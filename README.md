@@ -29,3 +29,6 @@ Lean verification code lives here because it is a first-class agent tool. In
 production, the verifier can still run as a separate process or sidecar
 container even though it shares this repository.
 
+## License
+
+Apache License 2.0.
