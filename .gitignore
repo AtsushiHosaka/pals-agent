@@ -7,8 +7,14 @@
 *.pem
 *.key
 
-# Documentation is kept in the private parent repository.
+# Public OSS documentation allowlist.
 *.md
+!README.md
+!SECURITY.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!CHANGELOG.md
+!SUPPORT.md
 
 # Python
 .venv/
