@@ -1,0 +1,38 @@
+# Secrets and local environment
+.claude/
+.codex/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Documentation is kept in the private parent repository.
+*.md
+
+# Python
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.pyc
+
+# Node/tooling
+node_modules/
+dist/
+build/
+coverage/
+
+# Logs/artifacts
+*.log
+outputs/
+artifacts/
+
+# OS/editor
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+*.swp
