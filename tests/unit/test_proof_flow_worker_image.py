@@ -206,6 +206,7 @@ def test_build_worker_image_rejects_provenance_in_final_image_environment(
         "manifest",
         "seed",
         "fingerprint",
+        "c14n_v3_fingerprint",
     ),
 )
 def test_build_worker_image_rejects_any_seed_or_provenance_mismatch(
@@ -245,6 +246,25 @@ def test_build_worker_image_rejects_any_seed_or_provenance_mismatch(
         seed = json.loads(artifact.seed_file.read_bytes())
         seed["fingerprint"] = fingerprint
         artifact.seed_file.write_bytes(rfc8785.dumps(seed))
+    elif mutation == "c14n_v3_fingerprint":
+        fingerprint = json.loads(artifact.fingerprint_file.read_bytes())
+        fingerprint["canonicalizer_version"] = "openmath-cdbase-alpha-c14n-v3"
+        fingerprint_bytes = rfc8785.dumps(fingerprint)
+        artifact.fingerprint_file.write_bytes(fingerprint_bytes)
+        seed = json.loads(artifact.seed_file.read_bytes())
+        seed["fingerprint"] = fingerprint
+        artifact.seed_file.write_bytes(rfc8785.dumps(seed))
+        provenance = json.loads(artifact.build_provenance_file.read_bytes())
+        provenance["canonicalizer_version"] = "openmath-cdbase-alpha-c14n-v3"
+        provenance_bytes = rfc8785.dumps(provenance)
+        artifact.build_provenance_file.write_bytes(provenance_bytes)
+        labels["io.pals.draft-retrieval-provenance.v1"] = (
+            base64.urlsafe_b64encode(provenance_bytes).rstrip(b"=").decode("ascii")
+        )
+        labels["io.pals.draft-retrieval-provenance.sha256"] = hashlib.sha256(
+            provenance_bytes
+        ).hexdigest()
+        artifact.oci_labels_file.write_bytes(rfc8785.dumps(labels))
     else:
         raise AssertionError(mutation)
 
@@ -355,7 +375,7 @@ def _artifact(
         "deployment": "test",
         "revision": "test",
         "dimension": 2,
-        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v3",
+        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
     }
     seed_bytes = rfc8785.dumps(
         {
@@ -367,7 +387,7 @@ def _artifact(
     manifest_bytes = rfc8785.dumps([])
     provenance_bytes = rfc8785.dumps(
         {
-            "canonicalizer_version": "openmath-cdbase-alpha-c14n-v3",
+            "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
             "elementtree_source_path": property.source_path,
             "elementtree_source_sha256": property.source_sha256,
             "property_id": "PFI-BP-001",

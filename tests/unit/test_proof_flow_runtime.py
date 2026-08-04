@@ -278,7 +278,7 @@ def test_pfi_runtime_maps_structuring_failure_to_a_closed_error() -> None:
         runtime.retrieve("For all real x, x equals x.")
 
 
-def test_pfi_runtime_rejects_a_wrong_canonicalizer_before_embedding_or_api() -> None:
+def test_pfi_runtime_rejects_c14n_v3_before_embedding_or_api() -> None:
     structurer = FakeStructurer(calls=[])
     embeddings = FakeEmbeddingModel(calls=[])
     candidates = FakeCandidatePort(calls=[])
@@ -286,7 +286,9 @@ def test_pfi_runtime_rejects_a_wrong_canonicalizer_before_embedding_or_api() -> 
     runtime = ProofFlowRuntime(
         structurer=structurer,
         embedding_model=embeddings,
-        embedding_fingerprint=replace(_FINGERPRINT, canonicalizer_version="untrusted-v1"),
+        embedding_fingerprint=replace(
+            _FINGERPRINT, canonicalizer_version="openmath-cdbase-alpha-c14n-v3"
+        ),
         runtime_provenance_sha256=_RUNTIME_PROVENANCE_SHA256,
         candidate_client=candidates,
         reranker=reranker,

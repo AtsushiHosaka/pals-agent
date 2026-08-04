@@ -303,7 +303,7 @@ def _read_oci_labels(
     dimension = fingerprint["dimension"]
     if isinstance(dimension, bool) or not isinstance(dimension, int) or not 1 <= dimension <= 4096:
         raise WorkerImageBuildError("worker image fingerprint dimension is invalid")
-    if fingerprint["canonicalizer_version"] != "openmath-cdbase-alpha-c14n-v3":
+    if fingerprint["canonicalizer_version"] != "openmath-cdbase-alpha-c14n-v4":
         raise WorkerImageBuildError("worker image fingerprint canonicalizer is invalid")
     projection: list[dict[str, object]] = []
     previous_identifier: bytes | None = None
@@ -380,7 +380,7 @@ def _read_oci_labels(
     if set(provenance) != expected_provenance_keys:
         raise WorkerImageBuildError("worker image provenance shape is invalid")
     expected_values: dict[str, object] = {
-        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v3",
+        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
         "elementtree_source_path": canonicalizer_property.source_path,
         "elementtree_source_sha256": canonicalizer_property.source_sha256,
         "property_id": "PFI-BP-001",

@@ -28,11 +28,11 @@ from pals_agent.openmath import (
 )
 
 _PARENT_HASHES = {
-    "requirements.md": "aef472a50f3da14e8fe879cb604198dd611af256aa4975b64837ef808455c911",
-    "design.md": "b1d02ad05c0530579ec0fb79f1aaf7b9093e82cb3fd56e238e8ce2e5ea0a608d",
-    "tasks.md": "94c40fc7b3c099aafc4018544eaccab4dbe9532eeeb9e2c30eafda348c11c53e",
+    "requirements.md": "358225f8fce24dbaf3b8a87dd71b674a2968979a9f60e3106ec8cce8a530c4ac",
+    "design.md": "a4e03127d9903495ee6444d87df238025cbdabdce0b2e8d9d9a6d417413b2a4d",
+    "tasks.md": "44effa741ddad7740325c7b7e9d389c23da51ecd57cf96450cd722ab87fc8de0",
 }
-_CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v3"
+_CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v4"
 _SOURCE_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _DRAFT_ID = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 _SEED_PATH = "/opt/pals/draft-seed.json"

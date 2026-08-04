@@ -32,7 +32,7 @@ _RESULT = {
     "runtime_provenance_sha256": "b" * 64,
     "fingerprint": {
         **_FINGERPRINT.as_json(),
-        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v3",
+        "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
     },
     "candidates": [
         {
@@ -144,7 +144,7 @@ def test_pfi_ag_003_sends_one_exact_private_vector_only_request() -> None:
         "embedding": [1.0, 0.0],
         "fingerprint": {
             **_FINGERPRINT.as_json(),
-            "canonicalizer_version": "openmath-cdbase-alpha-c14n-v3",
+            "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
         },
     }
     assert set(request) == {"schema_version", "embedding", "fingerprint"}
@@ -193,7 +193,7 @@ def test_pfi_ag_003_maps_a_nonconforming_success_response_to_compatibility(
                 deployment="text-embedding-3-small",
                 revision="2026-07-27",
                 dimension=2,
-                canonicalizer_version="wrong",
+                canonicalizer_version="openmath-cdbase-alpha-c14n-v3",
             ),
         ),
     ],

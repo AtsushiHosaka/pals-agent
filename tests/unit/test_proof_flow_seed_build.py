@@ -135,7 +135,7 @@ def _fingerprint() -> SeedEmbeddingFingerprint:
         deployment="deployment",
         revision="revision",
         dimension=2,
-        canonicalizer_version="openmath-cdbase-alpha-c14n-v3",
+        canonicalizer_version="openmath-cdbase-alpha-c14n-v4",
     )
 
 
@@ -146,6 +146,11 @@ def _builder(model: _EmbeddingModel) -> ProofDraftSeedBuilder:
         fingerprint=_fingerprint(),
         canonicalizer_property=_CANONICALIZER_PROPERTY,
     )
+
+
+def test_pfi_ag_002_rejects_c14n_v3_fingerprint_before_embedding() -> None:
+    with pytest.raises(ValueError, match="canonicalizer version"):
+        replace(_fingerprint(), canonicalizer_version="openmath-cdbase-alpha-c14n-v3")
 
 
 @pytest.mark.parametrize("name", ("requirements.md", "design.md", "tasks.md"))

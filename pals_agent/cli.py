@@ -454,7 +454,7 @@ def _build_pfi_seed(
             deployment=embedding_model.deployment_identity,
             revision=embedding_model.revision,
             dimension=embedding_model.dimension,
-            canonicalizer_version="openmath-cdbase-alpha-c14n-v3",
+            canonicalizer_version="openmath-cdbase-alpha-c14n-v4",
         ),
         canonicalizer_property=canonicalizer_property,
     ).build(

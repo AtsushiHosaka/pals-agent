@@ -20,7 +20,7 @@ from pals_agent.models import ProofDraft
 from pals_agent.openmath import validate_canonical_retrieval_openmath_xml
 
 _PATH = "/v1/internal/proof-flow-index/candidates"
-_CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v3"
+_CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v4"
 _MAX_BODY_BYTES = 262_144
 _MAX_CANDIDATE_BYTES = 16_384
 _MAX_TEXT_CODE_POINTS = 20_000
