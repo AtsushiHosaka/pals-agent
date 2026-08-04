@@ -15,6 +15,9 @@
 !CODE_OF_CONDUCT.md
 !CHANGELOG.md
 !SUPPORT.md
+!specs/proof-explanation-evaluation/requirements.md
+!specs/proof-explanation-evaluation/design.md
+!specs/proof-explanation-evaluation/tasks.md
 
 # Python
 .venv/
@@ -35,6 +38,8 @@ coverage/
 *.log
 outputs/
 artifacts/
+.pals-agent-artifacts/
+lean-workspace/.lake/
 
 # OS/editor
 .DS_Store

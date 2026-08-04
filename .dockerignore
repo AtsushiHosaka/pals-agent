@@ -1,0 +1,10 @@
+.git
+.mypy_cache
+.pals-agent-artifacts
+.pytest_cache
+.ruff_cache
+.venv
+__pycache__
+*.egg-info
+*.pyc
+lean-workspace/.lake
