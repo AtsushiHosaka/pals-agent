@@ -1535,6 +1535,8 @@ def _validate_claim_resource(
             "id",
             "proof_job_id",
             "section_id",
+            "selected_text",
+            "after_clarification_id",
             "question",
             "state",
             "content",
@@ -1546,6 +1548,12 @@ def _validate_claim_resource(
             raise ValueError("clarification claim resource identity/fields are invalid")
         _bounded_text(resource.get("proof_job_id"), maximum=200)
         section_id = _bounded_text(resource.get("section_id"), maximum=200)
+        selected_text = resource.get("selected_text")
+        if not isinstance(selected_text, str) or len(selected_text) > 800:
+            raise ValueError("clarification selected text is invalid")
+        after_clarification_id = resource.get("after_clarification_id")
+        if after_clarification_id is not None:
+            _bounded_text(after_clarification_id, maximum=200)
         question = _bounded_text(resource.get("question"), maximum=20_000)
         if section_id != section_id.strip():
             raise ValueError("clarification section id is not canonical")

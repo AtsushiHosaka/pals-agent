@@ -731,6 +731,8 @@ def _claim_envelope(
             "id": resource_id,
             "proof_job_id": "job-1",
             "section_id": "finish",
+            "selected_text": "trivial",
+            "after_clarification_id": None,
             "question": "なぜ trivial でよいのですか？",
             **common,
         }

@@ -371,6 +371,8 @@ def _clarification_resource(
         "id": clarification_id,
         "proof_job_id": proof_job_id,
         "section_id": "finish",
+        "selected_text": "この命題は追加の仮定なしに成り立つ",
+        "after_clarification_id": None,
         "question": "なぜこの命題は追加の仮定なしに成り立つのですか？",
         "state": state,
         "content": content,
