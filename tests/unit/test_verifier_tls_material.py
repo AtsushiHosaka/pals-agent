@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pytest
 
 from pals_agent.lean_verifier.tls_material import (
     Boto3SecretBinaryReader,
+    MountedFileSecretBinaryReader,
     SecretBinaryReference,
     TlsMaterialError,
     VerifierServerTlsConfiguration,
@@ -33,9 +37,7 @@ def test_secret_reader_uses_exact_arn_and_immutable_version() -> None:
     result = Boto3SecretBinaryReader(client).get(reference)
 
     assert result == b"certificate-bytes"
-    assert client.calls == [
-        {"SecretId": reference.arn, "VersionId": reference.version_id}
-    ]
+    assert client.calls == [{"SecretId": reference.arn, "VersionId": reference.version_id}]
 
 
 @pytest.mark.parametrize(
@@ -65,6 +67,25 @@ def test_secret_reader_rejects_aliases_and_nonbinary_material(response: object) 
 
     with pytest.raises(TlsMaterialError):
         Boto3SecretBinaryReader(FakeSecretsClient(response)).get(reference)
+
+
+def test_mounted_tls_reader_rejects_links_and_nonprivate_modes(tmp_path: Path) -> None:
+    reference = _reference("mounted", "release-v1")
+    path = tmp_path / "server.pem"
+    path.write_bytes(b"certificate")
+    path.chmod(0o400)
+    reader = MountedFileSecretBinaryReader({reference: path})
+
+    assert reader.get(reference) == b"certificate"
+
+    path.chmod(0o444)
+    with pytest.raises(TlsMaterialError):
+        reader.get(reference)
+    path.chmod(0o400)
+    link = tmp_path / "link.pem"
+    os.symlink(path, link)
+    with pytest.raises(TlsMaterialError):
+        MountedFileSecretBinaryReader({reference: link}).get(reference)
 
 
 def test_tls_configuration_rejects_a_mismatched_reconciler_identity() -> None:

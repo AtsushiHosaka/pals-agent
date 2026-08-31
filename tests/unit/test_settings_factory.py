@@ -9,7 +9,11 @@ from pals_agent.draft_embeddings import (
 from pals_agent.factory import (
     build_draft_embedding_model,
     build_pipeline,
+    build_proof_explainer,
     build_proof_flow_runtime,
+    build_proof_output_reviewer,
+    build_proof_semantic_reviewer,
+    build_recipe_attempt_planner,
     build_semantic_stage_judge,
     build_statement_openmath_structurer,
 )
@@ -34,6 +38,7 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.llm_provider == "ollama"
     assert settings.ollama_model == "qwen2.5:3b"
     assert settings.openai_model == "gpt-5.4-nano"
+    assert build_recipe_attempt_planner(settings) is None
     assert settings.openai_max_output_tokens == 12000
     assert settings.prove_mlx_model_path is None
     assert settings.mlx_generate_binary == "mlx_lm.generate"
@@ -49,6 +54,38 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.draft_embedding_timeout_seconds == 60.0
     assert settings.pfi_runtime_provenance_sha256 is None
     assert settings.max_repair_attempts == 12
+
+
+def test_settings_reject_partial_recipe_selection_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PALS_RECIPE_WORKER_SECRET", "recipe-secret")
+
+    with pytest.raises(ValueError, match="Recipe selection requires"):
+        AgentSettings.from_env()
+
+
+def test_dpb_014_settings_build_recipe_selection_from_signed_fingerprint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("PALS_RECIPE_WORKER_SECRET", "recipe-secret")
+    monkeypatch.setenv("PALS_RECIPE_VERIFIER_SHA256", "b" * 64)
+    monkeypatch.setenv("PALS_RECIPE_ACTIVE_LEAN_VERSION", "v4.19.0")
+    monkeypatch.setenv("PALS_RECIPE_ACTIVE_LAKE_MANIFEST_SHA256", "a" * 64)
+    monkeypatch.setenv("PALS_API_BASE_URL", "https://api.palschat.site")
+
+    planner = build_recipe_attempt_planner(AgentSettings.from_env())
+
+    assert planner is not None
+    assert planner.toolchain_fingerprint.lean_version == "v4.19.0"
+    assert planner.toolchain_fingerprint.lake_manifest_sha256 == "a" * 64
+    assert planner.toolchain_fingerprint.verifier_sha256 == "b" * 64
+    assert (
+        planner.toolchain_fingerprint.materializer_version
+        == "pals.recipe-materializer.v1"
+    )
+
+
 def test_settings_read_openai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PALS_LLM_PROVIDER", "openai")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
@@ -127,6 +164,26 @@ def test_factory_uses_openai_generator(monkeypatch: pytest.MonkeyPatch) -> None:
     assert pipeline.proof_flow_retriever is None
     assert pipeline.verifier is None
     assert pipeline.verification_mode == "api_reconcile"
+
+
+def test_factory_builds_distinct_explanation_and_review_sessions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("PALS_LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("PALS_OPENAI_MODEL", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+    settings = AgentSettings.from_env()
+    explainer = build_proof_explainer(settings)
+    reviewer = build_proof_output_reviewer(settings)
+    proof_reviewer = build_proof_semantic_reviewer(settings)
+
+    assert explainer.client is not reviewer.client
+    assert explainer.client is not proof_reviewer.client
+    assert reviewer.client is not proof_reviewer.client
+    assert explainer.model == reviewer.model == "gpt-5.4-mini-2026-03-17"
+    assert explainer.provider == reviewer.provider == "openai"
 
 
 def test_factory_rejects_generation_provider_override_before_work(
@@ -312,12 +369,10 @@ def test_release_role_registry_is_complete_immutable_and_code_owned() -> None:
         ModelRole.REPAIR,
         ModelRole.EXPLAIN,
         ModelRole.CLARIFY,
+        ModelRole.PROOF_REVIEW,
     )
     assert all(entry.provider == "openai" for entry in RELEASE_ROLE_REGISTRY)
-    assert all(
-        entry.model == "gpt-5.4-mini-2026-03-17"
-        for entry in RELEASE_ROLE_REGISTRY
-    )
+    assert all(entry.model == "gpt-5.4-mini-2026-03-17" for entry in RELEASE_ROLE_REGISTRY)
     assert all(fixed_model_default(entry.role) == entry for entry in RELEASE_ROLE_REGISTRY)
 
 

@@ -1425,6 +1425,53 @@ def test_plain_square_input_reaches_epsilon_delta_through_the_proof_flow_runtime
     assert validate_generated_lean(request, EPSILON_DELTA_SQUARE_CODE) == []
 
 
+def test_retrieval_canonical_binder_names_never_replace_the_learner_problem(
+    tmp_path: Path,
+) -> None:
+    """OpenMath alpha-normalization is a retrieval key, never generation input."""
+    statement = "関数 t ↦ t^2 が実数全体で連続であることを示してください。"
+    source_draft = SeedDraftCatalog().find_by_id("continuous_square")
+    assert source_draft is not None
+    source_xml = source_draft.openmath_xml.replace('name="x"', 'name="t"')
+    query_openmath = canonicalize_retrieval_openmath_xml(source_xml)
+    assert 'name="v1"' in query_openmath
+
+    fingerprint = DraftEmbeddingFingerprint(
+        provider="openai",
+        model="text-embedding-3-small",
+        endpoint="https://api.openai.com/v1",
+        deployment="text-embedding-3-small",
+        revision="2026-07-31",
+        dimension=2,
+    )
+    retriever = ProofFlowRuntime(
+        structurer=RecordingStructurer({statement: source_xml}, default_xml=source_xml),
+        embedding_model=UnitEmbeddingModel(calls=[]),
+        embedding_fingerprint=fingerprint,
+        runtime_provenance_sha256="b" * 64,
+        candidate_client=SquareCandidateResponse(
+            draft=replace(source_draft, openmath_xml=query_openmath),
+            fingerprint=fingerprint,
+            calls=[],
+        ),
+        reranker=SquareRerankerResponse(calls=[]),
+    )
+    pipeline = ProofPipeline(
+        generator=RecordingContinuousGenerator(),
+        verifier=FakeVerifier(),
+        artifact_store=FileArtifactStore(tmp_path),
+        proof_flow_retriever=retriever,
+    )
+
+    request = pipeline._request_for_statement(statement)
+    generation_prompt = _prompt_for(request)
+
+    assert request.prompt == statement
+    assert request.query_openmath_xml == query_openmath
+    assert statement in generation_prompt
+    assert 'name="v1"' not in generation_prompt
+
+
 def test_approximate_or_reranked_square_context_does_not_select_a_method() -> None:
     draft = SeedDraftCatalog().find_by_id("continuous_square")
     assert draft is not None

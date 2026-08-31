@@ -4,22 +4,28 @@ import json
 import math
 import re
 import time
+import uuid
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
+
+from pals_agent.lean_target import LeanTargetDeclaration
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])(?:"
-    r"aesop|all_goals|apply|assumption|by|calc|cases|constructor|continuity|"
-    r"convert|decide|def|exact|example|exists|ext|field_simp|fun|gcongr|"
-    r"have|induction|infer_instance|intro|lemma|left|let|linarith|native_decide|"
-    r"nlinarith|norm_cast|norm_num|obtain|omega|positivity|rcases|refine|repeat|"
-    r"rfl|right|ring|ring_nf|rw|simpa|simp|subst|tauto|theorem|trivial|use|where"
+    # Keep only terms that are recognisably Lean-specific in ordinary learner prose.
+    # English mathematical explanations legitimately use words such as "let", "left",
+    # "right", "continuity", and "theorem".
+    r"aesop|all_goals|field_simp|gcongr|infer_instance|linarith|native_decide|"
+    r"nlinarith|norm_cast|norm_num|omega|rcases|rfl|ring_nf|rw|simpa|simp|subst|tauto"
     r")(?![A-Za-z0-9_])",
     re.IGNORECASE,
 )
 _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?![A-Za-z0-9_])"
+)
+_BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
+    r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
 
 
@@ -43,6 +49,32 @@ class ExplanationGenerationError(RuntimeError):
 
 class ExplanationDeadlineExceeded(ExplanationGenerationError):
     """Raised when explanation work reaches its monotonic hard deadline."""
+
+
+class ProofOutputReviewError(RuntimeError):
+    """Raised when an independent review cannot approve learner-facing output."""
+
+
+@dataclass(frozen=True, slots=True)
+class ProofOutputReview:
+    """An independent approval attached to one exact learner-facing output."""
+
+    kind: Literal["explanation", "clarification"]
+    reviewer_provider: str
+    reviewer_model: str
+    session_id: str
+    rationale: str
+
+
+@dataclass(frozen=True, slots=True)
+class ProofSemanticReview:
+    """An independently reviewed decision, ready for durable settlement."""
+
+    decision: Literal["approved", "rejected"]
+    rationale: str
+    reviewer_provider: str
+    reviewer_model: str
+    session_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +102,259 @@ class ProofExplanation:
     prompt: str
     raw_model_output: str
     elapsed_ms: int
+
+
+class ProofOutputReviewer(Protocol):
+    """A separate LLM session that approves output before learner publication."""
+
+    def review_explanation(
+        self,
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        explanation: ProofExplanation,
+        language: str,
+        deadline: float | None = None,
+        timeout_seconds: float | None = None,
+    ) -> ProofOutputReview: ...
+
+    def review_clarification(
+        self,
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        explanation: ProofExplanation,
+        clarification: ProofClarification,
+        language: str,
+        deadline: float | None = None,
+        timeout_seconds: float | None = None,
+    ) -> ProofOutputReview: ...
+
+
+class ProofSemanticReviewer(Protocol):
+    """A separate LLM session that decides whether a Lean candidate matches the request."""
+
+    def review_proof(
+        self,
+        *,
+        theorem_statement: str,
+        formal_statement: str | None,
+        target_declaration: LeanTargetDeclaration,
+        lean_code: str,
+        timeout_seconds: float | None = None,
+    ) -> ProofSemanticReview: ...
+
+
+@dataclass(frozen=True, slots=True)
+class LeanGroundedOutputReviewer:
+    """Fail-closed reviewer for explanation and clarification publication.
+
+    The reviewer is built with a separate client instance from the generator.  Each
+    `generate` call is a standalone Responses request, so it does not inherit the
+    generator's prompt or response state even when the release model is the same.
+    """
+
+    client: TextGenerationClient
+    model: str
+    provider: str
+    max_attempts: int = 2
+    monotonic: Callable[[], float] = time.monotonic
+    session_id_factory: Callable[[], uuid.UUID] = uuid.uuid4
+
+    def __post_init__(self) -> None:
+        if not self.model.strip():
+            raise ValueError("model must be non-empty")
+        if not self.provider.strip():
+            raise ValueError("provider must be non-empty")
+        if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
+            raise ValueError("max_attempts must be between one and three")
+
+    def review_explanation(
+        self,
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        explanation: ProofExplanation,
+        language: str,
+        deadline: float | None = None,
+        timeout_seconds: float | None = None,
+    ) -> ProofOutputReview:
+        return self._review(
+            kind="explanation",
+            session_id=str(self.session_id_factory()),
+            prompt=_output_review_prompt(
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                explanation=explanation,
+                language=language,
+            ),
+            deadline=deadline,
+            timeout_seconds=timeout_seconds,
+        )
+
+    def review_clarification(
+        self,
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        explanation: ProofExplanation,
+        clarification: ProofClarification,
+        language: str,
+        deadline: float | None = None,
+        timeout_seconds: float | None = None,
+    ) -> ProofOutputReview:
+        return self._review(
+            kind="clarification",
+            session_id=str(self.session_id_factory()),
+            prompt=_output_review_prompt(
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                explanation=explanation,
+                clarification=clarification,
+                language=language,
+            ),
+            deadline=deadline,
+            timeout_seconds=timeout_seconds,
+        )
+
+    def _review(
+        self,
+        *,
+        kind: Literal["explanation", "clarification"],
+        session_id: str,
+        prompt: str,
+        deadline: float | None,
+        timeout_seconds: float | None,
+    ) -> ProofOutputReview:
+        _validate_deadline_options(deadline, timeout_seconds)
+        validation_error = ""
+        current_prompt = prompt
+        for attempt in range(1, self.max_attempts + 1):
+            transport_timeout = _remaining_transport_timeout(
+                deadline=deadline,
+                timeout_seconds=timeout_seconds,
+                monotonic=self.monotonic,
+            )
+            try:
+                if transport_timeout is None:
+                    raw_output = self.client.generate(
+                        model=self.model,
+                        prompt=current_prompt,
+                    )
+                else:
+                    raw_output = self.client.generate(
+                        model=self.model,
+                        prompt=current_prompt,
+                        timeout_seconds=transport_timeout,
+                    )
+            except Exception as exc:
+                raise ProofOutputReviewError("independent output review transport failed") from exc
+            _raise_if_deadline_reached(deadline, self.monotonic)
+            try:
+                approved, rationale = _output_review_decision(_parse_json_object(raw_output))
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                _raise_if_deadline_reached(deadline, self.monotonic)
+                validation_error = str(exc)
+                if attempt < self.max_attempts:
+                    current_prompt = (
+                        f"{prompt}\n\nThe previous response failed schema validation: "
+                        f"{validation_error}\nReturn the exact JSON object only."
+                    )
+                continue
+            if approved:
+                return ProofOutputReview(
+                    kind=kind,
+                    reviewer_provider=self.provider,
+                    reviewer_model=self.model,
+                    session_id=session_id,
+                    rationale=rationale,
+                )
+            validation_error = "independent reviewer rejected the output"
+            if attempt < self.max_attempts:
+                current_prompt = (
+                    f"{prompt}\n\nThe previous review rejected the candidate. Re-evaluate the "
+                    "same evidence independently and return the exact JSON decision only. Do not "
+                    "infer a preferred outcome from this retry."
+                )
+                continue
+            raise ProofOutputReviewError(validation_error)
+
+        raise ProofOutputReviewError(
+            "independent output review did not approve the output: "
+            f"{validation_error}",
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class LeanProofSemanticReviewer:
+    """Fail closed before the API may publish a Lean-verified candidate."""
+
+    client: TextGenerationClient
+    model: str
+    provider: str
+    max_attempts: int = 2
+    session_id_factory: Callable[[], uuid.UUID] = uuid.uuid4
+
+    def __post_init__(self) -> None:
+        if not self.model.strip() or not self.provider.strip():
+            raise ValueError("semantic reviewer model and provider must be non-empty")
+        if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
+            raise ValueError("max_attempts must be between one and three")
+
+    def review_proof(
+        self,
+        *,
+        theorem_statement: str,
+        formal_statement: str | None,
+        target_declaration: LeanTargetDeclaration,
+        lean_code: str,
+        timeout_seconds: float | None = None,
+    ) -> ProofSemanticReview:
+        session_id = str(self.session_id_factory())
+        prompt = _proof_semantic_review_prompt(
+            theorem_statement=theorem_statement,
+            formal_statement=formal_statement,
+            target_declaration=target_declaration,
+            lean_code=lean_code,
+        )
+        validation_error = ""
+        current_prompt = prompt
+        for attempt in range(1, self.max_attempts + 1):
+            try:
+                if timeout_seconds is None:
+                    raw_output = self.client.generate(model=self.model, prompt=current_prompt)
+                else:
+                    raw_output = self.client.generate(
+                        model=self.model,
+                        prompt=current_prompt,
+                        timeout_seconds=timeout_seconds,
+                    )
+                decision, rationale = _proof_semantic_review_decision(
+                    _parse_json_object(raw_output)
+                )
+            except Exception as exc:
+                validation_error = str(exc)
+                if attempt < self.max_attempts:
+                    current_prompt = (
+                        f"{prompt}\n\nThe previous response was invalid: {validation_error}. "
+                        "Return the exact JSON object only."
+                    )
+                    continue
+                return ProofSemanticReview(
+                    decision="rejected",
+                    rationale="The independent proof review could not be completed.",
+                    reviewer_provider=self.provider,
+                    reviewer_model=self.model,
+                    session_id=session_id,
+                )
+            return ProofSemanticReview(
+                decision=decision,
+                rationale=rationale,
+                reviewer_provider=self.provider,
+                reviewer_model=self.model,
+                session_id=session_id,
+            )
+        raise AssertionError("semantic reviewer exhausted without a decision")
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,6 +417,7 @@ class LeanProofExplainer:
             validator=lambda value: _parse_explanation(
                 value,
                 lean_code,
+                language=language,
                 require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
             ),
             deadline=deadline,
@@ -198,6 +484,7 @@ class LeanProofExplainer:
                 lean_code=lean_code,
                 section_id=section_id,
                 selected=selected,
+                language=language,
             ),
             deadline=deadline,
             timeout_seconds=timeout_seconds,
@@ -294,15 +581,17 @@ def _parse_explanation(
     payload: dict[str, Any],
     lean_code: str,
     *,
+    language: str = "ja",
     require_epsilon_delta: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
-    overview = _required_bounded_japanese_text(
+    _require_output_language(language)
+    overview = _required_bounded_language_text(
         payload,
         "overview",
         minimum=1,
         maximum=600,
     )
-    conclusion = _required_bounded_japanese_text(
+    conclusion = _required_bounded_language_text(
         payload,
         "conclusion",
         minimum=1,
@@ -324,13 +613,13 @@ def _parse_explanation(
             raise ValueError(f"duplicate explanation section id: {section_id}")
         seen_ids.add(section_id)
         references = _parse_references(raw_section, lean_code)
-        title = _required_bounded_japanese_text(
+        title = _required_bounded_language_text(
             raw_section,
             "title",
             minimum=1,
             maximum=80,
         )
-        summary = _required_bounded_japanese_text(
+        summary = _required_bounded_language_text(
             raw_section,
             "summary",
             minimum=1,
@@ -347,7 +636,7 @@ def _parse_explanation(
             )
         )
     if require_epsilon_delta:
-        if not overview.startswith("$\\varepsilon>0$ を任意に取ります。"):
+        if language == "ja" and not overview.startswith("$\\varepsilon>0$ を任意に取ります。"):
             raise ValueError(
                 "x-squared continuity explanation must start with the mathematical proof"
             )
@@ -366,10 +655,12 @@ def _parse_clarification(
     lean_code: str,
     section_id: str,
     selected: ExplanationSection,
+    language: str = "ja",
 ) -> tuple[str, tuple[str, ...], tuple[LeanLineReference, ...]]:
     if _required_text(payload, "section_id") != section_id:
         raise ValueError("clarification section_id does not match the requested section")
-    answer = _required_bounded_japanese_text(
+    _require_output_language(language)
+    answer = _required_bounded_language_text(
         payload,
         "answer",
         minimum=40,
@@ -461,7 +752,24 @@ def _parse_json_object(raw_output: str) -> dict[str, Any]:
             stripped = stripped[first_newline + 1 : last_fence].strip()
     if not stripped.startswith("{"):
         raise json.JSONDecodeError("response does not contain a JSON object", stripped, 0)
-    value, end = json.JSONDecoder().raw_decode(stripped)
+    # JSON permits `\n` and `\t`, while TeX commands such as `\neq` and `\text`
+    # begin with the same letters. Repair a single TeX command slash before decoding;
+    # correctly escaped JSON backslashes and one-letter JSON escapes remain untouched.
+    stripped = _BARE_LATEX_JSON_BACKSLASH_PATTERN.sub(r"\\\\", stripped)
+    decoder = json.JSONDecoder()
+    try:
+        value, end = decoder.raw_decode(stripped)
+    except json.JSONDecodeError as exc:
+        # Responses routinely contain LaTeX such as ``\varepsilon`` inside JSON strings.
+        # A model may emit its single backslash without JSON-escaping it; repair only that
+        # otherwise-invalid escape class, then apply the same strict JSON and schema checks.
+        if "Invalid \\escape" not in exc.msg:
+            raise
+        repaired = re.sub(
+            r'(?<!\\)\\(?!(?:["\\\\/bfnrt]|u[0-9A-Fa-f]{4}))', r"\\\\", stripped
+        )
+        value, end = decoder.raw_decode(repaired)
+        stripped = repaired
     if stripped[end:].strip():
         raise json.JSONDecodeError("response contains text after the JSON object", stripped, end)
     if not isinstance(value, dict):
@@ -490,7 +798,7 @@ def _required_list(payload: dict[str, Any], key: str) -> list[Any]:
     return value
 
 
-def _required_bounded_japanese_text(
+def _required_bounded_language_text(
     payload: dict[str, Any],
     key: str,
     *,
@@ -499,9 +807,12 @@ def _required_bounded_japanese_text(
 ) -> str:
     value = payload[key]
     text = _bounded_text_value(value, key, minimum=minimum, maximum=maximum)
-    if not any(_is_japanese_code_point(character) for character in _trim_unicode_whitespace(text)):
-        raise ValueError(f"{key} must contain Japanese text")
     return text
+
+
+def _require_output_language(language: str) -> None:
+    if language not in {"en", "ja", "zh-Hans", "zh-Hant"}:
+        raise ValueError("output language is unsupported")
 
 
 def _bounded_text_value(
@@ -594,16 +905,26 @@ def _explanation_prompt(
 ) -> str:
     x_squared_instruction = ""
     if require_epsilon_delta:
-        x_squared_instruction = """
+        opening_instruction = (
+            "The overview must begin exactly with:\n"
+            "$\\varepsilon>0$ を任意に取ります。"
+            if language == "ja"
+            else (
+                "Begin directly with an epsilon-delta proof in the requested output language, "
+                "starting from an arbitrary $\\varepsilon>0$."
+            )
+        )
+        x_squared_instruction = f"""
 This learner asked why x² is continuous. Derive an epsilon-delta explanation from the verified
 theorem: give an explicit positive delta choice and use the factorization/bound of |x²-a²|.
-Write the mathematical proof itself from the first sentence. The overview must begin exactly with:
-$\\varepsilon>0$ を任意に取ります。
+Write the mathematical proof itself from the first sentence. {opening_instruction}
 Then proceed in textbook order: fix the real point, choose delta explicitly, assume the
 delta-neighborhood condition, derive the factorization and epsilon bound, and conclude continuity.
-Use section titles that name mathematical steps. Do not begin with a summary, proof-plan preview,
-or conclusion preview. Never use source-commentary headings such as ライブラリの利用, 示したい内容,
-or 連続性判定を使う. Do not say that the learner requested epsilon-delta, and do not expose Lean
+Do not begin with a summary. Do not create visible section titles, a proof-plan preview, or a
+conclusion preview. Never use source-commentary headings such as ライブラリの利用, 示したい内容,
+or 連続性判定を使う. Use direct proof prose such as “Fix”, “Let”, “Set”, “Assume”, and
+“Therefore”, rather than conversational framing such as “We will show”, “Let us”, or
+“In this step”. Do not say that the learner requested epsilon-delta, and do not expose Lean
 syntax."""
     return f"""Write a mathematical proof for a learner, grounded in a verified Lean artifact.
 The theorem statement and verified Lean code below are the only sources of truth.
@@ -612,6 +933,11 @@ commentary on the Lean source. Begin with the proof itself. Do not first summari
 describe imports or libraries, preview the conclusion, or explain what individual source lines,
 commands, or tactics do.
 Across overview, sections, and conclusion, write one continuous proof in logical textbook order.
+The visible proof has no headings, bullets, numbered steps, or conversational step labels. Each
+section is only an internal anchor for learner questions; its `title` is never shown. The summary
+must continue the proof in ordinary mathematical prose, not introduce a titled step. Prefer direct
+mathematical constructions (“Fix …”, “Let …”, “Set …”, “Assume …”, “Thus …”) over conversational
+or pedagogical framing (“We will show …”, “Let us …”, “In this step …”, or “The idea is …”).
 {x_squared_instruction}
 
 Output language: {language}
@@ -623,7 +949,7 @@ Return exactly one JSON object with this schema:
   "sections": [
     {{
       "id": "stable-kebab-case-id",
-      "title": "short title naming a mathematical step",
+      "title": "internal short label; it is not learner-facing",
       "summary": "the next part of the mathematical proof",
       "references": [
         {{"start_line": 1, "end_line": 2, "excerpt": "exact text from those lines"}}
@@ -633,12 +959,14 @@ Return exactly one JSON object with this schema:
   "conclusion": "the final mathematical conclusion"
 }}
 
-Write Japanese text. Overview and conclusion must be 1-600 code points. Return 1-20
-sections; each title is 1-80 code points, each summary is 1-800, and every section has
-1-20 references. Every prose field must contain Japanese. Each excerpt must match the
+Write all learner-facing prose in the requested output language. Overview and conclusion must be
+1-600 code points. Return 1-20 sections; each internal title is 1-80 code points, each summary
+is 1-800,
+and every section has 1-20 references. Each excerpt must match the
 cited code exactly. Do not claim anything unsupported by the cited lines. Learner-facing
-prose must not quote Lean source, tactic or command names, or Lean identifiers. Explain
-the underlying mathematical step in Japanese; Lean source belongs only in `references`.
+prose must not quote Lean source, tactic or command names, or Lean identifiers. Explain the
+underlying mathematical step in the requested output language; Lean source belongs only in
+`references`.
 Wrap every mathematical expression in `$...$` using KaTeX-compatible LaTeX. For
 example, write `$|x^2-a^2|=|x-a||x+a|$`, `$\\varepsilon$`, and `$\\delta$`;
 do not leave mathematical expressions as un-delimited plain text.
@@ -705,12 +1033,13 @@ Return exactly one JSON object with this schema:
   ]
 }}
 
-Write a Japanese answer of 40-4000 code points that is longer than and does not repeat
-the selected summary. Return 2-10 nonblank key points of at most 500 code points and
-1-20 references. At least one reference must overlap the selected section. Every
+Write an answer in the requested output language of 40-4000 code points that is longer than
+and does not repeat the selected summary. Return 2-10 nonblank key points of at most 500
+code points and 1-20 references. At least one reference must overlap the selected section. Every
 excerpt must exactly match the cited 1-based line range. The answer and key points must
 not quote Lean source, tactic or command names, or Lean identifiers. Explain the
-underlying mathematical step in Japanese; Lean source belongs only in `references`.
+underlying mathematical step in the requested output language; Lean source belongs only in
+`references`.
 Wrap every mathematical expression in `$...$` using KaTeX-compatible LaTeX. Do not
 leave formulas, variables, epsilon, or delta as un-delimited plain text.
 
@@ -724,6 +1053,142 @@ Canonical Lean line table (JSON; each `text` value preserves leading spaces):
 
 Copy every `excerpt` exactly from the referenced `text` values, preserving leading
 spaces and joining multi-line ranges with a single newline."""
+
+
+def _output_review_prompt(
+    *,
+    theorem_statement: str,
+    lean_code: str,
+    explanation: ProofExplanation,
+    language: str,
+    clarification: ProofClarification | None = None,
+) -> str:
+    _require_output_language(language)
+    reviewed_output: dict[str, Any] = {
+        "explanation": {
+            "overview": explanation.overview,
+            "sections": [
+                {
+                    "id": section.id,
+                    "title": section.title,
+                    "summary": section.summary,
+                    "references": [asdict(reference) for reference in section.references],
+                }
+                for section in explanation.sections
+            ],
+            "conclusion": explanation.conclusion,
+        }
+    }
+    if clarification is not None:
+        reviewed_output["clarification"] = {
+            "section_id": clarification.section_id,
+            "question": clarification.question,
+            "answer": clarification.answer,
+            "key_points": list(clarification.key_points),
+            "references": [asdict(reference) for reference in clarification.references],
+        }
+    output_kind = "clarification" if clarification is not None else "explanation"
+    return f"""You are an independent review session for learner-facing mathematical output.
+You did not generate the candidate. Do not continue or repair it. Review only the supplied
+candidate against the verified Lean source and the learner theorem statement. A clarification
+must also be grounded in the supplied explanation. Approve only if every mathematical claim in
+the candidate is supported by those sources and all learner-facing prose is written in `{language}`.
+Mathematical notation, formula variables, and exact Lean excerpts are language-neutral: do not
+reject a candidate merely because those non-prose spans are not words in `{language}`.
+For a verified theorem, standard mathematical derivations of its stated claim are grounded even
+when the Lean proof uses automation. Do not require the learner-facing explanation to mention a
+tactic, source line, or other Lean implementation detail; reject only a genuine mathematical or
+grounding contradiction in the candidate itself.
+Do not reveal hidden chain-of-thought.
+
+The proof is already verified. Your decision controls only whether this {output_kind} can be
+published; it must not alter the proof's verified state.
+
+Return exactly one JSON object and no surrounding text:
+{{"approved": true, "rationale": "a concise review reason"}}
+or
+{{"approved": false, "rationale": "a concise review reason"}}
+
+User theorem statement:
+{theorem_statement}
+
+Verified Lean source:
+```lean
+{lean_code}
+```
+
+Candidate {output_kind} JSON:
+{json.dumps(reviewed_output, ensure_ascii=False, sort_keys=True)}"""
+
+
+def _review_approved(payload: dict[str, Any]) -> bool:
+    if set(payload) != {"approved"} or type(payload["approved"]) is not bool:
+        raise ValueError("review response must contain exactly one boolean approved field")
+    return payload["approved"]
+
+
+def _output_review_decision(payload: dict[str, Any]) -> tuple[bool, str]:
+    if set(payload) != {"approved", "rationale"} or type(payload.get("approved")) is not bool:
+        raise ValueError("output review response must contain approved and rationale fields")
+    rationale = payload.get("rationale")
+    if not isinstance(rationale, str) or not rationale.strip() or len(rationale) > 8_000:
+        raise ValueError("output review rationale must be a bounded nonblank string")
+    return payload["approved"], rationale
+
+
+def _proof_semantic_review_decision(
+    payload: dict[str, Any],
+) -> tuple[Literal["approved", "rejected"], str]:
+    if set(payload) != {"approved", "rationale"}:
+        raise ValueError(
+            "proof review response must contain exactly approved and rationale fields"
+        )
+    approved = payload["approved"]
+    rationale = payload["rationale"]
+    if type(approved) is not bool:
+        raise ValueError("proof review approved field must be boolean")
+    if (
+        not isinstance(rationale, str)
+        or not rationale.strip()
+        or len(rationale) > 8_000
+    ):
+        raise ValueError("proof review rationale must be nonblank and at most 8000 characters")
+    return ("approved" if approved else "rejected"), rationale
+
+
+def _proof_semantic_review_prompt(
+    *,
+    theorem_statement: str,
+    formal_statement: str | None,
+    target_declaration: LeanTargetDeclaration,
+    lean_code: str,
+) -> str:
+    formal = formal_statement or "(No separate formal statement was supplied.)"
+    return f"""You are an independent proof-review session. You did not generate this Lean
+candidate. The deterministic parser extracted exactly this one target declaration; reject if it
+does not correspond to the displayed Lean source. Decide whether that exact proposition corresponds
+to the learner's request and whether the candidate's proof logically establishes it. Lean
+compilation has already succeeded, but that alone is not approval. Do not repair
+or continue the proof. Return exactly one JSON object and no surrounding text:
+{{\"approved\": true, \"rationale\": \"concise review rationale\"}}
+or
+{{\"approved\": false, \"rationale\": \"concise review rationale\"}}
+The rationale must be nonblank, under 8,000 characters, and must not disclose hidden
+chain-of-thought.
+
+Learner request:
+{theorem_statement}
+
+Learner-provided formal statement:
+{formal}
+
+Exact extracted target declaration:
+{json.dumps(target_declaration.as_dict(), ensure_ascii=False, sort_keys=True)}
+
+Lean candidate source:
+```lean
+{lean_code}
+```"""
 
 
 def _is_x_squared_continuity(theorem_statement: str) -> bool:
@@ -741,9 +1206,6 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         .replace("\\rvert", "|")
         .replace("\\cdot", "*")
         .replace("\\times", "*")
-        .replace("\\leq", "<=")
-        .replace("\\le", "<=")
-        .replace("\\lt", "<")
         .replace("≤", "<=")
         .replace("\\{", "(")
         .replace("\\}", ")")
@@ -751,6 +1213,9 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         .replace("²", "^2")
     )
     compact = re.sub(r"\\(?:left|right|quad|qquad|[,;:!])", "", compact)
+    compact = re.sub(r"\\leq?(?![A-Za-z])", "<=", compact)
+    compact = re.sub(r"\\lt(?![A-Za-z])", "<", compact)
+    compact = re.sub(r"\\frac\{ε\}\{([^{}]*)\}", r"ε/(\1)", compact)
     compact = compact.replace("{", "").replace("}", "")
     construction = re.search(r"δ(?::=|=)(?P<choice>[^$。、；;]{1,200})", compact)
     has_delta_construction = (
@@ -782,8 +1247,8 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
     )
     applies_epsilon_bound = (
         factorization is not None
-        and re.match(
-            r"(?:<ε|<=?[^$。、；;]{1,200}<ε)",
+        and re.search(
+            r"[^$。、；;]{0,240}<=?ε",
             compact[factorization.end() :],
         )
         is not None
@@ -794,7 +1259,12 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         and has_positive_delta
         and applies_delta_neighborhood
         and applies_epsilon_bound
-        and "連続" in compact[factorization.end() if factorization is not None else 0 :]
+        and re.search(
+            r"(?:連続|continuous|continuity)",
+            compact[factorization.end() if factorization is not None else 0 :],
+            re.IGNORECASE,
+        )
+        is not None
     )
 
 

@@ -1,0 +1,36 @@
+{
+  "schema_version": "pals.typed-number-theory-registry.v1",
+  "profile_id": "typed-number-theory-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-number-theory:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "Nat"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "Int"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "nat_literal"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "int_literal"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "nat_add"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "nat_mul"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "int_add"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "int_mul"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "int_neg"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "int_of_nat"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "gcd"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "lcm"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "nat_mod"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "congruent_nat"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "divides_nat"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "divides_int"},
+    {"cdbase": "urn:pals:openmath:typed-number-theory:v1", "cd": "numbertheory1", "name": "is_prime"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

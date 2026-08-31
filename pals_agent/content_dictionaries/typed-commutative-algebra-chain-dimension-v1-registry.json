@@ -1,0 +1,32 @@
+{
+  "schema_version": "pals.typed-commutative-algebra-chain-dimension-registry.v1",
+  "profile_id": "typed-commutative-algebra-chain-dimension-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "CommRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "Ideal"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "NoetherianRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "ArtinianRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IdealFG"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "KrullDimLEZero"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "PrimeIdeal"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "MaximalIdeal"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IdealSum"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IdealInf"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IdealProduct"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IdealRadical"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "Field"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "HilbertNoetherian"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-chain-dimension:v1", "cd": "chain1", "name": "IteratedHilbertNoetherian"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"}
+  ]
+}

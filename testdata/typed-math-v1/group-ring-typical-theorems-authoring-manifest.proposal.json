@@ -1,0 +1,673 @@
+{
+  "schema_version": "pals.typed-math-v1-authoring-manifest.v1",
+  "proposal_status": "not_admitted_requires_independent_project_review",
+  "profile": {
+    "id": "typed-math-v1",
+    "validator": "pals_agent.typed_math.validate_canonical_typed_math_openmath_xml",
+    "canonicalizer": "openmath-cdbase-alpha-c14n-v4",
+    "admission_openmath_field": "canonical_openmath_xml",
+    "cd_bundle": {
+      "registry_path": "pals_agent/content_dictionaries/typed-math-v1-registry.json",
+      "sha256": "sha256:ce6a39ab7627f6d733fdb40b6a899a5726d0aefe06f25fbd07cffc4c21bf5a35",
+      "digest_input": "exact UTF-8 bytes of the named registry file"
+    },
+    "lean_toolchain": {
+      "path": "lean-workspace/lean-toolchain",
+      "value": "leanprover/lean4:v4.32.0-rc1",
+      "sha256": "sha256:2c290dc3675a4faf0bc03545ff71a417d2f9a7c2e60e8be80ed643fcbcc73e2d",
+      "digest_input": "exact UTF-8 bytes of the named lean-toolchain file"
+    }
+  },
+  "lean_witness_bundle": {
+    "path": "testdata/typed-math-v1/group-ring-typical-theorems-authoring-witnesses.lean",
+    "sha256": "sha256:3cda03fcd1d6b8da21c3fd799ce3c8e5d05fa8f180c769e1e55e95443882ce5f",
+    "digest_input": "exact UTF-8 bytes of the named Lean file, including import and final newline",
+    "verification_command": "cd pals-agent/lean-workspace && lake env lean ../testdata/typed-math-v1/group-ring-typical-theorems-authoring-witnesses.lean",
+    "verification_status": "verified_local_pinned_workspace"
+  },
+  "cards": [
+    {
+      "id": "typed_group_inverse_involution",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "introductory",
+      "canonical_statement": "For every element a of a group G, the inverse of a⁻¹ is a.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"a\"/></OMA></OMA><OMV name=\"a\"/></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMA><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:59c7af244519f028748757943e31c898247f2aafe9cc9c3b25d13ab29d7fca2c",
+      "proof_strategy": "Use uniqueness of the inverse after observing that a is an inverse of a⁻¹.",
+      "sketch_steps": [
+        "setup: Fix a in the carrier of G.",
+        "inverse: Form a⁻¹ using the group inverse operation.",
+        "candidate: Observe that a is a two-sided inverse candidate for a⁻¹.",
+        "uniqueness: Apply uniqueness of inverses in a group.",
+        "conclude: The inverse of a⁻¹ is a."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a : G), a⁻¹⁻¹ = a",
+        "target_sha256": "sha256:4d5d7efca5fb3264f86c0598223a71df3ec7640f2168bb9a5f615179b55e7d7b",
+        "witness": "example : ∀ {G : Type*} [Group G] (a : G), a⁻¹⁻¹ = a := by\n  intro G _ a\n  simp\n",
+        "witness_sha256": "sha256:a9ffaf6071abe9b2145aaa64760dfaa01c1d31165b2c97929ec113b8d5996ac2"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_inverse_one",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "introductory",
+      "canonical_statement": "In every group G, the inverse of the identity element is the identity element.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"one\"/><OMV name=\"G\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"one\"/><OMV name=\"G\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"one\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"one\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:b98fc060dbbb4e5859af555183171fe8a88ed6f32858a807ae081ead52135fff",
+      "proof_strategy": "Show that the identity is its own two-sided inverse.",
+      "sketch_steps": [
+        "setup: Fix the group G and its identity 1.",
+        "candidate: Use 1 itself as an inverse candidate for 1.",
+        "left-product: Simplify 1*1 to 1.",
+        "right-product: Simplify the reverse product in the same way.",
+        "conclude: Inverse uniqueness gives 1⁻¹ = 1."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G], (1 : G)⁻¹ = 1",
+        "target_sha256": "sha256:d61b075262f207e04f2c990d91f2d68fef98e6cf6951e4cc2fbc2b052b166de9",
+        "witness": "example : ∀ {G : Type*} [Group G], (1 : G)⁻¹ = 1 := by\n  intro G _\n  simp\n",
+        "witness_sha256": "sha256:89fe6158895d868c0aa493f4cc2af6a29bb418698a8c8323fbdfb41014ccf0ee"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_left_cancellation_iff",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For a, b, c in a group G, a*b = a*c if and only if b = c.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"c\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"a\"/><OMV name=\"b\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"a\"/><OMV name=\"c\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"b\"/><OMV name=\"c\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:b1fc4aac613ddf06c9d85cd0d61a67263d071c2cf8298747a0f0b5a6acc6ffb8",
+      "proof_strategy": "Multiply an equality on the left by a⁻¹, and use congruence for the converse.",
+      "sketch_steps": [
+        "setup: Fix a, b, c in G.",
+        "forward: Assume a*b = a*c.",
+        "cancel: Multiply both sides on the left by a⁻¹ and reassociate.",
+        "simplify: Reduce a⁻¹*a to 1.",
+        "reverse: Substitute b = c to recover the product equality."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a b c : G), a * b = a * c ↔ b = c",
+        "target_sha256": "sha256:bc9ce9cf6abf70dcb5790806da5eff0589df718e34147ea2baed7fc80aadf21d",
+        "witness": "example : ∀ {G : Type*} [Group G] (a b c : G), a * b = a * c ↔ b = c := by\n  intro G _ a b c\n  constructor\n  · exact mul_left_cancel\n  · intro h\n    simp [h]\n",
+        "witness_sha256": "sha256:9cf464f68514d42734bb01fd349711661a8d3a78a94bc3ea3af4180ac74d1523"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_right_cancellation_iff",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For a, b, c in a group G, b*a = c*a if and only if b = c.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"c\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"b\"/><OMV name=\"a\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"c\"/><OMV name=\"a\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"b\"/><OMV name=\"c\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:93c3a10a6cc461406f61494d51a5d8d755920953fcb5736e4e64101e26adfba6",
+      "proof_strategy": "Multiply an equality on the right by a⁻¹, and use congruence for the converse.",
+      "sketch_steps": [
+        "setup: Fix a, b, c in G.",
+        "forward: Assume b*a = c*a.",
+        "cancel: Multiply both sides on the right by a⁻¹.",
+        "simplify: Reduce a*a⁻¹ to 1.",
+        "reverse: Substitute b = c to recover the original equality."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a b c : G), b * a = c * a ↔ b = c",
+        "target_sha256": "sha256:0277e5d2798f77901ff45afa57da99072070d632173a3b556ba47044ed0bd780",
+        "witness": "example : ∀ {G : Type*} [Group G] (a b c : G), b * a = c * a ↔ b = c := by\n  intro G _ a b c\n  constructor\n  · exact mul_right_cancel\n  · intro h\n    simp [h]\n",
+        "witness_sha256": "sha256:a3d855a8db26998545ba14feecf9ef5e089e168f8adebb89bfa806e7afda363a"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_solve_left_multiplication",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For a, x, b in a group G, a*x = b if and only if x = a⁻¹*b.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"a\"/><OMV name=\"x\"/></OMA><OMV name=\"b\"/></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"a\"/></OMA><OMV name=\"b\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMV name=\"v4\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:e1bf8af7b108963dabffeac23241e275114db2cf9ada3e59179999e13bad4825",
+      "proof_strategy": "Undo left multiplication by multiplying with a⁻¹, then verify the proposed solution.",
+      "sketch_steps": [
+        "setup: Fix a, x, b in G.",
+        "forward: Start from a*x = b.",
+        "undo: Multiply on the left by a⁻¹ and reassociate.",
+        "simplify: Replace a⁻¹*a by 1 to isolate x.",
+        "reverse: Substitute x = a⁻¹*b and simplify a*a⁻¹."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a x b : G), a * x = b ↔ x = a⁻¹ * b",
+        "target_sha256": "sha256:67b893f374201ba682663012e928864ba607220d818d76b307898758670acd41",
+        "witness": "example : ∀ {G : Type*} [Group G] (a x b : G), a * x = b ↔ x = a⁻¹ * b := by\n  intro G _ a x b\n  constructor\n  · intro h\n    calc\n      x = 1 * x := by simp\n      _ = (a⁻¹ * a) * x := by simp\n      _ = a⁻¹ * (a * x) := by rw [mul_assoc]\n      _ = a⁻¹ * b := by rw [h]\n  · intro h\n    rw [h]\n    simp\n",
+        "witness_sha256": "sha256:0c4c82eeb1523d64e2bf7f160e54b7072fdac8c306be207b4bd9e99cd77a4d31"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_solve_right_multiplication",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For x, a, b in a group G, x*a = b if and only if x = b*a⁻¹.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"x\"/><OMV name=\"a\"/></OMA><OMV name=\"b\"/></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"b\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"a\"/></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMV name=\"v4\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:df725ad29643ff3ee4ed7bffcb406c47f01375b1ac345bb4c5abbd7d42c47afc",
+      "proof_strategy": "Undo right multiplication by multiplying with a⁻¹, then verify the proposed solution.",
+      "sketch_steps": [
+        "setup: Fix x, a, b in G.",
+        "forward: Start from x*a = b.",
+        "undo: Multiply on the right by a⁻¹ and reassociate.",
+        "simplify: Replace a*a⁻¹ by 1 to isolate x.",
+        "reverse: Substitute x = b*a⁻¹ and simplify."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (x a b : G), x * a = b ↔ x = b * a⁻¹",
+        "target_sha256": "sha256:2e003460532d8be676aafbb37d754a8b8033ad25176eef78f71b98a27cdd47b0",
+        "witness": "example : ∀ {G : Type*} [Group G] (x a b : G), x * a = b ↔ x = b * a⁻¹ := by\n  intro G _ x a b\n  constructor\n  · intro h\n    calc\n      x = x * 1 := by simp\n      _ = x * (a * a⁻¹) := by simp\n      _ = (x * a) * a⁻¹ := by rw [mul_assoc]\n      _ = b * a⁻¹ := by rw [h]\n  · intro h\n    rw [h]\n    simp [mul_assoc]\n",
+        "witness_sha256": "sha256:3e8006129ee8861875e10da83d6cd4a77619d66a6f2771f20347a744425a6957"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_product_one_iff_right_inverse",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For a and b in a group G, a*b = 1 if and only if b = a⁻¹.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"a\"/><OMV name=\"b\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"one\"/><OMV name=\"G\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"b\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"a\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"one\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:b3a09468a1a88f59746f7057ed3b3fda6e668edba3865a9fb97b7c61613e4f9c",
+      "proof_strategy": "Treat b as the solution of the equation a*b = 1.",
+      "sketch_steps": [
+        "setup: Fix a and b in G.",
+        "forward: Assume a*b is the identity.",
+        "isolate: Multiply on the left by a⁻¹.",
+        "simplify: Reassociate and reduce a⁻¹*a and 1*b.",
+        "reverse: Substitute b = a⁻¹ and simplify a*a⁻¹."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a b : G), a * b = 1 ↔ b = a⁻¹",
+        "target_sha256": "sha256:6e36858fb1fe1d9fc2c05c35bba98ee85761f6a24cade5f40054eb4f89806454",
+        "witness": "example : ∀ {G : Type*} [Group G] (a b : G), a * b = 1 ↔ b = a⁻¹ := by\n  intro G _ a b\n  constructor\n  · intro h\n    calc\n      b = 1 * b := by simp\n      _ = (a⁻¹ * a) * b := by simp\n      _ = a⁻¹ * (a * b) := by rw [mul_assoc]\n      _ = a⁻¹ * 1 := by rw [h]\n      _ = a⁻¹ := by simp\n  · intro h\n    rw [h]\n    simp\n",
+        "witness_sha256": "sha256:1cf0ff03852af8c817012a6941422b14841bc2366b1d3442c2ef09e6dc1e6a53"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_cancel_right_inverse",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "introductory",
+      "canonical_statement": "For a and b in a group G, (a*b)*b⁻¹ = a.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"mul\"/><OMV name=\"G\"/><OMV name=\"a\"/><OMV name=\"b\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"b\"/></OMA></OMA><OMV name=\"a\"/></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:c6b7e86e995be73f00fe31a9167160333604bd21d04cd4a98f49bf1e02abfabc",
+      "proof_strategy": "Reassociate the product and cancel b with its right inverse.",
+      "sketch_steps": [
+        "setup: Fix a and b in G.",
+        "associate: Rewrite (a*b)*b⁻¹ as a*(b*b⁻¹).",
+        "inverse: Apply the right-inverse law to b.",
+        "identity: Simplify a*1.",
+        "conclude: The result is a."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a b : G), (a * b) * b⁻¹ = a",
+        "target_sha256": "sha256:07f35b16c0f6637fa3b3d9b4a757fb454713ecec75f056f9625f2953e3c51f95",
+        "witness": "example : ∀ {G : Type*} [Group G] (a b : G), (a * b) * b⁻¹ = a := by\n  intro G _ a b\n  simp [mul_assoc]\n",
+        "witness_sha256": "sha256:b189ad0a0b649450943659456bfa3df9ae66fdc46f9401c85eaef22c8b2afdce"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_group_inverse_equality_iff",
+      "domain": "abstract_algebra_groups",
+      "difficulty": "standard",
+      "canonical_statement": "For a and b in a group G, a⁻¹ = b⁻¹ if and only if a = b.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"Group\"/></OMATP><OMV name=\"G\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"a\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"G\"/></OMA></OMATP><OMV name=\"b\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"a\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"inv\"/><OMV name=\"G\"/><OMV name=\"b\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"a\"/><OMV name=\"b\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Group\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"inv\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:0c35a7edccde3e5bd6acd8892b6952d029430484cac5967e7e81bba2fc1b89e7",
+      "proof_strategy": "Take inverses on both sides, using inverse involution; use substitution in the converse.",
+      "sketch_steps": [
+        "setup: Fix a and b in G.",
+        "forward: Assume their inverses are equal.",
+        "invert: Apply the inverse operation to both sides.",
+        "simplify: Use (u⁻¹)⁻¹ = u.",
+        "reverse: Substitute a = b before taking inverses."
+      ],
+      "lean": {
+        "target": "∀ {G : Type*} [Group G] (a b : G), a⁻¹ = b⁻¹ ↔ a = b",
+        "target_sha256": "sha256:9d14c14bf24bc522efb6fab263a50c86b0019648e5dd4845cb22a13d6d8f719a",
+        "witness": "example : ∀ {G : Type*} [Group G] (a b : G), a⁻¹ = b⁻¹ ↔ a = b := by\n  intro G _ a b\n  constructor\n  · intro h\n    have h' := congrArg Inv.inv h\n    simpa using h'\n  · intro h\n    simp [h]\n",
+        "witness_sha256": "sha256:8393aee1200185353f73617ec9e7d1a7ad681e12523998e26a90527aae3e4456"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the Group carrier and every element operand are explicitly bound, and each group operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed Group lowering: algebra1:mul, inv, and one map to Lean multiplication, inversion, and identity.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_double_negation",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "introductory",
+      "canonical_statement": "For every x in a commutative ring R, -(-x) = x.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"x\"/></OMA></OMA><OMV name=\"x\"/></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMA><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:90ce9c61ea106d781b9d49e825c3241b619ee8b2c40981d69413bac030f0ff3f",
+      "proof_strategy": "Use uniqueness of the additive inverse of x.",
+      "sketch_steps": [
+        "setup: Fix x in R.",
+        "inverse: The element -x is an additive inverse of x.",
+        "candidate: Observe that x is an additive inverse of -x.",
+        "uniqueness: Apply uniqueness of additive inverses.",
+        "conclude: -(-x) equals x."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x : R), - -x = x",
+        "target_sha256": "sha256:f7e018878a2b73466b644b727758d96a41a5f54d984081ded6fb422f6fad4fa4",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x : R), - -x = x := by\n  intro R _ x\n  simp\n",
+        "witness_sha256": "sha256:32e69c0d08f50743b65c6c6a5eadfb0c54f0c52570bc26af6fab94188b2cb0e9"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_neg_zero",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "introductory",
+      "canonical_statement": "In every commutative ring R, the additive inverse of zero is zero.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:d000bddc374b52a827d5adcd455bef4703c6573f3ba4538782e009d4ed1f5367",
+      "proof_strategy": "Use that zero is its own additive inverse.",
+      "sketch_steps": [
+        "setup: Fix the commutative ring R and its additive zero.",
+        "candidate: Use zero as an inverse candidate for zero.",
+        "sum: Verify 0+0=0.",
+        "uniqueness: Use uniqueness of additive inverses.",
+        "conclude: -0=0."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R], -(0 : R) = 0",
+        "target_sha256": "sha256:76131fb873e40f02661c2b4b5598c075bbb6677242b5501ccaaa96c4a531b35e",
+        "witness": "example : ∀ {R : Type*} [CommRing R], -(0 : R) = 0 := by\n  intro R _\n  simp\n",
+        "witness_sha256": "sha256:ebf962769390f3aac4cc24ab8dbe53c241a59b6e2cd6cb888af41b6946692855"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_add_left_cancellation_iff",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x, y, z in a commutative ring R, x+y = x+z if and only if y = z.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"z\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"z\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"y\"/><OMV name=\"z\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:6b992b10483ce57e16b6c7ad1ba13996c8a0e9f391e51e764e8e59ed93eeec36",
+      "proof_strategy": "Add -x to both sides for cancellation; use substitution for the converse.",
+      "sketch_steps": [
+        "setup: Fix x, y, z in R.",
+        "forward: Assume x+y=x+z.",
+        "cancel: Add -x to both sides and reassociate.",
+        "simplify: Reduce -x+x to zero.",
+        "reverse: Substitute y=z to recover the original equality."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y z : R), x + y = x + z ↔ y = z",
+        "target_sha256": "sha256:87f5028d82c3b8ec55fa4b39253e1762ab24206dfa3a1494b2b00898f5d7b7fe",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y z : R), x + y = x + z ↔ y = z := by\n  intro R _ x y z\n  constructor\n  · exact add_left_cancel\n  · intro h\n    simp [h]\n",
+        "witness_sha256": "sha256:c182c548ed2e488c58d0dc0b1eba46d00b620dad52993854909d0d08a59c7382"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_solve_left_addition",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x, y, z in a commutative ring R, x+y = z if and only if y = z+(-x).",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"z\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMV name=\"z\"/></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"y\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"z\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"x\"/></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v4\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMV name=\"v4\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v4\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:81b2c5996a1ede1b07f8a33355e68f6f70d8048842597c971ea61af162a5f253",
+      "proof_strategy": "Add the additive inverse of x to isolate y, then substitute back.",
+      "sketch_steps": [
+        "setup: Fix x, y, z in R.",
+        "forward: Assume x+y=z.",
+        "isolate: Add -x and reassociate the left-hand side.",
+        "simplify: Reduce -x+x to zero and commute the resulting sum.",
+        "reverse: Substitute y=z+(-x) and cancel x with -x."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y z : R), x + y = z ↔ y = z + -x",
+        "target_sha256": "sha256:3b173b0ca3758eaa23060dc871e4bbd6808c25602c0516bfdc325fe274c85704",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y z : R), x + y = z ↔ y = z + -x := by\n  intro R _ x y z\n  constructor\n  · intro h\n    calc\n      y = 0 + y := by simp\n      _ = (-x + x) + y := by simp\n      _ = -x + (x + y) := by rw [add_assoc]\n      _ = -x + z := by rw [h]\n      _ = z + -x := by rw [add_comm]\n  · intro h\n    calc\n      x + y = x + (z + -x) := by rw [h]\n      _ = (x + -x) + z := by ac_rfl\n      _ = 0 + z := by simp\n      _ = z := by simp\n",
+        "witness_sha256": "sha256:e45188b7addc757aad5670daabffb6d411d156d6703197dbe192cf770cd94389"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_zero_sum_iff_neg",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x and y in a commutative ring R, x+y=0 if and only if x=-y.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"equivalent\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"y\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"equivalent\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:887475e5964832bda2aa7333af9813f9e846f3e8a79647a6801476af86bf871b",
+      "proof_strategy": "Move y across the equation using its additive inverse.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "forward: Assume x+y=0.",
+        "isolate: Add -y and reassociate.",
+        "simplify: Replace y+(-y) by zero.",
+        "reverse: Substitute x=-y and simplify the sum."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), x + y = 0 ↔ x = -y",
+        "target_sha256": "sha256:eda5a12e25333302eacba2a6a484f15ed5efb5e4a297546b10c565f52352e521",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), x + y = 0 ↔ x = -y := by\n  intro R _ x y\n  constructor\n  · intro h\n    calc\n      x = x + 0 := by simp\n      _ = x + (y + -y) := by simp\n      _ = (x + y) + -y := by rw [add_assoc]\n      _ = 0 + -y := by rw [h]\n      _ = -y := by simp\n  · intro h\n    rw [h]\n    simp\n",
+        "witness_sha256": "sha256:eb7afe6cb007bc783415f84f56793ff3a1d870ff5aa32d17727a9b7d7c869b20"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_neg_add",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x and y in a commutative ring R, -(x+y)=(-x)+(-y).",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"y\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:f1d1a75d1aac3ade4e615cff245073a8654c2e3f7e1f99c6737d3e3fa74e8fca",
+      "proof_strategy": "Show that (-x)+(-y) is the additive inverse of x+y.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "candidate: Propose (-x)+(-y) as the inverse of x+y.",
+        "expand: Add the two expressions and reassociate.",
+        "cancel: Pair x with -x and y with -y.",
+        "conclude: Inverse uniqueness gives the formula."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), -(x + y) = -x + -y",
+        "target_sha256": "sha256:41049025cd2c06f52f65f9803369a35bec02995a86ffcb2ceb57c4b3c34ffec3",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), -(x + y) = -x + -y := by\n  intro R _ x y\n  simp [add_comm]\n",
+        "witness_sha256": "sha256:24e8dc9f4f51cdaba6d8f2a164b2f40d15277cbc8a282333fcdd83711f72f263"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_neg_mul_left",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x and y in a commutative ring R, (-x)*y = -(x*y).",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"x\"/></OMA><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:57785977f80e0f08c3319f8f41cd5c5f3b36d11f3d2bb6c5bea463a4310c060c",
+      "proof_strategy": "Use distributivity to show that (-x)*y is the additive inverse of x*y.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "candidate: Consider (-x)*y.",
+        "add: Add x*y to that candidate.",
+        "factor: Use distributivity to factor (-x+x)*y.",
+        "conclude: The product is zero, so the candidate is -(x*y)."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), (-x) * y = -(x * y)",
+        "target_sha256": "sha256:409983f7b0280b343eb8d40318c84264437cea63f611a57e77d42d53eda3f1cf",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), (-x) * y = -(x * y) := by\n  intro R _ x y\n  simp\n",
+        "witness_sha256": "sha256:11859b66599f5023f08b2470652fe4941aff7d7556781fcbcd089945ec44120e"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_neg_mul_neg",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "standard",
+      "canonical_statement": "For x and y in a commutative ring R, (-x)*(-y)=x*y.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"y\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:a74584571d0bc6c13890be4bc67f6dd337af14ee280f354ae3b51d35ad94f59d",
+      "proof_strategy": "Apply the one-negative product rule twice and use double negation.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "first-sign: Move the negation on the left factor outside the product.",
+        "second-sign: Apply the same rule to the remaining negated factor.",
+        "double-negation: Simplify the double additive inverse of x*y.",
+        "conclude: The product equals x*y."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), (-x) * (-y) = x * y",
+        "target_sha256": "sha256:bbd1ab27afb52c3f5a105777b4cad8891706d1ee6efbb618c9ada4c103295918",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), (-x) * (-y) = x * y := by\n  intro R _ x y\n  simp\n",
+        "witness_sha256": "sha256:67a68c671e1379c65b0194ebe537927999283761c97c4f3cacbf7490c92e3f4c"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_mul_zero_right",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "introductory",
+      "canonical_statement": "For every x in a commutative ring R, x*0=0.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:5148e0705cd349641589246697657a65839e67c06674aa380f6e5d7b0df205ed",
+      "proof_strategy": "Use distributivity and additive cancellation to identify x*0 with zero.",
+      "sketch_steps": [
+        "setup: Fix x in R.",
+        "duplicate: Rewrite 0 as 0+0.",
+        "distribute: Expand x*(0+0) into x*0+x*0.",
+        "cancel: Cancel one x*0 from both sides.",
+        "conclude: x*0=0."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x : R), x * 0 = 0",
+        "target_sha256": "sha256:3f336ef267840d777a1e90943ba6f33afec9f51ab025810d8cc5d7599bd66f7e",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x : R), x * 0 = 0 := by\n  intro R _ x\n  simp\n",
+        "witness_sha256": "sha256:c24b5b3dceb824e8e64ea35202e48afbbab04f94d6daba363b4720f8be276de3"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_square_expansion",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "intermediate",
+      "canonical_statement": "For x and y in a commutative ring R, (x+y)(x+y)=x*x+(x*y+(y*x+y*y)).",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"y\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"y\"/><OMV name=\"y\"/></OMA></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:946e850c679d64a9a0d8bd6ee914b141fd4bab57e6e1ecb2e78213fae6e41a31",
+      "proof_strategy": "Distribute each sum and collect the four products without collapsing the two cross terms.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "outer-distribution: Expand the left factor across x+y.",
+        "inner-distribution: Expand both resulting products.",
+        "associate: Reassociate the four summands in the displayed order.",
+        "conclude: Both sides are the same four-term sum."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), (x + y) * (x + y) = x * x + (x * y + (y * x + y * y))",
+        "target_sha256": "sha256:d4c4155a72a724bcdddafaaaa6f1a08761a4c733caea9f11c05e4c81529f607b",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), (x + y) * (x + y) = x * x + (x * y + (y * x + y * y)) := by\n  intro R _ x y\n  ring\n",
+        "witness_sha256": "sha256:c5426e71e7e7c2b66b9a3f2bf9fb0a4d864a62a18462d70809ee641a8a7bc0c1"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_comm_ring_difference_of_squares",
+      "domain": "abstract_algebra_rings",
+      "difficulty": "intermediate",
+      "canonical_statement": "For x and y in a commutative ring R, (x+y)(x+(-y))=x*x+(-(y*y)).",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"CommRing\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMV name=\"y\"/></OMA></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_add\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_neg\"/><OMV name=\"R\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"y\"/><OMV name=\"y\"/></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"CommRing\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_add\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_neg\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:6e589719d617ea299cbc2a5b511ea1e8bc729e7dacc4d118b3a361ee31df495b",
+      "proof_strategy": "Expand both products, cancel the two cross terms, then simplify the double negative.",
+      "sketch_steps": [
+        "setup: Fix x and y in R.",
+        "expand: Distribute both factors into four products.",
+        "signs: Rewrite products containing -y as additive negatives.",
+        "cancel: Pair x*y with its additive inverse.",
+        "conclude: The remaining terms are x*x and -(y*y)."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] (x y : R), (x + y) * (x + -y) = x * x + -(y * y)",
+        "target_sha256": "sha256:aa05947d828d1a6bd31b0b34f9f59e7f799af729fdb7dfe3e5aa266cd6a02ada",
+        "witness": "example : ∀ {R : Type*} [CommRing R] (x y : R), (x + y) * (x + -y) = x * x + -(y * y) := by\n  intro R _ x y\n  ring\n",
+        "witness_sha256": "sha256:d5a0d5f3c9744a013ed3d7c7921f6da215761edeed9313aad4c9cf4dd23be231"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the CommRing carrier and every element operand are explicitly bound, and each ring operation is indexed by that same carrier.",
+        "openmath_to_lean": "exact under the profile's carrier-indexed CommRing lowering: ring_add, ring_mul, ring_neg, and ring_zero map to Lean's corresponding ring operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_integral_domain_zero_product",
+      "domain": "abstract_algebra_integral_domains",
+      "difficulty": "standard",
+      "canonical_statement": "For x and y in an integral domain R, x*y=0 implies x=0 or y=0.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"IntegralDomain\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"y\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"implies\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"y\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"or\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"y\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"IntegralDomain\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v3\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"implies\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v3\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"or\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v3\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:25b55595f4ba55b2df9b32ed9d6b7958a33940f22d3deb2fad37afa9963e60e5",
+      "proof_strategy": "Apply the no-zero-divisors property of an integral domain.",
+      "sketch_steps": [
+        "setup: Fix x and y in the integral domain R.",
+        "premise: Assume x*y=0.",
+        "domain-property: Invoke that R has no zero divisors.",
+        "split: Obtain x=0 or y=0.",
+        "conclude: This is the stated disjunction."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] [IsDomain R] (x y : R), x * y = 0 → x = 0 ∨ y = 0",
+        "target_sha256": "sha256:41a8a72420da90b83a3bea432e3e899122761ba476f15f4754fe1166b0301707",
+        "witness": "example : ∀ {R : Type*} [CommRing R] [IsDomain R] (x y : R), x * y = 0 → x = 0 ∨ y = 0 := by\n  intro R _ _ x y h\n  exact eq_zero_or_eq_zero_of_mul_eq_zero h\n",
+        "witness_sha256": "sha256:60666bf562b5583c507383c7c2545a49096c32adcb38f02c3a66589ac2e2300e"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the IntegralDomain carrier and both element operands are explicitly bound; the premise and disjunction remain propositions over that same carrier.",
+        "openmath_to_lean": "exact under the recorded lowering: algebra1:IntegralDomain maps to the Lean assumptions [CommRing R] [IsDomain R]; ring multiplication/zero and logic1:implies/or map to their corresponding Lean operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    },
+    {
+      "id": "typed_integral_domain_square_zero",
+      "domain": "abstract_algebra_integral_domains",
+      "difficulty": "standard",
+      "canonical_statement": "For x in an integral domain R, x*x=0 implies x=0.",
+      "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"forall\"/><OMBVAR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"IntegralDomain\"/></OMATP><OMV name=\"R\"/></OMATTR><OMATTR><OMATP><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"type\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"typed1\" name=\"Elem\"/><OMV name=\"R\"/></OMA></OMATP><OMV name=\"x\"/></OMATTR></OMBVAR><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"logic1\" name=\"implies\"/><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_mul\"/><OMV name=\"R\"/><OMV name=\"x\"/><OMV name=\"x\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"http://www.openmath.org/cd\" cd=\"relation1\" name=\"eq\"/><OMV name=\"x\"/><OMA><OMS cdbase=\"urn:pals:openmath:typed-math:v1\" cd=\"algebra1\" name=\"ring_zero\"/><OMV name=\"R\"/></OMA></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"IntegralDomain\"></n1:OMS></n1:OMATP><n1:OMV name=\"v1\"></n1:OMV></n1:OMATTR><n1:OMATTR><n1:OMATP><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"type\"></n1:OMS><n1:OMA><n1:OMS cd=\"typed1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"Elem\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMATP><n1:OMV name=\"v2\"></n1:OMV></n1:OMATTR></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" cdbase=\"http://www.openmath.org/cd\" name=\"implies\"></n1:OMS><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_mul\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA><n1:OMA><n1:OMS cd=\"relation1\" cdbase=\"http://www.openmath.org/cd\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMA><n1:OMS cd=\"algebra1\" cdbase=\"urn:pals:openmath:typed-math:v1\" name=\"ring_zero\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "canonical_openmath_xml_sha256": "sha256:868f457fa90bed6267907cd2f8ab6284fbb68767051dccf8832ad5581fe138aa",
+      "proof_strategy": "Specialize the zero-product property to the same factor twice.",
+      "sketch_steps": [
+        "setup: Fix x in the integral domain R.",
+        "premise: Assume x*x=0.",
+        "zero-product: Apply the no-zero-divisors conclusion to x and x.",
+        "cases: Both alternatives are the same assertion x=0.",
+        "conclude: x=0."
+      ],
+      "lean": {
+        "target": "∀ {R : Type*} [CommRing R] [IsDomain R] (x : R), x * x = 0 → x = 0",
+        "target_sha256": "sha256:1fd3dc61a9cb32c778a42eaec297b2797b116ed9e299ac45182ddc8bee116be7",
+        "witness": "example : ∀ {R : Type*} [CommRing R] [IsDomain R] (x : R), x * x = 0 → x = 0 := by\n  intro R _ _ x h\n  exact mul_self_eq_zero.mp h\n",
+        "witness_sha256": "sha256:90258cf700ce72e353660b73945634a501ed94c31d9edbf60b722eac3c0c0db6"
+      },
+      "statement_openmath_lean_alignment_review": {
+        "status": "reviewed_by_local_authoring_agent_not_admitted",
+        "statement_to_openmath": "exact: the IntegralDomain carrier and both element operands are explicitly bound; the premise and disjunction remain propositions over that same carrier.",
+        "openmath_to_lean": "exact under the recorded lowering: algebra1:IntegralDomain maps to the Lean assumptions [CommRing R] [IsDomain R]; ring multiplication/zero and logic1:implies/or map to their corresponding Lean operations.",
+        "admission_gate": "An independent project reviewer must accept this record before any typed catalog or database admission."
+      }
+    }
+  ],
+  "manifest_digest": {
+    "algorithm": "sha256",
+    "input": "RFC 8785 canonical JSON serialization of this object with manifest_digest omitted",
+    "sha256": "sha256:a97c8d5e79c00904b9a4cbac677cef19925a9f69ed983a27cb260c9d8b678829"
+  }
+}

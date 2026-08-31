@@ -238,7 +238,7 @@ and carries the exact expiry of 15,552,000 seconds after observation and a
 deletion deadline 86,400 seconds later. Any absent control, mismatched receipt,
 incomplete run, or overdue retained record blocks the release. Never put these records, provider
 envelopes, prompts, IDs outside the governed inventory, or token usage in the
-repository, corpus, normal runtime DTOs, logs, traces, metrics labels, or Notion.
+repository, corpus, normal runtime DTOs, logs, traces, metrics labels, or external workspaces.
 
 Run the test gate:
 

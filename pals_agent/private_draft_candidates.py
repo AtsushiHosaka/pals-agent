@@ -18,6 +18,7 @@ from pals_agent.http_transport import (
 )
 from pals_agent.models import ProofDraft
 from pals_agent.openmath import validate_canonical_retrieval_openmath_xml
+from pals_agent.openmath_v4_contract import require_openmath_c14n_v4_contract
 
 _PATH = "/v1/internal/proof-flow-index/candidates"
 _CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v4"
@@ -229,6 +230,9 @@ def _candidate_result(
     *,
     expected_fingerprint: DraftEmbeddingFingerprint,
 ) -> DraftCandidateResult:
+    # The catalog fingerprint names this version, so do not accept its bytes unless the shared
+    # contract remains bound to the exact local canonicalizer implementation.
+    require_openmath_c14n_v4_contract()
     root = _exact_object(
         value,
         {

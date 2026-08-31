@@ -15,8 +15,8 @@ from pals_agent.proof_flow_seed import load_continuity_catalog
 
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-base-37.json"
-CATALOG = ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
+BASE = ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-base-37.json"
+CATALOG = ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
 
 
 def test_collection_is_deterministically_derived_from_the_retained_base() -> None:

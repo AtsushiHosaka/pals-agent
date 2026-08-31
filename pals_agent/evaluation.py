@@ -1423,8 +1423,8 @@ def _explanation_shape_valid(explanation: Mapping[str, Any]) -> bool:
     conclusion = explanation.get("conclusion")
     raw_sections = explanation.get("sections")
     if (
-        not _bounded_japanese_text(overview, minimum=1, maximum=600)
-        or not _bounded_japanese_text(conclusion, minimum=1, maximum=600)
+        not _bounded_text(overview, minimum=1, maximum=600)
+        or not _bounded_text(conclusion, minimum=1, maximum=600)
         or not isinstance(raw_sections, list)
         or not 1 <= len(raw_sections) <= 20
     ):
@@ -1440,8 +1440,8 @@ def _explanation_shape_valid(explanation: Mapping[str, Any]) -> bool:
             not isinstance(section_id, str)
             or not _trim_unicode_whitespace(section_id)
             or section_id in section_ids
-            or not _bounded_japanese_text(section.get("title"), minimum=1, maximum=80)
-            or not _bounded_japanese_text(section.get("summary"), minimum=1, maximum=800)
+            or not _bounded_text(section.get("title"), minimum=1, maximum=80)
+            or not _bounded_text(section.get("summary"), minimum=1, maximum=800)
         ):
             return False
         section_ids.add(section_id)
@@ -1532,7 +1532,7 @@ def _clarification_metrics(
             or not _trim_unicode_whitespace(section_id)
             or not isinstance(question, str)
             or not _trim_unicode_whitespace(question)
-            or not _bounded_japanese_text(answer, minimum=40, maximum=4000)
+            or not _bounded_text(answer, minimum=40, maximum=4000)
             or not isinstance(key_points, list)
             or not 2 <= len(key_points) <= 10
             or not all(_bounded_text(point, minimum=1, maximum=500) for point in key_points)
@@ -1670,23 +1670,6 @@ def _bounded_text(value: Any, *, minimum: int, maximum: int) -> bool:
         return False
     length = len(_trim_unicode_whitespace(value))
     return minimum <= length <= maximum
-
-
-def _bounded_japanese_text(value: Any, *, minimum: int, maximum: int) -> bool:
-    return (
-        _bounded_text(value, minimum=minimum, maximum=maximum)
-        and isinstance(value, str)
-        and any(_is_japanese_code_point(character) for character in _trim_unicode_whitespace(value))
-    )
-
-
-def _is_japanese_code_point(character: str) -> bool:
-    code_point = ord(character)
-    return (
-        0x3040 <= code_point <= 0x309F
-        or 0x30A0 <= code_point <= 0x30FF
-        or 0x4E00 <= code_point <= 0x9FFF
-    )
 
 
 def _is_unicode_whitespace(character: str) -> bool:

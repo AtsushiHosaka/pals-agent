@@ -7,10 +7,12 @@ import fcntl
 import hashlib
 import os
 import ssl
-from collections.abc import Iterator
+import stat
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Final, Protocol
 
 from cryptography import x509
@@ -66,6 +68,45 @@ class Boto3SecretBinaryReader:
         ):
             raise TlsMaterialError("verifier transport secret response was invalid")
         return value
+
+
+@dataclass(frozen=True, slots=True)
+class MountedFileSecretBinaryReader:
+    """Read exact rootless-container TLS mounts without following links."""
+
+    files: Mapping[SecretBinaryReference, Path]
+
+    def get(self, reference: SecretBinaryReference) -> bytes:
+        path = self.files.get(reference)
+        if path is None or not path.is_absolute():
+            raise TlsMaterialError("verifier transport file reference was not admitted")
+        flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+        try:
+            descriptor = os.open(path, flags)
+        except OSError as exc:
+            raise TlsMaterialError("verifier transport file could not be opened") from exc
+        try:
+            metadata = os.fstat(descriptor)
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_uid != os.geteuid()
+                or stat.S_IMODE(metadata.st_mode) != stat.S_IRUSR
+                or not 1 <= metadata.st_size <= 65_536
+            ):
+                raise TlsMaterialError("verifier transport file metadata was invalid")
+            chunks: list[bytes] = []
+            remaining = metadata.st_size
+            while remaining:
+                chunk = os.read(descriptor, remaining)
+                if not chunk:
+                    raise TlsMaterialError("verifier transport file was truncated")
+                chunks.append(chunk)
+                remaining -= len(chunk)
+            if os.read(descriptor, 1):
+                raise TlsMaterialError("verifier transport file changed while reading")
+            return b"".join(chunks)
+        finally:
+            os.close(descriptor)
 
 
 @dataclass(frozen=True, slots=True)
@@ -202,16 +243,14 @@ def _canonical_pem_der(value: bytes, *, label: str) -> bytes:
 def _pem(label: str, der: bytes) -> bytes:
     encoded = base64.b64encode(der).decode("ascii")
     lines = [encoded[index : index + 64] for index in range(0, len(encoded), 64)]
-    return (
-        f"-----BEGIN {label}-----\n" + "\n".join(lines) + f"\n-----END {label}-----\n"
-    ).encode("ascii")
+    return (f"-----BEGIN {label}-----\n" + "\n".join(lines) + f"\n-----END {label}-----\n").encode(
+        "ascii"
+    )
 
 
 def _validate_ca(certificate: x509.Certificate, expected_spki_sha256: str) -> None:
     try:
-        constraints = certificate.extensions.get_extension_for_class(
-            x509.BasicConstraints
-        ).value
+        constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
         usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
     except x509.ExtensionNotFound as exc:
         raise TlsMaterialError("verifier CA extensions were incomplete") from exc
@@ -230,12 +269,8 @@ def _validate_server_certificate(
     server_name: str,
 ) -> None:
     try:
-        constraints = certificate.extensions.get_extension_for_class(
-            x509.BasicConstraints
-        ).value
-        names = certificate.extensions.get_extension_for_class(
-            x509.SubjectAlternativeName
-        ).value
+        constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
+        names = certificate.extensions.get_extension_for_class(x509.SubjectAlternativeName).value
     except x509.ExtensionNotFound as exc:
         raise TlsMaterialError("verifier server certificate extensions were incomplete") from exc
     if constraints.ca or names.get_values_for_type(x509.DNSName) != [server_name]:

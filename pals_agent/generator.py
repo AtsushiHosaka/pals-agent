@@ -653,29 +653,36 @@ Lean Sketch to complete:
 
 def _lean_reliability_guidance(request: ProofRequest) -> str:
     normalized = request.prompt.lower().replace(" ", "")
-    is_square = any(
-        token in normalized
-        for token in ("x²", "x^2", "x**2", "xの2乗", "x二乗")
-    )
     is_continuity = "連続" in normalized or "continuous" in normalized
-    if not (is_square and is_continuity):
+    exponent = _real_power_exponent(normalized)
+    if not (is_continuity and exponent is not None):
         return ""
 
-    return """
-This request is specifically the continuity of the real square function. Use a
+    return f"""
+This request is the continuity of the real power function $x^{exponent}$. Use a
 syntactically valid parenthesized function proposition. The following is the
 preferred reliable shape (the theorem name may differ):
 
 ```lean
 import Mathlib
 
-theorem square_continuous : Continuous (fun x : ℝ => x ^ 2) := by
+theorem power_continuous : Continuous (fun x : ℝ => x ^ {exponent}) := by
   fun_prop
 ```
 
 Never emit `Continuous fun x : ℝ => ...`; Lean requires parentheses around the
 function expression in this proposition.
 """
+
+
+def _real_power_exponent(normalized_statement: str) -> str | None:
+    match = re.search(r"x(?:\^|\*\*)([2-9][0-9]*)", normalized_statement)
+    if match is not None:
+        return match.group(1)
+    for glyph, exponent in (("²", "2"), ("³", "3")):
+        if f"x{glyph}" in normalized_statement:
+            return exponent
+    return None
 
 
 def _prompt_for(request: ProofRequest, feedback: GenerationFeedback | None = None) -> str:

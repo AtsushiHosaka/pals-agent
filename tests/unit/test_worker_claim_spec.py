@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import uuid
 from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+import rfc8785
 
 from pals_agent import explanations
 from pals_agent.api_client import PalsApiError
@@ -14,9 +16,10 @@ from pals_agent.explanations import (
     LeanLineReference,
     ProofClarification,
     ProofExplanation,
+    ProofOutputReview,
 )
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, parse_sqs_agent_message
+from pals_agent.worker import SqsProofWorker, _parse_claim_envelope, parse_sqs_agent_message
 
 CLAIM_IDS = (
     uuid.UUID("11111111-1111-4111-8111-111111111111"),
@@ -150,6 +153,37 @@ class RecordingExplainer:
         )
 
 
+class RecordingOutputReviewer:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.error = error
+        self.explanation_calls: list[dict[str, Any]] = []
+        self.clarification_calls: list[dict[str, Any]] = []
+
+    def review_explanation(self, **kwargs: Any) -> ProofOutputReview:
+        self.explanation_calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        return ProofOutputReview(
+            kind="explanation",
+            reviewer_provider="test-reviewer",
+            reviewer_model="review-model",
+            session_id="33333333-3333-4333-8333-333333333333",
+            rationale="The explanation is grounded in the verified Lean source.",
+        )
+
+    def review_clarification(self, **kwargs: Any) -> ProofOutputReview:
+        self.clarification_calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        return ProofOutputReview(
+            kind="clarification",
+            reviewer_provider="test-reviewer",
+            reviewer_model="review-model",
+            session_id="33333333-3333-4333-8333-333333333333",
+            rationale="The clarification is grounded in the verified Lean source.",
+        )
+
+
 class PipelineThatMustNotRun:
     def run_statement(self, **kwargs: Any) -> Any:
         raise AssertionError(f"unexpected proof pipeline call: {kwargs}")
@@ -165,6 +199,7 @@ class ClaimApi:
         terminal_response: dict[str, Any] | Exception | None = None,
         completed_error: Exception | None = None,
         proof_job_response: dict[str, Any] | None = None,
+        output_language: str = "ja",
     ) -> None:
         self.claim_response = claim_response
         self.clock = clock
@@ -172,6 +207,7 @@ class ClaimApi:
         self.terminal_response = terminal_response
         self.completed_error = completed_error
         self.proof_job_response = proof_job_response
+        self.output_language = output_language
         self.explanation_updates: list[dict[str, Any]] = []
         self.clarification_updates: list[dict[str, Any]] = []
         self.proof_job_reads: list[str] = []
@@ -185,6 +221,7 @@ class ClaimApi:
             "state": "verified",
             "theorem_statement": "True を証明せよ",
             "lean_code": LEAN_CODE,
+            "output_language": self.output_language,
             "context": {},
         }
 
@@ -204,6 +241,15 @@ class ClaimApi:
 
     def submit_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
         raise AssertionError(f"unexpected verification candidate import: {kwargs}")
+
+    def settle_proof_semantic_review(
+        self,
+        *,
+        proof_job_id: str,
+        evidence: dict[str, Any],
+    ) -> dict[str, Any]:
+        _ = (proof_job_id, evidence)
+        raise AssertionError("unexpected semantic review settlement")
 
     def upsert_proof_explanation(self, **kwargs: Any) -> dict[str, Any]:
         self.explanation_updates.append(kwargs)
@@ -225,6 +271,7 @@ class ClaimApi:
             "id": clarification_id,
             "state": "queued",
             "proof_job_id": "proof-1",
+            "output_language": self.output_language,
             "theorem_statement": "True を証明せよ",
             "lean_code": LEAN_CODE,
             "section_id": "finish",
@@ -238,9 +285,7 @@ class ClaimApi:
                         "id": "finish",
                         "title": "証明を閉じる",
                         "summary": "この命題は追加の仮定なしに成り立つことを確認します。",
-                        "references": [
-                            {"start_line": 2, "end_line": 2, "excerpt": "  trivial"}
-                        ],
+                        "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
                     }
                 ],
                 "conclusion": "したがって True が証明されました。",
@@ -283,9 +328,7 @@ def _explanation_resource(
                     "id": "finish",
                     "title": "証明を閉じる",
                     "summary": "この命題は追加の仮定なしに成り立つことを確認します。",
-                    "references": [
-                        {"start_line": 2, "end_line": 2, "excerpt": "  trivial"}
-                    ],
+                    "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
                 }
             ],
             "conclusion": "したがって True が証明されました。",
@@ -319,9 +362,7 @@ def _clarification_resource(
                 "したがって、残っている目標がそのまま正しいことを確認できます。"
             ),
             "key_points": ["ゴールは True です。", "標準規則で閉じます。"],
-            "references": [
-                {"start_line": 2, "end_line": 2, "excerpt": "  trivial"}
-            ],
+            "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
             "model": "explain-model",
             "provider": "test-provider",
             "elapsed_ms": 3,
@@ -376,9 +417,7 @@ def _failed_terminal_envelope(
     *, resource_kind: str, resource_id: str | None = None
 ) -> dict[str, Any]:
     resource = (
-        _clarification_resource(
-            clarification_id=resource_id or "clarification-1", state="failed"
-        )
+        _clarification_resource(clarification_id=resource_id or "clarification-1", state="failed")
         if resource_kind == "clarification"
         else _explanation_resource(proof_job_id=resource_id or "proof-1", state="failed")
     )
@@ -387,6 +426,53 @@ def _failed_terminal_envelope(
         "lease_remaining_ms": None,
         "resource": resource,
     }
+
+
+def test_prx_042_accepts_the_current_api_proof_claim_resource_shape() -> None:
+    resource = {
+        "id": "proof-1",
+        "job_id": "proof-1",
+        "project_id": None,
+        "chat_id": "chat-1",
+        "output_language": "en",
+        "theorem_statement": "Show that x squared is continuous.",
+        "formal_statement": None,
+        "state": "queued",
+        "request_context": {},
+        "status_context": None,
+        "diagnostics": [],
+        "result_artifact_uri": None,
+        "lean_code": None,
+        "verifier_attestation": None,
+        "verification_candidate_id": None,
+        "verification_candidate_state": None,
+        "generation_session_id": "11111111-1111-4111-8111-111111111111",
+    }
+
+    envelope = _parse_claim_envelope(
+        {
+            "claim_status": "acquired",
+            "lease_remaining_ms": 3_599_999,
+            "resource": resource,
+        },
+        resource_kind="proof_job",
+        resource_id="proof-1",
+    )
+
+    assert envelope.status == "acquired"
+    assert envelope.lease_remaining_ms == 3_599_999
+
+    resource["generation_session_id"] = "not-a-uuid"
+    with pytest.raises(ValueError, match="proof generation session id"):
+        _parse_claim_envelope(
+            {
+                "claim_status": "acquired",
+                "lease_remaining_ms": 3_599_999,
+                "resource": resource,
+            },
+            resource_kind="proof_job",
+            resource_id="proof-1",
+        )
 
 
 def _settings(timeout: int = 90) -> AgentSettings:
@@ -409,12 +495,14 @@ def _worker(
     *,
     timeout: int = 90,
     uuid_factory: UuidFactory | None = None,
+    output_reviewer: RecordingOutputReviewer | None = None,
 ) -> SqsProofWorker:
     return SqsProofWorker(
         settings=_settings(timeout),
         api_client=api,
         pipeline=PipelineThatMustNotRun(),
         explainer=explainer,
+        output_reviewer=output_reviewer or RecordingOutputReviewer(),
         monotonic=clock,
         uuid4_factory=uuid_factory or UuidFactory(),
     )
@@ -475,7 +563,7 @@ def test_pae_015_each_receive_uses_a_fresh_uuid4_and_never_reuses_busy_claim(
 
 @pytest.mark.parametrize(
     ("timeout", "required_lease_ms", "visibility_seconds"),
-    [(1, 33_000, 63), (90, 300_000, 330), (300, 930_000, 960)],
+    [(1, 35_000, 65), (90, 480_000, 510), (300, 1_530_000, 1_560)],
 )
 def test_pae_015_acquired_claim_uses_exact_lease_and_visibility_formulas(
     monkeypatch: pytest.MonkeyPatch,
@@ -485,7 +573,7 @@ def test_pae_015_acquired_claim_uses_exact_lease_and_visibility_formulas(
 ) -> None:
     clock = FakeClock()
     sqs = FakeSqs("proof-1", clock=clock)
-    api = ClaimApi(claim_response=_envelope("acquired", 1_000_000))
+    api = ClaimApi(claim_response=_envelope("acquired", 2_000_000))
     explainer = RecordingExplainer()
     _install_sqs(monkeypatch, sqs)
 
@@ -504,11 +592,11 @@ def test_pae_015_acquired_claim_uses_exact_lease_and_visibility_formulas(
     assert terminal["claim_id"] == claim["claim_id"]
     assert "required_lease_ms" not in terminal
     assert explainer.explain_calls[0]["timeout_seconds"] == timeout
-    assert explainer.explain_calls[0]["deadline"] == 100.0 + 3 * timeout
+    assert explainer.explain_calls[0]["deadline"] == 100.0 + 5 * timeout
     assert len(sqs.delete_calls) == 1
 
 
-@pytest.mark.parametrize(("lease_ms", "allowed"), [(36_000, True), (35_999, False)])
+@pytest.mark.parametrize(("lease_ms", "allowed"), [(38_000, True), (37_999, False)])
 def test_pae_015_final_margin_exactly_thirty_seconds_passes(
     monkeypatch: pytest.MonkeyPatch,
     lease_ms: int,
@@ -655,6 +743,7 @@ def test_clarification_does_not_construct_proof_generation_pipeline(
         api_client=api,
         pipeline=None,
         explainer=explainer,
+        output_reviewer=RecordingOutputReviewer(),
         pipeline_factory=unavailable_proof_pipeline,
         monotonic=clock,
         uuid4_factory=UuidFactory(),
@@ -672,9 +761,7 @@ def test_exp_010_clarification_passes_parent_target_to_generation(
     clock = FakeClock()
     clarification_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
     parent_id = "58cd9b1d-5ef0-4dc2-b47b-93e91d5dca67"
-    sqs = FakeSqs(
-        f'{{"kind":"clarification","id":"{clarification_id}"}}'
-    )
+    sqs = FakeSqs(f'{{"kind":"clarification","id":"{clarification_id}"}}')
     api = ClaimApi(
         claim_response=_envelope(
             "acquired",
@@ -733,9 +820,7 @@ def test_pae_015_terminal_resource_for_another_proof_never_deletes_receipt(
 ) -> None:
     clock = FakeClock()
     sqs = FakeSqs("proof-1")
-    api = ClaimApi(
-        claim_response=_envelope("terminal", None, resource_id="proof-2")
-    )
+    api = ClaimApi(claim_response=_envelope("terminal", None, resource_id="proof-2"))
     explainer = RecordingExplainer()
     _install_sqs(monkeypatch, sqs)
 
@@ -894,9 +979,7 @@ def test_pae_038_clarification_worker_retains_wrong_api_marker_before_claim(
     clock = FakeClock()
     body = '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}'
     sqs = FakeSqs(body)
-    api = ClaimApi(
-        claim_response=_envelope("not_ready", None, resource_kind="clarification")
-    )
+    api = ClaimApi(claim_response=_envelope("not_ready", None, resource_kind="clarification"))
     explainer = RecordingExplainer()
     _install_sqs(monkeypatch, sqs)
 
@@ -953,6 +1036,241 @@ def test_pae_015_terminal_write_failure_retains_receipt(
     assert sqs.delete_calls == []
 
 
+def test_core_006_summary_review_must_pass_before_completion_and_uses_verified_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = FakeClock()
+    sqs = FakeSqs("proof-1")
+    api = ClaimApi(claim_response=_envelope("acquired", 600_000))
+    explainer = RecordingExplainer()
+    reviewer = RecordingOutputReviewer()
+    _install_sqs(monkeypatch, sqs)
+
+    assert _worker(api, explainer, clock, output_reviewer=reviewer).run_once() is True
+
+    assert [update["state"] for update in api.explanation_updates] == [
+        "generating",
+        "completed",
+    ]
+    assert len(reviewer.explanation_calls) == 1
+    review_call = reviewer.explanation_calls[0]
+    assert review_call["lean_code"] == LEAN_CODE
+    assert review_call["explanation"].overview == "証明の概要です。"
+    assert cast(object, reviewer) is not explainer
+    completed = api.explanation_updates[-1]
+    evidence = cast(dict[str, Any], completed["review_evidence"])
+    expected_output = {
+        "output_kind": "explanation",
+        "proof_job_id": "proof-1",
+        "content": completed["content"],
+    }
+    assert evidence["schema_version"] == "pals.proof-output-review.v2"
+    assert evidence["output_kind"] == "explanation"
+    assert evidence["generator_session_id"] == completed["claim_id"]
+    assert evidence["output_sha256"] == hashlib.sha256(
+        rfc8785.dumps(expected_output)
+    ).hexdigest()
+    assert evidence["lean_sha256"] == hashlib.sha256(LEAN_CODE.encode("utf-8")).hexdigest()
+    assert evidence["parent_explanation_sha256"] is None
+    assert evidence["reviewer"] == {
+        "provider": "test-reviewer",
+        "model": "review-model",
+        "session_id": "33333333-3333-4333-8333-333333333333",
+    }
+    assert evidence["decision"] == "approved"
+    assert evidence["rationale"] == "The explanation is grounded in the verified Lean source."
+    unsigned_evidence = {
+        key: value for key, value in evidence.items() if key != "evidence_sha256"
+    }
+    assert evidence["evidence_sha256"] == hashlib.sha256(
+        rfc8785.dumps(unsigned_evidence)
+    ).hexdigest()
+
+
+@pytest.mark.parametrize(
+    ("body", "updates_name", "review_method", "diagnostic_code"),
+    [
+        (
+            "proof-1",
+            "explanation_updates",
+            "explanation_calls",
+            "pals.explanation_review_failed",
+        ),
+        (
+            '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}',
+            "clarification_updates",
+            "clarification_calls",
+            "pals.clarification_review_failed",
+        ),
+    ],
+)
+def test_core_006_rejected_output_fails_only_that_output_before_completion(
+    monkeypatch: pytest.MonkeyPatch,
+    body: str,
+    updates_name: str,
+    review_method: str,
+    diagnostic_code: str,
+) -> None:
+    clock = FakeClock()
+    sqs = FakeSqs(body)
+    api = ClaimApi(
+        claim_response=_envelope(
+            "acquired",
+            600_000,
+            resource_kind=("clarification" if "clarification" in body else "explanation"),
+            resource_id=(
+                "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1" if "clarification" in body else None
+            ),
+        ),
+        terminal_response=_envelope(
+            "terminal",
+            None,
+            resource_kind=("clarification" if "clarification" in body else "explanation"),
+            resource_id=(
+                "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1" if "clarification" in body else None
+            ),
+        ),
+    )
+    explainer = RecordingExplainer()
+    reviewer = RecordingOutputReviewer(
+        error=explanations.ProofOutputReviewError("PRIVATE REVIEW DETAIL")
+    )
+    _install_sqs(monkeypatch, sqs)
+
+    assert _worker(api, explainer, clock, output_reviewer=reviewer).run_once() is True
+
+    updates = cast(list[dict[str, Any]], getattr(api, updates_name))
+    assert [update["state"] for update in updates] == ["generating", "failed"]
+    assert updates[-1]["diagnostics"][0].code == diagnostic_code
+    assert "review_evidence" not in updates[-1]
+    assert "PRIVATE" not in updates[-1]["diagnostics"][0].message
+    assert len(cast(list[dict[str, Any]], getattr(reviewer, review_method))) == 1
+    assert api.proof_job_reads == ["proof-1"]
+    assert len(sqs.delete_calls) == 1
+
+
+def test_core_006_unavailable_reviewer_fails_only_the_localized_explanation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clock = FakeClock()
+    sqs = FakeSqs("proof-1")
+    api = ClaimApi(
+        claim_response=_envelope("acquired", 600_000),
+        output_language="zh-Hant",
+    )
+    _install_sqs(monkeypatch, sqs)
+    worker = SqsProofWorker(
+        settings=_settings(),
+        api_client=api,
+        pipeline=PipelineThatMustNotRun(),
+        explainer=RecordingExplainer(),
+        output_reviewer=None,
+        monotonic=clock,
+        uuid4_factory=UuidFactory(),
+    )
+
+    assert worker.run_once() is True
+
+    assert [update["state"] for update in api.explanation_updates] == ["generating", "failed"]
+    failed = api.explanation_updates[-1]
+    assert failed["diagnostics"][0].code == "pals.explanation_review_failed"
+    assert failed["diagnostics"][0].message == "說明審核失敗。"
+    assert "review_evidence" not in failed
+    assert api.proof_job_reads == ["proof-1"]
+    assert len(sqs.delete_calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("language", "expected_explanation", "expected_clarification"),
+    [
+        (
+            "en",
+            "Explanation review failed.",
+            "Clarification review failed.",
+        ),
+        (
+            "ja",
+            "説明のレビューに失敗しました。",
+            "追加回答のレビューに失敗しました。",
+        ),
+        (
+            "zh-Hans",
+            "说明审核失败。",
+            "补充回答审核失败。",
+        ),
+        (
+            "zh-Hant",
+            "說明審核失敗。",
+            "補充回答審核失敗。",
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("body", "resource_kind", "updates_name", "expected_index"),
+    [
+        ("proof-1", "explanation", "explanation_updates", 1),
+        (
+            '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}',
+            "clarification",
+            "clarification_updates",
+            2,
+        ),
+    ],
+)
+def test_core_004_localizes_explanation_and_clarification_failures_to_chat_language(
+    monkeypatch: pytest.MonkeyPatch,
+    language: str,
+    expected_explanation: str,
+    expected_clarification: str,
+    body: str,
+    resource_kind: str,
+    updates_name: str,
+    expected_index: int,
+) -> None:
+    clock = FakeClock()
+    resource_id = (
+        "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1" if resource_kind == "clarification" else None
+    )
+    api = ClaimApi(
+        claim_response=_envelope(
+            "acquired",
+            600_000,
+            resource_kind=resource_kind,
+            resource_id=resource_id,
+        ),
+        terminal_response=_envelope(
+            "terminal",
+            None,
+            resource_kind=resource_kind,
+            resource_id=resource_id,
+        ),
+        output_language=language,
+    )
+    sqs = FakeSqs(body)
+    reviewer = RecordingOutputReviewer(
+        error=explanations.ProofOutputReviewError("PRIVATE REVIEW DETAIL")
+    )
+    _install_sqs(monkeypatch, sqs)
+
+    assert (
+        _worker(
+            api,
+            RecordingExplainer(),
+            clock,
+            output_reviewer=reviewer,
+        ).run_once()
+        is True
+    )
+
+    updates = cast(list[dict[str, Any]], getattr(api, updates_name))
+    assert updates[-1]["state"] == "failed"
+    assert updates[-1]["diagnostics"][0].message == (
+        expected_explanation if expected_index == 1 else expected_clarification
+    )
+    assert "PRIVATE" not in updates[-1]["diagnostics"][0].message
+    assert api.proof_job_reads == ["proof-1"]
+
+
 @pytest.mark.parametrize(
     ("body", "error_code", "updates_name", "diagnostic_code"),
     [
@@ -979,11 +1297,7 @@ def test_pae_015_reference_mismatch_terminalizes_once_with_the_current_claim(
 ) -> None:
     clock = FakeClock()
     sqs = FakeSqs(body)
-    resource_id = (
-        "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
-        if "clarification" in body
-        else None
-    )
+    resource_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1" if "clarification" in body else None
     api = ClaimApi(
         claim_response=_envelope(
             "acquired",
@@ -1054,11 +1368,7 @@ def test_pae_015_reference_mismatch_retains_nonfailed_or_ambiguous_terminal(
 ) -> None:
     clock = FakeClock()
     sqs = FakeSqs(body)
-    resource_id = (
-        "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
-        if "clarification" in body
-        else None
-    )
+    resource_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1" if "clarification" in body else None
     api = ClaimApi(
         claim_response=_envelope(
             "acquired",

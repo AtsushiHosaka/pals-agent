@@ -92,7 +92,6 @@ def test_pae_002_overview_and_conclusion_accept_exact_codepoint_boundaries(
     [
         ("overview", ""),
         ("overview", "日" + "a" * 600),
-        ("overview", "ASCII only"),
         ("conclusion", "\u3000\u00a0"),
     ],
 )
@@ -124,12 +123,11 @@ def test_pae_002_section_text_boundaries_and_storage_are_exact() -> None:
     ("field", "value"),
     [
         ("title", "題" + "a" * 80),
-        ("title", "title only"),
         ("summary", "要" + "a" * 800),
         ("summary", 123),
     ],
 )
-def test_pae_002_section_text_rejects_out_of_bounds_or_non_japanese(
+def test_pae_002_section_text_rejects_out_of_bounds_or_non_text(
     field: str,
     value: Any,
 ) -> None:
@@ -138,6 +136,19 @@ def test_pae_002_section_text_rejects_out_of_bounds_or_non_japanese(
 
     with pytest.raises((TypeError, ValueError)):
         proof_explanation_from_api(payload, lean_code=LEAN_CODE)
+
+
+def test_pae_002_accepts_english_learner_content() -> None:
+    payload = _explanation_payload(
+        overview="This proof establishes the goal directly.",
+        conclusion="Therefore the proposition holds.",
+    )
+    payload["sections"][0]["title"] = "Close the goal"
+    payload["sections"][0]["summary"] = "The final step proves the proposition directly."
+
+    explanation = proof_explanation_from_api(payload, lean_code=LEAN_CODE)
+
+    assert explanation.overview == "This proof establishes the goal directly."
 
 
 @pytest.mark.parametrize(("count", "valid"), [(1, True), (20, True), (0, False), (21, False)])
@@ -220,9 +231,9 @@ def test_pae_004_answer_accepts_exact_codepoint_boundaries(length: int) -> None:
 
 @pytest.mark.parametrize(
     "answer",
-    ["詳" + "あ" * 38, "詳" + "あ" * 4000, "a" * 100],
+    ["詳" + "あ" * 38, "詳" + "あ" * 4000],
 )
-def test_pae_004_answer_rejects_length_and_language_violations(answer: str) -> None:
+def test_pae_004_answer_rejects_length_violations(answer: str) -> None:
     with pytest.raises(ExplanationGenerationError):
         _generate_clarification(_clarification_payload(answer=answer))
 
@@ -287,6 +298,20 @@ def test_pae_002_learner_prose_rejects_lean_commands_and_identifiers(
             _explanation_payload(**{field: value}),
             lean_code=LEAN_CODE,
         )
+
+
+def test_pae_002_learner_prose_allows_ordinary_english_math_words() -> None:
+    result = proof_explanation_from_api(
+        _explanation_payload(
+            overview=(
+                "Let the left and right sides be compared through the continuity theorem."
+            ),
+            conclusion="Therefore the values agree continuously.",
+        ),
+        lean_code=LEAN_CODE,
+    )
+
+    assert result.overview.startswith("Let the left")
 
 
 @pytest.mark.parametrize(

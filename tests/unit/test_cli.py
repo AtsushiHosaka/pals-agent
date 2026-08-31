@@ -75,8 +75,6 @@ def test_build_pfi_worker_image_cli_generates_then_verifies_the_image(
                 "pals-agent-worker:test",
                 "--context",
                 str(context),
-                "--repository-root",
-                str(tmp_path),
             ]
         )
         == 0
@@ -157,8 +155,6 @@ def test_build_pfi_seed_cli_uses_the_explicit_agent_source_root(
                 str(output),
                 "--source-commit",
                 "1" * 40,
-                "--repository-root",
-                str(tmp_path),
             ]
         )
         == 0

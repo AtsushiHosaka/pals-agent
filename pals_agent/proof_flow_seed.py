@@ -27,11 +27,6 @@ from pals_agent.openmath import (
     validate_openmath_statement_semantics,
 )
 
-_PARENT_HASHES = {
-    "requirements.md": "358225f8fce24dbaf3b8a87dd71b674a2968979a9f60e3106ec8cce8a530c4ac",
-    "design.md": "a4e03127d9903495ee6444d87df238025cbdabdce0b2e8d9d9a6d417413b2a4d",
-    "tasks.md": "44effa741ddad7740325c7b7e9d389c23da51ecd57cf96450cd722ab87fc8de0",
-}
 _CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v4"
 _SOURCE_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 _DRAFT_ID = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
@@ -45,10 +40,6 @@ _MAX_SEED_BYTES = 536_870_912
 _PROVENANCE_LABEL = "io.pals.draft-retrieval-provenance.v1"
 _PROVENANCE_DIGEST_LABEL = "io.pals.draft-retrieval-provenance.sha256"
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
-
-
-class ParentPFIAuthorityError(RuntimeError):
-    pass
 
 
 class SeedBuildError(RuntimeError):
@@ -608,29 +599,6 @@ def host_elementtree_source_sha256() -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-@dataclass(frozen=True, slots=True)
-class ParentPFIAuthorityGate:
-    repository_root: Path
-
-    def verify(self) -> None:
-        bundle = self.repository_root / "specs" / "proof-flow-index"
-        for name, expected in _PARENT_HASHES.items():
-            path = bundle / name
-            try:
-                mode = path.lstat().st_mode
-                raw = path.read_bytes()
-            except OSError as exc:
-                raise ParentPFIAuthorityError("approved parent PFI is unreadable") from exc
-            if not stat.S_ISREG(mode) or stat.S_ISLNK(mode):
-                raise ParentPFIAuthorityError("approved parent PFI is not a regular file")
-            if hashlib.sha256(raw).hexdigest() != expected:
-                raise ParentPFIAuthorityError("approved parent PFI hash mismatch")
-            if name == "requirements.md":
-                frontmatter = raw.split(b"---", 2)
-                if len(frontmatter) != 3 or b"\nstatus: approved\n" not in frontmatter[1]:
-                    raise ParentPFIAuthorityError("parent PFI status is not approved")
-
-
 class SeedEmbeddingModel(Protocol):
     def embed(self, text: str) -> list[float]: ...
 
@@ -686,7 +654,6 @@ class SeedBuildArtifact:
 
 @dataclass(frozen=True, slots=True)
 class ProofDraftSeedBuilder:
-    authority: ParentPFIAuthorityGate
     embedding_model: SeedEmbeddingModel
     fingerprint: SeedEmbeddingFingerprint
     canonicalizer_property: CanonicalizerChildProperty
@@ -698,7 +665,6 @@ class ProofDraftSeedBuilder:
         destination: Path,
         source_commit: str,
     ) -> SeedBuildArtifact:
-        self.authority.verify()
         if platform.python_version() != "3.12.13":
             raise SeedBuildError("PFI seed build requires exact CPython 3.12.13")
         if self.canonicalizer_property.source_sha256 != host_elementtree_source_sha256():
@@ -743,7 +709,7 @@ class ProofDraftSeedBuilder:
         except Exception as exc:
             if temporary.exists():
                 shutil.rmtree(temporary)
-            if isinstance(exc, ParentPFIAuthorityError | SeedBuildError):
+            if isinstance(exc, SeedBuildError):
                 raise
             raise SeedBuildError("PFI seed build failed closed") from exc
 

@@ -18,8 +18,6 @@ from pals_agent.openmath import (
 )
 from pals_agent.proof_flow_seed import (
     CanonicalizerChildProperty,
-    ParentPFIAuthorityError,
-    ParentPFIAuthorityGate,
     ProofDraftSeedBuilder,
     SeedBuildError,
     SeedEmbeddingFingerprint,
@@ -141,7 +139,6 @@ def _fingerprint() -> SeedEmbeddingFingerprint:
 
 def _builder(model: _EmbeddingModel) -> ProofDraftSeedBuilder:
     return ProofDraftSeedBuilder(
-        authority=ParentPFIAuthorityGate(PALS_ROOT),
         embedding_model=model,
         fingerprint=_fingerprint(),
         canonicalizer_property=_CANONICALIZER_PROPERTY,
@@ -151,85 +148,6 @@ def _builder(model: _EmbeddingModel) -> ProofDraftSeedBuilder:
 def test_pfi_ag_002_rejects_c14n_v3_fingerprint_before_embedding() -> None:
     with pytest.raises(ValueError, match="canonicalizer version"):
         replace(_fingerprint(), canonicalizer_version="openmath-cdbase-alpha-c14n-v3")
-
-
-@pytest.mark.parametrize("name", ("requirements.md", "design.md", "tasks.md"))
-def test_pfi_ag_001_rejects_any_parent_byte_mutation(tmp_path: Path, name: str) -> None:
-    ParentPFIAuthorityGate(PALS_ROOT).verify()
-    copied_root, copied_parent = _copy_parent_pfi_bundle(tmp_path)
-    copied_parent.joinpath(name).write_bytes(copied_parent.joinpath(name).read_bytes() + b"\n")
-
-    with pytest.raises(ParentPFIAuthorityError):
-        ParentPFIAuthorityGate(copied_root).verify()
-
-
-def test_pfi_ag_001_rejects_draft_parent_status(tmp_path: Path) -> None:
-    copied_root, copied_parent = _copy_parent_pfi_bundle(tmp_path)
-    requirements = copied_parent.joinpath("requirements.md")
-    requirements.write_bytes(
-        requirements.read_bytes().replace(b"status: approved", b"status: draft", 1)
-    )
-
-    with pytest.raises(ParentPFIAuthorityError):
-        ParentPFIAuthorityGate(copied_root).verify()
-
-
-@pytest.mark.parametrize("name", ("requirements.md", "design.md", "tasks.md"))
-def test_pfi_ag_001_rejects_a_symlinked_parent_authority_file_before_build(
-    tmp_path: Path,
-    name: str,
-) -> None:
-    copied_root, copied_parent = _copy_parent_pfi_bundle(tmp_path)
-    authority_file = copied_parent / name
-    replacement = tmp_path / f"{name}.replacement"
-    replacement.write_bytes(authority_file.read_bytes())
-    authority_file.unlink()
-    authority_file.symlink_to(replacement)
-    model = _EmbeddingModel([[1.0, 0.0]])
-    destination = tmp_path / "published"
-    builder = ProofDraftSeedBuilder(
-        authority=ParentPFIAuthorityGate(copied_root),
-        embedding_model=model,
-        fingerprint=_fingerprint(),
-        canonicalizer_property=_CANONICALIZER_PROPERTY,
-    )
-
-    with pytest.raises(ParentPFIAuthorityError, match="regular file"):
-        builder.build(
-            drafts=(_draft(),),
-            destination=destination,
-            source_commit="1" * 40,
-        )
-
-    assert model.calls == []
-    assert not destination.exists()
-
-
-@pytest.mark.parametrize("name", ("requirements.md", "design.md", "tasks.md"))
-def test_pfi_ag_001_rejects_missing_parent_file_before_build(
-    tmp_path: Path,
-    name: str,
-) -> None:
-    copied_root, copied_parent = _copy_parent_pfi_bundle(tmp_path)
-    copied_parent.joinpath(name).unlink()
-    model = _EmbeddingModel([[1.0, 0.0]])
-    destination = tmp_path / "published"
-    builder = ProofDraftSeedBuilder(
-        authority=ParentPFIAuthorityGate(copied_root),
-        embedding_model=model,
-        fingerprint=_fingerprint(),
-        canonicalizer_property=_CANONICALIZER_PROPERTY,
-    )
-
-    with pytest.raises(ParentPFIAuthorityError):
-        builder.build(
-            drafts=(_draft(),),
-            destination=destination,
-            source_commit="1" * 40,
-        )
-
-    assert model.calls == []
-    assert not destination.exists()
 
 
 @pytest.mark.parametrize(
@@ -258,17 +176,6 @@ def test_pfi_ag_002_rejects_each_noncanonical_source_commit_before_embedding(
 
     assert model.calls == []
     assert not destination.exists()
-
-
-def _copy_parent_pfi_bundle(tmp_path: Path) -> tuple[Path, Path]:
-    copied_root = tmp_path / "pals"
-    copied_parent = copied_root / "specs" / "proof-flow-index"
-    copied_parent.mkdir(parents=True)
-    for name in ("requirements.md", "design.md", "tasks.md"):
-        copied_parent.joinpath(name).write_bytes(
-            (PALS_ROOT / "specs" / "proof-flow-index" / name).read_bytes()
-        )
-    return copied_root, copied_parent
 
 
 def test_pfi_ag_002_builds_exact_atomic_seed_manifest_and_oci_property(

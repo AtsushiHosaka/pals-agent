@@ -1,4 +1,7 @@
 .git
+.env
+.env.*
+!.env.example
 .mypy_cache
 .pals-agent-artifacts
 .pytest_cache

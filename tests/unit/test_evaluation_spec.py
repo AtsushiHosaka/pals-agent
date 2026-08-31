@@ -334,14 +334,13 @@ def _replace_references_with_overflow(value: dict[str, Any]) -> None:
 @pytest.mark.parametrize(
     "mutate",
     [
-        _replace_overview_with_english,
         _replace_title_with_overflow,
         _replace_summary_with_overflow,
         _replace_sections_with_overflow,
         _replace_references_with_overflow,
     ],
 )
-def test_pae_002_shape_valid_enforces_japanese_and_cardinality_bounds(
+def test_pae_002_shape_valid_enforces_text_and_cardinality_bounds(
     mutate: Callable[[dict[str, Any]], None],
 ) -> None:
     explanation = _explanation()
@@ -352,6 +351,16 @@ def test_pae_002_shape_valid_enforces_japanese_and_cardinality_bounds(
     assert stage.status == "failed"
     assert stage.metric("payload_present").value is True
     assert stage.metric("shape_valid").value is False
+
+
+def test_pae_002_shape_valid_accepts_english_learner_content() -> None:
+    explanation = _explanation()
+    _replace_overview_with_english(explanation)
+
+    stage = _stage(_verified_artifact(), "explanation", explanation=explanation)
+
+    assert stage.status == "passed"
+    assert stage.metric("shape_valid").value is True
 
 
 @pytest.mark.parametrize("clarifications", [None, [], {}, "wrong"])
@@ -391,12 +400,9 @@ def test_pae_004_009_expected_clarification_enforces_detail_and_overlap() -> Non
 
 @pytest.mark.parametrize(
     "mutate",
-    [
-        lambda value: value.update(answer="短い回答です。"),
-        lambda value: value.update(
-            answer="This English-only answer is deliberately longer than forty code points."
-        ),
-        lambda value: value.update(key_points=["一つだけです。"]),
+        [
+            lambda value: value.update(answer="短い回答です。"),
+            lambda value: value.update(key_points=["一つだけです。"]),
         lambda value: value.update(key_points=["点" * 501, "二つ目です。"]),
         lambda value: value.update(
             references=[{"start_line": 1, "end_line": 1, "excerpt": "import Mathlib"}]
@@ -418,6 +424,23 @@ def test_pae_004_clarification_shape_bounds_and_non_repetition_fail_closed(
     )
 
     assert stage.status == "failed"
+
+
+def test_pae_004_clarification_shape_accepts_english_answer() -> None:
+    clarification = _clarification()
+    clarification["answer"] = (
+        "This answer explains how the cited Lean line closes the proof goal directly."
+    )
+
+    stage = _stage(
+        _verified_artifact(),
+        "explanation",
+        explanation=_explanation(),
+        clarifications=[clarification],
+        expect_clarification=True,
+    )
+
+    assert stage.status == "passed"
 
 
 def test_pae_009_missing_expect_clarification_cannot_upgrade_a_valid_explanation() -> None:

@@ -633,6 +633,85 @@ def test_semantic_validation_accepts_supported_nary_logic_and_arithmetic() -> No
     validate_openmath_statement_semantics(xml, "generic mathematical statement")
 
 
+def test_semantic_validation_accepts_standard_trigonometric_and_calculus_terms() -> None:
+    trig = (
+        f'<OMOBJ xmlns="{OPENMATH}" version="2.0"><OMBIND>'
+        '<OMS cd="quant1" name="forall"/><OMBVAR><OMV name="x"/></OMBVAR>'
+        '<OMA><OMS cd="logic1" name="implies"/>'
+        '<OMA><OMS cd="set1" name="in"/><OMV name="x"/>'
+        '<OMS cd="setname1" name="R"/></OMA>'
+        '<OMA><OMS cd="relation1" name="eq"/>'
+        '<OMA><OMS cd="arith1" name="plus"/>'
+        '<OMA><OMS cd="arith1" name="power"/><OMA><OMS cd="transc1" name="sin"/>'
+        '<OMV name="x"/></OMA><OMI>2</OMI></OMA>'
+        '<OMA><OMS cd="arith1" name="power"/><OMA><OMS cd="transc1" name="cos"/>'
+        '<OMV name="x"/></OMA><OMI>2</OMI></OMA></OMA><OMI>1</OMI></OMA></OMA>'
+        '</OMBIND></OMOBJ>'
+    )
+    derivative = (
+        f'<OMOBJ xmlns="{OPENMATH}" version="2.0"><OMBIND>'
+        '<OMS cd="quant1" name="forall"/><OMBVAR><OMV name="x"/></OMBVAR>'
+        '<OMA><OMS cd="logic1" name="implies"/>'
+        '<OMA><OMS cd="set1" name="in"/><OMV name="x"/>'
+        '<OMS cd="setname1" name="R"/></OMA>'
+        '<OMA><OMS cd="relation1" name="eq"/>'
+        f'<OMA><OMS cdbase="{PALS_OPENMATH_CDBASE}" cd="pals1" name="apply"/>'
+        '<OMA><OMS cd="calculus1" name="diff"/><OMBIND>'
+        '<OMS cd="fns1" name="lambda"/><OMBVAR><OMV name="t"/></OMBVAR>'
+        '<OMA><OMS cd="arith1" name="power"/><OMV name="t"/><OMI>2</OMI></OMA>'
+        '</OMBIND></OMA><OMV name="x"/></OMA>'
+        '<OMA><OMS cd="arith1" name="times"/><OMI>2</OMI><OMV name="x"/></OMA>'
+        '</OMA></OMA></OMBIND></OMOBJ>'
+    )
+    definite_integral = (
+        f'<OMOBJ xmlns="{OPENMATH}" version="2.0"><OMA>'
+        '<OMS cd="relation1" name="eq"/><OMA><OMS cd="calculus1" name="defint"/>'
+        '<OMA><OMS cd="interval1" name="oriented_interval"/><OMI>0</OMI>'
+        '<OMI>1</OMI></OMA><OMBIND><OMS cd="fns1" name="lambda"/>'
+        '<OMBVAR><OMV name="t"/></OMBVAR><OMV name="t"/></OMBIND></OMA>'
+        '<OMA><OMS cd="arith1" name="divide"/><OMI>1</OMI><OMI>2</OMI></OMA>'
+        '</OMA></OMOBJ>'
+    )
+
+    validate_openmath_statement_semantics(
+        trig,
+        "For every real x, sin(x)^2 + cos(x)^2 = 1.",
+    )
+    validate_openmath_statement_semantics(
+        derivative,
+        "For every real x, the derivative of x^2 is 2*x.",
+    )
+    validate_openmath_statement_semantics(
+        definite_integral,
+        "The definite integral of x from 0 to 1 is 1/2.",
+    )
+
+
+def test_semantic_validation_requires_functional_calculus_arguments() -> None:
+    invalid_derivative = (
+        f'<OMOBJ xmlns="{OPENMATH}" version="2.0"><OMA>'
+        '<OMS cd="relation1" name="eq"/><OMA><OMS cd="calculus1" name="diff"/>'
+        '<OMV name="f"/></OMA><OMV name="g"/></OMA></OMOBJ>'
+    )
+    invalid_integral = (
+        f'<OMOBJ xmlns="{OPENMATH}" version="2.0"><OMA>'
+        '<OMS cd="relation1" name="eq"/><OMA><OMS cd="calculus1" name="defint"/>'
+        '<OMA><OMS cd="interval1" name="oriented_interval"/><OMI>0</OMI>'
+        '<OMI>1</OMI></OMA><OMV name="f"/></OMA><OMI>0</OMI></OMA></OMOBJ>'
+    )
+
+    with pytest.raises(MathXMLValidationError, match="calculus1:diff.*unary"):
+        validate_openmath_statement_semantics(
+            invalid_derivative,
+            "generic mathematical statement",
+        )
+    with pytest.raises(MathXMLValidationError, match="calculus1:defint.*unary"):
+        validate_openmath_statement_semantics(
+            invalid_integral,
+            "generic mathematical statement",
+        )
+
+
 @pytest.mark.parametrize(
     ("xml", "role"),
     [

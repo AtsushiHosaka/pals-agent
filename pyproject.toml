@@ -28,8 +28,25 @@ pals-agent = "pals_agent.cli:main"
 packages = ["pals_agent"]
 
 [tool.hatch.build.targets.wheel.force-include]
+"pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json" = "pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json"
 "pals_agent/seed/dsp_drafts.json" = "pals_agent/seed/dsp_drafts.json"
 "pals_agent/content_dictionaries/pals1.ocd" = "pals_agent/content_dictionaries/pals1.ocd"
+"pals_agent/content_dictionaries/typed-math-v1-registry.json" = "pals_agent/content_dictionaries/typed-math-v1-registry.json"
+"pals_agent/content_dictionaries/typed-real-analysis-v1-registry.json" = "pals_agent/content_dictionaries/typed-real-analysis-v1-registry.json"
+"pals_agent/content_dictionaries/typed-multivariable-calculus-v1-registry.json" = "pals_agent/content_dictionaries/typed-multivariable-calculus-v1-registry.json"
+"pals_agent/content_dictionaries/typed-math-matrix-v1-registry.json" = "pals_agent/content_dictionaries/typed-math-matrix-v1-registry.json"
+"pals_agent/content_dictionaries/typed-probability-v1-registry.json" = "pals_agent/content_dictionaries/typed-probability-v1-registry.json"
+"pals_agent/content_dictionaries/typed-finite-graph-v1-registry.json" = "pals_agent/content_dictionaries/typed-finite-graph-v1-registry.json"
+"pals_agent/content_dictionaries/typed-number-theory-v1-registry.json" = "pals_agent/content_dictionaries/typed-number-theory-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-v1-registry.json"
+"pals_agent/content_dictionaries/typed-geometry-complex-v1-registry.json" = "pals_agent/content_dictionaries/typed-geometry-complex-v1-registry.json"
+"pals_agent/content_dictionaries/typed-plane-geometry-v1-registry.json" = "pals_agent/content_dictionaries/typed-plane-geometry-v1-registry.json"
+"pals_agent/content_dictionaries/typed-ode-v1-registry.json" = "pals_agent/content_dictionaries/typed-ode-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-modules-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-modules-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-localization-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-localization-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-decomposition-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-decomposition-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json"
 
 [tool.pytest.ini_options]
 addopts = "-q"

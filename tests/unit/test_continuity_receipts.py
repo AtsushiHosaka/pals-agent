@@ -10,8 +10,8 @@ from pals_agent.proof_flow_seed import load_continuity_catalog
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CATALOG = ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
-RECEIPTS = ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-local-lean-receipts.json"
+CATALOG = ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
+RECEIPTS = ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-local-lean-receipts.json"
 
 
 def test_local_receipts_bind_every_catalog_card_without_retaining_proof_source() -> None:

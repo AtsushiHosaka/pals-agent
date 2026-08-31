@@ -7,6 +7,7 @@ from typing import Any
 from unittest.mock import ANY
 
 import pytest
+import rfc8785
 
 from pals_agent.api_client import (
     PalsApiError,
@@ -20,6 +21,8 @@ from pals_agent.explanations import (
     LeanLineReference,
     ProofClarification,
     ProofExplanation,
+    ProofOutputReview,
+    ProofSemanticReview,
 )
 from pals_agent.models import (
     Diagnostic,
@@ -34,13 +37,11 @@ from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
 from pals_agent.settings import AgentSettings
 from pals_agent.worker import SqsProofWorker, parse_agent_task
 
-VERIFIED_LEAN_CODE = (
-    Path(__file__).parents[1] / "fixtures" / "PalsX2Verified.lean"
-).read_text(encoding="utf-8")
-VERIFIED_LEAN_SHA256 = hashlib.sha256(VERIFIED_LEAN_CODE.encode("utf-8")).hexdigest()
-VERIFIED_ARTIFACT_URI = (
-    f"s3://manual-fixtures/manual-fixtures/{VERIFIED_LEAN_SHA256}.lean"
+VERIFIED_LEAN_CODE = (Path(__file__).parents[1] / "fixtures" / "PalsX2Verified.lean").read_text(
+    encoding="utf-8"
 )
+VERIFIED_LEAN_SHA256 = hashlib.sha256(VERIFIED_LEAN_CODE.encode("utf-8")).hexdigest()
+VERIFIED_ARTIFACT_URI = f"s3://manual-fixtures/manual-fixtures/{VERIFIED_LEAN_SHA256}.lean"
 
 
 class FakeApi:
@@ -50,6 +51,8 @@ class FakeApi:
         self.explanation_updates: list[dict[str, Any]] = []
         self.clarification_updates: list[dict[str, Any]] = []
         self.state = "queued"
+        self.chat_id = "chat-1"
+        self.output_language = "ja"
         self.theorem_statement = "x^2が連続であることを示せ"
         self.context: dict[str, Any] = {
             "fixture_provenance": {
@@ -62,7 +65,11 @@ class FakeApi:
             }
         }
         self.lean_code: str | None = None
+        self.status_context: dict[str, Any] | None = None
         self.verification_candidates: list[dict[str, Any]] = []
+        self.verification_candidate_id: str | None = None
+        self.reconciliation_retries: list[tuple[str, str]] = []
+        self.generation_session_id: str | None = None
         self.clarification_input: dict[str, Any] = {}
         self.explanation_existing_state: str | None = None
 
@@ -76,6 +83,7 @@ class FakeApi:
         assert claim_id
         assert required_lease_ms == 3_600_000
         self.events.append("proof_generation_claim")
+        self.generation_session_id = claim_id
         return _claim_envelope(
             "acquired",
             3_600_000,
@@ -88,9 +96,19 @@ class FakeApi:
         return {
             "id": proof_job_id,
             "state": self.state,
+            "chat_id": self.chat_id,
+            "output_language": self.output_language,
             "theorem_statement": self.theorem_statement,
             "request_context": self.context,
             "lean_code": self.lean_code,
+            "status_context": self.status_context,
+            "verification_candidate_id": self.verification_candidate_id,
+            "verification_candidate_state": (
+                "compiling"
+                if self.state == "compiling" and self.verification_candidate_id is not None
+                else None
+            ),
+            "generation_session_id": self.generation_session_id,
         }
 
     def update_proof_job(
@@ -118,14 +136,36 @@ class FakeApi:
                 "verifier_attestation": verifier_attestation,
             }
         )
+        self.status_context = context
         return {"id": proof_job_id, "state": state}
 
     def submit_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
         self.events.append("verification_candidate")
         self.verification_candidates.append(kwargs)
-        self.state = "verified"
+        self.state = "semantic_review"
         self.lean_code = kwargs["lean_code"]
+        self.verification_candidate_id = kwargs["candidate_id"]
         return {"candidate_status": "compiling"}
+
+    def retry_verification_candidate_reconciliation(
+        self,
+        *,
+        proof_job_id: str,
+        candidate_id: str,
+    ) -> dict[str, Any]:
+        self.reconciliation_retries.append((proof_job_id, candidate_id))
+        return {"reconciliation": "accepted"}
+
+    def settle_proof_semantic_review(
+        self,
+        *,
+        proof_job_id: str,
+        evidence: dict[str, Any],
+    ) -> dict[str, Any]:
+        self.events.append("semantic_review")
+        self.state = "verified" if evidence["decision"] == "approved" else "failed"
+        return {"id": proof_job_id, "state": self.state}
+
 
     def upsert_proof_explanation(
         self,
@@ -135,6 +175,7 @@ class FakeApi:
         claim_id: str,
         required_lease_ms: int | None = None,
         content: dict[str, Any] | None = None,
+        review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
     ) -> dict[str, Any]:
         if state == "generating" and self.explanation_existing_state == "completed":
@@ -145,6 +186,7 @@ class FakeApi:
             "claim_id": claim_id,
             "required_lease_ms": required_lease_ms,
             "content": content,
+            "review_evidence": review_evidence,
             "diagnostics": diagnostics or [],
         }
         self.explanation_updates.append(update)
@@ -165,18 +207,22 @@ class FakeApi:
         self,
         *,
         clarification_id: str,
+        proof_job_id: str | None = None,
         state: str,
         claim_id: str,
         required_lease_ms: int | None = None,
         content: dict[str, Any] | None = None,
+        review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
     ) -> dict[str, Any]:
         update = {
             "id": clarification_id,
+            "proof_job_id": proof_job_id,
             "state": state,
             "claim_id": claim_id,
             "required_lease_ms": required_lease_ms,
             "content": content,
+            "review_evidence": review_evidence,
             "diagnostics": diagnostics or [],
         }
         self.clarification_updates.append(update)
@@ -186,6 +232,44 @@ class FakeApi:
             resource_kind="clarification",
             resource_id=clarification_id,
         )
+
+
+class DelayedCandidateApi(FakeApi):
+    def __init__(self, *, compiling_reads: int = 2) -> None:
+        super().__init__()
+        self.compiling_reads = compiling_reads
+        self.candidate_reads = 0
+
+    def submit_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
+        response = super().submit_verification_candidate(**kwargs)
+        self.state = "compiling"
+        return response
+
+    def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+        if self.state == "compiling" and self.verification_candidate_id is not None:
+            self.candidate_reads += 1
+            if self.candidate_reads > self.compiling_reads:
+                self.state = "semantic_review"
+                self.status_context = {
+                    "target_declaration": {
+                        "kind": "theorem",
+                        "name": "x2_continuous",
+                        "proposition": "Continuous (fun y : ℝ => y ^ 2)",
+                    }
+                }
+        payload = super().get_proof_job(proof_job_id)
+        payload["diagnostics"] = (
+            [
+                {
+                    "severity": "info",
+                    "message": "Verification is pending.",
+                    "code": "pals.verification_pending",
+                }
+            ]
+            if self.state == "compiling"
+            else []
+        )
+        return payload
 
 
 class FakeExplainer:
@@ -275,6 +359,52 @@ class FailingExplainer(FakeExplainer):
         raise ExplanationGenerationError(
             "invalid clarification",
             attempt_outputs=("bad one", "bad two"),
+        )
+
+
+class FakeOutputReviewer:
+    def __init__(self, *, error: Exception | None = None) -> None:
+        self.error = error
+        self.explanation_calls: list[dict[str, Any]] = []
+        self.clarification_calls: list[dict[str, Any]] = []
+
+    def review_explanation(self, **kwargs: Any) -> ProofOutputReview:
+        self.explanation_calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        return ProofOutputReview(
+            kind="explanation",
+            reviewer_provider="test-reviewer",
+            reviewer_model="review-model",
+            session_id="standalone-review-session",
+            rationale="The explanation is grounded in the verified Lean source.",
+        )
+
+    def review_clarification(self, **kwargs: Any) -> ProofOutputReview:
+        self.clarification_calls.append(kwargs)
+        if self.error is not None:
+            raise self.error
+        return ProofOutputReview(
+            kind="clarification",
+            reviewer_provider="test-reviewer",
+            reviewer_model="review-model",
+            session_id="standalone-review-session",
+            rationale="The clarification is grounded in the verified Lean source.",
+        )
+
+
+class FakeSemanticReviewer:
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+
+    def review_proof(self, **kwargs: Any) -> ProofSemanticReview:
+        self.calls.append(kwargs)
+        return ProofSemanticReview(
+            decision="approved",
+            rationale="The target and Lean proof match the learner request.",
+            reviewer_provider="openai",
+            reviewer_model="gpt-5.4-mini-2026-03-17",
+            session_id="33333333-3333-4333-8333-333333333333",
         )
 
 
@@ -422,8 +552,8 @@ class FakePipeline:
                         "sketch": None,
                         "stage_diagnostics": [],
                     },
-                "verification": {
-                    "success": False,
+                    "verification": {
+                        "success": False,
                         "diagnostics": [],
                         "elapsed_ms": 1,
                     },
@@ -579,6 +709,8 @@ def _claim_envelope(
             "id": resource_id,
             "job_id": resource_id,
             "project_id": None,
+            "chat_id": "chat-1",
+            "output_language": "ja",
             "theorem_statement": "x^2が連続であることを示せ",
             "formal_statement": None,
             "state": state,
@@ -588,6 +720,9 @@ def _claim_envelope(
             "result_artifact_uri": None,
             "lean_code": None,
             "verifier_attestation": None,
+            "verification_candidate_id": None,
+            "verification_candidate_state": None,
+            "generation_session_id": None,
         }
     elif resource_kind == "explanation":
         resource = {"proof_job_id": resource_id, **common}
@@ -663,12 +798,16 @@ def _worker(
     api: FakeApi | None = None,
     pipeline: FakePipeline | None = None,
     explainer: FakeExplainer | None = None,
+    output_reviewer: FakeOutputReviewer | None = None,
+    proof_reviewer: FakeSemanticReviewer | None = None,
 ) -> SqsProofWorker:
     return SqsProofWorker(
         settings=_settings(),
         api_client=api or FakeApi(),
         pipeline=pipeline or FakePipeline(),
         explainer=explainer or FakeExplainer(),
+        output_reviewer=output_reviewer or FakeOutputReviewer(),
+        proof_reviewer=proof_reviewer or FakeSemanticReviewer(),
     )
 
 
@@ -679,9 +818,11 @@ def test_worker_processes_api_job_and_updates_progress() -> None:
         api_client=api,
         pipeline=FakePipeline(),
         explainer=FakeExplainer(),
+        output_reviewer=FakeOutputReviewer(),
+        proof_reviewer=FakeSemanticReviewer(),
     )
 
-    _process_proof(worker, "job-1")
+    assert _process_proof(worker, "job-1") is True
 
     assert api.events.index("proof_generation_claim") < api.events.index("proof_update:drafting")
     assert all(update["claim_id"] == _TEST_CLAIM_ID for update in api.updates)
@@ -701,6 +842,7 @@ def test_worker_processes_api_job_and_updates_progress() -> None:
             "result_artifact_uri": VERIFIED_ARTIFACT_URI,
         }
     ]
+    assert api.events.count("semantic_review") == 1
     assert [update["state"] for update in api.explanation_updates] == [
         "generating",
         "completed",
@@ -708,6 +850,41 @@ def test_worker_processes_api_job_and_updates_progress() -> None:
     assert api.explanation_updates[-1]["content"]["overview"].startswith("検証済み")
     assert "prompt" not in api.explanation_updates[-1]["content"]
     assert "raw_model_output" not in api.explanation_updates[-1]["content"]
+
+
+def test_worker_waits_for_delayed_candidate_and_finishes_on_one_sqs_delivery(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sqs = FakeSqsClient([{"Body": "job-1", "ReceiptHandle": "receipt-1"}])
+    monkeypatch.setattr("pals_agent.worker.boto3.client", lambda *_args, **_kwargs: sqs)
+    api = DelayedCandidateApi(compiling_reads=2)
+    sleeps: list[float] = []
+    worker = SqsProofWorker(
+        settings=_settings(),
+        api_client=api,
+        pipeline=FakePipeline(),
+        explainer=FakeExplainer(),
+        output_reviewer=FakeOutputReviewer(),
+        proof_reviewer=FakeSemanticReviewer(),
+        sleep=sleeps.append,
+    )
+
+    assert worker.run_once() is True
+
+    assert sleeps == [1.0, 1.0]
+    assert api.events.count("proof_generation_claim") == 1
+    assert api.events.count("verification_candidate") == 1
+    assert api.events.count("semantic_review") == 1
+    assert [update["state"] for update in api.explanation_updates] == [
+        "generating",
+        "completed",
+    ]
+    assert sqs.deleted == [
+        {
+            "QueueUrl": "http://localstack:4566/000000000000/q",
+            "ReceiptHandle": "receipt-1",
+        }
+    ]
 
 
 def test_worker_retains_receipt_when_verification_candidate_import_is_unavailable() -> None:
@@ -730,12 +907,25 @@ def test_worker_run_once_receives_sqs_message_and_deletes_after_success(
         [{"Body": "job-1", "ReceiptHandle": "receipt-1"}],
     )
     monkeypatch.setattr("pals_agent.worker.boto3.client", lambda *_args, **_kwargs: sqs)
-    worker = _worker()
+    api = FakeApi()
+    api.state = "semantic_review"
+    api.lean_code = VERIFIED_LEAN_CODE
+    api.verification_candidate_id = "22222222-2222-4222-8222-222222222222"
+    api.generation_session_id = _TEST_CLAIM_ID
+    api.status_context = {
+        "target_declaration": {
+            "kind": "theorem",
+            "name": "x2_continuous",
+            "proposition": "Continuous (fun y : ℝ => y ^ 2)",
+        }
+    }
+    worker = _worker(api=api)
 
     assert worker.run_once() is True
     assert sqs.received_queue_url == "http://localstack:4566/000000000000/q"
     assert sqs.receive_kwargs["MessageAttributeNames"] == ["All"]
     assert sqs.receive_kwargs["MessageSystemAttributeNames"] == ["All"]
+    assert sqs.receive_kwargs["WaitTimeSeconds"] == 20
     assert sqs.deleted == [
         {
             "QueueUrl": "http://localstack:4566/000000000000/q",
@@ -758,9 +948,7 @@ def test_worker_run_once_returns_false_without_message(
 def test_agent_task_parser_supports_legacy_proof_and_structured_clarification() -> None:
     assert parse_agent_task("job-1").kind == "proof"
     assert parse_agent_task("job-1").id == "job-1"
-    task = parse_agent_task(
-        '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}'
-    )
+    task = parse_agent_task('{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}')
     assert task.kind == "clarification"
     assert task.id == "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
 
@@ -823,6 +1011,7 @@ def test_worker_processes_structured_clarification_task_and_hides_private_model_
     api.clarification_input = {
         "proof_job_id": "job-1",
         "state": "queued",
+        "output_language": "ja",
         "theorem_statement": "True を示せ",
         "lean_code": lean_code,
         "section_id": "finish-proof",
@@ -853,10 +1042,7 @@ def test_worker_processes_structured_clarification_task_and_hides_private_model_
     sqs = FakeSqsClient(
         [
             {
-                "Body": (
-                    '{"kind":"clarification",'
-                    '"id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}'
-                ),
+                "Body": ('{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}'),
                 "ReceiptHandle": "receipt-1",
             }
         ]
@@ -870,10 +1056,35 @@ def test_worker_processes_structured_clarification_task_and_hides_private_model_
         "generating",
         "completed",
     ]
-    completed = api.clarification_updates[-1]["content"]
+    completed_update = api.clarification_updates[-1]
+    completed = completed_update["content"]
     assert completed["question"] == "trivial は何をしているの？"
     assert "prompt" not in completed
     assert "raw_model_output" not in completed
+    parent_output = {
+        "output_kind": "explanation",
+        "proof_job_id": "job-1",
+        "content": api.clarification_input["summary"],
+    }
+    parent_sha256 = hashlib.sha256(rfc8785.dumps(parent_output)).hexdigest()
+    clarification_output = {
+        "output_kind": "clarification",
+        "clarification_id": "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1",
+        "proof_job_id": "job-1",
+        "content": completed,
+        "parent_explanation_sha256": parent_sha256,
+    }
+    evidence = completed_update["review_evidence"]
+    assert evidence["output_kind"] == "clarification"
+    assert evidence["output_sha256"] == hashlib.sha256(
+        rfc8785.dumps(clarification_output)
+    ).hexdigest()
+    assert evidence["parent_explanation_sha256"] == parent_sha256
+    assert evidence["evidence_sha256"] == hashlib.sha256(
+        rfc8785.dumps(
+            {key: value for key, value in evidence.items() if key != "evidence_sha256"}
+        )
+    ).hexdigest()
     assert len(explainer.clarify_calls) == 1
     assert sqs.deleted[0]["ReceiptHandle"] == "receipt-1"
 
@@ -888,6 +1099,7 @@ def test_worker_records_clarification_generation_failure_without_placeholder() -
     api.clarification_input = {
         "proof_job_id": "job-1",
         "state": "queued",
+        "output_language": "ja",
         "theorem_statement": "True を示せ",
         "lean_code": lean_code,
         "section_id": "finish-proof",
@@ -899,9 +1111,7 @@ def test_worker_records_clarification_generation_failure_without_placeholder() -
                     "id": "finish-proof",
                     "title": "証明を閉じる",
                     "summary": "最後の行です。",
-                    "references": [
-                        {"start_line": 2, "end_line": 2, "excerpt": "  trivial"}
-                    ],
+                    "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
                 }
             ],
             "conclusion": summary.conclusion,
@@ -921,7 +1131,7 @@ def test_worker_records_clarification_generation_failure_without_placeholder() -
     failed = api.clarification_updates[-1]
     assert failed["content"] is None
     assert failed["diagnostics"][0].code == "pals.clarification_failed"
-    assert failed["diagnostics"][0].message == "Clarification generation failed."
+    assert failed["diagnostics"][0].message == "追加回答の生成に失敗しました。"
 
 
 @pytest.mark.parametrize("state", ["completed", "failed", "dispatch_uncertain"])
@@ -970,6 +1180,7 @@ def test_worker_deletes_message_after_invalid_openmath_terminal_failure(
         api_client=api,
         pipeline=pipeline,
         explainer=FakeExplainer(),
+        output_reviewer=FakeOutputReviewer(),
     )
 
     assert worker.run_once() is True
@@ -1030,6 +1241,7 @@ def test_worker_adds_missing_explanation_to_verified_job_without_rerunning_proof
         api_client=api,
         pipeline=pipeline,
         explainer=explainer,
+        output_reviewer=FakeOutputReviewer(),
     )
 
     _process_proof(worker, "job-1")
@@ -1050,6 +1262,7 @@ def test_worker_skips_terminal_explanation_redelivery_conflict() -> None:
         api_client=api,
         pipeline=pipeline,
         explainer=explainer,
+        output_reviewer=FakeOutputReviewer(),
     )
 
     _process_proof(worker, "job-1")
@@ -1098,6 +1311,7 @@ def test_worker_passes_formal_statement_context_to_pipeline() -> None:
         api_client=api,
         pipeline=pipeline,
         explainer=FakeExplainer(),
+        output_reviewer=FakeOutputReviewer(),
     )
 
     _process_proof(worker, "job-1")

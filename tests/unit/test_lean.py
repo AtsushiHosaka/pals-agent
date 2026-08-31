@@ -97,13 +97,43 @@ def test_verifier_rejects_compiler_report_that_declaration_uses_sorry(
     assert all(diagnostic.code != "lean.verified" for diagnostic in result.diagnostics)
 
 
-def test_verifier_rejects_trusted_declarations_before_invoking_lean() -> None:
-    result = LeanVerifier(lean_binary="missing-lean").verify(
-        "axiom h : False\nexample : False := h"
-    )
+@pytest.mark.parametrize(
+    ("source", "token", "diagnostic_code"),
+    [
+        ("example : True := by\n  sorry", "sorry", "lean.disallowed_placeholder"),
+        ("example : True := by\n  admit", "admit", "lean.disallowed_placeholder"),
+        (
+            "axiom h : False\nexample : False := h",
+            "axiom",
+            "lean.disallowed_trusted_declaration",
+        ),
+        (
+            "constant h : False\nexample : False := h",
+            "constant",
+            "lean.disallowed_trusted_declaration",
+        ),
+        (
+            "opaque hidden : Nat := 0\nexample : True := by trivial",
+            "opaque",
+            "lean.disallowed_trusted_declaration",
+        ),
+        (
+            "unsafe def hidden : Nat := 0\nexample : True := by trivial",
+            "unsafe",
+            "lean.disallowed_trusted_declaration",
+        ),
+    ],
+)
+def test_verifier_rejects_every_disallowed_verified_source_token_before_invoking_lean(
+    source: str,
+    token: str,
+    diagnostic_code: str,
+) -> None:
+    result = LeanVerifier(lean_binary="missing-lean").verify(source)
 
     assert result.success is False
-    assert result.diagnostics[0].code == "lean.disallowed_trusted_declaration"
+    assert result.diagnostics[0].code == diagnostic_code
+    assert token in result.diagnostics[0].message
 
 
 def test_verifier_ignores_disallowed_tokens_in_comments_and_strings() -> None:

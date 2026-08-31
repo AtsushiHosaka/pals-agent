@@ -22,6 +22,9 @@ from pals_agent.factory import (
     build_draft_embedding_model,
     build_pipeline,
     build_proof_explainer,
+    build_proof_output_reviewer,
+    build_proof_semantic_reviewer,
+    build_recipe_attempt_planner,
     build_semantic_stage_judge,
     build_statement_openmath_structurer,
 )
@@ -33,7 +36,6 @@ from pals_agent.proof_flow_image import (
 )
 from pals_agent.proof_flow_seed import (
     CanonicalizerChildProperty,
-    ParentPFIAuthorityGate,
     ProofDraftSeedBuilder,
     SeedBuildArtifact,
     SeedEmbeddingFingerprint,
@@ -63,11 +65,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     pfi_seed_parser.add_argument("--output", type=Path, required=True)
     pfi_seed_parser.add_argument("--source-commit", required=True)
-    pfi_seed_parser.add_argument(
-        "--repository-root",
-        type=Path,
-        default=Path.cwd().parent,
-    )
     pfi_image_parser = subparsers.add_parser(
         "build-pfi-worker-image",
         help="Build and verify the PFI signed worker image from an atomic seed.",
@@ -184,11 +181,7 @@ def main(argv: list[str] | None = None) -> int:
             source_commit=args.source_commit,
         )
         docker = SubprocessDocker()
-        docker_cwd = (
-            args.context
-            if args.command == "build-pfi-worker-image"
-            else source_root
-        )
+        docker_cwd = args.context if args.command == "build-pfi-worker-image" else source_root
         canonicalizer_property = probe_base_image_elementtree(docker, cwd=docker_cwd)
         output = (
             args.output
@@ -199,7 +192,6 @@ def main(argv: list[str] | None = None) -> int:
             settings=settings,
             output=output,
             source_commit=args.source_commit,
-            repository_root=args.repository_root,
             canonicalizer_property=canonicalizer_property,
         )
         if args.command == "build-pfi-worker-image":
@@ -232,9 +224,7 @@ def main(argv: list[str] | None = None) -> int:
         if not args.semantic_judge and (
             args.expected_evidence is not None or args.rubric is not None
         ):
-            raise ValueError(
-                "--expected-evidence and --rubric require --semantic-judge"
-            )
+            raise ValueError("--expected-evidence and --rubric require --semantic-judge")
         artifact = _read_json_mapping(args.artifact)
         explanation = (
             _explanation_content(_read_json_mapping(args.explanation))
@@ -270,11 +260,7 @@ def main(argv: list[str] | None = None) -> int:
                     if args.expected_evidence is not None
                     else None
                 ),
-                rubric=(
-                    _read_json_mapping(args.rubric)
-                    if args.rubric is not None
-                    else None
-                ),
+                rubric=(_read_json_mapping(args.rubric) if args.rubric is not None else None),
             )
         store = JsonlEvaluationStore(args.history)
         store.append(run)
@@ -284,11 +270,7 @@ def main(argv: list[str] | None = None) -> int:
                     "evaluation": run.to_dict(),
                     "history": str(args.history),
                     "run_summary": summarize_evaluation_runs(
-                        tuple(
-                            item
-                            for item in store.load_history()
-                            if item.run_id == run.run_id
-                        )
+                        tuple(item for item in store.load_history() if item.run_id == run.run_id)
                     ),
                 },
                 ensure_ascii=False,
@@ -301,9 +283,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "evaluation-history":
         history = JsonlEvaluationStore(args.history).load_history()
         selected = (
-            tuple(run for run in history if run.run_id == args.run_id)
-            if args.run_id
-            else history
+            tuple(run for run in history if run.run_id == args.run_id) if args.run_id else history
         )
         print(
             json.dumps(
@@ -380,7 +360,10 @@ def main(argv: list[str] | None = None) -> int:
             api_client=api_client,
             pipeline=None,
             explainer=build_proof_explainer(settings),
+            output_reviewer=build_proof_output_reviewer(settings),
+            proof_reviewer=build_proof_semantic_reviewer(settings),
             pipeline_factory=lambda: build_pipeline(settings),
+            recipe_attempt_planner=build_recipe_attempt_planner(settings),
         )
         if args.command == "worker":
             worker.run_forever()
@@ -440,12 +423,10 @@ def _build_pfi_seed(
     settings: AgentSettings,
     output: Path,
     source_commit: str,
-    repository_root: Path,
     canonicalizer_property: CanonicalizerChildProperty,
 ) -> SeedBuildArtifact:
     embedding_model = build_draft_embedding_model(settings)
     return ProofDraftSeedBuilder(
-        authority=ParentPFIAuthorityGate(repository_root),
         embedding_model=embedding_model,
         fingerprint=SeedEmbeddingFingerprint(
             provider=settings.draft_embedding_provider,

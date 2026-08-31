@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import Any, Final, Literal, Protocol, cast
 
 import boto3  # type: ignore[import-untyped]
+import rfc8785
 
 from pals_agent.api_client import (
     PalsApiError,
@@ -22,7 +23,16 @@ from pals_agent.explanations import (
     ExplanationDeadlineExceeded,
     ProofClarification,
     ProofExplanation,
+    ProofOutputReview,
+    ProofOutputReviewer,
+    ProofOutputReviewError,
+    ProofSemanticReview,
+    ProofSemanticReviewer,
     proof_explanation_from_api,
+)
+from pals_agent.lean_target import (
+    LeanTargetDeclaration,
+    extract_single_target_declaration,
 )
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.models import (
@@ -36,6 +46,10 @@ from pals_agent.models import (
 from pals_agent.openmath import OpenMathStructuringError
 from pals_agent.pipeline import ApiRepairSeed
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
+from pals_agent.recipe_attempt import (
+    RecipeAttemptPlannerV1,
+    RecipeAttemptV1,
+)
 from pals_agent.settings import AgentSettings
 
 ClaimStatus = Literal[
@@ -49,9 +63,7 @@ ResourceKind = Literal["proof_job", "explanation", "clarification"]
 VisibilityExtender = Callable[[int], None]
 
 _NON_VERIFIED_TERMINAL_STATES: Final = frozenset({"failed", "canceled"})
-_CLAIM_STATUSES: Final = frozenset(
-    {"acquired", "busy", "terminal", "lease_too_short", "not_ready"}
-)
+_CLAIM_STATUSES: Final = frozenset({"acquired", "busy", "terminal", "lease_too_short", "not_ready"})
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", re.ASCII)
 _MANUAL_FIXTURE_URI_RE = re.compile(
     r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/manual-fixtures/([0-9a-f]{64})\.lean$",
@@ -64,26 +76,127 @@ _MODEL_ARTIFACT_URI_RE = re.compile(
 )
 _OPENMATH_ROLE_MODEL = fixed_model_default(ModelRole.OPENMATH)
 _TERMINAL_MARGIN_SECONDS: Final = 30.0
-_MAX_MODEL_ATTEMPTS: Final = 3
+_CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 330.0
+_CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
+_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
+_MAX_EXPLANATION_MODEL_CALLS: Final = 5
 _STATUS_CONTEXT_SCHEMA: Final = "pals.proof-status-context.v1"
-_CLARIFICATION_DISPATCH_SCHEMA_VERSION: Final = (
-    "pals.proof-clarification-dispatch.v1"
-)
-_SENSITIVE_STATUS_MESSAGES: Final = {
-    "openai.error": "Proof generation failed.",
-    "ollama.error": "Proof generation failed.",
-    "llm.generation_failed": "Proof generation failed.",
-    "pals.repair_generator_unavailable": "Proof generation failed.",
-    "llm.empty": "Proof generation returned no usable Lean code.",
-    "pals.generation_empty": "Proof generation returned no usable Lean code.",
-    "pals.repair_route_invalid_response": "Repair route selection failed.",
-    "pals.repair_route_transport_error": "Repair route selection failed.",
-    "pals.repair_route_selection_failed": "Repair route selection failed.",
-    "pals.openmath_structuring_failed": (
-        "The theorem statement could not be structured."
-    ),
-    "pals.artifact_checkpoint_failed": "Proof artifact persistence failed.",
-    "pals.artifact_persistence_failed": "Proof artifact persistence failed.",
+_CLARIFICATION_DISPATCH_SCHEMA_VERSION: Final = "pals.proof-clarification-dispatch.v1"
+_SEMANTIC_REVIEW_SCHEMA_VERSION: Final = "pals.proof-semantic-review.v2"
+_OUTPUT_REVIEW_SCHEMA_VERSION: Final = "pals.proof-output-review.v2"
+_UNAVAILABLE_PROOF_REVIEWER_PROVIDER: Final = "unavailable"
+_UNAVAILABLE_PROOF_REVIEWER_MODEL: Final = "independent-proof-review-unavailable"
+_UNAVAILABLE_PROOF_REVIEW_RATIONALE: Final = "The independent proof review could not be completed."
+_OUTPUT_LANGUAGES: Final = frozenset({"en", "ja", "zh-Hans", "zh-Hant"})
+_LEARNER_FAILURE_MESSAGES: Final = {
+    "en": {
+        "openai.error": "Proof generation failed.",
+        "ollama.error": "Proof generation failed.",
+        "llm.generation_failed": "Proof generation failed.",
+        "pals.repair_generator_unavailable": "Proof generation failed.",
+        "llm.empty": "Proof generation returned no usable Lean code.",
+        "pals.generation_empty": "Proof generation returned no usable Lean code.",
+        "pals.repair_route_invalid_response": "Repair route selection failed.",
+        "pals.repair_route_transport_error": "Repair route selection failed.",
+        "pals.repair_route_selection_failed": "Repair route selection failed.",
+        "pals.openmath_structuring_failed": "The theorem statement could not be structured.",
+        "pals.proof_flow_retrieval_failed": "Proof Flow could not provide reusable context.",
+        "pals.artifact_checkpoint_failed": "The proof result could not be durably persisted.",
+        "pals.artifact_persistence_failed": "The proof result could not be durably persisted.",
+        "pals.theorem_alignment_failed": (
+            "The generated Lean theorem did not match the requested theorem."
+        ),
+        "pals.explanation_deadline_exceeded": "Explanation generation exceeded its deadline.",
+        "pals.explanation_review_failed": "Explanation review failed.",
+        "pals.explanation_failed": "Explanation generation failed.",
+        "pals.explanation_reference_mismatch": (
+            "Explanation references no longer match the verified proof."
+        ),
+        "pals.clarification_deadline_exceeded": "Clarification generation exceeded its deadline.",
+        "pals.clarification_review_failed": "Clarification review failed.",
+        "pals.clarification_failed": "Clarification generation failed.",
+        "pals.clarification_reference_mismatch": (
+            "Clarification references no longer match the verified proof."
+        ),
+    },
+    "ja": {
+        "openai.error": "証明の生成に失敗しました。",
+        "ollama.error": "証明の生成に失敗しました。",
+        "llm.generation_failed": "証明の生成に失敗しました。",
+        "pals.repair_generator_unavailable": "証明の生成に失敗しました。",
+        "llm.empty": "利用できる Lean コードを生成できませんでした。",
+        "pals.generation_empty": "利用できる Lean コードを生成できませんでした。",
+        "pals.repair_route_invalid_response": "修復手順の選択に失敗しました。",
+        "pals.repair_route_transport_error": "修復手順の選択に失敗しました。",
+        "pals.repair_route_selection_failed": "修復手順の選択に失敗しました。",
+        "pals.openmath_structuring_failed": "定理の記述を構造化できませんでした。",
+        "pals.proof_flow_retrieval_failed": (
+            "Proof Flow から再利用可能な文脈を取得できませんでした。"
+        ),
+        "pals.artifact_checkpoint_failed": "証明結果を永続的に保存できませんでした。",
+        "pals.artifact_persistence_failed": "証明結果を永続的に保存できませんでした。",
+        "pals.theorem_alignment_failed": (
+            "生成された Lean 定理が要求された定理と一致しませんでした。"
+        ),
+        "pals.explanation_deadline_exceeded": "説明の生成が期限内に完了しませんでした。",
+        "pals.explanation_review_failed": "説明のレビューに失敗しました。",
+        "pals.explanation_failed": "説明の生成に失敗しました。",
+        "pals.explanation_reference_mismatch": "説明の参照が検証済みの証明と一致しなくなりました。",
+        "pals.clarification_deadline_exceeded": "追加回答の生成が期限内に完了しませんでした。",
+        "pals.clarification_review_failed": "追加回答のレビューに失敗しました。",
+        "pals.clarification_failed": "追加回答の生成に失敗しました。",
+        "pals.clarification_reference_mismatch": (
+            "追加回答の参照が検証済みの証明と一致しなくなりました。"
+        ),
+    },
+    "zh-Hans": {
+        "openai.error": "证明生成失败。",
+        "ollama.error": "证明生成失败。",
+        "llm.generation_failed": "证明生成失败。",
+        "pals.repair_generator_unavailable": "证明生成失败。",
+        "llm.empty": "未能生成可用的 Lean 代码。",
+        "pals.generation_empty": "未能生成可用的 Lean 代码。",
+        "pals.repair_route_invalid_response": "选择修复步骤失败。",
+        "pals.repair_route_transport_error": "选择修复步骤失败。",
+        "pals.repair_route_selection_failed": "选择修复步骤失败。",
+        "pals.openmath_structuring_failed": "无法结构化定理陈述。",
+        "pals.proof_flow_retrieval_failed": "Proof Flow 未能提供可复用的上下文。",
+        "pals.artifact_checkpoint_failed": "无法持久保存证明结果。",
+        "pals.artifact_persistence_failed": "无法持久保存证明结果。",
+        "pals.theorem_alignment_failed": "生成的 Lean 定理与请求的定理不匹配。",
+        "pals.explanation_deadline_exceeded": "说明生成已超过截止时间。",
+        "pals.explanation_review_failed": "说明审核失败。",
+        "pals.explanation_failed": "说明生成失败。",
+        "pals.explanation_reference_mismatch": "说明中的引用不再与已验证的证明相符。",
+        "pals.clarification_deadline_exceeded": "补充回答生成已超过截止时间。",
+        "pals.clarification_review_failed": "补充回答审核失败。",
+        "pals.clarification_failed": "补充回答生成失败。",
+        "pals.clarification_reference_mismatch": "补充回答中的引用不再与已验证的证明相符。",
+    },
+    "zh-Hant": {
+        "openai.error": "證明生成失敗。",
+        "ollama.error": "證明生成失敗。",
+        "llm.generation_failed": "證明生成失敗。",
+        "pals.repair_generator_unavailable": "證明生成失敗。",
+        "llm.empty": "未能產生可用的 Lean 程式碼。",
+        "pals.generation_empty": "未能產生可用的 Lean 程式碼。",
+        "pals.repair_route_invalid_response": "選擇修復步驟失敗。",
+        "pals.repair_route_transport_error": "選擇修復步驟失敗。",
+        "pals.repair_route_selection_failed": "選擇修復步驟失敗。",
+        "pals.openmath_structuring_failed": "無法結構化定理陳述。",
+        "pals.proof_flow_retrieval_failed": "Proof Flow 未能提供可重用的脈絡。",
+        "pals.artifact_checkpoint_failed": "無法持久保存證明結果。",
+        "pals.artifact_persistence_failed": "無法持久保存證明結果。",
+        "pals.theorem_alignment_failed": "產生的 Lean 定理與請求的定理不相符。",
+        "pals.explanation_deadline_exceeded": "說明生成已超過截止時間。",
+        "pals.explanation_review_failed": "說明審核失敗。",
+        "pals.explanation_failed": "說明生成失敗。",
+        "pals.explanation_reference_mismatch": "說明中的參照不再與已驗證的證明相符。",
+        "pals.clarification_deadline_exceeded": "補充回答生成已超過截止時間。",
+        "pals.clarification_review_failed": "補充回答審核失敗。",
+        "pals.clarification_failed": "補充回答生成失敗。",
+        "pals.clarification_reference_mismatch": "補充回答中的參照不再與已驗證的證明相符。",
+    },
 }
 
 
@@ -120,6 +233,38 @@ class ProofJobApi(Protocol):
         result_artifact_uri: str,
     ) -> dict[str, Any]: ...
 
+    def submit_recipe_verification_candidate(
+        self,
+        *,
+        proof_job_id: str,
+        mutation_claim_id: str,
+        candidate_id: str,
+        lean_code: str,
+        result_artifact_uri: str,
+        candidate_source: dict[str, Any],
+    ) -> dict[str, Any]: ...
+
+    def retry_verification_candidate_reconciliation(
+        self,
+        *,
+        proof_job_id: str,
+        candidate_id: str,
+    ) -> dict[str, Any]: ...
+
+    def settle_proof_semantic_review(
+        self,
+        *,
+        proof_job_id: str,
+        evidence: dict[str, Any],
+    ) -> dict[str, Any]: ...
+
+    def settle_recipe_semantic_review(
+        self,
+        *,
+        proof_job_id: str,
+        evidence: dict[str, Any],
+    ) -> dict[str, Any]: ...
+
     def upsert_proof_explanation(
         self,
         *,
@@ -128,6 +273,7 @@ class ProofJobApi(Protocol):
         claim_id: str,
         required_lease_ms: int | None = None,
         content: dict[str, Any] | None = None,
+        review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
     ) -> dict[str, Any]: ...
 
@@ -137,10 +283,12 @@ class ProofJobApi(Protocol):
         self,
         *,
         clarification_id: str,
+        proof_job_id: str | None = None,
         state: str,
         claim_id: str,
         required_lease_ms: int | None = None,
         content: dict[str, Any] | None = None,
+        review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
     ) -> dict[str, Any]: ...
 
@@ -221,15 +369,19 @@ class SqsProofWorker:
     # runtime was not configured locally.
     pipeline: StatementPipeline | None
     explainer: ProofExplainer
+    output_reviewer: ProofOutputReviewer | None = None
+    proof_reviewer: ProofSemanticReviewer | None = None
     pipeline_factory: Callable[[], StatementPipeline] | None = None
+    recipe_attempt_planner: RecipeAttemptPlannerV1 | None = None
     monotonic: Callable[[], float] = time.monotonic
+    sleep: Callable[[float], None] = time.sleep
     uuid4_factory: Callable[[], uuid.UUID] = uuid.uuid4
 
     def run_forever(self) -> None:
         while True:
             processed = self.run_once()
             if not processed:
-                time.sleep(self.settings.worker_idle_sleep_seconds)
+                self.sleep(self.settings.worker_idle_sleep_seconds)
 
     def run_once(self) -> bool:
         if not self.settings.proof_jobs_queue_url:
@@ -243,7 +395,7 @@ class SqsProofWorker:
         response = sqs.receive_message(
             QueueUrl=self.settings.proof_jobs_queue_url,
             MaxNumberOfMessages=1,
-            WaitTimeSeconds=1,
+            WaitTimeSeconds=20,
             MessageAttributeNames=["All"],
             MessageSystemAttributeNames=["All"],
         )
@@ -308,6 +460,106 @@ class SqsProofWorker:
         if state in _NON_VERIFIED_TERMINAL_STATES:
             return True
         statement = _required_text(proof_job, "theorem_statement")
+        language = _required_output_language(proof_job)
+        if state == "semantic_review":
+            lean_code = proof_job.get("lean_code")
+            if not isinstance(lean_code, str) or not lean_code.strip():
+                return False
+            try:
+                candidate_id = _required_verification_candidate_id(proof_job)
+            except ValueError:
+                return False
+            is_recipe_attempt = proof_job.get("attempt_source") == "recipe"
+            try:
+                generation_session_id = (
+                    None if is_recipe_attempt else _required_generation_session_id(proof_job)
+                )
+                source_binding_sha256 = (
+                    _required_sha256(proof_job, "source_binding_sha256")
+                    if is_recipe_attempt
+                    else None
+                )
+            except ValueError:
+                return False
+            target_declaration = _persisted_target_declaration(proof_job, lean_code)
+            if target_declaration is None:
+                return False
+            request_context = proof_job.get("request_context")
+            formal_statement = (
+                request_context.get("formal_statement")
+                if isinstance(request_context, dict)
+                else None
+            )
+            if not isinstance(formal_statement, str) or not formal_statement.strip():
+                formal_statement = None
+            try:
+                review = self._required_proof_reviewer().review_proof(
+                    theorem_statement=statement,
+                    formal_statement=formal_statement,
+                    target_declaration=target_declaration,
+                    lean_code=lean_code,
+                    timeout_seconds=self.settings.explanation_model_timeout_seconds,
+                )
+            except Exception:
+                review = self._unavailable_proof_review()
+            if is_recipe_attempt:
+                assert source_binding_sha256 is not None
+                evidence = _recipe_semantic_review_evidence(
+                    candidate_id=candidate_id,
+                    theorem_statement=statement,
+                    formal_statement=formal_statement,
+                    lean_code=lean_code,
+                    target_declaration=target_declaration,
+                    source_binding_sha256=source_binding_sha256,
+                    review=review,
+                )
+            else:
+                assert generation_session_id is not None
+                evidence = _semantic_review_evidence(
+                    candidate_id=candidate_id,
+                    theorem_statement=statement,
+                    formal_statement=formal_statement,
+                    lean_code=lean_code,
+                    target_declaration=target_declaration,
+                    generator_session_id=generation_session_id,
+                    review=review,
+                )
+            approved = review.decision == "approved"
+            try:
+                response = (
+                    self.api_client.settle_recipe_semantic_review(
+                        proof_job_id=proof_job_id,
+                        evidence=evidence,
+                    )
+                    if is_recipe_attempt
+                    else self.api_client.settle_proof_semantic_review(
+                        proof_job_id=proof_job_id,
+                        evidence=evidence,
+                    )
+                )
+            except Exception:
+                # A transport failure after settlement is ambiguous; readback/redelivery is the
+                # only authority allowed to decide whether the durable state changed.
+                return False
+            settled = _semantic_review_terminal_response(
+                response,
+                proof_job_id=proof_job_id,
+            )
+            if not settled or not approved:
+                return settled
+            # The semantic-review delivery is the first point at which the proof is durably
+            # verified.  Continue with learner-facing work on this receipt when it has a
+            # claim; an explanation failure is isolated from this already-verified proof.
+            if claim_id is None or extend_visibility is None:
+                return True
+            return self._ensure_summary_explanation(
+                proof_job_id=proof_job_id,
+                theorem_statement=statement,
+                lean_code=lean_code,
+                claim_id=claim_id,
+                extend_visibility=extend_visibility,
+                language=language,
+            )
         if state == "verified":
             lean_code = proof_job.get("lean_code")
             if not isinstance(lean_code, str) or not lean_code.strip():
@@ -320,12 +572,35 @@ class SqsProofWorker:
                 lean_code=lean_code,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                language=language,
             )
 
         if _has_pending_api_candidate(proof_job):
             # Candidate import is durable, but reconciliation owns the next state transition.
-            # Retain the receipt rather than reacquiring the proof and starting a parallel run.
-            return False
+            # Keep this delivery alive while the API-owned verifier finishes.  Returning here
+            # would leave the generation receipt invisible for the remainder of its one-hour
+            # lease, so semantic review could not start until a very late redelivery.
+            if extend_visibility is None:
+                return False
+            try:
+                self.api_client.retry_verification_candidate_reconciliation(
+                    proof_job_id=proof_job_id,
+                    candidate_id=_required_verification_candidate_id(proof_job),
+                )
+            except (PalsApiError, ValueError):
+                return False
+            reconciled = self._wait_for_candidate_reconciliation(
+                proof_job_id=proof_job_id,
+                extend_visibility=extend_visibility,
+                refresh_visibility=True,
+            )
+            if reconciled is None:
+                return False
+            return self.process_proof_job(
+                proof_job_id,
+                claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
 
         context = proof_job.get("request_context")
         context = context if isinstance(context, dict) else {}
@@ -349,6 +624,25 @@ class SqsProofWorker:
         if not generation.acquired:
             return generation.acknowledge
 
+        # A pre-existing API repair receipt belongs to the ordinary model path.  Do not perform a
+        # fresh Recipe selection over that durable attempt, or change its retry semantics.
+        if api_repair_seed is None:
+            try:
+                recipe_attempt = self._selected_recipe_attempt(formal_statement=formal_statement)
+            except RuntimeError:
+                return False
+            if recipe_attempt is not None:
+                # This branch intentionally precedes pipeline construction: the selected source is
+                # immutable catalog material, not an LLM prompt or a repair seed.  Any failure here
+                # is retried as a Recipe attempt and must never fall through to generation.
+                return self._submit_selected_recipe_candidate(
+                    proof_job=proof_job,
+                    proof_job_id=proof_job_id,
+                    mutation_claim_id=claim_id,
+                    attempt=recipe_attempt,
+                    extend_visibility=extend_visibility,
+                )
+
         latest_state: ProofJobState | None = None
         latest_lean_code: str | None = None
         candidate_submitted = False
@@ -366,13 +660,18 @@ class SqsProofWorker:
             if status == "verified":
                 raise RuntimeError("worker pipeline must not publish direct verifier success")
             latest_state = status
-            api_diagnostics = _status_diagnostics(diagnostics)
+            api_diagnostics = _status_diagnostics(diagnostics, language=language)
             api_context = _proof_status_context(
                 state=status,
                 raw=status_context,
                 diagnostics=api_diagnostics,
                 max_repair_attempts=getattr(self.settings, "max_repair_attempts", 12),
+                language=language,
             )
+            if status == "compiling" and isinstance(lean_code, str) and lean_code.strip():
+                target_declaration = extract_single_target_declaration(lean_code)
+                if target_declaration is not None:
+                    api_context["target_declaration"] = target_declaration.as_dict()
             self.api_client.update_proof_job(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
@@ -397,9 +696,8 @@ class SqsProofWorker:
             on_status(
                 "failed",
                 [
-                    _fixed_diagnostic(
-                        "pals.openmath_structuring_failed",
-                        "The theorem statement could not be structured.",
+                    _localized_failure_diagnostic(
+                        "pals.openmath_structuring_failed", language=language
                     )
                 ],
                 None,
@@ -415,9 +713,8 @@ class SqsProofWorker:
             on_status(
                 "failed",
                 [
-                    _fixed_diagnostic(
-                        "pals.proof_flow_retrieval_failed",
-                        "Proof Flow retrieval could not provide reusable context.",
+                    _localized_failure_diagnostic(
+                        "pals.proof_flow_retrieval_failed", language=language
                     )
                 ],
                 None,
@@ -429,9 +726,8 @@ class SqsProofWorker:
             on_status(
                 "failed",
                 [
-                    _fixed_diagnostic(
-                        "pals.artifact_persistence_failed",
-                        "The proof result could not be durably persisted.",
+                    _localized_failure_diagnostic(
+                        "pals.artifact_persistence_failed", language=language
                     )
                 ],
                 None,
@@ -443,13 +739,16 @@ class SqsProofWorker:
         if getattr(run_result, "verification_pending", False):
             if not isinstance(latest_lean_code, str) or not latest_lean_code.strip():
                 return False
-            if not _verified_candidate_matches_statement(statement, latest_lean_code):
+            target_declaration = extract_single_target_declaration(latest_lean_code)
+            if target_declaration is None or not _target_matches_statement(
+                statement,
+                target_declaration,
+            ):
                 on_status(
                     "failed",
                     [
-                        _fixed_diagnostic(
-                            "pals.theorem_alignment_failed",
-                            "The generated Lean theorem did not match the requested theorem.",
+                        _localized_failure_diagnostic(
+                            "pals.theorem_alignment_failed", language=language
                         )
                     ],
                     None,
@@ -482,21 +781,15 @@ class SqsProofWorker:
             # The candidate route's 200 only proves durable import.  It is not verifier success;
             # a read-back must observe the API-owned reconciled result before explanation work can
             # begin.  A still-compiling result remains unacknowledged for a later queue delivery.
-            try:
-                reconciled = self.api_client.get_proof_job(proof_job_id)
-            except PalsApiError:
-                # The candidate may have been durably imported even though its result cannot
-                # yet be observed.  Retain the receipt and let a later delivery read it back.
-                return False
-            if reconciled.get("state") != "verified":
-                return False
-            reconciled_lean_code = reconciled.get("lean_code")
-            if not isinstance(reconciled_lean_code, str) or not reconciled_lean_code.strip():
-                return False
-            return self._ensure_summary_explanation(
+            reconciled = self._wait_for_candidate_reconciliation(
                 proof_job_id=proof_job_id,
-                theorem_statement=statement,
-                lean_code=reconciled_lean_code,
+                extend_visibility=extend_visibility,
+                refresh_visibility=False,
+            )
+            if reconciled is None:
+                return False
+            return self.process_proof_job(
+                proof_job_id,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
             )
@@ -508,7 +801,44 @@ class SqsProofWorker:
             lean_code=latest_lean_code,
             claim_id=claim_id,
             extend_visibility=extend_visibility,
+            language=language,
         )
+
+    def _wait_for_candidate_reconciliation(
+        self,
+        *,
+        proof_job_id: str,
+        extend_visibility: VisibilityExtender,
+        refresh_visibility: bool,
+    ) -> dict[str, Any] | None:
+        """Wait for API-owned Lean reconciliation without consuming SQS receives.
+
+        A generation delivery already has a one-hour visibility lease.  A later delivery that
+        discovers a persisted candidate does not, so it receives a bounded visibility extension
+        before polling.  The timeout is longer than the reconciler's 310-second lease and leaves
+        the standard 30-second terminal margin.
+        """
+
+        if refresh_visibility:
+            try:
+                extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
+            except Exception:
+                return None
+        deadline = self.monotonic() + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
+        while True:
+            try:
+                proof_job = self.api_client.get_proof_job(proof_job_id)
+            except PalsApiError:
+                proof_job = None
+            if isinstance(proof_job, dict) and (
+                proof_job.get("state") != "compiling"
+                or not _has_pending_api_candidate(proof_job)
+            ):
+                return proof_job
+            remaining = deadline - self.monotonic()
+            if remaining <= 0:
+                return None
+            self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -532,6 +862,69 @@ class SqsProofWorker:
         object.__setattr__(self, "pipeline", pipeline)
         return pipeline
 
+    def _selected_recipe_attempt(self, *, formal_statement: str | None) -> RecipeAttemptV1 | None:
+        """Select before model generation, returning ``None`` only for an authenticated miss.
+
+        A selection transport/validation failure is deliberately not converted to a no-Recipe
+        decision: without a signed ``not_selected`` result the worker cannot safely start the
+        model path.
+        """
+
+        planner = self.recipe_attempt_planner
+        if planner is None:
+            return None
+        try:
+            decision = planner.decide(formal_declaration=formal_statement)
+        except Exception as error:
+            raise RuntimeError("Recipe selection is unavailable") from error
+        return decision if isinstance(decision, RecipeAttemptV1) else None
+
+    def _submit_selected_recipe_candidate(
+        self,
+        *,
+        proof_job: dict[str, Any],
+        proof_job_id: str,
+        mutation_claim_id: str,
+        attempt: RecipeAttemptV1,
+        extend_visibility: VisibilityExtender,
+    ) -> bool:
+        """Persist one Recipe candidate and never invoke generation or repair.
+
+        The client repeats byte/digest checks before the API performs receipt authority admission.
+        A verifier failure will be settled by the API as the terminal Recipe outcome.
+        """
+
+        try:
+            candidate_id = str(uuid.uuid4())
+            result_artifact_uri = _recipe_candidate_artifact_uri(
+                proof_job_id=proof_job_id,
+                candidate_id=candidate_id,
+                lean_sha256=attempt.source_sha256,
+                artifacts_bucket=self.settings.artifacts_bucket,
+            )
+            self.api_client.submit_recipe_verification_candidate(
+                proof_job_id=proof_job_id,
+                mutation_claim_id=mutation_claim_id,
+                candidate_id=candidate_id,
+                lean_code=attempt.source,
+                result_artifact_uri=result_artifact_uri,
+                candidate_source=attempt.candidate_source_payload(),
+            )
+        except (PalsApiError, ValueError):
+            return False
+        reconciled = self._wait_for_candidate_reconciliation(
+            proof_job_id=proof_job_id,
+            extend_visibility=extend_visibility,
+            refresh_visibility=False,
+        )
+        if reconciled is None:
+            return False
+        return self.process_proof_job(
+            proof_job_id=proof_job_id,
+            claim_id=mutation_claim_id,
+            extend_visibility=extend_visibility,
+        )
+
     def process_clarification(
         self,
         clarification_id: str,
@@ -542,8 +935,7 @@ class SqsProofWorker:
         worker_input = self.api_client.get_proof_clarification(clarification_id)
         if (
             not isinstance(worker_input, dict)
-            or worker_input.get("dispatch_schema_version")
-            != _CLARIFICATION_DISPATCH_SCHEMA_VERSION
+            or worker_input.get("dispatch_schema_version") != _CLARIFICATION_DISPATCH_SCHEMA_VERSION
         ):
             return False
         if worker_input.get("state") in {"completed", "failed", "dispatch_uncertain"}:
@@ -557,10 +949,10 @@ class SqsProofWorker:
             proof_job_id = _required_text(worker_input, "proof_job_id")
             theorem_statement = _required_text(worker_input, "theorem_statement")
             lean_code = _required_text(worker_input, "lean_code")
+            language = _required_output_language(worker_input)
             after_clarification_id = worker_input.get("after_clarification_id")
             if after_clarification_id is not None and (
-                not isinstance(after_clarification_id, str)
-                or not after_clarification_id
+                not isinstance(after_clarification_id, str) or not after_clarification_id
             ):
                 return False
             proof_input = self.api_client.get_proof_job(proof_job_id)
@@ -603,6 +995,7 @@ class SqsProofWorker:
                 "explanation": explanation,
                 "section_id": _required_text(worker_input, "section_id"),
                 "question": _required_text(worker_input, "question"),
+                "language": language,
                 "deadline": permit.deadline,
                 "timeout_seconds": permit.timeout_seconds,
             }
@@ -612,29 +1005,58 @@ class SqsProofWorker:
             if after_clarification_id is not None:
                 clarification_kwargs["after_clarification_id"] = after_clarification_id
             clarification = self.explainer.clarify(**clarification_kwargs)
+            reviewer = self._required_output_reviewer()
+            review = reviewer.review_clarification(
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                explanation=explanation,
+                clarification=clarification,
+                language=language,
+                deadline=permit.deadline,
+                timeout_seconds=permit.timeout_seconds,
+            )
             content = _public_clarification_content(clarification)
+            review_evidence = _output_review_evidence(
+                kind="clarification",
+                proof_job_id=proof_job_id,
+                clarification_id=clarification_id,
+                content=content,
+                lean_code=lean_code,
+                parent_explanation_content=_public_explanation_content(explanation),
+                generator_session_id=claim_id,
+                review=review,
+            )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
                 code="pals.clarification_deadline_exceeded",
-                message="Clarification generation exceeded its deadline.",
+                language=language,
+            )
+        except ProofOutputReviewError:
+            return self._write_clarification_failure(
+                clarification_id=clarification_id,
+                claim_id=claim_id,
+                code="pals.clarification_review_failed",
+                language=language,
             )
         except Exception:
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
                 code="pals.clarification_failed",
-                message="Clarification generation failed.",
+                language=language,
             )
 
         try:
             response = self.api_client.update_proof_clarification(
                 clarification_id=clarification_id,
+                proof_job_id=proof_job_id,
                 state="completed",
                 claim_id=claim_id,
                 content=content,
+                review_evidence=review_evidence,
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_clarification_reference_mismatch":
@@ -642,7 +1064,7 @@ class SqsProofWorker:
                     clarification_id=clarification_id,
                     claim_id=claim_id,
                     code="pals.clarification_reference_mismatch",
-                    message="Clarification references no longer match the verified proof.",
+                    language=language,
                     require_failed_terminal=True,
                 )
             return False
@@ -662,6 +1084,7 @@ class SqsProofWorker:
         lean_code: str,
         claim_id: str,
         extend_visibility: VisibilityExtender,
+        language: str,
     ) -> bool:
         acquisition = self._acquire(
             resource_kind="explanation",
@@ -684,24 +1107,51 @@ class SqsProofWorker:
                 theorem_statement=theorem_statement,
                 lean_code=lean_code,
                 verified=True,
+                language=language,
+                deadline=permit.deadline,
+                timeout_seconds=permit.timeout_seconds,
+            )
+            reviewer = self._required_output_reviewer()
+            review = reviewer.review_explanation(
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                explanation=explanation,
+                language=language,
                 deadline=permit.deadline,
                 timeout_seconds=permit.timeout_seconds,
             )
             content = _public_explanation_content(explanation)
+            review_evidence = _output_review_evidence(
+                kind="explanation",
+                proof_job_id=proof_job_id,
+                clarification_id=None,
+                content=content,
+                lean_code=lean_code,
+                parent_explanation_content=None,
+                generator_session_id=claim_id,
+                review=review,
+            )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
                 code="pals.explanation_deadline_exceeded",
-                message="Explanation generation exceeded its deadline.",
+                language=language,
+            )
+        except ProofOutputReviewError:
+            return self._write_explanation_failure(
+                proof_job_id=proof_job_id,
+                claim_id=claim_id,
+                code="pals.explanation_review_failed",
+                language=language,
             )
         except Exception:
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
                 code="pals.explanation_failed",
-                message="Explanation generation failed.",
+                language=language,
             )
 
         try:
@@ -710,6 +1160,7 @@ class SqsProofWorker:
                 state="completed",
                 claim_id=claim_id,
                 content=content,
+                review_evidence=review_evidence,
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_explanation_reference_mismatch":
@@ -717,7 +1168,7 @@ class SqsProofWorker:
                     proof_job_id=proof_job_id,
                     claim_id=claim_id,
                     code="pals.explanation_reference_mismatch",
-                    message="Explanation references no longer match the verified proof.",
+                    language=language,
                     require_failed_terminal=True,
                 )
             return False
@@ -740,7 +1191,7 @@ class SqsProofWorker:
     ) -> _AcquisitionResult:
         timeout_seconds = self.settings.explanation_model_timeout_seconds
         required_lease_ms = (
-            _MAX_MODEL_ATTEMPTS * timeout_seconds + int(_TERMINAL_MARGIN_SECONDS)
+            _MAX_EXPLANATION_MODEL_CALLS * timeout_seconds + int(_TERMINAL_MARGIN_SECONDS)
         ) * 1000
         claim_request_started_at = self.monotonic()
         try:
@@ -758,9 +1209,7 @@ class SqsProofWorker:
         if envelope.status != "acquired" or envelope.lease_remaining_ms is None:
             return _AcquisitionResult(acknowledge=False, permit=None)
 
-        lease_deadline = (
-            claim_request_started_at + envelope.lease_remaining_ms / 1000.0
-        )
+        lease_deadline = claim_request_started_at + envelope.lease_remaining_ms / 1000.0
         visibility_seconds = math.ceil(required_lease_ms / 1000) + 30
         try:
             extend_visibility(visibility_seconds)
@@ -768,7 +1217,7 @@ class SqsProofWorker:
             return _AcquisitionResult(acknowledge=False, permit=None)
 
         generation_started_at = self.monotonic()
-        generation_span = _MAX_MODEL_ATTEMPTS * timeout_seconds
+        generation_span = _MAX_EXPLANATION_MODEL_CALLS * timeout_seconds
         margin = lease_deadline - (generation_started_at + generation_span)
         if margin < _TERMINAL_MARGIN_SECONDS:
             return _AcquisitionResult(acknowledge=False, permit=None)
@@ -829,7 +1278,7 @@ class SqsProofWorker:
         proof_job_id: str,
         claim_id: str,
         code: str,
-        message: str,
+        language: str,
         require_failed_terminal: bool = False,
     ) -> bool:
         try:
@@ -837,7 +1286,7 @@ class SqsProofWorker:
                 proof_job_id=proof_job_id,
                 state="failed",
                 claim_id=claim_id,
-                diagnostics=[_fixed_diagnostic(code, message)],
+                diagnostics=[_localized_failure_diagnostic(code, language=language)],
             )
         except Exception:
             return False
@@ -859,7 +1308,7 @@ class SqsProofWorker:
         clarification_id: str,
         claim_id: str,
         code: str,
-        message: str,
+        language: str,
         require_failed_terminal: bool = False,
     ) -> bool:
         try:
@@ -867,7 +1316,7 @@ class SqsProofWorker:
                 clarification_id=clarification_id,
                 state="failed",
                 claim_id=claim_id,
-                diagnostics=[_fixed_diagnostic(code, message)],
+                diagnostics=[_localized_failure_diagnostic(code, language=language)],
             )
         except Exception:
             return False
@@ -885,9 +1334,31 @@ class SqsProofWorker:
 
     def _raise_if_generation_deadline_reached(self, deadline: float) -> None:
         if self.monotonic() >= deadline:
-            raise ExplanationDeadlineExceeded(
-                "explanation generation deadline exceeded"
-            )
+            raise ExplanationDeadlineExceeded("explanation generation deadline exceeded")
+
+    def _required_output_reviewer(self) -> ProofOutputReviewer:
+        if self.output_reviewer is None:
+            raise ProofOutputReviewError("independent output reviewer is unavailable")
+        return self.output_reviewer
+
+    def _required_proof_reviewer(self) -> ProofSemanticReviewer:
+        if self.proof_reviewer is None:
+            raise ProofOutputReviewError("independent proof reviewer is unavailable")
+        return self.proof_reviewer
+
+    def _unavailable_proof_review(self) -> ProofSemanticReview:
+        """Represent a reviewer construction or invocation failure as a durable rejection."""
+
+        session_id = self.uuid4_factory()
+        if not isinstance(session_id, uuid.UUID) or session_id.version != 4:
+            session_id = uuid.uuid4()
+        return ProofSemanticReview(
+            decision="rejected",
+            rationale=_UNAVAILABLE_PROOF_REVIEW_RATIONALE,
+            reviewer_provider=_UNAVAILABLE_PROOF_REVIEWER_PROVIDER,
+            reviewer_model=_UNAVAILABLE_PROOF_REVIEWER_MODEL,
+            session_id=str(session_id),
+        )
 
     def _fresh_claim_id(self) -> str:
         value = self.uuid4_factory()
@@ -985,11 +1456,7 @@ def parse_agent_task(body: str) -> AgentTask:
         raise ValueError("SQS agent task JSON must be an object")
     kind = payload.get("kind")
     task_id = payload.get("id")
-    if (
-        kind != "clarification"
-        or not isinstance(task_id, str)
-        or not _is_canonical_uuid4(task_id)
-    ):
+    if kind != "clarification" or not isinstance(task_id, str) or not _is_canonical_uuid4(task_id):
         raise ValueError("SQS agent task JSON must contain a clarification kind and id")
     expected_body = f'{{"kind":"clarification","id":"{task_id}"}}'
     if body != expected_body:
@@ -1143,6 +1610,8 @@ def _validate_proof_job_claim_resource(
         "id",
         "job_id",
         "project_id",
+        "chat_id",
+        "output_language",
         "theorem_statement",
         "formal_statement",
         "state",
@@ -1152,6 +1621,9 @@ def _validate_proof_job_claim_resource(
         "result_artifact_uri",
         "lean_code",
         "verifier_attestation",
+        "verification_candidate_id",
+        "verification_candidate_state",
+        "generation_session_id",
     }
     if set(resource) != expected_keys:
         raise ValueError("proof generation claim resource fields are invalid")
@@ -1160,6 +1632,8 @@ def _validate_proof_job_claim_resource(
     project_id = resource.get("project_id")
     if project_id is not None:
         _bounded_text(project_id, maximum=200)
+    _bounded_text(resource.get("chat_id"), maximum=36)
+    _required_output_language(resource)
     _bounded_text(resource.get("theorem_statement"), maximum=20_000)
     formal_statement = resource.get("formal_statement")
     if formal_statement is not None:
@@ -1181,6 +1655,26 @@ def _validate_proof_job_claim_resource(
     if lean_code is not None:
         _bounded_text(lean_code, maximum=200_000)
     attestation = resource.get("verifier_attestation")
+    verification_candidate_id = resource.get("verification_candidate_id")
+    verification_candidate_state = resource.get("verification_candidate_state")
+    if verification_candidate_id is not None and not _is_canonical_uuid4(
+        verification_candidate_id
+    ):
+        raise ValueError("proof generation verification candidate id is invalid")
+    if (verification_candidate_id is None) != (verification_candidate_state is None):
+        raise ValueError("proof generation verification candidate binding is incomplete")
+    if verification_candidate_state is not None and verification_candidate_state not in {
+        "compiling",
+        "semantic_review",
+        "verified",
+        "verification_failed",
+    }:
+        raise ValueError("proof generation verification candidate state is invalid")
+    generation_session_id = resource.get("generation_session_id")
+    if generation_session_id is not None and not _is_canonical_uuid4(
+        generation_session_id
+    ):
+        raise ValueError("proof generation session id is invalid")
     if state == "verified":
         if not isinstance(lean_code, str) or not isinstance(artifact_uri, str):
             raise ValueError("verified proof resource lacks evidence")
@@ -1295,9 +1789,9 @@ def _validate_worker_diagnostics(value: Any) -> None:
     for diagnostic in value:
         if not isinstance(diagnostic, dict):
             raise ValueError("worker diagnostic must be an object")
-        if not {"severity", "message"}.issubset(diagnostic) or not set(
-            diagnostic
-        ).issubset({"severity", "message", "code", "line", "column"}):
+        if not {"severity", "message"}.issubset(diagnostic) or not set(diagnostic).issubset(
+            {"severity", "message", "code", "line", "column"}
+        ):
             raise ValueError("worker diagnostic fields are invalid")
         if diagnostic.get("severity") not in {"info", "warning", "error"}:
             raise ValueError("worker diagnostic severity is invalid")
@@ -1445,8 +1939,7 @@ def _top_level_declarations(source: str) -> list[re.Match[str]]:
         elif depth == 0:
             declaration = pattern.match(source, index)
             if declaration is not None and (
-                index == 0
-                or not (source[index - 1].isalnum() or source[index - 1] == "_")
+                index == 0 or not (source[index - 1].isalnum() or source[index - 1] == "_")
             ):
                 declarations.append(declaration)
                 index = declaration.end()
@@ -1495,14 +1988,12 @@ def _matches_x_squared_continuity(proposition: str) -> bool:
 
     lambda_body = expression[len("fun") :]
     arrow_positions = [
-        position
-        for position in (lambda_body.find("=>"), lambda_body.find("↦"))
-        if position >= 0
+        position for position in (lambda_body.find("=>"), lambda_body.find("↦")) if position >= 0
     ]
     if not arrow_positions:
         return False
     arrow_position = min(arrow_positions)
-    arrow_width = 2 if lambda_body[arrow_position :].startswith("=>") else 1
+    arrow_width = 2 if lambda_body[arrow_position:].startswith("=>") else 1
     binder = lambda_body[:arrow_position]
     body = lambda_body[arrow_position + arrow_width :]
 
@@ -1525,24 +2016,49 @@ def _matches_x_squared_continuity(proposition: str) -> bool:
     base, exponent = normalized_body.rsplit("^", maxsplit=1)
     normalized_base = _strip_redundant_parentheses(base)
     normalized_exponent = _strip_redundant_parentheses(exponent)
-    return (
-        normalized_base == binder_match.group("variable")
-        and normalized_exponent == "2"
-    )
+    return normalized_base == binder_match.group("variable") and normalized_exponent == "2"
 
 
-def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:
-    """Reject a verified but unrelated theorem before it can acquire an explanation."""
+def _target_matches_statement(
+    statement: str,
+    target_declaration: LeanTargetDeclaration,
+) -> bool:
+    """Apply deterministic checks before the independent semantic review."""
     normalized_statement = re.sub(r"\s+", "", statement).lower()
     is_x_squared_continuity = "連続" in normalized_statement and (
         "x²" in normalized_statement or "x^2" in normalized_statement
     )
     if not is_x_squared_continuity:
         return True
-    return any(
-        _matches_x_squared_continuity(proposition)
-        for proposition in _theorem_propositions(lean_code)
+    return _matches_x_squared_continuity(target_declaration.proposition)
+
+
+def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:
+    """Reject missing, ambiguous, or deterministically unrelated candidates."""
+    target_declaration = extract_single_target_declaration(lean_code)
+    return target_declaration is not None and _target_matches_statement(
+        statement,
+        target_declaration,
     )
+
+
+def _persisted_target_declaration(
+    proof_job: dict[str, Any],
+    lean_code: str,
+) -> LeanTargetDeclaration | None:
+    status_context = proof_job.get("status_context")
+    raw_target = (
+        status_context.get("target_declaration") if isinstance(status_context, dict) else None
+    )
+    target_declaration = extract_single_target_declaration(lean_code)
+    if (
+        target_declaration is None
+        or not isinstance(raw_target, dict)
+        or set(raw_target) != {"kind", "name", "proposition"}
+        or raw_target != target_declaration.as_dict()
+    ):
+        return None
+    return target_declaration
 
 
 def _same_verified_proof(
@@ -1610,18 +2126,135 @@ def _public_clarification_content(clarification: ProofClarification) -> dict[str
     }
 
 
+def _output_review_evidence(
+    *,
+    kind: Literal["explanation", "clarification"],
+    proof_job_id: str,
+    clarification_id: str | None,
+    content: dict[str, Any],
+    lean_code: str,
+    parent_explanation_content: dict[str, Any] | None,
+    generator_session_id: str,
+    review: ProofOutputReview,
+) -> dict[str, Any]:
+    """Bind separate-session approval to exactly the learner-visible output."""
+
+    if not isinstance(review, ProofOutputReview) or review.kind != kind:
+        raise ProofOutputReviewError("independent output review record is invalid")
+    if not _is_canonical_uuid4(generator_session_id):
+        raise ProofOutputReviewError("output generation session is invalid")
+    if kind == "explanation":
+        if clarification_id is not None or parent_explanation_content is not None:
+            raise ProofOutputReviewError("explanation review has an unexpected parent binding")
+        parent_explanation_sha256: str | None = None
+    else:
+        if not clarification_id or parent_explanation_content is None:
+            raise ProofOutputReviewError("clarification review requires its parent explanation")
+        parent_explanation_sha256 = _canonical_json_sha256(
+            {
+                "output_kind": "explanation",
+                "proof_job_id": proof_job_id,
+                "content": parent_explanation_content,
+            }
+        )
+    reviewer = {
+        "provider": review.reviewer_provider,
+        "model": review.reviewer_model,
+        "session_id": review.session_id,
+    }
+    if not all(_is_review_identifier(value) for value in reviewer.values()):
+        raise ProofOutputReviewError("independent output reviewer identity is invalid")
+    if review.session_id == generator_session_id:
+        raise ProofOutputReviewError("output reviewer session must differ from generation")
+    if (
+        not isinstance(review.rationale, str)
+        or not review.rationale.strip()
+        or len(review.rationale) > 8_000
+    ):
+        raise ProofOutputReviewError("independent output review rationale is invalid")
+    output: dict[str, Any] = {
+        "output_kind": kind,
+        "proof_job_id": proof_job_id,
+        "content": content,
+    }
+    if kind == "clarification":
+        assert clarification_id is not None
+        output["clarification_id"] = clarification_id
+        output["parent_explanation_sha256"] = parent_explanation_sha256
+    unsigned_evidence: dict[str, Any] = {
+        "schema_version": _OUTPUT_REVIEW_SCHEMA_VERSION,
+        "output_kind": kind,
+        "output_sha256": _canonical_json_sha256(output),
+        "lean_sha256": _text_sha256(lean_code),
+        "parent_explanation_sha256": parent_explanation_sha256,
+        "generator_session_id": generator_session_id,
+        "reviewer": reviewer,
+        "decision": "approved",
+        "rationale": review.rationale,
+    }
+    return {
+        **unsigned_evidence,
+        "evidence_sha256": _canonical_json_sha256(unsigned_evidence),
+    }
+
+
+def _is_review_identifier(value: str) -> bool:
+    return (
+        bool(value)
+        and len(value) <= 200
+        and value.isascii()
+        and all("!" <= character <= "~" for character in value)
+    )
+
+
 def _fixed_diagnostic(code: str, message: str) -> Diagnostic:
     return Diagnostic(severity="error", code=code, message=message)
 
 
-def _status_diagnostics(diagnostics: list[Diagnostic]) -> list[Diagnostic]:
+def _localized_failure_diagnostic(code: str, *, language: str) -> Diagnostic:
+    return _fixed_diagnostic(
+        code,
+        _localized_failure_message(code, language=language),
+    )
+
+
+def _localized_failure_message(code: str, *, language: str) -> str:
+    _require_output_language_value(language)
+    message = _LEARNER_FAILURE_MESSAGES[language].get(code)
+    if message is None:
+        raise ValueError("learner failure message code is unsupported")
+    return message
+
+
+def _localized_status_message(
+    code: str | None,
+    message: object,
+    *,
+    language: str,
+) -> object:
+    _require_output_language_value(language)
+    if code is None:
+        return message
+    localized = _LEARNER_FAILURE_MESSAGES[language].get(code)
+    return localized if localized is not None else message
+
+
+def _status_diagnostics(
+    diagnostics: list[Diagnostic],
+    *,
+    language: str,
+) -> list[Diagnostic]:
     return [
         Diagnostic(
             severity=diagnostic.severity,
             code=diagnostic.code,
-            message=_SENSITIVE_STATUS_MESSAGES.get(
-                diagnostic.code or "",
-                diagnostic.message,
+            message=cast(
+                str,
+                _localized_status_message(
+                    diagnostic.code,
+                    diagnostic.message,
+                    language=language,
+                ),
             ),
             line=diagnostic.line,
             column=diagnostic.column,
@@ -1636,6 +2269,7 @@ def _proof_status_context(
     raw: dict[str, Any],
     diagnostics: list[Diagnostic],
     max_repair_attempts: int,
+    language: str,
 ) -> dict[str, Any]:
     """Project DSP progress into the API's closed status-context contract."""
 
@@ -1655,23 +2289,19 @@ def _proof_status_context(
     if state not in {"repairing", "verified", "failed", "canceled", "compiling"}:
         return context
 
-    attempt = _status_attempt(raw.get("attempt_evidence"))
+    attempt = _status_attempt(raw.get("attempt_evidence"), language=language)
     if attempt is None:
         if state == "compiling":
             return context
         if state != "failed":
             raise ValueError("terminal proof status lacks attempt evidence")
-        attempt = _synthetic_failure_attempt(diagnostics)
+        attempt = _synthetic_failure_attempt(diagnostics, language=language)
 
     repairs_used = raw.get("repairs_used")
     if type(repairs_used) is not int or repairs_used < 0:
         repairs_used = max(0, int(attempt["attempt"]) - 1)
     configured_repairs = raw.get("max_repair_attempts")
-    if (
-        type(configured_repairs) is not int
-        or configured_repairs < 1
-        or configured_repairs > 64
-    ):
+    if type(configured_repairs) is not int or configured_repairs < 1 or configured_repairs > 64:
         configured_repairs = max_repair_attempts
     elapsed_ms = raw.get("verification_elapsed_ms")
     if type(elapsed_ms) is not int or elapsed_ms < 0:
@@ -1758,13 +2388,13 @@ def _status_retrieval(value: object) -> dict[str, Any] | None:
     }
 
 
-def _status_attempt(value: object) -> dict[str, Any] | None:
+def _status_attempt(value: object, *, language: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         return None
     attempt = value.get("attempt")
     phase = value.get("phase")
-    generated = _status_generated(value.get("generated"))
-    verification = _status_verification(value.get("verification"))
+    generated = _status_generated(value.get("generated"), language=language)
+    verification = _status_verification(value.get("verification"), language=language)
     checkpoint_status = value.get("checkpoint_status")
     if (
         type(attempt) is not int
@@ -1779,7 +2409,7 @@ def _status_attempt(value: object) -> dict[str, Any] | None:
         "phase": phase,
         "generated": generated,
         "verification": verification,
-        "diagnostics": _status_diagnostic_payloads(value.get("diagnostics")),
+        "diagnostics": _status_diagnostic_payloads(value.get("diagnostics"), language=language),
         "checkpoint_status": checkpoint_status,
         "repair_route": _status_repair_route(
             value.get("repair_route"),
@@ -1789,7 +2419,7 @@ def _status_attempt(value: object) -> dict[str, Any] | None:
     return result
 
 
-def _status_generated(value: object) -> dict[str, Any] | None:
+def _status_generated(value: object, *, language: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         return None
     model = value.get("model")
@@ -1813,7 +2443,9 @@ def _status_generated(value: object) -> dict[str, Any] | None:
         "elapsed_ms": elapsed_ms,
         "draft": _status_draft(value.get("draft")),
         "sketch": _status_sketch(value.get("sketch")),
-        "stage_diagnostics": _status_diagnostic_payloads(value.get("stage_diagnostics")),
+        "stage_diagnostics": _status_diagnostic_payloads(
+            value.get("stage_diagnostics"), language=language
+        ),
     }
 
 
@@ -1850,7 +2482,7 @@ def _status_sketch(value: object) -> dict[str, Any] | None:
     }
 
 
-def _status_verification(value: object) -> dict[str, Any] | None:
+def _status_verification(value: object, *, language: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         return None
     success = value.get("success")
@@ -1859,7 +2491,7 @@ def _status_verification(value: object) -> dict[str, Any] | None:
         return None
     return {
         "success": success,
-        "diagnostics": _status_diagnostic_payloads(value.get("diagnostics")),
+        "diagnostics": _status_diagnostic_payloads(value.get("diagnostics"), language=language),
         "elapsed_ms": elapsed_ms,
     }
 
@@ -1870,11 +2502,7 @@ def _status_repair_route(
 ) -> dict[str, Any] | None:
     raw = value if isinstance(value, dict) else None
     route = raw.get("route") if raw is not None else value
-    attempts = (
-        raw.get("selector_attempts")
-        if raw is not None
-        else attempts_value
-    )
+    attempts = raw.get("selector_attempts") if raw is not None else attempts_value
     if route not in {"draft", "sketch", "prove"} or not isinstance(attempts, list):
         return None
     normalized: list[dict[str, Any]] = []
@@ -1891,7 +2519,11 @@ def _status_repair_route(
     return {"route": route, "selector_attempts": normalized}
 
 
-def _status_diagnostic_payloads(value: object) -> list[dict[str, Any]]:
+def _status_diagnostic_payloads(
+    value: object,
+    *,
+    language: str,
+) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         return []
     result: list[dict[str, Any]] = []
@@ -1900,9 +2532,10 @@ def _status_diagnostic_payloads(value: object) -> list[dict[str, Any]]:
             result.append(
                 {
                     "severity": item.severity,
-                    "message": _SENSITIVE_STATUS_MESSAGES.get(
-                        item.code or "",
+                    "message": _localized_status_message(
+                        item.code,
                         item.message,
+                        language=language,
                     ),
                     "code": item.code,
                     "line": item.line,
@@ -1914,9 +2547,10 @@ def _status_diagnostic_payloads(value: object) -> list[dict[str, Any]]:
             result.append(
                 {
                     "severity": item.get("severity"),
-                    "message": _SENSITIVE_STATUS_MESSAGES.get(
-                        code if isinstance(code, str) else "",
+                    "message": _localized_status_message(
+                        code if isinstance(code, str) else None,
                         item.get("message"),
+                        language=language,
                     ),
                     "code": code,
                     "line": item.get("line"),
@@ -1926,8 +2560,12 @@ def _status_diagnostic_payloads(value: object) -> list[dict[str, Any]]:
     return result
 
 
-def _synthetic_failure_attempt(diagnostics: list[Diagnostic]) -> dict[str, Any]:
-    payload = _status_diagnostic_payloads(diagnostics)
+def _synthetic_failure_attempt(
+    diagnostics: list[Diagnostic],
+    *,
+    language: str,
+) -> dict[str, Any]:
+    payload = _status_diagnostic_payloads(diagnostics, language=language)
     return {
         "attempt": 1,
         "phase": "preflight",
@@ -1948,6 +2586,8 @@ def _synthetic_failure_attempt(diagnostics: list[Diagnostic]) -> dict[str, Any]:
 
 
 def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
+    if proof_job.get("verification_candidate_state") == "verification_failed":
+        return True
     diagnostics = proof_job.get("diagnostics")
     return isinstance(diagnostics, list) and any(
         isinstance(item, dict) and item.get("code") == "verifier_compile_failed"
@@ -1956,10 +2596,143 @@ def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
 
 
 def _has_pending_api_candidate(proof_job: dict[str, Any]) -> bool:
+    if proof_job.get("verification_candidate_state") == "compiling":
+        return True
     diagnostics = proof_job.get("diagnostics")
     return isinstance(diagnostics, list) and any(
         isinstance(item, dict) and item.get("code") == "pals.verification_pending"
         for item in diagnostics
+    )
+
+
+def _required_output_language(payload: dict[str, Any]) -> str:
+    language = payload.get("output_language")
+    if not isinstance(language, str):
+        raise ValueError("worker resource output language is invalid")
+    _require_output_language_value(language)
+    return language
+
+
+def _required_verification_candidate_id(payload: dict[str, Any]) -> str:
+    candidate_id = _required_text(payload, "verification_candidate_id")
+    if not _is_canonical_uuid4(candidate_id):
+        raise ValueError("worker verification candidate id is invalid")
+    return candidate_id
+
+
+def _required_generation_session_id(payload: dict[str, Any]) -> str:
+    session_id = _required_text(payload, "generation_session_id")
+    if not _is_canonical_uuid4(session_id):
+        raise ValueError("worker proof generation session is invalid")
+    return session_id
+
+
+def _required_sha256(payload: dict[str, Any], key: str) -> str:
+    value = _required_text(payload, key)
+    if re.fullmatch(r"[0-9a-f]{64}", value, flags=re.ASCII) is None:
+        raise ValueError(f"worker {key} is invalid")
+    return value
+
+
+def _require_output_language_value(language: str) -> None:
+    if language not in _OUTPUT_LANGUAGES:
+        raise ValueError("worker resource output language is invalid")
+
+
+def _semantic_review_evidence(
+    *,
+    candidate_id: str,
+    theorem_statement: str,
+    formal_statement: str | None,
+    lean_code: str,
+    target_declaration: LeanTargetDeclaration,
+    generator_session_id: str,
+    review: ProofSemanticReview,
+) -> dict[str, Any]:
+    """Bind a semantic-review decision to exactly the persisted candidate inputs.
+
+    The API owns the terminal transition and recomputes every digest from the persisted
+    candidate. Raw model output is deliberately not persisted or exposed.
+    """
+
+    if not _is_canonical_uuid4(generator_session_id):
+        raise ValueError("semantic review generation session is invalid")
+    if review.session_id == generator_session_id:
+        raise ValueError("semantic reviewer session must differ from generation")
+    lean_sha256 = _text_sha256(lean_code)
+    review_input: dict[str, Any] = {
+        "theorem_statement": theorem_statement,
+        "formal_statement": formal_statement,
+        "target_declaration": target_declaration.as_dict(),
+        "lean_sha256": lean_sha256,
+    }
+    evidence: dict[str, Any] = {
+        "schema_version": _SEMANTIC_REVIEW_SCHEMA_VERSION,
+        "candidate_id": candidate_id,
+        "generator_session_id": generator_session_id,
+        "lean_sha256": lean_sha256,
+        "target_declaration": target_declaration.as_dict(),
+        "review_input_sha256": _canonical_json_sha256(review_input),
+        "reviewer": {
+            "provider": review.reviewer_provider,
+            "model": review.reviewer_model,
+            "session_id": review.session_id,
+        },
+        "decision": review.decision,
+        "rationale": review.rationale,
+    }
+    return {**evidence, "evidence_sha256": _canonical_json_sha256(evidence)}
+
+
+def _recipe_semantic_review_evidence(
+    *,
+    candidate_id: str,
+    theorem_statement: str,
+    formal_statement: str | None,
+    lean_code: str,
+    target_declaration: LeanTargetDeclaration,
+    source_binding_sha256: str,
+    review: ProofSemanticReview,
+) -> dict[str, Any]:
+    """Build the closed v3 review request for the same catalog materialized bytes.
+
+    The source binding is checked before building this object but intentionally is not serialized:
+    the API derives it from the locked candidate and binds it into the immutable v3 evidence.
+    """
+
+    if re.fullmatch(r"[0-9a-f]{64}", source_binding_sha256, flags=re.ASCII) is None:
+        raise ValueError("Recipe semantic review source binding is invalid")
+    lean_sha256 = _text_sha256(lean_code)
+    review_input: dict[str, Any] = {
+        "theorem_statement": theorem_statement,
+        "formal_statement": formal_statement,
+        "target_declaration": target_declaration.as_dict(),
+        "lean_sha256": lean_sha256,
+    }
+    return {
+        "schema_version": "pals.proof-semantic-review.v3",
+        "candidate_id": candidate_id,
+        "lean_sha256": lean_sha256,
+        "target_declaration": target_declaration.as_dict(),
+        "review_input_sha256": _canonical_json_sha256(review_input),
+        "decision": review.decision,
+        "rationale": review.rationale,
+    }
+
+
+def _text_sha256(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _canonical_json_sha256(value: dict[str, Any]) -> str:
+    return hashlib.sha256(rfc8785.dumps(value)).hexdigest()
+
+
+def _semantic_review_terminal_response(response: Any, *, proof_job_id: str) -> bool:
+    return (
+        isinstance(response, dict)
+        and response.get("id") == proof_job_id
+        and response.get("state") in {"verified", "failed"}
     )
 
 
@@ -1997,8 +2770,7 @@ def _api_repair_seed_from_worker_input(
         return None
     diagnostics = _worker_diagnostics_from_payload(proof_job.get("diagnostics"))
     if diagnostics is None or not any(
-        item.severity == "error" and item.code == "verifier_compile_failed"
-        for item in diagnostics
+        item.severity == "error" and item.code == "verifier_compile_failed" for item in diagnostics
     ):
         return None
     return ApiRepairSeed(
@@ -2158,6 +2930,27 @@ def _candidate_artifact_uri(
     if isinstance(artifact_uri, str) and _MODEL_ARTIFACT_URI_RE.fullmatch(artifact_uri):
         return artifact_uri
     return _manual_fixture_candidate_uri(proof_job, lean_code=lean_code)
+
+
+def _recipe_candidate_artifact_uri(
+    *,
+    proof_job_id: str,
+    candidate_id: str,
+    lean_sha256: str,
+    artifacts_bucket: str | None,
+) -> str:
+    if (
+        not isinstance(artifacts_bucket, str)
+        or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.-]{0,254}", artifacts_bucket, re.ASCII) is None
+        or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", proof_job_id, re.ASCII) is None
+        or not _is_canonical_uuid4(candidate_id)
+        or re.fullmatch(r"[0-9a-f]{64}", lean_sha256, re.ASCII) is None
+    ):
+        raise ValueError("Recipe candidate artifact binding is invalid")
+    return (
+        f"s3://{artifacts_bucket}/proof-jobs/{proof_job_id}/candidates/"
+        f"{candidate_id}/{lean_sha256}.lean"
+    )
 
 
 def _manual_fixture_candidate_uri(

@@ -16,6 +16,7 @@ class ModelRole(StrEnum):
     REPAIR = "repair"
     EXPLAIN = "explain"
     CLARIFY = "clarify"
+    PROOF_REVIEW = "proof_review"
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +43,7 @@ RELEASE_ROLE_REGISTRY: Final[tuple[RoleModelDefault, ...]] = tuple(
         ModelRole.REPAIR,
         ModelRole.EXPLAIN,
         ModelRole.CLARIFY,
+        ModelRole.PROOF_REVIEW,
     )
 )
 _FIXED_ROLE_DEFAULTS: Final = {entry.role: entry for entry in RELEASE_ROLE_REGISTRY}

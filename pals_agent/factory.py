@@ -8,7 +8,11 @@ from pals_agent.draft_embeddings import (
     OllamaEmbeddingModel,
     OpenAIEmbeddingModel,
 )
-from pals_agent.explanations import LeanProofExplainer
+from pals_agent.explanations import (
+    LeanGroundedOutputReviewer,
+    LeanProofExplainer,
+    LeanProofSemanticReviewer,
+)
 from pals_agent.generator import HybridLeanGenerator
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.ollama import OllamaClient
@@ -19,7 +23,12 @@ from pals_agent.openmath import (
 )
 from pals_agent.pipeline import ProofPipeline
 from pals_agent.private_draft_candidates import DraftEmbeddingFingerprint
+from pals_agent.private_recipe_selection import (
+    PrivateRecipeSelectionClient,
+    ToolchainFingerprintV1,
+)
 from pals_agent.proof_flow_runtime import ProofFlowRuntime, build_private_proof_flow_runtime
+from pals_agent.recipe_attempt import RecipeAttemptPlannerV1
 from pals_agent.semantic_evaluation import SemanticStageJudge
 from pals_agent.settings import AgentSettings, validate_release_generation_environment
 
@@ -36,6 +45,36 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         proof_flow_retriever=None,
         max_repair_attempts=settings.max_repair_attempts,
         verification_mode="api_reconcile",
+    )
+
+
+def build_recipe_attempt_planner(settings: AgentSettings) -> RecipeAttemptPlannerV1 | None:
+    """Compose Recipe selection only from the same pinned verifier workspace.
+
+    An absent four-value configuration leaves legacy no-Recipe generation unchanged.  Partial
+    configuration is rejected by ``AgentSettings``; malformed pinned workspace data fails startup
+    instead of allowing a guessed toolchain fingerprint.
+    """
+
+    if settings.recipe_worker_secret is None:
+        return None
+    if (
+        settings.recipe_verifier_sha256 is None
+        or settings.recipe_active_lean_version is None
+        or settings.recipe_active_lake_manifest_sha256 is None
+    ):
+        raise ValueError("Recipe selection configuration is incomplete")
+    return RecipeAttemptPlannerV1(
+        selector=PrivateRecipeSelectionClient(
+            base_url=settings.api_base_url,
+            worker_secret=settings.recipe_worker_secret,
+        ),
+        toolchain_fingerprint=ToolchainFingerprintV1(
+            lean_version=settings.recipe_active_lean_version,
+            lake_manifest_sha256=settings.recipe_active_lake_manifest_sha256,
+            verifier_sha256=settings.recipe_verifier_sha256,
+            materializer_version="pals.recipe-materializer.v1",
+        ),
     )
 
 
@@ -58,6 +97,28 @@ def build_proof_explainer(settings: AgentSettings) -> LeanProofExplainer:
     )
 
 
+def build_proof_output_reviewer(settings: AgentSettings) -> LeanGroundedOutputReviewer:
+    """Build a distinct Responses client for the mandatory publication review."""
+    binding = fixed_model_default(ModelRole.EXPLAIN)
+    return LeanGroundedOutputReviewer(
+        client=_release_openai_client(settings),
+        model=binding.model,
+        provider=binding.provider,
+        max_attempts=2,
+    )
+
+
+def build_proof_semantic_reviewer(settings: AgentSettings) -> LeanProofSemanticReviewer:
+    """Build a separate LLM session for the post-Lean proof acceptance gate."""
+    binding = fixed_model_default(ModelRole.PROOF_REVIEW)
+    return LeanProofSemanticReviewer(
+        client=_release_openai_client(settings),
+        model=binding.model,
+        provider=binding.provider,
+        max_attempts=2,
+    )
+
+
 def build_semantic_stage_judge(settings: AgentSettings) -> SemanticStageJudge:
     provider = settings.semantic_evaluator_provider
     model = settings.semantic_evaluator_model
@@ -71,9 +132,7 @@ def build_semantic_stage_judge(settings: AgentSettings) -> SemanticStageJudge:
         raise ValueError("semantic evaluator configuration must be all-or-none")
     generation_binding = fixed_model_default(ModelRole.DRAFT)
     if provider == generation_binding.provider and model == generation_binding.model:
-        raise ValueError(
-            "semantic evaluator must differ from the generation provider/model"
-        )
+        raise ValueError("semantic evaluator must differ from the generation provider/model")
     if provider == "openai":
         return SemanticStageJudge(
             client=OpenAIResponsesClient(
@@ -143,9 +202,7 @@ def build_draft_embedding_model(settings: AgentSettings) -> EmbeddingModel:
             base_url=settings.openai_base_url,
             timeout_seconds=settings.draft_embedding_timeout_seconds,
             endpoint_identity_override=settings.draft_embedding_endpoint_identity,
-            deployment_identity_override=(
-                settings.draft_embedding_deployment_identity
-            ),
+            deployment_identity_override=(settings.draft_embedding_deployment_identity),
         )
     return OllamaEmbeddingModel(
         revision=settings.draft_embedding_revision,

@@ -208,6 +208,13 @@ _SUPPORTED_SYMBOLS: dict[_SymbolIdentity, _SymbolSpec] = {
     },
     **{(OPENMATH_STANDARD_CDBASE, "arith1", name): _UNARY_TERM for name in ("abs", "unary_minus")},
     **{
+        (OPENMATH_STANDARD_CDBASE, "transc1", name): _UNARY_TERM
+        for name in ("sin", "cos", "tan", "exp", "ln")
+    },
+    (OPENMATH_STANDARD_CDBASE, "calculus1", "diff"): _UNARY_TERM,
+    (OPENMATH_STANDARD_CDBASE, "calculus1", "defint"): _BINARY_TERM,
+    (OPENMATH_STANDARD_CDBASE, "interval1", "oriented_interval"): _BINARY_TERM,
+    **{
         (OPENMATH_STANDARD_CDBASE, "arith1", name): _BINARY_TERM
         for name in ("divide", "minus", "power", "product", "root", "sum")
     },
@@ -991,6 +998,26 @@ def _validate_supported_symbol_profile(
                     "The function argument of `pals1:continuous_on` must be an OMV "
                     "or a term-valued OMBIND with binder `fns1:lambda`; a proposition-valued "
                     "lambda is not a mathematical function term."
+                )
+
+        if symbol == (OPENMATH_STANDARD_CDBASE, "calculus1", "diff"):
+            if not _is_unary_openmath_lambda(arguments[0], parents=parents):
+                raise MathXMLValidationError(
+                    "The argument of `calculus1:diff` must be a term-valued unary "
+                    "`fns1:lambda`."
+                )
+
+        if symbol == (OPENMATH_STANDARD_CDBASE, "calculus1", "defint"):
+            interval, function = arguments
+            if not _is_oriented_interval(interval, parents=parents):
+                raise MathXMLValidationError(
+                    "The first argument of `calculus1:defint` must be an "
+                    "`interval1:oriented_interval`."
+                )
+            if not _is_unary_openmath_lambda(function, parents=parents):
+                raise MathXMLValidationError(
+                    "The second argument of `calculus1:defint` must be a term-valued "
+                    "unary `fns1:lambda`."
                 )
 
     for binding in root.iter(f"{{{OPENMATH_NAMESPACE}}}OMBIND"):
@@ -2658,6 +2685,40 @@ def _is_openmath_function(
         "fns1",
         "lambda",
     ) and not _is_proposition(body, parents=parents)
+
+
+def _is_unary_openmath_lambda(
+    element: ET.Element,
+    *,
+    parents: dict[ET.Element, ET.Element],
+) -> bool:
+    if _local_name(element) != "OMBIND":
+        return False
+    children = list(element)
+    if len(children) != 3:
+        return False
+    binder, variables, body = children
+    return (
+        _operator_symbol(binder, parents=parents)
+        == (OPENMATH_STANDARD_CDBASE, "fns1", "lambda")
+        and len(list(variables)) == 1
+        and not _is_proposition(body, parents=parents)
+    )
+
+
+def _is_oriented_interval(
+    element: ET.Element,
+    *,
+    parents: dict[ET.Element, ET.Element],
+) -> bool:
+    if _local_name(element) != "OMA":
+        return False
+    operator, *arguments = list(element)
+    return (
+        _operator_symbol(operator, parents=parents)
+        == (OPENMATH_STANDARD_CDBASE, "interval1", "oriented_interval")
+        and len(arguments) == 2
+    )
 
 
 def _structural_features(root: ET.Element) -> Counter[str]:

@@ -1,15 +1,53 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from typing import Any
 
 import pytest
+import rfc8785
 
 from pals_agent.api_client import PalsApiClient, PalsApiError
 from pals_agent.http_transport import HttpResponse, HttpTransportError
 from pals_agent.models import Diagnostic
 
 CLAIM_ID = "11111111-1111-4111-8111-111111111111"
+
+
+def _output_review_evidence(
+    *,
+    kind: str,
+    proof_job_id: str,
+    content: dict[str, Any],
+    clarification_id: str | None = None,
+    parent_explanation_sha256: str | None = None,
+) -> dict[str, Any]:
+    output: dict[str, Any] = {
+        "output_kind": kind,
+        "proof_job_id": proof_job_id,
+        "content": content,
+    }
+    if kind == "clarification":
+        assert clarification_id is not None and parent_explanation_sha256 is not None
+        output["clarification_id"] = clarification_id
+        output["parent_explanation_sha256"] = parent_explanation_sha256
+    evidence: dict[str, Any] = {
+        "schema_version": "pals.proof-output-review.v2",
+        "output_kind": kind,
+        "output_sha256": hashlib.sha256(rfc8785.dumps(output)).hexdigest(),
+        "lean_sha256": "a" * 64,
+        "parent_explanation_sha256": parent_explanation_sha256,
+        "generator_session_id": CLAIM_ID,
+        "reviewer": {
+            "provider": "test-provider",
+            "model": "independent-reviewer",
+            "session_id": "standalone-review-session",
+        },
+        "decision": "approved",
+        "rationale": "The learner output is grounded in the verified Lean source.",
+    }
+    evidence["evidence_sha256"] = hashlib.sha256(rfc8785.dumps(evidence)).hexdigest()
+    return evidence
 
 
 class RecordingTransport:
@@ -127,11 +165,18 @@ def test_pex_009_completed_and_failed_variants_omit_forbidden_fields(
         transport=transport,
     )
 
+    content = {"overview": "証明です。"}
+    review_evidence = _output_review_evidence(
+        kind="explanation",
+        proof_job_id="proof-1",
+        content=content,
+    )
     client.upsert_proof_explanation(
         proof_job_id="proof-1",
         state="completed",
         claim_id=CLAIM_ID,
-        content={"overview": "証明です。"},
+        content=content,
+        review_evidence=review_evidence,
     )
     client.upsert_proof_explanation(
         proof_job_id="proof-1",
@@ -149,7 +194,8 @@ def test_pex_009_completed_and_failed_variants_omit_forbidden_fields(
     assert transport.calls[0]["body"] == {
         "state": "completed",
         "claim_id": CLAIM_ID,
-        "content": {"overview": "証明です。"},
+        "content": content,
+        "review_evidence": review_evidence,
     }
     assert transport.calls[1]["body"] == {
         "state": "failed",
@@ -164,6 +210,73 @@ def test_pex_009_completed_and_failed_variants_omit_forbidden_fields(
                 }
         ],
     }
+
+
+def test_completed_clarification_sends_exact_bound_review_evidence() -> None:
+    transport = RecordingTransport()
+    client = PalsApiClient(
+        base_url="https://api.test",
+        worker_secret="PRIVATE-SECRET",
+        transport=transport,
+    )
+    parent_content = {"overview": "proof explanation"}
+    parent_sha256 = hashlib.sha256(
+        rfc8785.dumps(
+            {
+                "output_kind": "explanation",
+                "proof_job_id": "proof-1",
+                "content": parent_content,
+            }
+        )
+    ).hexdigest()
+    content = {"answer": "Because the Lean proof closes the goal."}
+    review_evidence = _output_review_evidence(
+        kind="clarification",
+        proof_job_id="proof-1",
+        clarification_id="clarification-1",
+        content=content,
+        parent_explanation_sha256=parent_sha256,
+    )
+
+    client.update_proof_clarification(
+        clarification_id="clarification-1",
+        proof_job_id="proof-1",
+        state="completed",
+        claim_id=CLAIM_ID,
+        content=content,
+        review_evidence=review_evidence,
+    )
+
+    assert transport.calls[0]["body"] == {
+        "state": "completed",
+        "claim_id": CLAIM_ID,
+        "content": content,
+        "review_evidence": review_evidence,
+    }
+
+
+def test_completed_output_rejects_tampered_review_evidence_before_transport() -> None:
+    client = PalsApiClient(
+        base_url="https://api.test",
+        worker_secret="PRIVATE-SECRET",
+        transport=TransportThatMustNotRun(),
+    )
+    content = {"overview": "証明です。"}
+    review_evidence = _output_review_evidence(
+        kind="explanation",
+        proof_job_id="proof-1",
+        content=content,
+    )
+    review_evidence["evidence_sha256"] = "0" * 64
+
+    with pytest.raises(ValueError, match="digest"):
+        client.upsert_proof_explanation(
+            proof_job_id="proof-1",
+            state="completed",
+            claim_id=CLAIM_ID,
+            content=content,
+            review_evidence=review_evidence,
+        )
 
 
 @pytest.mark.parametrize(

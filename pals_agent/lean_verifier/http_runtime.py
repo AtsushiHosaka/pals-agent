@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -17,9 +18,11 @@ from pals_agent.lean_verifier.http_server import (
     IsolatedVerifierHttpSettings,
     VerifierDeploymentBinding,
     create_server,
+    pinned_recipe_admission_context,
 )
 from pals_agent.lean_verifier.tls_material import (
     Boto3SecretBinaryReader,
+    MountedFileSecretBinaryReader,
     SecretBinaryReference,
     TlsMaterialError,
     VerifierServerTlsConfiguration,
@@ -31,11 +34,19 @@ _PORT: Final = 18_117
 _MAX_TIMEOUT_SECONDS: Final = 300.0
 _SCRATCH_DIRECTORY: Final = Path("/run/pals-verifier-requests")
 _SCRATCH_MAX_BYTES: Final = 64 * 1024 * 1024
+_READY_MARKER: Final = _SCRATCH_DIRECTORY / "verifier-ready"
+_MOUNTED_TLS_DIRECTORY: Final = Path("/run/pals-verifier-tls")
 _LOCALSTACK_ACCESS_KEY_ID: Final = "test"
 _LOCALSTACK_TEST_SECRET: Final = "test"
 _LOCALSTACK_SECRETS_ENDPOINT: Final = "http://localstack:4566"
 _ALLOWED_REFERENCE_ENVIRONMENT_NAMES: Final = frozenset(
     {
+        # ECS task-role discovery references, not credential material. The
+        # boundary still rejects every actual AWS key/token variable.
+        "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
+        "AWS_DEFAULT_REGION",
+        "AWS_EXECUTION_ENV",
+        "AWS_REGION",
         "PALS_AWS_REGION",
         "PALS_AWS_ENDPOINT_URL",
         "PALS_VERIFIER_SERVER_CERTIFICATE_SECRET_ARN",
@@ -55,6 +66,7 @@ class HttpVerifierRuntimeSettings:
     timeout_seconds: float
     aws_region: str
     aws_endpoint_url: str | None
+    tls_directory: Path | None
     binding: VerifierDeploymentBinding
     tls: VerifierServerTlsConfiguration
 
@@ -63,42 +75,29 @@ class HttpVerifierRuntimeSettings:
         timeout_seconds = _positive_float("PALS_LEAN_TIMEOUT_SECONDS", _MAX_TIMEOUT_SECONDS)
         if timeout_seconds != _MAX_TIMEOUT_SECONDS:
             raise ValueError("PALS_LEAN_TIMEOUT_SECONDS must equal 300")
+        environment = _required("PALS_ENV")
+        release_id = _uuid4(_required("PALS_RELEASE_ID"))
+        tls_directory = _tls_directory(environment)
         return cls(
             bind_host=_required("PALS_VERIFIER_BIND_HOST"),
             project_dir=Path(_required("PALS_LEAN_PROJECT_DIR")),
             timeout_seconds=timeout_seconds,
             aws_region=_required("PALS_AWS_REGION"),
             aws_endpoint_url=_optional("PALS_AWS_ENDPOINT_URL"),
+            tls_directory=tls_directory,
             binding=VerifierDeploymentBinding(
-                release_id=_uuid4(_required("PALS_RELEASE_ID")),
-                deployment_binding_sha256=_required(
-                    "PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"
-                ),
+                release_id=release_id,
+                deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
                 verifier_image_digest=_required("PALS_VERIFIER_IMAGE_DIGEST"),
                 verifier_toolchain_sha256=_required("PALS_VERIFIER_TOOLCHAIN_SHA256"),
             ),
             tls=VerifierServerTlsConfiguration(
-                server_certificate=_reference(
-                    "PALS_VERIFIER_SERVER_CERTIFICATE_SECRET_ARN",
-                    "PALS_VERIFIER_SERVER_CERTIFICATE_SECRET_VERSION_ID",
-                ),
-                server_private_key=_reference(
-                    "PALS_VERIFIER_SERVER_PRIVATE_KEY_SECRET_ARN",
-                    "PALS_VERIFIER_SERVER_PRIVATE_KEY_SECRET_VERSION_ID",
-                ),
-                ca_certificate=_reference(
-                    "PALS_VERIFIER_CA_CERTIFICATE_SECRET_ARN",
-                    "PALS_VERIFIER_CA_CERTIFICATE_SECRET_VERSION_ID",
-                ),
+                **_tls_references(release_id, tls_directory),
                 server_name=_required("PALS_VERIFIER_SERVER_NAME"),
-                environment=_required("PALS_ENV"),
+                environment=environment,
                 ca_spki_sha256=_required("PALS_VERIFIER_CA_SPKI_SHA256"),
-                reconciler_client_spki_sha256=_required(
-                    "PALS_RECONCILER_CLIENT_SPKI_SHA256"
-                ),
-                reconciler_client_spiffe_uri=_required(
-                    "PALS_RECONCILER_CLIENT_SPIFFE_URI"
-                ),
+                reconciler_client_spki_sha256=_required("PALS_RECONCILER_CLIENT_SPKI_SHA256"),
+                reconciler_client_spiffe_uri=_required("PALS_RECONCILER_CLIENT_SPIFFE_URI"),
             ),
         )
 
@@ -109,16 +108,17 @@ def main() -> None:
         settings = HttpVerifierRuntimeSettings.from_env()
         if not _SCRATCH_DIRECTORY.is_dir():
             raise ValueError("verifier request scratch tmpfs is unavailable")
+        _clear_ready_marker(_READY_MARKER)
         attest_http_runtime_boundary(
             project_dir=settings.project_dir,
             scratch_dir=_SCRATCH_DIRECTORY,
             scratch_max_bytes=_SCRATCH_MAX_BYTES,
             allowed_reference_environment_names=_ALLOWED_REFERENCE_ENVIRONMENT_NAMES,
         )
-        secrets_client = _secrets_client(settings)
+        reader = _tls_reader(settings)
         material = build_verifier_server_tls_material(
             settings.tls,
-            reader=Boto3SecretBinaryReader(secrets_client),
+            reader=reader,
         )
         server = create_server(
             IsolatedVerifierHttpSettings(
@@ -127,6 +127,10 @@ def main() -> None:
                 ssl_context=material.ssl_context,
                 reconciler_client_spki_sha256=material.reconciler_client_spki_sha256,
                 reconciler_client_spiffe_uri=material.reconciler_client_spiffe_uri,
+                recipe_admission_context=pinned_recipe_admission_context(
+                    project_dir=settings.project_dir,
+                    verifier_sha256=settings.binding.verifier_toolchain_sha256,
+                ),
             ),
             verifier=LeanVerifier(
                 project_dir=settings.project_dir,
@@ -134,6 +138,10 @@ def main() -> None:
                 scratch_dir=_SCRATCH_DIRECTORY,
             ),
         )
+        # The marker is strictly local to the bounded tmpfs.  ECS observes it
+        # through its container health check; no unauthenticated HTTP readiness
+        # endpoint is introduced by deployment plumbing.
+        _create_ready_marker(_READY_MARKER)
     except (TlsMaterialError, OSError, ValueError) as exc:
         _LOGGER.error("verifier startup failed: %s", type(exc).__name__)
         raise SystemExit(2) from None
@@ -146,7 +154,22 @@ def main() -> None:
     try:
         server.serve_forever()
     finally:
+        _clear_ready_marker(_READY_MARKER)
         server.server_close()
+
+
+def _create_ready_marker(path: Path) -> None:
+    descriptor = os.open(
+        path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    os.close(descriptor)
+
+
+def _clear_ready_marker(path: Path) -> None:
+    with suppress(FileNotFoundError):
+        path.unlink()
 
 
 def _required(name: str) -> str:
@@ -192,6 +215,72 @@ def _reference(arn_name: str, version_name: str) -> SecretBinaryReference:
     return SecretBinaryReference(
         arn=_required(arn_name),
         version_id=_required(version_name),
+    )
+
+
+def _tls_directory(environment: str) -> Path | None:
+    value = _optional("PALS_VERIFIER_TLS_DIRECTORY")
+    if value is None:
+        return None
+    path = Path(value)
+    if environment == "prod" and path != _MOUNTED_TLS_DIRECTORY:
+        raise ValueError("production verifier TLS directory must use the admitted mount")
+    secret_names = tuple(
+        name
+        for name in _ALLOWED_REFERENCE_ENVIRONMENT_NAMES
+        if name.startswith("PALS_VERIFIER_") and "SECRET_" in name
+    )
+    if any(os.getenv(name) for name in secret_names):
+        raise ValueError("mounted verifier TLS and Secrets Manager references are exclusive")
+    return path
+
+
+def _tls_references(
+    release_id: UUID,
+    directory: Path | None,
+) -> dict[str, SecretBinaryReference]:
+    if directory is None:
+        return {
+            "server_certificate": _reference(
+                "PALS_VERIFIER_SERVER_CERTIFICATE_SECRET_ARN",
+                "PALS_VERIFIER_SERVER_CERTIFICATE_SECRET_VERSION_ID",
+            ),
+            "server_private_key": _reference(
+                "PALS_VERIFIER_SERVER_PRIVATE_KEY_SECRET_ARN",
+                "PALS_VERIFIER_SERVER_PRIVATE_KEY_SECRET_VERSION_ID",
+            ),
+            "ca_certificate": _reference(
+                "PALS_VERIFIER_CA_CERTIFICATE_SECRET_ARN",
+                "PALS_VERIFIER_CA_CERTIFICATE_SECRET_VERSION_ID",
+            ),
+        }
+    version = str(release_id)
+    return {
+        "server_certificate": SecretBinaryReference(
+            arn="arn:pals:mounted-verifier-tls:server-certificate",
+            version_id=version,
+        ),
+        "server_private_key": SecretBinaryReference(
+            arn="arn:pals:mounted-verifier-tls:server-private-key",
+            version_id=version,
+        ),
+        "ca_certificate": SecretBinaryReference(
+            arn="arn:pals:mounted-verifier-tls:ca-certificate",
+            version_id=version,
+        ),
+    }
+
+
+def _tls_reader(settings: HttpVerifierRuntimeSettings) -> Any:
+    directory = settings.tls_directory
+    if directory is None:
+        return Boto3SecretBinaryReader(_secrets_client(settings))
+    return MountedFileSecretBinaryReader(
+        {
+            settings.tls.server_certificate: directory / "server-certificate.pem",
+            settings.tls.server_private_key: directory / "server-private-key.pem",
+            settings.tls.ca_certificate: directory / "ca-certificate.pem",
+        }
     )
 
 

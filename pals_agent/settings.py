@@ -62,6 +62,10 @@ class AgentSettings:
     semantic_evaluator_model: str | None = None
     semantic_evaluator_revision: str | None = None
     semantic_evaluator_base_url: str | None = None
+    recipe_worker_secret: str | None = None
+    recipe_verifier_sha256: str | None = None
+    recipe_active_lean_version: str | None = None
+    recipe_active_lake_manifest_sha256: str | None = None
 
     def __post_init__(self) -> None:
         generation_binding = fixed_model_default(ModelRole.DRAFT)
@@ -73,6 +77,19 @@ class AgentSettings:
             generation_provider=generation_binding.provider,
             generation_model=generation_binding.model,
         )
+        recipe_values = (
+            self.recipe_worker_secret,
+            self.recipe_verifier_sha256,
+            self.recipe_active_lean_version,
+            self.recipe_active_lake_manifest_sha256,
+        )
+        if any(value is not None for value in recipe_values) and not all(
+            value is not None for value in recipe_values
+        ):
+            raise ValueError(
+                "Recipe selection requires its worker secret, verifier digest, "
+                "and signed Lean/Mathlib fingerprint"
+            )
 
     @classmethod
     def from_env(cls) -> AgentSettings:
@@ -103,8 +120,7 @@ class AgentSettings:
             or os.getenv("OLLAMA_DRAFT_MODEL")
             or "qwen2.5:3b",
             openai_api_key=_first_env("PALS_OPENAI_API_KEY", "OPENAI_API_KEY") or "",
-            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL")
-            or "gpt-5.4-nano",
+            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or "gpt-5.4-nano",
             openai_base_url=os.getenv(
                 "PALS_OPENAI_BASE_URL",
                 "https://api.openai.com/v1",
@@ -152,6 +168,12 @@ class AgentSettings:
             semantic_evaluator_model=semantic_evaluator[1],
             semantic_evaluator_revision=semantic_evaluator[2],
             semantic_evaluator_base_url=semantic_evaluator[3],
+            recipe_worker_secret=_optional_env("PALS_RECIPE_WORKER_SECRET"),
+            recipe_verifier_sha256=_optional_env("PALS_RECIPE_VERIFIER_SHA256"),
+            recipe_active_lean_version=_optional_env("PALS_RECIPE_ACTIVE_LEAN_VERSION"),
+            recipe_active_lake_manifest_sha256=_optional_env(
+                "PALS_RECIPE_ACTIVE_LAKE_MANIFEST_SHA256"
+            ),
         )
 
 
@@ -181,8 +203,7 @@ def validate_release_generation_environment() -> None:
     ]
     if configured:
         raise ValueError(
-            "Release generation roles are code-owned; remove: "
-            + ", ".join(configured)
+            "Release generation roles are code-owned; remove: " + ", ".join(configured)
         )
 
 
@@ -230,9 +251,7 @@ def _bounded_ascii_int_env(
     if value is None:
         return default
     if re.fullmatch(r"[0-9]+", value, flags=re.ASCII) is None:
-        raise ValueError(
-            f"{name} must be an ASCII base-10 integer between {minimum} and {maximum}"
-        )
+        raise ValueError(f"{name} must be an ASCII base-10 integer between {minimum} and {maximum}")
     parsed = int(value, 10)
     if not minimum <= parsed <= maximum:
         raise ValueError(f"{name} must be between {minimum} and {maximum}")
@@ -256,9 +275,7 @@ def _positive_float_env(name: str, default: float) -> float:
 def _draft_embedding_provider() -> Literal["openai", "ollama"]:
     configured = os.getenv("PALS_DRAFT_EMBEDDING_PROVIDER")
     value = (
-        "openai"
-        if configured is None or configured.strip() == ""
-        else configured.strip().lower()
+        "openai" if configured is None or configured.strip() == "" else configured.strip().lower()
     )
     if value == "openai":
         return "openai"
@@ -313,9 +330,7 @@ def _semantic_evaluator_env() -> tuple[
     assert base_url is not None
     if provider not in {"openai", "ollama"}:
         raise ValueError("semantic evaluator provider must be openai or ollama")
-    semantic_provider: Literal["openai", "ollama"] = (
-        "openai" if provider == "openai" else "ollama"
-    )
+    semantic_provider: Literal["openai", "ollama"] = "openai" if provider == "openai" else "ollama"
     return semantic_provider, model, revision, base_url
 
 
@@ -337,10 +352,7 @@ def _validate_semantic_evaluator_configuration(
         raise ValueError("semantic evaluator provider must be openai or ollama")
     if not isinstance(model, str) or _SEMANTIC_EVALUATOR_TOKEN_RE.fullmatch(model) is None:
         raise ValueError("semantic evaluator model is invalid")
-    if (
-        not isinstance(revision, str)
-        or _SEMANTIC_EVALUATOR_TOKEN_RE.fullmatch(revision) is None
-    ):
+    if not isinstance(revision, str) or _SEMANTIC_EVALUATOR_TOKEN_RE.fullmatch(revision) is None:
         raise ValueError("semantic evaluator revision is invalid")
     if not isinstance(base_url, str) or base_url != base_url.strip():
         raise ValueError("semantic evaluator base URL is invalid")
@@ -363,6 +375,4 @@ def _validate_semantic_evaluator_configuration(
     ):
         raise ValueError("semantic evaluator base URL is invalid")
     if provider == generation_provider and model == generation_model:
-        raise ValueError(
-            "semantic evaluator must differ from the generation provider/model"
-        )
+        raise ValueError("semantic evaluator must differ from the generation provider/model")

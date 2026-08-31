@@ -605,7 +605,7 @@ def test_approximate_draft_context_remains_advisory() -> None:
     assert "Reduce to a local identity." in prompt
 
 
-def test_square_continuity_prove_prompt_requires_valid_parenthesized_function() -> None:
+def test_real_power_continuity_prove_prompt_requires_valid_parenthesized_function() -> None:
     square_request = ProofRequest(
         id="square",
         prompt="x² が連続であることを説明してください。",
@@ -627,4 +627,28 @@ def test_square_continuity_prove_prompt_requires_valid_parenthesized_function() 
 
     assert "Continuous (fun x : ℝ => x ^ 2)" in prompt
     assert "Never emit `Continuous fun x : ℝ => ...`" in prompt
+    assert "fun_prop" in prompt
+
+
+def test_cubic_continuity_prove_prompt_uses_the_verified_power_shape() -> None:
+    cubic_request = ProofRequest(
+        id="cubic",
+        prompt="x^3が連続であることを証明してください。",
+    )
+
+    prompt = _prove_prompt_for(
+        cubic_request,
+        GeneratedDraft(text="Use continuity of multiplication.", model="", raw_model_output=""),
+        GeneratedSketch(
+            lean_code=(
+                "import Mathlib\n\n"
+                "theorem bad : Continuous fun x : ℝ => x ^ 3 := by\n  sorry"
+            ),
+            model="",
+            raw_model_output="",
+        ),
+    )
+
+    assert "Continuous (fun x : ℝ => x ^ 3)" in prompt
+    assert "theorem power_continuous" in prompt
     assert "fun_prop" in prompt

@@ -17,9 +17,9 @@ from pals_agent.continuity_release_candidate import (
 from pals_agent.proof_flow_seed import load_continuity_catalog
 
 ROOT = Path(__file__).resolve().parents[2]
-CATALOG = ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
+CATALOG = ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-catalog.json"
 LOCAL_RECEIPTS = (
-    ROOT / "specs" / "continuity-draft-seed-pilot" / "continuity-v1-local-lean-receipts.json"
+    ROOT / "testdata" / "continuity-draft-seed-pilot" / "continuity-v1-local-lean-receipts.json"
 )
 
 

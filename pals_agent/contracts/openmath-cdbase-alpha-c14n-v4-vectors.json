@@ -1,0 +1,80 @@
+{
+  "schema_version": "pals.openmath-cdbase-alpha-c14n-v4-vectors.v2",
+  "canonicalizer_version": "openmath-cdbase-alpha-c14n-v4",
+  "reference_implementation": {
+    "repository": "pals-agent",
+    "revision": "WORKING: source_sha256 is the immutable authority",
+    "source_path": "pals_agent/openmath.py",
+    "source_sha256": "2bbda0e91eac0ab043a2cf5fb256bacdd66e7a9e97000249ecb07ccb5bfbdf57",
+    "entry_point": "canonicalize_retrieval_openmath_xml",
+    "runtime": "CPython 3.12 standard-library xml.etree.ElementTree"
+  },
+  "algorithm": {
+    "authority": "The named reference entry point and source SHA-256 define all accepted input, rejection, alpha-normalization, namespace-prefix, and canonical-byte behavior not redundantly demonstrated by the vectors. Independent implementations must be observationally identical and may not import the agent at runtime.",
+    "input_profile": "An XML document accepted by the named reference entry point as a closed retrieval OpenMath proposition.",
+    "steps": [
+      "parse and validate the document with the reference OpenMath XML validator and retrieval profile with require_closed=true",
+      "deep-copy the parsed root, then alpha-normalize declarations using the reference tree traversal, lexical shadowing, and declaration order",
+      "remove only ignorable whitespace using the reference traversal",
+      "serialize with the CPython 3.12 ElementTree canonicalize call arguments with_comments=false, strip_text=false, rewrite_prefixes=true, qname_aware_tags=set(), qname_aware_attrs=set(), exclude_tags=set(), and exclude_attrs=set()",
+      "require exactly one serialization transport artifact ` xmlns:n0=\"\"`, remove that exact substring once, and reject if the remaining UTF-8 bytes do not parse as XML"
+    ],
+    "payload_preimage": "RFC 8785 UTF-8 serialization of {id, canonical_statement, openmath_xml, proof_strategy, sketch_steps}, where openmath_xml is the canonical XML in the matching vector"
+  },
+  "vectors": [
+    {
+      "id": "c14n_v4_namespace_whitespace_attribute_order",
+      "input_openmath_xml": "<om:OMOBJ version=\"2.0\" xmlns:om=\"http://www.openmath.org/OpenMath\">\n<om:OMBIND><om:OMS name=\"forall\" cd=\"quant1\"></om:OMS><om:OMBVAR><om:OMV name=\"right\"></om:OMV></om:OMBVAR><om:OMA><om:OMS name=\"eq\" cd=\"relation1\"></om:OMS><om:OMV name=\"right\"></om:OMV><om:OMV name=\"right\"></om:OMV></om:OMA></om:OMBIND>\n</om:OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"quant1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMV name=\"v1\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" name=\"eq\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "payload": {
+        "id": "recipe_c14n_vector",
+        "canonical_statement": "Every value equals itself.",
+        "proof_strategy": "Use equality.",
+        "sketch_steps": ["Compare the two terms."]
+      },
+      "payload_jcs": "{\"canonical_statement\":\"Every value equals itself.\",\"id\":\"recipe_c14n_vector\",\"openmath_xml\":\"<n1:OMOBJ xmlns:n1=\\\"http://www.openmath.org/OpenMath\\\" version=\\\"2.0\\\"><n1:OMBIND><n1:OMS cd=\\\"quant1\\\" name=\\\"forall\\\"></n1:OMS><n1:OMBVAR><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\\\"relation1\\\" name=\\\"eq\\\"></n1:OMS><n1:OMV name=\\\"v1\\\"></n1:OMV><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>\",\"proof_strategy\":\"Use equality.\",\"sketch_steps\":[\"Compare the two terms.\"]}",
+      "payload_sha256": "6f71e5a6a4101e12cd63a630db8352e82dae0b8f2a9edf4561d73770c356bddf"
+    },
+    {
+      "id": "c14n_v4_nested_shadowed_and_multiple_namespaces",
+      "input_openmath_xml": "<om:OMOBJ version=\"2.0\" xmlns:unused=\"urn:unused\" xmlns:om=\"http://www.openmath.org/OpenMath\"><om:OMBIND><om:OMS name=\"forall\" cd=\"quant1\"/><om:OMBVAR><om:OMV name=\"x\"/></om:OMBVAR><om:OMBIND><om:OMS name=\"forall\" cd=\"quant1\"/><om:OMBVAR><om:OMV name=\"x\"/></om:OMBVAR><om:OMA><om:OMS name=\"eq\" cd=\"relation1\"/><om:OMV name=\"x\"/><om:OMV name=\"x\"/></om:OMA></om:OMBIND></om:OMBIND></om:OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"quant1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMV name=\"v1\"></n1:OMV></n1:OMBVAR><n1:OMBIND><n1:OMS cd=\"quant1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMV name=\"v2\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" name=\"eq\"></n1:OMS><n1:OMV name=\"v2\"></n1:OMV><n1:OMV name=\"v2\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMBIND></n1:OMOBJ>",
+      "payload": {
+        "id": "recipe_c14n_nested_shadowed",
+        "canonical_statement": "Every value equals itself.",
+        "proof_strategy": "Use equality.",
+        "sketch_steps": ["Compare the two terms."]
+      },
+      "payload_jcs": "{\"canonical_statement\":\"Every value equals itself.\",\"id\":\"recipe_c14n_nested_shadowed\",\"openmath_xml\":\"<n1:OMOBJ xmlns:n1=\\\"http://www.openmath.org/OpenMath\\\" version=\\\"2.0\\\"><n1:OMBIND><n1:OMS cd=\\\"quant1\\\" name=\\\"forall\\\"></n1:OMS><n1:OMBVAR><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMBVAR><n1:OMBIND><n1:OMS cd=\\\"quant1\\\" name=\\\"forall\\\"></n1:OMS><n1:OMBVAR><n1:OMV name=\\\"v2\\\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\\\"relation1\\\" name=\\\"eq\\\"></n1:OMS><n1:OMV name=\\\"v2\\\"></n1:OMV><n1:OMV name=\\\"v2\\\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMBIND></n1:OMOBJ>\",\"proof_strategy\":\"Use equality.\",\"sketch_steps\":[\"Compare the two terms.\"]}",
+      "payload_sha256": "096cef3e61fa15971fab7b603499713fca67e08b60f7eaf32a14534ab540365a"
+    },
+    {
+      "id": "c14n_v4_entity_cdata",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><![CDATA[  ]]><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"relation1\" name=\"e&#x71;\"/><OMV name=\"x\"/><OMV name=\"x\"/></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"quant1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMV name=\"v1\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\"relation1\" name=\"eq\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "payload": {
+        "id": "recipe_c14n_entity_cdata",
+        "canonical_statement": "Every value equals itself.",
+        "proof_strategy": "Use equality.",
+        "sketch_steps": ["Compare the two terms."]
+      },
+      "payload_jcs": "{\"canonical_statement\":\"Every value equals itself.\",\"id\":\"recipe_c14n_entity_cdata\",\"openmath_xml\":\"<n1:OMOBJ xmlns:n1=\\\"http://www.openmath.org/OpenMath\\\" version=\\\"2.0\\\"><n1:OMBIND><n1:OMS cd=\\\"quant1\\\" name=\\\"forall\\\"></n1:OMS><n1:OMBVAR><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\\\"relation1\\\" name=\\\"eq\\\"></n1:OMS><n1:OMV name=\\\"v1\\\"></n1:OMV><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMA></n1:OMBIND></n1:OMOBJ>\",\"proof_strategy\":\"Use equality.\",\"sketch_steps\":[\"Compare the two terms.\"]}",
+      "payload_sha256": "75ca1b227357ba1d40f9560995f0cfc33e97bbe1b25125c1fb99f78e95cd6515"
+    },
+    {
+      "id": "c14n_v4_invalid_profile_attribute",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMI forged=\"yes\">1</OMI></OMOBJ>",
+      "expected_outcome": "reject"
+    },
+    {
+      "id": "c14n_v4_invalid_empty_bound_variable_name",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"\"/></OMBVAR><OMA><OMS cd=\"relation1\" name=\"eq\"/><OMV name=\"\"/><OMV name=\"\"/></OMA></OMBIND></OMOBJ>",
+      "expected_outcome": "reject"
+    },
+    {
+      "id": "c14n_v4_invalid_continuity_lambda_arity",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"set1\" name=\"emptyset\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/><OMV name=\"y\"/></OMBVAR><OMI>0</OMI></OMBIND></OMA></OMOBJ>",
+      "expected_outcome": "reject"
+    }
+  ]
+}

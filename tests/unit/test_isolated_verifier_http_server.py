@@ -11,21 +11,46 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from threading import Event, Thread
+from typing import Any, cast
 from uuid import UUID
 
 import pytest
+import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
 from pals_agent.lean_verifier.http_server import (
     IsolatedVerifierHttpSettings,
+    RecipeAdmissionVerifierContext,
     VerifierDeploymentBinding,
     create_server,
+    pinned_recipe_admission_context,
 )
 from pals_agent.models import Diagnostic, VerificationResult
 
 _RELEASE_ID = UUID("018a3b10-514d-4d6d-845e-3f322b74bca0")
 _DEPLOYMENT_SHA = "a" * 64
+_ADMISSION_ID = UUID("e406e9fa-fd9f-4856-b5c4-18e9b3102128")
+
+
+def _admission_context() -> RecipeAdmissionVerifierContext:
+    return RecipeAdmissionVerifierContext(
+        toolchain_fingerprint={
+            "schema_version": "pals.lean-toolchain-fingerprint.v1",
+            "lean_version": "leanprover/lean4:v4.32.0-rc1",
+            "lake_manifest_sha256": "d" * 64,
+            "verifier_sha256": "c" * 64,
+            "materializer_version": "pals.recipe-materializer.v1",
+        },
+        compiler_command={
+            "schema_version": "pals.recipe-admission-compiler-command.v1",
+            "argv": ["lake", "env", "lean", "--threads=1", "Main.lean"],
+            "workspace_lake_manifest_sha256": "d" * 64,
+            "workspace_lean_toolchain_sha256": "e" * 64,
+        },
+    )
+
+
 class StubVerifier:
     def __init__(self, result: VerificationResult) -> None:
         self.result = result
@@ -94,6 +119,7 @@ def _running_server(
         ssl_context=server_context,
         reconciler_client_spki_sha256=client_spki_sha256,
         reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
+        recipe_admission_context=_admission_context(),
     )
     server = create_server(settings, verifier=verifier)
     thread = Thread(target=server.serve_forever, daemon=True)
@@ -130,9 +156,7 @@ def test_mtls_ready_and_successful_compile_produce_exact_bound_objects(
     assert proof == (
         200,
         {
-            "lean_sha256": hashlib.sha256(
-                b"example : True := by trivial"
-            ).hexdigest(),
+            "lean_sha256": hashlib.sha256(b"example : True := by trivial").hexdigest(),
             "proof_job_id": "proof-1",
             "result_artifact_uri": "s3://bucket/manual-fixtures/" + "a" * 64 + ".lean",
             "schema_version": "pals.verifier-attestation.v1",
@@ -232,6 +256,199 @@ def test_busy_and_compiler_failure_use_the_closed_error_registry(
         },
     )
     assert verifier.calls == ["first", "third"]
+
+
+def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_success())
+    context = _admission_context()
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    with _running_server(server_context, client_spki_sha256, verifier):
+        response = _request(
+            client_context,
+            _recipe_admission_request(source, context),
+            canonical=True,
+        )
+
+    assert response == (
+        200,
+        {
+            "schema_version": "pals.recipe-admission-verifier-result.v1",
+            "status": "verified",
+            "admission_id": str(_ADMISSION_ID),
+            "materialized_source_sha256": hashlib.sha256(source.encode()).hexdigest(),
+            "toolchain_fingerprint": context.toolchain_fingerprint,
+            "toolchain_fingerprint_sha256": context.toolchain_fingerprint_sha256,
+            "compiler_command_sha256": context.compiler_command_sha256,
+            "compiler_result": {
+                "schema_version": "pals.recipe-admission-compiler-result.v1",
+                "verification_succeeded": True,
+                "diagnostic_codes": [],
+            },
+        },
+    )
+    assert verifier.calls == [source]
+
+
+def test_recipe_admission_rejects_noncanonical_or_tampered_bindings_before_compile(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_success())
+    context = _admission_context()
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    bad_digest = _recipe_admission_request(
+        source,
+        context,
+        materialized_source_sha256="0" * 64,
+    )
+    noncanonical = _recipe_admission_request(source, context, canonical=False)
+    wrong_toolchain = _recipe_admission_request(
+        source,
+        context,
+        expected_fingerprint_sha256="1" * 64,
+    )
+    with _running_server(server_context, client_spki_sha256, verifier):
+        results = [
+            _request(client_context, request, canonical=True)
+            for request in (bad_digest, noncanonical, wrong_toolchain)
+        ]
+
+    assert results == [
+        (
+            400,
+            {
+                "schema_version": "pals.recipe-admission-verifier-result.v1",
+                "status": "failed",
+                "admission_id": str(_ADMISSION_ID),
+                "failure_code": "verifier_request_invalid",
+                "retryable": False,
+            },
+        ),
+        (
+            400,
+            {
+                "schema_version": "pals.recipe-admission-verifier-result.v1",
+                "status": "failed",
+                "admission_id": str(_ADMISSION_ID),
+                "failure_code": "verifier_request_invalid",
+                "retryable": False,
+            },
+        ),
+        (
+            400,
+            {
+                "schema_version": "pals.recipe-admission-verifier-result.v1",
+                "status": "failed",
+                "admission_id": str(_ADMISSION_ID),
+                "failure_code": "verifier_request_invalid",
+                "retryable": False,
+            },
+        ),
+    ]
+    assert verifier.calls == []
+
+
+def test_recipe_admission_failure_never_returns_proof_job_or_artifact_fields(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    source = "import Mathlib\n\nexample : False := by\n  exact False.elim (by trivial)\n"
+    with _running_server(server_context, client_spki_sha256, StubVerifier(_failure())):
+        response = _request(
+            client_context,
+            _recipe_admission_request(source, _admission_context()),
+            canonical=True,
+        )
+
+    assert response == (
+        422,
+        {
+            "schema_version": "pals.recipe-admission-verifier-result.v1",
+            "status": "failed",
+            "admission_id": str(_ADMISSION_ID),
+            "failure_code": "verifier_compile_failed",
+            "retryable": False,
+        },
+    )
+
+
+def test_recipe_admission_lean_timeout_maps_to_closed_retryable_504(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    with _running_server(server_context, client_spki_sha256, StubVerifier(_timeout_failure())):
+        response = _request(
+            client_context,
+            _recipe_admission_request(source, _admission_context()),
+            canonical=True,
+        )
+
+    assert response == (
+        504,
+        {
+            "schema_version": "pals.recipe-admission-verifier-result.v1",
+            "status": "failed",
+            "admission_id": str(_ADMISSION_ID),
+            "failure_code": "verifier_timeout",
+            "retryable": True,
+        },
+    )
+
+
+def test_recipe_admission_busy_uses_its_closed_retryable_registry(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = BlockingVerifier()
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    request = _recipe_admission_request(source, _admission_context())
+    with _running_server(server_context, client_spki_sha256, verifier):
+        first = Thread(target=lambda: _request(client_context, request, canonical=True))
+        first.start()
+        assert verifier.started.wait(timeout=2)
+        busy = _request(client_context, request, canonical=True)
+        verifier.release.set()
+        first.join(timeout=3)
+        assert not first.is_alive()
+
+    assert busy == (
+        503,
+        {
+            "schema_version": "pals.recipe-admission-verifier-result.v1",
+            "status": "failed",
+            "admission_id": str(_ADMISSION_ID),
+            "failure_code": "verifier_not_ready",
+            "retryable": True,
+        },
+    )
+
+
+def test_pinned_recipe_admission_context_binds_exact_workspace_bytes(tmp_path: Path) -> None:
+    workspace = tmp_path / "lean-workspace"
+    workspace.mkdir()
+    (workspace / "lakefile.lean").write_text("import Lake\n", encoding="utf-8")
+    manifest = workspace / "lake-manifest.json"
+    manifest.write_bytes(b'{"version":"1.2.0"}\n')
+    toolchain = workspace / "lean-toolchain"
+    toolchain.write_bytes(b"leanprover/lean4:v4.32.0-rc1")
+
+    context = pinned_recipe_admission_context(project_dir=workspace, verifier_sha256="f" * 64)
+
+    assert context.toolchain_fingerprint == {
+        "schema_version": "pals.lean-toolchain-fingerprint.v1",
+        "lean_version": "leanprover/lean4:v4.32.0-rc1",
+        "lake_manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest(),
+        "verifier_sha256": "f" * 64,
+        "materializer_version": "pals.recipe-materializer.v1",
+    }
+    assert (
+        context.compiler_command["workspace_lean_toolchain_sha256"]
+        == hashlib.sha256(toolchain.read_bytes()).hexdigest()
+    )
 
 
 def _create_certificates(root: Path) -> None:
@@ -370,9 +587,41 @@ def _verify_request(
     )
 
 
+def _recipe_admission_request(
+    source: str,
+    context: RecipeAdmissionVerifierContext,
+    *,
+    materialized_source_sha256: str | None = None,
+    expected_fingerprint_sha256: str | None = None,
+    canonical: bool = True,
+) -> bytes:
+    payload = {
+        "schema_version": "pals.recipe-admission-verifier-request.v1",
+        "admission_id": str(_ADMISSION_ID),
+        "materialized_source": source,
+        "materialized_source_sha256": (
+            materialized_source_sha256 or hashlib.sha256(source.encode()).hexdigest()
+        ),
+        "expected_toolchain_fingerprint": context.toolchain_fingerprint,
+        "expected_toolchain_fingerprint_sha256": (
+            expected_fingerprint_sha256 or context.toolchain_fingerprint_sha256
+        ),
+    }
+    body = rfc8785.dumps(cast(Any, payload)) if canonical else json.dumps(payload).encode("utf-8")
+    return (
+        b"POST /v1/recipe-admissions/verify HTTP/1.1\r\n"
+        + _headers()
+        + b"Content-Type: application/json\r\n"
+        + f"Content-Length: {len(body)}\r\n\r\n".encode("ascii")
+        + body
+    )
+
+
 def _request(
     context: ssl.SSLContext,
     raw_request: bytes,
+    *,
+    canonical: bool = False,
 ) -> tuple[int, dict[str, object]]:
     with (
         socket.create_connection(("127.0.0.1", 18117), timeout=3) as raw,
@@ -389,6 +638,8 @@ def _request(
         assert response.getheader("Content-Length") == str(len(content))
     payload = json.loads(content)
     assert isinstance(payload, dict)
+    if canonical:
+        assert rfc8785.dumps(payload) == content
     return response.status, payload
 
 
@@ -425,4 +676,20 @@ def _failure() -> VerificationResult:
         stdout="",
         stderr="",
         elapsed_ms=3,
+    )
+
+
+def _timeout_failure() -> VerificationResult:
+    return VerificationResult(
+        success=False,
+        diagnostics=[
+            Diagnostic(
+                severity="error",
+                code="lean.timeout",
+                message="Lean timed out after 300.0s.",
+            )
+        ],
+        stdout="",
+        stderr="",
+        elapsed_ms=300_000,
     )

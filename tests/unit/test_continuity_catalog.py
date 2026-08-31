@@ -11,7 +11,7 @@ from pals_agent import proof_flow_seed
 
 CATALOG_PATH = (
     Path(__file__).resolve().parents[2]
-    / "specs"
+    / "testdata"
     / "continuity-draft-seed-pilot"
     / "continuity-v1-catalog.json"
 )
