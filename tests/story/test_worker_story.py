@@ -40,8 +40,7 @@ from pals_agent.worker import SqsProofWorker, parse_agent_task
 VERIFIED_LEAN_CODE = (Path(__file__).parents[1] / "fixtures" / "PalsX2Verified.lean").read_text(
     encoding="utf-8"
 )
-VERIFIED_LEAN_SHA256 = hashlib.sha256(VERIFIED_LEAN_CODE.encode("utf-8")).hexdigest()
-VERIFIED_ARTIFACT_URI = f"s3://manual-fixtures/manual-fixtures/{VERIFIED_LEAN_SHA256}.lean"
+VERIFIED_ARTIFACT_URI = "s3://pals-artifacts/proof-jobs/job-1/result.lean"
 
 
 class FakeApi:
@@ -54,16 +53,7 @@ class FakeApi:
         self.chat_id = "chat-1"
         self.output_language = "ja"
         self.theorem_statement = "x^2が連続であることを示せ"
-        self.context: dict[str, Any] = {
-            "fixture_provenance": {
-                "kind": "manual_verified_fixture",
-                "artifact_uri": VERIFIED_ARTIFACT_URI,
-                "model_generated": False,
-                "sha256": VERIFIED_LEAN_SHA256,
-                "verification_success": True,
-                "verifier": "isolated_mtls_http_lean_verifier",
-            }
-        }
+        self.context: dict[str, Any] = {}
         self.lean_code: str | None = None
         self.status_context: dict[str, Any] | None = None
         self.verification_candidates: list[dict[str, Any]] = []
@@ -572,7 +562,10 @@ class FakePipeline:
                 },
             },
         )
-        return SimpleNamespace(verification_pending=True)
+        return SimpleNamespace(
+            artifact=SimpleNamespace(lean_uri=VERIFIED_ARTIFACT_URI),
+            verification_pending=True,
+        )
 
 
 class ExplodingPipeline(FakePipeline):

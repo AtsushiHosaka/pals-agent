@@ -65,10 +65,6 @@ VisibilityExtender = Callable[[int], None]
 _NON_VERIFIED_TERMINAL_STATES: Final = frozenset({"failed", "canceled"})
 _CLAIM_STATUSES: Final = frozenset({"acquired", "busy", "terminal", "lease_too_short", "not_ready"})
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", re.ASCII)
-_MANUAL_FIXTURE_URI_RE = re.compile(
-    r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/manual-fixtures/([0-9a-f]{64})\.lean$",
-    re.ASCII,
-)
 _MODEL_ARTIFACT_URI_RE = re.compile(
     r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/proof-jobs/"
     r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}/result\.lean$",
@@ -758,7 +754,6 @@ class SqsProofWorker:
                 return True
             try:
                 candidate_artifact_uri = _candidate_artifact_uri(
-                    proof_job,
                     run_result=run_result,
                     lean_code=latest_lean_code,
                 )
@@ -2925,19 +2920,18 @@ def _worker_diagnostics_from_payload(value: object) -> list[Diagnostic] | None:
 
 
 def _candidate_artifact_uri(
-    proof_job: dict[str, Any],
     *,
     run_result: Any,
     lean_code: str | None,
 ) -> str:
-    """Select a durable model artifact or the exact pre-persisted manual fixture."""
+    """Require the durable Lean artifact produced by the model pipeline."""
     if not isinstance(lean_code, str) or not lean_code.strip():
         raise ValueError("verified candidate requires nonblank Lean code")
     artifact = getattr(run_result, "artifact", None)
     artifact_uri = getattr(artifact, "lean_uri", None)
     if isinstance(artifact_uri, str) and _MODEL_ARTIFACT_URI_RE.fullmatch(artifact_uri):
         return artifact_uri
-    return _manual_fixture_candidate_uri(proof_job, lean_code=lean_code)
+    raise ValueError("verified candidate requires a durable model Lean artifact")
 
 
 def _recipe_candidate_artifact_uri(
@@ -2959,45 +2953,6 @@ def _recipe_candidate_artifact_uri(
         f"s3://{artifacts_bucket}/proof-jobs/{proof_job_id}/candidates/"
         f"{candidate_id}/{lean_sha256}.lean"
     )
-
-
-def _manual_fixture_candidate_uri(
-    proof_job: dict[str, Any],
-    *,
-    lean_code: str | None,
-) -> str:
-    """Return the pre-persisted fixture URI only when it binds this exact Lean byte sequence."""
-    if not isinstance(lean_code, str) or not lean_code.strip():
-        raise ValueError("verified candidate requires nonblank Lean code")
-    request_context = proof_job.get("request_context")
-    if not isinstance(request_context, dict):
-        raise ValueError("verified candidate requires persisted fixture provenance")
-    provenance = request_context.get("fixture_provenance")
-    expected_keys = {
-        "kind",
-        "artifact_uri",
-        "model_generated",
-        "sha256",
-        "verification_success",
-        "verifier",
-    }
-    if not isinstance(provenance, dict) or set(provenance) != expected_keys:
-        raise ValueError("verified candidate requires persisted fixture provenance")
-    artifact_uri = provenance["artifact_uri"]
-    lean_sha256 = hashlib.sha256(lean_code.encode("utf-8")).hexdigest()
-    if (
-        provenance["kind"] != "manual_verified_fixture"
-        or provenance["model_generated"] is not False
-        or provenance["verification_success"] is not True
-        or provenance["verifier"] != "isolated_mtls_http_lean_verifier"
-        or provenance["sha256"] != lean_sha256
-        or not isinstance(artifact_uri, str)
-    ):
-        raise ValueError("verified candidate does not match persisted fixture provenance")
-    uri_match = _MANUAL_FIXTURE_URI_RE.fullmatch(artifact_uri)
-    if uri_match is None or uri_match.group(1) != lean_sha256:
-        raise ValueError("verified candidate fixture URI does not bind Lean bytes")
-    return artifact_uri
 
 
 def _required_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:

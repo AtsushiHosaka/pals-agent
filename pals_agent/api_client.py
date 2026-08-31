@@ -24,10 +24,6 @@ _SEMANTIC_REVIEW_SCHEMA_VERSION = "pals.proof-semantic-review.v2"
 _RECIPE_SEMANTIC_REVIEW_SCHEMA_VERSION = "pals.proof-semantic-review.v3"
 _OUTPUT_REVIEW_SCHEMA_VERSION = "pals.proof-output-review.v2"
 _SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
-_MANUAL_FIXTURE_URI_RE = re.compile(
-    r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/manual-fixtures/([0-9a-f]{64})\.lean$",
-    re.ASCII,
-)
 _MODEL_ARTIFACT_URI_RE = re.compile(
     r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/proof-jobs/"
     r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}/result\.lean$",
@@ -146,11 +142,8 @@ class PalsApiClient:
             raise ValueError("verification candidates require bounded nonblank Lean code")
         if not isinstance(result_artifact_uri, str):
             raise ValueError("verification candidates require a canonical Lean artifact URI")
-        uri_match = _MANUAL_FIXTURE_URI_RE.fullmatch(result_artifact_uri)
         lean_sha256 = hashlib.sha256(lean_code.encode("utf-8")).hexdigest()
-        if uri_match is not None and uri_match.group(1) != lean_sha256:
-            raise ValueError("verification candidate URI must bind the exact Lean digest")
-        if uri_match is None and _MODEL_ARTIFACT_URI_RE.fullmatch(result_artifact_uri) is None:
+        if _MODEL_ARTIFACT_URI_RE.fullmatch(result_artifact_uri) is None:
             raise ValueError("verification candidates require a canonical Lean artifact URI")
         return self._request(
             "POST",

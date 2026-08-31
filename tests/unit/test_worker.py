@@ -28,6 +28,7 @@ from pals_agent.settings import AgentSettings
 from pals_agent.worker import (
     SqsProofWorker,
     _api_repair_seed_from_worker_input,
+    _candidate_artifact_uri,
     _has_api_compile_failure,
     _has_pending_api_candidate,
     _verified_candidate_matches_statement,
@@ -40,6 +41,22 @@ _RECIPE_TOOLCHAIN = ToolchainFingerprintV1(
     materializer_version="recipe-materializer-v1",
 )
 _RECIPE_SOURCE = "import Mathlib\n\nexample : True := by\n  trivial\n"
+_MODEL_ARTIFACT_URI = "s3://pals-artifacts/proof-jobs/job-1/result.lean"
+
+
+def test_worker_candidate_requires_the_model_pipeline_artifact() -> None:
+    result = SimpleNamespace(artifact=SimpleNamespace(lean_uri=_MODEL_ARTIFACT_URI))
+
+    assert _candidate_artifact_uri(run_result=result, lean_code=_RECIPE_SOURCE) == (
+        _MODEL_ARTIFACT_URI
+    )
+
+
+def test_worker_candidate_does_not_fall_back_to_manual_fixture_provenance() -> None:
+    result = SimpleNamespace(artifact=None)
+
+    with pytest.raises(ValueError, match="durable model Lean artifact"):
+        _candidate_artifact_uri(run_result=result, lean_code=_RECIPE_SOURCE)
 
 
 class _RecipeSelector:

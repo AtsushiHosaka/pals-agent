@@ -14,7 +14,7 @@ LEAN_CODE = "import Mathlib\n\nexample : True := by\n  trivial\n"
 CLAIM_ID = "11111111-1111-4111-8111-111111111111"
 CANDIDATE_ID = "22222222-2222-4222-8222-222222222222"
 LEAN_SHA256 = hashlib.sha256(LEAN_CODE.encode("utf-8")).hexdigest()
-ARTIFACT_URI = f"s3://manual-fixtures/manual-fixtures/{LEAN_SHA256}.lean"
+ARTIFACT_URI = "s3://pals-artifacts/proof-jobs/job-1/result.lean"
 
 
 class RecordingTransport:
@@ -94,6 +94,22 @@ def test_candidate_submission_accepts_the_durable_model_lean_artifact() -> None:
     )
 
     assert transport.calls[0]["body"]["result_artifact_uri"] == artifact_uri
+
+
+def test_candidate_submission_rejects_a_manual_fixture_even_when_its_digest_matches() -> None:
+    transport = RecordingTransport()
+    fixture_uri = f"s3://manual-fixtures/manual-fixtures/{LEAN_SHA256}.lean"
+
+    with pytest.raises(ValueError, match="canonical Lean artifact URI"):
+        _client(transport).submit_verification_candidate(
+            proof_job_id="job-1",
+            claim_id=CLAIM_ID,
+            candidate_id=CANDIDATE_ID,
+            lean_code=LEAN_CODE,
+            result_artifact_uri=fixture_uri,
+        )
+
+    assert transport.calls == []
 
 
 def _recipe_candidate_source() -> dict[str, Any]:
