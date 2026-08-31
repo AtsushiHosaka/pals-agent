@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pals-agent"
+version = "0.1.0"
+description = "Local PALS proof agent worker with Ollama, Lean, SQS, and artifact logging."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "boto3>=1.35,<2.0",
+  "cryptography>=44,<46",
+  "rfc8785==0.1.4",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.13,<2.0",
+  "pytest>=8.3,<9.0",
+  "ruff>=0.8,<1.0",
+]
+
+[project.scripts]
+pals-agent = "pals_agent.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pals_agent"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json" = "pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json"
+"pals_agent/seed/dsp_drafts.json" = "pals_agent/seed/dsp_drafts.json"
+"pals_agent/content_dictionaries/pals1.ocd" = "pals_agent/content_dictionaries/pals1.ocd"
+"pals_agent/content_dictionaries/typed-math-v1-registry.json" = "pals_agent/content_dictionaries/typed-math-v1-registry.json"
+"pals_agent/content_dictionaries/typed-real-analysis-v1-registry.json" = "pals_agent/content_dictionaries/typed-real-analysis-v1-registry.json"
+"pals_agent/content_dictionaries/typed-multivariable-calculus-v1-registry.json" = "pals_agent/content_dictionaries/typed-multivariable-calculus-v1-registry.json"
+"pals_agent/content_dictionaries/typed-math-matrix-v1-registry.json" = "pals_agent/content_dictionaries/typed-math-matrix-v1-registry.json"
+"pals_agent/content_dictionaries/typed-probability-v1-registry.json" = "pals_agent/content_dictionaries/typed-probability-v1-registry.json"
+"pals_agent/content_dictionaries/typed-finite-graph-v1-registry.json" = "pals_agent/content_dictionaries/typed-finite-graph-v1-registry.json"
+"pals_agent/content_dictionaries/typed-number-theory-v1-registry.json" = "pals_agent/content_dictionaries/typed-number-theory-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-v1-registry.json"
+"pals_agent/content_dictionaries/typed-geometry-complex-v1-registry.json" = "pals_agent/content_dictionaries/typed-geometry-complex-v1-registry.json"
+"pals_agent/content_dictionaries/typed-plane-geometry-v1-registry.json" = "pals_agent/content_dictionaries/typed-plane-geometry-v1-registry.json"
+"pals_agent/content_dictionaries/typed-ode-v1-registry.json" = "pals_agent/content_dictionaries/typed-ode-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-modules-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-modules-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-localization-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-localization-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-decomposition-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-decomposition-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json"
+"pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+  ".venv",
+  "lean-workspace/.lake",
+]
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "SIM", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+exclude = ["build", "dist", "lean-workspace/.lake"]

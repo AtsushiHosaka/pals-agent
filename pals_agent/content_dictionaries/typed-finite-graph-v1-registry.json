@@ -1,0 +1,42 @@
+{
+  "schema_version": "pals.typed-finite-graph-registry.v1",
+  "profile_id": "typed-finite-graph-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-finite-graph:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "FinSimpleGraph"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "Vertex"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "VertexClass"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "Trail"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "degree"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "vertex_count"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "edge_count"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "degree_sum"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "odd_degree_count"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "nat_add"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "nat_mul"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "adjacent"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "connected"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "nonisolated_connected"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "acyclic"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "tree"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "bipartite"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "proper_bipartition"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "is_euler_trail"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "is_euler_circuit"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "has_euler_trail"},
+    {"cdbase": "urn:pals:openmath:typed-finite-graph:v1", "cd": "pals_typed_graph", "name": "has_euler_circuit"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "equivalent"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

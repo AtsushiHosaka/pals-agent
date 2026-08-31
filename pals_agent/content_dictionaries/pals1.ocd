@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CD xmlns="http://www.openmath.org/OpenMathCD">
+  <CDName>pals1</CDName>
+  <CDBase>urn:pals:openmath:cd:v1</CDBase>
+  <CDURL>urn:pals:openmath:cd:v1/pals1.ocd</CDURL>
+  <CDReviewDate>2026-07-10</CDReviewDate>
+  <CDStatus>experimental</CDStatus>
+  <CDDate>2026-07-10</CDDate>
+  <CDVersion>1</CDVersion>
+  <CDRevision>0</CDRevision>
+  <Description>
+    Mathematical symbols required by the initial PALS OpenMath statement profile.
+  </Description>
+
+  <CDDefinition>
+    <Name>compact</Name>
+    <Role>application</Role>
+    <Description>A unary predicate asserting that a set or topological object is compact.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>continuous_on</Name>
+    <Role>application</Role>
+    <Description>
+      A binary predicate asserting that its second argument is continuous on its first argument.
+    </Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>dimension</Name>
+    <Role>application</Role>
+    <Description>The dimension of a vector space or other dimension-bearing object.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>domain</Name>
+    <Role>application</Role>
+    <Description>The domain of a map.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>finite_dimensional</Name>
+    <Role>application</Role>
+    <Description>A unary predicate asserting that a vector space is finite-dimensional.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>linear_map</Name>
+    <Role>application</Role>
+    <Description>A unary predicate asserting that an object is a linear map.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>nullity</Name>
+    <Role>application</Role>
+    <Description>The dimension of the kernel of a linear map.</Description>
+  </CDDefinition>
+
+  <CDDefinition>
+    <Name>rank</Name>
+    <Role>application</Role>
+    <Description>The dimension of the range of a linear map.</Description>
+  </CDDefinition>
+</CD>

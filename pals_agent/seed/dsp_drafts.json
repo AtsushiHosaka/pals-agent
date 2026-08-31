@@ -1,0 +1,404 @@
+[
+  {
+    "id": "continuous_square",
+    "matched_prompt": "Show that the function x ↦ x^2 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"setname1\" name=\"R\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"arith1\" name=\"power\"/><OMV name=\"x\"/><OMI>2</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Use `Metric.continuous_iff` and an explicit epsilon-delta proof. For ε > 0 at x, choose δ = min 1 (ε / (2 * |x| + 1)); then bound `|y ^ 2 - x ^ 2| = |y - x| * |y + x|`. Do not close the proof with shortcut continuity lemmas such as `continuous_id.pow`.",
+    "sketch_steps": [
+      "Rewrite continuity using `Metric.continuous_iff`.",
+      "Fix x and ε > 0.",
+      "Choose δ = min 1 (ε / (2 * |x| + 1)).",
+      "Use |y - x| < 1 to show |y + x| ≤ 2 * |x| + 1.",
+      "Conclude |y^2 - x^2| = |y - x| * |y + x| < ε."
+    ]
+  },
+  {
+    "id": "continuous_power",
+    "matched_prompt": "Show that if n is a natural number, the function x ↦ x^n is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"n\"/></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\"/><OMA><OMS cd=\"set1\" name=\"in\"/><OMV name=\"n\"/><OMS cd=\"setname1\" name=\"N\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"setname1\" name=\"R\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"arith1\" name=\"power\"/><OMV name=\"x\"/><OMV name=\"n\"/></OMA></OMBIND></OMA></OMA></OMBIND></OMOBJ>",
+    "proof_strategy": "Generalize the square-function continuity draft by induction on the natural exponent. The base case is constant. In the successor case, use the epsilon-delta product estimate with a local bound for x^n and the induction hypothesis; do not replace the target with the x^2 theorem.",
+    "sketch_steps": [
+      "Keep the target as `Continuous (fun x : ℝ => x ^ n)` with n : ℕ.",
+      "Relate the problem to the `continuous_square` draft as the same polynomial/Power continuity family.",
+      "Prove by induction on n and expand the successor product step with an epsilon split and a local factor bound.",
+      "Do not instantiate n = 2 or reuse the `pals_continuous_square` formal statement.",
+      "Conclude the successor case with the same local bounding idea as the square proof."
+    ]
+  },
+  {
+    "id": "continuous_affine",
+    "matched_prompt": "Show that if a and b are real, the affine function x ↦ a*x+b is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"a\"/><OMV name=\"b\"/></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\"/><OMA><OMS cd=\"logic1\" name=\"and\"/><OMA><OMS cd=\"set1\" name=\"in\"/><OMV name=\"a\"/><OMS cd=\"setname1\" name=\"R\"/></OMA><OMA><OMS cd=\"set1\" name=\"in\"/><OMV name=\"b\"/><OMS cd=\"setname1\" name=\"R\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"setname1\" name=\"R\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\"/><OMA><OMS cd=\"arith1\" name=\"times\"/><OMV name=\"a\"/><OMV name=\"x\"/></OMA><OMV name=\"b\"/></OMA></OMBIND></OMA></OMA></OMBIND></OMOBJ>",
+    "proof_strategy": "Use `Metric.continuous_iff`. At a point x and tolerance ε > 0, split on a = 0. If a = 0, the output distance is zero and any positive δ works. If a ≠ 0, choose δ = ε / |a|; then `|(a*y+b) - (a*x+b)| = |a| * |y-x| < ε`. Do not replace the requested argument with `continuous_const.mul continuous_id`.",
+    "sketch_steps": [
+      "setup: Rewrite continuity with `Metric.continuous_iff`, then fix x and ε > 0.",
+      "case_split: Separate the constant case a = 0 from a ≠ 0.",
+      "derive: For a ≠ 0 choose δ = ε / |a| and prove δ > 0.",
+      "calculation: Cancel b and factor the difference as |a| * |y - x|.",
+      "conclude: Multiply the δ-bound by |a| to obtain an output distance below ε."
+    ]
+  },
+  {
+    "id": "continuous_absolute_value",
+    "matched_prompt": "Show that the absolute value function x ↦ |x| is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"setname1\" name=\"R\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"arith1\" name=\"abs\"/><OMV name=\"x\"/></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Use `Metric.continuous_iff` and choose δ = ε. Apply the reverse triangle inequality `||y| - |x|| ≤ |y - x|`; therefore an input distance below δ is already an output distance below ε. Avoid closing immediately with `continuous_abs`.",
+    "sketch_steps": [
+      "setup: Fix x and ε > 0 in the metric definition of continuity.",
+      "derive: Choose δ = ε, whose positivity is exactly the assumption on ε.",
+      "calculation: Rewrite the output distance as ||y| - |x||.",
+      "apply_theorem: Use `abs_sub_abs_le_abs_sub` to bound it by |y - x|.",
+      "conclude: Combine the reverse-triangle bound with dist y x < δ = ε."
+    ]
+  },
+  {
+    "id": "continuous_reciprocal_nonzero",
+    "matched_prompt": "Show that the reciprocal function x ↦ 1/x is continuous on ℝ \\ {0}.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMA><OMS cd=\"set1\" name=\"setdiff\"/><OMS cd=\"setname1\" name=\"R\"/><OMA><OMS cd=\"set1\" name=\"set\"/><OMI>0</OMI></OMA></OMA><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/></OMBVAR><OMA><OMS cd=\"arith1\" name=\"divide\"/><OMS cd=\"alg1\" name=\"one\"/><OMV name=\"x\"/></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "At a fixed x ≠ 0 and ε > 0, first keep y away from zero by requiring |y - x| < |x| / 2, which gives |y| ≥ |x| / 2. Also require |y - x| < ε * |x|^2 / 2. Choose δ as the minimum of those positive bounds. Then use `|1/y - 1/x| = |y-x| / (|x|*|y|)` and the lower bound on |y|. Do not replace the requested argument with `continuousAt_inv₀`.",
+    "sketch_steps": [
+      "setup: Fix x in ℝ \\ {0} and ε > 0; first prove continuity at x.",
+      "derive: Choose δ = min (|x| / 2) (ε * |x|^2 / 2) and prove δ > 0.",
+      "derive: From |y - x| < |x| / 2, prove |y| ≥ |x| / 2 and hence y ≠ 0.",
+      "calculation: Rewrite |y⁻¹ - x⁻¹| as |y - x| / (|x| * |y|).",
+      "conclude: Obtain continuity at x, then restrict it to `ContinuousWithinAt` on ℝ \\ {0}."
+    ]
+  },
+  {
+    "id": "rank_nullity",
+    "matched_prompt": "Show that if A is a linear map and domain A is finite-dimensional, rank A + nullity A = dim(domain A).",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"A\"/></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\"/><OMA><OMS cd=\"logic1\" name=\"and\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"linear_map\"/><OMV name=\"A\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"finite_dimensional\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"domain\"/><OMV name=\"A\"/></OMA></OMA></OMA><OMA><OMS cd=\"relation1\" name=\"eq\"/><OMA><OMS cd=\"arith1\" name=\"plus\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"rank\"/><OMV name=\"A\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"nullity\"/><OMV name=\"A\"/></OMA></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"dimension\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"domain\"/><OMV name=\"A\"/></OMA></OMA></OMA></OMA></OMBIND></OMOBJ>",
+    "proof_strategy": "Use the standard mathlib rank-nullity theorem for linear maps: `LinearMap.finrank_range_add_finrank_ker`.",
+    "sketch_steps": [
+      "Introduce a field K and finite-dimensional K-vector space V.",
+      "Represent A as a linear map f : V →ₗ[K] W.",
+      "State rank-nullity as finrank(range f) + finrank(ker f) = finrank V.",
+      "Apply `LinearMap.finrank_range_add_finrank_ker f`."
+    ]
+  },
+  {
+    "id": "continuous_affine_three_minus_two",
+    "matched_prompt": "Show that the function x ↦ 3*x-2 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMA><OMS cd=\"arith1\" name=\"times\" /><OMI>3</OMI><OMV name=\"x\" /></OMA><OMI>2</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε/3 because subtracting 2 cancels from the output difference and scaling by 3 multiplies distance by 3.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε/3.",
+      "calculation: Simplify |(3y-2)-(3x-2)| to 3|y-x|.",
+      "apply_theorem: Choose δ = ε/3, which is positive.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_cube",
+    "matched_prompt": "Show that the function x ↦ x^3 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>3</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor y^3-x^3 and use a unit neighborhood to bound y^2+xy+x^2; choose δ = min(1, ε/C).",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Use y^3-x^3 = (y-x)(y^2+xy+x^2) and C = 3(|x|+1)^2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the second factor.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_fourth_power",
+    "matched_prompt": "Show that the function x ↦ x^4 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>4</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor y^4-x^4 and bound y^3+y^2x+yx^2+x^3 on |y-x|<1 before choosing δ.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor y^4-x^4 and set C = 4(|x|+1)^3.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the cubic factor.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_shift_plus_one",
+    "matched_prompt": "Show that the function x ↦ x+1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMV name=\"x\" /><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε because translation by 1 leaves distances unchanged.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε.",
+      "calculation: Cancel the constant to obtain |(y+1)-(x+1)| = |y-x|.",
+      "apply_theorem: Choose δ = ε.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_shift_minus_one",
+    "matched_prompt": "Show that the function x ↦ x-1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMV name=\"x\" /><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε because subtracting 1 leaves distances unchanged.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε.",
+      "calculation: Cancel the constant to obtain |(y-1)-(x-1)| = |y-x|.",
+      "apply_theorem: Choose δ = ε.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_scale_two",
+    "matched_prompt": "Show that the function x ↦ 2*x is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"times\" /><OMI>2</OMI><OMV name=\"x\" /></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε/2 and use |2y-2x| = 2|y-x|.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε/2.",
+      "calculation: Factor the output difference as 2*(y-x).",
+      "apply_theorem: Choose δ = ε/2, which is positive.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_quadratic_plus_one",
+    "matched_prompt": "Show that the function x ↦ x^2+1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Cancel the constant, factor y^2-x^2, and use the standard local bound for |y+x|.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Reduce to |y-x|*|y+x| and set C = 2|x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_quadratic_minus_one",
+    "matched_prompt": "Show that the function x ↦ x^2-1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Cancel the constant, factor y^2-x^2, and choose δ from a local bound on |y+x|.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Reduce to |y-x|*|y+x| and set C = 2|x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_square_plus_identity",
+    "matched_prompt": "Show that the function x ↦ x^2+x is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMV name=\"x\" /></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor the total change as (y-x)(y+x+1) and bound the second factor on a unit neighborhood.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Use (y^2+y)-(x^2+x) = (y-x)(y+x+1) and C = 2|x|+2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x+1|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_cube_plus_one",
+    "matched_prompt": "Show that the function x ↦ x^3+1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>3</OMI></OMA><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Cancel 1, factor the cubic difference, and use a local bound for its quadratic factor.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor y^3-x^3 and set C = 3(|x|+1)^2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the quadratic factor.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_cube_minus_identity",
+    "matched_prompt": "Show that the function x ↦ x^3-x is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>3</OMI></OMA><OMV name=\"x\" /></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor the change as (y-x)(y^2+xy+x^2-1) and bound the second factor locally.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor by y-x and set C = 3(|x|+1)^2+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the remaining factor.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_even_polynomial",
+    "matched_prompt": "Show that the function x ↦ x^4+x^2 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>4</OMI></OMA><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor both power differences by y-x, add their local bounds, and choose δ = min(1, ε/C).",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor both terms and set C = 4(|x|+1)^3+2|x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds their sum.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_quadratic_trinomial",
+    "matched_prompt": "Show that the function x ↦ x^2+x+1 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMV name=\"x\" /><OMI>1</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Cancel the constant and factor the remaining change as (y-x)(y+x+1).",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Regroup as (y-x)(y+x+1) and set C = 2|x|+2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x+1|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_cubic_polynomial",
+    "matched_prompt": "Show that the function x ↦ x^3+x^2+x is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>3</OMI></OMA><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMV name=\"x\" /></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor every term difference by y-x and bound the resulting polynomial coefficient locally.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor by y-x and set C = 3(|x|+1)^2+2|x|+2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the remaining coefficient.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_constant_real",
+    "matched_prompt": "Show that if c is real, the constant function with value c is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\" /><OMBVAR><OMV name=\"c\" /></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\" /><OMA><OMS cd=\"set1\" name=\"in\" /><OMV name=\"c\" /><OMS cd=\"setname1\" name=\"R\" /></OMA><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMV name=\"c\" /></OMBIND></OMA></OMA></OMBIND></OMOBJ>",
+    "proof_strategy": "The output difference is always zero, so any positive delta proves epsilon-delta continuity.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = 1.",
+      "calculation: For every y, |c - c| = 0.",
+      "apply_theorem: Use 0 < ε; the input-distance hypothesis is not otherwise needed.",
+      "conclude: The same choice works at every x, so the constant function is continuous."
+    ]
+  },
+  {
+    "id": "continuous_shifted_square",
+    "matched_prompt": "Show that the function x ↦ (x+1)^2 is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"power\" /><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMV name=\"x\" /><OMI>1</OMI></OMA><OMI>2</OMI></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Factor (y+1)^2-(x+1)^2 and bound |y+x+2| on a unit neighborhood.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor the difference and set C = 2|x|+3 for |y+x+2|.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x+2|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_shifted_absolute",
+    "matched_prompt": "Show that the function x ↦ |x-1| is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"abs\" /><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMV name=\"x\" /><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε and apply the reverse triangle inequality after translation.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε.",
+      "calculation: Bound ||y-1|-|x-1|| by |(y-1)-(x-1)| = |y-x|.",
+      "apply_theorem: Choose δ = ε.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_affine_absolute",
+    "matched_prompt": "Show that the function x ↦ |2*x+1| is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"abs\" /><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"times\" /><OMI>2</OMI><OMV name=\"x\" /></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε/2; reverse triangle inequality reduces the output change to 2|y-x|.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε/2.",
+      "calculation: Bound the absolute-value difference by |(2y+1)-(2x+1)| = 2|y-x|.",
+      "apply_theorem: Choose δ = ε/2, which is positive.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_x_abs",
+    "matched_prompt": "Show that the function x ↦ x*|x| is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"times\" /><OMV name=\"x\" /><OMA><OMS cd=\"arith1\" name=\"abs\" /><OMV name=\"x\" /></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Add and subtract x|y|, use a unit neighborhood to bound |y|, and split ε across the two product terms.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Expand the difference and set C = 2|x|+1 using |y| < |x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds both terms together.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_identity_real",
+    "matched_prompt": "Show that the identity function x ↦ x is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMV name=\"x\" /></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Choose δ = ε because the identity function preserves the input distance exactly.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Choose δ = ε, which is positive.",
+      "calculation: The output distance is |y - x|.",
+      "apply_theorem: Apply the hypothesis |y - x| < δ = ε directly.",
+      "conclude: This choice works at every x, so the identity function is continuous."
+    ]
+  },
+  {
+    "id": "continuous_abs_quadratic_minus_one",
+    "matched_prompt": "Show that the function x ↦ |x^2-1| is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"abs\" /><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Apply reverse triangle inequality, cancel the constants, and use the local difference-of-squares estimate.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Bound by |y-x||y+x| and set C = 2|x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds |y+x|.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_rational_x_over_square_plus_one",
+    "matched_prompt": "Show that the function x ↦ x/(x^2+1) is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"divide\" /><OMV name=\"x\" /><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Use x^2+1 ≥ 1, combine the fractions, and locally bound the polynomial numerator of the difference before choosing δ.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor by y-x and set C = 1+|x|(|x|+1); denominators are at least 1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the quotient coefficient.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_rational_one_over_square_plus_one",
+    "matched_prompt": "Show that the function x ↦ 1/(x^2+1) is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"divide\" /><OMI>1</OMI><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Both denominators are at least 1; combine reciprocals and bound |y^2-x^2| by a local multiple of |y-x|.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Bound the quotient by |y-x||y+x| and set C = 2|x|+1.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and denominators are at least 1.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_rational_shifted_numerator",
+    "matched_prompt": "Show that the function x ↦ (x+1)/(x^2+1) is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"divide\" /><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMV name=\"x\" /><OMI>1</OMI></OMA><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Use denominator lower bounds, combine fractions, factor the numerator difference by y-x, and bound remaining factors locally.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Factor as (y-x)(1-xy-x-y) and set C = |x|^2+3|x|+2.",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and denominators are at least 1.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  },
+  {
+    "id": "continuous_rational_quadratic_ratio",
+    "matched_prompt": "Show that the function x ↦ (x^2-1)/(x^2+1) is continuous on ℝ.",
+    "openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cd=\"pals1\" name=\"continuous_on\" cdbase=\"urn:pals:openmath:cd:v1\" /><OMS cd=\"setname1\" name=\"R\" /><OMBIND><OMS cd=\"fns1\" name=\"lambda\" /><OMBVAR><OMV name=\"x\" /></OMBVAR><OMA><OMS cd=\"arith1\" name=\"divide\" /><OMA><OMS cd=\"arith1\" name=\"minus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA><OMA><OMS cd=\"arith1\" name=\"plus\" /><OMA><OMS cd=\"arith1\" name=\"power\" /><OMV name=\"x\" /><OMI>2</OMI></OMA><OMI>1</OMI></OMA></OMA></OMBIND></OMA></OMOBJ>",
+    "proof_strategy": "Use denominators ≥ 1; after combining fractions the numerator is a constant multiple of y^2-x^2, which has a local epsilon-delta bound.",
+    "sketch_steps": [
+      "setup: Fix a base point x and a tolerance ε > 0.",
+      "derive: Restrict to |y - x| < 1 so every variable factor has an explicit local bound.",
+      "calculation: Simplify to 2|y-x||y+x| over denominators at least 1 and set C = 2(2|x|+1).",
+      "apply_theorem: Choose δ = min(1, ε/C); C is positive and bounds the quotient coefficient.",
+      "conclude: Substitute |y - x| < δ into the estimate to obtain output distance < ε."
+    ]
+  }
+]

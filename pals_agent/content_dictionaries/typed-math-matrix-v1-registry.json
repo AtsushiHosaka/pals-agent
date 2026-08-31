@@ -1,0 +1,38 @@
+{
+  "schema_version": "pals.typed-math-matrix-registry.v1",
+  "profile_id": "typed-math-matrix-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-math:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "typed1", "name": "Elem"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "algebra1", "name": "Field"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "Matrix"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "ColumnVector"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "field_nat_cast"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "literal"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "column_literal"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "zero"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "identity"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "add"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "neg"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "scale"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "mul"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "transpose"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "determinant"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "rank"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "is_inverse"},
+    {"cdbase": "urn:pals:openmath:typed-math:v1", "cd": "matrix1", "name": "mul_vec"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "equivalent"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

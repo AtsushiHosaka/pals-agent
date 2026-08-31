@@ -1,0 +1,31 @@
+{
+  "schema_version": "pals.typed-commutative-algebra-registry.v1",
+  "profile_id": "typed-commutative-algebra-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-commutative-algebra:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "typed1", "name": "Elem"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "CommRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "Ideal"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_bot"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_top"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_sum"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_inf"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_product"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_radical"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "ideal_le"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "is_prime_ideal"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra:v1", "cd": "commalg1", "name": "is_maximal_ideal"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

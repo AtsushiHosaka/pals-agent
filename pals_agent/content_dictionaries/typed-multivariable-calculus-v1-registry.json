@@ -1,0 +1,37 @@
+{
+  "schema_version": "pals.typed-multivariable-calculus-registry.v1",
+  "profile_id": "typed-multivariable-calculus-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-multivariable-calculus:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "typed1", "name": "Real"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "Real2"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "Real2Function"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "lambda2"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "of_int"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "pair"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "fst"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "snd"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "apply"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "partial_x_at"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "partial_y_at"},
+    {"cdbase": "urn:pals:openmath:typed-multivariable-calculus:v1", "cd": "multicalc1", "name": "differentiable_at"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "plus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "times"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "minus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "unary_minus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "power"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "equivalent"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema_version": "pals.typed-plane-geometry-registry.v1",
+  "profile_id": "typed-plane-geometry-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-plane-geometry:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "Real"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "Vector2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "Point2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "Line2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "Circle2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "vector2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "vector_add"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "point2"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "incident_point_line"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "incident_point_circle"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "parallel"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "perpendicular"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "distance_sq"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "midpoint"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "reflect"},
+    {"cdbase": "urn:pals:openmath:typed-plane-geometry:v1", "cd": "pals_plane_geometry", "name": "non_collinear"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "equivalent"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}

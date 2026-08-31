@@ -1,0 +1,29 @@
+{
+  "schema_version": "pals.typed-ode-registry.v1",
+  "profile_id": "typed-ode-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-ode:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "typed1", "name": "Real"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "lambda"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "of_int"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "apply"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "deriv_at"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "second_deriv_at"},
+    {"cdbase": "urn:pals:openmath:typed-ode:v1", "cd": "ode1", "name": "initial_value"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "plus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "times"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "minus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "unary_minus"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "arith1", "name": "power"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "transc1", "name": "exp"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "transc1", "name": "sin"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "transc1", "name": "cos"}
+  ]
+}

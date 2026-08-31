@@ -1,0 +1,38 @@
+{
+  "schema_version": "pals.typed-commutative-algebra-integral-registry.v1",
+  "profile_id": "typed-commutative-algebra-integral-v1",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-commutative-algebra-integral:v1"
+  },
+  "symbols": [
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "typed1", "name": "forall"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "typed1", "name": "exists"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "typed1", "name": "type"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "typed1", "name": "Elem"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "CommRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "Domain"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "Field"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "Extension"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ValuationRing"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_zero"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_one"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_add"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_sub"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_mul"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_neg"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "ring_square"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "extension_map"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "is_integral"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "is_integral_extension"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "field_inv"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "valuation_mem"},
+    {"cdbase": "urn:pals:openmath:typed-commutative-algebra-integral:v1", "cd": "integral1", "name": "valuation_integrally_closed"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "eq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "relation1", "name": "neq"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "and"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "or"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "implies"},
+    {"cdbase": "http://www.openmath.org/cd", "cd": "logic1", "name": "not"}
+  ]
+}
