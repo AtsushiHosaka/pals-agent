@@ -10,6 +10,7 @@ import copy
 import hashlib
 import json
 import time
+import unicodedata
 from dataclasses import dataclass, replace
 from typing import Any, Protocol
 
@@ -88,6 +89,7 @@ DECISION_SCHEMA = _object(
         },
         "conclusion": _STRING,
         "answer": _STRING,
+        "next_input_suggestion": {"type": ["string", "null"]},
         "supporting_proof": _STRING,
         "dependency_cycle": {"type": "boolean"},
         "question": _NULLABLE_QUESTION,
@@ -264,7 +266,16 @@ class ProofReuseRuntime:
                 "must explicitly say the requested claim is false. If mathematical confidence "
                 "is insufficient, use uncertain. If essential information is absent, ask "
                 "needs_input; never ask 'is this proof okay?'. Unsupported requests must use "
-                "unsupported rather than fabricate success.\nDATA:\n"
+                "unsupported rather than fabricate success.\n"
+                "For action answer, also provide next_input_suggestion: one concise probable "
+                "next message the learner might send, grounded in the exact original request, "
+                "its explicit clarification answers, and the answer you just wrote. Write from "
+                "the learner's perspective in request.output_language, as plain text on one line "
+                "of at most 160 characters, with no label or Markdown. Do not suggest another "
+                "topic, presume acceptance, or ask for approval of the proof. Use null when "
+                "there is no useful next question, and for every non-answer action. This is "
+                "only an optional input hint, not part of the proof or a new user request.\n"
+                "DATA:\n"
                 + json.dumps(
                     {
                         "request": context,
@@ -420,6 +431,8 @@ class ProofReuseRuntime:
                 {
                     "text": decision["answer"],
                     "evidence_kind": "llm_assessed",
+                    **({"next_input_suggestion": decision["next_input_suggestion"]}
+                       if decision["next_input_suggestion"] is not None else {}),
                     "sources": [
                         {
                             key: selected[identifier][key]
@@ -475,16 +488,40 @@ class ProofReuseRuntime:
                 response_schema=schema,
                 timeout_seconds=min(timeout, remaining),
             )
-        if len(raw.encode()) > 65536:
+        has_advisory = "next_input_suggestion" in schema["properties"]
+        if len(raw.encode(errors="surrogatepass")) > 65536:
             raise ProofReuseError("proof_reuse_invalid_response")
         try:
             value = json.loads(raw, object_pairs_hook=_unique_object)
+            if has_advisory and isinstance(value, dict):
+                # The optional hint is not evidence. Bad hints must never reject a
+                # valid proof or reach JSONB storage as invalid Unicode/control text.
+                value["next_input_suggestion"] = _sanitize_next_input_suggestion(
+                    value.get("next_input_suggestion")
+                ) if value.get("action") == "answer" else None
             _validate_json_storage_text(value)
         except (ValueError, RecursionError):
             raise ProofReuseError("proof_reuse_invalid_response") from None
         if not isinstance(value, dict) or set(value) != set(schema["properties"]):
             raise ProofReuseError("proof_reuse_invalid_response")
         return value
+
+
+def _sanitize_next_input_suggestion(value: Any) -> str | None:
+    if not isinstance(value, str) or any(
+        unicodedata.category(char) == "Cc"
+        or char in "\u2028\u2029"
+        or "\ud800" <= char <= "\udfff"
+        for char in value
+    ):
+        return None
+    text = value.strip()
+    if (
+        not 1 <= len(text) <= 160
+        or "```" in text
+    ):
+        return None
+    return text
 
 
 
