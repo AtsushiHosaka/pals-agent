@@ -13,6 +13,7 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
+from pals_agent.material_context import MaterialContext, MaterialContextError
 from pals_agent.proof_reuse import MAX_SECONDS, ProofReuseResult, ProofReuseRuntime
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.token_meter import (
@@ -41,6 +42,10 @@ class ProofRequestApi(TokenMeterApi, Protocol):
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]: ...
 
+    def get_proof_request_materials(
+        self, *, request_id: str, claim_id: str
+    ) -> dict[str, Any]: ...
+
 
 @dataclass(frozen=True, slots=True)
 class ProofRequestProcessor:
@@ -61,7 +66,14 @@ class ProofRequestProcessor:
             lease_ms=240000,
         )
         keys = {"status", "request", "claim_id", "lease_expires_at"}
-        if set(claim) not in (keys, keys | {"billing_operation_id"}):
+        if not keys <= set(claim) or set(claim) - keys - {
+            "billing_operation_id", "material_context_available"
+        }:
+            return False
+        if (
+            "material_context_available" in claim
+            and type(claim["material_context_available"]) is not bool
+        ):
             return False
         if claim["status"] == "terminal":
             return True
@@ -106,6 +118,17 @@ class ProofRequestProcessor:
 
         started = time.monotonic()
         try:
+            if claim.get("material_context_available"):
+                try:
+                    payload = self.api.get_proof_request_materials(
+                        request_id=request_id, claim_id=claim_id,
+                    )
+                except PalsApiError as error:
+                    raise MaterialContextError("material_context_unavailable") from error
+                material_context = MaterialContext.parse(
+                    payload, project_id=request.get("project_id")
+                )
+                request = dict(request, material_context=material_context.as_data())
             with usage_scope(record):
                 if "billing_operation_id" in claim:
                     if not self.token_accounting_enabled:
@@ -126,6 +149,11 @@ class ProofRequestProcessor:
                         raise TokenMeterError("token_qa_missing")
                 else:
                     result = self.runtime.answer(request)
+        except MaterialContextError as error:
+            result = ProofReuseResult(
+                "failed", None, None, error.code,
+                {"schema_version": "pals.proof-reuse-assessment.v1"},
+            )
         except (TokenMeterError, ValueError) as error:
             result = ProofReuseResult(
                 "failed", None, None,

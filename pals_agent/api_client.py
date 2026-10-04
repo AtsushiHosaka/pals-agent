@@ -152,6 +152,15 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def get_proof_request_materials(
+        self, *, request_id: str, claim_id: str
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/materials",
+            {"claim_id": _canonical_claim_id(claim_id)},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
