@@ -3,6 +3,7 @@
 Mount the service directory read-only, not credentials.json itself: the broker
 atomically replaces that file. No AWS call, disk cache or ambient fallback occurs.
 Only the SDK-facing successful stdout contains credentials; errors are closed.
+An independently mounted host policy fixes the expected role and session name.
 """
 
 from __future__ import annotations
@@ -29,8 +30,13 @@ _STATE_KEYS = {
     "expires_at",
     "reason",
 }
-_WORKER_ROLE_ARN = "arn:aws:iam::828786775577:role/pals-mini-prod/pals-mini-prod-worker"
 _WORKER_SESSION_NAME = "pals-mini-worker"
+_DEFAULT_POLICY_PATH = Path("/run/credentials-policy/worker-role.json")
+_POLICY_KEYS = {"version", "role_arn", "session_name"}
+_ROLE_ARN = re.compile(
+    r"arn:(?:aws|aws-us-gov|aws-cn):iam::(?!0{12}:)[0-9]{12}:role/"
+    r"(?:[A-Za-z0-9_+=,.@-]+/)*[A-Za-z0-9_+=,.@-]{1,64}\Z"
+)
 _MAX_BYTES = 16384
 _ERROR = "Worker AWS session is unavailable."
 
@@ -121,7 +127,40 @@ def _read_private_file(directory_descriptor: int, name: str) -> bytes:
         os.close(descriptor)
 
 
-def _validate_ready_state(data: bytes, credentials: dict[str, Any], *, now: datetime) -> None:
+def _read_policy(path: Path, credential_directory: Path) -> dict[str, Any]:
+    if not path.is_absolute() or path.resolve(strict=True) != path:
+        raise ValueError("Worker role policy path is invalid")
+    policy_directory = path.parent
+    if (
+        policy_directory == credential_directory
+        or policy_directory in credential_directory.parents
+        or credential_directory in policy_directory.parents
+    ):
+        raise ValueError("Worker role policy must be independent of the credential directory")
+    descriptor = _trusted_directory(policy_directory)
+    try:
+        value = json.loads(
+            _read_private_file(descriptor, path.name), object_pairs_hook=_unique_members
+        )
+    finally:
+        os.close(descriptor)
+    if (
+        not isinstance(value, dict)
+        or set(value) != _POLICY_KEYS
+        or type(value["version"]) is not int
+        or value["version"] != 1
+        or not isinstance(value["role_arn"], str)
+        or len(value["role_arn"]) > 2048
+        or not _ROLE_ARN.fullmatch(value["role_arn"])
+        or value["session_name"] != _WORKER_SESSION_NAME
+    ):
+        raise ValueError("Worker role policy is invalid")
+    return value
+
+
+def _validate_ready_state(
+    data: bytes, credentials: dict[str, Any], policy: dict[str, Any], *, now: datetime
+) -> None:
     # This is an assertion by the trusted host broker, not an STS identity call.
     value = json.loads(data, object_pairs_hook=_unique_members)
     if (
@@ -131,8 +170,8 @@ def _validate_ready_state(data: bytes, credentials: dict[str, Any], *, now: date
         or value["version"] != 1
         or value["ready"] is not True
         or value["reason"] is not None
-        or value["role_arn"] != _WORKER_ROLE_ARN
-        or value["session_name"] != _WORKER_SESSION_NAME
+        or value["role_arn"] != policy["role_arn"]
+        or value["session_name"] != policy["session_name"]
         or value["expires_at"] != credentials["Expiration"]
         or not isinstance(value["checked_at"], str)
         or not _STATE_TIMESTAMP.fullmatch(value["checked_at"])
@@ -147,7 +186,9 @@ def _validate_ready_state(data: bytes, credentials: dict[str, Any], *, now: date
         raise ValueError("Worker broker is not ready")
 
 
-def read_credentials(directory: Path, *, now: datetime | None = None) -> dict[str, Any]:
+def read_credentials(
+    directory: Path, *, now: datetime | None = None, policy_path: Path | None = None
+) -> dict[str, Any]:
     """Read a complete session and matching ready marker through one trusted directory.
 
     The broker writes credentials before the matching marker. Mismatched expirations
@@ -157,11 +198,14 @@ def read_credentials(directory: Path, *, now: datetime | None = None) -> dict[st
     now = now or datetime.now(UTC)
     directory_descriptor = _trusted_directory(directory)
     try:
+        policy = _read_policy(
+            policy_path if policy_path is not None else _DEFAULT_POLICY_PATH, directory
+        )
         credentials = _validate_record(
             _read_private_file(directory_descriptor, "credentials.json"), now=now
         )
         _validate_ready_state(
-            _read_private_file(directory_descriptor, "state.json"), credentials, now=now
+            _read_private_file(directory_descriptor, "state.json"), credentials, policy, now=now
         )
         return credentials
     finally:

@@ -11,6 +11,7 @@ import configparser
 import importlib.util
 import json
 import os
+import re
 import socket
 import stat
 import subprocess
@@ -27,7 +28,7 @@ _MODULE = _ROOT / "pals_agent" / "aws_worker_credentials.py"
 _LAUNCHER = _ROOT / "scripts" / "start-worker-with-credentials.sh"
 _PROFILE = _ROOT / "scripts" / "aws-worker-profile.conf"
 _NOW = datetime(2026, 10, 2, 0, 0, 0, tzinfo=UTC)
-_ROLE = "arn:aws:iam::828786775577:role/pals-mini-prod/pals-mini-prod-worker"
+_ROLE = "arn:aws:iam::111111111111:role/synthetic/worker"
 _SESSION = "pals-mini-worker"
 _CHECK = (
     "/usr/local/bin/python -I -m pals_agent.aws_worker_credentials --check /run/credentials/worker"
@@ -92,12 +93,17 @@ def _write_private(path: Path, value: dict[str, Any] | bytes) -> None:
 
 
 @pytest.fixture
-def handoff(tmp_path: Path) -> Path:
+def handoff(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     directory = tmp_path.resolve() / "worker"
     directory.mkdir(mode=0o700)
     credentials = _synthetic_credentials()
     _write_private(directory / "credentials.json", credentials)
     _write_private(directory / "state.json", _synthetic_state(credentials))
+    policy_directory = tmp_path.resolve() / "policy"
+    policy_directory.mkdir(mode=0o700)
+    policy_path = policy_directory / "worker-role.json"
+    _write_private(policy_path, {"version": 1, "role_arn": _ROLE, "session_name": _SESSION})
+    monkeypatch.setattr(adapter, "_DEFAULT_POLICY_PATH", policy_path)
     return directory
 
 
@@ -112,6 +118,141 @@ def test_reads_exact_worker_session_and_ready_marker(handoff: Path) -> None:
         "expires_at",
         "reason",
     }
+
+
+def test_expected_role_comes_from_independent_policy(handoff: Path) -> None:
+    policy_path = Path(adapter._DEFAULT_POLICY_PATH)
+    assert adapter.read_credentials(handoff, now=_NOW, policy_path=policy_path) == (
+        _synthetic_credentials()
+    )
+    policy = json.loads(policy_path.read_bytes())
+    policy["role_arn"] = _ROLE.replace("/worker", "/different-worker")
+    _write_private(policy_path, policy)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("version", True),
+        ("version", 2),
+        ("version", "1"),
+        ("role_arn", None),
+        ("role_arn", ""),
+        ("role_arn", _ROLE.replace("111111111111", "000000000000")),
+        ("role_arn", _ROLE.replace("111111111111", "11111111111")),
+        ("role_arn", _ROLE.replace(":role/", ":user/")),
+        ("role_arn", _ROLE + "/"),
+        ("role_arn", _ROLE + "\n"),
+        ("session_name", None),
+        ("session_name", "pals-mini-api"),
+        ("session_name", _SESSION + " "),
+    ],
+)
+def test_rejects_invalid_independent_policy(handoff: Path, field: str, value: Any) -> None:
+    policy_path = Path(adapter._DEFAULT_POLICY_PATH)
+    policy = json.loads(policy_path.read_bytes())
+    policy[field] = value
+    _write_private(policy_path, policy)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize("change", ["extra", "missing", "duplicate"])
+def test_policy_requires_closed_unique_members(handoff: Path, change: str) -> None:
+    policy_path = Path(adapter._DEFAULT_POLICY_PATH)
+    policy = json.loads(policy_path.read_bytes())
+    if change == "extra":
+        policy["unexpected"] = None
+        _write_private(policy_path, policy)
+    elif change == "missing":
+        del policy["role_arn"]
+        _write_private(policy_path, policy)
+    else:
+        data = json.dumps(policy)
+        _write_private(policy_path, (data[:-1] + ',"version":1}').encode())
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize("data", [b"", b"not-json", b"[]", b" " * 16385, b"\xff"])
+def test_policy_rejects_invalid_or_unbounded_records(handoff: Path, data: bytes) -> None:
+    _write_private(Path(adapter._DEFAULT_POLICY_PATH), data)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize("location", ["same", "ancestor", "descendant"])
+def test_policy_and_credential_directories_must_be_disjoint(handoff: Path, location: str) -> None:
+    if location == "same":
+        directory = handoff
+    elif location == "ancestor":
+        directory = handoff.parent
+    else:
+        directory = handoff / "policy"
+        directory.mkdir(mode=0o700)
+    policy_path = directory / "worker-role.json"
+    _write_private(policy_path, {"version": 1, "role_arn": _ROLE, "session_name": _SESSION})
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW, policy_path=policy_path)
+
+
+@pytest.mark.parametrize("mode", [0o400, 0o640, 0o644, 0o660, 0o777])
+def test_policy_requires_private_file_mode(handoff: Path, mode: int) -> None:
+    Path(adapter._DEFAULT_POLICY_PATH).chmod(mode)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize("mode", [0o500, 0o750, 0o755, 0o770, 0o777])
+def test_policy_requires_private_directory_mode(handoff: Path, mode: int) -> None:
+    Path(adapter._DEFAULT_POLICY_PATH).parent.chmod(mode)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+@pytest.mark.parametrize("kind", ["symlink", "hardlink", "directory", "fifo", "missing"])
+def test_policy_rejects_unsafe_files(handoff: Path, kind: str) -> None:
+    path = Path(adapter._DEFAULT_POLICY_PATH)
+    saved = path.with_suffix(".fixture")
+    path.replace(saved)
+    if kind == "symlink":
+        path.symlink_to(saved)
+    elif kind == "hardlink":
+        path.hardlink_to(saved)
+    elif kind == "directory":
+        path.mkdir(mode=0o600)
+    elif kind == "fifo":
+        os.mkfifo(path, mode=0o600)
+    with pytest.raises((OSError, ValueError)):
+        adapter.read_credentials(handoff, now=_NOW)
+
+
+def test_policy_rejects_symlinked_directory_and_relative_path(handoff: Path) -> None:
+    path = Path(adapter._DEFAULT_POLICY_PATH)
+    alias = handoff.parent / "policy-alias"
+    alias.symlink_to(path.parent, target_is_directory=True)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW, policy_path=alias / path.name)
+    with pytest.raises(ValueError):
+        adapter.read_credentials(handoff, now=_NOW, policy_path=Path("worker-role.json"))
+
+
+def test_missing_policy_cannot_use_ready_state_or_ambient_role(
+    handoff: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _freeze_reader(monkeypatch)
+    monkeypatch.setenv("AWS_ROLE_ARN", _ROLE)
+    Path(adapter._DEFAULT_POLICY_PATH).unlink()
+    for arguments in ([str(handoff)], ["--check", str(handoff)]):
+        assert adapter.main(arguments) == 1
+        assert capsys.readouterr() == ("", _ERROR)
+
+
+def test_public_adapter_has_no_embedded_account_role() -> None:
+    assert Path("/run/credentials-policy/worker-role.json") == _load_adapter()._DEFAULT_POLICY_PATH
+    assert re.search(r"arn:(?:aws|aws-us-gov|aws-cn):iam::[0-9]{12}:", _MODULE.read_text()) is None
 
 
 @pytest.mark.parametrize("field", ["SecretAccessKey", "SessionToken"])
@@ -197,8 +338,8 @@ def test_requires_exact_unique_json_members(handoff: Path, name: str, change: st
         ("ready", False),
         ("ready", 1),
         ("reason", "authentication-or-renewal-failed"),
-        ("role_arn", _ROLE.replace("-worker", "-api")),
-        ("role_arn", _ROLE.replace("828786775577", "000000000000")),
+        ("role_arn", _ROLE.replace("/worker", "/api")),
+        ("role_arn", _ROLE.replace("111111111111", "000000000000")),
         ("session_name", "pals-mini-api"),
         ("expires_at", None),
         ("expires_at", "2026-10-02T00:59:59+00:00"),

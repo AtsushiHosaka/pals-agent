@@ -13,7 +13,35 @@ import botocore.session
 import pytest
 from botocore.exceptions import CredentialRetrievalError
 
+from pals_agent import aws_worker_credentials as adapter
 from pals_agent.aws_worker_credentials import main, read_credentials
+
+_ROLE = "arn:aws:iam::111111111111:role/synthetic/worker"
+
+
+@pytest.fixture
+def policy_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    directory = tmp_path.resolve() / "policy"
+    directory.mkdir(mode=0o700)
+    path = directory / "worker-role.json"
+    path.write_text(
+        json.dumps({"version": 1, "role_arn": _ROLE, "session_name": "pals-mini-worker"})
+    )
+    path.chmod(0o600)
+    monkeypatch.setattr(adapter, "_DEFAULT_POLICY_PATH", path)
+    return path
+
+
+def process_command(directory: Path, policy_path: Path) -> list[str]:
+    # A separate process cannot inherit the parent's monkeypatch. Set the
+    # synthetic mount path before forwarding the unchanged adapter arguments.
+    bootstrap = (
+        "import sys; from pathlib import Path; "
+        "from pals_agent import aws_worker_credentials as adapter; "
+        "adapter._DEFAULT_POLICY_PATH = Path(sys.argv.pop(1)); "
+        "raise SystemExit(adapter.main())"
+    )
+    return [sys.executable, "-c", bootstrap, str(policy_path), str(directory)]
 
 
 def record(*, key: str = "ASIA" + "A" * 16, minutes: int = 55) -> dict[str, object]:
@@ -37,20 +65,26 @@ def write_record(directory: Path, value: dict[str, object]) -> None:
     temporary.replace(credentials)
     marker = directory / "state.json"
     temporary = directory / "state.new"
-    temporary.write_text(json.dumps({
-        "version": 1,
-        "ready": True,
-        "role_arn": "arn:aws:iam::828786775577:role/pals-mini-prod/pals-mini-prod-worker",
-        "session_name": "pals-mini-worker",
-        "checked_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "expires_at": value["Expiration"],
-        "reason": None,
-    }))
+    temporary.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "ready": True,
+                "role_arn": _ROLE,
+                "session_name": "pals-mini-worker",
+                "checked_at": datetime.now(UTC).isoformat(timespec="seconds"),
+                "expires_at": value["Expiration"],
+                "reason": None,
+            }
+        )
+    )
     temporary.chmod(0o600)
     temporary.replace(marker)
 
 
-def test_botocore_process_refresh_observes_atomic_file_replacement(tmp_path, monkeypatch):
+def test_botocore_process_refresh_observes_atomic_file_replacement(
+    tmp_path, monkeypatch, policy_path: Path
+):
     for name in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("AWS_EC2_METADATA_DISABLED", "true")
@@ -58,9 +92,7 @@ def test_botocore_process_refresh_observes_atomic_file_replacement(tmp_path, mon
     directory = tmp_path.resolve() / "worker"
     write_record(directory, record(minutes=5))
     config = tmp_path / "config"
-    command = shlex.join([
-        sys.executable, "-m", "pals_agent.aws_worker_credentials", str(directory)
-    ])
+    command = shlex.join(process_command(directory, policy_path))
     config.write_text("[profile pals-worker]\ncredential_process = " + command + "\n")
     session = botocore.session.Session(profile="pals-worker")
     session.set_config_variable("config_file", str(config))
@@ -87,7 +119,9 @@ def test_botocore_process_refresh_observes_atomic_file_replacement(tmp_path, mon
         {"extra": "forbidden"},
     ],
 )
-def test_invalid_or_expired_records_fail_closed_without_output(tmp_path, capsys, change):
+def test_invalid_or_expired_records_fail_closed_without_output(
+    tmp_path, capsys, change, policy_path: Path
+):
     directory = tmp_path.resolve() / "worker"
     write_record(directory, {**record(), **change})
     assert main([str(directory)]) == 1
@@ -96,7 +130,7 @@ def test_invalid_or_expired_records_fail_closed_without_output(tmp_path, capsys,
     assert output.err == "Worker AWS session is unavailable.\n"
 
 
-def test_missing_symlink_and_writable_records_are_rejected(tmp_path):
+def test_missing_symlink_and_writable_records_are_rejected(tmp_path, policy_path: Path):
     directory = tmp_path.resolve() / "worker"
     with pytest.raises(FileNotFoundError):
         read_credentials(directory)
@@ -112,12 +146,9 @@ def test_missing_symlink_and_writable_records_are_rejected(tmp_path):
         read_credentials(link)
 
 
-def test_real_process_missing_file_has_empty_stdout_and_closed_error(tmp_path):
+def test_real_process_missing_file_has_empty_stdout_and_closed_error(tmp_path, policy_path: Path):
     result = subprocess.run(
-        [
-            sys.executable, "-m", "pals_agent.aws_worker_credentials",
-            str(tmp_path.resolve() / "absent"),
-        ],
+        process_command(tmp_path.resolve() / "absent", policy_path),
         capture_output=True,
         text=True,
         check=False,
