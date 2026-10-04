@@ -15,6 +15,7 @@ from pals_agent.http_transport import (
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.private_draft_candidates import DraftCandidateResult
 from pals_agent.proof_flow_evidence import DraftEvidence
+from pals_agent.reranker_diagnostics import response_diagnostics, sanitize_reranker_diagnostics
 
 _ENDPOINT = "https://api.openai.com/v1/responses"
 _DRAFT_ROLE_MODEL = fixed_model_default(ModelRole.DRAFT)
@@ -37,6 +38,10 @@ _MAX_SELECTION_BYTES = 512
 
 class DraftRerankerInvalidError(RuntimeError):
     """The reranker request or a successful provider envelope is invalid."""
+
+    def __init__(self, message: str, *, private_evidence: object = None) -> None:
+        super().__init__(message)
+        self.private_evidence = sanitize_reranker_diagnostics(private_evidence)
 
 
 class DraftRerankerUnavailableError(RuntimeError):
@@ -100,11 +105,13 @@ class OpenAIDraftReranker:
             raise DraftRerankerUnavailableError("Draft reranker is unavailable.") from None
         if not 200 <= response.status_code < 300 or len(response.body) > _MAX_RESPONSE_BYTES:
             raise DraftRerankerUnavailableError("Draft reranker is unavailable.")
+        parse_progress = {"stage": "json"}
         try:
-            return _parse_response(response.body, request=request)
+            return _parse_response(response.body, request=request, parse_progress=parse_progress)
         except (TypeError, ValueError, UnicodeDecodeError):
             raise DraftRerankerInvalidError(
-                "Draft reranker returned an invalid response."
+                "Draft reranker returned an invalid response.",
+                private_evidence=response_diagnostics(response.body, parse_progress["stage"]),
             ) from None
 
 
@@ -136,6 +143,8 @@ def build_draft_reranker_request(
         "input": provider_input,
         "max_output_tokens": 512,
         "model": _MODEL,
+        "reasoning": {"effort": "low"},
+        "service_tier": "default",
         "store": False,
         "stream": False,
         "text": {
@@ -216,18 +225,30 @@ class _JsonPairs(list[tuple[str, Any]]):
     pass
 
 
-def _parse_response(body: bytes, *, request: DraftRerankerRequest) -> DraftRerankerResponse:
+def _parse_response(
+    body: bytes, *, request: DraftRerankerRequest,
+    parse_progress: dict[str, str] | None = None,
+) -> DraftRerankerResponse:
+    progress = parse_progress if parse_progress is not None else {}
+    progress["stage"] = "json"
     envelope = _decode_json(body)
+    progress["stage"] = "envelope"
     root = _object(envelope, exact=None)
     _require(root, "object", "response")
+    progress["stage"] = "status"
     _require(root, "status", "completed")
+    progress["stage"] = "envelope"
     _require(root, "error", None)
     _require(root, "incomplete_details", None)
+    progress["stage"] = "model"
     _require(root, "model", _MODEL)
+    progress["stage"] = "usage"
     usage = _usage(root.get("usage"))
+    progress["stage"] = "output"
     output = root.get("output")
     if not isinstance(output, list) or len(output) != 1:
         raise ValueError("reranker output is invalid")
+    progress["stage"] = "message"
     message = _object(output[0], exact=None)
     _require(message, "type", "message")
     _require(message, "role", "assistant")
@@ -235,6 +256,7 @@ def _parse_response(body: bytes, *, request: DraftRerankerRequest) -> DraftReran
     for forbidden in ("refusal", "reasoning", "tool", "function", "computer", "custom"):
         if forbidden in message:
             raise ValueError("reranker message is invalid")
+    progress["stage"] = "content"
     content = message.get("content")
     if not isinstance(content, list) or len(content) != 1:
         raise ValueError("reranker message content is invalid")
@@ -243,10 +265,12 @@ def _parse_response(body: bytes, *, request: DraftRerankerRequest) -> DraftReran
     _require(text_item, "annotations", [])
     if "refusal" in text_item:
         raise ValueError("reranker output text is invalid")
+    progress["stage"] = "selection"
     text = text_item.get("text")
     if not isinstance(text, str) or len(text.encode("utf-8")) > _MAX_SELECTION_BYTES:
         raise ValueError("reranker selection text is invalid")
     selection = _object(_decode_json(text.encode("utf-8")), exact={"selected_draft_ids"})
+    progress["stage"] = "selection_ids"
     ids = selection["selected_draft_ids"]
     if (
         not isinstance(ids, list)
@@ -262,9 +286,9 @@ def _parse_response(body: bytes, *, request: DraftRerankerRequest) -> DraftReran
 
 
 def _usage(value: object) -> DraftRerankerUsage:
-    root = _object(
+    root = _required_usage_object(
         value,
-        exact={
+        required={
             "input_tokens",
             "input_tokens_details",
             "output_tokens",
@@ -275,9 +299,9 @@ def _usage(value: object) -> DraftRerankerUsage:
     input_tokens = _token_count(root["input_tokens"])
     output_tokens = _token_count(root["output_tokens"])
     total_tokens = _token_count(root["total_tokens"])
-    input_details = _object(root["input_tokens_details"], exact={"cached_tokens"})
-    output_details = _object(
-        root["output_tokens_details"], exact={"reasoning_tokens"}
+    input_details = _required_usage_object(root["input_tokens_details"], required={"cached_tokens"})
+    output_details = _required_usage_object(
+        root["output_tokens_details"], required={"reasoning_tokens"}
     )
     cached_input_tokens = _token_count(input_details["cached_tokens"])
     reasoning_output_tokens = _token_count(output_details["reasoning_tokens"])
@@ -296,6 +320,15 @@ def _usage(value: object) -> DraftRerankerUsage:
         nonreasoning_output_tokens=output_tokens - reasoning_output_tokens,
         total_tokens=total_tokens,
     )
+
+
+def _required_usage_object(value: object, *, required: set[str]) -> dict[str, object]:
+    # Provider usage may add metadata. Only the required counts inform usage;
+    # unknown values are not projected, retained, or used for acceptance.
+    root = _object(value, exact=None)
+    if not required.issubset(root):
+        raise ValueError("reranker usage is missing required fields")
+    return root
 
 
 def _token_count(value: object) -> int:

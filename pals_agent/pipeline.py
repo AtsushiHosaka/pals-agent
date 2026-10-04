@@ -157,6 +157,10 @@ class ApiRepairSeed:
     verification: VerificationResult
     attempt: int
     repairs_used: int
+    repair_route: dict[str, Any] | None = None
+    # Oldest first, excluding this seed's current failure. Populated only after
+    # the worker validates the API's candidate-bound consecutive history.
+    prior_failure_fingerprints: tuple[frozenset[str], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -206,11 +210,15 @@ class ProofPipeline:
         proof_job_id: str,
         on_status: StatusCallback | None = None,
         api_repair_seed: ApiRepairSeed | None = None,
+        prepared_request: ProofRequest | None = None,
     ) -> ProofRunResult:
-        request = self._request_for_statement(
-            statement,
-            formal_statement=formal_statement,
+        request = prepared_request or self.prepare_statement(
+            statement=statement, formal_statement=formal_statement
         )
+        if request.prompt != statement.strip() or request.formal_statement != (
+            formal_statement.strip() if formal_statement else None
+        ):
+            raise ValueError("Prepared proof request does not match the submitted statement")
         return self._run_request(
             request=request,
             verification_harness=request.formal_statement,
@@ -225,6 +233,12 @@ class ProofPipeline:
             on_status=on_status,
             api_repair_seed=api_repair_seed,
         )
+
+    def prepare_statement(
+        self, *, statement: str, formal_statement: str | None = None
+    ) -> ProofRequest:
+        """Retrieve once before Recipe selection; model generation consumes this same result."""
+        return self._request_for_statement(statement, formal_statement=formal_statement)
 
     def _run_request(
         self,
@@ -288,16 +302,21 @@ class ProofPipeline:
                 )
             ]
             attempts[0]["checkpoint_status"] = "published"
-            failure_fingerprint_history = [
-                _failure_fingerprint_set(api_repair_seed.verification.diagnostics)
-            ]
+            # Retain the API-owned selector receipt for this already-generated
+            # attempt. A later failed attempt cannot be represented as attempt one.
+            attempts[0]["repair_route"] = api_repair_seed.repair_route
+            failure_fingerprint_history = list(api_repair_seed.prior_failure_fingerprints)
+            repair_feedback_diagnostics = _with_repair_stagnation(
+                list(api_repair_seed.verification.diagnostics),
+                failure_fingerprint_history,
+            )
             generated = api_repair_seed.generated
             model_attempt = generated
             model_attempt_verification = api_repair_seed.verification
             repair_generation = self._repair_after_failure(
                 request=request,
                 generated=generated,
-                feedback_diagnostics=list(api_repair_seed.verification.diagnostics),
+                feedback_diagnostics=repair_feedback_diagnostics,
                 cumulative_diagnostics=diagnostics,
                 problem_id=problem_id,
                 attempt=api_repair_seed.attempt,
@@ -874,7 +893,11 @@ class ProofPipeline:
         verification_pending: bool = False,
         termination_reason_override: TerminationReason | None = None,
     ) -> ProofRunResult:
-        repairs_used = max(0, len(attempts) - 1)
+        # A resumed run retains only the API-owned previous attempt plus its new
+        # work. Their absolute attempt numbers, not this partial history's length,
+        # determine the consumed repair budget and termination receipt.
+        latest_attempt = int(attempts[-1]["attempt"])
+        repairs_used = max(0, latest_attempt - 1)
         termination_reason = (
             termination_reason_override
             if termination_reason_override is not None
@@ -887,7 +910,7 @@ class ProofPipeline:
         )
         termination_event = _termination_event(
             termination_reason,
-            attempt=len(attempts),
+            attempt=latest_attempt,
         )
         metadata = {
                 "proof_job_id": proof_job_id,
@@ -949,7 +972,7 @@ class ProofPipeline:
                 **_request_context(request, problem_id=problem_id),
                 "lean_artifact_uri": artifact.lean_uri,
                 "verification_elapsed_ms": verification.elapsed_ms,
-                "attempts": len(attempts),
+                "attempts": latest_attempt,
                 "repairs_used": repairs_used,
                 "max_repair_attempts": self.max_repair_attempts,
                 "termination_reason": termination_reason,
@@ -1285,9 +1308,10 @@ def _with_repair_stagnation(
         severity="warning",
         code="pals.repair_stagnation",
         message=(
-            "The following error codes persisted across the last 3 attempts: "
+            "The same normalized diagnostic signatures appeared in 3 consecutive attempts: "
             + ", ".join(persistent_codes)
-            + ". Reconsider whether repair should resume from sketch or draft instead "
+            + ". This does not establish that their mathematical causes are identical. "
+            "Reconsider whether repair should resume from sketch or draft instead "
             "of repeating the same local proof repair."
         ),
     )
@@ -1306,6 +1330,7 @@ def _failure_fingerprint_set(
         _repair_failure_fingerprint(diagnostic)
         for diagnostic in diagnostics
         if diagnostic.severity == "error" and diagnostic.code
+        and diagnostic.code != "verifier_compile_failed"
     )
 
 
@@ -1324,6 +1349,17 @@ def _validate_api_repair_seed(
         raise ValueError("API repair seed has an invalid attempt or repair budget")
     if seed.verification.success:
         raise ValueError("API repair seed must represent a failed verification")
+    if (
+        not isinstance(seed.prior_failure_fingerprints, tuple)
+        or len(seed.prior_failure_fingerprints) > min(2, seed.attempt - 1)
+        or any(
+            not isinstance(items, frozenset)
+            or len(items) > 8
+            or any(not isinstance(item, str) or not 1 <= len(item) <= 512 for item in items)
+            for items in seed.prior_failure_fingerprints
+        )
+    ):
+        raise ValueError("API repair seed has invalid prior diagnostic fingerprints")
     if not seed.generated.lean_code.strip():
         raise ValueError("API repair seed requires nonblank prior Lean code")
     if not any(

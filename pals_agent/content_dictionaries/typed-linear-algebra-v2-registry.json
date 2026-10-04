@@ -1,0 +1,251 @@
+{
+  "schema_version": "pals.typed-linear-algebra-registry.v2",
+  "profile_id": "typed-linear-algebra-v2",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "typed1",
+      "name": "forall"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "typed1",
+      "name": "exists"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "typed1",
+      "name": "type"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Basis"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Field"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "FiniteDimensionalSpace"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "LinearMap"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Scalar"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "ScalarFamily"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Subspace"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "Vector"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "VectorFamily"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "basis_vectors"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "det"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "dim"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "eigenfamily"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "eigenspace"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "family_span"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "has_eigenbasis"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "independent"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "injective"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "kernel"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "linear_comp"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "linear_id"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "linear_smul"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "linear_sub"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "range"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "scalar_family_injective"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "scalar_mul"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "scalar_pow"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "scalar_zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_bot"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_dim"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_inf"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_le"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_lt"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_sup"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "sub_top"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v2",
+      "cd": "la2",
+      "name": "surjective"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus"
+    }
+  ]
+}

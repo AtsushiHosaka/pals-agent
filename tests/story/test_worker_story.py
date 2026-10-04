@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -86,6 +87,7 @@ class FakeApi:
         return {
             "id": proof_job_id,
             "state": self.state,
+            "result_artifact_uri": VERIFIED_ARTIFACT_URI,
             "chat_id": self.chat_id,
             "output_language": self.output_language,
             "theorem_statement": self.theorem_statement,
@@ -99,6 +101,15 @@ class FakeApi:
                 else None
             ),
             "generation_session_id": self.generation_session_id,
+        }
+
+    def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+        return {
+            "schema_version": "pals.verification-candidate-binding.v1", **kwargs,
+            "mutation_claim_id": self.generation_session_id,
+            "lean_sha256": hashlib.sha256((self.lean_code or "").encode()).hexdigest(),
+            "result_artifact_uri": VERIFIED_ARTIFACT_URI,
+            "source_binding_sha256": None, "candidate_status": self.state,
         }
 
     def update_proof_job(
@@ -445,6 +456,9 @@ class UnavailableApi(FakeApi):
 
 
 class CandidateImportUnavailableApi(FakeApi):
+    def get_verification_candidate_binding(self, **_kwargs: Any) -> dict[str, Any]:
+        raise PalsApiError("candidate was not committed", status_code=404)
+
     def submit_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
         self.events.append("verification_candidate")
         self.verification_candidates.append(kwargs)
@@ -1069,6 +1083,13 @@ def test_worker_processes_structured_clarification_task_and_hides_private_model_
         "content": completed,
         "parent_explanation_sha256": parent_sha256,
     }
+    clarification_context = {
+        "section_id": "finish-proof", "question": "trivial は何をしているの？",
+        "selected_text": "", "after_clarification_id": None, "parent_clarification": None,
+    }
+    clarification_output["clarification_context_sha256"] = hashlib.sha256(
+        rfc8785.dumps(clarification_context)
+    ).hexdigest()
     evidence = completed_update["review_evidence"]
     assert evidence["output_kind"] == "clarification"
     assert evidence["output_sha256"] == hashlib.sha256(
@@ -1312,3 +1333,108 @@ def test_worker_passes_formal_statement_context_to_pipeline() -> None:
     _process_proof(worker, "job-1")
 
     assert pipeline.formal_statement == "example : Continuous fun x : ℝ => x ^ 2 := by"
+
+
+@pytest.mark.parametrize("notifier_available", [True, False])
+def test_committed_import_transport_failure_keeps_exact_candidate_and_bounded_visibility(
+    notifier_available: bool,
+) -> None:
+    class AmbiguousApi(DelayedCandidateApi):
+        binding_reads = 0
+
+        def submit_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
+            super().submit_verification_candidate(**kwargs)
+            raise PalsApiError("notification unavailable after durable import")
+
+        def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+            self.binding_reads += 1
+            candidate = self.verification_candidates[-1]
+            assert kwargs == {
+                "proof_job_id": candidate["proof_job_id"],
+                "candidate_id": candidate["candidate_id"],
+            }
+            return {
+                "schema_version": "pals.verification-candidate-binding.v1",
+                **kwargs,
+                "mutation_claim_id": candidate["claim_id"],
+                "lean_sha256": hashlib.sha256(candidate["lean_code"].encode()).hexdigest(),
+                "result_artifact_uri": candidate["result_artifact_uri"],
+                "source_binding_sha256": None,
+                "candidate_status": self.state,
+            }
+
+        def retry_verification_candidate_reconciliation(self, **kwargs: Any) -> dict[str, Any]:
+            result = super().retry_verification_candidate_reconciliation(**kwargs)
+            if not notifier_available:
+                raise PalsApiError("notification remains unavailable")
+            return result
+
+    api = AmbiguousApi(compiling_reads=2 if notifier_available else 10000)
+    worker = _worker(api=api)
+    clock = [0.0]
+    worker = replace(worker, monotonic=lambda: clock[0],
+                     sleep=lambda seconds: clock.__setitem__(0, clock[0] + seconds))
+    visibility: list[int] = []
+    acknowledged = worker.process_proof_job(
+        "job-1", claim_id="11111111-1111-4111-8111-111111111111",
+        extend_visibility=visibility.append,
+    )
+    assert acknowledged is notifier_available
+    assert len(api.verification_candidates) == 1
+    assert api.events.count("proof_generation_claim") == 1
+    assert api.binding_reads == (2 if notifier_available else 1)
+    assert api.reconciliation_retries == [("job-1", api.verification_candidate_id)]
+    assert 360 in visibility
+    if not notifier_available:
+        assert clock[0] == 330
+        assert visibility[-1] == 360
+        assert not api.explanation_updates
+
+
+@pytest.mark.parametrize("changed", [
+    "schema_version", "proof_job_id", "candidate_id", "mutation_claim_id", "lean_sha256",
+    "result_artifact_uri", "source_binding_sha256", "candidate_status", "extra",
+])
+def test_ambiguous_import_does_not_recover_a_different_or_unknown_binding(changed: str) -> None:
+    api = FakeApi()
+    candidate_id = "22222222-2222-4222-8222-222222222222"
+    claim_id = "11111111-1111-4111-8111-111111111111"
+    binding = {
+        "schema_version": "pals.verification-candidate-binding.v1",
+        "proof_job_id": "job-1", "candidate_id": candidate_id, "mutation_claim_id": claim_id,
+        "lean_sha256": hashlib.sha256(b"example : True := by trivial").hexdigest(),
+        "result_artifact_uri": VERIFIED_ARTIFACT_URI, "source_binding_sha256": None,
+        "candidate_status": "compiling",
+    }
+    binding[changed] = "wrong"
+    api.get_verification_candidate_binding = lambda **_kwargs: binding  # type: ignore[attr-defined]
+    assert not _worker(api=api)._recover_candidate_import(
+        proof_job_id="job-1", candidate_id=candidate_id, claim_id=claim_id,
+        lean_code="example : True := by trivial", result_artifact_uri=VERIFIED_ARTIFACT_URI,
+        source_binding_sha256=None,
+    )
+    assert api.reconciliation_retries == []
+    assert api.events == []
+
+
+def test_late_candidate_completion_extends_visibility_before_semantic_model_call() -> None:
+    clock = [0.0]
+    visibility: list[tuple[float, int]] = []
+    api = DelayedCandidateApi(compiling_reads=329)
+
+    class ObservedReviewer(FakeSemanticReviewer):
+        def review_proof(self, **kwargs: Any) -> ProofSemanticReview:
+            assert clock[0] == 329
+            assert visibility[-1] == (329, 3 * kwargs["timeout_seconds"] + 30)
+            return super().review_proof(**kwargs)
+
+    worker = replace(
+        _worker(api=api, proof_reviewer=ObservedReviewer()), monotonic=lambda: clock[0],
+        sleep=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
+    )
+    assert worker.process_proof_job(
+        "job-1", claim_id="11111111-1111-4111-8111-111111111111",
+        extend_visibility=lambda seconds: visibility.append((clock[0], seconds)),
+    )
+    assert api.events.count("proof_generation_claim") == 1
+    assert api.events.count("semantic_review") == 1

@@ -204,8 +204,12 @@ class RecipeSelectionQuery:
     formal_target: FormalTarget | None = None
     draft_revision: DraftRevisionReference | None = None
     proof_method_tag: str | None = None
+    proof_job_id: str | None = None
+    mutation_claim_id: str | None = None
 
     def __post_init__(self) -> None:
+        if (self.proof_job_id is None) != (self.mutation_claim_id is None):
+            raise ValueError("selection claim binding is incomplete")
         if not isinstance(self.toolchain_fingerprint, ToolchainFingerprintV1):
             raise ValueError("toolchain fingerprint is invalid")
         if self.formal_target is not None and not isinstance(self.formal_target, FormalTarget):
@@ -263,6 +267,7 @@ class RecipeExclusion:
 @dataclass(frozen=True, slots=True)
 class RecipeNotSelected:
     exclusions: tuple[RecipeExclusion, ...]
+    request_sha256: str | None = None
 
 
 type RecipeSelection = RecipeSelected | RecipeNotSelected
@@ -303,6 +308,7 @@ class PrivateRecipeSelectionClient:
 
     base_url: str
     worker_secret: str
+    allow_local_http: bool = False
     transport: HttpTransport = field(
         default_factory=lambda: HardDeadlineHttpTransport(max_response_bytes=_MAX_RESPONSE_BYTES),
         repr=False,
@@ -317,7 +323,7 @@ class PrivateRecipeSelectionClient:
     )
 
     def __post_init__(self) -> None:
-        _validate_api_base_url(self.base_url)
+        _validate_api_base_url(self.base_url, allow_local_http=self.allow_local_http)
         if (
             not isinstance(self.worker_secret, str)
             or not self.worker_secret.strip()
@@ -372,6 +378,14 @@ class PrivateRecipeSelectionClient:
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                     "X-PALS-Recipe-Worker-Secret": self.worker_secret,
+                    **(
+                        {
+                            "X-PALS-Proof-Job-Id": query.proof_job_id,
+                            "X-PALS-Mutation-Claim-Id": query.mutation_claim_id,
+                        }
+                        if query.proof_job_id is not None and query.mutation_claim_id is not None
+                        else {}
+                    ),
                 },
                 body=body,
                 timeout_seconds=10.0,
@@ -444,7 +458,9 @@ def _selection_result(
         return _selected(root["selection"], query=query)
     if root["selection"] is not None:
         raise ValueError("not-selected Recipe response includes a selection")
-    return RecipeNotSelected(exclusions=_exclusions(root["exclusions"]))
+    return RecipeNotSelected(
+        exclusions=_exclusions(root["exclusions"]), request_sha256=request_sha256
+    )
 
 
 def _selected(value: object, *, query: RecipeSelectionQuery) -> RecipeSelected:
@@ -705,7 +721,7 @@ def _exact_object(value: object, expected: set[str]) -> dict[str, object]:
     return value
 
 
-def _validate_api_base_url(value: str) -> None:
+def _validate_api_base_url(value: str, *, allow_local_http: bool = False) -> None:
     if (
         not isinstance(value, str)
         or not value
@@ -718,7 +734,12 @@ def _validate_api_base_url(value: str) -> None:
     except ValueError as exc:
         raise ValueError("Recipe API base URL must be an absolute HTTPS origin") from exc
     if (
-        parts.scheme != "https"
+        not (
+            parts.scheme == "https"
+            or allow_local_http is True
+            and value.rstrip("/")
+            in {"http://api:8000", "http://localhost:8000", "http://127.0.0.1:8000"}
+        )
         or parts.hostname is None
         or port is not None
         and not 1 <= port <= 65_535

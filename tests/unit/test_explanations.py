@@ -1,5 +1,6 @@
 import json
 import uuid
+from dataclasses import replace
 
 import pytest
 
@@ -12,6 +13,7 @@ from pals_agent.explanations import (
     ProofExplanation,
     ProofOutputReview,
     ProofOutputReviewError,
+    ProofSemanticReviewUnavailable,
     _parse_json_object,
 )
 from pals_agent.lean_target import LeanTargetDeclaration
@@ -73,9 +75,7 @@ def test_explanation_json_parser_repairs_only_bare_latex_backslashes() -> None:
     assert _parse_json_object(r'{"formula":"\text{x}\neq y\to z"}') == {
         "formula": r"\text{x}\neq y\to z"
     }
-    assert _parse_json_object(r'{"excerpt":"first\n  second"}') == {
-        "excerpt": "first\n  second"
-    }
+    assert _parse_json_object(r'{"excerpt":"first\n  second"}') == {"excerpt": "first\n  second"}
 
     with pytest.raises(json.JSONDecodeError):
         _parse_json_object('{"formula": }')
@@ -90,8 +90,7 @@ def epsilon_delta_payload(
         "この $\\delta$ は $\\delta>0$ です。"
     ),
     conclusion: str = (
-        "$|x^2-a^2|=|x-a||x+a|<\\varepsilon$ と評価できるため、"
-        "$x^2$ は点 $a$ で連続です。"
+        "$|x^2-a^2|=|x-a||x+a|<\\varepsilon$ と評価できるため、$x^2$ は点 $a$ で連続です。"
     ),
 ) -> str:
     return json.dumps(
@@ -168,12 +167,64 @@ def test_independent_output_reviewer_requires_explicit_approval_against_lean_sou
         in prompt
     )
     assert "standard mathematical derivations of its stated claim are grounded" in prompt
+    assert "reject duplicated substantive derivations or calculations" in prompt
+    assert "Reject circular reasoning that assumes the requested claim" in prompt
+    assert "rephrases the requested claim without a supporting argument" in prompt
+    assert "Standard theorems may be used under their required hypotheses" in prompt
+    assert "do not demand that every auxiliary lemma be proved again" in prompt
+    assert "A brief final statement of the established result is allowed" in prompt
+    assert "Reusing an expression to continue a deduction is also allowed" in prompt
     assert review == ProofOutputReview(
         kind="explanation",
         reviewer_provider="review-provider",
         reviewer_model="explain-model",
         session_id="33333333-3333-4333-8333-333333333333",
         rationale="Lean source supports the explanation.",
+    )
+
+
+def test_explanation_reviewer_gets_visible_prose_once_without_internal_labels() -> None:
+    explanation = _reviewable_explanation()
+    explanation = replace(
+        explanation,
+        sections=(replace(explanation.sections[0], title="INTERNAL_LABEL_NOT_VISIBLE"),),
+    )
+    client = FakeClient('{"approved": true, "rationale": "Grounded continuous proof."}')
+    reviewer = LeanGroundedOutputReviewer(
+        client=client,
+        model="explain-model",
+        provider="review-provider",
+    )
+    reviewer.review_explanation(
+        theorem_statement="n + 0 = n を示せ",
+        lean_code=LEAN_CODE,
+        explanation=explanation,
+        language="ja",
+    )
+    prompt = client.prompts[0]
+    visible = prompt.split("BEGIN LEARNER-VISIBLE PROOF\n", 1)[1].split(
+        "\nEND LEARNER-VISIBLE PROOF",
+        1,
+    )[0]
+    assert visible == "\n\n".join(
+        [
+            explanation.overview,
+            explanation.sections[0].summary,
+            explanation.conclusion,
+        ]
+    )
+    assert "INTERNAL_LABEL_NOT_VISIBLE" not in visible
+    assert explanation.sections[0].references[0].excerpt not in visible
+    structured = json.loads(
+        prompt.split(
+            "Candidate explanation JSON (structured evidence; field names and internal titles "
+            "are not shown):\n",
+            1,
+        )[1]
+    )
+    assert structured["explanation"]["sections"][0]["title"] == "INTERNAL_LABEL_NOT_VISIBLE"
+    assert structured["explanation"]["sections"][0]["references"][0]["excerpt"] == (
+        explanation.sections[0].references[0].excerpt
     )
 
 
@@ -191,12 +242,15 @@ def test_independent_output_reviewer_rejects_nonapproval_and_checks_clarificatio
         raw_model_output="private",
         elapsed_ms=1,
     )
-    client = FakeClient('{"approved": false, "rationale": "The output is not grounded."}')
+    client = FakeClient(
+        '{"approved": false, "rationale": "The output is not grounded."}',
+        '{"approved": true, "rationale": "A second vote must not override rejection."}',
+    )
     reviewer = LeanGroundedOutputReviewer(
         client=client,
         model="explain-model",
         provider="review-provider",
-        max_attempts=1,
+        max_attempts=3,
     )
 
     with pytest.raises(ProofOutputReviewError):
@@ -206,37 +260,83 @@ def test_independent_output_reviewer_rejects_nonapproval_and_checks_clarificatio
             explanation=explanation,
             clarification=clarification,
             language="ja",
+            selected_text="選択した一意の式",
+            after_clarification_id="parent-1",
+            parent_clarification={
+                "id": "parent-1",
+                "question": "先の質問",
+                "answer": "親でのみ定義した変数",
+                "key_points": ["親の仮定", "親の結論"],
+            },
         )
 
     prompt = client.prompts[0]
+    assert "選択した一意の式" in prompt
+    assert "親でのみ定義した変数" in prompt
+    assert "先の質問" in prompt
     assert len(client.prompts) == 1
     assert "Candidate clarification JSON" in prompt
     assert clarification.answer in prompt
     assert explanation.sections[0].summary in prompt
+    assert "reject a circular restatement" in prompt
+    assert "Review the explanation as the learner reads it" not in prompt
+    assert len(client.responses) == 1
 
 
-def test_independent_output_reviewer_rechecks_a_rejection_without_biasing_the_decision() -> None:
+@pytest.mark.parametrize("malformed_first", [False, True])
+def test_independent_output_rejection_is_final_even_if_next_response_would_approve(
+    malformed_first: bool,
+) -> None:
     explanation = _reviewable_explanation()
+    responses = [
+        '{"approved": false, "rationale": "The derivation is repeated."}',
+        '{"approved": true, "rationale": "The theorem is verified."}',
+    ]
+    if malformed_first:
+        responses.insert(0, "not valid JSON")
+    client = FakeClient(*responses)
+    reviewer = LeanGroundedOutputReviewer(
+        client=client,
+        model="explain-model",
+        provider="review-provider",
+        max_attempts=3,
+    )
+
+    with pytest.raises(ProofOutputReviewError, match="rejected") as error:
+        reviewer.review_explanation(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            explanation=explanation,
+            language="ja",
+        )
+
+    assert error.value.category == "rejected"
+    assert error.value.rationale == "The derivation is repeated."
+    assert error.value.session_id is not None
+    assert len(client.prompts) == (2 if malformed_first else 1)
+    assert len(client.responses) == 1
+    assert json.loads(client.responses[0])["approved"] is True
+
+
+def test_independent_output_reviewer_can_retry_an_invalid_schema() -> None:
     client = FakeClient(
-        '{"approved": false, "rationale": "The first review is inconclusive."}',
-        '{"approved": true, "rationale": "The verified theorem supports the explanation."}',
+        '{"approved": "yes", "rationale": "not a boolean"}',
+        '{"approved": true, "rationale": "Continuous and grounded proof."}',
     )
     reviewer = LeanGroundedOutputReviewer(
         client=client,
         model="explain-model",
         provider="review-provider",
     )
-
     review = reviewer.review_explanation(
         theorem_statement="n + 0 = n を示せ",
         lean_code=LEAN_CODE,
-        explanation=explanation,
+        explanation=_reviewable_explanation(),
         language="ja",
     )
-
-    assert review.rationale == "The verified theorem supports the explanation."
+    assert review.rationale == "Continuous and grounded proof."
     assert len(client.prompts) == 2
-    assert "Do not infer a preferred outcome from this retry." in client.prompts[1]
+    assert "failed schema validation" in client.prompts[1]
 
 
 def test_independent_proof_reviewer_binds_its_decision_to_one_new_session() -> None:
@@ -275,7 +375,8 @@ def test_independent_proof_reviewer_binds_its_decision_to_one_new_session() -> N
     assert LEAN_CODE in client.prompts[0]
 
 
-def test_independent_proof_reviewer_returns_rejected_when_review_cannot_complete() -> None:
+def test_independent_proof_reviewer_raises_operational_failure_when_review_cannot_complete(
+) -> None:
     client = FakeClient('{"approved": true}')
     reviewer = LeanProofSemanticReviewer(
         client=client,
@@ -285,20 +386,19 @@ def test_independent_proof_reviewer_returns_rejected_when_review_cannot_complete
         session_id_factory=lambda: uuid.UUID("33333333-3333-4333-8333-333333333333"),
     )
 
-    review = reviewer.review_proof(
-        theorem_statement="Show that adding zero does not change a natural number.",
-        formal_statement=None,
-        target_declaration=LeanTargetDeclaration(
-            kind="theorem",
-            name="add_zero_nat",
-            proposition="∀ n : Nat, n + 0 = n",
-        ),
-        lean_code=LEAN_CODE,
-    )
-
-    assert review.decision == "rejected"
-    assert review.rationale == "The independent proof review could not be completed."
-    assert review.session_id == "33333333-3333-4333-8333-333333333333"
+    with pytest.raises(ProofSemanticReviewUnavailable) as error:
+        reviewer.review_proof(
+            theorem_statement="Show that adding zero does not change a natural number.",
+            formal_statement=None,
+            target_declaration=LeanTargetDeclaration(
+                kind="theorem",
+                name="add_zero_nat",
+                proposition="∀ n : Nat, n + 0 = n",
+            ),
+            lean_code=LEAN_CODE,
+        )
+    assert error.value.failure_kind == "schema"
+    assert len(client.prompts) == 1
 
 
 @pytest.mark.parametrize(
@@ -476,10 +576,7 @@ def test_x_squared_continuity_retries_old_summary_first_exposition() -> None:
                 "$\\delta:=\\min\\{1,\\varepsilon/(4|a|+2)\\}$"
                 " と定め、$0<\\delta$ です。"
             ),
-            (
-                "$|x^2-a^2|=|x-a|\\cdot|x+a|"
-                "\\le 2|x-a|(|a|+1)<\\epsilon$ と評価できるので連続です。"
-            ),
+            ("$|x^2-a^2|=|x-a|\\cdot|x+a|\\le 2|x-a|(|a|+1)<\\epsilon$ と評価できるので連続です。"),
         ),
         (
             (
@@ -487,10 +584,7 @@ def test_x_squared_continuity_retries_old_summary_first_exposition() -> None:
                 "$\\delta=\\min(1,\\varepsilon/(3|a|+2))$ と定めます。"
                 "この $\\delta$ は $\\delta>0$ です。"
             ),
-            (
-                "$|x^2-a^2|=|x+a|\\cdot|x-a|"
-                "<\\varepsilon$ と評価できるので連続です。"
-            ),
+            ("$|x^2-a^2|=|x+a|\\cdot|x-a|<\\varepsilon$ と評価できるので連続です。"),
         ),
         (
             (
@@ -519,9 +613,7 @@ def test_x_squared_continuity_accepts_equivalent_katex_notation(
     overview: str,
     conclusion: str,
 ) -> None:
-    explainer, _ = build_explainer(
-        epsilon_delta_payload(overview=overview, conclusion=conclusion)
-    )
+    explainer, _ = build_explainer(epsilon_delta_payload(overview=overview, conclusion=conclusion))
 
     result = explainer.explain(
         theorem_statement="x² が連続であることを説明してください。",
@@ -612,10 +704,7 @@ def test_x_squared_continuity_accepts_english_epsilon_delta_explanation() -> Non
                 "$\\delta=\\min(1,\\varepsilon/(2|a|+1))$ と定め、"
                 "$\\delta>0$ とします。"
             ),
-            (
-                "$|x^2-a^2|=|x-a||x+a|$ と因数分解します。"
-                "別に $|x-a|<\\varepsilon$ とします。"
-            ),
+            ("$|x^2-a^2|=|x-a||x+a|$ と因数分解します。別に $|x-a|<\\varepsilon$ とします。"),
         ),
         (
             (
@@ -771,6 +860,12 @@ def test_clarification_is_scoped_to_selected_section_and_lean() -> None:
         section_id="apply-add-zero",
         selected_text="0 を足しても値が変わらない",
         after_clarification_id="clarification-parent",
+        parent_clarification={
+            "id": "clarification-parent",
+            "question": "先の質問",
+            "answer": "親回答だけの追加仮定",
+            "key_points": ["仮定", "結論"],
+        },
         question="なぜ 0 を足しても値が変わらないのですか？",
     )
 
@@ -781,6 +876,8 @@ def test_clarification_is_scoped_to_selected_section_and_lean() -> None:
     assert "Selected section id: apply-add-zero" in client.prompts[1]
     assert "Selected learner text: 0 を足しても値が変わらない" in client.prompts[1]
     assert "Preceding clarification id: clarification-parent" in client.prompts[1]
+    assert "親回答だけの追加仮定" in client.prompts[1]
+    assert "先の質問" in client.prompts[1]
     assert "なぜ 0 を足しても値が変わらないのですか？" in client.prompts[1]
     assert "Canonical Lean line table" in client.prompts[1]
     assert "KaTeX-compatible LaTeX" in client.prompts[1]
@@ -795,9 +892,7 @@ def test_clarification_rejects_reference_outside_selected_section() -> None:
                 "正しい根拠としては利用できません。"
             ),
             "key_points": ["選択節との対応が必要です。", "引用範囲も一致が必要です。"],
-            "references": [
-                {"start_line": 1, "end_line": 1, "excerpt": "import Mathlib"}
-            ],
+            "references": [{"start_line": 1, "end_line": 1, "excerpt": "import Mathlib"}],
         },
         ensure_ascii=False,
     )
@@ -842,3 +937,159 @@ def test_pae_004_clarification_rejects_unverified_proof_before_prompt() -> None:
         )
 
     assert len(client.prompts) == 1
+
+
+def test_general_case_coverage_and_induction_guidance_preserve_soundness_gate() -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    prompt = _explanation_prompt(
+        theorem_statement="Prove by induction, including n=0.",
+        lean_code=LEAN_CODE,
+        language="en",
+        require_epsilon_delta=False,
+    )
+    assert "before the final conclusion" in prompt
+    assert "argument covers a case without extra assumptions" in prompt
+    review = _output_review_prompt(
+        theorem_statement="Prove by induction, including n=0.",
+        lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(),
+        language="en",
+    )
+    assert "is valid induction, not circular reasoning" in review
+    assert "specific missing base case" in review
+    assert "Reject circular" in review
+    assert "reject duplicated substantive derivations" in review
+
+
+def test_automated_source_exposition_requires_bridges_without_literal_source_steps() -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    source = "theorem target (n : Nat) : n + 0 = n := by simp"
+    prompt = _explanation_prompt(
+        theorem_statement="Every natural n satisfies n + 0 = n.",
+        lean_code=source, language="en", require_epsilon_delta=False,
+    )
+    assert "Show each essential" in prompt
+    assert "why its hypotheses hold" in prompt
+    assert "Do not merely assert the key intermediate fact" in prompt
+    assert "not written literally in the Lean source" in prompt
+    assert "separately verified by Lean" in prompt
+    review = _output_review_prompt(
+        theorem_statement="Every natural n satisfies n + 0 = n.",
+        lean_code=source, explanation=_reviewable_explanation(), language="en",
+    )
+    assert "Lean source lines alone are not grounds for rejection" in review
+    assert "without a bibliographic citation or Lean lemma name" in review
+    assert "Still reject a missing essential inference" in review
+    assert "an unchecked necessary hypothesis" in review
+    assert "Reject circular reasoning" in review
+    assert "reject duplicated substantive derivations" in review
+
+
+def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridge() -> None:
+    reason = "The argument asserts a key intermediate fact without establishing it."
+    client = FakeClient(
+        json.dumps({"approved": False, "rationale": reason}),
+        json.dumps({"approved": True, "rationale": "The source compiled."}),
+    )
+    reviewer = LeanGroundedOutputReviewer(
+        client=client, model="explain-model", provider="review-provider", max_attempts=2,
+    )
+    with pytest.raises(ProofOutputReviewError) as error:
+        reviewer.review_explanation(
+            theorem_statement="Every natural n satisfies n + 0 = n.",
+            lean_code="theorem target (n : Nat) : n + 0 = n := by simp",
+            explanation=_reviewable_explanation(), language="en",
+        )
+    assert error.value.category == "rejected"
+    assert error.value.rationale == reason
+    assert len(client.prompts) == 1
+    assert len(client.responses) == 1
+
+
+@pytest.mark.parametrize("raw", ["not json", '{"approved": "false", "rationale": "x"}'])
+def test_semantic_review_schema_retry_is_bounded_without_echoing_raw_response(raw):
+    client = FakeClient(raw, raw)
+    reviewer = LeanProofSemanticReviewer(
+        client=client, model="explain-model", provider="test", max_attempts=2
+    )
+    with pytest.raises(ProofSemanticReviewUnavailable) as error:
+        reviewer.review_proof(
+            theorem_statement="True", formal_statement=None,
+            target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
+            lean_code="example : True := by trivial", timeout_seconds=4,
+        )
+    assert error.value.failure_kind == "schema"
+    assert len(client.prompts) == 2
+    assert raw not in client.prompts[1]
+
+
+def test_semantic_provider_error_is_never_retried_or_cast_as_math_rejection():
+    calls = []
+
+    class FailingClient:
+        def generate(self, **kwargs):
+            calls.append(kwargs)
+            raise RuntimeError("private authorization and provider detail")
+
+    reviewer = LeanProofSemanticReviewer(
+        client=FailingClient(), model="explain-model", provider="test"
+    )
+    with pytest.raises(ProofSemanticReviewUnavailable) as error:
+        reviewer.review_proof(
+            theorem_statement="True", formal_statement=None,
+            target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
+            lean_code="example : True := by trivial",
+        )
+    assert error.value.failure_kind == "provider"
+    assert len(calls) == 1
+    assert "private" not in str(error.value)
+
+
+def test_valid_semantic_rejection_is_final_without_schema_revote():
+    client = FakeClient('{"approved": false, "rationale": "The requested target differs."}')
+    reviewer = LeanProofSemanticReviewer(client=client, model="explain-model", provider="test")
+    review = reviewer.review_proof(
+        theorem_statement="False", formal_statement=None,
+        target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
+        lean_code="example : True := by trivial",
+    )
+    assert review.decision == "rejected"
+    assert len(client.prompts) == 1
+
+
+def test_learner_facing_math_prompts_require_tex_for_membership_and_radicals() -> None:
+    from pals_agent.explanations import (
+        _clarification_prompt,
+        _explanation_prompt,
+        _output_review_prompt,
+    )
+
+    explanation = _reviewable_explanation()
+    generation = _explanation_prompt(
+        theorem_statement="x^m∈I ならば x∈√(IJ)",
+        lean_code=LEAN_CODE,
+        language="ja",
+    )
+    clarification = _clarification_prompt(
+        theorem_statement="x^m∈I ならば x∈√(IJ)",
+        lean_code=LEAN_CODE,
+        explanation=explanation,
+        selected=explanation.sections[0],
+        question="なぜ x∈√(IJ) ですか？",
+        language="ja",
+    )
+    review = _output_review_prompt(
+        theorem_statement="x^m∈I ならば x∈√(IJ)",
+        lean_code=LEAN_CODE,
+        explanation=explanation,
+        language="ja",
+    )
+    for prompt in (generation, clarification, review):
+        assert "$x^m\\in I$" in prompt
+        assert "$x\\in\\sqrt{IJ}$" in prompt
+        assert "never bare" in prompt or "raw `x^m∈I`" in prompt
+    assert "Escape each TeX backslash as `\\\\`" in generation
+    assert "Escape each TeX backslash as `\\\\`" in clarification
+    assert "Reject learner-visible mathematical expressions outside `$...$`" in review

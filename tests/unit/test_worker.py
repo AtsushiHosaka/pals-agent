@@ -8,18 +8,19 @@ from typing import Any, cast
 import pytest
 import rfc8785
 
-from pals_agent.api_client import VerifierAttestation
+from pals_agent.api_client import PalsApiError, VerifierAttestation
 from pals_agent.explanations import ProofSemanticReview
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
 )
-from pals_agent.models import Diagnostic, ProofJobState
+from pals_agent.models import Diagnostic, ProofJobState, ProofRequest
 from pals_agent.openmath import OpenMathStructuringError
 from pals_agent.pipeline import ApiRepairSeed
 from pals_agent.private_recipe_selection import (
     RecipeNotSelected,
     RecipeSelected,
+    RecipeSelectionQuery,
     ToolchainFingerprintV1,
 )
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
@@ -62,9 +63,11 @@ def test_worker_candidate_does_not_fall_back_to_manual_fixture_provenance() -> N
 class _RecipeSelector:
     def __init__(self) -> None:
         self.calls = 0
+        self.query: RecipeSelectionQuery | None = None
 
     def select(self, query: object) -> RecipeSelected:
-        del query
+        assert isinstance(query, RecipeSelectionQuery)
+        self.query = query
         self.calls += 1
         return RecipeSelected(
             recipe_id="recipe.square-v1",
@@ -90,7 +93,7 @@ class _NoRecipeSelector:
     def select(self, query: object) -> RecipeNotSelected:
         del query
         self.calls += 1
-        return RecipeNotSelected(exclusions=())
+        return RecipeNotSelected(exclusions=(), request_sha256="a" * 64)
 
 
 def test_x_squared_alignment_rejects_an_unrelated_verified_theorem() -> None:
@@ -236,11 +239,13 @@ class ExplainerThatMustNotRun:
 class SemanticReviewApi:
     def __init__(self) -> None:
         self.evidence: list[dict[str, Any]] = []
+        self.state = "semantic_review"
 
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
         return {
             "id": proof_job_id,
-            "state": "semantic_review",
+            "state": self.state,
+            "result_artifact_uri": "s3://pals-artifacts/proof-jobs/job-semantic/result.lean",
             "chat_id": "chat-1",
             "output_language": "zh-Hans",
             "theorem_statement": "theorem sample : True := by trivial",
@@ -256,6 +261,21 @@ class SemanticReviewApi:
             "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
             "generation_session_id": "11111111-1111-4111-8111-111111111111",
         }
+
+    def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+        job = self.get_proof_job(kwargs["proof_job_id"])
+        return {
+            "schema_version": "pals.verification-candidate-binding.v1", **kwargs,
+            "mutation_claim_id": job["generation_session_id"],
+            "lean_sha256": hashlib.sha256(job["lean_code"].encode()).hexdigest(),
+            "result_artifact_uri": job["result_artifact_uri"],
+            "source_binding_sha256": None, "candidate_status": "semantic_review",
+        }
+
+    def settle_proof_semantic_review_unavailable(self, *, proof_job_id, failure):
+        self.operational_failure = failure
+        self.state = "failed"
+        return {"id": proof_job_id, "state": "failed"}
 
     def settle_proof_semantic_review(
         self,
@@ -392,6 +412,92 @@ class RecordingApi:
         raise AssertionError(f"unexpected clarification update: {kwargs}")
 
 
+@pytest.mark.parametrize(
+    ("resumed_state", "expected_states"),
+    [
+        ("queued", ["retrieving_context", "drafting", "sketching", "proving", "compiling"]),
+        (
+            "retrieving_context",
+            ["retrieving_context", "drafting", "sketching", "proving", "compiling"],
+        ),
+        ("drafting", ["drafting", "sketching", "proving", "compiling"]),
+        ("sketching", ["sketching", "proving", "compiling"]),
+        ("proving", ["proving", "compiling"]),
+        ("compiling", ["compiling"]),
+        ("repairing", ["drafting", "sketching", "proving", "compiling"]),
+    ],
+)
+def test_resumed_generation_keeps_durable_progress_until_replayed_stages_catch_up(
+    resumed_state: str,
+    expected_states: list[str],
+    *,
+    acquired_state: str | None = None,
+) -> None:
+    class ResumedApi(RecordingApi):
+        def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+            return {**super().get_proof_job(proof_job_id), "state": resumed_state}
+
+        def acquire_proof_generation_claim(self, **kwargs: Any) -> dict[str, Any]:
+            response = super().acquire_proof_generation_claim(**kwargs)
+            response["resource"]["state"] = acquired_state or resumed_state
+            return response
+
+    class ReplayPipeline:
+        def run_statement(self, *, on_status: Any, **_kwargs: Any) -> Any:
+            for stage in ("retrieving_context", "drafting", "sketching", "proving", "compiling"):
+                on_status(stage, [], None, None, {})
+            # Stop before candidate import; this test checks resumed progress publication.
+            raise OpenMathStructuringError("generation failed after replay")
+
+    api = ResumedApi()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()),
+        api_client=api,
+        pipeline=ReplayPipeline(),
+        explainer=ExplainerThatMustNotRun(),
+    )
+    assert (
+        worker.process_proof_job(
+            "job-1",
+            claim_id="11111111-1111-4111-8111-111111111111",
+            extend_visibility=lambda _seconds: None,
+        )
+        is True
+    )
+    assert [update["state"] for update in api.updates] == [*expected_states, "failed"]
+
+
+def test_resumed_generation_uses_state_from_acquired_claim_not_earlier_read() -> None:
+    test_resumed_generation_keeps_durable_progress_until_replayed_stages_catch_up(
+        "drafting",
+        ["proving", "compiling"],
+        acquired_state="proving",
+    )
+
+
+def test_resumed_generation_publishes_failure_before_reaching_previous_stage() -> None:
+    class ResumedApi(RecordingApi):
+        def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+            return {**super().get_proof_job(proof_job_id), "state": "compiling"}
+
+    api = ResumedApi()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()),
+        api_client=api,
+        pipeline=StructuringFailurePipeline(),
+        explainer=ExplainerThatMustNotRun(),
+    )
+    assert (
+        worker.process_proof_job(
+            "job-1",
+            claim_id="11111111-1111-4111-8111-111111111111",
+            extend_visibility=lambda _seconds: None,
+        )
+        is True
+    )
+    assert [update["state"] for update in api.updates] == ["failed"]
+
+
 class PendingCandidateApi:
     def __init__(self) -> None:
         self.reconciliation_retries: list[tuple[str, str]] = []
@@ -449,6 +555,9 @@ class MalformedRepairSeedApi(PendingCandidateApi):
 
 
 class StructuringFailurePipeline:
+    def prepare_statement(self, *, statement: str) -> ProofRequest:
+        return ProofRequest(id="custom_statement", prompt=statement)
+
     def run_statement(
         self,
         *,
@@ -457,6 +566,7 @@ class StructuringFailurePipeline:
         proof_job_id: str,
         on_status: Any,
         api_repair_seed: ApiRepairSeed | None = None,
+        prepared_request: ProofRequest | None = None,
     ) -> None:
         _ = (statement, formal_statement, proof_job_id, on_status, api_repair_seed)
         raise OpenMathStructuringError("ollama returned malformed OpenMath XML")
@@ -476,7 +586,20 @@ class RetrievalFailurePipeline:
         raise ProofFlowRetrievalError("reranker_unavailable")
 
 
-def test_worker_rebuilds_only_api_authoritative_compile_failure_as_a_repair_seed() -> None:
+@pytest.mark.parametrize("prior_attempt", [1, 2])
+def test_worker_rebuilds_only_api_authoritative_compile_failure_as_a_repair_seed(
+    prior_attempt: int,
+) -> None:
+    prior_route = (
+        {
+            "route": "sketch",
+            "selector_attempts": [
+                {"attempt": 1, "outcome": "selected", "diagnostic_code": None, "route": "sketch"}
+            ],
+        }
+        if prior_attempt > 1
+        else None
+    )
     seed = _api_repair_seed_from_worker_input(
         {
             "state": "compiling",
@@ -493,7 +616,7 @@ def test_worker_rebuilds_only_api_authoritative_compile_failure_as_a_repair_seed
                 "schema_version": "pals.proof-status-context.v1",
                 "stage": "compiling",
                 "attempt_evidence": {
-                    "attempt": 1,
+                    "attempt": prior_attempt,
                     "phase": "compile",
                     "generated": {
                         "lean_code": "theorem old_candidate : True := by\n  exact missing_name\n",
@@ -506,14 +629,22 @@ def test_worker_rebuilds_only_api_authoritative_compile_failure_as_a_repair_seed
                     },
                     "verification": {
                         "success": False,
-                        "diagnostics": [],
+                        "diagnostics": [
+                            {
+                                "severity": "error",
+                                "message": "Unknown identifier missing_name.",
+                                "code": "lean.unknown_identifier",
+                                "line": 2,
+                                "column": 8,
+                            }
+                        ],
                         "elapsed_ms": 0,
                     },
                     "diagnostics": [],
                     "checkpoint_status": "published",
-                    "repair_route": None,
+                    "repair_route": prior_route,
                 },
-                "repairs_used": 0,
+                "repairs_used": prior_attempt - 1,
                 "max_repair_attempts": 12,
                 "verification_elapsed_ms": 0,
             },
@@ -521,10 +652,16 @@ def test_worker_rebuilds_only_api_authoritative_compile_failure_as_a_repair_seed
     )
 
     assert seed is not None
-    assert seed.attempt == 1
-    assert seed.repairs_used == 0
+    assert seed.attempt == prior_attempt
+    assert seed.repairs_used == prior_attempt - 1
+    assert seed.repair_route == prior_route
     assert seed.generated.lean_code.startswith("theorem old_candidate")
-    assert [item.code for item in seed.verification.diagnostics] == ["verifier_compile_failed"]
+    assert [item.code for item in seed.verification.diagnostics] == [
+        "verifier_compile_failed",
+        "lean.unknown_identifier",
+    ]
+    assert seed.verification.diagnostics[1].line == 2
+    assert "missing_name" in seed.verification.diagnostics[1].message
 
 
 def test_worker_recognizes_an_api_owned_pending_verification_candidate() -> None:
@@ -656,77 +793,59 @@ def test_worker_rejects_semantic_review_when_independent_review_fails() -> None:
     assert api.evidence[0]["decision"] == "rejected"
 
 
-def test_recipe_semantic_review_uses_the_closed_v3_evidence_without_llm_provenance() -> None:
-    class RecipeSemanticReviewApi:
-        def __init__(self) -> None:
-            self.evidence: list[dict[str, Any]] = []
-
-        def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+@pytest.mark.parametrize("settled", [True, False])
+def test_recipe_review_is_delegated_and_requires_authoritative_terminal_readback(settled) -> None:
+    class Api:
+        state = "semantic_review"
+        def get_proof_job(self, proof_job_id):
             return {
-                "id": proof_job_id,
-                "state": "semantic_review",
-                "attempt_source": "recipe",
-                "chat_id": "chat-1",
-                "output_language": "en",
-                "theorem_statement": "Show that True.",
-                "request_context": {"formal_statement": "example : True := by trivial"},
+                "id": proof_job_id, "state": self.state, "attempt_source": "recipe",
+                "output_language": "en", "theorem_statement": "Show that True.",
                 "lean_code": _RECIPE_SOURCE,
-                "status_context": {
-                    "target_declaration": {
-                        "kind": "example",
-                        "name": None,
-                        "proposition": "True",
-                    }
-                },
                 "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
-                "source_binding_sha256": "f" * 64,
             }
-
-        def settle_recipe_semantic_review(
-            self,
-            *,
-            proof_job_id: str,
-            evidence: dict[str, Any],
-        ) -> dict[str, Any]:
-            self.evidence.append(evidence)
-            return {"id": proof_job_id, "state": "failed"}
-
-    api = RecipeSemanticReviewApi()
+        def settle_recipe_semantic_review(self, **kwargs):
+            pytest.fail("Generic worker must never settle Recipe semantic review")
+    api = Api()
+    calls = []
+    class Dispatcher:
+        def request(self, **kwargs):
+            calls.append(kwargs)
+            if settled:
+                api.state = "failed"
     reviewer = RecordingSemanticReviewer(reject=True)
     worker = SqsProofWorker(
-        settings=cast(
-            AgentSettings,
-            SimpleNamespace(explanation_model_timeout_seconds=17),
-        ),
-        api_client=cast(Any, api),
-        pipeline=None,
-        explainer=ExplainerThatMustNotRun(),
-        proof_reviewer=reviewer,
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
+        api_client=cast(Any, api), pipeline=None, explainer=ExplainerThatMustNotRun(),
+        proof_reviewer=reviewer, recipe_review_dispatcher=cast(Any, Dispatcher()),
     )
+    visibility = []
+    assert (
+        worker.process_proof_job("job-recipe-semantic", extend_visibility=visibility.append)
+        is settled
+    )
+    assert calls == [{"proof_job_id": "job-recipe-semantic",
+                      "candidate_id": "22222222-2222-4222-8222-222222222222",
+                      "timeout_seconds": 79}]
+    assert visibility == [109]
+    assert reviewer.calls == []
 
-    assert worker.process_proof_job("job-recipe-semantic") is True
-    evidence = api.evidence[0]
-    assert set(evidence) == {
-        "schema_version",
-        "candidate_id",
-        "lean_sha256",
-        "target_declaration",
-        "review_input_sha256",
-        "decision",
-        "rationale",
-    }
-    assert evidence["schema_version"] == "pals.proof-semantic-review.v3"
-    assert evidence["lean_sha256"] == hashlib.sha256(_RECIPE_SOURCE.encode("utf-8")).hexdigest()
-    assert evidence["target_declaration"] == {
-        "kind": "example",
-        "name": None,
-        "proposition": "True",
-    }
-    assert len(reviewer.calls) == 1
-    assert reviewer.calls[0]["lean_code"] == _RECIPE_SOURCE
-    assert not {"generator_session_id", "reviewer", "model", "source_binding_sha256"} & set(
-        evidence
+
+def test_recipe_review_missing_isolated_actor_is_retryable_without_self_review() -> None:
+    class Api:
+        def get_proof_job(self, proof_job_id):
+            return {
+                "id": proof_job_id, "state": "semantic_review", "attempt_source": "recipe",
+                "output_language": "en", "theorem_statement": "True", "lean_code": _RECIPE_SOURCE,
+                "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
+            }
+    reviewer = RecordingSemanticReviewer(reject=True)
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()), api_client=cast(Any, Api()),
+        pipeline=None, explainer=ExplainerThatMustNotRun(), proof_reviewer=reviewer,
     )
+    assert worker.process_proof_job("job-recipe") is False
+    assert reviewer.calls == []
 
 
 @pytest.mark.parametrize(
@@ -734,7 +853,7 @@ def test_recipe_semantic_review_uses_the_closed_v3_evidence_without_llm_provenan
     [None, RaisingSemanticReviewer()],
     ids=["unavailable", "raises"],
 )
-def test_worker_durably_rejects_when_the_independent_reviewer_is_unavailable(
+def test_worker_durably_stops_without_rejection_when_the_independent_reviewer_is_unavailable(
     proof_reviewer: Any,
 ) -> None:
     api = SemanticReviewApi()
@@ -753,13 +872,10 @@ def test_worker_durably_rejects_when_the_independent_reviewer_is_unavailable(
     acknowledged = worker.process_proof_job("job-semantic")
 
     assert acknowledged is True
-    assert api.evidence[0]["decision"] == "rejected"
-    assert api.evidence[0]["rationale"] == ("The independent proof review could not be completed.")
-    assert api.evidence[0]["reviewer"] == {
-        "provider": "unavailable",
-        "model": "independent-proof-review-unavailable",
-        "session_id": "44444444-4444-4444-8444-444444444444",
-    }
+    assert api.evidence == []
+    assert api.operational_failure["failure_kind"] == "internal"
+    assert "decision" not in api.operational_failure
+    assert "reviewer" not in api.operational_failure
 
 
 def test_worker_waits_for_api_candidate_reconciliation_before_regenerating() -> None:
@@ -788,9 +904,7 @@ def test_worker_waits_for_api_candidate_reconciliation_before_regenerating() -> 
     )
 
     assert acknowledged is False
-    assert api.reconciliation_retries == [
-        ("job-pending", "22222222-2222-4222-8222-222222222222")
-    ]
+    assert api.reconciliation_retries == [("job-pending", "22222222-2222-4222-8222-222222222222")]
     assert visibility == [360]
     assert sum(sleeps) == 330.0
 
@@ -1000,11 +1114,17 @@ def test_worker_marks_invalid_lazy_proof_pipeline_configuration_as_terminal() ->
     assert api.updates[0]["diagnostics"][0].code == "pals.proof_flow_retrieval_failed"
 
 
-def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_repair() -> None:
+@pytest.mark.parametrize("formal_target", [True, False])
+@pytest.mark.parametrize("ambiguous_import", [True, False])
+def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_repair(
+    formal_target: bool, ambiguous_import: bool,
+) -> None:
     class RecipeApi:
         def __init__(self) -> None:
             self.recipe_submissions: list[dict[str, Any]] = []
             self.claims = 0
+            self.retries = 0
+            self.binding_reads = 0
 
         def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
             if self.recipe_submissions:
@@ -1024,7 +1144,9 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
                 "state": "queued",
                 "theorem_statement": "Show that True.",
                 "output_language": "en",
-                "request_context": {"formal_statement": "example : True := by trivial"},
+                "request_context": (
+                    {"formal_statement": "example : True := by trivial"} if formal_target else {}
+                ),
             }
 
         def acquire_proof_generation_claim(self, **_kwargs: Any) -> dict[str, Any]:
@@ -1055,9 +1177,41 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
 
         def submit_recipe_verification_candidate(self, **kwargs: Any) -> dict[str, Any]:
             self.recipe_submissions.append(kwargs)
+            if ambiguous_import:
+                raise PalsApiError("committed, but notification failed")
             return {"candidate_status": "compiling"}
 
+        def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+            self.binding_reads += 1
+            submitted = self.recipe_submissions[-1]
+            return {
+                "schema_version": "pals.verification-candidate-binding.v1",
+                **kwargs,
+                "mutation_claim_id": submitted["mutation_claim_id"],
+                "lean_sha256": hashlib.sha256(submitted["lean_code"].encode()).hexdigest(),
+                "result_artifact_uri": submitted["result_artifact_uri"],
+                "source_binding_sha256": hashlib.sha256(
+                    rfc8785.dumps(submitted["candidate_source"])
+                ).hexdigest(),
+                "candidate_status": "compiling",
+            }
+
+        def retry_verification_candidate_reconciliation(self, **kwargs: Any) -> dict[str, Any]:
+            assert kwargs["candidate_id"] == self.recipe_submissions[-1]["candidate_id"]
+            self.retries += 1
+            raise PalsApiError("notifier remains unavailable")
+
     class PipelineThatMustNotRun:
+        prepared_count = 0
+
+        def prepare_statement(self, *, statement: str) -> ProofRequest:
+            from dataclasses import replace
+
+            from tests.unit.test_recipe_attempt import exact_draft_request
+
+            self.prepared_count += 1
+            return replace(exact_draft_request(), prompt=statement)
+
         def run_statement(self, **_kwargs: Any) -> Any:
             raise AssertionError("selected Recipe must not invoke the generation pipeline")
 
@@ -1090,7 +1244,17 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
         extend_visibility=lambda _seconds: None,
     )
     assert selector.calls == 1
+    assert selector.query is not None
+    if formal_target:
+        assert selector.query.draft_revision is None
+    else:
+        assert selector.query.draft_revision is not None
+        assert selector.query.draft_revision.draft_id == "continuous_square"
+        assert selector.query.proof_method_tag == "epsilon_delta"
+        assert cast(PipelineThatMustNotRun, worker.pipeline).prepared_count == 1
     assert api.claims == 1
+    assert api.binding_reads == int(ambiguous_import)
+    assert api.retries == int(ambiguous_import)
     assert len(api.recipe_submissions) == 1
     submission = api.recipe_submissions[0]
     assert submission["lean_code"] == _RECIPE_SOURCE
@@ -1104,7 +1268,14 @@ def test_selected_recipe_submits_exact_bytes_without_constructing_pipeline_or_re
 
 
 def test_recipe_not_selected_keeps_the_existing_generation_pipeline() -> None:
-    api = RecordingApi()
+    class TraceRecordingApi(RecordingApi):
+        traces: list[dict[str, str]] = []
+
+        def record_no_recipe_attempt(self, **kwargs: str) -> dict[str, str]:
+            self.traces.append(kwargs)
+            return {"schema_version": "pals.recipe-attempt-trace-response.v1", "status": "linked"}
+
+    api = TraceRecordingApi()
     selector = _NoRecipeSelector()
     worker = SqsProofWorker(
         settings=cast(
@@ -1123,5 +1294,89 @@ def test_recipe_not_selected_keeps_the_existing_generation_pipeline() -> None:
         extend_visibility=lambda _seconds: None,
     )
     assert selector.calls == 1
+    assert api.traces == [{
+        "proof_job_id": "job-1", "mutation_claim_id": "11111111-1111-4111-8111-111111111111",
+        "request_sha256": "a" * 64,
+    }]
     assert api.updates[-1]["state"] == "failed"
     assert api.updates[-1]["diagnostics"][0].code == "pals.openmath_structuring_failed"
+
+
+@pytest.mark.parametrize("mismatch", [
+    "mutation_claim_id", "candidate_id", "proof_job_id", "lean_sha256",
+    "result_artifact_uri", "source_binding_sha256", "candidate_status", "unavailable",
+])
+def test_semantic_review_never_sends_legacy_or_raced_candidate_to_model(mismatch: str) -> None:
+    class StaleApi(SemanticReviewApi):
+        def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
+            if mismatch == "unavailable":
+                raise PalsApiError("binding read unavailable")
+            result = super().get_verification_candidate_binding(**kwargs)
+            result[mismatch] = (
+                "verified" if mismatch == "candidate_status" else
+                "33333333-3333-4333-8333-333333333333"
+            )
+            return result
+
+    api = StaleApi()
+    reviewer = RecordingSemanticReviewer()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
+        api_client=cast(Any, api), pipeline=None, explainer=ExplainerThatMustNotRun(),
+        proof_reviewer=cast(Any, reviewer),
+    )
+    assert not worker.process_proof_job("job-semantic")
+    assert reviewer.calls == []
+    assert api.evidence == []
+
+
+def test_semantic_review_visibility_failure_prevents_model_call() -> None:
+    api = SemanticReviewApi()
+    reviewer = RecordingSemanticReviewer()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
+        api_client=cast(Any, api), pipeline=None, explainer=ExplainerThatMustNotRun(),
+        proof_reviewer=cast(Any, reviewer),
+    )
+    def unavailable(seconds: int) -> None:
+        assert seconds == 81
+        raise RuntimeError("queue unavailable")
+    assert not worker.process_proof_job("job-semantic", extend_visibility=unavailable)
+    assert not reviewer.calls and not api.evidence
+
+
+@pytest.mark.parametrize("timeout", [True, 0, -1, 301, float("nan"), float("inf")])
+def test_semantic_review_rejects_invalid_visibility_timeout_before_model_call(timeout: Any) -> None:
+    reviewer = RecordingSemanticReviewer()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=timeout)),
+        api_client=cast(Any, SemanticReviewApi()), pipeline=None,
+        explainer=ExplainerThatMustNotRun(), proof_reviewer=cast(Any, reviewer),
+    )
+    assert not worker.process_proof_job("job-semantic", extend_visibility=lambda _seconds: None)
+    assert not reviewer.calls
+
+
+def test_unavailable_settlement_response_loss_acks_durable_failure_without_second_model_call():
+    class Api(SemanticReviewApi):
+        def settle_proof_semantic_review_unavailable(self, **kwargs):
+            super().settle_proof_semantic_review_unavailable(**kwargs)
+            raise PalsApiError("settlement response lost")
+
+    class Reviewer:
+        calls = 0
+
+        def review_proof(self, **kwargs):
+            self.calls += 1
+            raise RuntimeError("provider unavailable")
+
+    api, reviewer = Api(), Reviewer()
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
+        api_client=cast(Any, api), pipeline=None, explainer=ExplainerThatMustNotRun(),
+        proof_reviewer=cast(Any, reviewer),
+    )
+    assert worker.process_proof_job("job-semantic") is False
+    assert worker.process_proof_job("job-semantic") is True
+    assert reviewer.calls == 1
+    assert api.evidence == []

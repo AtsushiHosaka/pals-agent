@@ -30,6 +30,65 @@ _MODEL_ARTIFACT_URI_RE = re.compile(
     re.ASCII,
 )
 
+# Only fixed schema identifiers can enter operational validation diagnostics.
+# Unknown dictionary keys may contain user/model text, so they are redacted.
+_VALIDATION_LOCATION_FIELDS = frozenset({
+    "body", "query", "path", "header", "response", "claim_id", "expected_revision",
+    "outcome", "question", "answer", "text", "options", "evidence_kind", "sources",
+    "draft_id", "revision", "statement", "error_code", "private_evidence", "usage",
+    "call_id", "model_role", "provider", "model", "input_tokens", "output_tokens",
+    "cached_input_tokens", "reasoning_tokens", "price_snapshot_id", "provider_request_id",
+    "worker_elapsed_ms", "token_qa", "approved", "answer_sha256", "instantiation",
+})
+_VALIDATION_ERROR_TYPES = frozenset({
+    "missing", "extra_forbidden", "value_error", "assertion_error", "literal_error",
+    "string_type", "string_too_short", "string_too_long", "string_pattern_mismatch",
+    "string_unicode", "int_type", "int_parsing", "int_from_float", "bool_type",
+    "bool_parsing", "float_type", "float_parsing", "finite_number", "greater_than",
+    "greater_than_equal", "less_than", "less_than_equal", "multiple_of", "list_type",
+    "dict_type", "tuple_type", "set_type", "too_long", "too_short", "none_required",
+    "uuid_type", "uuid_parsing", "uuid_version", "json_invalid", "json_type",
+    "union_tag_invalid", "union_tag_not_found", "model_type", "model_attributes_type",
+})
+
+
+def _sanitize_validation_errors(value: object) -> tuple[tuple[str, str], ...]:
+    if not isinstance(value, (list, tuple)):
+        return ()
+    errors: list[tuple[str, str]] = []
+    for entry in value[:8]:
+        if not isinstance(entry, dict):
+            continue
+        location = entry.get("loc")
+        if not isinstance(location, (list, tuple)) or not location:
+            continue
+        parts = []
+        for part in location[:12]:
+            if isinstance(part, str) and part in _VALIDATION_LOCATION_FIELDS:
+                parts.append(part)
+            elif type(part) is int and 0 <= part <= 999:
+                parts.append(str(part))
+            else:
+                parts.append("_redacted")
+        if len(location) > 12:
+            parts.append("_truncated")
+        error_type = entry.get("type")
+        kind = (error_type if isinstance(error_type, str) and
+                error_type in _VALIDATION_ERROR_TYPES else "_redacted")
+        errors.append((".".join(parts), kind))
+    return tuple(errors)
+
+
+def _extract_api_validation_errors(body: str) -> object:
+    if len(body) > 65536 or len(body.encode("utf-8")) > 65536:
+        return None
+    try:
+        payload = json.loads(body)
+    except (json.JSONDecodeError, RecursionError):
+        return None
+    return payload.get("detail") if isinstance(payload, dict) else None
+
+
 # Kept only for test-double compatibility while the public worker transport no longer accepts it.
 type VerifierAttestation = dict[str, Any]
 
@@ -41,10 +100,12 @@ class PalsApiError(RuntimeError):
         *,
         status_code: int | None = None,
         error_code: str | None = None,
+        validation_errors: object = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.error_code = error_code
+        self.validation_errors = _sanitize_validation_errors(validation_errors)
 
 
 class ProofJobNotFoundError(PalsApiError):
@@ -62,6 +123,54 @@ class PalsApiClient:
         compare=False,
     )
 
+    def permit_token_call(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._request(
+            "POST", "/v1/internal/billing/token-permits", payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds,
+        )
+        if set(result) != {"permitted"} or result["permitted"] is not True:
+            raise PalsApiError("Token permit was malformed")
+
+    def record_token_receipt(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._request(
+            "POST", "/v1/internal/billing/token-receipts", payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds,
+        )
+        if set(result) != {"recorded"} or result["recorded"] is not True:
+            raise PalsApiError("Token receipt was malformed")
+
+    def acquire_proof_request_claim(
+        self, *, request_id: str, claim_id: str, lease_ms: int = 240000
+    ) -> dict[str, Any]:
+        if lease_ms != 240000:
+            raise ValueError("proof request lease must be 240000ms")
+        return self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/claims",
+            {"claim_id": _canonical_claim_id(claim_id), "lease_ms": lease_ms},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
+    def settle_proof_request(
+        self, *, request_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/settlements",
+            payload, headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
+    def record_proof_request_usage(
+        self, *, request_id: str, claim_id: str, usage: dict[str, Any]
+    ) -> None:
+        result = self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/usage",
+            {"claim_id": _canonical_claim_id(claim_id), "usage": usage},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+        if result != {"recorded": True}:
+            raise PalsApiError("Proof request usage receipt was malformed")
+
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
         resource_id = _path_segment(proof_job_id)
         return self._request(
@@ -69,6 +178,15 @@ class PalsApiClient:
             f"/v1/internal/proof-jobs/{resource_id}/worker-input",
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
+
+    def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None:
+        payload = dict(usage, generation_claim_id=_canonical_claim_id(claim_id))
+        result = self._request(
+            "POST", f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/usage",
+            payload, headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+        if result != {"recorded": True}:
+            raise PalsApiError("Usage receipt was malformed")
 
     def acquire_proof_generation_claim(
         self,
@@ -159,6 +277,28 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def record_no_recipe_attempt(
+        self, *, proof_job_id: str, mutation_claim_id: str, request_sha256: str
+    ) -> dict[str, Any]:
+        if (not isinstance(request_sha256, str)
+            or re.fullmatch(r"[0-9a-f]{64}", request_sha256) is None):
+            raise ValueError("Recipe decision digest is invalid")
+        response = self._request(
+            "POST",
+            f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/recipe-selection-traces",
+            {"schema_version": "pals.recipe-attempt-trace-request.v1",
+             "mutation_claim_id": _canonical_claim_id(mutation_claim_id),
+             "request_sha256": request_sha256},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+        if (
+            set(response) != {"schema_version", "status"}
+            or response.get("schema_version") != "pals.recipe-attempt-trace-response.v1"
+            or response.get("status") not in {"linked", "already_linked"}
+        ):
+            raise ValueError("Recipe decision acknowledgement is invalid")
+        return response
+
     def submit_recipe_verification_candidate(
         self,
         *,
@@ -206,6 +346,17 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def get_verification_candidate_binding(
+        self, *, proof_job_id: str, candidate_id: str,
+    ) -> dict[str, Any]:
+        resource_id = _path_segment(proof_job_id)
+        candidate = _canonical_claim_id(candidate_id)
+        return self._request(
+            "GET",
+            f"/v1/internal/proof-jobs/{resource_id}/verification-candidates/{candidate}/binding",
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
     def retry_verification_candidate_reconciliation(
         self,
         *,
@@ -238,22 +389,21 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
-    def settle_recipe_semantic_review(
-        self,
-        *,
-        proof_job_id: str,
-        evidence: dict[str, Any],
+    def settle_proof_semantic_review_unavailable(
+        self, *, proof_job_id: str, failure: dict[str, Any],
     ) -> dict[str, Any]:
-        """Settle a Recipe candidate without leaking model-generation provenance."""
-
-        resource_id = _path_segment(proof_job_id)
-        _validate_recipe_semantic_review_evidence(evidence)
+        if failure.get("source_binding_sha256") is not None:
+            raise PalsApiError("Recipe review requires the dedicated reviewer actor")
         return self._request(
             "POST",
-            f"/v1/internal/proof-jobs/{resource_id}/semantic-reviews",
-            evidence,
-            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/semantic-review-unavailable",
+            failure, headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
+
+    def settle_recipe_semantic_review(
+        self, *, proof_job_id: str, evidence: dict[str, Any],
+    ) -> dict[str, Any]:
+        raise PalsApiError("Recipe review requires the dedicated reviewer actor")
 
     def upsert_proof_explanation(
         self,
@@ -265,6 +415,8 @@ class PalsApiClient:
         content: dict[str, Any] | None = None,
         review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
+        private_review_failures: list[dict[str, Any]] | None = None,
+        retry_id: str | None = None,
     ) -> dict[str, Any]:
         resource_id = _path_segment(proof_job_id)
         if state == "completed":
@@ -285,6 +437,8 @@ class PalsApiClient:
                 content=content,
                 review_evidence=review_evidence,
                 diagnostics=diagnostics,
+                private_review_failures=private_review_failures,
+                retry_id=retry_id,
             ),
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
@@ -308,6 +462,7 @@ class PalsApiClient:
         content: dict[str, Any] | None = None,
         review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
+        private_review_failures: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         resource_id = _path_segment(clarification_id)
         if state == "completed":
@@ -328,6 +483,7 @@ class PalsApiClient:
                 content=content,
                 review_evidence=review_evidence,
                 diagnostics=diagnostics,
+                private_review_failures=private_review_failures,
             ),
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
@@ -338,6 +494,7 @@ class PalsApiClient:
         path: str,
         payload: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
+        timeout_seconds: float | None = None,
     ) -> dict[str, Any]:
         request_headers = {"Accept": "application/json", **(headers or {})}
         data = None
@@ -351,7 +508,8 @@ class PalsApiClient:
                 url=self.base_url.rstrip("/") + path,
                 headers=request_headers,
                 body=data,
-                timeout_seconds=self.timeout_seconds,
+                timeout_seconds=(self.timeout_seconds if timeout_seconds is None
+                                 else min(self.timeout_seconds, timeout_seconds)),
             )
         except HardDeadlineHttpError:
             raise PalsApiError("PALS API request failed") from None
@@ -367,6 +525,7 @@ class PalsApiClient:
                 f"PALS API returned HTTP {response.status_code}",
                 status_code=response.status_code,
                 error_code=error_code,
+                validation_errors=_extract_api_validation_errors(detail),
             ) from None
         try:
             decoded = json.loads(response.body.decode("utf-8"))
@@ -385,6 +544,8 @@ def _claim_update_payload(
     content: dict[str, Any] | None,
     review_evidence: dict[str, Any] | None,
     diagnostics: list[Diagnostic] | None,
+    private_review_failures: list[dict[str, Any]] | None = None,
+    retry_id: str | None = None,
 ) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "state": state,
@@ -414,6 +575,30 @@ def _claim_update_payload(
     else:
         raise ValueError("worker claim update state is invalid")
 
+    if retry_id is not None:
+        if state != "generating":
+            raise ValueError("retry_id is valid only for acquisition")
+        payload["retry_id"] = _canonical_claim_id(retry_id)
+    if private_review_failures is not None:
+        if state not in {"completed", "failed"} or not 1 <= len(private_review_failures) <= 2:
+            raise ValueError(
+                "private review failures require a terminal update and at most two items"
+            )
+        for failure in private_review_failures:
+            if set(failure) != {"category", "rationale", "reviewer_session_id", "candidate_sha256"}:
+                raise ValueError("invalid private review failure fields")
+            if failure["category"] not in {"rejected", "transport", "schema"}:
+                raise ValueError("invalid private review failure category")
+            if not isinstance(failure["rationale"], str) or len(failure["rationale"]) > 2000:
+                raise ValueError("invalid private review failure rationale")
+            if failure["reviewer_session_id"] is not None:
+                _canonical_claim_id(failure["reviewer_session_id"])
+            if (
+                not isinstance(failure["candidate_sha256"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", failure["candidate_sha256"]) is None
+            ):
+                raise ValueError("invalid private review candidate hash")
+        payload["private_review_failures"] = private_review_failures
     if diagnostics is not None:
         payload["diagnostics"] = [_diagnostic_payload(diagnostic) for diagnostic in diagnostics]
     return payload
@@ -491,6 +676,7 @@ def _validate_recipe_semantic_review_evidence(evidence: dict[str, Any]) -> None:
         "lean_sha256",
         "target_declaration",
         "review_input_sha256",
+        "source_binding_sha256",
         "decision",
         "rationale",
     }
@@ -505,6 +691,8 @@ def _validate_recipe_semantic_review_evidence(evidence: dict[str, Any]) -> None:
         _canonical_claim_id(candidate_id)
     except ValueError as exc:
         raise ValueError("Recipe semantic review candidate id is invalid") from exc
+    if not _is_sha256(evidence.get("source_binding_sha256")):
+        raise ValueError("Recipe semantic review source binding is invalid")
     if not _is_sha256(evidence.get("lean_sha256")):
         raise ValueError("Recipe semantic review Lean digest is invalid")
     if not _is_target_declaration(evidence.get("target_declaration")):
@@ -632,6 +820,8 @@ def _validate_output_review_binding(
             raise ValueError("clarification output review requires a valid clarification id")
         output["clarification_id"] = clarification_id
         output["parent_explanation_sha256"] = evidence["parent_explanation_sha256"]
+        if evidence["schema_version"] == "pals.proof-output-review.v3":
+            output["clarification_context_sha256"] = evidence["clarification_context_sha256"]
     elif clarification_id is not None:
         raise ValueError("explanation output reviews cannot bind a clarification id")
     if evidence["output_sha256"] != _canonical_json_sha256(output):
@@ -651,9 +841,20 @@ def _validate_output_review_evidence(evidence: dict[str, Any] | None) -> None:
         "rationale",
         "evidence_sha256",
     }
+    if (
+        isinstance(evidence, dict)
+        and evidence.get("schema_version") == "pals.proof-output-review.v3"
+    ):
+        required_keys.add("clarification_context_sha256")
+        if evidence.get("output_kind") != "clarification" or not _is_sha256(
+            evidence.get("clarification_context_sha256")
+        ):
+            raise ValueError("clarification review context is invalid")
     if not isinstance(evidence, dict) or set(evidence) != required_keys:
         raise ValueError("output review evidence fields are invalid")
-    if evidence.get("schema_version") != _OUTPUT_REVIEW_SCHEMA_VERSION:
+    if evidence.get("schema_version") not in {
+        _OUTPUT_REVIEW_SCHEMA_VERSION, "pals.proof-output-review.v3"
+    }:
         raise ValueError("output review evidence schema version is invalid")
     kind = evidence.get("output_kind")
     if kind not in {"explanation", "clarification"}:

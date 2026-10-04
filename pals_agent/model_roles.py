@@ -17,6 +17,8 @@ class ModelRole(StrEnum):
     EXPLAIN = "explain"
     CLARIFY = "clarify"
     PROOF_REVIEW = "proof_review"
+    PROOF_REUSE_JUDGE = "proof_reuse_judge"
+    PROOF_REUSE_JUDGE_ESCALATION = "proof_reuse_judge_escalation"
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,12 +28,14 @@ class RoleModelDefault:
     model: str
 
 
-RELEASE_ROLE_REGISTRY_REVISION: Final = "pals.release-role-registry.v1"
+RELEASE_ROLE_REGISTRY_REVISION: Final = "pals.release-role-registry.v2"
 RELEASE_MODEL_PROVIDER: Final = "openai"
-RELEASE_MODEL: Final = "gpt-5.4-mini-2026-03-17"
+RELEASE_MODEL: Final = "gpt-6-luna"
+ESCALATION_MODEL: Final = "gpt-5.6-terra"
 
 # This ordered tuple is the source of truth for release model identity.  It deliberately
-# has no environment-derived provider, alias, fallback, or per-role override.
+# has no environment-derived provider, fallback, or per-role override. The public
+# aliases below are the exact identities documented by OpenAI on 2026-09-30.
 RELEASE_ROLE_REGISTRY: Final[tuple[RoleModelDefault, ...]] = tuple(
     RoleModelDefault(role=role, provider=RELEASE_MODEL_PROVIDER, model=RELEASE_MODEL)
     for role in (
@@ -44,7 +48,14 @@ RELEASE_ROLE_REGISTRY: Final[tuple[RoleModelDefault, ...]] = tuple(
         ModelRole.EXPLAIN,
         ModelRole.CLARIFY,
         ModelRole.PROOF_REVIEW,
+        ModelRole.PROOF_REUSE_JUDGE,
     )
+) + (
+    RoleModelDefault(
+        role=ModelRole.PROOF_REUSE_JUDGE_ESCALATION,
+        provider=RELEASE_MODEL_PROVIDER,
+        model=ESCALATION_MODEL,
+    ),
 )
 _FIXED_ROLE_DEFAULTS: Final = {entry.role: entry for entry in RELEASE_ROLE_REGISTRY}
 

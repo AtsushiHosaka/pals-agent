@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import time
@@ -572,6 +573,7 @@ Return only the Draft. Do not write Lean code yet.
 Give an ordered, mathematically explicit sequence of atomic proof moves that can be
 translated into intermediate Lean `have` statements or local lemmas.
 Follow any required exact-match proof method below.
+{_learner_algebra_guidance()}
 
 Problem:
 {request.prompt}
@@ -596,10 +598,13 @@ Preserve the Draft's proof structure with intermediate `have` statements or loca
 Leave one or more localized `sorry` gaps for the substantive proof obligations.
 Do not use a shortcut tactic or proof term to close the whole theorem instead of
 representing the Draft's intermediate reasoning.
+{_learner_algebra_guidance()}
 
 Problem:
 {request.prompt}
 {_formal_statement_guidance(request.formal_statement)}
+{_target_declaration_guidance(request)}
+{_matrix_literal_guidance(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Required informal Draft to formalize:
@@ -624,11 +629,15 @@ Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 Preserve the Sketch's theorem statement and mathematical target. Fill every gap with
 valid Lean code. Treat every theorem name and proof term in the Sketch as untrusted:
 correct or replace invalid intermediate code before returning. Prefer a small,
-well-supported mathlib proof over a longer proof that merely looks plausible. In
+well-supported mathlib proof with visible intermediate reasoning over a longer
+proof that merely looks plausible. Preserve valid substantive `calc` steps,
+`have` statements, and local lemmas; do not collapse them into a shortcut. In
 particular, for routine continuity goals prefer `fun_prop` over inventing a
 product-domain type annotation for `continuous_mul`. The learner-facing explanation
 is generated separately from the verified theorem and must still expand the Draft's
-mathematical argument.
+mathematical argument without claiming unexposed tactic internals were explicit
+Lean proof steps.
+{_learner_algebra_guidance()}
 {_lean_reliability_guidance(request)}
 Do not use `sorry` or `admit`.
 You must prove the exact Lean theorem harness shown below when one is provided.
@@ -636,6 +645,8 @@ You must prove the exact Lean theorem harness shown below when one is provided.
 Problem:
 {request.prompt}
 {_formal_statement_guidance(request.formal_statement)}
+{_target_declaration_guidance(request)}
+{_matrix_literal_guidance(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Informal Draft whose required proof method must be preserved:
@@ -648,6 +659,59 @@ Lean Sketch to complete:
 {sketch.lean_code}
 ```
 {_repair_guidance(feedback)}
+"""
+
+
+def _learner_algebra_guidance() -> str:
+    return """
+Learner-facing algebra proof structure:
+For nontrivial algebraic identities, expose the main transformations as `calc`
+equalities or named `have` facts. Prefer explicit rewrites using supported lemmas
+such as `pow_two`, `add_mul`, and `mul_add` for power expansion and distribution.
+Do not replace the whole mathematical argument with a single `by ring` or
+`ring_nf`. These tactics remain allowed for a small local arithmetic obligation,
+for example collecting like terms after distribution has been shown explicitly.
+Do not add vacuous intermediate equalities merely to hide a whole-proof `ring`.
+Repair invalid steps locally while retaining valid intermediate reasoning.
+"""
+
+
+def _matrix_literal_guidance(request: ProofRequest) -> str:
+    normalized = request.prompt.lower()
+    if not (
+        "matrix" in normalized or "matrices" in normalized
+        or ("[[" in normalized and "field" in normalized)
+    ):
+        return ""
+    return """
+Lean matrix syntax and carrier discipline:
+A scalar 2-by-2 matrix over K uses semicolons between rows:
+`(!![1, 2; 3, 4] : Matrix (Fin 2) (Fin 2) K)`.
+Do not write `!![![1, 2], ![3, 4]]`: that is one row of vector-valued entries,
+not the required scalar 2-by-2 matrix. Explicitly bind the matrix element type to
+K; declaring `[Field K]` alone does not prevent unannotated numerals from being
+inferred in another carrier. Preserve the exact requested dimensions and field.
+For finite matrix products, expand `Matrix.mul_apply` and finite sums before
+closing entrywise arithmetic with `norm_num` or `ring`. A tactic-only edit cannot
+repair a wrong matrix shape or carrier in the generated proposition. Correct that
+formalization while preserving the user's mathematical statement and any exact
+user-supplied Lean harness. These are syntax examples, not a replacement theorem.
+In Lean 4, a local let in a target uses `let E : T := value; property E`, or the
+property on the next correctly indented line. Do not emit Lean 3's
+`let E : T := value in property E`: `in` is not the Lean 4 let-body delimiter.
+Parenthesize a complex initializer (for example `let E : T := (by ...); property E`)
+so its local assignments cannot be confused with the theorem's final `:= by`.
+When the request names a specific inverse B of A, the target must establish both
+A * B = I and B * A = I for those exact matrices. Mere invertibility, IsUnit A,
+or existence of some inverse is insufficient: preserve the supplied witness's
+identity. In particular, self-inverse means that the specified matrix itself is
+the inverse; do not replace that property with the weaker statement IsUnit A.
+For the rank of a matrix value M, use `Matrix.rank M` (equivalently `M.rank`),
+which is a natural number. `Module.rank K V` instead takes a module TYPE V and
+returns a Cardinal; never pass a matrix value as its V argument. Preserve the
+requested matrix in the target rather than replacing it with the dimension of
+an unrelated ambient space. For example, the 2-by-2 identity target is
+`(1 : Matrix (Fin 2) (Fin 2) K).rank = 2`; with `[Field K]`, `simp` proves it.
 """
 
 
@@ -725,14 +789,17 @@ Route meanings:
 
 If diagnostics include `pals.repair_stagnation`, the same errors survived at least
 three attempts. Do not reflexively repeat the previous route. Decide whether the
-formal decomposition itself should be regenerated at `sketch`, or whether there is a
+generated formalization needs `draft`, the decomposition needs `sketch`, or there is a
 specific materially different `prove` repair. Explain that choice in `rationale`.
+{_repair_location_guidance()}
 
 Problem:
 {request.prompt}
 
 Formal statement:
 {request.formal_statement or "(none)"}
+{_target_declaration_guidance(request)}
+{_matrix_literal_guidance(request)}
 
 Failed attempt number:
 {feedback.attempt}
@@ -768,10 +835,13 @@ Return exactly one JSON object with exactly one key, `instruction`.
 `instruction` must be a concise, concrete repair plan for the selected `{feedback.repair_route}`
 stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
 code, a route choice, an evaluation rubric, or any extra JSON field.
+{_learner_algebra_guidance()}
 
 Problem:
 {request.prompt}
 {_formal_statement_guidance(request.formal_statement)}
+{_target_declaration_guidance(request)}
+{_matrix_literal_guidance(request)}
 {_repair_guidance(feedback)}
 """
 
@@ -861,6 +931,38 @@ Candidate `{context.source_draft_id}` sketch pattern:
 {_prompt_list(context.sketch_steps)}"""
 
 
+def _generated_target_name(request: ProofRequest) -> str:
+    # Some callers reuse a generic ID, so include the unchanged user problem too.
+    # JSON preserves the field boundary; arbitrary input becomes a valid Lean identifier.
+    identity = json.dumps([request.id, request.prompt], ensure_ascii=False)
+    suffix = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:32]
+    return f"pals_target_{suffix}"
+
+
+def _target_declaration_guidance(request: ProofRequest) -> str:
+    if request.formal_statement and request.formal_statement.strip():
+        return """
+The exact supplied target harness takes precedence over generated naming conventions.
+Preserve its declaration name, namespace, binders, types, and proposition. Do not silently rename
+or namespace a user-specified target to avoid a collision. Generated helper lemmas should be local
+`have` statements, not new global declarations with Mathlib names.
+"""
+    return f"""
+Target declaration naming for this request:
+For a newly generated target with no user-specified declaration name or exact harness, use the
+request-specific name `{_generated_target_name(request)}`. This name is stable across Sketch,
+Prove, and Repair. Do not redeclare an imported Mathlib theorem name (for example `add_sq`,
+`sq_add`, or `mul_comm`) as your new target. Use local `have` statements for helper lemmas.
+If the Problem itself explicitly supplies an exact target harness or declaration name, preserve
+that user's name and namespace instead; do not rename or wrap that supplied target in a namespace.
+When diagnostics report that a generated target name is already declared, repair that identifier
+and any references to your own declaration, preserving its binders, types, and exact proposition.
+This is a naming repair, not a reason to weaken the claim or change its mathematical meaning.
+Keep references to existing Mathlib lemmas unchanged; do not globally replace a library name
+inside proof terms. Earlier generated Drafts or Sketches do not override this naming rule.
+"""
+
+
 def _formal_statement_guidance(formal_statement: str | None) -> str:
     if not formal_statement:
         return ""
@@ -884,8 +986,8 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
         {
             identifier
             for diagnostic in feedback.diagnostics
-            if diagnostic.code == "lean.unknownIdentifier"
-            for identifier in re.findall(r"`([^`]+)`", diagnostic.message)
+            if diagnostic.severity == "error"
+            for identifier in _unknown_identifiers(diagnostic)
         }
     )
     unknown_identifier_guidance = ""
@@ -901,11 +1003,13 @@ The selected DSP repair route is `{feedback.repair_route}`.
 Route rationale:
 {feedback.repair_rationale or "No rationale recorded."}
 
-At the current DSP stage, correct the identified failure while keeping the exact
-theorem harness. Every error diagnostic below is mandatory to fix. Produce materially
-corrected Lean code, not a paraphrase of the same failing term. Do not reuse a failing
+At the current DSP stage, correct the identified failure while keeping any user-supplied
+exact theorem harness and the requested mathematical claim.
+Every error diagnostic below is mandatory to fix. Produce materially corrected Lean code,
+not a paraphrase of the same failing term. Do not reuse a failing
 proof term, tactic sequence, or unknown identifier unless the diagnostic is explicitly
 addressed. Warnings do not excuse any remaining error.
+{_repair_location_guidance()}
 
 Failed attempt number:
 {feedback.attempt}
@@ -919,6 +1023,39 @@ Lean diagnostics to fix:
 {diagnostics or "- no diagnostics returned"}
 {unknown_identifier_guidance}
 """
+
+
+def _repair_location_guidance() -> str:
+    return """
+Locate each diagnostic's line and column in the actual Failed Lean code, including
+the declaration header, binders, proposition, and proof body. Inspect surrounding and
+preceding syntax too: a parser error may be reported after the broken construct.
+Do not infer the repair stage from the diagnostic code alone. In the route rationale
+or repair plan, identify the failing source region and explain why that stage can fix it.
+A model-generated Sketch is not evidence that its declaration or proposition is valid.
+If malformed generated target syntax survives a proof-body repair, revisit the upstream
+formalization at `draft`; repeating `prove` while preserving that malformed target cannot
+fix it. If only the proof plan is wrong, consider `sketch`; a local proof-body error can
+still use `prove`. Repeated syntax failure requires rechecking this distinction, not
+automatically repeating the previous route. Preserve any user-supplied exact harness;
+upstream regeneration may correct the model's formalization but must not weaken the
+requested claim, add assumptions, or substitute a different theorem.
+"""
+
+
+def _unknown_identifiers(diagnostic: object) -> tuple[str, ...]:
+    """Read both direct Lean and the API's closed, sanitized repair vocabulary."""
+    code = getattr(diagnostic, "code", None)
+    message = getattr(diagnostic, "message", "")
+    symbol = r"[A-Za-z_][A-Za-z0-9_'.]{0,127}"
+    if code == "lean.unknown_identifier":
+        match = re.fullmatch(
+            rf"Unknown identifier ({symbol}); use an available declaration\.", message
+        )
+        return (match.group(1),) if match else ()
+    if code == "lean.unknownIdentifier":
+        return tuple(re.findall(rf"`({symbol})`", message))
+    return ()
 
 
 def _format_diagnostic_for_prompt(diagnostic: object) -> str:

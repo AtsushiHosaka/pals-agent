@@ -1,0 +1,612 @@
+{
+  "schema_version": "pals.typed-commalg-v4-registry.v1",
+  "profile_id": "typed-commalg-v4",
+  "cdbases": {
+    "typed": "urn:pals:openmath:typed-commalg:v4",
+    "standard": "http://www.openmath.org/cd"
+  },
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "typed1",
+      "name": "forall",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Universal quantification."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "typed1",
+      "name": "exists",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Existential quantification."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "typed1",
+      "name": "type",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Binder sort annotation only."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Conjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Disjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Implication."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "signature": "explicit typed binders or propositions",
+      "lean_meaning": "Negation."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "signature": "same dependent sort × same dependent sort → Prop",
+      "lean_meaning": "Equality."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "signature": "same dependent sort × same dependent sort → Prop",
+      "lean_meaning": "Inequality."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "CommRing",
+      "signature": "Sort",
+      "lean_meaning": "A bound commutative ring with identity; the zero ring is allowed."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "Algebra",
+      "signature": "R → Sort",
+      "lean_meaning": "A bound commutative ring S with a specified Algebra R S structure."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "Ideal",
+      "signature": "R → Sort",
+      "lean_meaning": "Ideal R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "Element",
+      "signature": "R → Sort",
+      "lean_meaning": "An element of R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "Prime",
+      "signature": "R → Sort",
+      "lean_meaning": "PrimeSpectrum R: a prime ideal together with its primality proof."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "SpecSet",
+      "signature": "R → Sort",
+      "lean_meaning": "Set (PrimeSpectrum R), with the Zariski topology on its carrier."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "Submonoid",
+      "signature": "R → Sort",
+      "lean_meaning": "Submonoid R; multiplicative subset, possibly containing zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "RingHom",
+      "signature": "R × S → Sort",
+      "lean_meaning": "Unital ring homomorphism R →+* S."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "nontrivial",
+      "signature": "R → Prop",
+      "lean_meaning": "Nontrivial R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "domain",
+      "signature": "R → Prop",
+      "lean_meaning": "IsDomain R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "noetherian",
+      "signature": "R → Prop",
+      "lean_meaning": "IsNoetherianRing R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "integrally_closed",
+      "signature": "R → Prop",
+      "lean_meaning": "IsIntegrallyClosed R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_t0",
+      "signature": "R → Prop",
+      "lean_meaning": "T0Space (PrimeSpectrum R)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_nonempty",
+      "signature": "R → Prop",
+      "lean_meaning": "Nonempty (PrimeSpectrum R)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_bot",
+      "signature": "R → Ideal(R)",
+      "lean_meaning": "The zero ideal of R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_top",
+      "signature": "R → Ideal(R)",
+      "lean_meaning": "The whole ideal of R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "nilradical",
+      "signature": "R → Ideal(R)",
+      "lean_meaning": "nilradical R, the ideal of nilpotent elements."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "zero",
+      "signature": "R → Element(R)",
+      "lean_meaning": "0 in R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "one",
+      "signature": "R → Element(R)",
+      "lean_meaning": "1 in R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "empty",
+      "signature": "R → SpecSet(R)",
+      "lean_meaning": "Empty set of prime ideals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "univ",
+      "signature": "R → SpecSet(R)",
+      "lean_meaning": "All prime ideals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_radical",
+      "signature": "(R,I:Ideal(R)) → Ideal(R)",
+      "lean_meaning": "I.radical."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_prime",
+      "signature": "(R,I:Ideal(R)) → Prop",
+      "lean_meaning": "I.IsPrime."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_maximal",
+      "signature": "(R,I:Ideal(R)) → Prop",
+      "lean_meaning": "I.IsMaximal."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_le",
+      "signature": "(R,I,J:Ideal(R)) → Prop",
+      "lean_meaning": "I ≤ J."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_lt",
+      "signature": "(R,I,J:Ideal(R)) → Prop",
+      "lean_meaning": "I < J."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_sum",
+      "signature": "(R,I,J:Ideal(R)) → Ideal(R)",
+      "lean_meaning": "I ⊔ J, ideal sum."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_product",
+      "signature": "(R,I,J:Ideal(R)) → Ideal(R)",
+      "lean_meaning": "I * J, ideal product."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "prime_ideal",
+      "signature": "(R,p:Prime(R)) → Ideal(R)",
+      "lean_meaning": "p.asIdeal."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "singleton",
+      "signature": "(R,p:Prime(R)) → SpecSet(R)",
+      "lean_meaning": "The singleton set {p}."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "vanishing_ideal",
+      "signature": "(R,T:SpecSet(R)) → Ideal(R)",
+      "lean_meaning": "PrimeSpectrum.vanishingIdeal T, intersection of the prime ideals in T."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "zero_locus",
+      "signature": "(R,I:Ideal(R)) → SpecSet(R)",
+      "lean_meaning": "PrimeSpectrum.zeroLocus (I : Set R): primes containing I."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "closure",
+      "signature": "(R,T:SpecSet(R)) → SpecSet(R)",
+      "lean_meaning": "closure T in the Zariski topology."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "complement",
+      "signature": "(R,T:SpecSet(R)) → SpecSet(R)",
+      "lean_meaning": "Set complement of T in Spec R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_closed",
+      "signature": "(R,T:SpecSet(R)) → Prop",
+      "lean_meaning": "IsClosed T."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_clopen",
+      "signature": "(R,T:SpecSet(R)) → Prop",
+      "lean_meaning": "IsClopen T."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_compact",
+      "signature": "(R,T:SpecSet(R)) → Prop",
+      "lean_meaning": "IsCompact T; quasi-compactness, no Hausdorff condition asserted."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "is_irreducible",
+      "signature": "(R,T:SpecSet(R)) → Prop",
+      "lean_meaning": "IsIrreducible T; includes nonemptiness."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "set_union",
+      "signature": "(R,T,U:SpecSet(R)) → SpecSet(R)",
+      "lean_meaning": "T ∪ U."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "set_intersection",
+      "signature": "(R,T,U:SpecSet(R)) → SpecSet(R)",
+      "lean_meaning": "T ∩ U."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "set_subset",
+      "signature": "(R,T,U:SpecSet(R)) → Prop",
+      "lean_meaning": "T ⊆ U."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "basic_open",
+      "signature": "(R,x:Element(R)) → SpecSet(R)",
+      "lean_meaning": "PrimeSpectrum.basicOpen x as a set: primes not containing x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "principal",
+      "signature": "(R,x:Element(R)) → Ideal(R)",
+      "lean_meaning": "Ideal.span {x}."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "nilpotent",
+      "signature": "(R,x:Element(R)) → Prop",
+      "lean_meaning": "IsNilpotent x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "idempotent",
+      "signature": "(R,x:Element(R)) → Prop",
+      "lean_meaning": "IsIdempotentElem x, meaning x*x=x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ideal_member",
+      "signature": "(R,x:Element(R),I:Ideal(R)) → Prop",
+      "lean_meaning": "x ∈ I; element precedes ideal."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "algebra_map",
+      "signature": "(R,S:Algebra(R)) → RingHom(R,S)",
+      "lean_meaning": "algebraMap R S for the specified algebra structure."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "integral",
+      "signature": "(R,S:Algebra(R)) → Prop",
+      "lean_meaning": "Algebra.IsIntegral R S: every element of S is integral over R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "flat",
+      "signature": "(R,S:Algebra(R)) → Prop",
+      "lean_meaning": "Module.Flat R S for the R-module determined by the specified algebra structure."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ring_injective",
+      "signature": "(R,S,f:RingHom(R,S)) → Prop",
+      "lean_meaning": "Function.Injective f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ring_surjective",
+      "signature": "(R,S,f:RingHom(R,S)) → Prop",
+      "lean_meaning": "Function.Surjective f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ring_integral",
+      "signature": "(R,S,f:RingHom(R,S)) → Prop",
+      "lean_meaning": "RingHom.IsIntegral f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "ring_kernel",
+      "signature": "(R,S,f:RingHom(R,S)) → Ideal(R)",
+      "lean_meaning": "RingHom.ker f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_comap",
+      "signature": "(R,S,f:RingHom(R,S)) → SpecMap(S,R)",
+      "lean_meaning": "PrimeSpectrum.comap f: Spec S → Spec R, contraction of prime ideals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_range",
+      "signature": "(R,S,f:RingHom(R,S)) → SpecSet(R)",
+      "lean_meaning": "Set.range (PrimeSpectrum.comap f), a subset of Spec R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "map_ideal",
+      "signature": "(R,S,f:RingHom(R,S),I:Ideal(R)) → Ideal(S)",
+      "lean_meaning": "I.map f, extension of an ideal of R to S."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "comap_ideal",
+      "signature": "(R,S,f:RingHom(R,S),I:Ideal(S)) → Ideal(R)",
+      "lean_meaning": "I.comap f, contraction of an ideal of S to R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_preimage",
+      "signature": "(R,S,f:RingHom(R,S),T:SpecSet(R)) → SpecSet(S)",
+      "lean_meaning": "(PrimeSpectrum.comap f) ⁻¹' T for T ⊆ Spec R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "continuous",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "Continuous g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "embedding",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "Topology.IsEmbedding g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "open_embedding",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "Topology.IsOpenEmbedding g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "closed_embedding",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "Topology.IsClosedEmbedding g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "homeomorphism",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "IsHomeomorph g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "closed_map",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "IsClosedMap g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "spec_surjective",
+      "signature": "(A,B,g:SpecMap(A,B)) → Prop",
+      "lean_meaning": "Function.Surjective g."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "polynomial",
+      "signature": "R → CommRing",
+      "lean_meaning": "Polynomial R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "quotient",
+      "signature": "(R,I:Ideal(R)) → CommRing",
+      "lean_meaning": "R ⧸ I for ideal I of R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "localization",
+      "signature": "(R,M:Submonoid(R)) → CommRing",
+      "lean_meaning": "Localization M for multiplicative submonoid M of R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "away",
+      "signature": "(R,x:Element(R)) → CommRing",
+      "lean_meaning": "Localization.Away x = localization at powers of x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "at_prime",
+      "signature": "(R,p:Prime(R)) → CommRing",
+      "lean_meaning": "Localization.AtPrime p.asIdeal."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "quotient_map",
+      "signature": "(R,I:Ideal(R)) → RingHom(R,quotient(R,I))",
+      "lean_meaning": "Ideal.Quotient.mk I : R →+* R⧸I."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "localization_map",
+      "signature": "(R,M:Submonoid(R)) → RingHom(R,localization(R,M))",
+      "lean_meaning": "algebraMap R (Localization M)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "away_map",
+      "signature": "(R,x:Element(R)) → RingHom(R,away(R,x))",
+      "lean_meaning": "algebraMap R (Localization.Away x)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "dimension",
+      "signature": "R → Dimension",
+      "lean_meaning": "ringKrullDim R : WithBot ℕ∞; zero ring has dimension ⊥ and infinity is allowed."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "height",
+      "signature": "(R,I:Ideal(R)) → Dimension",
+      "lean_meaning": "(I.height : WithBot ℕ∞); explicit coercion from ideal height, including infinite height."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "dimension_successor",
+      "signature": "Dimension → Dimension",
+      "lean_meaning": "d + 1 in WithBot ℕ∞, not an implicit finite-dimensional assumption."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg:v4",
+      "cd": "spectrum4",
+      "name": "dimension_le",
+      "signature": "Dimension × Dimension → Prop",
+      "lean_meaning": "The order on WithBot ℕ∞."
+    }
+  ]
+}

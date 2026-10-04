@@ -156,8 +156,7 @@ def test_prx_042_proof_generation_claim_uses_exact_api_contract() -> None:
     assert transport.calls[0]["headers"]["X-PALS-Worker-Secret"] == "PRIVATE-SECRET"
 
 
-def test_pex_009_completed_and_failed_variants_omit_forbidden_fields(
-) -> None:
+def test_pex_009_completed_and_failed_variants_omit_forbidden_fields() -> None:
     transport = RecordingTransport()
     client = PalsApiClient(
         base_url="https://api.test",
@@ -201,13 +200,13 @@ def test_pex_009_completed_and_failed_variants_omit_forbidden_fields(
         "state": "failed",
         "claim_id": CLAIM_ID,
         "diagnostics": [
-                {
-                    "severity": "error",
-                    "code": "pals.explanation_failed",
-                    "message": "Explanation generation failed.",
-                    "line": None,
-                    "column": None,
-                }
+            {
+                "severity": "error",
+                "code": "pals.explanation_failed",
+                "message": "Explanation generation failed.",
+                "line": None,
+                "column": None,
+            }
         ],
     }
 
@@ -313,8 +312,7 @@ def test_pex_009_client_rejects_invalid_claim_variant_before_transport(
         client.upsert_proof_explanation(proof_job_id="proof-1", **kwargs)
 
 
-def test_pae_015_http_error_body_is_parsed_for_code_then_discarded(
-) -> None:
+def test_pae_015_http_error_body_is_parsed_for_code_then_discarded() -> None:
     secret = "PRIVATE-HTTP-BODY-CLAIM-SECRET"
     body = json.dumps(
         {
@@ -348,8 +346,7 @@ def test_pae_015_http_error_body_is_parsed_for_code_then_discarded(
     assert error_info.value.__cause__ is None
 
 
-def test_pae_015_transport_detail_is_not_retained_in_api_error(
-) -> None:
+def test_pae_015_transport_detail_is_not_retained_in_api_error() -> None:
     secret = "PRIVATE-TRANSPORT-DETAIL"
     client = PalsApiClient(
         base_url="https://api.test",
@@ -449,3 +446,38 @@ def test_pae_015_accepted_ids_are_encoded_as_one_path_segment(
     )
 
     assert transport.calls[0]["url"] == "https://api.test" + expected_path
+
+
+def test_retry_claim_and_private_rejection_evidence_use_internal_wire_only() -> None:
+    transport = RecordingTransport()
+    client = PalsApiClient(
+        base_url="https://api.test", worker_secret="PRIVATE-SECRET", transport=transport
+    )
+    client.upsert_proof_explanation(
+        proof_job_id="proof-1",
+        state="generating",
+        claim_id=CLAIM_ID,
+        required_lease_ms=1000,
+        retry_id=CLAIM_ID,
+    )
+    assert transport.calls[-1]["body"]["retry_id"] == CLAIM_ID
+    failure = {
+        "category": "rejected",
+        "rationale": "private review reason",
+        "reviewer_session_id": None,
+        "candidate_sha256": "a" * 64,
+    }
+    client.upsert_proof_explanation(
+        proof_job_id="proof-1", state="failed", claim_id=CLAIM_ID, private_review_failures=[failure]
+    )
+    assert transport.calls[-1]["body"]["private_review_failures"] == [failure]
+    assert "diagnostics" not in transport.calls[-1]["body"]
+    count = len(transport.calls)
+    with pytest.raises(ValueError):
+        client.upsert_proof_explanation(
+            proof_job_id="proof-1",
+            state="failed",
+            claim_id=CLAIM_ID,
+            private_review_failures=[{**failure, "rationale": "x" * 2001}],
+        )
+    assert len(transport.calls) == count

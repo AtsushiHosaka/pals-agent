@@ -1,0 +1,606 @@
+{
+  "schema_version": "pals.typed-linear-algebra-registry.v3",
+  "profile_id": "typed-linear-algebra-v3",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "End",
+      "lean_interpretation": "V →ₗ[ℝ] V",
+      "arguments": [
+        "Space"
+      ],
+      "result": "End@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "Nat",
+      "lean_interpretation": "ℕ; family sizes may be zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "OrthonormalBasis",
+      "lean_interpretation": "OrthonormalBasis (Fin n) ℝ V",
+      "arguments": [
+        "Space",
+        "IndexSize"
+      ],
+      "result": "ONBasis@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "Real",
+      "lean_interpretation": "ℝ"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "RealInnerProductSpace",
+      "lean_interpretation": "V : Type with NormedAddCommGroup V, InnerProductSpace ℝ V, FiniteDimensional ℝ V; nominal carrier V"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "ScalarFamily",
+      "lean_interpretation": "Fin n → ℝ",
+      "arguments": [
+        "IndexSize"
+      ],
+      "result": "ScalarFamily@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "Subspace",
+      "lean_interpretation": "Submodule ℝ V",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "Vector",
+      "lean_interpretation": "V",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "VectorFamily",
+      "lean_interpretation": "Fin n → V",
+      "arguments": [
+        "Space",
+        "IndexSize"
+      ],
+      "result": "Family@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "apply",
+      "lean_interpretation": "f x",
+      "arguments": [
+        "Space",
+        "End@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "coefficients",
+      "lean_interpretation": "fun i : Fin n => inner ℝ (v i) x",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1",
+        "Vector@0"
+      ],
+      "result": "ScalarFamily@1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "coordinates",
+      "lean_interpretation": "fun i : Fin n => b.repr x i",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "ONBasis@0,1",
+        "Vector@0"
+      ],
+      "result": "ScalarFamily@1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "dim",
+      "lean_interpretation": "Module.finrank ℝ V",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "dot",
+      "lean_interpretation": "∑ i : Fin n, a i * b i",
+      "arguments": [
+        "IndexSize",
+        "ScalarFamily@0",
+        "ScalarFamily@0"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "eigenfamily",
+      "lean_interpretation": "∀ i : Fin n, Module.End.HasEigenvector f (a i) (v i); explicitly f(v i)=a i •v i and v i≠0",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "End@0",
+        "ScalarFamily@1",
+        "Family@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "family_nonzero",
+      "lean_interpretation": "∀ i : Fin n, v i ≠ 0",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "family_span",
+      "lean_interpretation": "Submodule.span ℝ (Set.range v)",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "gram_schmidt",
+      "lean_interpretation": "InnerProductSpace.gramSchmidt ℝ v, in the natural order on Fin n",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Family@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "gram_schmidt_normed",
+      "lean_interpretation": "InnerProductSpace.gramSchmidtNormed ℝ v (normalization of zero is zero)",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Family@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "independent",
+      "lean_interpretation": "LinearIndependent ℝ v",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "inner",
+      "lean_interpretation": "inner ℝ x y",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "member",
+      "lean_interpretation": "x ∈ S",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Subspace@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "norm",
+      "lean_interpretation": "‖x‖",
+      "arguments": [
+        "Space",
+        "Vector@0"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "onbasis_vectors",
+      "lean_interpretation": "fun i : Fin n => b i",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "ONBasis@0,1"
+      ],
+      "result": "Family@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "orthogonal",
+      "lean_interpretation": "Sᗮ",
+      "arguments": [
+        "Space",
+        "Subspace@0"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "orthogonal_family",
+      "lean_interpretation": "Pairwise (fun i j => inner ℝ (v i) (v j) = 0)",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "orthonormal",
+      "lean_interpretation": "Orthonormal ℝ v",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "projection",
+      "lean_interpretation": "S.starProjection x (ambient V-valued orthogonal projection)",
+      "arguments": [
+        "Space",
+        "Subspace@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_abs",
+      "lean_interpretation": "|a|",
+      "arguments": [
+        "Real"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_mul",
+      "lean_interpretation": "a * b",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_nat",
+      "lean_interpretation": "(n : ℝ)",
+      "arguments": [
+        "Nat"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_neg",
+      "lean_interpretation": "-a",
+      "arguments": [
+        "Real"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_square",
+      "lean_interpretation": "a ^ 2",
+      "arguments": [
+        "Real"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "real_sub",
+      "lean_interpretation": "a - b",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_bot",
+      "lean_interpretation": "(⊥ : Submodule ℝ V)",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_dim",
+      "lean_interpretation": "Module.finrank ℝ S",
+      "arguments": [
+        "Space",
+        "Subspace@0"
+      ],
+      "result": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_inf",
+      "lean_interpretation": "S ⊓ T",
+      "arguments": [
+        "Space",
+        "Subspace@0",
+        "Subspace@0"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_le",
+      "lean_interpretation": "S ≤ T",
+      "arguments": [
+        "Space",
+        "Subspace@0",
+        "Subspace@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_sup",
+      "lean_interpretation": "S ⊔ T",
+      "arguments": [
+        "Space",
+        "Subspace@0",
+        "Subspace@0"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sub_top",
+      "lean_interpretation": "(⊤ : Submodule ℝ V)",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Subspace@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sum_scaled",
+      "lean_interpretation": "∑ i : Fin n, a i • v i",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "Family@0,1",
+        "ScalarFamily@1"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "sum_squares",
+      "lean_interpretation": "∑ i : Fin n, (a i) ^ 2",
+      "arguments": [
+        "IndexSize",
+        "ScalarFamily@0"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "symmetric",
+      "lean_interpretation": "f.IsSymmetric = ∀ x y, inner ℝ (f x) y = inner ℝ x (f y)",
+      "arguments": [
+        "Space",
+        "End@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "transition_det",
+      "lean_interpretation": "b.toBasis.det c; determinant of matrix with columns c in coordinates of b",
+      "arguments": [
+        "Space",
+        "IndexSize",
+        "ONBasis@0,1",
+        "ONBasis@0,1"
+      ],
+      "result": "Real"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "vector_add",
+      "lean_interpretation": "x + y",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "vector_sub",
+      "lean_interpretation": "x - y",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "la3",
+      "name": "vector_zero",
+      "lean_interpretation": "(0 : V)",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Vector@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "typed1",
+      "name": "forall",
+      "meaning": "universal typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "typed1",
+      "name": "exists",
+      "meaning": "existential typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v3",
+      "cd": "typed1",
+      "name": "type",
+      "meaning": "annotation on a bound variable only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "meaning": "P ∧ Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "meaning": "P ∨ Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "meaning": "P → Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "meaning": "¬P"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "meaning": "typed equality"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "meaning": "typed inequality"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "meaning": "≤ on ℕ or ℝ"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "meaning": "< on ℕ or ℝ"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "meaning": "+ on matching ℕ or ℝ"
+    }
+  ]
+}

@@ -56,7 +56,7 @@ def _provider_body(ids: list[str]) -> bytes:
             "status": "completed",
             "error": None,
             "incomplete_details": None,
-            "model": "gpt-5.4-mini-2026-03-17",
+            "model": "gpt-6-luna",
             "usage": {
                 "input_tokens": 10,
                 "input_tokens_details": {"cached_tokens": 2},
@@ -135,7 +135,9 @@ def test_pfi_ag_005_sends_one_pinned_strict_request_for_a_2xx_provider_response(
         }
     ]
     body = json.loads(request.body_jcs)
-    assert body["model"] == "gpt-5.4-mini-2026-03-17"
+    assert body["model"] == "gpt-6-luna"
+    assert body["reasoning"] == {"effort": "low"}
+    assert body["service_tier"] == "default"
     assert body["text"]["format"]["schema"] == {
         "additionalProperties": False,
         "properties": {
@@ -205,3 +207,74 @@ def test_pfi_ag_007_rejects_missing_or_inconsistent_usage() -> None:
                     body=json.dumps(body, separators=(",", ":")).encode()
                 ),
             ).rerank(_request())
+
+
+def test_provider_usage_extra_metadata_is_ignored_at_each_object_boundary() -> None:
+    envelope = json.loads(_provider_body(['a']))
+    usage = envelope['usage']
+    usage['future_provider_metadata'] = {'private': 'not retained'}
+    usage['input_tokens_details']['new_counter'] = {'not': 'a token count'}
+    usage['output_tokens_details']['other_detail'] = [True, 'private']
+    response = OpenAIDraftReranker(api_key='key', transport=RecordingTransport(
+        body=json.dumps(envelope).encode(),
+    )).rerank_response(_request())
+    assert response.selected_draft_ids == ('a',)
+    assert response.usage.input_tokens == 10
+    assert response.usage.cached_input_tokens == 2
+    assert response.usage.uncached_input_tokens == 8
+    assert response.usage.output_tokens == 3
+    assert response.usage.reasoning_output_tokens == 1
+    assert response.usage.nonreasoning_output_tokens == 2
+    assert response.usage.total_tokens == 13
+    assert 'private' not in repr(response)
+
+
+@pytest.mark.parametrize('path', [
+    ('input_tokens',), ('output_tokens',), ('total_tokens',),
+    ('input_tokens_details',), ('output_tokens_details',),
+    ('input_tokens_details', 'cached_tokens'), ('output_tokens_details', 'reasoning_tokens'),
+])
+def test_provider_usage_still_requires_every_known_count(path) -> None:
+    envelope = json.loads(_provider_body(['a']))
+    target = envelope['usage']
+    for key in path[:-1]:
+        target = target[key]
+    del target[path[-1]]
+    with pytest.raises(DraftRerankerInvalidError) as caught:
+        OpenAIDraftReranker(api_key='key', transport=RecordingTransport(
+            body=json.dumps(envelope).encode(),
+        )).rerank(_request())
+    assert caught.value.private_evidence['parse_stage'] == 'usage'
+
+
+@pytest.mark.parametrize('path,value', [
+    (('input_tokens',), True), (('output_tokens',), -1),
+    (('total_tokens',), 13.0), (('input_tokens_details', 'cached_tokens'), '2'),
+    (('output_tokens_details', 'reasoning_tokens'), None),
+    (('input_tokens',), 2**63), (('input_tokens_details', 'cached_tokens'), 11),
+    (('output_tokens_details', 'reasoning_tokens'), 4), (('total_tokens',), 99),
+])
+def test_provider_usage_rejects_invalid_types_ranges_and_inconsistent_counts(path, value) -> None:
+    envelope = json.loads(_provider_body(['a']))
+    target = envelope['usage']
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = value
+    with pytest.raises(DraftRerankerInvalidError):
+        OpenAIDraftReranker(api_key='key', transport=RecordingTransport(
+            body=json.dumps(envelope).encode(),
+        )).rerank(_request())
+
+
+@pytest.mark.parametrize('before,after', [
+    ('"input_tokens":10', '"input_tokens":10,"input_tokens":10'),
+    ('"cached_tokens":2', '"cached_tokens":2,"cached_tokens":2'),
+    ('"reasoning_tokens":1', '"reasoning_tokens":1,"reasoning_tokens":1'),
+    ('"input_tokens":10', '"input_tokens":10,"new":1,"new":2'),
+])
+def test_provider_usage_rejects_duplicate_members_even_for_unknown_metadata(before, after) -> None:
+    body = _provider_body(['a']).replace(before.encode(), after.encode())
+    with pytest.raises(DraftRerankerInvalidError):
+        OpenAIDraftReranker(
+            api_key='key', transport=RecordingTransport(body=body)
+        ).rerank(_request())

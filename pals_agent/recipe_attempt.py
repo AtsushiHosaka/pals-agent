@@ -9,8 +9,13 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol, cast
 
+import rfc8785
+
+from pals_agent.models import ProofRequest
+from pals_agent.openmath import canonicalize_retrieval_openmath_xml
+from pals_agent.openmath_v4_contract import require_openmath_c14n_v4_contract
 from pals_agent.private_recipe_selection import (
     ClosedRecipeHeaderV1,
     DraftRevisionReference,
@@ -29,11 +34,68 @@ class RecipeSelectionPort(Protocol):
     def select(self, query: RecipeSelectionQuery) -> RecipeSelection: ...
 
 
+def exact_retrieved_draft_reference(
+    request: ProofRequest,
+) -> tuple[DraftRevisionReference, str | None] | None:
+    """Resolve only one exact PFI result, never a similar or arbitrarily ranked Draft.
+
+    Recompute the five-field v4 binding rather than reusing PFI's v3 lookup digest.
+    The API subsequently re-fetches and independently revalidates this reference.
+    """
+    retrieval = request.proof_flow_result
+    if not isinstance(retrieval, dict) or retrieval.get("outcome") != "match":
+        return None
+    # Typed evidence has its own validator/profile binding. Until a corresponding
+    # Recipe alignment contract exists it must never be re-labelled as generic PFI.
+    if retrieval.get("schema_version") not in {None, "pals.draft-retrieval.v1"} or (
+        "profile_id" in retrieval
+    ):
+        return None
+    contexts = retrieval.get("contexts")
+    if not isinstance(contexts, list):
+        raise ValueError("Recipe Draft retrieval contexts are invalid")
+    exact = [
+        item
+        for item in contexts
+        if isinstance(item, dict)
+        and isinstance(item.get("evidence"), dict)
+        and item["evidence"].get("exact_equivalence") is True
+    ]
+    if len(exact) != 1:
+        return None
+    draft = exact[0].get("draft")
+    fields = {"id", "canonical_statement", "openmath_xml", "proof_strategy", "sketch_steps"}
+    if not isinstance(draft, dict) or set(draft) != fields:
+        raise ValueError("Recipe Draft payload is not closed")
+    if any(
+        not isinstance(draft[key], str) or not draft[key].strip()
+        for key in fields - {"sketch_steps"}
+    ):
+        raise ValueError("Recipe Draft text is invalid")
+    steps = draft["sketch_steps"]
+    if not isinstance(steps, list) or any(
+        not isinstance(step, str) or not step.strip() for step in steps
+    ):
+        raise ValueError("Recipe Draft sketch is invalid")
+    require_openmath_c14n_v4_contract()
+    payload = {**draft, "openmath_xml": canonicalize_retrieval_openmath_xml(draft["openmath_xml"])}
+    digest = hashlib.sha256(rfc8785.dumps(cast(Any, payload))).hexdigest()
+    methods = [
+        context.selected_proof_method
+        for context in request.related_draft_contexts
+        if context.source_draft_id == draft["id"] and context.exact_equivalence
+    ]
+    if len(methods) != 1:
+        raise ValueError("Recipe Draft method evidence is not uniquely bound")
+    return DraftRevisionReference(draft_id=draft["id"], draft_payload_sha256=digest), methods[0]
+
+
 @dataclass(frozen=True, slots=True)
 class NoRecipeAttemptV1:
     """A separately traceable decision to keep the old generation path available."""
 
     exclusions: tuple[tuple[str, str | None, int | None], ...]
+    request_sha256: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,6 +154,8 @@ class RecipeAttemptPlannerV1:
         formal_declaration: str | None,
         draft_revision: DraftRevisionReference | None = None,
         proof_method_tag: str | None = None,
+        proof_job_id: str | None = None,
+        mutation_claim_id: str | None = None,
     ) -> RecipeAttemptDecisionV1:
         formal_target = (
             FormalTarget.from_declaration(formal_declaration)
@@ -104,14 +168,17 @@ class RecipeAttemptPlannerV1:
                 draft_revision=draft_revision,
                 proof_method_tag=proof_method_tag,
                 toolchain_fingerprint=self.toolchain_fingerprint,
+                proof_job_id=proof_job_id,
+                mutation_claim_id=mutation_claim_id,
             )
         )
         if isinstance(selection, RecipeNotSelected):
             return NoRecipeAttemptV1(
+                request_sha256=selection.request_sha256,
                 exclusions=tuple(
                     (item.reason_code, item.recipe_id, item.recipe_revision)
                     for item in selection.exclusions
-                )
+                ),
             )
         if not isinstance(selection, RecipeSelected):
             raise ValueError("Recipe selection has an invalid result type")

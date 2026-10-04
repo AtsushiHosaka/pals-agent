@@ -293,7 +293,13 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if failure_code == "verifier_timeout":
             self._error(504, failure_code, request["proof_job_id"], retryable=True)
         else:
-            self._error(422, failure_code, request["proof_job_id"], retryable=False)
+            self._error(
+                422,
+                failure_code,
+                request["proof_job_id"],
+                retryable=False,
+                diagnostics=_repair_diagnostics(result, request["lean_code"]),
+            )
 
     def _verify_recipe_admission(self) -> None:
         """Compile one closed Recipe source without importing proof-job/artifact semantics."""
@@ -540,6 +546,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         proof_job_id: str | None,
         *,
         retryable: bool,
+        diagnostics: list[dict[str, object]] | None = None,
     ) -> None:
         self._write_json(
             status,
@@ -548,6 +555,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
                 "proof_job_id": proof_job_id,
                 "retryable": retryable,
                 "schema_version": _ERROR_SCHEMA_VERSION,
+                **({"diagnostics": diagnostics} if diagnostics is not None else {}),
             },
         )
 
@@ -774,3 +782,54 @@ def _failure_code(result: VerificationResult) -> str:
     if any(item.code in {"lean.timeout", "lean.verifier_timeout"} for item in result.diagnostics):
         return "verifier_timeout"
     return "verifier_compile_failed"
+
+
+def _repair_diagnostics(result: VerificationResult, source: str) -> list[dict[str, object]]:
+    """Export a closed repair vocabulary, never compiler text, paths or subprocess output."""
+    diagnostics: list[dict[str, object]] = []
+    patterns = (
+        (
+            "lean.already_declared",
+            r"^['`‘]([A-Za-z_][A-Za-z0-9_'.]{0,127})['`’] has already been declared\.?$",
+        ),
+        (
+            "lean.unknown_identifier",
+            r"^[Uu]nknown (?:identifier|constant) ['`‘]([A-Za-z_][A-Za-z0-9_'.]{0,127})['`’]\.?$",
+        ),
+    )
+    for item in result.diagnostics:
+        if item.severity != "error":
+            continue
+        code, symbol = "lean.compile_error", None
+        first_line = item.message.splitlines()[0] if item.message else ""
+        for candidate_code, pattern in patterns:
+            match = re.fullmatch(pattern, first_line)
+            if match and match.group(1) in source:
+                code, symbol = candidate_code, match.group(1)
+                break
+        if code == "lean.compile_error":
+            for prefix, category in (
+                ("unsolved goals", "lean.unsolved_goals"),
+                ("type mismatch", "lean.type_mismatch"),
+                ("application type mismatch", "lean.type_mismatch"),
+                ("unexpected token", "lean.syntax_error"),
+                ("tactic", "lean.tactic_failed"),
+            ):
+                if first_line.lower().startswith(prefix):
+                    code = category
+                    break
+        diagnostics.append(
+            {
+                "code": code,
+                "symbol": symbol,
+                "line": item.line
+                if type(item.line) is int and 1 <= item.line <= 1_000_000
+                else None,
+                "column": item.column
+                if type(item.column) is int and 0 <= item.column <= 1_000_000
+                else None,
+            }
+        )
+        if len(diagnostics) == 8:
+            break
+    return diagnostics

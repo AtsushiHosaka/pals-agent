@@ -6,6 +6,11 @@ from typing import Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
+from uuid import uuid4
+
+from pals_agent.http_transport import HardDeadlineHttpTransport
+from pals_agent.proof_reuse_usage import model_role
+from pals_agent.token_meter import active_token_meter
 
 
 class EmbeddingError(RuntimeError):
@@ -72,6 +77,19 @@ class OpenAIEmbeddingModel:
         }
         if self.model.startswith("text-embedding-3"):
             payload["dimensions"] = self.dimension
+
+        meter = active_token_meter()
+        if meter is not None:
+            with model_role("draft_embedding"):
+                metered = meter.request(
+                    transport=HardDeadlineHttpTransport(),
+                    endpoint=self.base_url.rstrip("/") + "/embeddings",
+                    headers={"Authorization": f"Bearer {self.api_key}",
+                             "Content-Type": "application/json"},
+                    payload=payload, data=json.dumps(payload).encode("utf-8"),
+                    timeout_seconds=self.timeout_seconds, call_id=str(uuid4()), embedding=True,
+                )
+            return _extract_embedding(json.loads(metered.body), expected_dimension=self.dimension)
 
         request = Request(
             self.base_url.rstrip("/") + "/embeddings",

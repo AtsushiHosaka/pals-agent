@@ -1,0 +1,592 @@
+{
+  "schema_version": "pals.typed-linear-algebra-registry.v4",
+  "profile_id": "typed-linear-algebra-v4",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Field",
+      "lean_interpretation": "K : Type with Field K, arbitrary characteristic"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Matrix",
+      "lean_interpretation": "Matrix (Fin m) (Fin n) K; row dimension precedes column dimension",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Nat",
+      "lean_interpretation": "ℕ including zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Polynomial",
+      "lean_interpretation": "Polynomial K",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Scalar",
+      "lean_interpretation": "K",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "Vector",
+      "lean_interpretation": "Fin n → K (column coordinates)",
+      "arguments": [
+        "Field",
+        "IndexSize"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "add",
+      "lean_interpretation": "A+B",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Mat@0,1,2"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "adjugate",
+      "lean_interpretation": "A.adjugate",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "charpoly",
+      "lean_interpretation": "A.charpoly = det(XI-A) over Polynomial K",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "count_nonzero",
+      "lean_interpretation": "Nat.card {i : Fin n // d i ≠ 0}",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Vec@0,1"
+      ],
+      "result": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "cramer",
+      "lean_interpretation": "A.cramer y; ith coordinate det(Matrix.updateCol A i y)",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1",
+        "Vec@0,1"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "det",
+      "lean_interpretation": "A.det",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "diag_entries",
+      "lean_interpretation": "fun i : Fin n => A i i",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "diagonal",
+      "lean_interpretation": "Matrix.diagonal d",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Vec@0,1"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "identity",
+      "lean_interpretation": "(1 : Matrix (Fin n) (Fin n) K)",
+      "arguments": [
+        "Field",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "inv",
+      "lean_interpretation": "Matrix nonsingular inverse A⁻¹; zero for a singular matrix",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "is_unit",
+      "lean_interpretation": "IsUnit A, equivalent to a two-sided inverse",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "linear_factor_product",
+      "lean_interpretation": "∏ i : Fin n, (Polynomial.X - Polynomial.C (d i))",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Vec@0,1"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "matrix_eval",
+      "lean_interpretation": "Polynomial.aeval A q; matrix argument before scalar polynomial",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1",
+        "Poly@0"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "mul",
+      "lean_interpretation": "A*B, left matrix m×n and right matrix n×p",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Mat@0,2,3"
+      ],
+      "result": "Mat@0,1,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "mul_vec",
+      "lean_interpretation": "A.mulVec x",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Vec@0,2"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "nilpotent",
+      "lean_interpretation": "IsNilpotent A = ∃ k : ℕ, A^k=0",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_X",
+      "lean_interpretation": "Polynomial.X : Polynomial K",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_coeff",
+      "lean_interpretation": "q.coeff k",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Nat"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_degree",
+      "lean_interpretation": "q.natDegree; zero polynomial convention is 0",
+      "arguments": [
+        "Field",
+        "Poly@0"
+      ],
+      "result": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_eval",
+      "lean_interpretation": "q.eval t",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_monic",
+      "lean_interpretation": "q.Monic",
+      "arguments": [
+        "Field",
+        "Poly@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_next_coeff",
+      "lean_interpretation": "q.nextCoeff; zero for constants, otherwise coefficient below leading degree",
+      "arguments": [
+        "Field",
+        "Poly@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "poly_pow",
+      "lean_interpretation": "q^k",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Nat"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "pow",
+      "lean_interpretation": "A^k",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1",
+        "Nat"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "rank",
+      "lean_interpretation": "A.rank : ℕ, dimension of column span",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2"
+      ],
+      "result": "Nat"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "scalar_inv",
+      "lean_interpretation": "a⁻¹, with 0⁻¹=0",
+      "arguments": [
+        "Field",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "scalar_mul",
+      "lean_interpretation": "a*b",
+      "arguments": [
+        "Field",
+        "Scalar@0",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "scalar_nat",
+      "lean_interpretation": "(i : K)",
+      "arguments": [
+        "Field",
+        "Nat"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "scalar_neg",
+      "lean_interpretation": "-a",
+      "arguments": [
+        "Field",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "scalar_pow",
+      "lean_interpretation": "a^k",
+      "arguments": [
+        "Field",
+        "Scalar@0",
+        "Nat"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "smul",
+      "lean_interpretation": "a • A",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Scalar@0",
+        "Mat@0,1,2"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "trace",
+      "lean_interpretation": "A.trace",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "transpose",
+      "lean_interpretation": "A.transpose",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2"
+      ],
+      "result": "Mat@0,2,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "upper_triangular",
+      "lean_interpretation": "A.BlockTriangular id = ∀ i j, j<i → A i j=0 on Fin n",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "vec_product",
+      "lean_interpretation": "∏ i : Fin n, d i",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Vec@0,1"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "vec_smul",
+      "lean_interpretation": "a • x",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Scalar@0",
+        "Vec@0,1"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "la4",
+      "name": "zero",
+      "lean_interpretation": "(0 : Matrix (Fin m) (Fin n) K)",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "typed1",
+      "name": "forall",
+      "meaning": "universal typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "typed1",
+      "name": "exists",
+      "meaning": "existential typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v4",
+      "cd": "typed1",
+      "name": "type",
+      "meaning": "bound declaration type only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "meaning": "P∧Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "meaning": "P∨Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "meaning": "P→Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "meaning": "¬P"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "meaning": "equality of matching dependent value types"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "meaning": "inequality of matching dependent value types"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "meaning": "≤ on ℕ only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "meaning": "< on ℕ only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "meaning": "addition of matching naturals or matching field scalars"
+    }
+  ]
+}

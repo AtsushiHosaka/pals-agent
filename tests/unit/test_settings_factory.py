@@ -27,6 +27,7 @@ from pals_agent.model_roles import (
 from pals_agent.ollama import OllamaClient
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.openmath import LLMStatementOpenMathStructurer
+from pals_agent.proof_flow_runtime import ProofFlowRuntime
 from pals_agent.settings import AgentSettings
 
 
@@ -37,7 +38,7 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert settings.llm_provider == "ollama"
     assert settings.ollama_model == "qwen2.5:3b"
-    assert settings.openai_model == "gpt-5.4-nano"
+    assert settings.openai_model == "gpt-6-luna"
     assert build_recipe_attempt_planner(settings) is None
     assert settings.openai_max_output_tokens == 12000
     assert settings.prove_mlx_model_path is None
@@ -80,10 +81,7 @@ def test_dpb_014_settings_build_recipe_selection_from_signed_fingerprint(
     assert planner.toolchain_fingerprint.lean_version == "v4.19.0"
     assert planner.toolchain_fingerprint.lake_manifest_sha256 == "a" * 64
     assert planner.toolchain_fingerprint.verifier_sha256 == "b" * 64
-    assert (
-        planner.toolchain_fingerprint.materializer_version
-        == "pals.recipe-materializer.v1"
-    )
+    assert planner.toolchain_fingerprint.materializer_version == "pals.recipe-materializer.v1"
 
 
 def test_settings_read_openai_provider(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -157,11 +155,11 @@ def test_factory_uses_openai_generator(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert isinstance(pipeline.generator, HybridLeanGenerator)
     assert pipeline.generator.provider == "openai"
-    assert pipeline.generator.model == "gpt-5.4-mini-2026-03-17"
+    assert pipeline.generator.model == "gpt-6-luna"
     assert pipeline.generator.openai is not None
     assert pipeline.generator.openai.max_output_tokens == 12000
     assert pipeline.draft_catalog is None
-    assert pipeline.proof_flow_retriever is None
+    assert isinstance(pipeline.proof_flow_retriever, ProofFlowRuntime)
     assert pipeline.verifier is None
     assert pipeline.verification_mode == "api_reconcile"
 
@@ -182,7 +180,7 @@ def test_factory_builds_distinct_explanation_and_review_sessions(
     assert explainer.client is not reviewer.client
     assert explainer.client is not proof_reviewer.client
     assert reviewer.client is not proof_reviewer.client
-    assert explainer.model == reviewer.model == "gpt-5.4-mini-2026-03-17"
+    assert explainer.model == reviewer.model == "gpt-6-luna"
     assert explainer.provider == reviewer.provider == "openai"
 
 
@@ -346,7 +344,7 @@ def test_factory_rejects_semantic_self_judge_provider_and_model(
     monkeypatch.setenv("PALS_SEMANTIC_EVALUATOR_PROVIDER", "openai")
     monkeypatch.setenv(
         "PALS_SEMANTIC_EVALUATOR_MODEL",
-        "gpt-5.4-mini-2026-03-17",
+        "gpt-6-luna",
     )
     monkeypatch.setenv("PALS_SEMANTIC_EVALUATOR_REVISION", "judge-revision")
     monkeypatch.setenv(
@@ -359,7 +357,7 @@ def test_factory_rejects_semantic_self_judge_provider_and_model(
 
 
 def test_release_role_registry_is_complete_immutable_and_code_owned() -> None:
-    assert RELEASE_ROLE_REGISTRY_REVISION == "pals.release-role-registry.v1"
+    assert RELEASE_ROLE_REGISTRY_REVISION == "pals.release-role-registry.v2"
     assert tuple(entry.role for entry in RELEASE_ROLE_REGISTRY) == (
         ModelRole.OPENMATH,
         ModelRole.DRAFT,
@@ -370,9 +368,19 @@ def test_release_role_registry_is_complete_immutable_and_code_owned() -> None:
         ModelRole.EXPLAIN,
         ModelRole.CLARIFY,
         ModelRole.PROOF_REVIEW,
+        ModelRole.PROOF_REUSE_JUDGE,
+        ModelRole.PROOF_REUSE_JUDGE_ESCALATION,
     )
     assert all(entry.provider == "openai" for entry in RELEASE_ROLE_REGISTRY)
-    assert all(entry.model == "gpt-5.4-mini-2026-03-17" for entry in RELEASE_ROLE_REGISTRY)
+    assert all(
+        entry.model
+        == (
+            "gpt-5.6-terra"
+            if entry.role == ModelRole.PROOF_REUSE_JUDGE_ESCALATION
+            else "gpt-6-luna"
+        )
+        for entry in RELEASE_ROLE_REGISTRY
+    )
     assert all(fixed_model_default(entry.role) == entry for entry in RELEASE_ROLE_REGISTRY)
 
 
@@ -415,12 +423,12 @@ def test_openmath_structuring_uses_fixed_role_model_and_preserves_power(
     assert isinstance(structurer, LLMStatementOpenMathStructurer)
     assert isinstance(structurer.client, OpenAIResponsesClient)
     assert structurer.provider == "openai"
-    assert structurer.model == "gpt-5.4-mini-2026-03-17"
+    assert structurer.model == "gpt-6-luna"
     assert structurer.client.api_key == "sk-openmath-test"
     assert structurer.client.base_url == "https://openmath.test/v1"
     assert structurer.client.max_output_tokens == 8192
     assert len(calls) == 1
-    assert calls[0][0] == "gpt-5.4-mini-2026-03-17"
+    assert calls[0][0] == "gpt-6-luna"
     assert "y^n が連続であることを示せ" in calls[0][1]
     assert 'cd="arith1" name="power"' in result
     assert 'name="v1"' in result
@@ -442,6 +450,7 @@ def test_factory_rejects_prove_model_override_before_work(
 
 def test_factory_uses_direct_verified_proof_flow(monkeypatch: pytest.MonkeyPatch) -> None:
     _pin_embedding(monkeypatch)
+    monkeypatch.delenv("PALS_PFI_PROVENANCE_SHA256")
     monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     monkeypatch.setenv("PALS_DRAFT_EMBEDDING_DIM", "32")
@@ -551,3 +560,37 @@ def _pin_embedding(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("PALS_PFI_PROVENANCE_SHA256", "b" * 64)
     monkeypatch.setenv("PALS_WORKER_SHARED_SECRET", "worker-test-secret")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+
+
+def test_learner_factory_fails_closed_on_explicit_invalid_pfi_capability(monkeypatch):
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.setenv("PALS_PFI_PROVENANCE_SHA256", "invalid")
+    with pytest.raises(ValueError, match="runtime provenance digest"):
+        build_pipeline(AgentSettings.from_env())
+
+
+def test_learner_factory_requires_complete_embedding_binding_when_pfi_enabled(monkeypatch):
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.delenv("PALS_DRAFT_EMBEDDING_REVISION")
+    with pytest.raises(RuntimeError, match="REVISION"):
+        build_pipeline(AgentSettings.from_env())
+
+
+@pytest.mark.parametrize("environment", ["local", "production", "test", ""])
+def test_recipe_local_compose_http_is_only_enabled_in_explicit_local_environment(
+    monkeypatch: pytest.MonkeyPatch,
+    environment: str,
+) -> None:
+    monkeypatch.setenv("PALS_ENV", environment)
+    monkeypatch.setenv("PALS_RECIPE_WORKER_SECRET", "recipe-secret")
+    monkeypatch.setenv("PALS_RECIPE_VERIFIER_SHA256", "b" * 64)
+    monkeypatch.setenv("PALS_RECIPE_ACTIVE_LEAN_VERSION", "v4.19.0")
+    monkeypatch.setenv("PALS_RECIPE_ACTIVE_LAKE_MANIFEST_SHA256", "a" * 64)
+    monkeypatch.setenv("PALS_API_BASE_URL", "http://api:8000")
+    if environment == "local":
+        assert build_recipe_attempt_planner(AgentSettings.from_env()) is not None
+    else:
+        with pytest.raises(ValueError, match="absolute HTTPS origin"):
+            build_recipe_attempt_planner(AgentSettings.from_env())

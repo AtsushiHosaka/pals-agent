@@ -33,8 +33,7 @@ def test_build_pfi_worker_image_cli_generates_then_verifies_the_image(
         seed_file=context / "build/proof-flow-index/rootfs/opt/pals/draft-seed.json",
         seed_manifest_file=context / "build/proof-flow-index/metadata/seed-manifest.json",
         fingerprint_file=context / "build/proof-flow-index/metadata/fingerprint.json",
-        build_provenance_file=context
-        / "build/proof-flow-index/metadata/build-provenance.json",
+        build_provenance_file=context / "build/proof-flow-index/metadata/build-provenance.json",
         oci_labels_file=context / "build/proof-flow-index/metadata/oci-labels.json",
         seed_manifest_sha256="sha256:" + "b" * 64,
         seed_count=31,
@@ -220,9 +219,7 @@ def test_pfi_source_checkout_rejects_dirty_or_mismatched_sources(
     revision: subprocess.CompletedProcess[str] | None,
     expected_message: str,
 ) -> None:
-    results = iter(
-        (status,) if revision is None else (status, revision)
-    )
+    results = iter((status,) if revision is None else (status, revision))
     monkeypatch.setattr(cli, "_run_git", lambda _root, *_args: next(results))
 
     with pytest.raises(RuntimeError, match=expected_message):
@@ -475,9 +472,7 @@ def test_evaluate_artifact_cli_includes_explanation_and_clarification_flow(
     assert exit_code == 0
     output = json.loads(capsys.readouterr().out)
     explanation_stage = next(
-        stage
-        for stage in output["evaluation"]["stages"]
-        if stage["stage"] == "explanation"
+        stage for stage in output["evaluation"]["stages"] if stage["stage"] == "explanation"
     )
     metrics = {metric["name"]: metric["value"] for metric in explanation_stage["metrics"]}
     assert explanation_stage["status"] == "passed"
@@ -534,17 +529,13 @@ def test_evaluate_artifact_cli_preserves_deterministic_history_when_semantic_jud
     assert exit_code == 0
     output = json.loads(capsys.readouterr().out)
     retrieval = next(
-        stage
-        for stage in output["evaluation"]["stages"]
-        if stage["stage"] == "retrieval"
+        stage for stage in output["evaluation"]["stages"] if stage["stage"] == "retrieval"
     )
     metrics = {metric["name"]: metric for metric in retrieval["metrics"]}
     assert metrics["candidate_present"]["value"] is True
     assert metrics["semantic_quality"]["status"] == "not_evaluated"
     assert metrics["semantic_quality"]["value"] is None
-    assert "private semantic judge transport detail" not in history_path.read_text(
-        encoding="utf-8"
-    )
+    assert "private semantic judge transport detail" not in history_path.read_text(encoding="utf-8")
 
 
 def test_evaluation_compare_cli_reports_baseline_to_candidate_delta(
@@ -568,34 +559,86 @@ def test_evaluation_compare_cli_reports_baseline_to_candidate_delta(
         encoding="utf-8",
     )
     for run_id, artifact_path in (("baseline", failed_path), ("candidate", passed_path)):
-        assert main(
-            [
-                "evaluate-artifact",
-                str(artifact_path),
-                "--suite-revision",
-                "suite-v1",
-                "--run-id",
-                run_id,
-                "--case-id",
-                "true-proof",
-                "--history",
-                str(history_path),
-            ]
-        ) == 0
+        assert (
+            main(
+                [
+                    "evaluate-artifact",
+                    str(artifact_path),
+                    "--suite-revision",
+                    "suite-v1",
+                    "--run-id",
+                    run_id,
+                    "--case-id",
+                    "true-proof",
+                    "--history",
+                    str(history_path),
+                ]
+            )
+            == 0
+        )
         capsys.readouterr()
 
-    assert main(
-        [
-            "evaluation-compare",
-            "--history",
-            str(history_path),
-            "--baseline-run",
-            "baseline",
-            "--candidate-run",
-            "candidate",
-        ]
-    ) == 0
+    assert (
+        main(
+            [
+                "evaluation-compare",
+                "--history",
+                str(history_path),
+                "--baseline-run",
+                "baseline",
+                "--candidate-run",
+                "candidate",
+            ]
+        )
+        == 0
+    )
 
     output = json.loads(capsys.readouterr().out)
     end_to_end = output["comparison"]["stages"]["end_to_end"]
     assert end_to_end["pass_rate_delta"] == 1.0
+
+
+def test_worker_readiness_clears_stale_marker_before_invalid_configuration(tmp_path, monkeypatch):
+    marker = tmp_path / "ready"
+    marker.write_text("1")
+
+    def invalid():
+        raise ValueError("invalid configuration")
+
+    monkeypatch.setattr(cli.AgentSettings, "from_env", invalid)
+    with pytest.raises(ValueError, match="invalid configuration"):
+        main(["worker", "--ready-file", str(marker)])
+    assert not marker.exists()
+
+
+def test_worker_readiness_requires_initialized_worker_and_cleans_up(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    marker = tmp_path / "ready"
+    settings = SimpleNamespace(
+        worker_shared_secret="secret",
+        api_base_url="https://api.invalid",
+        proof_jobs_queue_url="https://queue.invalid",
+    )
+    monkeypatch.setattr(cli.AgentSettings, "from_env", lambda: settings)
+    monkeypatch.setattr(cli, "build_proof_request_processor", lambda settings, api: None)
+    for name in (
+        "build_proof_explainer",
+        "build_proof_output_reviewer",
+        "build_proof_semantic_reviewer",
+        "build_recipe_attempt_planner",
+    ):
+        monkeypatch.setattr(cli, name, lambda settings: None)
+
+    def run():
+        assert marker.read_text().isdigit()
+        raise RuntimeError("worker stopped")
+
+    def construct(**kwargs):
+        assert not marker.exists()
+        return SimpleNamespace(run_forever=run)
+
+    monkeypatch.setattr(cli, "SqsProofWorker", construct)
+    with pytest.raises(RuntimeError, match="worker stopped"):
+        main(["worker", "--ready-file", str(marker)])
+    assert not marker.exists()

@@ -80,10 +80,7 @@ class StatementSeedDraftCatalog:
             if draft is not None:
                 self.draft_by_statement[problem.prompt] = draft
         self.structurer = RecordingStructurer(
-            {
-                statement: draft.openmath_xml
-                for statement, draft in self.draft_by_statement.items()
-            },
+            {statement: draft.openmath_xml for statement, draft in self.draft_by_statement.items()},
             drafts[0].openmath_xml,
         )
         self.statement_calls: list[str] = []
@@ -101,9 +98,7 @@ class StatementSeedDraftCatalog:
             vector_score=1.0,
             structural_score=1.0,
             final_score=1.0,
-            exact_equivalence=(
-                query_xml == canonicalize_openmath_xml(draft.openmath_xml)
-            ),
+            exact_equivalence=(query_xml == canonicalize_openmath_xml(draft.openmath_xml)),
         )
 
     def find_by_statement(self, statement: str) -> ProofDraft | None:
@@ -286,9 +281,7 @@ class RepairingStagedGenerator(RecordingStagedGenerator):
         return RepairRouteDecision(
             route="sketch",
             rationale="The formal Sketch did not contain localized proof gaps.",
-            raw_model_output=(
-                '{"route":"sketch","rationale":"missing formal sketch gaps"}'
-            ),
+            raw_model_output=('{"route":"sketch","rationale":"missing formal sketch gaps"}'),
         )
 
     def repair(
@@ -373,8 +366,7 @@ class OpenAIErrorGenerator:
             lean_code="",
             model=self.model,
             raw_model_output=(
-                "[openai-error] OPENAI_API_KEY is required when "
-                "PALS_LLM_PROVIDER=openai."
+                "[openai-error] OPENAI_API_KEY is required when PALS_LLM_PROVIDER=openai."
             ),
         )
 
@@ -416,8 +408,8 @@ class StringSpoofedFormalHarnessGenerator:
                 "import Mathlib\n\n"
                 "def claimedTarget : String := "
                 '"theorem pals_continuous_square : '
-                'Continuous (fun x : ℝ => x ^ 2) := by '
-                'Metric.continuous_iff ε / (2 * |x| + 1) '
+                "Continuous (fun x : ℝ => x ^ 2) := by "
+                "Metric.continuous_iff ε / (2 * |x| + 1) "
                 'dist (y ^ 2) (x ^ 2)"\n\n'
                 "example : True := by\n"
                 "  trivial"
@@ -561,11 +553,7 @@ class AlwaysBrokenRepairingGenerator(RepairingGenerator):
 class SucceedsOnFifthRepairGenerator(RepairingGenerator):
     def repair(self, request: ProofRequest, feedback: GenerationFeedback) -> GeneratedProof:
         self.feedback.append(feedback)
-        lean_code = (
-            FIXED_REPAIRABLE_CODE
-            if len(self.feedback) == 5
-            else BROKEN_REPAIRABLE_CODE
-        )
+        lean_code = FIXED_REPAIRABLE_CODE if len(self.feedback) == 5 else BROKEN_REPAIRABLE_CODE
         return GeneratedProof(
             lean_code=lean_code,
             model=self.model,
@@ -832,9 +820,7 @@ def test_pipeline_executes_real_dsp_stages_and_exposes_stage_outputs(
     sketch_context = statuses[2][2]
     generated_draft = sketch_context["generated_draft"]
     assert isinstance(generated_draft, dict)
-    assert generated_draft["text"] == (
-        "Use the natural-number add-zero identity."
-    )
+    assert generated_draft["text"] == ("Use the natural-number add-zero identity.")
     proving_code = statuses[3][1]
     assert proving_code is not None and "sorry" in proving_code
     generated_sketch = statuses[3][2]["generated_sketch"]
@@ -842,9 +828,7 @@ def test_pipeline_executes_real_dsp_stages_and_exposes_stage_outputs(
     assert generated_sketch["lean_code"] == proving_code
 
     metadata = json.loads((tmp_path / "staged-job" / "result.json").read_text())
-    assert metadata["generated"]["draft"]["text"] == (
-        "Use the natural-number add-zero identity."
-    )
+    assert metadata["generated"]["draft"]["text"] == ("Use the natural-number add-zero identity.")
     assert "prompt" in metadata["generated"]["draft"]
     assert "provider" in metadata["generated"]["draft"]
     assert "elapsed_ms" in metadata["generated"]["draft"]
@@ -867,9 +851,7 @@ def test_pipeline_repairs_a_failed_sketch_from_the_sketch_stage(
         statement="Every natural number plus zero is itself.",
         formal_statement="theorem add_zero_nat (n : Nat) : n + 0 = n := by",
         proof_job_id="sketch-repair-job",
-        on_status=lambda state, diagnostics, uri, lean_code, context: statuses.append(
-            state
-        ),
+        on_status=lambda state, diagnostics, uri, lean_code, context: statuses.append(state),
     )
 
     assert result.state == "verified"
@@ -890,8 +872,7 @@ def test_pipeline_repairs_a_failed_sketch_from_the_sketch_stage(
     assert route_feedback.previous_sketch is not None
     assert route_feedback.previous_sketch.lean_code == ""
     assert any(
-        diagnostic.code == "llm.generation_failed"
-        for diagnostic in route_feedback.diagnostics
+        diagnostic.code == "llm.generation_failed" for diagnostic in route_feedback.diagnostics
     )
 
 
@@ -913,9 +894,7 @@ def test_completed_proof_must_preserve_the_formal_sketch_scaffold() -> None:
     preserved = GeneratedProof(
         lean_code=FIXED_REPAIRABLE_CODE.replace(
             "  simpa using Nat.add_zero n",
-            "  have h : n + 0 = n := by\n"
-            "    simpa using Nat.add_zero n\n"
-            "  exact h",
+            "  have h : n + 0 = n := by\n    simpa using Nat.add_zero n\n  exact h",
         ),
         model="prove-model",
         raw_model_output="",
@@ -1020,8 +999,7 @@ def test_exact_draft_method_does_not_override_explicit_formal_identity(
     result = pipeline.run_statement(
         statement=BENCHMARK_PROBLEMS[0].prompt,
         formal_statement=(
-            "theorem model_chosen_square_name : "
-            "Continuous (fun x : ℝ => x ^ 2) := by"
+            "theorem model_chosen_square_name : Continuous (fun x : ℝ => x ^ 2) := by"
         ),
         proof_job_id="exact-draft-preflight",
     )
@@ -1045,12 +1023,15 @@ theorem model_compact_image {α β : Type*} [TopologicalSpace α]
         "(hf : ContinuousOn f s) : IsCompact (f '' s) := by"
     )
 
-    assert validate_generated_lean(
-        request,
-        code,
-        verification_harness=harness,
-        allow_theorem_name_variance=True,
-    ) == []
+    assert (
+        validate_generated_lean(
+            request,
+            code,
+            verification_harness=harness,
+            allow_theorem_name_variance=True,
+        )
+        == []
+    )
 
 
 def test_pipeline_fails_when_model_returns_no_lean_code(tmp_path: Path) -> None:
@@ -1134,9 +1115,7 @@ def test_pipeline_rejects_commented_fragment_spoof(
 
     result = pipeline.run_statement(
         statement=BENCHMARK_PROBLEMS[0].prompt,
-        formal_statement=(
-            "theorem expected_square : Continuous (fun x : ℝ => x ^ 2) := by"
-        ),
+        formal_statement=("theorem expected_square : Continuous (fun x : ℝ => x ^ 2) := by"),
         proof_job_id="job-1",
     )
 
@@ -1158,9 +1137,7 @@ def test_pipeline_rejects_string_literal_formal_harness_spoof(
 
     result = pipeline.run_statement(
         statement=BENCHMARK_PROBLEMS[0].prompt,
-        formal_statement=(
-            "theorem expected_square : Continuous (fun x : ℝ => x ^ 2) := by"
-        ),
+        formal_statement=("theorem expected_square : Continuous (fun x : ℝ => x ^ 2) := by"),
         proof_job_id="job-1",
     )
 
@@ -1306,9 +1283,7 @@ def test_approximate_draft_is_context_only_without_becoming_formal_identity(
             ),
         )
         assert "Target-agnostic related Draft context" in repair_prompt
-        assert all(
-            note in repair_prompt for note in request.related_draft_context.strategy_notes
-        )
+        assert all(note in repair_prompt for note in request.related_draft_context.strategy_notes)
         assert all(step in repair_prompt for step in request.related_draft_context.sketch_steps)
 
     metadata = json.loads((tmp_path / "job-cubed" / "result.json").read_text())
@@ -1407,15 +1382,22 @@ def test_plain_square_input_reaches_epsilon_delta_through_the_proof_flow_runtime
         proof_flow_retriever=retriever,
     )
 
+    request = pipeline.prepare_statement(statement=statement)
     result = pipeline.run_statement(
         statement=statement,
         proof_job_id="exact-proof-flow-square-method",
+        prepared_request=request,
     )
-    request = pipeline._request_for_statement(statement)
+    with pytest.raises(ValueError, match="does not match"):
+        pipeline.run_statement(
+            statement="A different theorem",
+            proof_job_id="wrong-statement",
+            prepared_request=request,
+        )
 
-    assert structurer.statements == [statement, statement]
-    assert len(candidates.calls) == 2
-    assert len(reranker.calls) == 2
+    assert structurer.statements == [statement]
+    assert len(candidates.calls) == 1
+    assert len(reranker.calls) == 1
     assert result.state == "failed"
     assert verifier.calls == []
     assert result.verification.diagnostics[-1].code == "pals.proof_method_mismatch"
@@ -1506,9 +1488,7 @@ def test_approximate_square_draft_cannot_verify_supplied_cube_target(
 
     result = pipeline.run_statement(
         statement="x^3が連続であることを示せ",
-        formal_statement=(
-            "theorem pals_continuous_cube : Continuous (fun x : ℝ => x ^ 3) := by"
-        ),
+        formal_statement=("theorem pals_continuous_cube : Continuous (fun x : ℝ => x ^ 3) := by"),
         proof_job_id="job-cube-with-harness",
     )
 
@@ -1660,15 +1640,11 @@ def test_pae_016_attempt_checkpoint_and_status_retain_exact_candidate_evidence(
     assert result.state == "verified"
     assert verifier.calls == [BROKEN_REPAIRABLE_CODE, FIXED_REPAIRABLE_CODE]
     metadata = json.loads(
-        (tmp_path / "candidate-evidence" / "result.json").read_text(
-            encoding="utf-8"
-        )
+        (tmp_path / "candidate-evidence" / "result.json").read_text(encoding="utf-8")
     )
     checkpoints = [
         json.loads(path.read_text(encoding="utf-8"))
-        for path in sorted(
-            (tmp_path / "candidate-evidence" / "attempts").glob("*.json")
-        )
+        for path in sorted((tmp_path / "candidate-evidence" / "attempts").glob("*.json"))
     ]
     repairing = next(event for event in statuses if event[0] == "repairing")
     terminal = statuses[-1]
@@ -1677,22 +1653,17 @@ def test_pae_016_attempt_checkpoint_and_status_retain_exact_candidate_evidence(
     assert repairing[3]["attempt_evidence"] == metadata["attempts"][0]
     assert repairing[3]["attempt_evidence"] == checkpoints[0]["attempt"]
     assert repairing[3]["repair_route"] == "prove"
-    assert repairing[3]["selector_attempts"] == (
-        metadata["attempts"][1]["repair_route"]["selector_attempts"]
+    assert (
+        repairing[3]["selector_attempts"]
+        == (metadata["attempts"][1]["repair_route"]["selector_attempts"])
     )
     assert terminal[0] == "verified"
     assert terminal[2] == FIXED_REPAIRABLE_CODE
     assert terminal[3]["attempt_evidence"] == metadata["attempts"][1]
     assert terminal[3]["attempt_evidence"] == checkpoints[1]["attempt"]
-    assert metadata["attempts"][0]["generated"]["lean_code"] == (
-        BROKEN_REPAIRABLE_CODE
-    )
-    assert metadata["attempts"][0]["diagnostics"][0]["code"] == (
-        "lean.unknown_identifier"
-    )
-    assert metadata["attempts"][1]["generated"]["lean_code"] == (
-        FIXED_REPAIRABLE_CODE
-    )
+    assert metadata["attempts"][0]["generated"]["lean_code"] == (BROKEN_REPAIRABLE_CODE)
+    assert metadata["attempts"][0]["diagnostics"][0]["code"] == ("lean.unknown_identifier")
+    assert metadata["attempts"][1]["generated"]["lean_code"] == (FIXED_REPAIRABLE_CODE)
     assert metadata["attempts"][1]["repair_route"]["route"] == "prove"
 
 
@@ -1769,23 +1740,17 @@ def test_pae_016_default_budget_can_verify_on_twelfth_repair_and_persists_order(
 
     assert result.state == "verified"
     assert len(generator.feedback) == 12
-    metadata = json.loads(
-        (tmp_path / "repair-twelve" / "result.json").read_text(encoding="utf-8")
-    )
+    metadata = json.loads((tmp_path / "repair-twelve" / "result.json").read_text(encoding="utf-8"))
     assert metadata["repairs_used"] == 12
     assert metadata["termination_reason"] == "verified"
-    assert [attempt["attempt"] for attempt in metadata["attempts"]] == list(
-        range(1, 14)
-    )
+    assert [attempt["attempt"] for attempt in metadata["attempts"]] == list(range(1, 14))
     assert all(
         set(attempt) >= {"attempt", "phase", "generated", "verification", "diagnostics"}
         for attempt in metadata["attempts"]
     )
     assert "repair_route" not in metadata["attempts"][0]
     assert all("repair_route" in attempt for attempt in metadata["attempts"][1:])
-    checkpoint_paths = sorted(
-        (tmp_path / "repair-twelve" / "attempts").glob("*.json")
-    )
+    checkpoint_paths = sorted((tmp_path / "repair-twelve" / "attempts").glob("*.json"))
     assert [path.name for path in checkpoint_paths] == [
         f"{attempt:04d}.json" for attempt in range(1, 14)
     ]
@@ -1885,16 +1850,9 @@ def test_pae_016_sketch_mismatch_is_not_added_to_repair_feedback(
     assert {
         diagnostic.code for diagnostic in generator.route_feedback[0].diagnostics
     } == expected_codes
-    assert {
-        diagnostic.code for diagnostic in generator.feedback[0].diagnostics
-    } == expected_codes
+    assert {diagnostic.code for diagnostic in generator.feedback[0].diagnostics} == expected_codes
     checkpoint = json.loads(
-        (
-            tmp_path
-            / "combined-diagnostics"
-            / "attempts"
-            / "0001.json"
-        ).read_text(encoding="utf-8")
+        (tmp_path / "combined-diagnostics" / "attempts" / "0001.json").read_text(encoding="utf-8")
     )
     assert checkpoint["attempt"]["phase"] == "compile"
     assert {
@@ -1928,18 +1886,13 @@ def test_pae_016_sketch_mismatch_is_evaluated_after_successful_compile(
         for diagnostic in result.verification.diagnostics
     )
     metadata = json.loads(
-        (tmp_path / "lean-success-sketch-mismatch" / "result.json").read_text(
-            encoding="utf-8"
-        )
+        (tmp_path / "lean-success-sketch-mismatch" / "result.json").read_text(encoding="utf-8")
     )
     assert metadata["post_runtime_evaluation"]["sketch_adherence"] is False
     checkpoint = json.loads(
-        (
-            tmp_path
-            / "lean-success-sketch-mismatch"
-            / "attempts"
-            / "0001.json"
-        ).read_text(encoding="utf-8")
+        (tmp_path / "lean-success-sketch-mismatch" / "attempts" / "0001.json").read_text(
+            encoding="utf-8"
+        )
     )
     assert checkpoint["attempt"]["phase"] == "compile"
     assert checkpoint["attempt"]["verification"]["success"] is True
@@ -2039,9 +1992,7 @@ def test_pae_016_stagnation_requires_three_consecutive_normalized_fingerprints()
     ]
 
     assert all(
-        diagnostic.code != "pals.repair_stagnation"
-        for output in outputs
-        for diagnostic in output
+        diagnostic.code != "pals.repair_stagnation" for output in outputs for diagnostic in output
     )
     fifth = _with_repair_stagnation(
         [
@@ -2079,9 +2030,7 @@ def test_pipeline_does_not_send_verifier_configuration_failure_to_llm(
     assert generator.feedback == []
     assert verifier.calls == [BROKEN_REPAIRABLE_CODE]
     metadata = json.loads(
-        (tmp_path / "missing-project-job" / "result.json").read_text(
-            encoding="utf-8"
-        )
+        (tmp_path / "missing-project-job" / "result.json").read_text(encoding="utf-8")
     )
     assert metadata["repairs_used"] == 0
     assert metadata["termination_reason"] == "non_repairable_failure"
@@ -2175,9 +2124,7 @@ def test_pae_016_file_attempt_checkpoint_is_create_only(tmp_path: Path) -> None:
             metadata={"checkpoint_schema_version": 1, "attempt": {"attempt": 999}},
         )
     persisted = json.loads(
-        (tmp_path / "immutable-run" / "attempts" / "0001.json").read_text(
-            encoding="utf-8"
-        )
+        (tmp_path / "immutable-run" / "attempts" / "0001.json").read_text(encoding="utf-8")
     )
     assert persisted == original
 

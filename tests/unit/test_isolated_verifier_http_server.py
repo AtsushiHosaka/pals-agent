@@ -253,6 +253,9 @@ def test_busy_and_compiler_failure_use_the_closed_error_registry(
             "proof_job_id": "proof-1",
             "retryable": False,
             "schema_version": "pals.isolated-verifier-error.v1",
+            "diagnostics": [
+                {"code": "lean.compile_error", "symbol": None, "line": None, "column": None}
+            ],
         },
     )
     assert verifier.calls == ["first", "third"]
@@ -693,3 +696,35 @@ def _timeout_failure() -> VerificationResult:
         stderr="",
         elapsed_ms=300_000,
     )
+
+
+def test_repair_feedback_is_closed_bounded_and_never_copies_compiler_logs() -> None:
+    from pals_agent.lean_verifier.http_server import _repair_diagnostics
+
+    result = VerificationResult(
+        success=False,
+        stdout="SECRET STDOUT",
+        stderr="SECRET STDERR",
+        elapsed_ms=1,
+        diagnostics=(
+            Diagnostic(
+                severity="error", message="'add_sq' has already been declared", line=3, column=8
+            ),
+            Diagnostic(severity="error", message="/private/secret.key: SECRET"),
+            *(
+                Diagnostic(severity="error", message="unknown identifier 'not_in_source'")
+                for _ in range(20)
+            ),
+        ),
+    )
+    feedback = _repair_diagnostics(result, "theorem add_sq : True := by trivial")
+    assert len(feedback) == 8
+    assert feedback[0] == {
+        "code": "lean.already_declared",
+        "symbol": "add_sq",
+        "line": 3,
+        "column": 8,
+    }
+    assert feedback[1]["code"] == "lean.compile_error"
+    assert "SECRET" not in str(feedback)
+    assert "not_in_source" not in str(feedback)

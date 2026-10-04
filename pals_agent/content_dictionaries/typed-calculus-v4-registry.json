@@ -1,0 +1,991 @@
+{
+  "schema_version": "pals.typed-calculus-registry.v4",
+  "profile_id": "typed-calculus-v4",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "typed4",
+      "name": "forall",
+      "semantics": "universal typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "typed4",
+      "name": "exists",
+      "semantics": "existential typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "typed4",
+      "name": "type",
+      "semantics": "explicit type annotation"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "RealInnerProductSpace",
+      "semantics": "V : Type*, NormedAddCommGroup V, InnerProductSpace ℝ V, FiniteDimensional ℝ V; nominal real Hilbert carrier, including dimension zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Nat",
+      "semantics": "ℕ including zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Real",
+      "semantics": "ℝ"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "RealFunction",
+      "semantics": "ℝ → ℝ"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Vector",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Vector@0",
+      "semantics": "E"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Function",
+      "arguments": [
+        "Space",
+        "Space"
+      ],
+      "result": "Function@0,1",
+      "semantics": "E → F"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "CLM",
+      "arguments": [
+        "Space",
+        "Space"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "E →L[ℝ] F"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "ScalarFunction",
+      "arguments": [
+        "Space"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "E → ℝ"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "ScalarCLM",
+      "arguments": [
+        "Space"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "E →L[ℝ] ℝ"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Curve",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Curve@0",
+      "semantics": "ℝ → E"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "DerivativeField",
+      "arguments": [
+        "Space",
+        "Space"
+      ],
+      "result": "DerivativeField@0,1",
+      "semantics": "E → E →L[ℝ] F"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "Bilinear",
+      "arguments": [
+        "Space",
+        "Space"
+      ],
+      "result": "Bilinear@0,1",
+      "semantics": "E →L[ℝ] E →L[ℝ] F"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "apply",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Vector@1",
+      "semantics": "f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_apply",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "curve_apply",
+      "arguments": [
+        "Space",
+        "Curve@0",
+        "Real"
+      ],
+      "result": "Vector@0",
+      "semantics": "c t"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_apply",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1",
+        "Vector@0"
+      ],
+      "result": "Vector@1",
+      "semantics": "A v"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_clm_apply",
+      "arguments": [
+        "Space",
+        "ScalarCLM@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "A v"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "bilinear_apply",
+      "arguments": [
+        "Space",
+        "Space",
+        "Bilinear@0,1",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@1",
+      "semantics": "B v w, where B : E →L[ℝ] E →L[ℝ] F"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "field_apply",
+      "arguments": [
+        "Space",
+        "Space",
+        "DerivativeField@0,1",
+        "Vector@0"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "D x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "real_nat",
+      "arguments": [
+        "Nat"
+      ],
+      "result": "Real",
+      "semantics": "exact cast (n : ℝ)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "real_mul",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "a*b"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "real_abs",
+      "arguments": [
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "|a|"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "vector_zero",
+      "arguments": [
+        "Space"
+      ],
+      "result": "Vector@0",
+      "semantics": "(0 : E)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "vector_add",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0",
+      "semantics": "x+y"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "vector_sub",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0",
+      "semantics": "x-y"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "vector_scale",
+      "arguments": [
+        "Space",
+        "Real",
+        "Vector@0"
+      ],
+      "result": "Vector@0",
+      "semantics": "c • x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "norm",
+      "arguments": [
+        "Space",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "‖x‖"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "inner",
+      "arguments": [
+        "Space",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "inner ℝ x y"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_norm",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1"
+      ],
+      "result": "Real",
+      "semantics": "operator norm ‖A‖"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_zero",
+      "arguments": [
+        "Space",
+        "Space"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "(0 : E →L[ℝ] F)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_clm_zero",
+      "arguments": [
+        "Space"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "(0 : E →L[ℝ] ℝ)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_add",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1",
+        "CLM@0,1"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "A+B"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_sub",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1",
+        "CLM@0,1"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "A-B"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_scale",
+      "arguments": [
+        "Space",
+        "Space",
+        "Real",
+        "CLM@0,1"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "c • A"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "clm_compose",
+      "arguments": [
+        "Space",
+        "Space",
+        "Space",
+        "CLM@1,2",
+        "CLM@0,1"
+      ],
+      "result": "CLM@0,2",
+      "semantics": "B.comp A; apply A first, then B"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "smul_right",
+      "arguments": [
+        "Space",
+        "Space",
+        "ScalarCLM@0",
+        "Vector@1"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "A.smulRight y = (fun h => A h • y)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "dual",
+      "arguments": [
+        "Space",
+        "Vector@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "InnerProductSpace.toDual ℝ E g; h ↦ inner ℝ g h"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "adjoint_apply",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1",
+        "Vector@1"
+      ],
+      "result": "Vector@0",
+      "semantics": "A.adjoint g, real Hilbert adjoint"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "linear_function",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => A x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "affine_function",
+      "arguments": [
+        "Space",
+        "Space",
+        "CLM@0,1",
+        "Vector@1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => A x+b"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "compose",
+      "arguments": [
+        "Space",
+        "Space",
+        "Space",
+        "Function@1,2",
+        "Function@0,1"
+      ],
+      "result": "Function@0,2",
+      "semantics": "g ∘ f"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "function_add",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Function@0,1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => f x+g x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "function_sub",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Function@0,1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => f x-g x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "function_scale",
+      "arguments": [
+        "Space",
+        "Space",
+        "Real",
+        "Function@0,1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => c • f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "function_smul",
+      "arguments": [
+        "Space",
+        "Space",
+        "ScalarFunction@0",
+        "Function@0,1"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun x => s x • f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_add",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "ScalarFunction@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => f x+g x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_scale",
+      "arguments": [
+        "Space",
+        "Real",
+        "ScalarFunction@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => c*f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_compose",
+      "arguments": [
+        "Space",
+        "Space",
+        "ScalarFunction@1",
+        "Function@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "f ∘ g"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "inner_composition",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Function@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => inner ℝ (f x) (g x)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "inner_derivative",
+      "arguments": [
+        "Space",
+        "Space",
+        "Vector@1",
+        "Vector@1",
+        "CLM@0,1",
+        "CLM@0,1"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "(fderivInnerCLM ℝ (u,v)).comp (A.prod B); h ↦ inner ℝ (A h) v + inner ℝ u (B h)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "norm_square_composition",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => ‖f x‖^2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "norm_composition",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => ‖f x‖"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "distance_composition",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Function@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => dist (f x) (g x)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "norm_square_derivative",
+      "arguments": [
+        "Space",
+        "Space",
+        "Vector@1",
+        "CLM@0,1"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "2 • (innerSL ℝ y).comp A"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "inner_function",
+      "arguments": [
+        "Space",
+        "Vector@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => inner ℝ v x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "norm_square",
+      "arguments": [
+        "Space"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => ‖x‖^2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "curve_compose",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Curve@0"
+      ],
+      "result": "Curve@1",
+      "semantics": "f ∘ c"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_curve_compose",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Curve@0"
+      ],
+      "result": "RealFunction",
+      "semantics": "f ∘ c"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_fderiv",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0",
+        "CLM@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "HasFDerivAt f A x; XML order (E,F,f,POINT,DERIVATIVE)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_scalar_fderiv",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0",
+        "ScalarCLM@0"
+      ],
+      "result": "Prop",
+      "semantics": "HasFDerivAt f A x; XML order (E,f,POINT,DERIVATIVE)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_gradient",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "HasGradientAt f g x; XML order (E,f,POINT,GRADIENT)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_curve_deriv",
+      "arguments": [
+        "Space",
+        "Curve@0",
+        "Real",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "HasDerivAt c v t; XML order (E,c,POINT,VELOCITY)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_real_deriv",
+      "arguments": [
+        "RealFunction",
+        "Real",
+        "Real"
+      ],
+      "result": "Prop",
+      "semantics": "HasDerivAt f m t; XML order (f,POINT,SLOPE)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_line_deriv",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "Prop",
+      "semantics": "HasLineDerivAt ℝ f w x v; order (E,F,f,base point x,direction v,result w), derivative at zero of t ↦ f(x+t•v)"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "derivative_field",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "DerivativeField@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "∀ x, HasFDerivAt f (D x) x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "has_second_deriv",
+      "arguments": [
+        "Space",
+        "Space",
+        "DerivativeField@0,1",
+        "Vector@0",
+        "Bilinear@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "HasFDerivAt D B x; differentiability of the derivative field at x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "differentiable_at",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "DifferentiableAt ℝ f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_differentiable_at",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "DifferentiableAt ℝ f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "continuous_at",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousAt f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_continuous_at",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousAt f x"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "fderiv",
+      "arguments": [
+        "Space",
+        "Space",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "fderiv ℝ f x, totalized as zero when not differentiable; presence is not a differentiability assertion"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "local_min",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "IsLocalMin f x, unconstrained neighborhood minimum"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "local_extremum",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "IsLocalExtr f x, unconstrained local minimum or maximum"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "cont_diff",
+      "arguments": [
+        "Space",
+        "Space",
+        "Nat",
+        "Function@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "ContDiff ℝ (n : ℕ) f, global C^n"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_cont_diff",
+      "arguments": [
+        "Space",
+        "Nat",
+        "ScalarFunction@0"
+      ],
+      "result": "Prop",
+      "semantics": "ContDiff ℝ (n : ℕ) f, global C^n"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "semantics": "standard logic1.and; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "semantics": "standard logic1.or; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "semantics": "standard logic1.implies; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "semantics": "standard logic1.not; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "semantics": "standard relation1.eq; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "semantics": "standard relation1.neq; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "semantics": "standard relation1.leq; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "semantics": "standard relation1.lt; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "semantics": "standard arith1.plus; matching value sorts, numeric order/arithmetic only"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v4",
+      "cd": "calculus4",
+      "name": "scalar_line_deriv",
+      "arguments": [
+        "Space",
+        "ScalarFunction@0",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "lineDeriv ℝ f x v, derivative at zero of t ↦ f(x+t•v); totalized as zero if this line restriction is not differentiable, so presence is not an existence assertion"
+    }
+  ]
+}

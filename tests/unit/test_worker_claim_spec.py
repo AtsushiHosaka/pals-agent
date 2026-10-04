@@ -757,8 +757,12 @@ def test_clarification_does_not_construct_proof_generation_pipeline(
     assert len(sqs.delete_calls) == 1
 
 
+@pytest.mark.parametrize(
+    "context_case", ["valid", "missing", "different-parent", "selection-not-in-parent"]
+)
 def test_exp_010_clarification_passes_parent_target_to_generation(
     monkeypatch: pytest.MonkeyPatch,
+    context_case: str,
 ) -> None:
     clock = FakeClock()
     clarification_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
@@ -784,15 +788,62 @@ def test_exp_010_clarification_passes_parent_target_to_generation(
         response = original_worker_input(target_id)
         response["selected_text"] = "前の回答で説明されたこの部分"
         response["after_clarification_id"] = parent_id
+        response["parent_clarification"] = {
+            "id": parent_id,
+            "question": "Earlier question",
+            "answer": (
+                "前の回答で説明されたこの部分。ここでは q を素数とし、"
+                "a を整数として議論を進めます。"
+            ),
+            "key_points": ["q is prime", "a is an integer"],
+        }
+        if context_case == "missing":
+            response.pop("parent_clarification")
+        elif context_case == "different-parent":
+            response["parent_clarification"]["id"] = "another-parent"
+        elif context_case == "selection-not-in-parent":
+            response["selected_text"] = "a passage from another answer"
         return response
 
     cast(Any, api).get_proof_clarification = parent_targeted_input
     explainer = RecordingExplainer()
     _install_sqs(monkeypatch, sqs)
 
-    assert _worker(api, explainer, clock).run_once() is True
+    reviewer = RecordingOutputReviewer()
+    assert _worker(api, explainer, clock, output_reviewer=reviewer).run_once() is True
+    if context_case != "valid":
+        assert explainer.clarify_calls == []
+        assert reviewer.clarification_calls == []
+        assert sqs.delete_calls == []
+        return
+    assert reviewer.clarification_calls[0]["selected_text"] == "前の回答で説明されたこの部分"
+    assert (
+        reviewer.clarification_calls[0]["parent_clarification"]
+        == explainer.clarify_calls[0]["parent_clarification"]
+    )
+    assert reviewer.clarification_calls[0]["parent_clarification"]["question"] == "Earlier question"
     assert explainer.clarify_calls[0]["selected_text"] == "前の回答で説明されたこの部分"
     assert explainer.clarify_calls[0]["after_clarification_id"] == parent_id
+    completed = api.clarification_updates[-1]
+    evidence = completed["review_evidence"]
+    context = {
+        "section_id": explainer.clarify_calls[0]["section_id"],
+        "question": explainer.clarify_calls[0]["question"],
+        "selected_text": explainer.clarify_calls[0]["selected_text"],
+        "after_clarification_id": parent_id,
+        "parent_clarification": explainer.clarify_calls[0]["parent_clarification"],
+    }
+    assert evidence["schema_version"] == "pals.proof-output-review.v3"
+    assert (
+        evidence["clarification_context_sha256"]
+        == hashlib.sha256(rfc8785.dumps(context)).hexdigest()
+    )
+    assert (
+        evidence["clarification_context_sha256"]
+        != hashlib.sha256(
+            rfc8785.dumps({**context, "selected_text": "a different selected statement"})
+        ).hexdigest()
+    )
 
 
 def test_pae_015_malformed_acquired_resource_never_authorizes_model_work(
@@ -1069,9 +1120,7 @@ def test_core_006_summary_review_must_pass_before_completion_and_uses_verified_s
     assert evidence["schema_version"] == "pals.proof-output-review.v2"
     assert evidence["output_kind"] == "explanation"
     assert evidence["generator_session_id"] == completed["claim_id"]
-    assert evidence["output_sha256"] == hashlib.sha256(
-        rfc8785.dumps(expected_output)
-    ).hexdigest()
+    assert evidence["output_sha256"] == hashlib.sha256(rfc8785.dumps(expected_output)).hexdigest()
     assert evidence["lean_sha256"] == hashlib.sha256(LEAN_CODE.encode("utf-8")).hexdigest()
     assert evidence["parent_explanation_sha256"] is None
     assert evidence["reviewer"] == {
@@ -1081,12 +1130,10 @@ def test_core_006_summary_review_must_pass_before_completion_and_uses_verified_s
     }
     assert evidence["decision"] == "approved"
     assert evidence["rationale"] == "The explanation is grounded in the verified Lean source."
-    unsigned_evidence = {
-        key: value for key, value in evidence.items() if key != "evidence_sha256"
-    }
-    assert evidence["evidence_sha256"] == hashlib.sha256(
-        rfc8785.dumps(unsigned_evidence)
-    ).hexdigest()
+    unsigned_evidence = {key: value for key, value in evidence.items() if key != "evidence_sha256"}
+    assert (
+        evidence["evidence_sha256"] == hashlib.sha256(rfc8785.dumps(unsigned_evidence)).hexdigest()
+    )
 
 
 @pytest.mark.parametrize(
@@ -1438,3 +1485,190 @@ def test_pae_015_model_timeout_accepts_exact_bounds(
     monkeypatch.setenv("PALS_EXPLANATION_MODEL_TIMEOUT_SECONDS", value)
 
     assert AgentSettings.from_env().explanation_model_timeout_seconds == int(value)
+
+
+@pytest.mark.parametrize("reference_error", [False, True])
+def test_rejected_summary_generates_one_new_candidate_and_keeps_private_reason(
+    monkeypatch: pytest.MonkeyPatch,
+    reference_error: bool,
+) -> None:
+    from dataclasses import replace
+
+    class CorrectingExplainer(RecordingExplainer):
+        def explain(self, **kwargs: Any) -> ProofExplanation:
+            original = super().explain(**kwargs)
+            return (
+                replace(original, overview="修正した導入です。")
+                if kwargs.get("review_feedback")
+                else original
+            )
+
+    class OnceRejectingReviewer(RecordingOutputReviewer):
+        def review_explanation(self, **kwargs: Any) -> ProofOutputReview:
+            if not self.explanation_calls:
+                self.explanation_calls.append(kwargs)
+                raise explanations.ProofOutputReviewError(
+                    "rejected",
+                    category="rejected",
+                    rationale="PRIVATE: duplicated derivation",
+                    session_id="44444444-4444-4444-8444-444444444444",
+                )
+            return super().review_explanation(**kwargs)
+
+    clock = FakeClock()
+    sqs = FakeSqs("proof-1")
+    api = ClaimApi(
+        claim_response=_envelope("acquired", 600_000),
+        completed_error=(
+            PalsApiError("private", error_code="proof_explanation_reference_mismatch")
+            if reference_error
+            else None
+        ),
+        terminal_response=(
+            _failed_terminal_envelope(resource_kind="explanation") if reference_error else None
+        ),
+    )
+    explainer = CorrectingExplainer()
+    reviewer = OnceRejectingReviewer()
+    _install_sqs(monkeypatch, sqs)
+    assert _worker(api, explainer, clock, output_reviewer=reviewer).run_once()
+    assert len(explainer.explain_calls) == len(reviewer.explanation_calls) == 2
+    assert (
+        explainer.explain_calls[1]["review_feedback"]["rationale"]
+        == "PRIVATE: duplicated derivation"
+    )
+    assert explainer.explain_calls[0]["deadline"] == explainer.explain_calls[1]["deadline"]
+    final = api.explanation_updates[-2] if reference_error else api.explanation_updates[-1]
+    if reference_error:
+        assert api.explanation_updates[-1]["state"] == "failed"
+        assert (
+            api.explanation_updates[-1]["private_review_failures"]
+            == final["private_review_failures"]
+        )
+    assert final["state"] == "completed"
+    assert final["content"]["overview"] == "修正した導入です。"
+    assert final["private_review_failures"][0]["category"] == "rejected"
+    assert "PRIVATE" not in str(final["content"])
+    assert (
+        final["private_review_failures"][0]["candidate_sha256"]
+        != final["review_evidence"]["output_sha256"]
+    )
+
+
+def test_repeated_rejected_candidate_never_gets_another_vote() -> None:
+    from pals_agent.worker import _generate_reviewed_candidate
+
+    review_calls = []
+
+    def reject(candidate: dict[str, Any]) -> ProofOutputReview:
+        review_calls.append(candidate)
+        raise explanations.ProofOutputReviewError(
+            "rejected", category="rejected", rationale="invalid"
+        )
+
+    failures: list[dict[str, Any]] = []
+    with pytest.raises(explanations.ProofOutputReviewError, match="repeated"):
+        _generate_reviewed_candidate(
+            generate=lambda _: {"answer": "same"},
+            review=reject,
+            content_of=lambda candidate: candidate,
+            failures=failures,
+        )
+    assert len(review_calls) == 1
+    assert len(failures) == 2
+    assert failures[-1]["reviewer_session_id"] is None
+
+
+@pytest.mark.parametrize("category", ["transport", "schema"])
+def test_review_infrastructure_failure_does_not_regenerate(category: str) -> None:
+    from pals_agent.worker import _generate_reviewed_candidate
+
+    generated = []
+
+    def generate(feedback: object) -> dict[str, str]:
+        generated.append(feedback)
+        return {"answer": "candidate"}
+
+    def fail(_: object) -> ProofOutputReview:
+        raise explanations.ProofOutputReviewError("unavailable", category=cast(Any, category))
+
+    failures: list[dict[str, Any]] = []
+    with pytest.raises(explanations.ProofOutputReviewError):
+        _generate_reviewed_candidate(
+            generate=generate,
+            review=fail,
+            content_of=lambda candidate: candidate,
+            failures=failures,
+        )
+    assert len(generated) == 1
+    assert failures[0]["category"] == category
+
+
+def test_hidden_metadata_changes_do_not_allow_revote_of_same_visible_explanation() -> None:
+    from pals_agent.worker import _generate_reviewed_candidate
+
+    counter = 0
+
+    def generate(_: object) -> dict[str, Any]:
+        nonlocal counter
+        counter += 1
+        return {
+            "overview": "x is real",
+            "sections": [
+                {
+                    "id": str(counter),
+                    "title": str(counter),
+                    "summary": "proof text",
+                    "references": [counter],
+                }
+            ],
+            "conclusion": "done",
+        }
+
+    calls = []
+
+    def review(candidate: object) -> ProofOutputReview:
+        calls.append(candidate)
+        raise explanations.ProofOutputReviewError(
+            "bad", category="rejected", rationale="unsupported"
+        )
+
+    with pytest.raises(explanations.ProofOutputReviewError, match="repeated"):
+        _generate_reviewed_candidate(
+            generate=generate, review=review, content_of=lambda value: value, failures=[]
+        )
+    assert counter == 2 and len(calls) == 1
+
+
+def test_explanation_retry_message_preserves_retry_binding_and_requires_closed_wire() -> None:
+    from pals_agent.worker import parse_agent_task
+
+    job = "11111111-1111-4111-8111-111111111111"
+    retry = "22222222-2222-4222-8222-222222222222"
+    body = f'{{"kind":"explanation","id":"{job}","retry_id":"{retry}"}}'
+    task = parse_agent_task(body)
+    assert task.kind == "explanation" and task.id == job and task.retry_id == retry
+    for bad in [
+        body.replace(retry, "invalid"),
+        body[:-1] + ',"extra":true}',
+        body.replace(",", ", "),
+    ]:
+        with pytest.raises(ValueError):
+            parse_agent_task(bad)
+
+
+def test_retry_dispatch_reads_verified_proof_and_claims_only_the_explanation() -> None:
+    clock = FakeClock()
+    api = ClaimApi(claim_response=_envelope("acquired", 600_000))
+    explainer = RecordingExplainer()
+    worker = _worker(api, explainer, clock)
+    retry = "22222222-2222-4222-8222-222222222222"
+    assert worker.process_explanation_retry(
+        "proof-1",
+        retry_id=retry,
+        claim_id="11111111-1111-4111-8111-111111111111",
+        extend_visibility=lambda _: None,
+    )
+    assert api.explanation_updates[0]["retry_id"] == retry
+    assert api.explanation_updates[-1]["state"] == "completed"
+    assert len(explainer.explain_calls) == 1

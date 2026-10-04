@@ -7,6 +7,7 @@ import re
 import time
 import uuid
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Final, Literal, Protocol, cast
@@ -28,6 +29,7 @@ from pals_agent.explanations import (
     ProofOutputReviewError,
     ProofSemanticReview,
     ProofSemanticReviewer,
+    ProofSemanticReviewUnavailable,
     proof_explanation_from_api,
 )
 from pals_agent.lean_target import (
@@ -41,16 +43,23 @@ from pals_agent.models import (
     GeneratedProof,
     GeneratedSketch,
     ProofJobState,
+    ProofRequest,
     VerificationResult,
 )
 from pals_agent.openmath import OpenMathStructuringError
-from pals_agent.pipeline import ApiRepairSeed
+from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set
+from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
+from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.recipe_attempt import (
+    NoRecipeAttemptV1,
     RecipeAttemptPlannerV1,
     RecipeAttemptV1,
+    exact_retrieved_draft_reference,
 )
+from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
 from pals_agent.settings import AgentSettings
+from pals_agent.usage import usage_scope
 
 ClaimStatus = Literal[
     "acquired",
@@ -80,9 +89,6 @@ _STATUS_CONTEXT_SCHEMA: Final = "pals.proof-status-context.v1"
 _CLARIFICATION_DISPATCH_SCHEMA_VERSION: Final = "pals.proof-clarification-dispatch.v1"
 _SEMANTIC_REVIEW_SCHEMA_VERSION: Final = "pals.proof-semantic-review.v2"
 _OUTPUT_REVIEW_SCHEMA_VERSION: Final = "pals.proof-output-review.v2"
-_UNAVAILABLE_PROOF_REVIEWER_PROVIDER: Final = "unavailable"
-_UNAVAILABLE_PROOF_REVIEWER_MODEL: Final = "independent-proof-review-unavailable"
-_UNAVAILABLE_PROOF_REVIEW_RATIONALE: Final = "The independent proof review could not be completed."
 _OUTPUT_LANGUAGES: Final = frozenset({"en", "ja", "zh-Hans", "zh-Hant"})
 _LEARNER_FAILURE_MESSAGES: Final = {
     "en": {
@@ -197,6 +203,8 @@ _LEARNER_FAILURE_MESSAGES: Final = {
 
 
 class ProofJobApi(Protocol):
+    def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None: ...
+
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]: ...
 
     def acquire_proof_generation_claim(
@@ -219,6 +227,10 @@ class ProofJobApi(Protocol):
         context: dict[str, Any],
     ) -> dict[str, Any]: ...
 
+    def get_verification_candidate_binding(
+        self, *, proof_job_id: str, candidate_id: str,
+    ) -> dict[str, Any]: ...
+
     def submit_verification_candidate(
         self,
         *,
@@ -227,6 +239,10 @@ class ProofJobApi(Protocol):
         candidate_id: str,
         lean_code: str,
         result_artifact_uri: str,
+    ) -> dict[str, Any]: ...
+
+    def record_no_recipe_attempt(
+        self, *, proof_job_id: str, mutation_claim_id: str, request_sha256: str
     ) -> dict[str, Any]: ...
 
     def submit_recipe_verification_candidate(
@@ -245,6 +261,10 @@ class ProofJobApi(Protocol):
         *,
         proof_job_id: str,
         candidate_id: str,
+    ) -> dict[str, Any]: ...
+
+    def settle_proof_semantic_review_unavailable(
+        self, *, proof_job_id: str, failure: dict[str, Any],
     ) -> dict[str, Any]: ...
 
     def settle_proof_semantic_review(
@@ -271,6 +291,8 @@ class ProofJobApi(Protocol):
         content: dict[str, Any] | None = None,
         review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
+        private_review_failures: list[dict[str, Any]] | None = None,
+        retry_id: str | None = None,
     ) -> dict[str, Any]: ...
 
     def get_proof_clarification(self, clarification_id: str) -> dict[str, Any]: ...
@@ -286,10 +308,15 @@ class ProofJobApi(Protocol):
         content: dict[str, Any] | None = None,
         review_evidence: dict[str, Any] | None = None,
         diagnostics: list[Diagnostic] | None = None,
+        private_review_failures: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]: ...
 
 
 class StatementPipeline(Protocol):
+    def prepare_statement(
+        self, *, statement: str, formal_statement: str | None = None
+    ) -> ProofRequest: ...
+
     def run_statement(
         self,
         *,
@@ -298,6 +325,7 @@ class StatementPipeline(Protocol):
         proof_job_id: str,
         on_status: Any,
         api_repair_seed: ApiRepairSeed | None = None,
+        prepared_request: ProofRequest | None = None,
     ) -> Any: ...
 
 
@@ -309,6 +337,7 @@ class ProofExplainer(Protocol):
         lean_code: str,
         verified: bool,
         language: str = "ja",
+        review_feedback: dict[str, Any] | None = None,
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofExplanation: ...
@@ -325,6 +354,7 @@ class ProofExplainer(Protocol):
         selected_text: str = "",
         after_clarification_id: str | None = None,
         language: str = "ja",
+        review_feedback: dict[str, Any] | None = None,
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofClarification: ...
@@ -334,6 +364,7 @@ class ProofExplainer(Protocol):
 class AgentTask:
     kind: str
     id: str
+    retry_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -353,6 +384,7 @@ class _AcquisitionResult:
     acknowledge: bool
     permit: _GenerationPermit | None
     acquired: bool = False
+    acquired_state: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -364,19 +396,25 @@ class SqsProofWorker:
     # that independent path unavailable whenever the optional Proof Flow
     # runtime was not configured locally.
     pipeline: StatementPipeline | None
-    explainer: ProofExplainer
+    explainer: ProofExplainer | None
     output_reviewer: ProofOutputReviewer | None = None
     proof_reviewer: ProofSemanticReviewer | None = None
     pipeline_factory: Callable[[], StatementPipeline] | None = None
     recipe_attempt_planner: RecipeAttemptPlannerV1 | None = None
+    recipe_review_dispatcher: RecipeReviewDispatcher | None = None
+    proof_request_processor: ProofRequestProcessor | None = None
     monotonic: Callable[[], float] = time.monotonic
     sleep: Callable[[float], None] = time.sleep
     uuid4_factory: Callable[[], uuid.UUID] = uuid.uuid4
 
+    stop_requested: Callable[[], bool] = lambda: False
+
     def run_forever(self) -> None:
-        while True:
+        # Drain only at delivery boundaries; never interrupt a model call or
+        # acknowledge a delivery merely because shutdown was requested.
+        while not self.stop_requested():
             processed = self.run_once()
-            if not processed:
+            if not processed and not self.stop_requested():
                 self.sleep(self.settings.worker_idle_sleep_seconds)
 
     def run_once(self) -> bool:
@@ -407,7 +445,9 @@ class SqsProofWorker:
         except (TypeError, ValueError):
             # Leave poison input for SQS redrive; never delete an unvalidated receipt.
             return True
-        claim_id = self._fresh_claim_id()
+        if (getattr(self.settings, "proof_capability", "full") != "full"
+                and task.kind != "proof_request"):
+            return True  # Preserve receipt for a worker with the explicit capability.
 
         def extend_visibility(seconds: int) -> None:
             sqs.change_message_visibility(
@@ -416,11 +456,30 @@ class SqsProofWorker:
                 VisibilityTimeout=seconds,
             )
 
+        if self.stop_requested():
+            # SIGTERM may arrive during the bounded SQS long poll. No claim or
+            # generation has started, so return this valid receipt for another worker.
+            extend_visibility(0)
+            return False
+        claim_id = self._fresh_claim_id()
         acknowledged = False
         try:
-            if task.kind == "proof":
+            if task.kind == "proof_request":
+                if self.proof_request_processor is None:
+                    return True  # Leave the receipt for a worker with this capability.
+                acknowledged = self.proof_request_processor.process(
+                    task.id, claim_id, extend_visibility,
+                )
+            elif task.kind == "proof":
                 acknowledged = self.process_proof_job(
                     task.id,
+                    claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                )
+            elif task.kind == "explanation":
+                acknowledged = self.process_explanation_retry(
+                    task.id,
+                    retry_id=cast(str, task.retry_id),
                     claim_id=claim_id,
                     extend_visibility=extend_visibility,
                 )
@@ -451,6 +510,8 @@ class SqsProofWorker:
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
     ) -> bool:
+        if getattr(self.settings, "proof_capability", "full") != "full":
+            return False
         proof_job = self.api_client.get_proof_job(proof_job_id)
         state = proof_job.get("state")
         if state in _NON_VERIFIED_TERMINAL_STATES:
@@ -466,19 +527,31 @@ class SqsProofWorker:
             except ValueError:
                 return False
             is_recipe_attempt = proof_job.get("attempt_source") == "recipe"
+            if is_recipe_attempt:
+                return self._request_recipe_review(
+                    proof_job_id=proof_job_id,
+                    candidate_id=candidate_id,
+                    claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                )
             try:
-                generation_session_id = (
-                    None if is_recipe_attempt else _required_generation_session_id(proof_job)
-                )
-                source_binding_sha256 = (
-                    _required_sha256(proof_job, "source_binding_sha256")
-                    if is_recipe_attempt
-                    else None
-                )
+                generation_session_id = _required_generation_session_id(proof_job)
             except ValueError:
                 return False
             target_declaration = _persisted_target_declaration(proof_job, lean_code)
             if target_declaration is None:
+                return False
+            artifact_uri = proof_job.get("result_artifact_uri")
+            if not isinstance(artifact_uri, str) or not artifact_uri:
+                return False
+            # A legacy/stale job session may differ from the immutable candidate's
+            # owner claim. Check before sending any source to the external reviewer.
+            binding = self._matching_candidate_binding(
+                proof_job_id=proof_job_id, candidate_id=candidate_id,
+                claim_id=generation_session_id, lean_code=lean_code,
+                result_artifact_uri=artifact_uri, source_binding_sha256=None,
+            )
+            if binding is None or binding["candidate_status"] != "semantic_review":
                 return False
             request_context = proof_job.get("request_context")
             formal_statement = (
@@ -488,50 +561,61 @@ class SqsProofWorker:
             )
             if not isinstance(formal_statement, str) or not formal_statement.strip():
                 formal_statement = None
+            timeout_seconds = self.settings.explanation_model_timeout_seconds
+            if (
+                isinstance(timeout_seconds, bool)
+                or not isinstance(timeout_seconds, (int, float))
+                or not math.isfinite(timeout_seconds)
+                or not 1 <= timeout_seconds <= 300
+            ):
+                return False
+            if extend_visibility is not None:
+                try:
+                    # The production reviewer permits at most three schema attempts,
+                    # each bounded by this timeout. Keep the delivery private for all
+                    # of them plus settlement margin; never acquire a generation claim.
+                    extend_visibility(3 * math.ceil(timeout_seconds) + 30)
+                except Exception:
+                    return False
             try:
                 review = self._required_proof_reviewer().review_proof(
                     theorem_statement=statement,
                     formal_statement=formal_statement,
                     target_declaration=target_declaration,
                     lean_code=lean_code,
-                    timeout_seconds=self.settings.explanation_model_timeout_seconds,
+                    timeout_seconds=timeout_seconds,
                 )
-            except Exception:
-                review = self._unavailable_proof_review()
-            if is_recipe_attempt:
-                assert source_binding_sha256 is not None
-                evidence = _recipe_semantic_review_evidence(
-                    candidate_id=candidate_id,
-                    theorem_statement=statement,
-                    formal_statement=formal_statement,
-                    lean_code=lean_code,
-                    target_declaration=target_declaration,
-                    source_binding_sha256=source_binding_sha256,
-                    review=review,
+            except Exception as exc:
+                failure = _semantic_review_unavailable_payload(
+                    candidate_id=candidate_id, mutation_claim_id=generation_session_id,
+                    theorem_statement=statement, formal_statement=formal_statement,
+                    lean_code=lean_code, target_declaration=target_declaration,
+                    result_artifact_uri=artifact_uri, source_binding_sha256=None,
+                    failure_kind=(
+                        exc.failure_kind if isinstance(exc, ProofSemanticReviewUnavailable)
+                        else "internal"
+                    ),
                 )
-            else:
-                assert generation_session_id is not None
-                evidence = _semantic_review_evidence(
-                    candidate_id=candidate_id,
-                    theorem_statement=statement,
-                    formal_statement=formal_statement,
-                    lean_code=lean_code,
-                    target_declaration=target_declaration,
-                    generator_session_id=generation_session_id,
-                    review=review,
-                )
+                try:
+                    response = self.api_client.settle_proof_semantic_review_unavailable(
+                        proof_job_id=proof_job_id, failure=failure,
+                    )
+                except Exception:
+                    return False
+                return _semantic_review_terminal_response(response, proof_job_id=proof_job_id)
+            evidence = _semantic_review_evidence(
+                candidate_id=candidate_id,
+                theorem_statement=statement,
+                formal_statement=formal_statement,
+                lean_code=lean_code,
+                target_declaration=target_declaration,
+                generator_session_id=generation_session_id,
+                review=review,
+            )
             approved = review.decision == "approved"
             try:
-                response = (
-                    self.api_client.settle_recipe_semantic_review(
-                        proof_job_id=proof_job_id,
-                        evidence=evidence,
-                    )
-                    if is_recipe_attempt
-                    else self.api_client.settle_proof_semantic_review(
-                        proof_job_id=proof_job_id,
-                        evidence=evidence,
-                    )
+                response = self.api_client.settle_proof_semantic_review(
+                    proof_job_id=proof_job_id, evidence=evidence,
                 )
             except Exception:
                 # A transport failure after settlement is ambiguous; readback/redelivery is the
@@ -622,9 +706,12 @@ class SqsProofWorker:
 
         # A pre-existing API repair receipt belongs to the ordinary model path.  Do not perform a
         # fresh Recipe selection over that durable attempt, or change its retry semantics.
-        if api_repair_seed is None:
+        if api_repair_seed is None and formal_statement is not None:
             try:
-                recipe_attempt = self._selected_recipe_attempt(formal_statement=formal_statement)
+                recipe_attempt = self._selected_recipe_attempt(
+                    formal_statement=formal_statement,
+                    proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                )
             except RuntimeError:
                 return False
             if recipe_attempt is not None:
@@ -642,6 +729,20 @@ class SqsProofWorker:
         latest_state: ProofJobState | None = None
         latest_lean_code: str | None = None
         candidate_submitted = False
+        candidate_import_recovered = False
+        # A fresh claim can resume a worker that died partway through generation.
+        # Recompute its unpublished work, but keep the durable progress at the last
+        # accepted stage until the replay catches up. The API still validates every
+        # published transition, and failures/repair transitions are never suppressed.
+        generation_stages = ("retrieving_context", "drafting", "sketching", "proving", "compiling")
+        resumed_state = generation.acquired_state
+        replay_before = (
+            generation_stages.index(resumed_state)
+            if api_repair_seed is None and resumed_state in generation_stages
+            else 1
+            if api_repair_seed is None and resumed_state == "repairing"
+            else 0
+        )
 
         def on_status(
             status: ProofJobState,
@@ -650,7 +751,11 @@ class SqsProofWorker:
             lean_code: str | None,
             status_context: dict[str, Any],
         ) -> None:
-            nonlocal candidate_submitted, latest_state, latest_lean_code
+            nonlocal candidate_submitted, latest_state, latest_lean_code, replay_before
+            if replay_before:
+                if status in generation_stages and generation_stages.index(status) < replay_before:
+                    return
+                replay_before = 0
             if lean_code:
                 latest_lean_code = lean_code
             if status == "verified":
@@ -687,7 +792,45 @@ class SqsProofWorker:
             }
             if api_repair_seed is not None:
                 run_kwargs["api_repair_seed"] = api_repair_seed
-            run_result = self._pipeline_for_proof().run_statement(**run_kwargs)
+            pipeline = self._pipeline_for_proof()
+            if (
+                self.recipe_attempt_planner is not None
+                and api_repair_seed is None
+                and formal_statement is None
+            ):
+                with usage_scope(lambda usage: self.api_client.record_usage(
+                    proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
+                )):
+                    prepared = pipeline.prepare_statement(statement=statement)
+                try:
+                    resolved = exact_retrieved_draft_reference(prepared)
+                    decision = self.recipe_attempt_planner.decide(
+                        formal_declaration=None,
+                        draft_revision=resolved[0] if resolved else None,
+                        proof_method_tag=resolved[1] if resolved else None,
+                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                    )
+                except (ValueError, RecipeSelectionUnavailableError):
+                    return False
+                if isinstance(decision, RecipeAttemptV1):
+                    return self._submit_selected_recipe_candidate(
+                        proof_job=proof_job,
+                        proof_job_id=proof_job_id,
+                        mutation_claim_id=claim_id,
+                        attempt=decision,
+                        extend_visibility=extend_visibility,
+                    )
+                try:
+                    self._record_no_recipe_attempt(
+                        decision, proof_job_id=proof_job_id, mutation_claim_id=claim_id
+                    )
+                except RuntimeError:
+                    return False
+                run_kwargs["prepared_request"] = prepared
+            with usage_scope(lambda usage: self.api_client.record_usage(
+                proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
+            )):
+                run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
                 "failed",
@@ -757,16 +900,26 @@ class SqsProofWorker:
                     run_result=run_result,
                     lean_code=latest_lean_code,
                 )
+            except ValueError:
+                return False
+            candidate_id = str(uuid.uuid4())
+            try:
                 self.api_client.submit_verification_candidate(
                     proof_job_id=proof_job_id,
                     claim_id=claim_id,
-                    candidate_id=str(uuid.uuid4()),
+                    candidate_id=candidate_id,
                     lean_code=latest_lean_code,
                     result_artifact_uri=candidate_artifact_uri,
                 )
-            except (PalsApiError, ValueError):
-                # Keep the queue receipt unacknowledged.  A failed candidate import is not
-                # proof verification success and must never crash the worker process.
+            except PalsApiError:
+                candidate_import_recovered = self._recover_candidate_import(
+                    proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
+                    lean_code=latest_lean_code, result_artifact_uri=candidate_artifact_uri,
+                    source_binding_sha256=None,
+                )
+                if not candidate_import_recovered:
+                    return False
+            except ValueError:
                 return False
             candidate_submitted = True
 
@@ -779,7 +932,7 @@ class SqsProofWorker:
             reconciled = self._wait_for_candidate_reconciliation(
                 proof_job_id=proof_job_id,
                 extend_visibility=extend_visibility,
-                refresh_visibility=False,
+                refresh_visibility=candidate_import_recovered,
             )
             if reconciled is None:
                 return False
@@ -798,6 +951,57 @@ class SqsProofWorker:
             extend_visibility=extend_visibility,
             language=language,
         )
+
+    def _recover_candidate_import(
+        self, *, proof_job_id: str, candidate_id: str, claim_id: str,
+        lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
+    ) -> bool:
+        """Resolve only this fresh submission; never re-import or acquire another claim."""
+        binding = self._matching_candidate_binding(
+            proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
+            lean_code=lean_code, result_artifact_uri=result_artifact_uri,
+            source_binding_sha256=source_binding_sha256,
+        )
+        if binding is None:
+            return False
+        if binding["candidate_status"] == "compiling":
+            # The immutable candidate is durable even if notification still fails.
+            # The caller uses a bounded wait and short receipt visibility in either case.
+            with suppress(PalsApiError, ValueError):
+                self.api_client.retry_verification_candidate_reconciliation(
+                    proof_job_id=proof_job_id, candidate_id=candidate_id,
+                )
+        return True
+
+    def _matching_candidate_binding(
+        self, *, proof_job_id: str, candidate_id: str, claim_id: str,
+        lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
+    ) -> dict[str, Any] | None:
+        expected = {
+            "schema_version": "pals.verification-candidate-binding.v1",
+            "proof_job_id": proof_job_id,
+            "candidate_id": candidate_id,
+            "mutation_claim_id": claim_id,
+            "lean_sha256": hashlib.sha256(lean_code.encode("utf-8")).hexdigest(),
+            "result_artifact_uri": result_artifact_uri,
+            "source_binding_sha256": source_binding_sha256,
+        }
+        try:
+            binding = self.api_client.get_verification_candidate_binding(
+                proof_job_id=proof_job_id, candidate_id=candidate_id,
+            )
+        except (PalsApiError, ValueError):
+            return None
+        if (
+            not isinstance(binding, dict)
+            or set(binding) != {*expected, "candidate_status"}
+            or any(binding.get(key) != value for key, value in expected.items())
+            or binding.get("candidate_status") not in {
+                "compiling", "semantic_review", "verified", "verification_failed",
+            }
+        ):
+            return None
+        return binding
 
     def _wait_for_candidate_reconciliation(
         self,
@@ -826,8 +1030,7 @@ class SqsProofWorker:
             except PalsApiError:
                 proof_job = None
             if isinstance(proof_job, dict) and (
-                proof_job.get("state") != "compiling"
-                or not _has_pending_api_candidate(proof_job)
+                proof_job.get("state") != "compiling" or not _has_pending_api_candidate(proof_job)
             ):
                 return proof_job
             remaining = deadline - self.monotonic()
@@ -857,7 +1060,9 @@ class SqsProofWorker:
         object.__setattr__(self, "pipeline", pipeline)
         return pipeline
 
-    def _selected_recipe_attempt(self, *, formal_statement: str | None) -> RecipeAttemptV1 | None:
+    def _selected_recipe_attempt(
+        self, *, formal_statement: str | None, proof_job_id: str, mutation_claim_id: str
+    ) -> RecipeAttemptV1 | None:
         """Select before model generation, returning ``None`` only for an authenticated miss.
 
         A selection transport/validation failure is deliberately not converted to a no-Recipe
@@ -869,10 +1074,30 @@ class SqsProofWorker:
         if planner is None:
             return None
         try:
-            decision = planner.decide(formal_declaration=formal_statement)
+            decision = planner.decide(
+                formal_declaration=formal_statement, proof_job_id=proof_job_id,
+                mutation_claim_id=mutation_claim_id,
+            )
         except Exception as error:
             raise RuntimeError("Recipe selection is unavailable") from error
+        if isinstance(decision, NoRecipeAttemptV1):
+            self._record_no_recipe_attempt(
+                decision, proof_job_id=proof_job_id, mutation_claim_id=mutation_claim_id
+            )
         return decision if isinstance(decision, RecipeAttemptV1) else None
+
+    def _record_no_recipe_attempt(
+        self, decision: NoRecipeAttemptV1, *, proof_job_id: str, mutation_claim_id: str
+    ) -> None:
+        if decision.request_sha256 is None:
+            raise RuntimeError("Recipe decision has no authenticated request binding")
+        try:
+            self.api_client.record_no_recipe_attempt(
+                proof_job_id=proof_job_id, mutation_claim_id=mutation_claim_id,
+                request_sha256=decision.request_sha256,
+            )
+        except (PalsApiError, ValueError) as error:
+            raise RuntimeError("Recipe decision could not be persisted") from error
 
     def _submit_selected_recipe_candidate(
         self,
@@ -889,14 +1114,18 @@ class SqsProofWorker:
         A verifier failure will be settled by the API as the terminal Recipe outcome.
         """
 
+        candidate_id = str(uuid.uuid4())
         try:
-            candidate_id = str(uuid.uuid4())
             result_artifact_uri = _recipe_candidate_artifact_uri(
                 proof_job_id=proof_job_id,
                 candidate_id=candidate_id,
                 lean_sha256=attempt.source_sha256,
                 artifacts_bucket=self.settings.artifacts_bucket,
             )
+        except ValueError:
+            return False
+        recovered = False
+        try:
             self.api_client.submit_recipe_verification_candidate(
                 proof_job_id=proof_job_id,
                 mutation_claim_id=mutation_claim_id,
@@ -905,12 +1134,21 @@ class SqsProofWorker:
                 result_artifact_uri=result_artifact_uri,
                 candidate_source=attempt.candidate_source_payload(),
             )
-        except (PalsApiError, ValueError):
+        except PalsApiError:
+            recovered = self._recover_candidate_import(
+                proof_job_id=proof_job_id, candidate_id=candidate_id,
+                claim_id=mutation_claim_id, lean_code=attempt.source,
+                result_artifact_uri=result_artifact_uri,
+                source_binding_sha256=_canonical_json_sha256(attempt.candidate_source_payload()),
+            )
+            if not recovered:
+                return False
+        except ValueError:
             return False
         reconciled = self._wait_for_candidate_reconciliation(
             proof_job_id=proof_job_id,
             extend_visibility=extend_visibility,
-            refresh_visibility=False,
+            refresh_visibility=recovered,
         )
         if reconciled is None:
             return False
@@ -927,6 +1165,8 @@ class SqsProofWorker:
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
     ) -> bool:
+        if getattr(self.settings, "proof_capability", "full") != "full":
+            return False
         worker_input = self.api_client.get_proof_clarification(clarification_id)
         if (
             not isinstance(worker_input, dict)
@@ -950,6 +1190,19 @@ class SqsProofWorker:
                 not isinstance(after_clarification_id, str) or not after_clarification_id
             ):
                 return False
+            selected_text = worker_input.get("selected_text", "")
+            if not isinstance(selected_text, str) or len(selected_text) > 800:
+                return False
+            parent_clarification = _clarification_parent_context(
+                worker_input, after_clarification_id
+            )
+            clarification_context = {
+                "section_id": _required_text(worker_input, "section_id"),
+                "question": worker_input["question"],
+                "selected_text": selected_text,
+                "after_clarification_id": after_clarification_id,
+                "parent_clarification": parent_clarification,
+            }
             proof_input = self.api_client.get_proof_job(proof_job_id)
             if not _same_verified_proof(
                 proof_input,
@@ -977,6 +1230,7 @@ class SqsProofWorker:
             return acquisition.acknowledge
 
         permit = acquisition.permit
+        private_review_failures: list[dict[str, Any]] = []
         try:
             summary_payload = _required_mapping(worker_input, "summary")
             explanation = proof_explanation_from_api(
@@ -989,32 +1243,41 @@ class SqsProofWorker:
                 "verified": True,
                 "explanation": explanation,
                 "section_id": _required_text(worker_input, "section_id"),
-                "question": _required_text(worker_input, "question"),
+                "question": worker_input["question"],
                 "language": language,
                 "deadline": permit.deadline,
                 "timeout_seconds": permit.timeout_seconds,
             }
-            selected_text = worker_input.get("selected_text")
-            if isinstance(selected_text, str) and selected_text:
-                clarification_kwargs["selected_text"] = selected_text
+            clarification_kwargs["selected_text"] = selected_text
             if after_clarification_id is not None:
                 clarification_kwargs["after_clarification_id"] = after_clarification_id
-            clarification = self.explainer.clarify(**clarification_kwargs)
+                clarification_kwargs["parent_clarification"] = parent_clarification
             reviewer = self._required_output_reviewer()
-            review = reviewer.review_clarification(
-                theorem_statement=theorem_statement,
-                lean_code=lean_code,
-                explanation=explanation,
-                clarification=clarification,
-                language=language,
-                deadline=permit.deadline,
-                timeout_seconds=permit.timeout_seconds,
+            clarification, review = _generate_reviewed_candidate(
+                generate=lambda feedback: self._required_explainer().clarify(
+                    **clarification_kwargs, **_optional_keyword("review_feedback", feedback)
+                ),
+                review=lambda candidate: reviewer.review_clarification(
+                    theorem_statement=theorem_statement,
+                    lean_code=lean_code,
+                    explanation=explanation,
+                    clarification=candidate,
+                    language=language,
+                    selected_text=selected_text,
+                    after_clarification_id=after_clarification_id,
+                    parent_clarification=parent_clarification,
+                    deadline=permit.deadline,
+                    timeout_seconds=permit.timeout_seconds,
+                ),
+                content_of=_public_clarification_content,
+                failures=private_review_failures,
             )
             content = _public_clarification_content(clarification)
             review_evidence = _output_review_evidence(
                 kind="clarification",
                 proof_job_id=proof_job_id,
                 clarification_id=clarification_id,
+                clarification_context=clarification_context,
                 content=content,
                 lean_code=lean_code,
                 parent_explanation_content=_public_explanation_content(explanation),
@@ -1028,6 +1291,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.clarification_deadline_exceeded",
                 language=language,
+                private_review_failures=private_review_failures,
             )
         except ProofOutputReviewError:
             return self._write_clarification_failure(
@@ -1035,6 +1299,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.clarification_review_failed",
                 language=language,
+                private_review_failures=private_review_failures,
             )
         except Exception:
             return self._write_clarification_failure(
@@ -1042,6 +1307,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.clarification_failed",
                 language=language,
+                private_review_failures=private_review_failures,
             )
 
         try:
@@ -1052,6 +1318,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 content=content,
                 review_evidence=review_evidence,
+                **_optional_keyword("private_review_failures", private_review_failures),
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_clarification_reference_mismatch":
@@ -1061,6 +1328,7 @@ class SqsProofWorker:
                     code="pals.clarification_reference_mismatch",
                     language=language,
                     require_failed_terminal=True,
+                    private_review_failures=private_review_failures,
                 )
             return False
         except Exception:
@@ -1069,6 +1337,29 @@ class SqsProofWorker:
             response,
             resource_kind="clarification",
             resource_id=clarification_id,
+        )
+
+    def process_explanation_retry(
+        self,
+        proof_job_id: str,
+        *,
+        retry_id: str,
+        claim_id: str,
+        extend_visibility: VisibilityExtender,
+    ) -> bool:
+        if getattr(self.settings, "proof_capability", "full") != "full":
+            return False
+        proof_job = self.api_client.get_proof_job(proof_job_id)
+        if proof_job.get("state") != "verified":
+            return proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES
+        return self._ensure_summary_explanation(
+            proof_job_id=proof_job_id,
+            theorem_statement=_required_text(proof_job, "theorem_statement"),
+            lean_code=_required_text(proof_job, "lean_code"),
+            language=_required_output_language(proof_job),
+            claim_id=claim_id,
+            extend_visibility=extend_visibility,
+            retry_id=retry_id,
         )
 
     def _ensure_summary_explanation(
@@ -1080,6 +1371,7 @@ class SqsProofWorker:
         claim_id: str,
         extend_visibility: VisibilityExtender,
         language: str,
+        retry_id: str | None = None,
     ) -> bool:
         acquisition = self._acquire(
             resource_kind="explanation",
@@ -1091,29 +1383,36 @@ class SqsProofWorker:
                 state="generating",
                 claim_id=claim_id,
                 required_lease_ms=required_lease_ms,
+                **_optional_keyword("retry_id", retry_id),
             ),
         )
         if acquisition.permit is None:
             return acquisition.acknowledge
 
         permit = acquisition.permit
+        private_review_failures: list[dict[str, Any]] = []
         try:
-            explanation = self.explainer.explain(
-                theorem_statement=theorem_statement,
-                lean_code=lean_code,
-                verified=True,
-                language=language,
-                deadline=permit.deadline,
-                timeout_seconds=permit.timeout_seconds,
-            )
             reviewer = self._required_output_reviewer()
-            review = reviewer.review_explanation(
-                theorem_statement=theorem_statement,
-                lean_code=lean_code,
-                explanation=explanation,
-                language=language,
-                deadline=permit.deadline,
-                timeout_seconds=permit.timeout_seconds,
+            explanation, review = _generate_reviewed_candidate(
+                generate=lambda feedback: self._required_explainer().explain(
+                    theorem_statement=theorem_statement,
+                    lean_code=lean_code,
+                    verified=True,
+                    language=language,
+                    deadline=permit.deadline,
+                    timeout_seconds=permit.timeout_seconds,
+                    **_optional_keyword("review_feedback", feedback),
+                ),
+                review=lambda candidate: reviewer.review_explanation(
+                    theorem_statement=theorem_statement,
+                    lean_code=lean_code,
+                    explanation=candidate,
+                    language=language,
+                    deadline=permit.deadline,
+                    timeout_seconds=permit.timeout_seconds,
+                ),
+                content_of=_public_explanation_content,
+                failures=private_review_failures,
             )
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
@@ -1133,6 +1432,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.explanation_deadline_exceeded",
                 language=language,
+                private_review_failures=private_review_failures,
             )
         except ProofOutputReviewError:
             return self._write_explanation_failure(
@@ -1140,6 +1440,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.explanation_review_failed",
                 language=language,
+                private_review_failures=private_review_failures,
             )
         except Exception:
             return self._write_explanation_failure(
@@ -1147,6 +1448,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 code="pals.explanation_failed",
                 language=language,
+                private_review_failures=private_review_failures,
             )
 
         try:
@@ -1156,6 +1458,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 content=content,
                 review_evidence=review_evidence,
+                **_optional_keyword("private_review_failures", private_review_failures),
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_explanation_reference_mismatch":
@@ -1165,6 +1468,7 @@ class SqsProofWorker:
                     code="pals.explanation_reference_mismatch",
                     language=language,
                     require_failed_terminal=True,
+                    private_review_failures=private_review_failures,
                 )
             return False
         except Exception:
@@ -1265,6 +1569,7 @@ class SqsProofWorker:
             acknowledge=False,
             permit=None,
             acquired=True,
+            acquired_state=raw_response["resource"]["state"],
         )
 
     def _write_explanation_failure(
@@ -1275,6 +1580,7 @@ class SqsProofWorker:
         code: str,
         language: str,
         require_failed_terminal: bool = False,
+        private_review_failures: list[dict[str, Any]] | None = None,
     ) -> bool:
         try:
             response = self.api_client.upsert_proof_explanation(
@@ -1282,6 +1588,7 @@ class SqsProofWorker:
                 state="failed",
                 claim_id=claim_id,
                 diagnostics=[_localized_failure_diagnostic(code, language=language)],
+                **_optional_keyword("private_review_failures", private_review_failures),
             )
         except Exception:
             return False
@@ -1305,6 +1612,7 @@ class SqsProofWorker:
         code: str,
         language: str,
         require_failed_terminal: bool = False,
+        private_review_failures: list[dict[str, Any]] | None = None,
     ) -> bool:
         try:
             response = self.api_client.update_proof_clarification(
@@ -1312,6 +1620,7 @@ class SqsProofWorker:
                 state="failed",
                 claim_id=claim_id,
                 diagnostics=[_localized_failure_diagnostic(code, language=language)],
+                **_optional_keyword("private_review_failures", private_review_failures),
             )
         except Exception:
             return False
@@ -1331,29 +1640,57 @@ class SqsProofWorker:
         if self.monotonic() >= deadline:
             raise ExplanationDeadlineExceeded("explanation generation deadline exceeded")
 
+    def _required_explainer(self) -> ProofExplainer:
+        if self.explainer is None:
+            raise RuntimeError("Formal proof explainer is unavailable")
+        return self.explainer
+
     def _required_output_reviewer(self) -> ProofOutputReviewer:
         if self.output_reviewer is None:
             raise ProofOutputReviewError("independent output reviewer is unavailable")
         return self.output_reviewer
 
+    def _request_recipe_review(
+        self, *, proof_job_id: str, candidate_id: str,
+        claim_id: str | None, extend_visibility: VisibilityExtender | None,
+    ) -> bool:
+        dispatcher = self.recipe_review_dispatcher
+        if dispatcher is None:
+            url = getattr(self.settings, "recipe_reviewer_url", None)
+            secret = getattr(self.settings, "recipe_review_requester_secret", None)
+            if not url or not secret:
+                return False
+            dispatcher = RecipeReviewDispatcher(url, secret)
+        timeout = self.settings.explanation_model_timeout_seconds * 2 + 45
+        try:
+            if extend_visibility is not None:
+                extend_visibility(timeout + 30)
+            dispatcher.request(
+                proof_job_id=proof_job_id, candidate_id=candidate_id, timeout_seconds=timeout,
+            )
+            persisted = self.api_client.get_proof_job(proof_job_id)
+        except Exception:
+            # The isolated actor may have committed even if its HTTP response was lost.
+            # Keep the SQS receipt; a later authoritative read resolves that uncertainty.
+            return False
+        if not _semantic_review_terminal_response(persisted, proof_job_id=proof_job_id):
+            return False
+        if persisted["state"] == "failed" or claim_id is None or extend_visibility is None:
+            return True
+        lean_code = persisted.get("lean_code")
+        if not isinstance(lean_code, str) or not lean_code.strip():
+            return False
+        return self._ensure_summary_explanation(
+            proof_job_id=proof_job_id,
+            theorem_statement=_required_text(persisted, "theorem_statement"),
+            lean_code=lean_code, claim_id=claim_id, extend_visibility=extend_visibility,
+            language=_required_output_language(persisted),
+        )
+
     def _required_proof_reviewer(self) -> ProofSemanticReviewer:
         if self.proof_reviewer is None:
             raise ProofOutputReviewError("independent proof reviewer is unavailable")
         return self.proof_reviewer
-
-    def _unavailable_proof_review(self) -> ProofSemanticReview:
-        """Represent a reviewer construction or invocation failure as a durable rejection."""
-
-        session_id = self.uuid4_factory()
-        if not isinstance(session_id, uuid.UUID) or session_id.version != 4:
-            session_id = uuid.uuid4()
-        return ProofSemanticReview(
-            decision="rejected",
-            rationale=_UNAVAILABLE_PROOF_REVIEW_RATIONALE,
-            reviewer_provider=_UNAVAILABLE_PROOF_REVIEWER_PROVIDER,
-            reviewer_model=_UNAVAILABLE_PROOF_REVIEWER_MODEL,
-            session_id=str(session_id),
-        )
 
     def _fresh_claim_id(self) -> str:
         value = self.uuid4_factory()
@@ -1439,6 +1776,11 @@ def parse_agent_task(body: str) -> AgentTask:
     stripped = body.strip()
     if not stripped:
         raise ValueError("SQS agent task body must not be empty")
+    if body.startswith("proof_request:"):
+        request_id = body.removeprefix("proof_request:")
+        if not _is_canonical_uuid4(request_id):
+            raise ValueError("invalid proof request task")
+        return AgentTask(kind="proof_request", id=request_id)
     if not stripped.startswith("{"):
         if not _RESOURCE_ID_RE.fullmatch(stripped):
             raise ValueError("Legacy SQS proof task id contains unsupported characters")
@@ -1451,6 +1793,19 @@ def parse_agent_task(body: str) -> AgentTask:
         raise ValueError("SQS agent task JSON must be an object")
     kind = payload.get("kind")
     task_id = payload.get("id")
+    if kind == "explanation":
+        retry_id = payload.get("retry_id")
+        if (
+            not isinstance(task_id, str)
+            or not _is_canonical_uuid4(task_id)
+            or not isinstance(retry_id, str)
+            or not _is_canonical_uuid4(retry_id)
+        ):
+            raise ValueError("invalid explanation retry task")
+        expected = f'{{"kind":"explanation","id":"{task_id}","retry_id":"{retry_id}"}}'
+        if body != expected:
+            raise ValueError("explanation retry task requires exact canonical bytes")
+        return AgentTask(kind=kind, id=task_id, retry_id=retry_id)
     if kind != "clarification" or not isinstance(task_id, str) or not _is_canonical_uuid4(task_id):
         raise ValueError("SQS agent task JSON must contain a clarification kind and id")
     expected_body = f'{{"kind":"clarification","id":"{task_id}"}}'
@@ -1481,7 +1836,7 @@ def parse_sqs_agent_message(message: Any) -> tuple[AgentTask, str]:
         raise ValueError("SQS system attributes must be an object when present")
 
     task = parse_agent_task(body)
-    if task.kind == "clarification" and raw_attributes:
+    if task.kind in {"clarification", "explanation", "proof_request"} and raw_attributes:
         raise ValueError("clarification SQS messages must have no application attributes")
     if task.kind == "proof" and not raw_attributes:
         raise ValueError("proof SQS messages require application attributes")
@@ -1628,7 +1983,9 @@ def _validate_proof_job_claim_resource(
         "verification_candidate_state",
         "generation_session_id",
     }
-    if set(resource) != expected_keys:
+    # Optional on newer API deployments; its evidence is separately validated
+    # before use. Invalid history is ignored without rejecting the base claim.
+    if set(resource) - {"compile_failure_history"} != expected_keys:
         raise ValueError("proof generation claim resource fields are invalid")
     if resource.get("id") != resource_id or resource.get("job_id") != resource_id:
         raise ValueError("proof generation claim resource identity is invalid")
@@ -1660,9 +2017,7 @@ def _validate_proof_job_claim_resource(
     attestation = resource.get("verifier_attestation")
     verification_candidate_id = resource.get("verification_candidate_id")
     verification_candidate_state = resource.get("verification_candidate_state")
-    if verification_candidate_id is not None and not _is_canonical_uuid4(
-        verification_candidate_id
-    ):
+    if verification_candidate_id is not None and not _is_canonical_uuid4(verification_candidate_id):
         raise ValueError("proof generation verification candidate id is invalid")
     if (verification_candidate_id is None) != (verification_candidate_state is None):
         raise ValueError("proof generation verification candidate binding is incomplete")
@@ -1674,9 +2029,7 @@ def _validate_proof_job_claim_resource(
     }:
         raise ValueError("proof generation verification candidate state is invalid")
     generation_session_id = resource.get("generation_session_id")
-    if generation_session_id is not None and not _is_canonical_uuid4(
-        generation_session_id
-    ):
+    if generation_session_id is not None and not _is_canonical_uuid4(generation_session_id):
         raise ValueError("proof generation session id is invalid")
     if state == "verified":
         if not isinstance(lean_code, str) or not isinstance(artifact_uri, str):
@@ -2129,6 +2482,32 @@ def _public_clarification_content(clarification: ProofClarification) -> dict[str
     }
 
 
+def _clarification_parent_context(
+    worker_input: dict[str, Any], parent_id: str | None,
+) -> dict[str, Any] | None:
+    parent = worker_input.get("parent_clarification")
+    if parent_id is None:
+        if parent is not None:
+            raise ValueError("Unexpected parent clarification")
+        return None
+    if not isinstance(parent, dict) or set(parent) != {"id", "question", "answer", "key_points"}:
+        raise ValueError("Parent clarification context is required")
+    if parent["id"] != parent_id:
+        raise ValueError("Parent clarification context identity mismatch")
+    _bounded_text(parent["question"], maximum=20000)
+    _bounded_text(parent["answer"], maximum=4000)
+    points = parent["key_points"]
+    if not isinstance(points, list) or not 2 <= len(points) <= 10:
+        raise ValueError("Parent clarification key points are invalid")
+    for point in points:
+        _bounded_text(point, maximum=500)
+    _required_text(worker_input, "selected_text")
+    selected = worker_input["selected_text"]
+    if selected not in parent["answer"]:
+        raise ValueError("Selection is not in its parent clarification")
+    return parent
+
+
 def _output_review_evidence(
     *,
     kind: Literal["explanation", "clarification"],
@@ -2139,6 +2518,7 @@ def _output_review_evidence(
     parent_explanation_content: dict[str, Any] | None,
     generator_session_id: str,
     review: ProofOutputReview,
+    clarification_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Bind separate-session approval to exactly the learner-visible output."""
 
@@ -2184,8 +2564,14 @@ def _output_review_evidence(
         assert clarification_id is not None
         output["clarification_id"] = clarification_id
         output["parent_explanation_sha256"] = parent_explanation_sha256
+        if clarification_context is None:
+            raise ProofOutputReviewError("clarification review requires its selected context")
+        output["clarification_context_sha256"] = _canonical_json_sha256(clarification_context)
     unsigned_evidence: dict[str, Any] = {
-        "schema_version": _OUTPUT_REVIEW_SCHEMA_VERSION,
+        "schema_version": (_OUTPUT_REVIEW_SCHEMA_VERSION if kind == "explanation"
+                           else "pals.proof-output-review.v3"),
+        **({"clarification_context_sha256": output["clarification_context_sha256"]}
+           if kind == "clarification" else {}),
         "output_kind": kind,
         "output_sha256": _canonical_json_sha256(output),
         "lean_sha256": _text_sha256(lean_code),
@@ -2642,6 +3028,26 @@ def _require_output_language_value(language: str) -> None:
         raise ValueError("worker resource output language is invalid")
 
 
+def _semantic_review_unavailable_payload(
+    *, candidate_id: str, mutation_claim_id: str, theorem_statement: str,
+    formal_statement: str | None, lean_code: str,
+    target_declaration: LeanTargetDeclaration, result_artifact_uri: str,
+    source_binding_sha256: str | None, failure_kind: str,
+) -> dict[str, Any]:
+    lean_sha256 = _text_sha256(lean_code)
+    return {
+        "schema_version": "pals.proof-semantic-review-unavailable.v1",
+        "candidate_id": candidate_id, "mutation_claim_id": mutation_claim_id,
+        "lean_sha256": lean_sha256, "result_artifact_uri": result_artifact_uri,
+        "target_declaration": target_declaration.as_dict(),
+        "review_input_sha256": _canonical_json_sha256({
+            "theorem_statement": theorem_statement, "formal_statement": formal_statement,
+            "target_declaration": target_declaration.as_dict(), "lean_sha256": lean_sha256,
+        }),
+        "source_binding_sha256": source_binding_sha256, "failure_kind": failure_kind,
+    }
+
+
 def _semantic_review_evidence(
     *,
     candidate_id: str,
@@ -2699,8 +3105,8 @@ def _recipe_semantic_review_evidence(
 ) -> dict[str, Any]:
     """Build the closed v3 review request for the same catalog materialized bytes.
 
-    The source binding is checked before building this object but intentionally is not serialized:
-    the API derives it from the locked candidate and binds it into the immutable v3 evidence.
+    The dedicated reviewer names the immutable source binding it inspected. The API
+    compares it with the locked candidate and derives the authenticated reviewer identity.
     """
 
     if re.fullmatch(r"[0-9a-f]{64}", source_binding_sha256, flags=re.ASCII) is None:
@@ -2718,6 +3124,7 @@ def _recipe_semantic_review_evidence(
         "lean_sha256": lean_sha256,
         "target_declaration": target_declaration.as_dict(),
         "review_input_sha256": _canonical_json_sha256(review_input),
+        "source_binding_sha256": source_binding_sha256,
         "decision": review.decision,
         "rationale": review.rationale,
     }
@@ -2768,10 +3175,21 @@ def _api_repair_seed_from_worker_input(
     attempt_number = attempt.get("attempt")
     if type(attempt_number) is not int or attempt_number != repairs_used + 1:
         return None
+    repair_route = _status_repair_route(attempt.get("repair_route"), None)
+    if (attempt_number == 1) != (repair_route is None):
+        return None
     generated = _generated_proof_from_status(attempt.get("generated"))
     if generated is None:
         return None
+    verification = attempt.get("verification")
     diagnostics = _worker_diagnostics_from_payload(proof_job.get("diagnostics"))
+    if diagnostics is not None and isinstance(verification, dict):
+        details = _worker_diagnostics_from_payload(verification.get("diagnostics"))
+        if details is not None:
+            diagnostics = [
+                *diagnostics,
+                *(item for item in details if item.code != "verifier_compile_failed"),
+            ]
     if diagnostics is None or not any(
         item.severity == "error" and item.code == "verifier_compile_failed" for item in diagnostics
     ):
@@ -2787,7 +3205,113 @@ def _api_repair_seed_from_worker_input(
         ),
         attempt=attempt_number,
         repairs_used=repairs_used,
+        repair_route=repair_route,
+        prior_failure_fingerprints=_compile_failure_history_fingerprints(
+            proof_job, attempt=attempt_number, lean_code=generated.lean_code
+        ),
     )
+
+
+def _compile_failure_history_fingerprints(
+    proof_job: dict[str, Any], *, attempt: int, lean_code: str
+) -> tuple[frozenset[str], ...]:
+    """Accept only consecutive API failures bound to the current candidate.
+
+    This optional evidence affects selector guidance only. Missing or malformed
+    history cannot change the existing repair seed, budget, claim or state.
+    """
+    history = proof_job.get("compile_failure_history")
+    candidate_id = proof_job.get("verification_candidate_id")
+    if (
+        not isinstance(history, list) or not 1 <= len(history) <= 3
+        or not isinstance(candidate_id, str) or not _is_canonical_uuid4(candidate_id)
+        or proof_job.get("verification_candidate_state") != "verification_failed"
+        or proof_job.get("lean_code") != lean_code
+    ):
+        return ()
+    context = proof_job.get("status_context")
+    evidence = context.get("attempt_evidence") if isinstance(context, dict) else None
+    verification = evidence.get("verification") if isinstance(evidence, dict) else None
+    if (
+        not isinstance(evidence, dict) or evidence.get("phase") != "compile"
+        or not isinstance(verification, dict) or verification.get("success") is not False
+        or not isinstance(verification.get("diagnostics"), list)
+    ):
+        return ()
+    current_diagnostics = _closed_compile_history_diagnostics([
+        item for item in verification["diagnostics"]
+        if not isinstance(item, dict) or item.get("code") != "verifier_compile_failed"
+    ])
+    if current_diagnostics is None:
+        return ()
+    seen_candidates: set[str] = set()
+    previous_sequence: int | None = None
+    fingerprints: list[frozenset[str]] = []
+    for index, item in enumerate(history):
+        if not isinstance(item, dict) or set(item) != {
+            "attempt", "candidate_id", "lean_sha256", "event_sequence", "diagnostics"
+        }:
+            return ()
+        number, identifier, digest, sequence = (
+            item["attempt"], item["candidate_id"], item["lean_sha256"], item["event_sequence"]
+        )
+        if (
+            type(number) is not int or not 1 <= number <= 65 or number != attempt - index
+            or not isinstance(identifier, str) or not _is_canonical_uuid4(identifier)
+            or identifier in seen_candidates
+            or not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+            or type(sequence) is not int or not 1 <= sequence <= 2**63 - 1
+            or (previous_sequence is not None and sequence >= previous_sequence)
+        ):
+            return ()
+        diagnostics = _closed_compile_history_diagnostics(item["diagnostics"])
+        if diagnostics is None:
+            return ()
+        if index == 0 and (
+            identifier != candidate_id
+            or digest != hashlib.sha256(lean_code.encode("utf-8")).hexdigest()
+            or diagnostics != current_diagnostics
+        ):
+            return ()
+        seen_candidates.add(identifier)
+        previous_sequence = sequence
+        fingerprints.append(_failure_fingerprint_set(diagnostics))
+    # Wire order is newest first. The pipeline appends the current failure once.
+    return tuple(reversed(fingerprints[1:]))
+
+
+def _closed_compile_history_diagnostics(value: object) -> list[Diagnostic] | None:
+    if not isinstance(value, list) or len(value) > 8:
+        return None
+    symbol = r"[A-Za-z_][A-Za-z0-9_'.]{0,127}"
+    patterns = {
+        "lean.already_declared": (
+            rf"Declaration {symbol} has already been declared; choose a fresh target name\."
+        ),
+        "lean.unknown_identifier": rf"Unknown identifier {symbol}; use an available declaration\.",
+        "lean.unsolved_goals": r"Lean reported unsolved goals\.",
+        "lean.type_mismatch": r"Lean reported a type mismatch\.",
+        "lean.syntax_error": r"Lean reported a syntax error\.",
+        "lean.tactic_failed": r"A Lean tactic failed\.",
+        "lean.compile_error": r"Lean compilation failed at this location\.",
+    }
+    for item in value:
+        if not isinstance(item, dict) or set(item) != {
+            "severity", "message", "code", "line", "column"
+        }:
+            return None
+        code, message = item["code"], item["message"]
+        if (
+            item["severity"] != "error" or not isinstance(code, str) or code not in patterns
+            or not isinstance(message, str) or re.fullmatch(patterns[code], message) is None
+            or any(
+                item[key] is not None
+                and (type(item[key]) is not int or not minimum <= item[key] <= 1_000_000)
+                for key, minimum in (("line", 1), ("column", 0))
+            )
+        ):
+            return None
+    return _worker_diagnostics_from_payload(value)
 
 
 def _generated_proof_from_status(value: object) -> GeneratedProof | None:
@@ -2967,3 +3491,69 @@ def _required_text(payload: dict[str, Any], key: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"Worker input is missing text field: {key}")
     return value.strip()
+
+
+def _generate_reviewed_candidate(
+    *,
+    generate: Callable[[dict[str, Any] | None], Any],
+    review: Callable[[Any], ProofOutputReview],
+    content_of: Callable[[Any], dict[str, Any]],
+    failures: list[dict[str, Any]],
+) -> tuple[Any, ProofOutputReview]:
+    """At most two candidates under the caller's unchanged hard deadline.
+
+    Rejection permits one feedback correction, never another vote on the same output.
+    Transport/schema failures are distinct and do not spend a new generation attempt.
+    """
+    feedback = None
+    previous_visible = None
+    for attempt in range(2):
+        candidate = generate(feedback)
+        content = content_of(candidate)
+        # Metadata cannot disguise a repeated learner-visible proof.
+        if "sections" in content:
+            visible = [
+                content.get("overview", ""),
+                *(section.get("summary", "") for section in content["sections"]),
+                content.get("conclusion", ""),
+            ]
+        else:
+            visible = [content.get("answer", ""), *content.get("key_points", [])]
+        normalized = json.dumps(
+            [" ".join(str(part).split()) for part in visible], ensure_ascii=False
+        )
+        candidate_sha256 = hashlib.sha256(rfc8785.dumps(content)).hexdigest()
+        try:
+            if normalized == previous_visible:
+                raise ProofOutputReviewError(
+                    "correction repeated rejected output",
+                    category="rejected",
+                    rationale=(
+                        "The correction repeated the rejected candidate "
+                        "without changing its visible content."
+                    ),
+                )
+            decision = review(candidate)
+            if any(item["reviewer_session_id"] == decision.session_id for item in failures):
+                raise ProofOutputReviewError(
+                    "correction review reused a prior session", category="schema"
+                )
+            return candidate, decision
+        except ProofOutputReviewError as exc:
+            failures.append(
+                {
+                    "category": exc.category,
+                    "rationale": exc.rationale,
+                    "reviewer_session_id": exc.session_id,
+                    "candidate_sha256": candidate_sha256,
+                }
+            )
+            if exc.category != "rejected" or attempt == 1:
+                raise
+            previous_visible = normalized
+            feedback = {"rationale": exc.rationale, "previous_candidate": normalized[:16000]}
+    raise AssertionError("candidate budget exhausted")
+
+
+def _optional_keyword(key: str, value: Any) -> dict[str, Any]:
+    return {key: value} if value else {}

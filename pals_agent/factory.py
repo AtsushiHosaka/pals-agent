@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+from dataclasses import replace
+
 import boto3  # type: ignore[import-untyped]
 
 from pals_agent.artifacts import ArtifactStore, S3ArtifactStore
@@ -22,15 +25,23 @@ from pals_agent.openmath import (
     StatementOpenMathStructurer,
 )
 from pals_agent.pipeline import ProofPipeline
-from pals_agent.private_draft_candidates import DraftEmbeddingFingerprint
+from pals_agent.private_draft_candidates import (
+    DraftEmbeddingFingerprint,
+    validate_draft_embedding_fingerprint,
+)
 from pals_agent.private_recipe_selection import (
     PrivateRecipeSelectionClient,
     ToolchainFingerprintV1,
 )
+from pals_agent.private_typed_candidates import PrivateTypedCandidateClient
+from pals_agent.profile_routing import ProfileRoutedProofFlowRuntime
+from pals_agent.proof_flow_reranker import OpenAIDraftReranker
 from pals_agent.proof_flow_runtime import ProofFlowRuntime, build_private_proof_flow_runtime
+from pals_agent.proof_request_worker import ProofRequestApi, ProofRequestProcessor
 from pals_agent.recipe_attempt import RecipeAttemptPlannerV1
 from pals_agent.semantic_evaluation import SemanticStageJudge
 from pals_agent.settings import AgentSettings, validate_release_generation_environment
+from pals_agent.typed_runtime import TypedProofFlowRuntime
 
 
 def build_pipeline(settings: AgentSettings) -> ProofPipeline:
@@ -39,10 +50,15 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         generator=generator,
         verifier=None,
         artifact_store=build_artifact_store(settings),
-        # The learner path generates and verifies the requested theorem directly.
-        # Proof-flow retrieval is a separate product capability, never a fallback
-        # for a learner's proof request.
-        proof_flow_retriever=None,
+        # Explicit pinned PFI capability enables exact Draft evidence. Its errors
+        # fail closed; an unconfigured deployment retains direct generation.
+        proof_flow_retriever=(
+            build_profile_routed_runtime(settings)
+            if settings.typed_catalog_enabled
+            else build_proof_flow_runtime(settings)
+            if settings.pfi_runtime_provenance_sha256 is not None
+            else None
+        ),
         max_repair_attempts=settings.max_repair_attempts,
         verification_mode="api_reconcile",
     )
@@ -68,12 +84,33 @@ def build_recipe_attempt_planner(settings: AgentSettings) -> RecipeAttemptPlanne
         selector=PrivateRecipeSelectionClient(
             base_url=settings.api_base_url,
             worker_secret=settings.recipe_worker_secret,
+            allow_local_http=os.environ.get("PALS_ENV") == "local",
         ),
         toolchain_fingerprint=ToolchainFingerprintV1(
             lean_version=settings.recipe_active_lean_version,
             lake_manifest_sha256=settings.recipe_active_lake_manifest_sha256,
             verifier_sha256=settings.recipe_verifier_sha256,
             materializer_version="pals.recipe-materializer.v1",
+        ),
+    )
+
+
+def build_proof_request_processor(
+    settings: AgentSettings, api_client: ProofRequestApi
+) -> ProofRequestProcessor:
+    """Compose natural proof answering separately from all Lean/artifact capabilities."""
+    from pals_agent.proof_reuse import ProofReuseRuntime
+    from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog
+
+    return ProofRequestProcessor(
+        api=api_client,
+        token_accounting_enabled=(
+            os.environ.get("PALS_ENV") in {"local", "prod"}
+            and os.environ.get("PALS_TOKEN_ACCOUNTING_ENABLED") == "true"
+        ),
+        runtime=ProofReuseRuntime(
+            client=replace(_release_openai_client(settings), max_output_tokens=6000),
+            catalog=ApiProofReuseCatalog(settings),
         ),
     )
 
@@ -220,16 +257,40 @@ def build_proof_flow_runtime(settings: AgentSettings) -> ProofFlowRuntime:
     return build_private_proof_flow_runtime(
         structurer=build_statement_openmath_structurer(settings),
         embedding_model=embedding_model,
-        embedding_fingerprint=DraftEmbeddingFingerprint(
-            provider=settings.draft_embedding_provider,
-            model=settings.draft_embedding_model,
-            endpoint=embedding_model.endpoint_identity,
-            deployment=embedding_model.deployment_identity,
-            revision=embedding_model.revision,
-            dimension=embedding_model.dimension,
+        embedding_fingerprint=validate_draft_embedding_fingerprint(
+            DraftEmbeddingFingerprint(
+                provider=settings.draft_embedding_provider,
+                model=settings.draft_embedding_model,
+                endpoint=embedding_model.endpoint_identity,
+                deployment=embedding_model.deployment_identity,
+                revision=embedding_model.revision,
+                dimension=embedding_model.dimension,
+            )
         ),
         runtime_provenance_sha256=settings.pfi_runtime_provenance_sha256 or "",
         api_base_url=settings.api_base_url,
         worker_secret=settings.worker_shared_secret,
         openai_api_key=settings.openai_api_key,
+    )
+
+
+def build_profile_routed_runtime(settings: AgentSettings) -> ProfileRoutedProofFlowRuntime:
+    """Worker-only API capability; no release credential or database access."""
+    client = _release_openai_client(settings)
+    return ProfileRoutedProofFlowRuntime(
+        client=client,
+        typed=TypedProofFlowRuntime(
+            client=client,
+            embeddings=OpenAIEmbeddingModel(
+                api_key=settings.openai_api_key,
+                revision="openai-release-2024-01-25",
+                timeout_seconds=settings.draft_embedding_timeout_seconds,
+            ),
+            candidates=PrivateTypedCandidateClient(
+                settings.api_base_url, settings.worker_shared_secret,
+            ),
+            reranker=OpenAIDraftReranker(api_key=settings.openai_api_key),
+        ),
+        generic=(build_proof_flow_runtime(settings)
+                 if settings.pfi_runtime_provenance_sha256 is not None else None),
     )

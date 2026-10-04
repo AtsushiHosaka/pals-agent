@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pals_agent.model_roles import ModelRole, fixed_model_default
+from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
 from pals_agent.models import DEFAULT_MAX_REPAIR_ATTEMPTS
 
 _SEMANTIC_EVALUATOR_TOKEN_RE = re.compile(
@@ -54,6 +54,8 @@ class AgentSettings:
     lean_binary: str
     lake_binary: str
     lean_project_dir: Path | None
+    proof_capability: Literal["full", "natural-only"] = "full"
+    typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     worker_idle_sleep_seconds: float = 2.0
@@ -66,8 +68,24 @@ class AgentSettings:
     recipe_verifier_sha256: str | None = None
     recipe_active_lean_version: str | None = None
     recipe_active_lake_manifest_sha256: str | None = None
+    recipe_reviewer_url: str | None = None
+    recipe_review_requester_secret: str | None = None
 
     def __post_init__(self) -> None:
+        if self.proof_capability not in {"full", "natural-only"}:
+            raise ValueError("PALS_PROOF_CAPABILITY must be full or natural-only")
+        if (self.recipe_reviewer_url is None) != (self.recipe_review_requester_secret is None):
+            raise ValueError("Recipe reviewer URL and requester secret must be configured together")
+        if self.recipe_review_requester_secret == self.worker_shared_secret:
+            raise ValueError(
+                "Recipe reviewer requester identity must be separate from worker API identity"
+            )
+        if self.recipe_reviewer_url is not None:
+            from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
+
+            RecipeReviewDispatcher(
+                self.recipe_reviewer_url, self.recipe_review_requester_secret or ""
+            )
         generation_binding = fixed_model_default(ModelRole.DRAFT)
         _validate_semantic_evaluator_configuration(
             provider=self.semantic_evaluator_provider,
@@ -100,6 +118,7 @@ class AgentSettings:
         semantic_evaluator = _semantic_evaluator_env()
         _reject_removed_pfi_configuration()
         return cls(
+            proof_capability=_proof_capability_env(),
             llm_provider=llm_provider,
             aws_region=_first_env("PALS_AWS_REGION", "AWS_REGION", "AWS_DEFAULT_REGION")
             or "ap-northeast-1",
@@ -120,7 +139,7 @@ class AgentSettings:
             or os.getenv("OLLAMA_DRAFT_MODEL")
             or "qwen2.5:3b",
             openai_api_key=_first_env("PALS_OPENAI_API_KEY", "OPENAI_API_KEY") or "",
-            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or "gpt-5.4-nano",
+            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or RELEASE_MODEL,
             openai_base_url=os.getenv(
                 "PALS_OPENAI_BASE_URL",
                 "https://api.openai.com/v1",
@@ -148,6 +167,7 @@ class AgentSettings:
             lean_binary=os.getenv("PALS_LEAN_BINARY", "lean"),
             lake_binary=os.getenv("PALS_LAKE_BINARY", "lake"),
             lean_project_dir=Path(lean_project_dir) if lean_project_dir else None,
+            typed_catalog_enabled=_strict_bool_env("PALS_TYPED_CATALOG_ENABLED"),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
@@ -174,6 +194,8 @@ class AgentSettings:
             recipe_active_lake_manifest_sha256=_optional_env(
                 "PALS_RECIPE_ACTIVE_LAKE_MANIFEST_SHA256"
             ),
+            recipe_reviewer_url=_optional_env("PALS_RECIPE_REVIEWER_URL"),
+            recipe_review_requester_secret=_optional_env("PALS_RECIPE_REVIEW_REQUESTER_SECRET"),
         )
 
 
@@ -376,3 +398,19 @@ def _validate_semantic_evaluator_configuration(
         raise ValueError("semantic evaluator base URL is invalid")
     if provider == generation_provider and model == generation_model:
         raise ValueError("semantic evaluator must differ from the generation provider/model")
+
+
+def _strict_bool_env(name: str) -> bool:
+    value = os.environ.get(name, "false")
+    if value not in {"true", "false"}:
+        raise ValueError(f"{name} must be true or false")
+    return value == "true"
+
+
+def _proof_capability_env() -> Literal["full", "natural-only"]:
+    value = os.environ.get("PALS_PROOF_CAPABILITY", "full")
+    if value == "full":
+        return "full"
+    if value == "natural-only":
+        return "natural-only"
+    raise ValueError("PALS_PROOF_CAPABILITY must be full or natural-only")

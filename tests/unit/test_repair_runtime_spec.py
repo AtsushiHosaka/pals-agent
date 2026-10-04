@@ -341,7 +341,10 @@ def test_pae_016_aggregate_failure_raises_typed_error_without_fake_result() -> N
     assert len(store.aggregate_calls) == 1
 
 
-def test_pae_016_api_verifier_compile_failure_resumes_through_route_and_repair() -> None:
+@pytest.mark.parametrize("prior_attempt", [1, 2])
+def test_pae_016_api_verifier_compile_failure_resumes_through_route_and_repair(
+    prior_attempt: int,
+) -> None:
     store = RecordingFaultStore(fail_checkpoint_at=99)
     generator = ApiRepairGenerator()
     pipeline = ProofPipeline(
@@ -366,18 +369,32 @@ def test_pae_016_api_verifier_compile_failure_resumes_through_route_and_repair()
             stderr="",
             elapsed_ms=7,
         ),
-        attempt=1,
-        repairs_used=0,
+        attempt=prior_attempt,
+        repairs_used=prior_attempt - 1,
+        repair_route=(
+            {
+                "route": "draft",
+                "selector_attempts": [
+                    {"attempt": 1, "outcome": "selected", "diagnostic_code": None, "route": "draft"}
+                ],
+            }
+            if prior_attempt > 1 else None
+        ),
     )
     statuses: list[str] = []
+    contexts: list[dict[str, Any]] = []
+
+    def record_status(
+        state: str, _diagnostics: Any, _uri: Any, _lean_code: Any, context: dict[str, Any],
+    ) -> None:
+        statuses.append(state)
+        contexts.append(context)
 
     result = pipeline.run_statement(
         statement="prove True",
         proof_job_id="api-repair-job",
         api_repair_seed=seed,
-        on_status=lambda state, _diagnostics, _uri, _lean_code, _context: statuses.append(
-            state
-        ),
+        on_status=record_status,
     )
 
     assert result.verification_pending is True
@@ -386,7 +403,13 @@ def test_pae_016_api_verifier_compile_failure_resumes_through_route_and_repair()
     assert len(generator.route_feedback) == 1
     assert len(generator.repair_feedback) == 1
     assert generator.route_feedback[0].previous_lean_code == prior_code
-    assert [item["attempt"] for item in store.aggregate_calls[0]["attempts"]] == [1, 2]
+    assert [item["attempt"] for item in store.aggregate_calls[0]["attempts"]] == [
+        prior_attempt, prior_attempt + 1,
+    ]
+    assert store.aggregate_calls[0]["attempts"][0]["repair_route"] == seed.repair_route
     assert store.aggregate_calls[0]["attempts"][1]["repair_route"]["route"] == "prove"
     assert statuses[0] == "repairing"
     assert statuses[-1] == "compiling"
+    assert contexts[-1]["repairs_used"] == prior_attempt
+    assert contexts[-1]["attempt_evidence"]["attempt"] == prior_attempt + 1
+    assert contexts[-1]["termination_event"]["attempt"] == prior_attempt + 1

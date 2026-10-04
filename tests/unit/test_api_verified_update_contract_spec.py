@@ -7,8 +7,9 @@ from typing import Any
 import pytest
 import rfc8785
 
-from pals_agent.api_client import PalsApiClient
+from pals_agent.api_client import PalsApiClient, PalsApiError
 from pals_agent.http_transport import HttpResponse
+from pals_agent.recipe_semantic_reviewer import RecipeSemanticReviewApiClient
 
 LEAN_CODE = "import Mathlib\n\nexample : True := by\n  trivial\n"
 CLAIM_ID = "11111111-1111-4111-8111-111111111111"
@@ -216,6 +217,7 @@ def test_recipe_semantic_review_omits_model_and_source_author_provenance() -> No
     evidence = {
         "schema_version": "pals.proof-semantic-review.v3",
         "candidate_id": CANDIDATE_ID,
+        "source_binding_sha256": "b" * 64,
         "lean_sha256": LEAN_SHA256,
         "target_declaration": {"kind": "example", "name": None, "proposition": "True"},
         "review_input_sha256": "e" * 64,
@@ -223,15 +225,35 @@ def test_recipe_semantic_review_omits_model_and_source_author_provenance() -> No
         "rationale": "The exact Recipe source proves the stated target.",
     }
 
-    _client(transport).settle_recipe_semantic_review(proof_job_id="job-1", evidence=evidence)
+    with pytest.raises(PalsApiError, match="dedicated reviewer"):
+        _client(transport).settle_recipe_semantic_review(proof_job_id="job-1", evidence=evidence)
+    assert transport.calls == []
 
-    assert transport.calls[0]["body"] == evidence
+    RecipeSemanticReviewApiClient(
+        base_url="https://api.test",
+        reviewer_secret="REVIEWER-ONLY-SECRET",
+        transport=transport,
+    ).settle("job-1", evidence)
+
+    assert len(transport.calls) == 1
+    call = transport.calls[0]
+    assert call["url"] == "https://api.test/v1/internal/proof-jobs/job-1/semantic-reviews"
+    assert call["method"] == "POST"
+    assert call["body"] == evidence
+    assert call["headers"] == {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "X-PALS-Recipe-Semantic-Reviewer-Secret": "REVIEWER-ONLY-SECRET",
+    }
     assert not {
         "generator_session_id",
         "reviewer",
+        "reviewer_principal",
         "source_author_principal",
-        "source_binding_sha256",
-    } & set(transport.calls[0]["body"])
+        "model",
+        "provider",
+    } & set(call["body"])
+    assert call["body"]["source_binding_sha256"] == "b" * 64
 
 
 @pytest.mark.parametrize(
@@ -286,3 +308,66 @@ def test_pjr_021_candidate_submission_rejects_unbound_input_before_transport(
         )
 
     assert transport.calls == []
+
+
+@pytest.mark.parametrize("status", ["linked", "already_linked"])
+def test_no_recipe_trace_forwards_only_authenticated_digest_and_live_claim(status: str) -> None:
+    class TraceTransport(RecordingTransport):
+        def request(self, **kwargs: Any) -> HttpResponse:
+            super().request(**kwargs)
+            return HttpResponse(
+                status_code=200,
+                body=json.dumps(
+                    {
+                        "schema_version": "pals.recipe-attempt-trace-response.v1",
+                        "status": status,
+                    }
+                ).encode(),
+            )
+
+    transport = TraceTransport()
+    result = _client(transport).record_no_recipe_attempt(
+        proof_job_id="job-1",
+        mutation_claim_id=CLAIM_ID,
+        request_sha256="a" * 64,
+    )
+    assert result["status"] == status
+    assert transport.calls[0]["body"] == {
+        "schema_version": "pals.recipe-attempt-trace-request.v1",
+        "mutation_claim_id": CLAIM_ID,
+        "request_sha256": "a" * 64,
+    }
+    assert transport.calls[0]["url"].endswith("/proof-jobs/job-1/recipe-selection-traces")
+
+
+def test_no_recipe_trace_rejects_unacknowledged_response() -> None:
+    with pytest.raises(ValueError):
+        _client(RecordingTransport()).record_no_recipe_attempt(
+            proof_job_id="job-1",
+            mutation_claim_id=CLAIM_ID,
+            request_sha256="a" * 64,
+        )
+
+
+def test_candidate_binding_get_is_private_and_sends_no_mutation_body() -> None:
+    class ReadTransport:
+        calls: list[dict[str, Any]] = []
+
+        def request(self, **kwargs: Any) -> HttpResponse:
+            self.calls.append(kwargs)
+            return HttpResponse(status_code=200, body=b"{}")
+
+    transport = ReadTransport()
+    client = PalsApiClient(base_url="https://api.test", worker_secret="test-secret",
+                           transport=transport)
+    assert client.get_verification_candidate_binding(
+        proof_job_id="job-1", candidate_id=CANDIDATE_ID,
+    ) == {}
+    call = transport.calls[0]
+    assert call["method"] == "GET"
+    assert call["url"].endswith(f"/job-1/verification-candidates/{CANDIDATE_ID}/binding")
+    assert call["headers"]["X-PALS-Worker-Secret"] == "test-secret"
+    assert call["body"] is None
+    with pytest.raises(ValueError):
+        client.get_verification_candidate_binding(proof_job_id="job-1", candidate_id="bad")
+    assert len(transport.calls) == 1

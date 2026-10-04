@@ -1,0 +1,478 @@
+{
+  "schema_version": "pals.typed-vector-calculus-registry.v6",
+  "profile_id": "typed-vector-calculus-v6",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "Nat",
+      "semantics": "Natural number (only bounded natural literals used for real constants)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "Real",
+      "semantics": "Real scalar ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "Point",
+      "semantics": "The fixed Euclidean plane ℝ × ℝ with standard real norm, topology and Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "ScalarFunction",
+      "semantics": "A total function (ℝ × ℝ) → ℝ, without implicit regularity."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "Dual",
+      "semantics": "A continuous real-linear map (ℝ × ℝ) →L[ℝ] ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "DualField",
+      "semantics": "A function (ℝ × ℝ) → ((ℝ × ℝ) →L[ℝ] ℝ)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "Set",
+      "semantics": "A set of planar points Set (ℝ × ℝ)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "RealFunction",
+      "semantics": "A total function ℝ → ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "real_nat",
+      "arguments": [
+        "Nat"
+      ],
+      "result": "Real",
+      "semantics": "Cast the supplied natural literal to ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "real_add",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Ordered real addition x+y."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "real_sub",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Ordered real subtraction x-y."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "real_mul",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Real multiplication x*y."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "point",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Point",
+      "semantics": "Ordered pair (x,y); first argument is the horizontal coordinate."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "fst",
+      "arguments": [
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "First coordinate z.1."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "snd",
+      "arguments": [
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "Second coordinate z.2."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "zero_dual",
+      "arguments": [],
+      "result": "Dual",
+      "semantics": "The zero continuous linear functional."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "zero_function",
+      "arguments": [],
+      "result": "ScalarFunction",
+      "semantics": "The identically zero planar scalar function."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "apply",
+      "arguments": [
+        "ScalarFunction",
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "Function evaluation f(z)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "dual_apply",
+      "arguments": [
+        "Dual",
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "Evaluation A(v) of a continuous linear functional on a direction."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "field_apply",
+      "arguments": [
+        "DualField",
+        "Point"
+      ],
+      "result": "Dual",
+      "semantics": "Evaluation of derivative field A at point z; returns A(z)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "fderiv_field",
+      "arguments": [
+        "ScalarFunction"
+      ],
+      "result": "DualField",
+      "semantics": "The totalized field z ↦ fderiv ℝ f z. Differentiability is not implicit."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "divergence",
+      "arguments": [
+        "DualField",
+        "DualField"
+      ],
+      "result": "ScalarFunction",
+      "semantics": "For derivatives A=Df and B=Dg, z ↦ A(z)(1,0)+B(z)(0,1). Operator itself does not assert those derivative premises."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "curl",
+      "arguments": [
+        "DualField",
+        "DualField"
+      ],
+      "result": "ScalarFunction",
+      "semantics": "For derivatives A=DP and B=DQ, scalar curl z ↦ B(z)(1,0)-A(z)(0,1), in that order."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "closed_rectangle",
+      "arguments": [
+        "Point",
+        "Point"
+      ],
+      "result": "Set",
+      "semantics": "Set.Icc a b, with componentwise order; empty if an endpoint order is reversed."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "open_rectangle",
+      "arguments": [
+        "Point",
+        "Point"
+      ],
+      "result": "Set",
+      "semantics": "Set.Ioo a.1 b.1 ×ˢ Set.Ioo a.2 b.2. Both coordinates must be strictly inside."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "set_difference",
+      "arguments": [
+        "Set",
+        "Set"
+      ],
+      "result": "Set",
+      "semantics": "Set difference s \\ t."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "member",
+      "arguments": [
+        "Point",
+        "Set"
+      ],
+      "result": "Prop",
+      "semantics": "Point membership z ∈ s."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "countable",
+      "arguments": [
+        "Set"
+      ],
+      "result": "Prop",
+      "semantics": "Set.Countable s; no differentiability exemption is implicit."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "has_fderiv",
+      "arguments": [
+        "ScalarFunction",
+        "Point",
+        "Dual"
+      ],
+      "result": "Prop",
+      "semantics": "has_fderiv(f,z,A) means HasFDerivAt f A z. Point precedes derivative in XML; Lean takes derivative before point."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "continuous_on",
+      "arguments": [
+        "ScalarFunction",
+        "Set"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousOn f s, including relative continuity at the boundary when s is closed."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "cont_diff_one",
+      "arguments": [
+        "ScalarFunction"
+      ],
+      "result": "Prop",
+      "semantics": "ContDiff ℝ 1 f on the entire plane. It is a genuine global C¹ hypothesis."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "integrable_on",
+      "arguments": [
+        "ScalarFunction",
+        "Set"
+      ],
+      "result": "Prop",
+      "semantics": "MeasureTheory.IntegrableOn f s with standard product Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "set_integral",
+      "arguments": [
+        "ScalarFunction",
+        "Set"
+      ],
+      "result": "Real",
+      "semantics": "Bochner integral ∫ z in s, f z with standard product Lebesgue volume, totalized as in Lean."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "horizontal_slice",
+      "arguments": [
+        "ScalarFunction",
+        "Real"
+      ],
+      "result": "RealFunction",
+      "semantics": "For f and fixed y, the function x ↦ f(x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "vertical_slice",
+      "arguments": [
+        "ScalarFunction",
+        "Real"
+      ],
+      "result": "RealFunction",
+      "semantics": "For f and fixed x, the function y ↦ f(x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "interval_integral",
+      "arguments": [
+        "RealFunction",
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Oriented interval integral ∫ t in a..b, h t. Endpoints a,b are not silently reordered."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "affine",
+      "arguments": [
+        "Real",
+        "Real",
+        "Real"
+      ],
+      "result": "ScalarFunction",
+      "semantics": "affine(α,β,p)(x,y)=α*x+β*y+p."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "boundary_flux",
+      "arguments": [
+        "ScalarFunction",
+        "ScalarFunction",
+        "Point",
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "For field (f,g), endpoints a,b: (∫x=a₁..b₁ g(x,b₂) - ∫x=a₁..b₁ g(x,a₂)) + ∫y=a₂..b₂ f(b₁,y) - ∫y=a₂..b₂ f(a₁,y). With a≤b this is outward flux: top−bottom+right−left. Without ordered endpoints it is only this signed formula."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "vector6",
+      "name": "boundary_circulation",
+      "arguments": [
+        "ScalarFunction",
+        "ScalarFunction",
+        "Point",
+        "Point"
+      ],
+      "result": "Real",
+      "semantics": "For one-form P dx+Q dy, endpoints a,b: ∫x=a₁..b₁ P(x,a₂) + ∫y=a₂..b₂ Q(b₁,y) - ∫x=a₁..b₁ P(x,b₂) - ∫y=a₂..b₂ Q(a₁,y). With a≤b this traverses bottom/right/top/left counterclockwise."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "typed6",
+      "name": "forall",
+      "semantics": "Universal quantification over explicitly typed, nonshadowing bound variables."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "typed6",
+      "name": "exists",
+      "semantics": "Existential quantification over explicitly typed, nonshadowing bound variables."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-vector-calculus:v6",
+      "cd": "typed6",
+      "name": "type",
+      "semantics": "Type annotation on a quantified variable only."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "semantics": "Logical conjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "semantics": "Logical disjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "semantics": "Logical implication, antecedent first."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "equivalent",
+      "arity": 2,
+      "semantics": "Logical equivalence."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "semantics": "Logical negation."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "semantics": "Equality of two values of identical type."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "semantics": "Inequality of two values of identical type."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "semantics": "Numeric ≤, left argument first."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "semantics": "Numeric strict <, left argument first."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "semantics": "Addition of two values of the same numeric type."
+    }
+  ]
+}

@@ -85,9 +85,7 @@ def test_openai_client_rejects_empty_response() -> None:
 def test_openai_client_rejects_a_response_from_a_different_model() -> None:
     client = OpenAIResponsesClient(
         api_key="sk-test",
-        transport=RecordingTransport(
-            b'{"model":"gpt-other","output_text":"generated"}'
-        ),
+        transport=RecordingTransport(b'{"model":"gpt-other","output_text":"generated"}'),
     )
 
     with pytest.raises(OpenAIError, match="does not match"):
@@ -96,3 +94,36 @@ def test_openai_client_rejects_a_response_from_a_different_model() -> None:
 
 def test_extract_response_text_prefers_output_text() -> None:
     assert _extract_response_text({"output_text": "text"}) == "text"
+
+
+@pytest.mark.parametrize("model,effort", [("gpt-6-luna", "low"), ("gpt-5.6-terra", "medium")])
+def test_release_models_pin_standard_tier_and_reasoning_without_retry(model, effort):
+    transport = RecordingTransport(json.dumps({"model": model, "output_text": "proof"}).encode())
+    result = OpenAIResponsesClient(
+        api_key="key", transport=transport, max_output_tokens=2000
+    ).generate(
+        model=model,
+        prompt="statement",
+        timeout_seconds=14,
+        response_schema=None,
+    )
+    assert result == "proof"
+    assert len(transport.calls) == 1
+    assert transport.calls[0]["timeout_seconds"] == 14
+    assert json.loads(transport.calls[0]["body"]) == {
+        "model": model,
+        "input": "statement",
+        "max_output_tokens": 2000,
+        "service_tier": "default",
+        "reasoning": {"effort": effort},
+    }
+
+
+@pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-5.6-terra"])
+def test_new_alias_rejects_unregistered_snapshot_without_falling_back(model):
+    transport = RecordingTransport(
+        json.dumps({"model": model + "-2099-01-01", "output_text": "proof"}).encode()
+    )
+    with pytest.raises(OpenAIError, match="does not match"):
+        OpenAIResponsesClient(api_key="key", transport=transport).generate(model=model, prompt="s")
+    assert len(transport.calls) == 1

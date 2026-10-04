@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass
 from typing import Literal, cast
 
+_TERM_IDENTIFIER = re.compile(r"[^\W\d][\w'.?]*")
+
 
 @dataclass(frozen=True, slots=True)
 class LeanTargetDeclaration:
@@ -79,6 +81,7 @@ def _parse_declaration(source: str, declaration: re.Match[str]) -> LeanTargetDec
 
     depth = 0
     proposition_start: int | None = None
+    pending_let_initializers = 0
     while index < len(source):
         character = source[index]
         if character in "([{":
@@ -92,9 +95,32 @@ def _parse_declaration(source: str, declaration: re.Match[str]) -> LeanTargetDec
             and not source.startswith(":=", index)
         ):
             proposition_start = index + 1
+        if depth == 0 and proposition_start is not None:
+            # Only declaration-form, nonrecursive lets are scanned without an
+            # enclosing delimiter. More complex term blocks can contain their
+            # own local assignments: require parentheses instead of guessing
+            # which assignment begins the theorem proof. Lean remains the parser.
+            token = _TERM_IDENTIFIER.match(source, index)
+            if token is not None and (
+                index == 0 or not (source[index - 1].isalnum() or source[index - 1] in "_'.")
+            ):
+                word = token.group(0)
+                if word in {
+                    "by", "do", "match", "have", "suffices", "letI", "letI'",
+                    "letI?", "let?", "rec", "mut", "where",
+                }:
+                    return None
+                if word == "let":
+                    pending_let_initializers += 1
+                index = token.end()
+                continue
         if depth == 0 and source.startswith(":=", index):
             if proposition_start is None:
                 return None
+            if pending_let_initializers:
+                pending_let_initializers -= 1
+                index += 2
+                continue
             proposition = " ".join(source[proposition_start:index].split())
             if not proposition:
                 return None

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import pytest
 
+from pals_agent.draft_catalog import SeedDraftCatalog
+from pals_agent.models import ProofRequest, RelatedDraftContext
 from pals_agent.private_recipe_selection import (
     RecipeExclusion,
     RecipeNotSelected,
@@ -15,6 +17,7 @@ from pals_agent.recipe_attempt import (
     NoRecipeAttemptV1,
     RecipeAttemptPlannerV1,
     RecipeAttemptV1,
+    exact_retrieved_draft_reference,
 )
 
 
@@ -116,3 +119,75 @@ def test_no_recipe_is_a_separate_non_generative_decision() -> None:
 
     assert isinstance(decision, NoRecipeAttemptV1)
     assert decision.exclusions == (("formal_target_and_draft_unavailable", None, None),)
+
+
+def exact_draft_request() -> ProofRequest:
+    draft = SeedDraftCatalog().find_by_id("continuous_square")
+    assert draft is not None
+    return ProofRequest(
+        id="custom_statement",
+        prompt="Prove square continuity",
+        related_draft_contexts=(
+            RelatedDraftContext(
+                source_draft_id=draft.id,
+                strategy_notes=(),
+                sketch_steps=(),
+                exact_equivalence=True,
+                selected_proof_method="epsilon_delta",
+            ),
+        ),
+        proof_flow_result={
+            "outcome": "match",
+            "contexts": [
+                {
+                    "draft": {
+                        "id": draft.id,
+                        "canonical_statement": draft.matched_prompt,
+                        "openmath_xml": draft.openmath_xml,
+                        "proof_strategy": draft.proof_strategy,
+                        "sketch_steps": list(draft.sketch_steps),
+                    },
+                    "evidence": {"exact_equivalence": True},
+                }
+            ],
+        },
+    )
+
+
+def test_aligned_recipe_reference_binds_every_original_draft_field_and_method() -> None:
+    request = exact_draft_request()
+    resolved = exact_retrieved_draft_reference(request)
+    assert resolved is not None
+    reference, method = resolved
+    assert reference.canonicalizer_version == "openmath-cdbase-alpha-c14n-v4"
+    assert reference.draft_id == "continuous_square"
+    assert method == "epsilon_delta"
+    assert request.proof_flow_result is not None
+    import copy
+
+    for field in ("canonical_statement", "proof_strategy", "sketch_steps"):
+        retrieval = copy.deepcopy(request.proof_flow_result)
+        draft = retrieval["contexts"][0]["draft"]
+        draft[field] = (
+            [*draft[field], "An additional step."]
+            if field == "sketch_steps"
+            else draft[field] + " changed"
+        )
+        changed = exact_retrieved_draft_reference(replace(request, proof_flow_result=retrieval))
+        assert (
+            changed is not None
+            and changed[0].draft_payload_sha256 != reference.draft_payload_sha256
+        )
+
+
+def test_related_or_ambiguous_drafts_never_select_an_arbitrary_alignment() -> None:
+    request = exact_draft_request()
+    assert request.proof_flow_result is not None
+    context = request.proof_flow_result["contexts"][0]
+    for contexts in ([{**context, "evidence": {"exact_equivalence": False}}], [context, context]):
+        assert (
+            exact_retrieved_draft_reference(
+                replace(request, proof_flow_result={"outcome": "match", "contexts": contexts})
+            )
+            is None
+        )

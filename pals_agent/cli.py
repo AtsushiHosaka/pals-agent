@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import signal
 import subprocess
 from dataclasses import asdict
 from pathlib import Path
@@ -23,6 +25,7 @@ from pals_agent.factory import (
     build_pipeline,
     build_proof_explainer,
     build_proof_output_reviewer,
+    build_proof_request_processor,
     build_proof_semantic_reviewer,
     build_recipe_attempt_planner,
     build_semantic_stage_judge,
@@ -57,7 +60,8 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=Path(".pals-agent-artifacts/benchmark-results.json"),
     )
-    subparsers.add_parser("worker", help="Continuously process SQS proof jobs.")
+    worker_parser = subparsers.add_parser("worker", help="Continuously process SQS proof jobs.")
+    worker_parser.add_argument("--ready-file", type=Path)
     subparsers.add_parser("worker-once", help="Process at most one SQS proof job.")
     pfi_seed_parser = subparsers.add_parser(
         "build-pfi-seed",
@@ -157,6 +161,9 @@ def main(argv: list[str] | None = None) -> int:
     comparison_parser.add_argument("--candidate-run", required=True)
 
     args = parser.parse_args(argv)
+    ready_file = args.ready_file if args.command == "worker" else None
+    if ready_file is not None:
+        ready_file.unlink(missing_ok=True)
 
     if args.command == "evaluation-history-migrate":
         report = migrate_evaluation_history(
@@ -355,18 +362,44 @@ def main(argv: list[str] | None = None) -> int:
             base_url=settings.api_base_url,
             worker_secret=settings.worker_shared_secret,
         )
+        draining = False
+
+        def request_drain(signum: int, frame: object) -> None:
+            nonlocal draining
+            # Only set an atomic Python flag in the signal handler. The worker
+            # finishes its current receipt using the ordinary claim/ack path.
+            draining = True
+
+        formal_enabled = getattr(settings, "proof_capability", "full") == "full"
         worker = SqsProofWorker(
             settings=settings,
             api_client=api_client,
             pipeline=None,
-            explainer=build_proof_explainer(settings),
-            output_reviewer=build_proof_output_reviewer(settings),
-            proof_reviewer=build_proof_semantic_reviewer(settings),
-            pipeline_factory=lambda: build_pipeline(settings),
-            recipe_attempt_planner=build_recipe_attempt_planner(settings),
+            explainer=build_proof_explainer(settings) if formal_enabled else None,
+            output_reviewer=build_proof_output_reviewer(settings) if formal_enabled else None,
+            proof_reviewer=build_proof_semantic_reviewer(settings) if formal_enabled else None,
+            pipeline_factory=(lambda: build_pipeline(settings)) if formal_enabled else None,
+            recipe_attempt_planner=(
+                build_recipe_attempt_planner(settings) if formal_enabled else None
+            ),
+            proof_request_processor=build_proof_request_processor(settings, api_client),
+            stop_requested=lambda: draining,
         )
         if args.command == "worker":
-            worker.run_forever()
+            if not settings.proof_jobs_queue_url:
+                raise RuntimeError("PALS_PROOF_JOBS_QUEUE_URL is required for the worker.")
+            if ready_file is not None:
+                ready_file.write_text(str(os.getpid()), encoding="ascii")
+            previous_handlers = {}
+            try:
+                for signum in (signal.SIGTERM, signal.SIGINT):
+                    previous_handlers[signum] = signal.signal(signum, request_drain)
+                worker.run_forever()
+            finally:
+                for signum, previous in previous_handlers.items():
+                    signal.signal(signum, previous)
+                if ready_file is not None:
+                    ready_file.unlink(missing_ok=True)
             return 0
         processed = worker.run_once()
         print(json.dumps({"processed": processed}, sort_keys=True))

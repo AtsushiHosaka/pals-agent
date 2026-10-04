@@ -1,0 +1,18 @@
+FROM python:3.12.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PALS_PROOF_CAPABILITY=natural-only
+
+WORKDIR /app
+
+COPY pyproject.toml README.md ./
+COPY pals_agent ./pals_agent
+COPY scripts/start-worker-with-credentials.sh scripts/aws-worker-profile.conf ./scripts/
+
+RUN pip install .
+
+USER 65532:65532
+
+CMD ["sh", "/app/scripts/start-worker-with-credentials.sh"]

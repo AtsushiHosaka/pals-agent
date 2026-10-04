@@ -1,0 +1,1499 @@
+{
+  "schema_version": "pals.typed-multivariable-registry.v5",
+  "profile_id": "typed-multivariable-v5",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "typed5",
+      "name": "forall",
+      "semantics": "Universal typed quantification, declarations ordered with no shadowing."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "typed5",
+      "name": "exists",
+      "semantics": "Existential typed quantification, declarations ordered with no shadowing."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "typed5",
+      "name": "type",
+      "semantics": "Dependent type annotation of the bound variable."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Nat",
+      "semantics": "Natural number including zero; dimensions and regularity orders are not interchangeable with real numbers."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Real",
+      "semantics": "Real number \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "RealFunction",
+      "semantics": "Function \u211d \u2192 \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Index",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Index@0",
+      "semantics": "Index(n) is Fin n. An index can exist only if n is positive."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Vector",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Vector@0",
+      "semantics": "Vector(n) is Fin n \u2192 \u211d with its standard finite product (supremum) norm."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Function",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "Function@0,1",
+      "semantics": "Function(m,n) is (Fin m \u2192 \u211d) \u2192 (Fin n \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "CLM",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "CLM(m,n) is (Fin m \u2192 \u211d) \u2192L[\u211d] (Fin n \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Matrix",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "Matrix@0,1",
+      "semantics": "Matrix(m,n) is Matrix (Fin m) (Fin n) \u211d; row dimension first, column dimension second."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ScalarFunction",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "ScalarFunction(n) is (Fin n \u2192 \u211d) \u2192 \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ScalarCLM",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "ScalarCLM(n) is (Fin n \u2192 \u211d) \u2192L[\u211d] \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Bilinear",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Bilinear@0",
+      "semantics": "Bilinear(n) is (Fin n \u2192 \u211d) \u2192L[\u211d] (Fin n \u2192 \u211d) \u2192L[\u211d] \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ScalarDerivativeField",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "ScalarDerivativeField@0",
+      "semantics": "ScalarDerivativeField(n) is (Fin n \u2192 \u211d) \u2192 ((Fin n \u2192 \u211d) \u2192L[\u211d] \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "DerivativeField",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "DerivativeField@0,1",
+      "semantics": "DerivativeField(m,n) is (Fin m \u2192 \u211d) \u2192 ((Fin m \u2192 \u211d) \u2192L[\u211d] (Fin n \u2192 \u211d))."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Set",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Set@0",
+      "semantics": "Set(n) is Set (Fin n \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "Curve",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Curve@0",
+      "semantics": "Curve(n) is \u211d \u2192 (Fin n \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "FunctionFamily",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "FunctionFamily@0,1",
+      "semantics": "FunctionFamily(k,n) is Fin k \u2192 ((Fin n \u2192 \u211d) \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "DualFamily",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "DualFamily@0,1",
+      "semantics": "DualFamily(k,n) is Fin k \u2192 ((Fin n \u2192 \u211d) \u2192L[\u211d] \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "RealFunctionFamily",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "RealFunctionFamily@0",
+      "semantics": "RealFunctionFamily(n) is Fin n \u2192 (\u211d \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ProductScalarFunction",
+      "arguments": [
+        "Dim",
+        "Dim"
+      ],
+      "result": "ProductScalarFunction@0,1",
+      "semantics": "ProductScalarFunction(m,n) is ((Fin m \u2192 \u211d) \u00d7 (Fin n \u2192 \u211d)) \u2192 \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ProductFunction",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim"
+      ],
+      "result": "ProductFunction@0,1,2",
+      "semantics": "ProductFunction(m,n,p) is ((Fin m \u2192 \u211d) \u00d7 (Fin n \u2192 \u211d)) \u2192 (Fin p \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ProductCLM",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim"
+      ],
+      "result": "ProductCLM@0,1,2",
+      "semantics": "ProductCLM(m,n,p) is ((Fin m \u2192 \u211d) \u00d7 (Fin n \u2192 \u211d)) \u2192L[\u211d] (Fin p \u2192 \u211d)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "LeftField",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim"
+      ],
+      "result": "LeftField@0,1,2",
+      "semantics": "LeftField(m,n,p) is ((Fin m \u2192 \u211d) \u00d7 (Fin n \u2192 \u211d)) \u2192 ((Fin m \u2192 \u211d) \u2192L[\u211d] (Fin p \u2192 \u211d))."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "RightField",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim"
+      ],
+      "result": "RightField@0,1,2",
+      "semantics": "RightField(m,n,p) is ((Fin m \u2192 \u211d) \u00d7 (Fin n \u2192 \u211d)) \u2192 ((Fin n \u2192 \u211d) \u2192L[\u211d] (Fin p \u2192 \u211d))."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_nat",
+      "arguments": [
+        "Nat"
+      ],
+      "result": "Real",
+      "semantics": "Cast a natural number into \u211d; no implicit real literals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_add",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Real addition, first plus second."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_sub",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Real subtraction, first minus second."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_mul",
+      "arguments": [
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "Real multiplication."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "apply",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Vector@1",
+      "semantics": "apply(m,n,f,x)=f x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_apply",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "scalar_apply(n,f,x)=f x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "coordinate",
+      "arguments": [
+        "Dim",
+        "Vector@0",
+        "Index@0"
+      ],
+      "result": "Real",
+      "semantics": "coordinate(n,x,i)=x i."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "basis_vector",
+      "arguments": [
+        "Dim",
+        "Index@0"
+      ],
+      "result": "Vector@0",
+      "semantics": "basis_vector(n,i)=Pi.single i 1."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "zero",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "Vector@0",
+      "semantics": "Zero vector in Fin n \u2192 \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "add",
+      "arguments": [
+        "Dim",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Vector@0",
+      "semantics": "Vector addition in the stated dimension."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "projection",
+      "arguments": [
+        "Dim",
+        "Index@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "projection(n,i)=fun x => x i."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "projection_clm",
+      "arguments": [
+        "Dim",
+        "Index@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "ContinuousLinearMap.proj i."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "update_curve",
+      "arguments": [
+        "Dim",
+        "Vector@0",
+        "Index@0"
+      ],
+      "result": "Curve@0",
+      "semantics": "update_curve(n,x,i)=fun t => Function.update x i t."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "coordinate_slice",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Vector@0",
+        "Index@0"
+      ],
+      "result": "RealFunction",
+      "semantics": "coordinate_slice(n,f,x,i)=fun t => f (Function.update x i t). The scalar parameter is the coordinate value, not an increment."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "component",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Index@1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "component(m,n,f,j)=fun x => f x j."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "component_clm",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "CLM@0,1",
+        "Index@1"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "component_clm(m,n,A,j)=(ContinuousLinearMap.proj j).comp A."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_fderiv",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0",
+        "CLM@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "has_fderiv(m,n,f,x,A)=HasFDerivAt f A x. Point precedes derivative."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_scalar_fderiv",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Vector@0",
+        "ScalarCLM@0"
+      ],
+      "result": "Prop",
+      "semantics": "has_scalar_fderiv(n,f,x,A)=HasFDerivAt f A x. Point precedes derivative."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_scalar_strict_fderiv",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Vector@0",
+        "ScalarCLM@0"
+      ],
+      "result": "Prop",
+      "semantics": "HasStrictFDerivAt f A x with ordered arguments n,f,x,A. Strict differentiability is stronger than differentiability at one point."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "differentiable_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "DifferentiableAt \u211d f x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_differentiable_at",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "DifferentiableAt \u211d f x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_differentiable",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0"
+      ],
+      "result": "Prop",
+      "semantics": "Differentiable \u211d f on the entire coordinate space."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_deriv",
+      "arguments": [
+        "RealFunction",
+        "Real",
+        "Real"
+      ],
+      "result": "Prop",
+      "semantics": "has_deriv(f,t,v)=HasDerivAt f v t; evaluation point then derivative value."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_curve_deriv",
+      "arguments": [
+        "Dim",
+        "Curve@0",
+        "Real",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "has_curve_deriv(n,c,t,v)=HasDerivAt c v t."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "clm_apply",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "CLM@0,1",
+        "Vector@0"
+      ],
+      "result": "Vector@1",
+      "semantics": "Application A v."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "dual_apply",
+      "arguments": [
+        "Dim",
+        "ScalarCLM@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "Application A v."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "dual_zero",
+      "arguments": [
+        "Dim"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "Zero continuous linear functional."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "dual_add",
+      "arguments": [
+        "Dim",
+        "ScalarCLM@0",
+        "ScalarCLM@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "Sum of continuous linear functionals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "dual_scale",
+      "arguments": [
+        "Dim",
+        "Real",
+        "ScalarCLM@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "Scalar c \u2022 A; arguments n,c,A."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "compose",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "Function@1,2",
+        "Function@0,1"
+      ],
+      "result": "Function@0,2",
+      "semantics": "compose(m,n,p,g,f)=g \u2218 f, applying f first."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "jacobian",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Matrix@1,0",
+      "semantics": "jacobian(m,n,f,x)=LinearMap.toMatrix' (fderiv \u211d f x).toLinearMap. Row is output coordinate, column input coordinate. fderiv is totalized, so using this operator alone does not assert differentiability."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "matrix_entry",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Matrix@0,1",
+        "Index@0",
+        "Index@1"
+      ],
+      "result": "Real",
+      "semantics": "Entry A row column, in that order."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "matrix_mul",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "Matrix@0,1",
+        "Matrix@1,2"
+      ],
+      "result": "Matrix@0,2",
+      "semantics": "Matrix product A B, in output-to-input order."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "matrix_action",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Matrix@0,1",
+        "Vector@1"
+      ],
+      "result": "Vector@0",
+      "semantics": "Matrix.mulVec A v."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "linearization_remainder",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Function@0,1",
+      "semantics": "fun y => f y - f x - (LinearMap.toMatrix' (fderiv \u211d f x).toLinearMap).mulVec (y-x)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "little_o_displacement",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Function@0,1",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "little_o_displacement(m,n,r,x) means r =o[nhds x] (fun y => y-x). This is the full vector first-order remainder relation, not pointwise equality."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_cont_diff",
+      "arguments": [
+        "Dim",
+        "Nat",
+        "ScalarFunction@0"
+      ],
+      "result": "Prop",
+      "semantics": "scalar_cont_diff(n,k,f)=ContDiff \u211d k f for natural k, including zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "field_cont_diff",
+      "arguments": [
+        "Dim",
+        "Nat",
+        "ScalarDerivativeField@0"
+      ],
+      "result": "Prop",
+      "semantics": "ContDiff \u211d k D as a function into the operator-normed space of linear functionals."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_fderiv_field",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0"
+      ],
+      "result": "ScalarDerivativeField@0",
+      "semantics": "The function fderiv \u211d f; totalized as zero at nondifferentiable points."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "bilinear_apply",
+      "arguments": [
+        "Dim",
+        "Bilinear@0",
+        "Vector@0",
+        "Vector@0"
+      ],
+      "result": "Real",
+      "semantics": "B u v, with u the outer and v the inner slot."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "quadratic",
+      "arguments": [
+        "Dim",
+        "Bilinear@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "quadratic(n,B)=fun x => B x x; B need not be symmetric."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "quadratic_derivative",
+      "arguments": [
+        "Dim",
+        "Bilinear@0",
+        "Vector@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "B x + B.flip x, the functional h \u21a6 B x h + B h x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "quadratic_field",
+      "arguments": [
+        "Dim",
+        "Bilinear@0"
+      ],
+      "result": "ScalarDerivativeField@0",
+      "semantics": "fun x => B x + B.flip x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "symmetrize",
+      "arguments": [
+        "Dim",
+        "Bilinear@0"
+      ],
+      "result": "Bilinear@0",
+      "semantics": "B + B.flip, not their half; evaluates to B u v + B v u."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_field_derivative",
+      "arguments": [
+        "Dim",
+        "ScalarDerivativeField@0",
+        "Vector@0",
+        "Bilinear@0"
+      ],
+      "result": "Prop",
+      "semantics": "HasFDerivAt D H x, arguments n,D,x,H."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_slice_left",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "ProductFunction@0,1,2",
+        "Vector@1"
+      ],
+      "result": "Function@0,2",
+      "semantics": "fun x => f (x,y); fix the right variable."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_slice_right",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "ProductFunction@0,1,2",
+        "Vector@0"
+      ],
+      "result": "Function@1,2",
+      "semantics": "fun y => f (x,y); fix the left variable."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "left_field_apply",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "LeftField@0,1,2",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "CLM@0,2",
+      "semantics": "A (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "right_field_apply",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "RightField@0,1,2",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "CLM@1,2",
+      "semantics": "B (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "continuous_left_field_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "LeftField@0,1,2",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousAt A (x,y), joint continuity in both blocks."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "continuous_right_field_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "RightField@0,1,2",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousAt B (x,y), joint continuity in both blocks."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "coprod",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "CLM@0,2",
+        "CLM@1,2"
+      ],
+      "result": "ProductCLM@0,1,2",
+      "semantics": "A.coprod B, mapping (u,v) to A u + B v."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_product_strict_fderiv",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Dim",
+        "ProductFunction@0,1,2",
+        "Vector@0",
+        "Vector@1",
+        "ProductCLM@0,1,2"
+      ],
+      "result": "Prop",
+      "semantics": "HasStrictFDerivAt f C (x,y); points x,y precede derivative C."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "local_extr_fiber",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "ScalarFunction@0",
+        "Vector@0"
+      ],
+      "result": "Prop",
+      "semantics": "local_extr_fiber(n,objective,constraint,x)=IsLocalExtrOn objective {y | constraint y = constraint x} x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "family_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "FunctionFamily@0,1",
+        "Index@0"
+      ],
+      "result": "ScalarFunction@1",
+      "semantics": "The ith scalar constraint function."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "dual_family_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "DualFamily@0,1",
+        "Index@0"
+      ],
+      "result": "ScalarCLM@1",
+      "semantics": "The ith constraint derivative functional."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "local_extr_fibers",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ScalarFunction@1",
+        "FunctionFamily@0,1",
+        "Vector@1"
+      ],
+      "result": "Prop",
+      "semantics": "local_extr_fibers(k,n,objective,F,x)=IsLocalExtrOn objective {y | \u2200 i, F i y = F i x} x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "weighted_dual_sum",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Vector@0",
+        "DualFamily@0,1"
+      ],
+      "result": "ScalarCLM@1",
+      "semantics": "\u2211 i : Fin k, coefficients i \u2022 derivativeFamily i."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_scalar_slice_left",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Vector@1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => f (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_scalar_slice_right",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Vector@0"
+      ],
+      "result": "ScalarFunction@1",
+      "semantics": "fun y => f (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "axis_jump",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "Index@0",
+        "Index@1",
+        "Real"
+      ],
+      "result": "ProductScalarFunction@0,1",
+      "semantics": "axis_jump(m,n,i,j,a)=fun (x,y) => if x i = 0 \u2228 y j = 0 then 0 else a. This explicit discontinuous family has no implicit regularity assumption."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_continuous_at",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Vector@0",
+        "Vector@1"
+      ],
+      "result": "Prop",
+      "semantics": "ContinuousAt f (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "integrable",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0"
+      ],
+      "result": "Prop",
+      "semantics": "MeasureTheory.Integrable f with respect to Lebesgue volume on Fin n \u2192 \u211d; requires absolute integrability for real functions."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "integral",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0"
+      ],
+      "result": "Real",
+      "semantics": "Bochner integral \u222b x, f x with respect to Lebesgue volume. Lean totalizes nonintegrable integrals to zero; existence must be asserted separately."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_integrable",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "Integrable f with respect to the product of the two Lebesgue volume measures."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_integral",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "Real",
+      "semantics": "\u222b z, f z with respect to product Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_separable",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ScalarFunction@0",
+        "ScalarFunction@1"
+      ],
+      "result": "ProductScalarFunction@0,1",
+      "semantics": "fun (x,y) => f x * g y."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "inner_integral_right",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => \u222b y, f (x,y); integrate the right variable first."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "inner_integral_left",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "ScalarFunction@1",
+      "semantics": "fun y => \u222b x, f (x,y); integrate the left variable first."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "ae_right_sections_integrable",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "\u2200\u1d50 x with respect to left Lebesgue volume, Integrable (fun y => f (x,y)). This is almost everywhere, never every section."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_ae_strongly_measurable",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "Prop",
+      "semantics": "AEStronglyMeasurable f for product Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "inner_abs_integral",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => \u222b y, \u2016f (x,y)\u2016; real norm is absolute value."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_integrable_on",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Set@0",
+        "Set@1"
+      ],
+      "result": "Prop",
+      "semantics": "IntegrableOn f (s \u00d7\u02e2 t) for product Lebesgue volume; s,t need not be assumed measurable in this Fubini identity."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_set_integral",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Set@0",
+        "Set@1"
+      ],
+      "result": "Real",
+      "semantics": "\u222b z in s \u00d7\u02e2 t, f z for product Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "inner_set_integral_right",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "ProductScalarFunction@0,1",
+        "Set@1"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => \u222b y in t, f (x,y)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "set_integral",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Set@0"
+      ],
+      "result": "Real",
+      "semantics": "\u222b x in s, f x with respect to restricted Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_family_at",
+      "arguments": [
+        "Dim",
+        "RealFunctionFamily@0",
+        "Index@0"
+      ],
+      "result": "RealFunction",
+      "semantics": "f i : \u211d \u2192 \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "real_integrable",
+      "arguments": [
+        "RealFunction"
+      ],
+      "result": "Prop",
+      "semantics": "Integrable f with respect to Lebesgue volume on \u211d."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "separable_n_product",
+      "arguments": [
+        "Dim",
+        "RealFunctionFamily@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x : Fin n \u2192 \u211d => \u220f i, f i (x i). n may be zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "product_real_integrals",
+      "arguments": [
+        "Dim",
+        "RealFunctionFamily@0"
+      ],
+      "result": "Real",
+      "semantics": "\u220f i : Fin n, \u222b t : \u211d, f i t, with empty product 1."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "measurable_set",
+      "arguments": [
+        "Dim",
+        "Set@0"
+      ],
+      "result": "Prop",
+      "semantics": "MeasurableSet s in the Borel measurable space of the coordinate space."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "injective_on",
+      "arguments": [
+        "Dim",
+        "Function@0,0",
+        "Set@0"
+      ],
+      "result": "Prop",
+      "semantics": "Set.InjOn f s, no global injectivity inferred."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "image",
+      "arguments": [
+        "Dim",
+        "Function@0,0",
+        "Set@0"
+      ],
+      "result": "Set@0",
+      "semantics": "Set.image f s."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "field_apply",
+      "arguments": [
+        "Dim",
+        "Dim",
+        "DerivativeField@0,1",
+        "Vector@0"
+      ],
+      "result": "CLM@0,1",
+      "semantics": "D x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "member",
+      "arguments": [
+        "Dim",
+        "Vector@0",
+        "Set@0"
+      ],
+      "result": "Prop",
+      "semantics": "x \u2208 s."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "has_fderiv_within",
+      "arguments": [
+        "Dim",
+        "Function@0,0",
+        "Vector@0",
+        "Set@0",
+        "CLM@0,0"
+      ],
+      "result": "Prop",
+      "semantics": "HasFDerivWithinAt f A s x, arguments n,f,x,s,A. No open set or nonzero Jacobian is assumed implicitly."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "jacobian_weighted",
+      "arguments": [
+        "Dim",
+        "Function@0,0",
+        "DerivativeField@0,0",
+        "ScalarFunction@0"
+      ],
+      "result": "ScalarFunction@0",
+      "semantics": "fun x => |(D x).det| * g (f x), with absolute determinant and derivative field D."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "integrable_on",
+      "arguments": [
+        "Dim",
+        "ScalarFunction@0",
+        "Set@0"
+      ],
+      "result": "Prop",
+      "semantics": "IntegrableOn g s for Lebesgue volume."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "curve_apply",
+      "arguments": [
+        "Dim",
+        "Curve@0",
+        "Real"
+      ],
+      "result": "Vector@0",
+      "semantics": "c t."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "scalar_field_apply",
+      "arguments": [
+        "Dim",
+        "ScalarDerivativeField@0",
+        "Vector@0"
+      ],
+      "result": "ScalarCLM@0",
+      "semantics": "D x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "pullback_one_form",
+      "arguments": [
+        "Dim",
+        "ScalarDerivativeField@0",
+        "Curve@0",
+        "Curve@0"
+      ],
+      "result": "RealFunction",
+      "semantics": "pullback_one_form(n,D,c,v)=fun t => D (c t) (v t). v is separately required to be the actual curve derivative."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "interval_integrable",
+      "arguments": [
+        "RealFunction",
+        "Real",
+        "Real"
+      ],
+      "result": "Prop",
+      "semantics": "IntervalIntegrable f volume a b; both orientations and a=b allowed."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "interval_integral",
+      "arguments": [
+        "RealFunction",
+        "Real",
+        "Real"
+      ],
+      "result": "Real",
+      "semantics": "\u222b t in a..b, f t, the oriented interval integral."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-multivariable:v5",
+      "cd": "multivar5",
+      "name": "in_uIcc",
+      "arguments": [
+        "Real",
+        "Real",
+        "Real"
+      ],
+      "result": "Prop",
+      "semantics": "in_uIcc(t,a,b) means t \u2208 Set.uIcc a b."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "semantics": "Standard logic1.and; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "semantics": "Standard logic1.or; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "semantics": "Standard logic1.implies; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "semantics": "Standard logic1.not; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "equivalent",
+      "arity": 2,
+      "semantics": "Standard logic1.equivalent; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "semantics": "Standard relation1.eq; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "semantics": "Standard relation1.neq; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "semantics": "Standard relation1.leq; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "semantics": "Standard relation1.lt; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "semantics": "Standard arith1.plus; matching sorts required, propositional arguments for logic and numeric arguments for ordering/arithmetic."
+    }
+  ]
+}

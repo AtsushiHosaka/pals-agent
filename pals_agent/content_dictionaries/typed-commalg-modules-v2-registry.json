@@ -1,0 +1,325 @@
+{
+  "schema_version": "pals.typed-commalg-modules-v2-registry.v1",
+  "profile_id": "typed-commalg-modules-v2",
+  "cdbases": {
+    "typed": "urn:pals:openmath:typed-commalg-modules:v2",
+    "standard": "http://www.openmath.org/cd"
+  },
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "typed1",
+      "name": "forall",
+      "signature": "(typed declarations,Prop)->Prop",
+      "lean_meaning": "Universal quantification with explicit ordered dependent declarations."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "typed1",
+      "name": "exists",
+      "signature": "(typed declarations,Prop)->Prop",
+      "lean_meaning": "Existential quantification with explicit ordered dependent declarations."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "typed1",
+      "name": "type",
+      "signature": "Binder annotation",
+      "lean_meaning": "One exact dependent binder sort annotation; not a term."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "CommRing",
+      "signature": "Sort",
+      "lean_meaning": "A type R equipped with CommRing R; no implicit domain or Noetherian hypothesis."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "LocalRing",
+      "signature": "Sort",
+      "lean_meaning": "A type R equipped with CommRing R and IsLocalRing R; locality is part of the bound structure."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "Module",
+      "signature": "(R:Ring)->Sort",
+      "lean_meaning": "An additive commutative group M with Module R M; declaration names its exact carrier."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "Ideal",
+      "signature": "(R:Ring)->Sort",
+      "lean_meaning": "Ideal R."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "Submodule",
+      "signature": "(R:Ring,M:Module(R))->Sort",
+      "lean_meaning": "Submodule R M; M may be an explicitly constructed quotient or tensor carrier."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "LinearMap",
+      "signature": "(R:Ring,M:Module(R),N:Module(R))->Sort",
+      "lean_meaning": "M →ₗ[R] N with exact source and target carriers."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "ideal_bot",
+      "signature": "(R:Ring)->Ideal(R)",
+      "lean_meaning": "(⊥ : Ideal R)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "maximal_ideal",
+      "signature": "(R:LocalRing)->Ideal(R)",
+      "lean_meaning": "IsLocalRing.maximalIdeal R; rejected for a mere CommRing binder."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "ideal_jacobson",
+      "signature": "(R:Ring,I:Ideal(R))->Ideal(R)",
+      "lean_meaning": "Ideal.jacobson I, the intersection of maximal ideals containing I."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "ideal_le",
+      "signature": "(R:Ring,I:Ideal(R),J:Ideal(R))->Prop",
+      "lean_meaning": "I ≤ J."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "quotient",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M))->Module(R)",
+      "lean_meaning": "M ⧸ U. Carrier identity retains exact R, M and U; quotient by a different submodule is a different carrier."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_carrier",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M))->Module(R)",
+      "lean_meaning": "The subtype U with its induced additive group and R-module structure."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "tensor",
+      "signature": "(R:Ring,M:Module(R),N:Module(R))->Module(R)",
+      "lean_meaning": "TensorProduct R M N with ordered factor carriers; no implicit commutativity coercion of factors."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_bot",
+      "signature": "(R:Ring,M:Module(R))->Submodule(R,M)",
+      "lean_meaning": "(⊥ : Submodule R M)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_top",
+      "signature": "(R:Ring,M:Module(R))->Submodule(R,M)",
+      "lean_meaning": "(⊤ : Submodule R M)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_le",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M),V:Submodule(R,M))->Prop",
+      "lean_meaning": "U ≤ V."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_sup",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M),V:Submodule(R,M))->Submodule(R,M)",
+      "lean_meaning": "U ⊔ V, the submodule sum."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "submodule_inf",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M),V:Submodule(R,M))->Submodule(R,M)",
+      "lean_meaning": "U ⊓ V, the submodule intersection."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "finite",
+      "signature": "(R:Ring,M:Module(R))->Prop",
+      "lean_meaning": "Module.Finite R M: finitely generated as an R-module, NOT finite cardinality."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "fg",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M))->Prop",
+      "lean_meaning": "U.FG: a finite subset spans U as an R-submodule of M."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "flat",
+      "signature": "(R:Ring,M:Module(R))->Prop",
+      "lean_meaning": "Module.Flat R M: tensoring with M preserves injections of R-modules; no freeness or finite generation implied."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "module_zero",
+      "signature": "(R:Ring,M:Module(R))->Prop",
+      "lean_meaning": "Subsingleton M, equivalently (⊤ : Submodule R M) = ⊥; not a judgment about cardinality of generators."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "ideal_smul",
+      "signature": "(R:Ring,M:Module(R),I:Ideal(R),U:Submodule(R,M))->Submodule(R,M)",
+      "lean_meaning": "I • U, generated by scalar products r • u with r in I and u in U. I • top denotes IM, not pointwise multiplication by one scalar."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "quotient_map",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M))->LinearMap(R,M,quotient(R,M,U))",
+      "lean_meaning": "U.mkQ, the canonical linear quotient projection."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "inclusion",
+      "signature": "(R:Ring,M:Module(R),U:Submodule(R,M))->LinearMap(R,submodule_carrier(R,M,U),M)",
+      "lean_meaning": "U.subtype, the canonical injective inclusion."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "linear_id",
+      "signature": "(R:Ring,M:Module(R))->LinearMap(R,M,M)",
+      "lean_meaning": "LinearMap.id."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "linear_zero",
+      "signature": "(R:Ring,M:Module(R),N:Module(R))->LinearMap(R,M,N)",
+      "lean_meaning": "(0 : M →ₗ[R] N)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "kernel",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N))->Submodule(R,M)",
+      "lean_meaning": "LinearMap.ker f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "range",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N))->Submodule(R,N)",
+      "lean_meaning": "LinearMap.range f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "injective",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N))->Prop",
+      "lean_meaning": "Function.Injective f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "surjective",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N))->Prop",
+      "lean_meaning": "Function.Surjective f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "compose",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),L:Module(R),f:LinearMap(R,M,N),g:LinearMap(R,N,L))->LinearMap(R,M,L)",
+      "lean_meaning": "g.comp f; arguments are FIRST f THEN g, not Lean comp receiver order."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "exact",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),L:Module(R),f:LinearMap(R,M,N),g:LinearMap(R,N,L))->Prop",
+      "lean_meaning": "Function.Exact f g, equivalent to LinearMap.range f = LinearMap.ker g. No endpoint injectivity or surjectivity implied."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "map",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N),U:Submodule(R,M))->Submodule(R,N)",
+      "lean_meaning": "U.map f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "comap",
+      "signature": "(R:Ring,M:Module(R),N:Module(R),f:LinearMap(R,M,N),V:Submodule(R,N))->Submodule(R,M)",
+      "lean_meaning": "V.comap f."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-commalg-modules:v2",
+      "cd": "module2",
+      "name": "tensor_map_left",
+      "signature": "(R:Ring,X:Module(R),M:Module(R),N:Module(R),f:LinearMap(R,M,N))->LinearMap(R,tensor(R,X,M),tensor(R,X,N))",
+      "lean_meaning": "f.lTensor X = identity_X ⊗ f. The fixed factor X comes before the source M and target N."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "signature": "(Prop,...,Prop)->Prop with 2..32 operands",
+      "lean_meaning": "Logical conjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "signature": "(Prop,...,Prop)->Prop with 2..32 operands",
+      "lean_meaning": "Logical disjunction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "signature": "(Prop,Prop)->Prop",
+      "lean_meaning": "Logical implication from first to second argument."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "signature": "(Prop)->Prop",
+      "lean_meaning": "Logical negation."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "signature": "(a:T,b:T)->Prop, T is an ideal, submodule or linear-map sort",
+      "lean_meaning": "a = b"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "signature": "(a:T,b:T)->Prop, T is an ideal, submodule or linear-map sort",
+      "lean_meaning": "a ≠ b"
+    }
+  ]
+}

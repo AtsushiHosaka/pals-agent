@@ -1,0 +1,444 @@
+{
+  "schema_version": "pals.typed-calculus-registry.v3",
+  "profile_id": "typed-calculus-v3",
+  "cdbases": {
+    "standard": "http://www.openmath.org/cd",
+    "typed": "urn:pals:openmath:typed-calculus:v3"
+  },
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "typed3",
+      "name": "forall",
+      "signature": "typed variables; Prop → Prop",
+      "semantics": "Universal quantification over explicitly typed bound variables."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "typed3",
+      "name": "exists",
+      "signature": "typed variables; Prop → Prop",
+      "semantics": "Existential quantification over explicitly typed bound variables."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "typed3",
+      "name": "type",
+      "signature": "binder annotation key",
+      "semantics": "Attaches one exact sort to one bound variable; never a term."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "typed3",
+      "name": "Real",
+      "signature": "Sort",
+      "semantics": "Lean ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "RealFunction",
+      "signature": "Sort",
+      "semantics": "Lean ℝ → ℝ."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "of_int",
+      "signature": "integer literal → Real",
+      "semantics": "Exact cast of a signed OMI integer literal to ℝ; a bound Nat is converted using of_nat instead."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "of_rat",
+      "signature": "(integer literal, positive integer literal) → Real",
+      "semantics": "Exact rational Real value with reduced numerator and positive nonzero denominator."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "lambda",
+      "signature": "(Real → Real body) → RealFunction",
+      "semantics": "Binds exactly one Real variable with a Real body; denotes a real function."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "apply",
+      "signature": "RealFunction × Real → Real",
+      "semantics": "apply(f,x) denotes f x."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "epsilon_delta_continuous_at",
+      "signature": "RealFunction × Real → Prop",
+      "semantics": "The usual positive epsilon/positive delta definition at a; equivalent to ContinuousAt f a."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "continuous_at",
+      "signature": "RealFunction × Real → Prop",
+      "semantics": "continuous_at(f,a) denotes ContinuousAt f a."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "differentiable_at",
+      "signature": "RealFunction × Real → Prop",
+      "semantics": "differentiable_at(f,a) denotes DifferentiableAt ℝ f a."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "has_deriv_at",
+      "signature": "RealFunction × Real × Real → Prop",
+      "semantics": "has_deriv_at(f,point,slope) denotes HasDerivAt f slope point; point precedes slope in OpenMath."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "interval_integrable",
+      "signature": "RealFunction × Real × Real → Prop",
+      "semantics": "IntervalIntegrable f volume a b, independent of endpoint order."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "signature": "same sort × same sort → Prop",
+      "semantics": "Equality of two terms of exactly the same sort."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "signature": "same sort × same sort → Prop",
+      "semantics": "Negation of equality of two terms of exactly the same sort."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "signature": "Real × Real or Nat × Nat → Prop",
+      "semantics": "Same-sort order, with no implicit Nat/Real cast."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "signature": "Real × Real or Nat × Nat → Prop",
+      "semantics": "Same-sort order, with no implicit Nat/Real cast."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "gt",
+      "signature": "Real × Real or Nat × Nat → Prop",
+      "semantics": "Same-sort order, with no implicit Nat/Real cast."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "geq",
+      "signature": "Real × Real or Nat × Nat → Prop",
+      "semantics": "Same-sort order, with no implicit Nat/Real cast."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "signature": "Prop^k → Prop, 2≤k≤32",
+      "semantics": "Conjunction of all arguments."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "signature": "Prop^k → Prop, 2≤k≤32",
+      "semantics": "Disjunction of the arguments."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "signature": "Prop × Prop → Prop",
+      "semantics": "Logical implication."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "equivalent",
+      "signature": "Prop × Prop → Prop",
+      "semantics": "Logical equivalence."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "signature": "Prop → Prop",
+      "semantics": "Logical negation."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "signature": "Real^k → Real, 2≤k≤32",
+      "semantics": "Sum of all real arguments."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "times",
+      "signature": "Real^k → Real, 2≤k≤32",
+      "semantics": "Product of all real arguments."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "minus",
+      "signature": "Real × Real → Real",
+      "semantics": "Real subtraction."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "divide",
+      "signature": "Real × Real → Real",
+      "semantics": "Lean real division; totalized at a zero denominator. Ordinary quotient derivative formulas require nonzero denominator premises."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "abs",
+      "signature": "Real → Real",
+      "semantics": "Real absolute value."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "unary_minus",
+      "signature": "Real → Real",
+      "semantics": "Real additive inverse."
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "power",
+      "signature": "Real × Nat → Real",
+      "semantics": "Natural-number exponentiation, including x^0=1 and 0^0=1; exponent may be a bound Nat variable."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "typed3",
+      "name": "Nat",
+      "signature": "Sort",
+      "semantics": "Lean ℕ, natural numbers including zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "nat_pred",
+      "signature": "Nat → Nat",
+      "semantics": "Nat.pred n = n - 1 with subtraction truncated at zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "nat_succ",
+      "signature": "Nat → Nat",
+      "semantics": "Nat.succ n = n + 1."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "of_nat",
+      "signature": "Nat → Real",
+      "semantics": "Canonical natural-number cast into Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "exp",
+      "signature": "Real → Real",
+      "semantics": "Real.exp on Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "log",
+      "signature": "Real → Real",
+      "semantics": "Real.log; the real logarithm of absolute value, totalized as Real.log 0 = 0. Derivative cards require nonzero input."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "sin",
+      "signature": "Real → Real",
+      "semantics": "Real.sin on Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "cos",
+      "signature": "Real → Real",
+      "semantics": "Real.cos on Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "sqrt",
+      "signature": "Real → Real",
+      "semantics": "Real.sqrt; nonnegative square root for nonnegative inputs and zero for negative inputs."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "arctan",
+      "signature": "Real → Real",
+      "semantics": "Real.arctan on Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "continuous",
+      "signature": "RealFunction → Prop",
+      "semantics": "Continuous f on all Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "differentiable",
+      "signature": "RealFunction → Prop",
+      "semantics": "Differentiable Real f on all Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "continuous_on_closed",
+      "signature": "RealFunction × Real × Real → Prop",
+      "semantics": "ContinuousOn f (Set.Icc a b); the closed interval is empty if b<a."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "differentiable_on_open",
+      "signature": "RealFunction × Real × Real → Prop",
+      "semantics": "DifferentiableOn Real f (Set.Ioo a b)."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "interval_integral",
+      "signature": "RealFunction × Real × Real → Real",
+      "semantics": "intervalIntegral f a b volume, oriented Bochner interval integral. Totalized by Lean; cards requiring an ordinary finite integral must also carry interval_integrable evidence."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "RealSequence",
+      "signature": "Sort",
+      "semantics": "ℕ → ℝ; indexed from zero."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "sequence_lambda",
+      "signature": "(Nat → Real body) → RealSequence",
+      "semantics": "Binds exactly one Nat index and returns a Real."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "nat_add",
+      "signature": "Nat × Nat → Nat",
+      "semantics": "Natural addition."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "nat_factorial",
+      "signature": "Nat → Nat",
+      "semantics": "Nat.factorial, including 0!=1."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "sequence_apply",
+      "signature": "RealSequence × Nat → Real",
+      "semantics": "sequence_apply(u,n) denotes u n."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "sequence_limit",
+      "signature": "RealSequence × Real → Prop",
+      "semantics": "Tendsto u Filter.atTop (nhds L). Sequence limit, not summation."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "has_sum",
+      "signature": "RealSequence × Real → Prop",
+      "semantics": "Mathlib HasSum u S: UNCONDITIONAL convergence of finite-subset sums. For real series this is absolute convergence, not merely convergence in the natural order."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "summable",
+      "signature": "RealSequence → Prop",
+      "semantics": "Mathlib Summable u, existence of an unconditional HasSum. Conditional ordered convergence is expressed separately as sequence_limit of partial sums."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "partial_sum",
+      "signature": "RealSequence × Nat → Real",
+      "semantics": "sum i in Finset.range n, u i. Includes indices 0 through n-1, empty sum at n=0."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "tsum",
+      "signature": "RealSequence → Real",
+      "semantics": "Mathlib tsum, totalized as zero for nonsummable sequences. No convergence follows from merely forming this term."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "rpow",
+      "signature": "Real × Real → Real",
+      "semantics": "Real.rpow, mathlib real exponentiation. Distinct from arith1:power with natural exponent."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "cont_diff_on",
+      "signature": "Nat × RealFunction × Real × Real → Prop",
+      "semantics": "cont_diff_on(n,f,a,b) = ContDiffOn ℝ n f (Set.uIcc a b). Order of endpoints does not matter."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "iterated_deriv",
+      "signature": "Nat × RealFunction → RealFunction",
+      "semantics": "iteratedDeriv n f, totalized mathlib iterated real derivative. Taylor applications retain required smoothness assumptions."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "iterated_deriv_on",
+      "signature": "Nat × RealFunction × Real × Real → RealFunction",
+      "semantics": "iteratedDerivWithin n f (Set.uIcc a b). The derivative domain is fixed by a,b."
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-calculus:v3",
+      "cd": "calculus3",
+      "name": "taylor_on",
+      "signature": "Nat × RealFunction × Real × Real × Real × Real → Real",
+      "semantics": "taylor_on(n,f,a,b,c,x) = taylorWithinEval f n (Set.uIcc a b) c x. a,b fix the differentiation domain; c is expansion center; x is evaluation point. Includes orders 0 through n."
+    }
+  ]
+}

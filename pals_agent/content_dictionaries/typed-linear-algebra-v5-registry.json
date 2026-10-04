@@ -1,0 +1,1016 @@
+{
+  "schema_version": "pals.typed-linear-algebra-registry.v5",
+  "profile_id": "typed-linear-algebra-v5",
+  "symbols": [
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Basis",
+      "lean_interpretation": "Module.Basis (Fin n) K V",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize"
+      ],
+      "result": "Basis@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Coordinates",
+      "lean_interpretation": "Fin n → K",
+      "arguments": [
+        "Field",
+        "IndexSize"
+      ],
+      "result": "Coords@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Family",
+      "lean_interpretation": "Fin n → V",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize"
+      ],
+      "result": "Family@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Field",
+      "lean_interpretation": "K : Type with Field K"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "FiniteDimensionalSpace",
+      "lean_interpretation": "V : Type with AddCommGroup V, Module K V and FiniteDimensional K V; requires one bound Field argument K"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Functional",
+      "lean_interpretation": "V →ₗ[K] K",
+      "arguments": [
+        "Field",
+        "Space@0"
+      ],
+      "result": "Func@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Index",
+      "lean_interpretation": "Fin n; bounded index into a declared natural size",
+      "arguments": [
+        "IndexSize"
+      ],
+      "result": "Index@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "LinearMap",
+      "lean_interpretation": "V →ₗ[K] W",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0"
+      ],
+      "result": "Lin@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Matrix",
+      "lean_interpretation": "Matrix (Fin m) (Fin n) K, row size then column size",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Nat",
+      "lean_interpretation": "ℕ, including zero"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Polynomial",
+      "lean_interpretation": "Polynomial K",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Scalar",
+      "lean_interpretation": "K",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Subspace",
+      "lean_interpretation": "Submodule K V",
+      "arguments": [
+        "Field",
+        "Space@0"
+      ],
+      "result": "Sub@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "Vector",
+      "lean_interpretation": "V",
+      "arguments": [
+        "Field",
+        "Space@0"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "apply",
+      "lean_interpretation": "f x",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2",
+        "Vec@0,1"
+      ],
+      "result": "Vec@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "basis_vectors",
+      "lean_interpretation": "fun i : Fin n => b i",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Basis@0,1,2"
+      ],
+      "result": "Family@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "charpoly",
+      "lean_interpretation": "LinearMap.charpoly f, convention det(XI-f)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "commute",
+      "lean_interpretation": "Commute f g: f*g=g*f where product is composition",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1",
+        "Lin@0,1,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "complementary",
+      "lean_interpretation": "IsCompl S T: S⊔T=⊤ and S⊓T=⊥",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Sub@0,1",
+        "Sub@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "compose",
+      "lean_interpretation": "g.comp f; first map f:V→W then g:W→U",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2",
+        "Lin@0,2,3"
+      ],
+      "result": "Lin@0,1,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "construct",
+      "lean_interpretation": "b.constr K v : V →ₗ[K] W; prescribed images of basis b",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "IndexSize",
+        "Basis@0,1,3",
+        "Family@0,2,3"
+      ],
+      "result": "Lin@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "coordinate_add",
+      "lean_interpretation": "x+y, pointwise addition of equally sized coefficient vectors",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Coords@0,1",
+        "Coords@0,1"
+      ],
+      "result": "Coords@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "coordinate_contains",
+      "lean_interpretation": "∃ i : Fin n, a i = z",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Coords@0,1",
+        "Scalar@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "coordinate_functionals",
+      "lean_interpretation": "fun i : Fin n => b.coord i, a family of K-linear functionals",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Basis@0,1,2"
+      ],
+      "result": "FuncFamily@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "coordinate_smul",
+      "lean_interpretation": "a • x, scalar multiplication of coefficient vector",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Scalar@0",
+        "Coords@0,1"
+      ],
+      "result": "Coords@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "coordinates",
+      "lean_interpretation": "fun i : Fin n => b.repr x i; equivalently b.equivFun x",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Basis@0,1,2",
+        "Vec@0,1"
+      ],
+      "result": "Coords@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "diagonal",
+      "lean_interpretation": "Matrix.diagonal a",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Coords@0,1"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "diagonal_map",
+      "lean_interpretation": "Matrix.toLin b b (Matrix.diagonal a)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Basis@0,1,2",
+        "Coords@0,2"
+      ],
+      "result": "Lin@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "eigenbasis",
+      "lean_interpretation": "∀ i : Fin n, f (b i) = a i • b i; b is a Basis so each b i is nonzero",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Lin@0,1,1",
+        "Basis@0,1,2",
+        "Coords@0,2"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "eigenspace",
+      "lean_interpretation": "Module.End.eigenspace f a",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1",
+        "Scalar@0"
+      ],
+      "result": "Sub@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "eigenspaces_sup",
+      "lean_interpretation": "⨆ a : K, Module.End.eigenspace f a; supremum of subspaces, not a set union",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1"
+      ],
+      "result": "Sub@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "family_images",
+      "lean_interpretation": "fun i => f (v i)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "IndexSize",
+        "Lin@0,1,2",
+        "Family@0,1,3"
+      ],
+      "result": "Family@0,2,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "functional_independent",
+      "lean_interpretation": "LinearIndependent K phi where phi : Fin n → (V →ₗ[K] K)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "FuncFamily@0,1,2"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "functional_sum",
+      "lean_interpretation": "∑ i : Fin n, a i • phi i; functional family precedes coefficients",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "FuncFamily@0,1,2",
+        "Coords@0,2"
+      ],
+      "result": "Func@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "functional_values",
+      "lean_interpretation": "fun i : Fin n => phi (v i)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Func@0,1",
+        "Family@0,1,2"
+      ],
+      "result": "Coords@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "has_eigenvalue",
+      "lean_interpretation": "Module.End.HasEigenvalue f a: eigenspace f a is nonzero",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1",
+        "Scalar@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "has_eigenvector",
+      "lean_interpretation": "Module.End.HasEigenvector f a x: f x=a • x and x≠0",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1",
+        "Scalar@0",
+        "Vec@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "identity",
+      "lean_interpretation": "LinearMap.id",
+      "arguments": [
+        "Field",
+        "Space@0"
+      ],
+      "result": "Lin@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "independent",
+      "lean_interpretation": "LinearIndependent K v",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Family@0,1,2"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "injective",
+      "lean_interpretation": "Function.Injective f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "linear_factor_product",
+      "lean_interpretation": "∏ i, (Polynomial.X - Polynomial.C (a i))",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Coords@0,1"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "map_add",
+      "lean_interpretation": "f+g",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2",
+        "Lin@0,1,2"
+      ],
+      "result": "Lin@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "map_smul",
+      "lean_interpretation": "a • f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Scalar@0",
+        "Lin@0,1,2"
+      ],
+      "result": "Lin@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_add",
+      "lean_interpretation": "A+B",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Mat@0,1,2"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_det",
+      "lean_interpretation": "Matrix.det A",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Mat@0,1,1"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_identity",
+      "lean_interpretation": "identity matrix",
+      "arguments": [
+        "Field",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_mul",
+      "lean_interpretation": "A*B with row/inner/column sizes specified",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Mat@0,2,3"
+      ],
+      "result": "Mat@0,1,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_single",
+      "lean_interpretation": "Matrix.single i j a: a at row i, column j, zero elsewhere",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Index@1",
+        "Index@2",
+        "Scalar@0"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_smul",
+      "lean_interpretation": "a • A",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Scalar@0",
+        "Mat@0,1,2"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_vec",
+      "lean_interpretation": "A.mulVec x",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Coords@0,2"
+      ],
+      "result": "Coords@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "matrix_zero",
+      "lean_interpretation": "zero matrix of the specified row and column sizes",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "minpoly",
+      "lean_interpretation": "minpoly K f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1"
+      ],
+      "result": "Poly@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "poly_aeval",
+      "lean_interpretation": "Polynomial.aeval f P : V →ₗ[K] V",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Lin@0,1,1",
+        "Poly@0"
+      ],
+      "result": "Lin@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "poly_divides",
+      "lean_interpretation": "P ∣ Q in Polynomial K, first polynomial divides the second",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Poly@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "poly_eval",
+      "lean_interpretation": "P.eval a",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "poly_root",
+      "lean_interpretation": "P.IsRoot a, equivalently P.eval a=0",
+      "arguments": [
+        "Field",
+        "Poly@0",
+        "Scalar@0"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "range",
+      "lean_interpretation": "LinearMap.range f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2"
+      ],
+      "result": "Sub@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "row",
+      "lean_interpretation": "A i : Fin n → K, where A has m rows and n columns",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Index@1"
+      ],
+      "result": "Coords@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "row_update",
+      "lean_interpretation": "Matrix.updateRow A i r; replace row i by r",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "IndexSize",
+        "Mat@0,1,2",
+        "Index@1",
+        "Coords@0,2"
+      ],
+      "result": "Mat@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "scalar_mul",
+      "lean_interpretation": "a*b in K",
+      "arguments": [
+        "Field",
+        "Scalar@0",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "scalar_neg",
+      "lean_interpretation": "-a in K",
+      "arguments": [
+        "Field",
+        "Scalar@0"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "scalar_one",
+      "lean_interpretation": "(1 : K)",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "scalar_zero",
+      "lean_interpretation": "(0 : K)",
+      "arguments": [
+        "Field"
+      ],
+      "result": "Scalar@0"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "span",
+      "lean_interpretation": "Submodule.span K (Set.range v)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Family@0,1,2"
+      ],
+      "result": "Sub@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "sub_le",
+      "lean_interpretation": "S≤T",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Sub@0,1",
+        "Sub@0,1"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "sub_map",
+      "lean_interpretation": "S.map f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2",
+        "Sub@0,1"
+      ],
+      "result": "Sub@0,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "sub_top",
+      "lean_interpretation": "(⊤ : Submodule K V)",
+      "arguments": [
+        "Field",
+        "Space@0"
+      ],
+      "result": "Sub@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "sum_scaled",
+      "lean_interpretation": "∑ i, a i • v i; family before coefficient family",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "Family@0,1,2",
+        "Coords@0,2"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "surjective",
+      "lean_interpretation": "Function.Surjective f",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "Lin@0,1,2"
+      ],
+      "result": "Prop"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "to_matrix",
+      "lean_interpretation": "LinearMap.toMatrix b c f; source basis b (n entries), target basis c (m entries), result m×n",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0",
+        "IndexSize",
+        "IndexSize",
+        "Basis@0,1,3",
+        "Basis@0,2,4",
+        "Lin@0,1,2"
+      ],
+      "result": "Mat@0,4,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "transition",
+      "lean_interpretation": "b.toMatrix c; columns are c-vectors in b-coordinates, converts coordinates in c into coordinates in b",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "IndexSize",
+        "IndexSize",
+        "Basis@0,1,2",
+        "Basis@0,1,3"
+      ],
+      "result": "Mat@0,2,3"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "transvection",
+      "lean_interpretation": "Matrix.transvection i j a = 1 + Matrix.single i j a; i and j are row indices, valid without i≠j (theorems specify the hypothesis)",
+      "arguments": [
+        "Field",
+        "IndexSize",
+        "Index@1",
+        "Index@1",
+        "Scalar@0"
+      ],
+      "result": "Mat@0,1,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "vector_smul",
+      "lean_interpretation": "a • x",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Scalar@0",
+        "Vec@0,1"
+      ],
+      "result": "Vec@0,1"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "la5",
+      "name": "zero_map",
+      "lean_interpretation": "(0 : V →ₗ[K] W)",
+      "arguments": [
+        "Field",
+        "Space@0",
+        "Space@0"
+      ],
+      "result": "Lin@0,1,2"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "typed1",
+      "name": "forall",
+      "meaning": "universal typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "typed1",
+      "name": "exists",
+      "meaning": "existential typed binder"
+    },
+    {
+      "cdbase": "urn:pals:openmath:typed-linear-algebra:v5",
+      "cd": "typed1",
+      "name": "type",
+      "meaning": "bound declaration type only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "and",
+      "arity": 2,
+      "meaning": "P∧Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "or",
+      "arity": 2,
+      "meaning": "P∨Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "implies",
+      "arity": 2,
+      "meaning": "P→Q"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "logic1",
+      "name": "not",
+      "arity": 1,
+      "meaning": "¬P"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "eq",
+      "arity": 2,
+      "meaning": "equality of matching dependent value types"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "neq",
+      "arity": 2,
+      "meaning": "inequality of matching dependent value types"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "leq",
+      "arity": 2,
+      "meaning": "≤ on ℕ only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "relation1",
+      "name": "lt",
+      "arity": 2,
+      "meaning": "< on ℕ only"
+    },
+    {
+      "cdbase": "http://www.openmath.org/cd",
+      "cd": "arith1",
+      "name": "plus",
+      "arity": 2,
+      "meaning": "addition of matching naturals or matching field scalars"
+    }
+  ]
+}

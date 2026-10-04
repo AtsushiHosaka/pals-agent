@@ -525,3 +525,27 @@ def test_lrc_t001_rejects_parameter_universe_and_typeclass_declaration_headers(
 ) -> None:
     assert ClosedRecipeHeaderV1.extract(declaration_source) is None
     assert FormalTarget.from_declaration(declaration_source) is None
+
+
+@pytest.mark.parametrize(
+    "origin", ["http://api:8000", "http://localhost:8000", "http://127.0.0.1:8000"]
+)
+def test_local_http_requires_explicit_opt_in_and_fixed_origin(origin: str) -> None:
+    with pytest.raises(ValueError, match="absolute HTTPS origin"):
+        PrivateRecipeSelectionClient(origin, _SECRET)
+    assert PrivateRecipeSelectionClient(origin, _SECRET, allow_local_http=True).base_url == origin
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "http://api.example:8000",
+        "http://api:8001",
+        "http://api:8000/path",
+        "http://user@api:8000",
+        "http://api:8000?token=x",
+    ],
+)
+def test_local_http_opt_in_does_not_allow_arbitrary_insecure_origins(origin: str) -> None:
+    with pytest.raises(ValueError, match="absolute HTTPS origin"):
+        PrivateRecipeSelectionClient(origin, _SECRET, allow_local_http=True)

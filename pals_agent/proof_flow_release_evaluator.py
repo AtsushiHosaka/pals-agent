@@ -47,9 +47,7 @@ _RERANKER_IDENTITY = {
     "prompt_sha256": "ee3210814e58edab5fa2a5878100b310d7811df23e3c5f2d09d93d8f3cc03d00",
     "real_execution_observed": False,
     "response_schema": {
-        "selected_draft_ids": (
-            "ordered unique array of zero through four supplied candidate IDs"
-        )
+        "selected_draft_ids": ("ordered unique array of zero through four supplied candidate IDs")
     },
 }
 _TOP_LEVEL_KEYS = frozenset(
@@ -191,10 +189,7 @@ class ProofFlowIndexReleaseEvaluator:
             raise ValueError("Release evaluator and evidence corpus do not match.")
         if self.runtime.embedding_fingerprint != self.admission.fingerprint:
             raise ValueError("Release evaluator fingerprint is not admitted.")
-        if (
-            self.runtime.runtime_provenance_sha256
-            != self.admission.runtime_provenance_sha256
-        ):
+        if self.runtime.runtime_provenance_sha256 != self.admission.runtime_provenance_sha256:
             raise ValueError("Release evaluator provenance is not admitted.")
 
     def evaluate(self, *, observed_at: str) -> ReleaseEvaluationResult:
@@ -262,6 +257,7 @@ class ProofFlowIndexReleaseEvaluator:
             prepared = self.runtime.prepare(query.natural_statement)
         except ProofFlowRetrievalError:
             raise ReleaseEvaluationError("runtime_incompatible") from None
+        _require_governed_reranker(prepared.reranker_request)
         candidates = prepared.candidates
         if (
             prepared.query_openmath != query.canonical_openmath
@@ -270,6 +266,23 @@ class ProofFlowIndexReleaseEvaluator:
         ):
             raise ReleaseEvaluationError("admission_incompatible")
         return prepared
+
+
+def _require_governed_reranker(request: DraftRerankerRequest) -> None:
+    # This evaluator and its immutable cost/evidence schema describe the historic
+    # mini corpus. Never label a newly deployed model's calls with that identity.
+    for identity_field in (
+        "provider",
+        "model",
+        "provider_api",
+        "contract_version",
+        "prompt_sha256",
+    ):
+        if (
+            request.compatibility.get(f"reranker_{identity_field}")
+            != _RERANKER_IDENTITY[identity_field]
+        ):
+            raise ReleaseEvaluationError("runtime_incompatible")
 
 
 def load_governed_release_corpus(path: Path) -> GovernedReleaseEvaluationCorpus:
@@ -320,9 +333,7 @@ def load_governed_release_corpus(path: Path) -> GovernedReleaseEvaluationCorpus:
         if (
             metric_contract["positive_query_denominator"] != 5
             or metric_contract["no_match_query_denominator"] != 1
-            or _metrics(
-                [(query, query.expected_selected_draft_ids) for query in queries]
-            )
+            or _metrics([(query, query.expected_selected_draft_ids) for query in queries])
             != metrics
         ):
             raise ValueError
@@ -440,14 +451,10 @@ def _metrics(
     observed: list[tuple[GovernedReleaseQuery, tuple[str, ...]]],
 ) -> tuple[Fraction, Fraction, Fraction, Fraction, Fraction]:
     positive = [
-        (query, selected)
-        for query, selected in observed
-        if query.expected_outcome == "match"
+        (query, selected) for query, selected in observed if query.expected_outcome == "match"
     ]
     negative = [
-        (query, selected)
-        for query, selected in observed
-        if query.expected_outcome == "no_match"
+        (query, selected) for query, selected in observed if query.expected_outcome == "no_match"
     ]
     if not positive or not negative:
         raise ValueError
@@ -484,16 +491,11 @@ def _metrics(
     ) / len(positive)
     specificity = Fraction(sum(not selected for _, selected in negative), len(negative))
     selected_pairs = [
-        (query, identifier)
-        for query, selected in observed
-        for identifier in selected
+        (query, identifier) for query, selected in observed for identifier in selected
     ]
     false_positive_rate = (
         Fraction(
-            sum(
-                identifier not in query.relevant_draft_ids
-                for query, identifier in selected_pairs
-            ),
+            sum(identifier not in query.relevant_draft_ids for query, identifier in selected_pairs),
             len(selected_pairs),
         )
         if selected_pairs

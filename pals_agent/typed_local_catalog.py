@@ -25,6 +25,33 @@ from .typed_commutative_algebra import (
     canonicalize_typed_commutative_algebra_openmath_xml,
     validate_canonical_typed_commutative_algebra_openmath_xml,
 )
+from .typed_commutative_algebra_chain_dimension import (
+    TYPED_COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_PROFILE,
+    canonicalize_typed_commutative_algebra_chain_dimension_openmath_xml,
+    validate_canonical_typed_commutative_algebra_chain_dimension_openmath_xml,
+)
+from .typed_commutative_algebra_chain_dimension_manifest import (
+    TypedCommutativeAlgebraChainDimensionManifestError,
+    validate_typed_commutative_algebra_chain_dimension_manifest,
+)
+from .typed_commutative_algebra_decomposition import (
+    TYPED_COMMUTATIVE_ALGEBRA_DECOMPOSITION_PROFILE,
+    canonicalize_typed_commutative_algebra_decomposition_openmath_xml,
+    validate_canonical_typed_commutative_algebra_decomposition_openmath_xml,
+)
+from .typed_commutative_algebra_decomposition_manifest import (
+    TypedCommutativeAlgebraDecompositionManifestError,
+    validate_typed_commutative_algebra_decomposition_manifest,
+)
+from .typed_commutative_algebra_integral import (
+    TYPED_COMMUTATIVE_ALGEBRA_INTEGRAL_PROFILE,
+    canonicalize_typed_commutative_algebra_integral_openmath_xml,
+    validate_canonical_typed_commutative_algebra_integral_openmath_xml,
+)
+from .typed_commutative_algebra_integral_manifest import (
+    TypedCommutativeAlgebraIntegralManifestError,
+    validate_typed_commutative_algebra_integral_manifest,
+)
 from .typed_commutative_algebra_localization import (
     TYPED_COMMUTATIVE_ALGEBRA_LOCALIZATION_PROFILE,
     canonicalize_typed_commutative_algebra_localization_openmath_xml,
@@ -421,6 +448,54 @@ _COMMUTATIVE_ALGEBRA_LOCALIZATION_SPEC = _ProfileSpec(
     canonicalize=canonicalize_typed_commutative_algebra_localization_openmath_xml,
     validate_canonical=validate_canonical_typed_commutative_algebra_localization_openmath_xml,
 )
+_COMMUTATIVE_ALGEBRA_INTEGRAL_SPEC = _ProfileSpec(
+    profile_id=TYPED_COMMUTATIVE_ALGEBRA_INTEGRAL_PROFILE,
+    schema_version="pals.typed-commutative-algebra-integral-v1-sealed-manifest.v1",
+    cards_key="cards",
+    validator_import=(
+        "pals_agent.typed_commutative_algebra_integral."
+        "validate_canonical_typed_commutative_algebra_integral_openmath_xml"
+    ),
+    validator_module_path="pals-agent/pals_agent/typed_commutative_algebra_integral.py",
+    registry_path=(
+        "pals-agent/pals_agent/content_dictionaries/"
+        "typed-commutative-algebra-integral-v1-registry.json"
+    ),
+    canonicalize=canonicalize_typed_commutative_algebra_integral_openmath_xml,
+    validate_canonical=validate_canonical_typed_commutative_algebra_integral_openmath_xml,
+)
+_COMMUTATIVE_ALGEBRA_DECOMPOSITION_SPEC = _ProfileSpec(
+    profile_id=TYPED_COMMUTATIVE_ALGEBRA_DECOMPOSITION_PROFILE,
+    schema_version="pals.typed-commutative-algebra-decomposition-v1-sealed-manifest.v1",
+    cards_key="cards",
+    validator_import=(
+        "pals_agent.typed_commutative_algebra_decomposition."
+        "validate_canonical_typed_commutative_algebra_decomposition_openmath_xml"
+    ),
+    validator_module_path="pals-agent/pals_agent/typed_commutative_algebra_decomposition.py",
+    registry_path=(
+        "pals-agent/pals_agent/content_dictionaries/"
+        "typed-commutative-algebra-decomposition-v1-registry.json"
+    ),
+    canonicalize=canonicalize_typed_commutative_algebra_decomposition_openmath_xml,
+    validate_canonical=validate_canonical_typed_commutative_algebra_decomposition_openmath_xml,
+)
+_COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_SPEC = _ProfileSpec(
+    profile_id=TYPED_COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_PROFILE,
+    schema_version="pals.typed-commutative-algebra-chain-dimension-v1-sealed-manifest.v1",
+    cards_key="cards",
+    validator_import=(
+        "pals_agent.typed_commutative_algebra_chain_dimension."
+        "validate_canonical_typed_commutative_algebra_chain_dimension_openmath_xml"
+    ),
+    validator_module_path="pals-agent/pals_agent/typed_commutative_algebra_chain_dimension.py",
+    registry_path=(
+        "pals-agent/pals_agent/content_dictionaries/"
+        "typed-commutative-algebra-chain-dimension-v1-registry.json"
+    ),
+    canonicalize=canonicalize_typed_commutative_algebra_chain_dimension_openmath_xml,
+    validate_canonical=validate_canonical_typed_commutative_algebra_chain_dimension_openmath_xml,
+)
 _ODE_SPEC = _ProfileSpec(
     profile_id=TYPED_ODE_PROFILE,
     schema_version="pals.typed-ode-v1-sealed-manifest.v1",
@@ -472,6 +547,10 @@ def validate_typed_local_catalog_manifest(
     repository_root: Path,
 ) -> TypedCatalogManifest:
     """Validate a manifest without accessing Postgres or an embedding provider."""
+    if payload.get("schema_version") == "pals.typed-catalog-expansion-batch.v1":
+        from .typed_catalog_expansion import validate_expansion_batch
+
+        return validate_expansion_batch(payload, repository_root=repository_root)
     profile_raw = _mapping(payload.get("profile"), "profile")
     profile_id = _required_string(profile_raw.get("id"), "profile.id")
     schema_version = _required_string(payload.get("schema_version"), "schema_version")
@@ -527,6 +606,35 @@ def validate_typed_local_catalog_manifest(
             payload, repository_root=repository_root
         )
         authoring_status = _required_string(payload["status"], "status")
+    elif spec is _COMMUTATIVE_ALGEBRA_INTEGRAL_SPEC:
+        try:
+            validate_typed_commutative_algebra_integral_manifest(
+                payload, repository_root=repository_root
+            )
+        except TypedCommutativeAlgebraIntegralManifestError as exc:
+            raise TypedLocalCatalogError("typed integral sealed manifest is invalid") from exc
+        manifest_digest = _required_string(payload["manifest_payload_sha256"], "manifest digest")
+        authoring_status = _required_string(payload["status"], "status")
+    elif spec is _COMMUTATIVE_ALGEBRA_DECOMPOSITION_SPEC:
+        try:
+            validate_typed_commutative_algebra_decomposition_manifest(
+                payload, repository_root=repository_root
+            )
+        except TypedCommutativeAlgebraDecompositionManifestError as exc:
+            raise TypedLocalCatalogError("typed decomposition sealed manifest is invalid") from exc
+        manifest_digest = _required_string(payload["manifest_payload_sha256"], "manifest digest")
+        authoring_status = _required_string(payload["status"], "status")
+    elif spec is _COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_SPEC:
+        try:
+            validate_typed_commutative_algebra_chain_dimension_manifest(
+                payload, repository_root=repository_root
+            )
+        except TypedCommutativeAlgebraChainDimensionManifestError as exc:
+            raise TypedLocalCatalogError(
+                "typed chain-dimension sealed manifest is invalid"
+            ) from exc
+        manifest_digest = _required_string(payload["manifest_payload_sha256"], "manifest digest")
+        authoring_status = _required_string(payload["status"], "status")
     else:
         manifest_digest = _validate_number_theory_manifest(payload, repository_root=repository_root)
         authoring_status = _required_string(payload["status"], "status")
@@ -579,6 +687,14 @@ def validate_typed_local_catalog_manifest(
             normalized = _validate_commutative_algebra_localization_card(
                 card, spec=spec, index=index
             )
+        elif spec in {
+            _COMMUTATIVE_ALGEBRA_INTEGRAL_SPEC,
+            _COMMUTATIVE_ALGEBRA_DECOMPOSITION_SPEC,
+            _COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_SPEC,
+        }:
+            # The full sealed manifest validator above binds every card and its
+            # evidence. Normalize the retrieval fields without promoting its status.
+            normalized = _validate_common_card_fields(card, spec=spec, index=index)
         else:
             normalized = _validate_number_theory_card(card, spec=spec, index=index)
         if normalized.card_id in seen_ids:
@@ -2859,6 +2975,12 @@ def _profile_spec(profile_id: str, schema_version: str) -> _ProfileSpec:
         spec = _COMMUTATIVE_ALGEBRA_MODULES_SPEC
     elif profile_id == _COMMUTATIVE_ALGEBRA_LOCALIZATION_SPEC.profile_id:
         spec = _COMMUTATIVE_ALGEBRA_LOCALIZATION_SPEC
+    elif profile_id == _COMMUTATIVE_ALGEBRA_INTEGRAL_SPEC.profile_id:
+        spec = _COMMUTATIVE_ALGEBRA_INTEGRAL_SPEC
+    elif profile_id == _COMMUTATIVE_ALGEBRA_DECOMPOSITION_SPEC.profile_id:
+        spec = _COMMUTATIVE_ALGEBRA_DECOMPOSITION_SPEC
+    elif profile_id == _COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_SPEC.profile_id:
+        spec = _COMMUTATIVE_ALGEBRA_CHAIN_DIMENSION_SPEC
     elif profile_id == _ODE_SPEC.profile_id:
         spec = _ODE_SPEC
     else:
