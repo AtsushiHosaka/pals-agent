@@ -17,6 +17,22 @@ MAX_CONTEXT_BYTES = 300_000
 MAX_SOURCE_PAGES = 100
 
 
+def _verbatim_excerpt(source: str, excerpt: str) -> str | None:
+    """Resolve OCR line wrapping without changing any non-whitespace character."""
+    if excerpt in source:
+        return excerpt
+    positions = [index for index, char in enumerate(source) if not char.isspace()]
+    flattened = "".join(source[index] for index in positions)
+    needle = "".join(char for char in excerpt if not char.isspace())
+    if not needle:
+        return None
+    start = flattened.find(needle)
+    if start < 0 or flattened.find(needle, start + 1) >= 0:
+        return None
+    original = source[positions[start]:positions[start + len(needle) - 1] + 1]
+    return original if len(original) <= 500 else None
+
+
 class MaterialContextError(ValueError):
     def __init__(self, code: str = "material_context_invalid") -> None:
         super().__init__(code)
@@ -135,13 +151,16 @@ class MaterialContext:
                 raise MaterialContextError("material_citation_invalid")
             key = (citation["material_id"], citation["page"])
             source = selected.get(key)
-            if source is None or key in seen or citation["excerpt"] not in source["text"]:
+            if source is None or key in seen:
+                raise MaterialContextError("material_citation_invalid")
+            excerpt = _verbatim_excerpt(source["text"], citation["excerpt"])
+            if excerpt is None:
                 raise MaterialContextError("material_citation_invalid")
             seen.add(key)
             result.append(
                 {
                     **{k: source[k] for k in ("material_id", "filename", "content_sha256", "page")},
-                    "excerpt": citation["excerpt"],
+                    "excerpt": excerpt,
                 }
             )
         return result
