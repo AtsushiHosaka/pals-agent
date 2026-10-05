@@ -211,7 +211,8 @@ def test_pex_009_completed_and_failed_variants_omit_forbidden_fields() -> None:
     }
 
 
-def test_completed_clarification_sends_exact_bound_review_evidence() -> None:
+@pytest.mark.parametrize("with_revision", [False, True])
+def test_completed_clarification_sends_exact_bound_review_evidence(with_revision: bool) -> None:
     transport = RecordingTransport()
     client = PalsApiClient(
         base_url="https://api.test",
@@ -229,6 +230,11 @@ def test_completed_clarification_sends_exact_bound_review_evidence() -> None:
         )
     ).hexdigest()
     content = {"answer": "Because the Lean proof closes the goal."}
+    if with_revision:
+        content.update({
+            "replacement_text": "The shorter mathematical proof.",
+            "revised_section": "Unchanged before. The shorter mathematical proof. Unchanged after.",
+        })
     review_evidence = _output_review_evidence(
         kind="clarification",
         proof_job_id="proof-1",
@@ -252,6 +258,15 @@ def test_completed_clarification_sends_exact_bound_review_evidence() -> None:
         "content": content,
         "review_evidence": review_evidence,
     }
+    if with_revision:
+        for field in ("replacement_text", "revised_section"):
+            with pytest.raises(ValueError, match="bind"):
+                client.update_proof_clarification(
+                    clarification_id="clarification-1", proof_job_id="proof-1", state="completed",
+                    claim_id=CLAIM_ID, content={**content, field: "tampered"},
+                    review_evidence=review_evidence,
+                )
+        assert len(transport.calls) == 1
 
 
 def test_completed_output_rejects_tampered_review_evidence_before_transport() -> None:

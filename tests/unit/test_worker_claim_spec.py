@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
+from dataclasses import replace
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -19,7 +20,12 @@ from pals_agent.explanations import (
     ProofOutputReview,
 )
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, _parse_claim_envelope, parse_sqs_agent_message
+from pals_agent.worker import (
+    SqsProofWorker,
+    _parse_claim_envelope,
+    _public_clarification_content,
+    parse_sqs_agent_message,
+)
 
 CLAIM_IDS = (
     uuid.UUID("11111111-1111-4111-8111-111111111111"),
@@ -846,6 +852,80 @@ def test_exp_010_clarification_passes_parent_target_to_generation(
     )
 
 
+def test_canvas_worker_reviews_and_hashes_the_current_section_revision(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    clarification_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
+    parent_id = "58cd9b1d-5ef0-4dc2-b47b-93e91d5dca67"
+    sqs = FakeSqs(f'{{"kind":"clarification","id":"{clarification_id}"}}')
+    api = ClaimApi(
+        claim_response=_envelope(
+            "acquired", 600_000, resource_kind="clarification", resource_id=clarification_id,
+        ),
+        terminal_response=_envelope(
+            "terminal", None, resource_kind="clarification", resource_id=clarification_id,
+        ),
+    )
+    original_input = api.get_proof_clarification
+    parent = {
+        "id": parent_id, "question": "Earlier question", "answer": "Brief edit status.",
+        "key_points": ["First", "Second"], "replacement_text": "previous replacement",
+        "revised_section": "Unchanged before. Current passage. Unchanged after.",
+    }
+
+    def revised_input(target_id: str) -> dict[str, Any]:
+        return {
+            **original_input(target_id), "selected_text": "Current passage",
+            "after_clarification_id": parent_id, "parent_clarification": parent,
+        }
+
+    class RevisionExplainer(RecordingExplainer):
+        def clarify(self, **kwargs: Any) -> ProofClarification:
+            return replace(
+                super().clarify(**kwargs), replacement_text="Shorter",
+                revised_section="Unchanged before. Shorter. Unchanged after.",
+            )
+
+    cast(Any, api).get_proof_clarification = revised_input
+    explainer = RevisionExplainer()
+    reviewer = RecordingOutputReviewer()
+    _install_sqs(monkeypatch, sqs)
+    assert _worker(api, explainer, FakeClock(), output_reviewer=reviewer).run_once() is True
+    candidate = reviewer.clarification_calls[0]["clarification"]
+    content = api.clarification_updates[-1]["content"]
+    evidence = api.clarification_updates[-1]["review_evidence"]
+    assert content == _public_clarification_content(candidate)
+    assert content["replacement_text"] == "Shorter"
+    assert content["revised_section"] == "Unchanged before. Shorter. Unchanged after."
+    assert explainer.clarify_calls[0]["parent_clarification"] == parent
+    context = {
+        "section_id": "finish", "question": candidate.question, "selected_text": "Current passage",
+        "after_clarification_id": parent_id, "parent_clarification": parent,
+    }
+    assert evidence["clarification_context_sha256"] == hashlib.sha256(
+        rfc8785.dumps(context)
+    ).hexdigest()
+    output = {
+        "output_kind": "clarification", "proof_job_id": "proof-1", "content": content,
+        "clarification_id": clarification_id,
+        "parent_explanation_sha256": evidence["parent_explanation_sha256"],
+        "clarification_context_sha256": evidence["clarification_context_sha256"],
+    }
+    # Bind both the exact patch and cumulative section, not merely its chat status.
+    assert evidence["output_sha256"] == hashlib.sha256(rfc8785.dumps(output)).hexdigest()
+    for field in ("replacement_text", "revised_section"):
+        changed = {**output, "content": {**content, field: "tampered"}}
+        assert evidence["output_sha256"] != hashlib.sha256(rfc8785.dumps(changed)).hexdigest()
+    assert (
+        evidence["clarification_context_sha256"]
+        != hashlib.sha256(
+            rfc8785.dumps({
+                **context, "parent_clarification": {**parent, "revised_section": "tampered"},
+            })
+        ).hexdigest()
+    )
+
+
 def test_pae_015_malformed_acquired_resource_never_authorizes_model_work(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1335,6 +1415,12 @@ def test_core_004_localizes_explanation_and_clarification_failures_to_chat_langu
             "clarification_updates",
             "pals.clarification_reference_mismatch",
         ),
+        (
+            '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}',
+            "proof_clarification_content_mismatch",
+            "clarification_updates",
+            "pals.clarification_failed",
+        ),
     ],
 )
 def test_pae_015_reference_mismatch_terminalizes_once_with_the_current_claim(
@@ -1379,6 +1465,57 @@ def test_pae_015_reference_mismatch_terminalizes_once_with_the_current_claim(
     assert len(sqs.delete_calls) == 1
 
 
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+def test_canvas_stale_settlement_fails_once_and_redelivery_does_not_regenerate(
+    monkeypatch: pytest.MonkeyPatch, language: str,
+) -> None:
+    clarification_id = "8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"
+    body = f'{{"kind":"clarification","id":"{clarification_id}"}}'
+    sqs = FakeSqs(body, body)
+
+    class SettlingApi(ClaimApi):
+        failed = False
+
+        def get_proof_clarification(self, target_id: str) -> dict[str, Any]:
+            resource = super().get_proof_clarification(target_id)
+            if self.failed:
+                resource["state"] = "failed"
+            return resource
+
+        def update_proof_clarification(self, **kwargs: Any) -> dict[str, Any]:
+            response = super().update_proof_clarification(**kwargs)
+            if kwargs["state"] == "failed":
+                self.failed = True
+            return response
+
+    api = SettlingApi(
+        claim_response=_envelope(
+            "acquired", 600_000, resource_kind="clarification", resource_id=clarification_id,
+        ),
+        completed_error=PalsApiError(
+            "private stale proof detail", error_code="proof_clarification_content_mismatch",
+        ),
+        terminal_response=_failed_terminal_envelope(
+            resource_kind="clarification", resource_id=clarification_id,
+        ), output_language=language,
+    )
+    explainer = RecordingExplainer()
+    reviewer = RecordingOutputReviewer()
+    _install_sqs(monkeypatch, sqs)
+    worker = _worker(api, explainer, FakeClock(), output_reviewer=reviewer)
+    assert worker.run_once() is True
+    assert [update["state"] for update in api.clarification_updates] == [
+        "generating", "completed", "failed",
+    ]
+    diagnostic = api.clarification_updates[-1]["diagnostics"][0]
+    assert diagnostic.code == "pals.clarification_failed"
+    assert "private stale proof detail" not in diagnostic.message
+    assert worker.run_once() is True
+    assert len(api.clarification_updates) == 3
+    assert len(explainer.clarify_calls) == len(reviewer.clarification_calls) == 1
+    assert len(sqs.delete_calls) == 2
+
+
 @pytest.mark.parametrize(
     ("body", "error_code", "updates_name", "terminal_response"),
     [
@@ -1405,6 +1542,12 @@ def test_pae_015_reference_mismatch_terminalizes_once_with_the_current_claim(
             "proof_clarification_reference_mismatch",
             "clarification_updates",
             RuntimeError("private failed write"),
+        ),
+        (
+            '{"kind":"clarification","id":"8bf36a9a-5d98-4e19-8f70-7f07dfc881a1"}',
+            "proof_clarification_content_mismatch",
+            "clarification_updates",
+            _envelope("terminal", None, resource_kind="clarification"),
         ),
     ],
 )

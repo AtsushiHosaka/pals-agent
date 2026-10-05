@@ -883,6 +883,85 @@ def test_clarification_is_scoped_to_selected_section_and_lean() -> None:
     assert "KaTeX-compatible LaTeX" in client.prompts[1]
 
 
+@pytest.mark.parametrize("parent_revision", [False, True])
+def test_canvas_revision_splices_only_selection_and_allows_shorter_proof(
+    parent_revision: bool,
+) -> None:
+    explanation = _reviewable_explanation()
+    current = (
+        "保存済みの前半。値が変わらないという長い説明。保存済みの後半。"
+        if parent_revision else explanation.sections[0].summary
+    )
+    selected = "値が変わらない"
+    response = json.dumps({
+        "section_id": "apply-add-zero", "answer": "簡潔にしました。",
+        "replacement_text": "不変", "key_points": ["加法の単位元です。", "値は同じです。"],
+        "references": [{"start_line": 4, "end_line": 4, "excerpt": "  simpa using Nat.add_zero n"}],
+    }, ensure_ascii=False)
+    explainer, client = build_explainer(response)
+    parent = {
+        "id": "parent", "question": "先の質問", "answer": "改善しました。",
+        "key_points": ["一つ", "二つ"], "replacement_text": "前の修正",
+        "revised_section": current,
+    } if parent_revision else None
+    result = explainer.clarify(
+        theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True,
+        explanation=explanation, section_id="apply-add-zero", question="短くして",
+        selected_text=selected, parent_clarification=parent,
+        after_clarification_id="parent" if parent_revision else None,
+    )
+    assert result.answer == "簡潔にしました。"
+    assert result.replacement_text == "不変"
+    assert result.revised_section == current.replace(selected, "不変", 1)
+    assert len(result.revised_section) < len(current)
+    assert explanation.sections[0].summary != result.revised_section
+    assert "Current proof section" in client.prompts[0]
+    assert current in client.prompts[0]
+
+    review_client = FakeClient('{"approved": true, "rationale": "The shorter proof is grounded."}')
+    reviewer = LeanGroundedOutputReviewer(
+        client=review_client, model="explain-model", provider="independent",
+    )
+    reviewer.review_clarification(
+        theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, explanation=explanation,
+        clarification=result, language="ja", selected_text=selected, parent_clarification=parent,
+    )
+    assert result.revised_section in review_client.prompts[0]
+    assert '"replacement_text": "不変"' in review_client.prompts[0]
+    assert "entire revised section in the surrounding proof" in review_client.prompts[0]
+
+
+@pytest.mark.parametrize("replacement", [None, "", "simpa", "`source`", "x" * 4001])
+def test_canvas_revision_rejects_missing_or_unsafe_replacement(replacement: str | None) -> None:
+    response = json.dumps({
+        "section_id": "apply-add-zero", "answer": "改善しました。",
+        "replacement_text": replacement, "key_points": ["一つ", "二つ"],
+        "references": [{"start_line": 4, "end_line": 4, "excerpt": "  simpa using Nat.add_zero n"}],
+    }, ensure_ascii=False)
+    explainer, _ = build_explainer(response, response)
+    with pytest.raises(ExplanationGenerationError):
+        explainer.clarify(
+            theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True,
+            explanation=_reviewable_explanation(), section_id="apply-add-zero",
+            question="改善して", selected_text="値が変わらない",
+        )
+
+
+@pytest.mark.parametrize("selection", ["存在しない範囲", "重複", "aa"])
+def test_canvas_revision_rejects_stale_or_ambiguous_selection_without_model_call(
+    selection: str,
+) -> None:
+    explainer, client = build_explainer()
+    with pytest.raises(ExplanationGenerationError, match="exactly once"):
+        explainer.clarify(
+            theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True,
+            explanation=_reviewable_explanation(), section_id="apply-add-zero", question="改善して",
+            selected_text=selection,
+            parent_clarification={"revised_section": "重複する箇所と重複する箇所 aaa"},
+        )
+    assert client.prompts == []
+
+
 def test_clarification_rejects_reference_outside_selected_section() -> None:
     clarification = json.dumps(
         {

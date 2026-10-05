@@ -1349,11 +1349,17 @@ class SqsProofWorker:
                 **_optional_keyword("private_review_failures", private_review_failures),
             )
         except PalsApiError as exc:
-            if exc.error_code == "proof_clarification_reference_mismatch":
+            if exc.error_code in {
+                "proof_clarification_reference_mismatch", "proof_clarification_content_mismatch"
+            }:
                 return self._write_clarification_failure(
                     clarification_id=clarification_id,
                     claim_id=claim_id,
-                    code="pals.clarification_reference_mismatch",
+                    code=(
+                        "pals.clarification_reference_mismatch"
+                        if exc.error_code == "proof_clarification_reference_mismatch"
+                        else "pals.clarification_failed"
+                    ),
                     language=language,
                     require_failed_terminal=True,
                     private_review_failures=private_review_failures,
@@ -2125,7 +2131,7 @@ def _validate_clarification_content(
     section_id: str,
     question: str,
 ) -> None:
-    if not isinstance(content, dict) or set(content) != {
+    required_keys = {
         "section_id",
         "question",
         "answer",
@@ -2134,8 +2140,14 @@ def _validate_clarification_content(
         "model",
         "provider",
         "elapsed_ms",
-    }:
+    }
+    if not isinstance(content, dict) or set(content) not in (
+        required_keys, required_keys | {"replacement_text", "revised_section"}
+    ):
         raise ValueError("clarification content fields are invalid")
+    if "replacement_text" in content:
+        _bounded_text(content["replacement_text"], maximum=4000)
+        _bounded_text(content["revised_section"], maximum=12000)
     if content.get("section_id") != section_id or content.get("question") != question:
         raise ValueError("clarification content identity is invalid")
     _bounded_text(content.get("answer"), maximum=100_000)
@@ -2491,7 +2503,7 @@ def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]
 
 
 def _public_clarification_content(clarification: ProofClarification) -> dict[str, Any]:
-    return {
+    content = {
         "section_id": clarification.section_id,
         "question": clarification.question,
         "answer": clarification.answer,
@@ -2508,6 +2520,14 @@ def _public_clarification_content(clarification: ProofClarification) -> dict[str
         "provider": clarification.provider,
         "elapsed_ms": clarification.elapsed_ms,
     }
+    if clarification.replacement_text is not None:
+        if clarification.revised_section is None:
+            raise ValueError("A replacement requires its revised proof section")
+        content["replacement_text"] = clarification.replacement_text
+        content["revised_section"] = clarification.revised_section
+    elif clarification.revised_section is not None:
+        raise ValueError("A revised proof section requires its replacement")
+    return content
 
 
 def _clarification_parent_context(
@@ -2518,12 +2538,18 @@ def _clarification_parent_context(
         if parent is not None:
             raise ValueError("Unexpected parent clarification")
         return None
-    if not isinstance(parent, dict) or set(parent) != {"id", "question", "answer", "key_points"}:
+    required_keys = {"id", "question", "answer", "key_points"}
+    if not isinstance(parent, dict) or set(parent) not in (
+        required_keys, required_keys | {"replacement_text", "revised_section"}
+    ):
         raise ValueError("Parent clarification context is required")
     if parent["id"] != parent_id:
         raise ValueError("Parent clarification context identity mismatch")
     _bounded_text(parent["question"], maximum=20000)
     _bounded_text(parent["answer"], maximum=4000)
+    if "revised_section" in parent:
+        _bounded_text(parent["replacement_text"], maximum=4000)
+        _bounded_text(parent["revised_section"], maximum=12000)
     points = parent["key_points"]
     if not isinstance(points, list) or not 2 <= len(points) <= 10:
         raise ValueError("Parent clarification key points are invalid")
@@ -2531,8 +2557,11 @@ def _clarification_parent_context(
         _bounded_text(point, maximum=500)
     _required_text(worker_input, "selected_text")
     selected = worker_input["selected_text"]
-    if selected not in parent["answer"]:
+    source = _bounded_text(parent.get("revised_section", parent["answer"]), maximum=12000)
+    if selected not in source:
         raise ValueError("Selection is not in its parent clarification")
+    if "revised_section" in parent and source.find(selected) != source.rfind(selected):
+        raise ValueError("Selection is ambiguous in its parent proof section")
     return parent
 
 
@@ -3546,7 +3575,10 @@ def _generate_reviewed_candidate(
                 content.get("conclusion", ""),
             ]
         else:
-            visible = [content.get("answer", ""), *content.get("key_points", [])]
+            visible = [
+                content.get("answer", ""), *content.get("key_points", []),
+                content.get("replacement_text", ""), content.get("revised_section", ""),
+            ]
         normalized = json.dumps(
             [" ".join(str(part).split()) for part in visible], ensure_ascii=False
         )
