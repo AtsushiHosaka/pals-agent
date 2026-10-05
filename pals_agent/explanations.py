@@ -1407,6 +1407,11 @@ Instead inspect the actual exported declaration in its full source context: bind
 quantifiers, assumptions, definitions, notation and conclusion. Reject a concrete mismatch
 with the learner's requested objects, property, witness or explicitly required method;
 also reject added assumptions, vacuous reformulations or misleading local redefinitions.
+A convention stated in the learner request itself (for example that the natural numbers start
+at 1, or a line beginning with "Conventions:") is part of the requested claim: a target that
+encodes exactly that stated convention, such as quantifying over n with 1 ≤ n, is neither an
+added assumption nor a weaker claim, even when the claim becomes immediate under it. A
+restriction that the request does not state remains an added assumption.
 Successful type checking does not establish that this is the theorem the learner requested.
 Base a rejection on that specific semantic mismatch, not on a guessed library-lemma meaning.
 Lean compilation alone is not approval. Do not repair

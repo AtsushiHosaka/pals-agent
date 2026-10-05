@@ -52,6 +52,24 @@ def test_rank_identity_review_keeps_exact_target_and_does_not_guess_library_sign
     assert "Lean compilation alone is not approval" in prompt
 
 
+def test_a_stated_convention_is_part_of_the_claim_but_unstated_restrictions_are_not():
+    prompt = _proof_semantic_review_prompt(
+        theorem_statement=(
+            "自然数は1から始まるものとする。"
+            "すべての自然数 n について n ≥ 1 であることを示せ。"
+        ),
+        formal_statement=None,
+        target_declaration=LeanTargetDeclaration(
+            kind="theorem", name="t", proposition="∀ n : {n : ℕ // 1 ≤ n}, 1 ≤ (n : ℕ)"
+        ),
+        lean_code="theorem t : ∀ n : {n : ℕ // 1 ≤ n}, 1 ≤ (n : ℕ) := fun n => n.property",
+    )
+    assert "A convention stated in the learner request itself" in prompt
+    assert "neither an\nadded assumption nor a weaker claim" in prompt
+    assert "A\nrestriction that the request does not state remains an added assumption." in prompt
+    assert "added assumptions, vacuous reformulations or misleading local redefinitions" in prompt
+
+
 @pytest.mark.parametrize(
     "proposition,rationale",
     [
