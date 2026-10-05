@@ -661,7 +661,9 @@ class ProofReuseRuntime:
                     evidence["lean_route"] = "dsp_after_catalog_review"
                     return ProofReuseResult(
                         "formal", None, None, None, evidence,
-                        {"kind": "dsp", "statement": preflight["statement"]},
+                        {"kind": "dsp", "statement": with_readings(
+                            preflight["statement"], evidence.get("applied_conventions") or []
+                        )},
                     )
                 raise ProofReuseError("proof_reuse_answer_review_failed")
             evidence["elapsed_ms"] = round((time.monotonic() - started) * 1000)
@@ -978,7 +980,8 @@ def _lean_route(
         return _non_answer(decision, turns, evidence)
     if decision["action"] == "unsupported" and preflight["requires_catalog_source"]:
         return _non_answer(decision, turns, evidence)
-    statement = preflight["statement"]
+    # MCV-005: every adopted reading reaches the Lean formalization and its review verbatim.
+    statement = with_readings(preflight["statement"], evidence.get("applied_conventions") or [])
     dsp = ProofReuseResult(
         "formal", None, None, None, evidence, {"kind": "dsp", "statement": statement}
     )

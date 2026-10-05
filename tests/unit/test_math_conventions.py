@@ -178,6 +178,13 @@ def test_worker_passes_readings_and_settles_the_applied_ones():
     settlement = api.settlements[0]
     assert settlement["outcome"] == "formal"
     assert settlement["conventions"] == [{"id": "zero_ring_domain", "choice": "include"}]
+    statement = settlement["formal_plan"]["statement"]
+    assert statement.startswith(READY["statement"])
+    assert statement.endswith(
+        "Conventions: the zero ring (where 1 = 0) counts as an integral domain. "
+        "Every other definition keeps its standard meaning."
+    )
+    assert statement.count("Conventions:") == 1
 
 
 def test_worker_sends_the_convention_question_without_applied_readings():

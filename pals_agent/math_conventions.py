@@ -57,10 +57,8 @@ def with_readings(statement: str, applied: list[dict[str, str]]) -> str:
     if not applied:
         return statement
     readings = "; ".join(reading(item["id"], item["choice"]) for item in applied)
-    return (
-        f"{statement.rstrip()}\n\nConventions: {readings}. "
-        "Every other definition keeps its standard meaning."
-    )
+    note = f"Conventions: {readings}. Every other definition keeps its standard meaning."
+    return statement if note in statement else f"{statement.rstrip()}\n\n{note}"
 
 
 def parse_claim(value: Any) -> dict[str, Any] | None:
