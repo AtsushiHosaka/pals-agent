@@ -11,6 +11,7 @@ import hashlib
 import json
 import time
 import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass, replace
 from typing import Any, Protocol
 
@@ -121,6 +122,11 @@ class ProofReuseResult:
     answer: dict[str, Any] | None
     error_code: str | None
     private_evidence: dict[str, Any]
+    # How the API's linked Lean proof job verifies the request (outcome "formal").
+    formal_plan: dict[str, Any] | None = None
+
+
+RecipeLookup = Callable[[list[dict[str, Any]]], list[dict[str, Any]]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,7 +134,11 @@ class ProofReuseRuntime:
     client: OpenAIResponsesClient
     catalog: ProofReuseCatalog
 
-    def answer(self, request: dict[str, Any]) -> ProofReuseResult:
+    def answer(
+        self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None
+    ) -> ProofReuseResult:
+        """Assess a request. With `recipe_lookup` (the Lean flow), never answer without Lean:
+        reuse an identical admitted Recipe, or hand the request to a linked Lean job."""
         started = time.monotonic()
         deadline = started + MAX_SECONDS
         evidence: dict[str, Any] = {"schema_version": "pals.proof-reuse-assessment.v1"}
@@ -367,6 +377,14 @@ class ProofReuseRuntime:
                 )
                 _validate_decision(decision)
                 evidence["escalated_assessment"] = decision
+            catalog_recipe: dict[str, Any] | None = None
+            if recipe_lookup is not None:
+                routed = _lean_route(
+                    decision, candidates, preflight, turns, evidence, recipe_lookup, retrieval
+                )
+                if isinstance(routed, ProofReuseResult):
+                    return routed
+                catalog_recipe = routed
             if decision["action"] != "answer":
                 return _non_answer(decision, turns, evidence)
             material_sources = (materials.validate_citations(decision["material_citations"])
@@ -445,13 +463,18 @@ class ProofReuseRuntime:
                         "KaTeX-compatible TeX such as $x^m\\in I$ and $x\\in\\sqrt{IJ}$. "
                         "Inspect only the proposed answer for this formatting rule; the original "
                         "request and catalog evidence may use raw notation. "
-                        "No Lean verification occurred; reject any claim otherwise. Do not trust "
+                        + (_CATALOG_REVIEW if catalog_recipe is not None else
+                           "No Lean verification occurred; reject any claim otherwise. ")
+                        + "Do not trust "
                         "the generating assessor's confidence. Give approved:boolean and a short "
                         "rationale (at most 2000 characters). Do not repeat the proof in the "
                         "rationale; state the verdict's mathematical justification "
                         "concisely.\nDATA:\n"
                         + json.dumps({"request": context, "answer": decision["answer"],
                                       "cited_sources": [selected[i] for i in ids],
+                                      **({"lean_target": catalog_recipe["target_source"],
+                                          "lean_source": catalog_recipe["lean_code"]}
+                                         if catalog_recipe is not None else {}),
                                       **({"material_sources": material_sources}
                                          if materials else {})},
                                      ensure_ascii=False),
@@ -489,6 +512,13 @@ class ProofReuseRuntime:
                 }
                 evidence["answer_qa_rationale"] = reviewed["rationale"]
             if not reviewed["approved"]:
+                if catalog_recipe is not None:
+                    # A rejected reuse is not a failure: Lean verifies the request with DSP.
+                    evidence["lean_route"] = "dsp_after_catalog_review"
+                    return ProofReuseResult(
+                        "formal", None, None, None, evidence,
+                        {"kind": "dsp", "statement": preflight["statement"]},
+                    )
                 raise ProofReuseError("proof_reuse_answer_review_failed")
             evidence["elapsed_ms"] = round((time.monotonic() - started) * 1000)
             return ProofReuseResult(
@@ -496,7 +526,13 @@ class ProofReuseRuntime:
                 None,
                 {
                     "text": decision["answer"],
-                    "evidence_kind": "llm_assessed",
+                    "evidence_kind": "llm_assessed" if catalog_recipe is None else "lean_catalog",
+                    **({"lean": {
+                        "source": "catalog",
+                        "lean_sha256": catalog_recipe["lean_sha256"],
+                        "recipe_id": catalog_recipe["recipe_id"],
+                        "recipe_revision": catalog_recipe["recipe_revision"],
+                    }} if catalog_recipe is not None else {}),
                     **({"material_sources": material_sources} if materials else {}),
                     **({"next_input_suggestion": decision["next_input_suggestion"]}
                        if decision["next_input_suggestion"] is not None else {}),
@@ -715,6 +751,89 @@ def _validate_decision(value: dict[str, Any]) -> None:
             or not all(_text(text, 4000, empty=False) for text in item.values())
         ):
             raise ProofReuseError("proof_reuse_invalid_response")
+
+
+_CATALOG_REVIEW = (
+    "This answer reuses an admitted catalog theorem whose Lean 4 source (lean_source, with "
+    "its theorem statement in lean_target) was compiled when it was admitted. Approve only "
+    "if lean_target states exactly the requested claim (same objects, domain, assumptions "
+    "and goal, nothing weaker or stronger) and the answer is a faithful explanation of that "
+    "Lean proof. The answer must not claim that a compiler ran for this request. "
+)
+
+
+def _lean_route(
+    decision: dict[str, Any],
+    candidates: list[dict[str, Any]],
+    preflight: dict[str, Any],
+    turns: list[dict[str, str]],
+    evidence: dict[str, Any],
+    recipe_lookup: RecipeLookup,
+    retrieval: Any,
+) -> ProofReuseResult | dict[str, Any]:
+    """Map the decision onto Lean (PFR-010-012). A dict means catalog reuse with that Recipe."""
+
+    if decision["action"] == "needs_input":
+        return _non_answer(decision, turns, evidence)
+    if decision["action"] == "unsupported" and preflight["requires_catalog_source"]:
+        return _non_answer(decision, turns, evidence)
+    statement = preflight["statement"]
+    dsp = ProofReuseResult(
+        "formal", None, None, None, evidence, {"kind": "dsp", "statement": statement}
+    )
+    selected = {item["draft_id"]: item for item in candidates}
+    ids = decision["source_ids"]
+    if (
+        decision["action"] != "answer"
+        or decision["mode"] not in ("direct", "instantiate")
+        or len(ids) != 1
+        or ids[0] not in selected
+        or decision["dependency_cycle"]
+    ):
+        evidence["lean_route"] = "dsp"
+        return dsp
+    source = {key: selected[ids[0]][key] for key in ("draft_id", "revision", "statement")}
+    recipes = recipe_lookup([source])
+    evidence["lean_recipes"] = [
+        {key: recipe[key] for key in ("recipe_id", "recipe_revision", "lean_sha256")}
+        for recipe in recipes
+    ]
+    if not recipes:
+        evidence["lean_route"] = "dsp"
+        return dsp
+    recipe = recipes[0]
+    if decision["mode"] == "direct":
+        evidence["lean_route"] = "catalog_reuse"
+        return dict(recipe, source=source)
+    try:
+        instantiate_universal(
+            selected[ids[0]]["openmath_xml"],
+            decision["substitutions"],
+            target=(
+                ""
+                if retrieval.compatibility.get("catalog_contract")
+                == "pals.proof-request-draft-candidates.v1"
+                else retrieval.query_openmath
+            ),
+        )
+    except InstantiationError:
+        evidence["lean_route"] = "dsp"
+        return dsp
+    evidence["lean_route"] = "instantiate"
+    return ProofReuseResult(
+        "formal", None, None, None, evidence,
+        {
+            "kind": "instantiate",
+            "statement": statement,
+            "recipe_id": recipe["recipe_id"],
+            "recipe_revision": recipe["recipe_revision"],
+            "lean_sha256": recipe["lean_sha256"],
+            "substitutions": [
+                {"variable": item["variable"], "term_openmath_xml": item["term_openmath_xml"]}
+                for item in decision["substitutions"]
+            ],
+        },
+    )
 
 
 def _non_answer(

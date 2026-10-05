@@ -46,6 +46,10 @@ class ProofRequestApi(TokenMeterApi, Protocol):
         self, *, request_id: str, claim_id: str
     ) -> dict[str, Any]: ...
 
+    def lookup_proof_request_recipes(
+        self, *, request_id: str, claim_id: str, sources: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]: ...
+
 
 @dataclass(frozen=True, slots=True)
 class ProofRequestProcessor:
@@ -67,12 +71,12 @@ class ProofRequestProcessor:
         )
         keys = {"status", "request", "claim_id", "lease_expires_at"}
         if not keys <= set(claim) or set(claim) - keys - {
-            "billing_operation_id", "material_context_available"
+            "billing_operation_id", "material_context_available", "lean_flow"
         }:
             return False
-        if (
-            "material_context_available" in claim
-            and type(claim["material_context_available"]) is not bool
+        if any(
+            key in claim and type(claim[key]) is not bool
+            for key in ("material_context_available", "lean_flow")
         ):
             return False
         if claim["status"] == "terminal":
@@ -117,6 +121,14 @@ class ProofRequestProcessor:
                 )
 
         started = time.monotonic()
+        # Only a released Lean flow may route requests to catalog reuse or linked Lean jobs.
+        recipe_lookup = (
+            (lambda sources: self.api.lookup_proof_request_recipes(
+                request_id=request_id, claim_id=claim_id, sources=sources
+            ))
+            if claim.get("lean_flow")
+            else None
+        )
         try:
             if claim.get("material_context_available"):
                 try:
@@ -139,7 +151,7 @@ class ProofRequestProcessor:
                     meter = TokenMeter(self.api, operation_id, request_id, claim_id,
                                        started + MAX_SECONDS)
                     with token_meter_scope(meter):
-                        result = self.runtime.answer(request)
+                        result = self.runtime.answer(request, recipe_lookup)
                     if meter.failed:
                         raise TokenMeterError("token_meter_failed")
                     if result.outcome == "answered" and (
@@ -148,7 +160,7 @@ class ProofRequestProcessor:
                     ):
                         raise TokenMeterError("token_qa_missing")
                 else:
-                    result = self.runtime.answer(request)
+                    result = self.runtime.answer(request, recipe_lookup)
         except MaterialContextError as error:
             result = ProofReuseResult(
                 "failed", None, None, error.code,
@@ -168,6 +180,7 @@ class ProofRequestProcessor:
             "question": result.question,
             "answer": result.answer,
             "error_code": result.error_code,
+            **({"formal_plan": result.formal_plan} if result.formal_plan is not None else {}),
             "private_evidence": dict(
                 result.private_evidence,
                 worker_elapsed_ms=round((time.monotonic() - started) * 1000),
@@ -189,4 +202,9 @@ class ProofRequestProcessor:
             # Do not generate again in this delivery after an uncertain commit. Redelivery
             # must acquire a fresh API claim, which observes an already-terminal result.
             return False
-        return settled.get("id") == request_id and settled.get("status") == result.outcome
+        expected = "verifying" if result.outcome == "formal" else result.outcome
+        return settled.get("id") == request_id and settled.get("status") in (
+            expected,
+            # The API refuses Lean outcomes it cannot run and records an explicit failure.
+            "failed",
+        )
