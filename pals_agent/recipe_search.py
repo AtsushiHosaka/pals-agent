@@ -67,9 +67,9 @@ def validate_recipe_candidates(value: Any, *, language: str) -> list[dict[str, A
         seen.add((identifier, revision))
         for field in ("statement", "domain", "conclusion", "target_source"):
             character_limit = 4000 if field == "domain" else (
-                65_000 if field == "target_source" else 20_000
+                65_536 if field == "target_source" else 20_000
             )
-            byte_limit = 65_000 if field == "target_source" else character_limit * 4
+            byte_limit = 65_536 if field == "target_source" else character_limit * 4
             if (
                 not bounded_text(candidate[field], byte_limit)
                 or len(candidate[field]) > character_limit

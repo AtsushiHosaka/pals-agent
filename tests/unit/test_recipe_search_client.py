@@ -95,3 +95,12 @@ def test_search_rejects_envelope_over_two_mebibytes_even_with_custom_transport()
     ) for index in range(8)]
     with pytest.raises(PalsApiError, match="byte limit"):
         search({"recipes": candidates})
+
+
+def test_target_utf8_limit_matches_existing_recipe_admission_contract():
+    target = "界" * 21_845 + "x"
+    assert len(target.encode()) == 65_536
+    result, _ = search({"recipes": [dict(RECIPE, target_source=target)]})
+    assert result[0]["target_source"] == target
+    with pytest.raises(PalsApiError):
+        search({"recipes": [dict(RECIPE, target_source=target + "x")]})
