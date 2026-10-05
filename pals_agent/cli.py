@@ -44,7 +44,7 @@ from pals_agent.proof_flow_seed import (
     SeedEmbeddingFingerprint,
 )
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker
+from pals_agent.worker import SqsProofWorker, worker_queue_url
 
 _SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
 _DEFAULT_AGENT_SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -62,7 +62,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     worker_parser = subparsers.add_parser("worker", help="Continuously process SQS proof jobs.")
     worker_parser.add_argument("--ready-file", type=Path)
-    subparsers.add_parser("worker-once", help="Process at most one SQS proof job.")
+    worker_once_parser = subparsers.add_parser("worker-once", help="Process at most one SQS task.")
+    for lane_parser in (worker_parser, worker_once_parser):
+        lane_parser.add_argument("--lane", choices=("all", "proof", "assessment"), default="all")
     pfi_seed_parser = subparsers.add_parser(
         "build-pfi-seed",
         help="Build the atomic PFI signed-worker seed input.",
@@ -356,6 +358,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command in {"worker", "worker-once"}:
+        worker_queue_url(settings, args.lane)
         if not settings.worker_shared_secret:
             raise RuntimeError("PALS_WORKER_SHARED_SECRET is required for worker commands.")
         api_client = PalsApiClient(
@@ -370,7 +373,10 @@ def main(argv: list[str] | None = None) -> int:
             # finishes its current receipt using the ordinary claim/ack path.
             draining = True
 
-        formal_enabled = getattr(settings, "proof_capability", "full") == "full"
+        formal_enabled = (
+            args.lane != "assessment"
+            and getattr(settings, "proof_capability", "full") == "full"
+        )
         worker = SqsProofWorker(
             settings=settings,
             api_client=api_client,
@@ -382,12 +388,14 @@ def main(argv: list[str] | None = None) -> int:
             recipe_attempt_planner=(
                 build_recipe_attempt_planner(settings) if formal_enabled else None
             ),
-            proof_request_processor=build_proof_request_processor(settings, api_client),
+            proof_request_processor=(
+                build_proof_request_processor(settings, api_client)
+                if args.lane != "proof" else None
+            ),
             stop_requested=lambda: draining,
+            lane=args.lane,
         )
         if args.command == "worker":
-            if not settings.proof_jobs_queue_url:
-                raise RuntimeError("PALS_PROOF_JOBS_QUEUE_URL is required for the worker.")
             if ready_file is not None:
                 ready_file.write_text(str(os.getpid()), encoding="ascii")
             previous_handlers = {}
