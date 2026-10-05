@@ -15,7 +15,9 @@ def checked(**check):
 
 def test_schema_and_prompt_require_the_premise_check():
     check = PREFLIGHT_SCHEMA["properties"]["premise_check"]
-    assert check["required"] == ["counterexample", "truth_depends_on", "assumed_defaults"]
+    assert check["required"] == [
+        "counterexample", "truth_depends_on", "assumed_defaults", "conventions"
+    ]
     engine, transport = runtime([READY, decision()])
     engine.answer(REQUEST)
     prompt = transport.calls[0]["input"]
@@ -90,19 +92,24 @@ def test_conventional_defaults_never_cause_a_question():
     assert engine.answer(REQUEST).outcome == "answered"
 
 
+VALID = {"counterexample": "", "truth_depends_on": [], "assumed_defaults": [], "conventions": []}
+
+
 @pytest.mark.parametrize(
     "check",
     [
         None,
         {"counterexample": "", "truth_depends_on": []},
-        {"counterexample": 1, "truth_depends_on": [], "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": "field", "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": [""], "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": ["x"] * 5, "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": ["x" * 301], "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": [], "assumed_defaults": ["x"] * 9},
-        {"counterexample": "x" * 1001, "truth_depends_on": [], "assumed_defaults": []},
-        {"counterexample": "", "truth_depends_on": [], "assumed_defaults": ["y" * 501]},
+        dict(VALID, counterexample=1),
+        dict(VALID, truth_depends_on="field"),
+        dict(VALID, truth_depends_on=[""]),
+        dict(VALID, truth_depends_on=["x"] * 5),
+        dict(VALID, truth_depends_on=["x" * 301]),
+        dict(VALID, assumed_defaults=["x"] * 9),
+        dict(VALID, counterexample="x" * 1001),
+        dict(VALID, assumed_defaults=["y" * 501]),
+        dict(VALID, conventions=["not_a_convention"]),
+        dict(VALID, conventions=["natural_zero", "natural_zero"]),
     ],
 )
 def test_malformed_premise_check_is_rejected(check):
