@@ -221,3 +221,34 @@ class ApiProofReuseCatalog:
                     "failure_code": getattr(error, "code", type(error).__name__),
                 },
             ) from error
+
+
+@dataclass(frozen=True, slots=True)
+class NaturalDspDraftRetriever:
+    """Use the real natural Draft API only inside a request-linked DSP Draft stage.
+
+    Natural catalog rows are strategy hints, never formal admission/equivalence evidence.
+    """
+
+    catalog: ApiProofReuseCatalog
+
+    def retrieve(
+        self, natural_statement: str
+    ) -> DraftRetrievalResult | NaturalDraftRetrievalResult:
+        from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
+
+        try:
+            return self.catalog.retrieve(
+                natural_statement, "generic-v1", deadline=time.monotonic() + 180.0
+            )
+        except ProofReuseError as error:
+            if error.code == "proof_reuse_query_invalid":
+                # The closed OpenMath vocabulary cannot represent every Lean goal.
+                # That supplies no Draft hint, but cannot invalidate the original goal.
+                # Full DSP and its compiler/semantic review still decide correctness.
+                return NaturalDraftRetrievalResult(
+                    "no_match", "", (),
+                    {"reason": "query_invalid", "evidence_kind": "no_sources",
+                     "catalog_query_performed": 0},
+                )
+            raise ProofFlowRetrievalError("retrieval_unavailable") from error
