@@ -31,7 +31,10 @@ _STATED_CONVENTION_INSTRUCTION = """A convention stated in the user theorem stat
 example a line beginning with "Conventions:", or that the natural numbers start at 1, or that
 0^0 = 1) is a premise of the claim. The proof may use it directly, and justifying a step by that
 convention or by the corresponding definition is valid, not a wrong reason. A convention changes
-only the notion it names; every other definition keeps its standard meaning."""
+only the notion it names; every other definition keeps its standard meaning. Apply a convention
+exactly to the case it governs: for example, 0^0 = 1 settles only the base 0. When standard texts
+differ on whether a fact is a definition or a theorem (for example a^0 = 1 for a nonzero base),
+citing either is valid and is not a wrong justification."""
 _SOURCE_CORRESPONDENCE_INSTRUCTION = """Source correspondence has two different granularities.
 When the source explicitly contains intermediate equalities or facts in calc, have, or rewrite
 steps, organize the mathematical paragraphs around those actual steps and cite the narrowest

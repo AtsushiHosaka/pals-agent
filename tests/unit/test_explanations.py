@@ -1114,6 +1114,8 @@ def test_stated_conventions_are_premises_for_explanation_and_its_review() -> Non
         assert "is a premise of the claim" in text
         assert "convention or by the corresponding definition is valid" in text
         assert "every other definition keeps its standard meaning" in text
+        assert "0^0 = 1 settles only the base 0" in text
+        assert "citing either is valid and is not a wrong justification" in text
         assert statement in text
     # The existing soundness gates are unchanged.
     assert "Reject circular reasoning" in review
