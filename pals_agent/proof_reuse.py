@@ -36,6 +36,59 @@ from pals_agent.proof_instantiation import (
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.token_meter import active_token_meter
 
+PREMISE_CHECK_INSTRUCTION = (
+    "Before deciding, check the claim exactly as stated under its most natural reading and fill "
+    "premise_check. counterexample: if a concrete admissible instance makes the claim false "
+    "(try small and boundary values such as 0, 1 and -1, zero or empty objects, and standard "
+    "counterexamples), describe that instance briefly; otherwise an empty string. Never call a "
+    "true claim false. truth_depends_on: each unstated choice, not settled by the statement or "
+    "the clarification answers, that changes whether the claim is true (for example the scalar "
+    "field of a vector space, real versus complex numbers, natural numbers versus integers, or a "
+    "nonzero or positivity condition); otherwise an empty list. assumed_defaults: each "
+    "conventional reading you adopt that does not change truth; write it explicitly into "
+    "statement. If counterexample or truth_depends_on is nonempty, return needs_input unless the "
+    "clarification answers already resolve it. For a counterexample, say tentatively (never as an "
+    "established fact) where the claim seems to fail, and give options containing the most likely "
+    "intended correct claim(s), each stated in full, plus one option to keep and prove the "
+    "statement as written. For a truth-dependent choice, ask for that choice, say briefly why it "
+    "matters, and offer the claim under each choice that makes it true; mention in the question, "
+    "not as an option, a choice that makes it false. Every offered claim other than the one kept "
+    "as written must itself pass the same counterexample check; omit any claim you are not sure "
+    "is true, and prefer fewer options. If the learner chose to keep the statement as "
+    "written, return ready with that statement unchanged and do not ask about it again; if they "
+    "chose a corrected claim, use it as the statement. A choice that does not change truth is "
+    "never a reason to ask: use the most general reading. Standard textbook definitions and "
+    "conventions (for example that an integral domain or a field has 1 different from 0, or that "
+    "a prime is greater than 1) are not unstated choices: adopt them as assumed_defaults. "
+)
+_COUNTEREXAMPLE_QUESTION = {
+    "en": (
+        "As stated, the claim may fail in this case: {}. Which claim do you mean? "
+        "You can also keep the statement as written.",
+        "Prove the statement as written",
+    ),
+    "ja": (
+        "このままの形では、次の場合に成り立たない可能性があります：{}。"
+        "どの主張を意図していますか？このまま証明を試すこともできます。",
+        "このまま証明を試す",
+    ),
+    "zh-Hans": (
+        "按现在的写法，这个命题在以下情况下可能不成立：{}。"
+        "您想表达的是哪个命题？也可以按原样尝试证明。",
+        "按原样尝试证明",
+    ),
+    "zh-Hant": (
+        "依目前的寫法，這個命題在以下情況可能不成立：{}。"
+        "您想表達的是哪個命題？也可以照原樣嘗試證明。",
+        "照原樣嘗試證明",
+    ),
+}
+_CHOICE_QUESTION = {
+    "en": "Whether the claim holds depends on: {}. Which do you intend?",
+    "ja": "この主張が成り立つかどうかは、次の点によって変わります：{}。どれを想定していますか？",
+    "zh-Hans": "这个命题是否成立取决于：{}。您指的是哪种情况？",
+    "zh-Hant": "這個命題是否成立取決於：{}。您指的是哪種情況？",
+}
 MAX_SECONDS = 180.0
 MAX_ROUNDS = 5
 QA_OUTPUT_TOKEN_LIMIT = 12000
@@ -70,6 +123,14 @@ PREFLIGHT_SCHEMA = _object(
         "requires_catalog_source": {"type": "boolean"},
         "question": _NULLABLE_QUESTION,
         "reason": _STRING,
+        # PFR-014: checked before any Lean work; kept only as private evidence.
+        "premise_check": _object(
+            {
+                "counterexample": _STRING,
+                "truth_depends_on": _STRINGS,
+                "assumed_defaults": _STRINGS,
+            }
+        ),
     }
 )
 DECISION_SCHEMA = _object(
@@ -183,6 +244,7 @@ class ProofReuseRuntime:
                  "Set null only if the original user statement already provides the whole "
                  "proposition without needing OCR, or no proposition can be identified. "
                  if materials else "")
+                + PREMISE_CHECK_INSTRUCTION
                 +
                 "Resolve only consequential missing mathematical information (domain, assumptions, "
                 "goal or proof method). Catalog retrieval happens AFTER this step: requests to "
@@ -228,6 +290,12 @@ class ProofReuseRuntime:
                 or preflight["action"] == "ready" and not preflight["confirmed_material_statement"]
             ):
                 raise ProofReuseError("material_proposition_unconfirmed")
+            if preflight["action"] == "ready" and not turns:
+                question = _premise_question(preflight["premise_check"], language)
+                if question is not None:
+                    evidence["premise_check_fallback"] = True
+                    return _non_answer({"action": "needs_input", "question": question},
+                                       turns, evidence)
             if preflight["action"] != "ready":
                 return _non_answer(preflight, turns, evidence)
             evidence["phase"] = "catalog_retrieval"
@@ -713,8 +781,39 @@ def _validate_preflight(value: dict[str, Any], profiles: tuple[str, ...]) -> Non
         or not _question(value["question"])
         or not _text(value["reason"], 4000)
         or (value["action"] == "needs_input") != (value["question"] is not None)
+        or not _premise_check(value["premise_check"])
     ):
         raise ProofReuseError("proof_reuse_invalid_response")
+
+
+def _premise_check(value: Any) -> bool:
+    # Bounds keep a fallback question within the API's 2,000-character question text.
+    def items(entries: Any, count: int, size: int) -> bool:
+        return isinstance(entries, list) and len(entries) <= count and all(
+            _text(entry, size, empty=False) for entry in entries
+        )
+
+    return (
+        isinstance(value, dict)
+        and set(value) == {"counterexample", "truth_depends_on", "assumed_defaults"}
+        and _text(value["counterexample"], 1000)
+        and items(value["truth_depends_on"], 4, 300)
+        and items(value["assumed_defaults"], 8, 500)
+    )
+
+
+def _premise_question(check: dict[str, Any], language: str) -> dict[str, Any] | None:
+    """The learner is asked first even when the model reported a problem without asking."""
+
+    counterexample = check["counterexample"].strip()
+    if counterexample:
+        text, option = _COUNTEREXAMPLE_QUESTION[language]
+        return {"text": text.format(counterexample), "options": [option]}
+    if check["truth_depends_on"]:
+        separator = "、" if language in {"ja", "zh-Hans", "zh-Hant"} else "; "
+        choices = separator.join(item.strip() for item in check["truth_depends_on"])
+        return {"text": _CHOICE_QUESTION[language].format(choices), "options": []}
+    return None
 
 
 def _validate_decision(value: dict[str, Any]) -> None:
