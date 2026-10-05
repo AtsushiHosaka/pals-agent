@@ -260,3 +260,51 @@ def test_oversized_api_validation_body_is_not_retained_or_parsed_for_diagnostics
         client.settle_proof_request(request_id=REQUEST_ID, payload={})
     assert failure.value.validation_errors == ()
     assert private_input not in str(failure.value) + repr(vars(failure.value))
+
+
+class LeanApiBoundary(ApiBoundary):
+    def __init__(self, recipes):
+        super().__init__()
+        self.recipes = recipes
+        self.lookups = []
+
+    def acquire_proof_request_claim(self, **kwargs):
+        return dict(super().acquire_proof_request_claim(**kwargs), lean_flow=True)
+
+    def lookup_proof_request_recipes(self, **kwargs):
+        self.lookups.append(kwargs)
+        return list(self.recipes)
+
+    def settle_proof_request(self, *, request_id, payload):
+        self.settlements.append(payload)
+        status = "verifying" if payload["outcome"] == "formal" else payload["outcome"]
+        return {"id": request_id, "status": status}
+
+
+def test_released_lean_flow_settles_a_formal_plan_for_the_linked_job():
+    engine, _ = runtime([READY, decision()])
+    api = LeanApiBoundary([])
+    assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
+    settlement = api.settlements[0]
+    assert settlement["outcome"] == "formal" and settlement["answer"] is None
+    assert settlement["formal_plan"] == {"kind": "dsp", "statement": READY["statement"]}
+    assert api.lookups[0]["claim_id"] == CLAIM_ID and api.lookups[0]["request_id"] == REQUEST_ID
+
+
+def test_unreleased_lean_flow_keeps_the_previous_answer_path():
+    engine, _ = runtime([READY, decision()])
+    api = ApiBoundary()
+    assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
+    assert "formal_plan" not in api.settlements[0]
+
+
+def test_non_boolean_lean_flag_is_rejected_before_any_model_call():
+    engine, provider = runtime([])
+    api = LeanApiBoundary([])
+    api.acquire_proof_request_claim = lambda **kwargs: dict(
+        ApiBoundary.acquire_proof_request_claim(api, **kwargs), lean_flow="yes"
+    )
+    assert not ProofRequestProcessor(api, engine).process(
+        REQUEST_ID, CLAIM_ID, lambda seconds: None
+    )
+    assert provider.calls == []

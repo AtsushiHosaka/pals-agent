@@ -161,6 +161,25 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def lookup_proof_request_recipes(
+        self, *, request_id: str, claim_id: str, sources: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Admitted Lean Recipes for candidate Drafts, bound to this live claim (PFR-010)."""
+        result = self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/recipes",
+            {"claim_id": _canonical_claim_id(claim_id), "sources": sources},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+        recipes = result.get("recipes") if isinstance(result, dict) else None
+        if not isinstance(recipes, list) or not all(
+            isinstance(item, dict)
+            and set(item) == {"draft_id", "recipe_id", "recipe_revision", "target_source",
+                              "lean_code", "lean_sha256"}
+            for item in recipes
+        ):
+            raise PalsApiError("invalid recipe lookup response")
+        return recipes
+
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
