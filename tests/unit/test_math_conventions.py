@@ -103,6 +103,7 @@ def test_known_reading_is_given_to_the_model_and_reported_as_applied():
     ]
     prompt = transport.calls[0]["input"]
     assert "Never ask about a listed convention yourself" in prompt
+    assert "A reading changes only the notion it names" in prompt
     data = json.loads(prompt.rsplit("\n", 1)[1])
     assert {i["id"]: i["known_reading"] for i in data["math_conventions"]}[
         "zero_ring_domain"
@@ -129,7 +130,9 @@ def test_a_model_question_about_a_known_reading_is_not_asked():
     assert result.private_evidence["applied_conventions"] == [
         {"id": "zero_pow_zero", "choice": "include"}
     ]
-    assert "Conventions: 0^0 = 1." in transport.calls[1]["input"]
+    assert "Conventions: 0^0 = 1. Every other definition keeps its standard meaning." in (
+        transport.calls[1]["input"]
+    )
 
 
 def test_a_counterexample_question_is_still_asked_with_known_readings():

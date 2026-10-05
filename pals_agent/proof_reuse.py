@@ -72,7 +72,10 @@ PREMISE_CHECK_INSTRUCTION = (
     "counterexample instead. A counterexample that exists only under one reading of a listed "
     "convention belongs in conventions, not in counterexample. When an unknown reading is the only "
     "issue, return ready with the statement unchanged. When its known_reading is given, decide the "
-    "claim under that reading and write the reading explicitly into statement. "
+    "claim under that reading and write the reading explicitly into statement. A reading changes "
+    "only the notion it names; every other definition (for example a field still has 1 different "
+    "from 0) keeps its standard meaning, so report a counterexample when the claim fails under "
+    "that reading. "
 )
 _COUNTEREXAMPLE_QUESTION = {
     "en": (

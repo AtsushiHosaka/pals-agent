@@ -1411,7 +1411,10 @@ A convention stated in the learner request itself (for example that the natural 
 at 1, or a line beginning with "Conventions:") is part of the requested claim: a target that
 encodes exactly that stated convention, such as quantifying over n with 1 ≤ n, is neither an
 added assumption nor a weaker claim, even when the claim becomes immediate under it. A
-restriction that the request does not state remains an added assumption.
+restriction that the request does not state remains an added assumption. A convention changes
+only the notion it names: every other notion keeps its standard definition (a field still has
+1 ≠ 0 even when the zero ring counts as an integral domain), and a conclusion weakened to fit a
+convention, such as replacing "is a field" by "every nonzero element is invertible", is weaker.
 Successful type checking does not establish that this is the theorem the learner requested.
 Base a rejection on that specific semantic mismatch, not on a guessed library-lemma meaning.
 Lean compilation alone is not approval. Do not repair

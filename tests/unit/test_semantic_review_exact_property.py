@@ -67,6 +67,9 @@ def test_a_stated_convention_is_part_of_the_claim_but_unstated_restrictions_are_
     assert "A convention stated in the learner request itself" in prompt
     assert "neither an\nadded assumption nor a weaker claim" in prompt
     assert "A\nrestriction that the request does not state remains an added assumption." in prompt
+    assert "A convention changes\nonly the notion it names" in prompt
+    weakened = 'replacing "is a field" by "every nonzero element is invertible", is weaker'
+    assert weakened in prompt
     assert "added assumptions, vacuous reformulations or misleading local redefinitions" in prompt
 
 
