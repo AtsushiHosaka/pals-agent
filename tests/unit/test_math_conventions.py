@@ -109,6 +109,37 @@ def test_known_reading_is_given_to_the_model_and_reported_as_applied():
     ] == "exclude"
 
 
+def test_every_convention_has_both_readings_in_plain_words():
+    from pals_agent.math_conventions import reading
+    for item in SPEC_IDS:
+        include, exclude = reading(item, "include"), reading(item, "exclude")
+        assert include and exclude and include != exclude
+        assert not include.startswith(("include", "exclude")) and not exclude.startswith("exclude")
+
+
+def test_a_model_question_about_a_known_reading_is_not_asked():
+    question = {"text": "How should 0^0 be treated?", "options": ["0^0 = 1", "undefined"]}
+    asks = relevant("zero_pow_zero", action="needs_input", question=question, statement="")
+    engine, transport = runtime([asks, decision()])
+    request = dict(REQUEST, statement="Prove that x^0 = 1 for every real x.",
+                   math_conventions={"policy": "default", "choices": {}})
+    result = engine.answer(request)
+    assert result.outcome == "answered"
+    assert result.private_evidence["convention_question_suppressed"] is True
+    assert result.private_evidence["applied_conventions"] == [
+        {"id": "zero_pow_zero", "choice": "include"}
+    ]
+    assert "Conventions: 0^0 = 1." in transport.calls[1]["input"]
+
+
+def test_a_counterexample_question_is_still_asked_with_known_readings():
+    check = dict(READY["premise_check"], conventions=["zero_pow_zero"], counterexample="x = 0")
+    question = {"text": "This seems to fail at x = 0. Which claim?", "options": []}
+    engine, _ = runtime([dict(READY, premise_check=check, action="needs_input", question=question)])
+    result = engine.answer(dict(REQUEST, math_conventions={"policy": "default", "choices": {}}))
+    assert result.outcome == "needs_input" and "convention_id" not in result.question
+
+
 def test_guests_use_defaults_and_are_never_asked():
     engine, _ = runtime([relevant("natural_zero", "zero_ring_domain"), decision()])
     result = engine.answer(with_conventions(policy="default"))

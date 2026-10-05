@@ -43,6 +43,23 @@ DEFAULTS = {item[0]: item[1] for item in CONVENTIONS}
 MEANINGS = {item[0]: item[2] for item in CONVENTIONS}
 
 
+def reading(convention_id: str, choice: str) -> str:
+    """The one adopted reading, e.g. 'the natural numbers start at 1'."""
+
+    include, exclude = MEANINGS[convention_id].split("; exclude: ", 1)
+    text = include.removeprefix("include: ") if choice == "include" else exclude
+    return text.rstrip(".")
+
+
+def with_readings(statement: str, applied: list[dict[str, str]]) -> str:
+    """The statement with every adopted reading written out for the Lean formalization."""
+
+    if not applied:
+        return statement
+    readings = "; ".join(reading(item["id"], item["choice"]) for item in applied)
+    return f"{statement.rstrip()}\n\nConventions: {readings}."
+
+
 def parse_claim(value: Any) -> dict[str, Any] | None:
     """The claim's `math_conventions`: a policy and readings for known IDs, or None if malformed."""
 

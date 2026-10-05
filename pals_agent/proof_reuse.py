@@ -26,7 +26,7 @@ from pals_agent.material_context import (
 )
 from pals_agent.math_conventions import IDS as CONVENTION_IDS
 from pals_agent.math_conventions import MEANINGS as CONVENTION_MEANINGS
-from pals_agent.math_conventions import known_readings
+from pals_agent.math_conventions import known_readings, with_readings
 from pals_agent.math_conventions import parse_claim as parse_conventions
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
@@ -342,6 +342,25 @@ class ProofReuseRuntime:
                 evidence["applied_conventions"] = [
                     {"id": item, "choice": known[item]} for item in relevant
                 ]
+                check = preflight["premise_check"]
+                if (
+                    relevant
+                    and preflight["action"] == "needs_input"
+                    and not check["counterexample"].strip()
+                    and not check["truth_depends_on"]
+                ):
+                    # MCV-005: the only issue is a listed convention whose reading is already
+                    # known (settings, this request, or the guest default): never ask about it.
+                    evidence["convention_question_suppressed"] = True
+                    preflight = dict(
+                        preflight,
+                        action="ready",
+                        question=None,
+                        statement=with_readings(
+                            preflight["statement"].strip() or statement,
+                            evidence["applied_conventions"],
+                        ),
+                    )
             if preflight["action"] == "needs_input" and preflight["question"] is None:
                 raise ProofReuseError("proof_reuse_invalid_response")
             if preflight["action"] == "ready" and not turns:
