@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import math
 import re
 import time
@@ -70,6 +71,27 @@ ClaimStatus = Literal[
 ]
 ResourceKind = Literal["proof_job", "explanation", "clarification"]
 VisibilityExtender = Callable[[int], None]
+WorkerLane = Literal["all", "proof", "assessment"]
+_logger = logging.getLogger(__name__)
+
+
+def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
+    """Resolve a lane only after checking the queues provide actual isolation."""
+    if lane not in {"all", "proof", "assessment"}:
+        raise ValueError("Worker lane must be all, proof, or assessment")
+    proof_queue = settings.proof_jobs_queue_url
+    if not proof_queue:
+        raise RuntimeError("PALS_PROOF_JOBS_QUEUE_URL is required for the worker.")
+    if lane == "all":
+        return proof_queue
+    if lane == "proof" and getattr(settings, "proof_capability", "full") != "full":
+        raise RuntimeError("The proof worker lane requires PALS_PROOF_CAPABILITY=full.")
+    assessment_queue = getattr(settings, "proof_requests_queue_url", None)
+    if not assessment_queue:
+        raise RuntimeError("PALS_PROOF_REQUESTS_QUEUE_URL is required for dedicated worker lanes.")
+    if assessment_queue == proof_queue:
+        raise RuntimeError("Proof and assessment worker lanes require different queue URLs.")
+    return assessment_queue if lane == "assessment" else proof_queue
 
 _NON_VERIFIED_TERMINAL_STATES: Final = frozenset({"failed", "canceled"})
 _CLAIM_STATUSES: Final = frozenset({"acquired", "busy", "terminal", "lease_too_short", "not_ready"})
@@ -408,6 +430,7 @@ class SqsProofWorker:
     uuid4_factory: Callable[[], uuid.UUID] = uuid.uuid4
 
     stop_requested: Callable[[], bool] = lambda: False
+    lane: WorkerLane = "all"
 
     def run_forever(self) -> None:
         # Drain only at delivery boundaries; never interrupt a model call or
@@ -418,8 +441,7 @@ class SqsProofWorker:
                 self.sleep(self.settings.worker_idle_sleep_seconds)
 
     def run_once(self) -> bool:
-        if not self.settings.proof_jobs_queue_url:
-            raise RuntimeError("PALS_PROOF_JOBS_QUEUE_URL is required for the worker.")
+        queue_url = worker_queue_url(self.settings, self.lane)
 
         sqs = boto3.client(
             "sqs",
@@ -427,7 +449,7 @@ class SqsProofWorker:
             region_name=self.settings.aws_region,
         )
         response = sqs.receive_message(
-            QueueUrl=self.settings.proof_jobs_queue_url,
+            QueueUrl=queue_url,
             MaxNumberOfMessages=1,
             WaitTimeSeconds=20,
             MessageAttributeNames=["All"],
@@ -445,13 +467,19 @@ class SqsProofWorker:
         except (TypeError, ValueError):
             # Leave poison input for SQS redrive; never delete an unvalidated receipt.
             return True
+        if ((self.lane == "assessment" and task.kind != "proof_request")
+                or (self.lane == "proof" and task.kind == "proof_request")):
+            # Leave wrong-lane input for redrive. Returning it immediately would
+            # create a hot loop and burn its receive count without doing work.
+            _logger.error("worker_task_lane_mismatch lane=%s task_kind=%s", self.lane, task.kind)
+            return True
         if (getattr(self.settings, "proof_capability", "full") != "full"
                 and task.kind != "proof_request"):
             return True  # Preserve receipt for a worker with the explicit capability.
 
         def extend_visibility(seconds: int) -> None:
             sqs.change_message_visibility(
-                QueueUrl=self.settings.proof_jobs_queue_url,
+                QueueUrl=queue_url,
                 ReceiptHandle=receipt_handle,
                 VisibilityTimeout=seconds,
             )
@@ -498,7 +526,7 @@ class SqsProofWorker:
 
         if acknowledged:
             sqs.delete_message(
-                QueueUrl=self.settings.proof_jobs_queue_url,
+                QueueUrl=queue_url,
                 ReceiptHandle=receipt_handle,
             )
         return True
