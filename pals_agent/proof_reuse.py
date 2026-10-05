@@ -379,6 +379,13 @@ class ProofReuseRuntime:
                                        turns, evidence)
             if preflight["action"] != "ready":
                 return _non_answer(preflight, turns, evidence)
+            refutation = _refutation_plan(
+                preflight, turns, language, evidence, lean_flow=recipe_lookup is not None
+            )
+            if refutation is not None:
+                # PFR-015: the learner kept a claim that still seems false; Lean refutes it first.
+                evidence["lean_route"] = "refute"
+                return ProofReuseResult("formal", None, None, None, evidence, refutation)
             evidence["phase"] = "catalog_retrieval"
             query_invalid = False
             try:
@@ -901,6 +908,41 @@ def _premise_check(value: Any) -> bool:
         and all(item in CONVENTION_IDS for item in value["conventions"])
         and len(set(value["conventions"])) == len(value["conventions"])
     )
+
+
+_REFUTATION_STATEMENT = {
+    "en": "Show that the following claim is false by proving its negation.\n"
+    "Claim: {claim}\nSuggested counterexample: {counterexample}",
+    "ja": "次の主張が偽であることを、その否定を証明して示せ。\n"
+    "主張：{claim}\n反例の候補：{counterexample}",
+    "zh-Hans": "证明以下命题是错误的（证明其否定）。\n命题：{claim}\n反例候选：{counterexample}",
+    "zh-Hant": "證明以下命題是錯誤的（證明其否定）。\n命題：{claim}\n反例候選：{counterexample}",
+}
+
+
+def _refutation_plan(
+    preflight: dict[str, Any],
+    turns: list[dict[str, str]],
+    language: str,
+    evidence: dict[str, Any],
+    *,
+    lean_flow: bool,
+) -> dict[str, Any] | None:
+    """A refute plan once the learner has answered and a counterexample is still reported."""
+
+    counterexample = preflight["premise_check"]["counterexample"].strip()
+    if not lean_flow or not turns or not counterexample:
+        return None
+    claim = with_readings(preflight["statement"], evidence.get("applied_conventions") or [])
+    statement = _REFUTATION_STATEMENT[language].format(claim=claim, counterexample=counterexample)
+    if len(statement) > 20_000:
+        return None
+    return {
+        "kind": "refute",
+        "statement": statement,
+        "claim": claim,
+        "counterexample": counterexample,
+    }
 
 
 def _convention_data(conventions: dict[str, Any]) -> list[dict[str, Any]]:

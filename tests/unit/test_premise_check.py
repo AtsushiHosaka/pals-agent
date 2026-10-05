@@ -118,3 +118,45 @@ def test_malformed_premise_check_is_rejected(check):
     engine, _ = runtime([dict(READY, premise_check=check)])
     result = engine.answer(REQUEST)
     assert (result.outcome, result.error_code) == ("failed", "proof_reuse_invalid_response")
+
+
+def test_a_claim_kept_as_written_with_a_counterexample_is_refuted_with_lean():
+    turns = [{"question_id": "q1", "question": "This seems to fail for n = 0. Which claim?",
+              "answer": "Prove the statement as written"}]
+    kept = checked(counterexample="n = 0 gives 0, which is even")
+    engine, transport = runtime([dict(kept, statement=ODD["statement"])])
+    result = engine.answer(dict(ODD, context_turns=turns), lambda sources: [])
+    assert result.outcome == "formal" and result.private_evidence["lean_route"] == "refute"
+    plan = result.formal_plan
+    assert plan["kind"] == "refute" and plan["claim"] == ODD["statement"]
+    assert plan["counterexample"] == "n = 0 gives 0, which is even"
+    assert plan["statement"].startswith("Show that the following claim is false")
+    assert ODD["statement"] in plan["statement"]
+    assert len(transport.calls) == 1  # no retrieval or decision for a refutation
+
+
+def test_refutation_needs_the_lean_flow_and_a_clarification():
+    engine, _ = runtime([checked(counterexample="n = 0")])
+    first = engine.answer(dict(ODD, output_language="ja"), lambda sources: [])
+    assert first.outcome == "needs_input"  # asked first (PFR-014)
+    turns = [{"question_id": "q1", "question": "Which claim?", "answer": "As written"}]
+    engine, _ = runtime([checked(counterexample="n = 0"), decision()])
+    legacy = engine.answer(dict(ODD, context_turns=turns))
+    assert legacy.outcome == "answered" and legacy.formal_plan is None
+
+
+def test_refutation_statement_is_in_the_output_language_with_conventions():
+    turns = [{"question_id": "q1", "question": "零環が反例のようです。",
+              "answer": "このまま証明を試す"}]
+    check = dict(READY["premise_check"], counterexample="零環", conventions=["zero_ring_domain"])
+    engine, _ = runtime([dict(READY, premise_check=check, statement="有限整域は体である。")])
+    result = engine.answer(
+        {"statement": "有限整域は体であることを示せ。", "output_language": "ja",
+         "context_turns": turns,
+         "math_conventions": {"policy": "ask", "choices": {"zero_ring_domain": "include"}}},
+        lambda sources: [],
+    )
+    plan = result.formal_plan
+    assert plan["statement"].startswith("次の主張が偽であることを、その否定を証明して示せ。")
+    assert "Conventions: the zero ring (where 1 = 0) counts as an integral domain." in plan["claim"]
+    assert "反例の候補：零環" in plan["statement"]
