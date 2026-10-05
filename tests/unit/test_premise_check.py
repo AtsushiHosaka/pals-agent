@@ -27,6 +27,8 @@ def test_schema_and_prompt_require_the_premise_check():
     assert "use the most general reading" in prompt
     assert "must itself pass the same counterexample check" in prompt
     assert "Standard textbook definitions and conventions" in prompt
+    assert "never replace it by its negation, a refutation, a weaker claim" in prompt
+    assert "once its known_reading is given, a counterexample under that reading" in prompt
 
 
 def test_model_question_about_a_suspected_counterexample_is_asked_first():

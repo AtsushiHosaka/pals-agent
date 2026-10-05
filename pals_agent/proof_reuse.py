@@ -69,13 +69,18 @@ PREMISE_CHECK_INSTRUCTION = (
     "math_conventions is absent. Never ask about a listed convention yourself and never put it in "
     "truth_depends_on: the system asks the learner. List a convention only when the claim is true "
     "under one reading and false under the other; when it is false under every reading, report a "
-    "counterexample instead. A counterexample that exists only under one reading of a listed "
-    "convention belongs in conventions, not in counterexample. When an unknown reading is the only "
+    "counterexample instead. While a listed convention's reading is unknown, a counterexample that "
+    "exists only under one reading belongs in conventions, not in counterexample; once its "
+    "known_reading is given, a counterexample under that reading belongs in counterexample. "
+    "When an unknown reading is the only "
     "issue, return ready with the statement unchanged. When its known_reading is given, decide the "
     "claim under that reading and write the reading explicitly into statement. A reading changes "
     "only the notion it names; every other definition (for example a field still has 1 different "
     "from 0) keeps its standard meaning, so report a counterexample when the claim fails under "
-    "that reading. "
+    "that reading. statement always expresses the learner's own claim with its clarified premises "
+    "and readings: never replace it by its negation, a refutation, a weaker claim or any other "
+    "claim the learner did not choose in a clarification answer. When the claim seems false, "
+    "report the counterexample and ask instead of rewriting it. "
 )
 _COUNTEREXAMPLE_QUESTION = {
     "en": (
