@@ -27,6 +27,11 @@ _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
 _BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
     r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
+_STATED_CONVENTION_INSTRUCTION = """A convention stated in the user theorem statement (for
+example a line beginning with "Conventions:", or that the natural numbers start at 1, or that
+0^0 = 1) is a premise of the claim. The proof may use it directly, and justifying a step by that
+convention or by the corresponding definition is valid, not a wrong reason. A convention changes
+only the notion it names; every other definition keeps its standard meaning."""
 _SOURCE_CORRESPONDENCE_INSTRUCTION = """Source correspondence has two different granularities.
 When the source explicitly contains intermediate equalities or facts in calc, have, or rewrite
 steps, organize the mathematical paragraphs around those actual steps and cite the narrowest
@@ -1008,6 +1013,7 @@ syntax."""
     return f"""Write a mathematical proof for a learner, grounded in a verified Lean artifact.
 The theorem statement and verified Lean code below are the only sources of truth for the claim
 and its assumptions.
+{_STATED_CONVENTION_INSTRUCTION}
 You may unpack automation or a library application using valid ordinary mathematics, even when
 those intermediate calculations are not written literally in the Lean source. Show each essential
 bridge: state the relevant definition, property, or standard theorem and why its hypotheses hold,
@@ -1318,6 +1324,7 @@ expansion and standard implicit equalities; do not invent a missing step when th
 equalities already establish it. A rejection must identify an actual invalid inference or
 violated output requirement, not a preferred wording or alternative proof order.
 {_SOURCE_CORRESPONDENCE_INSTRUCTION}
+{_STATED_CONVENTION_INSTRUCTION}
 Reject an output that attributes unseen intermediate states, internal rewrite order, or
 separate Lean verification to its additional mathematical derivation. A valid mathematical
 derivation with a coarse automation reference remains acceptable when it makes no such claim.
