@@ -1,0 +1,111 @@
+"""Ask before proving when a request looks false or its truth depends on a choice (PFR-014)."""
+
+import pytest
+
+from pals_agent.proof_reuse import PREFLIGHT_SCHEMA
+from tests.unit.test_proof_reuse import READY, REQUEST, decision, runtime
+
+ODD = {"statement": "Prove that for every natural number n, n^2 + n is odd.",
+       "output_language": "en", "context_turns": []}
+
+
+def checked(**check):
+    return dict(READY, premise_check=dict(READY["premise_check"], **check))
+
+
+def test_schema_and_prompt_require_the_premise_check():
+    check = PREFLIGHT_SCHEMA["properties"]["premise_check"]
+    assert check["required"] == ["counterexample", "truth_depends_on", "assumed_defaults"]
+    engine, transport = runtime([READY, decision()])
+    engine.answer(REQUEST)
+    prompt = transport.calls[0]["input"]
+    assert "concrete admissible instance makes the claim false" in prompt
+    assert "keep and prove the statement as written" in prompt
+    assert "do not ask about it again" in prompt
+    assert "use the most general reading" in prompt
+    assert "must itself pass the same counterexample check" in prompt
+    assert "Standard textbook definitions and conventions" in prompt
+
+
+def test_model_question_about_a_suspected_counterexample_is_asked_first():
+    question = {"text": "As stated, this seems to fail for n = 0. Which claim do you mean?",
+                "options": ["n^2 + n is even for every natural n", "Prove it as written"]}
+    asked = dict(checked(counterexample="n = 0 gives 0, which is even"),
+                 action="needs_input", statement="", question=question)
+    engine, transport = runtime([asked])
+    result = engine.answer(ODD)
+    assert result.outcome == "needs_input" and result.formal_plan is None
+    assert result.question["options"] == question["options"]
+    check = result.private_evidence["preflight"]["premise_check"]
+    assert check["counterexample"].startswith("n = 0")
+    # No retrieval, decision or Lean happens before the learner answers.
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("language", "phrase", "option"),
+    [
+        ("en", "may fail in this case: n = 0", "Prove the statement as written"),
+        ("ja", "成り立たない可能性があります：n = 0", "このまま証明を試す"),
+        ("zh-Hans", "可能不成立：n = 0", "按原样尝试证明"),
+        ("zh-Hant", "可能不成立：n = 0", "照原樣嘗試證明"),
+    ],
+)
+def test_reported_counterexample_without_a_question_still_asks(language, phrase, option):
+    engine, transport = runtime([checked(counterexample="n = 0")])
+    result = engine.answer(dict(ODD, output_language=language))
+    assert result.outcome == "needs_input"
+    assert phrase in result.question["text"] and result.question["options"] == [option]
+    assert result.private_evidence["premise_check_fallback"] is True
+    assert len(transport.calls) == 1
+
+
+def test_longest_fallback_questions_fit_the_api_question_text():
+    for check in ({"counterexample": "x" * 1000}, {"truth_depends_on": ["x" * 300] * 4}):
+        for language in ("en", "ja", "zh-Hans", "zh-Hant"):
+            engine, _ = runtime([checked(**check)])
+            result = engine.answer(dict(ODD, output_language=language))
+            assert len(result.question["text"]) <= 2000
+
+
+def test_unresolved_truth_dependent_choice_still_asks():
+    engine, _ = runtime([checked(truth_depends_on=["the scalar field (ℝ or ℂ)"])])
+    result = engine.answer(ODD)
+    assert result.outcome == "needs_input"
+    assert "depends on: the scalar field (ℝ or ℂ)" in result.question["text"]
+    assert result.question["options"] == []
+
+
+def test_answered_clarification_is_not_asked_again():
+    turns = [{"question_id": "q1", "question": "This seems to fail for n = 0. Which claim?",
+              "answer": "Prove the statement as written"}]
+    engine, transport = runtime([checked(counterexample="n = 0"), decision()])
+    result = engine.answer(dict(ODD, context_turns=turns))
+    assert result.outcome == "answered"
+    assert "premise_check_fallback" not in result.private_evidence
+
+
+def test_conventional_defaults_never_cause_a_question():
+    engine, _ = runtime([checked(assumed_defaults=["x ranges over the real numbers"]), decision()])
+    assert engine.answer(REQUEST).outcome == "answered"
+
+
+@pytest.mark.parametrize(
+    "check",
+    [
+        None,
+        {"counterexample": "", "truth_depends_on": []},
+        {"counterexample": 1, "truth_depends_on": [], "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": "field", "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": [""], "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": ["x"] * 5, "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": ["x" * 301], "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": [], "assumed_defaults": ["x"] * 9},
+        {"counterexample": "x" * 1001, "truth_depends_on": [], "assumed_defaults": []},
+        {"counterexample": "", "truth_depends_on": [], "assumed_defaults": ["y" * 501]},
+    ],
+)
+def test_malformed_premise_check_is_rejected(check):
+    engine, _ = runtime([dict(READY, premise_check=check)])
+    result = engine.answer(REQUEST)
+    assert (result.outcome, result.error_code) == ("failed", "proof_reuse_invalid_response")

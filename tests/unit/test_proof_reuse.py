@@ -26,6 +26,7 @@ READY = {
     "requires_catalog_source": False,
     "question": None,
     "reason": "Domain and goal are supplied.",
+    "premise_check": {"counterexample": "", "truth_depends_on": [], "assumed_defaults": []},
 }
 
 
