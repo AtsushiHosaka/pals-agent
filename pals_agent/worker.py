@@ -8,7 +8,7 @@ import re
 import time
 import uuid
 from collections.abc import Callable
-from contextlib import suppress
+from contextlib import ExitStack, suppress
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Final, Literal, Protocol, cast
@@ -37,6 +37,7 @@ from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
 )
+from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.models import (
     Diagnostic,
@@ -228,6 +229,8 @@ class ProofJobApi(Protocol):
     def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None: ...
 
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]: ...
+
+    def get_proof_job_chat_input(self, proof_job_id: str) -> dict[str, Any]: ...
 
     def acquire_proof_generation_claim(
         self,
@@ -541,6 +544,29 @@ class SqsProofWorker:
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
         proof_job = self.api_client.get_proof_job(proof_job_id)
+        if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
+            return True
+        context = proof_job.get("request_context", {})
+        if not isinstance(context, dict):
+            return False
+        with ExitStack() as stack:
+            try:
+                payload = (
+                    self.api_client.get_proof_job_chat_input(proof_job_id)
+                    if context.get("chat_route") is not None else None
+                )
+                stack.enter_context(linked_chat_scope(context, payload))
+            except (PalsApiError, ValueError, TypeError, KeyError):
+                return False
+            return self._process_proof_job(
+                proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
+
+    def _process_proof_job(
+        self, proof_job_id: str, *, proof_job: dict[str, Any],
+        claim_id: str | None, extend_visibility: VisibilityExtender | None,
+    ) -> bool:
         state = proof_job.get("state")
         if state in _NON_VERIFIED_TERMINAL_STATES:
             return True
@@ -1205,6 +1231,38 @@ class SqsProofWorker:
             return True
         if claim_id is None or extend_visibility is None:
             return False
+        try:
+            proof_job_id = _required_text(worker_input, "proof_job_id")
+            proof_input = self.api_client.get_proof_job(proof_job_id)
+            context = proof_input.get("request_context", {})
+            if not isinstance(context, dict):
+                return False
+            payload = (
+                self.api_client.get_proof_job_chat_input(proof_job_id)
+                if context.get("chat_route") is not None else None
+            )
+            with linked_chat_scope(context, payload):
+                return self._process_clarification(
+                    clarification_id, worker_input=worker_input, proof_input=proof_input,
+                    claim_id=claim_id, extend_visibility=extend_visibility,
+                )
+        except (PalsApiError, ValueError, TypeError, KeyError):
+            return False
+
+    def _process_clarification(
+        self, clarification_id: str, *, worker_input: dict[str, Any],
+        proof_input: dict[str, Any], claim_id: str | None,
+        extend_visibility: VisibilityExtender | None,
+    ) -> bool:
+        if (
+            not isinstance(worker_input, dict)
+            or worker_input.get("dispatch_schema_version") != _CLARIFICATION_DISPATCH_SCHEMA_VERSION
+        ):
+            return False
+        if worker_input.get("state") in {"completed", "failed", "dispatch_uncertain"}:
+            return True
+        if claim_id is None or extend_visibility is None:
+            return False
 
         try:
             if _required_text(worker_input, "id") != clarification_id:
@@ -1231,7 +1289,6 @@ class SqsProofWorker:
                 "after_clarification_id": after_clarification_id,
                 "parent_clarification": parent_clarification,
             }
-            proof_input = self.api_client.get_proof_job(proof_job_id)
             if not _same_verified_proof(
                 proof_input,
                 proof_job_id=proof_job_id,
@@ -1380,15 +1437,27 @@ class SqsProofWorker:
         proof_job = self.api_client.get_proof_job(proof_job_id)
         if proof_job.get("state") != "verified":
             return proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES
-        return self._ensure_summary_explanation(
-            proof_job_id=proof_job_id,
-            theorem_statement=_required_text(proof_job, "theorem_statement"),
-            lean_code=_required_text(proof_job, "lean_code"),
-            language=_required_output_language(proof_job),
-            claim_id=claim_id,
-            extend_visibility=extend_visibility,
-            retry_id=retry_id,
-        )
+        context = proof_job.get("request_context", {})
+        if not isinstance(context, dict):
+            return False
+        with ExitStack() as stack:
+            try:
+                payload = (
+                    self.api_client.get_proof_job_chat_input(proof_job_id)
+                    if context.get("chat_route") is not None else None
+                )
+                stack.enter_context(linked_chat_scope(context, payload))
+            except (PalsApiError, ValueError, TypeError, KeyError):
+                return False
+            return self._ensure_summary_explanation(
+                proof_job_id=proof_job_id,
+                theorem_statement=_required_text(proof_job, "theorem_statement"),
+                lean_code=_required_text(proof_job, "lean_code"),
+                language=_required_output_language(proof_job),
+                claim_id=claim_id,
+                extend_visibility=extend_visibility,
+                retry_id=retry_id,
+            )
 
     def _ensure_summary_explanation(
         self,

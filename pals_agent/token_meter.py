@@ -75,6 +75,42 @@ def _object(body: bytes) -> dict[str, Any]:
     return value
 
 
+def _supported_input(value: Any, *, embedding: bool) -> bool:
+    if isinstance(value, str):
+        return True
+    if embedding or not isinstance(value, list) or len(value) != 1:
+        return False
+    message = value[0]
+    if (
+        not isinstance(message, dict) or set(message) != {"role", "content"}
+        or message["role"] != "user" or not isinstance(message["content"], list)
+        or not 2 <= len(message["content"]) <= 331
+    ):
+        return False
+    parts = message["content"]
+    if (
+        not isinstance(parts[0], dict) or set(parts[0]) != {"type", "text"}
+        or parts[0]["type"] != "input_text" or not isinstance(parts[0]["text"], str)
+    ):
+        return False
+    from pals_agent.chat_images import validate_image_data_url
+
+    total_bytes = 0
+    for item in parts[1:]:
+        if (
+            not isinstance(item, dict) or set(item) != {"type", "image_url", "detail"}
+            or item["type"] != "input_image" or item["detail"] != "high"
+        ):
+            return False
+        try:
+            total_bytes += len(validate_image_data_url(item["image_url"]))
+            if total_bytes > 20_000_000:
+                return False
+        except (ValueError, TypeError):
+            return False
+    return True
+
+
 @dataclass
 class TokenMeter:
     api: TokenMeterApi
@@ -131,9 +167,9 @@ class TokenMeter:
             if (
                 snapshot is None
                 or not isinstance(model, str)
-                or not isinstance(payload.get("input"), str)
+                or not _supported_input(payload.get("input"), embedding=embedding)
             ):
-                # This release has no images/files/tools/batch or implicit context.
+                # Only explicit text or bounded inline derivatives may be counted.
                 raise TokenMeterError("token_input_unsupported")
             if data != json.dumps(payload).encode("utf-8"):
                 raise TokenMeterError("token_payload_changed")
@@ -153,7 +189,10 @@ class TokenMeter:
                     "text",
                     "service_tier",
                     "reasoning",
+                    "store",
                 }:
+                    raise TokenMeterError("token_input_unsupported")
+                if "store" in payload and payload["store"] is not False:
                     raise TokenMeterError("token_input_unsupported")
                 output_bound = _integer(payload["max_output_tokens"])
                 if output_bound == 0:

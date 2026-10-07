@@ -32,6 +32,7 @@ from pals_agent.explanations import (
 )
 from pals_agent.http_transport import HardDeadlineHttpTransport, HttpTransport
 from pals_agent.lean_target import extract_single_target_declaration
+from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.settings import validate_release_generation_environment
@@ -60,6 +61,10 @@ class RecipeSemanticReviewApiClient:
     reviewer_secret: str = field(repr=False)
     timeout_seconds: float = 15
     transport: HttpTransport = field(default_factory=HardDeadlineHttpTransport, repr=False)
+    attachment_transport: HttpTransport = field(
+        default_factory=lambda: HardDeadlineHttpTransport(max_response_bytes=28_000_000),
+        repr=False,
+    )
 
     def _request(
         self, method: str, path: str, payload: dict[str, Any] | None = None
@@ -78,13 +83,25 @@ class RecipeSemanticReviewApiClient:
             f"/semantic-review-input?candidate_id={_canonical_claim_id(candidate_id)}",
         )
         if (
-            set(result) != _INPUT_KEYS
+            set(result) not in (_INPUT_KEYS, _INPUT_KEYS | {"chat_input_available"})
+            or type(result.get("chat_input_available", False)) is not bool
             or result.get("id") != proof_job_id
             or result.get("verification_candidate_id") != candidate_id
             or result.get("attempt_source") not in {"recipe", "model"}
         ):
             raise ValueError("Dedicated reviewer input is not bound to the requested candidate")
         return result
+
+    def get_chat_input(self, proof_job_id: str, candidate_id: str) -> dict[str, Any]:
+        client = PalsApiClient(
+            self.base_url, "", self.timeout_seconds,
+            self.attachment_transport,
+        )
+        return client._request(
+            "GET", f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}"
+            f"/chat-input?candidate_id={_canonical_claim_id(candidate_id)}",
+            headers={_HEADER: self.reviewer_secret},
+        )
 
     def settle(self, proof_job_id: str, evidence: dict[str, Any]) -> dict[str, Any]:
         _validate_recipe_semantic_review_evidence(evidence)
@@ -139,13 +156,22 @@ class RecipeReviewActor:
             if target is None or target.as_dict() != content["target_declaration"]:
                 raise ValueError("Review target differs from exact source")
             try:
-                review = self.reviewer_factory().review_proof(
-                    theorem_statement=content["theorem_statement"],
-                    formal_statement=content["formal_statement"],
-                    target_declaration=target,
-                    lean_code=source,
-                    timeout_seconds=self.timeout_seconds,
+                chat_payload = (
+                    self.api.get_chat_input(proof_job_id, candidate_id)
+                    if content.get("chat_input_available") is True else None
                 )
+                chat_context = {
+                    "chat_route": chat_payload["chat_route"],
+                    "generation_model": chat_payload["request"]["generation_model"],
+                } if chat_payload is not None else {}
+                with linked_chat_scope(chat_context, chat_payload):
+                    review = self.reviewer_factory().review_proof(
+                        theorem_statement=content["theorem_statement"],
+                        formal_statement=content["formal_statement"],
+                        target_declaration=target,
+                        lean_code=source,
+                        timeout_seconds=self.timeout_seconds,
+                    )
                 evidence = _recipe_semantic_review_evidence(
                     candidate_id=candidate_id,
                     theorem_statement=content["theorem_statement"],

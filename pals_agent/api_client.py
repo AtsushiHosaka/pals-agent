@@ -122,6 +122,11 @@ class PalsApiClient:
         repr=False,
         compare=False,
     )
+    attachment_transport: HttpTransport = field(
+        default_factory=lambda: HardDeadlineHttpTransport(max_response_bytes=28_000_000),
+        repr=False,
+        compare=False,
+    )
 
     def permit_token_call(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
         result = self._request(
@@ -157,6 +162,17 @@ class PalsApiClient:
     ) -> dict[str, Any]:
         return self._request(
             "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/materials",
+            {"claim_id": _canonical_claim_id(claim_id)},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
+    def get_proof_request_attachments(
+        self, *, request_id: str, claim_id: str
+    ) -> dict[str, Any]:
+        from dataclasses import replace
+
+        return replace(self, transport=self.attachment_transport)._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/attachments",
             {"claim_id": _canonical_claim_id(claim_id)},
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
@@ -204,6 +220,14 @@ class PalsApiClient:
         return self._request(
             "GET",
             f"/v1/internal/proof-jobs/{resource_id}/worker-input",
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
+    def get_proof_job_chat_input(self, proof_job_id: str) -> dict[str, Any]:
+        from dataclasses import replace
+
+        return replace(self, transport=self.attachment_transport)._request(
+            "GET", f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/chat-input",
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
