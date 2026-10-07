@@ -12,8 +12,9 @@ import os
 import re
 import socket
 import threading
-from collections.abc import Callable
-from contextlib import suppress
+import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
@@ -31,10 +32,13 @@ from pals_agent.explanations import (
     ProofSemanticReviewUnavailable,
 )
 from pals_agent.http_transport import HardDeadlineHttpTransport, HttpTransport
+from pals_agent.input_fence import input_fence_scope
 from pals_agent.lean_target import extract_single_target_declaration
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.openai import OpenAIResponsesClient
+from pals_agent.proof_reuse_usage import model_role
 from pals_agent.settings import validate_release_generation_environment
+from pals_agent.token_meter import TokenMeter, TokenMeterError, token_meter_scope
 from pals_agent.worker import _recipe_semantic_review_evidence, _semantic_review_unavailable_payload
 
 _HEADER = "X-PALS-Recipe-Semantic-Reviewer-Secret"
@@ -52,6 +56,7 @@ _INPUT_KEYS = {
     "lean_code",
     "target_declaration",
 }
+_LINKED_INPUT_KEYS = {"proof_request_id", "input_generation", "billing_operation_id"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,13 +67,15 @@ class RecipeSemanticReviewApiClient:
     transport: HttpTransport = field(default_factory=HardDeadlineHttpTransport, repr=False)
 
     def _request(
-        self, method: str, path: str, payload: dict[str, Any] | None = None
+        self, method: str, path: str, payload: dict[str, Any] | None = None,
+        *, timeout_seconds: float | None = None,
     ) -> dict[str, Any]:
         if not self.reviewer_secret.strip():
             raise ValueError("Dedicated reviewer credential is required")
         # Reuse transport/error handling; this object never contains a worker credential.
         return PalsApiClient(self.base_url, "", self.timeout_seconds, self.transport)._request(
-            method, path, payload, headers={_HEADER: self.reviewer_secret}
+            method, path, payload, headers={_HEADER: self.reviewer_secret},
+            timeout_seconds=timeout_seconds,
         )
 
     def get_input(self, proof_job_id: str, candidate_id: str) -> dict[str, Any]:
@@ -78,13 +85,25 @@ class RecipeSemanticReviewApiClient:
             f"/semantic-review-input?candidate_id={_canonical_claim_id(candidate_id)}",
         )
         if (
-            set(result) != _INPUT_KEYS
+            not set(result) >= _INPUT_KEYS or set(result) - _INPUT_KEYS - _LINKED_INPUT_KEYS
             or result.get("id") != proof_job_id
             or result.get("verification_candidate_id") != candidate_id
             or result.get("attempt_source") not in {"recipe", "model"}
         ):
             raise ValueError("Dedicated reviewer input is not bound to the requested candidate")
         return result
+
+    def permit_token_call(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._request("POST", "/v1/internal/billing/recipe-token-permits", payload,
+                               timeout_seconds=timeout_seconds)
+        if result != {"permitted": True}:
+            raise PalsApiError("Recipe token permit was malformed")
+
+    def record_token_receipt(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._request("POST", "/v1/internal/billing/recipe-token-receipts", payload,
+                               timeout_seconds=timeout_seconds)
+        if result != {"recorded": True}:
+            raise PalsApiError("Recipe token receipt was malformed")
 
     def settle(self, proof_job_id: str, evidence: dict[str, Any]) -> dict[str, Any]:
         _validate_recipe_semantic_review_evidence(evidence)
@@ -121,6 +140,43 @@ class RecipeReviewActor:
         self._active: set[str] = set()
         self._lock = threading.Lock()
 
+    @contextmanager
+    def _calls(self, content: dict[str, Any], candidate_id: str) -> Iterator[None]:
+        if content.get("proof_request_id") is None:
+            if content.get("billing_operation_id") is not None:
+                raise TokenMeterError("recipe_request_binding_invalid")
+            yield
+            return
+        generation = content.get("input_generation")
+        if type(generation) is not int or generation < 1:
+            raise TokenMeterError("recipe_request_binding_invalid")
+
+        def current() -> bool:
+            latest = self.api.get_input(content["id"], candidate_id)
+            return latest["state"] == "semantic_review" and all(
+                latest.get(key) == content.get(key) for key in (
+                    "proof_request_id", "input_generation", "billing_operation_id",
+                    "verification_candidate_id", "source_binding_sha256", "mutation_claim_id",
+                )
+            )
+
+        with model_role("proof_qa"), input_fence_scope(current):
+            operation = content.get("billing_operation_id")
+            if operation is None:
+                yield
+            else:
+                meter = TokenMeter(
+                    self.api, operation, content["proof_request_id"], content["mutation_claim_id"],
+                    time.monotonic() + 2 * self.timeout_seconds,
+                    binding_kind="lean", input_generation=generation, proof_job_id=content["id"],
+                    verification_candidate_id=candidate_id,
+                    source_binding_sha256=content["source_binding_sha256"],
+                )
+                with token_meter_scope(meter):
+                    yield
+                if meter.failed:
+                    raise TokenMeterError("recipe_request_meter_failed")
+
     def review(self, proof_job_id: str, candidate_id: str) -> dict[str, Any]:
         _path_segment(proof_job_id)
         _canonical_claim_id(candidate_id)
@@ -139,13 +195,14 @@ class RecipeReviewActor:
             if target is None or target.as_dict() != content["target_declaration"]:
                 raise ValueError("Review target differs from exact source")
             try:
-                review = self.reviewer_factory().review_proof(
-                    theorem_statement=content["theorem_statement"],
-                    formal_statement=content["formal_statement"],
-                    target_declaration=target,
-                    lean_code=source,
-                    timeout_seconds=self.timeout_seconds,
-                )
+                with self._calls(content, candidate_id):
+                    review = self.reviewer_factory().review_proof(
+                        theorem_statement=content["theorem_statement"],
+                        formal_statement=content["formal_statement"],
+                        target_declaration=target,
+                        lean_code=source,
+                        timeout_seconds=self.timeout_seconds,
+                    )
                 evidence = _recipe_semantic_review_evidence(
                     candidate_id=candidate_id,
                     theorem_statement=content["theorem_statement"],

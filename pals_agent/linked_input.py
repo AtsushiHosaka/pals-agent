@@ -12,14 +12,19 @@ from pals_agent.token_meter import TokenMeter, TokenMeterError, token_meter_scop
 _job: ContextVar[dict[str, Any] | None] = ContextVar("pals_linked_job", default=None)
 
 
-def metered_linked_job() -> bool:
-    job = _job.get()
-    return job is not None and job.get("billing_operation_id") is not None
-
-
 @contextmanager
 def linked_job_scope(job: dict[str, Any]) -> Iterator[None]:
-    token = _job.set(job)
+    binding = dict(job)
+    context = job.get("request_context")
+    if not isinstance(context, dict):
+        context = job.get("context")
+    if isinstance(context, dict):
+        for field in ("proof_request_id", "input_generation", "billing_operation_id"):
+            if field in context:
+                if field in job and job[field] != context[field]:
+                    raise TokenMeterError("linked_request_binding_conflict")
+                binding[field] = context[field]
+    token = _job.set(binding)
     try:
         yield
     finally:

@@ -71,18 +71,31 @@ def test_hold_stops_before_any_lean_compilation(tmp_path):
             verifier.verify("example : True := by trivial")
 
 
-def test_paid_recipe_review_cannot_dispatch_unmetered_external_actor():
+def test_paid_recipe_review_dispatches_to_dedicated_actor_with_its_own_meter():
     from types import SimpleNamespace
 
-    def forbidden(**kwargs):
-        pytest.fail("The dedicated reviewer has no permit port for paid calls")
+    calls = []
 
     worker = SqsProofWorker(
-        settings=SimpleNamespace(), api_client=InputApi(), pipeline=None, explainer=None,
-        recipe_review_dispatcher=SimpleNamespace(request=forbidden),
+        settings=SimpleNamespace(explanation_model_timeout_seconds=30),
+        api_client=InputApi(), pipeline=None, explainer=None,
+        recipe_review_dispatcher=SimpleNamespace(request=lambda **kwargs: calls.append(kwargs)),
     )
     with linked_job_scope(JOB):
-        assert not worker._request_recipe_review(
+        worker._request_recipe_review(
             proof_job_id="linked-job", candidate_id="candidate", claim_id=CLAIM_ID,
             extend_visibility=lambda _: None,
         )
+    assert len(calls) == 1 and calls[0]["proof_job_id"] == "linked-job"
+
+
+def test_api_request_context_metadata_binds_linked_phase_calls():
+    api = InputApi()
+    provider = CountedProvider([amendment()], [])
+    job = {"id": JOB["id"], "request_context": {k: v for k, v in JOB.items() if k != "id"}}
+    with linked_job_scope(job), linked_call_scope(api, CLAIM_ID, time.monotonic() + 60):
+        OpenAIResponsesClient("test", transport=provider).generate(
+            model="gpt-6-luna", prompt="untrusted math"
+        )
+    assert api.permits[0]["request_id"] == REQUEST_ID
+    assert api.permits[0]["input_generation"] == 3

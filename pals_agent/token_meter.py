@@ -90,6 +90,8 @@ class TokenMeter:
     input_generation: int | None = None
     input_id: str | None = None
     proof_job_id: str | None = None
+    verification_candidate_id: str | None = None
+    source_binding_sha256: str | None = None
 
     def __post_init__(self) -> None:
         for value in (self.operation_id, self.request_id, self.claim_id):
@@ -134,6 +136,10 @@ class TokenMeter:
             permit_binding["input_id"] = self.input_id
         if self.proof_job_id is not None:
             permit_binding["proof_job_id"] = self.proof_job_id
+        if self.verification_candidate_id is not None:
+            permit_binding["verification_candidate_id"] = self.verification_candidate_id
+        if self.source_binding_sha256 is not None:
+            permit_binding["source_binding_sha256"] = self.source_binding_sha256
         check_input_snapshot()
         permitted = False
         receipt_attempted = False

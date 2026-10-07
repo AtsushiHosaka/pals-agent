@@ -37,7 +37,7 @@ from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
 )
-from pals_agent.linked_input import linked_call_scope, linked_job_scope, metered_linked_job
+from pals_agent.linked_input import linked_call_scope, linked_job_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.models import (
     Diagnostic,
@@ -1710,11 +1710,6 @@ class SqsProofWorker:
         self, *, proof_job_id: str, candidate_id: str,
         claim_id: str | None, extend_visibility: VisibilityExtender | None,
     ) -> bool:
-        if metered_linked_job():
-            # The isolated actor has a reviewer-only credential and no token
-            # permit port yet. Keep this delivery pending, never dispatch an
-            # unmetered paid model call or fall through to another proof path.
-            return False
         dispatcher = self.recipe_review_dispatcher
         if dispatcher is None:
             url = getattr(self.settings, "recipe_reviewer_url", None)
