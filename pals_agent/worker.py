@@ -554,6 +554,17 @@ class SqsProofWorker:
             return False
         with ExitStack() as stack:
             try:
+                if _billing_operation_finished(context):
+                    if proof_job.get("state") == "verified":
+                        return self._finish_closed_output(
+                            resource_kind="explanation", resource_id=proof_job_id,
+                            claim_id=claim_id, extend_visibility=extend_visibility,
+                            language=_required_output_language(proof_job),
+                        )
+                    return self._finish_closed_proof_job(
+                        proof_job_id=proof_job_id, proof_job=proof_job,
+                        claim_id=claim_id, extend_visibility=extend_visibility,
+                    )
                 payload = (
                     self.api_client.get_proof_job_chat_input(proof_job_id)
                     if context.get("chat_route") is not None else None
@@ -1272,6 +1283,14 @@ class SqsProofWorker:
             context = proof_input.get("request_context", {})
             if not isinstance(context, dict):
                 return False
+            if "billing_context" in worker_input:
+                context = dict(context, billing_context=worker_input["billing_context"])
+            if _billing_operation_finished(context):
+                return self._finish_closed_output(
+                    resource_kind="clarification", resource_id=clarification_id,
+                    claim_id=claim_id, extend_visibility=extend_visibility,
+                    language=_required_output_language(worker_input),
+                )
             payload = (
                 self.api_client.get_proof_job_chat_input(proof_job_id)
                 if context.get("chat_route") is not None else None
@@ -1483,6 +1502,12 @@ class SqsProofWorker:
             return False
         with ExitStack() as stack:
             try:
+                if _billing_operation_finished(context):
+                    return self._finish_closed_output(
+                        resource_kind="explanation", resource_id=proof_job_id,
+                        claim_id=claim_id, extend_visibility=extend_visibility,
+                        language=_required_output_language(proof_job), retry_id=retry_id,
+                    )
                 payload = (
                     self.api_client.get_proof_job_chat_input(proof_job_id)
                     if context.get("chat_route") is not None else None
@@ -1621,6 +1646,71 @@ class SqsProofWorker:
             response,
             resource_kind="explanation",
             resource_id=proof_job_id,
+        )
+
+    def _finish_closed_output(
+        self, *, resource_kind: ResourceKind, resource_id: str,
+        claim_id: str | None, extend_visibility: VisibilityExtender | None,
+        language: str, retry_id: str | None = None,
+    ) -> bool:
+        """Close abandoned output using its normal claim and terminal-write authority."""
+        if claim_id is None or extend_visibility is None:
+            return False
+        clarification = resource_kind == "clarification"
+        acquisition = self._acquire(
+            resource_kind=resource_kind, resource_id=resource_id,
+            claim_id=claim_id, extend_visibility=extend_visibility,
+            request=(
+                lambda lease: self.api_client.update_proof_clarification(
+                    clarification_id=resource_id, state="generating",
+                    claim_id=claim_id, required_lease_ms=lease,
+                )
+            ) if clarification else (
+                lambda lease: self.api_client.upsert_proof_explanation(
+                    proof_job_id=resource_id, state="generating", claim_id=claim_id,
+                    required_lease_ms=lease, **_optional_keyword("retry_id", retry_id),
+                )
+            ),
+        )
+        if acquisition.permit is None:
+            return acquisition.acknowledge
+        if clarification:
+            return self._write_clarification_failure(
+                clarification_id=resource_id, claim_id=claim_id,
+                code="pals.clarification_failed", language=language,
+            )
+        return self._write_explanation_failure(
+            proof_job_id=resource_id, claim_id=claim_id,
+            code="pals.explanation_failed", language=language,
+        )
+
+    def _finish_closed_proof_job(
+        self, *, proof_job_id: str, proof_job: dict[str, Any],
+        claim_id: str | None, extend_visibility: VisibilityExtender | None,
+    ) -> bool:
+        if claim_id is None or extend_visibility is None:
+            return False
+        acquired = self._acquire_proof_generation(
+            proof_job_id=proof_job_id, claim_id=claim_id,
+            extend_visibility=extend_visibility,
+        )
+        if not acquired.acquired:
+            return acquired.acknowledge
+        # The API's existing mutation gate remains authoritative, including for Lean jobs.
+        try:
+            response = self.api_client.update_proof_job(
+                proof_job_id=proof_job_id, claim_id=claim_id, state="failed",
+                diagnostics=[_localized_failure_diagnostic(
+                    "llm.generation_failed", language=_required_output_language(proof_job),
+                )], result_artifact_uri=None, lean_code=None,
+                context={"stage": "token_operation_closed"},
+            )
+        except Exception:
+            return False
+        return (
+            isinstance(response, dict)
+            and response.get("id") == proof_job_id
+            and response.get("state") in _NON_VERIFIED_TERMINAL_STATES
         )
 
     def _acquire(
@@ -1824,6 +1914,15 @@ class SqsProofWorker:
         lean_code = persisted.get("lean_code")
         if not isinstance(lean_code, str) or not lean_code.strip():
             return False
+        try:
+            if _billing_operation_finished(persisted.get("request_context", {})):
+                return self._finish_closed_output(
+                    resource_kind="explanation", resource_id=proof_job_id,
+                    claim_id=claim_id, extend_visibility=extend_visibility,
+                    language=_required_output_language(persisted),
+                )
+        except TokenMeterError:
+            return False
         with billing_stage(
             self.api_client, persisted.get("request_context", {}),
             scope="explanation", job_id=proof_job_id, claim_id=claim_id,
@@ -1845,6 +1944,21 @@ class SqsProofWorker:
         if not isinstance(value, uuid.UUID) or value.version != 4:
             raise RuntimeError("Worker claim factory must return a UUIDv4 value")
         return str(value)
+
+
+def _billing_operation_finished(context: dict[str, Any]) -> bool:
+    """Only the API's read projection may stop a closed operation's redelivery."""
+    admitted = context.get("billing_context")
+    if (
+        not isinstance(admitted, dict)
+        or admitted.get("policy_version") != POLICY_V2
+        or "operation_state" not in admitted
+    ):
+        return False
+    state = admitted["operation_state"]
+    if not isinstance(state, str) or state not in {"active", "released", "consumed"}:
+        raise TokenMeterError("token_operation_state_invalid")
+    return state in {"released", "consumed"}
 
 
 def _parse_claim_envelope(

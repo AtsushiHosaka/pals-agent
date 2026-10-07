@@ -194,3 +194,55 @@ def test_concurrent_admissions_keep_operation_and_role_separate():
         two = pool.submit(run, "gpt-5.6-terra", second)
         assert [one.result(), two.result()] == [OP, second]
     assert active_token_meter() is None
+
+
+@pytest.mark.parametrize("kind", ["clarification", "explanation_retry"])
+def test_independent_subject_is_carried_without_reopening_original_request(kind):
+    events = []
+    api, provider = StageLedger(events), ExactProvider(events)
+    admitted = context("gpt-6.1-sol")
+    subject = {"kind": kind, "id": "66666666-6666-4666-8666-666666666666"}
+    admitted["billing_context"]["subject"] = subject
+    scope = "clarification" if kind == "clarification" else "explanation"
+    role = "clarify" if kind == "clarification" else "explain"
+    client = OpenAIResponsesClient(api_key="test", transport=provider, max_output_tokens=40)
+    with (
+        billing_stage(
+            api,
+            admitted,
+            scope=scope,
+            job_id="job-1",
+            claim_id=CLAIM,
+            task_id=subject["id"] if kind == "clarification" else None,
+        ) as meter,
+        model_role(role),
+    ):
+        assert meter is not None and meter.request_id is None
+        assert client.generate(model="gpt-6.1-sol", prompt="x") == "answer"
+        meter.complete("llm")
+    for value in (*api.permits, *api.receipts, *api.seals):
+        assert value["subject"] == subject
+        assert "request_id" not in value
+        assert value["scope"] == scope
+        assert value["job_id"] == "job-1"
+
+
+@pytest.mark.parametrize(
+    "subject,scope,task",
+    [
+        ({"kind": "proof_request", "id": REQUEST}, "explanation", None),
+        ({"kind": "explanation_retry", "id": REQUEST}, "generation", None),
+        ({"kind": "clarification", "id": REQUEST}, "clarification", CLAIM),
+        ({"kind": "clarification", "id": REQUEST, "extra": "x"}, "clarification", REQUEST),
+    ],
+)
+def test_independent_subject_mismatch_is_rejected_before_provider(subject, scope, task):
+    admitted = context()
+    admitted["billing_context"]["subject"] = subject
+    api = StageLedger([])
+    with (
+        pytest.raises(TokenMeterError),
+        billing_stage(api, admitted, scope=scope, job_id="job-1", claim_id=CLAIM, task_id=task),
+    ):
+        pass
+    assert not api.events

@@ -127,20 +127,21 @@ def _supported_input(value: Any, *, embedding: bool) -> bool:
 class TokenMeter:
     api: TokenMeterApi
     operation_id: str
-    request_id: str
+    request_id: str | None
     claim_id: str
     deadline: float
     policy_version: str = "utilization-v1-2026-09-30"
     scope: str = "request"
     job_id: str | None = None
     task_id: str | None = None
+    subject: dict[str, str] | None = None
     failed: bool = False
     completed_calls: dict[str, str] = field(default_factory=dict)
     last_call_id: str | None = None
     sealed: bool = False
 
     def __post_init__(self) -> None:
-        for value in (self.operation_id, self.request_id, self.claim_id):
+        for value in (self.operation_id, self.claim_id):
             if str(UUID(value)) != value:
                 raise TokenMeterError("token_binding_invalid")
         if self.policy_version not in {"utilization-v1-2026-09-30", POLICY_V2}:
@@ -155,6 +156,28 @@ class TokenMeter:
             raise TokenMeterError("token_scope_invalid")
         if self.scope != "request" and (not isinstance(self.job_id, str) or not self.job_id):
             raise TokenMeterError("token_binding_invalid")
+        if self.subject is None:
+            if (
+                not isinstance(self.request_id, str)
+                or str(UUID(self.request_id)) != self.request_id
+            ):
+                raise TokenMeterError("token_binding_invalid")
+        elif (
+            self.policy_version != POLICY_V2
+            or self.request_id is not None
+            or set(self.subject) != {"kind", "id"}
+            or not isinstance(self.subject.get("id"), str)
+            or self.subject.get("kind") not in {"clarification", "explanation_retry"}
+            or self.scope != (
+                "clarification" if self.subject["kind"] == "clarification" else "explanation"
+            )
+            or self.scope == "clarification" and self.task_id != self.subject["id"]
+        ):
+            raise TokenMeterError("token_binding_invalid")
+        if self.subject is not None:
+            parsed = UUID(self.subject["id"])
+            if str(parsed) != self.subject["id"] or parsed.version != 4:
+                raise TokenMeterError("token_binding_invalid")
 
     def _remaining(self, deadline: float) -> float:
         remaining = min(deadline, self.deadline) - time.monotonic()
@@ -168,7 +191,6 @@ class TokenMeter:
         payload: dict[str, Any] = {
             "schema_version": "pals.token-stage-seal.v2",
             "operation_id": self.operation_id,
-            "request_id": self.request_id,
             "claim_id": self.claim_id,
             "scope": self.scope,
             "call_ids": sorted(self.completed_calls),
@@ -176,6 +198,10 @@ class TokenMeter:
             "outcome": "completed",
             "path": path,
         }
+        if self.request_id is not None:
+            payload["request_id"] = self.request_id
+        if self.subject is not None:
+            payload["subject"] = dict(self.subject)
         if self.job_id is not None:
             payload["job_id"] = self.job_id
         if self.task_id is not None:
@@ -206,15 +232,18 @@ class TokenMeter:
         Neither counting nor receipt latency grants additional generation time.
         """
         deadline = min(self.deadline, time.monotonic() + timeout_seconds)
-        binding = dict(
+        binding: dict[str, Any] = dict(
             operation_id=self.operation_id,
-            request_id=self.request_id,
             claim_id=self.claim_id,
             call_id=call_id,
         )
+        if self.request_id is not None:
+            binding["request_id"] = self.request_id
         versioned_binding = dict(binding)
         if self.policy_version == POLICY_V2:
             versioned_binding.update(scope=self.scope)
+            if self.subject is not None:
+                versioned_binding["subject"] = dict(self.subject)
             if self.job_id is not None:
                 versioned_binding["job_id"] = self.job_id
             if self.task_id is not None:

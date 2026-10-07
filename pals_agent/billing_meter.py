@@ -33,7 +33,8 @@ def billing_stage(
     if admitted.get("policy_version") == "utilization-v1-2026-09-30":
         yield None
         return
-    request_id = context.get("proof_request_id")
+    subject = admitted.get("subject")
+    request_id = context.get("proof_request_id") if subject is None else None
     operation_id = admitted.get("operation_id")
     if (
         admitted.get("policy_version") != POLICY_V2
@@ -42,13 +43,14 @@ def billing_stage(
         or admitted.get("generation_model") != context.get("generation_model")
         or admitted.get("role_policy_version") != ROLE_POLICY_V2
         or admitted.get("price_snapshot_ids") != TARIFF_SNAPSHOTS
-        or not isinstance(request_id, str)
+        or subject is None and not isinstance(request_id, str)
+        or subject is not None and not isinstance(subject, dict)
         or not isinstance(operation_id, str)
         or not isinstance(claim_id, str)
     ):
         raise TokenMeterError("token_binding_invalid")
     try:
-        for value in (request_id, operation_id, claim_id):
+        for value in (operation_id, claim_id, *([request_id] if request_id is not None else [])):
             if str(UUID(value)) != value:
                 raise ValueError
     except (ValueError, TypeError, AttributeError):
@@ -63,6 +65,7 @@ def billing_stage(
         scope=scope,
         job_id=job_id,
         task_id=task_id,
+        subject=subject,
     )
     with token_meter_scope(meter):
         yield meter

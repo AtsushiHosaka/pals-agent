@@ -4,6 +4,7 @@ These are caller regressions, not provider or PostgreSQL acceptance evidence.
 """
 
 import json
+from copy import deepcopy
 from dataclasses import replace
 from types import SimpleNamespace
 from typing import Any, cast
@@ -29,6 +30,19 @@ REQUEST = "44444444-4444-4444-8444-444444444444"
 OPERATION = "55555555-5555-4555-8555-555555555555"
 DELIVERY = "66666666-6666-4666-8666-666666666666"
 JOB = "job-semantic"
+
+
+def wire_diagnostics(values):
+    return [
+        {
+            "severity": item.severity,
+            "message": item.message,
+            "code": item.code,
+            "line": item.line,
+            "column": item.column,
+        }
+        for item in values
+    ]
 
 
 class StageApi(SemanticReviewApi):
@@ -103,7 +117,7 @@ class StageApi(SemanticReviewApi):
                 "content": kwargs.get("content"),
                 "created_at": "2026-10-07T00:00:00Z",
                 "updated_at": "2026-10-07T00:00:00Z",
-                "diagnostics": kwargs.get("diagnostics", []),
+                "diagnostics": wire_diagnostics(kwargs.get("diagnostics", [])),
             },
         }
 
@@ -112,34 +126,51 @@ class StageProvider:
     def __init__(self, api):
         self.api = api
         self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.http_calls: list[dict[str, Any]] = []
 
     def request(self, **kwargs):
+        self.http_calls.append(kwargs)
         payload = json.loads(kwargs["body"])
         if kwargs["url"].endswith("/input_tokens"):
-            return HttpResponse(200, json.dumps({
-                "object": "response.input_tokens", "input_tokens": 23,
-            }).encode())
+            return HttpResponse(
+                200,
+                json.dumps(
+                    {
+                        "object": "response.input_tokens",
+                        "input_tokens": 23,
+                    }
+                ).encode(),
+            )
         role = current_role()
         self.calls.append((role, payload))
         self.api.events.append(("provider", role))
         if role == "explain":
             answer = {
                 "overview": "Truth holds directly.",
-                "sections": [{
-                    "id": "truth", "title": "Truth", "summary": "The claim is true.",
-                    "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
-                }],
+                "sections": [
+                    {
+                        "id": "truth",
+                        "title": "Truth",
+                        "summary": "The claim is true.",
+                        "references": [{"start_line": 2, "end_line": 2, "excerpt": "  trivial"}],
+                    }
+                ],
                 "conclusion": "This establishes the requested claim.",
             }
         else:
             assert role in {"proof_review", "explain_qa"}
             answer = {"approved": True, "rationale": "Matches the exact verified source."}
         body = {
-            "object": "response", "id": f"resp_isolated_{len(self.calls)}",
-            "status": "completed", "model": payload["model"], "service_tier": "default",
+            "object": "response",
+            "id": f"resp_isolated_{len(self.calls)}",
+            "status": "completed",
+            "model": payload["model"],
+            "service_tier": "default",
             "output_text": json.dumps(answer),
             "usage": {
-                "input_tokens": 23, "output_tokens": 5, "total_tokens": 28,
+                "input_tokens": 23,
+                "output_tokens": 5,
+                "total_tokens": 28,
                 "input_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0},
                 "output_tokens_details": {"reasoning_tokens": 0},
             },
@@ -156,12 +187,166 @@ def setup_worker(fault=None):
 
     worker = SqsProofWorker(
         settings=cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17)),
-        api_client=cast(Any, api), pipeline=None,
+        api_client=cast(Any, api),
+        pipeline=None,
         explainer=LeanProofExplainer(client(), "gpt-6-luna", "openai", max_attempts=1),
         proof_reviewer=LeanProofSemanticReviewer(client(), "gpt-6-luna", "openai"),
         output_reviewer=LeanGroundedOutputReviewer(client(), "gpt-6-luna", "openai"),
     )
     return api, provider, worker, client
+
+
+@pytest.mark.parametrize("state", ["released", "consumed"])
+def test_closed_nonterminal_proof_cannot_acknowledge_without_mutation_authority(state):
+    api, provider, worker, _ = setup_worker()
+    original = api.get_proof_job
+
+    def get_job(job_id):
+        value = original(job_id)
+        value["request_context"]["billing_context"]["operation_state"] = state
+        return value
+
+    api.get_proof_job = get_job
+    assert not worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None)
+    assert not provider.http_calls and not api.permits and not api.receipts and not api.seals
+
+
+def _generation_claim(status, *, job_id=JOB):
+    terminal = status == "terminal"
+    return {
+        "claim_status": status,
+        "lease_remaining_ms": None if terminal else 3_600_000,
+        "resource": {
+            "id": job_id,
+            "job_id": job_id,
+            "project_id": None,
+            "chat_id": "chat-1",
+            "output_language": "en",
+            "theorem_statement": "Show that True.",
+            "formal_statement": None,
+            "state": "failed" if terminal else "queued",
+            "request_context": {},
+            "status_context": None,
+            "diagnostics": [],
+            "result_artifact_uri": None,
+            "lean_code": None,
+            "verifier_attestation": None,
+            "verification_candidate_id": None,
+            "verification_candidate_state": None,
+            "generation_session_id": None,
+        },
+    }
+
+
+@pytest.mark.parametrize("state", ["released", "consumed"])
+@pytest.mark.parametrize(
+    "outcome",
+    [
+        "persisted",
+        "terminal_claim",
+        "busy",
+        "acquire_error",
+        "acquire_wrong_id",
+        "mutation_error",
+        "mutation_nonterminal",
+        "mutation_wrong_id",
+        "mutation_missing_id",
+        "mutation_malformed",
+    ],
+)
+def test_closed_generation_acknowledges_only_its_authoritative_terminal_result(
+    state,
+    outcome,
+    monkeypatch,
+):
+    api, provider, worker, _ = setup_worker()
+    job = api.get_proof_job(JOB)
+    job["state"] = "queued"
+    job["request_context"]["billing_context"]["operation_state"] = state
+    original = deepcopy(job)
+    claims, updates = [], []
+    monkeypatch.setattr(api, "get_proof_job", lambda _: job)
+
+    def acquire(**kwargs):
+        claims.append(kwargs)
+        if outcome == "acquire_error":
+            raise PalsApiError("isolated claim rejection")
+        status = (
+            "busy"
+            if outcome == "busy"
+            else "terminal"
+            if outcome == "terminal_claim"
+            else "acquired"
+        )
+        return _generation_claim(
+            status, job_id="another-job" if outcome == "acquire_wrong_id" else JOB
+        )
+
+    def update(**kwargs):
+        updates.append(kwargs)
+        if outcome == "mutation_error":
+            raise PalsApiError("isolated mutation rejection")
+        if outcome == "mutation_nonterminal":
+            return {"id": JOB, "state": "queued"}
+        if outcome == "mutation_wrong_id":
+            return {"id": "another-job", "state": "failed"}
+        if outcome == "mutation_missing_id":
+            return {"state": "failed"}
+        if outcome == "mutation_malformed":
+            return None
+        return {"id": JOB, "state": "failed"}
+
+    monkeypatch.setattr(api, "acquire_proof_generation_claim", acquire, raising=False)
+    monkeypatch.setattr(api, "update_proof_job", update, raising=False)
+    assert worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None) is (
+        outcome in {"persisted", "terminal_claim"}
+    )
+    assert claims == [{"proof_job_id": JOB, "claim_id": DELIVERY, "required_lease_ms": 3_600_000}]
+    if outcome in {"terminal_claim", "busy", "acquire_error", "acquire_wrong_id"}:
+        assert not updates
+    else:
+        assert len(updates) == 1
+        assert updates[0]["proof_job_id"] == JOB and updates[0]["claim_id"] == DELIVERY
+        assert updates[0]["state"] == "failed"
+        assert updates[0]["context"] == {"stage": "token_operation_closed"}
+        assert updates[0]["lean_code"] is None and updates[0]["result_artifact_uri"] is None
+    assert not provider.http_calls
+    assert not api.permits and not api.receipts and not api.seals and not api.outputs
+    assert job == original
+    assert active_token_meter() is None
+
+
+@pytest.mark.parametrize("state", ["released", "consumed"])
+def test_closed_verified_job_finishes_its_output_without_changing_the_verified_proof(
+    state, monkeypatch
+):
+    api, provider, worker, _ = setup_worker()
+    job = api.get_proof_job(JOB)
+    job["state"] = "verified"
+    job["request_context"]["billing_context"]["operation_state"] = state
+    original = deepcopy(job)
+    monkeypatch.setattr(api, "get_proof_job", lambda _: job)
+    assert worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None)
+    assert [output["state"] for output in api.outputs] == ["generating", "failed"]
+    assert all(output["claim_id"] == DELIVERY for output in api.outputs)
+    assert not provider.http_calls and not api.permits and not api.receipts and not api.seals
+    assert job == original
+    assert active_token_meter() is None
+
+
+@pytest.mark.parametrize("state", ["unknown", None, True, []])
+def test_unknown_operation_read_state_does_not_acknowledge_or_call_provider(state):
+    api, provider, worker, _ = setup_worker()
+    original = api.get_proof_job
+
+    def get_job(job_id):
+        value = original(job_id)
+        value["request_context"]["billing_context"]["operation_state"] = state
+        return value
+
+    api.get_proof_job = get_job
+    assert not worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None)
+    assert not provider.calls and not api.permits
 
 
 def test_worker_seals_semantic_review_then_uses_fresh_explanation_meter():
@@ -187,9 +372,11 @@ def test_worker_seals_semantic_review_then_uses_fresh_explanation_meter():
             assert permit[field] == receipt[field]
         assert permit["operation_id"] == OPERATION
         assert permit["request_id"] == REQUEST
-    assert api.events.index(("seal", "semantic_review")) < api.events.index(
-        ("settle", "semantic_review")
-    ) < api.events.index(("permit", "explanation"))
+    assert (
+        api.events.index(("seal", "semantic_review"))
+        < api.events.index(("settle", "semantic_review"))
+        < api.events.index(("permit", "explanation"))
+    )
     assert api.events.index(("seal", "explanation")) < api.events.index(
         ("completed", "explanation")
     )
@@ -203,10 +390,15 @@ def test_worker_seals_semantic_review_then_uses_fresh_explanation_meter():
     assert len(provider.calls) == 3
 
 
-@pytest.mark.parametrize("fault", [
-    ("receipt", "semantic_review"), ("seal", "semantic_review"),
-    ("receipt", "explanation"), ("seal", "explanation"),
-])
+@pytest.mark.parametrize(
+    "fault",
+    [
+        ("receipt", "semantic_review"),
+        ("seal", "semantic_review"),
+        ("receipt", "explanation"),
+        ("seal", "explanation"),
+    ],
+)
 def test_failed_receipt_or_seal_never_writes_completed_explanation(fault):
     api, _, worker, _ = setup_worker(fault)
     worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None)
@@ -245,7 +437,8 @@ def test_recipe_actor_readback_uses_new_worker_explanation_stage():
     worker = replace(worker, recipe_review_dispatcher=ActorBoundary())
     assert worker.process_proof_job(JOB, claim_id=DELIVERY, extend_visibility=lambda _: None)
     assert [(role, p["model"]) for role, p in provider.calls] == [
-        ("explain", "gpt-6.1-sol"), ("explain_qa", "gpt-6-luna"),
+        ("explain", "gpt-6.1-sol"),
+        ("explain_qa", "gpt-6-luna"),
     ]
     assert len(api.seals) == 1
     seal = api.seals[0]
