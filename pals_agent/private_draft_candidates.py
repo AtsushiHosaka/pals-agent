@@ -139,6 +139,9 @@ class PrivateDraftCandidateClient:
         embedding: list[float],
         fingerprint: DraftEmbeddingFingerprint,
     ) -> DraftCandidateResult:
+        from pals_agent.input_fence import check_input_snapshot
+
+        check_input_snapshot()
         try:
             payload = _request_payload(embedding=embedding, fingerprint=fingerprint)
         except (TypeError, ValueError, struct.error):

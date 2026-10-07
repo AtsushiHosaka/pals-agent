@@ -13,6 +13,7 @@ from pals_agent.http_transport import (
     HttpResponseTooLarge,
     HttpTransport,
 )
+from pals_agent.input_fence import check_input_snapshot
 from pals_agent.model_roles import ESCALATION_MODEL, RELEASE_MODEL
 from pals_agent.openai_diagnostics import (
     http_failure_diagnostics,
@@ -55,6 +56,7 @@ class OpenAIResponsesClient:
                 private_diagnostics={"stage": "configuration"},
             )
 
+        check_input_snapshot()
         endpoint = self.base_url.rstrip("/") + "/responses"
         payload: dict[str, Any] = {
             "model": model,

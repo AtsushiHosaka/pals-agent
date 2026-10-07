@@ -162,6 +162,9 @@ class ProofFlowRuntime:
 
     def prepare(self, natural_statement: str) -> PreparedDraftRetrieval:
         """Run the shared deterministic path without invoking the semantic reranker."""
+        from pals_agent.input_fence import check_input_snapshot
+
+        check_input_snapshot()
         if not isinstance(natural_statement, str) or not natural_statement.strip():
             raise ProofFlowRetrievalError("input_too_large")
         try:

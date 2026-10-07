@@ -83,6 +83,9 @@ class LeanVerifier:
         return self._verify(lean_code, allow_sorry=True)
 
     def _verify(self, lean_code: str, *, allow_sorry: bool) -> VerificationResult:
+        from pals_agent.input_fence import check_input_snapshot
+
+        check_input_snapshot()
         checked_code = _strip_lean_comments_and_strings(lean_code)
 
         placeholder = _PLACEHOLDER_RE.search(checked_code)

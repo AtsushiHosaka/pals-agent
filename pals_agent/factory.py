@@ -99,8 +99,11 @@ def build_proof_request_processor(
     settings: AgentSettings, api_client: ProofRequestApi
 ) -> ProofRequestProcessor:
     """Compose natural proof answering separately from all Lean/artifact capabilities."""
+    from pals_agent.proof_input import ProofInputInterpreter
     from pals_agent.proof_reuse import ProofReuseRuntime
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog
+
+    client = replace(_release_openai_client(settings), max_output_tokens=6000)
 
     return ProofRequestProcessor(
         api=api_client,
@@ -109,9 +112,10 @@ def build_proof_request_processor(
             and os.environ.get("PALS_TOKEN_ACCOUNTING_ENABLED") == "true"
         ),
         runtime=ProofReuseRuntime(
-            client=replace(_release_openai_client(settings), max_output_tokens=6000),
+            client=client,
             catalog=ApiProofReuseCatalog(settings),
         ),
+        input_interpreter=ProofInputInterpreter(client),
     )
 
 

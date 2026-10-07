@@ -18,6 +18,7 @@ from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
 from pals_agent.http_transport import HttpResponse, HttpTransport
+from pals_agent.input_fence import check_input_snapshot
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.usage import PRICE_SNAPSHOTS, report_usage
 
@@ -85,6 +86,10 @@ class TokenMeter:
     failed: bool = False
     completed_calls: dict[str, str] = field(default_factory=dict)
     last_call_id: str | None = None
+    binding_kind: str = "assessment"
+    input_generation: int | None = None
+    input_id: str | None = None
+    proof_job_id: str | None = None
 
     def __post_init__(self) -> None:
         for value in (self.operation_id, self.request_id, self.claim_id):
@@ -122,6 +127,14 @@ class TokenMeter:
             claim_id=self.claim_id,
             call_id=call_id,
         )
+        permit_binding: dict[str, Any] = {"binding_kind": self.binding_kind}
+        if self.input_generation is not None:
+            permit_binding["input_generation"] = self.input_generation
+        if self.input_id is not None:
+            permit_binding["input_id"] = self.input_id
+        if self.proof_job_id is not None:
+            permit_binding["proof_job_id"] = self.proof_job_id
+        check_input_snapshot()
         permitted = False
         receipt_attempted = False
         try:
@@ -184,6 +197,7 @@ class TokenMeter:
                 self.api.permit_token_call(
                     dict(
                         binding,
+                        **permit_binding,
                         model=model,
                         model_role=current_role(),
                         price_snapshot_id=snapshot,

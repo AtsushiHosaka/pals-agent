@@ -342,6 +342,9 @@ class PrivateRecipeSelectionClient:
         self._nonce_guard = _NonceReplayGuard(clock=self.nonce_clock)
 
     def select(self, query: RecipeSelectionQuery) -> RecipeSelection:
+        from pals_agent.input_fence import check_input_snapshot
+
+        check_input_snapshot()
         if not isinstance(query, RecipeSelectionQuery):
             raise RecipeSelectionUnavailableError("Recipe selection is unavailable.")
         if query.draft_revision is not None:

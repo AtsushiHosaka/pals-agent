@@ -37,6 +37,7 @@ from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
 )
+from pals_agent.linked_input import linked_call_scope, linked_job_scope, metered_linked_job
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.models import (
     Diagnostic,
@@ -541,6 +542,19 @@ class SqsProofWorker:
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
         proof_job = self.api_client.get_proof_job(proof_job_id)
+        with linked_job_scope(proof_job):
+            return self._process_proof_job(
+                proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
+
+    def _process_proof_job(
+        self, proof_job_id: str, *, proof_job: dict[str, Any],
+        claim_id: str | None = None,
+        extend_visibility: VisibilityExtender | None = None,
+    ) -> bool:
+        if getattr(self.settings, "proof_capability", "full") != "full":
+            return False
         state = proof_job.get("state")
         if state in _NON_VERIFIED_TERMINAL_STATES:
             return True
@@ -606,13 +620,17 @@ class SqsProofWorker:
                 except Exception:
                     return False
             try:
-                review = self._required_proof_reviewer().review_proof(
-                    theorem_statement=statement,
-                    formal_statement=formal_statement,
-                    target_declaration=target_declaration,
-                    lean_code=lean_code,
-                    timeout_seconds=timeout_seconds,
-                )
+                with linked_call_scope(
+                    self.api_client, generation_session_id, time.monotonic() + 3 * timeout_seconds,
+                    role="proof_review",
+                ):
+                    review = self._required_proof_reviewer().review_proof(
+                        theorem_statement=statement,
+                        formal_statement=formal_statement,
+                        target_declaration=target_declaration,
+                        lean_code=lean_code,
+                        timeout_seconds=timeout_seconds,
+                    )
             except Exception as exc:
                 failure = _semantic_review_unavailable_payload(
                     candidate_id=candidate_id, mutation_claim_id=generation_session_id,
@@ -736,10 +754,11 @@ class SqsProofWorker:
         # fresh Recipe selection over that durable attempt, or change its retry semantics.
         if api_repair_seed is None and formal_statement is not None:
             try:
-                recipe_attempt = self._selected_recipe_attempt(
-                    formal_statement=formal_statement,
-                    proof_job_id=proof_job_id, mutation_claim_id=claim_id,
-                )
+                with linked_call_scope(self.api_client, claim_id, time.monotonic() + 60):
+                    recipe_attempt = self._selected_recipe_attempt(
+                        formal_statement=formal_statement,
+                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                    )
             except RuntimeError:
                 return False
             if recipe_attempt is not None:
@@ -826,7 +845,9 @@ class SqsProofWorker:
                 and api_repair_seed is None
                 and formal_statement is None
             ):
-                with usage_scope(lambda usage: self.api_client.record_usage(
+                with linked_call_scope(
+                    self.api_client, claim_id, time.monotonic() + 3600
+                ), usage_scope(lambda usage: self.api_client.record_usage(
                     proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
                 )):
                     prepared = pipeline.prepare_statement(statement=statement)
@@ -855,7 +876,9 @@ class SqsProofWorker:
                 except RuntimeError:
                     return False
                 run_kwargs["prepared_request"] = prepared
-            with usage_scope(lambda usage: self.api_client.record_usage(
+            with linked_call_scope(
+                self.api_client, claim_id, time.monotonic() + 3600
+            ), usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
             )):
                 run_result = pipeline.run_statement(**run_kwargs)
@@ -1281,25 +1304,28 @@ class SqsProofWorker:
                 clarification_kwargs["after_clarification_id"] = after_clarification_id
                 clarification_kwargs["parent_clarification"] = parent_clarification
             reviewer = self._required_output_reviewer()
-            clarification, review = _generate_reviewed_candidate(
-                generate=lambda feedback: self._required_explainer().clarify(
-                    **clarification_kwargs, **_optional_keyword("review_feedback", feedback)
-                ),
-                review=lambda candidate: reviewer.review_clarification(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    explanation=explanation,
-                    clarification=candidate,
-                    language=language,
-                    selected_text=selected_text,
-                    after_clarification_id=after_clarification_id,
-                    parent_clarification=parent_clarification,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                ),
-                content_of=_public_clarification_content,
-                failures=private_review_failures,
-            )
+            with linked_job_scope(proof_input), linked_call_scope(
+                self.api_client, claim_id, permit.deadline, role="clarify"
+            ):
+                clarification, review = _generate_reviewed_candidate(
+                    generate=lambda feedback: self._required_explainer().clarify(
+                        **clarification_kwargs, **_optional_keyword("review_feedback", feedback)
+                    ),
+                    review=lambda candidate: reviewer.review_clarification(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        explanation=explanation,
+                        clarification=candidate,
+                        language=language,
+                        selected_text=selected_text,
+                        after_clarification_id=after_clarification_id,
+                        parent_clarification=parent_clarification,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                    ),
+                    content_of=_public_clarification_content,
+                    failures=private_review_failures,
+                )
             content = _public_clarification_content(clarification)
             review_evidence = _output_review_evidence(
                 kind="clarification",
@@ -1380,15 +1406,16 @@ class SqsProofWorker:
         proof_job = self.api_client.get_proof_job(proof_job_id)
         if proof_job.get("state") != "verified":
             return proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES
-        return self._ensure_summary_explanation(
-            proof_job_id=proof_job_id,
-            theorem_statement=_required_text(proof_job, "theorem_statement"),
-            lean_code=_required_text(proof_job, "lean_code"),
-            language=_required_output_language(proof_job),
-            claim_id=claim_id,
-            extend_visibility=extend_visibility,
-            retry_id=retry_id,
-        )
+        with linked_job_scope(proof_job):
+            return self._ensure_summary_explanation(
+                proof_job_id=proof_job_id,
+                theorem_statement=_required_text(proof_job, "theorem_statement"),
+                lean_code=_required_text(proof_job, "lean_code"),
+                language=_required_output_language(proof_job),
+                claim_id=claim_id,
+                extend_visibility=extend_visibility,
+                retry_id=retry_id,
+            )
 
     def _ensure_summary_explanation(
         self,
@@ -1421,27 +1448,28 @@ class SqsProofWorker:
         private_review_failures: list[dict[str, Any]] = []
         try:
             reviewer = self._required_output_reviewer()
-            explanation, review = _generate_reviewed_candidate(
-                generate=lambda feedback: self._required_explainer().explain(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    verified=True,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                    **_optional_keyword("review_feedback", feedback),
-                ),
-                review=lambda candidate: reviewer.review_explanation(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    explanation=candidate,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                ),
-                content_of=_public_explanation_content,
-                failures=private_review_failures,
-            )
+            with linked_call_scope(self.api_client, claim_id, permit.deadline, role="explain"):
+                explanation, review = _generate_reviewed_candidate(
+                    generate=lambda feedback: self._required_explainer().explain(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        verified=True,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                        **_optional_keyword("review_feedback", feedback),
+                    ),
+                    review=lambda candidate: reviewer.review_explanation(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        explanation=candidate,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                    ),
+                    content_of=_public_explanation_content,
+                    failures=private_review_failures,
+                )
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -1682,6 +1710,11 @@ class SqsProofWorker:
         self, *, proof_job_id: str, candidate_id: str,
         claim_id: str | None, extend_visibility: VisibilityExtender | None,
     ) -> bool:
+        if metered_linked_job():
+            # The isolated actor has a reviewer-only credential and no token
+            # permit port yet. Keep this delivery pending, never dispatch an
+            # unmetered paid model call or fall through to another proof path.
+            return False
         dispatcher = self.recipe_review_dispatcher
         if dispatcher is None:
             url = getattr(self.settings, "recipe_reviewer_url", None)

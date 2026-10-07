@@ -161,6 +161,33 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def check_proof_request_claim(
+        self, *, request_id: str, claim_id: str, input_generation: int,
+        input_id: str | None = None,
+        proof_job_id: str | None = None,
+    ) -> bool:
+        result = self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/claims/"
+            f"{_canonical_claim_id(claim_id)}/checks",
+            {"input_generation": input_generation,
+             "input_id": _canonical_claim_id(input_id) if input_id is not None else None,
+             **({"proof_job_id": _path_segment(proof_job_id)}
+                if proof_job_id is not None else {})},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+        if set(result) != {"current"} or type(result["current"]) is not bool:
+            raise PalsApiError("Proof request claim check was malformed")
+        return bool(result["current"])
+
+    def settle_proof_request_input(
+        self, *, request_id: str, input_id: str, payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/inputs/"
+            f"{_canonical_claim_id(input_id)}/settlements", payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
     def lookup_proof_request_recipes(
         self, *, request_id: str, claim_id: str, sources: list[dict[str, Any]]
     ) -> list[dict[str, Any]]:

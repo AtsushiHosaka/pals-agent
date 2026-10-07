@@ -14,6 +14,7 @@ from pals_agent.http_transport import (
     HardDeadlineHttpTransport,
     HttpTransport,
 )
+from pals_agent.input_fence import check_input_snapshot
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.natural_query_tree import TREE_SCHEMA, VOCABULARY, tree_to_openmath
@@ -62,6 +63,7 @@ class BoundedEmbeddingModel(OpenAIEmbeddingModel):
     transport: HttpTransport = field(default_factory=HardDeadlineHttpTransport, repr=False)
 
     def embed(self, text: str) -> list[float]:
+        check_input_snapshot()
         meter = active_token_meter()
         call_id = str(uuid4())
         endpoint = self.base_url.rstrip("/") + "/embeddings"
@@ -181,6 +183,7 @@ class ApiProofReuseCatalog:
     def retrieve(
         self, statement: str, profile_id: str | None, *, deadline: float
     ) -> DraftRetrievalResult | NaturalDraftRetrievalResult:
+        check_input_snapshot()
         if profile_id is None:
             return DraftRetrievalResult("no_match", "", (), {"reason": "no_catalog_profile"})
         if profile_id not in self.profiles:
@@ -201,6 +204,7 @@ class ApiProofReuseCatalog:
                 revision=str(EMBEDDING_BINDING["revision"]),
                 timeout_seconds=10.0,
             ).embed(query)
+            check_input_snapshot()
             return NaturalDraftCandidateClient(
                 self.settings.api_base_url,
                 self.settings.worker_shared_secret,

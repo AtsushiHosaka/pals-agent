@@ -9,6 +9,7 @@ from urllib.request import Request, urlopen
 from uuid import uuid4
 
 from pals_agent.http_transport import HardDeadlineHttpTransport
+from pals_agent.input_fence import check_input_snapshot
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.token_meter import active_token_meter
 
@@ -66,6 +67,7 @@ class OpenAIEmbeddingModel:
         return self.deployment_identity_override or self.model
 
     def embed(self, text: str) -> list[float]:
+        check_input_snapshot()
         if not self.api_key.strip():
             raise EmbeddingError(
                 "OPENAI_API_KEY is required when PALS_DRAFT_EMBEDDING_PROVIDER=openai."
