@@ -112,7 +112,7 @@ def test_dsp_repair_and_explainer_selected_with_fixed_routing_and_independent_qa
         )
         assert review.reviewer_model == "gpt-6-luna"
     assert [call["model"] for call in provider.calls] == [
-        model, model, model, model, "gpt-6-luna", model, "gpt-6-luna"
+        model, model, model, "gpt-6-luna", "gpt-6-luna", model, "gpt-6-luna"
     ]
     assert_visual_calls(provider.calls)
     assert current_chat_images() == ()

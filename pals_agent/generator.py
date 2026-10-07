@@ -23,6 +23,7 @@ from pals_agent.models import (
 )
 from pals_agent.ollama import OllamaClient, OllamaError
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
+from pals_agent.proof_reuse_usage import with_model_role
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
@@ -53,6 +54,7 @@ class HybridLeanGenerator:
     prove_provider: str | None = None
     prove_client: TextGenerationClient | None = None
 
+    @with_model_role("prove")
     def generate(self, request: ProofRequest) -> GeneratedProof:
         return self._generate_staged(request=request, feedback=None, start_stage="draft")
 
@@ -94,12 +96,13 @@ class HybridLeanGenerator:
             start_stage=start_stage,
         )
 
+    @with_model_role("route")
     def _generate_repair_instruction(
         self,
         request: ProofRequest,
         feedback: GenerationFeedback,
     ) -> RepairInstruction:
-        client, model, _provider = self._default_endpoint()
+        client, model, _provider = self._default_endpoint(selected=False)
         if client is None:
             raise RepairInstructionError("repair client is not configured")
         raw_model_output = client.generate(
@@ -108,6 +111,7 @@ class HybridLeanGenerator:
         )
         return parse_repair_instruction(raw_model_output)
 
+    @with_model_role("route")
     def select_repair_route(
         self,
         request: ProofRequest,
@@ -236,6 +240,7 @@ class HybridLeanGenerator:
 
         return self.generate_proof(request, draft, sketch, feedback)
 
+    @with_model_role("draft")
     def generate_draft(
         self,
         request: ProofRequest,
@@ -282,6 +287,7 @@ class HybridLeanGenerator:
             elapsed_ms=_elapsed_ms(started_at),
         )
 
+    @with_model_role("sketch")
     def generate_sketch(
         self,
         request: ProofRequest,
@@ -339,6 +345,7 @@ class HybridLeanGenerator:
             elapsed_ms=_elapsed_ms(started_at),
         )
 
+    @with_model_role("prove")
     def generate_proof(
         self,
         request: ProofRequest,

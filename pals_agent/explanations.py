@@ -11,6 +11,7 @@ from typing import Any, Literal, Protocol
 
 from pals_agent.lean_target import LeanTargetDeclaration
 from pals_agent.linked_chat import selected_generation_model
+from pals_agent.proof_reuse_usage import with_model_role
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])(?:"
@@ -211,6 +212,7 @@ class LeanGroundedOutputReviewer:
         if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
             raise ValueError("max_attempts must be between one and three")
 
+    @with_model_role("explain_qa")
     def review_explanation(
         self,
         *,
@@ -234,6 +236,7 @@ class LeanGroundedOutputReviewer:
             timeout_seconds=timeout_seconds,
         )
 
+    @with_model_role("clarify_qa")
     def review_clarification(
         self,
         *,
@@ -361,6 +364,7 @@ class LeanProofSemanticReviewer:
         if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
             raise ValueError("max_attempts must be between one and three")
 
+    @with_model_role("proof_review")
     def review_proof(
         self,
         *,
@@ -439,6 +443,7 @@ class LeanProofExplainer:
         if type(self.max_attempts) is not int or not 1 <= self.max_attempts <= 3:
             raise ValueError("max_attempts must be between one and three")
 
+    @with_model_role("explain")
     def explain(
         self,
         *,
@@ -490,6 +495,7 @@ class LeanProofExplainer:
             elapsed_ms=_elapsed_ms(started_at, self.monotonic),
         )
 
+    @with_model_role("clarify")
     def clarify(
         self,
         *,

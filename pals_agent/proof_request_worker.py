@@ -83,7 +83,8 @@ class ProofRequestProcessor:
         )
         keys = {"status", "request", "claim_id", "lease_expires_at"}
         if not keys <= set(claim) or set(claim) - keys - {
-            "billing_operation_id", "material_context_available", "lean_flow", "math_conventions"
+            "billing_operation_id", "billing_policy_version", "billing_context",
+            "material_context_available", "lean_flow", "math_conventions"
         }:
             return False
         conventions = None
@@ -178,8 +179,12 @@ class ProofRequestProcessor:
                     operation_id = claim["billing_operation_id"]
                     if not isinstance(operation_id, str) or str(UUID(operation_id)) != operation_id:
                         raise TokenMeterError("token_binding_invalid")
-                    meter = TokenMeter(self.api, operation_id, request_id, claim_id,
-                                       started + MAX_SECONDS)
+                    meter = TokenMeter(
+                        self.api, operation_id, request_id, claim_id, started + MAX_SECONDS,
+                        policy_version=claim.get(
+                            "billing_policy_version", "utilization-v1-2026-09-30"
+                        ),
+                    )
                     with token_meter_scope(meter):
                         result = self.runtime.answer(request, recipe_lookup)
                     if meter.failed:
@@ -189,6 +194,13 @@ class ProofRequestProcessor:
                         or result.private_evidence["token_qa"].get("approved") is not True
                     ):
                         raise TokenMeterError("token_qa_missing")
+                    if result.outcome == "formal":
+                        meter.complete("formal")
+                    elif result.outcome == "answered":
+                        kind = result.answer.get("evidence_kind") if result.answer else None
+                        meter.complete(
+                            "explanation" if kind == "reviewed_explanation" else "catalog"
+                        )
                 else:
                     result = self.runtime.answer(request, recipe_lookup)
         except MaterialContextError as error:

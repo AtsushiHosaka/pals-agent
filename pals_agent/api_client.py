@@ -146,6 +146,15 @@ class PalsApiClient:
         if set(result) != {"recorded"} or result["recorded"] is not True:
             raise PalsApiError("Token receipt was malformed")
 
+    def seal_token_stage(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._request(
+            "POST", "/v1/internal/billing/token-stage-seals", payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds,
+        )
+        if result != {"sealed": True}:
+            raise PalsApiError("Token stage seal was malformed")
+
     def acquire_proof_request_claim(
         self, *, request_id: str, claim_id: str, lease_ms: int = 240000
     ) -> dict[str, Any]:

@@ -31,6 +31,7 @@ from pals_agent.proof_flow_reranker import (
     OpenAIDraftReranker,
 )
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.proof_reuse_usage import with_model_role
 from pals_agent.typed_literal_preservation import (
     LiteralPreservationError,
     validate_literal_preservation,
@@ -90,6 +91,7 @@ class TypedProofFlowRuntime:
         ):
             raise ValueError("Typed embedding binding is incompatible")
 
+    @with_model_role("openmath")
     def retrieve_for_profile(self, profile_id: str, statement: str) -> TypedRetrievalResult:
         if not statement.strip() or len(statement.encode()) > 16384:
             raise ValueError("typed statement invalid")

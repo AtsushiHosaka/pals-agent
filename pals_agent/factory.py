@@ -38,6 +38,7 @@ from pals_agent.profile_routing import ProfileRoutedProofFlowRuntime
 from pals_agent.proof_flow_reranker import OpenAIDraftReranker
 from pals_agent.proof_flow_runtime import ProofFlowRuntime, build_private_proof_flow_runtime
 from pals_agent.proof_request_worker import ProofRequestApi, ProofRequestProcessor
+from pals_agent.proof_reuse_usage import RoleBoundClient
 from pals_agent.recipe_attempt import RecipeAttemptPlannerV1
 from pals_agent.semantic_evaluation import SemanticStageJudge
 from pals_agent.settings import AgentSettings, validate_release_generation_environment
@@ -210,7 +211,7 @@ def build_statement_openmath_structurer(
 ) -> StatementOpenMathStructurer:
     binding = fixed_model_default(ModelRole.OPENMATH)
     return LLMStatementOpenMathStructurer(
-        client=_release_openai_client(settings),
+        client=RoleBoundClient(_release_openai_client(settings), "openmath"),
         model=binding.model,
         provider=binding.provider,
     )

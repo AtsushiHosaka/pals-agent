@@ -172,7 +172,9 @@ class ConventionApi(LeanApiBoundary):
 
 
 def test_worker_passes_readings_and_settles_the_applied_ones():
-    engine, _ = runtime([relevant("zero_ring_domain"), decision()])
+    assessment = {key: value for key, value in decision().items()
+                  if key not in {"answer", "next_input_suggestion"}}
+    engine, _ = runtime([relevant("zero_ring_domain"), assessment])
     api = ConventionApi({"policy": "ask", "choices": {"zero_ring_domain": "include"}})
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

@@ -21,6 +21,7 @@ from pals_agent.api_client import (
     ProofJobNotFoundError,
 )
 from pals_agent.artifacts import ArtifactPersistenceError
+from pals_agent.billing_meter import billing_stage
 from pals_agent.explanations import (
     ExplanationDeadlineExceeded,
     ProofClarification,
@@ -53,6 +54,7 @@ from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set
 from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
 from pals_agent.proof_request_worker import ProofRequestProcessor
+from pals_agent.provider_usage import POLICY_V2
 from pals_agent.recipe_attempt import (
     NoRecipeAttemptV1,
     RecipeAttemptPlannerV1,
@@ -61,6 +63,7 @@ from pals_agent.recipe_attempt import (
 )
 from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
 from pals_agent.settings import AgentSettings
+from pals_agent.token_meter import TokenMeterApi, TokenMeterError, active_token_meter
 from pals_agent.usage import usage_scope
 
 ClaimStatus = Literal[
@@ -225,7 +228,7 @@ _LEARNER_FAILURE_MESSAGES: Final = {
 }
 
 
-class ProofJobApi(Protocol):
+class ProofJobApi(TokenMeterApi, Protocol):
     def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None: ...
 
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]: ...
@@ -556,12 +559,30 @@ class SqsProofWorker:
                     if context.get("chat_route") is not None else None
                 )
                 stack.enter_context(linked_chat_scope(context, payload))
-            except (PalsApiError, ValueError, TypeError, KeyError):
+                state = proof_job.get("state")
+                if not (state == "semantic_review" and proof_job.get("attempt_source") == "recipe"):
+                    scope = "semantic_review" if state == "semantic_review" else (
+                        "explanation" if state == "verified" else "generation"
+                    )
+                    meter_claim = (
+                        proof_job.get("generation_session_id")
+                        if scope == "semantic_review" else claim_id
+                    )
+                    stack.enter_context(billing_stage(
+                        self.api_client, context, scope=scope, job_id=proof_job_id,
+                        claim_id=meter_claim,
+                        task_id=(proof_job.get("verification_candidate_id")
+                                 if scope == "semantic_review" else None),
+                    ))
+            except (PalsApiError, TokenMeterError, ValueError, TypeError, KeyError):
                 return False
-            return self._process_proof_job(
-                proof_job_id, proof_job=proof_job, claim_id=claim_id,
-                extend_visibility=extend_visibility,
-            )
+            try:
+                return self._process_proof_job(
+                    proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                )
+            except TokenMeterError:
+                return False
 
     def _process_proof_job(
         self, proof_job_id: str, *, proof_job: dict[str, Any],
@@ -668,6 +689,8 @@ class SqsProofWorker:
             )
             approved = review.decision == "approved"
             try:
+                if approved and (meter := active_token_meter()) is not None:
+                    meter.complete("llm")
                 response = self.api_client.settle_proof_semantic_review(
                     proof_job_id=proof_job_id, evidence=evidence,
                 )
@@ -686,14 +709,18 @@ class SqsProofWorker:
             # claim; an explanation failure is isolated from this already-verified proof.
             if claim_id is None or extend_visibility is None:
                 return True
-            return self._ensure_summary_explanation(
-                proof_job_id=proof_job_id,
-                theorem_statement=statement,
-                lean_code=lean_code,
-                claim_id=claim_id,
-                extend_visibility=extend_visibility,
-                language=language,
-            )
+            with billing_stage(
+                self.api_client, proof_job.get("request_context", {}),
+                scope="explanation", job_id=proof_job_id, claim_id=claim_id,
+            ):
+                return self._ensure_summary_explanation(
+                    proof_job_id=proof_job_id,
+                    theorem_statement=statement,
+                    lean_code=lean_code,
+                    claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                    language=language,
+                )
         if state == "verified":
             lean_code = proof_job.get("lean_code")
             if not isinstance(lean_code, str) or not lean_code.strip():
@@ -976,6 +1003,8 @@ class SqsProofWorker:
             except ValueError:
                 return False
             candidate_submitted = True
+            if (meter := active_token_meter()) is not None:
+                meter.complete("llm" if meter.completed_calls else "compile")
 
         if latest_state in _NON_VERIFIED_TERMINAL_STATES:
             return True
@@ -997,6 +1026,10 @@ class SqsProofWorker:
             )
         if latest_state != "verified" or not latest_lean_code:
             return False
+        if (meter := active_token_meter()) is not None and meter.policy_version == POLICY_V2:
+            # Linked v2 requires the API-owned candidate reconciliation and a new
+            # explanation stage. A pipeline-local success is no billing provenance.
+            raise TokenMeterError("token_stage_unverified")
         return self._ensure_summary_explanation(
             proof_job_id=proof_job_id,
             theorem_statement=statement,
@@ -1199,6 +1232,8 @@ class SqsProofWorker:
                 return False
         except ValueError:
             return False
+        if (meter := active_token_meter()) is not None:
+            meter.complete("recipe")
         reconciled = self._wait_for_candidate_reconciliation(
             proof_job_id=proof_job_id,
             extend_visibility=extend_visibility,
@@ -1241,12 +1276,16 @@ class SqsProofWorker:
                 self.api_client.get_proof_job_chat_input(proof_job_id)
                 if context.get("chat_route") is not None else None
             )
-            with linked_chat_scope(context, payload):
+            with linked_chat_scope(context, payload), billing_stage(
+                self.api_client, context, scope="clarification",
+                job_id=_required_text(worker_input, "proof_job_id"),
+                claim_id=claim_id, task_id=clarification_id,
+            ):
                 return self._process_clarification(
                     clarification_id, worker_input=worker_input, proof_input=proof_input,
                     claim_id=claim_id, extend_visibility=extend_visibility,
                 )
-        except (PalsApiError, ValueError, TypeError, KeyError):
+        except (PalsApiError, TokenMeterError, ValueError, TypeError, KeyError):
             return False
 
     def _process_clarification(
@@ -1370,6 +1409,8 @@ class SqsProofWorker:
                 review=review,
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
+            if (meter := active_token_meter()) is not None:
+                meter.complete("llm")
         except ExplanationDeadlineExceeded:
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
@@ -1447,7 +1488,11 @@ class SqsProofWorker:
                     if context.get("chat_route") is not None else None
                 )
                 stack.enter_context(linked_chat_scope(context, payload))
-            except (PalsApiError, ValueError, TypeError, KeyError):
+                stack.enter_context(billing_stage(
+                    self.api_client, context, scope="explanation",
+                    job_id=proof_job_id, claim_id=claim_id,
+                ))
+            except (PalsApiError, TokenMeterError, ValueError, TypeError, KeyError):
                 return False
             return self._ensure_summary_explanation(
                 proof_job_id=proof_job_id,
@@ -1523,6 +1568,8 @@ class SqsProofWorker:
                 review=review,
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
+            if (meter := active_token_meter()) is not None:
+                meter.complete("llm")
         except ExplanationDeadlineExceeded:
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
@@ -1777,12 +1824,16 @@ class SqsProofWorker:
         lean_code = persisted.get("lean_code")
         if not isinstance(lean_code, str) or not lean_code.strip():
             return False
-        return self._ensure_summary_explanation(
-            proof_job_id=proof_job_id,
-            theorem_statement=_required_text(persisted, "theorem_statement"),
-            lean_code=lean_code, claim_id=claim_id, extend_visibility=extend_visibility,
-            language=_required_output_language(persisted),
-        )
+        with billing_stage(
+            self.api_client, persisted.get("request_context", {}),
+            scope="explanation", job_id=proof_job_id, claim_id=claim_id,
+        ):
+            return self._ensure_summary_explanation(
+                proof_job_id=proof_job_id,
+                theorem_statement=_required_text(persisted, "theorem_statement"),
+                lean_code=lean_code, claim_id=claim_id, extend_visibility=extend_visibility,
+                language=_required_output_language(persisted),
+            )
 
     def _required_proof_reviewer(self) -> ProofSemanticReviewer:
         if self.proof_reviewer is None:

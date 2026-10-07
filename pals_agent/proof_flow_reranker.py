@@ -4,6 +4,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from typing import Any, cast
+from uuid import uuid4
 
 import rfc8785
 
@@ -15,7 +16,10 @@ from pals_agent.http_transport import (
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.private_draft_candidates import DraftCandidateResult
 from pals_agent.proof_flow_evidence import DraftEvidence
+from pals_agent.proof_reuse_usage import model_role
 from pals_agent.reranker_diagnostics import response_diagnostics, sanitize_reranker_diagnostics
+from pals_agent.token_meter import active_token_meter
+from pals_agent.usage import report_usage
 
 _ENDPOINT = "https://api.openai.com/v1/responses"
 _DRAFT_ROLE_MODEL = fixed_model_default(ModelRole.DRAFT)
@@ -89,15 +93,20 @@ class OpenAIDraftReranker:
         return self.rerank_response(request).selected_draft_ids
 
     def rerank_response(self, request: DraftRerankerRequest) -> DraftRerankerResponse:
+        headers = {"Authorization": f"Bearer {self.api_key}",
+                   "Content-Type": "application/json", "Accept": "application/json"}
+        call_id = str(uuid4())
+        meter = active_token_meter()
         try:
-            response = self.transport.request(
+            with model_role("rerank"):
+                response = meter.request(
+                    transport=self.transport, endpoint=_ENDPOINT, headers=headers,
+                    payload=json.loads(request.body_jcs), data=request.body_jcs,
+                    timeout_seconds=90.0, call_id=call_id,
+                ) if meter is not None else self.transport.request(
                 method="POST",
                 url=_ENDPOINT,
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
+                headers=headers,
                 body=request.body_jcs,
                 timeout_seconds=90.0,
             )
@@ -107,6 +116,9 @@ class OpenAIDraftReranker:
             raise DraftRerankerUnavailableError("Draft reranker is unavailable.")
         parse_progress = {"stage": "json"}
         try:
+            if meter is None:
+                with model_role("rerank"):
+                    report_usage(call_id, _MODEL, json.loads(response.body).get("usage"))
             return _parse_response(response.body, request=request, parse_progress=parse_progress)
         except (TypeError, ValueError, UnicodeDecodeError):
             raise DraftRerankerInvalidError(

@@ -11,6 +11,7 @@ from uuid import uuid4
 from pals_agent.http_transport import HardDeadlineHttpTransport
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.token_meter import active_token_meter
+from pals_agent.usage import report_usage
 
 
 class EmbeddingError(RuntimeError):
@@ -109,6 +110,11 @@ class OpenAIEmbeddingModel:
         except (URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise EmbeddingError(f"OpenAI embedding failed: {exc}") from exc
 
+        with model_role("draft_embedding"):
+            usage = body.get("usage")
+            report_usage(str(uuid4()), self.model, {
+                "input_tokens": usage.get("prompt_tokens"), "output_tokens": 0
+            } if isinstance(usage, dict) else None)
         return _extract_embedding(body, expected_dimension=self.dimension)
 
 

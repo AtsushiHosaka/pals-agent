@@ -421,12 +421,16 @@ def test_openmath_structuring_uses_fixed_role_model_and_preserves_power(
     result = structurer.structure("y^n が連続であることを示せ")
 
     assert isinstance(structurer, LLMStatementOpenMathStructurer)
-    assert isinstance(structurer.client, OpenAIResponsesClient)
+    from pals_agent.proof_reuse_usage import RoleBoundClient
+
+    assert isinstance(structurer.client, RoleBoundClient)
+    assert structurer.client.role == "openmath"
+    assert isinstance(structurer.client.client, OpenAIResponsesClient)
     assert structurer.provider == "openai"
     assert structurer.model == "gpt-6-luna"
-    assert structurer.client.api_key == "sk-openmath-test"
-    assert structurer.client.base_url == "https://openmath.test/v1"
-    assert structurer.client.max_output_tokens == 8192
+    assert structurer.client.client.api_key == "sk-openmath-test"
+    assert structurer.client.client.base_url == "https://openmath.test/v1"
+    assert structurer.client.client.max_output_tokens == 8192
     assert len(calls) == 1
     assert calls[0][0] == "gpt-6-luna"
     assert "y^n が連続であることを示せ" in calls[0][1]

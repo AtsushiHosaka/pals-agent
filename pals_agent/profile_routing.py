@@ -21,6 +21,7 @@ from pals_agent.private_draft_candidates import (
 )
 from pals_agent.proof_flow_reranker import DraftRerankerInvalidError, DraftRerankerUnavailableError
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.proof_reuse_usage import with_model_role
 from pals_agent.typed_runtime import TypedProofFlowRuntime
 from pals_agent.typed_runtime_failures import TypedRetrievalFailure
 
@@ -66,6 +67,7 @@ class ProfileRoutedProofFlowRuntime:
     typed: TypedProofFlowRuntime
     generic: GenericRetriever | None
 
+    @with_model_role("route")
     def retrieve(self, natural_statement: str) -> DraftRetrievalResult:
         if not natural_statement.strip() or len(natural_statement.encode()) > 16384:
             raise ValueError("Statement invalid for profile routing")

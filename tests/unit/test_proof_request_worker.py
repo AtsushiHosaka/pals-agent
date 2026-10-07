@@ -282,7 +282,9 @@ class LeanApiBoundary(ApiBoundary):
 
 
 def test_released_lean_flow_settles_a_formal_plan_for_the_linked_job():
-    engine, _ = runtime([READY, decision()])
+    assessment = {key: value for key, value in decision().items()
+                  if key not in {"answer", "next_input_suggestion"}}
+    engine, _ = runtime([READY, assessment])
     api = LeanApiBoundary([])
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

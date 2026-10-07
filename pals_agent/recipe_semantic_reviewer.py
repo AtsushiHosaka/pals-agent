@@ -25,6 +25,7 @@ from pals_agent.api_client import (
     _path_segment,
     _validate_recipe_semantic_review_evidence,
 )
+from pals_agent.billing_meter import billing_stage
 from pals_agent.explanations import (
     LeanProofSemanticReviewer,
     ProofSemanticReviewer,
@@ -83,7 +84,10 @@ class RecipeSemanticReviewApiClient:
             f"/semantic-review-input?candidate_id={_canonical_claim_id(candidate_id)}",
         )
         if (
-            set(result) not in (_INPUT_KEYS, _INPUT_KEYS | {"chat_input_available"})
+            not set(result) >= _INPUT_KEYS
+            or set(result) - _INPUT_KEYS - {
+                "chat_input_available", "billing_context", "proof_request_id"
+            }
             or type(result.get("chat_input_available", False)) is not bool
             or result.get("id") != proof_job_id
             or result.get("verification_candidate_id") != candidate_id
@@ -91,6 +95,35 @@ class RecipeSemanticReviewApiClient:
         ):
             raise ValueError("Dedicated reviewer input is not bound to the requested candidate")
         return result
+
+    def _meter_request(
+        self, path: str, payload: dict[str, Any], timeout_seconds: float
+    ) -> dict[str, Any]:
+        return PalsApiClient(self.base_url, "", self.timeout_seconds, self.transport)._request(
+            "POST", path, payload, headers={_HEADER: self.reviewer_secret},
+            timeout_seconds=timeout_seconds,
+        )
+
+    def permit_token_call(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._meter_request(
+            "/v1/internal/billing/token-permits", payload, timeout_seconds
+        )
+        if result != {"permitted": True}:
+            raise PalsApiError("Token permit was malformed")
+
+    def record_token_receipt(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._meter_request(
+            "/v1/internal/billing/token-receipts", payload, timeout_seconds
+        )
+        if result != {"recorded": True}:
+            raise PalsApiError("Token receipt was malformed")
+
+    def seal_token_stage(self, payload: dict[str, Any], *, timeout_seconds: float) -> None:
+        result = self._meter_request(
+            "/v1/internal/billing/token-stage-seals", payload, timeout_seconds
+        )
+        if result != {"sealed": True}:
+            raise PalsApiError("Token stage seal was malformed")
 
     def get_chat_input(self, proof_job_id: str, candidate_id: str) -> dict[str, Any]:
         client = PalsApiClient(
@@ -164,7 +197,16 @@ class RecipeReviewActor:
                     "chat_route": chat_payload["chat_route"],
                     "generation_model": chat_payload["request"]["generation_model"],
                 } if chat_payload is not None else {}
-                with linked_chat_scope(chat_context, chat_payload):
+                billing_context = {
+                    "proof_request_id": content.get("proof_request_id"),
+                    "billing_context": content.get("billing_context"),
+                    "generation_model": content.get("billing_context", {}).get("generation_model"),
+                }
+                with linked_chat_scope(chat_context, chat_payload), billing_stage(
+                    self.api, billing_context, scope="semantic_review",
+                    job_id=proof_job_id, claim_id=content["mutation_claim_id"],
+                    task_id=candidate_id, timeout_seconds=3 * self.timeout_seconds + 30,
+                ) as meter:
                     review = self.reviewer_factory().review_proof(
                         theorem_statement=content["theorem_statement"],
                         formal_statement=content["formal_statement"],
@@ -172,6 +214,8 @@ class RecipeReviewActor:
                         lean_code=source,
                         timeout_seconds=self.timeout_seconds,
                     )
+                    if review.decision == "approved" and meter is not None:
+                        meter.complete("llm")
                 evidence = _recipe_semantic_review_evidence(
                     candidate_id=candidate_id,
                     theorem_statement=content["theorem_statement"],

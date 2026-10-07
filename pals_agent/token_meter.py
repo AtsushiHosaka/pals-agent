@@ -16,9 +16,12 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 from uuid import UUID
 
+import rfc8785
+
 from pals_agent.api_client import PalsApiError
 from pals_agent.http_transport import HttpResponse, HttpTransport
 from pals_agent.proof_reuse_usage import current_role
+from pals_agent.provider_usage import POLICY_V2, TARIFF_SNAPSHOTS, exact_usage
 from pals_agent.usage import PRICE_SNAPSHOTS, report_usage
 
 
@@ -35,6 +38,8 @@ class TokenMeterApi(Protocol):
 
     def record_token_receipt(self, payload: dict[str, Any], *, timeout_seconds: float) -> None: ...
 
+    def seal_token_stage(self, payload: dict[str, Any], *, timeout_seconds: float) -> None: ...
+
 
 _active: ContextVar[TokenMeter | None] = ContextVar("pals_token_meter", default=None)
 
@@ -45,7 +50,8 @@ def active_token_meter() -> TokenMeter | None:
 
 @contextmanager
 def token_meter_scope(meter: TokenMeter) -> Iterator[None]:
-    if _active.get() is not None:
+    active = _active.get()
+    if active is not None and not active.sealed:
         raise TokenMeterError("token_meter_nested")
     token = _active.set(meter)
     try:
@@ -82,15 +88,19 @@ def _supported_input(value: Any, *, embedding: bool) -> bool:
         return False
     message = value[0]
     if (
-        not isinstance(message, dict) or set(message) != {"role", "content"}
-        or message["role"] != "user" or not isinstance(message["content"], list)
+        not isinstance(message, dict)
+        or set(message) != {"role", "content"}
+        or message["role"] != "user"
+        or not isinstance(message["content"], list)
         or not 2 <= len(message["content"]) <= 331
     ):
         return False
     parts = message["content"]
     if (
-        not isinstance(parts[0], dict) or set(parts[0]) != {"type", "text"}
-        or parts[0]["type"] != "input_text" or not isinstance(parts[0]["text"], str)
+        not isinstance(parts[0], dict)
+        or set(parts[0]) != {"type", "text"}
+        or parts[0]["type"] != "input_text"
+        or not isinstance(parts[0]["text"], str)
     ):
         return False
     from pals_agent.chat_images import validate_image_data_url
@@ -98,8 +108,10 @@ def _supported_input(value: Any, *, embedding: bool) -> bool:
     total_bytes = 0
     for item in parts[1:]:
         if (
-            not isinstance(item, dict) or set(item) != {"type", "image_url", "detail"}
-            or item["type"] != "input_image" or item["detail"] != "high"
+            not isinstance(item, dict)
+            or set(item) != {"type", "image_url", "detail"}
+            or item["type"] != "input_image"
+            or item["detail"] != "high"
         ):
             return False
         try:
@@ -118,20 +130,62 @@ class TokenMeter:
     request_id: str
     claim_id: str
     deadline: float
+    policy_version: str = "utilization-v1-2026-09-30"
+    scope: str = "request"
+    job_id: str | None = None
+    task_id: str | None = None
     failed: bool = False
     completed_calls: dict[str, str] = field(default_factory=dict)
     last_call_id: str | None = None
+    sealed: bool = False
 
     def __post_init__(self) -> None:
         for value in (self.operation_id, self.request_id, self.claim_id):
             if str(UUID(value)) != value:
                 raise TokenMeterError("token_binding_invalid")
+        if self.policy_version not in {"utilization-v1-2026-09-30", POLICY_V2}:
+            raise TokenMeterError("token_policy_unsupported")
+        if self.scope not in {
+            "request",
+            "generation",
+            "explanation",
+            "clarification",
+            "semantic_review",
+        }:
+            raise TokenMeterError("token_scope_invalid")
+        if self.scope != "request" and (not isinstance(self.job_id, str) or not self.job_id):
+            raise TokenMeterError("token_binding_invalid")
 
     def _remaining(self, deadline: float) -> float:
         remaining = min(deadline, self.deadline) - time.monotonic()
-        if remaining <= 0 or self.failed:
+        if remaining <= 0 or self.failed or self.sealed:
             raise TokenMeterError("token_meter_deadline")
         return remaining
+
+    def complete(self, path: str) -> None:
+        if self.policy_version != POLICY_V2:
+            return
+        payload: dict[str, Any] = {
+            "schema_version": "pals.token-stage-seal.v2",
+            "operation_id": self.operation_id,
+            "request_id": self.request_id,
+            "claim_id": self.claim_id,
+            "scope": self.scope,
+            "call_ids": sorted(self.completed_calls),
+            "completed_roles": sorted(set(self.completed_calls.values())),
+            "outcome": "completed",
+            "path": path,
+        }
+        if self.job_id is not None:
+            payload["job_id"] = self.job_id
+        if self.task_id is not None:
+            payload["task_id"] = self.task_id
+        try:
+            self.api.seal_token_stage(payload, timeout_seconds=self._remaining(self.deadline))
+        except Exception:
+            self.failed = True
+            raise TokenMeterError("token_stage_seal_failed") from None
+        self.sealed = True
 
     def request(
         self,
@@ -158,12 +212,20 @@ class TokenMeter:
             claim_id=self.claim_id,
             call_id=call_id,
         )
+        versioned_binding = dict(binding)
+        if self.policy_version == POLICY_V2:
+            versioned_binding.update(scope=self.scope)
+            if self.job_id is not None:
+                versioned_binding["job_id"] = self.job_id
+            if self.task_id is not None:
+                versioned_binding["task_id"] = self.task_id
         permitted = False
         receipt_attempted = False
         try:
             self._remaining(deadline)
             model = payload.get("model")
-            snapshot = PRICE_SNAPSHOTS.get(model) if isinstance(model, str) else None
+            snapshots = TARIFF_SNAPSHOTS if self.policy_version == POLICY_V2 else PRICE_SNAPSHOTS
+            snapshot = snapshots.get(model) if isinstance(model, str) else None
             if (
                 snapshot is None
                 or not isinstance(model, str)
@@ -171,8 +233,13 @@ class TokenMeter:
             ):
                 # Only explicit text or bounded inline derivatives may be counted.
                 raise TokenMeterError("token_input_unsupported")
-            if data != json.dumps(payload).encode("utf-8"):
+            if data not in (json.dumps(payload).encode("utf-8"), rfc8785.dumps(payload)):
                 raise TokenMeterError("token_payload_changed")
+            if self.policy_version == POLICY_V2 and endpoint not in {
+                "https://api.openai.com/v1/embeddings",
+                "https://api.openai.com/v1/responses",
+            }:
+                raise TokenMeterError("token_pricing_profile_unsupported")
             if embedding:
                 if (
                     model != "text-embedding-3-small"
@@ -190,10 +257,15 @@ class TokenMeter:
                     "service_tier",
                     "reasoning",
                     "store",
+                    "stream",
                 }:
                     raise TokenMeterError("token_input_unsupported")
                 if "store" in payload and payload["store"] is not False:
                     raise TokenMeterError("token_input_unsupported")
+                if "stream" in payload and payload["stream"] is not False:
+                    raise TokenMeterError("token_input_unsupported")
+                if self.policy_version == POLICY_V2 and payload.get("service_tier") != "default":
+                    raise TokenMeterError("token_pricing_profile_unsupported")
                 output_bound = _integer(payload["max_output_tokens"])
                 if output_bound == 0:
                     raise TokenMeterError("token_input_unsupported")
@@ -222,7 +294,12 @@ class TokenMeter:
             try:
                 self.api.permit_token_call(
                     dict(
-                        binding,
+                        versioned_binding,
+                        **(
+                            {"schema_version": "pals.token-permit.v2"}
+                            if self.policy_version == POLICY_V2
+                            else {}
+                        ),
                         model=model,
                         model_role=current_role(),
                         price_snapshot_id=snapshot,
@@ -260,8 +337,21 @@ class TokenMeter:
                 raise TokenMeterError("token_usage_missing")
             actual_input = _integer(usage.get("prompt_tokens" if embedding else "input_tokens"))
             actual_output = 0 if embedding else _integer(usage.get("output_tokens"))
-            cached = _integer(usage.get("input_tokens_details", {}).get("cached_tokens", 0))
-            reasoning = _integer(usage.get("output_tokens_details", {}).get("reasoning_tokens", 0))
+            actual = (
+                exact_usage(body, model, embedding=embedding)
+                if self.policy_version == POLICY_V2
+                else None
+            )
+            cached = (
+                actual["cached_input_tokens"]
+                if actual
+                else _integer(usage.get("input_tokens_details", {}).get("cached_tokens", 0))
+            )
+            reasoning = (
+                actual["reasoning_output_tokens"]
+                if actual
+                else _integer(usage.get("output_tokens_details", {}).get("reasoning_tokens", 0))
+            )
             if (
                 actual_input > input_bound
                 or actual_output > output_bound
@@ -272,12 +362,19 @@ class TokenMeter:
             receipt_attempted = True
             self.api.record_token_receipt(
                 dict(
-                    binding,
+                    versioned_binding,
+                    **({"schema_version": "pals.token-receipt.v2"} if actual else {}),
                     status="success",
-                    input_tokens=actual_input,
-                    output_tokens=actual_output,
-                    cached_input_tokens=cached,
-                    reasoning_output_tokens=reasoning,
+                    **(
+                        actual
+                        if actual
+                        else dict(
+                            input_tokens=actual_input,
+                            output_tokens=actual_output,
+                            cached_input_tokens=cached,
+                            reasoning_output_tokens=reasoning,
+                        )
+                    ),
                 ),
                 timeout_seconds=self._remaining(deadline),
             )
@@ -292,12 +389,18 @@ class TokenMeter:
                 with suppress(Exception):
                     self.api.record_token_receipt(
                         dict(
-                            binding,
+                            versioned_binding,
                             status="unknown",
-                            input_tokens=0,
-                            output_tokens=0,
-                            cached_input_tokens=0,
-                            reasoning_output_tokens=0,
+                            **(
+                                {"schema_version": "pals.token-receipt.v2"}
+                                if self.policy_version == POLICY_V2
+                                else dict(
+                                    input_tokens=0,
+                                    output_tokens=0,
+                                    cached_input_tokens=0,
+                                    reasoning_output_tokens=0,
+                                )
+                            ),
                         ),
                         timeout_seconds=max(0.001, min(5.0, self.deadline - time.monotonic())),
                     )
