@@ -28,6 +28,39 @@ from pals_agent.usage import usage_scope
 
 _logger = logging.getLogger(__name__)
 _SAFE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_]{0,79}$", re.ASCII)
+_SETTLED_STATUSES = frozenset({"answered", "needs_input", "verifying", "failed"})
+_ASSESSMENT_PHASES = frozenset({
+    "premise_resolution", "catalog_retrieval", "primary_assessment",
+    "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
+    "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
+})
+_RESULT_ERROR_CODES = frozenset({
+    "proof_reuse_answer_review_failed", "proof_reuse_catalog_invalid", "proof_reuse_deadline",
+    "proof_reuse_input_invalid", "proof_reuse_invalid_instantiation",
+    "proof_reuse_invalid_response", "proof_reuse_invalid_source",
+    "proof_reuse_provider_unavailable", "proof_reuse_query_invalid",
+    "proof_reuse_recipe_invalid", "proof_reuse_recipe_unavailable",
+    "proof_reuse_token_accounting_failed", "proof_reuse_unsupported",
+    "material_citation_invalid", "material_citation_missing", "material_context_invalid",
+    "material_context_too_large", "material_context_unavailable", "material_proposition_invalid",
+    "material_proposition_unconfirmed", "token_budget_exceeded", "token_usage_unknown",
+    "proof_request_delivery_exhausted", "lean_flow_unavailable", "lean_verification_required",
+    "lean_verification_failed", "lean_explanation_failed",
+})
+
+
+def _diagnostic_label(value: Any, allowed: frozenset[str]) -> str | None:
+    # A syntactically valid identifier can still contain private data. Never echo
+    # unknown labels from provider evidence or API responses into logs.
+    if value is None:
+        return None
+    return value if isinstance(value, str) and value in allowed else "unrecognized"
+
+
+def _review_verdict(evidence: dict[str, Any]) -> bool | None:
+    review = evidence.get("token_qa", evidence.get("answer_qa"))
+    verdict = review.get("approved") if isinstance(review, dict) else None
+    return verdict if type(verdict) is bool else None
 
 
 class ProofRequestApi(TokenMeterApi, Protocol):
@@ -238,8 +271,24 @@ class ProofRequestProcessor:
             # must acquire a fresh API claim, which observes an already-terminal result.
             return False
         expected = "verifying" if result.outcome == "formal" else result.outcome
-        return settled.get("id") == request_id and settled.get("status") in (
+        accepted = settled.get("id") == request_id and settled.get("status") in (
             expected,
             # The API refuses Lean outcomes it cannot run and records an explicit failure.
             "failed",
         )
+        status = settled.get("status")
+        if accepted and isinstance(status, str) and status in _SETTLED_STATUSES:
+            # This is the committed assessment result, including ordinary failed
+            # jobs. A formal result is a handoff, not a Lean verification receipt.
+            log = _logger.warning if status == "failed" else _logger.info
+            log(
+                "proof_request_settled request_id=%s claim_id=%s status=%s "
+                "assessment_phase=%s error_code=%s review_approved=%s",
+                request_id, claim_id, status,
+                _diagnostic_label(result.private_evidence.get("phase"), _ASSESSMENT_PHASES),
+                _diagnostic_label(
+                    settled.get("error_code", result.error_code), _RESULT_ERROR_CODES,
+                ),
+                _review_verdict(result.private_evidence),
+            )
+        return accepted
