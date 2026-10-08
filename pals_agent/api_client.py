@@ -11,11 +11,13 @@ from urllib.parse import quote
 import rfc8785
 
 from pals_agent.http_transport import (
+    MAX_HTTP_RESPONSE_BYTES,
     HardDeadlineHttpError,
     HardDeadlineHttpTransport,
     HttpTransport,
 )
 from pals_agent.models import Diagnostic, ProofJobState
+from pals_agent.recipe_search import LANGUAGES, bounded_text, validate_recipe_candidates
 
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", re.ASCII)
 _VERIFICATION_CANDIDATE_SCHEMA_VERSION = "pals.proof-verification-candidate.v1"
@@ -23,6 +25,7 @@ _RECIPE_VERIFICATION_CANDIDATE_SCHEMA_VERSION = "pals.proof-verification-candida
 _SEMANTIC_REVIEW_SCHEMA_VERSION = "pals.proof-semantic-review.v2"
 _RECIPE_SEMANTIC_REVIEW_SCHEMA_VERSION = "pals.proof-semantic-review.v3"
 _OUTPUT_REVIEW_SCHEMA_VERSION = "pals.proof-output-review.v2"
+RECIPE_SEARCH_RESPONSE_BYTES = 2_097_152
 _SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
 _MODEL_ARTIFACT_URI_RE = re.compile(
     r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/proof-jobs/"
@@ -118,7 +121,9 @@ class PalsApiClient:
     worker_secret: str
     timeout_seconds: float = 15.0
     transport: HttpTransport = field(
-        default_factory=HardDeadlineHttpTransport,
+        default_factory=lambda: HardDeadlineHttpTransport(
+            max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES
+        ),
         repr=False,
         compare=False,
     )
@@ -179,6 +184,28 @@ class PalsApiClient:
         ):
             raise PalsApiError("invalid recipe lookup response")
         return recipes
+
+    def search_proof_request_recipes(
+        self, *, request_id: str, claim_id: str, query: str, output_language: str, limit: int = 8
+    ) -> list[dict[str, Any]]:
+        """Search sealed Recipes directly, before any DSP Draft retrieval."""
+        if (not bounded_text(query, 8000) or not isinstance(output_language, str)
+                or output_language not in LANGUAGES
+                or type(limit) is not int or limit != 8):
+            raise ValueError("invalid Recipe search query")
+        result = self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/recipe-search",
+            {"claim_id": _canonical_claim_id(claim_id), "query": query,
+             "output_language": output_language, "limit": limit},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES,
+        )
+        try:
+            if not isinstance(result, dict) or set(result) != {"recipes"}:
+                raise ValueError("invalid Recipe search envelope")
+            return validate_recipe_candidates(result["recipes"], language=output_language)
+        except ValueError as error:
+            raise PalsApiError("invalid Recipe search response") from error
 
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
@@ -523,6 +550,7 @@ class PalsApiClient:
         payload: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
         timeout_seconds: float | None = None,
+        max_response_bytes: int = MAX_HTTP_RESPONSE_BYTES,
     ) -> dict[str, Any]:
         request_headers = {"Accept": "application/json", **(headers or {})}
         data = None
@@ -541,6 +569,8 @@ class PalsApiClient:
             )
         except HardDeadlineHttpError:
             raise PalsApiError("PALS API request failed") from None
+        if len(response.body) > max_response_bytes:
+            raise PalsApiError("PALS API response exceeded the byte limit")
         if not 200 <= response.status_code < 300:
             detail = response.body.decode("utf-8", errors="replace")
             error_code = _extract_api_error_code(detail)

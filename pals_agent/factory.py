@@ -45,6 +45,8 @@ from pals_agent.typed_runtime import TypedProofFlowRuntime
 
 
 def build_pipeline(settings: AgentSettings) -> ProofPipeline:
+    from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
+
     generator = build_generator(settings)
     return ProofPipeline(
         generator=generator,
@@ -61,6 +63,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         ),
         max_repair_attempts=settings.max_repair_attempts,
         verification_mode="api_reconcile",
+        natural_draft_retriever=NaturalDspDraftRetriever(ApiProofReuseCatalog(settings)),
     )
 
 

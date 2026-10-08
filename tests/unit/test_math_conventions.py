@@ -9,6 +9,7 @@ from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.proof_reuse import PREFLIGHT_SCHEMA
 from tests.unit.test_proof_request_worker import CLAIM_ID, REQUEST_ID, LeanApiBoundary
 from tests.unit.test_proof_reuse import READY, REQUEST, decision, runtime
+from tests.unit.test_proof_reuse_lean_flow import INTENT
 
 # The same order is pinned in pals-api (specs/math-conventions/design.md).
 SPEC_IDS = (
@@ -172,7 +173,7 @@ class ConventionApi(LeanApiBoundary):
 
 
 def test_worker_passes_readings_and_settles_the_applied_ones():
-    engine, _ = runtime([relevant("zero_ring_domain"), decision()])
+    engine, _ = runtime([relevant("zero_ring_domain"), INTENT])
     api = ConventionApi({"policy": "ask", "choices": {"zero_ring_domain": "include"}})
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

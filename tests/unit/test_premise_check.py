@@ -160,3 +160,18 @@ def test_refutation_statement_is_in_the_output_language_with_conventions():
     assert plan["statement"].startswith("次の主張が偽であることを、その否定を証明して示せ。")
     assert "Conventions: the zero ring (where 1 = 0) counts as an integral domain." in plan["claim"]
     assert "反例の候補：零環" in plan["statement"]
+
+
+def test_recipe_first_keeps_confirmed_refutation_before_search():
+    turns = [{"question_id": "q1", "question": "Which claim?", "answer": "As written"}]
+    kept = checked(counterexample="n = 0 gives 0, which is even")
+    engine, transport = runtime([dict(kept, statement=ODD["statement"])])
+
+    def no_search(query, language):
+        raise AssertionError("A confirmed false claim must be refuted before Recipe search")
+
+    result = engine.answer(dict(ODD, context_turns=turns), recipe_search=no_search)
+    assert result.outcome == "formal"
+    assert result.formal_plan["kind"] == "refute"
+    assert result.formal_plan["claim"] == ODD["statement"]
+    assert len(transport.calls) == 1

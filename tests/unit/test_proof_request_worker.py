@@ -272,6 +272,9 @@ class LeanApiBoundary(ApiBoundary):
         return dict(super().acquire_proof_request_claim(**kwargs), lean_flow=True)
 
     def lookup_proof_request_recipes(self, **kwargs):
+        raise AssertionError("released requests must not look up Draft-linked Recipes")
+
+    def search_proof_request_recipes(self, **kwargs):
         self.lookups.append(kwargs)
         return list(self.recipes)
 
@@ -282,7 +285,9 @@ class LeanApiBoundary(ApiBoundary):
 
 
 def test_released_lean_flow_settles_a_formal_plan_for_the_linked_job():
-    engine, _ = runtime([READY, decision()])
+    from tests.unit.test_proof_reuse_lean_flow import INTENT
+
+    engine, _ = runtime([READY, INTENT])
     api = LeanApiBoundary([])
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

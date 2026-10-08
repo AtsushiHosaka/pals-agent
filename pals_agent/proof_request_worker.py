@@ -15,7 +15,7 @@ from uuid import UUID
 from pals_agent.api_client import PalsApiError
 from pals_agent.material_context import MaterialContext, MaterialContextError
 from pals_agent.math_conventions import parse_claim as parse_conventions
-from pals_agent.proof_reuse import MAX_SECONDS, ProofReuseResult, ProofReuseRuntime
+from pals_agent.proof_reuse import MAX_SECONDS, ProofReuseError, ProofReuseResult, ProofReuseRuntime
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.token_meter import (
     TokenBudgetExceededError,
@@ -49,6 +49,10 @@ class ProofRequestApi(TokenMeterApi, Protocol):
 
     def lookup_proof_request_recipes(
         self, *, request_id: str, claim_id: str, sources: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]: ...
+
+    def search_proof_request_recipes(
+        self, *, request_id: str, claim_id: str, query: str, output_language: str, limit: int = 8
     ) -> list[dict[str, Any]]: ...
 
 
@@ -130,12 +134,18 @@ class ProofRequestProcessor:
 
         started = time.monotonic()
         # Only a released Lean flow may route requests to catalog reuse or linked Lean jobs.
-        recipe_lookup = (
-            (lambda sources: self.api.lookup_proof_request_recipes(
-                request_id=request_id, claim_id=claim_id, sources=sources
-            ))
-            if claim.get("lean_flow")
-            else None
+        def search_recipes(query: str, language: str) -> list[dict[str, Any]]:
+            try:
+                return self.api.search_proof_request_recipes(
+                    request_id=request_id, claim_id=claim_id, query=query,
+                    output_language=language, limit=8,
+                )
+            except PalsApiError as error:
+                raise ProofReuseError("proof_reuse_recipe_unavailable") from error
+
+        recipe_options: dict[str, Any] = (
+            {"recipe_search": search_recipes, "claim_id": claim_id}
+            if claim.get("lean_flow") else {}
         )
         try:
             if claim.get("material_context_available"):
@@ -159,7 +169,7 @@ class ProofRequestProcessor:
                     meter = TokenMeter(self.api, operation_id, request_id, claim_id,
                                        started + MAX_SECONDS)
                     with token_meter_scope(meter):
-                        result = self.runtime.answer(request, recipe_lookup)
+                        result = self.runtime.answer(request, **recipe_options)
                     if meter.failed:
                         raise TokenMeterError("token_meter_failed")
                     if result.outcome == "answered" and (
@@ -168,7 +178,7 @@ class ProofRequestProcessor:
                     ):
                         raise TokenMeterError("token_qa_missing")
                 else:
-                    result = self.runtime.answer(request, recipe_lookup)
+                    result = self.runtime.answer(request, **recipe_options)
         except MaterialContextError as error:
             result = ProofReuseResult(
                 "failed", None, None, error.code,

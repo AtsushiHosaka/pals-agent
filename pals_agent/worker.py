@@ -348,6 +348,7 @@ class StatementPipeline(Protocol):
         on_status: Any,
         api_repair_seed: ApiRepairSeed | None = None,
         prepared_request: ProofRequest | None = None,
+        request_linked: bool = False,
     ) -> Any: ...
 
 
@@ -712,6 +713,12 @@ class SqsProofWorker:
 
         context = proof_job.get("request_context")
         context = context if isinstance(context, dict) else {}
+        request_linked = "proof_request_id" in context
+        if request_linked and (
+            not isinstance(context["proof_request_id"], str)
+            or not _is_canonical_uuid4(context["proof_request_id"])
+        ):
+            return False
         formal_statement = context.get("formal_statement")
         if not isinstance(formal_statement, str) or not formal_statement.strip():
             formal_statement = None
@@ -734,7 +741,7 @@ class SqsProofWorker:
 
         # A pre-existing API repair receipt belongs to the ordinary model path.  Do not perform a
         # fresh Recipe selection over that durable attempt, or change its retry semantics.
-        if api_repair_seed is None and formal_statement is not None:
+        if not request_linked and api_repair_seed is None and formal_statement is not None:
             try:
                 recipe_attempt = self._selected_recipe_attempt(
                     formal_statement=formal_statement,
@@ -820,9 +827,12 @@ class SqsProofWorker:
             }
             if api_repair_seed is not None:
                 run_kwargs["api_repair_seed"] = api_repair_seed
+            if request_linked:
+                run_kwargs["request_linked"] = True
             pipeline = self._pipeline_for_proof()
             if (
                 self.recipe_attempt_planner is not None
+                and not request_linked
                 and api_repair_seed is None
                 and formal_statement is None
             ):

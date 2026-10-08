@@ -32,6 +32,8 @@ from pals_agent.models import (
     VerificationHarnessSource,
     VerificationResult,
 )
+from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
+from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 
 _THEOREM_DECLARATION_RE = re.compile(
@@ -135,7 +137,9 @@ class SearchableDraftCatalog(Protocol):
 
 
 class ProofFlowRetriever(Protocol):
-    def retrieve(self, natural_statement: str) -> DraftRetrievalResult: ...
+    def retrieve(
+        self, natural_statement: str
+    ) -> DraftRetrievalResult | NaturalDraftRetrievalResult: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,6 +176,7 @@ class ProofPipeline:
     proof_flow_retriever: ProofFlowRetriever | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     verification_mode: Literal["local", "api_reconcile"] = "local"
+    natural_draft_retriever: ProofFlowRetriever | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -211,10 +216,24 @@ class ProofPipeline:
         on_status: StatusCallback | None = None,
         api_repair_seed: ApiRepairSeed | None = None,
         prepared_request: ProofRequest | None = None,
+        request_linked: bool = False,
     ) -> ProofRunResult:
-        request = prepared_request or self.prepare_statement(
-            statement=statement, formal_statement=formal_statement
-        )
+        if prepared_request is not None:
+            request = prepared_request
+        elif request_linked:
+            if self.natural_draft_retriever is None:
+                from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
+
+                raise ProofFlowRetrievalError("retrieval_unavailable")
+            # API repairs already have the durable generated Draft/Sketch/Lean; never
+            # re-query a mutable catalog over that compiler failure and its repair seed.
+            request = _request_for_statement(
+                statement, formal_statement=formal_statement,
+                proof_flow_retriever=(self.natural_draft_retriever
+                                      if api_repair_seed is None else None),
+            )
+        else:
+            request = self.prepare_statement(statement=statement, formal_statement=formal_statement)
         if request.prompt != statement.strip() or request.formal_statement != (
             formal_statement.strip() if formal_statement else None
         ):
@@ -1750,7 +1769,8 @@ def _request_for_statement(
             related_draft_contexts=tuple(
                 _related_draft_context(
                     item.candidate.draft,
-                    exact_equivalence=item.exact_equivalence,
+                    exact_equivalence=(item.exact_equivalence if isinstance(item, DraftEvidence)
+                                       else False),
                 )
                 for item in retrieval.contexts
             ),
