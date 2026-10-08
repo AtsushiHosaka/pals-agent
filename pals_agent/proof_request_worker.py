@@ -76,7 +76,8 @@ class ProofRequestProcessor:
         )
         keys = {"status", "request", "claim_id", "lease_expires_at"}
         if not keys <= set(claim) or set(claim) - keys - {
-            "billing_operation_id", "material_context_available", "lean_flow", "math_conventions"
+            "billing_operation_id", "complimentary_token_operation", "material_context_available",
+            "lean_flow", "math_conventions"
         }:
             return False
         conventions = None
@@ -86,8 +87,11 @@ class ProofRequestProcessor:
                 return False
         if any(
             key in claim and type(claim[key]) is not bool
-            for key in ("material_context_available", "lean_flow")
+            for key in ("material_context_available", "lean_flow", "complimentary_token_operation")
         ):
+            return False
+        complimentary_token_operation = claim.get("complimentary_token_operation") is True
+        if complimentary_token_operation and "billing_operation_id" not in claim:
             return False
         if claim["status"] == "terminal":
             return True
@@ -161,11 +165,17 @@ class ProofRequestProcessor:
                 request = dict(request, material_context=material_context.as_data())
             with usage_scope(record):
                 if "billing_operation_id" in claim:
-                    if not self.token_accounting_enabled:
+                    # This API claim marker describes an already-admitted QA operation.
+                    # Each provider call still needs an owner/operation/live-claim permit.
+                    if not (self.token_accounting_enabled or complimentary_token_operation):
                         raise TokenMeterError("token_accounting_disabled")
                     operation_id = claim["billing_operation_id"]
                     if not isinstance(operation_id, str) or str(UUID(operation_id)) != operation_id:
                         raise TokenMeterError("token_binding_invalid")
+                    if not all(callable(getattr(self.api, name, None)) for name in (
+                        "permit_token_call", "record_token_receipt"
+                    )):
+                        raise TokenMeterError("token_accounting_unavailable")
                     meter = TokenMeter(self.api, operation_id, request_id, claim_id,
                                        started + MAX_SECONDS)
                     with token_meter_scope(meter):
