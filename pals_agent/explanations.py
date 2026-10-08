@@ -27,6 +27,14 @@ _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
 _BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
     r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
+_STATED_CONVENTION_INSTRUCTION = """A convention stated in the user theorem statement (for
+example a line beginning with "Conventions:", or that the natural numbers start at 1, or that
+0^0 = 1) is a premise of the claim. The proof may use it directly, and justifying a step by that
+convention or by the corresponding definition is valid, not a wrong reason. A convention changes
+only the notion it names; every other definition keeps its standard meaning. Apply a convention
+exactly to the case it governs: for example, 0^0 = 1 settles only the base 0. When standard texts
+differ on whether a fact is a definition or a theorem (for example a^0 = 1 for a nonzero base),
+citing either is valid and is not a wrong justification."""
 _SOURCE_CORRESPONDENCE_INSTRUCTION = """Source correspondence has two different granularities.
 When the source explicitly contains intermediate equalities or facts in calc, have, or rewrite
 steps, organize the mathematical paragraphs around those actual steps and cite the narrowest
@@ -1008,6 +1016,7 @@ syntax."""
     return f"""Write a mathematical proof for a learner, grounded in a verified Lean artifact.
 The theorem statement and verified Lean code below are the only sources of truth for the claim
 and its assumptions.
+{_STATED_CONVENTION_INSTRUCTION}
 You may unpack automation or a library application using valid ordinary mathematics, even when
 those intermediate calculations are not written literally in the Lean source. Show each essential
 bridge: state the relevant definition, property, or standard theorem and why its hypotheses hold,
@@ -1318,6 +1327,7 @@ expansion and standard implicit equalities; do not invent a missing step when th
 equalities already establish it. A rejection must identify an actual invalid inference or
 violated output requirement, not a preferred wording or alternative proof order.
 {_SOURCE_CORRESPONDENCE_INSTRUCTION}
+{_STATED_CONVENTION_INSTRUCTION}
 Reject an output that attributes unseen intermediate states, internal rewrite order, or
 separate Lean verification to its additional mathematical derivation. A valid mathematical
 derivation with a coarse automation reference remains acceptable when it makes no such claim.
@@ -1407,6 +1417,14 @@ Instead inspect the actual exported declaration in its full source context: bind
 quantifiers, assumptions, definitions, notation and conclusion. Reject a concrete mismatch
 with the learner's requested objects, property, witness or explicitly required method;
 also reject added assumptions, vacuous reformulations or misleading local redefinitions.
+A convention stated in the learner request itself (for example that the natural numbers start
+at 1, or a line beginning with "Conventions:") is part of the requested claim: a target that
+encodes exactly that stated convention, such as quantifying over n with 1 ≤ n, is neither an
+added assumption nor a weaker claim, even when the claim becomes immediate under it. A
+restriction that the request does not state remains an added assumption. A convention changes
+only the notion it names: every other notion keeps its standard definition (a field still has
+1 ≠ 0 even when the zero ring counts as an integral domain), and a conclusion weakened to fit a
+convention, such as replacing "is a field" by "every nonzero element is invertible", is weaker.
 Successful type checking does not establish that this is the theorem the learner requested.
 Base a rejection on that specific semantic mismatch, not on a guessed library-lemma meaning.
 Lean compilation alone is not approval. Do not repair

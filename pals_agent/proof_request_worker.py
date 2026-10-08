@@ -14,6 +14,7 @@ from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
 from pals_agent.material_context import MaterialContext, MaterialContextError
+from pals_agent.math_conventions import parse_claim as parse_conventions
 from pals_agent.proof_reuse import MAX_SECONDS, ProofReuseError, ProofReuseResult, ProofReuseRuntime
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.token_meter import (
@@ -75,9 +76,14 @@ class ProofRequestProcessor:
         )
         keys = {"status", "request", "claim_id", "lease_expires_at"}
         if not keys <= set(claim) or set(claim) - keys - {
-            "billing_operation_id", "material_context_available", "lean_flow"
+            "billing_operation_id", "material_context_available", "lean_flow", "math_conventions"
         }:
             return False
+        conventions = None
+        if "math_conventions" in claim:
+            conventions = parse_conventions(claim["math_conventions"])
+            if conventions is None:
+                return False
         if any(
             key in claim and type(claim[key]) is not bool
             for key in ("material_context_available", "lean_flow")
@@ -90,6 +96,8 @@ class ProofRequestProcessor:
         request = claim["request"]
         if not isinstance(request, dict) or request.get("id") != request_id:
             return False
+        if conventions is not None:
+            request = dict(request, math_conventions=conventions)
         revision = request.get("revision")
         if type(revision) is not int or revision < 0 or request.get("status") != "assessing":
             return False
@@ -191,6 +199,13 @@ class ProofRequestProcessor:
             "answer": result.answer,
             "error_code": result.error_code,
             **({"formal_plan": result.formal_plan} if result.formal_plan is not None else {}),
+            # MCV-005: readings the assessment applied; the API re-checks each one.
+            **(
+                {"conventions": result.private_evidence["applied_conventions"]}
+                if result.outcome in {"answered", "formal"}
+                and result.private_evidence.get("applied_conventions")
+                else {}
+            ),
             "private_evidence": dict(
                 result.private_evidence,
                 worker_elapsed_ms=round((time.monotonic() - started) * 1000),

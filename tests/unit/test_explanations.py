@@ -1093,3 +1093,30 @@ def test_learner_facing_math_prompts_require_tex_for_membership_and_radicals() -
     assert "Escape each TeX backslash as `\\\\`" in generation
     assert "Escape each TeX backslash as `\\\\`" in clarification
     assert "Reject learner-visible mathematical expressions outside `$...$`" in review
+
+
+def test_stated_conventions_are_premises_for_explanation_and_its_review() -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    statement = (
+        "Prove that x^0 = 1 for every real number x.\n\n"
+        "Conventions: 0^0 = 1. Every other definition keeps its standard meaning."
+    )
+    prompt = _explanation_prompt(
+        theorem_statement=statement, lean_code=LEAN_CODE, language="en",
+        require_epsilon_delta=False,
+    )
+    review = _output_review_prompt(
+        theorem_statement=statement, lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(), language="en",
+    )
+    for text in (prompt, review):
+        assert "is a premise of the claim" in text
+        assert "convention or by the corresponding definition is valid" in text
+        assert "every other definition keeps its standard meaning" in text
+        assert "0^0 = 1 settles only the base 0" in text
+        assert "citing either is valid and is not a wrong justification" in text
+        assert statement in text
+    # The existing soundness gates are unchanged.
+    assert "Reject circular reasoning" in review
+    assert "A true equality with a wrong stated justification" in review

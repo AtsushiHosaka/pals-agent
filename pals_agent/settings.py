@@ -55,6 +55,7 @@ class AgentSettings:
     lake_binary: str
     lean_project_dir: Path | None
     proof_capability: Literal["full", "natural-only"] = "full"
+    proof_requests_queue_url: str | None = None
     typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
@@ -130,6 +131,10 @@ class AgentSettings:
             proof_jobs_queue_url=_first_env(
                 "PALS_SQS_PROOF_JOBS_QUEUE_URL",
                 "PALS_PROOF_JOBS_QUEUE_URL",
+            ),
+            proof_requests_queue_url=_first_env(
+                "PALS_SQS_PROOF_REQUESTS_QUEUE_URL",
+                "PALS_PROOF_REQUESTS_QUEUE_URL",
             ),
             artifacts_bucket=artifacts_bucket,
             api_base_url=os.getenv("PALS_API_BASE_URL", "http://localhost:8000"),
