@@ -98,9 +98,12 @@ def test_recipe_hit_returns_stored_answer_without_draft_generation_or_compilatio
     )
     review_prompt = transport.calls[-1]["input"]
     assert "without relying on any prior assessor" in review_prompt
+    assert "request.output_language selects the learner-facing prose language" in review_prompt
+    assert "Reject learner-facing prose in a different language" in review_prompt
     data = json.loads(review_prompt.split("DATA:\n", 1)[1])
     assert data["lean_source"] == SOURCE and data["answer"] == ANSWER
     assert data["request"]["original_statement"] == REQUEST["statement"]
+    assert data["request"]["output_language"] == "ja"
     assert "recipe_scope_assessment" not in data
     receipt = result.private_evidence["recipe_correspondence"]
     assert receipt["assessment_session_id"] != receipt["reviewer_session_id"]

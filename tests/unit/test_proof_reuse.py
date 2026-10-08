@@ -179,6 +179,55 @@ def test_unmetered_independent_review_failure_cannot_publish_answer():
     assert len(transport.calls) == 3
 
 
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+def test_normalized_mathematical_statement_cannot_change_saved_answer_language(language):
+    # Provider responses are fixtures: this tests transmitted context, not language quality.
+    statement = "Prove that for real 0 < a <= b, log(a) <= log(b)."
+    request = dict(REQUEST, statement=statement, output_language=language)
+    ready = dict(READY, statement=statement)
+    engine, transport = runtime([
+        ready,
+        decision(
+            mode="derive", source_ids=[], substitutions=[], premises=[],
+            conclusion="$\\log a\\le\\log b$ for $0<a\\le b$.",
+            answer="The logarithm has positive derivative $1/x$ on $(0,\\infty)$.",
+            supporting_proof="A positive derivative implies increasing by the mean value theorem.",
+        ),
+    ])
+
+    engine.answer(request)
+
+    generation, review = (call["input"] for call in transport.calls[1:])
+    for prompt in (generation, review):
+        assert "request.output_language selects the learner-facing prose language" in prompt
+        assert "resolved_statement is mathematical content, not a language preference" in prompt
+        data = json.loads(prompt.split("DATA:\n", 1)[1])
+        assert data["request"]["output_language"] == language
+        assert data["request"]["original_statement"] == statement
+    assert "Reject learner-facing prose in a different language" in review
+
+
+def test_wrong_language_review_rejection_remains_final_without_regeneration():
+    request = dict(REQUEST, statement="正の実数で対数が単調増加することを証明してください。")
+    ready = dict(READY, statement="The logarithm is increasing on the positive real numbers.")
+    answer = "For $0<a\\le b$, the derivative of $\\log x$ is $1/x>0$."
+    engine, transport = runtime([
+        ready,
+        decision(mode="derive", source_ids=[], substitutions=[], answer=answer),
+        {"approved": False, "rationale": "English prose does not satisfy Japanese output."},
+    ])
+
+    result = engine.answer(request)
+
+    assert result.outcome == "failed"
+    assert result.error_code == "proof_reuse_answer_review_failed"
+    assert result.answer is None
+    assert result.private_evidence["primary_assessment"]["answer"] == answer
+    assert result.private_evidence["answer_qa"]["approved"] is False
+    assert result.private_evidence["answer_qa_rationale"].startswith("English prose")
+    assert len(transport.calls) == 3
+
+
 def test_missing_domain_asks_before_retrieval_and_preserves_question_context():
     missing = dict(
         READY,
