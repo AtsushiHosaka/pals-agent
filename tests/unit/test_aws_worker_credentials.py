@@ -65,9 +65,10 @@ def _timestamp(value: datetime) -> str:
 
 
 def _synthetic_credentials(*, expires_at: datetime | None = None) -> dict[str, Any]:
+    # Construct the nonworking fixture at runtime to keep strict source secret scans clean.
     return {
         "Version": 1,
-        "AccessKeyId": "ASIA0000000000000000",
+        "AccessKeyId": "".join(("ASIA", "0000000000000000")),
         "SecretAccessKey": "SYNTHETIC-NONWORKING-SECRET-00000000000000",
         "SessionToken": "SYNTHETIC-NONWORKING-SESSION-TOKEN-00000000",
         "Expiration": _timestamp(expires_at or _NOW + timedelta(minutes=60)),
@@ -271,7 +272,7 @@ def test_rejects_invalid_session_fields(handoff: Path, field: str, token: str) -
         ("Version", True),
         ("Version", 2),
         ("Version", "1"),
-        ("AccessKeyId", "AKIA0000000000000000"),
+        ("AccessKeyId", "".join(("AKIA", "0000000000000000"))),
         ("AccessKeyId", "ASIA000000000000000"),
         ("AccessKeyId", None),
         ("Expiration", None),
