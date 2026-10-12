@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from http.client import IncompleteRead
 
 import pytest
 
+from pals_agent.draft_embeddings import OpenAIEmbeddingModel
 from pals_agent.models import ProofDraft
 from pals_agent.openmath import OpenMathStructuringError, canonicalize_retrieval_openmath_xml
 from pals_agent.private_draft_candidates import (
@@ -328,6 +330,44 @@ def test_pfi_runtime_rejects_an_invalid_embedding_before_private_api_or_reranker
         runtime.retrieve("For all real x, x equals x.")
 
     assert embeddings.calls == [_XML]
+    assert candidates.calls == []
+    assert reranker.calls == []
+
+
+@pytest.mark.parametrize(
+    "error", [BrokenPipeError("private socket detail"), IncompleteRead(b"private", 10)]
+)
+def test_embedding_response_disconnect_is_a_closed_retrieval_failure_without_fallback(
+    monkeypatch: pytest.MonkeyPatch, error: Exception,
+) -> None:
+    class FailedResponse:
+        def __enter__(self) -> FailedResponse:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            raise error
+
+    monkeypatch.setattr(
+        "pals_agent.draft_embeddings.urlopen", lambda *_args, **_kwargs: FailedResponse()
+    )
+    candidates = FakeCandidatePort(calls=[])
+    reranker = FakeReranker(ids=(), calls=[])
+    runtime = ProofFlowRuntime(
+        structurer=FakeStructurer(calls=[]),
+        embedding_model=OpenAIEmbeddingModel(
+            api_key="nonworking-test", revision=_FINGERPRINT.revision, dimension=2
+        ),
+        embedding_fingerprint=_FINGERPRINT,
+        runtime_provenance_sha256=_RUNTIME_PROVENANCE_SHA256,
+        candidate_client=candidates,
+        reranker=reranker,
+    )
+    with pytest.raises(ProofFlowRetrievalError, match="^embedding_invalid$") as failure:
+        runtime.retrieve("Prove convergence of a bounded monotone real sequence.")
+    assert failure.value.as_json()["error"] == {"code": "embedding_invalid"}
     assert candidates.calls == []
     assert reranker.calls == []
 

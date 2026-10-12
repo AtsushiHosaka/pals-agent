@@ -728,3 +728,32 @@ def test_repair_feedback_is_closed_bounded_and_never_copies_compiler_logs() -> N
     assert feedback[1]["code"] == "lean.compile_error"
     assert "SECRET" not in str(feedback)
     assert "not_in_source" not in str(feedback)
+
+
+def test_no_remaining_goals_has_specific_closed_feedback_without_compiler_text() -> None:
+    from pals_agent.lean_verifier.http_server import _repair_diagnostics
+
+    result = VerificationResult(
+        success=False,
+        stdout="PRIVATE compiler output",
+        stderr="PRIVATE transport output",
+        elapsed_ms=1,
+        diagnostics=(
+            Diagnostic("error", "No goals to be solved\nPRIVATE context", line=19, column=4),
+            Diagnostic("error", "No goals to be solved: arbitrary text", line=20, column=4),
+            Diagnostic("warning", "No goals to be solved", line=21, column=4),
+        ),
+    )
+
+    source = (
+        "theorem coprime_divisibility (a b c : ℕ) (hcoprime : Nat.gcd a b = 1) "
+        "(hdiv : a ∣ b * c) : a ∣ c := by\n"
+        "  exact (show Nat.Coprime a b from hcoprime).dvd_of_dvd_mul_left hdiv\n"
+    )
+    feedback = _repair_diagnostics(result, source)
+
+    assert feedback == [
+        {"code": "lean.no_goals", "symbol": None, "line": 19, "column": 4},
+        {"code": "lean.compile_error", "symbol": None, "line": 20, "column": 4},
+    ]
+    assert "PRIVATE" not in str(feedback)

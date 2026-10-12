@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from http.client import HTTPException
 from typing import Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -104,10 +105,17 @@ class OpenAIEmbeddingModel:
             with urlopen(request, timeout=self.timeout_seconds) as response:
                 body = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
-            detail = exc.read().decode("utf-8", errors="replace")
+            try:
+                detail = exc.read().decode("utf-8", errors="replace")
+            except (OSError, HTTPException):
+                raise EmbeddingError(
+                    f"OpenAI embedding failed: HTTP {exc.code}: error body unavailable"
+                ) from exc
             raise EmbeddingError(f"OpenAI embedding failed: HTTP {exc.code}: {detail}") from exc
         except (URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise EmbeddingError(f"OpenAI embedding failed: {exc}") from exc
+        except (OSError, HTTPException) as exc:
+            raise EmbeddingError("OpenAI embedding transport failed.") from exc
 
         return _extract_embedding(body, expected_dimension=self.dimension)
 
@@ -163,6 +171,8 @@ class OllamaEmbeddingModel:
                 body = json.loads(response.read().decode("utf-8"))
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
             raise EmbeddingError(f"Ollama embedding failed: {exc}") from exc
+        except (OSError, HTTPException) as exc:
+            raise EmbeddingError("Ollama embedding transport failed.") from exc
         if not isinstance(body, dict):
             raise EmbeddingError("Ollama embedding response was not a JSON object.")
         return body

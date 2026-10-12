@@ -802,6 +802,8 @@ def _repair_diagnostics(result: VerificationResult, source: str) -> list[dict[st
             continue
         code, symbol = "lean.compile_error", None
         first_line = item.message.splitlines()[0] if item.message else ""
+        if first_line == "No goals to be solved":
+            code = "lean.no_goals"
         for candidate_code, pattern in patterns:
             match = re.fullmatch(pattern, first_line)
             if match and match.group(1) in source:
