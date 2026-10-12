@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
@@ -8,6 +9,7 @@ from pals_agent.api_client import PalsApiClient, PalsApiError
 from pals_agent.http_transport import HttpResponse
 from pals_agent.lean import LeanVerifier
 from pals_agent.proof_request_worker import ProofRequestProcessor
+from pals_agent.proof_reuse import ProofReuseResult
 from pals_agent.worker import SqsProofWorker, parse_agent_task, parse_sqs_agent_message
 from tests.unit.test_proof_reuse import READY, REQUEST, decision, runtime
 
@@ -243,6 +245,96 @@ def test_settlement_warning_elides_unsafe_error_code_and_exception_message(caplo
     assert len(provider.calls) == 3
     assert "status_code=None error_code=None validation_errors=()" in caplog.text
     assert secret not in caplog.text and "SECRET-KEY" not in caplog.text
+
+
+@pytest.mark.parametrize("outcome,status,level", [
+    ("answered", "answered", "INFO"),
+    ("needs_input", "needs_input", "INFO"),
+    ("formal", "verifying", "INFO"),
+    ("failed", "failed", "WARNING"),
+])
+def test_committed_assessment_logs_safe_status_phase_and_review_without_private_data(
+    caplog, outcome, status, level,
+):
+    secret = "PRIVATE_PROMPT_ANSWER_REVIEW_RATIONALE"
+    result = ProofReuseResult(
+        outcome, {"text": secret}, {"text": secret},
+        "proof_reuse_answer_review_failed" if outcome == "failed" else None,
+        {"phase": "independent_answer_qa", "token_qa": {"approved": outcome != "failed"},
+         "token_qa_rationale": secret, "provider_failure": {"message": secret}},
+    )
+
+    class SettledApi(ApiBoundary):
+        def settle_proof_request(self, *, request_id, payload):
+            self.settlements.append(payload)
+            return {"id": request_id, "status": status, "error_code": result.error_code}
+
+    api = SettledApi()
+    caplog.set_level(logging.INFO, logger="pals_agent.proof_request_worker")
+    assert ProofRequestProcessor(api, SimpleNamespace(answer=lambda *a, **k: result)).process(
+        REQUEST_ID, CLAIM_ID, lambda _: None,
+    )
+    assert len(api.settlements) == 1 and len(caplog.records) == 1
+    event = caplog.records[0]
+    assert event.levelname == level and event.exc_info is None
+    assert "proof_request_settled" in event.message
+    assert f"request_id={REQUEST_ID} claim_id={CLAIM_ID} status={status}" in event.message
+    assert "assessment_phase=independent_answer_qa" in event.message
+    assert f"review_approved={outcome != 'failed'}" in event.message
+    assert secret not in caplog.text
+
+
+def test_committed_failure_uses_api_failure_code_and_never_echoes_unknown_labels(caplog):
+    secret = "private_prompt_that_is_a_valid_identifier"
+    result = ProofReuseResult(
+        "formal", None, None, None,
+        {"phase": secret, "answer_qa": {"approved": secret}, "failure_details": secret},
+    )
+
+    class SettledApi(ApiBoundary):
+        def settle_proof_request(self, *, request_id, payload):
+            return {"id": request_id, "status": "failed", "error_code": "lean_flow_unavailable"}
+
+    processor = ProofRequestProcessor(SettledApi(), SimpleNamespace(answer=lambda *a, **k: result))
+    assert processor.process(
+        REQUEST_ID, CLAIM_ID, lambda _: None,
+    )
+    assert (
+        "status=failed assessment_phase=unrecognized "
+        "error_code=lean_flow_unavailable" in caplog.text
+    )
+    assert "review_approved=None" in caplog.text and secret not in caplog.text
+
+
+@pytest.mark.parametrize("label", ["private_identifier", {"secret": "PRIVATE"}, "PRIVATE\nKEY"])
+def test_terminal_error_allowlist_does_not_echo_arbitrary_api_labels(caplog, label):
+    result = ProofReuseResult("failed", None, None, "proof_reuse_provider_unavailable", {})
+
+    class SettledApi(ApiBoundary):
+        def settle_proof_request(self, *, request_id, payload):
+            return {"id": request_id, "status": "failed", "error_code": label}
+
+    processor = ProofRequestProcessor(SettledApi(), SimpleNamespace(answer=lambda *a, **k: result))
+    assert processor.process(
+        REQUEST_ID, CLAIM_ID, lambda _: None,
+    )
+    assert "error_code=unrecognized" in caplog.text
+    assert "private_identifier" not in caplog.text and "PRIVATE" not in caplog.text
+
+
+def test_mismatched_settlement_is_not_logged_as_committed(caplog):
+    result = ProofReuseResult("answered", None, {"text": "PRIVATE"}, None, {})
+
+    class WrongApi(ApiBoundary):
+        def settle_proof_request(self, *, request_id, payload):
+            return {"id": CLAIM_ID, "status": "answered"}
+
+    caplog.set_level(logging.INFO, logger="pals_agent.proof_request_worker")
+    processor = ProofRequestProcessor(WrongApi(), SimpleNamespace(answer=lambda *a, **k: result))
+    assert not processor.process(
+        REQUEST_ID, CLAIM_ID, lambda _: None,
+    )
+    assert caplog.records == []
 
 
 @pytest.mark.parametrize("private_input", ["PRIVATE" * 10000, "私" * 30000])
