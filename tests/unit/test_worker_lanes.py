@@ -217,6 +217,29 @@ def test_assessment_cli_constructs_only_natural_processor(monkeypatch, command):
     assert cli.main([command, "--lane", "assessment"]) == 0
 
 
+@pytest.mark.parametrize("command", ["worker", "worker-once"])
+def test_proof_cli_constructs_formal_factories_without_assessment_processor(monkeypatch, command):
+    monkeypatch.setattr(cli.AgentSettings, "from_env", lambda: settings())
+    monkeypatch.setattr(cli, "build_proof_request_processor",
+                        lambda *args: pytest.fail("assessment factory constructed"))
+    formal = object()
+    pipeline = object()
+    for name in ("build_proof_explainer", "build_proof_output_reviewer",
+                 "build_proof_semantic_reviewer", "build_recipe_attempt_planner"):
+        monkeypatch.setattr(cli, name, lambda *args: formal)
+    monkeypatch.setattr(cli, "build_pipeline", lambda *args: pipeline)
+
+    def construct(**kwargs):
+        assert kwargs["lane"] == "proof" and kwargs["proof_request_processor"] is None
+        assert kwargs["pipeline_factory"]() is pipeline
+        assert kwargs["explainer"] is formal and kwargs["output_reviewer"] is formal
+        assert kwargs["proof_reviewer"] is formal and kwargs["recipe_attempt_planner"] is formal
+        return SimpleNamespace(run_once=lambda: True, run_forever=lambda: None)
+
+    monkeypatch.setattr(cli, "SqsProofWorker", construct)
+    assert cli.main([command, "--lane", "proof"]) == 0
+
+
 @pytest.mark.parametrize("queue", [None, "proof-queue"])
 def test_cli_invalid_lane_configuration_clears_readiness_before_factories(monkeypatch, tmp_path,
                                                                          queue):

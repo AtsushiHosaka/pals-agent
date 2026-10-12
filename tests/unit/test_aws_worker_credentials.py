@@ -26,6 +26,7 @@ import pytest
 _ROOT = Path(__file__).resolve().parents[2]
 _MODULE = _ROOT / "pals_agent" / "aws_worker_credentials.py"
 _LAUNCHER = _ROOT / "scripts" / "start-worker-with-credentials.sh"
+_FULL_LAUNCHER = _ROOT / "scripts" / "start-full-worker-with-credentials.sh"
 _PROFILE = _ROOT / "scripts" / "aws-worker-profile.conf"
 _NOW = datetime(2026, 10, 2, 0, 0, 0, tzinfo=UTC)
 _ROLE = "arn:aws:iam::111111111111:role/synthetic/worker"
@@ -726,3 +727,125 @@ def test_launcher_requires_natural_capability_and_accounting(
     assert result.stderr == (
         "Worker production boundary requires natural-only capability and token accounting.\n"
     )
+
+
+_FULL_ENVIRONMENT = {
+    "PALS_ENV": "prod",
+    "PALS_PROOF_CAPABILITY": "full",
+    "PALS_TOKEN_ACCOUNTING_ENABLED": "true",
+    "PALS_PROOF_JOBS_QUEUE_URL": "synthetic-proof-queue",
+    "PALS_PROOF_REQUESTS_QUEUE_URL": "synthetic-assessment-queue",
+}
+
+
+def _run_full_setup(
+    monkeypatch: pytest.MonkeyPatch,
+    environment: dict[str, str],
+    arguments: list[str],
+    suffix: str,
+) -> subprocess.CompletedProcess[str]:
+    setup, _, _ = _FULL_LAUNCHER.read_text().partition(_CHECK)
+    assert _CHECK not in setup and "exec /usr/local/bin/" not in setup
+    assert suffix.startswith("printf ")
+    with monkeypatch.context() as controlled:
+        controlled.setattr(subprocess, "Popen", _REAL_POPEN)
+        return subprocess.run(
+            ["/bin/sh", "-eu", "-c", setup + suffix, "full-worker", *arguments],
+            env=environment,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+
+
+def test_full_launcher_scrubs_every_provider_and_pins_production_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = {name: "SYNTHETIC-AMBIENT-OVERRIDE" for name in _AMBIENT_PROVIDERS}
+    environment.update({name: "SYNTHETIC-CONFIG-OVERRIDE" for name in _FIXED_ENVIRONMENT})
+    environment.update(_FULL_ENVIRONMENT)
+    names = sorted(_AMBIENT_PROVIDERS | set(_FIXED_ENVIRONMENT))
+    suffix = "\n".join(f"printf '%s=%s\\n' {name} \"${{{name}-__unset__}}\"" for name in names)
+    result = _run_full_setup(monkeypatch, environment, ["--lane", "proof"], suffix)
+    assert result.returncode == 0 and result.stderr == ""
+    assert dict(line.split("=", 1) for line in result.stdout.splitlines()) == {
+        **dict.fromkeys(_AMBIENT_PROVIDERS, "__unset__"),
+        **_FIXED_ENVIRONMENT,
+    }
+
+
+@pytest.mark.parametrize(
+    ("name", "value"),
+    [
+        ("PALS_ENV", "local"),
+        ("PALS_ENV", ""),
+        ("PALS_PROOF_CAPABILITY", "natural-only"),
+        ("PALS_PROOF_CAPABILITY", ""),
+        ("PALS_TOKEN_ACCOUNTING_ENABLED", "false"),
+        ("PALS_TOKEN_ACCOUNTING_ENABLED", "TRUE"),
+        ("PALS_LOCALSTACK_ENDPOINT_URL", "https://invalid.test"),
+        ("PALS_AWS_ENDPOINT_URL", "https://invalid.test"),
+        ("PALS_PROOF_JOBS_QUEUE_URL", ""),
+        ("PALS_PROOF_REQUESTS_QUEUE_URL", ""),
+        ("PALS_PROOF_REQUESTS_QUEUE_URL", "synthetic-proof-queue"),
+        # SQS aliases take precedence, matching AgentSettings.from_env.
+        ("PALS_SQS_PROOF_REQUESTS_QUEUE_URL", "synthetic-proof-queue"),
+        ("PALS_SQS_PROOF_JOBS_QUEUE_URL", "synthetic-assessment-queue"),
+    ],
+)
+def test_full_launcher_refuses_invalid_production_configuration_before_credentials(
+    monkeypatch: pytest.MonkeyPatch, name: str, value: str,
+) -> None:
+    result = _run_full_setup(
+        monkeypatch, {**_FULL_ENVIRONMENT, name: value}, ["--lane", "proof"],
+        "printf 'PRECHECK-MUST-NOT-RUN\\n'",
+    )
+    assert result.returncode == 2 and result.stdout == "" and result.stderr
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [[], ["--lane", "all"], ["--lane", "assessment"], ["--lane=proof"],
+     ["--lane", "proof", "--lane", "all"], ["--lane", "proof", "--lane=assessment"],
+     ["--lane", "proof", "--la", "all"], ["--lane", "proof", "--l=all"]],
+)
+def test_full_launcher_refuses_missing_or_overridden_proof_lane_before_credentials(
+    monkeypatch: pytest.MonkeyPatch, arguments: list[str],
+) -> None:
+    result = _run_full_setup(
+        monkeypatch, _FULL_ENVIRONMENT, arguments, "printf 'PRECHECK-MUST-NOT-RUN\\n'",
+    )
+    assert result.returncode == 2 and result.stdout == "" and result.stderr
+
+
+def test_full_launcher_accepts_queue_aliases_and_readiness_argument(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = {
+        **_FULL_ENVIRONMENT,
+        "PALS_SQS_PROOF_JOBS_QUEUE_URL": "synthetic-sqs-proof",
+        "PALS_SQS_PROOF_REQUESTS_QUEUE_URL": "synthetic-sqs-assessment",
+    }
+    result = _run_full_setup(
+        monkeypatch, environment,
+        ["--lane", "proof", "--ready-file", "/tmp/synthetic-ready"],
+        "printf '%s\\n' \"$@\"",
+    )
+    assert result.returncode == 0 and result.stderr == ""
+    assert result.stdout == "--ready-file\n/tmp/synthetic-ready\n"
+
+
+def test_full_image_uses_credential_precheck_and_fixed_proof_lane() -> None:
+    launcher = _FULL_LAUNCHER.read_text()
+    assert launcher.count(_CHECK) == 1
+    assert launcher.split(_CHECK)[1].strip() == (
+        'exec /usr/local/bin/pals-agent worker --lane proof "$@"'
+    )
+    image = (_ROOT / "Dockerfile.full-production").read_text()
+    assert "PALS_PROOF_CAPABILITY=full" in image
+    assert "USER 65532:65532" in image
+    assert "scripts/start-full-worker-with-credentials.sh scripts/aws-worker-profile.conf" in image
+    assert ('CMD ["sh", "/app/scripts/start-full-worker-with-credentials.sh", '
+            '"--lane", "proof"]') in image
+    assert "PALS_PFI_BUILD_PROVENANCE" not in image

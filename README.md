@@ -52,6 +52,34 @@ starts fail-closed when trust, resource, filesystem, process-boundary, or
 toolchain checks fail. The compiler receives no Worker, API, model, database,
 or cloud credential.
 
+## Production Worker Lanes
+
+The production assessment service uses `Dockerfile.natural-production` and
+`start-worker-with-credentials.sh`, which require `natural-only` capability.
+The separate formal proof service uses `Dockerfile.full-production`:
+
+```bash
+docker build -f Dockerfile.full-production -t pals-agent-proof-worker .
+```
+
+Its launcher requires `PALS_ENV=prod`, `PALS_PROOF_CAPABILITY=full`,
+`PALS_TOKEN_ACCOUNTING_ENABLED=true`, and an explicit `--lane proof` (the image
+command supplies it). Set both `PALS_PROOF_JOBS_QUEUE_URL` and
+`PALS_PROOF_REQUESTS_QUEUE_URL` to distinct queues; the `PALS_SQS_*` aliases are
+also supported. The existing assessment service continues consuming its
+dedicated queue. Both launchers scrub ambient AWS credentials and endpoint
+overrides, pin the production region, and validate the same rotating worker
+credential handoff before startup.
+
+The full image supports direct generation followed by API-owned Lean
+reconciliation. Provision its API worker secret, model provider configuration,
+artifact bucket, credential/policy mounts, and token accounting, together with
+the API reconciler and isolated verifier. It needs no Lean compiler in the
+credentialed worker. An unconfigured PFI runtime retains direct generation;
+this image supplies no Draft seed or PFI provenance. Enabling PFI requires the
+existing provenance-verified seed/image build and a pinned runtime configuration,
+not guessed provenance values.
+
 ## Local Worker
 
 The worker is API-reconciliation-first:
