@@ -9,11 +9,11 @@ from dataclasses import dataclass, replace
 from typing import Any
 
 from pals_agent.chat_images import (
-    chat_image_scope,
     chat_image_urls,
     chat_input_data,
     chat_input_sha256,
 )
+from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.material_context import MATERIAL_INSTRUCTION, MaterialContext
 from pals_agent.model_roles import RELEASE_MODEL
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
@@ -156,9 +156,23 @@ class ChatRuntime:
                     )
                 # The legacy proof branch remains fail-closed and sees every actual image,
                 # including its independent answer review. No text-only image fallback.
-                with chat_image_scope(images):
+                bound_request = {
+                    "statement": request["statement"],
+                    "context_turns": request["context_turns"],
+                    "chat_history": request.get("chat_history", []),
+                    "attachment_ids": request.get(
+                        "attachment_ids", [item["id"] for item in request.get("chat_images", [])]
+                    ),
+                    "generation_model": request.get("generation_model", RELEASE_MODEL),
+                }
+                with linked_chat_scope(
+                    {"generation_model": bound_request["generation_model"],
+                     "chat_route": evidence["chat_route"]},
+                    {"request": bound_request, "attachments": request.get("chat_images", []),
+                     "chat_route": evidence["chat_route"]},
+                ):
                     result = self.proof_runtime.answer(
-                        dict(request, statement=route["extracted_statement"]),
+                        request,
                         recipe_lookup,
                         recipe_search=recipe_search,
                         claim_id=claim_id,

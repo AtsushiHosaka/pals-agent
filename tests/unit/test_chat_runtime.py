@@ -83,9 +83,11 @@ class RecordedResponses:
 
 
 def engine(outputs, **kwargs):
+    from tests.unit.test_proof_reuse import CatalogBoundary
+
     provider = RecordedResponses(outputs, **kwargs)
     client = OpenAIResponsesClient(api_key="fixture-no-network", transport=provider)
-    return ChatRuntime(client, ProofReuseRuntime(client, None)), provider
+    return ChatRuntime(client, ProofReuseRuntime(client, CatalogBoundary())), provider
 
 
 def test_supplemental_image_only_answer_is_seen_by_classifier_generator_and_qa():
@@ -200,6 +202,92 @@ def test_lean_route_cannot_enter_historical_unverified_answer_branch():
     result = runtime.answer(dict(REQUEST, statement="Solve this"))
     assert result.outcome == "failed" and result.error_code == "lean_verification_required"
     assert len(provider.calls) == 1
+
+
+@pytest.mark.parametrize("image_only", [False, True])
+def test_lean_preflight_preserves_original_goal_and_bound_images(image_only):
+    from tests.unit.test_proof_reuse import READY
+    from tests.unit.test_proof_reuse_lean_flow import CLAIM_ID, REQUEST_ID
+
+    statement = "Let (aₙ) be increasing and bounded above. Prove that it converges."
+    intent = {
+        "query": statement, "domain": "Real sequences",
+        "assumptions": ["Increasing", "Bounded above"],
+        "quantifiers": ["Every such sequence"], "conclusion": "Convergence",
+        "proof_method_tag": None,
+    }
+    runtime, provider = engine([
+        route("lean", extracted_statement="Every bounded sequence converges."),
+        dict(READY, statement=statement), intent,
+    ])
+    request = dict(REQUEST, statement="" if image_only else statement,
+                   id=REQUEST_ID, revision=3)
+    result = runtime.answer(request, recipe_search=lambda *args: [], claim_id=CLAIM_ID)
+    assert result.outcome == "formal"
+    assert result.formal_plan["statement"] == statement
+    for call in provider.calls[1:]:
+        prompt = call["input"][0]["content"][0]["text"]
+        assert json.dumps({"original_statement": request["statement"]},
+                          ensure_ascii=False)[1:-1] in prompt
+        assert "Every bounded sequence converges." not in prompt.split(
+            "\n\nImmutable originating chat input", 1
+        )[0]
+        assert call["input"][0]["content"][1]["image_url"] == IMAGE["image_data_url"]
+
+
+def test_lean_catalog_receipt_and_independent_review_bind_original_statement():
+    import rfc8785
+
+    from tests.unit.test_proof_reuse import READY
+    from tests.unit.test_proof_reuse_lean_flow import (
+        BOUND_REQUEST,
+        CLAIM_ID,
+        INTENT,
+        MATCH,
+        RECIPE,
+        REVIEW,
+    )
+
+    runtime, provider = engine([
+        route("lean", extracted_statement="Prove True."), READY, INTENT, MATCH, REVIEW,
+    ])
+    result = runtime.answer(BOUND_REQUEST, recipe_search=lambda *args: [RECIPE],
+                            claim_id=CLAIM_ID)
+    assert result.outcome == "answered"
+    reviewed = json.loads(provider.calls[-1]["input"].split("DATA:\n", 1)[1]
+                          .split("\n\nImmutable originating chat input", 1)[0])
+    assert reviewed["request"]["original_statement"] == BOUND_REQUEST["statement"]
+    original = {key: BOUND_REQUEST[key] for key in (
+        "statement", "context_turns", "output_language",
+    )}
+    assert result.private_evidence["recipe_correspondence"]["request_context_sha256"] == (
+        hashlib.sha256(rfc8785.dumps(original)).hexdigest()
+    )
+
+
+def test_lean_followup_keeps_theorem_from_image_only_message_history():
+    from tests.unit.test_proof_reuse import READY
+    from tests.unit.test_proof_reuse_lean_flow import CLAIM_ID, REQUEST_ID
+
+    theorem = "Every increasing real sequence bounded above converges."
+    history = [
+        {"role": "user", "text": "", "attachment_ids": [IMAGE["id"]], "context_turns": []},
+        {"role": "assistant", "text": theorem, "attachment_ids": [], "context_turns": []},
+    ]
+    intent = {"query": theorem, "domain": "Real sequences", "assumptions": [],
+              "quantifiers": [], "conclusion": "Convergence", "proof_method_tag": None}
+    runtime, provider = engine([
+        route("lean", extracted_statement=theorem), dict(READY, statement=theorem), intent,
+    ])
+    request = dict(REQUEST, statement="Prove the theorem you stated above.",
+                   chat_history=history, id=REQUEST_ID, revision=3)
+    result = runtime.answer(request, recipe_search=lambda *args: [], claim_id=CLAIM_ID)
+    assert result.outcome == "formal"
+    for call in provider.calls[1:]:
+        prompt = call["input"][0]["content"][0]["text"]
+        assert json.dumps(history, ensure_ascii=False, sort_keys=True,
+                          separators=(",", ":")) in prompt
+        assert "Preserve the original mathematical task and assumptions" in prompt
 
 
 @pytest.mark.parametrize(

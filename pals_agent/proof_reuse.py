@@ -1069,7 +1069,7 @@ def _request_input(request: dict[str, Any]) -> tuple[str, str, list[dict[str, An
     turns = request.get("context_turns")
     if (
         not isinstance(statement, str)
-        or not statement.strip()
+        or (not statement.strip() and not current_chat_images())
         or len(statement) > 20000
         or language not in _LANGUAGES
         or not isinstance(turns, list)
