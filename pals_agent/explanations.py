@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
 from pals_agent.lean_target import LeanTargetDeclaration
+from pals_agent.linked_chat import selected_generation_model
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])(?:"
@@ -482,7 +483,7 @@ class LeanProofExplainer:
             overview=overview,
             sections=sections,
             conclusion=conclusion,
-            model=self.model,
+            model=selected_generation_model(self.model),
             provider=self.provider,
             prompt=prompt,
             raw_model_output=raw_output,
@@ -554,7 +555,7 @@ class LeanProofExplainer:
             answer=answer,
             key_points=key_points,
             references=references,
-            model=self.model,
+            model=selected_generation_model(self.model),
             provider=self.provider,
             prompt=prompt,
             raw_model_output=raw_output,
@@ -580,12 +581,12 @@ class LeanProofExplainer:
             )
             if transport_timeout is None:
                 raw_output = self.client.generate(
-                    model=self.model,
+                    model=selected_generation_model(self.model),
                     prompt=current_prompt,
                 )
             else:
                 raw_output = self.client.generate(
-                    model=self.model,
+                    model=selected_generation_model(self.model),
                     prompt=current_prompt,
                     timeout_seconds=transport_timeout,
                 )

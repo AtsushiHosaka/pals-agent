@@ -18,6 +18,7 @@ from uuid import UUID, uuid4
 
 import rfc8785
 
+from pals_agent.chat_images import current_chat_images
 from pals_agent.material_context import (
     MATERIAL_INSTRUCTION,
     MaterialContext,
@@ -236,13 +237,16 @@ class ProofReuseRuntime:
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
+        deadline: float | None = None,
     ) -> ProofReuseResult:
         """Recipe-first released flow uses recipe_search; recipe_lookup is legacy only.
 
         Reuse sealed source/answer bytes or hand the request to a complete DSP Lean job.
         """
         started = time.monotonic()
-        deadline = started + MAX_SECONDS
+        deadline = (
+            min(started + MAX_SECONDS, deadline) if deadline is not None else started + MAX_SECONDS
+        )
         evidence: dict[str, Any] = {"schema_version": "pals.proof-reuse-assessment.v1"}
         try:
             statement, language, turns = _request_input(request)
@@ -971,6 +975,8 @@ class ProofReuseRuntime:
                 prompt=prompt,
                 response_schema=schema,
                 timeout_seconds=min(timeout, remaining),
+                images=current_chat_images(),
+                store=False if current_chat_images() else None,
             )
         has_advisory = "next_input_suggestion" in schema["properties"]
         if len(raw.encode(errors="surrogatepass")) > 65536:
@@ -1037,7 +1043,9 @@ def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def _request_input(request: dict[str, Any]) -> tuple[str, str, list[dict[str, str]]]:
+def _request_input(request: dict[str, Any]) -> tuple[str, str, list[dict[str, Any]]]:
+    from pals_agent.chat_images import valid_chat_turn
+
     statement = request.get("statement")
     language = request.get("output_language")
     turns = request.get("context_turns")
@@ -1051,11 +1059,7 @@ def _request_input(request: dict[str, Any]) -> tuple[str, str, list[dict[str, st
     ):
         raise ProofReuseError("proof_reuse_input_invalid")
     for turn in turns:
-        if (
-            not isinstance(turn, dict)
-            or set(turn) != {"question_id", "question", "answer"}
-            or any(not isinstance(value, str) or not value.strip() for value in turn.values())
-        ):
+        if not valid_chat_turn(turn):
             raise ProofReuseError("proof_reuse_input_invalid")
     if len(json.dumps(turns, ensure_ascii=False).encode()) > 131072:
         raise ProofReuseError("proof_reuse_input_invalid")

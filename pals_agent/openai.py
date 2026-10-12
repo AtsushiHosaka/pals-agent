@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
@@ -48,7 +49,18 @@ class OpenAIResponsesClient:
         prompt: str,
         timeout_seconds: float | None = None,
         response_schema: dict[str, Any] | None = None,
+        images: tuple[str, ...] = (),
+        response_callback: Callable[[str], None] | None = None,
+        store: bool | None = None,
     ) -> str:
+        from pals_agent.chat_images import current_chat_images
+        from pals_agent.linked_chat import linked_chat_prompt
+
+        bound_prompt = linked_chat_prompt(prompt)
+        images = images or current_chat_images()
+        if images or bound_prompt != prompt:
+            store = False
+        prompt = bound_prompt
         if not self.api_key.strip():
             raise OpenAIError(
                 "OPENAI_API_KEY is required when PALS_LLM_PROVIDER=openai.",
@@ -58,10 +70,12 @@ class OpenAIResponsesClient:
         endpoint = self.base_url.rstrip("/") + "/responses"
         payload: dict[str, Any] = {
             "model": model,
-            "input": prompt,
+            "input": responses_input(prompt, images),
             "max_output_tokens": self.max_output_tokens,
         }
-        if model in {RELEASE_MODEL, ESCALATION_MODEL}:
+        if store is not None:
+            payload["store"] = store
+        if model in {RELEASE_MODEL, ESCALATION_MODEL, "gpt-6.1-sol"}:
             # Pin standard service for reproducible usage estimates and bound the
             # cheap first pass; Terra is invoked explicitly, never as a retry.
             payload["service_tier"] = "default"
@@ -141,7 +155,34 @@ class OpenAIResponsesClient:
             raise OpenAIError(
                 "OpenAI response did not contain text.", private_diagnostics={"stage": "empty_text"}
             )
+        if response_callback is not None:
+            response_id = body.get("id")
+            if (
+                not isinstance(response_id, str) or not response_id.startswith("resp_")
+                or not 6 <= len(response_id) <= 256
+            ):
+                raise OpenAIError("OpenAI response session identity was malformed")
+            response_callback(response_id)
         return generated
+
+
+def responses_input(prompt: str, images: tuple[str, ...]) -> str | list[dict[str, Any]]:
+    """Inline only validated image derivatives; never fetch provider supplied URLs."""
+    if not images:
+        return prompt
+    from pals_agent.chat_images import validate_image_data_url
+
+    if len(images) > 330:
+        raise ValueError("too many chat images")
+    total_bytes = 0
+    for item in images:
+        total_bytes += len(validate_image_data_url(item))
+        if total_bytes > 20_000_000:
+            raise ValueError("chat visual context exceeds limits")
+    return [{"role": "user", "content": [
+        {"type": "input_text", "text": prompt},
+        *({"type": "input_image", "image_url": item, "detail": "high"} for item in images),
+    ]}]
 
 
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:

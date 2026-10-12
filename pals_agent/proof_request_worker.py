@@ -13,9 +13,16 @@ from typing import Any, Protocol
 from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
+from pals_agent.chat_images import chat_attachment_ids, parse_chat_images
 from pals_agent.material_context import MaterialContext, MaterialContextError
 from pals_agent.math_conventions import parse_claim as parse_conventions
-from pals_agent.proof_reuse import MAX_SECONDS, ProofReuseError, ProofReuseResult, ProofReuseRuntime
+from pals_agent.proof_reuse import (
+    MAX_SECONDS,
+    ProofReuseError,
+    ProofReuseResult,
+    ProofReuseRuntime,
+    RecipeSearch,
+)
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.token_meter import (
     TokenBudgetExceededError,
@@ -30,7 +37,18 @@ _logger = logging.getLogger(__name__)
 _SAFE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_]{0,79}$", re.ASCII)
 
 
+class ChatAnswerRuntime(Protocol):
+    def answer(
+        self, request: dict[str, Any],
+        recipe_lookup: Callable[[list[dict[str, Any]]], list[dict[str, Any]]] | None = None, *,
+        recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
+    ) -> ProofReuseResult: ...
+
+
 class ProofRequestApi(TokenMeterApi, Protocol):
+    def get_proof_request_attachments(
+        self, *, request_id: str, claim_id: str
+    ) -> dict[str, Any]: ...
     def record_proof_request_usage(
         self, *, request_id: str, claim_id: str, usage: dict[str, Any]
     ) -> None: ...
@@ -59,7 +77,7 @@ class ProofRequestApi(TokenMeterApi, Protocol):
 @dataclass(frozen=True, slots=True)
 class ProofRequestProcessor:
     api: ProofRequestApi
-    runtime: ProofReuseRuntime
+    runtime: ProofReuseRuntime | ChatAnswerRuntime
     token_accounting_enabled: bool = False
 
     def process(
@@ -137,6 +155,7 @@ class ProofRequestProcessor:
                 )
 
         started = time.monotonic()
+        request = dict(request, worker_deadline=started + MAX_SECONDS)
         # Only a released Lean flow may route requests to catalog reuse or linked Lean jobs.
         def search_recipes(query: str, language: str) -> list[dict[str, Any]]:
             try:
@@ -152,6 +171,16 @@ class ProofRequestProcessor:
             if claim.get("lean_flow") else {}
         )
         try:
+            attachment_ids = chat_attachment_ids(request)
+            if attachment_ids:
+                try:
+                    image_payload = self.api.get_proof_request_attachments(
+                        request_id=request_id, claim_id=claim_id,
+                    )
+                    images = parse_chat_images(image_payload, attachment_ids)
+                except (PalsApiError, ValueError, TypeError, KeyError) as error:
+                    raise MaterialContextError("chat_attachments_unavailable") from error
+                request = dict(request, chat_images=images)
             if claim.get("material_context_available"):
                 try:
                     payload = self.api.get_proof_request_materials(
