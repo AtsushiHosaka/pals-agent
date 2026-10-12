@@ -93,10 +93,48 @@ def test_pdf_hash_binds_second_page_and_linked_review_restores_all_pages():
     assert chat_input_sha256(changed) != chat_input_sha256(request)
 
 
-def test_current_message_cannot_have_five_attachments():
-    ids = [f"44444444-4444-4444-8444-{number:012d}" for number in range(5)]
+def test_aggregate_attachment_manifest_retains_its_context_bound():
+    ids = [f"44444444-4444-4444-8444-{number:012d}" for number in range(331)]
+    assert chat_attachment_ids({"attachment_ids": ids[:330]}) == ids[:330]
     with pytest.raises(ValueError):
         chat_attachment_ids({"attachment_ids": ids})
+
+
+@pytest.mark.parametrize("source", ["clarification", "history"])
+def test_expanded_worker_snapshot_preserves_all_images_and_linked_review(source):
+    from tests.unit.test_linked_chat import binding
+
+    count = 5 if source == "clarification" else 8
+    documents = [dict(IMAGE, id=f"44444444-4444-4444-8444-{number:012d}")
+                 for number in range(count)]
+    identifiers = [document["id"] for document in documents]
+    metadata = {key: value for key, value in documents[4].items()
+                if key not in {"image_data_url", "ocr_text"}}
+    context, payload = binding()
+    payload["attachments"] = documents
+    payload["request"]["attachment_ids"] = identifiers
+    payload["request"]["context_turns"] = ([{
+        "question_id": "focus", "question": "Which part should I explain?",
+        "answer": "This part", "attachments": [metadata],
+    }] if source == "clarification" else [])
+    payload["request"]["chat_history"] = ([{
+        "role": "user", "text": "Explain the prior diagrams.",
+        "attachment_ids": identifiers[4:], "context_turns": [],
+    }] if source == "history" else [])
+    assert chat_attachment_ids(payload["request"]) == identifiers
+    parsed = parse_chat_images({"attachments": documents}, identifiers)
+    request = {**payload["request"], "output_language": "en", "chat_images": parsed}
+    runtime, provider = engine([
+        route(), {"text": "The diagrams describe mappings."},
+        {"approved": True, "rationale": "All requested diagrams were considered."},
+    ])
+    assert runtime.answer(request).outcome == "answered"
+    assert all(len(call["input"][0]["content"]) == count + 1 for call in provider.calls)
+    context["chat_route"]["input_sha256"] = chat_input_sha256(request)
+    payload["chat_route"] = context["chat_route"]
+    with linked_chat_scope(context, payload):
+        assert len(current_chat_images()) == count
+    assert current_chat_images() == ()
 
 
 def test_document_context_adapters_accept_large_bounded_payloads_only_on_context_routes():

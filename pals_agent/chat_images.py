@@ -199,7 +199,9 @@ def current_chat_images() -> tuple[str, ...]:
 def chat_attachment_ids(request: dict[str, Any]) -> list[str]:
     identifiers = request.get("attachment_ids", [])
     history = request.get("chat_history", [])
-    if (not isinstance(identifiers, list) or len(identifiers) > 4
+    # The API's worker DTO includes the whole frozen snapshot, not just the
+    # current message. Per-message limits belong to API create/premise contracts.
+    if (not isinstance(identifiers, list) or len(identifiers) > 330
         or not isinstance(history, list)):
         raise ValueError("invalid chat attachment manifest")
     result = list(identifiers)
