@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass, replace
 from typing import Protocol
 
+from pals_agent.linked_chat import selected_generation_model
 from pals_agent.mlx import MlxError
 from pals_agent.models import (
     GeneratedDraft,
@@ -112,7 +113,7 @@ class HybridLeanGenerator:
         request: ProofRequest,
         feedback: GenerationFeedback,
     ) -> RepairRouteDecision:
-        client, model, provider = self._default_endpoint()
+        client, model, provider = self._default_endpoint(selected=False)
         prompt = _repair_route_prompt_for(request, feedback)
         if client is None:
             raise RepairRouteSelectionError(
@@ -410,7 +411,7 @@ class HybridLeanGenerator:
     ) -> GeneratedProof:
         return GeneratedProof(
             lean_code="",
-            model=model or (self.prove_model or self.model),
+            model=model or selected_generation_model(self.prove_model or self.model),
             raw_model_output=error,
             draft=draft,
             sketch=sketch,
@@ -419,12 +420,15 @@ class HybridLeanGenerator:
             elapsed_ms=elapsed_ms,
         )
 
-    def _default_endpoint(self) -> tuple[TextGenerationClient | None, str, str]:
-        return self.client or self.openai or self.ollama, self.model, self.provider
+    def _default_endpoint(
+        self, *, selected: bool = True
+    ) -> tuple[TextGenerationClient | None, str, str]:
+        model = selected_generation_model(self.model) if selected else self.model
+        return self.client or self.openai or self.ollama, model, self.provider
 
     def _prove_endpoint(self) -> tuple[TextGenerationClient | None, str, str]:
         client = self.prove_client or self.client or self.openai or self.ollama
-        model = self.prove_model or self.model
+        model = selected_generation_model(self.prove_model or self.model)
         provider = self.prove_provider or self.provider
         return client, model, provider
 
