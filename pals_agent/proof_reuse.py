@@ -53,6 +53,10 @@ _OUTPUT_LANGUAGE_INSTRUCTION = (
 
 PREMISE_CHECK_INSTRUCTION = (
     "Before deciding, check the claim exactly as stated under its most natural reading and fill "
+    "premise_check for the goal the learner actually requested. If the learner explicitly asks "
+    "for a counterexample or where an earlier proof fails after changing a hypothesis, the goal "
+    "is that analysis or counterexample, not proving the earlier positive claim. Preserve that "
+    "requested goal; do not ask permission to refute a claim they already asked to test. Fill "
     "premise_check. counterexample: if a concrete admissible instance makes the claim false "
     "(try small and boundary values such as 0, 1 and -1, zero or empty objects, and standard "
     "counterexamples), describe that instance briefly; otherwise an empty string. Never call a "
@@ -246,6 +250,7 @@ class ProofReuseRuntime:
         evidence: dict[str, Any] = {"schema_version": "pals.proof-reuse-assessment.v1"}
         try:
             statement, language, turns = _request_input(request)
+            history = _conversation_history(request)
             conventions = None
             if "math_conventions" in request:
                 conventions = parse_conventions(request["math_conventions"])
@@ -256,6 +261,8 @@ class ProofReuseRuntime:
                 "clarifications": turns,
                 "output_language": language,
             }
+            if history:
+                context["conversation_history"] = history
             materials = None
             if "material_context" in request:
                 materials = MaterialContext.parse(
@@ -301,6 +308,15 @@ class ProofReuseRuntime:
                 "retrieved/catalog source as part of the answer; otherwise false. "
                 "Preserve the original request and clarification "
                 "answers; never weaken the goal or add assumptions. If it is sufficiently clear, "
+                "resolve references such as 'the theorem above' from conversation_history, "
+                "which contains preceding completed turns in chronological order. Prefer the "
+                "most recent uniquely matching theorem. Apply the current request's changed "
+                "hypotheses or goal to that theorem and make the resolved statement "
+                "self-contained. "
+                "Do not ask the learner to restate information already present there. Previous "
+                "answers are context, not verified mathematical evidence or confirmation of the "
+                "current claim; independently check them and never inherit a dropped hypothesis. "
+                "Ask when the referenced theorem is absent or multiple readings remain possible. "
                 "return ready and a faithful self-contained statement. Do not ask whether a proof "
                 "is acceptable, request permission to answer, or ask for preferences "
                 "that do not change correctness. Ask one concise concrete missing-premise question "
@@ -928,6 +944,8 @@ class ProofReuseRuntime:
             "request_context_sha256": hashlib.sha256(rfc8785.dumps({
                 "statement": request["statement"], "context_turns": request["context_turns"],
                 "output_language": request["output_language"],
+                **({"conversation_history": context["conversation_history"]}
+                   if context.get("conversation_history") else {}),
             })).hexdigest(),
             **{field: selected[field] for field in
                ("entry_sha256", "lean_sha256", "answer_sha256")},
@@ -1060,6 +1078,32 @@ def _request_input(request: dict[str, Any]) -> tuple[str, str, list[dict[str, st
     if len(json.dumps(turns, ensure_ascii=False).encode()) > 131072:
         raise ProofReuseError("proof_reuse_input_invalid")
     return statement, language, turns
+
+
+def _conversation_history(request: dict[str, Any]) -> list[dict[str, str]]:
+    history = request.get("conversation_history", [])
+    if not isinstance(history, list) or len(history) > 10:
+        raise ProofReuseError("proof_reuse_input_invalid")
+    for turn in history:
+        if (
+            not isinstance(turn, dict)
+            or set(turn) != {"statement", "answer"}
+            or not isinstance(turn["statement"], str)
+            or not turn["statement"].strip()
+            or len(turn["statement"]) > 20000
+            or not isinstance(turn["answer"], str)
+            or not turn["answer"].strip()
+            or len(turn["answer"]) > 60000
+        ):
+            raise ProofReuseError("proof_reuse_input_invalid")
+    try:
+        _validate_json_storage_text(history)
+        encoded = json.dumps(history, ensure_ascii=False).encode("utf-8")
+    except (ValueError, UnicodeError):
+        raise ProofReuseError("proof_reuse_input_invalid") from None
+    if len(encoded) > 131072:
+        raise ProofReuseError("proof_reuse_input_invalid")
+    return history
 
 
 def _text(value: Any, limit: int = 16384, *, empty: bool = True) -> bool:
