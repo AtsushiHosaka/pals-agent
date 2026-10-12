@@ -9,7 +9,8 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY pals_agent ./pals_agent
-COPY scripts/start-full-worker-with-credentials.sh scripts/aws-worker-profile.conf ./scripts/
+COPY scripts/start-full-worker-with-credentials.sh scripts/start-worker-with-credentials.sh \
+    scripts/aws-worker-profile.conf ./scripts/
 
 RUN pip install .
 

@@ -845,7 +845,9 @@ def test_full_image_uses_credential_precheck_and_fixed_proof_lane() -> None:
     image = (_ROOT / "Dockerfile.full-production").read_text()
     assert "PALS_PROOF_CAPABILITY=full" in image
     assert "USER 65532:65532" in image
-    assert "scripts/start-full-worker-with-credentials.sh scripts/aws-worker-profile.conf" in image
+    assert ("scripts/start-full-worker-with-credentials.sh "
+            "scripts/start-worker-with-credentials.sh") in image
+    assert "scripts/aws-worker-profile.conf ./scripts/" in image
     assert ('CMD ["sh", "/app/scripts/start-full-worker-with-credentials.sh", '
             '"--lane", "proof"]') in image
     assert "PALS_PFI_BUILD_PROVENANCE" not in image

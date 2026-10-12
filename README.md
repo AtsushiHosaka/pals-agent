@@ -71,6 +71,18 @@ dedicated queue. Both launchers scrub ambient AWS credentials and endpoint
 overrides, pin the production region, and validate the same rotating worker
 credential handoff before startup.
 
+For a shared signed worker image, `Dockerfile.full-production` also includes
+the unchanged natural-only launcher. Run the assessment service from that same
+image with `PALS_PROOF_CAPABILITY=natural-only`, `PALS_ENV=prod`, token accounting
+enabled, and both distinct queue URLs. Override its command with:
+
+```bash
+sh /app/scripts/start-worker-with-credentials.sh --lane assessment
+```
+
+The shared image defaults to the full proof service; each service must select
+its own capability and command explicitly.
+
 The full image supports direct generation followed by API-owned Lean
 reconciliation. Provision its API worker secret, model provider configuration,
 artifact bucket, credential/policy mounts, and token accounting, together with
