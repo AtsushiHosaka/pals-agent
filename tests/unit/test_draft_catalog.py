@@ -4,8 +4,10 @@ import json
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import replace
+from http.client import BadStatusLine, IncompleteRead
 from importlib import resources
 from typing import Any
+from urllib.error import HTTPError
 
 import pytest
 
@@ -18,6 +20,7 @@ from pals_agent.draft_catalog import (
 )
 from pals_agent.draft_embeddings import (
     EmbeddingError,
+    OllamaEmbeddingModel,
     OpenAIEmbeddingModel,
     normalize_embedding_endpoint,
 )
@@ -293,6 +296,96 @@ def test_openai_embedding_rejects_dimension_mismatch(
 
     with pytest.raises(EmbeddingError, match="dimension mismatch"):
         model.embed("x^2が連続であることを示せ")
+
+
+@pytest.mark.parametrize(
+    "error",
+    [BrokenPipeError("private socket detail"), ConnectionResetError("private socket detail"),
+     OSError("private socket detail"), IncompleteRead(b"private partial response", 10),
+     BadStatusLine("private HTTP status")],
+)
+@pytest.mark.parametrize("phase", ["open", "read"])
+def test_openai_embedding_normalizes_socket_and_http_response_failures(
+    monkeypatch: pytest.MonkeyPatch, error: Exception, phase: str,
+) -> None:
+    class FailedResponse:
+        def __enter__(self) -> FailedResponse:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            raise error
+
+    def failed_open(*_args: object, **_kwargs: object) -> FailedResponse:
+        if phase == "open":
+            raise error
+        return FailedResponse()
+
+    monkeypatch.setattr("pals_agent.draft_embeddings.urlopen", failed_open)
+    model = OpenAIEmbeddingModel(api_key="nonworking-test", revision="test", dimension=3)
+    with pytest.raises(EmbeddingError, match="^OpenAI embedding transport failed\\.$") as failure:
+        model.embed("Prove convergence of a bounded monotone real sequence.")
+    assert failure.value.__cause__ is error
+    assert "private" not in str(failure.value)
+
+
+@pytest.mark.parametrize(
+    "error", [BrokenPipeError("private socket detail"), IncompleteRead(b"private", 10)]
+)
+def test_openai_embedding_normalizes_failure_reading_http_error_body(
+    monkeypatch: pytest.MonkeyPatch, error: Exception,
+) -> None:
+    class FailedErrorBody:
+        def read(self, *_args: object, **_kwargs: object) -> bytes:
+            raise error
+
+        def close(self) -> None:
+            return None
+
+    http_error = HTTPError(
+        "https://api.openai.test/v1/embeddings", 502, "Bad Gateway", None, FailedErrorBody()
+    )
+
+    def failed_open(*_args: object, **_kwargs: object) -> None:
+        raise http_error
+
+    monkeypatch.setattr("pals_agent.draft_embeddings.urlopen", failed_open)
+    model = OpenAIEmbeddingModel(api_key="nonworking-test", revision="test", dimension=3)
+    with pytest.raises(EmbeddingError, match="HTTP 502: error body unavailable") as failure:
+        model.embed("Prove convergence of a bounded monotone real sequence.")
+    assert failure.value.__cause__ is http_error
+    assert "private" not in str(failure.value)
+
+
+@pytest.mark.parametrize(
+    "error", [BrokenPipeError("private socket detail"), IncompleteRead(b"private", 10)]
+)
+def test_ollama_embedding_normalizes_read_failures_without_returning_a_vector(
+    monkeypatch: pytest.MonkeyPatch, error: Exception,
+) -> None:
+    calls: list[str] = []
+
+    class FailedResponse:
+        def __enter__(self) -> FailedResponse:
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+        def read(self) -> bytes:
+            raise error
+
+    def failed_open(request: Any, **_kwargs: object) -> FailedResponse:
+        calls.append(request.full_url)
+        return FailedResponse()
+
+    monkeypatch.setattr("pals_agent.draft_embeddings.urlopen", failed_open)
+    model = OllamaEmbeddingModel(revision="test", dimension=3)
+    with pytest.raises(EmbeddingError, match="^Ollama embedding transport failed\\.$"):
+        model.embed("Prove convergence of a bounded monotone real sequence.")
+    assert calls == ["http://127.0.0.1:11434/api/embed", "http://127.0.0.1:11434/api/embeddings"]
 
 
 def test_embedding_model_rejects_missing_immutable_revision() -> None:
