@@ -316,6 +316,36 @@ def test_source_localization_contract_reaches_handoff_and_all_repair_stages() ->
         assert "repeating `prove` while preserving that malformed target cannot" in prompt
 
 
+def test_no_goals_instruction_reaches_selector_and_proof_repair_without_rewriting_source() -> None:
+    source = (
+        "import Mathlib.Data.Nat.GCD.Basic\n"
+        "theorem coprime_divisibility (a b c : ℕ) (hcoprime : Nat.gcd a b = 1) "
+        "(hdiv : a ∣ b * c) : a ∣ c := by\n"
+        "  have h : Nat.Coprime a b := hcoprime\n"
+        "  exact h.dvd_of_dvd_mul_left hdiv\n"
+        "  exact h.dvd_of_dvd_mul_left hdiv\n"
+    )
+    instruction = (
+        "No goals remain at this tactic; remove the redundant tactic without changing the theorem."
+    )
+    draft, sketch = prior_stages()
+    original = replace(
+        request(), prompt="Prove coprime divisibility for natural numbers.", formal_statement=None,
+    )
+    failed = replace(
+        feedback("prove", draft=draft, sketch=sketch), previous_lean_code=source,
+        diagnostics=(Diagnostic("error", instruction, "lean.no_goals", line=5, column=2),),
+    )
+    for prompt in (
+        _repair_route_prompt_for(original, failed),
+        _repair_instruction_prompt_for(original, failed),
+        _prove_prompt_for(original, draft, sketch, failed),
+    ):
+        assert source.strip() in prompt
+        assert f"line 5:2 [lean.no_goals]: {instruction}" in prompt
+    assert failed.previous_lean_code == source
+
+
 def test_repair_route_selector_retries_invalid_json_once() -> None:
     client = FakeTextClient(
         "resume from sketch",

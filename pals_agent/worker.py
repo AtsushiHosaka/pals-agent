@@ -3400,6 +3400,10 @@ def _closed_compile_history_diagnostics(value: object) -> list[Diagnostic] | Non
         "lean.type_mismatch": r"Lean reported a type mismatch\.",
         "lean.syntax_error": r"Lean reported a syntax error\.",
         "lean.tactic_failed": r"A Lean tactic failed\.",
+        "lean.no_goals": (
+            r"No goals remain at this tactic; remove the redundant tactic "
+            r"without changing the theorem\."
+        ),
         "lean.compile_error": r"Lean compilation failed at this location\.",
     }
     for item in value:

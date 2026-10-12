@@ -19,6 +19,8 @@ def diagnostic(code: str = "lean.syntax_error") -> dict[str, Any]:
     messages = {
         "lean.syntax_error": "Lean reported a syntax error.",
         "lean.type_mismatch": "Lean reported a type mismatch.",
+        "lean.no_goals": "No goals remain at this tactic; remove the redundant tactic "
+                         "without changing the theorem.",
     }
     return dict(severity="error", message=messages[code], code=code, line=12, column=7)
 
@@ -113,6 +115,36 @@ def test_three_bound_consecutive_failures_reach_selector_once_without_changing_b
     assert stagnation(feedback)[0].severity == "warning"
     assert "diagnostic signatures" in stagnation(feedback)[0].message
     assert "does not establish" in stagnation(feedback)[0].message
+    assert payload == original
+
+
+def test_no_goals_reaches_normal_repair_with_source_and_budget_preserved():
+    payload = resource()
+    source = (
+        "import Mathlib.Data.Nat.GCD.Basic\n"
+        "theorem coprime_divisibility (a b c : ℕ) (hcoprime : Nat.gcd a b = 1) "
+        "(hdiv : a ∣ b * c) : a ∣ c := by\n"
+        "  have h : Nat.Coprime a b := hcoprime\n"
+        "  exact h.dvd_of_dvd_mul_left hdiv\n"
+        "  exact h.dvd_of_dvd_mul_left hdiv\n"
+    )
+    payload["lean_code"] = source
+    payload["status_context"]["attempt_evidence"]["generated"]["lean_code"] = source
+    detail = diagnostic("lean.no_goals")
+    detail.update(line=5, column=2)
+    payload["status_context"]["attempt_evidence"]["verification"]["diagnostics"][1] = detail
+    for item in payload["compile_failure_history"]:
+        item["lean_sha256"] = hashlib.sha256(source.encode()).hexdigest()
+        item["diagnostics"] = [deepcopy(detail)]
+    original = deepcopy(payload)
+
+    seed, feedback = run_repair(payload)
+
+    assert seed.generated.lean_code == feedback.previous_lean_code == source
+    assert seed.repairs_used == 2 and feedback.attempt == 3
+    assert len(seed.prior_failure_fingerprints) == 2
+    assert len(stagnation(feedback)) == 1
+    assert detail in [d.to_api() for d in feedback.diagnostics]
     assert payload == original
 
 
