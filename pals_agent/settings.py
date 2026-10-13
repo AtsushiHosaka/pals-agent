@@ -71,8 +71,14 @@ class AgentSettings:
     recipe_active_lake_manifest_sha256: str | None = None
     recipe_reviewer_url: str | None = None
     recipe_review_requester_secret: str | None = None
+    api_ca_certificate_path: Path | None = None
 
     def __post_init__(self) -> None:
+        if self.api_ca_certificate_path is not None and (
+            not isinstance(self.api_ca_certificate_path, Path)
+            or not self.api_ca_certificate_path.is_absolute()
+        ):
+            raise ValueError("PALS_API_CA_CERTIFICATE_PATH must be an absolute path")
         if self.proof_capability not in {"full", "natural-only"}:
             raise ValueError("PALS_PROOF_CAPABILITY must be full or natural-only")
         if (self.recipe_reviewer_url is None) != (self.recipe_review_requester_secret is None):
@@ -117,6 +123,7 @@ class AgentSettings:
         llm_provider = _llm_provider()
         draft_embedding_provider = _draft_embedding_provider()
         semantic_evaluator = _semantic_evaluator_env()
+        api_ca_certificate_path = _optional_env("PALS_API_CA_CERTIFICATE_PATH")
         _reject_removed_pfi_configuration()
         return cls(
             proof_capability=_proof_capability_env(),
@@ -139,6 +146,9 @@ class AgentSettings:
             artifacts_bucket=artifacts_bucket,
             api_base_url=os.getenv("PALS_API_BASE_URL", "http://localhost:8000"),
             worker_shared_secret=os.getenv("PALS_WORKER_SHARED_SECRET", ""),
+            api_ca_certificate_path=(
+                Path(api_ca_certificate_path) if api_ca_certificate_path else None
+            ),
             ollama_host=os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434"),
             ollama_model=os.getenv("OLLAMA_PROVE_MODEL")
             or os.getenv("OLLAMA_DRAFT_MODEL")

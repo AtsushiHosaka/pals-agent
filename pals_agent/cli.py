@@ -45,6 +45,7 @@ from pals_agent.proof_flow_seed import (
 )
 from pals_agent.settings import AgentSettings
 from pals_agent.worker import SqsProofWorker, worker_queue_url
+from pals_agent.worker_api_trust import configure_worker_api_trust
 
 _SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
 _DEFAULT_AGENT_SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -358,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command in {"worker", "worker-once"}:
+        configure_worker_api_trust(getattr(settings, "api_ca_certificate_path", None))
         worker_queue_url(settings, args.lane)
         if not settings.worker_shared_secret:
             raise RuntimeError("PALS_WORKER_SHARED_SECRET is required for worker commands.")
