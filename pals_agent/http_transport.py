@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import math
 import multiprocessing
+import os
+import ssl
 import time
 from collections.abc import Callable
 from contextlib import suppress
@@ -9,7 +11,14 @@ from dataclasses import dataclass
 from multiprocessing.connection import Connection
 from typing import Any, Protocol, cast
 from urllib.error import HTTPError
-from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
+from urllib.parse import urlsplit
+from urllib.request import (
+    HTTPRedirectHandler,
+    HTTPSHandler,
+    ProxyHandler,
+    Request,
+    build_opener,
+)
 
 MAX_HTTP_RESPONSE_BYTES = 1_048_576
 
@@ -104,6 +113,8 @@ class HardDeadlineHttpTransport:
                     "headers": headers,
                     "body": body,
                     "socket_timeout": timeout,
+                    # Explicitly forward trust for forkserver helpers started before bootstrap.
+                    "ssl_cert_file": os.environ.get("SSL_CERT_FILE") or None,
                 }
             )
             remaining = deadline - time.monotonic()
@@ -161,6 +172,7 @@ def _http_helper(connection: Connection, max_response_bytes: int) -> None:
         headers = message.get("headers")
         body = message.get("body")
         socket_timeout = message.get("socket_timeout")
+        ssl_cert_file = message.get("ssl_cert_file")
         if (
             not isinstance(method, str)
             or not isinstance(url, str)
@@ -171,6 +183,7 @@ def _http_helper(connection: Connection, max_response_bytes: int) -> None:
             )
             or (body is not None and not isinstance(body, bytes))
             or not isinstance(socket_timeout, float)
+            or (ssl_cert_file is not None and not isinstance(ssl_cert_file, str))
         ):
             connection.send(("transport_error",))
             return
@@ -180,7 +193,13 @@ def _http_helper(connection: Connection, max_response_bytes: int) -> None:
             headers=cast(dict[str, str], headers),
             method=method,
         )
-        opener = build_opener(ProxyHandler({}), _NoRedirectHandler())
+        if urlsplit(url).scheme == "https":
+            tls_context = ssl.create_default_context(cafile=ssl_cert_file)
+            opener = build_opener(
+                ProxyHandler({}), _NoRedirectHandler(), HTTPSHandler(context=tls_context)
+            )
+        else:
+            opener = build_opener(ProxyHandler({}), _NoRedirectHandler())
         try:
             with opener.open(request, timeout=socket_timeout) as response:
                 status_code = response.status
