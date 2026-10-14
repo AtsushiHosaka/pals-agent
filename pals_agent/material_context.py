@@ -180,6 +180,8 @@ MATERIAL_INSTRUCTION = (
     "clarification confirms it. If the exercise is absent or ambiguous, ask for its precise "
     "identity/proposition; never invent or silently select one. An OCR statement alone is "
     "never user confirmation. Once confirmed, use that exact clarified proposition. "
+    "confirmed_material_proposition, when supplied, is the exact latest proposition "
+    "the learner confirmed; preserve its mathematical text without reformatting it. "
 )
 
 
@@ -235,3 +237,23 @@ def proposition_question(proposition: str, language: str) -> dict[str, Any]:
     }
     label, yes, correction = labels[language]
     return {"text": label + "\n\n" + proposition, "options": [yes, correction]}
+
+
+def latest_confirmed_proposition(turns: list[dict[str, str]], language: str) -> str | None:
+    """Freeze only the latest exact runtime-generated confirmation and its Yes.
+
+    No semantic equation normalization: ``b c`` and ``bc`` can name different
+    expressions. A later correction or other clarification invalidates this shortcut.
+    """
+    if not turns:
+        return None
+    turn = turns[-1]
+    template = proposition_question("", language)
+    prefix = template["text"]
+    question = turn["question"]
+    if not question.startswith(prefix) or turn["answer"] != template["options"][0]:
+        return None
+    proposition = question[len(prefix):]
+    if not proposition.strip() or len(proposition.encode("utf-8")) > 1600:
+        return None
+    return proposition

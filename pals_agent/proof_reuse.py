@@ -24,6 +24,7 @@ from pals_agent.material_context import (
     MaterialContext,
     MaterialContextError,
     confirmed_proposition,
+    latest_confirmed_proposition,
     proposition_question,
 )
 from pals_agent.math_conventions import IDS as CONVENTION_IDS
@@ -268,6 +269,7 @@ class ProofReuseRuntime:
             if history:
                 context["conversation_history"] = history
             materials = None
+            confirmed_material = None
             if "material_context" in request:
                 materials = MaterialContext.parse(
                     request["material_context"], project_id=request.get("project_id")
@@ -275,6 +277,9 @@ class ProofReuseRuntime:
                 context["project_materials"] = materials.as_data()
                 evidence["material_snapshot_sha256"] = materials.snapshot_sha256
                 evidence["material_source_count"] = len(materials.as_data()["sources"])
+                confirmed_material = latest_confirmed_proposition(turns, language)
+                if confirmed_material is not None:
+                    context["confirmed_material_proposition"] = confirmed_material
             evidence["phase"] = "premise_resolution"
             preflight_schema = _object(
                 {
@@ -358,6 +363,23 @@ class ProofReuseRuntime:
                 proposition = preflight["material_proposition"]
                 if proposition is not None and not _text(proposition, 1600, empty=False):
                     raise ProofReuseError("material_proposition_invalid")
+                if confirmed_material is not None:
+                    # The assessor may reformat a previously confirmed OCR target.
+                    # Preserve the learner's exact target rather than ask repeatedly
+                    # or accept the reformatted expression as a new confirmation.
+                    question = preflight.get("question")
+                    repeated = (
+                        proposition is not None and isinstance(question, dict)
+                        and question.get("text")
+                        == proposition_question(proposition, language)["text"]
+                    )
+                    preflight = dict(preflight, material_proposition=confirmed_material,
+                                     confirmed_material_statement=True)
+                    if preflight["action"] == "ready" or repeated:
+                        preflight = dict(preflight, action="ready", question=None,
+                                         statement=confirmed_material)
+                    proposition = confirmed_material
+                    evidence["preflight"] = preflight
                 if proposition is not None and not confirmed_proposition(proposition, turns):
                     return _non_answer({"action": "needs_input",
                                         "question": proposition_question(proposition, language)},
