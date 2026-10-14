@@ -52,6 +52,10 @@ possible. Longer mathematical exposition may share that coarse reference without
 finer correspondence. Do not fabricate intermediate Lean lines or replace the verified code.
 Mathematical prose need not name the command or discuss implementation details; distinguish
 the derivation from an execution trace by making no claims about unseen internal operations.
+Keep each argument in its stated number domain. If integer coefficients (for example Bezout
+coefficients) are introduced for a claim about natural-number divisibility, first derive an
+integer quotient, then justify that it is nonnegative before calling it a natural quotient.
+Do not apply closure of natural-number divisibility under multiplication by a negative integer.
 """
 
 
@@ -1302,6 +1306,10 @@ def _output_review_prompt(
             "reject duplicated substantive derivations or calculations, including paraphrases "
             "across fields or sections. Reject summary-first or conclusion-preview exposition. "
             "A brief final statement of the established result is allowed and is not duplication. "
+            "In particular, a short closing restatement of a divisibility, membership, inequality "
+            "or existence claim is allowed even if the last inference names that result. Do not "
+            "reject such a conclusion solely for restating the proved proposition. Distinguish "
+            "this from repeating a substantive derivation or the complete final calculation. "
             "But reject two consecutive final assertions of the same complete equality, one at "
             "the end of the last section and one in conclusion. Also check each named law: "
             "rewriting a square as a product is the definition of squaring, not distributivity. "
