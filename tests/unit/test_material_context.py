@@ -9,7 +9,12 @@ import rfc8785
 
 from pals_agent.api_client import PalsApiClient, PalsApiError
 from pals_agent.http_transport import HttpResponse
-from pals_agent.material_context import MaterialContext, MaterialContextError
+from pals_agent.material_context import (
+    MaterialContext,
+    MaterialContextError,
+    latest_confirmed_proposition,
+    proposition_question,
+)
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.proof_reuse import ProofReuseRuntime
@@ -192,6 +197,82 @@ def test_explicit_confirmation_and_original_request_reach_independent_qa():
     assert "Prove exercise 3." in provider.calls[-1]["input"]
     assert "Yes." in provider.calls[-1]["input"]
     assert PAGE_TEXT in provider.calls[-1]["input"]
+
+
+@pytest.mark.parametrize("action", ["ready", "needs_input"])
+def test_reformatted_confirmed_proposition_does_not_repeat_or_change_target(action):
+    original = "For natural a,b,c, gcd(a,b)=1 and a divides (b c) imply a divides c."
+    changed = original.replace("(b c)", "(bc)")
+    issued = proposition_question(original, "en")
+    request = material_request(output_language="en", context_turns=[{
+        "question_id": hashlib.sha256(rfc8785.dumps(issued)).hexdigest()[:24],
+        "question": proposition_question(original, "en")["text"],
+        "answer": "Yes",
+    }])
+    preflight = dict(READY, action=action, statement=changed,
+                     material_proposition=changed, confirmed_material_statement=True,
+                     question=proposition_question(changed, "en") if action == "needs_input"
+                     else None)
+    engine, provider = runtime([preflight, material_decision()])
+    result = engine.answer(request)
+    assert result.outcome == "answered"
+    assert result.private_evidence["preflight"]["statement"] == original
+    assert result.private_evidence["preflight"]["material_proposition"] == original
+    assert len(provider.calls) == 3  # Confirmation still reaches independent answer QA.
+    assert original in provider.calls[0]["input"]
+    assert "confirmed_material_proposition" in provider.calls[0]["input"]
+
+
+def test_latest_generated_confirmation_never_ignores_a_later_correction():
+    question = proposition_question(PAGE_TEXT, "en")
+    accepted = {"question_id": hashlib.sha256(rfc8785.dumps(question)).hexdigest()[:24],
+                "question": question["text"], "answer": "Yes"}
+    assert latest_confirmed_proposition([accepted], "en") == PAGE_TEXT
+    assert latest_confirmed_proposition([{**accepted, "question_id": "fabricated"}], "en") is None
+    assert latest_confirmed_proposition([{**accepted, "answer": "Correct the proposition"}],
+                                        "en") is None
+    assert latest_confirmed_proposition([accepted, {
+        "question_id": "q2", "question": "Which domain?", "answer": "positive numbers",
+    }], "en") is None
+    assert latest_confirmed_proposition([{**accepted, "question": "Please confirm: " + PAGE_TEXT}],
+                                        "en") is None
+
+
+@pytest.mark.parametrize("unresolved", ["options", "premises"])
+def test_confirmation_repeat_never_suppresses_unresolved_mathematical_choice(unresolved):
+    issued = proposition_question(PAGE_TEXT, "en")
+    question = dict(issued)
+    premise_check = copy.deepcopy(READY["premise_check"])
+    if unresolved == "options":
+        question["options"] = ["real domain", "positive domain"]
+    else:
+        premise_check["truth_depends_on"] = ["Is the domain all real numbers?"]
+    request = material_request(output_language="en", context_turns=[{
+        "question_id": hashlib.sha256(rfc8785.dumps(issued)).hexdigest()[:24],
+        "question": issued["text"], "answer": "Yes",
+    }])
+    engine, provider = runtime([dict(
+        READY, action="needs_input", question=question, premise_check=premise_check,
+        confirmed_material_statement=True, material_proposition=PAGE_TEXT,
+    )])
+    result = engine.answer(request)
+    assert result.outcome == "needs_input"
+    assert len(provider.calls) == 1
+
+
+def test_valid_confirmed_text_survives_oversized_assessor_reformatting():
+    issued = proposition_question(PAGE_TEXT, "en")
+    request = material_request(output_language="en", context_turns=[{
+        "question_id": hashlib.sha256(rfc8785.dumps(issued)).hexdigest()[:24],
+        "question": issued["text"], "answer": "Yes",
+    }])
+    engine, _ = runtime([
+        dict(READY, confirmed_material_statement=True, material_proposition="x" * 1601),
+        material_decision(),
+    ])
+    result = engine.answer(request)
+    assert result.outcome == "answered"
+    assert result.private_evidence["preflight"]["statement"] == PAGE_TEXT
 
 
 @pytest.mark.parametrize(
