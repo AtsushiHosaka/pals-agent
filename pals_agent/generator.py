@@ -587,6 +587,19 @@ Problem:
 """
 
 
+def _lean_import_guidance() -> str:
+    return (
+        "Start with Mathlib imports. Prefer the specific modules needed for the theorem "
+        "and proof, including individual tactic modules, instead of loading the entire "
+        "library with `import Mathlib`. For example, natural gcd/divisibility uses "
+        "`import Mathlib.Data.Nat.GCD.Basic`; add other required modules explicitly. "
+        "Keep every theorem assumption and substantive Draft proof step. The complete "
+        "`import Mathlib` remains available when the proof needs it, but avoid it when "
+        "focused imports suffice. A compiler deadline failure requires simplifying the "
+        "imports and expensive tactic search, not repeating the same code."
+    )
+
+
 def _sketch_prompt_for(
     request: ProofRequest,
     draft: GeneratedDraft,
@@ -594,7 +607,7 @@ def _sketch_prompt_for(
 ) -> str:
     return f"""Translate the informal Draft into a Lean 4/mathlib formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
-The code must start with `import Mathlib`.
+{_lean_import_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 You must prove the exact Lean theorem harness shown below when one is provided.
@@ -627,7 +640,7 @@ def _prove_prompt_for(
 ) -> str:
     return f"""Complete a Lean 4/mathlib proof from the supplied Draft and formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
-The code must start with `import Mathlib`.
+{_lean_import_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 Preserve the Sketch's theorem statement and mathematical target. Fill every gap with
