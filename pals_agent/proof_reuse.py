@@ -361,17 +361,16 @@ class ProofReuseRuntime:
             )
             if materials:
                 proposition = preflight["material_proposition"]
-                if proposition is not None and not _text(proposition, 1600, empty=False):
-                    raise ProofReuseError("material_proposition_invalid")
                 if confirmed_material is not None:
                     # The assessor may reformat a previously confirmed OCR target.
                     # Preserve the learner's exact target rather than ask repeatedly
                     # or accept the reformatted expression as a new confirmation.
                     question = preflight.get("question")
                     repeated = (
-                        proposition is not None and isinstance(question, dict)
-                        and question.get("text")
-                        == proposition_question(proposition, language)["text"]
+                        isinstance(proposition, str) and isinstance(question, dict)
+                        and question == proposition_question(proposition, language)
+                        and not preflight["premise_check"]["truth_depends_on"]
+                        and not preflight["premise_check"]["counterexample"].strip()
                     )
                     preflight = dict(preflight, material_proposition=confirmed_material,
                                      confirmed_material_statement=True)
@@ -380,6 +379,8 @@ class ProofReuseRuntime:
                                          statement=confirmed_material)
                     proposition = confirmed_material
                     evidence["preflight"] = preflight
+                if proposition is not None and not _text(proposition, 1600, empty=False):
+                    raise ProofReuseError("material_proposition_invalid")
                 if proposition is not None and not confirmed_proposition(proposition, turns):
                     return _non_answer({"action": "needs_input",
                                         "question": proposition_question(proposition, language)},

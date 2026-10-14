@@ -256,4 +256,7 @@ def latest_confirmed_proposition(turns: list[dict[str, str]], language: str) -> 
     proposition = question[len(prefix):]
     if not proposition.strip() or len(proposition.encode("utf-8")) > 1600:
         return None
+    issued = proposition_question(proposition, language)
+    if turn["question_id"] != hashlib.sha256(rfc8785.dumps(issued)).hexdigest()[:24]:
+        return None
     return proposition
