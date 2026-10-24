@@ -8,6 +8,7 @@ from dataclasses import dataclass, replace
 from typing import Protocol
 
 from pals_agent.linked_chat import selected_generation_model
+from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
 from pals_agent.mlx import MlxError
 from pals_agent.models import (
     GeneratedDraft,
@@ -577,6 +578,7 @@ Return only the Draft. Do not write Lean code yet.
 Give an ordered, mathematically explicit sequence of atomic proof moves that can be
 translated into intermediate Lean `have` statements or local lemmas.
 Follow any required exact-match proof method below.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
 Problem:
@@ -615,6 +617,7 @@ Preserve the Draft's proof structure with intermediate `have` statements or loca
 Leave one or more localized `sorry` gaps for the substantive proof obligations.
 Do not use a shortcut tactic or proof term to close the whole theorem instead of
 representing the Draft's intermediate reasoning.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
 Problem:
@@ -654,6 +657,7 @@ product-domain type annotation for `continuous_mul`. The learner-facing explanat
 is generated separately from the verified theorem and must still expand the Draft's
 mathematical argument without claiming unexposed tactic internals were explicit
 Lean proof steps.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 {_lean_reliability_guidance(request)}
 Do not use `sorry` or `admit`.
@@ -852,6 +856,7 @@ Return exactly one JSON object with exactly one key, `instruction`.
 `instruction` must be a concise, concrete repair plan for the selected `{feedback.repair_route}`
 stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
 code, a route choice, an evaluation rubric, or any extra JSON field.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
 Problem:
