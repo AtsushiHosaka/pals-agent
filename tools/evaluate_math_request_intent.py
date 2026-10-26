@@ -49,6 +49,21 @@ CASES = (
         "and exhaustiveness. The absence of a supplied answer is not a missing premise.",
     },
     {
+        "id": "whether_false",
+        "statement": "実数 x に対して x^2-6*x+13 は常に 5 以上になるかどうか判定して。",
+        "action": "ready",
+        "expectation": "Answer no, for example x=3 gives 4<5. Preserve the truth-decision "
+        "question and prove the negation of the universal bound; do not assume the bound "
+        "or ask permission to refute an assertion the user asked to test.",
+    },
+    {
+        "id": "whether_true",
+        "statement": "実数 x に対して x^2-6*x+13 は常に 4 以上になるかどうか判定して。",
+        "action": "ready",
+        "expectation": "Answer yes by completing the square and using nonnegativity. "
+        "The proposed bound must be the conclusion to prove, not an assumed premise.",
+    },
+    {
         "id": "ambiguity",
         "statement": "What are the solutions of x^2+1=0?",
         "action": "needs_input",

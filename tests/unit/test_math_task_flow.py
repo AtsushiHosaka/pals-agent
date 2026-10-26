@@ -13,6 +13,7 @@ from tests.unit.test_proof_reuse_lean_flow import CLAIM_ID, REQUEST_ID
     "Compute the rank over R of [[1,2,3],[2,4,6],[1,1,1]].",
     "Find all real solutions of sqrt(x+2)=x.",
     "What are the units of Z/12Z?",
+    "Determine whether every real x satisfies x^2-6*x+13 >= 5.",
 ])
 def test_unknown_answer_survives_routing_and_search_miss_as_a_dsp_task(statement):
     intent = {
