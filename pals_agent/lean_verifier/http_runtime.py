@@ -13,6 +13,7 @@ from uuid import UUID
 import boto3  # type: ignore[import-untyped]
 
 from pals_agent.lean import LeanVerifier
+from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
 from pals_agent.lean_verifier.boundary import attest_http_runtime_boundary
 from pals_agent.lean_verifier.http_server import (
     IsolatedVerifierHttpSettings,
@@ -69,6 +70,7 @@ class HttpVerifierRuntimeSettings:
     tls_directory: Path | None
     binding: VerifierDeploymentBinding
     tls: VerifierServerTlsConfiguration
+    reuse_lake_environment: bool = False
 
     @classmethod
     def from_env(cls) -> HttpVerifierRuntimeSettings:
@@ -85,6 +87,7 @@ class HttpVerifierRuntimeSettings:
             aws_region=_required("PALS_AWS_REGION"),
             aws_endpoint_url=_optional("PALS_AWS_ENDPOINT_URL"),
             tls_directory=tls_directory,
+            reuse_lake_environment=_reuse_lake_environment(),
             binding=VerifierDeploymentBinding(
                 release_id=release_id,
                 deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
@@ -136,6 +139,18 @@ def main() -> None:
                 project_dir=settings.project_dir,
                 timeout_seconds=settings.timeout_seconds,
                 scratch_dir=_SCRATCH_DIRECTORY,
+                lake_environment_cache=(
+                    LakeEnvironmentCache() if settings.reuse_lake_environment else None
+                ),
+                timing_observer=_log_verification_timing,
+            ),
+            # Admission receipts bind the literal lake-env command. Keep that
+            # contract even when proof-job compilation reuses setup.
+            admission_verifier=LeanVerifier(
+                project_dir=settings.project_dir,
+                timeout_seconds=settings.timeout_seconds,
+                scratch_dir=_SCRATCH_DIRECTORY,
+                timing_observer=_log_verification_timing,
             ),
         )
         # The marker is strictly local to the bounded tmpfs.  ECS observes it
@@ -156,6 +171,20 @@ def main() -> None:
     finally:
         _clear_ready_marker(_READY_MARKER)
         server.server_close()
+
+
+def _reuse_lake_environment() -> bool:
+    value = os.getenv("PALS_LEAN_REUSE_LAKE_ENVIRONMENT", "false")
+    if value not in {"true", "false"}:
+        raise ValueError("PALS_LEAN_REUSE_LAKE_ENVIRONMENT must be true or false")
+    return value == "true"
+
+
+def _log_verification_timing(event: VerificationTiming) -> None:
+    _LOGGER.info(
+        "lean_stage stage=%s elapsed_ms=%.3f environment_cache=%s",
+        event.stage, event.elapsed_ms, event.cache_status or "none",
+    )
 
 
 def _create_ready_marker(path: Path) -> None:

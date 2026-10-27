@@ -1,0 +1,41 @@
+{
+  "schema_version": "pals.lean-acceleration-corpus.v1",
+  "cases": [
+    {
+      "id": "group-kernel-injectivity",
+      "family": "group theory",
+      "narrow_imports": [
+        "Mathlib.Algebra.Group.Hom.Basic"
+      ],
+      "body": "theorem pals_kernel_injective {G H : Type*} [Group G] [Group H]\n    (f : G \u2192* H) (hker : \u2200 x, f x = 1 \u2192 x = 1) : Function.Injective f := by\n  intro a b hab\n  have h : f (a * b\u207b\u00b9) = 1 := by\n    rw [map_mul, map_inv, hab, mul_inv_cancel]\n  have h' : a * b\u207b\u00b9 = 1 := hker (a * b\u207b\u00b9) h\n  exact mul_inv_eq_one.mp h'\n"
+    },
+    {
+      "id": "sequence-limit-addition",
+      "family": "real analysis",
+      "narrow_imports": [
+        "Mathlib.Data.Real.Basic",
+        "Mathlib.Tactic.Linarith",
+        "Mathlib.Tactic.Ring"
+      ],
+      "body": "theorem pals_sequence_limit_addition (u v : \u2115 \u2192 \u211d) (a b : \u211d)\n    (hu : \u2200 \u03b5 > 0, \u2203 N : \u2115, \u2200 n \u2265 N, |u n - a| < \u03b5)\n    (hv : \u2200 \u03b5 > 0, \u2203 N : \u2115, \u2200 n \u2265 N, |v n - b| < \u03b5) :\n    \u2200 \u03b5 > 0, \u2203 N : \u2115, \u2200 n \u2265 N, |(u n + v n) - (a + b)| < \u03b5 := by\n  intro \u03b5 h\u03b5\n  obtain \u27e8Nu, hNu\u27e9 := hu (\u03b5 / 2) (by linarith)\n  obtain \u27e8Nv, hNv\u27e9 := hv (\u03b5 / 2) (by linarith)\n  refine \u27e8max Nu Nv, ?_\u27e9\n  intro n hn\n  have hau := hNu n (le_trans (le_max_left _ _) hn)\n  have hav := hNv n (le_trans (le_max_right _ _) hn)\n  calc\n    |(u n + v n) - (a + b)| = |(u n - a) + (v n - b)| := by ring_nf\n    _ \u2264 |u n - a| + |v n - b| := abs_add_le _ _\n    _ < \u03b5 := by linarith\n"
+    },
+    {
+      "id": "coprime-product-divisibility",
+      "family": "number theory",
+      "narrow_imports": [
+        "Mathlib.Data.Nat.GCD.Basic"
+      ],
+      "body": "theorem pals_coprime_product_divisibility (a b n : \u2115)\n    (hab : Nat.Coprime a b) (ha : a \u2223 n) (hb : b \u2223 n) : a * b \u2223 n := by\n  obtain \u27e8k, hk\u27e9 := ha\n  have hbk : b \u2223 k := by\n    apply hab.symm.dvd_of_dvd_mul_left\n    rw [\u2190 hk]\n    exact hb\n  obtain \u27e8m, hm\u27e9 := hbk\n  refine \u27e8m, ?_\u27e9\n  rw [hk, hm, Nat.mul_assoc]\n"
+    },
+    {
+      "id": "linear-kernel-sum",
+      "family": "linear algebra",
+      "narrow_imports": [
+        "Mathlib.Algebra.Module.Submodule.Ker",
+        "Mathlib.Algebra.Module.Submodule.Range",
+        "Mathlib.Algebra.Module.LinearMap.Basic"
+      ],
+      "body": "theorem pals_linear_kernel_sum {K V W : Type*} [Field K]\n    [AddCommGroup V] [AddCommGroup W] [Module K V] [Module K W]\n    (f g : V \u2192\u2097[K] W)\n    (hdisjoint : \u2200 w, w \u2208 LinearMap.range f \u2192 w \u2208 LinearMap.range g \u2192 w = 0) :\n    LinearMap.ker (f + g) = LinearMap.ker f \u2293 LinearMap.ker g := by\n  ext x\n  constructor\n  \u00b7 intro hx\n    change f x + g x = 0 at hx\n    have hfx : f x = 0 := by\n      apply hdisjoint (f x) \u27e8x, rfl\u27e9\n      refine \u27e8-x, ?_\u27e9\n      simp only [map_neg]\n      exact (eq_neg_of_add_eq_zero_left hx).symm\n    constructor\n    \u00b7 exact hfx\n    \u00b7 change g x = 0\n      rw [hfx, zero_add] at hx\n      exact hx\n  \u00b7 rintro \u27e8hf, hg\u27e9\n    change f x + g x = 0\n    change f x = 0 at hf\n    change g x = 0 at hg\n    rw [hf, hg, add_zero]\n"
+    }
+  ]
+}

@@ -107,6 +107,7 @@ def _running_server(
     server_context: ssl.SSLContext,
     client_spki_sha256: str,
     verifier: StubVerifier,
+    admission_verifier: StubVerifier | None = None,
 ) -> Iterator[object]:
     settings = IsolatedVerifierHttpSettings(
         bind_host="127.0.0.1",
@@ -121,7 +122,7 @@ def _running_server(
         reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
         recipe_admission_context=_admission_context(),
     )
-    server = create_server(settings, verifier=verifier)
+    server = create_server(settings, verifier=verifier, admission_verifier=admission_verifier)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -293,6 +294,25 @@ def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(
         },
     )
     assert verifier.calls == [source]
+
+
+def test_recipe_admission_uses_separate_bound_compiler(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    proof_verifier = StubVerifier(_success())
+    admission_verifier = StubVerifier(_success())
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    with _running_server(
+        server_context, client_spki_sha256, proof_verifier, admission_verifier,
+    ):
+        response = _request(
+            client_context, _recipe_admission_request(source, _admission_context()),
+            canonical=True,
+        )
+    assert response[0] == 200
+    assert proof_verifier.calls == []
+    assert admission_verifier.calls == [source]
 
 
 def test_recipe_admission_rejects_noncanonical_or_tampered_bindings_before_compile(

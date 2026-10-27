@@ -10,10 +10,18 @@ import signal
 import subprocess
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from pals_agent.lean_environment import (
+    LakeEnvironmentCache,
+    VerificationTiming,
+    environment_identity,
+    materialize_lake_environment,
+    parse_lake_environment,
+)
 from pals_agent.models import Diagnostic, VerificationResult
 
 _PLACEHOLDER_RE = re.compile(
@@ -59,6 +67,8 @@ class LeanVerifier:
     child_path: str = _DEFAULT_CHILD_PATH
     elan_home: str = _DEFAULT_ELAN_HOME
     scratch_dir: Path = Path("/tmp")
+    lake_environment_cache: LakeEnvironmentCache | None = None
+    timing_observer: Callable[[VerificationTiming], None] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "scratch_dir", Path(self.scratch_dir))
@@ -77,10 +87,24 @@ class LeanVerifier:
             raise ValueError("Lean scratch directory must be absolute")
 
     def verify(self, lean_code: str) -> VerificationResult:
-        return self._verify(lean_code, allow_sorry=False)
+        return self._timed_verify(lean_code, allow_sorry=False)
 
     def verify_sketch(self, lean_code: str) -> VerificationResult:
-        return self._verify(lean_code, allow_sorry=True)
+        return self._timed_verify(lean_code, allow_sorry=True)
+
+    def _timed_verify(self, lean_code: str, *, allow_sorry: bool) -> VerificationResult:
+        started = time.monotonic()
+        try:
+            return self._verify(lean_code, allow_sorry=allow_sorry)
+        finally:
+            self._observe("total", started)
+
+    def _observe(self, stage: str, started: float, status: str | None = None) -> None:
+        if self.timing_observer is not None:
+            self.timing_observer(VerificationTiming(
+                stage=stage, elapsed_ms=(time.monotonic() - started) * 1000,
+                cache_status=status,
+            ))
 
     def _verify(self, lean_code: str, *, allow_sorry: bool) -> VerificationResult:
         checked_code = _strip_lean_comments_and_strings(lean_code)
@@ -245,11 +269,6 @@ class LeanVerifier:
                 lean_binary=lean_binary,
                 lake_binary=lake_binary,
             )
-            limited_command = _limited_command(
-                command,
-                timeout_seconds=float(self.timeout_seconds),
-                scratch_dir=temporary_dir,
-            )
             child_environment = {
                 "PATH": self.child_path,
                 "HOME": str(home_dir),
@@ -260,13 +279,30 @@ class LeanVerifier:
             }
 
             started_at = time.monotonic()
-            completed = _run_limited_process(
-                limited_command,
-                cwd=cwd,
-                environment=child_environment,
-                timeout_seconds=float(self.timeout_seconds),
-                output_limit_bytes=self.output_limit_bytes,
+            deadline = started_at + float(self.timeout_seconds)
+            command, child_environment = self._reuse_environment(
+                command, child_environment, lean_binary=lean_binary,
+                lake_binary=lake_binary, temporary_dir=temporary_dir, deadline=deadline,
             )
+            remaining = (
+                float(self.timeout_seconds) if self.lake_environment_cache is None
+                else deadline - time.monotonic()
+            )
+            compile_started = time.monotonic()
+            if remaining <= 0:
+                completed = _ProcessResult(-signal.SIGKILL, "", "", True, False)
+            else:
+                limited_command = _limited_command(
+                    command, timeout_seconds=remaining, scratch_dir=temporary_dir,
+                )
+                completed = _run_limited_process(
+                    limited_command,
+                    cwd=cwd,
+                    environment=child_environment,
+                    timeout_seconds=remaining,
+                    output_limit_bytes=self.output_limit_bytes,
+                )
+            self._observe("compile", compile_started)
 
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
         stderr = completed.stderr
@@ -358,6 +394,58 @@ class LeanVerifier:
             stderr=stderr,
             elapsed_ms=elapsed_ms,
         )
+
+    def _reuse_environment(
+        self, command: list[str], base: dict[str, str], *, lean_binary: str,
+        lake_binary: str | None, temporary_dir: Path, deadline: float,
+    ) -> tuple[list[str], dict[str, str]]:
+        cache = self.lake_environment_cache
+        if cache is None or self.project_dir is None or lake_binary is None:
+            return command, base
+        project_dir = self.project_dir
+        started = time.monotonic()
+        status = "fallback"
+        try:
+            identity_started = time.monotonic()
+            key = environment_identity(project_dir, lean_binary, lake_binary, base)
+            self._observe("environment_identity", identity_started)
+
+            def prepare() -> dict[str, str]:
+                remaining = min(10.0, deadline - time.monotonic())
+                if remaining <= 0:
+                    raise TimeoutError("Lake preparation deadline expired")
+                env_binary = shutil.which("env", path=self.child_path)
+                if env_binary is None:
+                    raise ValueError("environment reader unavailable")
+                result = _run_limited_process(
+                    _limited_command(
+                        [lake_binary, "env", env_binary, "-0"],
+                        timeout_seconds=remaining, scratch_dir=temporary_dir,
+                    ),
+                    cwd=project_dir, environment=base,
+                    timeout_seconds=remaining,
+                    output_limit_bytes=min(self.output_limit_bytes, 65_536),
+                )
+                if result.returncode or result.timed_out or result.output_limited or result.stderr:
+                    raise ValueError("Lake preparation failed")
+                delta = parse_lake_environment(result.stdout, base)
+                if key != environment_identity(project_dir, lean_binary, lake_binary, base):
+                    raise ValueError("Lake configuration changed during preparation")
+                return delta
+
+            delta, status = cache.get_or_prepare(
+                key, prepare, timeout_seconds=max(0.0, deadline - time.monotonic()),
+            )
+            return (
+                [lean_binary, "--threads=1", command[-1]],
+                materialize_lake_environment(base, delta),
+            )
+        except (OSError, ValueError, KeyError, TypeError, TimeoutError):
+            # Optimization unavailable: execute the original bounded compiler path.
+            # No result, environment or admission status is fabricated or cached.
+            return command, base
+        finally:
+            self._observe("environment_prepare", started, status)
 
     def _command_for(
         self,
