@@ -10,6 +10,7 @@ import platform
 import resource
 import statistics
 import subprocess
+import sys
 import time
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
@@ -156,6 +157,7 @@ def benchmark(args: argparse.Namespace) -> dict[str, Any]:
                 row_cache = LakeEnvironmentCache() if mode == "environment_cold" else cache
                 rows.append(run_one(case, narrow=mode != "baseline_mathlib", mode=mode,
                                     repeat=repeat, cache=row_cache, **common))
+        print(f"completed {mode}: {len(rows)} source rows", file=sys.stderr, flush=True)
     summaries: dict[str, Any] = {}
     for mode in sorted({str(row["mode"]) for row in rows}):
         selected = [row for row in rows if row["mode"] == mode]
