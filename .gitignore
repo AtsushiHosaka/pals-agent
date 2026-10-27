@@ -47,3 +47,37 @@ lean-workspace/.lake/
 .idea/
 .vscode/
 *.swp
+
+# Cloud credentials and generated infrastructure state
+.aws/
+.gcp/
+service-account*.json
+service_account*.json
+*firebase-adminsdk*.json
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.example.tfvars
+!*.example.tfvars.json
+!*.template.tfvars
+!*.template.tfvars.json
+.terraform/
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Private signing and identity material
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.kubeconfig
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
