@@ -302,6 +302,44 @@ formal statement. The verifier also rejects disallowed Lean metaprogramming and
 interactive commands such as `run_cmd` and `#check` as defense in depth. There
 is no deterministic verified template fallback.
 
+## Opt-in synthetic geometry domain
+
+`pals-geometry` checks the explicitly structured
+`isosceles-midpoint-perpendicular-v1` family: ABC is non-collinear, AB = AC,
+and M is the midpoint of BC. It proves both line directions are nonzero and
+orthogonal using Mathlib's perpendicular-bisector theorems. See
+[testdata/synthetic-geometry-v1/isosceles-request.json](testdata/synthetic-geometry-v1/isosceles-request.json)
+for the closed input schema.
+
+```bash
+pals-geometry testdata/synthetic-geometry-v1/isosceles-request.json \
+  --lean-workspace "$PALS_GEOMETRY_LEAN_WORKSPACE"
+```
+
+The workspace must match the pinned Lean toolchain, complete Lake manifest,
+and clean dependency source revisions. Supply `--lean`, `--lake`, `--elan-home`,
+and `--child-path` for a local installation that differs from the verifier image.
+The command runs the existing resource-limited verifier and a trusted fixed-source
+transitive-axiom audit. Its JSON contains original input, exact source, ordered
+step dependencies, source ranges and digests, toolchain identities, and axioms.
+Only `propext`, `Classical.choice`, and `Quot.sound` are allowed.
+
+The caller supplies the structured interpretation and its exact text spans.
+This does not establish natural-language equivalence. Existing immutable OCR
+snapshots and figure metadata are retained; OCR propositions require the existing
+exact confirmation turn. Consequential ambiguity returns `needs_input` before
+Lean runs. Drawing coordinates cannot supply hypotheses. Diagram payloads consume
+the working `pals.diagram.v1` contract and remain `prepared_unrendered` until
+rendered elsewhere; unsupported labels or inconsistent drawings report diagram
+unavailability while retaining the checked proof.
+
+This entry point is an opt-in domain tool. The existing worker, catalog admission,
+semantic review, chat persistence and rendering flows keep their current contracts.
+Operator-provisioned Lean executables and compiled dependencies remain trusted;
+source/version checks do not attest compiled artifact provenance. Exit 0 means
+this structured family was checked; exit 2 means clarification or verification
+failure; malformed input, environment mismatch and audit errors exit 1.
+
 ## License
 
 Apache License 2.0.
