@@ -312,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
             child_path=args.child_path,
         )
         result = check_geometry(problem, verifier)
-    except (ValueError, OSError, KeyError, subprocess.SubprocessError) as exc:
+    except (ValueError, OSError, KeyError, RecursionError, subprocess.SubprocessError) as exc:
         print(json.dumps({"status": "failed", "error": str(exc)}, ensure_ascii=False))
         return 1
     print(json.dumps(result, ensure_ascii=False, indent=2))

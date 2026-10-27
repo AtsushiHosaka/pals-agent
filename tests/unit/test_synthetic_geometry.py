@@ -94,3 +94,10 @@ def test_cli_malformed_request_is_failure(tmp_path: Path, capsys: pytest.Capture
     path.write_text('{"schema_version": "unsupported"}')
     assert main([str(path), "--lean-workspace", str(tmp_path)]) == 1
     assert json.loads(capsys.readouterr().out)["status"] == "failed"
+
+
+def test_cli_deep_json_is_failure(tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    path = tmp_path / "request.json"
+    path.write_text("[" * 2000 + "0" + "]" * 2000)
+    assert main([str(path), "--lean-workspace", str(tmp_path)]) == 1
+    assert json.loads(capsys.readouterr().out)["status"] == "failed"
