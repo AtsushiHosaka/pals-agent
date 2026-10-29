@@ -1,0 +1,572 @@
+{
+  "schema_version": "pals.mathematical-breadth-corpus.v1",
+  "version": "1.0.0",
+  "requirements": [
+    "MRD-003",
+    "MRD-005",
+    "MRD-007",
+    "MRD-011"
+  ],
+  "toolchain": {
+    "lean_toolchain": "leanprover/lean4:v4.32.0-rc1",
+    "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+  },
+  "cases": [
+    {
+      "id": "ug.linear.projection_unique",
+      "family_id": "university.linear-algebra",
+      "source_path": "Linear.lean",
+      "theorem_name": "idempotent_decomposition_unique",
+      "statement": "For an idempotent linear endomorphism p, each vector has a unique decomposition as a vector in range p plus a vector in kernel p.",
+      "assumptions": [
+        "K is a field; V is a K-module with an additive commutative group.",
+        "p is linear and p composed with p equals p."
+      ],
+      "proof_outline": [
+        "Take u=p(x) and v=x-p(x).",
+        "Idempotence implies p(v)=0; u lies in the range by construction.",
+        "For any competing decomposition x=p(z)+v with p(v)=0, applying p identifies p(z)=p(x).",
+        "Subtract the common range component to identify the kernel component."
+      ],
+      "hard_negative": {
+        "statement": "The decomposition exists for every endomorphism, without idempotence.",
+        "counterexample": "On Q^2 set p(a,b)=(b,0). Its range and kernel both equal the first coordinate axis, so x=(0,1) has no such decomposition."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Algebra/Module/LinearMap/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "ug.real.unique_root",
+      "family_id": "university.real-analysis",
+      "source_path": "Real.lean",
+      "theorem_name": "unique_intermediate_root",
+      "statement": "A continuous strictly increasing function on [a,b] with negative and positive endpoint values has exactly one zero in [a,b].",
+      "assumptions": [
+        "a and b are real with a<=b.",
+        "f is continuous on the closed interval and strictly increasing there.",
+        "f(a)<0<f(b)."
+      ],
+      "proof_outline": [
+        "The endpoint inequalities put zero between f(a) and f(b).",
+        "Apply the intermediate value theorem to obtain an interval point with value zero.",
+        "Strict monotonicity on the interval implies injectivity there.",
+        "Compare an arbitrary other interval zero with the constructed point to prove uniqueness."
+      ],
+      "hard_negative": {
+        "statement": "Continuity and endpoint sign change alone imply a unique zero.",
+        "counterexample": "f(x)=x^3-x on [-2,2] is continuous, changes endpoint signs, and vanishes at -1,0,1. Counterexamples.lean proves these facts."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Order/IntermediateValue.lean",
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Order/Monotone/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "ug.commalg.prime_intersection",
+      "family_id": "university.commutative-algebra",
+      "source_path": "Algebra.lean",
+      "theorem_name": "prime_intersection_choice",
+      "statement": "If P is a prime ideal and I intersection J is contained in P, then I is contained in P or J is contained in P.",
+      "assumptions": [
+        "R is a commutative ring.",
+        "I, J, P are ideals of R; P is prime.",
+        "I intersection J is contained in P."
+      ],
+      "proof_outline": [
+        "Assume neither ideal is contained in P.",
+        "Choose x in I outside P and y in J outside P.",
+        "Ideal absorption puts xy in both I and J, hence in P.",
+        "Primality forces x or y into P, contradicting their choices."
+      ],
+      "hard_negative": {
+        "statement": "The conclusion holds for an arbitrary proper ideal P.",
+        "counterexample": "In Z take I=(2), J=(3), P=(6). I intersection J=P, but neither I nor J is contained in P."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/RingTheory/Ideal/Prime.lean",
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/RingTheory/Ideal/Operations.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "ug.topology.compact_inverse",
+      "family_id": "university.topology",
+      "source_path": "Topology.lean",
+      "theorem_name": "compact_continuous_bijection_inverse",
+      "statement": "A continuous bijection from a compact space to a Hausdorff space has a continuous two-sided inverse.",
+      "assumptions": [
+        "X and Y are topological spaces.",
+        "X is compact and Y is Hausdorff.",
+        "f:X->Y is continuous and bijective."
+      ],
+      "proof_outline": [
+        "Each closed subset of compact X is compact.",
+        "Its continuous image is compact, hence closed in Hausdorff Y.",
+        "Thus f is a closed continuous bijection, giving a homeomorphism.",
+        "The inverse equivalence is continuous and satisfies both inverse laws."
+      ],
+      "hard_negative": {
+        "statement": "The inverse remains continuous if compactness is omitted.",
+        "counterexample": "The usual-angle map t -> exp(i*t) from [0,2pi) to the unit circle is a continuous bijection; its inverse is discontinuous at 1. The half-open interval is not compact."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Compactness/Compact.lean",
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Homeomorph/Lemmas.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "ug.category.square_pasting",
+      "family_id": "university.category-theory",
+      "source_path": "Category.lean",
+      "theorem_name": "pasted_square_cancellation",
+      "statement": "Two horizontally adjacent commuting squares have a commuting outer rectangle.",
+      "assumptions": [
+        "C is a category with six objects and the seven well-typed morphisms named in the Lean target.",
+        "The left and the right squares each commute."
+      ],
+      "proof_outline": [
+        "Reassociate the outer top composite.",
+        "Use the right-square equality to replace its top-right route.",
+        "Reassociate and use the left-square equality.",
+        "Reassociate the bottom route to obtain the outer-square equality."
+      ],
+      "hard_negative": {
+        "statement": "The outer rectangle commutes when only the left square commutes.",
+        "counterexample": "In the category of sets take every object to be a singleton except the final object {0,1}. All maps between singletons are unique; choose final right arrow constant 1 and final bottom arrow constant 0. The left square commutes and the outer rectangle does not."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/CategoryTheory/CommSq.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "integration_obligations": [
+        "T3 inline tikz-cd rendering",
+        "T3 source access and reload persistence",
+        "T2/T3 checked composite identity bound to displayed arrows"
+      ]
+    },
+    {
+      "id": "ug.complex.reciprocal_locus",
+      "family_id": "university.complex-arithmetic",
+      "source_path": "Complex.lean",
+      "theorem_name": "real_of_unit_reciprocal_sum",
+      "statement": "For nonzero complex z, z+1/z is real exactly when z is real or its norm-square equals one.",
+      "assumptions": [
+        "z is a nonzero complex number.",
+        "Real means the imaginary component vanishes; norm-square is Complex.normSq."
+      ],
+      "proof_outline": [
+        "Nonzero z gives nonzero norm-square.",
+        "Express the imaginary part of z+1/z as im(z)-im(z)/normSq(z).",
+        "Clear the nonzero denominator and factor im(z)*(normSq(z)-1).",
+        "Use the zero-product property and check each converse branch."
+      ],
+      "hard_negative": {
+        "statement": "For nonzero z, z+1/z is real only when z is real.",
+        "counterexample": "z=i is not real, but z+1/z=0 since normSq(i)=1. This algebraic family is not itself complex-analysis breadth."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Data/Complex/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "ug.complex.liouville_reciprocal",
+      "family_id": "university.complex-analysis",
+      "source_path": "ComplexAnalysis.lean",
+      "theorem_name": "entire_bounded_below_constant",
+      "statement": "An entire complex-valued function whose norm has a uniform positive lower bound is constant.",
+      "assumptions": [
+        "f:C->C is complex differentiable everywhere.",
+        "eps is a positive real number.",
+        "eps <= norm(f(z)) for every complex z."
+      ],
+      "proof_outline": [
+        "The positive lower bound makes f nowhere zero.",
+        "The reciprocal 1/f is entire by the differentiation rule for inverses.",
+        "Its norm is bounded by 1/eps, using the norm-inverse identity and reversed reciprocal inequality.",
+        "Apply Liouville to the reciprocal and use injectivity of inversion to deduce f(z)=f(0)."
+      ],
+      "hard_negative": {
+        "statement": "A continuous function with a uniform positive norm lower bound must be constant.",
+        "counterexample": "f(z)=1+norm(z), embedded in C, is continuous with norm at least one, and f(0)=1 while f(1)=2. Counterexamples.lean proves the bound and nonconstancy; it does not claim complex differentiability."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Complex/Liouville.lean",
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Inv.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "negative.real.multiple_roots",
+      "family_id": "university.real-analysis",
+      "source_path": "Counterexamples.lean",
+      "theorem_name": "monotonicity_needed_for_unique_root",
+      "statement": "The polynomial x^3-x supplies distinct zeros despite continuity and endpoint sign change on [-2,2].",
+      "assumptions": [
+        "The domain and codomain are real.",
+        "No monotonicity assumption is made."
+      ],
+      "proof_outline": [
+        "Use the polynomial x^3-x.",
+        "Polynomial continuity follows from continuous arithmetic.",
+        "Evaluate endpoints and zeros -1,0,1 exactly.",
+        "Exhibit -1 different from 1 to refute uniqueness."
+      ],
+      "hard_negative": {
+        "statement": "The three roots collapse to a unique root.",
+        "counterexample": "The exact distinct values -1 and 1 both give zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Order/IntermediateValue.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "counterexample_witness"
+    },
+    {
+      "id": "negative.complex.continuity_insufficient",
+      "family_id": "university.complex-analysis",
+      "source_path": "Counterexamples.lean",
+      "theorem_name": "complex_differentiability_needed",
+      "statement": "The function z -> 1+norm(z) has norm at least one everywhere and is not constant.",
+      "assumptions": [
+        "The real-valued norm is embedded in C.",
+        "The claim is a lower bound and a nonconstancy witness, not holomorphicity."
+      ],
+      "proof_outline": [
+        "Rewrite the function as an embedded nonnegative real.",
+        "Its complex norm is the absolute value of that real.",
+        "Nonnegativity removes the absolute value.",
+        "Evaluate at zero and one to show different values."
+      ],
+      "hard_negative": {
+        "statement": "A positive lower norm bound suffices for Liouville without complex differentiability.",
+        "counterexample": "The displayed function gives values 1 and 2."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Complex/Liouville.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "counterexample_witness"
+    },
+    {
+      "id": "entrance.cubic_triangle",
+      "family_id": "school.entrance.polynomial-geometry",
+      "source_path": null,
+      "theorem_name": "cubic_triangle_classification",
+      "statement": "For c>0 and real t, classify when x^3-3x+t has three distinct real roots alpha<beta<gamma and c+alpha,c+beta,c+gamma are sides of a nondegenerate triangle.",
+      "assumptions": [
+        "c>0 and t is real.",
+        "All three roots must be real and pairwise distinct.",
+        "Triangle side lengths must be positive and satisfy strict triangle inequalities."
+      ],
+      "proof_outline": [
+        "Differentiate to locate extrema at -1 and 1; three distinct roots occur exactly for -2<t<2.",
+        "Locate roots in (-2,-1),(-1,1),(1,2) and use Vieta alpha+beta+gamma=0.",
+        "Triangle feasibility reduces to c>2*gamma; hence c<=2 is impossible.",
+        "For 2<c<4 monotonicity of x^3-3x on (1,infinity) gives 3*c/2-c^3/8<t<2.",
+        "For c>=4 every -2<t<2 works; check all strict boundaries separately."
+      ],
+      "hard_negative": {
+        "statement": "Allow equality in the triangle inequality while keeping the same strict parameter range.",
+        "counterexample": "c=3,t=9/8 has gamma=3/2 and alpha,beta=(-3 plus/minus sqrt(21))/4. The two shorter lengths sum exactly to the longest."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": []
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_not_compiled",
+      "polarity": "positive",
+      "method_constraints": "Use only high-school mathematics; finite or numerical checks alone cannot prove classification."
+    },
+    {
+      "id": "entrance.vieta_descent",
+      "family_id": "school.entrance.number-theory",
+      "source_path": null,
+      "theorem_name": "vieta_descent_classification",
+      "statement": "Classify all positive integer pairs (a,b) with a^2+b^2+1=3ab.",
+      "assumptions": [
+        "a and b are positive integers.",
+        "The coefficient is exactly 3 and the additive constant is exactly 1."
+      ],
+      "proof_outline": [
+        "Order a<=b; if a=1 then b is 1 or 2.",
+        "For a>1 define bprime=3*a-b; the equation gives b*bprime=a^2+1, so bprime>0.",
+        "The identity (b-a)*(b-2*a)=a^2-1>0 forces b>2*a, hence bprime<a.",
+        "Substitution gives the smaller solution (bprime,a); well-ordering reduces to the base cases.",
+        "Reverse descent: u0=u1=1 and u(n+2)=3*u(n+1)-u(n); all solutions are adjacent terms in either order.",
+        "Prove recurrence positivity and the preserved equation inductively to establish sufficiency and completeness."
+      ],
+      "hard_negative": {
+        "statement": "Drop positivity but keep the positive-sequence classification.",
+        "counterexample": "(-1,-1) satisfies the same equation and is outside the proposed positive sequence."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": []
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_not_compiled",
+      "polarity": "positive",
+      "method_constraints": "Use only high-school mathematics; finite or numerical checks alone cannot prove classification."
+    },
+    {
+      "id": "entrance.ballot_returns",
+      "family_id": "school.entrance.counting-probability",
+      "source_path": null,
+      "theorem_name": "ballot_first_return_and_ties",
+      "statement": "Uniformly order n red and n blue balls (n>=1), conditioned on every prefix having red>=blue. If K is half the first positive tie time and T counts positive ties including the final tie, prove P(K=k)=C(k-1)*C(n-k)/C(n) and E[T]=3*n/(n+2).",
+      "assumptions": [
+        "Every color word is equally likely before conditioning.",
+        "Every prefix has at least as many red as blue balls.",
+        "C(m)=binomial(2*m,m)/(m+1); 1<=k<=n.",
+        "T includes the final tie and excludes time zero."
+      ],
+      "proof_outline": [
+        "Use reflection to count admissible balanced words by C(n).",
+        "First return at time 2k removes an outer red/blue pair and leaves independent admissible words of sizes k-1 and n-k.",
+        "Divide their product count by C(n) for the first-return distribution.",
+        "For the tie indicator at time 2j count C(j)*C(n-j) words.",
+        "Sum the indicators and use the Catalan convolution to get (C(n+1)-C(n))/C(n).",
+        "Evaluate the ratio of Catalan numbers to obtain 3*n/(n+2)."
+      ],
+      "hard_negative": {
+        "statement": "Remove the prefix condition and retain the same expectation.",
+        "counterexample": "For n=2 the six unconditioned color words have mean positive tie count 5/3, whereas the conditioned formula is 3/2."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": []
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_not_compiled",
+      "polarity": "positive",
+      "method_constraints": "Use only high-school mathematics; finite or numerical checks alone cannot prove classification."
+    },
+    {
+      "id": "pending.geometry.isosceles_midpoint",
+      "family_id": "school.geometry",
+      "source_path": null,
+      "theorem_name": "isosceles_midpoint_perpendicular",
+      "statement": "For a nondegenerate isosceles triangle ABC with AB=AC and midpoint M of BC, prove AM perpendicular BC.",
+      "assumptions": [
+        "A,B,C form a nondegenerate triangle.",
+        "AB=AC; M is the midpoint of BC.",
+        "Any supplied figure must be transcribed and confirmed without using display coordinates as premises."
+      ],
+      "proof_outline": [
+        "T2 must supply checked instantiated geometric steps and a Lean source/trace binding.",
+        "T2 must record foundational assumptions and transitive axioms.",
+        "T3 must render the matching geometry inline with TikZ source and persistence.",
+        "T2/T3 must check degenerate and inconsistent-input cases through the actual integration."
+      ],
+      "hard_negative": {
+        "statement": "Remove nondegeneracy and still infer a unique perpendicular line AM.",
+        "counterexample": "Take B=(-1,0), C=(1,0), A=M=(0,0). AB=AC and M is the midpoint, but A and M do not determine a line."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": []
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_not_compiled",
+      "integration_obligations": [
+        "MRD-002 input fidelity",
+        "MRD-003 checked ordered trace",
+        "MRD-004 actual inline figure and TikZ",
+        "MRD-010 bounded renderer"
+      ]
+    }
+  ],
+  "scope": "Offline authored evaluation and local Lean witnesses. Not a signed runtime release corpus and not an admission record."
+}
