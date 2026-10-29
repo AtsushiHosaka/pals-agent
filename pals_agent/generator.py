@@ -8,6 +8,7 @@ from dataclasses import dataclass, replace
 from typing import Protocol
 
 from pals_agent.linked_chat import selected_generation_model
+from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
 from pals_agent.mlx import MlxError
 from pals_agent.models import (
     GeneratedDraft,
@@ -577,6 +578,7 @@ Return only the Draft. Do not write Lean code yet.
 Give an ordered, mathematically explicit sequence of atomic proof moves that can be
 translated into intermediate Lean `have` statements or local lemmas.
 Follow any required exact-match proof method below.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
 Problem:
@@ -600,6 +602,38 @@ def _lean_import_guidance() -> str:
     )
 
 
+def _lean_scalar_guidance() -> str:
+    return """
+Lean scalar formalization and case discipline:
+Keep the requested scalar carrier explicit in EVERY independent subclaim, including
+closed numerical attainment equalities inside conjunctions. A neighboring binder
+`x : ℝ` does not type an unrelated numeral-only conjunct: unannotated arithmetic may
+default to Nat, where subtraction truncates. Define a typed function `g : ℝ → ℝ`
+and state its attained value as `g c = m`, or annotate the numerical expression in
+the requested field. Correct the model-generated target if its carrier is wrong;
+do not try to prove a false Nat equality with tactics. Preserve any user harness.
+
+For real polynomial bounds, derive a square's nonnegativity with `sq_nonneg`,
+then use `nlinarith` with that fact; use `ring` for polynomial equalities.
+Avoid a redundant single-step `calc` that repeats the whole current goal: prove
+that equality directly with `rw`, `simpa`, or `ring`. Retain genuine multi-step
+calculations. Check layout and preceding local declarations before treating an
+unknown local fact or `exact` as a missing library theorem.
+Keep local facts self-contained: use either `have h (x : ℝ) : P x := by ...`
+or `have h : ∀ x : ℝ, P x := by intro x; ...`, without introducing x twice.
+
+For absolute values, split exhaustively on the sign of each argument with
+`by_cases h : 0 ≤ t`. In the positive branch use `abs_of_nonneg h`; in the
+other derive `t ≤ 0` from `le_of_not_ge h` and use `abs_of_nonpos`.
+Equivalently use `le_total t 0` and keep both inequalities non-strict.
+A proof of `a ≤ x` is NOT a proof of `a < x`. Never build a strict interval
+conjunction from weak inequalities returned by `le_total`. Either use the weak
+inequalities to rewrite the absolute values directly (including boundary cases),
+or derive a strict bound from an actual negated weak bound. Keep every branch,
+and verify each proposed root in the original equation after proving completeness.
+"""
+
+
 def _sketch_prompt_for(
     request: ProofRequest,
     draft: GeneratedDraft,
@@ -608,6 +642,7 @@ def _sketch_prompt_for(
     return f"""Translate the informal Draft into a Lean 4/mathlib formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
 {_lean_import_guidance()}
+{_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 You must prove the exact Lean theorem harness shown below when one is provided.
@@ -615,6 +650,7 @@ Preserve the Draft's proof structure with intermediate `have` statements or loca
 Leave one or more localized `sorry` gaps for the substantive proof obligations.
 Do not use a shortcut tactic or proof term to close the whole theorem instead of
 representing the Draft's intermediate reasoning.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
 Problem:
@@ -641,6 +677,7 @@ def _prove_prompt_for(
     return f"""Complete a Lean 4/mathlib proof from the supplied Draft and formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
 {_lean_import_guidance()}
+{_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 Preserve the Sketch's theorem statement and mathematical target. Fill every gap with
@@ -654,6 +691,7 @@ product-domain type annotation for `continuous_mul`. The learner-facing explanat
 is generated separately from the verified theorem and must still expand the Draft's
 mathematical argument without claiming unexposed tactic internals were explicit
 Lean proof steps.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 {_lean_reliability_guidance(request)}
 Do not use `sorry` or `admit`.
@@ -852,7 +890,9 @@ Return exactly one JSON object with exactly one key, `instruction`.
 `instruction` must be a concise, concrete repair plan for the selected `{feedback.repair_route}`
 stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
 code, a route choice, an evaluation rubric, or any extra JSON field.
+{DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
+{_lean_scalar_guidance()}
 
 Problem:
 {request.prompt}

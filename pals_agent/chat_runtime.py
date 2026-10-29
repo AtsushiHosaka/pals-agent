@@ -64,6 +64,11 @@ _BOUNDARY = (
     "Lean verification even if the user calls them explanations. Choose explanation only "
     "for describing concepts, the meaning of a diagram, reading notation, or explaining "
     "given intermediate steps without deciding correctness or solving/proving the task. "
+    "A short open question asking for a value, solution set, units, rank, limit or "
+    "classification also chooses lean, even without an explicit solve/prove verb. "
+    "For example, 'What are the units of Z/12Z?' asks for a classification, whereas "
+    "'What is a unit in a ring?' asks for a definition and chooses explanation. "
+    "Do not ask the learner to supply the unknown result. "
     "Never choose explanation because proving is difficult or Lean might fail. "
 )
 _VISUAL = (

@@ -11,6 +11,7 @@ from typing import Any, Literal, Protocol
 
 from pals_agent.lean_target import LeanTargetDeclaration
 from pals_agent.linked_chat import selected_generation_model
+from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])(?:"
@@ -1019,6 +1020,7 @@ or 連続性判定を使う. Use direct proof prose such as “Fix”, “Let”
 “In this step”. Do not say that the learner requested epsilon-delta, and do not expose Lean
 syntax."""
     return f"""Write a mathematical proof for a learner, grounded in a verified Lean artifact.
+{ANSWER_PRESENTATION}
 The theorem statement and verified Lean code below are the only sources of truth for the claim
 and its assumptions.
 {_STATED_CONVENTION_INSTRUCTION}
@@ -1322,6 +1324,7 @@ def _output_review_prompt(
         )
     )
     return f"""You are an independent review session for learner-facing mathematical output.
+{ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
 candidate against the verified Lean source and the learner theorem statement. A clarification
 must also be grounded in the supplied explanation. Approve only if every mathematical claim in
@@ -1407,7 +1410,8 @@ def _proof_semantic_review_prompt(
 ) -> str:
     formal = formal_statement or "(No separate formal statement was supplied.)"
     return f"""You are an independent proof-review session. You did not generate this Lean
-candidate. The deterministic parser extracted exactly this one target declaration; reject if it
+candidate. {ANSWER_SCOPE_REVIEW}
+The deterministic parser extracted exactly this one target declaration; reject if it
 does not correspond to the displayed Lean source. Decide whether that exact proposition corresponds
 to the learner's request and whether the candidate's proof logically establishes it.
 Reject a strictly weaker top-level proposition even if an intermediate proof step establishes
