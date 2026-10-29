@@ -185,9 +185,11 @@ class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
         self,
         settings: IsolatedVerifierHttpSettings,
         verifier: LeanVerifierPort,
+        admission_verifier: LeanVerifierPort | None = None,
     ) -> None:
         self.settings = settings
         self.verifier = verifier
+        self.admission_verifier = admission_verifier if admission_verifier is not None else verifier
         self.recipe_admission_context = settings.recipe_admission_context
         self.compile_slot = threading.BoundedSemaphore(1)
         self.ready = True
@@ -342,7 +344,9 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
             )
             return
         try:
-            result = self.server.verifier.verify(cast(str, request["materialized_source"]))
+            result = self.server.admission_verifier.verify(
+                cast(str, request["materialized_source"]),
+            )
         except BaseException:
             self._admission_error(
                 503,
@@ -629,8 +633,9 @@ def create_server(
     settings: IsolatedVerifierHttpSettings,
     *,
     verifier: LeanVerifierPort,
+    admission_verifier: LeanVerifierPort | None = None,
 ) -> ThreadingTlsVerifierServer:
-    return ThreadingTlsVerifierServer(settings, verifier)
+    return ThreadingTlsVerifierServer(settings, verifier, admission_verifier)
 
 
 def _single_header(headers: Message[str, str], name: str) -> str | None:

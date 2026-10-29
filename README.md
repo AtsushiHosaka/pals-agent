@@ -52,6 +52,10 @@ starts fail-closed when trust, resource, filesystem, process-boundary, or
 toolchain checks fail. The compiler receives no Worker, API, model, database,
 or cloud credential.
 
+Optional, measured [Lake environment reuse](tools/lean_acceleration/README.md)
+is disabled by default. It retains fresh compilation for every proof and keeps
+Recipe admission on its receipt-bound compiler command.
+
 ## Production Worker Lanes
 
 The production assessment service uses `Dockerfile.natural-production` and

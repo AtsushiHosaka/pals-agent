@@ -34,6 +34,17 @@ def test_runtime_requires_exact_immutable_transport_references(
     assert settings.tls.reconciler_client_spiffe_uri == ("spiffe://pals/local/verified-reconciler")
 
 
+def test_lake_environment_reuse_is_strictly_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_required_environment(monkeypatch)
+    monkeypatch.delenv("PALS_LEAN_REUSE_LAKE_ENVIRONMENT", raising=False)
+    assert HttpVerifierRuntimeSettings.from_env().reuse_lake_environment is False
+    monkeypatch.setenv("PALS_LEAN_REUSE_LAKE_ENVIRONMENT", "true")
+    assert HttpVerifierRuntimeSettings.from_env().reuse_lake_environment is True
+    monkeypatch.setenv("PALS_LEAN_REUSE_LAKE_ENVIRONMENT", "1")
+    with pytest.raises(ValueError, match="must be true or false"):
+        HttpVerifierRuntimeSettings.from_env()
+
+
 def test_runtime_accepts_only_the_production_mounted_tls_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -162,6 +173,7 @@ def test_runtime_marks_ready_only_after_boundary_tls_and_server_setup(
     tmp_path: Path,
 ) -> None:
     _set_required_environment(monkeypatch)
+    monkeypatch.setenv("PALS_LEAN_REUSE_LAKE_ENVIRONMENT", "true")
     scratch_dir = tmp_path / "scratch"
     scratch_dir.mkdir()
     ready_marker = scratch_dir / "verifier-ready"
@@ -221,8 +233,16 @@ def test_runtime_marks_ready_only_after_boundary_tls_and_server_setup(
             },
         ),
     )
-    monkeypatch.setattr(http_runtime, "LeanVerifier", lambda **_kwargs: object())
-    monkeypatch.setattr(http_runtime, "create_server", lambda *_args, **_kwargs: Server())
+    def capture_server(*_args: object, **kwargs: object) -> Server:
+        verifier = kwargs["verifier"]
+        admission_verifier = kwargs["admission_verifier"]
+        assert isinstance(verifier, http_runtime.LeanVerifier)
+        assert isinstance(admission_verifier, http_runtime.LeanVerifier)
+        assert verifier.lake_environment_cache is not None
+        assert admission_verifier.lake_environment_cache is None
+        return Server()
+
+    monkeypatch.setattr(http_runtime, "create_server", capture_server)
 
     http_runtime.main()
 
