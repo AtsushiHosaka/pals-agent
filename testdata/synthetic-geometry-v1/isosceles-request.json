@@ -1,0 +1,112 @@
+{
+  "schema_version": "pals.synthetic-geometry-input.v1",
+  "family": "isosceles-midpoint-perpendicular-v1",
+  "original_text": "A, B, C are non-collinear. AB = AC. M is the midpoint of BC. Prove AM is perpendicular to BC.",
+  "proposition": "A, B, C are non-collinear. AB = AC. M is the midpoint of BC. Prove AM is perpendicular to BC.",
+  "source_kind": "user_structured",
+  "objects": [
+    {
+      "id": "a",
+      "kind": "point",
+      "label": "A",
+      "role": "A"
+    },
+    {
+      "id": "b",
+      "kind": "point",
+      "label": "B",
+      "role": "B"
+    },
+    {
+      "id": "c",
+      "kind": "point",
+      "label": "C",
+      "role": "C"
+    },
+    {
+      "id": "m",
+      "kind": "point",
+      "label": "M",
+      "role": "M"
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "h_non_collinear",
+      "predicate": "non_collinear",
+      "objects": [
+        "a",
+        "b",
+        "c"
+      ],
+      "source_span": {
+        "start": 0,
+        "end": 26,
+        "excerpt": "A, B, C are non-collinear."
+      }
+    },
+    {
+      "id": "h_equal_sides",
+      "predicate": "equal_distance",
+      "objects": [
+        "a",
+        "b",
+        "a",
+        "c"
+      ],
+      "source_span": {
+        "start": 27,
+        "end": 35,
+        "excerpt": "AB = AC."
+      }
+    },
+    {
+      "id": "h_midpoint",
+      "predicate": "midpoint",
+      "objects": [
+        "m",
+        "b",
+        "c"
+      ],
+      "source_span": {
+        "start": 36,
+        "end": 60,
+        "excerpt": "M is the midpoint of BC."
+      }
+    }
+  ],
+  "conclusion": {
+    "id": "goal",
+    "predicate": "perpendicular",
+    "objects": [
+      "a",
+      "m",
+      "b",
+      "c"
+    ],
+    "source_span": {
+      "start": 67,
+      "end": 93,
+      "excerpt": "AM is perpendicular to BC."
+    }
+  },
+  "figures": [],
+  "display_coordinates": {
+    "a": [
+      0,
+      3
+    ],
+    "b": [
+      -2,
+      0
+    ],
+    "c": [
+      2,
+      0
+    ],
+    "m": [
+      0,
+      0
+    ]
+  }
+}
