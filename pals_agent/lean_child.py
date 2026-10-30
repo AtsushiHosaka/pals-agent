@@ -6,7 +6,9 @@ import ctypes
 import errno
 import os
 import resource
+import shlex
 import sys
+import sysconfig
 from pathlib import Path
 
 _LANDLOCK_CREATE_RULESET = 444
@@ -86,7 +88,7 @@ def main() -> None:
         limits = [int(value, 10) for value in sys.argv[2:8]]
         _apply_rlimits(limits)
         if sys.platform.startswith("linux"):
-            _apply_landlock(scratch_dir)
+            _apply_landlock(scratch_dir, sys.argv[9:])
             _apply_socket_seccomp()
         os.execv(sys.argv[9], sys.argv[9:])
     except (OSError, ValueError):
@@ -107,7 +109,117 @@ def _apply_rlimits(limits: list[int]) -> None:
         resource.setrlimit(resource_name, (value, value))
 
 
-def _apply_landlock(scratch_dir: Path) -> None:
+def _readable_runtime_paths(command: list[str]) -> dict[Path, int]:
+    """Derive access from trusted launcher configuration, never from proof text.
+
+    Lake's workspace and Elan's installed toolchains are deployment-owned inputs.
+    Production separately attests their read-only mounts. PATH is deliberately
+    not an allowlist: it also contains daemon executables and unrelated files.
+    """
+    paths: dict[Path, int] = {}
+
+    def allow(path: Path, access: int) -> Path:
+        resolved = path.resolve(strict=True)
+        if resolved == Path("/") or any(
+            resolved.is_relative_to(root) for root in (Path("/proc"), Path("/run"))
+        ):
+            raise ValueError("invalid Lean runtime path")
+        paths[resolved] = paths.get(resolved, 0) | access
+        return resolved
+
+    executables = [Path(command[0])]
+    lake_environment = len(command) > 2 and command[1] == "env"
+    if lake_environment:
+        executables.append(Path(command[2]))
+    toolchains: list[Path] = []
+    for executable in executables:
+        resolved = allow(executable, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_EXECUTE)
+        if not resolved.is_file():
+            raise ValueError("invalid Lean executable")
+        with resolved.open("rb") as source:
+            header = source.readline(256)
+        if header.startswith(b"#!"):
+            interpreter = shlex.split(header[2:].decode("utf-8"))
+            if not interpreter or not Path(interpreter[0]).is_absolute():
+                raise ValueError("invalid Lean executable interpreter")
+            allow(Path(interpreter[0]), _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_EXECUTE)
+        native_toolchain = resolved.parent.parent
+        if resolved.parent.name == "bin" and (native_toolchain / "lib/lean").is_dir():
+            toolchains.append(allow(native_toolchain, _LANDLOCK_READ_EXECUTE))
+
+    elan_home = Path(os.environ.get("ELAN_HOME", "/opt/elan"))
+    # Standalone integrations may configure a native sysroot instead of Elan.
+    if (elan_home / "bin/lean").is_file() and (elan_home / "lib/lean").is_dir():
+        toolchains.append(allow(elan_home, _LANDLOCK_READ_EXECUTE))
+    installed = elan_home / "toolchains"
+    if installed.is_dir():
+        # Elan proxies dispatch to the pinned installed toolchain. Do not expose
+        # the rest of ELAN_HOME (or the daemon's HOME) to compiled Lean code.
+        for name in ("lean", "lake"):
+            proxy = elan_home / "bin" / name
+            if proxy.is_file():
+                allow(proxy, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_EXECUTE)
+        allow(installed, _LANDLOCK_ACCESS_FS_READ_DIR)
+        for toolchain in installed.iterdir():
+            if (toolchain / "bin/lean").is_file() and (toolchain / "lib/lean").is_dir():
+                # `elan toolchain link` may name an operator-provisioned sysroot
+                # outside ELAN_HOME. Canonicalize that runtime, not its parent.
+                toolchains.append(allow(toolchain, _LANDLOCK_READ_EXECUTE))
+        for name in ("settings.toml", "known-projects"):
+            settings = elan_home / name
+            if settings.is_file():
+                allow(settings, _LANDLOCK_ACCESS_FS_READ_FILE)
+        for directory in (Path.cwd(), *Path.cwd().parents):
+            pin = directory / "lean-toolchain"
+            if pin.is_file():
+                allow(pin, _LANDLOCK_ACCESS_FS_READ_FILE)
+                break
+
+    workspace: Path | None = None
+    if lake_environment or os.environ.get("LEAN_PATH"):
+        workspace = Path.cwd().resolve(strict=True)
+        if not (workspace / "lean-toolchain").is_file() or not any(
+            (workspace / name).is_file() for name in ("lakefile.lean", "lakefile.toml")
+        ):
+            raise ValueError("invalid Lean workspace")
+        allow(workspace, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_READ_DIR)
+        # Lake checks the pinned package remotes even for `lake env`.
+        git = Path("/usr/bin/git")
+        if git.is_file():
+            allow(git, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_EXECUTE)
+    for name in ("LEAN_PATH", "LEAN_SRC_PATH", "LD_LIBRARY_PATH"):
+        for value in filter(None, os.environ.get(name, "").split(os.pathsep)):
+            path = Path(value).resolve()
+            import_roots = [*toolchains, *([workspace] if workspace else [])]
+            if not any(path.is_relative_to(root) for root in import_roots):
+                raise ValueError("Lean import path is outside its runtime")
+            # Lake includes build output directories that need not exist yet.
+            if path.exists():
+                allow(path, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_READ_DIR)
+
+    multiarch = sysconfig.get_config_var("MULTIARCH")
+    if not isinstance(multiarch, str) or not multiarch or Path(multiarch).name != multiarch:
+        raise ValueError("unsupported Linux runtime library layout")
+    for library_root in (Path("/lib") / multiarch, Path("/usr/lib") / multiarch):
+        if library_root.is_dir():
+            allow(library_root, _LANDLOCK_READ_EXECUTE)
+    # The x86-64 loader alias can live outside its triplet library directory.
+    loader = Path("/lib64/ld-linux-x86-64.so.2")
+    if loader.is_file():
+        allow(loader, _LANDLOCK_ACCESS_FS_READ_FILE | _LANDLOCK_ACCESS_FS_EXECUTE)
+    cache = Path("/etc/ld.so.cache")
+    if cache.is_file():
+        allow(cache, _LANDLOCK_ACCESS_FS_READ_FILE)
+    return paths
+
+
+def _apply_landlock(scratch_dir: Path, command: list[str]) -> None:
+    runtime_paths = _readable_runtime_paths(command)
+    scratch_dir = scratch_dir.resolve(strict=True)
+    if scratch_dir == Path("/") or any(
+        scratch_dir.is_relative_to(root) for root in (Path("/proc"), Path("/run"))
+    ):
+        raise ValueError("invalid Lean scratch directory")
     libc = ctypes.CDLL(None, use_errno=True)
     libc.syscall.restype = ctypes.c_long
     abi = libc.syscall(
@@ -134,17 +246,19 @@ def _apply_landlock(scratch_dir: Path) -> None:
     if ruleset_fd < 0:
         _raise_errno("Landlock ruleset creation failed")
     try:
-        _add_landlock_path_rule(
-            libc,
-            ruleset_fd,
-            Path("/"),
-            _LANDLOCK_READ_EXECUTE,
-        )
+        for path, access in runtime_paths.items():
+            _add_landlock_path_rule(libc, ruleset_fd, path, access)
         _add_landlock_path_rule(
             libc,
             ruleset_fd,
             Path("/dev/null"),
             _LANDLOCK_NULL_DEVICE,
+        )
+        _add_landlock_path_rule(
+            libc,
+            ruleset_fd,
+            Path("/dev/urandom"),
+            _LANDLOCK_ACCESS_FS_READ_FILE,
         )
         _add_landlock_path_rule(
             libc,
