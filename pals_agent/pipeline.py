@@ -12,6 +12,7 @@ from pals_agent.artifacts import (
     ArtifactStore,
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
+from pals_agent.lean_target import extract_single_target_declaration
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
     BenchmarkProblem,
@@ -370,6 +371,7 @@ class ProofPipeline:
                 request,
                 generated.lean_code,
                 verification_harness=verification_harness,
+                require_single_target=self.verification_mode == "api_reconcile",
             )
             if preflight_diagnostics:
                 failure_diagnostics = [*generated.stage_diagnostics]
@@ -1024,6 +1026,7 @@ def validate_generated_lean(
     verification_harness: str | None = None,
     allow_theorem_name_variance: bool = False,
     defer_formal_harness: bool = False,
+    require_single_target: bool = False,
 ) -> list[Diagnostic]:
     if not lean_code.strip():
         return [
@@ -1033,6 +1036,24 @@ def validate_generated_lean(
                 message="The model did not produce extractable Lean code.",
             )
         ]
+
+    # The worker protocol requires one unambiguous target for independent semantic
+    # review. Repair its source shape here, within the existing bounded DSP loop,
+    # instead of discovering it only in the worker's final submission guard.
+    # Local verifier tooling retains its existing multi-declaration contract.
+    if require_single_target and extract_single_target_declaration(lean_code) is None:
+        return [Diagnostic(
+            severity="error",
+            code="pals.target_declaration_invalid",
+            message=(
+                "API verification requires exactly one parseable top-level theorem, lemma or "
+                "example target. Preserve the complete requested claim, assumptions and any "
+                "exact supplied harness. Move auxiliary proof declarations into local `have` "
+                "statements inside that target, even if the previous Sketch used global helpers. "
+                "Do not select one of several conclusions, discard obligations or weaken the "
+                "proposition to satisfy this source-shape requirement."
+            ),
+        )]
 
     formal_statement = verification_harness or request.formal_statement
 
