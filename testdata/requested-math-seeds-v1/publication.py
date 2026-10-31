@@ -100,7 +100,15 @@ def search_candidate(case: dict, manifest: dict, receipt: dict) -> dict:
         "quantifiers": [],
         "conclusion": manifest["target_source"],
         "proof_method_tag": None,
-        "search_text": case["question"] + "\n" + "\n".join(case["assumptions"]),
+        "search_text": "\n".join(
+            [
+                case["question"],
+                *case["assumptions"],
+                *case["proof_outline"],
+                case["id"].split(".", 1)[-1].replace("_", " "),
+                case["family_id"].replace("-", " "),
+            ]
+        ),
         "output_language": "ja",
         "answer": case["answer"],
         "answer_sha256": sha(case["answer"].encode()),

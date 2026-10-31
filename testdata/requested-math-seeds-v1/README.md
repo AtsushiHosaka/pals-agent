@@ -109,6 +109,12 @@ measure and match that fingerprint; these files do not assert it has done so.
      --output-directory "$NEW_PRIVATE_ENTRY_DIRECTORY"
    ```
 
+   Search text retains the Japanese question, exact assumptions and existing
+   English proof outline, plus the case/family identifier words. The current
+   PostgreSQL search uses English text-search lexemes; this gives it existing
+   English mathematical terms without changing the theorem or answer. Actual
+   retrieval still requires runtime replay.
+
    This helper has no DB/network/key access and cannot establish receipt origin;
    the release admission tool independently checks all identities against DB
    evidence. No receipt or search entry with invented receipt hashes is included

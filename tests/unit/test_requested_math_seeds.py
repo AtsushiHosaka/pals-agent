@@ -117,6 +117,10 @@ def test_search_candidate_requires_receipt_binding_and_keeps_japanese_answer():
     entry = module.search_candidate(case, manifest, receipt)
     assert entry["output_language"] == "ja"
     assert entry["answer"] == case["answer"]
+    assert all(step in entry["search_text"] for step in case["proof_outline"])
+    assert "continuity" in entry["search_text"].lower()
+    assert "natural power continuous" in entry["search_text"]
+    assert "real analysis" in entry["search_text"]
     assert entry["compiler_receipt_sha256"] == module.sha(rfc8785.dumps(receipt))
     assert "review" not in entry and "review_signature" not in entry
     for field in ("materialized_source_sha256", "toolchain_fingerprint_sha256"):
