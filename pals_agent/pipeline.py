@@ -177,8 +177,11 @@ class ProofPipeline:
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
+    request_linked_typed_retriever: ProofFlowRetriever | None = None
 
     def __post_init__(self) -> None:
+        if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
+            raise ValueError("Request-linked typed retrieval must retain the natural Draft route")
         if (
             type(self.max_repair_attempts) is not int
             or not 1 <= self.max_repair_attempts <= 64
@@ -229,8 +232,10 @@ class ProofPipeline:
             # re-query a mutable catalog over that compiler failure and its repair seed.
             request = _request_for_statement(
                 statement, formal_statement=formal_statement,
-                proof_flow_retriever=(self.natural_draft_retriever
-                                      if api_repair_seed is None else None),
+                proof_flow_retriever=(
+                    (self.request_linked_typed_retriever or self.natural_draft_retriever)
+                    if api_repair_seed is None else None
+                ),
             )
         else:
             request = self.prepare_statement(statement=statement, formal_statement=formal_statement)
