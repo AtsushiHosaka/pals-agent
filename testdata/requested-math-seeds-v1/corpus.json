@@ -224,8 +224,7 @@
       "question": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
       "answer": "解は$x=1,y=2$だけである。第2式から$y=x+1$となる。第1式に代入すると$5x+2=7$なので$x=1$、したがって$y=2$である。逆にこの組を両方の式に代入すれば成立するため、存在と一意性の両方が確認できる。",
       "assumptions": [
-        "x,y are real numbers.",
-        "Both equations are required."
+        "x,y are real numbers."
       ],
       "proof_outline": [
         "Eliminate y using the second equation.",
@@ -511,7 +510,7 @@
       "question": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
       "answer": "そのような実数の組は存在しない。第1式を2倍すると$2x+2y=2$となる。一方、第2式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
       "assumptions": [
-        "x,y are real numbers; both equations hold simultaneously."
+        "The unknowns x and y range over R."
       ],
       "proof_outline": [
         "Multiply the first equation by 2.",

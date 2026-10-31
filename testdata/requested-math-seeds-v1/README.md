@@ -43,8 +43,10 @@ median was 1.179 seconds and maximum 2.735 seconds; the batch plus axiom audit t
 29.722 seconds. These are local compiler timings, not AWS or end-to-end response
 latency. The report is a private generated artifact and is not committed.
 
-Final corpus SHA256:
+Corpus SHA256 at the local compiler run, before the two structured-scope corrections:
 `c96876b736d92c73ac48f51f5093eed08ea45b006574058f89e75c0ec77514c5`.
+Current corpus SHA256 after those metadata-only corrections:
+`9a923c538425e1026bb5d368877d0f32c54a0ed8e10960e4e30a42998dd38ec4`. The Lean sources and all authoring manifests are unchanged.
 Local report SHA256:
 `f1856209dce8dda2ffe5929e35e832f9b1331b8a356e3e904aaed5e8272611fd`.
 
