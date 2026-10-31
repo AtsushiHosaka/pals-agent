@@ -11,9 +11,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/natural_power_continuous.lean",
       "theorem_name": "requested_natural_power_continuous",
-      "statement": "For every natural number n, prove that the real function x ↦ x^n is continuous on all of R.",
-      "question": "For every natural number n, prove that the real function x ↦ x^n is continuous on all of R.",
-      "answer": "Yes, including n=0. For n=0 the function is the constant 1. If x^n is continuous, multiplication by the continuous identity function makes x^(n+1) continuous. Induction proves the assertion for every natural exponent.",
+      "statement": "任意の自然数$n$について、実数上の関数$f(x)=x^n$が実数全体で連続であることを証明せよ。$n=0$も含める。",
+      "question": "任意の自然数$n$について、実数上の関数$f(x)=x^n$が実数全体で連続であることを証明せよ。$n=0$も含める。",
+      "answer": "$n=0$では定数関数$1$なので連続である。$x^n$が連続だと仮定すると、恒等関数$x$も連続なので、積$x^{n+1}=x^n x$も連続になる。したがって数学的帰納法により、任意の自然数$n$について$x^n$は実数全体で連続である。",
       "assumptions": [
         "n is a natural number; domain and codomain are R."
       ],
@@ -52,9 +52,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/right_limit_and_discontinuity.lean",
       "theorem_name": "requested_right_limit_and_discontinuity",
-      "statement": "Let f:R→R satisfy f(0)=1 and f(x)=0 whenever x>0. Determine its right limit at 0, and decide whether f is continuous at 0. Values for x<0 are arbitrary.",
-      "question": "Let f:R→R satisfy f(0)=1 and f(x)=0 whenever x>0. Determine its right limit at 0, and decide whether f is continuous at 0. Values for x<0 are arbitrary.",
-      "answer": "The right limit is 0, and f is not continuous at 0. On the entire positive half-line the function equals the constant 0, so it has the same right-hand limit. Continuity at 0 would also give right-hand limit f(0)=1. Uniqueness of limits in R would force 0=1, a contradiction.",
+      "statement": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
+      "question": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
+      "answer": "右極限は$0$であり、$f$は$0$で連続ではない。正の側では$f$が定数関数$0$と一致するため、右極限も$0$になる。一方、$0$で連続なら右極限は$f(0)=1$でなければならない。実数値関数の極限の一意性から$0=1$となり矛盾する。負の側の値は、この結論に影響しない。",
       "assumptions": [
         "f is real-valued on R.",
         "f(0)=1.",
@@ -96,9 +96,9 @@
       "family_id": "calculus",
       "source_path": "proofs/cubic_derivative.lean",
       "theorem_name": "requested_cubic_derivative",
-      "statement": "For every real x, compute and prove the derivative of f(x)=x^3-3x.",
-      "question": "For every real x, compute and prove the derivative of f(x)=x^3-3x.",
-      "answer": "The derivative is f′(x)=3x^2-3 at every real x. Apply the power rule to x^3, differentiate 3x by the constant-multiple rule, and subtract the resulting derivatives.",
+      "statement": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+      "question": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+      "answer": "任意の実数$x$について$f^{\\prime}(x)=3x^2-3$である。べき関数の微分公式から$x^3$の導関数は$3x^2$となる。また、恒等関数の微分と定数倍の公式から$3x$の導関数は$3$である。差の微分公式を使えば、求める式が得られる。",
       "assumptions": [
         "x is an arbitrary real number."
       ],
@@ -137,9 +137,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/pi_gt_305.lean",
       "theorem_name": "requested_pi_gt_305",
-      "statement": "Prove the exact strict inequality π>3.05, without treating a decimal approximation as a proof.",
-      "question": "Prove the exact strict inequality π>3.05, without treating a decimal approximation as a proof.",
-      "answer": "The certified library inequality 3.14<π is stronger. Since 3.05<3.14 by exact rational arithmetic, transitivity gives 3.05<π. The decimals here denote exact rationals, not floating-point estimates.",
+      "statement": "浮動小数点の近似値を証明として使わず、厳密な不等式$\\pi>3.05$を証明せよ。形式的に証明済みのライブラリの評価を使ってよい。",
+      "question": "浮動小数点の近似値を証明として使わず、厳密な不等式$\\pi>3.05$を証明せよ。形式的に証明済みのライブラリの評価を使ってよい。",
+      "answer": "ライブラリで証明済みの下界$3.14<\\pi$を用いる。十進表記を正確な有理数として扱えば$3.05<3.14$は厳密に確認できる。よって不等式の推移性から$3.05<\\pi$が従う。これは既知の下界を利用する証明であり、浮動小数点近似や新たな幾何学的評価による証明ではない。",
       "assumptions": [
         "π is Real.pi; 3.05 and 3.14 are exact real rational numerals."
       ],
@@ -178,9 +178,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/linear_injective_iff_zero_kernel.lean",
       "theorem_name": "requested_linear_injective_iff_zero_kernel",
-      "statement": "For a linear map f:V→W over a field K, prove that f is injective exactly when f(x)=0 implies x=0 for every x.",
-      "question": "For a linear map f:V→W over a field K, prove that f is injective exactly when f(x)=0 implies x=0 for every x.",
-      "answer": "If f is injective, compare f(x)=0 with f(0)=0 to get x=0. Conversely, if the zero fiber is trivial and f(x)=f(y), linearity gives f(x-y)=0. The hypothesis forces x-y=0, hence x=y.",
+      "statement": "体$K$上のベクトル空間$V,W$と線形写像$f:V\\to W$を考える。$f$が単射であることと、すべての$x\\in V$について$f(x)=0$なら$x=0$となることが同値であると証明せよ。",
+      "question": "体$K$上のベクトル空間$V,W$と線形写像$f:V\\to W$を考える。$f$が単射であることと、すべての$x\\in V$について$f(x)=0$なら$x=0$となることが同値であると証明せよ。",
+      "answer": "$f$が単射なら、$f(x)=0=f(0)$から$x=0$が従う。逆に零点が$0$だけだと仮定し、$f(x)=f(y)$とする。線形性から$f(x-y)=f(x)-f(y)=0$である。仮定により$x-y=0$なので$x=y$となり、$f$は単射である。",
       "assumptions": [
         "K is a field; V and W are K-vector spaces.",
         "f is K-linear."
@@ -220,9 +220,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/linear_system_unique_solution.lean",
       "theorem_name": "requested_linear_system_unique_solution",
-      "statement": "Solve over R the system 3x+2y=7 and x-y=-1, and prove that your solution is the only one.",
-      "question": "Solve over R the system 3x+2y=7 and x-y=-1, and prove that your solution is the only one.",
-      "answer": "The unique solution is x=1,y=2. The second equation gives y=x+1. Substituting into the first yields 5x+2=7, hence x=1 and y=2. Direct substitution verifies both equations, proving the equivalence with this single pair.",
+      "statement": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
+      "question": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
+      "answer": "解は$x=1,y=2$だけである。第2式から$y=x+1$となる。第1式に代入すると$5x+2=7$なので$x=1$、したがって$y=2$である。逆にこの組を両方の式に代入すれば成立するため、存在と一意性の両方が確認できる。",
       "assumptions": [
         "x,y are real numbers.",
         "Both equations are required."
@@ -262,9 +262,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/determinant_nonzero_decision.lean",
       "theorem_name": "requested_determinant_nonzero_decision",
-      "statement": "Decide whether the real matrix [[1,2],[3,5]] has zero determinant, and justify the decision.",
-      "question": "Decide whether the real matrix [[1,2],[3,5]] has zero determinant, and justify the decision.",
-      "answer": "Its determinant is 1·5-2·3=-1, so it is nonzero. The Lean witness applies the exact 2×2 determinant formula and proves that the resulting real number is not zero.",
+      "statement": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+      "question": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+      "answer": "$2\\times2$行列の行列式の公式から、$\\det A=1\\cdot5-2\\cdot3=-1$となる。実数の$-1$は$0$と異なるので、行列式は非零である。Leanの証明も、この公式の適用と正確な計算によって非零性を確認している。",
       "assumptions": [
         "The matrix is 2×2 with entries in R."
       ],
@@ -303,9 +303,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/rational_power_continuous.lean",
       "theorem_name": "requested_rational_power_continuous",
-      "statement": "For a natural number n, prove that x ↦ (x^n+sin x)/(1+x^2) is continuous on R.",
-      "question": "For a natural number n, prove that x ↦ (x^n+sin x)/(1+x^2) is continuous on R.",
-      "answer": "The numerator is continuous by continuity of natural powers, sine and addition. The denominator is continuous and is strictly positive because x^2≥0. The quotient rule for continuity therefore applies at every real point.",
+      "statement": "自然数$n$について、実関数$f(x)=\\dfrac{x^n+\\sin x}{1+x^2}$が実数全体で連続であることを証明せよ。",
+      "question": "自然数$n$について、実関数$f(x)=\\dfrac{x^n+\\sin x}{1+x^2}$が実数全体で連続であることを証明せよ。",
+      "answer": "分子は連続なべき関数と正弦関数の和なので連続である。分母も連続であり、すべての実数$x$について$x^2\\ge0$だから$1+x^2>0$となる。したがって分母はどの点でも消えない。商の連続性の定理により、$f$は実数全体で連続である。",
       "assumptions": [
         "n is a natural number.",
         "The denominator is exactly 1+x^2."
@@ -345,9 +345,9 @@
       "family_id": "calculus",
       "source_path": "proofs/exponential_product_derivative.lean",
       "theorem_name": "requested_exponential_product_derivative",
-      "statement": "Compute and prove the derivative of x↦x exp(x) at an arbitrary real x.",
-      "question": "Compute and prove the derivative of x↦x exp(x) at an arbitrary real x.",
-      "answer": "The derivative is (x+1)exp(x). The product rule gives 1·exp(x)+x·exp(x), which factors as (x+1)exp(x).",
+      "statement": "実関数$f(x)=x e^x$について、任意の実数$x$での導関数を求め、積の微分公式で証明せよ。",
+      "question": "実関数$f(x)=x e^x$について、任意の実数$x$での導関数を求め、積の微分公式で証明せよ。",
+      "answer": "導関数は$f^{\\prime}(x)=(x+1)e^x$である。恒等関数の導関数は$1$、指数関数の導関数は$e^x$なので、積の微分公式から$f^{\\prime}(x)=1\\cdot e^x+x e^x$となる。これを因数分解すれば$(x+1)e^x$が得られる。",
       "assumptions": [
         "x is an arbitrary real number."
       ],
@@ -386,9 +386,9 @@
       "family_id": "calculus",
       "source_path": "proofs/reciprocal_derivative.lean",
       "theorem_name": "requested_reciprocal_derivative",
-      "statement": "At a real point x≠0, prove the derivative formula for y↦1/y.",
-      "question": "At a real point x≠0, prove the derivative formula for y↦1/y.",
-      "answer": "The derivative is -1/x^2. The inverse-function differentiation rule applies because x is nonzero; the Lean expression -(x^2)⁻¹ is exactly this value.",
+      "statement": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
+      "question": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
+      "answer": "$x\\ne0$なので逆数の微分公式を適用でき、微分係数は$-1/x^2$となる。Leanではこれを$-(x^2)^{-1}$と表す。非零という仮定は必要であり、逆数を$0$で$0$と定義しても、そこで連続になるわけではない。",
       "assumptions": [
         "x is a nonzero real number."
       ],
@@ -426,9 +426,9 @@
       "family_id": "calculus",
       "source_path": "proofs/absolute_value_not_differentiable.lean",
       "theorem_name": "requested_absolute_value_not_differentiable",
-      "statement": "Is the real absolute-value function differentiable at 0? Give a justified decision.",
-      "question": "Is the real absolute-value function differentiable at 0? Give a justified decision.",
-      "answer": "No. For positive h the difference quotient |h|/h is 1, while for negative h it is -1. The two one-sided limits cannot agree, so a derivative at zero cannot exist. The witness invokes the library theorem formally proving this obstruction.",
+      "statement": "実数上の絶対値関数$f(x)=|x|$は$0$で微分可能か。理由を示して判定せよ。",
+      "question": "実数上の絶対値関数$f(x)=|x|$は$0$で微分可能か。理由を示して判定せよ。",
+      "answer": "$0$では微分可能ではない。差商は$h>0$なら$|h|/h=1$、$h<0$なら$|h|/h=-1$となる。左右から近づけた極限が一致しないため、$0$での微分係数は存在しない。Leanでは、この事実を証明済みの定理を適用して微分不可能性を確認している。",
       "assumptions": [
         "The function is x↦|x| on R; the point is exactly zero."
       ],
@@ -466,9 +466,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/quadratic_not_injective.lean",
       "theorem_name": "requested_quadratic_not_injective",
-      "statement": "Is the map x↦x^2 injective on all of R? Prove your answer.",
-      "question": "Is the map x↦x^2 injective on all of R? Prove your answer.",
-      "answer": "No. The distinct inputs -1 and 1 both have image 1. Injectivity would force -1=1, contradicting exact real arithmetic.",
+      "statement": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
+      "question": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
+      "answer": "単射ではない。異なる2点$-1$と$1$について、どちらの値も$1$となる。もし単射なら、この値の等しさから$-1=1$が従ってしまい矛盾する。したがって、実数全体を定義域とする平方関数は単射ではない。",
       "assumptions": [
         "The domain is all of R, not just the nonnegative reals."
       ],
@@ -507,9 +507,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/linear_system_inconsistent.lean",
       "theorem_name": "requested_linear_system_inconsistent",
-      "statement": "Determine whether real numbers x,y can satisfy x+y=1 and 2x+2y=3 simultaneously.",
-      "question": "Determine whether real numbers x,y can satisfy x+y=1 and 2x+2y=3 simultaneously.",
-      "answer": "No solution exists. Doubling the first equation forces 2x+2y=2, which contradicts the second equation 2x+2y=3.",
+      "statement": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
+      "question": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
+      "answer": "そのような実数の組は存在しない。第1式を2倍すると$2x+2y=2$となる。一方、第2式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
       "assumptions": [
         "x,y are real numbers; both equations hold simultaneously."
       ],
@@ -548,9 +548,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/composite_injective_implies_first.lean",
       "theorem_name": "requested_composite_injective_implies_first",
-      "statement": "For maps f:A→B and g:B→C, prove that injectivity of g∘f forces f to be injective. This also applies to linear maps.",
-      "question": "For maps f:A→B and g:B→C, prove that injectivity of g∘f forces f to be injective. This also applies to linear maps.",
-      "answer": "Suppose f(x)=f(y). Applying g yields (g∘f)(x)=(g∘f)(y). Injectivity of the composite therefore gives x=y.",
+      "statement": "写像$f:A\\to B$、$g:B\\to C$について、合成写像$g\\circ f$が単射なら$f$も単射であることを証明せよ。",
+      "question": "写像$f:A\\to B$、$g:B\\to C$について、合成写像$g\\circ f$が単射なら$f$も単射であることを証明せよ。",
+      "answer": "$f(x)=f(y)$と仮定する。両辺に$g$を適用すると、$(g\\circ f)(x)=(g\\circ f)(y)$となる。合成写像は単射なので$x=y$である。これは$f$が単射であることの定義そのものだから、結論が従う。",
       "assumptions": [
         "f and g are composable functions.",
         "g∘f is injective."
@@ -590,9 +590,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/rank_nullity.lean",
       "theorem_name": "requested_rank_nullity",
-      "statement": "For a linear map f:V→W with V finite-dimensional over a division ring K, prove dim(range f)+dim(ker f)=dim V.",
-      "question": "For a linear map f:V→W with V finite-dimensional over a division ring K, prove dim(range f)+dim(ker f)=dim V.",
-      "answer": "This is the rank-nullity theorem. A basis of the kernel extends to a basis of V; the images of the added basis vectors form a basis of the range. Counting those two disjoint parts gives the stated equality. The Lean witness uses the formal finite-dimensional rank-nullity theorem.",
+      "statement": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+      "question": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+      "answer": "これは有限次元の次元定理である。核の基底を$V$の基底に拡張すると、追加した基底ベクトルの像が像空間の基底になる。核の基底と追加部分の個数を合わせれば$V$の次元になるので、求める等式が従う。Leanでは有限次元の線形写像に対する次元定理を適用している。",
       "assumptions": [
         "K is a division ring.",
         "V,W are K-modules; V is finite-dimensional.",
@@ -632,9 +632,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/projection_not_injective.lean",
       "theorem_name": "requested_projection_not_injective",
-      "statement": "Decide whether the coordinate projection R²→R, (x,y)↦x, is injective.",
-      "question": "Decide whether the coordinate projection R²→R, (x,y)↦x, is injective.",
-      "answer": "It is not injective: (0,0) and (0,1) have the same first coordinate but are distinct. Applying a hypothetical injectivity proof and then the second-coordinate projection would force 0=1.",
+      "statement": "第1座標への射影$p:\\mathbb{R}^2\\to\\mathbb{R}$、$p(x,y)=x$は単射か。理由を示して判定せよ。",
+      "question": "第1座標への射影$p:\\mathbb{R}^2\\to\\mathbb{R}$、$p(x,y)=x$は単射か。理由を示して判定せよ。",
+      "answer": "単射ではない。$(0,0)$と$(0,1)$の第1座標はどちらも$0$だが、この2点は異なる。もし射影が単射なら2点が等しくなり、第2座標を比べると$0=1$となって矛盾する。よって、この射影は単射ではない。",
       "assumptions": [
         "The domain is the entire product R×R."
       ],
@@ -673,9 +673,9 @@
       "family_id": "linear-algebra",
       "source_path": "proofs/product_determinant_nonzero_iff.lean",
       "theorem_name": "requested_product_determinant_nonzero_iff",
-      "statement": "For two real square matrices A,B of the same finite size, prove det(AB)≠0 iff det(A)≠0 and det(B)≠0.",
-      "question": "For two real square matrices A,B of the same finite size, prove det(AB)≠0 iff det(A)≠0 and det(B)≠0.",
-      "answer": "Determinants multiply: det(AB)=det(A)det(B). Since R has no zero divisors, that product is nonzero exactly when both factors are nonzero.",
+      "statement": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
+      "question": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
+      "answer": "行列式の乗法性から$\\det(AB)=\\det A\\det B$である。実数には零因子がないので、この積が非零であることと、2つの因子がともに非零であることは同値になる。したがって、求める同値関係が従う。",
       "assumptions": [
         "A,B are square matrices indexed by the same finite decidable type.",
         "Entries lie in R."
@@ -714,9 +714,9 @@
       "family_id": "real-analysis",
       "source_path": "proofs/continuous_endpoint_sign_change_has_root.lean",
       "theorem_name": "requested_continuous_endpoint_sign_change_has_root",
-      "statement": "Let a≤b and let f be real-valued and continuous on [a,b], with f(a)<0<f(b). Prove that f has a zero in [a,b].",
-      "question": "Let a≤b and let f be real-valued and continuous on [a,b], with f(a)<0<f(b). Prove that f has a zero in [a,b].",
-      "answer": "The endpoint inequalities put 0 between f(a) and f(b). The intermediate value theorem supplies x in [a,b] with f(x)=0. This proves existence, not uniqueness.",
+      "statement": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+      "question": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+      "answer": "$0$は両端での値$f(a)$と$f(b)$の間にある。閉区間上の連続性を仮定しているので、中間値の定理を適用すると、$[a,b]$内に$f(x)=0$となる点$x$が得られる。この議論で示すのは零点の存在であり、一意性までは主張していない。",
       "assumptions": [
         "a,b are real with a≤b.",
         "f is continuous on the closed interval.",
@@ -756,9 +756,9 @@
       "family_id": "calculus",
       "source_path": "proofs/sum_derivative.lean",
       "theorem_name": "requested_sum_derivative",
-      "statement": "If real functions f,g have derivatives f′,g′ at a, prove that x↦f(x)+g(x) has derivative f′+g′ at a.",
-      "question": "If real functions f,g have derivatives f′,g′ at a, prove that x↦f(x)+g(x) has derivative f′+g′ at a.",
-      "answer": "Subtract the two point values in the difference quotient, split the sum, and use the limits defining the two derivatives. Formally this is the derivative addition rule with exactly the two stated differentiability hypotheses.",
+      "statement": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
+      "question": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
+      "answer": "和の差商は、それぞれの関数の差商の和に分けられる。仮定から2つの差商はそれぞれ$f^{\\prime}$と$g^{\\prime}$に収束するので、極限の和の法則により和の差商は$f^{\\prime}+g^{\\prime}$に収束する。Leanでは、2つの微分可能性の仮定に和の微分公式を適用している。",
       "assumptions": [
         "HasDerivAt f f′ a.",
         "HasDerivAt g g′ a."
@@ -797,9 +797,9 @@
       "family_id": "number-theory",
       "source_path": "proofs/tan_one_degree_irrational.lean",
       "theorem_name": "requested_tan_one_degree_irrational",
-      "statement": "Prove that tan(1°)=tan(π/180) is irrational. Angles inside Lean trigonometric functions are measured in radians.",
-      "question": "Prove that tan(1°)=tan(π/180) is irrational. Angles inside Lean trigonometric functions are measured in radians.",
-      "answer": "Assume tan(π/180)=q is rational. Its cosine is nonzero because π/180 lies strictly between -π/2 and π/2. The identities sin²θ+cos²θ=1 and cos(2θ)=2cos²θ-1 then give cos(2θ)=(1-q²)/(1+q²), a rational number. Niven’s theorem says that a rational multiple rπ in [0,π] with rational cosine has r in {0,1/3,1/2,2/3,1}. Here 2θ=(1/90)π, and 1/90 is none of these numbers, a contradiction.",
+      "statement": "$\\tan1^\\circ=\\tan(\\pi/180)$は有理数か。理由も証明せよ。Leanの三角関数では角度をラジアンで表す。",
+      "question": "$\\tan1^\\circ=\\tan(\\pi/180)$は有理数か。理由も証明せよ。Leanの三角関数では角度をラジアンで表す。",
+      "answer": "無理数である。$\\theta=\\pi/180$とおき、$\\tan\\theta=q$となる有理数$q$があると仮定する。$-\\pi/2<\\theta<\\pi/2$だから$\\cos\\theta\\ne0$である。三角関数の恒等式から$\\cos(2\\theta)=(1-q^2)/(1+q^2)$となり、これも有理数になる。Nivenの定理によると、$0\\le r\\le1$を満たす有理数$r$について$\\cos(r\\pi)$が有理数なら、$r$は$0,1/3,1/2,2/3,1$のいずれかである。ところが$2\\theta=(1/90)\\pi$であり、$1/90$はどの値とも異なる。したがって仮定が誤りで、$\\tan1^\\circ$は無理数である。",
       "assumptions": [
         "The angle is exactly π/180 radians.",
         "Irrational means not equal to the real cast of any rational number."
