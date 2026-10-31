@@ -60,6 +60,51 @@ MAX_NODES = 4096
 MAX_DEPTH = 64
 MAX_TEXT = 20_000
 
+_LINEAR_V2_GUIDANCE = """
+Exact typed-linear-algebra-v2 declaration sorts (cd la2):
+Field and Nat are atomic: use kind="symbol", never an application with [].
+FiniteDimensionalSpace(K), Scalar(K), Vector(K,V), Subspace(K,V),
+LinearMap(K,V,W), VectorFamily(K,V,n), ScalarFamily(K,n), Basis(K,V,n)
+are dependent sorts: use kind="application" with the shown ordered arguments.
+K is an earlier bound Field; V and W are earlier FiniteDimensionalSpace(K)
+carriers. n is an earlier bound Nat when used as a family/basis index.
+FiniteDimensionalSpace(K) already includes AddCommGroup, Module K and
+FiniteDimensional K; do not add or omit assumptions elsewhere to change the target.
+In the signatures below, every explicit carrier/index is REQUIRED, including
+when Lean could infer it. Space variables and subspace values are distinct.
+All listed value operators are cd la2 with the exact profile cdbase:
+dim(K,V) -> Nat; sub_dim(K,V,S) -> Nat for S:Subspace(K,V).
+sub_top(K,V), sub_bot(K,V) -> Subspace(K,V).
+sub_sup(K,V,S,T), sub_inf(K,V,S,T) -> Subspace(K,V).
+sub_le(K,V,S,T), sub_lt(K,V,S,T) -> Prop.
+kernel(K,V,W,f) -> Subspace(K,V); range(K,V,W,f) -> Subspace(K,W),
+where f:LinearMap(K,V,W). Neither kernel(f) nor range(f) is accepted.
+The dimension of a subspace uses sub_dim with its AMBIENT space: for example,
+sub_dim(K,W,range(K,V,W,f)); dim(K,range(...)) is invalid because range is
+a subspace value, not a declared finite-dimensional carrier.
+injective(K,V,W,f), surjective(K,V,W,f) -> Prop.
+linear_comp(K,V,W,U,f,g) -> LinearMap(K,V,U), where f:V->W and g:W->U.
+linear_sub(K,V,W,f,g), linear_smul(K,V,W,a,f) -> LinearMap(K,V,W), a:Scalar(K).
+linear_id(K,V) -> LinearMap(K,V,V).
+det(K,V,f) -> Scalar(K); eigenspace(K,V,f,a) -> Subspace(K,V),
+where f:LinearMap(K,V,V) and a:Scalar(K).
+family_span(K,V,n,v), independent(K,V,n,v) take v:VectorFamily(K,V,n)
+and return Subspace(K,V), Prop respectively.
+basis_vectors(K,V,n,b) -> VectorFamily(K,V,n), b:Basis(K,V,n).
+scalar_family_injective(K,n,a) -> Prop, a:ScalarFamily(K,n).
+eigenfamily(K,V,n,f,a,v) -> Prop; has_eigenbasis(K,V,n,f,a) -> Prop,
+where f:LinearMap(K,V,V), a:ScalarFamily(K,n), v:VectorFamily(K,V,n).
+scalar_zero(K), scalar_mul(K,a,b), scalar_pow(K,a,m) -> Scalar(K),
+where a,b:Scalar(K), m:Nat. A bare nonnegative integer node has Nat sort,
+never Scalar(K). No other scalar literal/cast constructor is available here.
+Standard http://www.openmath.org/cd operators: logic1 and/or/implies each take
+exactly two Props, not one; logic1 not takes one Prop. relation1 eq/neq take
+two values of the same sort, excluding carrier/Prop equality. relation1 leq/lt
+and arith1 plus take two Nats; plus returns Nat and the relations return Prop.
+typed1 forall/exists are binder nodes with Prop bodies; typed1 type is only the
+declaration type_key. No sort constructor is a term or a zero-argument value.
+"""
+
 
 def runtime_profile_specs() -> dict[str, local._ProfileSpec]:
     """Keep the existing sixteen profiles and explicitly add the reviewed fourteen."""
@@ -154,16 +199,22 @@ def response_schema(profile_id: str) -> dict[str, Any]:
 
 def guidance(profile_id: str) -> str:
     _spec(profile_id)
-    return (
+    common = (
         "Use the closed expansion expression schema, not XML. An application contains "
         "an exact registry operator and its ordered arguments array. A symbol has an "
         "operator; a variable has a name; an integer has its original decimal value. "
         "A binder has an operator, ordered declarations(name,type_key,sort), and body. "
         "A sort is an expression tree, including all explicit dependent carrier arguments. "
+        "Atomic sorts are kind=symbol, NOT kind=application with an empty arguments array. "
+        "A dependent sort is kind=application with every required carrier in signature order. "
+        "Use an empty application only for a genuine listed nullary VALUE operator, never "
+        "as a generic spelling of a sort. Bind carriers before their dependent variables; "
+        "each declaration type_key is the selected registry's exact type symbol. "
         "Preserve carrier names, scope, quantifier order, premises and every literal. "
         "Use only the selected registry: no casts, dimensions, premises or missing terms "
         "may be inferred. The original profile validator checks the complete result."
     )
+    return common + ("\n" + _LINEAR_V2_GUIDANCE if profile_id == "typed-linear-algebra-v2" else "")
 
 
 def to_openmath_xml(raw: str, profile_id: str) -> str:

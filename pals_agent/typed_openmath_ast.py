@@ -6,6 +6,7 @@ import json
 import xml.etree.ElementTree as ET
 from typing import Any
 
+from pals_agent.openmath import MathXMLValidationError
 from pals_agent.typed_expression_signatures import signatures, sort_signatures
 
 SCHEMA_VERSION = "pals.typed-openmath-expression.v5"
@@ -249,6 +250,13 @@ def to_openmath_xml(raw: str, profile_id: str) -> str:
     if profile_id in expansion.EXPANSION_PROFILES:
         try:
             return expansion.to_openmath_xml(raw, profile_id)
+        except MathXMLValidationError as error:
+            # Only the installed local validator's bounded diagnostic is eligible.
+            # Generic/provider exception text stays behind the closed boundary.
+            detail = str(error).encode("utf-8")[:384].decode("utf-8", errors="ignore")
+            raise TypedOpenMathASTError(
+                "Expansion selected-profile validation failed: " + detail
+            ) from None
         except (ValueError, UnicodeError, RecursionError):
             raise TypedOpenMathASTError(
                 "Expansion expression invalid for selected profile"
