@@ -1,0 +1,840 @@
+{
+  "schema_version": "pals.mathematical-breadth-corpus.v1",
+  "version": "1.0.0",
+  "toolchain": {
+    "lean_toolchain": "leanprover/lean4:v4.32.0-rc1",
+    "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+  },
+  "cases": [
+    {
+      "id": "requested.natural_power_continuous",
+      "family_id": "real-analysis",
+      "source_path": "proofs/natural_power_continuous.lean",
+      "theorem_name": "requested_natural_power_continuous",
+      "statement": "For every natural number n, prove that the real function x ↦ x^n is continuous on all of R.",
+      "question": "For every natural number n, prove that the real function x ↦ x^n is continuous on all of R.",
+      "answer": "Yes, including n=0. For n=0 the function is the constant 1. If x^n is continuous, multiplication by the continuous identity function makes x^(n+1) continuous. Induction proves the assertion for every natural exponent.",
+      "assumptions": [
+        "n is a natural number; domain and codomain are R."
+      ],
+      "proof_outline": [
+        "Establish continuity of the constant zeroth power.",
+        "Use the product rule for continuity and x^(n+1)=x^n*x.",
+        "Conclude by induction on n."
+      ],
+      "hard_negative": {
+        "statement": "All integer powers are continuous at zero.",
+        "counterexample": "The negative power x↦x^(-1) is not continuous at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Algebra/Monoid.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.right_limit_and_discontinuity",
+      "family_id": "real-analysis",
+      "source_path": "proofs/right_limit_and_discontinuity.lean",
+      "theorem_name": "requested_right_limit_and_discontinuity",
+      "statement": "Let f:R→R satisfy f(0)=1 and f(x)=0 whenever x>0. Determine its right limit at 0, and decide whether f is continuous at 0. Values for x<0 are arbitrary.",
+      "question": "Let f:R→R satisfy f(0)=1 and f(x)=0 whenever x>0. Determine its right limit at 0, and decide whether f is continuous at 0. Values for x<0 are arbitrary.",
+      "answer": "The right limit is 0, and f is not continuous at 0. On the entire positive half-line the function equals the constant 0, so it has the same right-hand limit. Continuity at 0 would also give right-hand limit f(0)=1. Uniqueness of limits in R would force 0=1, a contradiction.",
+      "assumptions": [
+        "f is real-valued on R.",
+        "f(0)=1.",
+        "For every positive x, f(x)=0; no negative-side assumption."
+      ],
+      "proof_outline": [
+        "Show eventual equality with the constant zero function in the right-neighborhood filter.",
+        "Transport the constant-function limit.",
+        "Assume continuity and restrict its limit to the right.",
+        "Use uniqueness of limits to contradict 0≠1."
+      ],
+      "hard_negative": {
+        "statement": "The right limit must equal the assigned point value.",
+        "counterexample": "The stated function has right limit 0 while its value at zero is 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Defs/Filter.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.cubic_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/cubic_derivative.lean",
+      "theorem_name": "requested_cubic_derivative",
+      "statement": "For every real x, compute and prove the derivative of f(x)=x^3-3x.",
+      "question": "For every real x, compute and prove the derivative of f(x)=x^3-3x.",
+      "answer": "The derivative is f′(x)=3x^2-3 at every real x. Apply the power rule to x^3, differentiate 3x by the constant-multiple rule, and subtract the resulting derivatives.",
+      "assumptions": [
+        "x is an arbitrary real number."
+      ],
+      "proof_outline": [
+        "Differentiate the identity function and its third power.",
+        "Differentiate the constant multiple 3x.",
+        "Apply the subtraction rule and simplify."
+      ],
+      "hard_negative": {
+        "statement": "A positive leading coefficient makes this function increasing everywhere.",
+        "counterexample": "At x=0 its derivative is -3, so it is locally decreasing there."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Pow.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.pi_gt_305",
+      "family_id": "real-analysis",
+      "source_path": "proofs/pi_gt_305.lean",
+      "theorem_name": "requested_pi_gt_305",
+      "statement": "Prove the exact strict inequality π>3.05, without treating a decimal approximation as a proof.",
+      "question": "Prove the exact strict inequality π>3.05, without treating a decimal approximation as a proof.",
+      "answer": "The certified library inequality 3.14<π is stronger. Since 3.05<3.14 by exact rational arithmetic, transitivity gives 3.05<π. The decimals here denote exact rationals, not floating-point estimates.",
+      "assumptions": [
+        "π is Real.pi; 3.05 and 3.14 are exact real rational numerals."
+      ],
+      "proof_outline": [
+        "Use the formally proved lower bound 3.14<π.",
+        "Compare 3.05 and 3.14 exactly.",
+        "Conclude by transitivity."
+      ],
+      "hard_negative": {
+        "statement": "The same argument proves π>3.2.",
+        "counterexample": "The certified upper bound π<3.15 rules out π>3.2."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Real/Pi/Bounds.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.linear_injective_iff_zero_kernel",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_injective_iff_zero_kernel.lean",
+      "theorem_name": "requested_linear_injective_iff_zero_kernel",
+      "statement": "For a linear map f:V→W over a field K, prove that f is injective exactly when f(x)=0 implies x=0 for every x.",
+      "question": "For a linear map f:V→W over a field K, prove that f is injective exactly when f(x)=0 implies x=0 for every x.",
+      "answer": "If f is injective, compare f(x)=0 with f(0)=0 to get x=0. Conversely, if the zero fiber is trivial and f(x)=f(y), linearity gives f(x-y)=0. The hypothesis forces x-y=0, hence x=y.",
+      "assumptions": [
+        "K is a field; V and W are K-vector spaces.",
+        "f is K-linear."
+      ],
+      "proof_outline": [
+        "Use linearity to identify f(0)=0.",
+        "Apply injectivity for the forward implication.",
+        "For the converse apply the zero-fiber hypothesis to x-y."
+      ],
+      "hard_negative": {
+        "statement": "A function with a unique zero must be injective even without linearity.",
+        "counterexample": "The function x↦x^2 on R has only zero as a zero, but takes the same value at -1 and 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Algebra/Module/LinearMap/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.linear_system_unique_solution",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_system_unique_solution.lean",
+      "theorem_name": "requested_linear_system_unique_solution",
+      "statement": "Solve over R the system 3x+2y=7 and x-y=-1, and prove that your solution is the only one.",
+      "question": "Solve over R the system 3x+2y=7 and x-y=-1, and prove that your solution is the only one.",
+      "answer": "The unique solution is x=1,y=2. The second equation gives y=x+1. Substituting into the first yields 5x+2=7, hence x=1 and y=2. Direct substitution verifies both equations, proving the equivalence with this single pair.",
+      "assumptions": [
+        "x,y are real numbers.",
+        "Both equations are required."
+      ],
+      "proof_outline": [
+        "Eliminate y using the second equation.",
+        "Derive x=1 and y=2 by exact linear arithmetic.",
+        "Verify the converse by substitution."
+      ],
+      "hard_negative": {
+        "statement": "The first equation alone has the same unique solution.",
+        "counterexample": "For example x=7/3,y=0 satisfies the first equation and differs from (1,2)."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Tactic/Linarith/Frontend.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.determinant_nonzero_decision",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/determinant_nonzero_decision.lean",
+      "theorem_name": "requested_determinant_nonzero_decision",
+      "statement": "Decide whether the real matrix [[1,2],[3,5]] has zero determinant, and justify the decision.",
+      "question": "Decide whether the real matrix [[1,2],[3,5]] has zero determinant, and justify the decision.",
+      "answer": "Its determinant is 1·5-2·3=-1, so it is nonzero. The Lean witness applies the exact 2×2 determinant formula and proves that the resulting real number is not zero.",
+      "assumptions": [
+        "The matrix is 2×2 with entries in R."
+      ],
+      "proof_outline": [
+        "Use the 2×2 determinant formula.",
+        "Evaluate with exact arithmetic.",
+        "Conclude that -1 is nonzero."
+      ],
+      "hard_negative": {
+        "statement": "Every matrix with positive entries has nonzero determinant.",
+        "counterexample": "The matrix [[1,2],[2,4]] has positive entries and determinant zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.rational_power_continuous",
+      "family_id": "real-analysis",
+      "source_path": "proofs/rational_power_continuous.lean",
+      "theorem_name": "requested_rational_power_continuous",
+      "statement": "For a natural number n, prove that x ↦ (x^n+sin x)/(1+x^2) is continuous on R.",
+      "question": "For a natural number n, prove that x ↦ (x^n+sin x)/(1+x^2) is continuous on R.",
+      "answer": "The numerator is continuous by continuity of natural powers, sine and addition. The denominator is continuous and is strictly positive because x^2≥0. The quotient rule for continuity therefore applies at every real point.",
+      "assumptions": [
+        "n is a natural number.",
+        "The denominator is exactly 1+x^2."
+      ],
+      "proof_outline": [
+        "Prove continuity of the numerator and denominator.",
+        "Show 1+x^2>0 for every real x.",
+        "Apply continuity of division with nonvanishing denominator."
+      ],
+      "hard_negative": {
+        "statement": "Any quotient of continuous real functions is continuous everywhere.",
+        "counterexample": "The function 1/x is not continuous at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Algebra/Field.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.exponential_product_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/exponential_product_derivative.lean",
+      "theorem_name": "requested_exponential_product_derivative",
+      "statement": "Compute and prove the derivative of x↦x exp(x) at an arbitrary real x.",
+      "question": "Compute and prove the derivative of x↦x exp(x) at an arbitrary real x.",
+      "answer": "The derivative is (x+1)exp(x). The product rule gives 1·exp(x)+x·exp(x), which factors as (x+1)exp(x).",
+      "assumptions": [
+        "x is an arbitrary real number."
+      ],
+      "proof_outline": [
+        "Differentiate the identity and exponential functions.",
+        "Apply the product rule.",
+        "Factor the resulting expression."
+      ],
+      "hard_negative": {
+        "statement": "The derivative is merely x exp(x).",
+        "counterexample": "At x=0 that expression is 0, whereas the derivative is 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/SpecialFunctions/ExpDeriv.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.reciprocal_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/reciprocal_derivative.lean",
+      "theorem_name": "requested_reciprocal_derivative",
+      "statement": "At a real point x≠0, prove the derivative formula for y↦1/y.",
+      "question": "At a real point x≠0, prove the derivative formula for y↦1/y.",
+      "answer": "The derivative is -1/x^2. The inverse-function differentiation rule applies because x is nonzero; the Lean expression -(x^2)⁻¹ is exactly this value.",
+      "assumptions": [
+        "x is a nonzero real number."
+      ],
+      "proof_outline": [
+        "Check the nonzero hypothesis required by the reciprocal rule.",
+        "Apply the derivative theorem for inversion."
+      ],
+      "hard_negative": {
+        "statement": "The same derivative theorem applies at x=0.",
+        "counterexample": "The totalized inverse function is not continuous, hence not differentiable, at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Inv.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.absolute_value_not_differentiable",
+      "family_id": "calculus",
+      "source_path": "proofs/absolute_value_not_differentiable.lean",
+      "theorem_name": "requested_absolute_value_not_differentiable",
+      "statement": "Is the real absolute-value function differentiable at 0? Give a justified decision.",
+      "question": "Is the real absolute-value function differentiable at 0? Give a justified decision.",
+      "answer": "No. For positive h the difference quotient |h|/h is 1, while for negative h it is -1. The two one-sided limits cannot agree, so a derivative at zero cannot exist. The witness invokes the library theorem formally proving this obstruction.",
+      "assumptions": [
+        "The function is x↦|x| on R; the point is exactly zero."
+      ],
+      "proof_outline": [
+        "Compare the two one-sided difference quotients.",
+        "Use the formal non-differentiability theorem at zero."
+      ],
+      "hard_negative": {
+        "statement": "Absolute value is nowhere differentiable.",
+        "counterexample": "At every positive point it agrees locally with the identity and has derivative 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Abs.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.quadratic_not_injective",
+      "family_id": "real-analysis",
+      "source_path": "proofs/quadratic_not_injective.lean",
+      "theorem_name": "requested_quadratic_not_injective",
+      "statement": "Is the map x↦x^2 injective on all of R? Prove your answer.",
+      "question": "Is the map x↦x^2 injective on all of R? Prove your answer.",
+      "answer": "No. The distinct inputs -1 and 1 both have image 1. Injectivity would force -1=1, contradicting exact real arithmetic.",
+      "assumptions": [
+        "The domain is all of R, not just the nonnegative reals."
+      ],
+      "proof_outline": [
+        "Evaluate the map at -1 and 1.",
+        "Apply hypothetical injectivity.",
+        "Derive a contradiction from distinctness."
+      ],
+      "hard_negative": {
+        "statement": "Squaring is noninjective on every subset of R.",
+        "counterexample": "On the nonnegative reals it is strictly increasing and injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Data/Real/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.linear_system_inconsistent",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_system_inconsistent.lean",
+      "theorem_name": "requested_linear_system_inconsistent",
+      "statement": "Determine whether real numbers x,y can satisfy x+y=1 and 2x+2y=3 simultaneously.",
+      "question": "Determine whether real numbers x,y can satisfy x+y=1 and 2x+2y=3 simultaneously.",
+      "answer": "No solution exists. Doubling the first equation forces 2x+2y=2, which contradicts the second equation 2x+2y=3.",
+      "assumptions": [
+        "x,y are real numbers; both equations hold simultaneously."
+      ],
+      "proof_outline": [
+        "Multiply the first equation by 2.",
+        "Compare with the second equation.",
+        "Contradict 2≠3."
+      ],
+      "hard_negative": {
+        "statement": "Two linear equations in two variables always have a solution.",
+        "counterexample": "This very system is inconsistent because its left sides are dependent but right sides are incompatible."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Tactic/Linarith/Frontend.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.composite_injective_implies_first",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/composite_injective_implies_first.lean",
+      "theorem_name": "requested_composite_injective_implies_first",
+      "statement": "For maps f:A→B and g:B→C, prove that injectivity of g∘f forces f to be injective. This also applies to linear maps.",
+      "question": "For maps f:A→B and g:B→C, prove that injectivity of g∘f forces f to be injective. This also applies to linear maps.",
+      "answer": "Suppose f(x)=f(y). Applying g yields (g∘f)(x)=(g∘f)(y). Injectivity of the composite therefore gives x=y.",
+      "assumptions": [
+        "f and g are composable functions.",
+        "g∘f is injective."
+      ],
+      "proof_outline": [
+        "Start from equal f-images.",
+        "Apply g to obtain equal composite-images.",
+        "Use the assumed composite injectivity."
+      ],
+      "hard_negative": {
+        "statement": "Injectivity of g∘f also forces g to be injective on all of B.",
+        "counterexample": "Let A be a singleton, B have two points, f choose one point, and g be constant. The composite is injective on A but g is not injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Logic/Function/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.rank_nullity",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/rank_nullity.lean",
+      "theorem_name": "requested_rank_nullity",
+      "statement": "For a linear map f:V→W with V finite-dimensional over a division ring K, prove dim(range f)+dim(ker f)=dim V.",
+      "question": "For a linear map f:V→W with V finite-dimensional over a division ring K, prove dim(range f)+dim(ker f)=dim V.",
+      "answer": "This is the rank-nullity theorem. A basis of the kernel extends to a basis of V; the images of the added basis vectors form a basis of the range. Counting those two disjoint parts gives the stated equality. The Lean witness uses the formal finite-dimensional rank-nullity theorem.",
+      "assumptions": [
+        "K is a division ring.",
+        "V,W are K-modules; V is finite-dimensional.",
+        "f is K-linear."
+      ],
+      "proof_outline": [
+        "Apply finite-dimensional rank-nullity to f.",
+        "Identify the image and kernel dimensions in the requested order."
+      ],
+      "hard_negative": {
+        "statement": "The same finite-natural-dimension formula can be used without finite-dimensionality.",
+        "counterexample": "Evaluation at zero from real polynomials to R has one-dimensional image and infinite-dimensional kernel; finrank of an infinite-dimensional space is 0 in Lean, so the stated natural-number formula fails."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/FiniteDimensional/Lemmas.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.projection_not_injective",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/projection_not_injective.lean",
+      "theorem_name": "requested_projection_not_injective",
+      "statement": "Decide whether the coordinate projection R²→R, (x,y)↦x, is injective.",
+      "question": "Decide whether the coordinate projection R²→R, (x,y)↦x, is injective.",
+      "answer": "It is not injective: (0,0) and (0,1) have the same first coordinate but are distinct. Applying a hypothetical injectivity proof and then the second-coordinate projection would force 0=1.",
+      "assumptions": [
+        "The domain is the entire product R×R."
+      ],
+      "proof_outline": [
+        "Compare the images of (0,0) and (0,1).",
+        "Use hypothetical injectivity to equate the pairs.",
+        "Project to the second coordinate for a contradiction."
+      ],
+      "hard_negative": {
+        "statement": "The coordinate projection is noninjective on every subspace.",
+        "counterexample": "Its restriction to the x-axis is injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Prod.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.product_determinant_nonzero_iff",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/product_determinant_nonzero_iff.lean",
+      "theorem_name": "requested_product_determinant_nonzero_iff",
+      "statement": "For two real square matrices A,B of the same finite size, prove det(AB)≠0 iff det(A)≠0 and det(B)≠0.",
+      "question": "For two real square matrices A,B of the same finite size, prove det(AB)≠0 iff det(A)≠0 and det(B)≠0.",
+      "answer": "Determinants multiply: det(AB)=det(A)det(B). Since R has no zero divisors, that product is nonzero exactly when both factors are nonzero.",
+      "assumptions": [
+        "A,B are square matrices indexed by the same finite decidable type.",
+        "Entries lie in R."
+      ],
+      "proof_outline": [
+        "Rewrite with multiplicativity of determinant.",
+        "Use the nonzero-product equivalence in R."
+      ],
+      "hard_negative": {
+        "statement": "The statement holds over every commutative ring.",
+        "counterexample": "Over Z/6Z the nonzero 1×1 matrices [2] and [3] multiply to [0]."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.continuous_endpoint_sign_change_has_root",
+      "family_id": "real-analysis",
+      "source_path": "proofs/continuous_endpoint_sign_change_has_root.lean",
+      "theorem_name": "requested_continuous_endpoint_sign_change_has_root",
+      "statement": "Let a≤b and let f be real-valued and continuous on [a,b], with f(a)<0<f(b). Prove that f has a zero in [a,b].",
+      "question": "Let a≤b and let f be real-valued and continuous on [a,b], with f(a)<0<f(b). Prove that f has a zero in [a,b].",
+      "answer": "The endpoint inequalities put 0 between f(a) and f(b). The intermediate value theorem supplies x in [a,b] with f(x)=0. This proves existence, not uniqueness.",
+      "assumptions": [
+        "a,b are real with a≤b.",
+        "f is continuous on the closed interval.",
+        "f(a)<0 and f(b)>0."
+      ],
+      "proof_outline": [
+        "Place zero in the interval between endpoint values.",
+        "Apply the interval intermediate value theorem."
+      ],
+      "hard_negative": {
+        "statement": "The zero is automatically unique.",
+        "counterexample": "The continuous function x^3-x on [-2,2] has zeros -1,0,1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Order/IntermediateValue.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.sum_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/sum_derivative.lean",
+      "theorem_name": "requested_sum_derivative",
+      "statement": "If real functions f,g have derivatives f′,g′ at a, prove that x↦f(x)+g(x) has derivative f′+g′ at a.",
+      "question": "If real functions f,g have derivatives f′,g′ at a, prove that x↦f(x)+g(x) has derivative f′+g′ at a.",
+      "answer": "Subtract the two point values in the difference quotient, split the sum, and use the limits defining the two derivatives. Formally this is the derivative addition rule with exactly the two stated differentiability hypotheses.",
+      "assumptions": [
+        "HasDerivAt f f′ a.",
+        "HasDerivAt g g′ a."
+      ],
+      "proof_outline": [
+        "Apply the derivative addition rule.",
+        "Keep the common point and add derivative values."
+      ],
+      "hard_negative": {
+        "statement": "Differentiability of f+g forces each summand to be differentiable.",
+        "counterexample": "Take f=|x| and g=-|x| at zero: their sum is constant and differentiable while neither summand is differentiable."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Add.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    },
+    {
+      "id": "requested.tan_one_degree_irrational",
+      "family_id": "number-theory",
+      "source_path": "proofs/tan_one_degree_irrational.lean",
+      "theorem_name": "requested_tan_one_degree_irrational",
+      "statement": "Prove that tan(1°)=tan(π/180) is irrational. Angles inside Lean trigonometric functions are measured in radians.",
+      "question": "Prove that tan(1°)=tan(π/180) is irrational. Angles inside Lean trigonometric functions are measured in radians.",
+      "answer": "Assume tan(π/180)=q is rational. Its cosine is nonzero because π/180 lies strictly between -π/2 and π/2. The identities sin²θ+cos²θ=1 and cos(2θ)=2cos²θ-1 then give cos(2θ)=(1-q²)/(1+q²), a rational number. Niven’s theorem says that a rational multiple rπ in [0,π] with rational cosine has r in {0,1/3,1/2,2/3,1}. Here 2θ=(1/90)π, and 1/90 is none of these numbers, a contradiction.",
+      "assumptions": [
+        "The angle is exactly π/180 radians.",
+        "Irrational means not equal to the real cast of any rational number."
+      ],
+      "proof_outline": [
+        "Assume a rational tangent value q.",
+        "Establish a nonzero cosine and derive the double-angle rational cosine.",
+        "Apply the formally proved Niven angle classification with r=1/90.",
+        "Discharge all possible rational-angle values by exact arithmetic."
+      ],
+      "hard_negative": {
+        "statement": "Every rational-degree angle has irrational tangent.",
+        "counterexample": "tan(45°)=1 is rational."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/NumberTheory/Niven.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive"
+    }
+  ],
+  "scope": "Twenty requested question/answer candidates with independent single-theorem Lean files. Actual local compiler evidence is required; this corpus is not a signed runtime seed or DB publication."
+}
