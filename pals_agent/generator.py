@@ -593,11 +593,14 @@ def _lean_import_guidance() -> str:
     return (
         "Start with Mathlib imports. Prefer the specific modules needed for the theorem "
         "and proof, including individual tactic modules, instead of loading the entire "
-        "library with `import Mathlib`. For example, natural gcd/divisibility uses "
-        "`import Mathlib.Data.Nat.GCD.Basic`; add other required modules explicitly. "
-        "Keep every theorem assumption and substantive Draft proof step. The complete "
-        "`import Mathlib` remains available when the proof needs it, but avoid it when "
-        "focused imports suffice. A compiler deadline failure requires simplifying the "
+        "library with `import Mathlib`. Verify the owning modules in the active pinned "
+        "Mathlib when source information is available; do not infer a module path from "
+        "a declaration name or assume a nearby module exports it. Unknown identifiers "
+        "can mean missing imports, not nonexistent declarations. If the required module "
+        "cannot be established, try `import Mathlib` once and recompile before changing "
+        "an otherwise valid proof body. Keep every theorem assumption and substantive "
+        "Draft proof step. Prefer focused imports once their declarations are verified. "
+        "A compiler deadline failure requires simplifying the "
         "imports and expensive tactic search, not repeating the same code."
     )
 
@@ -1050,9 +1053,19 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
     unknown_identifier_guidance = ""
     if unknown_identifiers:
         unknown_identifier_guidance = (
-            "\nIdentifiers rejected by Lean and forbidden in the next candidate unless "
-            "replaced by a verified fully-qualified declaration:\n"
+            "\nIdentifiers unresolved in the failed import environment:\n"
             + "\n".join(f"- `{identifier}`" for identifier in unknown_identifiers)
+            + "\nA fully-qualified declaration may exist in a Mathlib module that was not "
+            "imported. Check its owning module in the active pinned source when available. "
+            "First repair only the imports while preserving the theorem and proof body "
+            "when this resolves the diagnostic. If module ownership is uncertain and the "
+            "failed code lacks `import Mathlib`, try `import Mathlib` once and recompile. "
+            "If the identifier is still unknown with the full import, treat it as "
+            "unavailable and use an actual verified declaration; do not repeat the same "
+            "import-only attempt or invent a replacement name. An import change alone "
+            "does not establish success: the ordinary Lean verifier must accept the "
+            "complete candidate. Never add axioms, weaken assumptions or change the "
+            "requested claim to silence an import error.\n"
         )
     return f"""
 Previous attempt failed Lean validation or compilation.

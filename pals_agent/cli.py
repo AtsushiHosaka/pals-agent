@@ -46,6 +46,7 @@ from pals_agent.proof_flow_seed import (
 from pals_agent.settings import AgentSettings
 from pals_agent.worker import SqsProofWorker, worker_queue_url
 from pals_agent.worker_api_trust import configure_worker_api_trust
+from pals_agent.worker_processes import MAX_PROOF_WORKERS, run_proof_workers
 
 _SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
 _DEFAULT_AGENT_SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -63,6 +64,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     worker_parser = subparsers.add_parser("worker", help="Continuously process SQS proof jobs.")
     worker_parser.add_argument("--ready-file", type=Path)
+    worker_parser.add_argument("--processes", type=int, choices=range(1, MAX_PROOF_WORKERS + 1),
+                               default=1, help="Independent proof-lane processes (default: one).")
     worker_once_parser = subparsers.add_parser("worker-once", help="Process at most one SQS task.")
     for lane_parser in (worker_parser, worker_once_parser):
         lane_parser.add_argument("--lane", choices=("all", "proof", "assessment"), default="all")
@@ -164,6 +167,8 @@ def main(argv: list[str] | None = None) -> int:
     comparison_parser.add_argument("--candidate-run", required=True)
 
     args = parser.parse_args(argv)
+    if args.command == "worker" and args.processes > 1 and args.lane != "proof":
+        parser.error("multiple worker processes require the explicit proof lane")
     ready_file = args.ready_file if args.command == "worker" else None
     if ready_file is not None:
         ready_file.unlink(missing_ok=True)
@@ -359,6 +364,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command in {"worker", "worker-once"}:
+        if args.command == "worker" and args.processes > 1:
+            return run_proof_workers(processes=args.processes, ready_file=ready_file)
         configure_worker_api_trust(getattr(settings, "api_ca_certificate_path", None))
         worker_queue_url(settings, args.lane)
         if not settings.worker_shared_secret:

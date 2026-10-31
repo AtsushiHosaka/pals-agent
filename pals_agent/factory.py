@@ -48,6 +48,8 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
 
     generator = build_generator(settings)
+    natural = NaturalDspDraftRetriever(ApiProofReuseCatalog(settings))
+    typed = build_profile_routed_runtime(settings) if settings.typed_catalog_enabled else None
     return ProofPipeline(
         generator=generator,
         verifier=None,
@@ -55,15 +57,20 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         # Explicit pinned PFI capability enables exact Draft evidence. Its errors
         # fail closed; an unconfigured deployment retains direct generation.
         proof_flow_retriever=(
-            build_profile_routed_runtime(settings)
-            if settings.typed_catalog_enabled
+            typed
+            if typed is not None
             else build_proof_flow_runtime(settings)
             if settings.pfi_runtime_provenance_sha256 is not None
             else None
         ),
         max_repair_attempts=settings.max_repair_attempts,
         verification_mode="api_reconcile",
-        natural_draft_retriever=NaturalDspDraftRetriever(ApiProofReuseCatalog(settings)),
+        natural_draft_retriever=natural,
+        request_linked_typed_retriever=(
+            replace(typed, generic=natural)
+            if settings.request_linked_typed_catalog_enabled and typed is not None
+            else None
+        ),
     )
 
 

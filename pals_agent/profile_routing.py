@@ -10,9 +10,9 @@ import json
 from dataclasses import dataclass
 from typing import Protocol
 
-from pals_agent import typed_local_catalog
 from pals_agent.draft_embeddings import EmbeddingError
 from pals_agent.model_roles import ModelRole, fixed_model_default
+from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.private_draft_candidates import (
     DraftCandidateCompatibilityError,
@@ -21,23 +21,18 @@ from pals_agent.private_draft_candidates import (
 )
 from pals_agent.proof_flow_reranker import DraftRerankerInvalidError, DraftRerankerUnavailableError
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.typed_expansion_runtime import runtime_profile_specs
 from pals_agent.typed_runtime import TypedProofFlowRuntime
 from pals_agent.typed_runtime_failures import TypedRetrievalFailure
 
 GENERIC_PROFILE = "generic-v1"
-SUPPORTED_TYPED_PROFILES = tuple(
-    sorted(
-        {
-            value.profile_id
-            for value in vars(typed_local_catalog).values()
-            if isinstance(value, typed_local_catalog._ProfileSpec)
-        }
-    )
-)
+SUPPORTED_TYPED_PROFILES = tuple(sorted(runtime_profile_specs()))
 
 
 class GenericRetriever(Protocol):
-    def retrieve(self, natural_statement: str) -> DraftRetrievalResult: ...
+    def retrieve(
+        self, natural_statement: str
+    ) -> DraftRetrievalResult | NaturalDraftRetrievalResult: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,7 +61,9 @@ class ProfileRoutedProofFlowRuntime:
     typed: TypedProofFlowRuntime
     generic: GenericRetriever | None
 
-    def retrieve(self, natural_statement: str) -> DraftRetrievalResult:
+    def retrieve(
+        self, natural_statement: str
+    ) -> DraftRetrievalResult | NaturalDraftRetrievalResult:
         if not natural_statement.strip() or len(natural_statement.encode()) > 16384:
             raise ValueError("Statement invalid for profile routing")
         try:

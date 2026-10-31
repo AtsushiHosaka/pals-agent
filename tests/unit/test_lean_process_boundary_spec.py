@@ -97,7 +97,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
 def test_pae_017_combined_lean_output_is_hard_capped(tmp_path: Path) -> None:
     noisy = _write_shell_executable(
         tmp_path / "lean-noisy",
-        "/usr/bin/yes x | /usr/bin/head -c 1048577\n",
+        "while :; do printf '%1024s\\n' x; done\n",
     )
 
     result = LeanVerifier(lean_binary=str(noisy)).verify(
@@ -115,10 +115,10 @@ def test_pae_017_timeout_kills_complete_process_group(tmp_path: Path) -> None:
     sleeper = _write_shell_executable(
         tmp_path / "lean-sleeper",
         """\
-/bin/sleep 30 &
+while :; do :; done &
 child=$!
 printf '%s\\n' "$child"
-/bin/sleep 30
+wait "$child"
 """,
     )
     descendant_pid: int | None = None

@@ -6,6 +6,7 @@ import json
 import xml.etree.ElementTree as ET
 from typing import Any
 
+from pals_agent.openmath import MathXMLValidationError
 from pals_agent.typed_expression_signatures import signatures, sort_signatures
 
 SCHEMA_VERSION = "pals.typed-openmath-expression.v5"
@@ -69,6 +70,10 @@ def _symbol_schema(symbols: list[tuple[str, str, str]]) -> dict[str, Any]:
 
 
 def response_schema(profile_id: str) -> dict[str, Any]:
+    from pals_agent import typed_expansion_runtime as expansion
+
+    if profile_id in expansion.EXPANSION_PROFILES:
+        return expansion.response_schema(profile_id)
     mapping = signatures(profile_id)
     sorts = sort_signatures(profile_id)
     expr = {"$ref": "#/$defs/expression"}
@@ -240,6 +245,22 @@ def _xml_text(value: object) -> str:
 
 
 def to_openmath_xml(raw: str, profile_id: str) -> str:
+    from pals_agent import typed_expansion_runtime as expansion
+
+    if profile_id in expansion.EXPANSION_PROFILES:
+        try:
+            return expansion.to_openmath_xml(raw, profile_id)
+        except MathXMLValidationError as error:
+            # Only the installed local validator's bounded diagnostic is eligible.
+            # Generic/provider exception text stays behind the closed boundary.
+            detail = str(error).encode("utf-8")[:384].decode("utf-8", errors="ignore")
+            raise TypedOpenMathASTError(
+                "Expansion selected-profile validation failed: " + detail
+            ) from None
+        except (ValueError, UnicodeError, RecursionError):
+            raise TypedOpenMathASTError(
+                "Expansion expression invalid for selected profile"
+            ) from None
     mapping = signatures(profile_id)
     sorts = sort_signatures(profile_id)
     if not isinstance(raw, str):

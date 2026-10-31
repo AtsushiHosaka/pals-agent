@@ -1,0 +1,890 @@
+{
+  "schema_version": "pals.mathematical-breadth-corpus.v1",
+  "version": "1.0.0",
+  "toolchain": {
+    "lean_toolchain": "leanprover/lean4:v4.32.0-rc1",
+    "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+  },
+  "cases": [
+    {
+      "id": "requested.natural_power_continuous",
+      "family_id": "real-analysis",
+      "source_path": "proofs/natural_power_continuous.lean",
+      "theorem_name": "requested_natural_power_continuous",
+      "statement": "任意の自然数$n$について、実数上の関数$f(x)=x^n$が実数全体で連続であることを証明せよ。$n=0$も含める。",
+      "question": "任意の自然数$n$について、実数上の関数$f(x)=x^n$が実数全体で連続であることを証明せよ。$n=0$も含める。",
+      "answer": "$n=0$では定数関数$1$なので連続である。$x^n$が連続だと仮定すると、恒等関数$x$も連続なので、積$x^{n+1}=x^n x$も連続になる。したがって数学的帰納法により、任意の自然数$n$について$x^n$は実数全体で連続である。",
+      "assumptions": [
+        "n is a natural number; domain and codomain are R."
+      ],
+      "proof_outline": [
+        "Establish continuity of the constant zeroth power.",
+        "Use the product rule for continuity and x^(n+1)=x^n*x.",
+        "Conclude by induction on n."
+      ],
+      "hard_negative": {
+        "statement": "All integer powers are continuous at zero.",
+        "counterexample": "The negative power x↦x^(-1) is not continuous at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Algebra/Monoid.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every natural number $n\\in\\mathbb N$, including $0$."
+      ]
+    },
+    {
+      "id": "requested.right_limit_and_discontinuity",
+      "family_id": "real-analysis",
+      "source_path": "proofs/right_limit_and_discontinuity.lean",
+      "theorem_name": "requested_right_limit_and_discontinuity",
+      "statement": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
+      "question": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
+      "answer": "右極限は$0$であり、$f$は$0$で連続ではない。正の側では$f$が定数関数$0$と一致するため、右極限も$0$になる。一方、$0$で連続なら右極限は$f(0)=1$でなければならない。実数値関数の極限は一意なので、これらの異なる右極限を持つことはなく、矛盾する。負の側の値は、この結論に影響しない。",
+      "assumptions": [
+        "f is real-valued on R.",
+        "f(0)=1.",
+        "For every positive x, f(x)=0; no negative-side assumption."
+      ],
+      "proof_outline": [
+        "Show eventual equality with the constant zero function in the right-neighborhood filter.",
+        "Transport the constant-function limit.",
+        "Assume continuity and restrict its limit to the right.",
+        "Use uniqueness of limits to contradict 0≠1."
+      ],
+      "hard_negative": {
+        "statement": "The right limit must equal the assigned point value.",
+        "counterexample": "The stated function has right limit 0 while its value at zero is 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Defs/Filter.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every function $f:\\mathbb R\\to\\mathbb R$ satisfying the stated value at $0$ and the universally quantified positive-side premise."
+      ]
+    },
+    {
+      "id": "requested.cubic_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/cubic_derivative.lean",
+      "theorem_name": "requested_cubic_derivative",
+      "statement": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+      "question": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+      "answer": "任意の実数$x$について$f^{\\prime}(x)=3x^2-3$である。べき関数の微分公式から$x^3$の導関数は$3x^2$となる。また、恒等関数の微分と定数倍の公式から$3x$の導関数は$3$である。差の微分公式を使えば、求める式が得られる。",
+      "assumptions": [
+        "x is an arbitrary real number."
+      ],
+      "proof_outline": [
+        "Differentiate the identity function and its third power.",
+        "Differentiate the constant multiple 3x.",
+        "Apply the subtraction rule and simplify."
+      ],
+      "hard_negative": {
+        "statement": "A positive leading coefficient makes this function increasing everywhere.",
+        "counterexample": "At x=0 its derivative is -3, so it is locally decreasing there."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Pow.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$."
+      ]
+    },
+    {
+      "id": "requested.pi_gt_305",
+      "family_id": "real-analysis",
+      "source_path": "proofs/pi_gt_305.lean",
+      "theorem_name": "requested_pi_gt_305",
+      "statement": "浮動小数点の近似値を証明として使わず、厳密な不等式$\\pi>3.05$を証明せよ。形式的に証明済みのライブラリの評価を使ってよい。",
+      "question": "浮動小数点の近似値を証明として使わず、厳密な不等式$\\pi>3.05$を証明せよ。形式的に証明済みのライブラリの評価を使ってよい。",
+      "answer": "ライブラリで証明済みの下界$3.14<\\pi$を用いる。十進表記を正確な有理数として扱えば$3.05<3.14$は厳密に確認できる。よって不等式の推移性から$3.05<\\pi$が従う。これは既知の下界を利用する証明であり、浮動小数点近似や新たな幾何学的評価による証明ではない。",
+      "assumptions": [
+        "π is Real.pi; 3.05 and 3.14 are exact real rational numerals."
+      ],
+      "proof_outline": [
+        "Use the formally proved lower bound 3.14<π.",
+        "Compare 3.05 and 3.14 exactly.",
+        "Conclude by transitivity."
+      ],
+      "hard_negative": {
+        "statement": "The same argument proves π>3.2.",
+        "counterexample": "The certified upper bound π<3.15 rules out π>3.2."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Real/Pi/Bounds.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": []
+    },
+    {
+      "id": "requested.linear_injective_iff_zero_kernel",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_injective_iff_zero_kernel.lean",
+      "theorem_name": "requested_linear_injective_iff_zero_kernel",
+      "statement": "体$K$上のベクトル空間$V,W$と線形写像$f:V\\to W$を考える。$f$が単射であることと、すべての$x\\in V$について$f(x)=0$なら$x=0$となることが同値であると証明せよ。",
+      "question": "体$K$上のベクトル空間$V,W$と線形写像$f:V\\to W$を考える。$f$が単射であることと、すべての$x\\in V$について$f(x)=0$なら$x=0$となることが同値であると証明せよ。",
+      "answer": "$f$が単射なら、$f(x)=0=f(0)$から$x=0$が従う。逆に零点が$0$だけだと仮定し、$f(x)=f(y)$とする。線形性から$f(x-y)=f(x)-f(y)=0$である。仮定により$x-y=0$なので$x=y$となり、$f$は単射である。",
+      "assumptions": [
+        "K is a field; V and W are K-vector spaces.",
+        "f is K-linear."
+      ],
+      "proof_outline": [
+        "Use linearity to identify f(0)=0.",
+        "Apply injectivity for the forward implication.",
+        "For the converse apply the zero-fiber hypothesis to x-y."
+      ],
+      "hard_negative": {
+        "statement": "A function with a unique zero must be injective even without linearity.",
+        "counterexample": "The function x↦x^2 on R has only zero as a zero, but takes the same value at -1 and 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Algebra/Module/LinearMap/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every field $K$, every pair of $K$-vector spaces $V,W$, and every $K$-linear map $f:V\\to W$.",
+        "In the right-hand side of the equivalence, $f(x)=0\\Rightarrow x=0$ is required for every $x\\in V$."
+      ]
+    },
+    {
+      "id": "requested.linear_system_unique_solution",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_system_unique_solution.lean",
+      "theorem_name": "requested_linear_system_unique_solution",
+      "statement": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
+      "question": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
+      "answer": "解は$x=1,y=2$だけである。第二式から$y=x+1$となる。第一式に代入すると$5x+2=7$なので$x=1$、したがって$y=2$である。逆にこの組を両方の式に代入すれば成立するため、存在と一意性の両方が確認できる。",
+      "assumptions": [
+        "x,y are real numbers."
+      ],
+      "proof_outline": [
+        "Eliminate y using the second equation.",
+        "Derive x=1 and y=2 by exact linear arithmetic.",
+        "Verify the converse by substitution."
+      ],
+      "hard_negative": {
+        "statement": "The first equation alone has the same unique solution.",
+        "counterexample": "For example x=7/3,y=0 satisfies the first equation and differs from (1,2)."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Tactic/Linarith/Frontend.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every pair $(x,y)\\in\\mathbb R^2$."
+      ]
+    },
+    {
+      "id": "requested.determinant_nonzero_decision",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/determinant_nonzero_decision.lean",
+      "theorem_name": "requested_determinant_nonzero_decision",
+      "statement": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+      "question": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+      "answer": "$2\\times2$行列の行列式の公式から、$\\det A=1\\cdot5-2\\cdot3=-1$となる。実数の$-1$は$0$と異なるので、行列式は非零である。Leanの証明も、この公式の適用と正確な計算によって非零性を確認している。",
+      "assumptions": [
+        "The matrix is 2×2 with entries in R."
+      ],
+      "proof_outline": [
+        "Use the 2×2 determinant formula.",
+        "Evaluate with exact arithmetic.",
+        "Conclude that -1 is nonzero."
+      ],
+      "hard_negative": {
+        "statement": "Every matrix with positive entries has nonzero determinant.",
+        "counterexample": "The matrix [[1,2],[2,4]] has positive entries and determinant zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": []
+    },
+    {
+      "id": "requested.rational_power_continuous",
+      "family_id": "real-analysis",
+      "source_path": "proofs/rational_power_continuous.lean",
+      "theorem_name": "requested_rational_power_continuous",
+      "statement": "自然数$n$について、実関数$f(x)=\\dfrac{x^n+\\sin x}{1+x^2}$が実数全体で連続であることを証明せよ。",
+      "question": "自然数$n$について、実関数$f(x)=\\dfrac{x^n+\\sin x}{1+x^2}$が実数全体で連続であることを証明せよ。",
+      "answer": "分子は連続なべき関数と正弦関数の和なので連続である。分母も連続であり、すべての実数$x$について$x^2\\ge0$だから$1+x^2>0$となる。したがって分母はどの点でも消えない。商の連続性の定理により、$f$は実数全体で連続である。",
+      "assumptions": [
+        "n is a natural number.",
+        "The denominator is exactly 1+x^2."
+      ],
+      "proof_outline": [
+        "Prove continuity of the numerator and denominator.",
+        "Show 1+x^2>0 for every real x.",
+        "Apply continuity of division with nonvanishing denominator."
+      ],
+      "hard_negative": {
+        "statement": "Any quotient of continuous real functions is continuous everywhere.",
+        "counterexample": "The function 1/x is not continuous at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Algebra/Field.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every natural number $n\\in\\mathbb N$, including $0$."
+      ]
+    },
+    {
+      "id": "requested.exponential_product_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/exponential_product_derivative.lean",
+      "theorem_name": "requested_exponential_product_derivative",
+      "statement": "実関数$f(x)=x e^x$について、任意の実数$x$での導関数を求め、積の微分公式で証明せよ。",
+      "question": "実関数$f(x)=x e^x$について、任意の実数$x$での導関数を求め、積の微分公式で証明せよ。",
+      "answer": "導関数は$f^{\\prime}(x)=(x+1)e^x$である。恒等関数の導関数は$1$、指数関数の導関数は$e^x$なので、積の微分公式から$f^{\\prime}(x)=1\\cdot e^x+x e^x$となる。これを因数分解すれば$(x+1)e^x$が得られる。",
+      "assumptions": [
+        "x is an arbitrary real number."
+      ],
+      "proof_outline": [
+        "Differentiate the identity and exponential functions.",
+        "Apply the product rule.",
+        "Factor the resulting expression."
+      ],
+      "hard_negative": {
+        "statement": "The derivative is merely x exp(x).",
+        "counterexample": "At x=0 that expression is 0, whereas the derivative is 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/SpecialFunctions/ExpDeriv.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$."
+      ]
+    },
+    {
+      "id": "requested.reciprocal_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/reciprocal_derivative.lean",
+      "theorem_name": "requested_reciprocal_derivative",
+      "statement": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
+      "question": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
+      "answer": "仮定$x\\ne0$により、逆数関数の微分定理を点$x$に適用できる。この定理から、関数$y\\mapsto y^{-1}$の$x$における微分係数は$-(x^2)^{-1}$となる。実数の割り算の表記では、これは$-1/x^2$である。Leanの証明も、非零の仮定をこの微分定理に渡している。",
+      "assumptions": [
+        "x is a nonzero real number."
+      ],
+      "proof_outline": [
+        "Check the nonzero hypothesis required by the reciprocal rule.",
+        "Apply the derivative theorem for inversion."
+      ],
+      "hard_negative": {
+        "statement": "The same derivative theorem applies at x=0.",
+        "counterexample": "The totalized inverse function is not continuous, hence not differentiable, at zero."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Inv.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$ satisfying $x\\ne0$."
+      ]
+    },
+    {
+      "id": "requested.absolute_value_not_differentiable",
+      "family_id": "calculus",
+      "source_path": "proofs/absolute_value_not_differentiable.lean",
+      "theorem_name": "requested_absolute_value_not_differentiable",
+      "statement": "実数上の絶対値関数$f(x)=|x|$は$0$で微分可能か。理由を示して判定せよ。",
+      "question": "実数上の絶対値関数$f(x)=|x|$は$0$で微分可能か。理由を示して判定せよ。",
+      "answer": "$0$では微分可能ではない。差商は$h>0$なら$|h|/h=1$、$h<0$なら$|h|/h=-1$となる。左右から近づけた極限が一致しないため、$0$での微分係数は存在しない。Leanでは、この事実を証明済みの定理を適用して微分不可能性を確認している。",
+      "assumptions": [
+        "The function is x↦|x| on R; the point is exactly zero."
+      ],
+      "proof_outline": [
+        "Compare the two one-sided difference quotients.",
+        "Use the formal non-differentiability theorem at zero."
+      ],
+      "hard_negative": {
+        "statement": "Absolute value is nowhere differentiable.",
+        "counterexample": "At every positive point it agrees locally with the identity and has derivative 1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Abs.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": []
+    },
+    {
+      "id": "requested.quadratic_not_injective",
+      "family_id": "real-analysis",
+      "source_path": "proofs/quadratic_not_injective.lean",
+      "theorem_name": "requested_quadratic_not_injective",
+      "statement": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
+      "question": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
+      "answer": "単射ではない。異なる点$-1$と$1$について、どちらの値も$1$となる。もし単射なら、この値の等しさから$-1=1$が従ってしまい矛盾する。したがって、実数全体を定義域とする平方関数は単射ではない。",
+      "assumptions": [
+        "The domain is all of R, not just the nonnegative reals."
+      ],
+      "proof_outline": [
+        "Evaluate the map at -1 and 1.",
+        "Apply hypothetical injectivity.",
+        "Derive a contradiction from distinctness."
+      ],
+      "hard_negative": {
+        "statement": "Squaring is noninjective on every subset of R.",
+        "counterexample": "On the nonnegative reals it is strictly increasing and injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Data/Real/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": []
+    },
+    {
+      "id": "requested.linear_system_inconsistent",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/linear_system_inconsistent.lean",
+      "theorem_name": "requested_linear_system_inconsistent",
+      "statement": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
+      "question": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
+      "answer": "そのような実数の組は存在しない。第一式を二倍すると$2x+2y=2$となる。一方、第二式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
+      "assumptions": [
+        "The unknowns x and y range over R."
+      ],
+      "proof_outline": [
+        "Multiply the first equation by 2.",
+        "Compare with the second equation.",
+        "Contradict 2≠3."
+      ],
+      "hard_negative": {
+        "statement": "Two linear equations in two variables always have a solution.",
+        "counterexample": "This very system is inconsistent because its left sides are dependent but right sides are incompatible."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Tactic/Linarith/Frontend.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "The existential quantifier over $(x,y)\\in\\mathbb R^2$ is negated: no pair satisfies both equations."
+      ]
+    },
+    {
+      "id": "requested.composite_injective_implies_first",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/composite_injective_implies_first.lean",
+      "theorem_name": "requested_composite_injective_implies_first",
+      "statement": "写像$f:A\\to B$、$g:B\\to C$について、合成写像$g\\circ f$が単射なら$f$も単射であることを証明せよ。",
+      "question": "写像$f:A\\to B$、$g:B\\to C$について、合成写像$g\\circ f$が単射なら$f$も単射であることを証明せよ。",
+      "answer": "$f(x)=f(y)$と仮定する。両辺に$g$を適用すると、$(g\\circ f)(x)=(g\\circ f)(y)$となる。合成写像は単射なので$x=y$である。これは$f$が単射であることの定義そのものだから、結論が従う。",
+      "assumptions": [
+        "f and g are composable functions.",
+        "g∘f is injective."
+      ],
+      "proof_outline": [
+        "Start from equal f-images.",
+        "Apply g to obtain equal composite-images.",
+        "Use the assumed composite injectivity."
+      ],
+      "hard_negative": {
+        "statement": "Injectivity of g∘f also forces g to be injective on all of B.",
+        "counterexample": "Let A be a singleton, B have two points, f choose one point, and g be constant. The composite is injective on A but g is not injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Logic/Function/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For all types $A,B,C$ and every pair of maps $f:A\\to B$, $g:B\\to C$, under the stated injectivity assumption on $g\\circ f$."
+      ]
+    },
+    {
+      "id": "requested.rank_nullity",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/rank_nullity.lean",
+      "theorem_name": "requested_rank_nullity",
+      "statement": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+      "question": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+      "answer": "$K$は斜体、$V,W$は$K$上の加群で、$V$は有限次元である。したがって、線形写像$f$に有限次元の次元定理を適用できる。この定理から$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$が得られる。Leanの証明も、ライブラリで証明済みのこの定理を$f$に直接適用している。",
+      "assumptions": [
+        "K is a division ring.",
+        "V,W are K-modules; V is finite-dimensional.",
+        "f is K-linear."
+      ],
+      "proof_outline": [
+        "Apply finite-dimensional rank-nullity to f.",
+        "Identify the image and kernel dimensions in the requested order."
+      ],
+      "hard_negative": {
+        "statement": "The same finite-natural-dimension formula can be used without finite-dimensionality.",
+        "counterexample": "Evaluation at zero from real polynomials to R has one-dimensional image and infinite-dimensional kernel; finrank of an infinite-dimensional space is 0 in Lean, so the stated natural-number formula fails."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/FiniteDimensional/Lemmas.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every division ring $K$, every pair of left $K$-modules $V,W$ with commutative additive groups and finite-dimensional $V$, and every $K$-linear map $f:V\\to W$."
+      ]
+    },
+    {
+      "id": "requested.projection_not_injective",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/projection_not_injective.lean",
+      "theorem_name": "requested_projection_not_injective",
+      "statement": "第1座標への射影$p:\\mathbb{R}^2\\to\\mathbb{R}$、$p(x,y)=x$は単射か。理由を示して判定せよ。",
+      "question": "第1座標への射影$p:\\mathbb{R}^2\\to\\mathbb{R}$、$p(x,y)=x$は単射か。理由を示して判定せよ。",
+      "answer": "単射ではない。$(0,0)$と$(0,1)$の第1座標はどちらも$0$だが、この2点は異なる。もし射影が単射なら2点が等しくなり、第2座標を比べると$0=1$となって矛盾する。よって、この射影は単射ではない。",
+      "assumptions": [
+        "The domain is the entire product R×R."
+      ],
+      "proof_outline": [
+        "Compare the images of (0,0) and (0,1).",
+        "Use hypothetical injectivity to equate the pairs.",
+        "Project to the second coordinate for a contradiction."
+      ],
+      "hard_negative": {
+        "statement": "The coordinate projection is noninjective on every subspace.",
+        "counterexample": "Its restriction to the x-axis is injective."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Prod.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": []
+    },
+    {
+      "id": "requested.product_determinant_nonzero_iff",
+      "family_id": "linear-algebra",
+      "source_path": "proofs/product_determinant_nonzero_iff.lean",
+      "theorem_name": "requested_product_determinant_nonzero_iff",
+      "statement": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
+      "question": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
+      "answer": "行列式の乗法性から$\\det(AB)=\\det A\\det B$である。実数には零因子がないので、この積が非零であることと、両方の因子がともに非零であることは同値になる。したがって、求める同値関係が従う。",
+      "assumptions": [
+        "A,B are square matrices indexed by the same finite decidable type.",
+        "Entries lie in R."
+      ],
+      "proof_outline": [
+        "Rewrite with multiplicativity of determinant.",
+        "Use the nonzero-product equivalence in R."
+      ],
+      "hard_negative": {
+        "statement": "The statement holds over every commutative ring.",
+        "counterexample": "Over Z/6Z the nonzero 1×1 matrices [2] and [3] multiply to [0]."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/LinearAlgebra/Matrix/Determinant/Basic.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every finite type $n$ with decidable equality and every pair of real square matrices $A,B$ indexed by $n$."
+      ]
+    },
+    {
+      "id": "requested.continuous_endpoint_sign_change_has_root",
+      "family_id": "real-analysis",
+      "source_path": "proofs/continuous_endpoint_sign_change_has_root.lean",
+      "theorem_name": "requested_continuous_endpoint_sign_change_has_root",
+      "statement": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+      "question": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+      "answer": "$0$は両端での値$f(a)$と$f(b)$の間にある。閉区間上の連続性を仮定しているので、中間値の定理を適用すると、$[a,b]$内に$f(x)=0$となる点$x$が得られる。この議論で示すのは零点の存在であり、一意性までは主張していない。",
+      "assumptions": [
+        "a,b are real with a≤b.",
+        "f is continuous on the closed interval.",
+        "f(a)<0 and f(b)>0."
+      ],
+      "proof_outline": [
+        "Place zero in the interval between endpoint values.",
+        "Apply the interval intermediate value theorem."
+      ],
+      "hard_negative": {
+        "statement": "The zero is automatically unique.",
+        "counterexample": "The continuous function x^3-x on [-2,2] has zeros -1,0,1."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Topology/Order/IntermediateValue.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real function $f:\\mathbb R\\to\\mathbb R$ and real endpoints $a,b$ satisfying the stated order, continuity and strict sign conditions.",
+        "The conclusion existentially quantifies a point $x\\in[a,b]$ with $f(x)=0$."
+      ]
+    },
+    {
+      "id": "requested.sum_derivative",
+      "family_id": "calculus",
+      "source_path": "proofs/sum_derivative.lean",
+      "theorem_name": "requested_sum_derivative",
+      "statement": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
+      "question": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
+      "answer": "仮定より、$f$と$g$は同じ点$a$で微分係数$f^{\\prime}$と$g^{\\prime}$を持つ。和の微分公式をこれらの仮定に適用すると、関数$x\\mapsto f(x)+g(x)$は$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つ。Leanの証明も、この公式を仮定に直接適用している。",
+      "assumptions": [
+        "HasDerivAt f f′ a.",
+        "HasDerivAt g g′ a."
+      ],
+      "proof_outline": [
+        "Apply the derivative addition rule.",
+        "Keep the common point and add derivative values."
+      ],
+      "hard_negative": {
+        "statement": "Differentiability of f+g forces each summand to be differentiable.",
+        "counterexample": "Take f=|x| and g=-|x| at zero: their sum is constant and differentiable while neither summand is differentiable."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/Analysis/Calculus/Deriv/Add.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [
+        "For every pair of real functions $f,g:\\mathbb R\\to\\mathbb R$ and real numbers $a,f',g'$ satisfying the two derivative hypotheses at the same point $a$."
+      ]
+    },
+    {
+      "id": "requested.tan_one_degree_irrational",
+      "family_id": "number-theory",
+      "source_path": "proofs/tan_one_degree_irrational.lean",
+      "theorem_name": "requested_tan_one_degree_irrational",
+      "statement": "$\\tan1^\\circ=\\tan(\\pi/180)$は有理数か。理由も証明せよ。Leanの三角関数では角度をラジアンで表す。",
+      "question": "$\\tan1^\\circ=\\tan(\\pi/180)$は有理数か。理由も証明せよ。Leanの三角関数では角度をラジアンで表す。",
+      "answer": "無理数である。$\\theta=\\pi/180$とおき、$\\tan\\theta=q$となる有理数$q$があると仮定する。$-\\pi/2<\\theta<\\pi/2$だから$\\cos\\theta\\ne0$である。三角関数の恒等式から$\\cos(2\\theta)=(1-q^2)/(1+q^2)$となり、これも有理数になる。Nivenの定理によると、$0\\le r\\le1$を満たす有理数$r$について$\\cos(r\\pi)$が有理数なら、$r$は$0,1/3,1/2,2/3,1$のいずれかである。ところが$2\\theta=(1/90)\\pi$であり、$1/90$はどの値とも異なる。したがって仮定が誤りで、$\\tan1^\\circ$は無理数である。",
+      "assumptions": [
+        "The angle is exactly π/180 radians.",
+        "Irrational means not equal to the real cast of any rational number."
+      ],
+      "proof_outline": [
+        "Assume a rational tangent value q.",
+        "Establish a nonzero cosine and derive the double-angle rational cosine.",
+        "Apply the formally proved Niven angle classification with r=1/90.",
+        "Discharge all possible rational-angle values by exact arithmetic."
+      ],
+      "hard_negative": {
+        "statement": "Every rational-degree angle has irrational tangent.",
+        "counterexample": "tan(45°)=1 is rational."
+      },
+      "provenance": {
+        "kind": "original_synthetic_problem_and_proof",
+        "license": "Apache-2.0",
+        "upstream_library": "Mathlib",
+        "upstream_license": "Apache-2.0",
+        "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+        "source_references": [
+          "https://github.com/leanprover-community/mathlib4/blob/8b62164d808cd0f23b7d8cc28190a6c1a1bb483a/Mathlib/NumberTheory/Niven.lean"
+        ]
+      },
+      "lifecycle": {
+        "authored": true,
+        "independently_reviewed": false,
+        "admitted": false,
+        "retrievable": false,
+        "runtime_verified": false,
+        "deployed": false
+      },
+      "status": "authored_awaiting_execution",
+      "polarity": "positive",
+      "quantifiers": [],
+      "publication_statement": "実数$\\tan(\\pi/180)$は無理数である。角度はラジアンで表す。"
+    }
+  ],
+  "scope": "Twenty requested question/answer candidates with independent single-theorem Lean files. Actual local compiler evidence is required; this corpus is not a signed runtime seed or DB publication."
+}

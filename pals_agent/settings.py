@@ -57,6 +57,7 @@ class AgentSettings:
     proof_capability: Literal["full", "natural-only"] = "full"
     proof_requests_queue_url: str | None = None
     typed_catalog_enabled: bool = False
+    request_linked_typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     worker_idle_sleep_seconds: float = 2.0
@@ -74,6 +75,14 @@ class AgentSettings:
     api_ca_certificate_path: Path | None = None
 
     def __post_init__(self) -> None:
+        if type(self.request_linked_typed_catalog_enabled) is not bool:
+            raise ValueError("PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED must be boolean")
+        if self.request_linked_typed_catalog_enabled and (
+            not self.typed_catalog_enabled or self.proof_capability != "full"
+        ):
+            raise ValueError(
+                "Request-linked typed retrieval requires typed catalog and full proof capability"
+            )
         if self.api_ca_certificate_path is not None and (
             not isinstance(self.api_ca_certificate_path, Path)
             or not self.api_ca_certificate_path.is_absolute()
@@ -183,6 +192,9 @@ class AgentSettings:
             lake_binary=os.getenv("PALS_LAKE_BINARY", "lake"),
             lean_project_dir=Path(lean_project_dir) if lean_project_dir else None,
             typed_catalog_enabled=_strict_bool_env("PALS_TYPED_CATALOG_ENABLED"),
+            request_linked_typed_catalog_enabled=_strict_bool_env(
+                "PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED"
+            ),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",

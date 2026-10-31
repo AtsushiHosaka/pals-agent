@@ -35,14 +35,11 @@ from pals_agent.private_draft_candidates import (
 
 
 def profile_contract(profile_id: str) -> tuple[local._ProfileSpec, dict[str, Any]]:
-    specs = [
-        value
-        for value in vars(local).values()
-        if isinstance(value, local._ProfileSpec) and value.profile_id == profile_id
-    ]
-    if not specs:
+    from pals_agent.typed_expansion_runtime import runtime_profile_specs
+
+    spec = runtime_profile_specs().get(profile_id)
+    if spec is None:
         raise DraftCandidateCompatibilityError("Typed profile is unsupported.")
-    spec = specs[0]
     root = Path(__file__).parent
     binding = dict(
         profile_id=profile_id,

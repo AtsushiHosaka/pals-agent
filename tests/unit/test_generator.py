@@ -137,7 +137,9 @@ def test_generated_proof_keeps_existing_constructor_compatible() -> None:
         ),
     ],
 )
-def test_repair_guidance_forbids_unknown_identifier_from_next_candidate(code, message) -> None:
+def test_repair_guidance_distinguishes_missing_import_from_unavailable_identifier(
+    code, message
+) -> None:
     repair_feedback = GenerationFeedback(
         attempt=2,
         previous_lean_code="example : True := by exact abs_add",
@@ -154,7 +156,12 @@ def test_repair_guidance_forbids_unknown_identifier_from_next_candidate(code, me
     guidance = _repair_guidance(repair_feedback)
 
     assert "Every error diagnostic below is mandatory to fix" in guidance
-    assert "Identifiers rejected by Lean and forbidden" in guidance
+    assert "Identifiers unresolved in the failed import environment" in guidance
+    assert "First repair only the imports while preserving the theorem and proof body" in guidance
+    assert "try `import Mathlib` once and recompile" in guidance
+    assert "still unknown with the full import, treat it as unavailable" in guidance
+    assert "ordinary Lean verifier must accept" in guidance
+    assert "Never add axioms, weaken assumptions or change the requested claim" in guidance
     assert "- `abs_add`" in guidance
 
 
@@ -836,3 +843,15 @@ def test_generated_names_distinguish_statements_with_the_shared_pipeline_id() ->
     assert _generated_target_name(ProofRequest(id="a,b", prompt="c")) != (
         _generated_target_name(ProofRequest(id="a", prompt="b,c"))
     )
+
+
+def test_import_guidance_requires_source_backed_module_selection_before_fallback():
+    from pals_agent.generator import _lean_import_guidance
+
+    guidance = _lean_import_guidance()
+    assert "Verify the owning modules in the active pinned Mathlib" in guidance
+    assert "do not infer a module path" in guidance
+    assert "try `import Mathlib` once and recompile before changing" in guidance
+    assert "Keep every theorem assumption and substantive Draft proof step" in guidance
+    assert "compiler deadline failure requires simplifying" in guidance
+    assert "Mathlib.Data.Nat.GCD.Basic" not in guidance
