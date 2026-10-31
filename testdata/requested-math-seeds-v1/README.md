@@ -45,8 +45,8 @@ latency. The report is a private generated artifact and is not committed.
 
 Corpus SHA256 at the local compiler run, before the two structured-scope corrections:
 `c96876b736d92c73ac48f51f5093eed08ea45b006574058f89e75c0ec77514c5`.
-Current corpus SHA256 after those metadata-only corrections:
-`9a923c538425e1026bb5d368877d0f32c54a0ed8e10960e4e30a42998dd38ec4`. The Lean sources and all authoring manifests are unchanged.
+Current corpus SHA256 after the structured-scope and explanation corrections:
+`4b127150116b64ca8aad39b69e155213b146eba2ad274f959ca2e734a1462e56`. The Lean sources and all authoring manifests are unchanged.
 Local report SHA256:
 `f1856209dce8dda2ffe5929e35e832f9b1331b8a356e3e904aaed5e8272611fd`.
 

@@ -105,11 +105,10 @@ def search_candidate(case: dict, manifest: dict, receipt: dict) -> dict:
         "schema_version": "pals.recipe-search-entry.v1",
         "recipe_id": manifest["recipe_id"],
         "recipe_revision": manifest["revision"],
-        "statement": case["question"],
+        "statement": case.get("publication_statement", case["question"]),
         "domain": case["family_id"],
         "assumptions": case["assumptions"],
-        # Exact quantification is retained in the formal conclusion below.
-        "quantifiers": [],
+        "quantifiers": case["quantifiers"],
         "conclusion": manifest["target_source"],
         "proof_method_tag": None,
         "search_text": "\n".join(

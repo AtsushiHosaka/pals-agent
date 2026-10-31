@@ -159,3 +159,21 @@ def test_publication_output_refuses_existing_file_and_symlink(tmp_path):
     with pytest.raises(FileExistsError):
         module.write_new(link, b"replacement")
     assert target.read_bytes() == b"original"
+
+
+def test_structured_quantifiers_follow_the_closed_theorem_scope():
+    module = _publication_module()
+    cases = json.loads((ROOT / "corpus.json").read_bytes())["cases"]
+    for case in cases:
+        manifest = module.read_object(ROOT / "publication" / (case["id"] + ".json"))
+        quantified = manifest["target_source"].startswith(("∀", "¬ ∃"))
+        assert isinstance(case["quantifiers"], list)
+        assert bool(case["quantifiers"]) is quantified
+        assert all(isinstance(value, str) and value for value in case["quantifiers"])
+    by_id = {case["id"]: case for case in cases}
+    assert "left $K$-modules" in by_id["requested.rank_nullity"]["quantifiers"][0]
+    assert "finite-dimensional $V$" in by_id["requested.rank_nullity"]["quantifiers"][0]
+    assert "negated" in by_id["requested.linear_system_inconsistent"]["quantifiers"][0]
+    tangent = by_id["requested.tan_one_degree_irrational"]
+    assert "有理数か" in tangent["question"]
+    assert "無理数である" in tangent["publication_statement"]

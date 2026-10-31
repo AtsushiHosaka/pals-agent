@@ -45,7 +45,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every natural number $n\\in\\mathbb N$, including $0$."
+      ]
     },
     {
       "id": "requested.right_limit_and_discontinuity",
@@ -54,7 +57,7 @@
       "theorem_name": "requested_right_limit_and_discontinuity",
       "statement": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
       "question": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
-      "answer": "右極限は$0$であり、$f$は$0$で連続ではない。正の側では$f$が定数関数$0$と一致するため、右極限も$0$になる。一方、$0$で連続なら右極限は$f(0)=1$でなければならない。実数値関数の極限の一意性から$0=1$となり矛盾する。負の側の値は、この結論に影響しない。",
+      "answer": "右極限は$0$であり、$f$は$0$で連続ではない。正の側では$f$が定数関数$0$と一致するため、右極限も$0$になる。一方、$0$で連続なら右極限は$f(0)=1$でなければならない。実数値関数の極限は一意なので、これらの異なる右極限を持つことはなく、矛盾する。負の側の値は、この結論に影響しない。",
       "assumptions": [
         "f is real-valued on R.",
         "f(0)=1.",
@@ -89,7 +92,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every function $f:\\mathbb R\\to\\mathbb R$ satisfying the stated value at $0$ and the universally quantified positive-side premise."
+      ]
     },
     {
       "id": "requested.cubic_derivative",
@@ -130,7 +136,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$."
+      ]
     },
     {
       "id": "requested.pi_gt_305",
@@ -171,7 +180,8 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": []
     },
     {
       "id": "requested.linear_injective_iff_zero_kernel",
@@ -213,7 +223,11 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every field $K$, every pair of $K$-vector spaces $V,W$, and every $K$-linear map $f:V\\to W$.",
+        "In the right-hand side of the equivalence, $f(x)=0\\Rightarrow x=0$ is required for every $x\\in V$."
+      ]
     },
     {
       "id": "requested.linear_system_unique_solution",
@@ -254,7 +268,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every pair $(x,y)\\in\\mathbb R^2$."
+      ]
     },
     {
       "id": "requested.determinant_nonzero_decision",
@@ -295,7 +312,8 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": []
     },
     {
       "id": "requested.rational_power_continuous",
@@ -337,7 +355,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every natural number $n\\in\\mathbb N$, including $0$."
+      ]
     },
     {
       "id": "requested.exponential_product_derivative",
@@ -378,7 +399,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$."
+      ]
     },
     {
       "id": "requested.reciprocal_derivative",
@@ -387,7 +411,7 @@
       "theorem_name": "requested_reciprocal_derivative",
       "statement": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
       "question": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
-      "answer": "$x\\ne0$なので逆数の微分公式を適用でき、微分係数は$-1/x^2$となる。Leanではこれを$-(x^2)^{-1}$と表す。非零という仮定は必要であり、逆数を$0$で$0$と定義しても、そこで連続になるわけではない。",
+      "answer": "仮定$x\\ne0$により、逆数関数の微分定理を点$x$に適用できる。この定理から、関数$y\\mapsto y^{-1}$の$x$における微分係数は$-(x^2)^{-1}$となる。実数の割り算の表記では、これは$-1/x^2$である。Leanの証明も、非零の仮定をこの微分定理に渡している。",
       "assumptions": [
         "x is a nonzero real number."
       ],
@@ -418,7 +442,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real number $x\\in\\mathbb R$ satisfying $x\\ne0$."
+      ]
     },
     {
       "id": "requested.absolute_value_not_differentiable",
@@ -458,7 +485,8 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": []
     },
     {
       "id": "requested.quadratic_not_injective",
@@ -467,7 +495,7 @@
       "theorem_name": "requested_quadratic_not_injective",
       "statement": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
       "question": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
-      "answer": "単射ではない。異なる2点$-1$と$1$について、どちらの値も$1$となる。もし単射なら、この値の等しさから$-1=1$が従ってしまい矛盾する。したがって、実数全体を定義域とする平方関数は単射ではない。",
+      "answer": "単射ではない。異なる点$-1$と$1$について、どちらの値も$1$となる。もし単射なら、この値の等しさから$-1=1$が従ってしまい矛盾する。したがって、実数全体を定義域とする平方関数は単射ではない。",
       "assumptions": [
         "The domain is all of R, not just the nonnegative reals."
       ],
@@ -499,7 +527,8 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": []
     },
     {
       "id": "requested.linear_system_inconsistent",
@@ -540,7 +569,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "The existential quantifier over $(x,y)\\in\\mathbb R^2$ is negated: no pair satisfies both equations."
+      ]
     },
     {
       "id": "requested.composite_injective_implies_first",
@@ -582,7 +614,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For all types $A,B,C$ and every pair of maps $f:A\\to B$, $g:B\\to C$, under the stated injectivity assumption on $g\\circ f$."
+      ]
     },
     {
       "id": "requested.rank_nullity",
@@ -591,7 +626,7 @@
       "theorem_name": "requested_rank_nullity",
       "statement": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
       "question": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
-      "answer": "これは有限次元の次元定理である。核の基底を$V$の基底に拡張すると、追加した基底ベクトルの像が像空間の基底になる。核の基底と追加部分の個数を合わせれば$V$の次元になるので、求める等式が従う。Leanでは有限次元の線形写像に対する次元定理を適用している。",
+      "answer": "$K$は斜体、$V,W$は$K$上の加群で、$V$は有限次元である。したがって、線形写像$f$に有限次元の次元定理を適用できる。この定理から$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$が得られる。Leanの証明も、ライブラリで証明済みのこの定理を$f$に直接適用している。",
       "assumptions": [
         "K is a division ring.",
         "V,W are K-modules; V is finite-dimensional.",
@@ -624,7 +659,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every division ring $K$, every pair of left $K$-modules $V,W$ with commutative additive groups and finite-dimensional $V$, and every $K$-linear map $f:V\\to W$."
+      ]
     },
     {
       "id": "requested.projection_not_injective",
@@ -665,7 +703,8 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": []
     },
     {
       "id": "requested.product_determinant_nonzero_iff",
@@ -706,7 +745,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every finite type $n$ with decidable equality and every pair of real square matrices $A,B$ indexed by $n$."
+      ]
     },
     {
       "id": "requested.continuous_endpoint_sign_change_has_root",
@@ -748,7 +790,11 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every real function $f:\\mathbb R\\to\\mathbb R$ and real endpoints $a,b$ satisfying the stated order, continuity and strict sign conditions.",
+        "The conclusion existentially quantifies a point $x\\in[a,b]$ with $f(x)=0$."
+      ]
     },
     {
       "id": "requested.sum_derivative",
@@ -757,7 +803,7 @@
       "theorem_name": "requested_sum_derivative",
       "statement": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
       "question": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
-      "answer": "和の差商は、それぞれの関数の差商の和に分けられる。仮定から2つの差商はそれぞれ$f^{\\prime}$と$g^{\\prime}$に収束するので、極限の和の法則により和の差商は$f^{\\prime}+g^{\\prime}$に収束する。Leanでは、2つの微分可能性の仮定に和の微分公式を適用している。",
+      "answer": "仮定より、$f$と$g$は同じ点$a$で微分係数$f^{\\prime}$と$g^{\\prime}$を持つ。和の微分公式をこれらの仮定に適用すると、関数$x\\mapsto f(x)+g(x)$は$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つ。Leanの証明も、この公式を仮定に直接適用している。",
       "assumptions": [
         "HasDerivAt f f′ a.",
         "HasDerivAt g g′ a."
@@ -789,7 +835,10 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [
+        "For every pair of real functions $f,g:\\mathbb R\\to\\mathbb R$ and real numbers $a,f',g'$ satisfying the two derivative hypotheses at the same point $a$."
+      ]
     },
     {
       "id": "requested.tan_one_degree_irrational",
@@ -832,7 +881,9 @@
         "deployed": false
       },
       "status": "authored_awaiting_execution",
-      "polarity": "positive"
+      "polarity": "positive",
+      "quantifiers": [],
+      "publication_statement": "実数$\\tan(\\pi/180)$は無理数である。角度はラジアンで表す。"
     }
   ],
   "scope": "Twenty requested question/answer candidates with independent single-theorem Lean files. Actual local compiler evidence is required; this corpus is not a signed runtime seed or DB publication."
