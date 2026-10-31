@@ -236,7 +236,7 @@
       "theorem_name": "requested_linear_system_unique_solution",
       "statement": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
       "question": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
-      "answer": "解は$x=1,y=2$だけである。第2式から$y=x+1$となる。第1式に代入すると$5x+2=7$なので$x=1$、したがって$y=2$である。逆にこの組を両方の式に代入すれば成立するため、存在と一意性の両方が確認できる。",
+      "answer": "解は$x=1,y=2$だけである。第二式から$y=x+1$となる。第一式に代入すると$5x+2=7$なので$x=1$、したがって$y=2$である。逆にこの組を両方の式に代入すれば成立するため、存在と一意性の両方が確認できる。",
       "assumptions": [
         "x,y are real numbers."
       ],
@@ -537,7 +537,7 @@
       "theorem_name": "requested_linear_system_inconsistent",
       "statement": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
       "question": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
-      "answer": "そのような実数の組は存在しない。第1式を2倍すると$2x+2y=2$となる。一方、第2式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
+      "answer": "そのような実数の組は存在しない。第一式を二倍すると$2x+2y=2$となる。一方、第二式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
       "assumptions": [
         "The unknowns x and y range over R."
       ],
@@ -713,7 +713,7 @@
       "theorem_name": "requested_product_determinant_nonzero_iff",
       "statement": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
       "question": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
-      "answer": "行列式の乗法性から$\\det(AB)=\\det A\\det B$である。実数には零因子がないので、この積が非零であることと、2つの因子がともに非零であることは同値になる。したがって、求める同値関係が従う。",
+      "answer": "行列式の乗法性から$\\det(AB)=\\det A\\det B$である。実数には零因子がないので、この積が非零であることと、両方の因子がともに非零であることは同値になる。したがって、求める同値関係が従う。",
       "assumptions": [
         "A,B are square matrices indexed by the same finite decidable type.",
         "Entries lie in R."
