@@ -69,6 +69,10 @@ def _symbol_schema(symbols: list[tuple[str, str, str]]) -> dict[str, Any]:
 
 
 def response_schema(profile_id: str) -> dict[str, Any]:
+    from pals_agent import typed_expansion_runtime as expansion
+
+    if profile_id in expansion.EXPANSION_PROFILES:
+        return expansion.response_schema(profile_id)
     mapping = signatures(profile_id)
     sorts = sort_signatures(profile_id)
     expr = {"$ref": "#/$defs/expression"}
@@ -240,6 +244,15 @@ def _xml_text(value: object) -> str:
 
 
 def to_openmath_xml(raw: str, profile_id: str) -> str:
+    from pals_agent import typed_expansion_runtime as expansion
+
+    if profile_id in expansion.EXPANSION_PROFILES:
+        try:
+            return expansion.to_openmath_xml(raw, profile_id)
+        except (ValueError, UnicodeError, RecursionError):
+            raise TypedOpenMathASTError(
+                "Expansion expression invalid for selected profile"
+            ) from None
     mapping = signatures(profile_id)
     sorts = sort_signatures(profile_id)
     if not isinstance(raw, str):

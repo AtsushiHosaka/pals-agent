@@ -204,6 +204,10 @@ from Real; do not construct it via a Real cast. relation1:leq only compares Nats
 
 
 def profile_guidance(profile_id: str) -> str:
+    from pals_agent import typed_expansion_runtime as expansion
+
+    if profile_id in expansion.EXPANSION_PROFILES:
+        return expansion.guidance(profile_id)
     if profile_id in _GUIDANCE:
         return _COMMON + "\nProfile signatures:\n" + _GUIDANCE[profile_id]
     from pals_agent.typed_algebra_guidance import profile_guidance as algebra_guidance

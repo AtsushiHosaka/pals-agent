@@ -18,7 +18,9 @@ from pals_agent import typed_local_catalog as local
 
 def profile_bindings(repository_root: Path) -> dict[str, dict[str, Any]]:
     bindings = {}
-    for value in vars(local).values():
+    from pals_agent.typed_expansion_runtime import runtime_profile_specs
+
+    for value in runtime_profile_specs().values():
         if isinstance(value, local._ProfileSpec):
             profile = local._profile_binding(value, repository_root=repository_root)
             bindings[profile.profile_id] = {
