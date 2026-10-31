@@ -7,6 +7,7 @@ import errno
 import os
 import resource
 import shlex
+import stat
 import sys
 import sysconfig
 from pathlib import Path
@@ -213,13 +214,46 @@ def _readable_runtime_paths(command: list[str]) -> dict[Path, int]:
     return paths
 
 
+def _validated_scratch_directory(scratch_dir: Path) -> Path:
+    resolved = scratch_dir.resolve(strict=True)
+    if resolved == Path("/") or resolved.is_relative_to(Path("/proc")):
+        raise ValueError("invalid Lean scratch directory")
+    if resolved.is_relative_to(Path("/run")):
+        # HTTP startup attests this exact bounded tmpfs. Grant only the current
+        # TemporaryDirectory child, never its parent or the daemon's TLS mount.
+        request_root = Path("/run/pals-verifier-requests")
+        if (
+            scratch_dir != resolved
+            or resolved.parent != request_root
+            or not resolved.name.startswith("pals-lean-")
+            or resolved.name == "pals-lean-"
+            or os.geteuid() == 0
+        ):
+            raise ValueError("invalid HTTP Lean scratch directory")
+        for directory in (request_root, resolved):
+            info = directory.lstat()
+            if (
+                not stat.S_ISDIR(info.st_mode)
+                or info.st_uid != os.geteuid()
+                or stat.S_IMODE(info.st_mode) != 0o700
+            ):
+                raise ValueError("unprotected HTTP Lean scratch directory")
+        mount_types = []
+        for line in Path("/proc/self/mountinfo").read_text(encoding="utf-8").splitlines():
+            fields = line.split()
+            if len(fields) > 6 and fields[4] == str(request_root):
+                separator = fields.index("-")
+                mount_types.append(fields[separator + 1])
+        filesystem = os.statvfs(request_root)
+        size = filesystem.f_frsize * filesystem.f_blocks
+        if mount_types != ["tmpfs"] or not 0 < size <= 64 * 1024 * 1024:
+            raise ValueError("HTTP Lean scratch tmpfs boundary is unavailable")
+    return resolved
+
+
 def _apply_landlock(scratch_dir: Path, command: list[str]) -> None:
     runtime_paths = _readable_runtime_paths(command)
-    scratch_dir = scratch_dir.resolve(strict=True)
-    if scratch_dir == Path("/") or any(
-        scratch_dir.is_relative_to(root) for root in (Path("/proc"), Path("/run"))
-    ):
-        raise ValueError("invalid Lean scratch directory")
+    scratch_dir = _validated_scratch_directory(scratch_dir)
     libc = ctypes.CDLL(None, use_errno=True)
     libc.syscall.restype = ctypes.c_long
     abi = libc.syscall(

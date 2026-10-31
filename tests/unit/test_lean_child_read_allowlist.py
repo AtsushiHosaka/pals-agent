@@ -1,15 +1,115 @@
 from __future__ import annotations
 
+import os
 import shlex
 import subprocess
 import sys
 import sysconfig
 from pathlib import Path
+from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 
 import pytest
 
 from pals_agent import lean_child
 from pals_agent.lean import _limited_command
+
+
+def _http_scratch_fixture(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> tuple[Path, Path]:
+    run = tmp_path / "run"
+    root = run / "pals-verifier-requests"
+    root.mkdir(parents=True, mode=0o700)
+    child = root / "pals-lean-requestfixture"
+    child.mkdir(mode=0o700)
+    mounts = tmp_path / "mountinfo"
+    mounts.write_text(f"1 0 0:1 / {root} rw - tmpfs tmpfs rw,size=65536k\n")
+    original_path = Path
+    aliases = {
+        "/run": run,
+        "/run/pals-verifier-requests": root,
+        "/proc/self/mountinfo": mounts,
+    }
+    monkeypatch.setattr(
+        lean_child, "Path", lambda value: aliases.get(str(value), original_path(value))
+    )
+    monkeypatch.setattr(
+        lean_child.os,
+        "statvfs",
+        lambda _: SimpleNamespace(
+            f_frsize=4096,
+            f_blocks=16384,
+        ),
+    )
+    return root, child
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="HTTP verifier is rootless")
+def test_http_request_scratch_accepts_only_attested_private_child(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    _, child = _http_scratch_fixture(monkeypatch, tmp_path)
+    assert lean_child._validated_scratch_directory(child) == child
+
+
+@pytest.mark.parametrize("invalid", ["parent", "nested", "other-name", "alias", "root", "proc"])
+def test_http_scratch_does_not_grant_parent_other_runtime_or_symlink(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    invalid: str,
+) -> None:
+    root, child = _http_scratch_fixture(monkeypatch, tmp_path)
+    nested = child / "pals-lean-nested"
+    nested.mkdir(mode=0o700)
+    other = root / "daemon-credentials"
+    other.mkdir(mode=0o700)
+    alias = root / "pals-lean-alias"
+    alias.symlink_to(child, target_is_directory=True)
+    candidate = {
+        "parent": root,
+        "nested": nested,
+        "other-name": other,
+        "alias": alias,
+        "root": Path("/"),
+        "proc": Path("/proc"),
+    }[invalid]
+    with pytest.raises((ValueError, OSError)):
+        lean_child._validated_scratch_directory(candidate)
+
+
+@pytest.mark.parametrize(
+    "invalid", ["parent-mode", "child-mode", "root-user", "wrong-owner", "not-tmpfs", "oversize"]
+)
+def test_http_scratch_requires_actual_ownership_permissions_and_bounded_tmpfs(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    invalid: str,
+) -> None:
+    root, child = _http_scratch_fixture(monkeypatch, tmp_path)
+    if invalid == "parent-mode":
+        root.chmod(0o755)
+    elif invalid == "child-mode":
+        child.chmod(0o755)
+    elif invalid == "root-user":
+        monkeypatch.setattr(lean_child.os, "geteuid", lambda: 0)
+    elif invalid == "wrong-owner":
+        monkeypatch.setattr(lean_child.os, "geteuid", lambda: child.stat().st_uid + 1)
+    elif invalid == "not-tmpfs":
+        (tmp_path / "mountinfo").write_text(f"1 0 0:1 / {root} rw - ext4 /dev/fixture rw\n")
+    else:
+        monkeypatch.setattr(
+            lean_child.os,
+            "statvfs",
+            lambda _: SimpleNamespace(
+                f_frsize=4096,
+                f_blocks=16385,
+            ),
+        )
+    with pytest.raises(ValueError):
+        lean_child._validated_scratch_directory(child)
 
 
 def test_runtime_paths_do_not_grant_the_host_root_or_daemon_directories(
@@ -132,3 +232,61 @@ def test_linux_child_missing_executable_fails_closed(tmp_path: Path) -> None:
     )
 
     assert result.returncode == 125
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux Landlock boundary")
+def test_linux_http_scratch_child_does_not_expose_sibling_runtime_files(tmp_path: Path) -> None:
+    root = Path("/run/pals-verifier-requests")
+    if os.geteuid() == 0 or not root.is_dir():
+        pytest.skip("requires rootless HTTP verifier's exact bounded tmpfs fixture")
+    with TemporaryDirectory(prefix="pals-lean-", dir=root) as name:
+        scratch = Path(name)
+        assert lean_child._validated_scratch_directory(scratch) == scratch
+        (scratch / "input.txt").write_text("allowed\n")
+        tls_fixture = root / (scratch.name + ".tls-fixture")
+        credential_fixture = root / (scratch.name + ".credential-fixture")
+        tls_fixture.write_text("harmless TLS fixture\n")
+        credential_fixture.write_text("harmless credential fixture\n")
+        try:
+            workspace = tmp_path / "project"
+            workspace.mkdir()
+            (workspace / "lean-toolchain").write_text("reviewed fixture toolchain\n")
+            (workspace / "lakefile.lean").write_text("reviewed fixture configuration\n")
+            probe = tmp_path / "reviewed-probe"
+            probe.write_text(
+                "#!/bin/sh\n"
+                'IFS= read -r value < "$TMPDIR/input.txt" || exit 30\n'
+                '[ "$value" = allowed ] || exit 31\n'
+                "printf 'created\\n' > \"$TMPDIR/output.txt\" || exit 32\n"
+                f"if (IFS= read -r value < {shlex.quote(str(tls_fixture))}); then exit 33; fi\n"
+                f"if (IFS= read -r value < {shlex.quote(str(credential_fixture))}); "
+                "then exit 34; fi\n"
+                "printf 'http-sandbox-ok\\n'\n",
+            )
+            probe.chmod(0o755)
+            result = subprocess.run(
+                _limited_command(
+                    [str(probe), "env", "/bin/true"], timeout_seconds=10, scratch_dir=scratch
+                ),
+                cwd=workspace,
+                env={
+                    "PATH": "/usr/bin:/bin",
+                    "ELAN_HOME": str(tmp_path / "no-elan"),
+                    "HOME": str(scratch),
+                    "TMPDIR": str(scratch),
+                    "LANG": "C.UTF-8",
+                },
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+            assert result.returncode == 0, result.stderr
+            assert result.stdout == "http-sandbox-ok\n"
+            assert (scratch / "output.txt").read_text() == "created\n"
+            assert tls_fixture.read_text() == "harmless TLS fixture\n"
+            assert credential_fixture.read_text() == "harmless credential fixture\n"
+        finally:
+            tls_fixture.unlink()
+            credential_fixture.unlink()
