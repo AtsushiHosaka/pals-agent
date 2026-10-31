@@ -84,7 +84,7 @@ def test_closed_authoring_candidates_preserve_author_and_exact_single_target():
             manifest["author_profile"]["source_author_principal"]
             == manifest["source_author_principal"]
         )
-        assert manifest["toolchain"]["toolchain_id"] == "lean-4.32.0-rc1-mathlib-8b62164d-aws-v1"
+        assert manifest["toolchain"] == module.EXPECTED_TOOLCHAIN
         source = module.materialize(manifest).decode()
         declaration = extract_single_target_declaration(source)
         assert declaration is not None
@@ -135,6 +135,14 @@ def test_search_candidate_requires_receipt_binding_and_keeps_japanese_answer():
         module.search_candidate(case, manifest, wrong)
     with pytest.raises(ValueError, match="identity mismatch"):
         module.search_candidate(case, manifest, {**receipt, "extra": True})
+    for toolchain in (
+        {**manifest["toolchain"], "toolchain_id": "lean-4.32.0-rc1-mathlib-8b62164d-aws-v1"},
+        {**manifest["toolchain"], "fingerprint": {
+            **manifest["toolchain"]["fingerprint"], "verifier_sha256": "f" * 64,
+        }},
+    ):
+        with pytest.raises(ValueError, match="frozen compiler"):
+            module.search_candidate(case, {**manifest, "toolchain": toolchain}, receipt)
 
 
 def test_publication_output_refuses_existing_file_and_symlink(tmp_path):

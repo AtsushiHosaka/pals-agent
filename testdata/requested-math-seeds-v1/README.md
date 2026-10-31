@@ -65,9 +65,13 @@ proof-request candidate capture remains available separately. Twenty canonical
 `publication/*.json` files use the existing `pals.recipe-authoring-manifest.v1`
 schema. The operator-approved author is
 `pals.principal.v1/codex/requested-math-seeds-20261031`; the toolchain identifier is
-`lean-4.32.0-rc1-mathlib-8b62164d-aws-v1`. Their expected fingerprint uses the
-observed active source pins. The real isolated verifier must independently
-measure and match that fingerprint; these files do not assert it has done so.
+`lean-4.32.0-rc1-mathlib-8b62164d-aws-v2`. Its expected verifier fingerprint is
+`8a13da18825fc857f150220dc7aec489318dc7d2354a05bb955207e4764f284f`, the exact
+`pals_agent` source archive used for the compiler build at commit `f851917`.
+This version repairs the protected HTTP request scratch boundary. The metadata
+update leaves all 20 materialized Lean files, corpus and proof witnesses unchanged.
+The real isolated verifier must independently measure and match the new fingerprint;
+the earlier local compiler reports establish neither that measurement nor admission.
 
 1. In the API release environment, run each canonical authoring file through the
    existing real mTLS verifier and catalog admission:

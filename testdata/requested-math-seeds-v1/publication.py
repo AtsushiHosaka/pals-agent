@@ -18,6 +18,16 @@ import rfc8785
 
 ROOT = Path(__file__).resolve().parent
 DIGEST = re.compile(r"[0-9a-f]{64}")
+EXPECTED_TOOLCHAIN = {
+    "toolchain_id": "lean-4.32.0-rc1-mathlib-8b62164d-aws-v2",
+    "fingerprint": {
+        "schema_version": "pals.lean-toolchain-fingerprint.v1",
+        "lean_version": "leanprover/lean4:v4.32.0-rc1",
+        "lake_manifest_sha256": "290f048c4a499d34a3b21f8db30ade48a2b8d05b0fe79709f1868fa6748944fa",
+        "verifier_sha256": "8a13da18825fc857f150220dc7aec489318dc7d2354a05bb955207e4764f284f",
+        "materializer_version": "pals.recipe-materializer.v1",
+    },
+}
 
 
 def sha(raw: bytes) -> str:
@@ -60,6 +70,8 @@ def materialize(manifest: dict) -> bytes:
 
 def search_candidate(case: dict, manifest: dict, receipt: dict) -> dict:
     """Pure binding check, not proof of the supplied receipt's origin or authority."""
+    if manifest["toolchain"] != EXPECTED_TOOLCHAIN:
+        raise ValueError("authoring toolchain differs from the frozen compiler")
     source = materialize(manifest)
     fingerprint_hash = sha(rfc8785.dumps(manifest["toolchain"]["fingerprint"]))
     if (
