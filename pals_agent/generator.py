@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass, replace
 from typing import Protocol
 
-from pals_agent.linked_chat import selected_generation_model
+from pals_agent.linked_chat import selected_generation_model, selected_generation_reasoning_effort
 from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
 from pals_agent.mlx import MlxError
 from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
@@ -458,10 +458,19 @@ class HybridLeanGenerator:
             client, model, provider = self._prove_endpoint()
         else:
             client, model, provider = self._default_endpoint(selected=role != ModelRole.ROUTE)
+        selected_effort = (
+            selected_generation_reasoning_effort(None) if role != ModelRole.ROUTE else None
+        )
         if not self.use_release_role_bindings:
-            return client, model, provider, None
-        # One static release choice for all attempts. Retry count and compiler
-        # errors do not select another model or raise the reasoning effort.
+            if selected_effort is None:
+                return client, model, provider, None
+            if not isinstance(client, OpenAIResponsesClient):
+                raise ValueError("Selected reasoning requires an OpenAI generation client")
+            return (
+                replace(client, reasoning_effort=selected_effort), model, provider, selected_effort
+            )
+        # An explicit request choice is fixed for its entire lifetime. Retry count
+        # and compiler errors never select another model or raise the effort.
         binding = fixed_model_default(role)
         if role == ModelRole.ROUTE:
             model = binding.model
@@ -471,7 +480,10 @@ class HybridLeanGenerator:
             # whole run. It never changes in response to failures or retry count.
             if role != ModelRole.ROUTE and model != RELEASE_MODEL:
                 effort = client.reasoning_effort or effort
+            effort = selected_effort or effort
             client = replace(client, reasoning_effort=effort)
+        elif selected_effort is not None:
+            raise ValueError("Selected reasoning requires an OpenAI generation client")
         return client, model, binding.provider, effort
 
 

@@ -162,7 +162,8 @@ def test_selected_lean_generation_model_never_changes_cheap_explanation_or_fixed
             {"approved": True, "rationale": "Faithful explanation."},
         ]
     )
-    assert runtime.answer(dict(REQUEST, generation_model=model)).outcome == "answered"
+    assert runtime.answer(dict(REQUEST, generation_model=model,
+                               generation_reasoning_effort="high")).outcome == "answered"
     assert [call["model"] for call in provider.calls] == [
         "gpt-6.1-sol", "gpt-6-luna", "gpt-6-luna",
     ]
@@ -416,3 +417,32 @@ def test_worker_attachment_client_has_a_bounded_dedicated_large_response_transpo
     client = PalsApiClient("https://api.example.test", "fixture")
     assert client.transport.max_response_bytes == 2_097_152
     assert client.attachment_transport.max_response_bytes == 56_000_000
+
+
+@pytest.mark.parametrize("effort", [None, "none", "xhigh", "unsupported", {}, []])
+def test_invalid_generation_effort_never_reaches_the_intent_provider(effort):
+    runtime, provider = engine([route()])
+    result = runtime.answer(dict(REQUEST, generation_reasoning_effort=effort))
+    assert result.outcome == "failed"
+    assert result.error_code == "chat_invalid_response"
+    assert provider.calls == []
+
+
+def test_natural_chat_lean_route_carries_the_explicit_effort_to_generation_scope():
+    from dataclasses import replace
+
+    from pals_agent.linked_chat import selected_generation_reasoning_effort
+    from pals_agent.proof_reuse import ProofReuseResult
+
+    class ObservingProofRuntime:
+        def answer(self, request, *args, **kwargs):
+            assert request["generation_reasoning_effort"] == "high"
+            assert selected_generation_reasoning_effort(None) == "high"
+            return ProofReuseResult("failed", None, None, "lean_verification_required", {})
+
+    runtime, provider = engine([route("lean")])
+    runtime = replace(runtime, proof_runtime=ObservingProofRuntime())
+    result = runtime.answer(dict(REQUEST, generation_reasoning_effort="high"), lambda _: None)
+    assert result.error_code == "lean_verification_required"
+    assert len(provider.calls) == 1
+    assert selected_generation_reasoning_effort(None) is None

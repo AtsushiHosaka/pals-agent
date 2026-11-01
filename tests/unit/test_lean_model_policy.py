@@ -186,3 +186,56 @@ def test_lean_model_selection_does_not_raise_explanation_model_cost() -> None:
     assert result.model == "gpt-6-luna"
     assert transport.calls[0]["model"] == "gpt-6-luna"
     assert transport.calls[0]["reasoning"] == {"effort": "low"}
+
+
+@pytest.mark.parametrize("selected", ["gpt-6.1-terra", "gpt-6.1-sol", "gpt-6-luna"])
+@pytest.mark.parametrize("effort", ["low", "medium", "high"])
+def test_explicit_request_effort_is_used_for_all_dsp_stages_and_repairs(
+    selected: str, effort: str,
+) -> None:
+    generator, transport = dsp()
+    assert generator.openai is not None
+    # The immutable request wins over a separately constructed client's default.
+    generator = replace(generator, openai=replace(generator.openai, reasoning_effort="low"))
+    costs: list[dict[str, Any]] = []
+    with linked_chat_scope({
+        "generation_model": selected, "generation_reasoning_effort": effort,
+    }), usage_scope(costs.append):
+        initial = generator.generate(request())
+        restored = _generated_proof_from_status(json.loads(json.dumps(asdict(initial))))
+        assert restored is not None
+        assert restored.reasoning_effort == effort
+        assert restored.draft is not None and restored.draft.reasoning_effort == effort
+        assert restored.sketch is not None and restored.sketch.reasoning_effort == effort
+        for attempt in (1, 3, 12):
+            repaired = generator.repair(request(), GenerationFeedback(
+                attempt=attempt, previous_lean_code=restored.lean_code,
+                diagnostics=(Diagnostic("error", "unknown tactic", "lean.unknown_identifier"),),
+                repair_route="prove", previous_draft=restored.draft,
+                previous_sketch=restored.sketch,
+            ))
+            assert (repaired.model, repaired.reasoning_effort) == (selected, effort)
+        assert all(call["model"] == selected for call in transport.calls)
+        assert all(call["reasoning"] == {"effort": effort} for call in transport.calls)
+        assert {cost["model"] for cost in costs} == {selected}
+        assert all(cost["output_tokens"] == 80 for cost in costs)
+        assert all(cost["reasoning_output_tokens"] == 60 for cost in costs)
+        route = generator.select_repair_route(request(), GenerationFeedback(
+            1, "bad", (Diagnostic("error", "syntax"),),
+        ))
+        assert (route.model, route.reasoning_effort) == ("gpt-6-luna", "low")
+    transport.calls.clear()
+    generator.generate(request())
+    assert all(call["model"] == "gpt-6.1-terra" for call in transport.calls)
+    assert all(call["reasoning"] == {"effort": "low"} for call in transport.calls)
+
+
+def test_explicit_request_effort_is_not_ignored_without_release_role_bindings() -> None:
+    generator, transport = dsp()
+    generator = replace(generator, use_release_role_bindings=False)
+    with linked_chat_scope({
+        "generation_model": "gpt-6.1-sol", "generation_reasoning_effort": "high",
+    }):
+        generated = generator.generate(request())
+    assert generated.reasoning_effort == "high"
+    assert all(call["reasoning"] == {"effort": "high"} for call in transport.calls)

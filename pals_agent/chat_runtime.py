@@ -13,7 +13,7 @@ from pals_agent.chat_images import (
     chat_input_data,
     chat_input_sha256,
 )
-from pals_agent.linked_chat import linked_chat_scope
+from pals_agent.linked_chat import linked_chat_scope, validate_generation_settings
 from pals_agent.material_context import MATERIAL_INSTRUCTION, MaterialContext
 from pals_agent.model_roles import RELEASE_MODEL
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
@@ -170,9 +170,16 @@ class ChatRuntime:
                     ),
                     "generation_model": request.get("generation_model", RELEASE_MODEL),
                 }
+                generation_context = {
+                    "generation_model": bound_request["generation_model"],
+                    "chat_route": evidence["chat_route"],
+                }
+                if "generation_reasoning_effort" in request:
+                    effort = request["generation_reasoning_effort"]
+                    bound_request["generation_reasoning_effort"] = effort
+                    generation_context["generation_reasoning_effort"] = effort
                 with linked_chat_scope(
-                    {"generation_model": bound_request["generation_model"],
-                     "chat_route": evidence["chat_route"]},
+                    generation_context,
                     {"request": bound_request, "attachments": request.get("chat_images", []),
                      "chat_route": evidence["chat_route"]},
                 ):
@@ -378,6 +385,7 @@ def _validate_route(route: dict[str, Any]) -> None:
 
 
 def _validate_request(request: dict[str, Any]) -> None:
+    validate_generation_settings(request)
     _validate_json_storage_text(request)
     statement = request["statement"]
     turns = request["context_turns"]

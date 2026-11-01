@@ -31,7 +31,7 @@ from tests.unit.test_recipe_semantic_reviewer import Api as RecipeApi
 from tests.unit.test_worker import SemanticReviewApi
 
 
-def binding(model="gpt-6.1-sol"):
+def binding(model="gpt-6.1-sol", effort=None):
     source = {
         "statement": "Prove the identity in this image.",
         "context_turns": [{
@@ -48,9 +48,11 @@ def binding(model="gpt-6.1-sol"):
         "session_id": "resp_classifier", "rationale": "An explicit proof request.",
         "extracted_statement": "Every natural number plus zero is itself.", "question": None,
     }
-    return {"generation_model": model, "chat_route": route}, {
-        "request": source, "attachments": [IMAGE], "chat_route": route,
-    }
+    context = {"generation_model": model, "chat_route": route}
+    if effort is not None:
+        source["generation_reasoning_effort"] = effort
+        context["generation_reasoning_effort"] = effort
+    return context, {"request": source, "attachments": [IMAGE], "chat_route": route}
 
 
 class Responses:
@@ -182,7 +184,7 @@ def test_separate_recipe_reviewer_receives_same_visual_binding_without_worker_se
 
         def get_chat_input(self, job, candidate):
             assert (job, candidate) == ("proof-1", self.candidate)
-            return binding()[1]
+            return binding(effort="high")[1]
 
     api = LinkedRecipeApi()
     provider = Responses([{"approved": True, "rationale": "Source and visual goal agree."}])
@@ -194,3 +196,42 @@ def test_separate_recipe_reviewer_receives_same_visual_binding_without_worker_se
     assert len(provider.calls) == len(api.writes) == 1
     assert provider.calls[0]["model"] == "gpt-6-luna"
     assert_visual_calls(provider.calls)
+
+
+@pytest.mark.parametrize("effort", ["low", "medium", "high"])
+def test_linked_reasoning_choice_is_exactly_bound_and_scope_is_restored(effort):
+    from pals_agent.linked_chat import selected_generation_reasoning_effort
+
+    context, payload = copy.deepcopy(binding())
+    context["generation_reasoning_effort"] = effort
+    payload["request"]["generation_reasoning_effort"] = effort
+    with linked_chat_scope(context, payload):
+        assert selected_generation_reasoning_effort(None) == effort
+        with linked_chat_scope({"generation_reasoning_effort": "low"}):
+            assert selected_generation_reasoning_effort(None) == "low"
+        assert selected_generation_reasoning_effort(None) == effort
+    assert selected_generation_reasoning_effort(None) is None
+
+
+@pytest.mark.parametrize("effort", [None, "none", "xhigh", "max", "arbitrary", 1, {}, []])
+def test_invalid_request_reasoning_fails_before_generation(effort):
+    from pals_agent.linked_chat import selected_generation_reasoning_effort
+
+    with pytest.raises(ValueError), linked_chat_scope({"generation_reasoning_effort": effort}):
+        pytest.fail("unsupported request reasoning must be rejected")
+    assert selected_generation_reasoning_effort(None) is None
+
+
+@pytest.mark.parametrize("mutation", ["different", "missing_context", "missing_payload"])
+def test_linked_reasoning_cannot_change_between_request_context_and_snapshot(mutation):
+    context, payload = copy.deepcopy(binding())
+    context["generation_reasoning_effort"] = "high"
+    payload["request"]["generation_reasoning_effort"] = "high"
+    if mutation == "different":
+        payload["request"]["generation_reasoning_effort"] = "low"
+    elif mutation == "missing_context":
+        del context["generation_reasoning_effort"]
+    else:
+        del payload["request"]["generation_reasoning_effort"]
+    with pytest.raises(ValueError), linked_chat_scope(context, payload):
+        pytest.fail("request choice must not be replaced during redelivery")

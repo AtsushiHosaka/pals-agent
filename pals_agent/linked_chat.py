@@ -16,8 +16,10 @@ from pals_agent.chat_images import (
     chat_input_sha256,
     parse_chat_images,
 )
+from pals_agent.model_roles import ReasoningEffort
 
 _model: ContextVar[str | None] = ContextVar("linked_generation_model", default=None)
+_effort: ContextVar[ReasoningEffort | None] = ContextVar("linked_generation_effort", default=None)
 _input: ContextVar[str | None] = ContextVar("linked_chat_input", default=None)
 GENERATION_MODELS = frozenset({"gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-5.6-terra"})
 
@@ -25,6 +27,11 @@ GENERATION_MODELS = frozenset({"gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gp
 def selected_generation_model(default: str) -> str:
     """Only generation callers opt in; classifiers, search and QA do not."""
     return _model.get() or default
+
+
+def selected_generation_reasoning_effort(default: ReasoningEffort | None) -> ReasoningEffort | None:
+    """An explicit immutable request choice overrides only Lean generation roles."""
+    return _effort.get() or default
 
 
 def linked_chat_prompt(prompt: str) -> str:
@@ -43,13 +50,25 @@ def linked_chat_prompt(prompt: str) -> str:
     )
 
 
+def validate_generation_settings(context: dict[str, Any]) -> None:
+    """Reject unsupported public choices before any provider request."""
+    model = context.get("generation_model")
+    if model is not None and (not isinstance(model, str) or model not in GENERATION_MODELS):
+        raise ValueError("invalid linked generation model")
+    effort = context.get("generation_reasoning_effort")
+    if "generation_reasoning_effort" in context and (
+        not isinstance(effort, str) or effort not in {"low", "medium", "high"}
+    ):
+        raise ValueError("invalid linked generation reasoning effort")
+
+
 @contextmanager
 def linked_chat_scope(
     context: dict[str, Any], payload: dict[str, Any] | None = None
 ) -> Iterator[None]:
+    validate_generation_settings(context)
     model = context.get("generation_model")
-    if model is not None and (not isinstance(model, str) or model not in GENERATION_MODELS):
-        raise ValueError("invalid linked generation model")
+    effort = context.get("generation_reasoning_effort")
     route = context.get("chat_route")
     image_urls: tuple[str, ...] = ()
     serialized = None
@@ -65,13 +84,20 @@ def linked_chat_scope(
             or payload["chat_route"] != route
             or not isinstance(payload["request"], dict)
             or payload["request"].get("generation_model") != model
+            or payload["request"].get("generation_reasoning_effort") != effort
+            or ("generation_reasoning_effort" in payload["request"]) != (
+                "generation_reasoning_effort" in context
+            )
         ):
             raise ValueError("invalid linked chat binding")
         request = dict(payload["request"])
         if (
-            set(request) != {
-                "statement", "context_turns", "chat_history", "attachment_ids", "generation_model"
-            }
+            set(request) not in (
+                {"statement", "context_turns", "chat_history", "attachment_ids",
+                 "generation_model"},
+                {"statement", "context_turns", "chat_history", "attachment_ids", "generation_model",
+                 "generation_reasoning_effort"},
+            )
             or not isinstance(request["statement"], str)
             or not isinstance(request["context_turns"], list)
             or not isinstance(request["chat_history"], list)
@@ -92,9 +118,11 @@ def linked_chat_scope(
     elif payload is not None:
         raise ValueError("unexpected linked chat payload")
     model_token, input_token = _model.set(model), _input.set(serialized)
+    effort_token = _effort.set(effort)
     try:
         with chat_image_scope(image_urls):
             yield
     finally:
+        _effort.reset(effort_token)
         _input.reset(input_token)
         _model.reset(model_token)

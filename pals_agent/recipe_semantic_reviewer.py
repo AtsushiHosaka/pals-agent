@@ -165,6 +165,13 @@ class RecipeReviewActor:
                     "chat_route": chat_payload["chat_route"],
                     "generation_model": chat_payload["request"]["generation_model"],
                 } if chat_payload is not None else {}
+                if (
+                    chat_payload is not None
+                    and "generation_reasoning_effort" in chat_payload["request"]
+                ):
+                    chat_context["generation_reasoning_effort"] = chat_payload["request"][
+                        "generation_reasoning_effort"
+                    ]
                 with linked_chat_scope(chat_context, chat_payload):
                     review = self.reviewer_factory().review_proof(
                         theorem_statement=content["theorem_statement"],
