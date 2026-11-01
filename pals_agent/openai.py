@@ -151,13 +151,20 @@ class OpenAIResponsesClient:
                 "OpenAI response was malformed", private_diagnostics={"stage": "json"}
             )
         if body.get("model") != model:
+            if meter is None:
+                # Preserve incurred known-model usage even when identity checking
+                # rejects this response. Never invent a price for an unknown model.
+                report_usage(
+                    call_id, str(body.get("model", "")), body.get("usage"),
+                    provider_request_id=body.get("id"),
+                )
             raise OpenAIError(
                 "OpenAI response model does not match the requested release model.",
                 private_diagnostics={"stage": "model"},
             )
 
         if meter is None:
-            report_usage(call_id, model, body.get("usage"))
+            report_usage(call_id, model, body.get("usage"), provider_request_id=body.get("id"))
         generated = (
             _extract_structured_response_text(body)
             if response_schema is not None

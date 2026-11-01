@@ -49,6 +49,14 @@ from pals_agent.proof_instantiation import (
 )
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.recipe_search import bounded_text, validate_recipe_candidates
+from pals_agent.recipe_semantic import (
+    RecipeBatch,
+    SemanticAttempt,
+    SemanticReuseError,
+)
+from pals_agent.recipe_semantic import (
+    attempt as semantic_attempt,
+)
 from pals_agent.token_meter import active_token_meter
 
 _OUTPUT_LANGUAGE_INSTRUCTION = (
@@ -267,6 +275,7 @@ class ProofReuseRuntime:
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
         deadline: float | None = None, allow_exact_input: bool = True,
+        recipe_batch: RecipeBatch | None = None,
     ) -> ProofReuseResult:
         """Recipe-first released flow uses recipe_search; recipe_lookup is legacy only.
 
@@ -284,6 +293,16 @@ class ProofReuseRuntime:
             ) if allow_exact_input else None
             if exact is not None:
                 return exact
+            evidence["phase"] = "recipe_semantic_review"
+            semantic = self.semantic_recipe_input(
+                request, recipe_batch=recipe_batch, claim_id=claim_id, deadline=deadline,
+            )
+            if semantic is not None:
+                if semantic.answer is not None:
+                    return ProofReuseResult(
+                        "answered", None, semantic.answer, None, semantic.evidence,
+                    )
+                evidence.update(semantic.evidence)
             history = _conversation_history(request)
             conventions = None
             if "math_conventions" in request:
@@ -853,6 +872,17 @@ class ProofReuseRuntime:
             # Untrusted JSON must never escape into the SQS polling loop, and malformed
             # responses are not mathematical uncertainty eligible for model escalation.
             return ProofReuseResult("failed", None, None, "proof_reuse_invalid_response", evidence)
+
+    def semantic_recipe_input(
+        self, request: dict[str, Any], *, recipe_batch: RecipeBatch | None,
+        claim_id: str | None, deadline: float,
+    ) -> SemanticAttempt | None:
+        if recipe_batch is None or claim_id is None:
+            return None
+        try:
+            return semantic_attempt(self.client, request, claim_id, recipe_batch, deadline=deadline)
+        except SemanticReuseError as error:
+            raise ProofReuseError(error.code) from error
 
     def exact_recipe_input(
         self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,

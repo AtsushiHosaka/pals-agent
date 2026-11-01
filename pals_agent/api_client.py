@@ -224,6 +224,16 @@ class PalsApiClient:
         except ValueError as error:
             raise PalsApiError("invalid Recipe search response") from error
 
+    def get_proof_request_recipe_batch(
+        self, *, request_id: str, claim_id: str, output_language: str,
+    ) -> dict[str, Any]:
+        return self._request(
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/recipe-batch",
+            {"claim_id": _canonical_claim_id(claim_id), "output_language": output_language},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES,
+        )
+
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
@@ -261,7 +271,10 @@ class PalsApiClient:
         )
 
     def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None:
-        payload = dict(usage, generation_claim_id=_canonical_claim_id(claim_id))
+        # Request-specific semantic evidence retains real provider IDs. The
+        # historical proof-job usage v1 API remains a closed envelope.
+        payload = {key: value for key, value in usage.items() if key != "provider_request_id"}
+        payload["generation_claim_id"] = _canonical_claim_id(claim_id)
         result = self._request(
             "POST", f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/usage",
             payload, headers={"X-PALS-Worker-Secret": self.worker_secret},

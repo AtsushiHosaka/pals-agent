@@ -4,6 +4,7 @@ A metering failure is visible but never changes proof generation or quota.
 """
 
 import logging
+import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -39,7 +40,28 @@ def usage_scope(reporter: Callable[[dict[str, Any]], None]) -> Iterator[None]:
         _reporter.reset(token)
 
 
-def report_usage(call_id: str, model: str, usage: Any) -> None:
+@contextmanager
+def capture_usage() -> Iterator[list[dict[str, Any]]]:
+    """Capture this one call while retaining the claim's ordinary durable reporter."""
+    parent = _reporter.get()
+    records: list[dict[str, Any]] = []
+
+    def collect(record: dict[str, Any]) -> None:
+        records.append(dict(record))
+        if parent is not None:
+            parent(record)
+
+    with usage_scope(collect):
+        yield records
+
+
+def report_usage(
+    call_id: str,
+    model: str,
+    usage: Any,
+    *,
+    provider_request_id: Any = None,
+) -> None:
     reporter = _reporter.get()
     if reporter is None:
         return
@@ -73,6 +95,15 @@ def report_usage(call_id: str, model: str, usage: Any) -> None:
                 output_tokens=output_tokens,
                 reasoning_output_tokens=reasoning,
                 price_snapshot_id=snapshot,
+                **(
+                    {"provider_request_id": provider_request_id}
+                    if (
+                        isinstance(provider_request_id, str)
+                        and 6 <= len(provider_request_id) <= 256
+                        and re.fullmatch(r"resp_[A-Za-z0-9_-]+", provider_request_id)
+                    )
+                    else {}
+                ),
             )
         )
     except Exception as exc:

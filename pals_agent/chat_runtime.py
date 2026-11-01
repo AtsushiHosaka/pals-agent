@@ -31,6 +31,7 @@ from pals_agent.proof_reuse import (
     _validate_json_storage_text,
 )
 from pals_agent.proof_reuse_usage import model_role
+from pals_agent.recipe_semantic import RecipeBatch
 from pals_agent.token_meter import active_token_meter
 
 INTENT_MODEL = "gpt-6.1-sol"
@@ -92,6 +93,7 @@ class ChatRuntime:
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
+        recipe_batch: RecipeBatch | None = None,
     ) -> ProofReuseResult:
         deadline = min(
             time.monotonic() + MAX_SECONDS,
@@ -105,6 +107,16 @@ class ChatRuntime:
             ) if recipe_search is not None else None
             if exact is not None:
                 return exact
+            evidence["phase"] = "recipe_semantic_review"
+            semantic = self.proof_runtime.semantic_recipe_input(
+                request, recipe_batch=recipe_batch, claim_id=claim_id, deadline=deadline,
+            ) if recipe_batch is not None else None
+            if semantic is not None:
+                if semantic.answer is not None:
+                    return ProofReuseResult(
+                        "answered", None, semantic.answer, None, semantic.evidence,
+                    )
+                evidence.update(semantic.evidence)
             input_sha = chat_input_sha256(request)
             data = chat_input_data(request)
             data["output_language"] = request["output_language"]

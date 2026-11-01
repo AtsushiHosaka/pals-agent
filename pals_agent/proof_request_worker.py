@@ -9,7 +9,7 @@ from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
@@ -24,6 +24,7 @@ from pals_agent.proof_reuse import (
     RecipeSearch,
 )
 from pals_agent.proof_reuse_usage import current_role
+from pals_agent.recipe_semantic import RecipeBatch
 from pals_agent.token_meter import (
     TokenBudgetExceededError,
     TokenMeter,
@@ -40,7 +41,7 @@ _ASSESSMENT_PHASES = frozenset({
     "premise_resolution", "catalog_retrieval", "primary_assessment",
     "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
     "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
-    "recipe_exact_input", "recipe_parallel_independent_reviews",
+    "recipe_exact_input", "recipe_parallel_independent_reviews", "recipe_semantic_review",
 })
 _RESULT_ERROR_CODES = frozenset({
     "proof_reuse_answer_review_failed", "proof_reuse_catalog_invalid", "proof_reuse_deadline",
@@ -76,6 +77,7 @@ class ChatAnswerRuntime(Protocol):
         self, request: dict[str, Any],
         recipe_lookup: Callable[[list[dict[str, Any]]], list[dict[str, Any]]] | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
+        recipe_batch: RecipeBatch | None = None,
     ) -> ProofReuseResult: ...
 
 
@@ -204,6 +206,17 @@ class ProofRequestProcessor:
             {"recipe_search": search_recipes, "claim_id": claim_id}
             if claim.get("lean_flow") else {}
         )
+        batch_method = getattr(self.api, "get_proof_request_recipe_batch", None)
+        if claim.get("lean_flow") and callable(batch_method):
+            def load_batch() -> dict[str, Any]:
+                try:
+                    return cast(dict[str, Any], batch_method(
+                        request_id=request_id, claim_id=claim_id,
+                        output_language=request["output_language"],
+                    ))
+                except PalsApiError as error:
+                    raise ProofReuseError("proof_reuse_recipe_unavailable") from error
+            recipe_options["recipe_batch"] = load_batch
         try:
             attachment_ids = chat_attachment_ids(request)
             if attachment_ids:

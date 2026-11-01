@@ -78,3 +78,9 @@ def fixed_model_default(role: ModelRole) -> RoleModelDefault:
     """Return the immutable release binding for one known generation role."""
 
     return _FIXED_ROLE_DEFAULTS[role]
+
+
+# PFR-019's measured dual review configuration is static, separate from the
+# learner-selected Lean generator and the ordinary explanation/review policy.
+RECIPE_SEMANTIC_MODEL: Final = RELEASE_MODEL
+RECIPE_SEMANTIC_REASONING_EFFORT: Final[ReasoningEffort] = "low"

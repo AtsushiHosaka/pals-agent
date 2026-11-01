@@ -253,7 +253,7 @@ class TokenMeter:
                 timeout_seconds=self._remaining(deadline),
             )
             body = _object(response.body)
-            if not 200 <= response.status_code < 300 or body.get("model") != model:
+            if not 200 <= response.status_code < 300:
                 raise TokenMeterError("token_provider_unavailable")
             usage = body.get("usage")
             telemetry_usage = (
@@ -263,7 +263,12 @@ class TokenMeter:
             )
             # Keep provider cost evidence even when customer accounting subsequently
             # fails (including usage above a permit or a lost receipt acknowledgement).
-            report_usage(call_id, model, telemetry_usage)
+            report_usage(
+                call_id, str(body.get("model", "")), telemetry_usage,
+                provider_request_id=body.get("id"),
+            )
+            if body.get("model") != model:
+                raise TokenMeterError("token_provider_unavailable")
             if not isinstance(usage, dict):
                 raise TokenMeterError("token_usage_missing")
             actual_input = _integer(usage.get("prompt_tokens" if embedding else "input_tokens"))
