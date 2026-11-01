@@ -40,6 +40,7 @@ _ASSESSMENT_PHASES = frozenset({
     "premise_resolution", "catalog_retrieval", "primary_assessment",
     "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
     "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
+    "recipe_exact_input",
 })
 _RESULT_ERROR_CODES = frozenset({
     "proof_reuse_answer_review_failed", "proof_reuse_catalog_invalid", "proof_reuse_deadline",
@@ -244,7 +245,15 @@ class ProofRequestProcessor:
                         result = self.runtime.answer(request, **recipe_options)
                     if meter.failed:
                         raise TokenMeterError("token_meter_failed")
-                    if result.outcome == "answered" and (
+                    from pals_agent.recipe_exact_input import result_is_bound
+
+                    exact_zero_call = (
+                        not meter.completed_calls
+                        and result_is_bound(
+                            request, claim_id, result.answer, result.private_evidence,
+                        )
+                    )
+                    if result.outcome == "answered" and not exact_zero_call and (
                         not isinstance(result.private_evidence.get("token_qa"), dict)
                         or result.private_evidence["token_qa"].get("approved") is not True
                     ):

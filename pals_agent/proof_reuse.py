@@ -264,7 +264,7 @@ class ProofReuseRuntime:
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
-        deadline: float | None = None,
+        deadline: float | None = None, allow_exact_input: bool = True,
     ) -> ProofReuseResult:
         """Recipe-first released flow uses recipe_search; recipe_lookup is legacy only.
 
@@ -277,6 +277,11 @@ class ProofReuseRuntime:
         evidence: dict[str, Any] = {"schema_version": "pals.proof-reuse-assessment.v1"}
         try:
             statement, language, turns = _request_input(request)
+            exact = self.exact_recipe_input(
+                request, recipe_search=recipe_search, claim_id=claim_id, deadline=deadline,
+            ) if allow_exact_input else None
+            if exact is not None:
+                return exact
             history = _conversation_history(request)
             conventions = None
             if "math_conventions" in request:
@@ -847,6 +852,55 @@ class ProofReuseRuntime:
             # responses are not mathematical uncertainty eligible for model escalation.
             return ProofReuseResult("failed", None, None, "proof_reuse_invalid_response", evidence)
 
+    def exact_recipe_input(
+        self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,
+        claim_id: str | None, deadline: float | None = None,
+    ) -> ProofReuseResult | None:
+        """A separate finite input contract, never a fabricated LLM correspondence."""
+        from pals_agent.recipe_exact_input import (
+            APPLIED,
+            QUERY,
+            candidate_matches,
+            correspondence,
+            eligible,
+        )
+
+        if recipe_search is None or not eligible(request):
+            return None
+        deadline = time.monotonic() + MAX_SECONDS if deadline is None else deadline
+        if deadline <= time.monotonic():
+            raise ProofReuseError("proof_reuse_deadline")
+        _request_input(request)
+        _conversation_history(request)
+        if claim_id is None:
+            raise ProofReuseError("proof_reuse_input_invalid")
+        try:
+            receipt = correspondence(request, claim_id)
+            candidates = validate_recipe_candidates(
+                recipe_search(QUERY, "ja"), language="ja",
+            )
+        except ValueError as error:
+            raise ProofReuseError("proof_reuse_recipe_invalid") from error
+        if deadline <= time.monotonic():
+            raise ProofReuseError("proof_reuse_deadline")
+        selected = next((item for item in candidates if candidate_matches(item)), None)
+        if selected is None:
+            # Missing/changed/unavailable registry entry does not authorize reuse.
+            return None
+        answer = {
+            "text": selected["answer"], "evidence_kind": "lean_catalog", "sources": [],
+            "lean": {"source": "catalog", **{key: selected[key] for key in (
+                "recipe_id", "recipe_revision", "entry_sha256", "answer_sha256", "lean_sha256",
+                "compiler_receipt_sha256", "toolchain_sha256",
+            )}},
+        }
+        return ProofReuseResult("answered", None, answer, None, {
+            "schema_version": "pals.proof-reuse-assessment.v1",
+            "phase": "recipe_exact_input", "lean_route": "catalog_reuse_exact_input",
+            "applied_conventions": copy.deepcopy(APPLIED),
+            "recipe_exact_input_correspondence": receipt,
+        })
+
     def _recipe_first(
         self, request: dict[str, Any], context: dict[str, Any], preflight: dict[str, Any],
         evidence: dict[str, Any], search: RecipeSearch, claim_id: str | None,
@@ -999,6 +1053,11 @@ class ProofReuseRuntime:
                 or not bounded_text(reviewed["rationale"], 8000)
                 or len(reviewed["rationale"]) > 2000):
             raise ProofReuseError("proof_reuse_invalid_response")
+        evidence["recipe_independent_review"] = {
+            "approved": reviewed["approved"], "rationale": reviewed["rationale"],
+            "recipe_id": selected["recipe_id"], "recipe_revision": selected["recipe_revision"],
+            "entry_sha256": selected["entry_sha256"],
+        }
         qa = {"approved": reviewed["approved"], "answer_sha256": selected["answer_sha256"]}
         if meter is not None:
             qa_call = meter.last_call_id

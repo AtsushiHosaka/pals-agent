@@ -20,6 +20,7 @@ from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.proof_reuse import (
     MAX_ROUNDS,
     MAX_SECONDS,
+    ProofReuseError,
     ProofReuseResult,
     ProofReuseRuntime,
     RecipeLookup,
@@ -99,6 +100,11 @@ class ChatRuntime:
         evidence: dict[str, Any] = {"schema_version": "pals.proof-reuse-assessment.v1"}
         try:
             _validate_request(request)
+            exact = self.proof_runtime.exact_recipe_input(
+                request, recipe_search=recipe_search, claim_id=claim_id, deadline=deadline,
+            ) if recipe_search is not None else None
+            if exact is not None:
+                return exact
             input_sha = chat_input_sha256(request)
             data = chat_input_data(request)
             data["output_language"] = request["output_language"]
@@ -188,10 +194,12 @@ class ChatRuntime:
                         recipe_lookup,
                         recipe_search=recipe_search,
                         claim_id=claim_id,
-                        deadline=deadline,
+                        deadline=deadline, allow_exact_input=False,
                     )
                 return replace(result, private_evidence={**result.private_evidence, **evidence})
             return self._explain(request, data, images, input_sha, evidence, deadline, materials)
+        except ProofReuseError as error:
+            return ProofReuseResult("failed", None, None, error.code, evidence)
         except OpenAIError as error:
             evidence["provider_failure"] = error.private_diagnostics
             return ProofReuseResult("failed", None, None, "chat_provider_unavailable", evidence)
