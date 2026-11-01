@@ -257,7 +257,7 @@ def test_uncertainty_uses_terra_once_and_never_sol():
     engine, transport = runtime([READY, decision(action="uncertain"), decision()])
     assert engine.answer(REQUEST).outcome == "answered"
     assert [c["model"] for c in transport.calls] == [
-        "gpt-6-luna", "gpt-6-luna", "gpt-5.6-terra", "gpt-6-luna"
+        "gpt-6-luna", "gpt-6-luna", "gpt-6.1-terra", "gpt-6-luna"
     ]
 
 

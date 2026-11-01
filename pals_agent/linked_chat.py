@@ -19,7 +19,7 @@ from pals_agent.chat_images import (
 
 _model: ContextVar[str | None] = ContextVar("linked_generation_model", default=None)
 _input: ContextVar[str | None] = ContextVar("linked_chat_input", default=None)
-GENERATION_MODELS = frozenset({"gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra"})
+GENERATION_MODELS = frozenset({"gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-5.6-terra"})
 
 
 def selected_generation_model(default: str) -> str:

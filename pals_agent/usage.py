@@ -21,6 +21,7 @@ PRICE_SNAPSHOTS = {
     # estimate all input at the cache-write upper bound, not a claimed invoice.
     "gpt-6-luna": "openai-gpt-6-luna-standard-upper-bound-2026-09-30",
     "gpt-6.1-sol": "openai-gpt-6.1-sol-standard-upper-bound-2026-10-07",
+    "gpt-6.1-terra": "openai-gpt-6.1-terra-standard-upper-bound-2026-11-01",
     "gpt-5.6-terra": "openai-gpt-5.6-terra-standard-upper-bound-2026-09-30",
     "gpt-5.4-mini": "openai-gpt-5.4-mini-2026-09-29",
     "gpt-5.4-mini-2026-03-17": "openai-gpt-5.4-mini-2026-09-29",

@@ -84,8 +84,8 @@ def assert_visual_calls(calls):
         assert "reject a proof or explanation" in content[0]["text"]
 
 
-@pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra"])
-def test_dsp_repair_and_explainer_selected_with_fixed_routing_and_independent_qa(model):
+@pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-6.1-terra", "gpt-6.1-sol", "gpt-5.6-terra"])
+def test_dsp_repair_selected_with_fixed_explanation_routing_and_independent_qa(model):
     provider = Responses([
         DRAFT, SKETCH, PROOF, {"instruction": "Use the identity."},
         {"route": "prove", "rationale": "The sketch is usable."},
@@ -105,14 +105,14 @@ def test_dsp_repair_and_explainer_selected_with_fixed_routing_and_independent_qa
         explanation = explainer.explain(
             theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True,
         )
-        assert explanation.model == model
+        assert explanation.model == "gpt-6-luna"
         review = reviewer.review_explanation(
             theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, explanation=explanation,
             language="ja",
         )
         assert review.reviewer_model == "gpt-6-luna"
     assert [call["model"] for call in provider.calls] == [
-        model, model, model, model, "gpt-6-luna", model, "gpt-6-luna"
+        model, model, model, model, "gpt-6-luna", "gpt-6-luna", "gpt-6-luna"
     ]
     assert_visual_calls(provider.calls)
     assert current_chat_images() == ()

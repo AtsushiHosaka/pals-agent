@@ -110,19 +110,20 @@ The worker is API-reconciliation-first:
   sketch, or prove,
 - stores generated code, model output, diagnostics, timings, and artifacts.
 
-Provider selection is controlled by environment variables:
+Release roles are code-owned in `pals_agent/model_roles.py`. Lean Draft, Sketch,
+Prove, and Repair use `gpt-6.1-terra` with medium reasoning. OpenMath, route selection,
+retrieval ranking, explanations, and independent review use `gpt-6-luna` with low
+reasoning. A user-selected Lean model remains selected throughout its retries;
+explanations keep their separate cheaper model. Compiler failures do not switch
+the selected model or reasoning effort, and there is no automatic Sol or Astra
+fallback.
+
+Configure the release client's credentials and bounded output budget:
 
 ```bash
-# Default local mode
-PALS_LLM_PROVIDER=ollama
-OLLAMA_PROVE_MODEL=qwen2.5:3b
-
-# OpenAI mode
-PALS_LLM_PROVIDER=openai
 OPENAI_API_KEY=sk-...
-PALS_OPENAI_MODEL=gpt-5.4-nano
 PALS_OPENAI_BASE_URL=https://api.openai.com/v1
-PALS_OPENAI_MAX_OUTPUT_TOKENS=12000
+PALS_OPENAI_MAX_OUTPUT_TOKENS=16384
 
 # Bounded Lean diagnostic repair loop
 PALS_MAX_REPAIR_ATTEMPTS=12
@@ -206,9 +207,10 @@ retrieval validates and alpha-canonicalizes the query, embeds it once, and sends
 one vector/fingerprint-only request to the worker-authenticated API private port.
 The Agent has no direct storage driver, credential, configuration, migration, or
 fallback catalog. Before retrieval, the OpenMath structuring role uses the
-code-owned `gpt-5.4` default through `OPENAI_API_KEY` and
+code-owned `gpt-6-luna` default through `OPENAI_API_KEY` and
 `PALS_OPENAI_BASE_URL`; there is no environment model selector for this role.
-Draft, sketch, prove, and repair keep their existing provider/model routing.
+Release startup rejects provider/model override variables such as
+`PALS_LLM_PROVIDER`, `PALS_OPENAI_MODEL`, and `OPENAI_MODEL`.
 
 The packaged bootstrap catalog currently contains 31 Drafts. Thirty are
 continuity examples spanning direct Lipschitz estimates, closure constructions,

@@ -134,6 +134,7 @@ def build_generator(settings: AgentSettings) -> HybridLeanGenerator:
         model=binding.model,
         provider=binding.provider,
         openai=_release_openai_client(settings),
+        use_release_role_bindings=True,
     )
 
 

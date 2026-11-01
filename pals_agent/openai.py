@@ -14,7 +14,11 @@ from pals_agent.http_transport import (
     HttpResponseTooLarge,
     HttpTransport,
 )
-from pals_agent.model_roles import ESCALATION_MODEL, RELEASE_MODEL
+from pals_agent.model_roles import (
+    ESCALATION_MODEL,
+    RELEASE_MODEL,
+    ReasoningEffort,
+)
 from pals_agent.openai_diagnostics import (
     http_failure_diagnostics,
     response_failure_diagnostics,
@@ -41,6 +45,7 @@ class OpenAIResponsesClient:
         repr=False,
         compare=False,
     )
+    reasoning_effort: ReasoningEffort | None = None
 
     def generate(
         self,
@@ -75,11 +80,18 @@ class OpenAIResponsesClient:
         }
         if store is not None:
             payload["store"] = store
-        if model in {RELEASE_MODEL, ESCALATION_MODEL, "gpt-6.1-sol"}:
-            # Pin standard service for reproducible usage estimates and bound the
-            # cheap first pass; Terra is invoked explicitly, never as a retry.
+        if model in {RELEASE_MODEL, ESCALATION_MODEL, "gpt-6.1-sol", "gpt-5.6-terra"}:
+            # Reasoning models reject temperature/top_p; effort is the only
+            # sampling-related control. Never retry with a different model here.
             payload["service_tier"] = "default"
-            payload["reasoning"] = {"effort": "low" if model == RELEASE_MODEL else "medium"}
+            effort = self.reasoning_effort or (
+                "low" if model == RELEASE_MODEL else "medium"
+            )
+            if effort not in {"none", "low", "medium", "high", "xhigh", "max"} or (
+                model == "gpt-6.1-sol" and effort == "none"
+            ):
+                raise ValueError("Unsupported reasoning effort for the selected model")
+            payload["reasoning"] = {"effort": effort}
         if response_schema is not None:
             payload["text"] = {
                 "format": {

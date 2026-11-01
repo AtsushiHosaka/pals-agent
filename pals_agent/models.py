@@ -131,6 +131,7 @@ class GeneratedDraft:
     prompt: str = ""
     provider: str = ""
     elapsed_ms: int = 0
+    reasoning_effort: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,6 +143,7 @@ class GeneratedSketch:
     prompt: str = ""
     provider: str = ""
     elapsed_ms: int = 0
+    reasoning_effort: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,6 +157,7 @@ class GeneratedProof:
     provider: str = ""
     elapsed_ms: int = 0
     stage_diagnostics: tuple[Diagnostic, ...] = ()
+    reasoning_effort: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -168,6 +171,7 @@ class RepairRouteDecision:
     elapsed_ms: int = 0
     attempt_outputs: tuple[str, ...] = ()
     selector_attempts: tuple[RepairRouteAttemptEvidence, ...] = ()
+    reasoning_effort: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

@@ -1290,6 +1290,7 @@ def _failed_staged_proof(
         provider=failed_stage.provider,
         elapsed_ms=failed_stage.elapsed_ms,
         stage_diagnostics=stage_diagnostics,
+        reasoning_effort=failed_stage.reasoning_effort,
     )
 
 

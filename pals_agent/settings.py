@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
+from pals_agent.model_roles import LEAN_GENERATION_MODEL, ModelRole, fixed_model_default
 from pals_agent.models import DEFAULT_MAX_REPAIR_ATTEMPTS
 
 _SEMANTIC_EVALUATOR_TOKEN_RE = re.compile(
@@ -163,12 +163,14 @@ class AgentSettings:
             or os.getenv("OLLAMA_DRAFT_MODEL")
             or "qwen2.5:3b",
             openai_api_key=_first_env("PALS_OPENAI_API_KEY", "OPENAI_API_KEY") or "",
-            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or RELEASE_MODEL,
+            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or LEAN_GENERATION_MODEL,
             openai_base_url=os.getenv(
                 "PALS_OPENAI_BASE_URL",
                 "https://api.openai.com/v1",
             ),
-            openai_max_output_tokens=_positive_int_env("PALS_OPENAI_MAX_OUTPUT_TOKENS", 12000),
+            openai_max_output_tokens=_bounded_ascii_int_env(
+                "PALS_OPENAI_MAX_OUTPUT_TOKENS", 16384, minimum=1, maximum=32768,
+            ),
             prove_mlx_model_path=_optional_env("PALS_PROVE_MLX_MODEL_PATH"),
             mlx_generate_binary=os.getenv("PALS_MLX_GENERATE_BINARY", "mlx_lm.generate"),
             mlx_max_tokens=_positive_int_env("PALS_MLX_MAX_TOKENS", 4096),

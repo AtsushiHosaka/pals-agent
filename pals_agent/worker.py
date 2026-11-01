@@ -3432,6 +3432,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
     model = value.get("model")
     provider = value.get("provider")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(lean_code, str)
         or not lean_code.strip()
@@ -3441,6 +3442,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
         or not provider.strip()
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     draft = _generated_draft_from_status(value.get("draft"))
@@ -3460,6 +3462,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
         sketch=sketch,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
         stage_diagnostics=tuple(stage_diagnostics),
     )
 
@@ -3471,6 +3474,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
     model = value.get("model")
     provider = value.get("provider")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(text, str)
         or not text.strip()
@@ -3480,6 +3484,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
         or not provider.strip()
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     return GeneratedDraft(
@@ -3488,6 +3493,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
         raw_model_output=text,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
     )
 
 
@@ -3499,6 +3505,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
     provider = value.get("provider")
     has_gaps = value.get("has_gaps")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(lean_code, str)
         or not lean_code.strip()
@@ -3509,6 +3516,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
         or not isinstance(has_gaps, bool)
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     return GeneratedSketch(
@@ -3518,6 +3526,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
         has_gaps=has_gaps,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
     )
 
 

@@ -38,9 +38,9 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert settings.llm_provider == "ollama"
     assert settings.ollama_model == "qwen2.5:3b"
-    assert settings.openai_model == "gpt-6-luna"
+    assert settings.openai_model == "gpt-6.1-terra"
     assert build_recipe_attempt_planner(settings) is None
-    assert settings.openai_max_output_tokens == 12000
+    assert settings.openai_max_output_tokens == 16384
     assert settings.prove_mlx_model_path is None
     assert settings.mlx_generate_binary == "mlx_lm.generate"
     assert settings.mlx_max_tokens == 4096
@@ -155,9 +155,10 @@ def test_factory_uses_openai_generator(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert isinstance(pipeline.generator, HybridLeanGenerator)
     assert pipeline.generator.provider == "openai"
-    assert pipeline.generator.model == "gpt-6-luna"
+    assert pipeline.generator.model == "gpt-6.1-terra"
     assert pipeline.generator.openai is not None
-    assert pipeline.generator.openai.max_output_tokens == 12000
+    assert pipeline.generator.openai.max_output_tokens == 16384
+    assert pipeline.generator.use_release_role_bindings is True
     assert pipeline.draft_catalog is None
     assert isinstance(pipeline.proof_flow_retriever, ProofFlowRuntime)
     assert pipeline.verifier is None
@@ -344,7 +345,7 @@ def test_factory_rejects_semantic_self_judge_provider_and_model(
     monkeypatch.setenv("PALS_SEMANTIC_EVALUATOR_PROVIDER", "openai")
     monkeypatch.setenv(
         "PALS_SEMANTIC_EVALUATOR_MODEL",
-        "gpt-6-luna",
+        "gpt-6.1-terra",
     )
     monkeypatch.setenv("PALS_SEMANTIC_EVALUATOR_REVISION", "judge-revision")
     monkeypatch.setenv(
@@ -357,7 +358,7 @@ def test_factory_rejects_semantic_self_judge_provider_and_model(
 
 
 def test_release_role_registry_is_complete_immutable_and_code_owned() -> None:
-    assert RELEASE_ROLE_REGISTRY_REVISION == "pals.release-role-registry.v2"
+    assert RELEASE_ROLE_REGISTRY_REVISION == "pals.release-role-registry.v3"
     assert tuple(entry.role for entry in RELEASE_ROLE_REGISTRY) == (
         ModelRole.OPENMATH,
         ModelRole.DRAFT,
@@ -372,15 +373,13 @@ def test_release_role_registry_is_complete_immutable_and_code_owned() -> None:
         ModelRole.PROOF_REUSE_JUDGE_ESCALATION,
     )
     assert all(entry.provider == "openai" for entry in RELEASE_ROLE_REGISTRY)
-    assert all(
-        entry.model
-        == (
-            "gpt-5.6-terra"
-            if entry.role == ModelRole.PROOF_REUSE_JUDGE_ESCALATION
-            else "gpt-6-luna"
+    lean_roles = {ModelRole.DRAFT, ModelRole.SKETCH, ModelRole.PROVE, ModelRole.REPAIR}
+    for entry in RELEASE_ROLE_REGISTRY:
+        is_terra = entry.role in lean_roles or entry.role == ModelRole.PROOF_REUSE_JUDGE_ESCALATION
+        assert entry.model == ("gpt-6.1-terra" if is_terra else "gpt-6-luna")
+        assert entry.reasoning_effort == (
+            "medium" if entry.role in lean_roles else "high" if is_terra else "low"
         )
-        for entry in RELEASE_ROLE_REGISTRY
-    )
     assert all(fixed_model_default(entry.role) == entry for entry in RELEASE_ROLE_REGISTRY)
 
 
