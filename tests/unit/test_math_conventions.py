@@ -173,7 +173,7 @@ class ConventionApi(LeanApiBoundary):
 
 
 def test_worker_passes_readings_and_settles_the_applied_ones():
-    engine, _ = runtime([relevant("zero_ring_domain"), INTENT])
+    engine, _ = runtime([dict(relevant("zero_ring_domain"), recipe_intent=INTENT), INTENT])
     api = ConventionApi({"policy": "ask", "choices": {"zero_ring_domain": "include"}})
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]
@@ -189,7 +189,7 @@ def test_worker_passes_readings_and_settles_the_applied_ones():
 
 
 def test_worker_sends_the_convention_question_without_applied_readings():
-    engine, _ = runtime([relevant("zero_ring_domain")])
+    engine, _ = runtime([dict(relevant("zero_ring_domain"), recipe_intent=INTENT)])
     api = ConventionApi({"policy": "ask", "choices": {}})
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

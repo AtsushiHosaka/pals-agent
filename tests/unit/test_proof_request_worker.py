@@ -377,9 +377,9 @@ class LeanApiBoundary(ApiBoundary):
 
 
 def test_released_lean_flow_settles_a_formal_plan_for_the_linked_job():
-    from tests.unit.test_proof_reuse_lean_flow import INTENT
+    from tests.unit.test_proof_reuse_lean_flow import READY_INTENT
 
-    engine, _ = runtime([READY, INTENT])
+    engine, _ = runtime([READY_INTENT])
     api = LeanApiBoundary([])
     assert ProofRequestProcessor(api, engine).process(REQUEST_ID, CLAIM_ID, lambda seconds: None)
     settlement = api.settlements[0]

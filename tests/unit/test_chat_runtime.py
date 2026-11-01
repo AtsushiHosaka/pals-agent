@@ -151,8 +151,10 @@ def test_explanation_three_real_client_calls_are_visual_independent_and_metered(
     assert "hidden solve/prove/correctness" in provider.calls[2]["input"][0]["content"][0]["text"]
 
 
-@pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra"])
-def test_selected_generation_model_never_changes_fixed_intent_or_qa(model):
+@pytest.mark.parametrize("model", [
+    "gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra", "gpt-6.1-terra",
+])
+def test_selected_lean_generation_model_never_changes_cheap_explanation_or_fixed_reviews(model):
     runtime, provider = engine(
         [
             route(),
@@ -161,7 +163,10 @@ def test_selected_generation_model_never_changes_fixed_intent_or_qa(model):
         ]
     )
     assert runtime.answer(dict(REQUEST, generation_model=model)).outcome == "answered"
-    assert [call["model"] for call in provider.calls] == ["gpt-6.1-sol", model, "gpt-6-luna"]
+    assert [call["model"] for call in provider.calls] == [
+        "gpt-6.1-sol", "gpt-6-luna", "gpt-6-luna",
+    ]
+    assert [call["reasoning"]["effort"] for call in provider.calls[1:]] == ["low", "low"]
 
 
 def test_qa_rejection_never_publishes_or_falls_back_to_a_proof_route():
@@ -238,18 +243,17 @@ def test_lean_preflight_preserves_original_goal_and_bound_images(image_only):
 def test_lean_catalog_receipt_and_independent_review_bind_original_statement():
     import rfc8785
 
-    from tests.unit.test_proof_reuse import READY
     from tests.unit.test_proof_reuse_lean_flow import (
         BOUND_REQUEST,
         CLAIM_ID,
-        INTENT,
         MATCH,
+        READY_INTENT,
         RECIPE,
         REVIEW,
     )
 
     runtime, provider = engine([
-        route("lean", extracted_statement="Prove True."), READY, INTENT, MATCH, REVIEW,
+        route("lean", extracted_statement="Prove True."), READY_INTENT, MATCH, REVIEW,
     ])
     result = runtime.answer(BOUND_REQUEST, recipe_search=lambda *args: [RECIPE],
                             claim_id=CLAIM_ID)
