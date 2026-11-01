@@ -293,13 +293,14 @@ def test_claim_bound_token_operation_allows_only_exact_zero_provider_result(cont
 
 
 def test_rejected_independent_review_keeps_only_bounded_private_diagnostic():
-    from tests.unit.test_proof_reuse_lean_flow import MATCH, READY_INTENT, RECIPE
+    from tests.unit.test_proof_reuse_lean_flow import MATCH, READY_INTENT, RECIPE, REVIEW
 
     proof, _ = runtime(
         [
             READY_INTENT,
             MATCH,
-            {"approved": False, "rationale": "The answer omits a required boundary explanation."},
+            dict(REVIEW, approved=False,
+             rationale="The answer omits a required boundary explanation."),
         ]
     )
     result = proof.answer(BOUND_REQUEST, recipe_search=lambda *_: [RECIPE], claim_id=CLAIM_ID)

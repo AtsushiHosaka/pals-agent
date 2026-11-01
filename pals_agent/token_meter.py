@@ -9,10 +9,12 @@ from __future__ import annotations
 import hashlib
 import json
 import time
+from _thread import LockType
 from collections.abc import Iterator
 from contextlib import contextmanager, suppress
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from threading import Lock
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -121,6 +123,11 @@ class TokenMeter:
     failed: bool = False
     completed_calls: dict[str, str] = field(default_factory=dict)
     last_call_id: str | None = None
+    _state_lock: LockType = field(default_factory=Lock, init=False, repr=False, compare=False)
+
+    def snapshot_completed_calls(self) -> dict[str, str]:
+        with self._state_lock:
+            return dict(self.completed_calls)
 
     def __post_init__(self) -> None:
         for value in (self.operation_id, self.request_id, self.claim_id):
@@ -129,8 +136,9 @@ class TokenMeter:
 
     def _remaining(self, deadline: float) -> float:
         remaining = min(deadline, self.deadline) - time.monotonic()
-        if remaining <= 0 or self.failed:
-            raise TokenMeterError("token_meter_deadline")
+        with self._state_lock:
+            if remaining <= 0 or self.failed:
+                raise TokenMeterError("token_meter_deadline")
         return remaining
 
     def request(
@@ -269,6 +277,7 @@ class TokenMeter:
                 or reasoning > actual_output
             ):
                 raise TokenMeterError("token_usage_exceeds_permit")
+            receipt_timeout = self._remaining(deadline)
             receipt_attempted = True
             self.api.record_token_receipt(
                 dict(
@@ -279,10 +288,11 @@ class TokenMeter:
                     cached_input_tokens=cached,
                     reasoning_output_tokens=reasoning,
                 ),
-                timeout_seconds=self._remaining(deadline),
+                timeout_seconds=receipt_timeout,
             )
-            self.completed_calls[call_id] = current_role()
-            self.last_call_id = call_id
+            with self._state_lock:
+                self.completed_calls[call_id] = current_role()
+                self.last_call_id = call_id
             return response
         except Exception as error:
             # A lost success acknowledgement is NOT rewritten as unknown. The API
@@ -301,7 +311,8 @@ class TokenMeter:
                         ),
                         timeout_seconds=max(0.001, min(5.0, self.deadline - time.monotonic())),
                     )
-            self.failed = True
+            with self._state_lock:
+                self.failed = True
             if isinstance(error, TokenBudgetExceededError):
                 raise TokenBudgetExceededError("token_budget_exceeded") from None
             raise TokenMeterError("proof_reuse_token_accounting_failed") from None

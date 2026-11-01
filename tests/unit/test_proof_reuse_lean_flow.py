@@ -59,6 +59,7 @@ MATCH = {
     "rationale": "Same mathematical scope modulo wording and bound variable names.",
 }
 REVIEW = {
+    "recipe_id": RECIPE["recipe_id"], "recipe_revision": 1,
     "approved": True,
     "rationale": "The actual Lean and stored answer match the original request.",
 }
@@ -97,12 +98,14 @@ def test_recipe_hit_returns_stored_answer_without_draft_generation_or_compilatio
     assert all(
         "answer" not in call["text"]["format"]["schema"]["properties"] for call in transport.calls
     )
-    review_prompt = transport.calls[-1]["input"]
+    review_prompt = next(call["input"] for call in transport.calls
+                         if "approved" in call["text"]["format"]["schema"]["properties"])
     assert "without relying on any prior assessor" in review_prompt
     assert "request.output_language selects the learner-facing prose language" in review_prompt
     assert "Reject learner-facing prose in a different language" in review_prompt
     data = json.loads(review_prompt.split("DATA:\n", 1)[1])
-    assert data["lean_source"] == SOURCE and data["answer"] == ANSWER
+    assert data["candidates"][0]["lean_code"] == SOURCE
+    assert data["candidates"][0]["answer"] == ANSWER
     assert data["request"]["original_statement"] == REQUEST["statement"]
     assert data["request"]["output_language"] == "ja"
     assert "recipe_scope_assessment" not in data
@@ -131,10 +134,10 @@ def test_valid_search_miss_routes_to_dsp_without_presearching_draft(monkeypatch)
     "dimension", ["objects", "domain", "assumptions", "quantifiers", "conclusion", "method"]
 )
 def test_each_scope_difference_including_specialization_requires_full_dsp(dimension):
-    engine, transport = runtime([READY_INTENT, dict(MATCH, **{dimension: False})])
+    engine, transport = runtime([READY_INTENT, dict(MATCH, **{dimension: False}), REVIEW])
     result, _ = run(engine, [RECIPE])
     assert result.outcome == "formal" and result.formal_plan["kind"] == "dsp"
-    assert len(transport.calls) == 2
+    assert len(transport.calls) == 3
 
 
 def test_independent_rejection_cannot_publish_stored_answer():
@@ -184,9 +187,9 @@ def test_missing_premise_asks_before_recipe_or_draft_search():
 
 def test_uncertainty_requires_dsp_without_paid_generation_escalation():
     uncertain = dict(MATCH, recipe_id=None, recipe_revision=None, domain=False)
-    engine, transport = runtime([READY_INTENT, uncertain])
+    engine, transport = runtime([READY_INTENT, uncertain, REVIEW])
     result, _ = run(engine, [RECIPE])
-    assert result.outcome == "formal" and len(transport.calls) == 2
+    assert result.outcome == "formal" and len(transport.calls) == 3
 
 
 def test_without_lean_flow_previous_answer_path_is_unchanged():
@@ -220,8 +223,10 @@ def test_combined_resolution_is_search_data_and_keeps_both_independent_reviews()
     assert result.private_evidence["request_structure"] == INTENT
     assert "premise_check" in provider.calls[0]["text"]["format"]["schema"]["properties"]
     assert "recipe_intent" in provider.calls[0]["text"]["format"]["schema"]["properties"]
-    assessment = json.loads(provider.calls[1]["input"].split("DATA:\n", 1)[1])
-    review = json.loads(provider.calls[2]["input"].split("DATA:\n", 1)[1])
+    assessment = json.loads(next(call["input"] for call in provider.calls
+        if "objects" in call["text"]["format"]["schema"]["properties"]).split("DATA:\n",1)[1])
+    review = json.loads(next(call["input"] for call in provider.calls
+        if "approved" in call["text"]["format"]["schema"]["properties"]).split("DATA:\n",1)[1])
     assert assessment["intent"] == INTENT
     candidate = assessment["candidates"][0]
     # Hashes are checked locally before assessment and bound again at settlement;

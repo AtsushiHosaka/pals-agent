@@ -40,7 +40,7 @@ _ASSESSMENT_PHASES = frozenset({
     "premise_resolution", "catalog_retrieval", "primary_assessment",
     "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
     "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
-    "recipe_exact_input",
+    "recipe_exact_input", "recipe_parallel_independent_reviews",
 })
 _RESULT_ERROR_CODES = frozenset({
     "proof_reuse_answer_review_failed", "proof_reuse_catalog_invalid", "proof_reuse_deadline",

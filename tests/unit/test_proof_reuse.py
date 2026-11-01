@@ -1,6 +1,7 @@
 """Exercise production assessment through an isolated provider HTTP boundary."""
 
 import json
+from threading import Lock
 
 import pytest
 
@@ -59,11 +60,31 @@ class ProviderTransport:
     def __init__(self, responses):
         self.responses = list(responses)
         self.calls = []
+        self._lock = Lock()
+        self._recipe_responses = None
 
     def request(self, **kwargs):
         body = json.loads(kwargs["body"])
-        self.calls.append(body)
-        response = self.responses.pop(0)
+        properties = body.get("text", {}).get("format", {}).get("schema", {}).get("properties", {})
+        pair_role = (
+            "review" if {"recipe_id", "approved"} <= properties.keys() else
+            "scope" if {"recipe_id", "objects", "quantifiers", "method"} <= properties.keys()
+            else None
+        )
+        with self._lock:
+            self.calls.append(body)
+            if pair_role is not None:
+                # Scripted independent responses are assigned by role, never by
+                # nondeterministic thread arrival order. No result is synthesized.
+                if self._recipe_responses is None:
+                    self._recipe_responses = {
+                        "scope": self.responses.pop(0), "review": self.responses.pop(0),
+                    }
+                response = self._recipe_responses.pop(pair_role)
+                if not self._recipe_responses:
+                    self._recipe_responses = None
+            else:
+                response = self.responses.pop(0)
         if isinstance(response, int):
             return HttpResponse(response, b'{"error":{"code":"insufficient_quota"}}')
         text = response if isinstance(response, str) else json.dumps(response, ensure_ascii=False)
