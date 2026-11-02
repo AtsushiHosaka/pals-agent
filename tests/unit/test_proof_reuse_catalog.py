@@ -237,26 +237,17 @@ def test_statement_search_embeds_the_english_rewrite_without_any_vocabulary(monk
     assert calls["retrieved"] == calls["embedding_input"]
 
 
-def test_statement_search_covers_requests_preflight_left_without_a_profile(monkeypatch):
+def test_profileless_requests_stay_away_from_paid_search_with_the_flag_on(monkeypatch):
     calls = {}
     _capture_statement_search(monkeypatch, calls)
-    ApiProofReuseCatalog(_statement_settings()).retrieve(
-        "有限群は組成列をもつ", None, deadline=time.monotonic() + 180
-    )
-    assert calls["retrieved"]
-
-
-def test_flag_off_keeps_profileless_requests_away_from_paid_search(monkeypatch):
-    calls = {}
-    _capture_statement_search(monkeypatch, calls)
-    result = ApiProofReuseCatalog(_statement_settings(False)).retrieve(
+    result = ApiProofReuseCatalog(_statement_settings()).retrieve(
         "有限群は組成列をもつ", None, deadline=time.monotonic() + 180
     )
     assert result.compatibility == {"reason": "no_catalog_profile"}
     assert calls == {}
 
 
-def test_failed_optional_search_cannot_fail_a_profileless_request(monkeypatch):
+def test_failed_statement_search_stays_a_catalog_failure(monkeypatch):
     calls = {}
     _capture_statement_search(monkeypatch, calls)
 
@@ -267,11 +258,10 @@ def test_failed_optional_search_cannot_fail_a_profileless_request(monkeypatch):
         "pals_agent.proof_reuse_catalog.NaturalDraftCandidateClient.retrieve_by_statement",
         unavailable,
     )
-    catalog = ApiProofReuseCatalog(_statement_settings())
-    result = catalog.retrieve("有限群は組成列をもつ", None, deadline=time.monotonic() + 180)
-    assert result.contexts == ()
     with pytest.raises(ProofReuseError, match="catalog_unavailable"):
-        catalog.retrieve("有限群は組成列をもつ", "generic-v1", deadline=time.monotonic() + 180)
+        ApiProofReuseCatalog(_statement_settings()).retrieve(
+            "有限群は組成列をもつ", "generic-v1", deadline=time.monotonic() + 180
+        )
 
 
 def test_empty_english_rewrite_is_an_invalid_query(monkeypatch):
