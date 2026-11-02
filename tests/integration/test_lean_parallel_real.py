@@ -378,7 +378,8 @@ def test_seccomp_denies_every_signal_route_out_of_a_compile() -> None:
         victim.wait(timeout=5)
 
 
-@pytest.mark.parametrize("held", [54, 55, 56])
+# Without the cgroup check, 58 and 60 held PIDs turned a true proof into `lean.failed`.
+@pytest.mark.parametrize("held", [56, 58, 60])
 def test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict(
     runtime: tuple[Path, Path], held: int,
 ) -> None:
@@ -401,6 +402,8 @@ def test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict(
         assert result.success is True or codes == ["lean.compile_interrupted"], (
             codes, result.stderr[:400],
         )
+    if held >= 58:
+        assert any(result.success is False for result in results)
     assert verifier.verify(_TRUE).success is True
 
 
