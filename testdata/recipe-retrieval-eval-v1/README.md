@@ -11,8 +11,9 @@ cards are read-only input and are not copied here.
 
 ```sh
 PYTHONPATH=. OPENAI_API_KEY=... python testdata/recipe-retrieval-eval-v1/evaluate.py \
-  --cards "$TEXTBOOK_CATALOG_DIRECTORY" --output "$NEW_PRIVATE_RESULT_FILE"
+  --cards "$TEXTBOOK_CATALOG_DIRECTORY" --output "$NEW_PRIVATE_RESULT_FILE" \
+  --vector-cache "$PRIVATE_VECTOR_CACHE_FILE"
 ```
 
 The run calls paid providers and appends one JSON line per query, so it can resume. Results are
-recorded in the parent repository under `docs/aws-recipe-retrieval-scale-2026-11-02.md`.
+recorded in the parent repository under `docs/recipe-retrieval-scale-2026-11-02.md`.
