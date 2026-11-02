@@ -126,7 +126,11 @@ def _record_handoffs(
     linked: dict[str, float] = {}
     for trace in traces:
         request = trace.get("linked_request_correlation_sha256")
-        if request in finished and isinstance(trace.get("started_unix_ms"), int):
+        if (
+            isinstance(request, str)
+            and request in finished
+            and isinstance(trace.get("started_unix_ms"), int)
+        ):
             linked[request] = min(linked.get(request, math.inf), trace["started_unix_ms"])
     for request, started in linked.items():
         samples["fresh_proof_job", "handoff/assessment_to_job"].append(
