@@ -41,7 +41,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         if "--run" in command:
             # The trusted audit that follows every accepted compile reuses the same boundary.
             nonce = command[command.index("--run") + 2]
-            report = f"theorem target\ncomplete {nonce}\n"
+            report = f"theorem target\nbound target\ncomplete {nonce}\n"
             return lean_module._ProcessResult(0, report, "", False, False)
         Path(command[command.index("-o") + 1]).write_bytes(b"olean")
         captured.update(

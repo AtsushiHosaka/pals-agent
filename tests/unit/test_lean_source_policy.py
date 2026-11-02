@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from pals_agent.lean import LeanVerifier
@@ -350,3 +352,48 @@ def test_sketch_verifier_applies_the_same_policy() -> None:
 
     assert result.success is False
     assert result.diagnostics[0].code == "lean.disallowed_metaprogramming"
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        '/--/ " -/\nmacro_rules | _ => _ -- "\ntheorem t : True := trivial\n',
+        '/-!/ " -/\nrun_cmd pure () -- "\n',
+        "def t : Set Nat := ∅ᶜinfix:50 \" = \" => f\n",
+        "def t : Set Nat := ∅ᶜset_option debug.skipKernelTC true\n",
+        "def t := 1run_elab pure ()\n",
+        'def x : String := s! "{(by_elab foo : Nat)}"\n',
+        'def x : String := s!\n  "{foo}"\n',
+        'def x : String := s! /- gap -/ "{foo}"\n',
+        "def v : Nat := eval% 2^10\n",
+        'def v := include_str "/etc/hosts"\n',
+        "def v := 1\nsimproc_decl foo (bar) := baz\n",
+    ],
+)
+def test_lexer_disagreements_found_in_review_are_rejected(source: str) -> None:
+    assert find_source_violation(source) is not None
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "/-- doc -/\ntheorem t : True := trivial\n",
+        "/-! module doc -/\ntheorem t : True := trivial\n",
+        "theorem t (h' : x ≠ y) (x₁ : Nat) : x₁ = x₁ := rfl\n",
+        "theorem t (sᶜ : Set Nat) : sᶜ = sᶜ := rfl\n",
+        "theorem t : (fun x => x !) 3 = 6 := rfl\n",
+        "theorem t (run_elaborate : Nat) : run_elaborate = run_elaborate := rfl\n",
+    ],
+)
+def test_lexer_fixes_keep_legitimate_syntax(source: str) -> None:
+    assert find_source_violation(source) is None
+
+
+@pytest.mark.parametrize(
+    "source",
+    ["1" * 480_000, "aesop (" * 68_000, "@[simp] " * 60_000],
+)
+def test_policy_stays_fast_on_adversarial_input(source: str) -> None:
+    started = time.monotonic()
+    find_source_violation(source)
+    assert time.monotonic() - started < 5

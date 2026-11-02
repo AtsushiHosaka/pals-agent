@@ -12,6 +12,7 @@ from pals_agent.lean_audit import (
     audit_diagnostics,
     parse_audit_report,
 )
+from pals_agent.lean_source_policy import statement_reference
 
 NONCE = "ab" * 32
 
@@ -59,7 +60,7 @@ def test_parse_fails_closed(stdout: str) -> None:
 
 def test_diagnostics_accept_standard_axioms_and_declared_theorem() -> None:
     report = parse_audit_report(
-        _report("theorem N.target", "axiom propext", "axiom Quot.sound"), NONCE
+        _report("theorem N.target", "axiom propext", "axiom Quot.sound", "bound N.target"), NONCE
     )
 
     assert report is not None
@@ -71,7 +72,7 @@ def test_diagnostics_accept_standard_axioms_and_declared_theorem() -> None:
     ["sorryAx", "bad", "Lean.ofReduceBool", "Lean.trustCompiler", "b._native.native_decide.ax_1_1"],
 )
 def test_diagnostics_reject_every_other_axiom(axiom: str) -> None:
-    report = parse_audit_report(_report("theorem t", f"axiom {axiom}"), NONCE)
+    report = parse_audit_report(_report("theorem t", f"axiom {axiom}", "bound t"), NONCE)
 
     assert report is not None
     assert [item.code for item in audit_diagnostics(report, ("t",))] == ["lean.disallowed_axiom"]
@@ -88,10 +89,131 @@ def test_diagnostics_reject_declared_theorem_absent_from_compiled_module(reporte
 
 
 def test_diagnostics_match_private_and_guillemet_names() -> None:
-    report = parse_audit_report(_report("theorem _private.Main.0.N.a", "theorem «e f»"), NONCE)
+    report = parse_audit_report(
+        _report(
+            "theorem _private.Main.0.N.a",
+            "theorem «e f»",
+            "bound _private.Main.0.N.a",
+            "bound «e f»",
+        ),
+        NONCE,
+    )
 
     assert report is not None
     assert audit_diagnostics(report, ("a", "«e f»")) == []
+
+
+def test_diagnostics_reject_compiled_type_that_differs_from_statement() -> None:
+    report = parse_audit_report(_report("theorem t", "unbound t"), NONCE)
+
+    assert report is not None
+    assert [item.code for item in audit_diagnostics(report, ("t",))] == [
+        "lean.statement_mismatch"
+    ]
+
+
+def test_diagnostics_reject_declared_theorem_without_restatement() -> None:
+    report = parse_audit_report(_report("theorem t"), NONCE)
+
+    assert report is not None
+    assert [item.code for item in audit_diagnostics(report, ("t",))] == [
+        "lean.statement_mismatch"
+    ]
+
+
+def test_diagnostics_reject_unbound_auxiliary_definition() -> None:
+    report = parse_audit_report(_report("theorem t", "bound t", "unbound helper"), NONCE)
+
+    assert report is not None
+    assert [item.code for item in audit_diagnostics(report, ("t",))] == [
+        "lean.statement_mismatch"
+    ]
+
+
+def test_diagnostics_reject_statement_that_needs_a_removed_command() -> None:
+    report = parse_audit_report(_report("theorem t", "statement_error unknown n"), NONCE)
+
+    assert report is not None
+    assert [item.code for item in audit_diagnostics(report, ("t",))] == [
+        "lean.statement_mismatch"
+    ]
+
+
+def test_reference_replaces_proofs_and_drops_outside_commands() -> None:
+    reference = statement_reference(
+        "import Mathlib\n"
+        "open Filter\n"
+        "variable (h : False)\n"
+        "include h\n"
+        "instance forged : OfNat Nat 2 := ⟨1⟩\n"
+        "namespace N\n"
+        "/-- doc -/\n"
+        "def twice (n : Nat) : Nat := n + n\n"
+        "@[simp] theorem t {a : Nat} (ha : 0 < a) :\n"
+        "    twice a = a + a := by\n"
+        "  rfl\n"
+        "end N\n"
+    )
+
+    assert reference == (
+        "open Filter\n"
+        "namespace N\n"
+        "def twice (n : Nat) : Nat := n + n\n"
+        "theorem t {a : Nat} (ha : 0 < a) :\n"
+        "    twice a = a + a := sorry\n"
+        "end N\n"
+    )
+
+
+def test_reference_keeps_scoped_prefix_only_for_its_declaration() -> None:
+    reference = statement_reference(
+        "set_option maxHeartbeats 1000 in\n"
+        "theorem t : True := trivial\n"
+        "open Nat in\n"
+        "instance forged : OfNat Nat 2 := ⟨1⟩\n"
+        "theorem u : True := trivial\n"
+    )
+
+    assert reference == (
+        "set_option maxHeartbeats 1000 in\n"
+        "theorem t : True := sorry\n"
+        "theorem u : True := sorry\n"
+    )
+
+
+def test_reference_reads_lets_and_match_alternatives() -> None:
+    reference = statement_reference(
+        "theorem t : let a := 1; a = a := rfl\n"
+        "theorem u : ∀ n : Nat, n = n\n"
+        "  | 0 => rfl\n"
+        "  | _ + 1 => rfl\n"
+    )
+
+    assert reference == (
+        "theorem t : let a := 1; a = a := sorry\n"
+        "theorem u : ∀ n : Nat, n = n := sorry\n"
+    )
+
+
+def test_reference_blanks_comments_and_literals() -> None:
+    reference = statement_reference('/--/ " -/\nmacro\n"\ntheorem t : True := trivial\n')
+
+    assert reference is not None
+    assert "macro" not in reference
+    assert '"' not in reference
+
+
+def test_reference_fails_closed_without_a_statement() -> None:
+    assert statement_reference("theorem t := trivial\n") is None
+
+
+def test_reference_skips_example_without_a_type_and_restates_typed_one() -> None:
+    reference = statement_reference(
+        "noncomputable def pals_audit_0 := 1\n"
+        "noncomputable def pals_audit_1 : 1 = 1 := rfl\n"
+    )
+
+    assert reference == "noncomputable def pals_audit_1 : 1 = 1 := sorry\n"
 
 
 class _Compiler:
@@ -119,7 +241,7 @@ class _Compiler:
             stdout = (
                 self.audit_stdout
                 if self.audit_stdout is not None
-                else _report("theorem t", "axiom propext", nonce=nonce)
+                else _report("theorem t", "axiom propext", "bound t", nonce=nonce)
             )
             return _ok(stdout, self.audit_returncode)
         if "-o" in command and self.writes_artifact:

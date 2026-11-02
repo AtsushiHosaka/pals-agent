@@ -141,7 +141,6 @@ def test_kernel_replay_rejects_a_declaration_the_compile_skipped() -> None:
         "example : True := trivial\n",
         "example : Nat := 1\n",
         "example := (2 : Nat)\n",
-        "variable (n : Nat) in\nexample : n = n := rfl\n",
         "noncomputable section\nexample (p : Prop) : p ∨ ¬p := Classical.em p\nend\n",
         "namespace A.B\nprotected theorem honest : True := trivial\nend A.B\n",
         "private theorem hidden : True := trivial\n",
@@ -235,3 +234,56 @@ def test_real_mathlib_exit_is_rejected_on_every_compile_path(
 
     assert result.success is False
     assert "lean.trusted_audit_failed" in _codes(result)
+
+
+FORGED_STATEMENTS = {
+    "binder_from_variable": "variable (n : Nat) in\nexample : n = n := rfl\n",
+    "included_false_hypothesis": (
+        "variable (h : False)\ninclude h\ntheorem forged_false : (1 : Nat) = 2 := h.elim\n"
+    ),
+    "shadowed_numeral": (
+        "instance forged : OfNat Nat 2 := ⟨1⟩\ntheorem forged_false : (1 : Nat) = 2 := rfl\n"
+    ),
+    "rewriting_macro": (
+        "macro_rules | `(theorem $n:ident : (1 : Nat) = 2 := $_) => "
+        "`(theorem $n:ident : True := trivial)\n"
+        "theorem forged_false : (1 : Nat) = 2 := by simp\n"
+    ),
+    "shadowed_equality": (
+        'infix:50 (priority := high) " = " => fun (_ _ : Nat) => True\n'
+        "theorem forged_false : (1 : Nat) = 2 := trivial\n"
+    ),
+    "notation_inside_definition": (
+        'notation "two_value" => (1 : Nat)\n'
+        "def two : Nat := two_value\n"
+        "theorem forged_false : two = 1 := rfl\n"
+    ),
+}
+
+
+@pytest.mark.parametrize("name", sorted(FORGED_STATEMENTS))
+def test_audit_rejects_compiled_type_that_differs_from_written_statement(
+    name: str, without_source_policy: None
+) -> None:
+    result = _plain(_lean()).verify(FORGED_STATEMENTS[name])
+
+    assert result.success is False
+    assert "lean.statement_mismatch" in _codes(result)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "namespace N\ndef twice (n : Nat) : Nat := n + n\n"
+        "theorem t (n : Nat) : twice n = n + n := rfl\nend N\n",
+        "universe u\ntheorem t {α : Sort u} (a : α) : a = a := rfl\n",
+        "open Nat in\ntheorem t : succ 0 = 1 := rfl\n",
+        "set_option maxRecDepth 1000 in\ntheorem t : True := trivial\n",
+        "structure P where\n  x : Nat\ntheorem t (p : P) : p.x = p.x := rfl\n",
+        "example : (1 : Nat) = 1 := rfl\n",
+    ],
+)
+def test_audit_accepts_self_contained_statements(source: str) -> None:
+    result = _plain(_lean()).verify(source)
+
+    assert result.success is True, _codes(result)

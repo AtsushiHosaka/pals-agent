@@ -21,6 +21,7 @@ from pals_agent.lean_audit import (
     audit_diagnostics,
     audit_failure,
     parse_audit_report,
+    statement_mismatch,
 )
 from pals_agent.lean_environment import (
     LakeEnvironmentCache,
@@ -32,6 +33,7 @@ from pals_agent.lean_environment import (
 from pals_agent.lean_source_policy import (
     declared_theorem_names,
     find_source_violation,
+    statement_reference,
     strip_lean_comments_and_strings,
     with_auditable_examples,
 )
@@ -528,6 +530,13 @@ class LeanVerifier:
         if olean_file.is_symlink() or not olean_file.is_file():
             return [audit_failure("Lean exited without writing a compiled module.")]
 
+        reference = statement_reference(separate_compile_source or lean_code)
+        if reference is None or find_source_violation(reference) is not None:
+            return [statement_mismatch("A statement could not be read from the written source.")]
+        reference_file = audit_dir / "Statements.lean"
+        reference_file.write_text(reference, encoding="utf-8")
+        reference_file.chmod(0o400)
+
         nonce = secrets.token_hex(32)
         audit_file = audit_dir / "Audit.lean"
         audit_file.write_text(TRUSTED_AUDIT_SOURCE, encoding="utf-8")
@@ -539,6 +548,7 @@ class LeanVerifier:
             str(audit_file),
             nonce,
             str(olean_file),
+            str(reference_file),
         ]
         audited = run(
             [lake_binary, "env", *lean_arguments]
