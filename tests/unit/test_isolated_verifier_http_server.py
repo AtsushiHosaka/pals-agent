@@ -402,7 +402,7 @@ def test_every_slot_is_released_after_a_timeout_or_compiler_error(
     assert len(verifier.calls) == 5
 
 
-@pytest.mark.parametrize("value", [0, 5, -1, True, 2.0, "2"])
+@pytest.mark.parametrize("value", [0, 3, -1, True, 2.0, "2"])
 def test_concurrent_compile_setting_is_closed(
     tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
     value: object,

@@ -51,10 +51,10 @@ def test_concurrent_compiles_default_to_one_and_accept_only_the_bounded_range(
     _set_required_environment(monkeypatch)
     monkeypatch.delenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", raising=False)
     assert HttpVerifierRuntimeSettings.from_env().max_concurrent_compiles == 1
-    for value, expected in (("1", 1), ("2", 2), ("4", 4)):
+    for value, expected in (("1", 1), ("2", 2)):
         monkeypatch.setenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", value)
         assert HttpVerifierRuntimeSettings.from_env().max_concurrent_compiles == expected
-    for value in ("0", "5", "02", "-1", "two", "", " 2", "2.0", "\u0662"):
+    for value in ("0", "3", "4", "02", "-1", "two", "", " 2", "2.0", "\u0662"):
         monkeypatch.setenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", value)
         with pytest.raises(ValueError, match="PALS_LEAN_MAX_CONCURRENT_COMPILES"):
             HttpVerifierRuntimeSettings.from_env()

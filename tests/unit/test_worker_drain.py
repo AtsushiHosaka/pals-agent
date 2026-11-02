@@ -180,6 +180,43 @@ def test_transient_sqs_error_backs_off_instead_of_killing_the_worker(monkeypatch
     assert sum(slept) == 2 + 4 + 8
 
 
+def test_sqs_outage_past_its_limit_ends_the_worker_for_a_lane_restart_decision(monkeypatch):
+    from pals_agent.worker import WorkerSqsUnavailableError
+
+    slept = []
+    worker, _queue = _failing_worker(monkeypatch, 10_000, slept=slept)
+    monkeypatch.setattr("pals_agent.worker.worker_queue_url", lambda *a: "proof-queue")
+    with pytest.raises(WorkerSqsUnavailableError):
+        worker.run_forever()
+    assert 900 <= sum(slept) < 960
+
+
+def test_cli_removes_readiness_and_exits_nonzero_on_an_sqs_outage(monkeypatch, tmp_path):
+    from pals_agent.worker import WorkerSqsUnavailableError
+
+    ready = tmp_path / "ready"
+
+    class Worker:
+        def __init__(self, **kwargs):
+            pass
+
+        def run_forever(self):
+            assert ready.exists()
+            raise WorkerSqsUnavailableError("outage")
+
+    for name in ("configure_worker_api_trust", "worker_queue_url", "build_proof_request_processor"):
+        monkeypatch.setattr(cli, name, lambda *a, **kw: None)
+    monkeypatch.setattr(cli, "SqsProofWorker", Worker)
+    monkeypatch.setattr(cli, "AgentSettings", SimpleNamespace(from_env=lambda: SimpleNamespace(
+        worker_shared_secret="fixture-only", api_base_url="https://api.invalid",
+        proof_capability="natural-only", api_ca_certificate_path=None,
+    )))
+    monkeypatch.setenv("PALS_WORKER_PROCESSES", "1")
+    code = cli.main(["worker", "--lane", "assessment", "--ready-file", str(ready)])
+    assert code == cli.LANE_UNAVAILABLE_EXIT != 0
+    assert not ready.exists()
+
+
 def test_worker_once_still_surfaces_an_sqs_error(monkeypatch):
     from botocore.exceptions import BotoCoreError
 

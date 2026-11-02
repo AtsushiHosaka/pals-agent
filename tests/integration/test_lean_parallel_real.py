@@ -13,8 +13,10 @@ import shutil
 import signal
 import socket
 import ssl
+import subprocess
 import sys
 import tempfile
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -237,6 +239,29 @@ def _run_hostile(
     )
 
 
+def test_a_compile_cannot_signal_even_its_own_spawned_child(runtime: tuple[Path, Path]) -> None:
+    project, _scratch = runtime
+    with tempfile.TemporaryDirectory(prefix="pals-lean-", dir=runtime[1]) as own:
+        sleeper = Path(own) / "Sleeper.lean"
+        sleeper.write_text("def main : IO Unit := IO.sleep 120000\n", encoding="utf-8")
+        program = Path(own) / "Kill.lean"
+        program.write_text(_KILLER.format(sleeper=str(sleeper)), encoding="utf-8")
+        lean = shutil.which("lean")
+        assert lean is not None
+        result = _run_limited_process(
+            _limited_command([lean, "--run", str(program)], timeout_seconds=60,
+                             scratch_dir=Path(own)),
+            cwd=project,
+            environment={
+                "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8", "PATH": os.environ["PATH"],
+                "HOME": own, "TMPDIR": own, "ELAN_HOME": os.environ.get("ELAN_HOME", "/opt/elan"),
+            },
+            timeout_seconds=60,
+            output_limit_bytes=65_536,
+        )
+    assert result.stdout.split() == ["kill-denied"], (result.stdout, result.stderr)
+
+
 def test_descendants_cannot_outlive_a_finished_compile_or_starve_a_sibling(
     runtime: tuple[Path, Path],
 ) -> None:
@@ -316,6 +341,69 @@ def test_killed_supervisor_is_an_interruption_and_its_descendants_are_reaped(
     assert _settled_pids(baseline + 2) <= baseline + 2
 
 
+def test_seccomp_denies_every_signal_route_out_of_a_compile() -> None:
+    """Real syscalls in a forked child, because Lean only exposes kill for its own child."""
+    if not sys.platform.startswith("linux"):
+        pytest.skip("seccomp is Linux only")
+    victim = subprocess.Popen(["sleep", "60"])
+    probe = (
+        "import os,signal,sys;"
+        "from pals_agent import lean_child;"
+        "lean_child._apply_socket_seccomp();"
+        "victim=int(sys.argv[1]);"
+        "denied=[];\n"
+        "for name,call in (('kill',lambda:os.kill(victim,signal.SIGKILL)),"
+        "('stop',lambda:os.kill(victim,signal.SIGSTOP)),"
+        "('all',lambda:os.kill(-1,signal.SIGKILL)),"
+        "('pidfd',lambda:signal.pidfd_send_signal(os.pidfd_open(victim),signal.SIGKILL)),"
+        "('thread',lambda:signal.pthread_kill(__import__('threading').get_ident(),signal.SIGUSR1))):\n"
+        "    try:\n"
+        "        call(); denied.append(name+'=allowed')\n"
+        "    except PermissionError:\n"
+        "        denied.append(name+'=denied')\n"
+        "print(' '.join(denied))\n"
+    )
+    try:
+        result = subprocess.run(
+            [sys.executable, "-c", probe, str(victim.pid)],
+            capture_output=True, text=True, timeout=30, check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert result.stdout.split() == [
+            "kill=denied", "stop=denied", "all=denied", "pidfd=denied", "thread=denied",
+        ]
+        assert victim.poll() is None
+    finally:
+        victim.kill()
+        victim.wait(timeout=5)
+
+
+@pytest.mark.parametrize("held", [54, 55, 56])
+def test_a_sibling_holding_pids_never_turns_a_true_proof_into_a_verdict(
+    runtime: tuple[Path, Path], held: int,
+) -> None:
+    """These tasks stand in for a neighbour; only the container's PID count matters."""
+    release = threading.Event()
+    threads = []
+    while _pids_current() < held:
+        thread = threading.Thread(target=release.wait, daemon=True)
+        thread.start()
+        threads.append(thread)
+    verifier = _verifier(runtime)
+    try:
+        results = [verifier.verify(_TRUE) for _ in range(3)]
+    finally:
+        release.set()
+        for thread in threads:
+            thread.join(timeout=5)
+    for result in results:
+        codes = [item.code for item in result.diagnostics]
+        assert result.success is True or codes == ["lean.compile_interrupted"], (
+            codes, result.stderr[:400],
+        )
+    assert verifier.verify(_TRUE).success is True
+
+
 def test_a_full_scratch_filesystem_fails_closed(runtime: tuple[Path, Path]) -> None:
     filler = runtime[1] / "pals-parallel-filler"
     try:
@@ -346,6 +434,17 @@ def main (args : List String) : IO UInt32 := do
   return 0
 """
 
+
+_KILLER = """
+def main : IO Unit := do
+  let lean ← IO.appPath
+  let child ← IO.Process.spawn {{ cmd := lean.toString, args := #["--run", "{sleeper}"] }}
+  try
+    child.kill
+    IO.println "kill-allowed"
+  catch _ =>
+    IO.println "kill-denied"
+"""
 
 _HOSTILE = """
 def main : IO Unit := do

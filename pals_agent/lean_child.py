@@ -59,6 +59,16 @@ _BLOCKED_SOCKET_SYSCALLS = (
     b"recvmsg",
     b"recvmmsg",
 )
+# Without these a compile could stop or kill a sibling, its supervisor or the server. An abort in
+# Lean still ends the process: glibc falls through to a faulting instruction.
+_BLOCKED_SIGNAL_SYSCALLS = (
+    b"kill",
+    b"tkill",
+    b"tgkill",
+    b"rt_sigqueueinfo",
+    b"rt_tgsigqueueinfo",
+    b"pidfd_send_signal",
+)
 _LIMIT_NAMES = (
     resource.RLIMIT_CPU,
     resource.RLIMIT_AS,
@@ -359,7 +369,7 @@ def _apply_socket_seccomp() -> None:
     if not context:
         raise OSError(errno.EPERM, "seccomp context creation failed")
     try:
-        for syscall_name in _BLOCKED_SOCKET_SYSCALLS:
+        for syscall_name in (*_BLOCKED_SOCKET_SYSCALLS, *_BLOCKED_SIGNAL_SYSCALLS):
             syscall_number = seccomp.seccomp_syscall_resolve_name(syscall_name)
             if syscall_number < 0:
                 continue

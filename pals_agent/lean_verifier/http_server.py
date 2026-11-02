@@ -43,7 +43,9 @@ _PROOF_JOB_ID_RE: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$")
 _SHA256_RE: Final = re.compile(r"^[0-9a-f]{64}$")
 _IMAGE_DIGEST_RE: Final = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MAX_ADMISSION_SOURCE_BYTES: Final = 480_000
-MAX_CONCURRENT_COMPILES: Final = 4
+# Two honest compiles peak at 48 of the container's 64 PIDs and four at 61, too close to refused
+# forks. Raise this only together with the PID limit that `boundary.py` attests.
+MAX_CONCURRENT_COMPILES: Final = 2
 
 
 @dataclass(frozen=True, slots=True)

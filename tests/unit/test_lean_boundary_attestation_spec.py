@@ -144,7 +144,7 @@ def test_pae_017_outer_cpu_attestation_is_bounded_at_two_vcpus(
 def test_outer_memory_ceiling_scales_only_with_the_validated_slot_count() -> None:
     assert boundary_module.maximum_memory_bytes(1) == 4 * _GIB
     assert boundary_module.maximum_memory_bytes(2) == 8 * _GIB
-    for value in (0, 5, True, 2.0):
+    for value in (0, 3, True, 2.0):
         with pytest.raises(ValueError, match="concurrent compiles"):
             boundary_module.maximum_memory_bytes(value)  # type: ignore[arg-type]
 

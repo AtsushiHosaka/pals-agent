@@ -73,6 +73,7 @@ _SUPERVISOR_GRACE_SECONDS = 5.0
 _DRAIN_GRACE_SECONDS = 0.2
 _SUPERVISOR_STATUS_RE = re.compile(rb"(-?\d{1,4}) ([01])\n")
 _CGROUP_MEMORY_EVENTS = Path("/sys/fs/cgroup/memory.events")
+_CGROUP_PIDS_EVENTS = Path("/sys/fs/cgroup/pids.events")
 COMPILE_INTERRUPTED = "lean.compile_interrupted"
 _ACTIVE_SUPERVISORS: set[int] = set()
 _ACTIVE_SUPERVISORS_LOCK = threading.Lock()
@@ -668,7 +669,7 @@ def _run_limited_process(
     output_limit_bytes: int,
 ) -> _ProcessResult:
     _enable_child_subreaper()
-    oom_kills_before = _oom_kill_count()
+    pressure_before = _cgroup_pressure()
     status_read, status_write = os.pipe()
     try:
         with _ACTIVE_SUPERVISORS_LOCK:
@@ -766,7 +767,7 @@ def _run_limited_process(
     if not timed_out and not output_limited and (
         returncode < 0
         or returncode > 128
-        or (returncode != 0 and _oom_kill_count() > oom_kills_before)
+        or (returncode != 0 and _cgroup_pressure() > pressure_before)
     ):
         raise LeanCompileInterrupted(f"Lean was terminated with status {returncode}")
     return _ProcessResult(
@@ -793,15 +794,21 @@ def _read_supervisor_status(descriptor: int) -> tuple[int, bool] | None:
     return int(match.group(1)), match.group(2) == b"1"
 
 
-def _oom_kill_count() -> int:
-    """Kills in this cgroup; a kill during a failed compile makes that failure not a verdict."""
+def _cgroup_pressure() -> int:
+    """OOM kills and refused forks in this cgroup; either during a failure denies it a verdict."""
+    return _cgroup_event(_CGROUP_MEMORY_EVENTS, "oom_kill") + _cgroup_event(
+        _CGROUP_PIDS_EVENTS, "max",
+    )
+
+
+def _cgroup_event(path: Path, name: str) -> int:
     try:
-        events = _CGROUP_MEMORY_EVENTS.read_text(encoding="ascii")
+        events = path.read_text(encoding="ascii")
     except OSError:
         return 0
     for line in events.splitlines():
-        name, _, value = line.partition(" ")
-        if name == "oom_kill" and value.isdecimal():
+        key, _, value = line.partition(" ")
+        if key == name and value.isdecimal():
             return int(value)
     return 0
 

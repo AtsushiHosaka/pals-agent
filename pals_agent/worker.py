@@ -77,6 +77,9 @@ VisibilityExtender = Callable[[int], None]
 WorkerLane = Literal["all", "proof", "assessment"]
 _logger = logging.getLogger(__name__)
 _SQS_BACKOFF_MAX_SECONDS: Final = 60.0
+# Long enough to ride out a brownout or credential rotation, short enough that a lane which cannot
+# consume does not keep reporting healthy past what an operator would accept as an outage.
+_SQS_OUTAGE_LIMIT_SECONDS: Final = 900.0
 
 
 def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
@@ -416,6 +419,10 @@ class _AcquisitionResult:
     acquired_state: str | None = None
 
 
+class WorkerSqsUnavailableError(RuntimeError):
+    """SQS failed continuously past the outage limit, so this lane cannot do its work."""
+
+
 @dataclass(frozen=True, slots=True)
 class SqsProofWorker:
     settings: AgentSettings
@@ -443,13 +450,18 @@ class SqsProofWorker:
         # Drain only at delivery boundaries; never interrupt a model call or
         # acknowledge a delivery merely because shutdown was requested.
         failures = 0
+        outage_started = 0.0
         while not self.stop_requested():
             try:
                 processed = self.run_once()
             except (BotoCoreError, ClientError) as error:
                 # SQS was unreachable. An undeleted receipt returns after its visibility timeout
                 # and the API claim fences a repeat, so waiting here loses nothing.
+                if failures == 0:
+                    outage_started = self.monotonic()
                 failures += 1
+                if self.monotonic() - outage_started >= _SQS_OUTAGE_LIMIT_SECONDS:
+                    raise WorkerSqsUnavailableError("SQS outage limit exceeded") from error
                 delay = min(_SQS_BACKOFF_MAX_SECONDS, 2.0 ** min(failures, 8))
                 _logger.error(
                     "worker_sqs_unavailable lane=%s error=%s consecutive=%d delay_seconds=%.0f",

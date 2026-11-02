@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import errno
 import os
-import shutil
 import signal
 import subprocess
 import sys
@@ -218,10 +217,23 @@ def test_failure_during_an_oom_kill_is_an_interruption_and_success_stays_success
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     counts = iter([0, 1, 0, 1])
-    monkeypatch.setattr(lean_module, "_oom_kill_count", lambda: next(counts))
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: next(counts))
     with pytest.raises(lean_module.LeanCompileInterrupted):
         _run(["/bin/sh", "-c", "exit 1"])
     assert _run(["/bin/sh", "-c", "exit 0"]).returncode == 0
+
+
+def test_cgroup_pressure_counts_oom_kills_and_refused_forks(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    memory = tmp_path / "memory.events"
+    pids = tmp_path / "pids.events"
+    monkeypatch.setattr(lean_module, "_CGROUP_MEMORY_EVENTS", memory)
+    monkeypatch.setattr(lean_module, "_CGROUP_PIDS_EVENTS", pids)
+    assert lean_module._cgroup_pressure() == 0
+    memory.write_text("oom 9\noom_kill 2\n", encoding="ascii")
+    pids.write_text("max 3\n", encoding="ascii")
+    assert lean_module._cgroup_pressure() == 5
 
 
 def test_exhausted_pids_at_start_are_an_interruption(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -246,9 +258,9 @@ def test_dead_supervisor_is_an_interruption_and_its_pipes_are_not_waited_for(
 def test_interrupted_compile_returns_a_failed_result_without_touching_success(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
+    if sys.platform.startswith("linux"):
+        pytest.skip("the Linux sandbox denies this shell; the real integration test covers it")
     probe = _write_shell_executable(tmp_path / "lean-probe", "kill -9 $$\n")
-    if sys.platform.startswith("linux") and shutil.which("prlimit") is None:
-        pytest.skip("Linux resource limiter is required")
     result = LeanVerifier(lean_binary=str(probe), scratch_dir=tmp_path).verify(
         "example : True := by trivial"
     )

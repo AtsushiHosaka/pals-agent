@@ -6,7 +6,8 @@ worker. It never kills a child with a possibly active delivery. A child that alr
 died is replaced within a budget: its receipt returns through SQS and the API claim
 fences a repeat, while draining would stop every healthy sibling in a container that
 does not restart. An exhausted budget still drains and exits, so a persistent fault
-cannot hide behind restarts.
+cannot hide behind restarts. An SQS outage reported by a child is not restarted at all,
+because every sibling shares that queue.
 """
 
 from __future__ import annotations
@@ -23,8 +24,11 @@ from contextlib import suppress
 from pathlib import Path
 
 MAX_PROOF_WORKERS = 8
+# Five crashes an hour: a crash every 12 minutes or faster stops the lane. A shorter window would
+# let a steady crash loop stay under the budget forever.
 _RESTART_BUDGET = 5
-_RESTART_WINDOW_SECONDS = 600.0
+_RESTART_WINDOW_SECONDS = 3600.0
+LANE_UNAVAILABLE_EXIT = 75
 _PROCESSES_ENV = "PALS_WORKER_PROCESSES"
 _SUPERVISED_LANES = frozenset({"proof", "assessment"})
 
@@ -136,6 +140,8 @@ def _supervise(
                     for index, code in enumerate(exits):
                         if code is None:
                             continue
+                        if code == LANE_UNAVAILABLE_EXIT:
+                            return 1
                         # Even an unexpected zero exit means the configured lane
                         # no longer has its promised number of live workers.
                         now = time.monotonic()

@@ -327,3 +327,22 @@ def test_exhausted_restart_budget_still_drains_and_exits(tmp_path):
     assert process.wait(timeout=20) == 1
     assert 3 <= len(list(tmp_path.glob("birth-*"))) <= 5
     assert not (tmp_path / "ready").exists()
+
+
+def test_child_reporting_an_sqs_outage_stops_the_lane_without_a_restart(tmp_path):
+    outage = (
+        "import sys,pathlib,os;"
+        f"pathlib.Path({str(tmp_path)!r},f'birth-{{os.getpid()}}').write_text('');"
+        "pathlib.Path(sys.argv[-1]).write_text(str(os.getpid()));"
+        f"os._exit({worker_processes.LANE_UNAVAILABLE_EXIT})"
+    )
+    assert worker_processes._supervise(
+        command=[sys.executable, "-c", outage], processes=2, ready_file=tmp_path / "ready",
+        startup_seconds=5, poll_seconds=.01, restart_budget=5,
+    ) == 1
+    assert len(list(tmp_path.glob("birth-*"))) == 2
+    assert not (tmp_path / "ready").exists()
+
+
+def test_restart_budget_window_reaches_a_crash_every_twelve_minutes():
+    assert worker_processes._RESTART_WINDOW_SECONDS / worker_processes._RESTART_BUDGET == 720

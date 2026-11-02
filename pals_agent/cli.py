@@ -46,9 +46,10 @@ from pals_agent.proof_flow_seed import (
 )
 from pals_agent.runtime_latency import TimedTransport
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, worker_queue_url
+from pals_agent.worker import SqsProofWorker, WorkerSqsUnavailableError, worker_queue_url
 from pals_agent.worker_api_trust import configure_worker_api_trust
 from pals_agent.worker_processes import (
+    LANE_UNAVAILABLE_EXIT,
     MAX_PROOF_WORKERS,
     run_lane_workers,
     worker_processes_from_env,
@@ -436,6 +437,8 @@ def main(argv: list[str] | None = None) -> int:
                 for signum in (signal.SIGTERM, signal.SIGINT):
                     previous_handlers[signum] = signal.signal(signum, request_drain)
                 worker.run_forever()
+            except WorkerSqsUnavailableError:
+                return LANE_UNAVAILABLE_EXIT
             finally:
                 for signum, previous in previous_handlers.items():
                     signal.signal(signum, previous)
