@@ -36,6 +36,15 @@ entry, an embedding, a database row or a measured retrieval result. The release 
 compile each manifest again. Search publication also needs the 32-entry retrieval limit lifted
 first (`recipe_local_retrieval.py`, `recipe_semantic_contract.py`).
 
+## Known risk before search publication
+
+With real reviewers on 1,082 candidates, a general question about two lists of real numbers
+wrongly reused `cauchy_schwarz_two_dimensional` in 10 of 10 reviews. It also happens with the earlier
+answer text, so the cause is in the review, not the rewrite. Special and general forms of one fact
+exist elsewhere too, such as `amgm_two_variables` with `amgm_finite_family`, and
+`total_probability_two` with `total_probability_partition`. Publishing them needs that review fix
+first. Measurements are in `AtsushiHosaka/pals#150`.
+
 ## Draft tiers
 
 Only 87 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
