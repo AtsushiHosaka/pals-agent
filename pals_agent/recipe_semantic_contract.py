@@ -742,7 +742,10 @@ def parse(
         need(
             value["source_target_sha256"] == target
             or value["source_target_sha256"]
-            not in {hashlib.sha256(r["target_source"].encode()).hexdigest() for r in batch["recipes"]},
+            not in {
+                hashlib.sha256(row["target_source"].encode()).hexdigest()
+                for row in batch["recipes"]
+            },
             "response_selected_target_changed",
         )
         value["source_target_sha256"] = target
@@ -750,7 +753,9 @@ def parse(
         need(len(set(kinds)) == len(kinds), "response_duplicate_task_kind")
     else:
         # A rejection selects nothing, whatever its stray fields say; the request stays routable.
-        value.update(recipe_id=None, recipe_revision=None, source_target_sha256=None, answer_qa=False)
+        value.update(
+            recipe_id=None, recipe_revision=None, source_target_sha256=None, answer_qa=False
+        )
     return cast(dict[str, Any], value)
 
 
