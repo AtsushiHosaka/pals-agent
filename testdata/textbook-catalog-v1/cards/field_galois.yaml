@@ -2,22 +2,28 @@
   kind: named
   level: 3
   topic: 体の拡大・次数公式
-  statement: 体の拡大の列F⊂K⊂Lで[K:F]と[L:K]が有限ならば、L/Fも有限次拡大であり、[L:F]=[L:K][K:F]が成り立つ(次数公式)。
-  statement_en: "Tower law: for fields F ⊂ K ⊂ L with [K:F] and [L:K] finite, L/F is finite and [L:F] = [L:K][K:F]."
+  statement: 次数公式。体の拡大の列$F\subset K\subset L$で$[K:F]$と$[L:K]$が有限ならば、$L/F$も有限次拡大であり、$[L:F]=[L:K][K:F]$が成り立つ。
+  statement_en: 'Tower law: for fields F ⊂ K ⊂ L with [K:F] and [L:K] finite, L/F is finite and [L:F] = [L:K][K:F].'
   assumptions:
-    - F, K, Lは体でF⊂K⊂L
-    - K/FとL/Kは有限次拡大
+  - $F,K,L$は体で$F\subset K\subset L$
+  - $K/F$と$L/K$は有限次拡大
   quantifiers:
-    - 任意の体F, K, L
-  conclusion: L/Fは有限次拡大で[L:F]=[L:K][K:F]である。
+  - 任意の体$F,K,L$
+  conclusion: $L/F$は有限次拡大で$[L:F]=[L:K][K:F]$である。
   answer: |
-    KのF上の基底をa_i、LのK上の基底をb_jとし、積a_i b_jの全体がLのF上の基底になることを示す。任意のz∈Lはb_jのK係数一次結合で書け、各係数をa_iで展開すればa_i b_jのF係数一次結合になる。Σc_{ij}a_i b_j=0ならばb_jの一次独立性からΣ_i c_{ij}a_i=0となり、a_iの一次独立性から全てのc_{ij}=0である。したがって基底の元の個数を数えて[L:F]=[K:F][L:K]を得る。
+    $F\subset K\subset L$を体の拡大の列とし、$K/F$と$L/K$を有限次とする。$K$の$F$上の基底を$a_1,\ldots,a_m$、$L$の$K$上の基底を$b_1,\ldots,b_n$とする。$mn$個の積$a_ib_j$が$L$の$F$上の基底であることを示す。
+
+    張ること。任意の$z\in L$は$z=\sum_jc_jb_j$（$c_j\in K$）と書ける。各$c_j$を$c_j=\sum_id_{ij}a_i$（$d_{ij}\in F$）と展開すると、$z=\sum_{i,j}d_{ij}a_ib_j$である。
+
+    一次独立性。$d_{ij}\in F$について$\sum_{i,j}d_{ij}a_ib_j=0$とする。これは$\sum_j(\sum_id_{ij}a_i)b_j=0$と書けるので、$b_j$の$K$上の一次独立性より、各$j$で$\sum_id_{ij}a_i=0$である。$a_i$の$F$上の一次独立性より、すべての$d_{ij}$は$0$である。
+
+    よって$L/F$は有限次で、$[L:F]=mn=[L:K][K:F]$である。
   strategy: Multiply a basis of K/F by a basis of L/K and show the products form a basis of L/F.
   sketch:
-    - "setup: Choose a basis a_i of K over F and a basis b_j of L over K."
-    - "derive: Expanding coefficients shows that the products a_i b_j span L over F."
-    - "derive: Linear independence of b_j and then of a_i shows that the products are independent over F."
-    - "conclude: Counting the basis gives [L:F] = [K:F][L:K], so L/F is finite."
+  - 'setup: Choose a basis a_i of K over F and a basis b_j of L over K.'
+  - 'derive: Expanding coefficients shows that the products a_i b_j span L over F.'
+  - 'derive: Linear independence of b_j and then of a_i shows that the products are independent over F.'
+  - 'conclude: Counting the basis gives [L:F] = [K:F][L:K], so L/F is finite.'
   openmath: (forall (F K L) (-> (and (finite_extension K F) (finite_extension L K)) (and (finite_extension L F) (= (ext_degree L F) (* (ext_degree L K) (ext_degree K F))))))
   hard_negative:
     statement: F⊂K⊂Lで[L:F]が有限ならば、[L:K]は[K:F]を割り切る。
@@ -32,22 +38,24 @@
   kind: gap
   level: 3
   topic: 体の拡大・元の次数
-  statement: E/Fが有限次拡大ならば、任意のx∈EのF上の最小多項式の次数は[E:F]を割り切る。
+  statement: $E/F$が有限次拡大ならば、任意の$x\in E$の$F$上の最小多項式の次数は$[E:F]$を割り切る。
   statement_en: If E/F is a finite extension and x ∈ E, then the degree of the minimal polynomial of x over F divides [E:F].
   assumptions:
-    - E/Fは有限次拡大
-    - x∈E
+  - $E/F$は有限次拡大
+  - $x\in E$
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈E
-  conclusion: xの最小多項式の次数は[E:F]を割り切る。
+  - 任意の体$F,E$
+  - 任意の$x\in E$
+  conclusion: $x$の$F$上の最小多項式の次数は$[E:F]$を割り切る。
   answer: |
-    E/Fは有限次なのでxはF上代数的であり、[F(x):F]はxの最小多項式の次数に等しい。F⊂F(x)⊂Eに次数公式を使うと[E:F]=[E:F(x)][F(x):F]となる。よって最小多項式の次数は[E:F]を割り切る。
+    $E/F$を体の有限次拡大、$x\in E$とする。有限次拡大の元は代数的なので、$x$は$F$上の最小多項式を持ち、$[F(x):F]$はその次数に等しい。
+
+    $F\subset F(x)\subset E$に次数公式を使うと$[E:F]=[E:F(x)][F(x):F]$である。よって最小多項式の次数$[F(x):F]$は$[E:F]$を割り切る。
   strategy: Apply the tower law to F ⊂ F(x) ⊂ E and identify [F(x):F] with the degree of the minimal polynomial.
   sketch:
-    - "translate: Since E/F is finite, x is algebraic and [F(x):F] equals the degree of its minimal polynomial."
-    - "apply_theorem: The tower law gives [E:F] = [E:F(x)][F(x):F]."
-    - "conclude: Therefore the degree of the minimal polynomial divides [E:F]."
+  - 'translate: Since E/F is finite, x is algebraic and [F(x):F] equals the degree of its minimal polynomial.'
+  - 'apply_theorem: The tower law gives [E:F] = [E:F(x)][F(x):F].'
+  - 'conclude: Therefore the degree of the minimal polynomial divides [E:F].'
   openmath: (forall (F E x) (-> (and (finite_extension E F) (in x E)) (dvd (poly_degree (minimal_polynomial x F)) (ext_degree E F))))
   hard_negative:
     statement: E/Fが有限次拡大で[E:F]を割り切る任意の正整数dに対し、次数dの元がEに存在する。
@@ -63,23 +71,27 @@
   kind: gap
   level: 3
   topic: 最小多項式・既約性
-  statement: xが体F上代数的ならば、xのF上の最小多項式はF上既約である。
+  statement: $x$が体$F$上代数的ならば、$x$の$F$上の最小多項式は$F$上既約である。
   statement_en: If x is algebraic over a field F, then its minimal polynomial over F is irreducible over F.
   assumptions:
-    - Eは体Fの拡大体
-    - x∈EはF上代数的
+  - $E$は体$F$の拡大体
+  - $x\in E$は$F$上代数的
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈E
-  conclusion: xのF上の最小多項式はF上既約である。
+  - 任意の体$F,E$
+  - 任意の$x\in E$
+  conclusion: $x$の$F$上の最小多項式は$F$上既約である。
   answer: |
-    最小多項式をmとし、m=ghと分解できたとする。代入するとg(x)h(x)=0であり、Eは体なのでg(x)=0またはh(x)=0である。たとえばg(x)=0とすると、mの次数の最小性からgの次数はmの次数以上であり、hは定数となる。よってmは可約でない。mは次数1以上なので既約である。
+    $E$を体$F$の拡大体、$x\in E$を$F$上代数的な元とし、$m$を$x$の最小多項式とする。すなわち$m$は$x$を根に持つ$F$係数モニック多項式のうち次数が最小のものである。
+
+    $1\neq 0$なので$m$は定数でなく、$0$でも単元でもない。$m=gh$（$g,h\in F[X]$）とする。代入すると$g(x)h(x)=0$であり、$E$は体なので$g(x)=0$または$h(x)=0$である。
+
+    $g(x)=0$とする。$g\neq 0$であり、$g$を主係数で割ったモニック多項式も$x$を根に持つので、最小性より$\deg g\geq\deg m$である。よって$\deg h=0$であり、$h$は単元である。$h(x)=0$の場合も同様に$g$は単元である。したがって$m$は既約である。
   strategy: Factor the minimal polynomial and use that E has no zero divisors together with minimality of the degree.
   sketch:
-    - "setup: Suppose the minimal polynomial m factors as g h."
-    - "derive: Evaluating at x gives g(x)h(x) = 0, so one factor vanishes at x."
-    - "derive: Minimality of deg m forces the other factor to be constant."
-    - "conclude: Since deg m ≥ 1, m is irreducible."
+  - 'setup: Suppose the minimal polynomial m factors as g h.'
+  - 'derive: Evaluating at x gives g(x)h(x) = 0, so one factor vanishes at x.'
+  - 'derive: Minimality of deg m forces the other factor to be constant.'
+  - 'conclude: Since deg m ≥ 1, m is irreducible.'
   openmath: (forall (F E x) (-> (and (field_extension E F) (in x E) (algebraic_over x F)) (irreducible_over (minimal_polynomial x F) F)))
   hard_negative:
     statement: xを根に持つF係数の多項式はF上既約である。
@@ -94,23 +106,26 @@
   kind: gap
   level: 3
   topic: 最小多項式・整除性
-  statement: xが体F上代数的でF係数多項式fがf(x)=0を満たすならば、xのF上の最小多項式はfを割り切る。
+  statement: $x$が体$F$上代数的で$f\in F[X]$が$f(x)=0$を満たすならば、$x$の$F$上の最小多項式は$f$を割り切る。
   statement_en: If x is algebraic over a field F and f in F[X] satisfies f(x) = 0, then the minimal polynomial of x over F divides f.
   assumptions:
-    - x∈EはF上代数的
-    - fはF係数の多項式でf(x)=0
+  - $E$は体$F$の拡大体
+  - $x\in E$は$F$上代数的
+  - $f\in F[X]$は$f(x)=0$を満たす
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈Eと多項式f
-  conclusion: xの最小多項式mはfを割り切る。
+  - 任意の体$F,E$
+  - 任意の$x\in E$と多項式$f\in F[X]$
+  conclusion: $x$の$F$上の最小多項式は$f$を割り切る。
   answer: |
-    xの最小多項式をmとする。fをmで割ってf=qm+r、rの次数はmの次数未満とする。xを代入するとr(x)=f(x)-q(x)m(x)=0である。r≠0ならば、mの次数の最小性に反する。よってr=0であり、mはfを割り切る。
+    $E$を体$F$の拡大体、$x\in E$を$F$上代数的な元、$m$をその最小多項式とし、$f\in F[X]$は$f(x)=0$を満たすとする。
+
+    $f$を$m$で割って$f=qm+r$（$r=0$または$\deg r<\deg m$）とする。$x$を代入すると$r(x)=f(x)-q(x)m(x)=0$である。$r\neq 0$なら、$r$を主係数で割ったモニック多項式は$x$を根に持ち、次数が$m$より小さい。これは最小性に反する。よって$r=0$であり、$m$は$f$を割り切る。
   strategy: Divide f by the minimal polynomial and use minimality of the degree on the remainder.
   sketch:
-    - "setup: Write f = q m + r with deg r < deg m."
-    - "derive: Evaluating at x gives r(x) = 0."
-    - "contradiction: A nonzero r would contradict minimality of deg m."
-    - "conclude: Hence r = 0 and m divides f."
+  - 'setup: Write f = q m + r with deg r < deg m.'
+  - 'derive: Evaluating at x gives r(x) = 0.'
+  - 'contradiction: A nonzero r would contradict minimality of deg m.'
+  - 'conclude: Hence r = 0 and m divides f.'
   openmath: (forall (F E x f) (-> (and (field_extension E F) (in x E) (algebraic_over x F) (polynomial_over f F) (= (poly_eval f x) 0)) (dvd (minimal_polynomial x F) f)))
   hard_negative:
     statement: f(x)=0ならば、fはxの最小多項式を割り切る。
@@ -125,22 +140,26 @@
   kind: gap
   level: 3
   topic: 最小多項式・一意性
-  statement: F係数のモニック既約多項式pがxを根に持つならば、pはxのF上の最小多項式に等しい。
+  statement: $F$係数のモニック既約多項式$p$が$x$を根に持つならば、$p$は$x$の$F$上の最小多項式に等しい。
   statement_en: A monic irreducible polynomial over F having x as a root equals the minimal polynomial of x over F.
   assumptions:
-    - pはF上モニックかつ既約
-    - p(x)=0
+  - $E$は体$F$の拡大体
+  - $x\in E$
+  - $p\in F[X]$はモニックかつ既約
+  - $p(x)=0$
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈Eと多項式p
-  conclusion: pはxのF上の最小多項式に等しい。
+  - 任意の体$F,E$
+  - 任意の$x\in E$と多項式$p\in F[X]$
+  conclusion: $p$は$x$の$F$上の最小多項式に等しい。
   answer: |
-    xはpの根なのでF上代数的であり、その最小多項式をmとする。p(x)=0よりmはpを割り切る。pは既約でmは定数でないので、p=cmとなる定数c≠0がある。両辺ともモニックなのでc=1であり、p=mである。
+    $E$を体$F$の拡大体、$x\in E$とし、$p\in F[X]$をモニックかつ既約で$p(x)=0$を満たす多項式とする。$p\neq 0$なので$x$は$F$上代数的であり、最小多項式$m$を持つ。
+
+    $p(x)=0$より、$m$は$p$を割り切る。$p$は既約で$m$は定数でないので、$p=cm$となる$c\in F$（$c\neq 0$）がある。$p,m$はともにモニックなので$c=1$であり、$p=m$である。
   strategy: The minimal polynomial divides p, and irreducibility plus monicity force equality.
   sketch:
-    - "apply_theorem: Since p(x) = 0, the minimal polynomial m divides p."
-    - "derive: Irreducibility of p and non-constancy of m give p = c m with c a nonzero constant."
-    - "conclude: Comparing leading coefficients of monic polynomials gives c = 1."
+  - 'apply_theorem: Since p(x) = 0, the minimal polynomial m divides p.'
+  - 'derive: Irreducibility of p and non-constancy of m give p = c m with c a nonzero constant.'
+  - 'conclude: Comparing leading coefficients of monic polynomials gives c = 1.'
   openmath: (forall (F E x p) (-> (and (field_extension E F) (in x E) (polynomial_over p F) (monic_polynomial p) (irreducible_over p F) (= (poly_eval p x) 0)) (= p (minimal_polynomial x F))))
   hard_negative:
     statement: F上既約な多項式pがxを根に持てば、pはxの最小多項式に等しい。
@@ -155,23 +174,30 @@
   kind: textbook
   level: 3
   topic: 単純拡大・次数
-  statement: xが体F上代数的ならば、[F(x):F]はxのF上の最小多項式の次数に等しい。
+  statement: $x$が体$F$上代数的ならば、$[F(x):F]$は$x$の$F$上の最小多項式の次数に等しい。
   statement_en: If x is algebraic over a field F, then [F(x):F] equals the degree of the minimal polynomial of x over F.
   assumptions:
-    - x∈EはF上代数的
+  - $E$は体$F$の拡大体
+  - $x\in E$は$F$上代数的
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈E
-  conclusion: "[F(x):F]はxの最小多項式の次数に等しい。"
+  - 任意の体$F,E$
+  - 任意の$x\in E$
+  conclusion: $[F(x):F]$は$x$の$F$上の最小多項式の次数に等しい。
   answer: |
-    xの最小多項式をm、その次数をnとする。F[X]からF(x)への代入写像の核はmで生成され、mは既約なので像F[x]は体となり、F(x)=F[x]である。任意のf(x)はfをmで割った余りの値に等しいので、1,x,…,x^{n-1}はF(x)を張る。これらがF上一次従属ならば次数n未満の非零多項式がxを根に持ち、nの最小性に反する。したがって1,x,…,x^{n-1}は基底であり、[F(x):F]=nである。
+    $E$を体$F$の拡大体、$x\in E$を$F$上代数的な元とし、$m$をその最小多項式、$n=\deg m$とする。
+
+    代入写像$F[X]\to E$、$f\mapsto f(x)$を考える。最小多項式の性質より、その核は$(m)$である。$m$は既約なので$(m)$は極大イデアルであり、像$F[x]$は体である。$F[x]$は$F$と$x$を含むので、$F(x)=F[x]$である。
+
+    任意の$f\in F[X]$を$m$で割って$f=qm+r$（$r=0$または$\deg r<n$）とすると$f(x)=r(x)$である。よって$1,x,\ldots,x^{n-1}$は$F(x)$を張る。
+
+    これらが$F$上一次従属なら、次数$n$未満の$0$でない多項式が$x$を根に持ち、最小多項式の次数の最小性に反する。したがって$1,x,\ldots,x^{n-1}$は基底であり、$[F(x):F]=n$である。
   strategy: Show 1, x, ..., x^(n-1) is a basis of F(x) using division by the minimal polynomial.
   sketch:
-    - "setup: Let m be the minimal polynomial of x and n its degree."
-    - "derive: The evaluation map has kernel (m), and irreducibility of m gives F(x) = F[x]."
-    - "derive: Division by m shows that 1, x, ..., x^(n-1) span F(x)."
-    - "derive: Minimality of n shows that these powers are linearly independent."
-    - "conclude: Thus [F(x):F] = n."
+  - 'setup: Let m be the minimal polynomial of x and n its degree.'
+  - 'derive: The evaluation map has kernel (m), and irreducibility of m gives F(x) = F[x].'
+  - 'derive: Division by m shows that 1, x, ..., x^(n-1) span F(x).'
+  - 'derive: Minimality of n shows that these powers are linearly independent.'
+  - 'conclude: Thus [F(x):F] = n.'
   openmath: (forall (F E x) (-> (and (field_extension E F) (in x E) (algebraic_over x F)) (= (ext_degree (simple_extension F x) F) (poly_degree (minimal_polynomial x F)))))
   hard_negative:
     statement: xがF上の次数dの多項式の根ならば、[F(x):F]=dである。
@@ -189,17 +215,17 @@
   statement: 体の有限次拡大は代数拡大である。
   statement_en: Every finite extension of fields is algebraic.
   assumptions:
-    - E/Fは有限次拡大
+  - $E/F$は有限次拡大
   quantifiers:
-    - 任意の体F, E
-  conclusion: Eの任意の元はF上代数的である。
+  - 任意の体$F,E$
+  conclusion: $E$の任意の元は$F$上代数的である。
   answer: |
-    [E:F]=nとし、x∈Eをとる。n+1個の元1,x,…,x^nはn次元のF線形空間Eで一次従属である。その非自明な一次関係は、xを根に持つ非零のF係数多項式を与える。よってxはF上代数的である。
+    $E/F$を体の有限次拡大とし、$n=[E:F]$、$x\in E$とする。$n+1$個の元$1,x,\ldots,x^n$は$n$次元の$F$線形空間$E$の中で一次従属である。よって、すべては$0$でない$c_0,\ldots,c_n\in F$で$\sum_{i}c_ix^i=0$となるものがある。多項式$\sum_ic_iX^i$は$0$でなく$x$を根に持つので、$x$は$F$上代数的である。
   strategy: Powers of x are linearly dependent in a finite-dimensional space, which gives an annihilating polynomial.
   sketch:
-    - "setup: Let n = [E:F] and fix x in E."
-    - "derive: The n+1 elements 1, x, ..., x^n are linearly dependent over F."
-    - "conclude: A nontrivial relation is a nonzero polynomial with root x, so x is algebraic."
+  - 'setup: Let n = [E:F] and fix x in E.'
+  - 'derive: The n+1 elements 1, x, ..., x^n are linearly dependent over F.'
+  - 'conclude: A nontrivial relation is a nonzero polynomial with root x, so x is algebraic.'
   openmath: (forall (F E) (-> (finite_extension E F) (algebraic_extension E F)))
   hard_negative:
     statement: 代数拡大は有限次拡大である。
@@ -214,22 +240,28 @@
   kind: gap
   level: 3
   topic: 代数的元・体演算
-  statement: x, yが体F上代数的ならば、x+y, xy, -x, x⁻¹もF上代数的である。ただしx=0のときはx⁻¹=0と約束する。
+  statement: $x,y$が体$F$上代数的ならば、$x+y$、$xy$、$-x$、$x^{-1}$も$F$上代数的である。ただし$x=0$のときは$x^{-1}=0$と約束する。
   statement_en: If x and y are algebraic over a field F, then x+y, xy, -x and x⁻¹ are algebraic over F, with the convention 0⁻¹ = 0.
   assumptions:
-    - x, y∈EはF上代数的
+  - $E$は体$F$の拡大体
+  - $x,y\in E$は$F$上代数的
+  - $x=0$のときは$x^{-1}=0$と約束する
   quantifiers:
-    - 任意の体F, E
-    - 任意のx, y∈E
-  conclusion: x+y, xy, -x, x⁻¹はF上代数的である。
+  - 任意の体$F,E$
+  - 任意の$x,y\in E$
+  conclusion: $x+y$、$xy$、$-x$、$x^{-1}$は$F$上代数的である。
   answer: |
-    x=0のときx⁻¹=0と約束すれば、x⁻¹についても主張は明らかである。xとyがF上代数的なので[F(x):F]は有限であり、yはF(x)上代数的なので[F(x,y):F(x)]も有限である。次数公式から[F(x,y):F]は有限となる。x+y, xy, -x, x⁻¹は全てF(x,y)の元であり、有限次拡大の元は代数的である。
+    $E$を体$F$の拡大体、$x,y\in E$を$F$上代数的な元とする。$x=0$のときは$x^{-1}=0$と約束する。
+
+    $x$は$F$上代数的なので$[F(x):F]$は有限である。$y$は$F$上代数的なので$F(x)$上でも代数的であり、$[F(x,y):F(x)]$も有限である。次数公式より$[F(x,y):F]$は有限である。
+
+    $x+y$、$xy$、$-x$、$x^{-1}$はすべて$F(x,y)$の元である（$x=0$のときの$x^{-1}=0$も含む）。有限次拡大の元は代数的なので、これらは$F$上代数的である。
   strategy: All four elements lie in F(x,y), which is finite over F by the tower law.
   sketch:
-    - "derive: F(x)/F is finite because x is algebraic, and F(x,y)/F(x) is finite because y is algebraic."
-    - "apply_theorem: The tower law shows that F(x,y)/F is finite."
-    - "translate: The elements x+y, xy, -x and x⁻¹ all lie in F(x,y)."
-    - "conclude: Elements of a finite extension are algebraic."
+  - 'derive: F(x)/F is finite because x is algebraic, and F(x,y)/F(x) is finite because y is algebraic.'
+  - 'apply_theorem: The tower law shows that F(x,y)/F is finite.'
+  - 'translate: The elements x+y, xy, -x and x⁻¹ all lie in F(x,y).'
+  - 'conclude: Elements of a finite extension are algebraic.'
   openmath: (forall (F E x y) (-> (and (field_extension E F) (in x E) (in y E) (algebraic_over x F) (algebraic_over y F)) (and (algebraic_over (+ x y) F) (algebraic_over (* x y) F) (algebraic_over (neg x) F) (algebraic_over (/ 1 x) F))))
   hard_negative:
     statement: x+yがF上代数的ならば、xもF上代数的である。
@@ -244,23 +276,27 @@
   kind: gap
   level: 3
   topic: 代数拡大・推移性
-  statement: K/FとL/Kが代数拡大ならば、L/Fも代数拡大である。
+  statement: $K/F$と$L/K$が代数拡大ならば、$L/F$も代数拡大である。
   statement_en: If K/F and L/K are algebraic extensions, then L/F is algebraic.
   assumptions:
-    - F⊂K⊂Lは体の拡大の列
-    - K/FとL/Kは代数拡大
+  - $F\subset K\subset L$は体の拡大の列
+  - $K/F$と$L/K$は代数拡大
   quantifiers:
-    - 任意の体F, K, L
-  conclusion: L/Fは代数拡大である。
+  - 任意の体$F,K,L$
+  conclusion: $L/F$は代数拡大である。
   answer: |
-    x∈Lをとる。xはK上代数的なので、ある多項式の係数a_0,…,a_n∈Kを用いてxの関係式が書ける。K_0=F(a_0,…,a_n)とおくと、各a_iがF上代数的なのでK_0/Fは有限次である。xはK_0上代数的なのでK_0(x)/K_0も有限次であり、次数公式からK_0(x)/Fは有限次となる。よってxはF上代数的である。
+    $F\subset K\subset L$を体の拡大の列とし、$K/F$と$L/K$を代数拡大とする。$x\in L$をとる。$x$は$K$上代数的なので、$0$でない多項式$\sum_{i=0}^{n}a_iX^i$（$a_i\in K$）が$x$を根に持つ。
+
+    $K_0=F(a_0,\ldots,a_n)$とおく。各$a_i$は$F$上代数的なので、$F(a_0,\ldots,a_{i-1})$上でも代数的である。次数公式を繰り返し使うと、$K_0/F$は有限次である。$x$は$K_0$上代数的なので$K_0(x)/K_0$も有限次であり、次数公式より$K_0(x)/F$は有限次である。
+
+    有限次拡大の元は代数的なので、$x$は$F$上代数的である。
   strategy: Pass to the finite subextension generated by the coefficients of a polynomial annihilating x.
   sketch:
-    - "setup: Fix x in L and a polynomial over K with root x."
-    - "construct: Let K_0 be the field generated over F by its coefficients."
-    - "derive: K_0/F is finite since the coefficients are algebraic, and K_0(x)/K_0 is finite."
-    - "apply_theorem: The tower law shows that K_0(x)/F is finite."
-    - "conclude: Hence x is algebraic over F."
+  - 'setup: Fix x in L and a polynomial over K with root x.'
+  - 'construct: Let K_0 be the field generated over F by its coefficients.'
+  - 'derive: K_0/F is finite since the coefficients are algebraic, and K_0(x)/K_0 is finite.'
+  - 'apply_theorem: The tower law shows that K_0(x)/F is finite.'
+  - 'conclude: Hence x is algebraic over F.'
   openmath: (forall (F K L) (-> (and (field_extension K F) (field_extension L K) (algebraic_extension K F) (algebraic_extension L K)) (algebraic_extension L F)))
   hard_negative:
     statement: K/Fが代数拡大ならば、Kの任意の拡大LはF上代数的である。
@@ -275,21 +311,26 @@
   kind: textbook
   level: 3
   topic: 根の添加・剰余環
-  statement: fが体F上既約ならば、体F[X]/(f)においてXの像はfの根であり、この拡大の次数はfの次数に等しい。
+  statement: $f$が体$F$上既約ならば、体$F[X]/(f)$において$X$の像は$f$の根であり、この拡大の次数は$f$の次数に等しい。
   statement_en: If f is irreducible over a field F, then in the field F[X]/(f) the class of X is a root of f, and the degree of this extension equals deg f.
   assumptions:
-    - fはF上既約
+  - $F$は体
+  - $f\in F[X]$は既約
   quantifiers:
-    - 任意の体Fと既約多項式f
-  conclusion: F[X]/(f)はfの根を持つ拡大体で、[F[X]/(f):F]=deg fである。
+  - 任意の体$F$と既約多項式$f\in F[X]$
+  conclusion: $F[X]/(f)$は$f$の根を持つ$F$の拡大体で、$[F[X]/(f):F]=\deg f$である。
   answer: |
-    F[X]は単項イデアル整域でfは既約なので、(f)は極大イデアルであり、F[X]/(f)は体である。Xの像をαとするとf(α)はf(X)の像であり0に等しい。f(X)の次数をnとすると、割り算によって任意の類は次数n未満の代表元をただ一つ持つ。よって1,α,…,α^{n-1}はF上の基底であり、次数はnである。
+    $F$を体、$f\in F[X]$を既約多項式とし、$n=\deg f\geq 1$とする。$F[X]$は単項イデアル整域で$f$は既約なので、$(f)$は極大イデアルであり、$A=F[X]/(f)$は体である。$F\to A$は体の準同型なので単射であり、$A$を$F$の拡大体とみなす。
+
+    $\alpha$を$X$の$A$における像とする。剰余写像は環準同型で$F$を固定するので、$f(\alpha)$は$f(X)$の像であり、$0$に等しい。
+
+    任意の$g\in F[X]$を$f$で割ると、$g=qf+r$（$r=0$または$\deg r<n$）である。よって$g$の類は$r$の類に等しく、$1,\alpha,\ldots,\alpha^{n-1}$は$A$を$F$上張る。$\sum_{i<n}c_i\alpha^i=0$なら多項式$\sum_{i<n}c_iX^i$は$f$で割り切れるが、次数が$n$未満なので$0$である。よってこれらは一次独立である。したがって$[A:F]=n$である。
   strategy: Use that (f) is maximal, then count a basis of the quotient by division with remainder.
   sketch:
-    - "translate: Since F[X] is a PID and f is irreducible, (f) is maximal and the quotient is a field."
-    - "derive: The class α of X satisfies f(α) = 0 because f maps to zero in the quotient."
-    - "derive: Division with remainder gives a unique representative of degree below n = deg f."
-    - "conclude: Thus 1, α, ..., α^(n-1) is a basis and the degree is n."
+  - 'translate: Since F[X] is a PID and f is irreducible, (f) is maximal and the quotient is a field.'
+  - 'derive: The class α of X satisfies f(α) = 0 because f maps to zero in the quotient.'
+  - 'derive: Division with remainder gives a unique representative of degree below n = deg f.'
+  - 'conclude: Thus 1, α, ..., α^(n-1) is a basis and the degree is n.'
   openmath: (forall (F f) (-> (and (polynomial_over f F) (irreducible_over f F)) (and (field_extension (adjoin_root f) F) (= (poly_eval f (adjoin_root_generator f)) 0) (= (ext_degree (adjoin_root f) F) (poly_degree f)))))
   hard_negative:
     statement: 任意の多項式fについてF[X]/(f)は体である。
@@ -308,23 +349,29 @@
   kind: textbook
   level: 3
   topic: 分解体・存在と一意性
-  statement: 体F上の任意の多項式fには分解体が存在し、fの分解体はF上同型を除いて一意である。
+  statement: 体$F$上の任意の多項式$f$には分解体が存在し、$f$の分解体は$F$上同型を除いて一意である。
   statement_en: Every polynomial f over a field F has a splitting field, and any two splitting fields of f are isomorphic over F.
   assumptions:
-    - fは体F上の多項式
+  - $f$は体$F$上の多項式
   quantifiers:
-    - 任意の体Fと多項式f
-    - fの任意の分解体E, L
-  conclusion: fの分解体が存在し、任意の2つの分解体はF上同型である。
+  - 任意の体$F$と多項式$f\in F[X]$
+  - $f$の任意の分解体$E,L$
+  conclusion: $f$の分解体が存在し、任意の二つの分解体は$F$上同型である。
   answer: |
-    概略を述べる。存在はfの次数に関する帰納法で示す。fの既約因子gをとりF[X]/(g)へ移ると、fは1次因子を持つので、残りの因子に帰納法の仮定を使えばよい。一意性も次数の帰納法で示す。Fの同型σ:F→F'とfの既約因子gについて、gの根αとσgの根βの間にσはF(α)≅F'(β)を延長する。これをE, L上の残りの因子へ繰り返すと、Fを固定する同型E≅Lが得られる。
+    $F$を体、$f\in F[X]$とする。$F$の拡大体$E$が$f$の分解体であるとは、$f$が$E[X]$で一次式の積に分解し、$E$が$F$と$f$の根で生成されることをいう。$f$が$0$または定数のときは根を考えず、$E=F$が唯一の分解体である。以下$\deg f\geq 1$とする。
+
+    存在を$\deg f$に関する帰納法で示す。主張は任意の体について考える。$f$の既約因子$g$をとり、$F_1=F[X]/(g)$とする。$F_1$は$F$の拡大体で$g$の根$\alpha$を持つので、$F_1[X]$で$f=(X-\alpha)f_1$、$\deg f_1=\deg f-1$である。$f_1$が定数なら$E=F_1=F(\alpha)$が分解体である。そうでなければ、帰納法の仮定より$F_1$上の$f_1$の分解体$E$がある。$f$は$E[X]$で一次式の積に分解し、$E$は$F$、$\alpha$、$f_1$の根で生成される。すなわち$E$は$f$の分解体である。
+
+    一意性は次の形で示す。$\sigma:F\to F'$を体の同型とし、$f$の係数に$\sigma$を施した多項式を$\sigma f$と書く。$E$が$f$の$F$上の分解体、$L$が$\sigma f$の$F'$上の分解体なら、$\sigma$は同型$E\to L$に延長される。$\deg f$に関する帰納法を用いる。$\deg f=0$なら$E=F$、$L=F'$である。$\deg f\geq 1$とし、$f$の既約因子$g$をとると、$\sigma g$は$\sigma f$の既約因子である。$g$の根$\alpha\in E$と$\sigma g$の根$\beta\in L$をとると、$F(\alpha)\cong F[X]/(g)\cong F'[X]/(\sigma g)\cong F'(\beta)$より、$\sigma$は$\alpha\mapsto\beta$となる同型$\sigma_1:F(\alpha)\to F'(\beta)$に延長される。$f=(X-\alpha)f_1$とすると、$\sigma_1f=(X-\beta)\sigma_1f_1$である。$E$は$f_1$の$F(\alpha)$上の分解体、$L$は$\sigma_1f_1$の$F'(\beta)$上の分解体である。帰納法の仮定より、$\sigma_1$は同型$E\to L$に延長される。
+
+    $F'=F$、$\sigma=\mathrm{id}$とすると、$f$の二つの分解体の間に$F$を固定する同型が得られる。
   strategy: Adjoin roots one irreducible factor at a time for existence, and extend isomorphisms root by root for uniqueness.
   sketch:
-    - "induction: Induct on deg f, for existence, by adjoining a root of an irreducible factor."
-    - "derive: The polynomial then has a linear factor, and the remaining factor has smaller degree."
-    - "induction: For uniqueness, prove more generally that an isomorphism of base fields extends to splitting fields."
-    - "construct: An isomorphism σ extends to F(α) ≅ F'(β) by sending a root α of g to a root β of σg."
-    - "conclude: Repeating this yields an F-isomorphism between any two splitting fields."
+  - 'induction: Induct on deg f, for existence, by adjoining a root of an irreducible factor.'
+  - 'derive: The polynomial then has a linear factor, and the remaining factor has smaller degree.'
+  - 'induction: For uniqueness, prove more generally that an isomorphism of base fields extends to splitting fields.'
+  - 'construct: An isomorphism σ extends to F(α) ≅ F''(β) by sending a root α of g to a root β of σg.'
+  - 'conclude: Repeating this yields an F-isomorphism between any two splitting fields.'
   openmath: (forall (F f) (-> (polynomial_over f F) (and (exists (E) (splitting_field E f F)) (forall (E L) (-> (and (splitting_field E f F) (splitting_field L f F)) (isomorphic_over E L F))))))
   hard_negative:
     statement: fの2つの分解体の間のF上の同型は一意に定まる。
@@ -341,24 +388,36 @@
   kind: textbook
   level: 3
   topic: 代数的閉包・存在と一意性
-  statement: 任意の体Fに代数的閉包が存在し、Fの代数的閉包はF上同型を除いて一意である。
+  statement: 任意の体$F$に代数的閉包が存在し、$F$の代数的閉包は$F$上同型を除いて一意である。
   statement_en: Every field F has an algebraic closure, and any two algebraic closures of F are isomorphic over F.
   assumptions:
-    - Fは体
+  - $F$は体
   quantifiers:
-    - 任意の体F
-    - Fの任意の代数的閉包L, M
-  conclusion: Fの代数的閉包が存在し、任意の2つはF上同型である。
+  - 任意の体$F$
+  - $F$の任意の代数的閉包$L,M$
+  conclusion: $F$の代数的閉包が存在し、任意の二つは$F$上同型である。
   answer: |
-    概略を述べる。存在については、各モニック多項式fに不定元X_fを対応させた多項式環で、f(X_f)たちが生成するイデアルが真であることを確かめ、極大イデアルで割って全ての多項式が根を持つ拡大をつくる。これを繰り返して合併をとり、その中の代数的元の全体をとると代数的閉包になる。一意性については、代数拡大LからMへのF上の埋め込みをツォルンの補題で最大まで延長する。最大の埋め込みはL全体で定義され、Lが代数的に閉じておりM/Fが代数的なので全射であり、同型となる。
+    $F$を体とする。$F$の代数的閉包とは、$F$の代数拡大であって代数的閉体であるものをいう。
+
+    存在を示す。まず任意の体$K$に対して、$K[X]$の定数でない多項式がすべて根を持つ拡大体$K_1$を作る。定数でない各$f\in K[X]$に不定元$X_f$を対応させ、多項式環$A=K[X_f\mid f]$の中で$f(X_f)$たちが生成するイデアルを$I$とする。$I=A$なら$1=\sum_{i=1}^{m}h_if_i(X_{f_i})$（$h_i\in A$）と書ける。各$f_i$が根$\alpha_i$を持つ$K$の有限次拡大$K'$をとる（分解体でよい）。$X_{f_i}\mapsto\alpha_i$、他の不定元$\mapsto 0$と代入すると、$K'$で$1=0$となり矛盾する。よって$I\neq A$であり、クルルの定理より$I$は極大イデアル$\mathfrak{m}$に含まれる。$K_1=A/\mathfrak{m}$は$K$の拡大体であり、$X_f$の類は$f$の根である。
+
+    $K_0=F$、$K_{i+1}=(K_i)_1$とし、これらの和集合（帰納的極限）を$\Omega$とする。$\Omega$は体である。$\Omega[X]$の定数でない多項式の係数はある$K_i$に入るので、$K_{i+1}$に根を持つ。よって$\Omega$は代数的閉体である。
+
+    $\bar F\subset\Omega$を$F$上代数的な元の全体とする。代数的な元は体演算で閉じるので、$\bar F$は$F$の代数拡大である。定数でない$g\in\bar F[X]$は$\Omega$に根$z$を持つ。$z$は$\bar F$上代数的であり、代数拡大の推移性より$F$上代数的なので、$z\in\bar F$である。よって$\bar F$は$F$の代数的閉包である。
+
+    一意性を示す。$L,M$を$F$の代数的閉包とする。$F\subset K\subset L$を満たす体$K$と$F$を固定する体準同型$\tau:K\to M$の組$(K,\tau)$の全体を、延長関係で順序づける。$(F,\iota)$（$\iota:F\to M$は標準的な埋め込み）が属するので空でなく、鎖には和集合が上界を与える。ツォルンの補題より極大元$(K,\tau)$がある。
+
+    $a\in L\setminus K$があるとする。$a$は$K$上代数的であり、$K$上の最小多項式を$m$とする。$M$は代数的閉体なので、$\tau m$は$M$に根$b$を持つ。$K(a)\cong K[X]/(m)$より、$\tau$は$a\mapsto b$により$K(a)\to M$に延長され、極大性に反する。よって$K=L$である。
+
+    $\tau:L\to M$は$F$を固定する単射であり、$\tau(L)$は$L$と同型なので代数的閉体である。$y\in M$は$F$上代数的なので$\tau(L)$上でも代数的であり、その最小多項式は代数的閉体上の既約多項式なので一次式である。よって$y\in\tau(L)$である。したがって$\tau$は全射であり、$F$上の同型である。
   strategy: Build the closure by adjoining roots of all polynomials with Zorn-style maximal ideals, and compare closures through a maximal embedding.
   sketch:
-    - "construct: Adjoin an indeterminate per monic polynomial and quotient by a maximal ideal containing the relations."
-    - "derive: Iterate and take the union to obtain an algebraically closed extension."
-    - "construct: The algebraic elements in this extension form an algebraic closure."
-    - "apply_theorem: Zorn's lemma extends the inclusion of F to an embedding of L into M."
-    - "derive: The image is algebraically closed and M/F is algebraic, so the embedding is surjective."
-    - "conclude: Any two algebraic closures are F-isomorphic."
+  - 'construct: Adjoin an indeterminate per monic polynomial and quotient by a maximal ideal containing the relations.'
+  - 'derive: Iterate and take the union to obtain an algebraically closed extension.'
+  - 'construct: The algebraic elements in this extension form an algebraic closure.'
+  - 'apply_theorem: Zorn''s lemma extends the inclusion of F to an embedding of L into M.'
+  - 'derive: The image is algebraically closed and M/F is algebraic, so the embedding is surjective.'
+  - 'conclude: Any two algebraic closures are F-isomorphic.'
   openmath: (forall (F) (and (exists (E) (algebraic_closure_of E F)) (forall (L M) (-> (and (algebraic_closure_of L F) (algebraic_closure_of M F)) (isomorphic_over L M F)))))
   hard_negative:
     statement: 体Fの代数的閉包はFを含む任意の代数的閉体と同型である。
@@ -375,21 +434,23 @@
   kind: gap
   level: 3
   topic: 代数的閉体・代数拡大
-  statement: 代数的閉体kの代数拡大Eはkに一致する。すなわち標準的な埋め込みk→Eは全射である。
+  statement: 代数的閉体$k$の代数拡大$E$は$k$に一致する。すなわち標準的な埋め込み$k\to E$は全射である。
   statement_en: If k is algebraically closed and E/k is algebraic, then the canonical map k → E is surjective.
   assumptions:
-    - kは代数的閉体
-    - E/kは代数拡大
+  - $k$は代数的閉体
+  - $E/k$は代数拡大
   quantifiers:
-    - 任意の体k, E
-  conclusion: 標準的な埋め込みk→Eは全射である。
+  - 任意の体$k,E$
+  conclusion: 標準的な埋め込み$k\to E$は全射である。
   answer: |
-    x∈Eをとる。xはk上代数的なので最小多項式mを持ち、mはk上既約である。kは代数的閉体なのでk上の既約多項式の次数は1であり、m=X-aとなるa∈kがある。m(x)=0よりx=aであり、xはkの像に含まれる。
+    $k$を代数的閉体、$E/k$を代数拡大とし、$x\in E$とする。$x$は$k$上代数的なので最小多項式$m$を持ち、$m$は$k$上既約で定数でない。
+
+    $k$は代数的閉体なので$m$は根$a\in k$を持ち、$X-a$は$m$を割り切る。$m$はモニックかつ既約なので$m=X-a$である。$m(x)=0$より$x=a$であり、$x$は$k$の像に含まれる。
   strategy: An irreducible polynomial over an algebraically closed field is linear, so the minimal polynomial of x has its root in k.
   sketch:
-    - "setup: Fix x in E and let m be its minimal polynomial over k."
-    - "derive: Irreducible polynomials over k have degree 1, so m = X - a."
-    - "conclude: Then x = a lies in the image of k."
+  - 'setup: Fix x in E and let m be its minimal polynomial over k.'
+  - 'derive: Irreducible polynomials over k have degree 1, so m = X - a.'
+  - 'conclude: Then x = a lies in the image of k.'
   openmath: (forall (k E) (-> (and (algebraically_closed k) (algebraic_extension E k)) (forall (x) (-> (in x E) (in x k)))))
   hard_negative:
     statement: 代数的閉体kの任意の拡大体はkに一致する。
@@ -407,19 +468,25 @@
   statement: 多項式の分解体は基礎体上の正規拡大である。
   statement_en: A splitting field of a polynomial over a field F is a normal extension of F.
   assumptions:
-    - Eは体F上の多項式fの分解体
+  - $E$は体$F$上の多項式$f$の分解体
   quantifiers:
-    - 任意の体F, Eと多項式f
-  conclusion: E/Fは正規拡大である。
+  - 任意の体$F,E$と多項式$f\in F[X]$
+  conclusion: $E/F$は正規拡大である。
   answer: |
-    gをF上の既約多項式としgの根α∈Eをとる。gの別の根βをEの拡大体の中でとると、F(α)≅F(β)となるF上の同型がある。Eはfの分解体なので、E/F(α)とE(β)/F(β)はともにfの分解体である。分解体の一意性の議論から[E(β):F(β)]=[E:F(α)]である。次数公式により[E(β):F]=[E:F]が得られ、E(β)=Eとなる。よってβ∈Eであり、gはE上で完全に分解する。
+    $F$を体、$f\in F[X]$とし、$E$を$f$の分解体とする。すなわち$E=F(a_1,\ldots,a_r)$であり、$a_1,\ldots,a_r$は$f$の$E$における根の全体で、$f$は$E[X]$で一次式の積に分解する（$f$が$0$または定数なら$r=0$で$E=F$である）。$E/F$は有限次なので代数拡大である。
+
+    正規拡大であることを示すには、$F$上既約な多項式$g$が$E$に根を持てば$E$で一次式の積に分解することを示せばよい。$\alpha\in E$を$g$の根とする。$g$の$E$上の分解体$\Omega$をとり、$\beta\in\Omega$を$g$の任意の根とする。$\beta\in E$を示す。
+
+    $F(\alpha)\cong F[X]/(g)\cong F(\beta)$より、$F$を固定し$\alpha\mapsto\beta$となる同型$\sigma:F(\alpha)\to F(\beta)$がある。$E=F(\alpha)(a_1,\ldots,a_r)$は$f$の$F(\alpha)$上の分解体であり、$E(\beta)=F(\beta)(a_1,\ldots,a_r)$は$f$の$F(\beta)$上の分解体である。$\sigma$は$F$を固定するので、$f$の係数を変えない。
+
+    分解体の同型延長定理（体の同型$\sigma:F_1\to F_2$は、$f_1\in F_1[X]$の分解体から$\sigma f_1$の分解体への同型に延長される）より、$\sigma$は同型$E\to E(\beta)$に延長される。この同型は$F$を固定するので$F$線形であり、$[E:F]=[E(\beta):F]$である。$E\subset E(\beta)$でともに有限次元なので$E=E(\beta)$であり、$\beta\in E$である。
   strategy: Compare the degrees of E over F(α) and E(β) over F(β), both splitting fields of f.
   sketch:
-    - "setup: Take an irreducible g over F with roots α in E and β in an extension."
-    - "construct: There is an F-isomorphism F(α) ≅ F(β)."
-    - "apply_theorem: E and E(β) are splitting fields of f over F(α) and F(β), so the isomorphism extends and the degrees agree."
-    - "derive: The tower law gives [E(β):F] = [E:F], hence β lies in E."
-    - "conclude: Thus g splits in E and E/F is normal."
+  - 'setup: Take an irreducible g over F with roots α in E and β in an extension.'
+  - 'construct: There is an F-isomorphism F(α) ≅ F(β).'
+  - 'apply_theorem: E and E(β) are splitting fields of f over F(α) and F(β), so the isomorphism extends and the degrees agree.'
+  - 'derive: The tower law gives [E(β):F] = [E:F], hence β lies in E.'
+  - 'conclude: Thus g splits in E and E/F is normal.'
   openmath: (forall (F E f) (-> (splitting_field E f F) (normal_extension E F)))
   hard_negative:
     statement: 有限次拡大はつねに正規拡大である。
@@ -434,21 +501,26 @@
   kind: gap
   level: 3
   topic: 分離多項式・形式微分
-  statement: 体F上の既約多項式fが分離的であるための必要十分条件は、形式微分f'が0でないことである。
+  statement: 体$F$上の既約多項式$f$が分離的であるための必要十分条件は、形式微分$f'$が$0$でないことである。
   statement_en: An irreducible polynomial f over a field F is separable if and only if its formal derivative f' is nonzero.
   assumptions:
-    - fは体F上既約
+  - $F$は体
+  - $f\in F[X]$は既約
   quantifiers:
-    - 任意の体Fと多項式f
-  conclusion: fが分離的であることとf'≠0は同値である。
+  - 任意の体$F$と既約多項式$f\in F[X]$
+  conclusion: $f$が分離的であることと$f'\neq 0$は同値である。
   answer: |
-    分離的とはfとf'が互いに素であることをいう。f'=0ならばgcd(f,f')=fは定数でないので、fは分離的でない。逆にf'≠0とする。f'の次数はfの次数より小さいので、既約なfはf'を割り切らない。よってgcd(f,f')は定数であり、fは分離的である。
+    $F$を体、$f\in F[X]$を既約多項式とする。$f$が分離的であるとは、$f$と$f'$が互いに素であることをいう。これは$f$が分解体で重根を持たないことと同値である。
+
+    $f'=0$なら$\gcd(f,f')=f$は定数でないので、$f$は分離的でない。
+
+    $f'\neq 0$とする。$\deg f'<\deg f$なので、$f$は$f'$を割り切らない。$\gcd(f,f')$は既約な$f$を割り切るので、定数または$f$の定数倍である。後者なら$f\mid f'$となるので、$\gcd(f,f')$は定数である。よって$f$は分離的である。
   strategy: Compare gcd(f, f') with the irreducible f using the degree of f'.
   sketch:
-    - "translate: Separability means that f and f' are coprime."
-    - "case_split: If f' = 0, then gcd(f, f') = f is not constant, so f is not separable."
-    - "case_split: If f' is nonzero, its degree is below deg f, so irreducible f does not divide it."
-    - "conclude: Hence gcd(f, f') is constant and f is separable."
+  - 'translate: Separability means that f and f'' are coprime.'
+  - 'case_split: If f'' = 0, then gcd(f, f'') = f is not constant, so f is not separable.'
+  - 'case_split: If f'' is nonzero, its degree is below deg f, so irreducible f does not divide it.'
+  - 'conclude: Hence gcd(f, f'') is constant and f is separable.'
   openmath: (forall (F f) (-> (and (polynomial_over f F) (irreducible_over f F)) (<-> (separable_polynomial f) (!= (poly_derivative f) 0))))
   hard_negative:
     statement: 任意の多項式fについて、f'≠0ならばfは分離的である。
@@ -463,21 +535,25 @@
   kind: gap
   level: 3
   topic: 完全体・標数0と有限体
-  statement: 標数0の体と有限体は完全体である。
+  statement: 標数$0$の体と有限体は完全体である。
   statement_en: Every field of characteristic zero and every finite field is perfect.
   assumptions:
-    - Kは標数0の体または有限体
+  - $K$は標数$0$の体または有限体
   quantifiers:
-    - 任意の体K
-  conclusion: Kは完全体である。
+  - 任意の体$K$
+  conclusion: $K$は完全体である。
   answer: |
-    完全体とはK上の既約多項式が全て分離的である体をいう。標数0では、定数でない多項式の形式微分は0でないので、既約多項式は分離的である。Kが標数pの有限体のとき、フロベニウス写像x↦x^pは単射であり、有限性から全射である。既約なfがf'=0を満たすとf=g(X^p)と書け、係数のp乗根をとるとfはある多項式のp乗となり、既約性に反する。よってf'≠0でありfは分離的である。
+    $K$を標数$0$の体または有限体とする。完全体とは、その上の既約多項式がすべて分離的である体をいう。既約多項式$f$については、$f$が分離的であることと$f'\neq 0$が同値なので、既約な$f\in K[X]$について$f'\neq 0$を示せばよい。
+
+    標数$0$の場合、$f$の次数を$n\geq 1$、主係数を$a$とすると、$f'$の$X^{n-1}$の係数$na$は$0$でない。よって$f'\neq 0$である。
+
+    $K$が有限体の場合、標数は素数$p$である。写像$x\mapsto x^p$は体の準同型なので単射であり、$K$は有限なので全射である。$f'=0$と仮定する。$f=\sum_ic_iX^i$について$ic_i=0$なので、$p\nmid i$なら$c_i=0$である。よって$f=\sum_jc_{pj}X^{pj}$である。$c_{pj}=d_j^p$となる$d_j\in K$をとると、標数$p$の等式$(a+b)^p=a^p+b^p$より$f=(\sum_jd_jX^j)^p$である。$f$は単元でないので$\sum_jd_jX^j$も単元でなく、$p\geq 2$より$f$は単元でない二つの多項式の積になる。これは既約性に反する。よって$f'\neq 0$である。
   strategy: Show the derivative of an irreducible polynomial is nonzero, using surjectivity of Frobenius in the finite case.
   sketch:
-    - "case_split: In characteristic zero, a nonconstant polynomial has a nonzero derivative."
-    - "case_split: In a finite field of characteristic p, the injective Frobenius map is surjective."
-    - "contradiction: If f' = 0 then f = g(X^p), and taking p-th roots of coefficients makes f a p-th power."
-    - "conclude: So irreducible polynomials have nonzero derivative and are separable."
+  - 'case_split: In characteristic zero, a nonconstant polynomial has a nonzero derivative.'
+  - 'case_split: In a finite field of characteristic p, the injective Frobenius map is surjective.'
+  - 'contradiction: If f'' = 0 then f = g(X^p), and taking p-th roots of coefficients makes f a p-th power.'
+  - 'conclude: So irreducible polynomials have nonzero derivative and are separable.'
   openmath: (forall (K) (-> (or (= (field_characteristic K) 0) (finite_field K)) (perfect_field K)))
   hard_negative:
     statement: 標数pの体は全て完全体である。
@@ -494,22 +570,22 @@
   kind: gap
   level: 3
   topic: 完全体・分離拡大
-  statement: 完全体F上の代数拡大は分離拡大である。
+  statement: 完全体$F$上の代数拡大は分離拡大である。
   statement_en: Every algebraic extension of a perfect field is separable.
   assumptions:
-    - Fは完全体
-    - E/Fは代数拡大
+  - $F$は完全体
+  - $E/F$は代数拡大
   quantifiers:
-    - 任意の体F, E
-  conclusion: E/Fは分離拡大である。
+  - 任意の体$F,E$
+  conclusion: $E/F$は分離拡大である。
   answer: |
-    x∈Eをとると、xはF上代数的なのでF上の最小多項式mを持つ。mはF上既約である。Fは完全体なので既約多項式mは分離的である。よって全てのxがF上分離的であり、E/Fは分離拡大である。
+    $F$を完全体、$E/F$を代数拡大とする。$x\in E$をとると、$x$は$F$上代数的なので最小多項式$m$を持ち、$m$は$F$上既約である。$F$は完全体なので、既約多項式$m$は分離的である。すべての$x\in E$の最小多項式が分離的なので、$E/F$は分離拡大である。
   strategy: The minimal polynomial of each element is irreducible, hence separable over a perfect field.
   sketch:
-    - "setup: Fix x in E and let m be its minimal polynomial over F."
-    - "derive: The polynomial m is irreducible over F."
-    - "apply_theorem: Irreducible polynomials over a perfect field are separable."
-    - "conclude: Every element of E is separable over F."
+  - 'setup: Fix x in E and let m be its minimal polynomial over F.'
+  - 'derive: The polynomial m is irreducible over F.'
+  - 'apply_theorem: Irreducible polynomials over a perfect field are separable.'
+  - 'conclude: Every element of E is separable over F.'
   openmath: (forall (F E) (-> (and (perfect_field F) (algebraic_extension E F)) (separable_extension E F)))
   hard_negative:
     statement: 任意の体F上の代数拡大は分離拡大である。
@@ -524,22 +600,27 @@
   kind: gap
   level: 4
   topic: 完全体・フロベニウス写像
-  statement: 標数pの体Kが完全体であるための必要十分条件は、Kの任意の元がp乗根をKの中に持つことである。
+  statement: 素数$p$を標数とする体$K$が完全体であるための必要十分条件は、$K$の任意の元が$p$乗根を$K$の中に持つことである。
   statement_en: A field K of prime characteristic p is perfect if and only if every element of K has a p-th root in K.
   assumptions:
-    - Kは標数pの体、pは素数
+  - $p$は素数
+  - $K$は標数$p$の体
   quantifiers:
-    - 任意の体Kと素数p
-  conclusion: Kが完全体であることと、任意のy∈Kにx^p=yとなるx∈Kが存在することは同値である。
+  - 任意の素数$p$と標数$p$の体$K$
+  conclusion: $K$が完全体であることと、任意の$y\in K$に$x^p=y$となる$x\in K$が存在することは同値である。
   answer: |
-    Kが完全体でa∈Kがp乗根を持たないとすると、X^p-aはK上既約である。その形式微分は0なので分離的でなく、完全体であることに反する。逆に全ての元がp乗根を持つとする。既約なfが分離的でないならf'=0なので、f=g(X^p)と書ける。gの係数のp乗根をとり、標数pの二項展開を使うとfはある多項式のp乗となり、既約性に反する。
+    $p$を素数、$K$を標数$p$の体とする。
+
+    $K$が完全体であるとし、$a\in K$とする。$X^p-a$の分解体の中で根$b$をとると、$b^p=a$であり、標数$p$の等式より$X^p-a=(X-b)^p$である。$g$を$X^p-a$の$K[X]$におけるモニックな既約因子とすると、$g=(X-b)^k$（$k\geq 1$）である。$K$は完全体なので$g$は分離的であり、重根を持たない。よって$k=1$であり、$g=X-b\in K[X]$より$b\in K$である。すなわち$a$は$K$に$p$乗根を持つ。
+
+    逆に$K$の任意の元が$K$に$p$乗根を持つとする。既約な$f\in K[X]$が分離的でないと仮定すると、既約多項式の分離性の判定より$f'=0$である。$f=\sum_ic_iX^i$について$ic_i=0$なので、$p\nmid i$なら$c_i=0$であり、$f=\sum_jc_{pj}X^{pj}$である。$c_{pj}=d_j^p$となる$d_j\in K$をとると、$f=(\sum_jd_jX^j)^p$である。$f$は単元でないので$\sum_jd_jX^j$も単元でなく、$p\geq 2$より$f$は単元でない二つの多項式の積になる。これは既約性に反する。よって$K$は完全体である。
   strategy: Use X^p - a as an inseparable irreducible polynomial for one direction, and take p-th roots of coefficients for the other.
   sketch:
-    - "contradiction: If a has no p-th root, then X^p - a is irreducible with zero derivative, so K is not perfect."
-    - "setup: Conversely assume that every element has a p-th root and let f be irreducible with f' = 0."
-    - "derive: Then f = g(X^p) for some polynomial g."
-    - "derive: Taking p-th roots of the coefficients of g writes f as a p-th power."
-    - "conclude: This contradicts irreducibility, so every irreducible polynomial is separable."
+  - 'contradiction: If a has no p-th root, then X^p - a is irreducible with zero derivative, so K is not perfect.'
+  - 'setup: Conversely assume that every element has a p-th root and let f be irreducible with f'' = 0.'
+  - 'derive: Then f = g(X^p) for some polynomial g.'
+  - 'derive: Taking p-th roots of the coefficients of g writes f as a p-th power.'
+  - 'conclude: This contradicts irreducibility, so every irreducible polynomial is separable.'
   openmath: (forall (K p) (-> (and (in p P) (= (field_characteristic K) p)) (<-> (perfect_field K) (forall (y) (-> (in y K) (exists (x) (and (in x K) (= (^ x p) y))))))))
   hard_negative:
     statement: 標数pの体ではフロベニウス写像はつねに全射である。
@@ -560,22 +641,32 @@
   kind: named
   level: 4
   topic: 分離拡大・原始元定理
-  statement: 有限次分離拡大E/Fには、E=F(α)となる元α∈Eが存在する(原始元定理)。
-  statement_en: "Primitive element theorem: a finite separable extension E/F is simple, that is, E = F(α) for some α in E."
+  statement: 原始元定理。有限次分離拡大$E/F$には、$E=F(\alpha)$となる元$\alpha\in E$が存在する。
+  statement_en: 'Primitive element theorem: a finite separable extension E/F is simple, that is, E = F(α) for some α in E.'
   assumptions:
-    - E/Fは有限次分離拡大
+  - $E/F$は有限次分離拡大
   quantifiers:
-    - 任意の体F, E
-  conclusion: E=F(α)となるα∈Eが存在する。
+  - 任意の体$F,E$
+  conclusion: $E=F(\alpha)$となる$\alpha\in E$が存在する。
   answer: |
-    概略を述べる。Fが有限体ならばEも有限体であり、乗法群の生成元が原始元となる。Fが無限体のとき、帰納法によりE=F(a,b)の場合に帰着する。g,hをa,bの最小多項式とし、Eを含む分解体でgの根をa_i、hの根をb_jとする。分離性からb_jは相異なるので、有限個の例外を除くc∈Fに対してα=a+cbはa_i+cb_jが全て相異なる値をとる。このときgcd(g(α-cX),h(X))=X-bとなり、b∈F(α)およびa∈F(α)が従う。
+    $E/F$を体の有限次分離拡大とする。
+
+    $F$が有限体の場合、$E$も有限体である。有限体の乗法群は巡回群なので、$E^\times$の生成元$\alpha$をとると$E=F(\alpha)$である。
+
+    $F$が無限体の場合を考える。$E$は有限次なので$E=F(a_1,\ldots,a_r)$（$r\geq 1$）と書ける。$r$に関する帰納法により、$E=F(a,b)$のとき$E=F(\alpha)$となる$\alpha$を見つければ十分である。実際、$F(a_1,\ldots,a_{r-1})=F(\gamma)$なら$E=F(\gamma,a_r)$である。
+
+    $g,h$を$a,b$の$F$上の最小多項式とする。$h$は分離的である。$gh$が一次式の積に分解する$E$の拡大体$\Omega$をとる。$\Omega$における$g$の根を$a_1=a,\ldots,a_s$、$h$の相異なる根を$b_1=b,\ldots,b_t$とする。$F$は無限体なので、$c\neq 0$かつ、すべての$i$とすべての$j\geq 2$について$c\neq(a_i-a)/(b-b_j)$を満たす$c\in F$がとれる。このとき$\alpha=a+cb$は、$j\geq 2$なら$a_i+cb_j\neq\alpha$を満たす。
+
+    $K=F(\alpha)$とし、$\varphi(X)=g(\alpha-cX)\in K[X]$とおく。$\varphi(b)=g(a)=0$かつ$h(b)=0$である。$b_j$が$\varphi$の根なら、$\alpha-cb_j$は$g$のある根$a_i$に等しく、$\alpha=a_i+cb_j$となるので、上の選び方より$j=1$である。よって$\varphi$と$h$の$\Omega$における共通根は$b$だけであり、$h$は重根を持たないので、$\Omega[X]$で$\gcd(\varphi,h)=X-b$である。
+
+    最大公約多項式はユークリッドの互除法で求まるので、$K[X]$で計算しても$\Omega[X]$で計算しても同じである。よって$X-b\in K[X]$であり、$b\in K$である。すると$a=\alpha-cb\in K$である。したがって$F(a,b)=F(\alpha)$である。
   strategy: Handle finite fields by a generator of the unit group, and reduce the infinite case to two generators with a generic linear combination.
   sketch:
-    - "case_split: If F is finite, then a generator of the cyclic group of units of E is primitive."
-    - "translate: If F is infinite, reduce by induction to E = F(a, b)."
-    - "construct: Choose c in F avoiding finitely many values so that α = a + c b separates the conjugate sums."
-    - "derive: Then gcd(g(α - cX), h(X)) = X - b, using that h has simple roots."
-    - "conclude: Thus b and then a lie in F(α), so E = F(α)."
+  - 'case_split: If F is finite, then a generator of the cyclic group of units of E is primitive.'
+  - 'translate: If F is infinite, reduce by induction to E = F(a, b).'
+  - 'construct: Choose c in F avoiding finitely many values so that α = a + c b separates the conjugate sums.'
+  - 'derive: Then gcd(g(α - cX), h(X)) = X - b, using that h has simple roots.'
+  - 'conclude: Thus b and then a lie in F(α), so E = F(α).'
   openmath: (forall (F E) (-> (and (finite_extension E F) (separable_extension E F)) (exists (a) (and (in a E) (= E (simple_extension F a))))))
   hard_negative:
     statement: 全ての有限次拡大は単純拡大である。
@@ -590,24 +681,28 @@
   kind: textbook
   level: 3
   topic: 有限体・存在と一意性
-  statement: 素数pと正整数nに対し位数p^nの有限体が存在し、位数p^nの体は全て環として同型である。
+  statement: 素数$p$と正整数$n$に対し位数$p^n$の有限体が存在し、位数$p^n$の体はすべて環として同型である。
   statement_en: For a prime p and a positive integer n, a field of order p^n exists, and any two fields of order p^n are isomorphic as rings.
   assumptions:
-    - pは素数
-    - nは正整数
+  - $p$は素数
+  - $n$は正整数
   quantifiers:
-    - 任意の素数pと正整数n
-    - 位数p^nの任意の体K
-  conclusion: 位数p^nの体が存在し、位数p^nの体はGF(p^n)と環同型である。
+  - 任意の素数$p$と正整数$n$
+  - 位数$p^n$の任意の体$K$
+  conclusion: $X^{p^n}-X$の$\mathbb{F}_p$上の分解体$\mathrm{GF}(p^n)$は位数$p^n$の体であり、位数$p^n$の任意の体はこれと環同型である。
   answer: |
-    q=p^nとし、F_p上のX^q-Xの分解体をLとする。この多項式の形式微分は-1なので根は全て相異なり、根の全体はフロベニウス写像の固定点として部分体をなす。その部分体がLと一致するので、Lの位数はqである。逆に位数qの体Kでは、乗法群の位数がq-1なので全ての元がx^q=xを満たす。よってKはF_p上X^q-Xの分解体であり、分解体の一意性からKはLと同型である。
+    $p$を素数、$n$を正整数とし、$q=p^n$とおく。$L=\mathrm{GF}(p^n)$を$\mathbb{F}_p$上の$X^q-X$の分解体とする。
+
+    $|L|=q$を示す。$X^q-X$の形式微分は$qX^{q-1}-1=-1$なので、この多項式は重根を持たず、$L$に相異なる$q$個の根を持つ。$x\mapsto x^q$はフロベニウス写像の反復であり、$L$の環準同型である。根の全体$S$はその固定点の集合なので、$L$の部分体である。$S$は$\mathbb{F}_p$を含み、$L$は$\mathbb{F}_p$と$X^q-X$の根で生成されるので、$L=S$である。よって$|L|=q$である。
+
+    一意性を示す。$K$を位数$q$の体とする。$K$は有限なので標数はある素数$\ell$であり、$\mathbb{F}_\ell$上の線形空間として$|K|$は$\ell$の冪である。$|K|=p^n$より$\ell=p$である。$K^\times$の位数は$q-1$なので、ラグランジュの定理より$x\neq 0$で$x^{q-1}=1$である。よってすべての$x\in K$が$x^q=x$を満たす。$X^q-X$は$K$に$q$個の根を持つので$K$で一次式の積に分解し、$K$はその根の全体である。すなわち$K$は$\mathbb{F}_p$上の$X^q-X$の分解体である。分解体の一意性より$K$は$L$と$\mathbb{F}_p$上同型であり、特に環同型である。
   strategy: Construct the field as the root set of X^q - X and recognize every field of order q as its splitting field.
   sketch:
-    - "construct: Let L be a splitting field of X^q - X over F_p, where q = p^n."
-    - "derive: The derivative is -1, so the roots are distinct and form a subfield of order q."
-    - "derive: In a field K of order q, every element satisfies x^q = x by Lagrange."
-    - "translate: Hence K is also a splitting field of X^q - X over its prime field."
-    - "apply_theorem: Uniqueness of splitting fields gives K ≅ L."
+  - 'construct: Let L be a splitting field of X^q - X over F_p, where q = p^n.'
+  - 'derive: The derivative is -1, so the roots are distinct and form a subfield of order q.'
+  - 'derive: In a field K of order q, every element satisfies x^q = x by Lagrange.'
+  - 'translate: Hence K is also a splitting field of X^q - X over its prime field.'
+  - 'apply_theorem: Uniqueness of splitting fields gives K ≅ L.'
   openmath: (forall (p n) (-> (and (in p P) (> n 0)) (and (= (size (galois_field p n)) (^ p n)) (forall (K) (-> (and (finite_field K) (= (size K) (^ p n))) (ring_isomorphic K (galois_field p n)))))))
   hard_negative:
     statement: 任意の正整数qに対し位数qの体が存在する。
@@ -633,18 +728,22 @@
   statement: 有限体の乗法群は巡回群である。
   statement_en: The multiplicative group of a finite field is cyclic.
   assumptions:
-    - Kは有限体
+  - $K$は有限体
   quantifiers:
-    - 任意の有限体K
-  conclusion: Kの乗法群は巡回群である。
+  - 任意の有限体$K$
+  conclusion: $K$の乗法群$K^\times$は巡回群である。
   answer: |
-    乗法群の位数をNとする。dがNの約数のとき、X^d-1の根は高々d個なので、位数dの元があればその元の冪が根の全てであり、位数dの元はちょうどφ(d)個である。したがって位数dの元の個数ψ(d)は0またはφ(d)である。Σ_{d|N}ψ(d)=N=Σ_{d|N}φ(d)より、全てのdでψ(d)=φ(d)となる。特にψ(N)=φ(N)≥1なので、位数Nの元が存在する。
+    $K$を有限体、$N=|K^\times|$とし、$N$の約数$d$について$\psi(d)$を$K^\times$の位数$d$の元の個数とする。$\varphi$をオイラー関数とする。
+
+    $\psi(d)>0$とし、$a$を位数$d$の元とする。$\langle a\rangle$の$d$個の元はすべて$X^d-1$の根である。体上の$d$次多項式の根は高々$d$個なので、$X^d-1$の根は$\langle a\rangle$の元に尽きる。位数$d$の元は$X^d-1$の根なので$\langle a\rangle$に含まれ、位数$d$の巡回群の位数$d$の元はちょうど$\varphi(d)$個である。よって$\psi(d)$は$0$または$\varphi(d)$である。
+
+    ラグランジュの定理より各元の位数は$N$の約数なので、$\sum_{d\mid N}\psi(d)=N$である。一方、$\sum_{d\mid N}\varphi(d)=N$である。$\psi(d)\leq\varphi(d)$なので、すべての$d\mid N$で$\psi(d)=\varphi(d)$である。特に$\psi(N)=\varphi(N)\geq 1$であり、位数$N$の元が存在する。よって$K^\times$は巡回群である。
   strategy: Count elements of each order using that X^d - 1 has at most d roots and compare with the totient sum.
   sketch:
-    - "setup: Let N be the order of the unit group and ψ(d) the number of elements of order d."
-    - "derive: Since X^d - 1 has at most d roots, ψ(d) is 0 or φ(d)."
-    - "derive: The identities Σψ(d) = N = Σφ(d) force ψ(d) = φ(d) for each divisor d."
-    - "conclude: So ψ(N) is at least one, and a generator exists."
+  - 'setup: Let N be the order of the unit group and ψ(d) the number of elements of order d.'
+  - 'derive: Since X^d - 1 has at most d roots, ψ(d) is 0 or φ(d).'
+  - 'derive: The identities Σψ(d) = N = Σφ(d) force ψ(d) = φ(d) for each divisor d.'
+  - 'conclude: So ψ(N) is at least one, and a generator exists.'
   openmath: (forall (K) (-> (finite_field K) (cyclic_group (units_group K))))
   hard_negative:
     statement: 無限体の乗法群も巡回群である。
@@ -659,24 +758,30 @@
   kind: textbook
   level: 3
   topic: 有限体・フロベニウス自己同型
-  statement: 有限体Kの有限次拡大L/Kにおいて、x↦x^{|K|}はLのK上の自己同型であり、その位数は[L:K]で、Gal(L/K)はこの自己同型で生成される。
+  statement: 有限体$K$の有限次拡大$L/K$において、$x\mapsto x^{|K|}$は$L$の$K$上の自己同型であり、その位数は$[L:K]$で、$L$の$K$上の自己同型はすべてこの自己同型の冪である。
   statement_en: For a finite extension L/K of a finite field K, the map x ↦ x^|K| is a K-automorphism of L of order [L:K], and it generates Gal(L/K).
   assumptions:
-    - Kは有限体
-    - L/Kは有限次拡大
+  - $K$は有限体
+  - $L/K$は有限次拡大
   quantifiers:
-    - 任意の有限体Kとその有限次拡大L
-  conclusion: フロベニウス自己同型φの位数は[L:K]で、L/Kの任意の自己同型はφの冪である。
+  - 任意の有限体$K$とその有限次拡大$L$
+  conclusion: $\phi(x)=x^{|K|}$で定まる$\phi$は$L$の$K$上の自己同型で、その位数は$[L:K]$であり、$L$の$K$上の任意の自己同型は$\phi$の冪である。
   answer: |
-    q=|K|、n=[L:K]とし、φ(x)=x^qとおく。標数がpでqがpの冪なのでφは環準同型であり、Lが有限なので単射から全単射となる。Kの元はx^q=xを満たすのでφはKを固定する。φ^i=idならばLの全ての元がX^{q^i}-Xの根であり、q^n個の根を持つのでq^i≥q^nとなる。またL^×の位数q^n-1からφ^n=idである。よってφの位数はnであり、L/Kの自己同型の個数は高々nなので、自己同型はφの冪に尽きる。
+    $K$を有限体、$L/K$を有限次拡大とし、$q=|K|$、$n=[L:K]$とする。$|L|=q^n$である。$K$の標数を$p$とすると$q$は$p$の冪であり、$\phi(x)=x^q$は$x\mapsto x^p$の反復なので環準同型である。
+
+    $\phi$は体の準同型なので単射であり、$L$は有限なので全単射である。$K^\times$の位数は$q-1$なので$x\in K$は$x^q=x$を満たし、$\phi$は$K$を固定する。よって$\phi$は$L$の$K$上の自己同型である。
+
+    $L^\times$の位数は$q^n-1$なので、すべての$x\in L$が$x^{q^n}=x$を満たし、$\phi^n=\mathrm{id}$である。$1\leq i<n$で$\phi^i=\mathrm{id}$とすると、$L$の$q^n$個の元がすべて次数$q^i<q^n$の多項式$X^{q^i}-X$の根となり、矛盾する。よって$\phi$の位数は$n$である。
+
+    $L^\times$は巡回群なので、その生成元$\alpha$について$L=K(\alpha)$であり、$\alpha$の最小多項式の次数は$n$である。$L$の$K$上の自己同型は$\alpha$の像で定まり、その像は最小多項式の根なので、自己同型は高々$n$個である。$\mathrm{id},\phi,\ldots,\phi^{n-1}$は相異なる$n$個の自己同型なので、これらがすべてである。
   strategy: Compute the order of φ by counting roots of X^(q^i) - X and compare it with the bound on the number of automorphisms.
   sketch:
-    - "setup: Let q = |K|, n = [L:K] and φ(x) = x^q."
-    - "derive: The map φ is a bijective ring map fixing K because x^q = x on K."
-    - "derive: Every element of L satisfies x^(q^n) = x, so φ^n = id."
-    - "contradiction: If φ^i = id with i < n, then X^(q^i) - X would have more roots than its degree."
-    - "apply_theorem: The number of K-automorphisms of L is at most [L:K]."
-    - "conclude: So the powers of φ are all the automorphisms."
+  - 'setup: Let q = |K|, n = [L:K] and φ(x) = x^q.'
+  - 'derive: The map φ is a bijective ring map fixing K because x^q = x on K.'
+  - 'derive: Every element of L satisfies x^(q^n) = x, so φ^n = id.'
+  - 'contradiction: If φ^i = id with i < n, then X^(q^i) - X would have more roots than its degree.'
+  - 'apply_theorem: The number of K-automorphisms of L is at most [L:K].'
+  - 'conclude: So the powers of φ are all the automorphisms.'
   openmath: (forall (K L) (-> (and (finite_field K) (finite_extension L K)) (and (= (element_order (frobenius_automorphism L K)) (ext_degree L K)) (= (galois_group L K) (cyclic_subgroup (frobenius_automorphism L K))))))
   hard_negative:
     statement: x↦x^pは任意の有限次拡大L/KのK上の自己同型である。
@@ -700,22 +805,28 @@
   kind: gap
   level: 4
   topic: ガロア拡大・群の位数
-  statement: 有限次ガロア拡大E/Fでは、Gal(E/F)の位数は[E:F]に等しい。
+  statement: 有限次ガロア拡大$E/F$では、$\operatorname{Gal}(E/F)$の位数は$[E:F]$に等しい。
   statement_en: For a finite Galois extension E/F, the order of Gal(E/F) equals [E:F].
   assumptions:
-    - E/Fは有限次ガロア拡大
+  - $E/F$は有限次ガロア拡大
   quantifiers:
-    - 任意の体F, E
-  conclusion: "|Gal(E/F)|=[E:F]である。"
+  - 任意の体$F,E$
+  conclusion: $|\operatorname{Gal}(E/F)|=[E:F]$である。
   answer: |
-    E/Fは有限次分離拡大なので、原始元定理によりE=F(α)と書ける。αの最小多項式mの次数は[E:F]である。E/Fは正規かつ分離的なのでmはEで相異なる[E:F]個の根に分解する。F上の自己同型はαの像で定まり、mの各根へαを送る自己同型が1つずつ存在する。よって自己同型の個数は[E:F]である。
+    $E/F$を有限次ガロア拡大、すなわち有限次で正規かつ分離的な拡大とし、$n=[E:F]$とする。
+
+    原始元定理より$E=F(\alpha)$と書ける。$\alpha$の$F$上の最小多項式を$m$とすると$\deg m=n$である。$E/F$は正規なので$m$は$E$で一次式の積に分解し、分離的なのでその根は相異なる。よって$m$は$E$に相異なる$n$個の根を持つ。
+
+    $\sigma\in\operatorname{Gal}(E/F)$は$\sigma(\alpha)$で定まり、$\sigma(\alpha)$は$m$の根である。逆に$\beta\in E$を$m$の根とすると、$F(\alpha)\cong F[X]/(m)\cong F(\beta)$より、$F$を固定し$\alpha\mapsto\beta$となる同型$F(\alpha)\to F(\beta)$がある。$[F(\beta):F]=n$なので$F(\beta)=E$であり、これは$E$の$F$上の自己同型である。
+
+    したがって$\operatorname{Gal}(E/F)$の元と$m$の根は一対一に対応し、$|\operatorname{Gal}(E/F)|=n$である。
   strategy: Write E = F(α) and count automorphisms by the roots of the minimal polynomial of α.
   sketch:
-    - "apply_theorem: The primitive element theorem gives E = F(α)."
-    - "derive: The minimal polynomial m of α has degree [E:F]."
-    - "derive: Normality and separability mean that m has [E:F] distinct roots in E."
-    - "construct: Each root of m determines exactly one F-automorphism of E."
-    - "conclude: Hence |Gal(E/F)| = [E:F]."
+  - 'apply_theorem: The primitive element theorem gives E = F(α).'
+  - 'derive: The minimal polynomial m of α has degree [E:F].'
+  - 'derive: Normality and separability mean that m has [E:F] distinct roots in E.'
+  - 'construct: Each root of m determines exactly one F-automorphism of E.'
+  - 'conclude: Hence |Gal(E/F)| = [E:F].'
   openmath: (forall (F E) (-> (and (finite_extension E F) (galois_extension E F)) (= (size (galois_group E F)) (ext_degree E F))))
   hard_negative:
     statement: 任意の有限次拡大E/Fで|Aut(E/F)|=[E:F]である。
@@ -730,23 +841,31 @@
   kind: named
   level: 4
   topic: ガロア理論・基本定理
-  statement: 有限次ガロア拡大E/Fにおいて、中間体Kに固定部分群を対応させる写像は、中間体全体と部分群全体の間の包含を逆転する全単射であり、逆写像はHに固定体を対応させる。さらに[E:K]はKの固定部分群の位数に等しい(ガロア理論の基本定理のうちガロア対応の部分)。
-  statement_en: "Fundamental theorem of Galois theory, correspondence part: for a finite Galois extension E/F, sending K to its fixing subgroup is an inclusion-reversing bijection from intermediate fields onto subgroups of Gal(E/F), with inverse H ↦ fixed field of H, and [E:K] equals the order of the fixing subgroup of K."
+  statement: ガロア理論の基本定理のうちガロア対応の部分。有限次ガロア拡大$E/F$において、中間体$K$に固定部分群を対応させる写像は、中間体全体と$\operatorname{Gal}(E/F)$の部分群全体の間の包含を逆転する全単射であり、逆写像は部分群$H$に固定体を対応させる。さらに$[E:K]$は$K$の固定部分群の位数に等しい。
+  statement_en: 'Fundamental theorem of Galois theory, correspondence part: for a finite Galois extension E/F, sending K to its fixing subgroup is an inclusion-reversing bijection from intermediate fields onto subgroups of Gal(E/F), with inverse H ↦ fixed field of H, and [E:K] equals the order of the fixing subgroup of K.'
   assumptions:
-    - E/Fは有限次ガロア拡大
+  - $E/F$は有限次ガロア拡大
   quantifiers:
-    - 任意の体F, E
-    - 任意の中間体Kと部分群H
-  conclusion: K↦Fix(K)とH↦E^Hは互いに逆で包含を逆転する全単射であり、[E:K]=|Fix(K)|である。
+  - 任意の体$F,E$
+  - 任意の中間体$K$と$\operatorname{Gal}(E/F)$の部分群$H$
+  conclusion: $K\mapsto\operatorname{Fix}(K)$と$H\mapsto E^H$は互いに逆で包含を逆転する全単射であり、$[E:K]=|\operatorname{Fix}(K)|$である。
   answer: |
-    概略を述べる。中間体Kに対しE/Kもガロア拡大であるから、|Fix(K)|=[E:K]である。Fix(K)で固定される元はK上の共役を持たないので、E^{Fix(K)}=Kとなる。部分群Hに対してはアルティンの定理より[E:E^H]=|H|であり、E^Hの固定部分群はHを含み位数が[E:E^H]に等しいので、Hと一致する。したがって2つの写像は互いに逆であり、定義から包含を逆転する。
+    $E/F$を有限次ガロア拡大、$G=\operatorname{Gal}(E/F)$とする。中間体$K$の固定部分群を$\operatorname{Fix}(K)=\{\sigma\in G\mid\sigma|_K=\mathrm{id}\}$とし、部分群$H$の固定体を$E^H=\{x\in E\mid\forall\sigma\in H,\ \sigma(x)=x\}$とする。$\operatorname{Fix}(K)$は$G$の部分群であり、$\operatorname{Gal}(E/K)$に等しい。$E^H$は中間体である。
+
+    次の三つの定理を用いる。定理1：有限次ガロア拡大の群の位数は拡大次数に等しい。定理2：有限次ガロア拡大の群のすべての元で固定される元は基礎体の元である。定理3（アルティンの定理）：有限群が体$E$に忠実に作用するとき、$E$は固定体上の有限次ガロア拡大で、次数は群の位数に等しい。
+
+    $K$を中間体とする。$z\in E$の$K$上の最小多項式は$F$上の最小多項式を割り切る。後者は$E$で相異なる一次式の積に分解するので、前者も同様である。よって$E/K$は有限次ガロア拡大である。定理1より$|\operatorname{Fix}(K)|=[E:K]$であり、定理2より$E^{\operatorname{Fix}(K)}=K$である。
+
+    $H$を部分群とする。$H$は$E$に忠実に作用するので、定理3より$[E:E^H]=|H|$である。定義から$H\subset\operatorname{Fix}(E^H)$であり、上で示したことより$|\operatorname{Fix}(E^H)|=[E:E^H]=|H|$である。よって$\operatorname{Fix}(E^H)=H$である。
+
+    以上より二つの写像は互いに逆である。定義から、$K\subset K'$なら$\operatorname{Fix}(K')\subset\operatorname{Fix}(K)$であり、$H\subset H'$なら$E^{H'}\subset E^H$である。互いに逆なので、$K\subset K'$と$\operatorname{Fix}(K')\subset\operatorname{Fix}(K)$は同値である。
   strategy: Prove both round trips using that E/K is Galois for intermediate K and Artin's theorem for subgroups.
   sketch:
-    - "setup: For an intermediate field K, E/K is Galois, so its group has order [E:K]."
-    - "derive: Elements fixed by the fixing subgroup of K lie in K, so the fixed field of Fix(K) equals K."
-    - "apply_theorem: For a subgroup H, Artin's theorem gives [E:E^H] = |H|."
-    - "derive: The fixing subgroup of E^H contains H and has the same order, so it equals H."
-    - "conclude: The two maps are mutually inverse and reverse inclusions."
+  - 'setup: For an intermediate field K, E/K is Galois, so its group has order [E:K].'
+  - 'derive: Elements fixed by the fixing subgroup of K lie in K, so the fixed field of Fix(K) equals K.'
+  - 'apply_theorem: For a subgroup H, Artin''s theorem gives [E:E^H] = |H|.'
+  - 'derive: The fixing subgroup of E^H contains H and has the same order, so it equals H.'
+  - 'conclude: The two maps are mutually inverse and reverse inclusions.'
   openmath: (forall (F E) (-> (and (finite_extension E F) (galois_extension E F)) (and (forall (K) (-> (intermediate_field K F E) (and (subgroup_of (fixing_subgroup K E) (galois_group E F)) (= (fixed_field (fixing_subgroup K E) E) K) (= (size (fixing_subgroup K E)) (ext_degree E K))))) (forall (H) (-> (subgroup_of H (galois_group E F)) (and (intermediate_field (fixed_field H E) F E) (= (fixing_subgroup (fixed_field H E) E) H)))) (forall (K L) (-> (and (intermediate_field K F E) (intermediate_field L F E)) (<-> (subset K L) (subset (fixing_subgroup L E) (fixing_subgroup K E))))))))
   hard_negative:
     statement: 任意の有限次拡大で中間体と自己同型群の部分群は1対1に対応する。
@@ -761,22 +880,26 @@
   kind: gap
   level: 4
   topic: ガロア対応・固定体
-  statement: 有限次ガロア拡大E/Fでは、中間体Kの固定部分群の固定体はKであり、部分群Hの固定体の固定部分群はHである。
+  statement: 有限次ガロア拡大$E/F$では、中間体$K$の固定部分群の固定体は$K$であり、$\operatorname{Gal}(E/F)$の部分群$H$の固定体の固定部分群は$H$である。
   statement_en: In a finite Galois extension E/F, the fixed field of the fixing subgroup of an intermediate field K is K, and the fixing subgroup of the fixed field of a subgroup H is H.
   assumptions:
-    - E/Fは有限次ガロア拡大
+  - $E/F$は有限次ガロア拡大
   quantifiers:
-    - 任意の中間体K
-    - Gal(E/F)の任意の部分群H
-  conclusion: E^{Fix(K)}=KかつFix(E^H)=Hである。
+  - 任意の中間体$K$
+  - $\operatorname{Gal}(E/F)$の任意の部分群$H$
+  conclusion: $E^{\operatorname{Fix}(K)}=K$かつ$\operatorname{Fix}(E^H)=H$である。
   answer: |
-    E/Kはガロア拡大なので、Fix(K)=Gal(E/K)の固定体はKであり、これが前半である。後半を示す。アルティンの定理から[E:E^H]=|H|である。一方でE/E^Hはガロア拡大なので|Fix(E^H)|=[E:E^H]=|H|である。H⊂Fix(E^H)は定義から明らかなので、両者の位数を比べてFix(E^H)=Hとなる。
+    $E/F$を有限次ガロア拡大とし、$K$を中間体、$H$を$\operatorname{Gal}(E/F)$の部分群とする。$\operatorname{Fix}(K)$で$K$の固定部分群を、$E^H$で$H$の固定体を表す。
+
+    $z\in E$の$K$上の最小多項式は$F$上の最小多項式を割り切り、後者は$E$で相異なる一次式の積に分解する。よって$E/K$は有限次ガロア拡大であり、その群は$\operatorname{Fix}(K)$である。有限次ガロア拡大の群のすべての元で固定される元は基礎体の元なので、$E^{\operatorname{Fix}(K)}=K$である。
+
+    アルティンの定理（有限群が体に忠実に作用するとき、固定体上の拡大はガロア拡大で、次数は群の位数に等しい）より$[E:E^H]=|H|$である。$E/E^H$は有限次ガロア拡大なので$|\operatorname{Fix}(E^H)|=[E:E^H]=|H|$である。定義から$H\subset\operatorname{Fix}(E^H)$であり、位数が等しいので$\operatorname{Fix}(E^H)=H$である。
   strategy: Use the fixed field property of Galois extensions and compare orders using Artin's theorem.
   sketch:
-    - "translate: Since E/K is Galois with group Fix(K), its fixed field is K."
-    - "apply_theorem: Artin's theorem gives [E:E^H] = |H|."
-    - "derive: The extension E/E^H is Galois, so |Fix(E^H)| = [E:E^H]."
-    - "conclude: Since H is contained in Fix(E^H) and the orders agree, they are equal."
+  - 'translate: Since E/K is Galois with group Fix(K), its fixed field is K.'
+  - 'apply_theorem: Artin''s theorem gives [E:E^H] = |H|.'
+  - 'derive: The extension E/E^H is Galois, so |Fix(E^H)| = [E:E^H].'
+  - 'conclude: Since H is contained in Fix(E^H) and the orders agree, they are equal.'
   openmath: (forall (F E) (-> (and (finite_extension E F) (galois_extension E F)) (and (forall (K) (-> (intermediate_field K F E) (= (fixed_field (fixing_subgroup K E) E) K))) (forall (H) (-> (subgroup_of H (galois_group E F)) (= (fixing_subgroup (fixed_field H E) E) H))))))
   hard_negative:
     statement: 有限次拡大E/Fの任意の中間体KについてE^{Fix(K)}=Kである。
@@ -791,24 +914,28 @@
   kind: gap
   level: 4
   topic: ガロア拡大・固定元
-  statement: 有限次ガロア拡大E/Fでは、x∈Eがガロア群の全ての元で固定されることと、x∈Fであることは同値である。
+  statement: 有限次ガロア拡大$E/F$では、$x\in E$が$\operatorname{Gal}(E/F)$のすべての元で固定されることと、$x\in F$であることは同値である。
   statement_en: In a finite Galois extension E/F, an element x of E is fixed by every element of Gal(E/F) if and only if x lies in F.
   assumptions:
-    - E/Fは有限次ガロア拡大
-    - x∈E
+  - $E/F$は有限次ガロア拡大
+  - $x\in E$
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈E
-  conclusion: x∈Fと、任意のσ∈Gal(E/F)でσ(x)=xとなることは同値である。
+  - 任意の体$F,E$
+  - 任意の$x\in E$
+  conclusion: $x\in F$であることと、任意の$\sigma\in\operatorname{Gal}(E/F)$で$\sigma(x)=x$であることは同値である。
   answer: |
-    x∈Fならば定義からσ(x)=xである。逆にxが全てのσで固定されるとする。xの最小多項式mの根はE/Fの正規性からEに全て入り、分離性から相異なる。各根yにはσ(x)=yとなるσが存在するので、仮定からy=xである。よってmの根はxのみであり、相異なる根を持つのでmは1次である。したがってx∈Fである。
+    $E/F$を有限次ガロア拡大、$x\in E$とする。$x\in F$なら、定義より任意の$\sigma\in\operatorname{Gal}(E/F)$について$\sigma(x)=x$である。
+
+    逆に$x$がすべての$\sigma$で固定されるとし、$m$を$x$の$F$上の最小多項式とする。$E/F$は正規なので$m$は$E$で一次式の積に分解し、分離的なのでその根は相異なる。
+
+    $y\in E$を$m$の根とする。正規拡大では最小多項式が等しい二元は自己同型で移りあうので、$\sigma(x)=y$となる$\sigma\in\operatorname{Gal}(E/F)$がある。仮定より$y=x$である。よって$m$の根は$x$だけであり、根は相異なるので$\deg m=1$である。したがって$x\in F$である。
   strategy: The conjugates of x are the images under the group, and a fixed x has only itself as conjugate.
   sketch:
-    - "derive: If x is in F then every F-automorphism fixes it."
-    - "setup: Conversely let m be the minimal polynomial of a fixed element x."
-    - "derive: Each root of m is an image σ(x), which equals x by assumption."
-    - "derive: Separability means that m has simple roots, so deg m = 1."
-    - "conclude: Hence x lies in F."
+  - 'derive: If x is in F then every F-automorphism fixes it.'
+  - 'setup: Conversely let m be the minimal polynomial of a fixed element x.'
+  - 'derive: Each root of m is an image σ(x), which equals x by assumption.'
+  - 'derive: Separability means that m has simple roots, so deg m = 1.'
+  - 'conclude: Hence x lies in F.'
   openmath: (forall (F E x) (-> (and (finite_extension E F) (galois_extension E F) (in x E)) (<-> (in x F) (forall (s) (-> (in s (galois_group E F)) (= (automorphism_apply s x) x))))))
   hard_negative:
     statement: 有限次拡大E/Fで全自己同型に固定される元はFの元である。
@@ -823,23 +950,31 @@
   kind: textbook
   level: 4
   topic: 固定体・アルティンの定理
-  statement: 有限群Gが体Eに忠実に自己同型として作用するとき、E/E^Gは有限次ガロア拡大であり、[E:E^G]=|G|である。
+  statement: アルティンの定理。有限群$G$が体$E$に体の自己同型として忠実に作用するとき、$E/E^G$は有限次ガロア拡大であり、$[E:E^G]=|G|$である。
   statement_en: If a finite group G acts faithfully on a field E by field automorphisms, then E over the fixed field E^G is Galois and [E:E^G] = |G|.
   assumptions:
-    - Gは有限群
-    - Gは体Eに体の自己同型として忠実に作用する
+  - $G$は有限群
+  - $G$は体$E$に体の自己同型として忠実に作用する
   quantifiers:
-    - 任意の有限群Gと体E
-  conclusion: E/E^Gはガロア拡大で、[E:E^G]=|G|である。
+  - 任意の有限群$G$と体$E$
+  conclusion: $E/E^G$は有限次ガロア拡大で、$[E:E^G]=|G|$である。
   answer: |
-    x∈Eに対し、軌道G·xの相異なる元yについてのΠ(X-y)はGの作用で不変なのでE^G係数であり、xを根に持つ分離多項式である。その次数は|G|以下である。これらの多項式は全ての根をEに持つので、E/E^Gは分離的かつ正規であり、原始元定理の議論によって[E:E^G]≤|G|が得られる。一方でデデキントの補題より相異なる自己同型は一次独立なので、|G|≤[E:E^G]である。よって[E:E^G]=|G|である。
+    $G$を有限群とし、体$E$に体の自己同型として忠実に作用するとする。$F=E^G$とおく。
+
+    $x\in E$の$G$軌道を$\{y_1,\ldots,y_r\}$（相異なる元）とし、$p_x=\prod_i(X-y_i)$とおく。$r\leq|G|$である。$G$は$y_i$を置換するので、$p_x$の係数は$G$で固定され、$p_x\in F[X]$である。$p_x$は$x$を根に持ち、重根を持たず、$E$で一次式の積に分解する。よって$x$は$F$上代数的で、最小多項式は$p_x$を割り切る。したがって$E/F$は代数的で分離的であり、各元の$F$上の次数は高々$|G|$である。$F$上既約な多項式が$x\in E$を根に持てば、それは$x$の最小多項式の定数倍なので$E$で分解する。よって$E/F$は正規である。
+
+    $[E:F]\leq|G|$を示す。$F$上有限個の元で生成される$E$の部分体は有限次分離拡大なので、原始元定理より単純拡大であり、次数は上の評価より$|G|$以下である。そのような部分体のうち次数が最大のものを$F'$とする。任意の$x\in E$について$F'(x)$も同じ形の部分体であり、$F'\subset F'(x)$と最大性より$F'(x)=F'$である。よって$E=F'$であり、$[E:F]\leq|G|$である。
+
+    $|G|\leq[E:F]$を示す。$d=[E:F]<|G|$と仮定し、$e_1,\ldots,e_d$を$E$の$F$上の基底とする。$G$の元を$\sigma_1,\ldots,\sigma_{|G|}$とする。未知数$c_i\in E$の連立一次方程式$\sum_i\sigma_i(e_j)c_i=0$（$j=1,\ldots,d$）は未知数の方が多いので、自明でない解を持つ。任意の$x=\sum_jf_je_j$（$f_j\in F$）について、$\sigma_i$は$f_j$を固定するので$\sum_ic_i\sigma_i(x)=\sum_jf_j\sum_ic_i\sigma_i(e_j)=0$である。作用は忠実なので$\sigma_i$は相異なる自己同型であり、これはデデキントの補題（体の相異なる自己同型は$E$上一次独立である）に反する。
+
+    以上より$[E:F]=|G|$であり、$E/F$は有限次で正規かつ分離的、すなわち有限次ガロア拡大である。
   strategy: Use orbit polynomials to bound the degree above and Dedekind independence of automorphisms to bound it below.
   sketch:
-    - "construct: For x in E, the product of X - y over the orbit of x is G-invariant."
-    - "derive: That polynomial is separable and splits in E, so E/E^G is separable and normal."
-    - "derive: Every element has degree at most |G| over E^G, so the primitive element argument gives [E:E^G] ≤ |G|."
-    - "apply_theorem: Dedekind's lemma on independence of automorphisms gives |G| ≤ [E:E^G]."
-    - "conclude: Hence [E:E^G] = |G| and the extension is Galois."
+  - 'construct: For x in E, the product of X - y over the orbit of x is G-invariant.'
+  - 'derive: That polynomial is separable and splits in E, so E/E^G is separable and normal.'
+  - 'derive: Every element has degree at most |G| over E^G, so the primitive element argument gives [E:E^G] ≤ |G|.'
+  - 'apply_theorem: Dedekind''s lemma on independence of automorphisms gives |G| ≤ [E:E^G].'
+  - 'conclude: Hence [E:E^G] = |G| and the extension is Galois.'
   openmath: (forall (G E) (-> (and (finite_group G) (field_group_action G E)) (and (galois_extension E (fixed_field G E)) (= (ext_degree E (fixed_field G E)) (size G)))))
   hard_negative:
     statement: 無限群Gが体Eに忠実に作用するときも、E/E^Gは有限次拡大である。
@@ -854,24 +989,30 @@
   kind: gap
   level: 4
   topic: 正規拡大・共役元
-  statement: E/Fが正規拡大でx, y∈EのF上の最小多項式が等しいならば、σ(x)=yとなるF上の自己同型σ:E→Eが存在する。
+  statement: $E/F$が正規拡大で$x,y\in E$の$F$上の最小多項式が等しいならば、$\sigma(x)=y$となる$E$の$F$上の自己同型$\sigma$が存在する。
   statement_en: If E/F is normal and x, y in E have the same minimal polynomial over F, then some F-automorphism σ of E satisfies σ(x) = y.
   assumptions:
-    - E/Fは正規拡大
-    - x, y∈EのF上の最小多項式は等しい
+  - $E/F$は正規拡大
+  - $x,y\in E$の$F$上の最小多項式は等しい
   quantifiers:
-    - 任意の体F, E
-    - 任意のx, y∈E
-  conclusion: σ(x)=yとなるσ∈Aut(E/F)が存在する。
+  - 任意の体$F,E$
+  - 任意の$x,y\in E$
+  conclusion: $\sigma(x)=y$となる$E$の$F$上の自己同型$\sigma$が存在する。
   answer: |
-    最小多項式が等しいので、x↦yはF上の体の同型F(x)→F(y)を定める。Eの代数的閉包Cをとり、代数拡大E/F(x)に沿ってこの同型を埋め込みσ:E→Cへ延長する。E/Fは正規なのでσ(E)=Eである。実際、Eの元の共役は全てEに入るので、σ(E)⊂Eとなり、代数拡大の自己準同型として全射でもある。よってσはEのF上の自己同型であり、σ(x)=yである。
+    $E/F$を正規拡大とし、$x,y\in E$の$F$上の最小多項式が等しいとする。それを$m$とすると、$F(x)\cong F[X]/(m)\cong F(y)$より、$F$を固定し$x\mapsto y$となる同型$F(x)\to F(y)$がある。
+
+    $C$を$E$の代数的閉包とする。埋め込みの延長定理（$E/K$が代数拡大で$C$が代数的閉体なら、体準同型$K\to C$は$E\to C$に延長される）より、この同型は体準同型$\sigma:E\to C$に延長される。$\sigma$は$F$を固定し、$\sigma(x)=y$である。
+
+    $\sigma(E)\subset E$を示す。$z\in E$の$F$上の最小多項式を$m_z$とすると、$\sigma(z)$は$m_z$の根である。$E/F$は正規なので$m_z$の根はすべて$E$に入り、$\sigma(z)\in E$である。
+
+    $\sigma$が$E$上全射であることを示す。$z\in E$について、$m_z$の$E$における根の集合は有限である。$\sigma$はこの集合をそれ自身に単射で写すので全単射である。よって$z$は$\sigma$の像に入る。したがって$\sigma$は$E$の$F$上の自己同型である。
   strategy: Extend the isomorphism F(x) ≅ F(y) to an embedding into an algebraic closure and use normality to stay inside E.
   sketch:
-    - "construct: Equal minimal polynomials give an F-isomorphism F(x) → F(y) with x ↦ y."
-    - "apply_theorem: Extend it to an embedding σ of E into an algebraic closure."
-    - "derive: Normality places all conjugates of elements of E inside E, so σ(E) ⊂ E."
-    - "derive: An algebraic F-endomorphism of E is surjective."
-    - "conclude: So σ is an F-automorphism of E with σ(x) = y."
+  - 'construct: Equal minimal polynomials give an F-isomorphism F(x) → F(y) with x ↦ y.'
+  - 'apply_theorem: Extend it to an embedding σ of E into an algebraic closure.'
+  - 'derive: Normality places all conjugates of elements of E inside E, so σ(E) ⊂ E.'
+  - 'derive: An algebraic F-endomorphism of E is surjective.'
+  - 'conclude: So σ is an F-automorphism of E with σ(x) = y.'
   openmath: (forall (F E x y) (-> (and (normal_extension E F) (in x E) (in y E) (= (minimal_polynomial x F) (minimal_polynomial y F))) (exists (s) (and (in s (galois_group E F)) (= (automorphism_apply s x) y)))))
   hard_negative:
     statement: 有限次拡大E/Fとx∈Eについて、xの最小多項式の任意の根yに対しσ(x)=yとなるEのF上の自己同型が存在する。
@@ -890,19 +1031,23 @@
   statement: 分離多項式の分解体は基礎体上のガロア拡大である。
   statement_en: A splitting field of a separable polynomial over F is a Galois extension of F.
   assumptions:
-    - fはF上の分離多項式
-    - Eはfの分解体
+  - $f\in F[X]$は分離多項式
+  - $E$は$f$の$F$上の分解体
   quantifiers:
-    - 任意の体F, Eと多項式f
-  conclusion: E/Fはガロア拡大である。
+  - 任意の体$F,E$と多項式$f\in F[X]$
+  conclusion: $E/F$はガロア拡大である。
   answer: |
-    分解体なのでE/Fは有限次の正規拡大である。Eはfの根a_1,…,a_nでF上生成される。各a_iの最小多項式はfを割り切るので、fの分離性から重根を持たず、a_iはF上分離的である。分離的な元で生成された拡大は分離的なので、E/Fは分離拡大である。正規かつ分離的なのでE/Fはガロア拡大である。
+    $F$を体、$f\in F[X]$を分離多項式（$f$と$f'$が互いに素である多項式）とし、$E$を$f$の分解体とする。$f$は重根を持たない。
+
+    分解体なので$E/F$は有限次の正規拡大である。$E$は$f$の根$a_1,\ldots,a_n$で$F$上生成される。各$a_i$の最小多項式は$f$を割り切るので重根を持たず、$a_i$は$F$上分離的である。
+
+    分離的な元で生成された代数拡大は分離拡大である。よって$E/F$は分離拡大である。正規かつ分離的なので、$E/F$はガロア拡大である。
   strategy: Combine normality of splitting fields with separability of the generators.
   sketch:
-    - "apply_theorem: A splitting field is a finite normal extension."
-    - "derive: Each root a_i of f has a minimal polynomial dividing f, so it is separable over F."
-    - "apply_theorem: An extension generated by separable elements is separable."
-    - "conclude: Thus E/F is normal and separable, hence Galois."
+  - 'apply_theorem: A splitting field is a finite normal extension.'
+  - 'derive: Each root a_i of f has a minimal polynomial dividing f, so it is separable over F.'
+  - 'apply_theorem: An extension generated by separable elements is separable.'
+  - 'conclude: Thus E/F is normal and separable, hence Galois.'
   openmath: (forall (F E f) (-> (and (splitting_field E f F) (separable_polynomial f)) (galois_extension E F)))
   hard_negative:
     statement: 任意の多項式の分解体はガロア拡大である。
@@ -917,23 +1062,31 @@
   kind: textbook
   level: 4
   topic: ガロア対応・正規部分群
-  statement: 有限次ガロア拡大E/Fで、中間体KがF上ガロアならばKの固定部分群は正規である。逆に正規部分群Hの固定体E^HはF上ガロアであり、Gal(E^H/F)はGal(E/F)/Hと同型である。
+  statement: 有限次ガロア拡大$E/F$で、中間体$K$が$F$上ガロアならば$K$の固定部分群は正規部分群である。また正規部分群$H$の固定体$E^H$は$F$上ガロアであり、$\operatorname{Gal}(E^H/F)$は$\operatorname{Gal}(E/F)/H$と同型である。
   statement_en: In a finite Galois extension E/F, if an intermediate field K is Galois over F then its fixing subgroup is normal; conversely for a normal subgroup H, the fixed field E^H is Galois over F and Gal(E^H/F) ≅ Gal(E/F)/H.
   assumptions:
-    - E/Fは有限次ガロア拡大
+  - $E/F$は有限次ガロア拡大
   quantifiers:
-    - 任意の中間体K
-    - Gal(E/F)の任意の正規部分群H
-  conclusion: K/Fがガロアならば固定部分群は正規であり、Hが正規ならばE^H/FはガロアでGal(E^H/F)≅Gal(E/F)/Hである。
+  - 任意の中間体$K$
+  - $\operatorname{Gal}(E/F)$の任意の正規部分群$H$
+  conclusion: $K/F$がガロアならば$\operatorname{Fix}(K)$は正規部分群であり、$H$が正規部分群ならば$E^H/F$はガロアで$\operatorname{Gal}(E^H/F)\cong\operatorname{Gal}(E/F)/H$である。
   answer: |
-    σ∈Gal(E/F)に対し、σ(K)の固定部分群はσFix(K)σ⁻¹である。K/Fがガロアならば正規なのでσ(K)=Kとなり、Fix(K)は正規である。逆にHが正規ならばσ(E^H)はσHσ⁻¹=Hの固定体E^Hに等しい。よってF上の共役はE^Hに留まるので、E^H/Fは正規であり、分離的なのでガロアである。制限写像Gal(E/F)→Gal(E^H/F)は核Hを持ち、位数の比較または延長定理により全射なので、準同型定理から同型が従う。
+    $E/F$を有限次ガロア拡大、$G=\operatorname{Gal}(E/F)$とする。$\operatorname{Fix}(K)$で中間体$K$の固定部分群を、$E^H$で部分群$H$の固定体を表す。
+
+    $K$を$F$上ガロアな中間体とする。$\sigma\in G$、$x\in K$なら、$\sigma(x)$は$x$の$F$上の最小多項式の根である。$K/F$は正規なのでその根はすべて$K$に入り、$\sigma(K)\subset K$である。これは$\sigma^{-1}$にも使える。$\tau\in\operatorname{Fix}(K)$と$x\in K$について、$\sigma^{-1}(x)\in K$なので$\sigma\tau\sigma^{-1}(x)=\sigma\sigma^{-1}(x)=x$である。よって$\operatorname{Fix}(K)$は正規部分群である。
+
+    $H$を正規部分群とする。$\sigma\in G$、$x\in E^H$、$\tau\in H$について、$\sigma^{-1}\tau\sigma\in H$より$\tau\sigma(x)=\sigma(\sigma^{-1}\tau\sigma)(x)=\sigma(x)$である。よって$\sigma(E^H)\subset E^H$である。
+
+    $E^H/F$がガロアであることを示す。$E/F$の部分拡大なので有限次で分離的である。$F$上既約な多項式$g$が$x\in E^H$を根に持つとする。$g$の根はすべて$E$に入る。正規拡大では最小多項式が等しい二元は自己同型で移りあうので、各根は$\sigma(x)$（$\sigma\in G$）の形であり、$E^H$に属する。よって$E^H/F$は正規である。
+
+    制限写像$\rho:G\to\operatorname{Gal}(E^H/F)$は上で示したことから定まる準同型である。核は$\operatorname{Fix}(E^H)$であり、ガロア対応よりこれは$H$に等しい。よって$\rho$は単射準同型$G/H\to\operatorname{Gal}(E^H/F)$を誘導する。位数を比べると、$|G/H|=[E:F]/[E:E^H]=[E^H:F]=|\operatorname{Gal}(E^H/F)|$である。したがって同型である。
   strategy: Conjugation transports fixed fields and fixing subgroups, then the restriction map gives the quotient isomorphism.
   sketch:
-    - "derive: For σ in the group, the fixing subgroup of σ(K) is the conjugate of the fixing subgroup of K."
-    - "translate: K/F is normal exactly when K is stable under all σ."
-    - "derive: For normal H, the fixed field E^H is stable under σ, so E^H/F is normal and separable."
-    - "construct: Restriction gives a homomorphism Gal(E/F) → Gal(E^H/F) with kernel H."
-    - "apply_theorem: Restriction is surjective by the extension theorem, and the isomorphism theorem concludes."
+  - 'derive: For σ in the group, the fixing subgroup of σ(K) is the conjugate of the fixing subgroup of K.'
+  - 'translate: K/F is normal exactly when K is stable under all σ.'
+  - 'derive: For normal H, the fixed field E^H is stable under σ, so E^H/F is normal and separable.'
+  - 'construct: Restriction gives a homomorphism Gal(E/F) → Gal(E^H/F) with kernel H.'
+  - 'apply_theorem: Restriction is surjective by the extension theorem, and the isomorphism theorem concludes.'
   openmath: (forall (F E) (-> (and (finite_extension E F) (galois_extension E F)) (and (forall (K) (-> (and (intermediate_field K F E) (galois_extension K F)) (normal_subgroup (fixing_subgroup K E) (galois_group E F)))) (forall (H) (-> (normal_subgroup H (galois_group E F)) (and (galois_extension (fixed_field H E) F) (isomorphic_groups (quotient_group (galois_group E F) H) (galois_group (fixed_field H E) F))))))))
   hard_negative:
     statement: 有限次ガロア拡大の中間体Kは全てF上ガロアである。
@@ -952,22 +1105,29 @@
   kind: gap
   level: 3
   topic: 円分多項式・約数積と次数
-  statement: 自明でない可換環R上で、正整数nに対しX^n-1=Π_{d|n}Φ_d(X)であり、Φ_nの次数はφ(n)である。
+  statement: 零環でない可換環$R$上で、正整数$n$に対し$X^n-1=\prod_{d\mid n}\Phi_d(X)$であり、$\Phi_n$の次数は$\varphi(n)$である。
   statement_en: Over a nontrivial commutative ring R, for a positive integer n, X^n - 1 is the product of Φ_d over the divisors d of n, and Φ_n has degree φ(n).
   assumptions:
-    - nは正整数
-    - Rは自明でない可換環
+  - $n$は正整数
+  - $R$は零環でない可換環
+  - $R$上の$\Phi_d$は$\mathbb{Z}[X]$の円分多項式の係数を$R$に写した多項式である
   quantifiers:
-    - 任意の可換環Rと正整数n
-  conclusion: X^n-1=Π_{d|n}Φ_d(X)かつdeg Φ_n=φ(n)である。
+  - 任意の零環でない可換環$R$と正整数$n$
+  conclusion: $X^n-1=\prod_{d\mid n}\Phi_d(X)$かつ$\deg\Phi_n=\varphi(n)$である。
   answer: |
-    Cで考える。Φ_dは1の原始d乗根αについてのΠ(X-α)で定義される。1のn乗根は、それぞれある約数dについて原始d乗根となり、そのdは位数として一意である。よってX^n-1=Π_{d|n}Φ_d(X)が成り立つ。次数は原始n乗根の個数なのでφ(n)である。Φ_dは整係数でモニックなので、整数環から任意のRへ係数を移しても等式と次数は保たれる。
+    $R$を零環でない可換環、$n$を正整数とする。$\Phi_d\in\mathbb{C}[X]$を、$1$の原始$d$乗根$\alpha$全体についての積$\prod(X-\alpha)$とする。
+
+    $\mathbb{C}$で考える。$1$の$n$乗根はそれぞれ、位数$d$をただ一つ持ち、$d\mid n$かつ原始$d$乗根である。逆に$d\mid n$なら原始$d$乗根は$n$乗根である。$X^n-1$は相異なる$n$個の$n$乗根で分解するので、$X^n-1=\prod_{d\mid n}\Phi_d$である。原始$n$乗根は$e^{2\pi ik/n}$（$1\leq k\leq n$、$\gcd(k,n)=1$）なので、$\deg\Phi_n=\varphi(n)$である。
+
+    $\Phi_d$がモニックかつ整数係数であることを$d$に関する帰納法で示す。$\Phi_d$はモニックである。$X^d-1=\Phi_d\prod_{e\mid d,\,e<d}\Phi_e$であり、帰納法の仮定より$u=\prod_{e\mid d,\,e<d}\Phi_e$はモニックかつ整数係数である。$u$はモニックなので、$X^d-1=uw+s$（$w,s\in\mathbb{Z}[X]$、$\deg s<\deg u$）と書ける。$\mathbb{C}[X]$での割り算の一意性より$s=0$かつ$w=\Phi_d$である。よって$\Phi_d\in\mathbb{Z}[X]$である。
+
+    $R$上の$\Phi_d$は、この$\mathbb{Z}[X]$の多項式の係数を$\mathbb{Z}\to R$で写したものである。係数の写像は環準同型$\mathbb{Z}[X]\to R[X]$なので、等式$X^n-1=\prod_{d\mid n}\Phi_d$は$R[X]$でも成り立つ。$R$は零環でないので$1\neq 0$であり、モニック多項式の次数は変わらない。よって$R$上でも$\deg\Phi_n=\varphi(n)$である。
   strategy: Group the n-th roots of unity by their exact order, then transfer the integer identity to any ring.
   sketch:
-    - "translate: Over the complex numbers, Φ_d is the product of X - α over primitive d-th roots α."
-    - "derive: Each n-th root of unity is a primitive d-th root for exactly one divisor d of n."
-    - "derive: Therefore X^n - 1 is the product of Φ_d, and deg Φ_n = φ(n)."
-    - "conclude: Monic integer coefficients transfer both facts to any nontrivial commutative ring."
+  - 'translate: Over the complex numbers, Φ_d is the product of X - α over primitive d-th roots α.'
+  - 'derive: Each n-th root of unity is a primitive d-th root for exactly one divisor d of n.'
+  - 'derive: Therefore X^n - 1 is the product of Φ_d, and deg Φ_n = φ(n).'
+  - 'conclude: Monic integer coefficients transfer both facts to any nontrivial commutative ring.'
   openmath: (forall (R n) (-> (and (nontrivial_ring R) (> n 0)) (and (= (polynomial_x_pow_sub n 1) (product_over_divisors n (lambda (d) (cyclotomic_polynomial d R)))) (= (poly_degree (cyclotomic_polynomial n R)) (euler_phi n)))))
   hard_negative:
     statement: Φ_nの次数はn-1である。
@@ -982,24 +1142,30 @@
   kind: gap
   level: 3
   topic: 円分多項式・原始根
-  statement: 体Fでn≠0ならば、μ∈FがΦ_nの根であることと、μが1の原始n乗根であることは同値である。
+  statement: 体$F$で正整数$n$の像が$0$でないならば、$\mu\in F$が$\Phi_n$の根であることと、$\mu$が$1$の原始$n$乗根であることは同値である。
   statement_en: If n is nonzero in a field F, then μ in F is a root of Φ_n if and only if μ is a primitive n-th root of unity.
   assumptions:
-    - Fは体でnはFにおいて0でない
-    - μ∈F
+  - $F$は体で$n$の$F$における像は$0$でない
+  - $\mu\in F$
   quantifiers:
-    - 任意の体Fと正整数n
-    - 任意のμ∈F
-  conclusion: Φ_n(μ)=0とμが1の原始n乗根であることは同値である。
+  - 任意の体$F$と自然数$n$
+  - 任意の$\mu\in F$
+  conclusion: $\Phi_n(\mu)=0$と$\mu$が$1$の原始$n$乗根であることは同値である。
   answer: |
-    μが原始n乗根ならば、Fに原始n乗根があるのでX^n-1はFの中で相異なるn個の根に分かれ、Φ_nはそれらのうち原始n乗根全体についての積であるから、Φ_n(μ)=0である。逆にΦ_n(μ)=0とする。X^n-1=Π_{d|n}Φ_dよりμ^n=1であり、μの位数をdとするとdはnを割る。d<nならばμはΦ_dの根でもあるので、X^n-1はμを重根に持つ。しかしnがFで0でなければX^n-1の形式微分nX^{n-1}とX^n-1は互いに素で重根がなく、矛盾する。よってd=nである。
+    $F$を体、$n$を自然数で$F$における像が$0$でないものとする（特に$n\geq 1$である）。$\mu\in F$とする。$F[X]$で$X^m-1=\prod_{d\mid m}\Phi_d$（$m\geq 1$）が成り立つ。
+
+    $X\cdot nX^{n-1}-n(X^n-1)=n$は$F$の単元なので、$X^n-1$とその形式微分$nX^{n-1}$は互いに素である。よって$X^n-1$は重根を持たない。
+
+    $\mu$が原始$n$乗根であるとする。$\mu^n=1$なので、ある$d\mid n$で$\Phi_d(\mu)=0$である。$d<n$なら、$\Phi_d\mid X^d-1$より$\mu^d=1$となり、位数が$n$であることに反する。よって$d=n$であり、$\Phi_n(\mu)=0$である。
+
+    逆に$\Phi_n(\mu)=0$とする。$\Phi_n\mid X^n-1$より$\mu^n=1$なので、$\mu$の乗法的な位数$d$は$n$を割り切る。$d<n$と仮定する。$\mu^d=1$なので、ある$e\mid d$で$\Phi_e(\mu)=0$である。$e\leq d<n$かつ$e\mid n$なので、$\Phi_e$と$\Phi_n$は$X^n-1=\prod_{d'\mid n}\Phi_{d'}$の別々の因子である。どちらも$\mu$を根に持つので$\mu$は$X^n-1$の重根となり、矛盾する。よって$d=n$であり、$\mu$は原始$n$乗根である。
   strategy: Use the divisor product and the separability of X^n - 1 when n is invertible in F.
   sketch:
-    - "derive: A primitive n-th root is a root of Φ_n by the factorization of X^n - 1 in F."
-    - "setup: Conversely suppose Φ_n(μ) = 0 and let d be the order of μ."
-    - "derive: The divisor product gives μ^n = 1, so d divides n."
-    - "contradiction: If d < n then μ is a double root of X^n - 1, contradicting coprimality with its derivative."
-    - "conclude: Therefore d = n."
+  - 'derive: A primitive n-th root is a root of Φ_n by the factorization of X^n - 1 in F.'
+  - 'setup: Conversely suppose Φ_n(μ) = 0 and let d be the order of μ.'
+  - 'derive: The divisor product gives μ^n = 1, so d divides n.'
+  - 'contradiction: If d < n then μ is a double root of X^n - 1, contradicting coprimality with its derivative.'
+  - 'conclude: Therefore d = n.'
   openmath: (forall (F n m) (-> (and (nonzero_in_field n F) (in m F)) (<-> (= (poly_eval (cyclotomic_polynomial n F) m) 0) (primitive_root_of_unity m n))))
   hard_negative:
     statement: 任意の体FでΦ_nの根は1の原始n乗根である。
@@ -1015,25 +1181,35 @@
   kind: textbook
   level: 4
   topic: 円分多項式・既約性
-  statement: 正整数nについてΦ_nはQ上既約であり、標数0の体に含まれる1の原始n乗根のQ上の最小多項式はΦ_nである。
+  statement: 正整数$n$について$\Phi_n$は$\mathbb{Q}$上既約であり、標数$0$の体に含まれる$1$の原始$n$乗根の$\mathbb{Q}$上の最小多項式は$\Phi_n$である。
   statement_en: For a positive integer n, Φ_n is irreducible over Q, and it is the minimal polynomial over Q of any primitive n-th root of unity in a field of characteristic zero.
   assumptions:
-    - nは正整数
-    - Kは標数0の体でμ∈Kは1の原始n乗根
+  - $n$は正整数
+  - $K$は標数$0$の体で、$\mu\in K$は$1$の原始$n$乗根
   quantifiers:
-    - 任意の正整数n
-    - 任意の標数0の体Kとμ∈K
-  conclusion: Φ_nはQ上既約であり、Φ_n=minpoly_Q(μ)である。
+  - 任意の正整数$n$
+  - 任意の標数$0$の体$K$と$\mu\in K$
+  conclusion: $\Phi_n$は$\mathbb{Q}$上既約であり、$\Phi_n$は$\mu$の$\mathbb{Q}$上の最小多項式である。
   answer: |
-    概略を述べる。μの最小多項式をfとすると、ガウスの補題よりfは整係数でΦ_nを割り切る。素数pがnを割らないとき、f(μ^p)=0を示す。そうでなければΦ_n=fgでg(μ^p)=0となり、fはg(X^p)を割り切る。mod pでg(X^p)=g(X)^pとなるので、fとgのmod pの像は共通因子を持ち、Φ_nはmod pで重根を持つ。これはX^n-1がmod pで分離的であることに反する。原始n乗根はμのnと互いに素な指数による冪なので、これを指数の素因数ごとに繰り返すと全てfの根となり、f=Φ_nである。
+    $n$を正整数とする。$\Phi_n\in\mathbb{Z}[X]$はモニックで、$\mathbb{Z}[X]$において$X^n-1$を割り切り、$\mathbb{C}$における根は$1$の原始$n$乗根の全体である。
+
+    $\zeta\in\mathbb{C}$を原始$n$乗根、$f$をその$\mathbb{Q}$上の最小多項式とする。$\Phi_n(\zeta)=0$より$\mathbb{Q}[X]$で$\Phi_n=fg$（$f,g$はモニック）と書ける。$f,g$は整数係数である。実際、$f=\alpha f_0$、$g=\beta g_0$（$\alpha,\beta\in\mathbb{Q}$、$f_0,g_0\in\mathbb{Z}[X]$は主係数が正の原始多項式）と書くと、ガウスの補題より$f_0g_0$は原始的なので、$\Phi_n=\alpha\beta f_0g_0$の係数の最大公約数を比べて$\alpha\beta=\pm 1$である。主係数を比べると、$f_0,g_0$の主係数は積が$\pm 1$の正の整数なので$1$である。よって$f_0,g_0$はモニックであり、$f,g$もモニックなので$\alpha=\beta=1$である。
+
+    $f$の任意の根$\xi$と$n$を割り切らない素数$p$について、$\xi^p$も$f$の根であることを示す。$\xi$は原始$n$乗根であり、$\gcd(p,n)=1$より$\xi^p$も原始$n$乗根なので、$\Phi_n$の根である。$f(\xi^p)\neq 0$と仮定すると$g(\xi^p)=0$であり、$\xi$は$g(X^p)$の根である。$f$はモニックかつ既約で$\xi$を根に持つので$\xi$の最小多項式であり、$f\mid g(X^p)$である。$f$はモニックなので、$g(X^p)=fh$となる$h\in\mathbb{Z}[X]$がある。
+
+    係数を$p$で割った像を上線で表す。$\mathbb{F}_p[X]$では、フロベニウス写像とフェルマーの小定理より$\bar g(X^p)=\bar g^p$である。よって$\bar g^p=\bar f\bar h$である。$\bar f$はモニックで次数が正なので、既約因子$\pi$を持つ。$\pi\mid\bar g^p$より$\pi\mid\bar g$であり、$\pi^2\mid\bar f\bar g=\bar\Phi_n$である。$\bar\Phi_n$は$X^n-1$を割り切るので、$\pi^2\mid X^n-1$である。すると$\pi$は$X^n-1$の形式微分$nX^{n-1}$も割り切る。$X\cdot nX^{n-1}-n(X^n-1)=n$であり、$p\nmid n$より$n$は$\mathbb{F}_p$の単元なので、$\pi$は単元を割り切ることになり矛盾する。よって$f(\xi^p)=0$である。
+
+    任意の原始$n$乗根は$\zeta^k$（$\gcd(k,n)=1$）と書け、$k$は$n$を割り切らない素数の積である。上の主張を素因数ごとに繰り返すと、$\zeta^k$は$f$の根である。したがって$\deg f\geq\varphi(n)=\deg\Phi_n$であり、$f\mid\Phi_n$でともにモニックなので$f=\Phi_n$である。よって$\Phi_n$は$\mathbb{Q}$上既約である。
+
+    $K$を標数$0$の体、$\mu\in K$を原始$n$乗根とする。$K$は$\mathbb{Q}$を含み、$n$の像は$0$でない。体で$n$の像が$0$でないとき原始$n$乗根は$\Phi_n$の根なので、$\Phi_n(\mu)=0$である。$\Phi_n$は$\mathbb{Q}$上モニックかつ既約なので、$\mu$の最小多項式である。
   strategy: Show that the minimal polynomial is stable under μ ↦ μ^p by reduction mod p, and conclude that it contains all primitive roots.
   sketch:
-    - "translate: By Gauss's lemma, the minimal polynomial f of μ has integer coefficients and divides Φ_n."
-    - "setup: Fix a prime p not dividing n and write Φ_n = f g over the integers."
-    - "contradiction: If g(μ^p) = 0 then f divides g(X^p), and reducing mod p gives a common factor of f and g."
-    - "derive: That would give a repeated root of X^n - 1 mod p, which is impossible."
-    - "derive: Every primitive n-th root is obtained from μ by such prime powers."
-    - "conclude: Hence f = Φ_n, and Φ_n is irreducible."
+  - 'translate: By Gauss''s lemma, the minimal polynomial f of μ has integer coefficients and divides Φ_n.'
+  - 'setup: Fix a prime p not dividing n and write Φ_n = f g over the integers.'
+  - 'contradiction: If g(μ^p) = 0 then f divides g(X^p), and reducing mod p gives a common factor of f and g.'
+  - 'derive: That would give a repeated root of X^n - 1 mod p, which is impossible.'
+  - 'derive: Every primitive n-th root is obtained from μ by such prime powers.'
+  - 'conclude: Hence f = Φ_n, and Φ_n is irreducible.'
   openmath: (forall (n) (-> (> n 0) (and (irreducible_over (cyclotomic_polynomial n Q) Q) (forall (K m) (-> (and (= (field_characteristic K) 0) (in m K) (primitive_root_of_unity m n)) (= (cyclotomic_polynomial n Q) (minimal_polynomial m Q)))))))
   hard_negative:
     statement: Φ_nは任意の体上で既約である。
@@ -1050,22 +1226,28 @@
   kind: textbook
   level: 4
   topic: 円分拡大・ガロア群
-  statement: Lがn乗根の添加によるQの円分拡大(n≥1)ならば、L/Qはガロア拡大で、[L:Q]=φ(n)であり、Gal(L/Q)は(Z/nZ)^×と同型である。
+  statement: $n$を正整数とし、$L$を$1$の$n$乗根で$\mathbb{Q}$上生成される体で原始$n$乗根を含むものとする。このとき$L/\mathbb{Q}$はガロア拡大で、$[L:\mathbb{Q}]=\varphi(n)$であり、$\operatorname{Gal}(L/\mathbb{Q})$は$(\mathbb{Z}/n\mathbb{Z})^\times$と同型である。
   statement_en: If L is the n-th cyclotomic extension of Q with n ≥ 1, then L/Q is Galois, [L:Q] = φ(n), and Gal(L/Q) is isomorphic to (Z/nZ)^×.
   assumptions:
-    - nは正整数
-    - LはQ上1のn乗根で生成される体
+  - $n$は正整数
+  - $L$は$1$の$n$乗根で$\mathbb{Q}$上生成される体で、$1$の原始$n$乗根を含む
   quantifiers:
-    - 任意の正整数nとQの円分拡大L
-  conclusion: L/Qはガロア拡大で、[L:Q]=φ(n)かつGal(L/Q)≅(Z/nZ)^×である。
+  - 任意の正整数$n$と$\mathbb{Q}$の円分拡大$L$
+  conclusion: $L/\mathbb{Q}$はガロア拡大で、$[L:\mathbb{Q}]=\varphi(n)$かつ$\operatorname{Gal}(L/\mathbb{Q})\cong(\mathbb{Z}/n\mathbb{Z})^\times$である。
   answer: |
-    Lは原始n乗根ζによりL=Q(ζ)と書け、X^n-1の分解体である。X^n-1は分離的なので、L/Qはガロア拡大である。Φ_nはQ上既約でζの最小多項式なので、[L:Q]=deg Φ_n=φ(n)である。σ∈Gal(L/Q)はζを原始n乗根へ送るのでσ(ζ)=ζ^{a(σ)}と書け、σ↦a(σ)は(Z/nZ)^×への単射準同型である。両者の位数がともにφ(n)なので同型である。
+    $n$を正整数、$L$を$1$の$n$乗根で$\mathbb{Q}$上生成される体で、$1$の原始$n$乗根$\zeta$を含むものとする。
+
+    $1,\zeta,\ldots,\zeta^{n-1}$は$X^n-1$の相異なる$n$個の根なので、$1$の$n$乗根の全体である。よって$L=\mathbb{Q}(\zeta)$であり、$L$は$X^n-1$の$\mathbb{Q}$上の分解体である。$X^n-1$は標数$0$で形式微分$nX^{n-1}$と互いに素なので分離的である。したがって$L/\mathbb{Q}$はガロア拡大である。
+
+    $\Phi_n$は$\mathbb{Q}$上既約で$\zeta$の最小多項式なので、$[L:\mathbb{Q}]=\deg\Phi_n=\varphi(n)$である。
+
+    $\sigma\in\operatorname{Gal}(L/\mathbb{Q})$は元の位数を保つので、$\sigma(\zeta)$は原始$n$乗根であり、$\sigma(\zeta)=\zeta^{a(\sigma)}$（$a(\sigma)\in(\mathbb{Z}/n\mathbb{Z})^\times$）と書ける。$\sigma\tau(\zeta)=\sigma(\zeta^{a(\tau)})=\zeta^{a(\sigma)a(\tau)}$なので、$a$は準同型である。$\sigma$は$\sigma(\zeta)$で定まるので、$a$は単射である。$|\operatorname{Gal}(L/\mathbb{Q})|=[L:\mathbb{Q}]=\varphi(n)=|(\mathbb{Z}/n\mathbb{Z})^\times|$なので、$a$は同型である。
   strategy: Use the irreducibility of Φ_n for the degree and the action on ζ for an injection into (Z/nZ)^×.
   sketch:
-    - "translate: L = Q(ζ) is the splitting field of the separable polynomial X^n - 1, so L/Q is Galois."
-    - "apply_theorem: Irreducibility of Φ_n gives [L:Q] = φ(n)."
-    - "construct: Define a(σ) by σ(ζ) = ζ^a(σ), which is an injective homomorphism into (Z/nZ)^×."
-    - "conclude: Comparing orders shows that it is an isomorphism."
+  - 'translate: L = Q(ζ) is the splitting field of the separable polynomial X^n - 1, so L/Q is Galois.'
+  - 'apply_theorem: Irreducibility of Φ_n gives [L:Q] = φ(n).'
+  - 'construct: Define a(σ) by σ(ζ) = ζ^a(σ), which is an injective homomorphism into (Z/nZ)^×.'
+  - 'conclude: Comparing orders shows that it is an isomorphism.'
   openmath: (forall (n L) (-> (and (> n 0) (cyclotomic_extension L n Q)) (and (galois_extension L Q) (= (ext_degree L Q) (euler_phi n)) (isomorphic_groups (galois_group L Q) (zmod_units n)))))
   hard_negative:
     statement: 任意の体F上で円分拡大の次数はφ(n)である。
@@ -1081,24 +1263,41 @@
   kind: named
   level: 4
   topic: ガロア理論・方程式の可解性
-  statement: 既約多項式qがべき根で解ける根を持てば、qのガロア群は可解である(ガロアの可解性判定の一方向で、アーベル・ルフィニの定理の証明の主要部)。
-  statement_en: "Main step of the Abel-Ruffini theorem, one direction of the Galois solvability criterion: if an irreducible polynomial q over F has a root solvable by radicals, then the Galois group of q is solvable."
+  statement: ガロアの可解性判定の一方向で、アーベル・ルフィニの定理の証明の主要部。体$F$上の既約多項式$q$がべき根で解ける根を持てば、$q$のガロア群は可解である。
+  statement_en: 'Main step of the Abel-Ruffini theorem, one direction of the Galois solvability criterion: if an irreducible polynomial q over F has a root solvable by radicals, then the Galois group of q is solvable.'
   assumptions:
-    - qはF上既約
-    - x∈Eはq(x)=0を満たし、Fからべき根と体演算で得られる
+  - $E$は体$F$の拡大体
+  - $q\in F[X]$は既約
+  - $x\in E$は$q(x)=0$を満たし、$F$の元から体演算とべき根で得られる
   quantifiers:
-    - 任意の体F, E
-    - 任意のx∈Eと多項式q
-  conclusion: qのガロア群は可解である。
+  - 任意の体$F,E$
+  - 任意の$x\in E$と多項式$q\in F[X]$
+  conclusion: $q$のガロア群（$q$の分解体の$F$上の自己同型群）は可解である。
   answer: |
-    概略を述べる。xはFから四則とべき根をとる操作の有限回で得られるので、その構成に関する帰納法を使う。主な段階は3つある。第一に、X^n-aのガロア群は可解である。これは1のn乗根の添加がアーベル拡大であり、その上でX^n-aの分解体が巡回拡大の合成になることによる。第二に、分解体の塔の上に分解する多項式については、可解性が部分群と商を通じて遺伝する。第三に、これらからxの最小多項式のガロア群が可解であることが従い、qはそのスカラー倍なのでqのガロア群も可解である。
+    $E$を体$F$の拡大体、$q\in F[X]$を既約多項式とする。$x\in E$は$q(x)=0$を満たし、べき根で解ける元、すなわち$F$の元から出発して加減乗除と$n$乗根（$n\geq 1$）をとる操作を$E$の中で有限回行って得られる元とする。$0$でない$p\in F[X]$について、$E_p$を$p$の$F$上の分解体、$G(p)$を$E_p$の$F$上の自己同型群とする。これが$p$のガロア群である。
+
+    次の定理を用いる。分解体の同型延長定理（体の同型$\sigma:F_1\to F_2$は$f_1\in F_1[X]$の分解体から$\sigma f_1$の分解体への同型に延長される）。また、任意の体$K$と$a\in K$について、$K$上の$X^n-a$のガロア群は可解である。可解群の部分群と商は可解であり、可解群を正規部分群と商に持つ群も可解である。
+
+    性質1。$p$が$E_q$で一次式の積に分解するとする（$E_p\subset E_q$とみなす）。$\sigma\in G(q)$は$p$の根を置換するので$\sigma(E_p)=E_p$であり、制限$G(q)\to G(p)$が定まる。その核は$\operatorname{Aut}(E_q/E_p)$である。$E_q$は$q$の$E_p$上の分解体であり、$\tau\in G(p)$は$F$を固定して$q$を変えないので、同型延長定理より$\tau$は$E_q$の自己同型に延長される。よって制限は全射である。したがって、$G(q)$が可解なら$G(p)$は可解である。また$G(p)$と$\operatorname{Aut}(E_q/E_p)$が可解なら$G(q)$は可解である。
+
+    性質2。$\sigma\mapsto(\sigma|_{E_p},\sigma|_{E_q})$は単射準同型$G(pq)\to G(p)\times G(q)$である。$E_{pq}$は$p,q$の根で生成されるからである。よって$G(p),G(q)$が可解なら$G(pq)$は可解である。
+
+    べき根で解ける元$x$について「$x$は$F$上代数的で、最小多項式$m_x$について$G(m_x)$は可解である」ことを、$x$の構成に関する帰納法で示す。
+
+    $x\in F$なら$m_x=X-x$であり、$G(m_x)$は自明である。
+
+    $\gamma$が$\alpha+\beta$、$-\alpha$、$\alpha\beta$、$\alpha^{-1}$（$\alpha\neq 0$）のどれかで、$\alpha,\beta$について主張が成り立つとする。$m=m_\alpha m_\beta$とし、$E$の代数的閉包の中で$F$と$m$の根が生成する体を$E_m$とする。$E_m$は$\alpha,\beta$を含むので$\gamma$を含む。$E_m/F$は有限次の正規拡大なので、$\gamma$は代数的で、$m_\gamma$は$E_m$で一次式の積に分解する。性質2より$G(m)$は可解であり、性質1より$G(m_\gamma)$は可解である。
+
+    $y\in E$、$n\geq 1$とし、$c=y^n$について主張が成り立つとする。$y$は$F(c)$上代数的なので$F$上代数的である。$r(X)=m_c(X^n)\in F[X]$とおく。$r\neq 0$かつ$r(y)=0$である。$m_c$の根$c_i$に対して、$E_r$の代数的閉包の中で$d^n=c_i$となる$d$をとると、$r(d)=m_c(c_i)=0$なので$d\in E_r$であり、$c_i=d^n\in E_r$である。よって$m_c$は$E_r$で分解し、$E_{m_c}\subset E_r$とみなせる。$E_{m_c}[X]$で$r=\prod_i(X^n-c_i)$であり、$E_r$は$r$の$E_{m_c}$上の分解体である。各$X^n-c_i$の$E_{m_c}$上のガロア群は可解なので、性質2を$E_{m_c}$上で繰り返し使うと$\operatorname{Aut}(E_r/E_{m_c})$は可解である。$G(m_c)$は可解なので、性質1より$G(r)$は可解である。$m_y\mid r$なので$m_y$は$E_r$で分解し、性質1より$G(m_y)$は可解である。
+
+    最後に、$q$は既約で$q(x)=0$なので$m_x$の定数倍である。よって$q$と$m_x$の分解体は同じであり、$q$のガロア群$G(m_x)$は可解である。
   strategy: Induct on the construction of x, using solvability of Gal(X^n - a) and closure of solvable groups under extensions and quotients.
   sketch:
-    - "induction: Induct on how x is obtained by field operations and radicals from F."
-    - "derive: The group of X^n - 1 is abelian, and over its splitting field the group of X^n - a is abelian too."
-    - "apply_theorem: Solvable groups are closed under subgroups, quotients and extensions."
-    - "derive: So the minimal polynomial of x has a solvable Galois group."
-    - "conclude: Since q is a scalar multiple of that polynomial, its Galois group is solvable."
+  - 'induction: Induct on how x is obtained by field operations and radicals from F.'
+  - 'derive: The group of X^n - 1 is abelian, and over its splitting field the group of X^n - a is abelian too.'
+  - 'apply_theorem: Solvable groups are closed under subgroups, quotients and extensions.'
+  - 'derive: So the minimal polynomial of x has a solvable Galois group.'
+  - 'conclude: Since q is a scalar multiple of that polynomial, its Galois group is solvable.'
   openmath: (forall (F E x q) (-> (and (field_extension E F) (in x E) (polynomial_over q F) (solvable_by_radicals x F) (irreducible_over q F) (= (poly_eval q x) 0)) (solvable_group (polynomial_galois_group q F))))
   hard_negative:
     statement: ガロア群が可解でない既約多項式は根を持たない。
@@ -1113,24 +1312,35 @@
   kind: gap
   level: 4
   topic: ガロア群・べき根の多項式
-  statement: 体F上の多項式X^n-aのガロア群は可解である。
+  statement: 体$F$上の多項式$X^n-a$のガロア群は可解である。
   statement_en: For a field F, the Galois group of X^n - a over F is solvable.
   assumptions:
-    - Fは体
-    - nは自然数、a∈F
+  - $F$は体
+  - $n$は自然数
+  - $a\in F$
   quantifiers:
-    - 任意の体F
-    - 任意のnとa∈F
-  conclusion: X^n-aのガロア群は可解である。
+  - 任意の体$F$
+  - 任意の自然数$n$と$a\in F$
+  conclusion: $X^n-a$のガロア群（分解体の$F$上の自己同型群）は可解である。
   answer: |
-    a=0またはn=0ならばX^n-aは1次式の積か定数なので、ガロア群は自明である。それ以外ではX^n-1の分解体F'をとる。X^n-1のガロア群は1の根の間の冪写像で書けるのでアーベル群である。F'上ではX^n-aの2根の比が1のn乗根なので、根の1つbを固定するとσ↦σ(b)/bは単射準同型を与え、ガロア群はアーベル群である。X^n-aの分解体はF'とbの合成で得られ、可解群の拡大は可解なので、主張が従う。
+    $F$を体、$n$を自然数、$a\in F$とする。$X^n-a$のガロア群とは、その$F$上の分解体$K$の$F$上の自己同型群$\operatorname{Aut}(K/F)$である。
+
+    $a=0$なら$X^n$の根は$0$だけであり、$n=0$なら$1-a$は定数である。どちらの場合も$K=F$であり、群は自明である。以下$a\neq 0$、$n\geq 1$とする。
+
+    $K[X]$で$X^n-a=\prod_{i=1}^n(X-y_i)$と分解する。$b=y_1$とおくと、$b^n=a\neq 0$より$b\neq 0$である。$X$に$bX$を代入して$a=b^n$で割ると、$X^n-1=\prod_{i=1}^n(X-y_i/b)$を得る。よって$X^n-1$は$K$で一次式の積に分解する。$K$の中の$1$の$n$乗根の全体を$\mu$とし、$E_1=F(\mu)$とおくと、$E_1$は$X^n-1$の$F$上の分解体である。$X^n-a$の根はすべて$\omega b$（$\omega\in\mu$）の形なので、$K=E_1(b)$である。
+
+    $\mu$は体の乗法群の有限部分群なので巡回群であり、生成元$\zeta$を持つ。$E_1=F(\zeta)$である。$\sigma\in\operatorname{Aut}(K/F)$は$\mu$を保つので、$\sigma(\zeta)=\zeta^{k(\sigma)}$と書ける。よって制限$\rho:\operatorname{Aut}(K/F)\to\operatorname{Aut}(E_1/F)$が定まる。$\operatorname{Aut}(E_1/F)$の元は$\zeta$の像で定まり、$\zeta\mapsto\zeta^k$と$\zeta\mapsto\zeta^l$の合成はどちらの順でも$\zeta\mapsto\zeta^{kl}$なので、$\operatorname{Aut}(E_1/F)$はアーベル群である。
+
+    $\rho$の核$N=\operatorname{Aut}(K/E_1)$を考える。$\sigma\in N$について$\sigma(b)$は$X^n-a$の根なので、$\sigma(b)=\omega_\sigma b$（$\omega_\sigma\in\mu$）と書ける。$\sigma$は$\mu$を固定するので、$\sigma\tau(b)=\sigma(\omega_\tau b)=\omega_\tau\omega_\sigma b$であり、$\sigma\mapsto\omega_\sigma$は$N\to\mu$の準同型である。$K=E_1(b)$なので$\sigma$は$\sigma(b)$で定まり、この準同型は単射である。よって$N$はアーベル群である。
+
+    $N$は$\operatorname{Aut}(K/F)$の正規部分群でアーベル群であり、商$\operatorname{Aut}(K/F)/N$は$\operatorname{Aut}(E_1/F)$の部分群と同型なのでアーベル群である。したがって$\operatorname{Aut}(K/F)$は可解である。
   strategy: Split into the cyclotomic step and the radical step, each abelian, and combine using extensions of solvable groups.
   sketch:
-    - "case_split: The cases a = 0 and n = 0 give a trivial group."
-    - "derive: The group of X^n - 1 embeds in the unit group of integers modulo the order, hence is abelian."
-    - "derive: Over the field containing the roots of unity, σ ↦ σ(b)/b embeds the group of X^n - a in an abelian group."
-    - "apply_theorem: Extensions of solvable groups are solvable."
-    - "conclude: So the group of X^n - a is solvable."
+  - 'case_split: The cases a = 0 and n = 0 give a trivial group.'
+  - 'derive: The group of X^n - 1 embeds in the unit group of integers modulo the order, hence is abelian.'
+  - 'derive: Over the field containing the roots of unity, σ ↦ σ(b)/b embeds the group of X^n - a in an abelian group.'
+  - 'apply_theorem: Extensions of solvable groups are solvable.'
+  - 'conclude: So the group of X^n - a is solvable.'
   openmath: (forall (F n a) (-> (and (in a F) (>= n 0)) (solvable_group (polynomial_galois_group (polynomial_x_pow_sub n a) F))))
   hard_negative:
     statement: X^n-aのガロア群はつねにアーベル群である。
@@ -1145,23 +1355,33 @@
   kind: named
   level: 4
   topic: 代数的閉体・代数学の基本定理
-  statement: 定数でない複素係数多項式は複素数の根を持つ。すなわちCは代数的閉体である(代数学の基本定理)。
-  statement_en: "Fundamental theorem of algebra: every nonconstant complex polynomial has a complex root; equivalently, C is algebraically closed."
+  statement: 代数学の基本定理。定数でない複素係数多項式は複素数の根を持つ。すなわち$\mathbb{C}$は代数的閉体である。
+  statement_en: 'Fundamental theorem of algebra: every nonconstant complex polynomial has a complex root; equivalently, C is algebraically closed.'
   assumptions:
-    - fは次数が正の複素係数多項式
+  - $f$は次数が正の複素係数多項式
   quantifiers:
-    - 任意の複素係数多項式f
-  conclusion: fはCに根を持ち、Cは代数的閉体である。
+  - 任意の複素係数多項式$f$
+  conclusion: $f$は$\mathbb{C}$に根を持ち、$\mathbb{C}$は代数的閉体である。
   answer: |
-    ガロア理論による概略を述べる。中間値の定理から実係数の奇数次多項式は実根を持つので、Rの奇数次の拡大は自明である。また複素数は平方根を持つので、Cに2次拡大はない。Cの有限次拡大LをR上ガロアにとり、G=Gal(L/R)のシロー2部分群の固定体を考える。これはR上奇数次なのでRであり、Gは2群である。Gal(L/C)が非自明ならば指数2の部分群があり、その固定体はCの2次拡大となって矛盾する。よってL=Cである。
+    $f\in\mathbb{C}[X]$を次数が正の多項式とする。ガロア理論を用いて証明する。解析の事実としては、中間値の定理と複素数の極形式を用いる。
+
+    事実1。$\mathbb{R}$の有限次拡大で次数が奇数のものは$\mathbb{R}$自身である。$M/\mathbb{R}$をそのような拡大とする。標数$0$なので原始元定理より$M=\mathbb{R}(\theta)$であり、$\theta$の最小多項式は奇数次である。実係数の奇数次多項式は中間値の定理より実根を持つので、既約性から一次式である。よって$M=\mathbb{R}$である。
+
+    事実2。$\mathbb{C}$に$2$次拡大はない。任意の複素数は極形式$re^{i\theta}$に対する$\sqrt r\,e^{i\theta/2}$を平方根に持つ（$r\geq 0$の実数の平方根は中間値の定理で得られる）。よって根の公式から、複素係数の$2$次多項式は$\mathbb{C}$に根を持ち、既約でない。$2$次拡大の元の最小多項式の次数は$1$なので、拡大は自明である。
+
+    $\bar f$を$f$の係数の複素共役をとった多項式とすると、$g=f\bar f(X^2+1)$は実係数である。$L$を$g$の$\mathbb{R}$上の分解体とする。$L$は$X^2+1$の根を含むので$\mathbb{C}=\mathbb{R}(i)$を含み、$f\mid g$より$f$は$L$に根を持つ。標数$0$なので$L/\mathbb{R}$はガロア拡大である。$G=\operatorname{Gal}(L/\mathbb{R})$とする。
+
+    $P$を$G$のシロー$2$部分群とする。ガロア対応より、固定体$L^P$の$\mathbb{R}$上の次数は$[G:P]$であり奇数である。事実1より$L^P=\mathbb{R}$なので、$G=P$は$2$群である。
+
+    $H=\operatorname{Gal}(L/\mathbb{C})$は$2$群である。$H$が自明でないとすると、指数$2$の部分群$H'$を持つ。その固定体$L^{H'}$は$\mathbb{C}$の$2$次拡大であり、事実2に反する。よって$H$は自明であり、$L=\mathbb{C}$である。したがって$f$は$\mathbb{C}$に根を持つ。定数でない任意の複素係数多項式が根を持つので、$\mathbb{C}$は代数的閉体である。
   strategy: Combine the intermediate value theorem and quadratic roots with Sylow theory on a Galois closure over R.
   sketch:
-    - "derive: Odd-degree real polynomials have a real root, so R has no nontrivial odd-degree extension."
-    - "derive: Every complex number has a square root, so C has no quadratic extension."
-    - "construct: Take a finite extension L of C that is Galois over R, with group G."
-    - "apply_theorem: The fixed field of a Sylow 2-subgroup has odd degree over R, hence G is a 2-group."
-    - "contradiction: A nontrivial Gal(L/C) has an index 2 subgroup, whose fixed field is a quadratic extension of C."
-    - "conclude: Hence L = C, and C is algebraically closed."
+  - 'derive: Odd-degree real polynomials have a real root, so R has no nontrivial odd-degree extension.'
+  - 'derive: Every complex number has a square root, so C has no quadratic extension.'
+  - 'construct: Take a finite extension L of C that is Galois over R, with group G.'
+  - 'apply_theorem: The fixed field of a Sylow 2-subgroup has odd degree over R, hence G is a 2-group.'
+  - 'contradiction: A nontrivial Gal(L/C) has an index 2 subgroup, whose fixed field is a quadratic extension of C.'
+  - 'conclude: Hence L = C, and C is algebraically closed.'
   openmath: (and (forall (f) (-> (and (polynomial_over f C) (> (poly_degree f) 0)) (exists (z) (and (in z C) (= (poly_eval f z) 0))))) (algebraically_closed C))
   hard_negative:
     statement: 定数でない実係数多項式は実数の根を持つ。
@@ -1175,21 +1395,21 @@
   kind: gap
   level: 4
   topic: 作図可能性・2冪次拡大
-  statement: 拡大次数が2^nであるE/Fの任意の元のF上の次数は2の冪である。
+  statement: 拡大次数が$2^n$である$E/F$の任意の元の$F$上の次数は$2$の冪である。
   statement_en: If [E:F] = 2^n, then the degree over F of every element of E is a power of 2.
   assumptions:
-    - E/Fは有限次拡大で[E:F]=2^n
-    - x∈E
+  - $E/F$は有限次拡大で$[E:F]=2^n$
+  - $x\in E$
   quantifiers:
-    - 任意の体F, E
-    - 任意のnとx∈E
-  conclusion: xの最小多項式の次数は2^k(k≤n)の形である。
+  - 任意の体$F,E$
+  - 任意の自然数$n$と$x\in E$
+  conclusion: $x$の$F$上の最小多項式の次数は$2^k$（$k\leq n$）の形である。
   answer: |
-    E/Fが有限次なのでxの最小多項式の次数は[E:F]=2^nを割り切る。2は素数なので2^nの約数は2^k(k≤n)の形に限る。よってxの次数は2の冪である。
+    $E/F$を$[E:F]=2^n$の有限次拡大、$x\in E$とする。有限次拡大の元の最小多項式の次数は拡大次数を割り切るので、$x$の$F$上の最小多項式の次数は$2^n$を割り切る。$2$は素数なので、$2^n$の約数は$2^k$（$0\leq k\leq n$）の形に限る。よって$x$の次数は$2^k$（$k\leq n$）の形である。
   strategy: Use that the degree divides [E:F] and classify the divisors of a prime power.
   sketch:
-    - "apply_theorem: The degree of the minimal polynomial divides [E:F] = 2^n."
-    - "conclude: Divisors of 2^n are exactly 2^k with k ≤ n."
+  - 'apply_theorem: The degree of the minimal polynomial divides [E:F] = 2^n.'
+  - 'conclude: Divisors of 2^n are exactly 2^k with k ≤ n.'
   openmath: (forall (F E n x) (-> (and (finite_extension E F) (= (ext_degree E F) (^ 2 n)) (in x E)) (exists (k) (and (<= k n) (= (poly_degree (minimal_polynomial x F)) (^ 2 k))))))
   hard_negative:
     statement: 次数が2の冪である元は、2次拡大の塔の中に必ず入る。
@@ -1207,23 +1427,27 @@
   kind: textbook
   level: 4
   topic: 作図可能性・立方倍積
-  statement: Qの2^n次拡大Eには、3乗すると2になる元は存在しない(立方倍積の作図不可能性の代数的な核心)。
+  statement: $\mathbb{Q}$の$2^n$次拡大$E$には、$3$乗すると$2$になる元は存在しない（立方倍積の作図不可能性の代数的な核心）。
   statement_en: A degree 2^n extension E of Q contains no element whose cube is 2; this is the algebraic core of the impossibility of doubling the cube.
   assumptions:
-    - E/Qは有限次拡大で[E:Q]=2^n
+  - $E/\mathbb{Q}$は有限次拡大で$[E:\mathbb{Q}]=2^n$
   quantifiers:
-    - 任意の体Eと自然数n
-    - 任意のα∈E
-  conclusion: α^3≠2である。
+  - 任意の体$E$と自然数$n$
+  - 任意の$\alpha\in E$
+  conclusion: $\alpha^3\neq 2$である。
   answer: |
-    α^3=2となるα∈Eがあるとする。2はQの中で3乗数でないので、X^3-2はQ上既約である。実際、3次多項式が可約ならば有理根を持つが、有理根は有理根定理により整数であり、整数の3乗は2にならない。よってαの最小多項式はX^3-2であり、次数は3である。元の次数は[E:Q]を割り切るので3は2^nを割り切ることになり、矛盾する。
+    $E/\mathbb{Q}$を$[E:\mathbb{Q}]=2^n$の有限次拡大とする。$\alpha\in E$が$\alpha^3=2$を満たすと仮定する。
+
+    $X^3-2$は$\mathbb{Q}$上既約である。$3$次多項式が可約なら一次因子を持つので有理根を持つ。有理根を既約分数$a/b$とすると$a^3=2b^3$であり、$a$は偶数である。すると$8\mid a^3$なので$4\mid b^3$となり、$b$も偶数である。これは既約分数であることに反する。
+
+    よって$\alpha$の$\mathbb{Q}$上の最小多項式は$X^3-2$であり、次数は$3$である。有限次拡大の元の最小多項式の次数は拡大次数を割り切るので、$3$は$2^n$を割り切ることになり、矛盾する。
   strategy: Show X^3 - 2 is the minimal polynomial and use that 3 does not divide 2^n.
   sketch:
-    - "setup: Suppose α in E satisfies α^3 = 2."
-    - "derive: The rational root test shows that 2 is not a rational cube, so X^3 - 2 is irreducible over Q."
-    - "derive: Thus the minimal polynomial of α has degree 3."
-    - "apply_theorem: The degree of α divides [E:Q] = 2^n."
-    - "contradiction: The prime 3 does not divide a power of 2."
+  - 'setup: Suppose α in E satisfies α^3 = 2.'
+  - 'derive: The rational root test shows that 2 is not a rational cube, so X^3 - 2 is irreducible over Q.'
+  - 'derive: Thus the minimal polynomial of α has degree 3.'
+  - 'apply_theorem: The degree of α divides [E:Q] = 2^n.'
+  - 'contradiction: The prime 3 does not divide a power of 2.'
   openmath: (forall (E n a) (-> (and (finite_extension E Q) (= (ext_degree E Q) (^ 2 n)) (in a E)) (!= (^ a 3) 2)))
   hard_negative:
     statement: Qの任意の有限次拡大はα^3=2となるαを含まない。

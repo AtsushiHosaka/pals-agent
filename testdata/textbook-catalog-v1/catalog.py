@@ -29,6 +29,7 @@ from app.domain.recipe_catalog_admission import (
     RecipeMaterializerV1,
     validate_materialized_recipe,
 )
+
 from pals_agent import openmath as om
 
 ROOT = Path(__file__).resolve().parent
@@ -53,6 +54,10 @@ CARD_KEYS = {
 KINDS = {"gap", "textbook", "named"}
 SLUG = re.compile(r"^[a-z0-9][a-z0-9_]{0,70}$")
 STEP = re.compile(r"^[a-z_]+: \S")
+# Same canonical OpenMath as an existing Draft, which the loader rejects; the Recipe stays new.
+EXISTING_DRAFT_COLLISIONS = {
+    "textbook_number_theory_gcd_mul_lcm": "nt_gcd_lcm_product_identity",
+}
 CD_NAME = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 JAPANESE = re.compile(r"[ぁ-んァ-ヶ一-龠]")
 
@@ -111,7 +116,13 @@ def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
         if domain is not None and path.stem not in {"core", domain}:
             continue
         for name, spec in (yaml.safe_load(path.read_text()) or {}).items():
-            if not CD_NAME.match(name) or name in STANDARD or name in PALS1 or name in BINDERS or name in PALS1_BINDERS:
+            if (
+                not CD_NAME.match(name)
+                or name in STANDARD
+                or name in PALS1
+                or name in BINDERS
+                or name in PALS1_BINDERS
+            ):
                 raise CardError(f"{path.name}: invalid or built-in vocabulary name {name}")
             if set(spec) != {"args", "returns", "meaning"} or spec["returns"] not in {
                 "prop",
@@ -320,7 +331,8 @@ AXIOMS = re.compile(
     r"'(pals_card_\d+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)", re.S
 )
 DIAGNOSTIC = re.compile(
-    r"^[^\n:]*:(\d+):(\d+): error(?:\([^)\n]*\))?: (.*?)(?=^[^\n:]*:\d+:\d+: |^'pals_card_|\Z)", re.S | re.M
+    r"^[^\n:]*:(\d+):(\d+): error(?:\([^)\n]*\))?: (.*?)(?=^[^\n:]*:\d+:\d+: |^'pals_card_|\Z)",
+    re.S | re.M,
 )
 
 
@@ -476,7 +488,9 @@ def command_build(_: argparse.Namespace) -> int:
                 "openmath_xml": entry["xml"],
                 "proof_strategy": normalized(card["strategy"]),
                 "sketch_steps": card["sketch"],
-                "tier": entry["tier"],
+                "tier": "duplicate_of_existing"
+                if draft_id in EXISTING_DRAFT_COLLISIONS
+                else entry["tier"],
             }
         )
         searches.append(
@@ -616,7 +630,9 @@ def _statement_probe() -> str:
     return f"\nset_option pp.all true in\n#check @{MIN_IMPORTS_NAME}\n"
 
 
-def _run_lean(source: str, binary: str, env: dict[str, str], temp: str, label: str) -> tuple[int, str]:
+def _run_lean(
+    source: str, binary: str, env: dict[str, str], temp: str, label: str
+) -> tuple[int, str]:
     path = Path(temp) / f"{label}.lean"
     path.write_text(source)
     try:
@@ -661,7 +677,9 @@ def _minimal_imports(entry: dict, binary: str, env: dict[str, str], temp: str) -
         return row
     row["statement_pp_all_sha256"] = hashlib.sha256(expected.encode()).hexdigest()
     header = "".join(f"import {name}\n" for name in imports)
-    code, output = _run_lean(f"{header}\n{text}{_statement_probe()}", binary, env, temp, f"{label}N")
+    code, output = _run_lean(
+        f"{header}\n{text}{_statement_probe()}", binary, env, temp, f"{label}N"
+    )
     if code != 0:
         row["reason"] = f"narrow_compile_error: {_first_error(output)}"
         return row
@@ -678,7 +696,11 @@ def _measure(source: bytes, binary: str, env: dict[str, str], temp: str, label: 
     path.write_bytes(source)
     started = time.monotonic()
     done = subprocess.run(
-        ["/usr/bin/time", "-l", binary, str(path)], env=env, capture_output=True, text=True, timeout=600
+        ["/usr/bin/time", "-l", binary, str(path)],
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=600,
     )
     seconds = round(time.monotonic() - started, 3)
     path.unlink(missing_ok=True)
@@ -697,7 +719,11 @@ def _percentile(values: list[float], fraction: float) -> float:
 
 
 def command_min_imports(args: argparse.Namespace) -> int:
-    entries = all_entries() if not args.domain else load_file(CARDS / f"{args.domain}.yaml", load_vocabulary(args.domain))[0]
+    entries = (
+        all_entries()
+        if not args.domain
+        else load_file(CARDS / f"{args.domain}.yaml", load_vocabulary(args.domain))[0]
+    )
     binary, env = lean_environment()
     with (
         tempfile.TemporaryDirectory() as temp,
@@ -727,7 +753,9 @@ def command_min_imports(args: argparse.Namespace) -> int:
         "adopted": len(adopted),
         "kept_mathlib": len(rows) - len(adopted),
         "kept_reasons": reasons,
-        "import_count_median": _percentile([len(row["imports"]) for row in adopted], 0.5) if adopted else None,
+        "import_count_median": _percentile([len(row["imports"]) for row in adopted], 0.5)
+        if adopted
+        else None,
     }
     for side in ("broad", "narrow"):
         for key in ("seconds", "max_rss_bytes", "peak_footprint_bytes"):
@@ -742,7 +770,11 @@ def command_min_imports(args: argparse.Namespace) -> int:
     if not args.domain:
         write_json(
             GENERATED / "min-imports.json",
-            {"schema_version": "pals.textbook-min-imports.v1", "materializer_unchanged": True, "cases": rows},
+            {
+                "schema_version": "pals.textbook-min-imports.v1",
+                "materializer_unchanged": True,
+                "cases": rows,
+            },
         )
     report = {"summary": summary, "rows": rows, "measurements": measurements}
     Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n")
@@ -789,7 +821,9 @@ def command_apply_text(args: argparse.Namespace) -> int:
             elif not isinstance(value, str):
                 raise SystemExit(f"{card_id}.{key} must be text")
             by_id[card_id][key] = value
-    body = yaml.dump(cards, Dumper=_LiteralDumper, allow_unicode=True, sort_keys=False, width=100000)
+    body = yaml.dump(
+        cards, Dumper=_LiteralDumper, allow_unicode=True, sort_keys=False, width=100000
+    )
     path.write_text(body)
     print(f"patched {len(patch)} cards in {path.name}")
     return 0
@@ -808,8 +842,10 @@ def _text_problems(value: str) -> list[str]:
 
 def command_lint_text(args: argparse.Namespace) -> int:
     failed = 0
-    domains = [args.domain] if args.domain else sorted(
-        p.stem for p in CARDS.glob("*.yaml") if not p.stem.startswith("_")
+    domains = (
+        [args.domain]
+        if args.domain
+        else sorted(p.stem for p in CARDS.glob("*.yaml") if not p.stem.startswith("_"))
     )
     for domain in domains:
         for card in yaml.safe_load((CARDS / f"{domain}.yaml").read_text()):

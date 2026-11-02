@@ -2,19 +2,25 @@
   kind: gap
   level: 4
   topic: 可換環論・局所化
-  statement: 可換環Rの素イデアルPでの局所化R_Pは局所環である。
+  statement: $R$を可換環、$P$を$R$の素イデアルとする。$R$の$P$での局所化$S$は局所環である。
   statement_en: If P is a prime ideal of a commutative ring R and S is the localization of R at P, then S is a local ring.
-  assumptions: ["Rは可換環", "PはRの素イデアル", "SはRのPでの局所化"]
-  quantifiers: ["任意の可換環R, Sと素イデアルP"]
-  conclusion: Sは局所環である。
+  assumptions:
+  - $R$は可換環
+  - $P$は$R$の素イデアル
+  - $S$は$R$の$P$での局所化
+  quantifiers:
+  - 任意の可換環$R,S$と素イデアル$P$
+  conclusion: $S$は局所環である。
   answer: |
-    Sの元はa/s(a∈R, s∉P)と書ける。mをa∈Pであるa/s全体とすると、mはSのイデアルである。1=a/s(a∈P)なら、あるt∉Pでt(s-a)=0となり、ts=ta∈Pとなって、Pが素イデアルであることに反する。したがってmは真のイデアルである。a∉Pならa/sの逆元s/aがあるので、mの外の元はすべて単元である。よって非単元全体がイデアルmをなし、Sは局所環である。
+    $R$を可換環、$P$を$R$の素イデアル、$S$を$R$の$P$での局所化とする。$S$の元は$a/s$($a\in R$, $s\notin P$)と書ける。
+    $\mathfrak{m}$を、ある$a\in P$, $s\notin P$により$a/s$と書ける元全体とする。$a/s+b/t=(at+bs)/(st)$と$(r/u)(a/s)=(ra)/(us)$より、$\mathfrak{m}$は$S$のイデアルである。$1=a/s$($a\in P$, $s\notin P$)と仮定すると、ある$t\notin P$で$t(s-a)=0$となり、$ts=ta\in P$となる。$P$は素イデアルなので$t\in P$または$s\in P$となり矛盾する。よって$\mathfrak{m}$は真のイデアルである。
+    $S$の元$x$が$\mathfrak{m}$に属さないとする。$x=a/s$と書くと$a\notin P$なので、$s/a$が$S$に属し$x$の逆元である。したがって$\mathfrak{m}$の外の元はすべて単元であり、真のイデアル$\mathfrak{m}$の元は単元でない。非単元全体がイデアル$\mathfrak{m}$をなすので、$S$は局所環である。
   strategy: Show that fractions with numerator in P form a proper ideal whose complement consists of units.
   sketch:
-    - "setup: Let m be the set of fractions a/s with a in P and s outside P."
-    - "derive: m is an ideal of S, and it is proper because 1 = a/s would put a product ts outside P inside P."
-    - "derive: A fraction a/s with a outside P has inverse s/a."
-    - "conclude: The nonunits of S are exactly m, so S is local."
+  - 'setup: Let m be the set of fractions a/s with a in P and s outside P.'
+  - 'derive: m is an ideal of S, and it is proper because 1 = a/s would put a product ts outside P inside P.'
+  - 'derive: A fraction a/s with a outside P has inverse s/a.'
+  - 'conclude: The nonunits of S are exactly m, so S is local.'
   openmath: (forall (R S P) (-> (and (comm_ring R) (comm_ring S) (prime_ideal P R) (localization_at_prime S R P)) (local_ring S)))
   hard_negative:
     statement: 可換環Rの極大イデアルでない素イデアルPでの局所化は局所環にならない。
@@ -29,19 +35,26 @@
   kind: gap
   level: 4
   topic: 可換環論・局所化のイデアル
-  statement: 局所化S=M^{-1}RのイデアルJが素イデアルであることと、JのRへの引き戻しが素イデアルでMと交わらないことは同値である。
+  statement: $R$を可換環、$M$を$R$の乗法的部分モノイド、$S=M^{-1}R$を局所化、$\varphi:R\to S$を標準写像とする。$S$のイデアル$J$が素イデアルであることと、$\varphi^{-1}(J)$が素イデアルで$M$と交わらないことは同値である。
   statement_en: For the localization S of a commutative ring R at a submonoid M, an ideal J of S is prime if and only if its contraction to R is a prime ideal disjoint from M.
-  assumptions: ["Rは可換環", "MはRの乗法的部分モノイド", "SはRのMでの局所化", "JはSのイデアル"]
-  quantifiers: ["任意のR, S, M, J"]
-  conclusion: Jが素イデアルであることは、J∩Rが素イデアルかつMと交わらないことと同値である。
+  assumptions:
+  - $R$は可換環
+  - $M$は$R$の乗法的部分モノイド
+  - $S$は$R$の$M$での局所化で、$\varphi:R\to S$は標準写像
+  - $J$は$S$のイデアル
+  quantifiers:
+  - 任意の$R,S,M,J$
+  conclusion: $J$が素イデアルであることは、$\varphi^{-1}(J)$が素イデアルかつ$M$と交わらないことと同値である。
   answer: |
-    Jが素イデアルなら、素イデアルの引き戻しとしてJ∩Rは素イデアルである。m∈M∩Jがあると、mの像はSの単元なのでJ=Sとなり矛盾する。逆にP=J∩Rが素イデアルでMと交わらないとする。a/s·b/t∈Jならab∈Pなので、aまたはbがPに属し、a/sまたはb/tがJに属する。1∈Jなら1∈Pとなるので、Jは真のイデアルである。
+    $R$を可換環、$M$を$R$の乗法的部分モノイド、$S$を$R$の$M$での局所化、$\varphi:R\to S$を標準写像、$J$を$S$のイデアルとする。$S$の元は$a/s$($a\in R$, $s\in M$)と書け、$\varphi(s)$は単元である。$P=\varphi^{-1}(J)$とおく。$a/s\in J$と$a\in P$は同値である。実際、$\varphi(a)=\varphi(s)(a/s)$かつ$a/s=\varphi(s)^{-1}\varphi(a)$である。
+    $J$が素イデアルとする。素イデアルの引き戻しとして$P$は素イデアルである。$m\in M\cap P$があると、単元$\varphi(m)$が$J$に属して$J=S$となり矛盾する。よって$P$は$M$と交わらない。
+    逆に$P$が素イデアルで$M$と交わらないとする。$1\in J$なら$1\in P$となるので、$J$は真のイデアルである。$(a/s)(b/t)\in J$なら$(ab)/(st)\in J$なので$ab\in P$である。$P$は素イデアルなので$a\in P$または$b\in P$であり、$a/s\in J$または$b/t\in J$である。よって$J$は素イデアルである。
   strategy: Clear denominators using that elements of M become units in S.
   sketch:
-    - "translate: Every element of S has the form a/s, and it lies in J exactly when its numerator lies in the contraction."
-    - "derive: If J is prime, the contraction is prime, and a point of M in it would make J the unit ideal."
-    - "derive: Conversely, a product of fractions in J gives a product of numerators in the contraction, so primality transfers."
-    - "conclude: Both directions give the stated equivalence."
+  - 'translate: Every element of S has the form a/s, and it lies in J exactly when its numerator lies in the contraction.'
+  - 'derive: If J is prime, the contraction is prime, and a point of M in it would make J the unit ideal.'
+  - 'derive: Conversely, a product of fractions in J gives a product of numerators in the contraction, so primality transfers.'
+  - 'conclude: Both directions give the stated equivalence.'
   openmath: (forall (R S M J) (-> (and (comm_ring R) (comm_ring S) (submonoid_of M R) (localization_of S R M) (ideal_of J S)) (<-> (prime_ideal J S) (and (prime_ideal (ideal_comap (algebra_map R S) J) R) (= (inter M (ideal_comap (algebra_map R S) J)) emptyset)))))
   hard_negative:
     statement: Rの任意の素イデアルは、局所化Sのある素イデアルの引き戻しである。
@@ -56,20 +69,27 @@
   kind: textbook
   level: 4
   topic: 可換環論・局所化の完全性
-  statement: R加群の完全列M_0→M_1→M_2を乗法的部分モノイドSで局所化した列も完全である。
+  statement: $R$を可換環、$S$を$R$の乗法的部分モノイドとする。$R$加群の完全列$M_0\xrightarrow{g}M_1\xrightarrow{h}M_2$を$S$で局所化した列$S^{-1}M_0\to S^{-1}M_1\to S^{-1}M_2$も完全である。
   statement_en: If M_0 → M_1 → M_2 is an exact sequence of modules over a commutative ring R and S is a submonoid, then the induced sequence of localized modules is exact.
-  assumptions: ["Rは可換環", "SはRの乗法的部分モノイド", "g: M_0→M_1, h: M_1→M_2はR線形写像", "Im g=Ker h"]
-  quantifiers: ["任意のR, S, M_0, M_1, M_2, g, h"]
+  assumptions:
+  - $R$は可換環
+  - $S$は$R$の乗法的部分モノイド
+  - $g:M_0\to M_1$, $h:M_1\to M_2$は$R$線形写像
+  - $\operatorname{im}g=\ker h$
+  quantifiers:
+  - 任意の$R,S,M_0,M_1,M_2,g,h$
   conclusion: 局所化で誘導される列も完全である。
   answer: |
-    h∘g=0なので、誘導写像の合成も0である。逆にm/s∈S^{-1}M_1がhの誘導写像で0に移るとする。h(m)/s=0より、あるt∈Sでt·h(m)=0、すなわちh(tm)=0である。完全性からtm=g(x)となるx∈M_0がある。よってm/s=g(x)/(ts)はx/(ts)の像である。
+    $R$を可換環、$S$を$R$の乗法的部分モノイド、$M_0,M_1,M_2$を$R$加群とし、$g:M_0\to M_1$, $h:M_1\to M_2$を$\operatorname{im}g=\ker h$を満たす線形写像とする。誘導写像は$S^{-1}g(x/s)=g(x)/s$, $S^{-1}h(m/s)=h(m)/s$である。
+    $h\circ g=0$なので、誘導写像の合成は$0$である。
+    逆に$m/s\in S^{-1}M_1$が$h(m)/s=0$を満たすとする。局所化の定義から、ある$t\in S$で$t\,h(m)=0$、すなわち$h(tm)=0$である。完全性から$tm=g(x)$となる$x\in M_0$がある。よって$m/s=(tm)/(ts)=g(x)/(ts)$であり、これは$x/(ts)$の像である。
   strategy: Turn vanishing in the localization into honest vanishing after multiplying by an element of S, then use exactness upstairs.
   sketch:
-    - "derive: The composite of the induced maps vanishes because h ∘ g = 0."
-    - "setup: Take m/s in the localized middle term killed by the induced h."
-    - "translate: Vanishing of h(m)/s means t h(m) = 0 for some t in S."
-    - "apply_theorem: Exactness gives x with g(x) = t m."
-    - "conclude: Then m/s is the image of x/(ts)."
+  - 'derive: The composite of the induced maps vanishes because h ∘ g = 0.'
+  - 'setup: Take m/s in the localized middle term killed by the induced h.'
+  - 'translate: Vanishing of h(m)/s means t h(m) = 0 for some t in S.'
+  - 'apply_theorem: Exactness gives x with g(x) = t m.'
+  - 'conclude: Then m/s is the image of x/(ts).'
   openmath: (forall (R S M0 M1 M2 g h) (-> (and (comm_ring R) (submonoid_of S R) (module_over M0 R) (module_over M1 R) (module_over M2 R) (module_hom g R M0 M1) (module_hom h R M1 M2) (exact_pair g h)) (exact_pair (localized_map g S) (localized_map h S))))
   hard_negative:
     statement: 局所化した列が完全であれば、元の列も完全である。
@@ -84,19 +104,26 @@
   kind: textbook
   level: 4
   topic: 可換環論・中山の補題
-  statement: 局所環Rの極大イデアルmと有限生成R加群Mについて、mM=MならM=0である。
+  statement: $R$を局所環、$\mathfrak{m}$をその極大イデアル、$M$を有限生成$R$加群とする。$\mathfrak{m}M=M$ならば$M=0$である。
   statement_en: If R is a local ring with maximal ideal m and M is a finitely generated R-module with mM = M, then M = 0.
-  assumptions: ["Rは局所環", "mはRの極大イデアル", "Mは有限生成R加群", "mM=M"]
-  quantifiers: ["任意の局所環Rと有限生成加群M"]
-  conclusion: M=0である。
+  assumptions:
+  - $R$は局所環
+  - $\mathfrak{m}$は$R$の極大イデアル
+  - $M$は有限生成$R$加群
+  - $\mathfrak{m}M=M$
+  quantifiers:
+  - 任意の局所環$R$と有限生成加群$M$
+  conclusion: $M=0$である。
   answer: |
-    M≠0とし、生成元の個数が最小となる生成系x_1,…,x_nを取る。mM=Mよりx_n=Σa_i x_i(a_i∈m)と書ける。すると(1-a_n)x_n=Σ_{i<n}a_i x_iであり、a_n∈mから1-a_nは単元である。よってx_nは他の生成元で書け、最小性に反する。
+    $R$を局所環、$\mathfrak{m}$をその極大イデアル、$M$を$\mathfrak{m}M=M$を満たす有限生成$R$加群とする。
+    $M\neq0$と仮定し、元の個数$n$が最小の生成系$x_1,\dots,x_n$を取る。$n\geq1$である。$x_n\in M=\mathfrak{m}M$であり、$M$の元は$x_i$の線形結合なので、$x_n=\sum_{i=1}^na_ix_i$($a_i\in\mathfrak{m}$)と書ける。すると$(1-a_n)x_n=\sum_{i<n}a_ix_i$である。
+    $a_n\in\mathfrak{m}$なので$1-a_n\notin\mathfrak{m}$であり、$R$は局所環だから$1-a_n$は単元である。よって$x_n$は$x_1,\dots,x_{n-1}$の線形結合であり、$n$の最小性に反する。したがって$M=0$である。
   strategy: Use a minimal generating set and the fact that 1 minus an element of m is a unit.
   sketch:
-    - "setup: Suppose M is nonzero and take a generating set of minimal size."
-    - "translate: mM = M writes the last generator as a combination with coefficients in m."
-    - "derive: Moving the last term to the left gives (1 - a) x_n in the span of the others, and 1 - a is a unit."
-    - "contradiction: The last generator is redundant, against minimality."
+  - 'setup: Suppose M is nonzero and take a generating set of minimal size.'
+  - 'translate: mM = M writes the last generator as a combination with coefficients in m.'
+  - 'derive: Moving the last term to the left gives (1 - a) x_n in the span of the others, and 1 - a is a unit.'
+  - 'contradiction: The last generator is redundant, against minimality.'
   openmath: (forall (R M) (-> (and (comm_ring R) (local_ring R) (module_over M R) (finitely_generated_module R M) (= (ideal_smul_submodule (unique_maximal_ideal R) (whole_submodule M)) (whole_submodule M))) (zero_module_of M)))
   hard_negative:
     statement: 局所環上の任意の加群Mについて、mM=MならM=0である。
@@ -114,19 +141,26 @@
   kind: gap
   level: 4
   topic: 可換環論・中山の補題
-  statement: 局所環上の有限生成加群Mの部分加群Nについて、N+mM=MならN=Mである。
+  statement: $R$を局所環、$\mathfrak{m}$をその極大イデアル、$M$を有限生成$R$加群、$N$を$M$の部分加群とする。$N+\mathfrak{m}M=M$ならば$N=M$である。
   statement_en: If R is local with maximal ideal m, M is a finitely generated R-module and N is a submodule with N + mM = M, then N = M.
-  assumptions: ["Rは局所環", "mはRの極大イデアル", "Mは有限生成R加群", "NはMの部分加群", "N+mM=M"]
-  quantifiers: ["任意のR, M, N"]
-  conclusion: N=Mである。
+  assumptions:
+  - $R$は局所環
+  - $\mathfrak{m}$は$R$の極大イデアル
+  - $M$は有限生成$R$加群
+  - $N$は$M$の部分加群
+  - $N+\mathfrak{m}M=M$
+  quantifiers:
+  - 任意の$R,M,N$
+  conclusion: $N=M$である。
   answer: |
-    商加群M/Nは有限生成である。N+mM=Mはm(M/N)=M/Nを意味するので、中山の補題からM/N=0であり、N=Mとなる。特に、M/mMを生成する元の持ち上げはMを生成する。
+    $R$を局所環、$\mathfrak{m}$をその極大イデアル、$M$を有限生成$R$加群、$N$を$N+\mathfrak{m}M=M$を満たす部分加群とする。
+    商加群$M/N$は有限生成である。$N+\mathfrak{m}M=M$の両辺の$M/N$での像を比べると、$\mathfrak{m}(M/N)=M/N$である。中山の補題(局所環上の有限生成加群$V$について$\mathfrak{m}V=V$なら$V=0$)により$M/N=0$であり、$N=M$である。
   strategy: Apply Nakayama's lemma to the quotient M/N.
   sketch:
-    - "setup: Consider the finitely generated module M/N."
-    - "translate: N + mM = M says m(M/N) = M/N."
-    - "apply_theorem: Nakayama's lemma gives M/N = 0."
-    - "conclude: Therefore N = M."
+  - 'setup: Consider the finitely generated module M/N.'
+  - 'translate: N + mM = M says m(M/N) = M/N.'
+  - 'apply_theorem: Nakayama''s lemma gives M/N = 0.'
+  - 'conclude: Therefore N = M.'
   openmath: (forall (R M N) (-> (and (comm_ring R) (local_ring R) (module_over M R) (finitely_generated_module R M) (submodule_of N M) (= (submodule_sum N (ideal_smul_submodule (unique_maximal_ideal R) (whole_submodule M))) (whole_submodule M))) (= N (whole_submodule M))))
   hard_negative:
     statement: Mが有限生成でなくても、N+mM=MならN=Mである。
@@ -143,19 +177,23 @@
   kind: textbook
   level: 4
   topic: 可換環論・ヒルベルトの基底定理
-  statement: ネーター環R上のn変数多項式環R[x_1,…,x_n]はネーター環である。
+  statement: $R$をネーター環、$n$を自然数とする。$R$上の$n$変数多項式環$R[x_1,\dots,x_n]$はネーター環である。
   statement_en: If R is a Noetherian commutative ring, then the polynomial ring in n variables over R is Noetherian.
-  assumptions: ["Rはネーター環", "nは自然数"]
-  quantifiers: ["任意のネーター環Rと自然数n"]
-  conclusion: R[x_1,…,x_n]はネーター環である。
+  assumptions:
+  - $R$はネーター環
+  - $n$は自然数
+  quantifiers:
+  - 任意のネーター環$R$と自然数$n$
+  conclusion: $R[x_1,\dots,x_n]$はネーター環である。
   answer: |
-    nについての帰納法で示す。n=0ではRそのものである。R[x_1,…,x_{n+1}]はR[x_1,…,x_n][x_{n+1}]と同型であり、一変数のヒルベルトの基底定理から、帰納法の仮定でネーターな環上の一変数多項式環はネーター環である。
+    $R$をネーター環、$n$を自然数とする。$n$についての帰納法で示す。
+    $n=0$のとき、多項式環は$R$そのものであり、ネーター環である。$R[x_1,\dots,x_n]$がネーター環であるとする。$R[x_1,\dots,x_{n+1}]$は$R[x_1,\dots,x_n][x_{n+1}]$と同型である。ヒルベルトの基底定理(ネーター環上の$1$変数多項式環はネーター環である)により、これはネーター環である。
   strategy: Induct on the number of variables using the one-variable basis theorem.
   sketch:
-    - "induction: The case n = 0 is R itself."
-    - "translate: The ring in n + 1 variables is the one-variable polynomial ring over the ring in n variables."
-    - "apply_theorem: The one-variable Hilbert basis theorem applies to the Noetherian ring in n variables."
-    - "conclude: The ring in n + 1 variables is Noetherian."
+  - 'induction: The case n = 0 is R itself.'
+  - 'translate: The ring in n + 1 variables is the one-variable polynomial ring over the ring in n variables.'
+  - 'apply_theorem: The one-variable Hilbert basis theorem applies to the Noetherian ring in n variables.'
+  - 'conclude: The ring in n + 1 variables is Noetherian.'
   openmath: (forall (R n) (-> (and (comm_ring R) (noetherian_ring R) (in n N)) (noetherian_ring (mv_polynomial_ring (variable_family n) R))))
   hard_negative:
     statement: ネーター環上の可算無限変数の多項式環はネーター環である。
@@ -170,19 +208,23 @@
   kind: textbook
   level: 4
   topic: 可換環論・アルティン環
-  statement: アルティン整域は体である。
+  statement: $R$をアルティン整域とする。このとき$R$は体である。
   statement_en: A commutative Artinian integral domain is a field.
-  assumptions: ["Rは整域", "Rはアルティン環"]
-  quantifiers: ["任意のアルティン整域R"]
-  conclusion: Rは体である。
+  assumptions:
+  - $R$は整域
+  - $R$はアルティン環
+  quantifiers:
+  - 任意のアルティン整域$R$
+  conclusion: $R$は体である。
   answer: |
-    0でないa∈Rを取る。イデアルの降鎖(a)⊃(a^2)⊃…はアルティン性より停止し、あるnで(a^n)=(a^{n+1})となる。するとa^n=b a^{n+1}と書ける。Rは整域でa^n≠0なので1=baとなり、aは単元である。
+    $R$をアルティン整域とする。$0$でない$a\in R$を取る。
+    イデアルの降鎖$(a)\supseteq(a^2)\supseteq\cdots$はアルティン性より止まるので、ある$n$で$(a^n)=(a^{n+1})$となる。すると$a^n=ba^{n+1}$となる$b\in R$がある。$R$は整域で$a^n\neq0$なので、消去して$1=ba$を得る。よって$a$は単元であり、$R$は体である。
   strategy: Stabilize the descending chain of powers of a nonzero element and cancel.
   sketch:
-    - "setup: Fix a nonzero element a of R."
-    - "derive: The chain of ideals generated by powers of a stabilizes, so a^n = b a^(n+1) for some n and b."
-    - "derive: Cancelling a^n in the domain gives 1 = b a."
-    - "conclude: Every nonzero element is a unit, so R is a field."
+  - 'setup: Fix a nonzero element a of R.'
+  - 'derive: The chain of ideals generated by powers of a stabilizes, so a^n = b a^(n+1) for some n and b.'
+  - 'derive: Cancelling a^n in the domain gives 1 = b a.'
+  - 'conclude: Every nonzero element is a unit, so R is a field.'
   openmath: (forall (R) (-> (and (comm_ring R) (integral_domain R) (artinian_ring R)) (is_field R)))
   hard_negative:
     statement: ネーター整域は体である。
@@ -197,20 +239,26 @@
   kind: textbook
   level: 4
   topic: 可換環論・アルティン環とネーター環
-  statement: 可換環がアルティン環であることと、ネーター環であってすべての素イデアルが極大であることは同値である。
+  statement: $R$を可換環とする。$R$がアルティン環であることと、$R$がネーター環であってすべての素イデアルが極大であることは同値である。
   statement_en: A commutative ring is Artinian if and only if it is Noetherian and every prime ideal is maximal.
-  assumptions: ["Rは可換環"]
-  quantifiers: ["任意の可換環R"]
-  conclusion: Rがアルティン環であることと、Rがネーター環であってすべての素イデアルが極大であることは同値である。
+  assumptions:
+  - $R$は可換環
+  quantifiers:
+  - 任意の可換環$R$
+  conclusion: $R$がアルティン環であることと、$R$がネーター環であってすべての素イデアルが極大であることは同値である。
   answer: |
-    概略を述べる。アルティン環では素イデアルは極大で、極大イデアルは有限個であり、冪零根基は冪零である。したがって極大イデアルの積のある冪が0となる。この積の各段の商はR/m上の有限次元ベクトル空間で、降鎖条件と昇鎖条件が同値になるので、Rはネーター環である。逆にネーターですべての素イデアルが極大なら、極小素イデアルは有限個ですべて極大であり、冪零根基は冪零なので、同じ議論でRはアルティン環である。
+    $R$を可換環とする。$R=0$なら両辺とも成り立つので、$R\neq0$とする。
+    まず補助事実を述べる。体上のベクトル空間では、昇鎖条件、降鎖条件、有限次元性は同値である。無限個の線形独立な元$e_1,e_2,\dots$があれば、$\langle e_1,\dots,e_n\rangle$は真の昇鎖、$\langle e_n,e_{n+1},\dots\rangle$は真の降鎖をなすからである。また$R$加群$A$の部分加群$B$について、$A$が昇鎖条件(降鎖条件)を満たすことは、$B$と$A/B$の両方が満たすことと同値である。極大イデアルの有限個の積$\mathfrak{m}_1\cdots\mathfrak{m}_N=0$があるとき、$I_j=\mathfrak{m}_1\cdots\mathfrak{m}_j$とおくと、$I_{j-1}/I_j$は$R/\mathfrak{m}_j$上のベクトル空間である。その$R$部分加群は部分空間に等しい。よって、上の$2$つの事実から、$R$が昇鎖条件を満たすことと降鎖条件を満たすことは同値である。これを(*)とする。
+    $R$がアルティン環とする。素イデアル$P$について$R/P$はアルティン整域なので体であり、$P$は極大である。極大イデアルの有限個の共通部分のうち極小なものを$\mathfrak{m}_1\cap\dots\cap\mathfrak{m}_k$とする。任意の極大イデアル$\mathfrak{m}$について、極小性から$\mathfrak{m}\cap\mathfrak{m}_1\cap\dots\cap\mathfrak{m}_k=\mathfrak{m}_1\cap\dots\cap\mathfrak{m}_k$なので、$\mathfrak{m}\supseteq\mathfrak{m}_1\cdots\mathfrak{m}_k$である。$\mathfrak{m}$は素イデアルなので、ある$i$で$\mathfrak{m}\supseteq\mathfrak{m}_i$となり、$\mathfrak{m}=\mathfrak{m}_i$である。よって極大イデアルはこれらだけであり、$J=\mathfrak{m}_1\cap\dots\cap\mathfrak{m}_k$はジャコブソン根基である。
+    次に$J$の冪が$0$になることを示す。降鎖$J^n$は止まるので、$I=J^n=J^{n+1}=\cdots$となる$n$がある。$I\neq0$と仮定する。$KI\neq0$を満たすイデアル$K$全体は$R$を含むので、極小元$K$がある。$xI\neq0$となる$x\in K$を取ると$(x)I\neq0$なので、極小性から$K=(x)$である。$(xI)I=xI^2=xI\neq0$かつ$xI\subseteq(x)$なので、極小性から$xI=(x)$である。よって$x=xy$となる$y\in I\subseteq J$がある。$1-y$は単元なので$x=0$となり、$xI\neq0$に反する。したがって$J^n=0$である。すると$(\mathfrak{m}_1\cdots\mathfrak{m}_k)^n\subseteq J^n=0$なので、極大イデアルの積が$0$である。(*)から$R$はネーター環である。
+    逆に$R$がネーター環で、すべての素イデアルが極大とする。すべてのイデアルが素イデアルの有限個の積(空の積は$R$とする)を含むことを示す。そうでないイデアルがあれば、ネーター性から極大なもの$I$が取れる。$I$は素イデアルでなく$R$でもないので、$a,b\notin I$, $ab\in I$となる$a,b$がある。$I+(a)$と$I+(b)$は$I$より大きいので素イデアルの積を含む。$(I+(a))(I+(b))\subseteq I$なので$I$も素イデアルの積を含み、矛盾する。$I=0$に適用すると、素イデアルの積が$0$である。仮定からこれらは極大イデアルなので、(*)から$R$はアルティン環である。
   strategy: Write zero as a product of maximal ideals and compare chain conditions on the resulting filtration.
   sketch:
-    - "derive: In either case primes are maximal, there are finitely many of them, and the nilradical is nilpotent."
-    - "construct: Hence some product of maximal ideals, with repetition, is zero."
-    - "derive: The successive quotients of the resulting filtration are vector spaces over residue fields."
-    - "apply_theorem: On a vector space the ascending and descending chain conditions coincide."
-    - "conclude: Thus R has one chain condition exactly when it has the other."
+  - 'derive: In either case primes are maximal, there are finitely many of them, and the nilradical is nilpotent.'
+  - 'construct: Hence some product of maximal ideals, with repetition, is zero.'
+  - 'derive: The successive quotients of the resulting filtration are vector spaces over residue fields.'
+  - 'apply_theorem: On a vector space the ascending and descending chain conditions coincide.'
+  - 'conclude: Thus R has one chain condition exactly when it has the other.'
   openmath: (forall (R) (-> (comm_ring R) (<-> (artinian_ring R) (and (noetherian_ring R) (forall (P) (-> (prime_ideal P R) (maximal_ideal P R)))))))
   hard_negative:
     statement: 可換環がネーター環であればアルティン環である。
@@ -225,20 +273,26 @@
   kind: gap
   level: 4
   topic: 可換環論・根基イデアル
-  statement: イデアルIの根基の元は、Iを含むすべての素イデアルに属する元とちょうど一致する。
+  statement: $R$を可換環、$I$を$R$のイデアル、$x\in R$とする。$x$の冪が$I$に属することと、$I$を含むすべての素イデアルに$x$が属することは同値である。すなわち$I$の根基は、$I$を含む素イデアルすべての共通部分である。
   statement_en: For an ideal I of a commutative ring, an element x has a power in I if and only if x lies in every prime ideal containing I.
-  assumptions: ["Rは可換環", "IはRのイデアル", "x∈R"]
-  quantifiers: ["任意のR, I, x"]
-  conclusion: あるnでx^n∈Iであることと、Iを含むすべての素イデアルにxが属することは同値である。
+  assumptions:
+  - $R$は可換環
+  - $I$は$R$のイデアル
+  - $x\in R$
+  quantifiers:
+  - 任意の$R,I,x$
+  conclusion: ある自然数$n$で$x^n\in I$であることと、$I$を含むすべての素イデアルに$x$が属することは同値である。
   answer: |
-    x^n∈Iで、PがIを含む素イデアルならx^n∈Pなのでx∈Pである。逆にどのxの冪もIに属さないとする。xの冪と交わらずIを含むイデアル全体はツォルンの補題により極大元Pを持ち、Pは素イデアルである。このときx∉Pなので、右辺の条件が成り立たない。
+    $R$を可換環、$I$を$R$のイデアル、$x\in R$とする。
+    $x^n\in I$とし、$P$を$I$を含む素イデアルとする。$x^n\in P$である。$n=0$なら$1\in P$となって不可能なので$n\geq1$であり、$P$は素イデアルだから$x\in P$である。
+    逆に、どの自然数$n$でも$x^n\notin I$とする。$n=0$の場合から$I$は真のイデアルである。$I$を含み$x$の冪をどれも含まないイデアル全体は、$I$を含み、鎖の和集合で閉じている。ツォルンの補題により極大元$P$がある。$P$が素イデアルであることを示す。$1=x^0\notin P$である。$a,b\notin P$とすると、$P+(a)$と$P+(b)$は$P$より大きいので、$x^m\in P+(a)$, $x^n\in P+(b)$となる$m,n$がある。$x^{m+n}\in P+(ab)$であり、$x^{m+n}\notin P$なので$ab\notin P$である。よって$P$は$I$を含む素イデアルで、$x=x^1\notin P$である。これは右辺の条件の否定である。
   strategy: The forward direction uses primality; the converse uses a Zorn argument producing a prime avoiding the powers of x.
   sketch:
-    - "derive: If x^n lies in I and P is a prime containing I, then x lies in P."
-    - "setup: Conversely, suppose no power of x lies in I."
-    - "construct: By Zorn's lemma take an ideal containing I maximal among those missing all powers of x."
-    - "derive: This maximal ideal is prime and does not contain x."
-    - "conclude: The two conditions are equivalent."
+  - 'derive: If x^n lies in I and P is a prime containing I, then x lies in P.'
+  - 'setup: Conversely, suppose no power of x lies in I.'
+  - 'construct: By Zorn''s lemma take an ideal containing I maximal among those missing all powers of x.'
+  - 'derive: This maximal ideal is prime and does not contain x.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (R I x) (-> (and (comm_ring R) (ideal_of I R) (in x R)) (<-> (exists (n) (and (in n N) (in (^ x n) I))) (forall (P) (-> (and (prime_ideal P R) (subset I P)) (in x P))))))
   hard_negative:
     statement: Iの根基はIを含むすべての極大イデアルの共通部分に等しい。
@@ -255,19 +309,23 @@
   kind: gap
   level: 4
   topic: 可換環論・準素イデアル
-  statement: 準素イデアルの根基は素イデアルである。
+  statement: $R$を可換環、$I$を$R$の準素イデアルとする。$I$の根基$\operatorname{rad}(I)$は素イデアルである。
   statement_en: The radical of a primary ideal of a commutative ring is a prime ideal.
-  assumptions: ["Rは可換環", "IはRの準素イデアル"]
-  quantifiers: ["任意のR, I"]
-  conclusion: rad(I)は素イデアルである。
+  assumptions:
+  - $R$は可換環
+  - $I$は$R$の準素イデアル
+  quantifiers:
+  - 任意の$R,I$
+  conclusion: $\operatorname{rad}(I)$は素イデアルである。
   answer: |
-    Iは真のイデアルなので、1はrad(I)に属さない。xy∈rad(I)とすると、あるnで(xy)^n=x^n y^n∈Iである。Iが準素なので、x^n∈Iであるか、y^nの冪がIに属する。どちらの場合もxまたはyがrad(I)に属する。
+    $R$を可換環、$I$を$R$の準素イデアルとする。準素とは、$I\neq R$であり、$xy\in I$なら$x\in I$または$y\in\operatorname{rad}(I)$となることである。
+    $1\in\operatorname{rad}(I)$なら$1\in I$となるので、$\operatorname{rad}(I)$は真のイデアルである。$xy\in\operatorname{rad}(I)$とすると、ある$n$で$(xy)^n=x^ny^n\in I$である。準素性から$x^n\in I$または$y^n\in\operatorname{rad}(I)$である。前者なら$x\in\operatorname{rad}(I)$であり、後者なら$y$の冪が$I$に属するので$y\in\operatorname{rad}(I)$である。よって$\operatorname{rad}(I)$は素イデアルである。
   strategy: Apply the primary condition to the power x^n y^n lying in I.
   sketch:
-    - "derive: rad(I) is proper because I is proper."
-    - "setup: Suppose x y lies in rad(I), so x^n y^n lies in I for some n."
-    - "apply_theorem: The primary condition gives x^n in I or a power of y^n in I."
-    - "conclude: Either x or y lies in rad(I), so rad(I) is prime."
+  - 'derive: rad(I) is proper because I is proper.'
+  - 'setup: Suppose x y lies in rad(I), so x^n y^n lies in I for some n.'
+  - 'apply_theorem: The primary condition gives x^n in I or a power of y^n in I.'
+  - 'conclude: Either x or y lies in rad(I), so rad(I) is prime.'
   openmath: (forall (R I) (-> (and (comm_ring R) (primary_ideal I R)) (prime_ideal (ideal_radical I) R)))
   hard_negative:
     statement: 根基が素イデアルであるイデアルは準素イデアルである。
@@ -282,20 +340,25 @@
   kind: gap
   level: 4
   topic: 可換環論・準素イデアル
-  statement: 根基が極大イデアルであるイデアルは準素イデアルである。
+  statement: $R$を可換環、$I$を$R$のイデアルとする。$\operatorname{rad}(I)$が極大イデアルならば、$I$は準素イデアルである。
   statement_en: An ideal of a commutative ring whose radical is a maximal ideal is primary.
-  assumptions: ["Rは可換環", "IはRのイデアル", "rad(I)は極大イデアル"]
-  quantifiers: ["任意のR, I"]
-  conclusion: Iは準素イデアルである。
+  assumptions:
+  - $R$は可換環
+  - $I$は$R$のイデアル
+  - $\operatorname{rad}(I)$は極大イデアル
+  quantifiers:
+  - 任意の$R,I$
+  conclusion: $I$は準素イデアルである。
   answer: |
-    m=rad(I)とする。mを含む素イデアルはmだけなので、R/Iの素イデアルはm/Iのみであり、R/Iは局所環で、その非単元はすべて冪零である。xy∈Iでy∉mなら、yの像は単元なので、xの像は0となりx∈Iである。y∈mならyの冪がIに属する。Iは真のイデアルでもあるので、準素である。
+    $R$を可換環、$I$を$\mathfrak{m}=\operatorname{rad}(I)$が極大イデアルであるイデアルとする。$I\subseteq\mathfrak{m}\neq R$なので、$I$は真のイデアルである。
+    $xy\in I$とする。$y\in\mathfrak{m}$なら$y\in\operatorname{rad}(I)$である。$y\notin\mathfrak{m}$とする。$\mathfrak{m}$は極大なので$1=ry+s$となる$r\in R$, $s\in\mathfrak{m}$がある。$s^n\in I$となる$n$を取り、$1=(ry+s)^n$を展開すると、$1=yt+s^n$となる$t\in R$がある。よって$x=(xy)t+xs^n\in I$である。したがって$I$は準素イデアルである。
   strategy: In R/I every element is a unit or nilpotent, which is the primary condition.
   sketch:
-    - "derive: The only prime of R/I is m/I, so R/I is local with nilpotent nonunits."
-    - "setup: Take x y in I."
-    - "case_split: If y is outside m, its image is a unit and x lies in I."
-    - "case_split: If y lies in m, a power of y lies in I."
-    - "conclude: I is primary."
+  - 'derive: The only prime of R/I is m/I, so R/I is local with nilpotent nonunits.'
+  - 'setup: Take x y in I.'
+  - 'case_split: If y is outside m, its image is a unit and x lies in I.'
+  - 'case_split: If y lies in m, a power of y lies in I.'
+  - 'conclude: I is primary.'
   openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R) (maximal_ideal (ideal_radical I) R)) (primary_ideal I R)))
   hard_negative:
     statement: 根基が素イデアルであるイデアルは準素イデアルである。
@@ -310,21 +373,27 @@
   kind: named
   level: 4
   topic: 可換環論・準素分解
-  statement: ネーター環の任意のイデアルは、有限個の準素イデアルの共通部分として書ける。環全体は0個の共通部分とみなす(ラスカー・ネーターの定理)。
+  statement: $R$をネーター環とする。$R$の任意のイデアルは、有限個の準素イデアルの共通部分として書ける。環全体は$0$個の共通部分とみなす(ラスカー・ネーターの定理)。
   statement_en: Every ideal of a Noetherian commutative ring is a finite intersection of primary ideals, the whole ring being the empty intersection (Lasker-Noether theorem).
-  assumptions: ["Rはネーター環", "IはRのイデアル"]
-  quantifiers: ["任意のネーター環RとイデアルI"]
-  conclusion: 有限個の準素イデアルJ_1,…,J_kでI=J_1∩…∩J_kとなるものがある(I=Rのときはk=0)。
+  assumptions:
+  - $R$はネーター環
+  - $I$は$R$のイデアル
+  quantifiers:
+  - 任意のネーター環$R$とイデアル$I$
+  conclusion: 有限個の準素イデアル$J_1,\dots,J_k$で$I=J_1\cap\dots\cap J_k$となるものがある($I=R$のときは$k=0$)。
   answer: |
-    概略を述べる。主な段階は二つある。第一に、有限個の既約イデアルの共通部分に書けないイデアルがあると仮定する。ネーター性からその中に極大元が取れ、それは既約でないので、より大きな二つのイデアルの共通部分となって矛盾する。第二に、既約イデアルは準素である。R/Iで考えて、xy=0かつyが冪零でないとする。Ann(y^n)の昇鎖が停止することから(x)∩(y^n)=0が得られ、既約性からx=0となる。
+    $R$をネーター環、$I$を$R$のイデアルとする。$I=R$なら$0$個の共通部分である。真のイデアル$A$が既約であるとは、$A=B\cap C$($B,C$はイデアル)なら$A=B$または$A=C$となることとする。
+    第一に、すべての真のイデアルは有限個の既約イデアルの共通部分である。そうでない真のイデアルがあれば、ネーター性から極大なもの$A$が取れる。$A$は既約でないので、$A=B\cap C$, $B\supsetneq A$, $C\supsetneq A$と書ける。$B=R$なら$A=C$となるので$B\neq R$であり、同様に$C\neq R$である。極大性から$B,C$は既約イデアルの有限個の共通部分なので、$A$もそうであり矛盾する。
+    第二に、既約イデアル$A$は準素である。$xy\in A$, $x\notin A$とする。$\bar R=R/A$で考えると、$\bar x\neq0$, $\bar x\bar y=0$であり、$\bar R$の零イデアルは既約である。$\bar R$はネーター環なので、昇鎖$\operatorname{Ann}(\bar y^k)$は止まり、$\operatorname{Ann}(\bar y^n)=\operatorname{Ann}(\bar y^{n+1})$となる$n$がある。$z\in(\bar x)\cap(\bar y^n)$を取り、$z=a\bar x=b\bar y^n$と書く。$z\bar y=a\bar x\bar y=0$より$b\bar y^{n+1}=0$なので$b\in\operatorname{Ann}(\bar y^{n+1})=\operatorname{Ann}(\bar y^n)$であり、$z=0$である。よって$(\bar x)\cap(\bar y^n)=0$である。既約性と$\bar x\neq0$から$\bar y^n=0$、すなわち$y\in\operatorname{rad}(A)$である。$A\neq R$と合わせて$A$は準素である。
+    $2$つの事実を合わせると、$I$は有限個の準素イデアルの共通部分である。
   strategy: Decompose into irreducible ideals by Noetherian induction, then show irreducible ideals are primary.
   sketch:
-    - "contradiction: A maximal counterexample to finite irreducible decomposition cannot exist."
-    - "derive: Such an ideal would be reducible, hence an intersection of two larger ideals that do decompose."
-    - "setup: Next pass to the quotient by an irreducible ideal and assume x y = 0."
-    - "derive: Stabilization of the annihilators of powers of y gives (x) ∩ (y^n) = 0 for large n."
-    - "apply_theorem: Irreducibility forces x = 0 or y^n = 0, which is the primary condition."
-    - "conclude: Every ideal is a finite intersection of primary ideals."
+  - 'contradiction: A maximal counterexample to finite irreducible decomposition cannot exist.'
+  - 'derive: Such an ideal would be reducible, hence an intersection of two larger ideals that do decompose.'
+  - 'setup: Next pass to the quotient by an irreducible ideal and assume x y = 0.'
+  - 'derive: Stabilization of the annihilators of powers of y gives (x) ∩ (y^n) = 0 for large n.'
+  - 'apply_theorem: Irreducibility forces x = 0 or y^n = 0, which is the primary condition.'
+  - 'conclude: Every ideal is a finite intersection of primary ideals.'
   openmath: (forall (R I) (-> (and (comm_ring R) (noetherian_ring R) (ideal_of I R)) (exists (s) (and (finite_set s) (forall (J) (-> (in J s) (primary_ideal J R))) (= (finite_ideal_family_inf s) I)))))
   hard_negative:
     statement: ネーター環の任意のイデアルは、素イデアルの冪の有限個の共通部分として書ける。
@@ -340,19 +409,26 @@
   kind: gap
   level: 4
   topic: 可換環論・随伴素イデアル
-  statement: ネーター環上の有限生成加群の随伴素イデアルは有限個である。
+  statement: $R$をネーター環、$M$を有限生成$R$加群とする。$M$の随伴素イデアルは有限個である。
   statement_en: A finitely generated module over a Noetherian commutative ring has only finitely many associated primes.
-  assumptions: ["Rはネーター環", "Mは有限生成R加群"]
-  quantifiers: ["任意のR, M"]
-  conclusion: Ass(M)は有限集合である。
+  assumptions:
+  - $R$はネーター環
+  - $M$は有限生成$R$加群
+  quantifiers:
+  - 任意の$R,M$
+  conclusion: $\operatorname{Ass}(M)$は有限集合である。
   answer: |
-    Mには部分加群の有限列0=M_0⊂M_1⊂…⊂M_n=Mで、各商M_i/M_{i-1}がある素イデアルP_iによるR/P_iと同型なものがある。完全列0→N→M→M/N→0についてAss(M)⊂Ass(N)∪Ass(M/N)が成り立ち、Ass(R/P)={P}である。よってAss(M)⊂{P_1,…,P_n}であり、有限集合である。
+    $R$をネーター環、$M$を有限生成$R$加群とする。$\operatorname{Ass}(M)$は、$P=\operatorname{Ann}(x)$となる$x\in M$をもつ素イデアル$P$全体である。$M$はネーター加群である。
+    第一に、$V\neq0$である$R$加群$V$は随伴素イデアルをもつ。$R$はネーター環なので、$\operatorname{Ann}(y)$($y\in V$, $y\neq0$)の中に極大元$\operatorname{Ann}(y)$がある。$ab\in\operatorname{Ann}(y)$, $b\notin\operatorname{Ann}(y)$なら、$by\neq0$で$\operatorname{Ann}(by)\supseteq\operatorname{Ann}(y)$なので、極大性から等しい。$a\in\operatorname{Ann}(by)=\operatorname{Ann}(y)$となり、$\operatorname{Ann}(y)$は素イデアルである。
+    第二に、部分加群の有限列$0=M_0\subset M_1\subset\dots\subset M_n=M$で、各$M_i/M_{i-1}$がある素イデアル$P_i$について$R/P_i$と同型なものがある。そのような列をもつ部分加群全体は$0$を含むので、極大元$N$がある。$N\neq M$なら$M/N$に随伴素イデアル$P=\operatorname{Ann}(\bar x)$があり、$R\bar x\cong R/P$である。$R\bar x$の$M$での逆像は$N$より大きく、同じ列をもつので矛盾する。よって$N=M$である。
+    第三に、部分加群$N\subseteq M$について$\operatorname{Ass}(M)\subseteq\operatorname{Ass}(N)\cup\operatorname{Ass}(M/N)$である。$P=\operatorname{Ann}(x)\in\operatorname{Ass}(M)$なら$Rx\cong R/P$であり、$R/P$は整域なので$Rx$の$0$でない元の零化イデアルはすべて$P$である。$Rx\cap N\neq0$なら$P\in\operatorname{Ass}(N)$である。$Rx\cap N=0$なら$Rx$は$M/N$へ単射で移るので$P\in\operatorname{Ass}(M/N)$である。同じ理由で$\operatorname{Ass}(R/P)=\{P\}$である。
+    第二の列に第三の事実を繰り返し適用すると、$\operatorname{Ass}(M)\subseteq\{P_1,\dots,P_n\}$であり、有限集合である。
   strategy: Filter M with quotients R/P and use subadditivity of Ass along short exact sequences.
   sketch:
-    - "construct: Take a finite filtration of M with successive quotients isomorphic to R/P_i."
-    - "apply_theorem: Ass(M) is contained in Ass(N) ∪ Ass(M/N) for a submodule N."
-    - "derive: Ass(R/P) = {P} for a prime P."
-    - "conclude: Ass(M) lies in the finite set {P_1, ..., P_n}."
+  - 'construct: Take a finite filtration of M with successive quotients isomorphic to R/P_i.'
+  - 'apply_theorem: Ass(M) is contained in Ass(N) ∪ Ass(M/N) for a submodule N.'
+  - 'derive: Ass(R/P) = {P} for a prime P.'
+  - 'conclude: Ass(M) lies in the finite set {P_1, ..., P_n}.'
   openmath: (forall (R M) (-> (and (comm_ring R) (noetherian_ring R) (module_over M R) (finitely_generated_module R M)) (finite_set (associated_primes R M))))
   hard_negative:
     statement: ネーター環上の任意の加群の随伴素イデアルは有限個である。
@@ -367,20 +443,26 @@
   kind: gap
   level: 4
   topic: 可換環論・随伴素イデアル
-  statement: ネーター環R上の加群Mについて、rがMのある非零元を消すことと、rがMのある随伴素イデアルに属することは同値である。
+  statement: $R$をネーター環、$M$を$R$加群、$r\in R$とする。$r$が$M$のある非零元を消すことと、$r$が$M$のある随伴素イデアルに属することは同値である。
   statement_en: For a module M over a Noetherian commutative ring R, an element r kills some nonzero element of M if and only if r lies in some associated prime of M.
-  assumptions: ["Rはネーター環", "MはR加群", "r∈R"]
-  quantifiers: ["任意のR, M, r"]
-  conclusion: あるx≠0でrx=0となることと、rがある随伴素イデアルに属することは同値である。
+  assumptions:
+  - $R$はネーター環
+  - $M$は$R$加群
+  - $r\in R$
+  quantifiers:
+  - 任意の$R,M,r$
+  conclusion: ある$x\neq0$で$rx=0$となることと、$r$がある随伴素イデアルに属することは同値である。
   answer: |
-    r∈P=Ann(x)(x≠0)なら、定義からrx=0である。逆にrx=0, x≠0とする。Ann(y)(y≠0, Ann(x)⊂Ann(y))全体はネーター性から極大元Ann(y)を持ち、これは素イデアルである。実際ab∈Ann(y)でb∉Ann(y)なら、by≠0でAnn(by)はAnn(y)を含むので等しく、aはAnn(by)に属するからaはAnn(y)に属する。r∈Ann(x)⊂Ann(y)なので、rは随伴素イデアルAnn(y)に属する。
+    $R$をネーター環、$M$を$R$加群、$r\in R$とする。随伴素イデアルとは、$P=\operatorname{Ann}(x)$($x\in M$)と書ける素イデアルである。
+    $r\in P=\operatorname{Ann}(x)$とする。$P\neq R$より$x\neq0$であり、定義から$rx=0$である。
+    逆に$rx=0$, $x\neq0$とする。$y\neq0$かつ$\operatorname{Ann}(x)\subseteq\operatorname{Ann}(y)$を満たす$\operatorname{Ann}(y)$全体は$\operatorname{Ann}(x)$を含むので、ネーター性から極大元$\operatorname{Ann}(y)$がある。$y\neq0$より$\operatorname{Ann}(y)\neq R$である。$ab\in\operatorname{Ann}(y)$, $b\notin\operatorname{Ann}(y)$とすると、$by\neq0$で$\operatorname{Ann}(by)\supseteq\operatorname{Ann}(y)$なので、極大性から両者は等しい。$a\in\operatorname{Ann}(by)=\operatorname{Ann}(y)$より、$\operatorname{Ann}(y)$は素イデアルである。$r\in\operatorname{Ann}(x)\subseteq\operatorname{Ann}(y)$なので、$r$は随伴素イデアル$\operatorname{Ann}(y)$に属する。
   strategy: A maximal annihilator above Ann(x) is an associated prime containing r.
   sketch:
-    - "derive: If r lies in the annihilator of a nonzero x, then r x = 0."
-    - "setup: Conversely take x nonzero with r x = 0."
-    - "construct: Choose y nonzero with Ann(y) maximal among annihilators containing Ann(x)."
-    - "derive: Maximality shows Ann(y) is prime."
-    - "conclude: r lies in the associated prime Ann(y)."
+  - 'derive: If r lies in the annihilator of a nonzero x, then r x = 0.'
+  - 'setup: Conversely take x nonzero with r x = 0.'
+  - 'construct: Choose y nonzero with Ann(y) maximal among annihilators containing Ann(x).'
+  - 'derive: Maximality shows Ann(y) is prime.'
+  - 'conclude: r lies in the associated prime Ann(y).'
   openmath: (forall (R M r) (-> (and (comm_ring R) (noetherian_ring R) (module_over M R) (in r R)) (<-> (exists (x) (and (in x M) (!= x 0) (= (* r x) 0))) (exists (P) (and (in P (associated_primes R M)) (in r P))))))
   hard_negative:
     statement: ネーターでない可換環上でも、零因子全体は随伴素イデアルの和集合に等しい。
@@ -396,19 +478,26 @@
   kind: gap
   level: 4
   topic: 可換環論・整拡大
-  statement: R代数Aの元x, yがR上整なら、x+yとxyもR上整である。
+  statement: $R,A$を可換環、$A$を$R$代数とする。$x,y\in A$が$R$上整ならば、$x+y$と$xy$も$R$上整である。
   statement_en: If x and y in an R-algebra A are integral over R, then x + y and xy are integral over R.
-  assumptions: ["R, Aは可換環", "AはR代数", "x, y∈AはR上整"]
-  quantifiers: ["任意のR, A, x, y"]
-  conclusion: x+yとxyはR上整である。
+  assumptions:
+  - $R,A$は可換環
+  - $A$は$R$代数
+  - $x,y\in A$は$R$上整
+  quantifiers:
+  - 任意の$R,A,x,y$
+  conclusion: $x+y$と$xy$は$R$上整である。
   answer: |
-    xがR上整なのでR[x]は有限生成R加群であり、yはR[x]上整なのでR[x,y]は有限生成R[x]加群である。したがってR[x,y]は有限生成R加群である。有限生成R加群である部分環の元はケイリー・ハミルトンの定理によりR上整である。x+yとxyはR[x,y]に属するので、R上整である。
+    $R,A$を可換環、$A$を$R$代数とし、$x,y\in A$は$R$上整とする。$x$が次数$m$のモニック多項式、$y$が次数$n$のモニック多項式の根であるとする。
+    $B$を$x,y$で生成される$A$の部分$R$代数とする。$x$と$y$の方程式から、$B$は$R$加群として$x^iy^j$($i<m$, $j<n$)で生成される。よって$B$は有限生成$R$加群である。
+    $z\in B$は$R$上整であることを示す。$B$の生成元を$b_1,\dots,b_k$とし、$zb_i=\sum_ja_{ij}b_j$($a_{ij}\in R$の像)と書く。行列$Z=zE-(a_{ij})$は$Z(b_1,\dots,b_k)^{\mathsf T}=0$を満たす。余因子行列を左から掛けると、すべての$i$で$\det(Z)b_i=0$である。$1\in B$は$b_i$の線形結合なので$\det(Z)=0$である。$\det(Z)$を展開すると、$z$についてのモニックな方程式が得られる(ケイリー・ハミルトンの議論)。
+    $x+y$と$xy$は$B$に属するので、$R$上整である。
   strategy: Place both elements in the finite R-module R[x,y] and apply the determinant trick.
   sketch:
-    - "derive: R[x] is a finitely generated R-module, and R[x,y] is finitely generated over R[x]."
-    - "derive: Hence R[x,y] is a finitely generated R-module."
-    - "apply_theorem: By Cayley-Hamilton, every element of a subalgebra that is a finite R-module is integral over R."
-    - "conclude: x + y and x y lie in R[x,y], so they are integral."
+  - 'derive: R[x] is a finitely generated R-module, and R[x,y] is finitely generated over R[x].'
+  - 'derive: Hence R[x,y] is a finitely generated R-module.'
+  - 'apply_theorem: By Cayley-Hamilton, every element of a subalgebra that is a finite R-module is integral over R.'
+  - 'conclude: x + y and x y lie in R[x,y], so they are integral.'
   openmath: (forall (R A x y) (-> (and (comm_ring R) (comm_ring A) (algebra_over A R) (in x A) (in y A) (integral_element x R) (integral_element y R)) (and (integral_element (+ x y) R) (integral_element (* x y) R))))
   hard_negative:
     statement: x+yがR上整ならxとyもR上整である。
@@ -423,19 +512,26 @@
   kind: gap
   level: 4
   topic: 可換環論・整閉包
-  statement: RのAにおける整閉包C上で整なAの元は、R上整である。すなわちCはAの中で整閉である。
+  statement: $R,A$を可換環、$A$を$R$代数、$C$を$R$の$A$における整閉包とする。$C$上で整な$A$の元は$R$上整である。すなわち$C$は$A$の中で整閉である。
   statement_en: An element of an R-algebra A that is integral over the integral closure C of R in A is integral over R, so C is integrally closed in A.
-  assumptions: ["R, Aは可換環", "AはR代数", "CはRのAにおける整閉包", "x∈AはC上整"]
-  quantifiers: ["任意のR, A, x"]
-  conclusion: xはR上整である。
+  assumptions:
+  - $R,A$は可換環
+  - $A$は$R$代数
+  - $C$は$R$の$A$における整閉包
+  - $x\in A$は$C$上整
+  quantifiers:
+  - 任意の$R,A,x$
+  conclusion: $x$は$R$上整である。
   answer: |
-    xはC上のモニック多項式の根であり、その係数c_0,…,c_{n-1}はR上整である。R'=R[c_0,…,c_{n-1}]は有限生成R加群である。xはR'上整なのでR'[x]は有限生成R'加群となり、R'[x]は有限生成R加群である。したがってケイリー・ハミルトンの定理からxはR上整である。
+    $R,A$を可換環、$A$を$R$代数、$C$を$R$上整な$A$の元全体とし、$x\in A$は$C$上整とする。
+    $x$は$C$係数のモニック多項式の根であり、その係数を$c_0,\dots,c_{n-1}$とする。各$c_i$は$R$上整なので、$A$の部分$R$代数$R'=R[c_0,\dots,c_{n-1}]$は有限生成$R$加群である。$x$は$R'$上整なので、$R'[x]$は$1,x,\dots,x^{n-1}$で生成される$R'$加群である。よって$R'[x]$は有限生成$R$加群である。
+    $R'[x]$は$1$を含む部分$R$代数なので、ケイリー・ハミルトンの議論を使う。生成元$b_1,\dots,b_k$について$xb_i=\sum_ja_{ij}b_j$($a_{ij}\in R$の像)と書くと、$\det(xE-(a_{ij}))$がすべての$b_i$を消すので$0$である。これは$x$についてのモニックな方程式なので、$x$は$R$上整である。
   strategy: Adjoin the finitely many coefficients of an integral equation to get a finite R-module containing x.
   sketch:
-    - "setup: Write an integral equation for x with coefficients c_i in C."
-    - "derive: R[c_0, ..., c_(n-1)] is a finitely generated R-module because each c_i is integral."
-    - "derive: Adjoining x keeps the ring finitely generated as an R-module."
-    - "conclude: Cayley-Hamilton shows x is integral over R."
+  - 'setup: Write an integral equation for x with coefficients c_i in C.'
+  - 'derive: R[c_0, ..., c_(n-1)] is a finitely generated R-module because each c_i is integral.'
+  - 'derive: Adjoining x keeps the ring finitely generated as an R-module.'
+  - 'conclude: Cayley-Hamilton shows x is integral over R.'
   openmath: (forall (R A x) (-> (and (comm_ring R) (comm_ring A) (algebra_over A R) (in x A) (integral_element x (integral_closure_in R A))) (integral_element x R)))
   hard_negative:
     statement: 整域Rの分数体におけるRの整閉包はR自身である。
@@ -450,20 +546,27 @@
   kind: gap
   level: 4
   topic: 可換環論・整拡大
-  statement: 整域Sが部分環Rの整拡大であるとき、Rが体であることとSが体であることは同値である。
+  statement: $R,S$を可換環、$S$を整域とし、$S$は$R$上整で$R\to S$は単射とする。このとき$R$が体であることと$S$が体であることは同値である。
   statement_en: If S is an integral domain and the injective ring map R → S makes S integral over R, then R is a field if and only if S is a field.
-  assumptions: ["R, Sは可換環", "Sは整域", "R→Sは単射", "SはR上整"]
-  quantifiers: ["任意のR, S"]
-  conclusion: Rが体であることとSが体であることは同値である。
+  assumptions:
+  - $R,S$は可換環
+  - $S$は整域
+  - $R\to S$は単射
+  - $S$は$R$上整
+  quantifiers:
+  - 任意の$R,S$
+  conclusion: $R$が体であることと$S$が体であることは同値である。
   answer: |
-    Rが体のとき、0でないy∈Sの整方程式で次数最小のものを取る。Sは整域なので定数項は0でなく、Rの単元である。これを整理するとyの逆元が得られる。逆にSが体で0でないx∈Rを取ると、x^{-1}∈SはR上整である。整方程式にx^{n-1}を掛けるとx^{-1}∈R[x]=Rとなる。
+    $R,S$を可換環、$S$を整域、$\varphi:R\to S$を単射な環準同型とし、$S$は$R$上整とする。$\varphi$を通じて$R$を$S$の部分環とみなす。
+    $R$が体とする。$0$でない$y\in S$を取り、$y$の整方程式$y^n+a_{n-1}y^{n-1}+\dots+a_0=0$($a_i\in R$, $n\geq1$)で次数$n$が最小のものを取る。$a_0=0$なら、$y\neq0$と$S$が整域であることから、$y$で割って次数$n-1$の方程式が得られる。$n=1$なら$y=0$となる。どちらも矛盾なので$a_0\neq0$であり、$a_0$は$R$の単元である。したがって$y\cdot(-a_0^{-1})(y^{n-1}+a_{n-1}y^{n-2}+\dots+a_1)=1$であり、$y$は$S$の単元である。よって$S$は体である。
+    $S$が体とする。$0$でない$x\in R$を取る。$x^{-1}\in S$は$R$上整なので、$x^{-n}+a_{n-1}x^{-(n-1)}+\dots+a_0=0$($a_i\in R$, $n\geq1$)が成り立つ。$x^{n-1}$を掛けると$x^{-1}=-(a_{n-1}+a_{n-2}x+\dots+a_0x^{n-1})\in R$である。よって$x$は$R$の単元である。$S\neq0$と単射性から$R\neq0$なので、$R$は体である。
   strategy: Extract inverses from an integral equation in each direction.
   sketch:
-    - "setup: Assume R is a field and y in S is nonzero."
-    - "derive: In a minimal-degree integral equation, the constant term is nonzero, hence a unit of R, which yields an inverse of y."
-    - "setup: Conversely assume S is a field and x in R is nonzero."
-    - "derive: Multiply an integral equation of x^(-1) by x^(n-1) to express x^(-1) as an element of R."
-    - "conclude: Both directions hold."
+  - 'setup: Assume R is a field and y in S is nonzero.'
+  - 'derive: In a minimal-degree integral equation, the constant term is nonzero, hence a unit of R, which yields an inverse of y.'
+  - 'setup: Conversely assume S is a field and x in R is nonzero.'
+  - 'derive: Multiply an integral equation of x^(-1) by x^(n-1) to express x^(-1) as an element of R.'
+  - 'conclude: Both directions hold.'
   openmath: (forall (R S) (-> (and (comm_ring R) (integral_domain S) (ring_hom_injective (algebra_map R S)) (integral_extension S R)) (<-> (is_field R) (is_field S))))
   hard_negative:
     statement: SがR上整であれば、単射でなくてもSが体ならRは体である。
@@ -478,20 +581,28 @@
   kind: textbook
   level: 4
   topic: 可換環論・上昇定理
-  statement: 環準同型R→Sが単射でSがR上整なら、Rの任意の素イデアルPに対し、Sの素イデアルQでQ∩R=Pとなるものがある(lying over)。
+  statement: $R,S$を可換環、$R\to S$を単射な環準同型とし、$S$は$R$上整とする。$R$の任意の素イデアル$P$に対し、$S$の素イデアル$Q$で引き戻しが$P$になるものがある($\text{lying over}$定理)。
   statement_en: If R → S is an injective ring map making S integral over R, then every prime P of R is the contraction of some prime Q of S (lying over).
-  assumptions: ["R, Sは可換環", "R→Sは単射", "SはR上整", "PはRの素イデアル"]
-  quantifiers: ["任意のR, S, P"]
-  conclusion: Sの素イデアルQでQの引き戻しがPとなるものが存在する。
+  assumptions:
+  - $R,S$は可換環
+  - $\varphi:R\to S$は単射
+  - $S$は$R$上整
+  - $P$は$R$の素イデアル
+  quantifiers:
+  - 任意の$R,S,P$
+  conclusion: $S$の素イデアル$Q$で$\varphi^{-1}(Q)=P$となるものが存在する。
   answer: |
-    概略を述べる。Pの補集合で局所化すると、S_PはR_P上整であり、単射性からS_P≠0である。S_Pの極大イデアルnを取る。整拡大では極大イデアルの引き戻しは極大なので、nの引き戻しはR_Pの唯一の極大イデアルPR_Pである。nのSへの引き戻しをQとすると、Q∩R=Pである。
+    $R,S$を可換環、$\varphi:R\to S$を単射な環準同型とし、$S$は$R$上整とする。$P$を$R$の素イデアルとし、$T=R\setminus P$とおく。
+    $T$で局所化した環準同型$R_P=T^{-1}R\to T^{-1}S$を考える。$0\notin\varphi(T)$なので$T^{-1}S\neq0$である。$\varphi(a)/t=0$なら、ある$u\in T$で$\varphi(ua)=0$となり、$\varphi$の単射性から$ua=0$である。よって$a/t=0$であり、この写像は単射である。$s\in S$が$s^n+\sum_{i<n}\varphi(a_i)s^i=0$を満たせば、$s/t$は$(s/t)^n+\sum_{i<n}(a_i/t^{n-i})(s/t)^i=0$を満たすので、$T^{-1}S$は$R_P$上整である。
+    $T^{-1}S$の極大イデアル$\mathfrak{n}$を取り、$R_P$への引き戻しを$\mathfrak{p}$とする。単射$R_P/\mathfrak{p}\to T^{-1}S/\mathfrak{n}$は整で、右辺は体である。整拡大の定理(整域$B$が部分環$A$上整なら、$A$が体であることと$B$が体であることは同値)により、$R_P/\mathfrak{p}$は体である。$R_P$は局所環なので$\mathfrak{p}=PR_P$である。
+    $Q$を$\mathfrak{n}$の$S$への引き戻しとする。$Q$は素イデアルである。可換図式$R\to S\to T^{-1}S$と$R\to R_P\to T^{-1}S$から、$\varphi^{-1}(Q)$は$PR_P$の$R$への引き戻し、すなわち$P$である。
   strategy: Localize at P and contract a maximal ideal of the localized extension.
   sketch:
-    - "setup: Localize R and S at the complement of P."
-    - "derive: The localization of S is nonzero by injectivity and integral over the local ring R_P."
-    - "construct: Take a maximal ideal n of the localized S."
-    - "apply_theorem: The contraction of a maximal ideal along an integral extension is maximal, so n contracts to P R_P."
-    - "conclude: The contraction Q of n to S satisfies Q ∩ R = P."
+  - 'setup: Localize R and S at the complement of P.'
+  - 'derive: The localization of S is nonzero by injectivity and integral over the local ring R_P.'
+  - 'construct: Take a maximal ideal n of the localized S.'
+  - 'apply_theorem: The contraction of a maximal ideal along an integral extension is maximal, so n contracts to P R_P.'
+  - 'conclude: The contraction Q of n to S satisfies Q ∩ R = P.'
   openmath: (forall (R S P) (-> (and (comm_ring R) (comm_ring S) (ring_hom_injective (algebra_map R S)) (integral_extension S R) (prime_ideal P R)) (exists (Q) (and (prime_ideal Q S) (= (ideal_comap (algebra_map R S) Q) P)))))
   hard_negative:
     statement: R→SがR上整であれば、単射でなくてもRの任意の素イデアルは引き戻しとして現れる。
@@ -510,18 +621,25 @@
   kind: textbook
   level: 4
   topic: 可換環論・上昇定理
-  statement: SがR上整で、Rの素イデアルP_1⊂P_2とSの素イデアルQ_1でQ_1∩R=P_1となるものがあれば、Q_1⊂Q_2かつQ_2∩R=P_2を満たすSの素イデアルQ_2がある(going up)。
+  statement: $R,S$を可換環、$S$を$R$上整な代数、$\varphi:R\to S$を構造写像とする。$R$の素イデアル$P_2$と$S$の素イデアル$Q_1$が$\varphi^{-1}(Q_1)\subseteq P_2$を満たせば、$Q_1\subseteq Q_2$かつ$\varphi^{-1}(Q_2)=P_2$を満たす$S$の素イデアル$Q_2$がある($\text{going up}$定理)。
   statement_en: If S is integral over R, P_1 ⊂ P_2 are primes of R and Q_1 is a prime of S over P_1, then there is a prime Q_2 of S containing Q_1 and lying over P_2 (going up).
-  assumptions: ["R, Sは可換環", "SはR上整", "P_1⊂P_2はRの素イデアル", "Q_1はP_1の上にあるSの素イデアル"]
-  quantifiers: ["任意のR, S, P_1, P_2, Q_1"]
-  conclusion: Q_1⊂Q_2かつQ_2の引き戻しがP_2となる素イデアルQ_2が存在する。
+  assumptions:
+  - $R,S$は可換環
+  - $S$は$R$上整
+  - $P_1,P_2$は$R$のイデアルで$P_1\subseteq P_2$、$P_2$は素イデアル
+  - $Q_1$は$S$の素イデアルで$\varphi^{-1}(Q_1)=P_1$
+  quantifiers:
+  - 任意の$R,S,P_1,P_2,Q_1$
+  conclusion: $Q_1\subseteq Q_2$かつ$\varphi^{-1}(Q_2)=P_2$を満たす素イデアル$Q_2$が存在する。
   answer: |
-    R/P_1→S/Q_1は単射でS/Q_1はR/P_1上整である。lying over定理を素イデアルP_2/P_1に適用すると、その上にあるS/Q_1の素イデアルが得られる。その引き戻しをQ_2とすると、Q_2はQ_1を含む素イデアルで、Q_2∩R=P_2である。
+    $R,S$を可換環、$S$を$R$上整な代数、$\varphi:R\to S$を構造写像とする。$Q_1$を$S$の素イデアル、$P_1=\varphi^{-1}(Q_1)$とし、$P_2$を$P_1$を含む$R$の素イデアルとする。
+    $\varphi$は単射$R/P_1\to S/Q_1$を誘導する。$S$の元の整方程式を$Q_1$で割って考えると、$S/Q_1$は$R/P_1$上整である。$\text{lying over}$定理(単射で整な環準同型$A\to B$について、$A$の任意の素イデアルは$B$のある素イデアルの引き戻しである)を素イデアル$P_2/P_1$に適用すると、$S/Q_1$の素イデアルでその引き戻しが$P_2/P_1$となるものが得られる。
+    その$S$への引き戻しを$Q_2$とする。$Q_2$は$Q_1$を含む素イデアルであり、$\varphi^{-1}(Q_2)=P_2$である。
   strategy: Reduce to lying over for the quotient extension R/P_1 → S/Q_1.
   sketch:
-    - "translate: The map R/P_1 → S/Q_1 is injective and integral."
-    - "apply_theorem: Lying over gives a prime of S/Q_1 over P_2/P_1."
-    - "conclude: Its preimage Q_2 contains Q_1 and lies over P_2."
+  - 'translate: The map R/P_1 → S/Q_1 is injective and integral.'
+  - 'apply_theorem: Lying over gives a prime of S/Q_1 over P_2/P_1.'
+  - 'conclude: Its preimage Q_2 contains Q_1 and lies over P_2.'
   openmath: (forall (R S P1 P2 Q1) (-> (and (comm_ring R) (comm_ring S) (integral_extension S R) (prime_ideal P1 R) (prime_ideal P2 R) (prime_ideal Q1 S) (= (ideal_comap (algebra_map R S) Q1) P1) (subset P1 P2)) (exists (Q2) (and (prime_ideal Q2 S) (subset Q1 Q2) (= (ideal_comap (algebra_map R S) Q2) P2)))))
   hard_negative:
     statement: 整とは限らない環の拡大でも、同じ条件でQ_2が存在する。
@@ -537,19 +655,26 @@
   kind: gap
   level: 4
   topic: 可換環論・上昇定理
-  statement: SがR上整で、QがSの素イデアル、JがQを真に含むSのイデアルなら、Jの引き戻しはQの引き戻しを真に含む。
+  statement: $R,S$を可換環、$S$を$R$上整な代数、$\varphi:R\to S$を構造写像とする。$Q$を$S$の素イデアル、$J$を$Q$を真に含む$S$のイデアルとすると、$\varphi^{-1}(Q)\subsetneq\varphi^{-1}(J)$である。
   statement_en: If S is integral over R, Q is a prime ideal of S and J is an ideal of S strictly containing Q, then the contraction of J to R strictly contains the contraction of Q.
-  assumptions: ["R, Sは可換環", "SはR上整", "QはSの素イデアル", "JはQを真に含むSのイデアル"]
-  quantifiers: ["任意のR, S, Q, J"]
-  conclusion: Q∩R⊊J∩Rである。
+  assumptions:
+  - $R,S$は可換環
+  - $S$は$R$上整
+  - $Q$は$S$の素イデアル
+  - $J$は$Q$を真に含む$S$のイデアル
+  quantifiers:
+  - 任意の$R,S,Q,J$
+  conclusion: $\varphi^{-1}(Q)\subsetneq\varphi^{-1}(J)$である。
   answer: |
-    x∈J\Qを取る。S/Qにおけるxの像は0でなく、R/(Q∩R)上整である。整方程式で次数最小のものを取ると、S/Qは整域なので定数項は0でない。定数項はxの倍数と係数の和なのでJの像に属する。よってJ∩Rの元で、Q∩Rに属さないものがある。
+    $R,S$を可換環、$S$を$R$上整な代数、$\varphi:R\to S$を構造写像、$Q$を$S$の素イデアル、$J$を$Q$を真に含む$S$のイデアルとする。$\varphi^{-1}(Q)\subseteq\varphi^{-1}(J)$は明らかである。
+    $x\in J\setminus Q$を取る。$x$は$R$上整なので、$x^n+\varphi(a_{n-1})x^{n-1}+\dots+\varphi(a_0)\in Q$($a_i\in R$, $n\geq1$)を満たす式がある。このうち次数$n$が最小のものを取る。$\varphi(a_0)\in Q$と仮定すると、$x(x^{n-1}+\varphi(a_{n-1})x^{n-2}+\dots+\varphi(a_1))\in Q$である。$Q$は素イデアルで$x\notin Q$なので、第$2$の因子が$Q$に属する。$n\geq2$なら次数の最小性に反する。$n=1$なら第$2$の因子は$1$であり、$1\in Q$となって矛盾する。よって$a_0\notin\varphi^{-1}(Q)$である。
+    一方、$\varphi(a_0)$は$Q$の元から$x$の倍数を引いたものであり、$Q\subseteq J$, $x\in J$なので$\varphi(a_0)\in J$である。したがって$a_0\in\varphi^{-1}(J)\setminus\varphi^{-1}(Q)$である。
   strategy: The constant term of a minimal integral equation modulo Q gives an element in J ∩ R outside Q ∩ R.
   sketch:
-    - "setup: Choose x in J outside Q and reduce modulo Q."
-    - "derive: The image of x is nonzero and integral over R/(Q ∩ R)."
-    - "derive: A minimal-degree integral equation has nonzero constant term because S/Q is a domain."
-    - "conclude: This constant term is an element of J ∩ R not in Q ∩ R."
+  - 'setup: Choose x in J outside Q and reduce modulo Q.'
+  - 'derive: The image of x is nonzero and integral over R/(Q ∩ R).'
+  - 'derive: A minimal-degree integral equation has nonzero constant term because S/Q is a domain.'
+  - 'conclude: This constant term is an element of J ∩ R not in Q ∩ R.'
   openmath: (forall (R S Q J) (-> (and (comm_ring R) (comm_ring S) (integral_extension S R) (prime_ideal Q S) (ideal_of J S) (prsubset Q J)) (prsubset (ideal_comap (algebra_map R S) Q) (ideal_comap (algebra_map R S) J))))
   hard_negative:
     statement: 整とは限らない拡大でも、引き戻しが等しい素イデアルの間に真の包含はない。
@@ -564,21 +689,29 @@
   kind: named
   level: 4
   topic: 可換環論・ネーターの正規化定理
-  statement: 体k上の0でない有限生成代数Aに対し、ある非負整数sとk上の代数準同型g:k[x_1,…,x_s]→Aがあり、gは単射で、Aはgを通じて有限生成加群になる(ネーターの正規化定理)。
+  statement: 体$k$上の$0$でない有限生成可換代数$A$に対し、ある自然数$s$と$k$代数準同型$g:k[x_1,\dots,x_s]\to A$があり、$g$は単射で、$A$は$g$を通じて有限生成加群になる(ネーターの正規化定理)。
   statement_en: For a nonzero finitely generated algebra A over a field k there are s and an injective k-algebra map g from k[x_1, ..., x_s] to A making A a finite module over the polynomial ring (Noether normalization).
-  assumptions: ["kは体", "Aは0でない可換環", "Aはk上有限生成な代数"]
-  quantifiers: ["任意のk, A"]
-  conclusion: 単射で有限な代数準同型g:k[x_1,…,x_s]→Aが存在する。
+  assumptions:
+  - $k$は体
+  - $A$は$0$でない可換環
+  - $A$は$k$上有限生成な代数
+  quantifiers:
+  - 任意の$k,A$
+  conclusion: 単射かつ有限な$k$代数準同型$g:k[x_1,\dots,x_s]\to A$が存在する。
   answer: |
-    概略を述べる。Aの生成元の個数についての帰納法による。生成元y_1,…,y_nが代数的に独立ならAは多項式環である。そうでなければ非自明な関係式f(y_1,…,y_n)=0がある。変数変換y_i'=y_i-y_n^{r_i}(r_iを十分大きく取る)で、fはy_nについてモニックな形(定数倍を除く)となる。するとy_nはk[y_1',…,y_{n-1}']上整であり、この部分環に帰納法の仮定を適用して整拡大の推移性で結論を得る。整性と有限生成性から有限加群であることが従う。
+    $k$を体、$A$を$k$上有限生成な$0$でない可換代数とする。$A$の$k$代数としての生成元の個数$n$についての帰納法で示す。
+    $n=0$なら、$A\neq0$と$k$が体であることから$k\to A$は全単射であり、$s=0$でよい。
+    $n\geq1$とし、$A$の生成元を$y_1,\dots,y_n$とする。これらが$k$上代数的に独立なら、$x_i\mapsto y_i$で定まる$g:k[x_1,\dots,x_n]\to A$は同型であり、$s=n$でよい。
+    そうでないとき、$f(y_1,\dots,y_n)=0$となる$0$でない多項式$f\in k[x_1,\dots,x_n]$がある。$f$に現れるどの指数よりも大きい整数$d$を取り、$r_i=d^{n-i}$($i=1,\dots,n$)、$y_i'=y_i-y_n^{r_i}$($i<n$)とおく。$f(y_1'+y_n^{r_1},\dots,y_{n-1}'+y_n^{r_{n-1}},y_n)=0$を$y_n$の多項式として展開する。$f$の単項式$cx_1^{e_1}\cdots x_n^{e_n}$($c\neq0$)が与える$y_n$の最高次の項は$cy_n^{N(e)}$であり、$N(e)=\sum_{i=1}^ne_id^{n-i}$である。$0\leq e_i<d$なので、$d$進表記の一意性から、異なる単項式の$N(e)$は異なる。よって、$N(e)$が最大の単項式の項が全体の最高次の項になり、他の項の$y_n$の次数はより低い。$c$は単元なので、$c$で割ると、$y_n$は$B=k[y_1',\dots,y_{n-1}']$係数のモニックな多項式の根である。その次数$N$は$1$以上である。$N=0$なら$f$は$0$でない定数であり、$f(y_1,\dots,y_n)=0$は$A\neq0$に反するからである。
+    $y_i=y_i'+y_n^{r_i}$より$A=B[y_n]$なので、$A$は有限生成$B$加群である。$B$は$A$の$0$でない部分代数で、$n-1$個の元で生成される。帰納法の仮定から、単射で有限な$g':k[x_1,\dots,x_s]\to B$がある。$g'$と包含$B\to A$の合成$g$は単射であり、$A$は$g$を通じて有限生成加群である。
   strategy: Induct on generators, using a change of variables to make a relation monic in the last generator.
   sketch:
-    - "induction: Induct on the number n of algebra generators of A."
-    - "case_split: If the generators are algebraically independent, A itself is a polynomial ring."
-    - "construct: Otherwise change variables by y_i' = y_i - y_n^(r_i) so that a relation becomes monic in y_n up to a constant."
-    - "derive: Then A is finite over the subalgebra generated by y_1', ..., y_(n-1)'."
-    - "apply_theorem: The induction hypothesis applies to this subalgebra."
-    - "conclude: Finiteness is transitive, which gives the injective finite map from a polynomial ring."
+  - 'induction: Induct on the number n of algebra generators of A.'
+  - 'case_split: If the generators are algebraically independent, A itself is a polynomial ring.'
+  - 'construct: Otherwise change variables by y_i'' = y_i - y_n^(r_i) so that a relation becomes monic in y_n up to a constant.'
+  - 'derive: Then A is finite over the subalgebra generated by y_1'', ..., y_(n-1)''.'
+  - 'apply_theorem: The induction hypothesis applies to this subalgebra.'
+  - 'conclude: Finiteness is transitive, which gives the injective finite map from a polynomial ring.'
   openmath: (forall (k A) (-> (and (is_field k) (comm_ring A) (nontrivial_ring A) (finite_type_algebra A k)) (exists (s g) (and (in s N) (algebra_hom_of g k (mv_polynomial_ring (variable_family s) k) A) (ring_hom_injective g) (finite_ring_hom g)))))
   hard_negative:
     statement: 体でない基礎環、たとえばZ上の0でない有限生成代数でも同様の単射で有限な写像Z[x_1,…,x_s]→Aが存在する。
@@ -593,21 +726,29 @@
   kind: named
   level: 4
   topic: 可換環論・ヒルベルトの零点定理
-  statement: 代数閉体K上の有限変数多項式環のイデアルIと多項式fについて、fがIの共通零点すべてで0になることと、fのある冪がIに属することは同値である(ヒルベルトの零点定理)。
+  statement: $K$を代数閉体とする。$K$上の有限変数多項式環のイデアル$I$と多項式$f$について、$f$が$I$の共通零点すべてで$0$になることと、$f$のある冪が$I$に属することは同値である(ヒルベルトの零点定理)。
   statement_en: For an ideal I of a polynomial ring in finitely many variables over an algebraically closed field K and a polynomial f, f vanishes on the common zeros of I if and only if some power of f lies in I (Hilbert's Nullstellensatz).
-  assumptions: ["Kは代数閉体", "変数の添字集合は有限", "Iは多項式環のイデアル", "fは多項式"]
-  quantifiers: ["任意のK, 添字集合, I, f"]
-  conclusion: fがV(I)上で0になることと、あるnでf^n∈Iとなることは同値である。
+  assumptions:
+  - $K$は代数閉体
+  - 変数の添字集合は有限
+  - $I$は多項式環のイデアル
+  - $f$は多項式
+  quantifiers:
+  - 任意の$K$、添字集合、$I,f$
+  conclusion: $f$が$I$のすべての共通零点で$0$になることと、ある自然数$n$で$f^n\in I$となることは同値である。
   answer: |
-    概略を述べる。f^n∈Iならfは明らかにV(I)上で0になる。逆を二段階で示す。第一に弱零点定理として、ザリスキの補題から極大イデアルは一点の消滅イデアルであり、真のイデアルは共通零点を持つ。第二にラビノヴィッチの手法を用いる。fがV(I)上で0なら、新しい変数tを加えたイデアル(I,1-tf)は共通零点を持たず、単位イデアルである。1の表示にt=1/fを代入して分母を払うと、f^n∈Iが得られる。
+    $K$を代数閉体、$A=K[X_1,\dots,X_m]$を有限変数の多項式環、$I$を$A$のイデアル、$f\in A$とする。
+    $f^n\in I$とし、$x\in K^m$を$I$の共通零点とする。$f(x)^n=0$である。$n=0$なら$1=0$となって不可能なので$n\geq1$であり、$f(x)=0$である。
+    逆を示す。まず弱形を示す。すなわち、有限変数の多項式環の真のイデアルは共通零点をもつ。真のイデアルを含む極大イデアル$\mathfrak{M}$を取り、$L$を商環とする。$L$は体で、$K$上有限生成な代数である。ザリスキの補題(体上有限生成な代数である体は、その体の有限次拡大である)から$L/K$は有限次である。$K$は代数閉体なので$L=K$である。各変数の$L=K$での像を座標とする点$a$を取ると、$\mathfrak{M}$の元$p$について$p(a)$は$p$の$L$での像であり、$0$である。よって$a$は共通零点である。
+    $f$が$I$のすべての共通零点で$0$になるとする。$f=0$なら$f^1\in I$である。$f\neq0$とする。新しい変数$T$を加えた$A[T]$で、$I$と$1-Tf$が生成するイデアル$J$を考える。$J$の共通零点$(a,t)$があれば、$a$は$I$の共通零点なので$f(a)=0$となり、$1-tf(a)=1\neq0$に反する。よって弱形から$J=A[T]$であり、$1=\sum_ig_ip_i+h(1-Tf)$($p_i\in I$, $g_i,h\in A[T]$)と書ける。$A$の分数体で$T=1/f$を代入すると、$1=\sum_ig_i(X,1/f)p_i$である。$N$を十分大きく取ると$f^Ng_i(X,1/f)\in A$なので、$f^N\in I$である。
   strategy: Deduce the strong form from the weak form by the Rabinowitsch trick.
   sketch:
-    - "derive: If f^n lies in I, then f vanishes on every common zero of I."
-    - "apply_theorem: The weak form says every proper ideal has a common zero, using that maximal ideals are point ideals."
-    - "construct: Add a variable t and consider the ideal generated by I and 1 - t f."
-    - "derive: It has no common zero, so it is the unit ideal."
-    - "derive: Substituting t = 1/f in an expression of 1 and clearing denominators gives f^n in I."
-    - "conclude: The two conditions are equivalent."
+  - 'derive: If f^n lies in I, then f vanishes on every common zero of I.'
+  - 'apply_theorem: The weak form says every proper ideal has a common zero, using that maximal ideals are point ideals.'
+  - 'construct: Add a variable t and consider the ideal generated by I and 1 - t f.'
+  - 'derive: It has no common zero, so it is the unit ideal.'
+  - 'derive: Substituting t = 1/f in an expression of 1 and clearing denominators gives f^n in I.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (K s I f) (-> (and (is_field K) (algebraically_closed K) (finite_set s) (ideal_of I (mv_polynomial_ring s K)) (in f (mv_polynomial_ring s K))) (<-> (forall (x) (-> (and (in x (point_space s K)) (forall (p) (-> (in p I) (= (mv_eval x p) 0)))) (= (mv_eval x f) 0))) (exists (n) (and (in n N) (in (^ f n) I))))))
   hard_negative:
     statement: Kが代数閉体でなくても、fがIの共通零点で0になればfの冪がIに属する。
@@ -625,20 +766,26 @@
   kind: gap
   level: 4
   topic: 可換環論・ヒルベルトの零点定理
-  statement: 代数閉体K上の有限変数多項式環のイデアルIが極大であることと、ある点xがあってIがxで0になる多項式全体に等しいことは同値である。
+  statement: $K$を代数閉体とする。$K$上の有限変数多項式環のイデアル$I$が極大であることと、ある点$x$があって$I$が$x$で$0$になる多項式全体に等しいことは同値である。
   statement_en: An ideal I of a polynomial ring in finitely many variables over an algebraically closed field K is maximal if and only if I is the set of polynomials vanishing at some point x.
-  assumptions: ["Kは代数閉体", "変数の添字集合は有限", "Iは多項式環のイデアル"]
-  quantifiers: ["任意のK, 添字集合, I"]
-  conclusion: Iが極大であることと、I={p | p(x)=0}となる点xがあることは同値である。
+  assumptions:
+  - $K$は代数閉体
+  - 変数の添字集合は有限
+  - $I$は多項式環のイデアル
+  quantifiers:
+  - 任意の$K$、添字集合、$I$
+  conclusion: $I$が極大であることと、$I=\{p\mid p(x)=0\}$となる点$x$があることは同値である。
   answer: |
-    点xでの値写像p↦p(x)はKへの全射環準同型で、その核はxで0になる多項式全体である。商がKなので核は極大イデアルである。逆にIが極大なら、L=K[x_1,…,x_n]/Iは体でK上有限生成な代数である。ザリスキの補題からLはK上代数的であり、Kは代数閉なのでL=Kである。x_iの像をa_iとすると、Iは点a=(a_i)での値写像の核に含まれ、極大性から等しい。
+    $K$を代数閉体、$A=K[X_1,\dots,X_m]$を有限変数の多項式環、$I$を$A$のイデアルとする。
+    点$x\in K^m$について、値写像$p\mapsto p(x)$は$A$から$K$への全射環準同型である(定数で全射)。その核は$x$で$0$になる多項式全体であり、商が体$K$なので極大イデアルである。したがって$I$がこの核に等しければ$I$は極大である。
+    逆に$I$が極大とする。$L=A/I$は体で、$K$上有限生成な代数である。ザリスキの補題(体上有限生成な代数である体は、その体の有限次拡大である)から$L/K$は有限次である。$K$は代数閉体なので$L=K$である。$X_i$の$L=K$での像を$a_i$とし、$a=(a_i)$とおく。$p\in A$の$L$での像は$p(a)$なので、$p\in I$と$p(a)=0$は同値である。
   strategy: Identify the quotient by a maximal ideal with K via Zariski's lemma.
   sketch:
-    - "derive: The evaluation map at x is surjective onto K, so its kernel is maximal."
-    - "setup: Conversely let I be maximal and form the field L = K[x]/I."
-    - "apply_theorem: Zariski's lemma makes L algebraic over K, and algebraic closedness gives L = K."
-    - "construct: Let a_i be the image of x_i in K."
-    - "conclude: I lies in the kernel of evaluation at a, and maximality gives equality."
+  - 'derive: The evaluation map at x is surjective onto K, so its kernel is maximal.'
+  - 'setup: Conversely let I be maximal and form the field L = K[x]/I.'
+  - 'apply_theorem: Zariski''s lemma makes L algebraic over K, and algebraic closedness gives L = K.'
+  - 'construct: Let a_i be the image of x_i in K.'
+  - 'conclude: I lies in the kernel of evaluation at a, and maximality gives equality.'
   openmath: (forall (K s I) (-> (and (is_field K) (algebraically_closed K) (finite_set s) (ideal_of I (mv_polynomial_ring s K))) (<-> (maximal_ideal I (mv_polynomial_ring s K)) (exists (x) (and (in x (point_space s K)) (forall (p) (-> (in p (mv_polynomial_ring s K)) (<-> (in p I) (= (mv_eval x p) 0)))))))))
   hard_negative:
     statement: Kが代数閉体でなくても、極大イデアルは一点で0になる多項式全体である。
@@ -658,20 +805,25 @@
   kind: named
   level: 4
   topic: 可換環論・クルルの共通部分定理
-  statement: ネーター局所環Rの真のイデアルIについて、Iのすべての冪の共通部分は0である(クルルの共通部分定理)。
+  statement: $R$をネーター局所環、$I$を$R$の真のイデアルとする。$I$のすべての冪の共通部分は$0$である(クルルの共通部分定理)。
   statement_en: If I is a proper ideal of a Noetherian local ring R, then the intersection of all powers of I is zero (Krull's intersection theorem).
-  assumptions: ["Rはネーター局所環", "IはRの真のイデアル"]
-  quantifiers: ["任意のR, I"]
-  conclusion: ∩_n I^n=0である。
+  assumptions:
+  - $R$はネーター局所環
+  - $I$は$R$の真のイデアル
+  quantifiers:
+  - 任意の$R,I$
+  conclusion: $\bigcap_nI^n=0$である。
   answer: |
-    N=∩_n I^nとする。アルティン・リースの補題から、あるkで任意のn≥kに対しI^n∩N=I^{n-k}(I^k∩N)が成り立つ。n=k+1とすると、N⊂I^{k+1}なのでN=I^{k+1}∩N=I(I^k∩N)=INである。Iは極大イデアルに含まれ、ネーター性からNは有限生成なので、中山の補題からN=0である。
+    $R$をネーター局所環、$\mathfrak{m}$をその極大イデアル、$I$を真のイデアルとし、$N=\bigcap_nI^n$とおく。
+    アルティン・リースの補題(ネーター環のイデアル$I$と有限生成加群$M$の部分加群$N$について、ある$k$があり、すべての$n\geq k$で$I^nM\cap N=I^{n-k}(I^kM\cap N)$となる)を$M=R$に適用する。$n=k+1$とすると、$N\subseteq I^{k+1}$かつ$N\subseteq I^k$なので、$N=I^{k+1}\cap N=I(I^k\cap N)=IN$である。
+    $I$は真のイデアルなので$I\subseteq\mathfrak{m}$であり、$N=IN\subseteq\mathfrak{m}N\subseteq N$より$\mathfrak{m}N=N$である。ネーター性から$N$は有限生成なので、中山の補題(局所環上の有限生成加群$V$について$\mathfrak{m}V=V$なら$V=0$)から$N=0$である。
   strategy: Apply Artin-Rees to get N = IN, then Nakayama.
   sketch:
-    - "setup: Let N be the intersection of all powers of I."
-    - "apply_theorem: The Artin-Rees lemma gives k with I^n ∩ N = I^(n-k) (I^k ∩ N) for n at least k."
-    - "derive: Taking n = k + 1 gives N = I N."
-    - "apply_theorem: N is finitely generated and I lies in the maximal ideal, so Nakayama's lemma applies."
-    - "conclude: Therefore N = 0."
+  - 'setup: Let N be the intersection of all powers of I.'
+  - 'apply_theorem: The Artin-Rees lemma gives k with I^n ∩ N = I^(n-k) (I^k ∩ N) for n at least k.'
+  - 'derive: Taking n = k + 1 gives N = I N.'
+  - 'apply_theorem: N is finitely generated and I lies in the maximal ideal, so Nakayama''s lemma applies.'
+  - 'conclude: Therefore N = 0.'
   openmath: (forall (R I) (-> (and (comm_ring R) (noetherian_ring R) (local_ring R) (ideal_of I R) (!= I (unit_ideal R))) (= (ideal_family_inter (lambda (n) (ideal_power I n))) (zero_ideal R))))
   hard_negative:
     statement: ネーター環の真のイデアルIについて、局所環でなくても∩_n I^n=0である。
@@ -686,19 +838,25 @@
   kind: gap
   level: 4
   topic: 可換環論・クルル次元
-  statement: 体でない単項イデアル整域のクルル次元は1である。
+  statement: $R$を体でない単項イデアル整域とする。$R$のクルル次元は$1$である。
   statement_en: A principal ideal domain that is not a field has Krull dimension 1.
-  assumptions: ["Rは単項イデアル整域", "Rは体でない"]
-  quantifiers: ["任意のR"]
-  conclusion: dim R=1である。
+  assumptions:
+  - $R$は単項イデアル整域
+  - $R$は体でない
+  quantifiers:
+  - 任意の$R$
+  conclusion: $\dim R=1$である。
   answer: |
-    Rは体でないので0でない非単元があり、これを含む極大イデアルMは0でない。よって素イデアルの鎖0⊊Mがあり、dim R≥1である。単項イデアル整域の0でない素イデアルは極大なので、長さ2の鎖0⊊P⊊P'はない。したがってdim R=1である。
+    $R$を体でない単項イデアル整域とする。
+    $R$は体でないので$0$でない非単元がある。これを含む極大イデアル$\mathfrak{M}$は$0$でない素イデアルであり、$R$は整域なので$0$も素イデアルである。よって素イデアルの鎖$0\subsetneq\mathfrak{M}$があり、$\dim R\geq1$である。
+    $0$でない素イデアルは極大であることを示す。$(p)$を$0$でない素イデアルとし、$(p)\subseteq(q)\subsetneq R$とする。$p=qa$と書くと、$p$は$q$か$a$を割る。$p\mid a$なら$a=pb$で、$p=qpb$より$1=qb$となり、$q$が単元であることに反する。よって$p\mid q$であり、$(p)=(q)$である。
+    したがって長さ$2$の鎖$0\subsetneq P\subsetneq P'$はなく、$\dim R=1$である。
   strategy: Exhibit a chain of length one and rule out longer ones because nonzero primes are maximal.
   sketch:
-    - "derive: A nonzero nonunit lies in a nonzero maximal ideal, so the dimension is at least 1."
-    - "apply_theorem: Nonzero primes of a principal ideal domain are maximal."
-    - "derive: Hence no chain of primes has length 2."
-    - "conclude: The Krull dimension equals 1."
+  - 'derive: A nonzero nonunit lies in a nonzero maximal ideal, so the dimension is at least 1.'
+  - 'apply_theorem: Nonzero primes of a principal ideal domain are maximal.'
+  - 'derive: Hence no chain of primes has length 2.'
+  - 'conclude: The Krull dimension equals 1.'
   openmath: (forall (R) (-> (and (principal_ideal_domain R) (not (is_field R))) (= (ring_krull_dim R) 1)))
   hard_negative:
     statement: 体でない一意分解整域のクルル次元は1である。
@@ -713,18 +871,20 @@
   kind: gap
   level: 4
   topic: 可換環論・クルル次元
-  statement: 体のクルル次元は0である。
+  statement: $F$を体とする。$F$のクルル次元は$0$である。
   statement_en: A field has Krull dimension 0.
-  assumptions: ["Fは体"]
-  quantifiers: ["任意の体F"]
-  conclusion: dim F=0である。
+  assumptions:
+  - $F$は体
+  quantifiers:
+  - 任意の体$F$
+  conclusion: $\dim F=0$である。
   answer: |
-    体のイデアルは0とFだけなので、素イデアルは0のみである。素イデアルの鎖は0だけからなる長さ0の鎖に限られるので、dim F=0である。
+    $F$を体とする。$F$のイデアルは$0$と$F$だけなので、素イデアルは$0$のみである。素イデアルの鎖は$0$だけからなる長さ$0$の鎖に限られるので、$\dim F=0$である。
   strategy: List the prime ideals of a field.
   sketch:
-    - "derive: The only ideals of a field are 0 and the whole field."
-    - "derive: So 0 is the only prime ideal."
-    - "conclude: The only chain has length 0."
+  - 'derive: The only ideals of a field are 0 and the whole field.'
+  - 'derive: So 0 is the only prime ideal.'
+  - 'conclude: The only chain has length 0.'
   openmath: (forall (F) (-> (is_field F) (= (ring_krull_dim F) 0)))
   hard_negative:
     statement: クルル次元0の可換環は体である。
@@ -739,18 +899,23 @@
   kind: gap
   level: 4
   topic: 可換環論・離散付値環
-  statement: 離散付値環の既約元ϖについて、0でないイデアルはすべて(ϖ^n)の形である。
+  statement: $R$を離散付値環、$\varpi$を$R$の既約元とする。$R$の$0$でないイデアルはすべて$(\varpi^n)$の形である。
   statement_en: If ϖ is an irreducible element of a discrete valuation ring, then every nonzero ideal has the form (ϖ^n).
-  assumptions: ["Rは離散付値環", "ϖはRの既約元", "sはRの0でないイデアル"]
-  quantifiers: ["任意のR, ϖ, s"]
-  conclusion: あるnでs=(ϖ^n)となる。
+  assumptions:
+  - $R$は離散付値環
+  - $\varpi$は$R$の既約元
+  - $s$は$R$の$0$でないイデアル
+  quantifiers:
+  - 任意の$R,\varpi,s$
+  conclusion: ある自然数$n$で$s=(\varpi^n)$となる。
   answer: |
-    Rは単項イデアル整域なのでs=(a), a≠0と書ける。局所性から既約元はϖの単元倍に限られ、一意分解からa=uϖ^n(uは単元)となる。uは単元なので(a)=(ϖ^n)である。
+    $R$を離散付値環、すなわち体でない局所単項イデアル整域とする。$\varpi$を$R$の既約元、$s$を$R$の$0$でないイデアルとする。
+    単項イデアル整域では既約元の生成するイデアルは極大なので、$R$の唯一の極大イデアルは$(\varpi)$である。$R$は単項イデアル整域なので$s=(a)$, $a\neq0$と書ける。$R$は一意分解整域なので、$a$は単元と既約元の積である。既約元$q$は非単元なので$(\varpi)$に属し、$q=\varpi c$と書ける。$\varpi$は非単元で$q$は既約なので$c$は単元である。よって$a=u\varpi^n$($u$は単元)であり、$s=(a)=(\varpi^n)$である。
   strategy: Factor a generator of the ideal as a unit times a power of ϖ.
   sketch:
-    - "setup: Write s = (a) with a nonzero since R is a principal ideal domain."
-    - "derive: All irreducibles are associated to ϖ, so a = u ϖ^n with u a unit."
-    - "conclude: Therefore s = (ϖ^n)."
+  - 'setup: Write s = (a) with a nonzero since R is a principal ideal domain.'
+  - 'derive: All irreducibles are associated to ϖ, so a = u ϖ^n with u a unit.'
+  - 'conclude: Therefore s = (ϖ^n).'
   openmath: (forall (R w s) (-> (and (discrete_valuation_ring R) (irreducible_element w R) (ideal_of s R) (!= s (zero_ideal R))) (exists (n) (and (in n N) (= s (principal_ideal (^ w n)))))))
   hard_negative:
     statement: ネーター局所整域の0でないイデアルはすべて極大イデアルの冪である。
@@ -765,19 +930,24 @@
   kind: gap
   level: 4
   topic: 可換環論・付値環
-  statement: 付値環Rの分数体Kの元xについて、xまたはx^{-1}はRに属する。
+  statement: $R$を付値環、$K$をその分数体、$x\in K$とする。$x$または$x^{-1}$は$R$に属する。ここで$x=0$のときは$x$が$R$に属する。
   statement_en: For a valuation ring R with field of fractions K and x in K, either x or x^(-1) lies in R.
-  assumptions: ["Rは付値環", "KはRの分数体", "x∈K"]
-  quantifiers: ["任意のR, K, x"]
-  conclusion: xまたはx^{-1}はRに属する。
+  assumptions:
+  - $R$は付値環
+  - $K$は$R$の分数体
+  - $x\in K$
+  quantifiers:
+  - 任意の$R,K,x$
+  conclusion: $x\in R$であるか、$x\neq0$かつ$x^{-1}\in R$である。
   answer: |
-    x=0ならx∈Rである。x≠0のときx=a/b(a,b∈R, b≠0)と書く。付値環では任意の2元についてどちらかがもう一方を割るので、aがbを割るかbがaを割る。bがaを割ればx∈Rであり、aがbを割ればx^{-1}=b/a∈Rである。
+    $R$を付値環、すなわち任意の$2$元についてどちらかがもう一方を割る整域とし、$K$をその分数体、$x\in K$とする。$R$を$K$の部分環とみなす。
+    $x=0$なら$x\in R$である。$x\neq0$のとき、$x=a/b$($a,b\in R$, $a,b\neq0$)と書く。付値環の定義から、$b$が$a$を割るか$a$が$b$を割る。$b$が$a$を割れば$x\in R$であり、$a$が$b$を割れば$x^{-1}=b/a\in R$である。
   strategy: Use divisibility comparability on a numerator and a denominator.
   sketch:
-    - "setup: Write x = a/b with a, b in R and b nonzero."
-    - "apply_theorem: In a valuation ring a divides b or b divides a."
-    - "case_split: If b divides a then x lies in R, and if a divides b then x^(-1) lies in R."
-    - "conclude: So x or its inverse lies in R."
+  - 'setup: Write x = a/b with a, b in R and b nonzero.'
+  - 'apply_theorem: In a valuation ring a divides b or b divides a.'
+  - 'case_split: If b divides a then x lies in R, and if a divides b then x^(-1) lies in R.'
+  - 'conclude: So x or its inverse lies in R.'
   openmath: (forall (R K x) (-> (and (integral_domain R) (valuation_ring R) (is_field K) (fraction_field_of K R) (in x K)) (or (exists (a) (and (in a R) (= (fn_value (algebra_map R K) a) x))) (exists (a) (and (in a R) (= (fn_value (algebra_map R K) a) (/ 1 x)))))))
   hard_negative:
     statement: 任意の整域Rの分数体の元xについて、xまたはx^{-1}はRに属する。
@@ -792,20 +962,28 @@
   kind: textbook
   level: 4
   topic: 可換環論・デデキント整域
-  statement: デデキント整域の0でないイデアルは、0でない素イデアルの積として順序を除いて一意に書ける。環全体は空の積とみなす。
+  statement: $A$をデデキント整域(体も含む)とする。$A$の$0$でないイデアルは、$0$でない素イデアルの積として順序を除いて一意に書ける。環全体は空の積とみなす。
   statement_en: Every nonzero ideal of a Dedekind domain is a product of nonzero prime ideals, uniquely up to order, the whole ring being the empty product.
-  assumptions: ["Aはデデキント整域(体も含む)", "IはAの0でないイデアル"]
-  quantifiers: ["任意のA, I"]
-  conclusion: Iは0でない素イデアルの積であり、その多重集合は一意である。
+  assumptions:
+  - $A$はデデキント整域(体も含む)
+  - $I$は$A$の$0$でないイデアル
+  quantifiers:
+  - 任意の$A,I$
+  conclusion: $I$は$0$でない素イデアルの積であり、その因子の多重集合は一意である。
   answer: |
-    概略を述べる。主な段階は分数イデアルの可逆性である。0でない素イデアルPは極大で、整閉性とネーター性からP·P^{-1}=Aが得られる。存在は、素イデアルの積で書けないイデアルの極大元Iを取り、I⊂Pとして、I=P(P^{-1}I)でP^{-1}IがIより大きいことから矛盾を導く。一意性は、素イデアルPが積を含むならある因子を含み、極大性から等しくなることと、Pが可逆で消去できることによる。
+    $A$をデデキント整域、すなわちネーターで整閉であり、$0$でない素イデアルがすべて極大である整域とする。$K$をその分数体、$I$を$A$の$0$でないイデアルとする。$K$の元$x$と$A$の$0$でない有限生成部分加群$V\subseteq K$が$xV\subseteq V$を満たせば、$x$は$A$上整である(ケイリー・ハミルトンの議論)。$A$は整閉なので、このとき$x\in A$である。これを(*)とする。
+    第一に、$0$でないイデアルは$0$でない素イデアルの有限積を含む(空の積は$A$)。そうでないものがあれば、ネーター性から極大なもの$I_0$が取れる。$I_0$は素イデアルでも$A$でもないので、$a,b\notin I_0$, $ab\in I_0$となる$a,b$がある。$I_0+(a)$と$I_0+(b)$は素イデアルの積を含み、それらの積は$I_0$に含まれるので矛盾する。
+    第二に、$P$を$0$でない素イデアル、$P^{-1}=\{x\in K\mid xP\subseteq A\}$とすると、$P^{-1}\neq A$である。$0$でない$a\in P$を取り、$(a)$に含まれる素イデアルの積$P_1\cdots P_r$で$r$が最小のものを取る。$a$は非単元なので$r\geq1$である。$P\supseteq P_1\cdots P_r$なので、ある番号の因子が$P$に含まれる。番号を替えて$P_1\subseteq P$とすると、$P_1$の極大性から$P_1=P$である。$r$の最小性から$b\in P_2\cdots P_r$, $b\notin(a)$が取れる。$x=b/a$は$A$に属さず、$xP\subseteq(1/a)P_1\cdots P_r\subseteq A$である。
+    第三に、$PP^{-1}=A$である。$P\subseteq PP^{-1}\subseteq A$であり、$P$は極大である。$PP^{-1}=P$なら、任意の$x\in P^{-1}$は$xP\subseteq P$を満たすので、(*)から$x\in A$となり第二の事実に反する。
+    存在を示す。$0$でない素イデアルの積で書けない$0$でないイデアルがあるとし、極大なもの$I_1$を取る。$I_1\neq A$なので$I_1\subseteq P$となる極大イデアル$P$があり、$P\neq0$である。$J=P^{-1}I_1$は$P^{-1}P=A$に含まれるのでイデアルであり、$I_1\subseteq J$である。$J=I_1$なら$x\in P^{-1}\setminus A$について$xI_1\subseteq I_1$となり、(*)に反する。よって$J$は$I_1$より大きく、素イデアルの積である。$I_1=PJ$なので矛盾する。
+    一意性を示す。$P_1\cdots P_r=Q_1\cdots Q_t$を$0$でない素イデアルの積とする。$r$についての帰納法を用いる。$r=0$なら左辺は$A$であり、素イデアルは真のイデアルなので$t=0$である。$r\geq1$なら、左辺は真のイデアルなので$t\geq1$である。$P_1\supseteq Q_1\cdots Q_t$より、ある$j$で$P_1\supseteq Q_j$となり、$Q_j$の極大性から$P_1=Q_j$である。両辺に$P_1^{-1}$を掛けて消去し、帰納法の仮定を適用する。
   strategy: Show nonzero primes are invertible, then run the usual existence and cancellation argument.
   sketch:
-    - "derive: Nonzero primes are maximal and invertible as fractional ideals."
-    - "contradiction: A maximal ideal with no prime factorization would factor as P times a larger ideal."
-    - "derive: A prime containing a product contains one of the factors and equals it by maximality."
-    - "derive: Invertibility allows cancelling the common prime."
-    - "conclude: Existence and uniqueness of the factorization follow."
+  - 'derive: Nonzero primes are maximal and invertible as fractional ideals.'
+  - 'contradiction: A maximal ideal with no prime factorization would factor as P times a larger ideal.'
+  - 'derive: A prime containing a product contains one of the factors and equals it by maximality.'
+  - 'derive: Invertibility allows cancelling the common prime.'
+  - 'conclude: Existence and uniqueness of the factorization follow.'
   openmath: (forall (A I) (-> (and (dedekind_domain A) (ideal_of I A) (!= I (zero_ideal A))) (exists (s) (and (forall (p) (-> (multiset_mem p s) (and (prime_ideal p A) (!= p (zero_ideal A))))) (= (multiset_prod s) I) (forall (t) (-> (and (forall (p) (-> (multiset_mem p t) (and (prime_ideal p A) (!= p (zero_ideal A))))) (= (multiset_prod t) I)) (= t s)))))))
   hard_negative:
     statement: 任意のネーター整域の0でないイデアルは素イデアルの積として書ける。
@@ -826,19 +1004,23 @@
   kind: gap
   level: 4
   topic: 可換環論・デデキント整域
-  statement: デデキント整域のイデアルI, Jについて、IがJを割ることとIがJを含むことは同値である。
+  statement: $A$をデデキント整域(体も含む)、$I,J$を$A$のイデアルとする。$I$が$J$を割ることと、$I$が$J$を含むことは同値である。
   statement_en: For ideals I and J of a Dedekind domain, I divides J if and only if J is contained in I.
-  assumptions: ["Aはデデキント整域(体も含む)", "I, JはAのイデアル"]
-  quantifiers: ["任意のA, I, J"]
-  conclusion: I|Jであることと、J⊂Iであることは同値である。
+  assumptions:
+  - $A$はデデキント整域(体も含む)
+  - $I,J$は$A$のイデアル
+  quantifiers:
+  - 任意の$A,I,J$
+  conclusion: $J=IL$となるイデアル$L$があることと、$J\subseteq I$であることは同値である。
   answer: |
-    J=IKならJ⊂Iである。逆にJ⊂Iとする。I=0ならJ=0でJ=I·Aとなる。I≠0ならIは分数イデアルとして可逆なので、K=I^{-1}Jと置く。J⊂IからK⊂I^{-1}I=AとなりKはAのイデアルで、IK=Jである。
+    $A$をデデキント整域、$K$をその分数体、$I,J$を$A$のイデアルとする。
+    $J=IL$となるイデアル$L$があれば$J\subseteq I$である。逆に$J\subseteq I$とする。$I=0$なら$J=0=I\cdot A$である。$I\neq0$とする。デデキント整域の$0$でないイデアルは分数イデアルとして可逆である。すなわち、$I^{-1}=\{x\in K\mid xI\subseteq A\}$について$II^{-1}=A$である。$L=I^{-1}J$とおくと、$J\subseteq I$より$L\subseteq I^{-1}I=A$なので、$L$は$A$のイデアルであり、$IL=J$である。
   strategy: Use invertibility of nonzero ideals to define the quotient ideal.
   sketch:
-    - "derive: If J = I K, then J is contained in I."
-    - "setup: Conversely assume J is contained in I and I is nonzero."
-    - "construct: Let K = I^(-1) J, which lies in A because J ⊂ I."
-    - "conclude: Then I K = J, so I divides J."
+  - 'derive: If J = I K, then J is contained in I.'
+  - 'setup: Conversely assume J is contained in I and I is nonzero.'
+  - 'construct: Let K = I^(-1) J, which lies in A because J ⊂ I.'
+  - 'conclude: Then I K = J, so I divides J.'
   openmath: (forall (A I J) (-> (and (dedekind_domain A) (ideal_of I A) (ideal_of J A)) (<-> (dvd I J) (subset J I))))
   hard_negative:
     statement: 任意の可換環のイデアルについて、J⊂IならIはJを割る。
@@ -853,20 +1035,27 @@
   kind: textbook
   level: 4
   topic: 可換環論・デデキント整域
-  statement: デデキント整域の0でない素イデアルでの局所化は離散付値環である。
+  statement: $A$をデデキント整域(体も含む)、$P$を$A$の$0$でない素イデアルとする。$A$の$P$での局所化は離散付値環である。
   statement_en: The localization of a Dedekind domain at a nonzero prime ideal is a discrete valuation ring.
-  assumptions: ["Aはデデキント整域(体も含む)", "PはAの0でない素イデアル", "A_PはAのPでの局所化"]
-  quantifiers: ["任意のA, P, A_P"]
-  conclusion: A_Pは離散付値環である。
+  assumptions:
+  - $A$はデデキント整域(体も含む)
+  - $P$は$A$の$0$でない素イデアル
+  - $S$は$A$の$P$での局所化
+  quantifiers:
+  - 任意の$A,P,S$
+  conclusion: $S$は離散付値環である。
   answer: |
-    A_Pはネーター局所整域で、整閉であり、0でない素イデアルが極大イデアルPA_Pだけなので次元1である。極大イデアルm=PA_Pが単項であることを示す。0でないa∈mを取ると、(a)の根基はmなので、m^n⊂(a)となるnがある。そのうち最小のnについてb∈m^{n-1}\(a)を取り、x=a/bと置く。bm⊂(a)よりx^{-1}m⊂A_Pであり、x^{-1}∉A_Pと整閉性からx^{-1}m⊄mなので、x^{-1}m=A_Pとなり、m=(x)である。単項な極大イデアルを持つネーター局所整域で体でないものは離散付値環である。
+    $A$をデデキント整域、$P$を$A$の$0$でない素イデアル、$S$を$A$の$P$での局所化、$K$を$A$の分数体とする。$S$は$K$の部分環とみなせる。$\mathfrak{m}=PS$とおく。
+    $S$はネーター局所整域である。$S$は整閉である。実際、$x\in K$が$S$上整なら、方程式の分母を払って$s\in A\setminus P$で$sx$が$A$上整となり、$sx\in A$なので$x\in S$である。$S$の素イデアルは$P$に含まれる$A$の素イデアルに対応し、$P$は極大なので、$S$の素イデアルは$0$と$\mathfrak{m}$だけであり、$\mathfrak{m}\neq0$である。特に$S$は体でない。
+    $\mathfrak{m}$が単項であることを示す。$0$でない$a\in\mathfrak{m}$を取る。$(a)$を含む素イデアルは$\mathfrak{m}$だけなので$\operatorname{rad}(a)=\mathfrak{m}$である。$\mathfrak{m}$は有限生成なので、$\mathfrak{m}^n\subseteq(a)$となる$n\geq1$があり、その最小のものを取る。$b\in\mathfrak{m}^{n-1}\setminus(a)$を取り($\mathfrak{m}^0=S$)、$x=a/b$とおく。$b\notin(a)$より$x^{-1}=b/a\notin S$である。$b\mathfrak{m}\subseteq\mathfrak{m}^n\subseteq(a)$より$x^{-1}\mathfrak{m}\subseteq S$である。$x^{-1}\mathfrak{m}\subseteq\mathfrak{m}$なら、$\mathfrak{m}$は$0$でない有限生成加群なので、ケイリー・ハミルトンの議論から$x^{-1}$は$S$上整となり、整閉性に反する。よって$x^{-1}\mathfrak{m}$は$\mathfrak{m}$に含まれない$S$のイデアルであり、$S$は局所環なので$x^{-1}\mathfrak{m}=S$である。したがって$\mathfrak{m}=(x)$である。
+    クルルの共通部分定理(ネーター局所環の真のイデアル$I$について$\bigcap_nI^n=0$)から$\bigcap_n\mathfrak{m}^n=0$である。よって$0$でない$y\in S$は$y\in\mathfrak{m}^n\setminus\mathfrak{m}^{n+1}$となる$n$をもち、$y=ux^n$($u$は単元)と書ける。$S$の$0$でないイデアルでは、元の指数$n$の最小値を$n_0$とすると、そのイデアルは$(x^{n_0})$に等しい。したがって$S$は体でない局所単項イデアル整域、すなわち離散付値環である。
   strategy: In a one-dimensional integrally closed Noetherian local domain, produce a generator of the maximal ideal.
   sketch:
-    - "derive: The localization is a Noetherian local integrally closed domain of dimension 1."
-    - "setup: Take nonzero a in the maximal ideal m and the least n with m^n ⊂ (a)."
-    - "construct: Choose b in m^(n-1) outside (a) and put x = a/b."
-    - "derive: Integral closedness gives x^(-1) m = A_P, so m = (x)."
-    - "conclude: A non-field Noetherian local domain with principal maximal ideal is a discrete valuation ring."
+  - 'derive: The localization is a Noetherian local integrally closed domain of dimension 1.'
+  - 'setup: Take nonzero a in the maximal ideal m and the least n with m^n ⊂ (a).'
+  - 'construct: Choose b in m^(n-1) outside (a) and put x = a/b.'
+  - 'derive: Integral closedness gives x^(-1) m = A_P, so m = (x).'
+  - 'conclude: A non-field Noetherian local domain with principal maximal ideal is a discrete valuation ring.'
   openmath: (forall (A P S) (-> (and (dedekind_domain A) (prime_ideal P A) (!= P (zero_ideal A)) (integral_domain S) (localization_at_prime S A P)) (discrete_valuation_ring S)))
   hard_negative:
     statement: デデキント整域の零イデアルでの局所化も離散付値環である。
@@ -881,19 +1070,23 @@
   kind: textbook
   level: 4
   topic: 可換環論・素スペクトル
-  statement: 可換環Rの素スペクトルSpec Rはザリスキ位相で準コンパクトである。
+  statement: $R$を可換環とする。素スペクトル$\operatorname{Spec}R$はザリスキ位相で準コンパクトである。
   statement_en: The prime spectrum of a commutative ring is quasi-compact in the Zariski topology.
-  assumptions: ["Rは可換環"]
-  quantifiers: ["任意のR"]
-  conclusion: Spec Rは準コンパクトである。
+  assumptions:
+  - $R$は可換環
+  quantifiers:
+  - 任意の$R$
+  conclusion: $\operatorname{Spec}R$は準コンパクトである。
   answer: |
-    基本開集合D(f)は開基をなすので、Spec R=∪_i D(f_i)という被覆について示せばよい。この等式は、どの素イデアルもf_i全体を含まないこと、すなわちf_iが単位イデアルを生成することを意味する。すると1=Σ_{i∈F} a_i f_iとなる有限集合Fがあり、f_i(i∈F)も単位イデアルを生成する。よってSpec R=∪_{i∈F}D(f_i)である。
+    $R$を可換環とする。$f\in R$について、$D(f)$を$f$を含まない素イデアル全体とする。$D(f)$全体は開基をなす。
+    開基をなすので、$\operatorname{Spec}R$の開被覆を細分して$\operatorname{Spec}R=\bigcup_iD(f_i)$の形の被覆について有限部分被覆を示せばよい。この等式は、どの素イデアルも$f_i$全体を含まないことを意味する。真のイデアルは極大イデアルに含まれ、極大イデアルは素なので、これは$f_i$全体が単位イデアルを生成することと同値である。
+    よって$1=\sum_{i\in F}a_if_i$となる有限集合$F$と$a_i\in R$がある。すると$f_i$($i\in F$)も単位イデアルを生成するので、$\operatorname{Spec}R=\bigcup_{i\in F}D(f_i)$である。
   strategy: Translate a cover by basic opens into the ideal generated being the unit ideal.
   sketch:
-    - "setup: It suffices to refine covers to covers by basic open sets D(f_i)."
-    - "translate: The D(f_i) cover Spec R exactly when the f_i generate the unit ideal."
-    - "derive: The element 1 is a finite combination of the f_i."
-    - "conclude: Finitely many D(f_i) already cover Spec R."
+  - 'setup: It suffices to refine covers to covers by basic open sets D(f_i).'
+  - 'translate: The D(f_i) cover Spec R exactly when the f_i generate the unit ideal.'
+  - 'derive: The element 1 is a finite combination of the f_i.'
+  - 'conclude: Finitely many D(f_i) already cover Spec R.'
   openmath: (forall (R) (-> (comm_ring R) (compact_space (prime_spectrum R))))
   hard_negative:
     statement: 可換環の素スペクトルはハウスドルフ空間である。
@@ -908,19 +1101,24 @@
   kind: gap
   level: 4
   topic: 可換環論・素スペクトル
-  statement: Spec Rの点xが閉点であることと、xに対応する素イデアルが極大イデアルであることは同値である。
+  statement: $R$を可換環とする。$\operatorname{Spec}R$の点$x$が閉点であることと、$x$に対応する素イデアルが極大イデアルであることは同値である。
   statement_en: A point x of Spec R is closed if and only if the corresponding prime ideal is maximal.
-  assumptions: ["Rは可換環", "x∈Spec R"]
-  quantifiers: ["任意のR, x"]
-  conclusion: 一点集合{x}が閉集合であることと、xのイデアルが極大であることは同値である。
+  assumptions:
+  - $R$は可換環
+  - $x\in\operatorname{Spec}R$
+  quantifiers:
+  - 任意の$R,x$
+  conclusion: 一点集合$\{x\}$が閉集合であることと、$x$の素イデアルが極大であることは同値である。
   answer: |
-    Pをxの素イデアルとする。{x}の閉包はV(P)、すなわちPを含む素イデアル全体である。{x}が閉であることは、Pを含む素イデアルがPだけであることと同値である。真のイデアルは極大イデアルに含まれ、極大イデアルは素なので、これはPが極大であることと同値である。
+    $R$を可換環、$x\in\operatorname{Spec}R$とし、$P$を$x$に対応する素イデアルとする。部分集合$s\subseteq R$について、$V(s)$を$s$を含む素イデアル全体とする。
+    $\{x\}$の閉包は$V(P)$である。実際、$V(P)$は$x$を含む閉集合であり、閉集合$V(s)$が$x$を含めば$s\subseteq P$なので$V(P)\subseteq V(s)$である。よって$\{x\}$が閉であることは、$P$を含む素イデアルが$P$だけであることと同値である。
+    真のイデアルは極大イデアルに含まれ、極大イデアルは素である。したがってこの条件は、$P$が極大であることと同値である。
   strategy: Compute the closure of a point as V(P).
   sketch:
-    - "derive: The closure of {x} is V(P), the set of primes containing P."
-    - "translate: Hence {x} is closed exactly when P is the only prime containing P."
-    - "apply_theorem: Every proper ideal lies in a maximal ideal, and maximal ideals are prime."
-    - "conclude: This condition says P is maximal."
+  - 'derive: The closure of {x} is V(P), the set of primes containing P.'
+  - 'translate: Hence {x} is closed exactly when P is the only prime containing P.'
+  - 'apply_theorem: Every proper ideal lies in a maximal ideal, and maximal ideals are prime.'
+  - 'conclude: This condition says P is maximal.'
   openmath: (forall (R x) (-> (and (comm_ring R) (in x (prime_spectrum R))) (<-> (closed_in (singleton_set x) (prime_spectrum R)) (maximal_ideal (spectrum_point_ideal x) R))))
   hard_negative:
     statement: Spec Rのすべての点は閉点である。
@@ -935,19 +1133,24 @@
   kind: gap
   level: 4
   topic: 可換環論・素スペクトル
-  statement: Spec Rの部分集合Zが閉集合であることと、Rのある部分集合sによりZ=V(s)と書けることは同値である。
+  statement: $R$を可換環とする。$\operatorname{Spec}R$の部分集合$Z$が閉集合であることと、$R$のある部分集合$s$により$Z=V(s)$と書けることは同値である。
   statement_en: A subset Z of Spec R is closed if and only if Z = V(s) for some subset s of R.
-  assumptions: ["Rは可換環", "ZはSpec Rの部分集合"]
-  quantifiers: ["任意のR, Z"]
-  conclusion: Zが閉であることと、Z=V(s)となるsがあることは同値である。
+  assumptions:
+  - $R$は可換環
+  - $Z$は$\operatorname{Spec}R$の部分集合
+  quantifiers:
+  - 任意の$R,Z$
+  conclusion: $Z$が閉であることと、$Z=V(s)$となる$s\subseteq R$があることは同値である。
   answer: |
-    ザリスキ位相はV(s)の形の集合を閉集合とする位相である。V(s)全体が閉集合族の公理を満たすのは、V(∅)=Spec R, V(R)=∅, ∩V(s_i)=V(∪s_i), V(s)∪V(t)=V(st)による。最後の等式は素イデアルの性質から従う。したがって閉集合はV(s)の形の集合とちょうど一致する。
+    $R$を可換環、$Z$を$\operatorname{Spec}R$の部分集合とする。$s\subseteq R$について、$V(s)$を$s$を含む素イデアル全体とする。
+    ザリスキ位相は、$V(s)$の形の集合を閉集合とする位相である。$V(s)$全体が閉集合の公理を満たすことを確かめる。素イデアルは$1$を含まないので$V(\emptyset)=\operatorname{Spec}R$, $V(R)=\emptyset$である。定義から$\bigcap_iV(s_i)=V(\bigcup_is_i)$である。$st=\{ab\mid a\in s,b\in t\}$とおくと$V(s)\cup V(t)=V(st)$である。$\subseteq$は明らかであり、$\supseteq$は、素イデアル$P$が$s$も$t$も含まなければ$a\in s\setminus P$, $b\in t\setminus P$について$ab\notin P$となることから従う。
+    したがって閉集合は$V(s)$の形の集合とちょうど一致する。
   strategy: Verify the axioms of closed sets for the family V(s), the definition of the topology.
   sketch:
-    - "setup: The Zariski topology is defined by taking the sets V(s) as closed."
-    - "derive: Arbitrary intersections and the whole space and empty set are of this form."
-    - "derive: V(s) ∪ V(t) = V(st) by primality."
-    - "conclude: Thus closed subsets are exactly the V(s)."
+  - 'setup: The Zariski topology is defined by taking the sets V(s) as closed.'
+  - 'derive: Arbitrary intersections and the whole space and empty set are of this form.'
+  - 'derive: V(s) ∪ V(t) = V(st) by primality.'
+  - 'conclude: Thus closed subsets are exactly the V(s).'
   openmath: (forall (R Z) (-> (and (comm_ring R) (subset Z (prime_spectrum R))) (<-> (closed_in Z (prime_spectrum R)) (exists (s) (and (subset s R) (= Z (spectrum_zero_locus s)))))))
   hard_negative:
     statement: Spec Rの開集合はすべて、ある元fによる基本開集合D(f)である。
@@ -962,19 +1165,25 @@
   kind: gap
   level: 4
   topic: 可換環論・完備化
-  statement: 環RがイデアルIについて完備かつ分離なら、IはRのジャコブソン根基に含まれる。
+  statement: $R$を可換環、$I$を$R$のイデアルとする。$R$が$I$について完備かつ分離ならば、$I$は$R$のジャコブソン根基に含まれる。
   statement_en: If a commutative ring R is complete and separated for the I-adic topology, then I is contained in the Jacobson radical of R.
-  assumptions: ["Rは可換環", "IはRのイデアル", "RはI進完備かつ分離"]
-  quantifiers: ["任意のR, I"]
-  conclusion: IはRのジャコブソン根基に含まれる。
+  assumptions:
+  - $R$は可換環
+  - $I$は$R$のイデアル
+  - $R$は$I$進完備かつ分離
+  quantifiers:
+  - 任意の$R,I$
+  conclusion: $I$は$R$のジャコブソン根基に含まれる。
   answer: |
-    x∈Iとy∈Rについて1+xyが単元であることを示せばよい。z=xyはIに属するので、部分和Σ_{k<n}(-z)^kはI進コーシー列であり、完備性から極限wを持つ。各nで(1+z)Σ_{k<n}(-z)^k=1-(-z)^nであるから、(1+z)w-1は任意のI^nに属する。分離性から(1+z)w=1となり、1+zは単元である。
+    $R$を可換環、$I$を$R$が$I$進完備かつ分離であるイデアルとする。分離とは$\bigcap_nI^n=0$であることであり、完備とは、すべての$m\leq n$で$s_n-s_m\in I^m$を満たす列$(s_n)$に対し、すべての$n$で$s_n-w\in I^n$となる$w\in R$があることである。
+    $x\in I$がジャコブソン根基に属するには、すべての$y\in R$で$1+xy$が単元であればよい。$z=xy\in I$とおき、$s_n=\sum_{k<n}(-z)^k$とする。$m\leq n$なら$s_n-s_m\in I^m$なので、完備性から$s_n-w\in I^n$となる$w$がある。
+    $(1+z)s_n=1-(-z)^n$なので、$(1+z)w-1=(1+z)(w-s_n)-(-z)^n\in I^n$がすべての$n$で成り立つ。分離性から$(1+z)w=1$であり、$1+xy$は単元である。
   strategy: Invert 1 + xy by a convergent geometric series.
   sketch:
-    - "translate: It suffices to show 1 + x y is a unit for x in I and y in R."
-    - "construct: The partial sums of the geometric series in -x y form an I-adic Cauchy sequence."
-    - "derive: Completeness gives a limit w, and (1 + x y) w - 1 lies in every power of I."
-    - "conclude: Separatedness gives (1 + x y) w = 1."
+  - 'translate: It suffices to show 1 + x y is a unit for x in I and y in R.'
+  - 'construct: The partial sums of the geometric series in -x y form an I-adic Cauchy sequence.'
+  - 'derive: Completeness gives a limit w, and (1 + x y) w - 1 lies in every power of I.'
+  - 'conclude: Separatedness gives (1 + x y) w = 1.'
   openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R) (adic_complete I R)) (subset I (jacobson_radical R))))
   hard_negative:
     statement: Iがジャコブソン根基に含まれれば、RはI進完備である。
@@ -989,19 +1198,25 @@
   kind: textbook
   level: 4
   topic: 可換環論・完備化
-  statement: ネーター環RのI進完備化はR上平坦である。
+  statement: $R$をネーター環、$I$を$R$のイデアルとする。$R$の$I$進完備化は$R$上平坦である。
   statement_en: The I-adic completion of a Noetherian commutative ring R is a flat R-module.
-  assumptions: ["Rはネーター環", "IはRのイデアル"]
-  quantifiers: ["任意のR, I"]
-  conclusion: RのI進完備化はR上平坦である。
+  assumptions:
+  - $R$はネーター環
+  - $I$は$R$のイデアル
+  quantifiers:
+  - 任意の$R,I$
+  conclusion: $R$の$I$進完備化は$R$上平坦である。
   answer: |
-    概略を述べる。主な段階は三つある。第一に、アルティン・リースの補題から、有限生成加群の短完全列のI進完備化は完全である。第二に、有限生成加群Mについて、Rの完備化とMのテンソル積はMの完備化と自然に同型である。第三に、平坦性は有限生成イデアルJの包含J→Rをテンソルして単射であることと同値であり、これらは上の二点から従う。
+    $R$をネーター環、$I$を$R$のイデアルとする。$R$加群$M$について$\widehat M=\varprojlim_nM/I^nM$と書く。
+    第一に、有限生成加群の完全列$0\to N\to M\to L\to0$は完全列$0\to\widehat N\to\widehat M\to\widehat L\to0$を与える。各$n$で$0\to N/(I^nM\cap N)\to M/I^nM\to L/I^nL\to0$は完全である。左の項の系は推移写像が全射なので、逆極限を取っても完全である(逆系の短完全列で左の系の推移写像が全射なら、逆極限の列は完全である)。アルティン・リースの補題(ある$k$があり、すべての$n\geq k$で$I^nM\cap N=I^{n-k}(I^kM\cap N)$となる)から$I^nM\cap N\subseteq I^{n-k}N$である。よって$N$上の$2$つのフィルトレーションは同じ逆極限$\widehat N$を与える。分解して考えると、有限生成加群の右完全列$M'\to M\to M''\to0$は右完全列$\widehat{M'}\to\widehat M\to\widehat{M''}\to0$を与える。
+    第二に、有限生成加群$M$について自然な写像$\widehat R\otimes_RM\to\widehat M$は同型である。$M=R^k$では両辺とも$\widehat R^k$であり同型である。$R$はネーター環なので完全列$R^l\to R^k\to M\to0$がある。テンソル積と第一の事実からともに右完全なので、余核を比べて$M$でも同型である。
+    第三に、$R$加群$E$が平坦であることは、すべての有限生成イデアル$J$で$J\otimes_RE\to E$が単射であることと同値である(平坦性の判定法)。$E=\widehat R$とする。第二の事実の自然性から、$J\otimes_R\widehat R\to\widehat R$は完備化の写像$\widehat J\to\widehat R$と同一視される。第一の事実を$0\to J\to R\to R/J\to0$に適用すると、これは単射である。よって$\widehat R$は$R$上平坦である。
   strategy: Combine exactness of completion on finite modules with the tensor description of completion.
   sketch:
-    - "apply_theorem: Artin-Rees shows completion is exact on short exact sequences of finitely generated modules."
-    - "derive: For finitely generated M, tensoring with the completion of R gives the completion of M."
-    - "translate: Flatness reduces to injectivity after tensoring the inclusion of a finitely generated ideal into R."
-    - "conclude: That injectivity follows from the two previous facts."
+  - 'apply_theorem: Artin-Rees shows completion is exact on short exact sequences of finitely generated modules.'
+  - 'derive: For finitely generated M, tensoring with the completion of R gives the completion of M.'
+  - 'translate: Flatness reduces to injectivity after tensoring the inclusion of a finitely generated ideal into R.'
+  - 'conclude: That injectivity follows from the two previous facts.'
   openmath: (forall (R I) (-> (and (comm_ring R) (noetherian_ring R) (ideal_of I R)) (flat_module R (adic_completion I R))))
   hard_negative:
     statement: ネーター環RのI進完備化はR上常に忠実平坦である。

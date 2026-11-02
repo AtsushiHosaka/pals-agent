@@ -10184,7 +10184,7 @@
     "derive: Coprimality shows that the least common multiple is da'b'.",
     "conclude: Multiplying by d gives ab."
    ],
-   "tier": "generic_now"
+   "tier": "duplicate_of_existing"
   },
   {
    "canonical_statement": "If a prime p divides a product ab of natural numbers, then p divides a or p divides b.",

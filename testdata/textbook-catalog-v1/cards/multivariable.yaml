@@ -2,20 +2,22 @@
   kind: gap
   level: 1
   topic: 多変数関数・連続性と成分
-  statement: 写像f:R^n→R^mが連続であることと、fの各成分関数が連続であることは同値である。
+  statement: 写像$f:\mathbb{R}^n\to\mathbb{R}^m$が連続であることと、$f$の各成分関数が連続であることは同値である。
   statement_en: A map f from R^n to R^m is continuous if and only if each of its component functions is continuous.
   assumptions:
-    - f:R^n→R^m
+  - $f:\mathbb{R}^n\to\mathbb{R}^m$
   quantifiers:
-    - 任意の自然数n, mと写像f
-  conclusion: fが連続であることと、全てのiでf_iが連続であることは同値である。
+  - 任意の$n,m\in\mathbb{N}$と写像$f:\mathbb{R}^n\to\mathbb{R}^m$
+  conclusion: $f$が連続であることと、全ての$i$で$f_i$が連続であることは同値である。
   answer: |
-    各点x, aについて|f_i(x)-f_i(a)|≤‖f(x)-f(a)‖≤Σ_i|f_i(x)-f_i(a)|が成り立つ。左の不等式から、fが連続なら各f_iは連続である。右の不等式から、全てのf_iが連続ならfは連続である。
+    $n,m\in\mathbb{N}$とし、$f:\mathbb{R}^n\to\mathbb{R}^m$の成分関数を$f_1,\ldots,f_m$とする。$\mathbb{R}^m$のノルムはユークリッドノルムとする。
+
+    各点$x,a\in\mathbb{R}^n$と各$i$について、$|f_i(x)-f_i(a)|\leq\|f(x)-f(a)\|\leq\sum_j|f_j(x)-f_j(a)|$が成り立つ。左の不等式から、$f$が$a$で連続なら各$f_i$は$a$で連続である。右の不等式から、全ての$f_j$が$a$で連続なら$f$は$a$で連続である。$a$は任意なので同値性が従う。
   strategy: Compare the Euclidean norm of the difference with the absolute values of its coordinates.
   sketch:
-    - "setup: Fix points x and a and write out the coordinates of f(x)-f(a)."
-    - "derive: Each coordinate is bounded by the norm, and the norm is bounded by the sum of the coordinates."
-    - "conclude: The two bounds transfer continuity in each direction."
+  - 'setup: Fix points x and a and write out the coordinates of f(x)-f(a).'
+  - 'derive: Each coordinate is bounded by the norm, and the norm is bounded by the sum of the coordinates.'
+  - 'conclude: The two bounds transfer continuity in each direction.'
   openmath: (forall (n m f) (-> (map_between f (euclidean_space n) (euclidean_space m)) (<-> (continuous_map f) (forall (i) (continuous_map (component_fn f i))))))
   hard_negative:
     statement: f:R^2→Rが各変数を固定するごとに他方の変数について連続なら、fは連続である。
@@ -36,22 +38,24 @@
   kind: gap
   level: 2
   topic: 多変数関数・全微分の定義
-  statement: 実ノルム空間の間の写像fと有界線形写像Lについて、fがaで微分可能で微分がLであることは、f(a+h)-f(a)-L(h)がh→0で‖h‖のo(スモールオー)であることと同値である。
+  statement: 実ノルム空間の間の写像$f:E\to F$と有界線形写像$L:E\to F$について、$f$の$a$での微分が$L$であることは、$h\to0$で$f(a+h)-f(a)-L(h)=o(\|h\|)$となることと同値である。
   statement_en: For a map f between real normed spaces and a bounded linear map L, f has Fréchet derivative L at a if and only if f(a+h)-f(a)-L(h) is little-o of h as h tends to 0.
   assumptions:
-    - E, Fは実ノルム空間
-    - f:E→Fは写像
-    - L:E→Fは有界線形写像
+  - $E,F$は実ノルム空間
+  - $f:E\to F$は写像
+  - $L:E\to F$は有界線形写像
   quantifiers:
-    - 任意のf, L, 点a
-  conclusion: fのaでの微分がLであることと、f(a+h)-f(a)-L(h)=o(‖h‖)(h→0)は同値である。
+  - 任意の$f:E\to F$、$L$、$a\in E$
+  conclusion: $f$の$a$での微分が$L$であることと、$h\to0$で$f(a+h)-f(a)-L(h)=o(\|h\|)$となることは同値である。
   answer: |
-    微分の定義は、x→aのときf(x)-f(a)-L(x-a)=o(‖x-a‖)となることである。x=a+hと置くと、x→aとh→0は対応し、x-a=hである。したがって定義の条件はf(a+h)-f(a)-L(h)=o(‖h‖)と言い換えられる。
+    $E,F$を実ノルム空間、$f:E\to F$を写像、$L:E\to F$を有界線形写像、$a\in E$とする。
+
+    $f$の$a$での微分が$L$であるとは、任意の$\varepsilon>0$に対して$\delta>0$があり、$\|x-a\|<\delta$なら$\|f(x)-f(a)-L(x-a)\|\leq\varepsilon\|x-a\|$となることである。$x=a+h$とおくと、$\|x-a\|<\delta$は$\|h\|<\delta$と同じであり、$x-a=h$である。よってこの条件は、$\|h\|<\delta$なら$\|f(a+h)-f(a)-L(h)\|\leq\varepsilon\|h\|$となること、すなわち$h\to0$で$f(a+h)-f(a)-L(h)=o(\|h\|)$であることと同値である。
   strategy: Substitute x = a + h in the definition of the Fréchet derivative.
   sketch:
-    - "setup: Recall that the derivative is defined by a little-o condition as x tends to a."
-    - "translate: Put x = a + h, so that x tends to a exactly when h tends to 0."
-    - "conclude: The two little-o conditions coincide."
+  - 'setup: Recall that the derivative is defined by a little-o condition as x tends to a.'
+  - 'translate: Put x = a + h, so that x tends to a exactly when h tends to 0.'
+  - 'conclude: The two little-o conditions coincide.'
   openmath: (forall (E F f L a) (-> (and (normed_space E) (normed_space F) (map_between f E F) (continuous_linear_map L)) (<-> (has_fderiv_at f L a) (little_o_at (lambda (h) (- (- (fn_value f (+ a h)) (fn_value f a)) (fn_value L h))) (lambda (h) h) 0))))
   hard_negative:
     statement: 全ての方向vでaにおける方向微分係数がL(v)に等しければ、fはaで微分可能で微分はLである。
@@ -66,22 +70,24 @@
   kind: textbook
   level: 1
   topic: 多変数関数・微分可能性と連続性
-  statement: 実ノルム空間の間の写像fが点aで微分可能ならば、fはaで連続である。
+  statement: 実ノルム空間の間の写像$f$が点$a$で微分可能ならば、$f$は$a$で連続である。
   statement_en: If a map f between real normed spaces is Fréchet differentiable at a, then f is continuous at a.
   assumptions:
-    - E, Fは実ノルム空間
-    - fはaで微分可能
+  - $E,F$は実ノルム空間
+  - $f$は$a$で微分可能
   quantifiers:
-    - 任意のf:E→Fと点a
-  conclusion: fはaで連続である。
+  - 任意の$f:E\to F$と$a\in E$
+  conclusion: $f$は$a$で連続である。
   answer: |
-    Lをaでの微分とすると、f(x)-f(a)=L(x-a)+o(‖x-a‖)である。Lは有界なので‖L(x-a)‖≤‖L‖‖x-a‖はx→aで0に収束し、剰余項も0に収束する。したがってf(x)→f(a)である。
+    $E,F$を実ノルム空間とし、$f:E\to F$が$a\in E$で微分可能であるとする。$L$を$a$での微分とする。
+
+    微分の定義で$\varepsilon=1$とすると、$\delta>0$があり、$\|x-a\|<\delta$なら$\|f(x)-f(a)-L(x-a)\|\leq\|x-a\|$である。このとき$\|f(x)-f(a)\|\leq\|L(x-a)\|+\|x-a\|\leq(\|L\|+1)\|x-a\|$である。右辺は$x\to a$で$0$に収束するので、$f(x)\to f(a)$である。
   strategy: Bound the increment by the operator norm of the derivative plus the little-o remainder.
   sketch:
-    - "setup: Let L be the derivative of f at a."
-    - "derive: Write f(x)-f(a) as L(x-a) plus a little-o remainder."
-    - "derive: Boundedness of L makes L(x-a) tend to 0."
-    - "conclude: The increment tends to 0, so f is continuous at a."
+  - 'setup: Let L be the derivative of f at a.'
+  - 'derive: Write f(x)-f(a) as L(x-a) plus a little-o remainder.'
+  - 'derive: Boundedness of L makes L(x-a) tend to 0.'
+  - 'conclude: The increment tends to 0, so f is continuous at a.'
   openmath: (forall (E F f a) (-> (and (normed_space E) (normed_space F) (map_between f E F) (differentiable_at f a)) (continuous_map_at f a)))
   hard_negative:
     statement: f:R^2→Rの偏微分係数が点aで全て存在すれば、fはaで連続である。
@@ -96,22 +102,26 @@
   kind: textbook
   level: 1
   topic: 多変数関数・積の微分法則
-  statement: 実ノルム空間E上の実数値関数f, gが点aで微分可能で微分がL, Mならば、積fgもaで微分可能で、微分はf(a)M+g(a)Lである。
+  statement: 実ノルム空間$E$上の実数値関数$f,g$の点$a$での微分がそれぞれ$L,M$ならば、積$fg$も$a$で微分可能で、微分は$f(a)M+g(a)L$である。
   statement_en: If real-valued functions f and g on a real normed space have derivatives L and M at a, then the product fg has derivative f(a)M + g(a)L at a.
   assumptions:
-    - Eは実ノルム空間
-    - f, g:E→Rのaでの微分はL, M
+  - $E$は実ノルム空間
+  - $f,g:E\to\mathbb{R}$の$a$での微分はそれぞれ$L,M$
   quantifiers:
-    - 任意のf, g, L, M, 点a
-  conclusion: fgのaでの微分はf(a)M+g(a)Lである。
+  - 任意の$f,g:E\to\mathbb{R}$、有界線形写像$L,M:E\to\mathbb{R}$、$a\in E$
+  conclusion: $fg$の$a$での微分は$f(a)M+g(a)L$である。
   answer: |
-    f(a+h)=f(a)+L(h)+o(‖h‖), g(a+h)=g(a)+M(h)+o(‖h‖)を掛け合わせる。積はf(a)g(a)+f(a)M(h)+g(a)L(h)に、L(h)M(h)と剰余項を含む項を加えたものである。|L(h)M(h)|≤‖L‖‖M‖‖h‖^2なので、これらの項は全てo(‖h‖)である。したがってfgの微分はf(a)M+g(a)Lである。
+    $E$を実ノルム空間とし、$f,g:E\to\mathbb{R}$の$a\in E$での微分をそれぞれ$L,M$とする。$r(h)=f(a+h)-f(a)-L(h)$、$s(h)=g(a+h)-g(a)-M(h)$とおくと、$h\to0$で$r(h)=o(\|h\|)$、$s(h)=o(\|h\|)$である。
+
+    $f(a+h)=f(a)+L(h)+r(h)$と$g(a+h)=g(a)+M(h)+s(h)$を掛けると、$f(a+h)g(a+h)-f(a)g(a)-f(a)M(h)-g(a)L(h)$は次の和に等しい。$f(a)s(h)+g(a)r(h)+L(h)M(h)+L(h)s(h)+r(h)M(h)+r(h)s(h)$。
+
+    これらの項はすべて$o(\|h\|)$である。実際、$f(a)s(h)$と$g(a)r(h)$は定数倍なので$o(\|h\|)$である。$|L(h)M(h)|\leq\|L\|\|M\|\|h\|^2$である。$L(h)$、$M(h)$、$r(h)$は$h\to0$で$0$に収束するので、$L(h)s(h)$、$r(h)M(h)$、$r(h)s(h)$も$o(\|h\|)$である。よって$fg$の$a$での微分は$f(a)M+g(a)L$である。
   strategy: Multiply the first-order expansions of f and g and collect the terms of order o(h).
   sketch:
-    - "setup: Write the first-order expansions of f and g at a."
-    - "derive: Multiply them and isolate f(a)g(a) + f(a)M(h) + g(a)L(h)."
-    - "derive: Bound every remaining term by a constant times the square of the norm of h or by a little-o term."
-    - "conclude: The linear part is f(a)M + g(a)L."
+  - 'setup: Write the first-order expansions of f and g at a.'
+  - 'derive: Multiply them and isolate f(a)g(a) + f(a)M(h) + g(a)L(h).'
+  - 'derive: Bound every remaining term by a constant times the square of the norm of h or by a little-o term.'
+  - 'conclude: The linear part is f(a)M + g(a)L.'
   openmath: (forall (E f g L M a) (-> (and (normed_space E) (has_fderiv_at f L a) (has_fderiv_at g M a)) (has_fderiv_at (pointwise_product f g) (operator_add (scalar_multiple (fn_value f a) M) (scalar_multiple (fn_value g a) L)) a)))
   hard_negative:
     statement: fgのaでの微分はL·M(同じ方向の値どうしの積h↦L(h)M(h))である。
@@ -126,24 +136,28 @@
   kind: textbook
   level: 1
   topic: 多変数関数・連鎖律
-  statement: fが点aで微分可能で微分がL、gが点f(a)で微分可能で微分がMならば、合成g∘fはaで微分可能で、微分はM∘Lである。
+  statement: $f$の点$a$での微分が$L$、$g$の点$f(a)$での微分が$M$ならば、合成$g\circ f$は$a$で微分可能で、微分は$M\circ L$である。
   statement_en: If f has derivative L at a and g has derivative M at f(a), then the composite g∘f has derivative M∘L at a.
   assumptions:
-    - E, F, Gは実ノルム空間
-    - f:E→Fのaでの微分はL
-    - g:F→Gのf(a)での微分はM
+  - $E,F,G$は実ノルム空間
+  - $f:E\to F$の$a$での微分は$L$
+  - $g:F\to G$の$f(a)$での微分は$M$
   quantifiers:
-    - 任意のf, g, L, M, 点a
-  conclusion: g∘fのaでの微分はM∘Lである。
+  - 任意の$f:E\to F$、$g:F\to G$、有界線形写像$L,M$、$a\in E$
+  conclusion: $g\circ f$の$a$での微分は$M\circ L$である。
   answer: |
-    k=f(a+h)-f(a)と置くと、k=L(h)+o(‖h‖)であり、‖k‖≤C‖h‖がhの十分小さい範囲で成り立つ。gの展開からg(f(a+h))-g(f(a))=M(k)+o(‖k‖)である。M(k)=M(L(h))+M(o(‖h‖))=M(L(h))+o(‖h‖)で、o(‖k‖)もo(‖h‖)である。したがって合成の微分はM∘Lである。
+    $E,F,G$を実ノルム空間とし、$f:E\to F$の$a\in E$での微分を$L$、$g:F\to G$の$f(a)$での微分を$M$とする。$r(h)=f(a+h)-f(a)-L(h)$、$t(k)=g(f(a)+k)-g(f(a))-M(k)$とおくと、$r(h)=o(\|h\|)$、$t(k)=o(\|k\|)$である。
+
+    $k(h)=f(a+h)-f(a)=L(h)+r(h)$とおく。$h$が十分小さいとき$\|r(h)\|\leq\|h\|$なので、$\|k(h)\|\leq C\|h\|$である。ここで$C=\|L\|+1$である。特に$h\to0$で$k(h)\to0$である。さらに次の等式が成り立つ。$g(f(a+h))-g(f(a))-M(L(h))=M(r(h))+t(k(h))$。
+
+    右辺の評価を行う。まず$\|M(r(h))\|\leq\|M\|\|r(h)\|$なので、$M(r(h))=o(\|h\|)$である。次に$\varepsilon>0$に対して$\delta>0$があり、$\|k\|<\delta$なら$\|t(k)\|\leq\varepsilon\|k\|$である。$h$が十分小さければ$\|k(h)\|<\delta$なので、$\|t(k(h))\|\leq\varepsilon C\|h\|$である。よって$t(k(h))=o(\|h\|)$である。したがって$g\circ f$の$a$での微分は$M\circ L$である。
   strategy: Substitute the expansion of f into the expansion of g and absorb the remainders using the Lipschitz bound on the increment of f.
   sketch:
-    - "setup: Put k = f(a+h) - f(a) and expand it as L(h) plus a little-o term."
-    - "derive: Near 0 the norm of k is at most a constant times the norm of h."
-    - "apply_theorem: Expand g at f(a) and evaluate at k."
-    - "derive: Boundedness of M and the bound on k turn every remainder into o(h)."
-    - "conclude: The linear part of the composite is M∘L."
+  - 'setup: Put k = f(a+h) - f(a) and expand it as L(h) plus a little-o term.'
+  - 'derive: Near 0 the norm of k is at most a constant times the norm of h.'
+  - 'apply_theorem: Expand g at f(a) and evaluate at k.'
+  - 'derive: Boundedness of M and the bound on k turn every remainder into o(h).'
+  - 'conclude: The linear part of the composite is M∘L.'
   openmath: (forall (E F G f g L M a) (-> (and (normed_space E) (normed_space F) (normed_space G) (has_fderiv_at f L a) (has_fderiv_at g M (fn_value f a))) (has_fderiv_at (function_compose_map g f) (operator_comp M L) a)))
   hard_negative:
     statement: g∘fがaで微分可能でfがaで微分可能なら、gはf(a)で微分可能である。
@@ -158,22 +172,24 @@
   kind: gap
   level: 1
   topic: 多変数関数・曲線に沿う微分
-  statement: 曲線γがtで微分可能で速度がv、実数値関数fが点γ(t)で微分可能で微分がLならば、関数s↦f(γ(s))はtで微分可能で、微分係数はL(v)である。
+  statement: 曲線$\gamma$の$t$での微分係数が$v$、実数値関数$f$の点$\gamma(t)$での微分が$L$ならば、関数$s\mapsto f(\gamma(s))$は$t$で微分可能で、微分係数は$L(v)$である。
   statement_en: If a curve γ has velocity v at t and a real-valued function f has derivative L at γ(t), then s ↦ f(γ(s)) has derivative L(v) at t.
   assumptions:
-    - Eは実ノルム空間
-    - γ:R→Eのtでの微分係数はv
-    - f:E→Rのγ(t)での微分はL
+  - $E$は実ノルム空間
+  - $\gamma:\mathbb{R}\to E$の$t$での微分係数は$v$
+  - $f:E\to\mathbb{R}$の$\gamma(t)$での微分は$L$
   quantifiers:
-    - 任意のf, γ, L, v, 実数t
-  conclusion: s↦f(γ(s))のtでの微分係数はL(v)である。
+  - 任意の$f:E\to\mathbb{R}$、$\gamma:\mathbb{R}\to E$、有界線形写像$L$、$v\in E$、$t\in\mathbb{R}$
+  conclusion: $s\mapsto f(\gamma(s))$の$t$での微分係数は$L(v)$である。
   answer: |
-    γの微分係数がvであることは、γのtでの微分がh↦hvであることを意味する。連鎖律より、f∘γのtでの微分はh↦L(hv)=hL(v)である。実数上の線形写像h↦hL(v)に対応する微分係数はL(v)である。
+    $E$を実ノルム空間とし、$\gamma:\mathbb{R}\to E$の$t\in\mathbb{R}$での微分係数を$v\in E$、$f:E\to\mathbb{R}$の$\gamma(t)$での微分を$L$とする。
+
+    $\gamma$の微分係数が$v$であることは、$\gamma$の$t$での微分が有界線形写像$h\mapsto hv$であることを意味する。連鎖律より、$f\circ\gamma$の$t$での微分は$h\mapsto L(hv)=hL(v)$である。実数上の線形写像$h\mapsto hL(v)$に対応する微分係数は$L(v)$である。
   strategy: Apply the chain rule, viewing the velocity as the linear map h ↦ hv.
   sketch:
-    - "translate: View the velocity v as the derivative h ↦ hv of γ at t."
-    - "apply_theorem: Apply the chain rule to f∘γ."
-    - "conclude: The resulting linear map h ↦ hL(v) corresponds to the derivative L(v)."
+  - 'translate: View the velocity v as the derivative h ↦ hv of γ at t.'
+  - 'apply_theorem: Apply the chain rule to f∘γ.'
+  - 'conclude: The resulting linear map h ↦ hL(v) corresponds to the derivative L(v).'
   openmath: (forall (E f gamma L v t) (-> (and (normed_space E) (has_deriv_at (lambda (s) (fn_value gamma s)) v t) (has_fderiv_at f L (fn_value gamma t))) (has_deriv_at (lambda (s) (fn_value f (fn_value gamma s))) (fn_value L v) t)))
   hard_negative:
     statement: fの偏微分係数が点γ(t)に存在してγが微分可能なら、f(γ(s))のtでの微分係数は偏微分係数と速度の成分の積の和である。
@@ -188,23 +204,29 @@
   kind: gap
   level: 1
   topic: 多変数関数・ベクトル値写像の成分
-  statement: 写像f:E→R^mのaでの微分がLであることと、全ての成分iについてf_iのaでの微分がLの第i成分であることは同値である。
+  statement: 写像$f:E\to\mathbb{R}^m$の$a$での微分が$L$であることと、全ての$i$について$f_i$の$a$での微分が$L$の第$i$成分$L_i$であることは同値である。
   statement_en: A map f from a real normed space to R^m has derivative L at a if and only if for every i the component f_i has as derivative at a the i-th component of L.
   assumptions:
-    - Eは実ノルム空間
-    - f:E→R^m
-    - L:E→R^mは有界線形写像
+  - $E$は実ノルム空間
+  - $f:E\to\mathbb{R}^m$
+  - $L:E\to\mathbb{R}^m$は有界線形写像
   quantifiers:
-    - 任意のf, L, 点a
-  conclusion: fのaでの微分がLであることと、各iでf_iのaでの微分がL_iであることは同値である。
+  - 任意の$m\in\mathbb{N}$、$f:E\to\mathbb{R}^m$、$L$、$a\in E$
+  conclusion: $f$の$a$での微分が$L$であることと、各$i$で$f_i$の$a$での微分が$L_i$であることは同値である。
   answer: |
-    r(h)=f(a+h)-f(a)-L(h)と置くと、rの第i成分はf_i(a+h)-f_i(a)-L_i(h)である。R^mではベクトルのノルムが0に近づくことと全成分の絶対値が0に近づくことは同じであり、成分は有限個である。したがってr(h)=o(‖h‖)であることと、全てのiで第i成分がo(‖h‖)であることは同値である。
+    $E$を実ノルム空間、$m\in\mathbb{N}$、$f:E\to\mathbb{R}^m$を写像、$L:E\to\mathbb{R}^m$を有界線形写像、$a\in E$とする。$\mathbb{R}^m$のノルムは最大値ノルムとする。$r(h)=f(a+h)-f(a)-L(h)$とおくと、$r$の第$i$成分は$r_i(h)=f_i(a+h)-f_i(a)-L_i(h)$である。
+
+    全ての$i$で$|r_i(h)|\leq\|r(h)\|=\max_j|r_j(h)|$である。
+
+    $r(h)=o(\|h\|)$とする。左の不等式から、各$i$で$r_i(h)=o(\|h\|)$である。
+
+    逆に、全ての$i$で$r_i(h)=o(\|h\|)$とする。$\varepsilon>0$に対し、各$i$について$\delta_i>0$があり、$\|h\|<\delta_i$なら$|r_i(h)|\leq\varepsilon\|h\|$である。添字は有限個なので$\delta=\min_i\delta_i>0$をとれる（$m=0$なら$r=0$であり、示すことはない）。$\|h\|<\delta$なら$\|r(h)\|\leq\varepsilon\|h\|$である。よって$r(h)=o(\|h\|)$である。
   strategy: Apply the definition of the derivative to the remainder coordinate by coordinate.
   sketch:
-    - "setup: Define the remainder r(h) = f(a+h) - f(a) - L(h)."
-    - "translate: The i-th coordinate of r is the remainder for f_i and L_i."
-    - "derive: Finitely many coordinates are little-o exactly when the vector is little-o."
-    - "conclude: Hence the two differentiability statements are equivalent."
+  - 'setup: Define the remainder r(h) = f(a+h) - f(a) - L(h).'
+  - 'translate: The i-th coordinate of r is the remainder for f_i and L_i.'
+  - 'derive: Finitely many coordinates are little-o exactly when the vector is little-o.'
+  - 'conclude: Hence the two differentiability statements are equivalent.'
   openmath: (forall (E m f L a) (-> (and (normed_space E) (map_between f E (euclidean_space m))) (<-> (has_fderiv_at f L a) (forall (i) (has_fderiv_at (component_fn f i) (component_fn L i) a)))))
   hard_negative:
     statement: 実数値関数f:R^2→Rの偏微分係数が全て存在すれば、fは全微分可能である。
@@ -219,21 +241,23 @@
   kind: gap
   level: 1
   topic: 多変数関数・方向微分
-  statement: fが点aで微分可能で微分がLならば、任意のベクトルvについて、t↦f(a+tv)はt=0で微分可能で、微分係数はL(v)である。
+  statement: $f$の点$a$での微分が$L$ならば、任意のベクトル$v$について、$t\mapsto f(a+tv)$は$t=0$で微分可能で、微分係数は$L(v)$である。
   statement_en: If f has derivative L at a, then for every vector v the function t ↦ f(a+tv) has derivative L(v) at t=0.
   assumptions:
-    - E, Fは実ノルム空間
-    - f:E→Fのaでの微分はL
+  - $E,F$は実ノルム空間
+  - $f:E\to F$の$a$での微分は$L$
   quantifiers:
-    - 任意のf, L, 点a, ベクトルv
-  conclusion: t↦f(a+tv)のt=0での微分係数はL(v)である。
+  - 任意の$f:E\to F$、有界線形写像$L$、$a,v\in E$
+  conclusion: $t\mapsto f(a+tv)$の$t=0$での微分係数は$L(v)$である。
   answer: |
-    微分の定義よりf(a+tv)-f(a)=L(tv)+o(‖tv‖)=tL(v)+o(|t|)である。t≠0で両辺をtで割ると(f(a+tv)-f(a))/t=L(v)+o(1)となる。t→0とするとL(v)に収束する。
+    $E,F$を実ノルム空間とし、$f:E\to F$の$a\in E$での微分を$L$、$v\in E$とする。$r(h)=f(a+h)-f(a)-L(h)$とおくと、$r(h)=o(\|h\|)$である。
+
+    $\varepsilon>0$に対して$\delta>0$をとり、$\|h\|<\delta$なら$\|r(h)\|\leq\varepsilon\|h\|$とする。$t\neq0$かつ$|t|\|v\|<\delta$なら、$L(tv)=tL(v)$より$\|(f(a+tv)-f(a))/t-L(v)\|=\|r(tv)\|/|t|\leq\varepsilon\|v\|$である。$\varepsilon$は任意なので、$t\to0$で$(f(a+tv)-f(a))/t\to L(v)$である。
   strategy: Evaluate the first-order expansion along the line through a in direction v.
   sketch:
-    - "setup: Apply the definition of the derivative at the increment h = tv."
-    - "derive: Linearity gives L(tv) = tL(v), and the remainder is o(|t|)."
-    - "conclude: Dividing by t and letting t tend to 0 gives L(v)."
+  - 'setup: Apply the definition of the derivative at the increment h = tv.'
+  - 'derive: Linearity gives L(tv) = tL(v), and the remainder is o(|t|).'
+  - 'conclude: Dividing by t and letting t tend to 0 gives L(v).'
   openmath: (forall (E F f L a v) (-> (and (normed_space E) (normed_space F) (has_fderiv_at f L a)) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t v)))) (fn_value L v) 0)))
   hard_negative:
     statement: 方向微分係数が全ての方向vに存在すれば、v↦(方向微分係数)は線形である。
@@ -248,21 +272,23 @@
   kind: gap
   level: 1
   topic: 多変数関数・偏微分と全微分
-  statement: f:R^2→Rが点(a,b)で微分可能で微分がLならば、xについての偏微分係数はL(1,0)、yについての偏微分係数はL(0,1)である。
+  statement: $f:\mathbb{R}^2\to\mathbb{R}$の点$(a,b)$での微分が$L$ならば、$x$についての偏微分係数は$L(1,0)$、$y$についての偏微分係数は$L(0,1)$である。
   statement_en: If f from R^2 to R has derivative L at (a,b), then its partial derivatives at (a,b) with respect to x and y are L(1,0) and L(0,1).
   assumptions:
-    - f:R^2→Rの(a,b)での微分はL
+  - $f:\mathbb{R}^2\to\mathbb{R}$の$(a,b)$での微分は$L$
   quantifiers:
-    - 任意のf, L, 実数a, b
-  conclusion: x↦f(x,b)のaでの微分係数はL(1,0)、y↦f(a,y)のbでの微分係数はL(0,1)である。
+  - 任意の$f:\mathbb{R}^2\to\mathbb{R}$、有界線形写像$L$、$a,b\in\mathbb{R}$
+  conclusion: $x\mapsto f(x,b)$の$a$での微分係数は$L(1,0)$、$y\mapsto f(a,y)$の$b$での微分係数は$L(0,1)$である。
   answer: |
-    x↦(x,b)はaで微分可能で、速度は(1,0)である。fとの合成に連鎖律を使うと、x↦f(x,b)のaでの微分係数はL(1,0)である。同様にy↦(a,y)の速度は(0,1)なので、y↦f(a,y)のbでの微分係数はL(0,1)である。
+    $f:\mathbb{R}^2\to\mathbb{R}$の$(a,b)\in\mathbb{R}^2$での微分を$L$とする。
+
+    曲線$x\mapsto(x,b)$は$x=a$で$(a,b)$を通り、微分係数は$(1,0)$である。$f$との合成に連鎖律を使うと、$x\mapsto f(x,b)$の$a$での微分係数は$L(1,0)$である。同様に、曲線$y\mapsto(a,y)$は$y=b$で$(a,b)$を通り、微分係数は$(0,1)$である。よって$y\mapsto f(a,y)$の$b$での微分係数は$L(0,1)$である。
   strategy: Compose f with the two coordinate lines through (a,b) and use the chain rule.
   sketch:
-    - "construct: Parametrize the coordinate lines x ↦ (x,b) and y ↦ (a,y)."
-    - "derive: Their velocities are (1,0) and (0,1)."
-    - "apply_theorem: The chain rule along each line gives the values of L."
-    - "conclude: These values are the partial derivatives."
+  - 'construct: Parametrize the coordinate lines x ↦ (x,b) and y ↦ (a,y).'
+  - 'derive: Their velocities are (1,0) and (0,1).'
+  - 'apply_theorem: The chain rule along each line gives the values of L.'
+  - 'conclude: These values are the partial derivatives.'
   openmath: (forall (f L a b) (-> (has_fderiv_at f L (ordered_pair a b)) (and (has_deriv_at (lambda (x) (fn_value f (ordered_pair x b))) (fn_value L (ordered_pair 1 0)) a) (has_deriv_at (lambda (y) (fn_value f (ordered_pair a y))) (fn_value L (ordered_pair 0 1)) b))))
   hard_negative:
     statement: 両方の偏微分係数が(a,b)で存在すれば、fは(a,b)で微分可能で、Lは偏微分係数で定まる。
@@ -283,22 +309,24 @@
   kind: gap
   level: 1
   topic: 多変数関数・全微分の公式
-  statement: f:R^n→Rが点aで微分可能で微分がL、第i座標方向の偏微分係数がp_iならば、全てのベクトルvについてL(v)=Σ_i v_i p_iである。
+  statement: $f:\mathbb{R}^n\to\mathbb{R}$の点$a$での微分が$L$で、第$i$座標方向の偏微分係数が$p_i$ならば、全てのベクトル$v$について$L(v)=\sum_i v_ip_i$である。
   statement_en: If f from R^n to R has derivative L at a and partial derivatives p_i at a, then L(v) equals the sum of v_i p_i for every vector v.
   assumptions:
-    - f:R^n→Rのaでの微分はL
-    - t↦f(a+te_i)のt=0での微分係数はp_i
+  - $f:\mathbb{R}^n\to\mathbb{R}$の$a$での微分は$L$
+  - $t\mapsto f(a+te_i)$の$t=0$での微分係数は$p_i$
   quantifiers:
-    - 任意のn, f, L, 点a, p, ベクトルv
-  conclusion: L(v)=Σ_i v_i p_iである。
+  - 任意の$n\in\mathbb{N}$、$f:\mathbb{R}^n\to\mathbb{R}$、有界線形写像$L$、$a,p,v\in\mathbb{R}^n$
+  conclusion: $L(v)=\sum_i v_ip_i$である。
   answer: |
-    方向微分の公式より、t↦f(a+te_i)のt=0での微分係数はL(e_i)である。微分係数は一意なのでp_i=L(e_i)である。v=Σ_i v_i e_iとLの線形性からL(v)=Σ_i v_i L(e_i)=Σ_i v_i p_iである。
+    $n\in\mathbb{N}$とし、$f:\mathbb{R}^n\to\mathbb{R}$の$a\in\mathbb{R}^n$での微分を$L$とする。$e_i$を標準基底とし、$t\mapsto f(a+te_i)$の$t=0$での微分係数を$p_i$とする。
+
+    方向微分の公式（$f$の$a$での微分が$L$なら、$t\mapsto f(a+tv)$の$t=0$での微分係数は$L(v)$である）より、$t\mapsto f(a+te_i)$の$t=0$での微分係数は$L(e_i)$である。微分係数は一意なので$p_i=L(e_i)$である。$v\in\mathbb{R}^n$を$v=\sum_i v_ie_i$と書くと、$L$の線形性から$L(v)=\sum_i v_iL(e_i)=\sum_i v_ip_i$である。
   strategy: Identify each partial derivative with L on a basis vector and expand v in the standard basis.
   sketch:
-    - "apply_theorem: The directional derivative along e_i is L(e_i)."
-    - "derive: Uniqueness of the derivative gives p_i = L(e_i)."
-    - "setup: Expand v in the standard basis."
-    - "conclude: Linearity of L gives the sum formula."
+  - 'apply_theorem: The directional derivative along e_i is L(e_i).'
+  - 'derive: Uniqueness of the derivative gives p_i = L(e_i).'
+  - 'setup: Expand v in the standard basis.'
+  - 'conclude: Linearity of L gives the sum formula.'
   openmath: (forall (n f L a p v) (-> (and (has_fderiv_at f L a) (forall (i) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t (basis_vector i))))) (fn_value p i) 0))) (= (fn_value L v) (sum (index_set n) (lambda (i) (* (coordinate_of v i) (fn_value p i)))))))
   hard_negative:
     statement: 偏微分係数p_iが全て存在すれば、全ての方向vの方向微分係数はΣ_i v_i p_iである。
@@ -319,21 +347,25 @@
   kind: gap
   level: 1
   topic: 多変数関数・偏微分可能だが不連続な例
-  statement: f(x,y)=xy/(x^2+y^2), f(0,0)=0で定まる関数は、原点で両方の偏微分係数が0であるが、原点で連続でない。
+  statement: $(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$、$f(0,0)=0$と定める関数$f:\mathbb{R}^2\to\mathbb{R}$は、原点で両方の偏微分係数が$0$であるが、原点で連続でない。
   statement_en: The function f(x,y) = xy/(x^2+y^2) with f(0,0) = 0 has both partial derivatives equal to 0 at the origin but is not continuous at the origin.
   assumptions:
-    - f(x,y)=xy/(x^2+y^2), f(0,0)=0
+  - $(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$、$f(0,0)=0$
   quantifiers:
-    - 関数fは具体的に与えられている
-  conclusion: 原点でf_x=f_y=0であり、fは原点で連続でない。
+  - 関数$f$は具体的に与えられている
+  conclusion: 原点で$f_x=f_y=0$であり、$f$は原点で連続でない。
   answer: |
-    全てのxでf(x,0)=0、全てのyでf(0,y)=0なので、原点での偏微分係数はどちらも0である。一方、t≠0ではf(t,t)=t^2/(2t^2)=1/2である。t→0で(t,t)は原点に近づくがf(t,t)は1/2のままであり、f(0,0)=0に収束しない。したがってfは原点で連続でない。
+    $f:\mathbb{R}^2\to\mathbb{R}$を、$(x,y)\neq(0,0)$では$f(x,y)=xy/(x^2+y^2)$、原点では$f(0,0)=0$と定める。
+
+    全ての$x$で$f(x,0)=0$、全ての$y$で$f(0,y)=0$である。これらの$1$変数関数は定数なので、原点での偏微分係数はどちらも$0$である。
+
+    一方、$t\neq0$では$f(t,t)=t^2/(2t^2)=1/2$である。$t\to0$で$(t,t)$は原点に近づくが、$f(t,t)$は$1/2$のままであり、$f(0,0)=0$に収束しない。したがって$f$は原点で連続でない。
   strategy: The function vanishes on both axes but is constant 1/2 on the diagonal away from the origin.
   sketch:
-    - "derive: On each coordinate axis f vanishes identically, so both partial derivatives are 0."
-    - "derive: For t different from 0, f(t,t) = 1/2."
-    - "contradiction: Continuity at the origin would force the limit along the diagonal to be f(0,0) = 0."
-    - "conclude: Hence f is not continuous at the origin."
+  - 'derive: On each coordinate axis f vanishes identically, so both partial derivatives are 0.'
+  - 'derive: For t different from 0, f(t,t) = 1/2.'
+  - 'contradiction: Continuity at the origin would force the limit along the diagonal to be f(0,0) = 0.'
+  - 'conclude: Hence f is not continuous at the origin.'
   openmath: (forall (f) (-> (and (= (fn_value f (ordered_pair 0 0)) 0) (forall (x y) (-> (or (!= x 0) (!= y 0)) (= (fn_value f (ordered_pair x y)) (/ (* x y) (+ (^ x 2) (^ y 2))))))) (and (has_deriv_at (lambda (x) (fn_value f (ordered_pair x 0))) 0 0) (has_deriv_at (lambda (y) (fn_value f (ordered_pair 0 y))) 0 0) (not (continuous_map_at f (ordered_pair 0 0))))))
   hard_negative:
     statement: この関数は原点の近くで偏導関数が連続である。
@@ -362,21 +394,23 @@
   kind: gap
   level: 1
   topic: 多変数関数・勾配と方向微分
-  statement: 完備な実内積空間上の実数値関数fが点aで微分可能ならば、全てのベクトルvについて⟨∇f(a),v⟩=df(a)(v)である。
+  statement: 完備な実内積空間上の実数値関数$f$が点$a$で微分可能ならば、全てのベクトル$v$について$\langle\nabla f(a),v\rangle=df(a)(v)$である。
   statement_en: If a real-valued function f on a real Hilbert space is differentiable at a, then the inner product of the gradient at a with v equals the derivative of f at a applied to v, for every v.
   assumptions:
-    - Eは完備な実内積空間
-    - f:E→Rはaで微分可能
+  - $E$は完備な実内積空間
+  - $f:E\to\mathbb{R}$は$a$で微分可能
   quantifiers:
-    - 任意のf, 点a, ベクトルv
-  conclusion: ⟨∇f(a),v⟩=df(a)(v)である。
+  - 任意の$f:E\to\mathbb{R}$と$a,v\in E$
+  conclusion: $\langle\nabla f(a),v\rangle=df(a)(v)$である。
   answer: |
-    勾配∇f(a)は、有界線形汎関数df(a)をリースの表現定理で内積の形に表すベクトルとして定義される。すなわち全てのvでdf(a)(v)=⟨∇f(a),v⟩となるベクトルである。主張はこの定義そのものである。R^nでは∇f(a)の成分は偏微分係数であり、df(a)(v)=Σ_i ∂_if(a)v_iという通常の公式と一致する。
+    $E$を完備な実内積空間とし、$f:E\to\mathbb{R}$が$a\in E$で微分可能であるとする。$df(a)$は$E$上の有界線形汎関数である。リースの表現定理（完備な実内積空間上の有界線形汎関数$\ell$に対し、全ての$v$で$\ell(v)=\langle w,v\rangle$となる$w$がただ一つ存在する）を$\ell=df(a)$に適用する。
+
+    勾配$\nabla f(a)$は、このとき得られるベクトル$w$として定義される。したがって全ての$v\in E$で$\langle\nabla f(a),v\rangle=df(a)(v)$である。
   strategy: Unfold the definition of the gradient as the Riesz representative of the derivative.
   sketch:
-    - "setup: Recall that the gradient is the Riesz representative of the derivative."
-    - "translate: Riesz representation says the functional is the inner product with this vector."
-    - "conclude: Evaluating at v gives the formula."
+  - 'setup: Recall that the gradient is the Riesz representative of the derivative.'
+  - 'translate: Riesz representation says the functional is the inner product with this vector.'
+  - 'conclude: Evaluating at v gives the formula.'
   openmath: (forall (E f a v) (-> (and (hilbert_space E) (differentiable_at f a)) (= (inner_product (gradient_at f a) v) (fn_value (fderiv_at f a) v))))
   hard_negative:
     statement: fの微分df(a)と勾配∇f(a)は、どの実ノルム空間でも定義され、同じ空間の元である。
@@ -391,20 +425,22 @@
   kind: gap
   level: 1
   topic: 多変数関数・勾配の成分
-  statement: f:R^n→Rが点aで微分可能ならば、勾配∇f(a)の第i成分は第i座標方向の偏微分係数df(a)(e_i)である。
+  statement: $f:\mathbb{R}^n\to\mathbb{R}$が点$a$で微分可能ならば、勾配$\nabla f(a)$の第$i$成分は$df(a)(e_i)$である。
   statement_en: If f from R^n to R is differentiable at a, then the i-th component of the gradient at a is the partial derivative df(a)(e_i).
   assumptions:
-    - f:R^n→Rはaで微分可能
+  - $f:\mathbb{R}^n\to\mathbb{R}$は$a$で微分可能
   quantifiers:
-    - 任意のn, f, 点a, 添字i
-  conclusion: (∇f(a))_i=df(a)(e_i)である。
+  - 任意の$n\in\mathbb{N}$、$f:\mathbb{R}^n\to\mathbb{R}$、$a\in\mathbb{R}^n$、添字$i$
+  conclusion: $(\nabla f(a))_i=df(a)(e_i)$である。
   answer: |
-    勾配の定義より、df(a)(e_i)=⟨∇f(a),e_i⟩である。標準基底e_iとの内積はベクトルの第i成分を取り出す。したがってdf(a)(e_i)=(∇f(a))_iである。
+    $n\in\mathbb{N}$とし、ユークリッド内積をもつ$\mathbb{R}^n$上の関数$f:\mathbb{R}^n\to\mathbb{R}$が$a\in\mathbb{R}^n$で微分可能であるとする。$e_i$を標準基底とする。
+
+    勾配の定義より、全ての$v$で$df(a)(v)=\langle\nabla f(a),v\rangle$である。$v=e_i$とすると$df(a)(e_i)=\langle\nabla f(a),e_i\rangle$である。標準基底$e_i$との内積はベクトルの第$i$成分を取り出すので、$df(a)(e_i)=(\nabla f(a))_i$である。
   strategy: Take the inner product of the gradient with the standard basis vector.
   sketch:
-    - "apply_theorem: The defining property of the gradient gives df(a)(e_i) as an inner product."
-    - "derive: The inner product with e_i is the i-th coordinate."
-    - "conclude: So the component of the gradient is the partial derivative."
+  - 'apply_theorem: The defining property of the gradient gives df(a)(e_i) as an inner product.'
+  - 'derive: The inner product with e_i is the i-th coordinate.'
+  - 'conclude: So the component of the gradient is the partial derivative.'
   openmath: (forall (n f a i) (-> (and (map_between f (euclidean_space n) R) (differentiable_at f a)) (= (coordinate_of (gradient_at f a) i) (fn_value (fderiv_at f a) (basis_vector i)))))
   hard_negative:
     statement: fの偏微分係数が全て存在すれば、その偏微分係数を並べたベクトルvは全ての方向でdf(a)(w)=⟨v,w⟩を満たす。
@@ -421,22 +457,24 @@
   kind: gap
   level: 2
   topic: 多変数関数・勾配と曲線
-  statement: 完備な実内積空間上の実数値関数fが点γ(t)で微分可能で、曲線γのtでの速度がvならば、s↦f(γ(s))のtでの微分係数は⟨∇f(γ(t)),v⟩である。
+  statement: 完備な実内積空間上の実数値関数$f$が点$\gamma(t)$で微分可能で、曲線$\gamma$の$t$での微分係数が$v$ならば、$s\mapsto f(\gamma(s))$の$t$での微分係数は$\langle\nabla f(\gamma(t)),v\rangle$である。
   statement_en: If a real-valued function f on a real Hilbert space is differentiable at γ(t) and the curve γ has velocity v at t, then s ↦ f(γ(s)) has derivative equal to the inner product of the gradient of f at γ(t) with v.
   assumptions:
-    - Eは完備な実内積空間
-    - f:E→Rはγ(t)で微分可能
-    - γ:R→Eのtでの微分係数はv
+  - $E$は完備な実内積空間
+  - $f:E\to\mathbb{R}$は$\gamma(t)$で微分可能
+  - $\gamma:\mathbb{R}\to E$の$t$での微分係数は$v$
   quantifiers:
-    - 任意のf, γ, v, 実数t
-  conclusion: f∘γのtでの微分係数は⟨∇f(γ(t)),v⟩である。
+  - 任意の$f:E\to\mathbb{R}$、$\gamma:\mathbb{R}\to E$、$v\in E$、$t\in\mathbb{R}$
+  conclusion: $f\circ\gamma$の$t$での微分係数は$\langle\nabla f(\gamma(t)),v\rangle$である。
   answer: |
-    連鎖律より、f∘γのtでの微分係数はdf(γ(t))(v)である。勾配の定義よりdf(γ(t))(v)=⟨∇f(γ(t)),v⟩である。よって主張が成り立つ。
+    $E$を完備な実内積空間とし、$f:E\to\mathbb{R}$が$\gamma(t)$で微分可能、$\gamma:\mathbb{R}\to E$の$t\in\mathbb{R}$での微分係数が$v\in E$であるとする。
+
+    連鎖律より、$f\circ\gamma$の$t$での微分係数は$df(\gamma(t))(v)$である。勾配の定義より$df(\gamma(t))(v)=\langle\nabla f(\gamma(t)),v\rangle$である。よって微分係数は$\langle\nabla f(\gamma(t)),v\rangle$である。
   strategy: Combine the chain rule along a curve with the defining property of the gradient.
   sketch:
-    - "apply_theorem: The chain rule gives the derivative df(γ(t))(v)."
-    - "translate: Rewrite df(γ(t))(v) as an inner product with the gradient."
-    - "conclude: This is the stated formula."
+  - 'apply_theorem: The chain rule gives the derivative df(γ(t))(v).'
+  - 'translate: Rewrite df(γ(t))(v) as an inner product with the gradient.'
+  - 'conclude: This is the stated formula.'
   openmath: (forall (E f gamma v t) (-> (and (hilbert_space E) (differentiable_at f (fn_value gamma t)) (has_deriv_at (lambda (s) (fn_value gamma s)) v t)) (has_deriv_at (lambda (s) (fn_value f (fn_value gamma s))) (inner_product (gradient_at f (fn_value gamma t)) v) t)))
   hard_negative:
     statement: f∘γのtでの微分係数は‖∇f(γ(t))‖‖v‖である。
@@ -452,23 +490,27 @@
   kind: textbook
   level: 2
   topic: 多変数関数・勾配と最大増加方向
-  statement: fが点aで微分可能ならば、単位ベクトルvについてdf(a)(v)≤‖∇f(a)‖が成り立つ。さらに∇f(a)≠0のとき、u=∇f(a)/‖∇f(a)‖は単位ベクトルで、df(a)(u)=‖∇f(a)‖となる。
+  statement: 完備な実内積空間上の実数値関数$f$が点$a$で微分可能ならば、単位ベクトル$v$について$df(a)(v)\leq\|\nabla f(a)\|$が成り立つ。さらに$\nabla f(a)\neq0$のとき、$u=\nabla f(a)/\|\nabla f(a)\|$は単位ベクトルで、$df(a)(u)=\|\nabla f(a)\|$となる。
   statement_en: If f is differentiable at a, then df(a)(v) is at most the norm of the gradient for every unit vector v. If the gradient is nonzero, the normalized gradient u is a unit vector with df(a)(u) equal to the norm of the gradient.
   assumptions:
-    - Eは完備な実内積空間
-    - f:E→Rはaで微分可能
+  - $E$は完備な実内積空間
+  - $f:E\to\mathbb{R}$は$a$で微分可能
   quantifiers:
-    - 任意のf, 点a
-  conclusion: 単位ベクトルvについてdf(a)(v)≤‖∇f(a)‖であり、∇f(a)≠0なら勾配方向で等号が成り立つ。
+  - 任意の$f:E\to\mathbb{R}$と$a\in E$
+  conclusion: 単位ベクトル$v$について$df(a)(v)\leq\|\nabla f(a)\|$であり、$\nabla f(a)\neq0$なら勾配方向の単位ベクトルで等号が成り立つ。
   answer: |
-    コーシー・シュワルツの不等式より、単位ベクトルvについてdf(a)(v)=⟨∇f(a),v⟩≤‖∇f(a)‖‖v‖=‖∇f(a)‖である。∇f(a)≠0のとき、uのノルムは‖∇f(a)‖/‖∇f(a)‖=1である。また、df(a)(u)=⟨∇f(a),∇f(a)⟩/‖∇f(a)‖=‖∇f(a)‖である。
+    $E$を完備な実内積空間とし、$f:E\to\mathbb{R}$が$a\in E$で微分可能であるとする。
+
+    $v\in E$を単位ベクトルとする。勾配の定義とコーシー・シュワルツの不等式より、$df(a)(v)=\langle\nabla f(a),v\rangle\leq\|\nabla f(a)\|\|v\|=\|\nabla f(a)\|$である。
+
+    $\nabla f(a)\neq0$とし、$u=\nabla f(a)/\|\nabla f(a)\|$とおく。$\|u\|=\|\nabla f(a)\|/\|\nabla f(a)\|=1$である。また$df(a)(u)=\langle\nabla f(a),\nabla f(a)\rangle/\|\nabla f(a)\|=\|\nabla f(a)\|$である。
   strategy: Apply Cauchy-Schwarz to the inner product representation and check equality at the normalized gradient.
   sketch:
-    - "translate: Write df(a)(v) as the inner product of the gradient with v."
-    - "apply_theorem: Cauchy-Schwarz bounds it by the norm of the gradient for unit v."
-    - "construct: Assuming the gradient is nonzero, normalize it to get u."
-    - "derive: Compute the norm of u and the value df(a)(u)."
-    - "conclude: The bound is attained in the gradient direction."
+  - 'translate: Write df(a)(v) as the inner product of the gradient with v.'
+  - 'apply_theorem: Cauchy-Schwarz bounds it by the norm of the gradient for unit v.'
+  - 'construct: Assuming the gradient is nonzero, normalize it to get u.'
+  - 'derive: Compute the norm of u and the value df(a)(u).'
+  - 'conclude: The bound is attained in the gradient direction.'
   openmath: (forall (E f a) (-> (and (hilbert_space E) (differentiable_at f a)) (and (forall (v) (-> (= (norm v) 1) (<= (fn_value (fderiv_at f a) v) (norm (gradient_at f a))))) (-> (!= (gradient_at f a) 0) (and (= (norm (scalar_multiple (/ 1 (norm (gradient_at f a))) (gradient_at f a))) 1) (= (fn_value (fderiv_at f a) (scalar_multiple (/ 1 (norm (gradient_at f a))) (gradient_at f a))) (norm (gradient_at f a))))))))
   hard_negative:
     statement: 方向微分係数が最大となる単位ベクトルは、∇f(a)=0でも一意に定まる。
@@ -493,23 +535,27 @@
   kind: textbook
   level: 1
   topic: 多変数関数・極値と勾配
-  statement: 完備な実内積空間上の実数値関数fが点aで微分可能で、aで極大または極小となるならば、∇f(a)=0である。
+  statement: 完備な実内積空間上の実数値関数$f$が点$a$で微分可能で、$a$で極大または極小となるならば、$\nabla f(a)=0$である。
   statement_en: If a real-valued function on a real Hilbert space is differentiable at a and has a local maximum or minimum at a, then its gradient at a is 0.
   assumptions:
-    - Eは完備な実内積空間
-    - f:E→Rはaで微分可能
-    - fはaで極値をとる
+  - $E$は完備な実内積空間
+  - $f:E\to\mathbb{R}$は$a$で微分可能
+  - $f$は$a$で極値をとる
   quantifiers:
-    - 任意のf, 点a
-  conclusion: ∇f(a)=0である。
+  - 任意の$f:E\to\mathbb{R}$と$a\in E$
+  conclusion: $\nabla f(a)=0$である。
   answer: |
-    任意のベクトルvについて、g(t)=f(a+tv)はt=0で極値をとり、微分係数はdf(a)(v)である。1変数の極値の必要条件よりdf(a)(v)=0である。よってdf(a)=0であり、全てのvで⟨∇f(a),v⟩=0となる。v=∇f(a)と取ると‖∇f(a)‖^2=0なので、∇f(a)=0である。
+    $E$を完備な実内積空間とし、$f:E\to\mathbb{R}$が$a\in E$で微分可能で、$a$で極大または極小となるとする。
+
+    $v\in E$を任意にとり、$h(t)=f(a+tv)$とおく。$t\mapsto a+tv$は連続で$t=0$で$a$を通るので、$h$は$t=0$で極値をとる。方向微分の公式から、$h$の$t=0$での微分係数は$df(a)(v)$である。$1$変数関数が極値点で微分可能なら微分係数は$0$なので、$df(a)(v)=0$である。
+
+    よって全ての$v$で$\langle\nabla f(a),v\rangle=df(a)(v)=0$である。$v=\nabla f(a)$とすると$\|\nabla f(a)\|^2=0$なので、$\nabla f(a)=0$である。
   strategy: Restrict to lines through a, use the one-variable criterion, then test the gradient against itself.
   sketch:
-    - "setup: Fix a vector v and define g(t) = f(a+tv)."
-    - "apply_theorem: g has a local extremum at 0, so g'(0) = df(a)(v) = 0."
-    - "derive: Hence the inner product of the gradient with every v vanishes."
-    - "conclude: Taking v equal to the gradient shows that the gradient is 0."
+  - 'setup: Fix a vector v and define g(t) = f(a+tv).'
+  - 'apply_theorem: g has a local extremum at 0, so g''(0) = df(a)(v) = 0.'
+  - 'derive: Hence the inner product of the gradient with every v vanishes.'
+  - 'conclude: Taking v equal to the gradient shows that the gradient is 0.'
   openmath: (forall (E f a) (-> (and (hilbert_space E) (differentiable_at f a) (local_extremum_at f a)) (= (gradient_at f a) 0)))
   hard_negative:
     statement: ∇f(a)=0ならばfはaで極値をとる。
@@ -524,23 +570,25 @@
   kind: gap
   level: 1
   topic: 多変数関数・極値と偏微分
-  statement: fが点aで極値をとり、方向vの微分係数pが存在するならば、p=0である。特にaに存在する偏微分係数は全て0である。
+  statement: $f$が点$a$で極値をとり、方向$v$の微分係数$p$が存在するならば、$p=0$である。
   statement_en: If f has a local extremum at a and the directional derivative p in direction v exists at a, then p = 0. In particular every existing partial derivative at a vanishes.
   assumptions:
-    - Eは実ノルム空間
-    - f:E→Rはaで極値をとる
-    - t↦f(a+tv)のt=0での微分係数はp
+  - $E$は実ノルム空間
+  - $f:E\to\mathbb{R}$は$a$で極値をとる
+  - $t\mapsto f(a+tv)$の$t=0$での微分係数は$p$
   quantifiers:
-    - 任意のf, 点a, ベクトルv, 実数p
-  conclusion: p=0である。
+  - 任意の$f:E\to\mathbb{R}$、$a,v\in E$、$p\in\mathbb{R}$
+  conclusion: $p=0$である。
   answer: |
-    g(t)=f(a+tv)と置く。t→a+tvは連続でt=0でaを通るので、gはt=0で極値をとる。1変数関数が極値点で微分可能なら微分係数は0である。したがってp=g'(0)=0である。座標方向のvを取れば偏微分係数についての主張が得られる。
+    $E$を実ノルム空間、$f:E\to\mathbb{R}$を$a\in E$で極値をとる関数とする。$v\in E$とし、$h(t)=f(a+tv)$の$t=0$での微分係数を$p\in\mathbb{R}$とする。
+
+    $t\mapsto a+tv$は連続で$t=0$で$a$を通るので、$h$は$t=0$で極値をとる。$1$変数関数が極値点で微分可能なら微分係数は$0$である。したがって$p=h'(0)=0$である。
   strategy: Reduce to the one-variable extremum criterion along the line through a in direction v.
   sketch:
-    - "construct: Define g(t) = f(a+tv)."
-    - "derive: Continuity of the line implies that g has a local extremum at 0."
-    - "apply_theorem: The one-variable criterion gives g'(0) = 0."
-    - "conclude: Therefore p = 0."
+  - 'construct: Define g(t) = f(a+tv).'
+  - 'derive: Continuity of the line implies that g has a local extremum at 0.'
+  - 'apply_theorem: The one-variable criterion gives g''(0) = 0.'
+  - 'conclude: Therefore p = 0.'
   openmath: (forall (E f a v p) (-> (and (normed_space E) (local_extremum_at f a) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t v)))) p 0)) (= p 0)))
   hard_negative:
     statement: 全ての偏微分係数が0である点でfは極値をとる。
@@ -558,25 +606,29 @@
   kind: textbook
   level: 2
   topic: 多変数関数・平均値の不等式
-  statement: 実ノルム空間の凸集合sの各点でfが微分可能で‖df(x)‖≤Cならば、s内の任意のx, yについて‖f(y)-f(x)‖≤C‖y-x‖である。
+  statement: 実ノルム空間の凸集合$s$の各点で$f$が微分可能で$\|df(x)\|\leq C$ならば、$s$内の任意の$x,y$について$\|f(y)-f(x)\|\leq C\|y-x\|$である。
   statement_en: If f is differentiable at each point of a convex subset s of a real normed space with operator norm of the derivative at most C, then the norm of f(y)-f(x) is at most C times the norm of y-x for x, y in s.
   assumptions:
-    - E, Fは実ノルム空間
-    - sはEの凸集合
-    - fはsの各点で微分可能
-    - sの各点で‖df(x)‖≤C
+  - $E,F$は実ノルム空間
+  - $s\subseteq E$は凸集合
+  - $f:E\to F$は$s$の各点で微分可能
+  - $s$の各点で$\|df(x)\|\leq C$
   quantifiers:
-    - 任意のf, s, 実数C, sの点x, y
-  conclusion: ‖f(y)-f(x)‖≤C‖y-x‖である。
+  - 任意の$f:E\to F$、$s\subseteq E$、$C\in\mathbb{R}$、$x,y\in s$
+  conclusion: $\|f(y)-f(x)\|\leq C\|y-x\|$である。
   answer: |
-    凸性より線分x+t(y-x)(0≤t≤1)はsに含まれる。g(t)=f(x+t(y-x))は微分可能で、g'(t)=df(x+t(y-x))(y-x)なので‖g'(t)‖≤C‖y-x‖である。ベクトル値の1変数関数についての平均値の不等式より‖g(1)-g(0)‖≤C‖y-x‖である。これが主張である。
+    $E,F$を実ノルム空間、$s\subseteq E$を凸集合、$C\in\mathbb{R}$とする。$f:E\to F$は$s$の各点で微分可能で、$\|df(x)\|\leq C$を満たすとする。$x,y\in s$をとる。
+
+    凸性より、線分$x+t(y-x)$（$0\leq t\leq1$）は$s$に含まれる。$g(t)=f(x+t(y-x))$とおく。連鎖律より$g$は$[0,1]$の各点で微分可能で、$g'(t)=df(x+t(y-x))(y-x)$である。よって$\|g'(t)\|\leq\|df(x+t(y-x))\|\|y-x\|\leq C\|y-x\|$である。
+
+    ベクトル値の$1$変数関数についての平均値の不等式（$g:[0,1]\to F$が$[0,1]$の各点で微分可能で$\|g'(t)\|\leq K$なら、$\|g(1)-g(0)\|\leq K$）を$K=C\|y-x\|$で適用する。$g(0)=f(x)$、$g(1)=f(y)$なので、$\|f(y)-f(x)\|\leq C\|y-x\|$である。
   strategy: Restrict f to the segment from x to y and apply the one-variable mean value inequality.
   sketch:
-    - "setup: The segment from x to y lies in s by convexity."
-    - "construct: Define g(t) = f(x + t(y-x)) on [0,1]."
-    - "derive: The chain rule bounds the norm of g'(t) by C times the norm of y-x."
-    - "apply_theorem: The one-variable mean value inequality bounds g(1)-g(0)."
-    - "conclude: Since g(1)-g(0) = f(y)-f(x), the inequality follows."
+  - 'setup: The segment from x to y lies in s by convexity.'
+  - 'construct: Define g(t) = f(x + t(y-x)) on [0,1].'
+  - 'derive: The chain rule bounds the norm of g''(t) by C times the norm of y-x.'
+  - 'apply_theorem: The one-variable mean value inequality bounds g(1)-g(0).'
+  - 'conclude: Since g(1)-g(0) = f(y)-f(x), the inequality follows.'
   openmath: (forall (E F f s C x y) (-> (and (normed_space E) (normed_space F) (convex_set s) (forall (z) (-> (in z s) (and (differentiable_at f z) (<= (norm (fderiv_at f z)) C)))) (in x s) (in y s)) (<= (norm (- (fn_value f y) (fn_value f x))) (* C (norm (- y x))))))
   hard_negative:
     statement: ベクトル値写像f:s→Fについて、ある線分上の点zでf(y)-f(x)=df(z)(y-x)が成り立つ。
@@ -591,25 +643,31 @@
   kind: gap
   level: 2
   topic: 多変数関数・微分が0の写像
-  statement: 実ノルム空間の連結な開集合s上でfが微分可能で、sの全ての点で微分が0ならば、fはs上で定数である。
+  statement: 実ノルム空間の連結な開集合$s$上で$f$が微分可能で、$s$の全ての点で微分が$0$ならば、$f$は$s$上で定数である。
   statement_en: If f is differentiable on a connected open subset s of a real normed space and its derivative vanishes at each point of s, then f is constant on s.
   assumptions:
-    - E, Fは実ノルム空間
-    - sはEの連結な開集合
-    - fはs上で微分可能
-    - s上でdf=0
+  - $E,F$は実ノルム空間
+  - $s\subseteq E$は連結な開集合
+  - $f:E\to F$は$s$上で微分可能
+  - $s$上で$df=0$
   quantifiers:
-    - 任意のf, s, sの点x, y
-  conclusion: f(x)=f(y)である。
+  - 任意の$f:E\to F$、$s\subseteq E$、$x,y\in s$
+  conclusion: $f(x)=f(y)$である。
   answer: |
-    点x_0∈sを固定し、A={x∈s | f(x)=f(x_0)}と置く。fは連続なのでAはsで閉である。また、x∈Aを中心としsに含まれる球は凸なので、平均値の不等式を定数C=0で使うと球の上でfは定数であり、球はAに含まれる。よってAはsで開かつ閉で空でない。sは連結なのでA=sである。
+    $E,F$を実ノルム空間、$s\subseteq E$を連結な開集合とし、$f:E\to F$は$s$上で微分可能で、$s$の全ての点で$df=0$とする。$s$が空なら示すことはない。
+
+    $x_0\in s$を固定し、$A=\{x\in s\mid f(x)=f(x_0)\}$とおく。$x_0\in A$なので$A$は空でない。$f$は$s$上で連続なので、$A$は$s$で閉である。
+
+    $x\in A$とする。$s$は開集合なので、$x$を中心とする開球$B\subseteq s$がとれる。$B$は凸である。平均値の不等式（凸集合の各点で$\|df\|\leq C$なら、その集合の$u,v$について$\|f(u)-f(v)\|\leq C\|u-v\|$）を$C=0$で適用すると、$f$は$B$上で定数である。よって$B\subseteq A$であり、$A$は$s$で開である。
+
+    $s$は連結なので$A=s$である。したがって全ての$x,y\in s$で$f(x)=f(y)$である。
   strategy: Show that a level set of f is open and closed in s, using the mean value inequality on small balls.
   sketch:
-    - "setup: Fix x_0 in s and define A as the set of points of s where f equals f(x_0)."
-    - "derive: Continuity makes A closed in s."
-    - "apply_theorem: The mean value inequality with C = 0 makes f constant on balls in s, so A is open."
-    - "derive: A contains x_0, so it is nonempty."
-    - "conclude: Connectedness of s gives A = s."
+  - 'setup: Fix x_0 in s and define A as the set of points of s where f equals f(x_0).'
+  - 'derive: Continuity makes A closed in s.'
+  - 'apply_theorem: The mean value inequality with C = 0 makes f constant on balls in s, so A is open.'
+  - 'derive: A contains x_0, so it is nonempty.'
+  - 'conclude: Connectedness of s gives A = s.'
   openmath: (forall (E F f s x y) (-> (and (normed_space E) (normed_space F) (open_set s) (preconnected_in s E) (forall (z) (-> (in z s) (and (differentiable_at f z) (= (fderiv_at f z) 0)))) (in x s) (in y s)) (= (fn_value f x) (fn_value f y))))
   hard_negative:
     statement: 開集合s上でdf=0ならばfはs上で定数である。
@@ -624,22 +682,28 @@
   kind: textbook
   level: 2
   topic: 多変数関数・C1級と全微分可能性
-  statement: f:R^2→Rの偏導関数f_x, f_yが全ての点に存在し連続ならば、fは全ての点pで微分可能で、微分は(h,k)↦f_x(p)h+f_y(p)kである。
+  statement: $f:\mathbb{R}^2\to\mathbb{R}$の偏導関数$f_x,f_y$が全ての点に存在し連続ならば、$f$は全ての点$p$で微分可能で、微分は$(h,k)\mapsto f_x(p)h+f_y(p)k$である。
   statement_en: If the partial derivatives f_x and f_y of f from R^2 to R exist everywhere and are continuous, then f is differentiable at each point p with derivative (h,k) ↦ f_x(p)h + f_y(p)k.
   assumptions:
-    - f:R^2→R
-    - f_x, f_yは全ての点に存在し連続
+  - $f:\mathbb{R}^2\to\mathbb{R}$
+  - $f_x,f_y$は全ての点に存在し連続
   quantifiers:
-    - 任意のf, f_x, f_y, 点p
-  conclusion: fはpで微分可能で、微分はf_x(p)h+f_y(p)kである。
+  - 任意の$f,f_x,f_y:\mathbb{R}^2\to\mathbb{R}$と$p\in\mathbb{R}^2$
+  conclusion: $f$は$p$で微分可能で、微分は$(h,k)\mapsto f_x(p)h+f_y(p)k$である。
   answer: |
-    p=(a,b)に対してf(a+h,b+k)-f(a,b)をf(a+h,b+k)-f(a,b+k)とf(a,b+k)-f(a,b)に分ける。1変数の平均値の定理より、前者はf_x(a+θh,b+k)h、後者はf_y(a,b+θ'k)kと書ける(0<θ,θ'<1)。f_x, f_yは連続なので、これらはf_x(a,b)h+o(‖(h,k)‖)とf_y(a,b)k+o(‖(h,k)‖)である。よってfはpで微分可能で、微分は主張の形になる。
+    $f:\mathbb{R}^2\to\mathbb{R}$の偏導関数$f_x,f_y:\mathbb{R}^2\to\mathbb{R}$が全ての点に存在し連続であるとする。$p=(a,b)$とする。$\mathbb{R}^2$のノルムは$\|(h,k)\|=\max(|h|,|k|)$とする。$\mathbb{R}^2$のノルムはすべて同値なので、微分可能性はノルムの選び方によらない。
+
+    $\varepsilon>0$とする。$f_x,f_y$の$p$での連続性から$\delta>0$があり、$\|q-p\|<\delta$なら$|f_x(q)-f_x(p)|<\varepsilon$かつ$|f_y(q)-f_y(p)|<\varepsilon$である。$\|(h,k)\|<\delta$とする。
+
+    $f(a+h,b+k)-f(a,b)=(f(a+h,b+k)-f(a,b+k))+(f(a,b+k)-f(a,b))$と分ける。$1$変数の平均値の定理より、ある$0<\theta,\theta'<1$で第$1$項は$f_x(a+\theta h,b+k)h$、第$2$項は$f_y(a,b+\theta'k)k$と書ける。点$(a+\theta h,b+k)$と$(a,b+\theta'k)$は$p$から距離$\delta$未満にある。したがって$|f(a+h,b+k)-f(a,b)-f_x(p)h-f_y(p)k|\leq\varepsilon|h|+\varepsilon|k|\leq2\varepsilon\|(h,k)\|$である。
+
+    $\varepsilon$は任意なので、$f$は$p$で微分可能であり、微分は$(h,k)\mapsto f_x(p)h+f_y(p)k$である。
   strategy: Change one variable at a time, apply the one-variable mean value theorem, and use continuity of the partial derivatives.
   sketch:
-    - "setup: Split the increment of f into a change in x followed by a change in y."
-    - "apply_theorem: The one-variable mean value theorem expresses each piece through a partial derivative at an intermediate point."
-    - "derive: Continuity of the partial derivatives replaces the intermediate points by p up to o(h,k)."
-    - "conclude: The sum is the claimed linear map plus a little-o remainder."
+  - 'setup: Split the increment of f into a change in x followed by a change in y.'
+  - 'apply_theorem: The one-variable mean value theorem expresses each piece through a partial derivative at an intermediate point.'
+  - 'derive: Continuity of the partial derivatives replaces the intermediate points by p up to o(h,k).'
+  - 'conclude: The sum is the claimed linear map plus a little-o remainder.'
   openmath: (forall (f fx fy p) (-> (and (forall (q) (has_deriv_at (lambda (s) (fn_value f (ordered_pair s (second_coord q)))) (fn_value fx q) (first_coord q))) (forall (q) (has_deriv_at (lambda (s) (fn_value f (ordered_pair (first_coord q) s))) (fn_value fy q) (second_coord q))) (continuous_map fx) (continuous_map fy)) (and (differentiable_at f p) (forall (h k) (= (fn_value (fderiv_at f p) (ordered_pair h k)) (+ (* (fn_value fx p) h) (* (fn_value fy p) k)))))))
   hard_negative:
     statement: 偏導関数が全ての点に存在すれば、連続でなくてもfは微分可能である。
@@ -678,22 +742,30 @@
   kind: named
   level: 2
   topic: 多変数関数・シュワルツの定理
-  statement: (シュワルツの定理)f:R^2→RがC^2級ならば、全ての点(a,b)でf_{xy}(a,b)=f_{yx}(a,b)である。すなわち偏微分の順序を交換できる。
+  statement: （シュワルツの定理）$f:\mathbb{R}^2\to\mathbb{R}$が$C^2$級ならば、全ての点$(a,b)$で$\partial_x\partial_y f(a,b)=\partial_y\partial_x f(a,b)$である。すなわち偏微分の順序を交換できる。
   statement_en: (Schwarz) If f from R^2 to R is of class C^2, then the mixed partial derivatives at each point agree, that is, the order of partial differentiation can be interchanged.
   assumptions:
-    - f:R^2→RはC^2級
+  - $f:\mathbb{R}^2\to\mathbb{R}$は$C^2$級
   quantifiers:
-    - 任意のf, 実数a, b
-  conclusion: xで微分する前にyで微分した結果と、yで微分する前にxで微分した結果は(a,b)で一致する。
+  - 任意の$f:\mathbb{R}^2\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $y$で微分してから$x$で微分した結果と、$x$で微分してから$y$で微分した結果は$(a,b)$で一致する。
   answer: |
-    (概略)差分D(h,k)=f(a+h,b+k)-f(a+h,b)-f(a,b+k)+f(a,b)を考える。φ(x)=f(x,b+k)-f(x,b)に平均値の定理を使い、さらにyについて平均値の定理を使うと、D(h,k)=f_{yx}(a+θh,b+θ'k)hkと書ける。xとyの役割を入れ替えると、D(h,k)=f_{xy}(a+σh,b+σ'k)hkとも書ける。hkで割ってh,k→0とすると、二階偏導関数の連続性から両者は(a,b)で一致する。
+    $f:\mathbb{R}^2\to\mathbb{R}$を$C^2$級とし、$(a,b)\in\mathbb{R}^2$とする。$\partial_x\partial_y f$は$y$で微分してから$x$で微分したものを表す。$C^2$級なので、$\partial_x\partial_y f$と$\partial_y\partial_x f$は存在して連続である。
+
+    $h,k\neq0$について$D(h,k)=f(a+h,b+k)-f(a+h,b)-f(a,b+k)+f(a,b)$とおく。
+
+    $\phi(x)=f(x,b+k)-f(x,b)$とおくと$D(h,k)=\phi(a+h)-\phi(a)$である。平均値の定理より、ある$0<\theta<1$で$D(h,k)=\phi'(a+\theta h)h=(\partial_x f(a+\theta h,b+k)-\partial_x f(a+\theta h,b))h$である。さらに$y\mapsto\partial_x f(a+\theta h,y)$に平均値の定理を使うと、ある$0<\theta'<1$で$D(h,k)=\partial_y\partial_x f(a+\theta h,b+\theta'k)hk$である。
+
+    同様に$\psi(y)=f(a+h,y)-f(a,y)$とおくと$D(h,k)=\psi(b+k)-\psi(b)$である。平均値の定理を$y$について、次に$x$について使うと、ある$0<\sigma,\sigma'<1$で$D(h,k)=\partial_x\partial_y f(a+\sigma'h,b+\sigma k)hk$である。
+
+    $hk\neq0$で割ると$\partial_y\partial_x f(a+\theta h,b+\theta'k)=\partial_x\partial_y f(a+\sigma'h,b+\sigma k)$である。$h,k\to0$とすると、両辺の点は$(a,b)$に近づく。二階偏導関数の連続性から$\partial_y\partial_x f(a,b)=\partial_x\partial_y f(a,b)$である。
   strategy: Express the symmetric second difference through both mixed partials using the mean value theorem twice, then pass to the limit by continuity.
   sketch:
-    - "construct: Define the second difference D(h,k) of f around (a,b)."
-    - "apply_theorem: The mean value theorem in x, then in y, expresses D through one mixed partial."
-    - "apply_theorem: The same argument in the other order expresses D through the other mixed partial."
-    - "derive: Divide by hk and let h and k tend to 0."
-    - "conclude: Continuity of the second partial derivatives makes the two limits equal."
+  - 'construct: Define the second difference D(h,k) of f around (a,b).'
+  - 'apply_theorem: The mean value theorem in x, then in y, expresses D through one mixed partial.'
+  - 'apply_theorem: The same argument in the other order expresses D through the other mixed partial.'
+  - 'derive: Divide by hk and let h and k tend to 0.'
+  - 'conclude: Continuity of the second partial derivatives makes the two limits equal.'
   openmath: (forall (f a b) (-> (cont_diff 2 f) (= (deriv_at_point (lambda (x) (deriv_at_point (lambda (y) (fn_value f (ordered_pair x y))) b)) a) (deriv_at_point (lambda (y) (deriv_at_point (lambda (x) (fn_value f (ordered_pair x y))) a)) b))))
   hard_negative:
     statement: 二階偏導関数f_{xy}, f_{yx}が全ての点に存在すれば、連続でなくてもf_{xy}=f_{yx}である。
@@ -728,22 +800,24 @@
   kind: gap
   level: 2
   topic: 多変数関数・勾配場の積分可能条件
-  statement: C^2級関数f:R^2→Rについて、P=f_x, Q=f_yならば全ての点でP_y=Q_xである。すなわち勾配場は渦なしである。
+  statement: $C^2$級関数$f:\mathbb{R}^2\to\mathbb{R}$について、$P=f_x$、$Q=f_y$ならば全ての点で$P_y=Q_x$である。すなわち勾配場は渦なしである。
   statement_en: If f from R^2 to R is of class C^2 with partial derivatives P = f_x and Q = f_y, then P_y = Q_x everywhere, so a gradient field is curl-free.
   assumptions:
-    - f:R^2→RはC^2級
-    - P=f_x, Q=f_y
+  - $f:\mathbb{R}^2\to\mathbb{R}$は$C^2$級
+  - $P(q)=df(q)(1,0)$、$Q(q)=df(q)(0,1)$
   quantifiers:
-    - 任意のf, P, Q, 点p
-  conclusion: dP(p)(0,1)=dQ(p)(1,0)である。
+  - 任意の$f,P,Q:\mathbb{R}^2\to\mathbb{R}$と$p\in\mathbb{R}^2$
+  conclusion: $dP(p)(0,1)=dQ(p)(1,0)$である。
   answer: |
-    P(q)=df(q)(1,0)をqで微分すると、dP(p)(v)=d^2f(p)(v)(1,0)である。同様にdQ(p)(w)=d^2f(p)(w)(0,1)である。C^2級関数の二階微分は対称なので、d^2f(p)(0,1)(1,0)=d^2f(p)(1,0)(0,1)である。これはdP(p)(0,1)=dQ(p)(1,0)を意味する。
+    $f:\mathbb{R}^2\to\mathbb{R}$を$C^2$級とし、$P,Q:\mathbb{R}^2\to\mathbb{R}$が全ての$q$で$P(q)=df(q)(1,0)$、$Q(q)=df(q)(0,1)$を満たすとする。$p\in\mathbb{R}^2$をとる。
+
+    $P=\partial_x f$、$Q=\partial_y f$であり、$f$が$C^2$級なので$P,Q$は$C^1$級である。よって$dP(p)(0,1)=\partial_y P(p)=\partial_y\partial_x f(p)$、$dQ(p)(1,0)=\partial_x Q(p)=\partial_x\partial_y f(p)$である。シュワルツの定理（$C^2$級関数$f:\mathbb{R}^2\to\mathbb{R}$では全ての点で$\partial_x\partial_y f=\partial_y\partial_x f$）から、両者は等しい。
   strategy: Express P and Q through the first derivative of f and use symmetry of the second derivative.
   sketch:
-    - "translate: Write P(q) = df(q)(1,0) and Q(q) = df(q)(0,1)."
-    - "derive: Differentiating gives dP(p)(v) = d^2f(p)(v)(1,0) and dQ(p)(w) = d^2f(p)(w)(0,1)."
-    - "apply_theorem: The second derivative of a C^2 function is symmetric."
-    - "conclude: Hence P_y = Q_x."
+  - 'translate: Write P(q) = df(q)(1,0) and Q(q) = df(q)(0,1).'
+  - 'derive: Differentiating gives dP(p)(v) = d^2f(p)(v)(1,0) and dQ(p)(w) = d^2f(p)(w)(0,1).'
+  - 'apply_theorem: The second derivative of a C^2 function is symmetric.'
+  - 'conclude: Hence P_y = Q_x.'
   openmath: (forall (f P Q p) (-> (and (cont_diff 2 f) (forall (q) (= (fn_value (fderiv_at f q) (ordered_pair 1 0)) (fn_value P q))) (forall (q) (= (fn_value (fderiv_at f q) (ordered_pair 0 1)) (fn_value Q q)))) (= (fn_value (fderiv_at P p) (ordered_pair 0 1)) (fn_value (fderiv_at Q p) (ordered_pair 1 0)))))
   hard_negative:
     statement: R^2から原点を除いた領域で滑らかな場(P,Q)がP_y=Q_xを満たせば、そこで勾配場である。
@@ -767,23 +841,25 @@
   kind: gap
   level: 2
   topic: 多変数関数・同次関数
-  statement: 実ノルム空間E上の実数値関数fがk次同次、すなわち全てのt>0と全てのyでf(ty)=t^k f(y)を満たし、点xでの微分がLならば、L(x)=k f(x)である。
+  statement: 実ノルム空間$E$上の実数値関数$f$が、全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$を満たし、点$x$での微分が$L$ならば、$L(x)=kf(x)$である。
   statement_en: If a real-valued function f on a real normed space is homogeneous of degree k, that is f(ty) = t^k f(y) for all t > 0 and all y, and f has derivative L at x, then L(x) = k f(x).
   assumptions:
-    - Eは実ノルム空間
-    - 全てのt>0とyでf(ty)=t^k f(y)
-    - fのxでの微分はL
+  - $E$は実ノルム空間
+  - 全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$
+  - $f$の$x$での微分は$L$
   quantifiers:
-    - 任意のf, 自然数k, 点x, L
-  conclusion: L(x)=k f(x)である。
+  - 任意の$f:E\to\mathbb{R}$、$k\in\mathbb{N}$、$x\in E$、有界線形写像$L$
+  conclusion: $L(x)=kf(x)$である。
   answer: |
-    g(t)=f(tx)と置く。連鎖律より、g'(1)=L(x)である。一方、t>0ではg(t)=t^k f(x)なので、t=1の近くで微分してg'(1)=k f(x)である。したがってL(x)=k f(x)である。
+    $E$を実ノルム空間、$k\in\mathbb{N}$とし、$f:E\to\mathbb{R}$は全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$を満たすとする。$x\in E$での$f$の微分を$L$とする。
+
+    $h(t)=f(tx)$とおく。$t\mapsto tx$の$t=1$での微分係数は$x$であり、$t=1$で点$x$を通る。連鎖律より$h'(1)=L(x)$である。一方、$t>0$では$h(t)=t^kf(x)$なので、$t=1$で微分して$h'(1)=kf(x)$である。したがって$L(x)=kf(x)$である。
   strategy: Differentiate the identity f(tx) = t^k f(x) at t = 1 in two ways.
   sketch:
-    - "construct: Define g(t) = f(tx) for real t."
-    - "apply_theorem: The chain rule along the ray gives g'(1) = L(x)."
-    - "derive: Near t = 1 we have g(t) = t^k f(x), so g'(1) = k f(x)."
-    - "conclude: Uniqueness of the derivative gives L(x) = k f(x)."
+  - 'construct: Define g(t) = f(tx) for real t.'
+  - 'apply_theorem: The chain rule along the ray gives g''(1) = L(x).'
+  - 'derive: Near t = 1 we have g(t) = t^k f(x), so g''(1) = k f(x).'
+  - 'conclude: Uniqueness of the derivative gives L(x) = k f(x).'
   openmath: (forall (E f k x L) (-> (and (normed_space E) (in k N) (homogeneous_of_degree f k) (has_fderiv_at f L x)) (= (fn_value L x) (* k (fn_value f x)))))
   hard_negative:
     statement: L(x)=k f(x)が1点xで成り立てばfはk次同次である。
@@ -807,25 +883,35 @@
   kind: named
   level: 2
   topic: 多変数関数・逆関数定理
-  statement: (逆関数定理)Banach空間の間のC^1級写像fの点aでの微分Lが有界な逆を持つならば、g(f(a))=aであるgが存在し、aの近くでg(f(x))=x、f(a)の近くでf(g(y))=yを満たす。さらにgはf(a)の近くでC^1級で、f(a)での微分はL^{-1}である。
+  statement: （逆関数定理）バナッハ空間$E$から実ノルム空間$F$への写像$f$が点$a$の近くで$C^1$級で、$a$での微分$L$が連続線形同型ならば、$g(f(a))=a$を満たす$g:F\to E$が存在し、$a$の近くで$g(f(x))=x$、$f(a)$の近くで$f(g(y))=y$を満たす。さらに$g$は$f(a)$の近くで$C^1$級で、$f(a)$での微分は$L^{-1}$である。
   statement_en: (Inverse function theorem) If a C^1 map f between Banach spaces has at a a derivative L with bounded inverse, then there is g with g(f(a)) = a that inverts f near a and near f(a), g is C^1 at f(a), and its derivative there is the inverse of L.
   assumptions:
-    - E, FはBanach空間
-    - fはaの近くでC^1級
-    - fのaでの微分Lは連続線形同型
+  - $E$はバナッハ空間、$F$は実ノルム空間
+  - $f:E\to F$は$a$の近くで$C^1$級
+  - $f$の$a$での微分$L$は連続線形同型
   quantifiers:
-    - 任意のf, L, 点a
-  conclusion: fの局所逆写像gが存在し、f(a)でC^1級で、微分はL^{-1}である。
+  - 任意の$f:E\to F$、連続線形同型$L:E\to F$、$a\in E$
+  conclusion: $f$の局所逆写像$g$が存在し、$f(a)$の近くで$C^1$級で、$f(a)$での微分は$L^{-1}$である。
   answer: |
-    (概略)F(x)=x-L^{-1}(f(x)-y)と置くと、Fの不動点はf(x)=yの解である。fはC^1級なのでdF(a)=0であり、aの小さな閉球でFは縮小写像となる。バナッハの不動点定理により、f(a)に近いyごとに解xが一意に定まり、これがgを与える。gの微分可能性は、fの一次近似を逆に解いて確かめ、微分は(df)^{-1}である。この式と逆写像の連続性からgはC^1級である。
+    $E$をバナッハ空間、$F$を実ノルム空間とする。$f:E\to F$は$a\in E$の近くで$C^1$級で、$a$での微分$L$は連続線形同型であるとする。$b=f(a)$、$C=\|L^{-1}\|+1$とおく。バナッハの不動点定理（完備距離空間から自身への縮小写像はただ一つの不動点をもつ）と、平均値の不等式を用いる。
+
+    局所的な縮小性を示す。$df$は$a$の近傍で連続で$df(a)=L$なので、$r>0$があり、閉球$\bar B=\bar B(a,r)$の近傍で$f$は$C^1$級で、$\bar B$上で$\|I-L^{-1}df(x)\|\leq1/2$である。$\phi(x)=x-L^{-1}f(x)$とおくと$d\phi(x)=I-L^{-1}df(x)$である。$\bar B$は凸なので、平均値の不等式より$x,x'\in\bar B$で$\|\phi(x)-\phi(x')\|\leq\|x-x'\|/2$である。これと$x-x'=\phi(x)-\phi(x')+L^{-1}(f(x)-f(x'))$から、$\|x-x'\|\leq2C\|f(x)-f(x')\|$を得る。特に$f$は$\bar B$上で単射である。
+
+    局所逆写像を構成する。$\rho=r/(2C)$とし、$V$を$b$を中心とする半径$\rho$の開球とする。$y\in V$に対して$\Phi_y(x)=x-L^{-1}(f(x)-y)=\phi(x)+L^{-1}y$とおく。$\Phi_y$は$\bar B$上で比$1/2$の縮小である。$x\in\bar B$なら$\|\Phi_y(x)-a\|\leq\|\Phi_y(x)-\Phi_y(a)\|+\|L^{-1}(y-b)\|\leq r/2+C\rho=r$なので、$\Phi_y$は$\bar B$を自身に写す。$\bar B$は完備なので、不動点定理から$\Phi_y(x)=x$となる$x\in\bar B$がただ一つある。$\Phi_y(x)=x$は$f(x)=y$と同値である。この$x$を$g(y)$とし、$y\notin V$では$g(y)=a$と定める。
+
+    すると$V$上で$f(g(y))=y$であり、$a$は$\Phi_b$の不動点なので$g(b)=a$である。$f$は$a$で連続なので、$a$の近傍$W\subseteq\bar B$で$f(W)\subseteq V$となるものがある。$x\in W$なら、不動点の一意性から$g(f(x))=x$である。また$y,y'\in V$で$\|g(y)-g(y')\|\leq2C\|y-y'\|$なので、$g$は$V$上で連続である。
+
+    $g$の微分を求める。$y_0\in V$、$x_0=g(y_0)$、$A=df(x_0)$とする。$\|I-L^{-1}A\|\leq1/2$なので、ノイマン級数により$L^{-1}A$は$E$上の連続線形同型であり、$A$も連続線形同型である。$y\in V$について$k=y-y_0$、$h=g(y)-x_0$とおくと$\|h\|\leq2C\|k\|$である。$k=f(x_0+h)-f(x_0)=Ah+R(h)$、$R(h)=o(\|h\|)$と書ける。よって$h=A^{-1}k-A^{-1}R(h)$であり、$\|A^{-1}R(h)\|=o(\|k\|)$である。したがって$g$は$y_0$で微分可能で、$dg(y_0)=(df(g(y_0)))^{-1}$である。特に$dg(b)=L^{-1}$である。
+
+    最後に、$(df(x))^{-1}=(L^{-1}df(x))^{-1}L^{-1}$であり、$E$上の連続線形同型の逆をとる操作は連続である。$g$と$df$も連続なので、$dg$は$V$上で連続である。よって$g$は$b$の近傍$V$で$C^1$級である。
   strategy: Solve f(x) = y as a fixed point problem and apply the contraction mapping principle near a.
   sketch:
-    - "translate: Rewrite f(x) = y as the fixed point equation x = x - L^{-1}(f(x) - y)."
-    - "derive: Since f is C^1, this map is a contraction on a small closed ball around a."
-    - "apply_theorem: The contraction mapping principle gives a unique solution for each y near f(a)."
-    - "construct: Let g(y) be this solution, a local inverse of f."
-    - "derive: Inverting the linear approximation of f gives the derivative of g."
-    - "conclude: The formula for the derivative shows that g is C^1 at f(a)."
+  - 'translate: Rewrite f(x) = y as the fixed point equation x = x - L^{-1}(f(x) - y).'
+  - 'derive: Since f is C^1, this map is a contraction on a small closed ball around a.'
+  - 'apply_theorem: The contraction mapping principle gives a unique solution for each y near f(a).'
+  - 'construct: Let g(y) be this solution, a local inverse of f.'
+  - 'derive: Inverting the linear approximation of f gives the derivative of g.'
+  - 'conclude: The formula for the derivative shows that g is C^1 at f(a).'
   openmath: (forall (E F f L a) (-> (and (banach_space E) (normed_space F) (cont_diff_at 1 f a) (has_fderiv_at f L a) (linear_iso L)) (exists (g) (and (= (fn_value g (fn_value f a)) a) (local_inverse_of g f a) (has_fderiv_at g (inverse_operator L) (fn_value f a)) (cont_diff_at 1 g (fn_value f a))))))
   hard_negative:
     statement: 全ての点で微分が可逆なC^1級写像は、全体で単射である。
@@ -843,25 +929,31 @@
   kind: gap
   level: 2
   topic: 多変数関数・逆写像の微分
-  statement: gが点bで連続で、bの近くでf(g(y))=yを満たし、fのg(b)での微分が連続線形同型Lならば、gはbで微分可能で、微分はL^{-1}である。
+  statement: $g$が点$b$で連続で、$b$の近くで$f(g(y))=y$を満たし、$f$の$g(b)$での微分が連続線形同型$L$ならば、$g$は$b$で微分可能で、微分は$L^{-1}$である。
   statement_en: If g is continuous at b, f(g(y)) = y for y near b, and f has at g(b) a derivative L that is a continuous linear isomorphism, then g is differentiable at b with derivative the inverse of L.
   assumptions:
-    - E, Fは実ノルム空間
-    - gはbで連続
-    - bの近くでf(g(y))=y
-    - fのg(b)での微分は連続線形同型L
+  - $E,F$は実ノルム空間
+  - $g:F\to E$は$b$で連続
+  - $b$の近くで$f(g(y))=y$
+  - $f:E\to F$の$g(b)$での微分は連続線形同型$L$
   quantifiers:
-    - 任意のf, g, L, 点b
-  conclusion: gのbでの微分はL^{-1}である。
+  - 任意の$f:E\to F$、$g:F\to E$、連続線形同型$L:E\to F$、$b\in F$
+  conclusion: $g$の$b$での微分は$L^{-1}$である。
   answer: |
-    k=y-b, h=g(y)-g(b)と置く。fの展開からk=f(g(y))-f(g(b))=L(h)+o(‖h‖)である。gの連続性よりk→0でh→0なので、この展開はk→0で使える。L^{-1}を作用させるとh=L^{-1}(k)+o(‖h‖)である。L^{-1}は有界なので、kが小さいとき‖h‖≤C‖k‖となる。したがってh=L^{-1}(k)+o(‖k‖)であり、gのbでの微分はL^{-1}である。
+    $E,F$を実ノルム空間とし、$f:E\to F$、$g:F\to E$、$b\in F$とする。$g$は$b$で連続で、$b$の近くで$f(g(y))=y$であり、$f$の$g(b)$での微分は連続線形同型$L$であるとする。$C=\|L^{-1}\|+1$とおく。
+
+    $R(h)=f(g(b)+h)-f(g(b))-L(h)$とおくと、$R(h)=o(\|h\|)$である。$y$を$b$の近くにとり、$k=y-b$、$h=g(y)-g(b)$とおく。$f(g(y))=y$かつ$f(g(b))=b$なので、$k=L(h)+R(h)$である。$L^{-1}$を作用させると$h=L^{-1}(k)-L^{-1}(R(h))$である。
+
+    $0<\varepsilon\leq1/(2C)$とする。$\delta>0$があり、$\|h\|<\delta$なら$\|R(h)\|\leq\varepsilon\|h\|$である。$g$の$b$での連続性から、$k$が十分小さければ$\|h\|<\delta$である。このとき$\|h\|\leq C\|k\|+C\varepsilon\|h\|\leq C\|k\|+\|h\|/2$なので、$\|h\|\leq2C\|k\|$である。よって$\|h-L^{-1}(k)\|\leq C\|R(h)\|\leq C\varepsilon\|h\|\leq2C^2\varepsilon\|k\|$である。
+
+    $\varepsilon$はいくらでも小さくとれるので、$g(b+k)-g(b)-L^{-1}(k)=o(\|k\|)$である。すなわち$g$の$b$での微分は$L^{-1}$である。
   strategy: Invert the first-order expansion of f at g(b) and use continuity of g to control the remainder.
   sketch:
-    - "setup: Put k = y - b and h = g(y) - g(b)."
-    - "derive: The expansion of f gives k = L(h) + o(h)."
-    - "derive: Applying the inverse of L gives h = L^{-1}(k) + o(h)."
-    - "derive: Continuity of g and boundedness of the inverse give a bound of h by a constant times k."
-    - "conclude: Therefore h = L^{-1}(k) + o(k), which is differentiability with the stated derivative."
+  - 'setup: Put k = y - b and h = g(y) - g(b).'
+  - 'derive: The expansion of f gives k = L(h) + o(h).'
+  - 'derive: Applying the inverse of L gives h = L^{-1}(k) + o(h).'
+  - 'derive: Continuity of g and boundedness of the inverse give a bound of h by a constant times k.'
+  - 'conclude: Therefore h = L^{-1}(k) + o(k), which is differentiability with the stated derivative.'
   openmath: (forall (E F f g L b) (-> (and (normed_space E) (normed_space F) (continuous_map_at g b) (linear_iso L) (has_fderiv_at f L (fn_value g b)) (right_inverse_near f g b)) (has_fderiv_at g (inverse_operator L) b)))
   hard_negative:
     statement: gがbで連続でf(g(y))=yならば、fの微分が可逆でなくてもgはbで微分可能である。
@@ -876,25 +968,37 @@
   kind: named
   level: 2
   topic: 多変数関数・陰関数定理
-  statement: (陰関数定理)E_1, E_2, FをBanach空間とする。f:E_1×E_2→Fが点uの近くでC^1級で、uでの微分Lの第2変数方向の部分M=L(0,·)が有界な逆を持つとする。このときφが存在し、uの近くの点vについてf(v)=f(u)はφ(v_1)=v_2と同値である。さらにφはu_1で微分可能で、微分は-M^{-1}∘L(·,0)である。
+  statement: （陰関数定理）$E_1,E_2,F$をバナッハ空間とする。$f:E_1\times E_2\to F$が点$u=(u_1,u_2)$の近くで$C^1$級で、$u$での微分$L$の第$2$変数方向の部分$M=L(0,\cdot)$が有界な逆をもつとする。このとき$\varphi:E_1\to E_2$が存在し、$\varphi(u_1)=u_2$で、$u$の近くの点$v=(v_1,v_2)$について$f(v)=f(u)$は$\varphi(v_1)=v_2$と同値である。さらに$\varphi$は$u_1$で微分可能で、微分は$-M^{-1}\circ L(\cdot,0)$である。
   statement_en: (Implicit function theorem) Let E_1, E_2, F be Banach spaces, f from E_1×E_2 to F be C^1 near u, and suppose the partial derivative M of the derivative L at u in the second variable has a bounded inverse. Then there is φ with φ(u_1) = u_2 such that, for v near u, f(v) = f(u) if and only if φ(v_1) = v_2. Moreover φ is differentiable at u_1 with derivative -M^{-1} composed with the partial derivative of L in the first variable.
   assumptions:
-    - E_1, E_2, FはBanach空間
-    - fはuの近くでC^1級で、uでの微分はL
-    - M=L(0,·)はE_2からFへの有界な逆を持つ
+  - $E_1,E_2,F$はバナッハ空間
+  - $f:E_1\times E_2\to F$は$u$の近くで$C^1$級で、$u$での微分は$L$
+  - $M=L(0,\cdot)$は$E_2$から$F$への有界な逆をもつ
   quantifiers:
-    - 任意のf, L, 点u
-  conclusion: uの近くでf(v)=f(u)の解はφのグラフで与えられ、φ'(u_1)=-M^{-1}∘L(·,0)である。
+  - 任意の$f:E_1\times E_2\to F$、有界線形写像$L$、$u\in E_1\times E_2$
+  conclusion: $u$の近くで$f(v)=f(u)$の解は$\varphi$のグラフで与えられ、$d\varphi(u_1)=-M^{-1}\circ L(\cdot,0)$である。
   answer: |
-    (概略)写像G(x,y)=(x,f(x,y))を考える。Gのuでの微分は(h,k)↦(h,L(h,k))で、Mが可逆なので有界な逆を持つ。逆関数定理からGは局所逆写像を持つ。その第2成分でφ(x)を定めると、u_1の近くでf(x,φ(x))=f(u)であり、uの近くの解はこれに限られる。φの微分はf(x,φ(x))=f(u)を連鎖律で微分して、L(h,0)+M(φ'(u_1)h)=0から得られる。
+    $E_1,E_2,F$をバナッハ空間とする。$f:E_1\times E_2\to F$は$u=(u_1,u_2)$の近くで$C^1$級で、$u$での微分を$L$とする。$M=L(0,\cdot):E_2\to F$は有界な逆をもつとする。
+
+    $G:E_1\times E_2\to E_1\times F$を$G(x,y)=(x,f(x,y))$で定める。$G$は$u$の近くで$C^1$級で、$dG(u)(h,k)=(h,L(h,0)+Mk)$である。この線形写像は有界な逆$(h,w)\mapsto(h,M^{-1}(w-L(h,0)))$をもつ。$E_1\times E_2$はバナッハ空間なので、逆関数定理を適用できる。よって$H:E_1\times F\to E_1\times E_2$があり、$H(G(u))=u$、$u$の近くで$H(G(v))=v$、$G(u)=(u_1,f(u))$の近くで$G(H(z))=z$を満たす。さらに$H$は$G(u)$で微分可能で、微分は$dG(u)^{-1}$である。
+
+    $H$の第$2$成分を$H_2$とし、$\varphi(x)=H_2(x,f(u))$と定める。$H(G(u))=u$より$\varphi(u_1)=u_2$である。
+
+    $v=(v_1,v_2)$を$u$に十分近くとり、$H(G(v))=v$かつ$G(H(v_1,f(u)))=(v_1,f(u))$が成り立つとする。
+
+    $f(v)=f(u)$とする。$G(v)=(v_1,f(u))$なので$H(v_1,f(u))=H(G(v))=v$であり、第$2$成分を比べて$\varphi(v_1)=v_2$である。
+
+    逆に$\varphi(v_1)=v_2$とする。$G(H(v_1,f(u)))=(v_1,f(u))$の第$1$成分を比べると、$H(v_1,f(u))$の第$1$成分は$v_1$である。よって$H(v_1,f(u))=(v_1,\varphi(v_1))=v$である。したがって$G(v)=(v_1,f(u))$であり、$f(v)=f(u)$である。
+
+    微分を求める。$\varphi$は$x\mapsto(x,f(u))$、$H$、第$2$成分への射影の合成なので、連鎖律より$u_1$で微分可能である。$d\varphi(u_1)(h)$は$dG(u)^{-1}(h,0)=(h,M^{-1}(0-L(h,0)))$の第$2$成分なので、$-M^{-1}(L(h,0))$である。
   strategy: Apply the inverse function theorem to G(x,y) = (x, f(x,y)) and read off the implicit function from its local inverse.
   sketch:
-    - "construct: Define G(x,y) = (x, f(x,y))."
-    - "derive: The invertibility of M makes the derivative of G at u invertible."
-    - "apply_theorem: The inverse function theorem gives a local inverse of G."
-    - "construct: Define φ from the second component of this local inverse at (x, f(u))."
-    - "derive: Near u the level set of f through u is the graph of φ."
-    - "conclude: Differentiating f(x, φ(x)) = f(u) by the chain rule gives the derivative of φ."
+  - 'construct: Define G(x,y) = (x, f(x,y)).'
+  - 'derive: The invertibility of M makes the derivative of G at u invertible.'
+  - 'apply_theorem: The inverse function theorem gives a local inverse of G.'
+  - 'construct: Define φ from the second component of this local inverse at (x, f(u)).'
+  - 'derive: Near u the level set of f through u is the graph of φ.'
+  - 'conclude: Differentiating f(x, φ(x)) = f(u) by the chain rule gives the derivative of φ.'
   openmath: (forall (E1 E2 F f L u) (-> (and (banach_space E1) (banach_space E2) (banach_space F) (cont_diff_at 1 f u) (has_fderiv_at f L u) (linear_iso (restricted_to_second L))) (exists (phi) (and (= (fn_value phi (first_coord u)) (second_coord u)) (locally_graph_of f phi u) (has_fderiv_at phi (operator_comp (scalar_multiple (neg 1) (inverse_operator (restricted_to_second L))) (restricted_to_first L)) (first_coord u))))))
   hard_negative:
     statement: f(x,y)=0でf_x≠0, f_y=0の点の近くでも、解集合はy=φ(x)の形のグラフで書ける。
@@ -913,25 +1017,35 @@
   kind: named
   level: 2
   topic: 多変数関数・ラグランジュの未定乗数法
-  statement: (ラグランジュの未定乗数法)Banach空間E上の実数値関数φ, gが点aで強微分可能で微分がφ', g'であり、g'≠0とする。φが等高集合{x | g(x)=g(a)}上でaで極値をとるならば、φ'=λg'となる実数λが存在する。
+  statement: （ラグランジュの未定乗数法）バナッハ空間$E$上の実数値関数$\varphi,g$が点$a$で強微分可能で、微分がそれぞれ$\varphi',g'$であり、$g'\neq0$とする。$\varphi$が等高集合$\{x\mid g(x)=g(a)\}$上で$a$において極値をとるならば、$\varphi'=\lambda g'$となる実数$\lambda$が存在する。
   statement_en: (Lagrange multipliers) Let φ and g be real-valued functions on a Banach space, strictly differentiable at a with derivatives φ' and g', and suppose g' is nonzero. If φ restricted to the level set of g through a has a local extremum at a, then φ' = λ g' for some real λ.
   assumptions:
-    - EはBanach空間
-    - φ, gはaで強微分可能(C^1級ならば成り立つ)
-    - g'≠0
-    - φは{x | g(x)=g(a)}上でaで極値をとる
+  - $E$はバナッハ空間
+  - $\varphi,g:E\to\mathbb{R}$は$a$で強微分可能（$C^1$級ならば成り立つ）
+  - $g'\neq0$
+  - $\varphi$は$\{x\mid g(x)=g(a)\}$上で$a$において極値をとる
   quantifiers:
-    - 任意のφ, g, φ', g', 点a
-  conclusion: φ'=λg'となる実数λが存在する。
+  - 任意の$\varphi,g:E\to\mathbb{R}$、有界線形汎関数$\varphi',g'$、$a\in E$
+  conclusion: $\varphi'=\lambda g'$となる$\lambda\in\mathbb{R}$が存在する。
   answer: |
-    (概略)x↦(g(x),φ(x))のaでの微分(g',φ')を考える。これがR^2への全射なら、強微分可能性と開写像型の定理より、像はg(a)を固定してもφ(a)の前後の値をとり、極値であることに矛盾する。よって(g',φ')は全射でなく、ある(p,q)≠0でpg'+qφ'=0となる。q=0ならp≠0でg'=0となり仮定に反するのでq≠0である。したがってφ'=(-p/q)g'である。
+    $E$をバナッハ空間、$\varphi,g:E\to\mathbb{R}$を$a\in E$で強微分可能な関数とし、微分をそれぞれ$\varphi',g'$、$g'\neq0$とする。$\varphi$は$\{x\mid g(x)=g(a)\}$上で$a$において極値をとるとする。$g$の強微分可能性とは、任意の$\varepsilon>0$に対して$\delta>0$があり、$\|x-a\|,\|x'-a\|<\delta$なら$|g(x)-g(x')-g'(x-x')|\leq\varepsilon\|x-x'\|$となることである。$\varphi$についても同様である。
+
+    $\varphi'=\lambda g'$となる$\lambda$がないと仮定して矛盾を導く。
+
+    $g'\neq0$より$g'(v_0)=1$となる$v_0$がある。$\psi=\varphi'-\varphi'(v_0)g'$は仮定から$0$でなく、$\psi(v_0)=0$である。$\psi(w_1)=1$となる$w_1$をとる。$w=w_1-g'(w_1)v_0$、$v=v_0-\varphi'(v_0)w$とおく。すると$g'(w)=0$、$\varphi'(w)=\psi(w)=1$であり、$g'(v)=1$、$\varphi'(v)=0$である。
+
+    $\mathbb{R}^2$に最大値ノルムを入れ、$z=(s,t)$に対して$x(z)=a+sv+tw$、$\Psi(z)=(g(x(z)),\varphi(x(z)))$とおく。$K=\|v\|+\|w\|>0$とすると$\|x(z)-x(z')\|\leq K\|z-z'\|$である。$g'(sv+tw)=s$、$\varphi'(sv+tw)=t$なので、$R(z)=\Psi(z)-\Psi(0)-z$の差は$R(z)-R(z')=(g(x(z))-g(x(z'))-g'(x(z)-x(z')),\ \varphi(x(z))-\varphi(x(z'))-\varphi'(x(z)-x(z')))$である。強微分可能性を$\varepsilon=1/(2K)$で使うと、$r>0$があり、$\|z\|,\|z'\|\leq r$なら$\|R(z)-R(z')\|\leq\|z-z'\|/2$である。また$R(0)=0$である。
+
+    $|\eta|\leq r/2$に対して$T(z)=(0,\eta)-R(z)$とおく。$\|z\|\leq r$なら$\|T(z)\|\leq|\eta|+\|z\|/2\leq r$なので、$T$は閉球$\{\|z\|\leq r\}$を自身に写す比$1/2$の縮小写像である。バナッハの不動点定理（完備距離空間から自身への縮小写像はただ一つの不動点をもつ）から不動点$z_\eta$がある。すると$\Psi(z_\eta)=\Psi(0)+(0,\eta)$である。つまり$x_\eta=x(z_\eta)$は$g(x_\eta)=g(a)$、$\varphi(x_\eta)=\varphi(a)+\eta$を満たす。さらに$\|z_\eta\|\leq|\eta|+\|z_\eta\|/2$より$\|z_\eta\|\leq2|\eta|$なので、$\|x_\eta-a\|\leq2K|\eta|$である。
+
+    $\varphi$が$a$で極大なら$\eta>0$を十分小さくとり、極小なら$\eta<0$で$|\eta|$を十分小さくとる。すると$x_\eta$は$a$の近くの等高集合の点であり、$\varphi(x_\eta)=\varphi(a)+\eta$が極値であることに反する。したがって$\varphi'=\lambda g'$となる$\lambda\in\mathbb{R}$が存在する。
   strategy: Show that the pair of derivatives is not surjective onto R^2, obtain a linear dependence, and exclude the vanishing coefficient of φ'.
   sketch:
-    - "construct: Consider the map x ↦ (g(x), φ(x)) and its derivative at a."
-    - "contradiction: If the derivative were surjective, an open mapping argument would contradict the local extremum on the level set."
-    - "derive: Hence there is a nonzero pair (p,q) with p g' + q φ' = 0."
-    - "case_split: If q = 0 then p is nonzero and g' = 0, against the hypothesis."
-    - "conclude: So q is nonzero and φ' = (-p/q) g'."
+  - 'construct: Consider the map x ↦ (g(x), φ(x)) and its derivative at a.'
+  - 'contradiction: If the derivative were surjective, an open mapping argument would contradict the local extremum on the level set.'
+  - 'derive: Hence there is a nonzero pair (p,q) with p g'' + q φ'' = 0.'
+  - 'case_split: If q = 0 then p is nonzero and g'' = 0, against the hypothesis.'
+  - 'conclude: So q is nonzero and φ'' = (-p/q) g''.'
   openmath: (forall (E phi g dphi dg a) (-> (and (banach_space E) (has_strict_fderiv_at g dg a) (has_strict_fderiv_at phi dphi a) (!= dg 0) (local_extremum_on phi (level_set_through g a) a)) (exists (l) (= dphi (scalar_multiple l dg)))))
   hard_negative:
     statement: g'=0の点でも、制約付き極値点ならφ'=λg'となるλが存在する。
@@ -960,21 +1074,23 @@
   kind: gap
   level: 2
   topic: 重積分・連続関数の可積分性
-  statement: R^nの閉直方体[a,b]上で連続な関数fは、[a,b]上で可積分である。
+  statement: $\mathbb{R}^n$の閉直方体$[a,b]$上で連続な関数$f$は、$[a,b]$上で可積分である。
   statement_en: A function continuous on a closed box [a,b] in R^n is integrable on [a,b].
   assumptions:
-    - f:R^n→Rは閉直方体[a,b]上で連続
+  - $f:\mathbb{R}^n\to\mathbb{R}$は閉直方体$[a,b]$上で連続
   quantifiers:
-    - 任意のn, f, a, b
-  conclusion: fは[a,b]上で可積分である。
+  - 任意の$n\in\mathbb{N}$、$f:\mathbb{R}^n\to\mathbb{R}$、$a,b\in\mathbb{R}^n$
+  conclusion: $f$は$[a,b]$上でルベーグ可積分である。
   answer: |
-    閉直方体は有界閉集合なのでコンパクトである。コンパクト集合上の連続関数は有界であり、Mで抑えられる。fは連続なので[a,b]上で可測であり、閉直方体の体積は有限なので、|f|の積分はM×体積以下で有限である。よってfは可積分である。
+    $n\in\mathbb{N}$、$a,b\in\mathbb{R}^n$とし、全ての$i$で$a_i\leq x_i\leq b_i$を満たす$x\in\mathbb{R}^n$全体を$[a,b]$とする。$f:\mathbb{R}^n\to\mathbb{R}$は$[a,b]$上で連続であるとする。$[a,b]$が空なら示すことはない。
+
+    $[a,b]$は有界閉集合なのでコンパクトである。コンパクト集合上の連続関数は有界なので、$[a,b]$上で$|f|\leq M$となる$M$がある。$f$は$[a,b]$上で連続なので、$[a,b]$上で可測である。$[a,b]$の体積は有限なので、$\int_{[a,b]}|f|\,dx\leq M\cdot\mathrm{vol}([a,b])<\infty$である。よって$f$は$[a,b]$上で可積分である。
   strategy: Compactness gives boundedness, and a bounded measurable function on a set of finite measure is integrable.
   sketch:
-    - "derive: The closed box is compact."
-    - "apply_theorem: A continuous function on a compact set is bounded."
-    - "derive: The box has finite volume, so the integral of the absolute value of f is finite."
-    - "conclude: Hence f is integrable on the box."
+  - 'derive: The closed box is compact.'
+  - 'apply_theorem: A continuous function on a compact set is bounded.'
+  - 'derive: The box has finite volume, so the integral of the absolute value of f is finite.'
+  - 'conclude: Hence f is integrable on the box.'
   openmath: (forall (n f a b) (-> (continuous_on_set f (box_region a b)) (integrable_on_set (lambda (x) (fn_value f x)) (box_region a b))))
   hard_negative:
     statement: 開直方体上で連続な関数は、その開直方体上で可積分である。
@@ -989,21 +1105,25 @@
   kind: textbook
   level: 2
   topic: 重積分・フビニの定理
-  statement: f:R^2→Rが長方形[a,b]×[c,d]上で連続ならば、長方形上の重積分は累次積分∫_{[a,b]}∫_{[c,d]}f(x,y)dydxに等しく、積分の順序を交換した∫_{[c,d]}∫_{[a,b]}f(x,y)dxdyにも等しい。
+  statement: $f:\mathbb{R}^2\to\mathbb{R}$が長方形$[a,b]\times[c,d]$上で連続ならば、長方形上の重積分は累次積分$\int_{[a,b]}\int_{[c,d]}f(x,y)\,dy\,dx$に等しく、積分の順序を交換した$\int_{[c,d]}\int_{[a,b]}f(x,y)\,dx\,dy$にも等しい。
   statement_en: If f from R^2 to R is continuous on the rectangle [a,b]×[c,d], then its double integral equals the iterated integral in either order.
   assumptions:
-    - fは[a,b]×[c,d]上で連続
+  - $f$は$[a,b]\times[c,d]$上で連続
   quantifiers:
-    - 任意のf, 実数a, b, c, d
-  conclusion: 重積分と2つの累次積分は全て等しい。
+  - 任意の$f:\mathbb{R}^2\to\mathbb{R}$と$a,b,c,d\in\mathbb{R}$
+  conclusion: 重積分と$2$つの累次積分は全て等しい。
   answer: |
-    長方形はコンパクトなのでfは有界で、長方形上で可積分である。可積分関数についてのフビニの定理より、重積分はどちらの順序の累次積分にも等しい。
+    $a,b,c,d\in\mathbb{R}$とし、$f:\mathbb{R}^2\to\mathbb{R}$は$Q=[a,b]\times[c,d]$上で連続であるとする。$Q$が空なら全ての積分は$0$なので、$Q$は空でないとする。
+
+    $Q$はコンパクトなので$f$は$Q$上で有界である。$f$は$Q$上で可測であり、$Q$の面積は有限なので、$f$は$Q$上で可積分である。$\mathbb{R}^2$のルベーグ測度は$\mathbb{R}$のルベーグ測度の直積である。
+
+    フビニの定理（直積測度空間上の可積分関数の積分は、どちらの順序の累次積分にも等しい）を$[a,b]$と$[c,d]$の直積に適用する。すると$\int_Q f=\int_{[a,b]}\int_{[c,d]}f(x,y)\,dy\,dx=\int_{[c,d]}\int_{[a,b]}f(x,y)\,dx\,dy$である。
   strategy: Establish integrability on the compact rectangle and apply Fubini in both orders.
   sketch:
-    - "derive: The rectangle is compact, so continuous f is bounded and integrable on it."
-    - "apply_theorem: Fubini expresses the double integral as the iterated integral in x then y."
-    - "apply_theorem: Fubini also lets the order of the iterated integrals be exchanged."
-    - "conclude: All three integrals agree."
+  - 'derive: The rectangle is compact, so continuous f is bounded and integrable on it.'
+  - 'apply_theorem: Fubini expresses the double integral as the iterated integral in x then y.'
+  - 'apply_theorem: Fubini also lets the order of the iterated integrals be exchanged.'
+  - 'conclude: All three integrals agree.'
   openmath: (forall (f a b c d) (-> (continuous_on_set f (product_set (closed_interval a b) (closed_interval c d))) (and (= (set_integral (product_set (closed_interval a b) (closed_interval c d)) (lambda (z) (fn_value f z))) (set_integral (closed_interval a b) (lambda (x) (set_integral (closed_interval c d) (lambda (y) (fn_value f (ordered_pair x y))))))) (= (set_integral (closed_interval a b) (lambda (x) (set_integral (closed_interval c d) (lambda (y) (fn_value f (ordered_pair x y)))))) (set_integral (closed_interval c d) (lambda (y) (set_integral (closed_interval a b) (lambda (x) (fn_value f (ordered_pair x y))))))))))
   hard_negative:
     statement: 累次積分が両方の順序で存在すれば、2つの累次積分は常に等しい。
@@ -1028,22 +1148,24 @@
   kind: gap
   level: 2
   topic: 重積分・変数分離型の積分
-  statement: fが[a,b]上で、gが[c,d]上で連続ならば、[a,b]×[c,d]上のf(x)g(y)の重積分は、∫_{[a,b]}f(x)dxと∫_{[c,d]}g(y)dyの積に等しい。
+  statement: $f$が$[a,b]$上で、$g$が$[c,d]$上で連続ならば、$[a,b]\times[c,d]$上の$f(x)g(y)$の重積分は、$\int_{[a,b]}f(x)\,dx$と$\int_{[c,d]}g(y)\,dy$の積に等しい。
   statement_en: If f is continuous on [a,b] and g is continuous on [c,d], then the double integral of f(x)g(y) over [a,b]×[c,d] is the product of the integral of f over [a,b] and the integral of g over [c,d].
   assumptions:
-    - fは[a,b]上で連続
-    - gは[c,d]上で連続
+  - $f$は$[a,b]$上で連続
+  - $g$は$[c,d]$上で連続
   quantifiers:
-    - 任意のf, g, 実数a, b, c, d
-  conclusion: 重積分は∫_{[a,b]}f(x)dx·∫_{[c,d]}g(y)dyに等しい。
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b,c,d\in\mathbb{R}$
+  conclusion: 重積分は$\int_{[a,b]}f(x)\,dx\cdot\int_{[c,d]}g(y)\,dy$に等しい。
   answer: |
-    f(x)g(y)は長方形上で可積分なので、フビニの定理より重積分は累次積分∫_{[a,b]}(∫_{[c,d]}f(x)g(y)dy)dxに等しい。内側の積分ではf(x)は定数なのでf(x)∫_{[c,d]}g(y)dyとなる。外側の積分で定数∫_{[c,d]}g(y)dyを外に出すと、主張の積が得られる。
+    $a,b,c,d\in\mathbb{R}$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$上で、$g:\mathbb{R}\to\mathbb{R}$は$[c,d]$上で連続であるとする。
+
+    $f(x)g(y)$は長方形$[a,b]\times[c,d]$上で連続なので、そこで可積分である。フビニの定理より、重積分は累次積分$\int_{[a,b]}(\int_{[c,d]}f(x)g(y)\,dy)\,dx$に等しい。内側の積分では$f(x)$は定数なので、内側は$f(x)\int_{[c,d]}g(y)\,dy$である。外側の積分で定数$\int_{[c,d]}g(y)\,dy$を外に出すと、$\int_{[a,b]}f(x)\,dx\cdot\int_{[c,d]}g(y)\,dy$を得る。
   strategy: Apply Fubini and pull out the factor that is constant in each inner integral.
   sketch:
-    - "apply_theorem: Fubini rewrites the double integral as an iterated integral."
-    - "derive: In the inner integral f(x) is constant."
-    - "derive: The integral of g is a constant in the outer integral."
-    - "conclude: The result is the product of the two single integrals."
+  - 'apply_theorem: Fubini rewrites the double integral as an iterated integral.'
+  - 'derive: In the inner integral f(x) is constant.'
+  - 'derive: The integral of g is a constant in the outer integral.'
+  - 'conclude: The result is the product of the two single integrals.'
   openmath: (forall (f g a b c d) (-> (and (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval c d))) (= (set_integral (product_set (closed_interval a b) (closed_interval c d)) (lambda (z) (* (fn_value f (first_coord z)) (fn_value g (second_coord z))))) (* (set_integral (closed_interval a b) (lambda (x) (fn_value f x))) (set_integral (closed_interval c d) (lambda (y) (fn_value g y)))))))
   hard_negative:
     statement: 一般のh(x,y)について、長方形上の重積分は∫_{[a,b]}h(x,c)dxと∫_{[c,d]}h(a,y)dyの積である。
@@ -1058,25 +1180,33 @@
   kind: textbook
   level: 3
   topic: 重積分・変数変換公式
-  statement: sをR^nの可測集合、f:R^n→R^nをs上で微分可能かつ単射とし、微分をf'とする。gがf(s)上で可積分ならば、∫_{f(s)}g(y)dy=∫_s|det f'(x)|g(f(x))dxである。
+  statement: $s\subseteq\mathbb{R}^n$を可測集合、$f:\mathbb{R}^n\to\mathbb{R}^n$を$s$上で微分可能かつ単射とし、微分を$f'$とする。$g$が$f(s)$上で可積分ならば、$\int_{f(s)}g(y)\,dy=\int_s|\det f'(x)|g(f(x))\,dx$である。
   statement_en: Let s be a measurable subset of R^n and f be differentiable and injective on s with derivative f'. If g is integrable on f(s), then the integral of g over f(s) equals the integral over s of the absolute determinant of f' times g composed with f.
   assumptions:
-    - sはR^nの可測集合
-    - fはs上で微分可能で、微分はf'
-    - fはs上で単射
-    - gはf(s)上で可積分
+  - $s\subseteq\mathbb{R}^n$は可測集合
+  - $f$は$s$上で微分可能で、微分は$f'$
+  - $f$は$s$上で単射
+  - $g$は$f(s)$上で可積分
   quantifiers:
-    - 任意のn, s, f, f', g
-  conclusion: ∫_{f(s)}g(y)dy=∫_s|det f'(x)|g(f(x))dxである。
+  - 任意の$n\in\mathbb{N}$、$s\subseteq\mathbb{R}^n$、$f,f',g$
+  conclusion: $\int_{f(s)}g(y)\,dy=\int_s|\det f'(x)|g(f(x))\,dx$である。
   answer: |
-    (概略)線形写像Lによる集合の像の体積は|det L|倍になる。sを小さな可測集合に分けると、各部分でfはf'(x)で近似されるので、f(s)の小部分の体積は|det f'(x)|倍で近似される。これから測度の等式vol(f(A))=∫_A|det f'(x)|dxが可測なA⊂sについて得られる。gを単関数で近似すると積分の公式になる。
+    以下は概略であり、次の測度の等式（＊）は引用して証明しない。それ以外の部分は証明する。
+
+    $n\in\mathbb{N}$、$s\subseteq\mathbb{R}^n$を可測集合とする。$f:\mathbb{R}^n\to\mathbb{R}^n$は$s$上で単射で、各$x\in s$で$s$に沿った微分が$f'(x)$であるとする。$g:\mathbb{R}^n\to\mathbb{R}$は$f(s)$上で可積分とする。$\lambda$をルベーグ測度とし、$J(x)=|\det f'(x)|$とおく。
+
+    引用する等式は次のとおりである。可測な$A\subseteq s$について、$f(A)$は可測で$\lambda(f(A))=\int_A J(x)\,dx$である（＊）。これは線形写像$T$について$\lambda(T(A))=|\det T|\lambda(A)$であることと局所線形近似から得られるが、その評価はここでは行わない。
+
+    （＊）から公式を導く。$f$は$s$上で連続なので、ボレル集合$B$について$A=s\cap f^{-1}(B)$は可測である。$f(A)=B\cap f(s)$なので、（＊）は$\int_{f(s)}1_B\,dy=\int_s J(x)1_B(f(x))\,dx$を意味する。線形性からボレル単関数で公式が成り立ち、単調収束定理から非負ボレル関数で成り立つ。
+
+    $g$については、$f(s)$上で$g$とほとんど至るところ一致するボレル関数$g_0$をとり、不一致の点を含むボレル零集合を$N$とする。$A=s\cap f^{-1}(N)$に（＊）を適用すると$\int_A J(x)\,dx=\lambda(f(A))\leq\lambda(N)=0$なので、$A$上でほとんど至るところ$J=0$である。よって$s$上でほとんど至るところ$J\cdot(g\circ f)=J\cdot(g_0\circ f)$である。$g_0$を正部分と負部分に分けると、それぞれの積分は有限である。公式を差し引くと、$\int_{f(s)}g(y)\,dy=\int_s J(x)g(f(x))\,dx$を得る。
   strategy: Approximate f locally by its derivative, deduce the measure formula, and extend from indicator functions to integrable functions.
   sketch:
-    - "apply_theorem: A linear map scales the volume of every set by the absolute value of its determinant."
-    - "setup: Partition s into small measurable pieces where f is close to its linearization."
-    - "derive: Summing gives the measure of f(A) as the integral of the absolute determinant over A."
-    - "derive: This is the integral formula for indicator functions."
-    - "conclude: Approximation by simple functions extends the formula to integrable g."
+  - 'apply_theorem: A linear map scales the volume of every set by the absolute value of its determinant.'
+  - 'setup: Partition s into small measurable pieces where f is close to its linearization.'
+  - 'derive: Summing gives the measure of f(A) as the integral of the absolute determinant over A.'
+  - 'derive: This is the integral formula for indicator functions.'
+  - 'conclude: Approximation by simple functions extends the formula to integrable g.'
   openmath: (forall (n s f df g) (-> (and (measurable_set s) (forall (x) (-> (in x s) (has_fderiv_within f (fn_value df x) s x))) (injective_on_set f s) (integrable_on_set (lambda (y) (fn_value g y)) (image_of f s))) (= (set_integral (image_of f s) (lambda (y) (fn_value g y))) (set_integral s (lambda (x) (* (abs (linear_det (fn_value df x))) (fn_value g (fn_value f x))))))))
   hard_negative:
     statement: fがs上で単射でなくても、同じ公式が成り立つ。
@@ -1091,20 +1221,22 @@
   kind: gap
   level: 2
   topic: 重積分・極座標のヤコビアン
-  statement: 写像Φ(r,θ)=(r cos θ, r sin θ)は全ての点(r,θ)で微分可能で、微分の行列式はrである。
+  statement: 写像$\Phi(r,\theta)=(r\cos\theta,r\sin\theta)$は全ての点$(r,\theta)$で微分可能で、微分の行列式は$r$である。
   statement_en: The map Φ(r,θ) = (r cos θ, r sin θ) is differentiable at every point (r,θ), and the determinant of its derivative is r.
   assumptions:
-    - Φ(r,θ)=(r cos θ, r sin θ)
+  - $\Phi(r,\theta)=(r\cos\theta,r\sin\theta)$
   quantifiers:
-    - 任意の点(r,θ)
-  conclusion: Φは(r,θ)で微分可能で、微分の行列式はrである。
+  - 任意の点$(r,\theta)\in\mathbb{R}^2$
+  conclusion: $\Phi$は$(r,\theta)$で微分可能で、微分の行列式は$r$である。
   answer: |
-    Φの成分は滑らかなので微分可能で、ヤコビ行列は第1行が(cos θ, -r sin θ)、第2行が(sin θ, r cos θ)である。行列式はr cos^2 θ+r sin^2 θ=rである。
+    $\Phi:\mathbb{R}^2\to\mathbb{R}^2$を$\Phi(r,\theta)=(r\cos\theta,r\sin\theta)$で定め、$(r,\theta)\in\mathbb{R}^2$とする。
+
+    $\Phi$の成分は$C^1$級なので、$\Phi$は$(r,\theta)$で微分可能である。ヤコビ行列は第$1$行が$(\cos\theta,-r\sin\theta)$、第$2$行が$(\sin\theta,r\cos\theta)$である。行列式は$r\cos^2\theta+r\sin^2\theta=r$である。
   strategy: Compute the Jacobian matrix of Φ and its determinant.
   sketch:
-    - "derive: The partial derivatives of the components give the Jacobian matrix."
-    - "derive: Its determinant is r cos^2 θ + r sin^2 θ."
-    - "conclude: The identity cos^2 θ + sin^2 θ = 1 reduces the determinant to r."
+  - 'derive: The partial derivatives of the components give the Jacobian matrix.'
+  - 'derive: Its determinant is r cos^2 θ + r sin^2 θ.'
+  - 'conclude: The identity cos^2 θ + sin^2 θ = 1 reduces the determinant to r.'
   openmath: (forall (r t) (exists (L) (and (has_fderiv_at polar_map L (ordered_pair r t)) (= (linear_det L) r))))
   hard_negative:
     statement: Φの微分の行列式はr^2である。
@@ -1119,22 +1251,28 @@
   kind: textbook
   level: 2
   topic: 重積分・極座標変換
-  statement: f:R^2→Rが可積分ならば、∫_{R^2}f(x,y)dxdy=∫_{(0,∞)×(-π,π)}r f(r cos θ, r sin θ)drdθである。
+  statement: $f:\mathbb{R}^2\to\mathbb{R}$が可積分ならば、$\int_{\mathbb{R}^2}f(x,y)\,dx\,dy=\int_{(0,\infty)\times(-\pi,\pi)}rf(r\cos\theta,r\sin\theta)\,dr\,d\theta$である。
   statement_en: If f from R^2 to R is integrable, then its integral over the plane equals the integral over (0,∞)×(-π,π) of r f(r cos θ, r sin θ).
   assumptions:
-    - f:R^2→Rは可積分
+  - $f:\mathbb{R}^2\to\mathbb{R}$は可積分
   quantifiers:
-    - 任意のf
-  conclusion: ∫_{R^2}f dxdy=∫_{(0,∞)×(-π,π)}r f(r cos θ, r sin θ)drdθである。
+  - 任意の$f:\mathbb{R}^2\to\mathbb{R}$
+  conclusion: $\int_{\mathbb{R}^2}f\,dx\,dy=\int_{(0,\infty)\times(-\pi,\pi)}rf(r\cos\theta,r\sin\theta)\,dr\,d\theta$である。
   answer: |
-    Φ(r,θ)=(r cos θ, r sin θ)は(0,∞)×(-π,π)上で単射で、ヤコビアンはr>0である。その像は平面から半直線{(x,0) | x≤0}を除いた集合で、除いた半直線の面積は0である。変数変換公式を使うと、平面上の積分は(0,∞)×(-π,π)上のr f(Φ(r,θ))の積分に等しい。
+    $f:\mathbb{R}^2\to\mathbb{R}$を可積分とする。$D=(0,\infty)\times(-\pi,\pi)$、$\Phi(r,\theta)=(r\cos\theta,r\sin\theta)$とおく。
+
+    $\Phi$は$D$上で単射である。$\Phi(r,\theta)=\Phi(r',\theta')$なら$r^2=r'^2$より$r=r'$であり、$\cos\theta=\cos\theta'$、$\sin\theta=\sin\theta'$より$\theta=\theta'$である（$\theta,\theta'\in(-\pi,\pi)$）。
+
+    $\Phi(D)$は平面から半直線$H=\{(x,0)\mid x\leq0\}$を除いた集合である。実際、$(x,y)\notin H$なら$r=\sqrt{x^2+y^2}>0$であり、$x=r\cos\theta$、$y=r\sin\theta$となる$\theta\in(-\pi,\pi]$がある。$\theta=\pi$なら$(x,y)\in H$となるので$\theta\neq\pi$である。逆に$D$の点の像は$H$に属さない。$H$の面積は$0$なので、$\int_{\mathbb{R}^2}f=\int_{\Phi(D)}f$である。
+
+    $\Phi$の微分の行列式は$r$で、$D$上で$r>0$である。変数変換公式（可測集合$s$上で微分可能かつ単射な$\Phi$と、$\Phi(s)$上で可積分な$f$について、$\int_{\Phi(s)}f=\int_s|\det\Phi'|\,f\circ\Phi$）を$s=D$に適用すると、$\int_{\Phi(D)}f=\int_D rf(r\cos\theta,r\sin\theta)\,dr\,d\theta$である。
   strategy: Apply the change of variables formula to polar coordinates and discard a null set.
   sketch:
-    - "setup: Let Φ be the polar map on (0,∞)×(-π,π)."
-    - "derive: Φ is injective there with Jacobian determinant r > 0."
-    - "derive: Its image is the plane minus a closed half-line, which has measure zero."
-    - "apply_theorem: The change of variables formula gives the integral of r f(Φ) over the domain."
-    - "conclude: This equals the integral of f over the plane."
+  - 'setup: Let Φ be the polar map on (0,∞)×(-π,π).'
+  - 'derive: Φ is injective there with Jacobian determinant r > 0.'
+  - 'derive: Its image is the plane minus a closed half-line, which has measure zero.'
+  - 'apply_theorem: The change of variables formula gives the integral of r f(Φ) over the domain.'
+  - 'conclude: This equals the integral of f over the plane.'
   openmath: (forall (f) (-> (integrable_on_whole_space f) (= (set_integral polar_domain (lambda (p) (* (first_coord p) (fn_value f (fn_value polar_map p))))) (integral_whole_space (lambda (z) (fn_value f z))))))
   hard_negative:
     statement: ∫_{R^2}f dxdy=∫_{(0,∞)×(-π,π)}f(r cos θ, r sin θ)drdθである(rの因子は不要である)。
@@ -1149,22 +1287,26 @@
   kind: named
   level: 2
   topic: 重積分・ガウス積分
-  statement: (ガウス積分)b>0ならば、∫_{-∞}^{∞}exp(-bx^2)dx=√(π/b)である。
+  statement: （ガウス積分）$b>0$ならば、$\int_{-\infty}^{\infty}\exp(-bx^2)\,dx=\sqrt{\pi/b}$である。
   statement_en: (Gaussian integral) For b > 0, the integral of exp(-b x^2) over the real line equals the square root of π/b.
   assumptions:
-    - b>0
+  - $b>0$
   quantifiers:
-    - 任意の実数b
-  conclusion: ∫_{-∞}^{∞}exp(-bx^2)dx=√(π/b)である。
+  - 任意の$b\in\mathbb{R}$
+  conclusion: $\int_{-\infty}^{\infty}\exp(-bx^2)\,dx=\sqrt{\pi/b}$である。
   answer: |
-    I=∫exp(-bx^2)dxと置く。I>0である。フビニの定理よりI^2=∫∫exp(-b(x^2+y^2))dxdyである。極座標に変換すると、I^2=∫_{-π}^{π}∫_0^∞ r exp(-br^2)drdθ=2π·1/(2b)=π/bである。I>0より、I=√(π/b)である。
+    $b>0$とし、$I=\int_{-\infty}^{\infty}\exp(-bx^2)\,dx$とおく。$\exp(bx^2)\geq1+bx^2$より$0<\exp(-bx^2)\leq1/(1+bx^2)$であり、右辺は$\mathbb{R}$上で可積分である。よって$I$は有限で$I>0$である。
+
+    トネリの定理より$\exp(-bx^2)\exp(-by^2)=\exp(-b(x^2+y^2))$は$\mathbb{R}^2$上で可積分で、その積分は$I^2$である。極座標の積分公式（可積分な$f:\mathbb{R}^2\to\mathbb{R}$について$\int_{\mathbb{R}^2}f=\int_{(0,\infty)\times(-\pi,\pi)}rf(r\cos\theta,r\sin\theta)\,dr\,d\theta$）とフビニの定理から、$I^2=\int_{-\pi}^{\pi}\int_0^\infty r\exp(-br^2)\,dr\,d\theta$である。
+
+    内側の積分は$[-\exp(-br^2)/(2b)]_0^\infty=1/(2b)$である。よって$I^2=2\pi\cdot1/(2b)=\pi/b$である。$I>0$より$I=\sqrt{\pi/b}$である。
   strategy: Square the integral, pass to polar coordinates, and take the positive root.
   sketch:
-    - "setup: Let I be the integral, and note that I is positive."
-    - "apply_theorem: Fubini writes I^2 as a double integral over the plane."
-    - "apply_theorem: Polar coordinates turn it into an elementary integral of r exp(-b r^2)."
-    - "derive: Evaluating gives I^2 = π/b."
-    - "conclude: Positivity of I gives the square root."
+  - 'setup: Let I be the integral, and note that I is positive.'
+  - 'apply_theorem: Fubini writes I^2 as a double integral over the plane.'
+  - 'apply_theorem: Polar coordinates turn it into an elementary integral of r exp(-b r^2).'
+  - 'derive: Evaluating gives I^2 = π/b.'
+  - 'conclude: Positivity of I gives the square root.'
   openmath: (forall (b) (-> (> b 0) (= (integral_real_line (lambda (x) (exp (* (neg b) (^ x 2))))) (root (/ pi b) 2))))
   hard_negative:
     statement: 全ての実数bについて∫exp(-bx^2)dx=√(π/b)が可積分性とともに成り立つ。
@@ -1179,21 +1321,23 @@
   kind: gap
   level: 2
   topic: 重積分・平面上のガウス積分
-  statement: ∫_{R^2}exp(-(x^2+y^2))dxdy=πである。
+  statement: $\int_{\mathbb{R}^2}\exp(-(x^2+y^2))\,dx\,dy=\pi$である。
   statement_en: The integral of exp(-(x^2+y^2)) over the plane equals π.
   assumptions:
-    - 被積分関数はexp(-(x^2+y^2))
+  - 被積分関数は$\exp(-(x^2+y^2))$
   quantifiers:
-    - 定数の等式であり、量化する変数はない
-  conclusion: ∫_{R^2}exp(-(x^2+y^2))dxdy=πである。
+  - 定数の等式であり、量化する変数はない
+  conclusion: $\int_{\mathbb{R}^2}\exp(-(x^2+y^2))\,dx\,dy=\pi$である。
   answer: |
-    exp(-(x^2+y^2))=exp(-x^2)exp(-y^2)である。変数分離型の積分なので、重積分は(∫exp(-x^2)dx)(∫exp(-y^2)dy)に等しい。ガウス積分より各因子は√πである。したがって重積分は√π·√π=πである。
+    $\mathbb{R}^2$上の関数$\exp(-(x^2+y^2))$を考える。$\exp(-(x^2+y^2))=\exp(-x^2)\exp(-y^2)$である。$\exp(-x^2)$は$\mathbb{R}$上で可積分なので、トネリの定理よりこの関数は$\mathbb{R}^2$上で可積分である。
+
+    フビニの定理より、重積分は$(\int_{\mathbb{R}}\exp(-x^2)\,dx)(\int_{\mathbb{R}}\exp(-y^2)\,dy)$に等しい。ガウス積分の公式（$b>0$なら$\int_{\mathbb{R}}\exp(-bx^2)\,dx=\sqrt{\pi/b}$）を$b=1$で用いると、各因子は$\sqrt{\pi}$である。したがって重積分は$\pi$である。
   strategy: Separate the variables and use the one-dimensional Gaussian integral.
   sketch:
-    - "derive: Factor the integrand as exp(-x^2) exp(-y^2)."
-    - "apply_theorem: The integral of a product of functions of separate variables is the product of the integrals."
-    - "apply_theorem: Each factor equals the square root of π."
-    - "conclude: The double integral equals π."
+  - 'derive: Factor the integrand as exp(-x^2) exp(-y^2).'
+  - 'apply_theorem: The integral of a product of functions of separate variables is the product of the integrals.'
+  - 'apply_theorem: Each factor equals the square root of π.'
+  - 'conclude: The double integral equals π.'
   openmath: (= (integral_whole_space (lambda (z) (exp (neg (+ (^ (first_coord z) 2) (^ (second_coord z) 2)))))) pi)
   hard_negative:
     statement: ∫_{R^2}exp(-(x^2+y^2))dxdy=√πである。
@@ -1217,22 +1361,26 @@
   kind: textbook
   level: 3
   topic: ベクトル解析・長方形上のグリーンの定理
-  statement: P, Q:R^2→RがC^1級でa_1≤b_1, a_2≤b_2ならば、長方形[a_1,b_1]×[a_2,b_2]上でQ_x-P_yの重積分は、長方形の境界を反時計回りに一周するPdx+Qdyの線積分に等しい。すなわち∫_{a_1}^{b_1}P(x,a_2)dx+∫_{a_2}^{b_2}Q(b_1,y)dy-∫_{a_1}^{b_1}P(x,b_2)dx-∫_{a_2}^{b_2}Q(a_1,y)dyに等しい。
+  statement: $P,Q:\mathbb{R}^2\to\mathbb{R}$が$C^1$級で$a_1\leq b_1$、$a_2\leq b_2$ならば、長方形$[a_1,b_1]\times[a_2,b_2]$上の$Q_x-P_y$の重積分は、長方形の境界を反時計回りに一周する$P\,dx+Q\,dy$の線積分に等しい。すなわち$\int_{a_1}^{b_1}P(x,a_2)\,dx+\int_{a_2}^{b_2}Q(b_1,y)\,dy-\int_{a_1}^{b_1}P(x,b_2)\,dx-\int_{a_2}^{b_2}Q(a_1,y)\,dy$に等しい。
   statement_en: If P and Q from R^2 to R are C^1 and a_1≤b_1, a_2≤b_2, then the double integral of Q_x - P_y over the rectangle equals the counterclockwise boundary line integral of P dx + Q dy.
   assumptions:
-    - P, QはC^1級
-    - a_1≤b_1, a_2≤b_2
+  - $P,Q:\mathbb{R}^2\to\mathbb{R}$は$C^1$級
+  - $a_1\leq b_1$、$a_2\leq b_2$
   quantifiers:
-    - 任意のP, Q, 実数a_1, b_1, a_2, b_2
-  conclusion: 重積分は境界の4つの線積分の符号付き和に等しい。
+  - 任意の$P,Q:\mathbb{R}^2\to\mathbb{R}$と$a_1,b_1,a_2,b_2\in\mathbb{R}$
+  conclusion: 重積分は境界の$4$つの線積分の符号付き和に等しい。
   answer: |
-    フビニの定理より、Q_xの重積分は∫_{a_2}^{b_2}(∫_{a_1}^{b_1}Q_x(x,y)dx)dyである。微積分の基本定理より、これは∫_{a_2}^{b_2}(Q(b_1,y)-Q(a_1,y))dyである。同様に、P_yの重積分は∫_{a_1}^{b_1}(P(x,b_2)-P(x,a_2))dxである。差をとると主張の式が得られる。
+    $P,Q:\mathbb{R}^2\to\mathbb{R}$を$C^1$級とし、$a_1\leq b_1$、$a_2\leq b_2$、$R=[a_1,b_1]\times[a_2,b_2]$とする。$Q_x(z)=dQ(z)(1,0)$、$P_y(z)=dP(z)(0,1)$は連続なので、コンパクト集合$R$上で可積分である。
+
+    フビニの定理より、$Q_x$の重積分は$\int_{a_2}^{b_2}(\int_{a_1}^{b_1}Q_x(x,y)\,dx)\,dy$である。微積分の基本定理より、これは$\int_{a_2}^{b_2}(Q(b_1,y)-Q(a_1,y))\,dy$である。同様に、$P_y$の重積分は$\int_{a_1}^{b_1}(\int_{a_2}^{b_2}P_y(x,y)\,dy)\,dx=\int_{a_1}^{b_1}(P(x,b_2)-P(x,a_2))\,dx$である。
+
+    差をとると、$\int_R(Q_x-P_y)=\int_{a_1}^{b_1}P(x,a_2)\,dx+\int_{a_2}^{b_2}Q(b_1,y)\,dy-\int_{a_1}^{b_1}P(x,b_2)\,dx-\int_{a_2}^{b_2}Q(a_1,y)\,dy$を得る。
   strategy: Apply Fubini and the fundamental theorem of calculus to Q_x and P_y separately.
   sketch:
-    - "derive: The integrands are continuous on the compact rectangle, so they are integrable."
-    - "apply_theorem: Fubini integrates Q_x first in x and P_y first in y."
-    - "apply_theorem: The fundamental theorem of calculus evaluates the inner integrals."
-    - "conclude: Subtracting gives the four boundary integrals with the stated signs."
+  - 'derive: The integrands are continuous on the compact rectangle, so they are integrable.'
+  - 'apply_theorem: Fubini integrates Q_x first in x and P_y first in y.'
+  - 'apply_theorem: The fundamental theorem of calculus evaluates the inner integrals.'
+  - 'conclude: Subtracting gives the four boundary integrals with the stated signs.'
   openmath: (forall (P Q a1 b1 a2 b2) (-> (and (<= a1 b1) (<= a2 b2) (cont_diff 1 P) (cont_diff 1 Q)) (= (set_integral (product_set (closed_interval a1 b1) (closed_interval a2 b2)) (lambda (z) (- (fn_value (fderiv_at Q z) (ordered_pair 1 0)) (fn_value (fderiv_at P z) (ordered_pair 0 1))))) (- (- (+ (interval_integral a1 b1 (lambda (x) (fn_value P (ordered_pair x a2)))) (interval_integral a2 b2 (lambda (y) (fn_value Q (ordered_pair b1 y))))) (interval_integral a1 b1 (lambda (x) (fn_value P (ordered_pair x b2))))) (interval_integral a2 b2 (lambda (y) (fn_value Q (ordered_pair a1 y))))))))
   hard_negative:
     statement: 原点を含む長方形でも、原点を除いて滑らかな場P=-y/(x^2+y^2), Q=x/(x^2+y^2)について同じ等式が成り立つ。
@@ -1265,23 +1413,27 @@
   kind: textbook
   level: 3
   topic: ベクトル解析・直方体上の発散定理
-  statement: F:R^{n+1}→R^{n+1}がC^1級でa≤bならば、直方体[a,b]上でのdiv Fの積分は、各座標iについて、面x_i=b_i上のF_iの積分から面x_i=a_i上のF_iの積分を引いたものの総和に等しい。
+  statement: $F:\mathbb{R}^{n+1}\to\mathbb{R}^{n+1}$が$C^1$級で$a\leq b$ならば、直方体$[a,b]$上の$\operatorname{div}F$の積分は、各座標$i$について、面$x_i=b_i$上の$F_i$の積分から面$x_i=a_i$上の$F_i$の積分を引いたものの総和に等しい。
   statement_en: If F from R^{n+1} to R^{n+1} is C^1 and a≤b, then the integral of div F over the box [a,b] equals the sum over the coordinates i of the integral of F_i over the face x_i = b_i minus the integral of F_i over the face x_i = a_i.
   assumptions:
-    - F:R^{n+1}→R^{n+1}はC^1級
-    - a≤b(各成分で)
+  - $F:\mathbb{R}^{n+1}\to\mathbb{R}^{n+1}$は$C^1$級
+  - 各成分で$a_i\leq b_i$
   quantifiers:
-    - 任意のn, F, a, b
-  conclusion: ∫_{[a,b]}div F dx=Σ_i(∫_{x_i=b_i}F_i-∫_{x_i=a_i}F_i)である。
+  - 任意の$n\in\mathbb{N}$、$F:\mathbb{R}^{n+1}\to\mathbb{R}^{n+1}$、$a,b\in\mathbb{R}^{n+1}$
+  conclusion: $\int_{[a,b]}\operatorname{div}F\,dx=\sum_i(\int_{x_i=b_i}F_i-\int_{x_i=a_i}F_i)$である。
   answer: |
-    div F=Σ_i∂_iF_iであり、∂_iF_iは連続なので直方体上で可積分である。各iについて、フビニの定理によりx_iを最初に積分する。微積分の基本定理より、x_iについての積分はF_i(x_i=b_i)-F_i(x_i=a_i)になる。残りの変数で積分すると面上の積分の差となり、iについて足すと主張が得られる。
+    $n\in\mathbb{N}$とし、$F:\mathbb{R}^{n+1}\to\mathbb{R}^{n+1}$を$C^1$級、$a,b\in\mathbb{R}^{n+1}$は各成分で$a_i\leq b_i$を満たすとする。$\operatorname{div}F=\sum_i\partial_iF_i$である。
+
+    $i$を固定する。$B_i=\prod_{j\neq i}[a_j,b_j]\subset\mathbb{R}^n$とし、$x'\in\mathbb{R}^n$の第$i$番目の位置に$t$を挿入した点を$\iota_i(t,x')$と書く。$\partial_iF_i$は連続なので、コンパクト集合$[a,b]$上で可積分である。$[a,b]$を$[a_i,b_i]\times B_i$と同一視してフビニの定理を使うと、$x_i$を最初に積分でき、$\int_{[a,b]}\partial_iF_i\,dx=\int_{B_i}(\int_{a_i}^{b_i}\partial_iF_i(\iota_i(t,x'))\,dt)\,dx'$である。
+
+    微積分の基本定理より、内側の積分は$F_i(\iota_i(b_i,x'))-F_i(\iota_i(a_i,x'))$である。これらは$B_i$上で連続なので、積分を分けられる。よって$\int_{[a,b]}\partial_iF_i\,dx=\int_{B_i}F_i(\iota_i(b_i,x'))\,dx'-\int_{B_i}F_i(\iota_i(a_i,x'))\,dx'$である。$i$について足すと主張が得られる。
   strategy: For each coordinate, integrate the i-th partial derivative first in x_i using Fubini and the fundamental theorem of calculus.
   sketch:
-    - "setup: Write the divergence as the sum of the i-th partial derivatives of F_i."
-    - "derive: Continuity on the compact box gives integrability."
-    - "apply_theorem: Fubini lets x_i be integrated first."
-    - "apply_theorem: The fundamental theorem of calculus turns this into the difference of F_i on the two faces."
-    - "conclude: Summing over i gives the boundary expression."
+  - 'setup: Write the divergence as the sum of the i-th partial derivatives of F_i.'
+  - 'derive: Continuity on the compact box gives integrability.'
+  - 'apply_theorem: Fubini lets x_i be integrated first.'
+  - 'apply_theorem: The fundamental theorem of calculus turns this into the difference of F_i on the two faces.'
+  - 'conclude: Summing over i gives the boundary expression.'
   openmath: (forall (n F a b) (-> (and (cont_diff 1 F) (forall (i) (<= (coordinate_of a i) (coordinate_of b i)))) (= (set_integral (box_region a b) (lambda (x) (divergence_at F x))) (box_boundary_flux F a b))))
   hard_negative:
     statement: Fが直方体の境界上で0ならばF自身が直方体上で恒等的に0である。
@@ -1303,23 +1455,25 @@
   kind: gap
   level: 2
   topic: ベクトル解析・勾配場の線積分
-  statement: f:E→RとC^1級の曲線γ:R→Eについて、fがC^1級ならば、∫_a^b df(γ(t))(γ'(t))dt=f(γ(b))-f(γ(a))である。
+  statement: $C^1$級の$f:E\to\mathbb{R}$と$C^1$級の曲線$\gamma:\mathbb{R}\to E$について、$\int_a^b df(\gamma(t))(\gamma'(t))\,dt=f(\gamma(b))-f(\gamma(a))$である。
   statement_en: If f from a real normed space E to R is C^1 and γ from R to E is a C^1 curve, then the integral from a to b of df(γ(t))(γ'(t)) equals f(γ(b)) - f(γ(a)).
   assumptions:
-    - Eは実ノルム空間
-    - f:E→RはC^1級
-    - γ:R→EはC^1級
+  - $E$は実ノルム空間
+  - $f:E\to\mathbb{R}$は$C^1$級
+  - $\gamma:\mathbb{R}\to E$は$C^1$級
   quantifiers:
-    - 任意のf, γ, 実数a, b
-  conclusion: 勾配場の線積分は端点でのfの値の差に等しい。
+  - 任意の$f:E\to\mathbb{R}$、$\gamma:\mathbb{R}\to E$、$a,b\in\mathbb{R}$
+  conclusion: 勾配場の線積分は端点での$f$の値の差に等しい。
   answer: |
-    h(t)=f(γ(t))と置くと、連鎖律よりh'(t)=df(γ(t))(γ'(t))である。df, γ, γ'は連続なのでh'も連続である。微積分の基本定理より、∫_a^b h'(t)dt=h(b)-h(a)=f(γ(b))-f(γ(a))である。
+    $E$を実ノルム空間とし、$f:E\to\mathbb{R}$と$\gamma:\mathbb{R}\to E$を$C^1$級、$a,b\in\mathbb{R}$とする。
+
+    $h(t)=f(\gamma(t))$とおくと、連鎖律より$h'(t)=df(\gamma(t))(\gamma'(t))$である。$df,\gamma,\gamma'$は連続なので、$h'$も連続である。微積分の基本定理より、$\int_a^b h'(t)\,dt=h(b)-h(a)=f(\gamma(b))-f(\gamma(a))$である。
   strategy: Apply the chain rule to f∘γ and then the fundamental theorem of calculus.
   sketch:
-    - "construct: Define h(t) = f(γ(t))."
-    - "apply_theorem: The chain rule gives h'(t) = df(γ(t))(γ'(t))."
-    - "derive: Continuity of df, γ and γ' makes h' continuous."
-    - "conclude: The fundamental theorem of calculus gives h(b) - h(a)."
+  - 'construct: Define h(t) = f(γ(t)).'
+  - 'apply_theorem: The chain rule gives h''(t) = df(γ(t))(γ''(t)).'
+  - 'derive: Continuity of df, γ and γ'' makes h'' continuous.'
+  - 'conclude: The fundamental theorem of calculus gives h(b) - h(a).'
   openmath: (forall (E f gamma a b) (-> (and (normed_space E) (cont_diff 1 f) (cont_diff 1 gamma)) (= (interval_integral a b (lambda (t) (fn_value (fderiv_at f (fn_value gamma t)) (deriv_at_point (lambda (s) (fn_value gamma s)) t)))) (- (fn_value f (fn_value gamma b)) (fn_value f (fn_value gamma a))))))
   hard_negative:
     statement: 一般のベクトル場の線積分は、端点が同じなら曲線の取り方によらない。

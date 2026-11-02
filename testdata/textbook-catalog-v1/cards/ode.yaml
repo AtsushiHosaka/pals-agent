@@ -2,22 +2,24 @@
   kind: textbook
   level: 1
   topic: 常微分方程式・定数係数1階線形
-  statement: 実数aと関数y:ℝ→ℝについて、全実数上でy'=ayが成り立つことと、全てのtでy(t)=y(0)e^{at}となることは同値である。
-  statement_en: "For real a and y : ℝ → ℝ, y is differentiable with y' = a y on all of ℝ if and only if y(t) = y(0) e^{at} for all t."
+  statement: $a\in\mathbb{R}$と$y:\mathbb{R}\to\mathbb{R}$について、全実数上で$y'=ay$が成り立つことと、全ての$t$で$y(t)=y(0)e^{at}$となることは同値である。
+  statement_en: 'For real a and y : ℝ → ℝ, y is differentiable with y'' = a y on all of ℝ if and only if y(t) = y(0) e^{at} for all t.'
   assumptions:
-    - "aは実数"
-    - "yは実数上の実数値関数"
+  - $a\in\mathbb{R}$
+  - $y:\mathbb{R}\to\mathbb{R}$
   quantifiers:
-    - "任意の実数aと関数y"
-  conclusion: 全実数上でy'=ayであることと、y(t)=y(0)e^{at}が全てのtで成り立つことは同値である。
+  - 任意の$a\in\mathbb{R}$と$y:\mathbb{R}\to\mathbb{R}$
+  conclusion: 全ての$t$で$y$の微分係数が$ay(t)$であることと、全ての$t$で$y(t)=y(0)e^{at}$であることは同値である。
   answer: |
-    y'=ayならg(t)=y(t)e^{-at}の導関数はay e^{-at}-ay e^{-at}=0である。全実数上で導関数が0の関数は定数なのでg(t)=g(0)=y(0)であり、y(t)=y(0)e^{at}を得る。逆にy(t)=y(0)e^{at}なら、微分してy'(t)=a y(0)e^{at}=ay(t)となる。
+    $a\in\mathbb{R}$、$y:\mathbb{R}\to\mathbb{R}$とする。
+    全実数上で$y'=ay$であるとする。$g(t)=y(t)e^{-at}$とおくと、積の微分より$g'(t)=ay(t)e^{-at}-ay(t)e^{-at}=0$である。全実数上で導関数が$0$の関数は平均値の定理より定数なので、$g(t)=g(0)=y(0)$である。よって$y(t)=y(0)e^{at}$である。
+    逆に全ての$t$で$y(t)=y(0)e^{at}$なら、$y$は微分可能で$y'(t)=ay(0)e^{at}=ay(t)$である。
   strategy: Multiply by the integrating factor e^{-at} so the product has zero derivative, then conclude it is constant.
   sketch:
-    - "setup: Assume y' = a y and put g(t) = y(t) e^{-at}."
-    - "derive: The product rule gives g'(t) = a y e^{-at} - a y e^{-at} = 0."
-    - "apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(0) = y(0)."
-    - "conclude: Multiply by e^{at} to get y(t) = y(0) e^{at}; the converse is direct differentiation."
+  - 'setup: Assume y'' = a y and put g(t) = y(t) e^{-at}.'
+  - 'derive: The product rule gives g''(t) = a y e^{-at} - a y e^{-at} = 0.'
+  - 'apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(0) = y(0).'
+  - 'conclude: Multiply by e^{at} to get y(t) = y(0) e^{at}; the converse is direct differentiation.'
   openmath: (forall (a y) (<-> (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* a (fn_value y t)) t)) (forall (t) (= (fn_value y t) (* (fn_value y 0) (exp (* a t)))))))
   hard_negative:
     statement: 区間の和(-∞,0)∪(0,∞)の上でy'=ayなら、y(t)=y(1)e^{a(t-1)}が定義域全体で成り立つ。
@@ -55,23 +57,24 @@
   kind: gap
   level: 2
   topic: 常微分方程式・変数係数1階線形
-  statement: Pがpの原始関数で、全実数上でy'=p(t)yならば、任意のs,tについてy(t)=y(s)exp(P(t)-P(s))である。
-  statement_en: "If P' = p on ℝ and y' = p(t) y on ℝ, then y(t) = y(s) exp(P(t) - P(s)) for all s and t."
+  statement: $p,P,y:\mathbb{R}\to\mathbb{R}$について、全実数上で$P'=p$かつ$y'=p(t)y$ならば、任意の$s,t\in\mathbb{R}$で$y(t)=y(s)e^{P(t)-P(s)}$である。
+  statement_en: If P' = p on ℝ and y' = p(t) y on ℝ, then y(t) = y(s) exp(P(t) - P(s)) for all s and t.
   assumptions:
-    - "全実数上でP'=p"
-    - "全実数上でy'=p(t)y"
+  - 全実数上で$P'=p$
+  - 全実数上で$y'(t)=p(t)y(t)$
   quantifiers:
-    - "任意の関数p, P, y"
-    - "任意の実数s, t"
-  conclusion: y(t)=y(s)exp(P(t)-P(s))が成り立つ。
+  - 任意の$p,P,y:\mathbb{R}\to\mathbb{R}$
+  - 任意の$s,t\in\mathbb{R}$
+  conclusion: $y(t)=y(s)e^{P(t)-P(s)}$である。
   answer: |
-    g(t)=y(t)e^{-P(t)}と置くと、積の微分によりg'(t)=p y e^{-P}-p y e^{-P}=0である。よってgは定数でありg(t)=g(s)となる。両辺にe^{P(t)}を掛けるとy(t)=y(s)exp(P(t)-P(s))を得る。特にyが1点で0なら恒等的に0であり、そうでなければyはどこでも0にならない。
+    $p,P,y:\mathbb{R}\to\mathbb{R}$とし、全実数上で$P'=p$、$y'(t)=p(t)y(t)$であるとする。$s,t\in\mathbb{R}$をとる。
+    $g(u)=y(u)e^{-P(u)}$とおくと、積の微分と合成関数の微分より$g'(u)=p(u)y(u)e^{-P(u)}-y(u)p(u)e^{-P(u)}=0$である。全実数上で導関数が$0$の関数は平均値の定理より定数なので、$g(t)=g(s)$、すなわち$y(t)e^{-P(t)}=y(s)e^{-P(s)}$である。両辺に$e^{P(t)}$を掛けると$y(t)=y(s)e^{P(t)-P(s)}$を得る。
   strategy: Show that y e^{-P} has zero derivative, hence is constant.
   sketch:
-    - "setup: Put g = y e^{-P}."
-    - "derive: The product and chain rules give g' = p y e^{-P} - p y e^{-P} = 0."
-    - "apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(s)."
-    - "conclude: Multiplying by e^{P(t)} gives the formula."
+  - 'setup: Put g = y e^{-P}.'
+  - 'derive: The product and chain rules give g'' = p y e^{-P} - p y e^{-P} = 0.'
+  - 'apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(s).'
+  - 'conclude: Multiplying by e^{P(t)} gives the formula.'
   openmath: (forall (p P y) (-> (and (forall (t) (has_deriv_at (lambda (r0) (fn_value P r0)) (fn_value p t) t)) (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* (fn_value p t) (fn_value y t)) t))) (forall (s t) (= (fn_value y t) (* (fn_value y s) (exp (- (fn_value P t) (fn_value P s))))))))
   hard_negative:
     statement: y'=p(t)yならばy(t)=y(s)exp(p(t)(t-s))である。
@@ -100,21 +103,23 @@
   kind: gap
   level: 2
   topic: 常微分方程式・積分因子
-  statement: 点tでP'(t)=p(t)かつy'(t)=q(t)-p(t)y(t)なら、e^{P}yの点tでの微分係数はe^{P(t)}q(t)である。
-  statement_en: "If P'(t) = p(t) and y'(t) = q(t) - p(t) y(t) at the point t, then the derivative of e^{P} y at t equals e^{P(t)} q(t)."
+  statement: $p,q,P,y:\mathbb{R}\to\mathbb{R}$、$t\in\mathbb{R}$について、点$t$で$P$の微分係数が$p(t)$、$y$の微分係数が$q(t)-p(t)y(t)$ならば、$s\mapsto e^{P(s)}y(s)$の点$t$での微分係数は$e^{P(t)}q(t)$である。
+  statement_en: If P'(t) = p(t) and y'(t) = q(t) - p(t) y(t) at the point t, then the derivative of e^{P} y at t equals e^{P(t)} q(t).
   assumptions:
-    - "点tでP'(t)=p(t)"
-    - "点tでy'(t)=q(t)-p(t)y(t)"
+  - 点$t$で$P$の微分係数は$p(t)$
+  - 点$t$で$y$の微分係数は$q(t)-p(t)y(t)$
   quantifiers:
-    - "任意の関数p, q, P, yと実数t"
-  conclusion: 関数e^{P}yは点tで微分可能で、微分係数はe^{P(t)}q(t)である。
+  - 任意の$p,q,P,y:\mathbb{R}\to\mathbb{R}$と$t\in\mathbb{R}$
+  conclusion: $s\mapsto e^{P(s)}y(s)$は点$t$で微分可能で、微分係数は$e^{P(t)}q(t)$である。
   answer: |
-    積の微分と合成関数の微分により、(e^{P}y)'(t)=e^{P(t)}p(t)y(t)+e^{P(t)}y'(t)である。y'(t)=q(t)-p(t)y(t)を代入するとp(t)y(t)の項が打ち消し合い、e^{P(t)}q(t)が残る。
+    $p,q,P,y:\mathbb{R}\to\mathbb{R}$、$t\in\mathbb{R}$とし、点$t$で$P$の微分係数が$p(t)$、$y$の微分係数が$q(t)-p(t)y(t)$であるとする。積の微分と合成関数の微分より、$s\mapsto e^{P(s)}y(s)$の点$t$での微分係数は
+    $e^{P(t)}p(t)y(t)+e^{P(t)}(q(t)-p(t)y(t))=e^{P(t)}q(t)$
+    である。
   strategy: Differentiate the product e^{P} y and cancel the p y terms using the equation.
   sketch:
-    - "apply_theorem: The chain rule gives (e^{P})'(t) = e^{P(t)} p(t)."
-    - "derive: The product rule gives (e^{P} y)'(t) = e^{P(t)} p(t) y(t) + e^{P(t)} y'(t)."
-    - "conclude: Substituting y'(t) = q(t) - p(t) y(t) cancels the p y terms."
+  - 'apply_theorem: The chain rule gives (e^{P})''(t) = e^{P(t)} p(t).'
+  - 'derive: The product rule gives (e^{P} y)''(t) = e^{P(t)} p(t) y(t) + e^{P(t)} y''(t).'
+  - 'conclude: Substituting y''(t) = q(t) - p(t) y(t) cancels the p y terms.'
   openmath: (forall (p q P y t) (-> (and (has_deriv_at (lambda (s) (fn_value P s)) (fn_value p t) t) (has_deriv_at (lambda (s) (fn_value y s)) (- (fn_value q t) (* (fn_value p t) (fn_value y t))) t)) (has_deriv_at (lambda (s) (* (exp (fn_value P s)) (fn_value y s))) (* (exp (fn_value P t)) (fn_value q t)) t)))
   hard_negative:
     statement: Pがpの原始関数でy'=q-pyなら、e^{p}yの導関数はe^{p}qである。
@@ -132,24 +137,27 @@
   kind: textbook
   level: 2
   topic: 常微分方程式・1階線形の解の公式
-  statement: qが連続、P'=pで、全実数上でy'+py=qならば、y(t)=e^{-P(t)}(e^{P(a)}y(a)+∫_a^t e^{P(s)}q(s)ds)である。
-  statement_en: "If q is continuous, P' = p and y' + p y = q on ℝ, then y(t) = e^{-P(t)} (e^{P(a)} y(a) + ∫_a^t e^{P(s)} q(s) ds) for all a and t."
+  statement: $p,q,P,y:\mathbb{R}\to\mathbb{R}$について、$q$が連続、全実数上で$P'=p$かつ$y'=q-py$ならば、任意の$a,t\in\mathbb{R}$で$y(t)=e^{-P(t)}\left(e^{P(a)}y(a)+\int_a^te^{P(s)}q(s)\,ds\right)$である。
+  statement_en: If q is continuous, P' = p and y' + p y = q on ℝ, then y(t) = e^{-P(t)} (e^{P(a)} y(a) + ∫_a^t e^{P(s)} q(s) ds) for all a and t.
   assumptions:
-    - "qは連続"
-    - "全実数上でP'=p"
-    - "全実数上でy'=q-py"
+  - $q$は連続
+  - 全実数上で$P'=p$
+  - 全実数上で$y'=q-py$
   quantifiers:
-    - "任意の関数p, q, P, y"
-    - "任意の実数a, t"
-  conclusion: y(t)=e^{-P(t)}(e^{P(a)}y(a)+∫_a^t e^{P(s)}q(s)ds)が成り立つ。
+  - 任意の$p,q,P,y:\mathbb{R}\to\mathbb{R}$
+  - 任意の$a,t\in\mathbb{R}$
+  conclusion: $y(t)=e^{-P(t)}\left(e^{P(a)}y(a)+\int_a^te^{P(s)}q(s)\,ds\right)$である。
   answer: |
-    積の微分により(e^{P}y)'=e^{P}p y+e^{P}(q-py)=e^{P}qである。右辺は連続なので、微分積分学の基本定理からe^{P(t)}y(t)-e^{P(a)}y(a)=∫_a^t e^{P(s)}q(s)dsとなる。移項してe^{-P(t)}を掛ければ公式を得る。
+    $p,q,P,y:\mathbb{R}\to\mathbb{R}$、$a,t\in\mathbb{R}$とし、$q$は連続で、全実数上で$P'=p$、$y'=q-py$であるとする。
+    積の微分より$(e^{P}y)'=e^{P}py+e^{P}(q-py)=e^{P}q$である。$P$は微分可能なので連続であり、$e^{P}q$は連続である。微分積分学の基本定理（連続な導関数をもつ$F$について$\int_a^tF'(s)\,ds=F(t)-F(a)$）を$F=e^{P}y$に用いると
+    $e^{P(t)}y(t)-e^{P(a)}y(a)=\int_a^te^{P(s)}q(s)\,ds$
+    となる。$e^{P(a)}y(a)$を移項して両辺に$e^{-P(t)}$を掛ければ結論を得る。
   strategy: Use the integrating factor e^{P}, integrate the resulting exact derivative, and solve for y.
   sketch:
-    - "derive: The product rule gives (e^{P} y)' = e^{P} q on ℝ."
-    - "setup: P is differentiable hence continuous, so e^{P} q is continuous and interval integrable."
-    - "apply_theorem: The fundamental theorem of calculus gives e^{P(t)} y(t) - e^{P(a)} y(a) = ∫_a^t e^{P} q."
-    - "conclude: Rearrange and multiply by e^{-P(t)}."
+  - 'derive: The product rule gives (e^{P} y)'' = e^{P} q on ℝ.'
+  - 'setup: P is differentiable hence continuous, so e^{P} q is continuous and interval integrable.'
+  - 'apply_theorem: The fundamental theorem of calculus gives e^{P(t)} y(t) - e^{P(a)} y(a) = ∫_a^t e^{P} q.'
+  - 'conclude: Rearrange and multiply by e^{-P(t)}.'
   openmath: (forall (p q P y a t) (-> (and (continuous_map q) (forall (s) (has_deriv_at (lambda (r0) (fn_value P r0)) (fn_value p s) s)) (forall (s) (has_deriv_at (lambda (r0) (fn_value y r0)) (- (fn_value q s) (* (fn_value p s) (fn_value y s))) s))) (= (fn_value y t) (* (exp (neg (fn_value P t))) (+ (* (exp (fn_value P a)) (fn_value y a)) (interval_integral a t (lambda (s) (* (exp (fn_value P s)) (fn_value q s)))))))))
   hard_negative:
     statement: y'+py=qならy(t)=e^{-P(t)}∫_a^t e^{P(s)}q(s)dsである。
@@ -175,25 +183,26 @@
   kind: gap
   level: 2
   topic: 常微分方程式・変数分離形
-  statement: y'=g(t)h(y)、h(y(t))≠0で、Hが1/hの原始関数、Gがgの原始関数ならば、H(y(t))-G(t)はtによらず一定である。
-  statement_en: "If y' = g(t) h(y) on ℝ, h(y(t)) ≠ 0 for all t, H has derivative 1/h(y(t)) at y(t), and G' = g, then H(y(t)) - G(t) does not depend on t."
+  statement: $y,g,h,H,G:\mathbb{R}\to\mathbb{R}$について、全ての$t$で$y'(t)=g(t)h(y(t))$、$h(y(t))\neq0$、$H$の点$y(t)$での微分係数が$1/h(y(t))$、$G'(t)=g(t)$ならば、$H(y(t))-G(t)$は$t$によらず一定である。
+  statement_en: If y' = g(t) h(y) on ℝ, h(y(t)) ≠ 0 for all t, H has derivative 1/h(y(t)) at y(t), and G' = g, then H(y(t)) - G(t) does not depend on t.
   assumptions:
-    - "全実数上でy'=g(t)h(y)"
-    - "全てのtでh(y(t))≠0"
-    - "全てのtでHは点y(t)で微分係数1/h(y(t))を持つ"
-    - "全実数上でG'=g"
+  - 全ての$t$で$y'(t)=g(t)h(y(t))$
+  - 全ての$t$で$h(y(t))\neq0$
+  - 全ての$t$で$H$の点$y(t)$での微分係数は$1/h(y(t))$
+  - 全ての$t$で$G'(t)=g(t)$
   quantifiers:
-    - "任意の関数y, g, h, H, G"
-    - "任意の実数s, t"
-  conclusion: H(y(t))-G(t)=H(y(s))-G(s)が成り立つ。
+  - 任意の$y,g,h,H,G:\mathbb{R}\to\mathbb{R}$
+  - 任意の$s,t\in\mathbb{R}$
+  conclusion: $H(y(t))-G(t)=H(y(s))-G(s)$である。
   answer: |
-    合成関数の微分により、(H∘y)'(t)=(1/h(y(t)))·g(t)h(y(t))=g(t)である。よってH∘y-Gの導関数はg-g=0となる。全実数上で導関数が0の関数は定数なので、H(y(t))-G(t)はtによらない。
+    $y,g,h,H,G:\mathbb{R}\to\mathbb{R}$とし、全ての$t$で$y'(t)=g(t)h(y(t))$、$h(y(t))\neq0$、$H$の点$y(t)$での微分係数が$1/h(y(t))$、$G'(t)=g(t)$であるとする。$s,t\in\mathbb{R}$をとる。
+    合成関数の微分より、$H\circ y$の点$t$での微分係数は$\dfrac{1}{h(y(t))}\cdot g(t)h(y(t))=g(t)$である。よって$H\circ y-G$の導関数は$g-g=0$である。全実数上で導関数が$0$の関数は平均値の定理より定数なので、$H(y(t))-G(t)=H(y(s))-G(s)$である。
   strategy: Differentiate H(y(t)) - G(t) by the chain rule and check that the derivative vanishes.
   sketch:
-    - "apply_theorem: The chain rule gives (H∘y)'(t) = (1/h(y(t))) g(t) h(y(t))."
-    - "derive: Since h(y(t)) ≠ 0 this equals g(t), so (H∘y - G)' = 0."
-    - "apply_theorem: A function with zero derivative on ℝ is constant."
-    - "conclude: Hence H(y(t)) - G(t) = H(y(s)) - G(s)."
+  - 'apply_theorem: The chain rule gives (H∘y)''(t) = (1/h(y(t))) g(t) h(y(t)).'
+  - 'derive: Since h(y(t)) ≠ 0 this equals g(t), so (H∘y - G)'' = 0.'
+  - 'apply_theorem: A function with zero derivative on ℝ is constant.'
+  - 'conclude: Hence H(y(t)) - G(t) = H(y(s)) - G(s).'
   openmath: (forall (y g h H G) (-> (and (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* (fn_value g t) (fn_value h (fn_value y t))) t)) (forall (t) (!= (fn_value h (fn_value y t)) 0)) (forall (t) (has_deriv_at (lambda (z) (fn_value H z)) (/ 1 (fn_value h (fn_value y t))) (fn_value y t))) (forall (t) (has_deriv_at (lambda (r0) (fn_value G r0)) (fn_value g t) t))) (forall (s t) (= (- (fn_value H (fn_value y t)) (fn_value G t)) (- (fn_value H (fn_value y s)) (fn_value G s))))))
   hard_negative:
     statement: y'=g(t)h(y)ならば、hが零点を持っていても全ての解がH(y)=G(t)+Cの形で得られる。
@@ -218,22 +227,23 @@
   kind: gap
   level: 2
   topic: 常微分方程式・ロジスティック方程式
-  statement: 1+Ce^{-rt}≠0となる点tで、関数y(s)=1/(1+Ce^{-rs})はロジスティック方程式y'=ry(1-y)を満たす。
-  statement_en: "At any point t with 1 + C e^{-rt} ≠ 0, the function y(s) = 1/(1 + C e^{-rs}) is differentiable and satisfies the logistic equation y'(t) = r y(t) (1 - y(t))."
+  statement: $r,C,t\in\mathbb{R}$、$1+Ce^{-rt}\neq0$とする。$y(s)=1/(1+Ce^{-rs})$は点$t$で微分可能で、$y'(t)=ry(t)(1-y(t))$を満たす。
+  statement_en: At any point t with 1 + C e^{-rt} ≠ 0, the function y(s) = 1/(1 + C e^{-rs}) is differentiable and satisfies the logistic equation y'(t) = r y(t) (1 - y(t)).
   assumptions:
-    - "r, C, tは実数"
-    - "1+Ce^{-rt}≠0"
+  - $r,C,t\in\mathbb{R}$
+  - $1+Ce^{-rt}\neq0$
   quantifiers:
-    - "任意の実数r, C, t"
-  conclusion: y(s)=1/(1+Ce^{-rs})は点tで微分可能で、y'(t)=ry(t)(1-y(t))である。
+  - 任意の$r,C,t\in\mathbb{R}$
+  conclusion: $y(s)=1/(1+Ce^{-rs})$は点$t$で微分可能で、$y'(t)=ry(t)(1-y(t))$である。
   answer: |
-    D(s)=1+Ce^{-rs}と置くとD'(t)=-rCe^{-rt}であり、商の微分によりy'(t)=rCe^{-rt}/D(t)²となる。一方、1-1/D=(D-1)/D=Ce^{-rt}/Dなので、ry(1-y)=rCe^{-rt}/D²である。両者は一致する。
+    $r,C,t\in\mathbb{R}$、$1+Ce^{-rt}\neq0$とする。$D(s)=1+Ce^{-rs}$、$y(s)=1/D(s)$とおく。$D$は微分可能で$D'(t)=-rCe^{-rt}$であり、$D(t)\neq0$である。商の微分より$y$は点$t$で微分可能で、$y'(t)=-D'(t)/D(t)^2=rCe^{-rt}/D(t)^2$である。
+    一方、$1-y(t)=(D(t)-1)/D(t)=Ce^{-rt}/D(t)$なので、$ry(t)(1-y(t))=rCe^{-rt}/D(t)^2$である。両者は一致する。
   strategy: Differentiate the reciprocal of the denominator and compare with r y (1 - y) after clearing denominators.
   sketch:
-    - "setup: Put D(s) = 1 + C e^{-rs}, so D'(t) = -r C e^{-rt} and D(t) ≠ 0."
-    - "apply_theorem: The quotient rule gives y'(t) = r C e^{-rt} / D(t)^2."
-    - "derive: Since D - 1 = C e^{-rt}, we have r y (1 - y) = r C e^{-rt} / D(t)^2."
-    - "conclude: The two expressions agree."
+  - 'setup: Put D(s) = 1 + C e^{-rs}, so D''(t) = -r C e^{-rt} and D(t) ≠ 0.'
+  - 'apply_theorem: The quotient rule gives y''(t) = r C e^{-rt} / D(t)^2.'
+  - 'derive: Since D - 1 = C e^{-rt}, we have r y (1 - y) = r C e^{-rt} / D(t)^2.'
+  - 'conclude: The two expressions agree.'
   openmath: (forall (r C t) (-> (!= (+ 1 (* C (exp (neg (* r t))))) 0) (has_deriv_at (lambda (s) (/ 1 (+ 1 (* C (exp (neg (* r s))))))) (* (* r (/ 1 (+ 1 (* C (exp (neg (* r t))))))) (- 1 (/ 1 (+ 1 (* C (exp (neg (* r t)))))))) t)))
   hard_negative:
     statement: y(s)=1/(1+Ce^{-rs})は全てのC, rについて全実数上で微分可能である。
@@ -257,23 +267,25 @@
   kind: gap
   level: 2
   topic: 常微分方程式・比較定理
-  statement: fが[s,t]で連続、(s,t)で微分可能でf'≤afならば、f(t)≤f(s)e^{a(t-s)}である。
-  statement_en: "If f is continuous on [s,t], differentiable on (s,t) and f' ≤ a f on (s,t), then f(t) ≤ f(s) e^{a(t-s)}."
+  statement: $s\leq t$とする。$f:\mathbb{R}\to\mathbb{R}$が$[s,t]$で連続で、$(s,t)$の各点$u$で微分係数$f_1(u)$をもち、$f_1(u)\leq af(u)$ならば、$f(t)\leq f(s)e^{a(t-s)}$である。
+  statement_en: If f is continuous on [s,t], differentiable on (s,t) and f' ≤ a f on (s,t), then f(t) ≤ f(s) e^{a(t-s)}.
   assumptions:
-    - "s≤t"
-    - "fは[s,t]で連続"
-    - "(s,t)上でf'=f₁かつf₁≤af"
+  - $s\leq t$
+  - $f$は$[s,t]$で連続
+  - $u\in(s,t)$で$f$の微分係数は$f_1(u)$
+  - $u\in(s,t)$で$f_1(u)\leq af(u)$
   quantifiers:
-    - "任意の関数f, f₁と実数a, s, t"
-  conclusion: f(t)≤f(s)e^{a(t-s)}が成り立つ。
+  - 任意の$f,f_1:\mathbb{R}\to\mathbb{R}$と$a,s,t\in\mathbb{R}$
+  conclusion: $f(t)\leq f(s)e^{a(t-s)}$である。
   answer: |
-    g(u)=f(u)e^{-au}と置くと、g'(u)=(f'(u)-af(u))e^{-au}≤0である。gは[s,t]で連続なので単調非増加であり、g(t)≤g(s)となる。両辺に正の数e^{at}を掛けるとf(t)≤f(s)e^{a(t-s)}を得る。aやfの符号についての仮定は不要である。
+    $f,f_1:\mathbb{R}\to\mathbb{R}$、$a,s,t\in\mathbb{R}$、$s\leq t$とする。$f$は$[s,t]$で連続で、$u\in(s,t)$で$f$の微分係数は$f_1(u)$、$f_1(u)\leq af(u)$であるとする。$a$や$f$の符号についての仮定はない。
+    $s=t$なら両辺は$f(s)$である。$s<t$とし、$g(u)=f(u)e^{-au}$とおく。$g$は$[s,t]$で連続で、$u\in(s,t)$で$g'(u)=(f_1(u)-af(u))e^{-au}\leq0$である。平均値の定理より$g(t)-g(s)=g'(c)(t-s)\leq0$となる$c\in(s,t)$がある。よって$f(t)e^{-at}\leq f(s)e^{-as}$である。両辺に正の数$e^{at}$を掛けると$f(t)\leq f(s)e^{a(t-s)}$を得る。
   strategy: Show that f e^{-au} is nonincreasing using the sign of its derivative.
   sketch:
-    - "setup: Put g(u) = f(u) e^{-au} on [s,t]."
-    - "derive: On (s,t) we have g'(u) = (f'(u) - a f(u)) e^{-au} ≤ 0."
-    - "apply_theorem: A continuous function with nonpositive derivative on the interior is nonincreasing."
-    - "conclude: g(t) ≤ g(s), and multiplying by e^{at} > 0 gives the bound."
+  - 'setup: Put g(u) = f(u) e^{-au} on [s,t].'
+  - 'derive: On (s,t) we have g''(u) = (f''(u) - a f(u)) e^{-au} ≤ 0.'
+  - 'apply_theorem: A continuous function with nonpositive derivative on the interior is nonincreasing.'
+  - 'conclude: g(t) ≤ g(s), and multiplying by e^{at} > 0 gives the bound.'
   openmath: (forall (f f1 a s t) (-> (and (<= s t) (continuous_on_set f (closed_interval s t)) (forall (u) (-> (in u (open_interval s t)) (and (has_deriv_at (lambda (r) (fn_value f r)) (fn_value f1 u) u) (<= (fn_value f1 u) (* a (fn_value f u))))))) (<= (fn_value f t) (* (fn_value f s) (exp (* a (- t s)))))))
   hard_negative:
     statement: f'≤afならば、s>tに対してもf(t)≤f(s)e^{a(t-s)}である。
@@ -313,25 +325,27 @@
   kind: named
   level: 3
   topic: 常微分方程式・グロンウォールの不等式
-  statement: （グロンウォールの不等式）uが[a,b]で連続、K≥0で、[a,b]上u(t)≤c+K∫_a^t u(s)dsならば、[a,b]上u(t)≤ce^{K(t-a)}である。
-  statement_en: "(Grönwall's inequality) If u is continuous on [a,b], K ≥ 0 and u(t) ≤ c + K ∫_a^t u(s) ds on [a,b], then u(t) ≤ c e^{K(t-a)} on [a,b]."
+  statement: （グロンウォールの不等式）$u:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続、$K\geq0$で、$[a,b]$上$u(t)\leq c+K\int_a^tu(s)\,ds$ならば、$[a,b]$上$u(t)\leq ce^{K(t-a)}$である。
+  statement_en: (Grönwall's inequality) If u is continuous on [a,b], K ≥ 0 and u(t) ≤ c + K ∫_a^t u(s) ds on [a,b], then u(t) ≤ c e^{K(t-a)} on [a,b].
   assumptions:
-    - "uは[a,b]で連続"
-    - "K≥0"
-    - "[a,b]上でu(t)≤c+K∫_a^t u(s)ds"
+  - $u$は$[a,b]$で連続
+  - $K\geq0$
+  - $t\in[a,b]$で$u(t)\leq c+K\int_a^tu(s)\,ds$
   quantifiers:
-    - "任意の関数uと実数c, K, a, b"
-    - "[a,b]内の任意のt"
-  conclusion: u(t)≤ce^{K(t-a)}が成り立つ。
+  - 任意の$u:\mathbb{R}\to\mathbb{R}$と$c,K,a,b\in\mathbb{R}$
+  - 任意の$t\in[a,b]$
+  conclusion: $u(t)\leq ce^{K(t-a)}$である。
   answer: |
-    v(t)=c+K∫_a^t u(s)dsと置くと、vは微分可能でv'=Ku≤Kvである。ここで仮定u≤vとK≥0を用いた。すると(ve^{-K(t-a)})'=(v'-Kv)e^{-K(t-a)}≤0なので、ve^{-K(t-a)}は[a,b]で単調非増加であり、その値はt=aでのcを超えない。よってu(t)≤v(t)≤ce^{K(t-a)}である。cの符号についての仮定は不要である。
+    $u:\mathbb{R}\to\mathbb{R}$、$c,K,a,b\in\mathbb{R}$、$K\geq0$とする。$u$は$[a,b]$で連続で、$t\in[a,b]$で$u(t)\leq c+K\int_a^tu(s)\,ds$であるとする。$c$の符号についての仮定はない。
+    $t\in[a,b]$をとり、$v(x)=c+K\int_a^xu(s)\,ds$とおく。$v$は$[a,b]$で連続で、$(a,b)$では微分積分学の基本定理より$v'=Ku$である。仮定$u\leq v$と$K\geq0$より$v'\leq Kv$である。
+    $w(x)=v(x)e^{-K(x-a)}$とおくと、$w$は$[a,b]$で連続で、$(a,b)$で$w'=(v'-Kv)e^{-K(x-a)}\leq0$である。$t>a$なら平均値の定理より$w(t)\leq w(a)=c$であり、$t=a$でも$w(a)=c$である。したがって$v(t)\leq ce^{K(t-a)}$であり、$u(t)\leq v(t)\leq ce^{K(t-a)}$を得る。
   strategy: Pass to the integral v(t) = c + K∫_a^t u, which satisfies a differential inequality, and apply the integrating factor e^{-K(t-a)}.
   sketch:
-    - "setup: Extend u continuously from [a,b] to ℝ so that the integral is differentiable everywhere."
-    - "translate: Put v(t) = c + K ∫_a^t u, so u ≤ v and v' = K u on [a,b]."
-    - "derive: Since K ≥ 0, v' = K u ≤ K v, so (v e^{-K(t-a)})' ≤ 0."
-    - "apply_theorem: A function with nonpositive derivative is nonincreasing, so v(t) e^{-K(t-a)} ≤ v(a) = c."
-    - "conclude: Therefore u(t) ≤ v(t) ≤ c e^{K(t-a)}."
+  - 'setup: Extend u continuously from [a,b] to ℝ so that the integral is differentiable everywhere.'
+  - 'translate: Put v(t) = c + K ∫_a^t u, so u ≤ v and v'' = K u on [a,b].'
+  - 'derive: Since K ≥ 0, v'' = K u ≤ K v, so (v e^{-K(t-a)})'' ≤ 0.'
+  - 'apply_theorem: A function with nonpositive derivative is nonincreasing, so v(t) e^{-K(t-a)} ≤ v(a) = c.'
+  - 'conclude: Therefore u(t) ≤ v(t) ≤ c e^{K(t-a)}.'
   openmath: (forall (u c K a b) (-> (and (continuous_on_set u (closed_interval a b)) (<= 0 K) (forall (t) (-> (in t (closed_interval a b)) (<= (fn_value u t) (+ c (* K (interval_integral a t (lambda (s) (fn_value u s))))))))) (forall (t) (-> (in t (closed_interval a b)) (<= (fn_value u t) (* c (exp (* K (- t a)))))))))
   hard_negative:
     statement: K<0でも、u(t)≤c+K∫_a^t u(s)dsならばu(t)≤ce^{K(t-a)}である。
@@ -396,27 +410,37 @@
   kind: textbook
   level: 3
   topic: 常微分方程式・微分形のグロンウォール評価
-  statement: ノルム空間値関数fが[a,b]で連続、[a,b)で右微分を持ち、‖f(a)‖≤δ、‖f'‖≤K‖f‖+ε、K≠0ならば、‖f(x)‖≤δe^{K(x-a)}+(ε/K)(e^{K(x-a)}-1)である。
-  statement_en: "If f is a normed-space-valued function continuous on [a,b] with right derivative f' on [a,b), ‖f(a)‖ ≤ δ, ‖f'‖ ≤ K‖f‖ + ε on [a,b) and K ≠ 0, then ‖f(x)‖ ≤ δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) on [a,b]."
+  statement: $E$を実ノルム空間、$K\neq0$とする。$f:\mathbb{R}\to E$が$[a,b]$で連続で、$[a,b)$の各点$x$で右微分係数$f'(x)$をもち、$\|f(a)\|\leq\delta$、$[a,b)$上$\|f'(x)\|\leq K\|f(x)\|+\varepsilon$ならば、$[a,b]$上$\|f(x)\|\leq\delta e^{K(x-a)}+\frac{\varepsilon}{K}(e^{K(x-a)}-1)$である。
+  statement_en: If f is a normed-space-valued function continuous on [a,b] with right derivative f' on [a,b), ‖f(a)‖ ≤ δ, ‖f'‖ ≤ K‖f‖ + ε on [a,b) and K ≠ 0, then ‖f(x)‖ ≤ δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) on [a,b].
   assumptions:
-    - "Eは実ノルム空間"
-    - "K≠0"
-    - "fは[a,b]で連続"
-    - "[a,b)の各点でfは右微分f'を持つ"
-    - "‖f(a)‖≤δ"
-    - "[a,b)上で‖f'‖≤K‖f‖+ε"
+  - $E$は実ノルム空間
+  - $K\neq0$
+  - $f$は$[a,b]$で連続
+  - $[a,b)$の各点$x$で$f$の右微分係数は$f'(x)$
+  - $\|f(a)\|\leq\delta$
+  - $x\in[a,b)$で$\|f'(x)\|\leq K\|f(x)\|+\varepsilon$
   quantifiers:
-    - "任意のE, f, f'と実数δ, K, ε, a, b"
-    - "[a,b]内の任意のx"
-  conclusion: ‖f(x)‖≤δe^{K(x-a)}+(ε/K)(e^{K(x-a)}-1)が成り立つ。
+  - 任意の実ノルム空間$E$、$f,f':\mathbb{R}\to E$、$\delta,K,\varepsilon,a,b\in\mathbb{R}$
+  - 任意の$x\in[a,b]$
+  conclusion: $\|f(x)\|\leq\delta e^{K(x-a)}+\frac{\varepsilon}{K}(e^{K(x-a)}-1)$である。
   answer: |
-    これは概略である。関数‖f‖の右上微分は‖f'‖以下なので、仮定から‖f‖の右上微分はK‖f‖+ε以下である。右辺の関数φ(x)はφ'=Kφ+ε、φ(a)=δを満たす。εをわずかに大きくしたφと‖f‖を比較すると、‖f‖が初めてφを超える点で傾きの大小が矛盾する。最後に増やした分を0に近づければ主張を得る。
+    $E$を実ノルム空間、$f,f':\mathbb{R}\to E$、$\delta,K,\varepsilon,a,b\in\mathbb{R}$、$K\neq0$とする。$f$は$[a,b]$で連続で、$[a,b)$の各点$x$で右微分係数$f'(x)$をもち、$\|f(a)\|\leq\delta$、$x\in[a,b)$で$\|f'(x)\|\leq K\|f(x)\|+\varepsilon$であるとする。$K,\varepsilon$の符号は問わない。$a>b$なら$[a,b]$は空なので、$a\leq b$とする。
+    $\eta>0$を固定し、$\varphi(x)=(\delta+\eta)e^{K(x-a)}+\frac{\varepsilon+\eta}{K}(e^{K(x-a)}-1)$とおく。微分すると$\varphi'=K\varphi+\varepsilon+\eta$であり、$\varphi(a)=\delta+\eta$である。
+    まず$[a,b]$上$\|f\|\leq\varphi$を示す。$S=\{x\in[a,b]\mid\forall y\in[a,x],\ \|f(y)\|\leq\varphi(y)\}$とおく。$\|f(a)\|\leq\delta<\varphi(a)$より$a\in S$である。$c=\sup S$とする。$y<c$なら$y\leq x$となる$x\in S$があるので$\|f(y)\|\leq\varphi(y)$であり、連続性より$y=c$でも成り立つ。よって$c\in S$である。
+    $c<b$と仮定して矛盾を導く。$\|f(c)\|<\varphi(c)$なら、連続性より$\tau>0$が存在して$c+\tau\leq b$かつ$[c,c+\tau]$上$\|f\|<\varphi$である。
+    $\|f(c)\|=\varphi(c)$の場合を考える。$f$の$c$での右微分と$\varphi$の$c$での微分の定義より、$\tau>0$が存在して$c+\tau\leq b$であり、$x\in(c,c+\tau]$で
+    $\|f(x)-f(c)-(x-c)f'(c)\|\leq\frac{\eta}{3}(x-c)$、$\varphi(x)\geq\varphi(c)+(x-c)(\varphi'(c)-\frac{\eta}{3})$
+    となる。仮定より$\|f'(c)\|\leq K\|f(c)\|+\varepsilon=K\varphi(c)+\varepsilon$なので、$x\in(c,c+\tau]$で
+    $\|f(x)\|\leq\varphi(c)+(x-c)(K\varphi(c)+\varepsilon+\frac{\eta}{3})\leq\varphi(c)+(x-c)(K\varphi(c)+\varepsilon+\frac{2\eta}{3})\leq\varphi(x)$
+    である。
+    どちらの場合も$c+\tau\in S$となり、$c=\sup S$に反する。よって$c=b$であり、$c\in S$より$[a,b]$上$\|f\|\leq\varphi$である。
+    $x\in[a,b]$を固定して$\eta\to+0$とすると、$\varphi(x)\to\delta e^{K(x-a)}+\frac{\varepsilon}{K}(e^{K(x-a)}-1)$となり、結論を得る。
   strategy: Compare the norm with the exact solution of φ' = Kφ + ε, φ(a) = δ, using a slope comparison on the right.
   sketch:
-    - "translate: The upper right slope of ‖f‖ is at most ‖f'‖, hence at most K‖f‖ + ε."
-    - "construct: The bound φ(x) = δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) satisfies φ' = Kφ + ε and φ(a) = δ."
-    - "contradiction: With ε slightly increased, ‖f‖ cannot cross φ, since at a first crossing the slopes would contradict."
-    - "conclude: Letting the increase tend to 0 gives the bound for ε."
+  - 'translate: The upper right slope of ‖f‖ is at most ‖f''‖, hence at most K‖f‖ + ε.'
+  - 'construct: The bound φ(x) = δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) satisfies φ'' = Kφ + ε and φ(a) = δ.'
+  - 'contradiction: With ε slightly increased, ‖f‖ cannot cross φ, since at a first crossing the slopes would contradict.'
+  - 'conclude: Letting the increase tend to 0 gives the bound for ε.'
   openmath: (forall (E f f1 d K e a b) (-> (and (normed_space_real E) (!= K 0) (continuous_on_set f (closed_interval a b)) (forall (x) (-> (in x (half_open_interval a b)) (and (has_right_deriv_at f (fn_value f1 x) x) (<= (norm (fn_value f1 x)) (+ (* K (norm (fn_value f x))) e))))) (<= (norm (fn_value f a)) d)) (forall (x) (-> (in x (closed_interval a b)) (<= (norm (fn_value f x)) (+ (* d (exp (* K (- x a)))) (* (/ e K) (- (exp (* K (- x a))) 1))))))))
   hard_negative:
     statement: 同じ仮定のもとで‖f(x)‖≤δe^{K(x-a)}が成り立つ。
@@ -433,25 +457,28 @@
   kind: textbook
   level: 3
   topic: 常微分方程式・解の一意性
-  statement: ベクトル場v(t,·)が定数Kで大域リプシッツならば、x'=v(t,x)の[a,b]上の解で初期値f(a)=g(a)が等しいものはfとgで一致する。
-  statement_en: "If each v(t, ·) is globally Lipschitz with a common constant K, two solutions f, g of x' = v(t, x) on [a,b] with f(a) = g(a) coincide on [a,b]."
+  statement: $E$を実ノルム空間、$K\geq0$とし、$v:\mathbb{R}\times E\to E$について全ての$t$で$v(t,\cdot)$がリプシッツ定数$K$をもつとする。$f,g:\mathbb{R}\to E$が$[a,b]$で連続で、$[a,b)$の各点$t$で右微分係数がそれぞれ$v(t,f(t))$、$v(t,g(t))$であり、$f(a)=g(a)$ならば、$[a,b]$上$f=g$である。
+  statement_en: If each v(t, ·) is globally Lipschitz with a common constant K, two solutions f, g of x' = v(t, x) on [a,b] with f(a) = g(a) coincide on [a,b].
   assumptions:
-    - "Eは実ノルム空間"
-    - "全てのtでv(t,·)はリプシッツ定数Kを持つ"
-    - "f, gは[a,b]で連続で、[a,b)で右微分がv(t,f), v(t,g)に等しい"
-    - "f(a)=g(a)"
+  - $E$は実ノルム空間
+  - 全ての$t\in\mathbb{R}$で$v(t,\cdot)$はリプシッツ定数$K\geq0$をもつ
+  - $f,g$は$[a,b]$で連続
+  - $t\in[a,b)$で$f,g$の右微分係数はそれぞれ$v(t,f(t))$、$v(t,g(t))$
+  - $f(a)=g(a)$
   quantifiers:
-    - "任意のE, v, K, f, g, a, b"
-    - "[a,b]内の任意のt"
-  conclusion: f(t)=g(t)が成り立つ。
+  - 任意の$E$、$v:\mathbb{R}\times E\to E$、$K\geq0$、$f,g:\mathbb{R}\to E$、$a,b\in\mathbb{R}$
+  - 任意の$t\in[a,b]$
+  conclusion: $f(t)=g(t)$である。
   answer: |
-    h=f-gと置くと、[a,b)で右微分h'=v(t,f)-v(t,g)を持ち、リプシッツ条件から‖h'‖≤K‖h‖である。h(a)=0なので、微分形のグロンウォール評価を初期値δ=0, ε=0で適用できる。その結果‖h(t)‖≤0·e^{K(t-a)}=0となり、f=gを得る。
+    $E$を実ノルム空間、$K\geq0$、$a,b\in\mathbb{R}$とする。$v:\mathbb{R}\times E\to E$は全ての$t$で$\|v(t,x)-v(t,y)\|\leq K\|x-y\|$を満たすとする。$f,g:\mathbb{R}\to E$は$[a,b]$で連続で、$t\in[a,b)$での右微分係数がそれぞれ$v(t,f(t))$、$v(t,g(t))$であり、$f(a)=g(a)$であるとする。
+    微分形のグロンウォール評価を用いる。すなわち、$h:\mathbb{R}\to E$が$[a,b]$で連続、$[a,b)$で右微分係数$h'$をもち、$K'\neq0$、$\|h(a)\|\leq\delta$、$[a,b)$上$\|h'(t)\|\leq K'\|h(t)\|+\varepsilon$ならば、$[a,b]$上$\|h(t)\|\leq\delta e^{K'(t-a)}+\frac{\varepsilon}{K'}(e^{K'(t-a)}-1)$である。
+    $h=f-g$、$K'=K+1>0$とおく。$h$は$[a,b]$で連続で、$t\in[a,b)$での右微分係数は$h'(t)=v(t,f(t))-v(t,g(t))$である。リプシッツ条件より$\|h'(t)\|\leq K\|h(t)\|\leq K'\|h(t)\|$である。$h(a)=0$なので、$\delta=0$、$\varepsilon=0$として上の評価を適用できる。その結果$[a,b]$上$\|h(t)\|\leq0$となり、$f=g$を得る。
   strategy: Apply the Grönwall estimate to the difference of the two solutions with zero initial value.
   sketch:
-    - "setup: Put h = f - g, so h(a) = 0."
-    - "derive: The Lipschitz condition gives ‖h'(t)‖ ≤ K‖h(t)‖ on [a,b)."
-    - "apply_theorem: Grönwall's estimate with δ = 0 and ε = 0 gives ‖h(t)‖ ≤ 0."
-    - "conclude: Hence f = g on [a,b]."
+  - 'setup: Put h = f - g, so h(a) = 0.'
+  - 'derive: The Lipschitz condition gives ‖h''(t)‖ ≤ K‖h(t)‖ on [a,b).'
+  - 'apply_theorem: Grönwall''s estimate with δ = 0 and ε = 0 gives ‖h(t)‖ ≤ 0.'
+  - 'conclude: Hence f = g on [a,b].'
   openmath: (forall (E v K f g a b) (-> (and (normed_space_real E) (forall (t) (lipschitz_map (fn_value v t) K)) (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval a b)) (forall (t) (-> (in t (half_open_interval a b)) (and (has_right_deriv_at f (fn_value (fn_value v t) (fn_value f t)) t) (has_right_deriv_at g (fn_value (fn_value v t) (fn_value g t)) t)))) (= (fn_value f a) (fn_value g a))) (forall (t) (-> (in t (closed_interval a b)) (= (fn_value f t) (fn_value g t))))))
   hard_negative:
     statement: vが連続でさえあれば、x'=v(t,x)の解は初期値から一意に決まる。
@@ -466,24 +493,27 @@
   kind: textbook
   level: 3
   topic: 常微分方程式・初期値への連続依存性
-  statement: ベクトル場v(t,·)が定数Kで大域リプシッツならば、x'=v(t,x)の[a,b]上の2つの解の距離はdist(f(t),g(t))≤dist(f(a),g(a))e^{K(t-a)}を満たす。
-  statement_en: "If each v(t, ·) is globally Lipschitz with constant K, any two solutions f, g of x' = v(t, x) on [a,b] satisfy dist(f(t), g(t)) ≤ dist(f(a), g(a)) e^{K(t-a)}."
+  statement: $E$を実ノルム空間、$K\geq0$とし、$v:\mathbb{R}\times E\to E$について全ての$t$で$v(t,\cdot)$がリプシッツ定数$K$をもつとする。$f,g:\mathbb{R}\to E$が$[a,b]$で連続で、$[a,b)$の各点$t$で右微分係数がそれぞれ$v(t,f(t))$、$v(t,g(t))$ならば、$[a,b]$上$\|f(t)-g(t)\|\leq\|f(a)-g(a)\|e^{K(t-a)}$である。
+  statement_en: If each v(t, ·) is globally Lipschitz with constant K, any two solutions f, g of x' = v(t, x) on [a,b] satisfy dist(f(t), g(t)) ≤ dist(f(a), g(a)) e^{K(t-a)}.
   assumptions:
-    - "Eは実ノルム空間"
-    - "全てのtでv(t,·)はリプシッツ定数Kを持つ"
-    - "f, gは[a,b]で連続で、[a,b)で右微分がv(t,f), v(t,g)に等しい"
+  - $E$は実ノルム空間
+  - 全ての$t\in\mathbb{R}$で$v(t,\cdot)$はリプシッツ定数$K\geq0$をもつ
+  - $f,g$は$[a,b]$で連続
+  - $t\in[a,b)$で$f,g$の右微分係数はそれぞれ$v(t,f(t))$、$v(t,g(t))$
   quantifiers:
-    - "任意のE, v, K, f, g, a, b"
-    - "[a,b]内の任意のt"
-  conclusion: dist(f(t),g(t))≤dist(f(a),g(a))e^{K(t-a)}が成り立つ。
+  - 任意の$E$、$v:\mathbb{R}\times E\to E$、$K\geq0$、$f,g:\mathbb{R}\to E$、$a,b\in\mathbb{R}$
+  - 任意の$t\in[a,b]$
+  conclusion: $\|f(t)-g(t)\|\leq\|f(a)-g(a)\|e^{K(t-a)}$である。
   answer: |
-    h=f-gと置くと、リプシッツ条件から‖h'(t)‖=‖v(t,f)-v(t,g)‖≤K‖h(t)‖である。微分形のグロンウォール評価をδ=‖h(a)‖, ε=0で適用すると、‖h(t)‖≤‖h(a)‖e^{K(t-a)}となる。ノルム空間では距離は差のノルムなので、これが主張である。
+    $E$を実ノルム空間、$K\geq0$、$a,b\in\mathbb{R}$とする。$v:\mathbb{R}\times E\to E$は全ての$t$で$\|v(t,x)-v(t,y)\|\leq K\|x-y\|$を満たすとする。$f,g:\mathbb{R}\to E$は$[a,b]$で連続で、$t\in[a,b)$での右微分係数がそれぞれ$v(t,f(t))$、$v(t,g(t))$であるとする。
+    微分形のグロンウォール評価を用いる。すなわち、$h:\mathbb{R}\to E$が$[a,b]$で連続、$[a,b)$で右微分係数$h'$をもち、$K'\neq0$、$\|h(a)\|\leq\delta$、$[a,b)$上$\|h'(t)\|\leq K'\|h(t)\|+\varepsilon$ならば、$[a,b]$上$\|h(t)\|\leq\delta e^{K'(t-a)}+\frac{\varepsilon}{K'}(e^{K'(t-a)}-1)$である。
+    $h=f-g$とおき、$\eta>0$に対し$K'=K+\eta>0$とする。$t\in[a,b)$での右微分係数は$h'(t)=v(t,f(t))-v(t,g(t))$であり、リプシッツ条件より$\|h'(t)\|\leq K\|h(t)\|\leq K'\|h(t)\|$である。$\delta=\|h(a)\|$、$\varepsilon=0$として上の評価を適用すると、$t\in[a,b]$で$\|h(t)\|\leq\|h(a)\|e^{(K+\eta)(t-a)}$である。$\eta\to+0$とすると$\|h(t)\|\leq\|h(a)\|e^{K(t-a)}$を得る。これが結論である。
   strategy: Apply Grönwall's estimate to the difference of the two solutions with ε = 0.
   sketch:
-    - "setup: Put h = f - g and δ = ‖h(a)‖."
-    - "derive: The Lipschitz condition gives ‖h'(t)‖ ≤ K‖h(t)‖."
-    - "apply_theorem: Grönwall's estimate with ε = 0 gives ‖h(t)‖ ≤ δ e^{K(t-a)}."
-    - "conclude: Rewrite the norms as distances."
+  - 'setup: Put h = f - g and δ = ‖h(a)‖.'
+  - 'derive: The Lipschitz condition gives ‖h''(t)‖ ≤ K‖h(t)‖.'
+  - 'apply_theorem: Grönwall''s estimate with ε = 0 gives ‖h(t)‖ ≤ δ e^{K(t-a)}.'
+  - 'conclude: Rewrite the norms as distances.'
   openmath: (forall (E v K f g a b) (-> (and (normed_space_real E) (forall (t) (lipschitz_map (fn_value v t) K)) (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval a b)) (forall (t) (-> (in t (half_open_interval a b)) (and (has_right_deriv_at f (fn_value (fn_value v t) (fn_value f t)) t) (has_right_deriv_at g (fn_value (fn_value v t) (fn_value g t)) t))))) (forall (t) (-> (in t (closed_interval a b)) (<= (dist_of (fn_value f t) (fn_value g t)) (* (dist_of (fn_value f a) (fn_value g a)) (exp (* K (- t a)))))))))
   hard_negative:
     statement: 同じ仮定のもとで、解の距離は時間とともに増えない。すなわちdist(f(t),g(t))≤dist(f(a),g(a))である。
@@ -498,28 +528,42 @@
   kind: named
   level: 3
   topic: 常微分方程式・ピカール＝リンデレーフの定理
-  statement: （ピカール＝リンデレーフの定理）fが閉球上xについてリプシッツ、tについて連続で、ノルムがL以下、L·max(tmax-t₀,t₀-tmin)≤aならば、x'=f(t,x), x(t₀)=x₀の解が[tmin,tmax]上に存在する。
-  statement_en: "(Picard–Lindelöf) Let E be a real Banach space, t₀ ∈ [tmin, tmax], and suppose that on the closed ball B(x₀, a) the field f(t, x) is K-Lipschitz in x, continuous in t and bounded in norm by L, with L·max(tmax - t₀, t₀ - tmin) ≤ a. Then x' = f(t, x), x(t₀) = x₀ has a solution on [tmin, tmax]."
+  statement: （ピカール＝リンデレーフの定理）$E$を実バナッハ空間、$I=[t_{\min},t_{\max}]$、$t_0\in I$、$x_0\in E$、$a,L,K\geq0$、$B=\{x\in E\mid\|x-x_0\|\leq a\}$とする。$t\in I$で$f(t,\cdot)$が$B$上リプシッツ定数$K$をもち、$x\in B$で$f(\cdot,x)$が$I$で連続、$I\times B$上$\|f(t,x)\|\leq L$、$L\max(t_{\max}-t_0,t_0-t_{\min})\leq a$ならば、$x'=f(t,x)$、$x(t_0)=x_0$の解が$I$上に存在する。導関数は$I$内で考える。
+  statement_en: (Picard–Lindelöf) Let E be a real Banach space, t₀ ∈ [tmin, tmax], and suppose that on the closed ball B(x₀, a) the field f(t, x) is K-Lipschitz in x, continuous in t and bounded in norm by L, with L·max(tmax - t₀, t₀ - tmin) ≤ a. Then x' = f(t, x), x(t₀) = x₀ has a solution on [tmin, tmax].
   assumptions:
-    - "Eは実バナッハ空間"
-    - "t₀∈[tmin,tmax]"
-    - "閉球B(x₀,a)上でf(t,·)はリプシッツ定数Kを持つ"
-    - "閉球上の各xでf(·,x)は[tmin,tmax]で連続"
-    - "‖f(t,x)‖≤L"
-    - "L·max(tmax-t₀,t₀-tmin)≤a"
+  - $E$は実バナッハ空間
+  - $t_0\in I=[t_{\min},t_{\max}]$
+  - $t\in I$で$f(t,\cdot)$は閉球$B=\{x\mid\|x-x_0\|\leq a\}$上リプシッツ定数$K$をもつ
+  - $x\in B$で$f(\cdot,x)$は$I$で連続
+  - $t\in I$、$x\in B$で$\|f(t,x)\|\leq L$
+  - $L\max(t_{\max}-t_0,t_0-t_{\min})\leq a$
   quantifiers:
-    - "任意のE, f, tmin, tmax, t₀, x₀, 非負実数a, L, K"
-  conclusion: α(t₀)=x₀かつ[tmin,tmax]上α'=f(t,α)となる関数αが存在する。
+  - 任意の$E$、$f:\mathbb{R}\times E\to E$、$t_{\min},t_{\max},t_0\in\mathbb{R}$、$x_0\in E$、$a,L,K\geq0$
+  - ある$\alpha:\mathbb{R}\to E$
+  conclusion: $\alpha(t_0)=x_0$かつ、全ての$t\in I$で$\alpha$の$I$内での微分係数が$f(t,\alpha(t))$となる$\alpha:\mathbb{R}\to E$が存在する。
   answer: |
-    これは概略である。微分方程式を積分方程式α(t)=x₀+∫_{t₀}^t f(s,α(s))dsに書き換え、右辺を与える写像Φを連続関数の空間に定める。ノルムの上界Lと時間幅の条件により、Φは閉球に値を持つ関数の集合を保つ。リプシッツ条件を繰り返し用いると、Φの反復は十分大きい回数で縮小写像になる。バナッハの不動点定理で得た不動点を微分すれば解となる。
+    $E$を実バナッハ空間、$f:\mathbb{R}\times E\to E$、$I=[t_{\min},t_{\max}]$、$t_0\in I$、$x_0\in E$、$a,L,K\geq0$、$B=\{x\in E\mid\|x-x_0\|\leq a\}$とする。$t\in I$で$f(t,\cdot)$は$B$上リプシッツ定数$K$をもち、$x\in B$で$f(\cdot,x)$は$I$で連続、$t\in I$、$x\in B$で$\|f(t,x)\|\leq L$であるとする。$T=\max(t_{\max}-t_0,t_0-t_{\min})$とおくと$LT\leq a$であり、$t\in I$で$|t-t_0|\leq T$である。
+    関数空間の設定。$X$を、$B$に値をとる連続関数$\alpha:I\to E$全体に一様距離$d(\alpha,\beta)=\sup_{t\in I}\|\alpha(t)-\beta(t)\|$を入れた空間とする。$E$は完備で$I$はコンパクトなので$C(I,E)$は完備である。$B$は閉集合なので$X$は$C(I,E)$の閉集合であり、$X$は完備である。定数関数$x_0$が属するので$X$は空でない。
+    積分作用素。$\alpha\in X$とする。$s,s_0\in I$について
+    $\|f(s,\alpha(s))-f(s_0,\alpha(s_0))\|\leq K\|\alpha(s)-\alpha(s_0)\|+\|f(s,\alpha(s_0))-f(s_0,\alpha(s_0))\|$
+    なので、$s\mapsto f(s,\alpha(s))$は$I$で連続である。$E$は完備なので、連続な$E$値関数のリーマン積分が定義でき、積分のノルムは被積分関数のノルムの積分以下である。$(\Phi\alpha)(t)=x_0+\int_{t_0}^tf(s,\alpha(s))\,ds$と定める。$\Phi\alpha$は連続で、$\|(\Phi\alpha)(t)-x_0\|\leq L|t-t_0|\leq LT\leq a$である。よって$\Phi:X\to X$である。
+    反復の縮小性。$\alpha,\beta\in X$、$t\in I$、$n\geq0$について
+    $\|(\Phi^n\alpha)(t)-(\Phi^n\beta)(t)\|\leq\frac{(K|t-t_0|)^n}{n!}d(\alpha,\beta)$
+    を帰納法で示す。$n=0$は$d$の定義である。$n$で成り立つとすると、リプシッツ条件より
+    $\|(\Phi^{n+1}\alpha)(t)-(\Phi^{n+1}\beta)(t)\|\leq\left|\int_{t_0}^tK\frac{(K|s-t_0|)^n}{n!}d(\alpha,\beta)\,ds\right|=\frac{(K|t-t_0|)^{n+1}}{(n+1)!}d(\alpha,\beta)$
+    である。したがって$d(\Phi^n\alpha,\Phi^n\beta)\leq\frac{(KT)^n}{n!}d(\alpha,\beta)$である。$n\to\infty$で$(KT)^n/n!\to0$なので、$(KT)^n/n!<1$となる$n$をとると$\Phi^n$は縮小写像である。
+    不動点。バナッハの不動点定理（空でない完備距離空間上の縮小写像は唯一の不動点をもつ）より、$\Phi^n\alpha=\alpha$となる$\alpha\in X$がただ一つ存在する。$\Phi^n(\Phi\alpha)=\Phi(\Phi^n\alpha)=\Phi\alpha$なので$\Phi\alpha$も$\Phi^n$の不動点であり、一意性より$\Phi\alpha=\alpha$である。すなわち$t\in I$で$\alpha(t)=x_0+\int_{t_0}^tf(s,\alpha(s))\,ds$であり、$\alpha(t_0)=x_0$である。
+    微分。$\alpha$を$\mathbb{R}$上の関数へ任意に拡張する。$I$内での微分係数は拡張の仕方によらない。$\gamma(s)=f(s,\alpha(s))$は$I$で連続である。$t,t+h\in I$、$h\neq0$なら
+    $\left\|\frac{\alpha(t+h)-\alpha(t)}{h}-\gamma(t)\right\|=\left\|\frac1h\int_t^{t+h}(\gamma(s)-\gamma(t))\,ds\right\|\leq\sup_{s}\|\gamma(s)-\gamma(t)\|$
+    である。ここで上限は$t$と$t+h$の間の$s$についてとる。$\gamma$の$t$での連続性より、$h\to0$で右辺は$0$に収束する。よって$\alpha$の$t$での$I$内の微分係数は$f(t,\alpha(t))$である。$I$が$1$点のときは、この微分の条件に対象となる$h$がないので自動的に成り立つ。
   strategy: Rewrite the initial value problem as a fixed-point equation for the Picard operator and use a contraction argument for an iterate.
   sketch:
-    - "translate: A solution is the same as a fixed point of Φ(α)(t) = x₀ + ∫_{t₀}^t f(s, α(s)) ds."
-    - "setup: Let X be the complete space of continuous curves with values in the closed ball B(x₀, a)."
-    - "derive: The bound L and the time-width condition show that Φ maps X into X."
-    - "derive: The Lipschitz condition gives ‖Φ^n α - Φ^n β‖ ≤ (K T)^n / n! ‖α - β‖, so an iterate is a contraction."
-    - "apply_theorem: Banach's fixed point theorem gives a fixed point of Φ."
-    - "conclude: Differentiating the integral equation gives the solution."
+  - 'translate: A solution is the same as a fixed point of Φ(α)(t) = x₀ + ∫_{t₀}^t f(s, α(s)) ds.'
+  - 'setup: Let X be the complete space of continuous curves with values in the closed ball B(x₀, a).'
+  - 'derive: The bound L and the time-width condition show that Φ maps X into X.'
+  - 'derive: The Lipschitz condition gives ‖Φ^n α - Φ^n β‖ ≤ (K T)^n / n! ‖α - β‖, so an iterate is a contraction.'
+  - 'apply_theorem: Banach''s fixed point theorem gives a fixed point of Φ.'
+  - 'conclude: Differentiating the integral equation gives the solution.'
   openmath: (forall (E f tmin tmax t0 x0 a L K) (-> (and (banach_space_real E) (in t0 (closed_interval tmin tmax)) (forall (t) (-> (in t (closed_interval tmin tmax)) (lipschitz_on_with (fn_value f t) K (closed_ball x0 a)))) (forall (x) (-> (in x (closed_ball x0 a)) (continuous_on_set_fn (lambda (t) (fn_value (fn_value f t) x)) (closed_interval tmin tmax)))) (forall (t x) (-> (and (in t (closed_interval tmin tmax)) (in x (closed_ball x0 a))) (<= (norm (fn_value (fn_value f t) x)) L))) (<= (* L (max_of (- tmax t0) (- t0 tmin))) a)) (exists (y) (and (= (fn_value y t0) x0) (forall (t) (-> (in t (closed_interval tmin tmax)) (has_deriv_within_at y (fn_value (fn_value f t) (fn_value y t)) (closed_interval tmin tmax) t)))))))
   hard_negative:
     statement: fがリプシッツで有界なら、閉球と時間幅の関係によらず、与えた任意の時間区間で解が閉球内に存在する。
@@ -536,22 +580,25 @@
   kind: gap
   level: 3
   topic: 常微分方程式・一意性の反例
-  statement: 方程式y'=2√|y|, y(0)=0には全実数上で異なる2つの解がある。実際にy≡0とy(t)=t|t|がともに解である。
-  statement_en: "The initial value problem y' = 2√|y|, y(0) = 0 has two different solutions on ℝ, for instance y ≡ 0 and y(t) = t|t|."
+  statement: 方程式$y'=2\sqrt{|y|}$、$y(0)=0$には全実数上で異なる$2$つの解がある。実際に$y_1\equiv0$と$y_2(t)=t|t|$がともに解である。
+  statement_en: The initial value problem y' = 2√|y|, y(0) = 0 has two different solutions on ℝ, for instance y ≡ 0 and y(t) = t|t|.
   assumptions:
-    - "仮定なし（存在の主張）"
+  - 仮定なし（存在の主張）
   quantifiers:
-    - "ある2つの関数y₁, y₂"
-  conclusion: y₁(0)=y₂(0)=0かつy₁≠y₂で、どちらも全実数上でy'=2√|y|を満たす。
+  - ある$2$つの関数$y_1,y_2:\mathbb{R}\to\mathbb{R}$
+  conclusion: $y_1(0)=y_2(0)=0$かつ$y_1\neq y_2$で、どちらも全実数上で$y'=2\sqrt{|y|}$を満たす。
   answer: |
-    y₁≡0は明らかに解である。y₂(t)=t|t|はt≥0でt²、t≤0で-t²に等しく、片側微分はどちらもt=0で0なので全実数上で微分可能であり、y₂'(t)=2|t|である。一方√|y₂(t)|=√(t²)=|t|なので、y₂'=2√|y₂|が成り立つ。y₂(1)=1≠0より2つの解は異なる。
+    存在の主張なので関数を具体的に与える。$y_1,y_2:\mathbb{R}\to\mathbb{R}$を$y_1(t)=0$、$y_2(t)=t|t|$と定める。$y_1(0)=y_2(0)=0$である。
+    $y_1$については$y_1'=0=2\sqrt{|y_1|}$である。
+    $y_2$は$t>0$で$t^2$、$t<0$で$-t^2$に等しいので、$t\neq0$で$y_2'(t)=2|t|$である。$t=0$では$h\neq0$に対し$(y_2(h)-y_2(0))/h=|h|\to0$なので$y_2'(0)=0=2|0|$である。よって全ての$t$で$y_2'(t)=2|t|$である。一方$\sqrt{|y_2(t)|}=\sqrt{t^2}=|t|$なので、$y_2'=2\sqrt{|y_2|}$が成り立つ。
+    $y_2(1)=1\neq0=y_1(1)$より、$2$つの解は異なる。
   strategy: Exhibit the zero function and t|t| and verify the equation for t|t| separately for t < 0, t = 0, t > 0.
   sketch:
-    - "construct: Take y₁ ≡ 0 and y₂(t) = t|t|."
-    - "case_split: For t > 0 y₂ agrees with t² near t, for t < 0 with -t² near t."
-    - "derive: At t = 0 both one-sided derivatives vanish, so y₂'(t) = 2|t| everywhere."
-    - "derive: Since √|t|t|| = |t|, the equation y₂' = 2√|y₂| holds."
-    - "conclude: y₂(1) = 1 ≠ 0 = y₁(1), so uniqueness fails."
+  - 'construct: Take y₁ ≡ 0 and y₂(t) = t|t|.'
+  - 'case_split: For t > 0 y₂ agrees with t² near t, for t < 0 with -t² near t.'
+  - 'derive: At t = 0 both one-sided derivatives vanish, so y₂''(t) = 2|t| everywhere.'
+  - 'derive: Since √|t|t|| = |t|, the equation y₂'' = 2√|y₂| holds.'
+  - 'conclude: y₂(1) = 1 ≠ 0 = y₁(1), so uniqueness fails.'
   openmath: (exists (y1 y2) (and (= (fn_value y1 0) 0) (= (fn_value y2 0) 0) (exists (s) (!= (fn_value y1 s) (fn_value y2 s))) (forall (t) (has_deriv_at (lambda (r0) (fn_value y1 r0)) (* 2 (root (abs (fn_value y1 t)) 2)) t)) (forall (t) (has_deriv_at (lambda (r0) (fn_value y2 r0)) (* 2 (root (abs (fn_value y2 t)) 2)) t))))
   hard_negative:
     statement: y'=2√|y|, y(1)=1の解も初期値から全実数上で一意に決まる。
@@ -602,20 +649,20 @@
   kind: gap
   level: 2
   topic: 常微分方程式・定数係数2階線形
-  statement: rがr²+ar+b=0の根ならば、y(t)=e^{rt}はy''+ay'+by=0の解である。
-  statement_en: "If r is a root of r² + a r + b = 0, then y(t) = e^{rt} satisfies y'' + a y' + b y = 0, with y' = r e^{rt}."
+  statement: $a,b,r\in\mathbb{R}$が$r^2+ar+b=0$を満たすならば、$y(t)=e^{rt}$は$y''+ay'+by=0$の解である。すなわち、全ての$t$で$y'(t)=re^{rt}$であり、$y'$の$t$での微分係数は$-a\cdot re^{rt}-be^{rt}$である。
+  statement_en: If r is a root of r² + a r + b = 0, then y(t) = e^{rt} satisfies y'' + a y' + b y = 0, with y' = r e^{rt}.
   assumptions:
-    - "r²+ar+b=0"
+  - $r^2+ar+b=0$
   quantifiers:
-    - "任意の実数a, b, r, t"
-  conclusion: e^{rs}の点tでの微分係数はre^{rt}であり、re^{rs}の点tでの微分係数は-a·re^{rt}-b·e^{rt}である。
+  - 任意の$a,b,r,t\in\mathbb{R}$
+  conclusion: $s\mapsto e^{rs}$の点$t$での微分係数は$re^{rt}$であり、$s\mapsto re^{rs}$の点$t$での微分係数は$-a\cdot re^{rt}-be^{rt}$である。
   answer: |
-    合成関数の微分によりy'=re^{rt}, y''=r²e^{rt}である。r²=-ar-bを代入すると、y''=-a·re^{rt}-b·e^{rt}=-ay'-byとなる。よってy''+ay'+by=0が成り立つ。
+    $a,b,r,t\in\mathbb{R}$、$r^2+ar+b=0$とする。合成関数の微分より、$s\mapsto e^{rs}$の点$t$での微分係数は$re^{rt}$である。同様に$s\mapsto re^{rs}$の点$t$での微分係数は$r^2e^{rt}$である。$r^2=-ar-b$を代入すると、これは$-a\cdot re^{rt}-be^{rt}$に等しい。$y(t)=e^{rt}$と書けば、$y''=-ay'-by$、すなわち$y''+ay'+by=0$である。
   strategy: Differentiate the exponential twice and substitute the characteristic equation.
   sketch:
-    - "derive: The chain rule gives y' = r e^{rt} and y'' = r² e^{rt}."
-    - "translate: The characteristic equation says r² = -a r - b."
-    - "conclude: Substituting gives y'' = -a y' - b y."
+  - 'derive: The chain rule gives y'' = r e^{rt} and y'''' = r² e^{rt}.'
+  - 'translate: The characteristic equation says r² = -a r - b.'
+  - 'conclude: Substituting gives y'''' = -a y'' - b y.'
   openmath: (forall (a b r t) (-> (= (+ (+ (^ r 2) (* a r)) b) 0) (and (has_deriv_at (lambda (s) (exp (* r s))) (* r (exp (* r t))) t) (has_deriv_at (lambda (s) (* r (exp (* r s)))) (- (neg (* a (* r (exp (* r t))))) (* b (exp (* r t)))) t))))
   hard_negative:
     statement: 任意の実数rについてe^{rt}はy''+ay'+by=0の解である。
@@ -633,20 +680,21 @@
   kind: gap
   level: 2
   topic: 常微分方程式・定数係数2階線形
-  statement: y(t)=te^{rt}は重根rを持つ方程式y''-2ry'+r²y=0の解である。
-  statement_en: "The function y(t) = t e^{rt} solves y'' - 2 r y' + r² y = 0, the equation with double characteristic root r, with y' = (1 + r t) e^{rt}."
+  statement: $r\in\mathbb{R}$とする。$y(t)=te^{rt}$は重根$r$をもつ方程式$y''-2ry'+r^2y=0$の解である。すなわち、$y'(t)=(1+rt)e^{rt}$であり、$y'$の$t$での微分係数は$2r(1+rt)e^{rt}-r^2te^{rt}$である。
+  statement_en: The function y(t) = t e^{rt} solves y'' - 2 r y' + r² y = 0, the equation with double characteristic root r, with y' = (1 + r t) e^{rt}.
   assumptions:
-    - "rは実数"
+  - $r\in\mathbb{R}$
   quantifiers:
-    - "任意の実数r, t"
-  conclusion: te^{rt}の導関数は(1+rt)e^{rt}であり、その導関数は2r(1+rt)e^{rt}-r²te^{rt}に等しい。
+  - 任意の$r,t\in\mathbb{R}$
+  conclusion: $s\mapsto se^{rs}$の点$t$での微分係数は$(1+rt)e^{rt}$であり、$s\mapsto(1+rs)e^{rs}$の点$t$での微分係数は$2r(1+rt)e^{rt}-r^2te^{rt}$である。
   answer: |
-    積の微分によりy'=e^{rt}+rte^{rt}=(1+rt)e^{rt}である。もう一度微分するとy''=re^{rt}+(1+rt)re^{rt}=(2r+r²t)e^{rt}となる。一方、2ry'-r²y=(2r+2r²t-r²t)e^{rt}=(2r+r²t)e^{rt}なので、y''-2ry'+r²y=0が成り立つ。
+    $r,t\in\mathbb{R}$とする。積の微分より、$s\mapsto se^{rs}$の点$t$での微分係数は$e^{rt}+rte^{rt}=(1+rt)e^{rt}$である。
+    $s\mapsto(1+rs)e^{rs}$の点$t$での微分係数は、積の微分より$re^{rt}+(1+rt)re^{rt}=(2r+r^2t)e^{rt}$である。一方$2r(1+rt)e^{rt}-r^2te^{rt}=(2r+2r^2t-r^2t)e^{rt}=(2r+r^2t)e^{rt}$である。両者は一致する。$y(t)=te^{rt}$と書けば、$y''=2ry'-r^2y$、すなわち$y''-2ry'+r^2y=0$である。
   strategy: Differentiate t e^{rt} twice with the product rule and compare the coefficients.
   sketch:
-    - "derive: The product rule gives y' = (1 + r t) e^{rt}."
-    - "derive: A second application gives y'' = (2 r + r² t) e^{rt}."
-    - "conclude: This equals 2 r y' - r² y."
+  - 'derive: The product rule gives y'' = (1 + r t) e^{rt}.'
+  - 'derive: A second application gives y'''' = (2 r + r² t) e^{rt}.'
+  - 'conclude: This equals 2 r y'' - r² y.'
   openmath: (forall (r t) (and (has_deriv_at (lambda (s) (* s (exp (* r s)))) (* (+ 1 (* r t)) (exp (* r t))) t) (has_deriv_at (lambda (s) (* (+ 1 (* r s)) (exp (* r s)))) (- (* (* 2 r) (* (+ 1 (* r t)) (exp (* r t)))) (* (^ r 2) (* t (exp (* r t))))) t)))
   hard_negative:
     statement: t²e^{rt}もy''-2ry'+r²y=0の解である。
@@ -669,21 +717,26 @@
   kind: gap
   level: 2
   topic: 常微分方程式・定数係数2階線形
-  statement: y(t)=e^{αt}(A cos βt+B sin βt)は、特性根α±iβを持つ方程式y''-2αy'+(α²+β²)y=0の解である。
-  statement_en: "The function y(t) = e^{αt} (A cos βt + B sin βt) solves y'' - 2α y' + (α² + β²) y = 0, the equation with characteristic roots α ± iβ, with y' = e^{αt} ((αA + βB) cos βt + (αB - βA) sin βt)."
+  statement: $\alpha,\beta,A,B\in\mathbb{R}$とする。$y(t)=e^{\alpha t}(A\cos\beta t+B\sin\beta t)$は、特性根$\alpha\pm i\beta$をもつ方程式$y''-2\alpha y'+(\alpha^2+\beta^2)y=0$の解である。
+  statement_en: The function y(t) = e^{αt} (A cos βt + B sin βt) solves y'' - 2α y' + (α² + β²) y = 0, the equation with characteristic roots α ± iβ, with y' = e^{αt} ((αA + βB) cos βt + (αB - βA) sin βt).
   assumptions:
-    - "α, β, A, Bは実数"
+  - $\alpha,\beta,A,B\in\mathbb{R}$
   quantifiers:
-    - "任意の実数α, β, A, B, t"
-  conclusion: yの導関数はe^{αt}((αA+βB)cos βt+(αB-βA)sin βt)であり、その導関数は2αy'-(α²+β²)yに等しい。
+  - 任意の$\alpha,\beta,A,B,t\in\mathbb{R}$
+  conclusion: $y'(t)=e^{\alpha t}((\alpha A+\beta B)\cos\beta t+(\alpha B-\beta A)\sin\beta t)$であり、$y'$の$t$での微分係数は$2\alpha y'(t)-(\alpha^2+\beta^2)y(t)$である。
   answer: |
-    積の微分によりy'=e^{αt}((αA+βB)cos βt+(αB-βA)sin βt)である。y'は同じ形でAをC=αA+βBに、BをD=αB-βAに置き換えたものである。したがってy''=e^{αt}((αC+βD)cos βt+(αD-βC)sin βt)となる。これを展開して係数を比較すると、y''=2αy'-(α²+β²)yが成り立つ。
+    $\alpha,\beta,A,B,t\in\mathbb{R}$とし、$y(t)=e^{\alpha t}(A\cos\beta t+B\sin\beta t)$とおく。積の微分より
+    $y'(t)=e^{\alpha t}((\alpha A+\beta B)\cos\beta t+(\alpha B-\beta A)\sin\beta t)$
+    である。$C=\alpha A+\beta B$、$D=\alpha B-\beta A$とおくと、$y'$は$y$の$A,B$を$C,D$に置き換えた形である。同じ計算より
+    $y''(t)=e^{\alpha t}((\alpha C+\beta D)\cos\beta t+(\alpha D-\beta C)\sin\beta t)$
+    である。ここで$\alpha C+\beta D=(\alpha^2-\beta^2)A+2\alpha\beta B$、$\alpha D-\beta C=(\alpha^2-\beta^2)B-2\alpha\beta A$である。
+    一方$2\alpha y'-(\alpha^2+\beta^2)y$の$e^{\alpha t}\cos\beta t$の係数は$2\alpha C-(\alpha^2+\beta^2)A=(\alpha^2-\beta^2)A+2\alpha\beta B$であり、$e^{\alpha t}\sin\beta t$の係数は$2\alpha D-(\alpha^2+\beta^2)B=(\alpha^2-\beta^2)B-2\alpha\beta A$である。よって$y''=2\alpha y'-(\alpha^2+\beta^2)y$である。
   strategy: Note that differentiation maps the family e^{αt}(C cos βt + D sin βt) into itself, then compare coefficients.
   sketch:
-    - "derive: For any C, D the derivative of e^{αt}(C cos βt + D sin βt) has coefficients (αC + βD, αD - βC)."
-    - "derive: Applying this to (A, B) gives y'."
-    - "derive: Applying it again gives y''."
-    - "conclude: Comparing coefficients of cos βt and sin βt gives y'' = 2α y' - (α² + β²) y."
+  - 'derive: For any C, D the derivative of e^{αt}(C cos βt + D sin βt) has coefficients (αC + βD, αD - βC).'
+  - 'derive: Applying this to (A, B) gives y''.'
+  - 'derive: Applying it again gives y''''.'
+  - 'conclude: Comparing coefficients of cos βt and sin βt gives y'''' = 2α y'' - (α² + β²) y.'
   openmath: (forall (al be A B t) (and (has_deriv_at (lambda (s) (* (exp (* al s)) (+ (* A (cos (* be s))) (* B (sin (* be s)))))) (* (exp (* al t)) (+ (* (+ (* al A) (* be B)) (cos (* be t))) (* (- (* al B) (* be A)) (sin (* be t))))) t) (has_deriv_at (lambda (s) (* (exp (* al s)) (+ (* (+ (* al A) (* be B)) (cos (* be s))) (* (- (* al B) (* be A)) (sin (* be s)))))) (- (* (* 2 al) (* (exp (* al t)) (+ (* (+ (* al A) (* be B)) (cos (* be t))) (* (- (* al B) (* be A)) (sin (* be t)))))) (* (+ (^ al 2) (^ be 2)) (* (exp (* al t)) (+ (* A (cos (* be t))) (* B (sin (* be t))))))) t)))
   hard_negative:
     statement: e^{αt}cos βtはy''-2αy'+(α²-β²)y=0の解である。
@@ -707,23 +760,26 @@
   kind: gap
   level: 2
   topic: 常微分方程式・重ね合わせの原理
-  statement: y₁がy''+py'+qy=f₁の解、y₂がy''+py'+qy=f₂の解のとき、c₁y₁+c₂y₂はy''+py'+qy=c₁f₁+c₂f₂の解である。
-  statement_en: "If y₁ solves y'' + p y' + q y = f₁ and y₂ solves y'' + p y' + q y = f₂ at t, then c₁y₁ + c₂y₂ solves y'' + p y' + q y = c₁f₁ + c₂f₂ at t."
+  statement: 点$t$で$y_1'=v_1$、$v_1'=f_1-pv_1-qy_1$かつ$y_2'=v_2$、$v_2'=f_2-pv_2-qy_2$ならば、$c_1y_1+c_2y_2$は点$t$で方程式$y''+py'+qy=c_1f_1+c_2f_2$を満たす。
+  statement_en: If y₁ solves y'' + p y' + q y = f₁ and y₂ solves y'' + p y' + q y = f₂ at t, then c₁y₁ + c₂y₂ solves y'' + p y' + q y = c₁f₁ + c₂f₂ at t.
   assumptions:
-    - "点tでy₁'=v₁, v₁'=f₁-pv₁-qy₁"
-    - "点tでy₂'=v₂, v₂'=f₂-pv₂-qy₂"
+  - 点$t$で$y_1$の微分係数は$v_1(t)$、$v_1$の微分係数は$f_1(t)-p(t)v_1(t)-q(t)y_1(t)$
+  - 点$t$で$y_2$の微分係数は$v_2(t)$、$v_2$の微分係数は$f_2(t)-p(t)v_2(t)-q(t)y_2(t)$
   quantifiers:
-    - "任意の関数p, q, f₁, f₂, y₁, v₁, y₂, v₂"
-    - "任意の実数c₁, c₂, t"
-  conclusion: c₁y₁+c₂y₂の導関数はc₁v₁+c₂v₂であり、その導関数は(c₁f₁+c₂f₂)-p(c₁v₁+c₂v₂)-q(c₁y₁+c₂y₂)である。
+  - 任意の$p,q,f_1,f_2,y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$
+  - 任意の$c_1,c_2,t\in\mathbb{R}$
+  conclusion: $c_1y_1+c_2y_2$の点$t$での微分係数は$c_1v_1(t)+c_2v_2(t)$であり、$c_1v_1+c_2v_2$の点$t$での微分係数は$c_1f_1(t)+c_2f_2(t)-p(t)(c_1v_1(t)+c_2v_2(t))-q(t)(c_1y_1(t)+c_2y_2(t))$である。
   answer: |
-    微分は線形なので、(c₁y₁+c₂y₂)'=c₁v₁+c₂v₂である。同様に(c₁v₁+c₂v₂)'=c₁(f₁-pv₁-qy₁)+c₂(f₂-pv₂-qy₂)となる。これを整理すると(c₁f₁+c₂f₂)-p(c₁v₁+c₂v₂)-q(c₁y₁+c₂y₂)が得られる。c₁=1, c₂=-1, f₁=f₂の場合から、同じ非斉次方程式の2解の差は斉次方程式の解である。
+    $p,q,f_1,f_2,y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$、$c_1,c_2,t\in\mathbb{R}$とする。点$t$で$y_1,y_2$の微分係数はそれぞれ$v_1(t),v_2(t)$であり、$v_1,v_2$の微分係数はそれぞれ$f_1(t)-p(t)v_1(t)-q(t)y_1(t)$、$f_2(t)-p(t)v_2(t)-q(t)y_2(t)$であるとする。
+    微分の線形性より、$c_1y_1+c_2y_2$の点$t$での微分係数は$c_1v_1(t)+c_2v_2(t)$である。同様に$c_1v_1+c_2v_2$の点$t$での微分係数は
+    $c_1(f_1(t)-p(t)v_1(t)-q(t)y_1(t))+c_2(f_2(t)-p(t)v_2(t)-q(t)y_2(t))$
+    である。これを整理すると$c_1f_1(t)+c_2f_2(t)-p(t)(c_1v_1(t)+c_2v_2(t))-q(t)(c_1y_1(t)+c_2y_2(t))$となる。
   strategy: Use linearity of the derivative in both layers of the first-order form and collect terms.
   sketch:
-    - "translate: Write the equation as the pair y' = v, v' = f - p v - q y."
-    - "apply_theorem: Linearity of the derivative gives (c₁y₁ + c₂y₂)' = c₁v₁ + c₂v₂."
-    - "derive: Linearity also gives the derivative of c₁v₁ + c₂v₂."
-    - "conclude: Collect terms to obtain the right-hand side c₁f₁ + c₂f₂."
+  - 'translate: Write the equation as the pair y'' = v, v'' = f - p v - q y.'
+  - 'apply_theorem: Linearity of the derivative gives (c₁y₁ + c₂y₂)'' = c₁v₁ + c₂v₂.'
+  - 'derive: Linearity also gives the derivative of c₁v₁ + c₂v₂.'
+  - 'conclude: Collect terms to obtain the right-hand side c₁f₁ + c₂f₂.'
   openmath: (forall (p q f1 f2 y1 v1 y2 v2 c1 c2 t) (-> (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t) t) (has_deriv_at (lambda (s) (fn_value v1 s)) (- (- (fn_value f1 t) (* (fn_value p t) (fn_value v1 t))) (* (fn_value q t) (fn_value y1 t))) t) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t) t) (has_deriv_at (lambda (s) (fn_value v2 s)) (- (- (fn_value f2 t) (* (fn_value p t) (fn_value v2 t))) (* (fn_value q t) (fn_value y2 t))) t)) (and (has_deriv_at (lambda (s) (+ (* c1 (fn_value y1 s)) (* c2 (fn_value y2 s)))) (+ (* c1 (fn_value v1 t)) (* c2 (fn_value v2 t))) t) (has_deriv_at (lambda (s) (+ (* c1 (fn_value v1 s)) (* c2 (fn_value v2 s)))) (- (- (+ (* c1 (fn_value f1 t)) (* c2 (fn_value f2 t))) (* (fn_value p t) (+ (* c1 (fn_value v1 t)) (* c2 (fn_value v2 t))))) (* (fn_value q t) (+ (* c1 (fn_value y1 t)) (* c2 (fn_value y2 t))))) t))))
   hard_negative:
     statement: y₁, y₂がともにy''+py'+qy=fの解ならy₁+y₂も同じ方程式の解である。
@@ -741,22 +797,26 @@
   kind: textbook
   level: 2
   topic: 常微分方程式・解空間の線形性
-  statement: 斉次方程式y''+p(t)y'+q(t)y=0の全実数上の解全体は、関数全体のなすベクトル空間の部分空間をなす。
-  statement_en: "The set of solutions on ℝ of the homogeneous equation y'' + p(t) y' + q(t) y = 0 is a linear subspace of the vector space of real functions."
+  statement: $p,q:\mathbb{R}\to\mathbb{R}$とする。斉次方程式$y''+p(t)y'+q(t)y=0$の全実数上の解全体は、関数全体のなす実ベクトル空間$\mathbb{R}^{\mathbb{R}}$の部分空間をなす。
+  statement_en: The set of solutions on ℝ of the homogeneous equation y'' + p(t) y' + q(t) y = 0 is a linear subspace of the vector space of real functions.
   assumptions:
-    - "p, qは実数上の実数値関数"
+  - $p,q:\mathbb{R}\to\mathbb{R}$
   quantifiers:
-    - "任意の関数p, q"
-  conclusion: 部分空間Sが存在し、yがSに属することと、yが方程式の解であることは同値である。
+  - 任意の$p,q:\mathbb{R}\to\mathbb{R}$
+  conclusion: $\mathbb{R}^{\mathbb{R}}$の部分空間$S$が存在し、$y\in S$であることと、全ての$t$で$y'=v$、$v'=-pv-qy$となる$v:\mathbb{R}\to\mathbb{R}$が存在することは同値である。
   answer: |
-    y≡0は導関数v≡0とともに方程式を満たす。y₁, y₂が解でv₁, v₂がその導関数なら、y₁+y₂の導関数はv₁+v₂であり、方程式が線形なのでy₁+y₂も解である。実数cについても、cyの導関数はcvで、同じ理由でcyは解である。よって解全体は零を含み、和とスカラー倍で閉じているので部分空間である。
+    $p,q:\mathbb{R}\to\mathbb{R}$とする。$S$を、全ての$t$で$y$の微分係数が$v(t)$、$v$の微分係数が$-p(t)v(t)-q(t)y(t)$となる$v:\mathbb{R}\to\mathbb{R}$が存在するような関数$y:\mathbb{R}\to\mathbb{R}$全体の集合とする。$S$が部分空間であることを示す。
+    $y\equiv0$は$v\equiv0$とともに条件を満たすので、$0\in S$である。
+    $y_1,y_2\in S$とし、対応する関数を$v_1,v_2$とする。$y_1+y_2$の微分係数は$v_1+v_2$であり、$v_1+v_2$の微分係数は$-p(v_1+v_2)-q(y_1+y_2)$である。よって$y_1+y_2\in S$である。
+    $y\in S$、$c\in\mathbb{R}$とし、対応する関数を$v$とする。$cy$の微分係数は$cv$であり、$cv$の微分係数は$-p(cv)-q(cy)$である。よって$cy\in S$である。
+    以上より$S$は部分空間であり、定義より求める同値が成り立つ。
   strategy: Check the three subspace axioms directly in the first-order form y' = v, v' = -p v - q y.
   sketch:
-    - "translate: Say y is a solution when some v satisfies y' = v and v' = -p v - q y on ℝ."
-    - "construct: Take the carrier of S to be this set of functions."
-    - "derive: The zero function is a solution with v = 0."
-    - "derive: Sums use v₁ + v₂ and scalar multiples use c v, by linearity of the derivative."
-    - "conclude: The solutions form a subspace."
+  - 'translate: Say y is a solution when some v satisfies y'' = v and v'' = -p v - q y on ℝ.'
+  - 'construct: Take the carrier of S to be this set of functions.'
+  - 'derive: The zero function is a solution with v = 0.'
+  - 'derive: Sums use v₁ + v₂ and scalar multiples use c v, by linearity of the derivative.'
+  - 'conclude: The solutions form a subspace.'
   openmath: (forall (p q) (exists (S) (and (subspace_of S real_function_space) (forall (y) (<-> (in y S) (exists (v) (forall (t) (and (has_deriv_at (lambda (s) (fn_value y s)) (fn_value v t) t) (has_deriv_at (lambda (s) (fn_value v s)) (- (neg (* (fn_value p t) (fn_value v t))) (* (fn_value q t) (fn_value y t))) t)))))))))
   hard_negative:
     statement: 非斉次方程式y''+py'+qy=fの解全体も部分空間をなす。
@@ -793,24 +853,29 @@
   kind: gap
   level: 2
   topic: 常微分方程式・定数係数2階線形
-  statement: y''+ay'+by=0の全実数上の2解は、1点での値と微分係数が等しければ全実数上で一致する。
-  statement_en: "Two solutions on ℝ of y'' + a y' + b y = 0 that agree in value and derivative at one point t₀ agree everywhere."
+  statement: $a,b\in\mathbb{R}$とする。$y''+ay'+by=0$の全実数上の$2$つの解は、$1$点$t_0$での値と微分係数が等しければ全実数上で一致する。
+  statement_en: Two solutions on ℝ of y'' + a y' + b y = 0 that agree in value and derivative at one point t₀ agree everywhere.
   assumptions:
-    - "全実数上でy₁'=v₁, v₁'=-av₁-by₁"
-    - "全実数上でy₂'=v₂, v₂'=-av₂-by₂"
-    - "y₁(t₀)=y₂(t₀), v₁(t₀)=v₂(t₀)"
+  - 全実数上で$y_1'=v_1$、$v_1'=-av_1-by_1$
+  - 全実数上で$y_2'=v_2$、$v_2'=-av_2-by_2$
+  - $y_1(t_0)=y_2(t_0)$、$v_1(t_0)=v_2(t_0)$
   quantifiers:
-    - "任意の実数a, b, t₀と関数y₁, v₁, y₂, v₂"
-    - "任意の実数t"
-  conclusion: y₁(t)=y₂(t)が成り立つ。
+  - 任意の$a,b,t_0\in\mathbb{R}$と$y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$
+  - 任意の$t\in\mathbb{R}$
+  conclusion: $y_1(t)=y_2(t)$である。
   answer: |
-    (y,v)を未知関数とすると、方程式はℝ²上の1階方程式x'=Lxになる。ここでL(y,v)=(v,-av-by)は線形写像なので、大域リプシッツである。リプシッツ条件のもとで1階方程式の解は1点の値から全実数上で一意に決まる。(y₁,v₁)と(y₂,v₂)はt₀で一致するので全実数上で一致し、特にy₁=y₂である。
+    $a,b,t_0\in\mathbb{R}$、$y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$とする。全実数上で$y_i'=v_i$、$v_i'=-av_i-by_i$（$i=1,2$）であり、$y_1(t_0)=y_2(t_0)$、$v_1(t_0)=v_2(t_0)$であるとする。$t\in\mathbb{R}$をとる。
+    $u=y_1-y_2$、$w=v_1-v_2$とおくと、$u'=w$、$w'=-aw-bu$、$u(t_0)=w(t_0)=0$である。$E=u^2+w^2$とおくと
+    $E'=2uw+2w(-aw-bu)=2(1-b)uw-2aw^2$
+    である。$2|uw|\leq u^2+w^2$より、$M=|1-b|+2|a|$とおくと$|E'|\leq ME$である。
+    $t\geq t_0$の場合、$(Ee^{-Ms})'=(E'-ME)e^{-Ms}\leq0$なので、$Ee^{-Ms}$は単調非増加である。よって$E(t)e^{-Mt}\leq E(t_0)e^{-Mt_0}=0$である。$t\leq t_0$の場合、$(Ee^{Ms})'=(E'+ME)e^{Ms}\geq0$なので、$Ee^{Ms}$は単調非減少である。よって$E(t)e^{Mt}\leq E(t_0)e^{Mt_0}=0$である。
+    $E\geq0$なのでどちらの場合も$E(t)=0$であり、$u(t)=0$、すなわち$y_1(t)=y_2(t)$である。
   strategy: Rewrite the equation as a linear first-order system on ℝ² and apply uniqueness under a Lipschitz bound.
   sketch:
-    - "translate: Put x = (y, v), so x' = L x with L(y, v) = (v, -a v - b y)."
-    - "derive: The linear map L on ℝ² is globally Lipschitz."
-    - "apply_theorem: Uniqueness for Lipschitz first-order systems on ℝ applies to the two curves."
-    - "conclude: The curves agree at t₀, so they agree everywhere; take first components."
+  - 'translate: Put x = (y, v), so x'' = L x with L(y, v) = (v, -a v - b y).'
+  - 'derive: The linear map L on ℝ² is globally Lipschitz.'
+  - 'apply_theorem: Uniqueness for Lipschitz first-order systems on ℝ applies to the two curves.'
+  - 'conclude: The curves agree at t₀, so they agree everywhere; take first components.'
   openmath: (forall (a b t0 y1 v1 y2 v2) (-> (and (forall (t) (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t) t) (has_deriv_at (lambda (s) (fn_value v1 s)) (- (neg (* a (fn_value v1 t))) (* b (fn_value y1 t))) t) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t) t) (has_deriv_at (lambda (s) (fn_value v2 s)) (- (neg (* a (fn_value v2 t))) (* b (fn_value y2 t))) t))) (= (fn_value y1 t0) (fn_value y2 t0)) (= (fn_value v1 t0) (fn_value v2 t0))) (forall (t) (= (fn_value y1 t) (fn_value y2 t)))))
   hard_negative:
     statement: y''+ay'+by=0の2解は、1点での値だけが等しければ全実数上で一致する。
@@ -842,24 +907,29 @@
   kind: textbook
   level: 2
   topic: 常微分方程式・定数係数2階線形
-  statement: r₁≠r₂のとき、(D-r₁)(D-r₂)y=0すなわちy''=(r₁+r₂)y'-r₁r₂yの全実数上の解は、y=c₁e^{r₁t}+c₂e^{r₂t}の形に限る。
-  statement_en: "If r₁ ≠ r₂, every solution on ℝ of y'' = (r₁ + r₂) y' - r₁r₂ y has the form y = c₁ e^{r₁t} + c₂ e^{r₂t}."
+  statement: $r_1\neq r_2$のとき、$y''=(r_1+r_2)y'-r_1r_2y$の全実数上の解は、実数$c_1,c_2$を用いて$y(t)=c_1e^{r_1t}+c_2e^{r_2t}$と書ける。
+  statement_en: If r₁ ≠ r₂, every solution on ℝ of y'' = (r₁ + r₂) y' - r₁r₂ y has the form y = c₁ e^{r₁t} + c₂ e^{r₂t}.
   assumptions:
-    - "r₁≠r₂"
-    - "全実数上でy'=v"
-    - "全実数上でv'=(r₁+r₂)v-r₁r₂y"
+  - $r_1\neq r_2$
+  - 全実数上で$y'=v$
+  - 全実数上で$v'=(r_1+r_2)v-r_1r_2y$
   quantifiers:
-    - "任意の実数r₁, r₂と関数y, v"
-  conclusion: 実数c₁, c₂が存在して、全てのtでy(t)=c₁e^{r₁t}+c₂e^{r₂t}となる。
+  - 任意の$r_1,r_2\in\mathbb{R}$と$y,v:\mathbb{R}\to\mathbb{R}$
+  - ある$c_1,c_2\in\mathbb{R}$
+  - 任意の$t\in\mathbb{R}$
+  conclusion: 全ての$t$で$y(t)=c_1e^{r_1t}+c_2e^{r_2t}$となる$c_1,c_2\in\mathbb{R}$が存在する。
   answer: |
-    u=v-r₂yと置くとu'=(r₁+r₂)v-r₁r₂y-r₂v=r₁uであり、同様にw=v-r₁yはw'=r₂wを満たす。1階方程式の解の形からu(t)=u(0)e^{r₁t}, w(t)=w(0)e^{r₂t}である。u-w=(r₁-r₂)yなので、r₁≠r₂より両辺をr₁-r₂で割ることができる。よってc₁=u(0)/(r₁-r₂), c₂=-w(0)/(r₁-r₂)と取れば主張を得る。
+    $r_1,r_2\in\mathbb{R}$、$r_1\neq r_2$、$y,v:\mathbb{R}\to\mathbb{R}$とし、全実数上で$y'=v$、$v'=(r_1+r_2)v-r_1r_2y$であるとする。
+    $u=v-r_2y$とおくと、$u'=(r_1+r_2)v-r_1r_2y-r_2v=r_1(v-r_2y)=r_1u$である。同様に$w=v-r_1y$とおくと$w'=r_2w$である。
+    一般に$z'=cz$なら$(ze^{-ct})'=0$なので$ze^{-ct}$は定数であり、$z(t)=z(0)e^{ct}$である。よって$u(t)=u(0)e^{r_1t}$、$w(t)=w(0)e^{r_2t}$である。
+    $u-w=(r_1-r_2)y$であり、$r_1-r_2\neq0$なので、$c_1=u(0)/(r_1-r_2)$、$c_2=-w(0)/(r_1-r_2)$とおくと$y(t)=c_1e^{r_1t}+c_2e^{r_2t}$である。
   strategy: Factor the operator into two first-order equations, solve each, and recover y from the difference.
   sketch:
-    - "construct: Put u = v - r₂y and w = v - r₁y."
-    - "derive: The equation gives u' = r₁u and w' = r₂w."
-    - "apply_theorem: The solutions of z' = r z are z(0) e^{rt}."
-    - "derive: The difference is u - w = (r₁ - r₂) y."
-    - "conclude: Divide by r₁ - r₂ ≠ 0 to obtain c₁ and c₂."
+  - 'construct: Put u = v - r₂y and w = v - r₁y.'
+  - 'derive: The equation gives u'' = r₁u and w'' = r₂w.'
+  - 'apply_theorem: The solutions of z'' = r z are z(0) e^{rt}.'
+  - 'derive: The difference is u - w = (r₁ - r₂) y.'
+  - 'conclude: Divide by r₁ - r₂ ≠ 0 to obtain c₁ and c₂.'
   openmath: (forall (r1 r2 y v) (-> (and (!= r1 r2) (forall (t) (and (has_deriv_at (lambda (s) (fn_value y s)) (fn_value v t) t) (has_deriv_at (lambda (s) (fn_value v s)) (- (* (+ r1 r2) (fn_value v t)) (* (* r1 r2) (fn_value y t))) t)))) (exists (c1 c2) (forall (t) (= (fn_value y t) (+ (* c1 (exp (* r1 t))) (* c2 (exp (* r2 t)))))))))
   hard_negative:
     statement: r₁=r₂=rのときも、解は全てc₁e^{rt}+c₂e^{rt}の形である。
@@ -907,25 +977,28 @@
   kind: named
   level: 3
   topic: 常微分方程式・ロンスキアン
-  statement: （アーベルの公式）y₁, y₂がy''+p(t)y'+q(t)y=0の解でP'=pならば、ロンスキアンW=y₁y₂'-y₁'y₂はW(t)=W(s)exp(P(s)-P(t))を満たす。
-  statement_en: "(Abel's identity) If y₁, y₂ solve y'' + p(t) y' + q(t) y = 0 on ℝ and P' = p, then the Wronskian W = y₁y₂' - y₁'y₂ satisfies W(t) = W(s) exp(P(s) - P(t))."
+  statement: （アーベルの公式）$y_1,y_2$が$y''+p(t)y'+q(t)y=0$の全実数上の解で$P'=p$ならば、ロンスキアン$W=y_1y_2'-y_1'y_2$は任意の$s,t\in\mathbb{R}$で$W(t)=W(s)e^{P(s)-P(t)}$を満たす。
+  statement_en: (Abel's identity) If y₁, y₂ solve y'' + p(t) y' + q(t) y = 0 on ℝ and P' = p, then the Wronskian W = y₁y₂' - y₁'y₂ satisfies W(t) = W(s) exp(P(s) - P(t)).
   assumptions:
-    - "全実数上でP'=p"
-    - "全実数上でy₁'=v₁, v₁'=-pv₁-qy₁"
-    - "全実数上でy₂'=v₂, v₂'=-pv₂-qy₂"
+  - 全実数上で$P'=p$
+  - 全実数上で$y_1'=v_1$、$v_1'=-pv_1-qy_1$
+  - 全実数上で$y_2'=v_2$、$v_2'=-pv_2-qy_2$
   quantifiers:
-    - "任意の関数p, q, P, y₁, v₁, y₂, v₂"
-    - "任意の実数s, t"
-  conclusion: y₁(t)v₂(t)-v₁(t)y₂(t)=(y₁(s)v₂(s)-v₁(s)y₂(s))exp(P(s)-P(t))が成り立つ。
+  - 任意の$p,q,P,y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$
+  - 任意の$s,t\in\mathbb{R}$
+  conclusion: $y_1(t)v_2(t)-v_1(t)y_2(t)=(y_1(s)v_2(s)-v_1(s)y_2(s))e^{P(s)-P(t)}$である。
   answer: |
-    W'=y₁'v₂+y₁v₂'-v₁'y₂-v₁y₂'である。方程式を代入するとv₁v₂の項とqy₁y₂の項が打ち消し合い、W'=-pWとなる。するとWe^{P}の導関数は-pWe^{P}+Wpe^{P}=0なのでWe^{P}は定数である。s, tでの値を比べればW(t)=W(s)exp(P(s)-P(t))を得る。特にWは恒等的に0か、どこでも0でないかのどちらかである。
+    $p,q,P,y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$、$s,t\in\mathbb{R}$とし、全実数上で$P'=p$、$y_i'=v_i$、$v_i'=-pv_i-qy_i$（$i=1,2$）であるとする。$W=y_1v_2-v_1y_2$とおく。
+    積の微分より
+    $W'=v_1v_2+y_1(-pv_2-qy_2)-(-pv_1-qy_1)y_2-v_1v_2=-p(y_1v_2-v_1y_2)=-pW$
+    である。したがって$(We^{P})'=-pWe^{P}+Wpe^{P}=0$であり、平均値の定理より$We^{P}$は定数である。よって$W(t)e^{P(t)}=W(s)e^{P(s)}$であり、$W(t)=W(s)e^{P(s)-P(t)}$を得る。
   strategy: Derive the first-order equation W' = -p W for the Wronskian and solve it with the integrating factor e^{P}.
   sketch:
-    - "derive: The product rule and the equations give W' = -p W, the q terms and v₁v₂ terms cancelling."
-    - "construct: Consider W e^{P}."
-    - "derive: Its derivative is -p W e^{P} + W p e^{P} = 0."
-    - "apply_theorem: A function with zero derivative on ℝ is constant."
-    - "conclude: Compare the values at s and t."
+  - 'derive: The product rule and the equations give W'' = -p W, the q terms and v₁v₂ terms cancelling.'
+  - 'construct: Consider W e^{P}.'
+  - 'derive: Its derivative is -p W e^{P} + W p e^{P} = 0.'
+  - 'apply_theorem: A function with zero derivative on ℝ is constant.'
+  - 'conclude: Compare the values at s and t.'
   openmath: (forall (p q P y1 v1 y2 v2) (-> (forall (t) (and (has_deriv_at (lambda (r) (fn_value P r)) (fn_value p t) t) (has_deriv_at (lambda (r) (fn_value y1 r)) (fn_value v1 t) t) (has_deriv_at (lambda (r) (fn_value v1 r)) (- (neg (* (fn_value p t) (fn_value v1 t))) (* (fn_value q t) (fn_value y1 t))) t) (has_deriv_at (lambda (r) (fn_value y2 r)) (fn_value v2 t) t) (has_deriv_at (lambda (r) (fn_value v2 r)) (- (neg (* (fn_value p t) (fn_value v2 t))) (* (fn_value q t) (fn_value y2 t))) t))) (forall (s t) (= (- (* (fn_value y1 t) (fn_value v2 t)) (* (fn_value v1 t) (fn_value y2 t))) (* (- (* (fn_value y1 s) (fn_value v2 s)) (* (fn_value v1 s) (fn_value y2 s))) (exp (- (fn_value P s) (fn_value P t))))))))
   hard_negative:
     statement: 同じ仮定のもとでW(t)=W(s)exp(P(t)-P(s))である。
@@ -963,23 +1036,25 @@
   kind: gap
   level: 2
   topic: 常微分方程式・ロンスキアン
-  statement: 微分可能なy₁, y₂のロンスキアンが1点t₀で0でなければ、y₁, y₂は一次独立である。すなわちc₁y₁+c₂y₂≡0ならc₁=c₂=0である。
-  statement_en: "If differentiable functions y₁, y₂ have nonzero Wronskian at one point t₀, they are linearly independent: c₁y₁ + c₂y₂ ≡ 0 implies c₁ = c₂ = 0."
+  statement: $y_1,y_2:\mathbb{R}\to\mathbb{R}$が点$t_0$で微分可能でロンスキアンが$t_0$で$0$でなければ、$y_1,y_2$は一次独立である。すなわち全ての$t$で$c_1y_1(t)+c_2y_2(t)=0$なら$c_1=c_2=0$である。
+  statement_en: 'If differentiable functions y₁, y₂ have nonzero Wronskian at one point t₀, they are linearly independent: c₁y₁ + c₂y₂ ≡ 0 implies c₁ = c₂ = 0.'
   assumptions:
-    - "点t₀でy₁'=v₁(t₀), y₂'=v₂(t₀)"
-    - "y₁(t₀)v₂(t₀)-v₁(t₀)y₂(t₀)≠0"
-    - "全てのtでc₁y₁(t)+c₂y₂(t)=0"
+  - 点$t_0$で$y_1,y_2$の微分係数はそれぞれ$v_1(t_0),v_2(t_0)$
+  - $y_1(t_0)v_2(t_0)-v_1(t_0)y_2(t_0)\neq0$
+  - 全ての$t$で$c_1y_1(t)+c_2y_2(t)=0$
   quantifiers:
-    - "任意の関数y₁, v₁, y₂, v₂と実数c₁, c₂, t₀"
-  conclusion: c₁=0かつc₂=0である。
+  - 任意の$y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$と$c_1,c_2,t_0\in\mathbb{R}$
+  conclusion: $c_1=0$かつ$c_2=0$である。
   answer: |
-    c₁y₁+c₂y₂≡0をt₀で微分するとc₁v₁(t₀)+c₂v₂(t₀)=0である。t₀での値の式c₁y₁(t₀)+c₂y₂(t₀)=0と合わせると、(c₁,c₂)についての斉次連立1次方程式が得られる。その係数行列の行列式はロンスキアンW(t₀)で、0でない。したがって消去法によりc₁W(t₀)=0, c₂W(t₀)=0となり、c₁=c₂=0である。
+    $y_1,v_1,y_2,v_2:\mathbb{R}\to\mathbb{R}$、$c_1,c_2,t_0\in\mathbb{R}$とする。点$t_0$で$y_1,y_2$の微分係数はそれぞれ$v_1(t_0),v_2(t_0)$であり、$W=y_1(t_0)v_2(t_0)-v_1(t_0)y_2(t_0)\neq0$、全ての$t$で$c_1y_1(t)+c_2y_2(t)=0$であるとする。
+    以下$y_i,v_i$は$t_0$での値を表す。恒等式$c_1y_1(t)+c_2y_2(t)=0$の$t_0$での値から$c_1y_1+c_2y_2=0$である。また$t_0$で微分すると、零関数の微分係数は$0$なので$c_1v_1+c_2v_2=0$である。
+    第1式に$v_2$を、第2式に$y_2$を掛けて引くと$c_1W=0$である。第2式に$y_1$を、第1式に$v_1$を掛けて引くと$c_2W=0$である。$W\neq0$より$c_1=c_2=0$である。
   strategy: Differentiate the linear relation at t₀ and solve the resulting 2×2 system, whose determinant is the Wronskian.
   sketch:
-    - "derive: Differentiating the relation at t₀ gives c₁v₁(t₀) + c₂v₂(t₀) = 0."
-    - "translate: Together with the value at t₀ this is a homogeneous 2×2 linear system."
-    - "derive: Elimination gives c₁W(t₀) = 0 and c₂W(t₀) = 0."
-    - "conclude: Since W(t₀) ≠ 0, both constants vanish."
+  - 'derive: Differentiating the relation at t₀ gives c₁v₁(t₀) + c₂v₂(t₀) = 0.'
+  - 'translate: Together with the value at t₀ this is a homogeneous 2×2 linear system.'
+  - 'derive: Elimination gives c₁W(t₀) = 0 and c₂W(t₀) = 0.'
+  - 'conclude: Since W(t₀) ≠ 0, both constants vanish.'
   openmath: (forall (y1 v1 y2 v2 c1 c2 t0) (-> (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t0) t0) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t0) t0) (!= (- (* (fn_value y1 t0) (fn_value v2 t0)) (* (fn_value v1 t0) (fn_value y2 t0))) 0) (forall (t) (= (+ (* c1 (fn_value y1 t)) (* c2 (fn_value y2 t))) 0))) (and (= c1 0) (= c2 0))))
   hard_negative:
     statement: 微分可能なy₁, y₂のロンスキアンが恒等的に0なら、y₁, y₂は一次従属である。
@@ -1006,22 +1081,22 @@
   kind: gap
   level: 2
   topic: 常微分方程式・調和振動子
-  statement: y''=-ω²yの全実数上の解について、エネルギーy'²+ω²y²は時間によらず一定である。
-  statement_en: "For a solution on ℝ of y'' = -ω² y, the energy y'² + ω² y² is constant in time."
+  statement: $\omega\in\mathbb{R}$とする。$y''=-\omega^2y$の全実数上の解について、エネルギー$y'^2+\omega^2y^2$は時間によらず一定である。
+  statement_en: For a solution on ℝ of y'' = -ω² y, the energy y'² + ω² y² is constant in time.
   assumptions:
-    - "全実数上でy'=v"
-    - "全実数上でv'=-ω²y"
+  - 全実数上で$y'=v$
+  - 全実数上で$v'=-\omega^2y$
   quantifiers:
-    - "任意の実数ωと関数y, v"
-    - "任意の実数s, t"
-  conclusion: v(t)²+ω²y(t)²=v(s)²+ω²y(s)²が成り立つ。
+  - 任意の$\omega\in\mathbb{R}$と$y,v:\mathbb{R}\to\mathbb{R}$
+  - 任意の$s,t\in\mathbb{R}$
+  conclusion: $v(t)^2+\omega^2y(t)^2=v(s)^2+\omega^2y(s)^2$である。
   answer: |
-    E=v²+ω²y²と置くと、E'=2vv'+2ω²yy'=2v(-ω²y)+2ω²yv=0である。全実数上で導関数が0の関数は定数なので、E(t)=E(s)となる。
+    $\omega\in\mathbb{R}$、$y,v:\mathbb{R}\to\mathbb{R}$、$s,t\in\mathbb{R}$とし、全実数上で$y'=v$、$v'=-\omega^2y$であるとする。$E=v^2+\omega^2y^2$とおくと、$E'=2vv'+2\omega^2yy'=2v(-\omega^2y)+2\omega^2yv=0$である。全実数上で導関数が$0$の関数は平均値の定理より定数なので、$E(t)=E(s)$である。
   strategy: Differentiate the energy and use the equation to see that the derivative vanishes.
   sketch:
-    - "construct: Put E = v² + ω² y²."
-    - "derive: Using y' = v and v' = -ω² y we get E' = 2v(-ω² y) + 2ω² y v = 0."
-    - "conclude: A function with zero derivative on ℝ is constant."
+  - 'construct: Put E = v² + ω² y².'
+  - 'derive: Using y'' = v and v'' = -ω² y we get E'' = 2v(-ω² y) + 2ω² y v = 0.'
+  - 'conclude: A function with zero derivative on ℝ is constant.'
   openmath: (forall (om y v) (-> (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (neg (* (^ om 2) (fn_value y t))) t))) (forall (s t) (= (+ (^ (fn_value v t) 2) (* (^ om 2) (^ (fn_value y t) 2))) (+ (^ (fn_value v s) 2) (* (^ om 2) (^ (fn_value y s) 2)))))))
   hard_negative:
     statement: y''=-ω²yの解についてy'²+y²は常に一定である。
@@ -1047,25 +1122,30 @@
   kind: textbook
   level: 2
   topic: 常微分方程式・調和振動子
-  statement: ω≠0のとき、y''=-ω²yの全実数上の解はy(t)=y(0)cos ωt+(y'(0)/ω)sin ωtに限る。
-  statement_en: "If ω ≠ 0, every solution on ℝ of y'' = -ω² y is y(t) = y(0) cos ωt + (y'(0)/ω) sin ωt."
+  statement: $\omega\neq0$のとき、$y''=-\omega^2y$の全実数上の解は$y(t)=y(0)\cos\omega t+\frac{y'(0)}{\omega}\sin\omega t$に限る。
+  statement_en: If ω ≠ 0, every solution on ℝ of y'' = -ω² y is y(t) = y(0) cos ωt + (y'(0)/ω) sin ωt.
   assumptions:
-    - "ω≠0"
-    - "全実数上でy'=v"
-    - "全実数上でv'=-ω²y"
+  - $\omega\neq0$
+  - 全実数上で$y'=v$
+  - 全実数上で$v'=-\omega^2y$
   quantifiers:
-    - "任意の実数ωと関数y, v"
-    - "任意の実数t"
-  conclusion: y(t)=y(0)cos ωt+(v(0)/ω)sin ωtが成り立つ。
+  - 任意の$\omega\in\mathbb{R}$と$y,v:\mathbb{R}\to\mathbb{R}$
+  - 任意の$t\in\mathbb{R}$
+  conclusion: $y(t)=y(0)\cos\omega t+\frac{v(0)}{\omega}\sin\omega t$である。
   answer: |
-    A(t)=y cos ωt-(v/ω)sin ωtとB(t)=y sin ωt+(v/ω)cos ωtを考える。方程式を使って微分するとA'=0, B'=0なので、AとBは定数でありA=y(0), B=v(0)/ωである。さらにA cos ωt+B sin ωt=y(cos²ωt+sin²ωt)=yとなる。これに定数値を代入すれば公式を得る。
+    $\omega\in\mathbb{R}$、$\omega\neq0$、$y,v:\mathbb{R}\to\mathbb{R}$、$t\in\mathbb{R}$とし、全実数上で$y'=v$、$v'=-\omega^2y$であるとする。
+    $A(s)=y(s)\cos\omega s-\frac{v(s)}{\omega}\sin\omega s$、$B(s)=y(s)\sin\omega s+\frac{v(s)}{\omega}\cos\omega s$とおく。微分して$v'=-\omega^2y$を代入すると
+    $A'=v\cos\omega s-\omega y\sin\omega s+\omega y\sin\omega s-v\cos\omega s=0$、
+    $B'=v\sin\omega s+\omega y\cos\omega s-\omega y\cos\omega s-v\sin\omega s=0$
+    である。よって$A,B$は定数で、$A\equiv A(0)=y(0)$、$B\equiv B(0)=v(0)/\omega$である。
+    さらに$A(s)\cos\omega s+B(s)\sin\omega s=y(s)(\cos^2\omega s+\sin^2\omega s)=y(s)$である。$s=t$として定数値を代入すると、$y(t)=y(0)\cos\omega t+\frac{v(0)}{\omega}\sin\omega t$を得る。
   strategy: Find two conserved quantities obtained by rotating (y, v/ω), then invert the rotation.
   sketch:
-    - "construct: Put A = y cos ωt - (v/ω) sin ωt and B = y sin ωt + (v/ω) cos ωt."
-    - "derive: The equation gives A' = 0 and B' = 0."
-    - "apply_theorem: A function with zero derivative on ℝ is constant, so A = y(0) and B = v(0)/ω."
-    - "derive: The identity cos² + sin² = 1 gives A cos ωt + B sin ωt = y."
-    - "conclude: Substituting the constants gives the formula."
+  - 'construct: Put A = y cos ωt - (v/ω) sin ωt and B = y sin ωt + (v/ω) cos ωt.'
+  - 'derive: The equation gives A'' = 0 and B'' = 0.'
+  - 'apply_theorem: A function with zero derivative on ℝ is constant, so A = y(0) and B = v(0)/ω.'
+  - 'derive: The identity cos² + sin² = 1 gives A cos ωt + B sin ωt = y.'
+  - 'conclude: Substituting the constants gives the formula.'
   openmath: (forall (om y v) (-> (and (!= om 0) (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (neg (* (^ om 2) (fn_value y t))) t)))) (forall (t) (= (fn_value y t) (+ (* (fn_value y 0) (cos (* om t))) (* (/ (fn_value v 0) om) (sin (* om t))))))))
   hard_negative:
     statement: ω=0のときもv(0)/ωの項を0と読めば、y''=0の解はy(t)=y(0)に限る。
@@ -1111,26 +1191,26 @@
   kind: gap
   level: 2
   topic: 常微分方程式・減衰振動
-  statement: γ≥0のとき、y''+2γy'+ω²y=0の全実数上の解について、エネルギーy'²+ω²y²は時間について単調非増加である。
-  statement_en: "If γ ≥ 0, then for a solution on ℝ of y'' + 2γ y' + ω² y = 0 the energy y'² + ω² y² is nonincreasing in time."
+  statement: $\gamma\geq0$のとき、$y''+2\gamma y'+\omega^2y=0$の全実数上の解について、エネルギー$y'^2+\omega^2y^2$は時間について単調非増加である。
+  statement_en: If γ ≥ 0, then for a solution on ℝ of y'' + 2γ y' + ω² y = 0 the energy y'² + ω² y² is nonincreasing in time.
   assumptions:
-    - "γ≥0"
-    - "全実数上でy'=v"
-    - "全実数上でv'=-2γv-ω²y"
-    - "s≤t"
+  - $\gamma\geq0$
+  - 全実数上で$y'=v$
+  - 全実数上で$v'=-2\gamma v-\omega^2y$
+  - $s\leq t$
   quantifiers:
-    - "任意の実数γ, ωと関数y, v"
-    - "s≤tを満たす任意の実数s, t"
-  conclusion: v(t)²+ω²y(t)²≤v(s)²+ω²y(s)²が成り立つ。
+  - 任意の$\gamma,\omega\in\mathbb{R}$と$y,v:\mathbb{R}\to\mathbb{R}$
+  - $s\leq t$を満たす任意の$s,t\in\mathbb{R}$
+  conclusion: $v(t)^2+\omega^2y(t)^2\leq v(s)^2+\omega^2y(s)^2$である。
   answer: |
-    E=v²+ω²y²と置くと、E'=2v(-2γv-ω²y)+2ω²yv=-4γv²である。γ≥0なのでE'≤0であり、全実数上で導関数が0以下の関数は単調非増加である。よってs≤tならE(t)≤E(s)となる。
+    $\gamma,\omega\in\mathbb{R}$、$\gamma\geq0$、$y,v:\mathbb{R}\to\mathbb{R}$、$s\leq t$とし、全実数上で$y'=v$、$v'=-2\gamma v-\omega^2y$であるとする。$E=v^2+\omega^2y^2$とおくと、$E'=2v(-2\gamma v-\omega^2y)+2\omega^2yv=-4\gamma v^2\leq0$である。$s=t$なら等号が成り立つ。$s<t$なら、平均値の定理より$E(t)-E(s)=E'(c)(t-s)\leq0$となる$c\in(s,t)$がある。よって$E(t)\leq E(s)$である。
   strategy: Compute the derivative of the energy, which equals -4γ v² ≤ 0, and apply the monotonicity criterion.
   sketch:
-    - "construct: Put E = v² + ω² y²."
-    - "derive: The equation gives E' = -4γ v²."
-    - "derive: Since γ ≥ 0, E' ≤ 0 on ℝ."
-    - "apply_theorem: A function with nonpositive derivative is nonincreasing."
-    - "conclude: Hence E(t) ≤ E(s) for s ≤ t."
+  - 'construct: Put E = v² + ω² y².'
+  - 'derive: The equation gives E'' = -4γ v².'
+  - 'derive: Since γ ≥ 0, E'' ≤ 0 on ℝ.'
+  - 'apply_theorem: A function with nonpositive derivative is nonincreasing.'
+  - 'conclude: Hence E(t) ≤ E(s) for s ≤ t.'
   openmath: (forall (ga om y v) (-> (and (<= 0 ga) (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (- (neg (* (* 2 ga) (fn_value v t))) (* (^ om 2) (fn_value y t))) t)))) (forall (s t) (-> (<= s t) (<= (+ (^ (fn_value v t) 2) (* (^ om 2) (^ (fn_value y t) 2))) (+ (^ (fn_value v s) 2) (* (^ om 2) (^ (fn_value y s) 2))))))))
   hard_negative:
     statement: γ<0でもエネルギーは単調非増加である。
@@ -1162,21 +1242,25 @@
   kind: textbook
   level: 3
   topic: 常微分方程式・行列の指数関数
-  statement: 実正方行列Aについて、t↦exp(tA)は微分可能で、導関数はA exp(tA)である。
-  statement_en: "For a real square matrix A, the map t ↦ exp(tA) is differentiable with derivative A exp(tA)."
+  statement: 有限集合で添字づけられた実正方行列$A$について、$\exp(M)=\sum_{n\geq0}M^n/n!$とすると、$s\mapsto\exp(sA)$は全実数で微分可能で、点$t$での微分係数は$A\exp(tA)$である。
+  statement_en: For a real square matrix A, the map t ↦ exp(tA) is differentiable with derivative A exp(tA).
   assumptions:
-    - "Aは有限集合で添字づけられた実正方行列"
+  - $A$は有限集合で添字づけられた実正方行列
   quantifiers:
-    - "任意の実正方行列Aと実数t"
-  conclusion: exp(sA)の点tでの微分係数はA exp(tA)である。
+  - 任意の実正方行列$A$と$t\in\mathbb{R}$
+  conclusion: $s\mapsto\exp(sA)$の点$t$での微分係数は$A\exp(tA)$である。
   answer: |
-    これは概略である。exp(tA)=Σ_{n≥0} t^nA^n/n!は、行列のノルムについて各有界区間で項別微分の級数が一様収束する。よって項別微分でき、導関数はΣ_{n≥1} t^{n-1}A^n/(n-1)!=A exp(tA)となる。
+    $A$を有限集合で添字づけられた実正方行列、$t\in\mathbb{R}$とし、$\exp(M)=\sum_{n\geq0}M^n/n!$とする。行列の空間に作用素ノルムなどの劣乗法的ノルム$\|\cdot\|$（$\|MN\|\leq\|M\|\|N\|$）を入れる。行列の空間は有限次元なので、収束と微分はノルムの選び方によらず、成分ごとに考えてよい。
+    $u_n(s)=s^nA^n/n!$とおき、$R>|t|$をとる。$n\geq1$で$u_n'(s)=s^{n-1}A^n/(n-1)!$であり、$|s|\leq R$で$\|u_n'(s)\|\leq R^{n-1}\|A\|^n/(n-1)!$である。$\sum_{n\geq1}R^{n-1}\|A\|^n/(n-1)!=\|A\|e^{R\|A\|}<\infty$なので、ワイエルシュトラスの優級数定理より$\sum u_n'$は$[-R,R]$で一様収束する。また$\sum u_n(0)=I$は収束する。
+    項別微分の定理（$C^1$級関数の級数について、導関数の級数が区間で一様収束し、元の級数が$1$点で収束するならば、元の級数は微分可能で導関数は導関数の級数に等しい）より、$\exp(sA)=\sum u_n(s)$は$(-R,R)$で微分可能である。点$t$での微分係数は
+    $\sum_{n\geq1}\frac{t^{n-1}A^n}{(n-1)!}=A\sum_{k\geq0}\frac{t^kA^k}{k!}=A\exp(tA)$
+    である。ここで左から$A$を掛ける写像が連続であることを用いた。
   strategy: Differentiate the exponential power series term by term, using its infinite radius of convergence.
   sketch:
-    - "setup: Fix a submultiplicative norm on the matrix algebra, which is finite-dimensional and complete."
-    - "apply_theorem: The exponential series has infinite radius of convergence, so it may be differentiated term by term."
-    - "derive: The termwise derivative is Σ t^{n-1} A^n / (n-1)!."
-    - "conclude: Factoring out A gives A exp(tA)."
+  - 'setup: Fix a submultiplicative norm on the matrix algebra, which is finite-dimensional and complete.'
+  - 'apply_theorem: The exponential series has infinite radius of convergence, so it may be differentiated term by term.'
+  - 'derive: The termwise derivative is Σ t^{n-1} A^n / (n-1)!.'
+  - 'conclude: Factoring out A gives A exp(tA).'
   openmath: (forall (A t) (-> (matrix_square R A) (has_deriv_at (lambda (s) (matrix_exp (matrix_scale s A))) (matrix_mul A (matrix_exp (matrix_scale t A))) t)))
   hard_negative:
     statement: 行列値関数A(t)について、exp(A(t))の導関数は常にA'(t)exp(A(t))である。
@@ -1193,22 +1277,23 @@
   kind: textbook
   level: 3
   topic: 常微分方程式・定数係数線形系
-  statement: 実正方行列Aとベクトルx₀について、x(t)=exp(tA)x₀は線形系x'=Axの解である。
-  statement_en: "For a real square matrix A and a vector x₀, the curve x(t) = exp(tA) x₀ solves the linear system x' = A x."
+  statement: 有限集合で添字づけられた実正方行列$A$と実ベクトル$x_0$について、$x(t)=\exp(tA)x_0$は線形系$x'=Ax$の解である。
+  statement_en: For a real square matrix A and a vector x₀, the curve x(t) = exp(tA) x₀ solves the linear system x' = A x.
   assumptions:
-    - "Aは実正方行列"
-    - "x₀は実ベクトル"
+  - $A$は有限集合で添字づけられた実正方行列
+  - $x_0$は同じ添字集合をもつ実ベクトル
   quantifiers:
-    - "任意のA, x₀と実数t"
-  conclusion: exp(sA)x₀の点tでの微分係数はA(exp(tA)x₀)である。
+  - 任意の$A$、$x_0$と$t\in\mathbb{R}$
+  conclusion: $s\mapsto\exp(sA)x_0$の点$t$での微分係数は$A(\exp(tA)x_0)$である。
   answer: |
-    exp(tA)の導関数はA exp(tA)である。行列Mをベクトルに対応させる写像M↦Mx₀は連続な線形写像なので、合成の微分により(exp(tA)x₀)'=(A exp(tA))x₀となる。行列積の結合法則によりこれはA(exp(tA)x₀)に等しく、x'=Axが成り立つ。
+    $A$を有限集合で添字づけられた実正方行列、$x_0$を同じ添字集合をもつ実ベクトル、$t\in\mathbb{R}$とする。$\exp(M)=\sum_{n\geq0}M^n/n!$である。
+    $s\mapsto\exp(sA)$の点$t$での微分係数は$A\exp(tA)$である（行列の指数関数の微分公式）。行列$M$をベクトル$Mx_0$に対応させる写像は有限次元空間の間の線形写像なので、連続で微分可能である。合成関数の微分より、$s\mapsto\exp(sA)x_0$の点$t$での微分係数は$(A\exp(tA))x_0$である。行列積の結合法則よりこれは$A(\exp(tA)x_0)$に等しい。
   strategy: Compose the derivative of exp(tA) with the continuous linear evaluation map M ↦ M x₀.
   sketch:
-    - "apply_theorem: The derivative of exp(tA) is A exp(tA)."
-    - "construct: M ↦ M x₀ is a continuous linear map on matrices."
-    - "derive: The chain rule gives (exp(tA) x₀)' = (A exp(tA)) x₀."
-    - "conclude: Associativity rewrites this as A (exp(tA) x₀)."
+  - 'apply_theorem: The derivative of exp(tA) is A exp(tA).'
+  - 'construct: M ↦ M x₀ is a continuous linear map on matrices.'
+  - 'derive: The chain rule gives (exp(tA) x₀)'' = (A exp(tA)) x₀.'
+  - 'conclude: Associativity rewrites this as A (exp(tA) x₀).'
   openmath: (forall (A x0 t) (-> (matrix_square R A) (has_deriv_at (lambda (s) (matrix_vector_mul (matrix_exp (matrix_scale s A)) x0)) (matrix_vector_mul A (matrix_vector_mul (matrix_exp (matrix_scale t A)) x0)) t)))
   hard_negative:
     statement: 行列値関数A(t)について、exp(∫_0^t A(s)ds)x₀は常にx'=A(t)xの解である。
@@ -1233,21 +1318,26 @@
   kind: gap
   level: 3
   topic: 常微分方程式・行列の指数関数
-  statement: 実正方行列A, BがAB=BAを満たすならば、exp(A+B)=exp(A)exp(B)である。
-  statement_en: "If real square matrices A and B commute, then exp(A + B) = exp(A) exp(B)."
+  statement: 有限集合で添字づけられた実正方行列$A,B$が$AB=BA$を満たすならば、$\exp(A+B)=\exp(A)\exp(B)$である。ここで$\exp(M)=\sum_{n\geq0}M^n/n!$である。
+  statement_en: If real square matrices A and B commute, then exp(A + B) = exp(A) exp(B).
   assumptions:
-    - "A, Bは実正方行列"
-    - "AB=BA"
+  - $A,B$は同じ有限集合で添字づけられた実正方行列
+  - $AB=BA$
   quantifiers:
-    - "任意の実正方行列A, B"
-  conclusion: exp(A+B)=exp(A)exp(B)が成り立つ。
+  - 任意の実正方行列$A,B$
+  conclusion: $\exp(A+B)=\exp(A)\exp(B)$である。
   answer: |
-    これは概略である。AとBが可換なので二項定理が使え、(A+B)^n/n!=Σ_{k+l=n}A^kB^l/(k!l!)となる。指数級数は絶対収束するので、級数の積を並べ替えることができる。したがってexp(A)exp(B)の項をk+lごとにまとめるとexp(A+B)に一致する。
+    $A,B$を同じ有限集合で添字づけられた実正方行列とし、$AB=BA$とする。$\exp(M)=\sum_{n\geq0}M^n/n!$である。行列の空間に作用素ノルムなどの劣乗法的ノルム$\|\cdot\|$を入れる。
+    $a_k=A^k/k!$、$b_l=B^l/l!$とおく。$\|a_k\|\leq\|A\|^k/k!$、$\|b_l\|\leq\|B\|^l/l!$より、$\sum\|a_k\|$と$\sum\|b_l\|$は収束する。その和をそれぞれ$\sigma,\tau$とする。
+    級数の積を次のように並べ替える。$c_n=\sum_{k+l=n}a_kb_l$とおく。$N\geq0$について、$\left(\sum_{k\leq N}a_k\right)\left(\sum_{l\leq N}b_l\right)-\sum_{n\leq N}c_n$は、$k,l\leq N$かつ$k+l>N$を満たす項$a_kb_l$の和である。$k+l>N$なら$k>N/2$または$l>N/2$なので、この差のノルムは
+    $\left(\sum_{k>N/2}\|a_k\|\right)\tau+\sigma\left(\sum_{l>N/2}\|b_l\|\right)$
+    以下であり、$N\to\infty$で$0$に収束する。よって$\exp(A)\exp(B)=\sum_{n\geq0}c_n$である。
+    $AB=BA$なので二項定理が使え、$(A+B)^n=\sum_{k+l=n}\frac{n!}{k!l!}A^kB^l$である。両辺を$n!$で割ると$(A+B)^n/n!=c_n$となる。したがって$\exp(A+B)=\sum_{n\geq0}c_n=\exp(A)\exp(B)$である。
   strategy: Expand with the binomial theorem, valid because A and B commute, and rearrange the absolutely convergent double series.
   sketch:
-    - "derive: Commutativity gives (A+B)^n / n! = Σ_{k+l=n} A^k B^l / (k! l!)."
-    - "apply_theorem: The exponential series converge absolutely, so their Cauchy product may be rearranged."
-    - "conclude: Grouping by k + l = n gives exp(A) exp(B) = exp(A+B)."
+  - 'derive: Commutativity gives (A+B)^n / n! = Σ_{k+l=n} A^k B^l / (k! l!).'
+  - 'apply_theorem: The exponential series converge absolutely, so their Cauchy product may be rearranged.'
+  - 'conclude: Grouping by k + l = n gives exp(A) exp(B) = exp(A+B).'
   openmath: (forall (A B) (-> (and (matrix_square R A) (matrix_square R B) (commuting_matrices A B)) (= (matrix_exp (+ A B)) (matrix_mul (matrix_exp A) (matrix_exp B)))))
   hard_negative:
     statement: 任意の実正方行列A, Bについてexp(A+B)=exp(A)exp(B)である。
@@ -1262,20 +1352,20 @@
   kind: gap
   level: 3
   topic: 常微分方程式・行列の指数関数
-  statement: 実正方行列Aについて、exp(-A)はexp(A)の逆行列である。
-  statement_en: "For a real square matrix A, exp(-A) is the inverse matrix of exp(A)."
+  statement: 有限集合で添字づけられた実正方行列$A$について、$\exp(-A)$は$\exp(A)$の逆行列である。
+  statement_en: For a real square matrix A, exp(-A) is the inverse matrix of exp(A).
   assumptions:
-    - "Aは実正方行列"
+  - $A$は有限集合で添字づけられた実正方行列
   quantifiers:
-    - "任意の実正方行列A"
-  conclusion: exp(-A)=(exp A)⁻¹が成り立つ。
+  - 任意の実正方行列$A$
+  conclusion: $\exp(-A)=(\exp A)^{-1}$である。
   answer: |
-    Aと-Aは可換なので、指数法則によりexp(A)exp(-A)=exp(A-A)=exp(0)=Iである。同様にexp(-A)exp(A)=Iとなる。よってexp(A)は可逆であり、その逆行列はexp(-A)である。
+    $A$を有限集合で添字づけられた実正方行列とし、$\exp(M)=\sum_{n\geq0}M^n/n!$とする。可換な行列についての指数法則（$MN=NM$ならば$\exp(M+N)=\exp(M)\exp(N)$）を用いる。$A$と$-A$は可換なので、$\exp(A)\exp(-A)=\exp(A-A)=\exp(0)=I$である。同様に$\exp(-A)\exp(A)=I$である。よって$\exp(A)$は可逆で、その逆行列は$\exp(-A)$である。
   strategy: Apply the exponential law to the commuting pair A, -A.
   sketch:
-    - "translate: A and -A commute."
-    - "apply_theorem: The exponential law gives exp(A) exp(-A) = exp(0) = I."
-    - "conclude: Hence exp(-A) is the inverse of exp(A)."
+  - 'translate: A and -A commute.'
+  - 'apply_theorem: The exponential law gives exp(A) exp(-A) = exp(0) = I.'
+  - 'conclude: Hence exp(-A) is the inverse of exp(A).'
   openmath: (forall (A) (-> (matrix_square R A) (= (matrix_exp (neg A)) (matrix_inverse (matrix_exp A)))))
   hard_negative:
     statement: 実正方行列Aについてexp(-A)=(exp A)ᵀである。

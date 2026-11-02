@@ -2,19 +2,28 @@
   kind: textbook
   level: 2
   topic: 線形代数・固有ベクトルの一次独立性
-  statement: 体上のベクトル空間の線形変換fについて、相異なる固有値に属する固有ベクトルの族は一次独立である。
+  statement: 体上のベクトル空間の線形変換$f$について、相異なる固有値に属する固有ベクトルの族は一次独立である。
   statement_en: For a linear endomorphism f of a vector space over a field, any family of eigenvectors belonging to pairwise distinct eigenvalues is linearly independent.
-  assumptions: [Kは体, VはK上のベクトル空間, fはVの線形変換, 族μの値は相異なる, 各v_iは固有値μ_iに属する固有ベクトル]
-  quantifiers: [任意のf, 任意の添字族μとv]
-  conclusion: 族vは一次独立である。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換
+  - $(\mu_i)_{i\in I}$の値は相異なる
+  - 各$v_i$は固有値$\mu_i$に属する固有ベクトル
+  quantifiers:
+  - 任意の$f$
+  - 任意の添字族$(\mu_i)_{i\in I}$と$(v_i)_{i\in I}$
+  conclusion: 族$(v_i)_{i\in I}$は一次独立である。
   answer: |
-    一次従属だと仮定し、0でない係数をもつ自明でない関係式のうち項数が最小のものをとる。固有ベクトルは0でないので、この関係式は2項以上を含む。その関係式にfを施した式から、ある項の固有値μ_iを掛けた式を引くと、係数に(μ_j-μ_i)が掛かった項数の小さい関係式が得られる。μが相異なるのでこの関係式の係数は0でなく、項数の最小性に矛盾する。よって族は一次独立である。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の線形変換とし、相異なるスカラー$(\mu_i)_{i\in I}$と、$v_i\neq0$かつ$f(v_i)=\mu_iv_i$を満たすベクトル$(v_i)_{i\in I}$を取る。
+
+    一次従属だと仮定する。$I$の空でない有限部分集合$J$と$0$でない係数$c_i$で$\sum_{i\in J}c_iv_i=0$となるもののうち、$|J|$が最小のものを取る。$v_i\neq0$なので$|J|\geq2$である。$i_0\in J$を固定する。この関係式に$f$を施した式$\sum_{i\in J}c_i\mu_iv_i=0$から、関係式の$\mu_{i_0}$倍を引くと、$\sum_{i\in J\setminus\{i_0\}}c_i(\mu_i-\mu_{i_0})v_i=0$を得る。$\mu_i$は相異なるので、この関係式の係数はどれも$0$でなく、$J\setminus\{i_0\}$は空でない。これは$|J|$の最小性に矛盾する。よって族$(v_i)_{i\in I}$は一次独立である。
   strategy: Take a shortest nontrivial linear relation and eliminate one term using f minus a scalar.
   sketch:
-    - "setup: Suppose a nontrivial linear relation among the eigenvectors exists and choose one with the fewest terms."
-    - "derive: Apply f and subtract μ_i times the relation to remove the i-th term."
-    - "derive: The surviving coefficients are multiplied by μ_j - μ_i, which are nonzero by distinctness."
-    - "contradiction: This is a shorter nontrivial relation, contradicting minimality."
+  - 'setup: Suppose a nontrivial linear relation among the eigenvectors exists and choose one with the fewest terms.'
+  - 'derive: Apply f and subtract μ_i times the relation to remove the i-th term.'
+  - 'derive: The surviving coefficients are multiplied by μ_j - μ_i, which are nonzero by distinctness.'
+  - 'contradiction: This is a shorter nontrivial relation, contradicting minimality.'
   openmath: (forall (K V f mu v) (-> (and (vector_space K V) (endomorphism K V f) (family_injective mu) (forall (i) (eigenvector_of f (fn_value mu i) (fn_value v i)))) (linearly_independent_family v)))
   hard_negative:
     statement: 同じ固有値に属する相異なる固有ベクトルの族も一次独立である。
@@ -29,18 +38,27 @@
   kind: gap
   level: 2
   topic: 線形代数・逆写像の固有値
-  statement: 線形写像gがg∘f=idを満たすとき、fの固有値μに属する固有ベクトルxについてμ≠0かつg(x)=μ⁻¹xである。
+  statement: 線形変換$f,g$が$g\circ f=\mathrm{id}$を満たすとき、$f$の固有値$\mu$に属する固有ベクトル$x$について$\mu\neq0$かつ$g(x)=\mu^{-1}x$である。
   statement_en: If g ∘ f = id and x ≠ 0 satisfies f x = μ x, then μ ≠ 0 and g x = μ⁻¹ x.
-  assumptions: [Kは体, VはK上のベクトル空間, f と g はVの線形変換, g∘f=id, x≠0, f(x)=μx]
-  quantifiers: [任意のf, g, 任意のスカラーμ, 任意のベクトルx]
-  conclusion: μ≠0かつg(x)=μ⁻¹x。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f,g$は$V$の線形変換
+  - $g\circ f=\mathrm{id}$
+  - $x\neq0$
+  - $f(x)=\mu x$
+  quantifiers:
+  - 任意の$f,g$
+  - 任意のスカラー$\mu$
+  - 任意のベクトル$x$
+  conclusion: $\mu\neq0$かつ$g(x)=\mu^{-1}x$である。
   answer: |
-    x=g(f(x))=g(μx)=μg(x)である。もしμ=0ならx=0となり、x≠0に反するのでμ≠0である。両辺にμ⁻¹を掛けるとg(x)=μ⁻¹xを得る。
+    $K$を体、$V$を$K$上のベクトル空間、$f,g$を$g\circ f=\mathrm{id}$を満たす$V$の線形変換とし、$\mu\in K$、$x\in V$は$x\neq0$かつ$f(x)=\mu x$を満たすとする。このとき$x=g(f(x))=g(\mu x)=\mu g(x)$である。もし$\mu=0$なら$x=0$となり、$x\neq0$に反するので$\mu\neq0$である。両辺に$\mu^{-1}$を掛けると$g(x)=\mu^{-1}x$を得る。
   strategy: Apply g to the eigenvalue equation and divide by μ.
   sketch:
-    - "derive: Applying g gives x = g(f x) = μ g x by linearity."
-    - "contradiction: If μ = 0 then x = 0, contrary to the hypothesis."
-    - "conclude: Multiply by μ⁻¹ to obtain g x = μ⁻¹ x."
+  - 'derive: Applying g gives x = g(f x) = μ g x by linearity.'
+  - 'contradiction: If μ = 0 then x = 0, contrary to the hypothesis.'
+  - 'conclude: Multiply by μ⁻¹ to obtain g x = μ⁻¹ x.'
   openmath: (forall (K V f g mu x) (-> (and (vector_space K V) (endomorphism K V f) (endomorphism K V g) (= (op_comp g f) (identity_map V)) (!= x 0) (= (fn_value f x) (smul mu x))) (and (!= mu 0) (= (fn_value g x) (smul (/ 1 mu) x)))))
   hard_negative:
     statement: x≠0の仮定がなくてもf(x)=μxとg∘f=idからμ≠0が従う。
@@ -61,18 +79,22 @@
   kind: gap
   level: 2
   topic: 線形代数・固有値0と単射性
-  statement: 線形変換fが固有値0をもつことと、fが単射でないことは同値である。
+  statement: 線形変換$f$が固有値$0$をもつことと、$f$が単射でないことは同値である。
   statement_en: A linear endomorphism f has eigenvalue 0 if and only if f is not injective.
-  assumptions: [Kは体, VはK上のベクトル空間, fはVの線形変換]
-  quantifiers: [任意のf]
-  conclusion: fが固有値0をもつこととfが単射でないことは同値である。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f$が固有値$0$をもつことと$f$が単射でないことは同値である。
   answer: |
-    fが固有値0をもつことは、x≠0でf(x)=0x=0となるxが存在すること、すなわちker fが0でないことと同値である。線形写像はker fが0のときちょうど単射なので、主張が従う。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の線形変換とする。$f$が固有値$0$をもつことは、$x\neq0$で$f(x)=0x=0$となる$x$が存在すること、すなわち$\ker f\neq\{0\}$と同値である。線形写像が単射であることは$\ker f=\{0\}$と同値なので、主張が従う。
   strategy: Identify the eigenspace for 0 with the kernel.
   sketch:
-    - "translate: The eigenspace of f for 0 equals ker f."
-    - "apply_theorem: A linear map is injective exactly when its kernel is zero."
-    - "conclude: Hence eigenvalue 0 exists exactly when f is not injective."
+  - 'translate: The eigenspace of f for 0 equals ker f.'
+  - 'apply_theorem: A linear map is injective exactly when its kernel is zero.'
+  - 'conclude: Hence eigenvalue 0 exists exactly when f is not injective.'
   openmath: (forall (K V f) (-> (and (vector_space K V) (endomorphism K V f)) (<-> (eigenvalue_of f 0) (not (injective_map f)))))
   hard_negative:
     statement: 線形変換fが固有値0をもつことと、fが全射でないことは任意のベクトル空間で同値である。
@@ -87,18 +109,25 @@
   kind: gap
   level: 2
   topic: 線形代数・相似行列の特性多項式
-  statement: 正方行列P,QがQP=Eを満たすとき、PAQとAの特性多項式は等しい。
+  statement: 正方行列$P,Q$が$QP=E$を満たすとき、$PAQ$と$A$の特性多項式は等しい。
   statement_en: If Q P = 1 for square matrices, then P A Q and A have the same characteristic polynomial.
-  assumptions: [Rは可換環, A, P, Qはn次正方行列, QP=E]
-  quantifiers: [任意のA, P, Q]
-  conclusion: PAQの特性多項式はAの特性多項式に等しい。
+  assumptions:
+  - $R$は可換環
+  - $A,P,Q$は$R$上の$n$次正方行列
+  - $QP=E$
+  - $E$は単位行列
+  quantifiers:
+  - 任意の$A,P,Q$
+  conclusion: $PAQ$の特性多項式は$A$の特性多項式に等しい。
   answer: |
-    正方行列X,YについてXYとYXの特性多項式は等しい。X=PA, Y=Qとすると、PAQの特性多項式はQPAの特性多項式に等しい。QP=EよりQPA=Aなので、主張が従う。
+    $R$を可換環、$A,P,Q$を$R$上の$n$次正方行列、$E$を単位行列とし、$QP=E$とする。行列式の乗法性から$\det Q\cdot\det P=1$である。したがって$\det P$は$R$の可逆元であり、余因子行列の等式$(\operatorname{adj}P)P=P\operatorname{adj}P=(\det P)E$から、$P$は両側逆行列$P^{-1}=(\det P)^{-1}\operatorname{adj}P$をもつ。$QP=E$の両辺に右から$P^{-1}$を掛けると$Q=P^{-1}$なので、$PQ=E$である。
+
+    多項式環$R[X]$上の行列として、$XE-PAQ=P(XE)Q-PAQ=P(XE-A)Q$である。両辺の行列式を取ると、$\det(XE-PAQ)=\det P\cdot\det(XE-A)\cdot\det Q=\det(XE-A)$である。よって$PAQ$と$A$の特性多項式は等しい。
   strategy: Use that XY and YX have the same characteristic polynomial.
   sketch:
-    - "apply_theorem: Characteristic polynomials of XY and YX agree for square matrices."
-    - "derive: Take X = P A and Y = Q so that the polynomial of P A Q equals that of Q P A."
-    - "conclude: Since Q P = 1, this is the characteristic polynomial of A."
+  - 'apply_theorem: Characteristic polynomials of XY and YX agree for square matrices.'
+  - 'derive: Take X = P A and Y = Q so that the polynomial of P A Q equals that of Q P A.'
+  - 'conclude: Since Q P = 1, this is the characteristic polynomial of A.'
   openmath: (forall (K A M N) (-> (and (matrix_square K A) (matrix_square K M) (matrix_square K N) (= (op_comp N M) 1)) (= (charpoly (op_comp (op_comp M A) N)) (charpoly A))))
   hard_negative:
     statement: 特性多項式が等しい正方行列は相似である。
@@ -113,19 +142,27 @@
   kind: textbook
   level: 2
   topic: 線形代数・対角化の十分条件
-  statement: n次元ベクトル空間の線形変換がn個の相異なる固有値をもつとき、固有ベクトルからなる基底が存在する。
+  statement: $n$次元ベクトル空間の線形変換が$n$個の相異なる固有値をもつとき、固有ベクトルからなる基底が存在する。
   statement_en: If a linear endomorphism f of an n-dimensional space has eigenvectors for n pairwise distinct eigenvalues μ_1, ..., μ_n, then the space has a basis b with f b_i = μ_i b_i.
-  assumptions: [Kは体, Vはn次元ベクトル空間, 族μの値は相異なる, 各v_iは固有値μ_iに属する固有ベクトル]
-  quantifiers: [任意のf, 任意のn, 任意の族μとv]
-  conclusion: 各b_iについてf(b_i)=μ_ib_iとなるVの基底bが存在する。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の$n$次元ベクトル空間
+  - $f$は$V$の線形変換
+  - $\mu_1,\dots,\mu_n$は相異なる
+  - 各$v_i$は固有値$\mu_i$に属する固有ベクトル
+  quantifiers:
+  - 任意の$f$
+  - 任意の$n$
+  - 任意の族$(\mu_i)$と$(v_i)$
+  conclusion: 各$i$について$f(b_i)=\mu_ib_i$となる$V$の基底$(b_i)$が存在する。
   answer: |
-    相異なる固有値に属する固有ベクトルv_1,…,v_nは一次独立である。n次元空間のn個の一次独立なベクトルは基底をなす。そこでb_i=v_iとすれば、f(b_i)=μ_ib_iを満たす基底が得られる。
+    $K$を体、$V$を$K$上の$n$次元ベクトル空間、$f$を$V$の線形変換とし、相異なるスカラー$\mu_1,\dots,\mu_n$と、$v_i\neq0$かつ$f(v_i)=\mu_iv_i$を満たすベクトル$v_1,\dots,v_n$を取る。相異なる固有値に属する固有ベクトルは一次独立なので、$v_1,\dots,v_n$は一次独立である。$n$次元空間の$n$個の一次独立なベクトルは基底をなす。そこで$b_i=v_i$とすれば、$f(b_i)=\mu_ib_i$を満たす基底が得られる。
   strategy: Eigenvectors for distinct eigenvalues are independent, and n independent vectors span an n-dimensional space.
   sketch:
-    - "apply_theorem: Eigenvectors for distinct eigenvalues are linearly independent."
-    - "apply_theorem: An independent family of size equal to the dimension spans the space."
-    - "construct: Build the basis from the family v."
-    - "conclude: Each basis vector satisfies f b_i = μ_i b_i."
+  - 'apply_theorem: Eigenvectors for distinct eigenvalues are linearly independent.'
+  - 'apply_theorem: An independent family of size equal to the dimension spans the space.'
+  - 'construct: Build the basis from the family v.'
+  - 'conclude: Each basis vector satisfies f b_i = μ_i b_i.'
   openmath: (forall (K V f n mu v) (-> (and (fd_vector_space K V) (endomorphism K V f) (= (dim_of K V) n) (family_injective mu) (forall (i) (eigenvector_of f (fn_value mu i) (fn_value v i)))) (exists (b) (and (is_basis_family K V b) (forall (i) (= (fn_value f (fn_value b i)) (smul (fn_value mu i) (fn_value b i))))))))
   hard_negative:
     statement: 対角化可能なn次正方行列はn個の相異なる固有値をもつ。
@@ -145,21 +182,29 @@
   kind: textbook
   level: 2
   topic: 線形代数・対角化の判定条件
-  statement: 線形変換fについて、固有空間の和が全空間になることと、固有ベクトルからなる基底が存在することは同値である。
+  statement: 線形変換$f$について、固有空間の和が全空間になることと、固有ベクトルからなる基底が存在することは同値である。
   statement_en: For a linear endomorphism f, the eigenspaces of f span the whole space if and only if the space has a basis consisting of eigenvectors of f.
-  assumptions: [Kは体, VはK上のベクトル空間, fはVの線形変換]
-  quantifiers: [任意のf]
-  conclusion: 固有空間の和がVに等しいことと、固有ベクトルからなるVの基底が存在することは同値である。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: 固有空間の和が$V$に等しいことと、固有ベクトルからなる$V$の基底が存在することは同値である。
   answer: |
-    固有空間の和がVならば、固有ベクトルと0全体の集合SはVを張る。張る集合は基底を部分集合として含むので、Sから基底がとれて、各元はf(b)=abの形を満たす。逆に固有ベクトルからなる基底があれば、各基底ベクトルはある固有空間に属するので、基底が張るVは固有空間の和に含まれる。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の線形変換とし、$\mu\in K$の固有空間を$V_\mu=\ker(f-\mu)$とする。
+
+    固有空間の和が$V$であるとする。集合$S=\bigcup_\mu V_\mu$は$V$を生成する。任意のベクトル空間で、生成系はその部分集合として基底を含む。よって$S$の部分集合である基底$B$が取れる。$B$の各元$b$はある$V_\mu$に属するので、$a(b)=\mu$とすれば$f(b)=a(b)b$である。基底の元は$0$でないので、$b$は固有ベクトルである。
+
+    逆に$V$の基底$(b_i)$とスカラー$(a_i)$で$f(b_i)=a_ib_i$となるものがあるとする。各$b_i$は$V_{a_i}$に属するので、固有空間の和はすべての$b_i$を含む。$(b_i)$は$V$を生成するので、固有空間の和は$V$に等しい。
   strategy: Extract a basis from the spanning set of eigenvectors, and conversely span by the basis.
   sketch:
-    - "setup: Let S be the set of vectors x with f x = a x for some scalar a."
-    - "translate: The sum of the eigenspaces is the span of S."
-    - "apply_theorem: A spanning set of a vector space contains a basis."
-    - "construct: Choose for each basis vector a scalar a with f b = a b."
-    - "derive: Conversely each basis vector lies in an eigenspace, so the sum contains the span of the basis."
-    - "conclude: The two conditions are equivalent."
+  - 'setup: Let S be the set of vectors x with f x = a x for some scalar a.'
+  - 'translate: The sum of the eigenspaces is the span of S.'
+  - 'apply_theorem: A spanning set of a vector space contains a basis.'
+  - 'construct: Choose for each basis vector a scalar a with f b = a b.'
+  - 'derive: Conversely each basis vector lies in an eigenspace, so the sum contains the span of the basis.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (K V f) (-> (and (vector_space K V) (endomorphism K V f)) (<-> (= (span_of_eigenspaces f) (whole_space V)) (exists (b a) (and (is_basis_family K V b) (forall (i) (= (fn_value f (fn_value b i)) (smul (fn_value a i) (fn_value b i)))))))))
   hard_negative:
     statement: 任意の線形変換について固有空間の和は全空間である。
@@ -191,19 +236,23 @@
   kind: gap
   level: 2
   topic: 線形代数・冪等写像の対角化
-  statement: f∘f=fを満たす線形変換fについて、固有値0と1の固有空間の和は全空間である。
+  statement: $f\circ f=f$を満たす線形変換$f$について、固有値$0$と$1$の固有空間の和は全空間である。
   statement_en: If a linear endomorphism satisfies f ∘ f = f, then the sum of its eigenspaces for 1 and 0 is the whole space.
-  assumptions: [Kは体, VはK上のベクトル空間, f∘f=f]
-  quantifiers: [任意のf]
-  conclusion: fの固有値1の固有空間と固有値0の固有空間の和はVに等しい。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換で$f\circ f=f$
+  quantifiers:
+  - 任意の$f$
+  conclusion: $\ker(f-1)+\ker f=V$である。
   answer: |
-    任意のxをx=f(x)+(x-f(x))と分解する。f(f(x))=f(x)より、f(x)は固有値1の固有空間に属する。またf(x-f(x))=f(x)-f(x)=0より、x-f(x)は固有値0の固有空間に属する。よって和は全空間である。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$f\circ f=f$を満たす$V$の線形変換とする。任意の$x\in V$を$x=f(x)+(x-f(x))$と分解する。$f(f(x))=f(x)$より、$f(x)$は固有値$1$の固有空間$\ker(f-1)$に属する。また$f(x-f(x))=f(x)-f(x)=0$より、$x-f(x)$は固有値$0$の固有空間$\ker f$に属する。よって$2$つの固有空間の和は全空間である。
   strategy: Decompose x as f x plus x - f x.
   sketch:
-    - "setup: Write x = f x + (x - f x)."
-    - "derive: f (f x) = f x shows that f x lies in the eigenspace for 1."
-    - "derive: f (x - f x) = 0 shows that x - f x lies in the eigenspace for 0."
-    - "conclude: The sum of the two eigenspaces is the whole space."
+  - 'setup: Write x = f x + (x - f x).'
+  - 'derive: f (f x) = f x shows that f x lies in the eigenspace for 1.'
+  - 'derive: f (x - f x) = 0 shows that x - f x lies in the eigenspace for 0.'
+  - 'conclude: The sum of the two eigenspaces is the whole space.'
   openmath: (forall (K V f) (-> (and (vector_space K V) (endomorphism K V f) (= (op_comp f f) f)) (= (subspace_sum (eigenspace f 1) (eigenspace f 0)) (whole_space V))))
   hard_negative:
     statement: f∘f=fならばfは零写像か恒等写像である。
@@ -227,17 +276,24 @@
   topic: 線形代数・最小多項式と対角化
   statement: 代数閉体上の有限次元空間の線形変換の最小多項式が無平方ならば、固有空間の和は全空間である。
   statement_en: Over an algebraically closed field, if the minimal polynomial of a linear endomorphism of a finite-dimensional space is squarefree, then its eigenspaces span the space.
-  assumptions: [Kは代数閉体, VはK上の有限次元ベクトル空間, fの最小多項式は無平方]
-  quantifiers: [任意のf]
-  conclusion: fの固有空間の和はVに等しい。
+  assumptions:
+  - $K$は代数閉体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の線形変換
+  - $f$の最小多項式は無平方
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f$の固有空間の和は$V$に等しい。
   answer: |
-    無平方な多項式で消される線形変換は半単純である。代数閉体上では最小多項式は相異なる一次式の積なので、中国剰余の定理により空間は各ker(f-μ)の直和に分解する。各ker(f-μ)は固有空間だから、固有空間の和は全空間である。
+    $K$を代数閉体、$V$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とし、$f$の最小多項式$m$が無平方であるとする。$K$は代数閉体で$m$は無平方なので、相異なる$\mu_1,\dots,\mu_r\in K$により$m=\prod_{i=1}^r(X-\mu_i)$と書ける。$r=0$なら$m=1$であり、$m(f)=\mathrm{id}=0$より$V=\{0\}$なので主張は成り立つ。
+
+    $r\geq1$とする。$\ell_i=\prod_{j\neq i}(X-\mu_j)/(\mu_i-\mu_j)$とおく。$\sum_i\ell_i-1$は次数が$r$未満で$\mu_1,\dots,\mu_r$を根にもつので$0$であり、$\sum_i\ell_i=1$である。任意の$x\in V$について$x=\sum_i\ell_i(f)(x)$となる。また$(X-\mu_i)\ell_i$は$m$のスカラー倍なので、$(f-\mu_i)\ell_i(f)(x)=0$である。すなわち$\ell_i(f)(x)$は$\ker(f-\mu_i)$に属する。よって$x$は固有空間の元の和であり、固有空間の和は全空間である。
   strategy: Squarefree minimal polynomial implies semisimple, and semisimple over an algebraically closed field means eigenspaces span.
   sketch:
-    - "translate: f is annihilated by the squarefree polynomial minpoly f."
-    - "apply_theorem: An endomorphism annihilated by a squarefree polynomial is semisimple."
-    - "apply_theorem: Over an algebraically closed field a semisimple endomorphism has generalized eigenspaces equal to eigenspaces."
-    - "conclude: Generalized eigenspaces span, so the eigenspaces span."
+  - 'translate: f is annihilated by the squarefree polynomial minpoly f.'
+  - 'apply_theorem: An endomorphism annihilated by a squarefree polynomial is semisimple.'
+  - 'apply_theorem: Over an algebraically closed field a semisimple endomorphism has generalized eigenspaces equal to eigenspaces.'
+  - 'conclude: Generalized eigenspaces span, so the eigenspaces span.'
   openmath: (forall (K V f) (-> (and (alg_closed_field K) (fd_vector_space K V) (endomorphism K V f) (squarefree_poly (minimal_polynomial f K))) (= (span_of_eigenspaces f) (whole_space V))))
   hard_negative:
     statement: 特性多項式が無平方でなければ線形変換は対角化できない。
@@ -253,18 +309,23 @@
   kind: gap
   level: 2
   topic: 線形代数・固有値の存在
-  statement: 代数閉体上の0でない有限次元ベクトル空間の線形変換は固有値をもつ。
+  statement: 代数閉体上の$0$でない有限次元ベクトル空間の線形変換は固有値をもつ。
   statement_en: A linear endomorphism of a nonzero finite-dimensional vector space over an algebraically closed field has an eigenvalue.
-  assumptions: [Kは代数閉体, VはK上の有限次元ベクトル空間, V≠0]
-  quantifiers: [任意のf]
-  conclusion: fの固有値が存在する。
+  assumptions:
+  - $K$は代数閉体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $V\neq\{0\}$
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f$の固有値が存在する。
   answer: |
-    Vの次元は正なので、fの特性多項式は次数が正である。Kは代数閉体だから特性多項式は根μをもつ。特性多項式の根は固有値なのでμはfの固有値である。
+    $K$を代数閉体、$V\neq\{0\}$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とする。$V$の基底を取り、$f$の表現行列を$A$、単位行列を$E$とする。特性多項式$\det(XE-A)$の次数は$\dim V>0$である。$K$は代数閉体なので、特性多項式は根$\mu$をもつ。このとき$\det(\mu E-A)=0$なので$\mu-f$は単射でなく、$x\neq0$で$f(x)=\mu x$となる$x$が存在する。よって$\mu$は$f$の固有値である。
   strategy: The characteristic polynomial has positive degree, so it has a root.
   sketch:
-    - "derive: The characteristic polynomial of f has degree dim V, which is positive."
-    - "apply_theorem: A nonconstant polynomial over an algebraically closed field has a root."
-    - "conclude: A root of the characteristic polynomial is an eigenvalue."
+  - 'derive: The characteristic polynomial of f has degree dim V, which is positive.'
+  - 'apply_theorem: A nonconstant polynomial over an algebraically closed field has a root.'
+  - 'conclude: A root of the characteristic polynomial is an eigenvalue.'
   openmath: (forall (K V f) (-> (and (alg_closed_field K) (fd_vector_space K V) (endomorphism K V f) (!= V (zero_subspace V))) (exists (mu) (eigenvalue_of f mu))))
   hard_negative:
     statement: 実ベクトル空間の線形変換は必ず実固有値をもつ。
@@ -279,20 +340,31 @@
   kind: named
   level: 2
   topic: 線形代数・ケーリー・ハミルトンの定理
-  statement: 可換環上の正方行列Aは自身の特性多項式の根である。すなわちp_A(A)=0である（ケーリー・ハミルトンの定理）。
-  statement_en: "Cayley-Hamilton theorem: a square matrix over a commutative ring is annihilated by its characteristic polynomial."
-  assumptions: [Rは可換環, Aは正方行列, p_AはAの特性多項式]
-  quantifiers: [任意のA]
-  conclusion: p_A(A)=0。
+  statement: 可換環上の正方行列$A$は自身の特性多項式の根である。すなわち$p_A(A)=0$である（ケーリー・ハミルトンの定理）。
+  statement_en: 'Cayley-Hamilton theorem: a square matrix over a commutative ring is annihilated by its characteristic polynomial.'
+  assumptions:
+  - $R$は可換環
+  - $A$は$R$上の$n$次正方行列
+  - $p_A(X)=\det(XE-A)$は$A$の特性多項式
+  - $E$は単位行列
+  quantifiers:
+  - 任意の$A$
+  conclusion: $p_A(A)=0$である。
   answer: |
-    概略を示す。多項式環上の行列XE-Aの余因子行列をBとすると、B(XE-A)=p_A(X)Eが成り立つ。Bを係数行列をもつXの多項式として展開し、両辺のX^kの係数を比較する。各等式に右からA^kを掛けて足すと左辺が消えて、p_A(A)=0が得られる。
+    $R$を可換環、$A$を$R$上の$n$次正方行列、$E$を単位行列とし、$p_A(X)=\det(XE-A)=\sum_{k=0}^n c_kX^k$（$c_n=1$）を特性多項式とする。$n=0$なら$0$次行列の環は零環なので明らかである。$n\geq1$とする。
+
+    余因子行列の等式$(\operatorname{adj}M)M=(\det M)E$は可換環上の任意の正方行列$M$で成り立つ。これを多項式環$R[X]$上の行列$M=XE-A$に適用する。$B=\operatorname{adj}(XE-A)$の各成分は次数$n-1$以下の多項式なので、$R$上の行列$B_0,\dots,B_{n-1}$により$B=\sum_{k=0}^{n-1}X^kB_k$と書ける。等式$B(XE-A)=p_A(X)E$は次のようになる。
+
+    $\sum_{k=0}^{n-1}X^{k+1}B_k-\sum_{k=0}^{n-1}X^kB_kA=\sum_{k=0}^nc_kX^kE$
+
+    各成分の$X^k$の係数を比較すると、$-B_0A=c_0E$、$1\leq k\leq n-1$について$B_{k-1}-B_kA=c_kE$、$B_{n-1}=c_nE$を得る。$X^k$の係数の等式に右から$A^k$を掛けて、$k=0,\dots,n$について足す。右辺の和は$\sum_kc_kA^k=p_A(A)$である。左辺の和は$-B_0A+\sum_{k=1}^{n-1}(B_{k-1}A^k-B_kA^{k+1})+B_{n-1}A^n$であり、隣り合う項が打ち消し合って$0$になる。したがって$p_A(A)=0$である。
   strategy: Use the adjugate identity in the polynomial ring and compare coefficients.
   sketch:
-    - "setup: Let B be the adjugate of XE - A over R[X]."
-    - "derive: B (XE - A) = p_A(X) E holds by the adjugate identity."
-    - "translate: Expand B as a polynomial in X with matrix coefficients."
-    - "derive: Compare coefficients of X^k and multiply by powers of A."
-    - "conclude: The sum telescopes, giving p_A(A) = 0."
+  - 'setup: Let B be the adjugate of XE - A over R[X].'
+  - 'derive: B (XE - A) = p_A(X) E holds by the adjugate identity.'
+  - 'translate: Expand B as a polynomial in X with matrix coefficients.'
+  - 'derive: Compare coefficients of X^k and multiply by powers of A.'
+  - 'conclude: The sum telescopes, giving p_A(A) = 0.'
   openmath: (forall (K A) (-> (matrix_square K A) (= (polynomial_eval (charpoly A) A) 0)))
   hard_negative:
     statement: 特性多項式はAを消す多項式のうち次数が最小のものである。
@@ -307,20 +379,30 @@
   kind: textbook
   level: 3
   topic: 線形代数・準素分解
-  statement: 互いに素な多項式p,qについて、ker p(f)q(f)はker p(f)とker q(f)の直和である。
+  statement: 互いに素な多項式$p,q$について、$\ker(pq)(f)$は$\ker p(f)$と$\ker q(f)$の直和である。
   statement_en: For coprime polynomials p and q, the kernel of p(f)q(f) is the direct sum of the kernels of p(f) and q(f).
-  assumptions: [Kは体, fはVの線形変換, pとqは互いに素]
-  quantifiers: [任意のf, 任意の多項式p, q]
-  conclusion: ker p(f)∩ker q(f)=0かつker p(f)+ker q(f)=ker (pq)(f)。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換
+  - $p,q\in K[X]$は互いに素
+  quantifiers:
+  - 任意の$f$
+  - 任意の多項式$p,q$
+  conclusion: $\ker p(f)\cap\ker q(f)=\{0\}$かつ$\ker p(f)+\ker q(f)=\ker(pq)(f)$である。
   answer: |
-    互いに素なのでap+bq=1となる多項式a,bがある。したがってa(f)p(f)+b(f)q(f)=idである。xがker p(f)とker q(f)の両方に属せばx=0である。また(pq)(f)x=0ならばx=a(f)p(f)x+b(f)q(f)xであり、第1項はker q(f)に、第2項はker p(f)に属する。逆の包含は明らかである。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の線形変換、$p,q\in K[X]$を互いに素な多項式とする。互いに素なので$ap+bq=1$となる多項式$a,b$があり、$a(f)p(f)+b(f)q(f)=\mathrm{id}$である。$f$の多項式どうしは可換である。
+
+    $x$が$\ker p(f)$と$\ker q(f)$の両方に属せば、$x=a(f)p(f)x+b(f)q(f)x=0$である。よって共通部分は$\{0\}$である。
+
+    $(pq)(f)x=0$とする。$x=a(f)p(f)x+b(f)q(f)x$である。$q(f)a(f)p(f)x=a(f)(pq)(f)x=0$より第$1$項は$\ker q(f)$に属し、同様に第$2$項は$\ker p(f)$に属する。逆に$y\in\ker p(f)$, $z\in\ker q(f)$なら、$(pq)(f)(y+z)=q(f)p(f)y+p(f)q(f)z=0$である。よって$\ker p(f)+\ker q(f)=\ker(pq)(f)$である。
   strategy: Apply the Bezout identity to f.
   sketch:
-    - "setup: Choose a, b with a p + b q = 1 and evaluate at f."
-    - "derive: A vector killed by both p(f) and q(f) is zero."
-    - "derive: For x in ker (pq)(f), the two Bezout terms lie in ker q(f) and ker p(f)."
-    - "derive: Both kernels are contained in ker (pq)(f) since polynomials in f commute."
-    - "conclude: The kernel of the product is the direct sum."
+  - 'setup: Choose a, b with a p + b q = 1 and evaluate at f.'
+  - 'derive: A vector killed by both p(f) and q(f) is zero.'
+  - 'derive: For x in ker (pq)(f), the two Bezout terms lie in ker q(f) and ker p(f).'
+  - 'derive: Both kernels are contained in ker (pq)(f) since polynomials in f commute.'
+  - 'conclude: The kernel of the product is the direct sum.'
   openmath: (forall (K V f p q) (-> (and (vector_space K V) (endomorphism K V f) (coprime_polys p q)) (and (= (subspace_inter (kernel (polynomial_eval p f)) (kernel (polynomial_eval q f))) (zero_subspace V)) (= (subspace_sum (kernel (polynomial_eval p f)) (kernel (polynomial_eval q f))) (kernel (polynomial_eval (* p q) f))))))
   hard_negative:
     statement: 任意の多項式p,qについてker (pq)(f)=ker p(f)+ker q(f)である。
@@ -337,18 +419,26 @@
   topic: 線形代数・広義固有空間分解
   statement: 代数閉体上の有限次元空間の線形変換について、広義固有空間の和は全空間である。
   statement_en: For a linear endomorphism of a finite-dimensional space over an algebraically closed field, the generalized eigenspaces span the whole space.
-  assumptions: [Kは代数閉体, VはK上の有限次元ベクトル空間, fはVの線形変換]
-  quantifiers: [任意のf]
-  conclusion: fの広義固有空間の和はVに等しい。
+  assumptions:
+  - $K$は代数閉体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f$の広義固有空間の和は$V$に等しい。
   answer: |
-    次元に関する帰納法を用いる。Vが0でなければfは固有値μをもつ。十分大きなkに対してV=ker (f-μ)^k⊕im (f-μ)^kと分解でき、im (f-μ)^kはf不変で次元が真に小さい。帰納法の仮定をこの像の上のfに適用すると、その空間はfの広義固有空間の和で覆われる。ker (f-μ)^kはμの広義固有空間に含まれるので、Vも広義固有空間の和である。
+    $K$を代数閉体、$V$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とする。$\mu\in K$の広義固有空間を、ある$k$で$(f-\mu)^kx=0$となる$x$全体と定める。$\dim V$に関する帰納法で示す。
+
+    $V=\{0\}$なら明らかである。$V\neq\{0\}$なら、代数閉体上なので$f$は固有値$\mu$をもつ。$g=f-\mu$とする。フィッティングの補題は、有限次元空間の線形変換$g$について、十分大きなすべての$k$で$V=\ker g^k\oplus\operatorname{Im}g^k$となることを述べる。そこで$k\geq1$をこの分解が成り立つように取る。
+
+    $W=\operatorname{Im}g^k$とおく。$f$は$g^k$と可換なので、$W$は$f$不変である。$\mu$の固有ベクトルは$\ker g^k$に属するので$\ker g^k\neq\{0\}$であり、$\dim W<\dim V$である。帰納法の仮定を$f|_W$に適用すると、$W$は$f|_W$の広義固有空間の和である。$f|_W$の広義固有空間は$f$の広義固有空間に含まれるので、$W$は$f$の広義固有空間の和に含まれる。$\ker g^k$は$\mu$の広義固有空間に含まれるので、$V=\ker g^k+W$も$f$の広義固有空間の和に含まれる。
   strategy: Induct on dimension using the kernel-image decomposition of (f - μ)^k.
   sketch:
-    - "setup: Induct on dim V; the case V = 0 is trivial."
-    - "apply_theorem: A nonzero space has an eigenvalue μ over an algebraically closed field."
-    - "derive: For large k, V is the direct sum of ker (f-μ)^k and im (f-μ)^k."
-    - "induction: Apply the hypothesis to f restricted to the invariant image, whose dimension is smaller."
-    - "conclude: Add the kernel part, which lies in the generalized eigenspace of μ."
+  - 'setup: Induct on dim V; the case V = 0 is trivial.'
+  - 'apply_theorem: A nonzero space has an eigenvalue μ over an algebraically closed field.'
+  - 'derive: For large k, V is the direct sum of ker (f-μ)^k and im (f-μ)^k.'
+  - 'induction: Apply the hypothesis to f restricted to the invariant image, whose dimension is smaller.'
+  - 'conclude: Add the kernel part, which lies in the generalized eigenspace of μ.'
   openmath: (forall (K V f) (-> (and (alg_closed_field K) (fd_vector_space K V) (endomorphism K V f)) (= (span_of_gen_eigenspaces f) (whole_space V))))
   hard_negative:
     statement: 代数閉体上の有限次元空間の線形変換について、固有空間の和は全空間である。
@@ -363,19 +453,28 @@
   kind: gap
   level: 2
   topic: 線形代数・広義固有ベクトル
-  statement: x≠0かつ(f-μ)^k x=0となる自然数kがあれば、μはfの固有値である。
+  statement: $x\neq0$かつ$(f-\mu)^kx=0$となる自然数$k$があれば、$\mu$は$f$の固有値である。
   statement_en: If x ≠ 0 and (f - μ)^k x = 0 for some natural number k, then μ is an eigenvalue of f.
-  assumptions: [Kは体, fはVの線形変換, x≠0, (f-μ)^k x=0]
-  quantifiers: [任意のf, 任意のスカラーμ, 任意のベクトルx, ある自然数k]
-  conclusion: μはfの固有値である。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の線形変換
+  - $x\neq0$
+  - $(f-\mu)^kx=0$
+  quantifiers:
+  - 任意の$f$
+  - 任意のスカラー$\mu$
+  - 任意のベクトル$x$
+  - 任意の自然数$k$
+  conclusion: $\mu$は$f$の固有値である。
   answer: |
-    (f-μ)^m x=0となる最小の自然数mをとる。x≠0なのでm≥1である。y=(f-μ)^{m-1}xとおくと、最小性よりy≠0であり、(f-μ)y=0である。よってyはμに属する固有ベクトルで、μは固有値である。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の線形変換、$\mu\in K$とし、$x\neq0$と自然数$k$が$(f-\mu)^kx=0$を満たすとする。$(f-\mu)^mx=0$となる最小の自然数$m$を取る。$x\neq0$なので$m\geq1$である。$y=(f-\mu)^{m-1}x$とおくと、最小性より$y\neq0$であり、$(f-\mu)y=0$である。よって$y$は$\mu$に属する固有ベクトルで、$\mu$は$f$の固有値である。
   strategy: Take the last nonzero vector in the chain x, (f-μ)x, ….
   sketch:
-    - "setup: Take the least m with (f-μ)^m x = 0."
-    - "derive: Since x ≠ 0, m is at least 1."
-    - "construct: Let y = (f-μ)^(m-1) x, which is nonzero by minimality."
-    - "conclude: (f-μ) y = 0, so y is an eigenvector for μ."
+  - 'setup: Take the least m with (f-μ)^m x = 0.'
+  - 'derive: Since x ≠ 0, m is at least 1.'
+  - 'construct: Let y = (f-μ)^(m-1) x, which is nonzero by minimality.'
+  - 'conclude: (f-μ) y = 0, so y is an eigenvector for μ.'
   openmath: (forall (K V f mu x k) (-> (and (vector_space K V) (endomorphism K V f) (!= x 0) (= (fn_value (op_pow (- f (smul mu (identity_map V))) k) x) 0)) (eigenvalue_of f mu)))
   hard_negative:
     statement: x≠0かつ(f-μ)^k x=0ならばx自身がμの固有ベクトルである。
@@ -406,20 +505,27 @@
   kind: gap
   level: 3
   topic: 線形代数・三角化
-  statement: 代数閉体上の0でない有限次元空間の線形変換fには、余次元1のf不変部分空間が存在する。
+  statement: 代数閉体上の$0$でない有限次元空間の線形変換$f$には、余次元$1$の$f$不変部分空間が存在する。
   statement_en: A linear endomorphism f of a nonzero finite-dimensional space over an algebraically closed field has an invariant subspace of codimension one.
-  assumptions: [Kは代数閉体, VはK上の有限次元ベクトル空間, V≠0, fはVの線形変換]
-  quantifiers: [任意のf]
-  conclusion: dim W+1=dim Vかつf(W)⊆Wとなる部分空間Wが存在する。
+  assumptions:
+  - $K$は代数閉体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $V\neq\{0\}$
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $\dim W+1=\dim V$かつ$f(W)\subseteq W$となる部分空間$W$が存在する。
   answer: |
-    双対写像f^*は0でない有限次元空間V^*の線形変換なので、固有ベクトルφをもつ。つまりφ≠0かつφ∘f=μφである。W=ker φとする。φ≠0よりWの次元はdim V-1である。x∈Wならばφ(f(x))=μφ(x)=0なので、f(x)∈Wである。この事実を帰納的に用いると線形変換の三角化が得られる。
+    $K$を代数閉体、$V\neq\{0\}$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とする。双対空間$V^*$は$0$でない有限次元空間であり、$f^*(\varphi)=\varphi\circ f$は$V^*$の線形変換である。代数閉体上の$0$でない有限次元空間の線形変換は固有値をもつので、$\varphi\neq0$と$\mu\in K$で$\varphi\circ f=\mu\varphi$となるものがある。
+
+    $W=\ker\varphi$とする。$\varphi\neq0$より$\varphi:V\to K$は全射なので、$\dim W+1=\dim V$である。$x\in W$ならば$\varphi(f(x))=\mu\varphi(x)=0$なので、$f(x)\in W$である。
   strategy: Take the kernel of an eigenvector of the dual map.
   sketch:
-    - "apply_theorem: The dual map of f has an eigenvector φ on the nonzero dual space."
-    - "construct: Let W be the kernel of φ."
-    - "derive: Since φ is a nonzero functional, W has codimension one."
-    - "derive: For x in W, φ(f x) = μ φ(x) = 0, so W is invariant."
-    - "conclude: W is the required hyperplane."
+  - 'apply_theorem: The dual map of f has an eigenvector φ on the nonzero dual space.'
+  - 'construct: Let W be the kernel of φ.'
+  - 'derive: Since φ is a nonzero functional, W has codimension one.'
+  - 'derive: For x in W, φ(f x) = μ φ(x) = 0, so W is invariant.'
+  - 'conclude: W is the required hyperplane.'
   openmath: (forall (K V f) (-> (and (alg_closed_field K) (fd_vector_space K V) (endomorphism K V f) (!= V (zero_subspace V))) (exists (W) (and (= (+ (dim_of K W) 1) (dim_of K V)) (invariant_subspace f W)))))
   hard_negative:
     statement: 実ベクトル空間の線形変換にも必ず余次元1の不変部分空間がある。
@@ -451,20 +557,28 @@
   kind: named
   level: 3
   topic: 線形代数・フィッティングの補題
-  statement: 有限次元空間の線形変換fについて、十分大きなnでVはker f^nとim f^nの直和である（フィッティングの補題）。
-  statement_en: "Fitting's lemma: for a linear endomorphism f of a finite-dimensional space V, for all sufficiently large n the space V is the direct sum of ker f^n and im f^n."
-  assumptions: [Kは体, VはK上の有限次元ベクトル空間, fはVの線形変換]
-  quantifiers: [任意のf, ある自然数N, N以上の任意のn]
-  conclusion: ker f^nとim f^nは互いに補空間である。
+  statement: 有限次元空間の線形変換$f$について、十分大きな$n$で$V$は$\ker f^n$と$\operatorname{Im}f^n$の直和である（フィッティングの補題）。
+  statement_en: 'Fitting''s lemma: for a linear endomorphism f of a finite-dimensional space V, for all sufficiently large n the space V is the direct sum of ker f^n and im f^n.'
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  - ある自然数$N$
+  - $N$以上の任意の$n$
+  conclusion: $\ker f^n$と$\operatorname{Im}f^n$は互いに補空間である。
   answer: |
-    ker f^nは増大列、im f^nは減少列で、有限次元なのでともにある番号Nから先は一定である。n≥Nとする。x∈ker f^n∩im f^nならばx=f^n(y)でf^{2n}(y)=0となり、ker f^{2n}=ker f^nよりx=f^n(y)=0である。階数・退化次数の定理よりdim ker f^n+dim im f^n=dim Vなので、和は全空間である。
+    $K$を体、$V$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とする。$\ker f^n$は$n$について増大列であり、次元は$\dim V$以下なので、ある$N$があってすべての$n\geq N$で$\ker f^n=\ker f^N$である。
+
+    $n\geq N$とする。$x\in\ker f^n\cap\operatorname{Im}f^n$ならば$x=f^n(y)$かつ$f^{2n}(y)=0$である。$2n\geq N$より$\ker f^{2n}=\ker f^n$なので、$x=f^n(y)=0$である。よって共通部分は$\{0\}$である。次元定理より$\dim\ker f^n+\dim\operatorname{Im}f^n=\dim V$なので、次元公式から$\ker f^n+\operatorname{Im}f^n$の次元は$\dim V$であり、和は全空間である。
   strategy: Use stabilization of kernels and images together with rank-nullity.
   sketch:
-    - "derive: The chains ker f^n and im f^n stabilize from some N because V is finite-dimensional."
-    - "setup: Fix n ≥ N and take x in ker f^n ∩ im f^n, x = f^n y."
-    - "derive: Then y lies in ker f^(2n) = ker f^n, so x = 0."
-    - "apply_theorem: Rank-nullity gives dim ker f^n + dim im f^n = dim V."
-    - "conclude: The two subspaces are complementary."
+  - 'derive: The chains ker f^n and im f^n stabilize from some N because V is finite-dimensional.'
+  - 'setup: Fix n ≥ N and take x in ker f^n ∩ im f^n, x = f^n y.'
+  - 'derive: Then y lies in ker f^(2n) = ker f^n, so x = 0.'
+  - 'apply_theorem: Rank-nullity gives dim ker f^n + dim im f^n = dim V.'
+  - 'conclude: The two subspaces are complementary.'
   openmath: (forall (K V f) (-> (and (fd_vector_space K V) (endomorphism K V f)) (exists (N) (forall (n) (-> (>= n N) (is_complement (kernel (op_pow f n)) (range_of (op_pow f n))))))))
   hard_negative:
     statement: 有限次元空間の線形変換fについてVはいつもker fとim fの直和である。
@@ -479,20 +593,34 @@
   kind: named
   level: 3
   topic: 線形代数・ジョルダン分解
-  statement: 完全体上の有限次元空間の線形変換fは、fの多項式として表される冪零変換nと半単純変換sの和f=n+sに書ける（ジョルダン・シュヴァレー分解）。
-  statement_en: "Jordan-Chevalley decomposition: a linear endomorphism f of a finite-dimensional space over a perfect field is a sum f = n + s with n nilpotent, s semisimple, and both n and s polynomials in f."
-  assumptions: [Kは完全体, VはK上の有限次元ベクトル空間, fはVの線形変換]
-  quantifiers: [任意のf]
-  conclusion: f=n+sとなるfの多項式n, sで、nが冪零、sが半単純であるものが存在する。
+  statement: 完全体上の有限次元空間の線形変換$f$は、$f$の多項式として表される冪零変換$n$と半単純変換$s$の和$f=n+s$に書ける（ジョルダン・シュヴァレー分解）。
+  statement_en: 'Jordan-Chevalley decomposition: a linear endomorphism f of a finite-dimensional space over a perfect field is a sum f = n + s with n nilpotent, s semisimple, and both n and s polynomials in f.'
+  assumptions:
+  - $K$は完全体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f=n+s$となる$f$の多項式$n,s$で、$n$が冪零、$s$が半単純であるものが存在する。
   answer: |
-    概略を示す。fの最小多項式の根基をgとすると、gは分離多項式で、ある自然数kについて最小多項式はg^kを割り切る。したがってg(f)は冪零である。またgの導関数g'とg^kは互いに素なので、g'(f)は可逆である。ヘンゼルの補題と同様のニュートン反復により、g(s)=0かつf-sが冪零となるfの多項式sが得られる。gは無平方なのでsは半単純であり、n=f-sとすればよい。
+    $K$を完全体、$V$を$K$上の有限次元ベクトル空間、$f$を$V$の線形変換とする。$s$が半単純であるとは、$s$不変な部分空間がすべて$s$不変な補空間をもつことをいう。$A=K[f]$を$f$の多項式全体のなす可換環とする。
+
+    $f$の最小多項式を割り切る相異なるモニック既約多項式を$g_1,\dots,g_r$とし、$g=\prod_ig_i$とおく。ある$k$で最小多項式は$g^k$を割り切るので、$g(f)^k=0$である。$K$は完全体なので各$g_i$は分離多項式であり、$g_i$は互いに素なので$g$も分離多項式である。よって$g$とその導関数$g'$は互いに素で、多項式$u,v$により$ug+vg'=1$と書ける。$\mathfrak{n}=g(f)A$とおくと、$\mathfrak{n}^k=0$である。
+
+    $h\in A$が$h-f\in\mathfrak{n}$を満たすとする。$g(h)-g(f)$は$h-f$で割り切れるので、$g(h)\in\mathfrak{n}$である。すると$v(h)g'(h)=1-u(h)g(h)$は$1$と冪零元の差なので可逆であり、$g'(h)$は$A$の可逆元である。また多項式の恒等式$g(Y+Z)=g(Y)+g'(Y)Z+Z^2G(Y,Z)$を満たす$2$変数多項式$G$がある。
+
+    $s_0=f$、$s_{j+1}=s_j-g(s_j)g'(s_j)^{-1}$と定める。帰納法で、$s_j-f\in\mathfrak{n}$かつ$g(s_j)\in\mathfrak{n}^{2^j}$を示す。$j=0$は明らかである。$j$で成り立つとき、$g(s_j)\in\mathfrak{n}$より$s_{j+1}-f\in\mathfrak{n}$である。上の恒等式で$Y=s_j$、$Z=-g(s_j)g'(s_j)^{-1}$とすると、$g(s_j)+g'(s_j)Z=0$なので、$g(s_{j+1})=Z^2G(Y,Z)\in\mathfrak{n}^{2^{j+1}}$である。
+
+    $2^j\geq k$となる$j$を取り、$s=s_j$、$n=f-s$とおく。$s,n\in A$であり、$f=n+s$である。$n\in\mathfrak{n}$より$n$は冪零であり、$g(s)=0$である。
+
+    $s$が半単純であることを示す。中国剰余の定理により、$K[X]/(g)$は体$L_i=K[X]/(g_i)$の直積である。$g(s)=0$より、$V$は$V_i=\ker g_i(s)$の直和に分解し、$V_i$は$L_i$上のベクトル空間となる。$U$を$s$不変な部分空間とすると、$U$は$K[X]/(g)$の作用で安定なので、$U=\bigoplus_i(U\cap V_i)$であり、各$U\cap V_i$は$L_i$上の部分空間である。$U\cap V_i$の$L_i$上の補空間$U_i$を取ると、$U_i$は$s$不変であり、$\bigoplus_iU_i$が$U$の$s$不変な補空間である。
   strategy: Run Newton iteration on the separable radical of the minimal polynomial.
   sketch:
-    - "setup: Let g be the squarefree radical of the minimal polynomial; g is separable because K is perfect."
-    - "derive: g(f) is nilpotent and g'(f) is invertible in the algebra generated by f."
-    - "apply_theorem: Newton iteration yields s in that algebra with g(s) = 0 and f - s nilpotent."
-    - "derive: Since g is squarefree, s is semisimple."
-    - "conclude: Put n = f - s."
+  - 'setup: Let g be the squarefree radical of the minimal polynomial; g is separable because K is perfect.'
+  - 'derive: g(f) is nilpotent and g''(f) is invertible in the algebra generated by f.'
+  - 'apply_theorem: Newton iteration yields s in that algebra with g(s) = 0 and f - s nilpotent.'
+  - 'derive: Since g is squarefree, s is semisimple.'
+  - 'conclude: Put n = f - s.'
   openmath: (forall (K V f) (-> (and (perfect_field K) (fd_vector_space K V) (endomorphism K V f)) (exists (n s) (and (polynomial_in n f) (polynomial_in s f) (nilpotent_op n) (semisimple_op s) (= f (+ n s))))))
   hard_negative:
     statement: 冪零変換と半単純変換の和への分解f=n+sは、nとsが可換でなくても一意である。
@@ -508,19 +636,25 @@
   kind: gap
   level: 2
   topic: 線形代数・冪零変換の固有値
-  statement: 冪零な線形変換の固有値は0のみである。
+  statement: 冪零な線形変換の固有値は$0$のみである。
   statement_en: Every eigenvalue of a nilpotent linear endomorphism is zero.
-  assumptions: [Kは体, fは冪零な線形変換, μはfの固有値]
-  quantifiers: [任意のf, 任意のμ]
-  conclusion: μ=0。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上のベクトル空間
+  - $f$は$V$の冪零な線形変換
+  - $\mu$は$f$の固有値
+  quantifiers:
+  - 任意の$f$
+  - 任意の$\mu$
+  conclusion: $\mu=0$である。
   answer: |
-    f^k=0とし、xをμの固有ベクトルとする。帰納的にf^k(x)=μ^k xなので、μ^k x=0である。x≠0よりμ^k=0であり、体には0でない冪零元がないのでμ=0である。
+    $K$を体、$V$を$K$上のベクトル空間、$f$を$V$の冪零な線形変換、$\mu$を$f$の固有値とする。$f^k=0$となる自然数$k$と、$f(x)=\mu x$を満たす$x\neq0$を取る。帰納的に$f^k(x)=\mu^kx$なので、$\mu^kx=0$である。$x\neq0$より$\mu^k=0$であり、体には$0$でない冪零元がないので$\mu=0$である。
   strategy: Apply the k-th power to an eigenvector.
   sketch:
-    - "setup: Choose k with f^k = 0 and an eigenvector x for μ."
-    - "derive: f^k x = μ^k x, so μ^k x = 0."
-    - "derive: Because x ≠ 0, μ^k = 0."
-    - "conclude: A field has no nonzero nilpotents, so μ = 0."
+  - 'setup: Choose k with f^k = 0 and an eigenvector x for μ.'
+  - 'derive: f^k x = μ^k x, so μ^k x = 0.'
+  - 'derive: Because x ≠ 0, μ^k = 0.'
+  - 'conclude: A field has no nonzero nilpotents, so μ = 0.'
   openmath: (forall (K V f mu) (-> (and (vector_space K V) (endomorphism K V f) (nilpotent_op f) (eigenvalue_of f mu)) (= mu 0)))
   hard_negative:
     statement: 固有値が0のみである線形変換は、任意の体上で冪零である。
@@ -540,18 +674,26 @@
   kind: gap
   level: 2
   topic: 線形代数・冪零指数の上界
-  statement: n次元空間の冪零な線形変換fはf^n=0を満たす。
+  statement: $n$次元空間の冪零な線形変換$f$は$f^n=0$を満たす。
   statement_en: A nilpotent linear endomorphism f of an n-dimensional vector space satisfies f^n = 0.
-  assumptions: [Kは体, Vは有限次元ベクトル空間, fは冪零]
-  quantifiers: [任意のf]
-  conclusion: f^{dim V}=0。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の冪零な線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $f^{\dim V}=0$である。
   answer: |
-    fの行列は係数体の代数閉包上でも冪零なので、そこでの固有値はすべて0である。代数閉包上で特性多項式は一次式の積に分解するので、特性多項式はX^{dim V}である。ケーリー・ハミルトンの定理より特性多項式にfを代入すると0になる。したがってf^{dim V}=0である。
+    $K$を体、$V$を$K$上の$d$次元ベクトル空間、$f$を$V$の冪零な線形変換とし、$f^r=0$となる$r$を取る。$\ker f^i$は$i$について増大列である。
+
+    $\ker f^i=\ker f^{i+1}$なら$\ker f^{i+1}=\ker f^{i+2}$である。実際、$x\in\ker f^{i+2}$なら$f(x)\in\ker f^{i+1}=\ker f^i$なので、$x\in\ker f^{i+1}$である。したがって一度等号が成り立つと、以後の列はすべて等しい。
+
+    $\ker f^d\neq V$と仮定する。$\ker f^r=V$なので、$i=0,1,\dots,d$のどの$i$でも$\ker f^i\neq\ker f^{i+1}$である。すると次元は$i$が増えるごとに$1$以上増えるので、$\dim\ker f^{d+1}\geq d+1$となり、$\dim V=d$に反する。よって$\ker f^d=V$であり、$f^d=0$である。
   strategy: The characteristic polynomial of a nilpotent map is X^n, then apply Cayley-Hamilton.
   sketch:
-    - "derive: The characteristic polynomial of a nilpotent f equals X^(dim V)."
-    - "apply_theorem: By Cayley-Hamilton the characteristic polynomial annihilates f."
-    - "conclude: Therefore f^(dim V) = 0."
+  - 'derive: The characteristic polynomial of a nilpotent f equals X^(dim V).'
+  - 'apply_theorem: By Cayley-Hamilton the characteristic polynomial annihilates f.'
+  - 'conclude: Therefore f^(dim V) = 0.'
   openmath: (forall (K V f) (-> (and (fd_vector_space K V) (endomorphism K V f) (nilpotent_op f)) (= (op_pow f (dim_of K V)) 0)))
   hard_negative:
     statement: n次元空間の冪零変換はf^{n-1}=0を満たす。
@@ -568,18 +710,24 @@
   kind: gap
   level: 2
   topic: 線形代数・冪零変換のトレース
-  statement: 有限次元空間の冪零な線形変換のトレースは0である。
+  statement: 有限次元空間の冪零な線形変換のトレースは$0$である。
   statement_en: The trace of a nilpotent linear endomorphism of a finite-dimensional vector space is zero.
-  assumptions: [Kは体, Vは有限次元ベクトル空間, fは冪零]
-  quantifiers: [任意のf]
-  conclusion: tr f=0。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $f$は$V$の冪零な線形変換
+  quantifiers:
+  - 任意の$f$
+  conclusion: $\operatorname{tr}f=0$である。
   answer: |
-    fの行列は係数体の代数閉包上でも冪零なので、そこでの固有値はすべて0であり、fの特性多項式はX^{dim V}である。トレースは特性多項式のX^{dim V-1}の係数の符号を変えたものなので0である。
+    $K$を体、$V$を$K$上の有限次元ベクトル空間、$f$を$V$の冪零な線形変換とし、$f^r=0$となる$r$を取る。増大列$\{0\}=\ker f^0\subseteq\ker f^1\subseteq\dots\subseteq\ker f^r=V$がある。$\ker f^1$の基底を取り、それを順に$\ker f^2,\dots,\ker f^r$の基底へ延長して、$V$の基底$e_1,\dots,e_d$を作る。
+
+    $e_j$が$\ker f^{i+1}$の基底を作る段階で加えた元なら、$f(e_j)\in\ker f^i$である。$\ker f^i$は$e_j$より前に選んだ元で生成されるので、$f(e_j)$は$e_1,\dots,e_{j-1}$の一次結合である。よってこの基底に関する$f$の表現行列は対角成分がすべて$0$の上三角行列である。トレースは基底の取り方によらないので、$\operatorname{tr}f=0$である。
   strategy: Read the trace from the characteristic polynomial X^n.
   sketch:
-    - "derive: The characteristic polynomial of f is X^(dim V)."
-    - "translate: The trace is minus the subleading coefficient of the characteristic polynomial."
-    - "conclude: That coefficient vanishes, so tr f = 0."
+  - 'derive: The characteristic polynomial of f is X^(dim V).'
+  - 'translate: The trace is minus the subleading coefficient of the characteristic polynomial.'
+  - 'conclude: That coefficient vanishes, so tr f = 0.'
   openmath: (forall (K V f) (-> (and (fd_vector_space K V) (endomorphism K V f) (nilpotent_op f)) (= (trace_of f) 0)))
   hard_negative:
     statement: トレースが0の線形変換は冪零である。
@@ -594,20 +742,23 @@
   kind: named
   level: 2
   topic: 内積空間・コーシー・シュワルツの不等式
-  statement: 実または複素内積空間のベクトルx,yについて|⟨x,y⟩|≤‖x‖‖y‖である（コーシー・シュワルツの不等式）。
-  statement_en: "Cauchy-Schwarz inequality: in a real or complex inner product space, |⟨x,y⟩| ≤ ‖x‖‖y‖ for all vectors x and y."
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: 不等式|⟨x,y⟩|≤‖x‖‖y‖が成り立つ。
+  statement: 実または複素内積空間のベクトル$x,y$について$|\langle x,y\rangle|\leq\|x\|\|y\|$である（コーシー・シュワルツの不等式）。
+  statement_en: 'Cauchy-Schwarz inequality: in a real or complex inner product space, |⟨x,y⟩| ≤ ‖x‖‖y‖ for all vectors x and y.'
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: 不等式$|\langle x,y\rangle|\leq\|x\|\|y\|$が成り立つ。
   answer: |
-    内積は第1変数について共役線形とする。x=0なら両辺0である。x≠0とし、t=⟨x,y⟩/‖x‖^2、z=y-txとおく。⟨x,z⟩=0なのでピタゴラスの定理より‖y‖^2=‖tx‖^2+‖z‖^2≥|t|^2‖x‖^2=|⟨x,y⟩|^2/‖x‖^2である。両辺に‖x‖^2を掛けて平方根をとると主張を得る。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$x,y\in E$とし、内積は第$1$変数について共役線形とする。$x=0$なら両辺は$0$である。$x\neq0$とし、$t=\langle x,y\rangle/\|x\|^2$、$z=y-tx$とおく。$\langle x,z\rangle=\langle x,y\rangle-t\|x\|^2=0$なので、$tx$と$z$は直交する。ピタゴラスの定理より$\|y\|^2=\|tx\|^2+\|z\|^2\geq|t|^2\|x\|^2=|\langle x,y\rangle|^2/\|x\|^2$である。両辺に$\|x\|^2$を掛けて平方根を取ると、$|\langle x,y\rangle|\leq\|x\|\|y\|$を得る。
   strategy: Project y onto x and use nonnegativity of the squared norm of the remainder.
   sketch:
-    - "case_split: The case x = 0 is immediate."
-    - "construct: For x ≠ 0 set t = ⟨x,y⟩/‖x‖² and z = y - t x."
-    - "derive: ⟨x,z⟩ = 0, so ‖y‖² = |t|²‖x‖² + ‖z‖²."
-    - "derive: Hence |⟨x,y⟩|²/‖x‖² ≤ ‖y‖²."
-    - "conclude: Multiply by ‖x‖² and take square roots."
+  - 'case_split: The case x = 0 is immediate.'
+  - 'construct: For x ≠ 0 set t = ⟨x,y⟩/‖x‖² and z = y - t x.'
+  - 'derive: ⟨x,z⟩ = 0, so ‖y‖² = |t|²‖x‖² + ‖z‖².'
+  - 'derive: Hence |⟨x,y⟩|²/‖x‖² ≤ ‖y‖².'
+  - 'conclude: Multiply by ‖x‖² and take square roots.'
   openmath: (forall (K E x y) (-> (inner_product_space_over K E) (<= (abs (inner_product x y)) (* (norm x) (norm y)))))
   hard_negative:
     statement: 実内積空間で⟨x,y⟩は常に‖x‖‖y‖以上である。
@@ -622,21 +773,28 @@
   kind: gap
   level: 2
   topic: 内積空間・コーシー・シュワルツの等号条件
-  statement: 0でないベクトルx,yについて|⟨x,y⟩|=‖x‖‖y‖であることと、y=rxとなる0でないスカラーrが存在することは同値である。
+  statement: $0$でないベクトル$x,y$について$|\langle x,y\rangle|=\|x\|\|y\|$であることと、$y=rx$となる$0$でないスカラー$r$が存在することは同値である。
   statement_en: For nonzero vectors x and y in an inner product space, |⟨x,y⟩| = ‖x‖‖y‖ if and only if y = r x for some nonzero scalar r.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, x≠0, y≠0]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: 等号成立とy=rx（r≠0）の存在は同値である。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - $x\neq0$
+  - $y\neq0$
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: $|\langle x,y\rangle|=\|x\|\|y\|$と、$r\neq0$かつ$y=rx$を満たす$r\in K$の存在は同値である。
   answer: |
-    内積は第1変数について共役線形とする。t=⟨x,y⟩/‖x‖^2、z=y-txとおくと、‖y‖^2=|t|^2‖x‖^2+‖z‖^2である。等号|⟨x,y⟩|=‖x‖‖y‖は‖z‖=0と同値であり、これはy=txを意味する。y≠0よりt≠0である。逆にy=rxならば、|⟨x,y⟩|=|r|‖x‖^2=‖x‖‖y‖である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$x,y$を$E$の$0$でないベクトルとし、内積は第$1$変数について共役線形とする。$t=\langle x,y\rangle/\|x\|^2$、$z=y-tx$とおくと、$\langle x,z\rangle=0$なので、$\|y\|^2=|t|^2\|x\|^2+\|z\|^2$である。両辺に$\|x\|^2$を掛けると、$\|x\|^2\|y\|^2=|\langle x,y\rangle|^2+\|x\|^2\|z\|^2$となる。
+
+    $x\neq0$なので、等号$|\langle x,y\rangle|=\|x\|\|y\|$は$z=0$と同値である。このとき$y=tx$であり、$y\neq0$より$t\neq0$である。逆に$y=rx$なら、$|\langle x,y\rangle|=|r|\|x\|^2=\|x\|\|rx\|=\|x\|\|y\|$である。
   strategy: Analyze the remainder term in the Cauchy-Schwarz proof.
   sketch:
-    - "construct: Set t = ⟨x,y⟩/‖x‖² and z = y - t x."
-    - "derive: ‖y‖² = |t|²‖x‖² + ‖z‖² by orthogonality."
-    - "translate: Equality in Cauchy-Schwarz is equivalent to z = 0."
-    - "derive: Since y ≠ 0, the scalar t is nonzero."
-    - "derive: Conversely y = r x gives |⟨x,y⟩| = |r|‖x‖² = ‖x‖‖y‖."
-    - "conclude: The two conditions are equivalent."
+  - 'construct: Set t = ⟨x,y⟩/‖x‖² and z = y - t x.'
+  - 'derive: ‖y‖² = |t|²‖x‖² + ‖z‖² by orthogonality.'
+  - 'translate: Equality in Cauchy-Schwarz is equivalent to z = 0.'
+  - 'derive: Since y ≠ 0, the scalar t is nonzero.'
+  - 'derive: Conversely y = r x gives |⟨x,y⟩| = |r|‖x‖² = ‖x‖‖y‖.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (K E x y) (-> (and (inner_product_space_over K E) (!= x 0) (!= y 0)) (<-> (= (abs (inner_product x y)) (* (norm x) (norm y))) (exists (r) (and (!= r 0) (= y (smul r x)))))))
   hard_negative:
     statement: 複素内積空間で|⟨x,y⟩|=‖x‖‖y‖ならば、y=rxとなる正の実数rが存在する。
@@ -651,18 +809,21 @@
   kind: gap
   level: 2
   topic: 内積空間・三角不等式
-  statement: 内積空間のベクトルx,yについて‖x+y‖≤‖x‖+‖y‖である。
+  statement: 内積空間のベクトル$x,y$について$\|x+y\|\leq\|x\|+\|y\|$である。
   statement_en: In an inner product space, ‖x + y‖ ≤ ‖x‖ + ‖y‖ for all vectors x and y.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: ‖x+y‖≤‖x‖+‖y‖。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: $\|x+y\|\leq\|x\|+\|y\|$が成り立つ。
   answer: |
-    ‖x+y‖^2=‖x‖^2+2Re⟨x,y⟩+‖y‖^2である。コーシー・シュワルツの不等式よりRe⟨x,y⟩≤|⟨x,y⟩|≤‖x‖‖y‖なので、右辺は(‖x‖+‖y‖)^2以下である。両辺は非負なので平方根をとって主張を得る。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$x,y\in E$とする。$\|x+y\|^2=\|x\|^2+2\operatorname{Re}\langle x,y\rangle+\|y\|^2$である。コーシー・シュワルツの不等式より$\operatorname{Re}\langle x,y\rangle\leq|\langle x,y\rangle|\leq\|x\|\|y\|$なので、右辺は$(\|x\|+\|y\|)^2$以下である。両辺は非負の数の平方なので、平方根を取って$\|x+y\|\leq\|x\|+\|y\|$を得る。
   strategy: Expand the squared norm and bound the cross term by Cauchy-Schwarz.
   sketch:
-    - "derive: ‖x+y‖² = ‖x‖² + 2 Re⟨x,y⟩ + ‖y‖²."
-    - "apply_theorem: Cauchy-Schwarz gives Re⟨x,y⟩ ≤ ‖x‖‖y‖."
-    - "conclude: So ‖x+y‖² ≤ (‖x‖+‖y‖)², and square roots give the claim."
+  - 'derive: ‖x+y‖² = ‖x‖² + 2 Re⟨x,y⟩ + ‖y‖².'
+  - 'apply_theorem: Cauchy-Schwarz gives Re⟨x,y⟩ ≤ ‖x‖‖y‖.'
+  - 'conclude: So ‖x+y‖² ≤ (‖x‖+‖y‖)², and square roots give the claim.'
   openmath: (forall (K E x y) (-> (inner_product_space_over K E) (<= (norm (+ x y)) (+ (norm x) (norm y)))))
   hard_negative:
     statement: 内積空間で‖x+y‖=‖x‖+‖y‖ならばy=xである。
@@ -677,17 +838,19 @@
   kind: gap
   level: 2
   topic: 内積空間・ピタゴラスの定理
-  statement: 実内積空間で‖x+y‖^2=‖x‖^2+‖y‖^2であることと⟨x,y⟩=0であることは同値である。
+  statement: 実内積空間で$\|x+y\|^2=\|x\|^2+\|y\|^2$であることと$\langle x,y\rangle=0$であることは同値である。
   statement_en: In a real inner product space, ‖x+y‖² = ‖x‖² + ‖y‖² if and only if ⟨x,y⟩ = 0.
-  assumptions: [Eは実内積空間]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: ‖x+y‖^2=‖x‖^2+‖y‖^2と⟨x,y⟩=0は同値である。
+  assumptions:
+  - $E$は実内積空間
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: $\|x+y\|^2=\|x\|^2+\|y\|^2$と$\langle x,y\rangle=0$は同値である。
   answer: |
-    内積の双線形性と対称性より、‖x+y‖^2=‖x‖^2+2⟨x,y⟩+‖y‖^2である。したがって等式‖x+y‖^2=‖x‖^2+‖y‖^2は2⟨x,y⟩=0と同値であり、⟨x,y⟩=0と同値である。
+    $E$を実内積空間、$x,y\in E$とする。内積の双線形性と対称性より、$\|x+y\|^2=\|x\|^2+2\langle x,y\rangle+\|y\|^2$である。したがって等式$\|x+y\|^2=\|x\|^2+\|y\|^2$は$2\langle x,y\rangle=0$と同値であり、$\langle x,y\rangle=0$と同値である。
   strategy: Expand the squared norm by bilinearity.
   sketch:
-    - "derive: ‖x+y‖² = ‖x‖² + 2⟨x,y⟩ + ‖y‖² in a real inner product space."
-    - "conclude: The stated identity is equivalent to ⟨x,y⟩ = 0."
+  - 'derive: ‖x+y‖² = ‖x‖² + 2⟨x,y⟩ + ‖y‖² in a real inner product space.'
+  - 'conclude: The stated identity is equivalent to ⟨x,y⟩ = 0.'
   openmath: (forall (E x y) (-> (inner_product_space_over R E) (<-> (= (^ (norm (+ x y)) 2) (+ (^ (norm x) 2) (^ (norm y) 2))) (= (inner_product x y) 0))))
   hard_negative:
     statement: 複素内積空間でも‖x+y‖^2=‖x‖^2+‖y‖^2ならば⟨x,y⟩=0である。
@@ -708,17 +871,19 @@
   kind: gap
   level: 2
   topic: 内積空間・実の偏極恒等式
-  statement: 実内積空間で⟨x,y⟩=(‖x+y‖^2-‖x-y‖^2)/4である。
+  statement: 実内積空間で$\langle x,y\rangle=(\|x+y\|^2-\|x-y\|^2)/4$である。
   statement_en: In a real inner product space, ⟨x,y⟩ = (‖x+y‖² - ‖x-y‖²)/4.
-  assumptions: [Eは実内積空間]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: ⟨x,y⟩=(‖x+y‖^2-‖x-y‖^2)/4。
+  assumptions:
+  - $E$は実内積空間
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: $\langle x,y\rangle=(\|x+y\|^2-\|x-y\|^2)/4$である。
   answer: |
-    ‖x+y‖^2=‖x‖^2+2⟨x,y⟩+‖y‖^2、‖x-y‖^2=‖x‖^2-2⟨x,y⟩+‖y‖^2である。第1式から第2式を引くと4⟨x,y⟩が残るので、主張を得る。
+    $E$を実内積空間、$x,y\in E$とする。内積の双線形性と対称性より、$\|x+y\|^2=\|x\|^2+2\langle x,y\rangle+\|y\|^2$、$\|x-y\|^2=\|x\|^2-2\langle x,y\rangle+\|y\|^2$である。第$1$式から第$2$式を引くと、$\|x+y\|^2-\|x-y\|^2=4\langle x,y\rangle$を得る。
   strategy: Subtract the two expansions of the squared norms.
   sketch:
-    - "derive: Expand ‖x+y‖² and ‖x-y‖² by bilinearity."
-    - "conclude: Their difference is 4⟨x,y⟩."
+  - 'derive: Expand ‖x+y‖² and ‖x-y‖² by bilinearity.'
+  - 'conclude: Their difference is 4⟨x,y⟩.'
   openmath: (forall (E x y) (-> (inner_product_space_over R E) (= (inner_product x y) (/ (- (^ (norm (+ x y)) 2) (^ (norm (- x y)) 2)) 4))))
   hard_negative:
     statement: 任意のノルム空間のノルムについて、(‖x+y‖^2-‖x-y‖^2)/4は双線形形式を与える。
@@ -734,18 +899,29 @@
   kind: textbook
   level: 2
   topic: 内積空間・複素の偏極恒等式
-  statement: 第1変数について共役線形な内積をもつ空間で、⟨x,y⟩=(‖x+y‖^2-‖x-y‖^2+i(‖x-iy‖^2-‖x+iy‖^2))/4である。
+  statement: 第$1$変数について共役線形な内積をもつ空間で、$\langle x,y\rangle=\bigl(\|x+y\|^2-\|x-y\|^2+i(\|x-iy\|^2-\|x+iy\|^2)\bigr)/4$である。
   statement_en: In an inner product space over R or C with inner product conjugate-linear in the first variable, ⟨x,y⟩ = (‖x+y‖² - ‖x-y‖² + i(‖x-iy‖² - ‖x+iy‖²))/4, where i is the imaginary unit of the scalar field (zero for R).
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, 内積は第1変数について共役線形, iはKの虚数単位（K=Rでは0）]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: 内積はノルムの4つの平方で表される。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - 内積は第$1$変数について共役線形
+  - $i$は$K=\mathbb{C}$では虚数単位、$K=\mathbb{R}$では$0$と定める
+  quantifiers:
+  - 任意のベクトル$x,y\in E$
+  conclusion: 内積はノルムの$4$つの平方で表される。
   answer: |
-    ‖x+y‖^2-‖x-y‖^2=4Re⟨x,y⟩である。yをiyに置き換えた式を計算すると、‖x-iy‖^2-‖x+iy‖^2=4Im⟨x,y⟩である。⟨x,y⟩=Re⟨x,y⟩+i Im⟨x,y⟩に代入すれば主張を得る。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$x,y\in E$とし、内積は第$1$変数について共役線形とする。$i$は$K=\mathbb{C}$では虚数単位、$K=\mathbb{R}$では$0$と定める。
+
+    任意の$w\in E$について$\|x\pm w\|^2=\|x\|^2\pm2\operatorname{Re}\langle x,w\rangle+\|w\|^2$なので、$\|x+w\|^2-\|x-w\|^2=4\operatorname{Re}\langle x,w\rangle$である。$w=y$とすると、$\|x+y\|^2-\|x-y\|^2=4\operatorname{Re}\langle x,y\rangle$である。
+
+    $K=\mathbb{C}$のとき、$w=iy$とすると$\langle x,iy\rangle=i\langle x,y\rangle$であり、$\operatorname{Re}(i\langle x,y\rangle)=-\operatorname{Im}\langle x,y\rangle$である。よって$\|x-iy\|^2-\|x+iy\|^2=4\operatorname{Im}\langle x,y\rangle$である。$\langle x,y\rangle=\operatorname{Re}\langle x,y\rangle+i\operatorname{Im}\langle x,y\rangle$に代入すれば等式を得る。
+
+    $K=\mathbb{R}$のとき、$i=0$なので右辺は$(\|x+y\|^2-\|x-y\|^2)/4=\operatorname{Re}\langle x,y\rangle=\langle x,y\rangle$である。
   strategy: Compute the real and imaginary parts of the inner product separately.
   sketch:
-    - "derive: ‖x+y‖² - ‖x-y‖² equals 4 Re⟨x,y⟩."
-    - "derive: Replacing y by i y gives ‖x-iy‖² - ‖x+iy‖² = 4 Im⟨x,y⟩."
-    - "conclude: Combine using ⟨x,y⟩ = Re⟨x,y⟩ + i Im⟨x,y⟩."
+  - 'derive: ‖x+y‖² - ‖x-y‖² equals 4 Re⟨x,y⟩.'
+  - 'derive: Replacing y by i y gives ‖x-iy‖² - ‖x+iy‖² = 4 Im⟨x,y⟩.'
+  - 'conclude: Combine using ⟨x,y⟩ = Re⟨x,y⟩ + i Im⟨x,y⟩.'
   openmath: (forall (K E x y) (-> (inner_product_space_over K E) (= (inner_product x y) (/ (+ (- (^ (norm (+ x y)) 2) (^ (norm (- x y)) 2)) (* (- (^ (norm (- x (smul (imaginary_unit K) y))) 2) (^ (norm (+ x (smul (imaginary_unit K) y))) 2)) (imaginary_unit K))) 4))))
   hard_negative:
     statement: 複素内積空間で⟨x,y⟩=(‖x+y‖^2-‖x-y‖^2)/4である。
@@ -760,18 +936,23 @@
   kind: gap
   level: 2
   topic: 内積空間・直交系の一次独立性
-  statement: 0でないベクトルからなる直交系は一次独立である。
+  statement: $0$でないベクトルからなる直交系は一次独立である。
   statement_en: A family of nonzero pairwise orthogonal vectors in an inner product space is linearly independent.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, 各v_i≠0, i≠jならば⟨v_i,v_j⟩=0]
-  quantifiers: [任意の族v]
-  conclusion: 族vは一次独立である。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - 各$v_i\neq0$
+  - $i\neq j$ならば$\langle v_i,v_j\rangle=0$
+  quantifiers:
+  - 任意の族$(v_i)_{i\in I}$
+  conclusion: 族$(v_i)_{i\in I}$は一次独立である。
   answer: |
-    有限和Σa_i v_i=0とする。v_jとの内積をとると、直交性よりa_j‖v_j‖^2=0である。v_j≠0なのでa_j=0となり、すべての係数が0である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間とし、内積は第$1$変数について共役線形とする。$(v_i)_{i\in I}$を$v_i\neq0$かつ$i\neq j$で$\langle v_i,v_j\rangle=0$を満たす族とする。有限和$\sum_ia_iv_i=0$とする。この和に現れる$j$について$v_j$との内積を取ると、直交性より$\langle v_j,\sum_ia_iv_i\rangle=a_j\|v_j\|^2=0$である。$v_j\neq0$なので$a_j=0$となり、すべての係数が$0$である。
   strategy: Pair a vanishing linear combination with each v_j.
   sketch:
-    - "setup: Suppose a finite combination Σ a_i v_i vanishes."
-    - "derive: Taking the inner product with v_j leaves a_j ‖v_j‖² = 0."
-    - "conclude: Since v_j ≠ 0, every a_j = 0."
+  - 'setup: Suppose a finite combination Σ a_i v_i vanishes.'
+  - 'derive: Taking the inner product with v_j leaves a_j ‖v_j‖² = 0.'
+  - 'conclude: Since v_j ≠ 0, every a_j = 0.'
   openmath: (forall (K E v) (-> (and (inner_product_space_over K E) (forall (i) (!= (fn_value v i) 0)) (forall (i j) (-> (!= i j) (= (inner_product (fn_value v i) (fn_value v j)) 0)))) (linearly_independent_family v)))
   hard_negative:
     statement: 一次独立なベクトルの族は直交系である。
@@ -786,20 +967,27 @@
   kind: textbook
   level: 2
   topic: 内積空間・グラム・シュミットの直交化
-  statement: 一次独立な族v_1,…,v_nに対し、各kで最初のk個が同じ部分空間を張る正規直交系u_1,…,u_nが存在する。
+  statement: 一次独立な族$v_1,\dots,v_n$に対し、各$k$で最初の$k$個が同じ部分空間を張る正規直交系$u_1,\dots,u_n$が存在する。
   statement_en: For a linearly independent family v_1,…,v_n in an inner product space there is an orthonormal family u_1,…,u_n such that for each k the first k vectors of u and of v span the same subspace.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, 族vは一次独立]
-  quantifiers: [任意の族v, 任意のn]
-  conclusion: 各kでspan(u_1,…,u_k)=span(v_1,…,v_k)となる正規直交系uが存在する。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - 族$v_1,\dots,v_n$は一次独立
+  quantifiers:
+  - 任意の族$(v_i)$
+  - 任意の$n$
+  conclusion: 各$k$で$\operatorname{span}(u_1,\dots,u_k)=\operatorname{span}(v_1,\dots,v_k)$となる正規直交系$(u_i)$が存在する。
   answer: |
-    内積は第1変数について共役線形とする。w_k=v_k-Σ_{j<k}⟨u_j,v_k⟩u_jとおき、u_k=w_k/‖w_k‖と帰納的に定める。v_kはv_1,…,v_{k-1}の張る空間に属さないのでw_k≠0である。w_kはj<kのu_jと直交するので、uは正規直交系である。定義からu_kとv_kは互いの張る空間に含まれ、最初のk個の張る空間は一致する。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$v_1,\dots,v_n$を$E$の一次独立な族とし、内積は第$1$変数について共役線形とする。$k$について帰納的に、$w_k=v_k-\sum_{j<k}\langle u_j,v_k\rangle u_j$、$u_k=w_k/\|w_k\|$と定める。
+
+    $u_1,\dots,u_{k-1}$は正規直交で、$\operatorname{span}(u_1,\dots,u_{k-1})=\operatorname{span}(v_1,\dots,v_{k-1})$とする。$v$の一次独立性より$v_k$はこの空間に属さないので、$w_k\neq0$であり、$u_k$は定義できる。$i<k$について$\langle u_i,w_k\rangle=\langle u_i,v_k\rangle-\sum_{j<k}\langle u_j,v_k\rangle\langle u_i,u_j\rangle=0$なので、$u_1,\dots,u_k$は正規直交である。定義から$u_k\in\operatorname{span}(v_1,\dots,v_k)$であり、$v_k=\|w_k\|u_k+\sum_{j<k}\langle u_j,v_k\rangle u_j\in\operatorname{span}(u_1,\dots,u_k)$である。よって最初の$k$個の張る空間は一致する。
   strategy: Subtract projections onto earlier vectors and normalize inductively.
   sketch:
-    - "construct: Define w_k = v_k - Σ_{j<k} ⟨u_j,v_k⟩ u_j and u_k = w_k/‖w_k‖."
-    - "derive: Independence gives w_k ≠ 0, so u_k is defined."
-    - "derive: A direct computation shows ⟨u_j,w_k⟩ = 0 for j < k."
-    - "induction: The spans of the first k vectors coincide by induction on k."
-    - "conclude: u is orthonormal with the required span property."
+  - 'construct: Define w_k = v_k - Σ_{j<k} ⟨u_j,v_k⟩ u_j and u_k = w_k/‖w_k‖.'
+  - 'derive: Independence gives w_k ≠ 0, so u_k is defined.'
+  - 'derive: A direct computation shows ⟨u_j,w_k⟩ = 0 for j < k.'
+  - 'induction: The spans of the first k vectors coincide by induction on k.'
+  - 'conclude: u is orthonormal with the required span property.'
   openmath: (forall (K E n v) (-> (and (inner_product_space_over K E) (linearly_independent_family v)) (exists (u) (and (orthonormal_family u E) (forall (k) (= (family_span_upto u k) (family_span_upto v k)))))))
   hard_negative:
     statement: グラム・シュミットの直交化で得られるu_kはv_kのスカラー倍である。
@@ -817,18 +1005,24 @@
   topic: 内積空間・正規直交基底への延長
   statement: 有限次元内積空間の正規直交な部分集合は、正規直交基底に延長できる。
   statement_en: Every orthonormal subset of a finite-dimensional inner product space extends to an orthonormal basis.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, vはEの正規直交な部分集合]
-  quantifiers: [任意の部分集合v]
-  conclusion: vを含む有限集合uであって、Eの正規直交基底となるものが存在する。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $v$は$E$の正規直交な部分集合
+  quantifiers:
+  - 任意の部分集合$v$
+  conclusion: $v$を含む有限集合$u$であって、$E$の正規直交基底となるものが存在する。
   answer: |
-    Sをvの張る部分空間とする。有限次元なのでS^⊥は正規直交基底wをもつ。S^⊥の元はvの元と直交するので、v∪wは正規直交系である。E=S⊕S^⊥より、v∪wはEを張る。よってv∪wが求める正規直交基底である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$v$を$E$の正規直交な部分集合とする。$v$は一次独立なので有限集合である。$S$を$v$の張る部分空間とする。$S^{\perp}$は有限次元内積空間なので、グラム・シュミットの直交化により正規直交基底$w$をもつ。
+
+    $S^{\perp}$の元は$v$の元と直交するので、$u=v\cup w$は正規直交系である。直交分解$E=S\oplus S^{\perp}$より、$u$は$E$を張る。よって$u$は$v$を含む$E$の正規直交基底である。
   strategy: Add an orthonormal basis of the orthogonal complement of the span.
   sketch:
-    - "setup: Let S be the span of v."
-    - "apply_theorem: The finite-dimensional space S^⊥ has an orthonormal basis w."
-    - "derive: v ∪ w is orthonormal because w is orthogonal to S."
-    - "derive: E = S ⊕ S^⊥ shows that v ∪ w spans E."
-    - "conclude: v ∪ w is an orthonormal basis containing v."
+  - 'setup: Let S be the span of v.'
+  - 'apply_theorem: The finite-dimensional space S^⊥ has an orthonormal basis w.'
+  - 'derive: v ∪ w is orthonormal because w is orthogonal to S.'
+  - 'derive: E = S ⊕ S^⊥ shows that v ∪ w spans E.'
+  - 'conclude: v ∪ w is an orthonormal basis containing v.'
   openmath: (forall (K E v) (-> (and (fd_inner_product_space K E) (orthonormal_set v E)) (exists (u) (family_extends_to_onb u v E))))
   hard_negative:
     statement: 有限次元内積空間の一次独立な部分集合は、それを含む正規直交基底に延長できる。
@@ -843,19 +1037,23 @@
   kind: gap
   level: 2
   topic: 内積空間・直交補空間の直交補空間
-  statement: 有限次元内積空間の部分空間Sについて(S^⊥)^⊥=Sである。
+  statement: 有限次元内積空間の部分空間$S$について$(S^{\perp})^{\perp}=S$である。
   statement_en: For a subspace S of a finite-dimensional inner product space, the orthogonal complement of S^⊥ equals S.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, SはEの部分空間]
-  quantifiers: [任意のS]
-  conclusion: (S^⊥)^⊥=S。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $S$は$E$の部分空間
+  quantifiers:
+  - 任意の$S$
+  conclusion: $(S^{\perp})^{\perp}=S$である。
   answer: |
-    定義からS⊆(S^⊥)^⊥である。E=S⊕S^⊥より、dim S^⊥=dim E-dim Sである。同じ理由でdim (S^⊥)^⊥=dim E-dim S^⊥=dim Sである。次元が等しいので包含は等号である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$S$を$E$の部分空間とする。$S$の元は$S^{\perp}$のすべての元と直交するので、$S\subseteq(S^{\perp})^{\perp}$である。直交分解$E=S\oplus S^{\perp}$より、$\dim S^{\perp}=\dim E-\dim S$である。これを$S^{\perp}$に適用すると、$\dim(S^{\perp})^{\perp}=\dim E-\dim S^{\perp}=\dim S$である。次元が等しいので、包含は等号である。
   strategy: Compare dimensions using the inclusion S ⊆ S^⊥⊥.
   sketch:
-    - "derive: Each element of S is orthogonal to S^⊥, so S ⊆ (S^⊥)^⊥."
-    - "apply_theorem: dim T + dim T^⊥ = dim E for each subspace T."
-    - "derive: Applying this twice gives dim (S^⊥)^⊥ = dim S."
-    - "conclude: The inclusion is an equality."
+  - 'derive: Each element of S is orthogonal to S^⊥, so S ⊆ (S^⊥)^⊥.'
+  - 'apply_theorem: dim T + dim T^⊥ = dim E for each subspace T.'
+  - 'derive: Applying this twice gives dim (S^⊥)^⊥ = dim S.'
+  - 'conclude: The inclusion is an equality.'
   openmath: (forall (K E S) (-> (and (fd_inner_product_space K E) (subspace_in S E)) (= (orthogonal_complement (orthogonal_complement S)) S)))
   hard_negative:
     statement: 無限次元内積空間でも任意の部分空間Sについて(S^⊥)^⊥=Sである。
@@ -870,20 +1068,26 @@
   kind: textbook
   level: 2
   topic: 内積空間・直交分解
-  statement: 有限次元内積空間の部分空間Sについて、E=S⊕S^⊥かつdim S+dim S^⊥=dim Eである。
+  statement: 有限次元内積空間の部分空間$S$について、$E=S\oplus S^{\perp}$かつ$\dim S+\dim S^{\perp}=\dim E$である。
   statement_en: For a subspace S of a finite-dimensional inner product space E, E is the direct sum of S and S^⊥, and dim S + dim S^⊥ = dim E.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, SはEの部分空間]
-  quantifiers: [任意のS]
-  conclusion: SとS^⊥は補空間であり、dim S+dim S^⊥=dim Eである。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $S$は$E$の部分空間
+  quantifiers:
+  - 任意の$S$
+  conclusion: $S$と$S^{\perp}$は補空間であり、$\dim S+\dim S^{\perp}=\dim E$である。
   answer: |
-    内積は第1変数について共役線形とする。x∈S∩S^⊥なら⟨x,x⟩=0よりx=0である。Sの正規直交基底e_1,…,e_mをとり、任意のxに対しp=Σ⟨e_i,x⟩e_iとおくと、x-pはすべてのe_iと直交するのでS^⊥に属する。よってx=p+(x-p)でE=S+S^⊥である。直和の次元公式から次元の等式が従う。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$S$を$E$の部分空間とし、内積は第$1$変数について共役線形とする。$x\in S\cap S^{\perp}$なら$\langle x,x\rangle=0$より$x=0$である。
+
+    グラム・シュミットの直交化により、$S$の正規直交基底$e_1,\dots,e_m$を取る。任意の$x\in E$に対し$p=\sum_i\langle e_i,x\rangle e_i$とおくと、$\langle e_j,x-p\rangle=\langle e_j,x\rangle-\langle e_j,x\rangle=0$である。よって$x-p$はすべての$e_j$と直交し、$S^{\perp}$に属する。$x=p+(x-p)$より$E=S+S^{\perp}$である。直和の次元公式から$\dim S+\dim S^{\perp}=\dim E$が従う。
   strategy: Use an orthonormal basis of S to construct the orthogonal projection.
   sketch:
-    - "derive: S ∩ S^⊥ = 0 because ⟨x,x⟩ = 0 forces x = 0."
-    - "construct: With an orthonormal basis (e_i) of S set p = Σ ⟨e_i,x⟩ e_i."
-    - "derive: x - p is orthogonal to each e_i, so x - p ∈ S^⊥."
-    - "derive: Hence E = S + S^⊥."
-    - "conclude: The dimension formula for direct sums gives the equality."
+  - 'derive: S ∩ S^⊥ = 0 because ⟨x,x⟩ = 0 forces x = 0.'
+  - 'construct: With an orthonormal basis (e_i) of S set p = Σ ⟨e_i,x⟩ e_i.'
+  - 'derive: x - p is orthogonal to each e_i, so x - p ∈ S^⊥.'
+  - 'derive: Hence E = S + S^⊥.'
+  - 'conclude: The dimension formula for direct sums gives the equality.'
   openmath: (forall (K E S) (-> (and (fd_inner_product_space K E) (subspace_in S E)) (and (is_complement S (orthogonal_complement S)) (= (+ (dim_of K S) (dim_of K (orthogonal_complement S))) (dim_of K E)))))
   hard_negative:
     statement: Sの補空間はS^⊥に限る。
@@ -898,19 +1102,26 @@
   kind: textbook
   level: 2
   topic: 内積空間・直交射影と最短距離
-  statement: 有限次元内積空間の部分空間Sと点xについて、xの直交射影はS上でxとの距離を最小にする。
+  statement: 有限次元内積空間の部分空間$S$と点$x$について、$x$の直交射影は$S$上で$x$との距離を最小にする。
   statement_en: For a subspace S of a finite-dimensional inner product space and a point x, the orthogonal projection of x onto S minimizes the distance from x among points of S.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, SはEの部分空間]
-  quantifiers: [任意のS, 任意のx, Sの任意の元w]
-  conclusion: pをxのSへの直交射影とすると‖x-p‖≤‖x-w‖である。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $S$は$E$の部分空間
+  - $p$は$x$の$S$への直交射影
+  quantifiers:
+  - 任意の$S$
+  - 任意の$x\in E$
+  - $S$の任意の元$w$
+  conclusion: $\|x-p\|\leq\|x-w\|$である。
   answer: |
-    x-w=(x-p)+(p-w)と分解する。x-p∈S^⊥かつp-w∈Sなので、2つの項は直交する。ピタゴラスの定理より‖x-w‖^2=‖x-p‖^2+‖p-w‖^2≥‖x-p‖^2である。両辺の平方根をとって主張を得る。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$S$を$E$の部分空間、$x\in E$、$w\in S$とする。$p$を$x$の$S$への直交射影、すなわち$p\in S$かつ$x-p\in S^{\perp}$を満たす元とする。$x-w=(x-p)+(p-w)$と分解する。$x-p\in S^{\perp}$かつ$p-w\in S$なので、$2$つの項は直交する。ピタゴラスの定理より$\|x-w\|^2=\|x-p\|^2+\|p-w\|^2\geq\|x-p\|^2$である。両辺の平方根を取ると$\|x-p\|\leq\|x-w\|$を得る。
   strategy: Split x - w into orthogonal parts and apply Pythagoras.
   sketch:
-    - "setup: Let p be the orthogonal projection of x and write x - w = (x - p) + (p - w)."
-    - "derive: x - p lies in S^⊥ and p - w lies in S, so they are orthogonal."
-    - "apply_theorem: Pythagoras gives ‖x-w‖² = ‖x-p‖² + ‖p-w‖²."
-    - "conclude: Therefore ‖x-p‖ ≤ ‖x-w‖."
+  - 'setup: Let p be the orthogonal projection of x and write x - w = (x - p) + (p - w).'
+  - 'derive: x - p lies in S^⊥ and p - w lies in S, so they are orthogonal.'
+  - 'apply_theorem: Pythagoras gives ‖x-w‖² = ‖x-p‖² + ‖p-w‖².'
+  - 'conclude: Therefore ‖x-p‖ ≤ ‖x-w‖.'
   openmath: (forall (K E S x w) (-> (and (fd_inner_product_space K E) (subspace_in S E) (in w S)) (<= (norm (- x (orthogonal_projection S x))) (norm (- x w)))))
   hard_negative:
     statement: 内積空間の任意の部分空間と任意の点xについて、xに最も近いSの点が存在する。
@@ -926,18 +1137,25 @@
   kind: gap
   level: 2
   topic: 内積空間・直交射影の特徴づけ
-  statement: v∈Sかつx-vがSと直交するならば、vはxのSへの直交射影である。
+  statement: $v\in S$かつ$x-v$が$S$と直交するならば、$v$は$x$の$S$への直交射影である。
   statement_en: If v ∈ S and x - v is orthogonal to every element of S, then v is the orthogonal projection of x onto S.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, SはEの部分空間, v∈S, x-v∈S^⊥]
-  quantifiers: [任意のS, 任意のx, v]
-  conclusion: pをxのSへの直交射影とするとp=v。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $S$は$E$の部分空間
+  - $v\in S$
+  - $x-v\in S^{\perp}$
+  quantifiers:
+  - 任意の$S$
+  - 任意の$x,v\in E$
+  conclusion: $p$を$x$の$S$への直交射影とすると$p=v$である。
   answer: |
-    x-pとx-vはともにS^⊥に属するので、差p-v=(x-v)-(x-p)もS^⊥に属する。一方p-vはSの元である。S∩S^⊥=0よりp=vである。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$S$を$E$の部分空間、$x\in E$、$v\in S$とし、$x-v\in S^{\perp}$とする。$p$を$x$の$S$への直交射影、すなわち$p\in S$かつ$x-p\in S^{\perp}$を満たす元とする。$x-p$と$x-v$はともに$S^{\perp}$に属するので、差$p-v=(x-v)-(x-p)$も$S^{\perp}$に属する。一方$p-v$は$S$の元である。$S\cap S^{\perp}=\{0\}$より$p=v$である。
   strategy: The difference of two candidates lies in S ∩ S^⊥.
   sketch:
-    - "setup: Let p be the projection, so x - p ∈ S^⊥."
-    - "derive: p - v = (x - v) - (x - p) lies in S^⊥ and in S."
-    - "conclude: S ∩ S^⊥ = 0 forces p = v."
+  - 'setup: Let p be the projection, so x - p ∈ S^⊥.'
+  - 'derive: p - v = (x - v) - (x - p) lies in S^⊥ and in S.'
+  - 'conclude: S ∩ S^⊥ = 0 forces p = v.'
   openmath: (forall (K E S x v) (-> (and (fd_inner_product_space K E) (subspace_in S E) (in v S) (forall (w) (-> (in w S) (= (inner_product (- x v) w) 0)))) (= (orthogonal_projection S x) v)))
   hard_negative:
     statement: v∈Sならばvはxの直交射影である。
@@ -952,18 +1170,23 @@
   kind: gap
   level: 2
   topic: 内積空間・随伴写像の合成
-  statement: 有限次元内積空間の線形写像A,Bについて(A∘B)^*=B^*∘A^*である。
+  statement: 有限次元内積空間の線形写像$A,B$について$(A\circ B)^*=B^*\circ A^*$である。
   statement_en: For linear maps A and B between finite-dimensional inner product spaces, the adjoint of A ∘ B is B* ∘ A*.
-  assumptions: [Kは実数体または複素数体, E, F, GはK上の有限次元内積空間, BはEからFへの線形写像, AはFからGへの線形写像]
-  quantifiers: [任意のA, B]
-  conclusion: (A∘B)^*=B^*∘A^*。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E,F,G$は$K$上の有限次元内積空間
+  - $B:E\to F$は線形写像
+  - $A:F\to G$は線形写像
+  quantifiers:
+  - 任意の$A,B$
+  conclusion: $(A\circ B)^*=B^*\circ A^*$である。
   answer: |
-    x∈E, y∈Gについて、⟨(A∘B)x,y⟩=⟨A(Bx),y⟩=⟨Bx,A^*y⟩=⟨x,B^*A^*y⟩である。随伴写像はこの等式で一意に定まるので、(A∘B)^*=B^*∘A^*である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E,F,G$を$K$上の有限次元内積空間、$B:E\to F$と$A:F\to G$を線形写像とする。線形写像$T$の随伴$T^*$は、すべての$x,y$で$\langle Tx,y\rangle=\langle x,T^*y\rangle$を満たす唯一の線形写像である。$x\in E$, $y\in G$について、$\langle(A\circ B)x,y\rangle=\langle A(Bx),y\rangle=\langle Bx,A^*y\rangle=\langle x,B^*A^*y\rangle$である。随伴の一意性より、$(A\circ B)^*=B^*\circ A^*$である。
   strategy: Verify the defining identity of the adjoint.
   sketch:
-    - "setup: Fix x in E and y in G."
-    - "derive: ⟨A(Bx),y⟩ = ⟨Bx,A*y⟩ = ⟨x,B*A*y⟩."
-    - "conclude: Uniqueness of the adjoint gives (A∘B)* = B*∘A*."
+  - 'setup: Fix x in E and y in G.'
+  - 'derive: ⟨A(Bx),y⟩ = ⟨Bx,A*y⟩ = ⟨x,B*A*y⟩.'
+  - 'conclude: Uniqueness of the adjoint gives (A∘B)* = B*∘A*.'
   openmath: (forall (K E F G A B) (-> (and (fd_inner_product_space K E) (fd_inner_product_space K F) (fd_inner_product_space K G) (linear_map_over K E F B) (linear_map_over K F G A)) (= (adjoint (op_comp A B)) (op_comp (adjoint B) (adjoint A)))))
   hard_negative:
     statement: (A∘B)^*=A^*∘B^*である。
@@ -978,19 +1201,23 @@
   kind: gap
   level: 2
   topic: 内積空間・随伴写像の核と像
-  statement: 有限次元内積空間の線形写像Tについてker T^*=(im T)^⊥である。
+  statement: 有限次元内積空間の線形写像$T$について$\ker T^*=(\operatorname{Im}T)^{\perp}$である。
   statement_en: For a linear map T between finite-dimensional inner product spaces, the kernel of the adjoint T* equals the orthogonal complement of the image of T.
-  assumptions: [Kは実数体または複素数体, E, FはK上の有限次元内積空間, TはEからFへの線形写像]
-  quantifiers: [任意のT]
-  conclusion: ker T^*=(im T)^⊥。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E,F$は$K$上の有限次元内積空間
+  - $T:E\to F$は線形写像
+  quantifiers:
+  - 任意の$T$
+  conclusion: $\ker T^*=(\operatorname{Im}T)^{\perp}$である。
   answer: |
-    y∈Fについて⟨Tw,y⟩=⟨w,T^*y⟩がすべてのw∈Eで成り立つ。y∈(im T)^⊥は、左辺がすべてのwで0になることを意味する。右辺がすべてのwで0になることは、内積の非退化性よりT^*y=0と同値である。よってker T^*=(im T)^⊥である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E,F$を$K$上の有限次元内積空間、$T:E\to F$を線形写像とする。$y\in F$について、すべての$w\in E$で$\langle Tw,y\rangle=\langle w,T^*y\rangle$である。$y\in(\operatorname{Im}T)^{\perp}$は、左辺がすべての$w$で$0$になることを意味する。右辺がすべての$w$で$0$になることは、$w=T^*y$と取れば分かるとおり$T^*y=0$と同値である。よって$\ker T^*=(\operatorname{Im}T)^{\perp}$である。
   strategy: Rewrite membership with the defining identity of the adjoint.
   sketch:
-    - "derive: ⟨Tw,y⟩ = ⟨w,T*y⟩ for all w and y."
-    - "translate: y ∈ (im T)^⊥ means the left side vanishes for all w."
-    - "apply_theorem: Nondegeneracy says the right side vanishes for all w exactly when T*y = 0."
-    - "conclude: Thus ker T* = (im T)^⊥."
+  - 'derive: ⟨Tw,y⟩ = ⟨w,T*y⟩ for all w and y.'
+  - 'translate: y ∈ (im T)^⊥ means the left side vanishes for all w.'
+  - 'apply_theorem: Nondegeneracy says the right side vanishes for all w exactly when T*y = 0.'
+  - 'conclude: Thus ker T* = (im T)^⊥.'
   openmath: (forall (K E F T) (-> (and (fd_inner_product_space K E) (fd_inner_product_space K F) (linear_map_over K E F T)) (= (kernel (adjoint T)) (orthogonal_complement (range_of T)))))
   hard_negative:
     statement: ker T^*=(ker T)^⊥である。
@@ -1015,19 +1242,25 @@
   kind: gap
   level: 2
   topic: 内積空間・自己共役作用素の固有値
-  statement: 自己共役な線形変換の固有値は実数である。すなわち固有値μについてμの共役はμに等しい。
+  statement: 自己共役な線形変換の固有値は実数である。すなわち固有値$\mu$について$\overline{\mu}=\mu$である。
   statement_en: Every eigenvalue μ of a self-adjoint linear endomorphism is real, that is, the conjugate of μ equals μ.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, Tは自己共役, μはTの固有値]
-  quantifiers: [任意のT, 任意のμ]
-  conclusion: μの共役はμに等しい。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - $T$は$E$の線形変換で、すべての$x,y$で$\langle Tx,y\rangle=\langle x,Ty\rangle$
+  - $\mu$は$T$の固有値
+  quantifiers:
+  - 任意の$T$
+  - 任意の$\mu$
+  conclusion: $\overline{\mu}=\mu$である。
   answer: |
-    xをμの固有ベクトルとする。第1変数について共役線形な内積を用いると、⟨Tx,x⟩=(μの共役)‖x‖^2である。一方⟨x,Tx⟩=μ‖x‖^2である。Tは自己共役なので両者は等しく、x≠0より‖x‖^2≠0である。よってμの共役はμに等しい。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間とし、内積は第$1$変数について共役線形とする。$T$を$E$の自己共役な線形変換、すなわちすべての$x,y$で$\langle Tx,y\rangle=\langle x,Ty\rangle$を満たすものとし、$\mu$を$T$の固有値とする。$x\neq0$で$Tx=\mu x$となる$x$を取る。$\langle Tx,x\rangle=\overline{\mu}\|x\|^2$であり、$\langle x,Tx\rangle=\mu\|x\|^2$である。$T$は自己共役なので両者は等しく、$x\neq0$より$\|x\|^2\neq0$である。よって$\overline{\mu}=\mu$である。
   strategy: Compare ⟨Tx,x⟩ and ⟨x,Tx⟩ on an eigenvector.
   sketch:
-    - "setup: Pick an eigenvector x for μ."
-    - "derive: ⟨Tx,x⟩ is the conjugate of μ times ‖x‖², and ⟨x,Tx⟩ is μ‖x‖²."
-    - "derive: Self-adjointness makes these two values equal."
-    - "conclude: Since ‖x‖² ≠ 0, μ equals its conjugate."
+  - 'setup: Pick an eigenvector x for μ.'
+  - 'derive: ⟨Tx,x⟩ is the conjugate of μ times ‖x‖², and ⟨x,Tx⟩ is μ‖x‖².'
+  - 'derive: Self-adjointness makes these two values equal.'
+  - 'conclude: Since ‖x‖² ≠ 0, μ equals its conjugate.'
   openmath: (forall (K E T mu) (-> (and (inner_product_space_over K E) (linear_map_over K E E T) (symmetric_operator T) (eigenvalue_of T mu)) (= (conjugate mu) mu)))
   hard_negative:
     statement: 複素内積空間のすべての線形変換の固有値は実数である。
@@ -1044,18 +1277,27 @@
   topic: 内積空間・自己共役作用素の固有ベクトルの直交性
   statement: 自己共役な線形変換の相異なる固有値に属するベクトルは直交する。
   statement_en: For a self-adjoint linear endomorphism T, if T x = μ x, T y = ν y and μ ≠ ν, then ⟨x,y⟩ = 0.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, Tは自己共役, Tx=μx, Ty=νy, μ≠ν]
-  quantifiers: [任意のT, 任意のμ, ν, 任意のx, y]
-  conclusion: ⟨x,y⟩=0。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - $T$は$E$の線形変換で、すべての$u,v$で$\langle Tu,v\rangle=\langle u,Tv\rangle$
+  - $Tx=\mu x$
+  - $Ty=\nu y$
+  - $\mu\neq\nu$
+  quantifiers:
+  - 任意の$T$
+  - 任意の$\mu,\nu$
+  - 任意の$x,y\in E$
+  conclusion: $\langle x,y\rangle=0$である。
   answer: |
-    x=0またはy=0なら明らかなので、どちらも0でないとする。このときμ,νは固有値であり実数である。⟨Tx,y⟩=μ⟨x,y⟩かつ⟨x,Ty⟩=ν⟨x,y⟩である。自己共役性より両者は等しいので(μ-ν)⟨x,y⟩=0である。μ≠νより⟨x,y⟩=0である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間とし、内積は第$1$変数について共役線形とする。$T$を$E$の自己共役な線形変換、すなわちすべての$u,v$で$\langle Tu,v\rangle=\langle u,Tv\rangle$を満たすものとし、$\mu\neq\nu$と$x,y\in E$が$Tx=\mu x$, $Ty=\nu y$を満たすとする。$x=0$または$y=0$なら$\langle x,y\rangle=0$なので、どちらも$0$でないとする。このとき$\mu$は$T$の固有値なので実数であり、$\overline{\mu}=\mu$である。$\langle Tx,y\rangle=\mu\langle x,y\rangle$かつ$\langle x,Ty\rangle=\nu\langle x,y\rangle$である。自己共役性より両者は等しいので、$(\mu-\nu)\langle x,y\rangle=0$である。$\mu\neq\nu$より$\langle x,y\rangle=0$である。
   strategy: Move T across the inner product and use that the eigenvalues are real.
   sketch:
-    - "case_split: The case x = 0 or y = 0 is immediate."
-    - "apply_theorem: Otherwise μ and ν are eigenvalues of T, hence real."
-    - "derive: ⟨Tx,y⟩ = μ⟨x,y⟩ and ⟨x,Ty⟩ = ν⟨x,y⟩."
-    - "derive: Self-adjointness gives (μ-ν)⟨x,y⟩ = 0."
-    - "conclude: Since μ ≠ ν, ⟨x,y⟩ = 0."
+  - 'case_split: The case x = 0 or y = 0 is immediate.'
+  - 'apply_theorem: Otherwise μ and ν are eigenvalues of T, hence real.'
+  - 'derive: ⟨Tx,y⟩ = μ⟨x,y⟩ and ⟨x,Ty⟩ = ν⟨x,y⟩.'
+  - 'derive: Self-adjointness gives (μ-ν)⟨x,y⟩ = 0.'
+  - 'conclude: Since μ ≠ ν, ⟨x,y⟩ = 0.'
   openmath: (forall (K E T mu nu x y) (-> (and (inner_product_space_over K E) (linear_map_over K E E T) (symmetric_operator T) (= (fn_value T x) (smul mu x)) (= (fn_value T y) (smul nu y)) (!= mu nu)) (= (inner_product x y) 0)))
   hard_negative:
     statement: 任意の線形変換の相異なる固有値に属する固有ベクトルは直交する。
@@ -1072,19 +1314,33 @@
   level: 3
   topic: 内積空間・スペクトル定理
   statement: 有限次元内積空間の自己共役な線形変換は、実固有値をもつ固有ベクトルからなる正規直交基底をもつ（スペクトル定理）。
-  statement_en: "Spectral theorem: a self-adjoint linear endomorphism of a finite-dimensional inner product space admits an orthonormal basis of eigenvectors with real eigenvalues."
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, Tは自己共役]
-  quantifiers: [任意のT]
-  conclusion: 各iでT(b_i)=d_ib_iとなる正規直交基底bと実数d_iが存在する。
+  statement_en: 'Spectral theorem: a self-adjoint linear endomorphism of a finite-dimensional inner product space admits an orthonormal basis of eigenvectors with real eigenvalues.'
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $T$は$E$の線形変換で、すべての$x,y$で$\langle Tx,y\rangle=\langle x,Ty\rangle$
+  quantifiers:
+  - 任意の$T$
+  conclusion: 各$i$で$T(b_i)=d_ib_i$となる正規直交基底$(b_i)$と実数$d_i$が存在する。
   answer: |
-    概略を示す。次元に関する帰納法を用いる。Eが0でなければ、単位球面上でのレイリー商⟨Tx,x⟩の最大点が固有ベクトルを与え、その固有値は実数である。この固有ベクトルの張る直線の直交補空間はT不変であり、Tの制限も自己共役である。帰納法の仮定で得られる正規直交基底に、正規化した固有ベクトルを加えれば求める基底が得られる。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間とし、内積は第$1$変数について共役線形とする。$T$を$E$の自己共役な線形変換、すなわちすべての$x,y$で$\langle Tx,y\rangle=\langle x,Ty\rangle$を満たすものとする。$\dim E$に関する帰納法で示す。$\dim E=0$なら空の基底でよい。$\dim E\geq1$とする。
+
+    まず実固有値をもつ固有ベクトルを作る。$\langle Tx,x\rangle=\langle x,Tx\rangle=\overline{\langle Tx,x\rangle}$なので、$\langle Tx,x\rangle$は実数である。有限次元空間では単位球面はコンパクトで、$x\mapsto\langle Tx,x\rangle$は連続である。よって最大値の定理により、$\|x_0\|=1$を満たす最大点$x_0$があり、最大値を$\lambda\in\mathbb{R}$とする。
+
+    $A=\lambda-T$とおく。$\lambda$は実数なので、$A$もすべての$x,y$で$\langle Ax,y\rangle=\langle x,Ay\rangle$を満たす。$x\neq0$なら$x/\|x\|$は単位ベクトルなので$\langle Tx,x\rangle\leq\lambda\|x\|^2$であり、すべての$x$で$\langle Ax,x\rangle\geq0$である。また$\langle Ax_0,x_0\rangle=0$である。$y=Ax_0$とおくと、任意の実数$t$について次が成り立つ。
+
+    $0\leq\langle A(x_0+ty),x_0+ty\rangle=2t\|y\|^2+t^2\langle Ay,y\rangle$
+
+    $y\neq0$なら、絶対値の小さい負の$t$で右辺は負になり矛盾する。よって$y=0$、すなわち$Tx_0=\lambda x_0$である。
+
+    次に$W=\{y\in E\mid\langle x_0,y\rangle=0\}$とおく。$y\in W$なら$\langle x_0,Ty\rangle=\langle Tx_0,y\rangle=\lambda\langle x_0,y\rangle=0$なので、$Ty\in W$である。$T|_W$も同じ対称性をもち、$E=Kx_0\oplus W$より$\dim W=\dim E-1$である。帰納法の仮定から、$W$の正規直交基底$b_2,\dots,b_n$と実数$d_2,\dots,d_n$で$Tb_i=d_ib_i$となるものがある。$b_1=x_0$, $d_1=\lambda$とすると、$b_1,\dots,b_n$は$n=\dim E$個の正規直交系なので$E$の基底であり、各$i$で$Tb_i=d_ib_i$である。
   strategy: Find one eigenvector by maximizing the Rayleigh quotient, then induct on the orthogonal complement.
   sketch:
-    - "setup: Induct on dim E."
-    - "apply_theorem: A maximizer of ⟨Tx,x⟩ on the unit sphere is an eigenvector with real eigenvalue."
-    - "derive: The orthogonal complement of this eigenvector is T-invariant."
-    - "induction: The restriction of T to the complement is self-adjoint, so it has an orthonormal eigenbasis."
-    - "conclude: Adding the normalized eigenvector gives the required basis."
+  - 'setup: Induct on dim E.'
+  - 'apply_theorem: A maximizer of ⟨Tx,x⟩ on the unit sphere is an eigenvector with real eigenvalue.'
+  - 'derive: The orthogonal complement of this eigenvector is T-invariant.'
+  - 'induction: The restriction of T to the complement is self-adjoint, so it has an orthonormal eigenbasis.'
+  - 'conclude: Adding the normalized eigenvector gives the required basis.'
   openmath: (forall (K E T) (-> (and (fd_inner_product_space K E) (linear_map_over K E E T) (symmetric_operator T)) (exists (b d) (and (orthonormal_family b E) (is_basis_family K E b) (forall (i) (and (in (fn_value d i) R) (= (fn_value T (fn_value b i)) (smul (fn_value d i) (fn_value b i)))))))))
   hard_negative:
     statement: 実内積空間の正規な線形変換は実固有ベクトルからなる正規直交基底をもつ。
@@ -1099,18 +1355,24 @@
   kind: gap
   level: 3
   topic: 内積空間・正規作用素
-  statement: 有限次元内積空間の線形変換TがTT^*=T^*Tを満たすならば、すべてのxで‖Tx‖=‖T^*x‖である。
+  statement: 有限次元内積空間の線形変換$T$が$TT^*=T^*T$を満たすならば、すべての$x$で$\|Tx\|=\|T^*x\|$である。
   statement_en: If a linear endomorphism T of a finite-dimensional inner product space is normal, that is T T* = T* T, then ‖T x‖ = ‖T* x‖ for all x.
-  assumptions: [Kは実数体または複素数体, EはK上の有限次元内積空間, TT^*=T^*T]
-  quantifiers: [任意のT, 任意のx]
-  conclusion: ‖Tx‖=‖T^*x‖。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の有限次元内積空間
+  - $T$は$E$の線形変換
+  - $TT^*=T^*T$
+  quantifiers:
+  - 任意の$T$
+  - 任意の$x\in E$
+  conclusion: $\|Tx\|=\|T^*x\|$である。
   answer: |
-    ‖Tx‖^2=⟨Tx,Tx⟩=⟨x,T^*Tx⟩である。同様に‖T^*x‖^2=⟨T^*x,T^*x⟩=⟨x,TT^*x⟩である。TT^*=T^*Tより両者は等しく、ノルムは非負なので‖Tx‖=‖T^*x‖である。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の有限次元内積空間、$T$を$TT^*=T^*T$を満たす$E$の線形変換、$x\in E$とする。$\|Tx\|^2=\langle Tx,Tx\rangle=\langle x,T^*Tx\rangle$である。同様に$\|T^*x\|^2=\langle T^*x,T^*x\rangle=\langle x,TT^*x\rangle$である。$TT^*=T^*T$より両者は等しく、ノルムは非負なので$\|Tx\|=\|T^*x\|$である。
   strategy: Move T across the inner product and use commutativity.
   sketch:
-    - "derive: ‖Tx‖² = ⟨x,T*Tx⟩ by the adjoint identity."
-    - "derive: ‖T*x‖² = ⟨x,TT*x⟩ in the same way."
-    - "conclude: Normality equates the two, and norms are nonnegative."
+  - 'derive: ‖Tx‖² = ⟨x,T*Tx⟩ by the adjoint identity.'
+  - 'derive: ‖T*x‖² = ⟨x,TT*x⟩ in the same way.'
+  - 'conclude: Normality equates the two, and norms are nonnegative.'
   openmath: (forall (K E T x) (-> (and (fd_inner_product_space K E) (linear_map_over K E E T) (= (op_comp T (adjoint T)) (op_comp (adjoint T) T))) (= (norm (fn_value T x)) (norm (fn_value (adjoint T) x)))))
   hard_negative:
     statement: 任意の線形変換Tについて‖Tx‖=‖T^*x‖である。
@@ -1128,18 +1390,22 @@
   kind: gap
   level: 2
   topic: 線形代数・直交行列と内積
-  statement: 実正方行列AがA^TA=Eを満たすならば、すべてのx,yで(Ax)・(Ay)=x・yである。
+  statement: 実正方行列$A$が$A^{\top}A=E$を満たすならば、すべての$x,y$で$(Ax)\cdot(Ay)=x\cdot y$である。
   statement_en: If a real square matrix A satisfies AᵀA = E, then (Ax)·(Ay) = x·y for all vectors x and y.
-  assumptions: [Aは実正方行列, A^TA=E]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: (Ax)・(Ay)=x・y。
+  assumptions:
+  - $A$は実$n$次正方行列
+  - $A^{\top}A=E$
+  - $E$は単位行列
+  quantifiers:
+  - 任意のベクトル$x,y\in\mathbb{R}^n$
+  conclusion: $(Ax)\cdot(Ay)=x\cdot y$である。
   answer: |
-    転置の性質より(Ax)・(Ay)=x・(A^T(Ay))=x・((A^TA)y)である。A^TA=Eなので、これはx・yに等しい。
+    $E$を単位行列、$A$を$A^{\top}A=E$を満たす実$n$次正方行列、$x,y\in\mathbb{R}^n$とする。転置の性質$(Au)\cdot v=u\cdot(A^{\top}v)$より、$(Ax)\cdot(Ay)=x\cdot(A^{\top}(Ay))=x\cdot((A^{\top}A)y)$である。$A^{\top}A=E$なので、これは$x\cdot y$に等しい。
   strategy: Move A across the dot product as its transpose.
   sketch:
-    - "derive: (Ax)·(Ay) = x·(Aᵀ(Ay))."
-    - "derive: Aᵀ(Ay) = (AᵀA)y = y."
-    - "conclude: The value is x·y."
+  - 'derive: (Ax)·(Ay) = x·(Aᵀ(Ay)).'
+  - 'derive: Aᵀ(Ay) = (AᵀA)y = y.'
+  - 'conclude: The value is x·y.'
   openmath: (forall (A x y) (-> (and (matrix_square R A) (= (op_comp (matrix_transpose A) A) 1)) (= (dot_product (matrix_vector A x) (matrix_vector A y)) (dot_product x y))))
   hard_negative:
     statement: Aが可逆な実行列ならば(Ax)・(Ay)=x・yである。
@@ -1154,18 +1420,22 @@
   kind: gap
   level: 2
   topic: 線形代数・直交行列の行列式
-  statement: 実正方行列AがA^TA=Eを満たすならばdet A=1またはdet A=-1である。
+  statement: 実正方行列$A$が$A^{\top}A=E$を満たすならば$\det A=1$または$\det A=-1$である。
   statement_en: If a real square matrix A satisfies AᵀA = E, then det A = 1 or det A = -1.
-  assumptions: [Aは実正方行列, A^TA=E]
-  quantifiers: [任意のA]
-  conclusion: det A=±1。
+  assumptions:
+  - $A$は実正方行列
+  - $A^{\top}A=E$
+  - $E$は単位行列
+  quantifiers:
+  - 任意の$A$
+  conclusion: $\det A=1$または$\det A=-1$である。
   answer: |
-    A^TA=Eの両辺の行列式をとると、det(A^T)det A=1である。det(A^T)=det Aより(det A)^2=1である。実数の平方が1なのでdet A=1またはdet A=-1である。
+    $E$を単位行列、$A$を$A^{\top}A=E$を満たす実正方行列とする。両辺の行列式を取ると、$\det(A^{\top})\det A=1$である。$\det(A^{\top})=\det A$より$(\det A)^2=1$である。平方が$1$の実数は$1$か$-1$なので、$\det A=1$または$\det A=-1$である。
   strategy: Take determinants of the defining relation.
   sketch:
-    - "derive: det(Aᵀ) det A = det E = 1."
-    - "derive: det(Aᵀ) = det A, so (det A)² = 1."
-    - "conclude: Hence det A is 1 or -1."
+  - 'derive: det(Aᵀ) det A = det E = 1.'
+  - 'derive: det(Aᵀ) = det A, so (det A)² = 1.'
+  - 'conclude: Hence det A is 1 or -1.'
   openmath: (forall (A) (-> (and (matrix_square R A) (= (op_comp (matrix_transpose A) A) 1)) (or (= (matrix_det A) 1) (= (matrix_det A) (neg 1)))))
   hard_negative:
     statement: det A=±1の実正方行列は直交行列である。
@@ -1182,17 +1452,25 @@
   kind: gap
   level: 2
   topic: 内積空間・ユニタリ変換の固有値
-  statement: ユニタリ変換や直交変換のようにノルムを保つ線形変換の固有値の絶対値は1である。
+  statement: ユニタリ変換や直交変換のようにノルムを保つ線形変換の固有値の絶対値は$1$である。
   statement_en: Every eigenvalue of a norm-preserving linear endomorphism of an inner product space, such as a unitary or orthogonal map, has absolute value 1.
-  assumptions: [Kは実数体または複素数体, EはK上の内積空間, すべてのvで‖Tv‖=‖v‖, x≠0, Tx=μx]
-  quantifiers: [任意のT, 任意のμ, 任意のx]
-  conclusion: 等式|μ|=1が成り立つ。
+  assumptions:
+  - $K$は$\mathbb{R}$または$\mathbb{C}$
+  - $E$は$K$上の内積空間
+  - $T$は$E$の線形変換で、すべての$v$で$\|Tv\|=\|v\|$
+  - $x\neq0$
+  - $Tx=\mu x$
+  quantifiers:
+  - 任意の$T$
+  - 任意の$\mu$
+  - 任意の$x$
+  conclusion: 等式$|\mu|=1$が成り立つ。
   answer: |
-    ‖x‖=‖Tx‖=‖μx‖=|μ|‖x‖である。x≠0より‖x‖≠0なので、両辺を‖x‖で割ると|μ|=1を得る。
+    $K$を$\mathbb{R}$または$\mathbb{C}$、$E$を$K$上の内積空間、$T$をすべての$v$で$\|Tv\|=\|v\|$を満たす$E$の線形変換とし、$\mu\in K$と$x\neq0$が$Tx=\mu x$を満たすとする。$\|x\|=\|Tx\|=\|\mu x\|=|\mu|\|x\|$である。$x\neq0$より$\|x\|\neq0$なので、両辺を$\|x\|$で割ると$|\mu|=1$を得る。
   strategy: Take norms of the eigenvalue equation.
   sketch:
-    - "derive: ‖x‖ = ‖Tx‖ = |μ|‖x‖."
-    - "conclude: Divide by ‖x‖ ≠ 0 to obtain |μ| = 1."
+  - 'derive: ‖x‖ = ‖Tx‖ = |μ|‖x‖.'
+  - 'conclude: Divide by ‖x‖ ≠ 0 to obtain |μ| = 1.'
   openmath: (forall (K E T mu x) (-> (and (inner_product_space_over K E) (linear_map_over K E E T) (forall (v) (= (norm (fn_value T v)) (norm v))) (!= x 0) (= (fn_value T x) (smul mu x))) (= (abs mu) 1)))
   hard_negative:
     statement: 固有値の絶対値がすべて1である線形変換はユニタリ変換である。
@@ -1209,21 +1487,28 @@
   kind: textbook
   level: 3
   topic: 線形代数・正定値行列
-  statement: 実対称行列Aが正定値であることと、Aの固有値がすべて正であることは同値である。
+  statement: 実対称行列$A$が正定値であることと、$A$の固有値がすべて正であることは同値である。
   statement_en: A real symmetric matrix is positive definite if and only if all of its eigenvalues are positive.
-  assumptions: [Aは実対称行列]
-  quantifiers: [任意のA]
-  conclusion: Aが正定値であることと、固有値がすべて正であることは同値である。
+  assumptions:
+  - $A$は実対称$n$次行列
+  - $d_1,\dots,d_n$は重複を込めて並べた$A$の固有値
+  quantifiers:
+  - 任意の$A$
+  conclusion: $A$が正定値であることと、すべての$i$で$d_i>0$であることは同値である。
   answer: |
-    スペクトル定理よりA=UDU^Tと書ける。ここでUは直交行列、Dは固有値d_iを並べた対角行列である。y=U^Txとおくと、x^TAx=y^TDy=Σd_iy_i^2である。Uは可逆なのでx≠0とy≠0は同値である。すべてのd_iが正なら右辺は正であり、逆にyを第i基本ベクトルにとるとx^TAx=d_iなので、正定値ならd_i>0である。
+    $A$を実対称$n$次行列、$d_1,\dots,d_n$を重複を込めて並べた$A$の固有値とする。$A$が正定値であるとは、すべての$x\neq0$で$x^{\top}Ax>0$であることをいう。
+
+    スペクトル定理を、標準内積をもつ$\mathbb{R}^n$の線形変換$x\mapsto Ax$に適用すると、固有ベクトルからなる正規直交基底が得られる。これを列に並べた直交行列を$U$、$D=\operatorname{diag}(d_1,\dots,d_n)$とすると、$A=UDU^{\top}$である。$y=U^{\top}x$とおくと、$x^{\top}Ax=y^{\top}Dy=\sum_id_iy_i^2$である。$U$は可逆なので、$x\neq0$と$y\neq0$は同値である。
+
+    すべての$d_i$が正なら、$y\neq0$で右辺は正なので$A$は正定値である。逆に$A$が正定値なら、$y$を第$i$基本ベクトルとする$x=Uy\neq0$について$x^{\top}Ax=d_i$なので、$d_i>0$である。
   strategy: Diagonalize A orthogonally and read the quadratic form in the new coordinates.
   sketch:
-    - "apply_theorem: Write A = U D Uᵀ with U orthogonal and D diagonal."
-    - "translate: With y = Uᵀ x, the quadratic form is Σ d_i y_i²."
-    - "derive: x ≠ 0 is equivalent to y ≠ 0 because U is invertible."
-    - "derive: Positive d_i make the form positive on nonzero vectors."
-    - "derive: Taking y to be a standard basis vector shows that positive definiteness forces d_i > 0."
-    - "conclude: The two conditions are equivalent."
+  - 'apply_theorem: Write A = U D Uᵀ with U orthogonal and D diagonal.'
+  - 'translate: With y = Uᵀ x, the quadratic form is Σ d_i y_i².'
+  - 'derive: x ≠ 0 is equivalent to y ≠ 0 because U is invertible.'
+  - 'derive: Positive d_i make the form positive on nonzero vectors.'
+  - 'derive: Taking y to be a standard basis vector shows that positive definiteness forces d_i > 0.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (A) (-> (real_symmetric_matrix A) (<-> (positive_definite_matrix A) (forall (c) (-> (eigenvalue_of A c) (> c 0))))))
   hard_negative:
     statement: 実正方行列の固有値がすべて正ならば、その行列は正定値である。
@@ -1238,18 +1523,24 @@
   kind: gap
   level: 2
   topic: 線形代数・二次形式と対称双線形形式
-  statement: 標数が2でない体上の二次形式qに付随する対称双線形形式Bは、B(x,x)=q(x)と2B(x,y)=q(x+y)-q(x)-q(y)を満たす。
+  statement: 標数が$2$でない体上の二次形式$q$に付随する対称双線形形式$B$は、$B(x,x)=q(x)$と$2B(x,y)=q(x+y)-q(x)-q(y)$を満たす。
   statement_en: Over a field where 2 is invertible, the symmetric bilinear form B associated to a quadratic form q satisfies B(x,x) = q(x) and 2B(x,y) = q(x+y) - q(x) - q(y).
-  assumptions: [Kは2が可逆な体, VはK上のベクトル空間, qはV上の二次形式, Bはqに付随する対称双線形形式]
-  quantifiers: [任意のq, 任意のベクトルx, y]
-  conclusion: B(x,x)=q(x)かつ2B(x,y)=q(x+y)-q(x)-q(y)。
+  assumptions:
+  - $K$は$2$が可逆な体
+  - $V$は$K$上のベクトル空間
+  - $q$は$V$上の二次形式
+  - $B$は$q$に付随する対称双線形形式
+  quantifiers:
+  - 任意の$q$
+  - 任意のベクトル$x,y\in V$
+  conclusion: $B(x,x)=q(x)$かつ$2B(x,y)=q(x+y)-q(x)-q(y)$である。
   answer: |
-    Bは2B(x,y)=q(x+y)-q(x)-q(y)で定義されるので、第2の等式は定義そのものである。y=xとすると、q(2x)=4q(x)より2B(x,x)=4q(x)-2q(x)=2q(x)である。2は可逆なのでB(x,x)=q(x)を得る。
+    $K$を$2$が可逆な体、$V$を$K$上のベクトル空間、$q$を$V$上の二次形式、$x,y\in V$とする。$q$に付随する対称双線形形式$B$は$2B(x,y)=q(x+y)-q(x)-q(y)$で定義されるので、第$2$の等式は定義そのものである。$y=x$とすると、$q(2x)=4q(x)$より$2B(x,x)=4q(x)-2q(x)=2q(x)$である。$2$は可逆なので$B(x,x)=q(x)$を得る。
   strategy: Use the polar form definition and q(2x) = 4 q(x).
   sketch:
-    - "translate: By definition 2B(x,y) = q(x+y) - q(x) - q(y)."
-    - "derive: Put y = x and use q(2x) = 4q(x) to get 2B(x,x) = 2q(x)."
-    - "conclude: Cancel the invertible element 2."
+  - 'translate: By definition 2B(x,y) = q(x+y) - q(x) - q(y).'
+  - 'derive: Put y = x and use q(2x) = 4q(x) to get 2B(x,x) = 2q(x).'
+  - 'conclude: Cancel the invertible element 2.'
   openmath: (forall (K V q x y) (-> (and (char_not_two K) (vector_space K V) (quadratic_form K V q)) (and (= (associated_bilinear q x x) (fn_value q x)) (= (* 2 (associated_bilinear q x y)) (- (- (fn_value q (+ x y)) (fn_value q x)) (fn_value q y))))))
   hard_negative:
     statement: 標数2の体でも二次形式qはB(x,x)=q(x)となる対称双線形形式Bをもつ。
@@ -1266,20 +1557,28 @@
   kind: textbook
   level: 3
   topic: 線形代数・対称双線形形式の対角化
-  statement: 2が可逆な体上の有限次元空間の対称双線形形式には、直交基底が存在する。
+  statement: $2$が可逆な体上の有限次元空間の対称双線形形式には、直交基底が存在する。
   statement_en: A symmetric bilinear form on a finite-dimensional vector space over a field in which 2 is invertible admits an orthogonal basis.
-  assumptions: [Kは2が可逆な体, VはK上の有限次元ベクトル空間, BはV上の対称双線形形式]
-  quantifiers: [任意のB]
-  conclusion: i≠jならばB(v_i,v_j)=0となるVの基底vが存在する。
+  assumptions:
+  - $K$は$2$が可逆な体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $B$は$V$上の対称双線形形式
+  quantifiers:
+  - 任意の$B$
+  conclusion: $i\neq j$ならば$B(v_i,v_j)=0$となる$V$の基底$(v_i)$が存在する。
   answer: |
-    次元に関する帰納法を用いる。B=0ならどの基底でもよい。B≠0なら、2が可逆であることと偏極恒等式よりB(x,x)≠0となるxが存在する。xの張る直線の直交空間W={y | B(x,y)=0}はxの直線の補空間である。W上のBの制限に帰納法の仮定を適用し、得られた直交基底にxを加えればよい。
+    $K$を$2$が可逆な体、$V$を$K$上の有限次元ベクトル空間、$B$を$V$上の対称双線形形式とする。$\dim V$に関する帰納法で示す。$B=0$ならどの基底でもよい。
+
+    $B\neq0$とする。$B$の対称性から$2B(x,y)=B(x+y,x+y)-B(x,x)-B(y,y)$である。$2$は可逆なので、すべての$z$で$B(z,z)=0$なら$B=0$となる。よって$B(x,x)\neq0$となる$x$が存在する。
+
+    $W=\{y\in V\mid B(x,y)=0\}$とおく。任意の$y\in V$について$y-(B(x,y)/B(x,x))x\in W$である。$B(x,x)\neq0$より$Kx\cap W=\{0\}$なので、$V=Kx\oplus W$であり$\dim W=\dim V-1$である。$W$上の$B$の制限に帰納法の仮定を適用すると、$W$の基底$v_2,\dots,v_n$で$i\neq j$なら$B(v_i,v_j)=0$となるものが得られる。$v_1=x$を加えると、$B(x,v_i)=B(v_i,x)=0$なので、$v_1,\dots,v_n$が求める基底である。
   strategy: Find a non-isotropic vector by polarization and induct on its orthogonal complement.
   sketch:
-    - "case_split: If B = 0, any basis works."
-    - "derive: Otherwise polarization and invertibility of 2 give x with B(x,x) ≠ 0."
-    - "derive: W = {y | B(x,y) = 0} is a complement of the line spanned by x."
-    - "induction: Restricting B to W yields an orthogonal basis of W."
-    - "conclude: Adding x gives an orthogonal basis of V."
+  - 'case_split: If B = 0, any basis works.'
+  - 'derive: Otherwise polarization and invertibility of 2 give x with B(x,x) ≠ 0.'
+  - 'derive: W = {y | B(x,y) = 0} is a complement of the line spanned by x.'
+  - 'induction: Restricting B to W yields an orthogonal basis of W.'
+  - 'conclude: Adding x gives an orthogonal basis of V.'
   openmath: (forall (K V B) (-> (and (char_not_two K) (fd_vector_space K V) (bilinear_form K V B) (symmetric_form B)) (exists (v) (and (is_basis_family K V v) (forall (i j) (-> (!= i j) (= (form_value B (fn_value v i) (fn_value v j)) 0)))))))
   hard_negative:
     statement: 標数2の体でも対称双線形形式はつねに直交基底をもつ。
@@ -1295,22 +1594,32 @@
   kind: named
   level: 3
   topic: 線形代数・シルベスターの慣性法則
-  statement: 実有限次元空間の二次形式は、係数が1,-1,0の対角形に同値である。また、どの対角形についても正の係数の個数と負の係数の個数は対角化の仕方によらない（シルベスターの慣性法則）。
-  statement_en: "Sylvester's law of inertia: a quadratic form on a finite-dimensional real vector space is equivalent to a diagonal form with coefficients in {1, -1, 0}, and the numbers of positive and of negative coefficients are the same for every diagonal form equivalent to it."
-  assumptions: [Vは実有限次元ベクトル空間, qはV上の二次形式]
-  quantifiers: [任意のq, qと同値な任意の対角形の係数w, w']
-  conclusion: 係数が1,-1,0の対角形が存在し、wとw'の正の係数の個数と負の係数の個数はそれぞれ一致する。
+  statement: 実有限次元空間の二次形式は、係数が$1,-1,0$の対角形に同値である。また、どの対角形についても正の係数の個数と負の係数の個数は対角化の仕方によらない（シルベスターの慣性法則）。
+  statement_en: 'Sylvester''s law of inertia: a quadratic form on a finite-dimensional real vector space is equivalent to a diagonal form with coefficients in {1, -1, 0}, and the numbers of positive and of negative coefficients are the same for every diagonal form equivalent to it.'
+  assumptions:
+  - $V$は実$n$次元ベクトル空間
+  - $q$は$V$上の二次形式
+  quantifiers:
+  - 任意の$q$
+  - $q$と同値な任意の対角形の係数$(u_i)$と$(t_i)$
+  conclusion: 係数が$1,-1,0$の対角形が存在し、$(u_i)$と$(t_i)$の正の係数の個数と負の係数の個数はそれぞれ一致する。
   answer: |
-    概略を示す。存在については直交基底をとり、q(v_i)≠0である基底ベクトルを|q(v_i)|^{1/2}で割る。一意性については、正の係数の個数がqの正定値部分空間の最大次元に等しいことを示す。対角形で正の係数の添字が張る部分空間Pは正定値であり、それ以外の添字が張る部分空間Nでは半負定値である。qが正定値な部分空間はNと0でしか交わらないので、次元はPの次元以下である。この最大次元は基底によらない。負の係数については-qに同じ議論を適用する。
+    $V$を実$n$次元ベクトル空間、$q$を$V$上の二次形式とする。$q$が係数$(u_i)$の対角形に同値であるとは、線形同型$\phi:V\to\mathbb{R}^n$で$q(x)=\sum_iu_i\phi(x)_i^2$となるものが存在することをいう。
+
+    存在を示す。$q$に付随する対称双線形形式$B$は$B(x,x)=q(x)$を満たす。$\mathbb{R}$では$2$が可逆なので、$V$には$B$に関する直交基底$v_1,\dots,v_n$がある。$q(v_i)\neq0$の$v_i$を$|q(v_i)|^{1/2}$で割ると、$q(v_i)\in\{1,-1,0\}$としてよい。$w_i=q(v_i)$とすると、直交性より$q(\sum_ix_iv_i)=\sum_iw_ix_i^2$である。座標を取る写像が線形同型なので、$q$は係数$(w_i)$の対角形に同値である。
+
+    一意性を示す。$q$が係数$(u_i)$に写像$\phi$で同値であり、係数$(t_i)$に写像$\psi$で同値であるとする。$a,b$をそれぞれ$(u_i),(t_i)$の正の係数の個数とし、$e_1,\dots,e_n$を$\mathbb{R}^n$の標準基底とする。$P=\phi^{-1}(\operatorname{span}\{e_i\mid u_i>0\})$とおくと、$\dim P=a$であり、$x\in P\setminus\{0\}$で$q(x)>0$である。$N=\psi^{-1}(\operatorname{span}\{e_i\mid t_i\leq0\})$とおくと、$\dim N=n-b$であり、$x\in N$で$q(x)\leq0$である。よって$P\cap N=\{0\}$であり、次元公式から$a+(n-b)\leq n$、すなわち$a\leq b$である。$2$つの同値の役割を入れ替えると$b\leq a$なので、$a=b$である。
+
+    $-q$は係数$(-u_i)$と$(-t_i)$の対角形に同じ写像で同値である。上の結果を$-q$に適用すると、$(u_i)$と$(t_i)$の負の係数の個数も一致する。
   strategy: Normalize an orthogonal basis for existence, and identify the positive count with a basis-free maximum dimension.
   sketch:
-    - "apply_theorem: A symmetric bilinear form has an orthogonal basis."
-    - "construct: Rescale each basis vector by the inverse square root of |q(v_i)| when nonzero."
-    - "translate: Let p be the maximal dimension of a subspace on which q is positive definite."
-    - "derive: A positive definite subspace meets the span of nonpositive coefficients only in 0, so its dimension is at most the positive count."
-    - "derive: The span of the positive coefficient vectors attains this bound, so the count equals p."
-    - "derive: Apply the same argument to -q for the negative count."
-    - "conclude: Both counts depend only on q."
+  - 'apply_theorem: A symmetric bilinear form has an orthogonal basis.'
+  - 'construct: Rescale each basis vector by the inverse square root of |q(v_i)| when nonzero.'
+  - 'translate: Let p be the maximal dimension of a subspace on which q is positive definite.'
+  - 'derive: A positive definite subspace meets the span of nonpositive coefficients only in 0, so its dimension is at most the positive count.'
+  - 'derive: The span of the positive coefficient vectors attains this bound, so the count equals p.'
+  - 'derive: Apply the same argument to -q for the negative count.'
+  - 'conclude: Both counts depend only on q.'
   openmath: (forall (V q) (-> (and (fd_vector_space R V) (quadratic_form R V q)) (and (exists (w) (and (forall (i) (or (= (fn_value w i) 1) (= (fn_value w i) 0) (= (fn_value w i) (neg 1)))) (forms_equivalent q (weighted_squares_form w)))) (forall (u t) (-> (and (forms_equivalent q (weighted_squares_form u)) (forms_equivalent q (weighted_squares_form t))) (and (= (count_positive u) (count_positive t)) (= (count_negative u) (count_negative t))))))))
   hard_negative:
     statement: 二次形式を対角化したときの係数の値そのものは対角化の仕方によらない。
@@ -1327,19 +1636,24 @@
   kind: textbook
   level: 2
   topic: 線形代数・双対空間と零化空間
-  statement: 有限次元空間Vの部分空間Wについて、dim W+dim W^0=dim Vである（W^0はWの零化空間）。
+  statement: 有限次元空間$V$の部分空間$W$について、$\dim W+\dim W^0=\dim V$である（$W^0$は$W$の零化空間）。
   statement_en: For a subspace W of a finite-dimensional vector space V with annihilator W⁰ in the dual space, dim W + dim W⁰ = dim V.
-  assumptions: [Kは体, VはK上の有限次元ベクトル空間, WはVの部分空間, W^0はWで0となる線形汎関数全体]
-  quantifiers: [任意のW]
-  conclusion: dim W+dim W^0=dim V。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $W$は$V$の部分空間
+  - $W^0$は$W$で$0$となる線形汎関数全体
+  quantifiers:
+  - 任意の$W$
+  conclusion: $\dim W+\dim W^0=\dim V$である。
   answer: |
-    Wの基底w_1,…,w_mを延長してVの基底w_1,…,w_nをとり、双対基底をφ_1,…,φ_nとする。線形汎関数φ=Σa_iφ_iがWで0になることは、a_1=…=a_m=0と同値である。よってφ_{m+1},…,φ_nがW^0の基底であり、dim W^0=n-mである。
+    $K$を体、$V$を$K$上の有限次元ベクトル空間、$W$を$V$の部分空間、$W^0$を$W$で$0$となる$V$上の線形汎関数全体とする。$W$の基底$w_1,\dots,w_m$を延長して$V$の基底$w_1,\dots,w_n$を取り、双対基底を$\varphi_1,\dots,\varphi_n$とする。線形汎関数$\varphi=\sum_ia_i\varphi_i$について$\varphi(w_j)=a_j$なので、$\varphi$が$W$で$0$になることは$a_1=\dots=a_m=0$と同値である。よって$\varphi_{m+1},\dots,\varphi_n$が$W^0$の基底であり、$\dim W^0=n-m$である。したがって$\dim W+\dim W^0=m+(n-m)=\dim V$である。
   strategy: Extend a basis of W and read the annihilator in the dual basis.
   sketch:
-    - "construct: Extend a basis of W to a basis of V and take the dual basis."
-    - "translate: φ = Σ a_i φ_i vanishes on W exactly when a_1 = … = a_m = 0."
-    - "derive: The functionals φ_{m+1},…,φ_n form a basis of W⁰."
-    - "conclude: dim W⁰ = dim V - dim W."
+  - 'construct: Extend a basis of W to a basis of V and take the dual basis.'
+  - 'translate: φ = Σ a_i φ_i vanishes on W exactly when a_1 = … = a_m = 0.'
+  - 'derive: The functionals φ_{m+1},…,φ_n form a basis of W⁰.'
+  - 'conclude: dim W⁰ = dim V - dim W.'
   openmath: (forall (K V W) (-> (and (fd_vector_space K V) (subspace_in W V)) (= (+ (dim_of K W) (dim_of K (dual_annihilator W))) (dim_of K V))))
   hard_negative:
     statement: 無限次元空間でも0でない部分空間Wの零化空間は有限次元である。
@@ -1354,19 +1668,22 @@
   kind: textbook
   level: 2
   topic: 線形代数・第二双対空間
-  statement: 有限次元ベクトル空間Vから第二双対空間V^**への標準写像x↦(φ↦φ(x))は全単射である。
+  statement: 有限次元ベクトル空間$V$から第二双対空間$V^{**}$への標準写像$x\mapsto(\varphi\mapsto\varphi(x))$は全単射である。
   statement_en: For a finite-dimensional vector space V, the canonical evaluation map from V to its double dual, x ↦ (φ ↦ φ(x)), is bijective.
-  assumptions: [Kは体, VはK上の有限次元ベクトル空間]
-  quantifiers: [任意のV]
-  conclusion: 標準写像V→V^**は全単射である。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  quantifiers:
+  - 任意の$V$
+  conclusion: 標準写像$V\to V^{**}$は全単射である。
   answer: |
-    x≠0ならばxを基底に延長した双対基底から、φ(x)≠0となる線形汎関数φがとれる。したがって標準写像は単射である。dim V^**=dim V^*=dim Vなので、有限次元の単射線形写像として全射でもある。
+    $K$を体、$V$を$K$上の有限次元ベクトル空間とする。標準写像は線形である。$x\neq0$ならば$x$を延長して$V$の基底を作り、その双対基底のうち$x$に対応する元を$\varphi$とすると、$\varphi(x)=1\neq0$である。したがって標準写像の核は$\{0\}$であり、標準写像は単射である。$\dim V^{**}=\dim V^*=\dim V$なので、同じ次元の空間の間の単射線形写像として全射でもある。
   strategy: Prove injectivity using a dual basis and compare dimensions.
   sketch:
-    - "derive: For x ≠ 0, extending x to a basis gives a functional φ with φ(x) ≠ 0."
-    - "derive: So the evaluation map is injective."
-    - "apply_theorem: dim V** = dim V* = dim V."
-    - "conclude: An injective linear map between spaces of equal finite dimension is bijective."
+  - 'derive: For x ≠ 0, extending x to a basis gives a functional φ with φ(x) ≠ 0.'
+  - 'derive: So the evaluation map is injective.'
+  - 'apply_theorem: dim V** = dim V* = dim V.'
+  - 'conclude: An injective linear map between spaces of equal finite dimension is bijective.'
   openmath: (forall (K V) (-> (fd_vector_space K V) (bijective_map (double_dual_map K V))))
   hard_negative:
     statement: 任意のベクトル空間Vで標準写像V→V^**は全射である。
@@ -1381,19 +1698,27 @@
   kind: textbook
   level: 3
   topic: 線形代数・テンソル積の普遍性
-  statement: 双線形写像B：V×W→Uに対し、すべてのv,wでL(v⊗w)=B(v,w)を満たす線形写像L：V⊗W→Uがただ一つ存在する。
+  statement: 双線形写像$B:V\times W\to U$に対し、すべての$v,w$で$L(v\otimes w)=B(v,w)$を満たす線形写像$L:V\otimes W\to U$がただ一つ存在する。
   statement_en: For a bilinear map B from V × W to U over a field K, there is a unique linear map L from V ⊗ W to U with L(v ⊗ w) = B(v,w) for all v and w.
-  assumptions: [Kは体, V, W, UはK上のベクトル空間, Bは双線形写像]
-  quantifiers: [任意のB]
-  conclusion: L(v⊗w)=B(v,w)を満たす線形写像Lがただ一つ存在する。
+  assumptions:
+  - $K$は体
+  - $V,W,U$は$K$上のベクトル空間
+  - $B:V\times W\to U$は双線形写像
+  quantifiers:
+  - 任意の$B$
+  conclusion: $L(v\otimes w)=B(v,w)$を満たす線形写像$L$がただ一つ存在する。
   answer: |
-    テンソル積は記号v⊗wが生成する自由加群を双線形性の関係式で割った商である。Bは双線形なので、生成元をB(v,w)に送る線形写像はこの関係式を0に送り、商の上の線形写像Lを定める。純テンソルv⊗wはV⊗Wを張るので、純テンソル上の値でLは一意に定まる。
+    $K$を体、$V,W,U$を$K$上のベクトル空間、$B:V\times W\to U$を双線形写像とする。テンソル積$V\otimes W$は、記号$v\otimes w$($v\in V$, $w\in W$)を基底とする自由$K$加群を、双線形性の関係式で割った商である。
+
+    生成元$v\otimes w$を$B(v,w)$に送る線形写像を考える。$B$は双線形なので、この写像は双線形性の関係式を$0$に送り、商の上の線形写像$L$を定める。$L$は$L(v\otimes w)=B(v,w)$を満たす。
+
+    純テンソル$v\otimes w$は$V\otimes W$を張るので、線形写像は純テンソル上の値で決まる。よって$L$は一意である。
   strategy: Define L on generators and use that bilinearity kills the relations.
   sketch:
-    - "construct: Send each generator v ⊗ w of the free module to B(v,w)."
-    - "derive: Bilinearity of B kills the defining relations, so the map descends to the quotient."
-    - "derive: Pure tensors span V ⊗ W, so a linear map is determined by its values on them."
-    - "conclude: L exists and is unique."
+  - 'construct: Send each generator v ⊗ w of the free module to B(v,w).'
+  - 'derive: Bilinearity of B kills the defining relations, so the map descends to the quotient.'
+  - 'derive: Pure tensors span V ⊗ W, so a linear map is determined by its values on them.'
+  - 'conclude: L exists and is unique.'
   openmath: (forall (K V W U B) (-> (and (vector_space K V) (vector_space K W) (vector_space K U) (bilinear_map B K V W U)) (exists (L) (and (linear_map_over K (tensor_product_module K V W) U L) (forall (v w) (= (fn_value L (pure_tensor v w)) (fn_value (fn_value B v) w))) (forall (M) (-> (and (linear_map_over K (tensor_product_module K V W) U M) (forall (v w) (= (fn_value M (pure_tensor v w)) (fn_value (fn_value B v) w)))) (= M L)))))))
   hard_negative:
     statement: V⊗Wのすべての元は純テンソルv⊗wの形である。
@@ -1409,19 +1734,24 @@
   kind: gap
   level: 3
   topic: 線形代数・純テンソルの非零性
-  statement: 体上のベクトル空間でx≠0かつy≠0ならばx⊗y≠0である。
+  statement: 体上のベクトル空間で$x\neq0$かつ$y\neq0$ならば$x\otimes y\neq0$である。
   statement_en: For vector spaces over a field, if x ≠ 0 and y ≠ 0 then x ⊗ y ≠ 0.
-  assumptions: [Kは体, V, WはK上のベクトル空間, x≠0, y≠0]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: x⊗y≠0。
+  assumptions:
+  - $K$は体
+  - $V,W$は$K$上のベクトル空間
+  - $x\in V$, $x\neq0$
+  - $y\in W$, $y\neq0$
+  quantifiers:
+  - 任意のベクトル$x,y$
+  conclusion: $x\otimes y\neq0$である。
   answer: |
-    x≠0, y≠0なので、φ(x)≠0, ψ(y)≠0となる線形汎関数φ,ψがある。(v,w)↦φ(v)ψ(w)は双線形なので、普遍性からL(v⊗w)=φ(v)ψ(w)となる線形写像L：V⊗W→Kが存在する。L(x⊗y)=φ(x)ψ(y)≠0なので、x⊗y≠0である。
+    $K$を体、$V,W$を$K$上のベクトル空間、$x\in V$, $y\in W$を$0$でないベクトルとする。$x$を延長した$V$の基底について$x$の座標を取ると、$\varphi(x)\neq0$となる線形汎関数$\varphi$が得られる。同様に$\psi(y)\neq0$となる線形汎関数$\psi$がある。$(v,w)\mapsto\varphi(v)\psi(w)$は双線形なので、テンソル積の普遍性から、$L(v\otimes w)=\varphi(v)\psi(w)$となる線形写像$L:V\otimes W\to K$が存在する。$L(x\otimes y)=\varphi(x)\psi(y)\neq0$なので、$x\otimes y\neq0$である。
   strategy: Separate the pure tensor with a product of linear functionals.
   sketch:
-    - "apply_theorem: Nonzero vectors are detected by linear functionals φ and ψ."
-    - "construct: The bilinear map (v,w) ↦ φ(v)ψ(w) induces L on V ⊗ W."
-    - "derive: L(x ⊗ y) = φ(x)ψ(y) is nonzero."
-    - "conclude: Therefore x ⊗ y ≠ 0."
+  - 'apply_theorem: Nonzero vectors are detected by linear functionals φ and ψ.'
+  - 'construct: The bilinear map (v,w) ↦ φ(v)ψ(w) induces L on V ⊗ W.'
+  - 'derive: L(x ⊗ y) = φ(x)ψ(y) is nonzero.'
+  - 'conclude: Therefore x ⊗ y ≠ 0.'
   openmath: (forall (K V W x y) (-> (and (vector_space K V) (vector_space K W) (!= x 0) (!= y 0)) (!= (pure_tensor x y) 0)))
   hard_negative:
     statement: 環上の加群でもx≠0かつy≠0ならばx⊗y≠0である。
@@ -1446,20 +1776,29 @@
   kind: textbook
   level: 3
   topic: 線形代数・外冪の次元
-  statement: 体上のd次元ベクトル空間Vのn次外冪の次元は二項係数C(d,n)である。
+  statement: 体上の$d$次元ベクトル空間$V$の$n$次外冪の次元は二項係数$\binom{d}{n}$である。
   statement_en: The n-th exterior power of a d-dimensional vector space over a field has dimension C(d,n).
-  assumptions: [Kは体, VはK上の有限次元ベクトル空間, dim V=d]
-  quantifiers: [任意のV, 任意のn]
-  conclusion: dim Λ^n V=C(d,n)。
+  assumptions:
+  - $K$は体
+  - $V$は$K$上の有限次元ベクトル空間
+  - $\dim V=d$
+  quantifiers:
+  - 任意の$V$
+  - 任意の自然数$n$
+  conclusion: $\dim\Lambda^nV=\binom{d}{n}$である。
   answer: |
-    Vの基底e_1,…,e_dを順序づける。多重線形性と交代性より、i_1<…<i_nを満たす添字の組に対応するe_{i_1}∧…∧e_{i_n}はΛ^n Vを張る。各組について、対応する外積だけを1に送る交代形式が行列式から作れるので、これらは一次独立である。この組の個数はC(d,n)である。
+    $K$を体、$V$を$K$上の$d$次元ベクトル空間、$n$を自然数とする。$V$の基底$e_1,\dots,e_d$を順序づけ、双対基底を$e_1^*,\dots,e_d^*$とする。$\{1,\dots,d\}$の$n$元部分集合$I=\{i_1<\dots<i_n\}$に対し、$e_I=e_{i_1}\wedge\dots\wedge e_{i_n}$とおく。$(e_I)_I$が$\Lambda^nV$の基底であることを示す。$I$の個数は$\binom{d}{n}$なので、これで主張が従う。
+
+    $\Lambda^nV$は$x_1\wedge\dots\wedge x_n$の形の元で張られる。各$x_k$を基底で展開すると、多重線形性からこれは$e_{j_1}\wedge\dots\wedge e_{j_n}$の一次結合になる。添字に重複があればこの外積は$0$であり、重複がなければ交代性により符号を除いて$e_I$に等しい。よって$(e_I)_I$は$\Lambda^nV$を張る。
+
+    一次独立性を示す。各$I$について、$\omega_I(x_1,\dots,x_n)=\det(e_{i_a}^*(x_b))_{a,b}$は$V^n$上の$n$重線形交代形式である。外冪の普遍性により、$n$重線形交代形式$\omega$は$\bar\omega(x_1\wedge\dots\wedge x_n)=\omega(x_1,\dots,x_n)$を満たす線形汎関数$\bar\omega:\Lambda^nV\to K$を定める。$\bar\omega_I(e_I)$は単位行列の行列式なので$1$である。$J\neq I$なら$i_a\notin J$となる$a$があり、$\bar\omega_I(e_J)$の行列は第$a$行が$0$になるので、値は$0$である。したがって$\sum_Jc_Je_J=0$に$\bar\omega_I$を施すと$c_I=0$であり、$(e_I)_I$は一次独立である。
   strategy: Exhibit the basis of wedges of increasing basis vectors.
   sketch:
-    - "setup: Fix an ordered basis e_1,…,e_d of V."
-    - "derive: Alternation shows wedges with increasing indices span Λ^n V."
-    - "construct: Minors of the coordinate matrix give alternating forms separating these wedges."
-    - "derive: Hence the wedges are linearly independent."
-    - "conclude: The number of increasing index tuples is C(d,n)."
+  - 'setup: Fix an ordered basis e_1,…,e_d of V.'
+  - 'derive: Alternation shows wedges with increasing indices span Λ^n V.'
+  - 'construct: Minors of the coordinate matrix give alternating forms separating these wedges.'
+  - 'derive: Hence the wedges are linearly independent.'
+  - 'conclude: The number of increasing index tuples is C(d,n).'
   openmath: (forall (K V n) (-> (fd_vector_space K V) (= (dim_of K (exterior_power K n V)) (binomial (dim_of K V) n))))
   hard_negative:
     statement: 外冪Λ^n Vの次元はd^nである。
@@ -1474,18 +1813,22 @@
   kind: gap
   level: 2
   topic: 線形代数・外積の反可換性
-  statement: 外積代数でベクトルx,yについてx∧x=0かつx∧y=-(y∧x)である。
+  statement: 外積代数でベクトル$x,y$について$x\wedge x=0$かつ$x\wedge y=-(y\wedge x)$である。
   statement_en: In the exterior algebra of a module, x ∧ x = 0 and x ∧ y = -(y ∧ x) for all vectors x and y.
-  assumptions: [Rは可換環, MはR加群, x, yはMの元]
-  quantifiers: [任意のベクトルx, y]
-  conclusion: x∧x=0かつx∧y=-(y∧x)。
+  assumptions:
+  - $R$は可換環
+  - $M$は$R$加群
+  - $x,y$は$M$の元
+  quantifiers:
+  - 任意のベクトル$x,y\in M$
+  conclusion: $x\wedge x=0$かつ$x\wedge y=-(y\wedge x)$である。
   answer: |
-    x∧x=0は外積代数の定義の関係式である。これを(x+y)に適用すると、0=(x+y)∧(x+y)=x∧x+x∧y+y∧x+y∧y=x∧y+y∧xである。よってx∧y=-(y∧x)である。
+    $R$を可換環、$M$を$R$加群、$x,y\in M$とする。$M$の外積代数は、$M$の元$z$について$z\wedge z=0$という関係式で定義される。特に$x\wedge x=0$である。これを$z=x+y$に適用すると、$0=(x+y)\wedge(x+y)=x\wedge x+x\wedge y+y\wedge x+y\wedge y=x\wedge y+y\wedge x$である。よって$x\wedge y=-(y\wedge x)$である。
   strategy: Expand (x+y) ∧ (x+y) = 0.
   sketch:
-    - "translate: x ∧ x = 0 is a defining relation of the exterior algebra."
-    - "derive: Expanding (x+y) ∧ (x+y) = 0 leaves x∧y + y∧x = 0."
-    - "conclude: Hence x∧y = -(y∧x)."
+  - 'translate: x ∧ x = 0 is a defining relation of the exterior algebra.'
+  - 'derive: Expanding (x+y) ∧ (x+y) = 0 leaves x∧y + y∧x = 0.'
+  - 'conclude: Hence x∧y = -(y∧x).'
   openmath: (forall (K M x y) (-> (module_over M K) (and (= (* (exterior_generator x) (exterior_generator x)) 0) (= (* (exterior_generator x) (exterior_generator y)) (neg (* (exterior_generator y) (exterior_generator x)))))))
   hard_negative:
     statement: x∧y=-(y∧x)という性質からx∧x=0が任意の環上で従う。

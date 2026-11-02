@@ -2,18 +2,22 @@
   kind: gap
   level: 2
   topic: 確率測度・余事象
-  statement: 確率測度Pと事象Aについて、P(Aᶜ)=1-P(A)が成り立つ。
+  statement: 確率測度$P$と可測な事象$A$について、$P(A^c)=1-P(A)$が成り立つ。
   statement_en: For a probability measure P and a measurable event A, P(Aᶜ) = 1 - P(A).
-  assumptions: [Pは確率測度, Aは可測な事象]
-  quantifiers: [任意の確率空間と事象A]
-  conclusion: P(Aᶜ)=1-P(A)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$は可測な事象
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A\in\mathcal{F}$
+  conclusion: $P(A^c)=1-P(A)$である。
   answer: |
-    AとAᶜは互いに素で、和集合は全事象である。有限加法性よりP(A)+P(Aᶜ)=P(Ω)=1となる。移項するとP(Aᶜ)=1-P(A)を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A\in\mathcal{F}$を事象とする。$A$と$A^c$は互いに素で、和集合は$\Omega$である。有限加法性より$P(A)+P(A^c)=P(\Omega)=1$となる。移項すると$P(A^c)=1-P(A)$を得る。
   strategy: Split the whole space into A and its complement and use additivity.
   sketch:
-    - "setup: Note that A and Aᶜ are disjoint with union Ω."
-    - "apply_theorem: Additivity gives P(A) + P(Aᶜ) = P(Ω) = 1."
-    - "conclude: Rearrange to obtain P(Aᶜ) = 1 - P(A)."
+  - 'setup: Note that A and Aᶜ are disjoint with union Ω.'
+  - 'apply_theorem: Additivity gives P(A) + P(Aᶜ) = P(Ω) = 1.'
+  - 'conclude: Rearrange to obtain P(Aᶜ) = 1 - P(A).'
   openmath: (forall (P A) (-> (and (probability_measure P) (measurable_event A)) (= (prob P (set_compl A)) (- 1 (prob P A)))))
   hard_negative:
     statement: 確率測度でない有限測度μでもμ(Aᶜ)=1-μ(A)が成り立つ。
@@ -29,19 +33,23 @@
   kind: gap
   level: 2
   topic: 確率測度・包除原理
-  statement: 事象A,Bについて、P(A∪B)=P(A)+P(B)-P(A∩B)が成り立つ。
+  statement: 確率測度$P$と可測な事象$A,B$について、$P(A\cup B)=P(A)+P(B)-P(A\cap B)$が成り立つ。
   statement_en: For measurable events A and B, P(A ∪ B) = P(A) + P(B) - P(A ∩ B).
-  assumptions: [Pは確率測度, AとBは可測な事象]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: P(A∪B)=P(A)+P(B)-P(A∩B)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $P(A\cup B)=P(A)+P(B)-P(A\cap B)$である。
   answer: |
-    A∪BはAとB\Aの互いに素な和なのでP(A∪B)=P(A)+P(B\A)である。またBはA∩BとB\Aの互いに素な和なのでP(B)=P(A∩B)+P(B\A)である。二式からP(B\A)を消去すると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を事象とする。$A\cup B$は$A$と$B\setminus A$の互いに素な和なので、$P(A\cup B)=P(A)+P(B\setminus A)$である。また$B$は$A\cap B$と$B\setminus A$の互いに素な和なので、$P(B)=P(A\cap B)+P(B\setminus A)$である。二つの式から$P(B\setminus A)$を消去すると、$P(A\cup B)=P(A)+P(B)-P(A\cap B)$を得る。
   strategy: Use two disjoint decompositions sharing the piece B \ A.
   sketch:
-    - "setup: Decompose A ∪ B = A ⊔ (B \\ A) and B = (A ∩ B) ⊔ (B \\ A)."
-    - "apply_theorem: Apply additivity to both decompositions."
-    - "derive: Eliminate P(B \\ A) between the two equations."
-    - "conclude: This yields P(A ∪ B) = P(A) + P(B) - P(A ∩ B)."
+  - 'setup: Decompose A ∪ B = A ⊔ (B \ A) and B = (A ∩ B) ⊔ (B \ A).'
+  - 'apply_theorem: Apply additivity to both decompositions.'
+  - 'derive: Eliminate P(B \ A) between the two equations.'
+  - 'conclude: This yields P(A ∪ B) = P(A) + P(B) - P(A ∩ B).'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B)) (= (prob P (union A B)) (- (+ (prob P A) (prob P B)) (prob P (inter A B))))))
   hard_negative:
     statement: 任意の事象A,BについてP(A∪B)=P(A)+P(B)である。
@@ -57,19 +65,29 @@
   kind: gap
   level: 2
   topic: 確率測度・和集合の上界
-  statement: 集合の有限族A_iについて、P(⋃A_i)≤ΣP(A_i)が成り立つ。
+  statement: 確率測度$P$と集合の有限族$(A_i)_{i\in s}$について、$P\left(\bigcup_{i\in s}A_i\right)\leq\sum_{i\in s}P(A_i)$が成り立つ。$A_i$は可測でなくてもよく、その場合の$P$は外測度の値を表す。
   statement_en: For a finite family of sets A_i, P(⋃_i A_i) ≤ Σ_i P(A_i).
-  assumptions: [Pは確率測度, sは有限な添字集合]
-  quantifiers: [任意の確率空間, 有限集合s, 集合族A]
-  conclusion: P(⋃_{i∈s}A_i)≤Σ_{i∈s}P(A_i)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $s$は有限な添字集合
+  - 各$A_i$は$\Omega$の部分集合（可測とは限らない）
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の有限集合$s$
+  - 任意の集合族$(A_i)_{i\in s}$
+  conclusion: $P\left(\bigcup_{i\in s}A_i\right)\leq\sum_{i\in s}P(A_i)$である。
   answer: |
-    sの要素数に関する帰納法で示す。空の場合は両辺とも0である。要素を一つ加えるときは、二つの集合についてP(B∪C)≤P(B)+P(C)を用いて帰納法の仮定につなげる。この二集合の不等式は測度の劣加法性である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$s$を有限集合、$(A_i)_{i\in s}$を$\Omega$の部分集合の族とする。可測とは限らない集合$S$に対しては$P(S)=\inf\{P(T):T\in\mathcal{F},\ S\subseteq T\}$と読む。この値は包含について単調であり、可測な$S$では元の$P(S)$に一致する。
+
+    まず二つの集合$B,C\subseteq\Omega$について$P(B\cup C)\leq P(B)+P(C)$を示す。$\varepsilon>0$に対して、可測な$T\supseteq B$と$U\supseteq C$を$P(T)\leq P(B)+\varepsilon$、$P(U)\leq P(C)+\varepsilon$となるようにとる。$T\cup U$は$T$と$U\setminus T$の互いに素な和なので、$P(B\cup C)\leq P(T\cup U)\leq P(T)+P(U)\leq P(B)+P(C)+2\varepsilon$である。$\varepsilon$は任意なので不等式が従う。
+
+    次に$s$の要素数に関する帰納法を用いる。$s$が空なら両辺とも$0$である。$s=s'\cup\{j\}$（$j\notin s'$）のときは、二集合の不等式と帰納法の仮定から$P\left(\bigcup_{i\in s}A_i\right)\leq P\left(\bigcup_{i\in s'}A_i\right)+P(A_j)\leq\sum_{i\in s}P(A_i)$を得る。
   strategy: Induct on the finite index set using subadditivity for two sets.
   sketch:
-    - "induction: Induct on the finite set s."
-    - "setup: The empty union has probability 0, which settles the base case."
-    - "apply_theorem: For the step, use P(B ∪ C) ≤ P(B) + P(C)."
-    - "conclude: Combine with the induction hypothesis."
+  - 'induction: Induct on the finite set s.'
+  - 'setup: The empty union has probability 0, which settles the base case.'
+  - 'apply_theorem: For the step, use P(B ∪ C) ≤ P(B) + P(C).'
+  - 'conclude: Combine with the induction hypothesis.'
   openmath: (forall (P s A) (-> (and (probability_measure P) (finite_set s)) (<= (prob P (union_over s A)) (sum s (lambda (i) (prob P (seq_value A i)))))))
   hard_negative:
     statement: 有限族についてP(⋃A_i)=ΣP(A_i)が常に成り立つ。
@@ -84,18 +102,25 @@
   kind: gap
   level: 2
   topic: 条件付き確率・乗法公式
-  statement: 事象Aが正の確率をもつとき、P(B|A)P(A)=P(A∩B)が成り立つ。
+  statement: 確率測度$P$、$P(A)>0$である可測な事象$A$、集合$B$について、$P(B\mid A)P(A)=P(A\cap B)$が成り立つ。$B$は可測でなくてもよく、その場合の$P$は外測度の値を表す。
   statement_en: If the event A has positive probability, then P(B|A) P(A) = P(A ∩ B).
-  assumptions: [Pは確率測度, Aは可測な事象, P(A)>0]
-  quantifiers: [任意の確率空間, 事象A, 集合B]
-  conclusion: P(B|A)P(A)=P(A∩B)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$は可測な事象
+  - $P(A)>0$
+  - $B$は$\Omega$の部分集合（可測とは限らない）
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A\in\mathcal{F}$
+  - 任意の集合$B\subseteq\Omega$
+  conclusion: $P(B\mid A)P(A)=P(A\cap B)$である。
   answer: |
-    条件付き確率の定義はP(B|A)=P(A∩B)/P(A)である。P(A)>0なので両辺にP(A)を掛けると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A\in\mathcal{F}$を$P(A)>0$である事象、$B\subseteq\Omega$を集合とする。条件付き確率は$P(B\mid A)=P(A\cap B)/P(A)$で定まる。$B$が可測でない場合も、$P(A\cap B)$を外測度の値としてこの式で読む。$P(A)>0$なので、両辺に$P(A)$を掛けると$P(B\mid A)P(A)=P(A\cap B)$を得る。
   strategy: Clear the denominator in the definition of conditional probability.
   sketch:
-    - "translate: Write P(B|A) = P(A ∩ B) / P(A)."
-    - "derive: Multiply by P(A), which is nonzero."
-    - "conclude: This gives P(B|A) P(A) = P(A ∩ B)."
+  - 'translate: Write P(B|A) = P(A ∩ B) / P(A).'
+  - 'derive: Multiply by P(A), which is nonzero.'
+  - 'conclude: This gives P(B|A) P(A) = P(A ∩ B).'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (> (prob P A) 0)) (= (* (cond_prob P B A) (prob P A)) (prob P (inter A B)))))
   hard_negative:
     statement: P(B|A)P(A)=P(B)が成り立つ。
@@ -111,19 +136,24 @@
   kind: gap
   level: 2
   topic: 条件付き確率・全確率の公式
-  statement: 0<P(A)<1のとき、事象Bについて P(B)=P(B|A)P(A)+P(B|Aᶜ)P(Aᶜ) が成り立つ。
+  statement: 確率測度$P$と可測な事象$A,B$について、$P(A)>0$かつ$P(A^c)>0$ならば、$P(B)=P(B\mid A)P(A)+P(B\mid A^c)P(A^c)$が成り立つ。
   statement_en: If A and Aᶜ both have positive probability, then for an event B, P(B) = P(B|A) P(A) + P(B|Aᶜ) P(Aᶜ).
-  assumptions: [Pは確率測度, AとBは可測な事象, P(A)>0かつP(Aᶜ)>0]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: P(B)=P(B|A)P(A)+P(B|Aᶜ)P(Aᶜ)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  - $P(A)>0$かつ$P(A^c)>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $P(B)=P(B\mid A)P(A)+P(B\mid A^c)P(A^c)$である。
   answer: |
-    BはB∩AとB∩Aᶜの互いに素な和なのでP(B)=P(A∩B)+P(Aᶜ∩B)である。乗法公式よりP(A∩B)=P(B|A)P(A)、P(Aᶜ∩B)=P(B|Aᶜ)P(Aᶜ)である。これらを代入すると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を$P(A)>0$、$P(A^c)>0$を満たす事象とする。$B$は$A\cap B$と$A^c\cap B$の互いに素な和なので、$P(B)=P(A\cap B)+P(A^c\cap B)$である。条件付き確率の定義より、$P(A\cap B)=P(B\mid A)P(A)$、$P(A^c\cap B)=P(B\mid A^c)P(A^c)$である。これらを代入すると$P(B)=P(B\mid A)P(A)+P(B\mid A^c)P(A^c)$を得る。
   strategy: Split B along A and Aᶜ, then apply the multiplication rule to each piece.
   sketch:
-    - "case_split: Decompose B into B ∩ A and B ∩ Aᶜ."
-    - "apply_theorem: Use additivity for the disjoint union."
-    - "derive: Rewrite each piece with the multiplication rule."
-    - "conclude: Sum the two terms."
+  - 'case_split: Decompose B into B ∩ A and B ∩ Aᶜ.'
+  - 'apply_theorem: Use additivity for the disjoint union.'
+  - 'derive: Rewrite each piece with the multiplication rule.'
+  - 'conclude: Sum the two terms.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (> (prob P A) 0) (> (prob P (set_compl A)) 0)) (= (prob P B) (+ (* (cond_prob P B A) (prob P A)) (* (cond_prob P B (set_compl A)) (prob P (set_compl A)))))))
   hard_negative:
     statement: P(B)=P(B|A)+P(B|Aᶜ)が成り立つ。
@@ -142,20 +172,30 @@
   kind: textbook
   level: 2
   topic: 条件付き確率・全確率の公式
-  statement: 全事象の有限分割A_iの各P(A_i)が正のとき、事象Bについて P(B)=Σ_iP(B|A_i)P(A_i) が成り立つ。
+  statement: 確率測度$P$について、可測な事象の有限族$(A_i)_{i\in I}$が$\Omega$の分割で各$P(A_i)$が正ならば、可測な事象$B$について$P(B)=\sum_{i\in I}P(B\mid A_i)P(A_i)$が成り立つ。
   statement_en: If the finitely many measurable events A_i partition the sample space and each has positive probability, then P(B) = Σ_i P(B|A_i) P(A_i) for every event B.
-  assumptions: [Pは確率測度, A_iは可測で互いに素, ⋃A_i=Ω, P(A_i)>0, Bは可測な事象]
-  quantifiers: [任意の確率空間, 有限添字集合ι, 分割A, 事象B]
-  conclusion: P(B)=Σ_iP(B|A_i)P(A_i)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $I$は有限集合
+  - 各$A_i$は可測で、$A_i$は互いに素
+  - $\bigcup_{i\in I}A_i=\Omega$
+  - 各$i$で$P(A_i)>0$
+  - $B$は可測な事象
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の有限集合$I$
+  - 任意の分割$(A_i)_{i\in I}$
+  - 任意の事象$B\in\mathcal{F}$
+  conclusion: $P(B)=\sum_{i\in I}P(B\mid A_i)P(A_i)$である。
   answer: |
-    A_iが全事象を覆うのでB=⋃_i(A_i∩B)である。A_iは互いに素なのでA_i∩Bも互いに素で、加法性からP(B)=Σ_iP(A_i∩B)となる。各項に乗法公式P(A_i∩B)=P(B|A_i)P(A_i)を適用すると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$I$を有限集合とする。$(A_i)_{i\in I}$を互いに素な事象の族で、$\bigcup_{i\in I}A_i=\Omega$と$P(A_i)>0$を満たすものとし、$B\in\mathcal{F}$を事象とする。$A_i$が$\Omega$を覆うので$B=\bigcup_{i\in I}(A_i\cap B)$である。$A_i$が互いに素なので$A_i\cap B$も互いに素で、加法性から$P(B)=\sum_{i\in I}P(A_i\cap B)$となる。条件付き確率の定義より$P(A_i\cap B)=P(B\mid A_i)P(A_i)$なので、これを各項に代入すると$P(B)=\sum_{i\in I}P(B\mid A_i)P(A_i)$を得る。
   strategy: Intersect B with the partition, add up, and apply the multiplication rule termwise.
   sketch:
-    - "setup: Write B as the union of the sets A_i ∩ B."
-    - "derive: These sets are measurable and pairwise disjoint because the A_i are."
-    - "apply_theorem: Finite additivity gives P(B) = Σ P(A_i ∩ B)."
-    - "apply_theorem: The multiplication rule rewrites each term as P(B|A_i) P(A_i)."
-    - "conclude: Summing the rewritten terms gives the formula."
+  - 'setup: Write B as the union of the sets A_i ∩ B.'
+  - 'derive: These sets are measurable and pairwise disjoint because the A_i are.'
+  - 'apply_theorem: Finite additivity gives P(B) = Σ P(A_i ∩ B).'
+  - 'apply_theorem: The multiplication rule rewrites each term as P(B|A_i) P(A_i).'
+  - 'conclude: Summing the rewritten terms gives the formula.'
   openmath: (forall (P I A B) (-> (and (probability_measure P) (event_partition A I) (measurable_event B) (forall (i) (-> (in i I) (> (prob P (seq_value A i)) 0)))) (= (prob P B) (sum I (lambda (i) (* (cond_prob P B (seq_value A i)) (prob P (seq_value A i))))))))
   hard_negative:
     statement: A_iが全事象を覆えば、互いに素でなくても同じ公式が成り立つ。
@@ -183,19 +223,25 @@
   kind: named
   level: 2
   topic: 条件付き確率・ベイズの定理
-  statement: 事象A,Bの確率がともに正のとき、P(B|A)=P(A|B)P(B)/P(A)が成り立つ（ベイズの定理）。
-  statement_en: "Bayes' theorem: if the events A and B have positive probability, then P(B|A) = P(A|B) P(B) / P(A)."
-  assumptions: [Pは確率測度, AとBは可測な事象, P(A)>0, P(B)>0]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: P(B|A)=P(A|B)P(B)/P(A)である。
+  statement: ベイズの定理。確率測度$P$と可測な事象$A,B$について、$P(A)>0$かつ$P(B)>0$ならば、$P(B\mid A)=P(A\mid B)P(B)/P(A)$が成り立つ。
+  statement_en: 'Bayes'' theorem: if the events A and B have positive probability, then P(B|A) = P(A|B) P(B) / P(A).'
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  - $P(A)>0$
+  - $P(B)>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $P(B\mid A)=P(A\mid B)P(B)/P(A)$である。
   answer: |
-    乗法公式からP(B|A)P(A)=P(A∩B)、P(A|B)P(B)=P(B∩A)である。A∩B=B∩Aなので両者は等しい。P(A)>0で割ると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を$P(A)>0$、$P(B)>0$を満たす事象とする。条件付き確率の定義より、$P(B\mid A)P(A)=P(A\cap B)$、$P(A\mid B)P(B)=P(B\cap A)$である。$A\cap B=B\cap A$なので、$P(B\mid A)P(A)=P(A\mid B)P(B)$となる。$P(A)>0$で割ると$P(B\mid A)=P(A\mid B)P(B)/P(A)$を得る。
   strategy: Express the same intersection in two ways by the multiplication rule.
   sketch:
-    - "apply_theorem: Write P(A ∩ B) = P(B|A) P(A)."
-    - "apply_theorem: Write P(B ∩ A) = P(A|B) P(B)."
-    - "derive: Equate the right-hand sides since A ∩ B = B ∩ A."
-    - "conclude: Divide by P(A) > 0."
+  - 'apply_theorem: Write P(A ∩ B) = P(B|A) P(A).'
+  - 'apply_theorem: Write P(B ∩ A) = P(A|B) P(B).'
+  - 'derive: Equate the right-hand sides since A ∩ B = B ∩ A.'
+  - 'conclude: Divide by P(A) > 0.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (> (prob P A) 0) (> (prob P B) 0)) (= (cond_prob P B A) (/ (* (cond_prob P A B) (prob P B)) (prob P A)))))
   hard_negative:
     statement: 常にP(B|A)=P(A|B)である。
@@ -216,19 +262,27 @@
   kind: gap
   level: 2
   topic: 独立性・事象の独立
-  statement: 可測な事象A,Bが独立であることと、P(A∩B)=P(A)P(B)は同値である。
+  statement: 確率測度$P$と可測な事象$A,B$について、$A$と$B$が生成する$\sigma$加法族が独立であることと、$P(A\cap B)=P(A)P(B)$は同値である。
   statement_en: Measurable events A and B are independent if and only if P(A ∩ B) = P(A) P(B).
-  assumptions: [Pは確率測度, AとBは可測な事象]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: AとBの独立性はP(A∩B)=P(A)P(B)と同値である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $\sigma(A)$と$\sigma(B)$が独立であることと$P(A\cap B)=P(A)P(B)$は同値である。
   answer: |
-    独立性を生成するσ加法族の独立と定めると、A,B自身に適用して積の等式を得る。逆に積の等式があれば、{A}と{B}はそれぞれ共通部分について閉じた生成系なので、π-λ定理により生成するσ加法族も独立になる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を事象とする。$A$が生成する$\sigma$加法族は$\sigma(A)=\{\emptyset,A,A^c,\Omega\}$である。事象$A,B$の独立とは、任意の$C\in\sigma(A)$、$D\in\sigma(B)$で$P(C\cap D)=P(C)P(D)$が成り立つことをいう。
+
+    独立なら、$C=A$、$D=B$とおいて$P(A\cap B)=P(A)P(B)$を得る。
+
+    逆に$P(A\cap B)=P(A)P(B)$を仮定する。$C$または$D$が$\emptyset$なら両辺とも$0$であり、$C$または$D$が$\Omega$なら両辺とももう一方の確率に等しい。残りは$A,A^c$と$B,B^c$の組である。加法性から$P(A\cap B^c)=P(A)-P(A\cap B)=P(A)-P(A)P(B)=P(A)P(B^c)$となる。$A$と$B$を入れ替えると$P(A^c\cap B)=P(A^c)P(B)$も得られる。さらに$P(A^c\cap B^c)=P(A^c)-P(A^c\cap B)=P(A^c)-P(A^c)P(B)=P(A^c)P(B^c)$である。よって$\sigma(A)$と$\sigma(B)$は独立である。
   strategy: Use the pi-lambda theorem to pass between generators and generated sigma-algebras.
   sketch:
-    - "translate: Interpret independence of events through the sigma-algebras they generate."
-    - "derive: The forward direction specializes to A and B."
-    - "apply_theorem: The backward direction uses that singletons are pi-systems and the pi-lambda theorem."
-    - "conclude: Hence the two conditions are equivalent."
+  - 'translate: Interpret independence of events through the sigma-algebras they generate.'
+  - 'derive: The forward direction specializes to A and B.'
+  - 'apply_theorem: The backward direction uses that singletons are pi-systems and the pi-lambda theorem.'
+  - 'conclude: Hence the two conditions are equivalent.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B)) (<-> (indep_events P A B) (= (prob P (inter A B)) (* (prob P A) (prob P B))))))
   hard_negative:
     statement: 互いに素な事象は独立である。
@@ -252,19 +306,24 @@
   kind: gap
   level: 2
   topic: 独立性・余事象
-  statement: 事象AとBが独立ならば、AとBᶜも独立である。
+  statement: 確率測度$P$について、可測な事象$A$と$B$が独立ならば、$A$と$B^c$も独立である。
   statement_en: If the measurable events A and B are independent, then A and Bᶜ are independent.
-  assumptions: [Pは確率測度, AとBは可測な事象, AとBは独立]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: AとBᶜは独立である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  - $A$と$B$は独立
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $A$と$B^c$は独立である。
   answer: |
-    AはA∩BとA∩Bᶜの互いに素な和なのでP(A∩Bᶜ)=P(A)-P(A∩B)である。独立性よりこれはP(A)-P(A)P(B)=P(A)(1-P(B))=P(A)P(Bᶜ)に等しい。よってAとBᶜは独立である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を独立な事象とする。可測な事象の独立は積の等式と同値なので、$P(A\cap B)=P(A)P(B)$である。$A$は$A\cap B$と$A\cap B^c$の互いに素な和なので、$P(A\cap B^c)=P(A)-P(A\cap B)$である。したがって$P(A\cap B^c)=P(A)-P(A)P(B)=P(A)(1-P(B))=P(A)P(B^c)$となる。同じ同値性から、$A$と$B^c$は独立である。
   strategy: Subtract the independent intersection from P(A) and factor.
   sketch:
-    - "setup: Decompose A into A ∩ B and A ∩ Bᶜ."
-    - "derive: Additivity gives P(A ∩ Bᶜ) = P(A) - P(A ∩ B)."
-    - "apply_theorem: Independence turns this into P(A)(1 - P(B))."
-    - "conclude: Since 1 - P(B) = P(Bᶜ), the events A and Bᶜ are independent."
+  - 'setup: Decompose A into A ∩ B and A ∩ Bᶜ.'
+  - 'derive: Additivity gives P(A ∩ Bᶜ) = P(A) - P(A ∩ B).'
+  - 'apply_theorem: Independence turns this into P(A)(1 - P(B)).'
+  - 'conclude: Since 1 - P(B) = P(Bᶜ), the events A and Bᶜ are independent.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (indep_events P A B)) (indep_events P A (set_compl B))))
   hard_negative:
     statement: AとB、AとCがそれぞれ独立ならば、AとB∩Cも独立である。
@@ -285,18 +344,24 @@
   kind: gap
   level: 2
   topic: 独立性・条件付き確率
-  statement: 事象AとBが独立でP(A)>0ならば、P(B|A)=P(B)である。
+  statement: 確率測度$P$について、可測な事象$A$と$B$が独立で$P(A)>0$ならば、$P(B\mid A)=P(B)$である。
   statement_en: If the measurable events A and B are independent and P(A) > 0, then P(B|A) = P(B).
-  assumptions: [Pは確率測度, AとBは可測な事象, AとBは独立, P(A)>0]
-  quantifiers: [任意の確率空間と事象A, B]
-  conclusion: P(B|A)=P(B)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$と$B$は可測な事象
+  - $A$と$B$は独立
+  - $P(A)>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A,B\in\mathcal{F}$
+  conclusion: $P(B\mid A)=P(B)$である。
   answer: |
-    定義と独立性からP(B|A)=P(A∩B)/P(A)=P(A)P(B)/P(A)である。P(A)>0なので約分でき、P(B|A)=P(B)を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A,B\in\mathcal{F}$を独立な事象とし、$P(A)>0$とする。条件付き確率の定義と独立性から$P(B\mid A)=P(A\cap B)/P(A)=P(A)P(B)/P(A)$である。$P(A)>0$なので約分でき、$P(B\mid A)=P(B)$を得る。
   strategy: Substitute the product formula into the definition of conditional probability.
   sketch:
-    - "translate: Write P(B|A) P(A) = P(A ∩ B)."
-    - "apply_theorem: Independence gives P(A ∩ B) = P(B) P(A)."
-    - "conclude: Cancel P(A) > 0."
+  - 'translate: Write P(B|A) P(A) = P(A ∩ B).'
+  - 'apply_theorem: Independence gives P(A ∩ B) = P(B) P(A).'
+  - 'conclude: Cancel P(A) > 0.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (indep_events P A B) (> (prob P A) 0)) (= (cond_prob P B A) (prob P B))))
   hard_negative:
     statement: 互いに素な事象A,BについてP(A)>0ならP(B|A)=P(B)である。
@@ -319,19 +384,28 @@
   kind: gap
   level: 2
   topic: 独立性・確率変数の変換
-  statement: 確率変数XとYが独立で、φとψが可測写像ならば、φ(X)とψ(Y)も独立である。
+  statement: 確率変数$X$と$Y$が独立で、$\varphi$と$\psi$が可測写像ならば、$\varphi\circ X$と$\psi\circ Y$も独立である。
   statement_en: If random variables X and Y are independent and φ, ψ are measurable maps, then φ(X) and ψ(Y) are independent.
-  assumptions: [Pは確率測度, XとYは独立, φとψは可測]
-  quantifiers: [任意の確率空間, 確率変数X, Y, 可測写像φ, ψ]
-  conclusion: φ∘Xとψ∘Yは独立である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $X:\Omega\to E$と$Y:\Omega\to E'$は独立
+  - $\varphi:E\to F$と$\psi:E'\to F'$は可測
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の可測空間$E,E',F,F'$
+  - 任意の確率変数$X,Y$
+  - 任意の可測写像$\varphi,\psi$
+  conclusion: $\varphi\circ X$と$\psi\circ Y$は独立である。
   answer: |
-    可測集合C,Dに対し、{φ(X)∈C}={X∈φ⁻¹(C)}、{ψ(Y)∈D}={Y∈ψ⁻¹(D)}である。φ⁻¹(C)とψ⁻¹(D)は可測なので、XとYの独立性から両事象の共通部分の確率は積に分解する。これはφ(X)とψ(Y)の独立性そのものである。
+    $(\Omega,\mathcal{F},P)$を確率空間、$E,E',F,F'$を可測空間とする。$X:\Omega\to E$と$Y:\Omega\to E'$を独立な確率変数、$\varphi:E\to F$と$\psi:E'\to F'$を可測写像とする。
+
+    可測集合$C\subseteq F$、$D\subseteq F'$をとる。このとき$\{\varphi\circ X\in C\}=\{X\in\varphi^{-1}(C)\}$、$\{\psi\circ Y\in D\}=\{Y\in\psi^{-1}(D)\}$である。$\varphi^{-1}(C)$と$\psi^{-1}(D)$は可測なので、$X$と$Y$の独立性から$P(\varphi\circ X\in C,\ \psi\circ Y\in D)=P(\varphi\circ X\in C)P(\psi\circ Y\in D)$を得る。$C,D$は任意なので、$\varphi\circ X$と$\psi\circ Y$は独立である。
   strategy: Pull events back through the measurable maps and use independence of X and Y.
   sketch:
-    - "setup: Fix measurable sets C and D in the target spaces."
-    - "translate: Rewrite the events through the preimages under φ and ψ."
-    - "apply_theorem: Apply independence of X and Y to those measurable preimages."
-    - "conclude: The product formula is exactly independence of φ(X) and ψ(Y)."
+  - 'setup: Fix measurable sets C and D in the target spaces.'
+  - 'translate: Rewrite the events through the preimages under φ and ψ.'
+  - 'apply_theorem: Apply independence of X and Y to those measurable preimages.'
+  - 'conclude: The product formula is exactly independence of φ(X) and ψ(Y).'
   openmath: (forall (P X Y f g) (-> (and (probability_measure P) (indep_rv P X Y) (measurable_map f) (measurable_map g)) (indep_rv P (map_compose f X) (map_compose g Y))))
   hard_negative:
     statement: φ(X)とψ(Y)が独立ならXとYも独立である。
@@ -346,18 +420,23 @@
   kind: gap
   level: 2
   topic: 期待値・線形性
-  statement: 可積分な確率変数X,Yと実数a,bについて、E[aX+bY]=aE[X]+bE[Y]が成り立つ。
+  statement: 可積分な実確率変数$X,Y$と実数$a,b$について、$E[aX+bY]=aE[X]+bE[Y]$が成り立つ。
   statement_en: For integrable random variables X, Y and real numbers a, b, E[aX + bY] = a E[X] + b E[Y].
-  assumptions: [Pは確率測度, XとYは可積分]
-  quantifiers: [任意の確率空間, 確率変数X, Y, 実数a, b]
-  conclusion: E[aX+bY]=aE[X]+bE[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  - 任意の実数$a,b$
+  conclusion: $E[aX+bY]=aE[X]+bE[Y]$である。
   answer: |
-    XとYが可積分なのでaXとbYも可積分である。積分の加法性と定数倍の性質からE[aX+bY]=E[aX]+E[bY]=aE[X]+bE[Y]となる。独立性はこの議論に現れない。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を可積分な実確率変数、$a,b\in\mathbb{R}$とする。$X,Y$が可積分なので、$aX$と$bY$も可積分である。積分の加法性と定数倍の性質から、$E[aX+bY]=E[aX]+E[bY]=aE[X]+bE[Y]$となる。この議論に独立性は現れない。
   strategy: Apply additivity and homogeneity of the integral.
   sketch:
-    - "setup: Note that aX and bY are integrable."
-    - "apply_theorem: Additivity of the integral splits the sum."
-    - "conclude: Homogeneity pulls out the constants a and b."
+  - 'setup: Note that aX and bY are integrable.'
+  - 'apply_theorem: Additivity of the integral splits the sum.'
+  - 'conclude: Homogeneity pulls out the constants a and b.'
   openmath: (forall (P X Y a b) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P)) (= (expectation P (+ (* a X) (* b Y))) (+ (* a (expectation P X)) (* b (expectation P Y))))))
   hard_negative:
     statement: 可積分なX,YについてE[XY]=E[X]E[Y]が常に成り立つ。
@@ -373,18 +452,23 @@
   kind: gap
   level: 2
   topic: 期待値・単調性
-  statement: 可積分なX,Yがほとんど確実にX≤Yを満たすならば、E[X]≤E[Y]である。
+  statement: 可積分な実確率変数$X,Y$がほとんど確実に$X\leq Y$を満たすならば、$E[X]\leq E[Y]$である。
   statement_en: If integrable random variables satisfy X ≤ Y almost surely, then E[X] ≤ E[Y].
-  assumptions: [Pは確率測度, XとYは可積分, ほとんど確実にX≤Y]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: E[X]≤E[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は可積分
+  - ほとんど確実に$X\leq Y$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $E[X]\leq E[Y]$である。
   answer: |
-    Y-Xは可積分で、ほとんど確実に非負である。ほとんど確実に非負な関数の積分は非負なので0≤E[Y-X]である。線形性からE[Y-X]=E[Y]-E[X]となり、E[X]≤E[Y]を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を可積分な実確率変数とし、ほとんど確実に$X\leq Y$とする。$Y-X$は可積分で、ほとんど確実に非負である。ほとんど確実に非負な関数の積分は非負なので、$0\leq E[Y-X]$である。線形性から$E[Y-X]=E[Y]-E[X]$なので、$E[X]\leq E[Y]$を得る。
   strategy: Reduce to nonnegativity of the integral of Y - X.
   sketch:
-    - "setup: Consider Y - X, which is integrable and almost surely nonnegative."
-    - "apply_theorem: The integral of an almost surely nonnegative function is nonnegative."
-    - "conclude: Linearity gives E[Y] - E[X] ≥ 0."
+  - 'setup: Consider Y - X, which is integrable and almost surely nonnegative.'
+  - 'apply_theorem: The integral of an almost surely nonnegative function is nonnegative.'
+  - 'conclude: Linearity gives E[Y] - E[X] ≥ 0.'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P) (ae_le P X Y)) (<= (expectation P X) (expectation P Y))))
   hard_negative:
     statement: E[X]≤E[Y]ならばほとんど確実にX≤Yである。
@@ -399,18 +483,22 @@
   kind: gap
   level: 2
   topic: 期待値・指示関数
-  statement: 事象Aの指示関数1_Aについて、E[1_A]=P(A)が成り立つ。
+  statement: 確率測度$P$と可測な事象$A$の指示関数$1_A$について、$E[1_A]=P(A)$が成り立つ。
   statement_en: For a measurable event A, the expectation of its indicator function equals P(A).
-  assumptions: [Pは確率測度, Aは可測な事象]
-  quantifiers: [任意の確率空間と事象A]
-  conclusion: E[1_A]=P(A)である。
+  assumptions:
+  - $P$は標本空間$\Omega$上の確率測度
+  - $A$は可測な事象
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象$A\in\mathcal{F}$
+  conclusion: $E[1_A]=P(A)$である。
   answer: |
-    1_AはA上で1、Aの外で0をとる単関数である。単関数の積分の定義から、その積分は1·P(A)+0·P(Aᶜ)=P(A)である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$A\in\mathcal{F}$を事象とする。指示関数$1_A$は$A$上で$1$、$A^c$上で$0$をとる単関数である。単関数の積分の定義から、$E[1_A]=1\cdot P(A)+0\cdot P(A^c)=P(A)$である。
   strategy: Compute the integral of a two-valued simple function.
   sketch:
-    - "translate: View the indicator as a simple function with values 1 and 0."
-    - "derive: Its integral is 1·P(A) + 0·P(Aᶜ)."
-    - "conclude: This equals P(A)."
+  - 'translate: View the indicator as a simple function with values 1 and 0.'
+  - 'derive: Its integral is 1·P(A) + 0·P(Aᶜ).'
+  - 'conclude: This equals P(A).'
   openmath: (forall (P A) (-> (and (probability_measure P) (measurable_event A)) (= (expectation P (indicator_of A)) (prob P A))))
   hard_negative:
     statement: E[1_A 1_B]=P(A)P(B)が常に成り立つ。
@@ -425,20 +513,29 @@
   kind: textbook
   level: 2
   topic: 期待値・独立な確率変数の積
-  statement: 可積分な確率変数XとYが独立ならば、XYも可積分でE[XY]=E[X]E[Y]である。
+  statement: 可積分な実確率変数$X$と$Y$が独立ならば、$XY$も可積分で$E[XY]=E[X]E[Y]$である。
   statement_en: If integrable random variables X and Y are independent, then XY is integrable and E[XY] = E[X] E[Y].
-  assumptions: [Pは確率測度, XとYは可積分, XとYは独立]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: XYは可積分でE[XY]=E[X]E[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は可積分
+  - $X$と$Y$は独立
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $XY$は可積分で$E[XY]=E[X]E[Y]$である。
   answer: |
-    指示関数の場合は独立性の定義そのものである。線形性から単関数に、単調収束定理から非負可測関数に広がる。これを|X|,|Y|に適用するとE[|XY|]=E[|X|]E[|Y|]<∞なのでXYは可積分である。正部分と負部分に分けて線形性を使うと、一般のXとYでE[XY]=E[X]E[Y]を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を可積分で独立な実確率変数とする。まず$\mathbb{R}$上の非負可測関数$f,g$について、$[0,\infty]$の値で$E[f(X)g(Y)]=E[f(X)]E[g(Y)]$を示す。
+
+    $f=1_C$、$g=1_D$（$C,D$は可測集合）のとき、この等式は$P(X\in C,\ Y\in D)=P(X\in C)P(Y\in D)$であり、独立性そのものである。両辺は$f$と$g$のそれぞれについて線形なので、非負単関数でも成り立つ。一般の$f,g$には、各点で単調に収束する非負単関数の列$f_n\uparrow f$、$g_n\uparrow g$をとる。このとき$f_n(X)g_n(Y)\uparrow f(X)g(Y)$なので、単調収束定理により極限でも等式が成り立つ。
+
+    $f=g=|\cdot|$とおくと$E[|XY|]=E[|X|]E[|Y|]<\infty$となり、$XY$は可積分である。次に$X=X^+-X^-$、$Y=Y^+-Y^-$と正部分と負部分に分ける。$X^\pm,Y^\pm$は$X,Y$の非負可測関数で、いずれも可積分である。したがって$E[X^{\pm}Y^{\pm}]=E[X^{\pm}]E[Y^{\pm}]$が符号の4通りすべてで成り立つ。$XY=X^+Y^+-X^+Y^--X^-Y^++X^-Y^-$の期待値を線形性で展開すると、$E[XY]=(E[X^+]-E[X^-])(E[Y^+]-E[Y^-])=E[X]E[Y]$を得る。
   strategy: Run the standard machine from indicators to integrable functions.
   sketch:
-    - "setup: For indicators of events the identity is the definition of independence."
-    - "derive: Extend to simple functions by bilinearity."
-    - "apply_theorem: Extend to nonnegative measurable functions by monotone convergence."
-    - "derive: Applying this to |X| and |Y| gives integrability of XY."
-    - "conclude: Split into positive and negative parts to finish."
+  - 'setup: For indicators of events the identity is the definition of independence.'
+  - 'derive: Extend to simple functions by bilinearity.'
+  - 'apply_theorem: Extend to nonnegative measurable functions by monotone convergence.'
+  - 'derive: Applying this to |X| and |Y| gives integrability of XY.'
+  - 'conclude: Split into positive and negative parts to finish.'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P) (indep_rv P X Y)) (and (integrable_rv (* X Y) P) (= (expectation P (* X Y)) (* (expectation P X) (expectation P Y))))))
   hard_negative:
     statement: E[XY]=E[X]E[Y]ならばXとYは独立である。
@@ -453,19 +550,23 @@
   kind: gap
   level: 2
   topic: 分散・基本公式
-  statement: 2乗可積分な確率変数Xについて、V[X]=E[X²]-E[X]²が成り立つ。
+  statement: 2乗可積分な実確率変数$X$について、$V[X]=E[X^2]-E[X]^2$が成り立つ。
   statement_en: For a square-integrable random variable X, Var(X) = E[X²] - E[X]².
-  assumptions: [Pは確率測度, Xは2乗可積分]
-  quantifiers: [任意の確率空間と確率変数X]
-  conclusion: V[X]=E[X²]-E[X]²である。
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  conclusion: $V[X]=E[X^2]-E[X]^2$である。
   answer: |
-    m=E[X]とおくと(X-m)²=X²-2mX+m²である。両辺の期待値をとり線形性を使うとV[X]=E[X²]-2m·m+m²=E[X²]-m²を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を2乗可積分な実確率変数とする。$|X|\leq(1+X^2)/2$なので$X$は可積分である。$m=E[X]$とおくと、$V[X]=E[(X-m)^2]$で、$(X-m)^2=X^2-2mX+m^2$である。各項は可積分なので、線形性から$V[X]=E[X^2]-2m\cdot m+m^2=E[X^2]-m^2$となる。$m=E[X]$なので結論を得る。
   strategy: Expand the square in the definition and apply linearity.
   sketch:
-    - "setup: Put m = E[X]."
-    - "derive: Expand (X - m)² = X² - 2mX + m²."
-    - "apply_theorem: Take expectations with linearity."
-    - "conclude: Simplify to E[X²] - m²."
+  - 'setup: Put m = E[X].'
+  - 'derive: Expand (X - m)² = X² - 2mX + m².'
+  - 'apply_theorem: Take expectations with linearity.'
+  - 'conclude: Simplify to E[X²] - m².'
   openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (variance P X) (- (expectation P (^ X 2)) (^ (expectation P X) 2)))))
   hard_negative:
     statement: V[X]=E[X²]が常に成り立つ。
@@ -480,18 +581,23 @@
   kind: gap
   level: 2
   topic: 分散・一次変換
-  statement: 2乗可積分なXと実数a,bについて、V[aX+b]=a²V[X]が成り立つ。
+  statement: 2乗可積分な実確率変数$X$と実数$a,b$について、$V[aX+b]=a^2V[X]$が成り立つ。
   statement_en: For a square-integrable random variable X and real numbers a, b, Var(aX + b) = a² Var(X).
-  assumptions: [Pは確率測度, Xは2乗可積分]
-  quantifiers: [任意の確率空間, 確率変数X, 実数a, b]
-  conclusion: V[aX+b]=a²V[X]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の実数$a,b$
+  conclusion: $V[aX+b]=a^2V[X]$である。
   answer: |
-    E[aX+b]=aE[X]+bなので、(aX+b)-E[aX+b]=a(X-E[X])である。両辺を2乗して期待値をとるとV[aX+b]=a²E[(X-E[X])²]=a²V[X]となる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を2乗可積分な実確率変数、$a,b\in\mathbb{R}$とする。$X$は可積分なので、$E[aX+b]=aE[X]+b$である。したがって$(aX+b)-E[aX+b]=a(X-E[X])$となる。両辺を2乗して期待値をとると、$V[aX+b]=a^2E[(X-E[X])^2]=a^2V[X]$を得る。
   strategy: The shift cancels when centering, and the scale factor comes out squared.
   sketch:
-    - "derive: Compute E[aX + b] = a E[X] + b."
-    - "derive: Hence the centered variable is a (X - E[X])."
-    - "conclude: Squaring and taking expectations gives a² Var(X)."
+  - 'derive: Compute E[aX + b] = a E[X] + b.'
+  - 'derive: Hence the centered variable is a (X - E[X]).'
+  - 'conclude: Squaring and taking expectations gives a² Var(X).'
   openmath: (forall (P X a b) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (variance P (+ (* a X) b)) (* (^ a 2) (variance P X)))))
   hard_negative:
     statement: V[aX+b]=aV[X]+bが成り立つ。
@@ -507,19 +613,23 @@
   kind: gap
   level: 2
   topic: 分散・共分散との関係
-  statement: 2乗可積分なX,Yについて、V[X+Y]=V[X]+2Cov(X,Y)+V[Y]が成り立つ。
+  statement: 2乗可積分な実確率変数$X,Y$について、$V[X+Y]=V[X]+2\operatorname{Cov}(X,Y)+V[Y]$が成り立つ。
   statement_en: For square-integrable random variables X and Y, Var(X + Y) = Var(X) + 2 Cov(X, Y) + Var(Y).
-  assumptions: [Pは確率測度, XとYは2乗可積分]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: V[X+Y]=V[X]+2Cov(X,Y)+V[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $V[X+Y]=V[X]+2\operatorname{Cov}(X,Y)+V[Y]$である。
   answer: |
-    U=X-E[X]、W=Y-E[Y]とおくと、X+Yの中心化はU+Wである。(U+W)²=U²+2UW+W²の期待値をとると、E[U²]=V[X]、E[W²]=V[Y]、E[UW]=Cov(X,Y)から結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を2乗可積分な実確率変数とする。$U=X-E[X]$、$W=Y-E[Y]$とおくと、$(X+Y)-E[X+Y]=U+W$である。$|UW|\leq(U^2+W^2)/2$なので$UW$は可積分である。$(U+W)^2=U^2+2UW+W^2$の期待値をとると、$E[U^2]=V[X]$、$E[W^2]=V[Y]$、$E[UW]=\operatorname{Cov}(X,Y)$から$V[X+Y]=V[X]+2\operatorname{Cov}(X,Y)+V[Y]$を得る。
   strategy: Center both variables and expand the square of the sum.
   sketch:
-    - "setup: Center X and Y to get U and W."
-    - "derive: The centered sum is U + W."
-    - "derive: Expand (U + W)² and take expectations."
-    - "conclude: Identify the terms as the variances and the covariance."
+  - 'setup: Center X and Y to get U and W.'
+  - 'derive: The centered sum is U + W.'
+  - 'derive: Expand (U + W)² and take expectations.'
+  - 'conclude: Identify the terms as the variances and the covariance.'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (= (variance P (+ X Y)) (+ (variance P X) (* 2 (covariance P X Y)) (variance P Y)))))
   hard_negative:
     statement: 任意のX,YでV[X+Y]=V[X]+V[Y]である。
@@ -534,19 +644,28 @@
   kind: textbook
   level: 2
   topic: 分散・独立な和
-  statement: 対ごとに独立で2乗可積分な確率変数の有限和の分散は、各分散の和に等しい。
+  statement: 対ごとに独立で2乗可積分な実確率変数の有限族$(X_i)_{i\in s}$について、$V\left[\sum_{i\in s}X_i\right]=\sum_{i\in s}V[X_i]$が成り立つ。
   statement_en: The variance of a finite sum of pairwise independent square-integrable random variables equals the sum of their variances.
-  assumptions: [Pは確率測度, 各X_iは2乗可積分, X_iは対ごとに独立]
-  quantifiers: [任意の確率空間, 有限な添字集合s, 確率変数族X]
-  conclusion: V[Σ_{i∈s}X_i]=Σ_{i∈s}V[X_i]である。
+  assumptions:
+  - $P$は確率測度
+  - $s$は有限な添字集合
+  - 各$X_i$は2乗可積分
+  - $(X_i)_{i\in s}$は対ごとに独立
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の有限集合$s$
+  - 任意の実確率変数の族$(X_i)_{i\in s}$
+  conclusion: $V\left[\sum_{i\in s}X_i\right]=\sum_{i\in s}V[X_i]$である。
   answer: |
-    Σ_iX_iの中心化はΣ_iU_i（U_i=X_i-E[X_i]）である。2乗を展開するとV[Σ_iX_i]=Σ_iE[U_i²]+Σ_{i≠j}E[U_iU_j]となる。i≠jではX_iとX_jが独立なのでE[U_iU_j]=E[U_i]E[U_j]=0である。よって残るのは各分散の和である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$s$を有限集合とし、$(X_i)_{i\in s}$を対ごとに独立で2乗可積分な実確率変数の族とする。$U_i=X_i-E[X_i]$とおくと、$\sum_{i\in s}X_i$から期待値を引いたものは$\sum_{i\in s}U_i$である。2乗を展開すると、$V\left[\sum_{i\in s}X_i\right]=\sum_{i\in s}E[U_i^2]+\sum_{i\neq j}E[U_iU_j]$となる。
+
+    $i\neq j$のとき、$U_i$と$U_j$はそれぞれ$X_i$と$X_j$の可測関数なので独立で、どちらも可積分である。独立な可積分確率変数の積の期待値は期待値の積なので、$E[U_iU_j]=E[U_i]E[U_j]=0$である。よって残るのは$\sum_{i\in s}E[U_i^2]=\sum_{i\in s}V[X_i]$である。
   strategy: Expand the square of the centered sum; independence kills the cross terms.
   sketch:
-    - "setup: Center each variable as U_i = X_i - E[X_i]."
-    - "derive: Expand the square of the sum into diagonal and off-diagonal terms."
-    - "apply_theorem: Pairwise independence gives E[U_i U_j] = 0 for i ≠ j."
-    - "conclude: Only the diagonal terms remain, which are the variances."
+  - 'setup: Center each variable as U_i = X_i - E[X_i].'
+  - 'derive: Expand the square of the sum into diagonal and off-diagonal terms.'
+  - 'apply_theorem: Pairwise independence gives E[U_i U_j] = 0 for i ≠ j.'
+  - 'conclude: Only the diagonal terms remain, which are the variances.'
   openmath: (forall (P s X) (-> (and (probability_measure P) (finite_set s) (forall (i) (-> (in i s) (square_integrable_rv (seq_value X i) P))) (pairwise_indep_rv P X)) (= (variance P (sum s (lambda (i) (seq_value X i)))) (sum s (lambda (i) (variance P (seq_value X i)))))))
   hard_negative:
     statement: 独立性なしで分散は和について加法的である。
@@ -565,18 +684,23 @@
   kind: gap
   level: 2
   topic: 分散・退化
-  statement: 2乗可積分なXの分散が0ならば、Xはほとんど確実にE[X]に等しい。
+  statement: 2乗可積分な実確率変数$X$の分散が$0$ならば、ほとんど確実に$X=E[X]$である。
   statement_en: If a square-integrable random variable X has variance 0, then X = E[X] almost surely.
-  assumptions: [Pは確率測度, Xは2乗可積分, "V[X]=0"]
-  quantifiers: [任意の確率空間と確率変数X]
-  conclusion: ほとんど確実にX=E[X]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  - $V[X]=0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  conclusion: ほとんど確実に$X=E[X]$である。
   answer: |
-    V[X]=E[(X-E[X])²]=0で、(X-E[X])²は非負である。非負関数の積分が0ならその関数はほとんど至るところ0なので、ほとんど確実にX=E[X]である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を$V[X]=0$である2乗可積分な実確率変数とする。このとき$E[(X-E[X])^2]=0$で、$(X-E[X])^2$は非負である。非負可測関数の積分が$0$ならその関数はほとんど至るところ$0$なので、ほとんど確実に$X=E[X]$である。
   strategy: A nonnegative function with zero integral vanishes almost everywhere.
   sketch:
-    - "translate: Write the hypothesis as E[(X - E[X])²] = 0."
-    - "apply_theorem: A nonnegative function with zero integral is zero almost everywhere."
-    - "conclude: Therefore X = E[X] almost surely."
+  - 'translate: Write the hypothesis as E[(X - E[X])²] = 0.'
+  - 'apply_theorem: A nonnegative function with zero integral is zero almost everywhere.'
+  - 'conclude: Therefore X = E[X] almost surely.'
   openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P) (= (variance P X) 0)) (ae_eq P X (expectation P X))))
   hard_negative:
     statement: 分散が0ならXは全ての標本点でE[X]に等しい。
@@ -591,19 +715,24 @@
   kind: gap
   level: 2
   topic: 分散・平均二乗誤差
-  statement: 2乗可積分なXと実数aについて、E[(X-a)²]=V[X]+(E[X]-a)²が成り立つ。
+  statement: 2乗可積分な実確率変数$X$と実数$a$について、$E[(X-a)^2]=V[X]+(E[X]-a)^2$が成り立つ。
   statement_en: For a square-integrable random variable X and a real number a, E[(X - a)²] = Var(X) + (E[X] - a)².
-  assumptions: [Pは確率測度, Xは2乗可積分]
-  quantifiers: [任意の確率空間, 確率変数X, 実数a]
-  conclusion: E[(X-a)²]=V[X]+(E[X]-a)²である。
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の実数$a$
+  conclusion: $E[(X-a)^2]=V[X]+(E[X]-a)^2$である。
   answer: |
-    m=E[X]とおくと(X-a)²=(X-m)²+2(m-a)(X-m)+(m-a)²である。期待値をとるとE[X-m]=0より中央の項が消え、E[(X-a)²]=V[X]+(m-a)²となる。特にE[(X-a)²]はa=E[X]で最小になる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を2乗可積分な実確率変数、$a\in\mathbb{R}$とする。$m=E[X]$とおくと、$(X-a)^2=(X-m)^2+2(m-a)(X-m)+(m-a)^2$である。期待値をとると$E[X-m]=0$より中央の項が消える。よって$E[(X-a)^2]=V[X]+(m-a)^2=V[X]+(E[X]-a)^2$を得る。
   strategy: Insert the mean into the square and note that the cross term has zero expectation.
   sketch:
-    - "setup: Put m = E[X] and write X - a = (X - m) + (m - a)."
-    - "derive: Expand the square into three terms."
-    - "derive: The cross term has zero expectation because E[X - m] = 0."
-    - "conclude: The remaining terms are Var(X) and (m - a)²."
+  - 'setup: Put m = E[X] and write X - a = (X - m) + (m - a).'
+  - 'derive: Expand the square into three terms.'
+  - 'derive: The cross term has zero expectation because E[X - m] = 0.'
+  - 'conclude: The remaining terms are Var(X) and (m - a)².'
   openmath: (forall (P X a) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (expectation P (^ (- X a) 2)) (+ (variance P X) (^ (- (expectation P X) a) 2)))))
   hard_negative:
     statement: E[(X-a)²]はXの中央値で常に最小になる。
@@ -631,19 +760,23 @@
   kind: gap
   level: 2
   topic: 共分散・基本公式
-  statement: 2乗可積分なX,Yについて、Cov(X,Y)=E[XY]-E[X]E[Y]が成り立つ。
+  statement: 2乗可積分な実確率変数$X,Y$について、$\operatorname{Cov}(X,Y)=E[XY]-E[X]E[Y]$が成り立つ。
   statement_en: For square-integrable random variables X and Y, Cov(X, Y) = E[XY] - E[X] E[Y].
-  assumptions: [Pは確率測度, XとYは2乗可積分]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: Cov(X,Y)=E[XY]-E[X]E[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $\operatorname{Cov}(X,Y)=E[XY]-E[X]E[Y]$である。
   answer: |
-    (X-E[X])(Y-E[Y])=XY-E[Y]X-E[X]Y+E[X]E[Y]である。コーシー・シュワルツの不等式からXYは可積分で、各項の期待値がとれる。線形性からCov(X,Y)=E[XY]-E[X]E[Y]-E[X]E[Y]+E[X]E[Y]=E[XY]-E[X]E[Y]となる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を2乗可積分な実確率変数とする。$|XY|\leq(X^2+Y^2)/2$なので$XY$は可積分であり、$X,Y$も可積分である。共分散は$\operatorname{Cov}(X,Y)=E[(X-E[X])(Y-E[Y])]$で定まる。積を展開すると$(X-E[X])(Y-E[Y])=XY-E[Y]X-E[X]Y+E[X]E[Y]$である。線形性から$\operatorname{Cov}(X,Y)=E[XY]-E[X]E[Y]-E[X]E[Y]+E[X]E[Y]=E[XY]-E[X]E[Y]$を得る。
   strategy: Expand the product in the definition and apply linearity.
   sketch:
-    - "setup: Expand the product of the two centered variables."
-    - "derive: Integrability of XY follows from square integrability."
-    - "apply_theorem: Take expectations by linearity."
-    - "conclude: Two of the product terms cancel."
+  - 'setup: Expand the product of the two centered variables.'
+  - 'derive: Integrability of XY follows from square integrability.'
+  - 'apply_theorem: Take expectations by linearity.'
+  - 'conclude: Two of the product terms cancel.'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (= (covariance P X Y) (- (expectation P (* X Y)) (* (expectation P X) (expectation P Y))))))
   hard_negative:
     statement: Cov(X,Y)=0ならばXとYは独立である。
@@ -658,18 +791,23 @@
   kind: gap
   level: 2
   topic: 共分散・独立性
-  statement: 2乗可積分なXとYが独立ならば、Cov(X,Y)=0である。
+  statement: 2乗可積分な実確率変数$X$と$Y$が独立ならば、$\operatorname{Cov}(X,Y)=0$である。
   statement_en: If square-integrable random variables X and Y are independent, then Cov(X, Y) = 0.
-  assumptions: [Pは確率測度, XとYは2乗可積分, XとYは独立]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: Cov(X,Y)=0である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は2乗可積分
+  - $X$と$Y$は独立
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $\operatorname{Cov}(X,Y)=0$である。
   answer: |
-    Cov(X,Y)=E[XY]-E[X]E[Y]である。XとYが独立なのでE[XY]=E[X]E[Y]であり、差は0になる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を独立で2乗可積分な実確率変数とする。このとき$X,Y$は可積分で、$\operatorname{Cov}(X,Y)=E[XY]-E[X]E[Y]$である。独立な可積分確率変数の積の期待値は期待値の積なので、$E[XY]=E[X]E[Y]$となる。よって$\operatorname{Cov}(X,Y)=0$である。
   strategy: Combine the covariance formula with the product rule for independent variables.
   sketch:
-    - "translate: Write Cov(X, Y) = E[XY] - E[X] E[Y]."
-    - "apply_theorem: Independence gives E[XY] = E[X] E[Y]."
-    - "conclude: The difference vanishes."
+  - 'translate: Write Cov(X, Y) = E[XY] - E[X] E[Y].'
+  - 'apply_theorem: Independence gives E[XY] = E[X] E[Y].'
+  - 'conclude: The difference vanishes.'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P) (indep_rv P X Y)) (= (covariance P X Y) 0)))
   hard_negative:
     statement: 無相関な確率変数は独立である。
@@ -684,19 +822,27 @@
   kind: gap
   level: 3
   topic: 共分散・コーシー・シュワルツ
-  statement: 2乗可積分なX,Yについて、Cov(X,Y)²≤V[X]V[Y]が成り立つ。
+  statement: 2乗可積分な実確率変数$X,Y$について、$\operatorname{Cov}(X,Y)^2\leq V[X]V[Y]$が成り立つ。
   statement_en: For square-integrable random variables X and Y, Cov(X, Y)² ≤ Var(X) Var(Y).
-  assumptions: [Pは確率測度, XとYは2乗可積分]
-  quantifiers: [任意の確率空間と確率変数X, Y]
-  conclusion: Cov(X,Y)²≤V[X]V[Y]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  conclusion: $\operatorname{Cov}(X,Y)^2\leq V[X]V[Y]$である。
   answer: |
-    任意の実数tについて0≤V[tY+X]=t²V[Y]+2tCov(X,Y)+V[X]である。tの2次式が常に非負なので判別式は0以下であり、4Cov(X,Y)²-4V[X]V[Y]≤0となる。これは結論そのものである。V[Y]=0の場合も、1次式が常に非負ならCov(X,Y)=0となるので同じ不等式が成り立つ。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を2乗可積分な実確率変数とする。任意の$t\in\mathbb{R}$について、$0\leq V[tY+X]=t^2V[Y]+2t\operatorname{Cov}(X,Y)+V[X]$である。
+
+    $V[Y]>0$なら、これは常に非負な$t$の2次式なので判別式は$0$以下である。したがって$4\operatorname{Cov}(X,Y)^2-4V[X]V[Y]\leq0$となり、結論を得る。
+
+    $V[Y]=0$なら、$2t\operatorname{Cov}(X,Y)+V[X]\geq0$が任意の$t$で成り立つので$\operatorname{Cov}(X,Y)=0$である。このとき両辺とも$0$で、不等式は成り立つ。
   strategy: A quadratic in t that is always nonnegative has nonpositive discriminant.
   sketch:
-    - "construct: Consider the variance of tY + X as a function of t."
-    - "derive: Expand it to t² Var(Y) + 2t Cov(X, Y) + Var(X)."
-    - "apply_theorem: Nonnegativity for all t forces the discriminant to be nonpositive."
-    - "conclude: Rearranging gives Cov(X, Y)² ≤ Var(X) Var(Y)."
+  - 'construct: Consider the variance of tY + X as a function of t.'
+  - 'derive: Expand it to t² Var(Y) + 2t Cov(X, Y) + Var(X).'
+  - 'apply_theorem: Nonnegativity for all t forces the discriminant to be nonpositive.'
+  - 'conclude: Rearranging gives Cov(X, Y)² ≤ Var(X) Var(Y).'
   openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (<= (^ (covariance P X Y) 2) (* (variance P X) (variance P Y)))))
   hard_negative:
     statement: 常にCov(X,Y)≤V[X]である。
@@ -720,18 +866,22 @@
   kind: gap
   level: 2
   topic: 期待値・2次モーメント
-  statement: 2乗可積分なXについて、E[X]²≤E[X²]が成り立つ。
+  statement: 2乗可積分な実確率変数$X$について、$E[X]^2\leq E[X^2]$が成り立つ。
   statement_en: For a square-integrable random variable X, E[X]² ≤ E[X²].
-  assumptions: [Pは確率測度, Xは2乗可積分]
-  quantifiers: [任意の確率空間と確率変数X]
-  conclusion: E[X]²≤E[X²]である。
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  conclusion: $E[X]^2\leq E[X^2]$である。
   answer: |
-    分散は非負の確率変数の期待値なのでV[X]≥0である。V[X]=E[X²]-E[X]²なので、移項するとE[X]²≤E[X²]を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を2乗可積分な実確率変数とする。分散$V[X]=E[(X-E[X])^2]$は非負の確率変数の期待値なので、$V[X]\geq0$である。$V[X]=E[X^2]-E[X]^2$なので、移項すると$E[X]^2\leq E[X^2]$を得る。
   strategy: Rearrange nonnegativity of the variance.
   sketch:
-    - "apply_theorem: The variance is the expectation of a square, so it is nonnegative."
-    - "translate: Use Var(X) = E[X²] - E[X]²."
-    - "conclude: Rearrange the inequality."
+  - 'apply_theorem: The variance is the expectation of a square, so it is nonnegative.'
+  - 'translate: Use Var(X) = E[X²] - E[X]².'
+  - 'conclude: Rearrange the inequality.'
   openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P)) (<= (^ (expectation P X) 2) (expectation P (^ X 2)))))
   hard_negative:
     statement: 常にE[X²]≤E[X]²である。
@@ -749,19 +899,26 @@
   kind: textbook
   level: 2
   topic: 確率不等式・マルコフの不等式
-  statement: ほとんど確実に非負で可積分なXと実数ε>0について、P(X≥ε)≤E[X]/εが成り立つ。
-  statement_en: "Markov's inequality: for an integrable, almost surely nonnegative random variable X and ε > 0, P(X ≥ ε) ≤ E[X] / ε."
-  assumptions: [Pは確率測度, Xは可積分, ほとんど確実にX≥0, ε>0]
-  quantifiers: [任意の確率空間, 確率変数X, 正の実数ε]
-  conclusion: P(X≥ε)≤E[X]/εである。
+  statement: マルコフの不等式。ほとんど確実に非負で可積分な実確率変数$X$と実数$\varepsilon>0$について、$P(X\geq\varepsilon)\leq E[X]/\varepsilon$が成り立つ。
+  statement_en: 'Markov''s inequality: for an integrable, almost surely nonnegative random variable X and ε > 0, P(X ≥ ε) ≤ E[X] / ε.'
+  assumptions:
+  - $P$は確率測度
+  - $X$は可積分
+  - ほとんど確実に$X\geq0$
+  - $\varepsilon>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の正の実数$\varepsilon$
+  conclusion: $P(X\geq\varepsilon)\leq E[X]/\varepsilon$である。
   answer: |
-    A={X≥ε}とおくと、ほとんど確実にε1_A≤Xである。A上ではε≤Xであり、Aの外では1_A=0かつほとんど確実にX≥0だからである。期待値をとるとεP(A)≤E[X]となり、ε>0で割ると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$をほとんど確実に非負で可積分な実確率変数、$\varepsilon>0$とする。$A=\{X\geq\varepsilon\}$とおく。$A$上では$\varepsilon\leq X$であり、$A$の外では$\varepsilon1_A=0$である。$X\geq0$がほとんど確実に成り立つので、ほとんど確実に$\varepsilon1_A\leq X$である。期待値をとると$\varepsilon P(A)\leq E[X]$となり、$\varepsilon>0$で割ると結論を得る。
   strategy: Bound X from below by a multiple of the indicator of the tail event.
   sketch:
-    - "setup: Let A = {X ≥ ε}."
-    - "derive: Almost surely ε 1_A ≤ X because X is nonnegative."
-    - "apply_theorem: Monotonicity of expectation gives ε P(A) ≤ E[X]."
-    - "conclude: Divide by ε > 0."
+  - 'setup: Let A = {X ≥ ε}.'
+  - 'derive: Almost surely ε 1_A ≤ X because X is nonnegative.'
+  - 'apply_theorem: Monotonicity of expectation gives ε P(A) ≤ E[X].'
+  - 'conclude: Divide by ε > 0.'
   openmath: (forall (P X e) (-> (and (probability_measure P) (integrable_rv X P) (ae_le P 0 X) (> e 0)) (<= (prob P (tail_event X e)) (/ (expectation P X) e))))
   hard_negative:
     statement: 非負性を仮定しない可積分なXでもP(X≥ε)≤E[X]/εが成り立つ。
@@ -778,19 +935,25 @@
   kind: named
   level: 2
   topic: 確率不等式・チェビシェフの不等式
-  statement: 2乗可積分なXと実数c>0について、P(|X-E[X]|≥c)≤V[X]/c²が成り立つ（チェビシェフの不等式）。
-  statement_en: "Chebyshev's inequality: for a square-integrable random variable X and c > 0, P(|X - E[X]| ≥ c) ≤ Var(X) / c²."
-  assumptions: [Pは確率測度, Xは2乗可積分, c>0]
-  quantifiers: [任意の確率空間, 確率変数X, 正の実数c]
-  conclusion: P(|X-E[X]|≥c)≤V[X]/c²である。
+  statement: チェビシェフの不等式。2乗可積分な実確率変数$X$と実数$c>0$について、$P(|X-E[X]|\geq c)\leq V[X]/c^2$が成り立つ。
+  statement_en: 'Chebyshev''s inequality: for a square-integrable random variable X and c > 0, P(|X - E[X]| ≥ c) ≤ Var(X) / c².'
+  assumptions:
+  - $P$は確率測度
+  - $X$は2乗可積分
+  - $c>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の正の実数$c$
+  conclusion: $P(|X-E[X]|\geq c)\leq V[X]/c^2$である。
   answer: |
-    Y=(X-E[X])²は非負で可積分である。|X-E[X]|≥cはY≥c²と同値である。Yにマルコフの不等式を適用するとP(Y≥c²)≤E[Y]/c²=V[X]/c²を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を2乗可積分な実確率変数、$c>0$とする。$Y=(X-E[X])^2$は非負で可積分である。$|X-E[X]|\geq c$は$Y\geq c^2$と同値である。マルコフの不等式は、ほとんど確実に非負で可積分な$Y$と$\varepsilon>0$について$P(Y\geq\varepsilon)\leq E[Y]/\varepsilon$を与える。これを$\varepsilon=c^2$で用いると、$P(|X-E[X]|\geq c)=P(Y\geq c^2)\leq E[Y]/c^2=V[X]/c^2$を得る。
   strategy: Apply Markov's inequality to the squared deviation.
   sketch:
-    - "setup: Put Y = (X - E[X])², which is nonnegative and integrable."
-    - "translate: The event |X - E[X]| ≥ c equals Y ≥ c²."
-    - "apply_theorem: Markov's inequality bounds its probability by E[Y] / c²."
-    - "conclude: E[Y] is the variance of X."
+  - 'setup: Put Y = (X - E[X])², which is nonnegative and integrable.'
+  - 'translate: The event |X - E[X]| ≥ c equals Y ≥ c².'
+  - 'apply_theorem: Markov''s inequality bounds its probability by E[Y] / c².'
+  - 'conclude: E[Y] is the variance of X.'
   openmath: (forall (P X c) (-> (and (probability_measure P) (square_integrable_rv X P) (> c 0)) (<= (prob P (tail_event (abs (- X (expectation P X))) c)) (/ (variance P X) (^ c 2)))))
   hard_negative:
     statement: c>0についてP(|X-E[X]|≥c)≤V[X]/cが成り立つ。
@@ -807,20 +970,36 @@
   kind: named
   level: 3
   topic: 確率不等式・イェンセンの不等式
-  statement: 閉凸集合s上で凸かつ連続なgと、ほとんど確実にsに値をとる可積分なXについて、g(X)が可積分ならばg(E[X])≤E[g(X)]である。
-  statement_en: "Jensen's inequality: if g is convex and continuous on a closed convex set s, X is integrable with values almost surely in s, and g(X) is integrable, then g(E[X]) ≤ E[g(X)]."
-  assumptions: [Pは確率測度, sは実数直線の閉凸集合, gはs上で凸かつ連続, Xは可積分, ほとんど確実にX∈s, g(X)は可積分]
-  quantifiers: [任意の確率空間, 確率変数X, 関数g, 集合s]
-  conclusion: g(E[X])≤E[g(X)]である。
+  statement: イェンセンの不等式。閉凸集合$s\subseteq\mathbb{R}$上で凸かつ連続な関数$g:\mathbb{R}\to\mathbb{R}$と、ほとんど確実に$s$に値をとる可積分な実確率変数$X$について、$g\circ X$が可積分ならば$g(E[X])\leq E[g(X)]$である。
+  statement_en: 'Jensen''s inequality: if g is convex and continuous on a closed convex set s, X is integrable with values almost surely in s, and g(X) is integrable, then g(E[X]) ≤ E[g(X)].'
+  assumptions:
+  - $P$は確率測度
+  - $s$は$\mathbb{R}$の閉凸集合
+  - $g$は$s$上で凸かつ連続
+  - $X$は可積分
+  - ほとんど確実に$X\in s$
+  - $g\circ X$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の関数$g:\mathbb{R}\to\mathbb{R}$
+  - 任意の集合$s\subseteq\mathbb{R}$
+  conclusion: $g(E[X])\leq E[g(X)]$である。
   answer: |
-    （概略）エピグラフ{(x,y):x∈s, g(x)≤y}は凸であり、gの連続性とsが閉であることから閉集合である。(X,g(X))はほとんど確実にこの閉凸集合に値をとる。確率測度による平均は閉凸集合に属するので、(E[X],E[g(X)])もエピグラフに属する。これはg(E[X])≤E[g(X)]を意味する。
+    $(\Omega,\mathcal{F},P)$を確率空間、$s\subseteq\mathbb{R}$を閉凸集合、$g:\mathbb{R}\to\mathbb{R}$を$s$上で凸かつ連続な関数とする。$X$を可積分な実確率変数とし、ほとんど確実に$X\in s$で、$g\circ X$も可積分であるとする。$P$は確率測度なので$s$は空でない。$\mathbb{R}$の閉凸集合は閉区間（非有界でもよい）である。$m=E[X]$とおくと、$\inf s\leq X\leq\sup s$がほとんど確実に成り立つので$\inf s\leq m\leq\sup s$であり、$s$が閉なので$m\in s$である。
+
+    $m$が$s$の端点の場合を先に扱う。$m=\inf s$なら、$X-m\geq0$がほとんど確実に成り立ち$E[X-m]=0$なので、ほとんど確実に$X=m$である。$m=\sup s$でも同様である。このとき$g(X)=g(m)$がほとんど確実に成り立ち、等号$g(m)=E[g(X)]$を得る。
+
+    $m$が$s$の内点の場合を考える。$x<m<y$を満たす$x,y\in s$について、凸性より$\dfrac{g(m)-g(x)}{m-x}\leq\dfrac{g(y)-g(m)}{y-m}$である。そこで$c=\sup_{x\in s,\ x<m}\dfrac{g(m)-g(x)}{m-x}$とおく。$m$が内点なので左右に$s$の点があり、$c$は有限の実数である。$c$の定義と上の不等式から、任意の$x\in s$で$g(x)\geq g(m)+c(x-m)$が成り立つ。
+
+    この不等式に$X$を代入すると、ほとんど確実に$g(X)\geq g(m)+c(X-m)$である。期待値をとると$E[X-m]=0$より$E[g(X)]\geq g(m)=g(E[X])$を得る。
   strategy: The mean of a random point in a closed convex set stays in that set; apply this to the epigraph.
   sketch:
-    - "construct: Form the epigraph of g over s."
-    - "derive: The epigraph is convex by convexity of g and closed by continuity and closedness of s."
-    - "translate: The pair (X, g(X)) lies almost surely in the epigraph."
-    - "apply_theorem: The mean of a probability measure on a closed convex set lies in that set."
-    - "conclude: Membership of (E[X], E[g(X)]) in the epigraph is the claim."
+  - 'construct: Form the epigraph of g over s.'
+  - 'derive: The epigraph is convex by convexity of g and closed by continuity and closedness of s.'
+  - 'translate: The pair (X, g(X)) lies almost surely in the epigraph.'
+  - 'apply_theorem: The mean of a probability measure on a closed convex set lies in that set.'
+  - 'conclude: Membership of (E[X], E[g(X)]) in the epigraph is the claim.'
   openmath: (forall (P X g s) (-> (and (probability_measure P) (closed_set s) (convex_on_set g s) (continuous_on_set g s) (ae_in P X s) (integrable_rv X P) (integrable_rv (map_compose g X) P)) (<= (fn_value g (expectation P X)) (expectation P (map_compose g X)))))
   hard_negative:
     statement: 任意の連続関数gについてg(E[X])≤E[g(X)]である。
@@ -835,19 +1014,26 @@
   kind: textbook
   level: 3
   topic: 確率不等式・チェルノフ限界
-  statement: t≥0でexp(tX)が可積分なら、任意の実数εについてP(X≥ε)≤exp(-tε)M_X(t)が成り立つ。
-  statement_en: "Chernoff bound: if t ≥ 0 and exp(tX) is integrable, then P(X ≥ ε) ≤ exp(-tε) M_X(t) for every real ε, where M_X is the moment generating function."
-  assumptions: [Pは確率測度, t≥0, exp(tX)は可積分]
-  quantifiers: [任意の確率空間, 確率変数X, 実数ε, 非負実数t]
-  conclusion: P(X≥ε)≤exp(-tε)M_X(t)である。
+  statement: チェルノフ限界。実確率変数$X$と$t\geq0$について$e^{tX}$が可積分なら、任意の実数$\varepsilon$について$P(X\geq\varepsilon)\leq e^{-t\varepsilon}M_X(t)$が成り立つ。ここで$M_X(t)=E[e^{tX}]$である。
+  statement_en: 'Chernoff bound: if t ≥ 0 and exp(tX) is integrable, then P(X ≥ ε) ≤ exp(-tε) M_X(t) for every real ε, where M_X is the moment generating function.'
+  assumptions:
+  - $P$は確率測度
+  - $t\geq0$
+  - $e^{tX}$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X$
+  - 任意の実数$\varepsilon$
+  - 任意の非負実数$t$
+  conclusion: $P(X\geq\varepsilon)\leq e^{-t\varepsilon}M_X(t)$である。
   answer: |
-    X≥εのときtX≥tεなのでexp(tX)≥exp(tε)である。つまり{X≥ε}⊆{exp(tX)≥exp(tε)}である。exp(tX)は非負で可積分なので、マルコフの不等式からP(X≥ε)≤E[exp(tX)]/exp(tε)=exp(-tε)M_X(t)を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X$を実確率変数、$\varepsilon\in\mathbb{R}$、$t\geq0$とし、$e^{tX}$は可積分とする。$M_X(t)=E[e^{tX}]$である。$X\geq\varepsilon$のとき$tX\geq t\varepsilon$なので$e^{tX}\geq e^{t\varepsilon}$である。つまり$\{X\geq\varepsilon\}\subseteq\{e^{tX}\geq e^{t\varepsilon}\}$である。$e^{tX}$は非負で可積分なので、$e^{t\varepsilon}>0$を閾値とするマルコフの不等式から、$P(X\geq\varepsilon)\leq E[e^{tX}]/e^{t\varepsilon}=e^{-t\varepsilon}M_X(t)$を得る。
   strategy: Apply Markov's inequality to the exponential of tX.
   sketch:
-    - "derive: If X ≥ ε then exp(tX) ≥ exp(tε), since t ≥ 0."
-    - "translate: Hence the tail event is contained in {exp(tX) ≥ exp(tε)}."
-    - "apply_theorem: Markov's inequality applies to the nonnegative variable exp(tX)."
-    - "conclude: The bound is exp(-tε) M_X(t)."
+  - 'derive: If X ≥ ε then exp(tX) ≥ exp(tε), since t ≥ 0.'
+  - 'translate: Hence the tail event is contained in {exp(tX) ≥ exp(tε)}.'
+  - 'apply_theorem: Markov''s inequality applies to the nonnegative variable exp(tX).'
+  - 'conclude: The bound is exp(-tε) M_X(t).'
   openmath: (forall (P X e t) (-> (and (probability_measure P) (>= t 0) (integrable_rv (exp (* t X)) P)) (<= (prob P (tail_event X e)) (* (exp (neg (* t e))) (mgf P X t)))))
   hard_negative:
     statement: t<0でも同じ形でP(X≥ε)≤exp(-tε)M_X(t)が成り立つ。
@@ -862,19 +1048,25 @@
   kind: gap
   level: 3
   topic: モーメント母関数・独立な和
-  statement: XとYが独立で、tについてexp(tX),exp(tY)が可積分ならば、M_{X+Y}(t)=M_X(t)M_Y(t)である。
+  statement: 独立な実確率変数$X,Y$と実数$t$について、$e^{tX}$と$e^{tY}$が可積分ならば、$M_{X+Y}(t)=M_X(t)M_Y(t)$である。ここで$M_Z(t)=E[e^{tZ}]$である。
   statement_en: If X and Y are independent and exp(tX), exp(tY) are integrable, then M_{X+Y}(t) = M_X(t) M_Y(t).
-  assumptions: [Pは確率測度, XとYは独立, exp(tX)とexp(tY)は可積分]
-  quantifiers: [任意の確率空間, 確率変数X, Y, 実数t]
-  conclusion: M_{X+Y}(t)=M_X(t)M_Y(t)である。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は独立
+  - $e^{tX}$と$e^{tY}$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  - 任意の実数$t$
+  conclusion: $M_{X+Y}(t)=M_X(t)M_Y(t)$である。
   answer: |
-    exp(t(X+Y))=exp(tX)exp(tY)である。XとYが独立なので、その可測関数であるexp(tX)とexp(tY)も独立である。独立な可積分確率変数の積の期待値は期待値の積なので、結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$X,Y$を独立な実確率変数、$t\in\mathbb{R}$とし、$e^{tX},e^{tY}$は可積分とする。$e^{t(X+Y)}=e^{tX}e^{tY}$である。$X$と$Y$が独立なので、その可測関数である$e^{tX}$と$e^{tY}$も独立である。独立な可積分確率変数の積の期待値は期待値の積なので、$M_{X+Y}(t)=E[e^{tX}]E[e^{tY}]=M_X(t)M_Y(t)$を得る。
   strategy: Factor the exponential and use the product rule for independent variables.
   sketch:
-    - "derive: Write exp(t(X + Y)) = exp(tX) exp(tY)."
-    - "apply_theorem: Measurable functions of independent variables are independent."
-    - "apply_theorem: Expectation of a product of independent integrable variables factors."
-    - "conclude: The result is M_X(t) M_Y(t)."
+  - 'derive: Write exp(t(X + Y)) = exp(tX) exp(tY).'
+  - 'apply_theorem: Measurable functions of independent variables are independent.'
+  - 'apply_theorem: Expectation of a product of independent integrable variables factors.'
+  - 'conclude: The result is M_X(t) M_Y(t).'
   openmath: (forall (P X Y t) (-> (and (probability_measure P) (indep_rv P X Y) (integrable_rv (exp (* t X)) P) (integrable_rv (exp (* t Y)) P)) (= (mgf P (+ X Y) t) (* (mgf P X t) (mgf P Y t)))))
   hard_negative:
     statement: 独立性なしでM_{X+Y}(t)=M_X(t)M_Y(t)が成り立つ。
@@ -889,20 +1081,30 @@
   kind: named
   level: 3
   topic: ボレル・カンテリの補題・第二補題
-  statement: 独立な事象列A_nについてΣP(A_n)=∞ならば、P(limsup A_n)=1である（第二補題）。
-  statement_en: "Second Borel–Cantelli lemma: if the events A_n are independent and Σ_n P(A_n) = ∞, then P(limsup A_n) = 1."
-  assumptions: [Pは確率測度, A_nは可測で独立, ΣP(A_n)=∞]
-  quantifiers: [任意の確率空間と事象列A]
-  conclusion: P(limsup A_n)=1である。
+  statement: ボレル・カンテリの第二補題。独立な可測事象の列$(A_n)_{n\in\mathbb{N}}$について$\sum_nP(A_n)=\infty$ならば、$P(\limsup_nA_n)=1$である。
+  statement_en: 'Second Borel–Cantelli lemma: if the events A_n are independent and Σ_n P(A_n) = ∞, then P(limsup A_n) = 1.'
+  assumptions:
+  - $P$は確率測度
+  - 各$A_n$は可測
+  - $(A_n)$は独立
+  - $\sum_nP(A_n)=\infty$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の事象列$(A_n)_{n\in\mathbb{N}}$
+  conclusion: $P(\limsup_nA_n)=1$である。
   answer: |
-    (limsup A_n)ᶜ=⋃_N⋂_{n≥N}A_nᶜなので、各NについてP(⋂_{n≥N}A_nᶜ)=0を示せばよい。独立性からM≥Nに対しP(⋂_{N≤n≤M}A_nᶜ)=Π(1-P(A_n))≤exp(-Σ_{N≤n≤M}P(A_n))である。級数の発散よりM→∞で右辺は0に近づく。よって余事象の確率は0であり、P(limsup A_n)=1である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(A_n)_{n\in\mathbb{N}}$を$\sum_nP(A_n)=\infty$を満たす独立な事象列とする。$\limsup_nA_n=\bigcap_N\bigcup_{n\geq N}A_n$なので、その余事象は$\bigcup_N\bigcap_{n\geq N}A_n^c$である。可算個の零集合の和は零集合なので、各$N$について$P\left(\bigcap_{n\geq N}A_n^c\right)=0$を示せばよい。
+
+    $(A_n)$が独立なら余事象の列$(A_n^c)$も独立である。したがって$M\geq N$に対して、$1-x\leq e^{-x}$を用いると
+    $P\left(\bigcap_{n=N}^{M}A_n^c\right)=\prod_{n=N}^{M}(1-P(A_n))\leq\exp\left(-\sum_{n=N}^{M}P(A_n)\right)$
+    である。級数が発散するので、$M\to\infty$で右辺は$0$に近づく。測度の上からの連続性により$P\left(\bigcap_{n\geq N}A_n^c\right)=0$となる。よって余事象の確率は$0$であり、$P(\limsup_nA_n)=1$である。
   strategy: Bound the probability of the complement with a product and 1 - x ≤ exp(-x).
   sketch:
-    - "translate: Express the complement of limsup as a union of tail intersections of complements."
-    - "apply_theorem: Independence factors the probability of finite intersections of complements."
-    - "derive: Use 1 - x ≤ exp(-x) to bound the product by exp of minus the partial sum."
-    - "derive: Divergence of the series forces this bound to 0."
-    - "conclude: Countable subadditivity gives P((limsup A_n)ᶜ) = 0."
+  - 'translate: Express the complement of limsup as a union of tail intersections of complements.'
+  - 'apply_theorem: Independence factors the probability of finite intersections of complements.'
+  - 'derive: Use 1 - x ≤ exp(-x) to bound the product by exp of minus the partial sum.'
+  - 'derive: Divergence of the series forces this bound to 0.'
+  - 'conclude: Countable subadditivity gives P((limsup A_n)ᶜ) = 0.'
   openmath: (forall (P A) (-> (and (probability_measure P) (forall (n) (measurable_event (seq_value A n))) (mutually_indep_events P A) (= (sum N (lambda (n) (prob P (seq_value A n)))) positive_infinity)) (= (prob P (limsup_events A)) 1)))
   hard_negative:
     statement: 独立性なしでもΣP(A_n)=∞ならP(limsup A_n)=1である。
@@ -917,21 +1119,39 @@
   kind: named
   level: 4
   topic: 極限定理・大数の強法則
-  statement: 対ごとに独立で同分布な可積分確率変数列の標本平均は、ほとんど確実にE[X_0]に収束する（大数の強法則）。
-  statement_en: "Strong law of large numbers (Etemadi): if the X_i are pairwise independent, identically distributed and integrable, then (X_0 + ... + X_{n-1}) / n converges to E[X_0] almost surely."
-  assumptions: [Pは確率測度, X_0は可積分, X_iは対ごとに独立, 各X_iはX_0と同分布]
-  quantifiers: [任意の確率空間と確率変数列X]
-  conclusion: ほとんど確実に(X_0+…+X_{n-1})/nはE[X_0]に収束する。
+  statement: 大数の強法則（エテマディの形）。対ごとに独立で同分布な実確率変数列$(X_i)_{i\geq0}$について、$X_0$が可積分ならば、ほとんど確実に$\frac{1}{n}\sum_{i<n}X_i\to E[X_0]$である。
+  statement_en: 'Strong law of large numbers (Etemadi): if the X_i are pairwise independent, identically distributed and integrable, then (X_0 + ... + X_{n-1}) / n converges to E[X_0] almost surely.'
+  assumptions:
+  - $P$は確率測度
+  - $X_0$は可積分
+  - $(X_i)$は対ごとに独立
+  - 各$X_i$は$X_0$と同分布
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数列$(X_i)_{i\geq0}$
+  conclusion: ほとんど確実に$\frac{1}{n}\sum_{i<n}X_i\to E[X_0]$である。
   answer: |
-    （概略）正部分と負部分に分けてX_i≥0としてよい。Y_i=X_i1_{X_i<i}と切り詰めると、ΣP(X_i≠Y_i)≤E[X_0]+1<∞なのでボレル・カンテリの第一補題により、有限個を除きX_i=Y_iである。切り詰めた変数の和について、等比的な部分列n_k上でチェビシェフの不等式と第一補題を使うと標本平均の収束を得る。最後にX_i≥0から標本平均の単調性を用いて部分列の間を挟み、全体の収束を導く。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(X_i)_{i\geq0}$を対ごとに独立で同分布な実確率変数列とし、$X_0$は可積分とする。$m=E[X_0]$とおく。ボレル・カンテリの第一補題「$\sum_kP(E_k)<\infty$ならば、ほとんど確実に$E_k$は有限個しか起こらない」を繰り返し用いる。
+
+    まず非負の場合に帰着する。$X_i^+$の列と$X_i^-$の列は、どちらも対ごとに独立で同分布で可積分である。$X_i=X_i^+-X_i^-$なので、それぞれで主張を示せば差をとって結論を得る。以下$X_i\geq0$とする。
+
+    次に切り詰める。$Y_i=X_i1_{\{X_i<i+1\}}$、$T_n=\sum_{i<n}Y_i$とおく。同分布性から$\sum_{i\geq0}P(X_i\neq Y_i)=\sum_{k\geq1}P(X_0\geq k)\leq E[X_0]<\infty$である。第一補題より、ほとんど確実に有限個の$i$を除いて$X_i=Y_i$である。したがって$T_n/n\to m$を示せばよい。また単調収束定理より$E[Y_i]=E[X_01_{\{X_0<i+1\}}]\to m$なので、チェザロ平均をとって$E[T_n]/n\to m$である。
+
+    分散の和を評価する。各$Y_i$は有界で、$(Y_i)$は対ごとに独立なので、$V[T_n]=\sum_{i<n}V[Y_i]\leq\sum_{i<n}E[Y_i^2]$である。ここで$x\geq0$について$x^2\sum_{j\geq1,\ j>x}j^{-2}\leq2x$が成り立つ。実際、$x\geq1$なら$\sum_{j>x}j^{-2}\leq\sum_{j>x}\frac{1}{j(j-1)}=\frac{1}{\lfloor x\rfloor}\leq\frac{2}{x}$である。$x<1$なら$\sum_{j\geq1}j^{-2}\leq2$と$x^2\leq x$を用いる。トネリの定理より$\sum_{i\geq0}E[Y_i^2]/(i+1)^2\leq2E[X_0]<\infty$を得る。
+
+    部分列での収束を示す。$\alpha>1$を固定し、$n_k=\lfloor\alpha^k\rfloor$とおくと$n_k\geq\alpha^k/2$である。$n_k>i$なら$\alpha^k\geq i+1$なので、等比級数の和から$\sum_{k:\ n_k>i}n_k^{-2}\leq C(i+1)^{-2}$となる。ここで$C=4/(1-\alpha^{-2})$である。$\varepsilon>0$についてチェビシェフの不等式と和の順序交換を用いると、
+    $\sum_kP(|T_{n_k}-E[T_{n_k}]|\geq\varepsilon n_k)\leq\varepsilon^{-2}\sum_kn_k^{-2}\sum_{i<n_k}E[Y_i^2]\leq C\varepsilon^{-2}\sum_{i\geq0}\frac{E[Y_i^2]}{(i+1)^2}<\infty$
+    である。第一補題を$\varepsilon=1/r$（$r=1,2,\dots$）に適用すると、ほとんど確実に$(T_{n_k}-E[T_{n_k}])/n_k\to0$である。$n_k\to\infty$と$E[T_n]/n\to m$から、ほとんど確実に$T_{n_k}/n_k\to m$となる。
+
+    最後に部分列の間を埋める。$n\geq1$に対して$k$を$n_k\leq n<n_{k+1}$となるようにとる。$Y_i\geq0$より$T_n$は$n$について単調増加なので、$\dfrac{T_{n_k}}{n_{k+1}}\leq\dfrac{T_n}{n}\leq\dfrac{T_{n_{k+1}}}{n_k}$である。$n_{k+1}/n_k\to\alpha$より、ほとんど確実に$m/\alpha\leq\liminf_nT_n/n\leq\limsup_nT_n/n\leq\alpha m$となる。$\alpha=1+1/r$（$r=1,2,\dots$）の可算個についてこれが同時に成り立つので、ほとんど確実に$T_n/n\to m$である。
   strategy: Truncate, control variances along a geometric subsequence, then interpolate by monotonicity.
   sketch:
-    - "setup: Reduce to nonnegative variables by positive and negative parts."
-    - "construct: Truncate X_i at level i to obtain Y_i."
-    - "apply_theorem: The first Borel–Cantelli lemma shows X_i = Y_i for all but finitely many i."
-    - "apply_theorem: Chebyshev and Borel–Cantelli give convergence along a geometric subsequence."
-    - "derive: Monotonicity of partial sums fills the gaps between subsequence terms."
-    - "conclude: Hence the sample mean converges to E[X_0] almost surely."
+  - 'setup: Reduce to nonnegative variables by positive and negative parts.'
+  - 'construct: Truncate X_i at level i to obtain Y_i.'
+  - 'apply_theorem: The first Borel–Cantelli lemma shows X_i = Y_i for all but finitely many i.'
+  - 'apply_theorem: Chebyshev and Borel–Cantelli give convergence along a geometric subsequence.'
+  - 'derive: Monotonicity of partial sums fills the gaps between subsequence terms.'
+  - 'conclude: Hence the sample mean converges to E[X_0] almost surely.'
   openmath: (forall (P X) (-> (and (probability_measure P) (integrable_rv (seq_value X 0) P) (pairwise_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0)))) (ae_tends_to P (lambda (n) (/ (partial_sum_rv X n) n)) (expectation P (seq_value X 0)))))
   hard_negative:
     statement: 可積分性を仮定しなくても、独立同分布な列の標本平均はほとんど確実に収束する。
@@ -946,20 +1166,30 @@
   kind: textbook
   level: 3
   topic: 極限定理・大数の弱法則
-  statement: 対ごとに独立で同分布な可積分確率変数列について、任意のε>0でP(|標本平均-E[X_0]|≥ε)は0に収束する（大数の弱法則）。
-  statement_en: "Weak law of large numbers: if the X_i are pairwise independent, identically distributed and integrable, then for every ε > 0, P(|(X_0 + ... + X_{n-1}) / n - E[X_0]| ≥ ε) tends to 0."
-  assumptions: [Pは確率測度, X_0は可積分, X_iは対ごとに独立, 各X_iはX_0と同分布, ε>0]
-  quantifiers: [任意の確率空間, 確率変数列X, 正の実数ε]
-  conclusion: nを大きくするとP(|(X_0+…+X_{n-1})/n-E[X_0]|≥ε)は0に収束する。
+  statement: 大数の弱法則。対ごとに独立で同分布な実確率変数列$(X_i)_{i\geq0}$について、$X_0$が可積分ならば、任意の$\varepsilon>0$で$P\left(\left|\frac{1}{n}\sum_{i<n}X_i-E[X_0]\right|\geq\varepsilon\right)\to0$である。
+  statement_en: 'Weak law of large numbers: if the X_i are pairwise independent, identically distributed and integrable, then for every ε > 0, P(|(X_0 + ... + X_{n-1}) / n - E[X_0]| ≥ ε) tends to 0.'
+  assumptions:
+  - $P$は確率測度
+  - $X_0$は可積分
+  - $(X_i)$は対ごとに独立
+  - 各$X_i$は$X_0$と同分布
+  - $\varepsilon>0$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数列$(X_i)_{i\geq0}$
+  - 任意の正の実数$\varepsilon$
+  conclusion: $n\to\infty$で$P\left(\left|\frac{1}{n}\sum_{i<n}X_i-E[X_0]\right|\geq\varepsilon\right)\to0$である。
   answer: |
-    仮定（対ごとの独立性、同分布性、X_0の可積分性）は、対ごとに独立な形の大数の強法則の仮定と同じである。これを引用すると、標本平均はほとんど確実にE[X_0]に収束する。E_n={|標本平均-E[X_0]|≥ε}とおくと、この収束からE_nが無限回起こる確率は0である。確率測度は有限なので、上からの連続性によりP(E_n)≤P(⋃_{k≥n}E_k)→0となる。分散が有限な場合は、チェビシェフの不等式から確率がV[X_0]/(nε²)以下になることでも直接示せる。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(X_i)_{i\geq0}$を対ごとに独立で同分布な実確率変数列とし、$X_0$は可積分とする。$\varepsilon>0$を固定する。大数の強法則（エテマディの形）は、これと同じ仮定のもとで、ほとんど確実に$\frac{1}{n}\sum_{i<n}X_i\to E[X_0]$であることを主張する。これを引用する。
+
+    $E_n=\left\{\left|\frac{1}{n}\sum_{i<n}X_i-E[X_0]\right|\geq\varepsilon\right\}$とおく。この収束から、$E_n$が無限回起こる確率は$0$である。$F_n=\bigcup_{k\geq n}E_k$とおくと、$F_n$は単調減少で$\bigcap_nF_n=\limsup_nE_n$である。$P$は有限測度なので、上からの連続性により$P(F_n)\to P(\limsup_nE_n)=0$となる。$P(E_n)\leq P(F_n)$なので、$P(E_n)\to0$を得る。
   strategy: Almost sure convergence from the strong law implies convergence in probability on a finite measure space.
   sketch:
-    - "apply_theorem: The strong law for pairwise independent variables has exactly these hypotheses and gives almost sure convergence of the sample mean."
-    - "derive: Each sample mean is almost everywhere strongly measurable."
-    - "apply_theorem: On a finite measure space, almost sure convergence implies convergence in measure."
-    - "translate: Rewrite the distance as the absolute deviation."
-    - "conclude: The tail probabilities tend to 0 for every ε > 0."
+  - 'apply_theorem: The strong law for pairwise independent variables has exactly these hypotheses and gives almost sure convergence of the sample mean.'
+  - 'derive: Each sample mean is almost everywhere strongly measurable.'
+  - 'apply_theorem: On a finite measure space, almost sure convergence implies convergence in measure.'
+  - 'translate: Rewrite the distance as the absolute deviation.'
+  - 'conclude: The tail probabilities tend to 0 for every ε > 0.'
   openmath: (forall (P X) (-> (and (probability_measure P) (integrable_rv (seq_value X 0) P) (pairwise_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0)))) (prob_tends_to P (lambda (n) (/ (partial_sum_rv X n) n)) (expectation P (seq_value X 0)))))
   hard_negative:
     statement: 確率収束するならほとんど確実にも収束する。
@@ -983,21 +1213,35 @@
   kind: named
   level: 4
   topic: 極限定理・中心極限定理
-  statement: 独立同分布で2乗可積分な確率変数列について、(S_n-nE[X_0])/√nは平均0、分散V[X_0]の正規分布に法則収束する（中心極限定理）。
-  statement_en: "Central limit theorem: if the X_i are independent, identically distributed and square-integrable, then (X_0 + ... + X_{n-1} - n E[X_0]) / √n converges in distribution to a normal law with mean 0 and variance Var(X_0)."
-  assumptions: [Pは確率測度, X_0は2乗可積分, X_iは独立, 各X_iはX_0と同分布, "Yは平均0で分散V[X_0]の正規分布に従う"]
-  quantifiers: [任意の確率空間, 確率変数列X, 極限の確率変数Y]
-  conclusion: (S_n-nE[X_0])/√nはYに法則収束する。
+  statement: 中心極限定理。独立で同分布な実確率変数列$(X_i)_{i\geq0}$について$X_0$が2乗可積分ならば、$\frac{1}{\sqrt{n}}\left(\sum_{i<n}X_i-nE[X_0]\right)$は、平均$0$、分散$V[X_0]$の正規分布に従う確率変数$Y$に法則収束する。分散が$0$のときの正規分布は$0$の一点分布とする。
+  statement_en: 'Central limit theorem: if the X_i are independent, identically distributed and square-integrable, then (X_0 + ... + X_{n-1} - n E[X_0]) / √n converges in distribution to a normal law with mean 0 and variance Var(X_0).'
+  assumptions:
+  - $P$は確率測度
+  - $X_0$は2乗可積分
+  - $(X_i)$は独立
+  - 各$X_i$は$X_0$と同分布
+  - $Y$は別の確率空間上でもよい確率変数で、平均$0$、分散$V[X_0]$の正規分布に従う
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数列$(X_i)_{i\geq0}$
+  - 上の分布に従う任意の確率変数$Y$
+  conclusion: $\frac{1}{\sqrt{n}}\left(\sum_{i<n}X_i-nE[X_0]\right)$は$Y$に法則収束する。
   answer: |
-    （概略）まず分散が0の場合は全X_iがほとんど確実に定数で自明である。分散が正なら標準化してE[X_0]=0、V[X_0]=1としてよい。独立性から標準化和の特性関数はφ(t/√n)^nに等しく、φはX_0の特性関数である。テイラー展開φ(s)=1-s²/2+o(s²)から、この値はexp(-t²/2)に収束する。レヴィの連続性定理により法則収束を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(X_i)_{i\geq0}$を独立で同分布な実確率変数列とし、$X_0$は2乗可積分とする。$m=E[X_0]$、$\sigma^2=V[X_0]$とおき、$Y$を$N(0,\sigma^2)$に従う確率変数とする（$\sigma=0$のときは$0$の一点分布）。$Z_i=X_i-m$、$W_n=\frac{1}{\sqrt{n}}\sum_{i<n}Z_i$とおく。$W_n$は主張に現れる正規化和に等しい。
+
+    $\varphi(s)=E[e^{isZ_0}]$を$Z_0$の特性関数とする。実数$x$について$\left|e^{ix}-1-ix+\frac{x^2}{2}\right|\leq\min\left(\frac{|x|^3}{6},x^2\right)$が成り立つ。$E[Z_0]=0$、$E[Z_0^2]=\sigma^2$なので、$\varphi(s)=1-\frac{\sigma^2s^2}{2}+r(s)$と書くと$|r(s)|\leq s^2E\left[\min\left(\frac{|s||Z_0|^3}{6},Z_0^2\right)\right]$である。期待値の中身は$s\to0$で各点で$0$に収束し、可積分な$Z_0^2$で押さえられる。優収束定理より$r(s)=o(s^2)$である。
+
+    $t\in\mathbb{R}$を固定する。独立性と同分布性から$E[e^{itW_n}]=\varphi(t/\sqrt{n})^n$である。上の展開より$\varphi(t/\sqrt{n})=1+c_n/n$と書け、$c_n\to-\sigma^2t^2/2$となる。複素数列について$c_n\to c$ならば$(1+c_n/n)^n\to e^c$なので、$E[e^{itW_n}]\to e^{-\sigma^2t^2/2}$を得る。これは$N(0,\sigma^2)$の特性関数である。
+
+    レヴィの連続性定理は「$\mathbb{R}$上の確率測度の列の特性関数が各点で確率測度$\mu$の特性関数に収束するならば、その列は$\mu$に弱収束する」と述べる。これを$W_n$の分布の列に適用すると、$W_n$は$Y$に法則収束する。
   strategy: Compute the limit of characteristic functions and apply Lévy's continuity theorem.
   sketch:
-    - "case_split: Treat the zero-variance case separately since all variables are almost surely constant."
-    - "setup: Standardize to mean 0 and variance 1."
-    - "apply_theorem: Independence turns the characteristic function of the normalized sum into a power."
-    - "derive: A second-order Taylor expansion gives the limit exp(-t²/2)."
-    - "apply_theorem: Lévy's continuity theorem turns this into convergence in distribution."
-    - "conclude: Undo the standardization."
+  - 'case_split: Treat the zero-variance case separately since all variables are almost surely constant.'
+  - 'setup: Standardize to mean 0 and variance 1.'
+  - 'apply_theorem: Independence turns the characteristic function of the normalized sum into a power.'
+  - 'derive: A second-order Taylor expansion gives the limit exp(-t²/2).'
+  - 'apply_theorem: Lévy''s continuity theorem turns this into convergence in distribution.'
+  - 'conclude: Undo the standardization.'
   openmath: (forall (P X Q Y) (-> (and (probability_measure P) (probability_measure Q) (square_integrable_rv (seq_value X 0) P) (mutually_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0))) (has_law Q Y (gaussian_measure 0 (variance P (seq_value X 0))))) (dist_tends_to P (lambda (n) (/ (- (partial_sum_rv X n) (* n (expectation P (seq_value X 0)))) (root n 2))) (gaussian_measure 0 (variance P (seq_value X 0))))))
   hard_negative:
     statement: 独立同分布なら分散が無限でも同じ正規化で正規分布に収束する。
@@ -1012,18 +1256,23 @@
   kind: gap
   level: 2
   topic: 有限分布・一様分布
-  statement: 空でない有限集合s上の一様分布について、事象tの確率は|s∩t|/|s|である。
+  statement: 一点集合がすべて可測である可測空間$\Omega$と空でない有限集合$s\subseteq\Omega$について、$s$上の一様分布のもとでの有限集合$t\subseteq\Omega$の確率は$|s\cap t|/|s|$である。
   statement_en: For the uniform distribution on a nonempty finite set s, the probability of t is |s ∩ t| / |s|.
-  assumptions: [sは空でない有限集合, tは有限集合, 全ての一点集合は可測]
-  quantifiers: [任意の標本空間, 有限集合s, t]
-  conclusion: s上の一様分布でのtの確率は|s∩t|/|s|である。
+  assumptions:
+  - $\Omega$の一点集合はすべて可測
+  - $s$は空でない有限集合
+  - $t$は有限集合
+  quantifiers:
+  - 任意の可測空間$\Omega$
+  - 任意の有限集合$s,t\subseteq\Omega$
+  conclusion: $s$上の一様分布での$t$の確率は$|s\cap t|/|s|$である。
   answer: |
-    s上の一様分布は計数測度をsで条件付けたものである。条件付き確率の定義より、tの確率はs∩tの要素数をsの要素数で割った値である。これは同様に確からしい場合の確率の定義に一致する。
+    $\Omega$を一点集合がすべて可測である可測空間、$s,t\subseteq\Omega$を有限集合とし、$s$は空でないとする。$s$上の一様分布とは、計数測度$\#$を$s$で条件付けた確率測度$\mu_s(\cdot)=\#(\cdot\cap s)/\#(s)$である。$s$は有限個の一点集合の和なので可測であり、$0<\#(s)<\infty$である。したがって$\mu_s(t)=\#(s\cap t)/\#(s)=|s\cap t|/|s|$を得る。
   strategy: Unfold the uniform measure as the counting measure conditioned on s.
   sketch:
-    - "translate: Identify the uniform measure with the counting measure conditioned on s."
-    - "derive: Apply the conditional probability formula to t."
-    - "conclude: The counting measure turns the quotient into |s ∩ t| / |s|."
+  - 'translate: Identify the uniform measure with the counting measure conditioned on s.'
+  - 'derive: Apply the conditional probability formula to t.'
+  - 'conclude: The counting measure turns the quotient into |s ∩ t| / |s|.'
   openmath: (forall (s t) (-> (and (finite_set s) (finite_set t) (not (= s emptyset))) (= (prob (uniform_measure_on s) t) (/ (size (inter s t)) (size s)))))
   hard_negative:
     statement: s上の一様分布でのtの確率は|t|/|s|である。
@@ -1038,19 +1287,23 @@
   kind: textbook
   level: 2
   topic: 有限分布・二項分布の平均
-  statement: 0≤p≤1のとき、Σ_{k=0}^{n}k·C(n,k)p^k(1-p)^{n-k}=npが成り立つ。
+  statement: 自然数$n$と$0\leq p\leq1$を満たす実数$p$について、$\sum_{k=0}^{n}k\binom{n}{k}p^k(1-p)^{n-k}=np$が成り立つ。
   statement_en: For 0 ≤ p ≤ 1, Σ_{k=0}^{n} k C(n,k) p^k (1-p)^{n-k} = n p, the mean of the binomial distribution.
-  assumptions: [nは自然数, 0≤p≤1]
-  quantifiers: [任意の自然数nと実数p]
-  conclusion: Σ_{k=0}^{n}k·C(n,k)p^k(1-p)^{n-k}=npである。
+  assumptions:
+  - $n$は自然数
+  - $0\leq p\leq1$
+  quantifiers:
+  - 任意の自然数$n$
+  - 任意の実数$p$
+  conclusion: $\sum_{k=0}^{n}k\binom{n}{k}p^k(1-p)^{n-k}=np$である。
   answer: |
-    二項定理(x+y)^n=Σ_kC(n,k)x^ky^{n-k}をxで微分してxを掛けると、nx(x+y)^{n-1}=Σ_kkC(n,k)x^ky^{n-k}となる。x=p、y=1-pを代入するとx+y=1なので、右辺が求める和で、左辺がnpである。
+    $n$を自然数、$p$を$0\leq p\leq1$を満たす実数とする。$n=0$なら両辺とも$0$である。$n\geq1$とする。二項定理$(x+y)^n=\sum_{k=0}^{n}\binom{n}{k}x^ky^{n-k}$を$x$で微分して$x$を掛けると、$nx(x+y)^{n-1}=\sum_{k=0}^{n}k\binom{n}{k}x^ky^{n-k}$となる。$x=p$、$y=1-p$を代入すると$x+y=1$なので、左辺は$np$、右辺は求める和である。
   strategy: Differentiate the binomial theorem in x and substitute y = 1 - x.
   sketch:
-    - "apply_theorem: Start from the binomial theorem for (x + y)^n."
-    - "derive: Differentiate in x and multiply by x."
-    - "derive: Substitute x = p and y = 1 - p so that x + y = 1."
-    - "conclude: The left side becomes n p and the right side is the required sum."
+  - 'apply_theorem: Start from the binomial theorem for (x + y)^n.'
+  - 'derive: Differentiate in x and multiply by x.'
+  - 'derive: Substitute x = p and y = 1 - p so that x + y = 1.'
+  - 'conclude: The left side becomes n p and the right side is the required sum.'
   openmath: (forall (n p) (-> (and (in n N) (<= 0 p) (<= p 1)) (= (sum (finset_range (+ n 1)) (lambda (k) (* k (binomial_coefficient n k) (^ p k) (^ (- 1 p) (- n k))))) (* n p))))
   hard_negative:
     statement: 二項分布の平均はnp(1-p)である。
@@ -1066,20 +1319,24 @@
   kind: textbook
   level: 2
   topic: 有限分布・二項分布の分散
-  statement: 0≤p≤1のとき、Σ_{k=0}^{n}(k-np)²C(n,k)p^k(1-p)^{n-k}=np(1-p)が成り立つ。
+  statement: 自然数$n$と$0\leq p\leq1$を満たす実数$p$について、$\sum_{k=0}^{n}(k-np)^2\binom{n}{k}p^k(1-p)^{n-k}=np(1-p)$が成り立つ。
   statement_en: For 0 ≤ p ≤ 1, Σ_{k=0}^{n} (k - np)² C(n,k) p^k (1-p)^{n-k} = n p (1 - p), the variance of the binomial distribution.
-  assumptions: [nは自然数, 0≤p≤1]
-  quantifiers: [任意の自然数nと実数p]
-  conclusion: Σ_{k=0}^{n}(k-np)²C(n,k)p^k(1-p)^{n-k}=np(1-p)である。
+  assumptions:
+  - $n$は自然数
+  - $0\leq p\leq1$
+  quantifiers:
+  - 任意の自然数$n$
+  - 任意の実数$p$
+  conclusion: $\sum_{k=0}^{n}(k-np)^2\binom{n}{k}p^k(1-p)^{n-k}=np(1-p)$である。
   answer: |
-    b_k=C(n,k)p^k(1-p)^{n-k}とおく。二項定理からΣb_k=1である。二項定理をxで1回と2回微分してx=p、y=1-pを代入すると、Σkb_k=np、Σk(k-1)b_k=n(n-1)p²を得る。(k-np)²=k(k-1)+(1-2np)k+(np)²なので、和はn(n-1)p²+(1-2np)np+(np)²=np(1-p)となる。
+    $n$を自然数、$p$を$0\leq p\leq1$を満たす実数とし、$b_k=\binom{n}{k}p^k(1-p)^{n-k}$とおく。二項定理から$\sum_{k=0}^{n}b_k=(p+(1-p))^n=1$である。二項定理の両辺を$x$で1回微分して$x$を掛け、2回微分して$x^2$を掛ける。そのあと$x=p$、$y=1-p$を代入すると、$\sum_{k=0}^{n}kb_k=np$、$\sum_{k=0}^{n}k(k-1)b_k=n(n-1)p^2$を得る。$(k-np)^2=k(k-1)+(1-2np)k+(np)^2$なので、求める和は$n(n-1)p^2+(1-2np)np+(np)^2=np-np^2=np(1-p)$となる。
   strategy: Express the second central moment through the factorial moments obtained from the binomial theorem.
   sketch:
-    - "setup: Put b_k = C(n,k) p^k (1-p)^{n-k}."
-    - "apply_theorem: The binomial theorem gives Σ b_k = 1."
-    - "derive: Differentiating once and twice gives Σ k b_k = np and Σ k(k-1) b_k = n(n-1)p²."
-    - "derive: Decompose (k - np)² = k(k-1) + (1 - 2np) k + (np)²."
-    - "conclude: Substitute and simplify to n p (1 - p)."
+  - 'setup: Put b_k = C(n,k) p^k (1-p)^{n-k}.'
+  - 'apply_theorem: The binomial theorem gives Σ b_k = 1.'
+  - 'derive: Differentiating once and twice gives Σ k b_k = np and Σ k(k-1) b_k = n(n-1)p².'
+  - 'derive: Decompose (k - np)² = k(k-1) + (1 - 2np) k + (np)².'
+  - 'conclude: Substitute and simplify to n p (1 - p).'
   openmath: (forall (n p) (-> (and (in n N) (<= 0 p) (<= p 1)) (= (sum (finset_range (+ n 1)) (lambda (k) (* (^ (- k (* n p)) 2) (binomial_coefficient n k) (^ p k) (^ (- 1 p) (- n k))))) (* n p (- 1 p)))))
   hard_negative:
     statement: 二項分布の分散はnpである。
@@ -1116,20 +1373,29 @@
   kind: textbook
   level: 3
   topic: 正規分布・平均と分散
-  statement: パラメータm,v(v≥0)の正規分布N(m,v)の期待値はmで、分散はvである。
+  statement: 実数$m$と非負実数$v$について、正規分布$N(m,v)$の期待値は$m$で、分散は$v$である。$v=0$のとき$N(m,0)$は$m$の一点分布とする。
   statement_en: The normal distribution with parameters m and v ≥ 0 has mean m and variance v.
-  assumptions: [mは実数, vは非負実数]
-  quantifiers: [任意の実数mと非負実数v]
-  conclusion: N(m,v)の期待値はm、分散はvである。
+  assumptions:
+  - $m$は実数
+  - $v$は非負実数
+  - $N(m,0)$は$m$の一点分布
+  quantifiers:
+  - 任意の実数$m$
+  - 任意の非負実数$v$
+  conclusion: $N(m,v)$の期待値は$m$、分散は$v$である。
   answer: |
-    v=0のとき分布はmの一点分布で明らかである。v>0のときモーメント母関数はM(t)=exp(mt+vt²/2)であり、原点の近くで解析的である。M'(0)=mから期待値はmである。M''(0)=v+m²から2次モーメントがv+m²となり、分散は(v+m²)-m²=vである。
+    $m\in\mathbb{R}$、$v\geq0$とする。$v=0$のとき$N(m,0)$は$m$の一点分布なので、期待値は$m$、分散は$0$である。
+
+    $v>0$のとき、$N(m,v)$は密度$\frac{1}{\sqrt{2\pi v}}e^{-(x-m)^2/(2v)}$をもつ。変数変換$x=m+\sqrt{v}z$により、$N(m,v)$に従う$X$は$X=m+\sqrt{v}Z$と同分布である。ここで$Z$は密度$\frac{1}{\sqrt{2\pi}}e^{-z^2/2}$をもつ。この密度は偶関数で、$|z|e^{-z^2/2}$は可積分なので、$E[Z]=0$である。部分積分とガウス積分$\int_{\mathbb{R}}e^{-z^2/2}dz=\sqrt{2\pi}$から、
+    $E[Z^2]=\frac{1}{\sqrt{2\pi}}\int_{\mathbb{R}}z\cdot ze^{-z^2/2}dz=\frac{1}{\sqrt{2\pi}}\int_{\mathbb{R}}e^{-z^2/2}dz=1$
+    である。よって$E[X]=m$であり、$V[X]=E[(\sqrt{v}Z)^2]=v$を得る。
   strategy: Read the first two moments off the moment generating function.
   sketch:
-    - "case_split: The case v = 0 is a point mass at m."
-    - "apply_theorem: For v > 0 the moment generating function is exp(mt + vt²/2)."
-    - "derive: Differentiate at 0 to get the first moment m."
-    - "derive: Differentiate twice to get the second moment v + m²."
-    - "conclude: The variance is therefore v."
+  - 'case_split: The case v = 0 is a point mass at m.'
+  - 'apply_theorem: For v > 0 the moment generating function is exp(mt + vt²/2).'
+  - 'derive: Differentiate at 0 to get the first moment m.'
+  - 'derive: Differentiate twice to get the second moment v + m².'
+  - 'conclude: The variance is therefore v.'
   openmath: (forall (m v) (-> (>= v 0) (and (= (expectation (gaussian_measure m v) identity_rv) m) (= (variance (gaussian_measure m v) identity_rv) v))))
   hard_negative:
     statement: 平均m、標準偏差vの正規分布の分散はvである。
@@ -1144,19 +1410,29 @@
   kind: gap
   level: 3
   topic: 正規分布・再生性
-  statement: 独立なX,Yがそれぞれ正規分布N(m₁,v₁),N(m₂,v₂)に従うならば、X+YはN(m₁+m₂,v₁+v₂)に従う。
+  statement: 独立な実確率変数$X,Y$がそれぞれ正規分布$N(m_1,v_1),N(m_2,v_2)$に従うならば、$X+Y$は$N(m_1+m_2,v_1+v_2)$に従う。ただし$v_i=0$のときの$N(m_i,0)$は$m_i$の一点分布とする。
   statement_en: If independent X and Y have laws N(m₁, v₁) and N(m₂, v₂), then X + Y has law N(m₁ + m₂, v₁ + v₂).
-  assumptions: [Pは確率測度, XとYは独立, XはN(m₁,v₁)に従う, YはN(m₂,v₂)に従う]
-  quantifiers: [任意の確率空間, 確率変数X, Y, 実数m₁, m₂, 非負実数v₁, v₂]
-  conclusion: X+YはN(m₁+m₂,v₁+v₂)に従う。
+  assumptions:
+  - $P$は確率測度
+  - $X$と$Y$は独立
+  - $X$は$N(m_1,v_1)$に従う
+  - $Y$は$N(m_2,v_2)$に従う
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数$X,Y$
+  - 任意の実数$m_1,m_2$
+  - 任意の非負実数$v_1,v_2$
+  conclusion: $X+Y$は$N(m_1+m_2,v_1+v_2)$に従う。
   answer: |
-    独立性からX+Yのモーメント母関数はM_X(t)M_Y(t)=exp((m₁+m₂)t+(v₁+v₂)t²/2)である。これはN(m₁+m₂,v₁+v₂)のモーメント母関数に等しい。至るところ有限なモーメント母関数は分布を決定するので、X+Yの分布はN(m₁+m₂,v₁+v₂)である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$m_1,m_2\in\mathbb{R}$、$v_1,v_2\geq0$とする。$X,Y$を独立な実確率変数で、それぞれ$N(m_1,v_1)$、$N(m_2,v_2)$に従うものとする。分散$0$の正規分布は一点分布である。
+
+    $N(m,v)$の特性関数は$\exp(imt-vt^2/2)$である。独立性から、$t\in\mathbb{R}$について$E[e^{it(X+Y)}]=E[e^{itX}]E[e^{itY}]=\exp(i(m_1+m_2)t-(v_1+v_2)t^2/2)$となる。これは$N(m_1+m_2,v_1+v_2)$の特性関数である。$\mathbb{R}$上の確率測度は特性関数で一意に定まる（特性関数の一意性定理）。よって$X+Y$の分布は$N(m_1+m_2,v_1+v_2)$である。
   strategy: Multiply moment generating functions and use uniqueness.
   sketch:
-    - "apply_theorem: Independence makes the moment generating function of X + Y a product."
-    - "derive: The product is exp((m₁+m₂)t + (v₁+v₂)t²/2)."
-    - "apply_theorem: A moment generating function that is finite everywhere determines the law."
-    - "conclude: Hence X + Y is normal with the summed parameters."
+  - 'apply_theorem: Independence makes the moment generating function of X + Y a product.'
+  - 'derive: The product is exp((m₁+m₂)t + (v₁+v₂)t²/2).'
+  - 'apply_theorem: A moment generating function that is finite everywhere determines the law.'
+  - 'conclude: Hence X + Y is normal with the summed parameters.'
   openmath: (forall (P X Y m1 m2 v1 v2) (-> (and (probability_measure P) (indep_rv P X Y) (has_law P X (gaussian_measure m1 v1)) (has_law P Y (gaussian_measure m2 v2))) (has_law P (+ X Y) (gaussian_measure (+ m1 m2) (+ v1 v2)))))
   hard_negative:
     statement: X,Yがそれぞれ正規分布に従えば、独立でなくてもX+Yは正規分布に従う。
@@ -1171,20 +1447,29 @@
   kind: textbook
   level: 3
   topic: 有限分布・ポアソンの極限定理
-  statement: np_nがrに収束するとき、二項分布Bin(n,p_n)のkでの確率はnを大きくするとパラメータrのポアソン分布のkでの確率に収束する。
+  statement: $[0,1]$に値をとる数列$(p_n)$と非負実数$r$について$np_n\to r$ならば、各自然数$k$について、二項分布$\mathrm{Bin}(n,p_n)$の$\{k\}$の確率はパラメータ$r$のポアソン分布の$\{k\}$の確率$e^{-r}r^k/k!$に収束する。
   statement_en: If n p_n converges to r ≥ 0, then for each k the probability that Bin(n, p_n) equals k converges to the probability that Poisson(r) equals k.
-  assumptions: ["p_nは[0,1]の数列", n p_nはrに収束, rは非負実数]
-  quantifiers: [任意の数列p, 非負実数r, 自然数k]
-  conclusion: Bin(n,p_n)({k})はPoisson(r)({k})=exp(-r)r^k/k!に収束する。
+  assumptions:
+  - $p_n\in[0,1]$
+  - $np_n\to r$
+  - $r$は非負実数
+  quantifiers:
+  - 任意の数列$(p_n)$
+  - 任意の非負実数$r$
+  - 任意の自然数$k$
+  conclusion: $n\to\infty$で$\mathrm{Bin}(n,p_n)(\{k\})\to e^{-r}r^k/k!$である。
   answer: |
-    C(n,k)p_n^k(1-p_n)^{n-k}をC(n,k)/n^k・(np_n)^k・(1-p_n)^{n-k}と分ける。kを固定するとC(n,k)/n^kは1/k!に、(np_n)^kはr^kに収束する。p_n→0なので(1-p_n)^{-k}は1に収束し、(1-p_n)^nはexp(-r)に収束する。これらの積の極限はexp(-r)r^k/k!である。
+    $r\geq0$、$k\in\mathbb{N}$とし、$(p_n)$を$p_n\in[0,1]$かつ$np_n\to r$を満たす数列とする。$n\geq k$のとき$\mathrm{Bin}(n,p_n)(\{k\})=\binom{n}{k}p_n^k(1-p_n)^{n-k}$である。$p_n=np_n/n\to0$なので、十分大きい$n$で$p_n<1$であり、次のように分けられる。
+    $\binom{n}{k}p_n^k(1-p_n)^{n-k}=\frac{\binom{n}{k}}{n^k}\cdot(np_n)^k\cdot(1-p_n)^n\cdot(1-p_n)^{-k}$
+
+    $k$を固定すると、$\binom{n}{k}/n^k=\frac{1}{k!}\prod_{j<k}\left(1-\frac{j}{n}\right)\to\frac{1}{k!}$である。また$(np_n)^k\to r^k$、$(1-p_n)^{-k}\to1$である。残りの因子を調べる。$\log(1-x)=-x(1+\rho(x))$（$x\to0$で$\rho(x)\to0$、$\rho(0)=0$）と書くと、$n\log(1-p_n)=-np_n(1+\rho(p_n))\to-r$である。よって$(1-p_n)^n\to e^{-r}$となる。これらの積の極限は$e^{-r}r^k/k!$である。
   strategy: Factor the binomial probability into three pieces with explicit limits.
   sketch:
-    - "setup: Fix k and write the binomial probability as a product of three factors."
-    - "derive: C(n,k)/n^k tends to 1/k!."
-    - "derive: (n p_n)^k tends to r^k."
-    - "derive: (1 - p_n)^{n-k} tends to exp(-r)."
-    - "conclude: Multiply the limits to get the Poisson probability."
+  - 'setup: Fix k and write the binomial probability as a product of three factors.'
+  - 'derive: C(n,k)/n^k tends to 1/k!.'
+  - 'derive: (n p_n)^k tends to r^k.'
+  - 'derive: (1 - p_n)^{n-k} tends to exp(-r).'
+  - 'conclude: Multiply the limits to get the Poisson probability.'
   openmath: (forall (p r k) (-> (and (forall (n) (and (<= 0 (seq_value p n)) (<= (seq_value p n) 1))) (>= r 0) (seq_tends_to (binomial_rate_seq p) r)) (seq_tends_to (binomial_prob_seq p k) (prob (poisson_measure r) (set k)))))
   hard_negative:
     statement: pを固定してnを大きくしても、Bin(n,p)の確率はポアソン分布の確率に収束する。
@@ -1199,18 +1484,24 @@
   kind: gap
   level: 3
   topic: 条件付き期待値・全期待値の法則
-  statement: 可積分なXと部分σ加法族Gについて、E[E[X|G]]=E[X]が成り立つ。
+  statement: 確率空間$(\Omega,\mathcal{F},P)$、部分$\sigma$加法族$\mathcal{G}\subseteq\mathcal{F}$、可積分な実確率変数$X$について、$E[E[X\mid\mathcal{G}]]=E[X]$が成り立つ。
   statement_en: For an integrable random variable X and a sub-sigma-algebra G, E[E[X|G]] = E[X].
-  assumptions: [Pは確率測度, Gは部分σ加法族, Xは可積分]
-  quantifiers: [任意の確率空間, 部分σ加法族G, 確率変数X]
-  conclusion: E[E[X|G]]=E[X]である。
+  assumptions:
+  - $P$は確率測度
+  - $\mathcal{G}$は$\mathcal{F}$の部分$\sigma$加法族
+  - $X$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の部分$\sigma$加法族$\mathcal{G}$
+  - 任意の実確率変数$X$
+  conclusion: $E[E[X\mid\mathcal{G}]]=E[X]$である。
   answer: |
-    条件付き期待値の定義から、任意のA∈Gについて∫_AE[X|G]dP=∫_AXdPである。全事象ΩはGに属するので、A=Ωとすると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$\mathcal{G}\subseteq\mathcal{F}$を部分$\sigma$加法族、$X$を可積分な実確率変数とする。条件付き期待値の定義から、任意の$A\in\mathcal{G}$について$\int_AE[X\mid\mathcal{G}]\,dP=\int_AX\,dP$である。$\Omega\in\mathcal{G}$なので、$A=\Omega$とすると$E[E[X\mid\mathcal{G}]]=E[X]$を得る。
   strategy: Apply the defining property of conditional expectation to the whole space.
   sketch:
-    - "translate: Recall the defining identity on every set in G."
-    - "derive: The whole space Ω belongs to G."
-    - "conclude: Taking A = Ω gives E[E[X|G]] = E[X]."
+  - 'translate: Recall the defining identity on every set in G.'
+  - 'derive: The whole space Ω belongs to G.'
+  - 'conclude: Taking A = Ω gives E[E[X|G]] = E[X].'
   openmath: (forall (P G X) (-> (and (probability_measure P) (sub_sigma_algebra G) (integrable_rv X P)) (= (expectation P (cond_expectation P X G)) (expectation P X))))
   hard_negative:
     statement: E[X|G]=E[X]がほとんど確実に成り立つ。
@@ -1225,19 +1516,27 @@
   kind: textbook
   level: 3
   topic: 条件付き期待値・タワー法則
-  statement: 部分σ加法族G⊆Hと可積分なXについて、ほとんど確実にE[E[X|H]|G]=E[X|G]である（タワー法則）。
-  statement_en: "Tower law: for sub-sigma-algebras G ⊆ H and an integrable random variable X, E[E[X|H]|G] = E[X|G] almost surely."
-  assumptions: [Pは確率測度, G⊆Hは部分σ加法族, Xは可積分]
-  quantifiers: [任意の確率空間, 部分σ加法族G, H, 確率変数X]
-  conclusion: ほとんど確実にE[E[X|H]|G]=E[X|G]である。
+  statement: タワー法則。確率空間$(\Omega,\mathcal{F},P)$の部分$\sigma$加法族$\mathcal{G}\subseteq\mathcal{H}\subseteq\mathcal{F}$と可積分な実確率変数$X$について、ほとんど確実に$E[E[X\mid\mathcal{H}]\mid\mathcal{G}]=E[X\mid\mathcal{G}]$である。
+  statement_en: 'Tower law: for sub-sigma-algebras G ⊆ H and an integrable random variable X, E[E[X|H]|G] = E[X|G] almost surely.'
+  assumptions:
+  - $P$は確率測度
+  - $\mathcal{G}\subseteq\mathcal{H}\subseteq\mathcal{F}$は部分$\sigma$加法族
+  - $X$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の部分$\sigma$加法族$\mathcal{G},\mathcal{H}$
+  - 任意の実確率変数$X$
+  conclusion: ほとんど確実に$E[E[X\mid\mathcal{H}]\mid\mathcal{G}]=E[X\mid\mathcal{G}]$である。
   answer: |
-    A∈Gを任意にとる。G⊆HなのでA∈Hでもある。定義から∫_AE[E[X|H]|G]dP=∫_AE[X|H]dP=∫_AXdP=∫_AE[X|G]dPである。両辺の被積分関数はどちらもG可測で可積分なので、一意性からほとんど確実に等しい。
+    $(\Omega,\mathcal{F},P)$を確率空間、$\mathcal{G}\subseteq\mathcal{H}\subseteq\mathcal{F}$を部分$\sigma$加法族、$X$を可積分な実確率変数とする。$A\in\mathcal{G}$を任意にとると、$\mathcal{G}\subseteq\mathcal{H}$より$A\in\mathcal{H}$でもある。条件付き期待値の定義を順に用いると、
+    $\int_AE[E[X\mid\mathcal{H}]\mid\mathcal{G}]\,dP=\int_AE[X\mid\mathcal{H}]\,dP=\int_AX\,dP=\int_AE[X\mid\mathcal{G}]\,dP$
+    である。$E[E[X\mid\mathcal{H}]\mid\mathcal{G}]$と$E[X\mid\mathcal{G}]$はどちらも$\mathcal{G}$可測で可積分である。そのような関数は$\mathcal{G}$の各集合上の積分でほとんど確実に一意に定まるので、両者はほとんど確実に等しい。
   strategy: Check the defining integrals on sets of the smaller sigma-algebra and use uniqueness.
   sketch:
-    - "setup: Fix a set A in G; it also lies in H."
-    - "derive: Chain the defining identities of the three conditional expectations on A."
-    - "apply_theorem: Conditional expectation is unique among G-measurable integrable functions."
-    - "conclude: The two sides agree almost surely."
+  - 'setup: Fix a set A in G; it also lies in H.'
+  - 'derive: Chain the defining identities of the three conditional expectations on A.'
+  - 'apply_theorem: Conditional expectation is unique among G-measurable integrable functions.'
+  - 'conclude: The two sides agree almost surely.'
   openmath: (forall (P G H X) (-> (and (probability_measure P) (sigma_le G H) (sub_sigma_algebra H) (integrable_rv X P)) (ae_eq P (cond_expectation P (cond_expectation P X H) G) (cond_expectation P X G))))
   hard_negative:
     statement: G⊆Hでなくても、E[E[X|H]|G]=E[X|G]が成り立つ。
@@ -1252,19 +1551,30 @@
   kind: textbook
   level: 3
   topic: 条件付き期待値・既知の因子の取り出し
-  statement: XがG可測で、YとXYが可積分ならば、ほとんど確実にE[XY|G]=XE[Y|G]である。
+  statement: 確率空間$(\Omega,\mathcal{F},P)$の部分$\sigma$加法族$\mathcal{G}$について、実確率変数$X$が$\mathcal{G}$可測で、$Y$と$XY$が可積分ならば、ほとんど確実に$E[XY\mid\mathcal{G}]=XE[Y\mid\mathcal{G}]$である。
   statement_en: If X is G-measurable and Y and XY are integrable, then E[XY|G] = X E[Y|G] almost surely.
-  assumptions: [Pは確率測度, Gは部分σ加法族, XはG可測, YとXYは可積分]
-  quantifiers: [任意の確率空間, 部分σ加法族G, 確率変数X, Y]
-  conclusion: ほとんど確実にE[XY|G]=XE[Y|G]である。
+  assumptions:
+  - $P$は確率測度
+  - $\mathcal{G}$は$\mathcal{F}$の部分$\sigma$加法族
+  - $X$は$\mathcal{G}$可測
+  - $Y$と$XY$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の部分$\sigma$加法族$\mathcal{G}$
+  - 任意の実確率変数$X,Y$
+  conclusion: ほとんど確実に$E[XY\mid\mathcal{G}]=XE[Y\mid\mathcal{G}]$である。
   answer: |
-    （概略）X=1_B（B∈G）の場合、A∈Gについて∫_A1_BE[Y|G]dP=∫_{A∩B}E[Y|G]dP=∫_{A∩B}YdP=∫_A1_BYdPなので成り立つ。線形性から単関数に広がる。一般のXは単関数で近似し、優収束定理でE[XY|G]とXE[Y|G]の等式へ極限移行する。
+    $(\Omega,\mathcal{F},P)$を確率空間、$\mathcal{G}\subseteq\mathcal{F}$を部分$\sigma$加法族とする。$X$を$\mathcal{G}$可測な実確率変数、$Y$を実確率変数とし、$Y$と$XY$は可積分とする。
+
+    まず$X\geq0$、$Y\geq0$の場合を示す。$Z=E[Y\mid\mathcal{G}]$とおくと、ほとんど確実に$Z\geq0$である。$A,B\in\mathcal{G}$について、定義から$\int_A1_BZ\,dP=\int_{A\cap B}Z\,dP=\int_{A\cap B}Y\,dP=\int_A1_BY\,dP$である。線形性より、$\mathcal{G}$可測な非負単関数$U$で$\int_AUZ\,dP=\int_AUY\,dP$が成り立つ。$X$に各点で単調に収束する$\mathcal{G}$可測な非負単関数の列をとると、単調収束定理から$\int_AXZ\,dP=\int_AXY\,dP$を得る。$A=\Omega$とすると$E[XZ]=E[XY]<\infty$なので、$XZ$は可積分である。$XZ$は$\mathcal{G}$可測でもあるので、条件付き期待値の一意性からほとんど確実に$E[XY\mid\mathcal{G}]=XZ$である。
+
+    一般の場合を示す。$X=X^+-X^-$、$Y=Y^+-Y^-$と分ける。$X^\pm$は$\mathcal{G}$可測で非負であり、$Y^\pm$は可積分で非負である。また$|X^\pm Y^\pm|\leq|XY|$より$X^\pm Y^\pm$も可積分である。前段から、符号の4通りすべてでほとんど確実に$E[X^\pm Y^\pm\mid\mathcal{G}]=X^\pm E[Y^\pm\mid\mathcal{G}]$が成り立つ。$XY=X^+Y^+-X^+Y^--X^-Y^++X^-Y^-$に条件付き期待値の線形性を用いて整理すると、ほとんど確実に$E[XY\mid\mathcal{G}]=(X^+-X^-)(E[Y^+\mid\mathcal{G}]-E[Y^-\mid\mathcal{G}])=XE[Y\mid\mathcal{G}]$を得る。
   strategy: Prove the identity for indicators and extend by approximation.
   sketch:
-    - "setup: Treat X = 1_B with B in G using the defining identity on A ∩ B."
-    - "derive: Extend to simple functions by linearity."
-    - "apply_theorem: Approximate X by simple functions and pass to the limit by dominated convergence."
-    - "conclude: The identity holds almost surely for general X."
+  - 'setup: Treat X = 1_B with B in G using the defining identity on A ∩ B.'
+  - 'derive: Extend to simple functions by linearity.'
+  - 'apply_theorem: Approximate X by simple functions and pass to the limit by dominated convergence.'
+  - 'conclude: The identity holds almost surely for general X.'
   openmath: (forall (P G X Y) (-> (and (probability_measure P) (sub_sigma_algebra G) (measurable_wrt X G) (integrable_rv Y P) (integrable_rv (* X Y) P)) (ae_eq P (cond_expectation P (* X Y) G) (* X (cond_expectation P Y G)))))
   hard_negative:
     statement: G可測でないXについてもE[XY|G]=XE[Y|G]が成り立つ。
@@ -1279,19 +1589,26 @@
   kind: gap
   level: 3
   topic: 条件付き期待値・独立性
-  statement: σ加法族H可測で可積分なXについて、HとGが独立ならば、ほとんど確実にE[X|G]=E[X]である。
+  statement: 確率空間$(\Omega,\mathcal{F},P)$の部分$\sigma$加法族$\mathcal{G},\mathcal{H}$が独立で、実確率変数$X$が$\mathcal{H}$可測かつ可積分ならば、ほとんど確実に$E[X\mid\mathcal{G}]=E[X]$である。
   statement_en: If X is integrable and measurable with respect to a sigma-algebra H independent of G, then E[X|G] = E[X] almost surely.
-  assumptions: [Pは確率測度, GとHは部分σ加法族, XはH可測で可積分, HとGは独立]
-  quantifiers: [任意の確率空間, 部分σ加法族G, H, 確率変数X]
-  conclusion: ほとんど確実にE[X|G]=E[X]である。
+  assumptions:
+  - $P$は確率測度
+  - $\mathcal{G}$と$\mathcal{H}$は$\mathcal{F}$の部分$\sigma$加法族
+  - $X$は$\mathcal{H}$可測で可積分
+  - $\mathcal{H}$と$\mathcal{G}$は独立
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の部分$\sigma$加法族$\mathcal{G},\mathcal{H}$
+  - 任意の実確率変数$X$
+  conclusion: ほとんど確実に$E[X\mid\mathcal{G}]=E[X]$である。
   answer: |
-    定数E[X]はG可測である。A∈Gについて、1_AとXは独立なので∫_AXdP=E[1_AX]=P(A)E[X]=∫_AE[X]dPである。条件付き期待値の一意性から、ほとんど確実にE[X|G]=E[X]である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$\mathcal{G},\mathcal{H}\subseteq\mathcal{F}$を独立な部分$\sigma$加法族、$X$を$\mathcal{H}$可測で可積分な実確率変数とする。定数$E[X]$は$\mathcal{G}$可測で可積分である。$A\in\mathcal{G}$をとると、$1_A$は$\mathcal{G}$可測で$X$は$\mathcal{H}$可測なので、$1_A$と$X$は独立である。独立な可積分確率変数の積の期待値は期待値の積なので、$\int_AX\,dP=E[1_AX]=P(A)E[X]=\int_AE[X]\,dP$である。条件付き期待値の一意性から、ほとんど確実に$E[X\mid\mathcal{G}]=E[X]$である。
   strategy: Verify that the constant E[X] satisfies the defining property, using independence of 1_A and X.
   sketch:
-    - "setup: The constant E[X] is G-measurable and integrable."
-    - "derive: For A in G, independence gives E[1_A X] = P(A) E[X]."
-    - "apply_theorem: Uniqueness of conditional expectation identifies E[X|G] with the constant."
-    - "conclude: Hence E[X|G] = E[X] almost surely."
+  - 'setup: The constant E[X] is G-measurable and integrable.'
+  - 'derive: For A in G, independence gives E[1_A X] = P(A) E[X].'
+  - 'apply_theorem: Uniqueness of conditional expectation identifies E[X|G] with the constant.'
+  - 'conclude: Hence E[X|G] = E[X] almost surely.'
   openmath: (forall (P G H X) (-> (and (probability_measure P) (sub_sigma_algebra G) (sub_sigma_algebra H) (measurable_wrt X H) (integrable_rv X P) (indep_sigma P H G)) (ae_eq P (cond_expectation P X G) (expectation P X))))
   hard_negative:
     statement: E[X|G]が定数ならばXはGと独立である。
@@ -1306,18 +1623,25 @@
   kind: gap
   level: 3
   topic: マルチンゲール・期待値の保存
-  statement: マルチンゲールX_nの期待値は一定で、E[X_n]=E[X_0]が成り立つ。
+  statement: フィルトレーション$(\mathcal{F}_n)_{n\in\mathbb{N}}$に関するマルチンゲール$(X_n)$について、任意の$n$で$E[X_n]=E[X_0]$が成り立つ。
   statement_en: A martingale has constant expectation, that is, E[X_n] = E[X_0] for all n.
-  assumptions: [Pは確率測度, Fはフィルトレーション, XはFに関するマルチンゲール]
-  quantifiers: [任意の確率空間, フィルトレーションF, マルチンゲールX, 自然数n]
-  conclusion: E[X_n]=E[X_0]である。
+  assumptions:
+  - $P$は確率測度
+  - $(\mathcal{F}_n)$はフィルトレーション
+  - $(X_n)$は$(\mathcal{F}_n)$に関するマルチンゲール
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意のフィルトレーション$(\mathcal{F}_n)$
+  - 任意のマルチンゲール$(X_n)$
+  - 任意の自然数$n$
+  conclusion: $E[X_n]=E[X_0]$である。
   answer: |
-    マルチンゲール性からE[X_n|F_0]=X_0がほとんど確実に成り立つ。両辺の期待値をとり、条件付き期待値の期待値が元の期待値に等しいことを使うとE[X_n]=E[X_0]を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(\mathcal{F}_n)_{n\in\mathbb{N}}$をフィルトレーション、$(X_n)$をこれに関する実数値マルチンゲール、$n\in\mathbb{N}$とする。マルチンゲール性からほとんど確実に$E[X_n\mid\mathcal{F}_0]=X_0$である。両辺の期待値をとり、$E[E[X_n\mid\mathcal{F}_0]]=E[X_n]$を使うと、$E[X_n]=E[X_0]$を得る。
   strategy: Take expectations in the martingale identity and use the law of total expectation.
   sketch:
-    - "translate: The martingale property gives E[X_n | F_0] = X_0."
-    - "apply_theorem: Taking expectations removes the conditioning."
-    - "conclude: Hence E[X_n] = E[X_0]."
+  - 'translate: The martingale property gives E[X_n | F_0] = X_0.'
+  - 'apply_theorem: Taking expectations removes the conditioning.'
+  - 'conclude: Hence E[X_n] = E[X_0].'
   openmath: (forall (P F X n) (-> (and (probability_measure P) (filtration_of F) (martingale P X F) (in n N)) (= (expectation P (seq_value X n)) (expectation P (seq_value X 0)))))
   hard_negative:
     statement: 期待値が一定の適合過程はマルチンゲールである。
@@ -1333,19 +1657,27 @@
   kind: gap
   level: 3
   topic: マルチンゲール・劣マルチンゲール
-  statement: 劣マルチンゲールX_nとi≤jについて、E[X_i]≤E[X_j]が成り立つ。
+  statement: フィルトレーション$(\mathcal{F}_n)_{n\in\mathbb{N}}$に関する劣マルチンゲール$(X_n)$と$i\leq j$について、$E[X_i]\leq E[X_j]$が成り立つ。
   statement_en: For a submartingale X and i ≤ j, E[X_i] ≤ E[X_j].
-  assumptions: [Pは確率測度, Fはフィルトレーション, XはFに関する劣マルチンゲール, i≤j]
-  quantifiers: [任意の確率空間, フィルトレーションF, 劣マルチンゲールX, 自然数i, j]
-  conclusion: E[X_i]≤E[X_j]である。
+  assumptions:
+  - $P$は確率測度
+  - $(\mathcal{F}_n)$はフィルトレーション
+  - $(X_n)$は$(\mathcal{F}_n)$に関する劣マルチンゲール
+  - $i\leq j$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意のフィルトレーション$(\mathcal{F}_n)$
+  - 任意の劣マルチンゲール$(X_n)$
+  - 任意の自然数$i,j$
+  conclusion: $E[X_i]\leq E[X_j]$である。
   answer: |
-    劣マルチンゲール性からほとんど確実にX_i≤E[X_j|F_i]である。両辺の期待値をとると、右辺の期待値は全期待値の法則からE[X_j]に等しい。よってE[X_i]≤E[X_j]である。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(\mathcal{F}_n)_{n\in\mathbb{N}}$をフィルトレーション、$(X_n)$をこれに関する実数値劣マルチンゲール、$i\leq j$を自然数とする。劣マルチンゲール性から、ほとんど確実に$X_i\leq E[X_j\mid\mathcal{F}_i]$である。両辺の期待値をとると、右辺は$E[E[X_j\mid\mathcal{F}_i]]=E[X_j]$である。よって$E[X_i]\leq E[X_j]$を得る。
   strategy: Take expectations in the submartingale inequality.
   sketch:
-    - "translate: The submartingale property gives X_i ≤ E[X_j | F_i] almost surely."
-    - "apply_theorem: Monotonicity of expectation preserves the inequality."
-    - "apply_theorem: The law of total expectation simplifies the right side."
-    - "conclude: Hence E[X_i] ≤ E[X_j]."
+  - 'translate: The submartingale property gives X_i ≤ E[X_j | F_i] almost surely.'
+  - 'apply_theorem: Monotonicity of expectation preserves the inequality.'
+  - 'apply_theorem: The law of total expectation simplifies the right side.'
+  - 'conclude: Hence E[X_i] ≤ E[X_j].'
   openmath: (forall (P F X i j) (-> (and (probability_measure P) (filtration_of F) (submartingale P X F) (<= i j)) (<= (expectation P (seq_value X i)) (expectation P (seq_value X j)))))
   hard_negative:
     statement: 期待値が単調増加な適合過程は劣マルチンゲールである。
@@ -1361,18 +1693,24 @@
   kind: gap
   level: 3
   topic: マルチンゲール・ドゥーブのマルチンゲール
-  statement: 可積分なYとフィルトレーションF_nについて、E[Y|F_n]はマルチンゲールである。
+  statement: 可積分な実確率変数$Y$とフィルトレーション$(\mathcal{F}_n)_{n\in\mathbb{N}}$について、$M_n=E[Y\mid\mathcal{F}_n]$はマルチンゲールである。
   statement_en: For an integrable random variable Y and a filtration F_n, the process E[Y | F_n] is a martingale.
-  assumptions: [Pは確率測度, Fはフィルトレーション, Yは可積分]
-  quantifiers: [任意の確率空間, フィルトレーションF, 確率変数Y]
-  conclusion: M_n=E[Y|F_n]はFに関するマルチンゲールである。
+  assumptions:
+  - $P$は確率測度
+  - $(\mathcal{F}_n)$はフィルトレーション
+  - $Y$は可積分
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意のフィルトレーション$(\mathcal{F}_n)$
+  - 任意の実確率変数$Y$
+  conclusion: $M_n=E[Y\mid\mathcal{F}_n]$は$(\mathcal{F}_n)$に関するマルチンゲールである。
   answer: |
-    M_nはF_n可測かつ可積分なので適合過程である。i≤jならF_i⊆F_jなので、タワー法則からE[M_j|F_i]=E[E[Y|F_j]|F_i]=E[Y|F_i]=M_iがほとんど確実に成り立つ。よってM_nはマルチンゲールである。
+    $(\Omega,\mathcal{F},P)$を確率空間、$(\mathcal{F}_n)_{n\in\mathbb{N}}$をフィルトレーション、$Y$を可積分な実確率変数とし、$M_n=E[Y\mid\mathcal{F}_n]$とおく。定義より$M_n$は$\mathcal{F}_n$可測で可積分である。$i\leq j$なら$\mathcal{F}_i\subseteq\mathcal{F}_j$なので、タワー法則からほとんど確実に$E[M_j\mid\mathcal{F}_i]=E[E[Y\mid\mathcal{F}_j]\mid\mathcal{F}_i]=E[Y\mid\mathcal{F}_i]=M_i$である。よって$(M_n)$はマルチンゲールである。
   strategy: Measurability is built in, and the martingale identity is the tower law.
   sketch:
-    - "derive: Each M_n is F_n-measurable and integrable, so the process is adapted."
-    - "apply_theorem: For i ≤ j the tower law gives E[M_j | F_i] = M_i."
-    - "conclude: Hence M is a martingale."
+  - 'derive: Each M_n is F_n-measurable and integrable, so the process is adapted.'
+  - 'apply_theorem: For i ≤ j the tower law gives E[M_j | F_i] = M_i.'
+  - 'conclude: Hence M is a martingale.'
   openmath: (forall (P F Y) (-> (and (probability_measure P) (filtration_of F) (integrable_rv Y P)) (martingale P (doob_process P Y F) F)))
   hard_negative:
     statement: 任意のマルチンゲールはある可積分なYによりX_n=E[Y|F_n]と表せる。
@@ -1387,18 +1725,26 @@
   kind: gap
   level: 2
   topic: 統計・標本平均の不偏性
-  statement: 可積分で期待値がmの確率変数X_0,…,X_{n-1}（n≥1）について、標本平均の期待値はmである。
+  statement: 自然数$n\geq1$と、可積分で期待値がいずれも$m$である実確率変数$X_0,\dots,X_{n-1}$について、標本平均の期待値は$m$である。独立性は仮定しない。
   statement_en: If X_0, ..., X_{n-1} with n ≥ 1 are integrable with common mean m, then the sample mean has expectation m.
-  assumptions: [Pは確率測度, n≥1, 各X_iは可積分, "E[X_i]=m"]
-  quantifiers: [任意の確率空間, 確率変数列X, 自然数n, 実数m]
-  conclusion: E[(X_0+…+X_{n-1})/n]=mである。
+  assumptions:
+  - $P$は確率測度
+  - $n\geq1$
+  - 各$X_i$（$i<n$）は可積分
+  - 各$i<n$で$E[X_i]=m$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数列$(X_i)$
+  - 任意の自然数$n$
+  - 任意の実数$m$
+  conclusion: $E\left[\frac{1}{n}\sum_{i<n}X_i\right]=m$である。
   answer: |
-    期待値の線形性からE[(ΣX_i)/n]=(ΣE[X_i])/n=(nm)/n=mである。この計算に独立性は使わない。
+    $(\Omega,\mathcal{F},P)$を確率空間、$n\geq1$を自然数、$m\in\mathbb{R}$とする。$X_0,\dots,X_{n-1}$を可積分で$E[X_i]=m$を満たす実確率変数とする。期待値の線形性から、$E\left[\frac{1}{n}\sum_{i<n}X_i\right]=\frac{1}{n}\sum_{i<n}E[X_i]=\frac{nm}{n}=m$である。この計算に独立性は使わない。
   strategy: Linearity of expectation with no independence assumption.
   sketch:
-    - "apply_theorem: Pull out 1/n and split the sum by linearity."
-    - "derive: Each term equals m, so the sum is n m."
-    - "conclude: Divide by n ≥ 1 to get m."
+  - 'apply_theorem: Pull out 1/n and split the sum by linearity.'
+  - 'derive: Each term equals m, so the sum is n m.'
+  - 'conclude: Divide by n ≥ 1 to get m.'
   openmath: (forall (P X n m) (-> (and (probability_measure P) (>= n 1) (forall (i) (-> (in i (finset_range n)) (and (integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m))))) (= (expectation P (/ (partial_sum_rv X n) n)) m)))
   hard_negative:
     statement: 標本平均の分散は母分散に等しい。
@@ -1416,19 +1762,24 @@
   kind: gap
   level: 2
   topic: 統計・偏差平方和の分解
-  statement: 標本平均をx̄とすると、実数aについてΣ(x_i-a)²=Σ(x_i-x̄)²+n(x̄-a)²が成り立つ。
+  statement: 自然数$n\geq1$と実数$x_0,\dots,x_{n-1}$の平均を$\bar{x}$とすると、任意の実数$a$について$\sum_{i<n}(x_i-a)^2=\sum_{i<n}(x_i-\bar{x})^2+n(\bar{x}-a)^2$が成り立つ。
   statement_en: With sample mean x̄ of x_0, ..., x_{n-1} and n ≥ 1, Σ_i (x_i - a)² = Σ_i (x_i - x̄)² + n (x̄ - a)² for every real a.
-  assumptions: [n≥1, x̄は標本平均]
-  quantifiers: [任意の実数列x, 自然数n, 実数a]
-  conclusion: Σ(x_i-a)²=Σ(x_i-x̄)²+n(x̄-a)²である。
+  assumptions:
+  - $n\geq1$
+  - $\bar{x}=\frac{1}{n}\sum_{i<n}x_i$
+  quantifiers:
+  - 任意の実数列$(x_i)$
+  - 任意の自然数$n$
+  - 任意の実数$a$
+  conclusion: $\sum_{i<n}(x_i-a)^2=\sum_{i<n}(x_i-\bar{x})^2+n(\bar{x}-a)^2$である。
   answer: |
-    x_i-a=(x_i-x̄)+(x̄-a)として2乗の展開を和にとると、Σ(x_i-a)²=Σ(x_i-x̄)²+2(x̄-a)Σ(x_i-x̄)+n(x̄-a)²となる。x̄の定義からΣ(x_i-x̄)=0なので中央の項が消える。よって結論を得る。
+    $n\geq1$を自然数、$x_0,\dots,x_{n-1},a$を実数とし、$\bar{x}=\frac{1}{n}\sum_{i<n}x_i$とおく。$x_i-a=(x_i-\bar{x})+(\bar{x}-a)$を2乗して$i$について和をとると、$\sum_{i<n}(x_i-a)^2=\sum_{i<n}(x_i-\bar{x})^2+2(\bar{x}-a)\sum_{i<n}(x_i-\bar{x})+n(\bar{x}-a)^2$となる。$\bar{x}$の定義から$\sum_{i<n}(x_i-\bar{x})=0$なので、中央の項が消えて結論を得る。
   strategy: Insert the sample mean and use that deviations from it sum to zero.
   sketch:
-    - "setup: Write x_i - a = (x_i - x̄) + (x̄ - a)."
-    - "derive: Expand the square and sum over i."
-    - "derive: The cross term vanishes since deviations from x̄ sum to 0."
-    - "conclude: This yields the decomposition."
+  - 'setup: Write x_i - a = (x_i - x̄) + (x̄ - a).'
+  - 'derive: Expand the square and sum over i.'
+  - 'derive: The cross term vanishes since deviations from x̄ sum to 0.'
+  - 'conclude: This yields the decomposition.'
   openmath: (forall (x n a m) (-> (and (>= n 1) (= m (/ (sum (finset_range n) (lambda (i) (seq_value x i))) n))) (= (sum (finset_range n) (lambda (i) (^ (- (seq_value x i) a) 2))) (+ (sum (finset_range n) (lambda (i) (^ (- (seq_value x i) m) 2))) (* n (^ (- m a) 2))))))
   hard_negative:
     statement: 実数aについてΣ(x_i-a)²≤Σ(x_i-x̄)²が成り立つ。
@@ -1454,21 +1805,33 @@
   kind: textbook
   level: 3
   topic: 統計・不偏分散
-  statement: 対ごとに独立で2乗可積分、平均m、分散σ²のX_0,…,X_{n-1}（n≥2）について、S²=Σ(X_i-X̄)²/(n-1)の期待値はσ²である。
+  statement: 自然数$n\geq2$と、対ごとに独立で2乗可積分、期待値がいずれも$m$、分散がいずれも$v$である実確率変数$X_0,\dots,X_{n-1}$について、$\bar{X}=\frac{1}{n}\sum_{i<n}X_i$とおくと、$S^2=\frac{1}{n-1}\sum_{i<n}(X_i-\bar{X})^2$の期待値は$v$である。
   statement_en: If X_0, ..., X_{n-1} with n ≥ 2 are pairwise independent and square-integrable with common mean m and variance σ², then S² = Σ_i (X_i - X̄)² / (n - 1) has expectation σ².
-  assumptions: [Pは確率測度, n≥2, 各X_iは2乗可積分, X_iは対ごとに独立, "E[X_i]=m", "V[X_i]=σ²"]
-  quantifiers: [任意の確率空間, 確率変数列X, 自然数n, 実数m, σ²]
-  conclusion: E[S²]=σ²である。
+  assumptions:
+  - $P$は確率測度
+  - $n\geq2$
+  - 各$X_i$（$i<n$）は2乗可積分
+  - $X_0,\dots,X_{n-1}$は対ごとに独立
+  - 各$i<n$で$E[X_i]=m$
+  - 各$i<n$で$V[X_i]=v$
+  quantifiers:
+  - 任意の確率空間$(\Omega,\mathcal{F},P)$
+  - 任意の実確率変数列$(X_i)$
+  - 任意の自然数$n$
+  - 任意の実数$m,v$
+  conclusion: $E\left[\frac{1}{n-1}\sum_{i<n}(X_i-\bar{X})^2\right]=v$である。
   answer: |
-    偏差平方和の分解からΣ(X_i-X̄)²=Σ(X_i-m)²-n(X̄-m)²である。第1項の期待値はΣV[X_i]=nσ²である。対ごとの独立性からV[X̄]=σ²/nなので、第2項の期待値はn·σ²/n=σ²である。よってE[Σ(X_i-X̄)²]=(n-1)σ²となり、n-1で割ると結論を得る。
+    $(\Omega,\mathcal{F},P)$を確率空間、$n\geq2$を自然数、$m,v\in\mathbb{R}$とする。$X_0,\dots,X_{n-1}$を対ごとに独立で2乗可積分な実確率変数とし、$E[X_i]=m$、$V[X_i]=v$とする。$\bar{X}=\frac{1}{n}\sum_{i<n}X_i$とおく。
+
+    実数$x_0,\dots,x_{n-1}$の平均$\bar{x}$と実数$a$についての恒等式$\sum_{i<n}(x_i-a)^2=\sum_{i<n}(x_i-\bar{x})^2+n(\bar{x}-a)^2$を$a=m$で用いると、$\sum_{i<n}(X_i-\bar{X})^2=\sum_{i<n}(X_i-m)^2-n(\bar{X}-m)^2$である。第1項の期待値は$\sum_{i<n}V[X_i]=nv$である。線形性から$E[\bar{X}]=m$であり、対ごとの独立性から$V\left[\sum_{i<n}X_i\right]=\sum_{i<n}V[X_i]=nv$である。したがって$E[(\bar{X}-m)^2]=V[\bar{X}]=v/n$となり、第2項の期待値は$n\cdot v/n=v$である。よって$E\left[\sum_{i<n}(X_i-\bar{X})^2\right]=(n-1)v$であり、$n-1$で割ると結論を得る。
   strategy: Decompose the sum of squares about the true mean and compute both expectations.
   sketch:
-    - "setup: Let S be the sum of the X_i, and note that its mean is n m."
-    - "apply_theorem: Pairwise independence gives Var(S) = n σ²."
-    - "derive: Pointwise, Σ(X_i - X̄)² = Σ(X_i - m)² - (S - nm)² / n."
-    - "derive: The first term has expectation n σ²."
-    - "derive: The second term has expectation Var(S) / n = σ²."
-    - "conclude: Dividing (n - 1) σ² by n - 1 gives σ²."
+  - 'setup: Let S be the sum of the X_i, and note that its mean is n m.'
+  - 'apply_theorem: Pairwise independence gives Var(S) = n σ².'
+  - 'derive: Pointwise, Σ(X_i - X̄)² = Σ(X_i - m)² - (S - nm)² / n.'
+  - 'derive: The first term has expectation n σ².'
+  - 'derive: The second term has expectation Var(S) / n = σ².'
+  - 'conclude: Dividing (n - 1) σ² by n - 1 gives σ².'
   openmath: (forall (P X n m v) (-> (and (probability_measure P) (>= n 2) (pairwise_indep_rv P X) (forall (i) (-> (in i (finset_range n)) (and (square_integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m) (= (variance P (seq_value X i)) v))))) (= (expectation P (/ (sum (finset_range n) (lambda (i) (^ (- (seq_value X i) (/ (partial_sum_rv X n) n)) 2))) (- n 1))) v)))
   hard_negative:
     statement: n-1でなくnで割った標本分散も母分散の不偏推定量である。

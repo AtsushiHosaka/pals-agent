@@ -2,18 +2,21 @@
   kind: gap
   level: 1
   topic: 不等式・相加相乗平均
-  statement: 非負実数a,bについて√(ab)≤(a+b)/2が成り立つ。
+  statement: 非負実数$a,b$について$\sqrt{ab}\leq\frac{a+b}{2}$が成り立つ。
   statement_en: For nonnegative reals a and b, sqrt(ab) ≤ (a+b)/2.
-  assumptions: [a≥0, b≥0]
-  quantifiers: [任意の実数a, b]
-  conclusion: √(ab)≤(a+b)/2である。
+  assumptions:
+  - $a\geq 0$
+  - $b\geq 0$
+  quantifiers:
+  - 任意の$a,b\in\mathbb{R}$
+  conclusion: $\sqrt{ab}\leq\frac{a+b}{2}$である。
   answer: |
-    右辺は非負なので、両辺の2乗を比べればよい。((a+b)/2)^2-ab=(a-b)^2/4≥0であるから、ab≤((a+b)/2)^2となる。平方根をとって√(ab)≤(a+b)/2を得る。
+    $a,b$を非負実数とする。$\left(\frac{a+b}{2}\right)^2-ab=\frac{(a-b)^2}{4}\geq 0$なので、$ab\leq\left(\frac{a+b}{2}\right)^2$である。$\frac{a+b}{2}\geq 0$なので、平方根を取ると$\sqrt{ab}\leq\frac{a+b}{2}$を得る。
   strategy: Compare squares of the two nonnegative sides and use (a-b)^2 ≥ 0.
   sketch:
-    - "setup: Note that (a+b)/2 is nonnegative."
-    - "derive: Expand ((a+b)/2)^2 - ab = (a-b)^2/4 ≥ 0."
-    - "conclude: Taking square roots gives sqrt(ab) ≤ (a+b)/2."
+  - 'setup: Note that (a+b)/2 is nonnegative.'
+  - 'derive: Expand ((a+b)/2)^2 - ab = (a-b)^2/4 ≥ 0.'
+  - 'conclude: Taking square roots gives sqrt(ab) ≤ (a+b)/2.'
   openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (<= (root (* a b) 2) (/ (+ a b) 2))))
   hard_negative:
     statement: 任意の実数a,bについてab≤(a+b)/2が成り立つ。
@@ -24,24 +27,28 @@
     by
       intro a b ha hb
       exact Real.sqrt_le_iff.mpr ⟨by positivity, by nlinarith [sq_nonneg (a - b)]⟩
-
 - id: amgm_finite_family
   kind: textbook
   level: 2
   topic: 不等式・相加相乗平均
-  statement: 正の整数nと非負実数z_1,…,z_nについて、相乗平均(z_1…z_n)^(1/n)は相加平均(z_1+…+z_n)/n以下である。
+  statement: 正の整数$n$と非負実数$z_1,\dots,z_n$について、$(z_1\cdots z_n)^{1/n}\leq\frac{z_1+\cdots+z_n}{n}$が成り立つ。
   statement_en: For a positive integer n and nonnegative reals z_1,...,z_n, the geometric mean (z_1...z_n)^(1/n) is at most the arithmetic mean (z_1+...+z_n)/n.
-  assumptions: [nは正の整数, 全てのiでz_i≥0]
-  quantifiers: [任意の正の整数n, 任意の非負実数の組z_1からz_n]
-  conclusion: (z_1…z_n)^(1/n)≤(z_1+…+z_n)/nである。
+  assumptions:
+  - $n$は正の整数
+  - 全ての$i$で$z_i\geq 0$
+  quantifiers:
+  - 任意の正の整数$n$
+  - 任意の$z_1,\dots,z_n\in\mathbb{R}$
+  conclusion: $(z_1\cdots z_n)^{1/n}\leq\frac{z_1+\cdots+z_n}{n}$である。
   answer: |
-    全てのz_iが正の場合に示せば、0を含む場合は左辺が0なので明らかである。対数関数は凹なので、イェンセンの不等式より(1/n)Σlog z_i≤log((1/n)Σz_i)が成り立つ。左辺はlog((z_1…z_n)^(1/n))に等しい。指数関数が単調増加であることから主張を得る。
+    $n$を正の整数、$z_1,\dots,z_n$を非負実数とする。ある$z_i$が$0$なら、積は$0$で$1/n>0$なので左辺は$0$であり、右辺は$0$以上である。
+    全ての$z_i$が正のとき、$A=\frac{1}{n}\sum_i z_i>0$とおく。$t>0$で$\log t\leq t-1$が成り立つので、$\log(z_i/A)\leq z_i/A-1$である。$i$について足すと$\sum_i\log(z_i/A)\leq\sum_i z_i/A-n=0$となる。これは$\frac{1}{n}\sum_i\log z_i\leq\log A$を意味する。指数関数は単調増加なので、$(z_1\cdots z_n)^{1/n}=\exp\left(\frac{1}{n}\sum_i\log z_i\right)\leq A$である。
   strategy: Apply the weighted AM-GM inequality with all weights equal to 1/n, then rewrite the product of powers.
   sketch:
-    - "setup: Take the weights w_i = 1/n, which are nonnegative and sum to 1."
-    - "apply_theorem: The weighted AM-GM inequality gives ∏ z_i^(1/n) ≤ Σ z_i/n."
-    - "translate: Since z_i ≥ 0, ∏ z_i^(1/n) equals (∏ z_i)^(1/n)."
-    - "conclude: Factor 1/n out of the sum to obtain the claimed bound."
+  - 'setup: Take the weights w_i = 1/n, which are nonnegative and sum to 1.'
+  - 'apply_theorem: The weighted AM-GM inequality gives ∏ z_i^(1/n) ≤ Σ z_i/n.'
+  - 'translate: Since z_i ≥ 0, ∏ z_i^(1/n) equals (∏ z_i)^(1/n).'
+  - 'conclude: Factor 1/n out of the sum to obtain the claimed bound.'
   openmath: (forall (n z) (-> (and (in n N) (> n 0) (forall (i) (-> (in i (oriented_interval 1 n)) (>= (seq_value z i) 0)))) (<= (^ (product (oriented_interval 1 n) (lambda (i) (seq_value z i))) (/ 1 n)) (/ (sum (oriented_interval 1 n) (lambda (i) (seq_value z i))) n))))
   hard_negative:
     statement: 負の数を含む実数z_1,…,z_nでも、偶数個の積が非負なら相乗平均は相加平均以下である。
@@ -61,22 +68,23 @@
           = ∏ i, z i ^ ((1 : ℝ) / n) := (Real.finsetProd_rpow Finset.univ z (fun i _ => hz i) _).symm
         _ ≤ ∑ i, (1 : ℝ) / n * z i := h
         _ = (∑ i, z i) / n := by rw [← Finset.mul_sum]; ring
-
 - id: cauchy_schwarz_two_dimensional
   kind: gap
   level: 1
   topic: 不等式・コーシー＝シュワルツ
-  statement: 実数a,b,c,dについて(ac+bd)^2≤(a^2+b^2)(c^2+d^2)が成り立つ。
+  statement: 実数$a,b,c,d$について$(ac+bd)^2\leq(a^2+b^2)(c^2+d^2)$が成り立つ。
   statement_en: For real numbers a,b,c,d, (ac+bd)^2 ≤ (a^2+b^2)(c^2+d^2).
-  assumptions: [a, b, c, dは実数]
-  quantifiers: [任意の実数a, b, c, d]
-  conclusion: (ac+bd)^2≤(a^2+b^2)(c^2+d^2)である。
+  assumptions:
+  - $a,b,c,d\in\mathbb{R}$
+  quantifiers:
+  - 任意の$a,b,c,d\in\mathbb{R}$
+  conclusion: $(ac+bd)^2\leq(a^2+b^2)(c^2+d^2)$である。
   answer: |
-    右辺から左辺を引いて展開すると、(a^2+b^2)(c^2+d^2)-(ac+bd)^2=(ad-bc)^2となる。実数の2乗は非負なので差は0以上であり、不等式が成り立つ。
+    $a,b,c,d$を実数とする。右辺から左辺を引いて展開すると、$(a^2+b^2)(c^2+d^2)-(ac+bd)^2=(ad-bc)^2$となる。実数の$2$乗は$0$以上なので、不等式が成り立つ。
   strategy: Write the difference of the two sides as the perfect square (ad-bc)^2.
   sketch:
-    - "derive: Expand to get (a^2+b^2)(c^2+d^2) - (ac+bd)^2 = (ad-bc)^2."
-    - "conclude: The square is nonnegative, so the inequality holds."
+  - 'derive: Expand to get (a^2+b^2)(c^2+d^2) - (ac+bd)^2 = (ad-bc)^2.'
+  - 'conclude: The square is nonnegative, so the inequality holds.'
   openmath: (forall (a b c d) (<= (^ (+ (* a c) (* b d)) 2) (* (+ (^ a 2) (^ b 2)) (+ (^ c 2) (^ d 2)))))
   hard_negative:
     statement: 実数a,b,c,dについて(ac+bd)^2≤a^2c^2+b^2d^2が成り立つ。
@@ -87,24 +95,27 @@
     by
       intro a b c d
       nlinarith [sq_nonneg (a * d - b * c)]
-
 - id: cauchy_schwarz_finite_sum
   kind: textbook
   level: 1
   topic: 不等式・コーシー＝シュワルツ
-  statement: 有限集合s上の実数値関数f,gについて(Σf(i)g(i))^2≤(Σf(i)^2)(Σg(i)^2)が成り立つ。
+  statement: 有限集合$s$と実数値関数$f,g$について$\left(\sum_{i\in s}f(i)g(i)\right)^2\leq\left(\sum_{i\in s}f(i)^2\right)\left(\sum_{i\in s}g(i)^2\right)$が成り立つ。
   statement_en: For real functions f,g on a finite set s, (Σ f(i)g(i))^2 ≤ (Σ f(i)^2)(Σ g(i)^2).
-  assumptions: [sは有限集合, f, gはs上の実数値関数]
-  quantifiers: [任意の有限集合sと実数値関数f, g]
-  conclusion: (Σf(i)g(i))^2≤(Σf(i)^2)(Σg(i)^2)である。
+  assumptions:
+  - $s$は有限集合
+  - $f,g$は実数値関数
+  quantifiers:
+  - 任意の有限集合$s$
+  - 任意の実数値関数$f,g$
+  conclusion: $\left(\sum_{i\in s}f(i)g(i)\right)^2\leq\left(\sum_{i\in s}f(i)^2\right)\left(\sum_{i\in s}g(i)^2\right)$である。
   answer: |
-    A=Σf(i)^2, B=Σf(i)g(i), C=Σg(i)^2とおく。任意の実数tについてΣ(tf(i)+g(i))^2=At^2+2Bt+C≥0である。A>0なら、この2次式の判別式が0以下であることからB^2≤ACを得る。A=0なら全てのf(i)が0なのでB=0であり、やはり成り立つ。
+    $s$を有限集合、$f,g$を実数値関数とする。$A=\sum_{i\in s}f(i)^2$、$B=\sum_{i\in s}f(i)g(i)$、$C=\sum_{i\in s}g(i)^2$とおく。$B^2\leq AC$を示せばよい。任意の実数$t$について$\sum_{i\in s}(tf(i)+g(i))^2=At^2+2Bt+C\geq 0$である。$A>0$なら$t=-B/A$を代入して$C-B^2/A\geq 0$となるので、$B^2\leq AC$を得る。$A=0$なら全ての$i\in s$で$f(i)=0$なので$B=0$であり、$B^2\leq AC$は$0\leq 0$となる。
   strategy: Use nonnegativity of the quadratic t ↦ Σ (t f(i) + g(i))^2 and its discriminant.
   sketch:
-    - "setup: Put A = Σ f(i)^2, B = Σ f(i)g(i), C = Σ g(i)^2."
-    - "derive: For all real t, A t^2 + 2 B t + C = Σ (t f(i) + g(i))^2 ≥ 0."
-    - "case_split: If A = 0, every f(i) vanishes and B = 0."
-    - "conclude: If A > 0, the discriminant is nonpositive, so B^2 ≤ AC."
+  - 'setup: Put A = Σ f(i)^2, B = Σ f(i)g(i), C = Σ g(i)^2.'
+  - 'derive: For all real t, A t^2 + 2 B t + C = Σ (t f(i) + g(i))^2 ≥ 0.'
+  - 'case_split: If A = 0, every f(i) vanishes and B = 0.'
+  - 'conclude: If A > 0, the discriminant is nonpositive, so B^2 ≤ AC.'
   openmath: (forall (s f g) (-> (finite_set s) (<= (^ (sum s (lambda (i) (* (fn_value f i) (fn_value g i)))) 2) (* (sum s (lambda (i) (^ (fn_value f i) 2))) (sum s (lambda (i) (^ (fn_value g i) 2)))))))
   hard_negative:
     statement: 有限和についてΣf(i)g(i)=(Σf(i))(Σg(i))が成り立つ。
@@ -115,25 +126,34 @@
     by
       intro ι s f g
       exact Finset.sum_mul_sq_le_sq_mul_sq s f g
-
 - id: holder_finite_sum
   kind: named
   level: 3
   topic: 不等式・ヘルダー
-  statement: p>1で1/p+1/q=1とする。有限集合s上の非負実数値関数f,gについてΣf(i)g(i)≤(Σf(i)^p)^(1/p)(Σg(i)^q)^(1/q)が成り立つ。
+  statement: $p>1$、$\frac{1}{p}+\frac{1}{q}=1$とする。有限集合$s$上で非負な実数値関数$f,g$について$\sum_{i\in s}f(i)g(i)\leq\left(\sum_{i\in s}f(i)^p\right)^{1/p}\left(\sum_{i\in s}g(i)^q\right)^{1/q}$が成り立つ。
   statement_en: Let p > 1 with 1/p + 1/q = 1. For nonnegative real functions f,g on a finite set s, Σ f(i)g(i) ≤ (Σ f(i)^p)^(1/p) (Σ g(i)^q)^(1/q).
-  assumptions: [p>1, 1/p+1/q=1, sは有限集合, s上でf≥0かつg≥0]
-  quantifiers: [任意の実数p, q, 任意の有限集合s, 任意の関数f, g]
-  conclusion: Σf(i)g(i)≤(Σf(i)^p)^(1/p)(Σg(i)^q)^(1/q)である。
+  assumptions:
+  - $p>1$
+  - $\frac{1}{p}+\frac{1}{q}=1$
+  - $s$は有限集合
+  - 全ての$i\in s$で$f(i)\geq 0$
+  - 全ての$i\in s$で$g(i)\geq 0$
+  quantifiers:
+  - 任意の$p,q\in\mathbb{R}$
+  - 任意の有限集合$s$
+  - 任意の実数値関数$f,g$
+  conclusion: $\sum_{i\in s}f(i)g(i)\leq\left(\sum_{i\in s}f(i)^p\right)^{1/p}\left(\sum_{i\in s}g(i)^q\right)^{1/q}$である。
   answer: |
-    A=(Σf(i)^p)^(1/p), B=(Σg(i)^q)^(1/q)とおく。A=0またはB=0なら、fまたはgが全て0なので左辺も0である。A,B>0なら、ヤングの不等式よりf(i)g(i)/(AB)≤(f(i)/A)^p/p+(g(i)/B)^q/qが成り立つ。iについて和をとると右辺の和は1/p+1/q=1となるので、Σf(i)g(i)≤ABを得る。
+    $p>1$、$\frac{1}{p}+\frac{1}{q}=1$とし、$s$を有限集合、$f,g$を$s$上で非負な実数値関数とする。$\frac{1}{q}=1-\frac{1}{p}\in(0,1)$なので$q>1$である。$A=\left(\sum_{i\in s}f(i)^p\right)^{1/p}$、$B=\left(\sum_{i\in s}g(i)^q\right)^{1/q}$とおく。
+    $A=0$なら、全ての$i\in s$で$f(i)=0$なので左辺は$0$であり、右辺も$0$である。$B=0$の場合も同じである。
+    $A,B>0$とする。ヤングの不等式は、$u,v\geq 0$について$uv\leq u^p/p+v^q/q$が成り立つという定理である。$u=f(i)/A$、$v=g(i)/B$として$i\in s$について足すと、$\frac{1}{AB}\sum_{i\in s}f(i)g(i)\leq\frac{1}{pA^p}\sum_{i\in s}f(i)^p+\frac{1}{qB^q}\sum_{i\in s}g(i)^q$である。$A^p=\sum_{i\in s}f(i)^p$、$B^q=\sum_{i\in s}g(i)^q$なので、右辺は$\frac{1}{p}+\frac{1}{q}=1$である。よって$\sum_{i\in s}f(i)g(i)\leq AB$を得る。
   strategy: Normalize by the two p-norms and sum Young's inequality term by term.
   sketch:
-    - "setup: Put A = (Σ f(i)^p)^(1/p) and B = (Σ g(i)^q)^(1/q)."
-    - "case_split: If A = 0 or B = 0, one of the functions vanishes and both sides are 0."
-    - "apply_theorem: Otherwise apply Young's inequality to f(i)/A and g(i)/B."
-    - "derive: Summing over i bounds Σ f(i)g(i)/(AB) by 1/p + 1/q = 1."
-    - "conclude: Multiply by AB."
+  - 'setup: Put A = (Σ f(i)^p)^(1/p) and B = (Σ g(i)^q)^(1/q).'
+  - 'case_split: If A = 0 or B = 0, one of the functions vanishes and both sides are 0.'
+  - 'apply_theorem: Otherwise apply Young''s inequality to f(i)/A and g(i)/B.'
+  - 'derive: Summing over i bounds Σ f(i)g(i)/(AB) by 1/p + 1/q = 1.'
+  - 'conclude: Multiply by AB.'
   openmath: (forall (s f g p q) (-> (and (finite_set s) (> p 1) (= (+ (/ 1 p) (/ 1 q)) 1) (forall (i) (-> (in i s) (and (>= (fn_value f i) 0) (>= (fn_value g i) 0))))) (<= (sum s (lambda (i) (* (fn_value f i) (fn_value g i)))) (* (^ (sum s (lambda (i) (^ (fn_value f i) p))) (/ 1 p)) (^ (sum s (lambda (i) (^ (fn_value g i) q))) (/ 1 q))))))
   hard_negative:
     statement: 1/p+1/q=1を仮定せずp,q>1だけでも同じ不等式が成り立つ。
@@ -145,25 +165,33 @@
       intro ι s f g p q hp hpq hf hg
       have hc : p.HolderConjugate q := Real.holderConjugate_iff.mpr ⟨hp, by simpa [one_div] using hpq⟩
       exact Real.inner_le_Lp_mul_Lq_of_nonneg s hc hf hg
-
 - id: minkowski_finite_sum
   kind: textbook
   level: 3
   topic: 不等式・ミンコフスキー
-  statement: p≥1とする。有限集合s上の非負実数値関数f,gについて(Σ(f(i)+g(i))^p)^(1/p)≤(Σf(i)^p)^(1/p)+(Σg(i)^p)^(1/p)が成り立つ。
+  statement: $p\geq 1$とする。有限集合$s$上で非負な実数値関数$f,g$について$\left(\sum_{i\in s}(f(i)+g(i))^p\right)^{1/p}\leq\left(\sum_{i\in s}f(i)^p\right)^{1/p}+\left(\sum_{i\in s}g(i)^p\right)^{1/p}$が成り立つ。
   statement_en: Let p ≥ 1. For nonnegative real functions f,g on a finite set s, (Σ (f(i)+g(i))^p)^(1/p) ≤ (Σ f(i)^p)^(1/p) + (Σ g(i)^p)^(1/p).
-  assumptions: [p≥1, sは有限集合, s上でf≥0かつg≥0]
-  quantifiers: [任意の実数p, 任意の有限集合s, 任意の関数f, g]
-  conclusion: pノルムの三角不等式が成り立つ。
+  assumptions:
+  - $p\geq 1$
+  - $s$は有限集合
+  - 全ての$i\in s$で$f(i)\geq 0$
+  - 全ての$i\in s$で$g(i)\geq 0$
+  quantifiers:
+  - 任意の$p\in\mathbb{R}$
+  - 任意の有限集合$s$
+  - 任意の実数値関数$f,g$
+  conclusion: $\left(\sum_{i\in s}(f(i)+g(i))^p\right)^{1/p}\leq\left(\sum_{i\in s}f(i)^p\right)^{1/p}+\left(\sum_{i\in s}g(i)^p\right)^{1/p}$である。
   answer: |
-    p=1のときは等号である。p>1としqを共役指数とする。(f+g)^p=f(f+g)^(p-1)+g(f+g)^(p-1)と分けて和をとり、各項にヘルダーの不等式を使う。(p-1)q=pなのでΣ(f+g)^p≤(‖f‖_p+‖g‖_p)(Σ(f+g)^p)^(1/q)を得る。Σ(f+g)^p>0なら両辺を(Σ(f+g)^p)^(1/q)で割れば主張となり、0なら明らかである。
+    $p\geq 1$とし、$s$を有限集合、$f,g$を$s$上で非負な実数値関数とする。$p=1$のとき両辺は等しい。以下$p>1$とし、$q=p/(p-1)$とおくと$\frac{1}{p}+\frac{1}{q}=1$、$(p-1)q=p$である。$S=\sum_{i\in s}(f(i)+g(i))^p$、$A=\left(\sum_{i\in s}f(i)^p\right)^{1/p}$、$B=\left(\sum_{i\in s}g(i)^p\right)^{1/p}$とおく。
+    各$i\in s$で$(f(i)+g(i))^p=f(i)(f(i)+g(i))^{p-1}+g(i)(f(i)+g(i))^{p-1}$である。ヘルダーの不等式は、$s$上で非負な$u,v$について$\sum_{i\in s}u(i)v(i)\leq\left(\sum_{i\in s}u(i)^p\right)^{1/p}\left(\sum_{i\in s}v(i)^q\right)^{1/q}$が成り立つという定理である。$v=(f+g)^{p-1}$とすると$v^q=(f+g)^p$なので、$\sum_{i\in s}f(i)(f(i)+g(i))^{p-1}\leq AS^{1/q}$である。$g$についても同様である。足すと$S\leq(A+B)S^{1/q}$を得る。
+    $S>0$なら両辺を$S^{1/q}$で割って、$S^{1-1/q}=S^{1/p}\leq A+B$を得る。$S=0$なら$S^{1/p}=0\leq A+B$である。
   strategy: Split (f+g)^p into two products and apply Hölder's inequality to each.
   sketch:
-    - "case_split: The case p = 1 is an equality, so assume p > 1 and let q be the conjugate exponent."
-    - "translate: Write (f+g)^p = f (f+g)^(p-1) + g (f+g)^(p-1)."
-    - "apply_theorem: Apply Hölder to both sums, using (p-1)q = p."
-    - "derive: Obtain Σ (f+g)^p ≤ (‖f‖_p + ‖g‖_p) (Σ (f+g)^p)^(1/q)."
-    - "conclude: Divide by (Σ (f+g)^p)^(1/q) when it is positive; otherwise the claim is trivial."
+  - 'case_split: The case p = 1 is an equality, so assume p > 1 and let q be the conjugate exponent.'
+  - 'translate: Write (f+g)^p = f (f+g)^(p-1) + g (f+g)^(p-1).'
+  - 'apply_theorem: Apply Hölder to both sums, using (p-1)q = p.'
+  - 'derive: Obtain Σ (f+g)^p ≤ (‖f‖_p + ‖g‖_p) (Σ (f+g)^p)^(1/q).'
+  - 'conclude: Divide by (Σ (f+g)^p)^(1/q) when it is positive; otherwise the claim is trivial.'
   openmath: (forall (s f g p) (-> (and (finite_set s) (>= p 1) (forall (i) (-> (in i s) (and (>= (fn_value f i) 0) (>= (fn_value g i) 0))))) (<= (^ (sum s (lambda (i) (^ (+ (fn_value f i) (fn_value g i)) p))) (/ 1 p)) (+ (^ (sum s (lambda (i) (^ (fn_value f i) p))) (/ 1 p)) (^ (sum s (lambda (i) (^ (fn_value g i) p))) (/ 1 p))))))
   hard_negative:
     statement: 0<p<1でも同じ不等式が成り立つ。
@@ -174,24 +202,29 @@
     by
       intro ι s f g p hp hf hg
       exact Real.Lp_add_le_of_nonneg s hp hf hg
-
 - id: young_conjugate_exponents
   kind: textbook
   level: 2
   topic: 不等式・ヤング
-  statement: p>1で1/p+1/q=1とする。非負実数a,bについてab≤a^p/p+b^q/qが成り立つ。
+  statement: $p>1$、$\frac{1}{p}+\frac{1}{q}=1$とする。非負実数$a,b$について$ab\leq\frac{a^p}{p}+\frac{b^q}{q}$が成り立つ。
   statement_en: Let p > 1 with 1/p + 1/q = 1. For nonnegative reals a,b, ab ≤ a^p/p + b^q/q.
-  assumptions: [a≥0, b≥0, p>1, 1/p+1/q=1]
-  quantifiers: [任意の実数a, b, p, q]
-  conclusion: ab≤a^p/p+b^q/qである。
+  assumptions:
+  - $a\geq 0$
+  - $b\geq 0$
+  - $p>1$
+  - $\frac{1}{p}+\frac{1}{q}=1$
+  quantifiers:
+  - 任意の$a,b,p,q\in\mathbb{R}$
+  conclusion: $ab\leq\frac{a^p}{p}+\frac{b^q}{q}$である。
   answer: |
-    a=0またはb=0なら左辺は0で右辺は非負である。a,b>0のとき、重み1/p,1/qの重みつき相加相乗平均の不等式をa^p,b^qに適用する。すると(a^p)^(1/p)(b^q)^(1/q)≤a^p/p+b^q/qとなる。左辺はabに等しいので主張を得る。
+    $a,b\geq 0$、$p>1$、$\frac{1}{p}+\frac{1}{q}=1$とする。$\frac{1}{q}=1-\frac{1}{p}>0$なので$q>0$である。$a=0$または$b=0$なら、左辺は$0$で右辺は$0$以上である。
+    $a,b>0$とする。$\log$の$2$階導関数は$-1/x^2<0$なので、$\log$は$(0,\infty)$で凹である。重み$\frac{1}{p},\frac{1}{q}$は正で和が$1$なので、$\log\left(\frac{a^p}{p}+\frac{b^q}{q}\right)\geq\frac{1}{p}\log a^p+\frac{1}{q}\log b^q=\log a+\log b=\log(ab)$である。指数関数は単調増加なので、$ab\leq\frac{a^p}{p}+\frac{b^q}{q}$を得る。
   strategy: Apply weighted AM-GM with weights 1/p and 1/q to a^p and b^q.
   sketch:
-    - "case_split: If a = 0 or b = 0, the left side is 0 and the right side is nonnegative."
-    - "apply_theorem: Otherwise use weighted AM-GM with weights 1/p and 1/q on a^p and b^q."
-    - "derive: The geometric mean simplifies to ab."
-    - "conclude: Hence ab ≤ a^p/p + b^q/q."
+  - 'case_split: If a = 0 or b = 0, the left side is 0 and the right side is nonnegative.'
+  - 'apply_theorem: Otherwise use weighted AM-GM with weights 1/p and 1/q on a^p and b^q.'
+  - 'derive: The geometric mean simplifies to ab.'
+  - 'conclude: Hence ab ≤ a^p/p + b^q/q.'
   openmath: (forall (a b p q) (-> (and (>= a 0) (>= b 0) (> p 1) (= (+ (/ 1 p) (/ 1 q)) 1)) (<= (* a b) (+ (/ (^ a p) p) (/ (^ b q) q)))))
   hard_negative:
     statement: p,q>1で1/p+1/q=1を仮定しなくても、ab≤a^p/p+b^q/qが成り立つ。
@@ -203,22 +236,23 @@
       intro a b p q ha hb hp hpq
       have hc : p.HolderConjugate q := Real.holderConjugate_iff.mpr ⟨hp, by simpa [one_div] using hpq⟩
       exact Real.young_inequality_of_nonneg ha hb hc
-
 - id: young_epsilon_form
   kind: gap
   level: 1
   topic: 不等式・ヤング
-  statement: ε>0と実数a,bについてab≤εa^2/2+b^2/(2ε)が成り立つ。
+  statement: $\varepsilon>0$と実数$a,b$について$ab\leq\frac{\varepsilon a^2}{2}+\frac{b^2}{2\varepsilon}$が成り立つ。
   statement_en: For ε > 0 and real a,b, ab ≤ ε a^2/2 + b^2/(2ε).
-  assumptions: [ε>0]
-  quantifiers: [任意の実数a, b, ε]
-  conclusion: ab≤εa^2/2+b^2/(2ε)である。
+  assumptions:
+  - $\varepsilon>0$
+  quantifiers:
+  - 任意の$a,b,\varepsilon\in\mathbb{R}$
+  conclusion: $ab\leq\frac{\varepsilon a^2}{2}+\frac{b^2}{2\varepsilon}$である。
   answer: |
-    右辺から左辺を引くと(εa-b)^2/(2ε)に等しい。ε>0よりこの値は0以上なので不等式が成り立つ。
+    $a,b$を実数、$\varepsilon>0$とする。右辺から左辺を引くと$\frac{\varepsilon a^2}{2}+\frac{b^2}{2\varepsilon}-ab=\frac{(\varepsilon a-b)^2}{2\varepsilon}$である。$\varepsilon>0$よりこの値は$0$以上なので、不等式が成り立つ。
   strategy: Write the difference of the two sides as a nonnegative square over 2ε.
   sketch:
-    - "derive: Compute ε a^2/2 + b^2/(2ε) - ab = (ε a - b)^2/(2ε)."
-    - "conclude: Since ε > 0 this quantity is nonnegative."
+  - 'derive: Compute ε a^2/2 + b^2/(2ε) - ab = (ε a - b)^2/(2ε).'
+  - 'conclude: Since ε > 0 this quantity is nonnegative.'
   openmath: (forall (a b e) (-> (> e 0) (<= (* a b) (+ (/ (* e (^ a 2)) 2) (/ (^ b 2) (* 2 e))))))
   hard_negative:
     statement: ε<0でもab≤εa^2/2+b^2/(2ε)が成り立つ。
@@ -233,23 +267,26 @@
         ring
       have h : 0 ≤ (ε * a - b) ^ 2 / (2 * ε) := by positivity
       linarith
-
 - id: bernoulli_natural_power
   kind: gap
   level: 1
   topic: 不等式・ベルヌーイ
-  statement: x≥-1と自然数nについて1+nx≤(1+x)^nが成り立つ。
+  statement: $x\geq -1$と自然数$n$について$1+nx\leq(1+x)^n$が成り立つ。
   statement_en: For x ≥ -1 and a natural number n, 1 + nx ≤ (1+x)^n.
-  assumptions: [x≥-1, nは自然数]
-  quantifiers: [任意の実数x, 任意の自然数n]
-  conclusion: 1+nx≤(1+x)^nである。
+  assumptions:
+  - $x\geq -1$
+  - $n\in\mathbb{N}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  - 任意の$n\in\mathbb{N}$
+  conclusion: $1+nx\leq(1+x)^n$である。
   answer: |
-    nについての帰納法で示す。n=0では両辺とも1である。nで成り立つとすると、1+x≥0なので(1+x)^(n+1)≥(1+nx)(1+x)=1+(n+1)x+nx^2となる。nx^2≥0より1+(n+1)x≤(1+x)^(n+1)を得る。
+    $x\geq -1$を実数とし、$n$についての帰納法で示す。$n=0$では両辺とも$1$である。$n$で成り立つとする。$1+x\geq 0$なので、$(1+x)^{n+1}=(1+x)^n(1+x)\geq(1+nx)(1+x)=1+(n+1)x+nx^2$となる。$nx^2\geq 0$より$1+(n+1)x\leq(1+x)^{n+1}$を得る。
   strategy: Induct on n, multiplying by the nonnegative factor 1+x.
   sketch:
-    - "induction: The case n = 0 reads 1 ≤ 1."
-    - "derive: Multiply the induction hypothesis by 1+x ≥ 0 to get (1+x)^(n+1) ≥ 1 + (n+1)x + n x^2."
-    - "conclude: Drop the nonnegative term n x^2."
+  - 'induction: The case n = 0 reads 1 ≤ 1.'
+  - 'derive: Multiply the induction hypothesis by 1+x ≥ 0 to get (1+x)^(n+1) ≥ 1 + (n+1)x + n x^2.'
+  - 'conclude: Drop the nonnegative term n x^2.'
   openmath: (forall (x n) (-> (and (in n N) (>= x -1)) (<= (+ 1 (* n x)) (^ (+ 1 x) n))))
   hard_negative:
     statement: 任意の実数xと自然数nについて1+nx≤(1+x)^nが成り立つ。
@@ -260,25 +297,35 @@
     by
       intro x n hx
       exact one_add_mul_le_pow (by linarith) n
-
 - id: jensen_finite_convex
   kind: named
   level: 2
   topic: 不等式・イェンセン
-  statement: fが実数の集合S上の凸関数で、有限個の点p_i∈Sと非負の重みw_i（総和1）が与えられたとき、f(Σw_ip_i)≤Σw_if(p_i)が成り立つ。
+  statement: $f$が実数の集合$S$上の凸関数で、有限集合$t$で添字付けられた点$p_i\in S$と総和$1$の非負の重み$w_i$が与えられたとき、$f\left(\sum_{i\in t}w_ip_i\right)\leq\sum_{i\in t}w_if(p_i)$が成り立つ。
   statement_en: If f is convex on a set S of real numbers, and p_i in S with nonnegative weights w_i summing to 1 over a finite index set, then f(Σ w_i p_i) ≤ Σ w_i f(p_i).
-  assumptions: [Sは実数の部分集合, fはS上で凸, tは有限集合, 全てのi∈tでw_i≥0, Σw_i=1, 全てのi∈tでp_i∈S]
-  quantifiers: [任意の有限集合t, 集合S, 関数f, 重みw, 点列p]
-  conclusion: f(Σw_ip_i)≤Σw_if(p_i)である。
+  assumptions:
+  - $S\subset\mathbb{R}$は凸集合で、$f$は$S$上で凸
+  - $t$は有限集合
+  - 全ての$i\in t$で$w_i\geq 0$
+  - $\sum_{i\in t}w_i=1$
+  - 全ての$i\in t$で$p_i\in S$
+  quantifiers:
+  - 任意の有限集合$t$
+  - 任意の集合$S\subset\mathbb{R}$
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  - 任意の実数の族$(w_i)$、$(p_i)$
+  conclusion: $f\left(\sum_{i\in t}w_ip_i\right)\leq\sum_{i\in t}w_if(p_i)$である。
   answer: |
-    添字の個数についての帰納法で示す。1点では等号である。w_k<1となるkを取り出し、残りの重みをw_i/(1-w_k)と正規化する。Sの凸性から残りの点の重心はSに属するので、凸関数の定義と帰納法の仮定を順に使えば不等式を得る。w_k=1の場合は他の重みが全て0なので明らかである。
+    $S\subset\mathbb{R}$を凸集合、$f$を$S$上の凸関数、$t$を有限集合とし、$p_i\in S$、$w_i\geq 0$($i\in t$)、$\sum_{i\in t}w_i=1$とする。$\sum_{i\in t}w_i=1$より$t$は空でない。$\sum_{i\in t}w_ip_i\in S$と求める不等式を、$t$の元の個数についての帰納法で同時に示す。
+    $t$が$1$元なら、その重みは$1$なので両辺は等しい。$t$が$2$元以上のとき、$k\in t$をとり、$t'=t\setminus\{k\}$、$W=\sum_{i\in t'}w_i=1-w_k$とおく。$W=0$なら全ての$i\in t'$で$w_i=0$かつ$w_k=1$なので、和は$p_k$であり、両辺はともに$f(p_k)$である。
+    $W>0$なら、$\lambda_i=w_i/W$($i\in t'$)は非負で総和$1$である。帰納法の仮定から$y=\sum_{i\in t'}\lambda_ip_i\in S$かつ$f(y)\leq\sum_{i\in t'}\lambda_if(p_i)$である。$\sum_{i\in t}w_ip_i=w_kp_k+Wy$であり、$w_k+W=1$なので、$S$の凸性からこの点は$S$に属する。$f$の凸性から$f(w_kp_k+Wy)\leq w_kf(p_k)+Wf(y)\leq w_kf(p_k)+\sum_{i\in t'}w_if(p_i)$となり、これが求める不等式である。
   strategy: Induct on the number of points, peeling off one point and renormalizing the remaining weights.
   sketch:
-    - "induction: A single point with weight 1 gives equality."
-    - "setup: Pick k with w_k < 1 and renormalize the other weights by 1/(1-w_k)."
-    - "derive: The normalized barycenter lies in S and convexity of f splits off the point p_k."
-    - "apply_theorem: Apply the induction hypothesis to the normalized weights."
-    - "conclude: Recombine to get f(Σ w_i p_i) ≤ Σ w_i f(p_i)."
+  - 'induction: A single point with weight 1 gives equality.'
+  - 'setup: Pick k with w_k < 1 and renormalize the other weights by 1/(1-w_k).'
+  - 'derive: The normalized barycenter lies in S and convexity of f splits off the point p_k.'
+  - 'apply_theorem: Apply the induction hypothesis to the normalized weights.'
+  - 'conclude: Recombine to get f(Σ w_i p_i) ≤ Σ w_i f(p_i).'
   openmath: (forall (t S f w p) (-> (and (finite_set t) (subset S R) (convex_function_on f S) (forall (i) (-> (in i t) (and (>= (fn_value w i) 0) (in (fn_value p i) S)))) (= (sum t (lambda (i) (fn_value w i))) 1)) (<= (fn_value f (sum t (lambda (i) (* (fn_value w i) (fn_value p i))))) (sum t (lambda (i) (* (fn_value w i) (fn_value f (fn_value p i))))))))
   hard_negative:
     statement: 重みに負の値を許しても総和が1ならf(Σw_ip_i)≤Σw_if(p_i)が成り立つ。
@@ -289,23 +336,28 @@
     by
       intro ι t S f w p hf h0 h1 hp
       simpa only [smul_eq_mul] using hf.map_sum_le h0 h1 hp
-
 - id: bisection_midpoint_error
   kind: gap
   level: 1
   topic: 数値解析・二分法
-  statement: 区間幅が毎回半分になる実数列a_n,b_nについて、xがa_n≤x≤b_nを満たすなら|x-(a_n+b_n)/2|≤(b_0-a_0)/2^(n+1)である。
+  statement: 実数列$(a_n),(b_n)$の区間幅が毎回半分になるとき、$a_n\leq x\leq b_n$を満たす実数$x$について$\left|x-\frac{a_n+b_n}{2}\right|\leq\frac{b_0-a_0}{2^{n+1}}$である。
   statement_en: If real sequences a_n,b_n satisfy b_(n+1)-a_(n+1) = (b_n-a_n)/2 for all n, and a_n ≤ x ≤ b_n, then |x-(a_n+b_n)/2| ≤ (b_0-a_0)/2^(n+1).
-  assumptions: [全てのnでb_(n+1)-a_(n+1)=(b_n-a_n)/2, a_n≤x≤b_n]
-  quantifiers: [任意の実数列a, b, 任意の自然数n, 任意の実数x]
-  conclusion: 中点の誤差は(b_0-a_0)/2^(n+1)以下である。
+  assumptions:
+  - 全ての$k$で$b_{k+1}-a_{k+1}=\frac{b_k-a_k}{2}$
+  - $a_n\leq x$
+  - $x\leq b_n$
+  quantifiers:
+  - 任意の実数列$(a_k),(b_k)$
+  - 任意の$n\in\mathbb{N}$
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $\left|x-\frac{a_n+b_n}{2}\right|\leq\frac{b_0-a_0}{2^{n+1}}$である。
   answer: |
-    帰納法によりb_n-a_n=(b_0-a_0)/2^nが成り立つ。a_n≤x≤b_nなので、xと区間の中点との距離は区間幅の半分以下である。よって|x-(a_n+b_n)/2|≤(b_n-a_n)/2=(b_0-a_0)/2^(n+1)となる。
+    $(a_k),(b_k)$を全ての$k$で$b_{k+1}-a_{k+1}=\frac{b_k-a_k}{2}$を満たす実数列とし、$n\in\mathbb{N}$、$x\in\mathbb{R}$は$a_n\leq x\leq b_n$を満たすとする。帰納法により$b_n-a_n=\frac{b_0-a_0}{2^n}$である。$a_n\leq x\leq b_n$から、$x-\frac{a_n+b_n}{2}$は$-\frac{b_n-a_n}{2}$以上$\frac{b_n-a_n}{2}$以下である。よって$\left|x-\frac{a_n+b_n}{2}\right|\leq\frac{b_n-a_n}{2}=\frac{b_0-a_0}{2^{n+1}}$である。
   strategy: Compute the width by induction, then bound the distance to the midpoint by half the width.
   sketch:
-    - "induction: Show b_n - a_n = (b_0 - a_0)/2^n."
-    - "derive: A point of [a_n, b_n] lies within half the width of the midpoint."
-    - "conclude: Substitute the width formula."
+  - 'induction: Show b_n - a_n = (b_0 - a_0)/2^n.'
+  - 'derive: A point of [a_n, b_n] lies within half the width of the midpoint.'
+  - 'conclude: Substitute the width formula.'
   openmath: (forall (a b n x) (-> (and (in n N) (forall (k) (-> (in k N) (= (- (seq_value b (+ k 1)) (seq_value a (+ k 1))) (/ (- (seq_value b k) (seq_value a k)) 2)))) (<= (seq_value a n) x) (<= x (seq_value b n))) (<= (abs (- x (/ (+ (seq_value a n) (seq_value b n)) 2))) (/ (- (seq_value b 0) (seq_value a 0)) (^ 2 (+ n 1))))))
   hard_negative:
     statement: xが区間[a_n,b_n]に属さなくても同じ誤差評価が成り立つ。
@@ -327,24 +379,31 @@
         field_simp
       rw [h, abs_le]
       constructor <;> linarith
-
 - id: newton_step_convex_bracket
   kind: gap
   level: 3
   topic: 数値解析・ニュートン法
-  statement: fが実数全体で凸、f(r)=0、xでの微分係数dが正、f(x)≥0のとき、ニュートン反復x'=x-f(x)/dはr≤x'≤xを満たす。
+  statement: $f$が$\mathbb{R}$全体で凸、$f(r)=0$、$f$の$x$での微分係数$d$が正、$f(x)\geq 0$のとき、$r\leq x-\frac{f(x)}{d}\leq x$である。
   statement_en: If f is convex on ℝ, f(r) = 0, f has derivative d > 0 at x, and f(x) ≥ 0, then the Newton iterate x' = x - f(x)/d satisfies r ≤ x' ≤ x.
-  assumptions: [fは実数全体で凸, f(r)=0, fのxでの微分係数はd, d>0, f(x)≥0]
-  quantifiers: [任意の関数f, 任意の実数x, r, d]
-  conclusion: r≤x-f(x)/d≤xである。
+  assumptions:
+  - $f$は$\mathbb{R}$全体で凸
+  - $f(r)=0$
+  - $f$の$x$での微分係数は$d$
+  - $d>0$
+  - $f(x)\geq 0$
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  - 任意の$x,r,d\in\mathbb{R}$
+  conclusion: $r\leq x-\frac{f(x)}{d}\leq x$である。
   answer: |
-    f(x)≥0かつd>0なのでf(x)/d≥0であり、x'≤xを得る。次に、凸関数のグラフは接線の上にあるので0=f(r)≥f(x)+d(r-x)である。これをd>0で割って整理するとr≤x-f(x)/dとなる。
+    $f:\mathbb{R}\to\mathbb{R}$を凸関数、$x,r,d\in\mathbb{R}$とし、$f(r)=0$、$f$の$x$での微分係数は$d>0$、$f(x)\geq 0$とする。$f(x)/d\geq 0$なので$x-f(x)/d\leq x$である。
+    $t\in(0,1)$について凸性から$f(x+t(r-x))\leq(1-t)f(x)+tf(r)$である。整理すると$\frac{f(x+t(r-x))-f(x)}{t}\leq f(r)-f(x)$となる。$t\to+0$とすると左辺は$d(r-x)$に収束するので、$d(r-x)\leq f(r)-f(x)=-f(x)$である。$d>0$で割って整理すると$r\leq x-f(x)/d$となる。
   strategy: Use the tangent line lower bound of a convex function at x, evaluated at the root r.
   sketch:
-    - "derive: Since f(x) ≥ 0 and d > 0, f(x)/d ≥ 0, so x' ≤ x."
-    - "case_split: Compare r and x using the slope inequalities of a convex function."
-    - "derive: In each case f(x) + d(r-x) ≤ f(r) = 0."
-    - "conclude: Dividing by d gives r ≤ x - f(x)/d."
+  - 'derive: Since f(x) ≥ 0 and d > 0, f(x)/d ≥ 0, so x'' ≤ x.'
+  - 'case_split: Compare r and x using the slope inequalities of a convex function.'
+  - 'derive: In each case f(x) + d(r-x) ≤ f(r) = 0.'
+  - 'conclude: Dividing by d gives r ≤ x - f(x)/d.'
   openmath: (forall (f x r d) (-> (and (convex_function_on_line f) (= (fn_value f r) 0) (has_derivative_at f d x) (> d 0) (>= (fn_value f x) 0)) (and (<= r (- x (/ (fn_value f x) d))) (<= (- x (/ (fn_value f x) d)) x))))
   hard_negative:
     statement: 凸性を仮定しなくてもニュートン反復は根rを超えない。
@@ -371,24 +430,28 @@
         linarith
       · have h : 0 ≤ f x / d := div_nonneg hx hd0.le
         linarith
-
 - id: rectangle_rule_lipschitz_error
   kind: gap
   level: 2
   topic: 数値解析・数値積分
-  statement: a≤bで連続関数fが区間[a,b]上でリプシッツ定数Lをもつとき、左端点の長方形公式の誤差は|∫_a^b f-(b-a)f(a)|≤L(b-a)^2/2を満たす。
+  statement: $a\leq b$で連続関数$f:\mathbb{R}\to\mathbb{R}$が区間$[a,b]$上でリプシッツ定数$L$を持つとき、$\left|\int_a^b f(x)\,dx-(b-a)f(a)\right|\leq\frac{L(b-a)^2}{2}$である。
   statement_en: If a ≤ b and a continuous f is Lipschitz with constant L on [a,b], then |∫_a^b f - (b-a)f(a)| ≤ L(b-a)^2/2.
-  assumptions: ["a≤b", "fは連続", "[a,b]上で|f(x)-f(y)|≤L|x-y|"]
-  quantifiers: [任意の関数f, 任意の実数a, b, L]
-  conclusion: "|∫_a^b f-(b-a)f(a)|≤L(b-a)^2/2である。"
+  assumptions:
+  - $a\leq b$
+  - $f$は連続
+  - 全ての$x,y\in[a,b]$で$|f(x)-f(y)|\leq L|x-y|$
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  - 任意の$a,b,L\in\mathbb{R}$
+  conclusion: $\left|\int_a^b f(x)\,dx-(b-a)f(a)\right|\leq\frac{L(b-a)^2}{2}$である。
   answer: |
-    (b-a)f(a)は定数f(a)の積分なので、誤差は∫_a^b(f(x)-f(a))dxに等しい。[a,b]上で|f(x)-f(a)|≤L(x-a)である。よって誤差の絶対値は∫_a^bL(x-a)dx=L(b-a)^2/2以下である。
+    $a\leq b$、$L\in\mathbb{R}$とし、$f:\mathbb{R}\to\mathbb{R}$は連続で、全ての$x,y\in[a,b]$で$|f(x)-f(y)|\leq L|x-y|$を満たすとする。$(b-a)f(a)$は定数$f(a)$の積分なので、誤差は$\int_a^b(f(x)-f(a))\,dx$に等しい。$x\in[a,b]$で$|f(x)-f(a)|\leq L(x-a)$である。よって誤差の絶対値は$\int_a^b L(x-a)\,dx=\frac{L(b-a)^2}{2}$以下である。
   strategy: Rewrite the error as an integral of f(x)-f(a) and bound the integrand by L(x-a).
   sketch:
-    - "translate: Write the error as ∫_a^b (f(x) - f(a)) dx."
-    - "derive: Bound the absolute value of the integral by the integral of the absolute value."
-    - "apply_theorem: Use |f(x) - f(a)| ≤ L(x-a) and monotonicity of the integral."
-    - "conclude: Compute ∫_a^b L(x-a) dx = L(b-a)^2/2."
+  - 'translate: Write the error as ∫_a^b (f(x) - f(a)) dx.'
+  - 'derive: Bound the absolute value of the integral by the integral of the absolute value.'
+  - 'apply_theorem: Use |f(x) - f(a)| ≤ L(x-a) and monotonicity of the integral.'
+  - 'conclude: Compute ∫_a^b L(x-a) dx = L(b-a)^2/2.'
   openmath: (forall (f a b L) (-> (and (<= a b) (fn_continuous_real f) (forall (x y) (-> (and (in x (closed_interval a b)) (in y (closed_interval a b))) (<= (abs (- (fn_value f x) (fn_value f y))) (* L (abs (- x y))))))) (<= (abs (- (interval_integral a b (lambda (x) (fn_value f x))) (* (- b a) (fn_value f a)))) (/ (* L (^ (- b a) 2)) 2))))
   hard_negative:
     statement: fが連続であるだけで|∫_a^b f-(b-a)f(a)|≤(b-a)^2が成り立つ。
@@ -416,23 +479,26 @@
       calc |∫ x in a..b, (f x - f a)| ≤ ∫ x in a..b, |f x - f a| := intervalIntegral.abs_integral_le_integral_abs hab
         _ ≤ ∫ x in a..b, L * (x - a) := hm
         _ = L * (b - a) ^ 2 / 2 := hi
-
 - id: convex_family_intersection
   kind: gap
   level: 2
   topic: 凸解析・凸集合
   statement: 実ベクトル空間の凸集合からなる任意の族について、その共通部分は凸集合である。
   statement_en: The intersection of an arbitrary family of convex subsets of a real vector space is convex.
-  assumptions: [Eは実ベクトル空間, 族Sの各元は凸集合]
-  quantifiers: [任意の実ベクトル空間E, Eの部分集合の任意の族S]
-  conclusion: Sの全ての元の共通部分は凸集合である。
+  assumptions:
+  - $E$は実ベクトル空間
+  - 族$\mathcal{S}$の各元は$E$の凸集合
+  quantifiers:
+  - 任意の実ベクトル空間$E$
+  - $E$の部分集合の任意の族$\mathcal{S}$
+  conclusion: $\bigcap\mathcal{S}$は凸集合である。
   answer: |
-    x,yを共通部分の点とし、a,b≥0, a+b=1とする。族の各元sについてx,y∈sであり、sは凸なのでax+by∈sである。sは任意なのでax+byは共通部分に属する。
+    $E$を実ベクトル空間、$\mathcal{S}$を$E$の凸集合からなる族とする。$x,y\in\bigcap\mathcal{S}$、$\alpha,\beta\geq 0$、$\alpha+\beta=1$とする。各$s\in\mathcal{S}$について$x,y\in s$であり、$s$は凸なので$\alpha x+\beta y\in s$である。$s$は任意なので$\alpha x+\beta y\in\bigcap\mathcal{S}$である。
   strategy: Check the convex combination inside each member of the family.
   sketch:
-    - "setup: Take x,y in the intersection and weights a,b ≥ 0 with a+b = 1."
-    - "derive: For each member s, convexity of s gives ax+by in s."
-    - "conclude: So ax+by lies in the intersection."
+  - 'setup: Take x,y in the intersection and weights a,b ≥ 0 with a+b = 1.'
+  - 'derive: For each member s, convexity of s gives ax+by in s.'
+  - 'conclude: So ax+by lies in the intersection.'
   openmath: (forall (E S) (-> (and (real_vector_space E) (forall (s) (-> (in s S) (convex_set s)))) (convex_set (set_family_inter S))))
   hard_negative:
     statement: 凸集合の族の和集合も凸集合である。
@@ -443,24 +509,29 @@
     by
       intro E _ _ S h
       exact convex_sInter h
-
 - id: convex_function_sublevel_set
   kind: gap
   level: 2
   topic: 凸解析・凸関数
-  statement: fが集合S上の凸関数なら、任意の実数rについて劣位集合{x∈S | f(x)≤r}は凸集合である。
+  statement: $f$が実ベクトル空間の集合$S$上の凸関数なら、任意の実数$r$について劣位集合$\{x\in S\mid f(x)\leq r\}$は凸集合である。
   statement_en: If f is convex on S, then for every real r the sublevel set {x in S | f(x) ≤ r} is convex.
-  assumptions: [Eは実ベクトル空間, fはS上で凸]
-  quantifiers: [任意の実ベクトル空間E, 集合S, 関数f, 実数r]
-  conclusion: "{x∈S | f(x)≤r}は凸集合である。"
+  assumptions:
+  - $E$は実ベクトル空間
+  - $S\subset E$は凸集合で、$f$は$S$上で凸
+  quantifiers:
+  - 任意の実ベクトル空間$E$
+  - 任意の集合$S\subset E$
+  - 任意の関数$f:E\to\mathbb{R}$
+  - 任意の$r\in\mathbb{R}$
+  conclusion: $\{x\in S\mid f(x)\leq r\}$は凸集合である。
   answer: |
-    x,yが劣位集合に属し、a,b≥0, a+b=1とする。Sは凸なのでax+by∈Sである。fの凸性からf(ax+by)≤af(x)+bf(y)≤(a+b)r=rとなるので、ax+byは劣位集合に属する。
+    $E$を実ベクトル空間、$S\subset E$を凸集合、$f:E\to\mathbb{R}$を$S$上の凸関数、$r\in\mathbb{R}$とする。$x,y\in S$が$f(x)\leq r$、$f(y)\leq r$を満たし、$\alpha,\beta\geq 0$、$\alpha+\beta=1$とする。$S$は凸なので$\alpha x+\beta y\in S$である。$f$の凸性から$f(\alpha x+\beta y)\leq\alpha f(x)+\beta f(y)\leq(\alpha+\beta)r=r$である。よって$\alpha x+\beta y$は劣位集合に属する。
   strategy: Bound f at a convex combination by the convexity inequality and the two sublevel bounds.
   sketch:
-    - "setup: Take x,y in the sublevel set and weights a,b ≥ 0 with a+b = 1."
-    - "derive: Convexity of S puts ax+by in S."
-    - "derive: Convexity of f gives f(ax+by) ≤ a f(x) + b f(y) ≤ r."
-    - "conclude: So ax+by is in the sublevel set."
+  - 'setup: Take x,y in the sublevel set and weights a,b ≥ 0 with a+b = 1.'
+  - 'derive: Convexity of S puts ax+by in S.'
+  - 'derive: Convexity of f gives f(ax+by) ≤ a f(x) + b f(y) ≤ r.'
+  - 'conclude: So ax+by is in the sublevel set.'
   openmath: (forall (E S f r) (-> (and (real_vector_space E) (convex_function_on f S)) (convex_set (sublevel_set_on f S r))))
   hard_negative:
     statement: 全ての劣位集合が凸ならfは凸関数である。
@@ -471,24 +542,31 @@
     by
       intro E _ _ S f r hf
       exact hf.convex_le r
-
 - id: convex_local_min_is_global
   kind: textbook
   level: 3
   topic: 凸解析・最適化
-  statement: fが凸集合S上の凸関数で、aがfのS上の局所最小点なら、aはS上の大域最小点である。
+  statement: 実ノルム空間の凸集合$S$上の凸関数$f$について、$a\in S$が$f$の$S$上の局所最小点なら、$a$は$S$上の最小点である。
   statement_en: If f is convex on S and a in S is a local minimizer of f on S, then a is a global minimizer of f on S.
-  assumptions: [Eは実ノルム空間, fはS上で凸, a∈S, aはfのS上の局所最小点]
-  quantifiers: [任意の実ノルム空間E, 集合S, 関数f, 点a]
-  conclusion: 全てのx∈Sでf(a)≤f(x)である。
+  assumptions:
+  - $E$は実ノルム空間
+  - $S\subset E$は凸集合で、$f$は$S$上で凸
+  - $a\in S$
+  - $a$は$f$の$S$上の局所最小点
+  quantifiers:
+  - 任意の実ノルム空間$E$
+  - 任意の集合$S\subset E$
+  - 任意の関数$f:E\to\mathbb{R}$
+  - 任意の$a\in E$
+  conclusion: 全ての$x\in S$で$f(a)\leq f(x)$である。
   answer: |
-    x∈Sとする。t∈(0,1)を十分小さくとると、点a+t(x-a)はSの中でaに十分近いので、局所最小性よりf(a)≤f(a+t(x-a))である。凸性からf(a+t(x-a))≤(1-t)f(a)+tf(x)となる。整理するとtf(a)≤tf(x)であり、t>0で割ってf(a)≤f(x)を得る。
+    $E$を実ノルム空間、$S\subset E$を凸集合、$f:E\to\mathbb{R}$を$S$上の凸関数、$a\in S$を$f$の$S$上の局所最小点とする。ある$\delta>0$があって、$y\in S$かつ$\|y-a\|<\delta$なら$f(a)\leq f(y)$である。$x\in S$とする。$t\in(0,1)$を$t\|x-a\|<\delta$となるようにとる。$y=a+t(x-a)=(1-t)a+tx$は$S$に属し、$\|y-a\|<\delta$である。よって$f(a)\leq f(y)$である。凸性から$f(y)\leq(1-t)f(a)+tf(x)$である。整理すると$tf(a)\leq tf(x)$であり、$t>0$で割って$f(a)\leq f(x)$を得る。
   strategy: Move along the segment from a to x and combine local minimality with the convexity inequality.
   sketch:
-    - "setup: Fix x in S and consider points a + t(x-a) for small t in (0,1)."
-    - "apply_theorem: Local minimality gives f(a) ≤ f(a + t(x-a)) for small t."
-    - "derive: Convexity gives f(a + t(x-a)) ≤ (1-t) f(a) + t f(x)."
-    - "conclude: Rearranging and dividing by t gives f(a) ≤ f(x)."
+  - 'setup: Fix x in S and consider points a + t(x-a) for small t in (0,1).'
+  - 'apply_theorem: Local minimality gives f(a) ≤ f(a + t(x-a)) for small t.'
+  - 'derive: Convexity gives f(a + t(x-a)) ≤ (1-t) f(a) + t f(x).'
+  - 'conclude: Rearranging and dividing by t gives f(a) ≤ f(x).'
   openmath: (forall (E S f a) (-> (and (normed_space E) (in a S) (convex_function_on f S) (local_minimizer_on f S a)) (minimizer_on f S a)))
   hard_negative:
     statement: fが凸でなくても局所最小点は大域最小点である。
@@ -499,24 +577,31 @@
     by
       intro E _ _ S f a ha hmin hc
       exact IsMinOn.of_isLocalMinOn_of_convexOn ha hmin hc
-
 - id: strict_convex_unique_minimizer
   kind: gap
   level: 3
   topic: 凸解析・最適化
-  statement: fが集合S上の狭義凸関数なら、fのS上の最小点は高々1つである。
+  statement: $f$が実ベクトル空間の集合$S$上の狭義凸関数なら、$f$の$S$上の最小点は高々$1$つである。
   statement_en: If f is strictly convex on S, then f has at most one minimizer on S.
-  assumptions: [fはS上で狭義凸, x, y∈S, x, yはどちらもfのS上の最小点]
-  quantifiers: [任意の実ベクトル空間E, 集合S, 関数f, 点x, y]
-  conclusion: x=yである。
+  assumptions:
+  - $E$は実ベクトル空間
+  - $S\subset E$は凸集合で、$f$は$S$上で狭義凸
+  - $x,y\in S$
+  - $x,y$はどちらも$f$の$S$上の最小点
+  quantifiers:
+  - 任意の実ベクトル空間$E$
+  - 任意の集合$S\subset E$
+  - 任意の関数$f:E\to\mathbb{R}$
+  - 任意の$x,y\in E$
+  conclusion: $x=y$である。
   answer: |
-    x≠yと仮定する。最小値が等しいのでf(x)=f(y)である。Sは凸なので中点(x+y)/2はSに属し、狭義凸性からf((x+y)/2)<(f(x)+f(y))/2=f(x)となる。これはxが最小点であることに反するので、x=yである。
+    $E$を実ベクトル空間、$S\subset E$を凸集合、$f:E\to\mathbb{R}$を$S$上の狭義凸関数とし、$x,y\in S$はどちらも$f$の$S$上の最小点であるとする。$x\neq y$と仮定する。互いに最小点なので$f(x)\leq f(y)$かつ$f(y)\leq f(x)$であり、$f(x)=f(y)$である。$S$は凸なので$m=\frac{1}{2}x+\frac{1}{2}y\in S$である。狭義凸性から$f(m)<\frac{1}{2}f(x)+\frac{1}{2}f(y)=f(x)$となる。これは$x$が最小点であることに反するので、$x=y$である。
   strategy: Test the midpoint of two distinct minimizers against strict convexity.
   sketch:
-    - "contradiction: Suppose x ≠ y are both minimizers on S."
-    - "derive: Minimality of both points gives f(x) = f(y)."
-    - "derive: The midpoint lies in S and strict convexity gives a smaller value there."
-    - "conclude: This contradicts minimality, hence x = y."
+  - 'contradiction: Suppose x ≠ y are both minimizers on S.'
+  - 'derive: Minimality of both points gives f(x) = f(y).'
+  - 'derive: The midpoint lies in S and strict convexity gives a smaller value there.'
+  - 'conclude: This contradicts minimality, hence x = y.'
   openmath: (forall (E S f x y) (-> (and (real_vector_space E) (strict_convex_function_on f S) (in x S) (in y S) (minimizer_on f S x) (minimizer_on f S y)) (= x y)))
   hard_negative:
     statement: 狭義凸関数は必ずS上に最小点をもつ。
@@ -527,24 +612,32 @@
     by
       intro E _ _ S f x y hf hx hy hmx hmy
       exact hf.eq_of_isMinOn hmx hmy hx hy
-
 - id: convex_first_order_lower_bound
   kind: gap
   level: 3
   topic: 凸解析・勾配条件
-  statement: fが集合S上の凸関数で点a∈Sでフレシェ微分L=f'(a)をもつなら、全てのx∈Sでf(a)+L(x-a)≤f(x)が成り立つ。
+  statement: 実ノルム空間の集合$S$上の凸関数$f$が点$a\in S$でフレシェ微分$L$を持つなら、全ての$x\in S$で$f(a)+L(x-a)\leq f(x)$が成り立つ。
   statement_en: If f is convex on S and has Fréchet derivative L at a in S, then f(a) + L(x-a) ≤ f(x) for all x in S.
-  assumptions: [Eは実ノルム空間, fはS上で凸, a, x∈S, fのaでのフレシェ微分はL]
-  quantifiers: [任意の実ノルム空間E, 集合S, 関数f, 連続線形汎関数L, 点a, x]
-  conclusion: f(a)+L(x-a)≤f(x)である。
+  assumptions:
+  - $E$は実ノルム空間
+  - $S\subset E$は凸集合で、$f$は$S$上で凸
+  - $a,x\in S$
+  - $f$の$a$でのフレシェ微分は$L$
+  quantifiers:
+  - 任意の実ノルム空間$E$
+  - 任意の集合$S\subset E$
+  - 任意の関数$f:E\to\mathbb{R}$
+  - 任意の連続線形汎関数$L:E\to\mathbb{R}$
+  - 任意の$a,x\in E$
+  conclusion: $f(a)+L(x-a)\leq f(x)$である。
   answer: |
-    t∈(0,1)について、凸性からf(a+t(x-a))≤(1-t)f(a)+tf(x)である。これを整理すると(f(a+t(x-a))-f(a))/t≤f(x)-f(a)となる。t→+0とすると左辺はL(x-a)に収束する。したがってL(x-a)≤f(x)-f(a)である。
+    $E$を実ノルム空間、$S\subset E$を凸集合、$f:E\to\mathbb{R}$を$S$上の凸関数とし、$a,x\in S$、$f$の$a$でのフレシェ微分を連続線形汎関数$L$とする。$t\in(0,1)$について、凸性から$f(a+t(x-a))\leq(1-t)f(a)+tf(x)$である。整理すると$\frac{f(a+t(x-a))-f(a)}{t}\leq f(x)-f(a)$となる。$a$での微分可能性から、$t\to+0$で左辺は$L(x-a)$に収束する。したがって$L(x-a)\leq f(x)-f(a)$である。
   strategy: Bound the difference quotient along the segment from a to x by convexity and pass to the limit.
   sketch:
-    - "derive: For t in (0,1), convexity gives f(a + t(x-a)) ≤ (1-t) f(a) + t f(x)."
-    - "translate: Rearrange to (f(a + t(x-a)) - f(a))/t ≤ f(x) - f(a)."
-    - "apply_theorem: By the chain rule the quotient tends to L(x-a) as t tends to 0 from the right."
-    - "conclude: Passing to the limit gives L(x-a) ≤ f(x) - f(a)."
+  - 'derive: For t in (0,1), convexity gives f(a + t(x-a)) ≤ (1-t) f(a) + t f(x).'
+  - 'translate: Rearrange to (f(a + t(x-a)) - f(a))/t ≤ f(x) - f(a).'
+  - 'apply_theorem: By the chain rule the quotient tends to L(x-a) as t tends to 0 from the right.'
+  - 'conclude: Passing to the limit gives L(x-a) ≤ f(x) - f(a).'
   openmath: (forall (E S f L a x) (-> (and (normed_space E) (convex_function_on f S) (in a S) (in x S) (has_frechet_derivative_at f L a)) (<= (+ (fn_value f a) (fn_value L (- x a))) (fn_value f x))))
   hard_negative:
     statement: 全てのxでf(a)+L(x-a)≥f(x)が成り立つ。
@@ -574,24 +667,34 @@
         rw [inv_mul_le_iff₀ ht.1]
         linarith
       linarith
-
 - id: convex_variational_inequality
   kind: textbook
   level: 3
   topic: 凸解析・勾配条件
-  statement: fが凸集合S上の凸関数で点a∈Sでフレシェ微分Lをもつとき、aがfのS上の最小点であることと、全てのx∈SでL(x-a)≥0であることは同値である。
+  statement: 実ノルム空間の凸集合$S$上の凸関数$f$が点$a\in S$でフレシェ微分$L$を持つとき、$a$が$f$の$S$上の最小点であることと、全ての$x\in S$で$L(x-a)\geq 0$であることは同値である。
   statement_en: If f is convex on S and has Fréchet derivative L at a in S, then a minimizes f on S if and only if L(x-a) ≥ 0 for all x in S.
-  assumptions: [Eは実ノルム空間, fはS上で凸, a∈S, fのaでのフレシェ微分はL]
-  quantifiers: [任意の実ノルム空間E, 集合S, 関数f, 連続線形汎関数L, 点a]
-  conclusion: aがS上の最小点であることと、全てのx∈SでL(x-a)≥0であることは同値である。
+  assumptions:
+  - $E$は実ノルム空間
+  - $S\subset E$は凸集合で、$f$は$S$上で凸
+  - $a\in S$
+  - $f$の$a$でのフレシェ微分は$L$
+  quantifiers:
+  - 任意の実ノルム空間$E$
+  - 任意の集合$S\subset E$
+  - 任意の関数$f:E\to\mathbb{R}$
+  - 任意の連続線形汎関数$L:E\to\mathbb{R}$
+  - 任意の$a\in E$
+  conclusion: $a$が$f$の$S$上の最小点であることと、全ての$x\in S$で$L(x-a)\geq 0$であることは同値である。
   answer: |
-    aが最小点でx∈Sとする。t∈(0,1)ならa+t(x-a)∈Sなので(f(a+t(x-a))-f(a))/t≥0であり、t→+0としてL(x-a)≥0を得る。逆に全てのx∈SでL(x-a)≥0とする。t∈(0,1)で凸性から(f(a+t(x-a))-f(a))/t≤f(x)-f(a)であり、t→+0としてL(x-a)≤f(x)-f(a)を得る。よってf(a)≤f(x)である。
+    $E$を実ノルム空間、$S\subset E$を凸集合、$f:E\to\mathbb{R}$を$S$上の凸関数、$a\in S$とし、$f$の$a$でのフレシェ微分を$L$とする。$x\in S$と$t\in(0,1)$について$a+t(x-a)=(1-t)a+tx\in S$である。また微分可能性から、$t\to+0$で$\frac{f(a+t(x-a))-f(a)}{t}\to L(x-a)$である。
+    $a$が最小点なら、この商は$0$以上なので、極限を取って$L(x-a)\geq 0$を得る。
+    逆に全ての$x\in S$で$L(x-a)\geq 0$とする。$x\in S$をとると、凸性から$\frac{f(a+t(x-a))-f(a)}{t}\leq f(x)-f(a)$である。$t\to+0$として$L(x-a)\leq f(x)-f(a)$を得る。よって$f(a)\leq f(x)$であり、$a$は最小点である。
   strategy: Take one-sided difference quotients along segments from a; minimality gives one direction and convexity gives the other.
   sketch:
-    - "setup: By the chain rule the quotient (f(a + t(x-a)) - f(a))/t tends to L(x-a) as t tends to 0 from the right."
-    - "derive: If a is a minimizer, the quotient is nonnegative for t in (0,1), so L(x-a) ≥ 0."
-    - "derive: Convexity bounds the quotient above by f(x) - f(a), so L(x-a) ≤ f(x) - f(a)."
-    - "conclude: If L(x-a) ≥ 0 on S, then f(a) ≤ f(x) for all x in S."
+  - 'setup: By the chain rule the quotient (f(a + t(x-a)) - f(a))/t tends to L(x-a) as t tends to 0 from the right.'
+  - 'derive: If a is a minimizer, the quotient is nonnegative for t in (0,1), so L(x-a) ≥ 0.'
+  - 'derive: Convexity bounds the quotient above by f(x) - f(a), so L(x-a) ≤ f(x) - f(a).'
+  - 'conclude: If L(x-a) ≥ 0 on S, then f(a) ≤ f(x) for all x in S.'
   openmath: (forall (E S f L a) (-> (and (normed_space E) (convex_function_on f S) (in a S) (has_frechet_derivative_at f L a)) (<-> (minimizer_on f S a) (forall (x) (-> (in x S) (>= (fn_value L (- x a)) 0))))))
   hard_negative:
     statement: fが凸でなくても、全てのx∈SでL(x-a)≥0ならaは最小点である。
@@ -634,24 +737,35 @@
           rw [inv_mul_le_iff₀ ht.1]
           linarith
         linarith [h x hx]
-
 - id: hahn_banach_point_closed_convex
   kind: named
   level: 4
   topic: 凸解析・分離定理
-  statement: 局所凸位相線形空間で、閉凸集合tに属さない点xがあるとき、連続線形汎関数fと実数uでf(x)<uかつ全てのb∈tでu<f(b)となるものが存在する。
+  statement: 実局所凸位相線形空間$E$で、閉凸集合$t$に属さない点$x$があるとき、連続線形汎関数$f$と実数$u$で、$f(x)<u$かつ全ての$b\in t$で$u<f(b)$となるものが存在する(ハーン＝バナッハの分離定理)。
   statement_en: In a real locally convex topological vector space, if x is not in the closed convex set t, there are a continuous linear functional f and a real u with f(x) < u and u < f(b) for all b in t.
-  assumptions: [Eは実局所凸位相線形空間, tは閉凸集合, x∉t]
-  quantifiers: [任意の実局所凸位相線形空間E, 集合t, 点x]
-  conclusion: f(x)<uかつ全てのb∈tでu<f(b)となる連続線形汎関数fと実数uが存在する。
+  assumptions:
+  - $E$は実局所凸位相線形空間
+  - $t\subset E$は閉凸集合
+  - $x\notin t$
+  quantifiers:
+  - 任意の実局所凸位相線形空間$E$
+  - 任意の集合$t\subset E$
+  - 任意の$x\in E$
+  - ある連続線形汎関数$f:E\to\mathbb{R}$
+  - ある$u\in\mathbb{R}$
+  conclusion: $f(x)<u$かつ全ての$b\in t$で$u<f(b)$となる連続線形汎関数$f$と実数$u$が存在する。
   answer: |
-    概略を述べる。tは閉でx∉tなので、0の凸開近傍Vでx+Vとtが交わらないものがとれる。開凸集合x+Vとtに、ミンコフスキー汎関数と解析形のハーン＝バナッハの定理を使う。これにより、連続線形汎関数fと実数cで、x+V上でf<c、t上でc≤fとなるものが得られる。xはx+Vの点なのでf(x)<cであり、u=(f(x)+c)/2とすればf(x)<uかつ全てのb∈tでu<f(b)となる。
+    $E$を実局所凸位相線形空間、$t\subset E$を閉凸集合、$x\in E\setminus t$とする。$t$が空なら$f=0$、$u=1$でよい。以下$t$は空でないとし、$t_0\in t$をとる。
+    $E\setminus t$は$x$の開近傍であり、$E$は局所凸なので、$0$の凸開近傍$V$で$(x+V)\cap t=\emptyset$となるものがある。$D=\{v-b+t_0\mid v\in V,\ b\in t\}$とおく。$D$は凸集合の和の平行移動なので凸であり、開集合$V$の平行移動の和集合なので開である。また$v=0$、$b=t_0$として$0\in D$である。$y=t_0-x$とおくと$y\notin D$である。実際$y=v-b+t_0$なら$b=x+v\in(x+V)\cap t$となり矛盾する。
+    $D$のミンコフスキー汎関数$p(z)=\inf\{\lambda>0\mid z\in\lambda D\}$を考える。$D$は$0$の凸開近傍なので、$p$は有限な値を取る劣線形汎関数である。$z\in D$なら、$D$が開なのである$\varepsilon>0$で$(1+\varepsilon)z\in D$となるので、$p(z)<1$である。また$p(y)\geq 1$である。実際$p(y)<1$なら、ある$\lambda\in(0,1)$で$y/\lambda\in D$となり、$0\in D$と凸性から$y\in D$となって矛盾する。
+    部分空間$\mathbb{R}y$上で$g(sy)=s$と定める。$s\geq 0$なら$g(sy)=s\leq sp(y)=p(sy)$であり、$s<0$なら$g(sy)<0\leq p(sy)$である。解析形のハーン＝バナッハの定理は、部分空間上で劣線形汎関数$p$以下の線形汎関数は、全体で$p$以下の線形汎関数に拡張できるという定理である。これにより、$E$上の線形汎関数$f$で$f\leq p$、$f(y)=1$となるものを得る。$D$上で$f<1$であり、$-D$上で$f>-1$である。よって$f$は$0$の近傍$D\cap(-D)$で有界であり、連続である。
+    $v\in V$、$b\in t$について$v-b+t_0\in D$なので、$f(v)-f(b)+f(t_0)<1=f(y)=f(t_0)-f(x)$である。すなわち$f(x)+f(v)<f(b)$である。$V$は$0$の近傍なので、ある$\varepsilon>0$で$\varepsilon y\in V$であり、$f(\varepsilon y)=\varepsilon$である。したがって全ての$b\in t$で$f(x)+\varepsilon<f(b)$である。$u=f(x)+\varepsilon/2$とすれば、$f(x)<u$かつ全ての$b\in t$で$u<f(b)$である。
   strategy: Thicken the closed convex set by a convex neighbourhood, then separate using the Minkowski functional and the analytic Hahn-Banach theorem.
   sketch:
-    - "setup: Choose a convex open neighbourhood V of 0 with x + V disjoint from t."
-    - "apply_theorem: The Minkowski functional and analytic Hahn-Banach give a continuous linear f and c with f < c on x + V and c ≤ f on t."
-    - "derive: Since x is in x + V, f(x) < c."
-    - "conclude: Take u = (f(x) + c)/2, so f(x) < u < f(b) for all b in t."
+  - 'setup: Choose a convex open neighbourhood V of 0 with x + V disjoint from t.'
+  - 'apply_theorem: The Minkowski functional and analytic Hahn-Banach give a continuous linear f and c with f < c on x + V and c ≤ f on t.'
+  - 'derive: Since x is in x + V, f(x) < c.'
+  - 'conclude: Take u = (f(x) + c)/2, so f(x) < u < f(b) for all b in t.'
   openmath: (forall (E t x) (-> (and (locally_convex_tvs E) (convex_set t) (closed_set t) (notin x t)) (exists (f u) (and (continuous_linear_functional f) (< (fn_value f x) u) (forall (b) (-> (in b t) (< u (fn_value f b))))))))
   hard_negative:
     statement: tが閉でなくても凸でさえあれば、t外の点は同じように狭義分離できる。
@@ -662,22 +776,26 @@
     by
       intro E _ _ _ _ _ _ t x ht hc hx
       exact geometric_hahn_banach_point_closed ht hc hx
-
 - id: convex_hull_minimal
   kind: gap
   level: 2
   topic: 凸解析・凸包
-  statement: 集合sが凸集合tに含まれるなら、sの凸包もtに含まれる。
+  statement: 実ベクトル空間の集合$s$が凸集合$t$に含まれるなら、$s$の凸包も$t$に含まれる。
   statement_en: If s is contained in a convex set t, then the convex hull of s is contained in t.
-  assumptions: [Eは実ベクトル空間, s⊆t, tは凸集合]
-  quantifiers: [任意の実ベクトル空間E, 集合s, t]
-  conclusion: conv(s)⊆tである。
+  assumptions:
+  - $E$は実ベクトル空間
+  - $s\subset t\subset E$
+  - $t$は凸集合
+  quantifiers:
+  - 任意の実ベクトル空間$E$
+  - 任意の集合$s,t\subset E$
+  conclusion: $\operatorname{conv}(s)\subset t$である。
   answer: |
-    凸包conv(s)はsを含む全ての凸集合の共通部分である。tはsを含む凸集合の1つなので、この共通部分はtに含まれる。
+    $E$を実ベクトル空間、$s,t\subset E$とし、$s\subset t$かつ$t$は凸集合であるとする。凸包$\operatorname{conv}(s)$は、$s$を含む全ての凸集合の共通部分である。$t$は$s$を含む凸集合の$1$つなので、この共通部分は$t$に含まれる。
   strategy: Use that the convex hull is the intersection of all convex supersets.
   sketch:
-    - "translate: conv(s) is the intersection of all convex sets containing s."
-    - "conclude: t is one of those sets, so conv(s) ⊆ t."
+  - 'translate: conv(s) is the intersection of all convex sets containing s.'
+  - 'conclude: t is one of those sets, so conv(s) ⊆ t.'
   openmath: (forall (E s t) (-> (and (real_vector_space E) (subset s t) (convex_set t)) (subset (convex_hull s) t)))
   hard_negative:
     statement: sの凸包はsを含む全ての集合に含まれる。
@@ -688,25 +806,33 @@
     by
       intro E _ _ s t hst ht
       exact convexHull_min hst ht
-
 - id: caratheodory_finite_dimension
   kind: textbook
   level: 3
   topic: 凸解析・凸包
-  statement: d次元実ベクトル空間で、集合sの凸包の点xは、sの高々d+1個の点からなる有限集合の凸包に属する。
+  statement: $d$次元実ベクトル空間で、集合$s$の凸包の点$x$は、$s$の高々$d+1$個の点からなる有限集合の凸包に属する(カラテオドリの定理)。
   statement_en: In a d-dimensional real vector space, every point x of the convex hull of s lies in the convex hull of a finite subset of s with at most d+1 points.
-  assumptions: [Eは有限次元実ベクトル空間, x∈conv(s)]
-  quantifiers: [任意の有限次元実ベクトル空間E, 集合s, 点x]
-  conclusion: tは有限でt⊆s, |t|≤dim E+1, x∈conv(t)を満たすtが存在する。
+  assumptions:
+  - $E$は有限次元実ベクトル空間
+  - $s\subset E$
+  - $x\in\operatorname{conv}(s)$
+  quantifiers:
+  - 任意の有限次元実ベクトル空間$E$
+  - 任意の集合$s\subset E$
+  - 任意の$x\in E$
+  - ある有限集合$t\subset s$
+  conclusion: $t\subset s$は有限集合で、$|t|\leq\dim E+1$かつ$x\in\operatorname{conv}(t)$を満たす$t$が存在する。
   answer: |
-    xを正の係数でsの有限個の点の凸結合に書き、点の個数が最小のものをとる。その点たちがアフィン独立でなければ、係数の和が0で全ては0でない実数の組があり、それらの線形結合は0になる。この組の定数倍を係数から引くと、ある係数が0になり他は非負のままなので点の個数を減らせて矛盾である。よって点たちはアフィン独立であり、その個数は高々dim E+1である。
+    $E$を$d$次元実ベクトル空間、$s\subset E$、$x\in\operatorname{conv}(s)$とする。$s$の点の有限個の凸結合全体は凸集合で、$s$を含み、$s$を含む任意の凸集合に含まれるので、$\operatorname{conv}(s)$に一致する。よって$x$は$s$の点の凸結合で書ける。$x=\sum_{i=1}^m\lambda_ix_i$($x_i\in s$は相異なり、$\lambda_i>0$、$\sum_i\lambda_i=1$)と書く表し方のうち、$m$が最小のものをとる。
+    $m\leq d+1$を示す。$m>d+1$と仮定すると、$m-1>d$個のベクトル$x_2-x_1,\dots,x_m-x_1$は線形従属である。全ては$0$でない実数$\mu_2,\dots,\mu_m$で$\sum_{i\geq 2}\mu_i(x_i-x_1)=0$となるものがある。$\mu_1=-\sum_{i\geq 2}\mu_i$とおくと、$\sum_{i=1}^m\mu_ix_i=0$、$\sum_{i=1}^m\mu_i=0$である。$\mu_i$は全ては$0$でなく和が$0$なので、$\mu_i>0$となる$i$がある。
+    $\theta=\min\{\lambda_i/\mu_i\mid\mu_i>0\}>0$とおき、$\lambda_i'=\lambda_i-\theta\mu_i$とする。$\mu_i>0$なら$\theta$の定義から$\lambda_i'\geq 0$であり、$\mu_i\leq 0$なら$\lambda_i'\geq\lambda_i>0$である。最小値を与える$i$では$\lambda_i'=0$である。また$\sum_i\lambda_i'=1$、$\sum_i\lambda_i'x_i=x$である。したがって$x$は$m-1$個以下の点の凸結合で書け、$m$の最小性に反する。よって$m\leq d+1$であり、$t=\{x_1,\dots,x_m\}$が求める集合である。
   strategy: Take a representation with the minimal number of points and show those points are affinely independent.
   sketch:
-    - "setup: Write x as a convex combination of finitely many points of s with the fewest possible points."
-    - "contradiction: If the points are affinely dependent, shift the coefficients along a dependency."
-    - "derive: Some coefficient becomes zero while the others stay nonnegative, reducing the number of points."
-    - "derive: So the points are affinely independent."
-    - "conclude: Affine independence bounds their number by dim E + 1."
+  - 'setup: Write x as a convex combination of finitely many points of s with the fewest possible points.'
+  - 'contradiction: If the points are affinely dependent, shift the coefficients along a dependency.'
+  - 'derive: Some coefficient becomes zero while the others stay nonnegative, reducing the number of points.'
+  - 'derive: So the points are affinely independent.'
+  - 'conclude: Affine independence bounds their number by dim E + 1.'
   openmath: (forall (E s x) (-> (and (real_vector_space E) (finite_dim_space E) (in x (convex_hull s))) (exists (t) (and (finite_set t) (subset t s) (<= (size t) (+ (vector_finrank E) 1)) (in x (convex_hull t))))))
   hard_negative:
     statement: d次元ではsの凸包の点はsの高々d個の点の凸包に属する。
@@ -725,26 +851,33 @@
         Submodule.finrank_le _
       simp only [Fintype.card_coe] at h1
       omega
-
 - id: krein_milman_theorem
   kind: named
   level: 4
   topic: 凸解析・端点
-  statement: ハウスドルフ局所凸位相線形空間のコンパクト凸集合sは、その端点全体の凸包の閉包に等しい。
+  statement: ハウスドルフな実局所凸位相線形空間$E$のコンパクト凸集合$s$は、その端点全体$\operatorname{ext}s$の凸包の閉包に等しい(クライン＝ミルマンの定理)。
   statement_en: A compact convex subset s of a Hausdorff real locally convex topological vector space equals the closure of the convex hull of its extreme points.
-  assumptions: [Eはハウスドルフな実局所凸位相線形空間, sはコンパクト, sは凸]
-  quantifiers: [任意のEと集合s]
-  conclusion: sの端点全体の凸包の閉包はsに等しい。
+  assumptions:
+  - $E$はハウスドルフな実局所凸位相線形空間
+  - $s\subset E$はコンパクト
+  - $s$は凸
+  quantifiers:
+  - 任意のハウスドルフな実局所凸位相線形空間$E$
+  - 任意の集合$s\subset E$
+  conclusion: $\overline{\operatorname{conv}(\operatorname{ext}s)}=s$である。
   answer: |
-    概略を述べる。第一段階として、ツォルンの補題で極小な閉端集合をとり、ハーン＝バナッハの定理でそれが1点であることを示す。これで空でないコンパクト集合は端点をもつ。第二段階として、端点の凸包の閉包はsの閉凸部分集合である。sの点xがこれに属さないなら、幾何形のハーン＝バナッハの定理でxを分離する連続線形汎関数をとり、その最小値をとる面に第一段階を適用すると、端点が分離の反対側に現れて矛盾する。
+    $E$をハウスドルフな実局所凸位相線形空間、$s\subset E$をコンパクト凸集合とする。証明ではハーン＝バナッハの分離定理を用いる。これは、$E$の閉凸集合$C$と$x\notin C$に対して、連続線形汎関数$f$と実数$u$で$f(x)<u$かつ全ての$b\in C$で$u<f(b)$となるものが存在するという定理である。
+    $s$の空でない閉部分集合$A$が閉端集合であるとは、$a,b\in s$、$\lambda\in(0,1)$、$\lambda a+(1-\lambda)b\in A$なら$a,b\in A$となることとする。$y\in s$が端点であることと、$\{y\}$が閉端集合であることは同値である。連続線形汎関数$f$が閉端集合$A$上で取る最小値を$m$とすると、$A'=\{a\in A\mid f(a)=m\}$も閉端集合である。実際、$a,b\in s$、$\lambda\in(0,1)$、$\lambda a+(1-\lambda)b\in A'$なら、まず$a,b\in A$なので$f(a),f(b)\geq m$であり、$\lambda f(a)+(1-\lambda)f(b)=m$より$f(a)=f(b)=m$となる。$A$はコンパクトなので最小値は存在し、$A'$は空でない。
+    第一段階として、任意の閉端集合$A$が端点を含むことを示す。$A$に含まれる閉端集合全体を包含関係で順序付ける。その鎖の共通部分は、コンパクト性により空でなく、閉であり、定義から閉端集合である。ツォルンの補題により、$A$に含まれる極小な閉端集合$B$がある。$B$が相異なる$2$点$y,z$を含むとする。$E$はハウスドルフなので$\{z\}$は閉凸集合であり、分離定理により$f(y)\neq f(z)$となる連続線形汎関数$f$がある。$f$の$B$上の最小値を与える点の集合$B'$は閉端集合であり、$f$は$B$上で定数でないので$B'\subsetneq B$である。これは$B$の極小性に反する。よって$B$は$1$点であり、その点は$s$の端点である。
+    第二段階として等式を示す。$K=\overline{\operatorname{conv}(\operatorname{ext}s)}$とおく。$s$は凸で、ハウスドルフ空間のコンパクト集合なので閉である。よって$K\subset s$である。$x\in s\setminus K$があると仮定する。$K$は閉凸集合なので、分離定理により連続線形汎関数$f$と実数$u$で$f(x)<u$かつ全ての$b\in K$で$u<f(b)$となるものがある。$s$は空でないコンパクト集合で閉端集合である。$f$の$s$上の最小値を$m$とすると$m\leq f(x)<u$であり、$A=\{a\in s\mid f(a)=m\}$は閉端集合である。第一段階により$A$は端点$y$を含む。すると$f(y)=m<u$であるが、$y\in K$より$u<f(y)$となり矛盾する。したがって$s\subset K$であり、$K=s$である。
   strategy: First obtain extreme points by Zorn and separation, then separate any missing point using Hahn-Banach.
   sketch:
-    - "apply_theorem: Zorn's lemma gives a minimal closed extreme subset of a nonempty compact set."
-    - "derive: Separation shows the minimal extreme subset is a single point, so extreme points exist."
-    - "translate: The closure of the convex hull of the extreme points is a closed convex subset of s."
-    - "contradiction: A point of s outside it would be separated by a continuous linear functional."
-    - "derive: The face where that functional attains its extremum contains an extreme point on the wrong side."
-    - "conclude: Hence the closure of the convex hull of the extreme points equals s."
+  - 'apply_theorem: Zorn''s lemma gives a minimal closed extreme subset of a nonempty compact set.'
+  - 'derive: Separation shows the minimal extreme subset is a single point, so extreme points exist.'
+  - 'translate: The closure of the convex hull of the extreme points is a closed convex subset of s.'
+  - 'contradiction: A point of s outside it would be separated by a continuous linear functional.'
+  - 'derive: The face where that functional attains its extremum contains an extreme point on the wrong side.'
+  - 'conclude: Hence the closure of the convex hull of the extreme points equals s.'
   openmath: (forall (E s) (-> (and (locally_convex_tvs E) (hausdorff_space E) (compact_set s) (convex_set s)) (= (set_closure (convex_hull (extreme_points s))) s)))
   hard_negative:
     statement: コンパクト凸集合はその端点全体の凸包に等しい（閉包は不要である）。
@@ -755,25 +888,31 @@
     by
       intro E _ _ _ _ _ _ _ s hs hc
       exact closure_convexHull_extremePoints hs hc
-
 - id: banach_fixed_point_real_constant
   kind: textbook
   level: 3
   topic: 数値解析・反復法
-  statement: 空でない完備距離空間上の写像fが0≤K<1についてd(f(x),f(y))≤Kd(x,y)を満たすなら、fの不動点がただ1つ存在する。
+  statement: 空でない完備距離空間$X$上の写像$f$が、$0\leq K<1$について全ての$x,y$で$d(f(x),f(y))\leq Kd(x,y)$を満たすなら、$f$の不動点がただ$1$つ存在する(バナッハの不動点定理)。
   statement_en: If f on a nonempty complete metric space satisfies d(f(x),f(y)) ≤ K d(x,y) with 0 ≤ K < 1, then f has exactly one fixed point.
-  assumptions: [Xは空でない完備距離空間, 0≤K<1, 全てのx, yでd(f(x),f(y))≤Kd(x,y)]
-  quantifiers: [任意のX, f, K]
-  conclusion: f(x)=xとなるxがただ1つ存在する。
+  assumptions:
+  - $X$は空でない完備距離空間
+  - $0\leq K<1$
+  - 全ての$x,y\in X$で$d(f(x),f(y))\leq Kd(x,y)$
+  quantifiers:
+  - 任意の空でない完備距離空間$X$
+  - 任意の写像$f:X\to X$
+  - 任意の$K\in\mathbb{R}$
+  conclusion: $f(x)=x$となる$x\in X$がただ$1$つ存在する。
   answer: |
-    x_0を任意にとりx_(n+1)=f(x_n)とする。d(x_(n+1),x_n)≤K^nd(x_1,x_0)と等比級数の収束からこの列はコーシー列であり、完備性により極限xをもつ。fは連続なのでf(x)=xである。f(x)=x, f(y)=yならd(x,y)≤Kd(x,y)でK<1なのでd(x,y)=0となり、不動点は一意である。
+    $X$を空でない完備距離空間、$0\leq K<1$とし、$f:X\to X$は全ての$x,y$で$d(f(x),f(y))\leq Kd(x,y)$を満たすとする。$x_0\in X$をとり、$x_{n+1}=f(x_n)$と定める。帰納法で$d(x_{n+1},x_n)\leq K^nd(x_1,x_0)$である。$m\geq 0$について三角不等式と等比級数から、$d(x_{n+m},x_n)\leq\sum_{j=n}^{n+m-1}K^jd(x_1,x_0)\leq\frac{K^n}{1-K}d(x_1,x_0)$である。右辺は$n\to\infty$で$0$に収束するので$(x_n)$はコーシー列であり、完備性により極限$x$を持つ。不等式から$f$は連続なので、$x_{n+1}=f(x_n)$の極限を取って$x=f(x)$を得る。
+    $f(x)=x$、$f(y)=y$なら$d(x,y)=d(f(x),f(y))\leq Kd(x,y)$である。よって$(1-K)d(x,y)\leq 0$であり、$K<1$なので$d(x,y)=0$である。したがって不動点は一意である。
   strategy: Iterate f from any point; geometric decay makes the orbit Cauchy, and the contraction inequality gives uniqueness.
   sketch:
-    - "construct: Pick x_0 and set x_(n+1) = f(x_n)."
-    - "derive: d(x_(n+1), x_n) ≤ K^n d(x_1, x_0), so the sequence is Cauchy."
-    - "apply_theorem: Completeness gives a limit x."
-    - "derive: Continuity of f gives f(x) = x."
-    - "conclude: Two fixed points satisfy d(x,y) ≤ K d(x,y), forcing x = y."
+  - 'construct: Pick x_0 and set x_(n+1) = f(x_n).'
+  - 'derive: d(x_(n+1), x_n) ≤ K^n d(x_1, x_0), so the sequence is Cauchy.'
+  - 'apply_theorem: Completeness gives a limit x.'
+  - 'derive: Continuity of f gives f(x) = x.'
+  - 'conclude: Two fixed points satisfy d(x,y) ≤ K d(x,y), forcing x = y.'
   openmath: (forall (X f K) (-> (and (metric_space X) (complete_space X) (>= K 0) (< K 1) (forall (x y) (<= (dist_of (fn_value f x) (fn_value f y)) (* K (dist_of x y))))) (exists (x) (and (= (fn_value f x) x) (forall (y) (-> (= (fn_value f y) y) (= y x)))))))
   hard_negative:
     statement: d(f(x),f(y))<d(x,y)（x≠y）だけで不動点が存在する。
@@ -786,24 +925,32 @@
       lift K to NNReal using hK0
       have hc : ContractingWith K f := ⟨by exact_mod_cast hK1, LipschitzWith.of_dist_le_mul hL⟩
       exact ⟨ContractingWith.fixedPoint f hc, hc.fixedPoint_isFixedPt, fun y hy => hc.fixedPoint_unique hy⟩
-
 - id: contraction_iteration_error_bound
   kind: gap
   level: 3
   topic: 数値解析・反復法
-  statement: 距離空間上のfが0≤K<1についてd(f(x),f(y))≤Kd(x,y)を満たし、aが不動点なら、d(f^n(x_0),a)≤K^n/(1-K)・d(x_0,f(x_0))である。
+  statement: 距離空間$X$上の写像$f$が、$0\leq K<1$について全ての$x,y$で$d(f(x),f(y))\leq Kd(x,y)$を満たし、$a$が不動点なら、$x_0\in X$と自然数$n$について$d(f^n(x_0),a)\leq\frac{K^n}{1-K}d(x_0,f(x_0))$である。
   statement_en: If f on a metric space satisfies d(f(x),f(y)) ≤ K d(x,y) with 0 ≤ K < 1 and f(a) = a, then d(f^n(x_0),a) ≤ K^n/(1-K) d(x_0,f(x_0)).
-  assumptions: [Xは距離空間, 0≤K<1, 全てのx, yでd(f(x),f(y))≤Kd(x,y), f(a)=a]
-  quantifiers: [任意のX, f, K, a, x_0, 任意の自然数n]
-  conclusion: d(f^n(x_0),a)≤K^n/(1-K)・d(x_0,f(x_0))である。
+  assumptions:
+  - $X$は距離空間
+  - $0\leq K<1$
+  - 全ての$x,y\in X$で$d(f(x),f(y))\leq Kd(x,y)$
+  - $f(a)=a$
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の写像$f:X\to X$
+  - 任意の$K\in\mathbb{R}$
+  - 任意の$a,x_0\in X$
+  - 任意の$n\in\mathbb{N}$
+  conclusion: $d(f^n(x_0),a)\leq\frac{K^n}{1-K}d(x_0,f(x_0))$である。
   answer: |
-    不動点とf(a)=aよりd(f^(m+1)(x_0),a)≤Kd(f^m(x_0),a)なので、帰納法でd(f^n(x_0),a)≤K^nd(x_0,a)となる。また三角不等式からd(x_0,a)≤d(x_0,f(x_0))+d(f(x_0),a)≤d(x_0,f(x_0))+Kd(x_0,a)である。よってd(x_0,a)≤d(x_0,f(x_0))/(1-K)であり、合わせて主張を得る。
+    $X$を距離空間、$0\leq K<1$、$f:X\to X$は全ての$x,y$で$d(f(x),f(y))\leq Kd(x,y)$を満たすとし、$a,x_0\in X$、$f(a)=a$、$n\in\mathbb{N}$とする。$f(a)=a$より$d(f^{m+1}(x_0),a)=d(f(f^m(x_0)),f(a))\leq Kd(f^m(x_0),a)$である。帰納法で$d(f^n(x_0),a)\leq K^nd(x_0,a)$となる。また三角不等式から$d(x_0,a)\leq d(x_0,f(x_0))+d(f(x_0),f(a))\leq d(x_0,f(x_0))+Kd(x_0,a)$である。よって$d(x_0,a)\leq\frac{d(x_0,f(x_0))}{1-K}$である。$K^n\geq 0$なので、合わせて主張を得る。
   strategy: Contract the distance to a by K at each step, then bound the initial distance by the first residual.
   sketch:
-    - "induction: d(f^n(x_0), a) ≤ K^n d(x_0, a) since f(a) = a."
-    - "derive: The triangle inequality gives d(x_0, a) ≤ d(x_0, f(x_0)) + K d(x_0, a)."
-    - "derive: Therefore d(x_0, a) ≤ d(x_0, f(x_0))/(1-K)."
-    - "conclude: Combine the two estimates."
+  - 'induction: d(f^n(x_0), a) ≤ K^n d(x_0, a) since f(a) = a.'
+  - 'derive: The triangle inequality gives d(x_0, a) ≤ d(x_0, f(x_0)) + K d(x_0, a).'
+  - 'derive: Therefore d(x_0, a) ≤ d(x_0, f(x_0))/(1-K).'
+  - 'conclude: Combine the two estimates.'
   openmath: (forall (X f K a x0 n) (-> (and (metric_space X) (in n N) (>= K 0) (< K 1) (forall (x y) (<= (dist_of (fn_value f x) (fn_value f y)) (* K (dist_of x y)))) (= (fn_value f a) a)) (<= (dist_of (iterate_of f n x0) a) (* (/ (^ K n) (- 1 K)) (dist_of x0 (fn_value f x0))))))
   hard_negative:
     statement: K=1でも同じ形の誤差評価で反復は不動点に収束する。
@@ -834,23 +981,27 @@
       calc dist (f^[n] x₀) a ≤ K ^ n * dist x₀ a := h1 n
         _ ≤ K ^ n * (dist x₀ (f x₀) / (1 - K)) := by gcongr
         _ = K ^ n / (1 - K) * dist x₀ (f x₀) := by ring
-
 - id: derivative_bound_unique_fixed_point
   kind: gap
   level: 2
   topic: 数値解析・反復法
-  statement: 実数全体で微分可能なfが、ある0≤K<1について全てのxで|f'(x)|≤Kを満たすなら、方程式f(x)=xの解はただ1つ存在する。
+  statement: $\mathbb{R}$全体で微分可能な関数$f$が、ある$0\leq K<1$について全ての$x$で$|f'(x)|\leq K$を満たすなら、方程式$f(x)=x$の解はただ$1$つ存在する。
   statement_en: If f is differentiable on ℝ and |f'(x)| ≤ K for all x with some 0 ≤ K < 1, then f(x) = x has exactly one solution.
-  assumptions: [fは実数全体で微分可能, 0≤K<1, 全てのxで|f'(x)|≤K]
-  quantifiers: [任意の関数f, 任意の実数K]
-  conclusion: f(x)=xとなる実数xがただ1つ存在する。
+  assumptions:
+  - $f$は$\mathbb{R}$全体で微分可能
+  - $0\leq K<1$
+  - 全ての$x\in\mathbb{R}$で$|f'(x)|\leq K$
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  - 任意の$K\in\mathbb{R}$
+  conclusion: $f(x)=x$となる$x\in\mathbb{R}$がただ$1$つ存在する。
   answer: |
-    平均値の定理より|f(x)-f(y)|≤K|x-y|なので、fは完備距離空間である実数全体の上の縮小写像である。よってバナッハの不動点定理から不動点がただ1つ存在する。
+    $f:\mathbb{R}\to\mathbb{R}$を微分可能な関数、$0\leq K<1$とし、全ての$x$で$|f'(x)|\leq K$とする。$x\neq y$について、平均値の定理からある$\xi$で$f(x)-f(y)=f'(\xi)(x-y)$となるので、$|f(x)-f(y)|\leq K|x-y|$である。$\mathbb{R}$は空でない完備距離空間である。バナッハの不動点定理は、空でない完備距離空間上の写像が$0\leq K<1$について$d(f(x),f(y))\leq Kd(x,y)$を満たすなら不動点がただ$1$つ存在するという定理である。これにより$f(x)=x$の解はただ$1$つ存在する。
   strategy: Turn the derivative bound into a contraction by the mean value theorem and apply the Banach fixed point theorem.
   sketch:
-    - "apply_theorem: The mean value theorem gives |f(x) - f(y)| ≤ K |x - y|."
-    - "translate: Since K < 1, f is a contraction on the complete space ℝ."
-    - "conclude: The Banach fixed point theorem gives a unique fixed point."
+  - 'apply_theorem: The mean value theorem gives |f(x) - f(y)| ≤ K |x - y|.'
+  - 'translate: Since K < 1, f is a contraction on the complete space ℝ.'
+  - 'conclude: The Banach fixed point theorem gives a unique fixed point.'
   openmath: (forall (f K) (-> (and (>= K 0) (< K 1) (forall (x) (exists (d) (and (has_derivative_at f d x) (<= (abs d) K))))) (exists (x) (and (= (fn_value f x) x) (forall (y) (-> (= (fn_value f y) y) (= y x)))))))
   hard_negative:
     statement: 全てのxで|f'(x)|<1なら不動点が存在する。
@@ -866,25 +1017,29 @@
         exact hd x)
       have hc : ContractingWith K f := ⟨by exact_mod_cast hK1, hL⟩
       exact ⟨ContractingWith.fixedPoint f hc, hc.fixedPoint_isFixedPt, fun y hy => hc.fixedPoint_unique hy⟩
-
 - id: lagrange_interpolation_unique
   kind: textbook
   level: 2
   topic: 数値解析・補間
-  statement: 互いに異なるn個の節点v_iと値r_iに対し、次数がn未満でP(v_i)=r_iとなる実係数多項式Pがただ1つ存在する。
+  statement: 有限集合$s$の上で単射な$v$と任意の$r$に対し、次数が$|s|$未満で全ての$i\in s$について$P(v_i)=r_i$となる実係数多項式$P$がただ$1$つ存在する(零多項式の次数は$-\infty$とする)。
   statement_en: For n distinct nodes v_i and values r_i, there is exactly one real polynomial P of degree less than n with P(v_i) = r_i for all i.
-  assumptions: [sは有限集合, vはs上で単射]
-  quantifiers: [任意の有限集合s, 任意の関数v, r]
-  conclusion: deg P<|s|かつ全てのi∈sでP(v_i)=r_iとなる多項式Pがただ1つ存在する。
+  assumptions:
+  - $s$は有限集合
+  - $v$は$s$上で単射
+  quantifiers:
+  - 任意の有限集合$s$
+  - 任意の実数の族$(v_i)$、$(r_i)$
+  conclusion: $\deg P<|s|$かつ全ての$i\in s$で$P(v_i)=r_i$となる多項式$P$がただ$1$つ存在する。
   answer: |
-    各i∈sについて、L_i(x)=∏_(j≠i)(x-v_j)/(v_i-v_j)とおくと、L_iはv_iで1、他の節点で0である。P=Σr_iL_iは次数がn未満で条件を満たす。P,Qがともに条件を満たせば、P-Qは次数n未満でn個の相異なる根をもつので0である。
+    $s$を元の個数$n$の有限集合、$(v_i),(r_i)$を実数の族とし、$v$は$s$上で単射であるとする。零多項式の次数は$-\infty$とする。各$i\in s$について$L_i(x)=\prod_{j\in s,\,j\neq i}\frac{x-v_j}{v_i-v_j}$とおく。$v$が単射なので分母は$0$でない。$L_i$の次数は$n-1$であり、$L_i(v_i)=1$、$j\neq i$で$L_i(v_j)=0$である。$P=\sum_{i\in s}r_iL_i$は次数が$n$未満で、全ての$i\in s$で$P(v_i)=r_i$を満たす。$n=0$のときは$P=0$である。
+    $P,Q$がともに条件を満たすとする。$P-Q$は次数が$n$未満で、$n$個の相異なる根$v_i$($i\in s$)を持つ。次数が$n$未満の$0$でない多項式の根は$n$個未満なので、$P-Q=0$である。
   strategy: Build the polynomial from the Lagrange basis and use the root count for uniqueness.
   sketch:
-    - "construct: Define L_i(x) as the product of (x-v_j)/(v_i-v_j) over j ≠ i."
-    - "derive: L_i equals 1 at v_i and 0 at the other nodes, so P = Σ r_i L_i interpolates."
-    - "derive: P has degree less than n."
-    - "contradiction: A nonzero difference of two solutions would have degree below n and n distinct roots."
-    - "conclude: Hence the interpolating polynomial is unique."
+  - 'construct: Define L_i(x) as the product of (x-v_j)/(v_i-v_j) over j ≠ i.'
+  - 'derive: L_i equals 1 at v_i and 0 at the other nodes, so P = Σ r_i L_i interpolates.'
+  - 'derive: P has degree less than n.'
+  - 'contradiction: A nonzero difference of two solutions would have degree below n and n distinct roots.'
+  - 'conclude: Hence the interpolating polynomial is unique.'
   openmath: (forall (s v r) (-> (and (finite_set s) (injective_on v s)) (exists (P) (and (real_polynomial P) (< (polynomial_degree P) (size s)) (forall (i) (-> (in i s) (= (polynomial_eval P (fn_value v i)) (fn_value r i)))) (forall (Q) (-> (and (real_polynomial Q) (< (polynomial_degree Q) (size s)) (forall (i) (-> (in i s) (= (polynomial_eval Q (fn_value v i)) (fn_value r i))))) (= Q P)))))))
   hard_negative:
     statement: 節点に重複があっても、次数n未満の補間多項式はただ1つ存在する。
@@ -898,24 +1053,31 @@
       refine ⟨Lagrange.interpolate s v r, ⟨Lagrange.degree_interpolate_lt r hv, fun i hi => Lagrange.eval_interpolate_at_node r hv hi⟩, ?_⟩
       rintro Q ⟨hd, he⟩
       exact Lagrange.eq_interpolate_of_eval_eq r hv hd he
-
 - id: composite_trapezoid_error_bound
   kind: gap
   level: 3
   topic: 数値解析・数値積分
-  statement: fが区間[a,b]でC^2級で|f''|≤ζならば、N等分の複合台形公式T_Nの誤差は|T_N-∫_a^b f|≤|b-a|^3ζ/(12N^2)を満たす。
+  statement: $a,b$の間の閉区間$I=[\min\{a,b\},\max\{a,b\}]$で$f$が$C^2$級で$|f''|\leq\zeta$ならば、$N$等分の複合台形公式$T_N=h\left(\frac{f(a)+f(b)}{2}+\sum_{k=1}^{N-1}f(a+kh)\right)$、$h=\frac{b-a}{N}$の誤差は$\left|T_N-\int_a^b f(x)\,dx\right|\leq\frac{|b-a|^3\zeta}{12N^2}$を満たす。
   statement_en: If f is C^2 on the interval between a and b and |f''| ≤ ζ there, the N-step composite trapezoidal rule T_N satisfies |T_N - ∫_a^b f| ≤ |b-a|^3 ζ/(12 N^2).
-  assumptions: [fはaとbの間の閉区間でC^2級, 閉区間上で|f''|≤ζ, N>0]
-  quantifiers: [任意の関数f, 任意の実数a, b, ζ, 任意の自然数N]
-  conclusion: "|T_N-∫_a^b f|≤|b-a|^3ζ/(12N^2)である。"
+  assumptions:
+  - $f$は$I=[\min\{a,b\},\max\{a,b\}]$で$C^2$級
+  - $I$上で$|f''|\leq\zeta$
+  - $N$は正の整数
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  - 任意の$a,b,\zeta\in\mathbb{R}$
+  - 任意の$N\in\mathbb{N}$
+  conclusion: $\left|T_N-\int_a^b f(x)\,dx\right|\leq\frac{|b-a|^3\zeta}{12N^2}$である。
   answer: |
-    幅hの1区間で、台形公式の誤差は部分積分により1/2∫_0^h t(h-t)f''(c+t)dtの形に書ける。|f''|≤ζと∫_0^h t(h-t)dt=h^3/6から、1区間の誤差はh^3ζ/12以下である。h=|b-a|/NとしてN区間の誤差を足し合わせると、N・h^3ζ/12=|b-a|^3ζ/(12N^2)を得る。
+    $a,b,\zeta\in\mathbb{R}$、$N$を正の整数、$I=[\min\{a,b\},\max\{a,b\}]$とし、$f$は$I$で$C^2$級で$|f''|\leq\zeta$を満たすとする。$h=(b-a)/N$、$T_N=h\left(\frac{f(a)+f(b)}{2}+\sum_{k=1}^{N-1}f(a+kh)\right)$とおく。$a=b$なら両辺は$0$である。$a$と$b$を入れ替えると、分点の集合は同じで$h$の符号だけが変わるので、$T_N$と積分はともに符号が変わる。よって$a<b$の場合を示せばよい。
+    $c<d$を$[a,b]$内の点とし、$\ell=d-c$とする。部分積分を$2$回行うと、$\int_c^d(x-c)(d-x)f''(x)\,dx=-\int_c^d(c+d-2x)f'(x)\,dx=\ell(f(c)+f(d))-2\int_c^d f(x)\,dx$である。したがって$\frac{\ell}{2}(f(c)+f(d))-\int_c^d f(x)\,dx=\frac{1}{2}\int_c^d(x-c)(d-x)f''(x)\,dx$である。$[c,d]$上で$(x-c)(d-x)\geq 0$であり、$|f''|\leq\zeta$と$\int_c^d(x-c)(d-x)\,dx=\ell^3/6$から、この値の絶対値は$\ell^3\zeta/12$以下である。
+    $x_k=a+kh$とおくと、$T_N=\sum_{k=0}^{N-1}\frac{h}{2}(f(x_k)+f(x_{k+1}))$である。各小区間に上の評価を使って足すと、$\left|T_N-\int_a^b f(x)\,dx\right|\leq N\cdot\frac{h^3\zeta}{12}=\frac{(b-a)^3\zeta}{12N^2}$を得る。
   strategy: Bound the single-interval error by integration by parts and sum over N subintervals.
   sketch:
-    - "setup: Split the interval into N pieces of width h = |b-a|/N."
-    - "derive: Integration by parts expresses each local error through f'' with weight t(h-t)/2."
-    - "derive: Each local error is at most h^3 ζ/12."
-    - "conclude: Summing N local errors gives |b-a|^3 ζ/(12 N^2)."
+  - 'setup: Split the interval into N pieces of width h = |b-a|/N.'
+  - 'derive: Integration by parts expresses each local error through f'''' with weight t(h-t)/2.'
+  - 'derive: Each local error is at most h^3 ζ/12.'
+  - 'conclude: Summing N local errors gives |b-a|^3 ζ/(12 N^2).'
   openmath: (forall (f a b z m) (-> (and (twice_continuously_differentiable_on f (closed_interval a b)) (forall (x) (-> (in x (closed_interval a b)) (<= (abs (second_derivative_within f (closed_interval a b) x)) z))) (in m N) (> m 0)) (<= (abs (- (trapezoid_sum f m a b) (interval_integral a b (lambda (x) (fn_value f x))))) (/ (* (^ (abs (- b a)) 3) z) (* 12 (^ m 2))))))
   hard_negative:
     statement: 一階導関数の評価|f'|≤ζだけから|T_N-∫_a^b f|≤|b-a|^3ζ/(12N^2)が成り立つ。
@@ -934,24 +1096,25 @@
         · rw [iteratedDerivWithin_succ, derivWithin_zero_of_notMem_closure (by rwa [hcl.closure_eq])]
           simpa using hz
       exact trapezoidal_error_le_of_c2 hf hall hN
-
 - id: fourier_exponential_orthogonality
   kind: gap
   level: 2
   topic: フーリエ級数・直交性
-  statement: 整数m,nについて、∫_0^(2π)e^(imx)e^(-inx)dxはm=nなら2π、m≠nなら0である。
+  statement: 整数$m,n$について、$\int_0^{2\pi}e^{imx}e^{-inx}\,dx$は$m=n$なら$2\pi$、$m\neq n$なら$0$である。
   statement_en: For integers m,n, the integral of e^(imx) e^(-inx) over [0,2π] equals 2π if m = n and 0 otherwise.
-  assumptions: [m, nは整数]
-  quantifiers: [任意の整数m, n]
-  conclusion: 積分値はm=nなら2π、m≠nなら0である。
+  assumptions:
+  - $m,n\in\mathbb{Z}$
+  quantifiers:
+  - 任意の$m,n\in\mathbb{Z}$
+  conclusion: 積分の値は$m=n$なら$2\pi$、$m\neq n$なら$0$である。
   answer: |
-    被積分関数はe^(i(m-n)x)に等しい。m=nならこれは定数1なので積分は2πである。m≠nならc=i(m-n)≠0として原始関数e^(cx)/cを使うと、積分は(e^(2π(m-n)i)-1)/cとなる。m-nは整数なのでe^(2π(m-n)i)=1であり、積分は0である。
+    $m,n$を整数とする。被積分関数は$e^{i(m-n)x}$に等しい。$m=n$ならこれは定数$1$なので、積分は$2\pi$である。$m\neq n$なら$c=i(m-n)\neq 0$とおき、原始関数$e^{cx}/c$を使うと、積分は$(e^{2\pi i(m-n)}-1)/c$となる。$m-n$は整数なので$e^{2\pi i(m-n)}=1$であり、積分は$0$である。
   strategy: Combine the exponentials and integrate e^(i(m-n)x) directly in the two cases.
   sketch:
-    - "translate: The integrand equals e^(i(m-n)x)."
-    - "case_split: If m = n, the integrand is 1 and the integral is 2π."
-    - "derive: If m ≠ n, use the antiderivative e^(i(m-n)x)/(i(m-n))."
-    - "conclude: Periodicity gives e^(2π(m-n)i) = 1, so the integral vanishes."
+  - 'translate: The integrand equals e^(i(m-n)x).'
+  - 'case_split: If m = n, the integrand is 1 and the integral is 2π.'
+  - 'derive: If m ≠ n, use the antiderivative e^(i(m-n)x)/(i(m-n)).'
+  - 'conclude: Periodicity gives e^(2π(m-n)i) = 1, so the integral vanishes.'
   openmath: (forall (m n) (-> (and (in m Z) (in n Z)) (and (-> (= m n) (= (interval_integral 0 (* 2 pi) (lambda (x) (* (exp (* complex_i m x)) (exp (neg (* complex_i n x)))))) (* 2 pi))) (-> (!= m n) (= (interval_integral 0 (* 2 pi) (lambda (x) (* (exp (* complex_i m x)) (exp (neg (* complex_i n x)))))) 0)))))
   hard_negative:
     statement: 実数m≠nについても∫_0^(2π)e^(imx)e^(-inx)dx=0が成り立つ。
@@ -983,24 +1146,26 @@
             _ = 1 := Complex.exp_int_mul_two_pi_mul_I _
         rw [h2]
         simp
-
 - id: cosine_system_orthogonality
   kind: gap
   level: 2
   topic: フーリエ級数・直交性
-  statement: 異なる自然数m,nについて∫_(-π)^π cos(mx)cos(nx)dx=0である。
+  statement: 異なる自然数$m,n$について$\int_{-\pi}^{\pi}\cos(mx)\cos(nx)\,dx=0$である。
   statement_en: For distinct natural numbers m,n, the integral of cos(mx)cos(nx) over [-π,π] is 0.
-  assumptions: [m, nは自然数, m≠n]
-  quantifiers: [任意の自然数m, n]
-  conclusion: ∫_(-π)^π cos(mx)cos(nx)dx=0である。
+  assumptions:
+  - $m,n\in\mathbb{N}$
+  - $m\neq n$
+  quantifiers:
+  - 任意の$m,n\in\mathbb{N}$
+  conclusion: $\int_{-\pi}^{\pi}\cos(mx)\cos(nx)\,dx=0$である。
   answer: |
-    積和公式よりcos(mx)cos(nx)=(cos((m-n)x)+cos((m+n)x))/2である。m≠nよりm-nとm+nはともに0でない整数である。0でない整数kについて、∫_(-π)^π cos(kx)dx=(sin(kπ)-sin(-kπ))/k=0となるので、積分は0である。
+    $m,n$を異なる自然数とする。積和公式より$\cos(mx)\cos(nx)=\frac{1}{2}(\cos((m-n)x)+\cos((m+n)x))$である。$m\neq n$より、$m-n$と$m+n$はともに$0$でない整数である。$0$でない整数$k$について、$\int_{-\pi}^{\pi}\cos(kx)\,dx=\frac{\sin(k\pi)-\sin(-k\pi)}{k}=0$である。よって積分は$0$である。
   strategy: Apply the product-to-sum formula and integrate cos(kx) for nonzero integer k.
   sketch:
-    - "translate: cos(mx)cos(nx) = (cos((m-n)x) + cos((m+n)x))/2."
-    - "derive: Both m-n and m+n are nonzero integers since m ≠ n."
-    - "derive: For an integer k ≠ 0, the integral of cos(kx) over [-π,π] is (sin(kπ) - sin(-kπ))/k = 0."
-    - "conclude: Adding the two integrals gives 0."
+  - 'translate: cos(mx)cos(nx) = (cos((m-n)x) + cos((m+n)x))/2.'
+  - 'derive: Both m-n and m+n are nonzero integers since m ≠ n.'
+  - 'derive: For an integer k ≠ 0, the integral of cos(kx) over [-π,π] is (sin(kπ) - sin(-kπ))/k = 0.'
+  - 'conclude: Adding the two integrals gives 0.'
   openmath: (forall (m n) (-> (and (in m N) (in n N) (!= m n)) (= (interval_integral (neg pi) pi (lambda (x) (* (cos (* m x)) (cos (* n x))))) 0)))
   hard_negative:
     statement: m=nのときも∫_(-π)^π cos(mx)cos(nx)dx=0である。
@@ -1029,24 +1194,26 @@
       simp_rw [e]
       rw [intervalIntegral.integral_div, intervalIntegral.integral_add (Continuous.intervalIntegrable (by fun_prop) _ _) (Continuous.intervalIntegrable (by fun_prop) _ _), key _ hsub, key _ hadd]
       simp
-
 - id: fourier_modes_orthonormal_l2
   kind: gap
   level: 4
   topic: フーリエ級数・直交性
-  statement: 周期Tの円周上で総質量1の測度をとるとき、フーリエ基底{e^(2πinx/T)}はL^2空間の正規直交系である。
+  statement: $T>0$とし、円周$X=\mathbb{R}/T\mathbb{Z}$に総質量$1$の不変測度$\mu$を入れる。このとき$e_n(x)=e^{2\pi inx/T}$($n\in\mathbb{Z}$)は$L^2(X,\mu)$の正規直交系である。
   statement_en: On the circle of period T with its normalized measure, the Fourier modes e^(2πinx/T) form an orthonormal family in L^2.
-  assumptions: [T>0]
-  quantifiers: [任意の正の実数T]
-  conclusion: フーリエ基底はL^2の正規直交系である。
+  assumptions:
+  - $T>0$
+  quantifiers:
+  - 任意の$T\in\mathbb{R}$
+  conclusion: $(e_n)_{n\in\mathbb{Z}}$は$L^2(X,\mu)$の正規直交系である。
   answer: |
-    モードの内積は、円周上の正規化された積分∫e^(2πi(n-m)x/T)dμである。m=nなら被積分関数は1で、測度の総質量が1なので値は1である。m≠nなら周期の積分として原始関数の差が0になるので値は0である。よって正規直交系である。
+    $T>0$とし、$X=\mathbb{R}/T\mathbb{Z}$に総質量$1$の不変測度$\mu$を入れ、$e_n(x)=e^{2\pi inx/T}$($n\in\mathbb{Z}$)とおく。$\mu$による積分は、$1$周期の積分により$\int_X g\,d\mu=\frac{1}{T}\int_0^T g(x)\,dx$と表される。$L^2(X,\mu)$の内積は$\langle g,h\rangle=\int_X\overline{g}h\,d\mu$である。
+    $m,n\in\mathbb{Z}$について$\langle e_m,e_n\rangle=\frac{1}{T}\int_0^T e^{2\pi i(n-m)x/T}\,dx$である。$m=n$なら被積分関数は$1$なので値は$1$である。$k=n-m\neq 0$なら、原始関数$\frac{T}{2\pi ik}e^{2\pi ikx/T}$により値は$\frac{1}{2\pi ik}(e^{2\pi ik}-1)=0$である。よって正規直交系である。
   strategy: Compute the normalized inner product of two modes as the integral of a single exponential.
   sketch:
-    - "translate: The inner product of modes m and n is the normalized integral of e^(2πi(n-m)x/T)."
-    - "case_split: For m = n the integrand is 1 and the total mass is 1."
-    - "derive: For m ≠ n the exponential integrates to 0 over a full period."
-    - "conclude: Therefore the family is orthonormal."
+  - 'translate: The inner product of modes m and n is the normalized integral of e^(2πi(n-m)x/T).'
+  - 'case_split: For m = n the integrand is 1 and the total mass is 1.'
+  - 'derive: For m ≠ n the exponential integrates to 0 over a full period.'
+  - 'conclude: Therefore the family is orthonormal.'
   openmath: (forall (T) (-> (> T 0) (orthonormal_family (fourier_l2_family T) (l2_circle_space T))))
   hard_negative:
     statement: 測度を長さTのルベーグ測度としても、このモードは同じ内積で正規直交である。
@@ -1057,23 +1224,28 @@
     by
       intro T hT
       exact orthonormal_fourier
-
 - id: fourier_coefficient_explicit_formula
   kind: gap
   level: 3
   topic: フーリエ級数・係数
-  statement: a<bのとき、区間(a,b]上の関数fの第n複素フーリエ係数は(1/(b-a))∫_a^b e^(-2πinx/(b-a))f(x)dxで与えられる。
+  statement: $a<b$のとき、$(a,b]$上で可積分な関数$f:\mathbb{R}\to\mathbb{C}$の第$n$複素フーリエ係数は$\frac{1}{b-a}\int_a^b e^{-2\pi inx/(b-a)}f(x)\,dx$で与えられる。
   statement_en: For a < b, the n-th complex Fourier coefficient of f on (a,b] equals (1/(b-a)) times the integral over [a,b] of e^(-2πinx/(b-a)) f(x).
-  assumptions: [a<b]
-  quantifiers: [任意の実数a, b, 関数f, 整数n]
-  conclusion: 第n係数は(1/(b-a))∫_a^b e^(-2πinx/(b-a))f(x)dxに等しい。
+  assumptions:
+  - $a<b$
+  - $f$は$(a,b]$上で可積分
+  quantifiers:
+  - 任意の$a,b\in\mathbb{R}$
+  - 任意の関数$f:\mathbb{R}\to\mathbb{C}$
+  - 任意の$n\in\mathbb{Z}$
+  conclusion: 第$n$係数は$\frac{1}{b-a}\int_a^b e^{-2\pi inx/(b-a)}f(x)\,dx$に等しい。
   answer: |
-    フーリエ係数は、周期b-aの円周上に持ち上げたfに第(-n)モードを掛け、総質量1の測度で積分した値である。円周上の積分は1周期[a,b]の積分を長さb-aで割ったものに等しい。第(-n)モードの値はe^(-2πinx/(b-a))なので、与えられた式になる。
+    $a<b$、$n\in\mathbb{Z}$とし、$f:\mathbb{R}\to\mathbb{C}$は$(a,b]$上で可積分であるとする。$T=b-a$、$X=\mathbb{R}/T\mathbb{Z}$とし、$\mu$を$X$上の総質量$1$の不変測度、$e_k(x)=e^{2\pi ikx/T}$とおく。$(a,b]$は$X$の代表元の集合なので、$f$の$(a,b]$への制限は$X$上の関数$F$を定める。第$n$複素フーリエ係数の定義は$\int_X e_{-n}F\,d\mu$である。
+    $\mu$は$(a,b]$上のルベーグ測度を$T$で割ったものの像なので、$X$上の積分は$\int_X g\,d\mu=\frac{1}{T}\int_a^b g(x)\,dx$と表される。$(a,b]$上で$F=f$、$e_{-n}(x)=e^{-2\pi inx/(b-a)}$であり、$1$点$a$は積分の値に影響しない。これを代入すると与えられた式になる。
   strategy: Unfold the coefficient on the circle into a normalized integral over one period and evaluate the mode.
   sketch:
-    - "translate: The coefficient is the normalized circle integral of the (-n)-th mode times the lift of f."
-    - "derive: The normalized circle integral is 1/(b-a) times the integral over [a,b]."
-    - "conclude: The (-n)-th mode at x equals e^(-2πinx/(b-a))."
+  - 'translate: The coefficient is the normalized circle integral of the (-n)-th mode times the lift of f.'
+  - 'derive: The normalized circle integral is 1/(b-a) times the integral over [a,b].'
+  - 'conclude: The (-n)-th mode at x equals e^(-2πinx/(b-a)).'
   openmath: (forall (a b f n) (-> (and (< a b) (in n Z)) (= (fourier_coeff_on f a b n) (* (/ 1 (- b a)) (interval_integral a b (lambda (x) (* (exp (/ (* 2 pi complex_i (neg n) x) (- b a))) (fn_value f x))))))))
   hard_negative:
     statement: 第n係数は正規化なしの∫_a^b e^(-2πinx/(b-a))f(x)dxに等しい。
@@ -1087,23 +1259,27 @@
       congr 1
       refine intervalIntegral.integral_congr (fun x _ => ?_)
       simp only [smul_eq_mul, fourier_coe_apply]
-
 - id: fourier_coefficient_l1_bound
   kind: gap
   level: 3
   topic: フーリエ級数・係数
-  statement: 周期Tの円周上の可積分関数fの第nフーリエ係数の絶対値は、総質量1の測度による∫|f|以下である。
+  statement: $T>0$とする。円周$X=\mathbb{R}/T\mathbb{Z}$上の総質量$1$の不変測度$\mu$について可積分な関数$f$の第$n$フーリエ係数$c_n(f)$は、$|c_n(f)|\leq\int_X|f|\,d\mu$を満たす。
   statement_en: For f integrable on the circle of period T, the absolute value of the n-th Fourier coefficient is at most the integral of |f| with respect to the normalized measure.
-  assumptions: [T>0, fは円周上で可積分]
-  quantifiers: [任意の正の実数T, 関数f, 整数n]
-  conclusion: 第n係数の絶対値は∫|f|以下である。
+  assumptions:
+  - $T>0$
+  - $f$は$X=\mathbb{R}/T\mathbb{Z}$上で$\mu$について可積分
+  quantifiers:
+  - 任意の$T\in\mathbb{R}$
+  - 任意の関数$f:X\to\mathbb{C}$
+  - 任意の$n\in\mathbb{Z}$
+  conclusion: $|c_n(f)|\leq\int_X|f|\,d\mu$である。
   answer: |
-    係数の定義は∫e_(-n)f dμである。積分の絶対値は絶対値の積分以下なので、|∫e_(-n)f dμ|≤∫|e_(-n)||f|dμである。モードの絶対値は1なので、右辺は∫|f|dμに等しい。
+    $T>0$、$X=\mathbb{R}/T\mathbb{Z}$とし、$\mu$を総質量$1$の不変測度、$f:X\to\mathbb{C}$を可積分関数、$n\in\mathbb{Z}$、$e_k(x)=e^{2\pi ikx/T}$とする。係数の定義は$c_n(f)=\int_X e_{-n}f\,d\mu$である。積分の絶対値は絶対値の積分以下なので、$|c_n(f)|\leq\int_X|e_{-n}||f|\,d\mu$である。$|e_{-n}|=1$なので、右辺は$\int_X|f|\,d\mu$に等しい。
   strategy: Apply the triangle inequality for integrals and use that Fourier modes have absolute value one.
   sketch:
-    - "translate: The coefficient is the integral of the (-n)-th mode times f."
-    - "derive: The absolute value of the integral is at most the integral of the absolute value."
-    - "conclude: The mode has absolute value 1, leaving the integral of |f|."
+  - 'translate: The coefficient is the integral of the (-n)-th mode times f.'
+  - 'derive: The absolute value of the integral is at most the integral of the absolute value.'
+  - 'conclude: The mode has absolute value 1, leaving the integral of |f|.'
   openmath: (forall (T f n) (-> (and (> T 0) (integrable_circle T f) (in n Z)) (<= (norm (fourier_coeff_circle T f n)) (integral_circle T (lambda (t) (norm (fn_value f t)))))))
   hard_negative:
     statement: 第n係数の絶対値はn→∞で常に1/|n|以下に減衰する。
@@ -1117,24 +1293,30 @@
       refine (MeasureTheory.norm_integral_le_integral_norm _).trans_eq ?_
       refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun t => ?_)
       simp [norm_smul, fourier_apply]
-
 - id: bessel_inequality_finite
   kind: gap
   level: 3
   topic: フーリエ級数・ベッセルの不等式
-  statement: 複素内積空間の正規直交系v_iと点xと有限集合sについてΣ_(i∈s)|⟨v_i,x⟩|^2≤‖x‖^2が成り立つ。
+  statement: 複素内積空間$E$の正規直交系$(v_i)$、点$x\in E$、有限集合$s$について$\sum_{i\in s}|\langle v_i,x\rangle|^2\leq\|x\|^2$が成り立つ(ベッセルの不等式)。
   statement_en: For an orthonormal family v_i in a complex inner product space, a point x and a finite set s, Σ_(i in s) |⟨v_i,x⟩|^2 ≤ ‖x‖^2.
-  assumptions: [Eは複素内積空間, vは正規直交系, sは有限集合]
-  quantifiers: [任意のE, v, x, s]
-  conclusion: Σ_(i∈s)|⟨v_i,x⟩|^2≤‖x‖^2である。
+  assumptions:
+  - $E$は複素内積空間
+  - $(v_i)$は正規直交系
+  - $s$は有限集合
+  quantifiers:
+  - 任意の複素内積空間$E$
+  - 任意の族$(v_i)$
+  - 任意の$x\in E$
+  - 任意の有限集合$s$
+  conclusion: $\sum_{i\in s}|\langle v_i,x\rangle|^2\leq\|x\|^2$である。
   answer: |
-    y=Σ_(i∈s)⟨v_i,x⟩v_iとおくと、正規直交性からx-yは全てのv_i（i∈s）と直交するのでyとも直交する。ピタゴラスの定理より‖x‖^2=‖x-y‖^2+‖y‖^2≥‖y‖^2である。再び正規直交性から‖y‖^2=Σ_(i∈s)|⟨v_i,x⟩|^2となる。
+    $E$を複素内積空間(内積は第$2$変数について線形)、$(v_i)$を正規直交系、$x\in E$、$s$を有限集合とする。$y=\sum_{i\in s}\langle v_i,x\rangle v_i$とおく。$j\in s$について、正規直交性から$\langle v_j,x-y\rangle=\langle v_j,x\rangle-\langle v_j,x\rangle=0$である。よって$x-y$は$y$と直交する。ピタゴラスの定理より$\|x\|^2=\|x-y\|^2+\|y\|^2\geq\|y\|^2$である。再び正規直交性から$\|y\|^2=\sum_{i\in s}|\langle v_i,x\rangle|^2$である。
   strategy: Decompose x into its orthogonal projection onto the span of finitely many v_i and a perpendicular remainder.
   sketch:
-    - "construct: Let y = Σ ⟨v_i,x⟩ v_i over i in s."
-    - "derive: x-y is orthogonal to each v_i, hence to y."
-    - "apply_theorem: The Pythagorean theorem gives ‖x‖^2 = ‖x-y‖^2 + ‖y‖^2."
-    - "conclude: Orthonormality gives ‖y‖^2 = Σ |⟨v_i,x⟩|^2, so the bound follows."
+  - 'construct: Let y = Σ ⟨v_i,x⟩ v_i over i in s.'
+  - 'derive: x-y is orthogonal to each v_i, hence to y.'
+  - 'apply_theorem: The Pythagorean theorem gives ‖x‖^2 = ‖x-y‖^2 + ‖y‖^2.'
+  - 'conclude: Orthonormality gives ‖y‖^2 = Σ |⟨v_i,x⟩|^2, so the bound follows.'
   openmath: (forall (E v x s) (-> (and (inner_product_space E) (orthonormal_family v E) (finite_set s)) (<= (sum s (lambda (i) (^ (norm (inner_product (fn_value v i) x)) 2))) (^ (norm x) 2))))
   hard_negative:
     statement: 任意の正規直交系で等号Σ|⟨v_i,x⟩|^2=‖x‖^2が成り立つ。
@@ -1145,25 +1327,33 @@
     by
       intro ι E _ _ v x s hv
       exact hv.sum_inner_products_le x
-
 - id: fourier_coefficient_integration_by_parts
   kind: gap
   level: 3
   topic: フーリエ級数・係数
-  statement: a<b, n≠0でfが閉区間上で微分可能、導関数f'が可積分なら、c_n(f)=(1/(-2πin))(e_(-n)(a)(f(b)-f(a))-(b-a)c_n(f'))が成り立つ。ここでe_k(x)=e^(2πikx/(b-a))であり、c_nは(a,b]上の第n複素フーリエ係数である。
+  statement: $a<b$、$n\neq 0$とし、$f:\mathbb{R}\to\mathbb{C}$は閉区間$[a,b]$の各点で微分係数$f'(x)$を持ち、$f'$は$[a,b]$で可積分であるとする。$e_k(x)=e^{2\pi ikx/(b-a)}$とし、$c_n$を$(a,b]$上の第$n$複素フーリエ係数とすると、$c_n(f)=\frac{1}{-2\pi in}\bigl(e_{-n}(a)(f(b)-f(a))-(b-a)c_n(f')\bigr)$が成り立つ。
   statement_en: For a < b and n ≠ 0, if f is differentiable on the closed interval with integrable derivative f', then c_n(f) = (1/(-2πin)) (e_(-n)(a)(f(b)-f(a)) - (b-a) c_n(f')), where e_k(x) = e^(2πikx/(b-a)) and c_n is the n-th complex Fourier coefficient on (a,b].
-  assumptions: [a<b, n≠0, 閉区間の各点でf'(x)はfの微分係数, f'はaからbまで可積分]
-  quantifiers: [任意の実数a, b, 関数f, f', 整数n]
-  conclusion: c_n(f)はf(b)-f(a)とc_n(f')で表される。
+  assumptions:
+  - $a<b$
+  - $n\neq 0$
+  - $[a,b]$の各点$x$で$f'(x)$は$f$の微分係数
+  - $f'$は$[a,b]$で可積分
+  quantifiers:
+  - 任意の$a,b\in\mathbb{R}$
+  - 任意の関数$f,f':\mathbb{R}\to\mathbb{C}$
+  - 任意の$n\in\mathbb{Z}$
+  conclusion: $c_n(f)=\frac{1}{-2\pi in}\bigl(e_{-n}(a)(f(b)-f(a))-(b-a)c_n(f')\bigr)$である。
   answer: |
-    c_n(f)=(1/(b-a))∫_a^b e_(-n)(x)f(x)dxに部分積分を適用する。e_(-n)の原始関数は(b-a)/(-2πin)・e_(-n)である。境界項はe_(-n)の周期性によりe_(-n)(a)(f(b)-f(a))にまとまり、積分項は(b-a)c_n(f')を与える。これらを整理すると主張の式になる。
+    $a<b$、$n\in\mathbb{Z}$、$n\neq 0$とし、$f,f':\mathbb{R}\to\mathbb{C}$について、$[a,b]$の各点$x$で$f'(x)$は$f$の微分係数であり、$f'$は$[a,b]$で可積分であるとする。$T=b-a$、$e_k(x)=e^{2\pi ikx/T}$とする。係数は$c_n(g)=\frac{1}{T}\int_a^b e_{-n}(x)g(x)\,dx$で与えられる。$f$は連続なので$c_n(f)$は定まる。
+    $E(x)=\frac{T}{-2\pi in}e_{-n}(x)$とおくと$E'=e_{-n}$であり、$Ef$は$[a,b]$の各点で微分可能で$(Ef)'=e_{-n}f+Ef'$である。右辺は可積分である。次の微分積分学の基本定理を実部と虚部に使う。$[a,b]$の各点で微分可能な実数値関数の導関数が可積分なら、導関数の積分は端点の値の差に等しい。これにより$E(b)f(b)-E(a)f(a)=\int_a^b e_{-n}(x)f(x)\,dx+\int_a^b E(x)f'(x)\,dx$である。
+    $e_{-n}$は周期$T$を持つので$e_{-n}(b)=e_{-n}(a)$である。また$\int_a^b e_{-n}(x)f'(x)\,dx=Tc_n(f')$である。よって$Tc_n(f)=\frac{T}{-2\pi in}\bigl(e_{-n}(a)(f(b)-f(a))-Tc_n(f')\bigr)$である。両辺を$T$で割り、$T=b-a$を代入すると主張の式になる。
   strategy: Integrate the coefficient by parts using an antiderivative of the mode, with periodicity simplifying the boundary term.
   sketch:
-    - "setup: Write c_n(f) as a normalized integral of the (-n)-th mode times f."
-    - "derive: The mode has antiderivative (b-a)/(-2πin) times itself because n ≠ 0."
-    - "apply_theorem: Integrate by parts."
-    - "derive: Periodicity gives equal mode values at a and b in the boundary term."
-    - "conclude: Collect terms into the stated identity."
+  - 'setup: Write c_n(f) as a normalized integral of the (-n)-th mode times f.'
+  - 'derive: The mode has antiderivative (b-a)/(-2πin) times itself because n ≠ 0.'
+  - 'apply_theorem: Integrate by parts.'
+  - 'derive: Periodicity gives equal mode values at a and b in the boundary term.'
+  - 'conclude: Collect terms into the stated identity.'
   openmath: (forall (a b f g n) (-> (and (< a b) (in n Z) (!= n 0) (forall (x) (-> (in x (closed_interval a b)) (has_derivative_at f (fn_value g x) x))) (interval_integrable_fn g a b)) (= (fourier_coeff_on f a b n) (* (/ 1 (* -2 pi complex_i n)) (- (* (fourier_mode_circle (- b a) (neg n) a) (- (fn_value f b) (fn_value f a))) (* (- b a) (fourier_coeff_on g a b n)))))))
   hard_negative:
     statement: n=0でも同じ式でc_0(f)を計算できる。
@@ -1174,25 +1364,30 @@
     by
       intro a b hab f f' n hn hf hf'
       exact fourierCoeffOn_of_hasDerivAt hab hn hf hf'
-
 - id: parseval_interval
   kind: named
   level: 4
   topic: フーリエ級数・パーセバルの等式
-  statement: a<bで複素数値関数fが(a,b]上で2乗可積分なら、Σ_(n∈Z)|c_n(f)|^2は(1/(b-a))∫_a^b|f(x)|^2dxに収束する。
+  statement: $a<b$で$f:\mathbb{R}\to\mathbb{C}$が$(a,b]$上で$2$乗可積分なら、$\sum_{n\in\mathbb{Z}}|c_n(f)|^2=\frac{1}{b-a}\int_a^b|f(x)|^2\,dx$である。ここで$c_n(f)=\frac{1}{b-a}\int_a^b e^{-2\pi inx/(b-a)}f(x)\,dx$である(パーセバルの等式)。
   statement_en: If a < b and f is square integrable on (a,b], then the series over all integers n of |c_n(f)|^2 converges unconditionally to (1/(b-a)) times the integral of |f|^2 over [a,b].
-  assumptions: ["a<b", "fは(a,b]上で2乗可積分"]
-  quantifiers: [任意の実数a, b, 関数f]
-  conclusion: Σ|c_n(f)|^2=(1/(b-a))∫_a^b|f|^2である。
+  assumptions:
+  - $a<b$
+  - $f$は$(a,b]$上で$2$乗可積分
+  quantifiers:
+  - 任意の$a,b\in\mathbb{R}$
+  - 任意の関数$f:\mathbb{R}\to\mathbb{C}$
+  conclusion: $\sum_{n\in\mathbb{Z}}|c_n(f)|^2$は無条件収束し、和は$\frac{1}{b-a}\int_a^b|f(x)|^2\,dx$である。
   answer: |
-    概略を述べる。周期b-aの円周上のL^2空間で、フーリエ基底は正規直交系をなす。さらに三角多項式の稠密性（ストーン＝ワイエルシュトラスの定理と連続関数のL^2稠密性）から完全であり、ヒルベルト基底となる。ヒルベルト基底については一般のパーセバルの等式が成り立つので、Σ|⟨e_n,f⟩|^2=‖f‖^2である。⟨e_n,f⟩=c_n(f)と‖f‖^2=(1/(b-a))∫_a^b|f|^2を代入すれば主張を得る。
+    $a<b$とし、$f:\mathbb{R}\to\mathbb{C}$は$(a,b]$上で$2$乗可積分であるとする。$T=b-a$、$X=\mathbb{R}/T\mathbb{Z}$とし、$\mu$を$X$上の総質量$1$の不変測度とする。$X$上の積分は$\int_X g\,d\mu=\frac{1}{T}\int_a^b g(x)\,dx$と表される。$(a,b]$は$X$の代表元の集合なので、$f$は$F\in L^2(X,\mu)$を定め、$\|F\|^2=\frac{1}{T}\int_a^b|f(x)|^2\,dx$である。$\mu(X)=1$なので$F$は可積分でもある。$e_n(x)=e^{2\pi inx/T}$、$\langle g,h\rangle=\int_X\overline{g}h\,d\mu$とおくと、$c_n(f)=\langle e_n,F\rangle$である。$\frac{1}{T}\int_a^b e^{2\pi ikx/T}\,dx$は$k=0$で$1$、$k\neq 0$で$0$なので、$(e_n)$は正規直交系である。
+    三角多項式の稠密性を示す。三角多項式($e_n$の有限線形結合)全体は、$e_me_n=e_{m+n}$、$\overline{e_n}=e_{-n}$、$e_0=1$より、複素共役で閉じた定数を含む$C(X)$の部分代数である。$e_1$は$X$上で単射なので点を分離する。ストーン＝ワイエルシュトラスの定理は、コンパクトハウスドルフ空間上の連続関数環の、複素共役で閉じ定数を含み点を分離する部分代数は一様ノルムで稠密であるという定理である。よって三角多項式は$C(X)$で一様ノルムについて稠密である。$\mu(X)=1$なので一様ノルムは$L^2$ノルム以上である。また、コンパクト距離空間上の有限ボレル測度について、$C(X)$は$L^2(X,\mu)$で稠密である。したがって三角多項式は$L^2(X,\mu)$で稠密である。
+    $\varepsilon>0$をとり、有限集合$S\subset\mathbb{Z}$と複素数$a_n$($n\in S$)を、$g=\sum_{n\in S}a_ne_n$が$\|F-g\|<\varepsilon$を満たすようにとる。$S\subset S'$を満たす有限集合$S'$について、$P=\sum_{n\in S'}\langle e_n,F\rangle e_n$とおく。正規直交性から$F-P$は全ての$e_n$($n\in S'$)と直交する。$g-P$はそれらの線形結合なので、$\|F-g\|^2=\|F-P\|^2+\|P-g\|^2\geq\|F-P\|^2$である。また$\|F\|^2=\|F-P\|^2+\sum_{n\in S'}|\langle e_n,F\rangle|^2$である。よって$0\leq\|F\|^2-\sum_{n\in S'}|c_n(f)|^2<\varepsilon^2$である。これは$\sum_{n\in\mathbb{Z}}|c_n(f)|^2$が$\|F\|^2=\frac{1}{b-a}\int_a^b|f(x)|^2\,dx$に無条件収束することを意味する。
   strategy: Show the Fourier modes are a Hilbert basis of L^2 of the circle, then use the abstract Parseval identity.
   sketch:
-    - "setup: Lift f to L^2 of the circle of period b-a with normalized measure."
-    - "derive: The Fourier modes are orthonormal in L^2."
-    - "apply_theorem: Stone-Weierstrass and density of continuous functions give completeness of the modes."
-    - "apply_theorem: The abstract Parseval identity gives Σ |⟨e_n,f⟩|^2 = ‖f‖^2."
-    - "conclude: Identify ⟨e_n,f⟩ with c_n(f) and ‖f‖^2 with the normalized integral."
+  - 'setup: Lift f to L^2 of the circle of period b-a with normalized measure.'
+  - 'derive: The Fourier modes are orthonormal in L^2.'
+  - 'apply_theorem: Stone-Weierstrass and density of continuous functions give completeness of the modes.'
+  - 'apply_theorem: The abstract Parseval identity gives Σ |⟨e_n,f⟩|^2 = ‖f‖^2.'
+  - 'conclude: Identify ⟨e_n,f⟩ with c_n(f) and ‖f‖^2 with the normalized integral.'
   openmath: (forall (a b f) (-> (and (< a b) (square_integrable_on f a b)) (has_sum_fn (lambda (n) (^ (norm (fourier_coeff_on f a b n)) 2)) (* (/ 1 (- b a)) (interval_integral a b (lambda (x) (^ (norm (fn_value f x)) 2)))))))
   hard_negative:
     statement: 可積分なだけのfでもΣ|c_n(f)|^2は(1/(b-a))∫_a^b|f|^2に収束する。
@@ -1203,25 +1398,32 @@
     by
       intro a b hab f h
       exact hasSum_sq_fourierCoeffOn hab h
-
 - id: fourier_series_pointwise_summable_coefficients
   kind: textbook
   level: 4
   topic: フーリエ級数・収束
-  statement: 周期Tの円周上の連続関数fのフーリエ係数が総和可能なら、各点xでフーリエ級数Σc_n(f)e_n(x)はf(x)に収束する。
+  statement: $T>0$とする。円周$X=\mathbb{R}/T\mathbb{Z}$上の連続関数$f$のフーリエ係数$(c_n(f))_{n\in\mathbb{Z}}$が総和可能なら、各点$x$で$\sum_{n\in\mathbb{Z}}c_n(f)e_n(x)=f(x)$である。ここで$e_n(x)=e^{2\pi inx/T}$である。
   statement_en: If f is continuous on the circle of period T and its Fourier coefficients are summable, then the Fourier series Σ c_n(f) e_n(x) converges to f(x) at every point x.
-  assumptions: [T>0, fは円周上で連続, 係数列c_n(f)は総和可能]
-  quantifiers: [任意の正の実数T, 関数f, 点x]
-  conclusion: Σc_n(f)e_n(x)=f(x)である。
+  assumptions:
+  - $T>0$
+  - $f$は$X=\mathbb{R}/T\mathbb{Z}$上で連続
+  - $(c_n(f))_{n\in\mathbb{Z}}$は総和可能
+  quantifiers:
+  - 任意の$T\in\mathbb{R}$
+  - 任意の連続関数$f:X\to\mathbb{C}$
+  - 任意の$x\in X$
+  conclusion: $\sum_{n\in\mathbb{Z}}c_n(f)e_n(x)=f(x)$である。
   answer: |
-    |e_n|=1と係数の総和可能性から、ワイエルシュトラスのM判定法によりフーリエ級数は一様収束し、連続な極限gをもつ。一様収束はL^2収束を導くので、gはfのL^2展開の極限と一致する。L^2では級数がfに収束するので、gとfはほとんど至るところ等しい。ともに連続で測度の台が全体なのでg=fであり、各点で収束する。
+    $T>0$、$X=\mathbb{R}/T\mathbb{Z}$とし、$\mu$を総質量$1$の不変測度、$e_n(x)=e^{2\pi inx/T}$とする。$f:X\to\mathbb{C}$は連続で、$c_n(f)=\int_X e_{-n}f\,d\mu$は$n\in\mathbb{Z}$について総和可能であるとする。複素数の総和可能性は絶対総和可能性と同値であり、$|c_n(f)e_n|=|c_n(f)|$である。ワイエルシュトラスの優級数判定法により、$g=\sum_n c_n(f)e_n$は$X$上で一様収束し、$g$は連続である。
+    一様収束なので項別積分でき、$\int_X e_{-n}e_m\,d\mu$は$m=n$で$1$、$m\neq n$で$0$なので、$c_m(g)=c_m(f)$である。$h=f-g$とおくと、$h$は連続で全ての$n$について$\int_X\overline{e_n}h\,d\mu=c_n(h)=0$である。
+    ストーン＝ワイエルシュトラスの定理は、コンパクトハウスドルフ空間上の連続関数環の、複素共役で閉じ定数を含み点を分離する部分代数は一様ノルムで稠密であるという定理である。$e_n$の有限線形結合全体はこの条件を満たすので、$h$に一様収束する三角多項式の列$P_k$がある。各$P_k$は$e_n$の有限線形結合なので$\int_X\overline{P_k}h\,d\mu=0$である。$k\to\infty$として$\int_X|h|^2\,d\mu=0$を得る。$|h|^2$は連続で、$\mu$は空でない開集合に正の測度を与えるので、$h=0$である。よって全ての$x\in X$で$f(x)=g(x)=\sum_n c_n(f)e_n(x)$である。
   strategy: The series converges uniformly by the M-test and its uniform limit agrees with the L^2 limit f.
   sketch:
-    - "derive: Since |e_n| = 1 and the coefficients are summable, the series converges uniformly to a continuous g."
-    - "apply_theorem: The Fourier series of f converges to f in L^2."
-    - "derive: Uniform convergence implies L^2 convergence, so g = f almost everywhere."
-    - "derive: Both functions are continuous, so g = f everywhere."
-    - "conclude: Hence the series converges to f(x) at every x."
+  - 'derive: Since |e_n| = 1 and the coefficients are summable, the series converges uniformly to a continuous g.'
+  - 'apply_theorem: The Fourier series of f converges to f in L^2.'
+  - 'derive: Uniform convergence implies L^2 convergence, so g = f almost everywhere.'
+  - 'derive: Both functions are continuous, so g = f everywhere.'
+  - 'conclude: Hence the series converges to f(x) at every x.'
   openmath: (forall (T f x) (-> (and (> T 0) (continuous_circle_function T f) (series_summable (fourier_coeff_family T f))) (has_sum_fn (lambda (n) (* (fourier_coeff_circle T f n) (fourier_mode_circle T n x))) (fn_value f x))))
   hard_negative:
     statement: 連続関数のフーリエ級数は係数の条件なしに全ての点でfに収束する。
@@ -1232,25 +1434,28 @@
     by
       intro T hT f h x
       exact has_pointwise_sum_fourier_series_of_summable h x
-
 - id: riemann_lebesgue_real_line
   kind: textbook
   level: 4
   topic: フーリエ変換・リーマン＝ルベーグの補題
-  statement: 実数上の可積分関数fについて、∫e^(-2πivw)f(v)dvは|w|→∞で0に収束する。
+  statement: $\mathbb{R}$上の可積分関数$f:\mathbb{R}\to\mathbb{C}$について、$\int_{\mathbb{R}}e^{-2\pi ivw}f(v)\,dv$は$|w|\to\infty$で$0$に収束する(リーマン＝ルベーグの補題)。
   statement_en: For an integrable f on ℝ, the integral of e^(-2πivw) f(v) dv tends to 0 as |w| tends to infinity.
-  assumptions: [fは実数全体で可積分]
-  quantifiers: [任意の関数f]
-  conclusion: "|w|→∞で∫e^(-2πivw)f(v)dv→0である。"
+  assumptions:
+  - $f$は$\mathbb{R}$全体で可積分
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{C}$
+  conclusion: $|w|\to\infty$で$\int_{\mathbb{R}}e^{-2\pi ivw}f(v)\,dv\to 0$である。
   answer: |
-    概略を述べる。コンパクト台連続関数はL^1で稠密で、積分の絶対値は‖f‖_1以下である。よってfがコンパクト台連続関数の場合に示せばよい。w≠0のとき変数変換v↦v+1/(2w)で符号が反転するので、積分は(1/2)∫e^(-2πivw)(f(v)-f(v+1/(2w)))dvに等しい。一様連続性により|w|→∞でこれは0に収束する。
+    $f:\mathbb{R}\to\mathbb{C}$を可積分関数とする。可積分関数$k$について$\Phi_k(w)=\int_{\mathbb{R}}e^{-2\pi ivw}k(v)\,dv$とおく。$|e^{-2\pi ivw}|=1$なので$|\Phi_f(w)-\Phi_k(w)|\leq\int_{\mathbb{R}}|f(v)-k(v)|\,dv$である。$\varepsilon>0$をとる。コンパクト台を持つ連続関数全体は$L^1(\mathbb{R})$で稠密なので、コンパクト台連続関数$g$で$\int_{\mathbb{R}}|f(v)-g(v)|\,dv<\varepsilon/2$となるものがある。
+    $g$の台が$[-M,M]$に含まれるとする。$|w|\geq 1$とし、$\delta=\frac{1}{2w}$とおく。変数変換$v\mapsto v+\delta$と$e^{-2\pi i\delta w}=e^{-\pi i}=-1$から、$\Phi_g(w)=-\int_{\mathbb{R}}e^{-2\pi ivw}g(v+\delta)\,dv$である。元の式と足して$2$で割ると、$\Phi_g(w)=\frac{1}{2}\int_{\mathbb{R}}e^{-2\pi ivw}(g(v)-g(v+\delta))\,dv$である。$|\delta|\leq\frac{1}{2}$なので、$g(v)-g(v+\delta)$は$[-M-1,M+1]$の外で$0$である。よって$|\Phi_g(w)|\leq(M+1)\sup_{v}|g(v)-g(v+\delta)|$である。
+    $g$は一様連続なので、$|w|\to\infty$すなわち$\delta\to 0$で右辺は$0$に収束する。したがって$|w|$が十分大きければ$|\Phi_g(w)|<\varepsilon/2$であり、$|\Phi_f(w)|<\varepsilon$である。
   strategy: Reduce to continuous compactly supported functions by density and use a half-period shift.
   sketch:
-    - "translate: The integral is bounded by ‖f‖_1, so by density assume f is continuous with compact support."
-    - "derive: Shifting v by 1/(2w) flips the sign of the exponential."
-    - "derive: So the integral is half of the integral of the exponential times f(v) - f(v + 1/(2w))."
-    - "apply_theorem: Uniform continuity of f makes this difference small as |w| grows."
-    - "conclude: Hence the integral tends to 0."
+  - 'translate: The integral is bounded by ‖f‖_1, so by density assume f is continuous with compact support.'
+  - 'derive: Shifting v by 1/(2w) flips the sign of the exponential.'
+  - 'derive: So the integral is half of the integral of the exponential times f(v) - f(v + 1/(2w)).'
+  - 'apply_theorem: Uniform continuity of f makes this difference small as |w| grows.'
+  - 'conclude: Hence the integral tends to 0.'
   openmath: (forall (f) (-> (integrable_real_line (lambda (v) (fn_value f v))) (tends_to_zero_at_infinity (lambda (w) (integral_real_line (lambda (v) (* (exp (neg (* 2 pi complex_i v w))) (fn_value f v))))))))
   hard_negative:
     statement: 有界な連続関数fについても∫e^(-2πivw)f(v)dv→0である。
@@ -1263,23 +1468,25 @@
       refine (Real.zero_at_infty_fourier f).congr (fun w => ?_)
       rw [Real.fourier_real_eq_integral_exp_smul]
       simp only [smul_eq_mul]
-
 - id: fourier_transform_uniform_bound
   kind: gap
   level: 3
   topic: フーリエ変換・基本評価
-  statement: 実数上の可積分関数fについて、全ての実数wで|∫e^(-2πivw)f(v)dv|≤∫|f(v)|dvが成り立つ。
+  statement: $\mathbb{R}$上の可積分関数$f:\mathbb{R}\to\mathbb{C}$について、全ての実数$w$で$\left|\int_{\mathbb{R}}e^{-2\pi ivw}f(v)\,dv\right|\leq\int_{\mathbb{R}}|f(v)|\,dv$が成り立つ。
   statement_en: For an integrable f on ℝ and every real w, the absolute value of the integral of e^(-2πivw) f(v) dv is at most the integral of |f|.
-  assumptions: [fは実数全体で可積分]
-  quantifiers: [任意の関数f, 実数w]
-  conclusion: "|∫e^(-2πivw)f(v)dv|≤∫|f(v)|dvである。"
+  assumptions:
+  - $f$は$\mathbb{R}$全体で可積分
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{C}$
+  - 任意の$w\in\mathbb{R}$
+  conclusion: $\left|\int_{\mathbb{R}}e^{-2\pi ivw}f(v)\,dv\right|\leq\int_{\mathbb{R}}|f(v)|\,dv$である。
   answer: |
-    積分の絶対値は絶対値の積分以下である。また実数指数のe^(-2πivw)は絶対値1である。よって被積分関数の絶対値は|f(v)|に等しく、不等式を得る。
+    $f:\mathbb{R}\to\mathbb{C}$を可積分関数、$w\in\mathbb{R}$とする。積分の絶対値は絶対値の積分以下である。$v,w$は実数なので$|e^{-2\pi ivw}|=1$であり、被積分関数の絶対値は$|f(v)|$に等しい。よって不等式を得る。
   strategy: Apply the triangle inequality for integrals and use that the exponential kernel has modulus one.
   sketch:
-    - "derive: The absolute value of the integral is at most the integral of the absolute value."
-    - "translate: The kernel has modulus 1, so the integrand's modulus is |f(v)|."
-    - "conclude: This gives the uniform bound independent of w."
+  - 'derive: The absolute value of the integral is at most the integral of the absolute value.'
+  - 'translate: The kernel has modulus 1, so the integrand''s modulus is |f(v)|.'
+  - 'conclude: This gives the uniform bound independent of w.'
   openmath: (forall (f w) (-> (integrable_real_line (lambda (v) (fn_value f v))) (<= (abs (integral_real_line (lambda (v) (* (exp (neg (* 2 pi complex_i v w))) (fn_value f v))))) (integral_real_line (lambda (v) (abs (fn_value f v)))))))
   hard_negative:
     statement: 全てのwで|∫e^(-2πivw)f(v)dv|=∫|f(v)|dvが成り立つ。
@@ -1293,25 +1500,34 @@
       refine MeasureTheory.integral_congr_ae (Filter.Eventually.of_forall fun v => ?_)
       change ‖Complex.exp (((-2 * Real.pi * v * w : ℝ) : ℂ) * Complex.I) * f v‖ = ‖f v‖
       rw [norm_mul, Complex.norm_exp_ofReal_mul_I, one_mul]
-
 - id: poisson_summation_power_decay
   kind: textbook
   level: 4
   topic: フーリエ変換・ポアソン和公式
-  statement: 実数上の連続関数fとそのフーリエ変換Ff(w)=∫f(x)e^(-2πixw)dxがともに、あるb>1について無限遠でO(|x|^(-b))なら、全ての実数xでΣ_(n∈Z)f(x+n)=Σ_(n∈Z)Ff(n)e^(2πinx)である。
+  statement: 連続関数$f:\mathbb{R}\to\mathbb{C}$とそのフーリエ変換$\widehat{f}(w)=\int_{\mathbb{R}}f(y)e^{-2\pi iyw}\,dy$がともに、ある$b>1$について無限遠で$O(|y|^{-b})$なら、全ての実数$x$で$\sum_{n\in\mathbb{Z}}f(x+n)=\sum_{n\in\mathbb{Z}}\widehat{f}(n)e^{2\pi inx}$である(ポアソン和公式)。
   statement_en: If f is continuous on ℝ and both f and its Fourier transform Ff(w) = ∫ f(x) e^(-2πixw) dx are O(|x|^(-b)) at infinity for some b > 1, then for every real x, Σ_(n in Z) f(x+n) = Σ_(n in Z) Ff(n) e^(2πinx).
-  assumptions: [fは連続, b>1, fは無限遠でO(|x|^(-b)), Ff(w)=∫f(x)e^(-2πixw)dxは無限遠でO(|x|^(-b))]
-  quantifiers: [任意の関数f, 実数b, x]
-  conclusion: Σf(x+n)=ΣFf(n)e^(2πinx)である。
+  assumptions:
+  - $f$は連続
+  - $b>1$
+  - $|y|\to\infty$で$f(y)=O(|y|^{-b})$
+  - $|y|\to\infty$で$\widehat{f}(y)=O(|y|^{-b})$
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{C}$
+  - 任意の$b,x\in\mathbb{R}$
+  conclusion: $\sum_{n\in\mathbb{Z}}f(x+n)=\sum_{n\in\mathbb{Z}}\widehat{f}(n)e^{2\pi inx}$である。
   answer: |
-    概略を述べる。fの減衰からg(x)=Σ_nf(x+n)は局所一様に収束し、周期1の連続関数となる。gの第m係数は、[0,1]の積分と和を交換して∫_Rf(x)e^(-2πimx)dx=Ff(m)と計算できる。Ffの減衰から係数は総和可能なので、gのフーリエ級数は各点でgに収束する。これが主張の等式である。
+    $f:\mathbb{R}\to\mathbb{C}$を連続関数、$b>1$、$x\in\mathbb{R}$とし、$\widehat{f}(w)=\int_{\mathbb{R}}f(y)e^{-2\pi iyw}\,dy$とする。$|y|\to\infty$で$f(y)=O(|y|^{-b})$かつ$\widehat{f}(y)=O(|y|^{-b})$であるとする。
+    $f$の減衰を整理する。$|y|\geq 1$では$1+|y|\leq 2|y|$なので$|y|^{-b}\leq 2^b(1+|y|)^{-b}$であり、有界閉区間上で$f$は連続なので有界である。よってある$C>0$があって全ての$y$で$|f(y)|\leq C(1+|y|)^{-b}$である。$b>1$なので$f$は可積分であり、$\widehat{f}$は定まる。
+    $F(y)=\sum_{n\in\mathbb{Z}}f(y+n)$とおく。$y\in[-1,1]$、$n\neq 0$なら$1+|y+n|\geq|n|$なので$|f(y+n)|\leq C|n|^{-b}$である。$\sum_{n\neq 0}|n|^{-b}<\infty$なので、優級数判定法により級数は$[-1,1]$上で絶対かつ一様に収束する。添字をずらすと$F(y+1)=F(y)$なので、級数は全ての$y$で絶対収束し、$F$は周期$1$の連続関数である。
+    $F$のフーリエ係数を求める。$m\in\mathbb{Z}$とする。$[0,1]$上の一様収束により積分と和を交換でき、$y'=y+n$と置くと$e^{-2\pi im(y'-n)}=e^{-2\pi imy'}$なので、$\int_0^1F(y)e^{-2\pi imy}\,dy=\sum_{n\in\mathbb{Z}}\int_n^{n+1}f(y')e^{-2\pi imy'}\,dy'=\int_{\mathbb{R}}f(y')e^{-2\pi imy'}\,dy'=\widehat{f}(m)$である。
+    $\widehat{f}$の減衰と$b>1$から$\sum_{m\in\mathbb{Z}}|\widehat{f}(m)|<\infty$である。フーリエ級数の各点収束定理は、周期$1$の連続関数のフーリエ係数が総和可能なら、そのフーリエ級数は各点でもとの関数の値に収束するという定理である。これを$F$に使うと、$F(x)=\sum_{m\in\mathbb{Z}}\widehat{f}(m)e^{2\pi imx}$となり、これが主張の等式である。
   strategy: Periodize f, compute the Fourier coefficients of the periodization, and use convergence for summable coefficients.
   sketch:
-    - "construct: Define the periodization g(x) = Σ f(x+n), which is continuous by the decay of f."
-    - "derive: Interchanging sum and integral gives that the m-th Fourier coefficient of g is Ff(m)."
-    - "derive: The decay of Ff makes the coefficients summable."
-    - "apply_theorem: A continuous function with summable coefficients equals its Fourier series at every point."
-    - "conclude: This is the stated identity."
+  - 'construct: Define the periodization g(x) = Σ f(x+n), which is continuous by the decay of f.'
+  - 'derive: Interchanging sum and integral gives that the m-th Fourier coefficient of g is Ff(m).'
+  - 'derive: The decay of Ff makes the coefficients summable.'
+  - 'apply_theorem: A continuous function with summable coefficients equals its Fourier series at every point.'
+  - 'conclude: This is the stated identity.'
   openmath: (forall (f b x) (-> (and (fn_continuous_real f) (> b 1) (big_o_power_decay f b) (big_o_power_decay (fourier_transform f) b)) (= (series_sum_fn (lambda (n) (fn_value f (+ x n)))) (series_sum_fn (lambda (n) (* (fn_value (fourier_transform f) n) (exp (* 2 pi complex_i n x))))))))
   hard_negative:
     statement: fが連続で可積分でさえあれば、減衰条件なしにポアソン和公式が成り立つ。

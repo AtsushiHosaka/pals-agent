@@ -2,18 +2,21 @@
   kind: gap
   level: 1
   topic: 整除・線形結合
-  statement: 整数aがbとcを割り切るなら、任意の整数x,yに対してaはbx+cyを割り切る。
+  statement: 整数$a$が$b$と$c$を割り切るなら、任意の整数$x,y$に対して$a$は$bx+cy$を割り切る。
   statement_en: If an integer a divides integers b and c, then a divides bx + cy for all integers x and y.
-  assumptions: ["a, b, c, x, yは整数", "aはbとcを割り切る"]
-  quantifiers: ["任意の整数a, b, c, x, y"]
-  conclusion: aはbx+cyを割り切る。
+  assumptions:
+  - $a,b,c,x,y$は整数
+  - $a\mid b$かつ$a\mid c$
+  quantifiers:
+  - 任意の整数$a,b,c,x,y$
+  conclusion: $a$は$bx+cy$を割り切る。
   answer: |
-    b=as, c=atとなる整数s,tをとる。このときbx+cy=a(sx+ty)であり、sx+tyは整数なのでaはbx+cyを割り切る。
+    $a,b,c,x,y$を整数とし、$a\mid b$かつ$a\mid c$とする。$b=as$, $c=at$となる整数$s,t$をとる。このとき$bx+cy=a(sx+ty)$であり、$sx+ty$は整数なので、$a$は$bx+cy$を割り切る。
   strategy: Write b and c as multiples of a and factor a out of the combination.
   sketch:
-    - "setup: Write b = as and c = at with integers s and t."
-    - "derive: Then bx + cy = a(sx + ty)."
-    - "conclude: Since sx + ty is an integer, a divides bx + cy."
+  - 'setup: Write b = as and c = at with integers s and t.'
+  - 'derive: Then bx + cy = a(sx + ty).'
+  - 'conclude: Since sx + ty is an integer, a divides bx + cy.'
   openmath: (forall (a b c x y) (-> (and (in a Z) (in b Z) (in c Z) (in x Z) (in y Z) (exists (s) (and (in s Z) (= b (* a s)))) (exists (t) (and (in t Z) (= c (* a t))))) (exists (u) (and (in u Z) (= (+ (* b x) (* c y)) (* a u))))))
   hard_negative:
     statement: aがbx+cyを割り切るならaはbとcを割り切る。
@@ -28,20 +31,25 @@
   kind: textbook
   level: 1
   topic: 除法の原理
-  statement: 整数aと0でない整数bに対し、a=bq+rかつ0≤r<|b|を満たす整数の組(q,r)がただ一つ存在する。
+  statement: 整数$a$と$0$でない整数$b$に対し、$a=bq+r$かつ$0\leq r<|b|$を満たす整数の組$(q,r)$がただ一つ存在する。
   statement_en: For an integer a and a nonzero integer b there is exactly one pair of integers (q, r) with a = bq + r and 0 ≤ r < |b|.
-  assumptions: ["a, bは整数", "b≠0"]
-  quantifiers: ["任意の整数aと0でない整数b"]
-  conclusion: a=bq+r, 0≤r<|b|を満たす(q,r)が一意に存在する。
+  assumptions:
+  - $a,b$は整数
+  - $b\neq 0$
+  quantifiers:
+  - 任意の整数$a$と$0$でない整数$b$
+  conclusion: $a=bq+r$, $0\leq r<|b|$を満たす整数の組$(q,r)$がただ一つ存在する。
   answer: |
-    集合{a-bk | kは整数}はb≠0より非負の元を含む。その非負の元のうち最小のものをrとし、r=a-bqとする。r≥|b|ならr-|b|もこの集合の非負の元となり最小性に反するので、0≤r<|b|である。別の組(q',r')があればb(q-q')=r'-rとなり、右辺の絶対値は|b|未満である。bの倍数で絶対値が|b|未満のものは0だけなので、q=q'かつr=r'である。
+    $a,b$を整数とし、$b\neq 0$とする。
+    存在を示す。集合$\{a-bk\mid k\in\mathbb{Z}\}$は非負の元を含む。実際、$k=-b|a|$とおくと$a-bk=a+b^2|a|\geq a+|a|\geq 0$である。この集合の非負の元のうち最小のものを$r$とし、$r=a-bq$となる整数$q$をとる。$r\geq|b|$なら$r-|b|$もこの集合の非負の元で$r$より小さいので、最小性に反する。よって$0\leq r<|b|$である。
+    一意性を示す。整数の組$(q',r')$も同じ条件を満たすとすると、$b(q-q')=r'-r$であり、右辺の絶対値は$|b|$未満である。$b$の倍数で絶対値が$|b|$未満のものは$0$だけなので、$q=q'$かつ$r=r'$である。
   strategy: Existence from the least nonnegative value of a - bk; uniqueness because a multiple of b smaller than |b| in absolute value vanishes.
   sketch:
-    - "construct: Let r = a - bq be the least nonnegative element of {a - bk}."
-    - "contradiction: If r ≥ |b| then r - |b| is a smaller nonnegative element."
-    - "setup: Suppose a = bq' + r' is another such representation."
-    - "derive: Then b(q - q') = r' - r with |r' - r| < |b|."
-    - "conclude: Hence r' = r and, since b ≠ 0, q' = q."
+  - 'construct: Let r = a - bq be the least nonnegative element of {a - bk}.'
+  - 'contradiction: If r ≥ |b| then r - |b| is a smaller nonnegative element.'
+  - 'setup: Suppose a = bq'' + r'' is another such representation.'
+  - 'derive: Then b(q - q'') = r'' - r with |r'' - r| < |b|.'
+  - 'conclude: Hence r'' = r and, since b ≠ 0, q'' = q.'
   openmath: (forall (a b) (-> (and (in a Z) (in b Z) (!= b 0)) (exists (q r) (and (in q Z) (in r Z) (= a (+ (* b q) r)) (<= 0 r) (< r (abs b)) (forall (s t) (-> (and (in s Z) (in t Z) (= a (+ (* b s) t)) (<= 0 t) (< t (abs b))) (and (= s q) (= t r))))))))
   hard_negative:
     statement: 余りの条件を0≤r≤|b|に緩めても、組(q,r)は一意である。
@@ -66,18 +74,23 @@
   kind: gap
   level: 1
   topic: ユークリッドの互除法
-  statement: 整数a,b,q,rがa=bq+rを満たすなら、gcd(a,b)=gcd(b,r)である。
+  statement: 整数$a,b,q,r$が$a=bq+r$を満たすなら、$\gcd(a,b)=\gcd(b,r)$である。ここで$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
   statement_en: If integers satisfy a = bq + r, then gcd(a, b) = gcd(b, r).
-  assumptions: ["a, b, q, rは整数", "a=bq+r"]
-  quantifiers: ["任意の整数a, b, q, r"]
-  conclusion: gcd(a,b)=gcd(b,r)である。
+  assumptions:
+  - $a,b,q,r$は整数
+  - $a=bq+r$
+  quantifiers:
+  - 任意の整数$a,b,q,r$
+  conclusion: $\gcd(a,b)=\gcd(b,r)$である。
   answer: |
-    aとbの公約数dはr=a-bqも割り切るので、bとrの公約数である。逆にbとrの公約数はa=bq+rも割り切るので、aとbの公約数である。公約数の集合が一致するので、最大公約数も一致する。
+    $a,b,q,r$を整数とし、$a=bq+r$とする。$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
+    $a,b$の公約数は$r=a-bq$も割り切るので、$b,r$の公約数である。逆に$b,r$の公約数は$a=bq+r$も割り切るので、$a,b$の公約数である。よって二つの組の公約数の集合は一致する。
+    $a=b=0$なら$r=0$であり、$b=r=0$なら$a=0$である。よって$a=b=0$と$b=r=0$は同値であり、この場合は両辺とも$\gcd(0,0)=0$である。そうでない場合、公約数の集合の最大元が最大公約数であり、集合が一致するので最大公約数も一致する。
   strategy: Show that the pairs (a, b) and (b, r) have the same common divisors.
   sketch:
-    - "derive: A common divisor of a and b divides r = a - bq."
-    - "derive: A common divisor of b and r divides a = bq + r."
-    - "conclude: The sets of common divisors agree, so the greatest common divisors agree."
+  - 'derive: A common divisor of a and b divides r = a - bq.'
+  - 'derive: A common divisor of b and r divides a = bq + r.'
+  - 'conclude: The sets of common divisors agree, so the greatest common divisors agree.'
   openmath: (forall (a b q r) (-> (and (in a Z) (in b Z) (in q Z) (in r Z) (= a (+ (* b q) r))) (= (gcd a b) (gcd b r))))
   hard_negative:
     statement: a=bq+rならgcd(a,b)=gcd(a,r)である。
@@ -93,20 +106,26 @@
   kind: textbook
   level: 1
   topic: ベズーの等式
-  statement: 任意の整数a,bに対し、ax+by=gcd(a,b)を満たす整数x,yが存在する。
+  statement: 任意の整数$a,b$に対し、$ax+by=\gcd(a,b)$を満たす整数$x,y$が存在する。ここで$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
   statement_en: For all integers a and b there exist integers x and y with ax + by = gcd(a, b).
-  assumptions: ["a, bは整数"]
-  quantifiers: ["任意の整数a, b", "ある整数x, y"]
-  conclusion: ax+by=gcd(a,b)となるx,yが存在する。
+  assumptions:
+  - $a,b$は整数
+  quantifiers:
+  - 任意の整数$a,b$
+  - ある整数$x,y$
+  conclusion: $ax+by=\gcd(a,b)$となる整数$x,y$が存在する。
   answer: |
-    a=b=0ならgcd(a,b)=0であり、x=y=0でよい。それ以外の場合、ax+byの形の正の整数のうち最小のものをdとする。除法の原理によりaをdで割った余りもax+byの形で、dより小さい非負の整数なので0である。同様にdはbも割り切るのでdは公約数である。一方でgcd(a,b)はdを割り切るので、d=gcd(a,b)である。
+    $a,b$を整数とする。$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
+    $a=b=0$なら$\gcd(a,b)=0$であり、$x=y=0$でよい。
+    それ以外の場合、$a\cdot a+b\cdot b>0$なので、$ax+by$（$x,y\in\mathbb{Z}$）の形の正の整数が存在する。そのうち最小のものを$d$とする。$a$を$d$で割って$a=dq+s$（$0\leq s<d$）とすると、$s=a-dq$も$ax+by$の形である。$d$の最小性から$s=0$であり、$d\mid a$である。同様に$d\mid b$なので、$d$は$a,b$の正の公約数であり、$d\leq\gcd(a,b)$である。
+    一方$\gcd(a,b)$は$a,b$を割り切るので$ax+by$の形の数$d$も割り切り、$\gcd(a,b)\leq d$である。よって$d=\gcd(a,b)$である。
   strategy: Take the least positive value of ax + by and show it is the gcd.
   sketch:
-    - "case_split: The case a = b = 0 is immediate with x = y = 0."
-    - "construct: Otherwise let d be the least positive integer of the form ax + by."
-    - "apply_theorem: Divide a and b by d; the remainders have the same form and are smaller than d."
-    - "derive: So the remainders vanish and d is a common divisor."
-    - "conclude: gcd(a, b) divides d, hence d = gcd(a, b)."
+  - 'case_split: The case a = b = 0 is immediate with x = y = 0.'
+  - 'construct: Otherwise let d be the least positive integer of the form ax + by.'
+  - 'apply_theorem: Divide a and b by d; the remainders have the same form and are smaller than d.'
+  - 'derive: So the remainders vanish and d is a common divisor.'
+  - 'conclude: gcd(a, b) divides d, hence d = gcd(a, b).'
   openmath: (forall (a b) (-> (and (in a Z) (in b Z)) (exists (x y) (and (in x Z) (in y Z) (= (+ (* a x) (* b y)) (gcd a b))))))
   hard_negative:
     statement: 任意の整数a,bと任意の整数cに対しax+by=cは整数解をもつ。
@@ -121,18 +140,22 @@
   kind: gap
   level: 1
   topic: 互いに素の特徴づけ
-  statement: 整数a,bについて、gcd(a,b)=1であることと、ax+by=1を満たす整数x,yが存在することは同値である。
+  statement: 整数$a,b$について、$\gcd(a,b)=1$であることと、$ax+by=1$を満たす整数$x,y$が存在することは同値である。
   statement_en: Integers a and b satisfy gcd(a, b) = 1 if and only if ax + by = 1 for some integers x and y.
-  assumptions: ["a, bは整数"]
-  quantifiers: ["任意の整数a, b"]
-  conclusion: gcd(a,b)=1とax+by=1の可解性は同値である。
+  assumptions:
+  - $a,b$は整数
+  quantifiers:
+  - 任意の整数$a,b$
+  conclusion: $\gcd(a,b)=1$と、$ax+by=1$が整数解を持つことは同値である。
   answer: |
-    gcd(a,b)=1ならベズーの等式からax+by=1となるx,yが存在する。逆にax+by=1なら、aとbの公約数は1を割り切るので±1に限られ、gcd(a,b)=1である。
+    $a,b$を整数とする。
+    $\gcd(a,b)=1$なら、ベズーの等式（任意の整数$a,b$に対し$ax+by=\gcd(a,b)$となる整数$x,y$が存在する）から、$ax+by=1$となる$x,y$が存在する。
+    逆に$ax+by=1$となる整数$x,y$があるとする。$a,b$の公約数は$ax+by=1$を割り切るので$\pm 1$に限られ、$a,b$の少なくとも一方は$0$でない。よって$\gcd(a,b)=1$である。
   strategy: One direction is Bézout; the other uses that a common divisor divides the combination.
   sketch:
-    - "apply_theorem: If gcd(a, b) = 1, Bézout gives x and y with ax + by = 1."
-    - "derive: If ax + by = 1, every common divisor of a and b divides 1."
-    - "conclude: Hence gcd(a, b) = 1."
+  - 'apply_theorem: If gcd(a, b) = 1, Bézout gives x and y with ax + by = 1.'
+  - 'derive: If ax + by = 1, every common divisor of a and b divides 1.'
+  - 'conclude: Hence gcd(a, b) = 1.'
   openmath: (forall (a b) (-> (and (in a Z) (in b Z)) (<-> (= (gcd a b) 1) (exists (x y) (and (in x Z) (in y Z) (= (+ (* a x) (* b y)) 1))))))
   hard_negative:
     statement: ax+by=2が整数解をもつならgcd(a,b)=2である。
@@ -152,19 +175,23 @@
   kind: gap
   level: 1
   topic: 一次不定方程式
-  statement: 整数a,b,cについて、ax+by=cが整数解をもつことと、gcd(a,b)がcを割り切ることは同値である。
+  statement: 整数$a,b,c$について、$ax+by=c$が整数解を持つことと、$\gcd(a,b)$が$c$を割り切ることは同値である。ここで$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
   statement_en: For integers a, b, c the equation ax + by = c has an integer solution if and only if gcd(a, b) divides c.
-  assumptions: ["a, b, cは整数"]
-  quantifiers: ["任意の整数a, b, c"]
-  conclusion: ax+by=cの可解性はgcd(a,b)がcを割り切ることと同値である。
+  assumptions:
+  - $a,b,c$は整数
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $ax+by=c$が整数解を持つことは、$\gcd(a,b)\mid c$と同値である。
   answer: |
-    解があれば、gcd(a,b)はaとbを割り切るのでax+by=cも割り切る。逆にc=gcd(a,b)kとする。ベズーの等式からas+bt=gcd(a,b)となるs,tをとると、a(sk)+b(tk)=cとなり、x=sk, y=tkが解である。
+    $a,b,c$を整数とする。$\gcd$は非負の最大公約数で、$\gcd(0,0)=0$とする。
+    整数解$x,y$があれば、$\gcd(a,b)$は$a,b$を割り切るので$ax+by=c$も割り切る。
+    逆に$c=\gcd(a,b)k$（$k\in\mathbb{Z}$）とする。ベズーの等式（任意の整数$a,b$に対し$ax+by=\gcd(a,b)$となる整数$x,y$が存在する）から、$as+bt=\gcd(a,b)$となる整数$s,t$をとる。両辺に$k$を掛けると$a(sk)+b(tk)=c$なので、$x=sk$, $y=tk$が解である。
   strategy: Necessity from divisibility of linear combinations; sufficiency by scaling a Bézout identity.
   sketch:
-    - "derive: If ax + by = c, then gcd(a, b) divides c because it divides a and b."
-    - "setup: Conversely write c = gcd(a, b) k."
-    - "apply_theorem: Take s and t with as + bt = gcd(a, b) by Bézout."
-    - "conclude: Then x = sk, y = tk solves the equation."
+  - 'derive: If ax + by = c, then gcd(a, b) divides c because it divides a and b.'
+  - 'setup: Conversely write c = gcd(a, b) k.'
+  - 'apply_theorem: Take s and t with as + bt = gcd(a, b) by Bézout.'
+  - 'conclude: Then x = sk, y = tk solves the equation.'
   openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z)) (<-> (exists (x y) (and (in x Z) (in y Z) (= (+ (* a x) (* b y)) c))) (exists (k) (and (in k Z) (= c (* (gcd a b) k)))))))
   hard_negative:
     statement: ax+by=cが整数解をもつならgcd(a,b)=gcd(a,c)である。
@@ -185,18 +212,23 @@
   kind: gap
   level: 1
   topic: 互いに素と整除
-  statement: 整数a,b,cについて、gcd(a,b)=1かつaがbcを割り切るなら、aはcを割り切る。
+  statement: 整数$a,b,c$について、$\gcd(a,b)=1$かつ$a$が$bc$を割り切るなら、$a$は$c$を割り切る。
   statement_en: If integers a, b, c satisfy gcd(a, b) = 1 and a divides bc, then a divides c.
-  assumptions: ["a, b, cは整数", "gcd(a,b)=1", "aはbcを割り切る"]
-  quantifiers: ["任意の整数a, b, c"]
-  conclusion: aはcを割り切る。
+  assumptions:
+  - $a,b,c$は整数
+  - $\gcd(a,b)=1$
+  - $a\mid bc$
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $a$は$c$を割り切る。
   answer: |
-    ベズーの等式からax+by=1となる整数x,yをとる。両辺にcを掛けるとc=acx+bcyである。aはacxとbcyの両方を割り切るので、aはcを割り切る。
+    $a,b,c$を整数とし、$\gcd(a,b)=1$かつ$a\mid bc$とする。
+    ベズーの等式（任意の整数$a,b$に対し$ax+by=\gcd(a,b)$となる整数$x,y$が存在する）から、$ax+by=1$となる整数$x,y$をとる。両辺に$c$を掛けると$c=acx+bcy$である。$a$は$acx$と$bcy$の両方を割り切るので、$a$は$c$を割り切る。
   strategy: Multiply a Bézout identity for a and b by c.
   sketch:
-    - "apply_theorem: Take x and y with ax + by = 1."
-    - "derive: Multiplying by c gives c = acx + (bc)y."
-    - "conclude: a divides both summands, so a divides c."
+  - 'apply_theorem: Take x and y with ax + by = 1.'
+  - 'derive: Multiplying by c gives c = acx + (bc)y.'
+  - 'conclude: a divides both summands, so a divides c.'
   openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z) (= (gcd a b) 1) (exists (k) (and (in k Z) (= (* b c) (* a k))))) (exists (m) (and (in m Z) (= c (* a m))))))
   hard_negative:
     statement: aがbcを割り切るなら、aはbまたはcを割り切る。
@@ -211,19 +243,23 @@
   kind: gap
   level: 1
   topic: 最大公約数と最小公倍数
-  statement: 自然数a,bについて、gcd(a,b)·lcm(a,b)=abである。
+  statement: 自然数$a,b$について、$\gcd(a,b)\cdot\operatorname{lcm}(a,b)=ab$である。ここで$\operatorname{lcm}(a,b)$は$a$または$b$が$0$のとき$0$とする。
   statement_en: For natural numbers a and b, gcd(a, b) · lcm(a, b) = ab.
-  assumptions: ["a, bは自然数"]
-  quantifiers: ["任意の自然数a, b"]
-  conclusion: gcd(a,b)·lcm(a,b)=abである。
+  assumptions:
+  - $a,b$は自然数
+  quantifiers:
+  - 任意の自然数$a,b$
+  conclusion: $\gcd(a,b)\cdot\operatorname{lcm}(a,b)=ab$である。
   answer: |
-    aまたはbが0なら両辺とも0である。a,bが正のとき、d=gcd(a,b)としてa=da', b=db'と書くとa',b'は互いに素である。aとbの公倍数はa'b'dの倍数に限られるのでlcm(a,b)=a'b'dであり、d·lcm(a,b)=da'·db'=abとなる。
+    $a,b$を自然数とする。$\operatorname{lcm}(a,b)$は$a,b$の正の公倍数のうち最小のものとし、$a$または$b$が$0$のときは$0$とする。
+    $a$または$b$が$0$なら両辺とも$0$である。
+    $a,b$が正のとき、$d=\gcd(a,b)$として$a=da'$, $b=db'$と書くと、$a',b'$は互いに素である。$L=da'b'$は$L=ab'=a'b$より$a,b$の公倍数である。$M$を$a,b$の公倍数とし、$M=ak=bl$と書くと、$a'k=b'l$である。$a',b'$は互いに素なので$b'\mid k$であり、$k=b't$とおくと$M=ab't=Lt$である。よって公倍数は全て$L$の倍数であり、$\operatorname{lcm}(a,b)=L$である。したがって$d\cdot\operatorname{lcm}(a,b)=da'\cdot db'=ab$である。
   strategy: Factor out the gcd and identify the lcm using coprimality of the cofactors.
   sketch:
-    - "case_split: If a or b is zero, both sides are zero."
-    - "setup: Otherwise write a = da' and b = db' with d = gcd(a, b) and a', b' coprime."
-    - "derive: Coprimality shows that the least common multiple is da'b'."
-    - "conclude: Multiplying by d gives ab."
+  - 'case_split: If a or b is zero, both sides are zero.'
+  - 'setup: Otherwise write a = da'' and b = db'' with d = gcd(a, b) and a'', b'' coprime.'
+  - 'derive: Coprimality shows that the least common multiple is da''b''.'
+  - 'conclude: Multiplying by d gives ab.'
   openmath: (forall (a b) (-> (and (in a N) (in b N)) (= (* (gcd a b) (lcm a b)) (* a b))))
   hard_negative:
     statement: 3個の自然数についてもgcd(a,b,c)·lcm(a,b,c)=abcである。
@@ -238,20 +274,25 @@
   kind: textbook
   level: 1
   topic: ユークリッドの補題
-  statement: 素数pが自然数の積abを割り切るなら、pはaまたはbを割り切る。
+  statement: 素数$p$が自然数の積$ab$を割り切るなら、$p$は$a$または$b$を割り切る。
   statement_en: If a prime p divides a product ab of natural numbers, then p divides a or p divides b.
-  assumptions: ["pは素数", "a, bは自然数", "pはabを割り切る"]
-  quantifiers: ["任意の素数pと自然数a, b"]
-  conclusion: pはaまたはbを割り切る。
+  assumptions:
+  - $p$は素数
+  - $a,b$は自然数
+  - $p\mid ab$
+  quantifiers:
+  - 任意の素数$p$と自然数$a,b$
+  conclusion: $p$は$a$または$b$を割り切る。
   answer: |
-    pがaを割り切らないとする。pの正の約数は1とpだけなのでgcd(p,a)=1であり、px+ay=1となる整数x,yが存在する。両辺にbを掛けるとb=pbx+abyであり、pは右辺の両項を割り切る。よってpはbを割り切る。
+    $p$を素数、$a,b$を自然数とし、$p\mid ab$とする。$p$が$a$を割り切らないとして、$p\mid b$を示す。
+    $p$の正の約数は$1$と$p$だけなので$\gcd(p,a)=1$である。ベズーの等式（任意の整数$u,v$に対し$ux+vy=\gcd(u,v)$となる整数$x,y$が存在する）から、$px+ay=1$となる整数$x,y$がある。両辺に$b$を掛けると$b=pbx+aby$である。$p$は右辺の両項を割り切るので、$p$は$b$を割り切る。
   strategy: If p does not divide a then p and a are coprime, and a Bézout identity transfers the divisibility to b.
   sketch:
-    - "case_split: Assume p does not divide a."
-    - "derive: The only positive divisors of p are 1 and p, so gcd(p, a) = 1."
-    - "apply_theorem: Take x and y with px + ay = 1."
-    - "derive: Multiplying by b gives b = pbx + (ab)y."
-    - "conclude: p divides both terms, so p divides b."
+  - 'case_split: Assume p does not divide a.'
+  - 'derive: The only positive divisors of p are 1 and p, so gcd(p, a) = 1.'
+  - 'apply_theorem: Take x and y with px + ay = 1.'
+  - 'derive: Multiplying by b gives b = pbx + (ab)y.'
+  - 'conclude: p divides both terms, so p divides b.'
   openmath: (forall (p a b) (-> (and (in p P) (in a N) (in b N) (exists (k) (and (in k N) (= (* a b) (* p k))))) (or (exists (s) (and (in s N) (= a (* p s)))) (exists (t) (and (in t N) (= b (* p t)))))))
   hard_negative:
     statement: 自然数dがabを割り切るなら、dはaまたはbを割り切る。
@@ -266,18 +307,21 @@
   kind: gap
   level: 1
   topic: 素因数の存在
-  statement: 2以上の自然数は素因数をもつ。
+  statement: $2$以上の自然数は素因数を持つ。
   statement_en: Every natural number n ≥ 2 has a prime divisor.
-  assumptions: ["nは2以上の自然数"]
-  quantifiers: ["任意の自然数n", "ある素数p"]
-  conclusion: nを割り切る素数が存在する。
+  assumptions:
+  - $n$は$2$以上の自然数
+  quantifiers:
+  - 任意の自然数$n$
+  - ある素数$p$
+  conclusion: $n$を割り切る素数が存在する。
   answer: |
-    nの1より大きい約数の全体はnを含むので空でない。そのうち最小のものをpとする。pが素数でなければ1<q<pとなるpの約数qがあり、qもnの約数なので最小性に反する。よってpは素数である。
+    $n$を$2$以上の自然数とする。$n$の$1$より大きい約数の全体は$n$を含むので空でない。そのうち最小のものを$p$とする。$p$が素数でなければ$1<q<p$となる$p$の約数$q$があり、$q$も$n$の$1$より大きい約数なので最小性に反する。よって$p$は素数であり、$p\mid n$である。
   strategy: The least divisor greater than 1 must be prime.
   sketch:
-    - "construct: Let p be the least divisor of n greater than 1."
-    - "contradiction: A proper nontrivial divisor of p would be a smaller divisor of n."
-    - "conclude: So p is a prime divisor of n."
+  - 'construct: Let p be the least divisor of n greater than 1.'
+  - 'contradiction: A proper nontrivial divisor of p would be a smaller divisor of n.'
+  - 'conclude: So p is a prime divisor of n.'
   openmath: (forall (n) (-> (and (in n N) (>= n 2)) (exists (p k) (and (in p P) (in k N) (= n (* p k))))))
   hard_negative:
     statement: すべての自然数は素因数をもつ。
@@ -292,19 +336,24 @@
   kind: gap
   level: 1
   topic: 素因数と平方根
-  statement: 2以上の合成数nは、p²≤nを満たす素因数pをもつ。
+  statement: $2$以上の合成数$n$は、$p^2\leq n$を満たす素因数$p$を持つ。
   statement_en: Every composite number n ≥ 2 has a prime divisor p with p² ≤ n.
-  assumptions: ["nは2以上の自然数", "nは素数でない"]
-  quantifiers: ["任意の2以上の合成数n", "ある素数p"]
-  conclusion: pはnを割り切りp²≤nである。
+  assumptions:
+  - $n$は$2$以上の自然数
+  - $n$は素数でない
+  quantifiers:
+  - 任意の$2$以上の合成数$n$
+  - ある素数$p$
+  conclusion: 素数$p$は$n$を割り切り、$p^2\leq n$である。
   answer: |
-    pをnの1より大きい最小の約数とすると、pは素数である。n=pmと書くと、nは素数でないのでm>1であり、mもnの1より大きい約数なのでp≤mである。したがってp²≤pm=nとなる。
+    $n$を素数でない$2$以上の自然数とする。$n$の$1$より大きい約数のうち最小のものを$p$とする。$p$が素数でなければ$p$の真の約数で$1$より大きいものが$n$の約数となって最小性に反するので、$p$は素数である。
+    $n=pm$と書く。$p$は素数で$n$は素数でないので$n\neq p$であり、$m>1$である。$m$も$n$の$1$より大きい約数なので$p\leq m$である。したがって$p^2\leq pm=n$である。
   strategy: Apply minimality of the least prime factor to the cofactor.
   sketch:
-    - "construct: Let p be the least divisor of n greater than 1; it is prime."
-    - "setup: Write n = pm."
-    - "derive: Since n is composite, m > 1, and so m ≥ p by minimality."
-    - "conclude: Therefore p² ≤ pm = n."
+  - 'construct: Let p be the least divisor of n greater than 1; it is prime.'
+  - 'setup: Write n = pm.'
+  - 'derive: Since n is composite, m > 1, and so m ≥ p by minimality.'
+  - 'conclude: Therefore p² ≤ pm = n.'
   openmath: (forall (n) (-> (and (in n N) (>= n 2) (notin n P)) (exists (p k) (and (in p P) (in k N) (= n (* p k)) (<= (^ p 2) n)))))
   hard_negative:
     statement: 2以上の合成数nのすべての素因数pはp²≤nを満たす。
@@ -319,18 +368,21 @@
   kind: named
   level: 1
   topic: 素数の無限性(ユークリッドの定理)
-  statement: 任意の自然数nに対し、nより大きな素数が存在する。すなわち素数は無限に存在する。
+  statement: 任意の自然数$n$に対し、$n$より大きな素数が存在する。すなわち素数は無限に存在する。
   statement_en: For every natural number n there is a prime greater than n; that is, there are infinitely many primes.
-  assumptions: ["nは自然数"]
-  quantifiers: ["任意の自然数n", "ある素数p"]
-  conclusion: n<pとなる素数pが存在する。
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  - ある素数$p$
+  conclusion: $n<p$となる素数$p$が存在する。
   answer: |
-    n!+1は2以上なので素因数pをもつ。p≤nとするとpはn!を割り切るので、差の1も割り切ることになり矛盾する。したがってp>nである。
+    $n$を自然数とする。$n!+1$は$2$以上なので、素因数$p$を持つ。$p\leq n$とすると$p$は$n!$を割り切るので、差の$1$も割り切ることになり矛盾する。したがって$p>n$である。
   strategy: A prime factor of n! + 1 cannot be at most n.
   sketch:
-    - "construct: Let p be a prime divisor of n! + 1."
-    - "contradiction: If p ≤ n then p divides n!, hence p divides 1."
-    - "conclude: So p > n."
+  - 'construct: Let p be a prime divisor of n! + 1.'
+  - 'contradiction: If p ≤ n then p divides n!, hence p divides 1.'
+  - 'conclude: So p > n.'
   openmath: (forall (n) (-> (in n N) (exists (p) (and (in p P) (< n p)))))
   hard_negative:
     statement: 最初のk個の素数の積に1を足した数は常に素数である。
@@ -346,21 +398,25 @@
   kind: named
   level: 1
   topic: 算術の基本定理
-  statement: 1以上の自然数は素数の積として表され、その表し方は積の順序を除いて一意である。
+  statement: $1$以上の自然数は素数の積として表され、その表し方は積の順序を除いて一意である。$1$は空の積として表す。
   statement_en: Every positive integer is a product of primes, and this factorization is unique up to the order of the factors.
-  assumptions: ["nは1以上の自然数"]
-  quantifiers: ["任意の1以上の自然数n"]
-  conclusion: 積がnとなる素数の有限多重集合がただ一つ存在する。
+  assumptions:
+  - $n$は$1$以上の自然数
+  quantifiers:
+  - 任意の$1$以上の自然数$n$
+  conclusion: 積が$n$となる素数の有限多重集合がただ一つ存在する。
   answer: |
-    存在はnに関する強帰納法で示す。n=1は空の積であり、n≥2なら素因数pをとってn/pに帰納法の仮定を使う。一意性もnの帰納法で示す。二つの分解p_1…p_r=q_1…q_sがあるとき、ユークリッドの補題からp_1はあるq_jを割り切り、q_jが素数なのでp_1=q_jである。両辺をp_1で割ると、より小さい数の二つの分解が得られ、帰納法の仮定から残りの因子も順序を除いて一致する。
+    $n$を$1$以上の自然数とする。素数の積は有限多重集合の積として扱い、空の積は$1$とする。
+    存在を$n$に関する累積帰納法で示す。$n=1$は空の積である。$n\geq 2$なら$n$は素因数$p$を持ち、$n/p<n$なので、帰納法の仮定から$n/p$は素数の積である。これに$p$を加えれば$n$の分解が得られる。
+    一意性も$n$に関する累積帰納法で示す。素数は$2$以上なので、積が$1$となる素数の多重集合は空だけである。$n\geq 2$とし、$n=p_1\cdots p_r=q_1\cdots q_s$を二つの分解とする。ユークリッドの補題（素数が積を割り切るなら、いずれかの因子を割り切る）から、$p_1$はある$q_j$を割り切り、$q_j$が素数なので$p_1=q_j$である。両辺を$p_1$で割ると$n/p_1<n$の二つの分解が得られ、帰納法の仮定から残りの因子も順序を除いて一致する。
   strategy: Existence by strong induction via a prime factor; uniqueness by induction using Euclid's lemma to cancel a common prime.
   sketch:
-    - "induction: Prove existence by strong induction on n."
-    - "apply_theorem: For n ≥ 2 take a prime factor p and factor n/p."
-    - "setup: For uniqueness compare two factorizations of n."
-    - "apply_theorem: By Euclid's lemma p_1 divides some q_j, and then p_1 = q_j."
-    - "induction: Cancel p_1 and apply the induction hypothesis to n/p_1."
-    - "conclude: The two multisets of primes coincide."
+  - 'induction: Prove existence by strong induction on n.'
+  - 'apply_theorem: For n ≥ 2 take a prime factor p and factor n/p.'
+  - 'setup: For uniqueness compare two factorizations of n.'
+  - 'apply_theorem: By Euclid''s lemma p_1 divides some q_j, and then p_1 = q_j.'
+  - 'induction: Cancel p_1 and apply the induction hypothesis to n/p_1.'
+  - 'conclude: The two multisets of primes coincide.'
   openmath: (forall (n) (-> (and (in n N) (>= n 1)) (exists (s) (and (prime_multiset s) (= (multiset_prod s) n) (forall (t) (-> (and (prime_multiset t) (= (multiset_prod t) n)) (= t s)))))))
   hard_negative:
     statement: 正の偶数全体で、二つの偶数の積に書けない偶数を「素」と呼ぶと、「素」な偶数への分解は一意である。
@@ -382,19 +438,23 @@
   kind: gap
   level: 2
   topic: 素数と二項係数
-  statement: 素数pと0<k<pを満たす自然数kに対し、pは二項係数C(p,k)を割り切る。
+  statement: 素数$p$と$0<k<p$を満たす自然数$k$に対し、$p$は二項係数$\binom{p}{k}$を割り切る。
   statement_en: For a prime p and a natural number k with 0 < k < p, p divides the binomial coefficient C(p, k).
-  assumptions: ["pは素数", "kは自然数", "0<k<p"]
-  quantifiers: ["任意の素数pと0<k<pなる自然数k"]
-  conclusion: pはC(p,k)を割り切る。
+  assumptions:
+  - $p$は素数
+  - $k$は自然数
+  - $0<k<p$
+  quantifiers:
+  - 任意の素数$p$と$0<k<p$なる自然数$k$
+  conclusion: $p$は$\binom{p}{k}$を割り切る。
   answer: |
-    k!(p-k)!C(p,k)=p!なので、pは左辺を割り切る。0<k<pよりk!と(p-k)!の因子はすべてp未満の正の整数であり、pで割り切れない。ユークリッドの補題からpはC(p,k)を割り切る。
+    $p$を素数、$k$を$0<k<p$を満たす自然数とする。$k!\,(p-k)!\binom{p}{k}=p!$なので、$p$は左辺を割り切る。$0<k<p$より$k!$と$(p-k)!$の因子は全て$p$未満の正の整数であり、$p$で割り切れない。ユークリッドの補題（素数が積を割り切るなら、いずれかの因子を割り切る）から、$p$は$\binom{p}{k}$を割り切る。
   strategy: Use p! = k!(p-k)!C(p,k) and Euclid's lemma.
   sketch:
-    - "setup: Write k!(p-k)! C(p, k) = p!."
-    - "derive: p divides the left side, while every factor of k! and (p-k)! is smaller than p."
-    - "apply_theorem: By Euclid's lemma p does not divide k!(p-k)!."
-    - "conclude: Hence p divides C(p, k)."
+  - 'setup: Write k!(p-k)! C(p, k) = p!.'
+  - 'derive: p divides the left side, while every factor of k! and (p-k)! is smaller than p.'
+  - 'apply_theorem: By Euclid''s lemma p does not divide k!(p-k)!.'
+  - 'conclude: Hence p divides C(p, k).'
   openmath: (forall (p k) (-> (and (in p P) (in k N) (< 0 k) (< k p)) (dvd p (binomial p k))))
   hard_negative:
     statement: 合成数nと0<k<nについても、nはC(n,k)を割り切る。
@@ -409,19 +469,24 @@
   kind: gap
   level: 1
   topic: 合同式の演算
-  statement: a≡b, c≡d (mod n)ならば、a+c≡b+dかつac≡bd (mod n)である。
+  statement: 整数$n,a,b,c,d$について、$a\equiv b\pmod{n}$かつ$c\equiv d\pmod{n}$ならば、$a+c\equiv b+d\pmod{n}$かつ$ac\equiv bd\pmod{n}$である。
   statement_en: If a ≡ b and c ≡ d modulo n, then a + c ≡ b + d and ac ≡ bd modulo n.
-  assumptions: ["n, a, b, c, dは整数", "a≡b (mod n)", "c≡d (mod n)"]
-  quantifiers: ["任意の整数n, a, b, c, d"]
-  conclusion: 和と積についても合同が保たれる。
+  assumptions:
+  - $n,a,b,c,d$は整数
+  - $a\equiv b\pmod{n}$
+  - $c\equiv d\pmod{n}$
+  quantifiers:
+  - 任意の整数$n,a,b,c,d$
+  conclusion: $a+c\equiv b+d\pmod{n}$かつ$ac\equiv bd\pmod{n}$である。
   answer: |
-    a-b=ns, c-d=ntとなる整数s,tをとる。(a+c)-(b+d)=n(s+t)なので和の合同が成り立つ。またac-bd=(a-b)c+b(c-d)=n(sc+bt)なので積の合同も成り立つ。
+    $n,a,b,c,d$を整数とし、$a\equiv b\pmod{n}$かつ$c\equiv d\pmod{n}$とする。合同は$n$が差を割り切ることを意味する（$n=0$では等号を意味する）。
+    $a-b=ns$, $c-d=nt$となる整数$s,t$をとる。$(a+c)-(b+d)=n(s+t)$なので、和の合同が成り立つ。また$ac-bd=(a-b)c+b(c-d)=n(sc+bt)$なので、積の合同も成り立つ。
   strategy: Expand the differences and factor out n.
   sketch:
-    - "setup: Write a - b = ns and c - d = nt."
-    - "derive: (a + c) - (b + d) = n(s + t)."
-    - "derive: ac - bd = (a - b)c + b(c - d) = n(sc + bt)."
-    - "conclude: Both differences are multiples of n."
+  - 'setup: Write a - b = ns and c - d = nt.'
+  - 'derive: (a + c) - (b + d) = n(s + t).'
+  - 'derive: ac - bd = (a - b)c + b(c - d) = n(sc + bt).'
+  - 'conclude: Both differences are multiples of n.'
   openmath: (forall (n a b c d) (-> (and (in n Z) (in a Z) (in b Z) (in c Z) (in d Z) (exists (s) (and (in s Z) (= (- a b) (* n s)))) (exists (t) (and (in t Z) (= (- c d) (* n t))))) (and (exists (u) (and (in u Z) (= (- (+ a c) (+ b d)) (* n u)))) (exists (v) (and (in v Z) (= (- (* a c) (* b d)) (* n v)))))))
   hard_negative:
     statement: a≡b (mod n)ならば、2^a≡2^b (mod n)である。
@@ -436,18 +501,23 @@
   kind: gap
   level: 1
   topic: 合同式の約分
-  statement: gcd(c,n)=1かつca≡cb (mod n)ならば、a≡b (mod n)である。
+  statement: 整数$n,a,b,c$について、$\gcd(c,n)=1$かつ$ca\equiv cb\pmod{n}$ならば、$a\equiv b\pmod{n}$である。
   statement_en: If gcd(c, n) = 1 and ca ≡ cb modulo n, then a ≡ b modulo n.
-  assumptions: ["n, a, b, cは整数", "gcd(c,n)=1", "ca≡cb (mod n)"]
-  quantifiers: ["任意の整数n, a, b, c"]
-  conclusion: a≡b (mod n)である。
+  assumptions:
+  - $n,a,b,c$は整数
+  - $\gcd(c,n)=1$
+  - $ca\equiv cb\pmod{n}$
+  quantifiers:
+  - 任意の整数$n,a,b,c$
+  conclusion: $a\equiv b\pmod{n}$である。
   answer: |
-    仮定からnはc(b-a)を割り切る。gcd(n,c)=1なので、互いに素な数についての整除の性質からnはb-aを割り切る。これはa≡b (mod n)を意味する。
+    $n,a,b,c$を整数とし、$\gcd(c,n)=1$かつ$ca\equiv cb\pmod{n}$とする。合同は$n$が差を割り切ることを意味する。
+    仮定から$n$は$c(a-b)$を割り切る。ベズーの等式（任意の整数$u,v$に対し$ux+vy=\gcd(u,v)$となる整数$x,y$が存在する）から$cx+ny=1$となる整数$x,y$をとり、両辺に$a-b$を掛けると$a-b=c(a-b)x+n(a-b)y$である。$n$は右辺の両項を割り切るので、$n$は$a-b$を割り切る。これは$a\equiv b\pmod{n}$を意味する。
   strategy: Rewrite the congruence as divisibility of c(b - a) and remove the coprime factor c.
   sketch:
-    - "translate: n divides cb - ca = c(b - a)."
-    - "apply_theorem: Since gcd(n, c) = 1, n divides b - a."
-    - "conclude: Hence a ≡ b modulo n."
+  - 'translate: n divides cb - ca = c(b - a).'
+  - 'apply_theorem: Since gcd(n, c) = 1, n divides b - a.'
+  - 'conclude: Hence a ≡ b modulo n.'
   openmath: (forall (n a b c) (-> (and (in n Z) (in a Z) (in b Z) (in c Z) (= (gcd c n) 1) (exists (k) (and (in k Z) (= (- (* c a) (* c b)) (* n k))))) (exists (m) (and (in m Z) (= (- a b) (* n m))))))
   hard_negative:
     statement: c≢0 (mod n)かつca≡cb (mod n)ならば、a≡b (mod n)である。
@@ -467,19 +537,23 @@
   kind: gap
   level: 2
   topic: 法nでの逆元
-  statement: 整数a,nについて、ax≡1 (mod n)を満たす整数xが存在することと、gcd(a,n)=1であることは同値である。
+  statement: 整数$a,n$について、$ax\equiv 1\pmod{n}$を満たす整数$x$が存在することと、$\gcd(a,n)=1$であることは同値である。
   statement_en: For integers a and n there is an integer x with ax ≡ 1 modulo n if and only if gcd(a, n) = 1.
-  assumptions: ["a, nは整数"]
-  quantifiers: ["任意の整数a, n"]
-  conclusion: aが法nで逆元をもつことはgcd(a,n)=1と同値である。
+  assumptions:
+  - $a,n$は整数
+  quantifiers:
+  - 任意の整数$a,n$
+  conclusion: $a$が法$n$で逆元を持つことは$\gcd(a,n)=1$と同値である。
   answer: |
-    ax≡1 (mod n)なら1-ax=nkとなる整数kがあり、ax+nk=1なのでgcd(a,n)=1である。逆にgcd(a,n)=1ならベズーの等式からua+vn=1となる整数u,vがあり、au≡1 (mod n)となる。
+    $a,n$を整数とする。合同は$n$が差を割り切ることを意味する（$n=0$では等号を意味する）。
+    $ax\equiv 1\pmod{n}$なら$1-ax=nk$となる整数$k$があり、$ax+nk=1$である。$a,n$の公約数は$1$を割り切るので$\pm 1$に限られ、$\gcd(a,n)=1$である。
+    逆に$\gcd(a,n)=1$なら、ベズーの等式（任意の整数$a,n$に対し$au+nv=\gcd(a,n)$となる整数$u,v$が存在する）から$au+nv=1$となる整数$u,v$がある。$1-au=nv$なので$au\equiv 1\pmod{n}$である。
   strategy: Both directions translate between the congruence and a Bézout identity.
   sketch:
-    - "translate: ax ≡ 1 modulo n means ax + nk = 1 for some integer k."
-    - "derive: Such an identity forces gcd(a, n) = 1."
-    - "apply_theorem: Conversely Bézout gives ua + vn = 1."
-    - "conclude: Then x = u is an inverse of a modulo n."
+  - 'translate: ax ≡ 1 modulo n means ax + nk = 1 for some integer k.'
+  - 'derive: Such an identity forces gcd(a, n) = 1.'
+  - 'apply_theorem: Conversely Bézout gives ua + vn = 1.'
+  - 'conclude: Then x = u is an inverse of a modulo n.'
   openmath: (forall (a n) (-> (and (in a Z) (in n Z)) (<-> (exists (x k) (and (in x Z) (in k Z) (= (- (* a x) 1) (* n k)))) (= (gcd a n) 1))))
   hard_negative:
     statement: a≢0 (mod n)なら、aは法nで逆元をもつ。
@@ -500,20 +574,28 @@
   kind: textbook
   level: 2
   topic: 中国剰余定理
-  statement: 互いに素な正の整数m,nと自然数a,bに対し、x≡a (mod m), x≡b (mod n)を満たす自然数xが存在する。さらに自然数yがこの連立合同式を満たすことは、y≡x (mod mn)と同値である。
+  statement: 互いに素な正の整数$m,n$と自然数$a,b$に対し、$x\equiv a\pmod{m}$, $x\equiv b\pmod{n}$を満たす自然数$x$が存在する。さらに自然数$y$がこの連立合同式を満たすことは、$y\equiv x\pmod{mn}$と同値である。
   statement_en: For coprime positive integers m, n and natural numbers a, b there is a natural number x with x ≡ a mod m and x ≡ b mod n, and a natural number y satisfies both congruences if and only if y ≡ x mod mn.
-  assumptions: ["m, nは正の整数", "gcd(m,n)=1", "a, bは自然数"]
-  quantifiers: ["任意のm, n, a, b", "ある自然数x", "任意の自然数y"]
-  conclusion: 連立合同式は解をもち、解は法mnで一意である。
+  assumptions:
+  - $m,n$は正の整数
+  - $\gcd(m,n)=1$
+  - $a,b$は自然数
+  quantifiers:
+  - 任意の$m,n,a,b$
+  - ある自然数$x$
+  - 任意の自然数$y$
+  conclusion: 連立合同式は自然数解$x$を持ち、自然数$y$が解であることは$y\equiv x\pmod{mn}$と同値である。
   answer: |
-    mu+nv=1となる整数u,vをとる。整数anv+bmuはmで割るとaと合同で、nで割るとbと合同である。これにmnの倍数を加えて非負にしたものをxとする。yが連立合同式を満たすことは、y-xがmとnの両方で割り切れることと同値である。m,nは互いに素なので、それはy-xがmnで割り切れることと同値である。
+    $m,n$を互いに素な正の整数、$a,b$を自然数とする。
+    存在を示す。ベズーの等式（任意の整数$m,n$に対し$mu+nv=\gcd(m,n)$となる整数$u,v$が存在する）から、$mu+nv=1$となる整数$u,v$をとる。$z=anv+bmu$とおく。$nv=1-mu$より$z\equiv a\pmod{m}$であり、$mu=1-nv$より$z\equiv b\pmod{n}$である。$t$を十分大きくとれば$x=z+mnt$は自然数で、同じ合同式を満たす。
+    解の特徴づけを示す。自然数$y$が連立合同式を満たすことは、$y\equiv x\pmod{m}$かつ$y\equiv x\pmod{n}$、すなわち$m\mid y-x$かつ$n\mid y-x$と同値である。$mn\mid y-x$ならこれは成り立つ。逆に$y-x=mk$かつ$n\mid mk$なら、$m,n$は互いに素なので$n\mid k$であり、$mn\mid y-x$である。
   strategy: Build the solution from a Bézout identity, then describe all solutions by divisibility of the difference.
   sketch:
-    - "apply_theorem: Take u and v with mu + nv = 1."
-    - "construct: anv + bmu solves the system; add a multiple of mn to make it nonnegative."
-    - "translate: y solves the system exactly when m and n both divide y - x."
-    - "apply_theorem: For coprime m and n this is equivalent to mn dividing y - x."
-    - "conclude: Solutions form one residue class modulo mn."
+  - 'apply_theorem: Take u and v with mu + nv = 1.'
+  - 'construct: anv + bmu solves the system; add a multiple of mn to make it nonnegative.'
+  - 'translate: y solves the system exactly when m and n both divide y - x.'
+  - 'apply_theorem: For coprime m and n this is equivalent to mn dividing y - x.'
+  - 'conclude: Solutions form one residue class modulo mn.'
   openmath: (forall (m n a b) (-> (and (in m N) (in n N) (> m 0) (> n 0) (in a N) (in b N) (= (gcd m n) 1)) (exists (x) (and (in x N) (exists (s) (and (in s Z) (= (- x a) (* m s)))) (exists (t) (and (in t Z) (= (- x b) (* n t)))) (forall (y) (-> (in y N) (<-> (and (exists (u) (and (in u Z) (= (- y a) (* m u)))) (exists (v) (and (in v Z) (= (- y b) (* n v))))) (exists (w) (and (in w Z) (= (- y x) (* (* m n) w)))))))))))
   hard_negative:
     statement: 任意の正の整数m,nと任意のa,bについて、連立合同式x≡a (mod m), x≡b (mod n)は解をもつ。
@@ -535,20 +617,26 @@
   kind: named
   level: 2
   topic: フェルマーの小定理
-  statement: 素数pと、pで割り切れない整数aに対し、a^(p-1)≡1 (mod p)である。
+  statement: 素数$p$と、$p$で割り切れない整数$a$に対し、$a^{p-1}\equiv 1\pmod{p}$である。
   statement_en: For a prime p and an integer a not divisible by p, a^(p-1) ≡ 1 modulo p.
-  assumptions: ["pは素数", "aは整数", "pはaを割り切らない"]
-  quantifiers: ["任意の素数pと整数a"]
-  conclusion: a^(p-1)≡1 (mod p)である。
+  assumptions:
+  - $p$は素数
+  - $a$は整数
+  - $p\nmid a$
+  quantifiers:
+  - 任意の素数$p$と整数$a$
+  conclusion: $a^{p-1}\equiv 1\pmod{p}$である。
   answer: |
-    a, 2a, …, (p-1)aはpで割り切れず、法pで互いに異なるので、法pで1, 2, …, p-1の並べ替えである。積をとるとa^(p-1)(p-1)!≡(p-1)! (mod p)となる。(p-1)!はpと互いに素なので約分でき、a^(p-1)≡1 (mod p)を得る。
+    $p$を素数、$a$を$p$で割り切れない整数とする。
+    $i\in\{1,\dots,p-1\}$について、$p\nmid i$と$p\nmid a$から、ユークリッドの補題（素数が積を割り切るなら、いずれかの因子を割り切る）により$p\nmid ia$である。また$1\leq j<i\leq p-1$で$ia\equiv ja\pmod{p}$なら$p\mid(i-j)a$となるが、$0<i-j<p$と$p\nmid a$に反する。よって$a,2a,\dots,(p-1)a$を$p$で割った余りは、$1,2,\dots,p-1$の並べ替えである。
+    積をとると$a^{p-1}(p-1)!\equiv(p-1)!\pmod{p}$である。$(p-1)!$は$p$と互いに素なので約分でき、$a^{p-1}\equiv 1\pmod{p}$を得る。
   strategy: Multiplication by a permutes the nonzero residues; compare the products of all residues.
   sketch:
-    - "setup: Consider the residues a, 2a, ..., (p-1)a modulo p."
-    - "derive: They are nonzero and pairwise incongruent, so they permute 1, ..., p-1."
-    - "derive: Taking products gives a^(p-1) (p-1)! ≡ (p-1)! modulo p."
-    - "apply_theorem: (p-1)! is coprime to p, so it can be cancelled."
-    - "conclude: Therefore a^(p-1) ≡ 1 modulo p."
+  - 'setup: Consider the residues a, 2a, ..., (p-1)a modulo p.'
+  - 'derive: They are nonzero and pairwise incongruent, so they permute 1, ..., p-1.'
+  - 'derive: Taking products gives a^(p-1) (p-1)! ≡ (p-1)! modulo p.'
+  - 'apply_theorem: (p-1)! is coprime to p, so it can be cancelled.'
+  - 'conclude: Therefore a^(p-1) ≡ 1 modulo p.'
   openmath: (forall (p a) (-> (and (in p P) (in a Z) (not (exists (k) (and (in k Z) (= a (* p k)))))) (exists (m) (and (in m Z) (= (- (^ a (- p 1)) 1) (* p m))))))
   hard_negative:
     statement: 2以上の自然数nについて2^(n-1)≡1 (mod n)が成り立つなら、nは素数である。
@@ -564,18 +652,23 @@
   kind: gap
   level: 2
   topic: フェルマーの小定理の冪形
-  statement: 素数pと任意の整数aに対し、a^p≡a (mod p)である。
+  statement: 素数$p$と任意の整数$a$に対し、$a^p\equiv a\pmod{p}$である。
   statement_en: For a prime p and every integer a, a^p ≡ a modulo p.
-  assumptions: ["pは素数", "aは整数"]
-  quantifiers: ["任意の素数pと整数a"]
-  conclusion: a^p≡a (mod p)である。
+  assumptions:
+  - $p$は素数
+  - $a$は整数
+  quantifiers:
+  - 任意の素数$p$と整数$a$
+  conclusion: $a^p\equiv a\pmod{p}$である。
   answer: |
-    pがaを割り切るなら両辺とも0と合同である。pがaを割り切らないなら、フェルマーの小定理からa^(p-1)≡1 (mod p)であり、両辺にaを掛ければよい。
+    $p$を素数、$a$を整数とする。
+    $p\mid a$なら、両辺とも$0$と合同である。
+    $p\nmid a$なら、フェルマーの小定理（素数$p$と$p\nmid a$なる整数$a$に対し$a^{p-1}\equiv 1\pmod{p}$）が使える。両辺に$a$を掛ければ$a^p\equiv a\pmod{p}$を得る。
   strategy: Split on whether p divides a and multiply Fermat's little theorem by a.
   sketch:
-    - "case_split: If p divides a, both sides are congruent to 0."
-    - "apply_theorem: Otherwise a^(p-1) ≡ 1 modulo p."
-    - "conclude: Multiply by a to get a^p ≡ a."
+  - 'case_split: If p divides a, both sides are congruent to 0.'
+  - 'apply_theorem: Otherwise a^(p-1) ≡ 1 modulo p.'
+  - 'conclude: Multiply by a to get a^p ≡ a.'
   openmath: (forall (p a) (-> (and (in p P) (in a Z)) (exists (m) (and (in m Z) (= (- (^ a p) a) (* p m))))))
   hard_negative:
     statement: 任意の2以上の自然数nと整数aに対し、a^n≡a (mod n)である。
@@ -590,18 +683,21 @@
   kind: gap
   level: 2
   topic: 素数冪の加法性
-  statement: 素数pと整数a,bに対し、(a+b)^p≡a^p+b^p (mod p)である。
+  statement: 素数$p$と整数$a,b$に対し、$(a+b)^p\equiv a^p+b^p\pmod{p}$である。
   statement_en: For a prime p and integers a and b, (a + b)^p ≡ a^p + b^p modulo p.
-  assumptions: ["pは素数", "a, bは整数"]
-  quantifiers: ["任意の素数pと整数a, b"]
-  conclusion: (a+b)^p≡a^p+b^p (mod p)である。
+  assumptions:
+  - $p$は素数
+  - $a,b$は整数
+  quantifiers:
+  - 任意の素数$p$と整数$a,b$
+  conclusion: $(a+b)^p\equiv a^p+b^p\pmod{p}$である。
   answer: |
-    二項定理で(a+b)^pを展開する。0<k<pのときC(p,k)はpで割り切れるので、その項は法pで消える。残るのはk=0とk=pの項だけであり、a^p+b^pと合同である。
+    $p$を素数、$a,b$を整数とする。二項定理より$(a+b)^p=\sum_{k=0}^{p}\binom{p}{k}a^kb^{p-k}$である。$0<k<p$のとき$\binom{p}{k}$は$p$で割り切れるので、その項は法$p$で$0$である。実際、$k!\,(p-k)!\binom{p}{k}=p!$の左辺を$p$が割り切り、$k!\,(p-k)!$は$p$で割り切れない。残るのは$k=0$と$k=p$の項だけであり、$(a+b)^p\equiv a^p+b^p\pmod{p}$である。
   strategy: Expand with the binomial theorem and discard the middle terms, whose coefficients are multiples of p.
   sketch:
-    - "apply_theorem: Expand (a + b)^p by the binomial theorem."
-    - "derive: For 0 < k < p the coefficient C(p, k) is divisible by p."
-    - "conclude: Only a^p and b^p survive modulo p."
+  - 'apply_theorem: Expand (a + b)^p by the binomial theorem.'
+  - 'derive: For 0 < k < p the coefficient C(p, k) is divisible by p.'
+  - 'conclude: Only a^p and b^p survive modulo p.'
   openmath: (forall (p a b) (-> (and (in p P) (in a Z) (in b Z)) (exists (m) (and (in m Z) (= (- (^ (+ a b) p) (+ (^ a p) (^ b p))) (* p m))))))
   hard_negative:
     statement: 任意の自然数nについて(a+b)^n≡a^n+b^n (mod n)である。
@@ -616,20 +712,26 @@
   kind: textbook
   level: 2
   topic: オイラーの定理
-  statement: 正の整数nと、nと互いに素な自然数aに対し、a^φ(n)≡1 (mod n)である。ここでφはオイラーのトーシェント関数である。
+  statement: 正の整数$n$と、$n$と互いに素な自然数$a$に対し、$a^{\varphi(n)}\equiv 1\pmod{n}$である。ここで$\varphi$はオイラーのトーシェント関数である。
   statement_en: For a positive integer n and a natural number a coprime to n, a^φ(n) ≡ 1 modulo n, where φ is Euler's totient function.
-  assumptions: ["nは正の整数", "aは自然数", "gcd(a,n)=1"]
-  quantifiers: ["任意のn, a"]
-  conclusion: a^φ(n)≡1 (mod n)である。
+  assumptions:
+  - $n$は正の整数
+  - $a$は自然数
+  - $\gcd(a,n)=1$
+  quantifiers:
+  - 任意の$n,a$
+  conclusion: $a^{\varphi(n)}\equiv 1\pmod{n}$である。
   answer: |
-    nと互いに素な法nの剰余をr_1, …, r_φ(n)とする。aを掛ける写像は既約剰余類の置換なので、ar_1, …, ar_φ(n)はこれらの並べ替えである。積をとるとa^φ(n)r_1…r_φ(n)≡r_1…r_φ(n) (mod n)となる。積r_1…r_φ(n)はnと互いに素なので約分でき、結論を得る。
+    $n$を正の整数、$a$を$n$と互いに素な自然数とする。$\varphi(n)$は$1$以上$n$以下で$n$と互いに素な整数の個数である。
+    そのような整数を$r_1,\dots,r_{\varphi(n)}$とする。各$ar_i$は$n$と互いに素なので、法$n$である$r_j$と合同である。$ar_i\equiv ar_k\pmod{n}$なら、$a$が$n$と互いに素なので約分でき、$r_i\equiv r_k\pmod{n}$となって$i=k$である。よって$ar_1,\dots,ar_{\varphi(n)}$は、法$n$で$r_1,\dots,r_{\varphi(n)}$の並べ替えである。
+    積をとると$a^{\varphi(n)}r_1\cdots r_{\varphi(n)}\equiv r_1\cdots r_{\varphi(n)}\pmod{n}$である。積$r_1\cdots r_{\varphi(n)}$は$n$と互いに素なので約分でき、$a^{\varphi(n)}\equiv 1\pmod{n}$を得る。
   strategy: Multiplication by a permutes the reduced residues; compare the products.
   sketch:
-    - "setup: List the reduced residues r_1, ..., r_φ(n) modulo n."
-    - "derive: Multiplication by a permutes them because gcd(a, n) = 1."
-    - "derive: Comparing products gives a^φ(n) R ≡ R modulo n, with R the product of the residues."
-    - "apply_theorem: R is coprime to n, so it can be cancelled."
-    - "conclude: Hence a^φ(n) ≡ 1 modulo n."
+  - 'setup: List the reduced residues r_1, ..., r_φ(n) modulo n.'
+  - 'derive: Multiplication by a permutes them because gcd(a, n) = 1.'
+  - 'derive: Comparing products gives a^φ(n) R ≡ R modulo n, with R the product of the residues.'
+  - 'apply_theorem: R is coprime to n, so it can be cancelled.'
+  - 'conclude: Hence a^φ(n) ≡ 1 modulo n.'
   openmath: (forall (a n) (-> (and (in a N) (in n N) (> n 0) (= (gcd a n) 1)) (dvd n (- (^ a (euler_phi n)) 1))))
   hard_negative:
     statement: aとnが互いに素でなくても、a^φ(n)≡1 (mod n)である。
@@ -644,18 +746,22 @@
   kind: gap
   level: 2
   topic: トーシェント関数の素数冪での値
-  statement: 素数pと正の整数kに対し、φ(p^k)=p^(k-1)(p-1)である。
+  statement: 素数$p$と正の整数$k$に対し、$\varphi(p^k)=p^{k-1}(p-1)$である。
   statement_en: For a prime p and a positive integer k, φ(p^k) = p^(k-1)(p-1).
-  assumptions: ["pは素数", "kは正の整数"]
-  quantifiers: ["任意の素数pと正の整数k"]
-  conclusion: φ(p^k)=p^(k-1)(p-1)である。
+  assumptions:
+  - $p$は素数
+  - $k$は正の整数
+  quantifiers:
+  - 任意の素数$p$と正の整数$k$
+  conclusion: $\varphi(p^k)=p^{k-1}(p-1)$である。
   answer: |
-    1からp^kまでの整数のうちp^kと互いに素でないものは、pの倍数であり、p^(k-1)個ある。よってφ(p^k)=p^k-p^(k-1)=p^(k-1)(p-1)である。
+    $p$を素数、$k$を正の整数とする。$\varphi(m)$は$1$以上$m$以下で$m$と互いに素な整数の個数である。
+    $p^k$の素因数は$p$だけなので、整数が$p^k$と互いに素でないことは$p$の倍数であることと同値である。$1$から$p^k$までの$p$の倍数は$p,2p,\dots,p^{k-1}\cdot p$の$p^{k-1}$個である。よって$\varphi(p^k)=p^k-p^{k-1}=p^{k-1}(p-1)$である。
   strategy: Count the multiples of p up to p^k.
   sketch:
-    - "translate: An integer is not coprime to p^k exactly when p divides it."
-    - "derive: There are p^(k-1) multiples of p in 1, ..., p^k."
-    - "conclude: φ(p^k) = p^k - p^(k-1) = p^(k-1)(p - 1)."
+  - 'translate: An integer is not coprime to p^k exactly when p divides it.'
+  - 'derive: There are p^(k-1) multiples of p in 1, ..., p^k.'
+  - 'conclude: φ(p^k) = p^k - p^(k-1) = p^(k-1)(p - 1).'
   openmath: (forall (p k) (-> (and (in p P) (in k N) (> k 0)) (= (euler_phi (^ p k)) (* (^ p (- k 1)) (- p 1)))))
   hard_negative:
     statement: 任意の自然数nとkに対し、φ(n^k)=n^(k-1)(n-1)である。
@@ -670,19 +776,24 @@
   kind: gap
   level: 2
   topic: トーシェント関数の乗法性
-  statement: 互いに素な正の整数m,nに対し、φ(mn)=φ(m)φ(n)である。
+  statement: 互いに素な正の整数$m,n$に対し、$\varphi(mn)=\varphi(m)\varphi(n)$である。
   statement_en: For coprime positive integers m and n, φ(mn) = φ(m)φ(n).
-  assumptions: ["m, nは正の整数", "gcd(m,n)=1"]
-  quantifiers: ["任意の正の整数m, n"]
-  conclusion: φ(mn)=φ(m)φ(n)である。
+  assumptions:
+  - $m,n$は正の整数
+  - $\gcd(m,n)=1$
+  quantifiers:
+  - 任意の正の整数$m,n$
+  conclusion: $\varphi(mn)=\varphi(m)\varphi(n)$である。
   answer: |
-    中国剰余定理から法mnの剰余類と、法mの剰余類と法nの剰余類の組は一対一に対応する。xがmnと互いに素であることは、xがmともnとも互いに素であることと同値である。よって既約剰余類の個数についてφ(mn)=φ(m)φ(n)となる。
+    $m,n$を互いに素な正の整数とする。$\varphi(k)$は$1$以上$k$以下で$k$と互いに素な整数の個数であり、法$k$の既約剰余類の個数に等しい。
+    法$mn$の剰余類$x$に、法$m$の剰余類と法$n$の剰余類の組を対応させる。中国剰余定理（$\gcd(m,n)=1$なら、任意の$a,b$に対し$x\equiv a\pmod{m}$, $x\equiv b\pmod{n}$となる$x$が存在し、$x$は法$mn$で一意である）により、この対応は全単射である。
+    素数が$mn$を割り切ることは$m$または$n$を割り切ることと同値なので、$\gcd(x,mn)=1$は$\gcd(x,m)=1$かつ$\gcd(x,n)=1$と同値である。よってこの全単射は、法$mn$の既約剰余類全体と、法$m$の既約剰余類と法$n$の既約剰余類の組全体を対応させる。個数を比べて$\varphi(mn)=\varphi(m)\varphi(n)$を得る。
   strategy: The Chinese remainder correspondence restricts to a bijection on reduced residues.
   sketch:
-    - "apply_theorem: The Chinese remainder theorem pairs residues mod mn with residues mod m and mod n."
-    - "translate: x is coprime to mn exactly when it is coprime to both m and n."
-    - "derive: So the correspondence restricts to reduced residues."
-    - "conclude: Counting gives φ(mn) = φ(m)φ(n)."
+  - 'apply_theorem: The Chinese remainder theorem pairs residues mod mn with residues mod m and mod n.'
+  - 'translate: x is coprime to mn exactly when it is coprime to both m and n.'
+  - 'derive: So the correspondence restricts to reduced residues.'
+  - 'conclude: Counting gives φ(mn) = φ(m)φ(n).'
   openmath: (forall (m n) (-> (and (in m N) (in n N) (> m 0) (> n 0) (= (gcd m n) 1)) (= (euler_phi (* m n)) (* (euler_phi m) (euler_phi n)))))
   hard_negative:
     statement: 任意の正の整数m,nに対しφ(mn)=φ(m)φ(n)である。
@@ -697,19 +808,23 @@
   kind: textbook
   level: 2
   topic: トーシェント関数の約数和
-  statement: 正の整数nに対し、nの正の約数dにわたるφ(d)の和はnに等しい。
+  statement: 正の整数$n$に対し、$n$の正の約数$d$にわたる$\varphi(d)$の和は$n$に等しい。
   statement_en: For a positive integer n, the sum of φ(d) over the positive divisors d of n equals n.
-  assumptions: ["nは正の整数"]
-  quantifiers: ["任意の正の整数n"]
-  conclusion: dがnの約数を動くときのφ(d)の和はnである。
+  assumptions:
+  - $n$は正の整数
+  quantifiers:
+  - 任意の正の整数$n$
+  conclusion: $\sum_{d\mid n}\varphi(d)=n$である。
   answer: |
-    1からnまでの整数kをgcd(k,n)の値で分類する。gcd(k,n)=n/dとなるkは、k=(n/d)jで1≤j≤dかつgcd(j,d)=1と書けるものであり、φ(d)個ある。dがnの約数全体を動けばすべてのkが一度ずつ数えられるので、φ(d)の和はnに等しい。
+    $n$を正の整数とする。$\varphi(d)$は$1$以上$d$以下で$d$と互いに素な整数の個数である。
+    $1$から$n$までの整数$k$を$\gcd(k,n)$の値で分類する。$\gcd(k,n)$は$n$の正の約数なので$n/d$の形に書ける。$d\mid n$を固定し、$g=n/d$とおく。$\gcd(k,n)=g$となる$k$は$g$の倍数なので$k=gj$（$1\leq j\leq d$）と書け、$\gcd(gj,gd)=g\gcd(j,d)$なので、条件は$\gcd(j,d)=1$と同値である。よってそのような$k$はちょうど$\varphi(d)$個ある。
+    $d$が$n$の正の約数全体を動くと、$1$から$n$までの整数がちょうど一度ずつ数えられるので、$\sum_{d\mid n}\varphi(d)=n$である。
   strategy: Partition 1, ..., n according to the gcd with n.
   sketch:
-    - "setup: Classify k in 1, ..., n by the value of gcd(k, n)."
-    - "translate: gcd(k, n) = n/d exactly when k = (n/d)j with 1 ≤ j ≤ d and gcd(j, d) = 1."
-    - "derive: Each such class has φ(d) elements."
-    - "conclude: Summing over the divisors d of n counts all n integers once."
+  - 'setup: Classify k in 1, ..., n by the value of gcd(k, n).'
+  - 'translate: gcd(k, n) = n/d exactly when k = (n/d)j with 1 ≤ j ≤ d and gcd(j, d) = 1.'
+  - 'derive: Each such class has φ(d) elements.'
+  - 'conclude: Summing over the divisors d of n counts all n integers once.'
   openmath: (forall (n) (-> (and (in n N) (> n 0)) (= (sum_over_divisors n (lambda (d) (euler_phi d))) n)))
   hard_negative:
     statement: nの約数dにわたるφ(d)の積はnに等しい。
@@ -724,18 +839,22 @@
   kind: gap
   level: 2
   topic: 法pでの1の平方根
-  statement: 素数pと整数xについて、x²≡1 (mod p)ならばx≡1またはx≡-1 (mod p)である。
+  statement: 素数$p$と整数$x$について、$x^2\equiv 1\pmod{p}$ならば$x\equiv 1$または$x\equiv -1\pmod{p}$である。
   statement_en: For a prime p and an integer x, if x² ≡ 1 modulo p, then x ≡ 1 or x ≡ -1 modulo p.
-  assumptions: ["pは素数", "xは整数", "x²≡1 (mod p)"]
-  quantifiers: ["任意の素数pと整数x"]
-  conclusion: x≡1またはx≡-1 (mod p)である。
+  assumptions:
+  - $p$は素数
+  - $x$は整数
+  - $x^2\equiv 1\pmod{p}$
+  quantifiers:
+  - 任意の素数$p$と整数$x$
+  conclusion: $x\equiv 1$または$x\equiv -1\pmod{p}$である。
   answer: |
-    仮定からpは(x-1)(x+1)を割り切る。ユークリッドの補題からpはx-1またはx+1を割り切る。前者はx≡1 (mod p)を、後者はx≡-1 (mod p)を意味する。
+    $p$を素数、$x$を整数とし、$x^2\equiv 1\pmod{p}$とする。仮定から$p$は$(x-1)(x+1)$を割り切る。ユークリッドの補題（素数が積を割り切るなら、いずれかの因子を割り切る）から、$p$は$x-1$または$x+1$を割り切る。前者は$x\equiv 1\pmod{p}$を、後者は$x\equiv -1\pmod{p}$を意味する。
   strategy: Factor x² - 1 and apply Euclid's lemma.
   sketch:
-    - "translate: p divides x² - 1 = (x - 1)(x + 1)."
-    - "apply_theorem: By Euclid's lemma p divides x - 1 or x + 1."
-    - "conclude: Hence x ≡ 1 or x ≡ -1 modulo p."
+  - 'translate: p divides x² - 1 = (x - 1)(x + 1).'
+  - 'apply_theorem: By Euclid''s lemma p divides x - 1 or x + 1.'
+  - 'conclude: Hence x ≡ 1 or x ≡ -1 modulo p.'
   openmath: (forall (p x) (-> (and (in p P) (in x Z) (exists (k) (and (in k Z) (= (- (^ x 2) 1) (* p k))))) (or (exists (s) (and (in s Z) (= (- x 1) (* p s)))) (exists (t) (and (in t Z) (= (+ x 1) (* p t)))))))
   hard_negative:
     statement: 任意の2以上の整数nについて、x²≡1 (mod n)ならx≡±1 (mod n)である。
@@ -756,21 +875,25 @@
   kind: named
   level: 2
   topic: ウィルソンの定理
-  statement: 2以上の自然数nについて、nが素数であることと、nが(n-1)!+1を割り切ることは同値である。
+  statement: $2$以上の自然数$n$について、$n$が素数であることと、$n$が$(n-1)!+1$を割り切ることは同値である。
   statement_en: For a natural number n ≥ 2, n is prime if and only if n divides (n-1)! + 1.
-  assumptions: ["nは2以上の自然数"]
-  quantifiers: ["任意の2以上の自然数n"]
-  conclusion: nが素数であることはn|(n-1)!+1と同値である。
+  assumptions:
+  - $n$は$2$以上の自然数
+  quantifiers:
+  - 任意の$2$以上の自然数$n$
+  conclusion: $n$が素数であることは$n\mid(n-1)!+1$と同値である。
   answer: |
-    nが素数のとき、1, …, n-1はそれぞれ法nの逆元をもつ。自分自身が逆元となるのはx²≡1を満たす1とn-1だけなので、残りは逆元と組にできて積が1になる。よって(n-1)!≡n-1≡-1 (mod n)である。nが合成数ならnの約数dで1<d<nとなるものがあり、dは(n-1)!を割り切る。dが(n-1)!+1を割り切るとdは1を割り切ることになるので、nは(n-1)!+1を割り切らない。
+    $n$を$2$以上の自然数とする。
+    $n$が素数であるとする。$1,\dots,n-1$はそれぞれ$n$と互いに素なので、この中に法$n$の逆元を持つ。$x^2\equiv 1\pmod{n}$は$x\equiv\pm 1\pmod{n}$と同値なので、自分自身が逆元となるのは$1$と$n-1$だけである。残りの元は逆元と二つずつ組にでき、各組の積は法$n$で$1$である。よって$(n-1)!\equiv 1\cdot(n-1)\equiv -1\pmod{n}$である。$n=2$のときも$1!\equiv -1\pmod{2}$である。したがって$n\mid(n-1)!+1$である。
+    $n$が素数でないとする。$n$の約数$d$で$1<d<n$となるものがあり、$d\leq n-1$なので$d$は$(n-1)!$を割り切る。$n$が$(n-1)!+1$を割り切るとすると$d$も割り切り、$d$は差の$1$を割り切ることになって矛盾する。よって$n$は$(n-1)!+1$を割り切らない。
   strategy: Pair residues with their inverses for primes; a proper divisor rules out composites.
   sketch:
-    - "setup: Let n be prime and pair each residue in 1, ..., n-1 with its inverse."
-    - "apply_theorem: Only 1 and n - 1 are self-inverse, because x² ≡ 1 forces x ≡ ±1."
-    - "derive: The pairs multiply to 1, so (n-1)! ≡ -1 modulo n."
-    - "case_split: Let n be composite with a divisor d, 1 < d < n."
-    - "contradiction: d divides (n-1)!, so if n divided (n-1)! + 1 then d would divide 1."
-    - "conclude: The divisibility holds exactly for primes."
+  - 'setup: Let n be prime and pair each residue in 1, ..., n-1 with its inverse.'
+  - 'apply_theorem: Only 1 and n - 1 are self-inverse, because x² ≡ 1 forces x ≡ ±1.'
+  - 'derive: The pairs multiply to 1, so (n-1)! ≡ -1 modulo n.'
+  - 'case_split: Let n be composite with a divisor d, 1 < d < n.'
+  - 'contradiction: d divides (n-1)!, so if n divided (n-1)! + 1 then d would divide 1.'
+  - 'conclude: The divisibility holds exactly for primes.'
   openmath: (forall (n) (-> (and (in n N) (>= n 2)) (<-> (in n P) (dvd n (+ (factorial (- n 1)) 1)))))
   hard_negative:
     statement: 2以上の自然数nについて、nが素数であることとnが(n-1)!を割り切らないことは同値である。
@@ -786,20 +909,27 @@
   kind: gap
   level: 2
   topic: 法nでの位数
-  statement: 正の整数nとnと互いに素な自然数a、自然数kについて、aの法nでの位数がkを割り切ることと、a^k≡1 (mod n)は同値である。
+  statement: 正の整数$n$、$n$と互いに素な自然数$a$、自然数$k$について、$a$の法$n$での位数が$k$を割り切ることと、$a^k\equiv 1\pmod{n}$は同値である。
   statement_en: For a positive integer n, a natural number a coprime to n and a natural number k, the multiplicative order of a modulo n divides k if and only if a^k ≡ 1 modulo n.
-  assumptions: ["nは正の整数", "a, kは自然数", "gcd(a,n)=1"]
-  quantifiers: ["任意のn, a, k"]
-  conclusion: ord_n(a)がkを割り切ることとa^k≡1 (mod n)は同値である。
+  assumptions:
+  - $n$は正の整数
+  - $a,k$は自然数
+  - $\gcd(a,n)=1$
+  quantifiers:
+  - 任意の$n,a,k$
+  conclusion: $\operatorname{ord}_n(a)\mid k$と$a^k\equiv 1\pmod{n}$は同値である。
   answer: |
-    d=ord_n(a)とし、k=dq+r, 0≤r<dと割る。a^d≡1なのでa^k≡a^r (mod n)である。a^k≡1ならa^r≡1であり、dの最小性からr=0となってdはkを割り切る。逆にdがkを割り切ればa^k=(a^d)^q≡1である。
+    $n$を正の整数、$a$を$n$と互いに素な自然数、$k$を自然数とする。$a$の法$n$での位数$d=\operatorname{ord}_n(a)$は、$a^d\equiv 1\pmod{n}$を満たす最小の正の整数である。そのような正の整数は、オイラーの定理（$\gcd(a,n)=1$なら$a^{\varphi(n)}\equiv 1\pmod{n}$）により存在する。
+    $k=dq+r$（$0\leq r<d$）と割ると、$a^d\equiv 1\pmod{n}$より$a^k=(a^d)^qa^r\equiv a^r\pmod{n}$である。
+    $a^k\equiv 1\pmod{n}$なら$a^r\equiv 1\pmod{n}$であり、$0\leq r<d$と$d$の最小性から$r=0$である。よって$d\mid k$である。
+    逆に$d\mid k$なら$r=0$なので、$a^k\equiv a^0=1\pmod{n}$である。
   strategy: Divide k by the order and use minimality of the order on the remainder.
   sketch:
-    - "setup: Let d be the order and write k = dq + r with 0 ≤ r < d."
-    - "derive: a^k ≡ a^r modulo n because a^d ≡ 1."
-    - "contradiction: If a^k ≡ 1 and r > 0, then r contradicts the minimality of d."
-    - "derive: If d divides k, then a^k = (a^d)^q ≡ 1."
-    - "conclude: The two conditions are equivalent."
+  - 'setup: Let d be the order and write k = dq + r with 0 ≤ r < d.'
+  - 'derive: a^k ≡ a^r modulo n because a^d ≡ 1.'
+  - 'contradiction: If a^k ≡ 1 and r > 0, then r contradicts the minimality of d.'
+  - 'derive: If d divides k, then a^k = (a^d)^q ≡ 1.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (n a k) (-> (and (in n N) (> n 0) (in a N) (in k N) (= (gcd a n) 1)) (<-> (dvd (multiplicative_order a n) k) (dvd n (- (^ a k) 1)))))
   hard_negative:
     statement: a^k≡1 (mod n)ならばkはaの位数である。
@@ -815,17 +945,21 @@
   kind: gap
   level: 2
   topic: 位数とトーシェント関数
-  statement: 正の整数nとnと互いに素な自然数aについて、aの法nでの位数はφ(n)を割り切る。
+  statement: 正の整数$n$と、$n$と互いに素な自然数$a$について、$a$の法$n$での位数は$\varphi(n)$を割り切る。
   statement_en: For a positive integer n and a natural number a coprime to n, the multiplicative order of a modulo n divides φ(n).
-  assumptions: ["nは正の整数", "aは自然数", "gcd(a,n)=1"]
-  quantifiers: ["任意のn, a"]
-  conclusion: ord_n(a)はφ(n)を割り切る。
+  assumptions:
+  - $n$は正の整数
+  - $a$は自然数
+  - $\gcd(a,n)=1$
+  quantifiers:
+  - 任意の$n,a$
+  conclusion: $\operatorname{ord}_n(a)$は$\varphi(n)$を割り切る。
   answer: |
-    オイラーの定理からa^φ(n)≡1 (mod n)である。aの位数がkを割り切ることはa^k≡1 (mod n)と同値なので、k=φ(n)とすれば結論を得る。
+    $n$を正の整数、$a$を$n$と互いに素な自然数とする。オイラーの定理（$\gcd(a,n)=1$なら$a^{\varphi(n)}\equiv 1\pmod{n}$）から$a^{\varphi(n)}\equiv 1\pmod{n}$である。$a$の位数$\operatorname{ord}_n(a)$が自然数$k$を割り切ることは$a^k\equiv 1\pmod{n}$と同値なので、$k=\varphi(n)$とすれば$\operatorname{ord}_n(a)\mid\varphi(n)$を得る。
   strategy: Combine Euler's theorem with the divisibility characterization of the order.
   sketch:
-    - "apply_theorem: Euler's theorem gives a^φ(n) ≡ 1 modulo n."
-    - "conclude: The order divides every exponent with this property, so it divides φ(n)."
+  - 'apply_theorem: Euler''s theorem gives a^φ(n) ≡ 1 modulo n.'
+  - 'conclude: The order divides every exponent with this property, so it divides φ(n).'
   openmath: (forall (n a) (-> (and (in n N) (> n 0) (in a N) (= (gcd a n) 1)) (dvd (multiplicative_order a n) (euler_phi n))))
   hard_negative:
     statement: aの法nでの位数はn-1を割り切る。
@@ -842,21 +976,26 @@
   kind: textbook
   level: 3
   topic: 素数を法とする原始根
-  statement: 任意の素数pに対し、pと互いに素な自然数gで、法pでの位数がp-1となるものが存在する。
+  statement: 任意の素数$p$に対し、$p$と互いに素な自然数$g$で、法$p$での位数が$p-1$となるものが存在する。
   statement_en: For every prime p there is a natural number g coprime to p whose multiplicative order modulo p is p - 1.
-  assumptions: ["pは素数"]
-  quantifiers: ["任意の素数p", "ある自然数g"]
-  conclusion: 位数がp-1のgが存在する。
+  assumptions:
+  - $p$は素数
+  quantifiers:
+  - 任意の素数$p$
+  - ある自然数$g$
+  conclusion: $\gcd(g,p)=1$かつ$\operatorname{ord}_p(g)=p-1$となる自然数$g$が存在する。
   answer: |
-    dがp-1を割り切るとき、位数dの元の個数をψ(d)とする。位数dの元があれば、その冪はx^d=1の解d個をすべて与える。体の上でd次多項式の根はd個以下だからである。したがって位数dの元はφ(d)個か0個である。ψ(d)の和とφ(d)の和はともにp-1なので、すべてのdでψ(d)=φ(d)となる。特にψ(p-1)=φ(p-1)>0であり、位数p-1の元が存在する。
+    $p$を素数とする。$\mathbb{Z}/p\mathbb{Z}$の$0$でない元全体を$G$とする。$G$の元は$p-1$個あり、$\mathbb{Z}/p\mathbb{Z}$は体である。フェルマーの小定理（$p\nmid a$なら$a^{p-1}\equiv 1\pmod{p}$）により、$G$の元の位数は$p-1$を割り切る。$d\mid p-1$に対し、位数が$d$の$G$の元の個数を$\psi(d)$とする。
+    $\psi(d)>0$とし、位数$d$の元$a$をとる。$1,a,\dots,a^{d-1}$は相異なり、どれも$x^d=1$の解である。体の上の$d$次多項式の根は$d$個以下なので、これらが解の全てであり、位数$d$の元は全て$a^j$（$0\leq j<d$）の形をしている。$a^j$の位数は$d/\gcd(j,d)$なので、$a^j$の位数が$d$であることは$\gcd(j,d)=1$と同値である。よって$\psi(d)=\varphi(d)$である。したがって全ての$d\mid p-1$で$\psi(d)\leq\varphi(d)$である。
+    $G$の各元の位数は$p-1$の約数のどれか一つなので$\sum_{d\mid p-1}\psi(d)=p-1$である。一方$\sum_{d\mid p-1}\varphi(d)=p-1$である（正の整数$n$について$\sum_{d\mid n}\varphi(d)=n$）。各項で$\psi(d)\leq\varphi(d)$なので、全ての$d$で$\psi(d)=\varphi(d)$である。特に$\psi(p-1)=\varphi(p-1)>0$であり、位数$p-1$の元が存在する。その元の代表で$1$以上$p-1$以下の自然数を$g$とすれば、$g$は$p$と互いに素で、$\operatorname{ord}_p(g)=p-1$である。
   strategy: Count elements of each order, using that x^d = 1 has at most d roots modulo p and that φ sums to n over divisors.
   sketch:
-    - "setup: Let ψ(d) be the number of residues of order d, for d dividing p - 1."
-    - "apply_theorem: x^d = 1 has at most d roots in the field Z/pZ."
-    - "derive: So ψ(d) is 0 or φ(d)."
-    - "apply_theorem: The sum of φ(d) over the divisors of p - 1 is p - 1, as is the sum of ψ(d)."
-    - "derive: Hence ψ(d) = φ(d) for every d."
-    - "conclude: In particular ψ(p - 1) = φ(p - 1) > 0."
+  - 'setup: Let ψ(d) be the number of residues of order d, for d dividing p - 1.'
+  - 'apply_theorem: x^d = 1 has at most d roots in the field Z/pZ.'
+  - 'derive: So ψ(d) is 0 or φ(d).'
+  - 'apply_theorem: The sum of φ(d) over the divisors of p - 1 is p - 1, as is the sum of ψ(d).'
+  - 'derive: Hence ψ(d) = φ(d) for every d.'
+  - 'conclude: In particular ψ(p - 1) = φ(p - 1) > 0.'
   openmath: (forall (p) (-> (in p P) (exists (g) (and (in g N) (= (gcd g p) 1) (= (multiplicative_order g p) (- p 1))))))
   hard_negative:
     statement: 任意の2以上の整数nに対し、法nでの位数がφ(n)となる元が存在する。
@@ -874,20 +1013,26 @@
   kind: textbook
   level: 3
   topic: オイラーの規準
-  statement: 奇素数pとpで割り切れない整数aについて、x²≡a (mod p)が整数解をもつことと、a^((p-1)/2)≡1 (mod p)は同値である。
+  statement: 奇素数$p$と、$p$で割り切れない整数$a$について、$x^2\equiv a\pmod{p}$が整数解を持つことと、$a^{(p-1)/2}\equiv 1\pmod{p}$は同値である。
   statement_en: For an odd prime p and an integer a not divisible by p, the congruence x² ≡ a modulo p has an integer solution if and only if a^((p-1)/2) ≡ 1 modulo p.
-  assumptions: ["pは奇素数", "aは整数", "pはaを割り切らない"]
-  quantifiers: ["任意の奇素数pと整数a"]
-  conclusion: aが平方剰余であることとa^((p-1)/2)≡1 (mod p)は同値である。
+  assumptions:
+  - $p$は奇素数
+  - $a$は整数
+  - $p\nmid a$
+  quantifiers:
+  - 任意の奇素数$p$と整数$a$
+  conclusion: $a$が法$p$の平方剰余であることと$a^{(p-1)/2}\equiv 1\pmod{p}$は同値である。
   answer: |
-    x²≡aならa^((p-1)/2)≡x^(p-1)≡1 (mod p)である。pはxを割り切らないのでフェルマーの小定理が使える。逆を示す。法pの原始根gをとりa≡g^k (mod p)とする。a^((p-1)/2)≡1ならg^(k(p-1)/2)≡1なので、p-1はk(p-1)/2を割り切り、kは偶数である。よってx=g^(k/2)が解である。
+    $p$を奇素数、$a$を$p$で割り切れない整数とする。
+    $x^2\equiv a\pmod{p}$となる整数$x$があるとする。$p\nmid a$より$p\nmid x$なので、フェルマーの小定理（$p\nmid x$なら$x^{p-1}\equiv 1\pmod{p}$）から$a^{(p-1)/2}\equiv x^{p-1}\equiv 1\pmod{p}$である。
+    逆に$a^{(p-1)/2}\equiv 1\pmod{p}$とする。原始根の存在（素数$p$に対し、法$p$での位数が$p-1$の自然数$g$が存在する）により、そのような$g$をとる。$1,g,\dots,g^{p-2}$は法$p$で相異なる$p-1$個の$0$でない剰余類なので、$a\equiv g^k\pmod{p}$となる自然数$k$がある。仮定から$g^{k(p-1)/2}\equiv 1\pmod{p}$なので、$p-1$は$k(p-1)/2$を割り切り、$k$は偶数である。よって$x=g^{k/2}$が$x^2\equiv a\pmod{p}$の解である。
   strategy: The forward direction is Fermat's little theorem; the converse writes a as a power of a primitive root and shows the exponent is even.
   sketch:
-    - "apply_theorem: If x² ≡ a, then a^((p-1)/2) ≡ x^(p-1) ≡ 1 by Fermat's little theorem."
-    - "construct: Conversely take a primitive root g and write a ≡ g^k."
-    - "derive: a^((p-1)/2) ≡ 1 means p - 1 divides k(p-1)/2."
-    - "derive: Hence k is even."
-    - "conclude: x = g^(k/2) satisfies x² ≡ a."
+  - 'apply_theorem: If x² ≡ a, then a^((p-1)/2) ≡ x^(p-1) ≡ 1 by Fermat''s little theorem.'
+  - 'construct: Conversely take a primitive root g and write a ≡ g^k.'
+  - 'derive: a^((p-1)/2) ≡ 1 means p - 1 divides k(p-1)/2.'
+  - 'derive: Hence k is even.'
+  - 'conclude: x = g^(k/2) satisfies x² ≡ a.'
   openmath: (forall (p a) (-> (and (in p P) (!= p 2) (in a Z) (not (exists (k) (and (in k Z) (= a (* p k)))))) (<-> (exists (x m) (and (in x Z) (in m Z) (= (- (^ x 2) a) (* p m)))) (exists (n) (and (in n Z) (= (- (^ a (/ (- p 1) 2)) 1) (* p n)))))))
   hard_negative:
     statement: 奇素数pと任意の整数aについて、x²≡a (mod p)の可解性はa^((p-1)/2)≡1 (mod p)と同値である。
@@ -919,19 +1064,24 @@
   kind: gap
   level: 3
   topic: ルジャンドル記号と冪
-  statement: 奇素数pと整数aについて、ルジャンドル記号(a/p)はa^((p-1)/2)と法pで合同である。
+  statement: 奇素数$p$と整数$a$について、ルジャンドル記号$\left(\frac{a}{p}\right)$は$a^{(p-1)/2}$と法$p$で合同である。
   statement_en: For an odd prime p and an integer a, the Legendre symbol (a/p) is congruent to a^((p-1)/2) modulo p.
-  assumptions: ["pは奇素数", "aは整数"]
-  quantifiers: ["任意の奇素数pと整数a"]
-  conclusion: (a/p)≡a^((p-1)/2) (mod p)である。
+  assumptions:
+  - $p$は奇素数
+  - $a$は整数
+  quantifiers:
+  - 任意の奇素数$p$と整数$a$
+  conclusion: $\left(\frac{a}{p}\right)\equiv a^{(p-1)/2}\pmod{p}$である。
   answer: |
-    pがaを割り切るなら両辺とも0と合同である。そうでないとき、b=a^((p-1)/2)とおくとフェルマーの小定理からb²≡1なので、b≡±1 (mod p)である。オイラーの規準から、aが平方剰余であることとb≡1は同値である。pは奇素数で1≢-1なので、b≡-1はaが平方非剰余であることと同値である。これは(a/p)の定義と一致する。
+    $p$を奇素数、$a$を整数とする。ルジャンドル記号$\left(\frac{a}{p}\right)$は、$p\mid a$なら$0$、$p\nmid a$で$x^2\equiv a\pmod{p}$が整数解を持つなら$1$、それ以外なら$-1$と定める。
+    $p\mid a$なら、$(p-1)/2\geq 1$なので両辺とも$0$と合同である。
+    $p\nmid a$とし、$b=a^{(p-1)/2}$とおく。フェルマーの小定理（$p\nmid a$なら$a^{p-1}\equiv 1\pmod{p}$）から$b^2\equiv 1\pmod{p}$なので、$p\mid(b-1)(b+1)$より$b\equiv\pm 1\pmod{p}$である。オイラーの規準（奇素数$p$と$p\nmid a$について、$x^2\equiv a\pmod{p}$が解を持つことと$a^{(p-1)/2}\equiv 1\pmod{p}$は同値）から、解を持つことと$b\equiv 1\pmod{p}$は同値である。$p\geq 3$より$1\not\equiv -1\pmod{p}$なので、解を持たないことと$b\equiv -1\pmod{p}$は同値である。これは$\left(\frac{a}{p}\right)\equiv b\pmod{p}$を意味する。
   strategy: Show that the power is ±1 by Fermat and identify the sign using Euler's criterion.
   sketch:
-    - "case_split: If p divides a, both sides are congruent to 0."
-    - "apply_theorem: Otherwise b = a^((p-1)/2) satisfies b² ≡ 1, so b ≡ ±1."
-    - "apply_theorem: By Euler's criterion b ≡ 1 exactly when a is a quadratic residue."
-    - "conclude: Since 1 and -1 are incongruent, b agrees with the Legendre symbol."
+  - 'case_split: If p divides a, both sides are congruent to 0.'
+  - 'apply_theorem: Otherwise b = a^((p-1)/2) satisfies b² ≡ 1, so b ≡ ±1.'
+  - 'apply_theorem: By Euler''s criterion b ≡ 1 exactly when a is a quadratic residue.'
+  - 'conclude: Since 1 and -1 are incongruent, b agrees with the Legendre symbol.'
   openmath: (forall (p a) (-> (and (in p P) (!= p 2) (in a Z)) (dvd p (- (legendre_symbol a p) (^ a (/ (- p 1) 2))))))
   hard_negative:
     statement: 奇数nと整数aについて、ヤコビ記号(a/n)はa^((n-1)/2)と法nで合同である。
@@ -949,19 +1099,24 @@
   kind: gap
   level: 3
   topic: ルジャンドル記号の乗法性
-  statement: 素数pと整数a,bについて、ルジャンドル記号は(ab/p)=(a/p)(b/p)を満たす。
+  statement: 素数$p$と整数$a,b$について、ルジャンドル記号は$\left(\frac{ab}{p}\right)=\left(\frac{a}{p}\right)\left(\frac{b}{p}\right)$を満たす。
   statement_en: For a prime p and integers a and b, the Legendre symbol satisfies (ab/p) = (a/p)(b/p).
-  assumptions: ["pは素数", "a, bは整数"]
-  quantifiers: ["任意の素数pと整数a, b"]
-  conclusion: (ab/p)=(a/p)(b/p)である。
+  assumptions:
+  - $p$は素数
+  - $a,b$は整数
+  quantifiers:
+  - 任意の素数$p$と整数$a,b$
+  conclusion: $\left(\frac{ab}{p}\right)=\left(\frac{a}{p}\right)\left(\frac{b}{p}\right)$である。
   answer: |
-    p=2のとき、記号の値はaが偶数なら0、奇数なら1であり、等式は直接確かめられる。pが奇素数のとき、(a/p)≡a^((p-1)/2) (mod p)から(ab/p)≡(ab)^((p-1)/2)≡(a/p)(b/p) (mod p)である。両辺はともに0, ±1のいずれかで、p≥3ではこれらは法pで互いに異なるので、等式が成り立つ。
+    $p$を素数、$a,b$を整数とする。ルジャンドル記号$\left(\frac{a}{p}\right)$は、$p\mid a$なら$0$、$p\nmid a$で$x^2\equiv a\pmod{p}$が整数解を持つなら$1$、それ以外なら$-1$と定める。
+    $p=2$のとき、奇数$a$は$1^2\equiv a\pmod{2}$を満たすので、記号の値は$a$が偶数なら$0$、奇数なら$1$である。$ab$が奇数であることは$a,b$がともに奇数であることと同値なので、等式が成り立つ。
+    $p$が奇素数のとき、$\left(\frac{a}{p}\right)\equiv a^{(p-1)/2}\pmod{p}$（オイラーの規準から従う合同式）を用いると、$\left(\frac{ab}{p}\right)\equiv(ab)^{(p-1)/2}\equiv\left(\frac{a}{p}\right)\left(\frac{b}{p}\right)\pmod{p}$である。両辺はともに$0,1,-1$のいずれかで、$p\geq 3$ではこれらは法$p$で互いに異なるので、等式が成り立つ。
   strategy: Use the power formula modulo p and the fact that values in {0, 1, -1} are determined by their residues.
   sketch:
-    - "case_split: The case p = 2 is checked directly."
-    - "apply_theorem: For odd p, (a/p) ≡ a^((p-1)/2) modulo p."
-    - "derive: Hence (ab/p) ≡ (a/p)(b/p) modulo p."
-    - "conclude: Both sides lie in {0, 1, -1}, which are distinct modulo p ≥ 3, so they are equal."
+  - 'case_split: The case p = 2 is checked directly.'
+  - 'apply_theorem: For odd p, (a/p) ≡ a^((p-1)/2) modulo p.'
+  - 'derive: Hence (ab/p) ≡ (a/p)(b/p) modulo p.'
+  - 'conclude: Both sides lie in {0, 1, -1}, which are distinct modulo p ≥ 3, so they are equal.'
   openmath: (forall (p a b) (-> (and (in p P) (in a Z) (in b Z)) (= (legendre_symbol (* a b) p) (* (legendre_symbol a p) (legendre_symbol b p)))))
   hard_negative:
     statement: ルジャンドル記号は((a+b)/p)=(a/p)+(b/p)を満たす。
@@ -976,18 +1131,20 @@
   kind: gap
   level: 3
   topic: 平方剰余の第一補充法則
-  statement: 奇素数pについて、x²≡-1 (mod p)が整数解をもつことと、p≡1 (mod 4)は同値である。
+  statement: 奇素数$p$について、$x^2\equiv -1\pmod{p}$が整数解を持つことと、$p\equiv 1\pmod{4}$は同値である。
   statement_en: For an odd prime p, the congruence x² ≡ -1 modulo p has an integer solution if and only if p ≡ 1 modulo 4.
-  assumptions: ["pは奇素数"]
-  quantifiers: ["任意の奇素数p"]
-  conclusion: -1が法pで平方剰余であることはp≡1 (mod 4)と同値である。
+  assumptions:
+  - $p$は奇素数
+  quantifiers:
+  - 任意の奇素数$p$
+  conclusion: $-1$が法$p$の平方剰余であることは$p\equiv 1\pmod{4}$と同値である。
   answer: |
-    オイラーの規準から、解が存在することは(-1)^((p-1)/2)≡1 (mod p)と同値である。pは奇素数で1≢-1 (mod p)なので、これは(p-1)/2が偶数であること、すなわちp≡1 (mod 4)と同値である。
+    $p$を奇素数とする。オイラーの規準（奇素数$p$と$p\nmid a$について、$x^2\equiv a\pmod{p}$が整数解を持つことと$a^{(p-1)/2}\equiv 1\pmod{p}$は同値）を$a=-1$に用いると、解が存在することは$(-1)^{(p-1)/2}\equiv 1\pmod{p}$と同値である。$p\geq 3$より$1\not\equiv -1\pmod{p}$なので、これは$(p-1)/2$が偶数であること、すなわち$p\equiv 1\pmod{4}$と同値である。
   strategy: Apply Euler's criterion to a = -1 and read off the parity of (p-1)/2.
   sketch:
-    - "apply_theorem: By Euler's criterion solvability is equivalent to (-1)^((p-1)/2) ≡ 1 modulo p."
-    - "derive: Since 1 and -1 are incongruent modulo p, this says (p-1)/2 is even."
-    - "conclude: That is p ≡ 1 modulo 4."
+  - 'apply_theorem: By Euler''s criterion solvability is equivalent to (-1)^((p-1)/2) ≡ 1 modulo p.'
+  - 'derive: Since 1 and -1 are incongruent modulo p, this says (p-1)/2 is even.'
+  - 'conclude: That is p ≡ 1 modulo 4.'
   openmath: (forall (p) (-> (and (in p P) (!= p 2)) (<-> (exists (x k) (and (in x Z) (in k Z) (= (+ (^ x 2) 1) (* p k)))) (exists (m) (and (in m Z) (= p (+ (* 4 m) 1)))))))
   hard_negative:
     statement: 任意の奇素数pについてx²≡-1 (mod p)は解をもつ。
@@ -1018,19 +1175,24 @@
   kind: gap
   level: 3
   topic: 平方剰余の第二補充法則
-  statement: 奇素数pについて、x²≡2 (mod p)が整数解をもつことと、p≡1または7 (mod 8)は同値である。
+  statement: 奇素数$p$について、$x^2\equiv 2\pmod{p}$が整数解を持つことと、$p\equiv 1$または$7\pmod{8}$は同値である。
   statement_en: For an odd prime p, the congruence x² ≡ 2 modulo p has an integer solution if and only if p ≡ 1 or 7 modulo 8.
-  assumptions: ["pは奇素数"]
-  quantifiers: ["任意の奇素数p"]
-  conclusion: 2が法pで平方剰余であることはp≡±1 (mod 8)と同値である。
+  assumptions:
+  - $p$は奇素数
+  quantifiers:
+  - 任意の奇素数$p$
+  conclusion: $2$が法$p$の平方剰余であることは$p\equiv 1$または$7\pmod{8}$と同値である。
   answer: |
-    ガウスの補題によると、(2/p)=(-1)^μであり、μは2, 4, …, p-1のうち(p-1)/2より大きいものの個数である。個数を数えると、μ=(p-1)/2-⌊(p-1)/4⌋である。p mod 8で場合分けすると、μはp≡±1のとき偶数で、p≡±3のとき奇数である。したがって(2/p)=1はp≡±1 (mod 8)と同値である。
+    $p$を奇素数とし、$P=(p-1)/2$とおく。ガウスの補題（奇素数$p$と$p\nmid a$なる整数$a$について$\left(\frac{a}{p}\right)=(-1)^\mu$である。ここで$\mu$は$1\leq k\leq P$のうち、$ka$を$p$で割った余りが$p/2$より大きいものの個数である）を$a=2$に用いる。
+    $1\leq k\leq P$なら$2k\leq p-1$なので、$2k$を$p$で割った余りは$2k$自身である。$2k$は整数なので、$2k>p/2$は$2k>P$と同値である。$2k\leq P$となる$k$は$\lfloor P/2\rfloor=\lfloor(p-1)/4\rfloor$個あるので、$\mu=P-\lfloor(p-1)/4\rfloor$である。
+    $p=8m+r$（$r\in\{1,3,5,7\}$）と書いて計算する。$r=1$なら$\mu=4m-2m=2m$である。$r=3$なら$\mu=(4m+1)-2m=2m+1$である。$r=5$なら$\mu=(4m+2)-(2m+1)=2m+1$である。$r=7$なら$\mu=(4m+3)-(2m+1)=2m+2$である。よって$\mu$が偶数であることは$r=1$または$r=7$と同値である。
+    $p\nmid 2$なので、$x^2\equiv 2\pmod{p}$が解を持つことは$\left(\frac{2}{p}\right)=1$、すなわち$\mu$が偶数であることと同値である。以上から結論を得る。
   strategy: Use Gauss's lemma for a = 2 and compute the parity of the count by residue class modulo 8.
   sketch:
-    - "apply_theorem: Gauss's lemma gives (2/p) = (-1)^μ with μ the number of even residues above (p-1)/2."
-    - "derive: Counting gives μ = (p-1)/2 - ⌊(p-1)/4⌋."
-    - "case_split: Check the four odd residue classes of p modulo 8."
-    - "conclude: μ is even exactly when p ≡ 1 or 7 modulo 8."
+  - 'apply_theorem: Gauss''s lemma gives (2/p) = (-1)^μ with μ the number of even residues above (p-1)/2.'
+  - 'derive: Counting gives μ = (p-1)/2 - ⌊(p-1)/4⌋.'
+  - 'case_split: Check the four odd residue classes of p modulo 8.'
+  - 'conclude: μ is even exactly when p ≡ 1 or 7 modulo 8.'
   openmath: (forall (p) (-> (and (in p P) (!= p 2)) (<-> (exists (x k) (and (in x Z) (in k Z) (= (- (^ x 2) 2) (* p k)))) (exists (m) (and (in m Z) (or (= p (+ (* 8 m) 1)) (= p (+ (* 8 m) 7))))))))
   hard_negative:
     statement: 奇素数pについて、2が平方剰余であることはp≡1 (mod 4)と同値である。
@@ -1058,21 +1220,28 @@
   kind: named
   level: 3
   topic: 平方剰余の相互法則
-  statement: 相異なる奇素数p,qについて、(p/q)(q/p)=(-1)^(((p-1)/2)((q-1)/2))である。
+  statement: 相異なる奇素数$p,q$について、$\left(\frac{p}{q}\right)\left(\frac{q}{p}\right)=(-1)^{\frac{p-1}{2}\cdot\frac{q-1}{2}}$である。
   statement_en: For distinct odd primes p and q, (p/q)(q/p) = (-1)^(((p-1)/2)((q-1)/2)).
-  assumptions: ["p, qは奇素数", "p≠q"]
-  quantifiers: ["任意の相異なる奇素数p, q"]
-  conclusion: (p/q)(q/p)=(-1)^(((p-1)/2)((q-1)/2))である。
+  assumptions:
+  - $p,q$は奇素数
+  - $p\neq q$
+  quantifiers:
+  - 任意の相異なる奇素数$p,q$
+  conclusion: $\left(\frac{p}{q}\right)\left(\frac{q}{p}\right)=(-1)^{\frac{p-1}{2}\cdot\frac{q-1}{2}}$である。
   answer: |
-    証明の概略を述べる。アイゼンシュタインによる形のガウスの補題から、(q/p)=(-1)^Sである。ここでSは1≤k≤(p-1)/2にわたる⌊kq/p⌋の和である。同様に(p/q)=(-1)^Tであり、Tは1≤l≤(q-1)/2にわたる⌊lp/q⌋の和である。Sは長方形0<x≤(p-1)/2, 0<y≤(q-1)/2の格子点のうち直線y=qx/pの下にある個数で、Tは上にある個数である。直線上に格子点はないので、S+T=((p-1)/2)((q-1)/2)となり結論を得る。
+    $p,q$を相異なる奇素数とし、$P=(p-1)/2$, $Q=(q-1)/2$とおく。$S=\sum_{k=1}^{P}\lfloor kq/p\rfloor$, $T=\sum_{l=1}^{Q}\lfloor lp/q\rfloor$とする。
+    まず$\left(\frac{q}{p}\right)=(-1)^S$を示す。$1\leq k\leq P$について$kq=p\lfloor kq/p\rfloor+r_k$（$0<r_k<p$）と書く。$r_k$のうち$p/2$より小さいものを$a_1,\dots,a_\nu$、大きいものを$b_1,\dots,b_\mu$とする。$a_i$と$p-b_j$はどれも$\{1,\dots,P\}$に属する。$k\neq l$なら$p\nmid(k-l)q$なので$r_k\neq r_l$である。また$r_k+r_l=p$なら$p\mid(k+l)q$となるが、$0<k+l\leq p-1$なので起こらない。よって$a_i$と$p-b_j$は相異なる$P$個の数であり、$\{1,\dots,P\}$の並べ替えである。
+    積をとると、法$p$で$P!\equiv\prod_i a_i\prod_j(p-b_j)\equiv(-1)^\mu\prod_k r_k\equiv(-1)^\mu q^PP!$である。$P!$は$p$と互いに素なので約分でき、$q^P\equiv(-1)^\mu\pmod{p}$である。オイラーの規準から従う合同式$\left(\frac{q}{p}\right)\equiv q^{P}\pmod{p}$より、$\left(\frac{q}{p}\right)\equiv(-1)^\mu\pmod{p}$である。両辺は$\pm 1$で$p\geq 3$なので、$\left(\frac{q}{p}\right)=(-1)^\mu$である。
+    和をとる。$A=\sum_i a_i$, $B=\sum_j b_j$, $N=\sum_{k=1}^{P}k$とおくと、並べ替えの関係から$A+\mu p-B=N$であり、$kq$の和から$qN=pS+A+B$である。辺々引くと$(q-1)N=p(S-\mu)+2B$である。$q-1$は偶数で$p$は奇数なので、$S-\mu$は偶数である。よって$\left(\frac{q}{p}\right)=(-1)^S$である。$p,q$を入れ替えれば$\left(\frac{p}{q}\right)=(-1)^T$である。
+    最後に$S+T=PQ$を示す。格子点の集合$\{(x,y)\mid 1\leq x\leq P,\ 1\leq y\leq Q\}$は$PQ$個の点からなる。この中に$qx=py$を満たす点はない。そのような点があれば$p\mid x$となり、$1\leq x<p$に反するからである。$x$を固定すると$qx/p\leq qP/p<q/2$より$\lfloor qx/p\rfloor\leq Q$なので、$py<qx$を満たす点は$\lfloor qx/p\rfloor$個ある。よって$py<qx$を満たす点は全部で$S$個ある。同様に$qx<py$を満たす点は全部で$T$個ある。したがって$S+T=PQ$であり、$\left(\frac{p}{q}\right)\left(\frac{q}{p}\right)=(-1)^{S+T}=(-1)^{PQ}$である。
   strategy: Express both symbols as signs of lattice point counts on either side of a diagonal in a rectangle (outline).
   sketch:
-    - "apply_theorem: Eisenstein's form of Gauss's lemma gives (q/p) = (-1)^S with S the sum of ⌊kq/p⌋."
-    - "apply_theorem: Likewise (p/q) = (-1)^T with T the sum of ⌊lp/q⌋."
-    - "translate: S and T count lattice points below and above the line y = qx/p in the rectangle."
-    - "derive: No lattice point of the rectangle lies on the line, because p and q are distinct primes."
-    - "derive: Therefore S + T = ((p-1)/2)((q-1)/2)."
-    - "conclude: Multiplying the two symbols gives the sign."
+  - 'apply_theorem: Eisenstein''s form of Gauss''s lemma gives (q/p) = (-1)^S with S the sum of ⌊kq/p⌋.'
+  - 'apply_theorem: Likewise (p/q) = (-1)^T with T the sum of ⌊lp/q⌋.'
+  - 'translate: S and T count lattice points below and above the line y = qx/p in the rectangle.'
+  - 'derive: No lattice point of the rectangle lies on the line, because p and q are distinct primes.'
+  - 'derive: Therefore S + T = ((p-1)/2)((q-1)/2).'
+  - 'conclude: Multiplying the two symbols gives the sign.'
   openmath: (forall (p q) (-> (and (in p P) (in q P) (!= p 2) (!= q 2) (!= p q)) (= (* (legendre_symbol p q) (legendre_symbol q p)) (^ (neg 1) (* (/ (- p 1) 2) (/ (- q 1) 2))))))
   hard_negative:
     statement: 相異なる奇素数p,qについて常に(p/q)=(q/p)である。
@@ -1092,21 +1261,28 @@
   kind: textbook
   level: 3
   topic: 二平方和定理(素数の場合)
-  statement: 4で割って3余らない素数pは、自然数a,bを用いてp=a²+b²と表せる。
+  statement: $4$で割って$3$余らない素数$p$は、自然数$a,b$を用いて$p=a^2+b^2$と表せる。
   statement_en: A prime p with p mod 4 ≠ 3 can be written as p = a² + b² with natural numbers a and b.
-  assumptions: ["pは素数", "pを4で割った余りは3でない"]
-  quantifiers: ["任意の素数p", "ある自然数a, b"]
-  conclusion: p=a²+b²と表せる。
+  assumptions:
+  - $p$は素数
+  - $p$を$4$で割った余りは$3$でない
+  quantifiers:
+  - 任意の素数$p$
+  - ある自然数$a,b$
+  conclusion: $p=a^2+b^2$と表せる。
   answer: |
-    p=2なら2=1²+1²である。p≡1 (mod 4)のとき、x²≡-1 (mod p)となるxがあり、pは(x+i)(x-i)を割り切るが、x+iもx-iも割り切らない。ガウス整数環はユークリッド整域なので、pは既約でなく、単数でない元の積p=αβと書ける。ノルムをとるとN(α)N(β)=p²かつN(α),N(β)>1なので、N(α)=pである。α=a+biとすればp=a²+b²となる。
+    $p$を素数とし、$p$を$4$で割った余りは$3$でないとする。
+    $p=2$なら$2=1^2+1^2$である。それ以外では$p\equiv 1\pmod{4}$である。第一補充法則（奇素数$p$について、$x^2\equiv -1\pmod{p}$が整数解を持つことと$p\equiv 1\pmod{4}$は同値）により、$x^2\equiv -1\pmod{p}$となる整数$x$がある。
+    ガウス整数環$\mathbb{Z}[i]$で$p$は$x^2+1=(x+i)(x-i)$を割り切る。一方$p$は$x+i$も$x-i$も割り切らない。割り切るとすると虚部を比べて$p\mid 1$となるからである。よって$p$は$\mathbb{Z}[i]$の素元でない。$\mathbb{Z}[i]$はユークリッド整域であり、ユークリッド整域では既約元は素元なので、$p$は既約でない。
+    $N(a+bi)=a^2+b^2$とおくと$N$は乗法的で、$N(\gamma)=1$と$\gamma$が単数であることは同値である。$N(p)=p^2>1$より$p$は$0$でも単数でもないので、単数でない$\alpha,\beta$により$p=\alpha\beta$と書ける。$N(\alpha)N(\beta)=p^2$かつ$N(\alpha),N(\beta)>1$なので、$N(\alpha)=p$である。$\alpha=a+bi$とすれば$p=a^2+b^2$であり、$a,b$を絶対値に置き換えれば自然数の表示を得る。
   strategy: Use that -1 is a square modulo p to show p is reducible in the Gaussian integers, then take norms.
   sketch:
-    - "case_split: p = 2 is 1² + 1²."
-    - "apply_theorem: For p ≡ 1 mod 4 there is x with x² ≡ -1 modulo p."
-    - "derive: p divides (x + i)(x - i) but neither factor."
-    - "apply_theorem: Z[i] is a Euclidean domain, so p is reducible, p = αβ with non-units."
-    - "derive: N(α)N(β) = p² forces N(α) = p."
-    - "conclude: Writing α = a + bi gives p = a² + b²."
+  - 'case_split: p = 2 is 1² + 1².'
+  - 'apply_theorem: For p ≡ 1 mod 4 there is x with x² ≡ -1 modulo p.'
+  - 'derive: p divides (x + i)(x - i) but neither factor.'
+  - 'apply_theorem: Z[i] is a Euclidean domain, so p is reducible, p = αβ with non-units.'
+  - 'derive: N(α)N(β) = p² forces N(α) = p.'
+  - 'conclude: Writing α = a + bi gives p = a² + b².'
   openmath: (forall (p) (-> (and (in p P) (not (exists (k) (and (in k N) (= p (+ (* 4 k) 3)))))) (exists (a b) (and (in a N) (in b N) (= (+ (^ a 2) (^ b 2)) p)))))
   hard_negative:
     statement: すべての奇素数は二つの平方数の和である。
@@ -1122,21 +1298,25 @@
   kind: textbook
   level: 4
   topic: 二平方和定理(一般の場合)
-  statement: 正の整数nが二つの平方数の和であることと、4で割って3余るnの素因数の指数がすべて偶数であることは同値である。
+  statement: 正の整数$n$が二つの自然数の平方の和であることと、$4$で割って$3$余る$n$の素因数の指数が全て偶数であることは同値である。
   statement_en: A positive integer n is a sum of two squares if and only if every prime factor of n congruent to 3 modulo 4 occurs with even exponent.
-  assumptions: ["nは正の整数"]
-  quantifiers: ["任意の正の整数n"]
-  conclusion: nが二平方和であることは指数の条件と同値である。
+  assumptions:
+  - $n$は正の整数
+  quantifiers:
+  - 任意の正の整数$n$
+  conclusion: $n=x^2+y^2$となる自然数$x,y$が存在することは、$q\equiv 3\pmod{4}$なる$n$の素因数$q$全てについて$q$の指数$v_q(n)$が偶数であることと同値である。
   answer: |
-    証明の概略を述べる。n=x²+y²とし、q≡3 (mod 4)がnを割り切るとする。qがyを割り切らなければ(x/y)²≡-1 (mod q)となり第一補充法則に反するので、qはxとyの両方を割り切る。両辺をq²で割る操作を繰り返すと、qの指数は偶数である。逆に指数の条件があれば、nは平方数t²と、2およびp≡1 (mod 4)となる素数たちとの積に書ける。t²=t²+0²であり、これらの素数も二平方和である。二平方和の積は恒等式(a²+b²)(c²+d²)=(ac-bd)²+(ad+bc)²により二平方和である。
+    $n$を正の整数とする。素数$q$について、$n$を割り切る$q$の最大冪の指数を$v_q(n)$と書く。
+    $n=x^2+y^2$（$x,y$は自然数）とし、$q\equiv 3\pmod{4}$を$n$の素因数とする。$q\nmid y$なら$yz\equiv 1\pmod{q}$となる整数$z$があり、$x^2\equiv -y^2\pmod{q}$の両辺に$z^2$を掛けると$(xz)^2\equiv -1\pmod{q}$である。これは第一補充法則（奇素数$q$について、$t^2\equiv -1\pmod{q}$が整数解を持つことと$q\equiv 1\pmod{4}$は同値）に反する。よって$q\mid y$であり、$q\mid x^2$から$q\mid x$である。すると$n/q^2=(x/q)^2+(y/q)^2$も二つの平方の和で、$v_q(n/q^2)=v_q(n)-2$である。$n/q^2$が$q$で割り切れなければ指数は$0$であり、割り切れれば同じ議論を$n/q^2$に適用できる。よって$v_q(n)$に関する帰納法により、$v_q(n)$は偶数である。
+    逆に条件が成り立つとする。指数が奇数の素因数全ての積を$s$とすると、$n=t^2s$となる正の整数$t$がある。$s$の素因数は条件から$4$で割って$3$余らないので、二平方和定理の素数の場合（$4$で割って$3$余らない素数は$a^2+b^2$の形に書ける）により、二つの平方の和である。恒等式$(a^2+b^2)(c^2+d^2)=(ac-bd)^2+(ad+bc)^2$により、二つの平方の和の積も二つの平方の和なので、整数$u,v$により$s=u^2+v^2$と書ける。$s=1$のときは$1=1^2+0^2$である。よって$n=(tu)^2+(tv)^2$であり、絶対値をとれば自然数の表示を得る。
   strategy: Descend by q² for primes q ≡ 3 mod 4; conversely combine prime representations with the two-squares identity (outline).
   sketch:
-    - "setup: Suppose n = x² + y² and q ≡ 3 mod 4 divides n."
-    - "apply_theorem: -1 is not a square modulo q, so q divides both x and y."
-    - "induction: Dividing by q² repeatedly shows that q has even exponent."
-    - "setup: Conversely write n as a square times a product of 2 and primes ≡ 1 mod 4."
-    - "apply_theorem: Each such prime is a sum of two squares."
-    - "conclude: The two-squares identity shows the product is also a sum of two squares."
+  - 'setup: Suppose n = x² + y² and q ≡ 3 mod 4 divides n.'
+  - 'apply_theorem: -1 is not a square modulo q, so q divides both x and y.'
+  - 'induction: Dividing by q² repeatedly shows that q has even exponent.'
+  - 'setup: Conversely write n as a square times a product of 2 and primes ≡ 1 mod 4.'
+  - 'apply_theorem: Each such prime is a sum of two squares.'
+  - 'conclude: The two-squares identity shows the product is also a sum of two squares.'
   openmath: (forall (n) (-> (and (in n N) (> n 0)) (<-> (exists (x y) (and (in x N) (in y N) (= n (+ (^ x 2) (^ y 2))))) (forall (q) (-> (and (in q P) (dvd q n) (exists (m) (and (in m N) (= q (+ (* 4 m) 3))))) (exists (k) (and (in k N) (= (padic_valuation q n) (* 2 k)))))))))
   hard_negative:
     statement: nが二平方和であることと、nが4で割って3余る素因数をもたないことは同値である。
@@ -1151,18 +1331,20 @@
   kind: gap
   level: 2
   topic: 二平方和と法4
-  statement: 4で割って3余る整数は、二つの整数の平方の和として表せない。
+  statement: $4$で割って$3$余る整数は、二つの整数の平方の和として表せない。
   statement_en: An integer of the form 4k + 3 is not the sum of the squares of two integers.
-  assumptions: ["k, x, yは整数"]
-  quantifiers: ["任意の整数k, x, y"]
-  conclusion: 4k+3≠x²+y²である。
+  assumptions:
+  - $k,x,y$は整数
+  quantifiers:
+  - 任意の整数$k,x,y$
+  conclusion: $4k+3\neq x^2+y^2$である。
   answer: |
-    整数の平方は4で割って0か1余る。xが偶数なら平方は0、奇数なら1と合同だからである。よってx²+y²は法4で0, 1, 2のいずれかと合同であり、3とは合同でない。
+    $k,x,y$を整数とする。整数の平方は$4$で割って$0$か$1$余る。実際、$x$が偶数なら$x^2\equiv 0\pmod{4}$であり、奇数なら$x^2\equiv 1\pmod{4}$である。よって$x^2+y^2$は法$4$で$0,1,2$のいずれかと合同であり、$3$とは合同でない。一方$4k+3\equiv 3\pmod{4}$なので、$4k+3\neq x^2+y^2$である。
   strategy: Reduce modulo 4 and list the residues of squares.
   sketch:
-    - "derive: Squares are congruent to 0 or 1 modulo 4."
-    - "derive: Therefore x² + y² is congruent to 0, 1 or 2 modulo 4."
-    - "conclude: It cannot equal 4k + 3."
+  - 'derive: Squares are congruent to 0 or 1 modulo 4.'
+  - 'derive: Therefore x² + y² is congruent to 0, 1 or 2 modulo 4.'
+  - 'conclude: It cannot equal 4k + 3.'
   openmath: (forall (k x y) (-> (and (in k Z) (in x Z) (in y Z)) (!= (+ (* 4 k) 3) (+ (^ x 2) (^ y 2)))))
   hard_negative:
     statement: 4で割って3余らない正の整数は二つの平方の和である。
@@ -1183,20 +1365,24 @@
   kind: textbook
   level: 3
   topic: メビウスの反転公式
-  statement: 実数値関数f,gについて、すべての正の整数nでg(n)=Σ_{d|n}f(d)であることと、すべての正の整数nでf(n)=Σ_{d|n}μ(d)g(n/d)であることは同値である。
+  statement: 関数$f,g:\mathbb{N}\to\mathbb{R}$について、全ての正の整数$n$で$g(n)=\sum_{d\mid n}f(d)$であることと、全ての正の整数$n$で$f(n)=\sum_{d\mid n}\mu(d)g(n/d)$であることは同値である。
   statement_en: For real-valued functions f and g, g(n) = Σ_{d|n} f(d) for all positive n if and only if f(n) = Σ_{d|n} μ(d) g(n/d) for all positive n.
-  assumptions: ["f, gは自然数上の実数値関数"]
-  quantifiers: ["任意の関数f, g"]
+  assumptions:
+  - $f,g:\mathbb{N}\to\mathbb{R}$は関数
+  quantifiers:
+  - 任意の関数$f,g$
   conclusion: 二つの和の関係は同値である。
   answer: |
-    Σ_{d|n}μ(d)はn=1で1、n>1で0である。g(n)=Σ_{d|n}f(d)とすると、Σ_{d|n}μ(d)g(n/d)=Σ_{d|n}μ(d)Σ_{e|(n/d)}f(e)=Σ_{e|n}f(e)Σ_{d|(n/e)}μ(d)となる。内側の和はe=nのときだけ1で、他は0なので、全体はf(n)である。逆向きも同様に和の順序を入れ替え、Σ_{d|m}μ(d)の値を使えば示せる。
+    $f,g:\mathbb{N}\to\mathbb{R}$を関数とし、$\mu$をメビウス関数とする。和の$d$は正の約数を動く。$\sum_{d\mid m}\mu(d)$は$m=1$で$1$、$m\geq 2$で$0$である。
+    全ての正の整数$n$で$g(n)=\sum_{d\mid n}f(d)$とする。$d\mid n$かつ$e\mid n/d$は、$e\mid n$かつ$d\mid n/e$と同値なので、$\sum_{d\mid n}\mu(d)g(n/d)=\sum_{d\mid n}\mu(d)\sum_{e\mid n/d}f(e)=\sum_{e\mid n}f(e)\sum_{d\mid n/e}\mu(d)$である。内側の和は$e=n$のときだけ$1$で、他は$0$なので、全体は$f(n)$である。
+    逆に全ての正の整数$n$で$f(n)=\sum_{d\mid n}\mu(d)g(n/d)$とする。各$d\mid n$について$f(d)=\sum_{e\mid d}\mu(e)g(d/e)$である。$d=em$とおくと、$d\mid n$かつ$e\mid d$の組$(d,e)$は、$m\mid n$かつ$e\mid n/m$の組$(m,e)$と一対一に対応する。よって$\sum_{d\mid n}f(d)=\sum_{m\mid n}g(m)\sum_{e\mid n/m}\mu(e)$である。内側の和は$m=n$のときだけ$1$で、他は$0$なので、全体は$g(n)$である。
   strategy: Interchange the order of summation and apply the divisor sum of the Möbius function.
   sketch:
-    - "apply_theorem: The sum of μ(d) over d | n is 1 for n = 1 and 0 otherwise."
-    - "setup: Assume g(n) is the divisor sum of f."
-    - "derive: Substituting and interchanging sums gives the sum over e | n of f(e) times the sum of μ(d) over d | n/e."
-    - "derive: Only e = n survives, which gives f(n)."
-    - "conclude: The converse follows by the same interchange of sums."
+  - 'apply_theorem: The sum of μ(d) over d | n is 1 for n = 1 and 0 otherwise.'
+  - 'setup: Assume g(n) is the divisor sum of f.'
+  - 'derive: Substituting and interchanging sums gives the sum over e | n of f(e) times the sum of μ(d) over d | n/e.'
+  - 'derive: Only e = n survives, which gives f(n).'
+  - 'conclude: The converse follows by the same interchange of sums.'
   openmath: (forall (f g) (<-> (forall (n) (-> (and (in n N) (> n 0)) (= (sum_over_divisors n (lambda (d) (fn_value f d))) (fn_value g n)))) (forall (n) (-> (and (in n N) (> n 0)) (= (sum_over_divisors n (lambda (d) (* (moebius d) (fn_value g (/ n d))))) (fn_value f n))))))
   hard_negative:
     statement: g(n)=Σ_{d|n}f(d)ならf(n)=Σ_{d|n}μ(d)g(d)である。
@@ -1211,19 +1397,23 @@
   kind: gap
   level: 3
   topic: メビウス関数の約数和
-  statement: 正の整数nについて、Σ_{d|n}μ(d)はn=1のとき1、n≥2のとき0である。
+  statement: 正の整数$n$について、$\sum_{d\mid n}\mu(d)$は$n=1$のとき$1$、$n\geq 2$のとき$0$である。
   statement_en: For a positive integer n, the sum of μ(d) over the divisors d of n is 1 if n = 1 and 0 if n ≥ 2.
-  assumptions: ["nは正の整数"]
-  quantifiers: ["任意の正の整数n"]
-  conclusion: 和はn=1で1、それ以外で0である。
+  assumptions:
+  - $n$は正の整数
+  quantifiers:
+  - 任意の正の整数$n$
+  conclusion: $\sum_{d\mid n}\mu(d)$は$n=1$で$1$、それ以外で$0$である。
   answer: |
-    n=1なら和はμ(1)=1である。n≥2とし、相異なる素因数をp_1, …, p_rとする(r≥1)。μ(d)≠0となるのはdがこれらの一部の積のときだけで、その値はk個の積に対して(-1)^kである。よって和はΣ_k C(r,k)(-1)^k=(1-1)^r=0である。
+    $n$を正の整数とする。メビウス関数$\mu$は、$d$が相異なる$k$個の素数の積なら$\mu(d)=(-1)^k$（$\mu(1)=1$を含む）、$d$が$1$より大きい平方数で割り切れるなら$\mu(d)=0$と定める。
+    $n=1$なら和は$\mu(1)=1$である。
+    $n\geq 2$とし、相異なる素因数を$p_1,\dots,p_r$（$r\geq 1$）とする。$\mu(d)\neq 0$となる$n$の約数$d$は、これらの一部の積だけである。$k$個の積は$\binom{r}{k}$通りあり、その値は$(-1)^k$なので、和は$\sum_{k=0}^{r}\binom{r}{k}(-1)^k=(1-1)^r=0$である。
   strategy: Only squarefree divisors contribute; the sum is a binomial expansion of (1 - 1)^r.
   sketch:
-    - "case_split: For n = 1 the sum is μ(1) = 1."
-    - "setup: For n ≥ 2 let p_1, ..., p_r be the distinct prime factors."
-    - "derive: Nonzero terms come from products of k of the primes and equal (-1)^k."
-    - "conclude: The sum equals (1 - 1)^r = 0."
+  - 'case_split: For n = 1 the sum is μ(1) = 1.'
+  - 'setup: For n ≥ 2 let p_1, ..., p_r be the distinct prime factors.'
+  - 'derive: Nonzero terms come from products of k of the primes and equal (-1)^k.'
+  - 'conclude: The sum equals (1 - 1)^r = 0.'
   openmath: (forall (n) (-> (and (in n N) (> n 0)) (and (-> (= n 1) (= (sum_over_divisors n (lambda (d) (moebius d))) 1)) (-> (>= n 2) (= (sum_over_divisors n (lambda (d) (moebius d))) 0)))))
   hard_negative:
     statement: n≥2についてΣ_{d|n}|μ(d)|=0である。
@@ -1240,18 +1430,24 @@
   kind: gap
   level: 3
   topic: 約数関数の乗法性
-  statement: 互いに素な正の整数m,nと自然数kについて、σ_k(n)=Σ_{d|n}d^kとおくとσ_k(mn)=σ_k(m)σ_k(n)である。
+  statement: 互いに素な正の整数$m,n$と自然数$k$について、$\sigma_k(n)=\sum_{d\mid n}d^k$とおくと$\sigma_k(mn)=\sigma_k(m)\sigma_k(n)$である。
   statement_en: For coprime positive integers m, n and a natural number k, the divisor power sum σ_k(n) = Σ_{d|n} d^k satisfies σ_k(mn) = σ_k(m)σ_k(n).
-  assumptions: ["m, nは正の整数", "kは自然数", "gcd(m,n)=1"]
-  quantifiers: ["任意の正の整数m, nと自然数k"]
-  conclusion: σ_k(mn)=σ_k(m)σ_k(n)である。
+  assumptions:
+  - $m,n$は正の整数
+  - $k$は自然数
+  - $\gcd(m,n)=1$
+  quantifiers:
+  - 任意の正の整数$m,n$と自然数$k$
+  conclusion: $\sigma_k(mn)=\sigma_k(m)\sigma_k(n)$である。
   answer: |
-    gcd(m,n)=1なのでmnの約数dはd=ab (a|m, b|n)と一意に書ける。逆にこの形の積はmnの約数である。したがってΣ_{d|mn}d^k=Σ_{a|m}Σ_{b|n}(ab)^k=σ_k(m)σ_k(n)である。
+    $m,n$を互いに素な正の整数、$k$を自然数とし、$\sigma_k(n)=\sum_{d\mid n}d^k$（$d$は正の約数を動く）とおく。
+    $(a,b)\mapsto ab$が、$a\mid m$, $b\mid n$の組全体から$mn$の正の約数全体への全単射であることを示す。$ab\mid mn$は明らかである。$\gcd(m,n)=1$より$m,n$は共通の素因数を持たない。$d\mid mn$をとり、$d$の素因数分解のうち$m$の素因数からなる部分を$a$、$n$の素因数からなる部分を$b$とすると、$d=ab$である。素数$p\mid m$について$d$の$p$の指数は$mn$の$p$の指数以下、すなわち$m$の$p$の指数以下なので、$a\mid m$である。同様に$b\mid n$である。また$d=ab$（$a\mid m$, $b\mid n$）なら、$a,b$は上の分解で定まるので、この表し方は一意である。
+    したがって$\sigma_k(mn)=\sum_{a\mid m}\sum_{b\mid n}(ab)^k=\sum_{a\mid m}a^k\sum_{b\mid n}b^k=\sigma_k(m)\sigma_k(n)$である。
   strategy: Divisors of mn factor uniquely as products of divisors of m and n.
   sketch:
-    - "derive: For coprime m and n every divisor of mn is uniquely ab with a | m and b | n."
-    - "derive: The sum over d | mn becomes a double sum of (ab)^k."
-    - "conclude: The double sum factors as σ_k(m)σ_k(n)."
+  - 'derive: For coprime m and n every divisor of mn is uniquely ab with a | m and b | n.'
+  - 'derive: The sum over d | mn becomes a double sum of (ab)^k.'
+  - 'conclude: The double sum factors as σ_k(m)σ_k(n).'
   openmath: (forall (k m n) (-> (and (in k N) (in m N) (in n N) (> m 0) (> n 0) (= (gcd m n) 1)) (= (sum_over_divisors (* m n) (lambda (d) (^ d k))) (* (sum_over_divisors m (lambda (d) (^ d k))) (sum_over_divisors n (lambda (e) (^ e k)))))))
   hard_negative:
     statement: 任意の正の整数m,nについてσ_1(mn)=σ_1(m)σ_1(n)である。
@@ -1267,21 +1463,30 @@
   kind: textbook
   level: 4
   topic: ペル方程式の解の存在
-  statement: 正の整数dについて、x²-dy²=1がy≠0となる整数解をもつことと、dが平方数でないことは同値である。
+  statement: 正の整数$d$について、$x^2-dy^2=1$が$y\neq 0$となる整数解を持つことと、$d$が平方数でないことは同値である。
   statement_en: For a positive integer d, the equation x² - dy² = 1 has an integer solution with y ≠ 0 if and only if d is not a perfect square.
-  assumptions: ["dは正の整数"]
-  quantifiers: ["任意の正の整数d"]
-  conclusion: 非自明解の存在はdが平方数でないことと同値である。
+  assumptions:
+  - $d$は正の整数
+  quantifiers:
+  - 任意の正の整数$d$
+  conclusion: $y\neq 0$となる整数解の存在は、$d$が平方数でないことと同値である。
   answer: |
-    証明の概略を述べる。d=t²なら(x-ty)(x+ty)=1からx-ty=x+ty=±1となり、y=0である。dが平方数でないとき、ディリクレの鳩の巣論法から、|x-y√d|<1/yとなる整数の組(x,y) (y>0)が無限に得られる。この組では|x²-dy²|<2√d+1である。値と法を有限個に絞れるので、同じ値mをとりxとyの法|m|での剰余も等しい二組がある。この二組を割り算すると整数の組が得られ、ノルムが1でy≠0の解となる。
+    $d$を正の整数とする。
+    $d$が平方数なら解がないことを示す。$d=t^2$（$t>0$）とする。$x^2-dy^2=1$なら$(x-ty)(x+ty)=1$なので、$x-ty=x+ty=\pm 1$である。差をとると$2ty=0$なので$y=0$である。
+    以下$d$は平方数でないとする。このとき$d\geq 2$であり、$\sqrt{d}$は無理数である。$y\geq 1$かつ$|x-y\sqrt{d}|<1/y$を満たす整数の組$(x,y)$全体を$\mathcal{S}$とする。
+    $\mathcal{S}$が無限集合であることを示す。正の整数$Y$をとる。$j=0,1,\dots,Y$に対する$j\sqrt{d}$の小数部分$\{j\sqrt{d}\}$は、$Y+1$個の数である。$[0,1)$を長さ$1/Y$の$Y$個の区間に分けると、鳩の巣原理により$j<k$の二つが同じ区間に入る。$y=k-j$, $x=\lfloor k\sqrt{d}\rfloor-\lfloor j\sqrt{d}\rfloor$とおくと、$1\leq y\leq Y$かつ$|x-y\sqrt{d}|<1/Y\leq 1/y$である。よって$(x,y)\in\mathcal{S}$かつ$|x-y\sqrt{d}|<1/Y$である。$\mathcal{S}$が有限なら、$\sqrt{d}$の無理性から$|x-y\sqrt{d}|$の最小値は正なので、$1/Y$をそれより小さくとると矛盾する。
+    $(x,y)\in\mathcal{S}$について、$|x+y\sqrt{d}|\leq|x-y\sqrt{d}|+2y\sqrt{d}<1/y+2y\sqrt{d}$なので、$|x^2-dy^2|<(1/y)(1/y+2y\sqrt{d})\leq 1+2\sqrt{d}$である。また$\sqrt{d}$は無理数で$y\geq 1$なので、$x^2-dy^2\neq 0$である。よって$m=x^2-dy^2$のとりうる値は有限個で、どれも$0$でない。さらに$x>y\sqrt{d}-1/y\geq\sqrt{d}-1>0$である。
+    鳩の巣原理により、$\mathcal{S}$の相異なる二組$(x_1,y_1),(x_2,y_2)$で、$m$の値が等しく、$x_1\equiv x_2$, $y_1\equiv y_2\pmod{|m|}$となるものがとれる。
+    $u=(x_1x_2-dy_1y_2)/m$, $v=(x_2y_1-x_1y_2)/m$とおく。法$|m|$で$x_1x_2-dy_1y_2\equiv x_1^2-dy_1^2=m\equiv 0$かつ$x_2y_1-x_1y_2\equiv x_1y_1-x_1y_1=0$なので、$u,v$は整数である。恒等式$(x_1x_2-dy_1y_2)^2-d(x_2y_1-x_1y_2)^2=(x_1^2-dy_1^2)(x_2^2-dy_2^2)=m^2$より、$u^2-dv^2=1$である。
+    $v\neq 0$を示す。$v=0$なら$x_1/y_1=x_2/y_2$であり、この値を$\rho$とすると$m=y_1^2(\rho^2-d)=y_2^2(\rho^2-d)$である。$m\neq 0$より$y_1^2=y_2^2$なので$y_1=y_2$であり、$x_1=x_2$となって二組が相異なることに反する。よって$(u,v)$は$v\neq 0$となる整数解である。
   strategy: Trivial for squares by factoring; for nonsquares use Dirichlet approximation and pigeonhole to divide two solutions of the same norm (outline).
   sketch:
-    - "derive: If d = t², factoring (x - ty)(x + ty) = 1 forces y = 0."
-    - "apply_theorem: Otherwise Dirichlet's approximation gives infinitely many (x, y) with |x - y√d| < 1/y."
-    - "derive: For these pairs |x² - dy²| is bounded."
-    - "derive: By pigeonhole two distinct pairs have the same norm m and the same residues modulo |m|."
-    - "construct: Dividing one by the other in Z[√d] gives an integer solution of norm 1."
-    - "conclude: This solution has y ≠ 0 because the two pairs are distinct."
+  - 'derive: If d = t², factoring (x - ty)(x + ty) = 1 forces y = 0.'
+  - 'apply_theorem: Otherwise Dirichlet''s approximation gives infinitely many (x, y) with |x - y√d| < 1/y.'
+  - 'derive: For these pairs |x² - dy²| is bounded.'
+  - 'derive: By pigeonhole two distinct pairs have the same norm m and the same residues modulo |m|.'
+  - 'construct: Dividing one by the other in Z[√d] gives an integer solution of norm 1.'
+  - 'conclude: This solution has y ≠ 0 because the two pairs are distinct.'
   openmath: (forall (d) (-> (and (in d Z) (> d 0)) (<-> (exists (x y) (and (in x Z) (in y Z) (= (- (^ x 2) (* d (^ y 2))) 1) (!= y 0))) (not (exists (t) (and (in t Z) (= d (^ t 2))))))))
   hard_negative:
     statement: 任意の正の整数dについてx²-dy²=1はy≠0の整数解をもつ。
@@ -1296,17 +1501,21 @@
   kind: gap
   level: 3
   topic: ペル方程式の解の合成
-  statement: (x_1,y_1), (x_2,y_2)がx²-dy²=1の解なら、(x_1x_2+dy_1y_2, x_1y_2+x_2y_1)も解である。
+  statement: 整数$d$について、$(x_1,y_1)$, $(x_2,y_2)$が$x^2-dy^2=1$の整数解なら、$(x_1x_2+dy_1y_2,\ x_1y_2+x_2y_1)$も解である。
   statement_en: If (x_1, y_1) and (x_2, y_2) solve x² - dy² = 1, then (x_1x_2 + dy_1y_2, x_1y_2 + x_2y_1) also solves it.
-  assumptions: ["d, x_1, y_1, x_2, y_2は整数", "x_1²-dy_1²=1", "x_2²-dy_2²=1"]
-  quantifiers: ["任意の整数d, x_1, y_1, x_2, y_2"]
-  conclusion: 合成した組も解である。
+  assumptions:
+  - $d,x_1,y_1,x_2,y_2$は整数
+  - $x_1^2-dy_1^2=1$
+  - $x_2^2-dy_2^2=1$
+  quantifiers:
+  - 任意の整数$d,x_1,y_1,x_2,y_2$
+  conclusion: $(x_1x_2+dy_1y_2)^2-d(x_1y_2+x_2y_1)^2=1$である。
   answer: |
-    展開すると、(x_1x_2+dy_1y_2)²-d(x_1y_2+x_2y_1)²=(x_1²-dy_1²)(x_2²-dy_2²)である。仮定から右辺は1·1=1である。
+    $d,x_1,y_1,x_2,y_2$を整数とし、$x_1^2-dy_1^2=1$かつ$x_2^2-dy_2^2=1$とする。展開すると交差項$2dx_1x_2y_1y_2$が打ち消し合い、$(x_1x_2+dy_1y_2)^2-d(x_1y_2+x_2y_1)^2=x_1^2x_2^2+d^2y_1^2y_2^2-dx_1^2y_2^2-dx_2^2y_1^2=(x_1^2-dy_1^2)(x_2^2-dy_2^2)$である。仮定から右辺は$1\cdot 1=1$である。
   strategy: The norm form x² - dy² is multiplicative.
   sketch:
-    - "derive: Expanding gives (x_1x_2 + dy_1y_2)² - d(x_1y_2 + x_2y_1)² = (x_1² - dy_1²)(x_2² - dy_2²)."
-    - "conclude: The right side equals 1 by hypothesis."
+  - 'derive: Expanding gives (x_1x_2 + dy_1y_2)² - d(x_1y_2 + x_2y_1)² = (x_1² - dy_1²)(x_2² - dy_2²).'
+  - 'conclude: The right side equals 1 by hypothesis.'
   openmath: (forall (d a b c e) (-> (and (in d Z) (in a Z) (in b Z) (in c Z) (in e Z) (= (- (^ a 2) (* d (^ b 2))) 1) (= (- (^ c 2) (* d (^ e 2))) 1)) (= (- (^ (+ (* a c) (* d (* b e))) 2) (* d (^ (+ (* a e) (* c b)) 2))) 1)))
   hard_negative:
     statement: 二つの解の和(x_1+x_2, y_1+y_2)も解である。
@@ -1323,19 +1532,24 @@
   kind: gap
   level: 3
   topic: ガウス整数の除法
-  statement: ガウス整数x,y (y≠0)に対し、x=yq+rかつN(r)<N(y)を満たすガウス整数q,rが存在する。Nはノルムa²+b²である。
+  statement: ガウス整数$x,y$（$y\neq 0$）に対し、$x=yq+r$かつ$N(r)<N(y)$を満たすガウス整数$q,r$が存在する。ここで$N(a+bi)=a^2+b^2$はノルムである。
   statement_en: For Gaussian integers x and y with y ≠ 0 there exist Gaussian integers q and r with x = yq + r and N(r) < N(y), where N(a + bi) = a² + b².
-  assumptions: ["x, yはガウス整数", "y≠0"]
-  quantifiers: ["任意のガウス整数x, y", "あるガウス整数q, r"]
-  conclusion: x=yq+rかつN(r)<N(y)となるq,rが存在する。
+  assumptions:
+  - $x,y$はガウス整数
+  - $y\neq 0$
+  quantifiers:
+  - 任意のガウス整数$x,y$
+  - あるガウス整数$q,r$
+  conclusion: $x=yq+r$かつ$N(r)<N(y)$となるガウス整数$q,r$が存在する。
   answer: |
-    複素数x/yの実部と虚部をそれぞれ最も近い整数に丸めてqを作る。実部と虚部の誤差は1/2以下なので、|x/y-q|²≤1/2である。r=x-yqとおくとrはガウス整数であり、N(r)=|y|²|x/y-q|²≤N(y)/2<N(y)である。
+    $x,y$をガウス整数とし、$y\neq 0$とする。$N(a+bi)=a^2+b^2$であり、$N(z)=|z|^2$である。
+    複素数$x/y$の実部と虚部をそれぞれ最も近い整数に丸めて、ガウス整数$q$を作る。実部と虚部の誤差は$1/2$以下なので、$|x/y-q|^2\leq 1/4+1/4=1/2$である。$r=x-yq$とおくと$r$はガウス整数で$x=yq+r$であり、$N(r)=|y|^2|x/y-q|^2\leq N(y)/2<N(y)$である。最後の不等式は$N(y)>0$による。
   strategy: Round the complex quotient to the nearest lattice point.
   sketch:
-    - "construct: Round the real and imaginary parts of x/y to nearest integers to get q."
-    - "derive: Then |x/y - q|² ≤ 1/2."
-    - "setup: Put r = x - yq, a Gaussian integer."
-    - "conclude: N(r) = N(y)|x/y - q|² ≤ N(y)/2 < N(y)."
+  - 'construct: Round the real and imaginary parts of x/y to nearest integers to get q.'
+  - 'derive: Then |x/y - q|² ≤ 1/2.'
+  - 'setup: Put r = x - yq, a Gaussian integer.'
+  - 'conclude: N(r) = N(y)|x/y - q|² ≤ N(y)/2 < N(y).'
   openmath: (forall (x y) (-> (and (in x gaussian_int) (in y gaussian_int) (!= y 0)) (exists (q r) (and (in q gaussian_int) (in r gaussian_int) (= x (+ (* y q) r)) (< (gaussian_norm r) (gaussian_norm y))))))
   hard_negative:
     statement: x=yq+rかつN(r)<N(y)を満たす組(q,r)は一意である。
@@ -1350,21 +1564,25 @@
   kind: textbook
   level: 4
   topic: ガウス整数環での素元
-  statement: 素数pがガウス整数環で素元であることと、p≡3 (mod 4)は同値である。
+  statement: 素数$p$がガウス整数環$\mathbb{Z}[i]$で素元であることと、$p\equiv 3\pmod{4}$は同値である。
   statement_en: A prime number p is a prime element of the Gaussian integers if and only if p ≡ 3 modulo 4.
-  assumptions: ["pは素数"]
-  quantifiers: ["任意の素数p"]
-  conclusion: pが素元であることはp≡3 (mod 4)と同値である。
+  assumptions:
+  - $p$は素数
+  quantifiers:
+  - 任意の素数$p$
+  conclusion: $p$が$\mathbb{Z}[i]$の素元であることは$p\equiv 3\pmod{4}$と同値である。
   answer: |
-    p≢3 (mod 4)ならp=a²+b²=(a+bi)(a-bi)であり、どちらの因子もノルムがpで単数でないので、pは既約でなく素元でない。p≡3 (mod 4)とする。p=αβで単数でないα,βがあればN(α)N(β)=p²からN(α)=pとなり、pは二つの平方の和となって法4の計算に反する。よってpは既約である。ガウス整数環はユークリッド整域なので、既約元は素元である。
+    $p$を素数とする。$N(a+bi)=a^2+b^2$は乗法的で、$N(\gamma)=1$と$\gamma$が単数であることは同値である。
+    $p\not\equiv 3\pmod{4}$とする。二平方和定理の素数の場合（$4$で割って$3$余らない素数は$a^2+b^2$の形に書ける）により、$p=a^2+b^2=(a+bi)(a-bi)$と書ける。どちらの因子もノルムが$p>1$で単数でないので、$p$は既約でない。整域の素元は既約なので、$p$は素元でない。
+    $p\equiv 3\pmod{4}$とする。$N(p)=p^2>1$より$p$は$0$でも単数でもない。$p=\alpha\beta$で$\alpha,\beta$がともに単数でないとすると、$N(\alpha)N(\beta)=p^2$かつ$N(\alpha),N(\beta)>1$より$N(\alpha)=p$である。すると$p$は二つの整数の平方の和となるが、平方は$4$で割って$0$か$1$余るので、これは$p\equiv 3\pmod{4}$に反する。よって$p$は既約である。$\mathbb{Z}[i]$はノルムによるユークリッド整域であり、ユークリッド整域では既約元は素元なので、$p$は素元である。
   strategy: Use the two-squares theorem to factor p when p is not 3 mod 4; otherwise norms and residues modulo 4 show irreducibility.
   sketch:
-    - "case_split: Suppose p is not congruent to 3 modulo 4."
-    - "apply_theorem: Then p = a² + b², so p = (a + bi)(a - bi) with non-units."
-    - "case_split: Suppose p ≡ 3 modulo 4 and p = αβ with non-units."
-    - "derive: Norms give N(α) = p, so p is a sum of two squares."
-    - "contradiction: Squares modulo 4 exclude this."
-    - "apply_theorem: Z[i] is a Euclidean domain, so the irreducible p is prime."
+  - 'case_split: Suppose p is not congruent to 3 modulo 4.'
+  - 'apply_theorem: Then p = a² + b², so p = (a + bi)(a - bi) with non-units.'
+  - 'case_split: Suppose p ≡ 3 modulo 4 and p = αβ with non-units.'
+  - 'derive: Norms give N(α) = p, so p is a sum of two squares.'
+  - 'contradiction: Squares modulo 4 exclude this.'
+  - 'apply_theorem: Z[i] is a Euclidean domain, so the irreducible p is prime.'
   openmath: (forall (p) (-> (in p P) (<-> (gaussian_prime p) (exists (k) (and (in k N) (= p (+ (* 4 k) 3)))))))
   hard_negative:
     statement: すべての奇素数はガウス整数環で素元である。
@@ -1380,19 +1598,23 @@
   kind: gap
   level: 1
   topic: 無限降下法
-  statement: 自然数上の述語Pについて、P(n)が成り立つ任意のnに対しm<nかつP(m)となるmがあるなら、Pはどの自然数でも成り立たない。
+  statement: 自然数上の述語$P$について、$P(n)$が成り立つ任意の$n$に対し$m<n$かつ$P(m)$となる$m$があるなら、$P$はどの自然数でも成り立たない。
   statement_en: If a predicate P on natural numbers has the property that P(n) implies P(m) for some m < n, then P(n) holds for no natural number n.
-  assumptions: ["Pは自然数上の述語", "P(n)ならm<nかつP(m)となるmが存在する"]
-  quantifiers: ["任意の述語Pと自然数n"]
-  conclusion: すべての自然数nでP(n)は成り立たない。
+  assumptions:
+  - $P$は自然数上の述語
+  - $P(n)$なら$m<n$かつ$P(m)$となる自然数$m$が存在する
+  quantifiers:
+  - 任意の述語$P$と自然数$n$
+  conclusion: 全ての自然数$n$で$P(n)$は成り立たない。
   answer: |
-    P(n)が成り立つnがあるとする。その全体は空でないので最小元n_0をもつ。仮定からm<n_0かつP(m)となるmがあり、最小性に反する。よってP(n)はどのnでも成り立たない。
+    $P$を自然数上の述語とし、$P(n)$が成り立つ任意の$n$に対して$m<n$かつ$P(m)$となる自然数$m$があるとする。
+    $P(n)$が成り立つ$n$があると仮定する。その全体は自然数の空でない部分集合なので、最小元$n_0$を持つ。仮定から$m<n_0$かつ$P(m)$となる$m$があり、最小性に反する。よって$P(n)$はどの自然数$n$でも成り立たない。
   strategy: Apply the well-ordering of the natural numbers to the set where P holds.
   sketch:
-    - "contradiction: Assume P holds at some natural number."
-    - "construct: Take the least n_0 with P(n_0)."
-    - "derive: The hypothesis yields m < n_0 with P(m)."
-    - "conclude: This contradicts minimality, so P holds nowhere."
+  - 'contradiction: Assume P holds at some natural number.'
+  - 'construct: Take the least n_0 with P(n_0).'
+  - 'derive: The hypothesis yields m < n_0 with P(m).'
+  - 'conclude: This contradicts minimality, so P holds nowhere.'
   openmath: (forall (Q) (-> (forall (n) (-> (and (in n N) (holds_at Q n)) (exists (m) (and (in m N) (< m n) (holds_at Q m))))) (forall (n) (-> (in n N) (not (holds_at Q n))))))
   hard_negative:
     statement: 整数上の述語についても、P(n)からm<nかつP(m)が従うならPはどこでも成り立たない。
@@ -1411,21 +1633,31 @@
   kind: textbook
   level: 4
   topic: 無限降下法・フェルマーの4乗の場合
-  statement: 0でない整数a,bと整数cに対し、a⁴+b⁴=c²は成り立たない。
+  statement: $0$でない整数$a,b$と整数$c$に対し、$a^4+b^4=c^2$は成り立たない。
   statement_en: For nonzero integers a and b and an integer c, a⁴ + b⁴ ≠ c².
-  assumptions: ["a, b, cは整数", "a≠0", "b≠0"]
-  quantifiers: ["任意の整数a, b, c"]
-  conclusion: a⁴+b⁴≠c²である。
+  assumptions:
+  - $a,b,c$は整数
+  - $a\neq 0$
+  - $b\neq 0$
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $a^4+b^4\neq c^2$である。
   answer: |
-    証明の概略を述べる。解があるとして|c|が最小のものをとると、a,bは互いに素である。(a²,b²,c)は原始ピタゴラス数なので、a²=m²-n², b²=2mn, c=m²+n²と書ける(aが奇数とする)。さらに(a,n,m)も原始ピタゴラス数となる。これを用いてm,nの因子が平方数であることを示すと、より小さい|c|をもつ解が得られ、最小性に反する。
+    $a,b,c$を整数とし、$a\neq 0$, $b\neq 0$とする。$a^4+b^4=c^2$となる組があるとして矛盾を導く。$a^4+b^4>0$より$c\neq 0$なので、絶対値に置き換えて$a,b,c$は正としてよい。そのような正の整数の組のうち$c$が最小のものをとる。
+    $a,b$は互いに素である。素数$p$が$a,b$を割り切ると、$p^4\mid c^2$より$p^2\mid c$であり、$(a/p,b/p,c/p^2)$がより小さい$c$の解となるからである。$a,b$がともに奇数なら$c^2\equiv 2\pmod{4}$となって起こらないので、$a,b$の一方だけが奇数である。対称性から$a$を奇数、$b$を偶数とする。
+    以下、原始ピタゴラス数の一般形（正の整数$x,y,z$が$x^2+y^2=z^2$, $\gcd(x,y)=1$を満たし$x$が奇数なら、$x=m^2-n^2$, $y=2mn$, $z=m^2+n^2$となる互いに素な正の整数$m>n$が存在する）を用いる。
+    $(a^2,b^2,c)$に適用すると、$a^2=m^2-n^2$, $b^2=2mn$, $c=m^2+n^2$となる互いに素な正の整数$m>n$がある。$a$は奇数なので$a^2\equiv 1\pmod{4}$であり、$m,n$の偶奇は異なる。$m$が偶数なら$n$は奇数で$m^2-n^2\equiv 3\pmod{4}$となるので、$m$は奇数であり、$n$は偶数である。
+    $a^2+n^2=m^2$であり、$a,n$の共通の素因数は$m$も割り切るので$\gcd(a,n)=1$である。$(a,n,m)$に適用すると、$n=2rs$, $m=r^2+s^2$となる互いに素な正の整数$r,s$がある。
+    $n=2n_1$, $b=2b_1$とおくと、$b^2=2mn$から$b_1^2=mn_1$である。$\gcd(m,n)=1$より$m,n_1$は互いに素なので、互いに素な正の整数の積が平方数であることから、$m=e^2$, $n_1=f^2$となる正の整数$e,f$がある。$n_1=rs$で$r,s$は互いに素なので、同様に$r=g^2$, $s=h^2$となる正の整数$g,h$がある。
+    $m=r^2+s^2$に代入すると$e^2=g^4+h^4$である。よって$(g,h,e)$は正の整数の解であり、$e\leq e^2=m<m^2+n^2=c$である。これは$c$の最小性に反する。
   strategy: Parametrize primitive Pythagorean triples twice and produce a smaller solution, contradicting minimality (outline).
   sketch:
-    - "setup: Take a solution with least |c|; then a and b are coprime."
-    - "apply_theorem: (a², b², c) is a primitive Pythagorean triple, parametrized by m and n."
-    - "apply_theorem: (a, n, m) is also a primitive Pythagorean triple."
-    - "derive: Coprimality shows that the relevant factors are perfect squares."
-    - "construct: These squares form a new solution with smaller |c|."
-    - "contradiction: This contradicts the minimal choice, so no solution exists."
+  - 'setup: Take a solution with least |c|; then a and b are coprime.'
+  - 'apply_theorem: (a², b², c) is a primitive Pythagorean triple, parametrized by m and n.'
+  - 'apply_theorem: (a, n, m) is also a primitive Pythagorean triple.'
+  - 'derive: Coprimality shows that the relevant factors are perfect squares.'
+  - 'construct: These squares form a new solution with smaller |c|.'
+  - 'contradiction: This contradicts the minimal choice, so no solution exists.'
   openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z) (!= a 0) (!= b 0)) (!= (+ (^ a 4) (^ b 4)) (^ c 2))))
   hard_negative:
     statement: 0でない整数a,bと整数cに対し、a²+b²=c²は成り立たない。
@@ -1440,22 +1672,30 @@
   kind: named
   level: 4
   topic: ベルトランの仮説
-  statement: 任意の正の整数nに対し、n<p≤2nを満たす素数pが存在する。
+  statement: 任意の正の整数$n$に対し、$n<p\leq 2n$を満たす素数$p$が存在する。
   statement_en: For every positive integer n there is a prime p with n < p ≤ 2n.
-  assumptions: ["nは正の整数"]
-  quantifiers: ["任意の正の整数n", "ある素数p"]
-  conclusion: n<p≤2nとなる素数pが存在する。
+  assumptions:
+  - $n$は正の整数
+  quantifiers:
+  - 任意の正の整数$n$
+  - ある素数$p$
+  conclusion: $n<p\leq 2n$となる素数$p$が存在する。
   answer: |
-    証明の概略を述べる。中心二項係数C(2n,n)は4^n/(2n)以上である。n≥3でn<p≤2nとなる素数がないとすると、C(2n,n)の素因数はすべて2n/3以下である。ルジャンドルの公式から各素数冪の因子は2n以下で、√(2n)を超える素数の指数は高々1である。素数の積の評価Π_{p≤x}p≤4^xを合わせると、十分大きなnで4^n/(2n)を下回る上界が得られ矛盾する。残りの小さなnは素数の列を直接示して確かめる。
+    $n$を正の整数とする。積や和の添字$p$は素数を動くものとする。エルデシュの証明に従う。
+    補題1を示す。実数$x\geq 1$について$\prod_{p\leq x}p\leq 4^x$である。$x$を$\lfloor x\rfloor$に置き換えてよいので、自然数$M\geq 1$について$M$に関する累積帰納法で示す。$M=1,2$では明らかである。$M\geq 3$が偶数なら$M$は素数でないので、$M-1$の場合から従う。$M=2k+1$（$k\geq 1$）とする。$k+1<p\leq 2k+1$なる素数$p$は$(2k+1)!$を割り切り、$k!\,(k+1)!$を割り切らないので、$\binom{2k+1}{k}$を割り切る。$\binom{2k+1}{k}=\binom{2k+1}{k+1}$は$(1+1)^{2k+1}$の展開に二度現れるので、$\binom{2k+1}{k}\leq 4^k$である。よって$\prod_{p\leq 2k+1}p\leq 4^{k+1}\cdot 4^k=4^{2k+1}$である。
+    補題2を示す。$\binom{2n}{n}\geq 4^n/(2n)$である。$(1+1)^{2n}=4^n$の展開を、$\binom{2n}{0}+\binom{2n}{2n}=2$と$\binom{2n}{k}$（$1\leq k\leq 2n-1$）の計$2n$個に分ける。どの項も$\binom{2n}{n}$以下なので、不等式を得る。
+    補題3を示す。$v_p$を$p$の指数とする。ルジャンドルの公式（$v_p(m!)=\sum_{j\geq 1}\lfloor m/p^j\rfloor$）より、$v_p\binom{2n}{n}=\sum_{j\geq 1}\left(\lfloor 2n/p^j\rfloor-2\lfloor n/p^j\rfloor\right)$である。各項は$0$か$1$で、$p^j>2n$なら$0$である。よって$p^{v_p\binom{2n}{n}}\leq 2n$であり、特に$p>\sqrt{2n}$なら指数は$1$以下である。さらに$n\geq 3$かつ$2n/3<p\leq n$なら指数は$0$である。このとき$p\geq 3$より$p^2\geq 3p>2n$なので$j=1$の項だけが残り、$\lfloor 2n/p\rfloor=2$, $\lfloor n/p\rfloor=1$よりその項は$0$である。
+    $n\geq 512$の場合を示す。$n<p\leq 2n$なる素数がないと仮定する。$\binom{2n}{n}$の素因数は$2n$以下なので、補題3と合わせると全て$2n/3$以下である。$\sqrt{2n}$以下の素数は高々$\sqrt{2n}$個で、それぞれの素数冪の因子は$2n$以下である。$\sqrt{2n}$を超える素数の指数は$1$以下なので、それらの積は補題1により$4^{2n/3}$以下である。補題2と合わせると$4^n/(2n)\leq(2n)^{\sqrt{2n}}4^{2n/3}$であり、$4^{n/3}\leq(2n)^{1+\sqrt{2n}}$である。$x=2n$とおき対数をとると、$x/3\leq(1+\sqrt{x})\log_2 x$である。$x\geq 1024$では$\sqrt{x}\geq 32$より$1+\sqrt{x}\leq(33/32)\sqrt{x}$なので、$\sqrt{x}\leq(99/32)\log_2 x$である。一方$h(x)=\sqrt{x}-(99/32)\log_2 x$とおくと、$h(1024)=32-30.9375>0$であり、$x\geq 1024$では$h'(x)=\frac{1}{x}\left(\frac{\sqrt{x}}{2}-\frac{99}{32\ln 2}\right)>0$である。$\sqrt{x}/2\geq 16$かつ$99/(32\ln 2)<5$だからである。よって$h(x)>0$となり矛盾する。
+    $n\leq 511$の場合を示す。素数の列$2,3,5,7,13,23,43,83,163,317,631$の各項は、一つ前の項の$2$倍より小さい。$n$より大きい最小の項を$p$とする。$p=2$なら$n=1$で$p\leq 2n$である。そうでなければ一つ前の項$q$は$q\leq n$なので、$p<2q\leq 2n$である。
   strategy: Compare lower and upper bounds for the central binomial coefficient, then check small n directly (outline).
   sketch:
-    - "derive: C(2n, n) ≥ 4^n/(2n)."
-    - "contradiction: Assume there is no prime in (n, 2n]."
-    - "apply_theorem: By Legendre's formula all prime factors are at most 2n/3 and prime powers are at most 2n."
-    - "apply_theorem: The bound on primorials gives the product of primes up to x at most 4^x."
-    - "derive: For large n the resulting upper bound is smaller than 4^n/(2n)."
-    - "case_split: Small n are checked with an explicit list of primes."
-    - "conclude: A prime exists in (n, 2n] for every positive n."
+  - 'derive: C(2n, n) ≥ 4^n/(2n).'
+  - 'contradiction: Assume there is no prime in (n, 2n].'
+  - 'apply_theorem: By Legendre''s formula all prime factors are at most 2n/3 and prime powers are at most 2n.'
+  - 'apply_theorem: The bound on primorials gives the product of primes up to x at most 4^x.'
+  - 'derive: For large n the resulting upper bound is smaller than 4^n/(2n).'
+  - 'case_split: Small n are checked with an explicit list of primes.'
+  - 'conclude: A prime exists in (n, 2n] for every positive n.'
   openmath: (forall (n) (-> (and (in n N) (>= n 1)) (exists (p) (and (in p P) (< n p) (<= p (* 2 n))))))
   hard_negative:
     statement: 任意の正の整数nに対し、n<p<2nを満たす素数pが存在する。

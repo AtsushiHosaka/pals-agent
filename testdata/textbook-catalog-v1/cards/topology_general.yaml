@@ -2,19 +2,27 @@
   kind: gap
   level: 2
   topic: 位相空間・開集合
-  statement: 位相空間において、有限個の開集合の共通部分は開集合である。
+  statement: 位相空間$X$において、有限個の開集合の共通部分は開集合である。
   statement_en: In a topological space, the intersection of a finite family of open sets is open.
-  assumptions: ["Xは位相空間", "sは添字の有限集合", "各i∈sに対しU_iはXの開集合"]
-  quantifiers: ["任意の位相空間X", "任意の有限添字集合s", "任意の集合族U"]
-  conclusion: ⋂_{i∈s} U_i はXの開集合である。
+  assumptions:
+  - $X$は位相空間
+  - $s$は集合$\iota$の有限部分集合
+  - $(U_i)_{i\in\iota}$は$X$の部分集合の族
+  - 各$i\in s$について$U_i$は$X$の開集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の集合$\iota$とその有限部分集合$s$
+  - 任意の部分集合族$(U_i)_{i\in\iota}$
+  conclusion: $\bigcap_{i\in s}U_i$は$X$の開集合である。
   answer: |
-    添字集合の要素数についての帰納法で示す。空の共通部分は全体集合Xであり、これは開集合である。要素を1つ加えるときは、それまでの共通部分と新しい開集合の共通部分をとる。開集合の公理より2つの開集合の共通部分は開集合なので、帰納法が進む。
+    $X$を位相空間、$s$を集合$\iota$の有限部分集合とし、$(U_i)_{i\in\iota}$を$X$の部分集合の族で、各$i\in s$について$U_i$が開集合であるものとする。$s$の要素数についての帰納法で、$\bigcap_{i\in s}U_i$が開集合であることを示す。
+    $s$が空のとき、空の共通部分は全体集合$X$であり、これは開集合である。$s=s'\cup\{j\}$かつ$j\notin s'$のとき、$\bigcap_{i\in s}U_i=\left(\bigcap_{i\in s'}U_i\right)\cap U_j$である。帰納法の仮定より$\bigcap_{i\in s'}U_i$は開集合であり、$U_j$も開集合である。開集合の公理より2つの開集合の共通部分は開集合なので、$\bigcap_{i\in s}U_i$は開集合である。
   strategy: Induct on the finite index set using the binary intersection axiom.
   sketch:
-    - "setup: Fix the finite index set s and the open sets U_i."
-    - "induction: The empty intersection is X, which is open."
-    - "derive: Adding one index intersects the previous open set with one more open set."
-    - "conclude: The binary intersection axiom keeps the result open."
+  - 'setup: Fix the finite index set s and the open sets U_i.'
+  - 'induction: The empty intersection is X, which is open.'
+  - 'derive: Adding one index intersects the previous open set with one more open set.'
+  - 'conclude: The binary intersection axiom keeps the result open.'
   openmath: (forall (X s U) (-> (and (finite_set s) (forall (i) (-> (in i s) (open_in X (fn_value U i))))) (open_in X (family_inter s U))))
   hard_negative:
     statement: 位相空間において、無限個の開集合の共通部分も開集合である。
@@ -29,19 +37,25 @@
   kind: gap
   level: 2
   topic: 位相空間・開集合の判定
-  statement: 位相空間の部分集合Sが開集合であることと、Sの各点xに対しxを含みSに含まれる開集合が存在することは同値である。
+  statement: 位相空間$X$の部分集合$S$が開集合であることと、$S$の各点$x$に対し$x$を含み$S$に含まれる開集合が存在することは同値である。
   statement_en: A subset S of a topological space is open if and only if every point of S lies in an open set contained in S.
-  assumptions: ["Xは位相空間", "SはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: Sが開であることと、各x∈Sがある開集合Uについてx∈U⊆Sを満たすことは同値である。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S$が開集合であることと、各$x\in S$に対し$x\in U\subseteq S$となる開集合$U$が存在することは同値である。
   answer: |
-    Sが開ならば、各点に対してU=Sをとればよい。逆に各x∈Sに対しx∈U_x⊆Sとなる開集合U_xがあるとする。このときSはU_x全体の和集合に等しい。開集合の和集合は開集合なので、Sは開である。
+    $X$を位相空間、$S$を$X$の部分集合とする。
+    $S$が開集合なら、各$x\in S$に対して$U=S$をとれば、$U$は開集合で$x\in U\subseteq S$である。
+    逆に、各$x\in S$に対し$x\in U_x\subseteq S$となる開集合$U_x$があるとする。各$U_x$は$S$に含まれ、$S$の各点$x$は$U_x$に属するので、$S=\bigcup_{x\in S}U_x$である。開集合の和集合は開集合なので、$S$は開集合である。
   strategy: Write S as the union of the local open sets.
   sketch:
-    - "case_split: Prove the two implications separately."
-    - "derive: If S is open, take U = S for each point."
-    - "construct: Otherwise pick U_x for each x in S and form their union."
-    - "conclude: The union equals S and is open."
+  - 'case_split: Prove the two implications separately.'
+  - 'derive: If S is open, take U = S for each point.'
+  - 'construct: Otherwise pick U_x for each x in S and form their union.'
+  - 'conclude: The union equals S and is open.'
   openmath: (forall (X S) (<-> (open_in X S) (forall (x) (-> (in x S) (exists (U) (and (open_in X U) (in x U) (subset U S)))))))
   hard_negative:
     statement: Sの各点xに対し、xを含みSに含まれる閉集合があればSは開集合である。
@@ -56,20 +70,26 @@
   kind: textbook
   level: 2
   topic: 距離空間・閉集合と点列
-  statement: 距離空間の部分集合Cが閉集合であることと、Cの点からなる点列の極限が常にCに属することは同値である。
+  statement: 距離空間$X$の部分集合$C$が閉集合であることと、$C$の点からなる点列の極限が常に$C$に属することは同値である。
   statement_en: A subset C of a metric space is closed if and only if the limit of every convergent sequence of points of C belongs to C.
-  assumptions: ["Xは距離空間", "CはXの部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合C"]
-  conclusion: Cが閉であることと、C内の点列a_nがaに収束すればa∈Cであることは同値である。
+  assumptions:
+  - $X$は距離空間
+  - $C$は$X$の部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$C$
+  conclusion: $C$が閉集合であることと、すべての項が$C$に属する点列$(a_n)$が$L\in X$に収束するなら$L\in C$となることは同値である。
   answer: |
-    Cが閉で、C内の点列がaに収束するとする。a∉Cなら、開集合C^cがaを含むので十分大きなnでa_n∈C^cとなり矛盾する。逆に点列の条件を仮定し、aをCの閉包の点とする。各nで球B(a,1/(n+1))はCと交わるので、そこから点a_nをとると、a_nはaに収束する。条件よりa∈Cとなるので、C自身が閉包に等しく閉である。
+    $X$を距離空間、$C$を$X$の部分集合とする。
+    まず$C$が閉集合であるとし、すべての項が$C$に属する点列$(a_n)$が$L\in X$に収束するとする。$L\notin C$と仮定すると、$C^c$は$L$を含む開集合なので、収束の定義より十分大きな$n$で$a_n\in C^c$となる。これは$a_n\in C$に反するので、$L\in C$である。
+    逆に、点列の極限についての条件を仮定し、$L$を$C$の閉包$\overline{C}$の点とする。各自然数$n$について開球$B(L,1/(n+1))$は$L$を含む開集合なので$C$と交わる。そこから点$a_n\in C$を1つ選ぶ。$d(a_n,L)<1/(n+1)$なので$(a_n)$は$L$に収束し、条件より$L\in C$である。したがって$\overline{C}=C$であり、閉包は閉集合なので$C$は閉集合である。
   strategy: Use the open complement in one direction and balls of radius 1/(n+1) in the other.
   sketch:
-    - "case_split: Prove the two implications separately."
-    - "contradiction: A limit outside C would have an open neighborhood missing C."
-    - "construct: For a closure point a, choose a_n in C within distance 1/(n+1) of a."
-    - "derive: The sequence converges to a, so a lies in C."
-    - "conclude: The closure of C equals C, so C is closed."
+  - 'case_split: Prove the two implications separately.'
+  - 'contradiction: A limit outside C would have an open neighborhood missing C.'
+  - 'construct: For a closure point a, choose a_n in C within distance 1/(n+1) of a.'
+  - 'derive: The sequence converges to a, so a lies in C.'
+  - 'conclude: The closure of C equals C, so C is closed.'
   openmath: (forall (X C) (-> (metric_space X) (<-> (closed_in X C) (forall (a L) (-> (and (forall (n) (in (seq_value a n) C)) (seq_tends_to a L)) (in L C))))))
   hard_negative:
     statement: 一般の位相空間で、点列の極限について閉じている部分集合は常に閉集合である。
@@ -90,18 +110,24 @@
   kind: gap
   level: 2
   topic: 位相空間・閉包
-  statement: Sを含む閉集合Cは、Sの閉包を含む。すなわち閉包はSを含む最小の閉集合である。
+  statement: 位相空間$X$の部分集合$S$を含む閉集合$C$は、$S$の閉包を含む。すなわち閉包は$S$を含む最小の閉集合である。
   statement_en: If a closed set C contains S, then C contains the closure of S.
-  assumptions: ["Xは位相空間", "S⊆C", "CはXの閉集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S, C"]
-  conclusion: Sの閉包はCに含まれる。
+  assumptions:
+  - $X$は位相空間
+  - $S,C$は$X$の部分集合
+  - $S\subseteq C$
+  - $C$は$X$の閉集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S,C$
+  conclusion: $\overline{S}\subseteq C$である。
   answer: |
-    閉包はSを含む閉集合すべての共通部分として定義される。CはSを含む閉集合の1つなので、この共通部分はCに含まれる。
+    $X$を位相空間、$S,C$を$X$の部分集合とし、$S\subseteq C$かつ$C$は閉集合であるとする。$S$の閉包$\overline{S}$は、$S$を含む閉集合すべての共通部分として定義される。$C$はこの族の1つなので、共通部分$\overline{S}$は$C$に含まれる。
   strategy: Use the definition of closure as the intersection of closed supersets.
   sketch:
-    - "translate: The closure of S is the intersection of all closed supersets of S."
-    - "derive: C is one member of this family."
-    - "conclude: The intersection is contained in C."
+  - 'translate: The closure of S is the intersection of all closed supersets of S.'
+  - 'derive: C is one member of this family.'
+  - 'conclude: The intersection is contained in C.'
   openmath: (forall (X S C) (-> (and (subset S C) (closed_in X C)) (subset (closure_in X S) C)))
   hard_negative:
     statement: Sを含む開集合は必ずSの閉包を含む。
@@ -116,19 +142,27 @@
   kind: gap
   level: 2
   topic: 位相空間・閉包
-  statement: 点xがSの閉包に属することと、xを含む任意の開集合がSと交わることは同値である。
+  statement: 位相空間$X$の部分集合$S$と点$x$について、$x$が$S$の閉包に属することと、$x$を含む任意の開集合が$S$と交わることは同値である。
   statement_en: A point x lies in the closure of S if and only if every open set containing x meets S.
-  assumptions: ["Xは位相空間", "SはXの部分集合", "xはXの点"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S", "任意の点x"]
-  conclusion: x∈cl(S)と、xを含む任意の開集合UについてU∩Sが空でないことは同値である。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の部分集合
+  - $x$は$X$の点
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  - 任意の点$x$
+  conclusion: $x\in\overline{S}$であることと、$x\in U$となる任意の開集合$U$について$U\cap S\neq\emptyset$であることは同値である。
   answer: |
-    xを含む開集合UでU∩Sが空のものがあるとする。このときU^cはSを含む閉集合でxを含まないので、xは閉包に属さない。逆にxが閉包に属さないとする。Sを含む閉集合Cでxを含まないものがあり、U=C^cはxを含む開集合でSと交わらない。対偶により同値が示された。
+    $X$を位相空間、$S$を$X$の部分集合、$x$を$X$の点とする。閉包$\overline{S}$は$S$を含む閉集合すべての共通部分である。両方向を対偶で示す。
+    $x$を含む開集合$U$で$U\cap S=\emptyset$となるものがあるとする。このとき$U^c$は$S$を含む閉集合で$x$を含まないので、$x\notin\overline{S}$である。
+    逆に$x\notin\overline{S}$とする。$S$を含む閉集合$C$で$x\notin C$となるものがある。$U=C^c$は$x$を含む開集合で、$S\subseteq C$より$U\cap S=\emptyset$である。
   strategy: Prove both contrapositives using the complement of a separating set.
   sketch:
-    - "translate: Work with contrapositives of both implications."
-    - "derive: An open U missing S gives the closed superset U^c excluding x."
-    - "derive: A closed superset C excluding x gives the open set C^c missing S."
-    - "conclude: The two conditions are equivalent."
+  - 'translate: Work with contrapositives of both implications.'
+  - 'derive: An open U missing S gives the closed superset U^c excluding x.'
+  - 'derive: A closed superset C excluding x gives the open set C^c missing S.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (X S x) (<-> (in x (closure_in X S)) (forall (U) (-> (and (open_in X U) (in x U)) (!= (inter U S) emptyset)))))
   hard_negative:
     statement: xがSの閉包に属することと、xを含む任意の閉集合がSと交わることは同値である。
@@ -143,19 +177,25 @@
   kind: gap
   level: 2
   topic: 位相空間・閉包
-  statement: 2つの部分集合の和集合の閉包は、それぞれの閉包の和集合に等しい。
+  statement: 位相空間$X$の2つの部分集合$S,T$の和集合の閉包は、それぞれの閉包の和集合に等しい。
   statement_en: The closure of a union of two subsets equals the union of their closures.
-  assumptions: ["Xは位相空間", "S, TはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S, T"]
-  conclusion: cl(S∪T)=cl(S)∪cl(T)が成り立つ。
+  assumptions:
+  - $X$は位相空間
+  - $S,T$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S,T$
+  conclusion: $\overline{S\cup T}=\overline{S}\cup\overline{T}$である。
   answer: |
-    S⊆S∪Tなので閉包の単調性からcl(S)⊆cl(S∪T)であり、Tも同様なので右辺は左辺に含まれる。逆に、cl(S)∪cl(T)は閉集合2つの和集合なので閉であり、S∪Tを含む。閉包はこれを含む最小の閉集合なので、左辺は右辺に含まれる。
+    $X$を位相空間、$S,T$を$X$の部分集合とする。閉包は、その集合を含む最小の閉集合である。
+    $\overline{S\cup T}$は$S$を含む閉集合なので$\overline{S}\subseteq\overline{S\cup T}$であり、同様に$\overline{T}\subseteq\overline{S\cup T}$である。よって$\overline{S}\cup\overline{T}\subseteq\overline{S\cup T}$である。
+    逆に、$\overline{S}\cup\overline{T}$は2つの閉集合の和集合なので閉集合であり、$S\cup T$を含む。閉包の最小性より$\overline{S\cup T}\subseteq\overline{S}\cup\overline{T}$である。
   strategy: Use monotonicity for one inclusion and minimality of the closure for the other.
   sketch:
-    - "derive: Monotonicity gives cl(S) ∪ cl(T) ⊆ cl(S ∪ T)."
-    - "derive: cl(S) ∪ cl(T) is a closed set containing S ∪ T."
-    - "apply_theorem: Minimality of the closure gives the reverse inclusion."
-    - "conclude: Both inclusions yield equality."
+  - 'derive: Monotonicity gives cl(S) ∪ cl(T) ⊆ cl(S ∪ T).'
+  - 'derive: cl(S) ∪ cl(T) is a closed set containing S ∪ T.'
+  - 'apply_theorem: Minimality of the closure gives the reverse inclusion.'
+  - 'conclude: Both inclusions yield equality.'
   openmath: (forall (X S T) (= (closure_in X (union S T)) (union (closure_in X S) (closure_in X T))))
   hard_negative:
     statement: 任意個の部分集合の和集合の閉包は、各閉包の和集合に等しい。
@@ -170,18 +210,23 @@
   kind: gap
   level: 2
   topic: 位相空間・内部と閉包
-  statement: 部分集合Sの補集合の内部は、Sの閉包の補集合に等しい。
+  statement: 位相空間$X$の部分集合$S$の補集合の内部は、$S$の閉包の補集合に等しい。
   statement_en: The interior of the complement of S equals the complement of the closure of S.
-  assumptions: ["Xは位相空間", "SはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: int(S^c)=cl(S)^cが成り立つ。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $\operatorname{int}(S^c)=(\overline{S})^c$である。
   answer: |
-    Uが開でU⊆S^cであることと、U^cが閉でS⊆U^cであることは同値である。したがってS^cに含まれる開集合の和集合の補集合は、Sを含む閉集合の共通部分である。前者がint(S^c)、後者がcl(S)なので、結論を得る。
+    $X$を位相空間、$S$を$X$の部分集合とする。内部$\operatorname{int}(S^c)$は$S^c$に含まれる開集合すべての和集合であり、閉包$\overline{S}$は$S$を含む閉集合すべての共通部分である。
+    $U$が開集合で$U\subseteq S^c$であることは、$U^c$が閉集合で$S\subseteq U^c$であることと同値である。よって補集合をとる対応は、$S^c$に含まれる開集合と$S$を含む閉集合の間の全単射である。ド・モルガンの法則より、前者すべての和集合の補集合は後者すべての共通部分に等しい。すなわち$\operatorname{int}(S^c)^c=\overline{S}$であり、両辺の補集合をとると主張を得る。
   strategy: Dualize the definitions of interior and closure through complements.
   sketch:
-    - "translate: Open subsets of S^c correspond to closed supersets of S by complement."
-    - "derive: The complement of the union of the former is the intersection of the latter."
-    - "conclude: Hence int(S^c) is the complement of cl(S)."
+  - 'translate: Open subsets of S^c correspond to closed supersets of S by complement.'
+  - 'derive: The complement of the union of the former is the intersection of the latter.'
+  - 'conclude: Hence int(S^c) is the complement of cl(S).'
   openmath: (forall (X S) (= (interior_in X (setdiff X S)) (setdiff X (closure_in X S))))
   hard_negative:
     statement: Sの補集合の内部は、Sの内部の補集合に等しい。
@@ -196,18 +241,24 @@
   kind: gap
   level: 2
   topic: 位相空間・閉包
-  statement: 部分集合Sが閉集合であることと、Sの閉包がS自身に等しいことは同値である。
+  statement: 位相空間$X$の部分集合$S$が閉集合であることと、$S$の閉包が$S$自身に等しいことは同値である。
   statement_en: A subset S is closed if and only if its closure equals S.
-  assumptions: ["Xは位相空間", "SはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: Sが閉であることとcl(S)=Sは同値である。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S$が閉集合であることと$\overline{S}=S$は同値である。
   answer: |
-    Sが閉なら、SはSを含む閉集合なので閉包の最小性からcl(S)⊆Sである。S⊆cl(S)は常に成り立つのでcl(S)=Sとなる。逆にcl(S)=Sなら、閉包は閉集合なのでSは閉である。
+    $X$を位相空間、$S$を$X$の部分集合とする。閉包$\overline{S}$は$S$を含む最小の閉集合である。
+    $S$が閉集合なら、$S$は$S$を含む閉集合の1つなので$\overline{S}\subseteq S$である。$S\subseteq\overline{S}$は常に成り立つので$\overline{S}=S$である。
+    逆に$\overline{S}=S$なら、閉包は閉集合なので$S$は閉集合である。
   strategy: Combine minimality of the closure with the fact that closures are closed.
   sketch:
-    - "derive: If S is closed, minimality gives cl(S) ⊆ S."
-    - "derive: S ⊆ cl(S) always holds, so they are equal."
-    - "conclude: Conversely S = cl(S) is closed because closures are closed."
+  - 'derive: If S is closed, minimality gives cl(S) ⊆ S.'
+  - 'derive: S ⊆ cl(S) always holds, so they are equal.'
+  - 'conclude: Conversely S = cl(S) is closed because closures are closed.'
   openmath: (forall (X S) (<-> (closed_in X S) (= (closure_in X S) S)))
   hard_negative:
     statement: Sが閉集合であることと、Sの内部がSに等しいことは同値である。
@@ -222,18 +273,24 @@
   kind: gap
   level: 2
   topic: 位相空間・境界
-  statement: 部分集合Sの境界は、Sの閉包とSの補集合の閉包の共通部分に等しい。
+  statement: 位相空間$X$の部分集合$S$の境界は、$S$の閉包と$S$の補集合の閉包の共通部分に等しい。
   statement_en: The boundary of S equals the intersection of the closure of S with the closure of its complement.
-  assumptions: ["Xは位相空間", "SはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: ∂S=cl(S)∩cl(S^c)が成り立つ。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $\partial S=\overline{S}\cap\overline{S^c}$である。
   answer: |
-    境界はcl(S)\int(S)と定義される。int(S)の補集合はcl(S^c)に等しいので、cl(S)\int(S)=cl(S)∩int(S)^c=cl(S)∩cl(S^c)となる。
+    $X$を位相空間、$S$を$X$の部分集合とする。境界は$\partial S=\overline{S}\setminus\operatorname{int}(S)$と定義される。
+    まず$\operatorname{int}(S)^c=\overline{S^c}$を示す。$\operatorname{int}(S)$は$S$に含まれる開集合すべての和集合である。補集合をとる対応は、$S$に含まれる開集合と$S^c$を含む閉集合の間の全単射である。ド・モルガンの法則より、$\operatorname{int}(S)^c$は$S^c$を含む閉集合すべての共通部分、すなわち$\overline{S^c}$である。
+    したがって$\partial S=\overline{S}\cap\operatorname{int}(S)^c=\overline{S}\cap\overline{S^c}$である。
   strategy: Rewrite the complement of the interior as the closure of the complement.
   sketch:
-    - "translate: The boundary is cl(S) minus int(S)."
-    - "derive: The complement of int(S) equals cl(S^c)."
-    - "conclude: Substituting gives cl(S) ∩ cl(S^c)."
+  - 'translate: The boundary is cl(S) minus int(S).'
+  - 'derive: The complement of int(S) equals cl(S^c).'
+  - 'conclude: Substituting gives cl(S) ∩ cl(S^c).'
   openmath: (forall (X S) (= (frontier_in X S) (inter (closure_in X S) (closure_in X (setdiff X S)))))
   hard_negative:
     statement: 部分集合Sの境界は常に空でない。
@@ -248,18 +305,24 @@
   kind: textbook
   level: 2
   topic: 位相空間・連続写像
-  statement: 写像f:X→Yが連続であることと、Yの任意の閉集合の逆像がXの閉集合であることは同値である。
+  statement: 位相空間の間の写像$f:X\to Y$が連続であることと、$Y$の任意の閉集合の逆像が$X$の閉集合であることは同値である。
   statement_en: A map f from X to Y is continuous if and only if the preimage of every closed subset of Y is closed in X.
-  assumptions: ["X, Yは位相空間", "f:X→Yは写像"]
-  quantifiers: ["任意の位相空間X, Y", "任意の写像f"]
-  conclusion: fが連続であることと、任意の閉集合C⊆Yについてf^{-1}(C)が閉であることは同値である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $f:X\to Y$は写像
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の写像$f$
+  conclusion: $f$が連続であることと、$Y$の任意の閉集合$C$について$f^{-1}(C)$が閉集合であることは同値である。
   answer: |
-    連続性は開集合の逆像が開であることで定義される。逆像は補集合と両立し、f^{-1}(C^c)=f^{-1}(C)^cが成り立つ。Cが閉であることとC^cが開であることは同値なので、開集合についての条件と閉集合についての条件は互いに言い換えられる。
+    $X,Y$を位相空間、$f:X\to Y$を写像とする。連続性は、$Y$の任意の開集合の逆像が$X$の開集合であることで定義される。任意の$C\subseteq Y$について$f^{-1}(C^c)=f^{-1}(C)^c$である。
+    $f$が連続で$C$が閉集合なら、$C^c$は開集合なので$f^{-1}(C)^c=f^{-1}(C^c)$は開集合であり、$f^{-1}(C)$は閉集合である。
+    逆に閉集合の逆像が常に閉集合であるとし、$V$を$Y$の開集合とする。$V^c$は閉集合なので$f^{-1}(V^c)=f^{-1}(V)^c$は閉集合であり、$f^{-1}(V)$は開集合である。よって$f$は連続である。
   strategy: Translate between open and closed sets through complements of preimages.
   sketch:
-    - "translate: Continuity means preimages of open sets are open."
-    - "derive: Preimages commute with complements."
-    - "conclude: The open-set and closed-set conditions are equivalent."
+  - 'translate: Continuity means preimages of open sets are open.'
+  - 'derive: Preimages commute with complements.'
+  - 'conclude: The open-set and closed-set conditions are equivalent.'
   openmath: (forall (X Y f) (<-> (continuous_between X Y f) (forall (C) (-> (closed_in Y C) (closed_in X (preimage_of f C))))))
   hard_negative:
     statement: fが連続であることと、Xの任意の閉集合の像がYの閉集合であることは同値である。
@@ -274,20 +337,26 @@
   kind: gap
   level: 2
   topic: 位相空間・連続写像と閉包
-  statement: 写像fが連続であることと、任意の部分集合Sについてf(cl(S))⊆cl(f(S))が成り立つことは同値である。
+  statement: 位相空間の間の写像$f:X\to Y$が連続であることと、$X$の任意の部分集合$S$について$f(\overline{S})\subseteq\overline{f(S)}$が成り立つことは同値である。
   statement_en: A map f is continuous if and only if f(cl S) is contained in cl(f(S)) for every subset S.
-  assumptions: ["X, Yは位相空間", "f:X→Yは写像"]
-  quantifiers: ["任意の位相空間X, Y", "任意の写像f"]
-  conclusion: fの連続性と、任意のSに対するf(cl(S))⊆cl(f(S))は同値である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $f:X\to Y$は写像
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の写像$f$
+  conclusion: $f$が連続であることと、任意の$S\subseteq X$について$f(\overline{S})\subseteq\overline{f(S)}$であることは同値である。
   answer: |
-    fが連続なら、f^{-1}(cl(f(S)))はSを含む閉集合なのでcl(S)を含み、これは包含f(cl(S))⊆cl(f(S))を意味する。逆に包含を仮定し、CをYの閉集合、S=f^{-1}(C)とする。f(cl(S))⊆cl(f(S))⊆cl(C)=Cよりcl(S)⊆Sとなる。よって閉集合の逆像は閉であり、fは連続である。
+    $X,Y$を位相空間、$f:X\to Y$を写像とする。
+    $f$が連続であるとし、$S\subseteq X$とする。$f^{-1}(\overline{f(S)})$は閉集合の逆像なので閉集合であり、$S$を含む。閉包の最小性より$\overline{S}\subseteq f^{-1}(\overline{f(S)})$であり、これは$f(\overline{S})\subseteq\overline{f(S)}$を意味する。
+    逆に、任意の$S$について包含が成り立つとする。$C$を$Y$の閉集合とし、$S=f^{-1}(C)$とおく。$f(S)\subseteq C$なので$f(\overline{S})\subseteq\overline{f(S)}\subseteq\overline{C}=C$である。よって$\overline{S}\subseteq f^{-1}(C)=S$となり、$S$は閉集合である。閉集合の逆像が常に閉集合なので、$f$は連続である。
   strategy: Use the closed preimage of cl(f(S)) forward, and test on S = f^{-1}(C) backward.
   sketch:
-    - "case_split: Prove the two implications separately."
-    - "derive: If f is continuous, the preimage of cl(f(S)) is closed and contains S."
-    - "apply_theorem: Minimality of the closure gives f(cl S) ⊆ cl(f S)."
-    - "construct: Conversely set S = f^{-1}(C) for a closed set C."
-    - "conclude: Then cl(S) ⊆ S, so preimages of closed sets are closed."
+  - 'case_split: Prove the two implications separately.'
+  - 'derive: If f is continuous, the preimage of cl(f(S)) is closed and contains S.'
+  - 'apply_theorem: Minimality of the closure gives f(cl S) ⊆ cl(f S).'
+  - 'construct: Conversely set S = f^{-1}(C) for a closed set C.'
+  - 'conclude: Then cl(S) ⊆ S, so preimages of closed sets are closed.'
   openmath: (forall (X Y f) (<-> (continuous_between X Y f) (forall (S) (subset (image_of f (closure_in X S)) (closure_in Y (image_of f S))))))
   hard_negative:
     statement: fが連続なら、任意のSについてf(cl(S))=cl(f(S))が成り立つ。
@@ -302,20 +371,26 @@
   kind: textbook
   level: 2
   topic: 距離空間・連続性と点列
-  statement: 距離空間の間の写像fが連続であることと、aに収束する任意の点列a_nについてf(a_n)がf(a)に収束することは同値である。
+  statement: 距離空間の間の写像$f:X\to Y$が連続であることと、$L$に収束する任意の点列$(a_n)$について$(f(a_n))$が$f(L)$に収束することは同値である。
   statement_en: A map between metric spaces is continuous if and only if it sends every sequence converging to a to a sequence converging to f(a).
-  assumptions: ["X, Yは距離空間", "f:X→Yは写像"]
-  quantifiers: ["任意の距離空間X, Y", "任意の写像f"]
-  conclusion: fの連続性と、点列についての収束の保存は同値である。
+  assumptions:
+  - $X,Y$は距離空間
+  - $f:X\to Y$は写像
+  quantifiers:
+  - 任意の距離空間$X,Y$
+  - 任意の写像$f$
+  conclusion: $f$が連続であることと、$X$の任意の点列$(a_n)$と点$L$について$a_n\to L$なら$f(a_n)\to f(L)$であることは同値である。
   answer: |
-    fが連続でa_n→aとする。f(a)の任意の近傍Vについてf^{-1}(V)はaの近傍なので、十分大きなnでf(a_n)∈Vとなる。逆にfがある点aで連続でないとする。あるε>0が存在し、各nに対しd(x,a)<1/(n+1)かつd(f(x),f(a))≥εとなるx=a_nがとれる。するとa_n→aだがf(a_n)はf(a)に収束せず、点列についての条件に反する。
+    $X,Y$を距離空間、$f:X\to Y$を写像とする。
+    $f$が連続で、点列$(a_n)$が$L\in X$に収束するとする。$V$を$f(L)$を含む$Y$の開集合とすると、$f^{-1}(V)$は$L$を含む開集合なので、十分大きな$n$で$a_n\in f^{-1}(V)$、すなわち$f(a_n)\in V$である。よって$f(a_n)\to f(L)$である。
+    逆に、$f$がある点$L$で連続でないとして点列の条件が破れることを示す。連続でないので、ある$\varepsilon>0$が存在し、各自然数$n$に対して$d(a_n,L)<1/(n+1)$かつ$d(f(a_n),f(L))\geq\varepsilon$となる点$a_n$がとれる。このとき$a_n\to L$であるが、$(f(a_n))$は$f(L)$に収束しない。
   strategy: Forward by neighborhoods; backward by choosing a witness sequence from the failure of epsilon-delta.
   sketch:
-    - "case_split: Prove the two implications separately."
-    - "derive: Continuity pulls a neighborhood of f(a) back to a neighborhood of a."
-    - "contradiction: Assume f is discontinuous at a with witness ε."
-    - "construct: Choose a_n within 1/(n+1) of a with d(f(a_n), f(a)) ≥ ε."
-    - "conclude: The sequence converges to a but its image does not converge to f(a)."
+  - 'case_split: Prove the two implications separately.'
+  - 'derive: Continuity pulls a neighborhood of f(a) back to a neighborhood of a.'
+  - 'contradiction: Assume f is discontinuous at a with witness ε.'
+  - 'construct: Choose a_n within 1/(n+1) of a with d(f(a_n), f(a)) ≥ ε.'
+  - 'conclude: The sequence converges to a but its image does not converge to f(a).'
   openmath: (forall (X Y f) (-> (and (metric_space X) (metric_space Y)) (<-> (continuous_between X Y f) (forall (a L) (-> (seq_tends_to a L) (seq_tends_to (function_compose_map f a) (fn_value f L)))))))
   hard_negative:
     statement: 一般の位相空間の間でも、点列の収束を保つ写像は連続である。
@@ -336,19 +411,25 @@
   kind: textbook
   level: 2
   topic: 距離空間・連続性
-  statement: 距離空間の間の写像fが連続であることと、任意の点bと任意のε>0に対しあるδ>0が存在してd(a,b)<δならd(f(a),f(b))<εとなることは同値である。
+  statement: 距離空間の間の写像$f:X\to Y$が連続であることと、任意の点$b$と任意の$\varepsilon>0$に対しある$\delta>0$が存在して、$d(a,b)<\delta$なら$d(f(a),f(b))<\varepsilon$となることは同値である。
   statement_en: A map between metric spaces is continuous if and only if it satisfies the epsilon-delta condition at every point.
-  assumptions: ["X, Yは距離空間", "f:X→Yは写像"]
-  quantifiers: ["任意の距離空間X, Y", "任意の写像f"]
-  conclusion: 開集合による連続性とε-δ条件は同値である。
+  assumptions:
+  - $X,Y$は距離空間
+  - $f:X\to Y$は写像
+  quantifiers:
+  - 任意の距離空間$X,Y$
+  - 任意の写像$f$
+  conclusion: 開集合の逆像による連続性と、各点$b\in X$での$\varepsilon$-$\delta$条件は同値である。
   answer: |
-    fが連続なら、球B(f(b),ε)の逆像はbを含む開集合なので、ある球B(b,δ)を含む。このδが条件を満たす。逆にε-δ条件を仮定し、VをYの開集合、b∈f^{-1}(V)とする。B(f(b),ε)⊆Vとなるεをとると、対応するδについてB(b,δ)⊆f^{-1}(V)である。よってf^{-1}(V)は開である。
+    $X,Y$を距離空間、$f:X\to Y$を写像とする。連続性は、$Y$の開集合の逆像が$X$の開集合であることで定義される。
+    $f$が連続であるとし、$b\in X$と$\varepsilon>0$をとる。$f^{-1}(B(f(b),\varepsilon))$は$b$を含む開集合なので、ある$\delta>0$について開球$B(b,\delta)$を含む。よって$d(a,b)<\delta$なら$d(f(a),f(b))<\varepsilon$である。
+    逆に$\varepsilon$-$\delta$条件を仮定し、$V$を$Y$の開集合、$b\in f^{-1}(V)$とする。$B(f(b),\varepsilon)\subseteq V$となる$\varepsilon>0$をとり、対応する$\delta>0$をとると、$B(b,\delta)\subseteq f^{-1}(V)$である。$b$は任意なので$f^{-1}(V)$は開集合である。
   strategy: Translate preimages of balls into balls contained in preimages.
   sketch:
-    - "derive: The preimage of an ε-ball at f(b) is open and contains a δ-ball at b."
-    - "setup: Conversely fix an open set V and a point b of its preimage."
-    - "derive: Choose ε with the ε-ball inside V and take the matching δ."
-    - "conclude: The δ-ball lies in the preimage, so the preimage is open."
+  - 'derive: The preimage of an ε-ball at f(b) is open and contains a δ-ball at b.'
+  - 'setup: Conversely fix an open set V and a point b of its preimage.'
+  - 'derive: Choose ε with the ε-ball inside V and take the matching δ.'
+  - 'conclude: The δ-ball lies in the preimage, so the preimage is open.'
   openmath: (forall (X Y f) (-> (and (metric_space X) (metric_space Y)) (<-> (continuous_between X Y f) (forall (b e) (-> (> e 0) (exists (d) (and (> d 0) (forall (a) (-> (< (dist_of a b) d) (< (dist_of (fn_value f a) (fn_value f b)) e))))))))))
   hard_negative:
     statement: fが連続なら、δはbに依存せずεだけから選べる。
@@ -365,16 +446,26 @@
   topic: ハウスドルフ空間・稠密集合
   statement: 値域がハウスドルフ空間のとき、稠密な部分集合上で一致する2つの連続写像は全体で一致する。
   statement_en: Two continuous maps into a Hausdorff space that agree on a dense subset are equal.
-  assumptions: ["Xは位相空間", "Yはハウスドルフ空間", "f, g:X→Yは連続", "SはXの稠密部分集合", "S上でf=g"]
-  quantifiers: ["任意の位相空間X, Y", "任意の連続写像f, g", "任意の稠密部分集合S"]
-  conclusion: f=gである。
+  assumptions:
+  - $X$は位相空間
+  - $Y$はハウスドルフ空間
+  - $f,g:X\to Y$は連続
+  - $S$は$X$の稠密な部分集合
+  - 任意の$x\in S$について$f(x)=g(x)$
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の連続写像$f,g$
+  - 任意の稠密部分集合$S$
+  conclusion: $f=g$である。
   answer: |
-    fとgが一致する点全体Eは、値域がハウスドルフなので閉集合である。仮定よりEはSを含むので、Sの閉包を含む。Sは稠密なのでその閉包はXであり、E=Xとなる。
+    $X$を位相空間、$Y$をハウスドルフ空間、$f,g:X\to Y$を連続写像、$S$を$X$の稠密な部分集合とし、$S$上で$f=g$とする。$E=\{x\in X\mid f(x)=g(x)\}$とおく。
+    $E$が閉集合であることを示す。$x\notin E$とすると$f(x)\neq g(x)$なので、$f(x)$と$g(x)$の交わらない開近傍$U,V$がある。$f^{-1}(U)\cap g^{-1}(V)$は$x$を含む開集合であり、その点では$f$の値が$U$に、$g$の値が$V$に入るので$E$と交わらない。よって$E^c$は開集合である。
+    仮定より$S\subseteq E$なので$\overline{S}\subseteq E$である。$S$は稠密なので$\overline{S}=X$であり、$E=X$、すなわち$f=g$である。
   strategy: The agreement set is closed and contains a dense set.
   sketch:
-    - "apply_theorem: The agreement set E of f and g is closed since Y is Hausdorff."
-    - "derive: E contains S, hence contains the closure of S."
-    - "conclude: The closure of S is X, so f = g."
+  - 'apply_theorem: The agreement set E of f and g is closed since Y is Hausdorff.'
+  - 'derive: E contains S, hence contains the closure of S.'
+  - 'conclude: The closure of S is X, so f = g.'
   openmath: (forall (X Y f g S) (-> (and (hausdorff_space Y) (continuous_between X Y f) (continuous_between X Y g) (dense_in X S) (forall (x) (-> (in x S) (= (fn_value f x) (fn_value g x))))) (= f g)))
   hard_negative:
     statement: 値域がハウスドルフなら、稠密部分集合上で一致する写像は連続でなくても等しい。
@@ -389,19 +480,26 @@
   kind: gap
   level: 2
   topic: 位相空間・同相写像
-  statement: 同相写像hによる像h(U)が開集合であることと、Uが開集合であることは同値である。
+  statement: 同相写像$h:X\to Y$と$X$の部分集合$U$について、像$h(U)$が開集合であることと$U$が開集合であることは同値である。
   statement_en: For a homeomorphism h, the image h(U) is open if and only if U is open.
-  assumptions: ["X, Yは位相空間", "h:X→Yは同相写像", "UはXの部分集合"]
-  quantifiers: ["任意の位相空間X, Y", "任意の同相写像h", "任意の部分集合U"]
-  conclusion: h(U)が開であることとUが開であることは同値である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $h:X\to Y$は同相写像
+  - $U$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の同相写像$h$
+  - 任意の部分集合$U$
+  conclusion: $h(U)$が開集合であることと$U$が開集合であることは同値である。
   answer: |
-    hは全単射なのでh(U)=(h^{-1})^{-1}(U)である。Uが開なら、h^{-1}の連続性よりh(U)は開である。逆にh(U)が開なら、U=h^{-1}(h(U))であり、hの連続性よりUは開である。
+    $X,Y$を位相空間、$h:X\to Y$を同相写像、$U$を$X$の部分集合とする。$h$は全単射で、$h$と$h^{-1}$はともに連続である。
+    $h(U)$は逆写像$h^{-1}$による$U$の逆像に等しい。よって$U$が開集合なら、$h^{-1}$の連続性より$h(U)$は開集合である。逆に$h(U)$が開集合なら、$U=h^{-1}(h(U))$は$h$による開集合の逆像なので、$h$の連続性より$U$は開集合である。
   strategy: Express the image as a preimage under the inverse map.
   sketch:
-    - "translate: The image h(U) is the preimage of U under the inverse of h."
-    - "derive: Continuity of the inverse gives one implication."
-    - "derive: U = h^{-1}(h(U)) and continuity of h give the other."
-    - "conclude: The two conditions are equivalent."
+  - 'translate: The image h(U) is the preimage of U under the inverse of h.'
+  - 'derive: Continuity of the inverse gives one implication.'
+  - 'derive: U = h^{-1}(h(U)) and continuity of h give the other.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (X Y h U) (-> (homeomorphism X Y h) (<-> (open_in Y (image_of h U)) (open_in X U))))
   hard_negative:
     statement: 連続な全単射hについて、Uが開ならh(U)も開である。
@@ -418,18 +516,25 @@
   topic: コンパクト空間・同相写像
   statement: コンパクト空間からハウスドルフ空間への連続な全単射は同相写像である。
   statement_en: A continuous bijection from a compact space to a Hausdorff space is a homeomorphism.
-  assumptions: ["Xはコンパクト空間", "Yはハウスドルフ空間", "f:X→Yは連続な全単射"]
-  quantifiers: ["任意の位相空間X, Y", "任意の写像f"]
-  conclusion: fは同相写像である。
+  assumptions:
+  - $X$はコンパクト空間
+  - $Y$はハウスドルフ空間
+  - $f:X\to Y$は連続な全単射
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の写像$f$
+  conclusion: $f$は同相写像である。
   answer: |
-    逆写像の連続性を示せばよく、そのためにはfが閉写像であることを示せばよい。CをXの閉集合とする。CはコンパクトなXの閉部分集合なのでコンパクトであり、その像f(C)もコンパクトである。Yはハウスドルフなのでf(C)は閉である。よってfは閉写像であり、f^{-1}は連続である。
+    $X$をコンパクト空間、$Y$をハウスドルフ空間、$f:X\to Y$を連続な全単射とする。$f^{-1}$が連続であることを示せばよい。
+    $C$を$X$の閉集合とする。コンパクト空間の閉部分集合はコンパクトなので、$C$はコンパクトである。コンパクト集合の連続像はコンパクトなので、$f(C)$はコンパクトである。ハウスドルフ空間のコンパクト部分集合は閉集合なので、$f(C)$は$Y$の閉集合である。
+    $f(C)$は$f^{-1}$による$C$の逆像に等しい。閉集合の逆像が閉集合なので$f^{-1}$は連続であり、$f$は同相写像である。
   strategy: Show f is a closed map via closed subset, continuous image and compact-in-Hausdorff.
   sketch:
-    - "translate: It suffices that f sends closed sets to closed sets."
-    - "derive: A closed subset C of the compact space X is compact."
-    - "derive: f(C) is compact as a continuous image."
-    - "apply_theorem: A compact subset of a Hausdorff space is closed."
-    - "conclude: f is a closed bijection, so its inverse is continuous."
+  - 'translate: It suffices that f sends closed sets to closed sets.'
+  - 'derive: A closed subset C of the compact space X is compact.'
+  - 'derive: f(C) is compact as a continuous image.'
+  - 'apply_theorem: A compact subset of a Hausdorff space is closed.'
+  - 'conclude: f is a closed bijection, so its inverse is continuous.'
   openmath: (forall (X Y f) (-> (and (compact_space X) (hausdorff_space Y) (continuous_between X Y f) (bijection_between X Y f)) (homeomorphism X Y f)))
   hard_negative:
     statement: Xがコンパクトでなくても、ハウスドルフ空間への連続な全単射は同相写像である。
@@ -444,18 +549,26 @@
   kind: gap
   level: 2
   topic: 位相空間・開基
-  statement: Bが開基のとき、Sが開集合であることと、Sの各点aに対しa∈t⊆Sとなるt∈Bが存在することは同値である。
+  statement: $\mathcal{B}$が位相空間$X$の開基のとき、$X$の部分集合$S$が開集合であることと、$S$の各点$a$に対し$a\in t\subseteq S$となる$t\in\mathcal{B}$が存在することは同値である。
   statement_en: If B is a basis, a set S is open if and only if every point a of S lies in some member t of B with t contained in S.
-  assumptions: ["Xは位相空間", "BはXの開基", "SはXの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の開基B", "任意の部分集合S"]
-  conclusion: Sが開であることと、各a∈Sに対しa∈t⊆Sなるt∈Bが存在することは同値である。
+  assumptions:
+  - $X$は位相空間
+  - $\mathcal{B}$は$X$の開基
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の開基$\mathcal{B}$
+  - 任意の部分集合$S$
+  conclusion: $S$が開集合であることと、各$a\in S$に対し$a\in t\subseteq S$となる$t\in\mathcal{B}$が存在することは同値である。
   answer: |
-    Sが開なら、開基の定義よりSはBの要素の和集合であり、各点aはその和の1つの要素tに属する。逆に条件を仮定すると、Sは条件で得られるtすべての和集合である。Bの要素は開なので、Sは開である。
+    $X$を位相空間、$\mathcal{B}$を$X$の開基、$S$を$X$の部分集合とする。開基とは、開集合からなる族で、任意の開集合がその要素の和集合で書けるものである。
+    $S$が開集合なら、$S$は$\mathcal{B}$の要素の和集合で書ける。各$a\in S$はその要素の1つ$t$に属し、$a\in t\subseteq S$である。
+    逆に条件を仮定し、各$a\in S$について$a\in t_a\subseteq S$となる$t_a\in\mathcal{B}$をとる。このとき$S=\bigcup_{a\in S}t_a$である。$\mathcal{B}$の要素は開集合なので、$S$は開集合である。
   strategy: Use the description of open sets as unions of basis members.
   sketch:
-    - "derive: An open S is a union of basis members, which gives t for each point."
-    - "derive: Conversely S is the union of the members t chosen for its points."
-    - "conclude: Unions of open sets are open."
+  - 'derive: An open S is a union of basis members, which gives t for each point.'
+  - 'derive: Conversely S is the union of the members t chosen for its points.'
+  - 'conclude: Unions of open sets are open.'
   openmath: (forall (X B S) (-> (topological_basis X B) (<-> (open_in X S) (forall (a) (-> (in a S) (exists (t) (and (in t B) (in a t) (subset t S))))))))
   hard_negative:
     statement: Bが開基なら、すべての開集合はBの要素である。
@@ -472,17 +585,20 @@
   topic: 可算公理・可分性
   statement: 第二可算空間は可分である。すなわち可算な稠密部分集合をもつ。
   statement_en: A second countable space has a countable dense subset.
-  assumptions: ["Xは第二可算空間"]
-  quantifiers: ["任意の位相空間X"]
-  conclusion: Xは可算な稠密部分集合をもつ。
+  assumptions:
+  - $X$は第二可算な位相空間
+  quantifiers:
+  - 任意の位相空間$X$
+  conclusion: $X$の可算な部分集合$D$で稠密なものが存在する。
   answer: |
-    Xの可算開基をとり、その空でない各要素から1点ずつ選ぶ。選んだ点の集合Dは可算である。Xの空でない開集合は空でない開基要素を含むので、Dの点を含む。したがってDは稠密である。
+    $X$を第二可算な位相空間とし、$\mathcal{B}$を$X$の可算な開基とする。$\mathcal{B}$の空でない各要素から1点ずつ選び、選んだ点の集合を$D$とする。$\mathcal{B}$は可算なので$D$も可算である。
+    $D$が稠密であることを示す。$U$を$X$の空でない開集合とする。$U$は$\mathcal{B}$の要素の和集合なので、$\mathcal{B}$の空でない要素$t$で$t\subseteq U$となるものがある。$t$から選んだ点は$D\cap U$に属する。空でない開集合がすべて$D$と交わるので、$\overline{D}=X$である。
   strategy: Choose one point from each nonempty member of a countable basis.
   sketch:
-    - "setup: Fix a countable basis of X."
-    - "construct: Pick one point from each nonempty basis member to form D."
-    - "derive: Each nonempty open set contains a nonempty basis member, hence a point of D."
-    - "conclude: D is countable and dense."
+  - 'setup: Fix a countable basis of X.'
+  - 'construct: Pick one point from each nonempty basis member to form D.'
+  - 'derive: Each nonempty open set contains a nonempty basis member, hence a point of D.'
+  - 'conclude: D is countable and dense.'
   openmath: (forall (X) (-> (second_countable_space X) (exists (D) (and (countable_set D) (dense_in X D)))))
   hard_negative:
     statement: 可分な位相空間は第二可算である。
@@ -499,18 +615,22 @@
   topic: 可算公理・距離空間
   statement: 可分な距離空間は第二可算である。
   statement_en: A separable metric space is second countable.
-  assumptions: ["Xは距離空間", "Xは可分"]
-  quantifiers: ["任意の距離空間X"]
-  conclusion: Xは第二可算である。
+  assumptions:
+  - $X$は距離空間
+  - $X$は可分
+  quantifiers:
+  - 任意の距離空間$X$
+  conclusion: $X$は第二可算である。
   answer: |
-    Dを可算な稠密部分集合とし、中心がDの点で半径が正の有理数である開球全体Bを考える。Bは可算である。Uを開集合、x∈Uとし、B(x,2r)⊆Uとなる有理数r>0をとる。d(x,c)<rとなるc∈Dをとると、x∈B(c,r)⊆Uとなる。よってBは開基である。
+    $X$を可分な距離空間とし、$D$を$X$の可算な稠密部分集合とする。中心が$D$の点で半径が正の有理数である開球全体を$\mathcal{B}$とする。$D$と有理数全体は可算なので、$\mathcal{B}$は可算であり、その要素は開集合である。
+    $\mathcal{B}$が開基であることを示す。$U$を開集合、$x\in U$とする。$B(x,2r)\subseteq U$となる正の有理数$r$をとる。$D$は稠密なので$d(x,c)<r$となる$c\in D$がある。このとき$x\in B(c,r)$である。また$z\in B(c,r)$なら$d(z,x)\leq d(z,c)+d(c,x)<2r$なので、$B(c,r)\subseteq B(x,2r)\subseteq U$である。よって$U$は$\mathcal{B}$の要素の和集合であり、$\mathcal{B}$は可算な開基である。
   strategy: Use rational balls centered on a countable dense subset.
   sketch:
-    - "setup: Take a countable dense subset D of X."
-    - "construct: Let B be the balls with center in D and positive rational radius."
-    - "derive: B is countable."
-    - "derive: For x in open U choose rational r with B(x,2r) ⊆ U and c in D near x."
-    - "conclude: x ∈ B(c,r) ⊆ U, so B is a basis."
+  - 'setup: Take a countable dense subset D of X.'
+  - 'construct: Let B be the balls with center in D and positive rational radius.'
+  - 'derive: B is countable.'
+  - 'derive: For x in open U choose rational r with B(x,2r) ⊆ U and c in D near x.'
+  - 'conclude: x ∈ B(c,r) ⊆ U, so B is a basis.'
   openmath: (forall (X) (-> (and (metric_space X) (separable_space X)) (second_countable_space X)))
   hard_negative:
     statement: 距離空間は常に第二可算である。
@@ -527,18 +647,24 @@
   topic: 可算公理・リンデレーフ性
   statement: 第二可算空間では、開集合族の和集合はその可算部分族の和集合と一致する。
   statement_en: In a second countable space, every family of open sets has a countable subfamily with the same union.
-  assumptions: ["Xは第二可算空間", "各iに対しU_iはXの開集合"]
-  quantifiers: ["任意の位相空間X", "任意の添字集合I", "任意の開集合族U"]
-  conclusion: 可算な添字部分集合Tが存在して⋃_{i∈T} U_i=⋃_i U_iとなる。
+  assumptions:
+  - $X$は第二可算な位相空間
+  - $(U_i)_{i\in\iota}$は$X$の開集合の族
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の添字集合$\iota$
+  - 任意の開集合族$(U_i)_{i\in\iota}$
+  conclusion: $\iota$の可算部分集合$T$が存在して$\bigcup_{i\in T}U_i=\bigcup_{i\in\iota}U_i$となる。
   answer: |
-    可算開基Bをとる。あるU_iに含まれるBの要素全体B'は可算である。各t∈B'に対しt⊆U_iとなるiを1つ選び、選んだi全体をTとする。Tは可算である。x∈U_iならx∈t⊆U_iとなるt∈B'があるので、xはTに対応するU_jの1つに属する。
+    $X$を第二可算な位相空間、$(U_i)_{i\in\iota}$を$X$の開集合の族とし、$\mathcal{B}$を$X$の可算な開基とする。いずれかの$U_i$に含まれる$\mathcal{B}$の要素全体を$\mathcal{B}'$とすると、$\mathcal{B}'$は可算である。各$t\in\mathcal{B}'$に対し$t\subseteq U_{i(t)}$となる添字$i(t)$を1つ選び、$T=\{i(t)\mid t\in\mathcal{B}'\}$とおく。$T$は可算である。
+    $\bigcup_{i\in T}U_i\subseteq\bigcup_{i\in\iota}U_i$は明らかである。逆に$x\in U_j$とする。$U_j$は開集合なので$x\in t\subseteq U_j$となる$t\in\mathcal{B}$があり、$t\in\mathcal{B}'$である。すると$x\in t\subseteq U_{i(t)}$かつ$i(t)\in T$である。よって両者は等しい。
   strategy: Index the subfamily by the countable basis members lying inside some U_i.
   sketch:
-    - "setup: Fix a countable basis B."
-    - "construct: Let B' be the members of B contained in some U_i and pick one such i for each."
-    - "derive: The chosen index set T is countable."
-    - "derive: Each point of the union lies in a member of B' and so in some U_j with j in T."
-    - "conclude: The two unions agree."
+  - 'setup: Fix a countable basis B.'
+  - 'construct: Let B'' be the members of B contained in some U_i and pick one such i for each.'
+  - 'derive: The chosen index set T is countable.'
+  - 'derive: Each point of the union lies in a member of B'' and so in some U_j with j in T.'
+  - 'conclude: The two unions agree.'
   openmath: (forall (X I U) (-> (and (second_countable_space X) (forall (i) (-> (in i I) (open_in X (fn_value U i))))) (exists (T) (and (subset T I) (countable_set T) (= (family_union T U) (family_union I U))))))
   hard_negative:
     statement: 第二可算空間では、任意の開被覆が有限部分被覆をもつ。
@@ -553,18 +679,26 @@
   kind: gap
   level: 2
   topic: 位相空間・部分空間位相
-  statement: 部分空間Aの部分集合Vが開であることと、Xの開集合Uがあって、V=U∩Aと書けることは同値である。
+  statement: 位相空間$X$の部分空間$A$の部分集合$V$が$A$で開であることと、$X$の開集合$U$があって$V=U\cap A$と書けることは同値である。
   statement_en: A subset V of a subspace A of X is open in A if and only if V is the trace on A of an open subset of X.
-  assumptions: ["Xは位相空間", "AはXの部分集合で部分空間位相をもつ", "VはAの部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合A", "任意のV⊆A"]
-  conclusion: VがAで開であることと、ある開集合U⊆XについてV=U∩Aであることは同値である。
+  assumptions:
+  - $X$は位相空間
+  - $A$は$X$の部分集合で部分空間位相をもつ
+  - $V$は$A$の部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$A$
+  - 任意の$V\subseteq A$
+  conclusion: $V$が$A$で開であることと、ある開集合$U\subseteq X$について$V=U\cap A$であることは同値である。
   answer: |
-    部分空間位相は包含写像を連続にする最弱の位相であり、その開集合は包含写像によるXの開集合の逆像そのものである。包含写像によるUの逆像はU∩Aである。よってVの開性とこの表示は同値である。
+    $X$を位相空間、$A$を$X$の部分集合、$V$を$A$の部分集合とし、$\iota:A\to X$を包含写像とする。任意の$U\subseteq X$について$\iota^{-1}(U)=U\cap A$である。
+    部分空間位相は、$\iota$を連続にする$A$の位相のうち最も弱いものである。$X$の開集合$U$による$U\cap A$の形の集合全体を$\mathcal{T}$とする。$\emptyset=\emptyset\cap A$、$A=X\cap A$である。さらに$(U\cap A)\cap(U'\cap A)=(U\cap U')\cap A$であり、$\bigcup_j(U_j\cap A)=\left(\bigcup_jU_j\right)\cap A$である。よって$\mathcal{T}$は$A$の位相であり、$\iota$を連続にする。
+    一方、$\iota$を連続にする位相は$\iota^{-1}(U)=U\cap A$をすべて開集合として含むので、$\mathcal{T}$を含む。したがって部分空間位相の開集合はちょうど$\mathcal{T}$の要素であり、これが主張の同値である。
   strategy: Unfold the subspace topology as the topology induced by the inclusion.
   sketch:
-    - "translate: The subspace topology is induced by the inclusion map."
-    - "derive: The preimage of U under the inclusion is U ∩ A."
-    - "conclude: Open sets of A are exactly the traces of open sets of X."
+  - 'translate: The subspace topology is induced by the inclusion map.'
+  - 'derive: The preimage of U under the inclusion is U ∩ A.'
+  - 'conclude: Open sets of A are exactly the traces of open sets of X.'
   openmath: (forall (X A V) (-> (subset V A) (<-> (open_in (subspace_topology_on X A) V) (exists (U) (and (open_in X U) (= V (inter U A)))))))
   hard_negative:
     statement: 部分空間Aで開な集合はXでも開である。
@@ -579,19 +713,26 @@
   kind: gap
   level: 2
   topic: 位相空間・積位相
-  statement: 積空間への写像が連続であることと、その2つの成分が連続であることは同値である。
+  statement: 位相空間の積$X\times Y$への写像$f:Z\to X\times Y$が連続であることと、その2つの成分が連続であることは同値である。
   statement_en: A map into a product of two spaces is continuous if and only if both components are continuous.
-  assumptions: ["Z, X, Yは位相空間", "f:Z→X×Yは写像"]
-  quantifiers: ["任意の位相空間Z, X, Y", "任意の写像f"]
-  conclusion: fの連続性と、2つの成分写像の連続性は同値である。
+  assumptions:
+  - $Z,X,Y$は位相空間
+  - $f:Z\to X\times Y$は写像
+  - $f(z)=(f_1(z),f_2(z))$
+  quantifiers:
+  - 任意の位相空間$Z,X,Y$
+  - 任意の写像$f$
+  conclusion: $f$が連続であることと、$f_1,f_2$がともに連続であることは同値である。
   answer: |
-    射影は連続なのでfが連続なら成分も連続である。逆に成分f_1, f_2が連続とする。積位相の開基U×Vについてf^{-1}(U×V)=f_1^{-1}(U)∩f_2^{-1}(V)は開である。開基の要素の逆像が開なので、fは連続である。
+    $Z,X,Y$を位相空間、$f:Z\to X\times Y$を写像とし、$f(z)=(f_1(z),f_2(z))$と書く。
+    積空間から各因子への射影は連続であり、$f_1,f_2$は$f$と射影の合成である。よって$f$が連続なら$f_1,f_2$も連続である。
+    逆に$f_1,f_2$が連続であるとする。$U\subseteq X$と$V\subseteq Y$を開集合とすると、$f^{-1}(U\times V)=f_1^{-1}(U)\cap f_2^{-1}(V)$は$Z$の開集合である。積位相の開集合は$U\times V$の形の集合の和集合であり、和集合の逆像は逆像の和集合である。したがって$X\times Y$の任意の開集合の逆像は開集合であり、$f$は連続である。
   strategy: Check continuity on the product basis.
   sketch:
-    - "derive: Composing with continuous projections gives continuous components."
-    - "setup: Conversely consider a basic open set U × V."
-    - "derive: Its preimage is the intersection of the component preimages."
-    - "conclude: Preimages of basis members are open, so f is continuous."
+  - 'derive: Composing with continuous projections gives continuous components.'
+  - 'setup: Conversely consider a basic open set U × V.'
+  - 'derive: Its preimage is the intersection of the component preimages.'
+  - 'conclude: Preimages of basis members are open, so f is continuous.'
   openmath: (forall (Z X Y f) (<-> (continuous_between Z (product_space X Y) f) (and (continuous_between Z X (function_compose_map (projection_first X Y) f)) (continuous_between Z Y (function_compose_map (projection_second X Y) f)))))
   hard_negative:
     statement: 積空間X×Y上の写像f:X×Y→Zは、各変数ごとに連続なら連続である。
@@ -610,19 +751,25 @@
   kind: gap
   level: 2
   topic: 位相空間・積位相と閉包
-  statement: 積集合の閉包は閉包の積に等しい。
+  statement: 位相空間の積において、積集合の閉包は閉包の積に等しい。
   statement_en: The closure of a product set equals the product of the closures.
-  assumptions: ["X, Yは位相空間", "S⊆X", "T⊆Y"]
-  quantifiers: ["任意の位相空間X, Y", "任意の部分集合S, T"]
-  conclusion: cl(S×T)=cl(S)×cl(T)が成り立つ。
+  assumptions:
+  - $X,Y$は位相空間
+  - $S\subseteq X$
+  - $T\subseteq Y$
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の部分集合$S,T$
+  conclusion: $\overline{S\times T}=\overline{S}\times\overline{T}$である。
   answer: |
-    点(x,y)の基本近傍はU×Vの形である。(U×V)∩(S×T)=(U∩S)×(V∩T)であり、これが空でないことはU∩SとV∩Tがともに空でないことと同値である。よって(x,y)がcl(S×T)に属することは、x∈cl(S)かつy∈cl(T)と同値である。
+    $X,Y$を位相空間、$S\subseteq X$、$T\subseteq Y$とし、$(x,y)\in X\times Y$とする。点が閉包に属することは、その点を含む任意の開集合が集合と交わることと同値である。積位相の開集合は$U\times V$の形の集合の和集合なので、$(x,y)$を含む任意の開集合は、$x\in U$かつ$y\in V$となる開集合$U,V$による$U\times V$を含む。したがって、$(x,y)\in\overline{S\times T}$は「そのような$U,V$すべてについて$(U\times V)\cap(S\times T)\neq\emptyset$」と同値である。
+    $(U\times V)\cap(S\times T)=(U\cap S)\times(V\cap T)$なので、この集合が空でないことは$U\cap S$と$V\cap T$がともに空でないことと同値である。よって上の条件は「$x$を含む任意の開集合が$S$と交わり、かつ$y$を含む任意の開集合が$T$と交わる」こと、すなわち$x\in\overline{S}$かつ$y\in\overline{T}$と同値である。
   strategy: Test membership in the closure on basic neighborhoods U × V.
   sketch:
-    - "translate: Use the characterization of closure by basic neighborhoods U × V."
-    - "derive: (U × V) ∩ (S × T) equals (U ∩ S) × (V ∩ T)."
-    - "derive: This set is nonempty exactly when both factors are nonempty."
-    - "conclude: Hence (x,y) ∈ cl(S × T) iff x ∈ cl(S) and y ∈ cl(T)."
+  - 'translate: Use the characterization of closure by basic neighborhoods U × V.'
+  - 'derive: (U × V) ∩ (S × T) equals (U ∩ S) × (V ∩ T).'
+  - 'derive: This set is nonempty exactly when both factors are nonempty.'
+  - 'conclude: Hence (x,y) ∈ cl(S × T) iff x ∈ cl(S) and y ∈ cl(T).'
   openmath: (forall (X Y S T) (= (closure_in (product_space X Y) (product_set S T)) (product_set (closure_in X S) (closure_in Y T))))
   hard_negative:
     statement: 積空間の任意の部分集合Wについて、cl(W)は射影の閉包の積に等しい。
@@ -637,19 +784,27 @@
   kind: textbook
   level: 2
   topic: 位相空間・商位相
-  statement: q:X→Yが商写像のとき、写像g:Y→Zが連続であることとg∘qが連続であることは同値である。
+  statement: $q:X\to Y$が商写像のとき、写像$g:Y\to Z$が連続であることと$g\circ q$が連続であることは同値である。
   statement_en: If q from X to Y is a quotient map, then g from Y to Z is continuous if and only if g composed with q is continuous.
-  assumptions: ["X, Y, Zは位相空間", "q:X→Yは商写像", "g:Y→Zは写像"]
-  quantifiers: ["任意の位相空間X, Y, Z", "任意の商写像q", "任意の写像g"]
-  conclusion: gの連続性とg∘qの連続性は同値である。
+  assumptions:
+  - $X,Y,Z$は位相空間
+  - $q:X\to Y$は商写像
+  - $g:Y\to Z$は写像
+  quantifiers:
+  - 任意の位相空間$X,Y,Z$
+  - 任意の商写像$q$
+  - 任意の写像$g$
+  conclusion: $g$が連続であることと$g\circ q$が連続であることは同値である。
   answer: |
-    qは連続なのでgが連続ならg∘qも連続である。逆にg∘qが連続とし、VをZの開集合とする。q^{-1}(g^{-1}(V))=(g∘q)^{-1}(V)はXで開である。商位相の定義より、g^{-1}(V)はYで開である。
+    $X,Y,Z$を位相空間、$q:X\to Y$を商写像、$g:Y\to Z$を写像とする。商写像とは、連続な全射で、$W\subseteq Y$について$q^{-1}(W)$が$X$で開であることと$W$が$Y$で開であることが同値になるものである。
+    $q$は連続なので、$g$が連続なら$g\circ q$も連続である。
+    逆に$g\circ q$が連続であるとし、$V$を$Z$の開集合とする。$q^{-1}(g^{-1}(V))=(g\circ q)^{-1}(V)$は$X$で開である。商写像の性質より$g^{-1}(V)$は$Y$で開である。よって$g$は連続である。
   strategy: Use the defining property of quotient maps on preimages.
   sketch:
-    - "derive: Composition with the continuous map q gives one direction."
-    - "setup: Conversely fix an open set V of Z."
-    - "derive: The preimage of g^{-1}(V) under q is the preimage of V under the composite."
-    - "conclude: By definition of the quotient topology g^{-1}(V) is open."
+  - 'derive: Composition with the continuous map q gives one direction.'
+  - 'setup: Conversely fix an open set V of Z.'
+  - 'derive: The preimage of g^{-1}(V) under q is the preimage of V under the composite.'
+  - 'conclude: By definition of the quotient topology g^{-1}(V) is open.'
   openmath: (forall (X Y Z q g) (-> (topological_quotient_map X Y q) (<-> (continuous_between Y Z g) (continuous_between X Z (function_compose_map g q)))))
   hard_negative:
     statement: 任意の連続全射qについて、g∘qが連続ならgも連続である。
@@ -664,17 +819,25 @@
   kind: gap
   level: 2
   topic: コンパクト性・開被覆
-  statement: コンパクト部分集合Kの開被覆は有限部分被覆をもつ。
+  statement: 位相空間のコンパクト部分集合$K$を覆う開集合族は、$K$を覆う有限部分族をもつ。
   statement_en: Every open cover of a compact subset K has a finite subcover.
-  assumptions: ["Xは位相空間", "KはXのコンパクト部分集合", "各U_iは開で、Kは⋃U_iに含まれる"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合K", "任意の開集合族U"]
-  conclusion: 添字の有限集合tが存在してK⊆⋃_{i∈t} U_iとなる。
+  assumptions:
+  - $X$は位相空間
+  - $K$は$X$のコンパクト部分集合
+  - $(U_i)_{i\in\iota}$は$X$の開集合の族
+  - $K\subseteq\bigcup_{i\in\iota}U_i$
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$K$
+  - 任意の開集合族$(U_i)_{i\in\iota}$
+  conclusion: $\iota$の有限部分集合$t$が存在して$K\subseteq\bigcup_{i\in t}U_i$となる。
   answer: |
-    コンパクト性の定義から直ちに従う。KはXの開集合族で覆われているので、部分空間Kの開被覆が定まり、その有限部分被覆を選ぶと対応するU_iの有限個がKを覆う。
+    $X$を位相空間、$K$を$X$のコンパクト部分集合、$(U_i)_{i\in\iota}$を$K$を覆う$X$の開集合の族とする。$K$がコンパクトであるとは、部分空間$K$の任意の開被覆が有限部分被覆をもつことである。
+    各$U_i\cap K$は部分空間$K$の開集合であり、これらは$K$を覆う。コンパクト性より、$\iota$の有限部分集合$t$があって$K=\bigcup_{i\in t}(U_i\cap K)$となる。したがって$K\subseteq\bigcup_{i\in t}U_i$である。
   strategy: Apply the definition of compactness to the given cover.
   sketch:
-    - "setup: Regard the family as an open cover of K."
-    - "conclude: Compactness extracts a finite subfamily still covering K."
+  - 'setup: Regard the family as an open cover of K.'
+  - 'conclude: Compactness extracts a finite subfamily still covering K.'
   openmath: (forall (X K I U) (-> (and (compact_in X K) (forall (i) (-> (in i I) (open_in X (fn_value U i)))) (subset K (family_union I U))) (exists (t) (and (subset t I) (finite_set t) (subset K (family_union t U))))))
   hard_negative:
     statement: コンパクト部分集合Kの閉集合による被覆は有限部分被覆をもつ。
@@ -689,19 +852,26 @@
   kind: gap
   level: 2
   topic: コンパクト性・閉部分集合
-  statement: コンパクト集合Kに含まれる閉集合Cはコンパクトである。
+  statement: 位相空間のコンパクト集合$K$に含まれる閉集合$C$はコンパクトである。
   statement_en: A closed subset of a compact set is compact.
-  assumptions: ["Xは位相空間", "KはXのコンパクト部分集合", "CはXの閉集合", "C⊆K"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合K, C"]
-  conclusion: Cはコンパクトである。
+  assumptions:
+  - $X$は位相空間
+  - $K$は$X$のコンパクト部分集合
+  - $C$は$X$の閉集合
+  - $C\subseteq K$
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$K,C$
+  conclusion: $C$はコンパクトである。
   answer: |
-    Cの開被覆に開集合C^cを加えると、Kの開被覆になる。Kはコンパクトなので有限部分被覆がとれる。そこからC^cを除いたものは、もとの被覆の有限部分族でCを覆う。
+    $X$を位相空間、$K$を$X$のコンパクト部分集合、$C$を$X$の閉集合とし、$C\subseteq K$とする。$(V_j)_{j\in J}$を$C$を覆う$X$の開集合の族とする。
+    $C^c$は開集合なので、$(V_j)_{j\in J}$に$C^c$を加えた族は$X$全体を覆う開集合族であり、特に$K$を覆う。$K$はコンパクトなので、この族の有限個で$K$を覆える。そこから$C^c$を除いた有限個の$V_j$を考える。$C\subseteq K$であり$C$の点は$C^c$に属さないので、これらの$V_j$は$C$を覆う。よって$C$はコンパクトである。
   strategy: Add the complement of C to the cover and use compactness of K.
   sketch:
-    - "setup: Fix an open cover of C."
-    - "construct: Add the open set C^c to get an open cover of K."
-    - "apply_theorem: Extract a finite subcover of K."
-    - "conclude: Removing C^c leaves a finite subcover of C."
+  - 'setup: Fix an open cover of C.'
+  - 'construct: Add the open set C^c to get an open cover of K.'
+  - 'apply_theorem: Extract a finite subcover of K.'
+  - 'conclude: Removing C^c leaves a finite subcover of C.'
   openmath: (forall (X K C) (-> (and (compact_in X K) (closed_in X C) (subset C K)) (compact_in X C)))
   hard_negative:
     statement: コンパクト集合Kの任意の部分集合はコンパクトである。
@@ -716,19 +886,26 @@
   kind: gap
   level: 2
   topic: コンパクト性・連続写像
-  statement: コンパクト集合の連続写像による像はコンパクトである。
+  statement: 位相空間のコンパクト集合の、連続写像による像はコンパクトである。
   statement_en: The image of a compact set under a continuous map is compact.
-  assumptions: ["X, Yは位相空間", "KはXのコンパクト部分集合", "f:X→Yは連続"]
-  quantifiers: ["任意の位相空間X, Y", "任意の部分集合K", "任意の連続写像f"]
-  conclusion: f(K)はYのコンパクト部分集合である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $K$は$X$のコンパクト部分集合
+  - $f:X\to Y$は連続
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の部分集合$K$
+  - 任意の連続写像$f$
+  conclusion: $f(K)$は$Y$のコンパクト部分集合である。
   answer: |
-    f(K)の開被覆{V_i}をとる。fは連続なのでf^{-1}(V_i)は開で、これらはKを覆う。Kの有限部分被覆f^{-1}(V_{i_1}),…,f^{-1}(V_{i_m})をとると、V_{i_1},…,V_{i_m}はf(K)を覆う。
+    $X,Y$を位相空間、$K$を$X$のコンパクト部分集合、$f:X\to Y$を連続写像とする。$(V_j)_{j\in J}$を$f(K)$を覆う$Y$の開集合の族とする。
+    $f$は連続なので各$f^{-1}(V_j)$は$X$の開集合であり、これらは$K$を覆う。$K$はコンパクトなので、有限個の添字$j_1,\dots,j_m$で$K\subseteq\bigcup_{l=1}^mf^{-1}(V_{j_l})$となる。このとき$f(K)\subseteq\bigcup_{l=1}^mV_{j_l}$である。よって$f(K)$はコンパクトである。
   strategy: Pull the cover back, extract a finite subcover and push it forward.
   sketch:
-    - "setup: Fix an open cover of f(K)."
-    - "derive: The preimages form an open cover of K."
-    - "apply_theorem: Compactness of K gives a finite subcover of preimages."
-    - "conclude: The corresponding open sets cover f(K)."
+  - 'setup: Fix an open cover of f(K).'
+  - 'derive: The preimages form an open cover of K.'
+  - 'apply_theorem: Compactness of K gives a finite subcover of preimages.'
+  - 'conclude: The corresponding open sets cover f(K).'
   openmath: (forall (X Y K f) (-> (and (compact_in X K) (continuous_between X Y f)) (compact_in Y (image_of f K))))
   hard_negative:
     statement: コンパクト集合の連続写像による逆像はコンパクトである。
@@ -745,18 +922,23 @@
   topic: コンパクト性・ハウスドルフ空間
   statement: ハウスドルフ空間のコンパクト部分集合は閉集合である。
   statement_en: A compact subset of a Hausdorff space is closed.
-  assumptions: ["Xはハウスドルフ空間", "KはXのコンパクト部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合K"]
-  conclusion: KはXの閉集合である。
+  assumptions:
+  - $X$はハウスドルフ空間
+  - $K$は$X$のコンパクト部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$K$
+  conclusion: $K$は$X$の閉集合である。
   answer: |
-    x∉Kとする。各y∈Kについてxとyの交わらない開近傍U_y∋x, V_y∋yをとる。{V_y}はKを覆うので有限個V_{y_1},…,V_{y_m}で覆える。U_{y_1}∩…∩U_{y_m}はxの開近傍で、Kと交わらない。よってK^cは開である。
+    $X$をハウスドルフ空間、$K$を$X$のコンパクト部分集合とする。$K^c$が開集合であることを示す。$K$が空なら$K^c=X$なので明らかである。
+    $K$は空でないとし、$x\notin K$とする。各$y\in K$について$x\neq y$なので、$x$を含む開集合$U_y$と$y$を含む開集合$V_y$で交わらないものがある。族$(V_y)_{y\in K}$は$K$を覆うので、有限個の点$y_1,\dots,y_m\in K$で$K\subseteq V_{y_1}\cup\dots\cup V_{y_m}$となる。$U=U_{y_1}\cap\dots\cap U_{y_m}$は$x$を含む開集合である。$U$は各$V_{y_l}$と交わらないので$K$と交わらず、$U\subseteq K^c$である。$x$は任意なので$K^c$は開集合である。
   strategy: Separate x from each point of K and use a finite subcover.
   sketch:
-    - "setup: Fix x outside K."
-    - "apply_theorem: For each y in K choose disjoint open U_y ∋ x and V_y ∋ y."
-    - "derive: Finitely many V_y cover K by compactness."
-    - "derive: The finite intersection of the corresponding U_y is an open neighborhood of x missing K."
-    - "conclude: The complement of K is open."
+  - 'setup: Fix x outside K.'
+  - 'apply_theorem: For each y in K choose disjoint open U_y ∋ x and V_y ∋ y.'
+  - 'derive: Finitely many V_y cover K by compactness.'
+  - 'derive: The finite intersection of the corresponding U_y is an open neighborhood of x missing K.'
+  - 'conclude: The complement of K is open.'
   openmath: (forall (X K) (-> (and (hausdorff_space X) (compact_in X K)) (closed_in X K)))
   hard_negative:
     statement: 任意の位相空間でコンパクト部分集合は閉集合である。
@@ -771,19 +953,27 @@
   kind: named
   level: 2
   topic: コンパクト性・最大値定理
-  statement: 最大値・最小値の定理。空でないコンパクト集合上の連続な実数値関数は最大値と最小値をとる。
+  statement: 最大値・最小値の定理。位相空間の空でないコンパクト集合上で連続な実数値関数は、その集合上で最大値と最小値をとる。
   statement_en: A continuous real-valued function on a nonempty compact set attains its maximum and minimum.
-  assumptions: ["Xは位相空間", "KはXの空でないコンパクト部分集合", "f:X→ℝはK上で連続"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合K", "任意の関数f"]
-  conclusion: あるc, d∈Kが存在し、任意のx∈Kについてf(d)≤f(x)≤f(c)となる。
+  assumptions:
+  - $X$は位相空間
+  - $K$は$X$の空でないコンパクト部分集合
+  - $f:X\to\mathbb{R}$は$K$上で連続
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$K$
+  - 任意の関数$f$
+  conclusion: ある$c\in K$が存在して任意の$x\in K$で$f(x)\leq f(c)$となり、ある$d\in K$が存在して任意の$x\in K$で$f(d)\leq f(x)$となる。
   answer: |
-    f(K)はℝのコンパクト集合なので有界閉集合である。空でない有界集合なので上限sと下限iが存在し、f(K)が閉なのでs, iはf(K)に属する。よってf(c)=s, f(d)=iとなるc, d∈Kがある。
+    $X$を位相空間、$K$を$X$の空でないコンパクト部分集合、$f:X\to\mathbb{R}$を$K$上で連続な関数とする。$f$の$K$への制限は連続なので、コンパクト集合の連続像として$f(K)$は$\mathbb{R}$のコンパクト集合である。距離空間のコンパクト集合は有界閉集合なので、$f(K)$は空でない有界閉集合である。
+    $s=\sup f(K)$とする。各自然数$n$について$s-1/(n+1)<y_n\leq s$となる$y_n\in f(K)$があり、$y_n\to s$である。$f(K)$は閉集合なので$s\in f(K)$であり、$f(c)=s$となる$c\in K$がとれる。任意の$x\in K$で$f(x)\leq f(c)$である。
+    同様に$\inf f(K)$も$f(K)$に属するので、$f(d)=\inf f(K)$となる$d\in K$がとれ、任意の$x\in K$で$f(d)\leq f(x)$である。
   strategy: The image is compact in ℝ, so it contains its supremum and infimum.
   sketch:
-    - "derive: f(K) is a nonempty compact subset of ℝ."
-    - "apply_theorem: Compact subsets of ℝ are closed and bounded."
-    - "derive: The supremum and infimum exist and lie in f(K)."
-    - "conclude: Points of K attaining them give the maximum and minimum."
+  - 'derive: f(K) is a nonempty compact subset of ℝ.'
+  - 'apply_theorem: Compact subsets of ℝ are closed and bounded.'
+  - 'derive: The supremum and infimum exist and lie in f(K).'
+  - 'conclude: Points of K attaining them give the maximum and minimum.'
   openmath: (forall (X K f) (-> (and (compact_in X K) (!= K emptyset) (continuous_between (subspace_topology_on X K) R f)) (and (exists (c) (and (in c K) (forall (x) (-> (in x K) (<= (fn_value f x) (fn_value f c)))))) (exists (d) (and (in d K) (forall (x) (-> (in x K) (<= (fn_value f d) (fn_value f x)))))))))
   hard_negative:
     statement: 有界な集合上の連続関数は最大値をとる。
@@ -802,18 +992,27 @@
   topic: コンパクト性・チコノフの定理
   statement: チコノフの定理。任意個のコンパクト空間の積空間はコンパクトである。
   statement_en: The product of an arbitrary family of compact spaces is compact in the product topology.
-  assumptions: ["Iは任意の添字集合", "各i∈Iに対しX_iはコンパクト空間"]
-  quantifiers: ["任意の添字集合I", "任意の空間族X"]
-  conclusion: 積空間∏_i X_iはコンパクトである。
+  assumptions:
+  - $\iota$は集合
+  - 各$i\in\iota$について$X_i$はコンパクト空間
+  quantifiers:
+  - 任意の添字集合$\iota$
+  - 任意の空間族$(X_i)_{i\in\iota}$
+  conclusion: 積空間$\prod_{i\in\iota}X_i$はコンパクトである。
   answer: |
-    概略を述べる。コンパクト性は、任意の超フィルターが収束することと同値である。積空間上の超フィルターFをとると、各射影による像F_iはX_i上の超フィルターであり、X_iのコンパクト性より極限x_iをもつ。選択公理で各x_iを選ぶと、点x=(x_i)に対しFはxに収束する。積位相の収束は成分ごとの収束だからである。
+    $\iota$を集合とし、各$i\in\iota$について$X_i$をコンパクト空間とする。$P=\prod_{i\in\iota}X_i$に積位相を入れ、$\pi_i:P\to X_i$を射影とする。超フィルターを用いて示す。
+    集合$Y$上のフィルターとは、空集合を含まず、有限個の共通部分と上位集合をとる操作で閉じた、$Y$の部分集合の空でない族である。超フィルターとは、任意の$A\subseteq Y$について$A$か$A^c$のどちらかを含むフィルターである。位相空間$Y$上のフィルター$\mathcal{F}$が点$y$に収束するとは、$y$を含む任意の開集合が$\mathcal{F}$に属することをいう。
+    第1段階として、有限交叉性をもつ部分集合の族は超フィルターに含まれることを示す。有限交叉性とは、どの有限個の共通部分も空でないことである。その族を含むフィルターが存在し、フィルターの鎖の和集合はフィルターなので、ツォルンの補題より極大なフィルター$\mathcal{F}$がとれる。$A\notin\mathcal{F}$かつ$A^c\notin\mathcal{F}$と仮定する。$A^c\notin\mathcal{F}$より、$\mathcal{F}$のどの要素も$A^c$に含まれないので$A$と交わる。すると$\mathcal{F}$と$A$から生成されるフィルターは$\mathcal{F}$より真に大きく、極大性に反する。よって$\mathcal{F}$は超フィルターである。
+    第2段階として、コンパクト空間$Y$上の超フィルター$\mathcal{U}$は収束することを示す。どの点にも収束しないと仮定すると、各$y\in Y$に$y$を含む開集合$V_y$で$V_y\notin\mathcal{U}$となるものがある。有限個の$V_{y_1},\dots,V_{y_m}$が$Y$を覆う。超フィルターの性質より各$V_{y_l}^c\in\mathcal{U}$なので、それらの共通部分である空集合が$\mathcal{U}$に属し、矛盾する。
+    第3段階として、$P$上の任意の超フィルター$\mathcal{F}$が収束することを示す。各$i$について$\mathcal{F}_i=\{A\subseteq X_i\mid\pi_i^{-1}(A)\in\mathcal{F}\}$とおく。逆像は共通部分と包含を保ち、$\pi_i^{-1}(\emptyset)=\emptyset$で、$\pi_i^{-1}(A^c)=\pi_i^{-1}(A)^c$なので、$\mathcal{F}_i$は$X_i$上の超フィルターである。第2段階より$\mathcal{F}_i$は収束するので、選択公理により極限$x_i$を選び、$x=(x_i)_{i\in\iota}$とおく。$x$を含む$P$の開集合は、有限個の添字$i_1,\dots,i_m$と$x_{i_l}$を含む開集合$V_l\subseteq X_{i_l}$による$\bigcap_{l=1}^m\pi_{i_l}^{-1}(V_l)$を含む。$V_l\in\mathcal{F}_{i_l}$なので$\pi_{i_l}^{-1}(V_l)\in\mathcal{F}$であり、その有限個の共通部分も、それを含む開集合も$\mathcal{F}$に属する。よって$\mathcal{F}$は$x$に収束する。
+    最後に$P$がコンパクトであることを示す。$P$の開集合族$(W_j)_{j\in J}$が$P$を覆い、有限部分被覆をもたないとする。このとき補集合の族$(W_j^c)_{j\in J}$は有限交叉性をもつので、第1段階よりこれを含む超フィルター$\mathcal{F}$がある。第3段階より$\mathcal{F}$はある点$x$に収束する。$x\in W_j$となる$j$をとると$W_j\in\mathcal{F}$かつ$W_j^c\in\mathcal{F}$となり、空集合が$\mathcal{F}$に属して矛盾する。
   strategy: Use ultrafilters and componentwise convergence (outline).
   sketch:
-    - "translate: Compactness is equivalent to convergence of every ultrafilter."
-    - "setup: Take an ultrafilter F on the product."
-    - "derive: Each projection of F is an ultrafilter on X_i and has a limit x_i."
-    - "construct: Choose the limits to form a point x of the product."
-    - "conclude: Componentwise convergence gives F converging to x."
+  - 'translate: Compactness is equivalent to convergence of every ultrafilter.'
+  - 'setup: Take an ultrafilter F on the product.'
+  - 'derive: Each projection of F is an ultrafilter on X_i and has a limit x_i.'
+  - 'construct: Choose the limits to form a point x of the product.'
+  - 'conclude: Componentwise convergence gives F converging to x.'
   openmath: (forall (I X) (-> (forall (i) (-> (in i I) (compact_space (fn_value X i)))) (compact_space (product_family I X))))
   hard_negative:
     statement: 任意個のコンパクト空間の積は箱型位相でもコンパクトである。
@@ -828,19 +1027,27 @@
   kind: textbook
   level: 2
   topic: コンパクト性・有限交叉性
-  statement: コンパクト集合Kと閉集合族{C_i}について、任意の有限部分族とKの共通部分が空でないならば、全体の共通部分とKの共通部分も空でない。
+  statement: 位相空間のコンパクト集合$K$と閉集合族$(C_i)_{i\in\iota}$について、$K$と任意の有限部分族の共通部分が空でないならば、$K$と族全体の共通部分も空でない。
   statement_en: If K is compact and {C_i} is a family of closed sets such that K meets every finite intersection of them, then K meets the whole intersection.
-  assumptions: ["Xは位相空間", "KはXのコンパクト部分集合", "各C_iは閉", "任意の有限な添字集合uについてK∩⋂_{i∈u} C_iは空でない"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合K", "任意の閉集合族C"]
-  conclusion: K∩⋂_i C_iは空でない。
+  assumptions:
+  - $X$は位相空間
+  - $K$は$X$のコンパクト部分集合
+  - 各$C_i$は$X$の閉集合
+  - $\iota$の任意の有限部分集合$u$について$K\cap\bigcap_{i\in u}C_i\neq\emptyset$
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$K$
+  - 任意の閉集合族$(C_i)_{i\in\iota}$
+  conclusion: $K\cap\bigcap_{i\in\iota}C_i\neq\emptyset$である。
   answer: |
-    K∩⋂_i C_iが空であると仮定する。このとき開集合族{C_i^c}はKを覆う。Kのコンパクト性より有限個の添字の集合uがあり、{C_i^c}_{i∈u}がKを覆う。これはK∩⋂_{i∈u} C_iが空であることを意味し、仮定に反する。
+    $X$を位相空間、$K$を$X$のコンパクト部分集合、$(C_i)_{i\in\iota}$を$X$の閉集合の族とし、$\iota$の任意の有限部分集合$u$について$K\cap\bigcap_{i\in u}C_i\neq\emptyset$であるとする。
+    $K\cap\bigcap_{i\in\iota}C_i=\emptyset$と仮定する。このとき開集合族$(C_i^c)_{i\in\iota}$は$K$を覆う。$K$はコンパクトなので、$\iota$の有限部分集合$u$があって$K\subseteq\bigcup_{i\in u}C_i^c$となる。これは$K\cap\bigcap_{i\in u}C_i=\emptyset$を意味し、仮定に反する。
   strategy: Take complements to obtain an open cover and argue by contradiction.
   sketch:
-    - "contradiction: Assume the full intersection with K is empty."
-    - "translate: The complements of the C_i form an open cover of K."
-    - "apply_theorem: Extract a finite subcover."
-    - "conclude: A finite intersection with K is empty, contradicting the hypothesis."
+  - 'contradiction: Assume the full intersection with K is empty.'
+  - 'translate: The complements of the C_i form an open cover of K.'
+  - 'apply_theorem: Extract a finite subcover.'
+  - 'conclude: A finite intersection with K is empty, contradicting the hypothesis.'
   openmath: (forall (X K I C) (-> (and (compact_in X K) (forall (i) (-> (in i I) (closed_in X (fn_value C i)))) (forall (u) (-> (and (subset u I) (finite_set u)) (!= (inter K (family_inter u C)) emptyset)))) (!= (inter K (family_inter I C)) emptyset)))
   hard_negative:
     statement: 閉集合の減少列は、各項が空でなければ共通部分も空でない。
@@ -857,17 +1064,22 @@
   topic: 距離空間・コンパクト性
   statement: 距離空間のコンパクト部分集合は有界閉集合である。
   statement_en: A compact subset of a metric space is closed and bounded.
-  assumptions: ["Xは距離空間", "KはXのコンパクト部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合K"]
-  conclusion: KはXの閉集合であり、有界である。
+  assumptions:
+  - $X$は距離空間
+  - $K$は$X$のコンパクト部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$K$
+  conclusion: $K$は$X$の閉集合であり、有界である。
   answer: |
-    距離空間はハウスドルフなのでコンパクト集合Kは閉である。Kが空でないとしてa∈Kを1つとる。開球B(a,n)全体はKを覆うので有限個で覆え、最大の半径をRとするとK⊆B(a,R)である。空集合なら明らかに有界である。
+    $X$を距離空間、$K$を$X$のコンパクト部分集合とする。距離空間はハウスドルフ空間であり、ハウスドルフ空間のコンパクト部分集合は閉集合なので、$K$は閉集合である。
+    有界性を示す。$K$が空なら有界である。$K$が空でないとき$a\in K$を1つとる。開球$B(a,n)$（$n$は正の整数）全体は$X$を覆うので、コンパクト性より有限個で$K$を覆える。その半径の最大値を$R$とすると$K\subseteq B(a,R)$であり、$K$は有界である。
   strategy: Hausdorffness gives closedness; a cover by balls gives boundedness.
   sketch:
-    - "apply_theorem: Metric spaces are Hausdorff, so K is closed."
-    - "construct: Cover K by the balls B(a,n) centered at a point a."
-    - "derive: Finitely many balls suffice, so K lies in one ball."
-    - "conclude: K is bounded."
+  - 'apply_theorem: Metric spaces are Hausdorff, so K is closed.'
+  - 'construct: Cover K by the balls B(a,n) centered at a point a.'
+  - 'derive: Finitely many balls suffice, so K lies in one ball.'
+  - 'conclude: K is bounded.'
   openmath: (forall (X K) (-> (and (metric_space X) (compact_in X K)) (and (closed_in X K) (bounded_in X K))))
   hard_negative:
     statement: 距離空間の有界閉集合はコンパクトである。
@@ -884,17 +1096,21 @@
   topic: 分離公理・コンパクト空間
   statement: コンパクトなハウスドルフ空間は正規空間である。
   statement_en: A compact Hausdorff space is normal.
-  assumptions: ["Xはコンパクトなハウスドルフ空間"]
-  quantifiers: ["任意の位相空間X"]
-  conclusion: Xの交わらない2つの閉集合は交わらない開集合で分離できる。
+  assumptions:
+  - $X$はコンパクトなハウスドルフ空間
+  quantifiers:
+  - 任意の位相空間$X$
+  conclusion: $X$の交わらない2つの閉集合は、交わらない2つの開集合で分離できる。
   answer: |
-    A, BをXの交わらない閉集合とする。Xはコンパクトなので、A, Bはコンパクトである。ハウスドルフ空間の交わらないコンパクト集合は交わらない開集合で分離できるので、Xは正規である。
+    $X$をコンパクトなハウスドルフ空間とし、$A,B$を$X$の交わらない閉集合とする。コンパクト空間の閉部分集合なので、$A,B$はコンパクトである。
+    まず$a\in A$を固定する。各$b\in B$について$a\neq b$なので、$a$を含む開集合$U_b$と$b$を含む開集合$V_b$で交わらないものがある。$B$はコンパクトなので有限個の$b_1,\dots,b_m\in B$で$B\subseteq W_a:=\bigcup_{l=1}^mV_{b_l}$となる（$B$が空なら$m=0$とする）。$O_a:=\bigcap_{l=1}^mU_{b_l}$は$a$を含む開集合で、$W_a$と交わらない。
+    次に族$(O_a)_{a\in A}$は$A$を覆うので、有限個の$a_1,\dots,a_k\in A$で$A\subseteq U:=\bigcup_{l=1}^kO_{a_l}$となる。$V:=\bigcap_{l=1}^kW_{a_l}$とおくと、$V$は$B$を含む開集合である。各$O_{a_l}$は$W_{a_l}$と交わらないので、$U$と$V$は交わらない。
   strategy: Closed subsets are compact, then separate disjoint compact sets.
   sketch:
-    - "setup: Take disjoint closed sets A and B."
-    - "derive: They are compact as closed subsets of a compact space."
-    - "apply_theorem: Disjoint compact sets in a Hausdorff space are separated by open sets."
-    - "conclude: X is normal."
+  - 'setup: Take disjoint closed sets A and B.'
+  - 'derive: They are compact as closed subsets of a compact space.'
+  - 'apply_theorem: Disjoint compact sets in a Hausdorff space are separated by open sets.'
+  - 'conclude: X is normal.'
   openmath: (forall (X) (-> (and (compact_space X) (hausdorff_space X)) (normal_space X)))
   hard_negative:
     statement: コンパクト空間は常に正規空間である。
@@ -911,18 +1127,25 @@
   topic: 距離空間・一様連続性
   statement: コンパクト距離空間から距離空間への連続写像は一様連続である。
   statement_en: A continuous map from a compact metric space to a metric space is uniformly continuous.
-  assumptions: ["Xはコンパクト距離空間", "Yは距離空間", "f:X→Yは連続"]
-  quantifiers: ["任意の距離空間X, Y", "任意の連続写像f"]
-  conclusion: fは一様連続である。
+  assumptions:
+  - $X$はコンパクト距離空間
+  - $Y$は距離空間
+  - $f:X\to Y$は連続
+  quantifiers:
+  - 任意の距離空間$X,Y$
+  - 任意の連続写像$f$
+  conclusion: $f$は一様連続である。
   answer: |
-    ε>0を固定する。各x∈Xでd(y,x)<2δ_xならd(f(y),f(x))<ε/2となるδ_x>0をとる。開球B(x,δ_x)全体はXを覆うので有限個B(x_i,δ_{x_i})で覆え、δをδ_{x_i}の最小値とする。d(y,z)<δとし、y∈B(x_i,δ_{x_i})とする。このときd(z,x_i)<2δ_{x_i}なので、三角不等式よりd(f(y),f(z))<εである。
+    $X$をコンパクト距離空間、$Y$を距離空間、$f:X\to Y$を連続写像とし、$\varepsilon>0$を固定する。$X$が空なら主張は明らかなので、空でないとする。
+    連続性より、各$x\in X$に対して$\delta_x>0$があり、$d(y,x)<2\delta_x$なら$d(f(y),f(x))<\varepsilon/2$となる。開球$B(x,\delta_x)$全体は$X$を覆うので、有限個の点$x_1,\dots,x_m$で$X=\bigcup_{l=1}^mB(x_l,\delta_{x_l})$となる。$\delta=\min_l\delta_{x_l}>0$とおく。
+    $d(y,z)<\delta$とする。$y\in B(x_l,\delta_{x_l})$となる$l$をとると、$d(z,x_l)\leq d(z,y)+d(y,x_l)<\delta+\delta_{x_l}\leq2\delta_{x_l}$である。よって$d(f(y),f(x_l))<\varepsilon/2$かつ$d(f(z),f(x_l))<\varepsilon/2$であり、三角不等式より$d(f(y),f(z))<\varepsilon$である。$\delta$は$\varepsilon$だけで定まるので、$f$は一様連続である。
   strategy: Use a finite subcover to take a uniform δ.
   sketch:
-    - "setup: Fix ε > 0 and pick δ_x from continuity at each point x."
-    - "apply_theorem: Compactness gives a finite subcover by the balls B(x, δ_x)."
-    - "construct: Let δ be the minimum of the finitely many δ_{x_i}."
-    - "derive: Points within δ both lie within 2δ_{x_i} of a common center x_i."
-    - "conclude: The triangle inequality gives d(f(y), f(z)) < ε."
+  - 'setup: Fix ε > 0 and pick δ_x from continuity at each point x.'
+  - 'apply_theorem: Compactness gives a finite subcover by the balls B(x, δ_x).'
+  - 'construct: Let δ be the minimum of the finitely many δ_{x_i}.'
+  - 'derive: Points within δ both lie within 2δ_{x_i} of a common center x_i.'
+  - 'conclude: The triangle inequality gives d(f(y), f(z)) < ε.'
   openmath: (forall (X Y f) (-> (and (metric_space X) (compact_space X) (metric_space Y) (continuous_between X Y f)) (uniformly_continuous_map X Y f)))
   hard_negative:
     statement: 有界な距離空間上の連続関数は一様連続である。
@@ -937,19 +1160,27 @@
   kind: gap
   level: 3
   topic: 距離空間・コンパクト集合と閉集合の距離
-  statement: 距離空間で交わらないコンパクト集合Kと閉集合Cの間には正の距離がある。
+  statement: 距離空間で交わらないコンパクト集合$K$と閉集合$C$の間には正の距離がある。
   statement_en: A compact set K and a disjoint closed set C in a metric space are at positive distance from each other.
-  assumptions: ["Xは距離空間", "KはXのコンパクト部分集合", "CはXの閉集合", "K∩Cは空"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合K, C"]
-  conclusion: r>0が存在し、任意のx∈K, y∈Cについてd(x,y)≥rとなる。
+  assumptions:
+  - $X$は距離空間
+  - $K$は$X$のコンパクト部分集合
+  - $C$は$X$の閉集合
+  - $K\cap C=\emptyset$
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$K,C$
+  conclusion: $r>0$が存在し、任意の$x\in K$と$y\in C$について$r\leq d(x,y)$となる。
   answer: |
-    Cが空なら明らかなので空でないとする。関数x↦d(x,C)は連続であり、Cが閉なのでx∉Cでは正である。Kが空でなければKのコンパクト性より最小値mをとり、m>0である。m=rとすれば、x∈K, y∈Cについてd(x,y)≥d(x,C)≥rである。Kが空なら任意のrでよい。
+    $X$を距離空間、$K$を$X$のコンパクト部分集合、$C$を$X$の閉集合とし、$K\cap C=\emptyset$とする。$K$または$C$が空なら$r=1$でよい。
+    $K,C$が空でないとする。$g(x)=\inf_{y\in C}d(x,y)$とおく。三角不等式より$|g(x)-g(x')|\leq d(x,x')$なので、$g$は連続である。$x\notin C$なら、$C^c$は開集合なので$B(x,\rho)\cap C=\emptyset$となる$\rho>0$があり、$g(x)\geq\rho>0$である。
+    $K$はコンパクトで空でないので、最大値・最小値の定理より$g$は$K$上で最小値をある点$x_0\in K$でとる。$x_0\notin C$なので$r:=g(x_0)>0$である。任意の$x\in K$と$y\in C$について$d(x,y)\geq g(x)\geq r$である。
   strategy: Minimize the continuous positive function x ↦ d(x,C) on K.
   sketch:
-    - "setup: Dispose of the trivial cases where K or C is empty."
-    - "derive: x ↦ d(x,C) is continuous and positive on K since C is closed and disjoint from K."
-    - "apply_theorem: The extreme value theorem gives a positive minimum r on K."
-    - "conclude: Hence d(x,y) ≥ d(x,C) ≥ r for x in K and y in C."
+  - 'setup: Dispose of the trivial cases where K or C is empty.'
+  - 'derive: x ↦ d(x,C) is continuous and positive on K since C is closed and disjoint from K.'
+  - 'apply_theorem: The extreme value theorem gives a positive minimum r on K.'
+  - 'conclude: Hence d(x,y) ≥ d(x,C) ≥ r for x in K and y in C.'
   openmath: (forall (X K C) (-> (and (metric_space X) (compact_in X K) (closed_in X C) (= (inter K C) emptyset)) (exists (r) (and (> r 0) (forall (x y) (-> (and (in x K) (in y C)) (>= (dist_of x y) r)))))))
   hard_negative:
     statement: 距離空間の交わらない2つの閉集合の間には常に正の距離がある。
@@ -969,20 +1200,29 @@
   kind: textbook
   level: 3
   topic: 距離空間・点列コンパクト性
-  statement: 距離空間の部分集合Kについて、Kがコンパクトであることと点列コンパクトであることは同値である。
+  statement: 距離空間の部分集合$K$について、$K$がコンパクトであることと点列コンパクトであることは同値である。
   statement_en: A subset K of a metric space is compact if and only if every sequence in K has a subsequence converging to a point of K.
-  assumptions: ["Xは距離空間", "KはXの部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合K"]
-  conclusion: Kのコンパクト性と、K内の任意の点列がKの点に収束する部分列をもつことは同値である。
+  assumptions:
+  - $X$は距離空間
+  - $K$は$X$の部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$K$
+  conclusion: $K$がコンパクトであることと、すべての項が$K$に属する任意の点列が$K$の点に収束する部分列をもつことは同値である。
   answer: |
-    概略を述べる。Kがコンパクトのとき、Kの点に収束する部分列をもたない点列があれば、Kの各点の小さな球は点列の項を有限個しか含まず、有限被覆と矛盾する。逆にKが点列コンパクトとする。まずKが全有界であることを示す。有限のε網がなければ、距離ε以上離れた点列がとれ、収束部分列をもたない。次にルベーグ数の議論で、開被覆に対するδをとり、δ網の有限個の球を被覆の要素に含めることで有限部分被覆を得る。
+    $X$を距離空間、$K$を$X$の部分集合とする。
+    まず$K$がコンパクトであるとし、$(a_n)$をすべての項が$K$に属する点列とする。$K$の点に収束する部分列をもたないと仮定する。このとき各$x\in K$に$r_x>0$があって、$a_n\in B(x,r_x)$となる添字$n$は有限個である。もしそうでなければ、ある$x\in K$についてどの$k$でも$B(x,1/(k+1))$に無限個の添字の項が入る。そこで$\varphi(0)<\varphi(1)<\dots$を$a_{\varphi(k)}\in B(x,1/(k+1))$となるように選ぶと、$x$に収束する部分列が得られるからである。開球$B(x,r_x)$全体は$K$を覆うので有限個で$K$を覆える。すると全項が$K$に属することから添字全体が有限集合となり、矛盾する。
+    逆に、$K$が点列コンパクトであるとする。$K$が空なら明らかなので、空でないとする。
+    第1段階として、任意の$\varepsilon>0$について$K$は中心が$K$の点である半径$\varepsilon$の開球の有限個で覆えることを示す。覆えないと仮定すると、$x_{n+1}\in K\setminus\bigcup_{k\leq n}B(x_k,\varepsilon)$と帰納的に点列$(x_n)$をとれる。異なる$m,n$で$d(x_m,x_n)\geq\varepsilon$なので、どの部分列もコーシー列でなく収束しない。これは点列コンパクト性に反する。
+    第2段階として、$(U_i)_{i\in\iota}$を$K$を覆う開集合族とし、$\delta>0$で次を満たすものがあることを示す。任意の$x\in K$について$B(x,\delta)$はある$U_i$に含まれる。そのような$\delta$がないと仮定すると、各$n$について$x_n\in K$で、$B(x_n,1/(n+1))$がどの$U_i$にも含まれないものがある。部分列$(x_{\varphi(k)})$が$x\in K$に収束するとする。$x\in U_j$となる$j$と、$B(x,2r)\subseteq U_j$となる$r>0$をとる。$k$を十分大きくとると$d(x_{\varphi(k)},x)<r$かつ$1/(\varphi(k)+1)<r$なので、$B(x_{\varphi(k)},1/(\varphi(k)+1))\subseteq B(x,2r)\subseteq U_j$となり、矛盾する。
+    第3段階として、第2段階の$\delta$に第1段階を適用し、$K\subseteq\bigcup_{l=1}^mB(x_l,\delta)$かつ$x_l\in K$とする。各$B(x_l,\delta)$を含む$U_{i_l}$を選ぶと、$U_{i_1},\dots,U_{i_m}$は$K$を覆う。よって$K$はコンパクトである。
   strategy: Compactness gives cluster points; conversely use total boundedness and a Lebesgue number (outline).
   sketch:
-    - "contradiction: A sequence without convergent subsequence contradicts a finite cover by small balls."
-    - "derive: Sequential compactness implies total boundedness via ε-separated sequences."
-    - "derive: Sequential compactness gives a Lebesgue number for any open cover."
-    - "construct: Take a finite δ-net for the Lebesgue number δ."
-    - "conclude: Each ball of the net lies in a cover member, giving a finite subcover."
+  - 'contradiction: A sequence without convergent subsequence contradicts a finite cover by small balls.'
+  - 'derive: Sequential compactness implies total boundedness via ε-separated sequences.'
+  - 'derive: Sequential compactness gives a Lebesgue number for any open cover.'
+  - 'construct: Take a finite δ-net for the Lebesgue number δ.'
+  - 'conclude: Each ball of the net lies in a cover member, giving a finite subcover.'
   openmath: (forall (X K) (-> (metric_space X) (<-> (compact_in X K) (sequentially_compact_in X K))))
   hard_negative:
     statement: 任意の位相空間でコンパクトであることと点列コンパクトであることは同値である。
@@ -997,19 +1237,26 @@
   kind: named
   level: 2
   topic: ユークリッド空間・ハイネ・ボレルの定理
-  statement: ハイネ・ボレルの定理。ℝ^nの部分集合がコンパクトであることと、有界閉集合であることは同値である。
+  statement: ハイネ・ボレルの定理。$\mathbb{R}^n$（ユークリッド距離）の部分集合がコンパクトであることと、有界閉集合であることは同値である。
   statement_en: A subset of Euclidean space ℝ^n is compact if and only if it is closed and bounded.
-  assumptions: ["nは自然数", "Kはℝ^nの部分集合"]
-  quantifiers: ["任意の自然数n", "任意の部分集合K"]
-  conclusion: Kのコンパクト性と、Kが有界閉であることは同値である。
+  assumptions:
+  - $n$は自然数
+  - $K$は$\mathbb{R}^n$の部分集合
+  quantifiers:
+  - 任意の自然数$n$
+  - 任意の部分集合$K$
+  conclusion: $K$がコンパクトであることと、$K$が閉集合かつ有界であることは同値である。
   answer: |
-    コンパクトならば有界閉であることは、距離空間で一般に成り立つ。逆にKを有界閉とする。Kは立方体[-R,R]^nに含まれる。閉区間[-R,R]は区間縮小法によりコンパクトであり、コンパクト集合の有限積としてこの立方体もコンパクトである。Kはその閉部分集合なのでコンパクトである。
+    $n$を自然数、$K$をユークリッド距離を入れた$\mathbb{R}^n$の部分集合とする。距離空間のコンパクト部分集合は有界閉集合なので、$K$がコンパクトなら$K$は有界閉集合である。
+    逆に$K$を有界閉集合とする。ある$R>0$で$K$は$\|x\|\leq R$の範囲にあり、各座標は$|x_j|\leq\|x\|\leq R$を満たすので、$K\subseteq[-R,R]^n$である。
+    閉区間$[a,b]$がコンパクトであることを示す。$(U_i)$を$[a,b]$を覆う開集合族とし、$[a,t]$が有限個の$U_i$で覆えるような$t\in[a,b]$の上限を$c$とする。$c\in U_j$となる$j$と、$(c-\eta,c+\eta)\subseteq U_j$となる$\eta>0$をとる。上限の性質より$c-\eta<t\leq c$となる$t$で$[a,t]$が有限個で覆えるものがある。それに$U_j$を加えると、$[a,\min(c+\eta/2,b)]$が有限個で覆える。上限の定義より$c=b$であり、$[a,b]$自身も有限個で覆える。
+    ユークリッド距離の位相は積位相に等しく、チコノフの定理（コンパクト空間の積はコンパクト）の有限個の場合より$[-R,R]^n$はコンパクトである。$K$はその閉部分集合なのでコンパクトである。
   strategy: Enclose K in a cube, which is a finite product of compact intervals.
   sketch:
-    - "derive: Compact implies closed and bounded in any metric space."
-    - "setup: Conversely enclose a closed bounded K in a cube [-R,R]^n."
-    - "apply_theorem: Closed intervals are compact and finite products of compact sets are compact."
-    - "conclude: K is a closed subset of a compact set, so it is compact."
+  - 'derive: Compact implies closed and bounded in any metric space.'
+  - 'setup: Conversely enclose a closed bounded K in a cube [-R,R]^n.'
+  - 'apply_theorem: Closed intervals are compact and finite products of compact sets are compact.'
+  - 'conclude: K is a closed subset of a compact set, so it is compact.'
   openmath: (forall (n K) (<-> (compact_in (euclidean_space n) K) (and (closed_in (euclidean_space n) K) (bounded_in (euclidean_space n) K))))
   hard_negative:
     statement: 任意の距離空間で、有界閉集合はコンパクトである。
@@ -1024,20 +1271,29 @@
   kind: named
   level: 3
   topic: 距離空間・ルベーグ数
-  statement: ルベーグの数の補題。距離空間のコンパクト集合Kの開被覆{U_i}に対し、δ>0が存在して、各x∈Kについて球B(x,δ)はあるU_iに含まれる。
+  statement: ルベーグの数の補題。距離空間のコンパクト集合$K$を覆う開集合族$(U_i)_{i\in\iota}$に対し、$\delta>0$が存在して、各$x\in K$について開球$B(x,\delta)$はある$U_i$に含まれる。
   statement_en: For an open cover of a compact subset K of a metric space, there is δ > 0 such that for every x in K the ball B(x,δ) lies in some member of the cover.
-  assumptions: ["Xは距離空間", "KはXのコンパクト部分集合", "各U_iは開で、Kは⋃U_iに含まれる"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合K", "任意の開集合族U"]
-  conclusion: δ>0が存在し、任意のx∈Kに対しB(x,δ)⊆U_iとなるiがある。
+  assumptions:
+  - $X$は距離空間
+  - $K$は$X$のコンパクト部分集合
+  - $(U_i)_{i\in\iota}$は$X$の開集合の族
+  - $K\subseteq\bigcup_{i\in\iota}U_i$
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$K$
+  - 任意の開集合族$(U_i)_{i\in\iota}$
+  conclusion: $\delta>0$が存在し、任意の$x\in K$に対し$B(x,\delta)\subseteq U_i$となる$i$がある。
   answer: |
-    各x∈KについてB(x,2r_x)⊆U_iとなるr_x>0とiをとる。球B(x,r_x)全体はKを覆うので、有限個B(x_1,r_1),…,B(x_m,r_m)で覆える。δをr_1,…,r_mの最小値とする。x∈Kを任意にとるとd(x,x_j)<r_jとなるjがあり、B(x,δ)⊆B(x_j,2r_j)が三角不等式から従う。後者はあるU_iに含まれる。
+    $X$を距離空間、$K$を$X$のコンパクト部分集合、$(U_i)_{i\in\iota}$を$K$を覆う$X$の開集合の族とする。$K$が空なら$\delta=1$でよいので、空でないとする。
+    各$x\in K$について$x\in U_i$となる$i$があり、$U_i$は開集合なので、$r_x>0$があって$B(x,2r_x)\subseteq U_i$となる。開球$B(x,r_x)$全体は$K$を覆うので、有限個の点$x_1,\dots,x_m\in K$で$K\subseteq\bigcup_{j=1}^mB(x_j,r_{x_j})$となる。$\delta=\min_jr_{x_j}>0$とおく。
+    $x\in K$とすると、$d(x,x_j)<r_{x_j}$となる$j$がある。$z\in B(x,\delta)$なら$d(z,x_j)\leq d(z,x)+d(x,x_j)<\delta+r_{x_j}\leq2r_{x_j}$である。よって$B(x,\delta)\subseteq B(x_j,2r_{x_j})$であり、右辺はある$U_i$に含まれる。
   strategy: Take a finite subcover by half-radius balls and the minimum radius.
   sketch:
-    - "setup: For each x in K choose r_x with B(x,2r_x) inside a cover member."
-    - "apply_theorem: Finitely many balls B(x_j,r_j) cover K."
-    - "construct: Let δ be the minimum of the radii r_j."
-    - "derive: For x in B(x_j,r_j) the triangle inequality gives B(x,δ) ⊆ B(x_j,2r_j)."
-    - "conclude: Hence B(x,δ) lies in a cover member."
+  - 'setup: For each x in K choose r_x with B(x,2r_x) inside a cover member.'
+  - 'apply_theorem: Finitely many balls B(x_j,r_j) cover K.'
+  - 'construct: Let δ be the minimum of the radii r_j.'
+  - 'derive: For x in B(x_j,r_j) the triangle inequality gives B(x,δ) ⊆ B(x_j,2r_j).'
+  - 'conclude: Hence B(x,δ) lies in a cover member.'
   openmath: (forall (X K I U) (-> (and (metric_space X) (compact_in X K) (forall (i) (-> (in i I) (open_in X (fn_value U i)))) (subset K (family_union I U))) (exists (d) (and (> d 0) (forall (x) (-> (in x K) (exists (i) (and (in i I) (subset (open_ball x d) (fn_value U i))))))))))
   hard_negative:
     statement: 距離空間の任意の開被覆にルベーグ数が存在する。
@@ -1052,18 +1308,25 @@
   kind: gap
   level: 2
   topic: 連結性・連続写像
-  statement: 連結集合の連続写像による像は連結である。
+  statement: 位相空間の連結部分集合の、連続写像による像は連結である。
   statement_en: The image of a connected set under a continuous map is connected.
-  assumptions: ["X, Yは位相空間", "SはXの空でない連結部分集合", "f:X→Yは連続"]
-  quantifiers: ["任意の位相空間X, Y", "任意の部分集合S", "任意の連続写像f"]
-  conclusion: f(S)はYの空でない連結部分集合である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $S$は$X$の空でない連結部分集合
+  - $f:X\to Y$は連続
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の部分集合$S$
+  - 任意の連続写像$f$
+  conclusion: $f(S)$は$Y$の空でない連結部分集合である。
   answer: |
-    f(S)が交わらない開集合U, Vで分割されたとする。すなわちf(S)⊆U∪Vで、U∩f(S)とV∩f(S)は空でなく、交わらない。するとf^{-1}(U), f^{-1}(V)はSを同様に分割し、Sの連結性に反する。Sが空でないのでf(S)も空でない。
+    $X,Y$を位相空間、$S$を$X$の空でない連結部分集合、$f:X\to Y$を連続写像とする。ここで部分集合$A$が連結であるとは、$A$が空でなく、開集合$U,V$で$A$を分離できないことである。$U,V$が$A$を分離するとは、$A\subseteq U\cup V$、$A\cap U\neq\emptyset$、$A\cap V\neq\emptyset$、$A\cap U\cap V=\emptyset$がすべて成り立つことをいう。
+    $S$が空でないので$f(S)$も空でない。$Y$の開集合$U,V$が$f(S)$を分離すると仮定する。$f$は連続なので$f^{-1}(U),f^{-1}(V)$は$X$の開集合である。$S\subseteq f^{-1}(U)\cup f^{-1}(V)$である。$f(S)\cap U\neq\emptyset$より$S\cap f^{-1}(U)\neq\emptyset$であり、$V$についても同様である。$x\in S\cap f^{-1}(U)\cap f^{-1}(V)$なら$f(x)\in f(S)\cap U\cap V$となるので、$S\cap f^{-1}(U)\cap f^{-1}(V)=\emptyset$である。よって$f^{-1}(U),f^{-1}(V)$は$S$を分離し、$S$の連結性に反する。
   strategy: Pull back a separation of the image.
   sketch:
-    - "contradiction: Assume open U and V separate f(S)."
-    - "derive: Their preimages are open by continuity and separate S."
-    - "conclude: This contradicts connectedness of S, so f(S) is connected."
+  - 'contradiction: Assume open U and V separate f(S).'
+  - 'derive: Their preimages are open by continuity and separate S.'
+  - 'conclude: This contradicts connectedness of S, so f(S) is connected.'
   openmath: (forall (X Y S f) (-> (and (connected_in X S) (continuous_between X Y f)) (connected_in Y (image_of f S))))
   hard_negative:
     statement: 連続写像による連結集合の逆像は連結である。
@@ -1078,19 +1341,27 @@
   kind: gap
   level: 2
   topic: 連結性・和集合
-  statement: 共通の点xをもつ連結集合の空でない族の和集合は連結である。
+  statement: 位相空間の点$x$を共通にもつ連結集合の、空でない族の和集合は連結である。
   statement_en: The union of a nonempty family of connected sets sharing a common point is connected.
-  assumptions: ["Xは位相空間", "添字集合は空でない", "各S_iは連結", "xは全てのS_iに属する"]
-  quantifiers: ["任意の位相空間X", "任意の空でない集合族S", "任意の点x"]
-  conclusion: ⋃_i S_iは空でない連結集合である。
+  assumptions:
+  - $X$は位相空間
+  - 添字集合$\iota$は空でない
+  - 各$S_i$は$X$の連結部分集合
+  - $x$はすべての$S_i$に属する
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の空でない集合族$(S_i)_{i\in\iota}$
+  - 任意の点$x$
+  conclusion: $\bigcup_{i\in\iota}S_i$は空でない連結集合である。
   answer: |
-    添字集合が空でないので和集合はxを含み、空でない。開集合U, Vが和集合を分割するとし、x∈Uとする。和集合に属するVの点yがあれば、yはあるS_iに属する。このときS_iはxとyを含むので、U, VによってS_iが分割され、S_iの連結性に反する。よってVは和集合と交わらない。
+    $X$を位相空間、$\iota$を空でない添字集合、$(S_i)_{i\in\iota}$を$X$の連結部分集合の族、$x$をすべての$S_i$に属する点とし、$W=\bigcup_{i\in\iota}S_i$とおく。開集合$U,V$が集合$A$を分離するとは、$A\subseteq U\cup V$、$A\cap U\neq\emptyset$、$A\cap V\neq\emptyset$、$A\cap U\cap V=\emptyset$がすべて成り立つことをいう。連結とは、空でなく、開集合で分離できないことである。
+    $\iota$は空でないので$x\in W$であり、$W$は空でない。開集合$U,V$が$W$を分離すると仮定する。$x\in U\cup V$なので、必要なら$U,V$を入れ替えて$x\in U$とする。$W\cap V$の点$y$をとると、$y\in S_i$となる$i$がある。このとき$S_i\subseteq U\cup V$、$x\in S_i\cap U$、$y\in S_i\cap V$であり、$S_i\cap U\cap V\subseteq W\cap U\cap V=\emptyset$である。よって$U,V$は$S_i$を分離し、$S_i$の連結性に反する。
   strategy: A separation of the union would separate the member containing a second point.
   sketch:
-    - "contradiction: Assume open U and V separate the union, with x in U."
-    - "setup: Take a point y of the union in V and a member S_i containing it."
-    - "derive: S_i contains x and y, so U and V separate S_i."
-    - "conclude: This contradicts connectedness of S_i."
+  - 'contradiction: Assume open U and V separate the union, with x in U.'
+  - 'setup: Take a point y of the union in V and a member S_i containing it.'
+  - 'derive: S_i contains x and y, so U and V separate S_i.'
+  - 'conclude: This contradicts connectedness of S_i.'
   openmath: (forall (X I S x) (-> (and (!= I emptyset) (forall (i) (-> (in i I) (and (connected_in X (fn_value S i)) (in x (fn_value S i)))))) (connected_in X (family_union I S))))
   hard_negative:
     statement: 連結集合の和集合は常に連結である。
@@ -1105,18 +1376,25 @@
   kind: gap
   level: 2
   topic: 連結性・閉包
-  statement: Sが空でない連結集合でS⊆T⊆cl(S)ならばTも連結である。特に空でない連結集合の閉包は連結である。
+  statement: 位相空間の連結部分集合$S$と部分集合$T$が$S\subseteq T\subseteq\overline{S}$を満たすならば、$T$も連結である。特に連結集合の閉包は連結である。
   statement_en: If S is nonempty and connected and S ⊆ T ⊆ cl(S), then T is nonempty and connected; in particular closures of nonempty connected sets are connected.
-  assumptions: ["Xは位相空間", "SはXの空でない連結部分集合", "S⊆T⊆cl(S)"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S, T"]
-  conclusion: Tは空でない連結集合である。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の空でない連結部分集合
+  - $S\subseteq T\subseteq\overline{S}$
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S,T$
+  conclusion: $T$は空でない連結集合である。
   answer: |
-    TはSを含むので空でない。開集合U, VがTを分割するとする。TのUの点はSの閉包の点なのでUはSと交わり、同様にVもSと交わる。するとU, VはSを分割し、Sの連結性に反する。よってTは連結である。
+    $X$を位相空間、$S$を$X$の空でない連結部分集合、$T$を$S\subseteq T\subseteq\overline{S}$を満たす部分集合とする。開集合$U,V$が集合$A$を分離するとは、$A\subseteq U\cup V$、$A\cap U\neq\emptyset$、$A\cap V\neq\emptyset$、$A\cap U\cap V=\emptyset$がすべて成り立つことをいう。連結とは、空でなく、開集合で分離できないことである。
+    $T$は$S$を含むので空でない。開集合$U,V$が$T$を分離すると仮定する。$T\cap U$の点$t$をとると、$t\in\overline{S}$であり$U$は$t$を含む開集合なので、$U\cap S\neq\emptyset$である。同様に$V\cap S\neq\emptyset$である。また$S\subseteq T\subseteq U\cup V$であり、$S\cap U\cap V\subseteq T\cap U\cap V=\emptyset$である。よって$U,V$は$S$を分離し、$S$の連結性に反する。
+    特に$T=\overline{S}$とすると、閉包$\overline{S}$は連結である。
   strategy: Each part of a separation of T must meet S because T lies in the closure of S.
   sketch:
-    - "contradiction: Assume open U and V separate T."
-    - "derive: Points of T in U are closure points of S, so U meets S; likewise V."
-    - "conclude: U and V then separate S, a contradiction."
+  - 'contradiction: Assume open U and V separate T.'
+  - 'derive: Points of T in U are closure points of S, so U meets S; likewise V.'
+  - 'conclude: U and V then separate S, a contradiction.'
   openmath: (forall (X S T) (-> (and (connected_in X S) (subset S T) (subset T (closure_in X S))) (connected_in X T)))
   hard_negative:
     statement: 連結集合の内部は連結である。
@@ -1131,19 +1409,25 @@
   kind: gap
   level: 2
   topic: 連結性・積
-  statement: 空でない連結集合S, Tの積S×Tは積空間で連結である。
+  statement: 位相空間$X,Y$の連結部分集合$S,T$の積$S\times T$は、積空間$X\times Y$で連結である。
   statement_en: The product of two nonempty connected sets is connected in the product space.
-  assumptions: ["X, Yは位相空間", "S⊆X, T⊆Yは空でない連結集合"]
-  quantifiers: ["任意の位相空間X, Y", "任意の部分集合S, T"]
-  conclusion: S×TはX×Yの空でない連結部分集合である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $S\subseteq X$と$T\subseteq Y$は空でない連結集合
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の部分集合$S,T$
+  conclusion: $S\times T$は$X\times Y$の空でない連結部分集合である。
   answer: |
-    (a,b)∈S×Tを固定する。各(x,y)∈S×Tについて、{x}×T∪S×{b}は、共通点(x,b)をもつ2つの連結集合の和なので連結で、(a,b)と(x,y)を含む。これらの集合は全て(a,b)を共有するので、和集合S×Tは連結である。
+    $X,Y$を位相空間、$S\subseteq X$と$T\subseteq Y$を空でない連結集合とする。ここで連結集合は空でないものとする。次の2つの事実を使う。連結集合の連続像は連結である。また、1点を共有する連結集合の空でない族の和集合は連結である。
+    $(a,b)\in S\times T$を固定する。$x\in S$に対し、$t\mapsto(x,t)$は$Y$から$X\times Y$への連続写像なので、$\{x\}\times T$は連結である。同様に$s\mapsto(s,b)$により$S\times\{b\}$は連結である。
+    各$(x,y)\in S\times T$について$C_{x,y}=(\{x\}\times T)\cup(S\times\{b\})$とおく。この2つの連結集合は点$(x,b)$を共有するので、$C_{x,y}$は連結である。$C_{x,y}$は$(a,b)$と$(x,y)$を含み、$S\times T$に含まれる。すべての$C_{x,y}$は$(a,b)$を共有し、和集合は$S\times T$である。よって$S\times T$は連結である。
   strategy: Cover the product by connected crosses through a fixed point.
   sketch:
-    - "setup: Fix (a,b) in S × T."
-    - "construct: For each (x,y) form the cross {x} × T ∪ S × {b}."
-    - "derive: Each cross is connected as a union of two connected sets sharing (x,b)."
-    - "conclude: All crosses contain (a,b), so their union S × T is connected."
+  - 'setup: Fix (a,b) in S × T.'
+  - 'construct: For each (x,y) form the cross {x} × T ∪ S × {b}.'
+  - 'derive: Each cross is connected as a union of two connected sets sharing (x,b).'
+  - 'conclude: All crosses contain (a,b), so their union S × T is connected.'
   openmath: (forall (X Y S T) (-> (and (connected_in X S) (connected_in Y T)) (connected_in (product_space X Y) (product_set S T))))
   hard_negative:
     statement: Sが連結ならば、任意の空でない集合Tについて積S×Tは連結である。
@@ -1158,20 +1442,27 @@
   kind: textbook
   level: 2
   topic: 連結性・実数直線
-  statement: ℝの空でない部分集合Sが連結であることと、Sの2点の間の点が常にSに属すること(Sが区間であること)は同値である。
+  statement: $\mathbb{R}$の空でない部分集合$S$が連結であることと、$S$の2点の間の点が常に$S$に属すること（$S$が区間であること）は同値である。
   statement_en: A nonempty subset S of ℝ is connected if and only if it contains every point between any two of its points.
-  assumptions: ["Sはℝの空でない部分集合"]
-  quantifiers: ["任意の空でない部分集合S"]
-  conclusion: Sの連結性と、x, y∈S, x≤z≤yならばz∈Sであることは同値である。
+  assumptions:
+  - $S$は$\mathbb{R}$の空でない部分集合
+  quantifiers:
+  - 任意の空でない部分集合$S$
+  conclusion: $S$が連結であることと、任意の$x,y\in S$と実数$z$について$x\leq z\leq y$なら$z\in S$であることは同値である。
   answer: |
-    x<z<yでx, y∈S, z∉Sなら、(-∞,z)と(z,∞)がSを分割するのでSは連結でない。逆にSが区間の条件を満たすとし、開集合U, VがSを分割するとする。x∈U∩S, y∈V∩Sをとり、必要ならU, Vを入れ替えてx<yとし、zを[x,y]∩Uの上限とする。区間の条件より[x,y]⊆Sなのでzはどちらかに属するが、いずれの場合も開集合であることから上限の性質に矛盾する。
+    $S$を$\mathbb{R}$の空でない部分集合とする。開集合$U,V$が$S$を分離するとは、$S\subseteq U\cup V$、$S\cap U\neq\emptyset$、$S\cap V\neq\emptyset$、$S\cap U\cap V=\emptyset$がすべて成り立つことをいう。空でない$S$が連結であるとは、開集合で分離できないことである。
+    まず対偶で一方向を示す。$x,y\in S$、$x\leq z\leq y$かつ$z\notin S$とする。$z\neq x,y$なので$x<z<y$である。$U=(-\infty,z)$と$V=(z,\infty)$は交わらず、$z\notin S$より$S\subseteq U\cup V$であり、$x\in U$、$y\in V$である。よって$S$は連結でない。
+    逆に$S$が区間の条件を満たすとし、開集合$U,V$が$S$を分離すると仮定する。$x\in S\cap U$と$y\in S\cap V$をとる。$S\cap U\cap V=\emptyset$より$x\neq y$であり、必要なら$U,V$を入れ替えて$x<y$とする。条件より$[x,y]\subseteq S$である。$z=\sup([x,y]\cap U)$とおくと$z\in[x,y]\subseteq S\subseteq U\cup V$である。
+    $z\in U$の場合、$y\in V$と$S\cap U\cap V=\emptyset$より$z\neq y$なので$z<y$である。$U$は開集合なので、$z$より大きい$[x,y]\cap U$の点があり、上限であることに反する。
+    $z\in V$の場合、$x\in U$と$S\cap U\cap V=\emptyset$より$z\neq x$なので$x<z$である。$V$は開集合なので$\eta>0$があって$(z-\eta,z]\subseteq V\cap[x,y]$となる。これらの点は$S\cap V$に属するので$U$に属さない。よって$z-\eta$も$[x,y]\cap U$の上界であり、上限であることに反する。
+    どちらの場合も矛盾するので、$S$は連結である。
   strategy: A missing point separates; otherwise use a supremum argument.
   sketch:
-    - "derive: A gap z gives the separation (-∞,z) and (z,∞)."
-    - "contradiction: Otherwise assume open U and V separate S with x in U and y in V."
-    - "construct: Let z be the supremum of [x,y] ∩ U."
-    - "case_split: z lies in U or in V."
-    - "conclude: Either case contradicts the supremum since U and V are open."
+  - 'derive: A gap z gives the separation (-∞,z) and (z,∞).'
+  - 'contradiction: Otherwise assume open U and V separate S with x in U and y in V.'
+  - 'construct: Let z be the supremum of [x,y] ∩ U.'
+  - 'case_split: z lies in U or in V.'
+  - 'conclude: Either case contradicts the supremum since U and V are open.'
   openmath: (forall (S) (-> (and (subset S R) (!= S emptyset)) (<-> (connected_in R S) (interval_like S))))
   hard_negative:
     statement: ℝの開集合はすべて連結である。
@@ -1192,18 +1483,23 @@
   kind: gap
   level: 2
   topic: 弧状連結性
-  statement: 弧状連結な集合は連結である。
+  statement: 位相空間の弧状連結な部分集合は連結である。
   statement_en: A path-connected set is connected.
-  assumptions: ["Xは位相空間", "SはXの弧状連結部分集合"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: SはXの連結部分集合である。
+  assumptions:
+  - $X$は位相空間
+  - $S$は$X$の弧状連結部分集合
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S$は$X$の連結部分集合である。
   answer: |
-    a∈Sを固定する。各x∈Sについてaとxを結ぶS内の道をとると、その像は閉区間の連続像なので連結である。これらの像はaを共有し、和集合はSなので、Sは連結である。
+    $X$を位相空間、$S$を$X$の弧状連結部分集合とする。弧状連結とは、$S$が空でなく、$S$の任意の2点が$S$内の道で結べることである。ここで連結集合は空でないものとする。次の2つの事実を使う。閉区間$[0,1]$は連結であり、連結集合の連続像は連結である。また、1点を共有する連結集合の空でない族の和集合は連結である。
+    $a\in S$を固定する。各$x\in S$について、$a$と$x$を結ぶ$S$内の道$\gamma_x:[0,1]\to S$をとる。その像$\gamma_x([0,1])$は$[0,1]$の連続像なので連結であり、$a,x$を含み$S$に含まれる。これらの像はすべて$a$を共有し、和集合は$S$である。よって$S$は連結である。
   strategy: Write S as a union of connected path images through a fixed point.
   sketch:
-    - "setup: Fix a point a in S."
-    - "derive: Each path from a to x has connected image since [0,1] is connected."
-    - "conclude: The images share a and their union is S, so S is connected."
+  - 'setup: Fix a point a in S.'
+  - 'derive: Each path from a to x has connected image since [0,1] is connected.'
+  - 'conclude: The images share a and their union is S, so S is connected.'
   openmath: (forall (X S) (-> (path_connected_in X S) (connected_in X S)))
   hard_negative:
     statement: 連結な集合は弧状連結である。
@@ -1218,18 +1514,25 @@
   kind: gap
   level: 2
   topic: 弧状連結性・連続写像
-  statement: 弧状連結な集合の連続写像による像は弧状連結である。
+  statement: 位相空間の弧状連結な部分集合の、連続写像による像は弧状連結である。
   statement_en: The image of a path-connected set under a continuous map is path-connected.
-  assumptions: ["X, Yは位相空間", "SはXの弧状連結部分集合", "f:X→Yは連続"]
-  quantifiers: ["任意の位相空間X, Y", "任意の部分集合S", "任意の連続写像f"]
-  conclusion: f(S)は弧状連結である。
+  assumptions:
+  - $X,Y$は位相空間
+  - $S$は$X$の弧状連結部分集合
+  - $f:X\to Y$は連続
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の部分集合$S$
+  - 任意の連続写像$f$
+  conclusion: $f(S)$は$Y$の弧状連結部分集合である。
   answer: |
-    f(S)の2点f(a), f(b)をa, b∈Sでとる。aとbを結ぶS内の道γをとる。f∘γは連続で、f(a)とf(b)を結ぶf(S)内の道である。
+    $X,Y$を位相空間、$S$を$X$の弧状連結部分集合、$f:X\to Y$を連続写像とする。弧状連結とは、空でなく、任意の2点が集合内の道で結べることである。
+    $S$が空でないので$f(S)$も空でない。$f(S)$の2点を$f(a),f(b)$（$a,b\in S$）と書く。$a$と$b$を結ぶ$S$内の道$\gamma:[0,1]\to S$をとる。$f\circ\gamma$は連続で、値は$f(S)$に入り、$f(a)$と$f(b)$を結ぶ。よって$f(S)$は弧状連結である。
   strategy: Compose a path with f.
   sketch:
-    - "setup: Take two image points f(a) and f(b) with a and b in S."
-    - "derive: A path in S from a to b exists."
-    - "conclude: Composing with f gives a path in f(S)."
+  - 'setup: Take two image points f(a) and f(b) with a and b in S.'
+  - 'derive: A path in S from a to b exists.'
+  - 'conclude: Composing with f gives a path in f(S).'
   openmath: (forall (X Y S f) (-> (and (path_connected_in X S) (continuous_between X Y f)) (path_connected_in Y (image_of f S))))
   hard_negative:
     statement: 弧状連結な集合の閉包は弧状連結である。
@@ -1246,16 +1549,22 @@
   topic: 連結性・開かつ閉な集合
   statement: 連結空間の空でない開かつ閉な部分集合は全体に一致する。
   statement_en: A nonempty subset of a connected space that is both open and closed is the whole space.
-  assumptions: ["Xは連結空間", "Sは開かつ閉", "Sは空でない"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合S"]
-  conclusion: S=Xである。
+  assumptions:
+  - $X$は連結な位相空間
+  - $S$は$X$の開かつ閉な部分集合
+  - $S$は空でない
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S=X$である。
   answer: |
-    SとS^cはともに開で、交わらず、和はXである。Xは連結なので一方は空である。Sは空でないのでS^cが空であり、S=Xとなる。
+    $X$を連結な位相空間、$S$を$X$の空でない開かつ閉な部分集合とする。連結性より、$X$は交わらない2つの空でない開集合の和に分解できない。
+    $S$は開集合であり、$S$は閉集合なので$S^c$も開集合である。$S$と$S^c$は交わらず、和は$X$である。$S$は空でないので$S^c$は空である。よって$S=X$である。
   strategy: S and its complement form an open partition of X.
   sketch:
-    - "derive: S and S^c are disjoint open sets covering X."
-    - "apply_theorem: Connectedness forces one of them to be empty."
-    - "conclude: Since S is nonempty, S^c is empty and S = X."
+  - 'derive: S and S^c are disjoint open sets covering X.'
+  - 'apply_theorem: Connectedness forces one of them to be empty.'
+  - 'conclude: Since S is nonempty, S^c is empty and S = X.'
   openmath: (forall (X S) (-> (and (preconnected_in X X) (open_in X S) (closed_in X S) (!= S emptyset)) (= S X)))
   hard_negative:
     statement: 連結空間の空でない開集合は全体に一致する。
@@ -1272,17 +1581,23 @@
   topic: 分離公理・極限の一意性
   statement: ハウスドルフ空間で点列の極限は高々1つである。
   statement_en: A sequence in a Hausdorff space has at most one limit.
-  assumptions: ["Xはハウスドルフ空間", "aはXの点列", "aはLとMに収束する"]
-  quantifiers: ["任意の位相空間X", "任意の点列a", "任意の点L, M"]
-  conclusion: L=Mである。
+  assumptions:
+  - $X$はハウスドルフ空間
+  - $(a_n)$は$X$の点列
+  - $(a_n)$は$L$と$M$に収束する
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の点列$(a_n)$
+  - 任意の点$L,M$
+  conclusion: $L=M$である。
   answer: |
-    L≠Mと仮定すると、交わらない開近傍U∋L, V∋Mがある。収束より、十分大きなnでa_n∈Uかつa_n∈Vとなる。これはU∩Vが空であることに反する。
+    $X$をハウスドルフ空間、$(a_n)$を$X$の点列とし、$(a_n)$が点$L$にも点$M$にも収束するとする。$L\neq M$と仮定すると、$L$を含む開集合$U$と$M$を含む開集合$V$で交わらないものがある。収束の定義より、十分大きな$n$で$a_n\in U$かつ$a_n\in V$となる。これは$U\cap V=\emptyset$に反する。よって$L=M$である。
   strategy: Separate the two limits and use eventual membership.
   sketch:
-    - "contradiction: Assume L ≠ M."
-    - "apply_theorem: Hausdorffness gives disjoint open neighborhoods."
-    - "derive: For large n the term a_n lies in both."
-    - "conclude: This contradicts disjointness."
+  - 'contradiction: Assume L ≠ M.'
+  - 'apply_theorem: Hausdorffness gives disjoint open neighborhoods.'
+  - 'derive: For large n the term a_n lies in both.'
+  - 'conclude: This contradicts disjointness.'
   openmath: (forall (X a L M) (-> (and (hausdorff_space X) (seq_tends_to a L) (seq_tends_to a M)) (= L M)))
   hard_negative:
     statement: 任意の位相空間で点列の極限は一意である。
@@ -1297,19 +1612,23 @@
   kind: gap
   level: 2
   topic: 分離公理・T1空間
-  statement: 位相空間がT1空間であることと、すべての一点集合が閉であることは同値である。
+  statement: 位相空間が$T_1$空間であることと、すべての一点集合が閉集合であることは同値である。
   statement_en: A topological space is T1 if and only if every singleton is closed.
-  assumptions: ["Xは位相空間"]
-  quantifiers: ["任意の位相空間X"]
-  conclusion: XがT1であることと、任意のxについて{x}が閉であることは同値である。
+  assumptions:
+  - $X$は位相空間
+  quantifiers:
+  - 任意の位相空間$X$
+  conclusion: $X$が$T_1$空間であることと、任意の$x\in X$について$\{x\}$が閉集合であることは同値である。
   answer: |
-    T1とは異なる2点x, yに対しxを含みyを含まない開集合があることである。T1なら、任意のyに対しy≠xからyの開近傍で{x}と交わらないものがあるので{x}^cは開である。逆に{x}^cが開なら、これは異なる点yを含み、xを含まない開集合である。よって2点の役割を入れ替えてT1を得る。
+    $X$を位相空間とする。$X$が$T_1$空間であるとは、異なる任意の2点$x,y$に対し、$x$を含み$y$を含まない開集合が存在することである。
+    $X$が$T_1$空間であるとし、$x\in X$とする。各$y\neq x$について、$y$を含み$x$を含まない開集合$V_y$がある。$\{x\}^c=\bigcup_{y\neq x}V_y$は開集合なので、$\{x\}$は閉集合である。
+    逆にすべての一点集合が閉集合であるとし、$x\neq y$とする。$\{y\}^c$は開集合で、$x$を含み$y$を含まない。よって$X$は$T_1$空間である。
   strategy: Identify the complement of a singleton with the separating open sets.
   sketch:
-    - "translate: T1 means each point y ≠ x has an open neighborhood excluding x."
-    - "derive: Then the complement of {x} is a union of open sets."
-    - "derive: Conversely the complement of {x} itself is such a neighborhood of y."
-    - "conclude: The two conditions are equivalent."
+  - 'translate: T1 means each point y ≠ x has an open neighborhood excluding x.'
+  - 'derive: Then the complement of {x} is a union of open sets.'
+  - 'derive: Conversely the complement of {x} itself is such a neighborhood of y.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (X) (<-> (t1_space X) (forall (x) (-> (in x X) (closed_in X (singleton_set x))))))
   hard_negative:
     statement: T1空間はハウスドルフ空間である。
@@ -1330,18 +1649,22 @@
   topic: 分離公理・距離空間
   statement: 距離空間は正規空間である。
   statement_en: Every metric space is normal.
-  assumptions: ["Xは距離空間"]
-  quantifiers: ["任意の距離空間X"]
-  conclusion: Xの交わらない閉集合は交わらない開集合で分離できる。
+  assumptions:
+  - $X$は距離空間
+  quantifiers:
+  - 任意の距離空間$X$
+  conclusion: $X$の交わらない2つの閉集合は、交わらない2つの開集合で分離できる。
   answer: |
-    A, Bを交わらない閉集合とする。空なら明らかなので空でないとする。関数d(x,A)とd(x,B)は連続であり、閉集合なのでd(x,A)=0はx∈Aと同値である。U={x | d(x,A)<d(x,B)}とV={x | d(x,B)<d(x,A)}はともに開で交わらず、それぞれAとBを含む。
+    $X$を距離空間とし、$A,B$を$X$の交わらない閉集合とする。$A$が空なら$\emptyset$と$X$で分離でき、$B$が空の場合も同様である。
+    $A,B$が空でないとする。$g_A(x)=\inf_{a\in A}d(x,a)$、$g_B(x)=\inf_{b\in B}d(x,b)$とおく。三角不等式より$|g_A(x)-g_A(x')|\leq d(x,x')$なので$g_A$は連続であり、$g_B$も同様である。$A$は閉集合なので、$x\notin A$ならある開球$B(x,\rho)$が$A$と交わらず、$g_A(x)\geq\rho>0$である。したがって$g_A(x)=0$は$x\in A$と同値であり、$g_B$についても同様である。
+    $U=\{x\mid g_A(x)<g_B(x)\}$、$V=\{x\mid g_B(x)<g_A(x)\}$とおく。$g_A,g_B$は連続なので$U,V$は開集合であり、明らかに交わらない。$a\in A$なら、$g_A(a)=0$であり、$a\notin B$より$g_B(a)>0$なので$a\in U$である。同様に$B\subseteq V$である。
   strategy: Compare the distance functions to the two closed sets.
   sketch:
-    - "setup: Take disjoint nonempty closed sets A and B."
-    - "construct: Let U and V be the sets where d(x,A) < d(x,B) and d(x,B) < d(x,A)."
-    - "derive: Continuity of distance makes U and V open, and they are disjoint."
-    - "derive: Closedness gives A ⊆ U and B ⊆ V."
-    - "conclude: X is normal."
+  - 'setup: Take disjoint nonempty closed sets A and B.'
+  - 'construct: Let U and V be the sets where d(x,A) < d(x,B) and d(x,B) < d(x,A).'
+  - 'derive: Continuity of distance makes U and V open, and they are disjoint.'
+  - 'derive: Closedness gives A ⊆ U and B ⊆ V.'
+  - 'conclude: X is normal.'
   openmath: (forall (X) (-> (metric_space X) (normal_space X)))
   hard_negative:
     statement: ハウスドルフ空間は正規空間である。
@@ -1356,20 +1679,32 @@
   kind: named
   level: 3
   topic: 分離公理・ウリゾーンの補題
-  statement: ウリゾーンの補題。正規空間の交わらない閉集合A, Bに対し、A上で0、B上で1、値域が[0,1]の連続関数が存在する。
+  statement: ウリゾーンの補題。正規空間の交わらない閉集合$A,B$に対し、$A$上で$0$、$B$上で$1$をとり、値が$[0,1]$に入る連続関数が存在する。
   statement_en: For disjoint closed sets A and B in a normal space, there is a continuous function to [0,1] equal to 0 on A and 1 on B.
-  assumptions: ["Xは正規空間", "A, BはXの閉集合", "A∩Bは空"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合A, B"]
-  conclusion: 連続関数f:X→ℝで、f|_A=0, f|_B=1, 0≤f≤1となるものが存在する。
+  assumptions:
+  - $X$は正規空間
+  - $A,B$は$X$の閉集合
+  - $A\cap B=\emptyset$
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$A,B$
+  conclusion: 連続関数$f:X\to\mathbb{R}$で、$A$上で$f=0$、$B$上で$f=1$、$X$上で$0\leq f\leq1$となるものが存在する。
   answer: |
-    概略を述べる。正規性を繰り返し使い、2進有理数rごとに開集合U_rをとる。ここでA⊆U_r、U_rはBと交わらず、r<sならcl(U_r)⊆U_sとなるように構成する。次にf(x)をx∈U_rとなるrの下限(なければ1)と定義する。fの連続性は包含関係cl(U_r)⊆U_sから示される。f=0がA上で、f=1がB上で成り立つ。
+    $X$を正規空間、$A,B$を$X$の交わらない閉集合とする。正規空間とは、交わらない2つの閉集合が交わらない2つの開集合で分離できる空間である。
+    準備として次を確かめる。$C$が閉集合、$W$が開集合で$C\subseteq W$なら、開集合$V$で$C\subseteq V$かつ$\overline{V}\subseteq W$となるものがある。実際、$C$と$W^c$は交わらない閉集合なので、交わらない開集合$V\supseteq C$と$V'\supseteq W^c$がとれる。$V\subseteq V'^c$であり$V'^c$は閉集合なので$\overline{V}\subseteq V'^c\subseteq W$である。
+    第1段階として、$[0,1]$内の2進有理数全体を$D$とし、開集合の族$(U_r)_{r\in D}$を次を満たすように作る。$r<s$なら$\overline{U_r}\subseteq U_s$であり、$A\subseteq U_0$であり、$U_1=B^c$である。$A\subseteq B^c$なので、準備より$U_0$を$A\subseteq U_0$かつ$\overline{U_0}\subseteq U_1$ととれる。分母$2^m$の点まで作れたとする。$r=(2k+1)/2^{m+1}$に対し、$p=k/2^m$、$q=(k+1)/2^m$とおく。$\overline{U_p}\subseteq U_q$なので、準備より$U_r$を$\overline{U_p}\subseteq U_r$かつ$\overline{U_r}\subseteq U_q$ととれる。隣り合う点について包含が成り立てば、$\overline{U_r}\subseteq U_{r'}\subseteq\overline{U_{r'}}\subseteq\dots$と順にたどることで、任意の$r<s$について包含が成り立つ。
+    第2段階として、$f(x)=\inf(\{r\in D\mid x\in U_r\}\cup\{1\})$と定める。$0\leq f\leq1$である。$x\in A$なら$x\in U_0$なので$f(x)=0$である。$x\in B$なら$x\notin U_1$であり、$r\in D$について$U_r\subseteq U_1$なので、どの$U_r$にも属さず$f(x)=1$である。
+    次の2つが成り立つ。第一に、$x\in\overline{U_r}$なら$f(x)\leq r$である。$r=1$なら明らかであり、$r<1$なら$r<s$となる任意の$s\in D$について$x\in U_s$なので$f(x)\leq s$であり、$D$の稠密性から$f(x)\leq r$である。第二に、$x\notin U_r$なら$f(x)\geq r$である。$x\in U_s$となる$s\in D$は、$s\leq r$なら$U_s\subseteq U_r$に反するので$s>r$であり、また$1\geq r$だからである。
+    第3段階として$f$の連続性を示す。$\mathbb{R}$の開集合は$(-\infty,b)$と$(a,\infty)$の形の集合の有限個の共通部分の和集合なので、これらの逆像が開集合であることを示せばよい。
+    $b>1$なら$\{f<b\}=X$である。$b\leq1$なら$\{f<b\}=\bigcup_{r\in D,\,r<b}U_r$である。実際、$f(x)<b\leq1$なら下限の定義より$x\in U_r$かつ$r<b$となる$r$があり、逆に$x\in U_r$かつ$r<b$なら$f(x)\leq r<b$である。よって$\{f<b\}$は開集合である。
+    $a<0$なら$\{f>a\}=X$である。$a\geq0$なら$\{f>a\}=\bigcup_{r\in D,\,r>a}(\overline{U_r})^c$である。実際、$f(x)>a$なら$a<r<f(x)$となる$r\in D$があり、第一の性質より$x\notin\overline{U_r}$である。逆に$x\notin\overline{U_r}$かつ$r>a$なら、$x\notin U_r$なので第二の性質より$f(x)\geq r>a$である。よって$\{f>a\}$は開集合である。
   strategy: Build a dyadic chain of open sets by normality and read f off the chain (outline).
   sketch:
-    - "construct: Use normality to build open sets U_r indexed by dyadic rationals with cl(U_r) ⊆ U_s for r < s."
-    - "setup: Arrange A ⊆ U_r and U_r disjoint from B."
-    - "construct: Define f(x) as the infimum of r with x in U_r, or 1 if none."
-    - "derive: The nesting of U_r gives continuity of f."
-    - "conclude: f is 0 on A, 1 on B and takes values in [0,1]."
+  - 'construct: Use normality to build open sets U_r indexed by dyadic rationals with cl(U_r) ⊆ U_s for r < s.'
+  - 'setup: Arrange A ⊆ U_r and U_r disjoint from B.'
+  - 'construct: Define f(x) as the infimum of r with x in U_r, or 1 if none.'
+  - 'derive: The nesting of U_r gives continuity of f.'
+  - 'conclude: f is 0 on A, 1 on B and takes values in [0,1].'
   openmath: (forall (X A B) (-> (and (normal_space X) (closed_in X A) (closed_in X B) (= (inter A B) emptyset)) (exists (f) (and (continuous_between X R f) (forall (x) (-> (in x A) (= (fn_value f x) 0))) (forall (x) (-> (in x B) (= (fn_value f x) 1))) (forall (x) (and (<= 0 (fn_value f x)) (<= (fn_value f x) 1)))))))
   hard_negative:
     statement: ハウスドルフ空間の交わらない閉集合は連続関数で分離できる。
@@ -1385,20 +1720,29 @@
   kind: named
   level: 3
   topic: 分離公理・ティーツェの拡張定理
-  statement: ティーツェの拡張定理。正規空間の閉集合C上の連続な実数値関数は、空間全体の連続関数に拡張できる。
+  statement: ティーツェの拡張定理。正規空間の閉集合$C$上の連続な実数値関数は、空間全体の連続関数に拡張できる。
   statement_en: A continuous real-valued function on a closed subset of a normal space extends to a continuous function on the whole space.
-  assumptions: ["Xは正規空間", "CはXの閉集合", "f:C→ℝは連続"]
-  quantifiers: ["任意の位相空間X", "任意の部分集合C", "任意の連続関数f"]
-  conclusion: 連続関数g:X→ℝでC上f=gとなるものが存在する。
+  assumptions:
+  - $X$は正規空間
+  - $C$は$X$の閉集合
+  - $f:C\to\mathbb{R}$は連続
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の部分集合$C$
+  - 任意の連続関数$f$
+  conclusion: 連続関数$g:X\to\mathbb{R}$で、任意の$x\in C$について$g(x)=f(x)$となるものが存在する。
   answer: |
-    概略を述べる。まず|f|≤1の場合を扱う。{f≤-1/3}と{f≥1/3}にウリゾーンの補題を適用すると、|g_1|≤1/3で|f-g_1|≤2/3をC上で満たす連続関数g_1がX上に得られる。これを繰り返すと、一様収束する級数Σg_nが得られ、その和が拡張になる。非有界な場合は、ℝと(-1,1)の同相で有界な場合に帰着する。
+    $X$を正規空間、$C$を$X$の閉集合、$f:C\to\mathbb{R}$を連続関数とする。ウリゾーンの補題を次の形で用いる。$X$の交わらない閉集合$A,B$に対し、$A$上で$0$、$B$上で$1$をとる連続関数$u:X\to[0,1]$が存在する。
+    第1段階として次を示す。$c>0$で$h:C\to[-c,c]$が連続なら、連続関数$k:X\to[-c/3,c/3]$で、$C$上で$|h-k|\leq2c/3$となるものがある。$A=\{x\in C\mid h(x)\leq-c/3\}$、$B=\{x\in C\mid h(x)\geq c/3\}$とおく。これらは$C$の閉集合であり、$C$は$X$の閉集合なので$X$の閉集合であり、交わらない。ウリゾーンの補題の関数$u$により$k=(2c/3)(u-1/2)$とおくと、$k$の値は$[-c/3,c/3]$に入り、$A$上で$k=-c/3$、$B$上で$k=c/3$である。$x\in A$なら$h(x),k(x)$はともに$[-c,-c/3]$に入り、$x\in B$なら$[c/3,c]$に入り、それ以外の$x\in C$なら$[-c/3,c/3]$に入る。いずれの場合も$|h(x)-k(x)|\leq2c/3$である。
+    第2段階として、$C$上で$|h|\leq1$となる連続関数$h:C\to\mathbb{R}$を考える。第1段階を繰り返して連続関数$k_n:X\to\mathbb{R}$（$n\geq0$）を次のように作る。$h_n=h-\sum_{j<n}k_j$が$C$上で$|h_n|\leq(2/3)^n$を満たすとき、$c=(2/3)^n$として$h_n$に第1段階を適用した関数を$k_n$とする。このとき$X$上で$|k_n|\leq(1/3)(2/3)^n$であり、$C$上で$|h_{n+1}|\leq(2/3)^{n+1}$である。ワイエルシュトラスの優級数判定法より$F=\sum_{n\geq0}k_n$は$X$上で一様収束する。連続関数の一様極限なので$F$は連続であり、$|F|\leq\sum_{n\geq0}(1/3)(2/3)^n=1$である。$C$上では$h_n\to0$なので$F=h$である。
+    第3段階として一般の$f$を扱う。$\phi(t)=t/(1+|t|)$は$\mathbb{R}$から$(-1,1)$への同相写像で、逆写像は$\psi(s)=s/(1-|s|)$である。$h=\phi\circ f$は$C$上で$|h|<1$を満たすので、第2段階より連続関数$F:X\to[-1,1]$で$C$上$F=h$となるものがある。$E=\{x\in X\mid|F(x)|=1\}$は閉集合であり、$C$上で$|F|<1$なので$C$と交わらない。ウリゾーンの補題より、$E$上で$0$、$C$上で$1$をとる連続関数$u:X\to[0,1]$がある。$G=uF$とおくと、$E$上で$G=0$であり、$E$の外では$|G|\leq|F|<1$なので、$G$の値は$(-1,1)$に入る。$C$上で$G=h$である。$g=\psi\circ G$は$X$上で連続であり、$C$上で$g=\psi\circ\phi\circ f=f$である。
   strategy: Approximate by Urysohn functions and sum a uniformly convergent series (outline).
   sketch:
-    - "setup: Reduce to a bounded function with |f| ≤ 1."
-    - "apply_theorem: Urysohn's lemma on {f ≤ -1/3} and {f ≥ 1/3} gives a first approximation g_1."
-    - "induction: Repeat on the remainder, shrinking by 2/3 at each step."
-    - "derive: The series of approximations converges uniformly to a continuous function."
-    - "conclude: Its sum extends f; the unbounded case follows through a homeomorphism of ℝ with (-1,1)."
+  - 'setup: Reduce to a bounded function with |f| ≤ 1.'
+  - 'apply_theorem: Urysohn''s lemma on {f ≤ -1/3} and {f ≥ 1/3} gives a first approximation g_1.'
+  - 'induction: Repeat on the remainder, shrinking by 2/3 at each step.'
+  - 'derive: The series of approximations converges uniformly to a continuous function.'
+  - 'conclude: Its sum extends f; the unbounded case follows through a homeomorphism of ℝ with (-1,1).'
   openmath: (forall (X C f) (-> (and (normal_space X) (closed_in X C) (continuous_between (subspace_topology_on X C) R f)) (exists (g) (and (continuous_between X R g) (forall (x) (-> (in x C) (= (fn_value g x) (fn_value f x))))))))
   hard_negative:
     statement: 正規空間の任意の部分集合上の連続な実数値関数は全体に拡張できる。
@@ -1416,17 +1760,25 @@
   topic: 距離空間・開球と閉球
   statement: 距離空間で開球は開集合であり、閉球は閉集合である。
   statement_en: In a metric space, open balls are open and closed balls are closed.
-  assumptions: ["Xは距離空間", "xはXの点", "rは実数"]
-  quantifiers: ["任意の距離空間X", "任意の点x", "任意の実数r"]
-  conclusion: B(x,r)は開集合であり、閉球は閉集合である。
+  assumptions:
+  - $X$は距離空間
+  - $x$は$X$の点
+  - $r$は実数
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の点$x$
+  - 任意の実数$r$
+  conclusion: $B(x,r)=\{y\mid d(y,x)<r\}$は開集合であり、$\overline{B}(x,r)=\{y\mid d(y,x)\leq r\}$は閉集合である。
   answer: |
-    y∈B(x,r)とし、s=r-d(x,y)>0とおく。三角不等式よりB(y,s)⊆B(x,r)なので開球は開である。閉球の補集合の点yについてs=d(x,y)-r>0とおくと、B(y,s)は閉球と交わらない。よって閉球は閉である。
+    $X$を距離空間、$x$を$X$の点、$r$を実数とする。開球を$B(x,r)=\{y\mid d(y,x)<r\}$、閉球を$\overline{B}(x,r)=\{y\mid d(y,x)\leq r\}$と書く。$r$の符号に制限はなく、以下の議論はどの実数$r$でも成り立つ。
+    $y\in B(x,r)$とし、$s=r-d(x,y)>0$とおく。$z\in B(y,s)$なら$d(z,x)\leq d(z,y)+d(y,x)<s+d(x,y)=r$である。よって$B(y,s)\subseteq B(x,r)$であり、$B(x,r)$は開集合である。
+    $y\notin\overline{B}(x,r)$とし、$s=d(x,y)-r>0$とおく。$z\in B(y,s)$なら$d(z,x)\geq d(y,x)-d(z,y)>d(x,y)-s=r$である。よって$B(y,s)$は閉球と交わらず、閉球の補集合は開集合である。したがって閉球は閉集合である。
   strategy: Use the triangle inequality with the margin r - d(x,y).
   sketch:
-    - "setup: Take y in the ball and let s = r - d(x,y)."
-    - "derive: The triangle inequality gives B(y,s) ⊆ B(x,r)."
-    - "derive: For y outside the closed ball, s = d(x,y) - r gives a ball missing it."
-    - "conclude: Open balls are open and closed balls are closed."
+  - 'setup: Take y in the ball and let s = r - d(x,y).'
+  - 'derive: The triangle inequality gives B(y,s) ⊆ B(x,r).'
+  - 'derive: For y outside the closed ball, s = d(x,y) - r gives a ball missing it.'
+  - 'conclude: Open balls are open and closed balls are closed.'
   openmath: (forall (X x r) (-> (metric_space X) (and (open_in X (open_ball x r)) (closed_in X (closed_ball x r)))))
   hard_negative:
     statement: 開球の閉包は常に同じ中心と半径の閉球に等しい。
@@ -1441,18 +1793,27 @@
   kind: gap
   level: 2
   topic: 距離空間・コーシー列
-  statement: コーシー列が収束する部分列をもつならば、もとの点列も同じ極限に収束する。
+  statement: 距離空間のコーシー列が収束する部分列をもつならば、もとの点列も同じ極限に収束する。
   statement_en: A Cauchy sequence with a convergent subsequence converges to the same limit.
-  assumptions: ["Xは距離空間", "aはコーシー列", "φは狭義単調増加", "a∘φはLに収束する"]
-  quantifiers: ["任意の距離空間X", "任意の点列a", "任意の部分列φ", "任意の点L"]
-  conclusion: aはLに収束する。
+  assumptions:
+  - $X$は距離空間
+  - $(a_n)$はコーシー列
+  - $\varphi:\mathbb{N}\to\mathbb{N}$は狭義単調増加
+  - $(a_{\varphi(k)})$は$L$に収束する
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の点列$(a_n)$
+  - 任意の$\varphi$
+  - 任意の点$L$
+  conclusion: $(a_n)$は$L$に収束する。
   answer: |
-    ε>0をとる。コーシー性からNがあり、m, n≥Nでd(a_m,a_n)<ε/2となる。部分列の収束から、φ(k)≥Nかつd(a_{φ(k)},L)<ε/2となるkがとれる。n≥Nなら三角不等式よりd(a_n,L)≤d(a_n,a_{φ(k)})+d(a_{φ(k)},L)<εである。
+    $X$を距離空間、$(a_n)$を$X$のコーシー列、$\varphi:\mathbb{N}\to\mathbb{N}$を狭義単調増加な写像とし、部分列$(a_{\varphi(k)})$が点$L$に収束するとする。
+    $\varepsilon>0$をとる。コーシー性より$N$があり、$m,n\geq N$で$d(a_m,a_n)<\varepsilon/2$となる。$\varphi$は狭義単調増加なので$\varphi(k)\geq k$である。部分列の収束と合わせると、$\varphi(k)\geq N$かつ$d(a_{\varphi(k)},L)<\varepsilon/2$となる$k$がとれる。$n\geq N$なら、三角不等式より$d(a_n,L)\leq d(a_n,a_{\varphi(k)})+d(a_{\varphi(k)},L)<\varepsilon$である。
   strategy: Combine Cauchy estimates with one far term of the subsequence.
   sketch:
-    - "setup: Fix ε > 0 and N from the Cauchy condition at ε/2."
-    - "derive: Choose k with φ(k) ≥ N and a_{φ(k)} within ε/2 of L."
-    - "conclude: The triangle inequality gives d(a_n, L) < ε for n ≥ N."
+  - 'setup: Fix ε > 0 and N from the Cauchy condition at ε/2.'
+  - 'derive: Choose k with φ(k) ≥ N and a_{φ(k)} within ε/2 of L.'
+  - 'conclude: The triangle inequality gives d(a_n, L) < ε for n ≥ N.'
   openmath: (forall (X a p L) (-> (and (metric_space X) (cauchy_seq X a) (strictly_increasing_index p) (seq_tends_to (function_compose_map a p) L)) (seq_tends_to a L)))
   hard_negative:
     statement: 収束する部分列をもつ点列は収束する。
@@ -1469,17 +1830,21 @@
   topic: 距離空間・完備性
   statement: 完備距離空間の閉部分集合は、部分空間として完備である。
   statement_en: A closed subset of a complete metric space is complete as a subspace.
-  assumptions: ["Xは完備距離空間", "CはXの閉集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合C"]
-  conclusion: 部分空間Cは完備である。
+  assumptions:
+  - $X$は完備距離空間
+  - $C$は$X$の閉集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$C$
+  conclusion: 部分空間$C$は完備である。
   answer: |
-    C内のコーシー列a_nをとる。Xで距離は同じなので、これはXのコーシー列であり、Xの完備性からある点Lに収束する。Cは閉であり全項がCに属するので、L∈Cである。よってa_nはCで収束する。
+    $X$を完備距離空間、$C$を$X$の閉集合とする。$(a_n)$を部分空間$C$のコーシー列とする。$C$の距離は$X$の距離の制限なので、$(a_n)$は$X$のコーシー列であり、$X$の完備性よりある点$L\in X$に収束する。$C$は閉集合で全項が$C$に属するので、$L\in C$である。距離が同じなので$(a_n)$は部分空間$C$でも$L$に収束する。よって$C$は完備である。
   strategy: Take the limit in X and use closedness to stay in C.
   sketch:
-    - "setup: Take a Cauchy sequence in C."
-    - "derive: It is Cauchy in X, so it converges in X by completeness."
-    - "derive: Closedness of C puts the limit in C."
-    - "conclude: The subspace C is complete."
+  - 'setup: Take a Cauchy sequence in C.'
+  - 'derive: It is Cauchy in X, so it converges in X by completeness.'
+  - 'derive: Closedness of C puts the limit in C.'
+  - 'conclude: The subspace C is complete.'
   openmath: (forall (X C) (-> (and (complete_space X) (closed_in X C)) (complete_space (subspace_topology_on X C))))
   hard_negative:
     statement: 完備距離空間の任意の部分空間は完備である。
@@ -1496,17 +1861,22 @@
   topic: 距離空間・完備性
   statement: 距離空間の完備な部分集合は閉集合である。
   statement_en: A complete subset of a metric space is closed.
-  assumptions: ["Xは距離空間", "SはXの完備な部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合S"]
-  conclusion: SはXの閉集合である。
+  assumptions:
+  - $X$は距離空間
+  - $S$は$X$の完備な部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S$は$X$の閉集合である。
   answer: |
-    S内の点列a_nがL∈Xに収束するとする。収束列なのでコーシー列であり、Sの完備性からa_nはSのある点L'に収束する。極限の一意性よりL=L'∈Sである。距離空間では、これはSが閉であることを意味する。
+    $X$を距離空間、$S$を$X$の部分集合とし、$S$は完備であるとする。すなわち、すべての項が$S$に属するコーシー列は$S$の点に収束する。
+    すべての項が$S$に属する点列$(a_n)$が$L\in X$に収束するとする。収束列なので$(a_n)$はコーシー列であり、完備性より$S$のある点$L'$に収束する。距離空間での極限は一意なので$L=L'\in S$である。距離空間では、点列の極限について閉じた部分集合は閉集合なので、$S$は閉集合である。
   strategy: Use the limit in S and uniqueness of limits.
   sketch:
-    - "setup: Take a sequence in S converging to L in X."
-    - "derive: The sequence is Cauchy, so it converges to some L' in S."
-    - "apply_theorem: Limits in a metric space are unique, so L = L'."
-    - "conclude: S contains the limits of its sequences, so it is closed."
+  - 'setup: Take a sequence in S converging to L in X.'
+  - 'derive: The sequence is Cauchy, so it converges to some L'' in S.'
+  - 'apply_theorem: Limits in a metric space are unique, so L = L''.'
+  - 'conclude: S contains the limits of its sequences, so it is closed.'
   openmath: (forall (X S) (-> (and (metric_space X) (complete_subset X S)) (closed_in X S)))
   hard_negative:
     statement: 距離空間の閉部分集合は完備である。
@@ -1523,17 +1893,26 @@
   topic: 距離空間・一様収束
   statement: 位相空間から距離空間への連続写像の列が一様収束するとき、極限写像は連続である。
   statement_en: A uniform limit of continuous maps from a topological space into a metric space is continuous.
-  assumptions: ["Xは位相空間", "Yは距離空間", "各F_nは連続", "F_nはfに一様収束する"]
-  quantifiers: ["任意の位相空間X", "任意の距離空間Y", "任意の写像列F", "任意の写像f"]
-  conclusion: fは連続である。
+  assumptions:
+  - $X$は位相空間
+  - $Y$は距離空間
+  - 各$F_n:X\to Y$は連続
+  - $(F_n)$は$f:X\to Y$に一様収束する
+  quantifiers:
+  - 任意の位相空間$X$
+  - 任意の距離空間$Y$
+  - 任意の写像列$(F_n)$
+  - 任意の写像$f$
+  conclusion: $f$は連続である。
   answer: |
-    a∈Xとε>0をとる。一様収束より、nが存在して全てのxでd(F_n(x),f(x))<ε/3となる。F_nの連続性より、aの近傍Uでx∈Uならd(F_n(x),F_n(a))<ε/3となる。三角不等式より、x∈Uでd(f(x),f(a))<εである。
+    $X$を位相空間、$Y$を距離空間、$F_n:X\to Y$を連続写像の列とし、$(F_n)$が写像$f:X\to Y$に一様収束するとする。
+    $a\in X$と$\varepsilon>0$をとる。一様収束より$n$が存在して、すべての$x\in X$で$d(F_n(x),f(x))<\varepsilon/3$となる。$F_n$は連続なので、$a$を含む開集合$U$があって、$x\in U$なら$d(F_n(x),F_n(a))<\varepsilon/3$となる。$x\in U$なら三角不等式より$d(f(x),f(a))\leq d(f(x),F_n(x))+d(F_n(x),F_n(a))+d(F_n(a),f(a))<\varepsilon$である。よって$f$は$a$で連続である。
   strategy: The ε/3 argument.
   sketch:
-    - "setup: Fix a point a and ε > 0."
-    - "derive: Choose n with F_n uniformly within ε/3 of f."
-    - "derive: Continuity of F_n gives a neighborhood of a with variation below ε/3."
-    - "conclude: The triangle inequality gives d(f(x), f(a)) < ε on it."
+  - 'setup: Fix a point a and ε > 0.'
+  - 'derive: Choose n with F_n uniformly within ε/3 of f.'
+  - 'derive: Continuity of F_n gives a neighborhood of a with variation below ε/3.'
+  - 'conclude: The triangle inequality gives d(f(x), f(a)) < ε on it.'
   openmath: (forall (X Y F f) (-> (and (metric_space Y) (forall (n) (continuous_between X Y (seq_value F n))) (tends_uniformly F f)) (continuous_between X Y f)))
   hard_negative:
     statement: 連続関数列が各点収束すれば、極限関数は連続である。
@@ -1550,19 +1929,29 @@
   topic: 完備距離空間・バナッハの不動点定理
   statement: バナッハの不動点定理。空でない完備距離空間上の縮小写像はただ1つの不動点をもち、任意の点からの反復列はその不動点に収束する。
   statement_en: A contraction on a nonempty complete metric space has a unique fixed point, and every iteration sequence converges to it.
-  assumptions: ["Xは空でない完備距離空間", "0≤K<1", "任意のx, yについてd(f(x),f(y))≤K d(x,y)"]
-  quantifiers: ["任意の距離空間X", "任意の写像f", "任意の実数K"]
-  conclusion: f(x)=xとなる点xがただ1つ存在し、任意のzについてf^n(z)はxに収束する。
+  assumptions:
+  - $X$は空でない完備距離空間
+  - $f:X\to X$は写像
+  - $0\leq K<1$
+  - 任意の$x,y\in X$について$d(f(x),f(y))\leq Kd(x,y)$
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の写像$f$
+  - 任意の実数$K$
+  conclusion: $f(p)=p$となる点$p$がただ1つ存在し、任意の$z\in X$について$f^n(z)\to p$である。
   answer: |
-    点zをとり、a_n=f^n(z)とおく。d(a_{n+1},a_n)≤K^n d(a_1,a_0)と等比級数の評価からa_nはコーシー列であり、完備性より点xに収束する。fは連続なので、f(x)=lim f(a_n)=xである。f(y)=yならd(x,y)=d(f(x),f(y))≤K d(x,y)でK<1なのでx=yとなる。zは任意であり、不動点は一意なので、全ての反復列は同じxに収束する。
+    $X$を空でない完備距離空間、$f:X\to X$を写像、$K$を$0\leq K<1$を満たす実数とし、任意の$x,y\in X$で$d(f(x),f(y))\leq Kd(x,y)$とする。この不等式より$f$は連続である。
+    任意の$z\in X$について$a_n=f^n(z)$とおく。帰納法より$d(a_{n+1},a_n)\leq K^nd(a_1,a_0)$である。$m>n$なら、三角不等式と等比級数の評価より$d(a_m,a_n)\leq\sum_{j=n}^{m-1}K^jd(a_1,a_0)\leq\dfrac{K^n}{1-K}d(a_1,a_0)$である。$K^n\to0$なので$(a_n)$はコーシー列であり、完備性よりある点$x$に収束する。$f$は連続なので$f(x)=\lim_nf(a_n)=\lim_na_{n+1}=x$であり、$x$は不動点である。
+    不動点の一意性を示す。$f(x)=x$かつ$f(y)=y$なら$d(x,y)=d(f(x),f(y))\leq Kd(x,y)$であり、$(1-K)d(x,y)\leq0$と$K<1$より$x=y$である。
+    $X$は空でないので上の議論により不動点$p$が存在し、一意性より不動点は$p$だけである。各$z$の反復列の極限は不動点なので$p$に等しい。
   strategy: Show iterates are Cauchy by a geometric estimate; contraction gives uniqueness.
   sketch:
-    - "construct: Fix z and define the iterates a_n = f^n(z)."
-    - "derive: d(a_{n+1}, a_n) ≤ K^n d(a_1, a_0) makes the sequence Cauchy."
-    - "apply_theorem: Completeness gives a limit x."
-    - "derive: Continuity of f gives f(x) = x."
-    - "derive: Two fixed points satisfy d(x,y) ≤ K d(x,y), so x = y."
-    - "conclude: Iteration from any point converges to the unique fixed point."
+  - 'construct: Fix z and define the iterates a_n = f^n(z).'
+  - 'derive: d(a_{n+1}, a_n) ≤ K^n d(a_1, a_0) makes the sequence Cauchy.'
+  - 'apply_theorem: Completeness gives a limit x.'
+  - 'derive: Continuity of f gives f(x) = x.'
+  - 'derive: Two fixed points satisfy d(x,y) ≤ K d(x,y), so x = y.'
+  - 'conclude: Iteration from any point converges to the unique fixed point.'
   openmath: (forall (X f K) (-> (and (complete_space X) (!= X emptyset) (<= 0 K) (< K 1) (forall (x y) (<= (dist_of (fn_value f x) (fn_value f y)) (* K (dist_of x y))))) (exists (p) (and (= (fn_value f p) p) (forall (q) (-> (= (fn_value f q) q) (= q p))) (forall (z) (seq_tends_to (iterate_sequence f z) p))))))
   hard_negative:
     statement: 完備距離空間上で、任意のx≠yについてd(f(x),f(y))<d(x,y)を満たす写像は不動点をもつ。
@@ -1582,21 +1971,27 @@
   kind: named
   level: 3
   topic: 完備距離空間・ベールの範疇定理
-  statement: ベールの範疇定理。完備距離空間で可算個の稠密な開集合の共通部分は稠密である。
+  statement: ベールの範疇定理。完備距離空間で、可算個の稠密な開集合の共通部分は稠密である。
   statement_en: In a complete metric space, a countable intersection of dense open sets is dense.
-  assumptions: ["Xは完備距離空間", "各U_nは開かつ稠密"]
-  quantifiers: ["任意の距離空間X", "任意の開集合列U"]
-  conclusion: ⋂_n U_nはXで稠密である。
+  assumptions:
+  - $X$は完備距離空間
+  - 各$n\in\mathbb{N}$について$U_n$は$X$の稠密な開集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の開集合列$(U_n)$
+  conclusion: $\bigcap_{n\in\mathbb{N}}U_n$は$X$で稠密である。
   answer: |
-    空でない開集合Vをとる。U_0の稠密性から閉球B_0⊆V∩U_0をとり、順にB_{n+1}⊆int(B_n)∩U_{n+1}で半径が1/(n+2)未満の閉球をとる。中心の列はコーシー列であり、完備性より収束する。その極限は全てのB_nに属するので、V∩⋂_n U_nに属する。よって共通部分は稠密である。
+    $X$を完備距離空間、$(U_n)_{n\in\mathbb{N}}$を$X$の稠密な開集合の列とする。$V$を$X$の空でない開集合とし、$V\cap\bigcap_nU_n\neq\emptyset$を示す。閉球を$\overline{B}(x,r)=\{y\mid d(y,x)\leq r\}$と書く。空でない開集合は小さな閉球を含む。$y\in W$で$W$が開集合なら、$B(y,2r)\subseteq W$となる$r$について$\overline{B}(y,r)\subseteq W$だからである。
+    $U_0$は稠密なので$V\cap U_0$は空でない開集合であり、$0<r_0<1$で$\overline{B}(x_0,r_0)\subseteq V\cap U_0$となるものがある。$\overline{B}(x_n,r_n)$まで選んだとする。開球$B(x_n,r_n)$は空でない開集合で$U_{n+1}$は稠密なので、$B(x_n,r_n)\cap U_{n+1}$は空でない開集合である。そこで$0<r_{n+1}<1/(n+2)$かつ$\overline{B}(x_{n+1},r_{n+1})\subseteq B(x_n,r_n)\cap U_{n+1}$となるものを選ぶ。
+    $m,n\geq N$なら$x_m,x_n\in\overline{B}(x_N,r_N)$なので$d(x_m,x_n)\leq2r_N$である。$r_N\to0$より$(x_n)$はコーシー列であり、完備性より点$x$に収束する。各$N$について$n\geq N$で$x_n\in\overline{B}(x_N,r_N)$であり、閉球は閉集合なので$x\in\overline{B}(x_N,r_N)\subseteq U_N$である。また$x\in\overline{B}(x_0,r_0)\subseteq V$である。よって$x\in V\cap\bigcap_nU_n$である。空でない開集合がすべて$\bigcap_nU_n$と交わるので、この共通部分は稠密である。
   strategy: Build nested closed balls with radii shrinking to zero.
   sketch:
-    - "setup: Fix a nonempty open set V."
-    - "construct: Choose nested closed balls B_n with B_n ⊆ U_n and radii tending to 0."
-    - "derive: The centers form a Cauchy sequence."
-    - "apply_theorem: Completeness gives a limit point."
-    - "derive: The limit lies in every B_n, so in V and every U_n."
-    - "conclude: The intersection meets every nonempty open set."
+  - 'setup: Fix a nonempty open set V.'
+  - 'construct: Choose nested closed balls B_n with B_n ⊆ U_n and radii tending to 0.'
+  - 'derive: The centers form a Cauchy sequence.'
+  - 'apply_theorem: Completeness gives a limit point.'
+  - 'derive: The limit lies in every B_n, so in V and every U_n.'
+  - 'conclude: The intersection meets every nonempty open set.'
   openmath: (forall (X U) (-> (and (complete_space X) (forall (n) (and (open_in X (seq_value U n)) (dense_in X (seq_value U n))))) (dense_in X (family_inter N U))))
   hard_negative:
     statement: 完備距離空間で非可算個の稠密な開集合の共通部分は稠密である。
@@ -1613,17 +2008,23 @@
   topic: 完備距離空間・ベールの範疇定理の応用
   statement: 空でない完備距離空間が可算個の閉集合の和で表されるならば、そのうちの1つは空でない内部をもつ。
   statement_en: If a nonempty complete metric space is a countable union of closed sets, then one of them has nonempty interior.
-  assumptions: ["Xは空でない完備距離空間", "各C_nは閉", "⋃_n C_n=X"]
-  quantifiers: ["任意の距離空間X", "任意の閉集合列C"]
-  conclusion: あるnについてC_nの内部は空でない。
+  assumptions:
+  - $X$は空でない完備距離空間
+  - 各$C_n$は$X$の閉集合
+  - $\bigcup_{n\in\mathbb{N}}C_n=X$
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の閉集合列$(C_n)$
+  conclusion: ある$n$について$\operatorname{int}(C_n)\neq\emptyset$である。
   answer: |
-    全てのC_nの内部が空と仮定する。このとき補集合C_n^cは開かつ稠密である。ベールの範疇定理より、それらの共通部分は稠密であり、Xが空でないので空でない。しかしその共通部分は⋃C_nの補集合であり空である。これは矛盾である。
+    $X$を空でない完備距離空間、$(C_n)_{n\in\mathbb{N}}$を$X$の閉集合の列で$\bigcup_nC_n=X$を満たすものとする。すべての$n$で$\operatorname{int}(C_n)=\emptyset$と仮定する。
+    $C_n^c$は開集合である。$C_n$に含まれる空でない開集合はないので、すべての空でない開集合は$C_n^c$と交わり、$C_n^c$は稠密である。ベールの範疇定理（完備距離空間で可算個の稠密な開集合の共通部分は稠密である）より、$\bigcap_nC_n^c$は稠密である。$X$は空でないので、この共通部分は空でない。一方$\bigcap_nC_n^c=(\bigcup_nC_n)^c=\emptyset$であり、矛盾する。
   strategy: Apply Baire to the complements.
   sketch:
-    - "contradiction: Assume every C_n has empty interior."
-    - "derive: The complements are open and dense."
-    - "apply_theorem: The Baire category theorem makes their intersection dense."
-    - "conclude: A dense subset of a nonempty space is nonempty, contradicting the cover."
+  - 'contradiction: Assume every C_n has empty interior.'
+  - 'derive: The complements are open and dense.'
+  - 'apply_theorem: The Baire category theorem makes their intersection dense.'
+  - 'conclude: A dense subset of a nonempty space is nonempty, contradicting the cover.'
   openmath: (forall (X C) (-> (and (complete_space X) (!= X emptyset) (forall (n) (closed_in X (seq_value C n))) (= (family_union N C) X)) (exists (n) (!= (interior_in X (seq_value C n)) emptyset))))
   hard_negative:
     statement: 任意の距離空間が可算個の閉集合の和なら、そのうちの1つは空でない内部をもつ。
@@ -1638,18 +2039,24 @@
   kind: gap
   level: 3
   topic: 距離空間・全有界性
-  statement: 距離空間の部分集合が全有界であることと、任意のε>0について半径εの開球有限個で覆えることは同値である。
+  statement: 距離空間の部分集合が全有界であることと、任意の$\varepsilon>0$について半径$\varepsilon$の開球有限個で覆えることは同値である。
   statement_en: A subset of a metric space is totally bounded if and only if for every ε > 0 it is covered by finitely many open balls of radius ε.
-  assumptions: ["Xは距離空間", "SはXの部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合S"]
-  conclusion: Sの全有界性と、有限のε網の存在は同値である。
+  assumptions:
+  - $X$は距離空間
+  - $S$は$X$の部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$S$
+  conclusion: $S$が全有界であることと、任意の$\varepsilon>0$に対し$X$の有限部分集合$t$があって$S\subseteq\bigcup_{y\in t}B(y,\varepsilon)$となることは同値である。
   answer: |
-    距離空間の一様構造は集合{(x,y) | d(x,y)<ε}で生成される。全有界性は、一様構造の各要素の大きさで有限個の被覆が存在することと定義される。この定義をε近縁で読むと、半径εの開球による有限被覆そのものになる。よって2つの条件は同値である。
+    $X$を距離空間、$S$を$X$の部分集合とする。ここで全有界性は距離が定める一様構造によって定義する。すなわち$S$が全有界とは、一様構造の任意の近縁$D\subseteq X\times X$に対し、$X$の有限部分集合$t$があって$S\subseteq\bigcup_{y\in t}\{x\mid(x,y)\in D\}$となることである。距離空間の近縁とは、ある$\varepsilon>0$について$D_\varepsilon=\{(x,y)\mid d(x,y)<\varepsilon\}$を含む集合である。また$\{x\mid(x,y)\in D_\varepsilon\}=B(y,\varepsilon)$である。
+    $S$が全有界なら、$D=D_\varepsilon$とすることで、任意の$\varepsilon>0$について有限個の開球$B(y,\varepsilon)$で$S$を覆える。
+    逆に開球による被覆の条件を仮定し、$D$を近縁とする。$D_\varepsilon\subseteq D$となる$\varepsilon>0$をとり、$S\subseteq\bigcup_{y\in t}B(y,\varepsilon)$となる有限集合$t$をとる。各$y$で$B(y,\varepsilon)\subseteq\{x\mid(x,y)\in D\}$なので、$S$は全有界である。
   strategy: Read the uniform definition of total boundedness on the distance basis.
   sketch:
-    - "translate: The uniformity of a metric space has basis the sets d(x,y) < ε."
-    - "derive: Covers at each entourage scale correspond to covers by ε-balls."
-    - "conclude: Total boundedness is equivalent to finite ε-nets."
+  - 'translate: The uniformity of a metric space has basis the sets d(x,y) < ε.'
+  - 'derive: Covers at each entourage scale correspond to covers by ε-balls.'
+  - 'conclude: Total boundedness is equivalent to finite ε-nets.'
   openmath: (forall (X S) (-> (metric_space X) (<-> (totally_bounded_in X S) (forall (e) (-> (> e 0) (exists (t) (and (finite_set t) (forall (y) (-> (in y S) (exists (c) (and (in c t) (< (dist_of y c) e))))))))))))
   hard_negative:
     statement: 距離空間の有界な部分集合は全有界である。
@@ -1666,18 +2073,24 @@
   topic: 距離空間・コンパクト性の特徴付け
   statement: 距離空間の部分集合がコンパクトであることと、全有界かつ完備であることは同値である。
   statement_en: A subset of a metric space is compact if and only if it is totally bounded and complete.
-  assumptions: ["Xは距離空間", "KはXの部分集合"]
-  quantifiers: ["任意の距離空間X", "任意の部分集合K"]
-  conclusion: Kのコンパクト性と、Kが全有界かつ完備であることは同値である。
+  assumptions:
+  - $X$は距離空間
+  - $K$は$X$の部分集合
+  quantifiers:
+  - 任意の距離空間$X$
+  - 任意の部分集合$K$
+  conclusion: $K$がコンパクトであることと、$K$が全有界かつ完備であることは同値である。
   answer: |
-    Kがコンパクトなら、半径εの球の開被覆の有限部分被覆から全有界である。またK内のコーシー列は点列コンパクト性より収束部分列をもち、コーシー列なのでその極限に収束するから、Kは完備である。逆にKが全有界かつ完備とする。K内の点列について、有限被覆を半径1/kごとに使って対角線論法を行うと、コーシーな部分列がとれる。完備性よりこれは収束するので、Kは点列コンパクトであり、距離空間なのでコンパクトである。
+    $X$を距離空間、$K$を$X$の部分集合とする。全有界とは、任意の$\varepsilon>0$について$K$が半径$\varepsilon$の開球有限個で覆えることである。完備とは、すべての項が$K$に属するコーシー列が$K$の点に収束することである。次の定理を使う。距離空間の部分集合がコンパクトであることは、すべての項がその集合に属する任意の点列がその集合の点に収束する部分列をもつこと（点列コンパクト性）と同値である。
+    $K$がコンパクトであるとする。$\varepsilon>0$について開球$B(x,\varepsilon)$（$x\in K$）は$K$を覆うので、有限個で覆える。よって$K$は全有界である。次に$(a_n)$を$K$内のコーシー列とする。点列コンパクト性より、$K$の点$x$に収束する部分列がある。$\varepsilon>0$に対し、$m,n\geq N$で$d(a_m,a_n)<\varepsilon/2$となる$N$をとり、部分列の項$a_{\varphi(k)}$で$\varphi(k)\geq N$かつ$d(a_{\varphi(k)},x)<\varepsilon/2$となるものをとる。$n\geq N$なら$d(a_n,x)<\varepsilon$なので、$(a_n)$は$x$に収束する。よって$K$は完備である。
+    逆に$K$が全有界かつ完備であるとし、$(a_n)$を$K$内の点列とする。$N_0=\mathbb{N}$とする。$k\geq1$について、$K$は半径$1/k$の開球有限個で覆えるので、そのうちの1つの開球$B_k$について$N_k=\{n\in N_{k-1}\mid a_n\in B_k\}$は無限集合である。$\varphi(1)<\varphi(2)<\dots$を$\varphi(k)\in N_k$となるように選ぶ。$j,l\geq k$なら$a_{\varphi(j)},a_{\varphi(l)}$はともに$B_k$に属するので$d(a_{\varphi(j)},a_{\varphi(l)})<2/k$である。よって$(a_{\varphi(k)})$はコーシー列であり、完備性より$K$の点に収束する。したがって$K$は点列コンパクトであり、上の定理よりコンパクトである。
   strategy: Forward via covers and sequential compactness; backward by a diagonal Cauchy subsequence.
   sketch:
-    - "derive: A finite subcover of ε-balls shows total boundedness."
-    - "derive: A Cauchy sequence has a convergent subsequence, so it converges in K."
-    - "construct: Conversely use finite 1/k-covers and a diagonal argument to extract a Cauchy subsequence."
-    - "apply_theorem: Completeness gives its limit in K."
-    - "conclude: K is sequentially compact, hence compact in a metric space."
+  - 'derive: A finite subcover of ε-balls shows total boundedness.'
+  - 'derive: A Cauchy sequence has a convergent subsequence, so it converges in K.'
+  - 'construct: Conversely use finite 1/k-covers and a diagonal argument to extract a Cauchy subsequence.'
+  - 'apply_theorem: Completeness gives its limit in K.'
+  - 'conclude: K is sequentially compact, hence compact in a metric space.'
   openmath: (forall (X K) (-> (metric_space X) (<-> (compact_in X K) (and (totally_bounded_in X K) (complete_subset X K)))))
   hard_negative:
     statement: 距離空間の有界かつ完備な部分集合はコンパクトである。

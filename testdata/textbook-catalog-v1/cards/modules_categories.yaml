@@ -2,19 +2,27 @@
   kind: textbook
   level: 3
   topic: 加群論・準同型定理
-  statement: R加群の準同型f:M→Nについて、[x]をf(x)へ送る写像はR加群の同型M/ker f≅im fを与える。
+  statement: $R$を環、$f:M\to N$を$R$加群の準同型とする。$x\in M$の類$[x]$を$f(x)$へ送る写像は、$R$加群の同型$M/\ker f\cong\operatorname{im}f$を与える。
   statement_en: For an R-linear map f from M to N, the assignment [x] to f(x) is a well-defined R-module isomorphism M/ker f to im f.
-  assumptions: [Rは環, MとNはR加群, fはR線形写像]
-  quantifiers: [任意の環R, R加群M, N, R線形写像f]
-  conclusion: M/ker fからim fへの同型eでe([x])=f(x)を満たすものが存在する。
+  assumptions:
+  - $R$は環
+  - $M,N$は$R$加群
+  - $f:M\to N$は$R$線形写像
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M,N$
+  - 任意の$R$線形写像$f:M\to N$
+  conclusion: すべての$x\in M$について$e([x])=f(x)$を満たす$R$加群の同型$e:M/\ker f\to\operatorname{im}f$が存在する。
   answer: |
-    [x]=[y]はx-y∈ker fと同値であり、これはf(x)=f(y)と同値である。したがって[x]をf(x)へ送る写像は定義でき、しかも単射である。線形性はfの線形性から従い、像はim fそのものなので全射でもある。
+    $R$を環、$M,N$を$R$加群、$f:M\to N$を$R$線形写像とし、$x\in M$の$M/\ker f$での類を$[x]$と書く。
+    $x,y\in M$について、$[x]=[y]$は$x-y\in\ker f$と同値であり、これは$f(x)=f(y)$と同値である。したがって$e([x])=f(x)$は代表元によらずに定まり、$e$は単射である。
+    $e$の$R$線形性は$f$の$R$線形性から従う。$e$の値は$f$の値全体なので、$e$は$\operatorname{im}f$への全射である。よって$e:M/\ker f\to\operatorname{im}f$は$R$加群の同型である。
   strategy: Pass f to the quotient by its kernel and corestrict to the image.
   sketch:
-    - "translate: Note that [x]=[y] holds exactly when f(x)=f(y)."
-    - "construct: Define e([x]) = f(x), which is well defined and injective by the previous step."
-    - "derive: Linearity of e follows from linearity of f."
-    - "conclude: The values of e fill im f, so e is an isomorphism onto im f."
+  - 'translate: Note that [x]=[y] holds exactly when f(x)=f(y).'
+  - 'construct: Define e([x]) = f(x), which is well defined and injective by the previous step.'
+  - 'derive: Linearity of e follows from linearity of f.'
+  - 'conclude: The values of e fill im f, so e is an isomorphism onto im f.'
   openmath: (forall (R M N f) (-> (and (is_ring R) (is_module R M) (is_module R N) (module_hom f R M N)) (exists (e) (and (module_hom e R (quotient_module M (map_kernel f)) (map_image f)) (bijective_map e) (forall (x) (-> (in x M) (= (fn_value e (fn_value (quotient_proj M (map_kernel f)) x)) (fn_value f x))))))))
   hard_negative:
     statement: R加群の準同型fについてM/ker f≅Nが常に成り立つ。
@@ -29,19 +37,27 @@
   kind: textbook
   level: 3
   topic: 加群論・準同型定理
-  statement: R加群Mの部分加群p,qについて、p/(p∩q)≅(p+q)/qが成り立つ。
+  statement: $R$を環、$p,q$を$R$加群$M$の部分加群とする。このとき$p/(p\cap q)\cong(p+q)/q$が成り立つ。
   statement_en: For submodules p and q of an R-module M, there is an isomorphism p/(p∩q) to (p+q)/q.
-  assumptions: [Rは環, MはR加群, pとqはMの部分加群]
-  quantifiers: [任意の環R, R加群M, 部分加群p, q]
-  conclusion: p/(p∩q)と(p+q)/qはR加群として同型である。
+  assumptions:
+  - $R$は環
+  - $M$は$R$加群
+  - $p,q$は$M$の部分加群
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M$
+  - 任意の部分加群$p,q$
+  conclusion: $p/(p\cap q)$と$(p+q)/q$は$R$加群として同型である。
   answer: |
-    合成p→p+q→(p+q)/qを考える。p+qの元はx+y(x∈p, y∈q)と書け、その類はxの類に等しいので、この合成は全射である。pの元xの像が0になるのはx∈qのとき、すなわちx∈p∩qのときだから、核はp∩qである。第一同型定理より主張が従う。
+    $R$を環、$M$を$R$加群、$p,q$を$M$の部分加群とする。包含$p\to p+q$と射影$p+q\to(p+q)/q$の合成を$\varphi:p\to(p+q)/q$とする。
+    $p+q$の元は$x+y$($x\in p$, $y\in q$)と書け、その類は$x$の類に等しいので、$\varphi$は全射である。$x\in p$について、$\varphi(x)=0$となるのは$x\in q$のとき、すなわち$x\in p\cap q$のときだから、$\ker\varphi=p\cap q$である。
+    第一同型定理を$\varphi$に適用すると、$p/(p\cap q)\cong(p+q)/q$を得る。
   strategy: Apply the first isomorphism theorem to p → (p+q)/q.
   sketch:
-    - "construct: Consider the composite p → p+q → (p+q)/q."
-    - "derive: It is surjective because x+y with x in p and y in q has the same class as x."
-    - "derive: Its kernel is p∩q."
-    - "apply_theorem: The first isomorphism theorem gives p/(p∩q) ≅ (p+q)/q."
+  - 'construct: Consider the composite p → p+q → (p+q)/q.'
+  - 'derive: It is surjective because x+y with x in p and y in q has the same class as x.'
+  - 'derive: Its kernel is p∩q.'
+  - 'apply_theorem: The first isomorphism theorem gives p/(p∩q) ≅ (p+q)/q.'
   openmath: (forall (R M p q) (-> (and (is_ring R) (is_module R M) (is_submodule p M) (is_submodule q M)) (module_iso R (quotient_module p (submodule_inter p q)) (quotient_module (submodule_sum p q) q))))
   hard_negative:
     statement: 部分加群p,qについてp/(p∩q)≅(p+q)/pが成り立つ。
@@ -56,19 +72,28 @@
   kind: textbook
   level: 3
   topic: 加群論・準同型定理
-  statement: R加群Mの部分加群S⊆Tについて、(M/S)/(T/S)≅M/Tが成り立つ。
+  statement: $R$を環、$S\subseteq T$を$R$加群$M$の部分加群とし、$T$の$M/S$での像を$T/S$と書く。このとき$(M/S)/(T/S)\cong M/T$が成り立つ。
   statement_en: For submodules S ≤ T of an R-module M, there is an isomorphism (M/S)/(T/S) to M/T, where T/S is the image of T in M/S.
-  assumptions: [Rは環, MはR加群, SとTはMの部分加群, S⊆T]
-  quantifiers: [任意の環R, R加群M, 部分加群S, T]
-  conclusion: (M/S)/(T/S)とM/TはR加群として同型である。
+  assumptions:
+  - $R$は環
+  - $M$は$R$加群
+  - $S,T$は$M$の部分加群
+  - $S\subseteq T$
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M$
+  - 任意の部分加群$S,T$
+  conclusion: $(M/S)/(T/S)$と$M/T$は$R$加群として同型である。
   answer: |
-    S⊆Tなので、射影M→M/TはSの上で0となり、全射M/S→M/Tを誘導する。[x]がこの写像で0になるのはx∈Tのとき、すなわち[x]∈T/Sのときである。よって核はT/Sであり、第一同型定理から同型を得る。
+    $R$を環、$M$を$R$加群、$S\subseteq T$を$M$の部分加群とする。$x\in M$の$M/S$での類を$[x]$と書き、$T$の$M/S$での像を$T/S$と書く。
+    $S\subseteq T$なので、射影$M\to M/T$は$S$の上で$0$であり、$[x]$を$x$の$M/T$での類へ送る線形写像$\psi:M/S\to M/T$が定まる。$\psi$は全射である。$\psi([x])=0$となるのは$x\in T$のときである。また$x\in T$なら$[x]\in T/S$であり、逆に$[x]\in T/S$なら$x-t\in S\subseteq T$となる$t\in T$があるので$x\in T$である。よって$\ker\psi=T/S$である。
+    第一同型定理を$\psi$に適用すると、$(M/S)/(T/S)\cong M/T$を得る。
   strategy: Factor M → M/T through M/S and compute the kernel.
   sketch:
-    - "construct: Since S ≤ T, the projection M → M/T induces a map M/S → M/T."
-    - "derive: This induced map is surjective."
-    - "derive: Its kernel is the image T/S of T."
-    - "apply_theorem: The first isomorphism theorem gives (M/S)/(T/S) ≅ M/T."
+  - 'construct: Since S ≤ T, the projection M → M/T induces a map M/S → M/T.'
+  - 'derive: This induced map is surjective.'
+  - 'derive: Its kernel is the image T/S of T.'
+  - 'apply_theorem: The first isomorphism theorem gives (M/S)/(T/S) ≅ M/T.'
   openmath: (forall (R M S T) (-> (and (is_ring R) (is_module R M) (is_submodule S M) (is_submodule T M) (is_submodule S T)) (module_iso R (quotient_module (quotient_module M S) (image_submodule (quotient_proj M S) T)) (quotient_module M T))))
   hard_negative:
     statement: 包含を仮定しなくても、部分加群S,Tについて(M/S)/(Tの像)≅M/Tが成り立つ。
@@ -83,19 +108,29 @@
   kind: gap
   level: 3
   topic: 加群論・剰余加群
-  statement: 線形写像f:M→Nが部分加群Sの上で0ならば、g∘π=fを満たす線形写像g:M/S→Nがただ1つ存在する。
+  statement: $R$を環、$M,N$を$R$加群、$S$を$M$の部分加群、$\pi:M\to M/S$を射影とする。線形写像$f:M\to N$が$S$の上で$0$ならば、$g\circ\pi=f$を満たす線形写像$g:M/S\to N$がただ$1$つ存在する。
   statement_en: If an R-linear map f from M to N vanishes on a submodule S, there is a unique R-linear map g from M/S to N with g composed with the projection equal to f.
-  assumptions: [Rは環, MとNはR加群, SはMの部分加群, S⊆ker f]
-  quantifiers: [任意の環R, R加群M, N, 部分加群S, 線形写像f]
-  conclusion: g∘π=fを満たす線形写像g:M/S→Nがただ1つ存在する。
+  assumptions:
+  - $R$は環
+  - $M,N$は$R$加群
+  - $S$は$M$の部分加群
+  - $f:M\to N$は線形写像で$S\subseteq\ker f$
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M,N$
+  - 任意の部分加群$S$
+  - 任意の線形写像$f$
+  conclusion: $g\circ\pi=f$を満たす線形写像$g:M/S\to N$がただ$1$つ存在する。
   answer: |
-    x-y∈Sならf(x)=f(y)なので、g([x])=f(x)は定義でき、線形である。g∘π=fは定義から成り立つ。別のhもh∘π=fを満たすなら、πは全射なので任意の[x]でh([x])=f(x)=g([x])となり、h=gである。
+    $R$を環、$M,N$を$R$加群、$S$を$M$の部分加群、$\pi:M\to M/S$を射影とし、$f:M\to N$を$S\subseteq\ker f$を満たす線形写像とする。$x\in M$の類を$[x]$と書く。
+    存在を示す。$x-y\in S$なら$f(x)=f(y)$なので、$g([x])=f(x)$は代表元によらずに定まる。$g$の線形性は$f$の線形性から従い、$g\circ\pi=f$は定義から成り立つ。
+    一意性を示す。線形写像$h:M/S\to N$も$h\circ\pi=f$を満たすとする。$\pi$は全射であり、任意の$[x]$について$h([x])=f(x)=g([x])$となるので、$h=g$である。
   strategy: Define g on classes and use surjectivity of the projection for uniqueness.
   sketch:
-    - "construct: Set g([x]) = f(x), which is well defined because S lies in ker f."
-    - "derive: Linearity of g and g∘π = f follow from the definition."
-    - "derive: If h∘π = f, then h and g agree on every class."
-    - "conclude: Hence g is unique."
+  - 'construct: Set g([x]) = f(x), which is well defined because S lies in ker f.'
+  - 'derive: Linearity of g and g∘π = f follow from the definition.'
+  - 'derive: If h∘π = f, then h and g agree on every class.'
+  - 'conclude: Hence g is unique.'
   openmath: (forall (R M N S f) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_submodule S M) (module_hom f R M N) (is_submodule S (map_kernel f))) (exists (g) (and (module_hom g R (quotient_module M S) N) (= (map_compose g (quotient_proj M S)) f) (forall (h) (-> (and (module_hom h R (quotient_module M S) N) (= (map_compose h (quotient_proj M S)) f)) (= h g)))))))
   hard_negative:
     statement: 任意の線形写像f:M→Nと部分加群Sに対して、g∘π=fとなるg:M/S→Nが存在する。
@@ -113,19 +148,27 @@
   kind: gap
   level: 3
   topic: 加群論・剰余加群
-  statement: 射影π:M→M/Sについて、Sを含む部分加群Tにはπ^{-1}(π(T))=T、M/Sの部分加群Uにはπ(π^{-1}(U))=Uが成り立つ。
+  statement: $R$を環、$S$を$R$加群$M$の部分加群、$\pi:M\to M/S$を射影とする。$S$を含む部分加群$T$について$\pi^{-1}(\pi(T))=T$が成り立ち、$M/S$の部分加群$U$について$\pi(\pi^{-1}(U))=U$が成り立つ。
   statement_en: For the projection π from M to M/S, every submodule T containing S satisfies π⁻¹(π(T)) = T, and every submodule U of M/S satisfies π(π⁻¹(U)) = U.
-  assumptions: [Rは環, MはR加群, SはMの部分加群]
-  quantifiers: [Sを含む任意の部分加群T, M/Sの任意の部分加群U]
-  conclusion: π^{-1}(π(T))=Tかつπ(π^{-1}(U))=Uである。
+  assumptions:
+  - $R$は環
+  - $M$は$R$加群
+  - $S$は$M$の部分加群
+  - $\pi:M\to M/S$は射影
+  quantifiers:
+  - $S$を含む$M$の任意の部分加群$T$
+  - $M/S$の任意の部分加群$U$
+  conclusion: $\pi^{-1}(\pi(T))=T$かつ$\pi(\pi^{-1}(U))=U$である。
   answer: |
-    x∈π^{-1}(π(T))ならπ(x)=π(t)となるt∈Tがあり、x-t∈S⊆Tなのでx∈Tである。逆の包含は明らかなので第一の等式が成り立つ。第二の等式では、πが全射だからUの各元はπの値として書け、その元はπ^{-1}(U)に属する。逆の包含も明らかである。
+    $R$を環、$M$を$R$加群、$S$を$M$の部分加群、$\pi:M\to M/S$を射影とする。$T$を$S$を含む$M$の部分加群、$U$を$M/S$の部分加群とする。
+    第一の等式を示す。$T\subseteq\pi^{-1}(\pi(T))$は明らかである。$x\in\pi^{-1}(\pi(T))$なら、$\pi(x)=\pi(t)$となる$t\in T$がある。このとき$x-t\in S\subseteq T$なので$x\in T$である。
+    第二の等式を示す。$\pi(\pi^{-1}(U))\subseteq U$は明らかである。$u\in U$を取ると、$\pi$は全射なので$u=\pi(x)$となる$x\in M$がある。$x\in\pi^{-1}(U)$なので$u\in\pi(\pi^{-1}(U))$である。
   strategy: Use S ≤ T for the first identity and surjectivity of π for the second.
   sketch:
-    - "setup: Let π be the projection with kernel S."
-    - "derive: If π(x)=π(t) with t in T, then x-t lies in S and hence in T, so x lies in T."
-    - "derive: Each element of U is π(x) for some x, and that x lies in π⁻¹(U)."
-    - "conclude: The two composites are identities on the indicated submodules."
+  - 'setup: Let π be the projection with kernel S.'
+  - 'derive: If π(x)=π(t) with t in T, then x-t lies in S and hence in T, so x lies in T.'
+  - 'derive: Each element of U is π(x) for some x, and that x lies in π⁻¹(U).'
+  - 'conclude: The two composites are identities on the indicated submodules.'
   openmath: (forall (R M S) (-> (and (is_ring R) (is_module R M) (is_submodule S M)) (and (forall (T) (-> (and (is_submodule T M) (is_submodule S T)) (= (preimage_submodule (quotient_proj M S) (image_submodule (quotient_proj M S) T)) T))) (forall (U) (-> (is_submodule U (quotient_module M S)) (= (image_submodule (quotient_proj M S) (preimage_submodule (quotient_proj M S) U)) U))))))
   hard_negative:
     statement: Mの任意の部分加群Tについてπ^{-1}(π(T))=Tが成り立つ。
@@ -142,18 +185,26 @@
   kind: gap
   level: 3
   topic: 加群論・完全列
-  statement: 0→M→Nが完全であることはM→Nの単射性と同値であり、M→N→0が完全であることはM→Nの全射性と同値である。
+  statement: $R$を環、$M,N,P,Q$を$R$加群、$f:M\to N$を線形写像とする。零写像$P\to M$と$f$の列が$M$で完全であることは$f$の単射性と同値であり、$f$と零写像$N\to Q$の列が$N$で完全であることは$f$の全射性と同値である。
   statement_en: The sequence P → M → N with zero first map is exact at M if and only if f from M to N is injective, and M → N → Q with zero second map is exact at N if and only if f is surjective.
-  assumptions: [Rは環, M, N, P, QはR加群, fはM→Nの線形写像]
-  quantifiers: [任意の環R, R加群M, N, P, Q, 線形写像f]
-  conclusion: 零写像に続く完全性はfの単射性と同値であり、零写像の前の完全性はfの全射性と同値である。
+  assumptions:
+  - $R$は環
+  - $M,N,P,Q$は$R$加群
+  - $f:M\to N$は線形写像
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M,N,P,Q$
+  - 任意の線形写像$f$
+  conclusion: 零写像$P\to M$と$f$の完全性は$f$の単射性と同値であり、$f$と零写像$N\to Q$の完全性は$f$の全射性と同値である。
   answer: |
-    零写像P→Mの像は0なので、Mでの完全性はker f=0を意味し、これはfの単射性と同値である。零写像N→Qの核はNなので、Nでの完全性はim f=Nを意味し、これはfの全射性そのものである。
+    $R$を環、$M,N,P,Q$を$R$加群、$f:M\to N$を線形写像とする。
+    零写像$P\to M$の像は$0$なので、$M$での完全性は$\ker f=0$を意味する。線形写像については、これは$f$の単射性と同値である。
+    零写像$N\to Q$の核は$N$なので、$N$での完全性は$\operatorname{im}f=N$を意味する。これは$f$の全射性そのものである。
   strategy: Compute the image and kernel of the zero maps.
   sketch:
-    - "translate: The image of the zero map into M is 0, so exactness says ker f = 0."
-    - "translate: The kernel of the zero map out of N is N, so exactness says im f = N."
-    - "conclude: These are injectivity and surjectivity of f."
+  - 'translate: The image of the zero map into M is 0, so exactness says ker f = 0.'
+  - 'translate: The kernel of the zero map out of N is N, so exactness says im f = N.'
+  - 'conclude: These are injectivity and surjectivity of f.'
   openmath: (forall (R M N P Q f) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_module R P) (is_module R Q) (module_hom f R M N)) (and (<-> (exact_pair (zero_map P M) f) (injective_map f)) (<-> (exact_pair f (zero_map N Q)) (surjective_map f)))))
   hard_negative:
     statement: M→N→0が完全ならM→Nは単射である。
@@ -168,18 +219,27 @@
   kind: gap
   level: 3
   topic: 加群論・完全列
-  statement: A→B→C→0が完全ならば、B/im f≅Cである。
+  statement: $R$を環、$A,B,C$を$R$加群とし、$f:A\to B$, $g:B\to C$を$\operatorname{im}f=\ker g$を満たす線形写像で$g$は全射とする。このとき$B/\operatorname{im}f\cong C$である。
   statement_en: If A → B → C → 0 is exact with maps f and g, then B/im f is isomorphic to C.
-  assumptions: [Rは環, A, B, CはR加群, im f=ker g, gは全射]
-  quantifiers: [任意の環R, R加群A, B, C, 線形写像f, g]
-  conclusion: B/im fとCはR加群として同型である。
+  assumptions:
+  - $R$は環
+  - $A,B,C$は$R$加群
+  - $f:A\to B$, $g:B\to C$は線形写像
+  - $\operatorname{im}f=\ker g$
+  - $g$は全射
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$A,B,C$
+  - 任意の線形写像$f,g$
+  conclusion: $B/\operatorname{im}f$と$C$は$R$加群として同型である。
   answer: |
-    gは全射なので第一同型定理によりB/ker g≅Cである。完全性からker g=im fなので、B/im f≅Cを得る。
+    $R$を環、$A,B,C$を$R$加群とし、$f:A\to B$と$g:B\to C$を$\operatorname{im}f=\ker g$を満たす線形写像で、$g$は全射とする。
+    $g$は全射なので、第一同型定理により$B/\ker g\cong C$である。仮定より$\ker g=\operatorname{im}f$なので、$B/\operatorname{im}f\cong C$を得る。
   strategy: Combine exactness with the first isomorphism theorem for g.
   sketch:
-    - "apply_theorem: Since g is surjective, B/ker g ≅ C."
-    - "translate: Exactness gives ker g = im f."
-    - "conclude: Therefore B/im f ≅ C."
+  - 'apply_theorem: Since g is surjective, B/ker g ≅ C.'
+  - 'translate: Exactness gives ker g = im f.'
+  - 'conclude: Therefore B/im f ≅ C.'
   openmath: (forall (R A B C f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (module_hom f R A B) (module_hom g R B C) (exact_pair f g) (surjective_map g)) (module_iso R (quotient_module B (map_image f)) C)))
   hard_negative:
     statement: A→B→Cがim f=ker gを満たすだけでB/im f≅Cである。
@@ -194,21 +254,32 @@
   kind: named
   level: 3
   topic: 加群論・図式の補題
-  statement: 完全な行をもつ5項の可換図式で、左から1番目の縦の射が全射、2番目と4番目が全単射、5番目が単射ならば、3番目の縦の射は全単射である(五項補題)。
+  statement: $R$を環とする。$M_1\to M_2\to M_3\to M_4\to M_5$と$N_1\to N_2\to N_3\to N_4\to N_5$を完全な行とする$R$加群の可換図式で、縦の線形写像$i_k:M_k\to N_k$について$i_1$が全射、$i_2,i_4$が全単射、$i_5$が単射ならば、$i_3$は全単射である(五項補題)。
   statement_en: In a commutative diagram of R-modules with exact rows of five terms, if the first vertical map is surjective, the second and fourth are bijective and the fifth is injective, then the third vertical map is bijective.
-  assumptions: [Rは環, 上下の行は完全, 各正方形は可換, i1は全射, i2とi4は全単射, i5は単射]
-  quantifiers: [任意の環R, 行をなすR加群と線形写像, 縦の線形写像i1からi5]
-  conclusion: i3は全単射である。
+  assumptions:
+  - $R$は環
+  - $f_k:M_k\to M_{k+1}$と$g_k:N_k\to N_{k+1}$は線形写像で、上下の行は$M_2,M_3,M_4$と$N_2,N_3,N_4$で完全
+  - 縦の線形写像$i_k:M_k\to N_k$について$g_k\circ i_k=i_{k+1}\circ f_k$
+  - $i_1$は全射
+  - $i_2,i_4$は全単射
+  - $i_5$は単射
+  quantifiers:
+  - 任意の環$R$
+  - 行をなす任意の$R$加群と線形写像
+  - 縦の任意の線形写像$i_1,\dots,i_5$
+  conclusion: $i_3$は全単射である。
   answer: |
-    単射性を示す。i3(m)=0ならi4(f3(m))=0よりf3(m)=0で、m=f2(x)と書ける。g2(i2(x))=0よりi2(x)=g1(y)となるyがあり、i1の全射性でy=i1(z)と書くと、i2の単射性からx=f1(z)となり、m=f2(f1(z))=0である。全射性も同じ図式追跡で示せる。nに対しg3(n)=i4(x)となるxを取ると、i5の単射性からx=f3(m)と書ける。差n-i3(m)はg3の核すなわちg2の像に入るので、i2の全射性で調整するとnはi3の像に入る。
+    $R$を環とする。$R$加群と線形写像の列$f_k:M_k\to M_{k+1}$, $g_k:N_k\to N_{k+1}$($k=1,2,3,4$)は、$M_2,M_3,M_4$および$N_2,N_3,N_4$で完全とする。線形写像$i_k:M_k\to N_k$($k=1,\dots,5$)は$g_k\circ i_k=i_{k+1}\circ f_k$を満たし、$i_1$は全射、$i_2,i_4$は全単射、$i_5$は単射とする。
+    単射性を示す。$m\in M_3$が$i_3(m)=0$を満たすとする。$i_4(f_3(m))=g_3(i_3(m))=0$と$i_4$の単射性から$f_3(m)=0$である。$M_3$での完全性から$m=f_2(x)$となる$x\in M_2$がある。すると$g_2(i_2(x))=i_3(f_2(x))=0$なので、$N_2$での完全性から$i_2(x)=g_1(y)$となる$y\in N_1$がある。$i_1$は全射なので$y=i_1(z)$となる$z\in M_1$がある。$i_2(f_1(z))=g_1(i_1(z))=g_1(y)=i_2(x)$と$i_2$の単射性から$x=f_1(z)$である。$M_2$での完全性から$f_2\circ f_1=0$なので、$m=f_2(f_1(z))=0$となる。
+    全射性を示す。$n\in N_3$を取る。$i_4$は全射なので$i_4(x)=g_3(n)$となる$x\in M_4$がある。$i_5(f_4(x))=g_4(i_4(x))=g_4(g_3(n))=0$と$i_5$の単射性から$f_4(x)=0$である。$M_4$での完全性から$x=f_3(m)$となる$m\in M_3$がある。すると$g_3(n-i_3(m))=g_3(n)-i_4(f_3(m))=g_3(n)-i_4(x)=0$なので、$N_3$での完全性から$n-i_3(m)=g_2(u)$となる$u\in N_2$がある。$i_2$は全射なので$u=i_2(v)$となる$v\in M_2$がある。したがって$n=i_3(m)+g_2(i_2(v))=i_3(m)+i_3(f_2(v))=i_3(m+f_2(v))$であり、$n$は$i_3$の像に入る。
   strategy: Chase elements through the diagram for injectivity and surjectivity separately.
   sketch:
-    - "setup: Fix the two exact rows and the commuting vertical maps."
-    - "derive: If i3(m)=0, injectivity of i4 gives f3(m)=0, so m=f2(x)."
-    - "derive: Then i2(x) lies in the image of g1, and surjectivity of i1 with injectivity of i2 shows x lies in the image of f1, so m=0."
-    - "derive: For n in the target, lift g3(n) through the bijective i4 to an element of the top row, which injectivity of i5 places in the image of f3."
-    - "derive: The difference between n and the resulting value lies in the image of g2 restricted through i2, by exactness of the lower row and surjectivity of i2."
-    - "conclude: Hence i3 is injective and surjective."
+  - 'setup: Fix the two exact rows and the commuting vertical maps.'
+  - 'derive: If i3(m)=0, injectivity of i4 gives f3(m)=0, so m=f2(x).'
+  - 'derive: Then i2(x) lies in the image of g1, and surjectivity of i1 with injectivity of i2 shows x lies in the image of f1, so m=0.'
+  - 'derive: For n in the target, lift g3(n) through the bijective i4 to an element of the top row, which injectivity of i5 places in the image of f3.'
+  - 'derive: The difference between n and the resulting value lies in the image of g2 restricted through i2, by exactness of the lower row and surjectivity of i2.'
+  - 'conclude: Hence i3 is injective and surjective.'
   openmath: (forall (R M1 M2 M3 M4 M5 N1 N2 N3 N4 N5 f1 f2 f3 f4 g1 g2 g3 g4 i1 i2 i3 i4 i5) (-> (and (is_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R M4) (is_module R M5) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R N4) (is_module R N5) (module_hom i3 R M3 N3) (exact_pair f1 f2) (exact_pair f2 f3) (exact_pair f3 f4) (exact_pair g1 g2) (exact_pair g2 g3) (exact_pair g3 g4) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (= (map_compose g3 i3) (map_compose i4 f3)) (= (map_compose g4 i4) (map_compose i5 f4)) (surjective_map i1) (bijective_map i2) (bijective_map i4) (injective_map i5)) (bijective_map i3)))
   hard_negative:
     statement: 完全な行の5項可換図式で、i2とi4だけが全単射ならi3は全単射である。
@@ -223,21 +294,29 @@
   kind: textbook
   level: 3
   topic: 加群論・図式の補題
-  statement: 短完全列の間の射で、両端の縦の射が全単射ならば、中央の縦の射も全単射である。
+  statement: $R$を環とし、$R$加群の短完全列$0\to A\to B\to C\to0$と$0\to A'\to B'\to C'\to0$の間の可換図式を考える。両端の縦の線形写像$a,c$が全単射ならば、中央の縦の線形写像$b$も全単射である。
   statement_en: Given a morphism of short exact sequences of R-modules whose two outer vertical maps are bijective, the middle vertical map is bijective.
-  assumptions: [Rは環, 0→A→B→C→0と0→A'→B'→C'→0は短完全列, 図式は可換, aとcは全単射]
-  quantifiers: [任意の環R, R加群と線形写像からなる図式]
-  conclusion: bは全単射である。
+  assumptions:
+  - $R$は環
+  - $0\to A\xrightarrow{f}B\xrightarrow{g}C\to0$と$0\to A'\xrightarrow{f'}B'\xrightarrow{g'}C'\to0$は短完全列
+  - $a:A\to A'$, $b:B\to B'$, $c:C\to C'$は線形写像で$f'\circ a=b\circ f$, $g'\circ b=c\circ g$
+  - $a,c$は全単射
+  quantifiers:
+  - 任意の環$R$
+  - 図式をなす任意の$R$加群と線形写像
+  conclusion: $b$は全単射である。
   answer: |
-    b(x)=0とする。c(g(x))=g'(b(x))=0よりg(x)=0なので、x=f(y)と書ける。f'(a(y))=b(f(y))=0とf'の単射性からa(y)=0となり、y=0、したがってx=0である。次にyをB'の元とする。g'(y)=c(g(x))となるxを取ると、y-b(x)はg'の核に入るのでf'(a(v))と書ける。すると、b(x+f(v))=yである。
+    $R$を環とする。$0\to A\xrightarrow{f}B\xrightarrow{g}C\to0$と$0\to A'\xrightarrow{f'}B'\xrightarrow{g'}C'\to0$を$R$加群の短完全列とし、線形写像$a:A\to A'$, $b:B\to B'$, $c:C\to C'$は$f'\circ a=b\circ f$と$g'\circ b=c\circ g$を満たし、$a,c$は全単射とする。
+    単射性を示す。$x\in B$が$b(x)=0$を満たすとする。$c(g(x))=g'(b(x))=0$と$c$の単射性から$g(x)=0$なので、$x=f(u)$となる$u\in A$がある。$f'(a(u))=b(f(u))=0$と$f'$の単射性から$a(u)=0$であり、$a$の単射性から$u=0$となる。よって$x=0$である。
+    全射性を示す。$w\in B'$を取る。$c$と$g$は全射なので、$g'(w)=c(g(x))$となる$x\in B$がある。すると$g'(w-b(x))=g'(w)-c(g(x))=0$なので、$w-b(x)=f'(w_0)$となる$w_0\in A'$がある。$a$は全射なので$w_0=a(v)$となる$v\in A$がある。このとき$b(x+f(v))=b(x)+f'(a(v))=b(x)+w-b(x)=w$である。
   strategy: Chase elements using exactness of both rows and bijectivity of the outer maps.
   sketch:
-    - "setup: Assume b(x)=0 to test injectivity."
-    - "derive: Injectivity of c gives g(x)=0, so x=f(y) by exactness."
-    - "derive: Injectivity of f' and a gives y=0, hence x=0."
-    - "construct: For y in B', pick x with c(g(x))=g'(y) using surjectivity of c and g."
-    - "derive: Then y-b(x) is in ker g', so it equals f'(a(v)) for some v."
-    - "conclude: b(x+f(v))=y, so b is surjective."
+  - 'setup: Assume b(x)=0 to test injectivity.'
+  - 'derive: Injectivity of c gives g(x)=0, so x=f(y) by exactness.'
+  - 'derive: Injectivity of f'' and a gives y=0, hence x=0.'
+  - 'construct: For y in B'', pick x with c(g(x))=g''(y) using surjectivity of c and g.'
+  - 'derive: Then y-b(x) is in ker g'', so it equals f''(a(v)) for some v.'
+  - 'conclude: b(x+f(v))=y, so b is surjective.'
   openmath: (forall (R A B C Ap Bp Cp f g fp gp a b c) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R Ap) (is_module R Bp) (is_module R Cp) (module_hom b R B Bp) (injective_map f) (exact_pair f g) (surjective_map g) (injective_map fp) (exact_pair fp gp) (surjective_map gp) (= (map_compose fp a) (map_compose b f)) (= (map_compose gp b) (map_compose c g)) (bijective_map a) (bijective_map c)) (bijective_map b)))
   hard_negative:
     statement: 両端の縦の射が全単射で図式が可換なら、行の完全性を仮定しなくても中央の縦の射は全単射である。
@@ -272,22 +351,36 @@
   kind: named
   level: 3
   topic: 加群論・図式の補題
-  statement: 完全な行M1→M2→M3→0と0→N1→N2→N3の間の可換図式に対し、核の列K2→K3と余核の列C1→C2をつなぐ線形写像δ:K3→C1が存在し、K2→K3→C1→C2は完全である(蛇の補題)。
+  statement: $R$を可換環とする。完全な行$M_1\to M_2\to M_3\to0$と$0\to N_1\to N_2\to N_3$の間の可換図式に対し、縦の線形写像$i_k:M_k\to N_k$の核を与える$K_2,K_3$と余核を与える$C_1,C_2$を取る。このとき線形写像$\delta:K_3\to C_1$が存在し、$K_2\to K_3\xrightarrow{\delta}C_1\to C_2$は$K_3$と$C_1$で完全である(蛇の補題)。
   statement_en: Given a commutative diagram with exact rows M1→M2→M3→0 and 0→N1→N2→N3 over a commutative ring, with kernels K2,K3 and cokernels C1,C2 of the vertical maps, there is a linear map δ from K3 to C1 such that K2→K3→C1→C2 is exact.
-  assumptions: [Rは可換環, 上の行は完全でf2は全射, 下の行は完全でg1は単射, 図式は可換, K2とK3はi2とi3の核を与え, C1とC2はi1とi2の余核を与える]
-  quantifiers: [任意の可換環R, 図式をなすR加群と線形写像]
-  conclusion: K2→K3→C1→C2を完全にする線形写像δ:K3→C1が存在する。
+  assumptions:
+  - $R$は可換環
+  - $f_1:M_1\to M_2$, $f_2:M_2\to M_3$は$\operatorname{im}f_1=\ker f_2$を満たし、$f_2$は全射
+  - $g_1:N_1\to N_2$, $g_2:N_2\to N_3$は$\operatorname{im}g_1=\ker g_2$を満たし、$g_1$は単射
+  - $g_1\circ i_1=i_2\circ f_1$, $g_2\circ i_2=i_3\circ f_2$
+  - $\iota_2:K_2\to M_2$は$\operatorname{im}\iota_2=\ker i_2$を満たす
+  - $\iota_3:K_3\to M_3$は単射で$\operatorname{im}\iota_3=\ker i_3$を満たす
+  - $\pi_1:N_1\to C_1$は全射で$\ker\pi_1=\operatorname{im}i_1$を満たす
+  - $\pi_2:N_2\to C_2$は$\ker\pi_2=\operatorname{im}i_2$を満たす
+  - $F:K_2\to K_3$, $G:C_1\to C_2$は$f_2\circ\iota_2=\iota_3\circ F$, $G\circ\pi_1=\pi_2\circ g_1$を満たす
+  quantifiers:
+  - 任意の可換環$R$
+  - 図式をなす任意の$R$加群と線形写像
+  conclusion: $\ker\delta=\operatorname{im}F$かつ$\ker G=\operatorname{im}\delta$を満たす線形写像$\delta:K_3\to C_1$が存在する。
   answer: |
-    概略を述べる。k∈K3に対し、f2の全射性でf2(y)=ι3(k)となるyを取る。g2(i2(y))=i3(ι3(k))=0なので、下の行の完全性からi2(y)=g1(z)となるzがただ1つある。δ(k)=π1(z)と定めると、yの取り方の差はf1の像に入り、zの差はi1の像に入るので、δは定義でき線形である。K3とC1での完全性は、同じ元の取り方を逆にたどる図式追跡で確かめる。
+    $R$を可換環とし、$R$加群と線形写像$f_1:M_1\to M_2$, $f_2:M_2\to M_3$, $g_1:N_1\to N_2$, $g_2:N_2\to N_3$, $i_k:M_k\to N_k$($k=1,2,3$)は次を満たすとする。$\operatorname{im}f_1=\ker f_2$で$f_2$は全射、$\operatorname{im}g_1=\ker g_2$で$g_1$は単射、$g_1\circ i_1=i_2\circ f_1$, $g_2\circ i_2=i_3\circ f_2$である。さらに$\iota_2:K_2\to M_2$は$\operatorname{im}\iota_2=\ker i_2$を満たし、$\iota_3:K_3\to M_3$は単射で$\operatorname{im}\iota_3=\ker i_3$を満たす。$\pi_1:N_1\to C_1$は全射で$\ker\pi_1=\operatorname{im}i_1$を満たし、$\pi_2:N_2\to C_2$は$\ker\pi_2=\operatorname{im}i_2$を満たす。$F:K_2\to K_3$と$G:C_1\to C_2$は$f_2\circ\iota_2=\iota_3\circ F$, $G\circ\pi_1=\pi_2\circ g_1$を満たす。
+    $\delta$を構成する。$k\in K_3$に対し、$f_2$の全射性から$f_2(y)=\iota_3(k)$となる$y\in M_2$を取る。$g_2(i_2(y))=i_3(f_2(y))=i_3(\iota_3(k))=0$なので、$i_2(y)=g_1(z)$となる$z\in N_1$があり、$g_1$の単射性から$z$はただ$1$つである。$\delta(k)=\pi_1(z)$と定める。別の$y'$を選ぶと、$y'-y\in\ker f_2=\operatorname{im}f_1$より$y'=y+f_1(w)$と書ける。すると$i_2(y')=g_1(z)+g_1(i_1(w))=g_1(z+i_1(w))$なので、対応する元は$z+i_1(w)$である。$\pi_1(i_1(w))=0$より$\delta(k)$は$y$の選び方によらない。$k,k'$に$y,y'$と$z,z'$が対応するとき、$ry+r'y'$には$rz+r'z'$が対応するので、$\delta$は線形である。
+    $\ker\delta=\operatorname{im}F$を示す。$l\in K_2$について$f_2(\iota_2(l))=\iota_3(F(l))$なので、$k=F(l)$には$y=\iota_2(l)$が取れる。$i_2(\iota_2(l))=0$より$z=0$となり、$\delta(F(l))=0$である。逆に$\delta(k)=0$とする。$\pi_1(z)=0$より$z=i_1(w)$となる$w\in M_1$がある。$y_0=y-f_1(w)$とおくと、$f_2(y_0)=\iota_3(k)$であり、$i_2(y_0)=g_1(z)-g_1(i_1(w))=0$である。よって$y_0=\iota_2(l)$となる$l\in K_2$がある。$\iota_3(F(l))=f_2(\iota_2(l))=\iota_3(k)$と$\iota_3$の単射性から$F(l)=k$である。
+    $\ker G=\operatorname{im}\delta$を示す。$G(\delta(k))=G(\pi_1(z))=\pi_2(g_1(z))=\pi_2(i_2(y))=0$である。逆に$c\in C_1$が$G(c)=0$を満たすとする。$\pi_1$は全射なので$c=\pi_1(z)$となる$z\in N_1$がある。$\pi_2(g_1(z))=G(c)=0$より$g_1(z)=i_2(y)$となる$y\in M_2$がある。$i_3(f_2(y))=g_2(i_2(y))=g_2(g_1(z))=0$なので、$f_2(y)=\iota_3(k)$となる$k\in K_3$がある。この$k$に対して$y,z$を選べるので、$\delta(k)=\pi_1(z)=c$である。
   strategy: Define δ by lifting along f2, pushing by i2, and pulling back along g1.
   sketch:
-    - "construct: For k in K3, choose y with f2(y)=ι3(k)."
-    - "derive: g2(i2(y))=0, so i2(y)=g1(z) for a unique z."
-    - "construct: Set δ(k)=π1(z)."
-    - "derive: Another choice of y changes z by an element of im i1, so δ is well defined and linear."
-    - "derive: A diagram chase gives exactness at K3."
-    - "derive: A diagram chase gives exactness at C1."
-    - "conclude: K2→K3→C1→C2 is exact."
+  - 'construct: For k in K3, choose y with f2(y)=ι3(k).'
+  - 'derive: g2(i2(y))=0, so i2(y)=g1(z) for a unique z.'
+  - 'construct: Set δ(k)=π1(z).'
+  - 'derive: Another choice of y changes z by an element of im i1, so δ is well defined and linear.'
+  - 'derive: A diagram chase gives exactness at K3.'
+  - 'derive: A diagram chase gives exactness at C1.'
+  - 'conclude: K2→K3→C1→C2 is exact.'
   openmath: (forall (R M1 M2 M3 N1 N2 N3 K2 K3 C1 C2 f1 f2 g1 g2 i1 i2 i3 u2 u3 p1 p2 F G) (-> (and (is_comm_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R K2) (is_module R K3) (is_module R C1) (is_module R C2) (exact_pair f1 f2) (surjective_map f2) (injective_map g1) (exact_pair g1 g2) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (exact_pair u2 i2) (exact_pair u3 i3) (injective_map u3) (exact_pair i1 p1) (exact_pair i2 p2) (surjective_map p1) (= (map_compose f2 u2) (map_compose u3 F)) (= (map_compose G p1) (map_compose p2 g1))) (exists (d) (and (module_hom d R K3 C1) (exact_pair F d) (exact_pair d G)))))
   hard_negative:
     statement: f2の全射性とg1の単射性がなくても、同じδがK3からC1へ定義できる。
@@ -304,21 +397,32 @@
   kind: textbook
   level: 3
   topic: 加群論・分裂完全列
-  statement: 短完全列0→A→B→C→0について、gの切断の存在、fの引き込みの存在、この列と直和の列を同型にするB≅A⊕Cの存在は同値である。
+  statement: $R$を環とし、$R$加群の短完全列$0\to A\xrightarrow{f}B\xrightarrow{g}C\to0$を考える。$g$の切断の存在、$f$の引き込みの存在、この列を直和の列へ移す同型$B\cong A\oplus C$の存在は、互いに同値である。
   statement_en: For a short exact sequence 0→A→B→C→0 with maps f and g, the existence of a section of g, the existence of a retraction of f, and the existence of an isomorphism B ≅ A⊕C compatible with the inclusion and the projection are equivalent.
-  assumptions: [Rは環, fは単射, im f=ker g, gは全射]
-  quantifiers: [任意の環R, R加群A, B, C, 線形写像f, g]
-  conclusion: 3条件(切断、引き込み、直和分解)は互いに同値である。
+  assumptions:
+  - $R$は環
+  - $A,B,C$は$R$加群
+  - $f:A\to B$は単射
+  - $\operatorname{im}f=\ker g$
+  - $g:B\to C$は全射
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$A,B,C$
+  - 任意の線形写像$f,g$
+  conclusion: 次の$3$条件は同値である。$g\circ s=\mathrm{id}_C$となる線形写像$s:C\to B$がある。$r\circ f=\mathrm{id}_A$となる線形写像$r:B\to A$がある。$f=e^{-1}\circ\mathrm{inl}$かつ$g=\mathrm{snd}\circ e$となる同型$e:B\to A\oplus C$がある。
   answer: |
-    切断sがあれば、x-s(g(x))はgの核に入るのでf(r(x))と一意に書け、rがfの引き込みとなる。引き込みrがあれば、xを(r(x),g(x))へ送る写像は線形である。r(x)=0かつg(x)=0ならx=0なので単射であり、(a,c)にはg(x)=cとなるxを取りx+f(a-r(x))を対応させれば全射もわかる。この同型はfとgを直和の包含と射影に移す。逆に直和分解があれば、Cの包含と分解の逆の合成がgの切断となる。
+    $R$を環、$A,B,C$を$R$加群とし、$f:A\to B$は単射、$g:B\to C$は全射で$\operatorname{im}f=\ker g$とする。$\mathrm{inl}:A\to A\oplus C$を$a\mapsto(a,0)$、$\mathrm{inr}:C\to A\oplus C$を$c\mapsto(0,c)$、$\mathrm{snd}:A\oplus C\to C$を第$2$成分への射影とする。
+    切断$s:C\to B$($g\circ s=\mathrm{id}_C$)があるとする。$x\in B$について$g(x-s(g(x)))=0$なので、$x-s(g(x))=f(r(x))$となる$r(x)\in A$がある。$f$の単射性から$r(x)$はただ$1$つに定まり、$r$は線形である。$g\circ f=0$より$f(a)-s(g(f(a)))=f(a)$なので、$r(f(a))=a$である。
+    引き込み$r:B\to A$($r\circ f=\mathrm{id}_A$)があるとし、$e(x)=(r(x),g(x))$と定める。$e$は線形である。$e(x)=0$なら$g(x)=0$より$x=f(a)$と書け、$a=r(f(a))=r(x)=0$なので$x=0$である。$(a,c)\in A\oplus C$に対し$g(x)=c$となる$x$を取り、$x'=x+f(a-r(x))$とおくと、$r(x')=a$, $g(x')=c$である。よって$e$は同型である。さらに$e(f(a))=(r(f(a)),g(f(a)))=(a,0)$なので$f=e^{-1}\circ\mathrm{inl}$であり、$\mathrm{snd}\circ e=g$である。
+    そのような同型$e$があるとし、$s=e^{-1}\circ\mathrm{inr}$とおく。$g\circ s=\mathrm{snd}\circ e\circ e^{-1}\circ\mathrm{inr}=\mathrm{snd}\circ\mathrm{inr}=\mathrm{id}_C$なので、$s$は$g$の切断である。以上で$3$条件が同値であることが示された。
   strategy: Build the retraction from a section, then the direct sum decomposition, and close the cycle.
   sketch:
-    - "setup: Assume 0→A→B→C→0 is exact."
-    - "construct: From a section s, define r by x - s(g(x)) = f(r(x))."
-    - "construct: From a retraction r, define B → A⊕C by x ↦ (r(x), g(x))."
-    - "derive: This map is bijective and is compatible with f and g."
-    - "construct: From a decomposition, compose the inclusion of C with the inverse."
-    - "conclude: The three conditions are equivalent."
+  - 'setup: Assume 0→A→B→C→0 is exact.'
+  - 'construct: From a section s, define r by x - s(g(x)) = f(r(x)).'
+  - 'construct: From a retraction r, define B → A⊕C by x ↦ (r(x), g(x)).'
+  - 'derive: This map is bijective and is compatible with f and g.'
+  - 'construct: From a decomposition, compose the inclusion of C with the inverse.'
+  - 'conclude: The three conditions are equivalent.'
   openmath: (forall (R A B C f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g) (surjective_map g)) (and (<-> (exists (s) (and (module_hom s R C B) (= (map_compose g s) (identity_map C)))) (exists (r) (and (module_hom r R B A) (= (map_compose r f) (identity_map A))))) (<-> (exists (r) (and (module_hom r R B A) (= (map_compose r f) (identity_map A)))) (exists (e) (and (module_hom e R B (direct_sum_modules A C)) (bijective_map e) (= (map_compose e f) (sum_inclusion_left A C)) (= (map_compose (sum_projection_right A C) e) g)))))))
   hard_negative:
     statement: 任意の短完全列でgの切断が存在する。
@@ -333,20 +437,28 @@
   kind: textbook
   level: 3
   topic: 加群論・Hom関手
-  statement: 0→A→B→Cが完全ならば、任意のR加群Xについて0→Hom(X,A)→Hom(X,B)→Hom(X,C)も完全である。
+  statement: $R$を環とし、$R$加群の列$0\to A\xrightarrow{f}B\xrightarrow{g}C$が完全とする。任意の$R$加群$X$について、合成で定まる列$0\to\mathrm{Hom}_R(X,A)\to\mathrm{Hom}_R(X,B)\to\mathrm{Hom}_R(X,C)$も完全である。
   statement_en: If 0→A→B→C is exact, then for every R-module X the sequence 0→Hom(X,A)→Hom(X,B)→Hom(X,C) given by postcomposition is exact.
-  assumptions: [Rは環, fは単射, im f=ker g]
-  quantifiers: [任意の環R, R加群A, B, C, X, 線形写像f, g]
-  conclusion: k↦f∘kは単射で、その像はh↦g∘hの核に等しい。
+  assumptions:
+  - $R$は環
+  - $f:A\to B$は単射
+  - $\operatorname{im}f=\ker g$
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$A,B,C,X$
+  - 任意の線形写像$f,g$
+  conclusion: $k\mapsto f\circ k$は単射で、その像は$h\mapsto g\circ h$の核に等しい。
   answer: |
-    fが単射なのでf∘k=f∘lならk=lである。g∘f=0なのでg∘(f∘k)=0である。逆にg∘h=0なら、各h(x)はker g=im fに入る。fの単射性からh(x)=f(k(x))となるk(x)がただ1つ定まり、kは線形でf∘k=hを満たす。
+    $R$を環、$A,B,C,X$を$R$加群とし、$f:A\to B$は単射な線形写像、$g:B\to C$は$\operatorname{im}f=\ker g$を満たす線形写像とする。
+    線形写像$k,l:X\to A$が$f\circ k=f\circ l$を満たすとする。$f$は単射なので、すべての$x\in X$で$k(x)=l(x)$である。よって$k\mapsto f\circ k$は単射である。
+    $g\circ f=0$より$g\circ(f\circ k)=0$である。逆に線形写像$h:X\to B$が$g\circ h=0$を満たすとする。各$x\in X$について$h(x)\in\ker g=\operatorname{im}f$なので、$h(x)=f(k(x))$となる$k(x)\in A$があり、$f$の単射性からただ$1$つに定まる。$f(k(x+x'))=h(x+x')=f(k(x)+k(x'))$とスカラー倍の同様の式から、$k$は線形である。このとき$f\circ k=h$である。
   strategy: Factor a map landing in ker g through the injective map f.
   sketch:
-    - "derive: Injectivity of f makes postcomposition by f injective."
-    - "derive: g∘f=0 makes the composite of the two postcompositions zero."
-    - "setup: Take h with g∘h=0, so h takes values in im f."
-    - "construct: Define k by h(x)=f(k(x)) using injectivity of f."
-    - "conclude: k is linear and f∘k=h."
+  - 'derive: Injectivity of f makes postcomposition by f injective.'
+  - 'derive: g∘f=0 makes the composite of the two postcompositions zero.'
+  - 'setup: Take h with g∘h=0, so h takes values in im f.'
+  - 'construct: Define k by h(x)=f(k(x)) using injectivity of f.'
+  - 'conclude: k is linear and f∘k=h.'
   openmath: (forall (R A B C X f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R X) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g)) (and (injective_map (post_compose f)) (exact_pair (post_compose f) (post_compose g)))))
   hard_negative:
     statement: A→B→C→0が完全ならHom(X,B)→Hom(X,C)は全射である。
@@ -377,18 +489,23 @@
   kind: gap
   level: 3
   topic: 加群論・自由加群
-  statement: 任意のR加群Mは、M自身を基底の添字とする自由加群R^{(M)}からの全射線形写像の像である。
+  statement: $R$を環とする。任意の$R$加群$M$は、$M$自身を基底の添字とする自由加群$R^{(M)}$からの全射線形写像の像である。
   statement_en: Every R-module M is the image of a surjective R-linear map from the free module on the underlying set of M.
-  assumptions: [Rは環, MはR加群]
-  quantifiers: [任意の環R, R加群M]
-  conclusion: 全射線形写像R^{(M)}→Mが存在する。
+  assumptions:
+  - $R$は環
+  - $M$は$R$加群
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M$
+  conclusion: 全射線形写像$R^{(M)}\to M$が存在する。
   answer: |
-    基底ベクトルe_mをm∈Mへ送る線形写像を、線形結合Σa_m e_mをΣa_m mへ送る写像として定める。e_mの像がmなので、この写像は全射である。
+    $R$を環、$M$を$R$加群とし、$R^{(M)}$の基底を$(e_m)_{m\in M}$とする。
+    $\varphi:R^{(M)}\to M$を、有限和$\sum_m a_me_m$を$\sum_m a_mm$へ送る写像として定める。基底による表示は一意で和は有限なので、$\varphi$は線形写像である。各$m\in M$について$\varphi(e_m)=m$なので、$\varphi$は全射である。
   strategy: Send each basis vector to the element that indexes it.
   sketch:
-    - "construct: Define Σa_m e_m ↦ Σa_m m."
-    - "derive: Linearity holds because the sums are finite."
-    - "conclude: e_m ↦ m shows surjectivity."
+  - 'construct: Define Σa_m e_m ↦ Σa_m m.'
+  - 'derive: Linearity holds because the sums are finite.'
+  - 'conclude: e_m ↦ m shows surjectivity.'
   openmath: (forall (R M) (-> (and (is_ring R) (is_module R M)) (exists (f) (and (module_hom f R (free_module_on R M) M) (surjective_map f)))))
   hard_negative:
     statement: 任意のR加群Mは自由加群と同型である。
@@ -403,19 +520,25 @@
   kind: gap
   level: 3
   topic: 加群論・自由加群と射影加群
-  statement: 可換環上の自由加群は射影加群であり、射影加群は平坦加群である。
+  statement: $R$を可換環とする。$R$上の自由加群は射影加群であり、$R$上の射影加群は平坦加群である。
   statement_en: Over a commutative ring, every free module is projective and every projective module is flat.
-  assumptions: [Rは可換環, MはR加群]
-  quantifiers: [任意の可換環R, R加群M]
-  conclusion: Mが自由ならMは射影的であり、Mが射影的ならMは平坦である。
+  assumptions:
+  - $R$は可換環
+  - $M$は$R$加群
+  quantifiers:
+  - 任意の可換環$R$
+  - 任意の$R$加群$M$
+  conclusion: $M$が自由なら$M$は射影的であり、$M$が射影的なら$M$は平坦である。
   answer: |
-    自由加群からの写像は基底の行き先を任意に選んで定まるので、全射に沿って基底の像を持ち上げれば射影性がわかる。射影加群は自由加群Fの直和因子である。Fとのテンソルは直和を与えるので単射を保ち、直和因子についても単射性が保たれる。よって射影加群は平坦である。
+    $R$を可換環、$M$を$R$加群とする。射影的とは全射に沿って線形写像が持ち上がることであり、平坦とは$M\otimes_R-$が単射線形写像を単射線形写像へ移すことである。
+    $M$が基底$(e_b)_{b\in B}$をもつ自由加群とする。全射$p:U\to V$と線形写像$q:M\to V$に対し、各$b$で$p(u_b)=q(e_b)$となる$u_b\in U$を選ぶ。$e_b\mapsto u_b$で定まる線形写像$h:M\to U$は$p\circ h=q$を満たす。よって$M$は射影的である。
+    $M$が射影的とする。自由加群$F=R^{(M)}$からの全射$s:F\to M$に沿って$\mathrm{id}_M$を持ち上げると、$s\circ i=\mathrm{id}_M$となる$i:M\to F$が得られる。単射線形写像$h:N\to N'$を取る。自然な同型$F\otimes_RN\cong N^{(M)}$のもとで$F\otimes h$は$h$の成分ごとの直和なので、単射である。$i\otimes\mathrm{id}_N$は左逆写像$s\otimes\mathrm{id}_N$をもつので単射である。$(F\otimes h)\circ(i\otimes\mathrm{id}_N)=(i\otimes\mathrm{id}_{N'})\circ(M\otimes h)$の左辺は単射なので、$M\otimes h$は単射である。よって$M$は平坦である。
   strategy: Lift basis images for projectivity and use direct summands of free modules for flatness.
   sketch:
-    - "derive: Maps out of a free module lift along surjections by lifting basis images."
-    - "translate: A projective module is a direct summand of a free module."
-    - "derive: Tensoring with a free module is a direct sum of copies of the identity, so it preserves injections."
-    - "conclude: Direct summands inherit this, so projective modules are flat."
+  - 'derive: Maps out of a free module lift along surjections by lifting basis images.'
+  - 'translate: A projective module is a direct summand of a free module.'
+  - 'derive: Tensoring with a free module is a direct sum of copies of the identity, so it preserves injections.'
+  - 'conclude: Direct summands inherit this, so projective modules are flat.'
   openmath: (forall (R M) (-> (and (is_comm_ring R) (is_module R M)) (and (-> (free_module R M) (projective_module R M)) (-> (projective_module R M) (flat_module R M)))))
   hard_negative:
     statement: 平坦加群は射影加群である。
@@ -430,19 +553,28 @@
   kind: gap
   level: 3
   topic: 加群論・射影加群
-  statement: Pが射影加群で、f:M→Nが全射線形写像ならば、任意のg:P→Nはf∘h=gとなるh:P→Mへ持ち上がる。
+  statement: $R$を環、$P$を射影$R$加群、$f:M\to N$を全射線形写像とする。任意の線形写像$g:P\to N$に対し、$f\circ h=g$となる線形写像$h:P\to M$が存在する。
   statement_en: If P is projective and f from M to N is a surjective linear map, then every linear map g from P to N lifts to h from P to M with f∘h=g.
-  assumptions: [Rは環, Pは射影R加群, fは全射]
-  quantifiers: [任意のR加群M, N, 線形写像f, g]
-  conclusion: f∘h=gを満たす線形写像h:P→Mが存在する。
+  assumptions:
+  - $R$は環
+  - $P$は射影$R$加群
+  - $M,N$は$R$加群
+  - $f:M\to N$は全射
+  - $g:P\to N$は線形写像
+  quantifiers:
+  - 任意の$R$加群$M,N$
+  - 任意の線形写像$f,g$
+  conclusion: $f\circ h=g$を満たす線形写像$h:P\to M$が存在する。
   answer: |
-    Pは自由加群Fと線形写像i:P→F, s:F→Pでs∘i=idを満たすものを持つ。F上の写像は基底の行き先で決まるので、g∘sの基底の像をfで持ち上げてk:F→Mを作り、f∘k=g∘sとする。h=k∘iとおくと、f∘h=g∘s∘i=gである。
+    $R$を環、$P$を射影$R$加群、$M,N$を$R$加群とし、$f:M\to N$を全射線形写像、$g:P\to N$を線形写像とする。ここで射影加群とは、自由加群$F$と線形写像$i:P\to F$, $s:F\to P$で$s\circ i=\mathrm{id}_P$を満たすものをもつ加群のことである。
+    $F$の基底を$(e_b)$とする。$f$は全射なので、各$b$で$f(m_b)=g(s(e_b))$となる$m_b\in M$を選べる。$e_b\mapsto m_b$で定まる線形写像を$k:F\to M$とすると、基底上の値が一致するので$f\circ k=g\circ s$である。
+    $h=k\circ i$とおくと、$f\circ h=g\circ s\circ i=g$である。
   strategy: Lift on a free module that contains P as a direct summand.
   sketch:
-    - "translate: Write P as a direct summand of a free module F via i and s."
-    - "construct: Lift the basis images of g∘s through f to get k from F to M."
-    - "construct: Set h = k∘i."
-    - "conclude: f∘h = g∘s∘i = g."
+  - 'translate: Write P as a direct summand of a free module F via i and s.'
+  - 'construct: Lift the basis images of g∘s through f to get k from F to M.'
+  - 'construct: Set h = k∘i.'
+  - 'conclude: f∘h = g∘s∘i = g.'
   openmath: (forall (R P M N f g) (-> (and (is_ring R) (is_module R P) (is_module R M) (is_module R N) (projective_module R P) (module_hom f R M N) (module_hom g R P N) (surjective_map f)) (exists (h) (and (module_hom h R P M) (= (map_compose f h) g)))))
   hard_negative:
     statement: 任意のR加群Pについて、全射fに沿って写像g:P→Nが持ち上がる。
@@ -457,19 +589,25 @@
   kind: textbook
   level: 3
   topic: 加群論・射影加群
-  statement: R加群Pが射影的であることと、Pを添字とする自由加群R^{(P)}への線形写像iとs∘i=idとなるsが存在することは同値である。すなわちPは自由加群の直和因子である。
+  statement: $R$を環とする。$R$加群$P$が射影的であることは、$P$を基底の添字とする自由加群$R^{(P)}$への線形写像$i$と、$s\circ i=\mathrm{id}_P$となる線形写像$s:R^{(P)}\to P$が存在することと同値である。すなわち$P$は自由加群の直和因子である。
   statement_en: An R-module P is projective if and only if there are linear maps i from P to the free module on P and s back to P with s∘i = id, that is, P is a direct summand of a free module.
-  assumptions: [Rは環, PはR加群]
-  quantifiers: [任意の環R, R加群P]
-  conclusion: Pの射影性とs∘i=idを満たすi, sの存在は同値である。
+  assumptions:
+  - $R$は環
+  - $P$は$R$加群
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$P$
+  conclusion: $P$の射影性と、$s\circ i=\mathrm{id}_P$を満たす線形写像$i:P\to R^{(P)}$, $s:R^{(P)}\to P$の存在は同値である。
   answer: |
-    Pが射影的なら、全射R^{(P)}→Pに沿って恒等写像が持ち上がり、i, sが得られる。逆にi, sがあるとする。全射f:M→Nとg:P→Nに対し、自由加群の持ち上げ性からf∘k=g∘sとなるk:R^{(P)}→Mを取る。h=k∘iとすればf∘h=g∘s∘i=gなのでPは射影的である。
+    $R$を環、$P$を$R$加群とする。射影的とは、任意の全射線形写像に沿って$P$からの線形写像が持ち上がることである。$R^{(P)}$の基底を$(e_p)_{p\in P}$とする。
+    $P$が射影的とする。$s:R^{(P)}\to P$を$e_p\mapsto p$で定まる全射線形写像とする。$s$に沿って$\mathrm{id}_P$を持ち上げると、$s\circ i=\mathrm{id}_P$となる$i:P\to R^{(P)}$が得られる。
+    逆に$i,s$があるとする。全射線形写像$f:M\to N$と線形写像$g:P\to N$を取る。各$p$で$f(m_p)=g(s(e_p))$となる$m_p\in M$を選び、$e_p\mapsto m_p$で定まる線形写像を$k:R^{(P)}\to M$とすると、$f\circ k=g\circ s$である。$h=k\circ i$とおくと$f\circ h=g\circ s\circ i=g$なので、$P$は射影的である。
   strategy: Lift the identity for one direction and restrict lifts along the summand for the other.
   sketch:
-    - "construct: If P is projective, lift the identity through the surjection from the free module on P."
-    - "setup: Conversely take i and s with s∘i = id, a surjection f and a map g."
-    - "derive: The free module is projective, so g∘s lifts to k with f∘k = g∘s."
-    - "conclude: h = k∘i lifts g."
+  - 'construct: If P is projective, lift the identity through the surjection from the free module on P.'
+  - 'setup: Conversely take i and s with s∘i = id, a surjection f and a map g.'
+  - 'derive: The free module is projective, so g∘s lifts to k with f∘k = g∘s.'
+  - 'conclude: h = k∘i lifts g.'
   openmath: (forall (R P) (-> (and (is_ring R) (is_module R P)) (<-> (projective_module R P) (exists (i s) (and (module_hom i R P (free_module_on R P)) (module_hom s R (free_module_on R P) P) (= (map_compose s i) (identity_map P)))))))
   hard_negative:
     statement: 射影加群は自由加群である。
@@ -489,17 +627,24 @@
   kind: gap
   level: 3
   topic: 加群論・移入加群
-  statement: Qが移入加群で、i:Q→Mが単射線形写像ならば、r∘i=idとなる線形写像r:M→Qが存在する。
+  statement: $R$を環、$Q$を移入$R$加群、$M$を$Q$と同じ宇宙に属する$R$加群とする。$i:Q\to M$が単射線形写像ならば、$r\circ i=\mathrm{id}_Q$となる線形写像$r:M\to Q$が存在する。
   statement_en: If Q is an injective module, M is a module in the same universe as Q, and i from Q to M is an injective linear map, then there is a linear map r from M to Q with r∘i = id.
-  assumptions: [Rは環, Qは移入R加群, iは単射, QとMは同じ宇宙に属する]
-  quantifiers: [任意のR加群M, 単射線形写像i]
-  conclusion: r∘i=idを満たす線形写像r:M→Qが存在する。
+  assumptions:
+  - $R$は環
+  - $Q$は移入$R$加群
+  - $M$は$R$加群で、$Q$と$M$は同じ宇宙に属する
+  - $i:Q\to M$は単射線形写像
+  quantifiers:
+  - $Q$と同じ宇宙の任意の$R$加群$M$
+  - 任意の単射線形写像$i$
+  conclusion: $r\circ i=\mathrm{id}_Q$を満たす線形写像$r:M\to Q$が存在する。
   answer: |
-    移入性の定義を単射iと恒等写像id:Q→Qに適用すると、r∘i=idとなるr:M→Qが得られる。
+    $R$を環、$Q$を移入$R$加群、$M$を$Q$と同じ宇宙に属する$R$加群とし、$i:Q\to M$を単射線形写像とする。移入性とは、同じ宇宙の加群の間の単射線形写像$j:X\to Y$と線形写像$g:X\to Q$に対し、$h\circ j=g$となる線形写像$h:Y\to Q$が存在することである。
+    この性質を$j=i$と$g=\mathrm{id}_Q$に適用すると、$r\circ i=\mathrm{id}_Q$となる線形写像$r:M\to Q$が得られる。
   strategy: Extend the identity of Q along i.
   sketch:
-    - "apply_theorem: Apply injectivity of Q to the injection i and the identity map."
-    - "conclude: The extension r satisfies r∘i = id."
+  - 'apply_theorem: Apply injectivity of Q to the injection i and the identity map.'
+  - 'conclude: The extension r satisfies r∘i = id.'
   openmath: (forall (R Q M i) (-> (and (is_ring R) (is_module R Q) (is_module R M) (injective_module R Q) (module_hom i R Q M) (injective_map i)) (exists (r) (and (module_hom r R M Q) (= (map_compose r i) (identity_map Q))))))
   hard_negative:
     statement: 任意のR加群Qについて、単射i:Q→Mには引き込みが存在する。
@@ -515,20 +660,27 @@
   kind: textbook
   level: 4
   topic: 加群論・平坦加群
-  statement: Mが平坦加群でN→N'→N''が完全ならば、M⊗N→M⊗N'→M⊗N''も完全である。
+  statement: $R$を可換環、$M$を平坦$R$加群とする。$R$加群の列$N\xrightarrow{f}N'\xrightarrow{g}N''$が$N'$で完全ならば、$M\otimes N\to M\otimes N'\to M\otimes N''$も$M\otimes N'$で完全である。
   statement_en: If M is a flat module over a commutative ring and N→N'→N'' is exact, then M⊗N→M⊗N'→M⊗N'' is exact.
-  assumptions: [Rは可換環, Mは平坦R加群, N→N'→N''は完全]
-  quantifiers: [任意のR加群N, N', N'', 線形写像f, g]
-  conclusion: M⊗fとM⊗gの列は完全である。
+  assumptions:
+  - $R$は可換環
+  - $M$は平坦$R$加群
+  - $f:N\to N'$, $g:N'\to N''$は線形写像で$\operatorname{im}f=\ker g$
+  quantifiers:
+  - 任意の$R$加群$N,N',N''$
+  - 任意の線形写像$f,g$
+  conclusion: $\mathrm{id}_M\otimes f$と$\mathrm{id}_M\otimes g$の列は完全である。
   answer: |
-    gをN'→N'/im fとN'/im f→N''の合成に分ける。第二の写像は完全性から単射であり、Mの平坦性によりテンソル後も単射である。右完全性によりM⊗(N'/im f)はM⊗N'をM⊗fの像で割った加群である。したがってM⊗gの核はM⊗fの像に等しい。
+    $R$を可換環、$M$を平坦$R$加群とし、$f:N\to N'$, $g:N'\to N''$を$\operatorname{im}f=\ker g$を満たす線形写像とする。
+    $C=N'/\operatorname{im}f$、$p:N'\to C$を射影とする。$\ker g=\operatorname{im}f$なので、$g$は単射線形写像$\bar g:C\to N''$を用いて$g=\bar g\circ p$と書ける。$M$は平坦なので$\mathrm{id}_M\otimes\bar g$は単射である。したがって$\ker(\mathrm{id}_M\otimes g)=\ker(\mathrm{id}_M\otimes p)$である。
+    列$N\to N'\to C\to0$は完全なので、テンソル積の右完全性により$M\otimes N\to M\otimes N'\to M\otimes C\to0$も完全である。よって$\ker(\mathrm{id}_M\otimes p)=\operatorname{im}(\mathrm{id}_M\otimes f)$であり、$\ker(\mathrm{id}_M\otimes g)=\operatorname{im}(\mathrm{id}_M\otimes f)$を得る。
   strategy: Factor g through the cokernel of f, then combine right exactness with flatness.
   sketch:
-    - "setup: Factor g as N' → N'/im f → N''."
-    - "derive: The second map is injective because the sequence is exact."
-    - "apply_theorem: Flatness keeps it injective after tensoring with M."
-    - "apply_theorem: Right exactness identifies M⊗(N'/im f) with the cokernel of M⊗f."
-    - "conclude: ker(M⊗g) = im(M⊗f)."
+  - 'setup: Factor g as N'' → N''/im f → N''''.'
+  - 'derive: The second map is injective because the sequence is exact.'
+  - 'apply_theorem: Flatness keeps it injective after tensoring with M.'
+  - 'apply_theorem: Right exactness identifies M⊗(N''/im f) with the cokernel of M⊗f.'
+  - 'conclude: ker(M⊗g) = im(M⊗f).'
   openmath: (forall (R M N1 N2 N3 f g) (-> (and (is_comm_ring R) (is_module R M) (is_module R N1) (is_module R N2) (is_module R N3) (flat_module R M) (module_hom f R N1 N2) (module_hom g R N2 N3) (exact_pair f g)) (exact_pair (tensor_identity_map M f) (tensor_identity_map M g))))
   hard_negative:
     statement: 任意のR加群Mについて、テンソルは完全列を完全列へ移す。
@@ -543,19 +695,26 @@
   kind: textbook
   level: 3
   topic: 加群論・テンソル積
-  statement: M→N→P→0が完全ならば、任意のR加群Qについて、Q⊗M→Q⊗N→Q⊗P→0も完全である。
+  statement: $R$を可換環とする。$R$加群の列$M\xrightarrow{f}N\xrightarrow{g}P\to0$が完全ならば、任意の$R$加群$Q$について$Q\otimes M\to Q\otimes N\to Q\otimes P\to0$も完全である。
   statement_en: If M→N→P→0 is exact, then for every module Q over a commutative ring, Q⊗M→Q⊗N→Q⊗P→0 is exact.
-  assumptions: [Rは可換環, M→N→Pは完全, gは全射]
-  quantifiers: [任意のR加群M, N, P, Q, 線形写像f, g]
-  conclusion: Q⊗fとQ⊗gの列は完全で、Q⊗gは全射である。
+  assumptions:
+  - $R$は可換環
+  - $f:M\to N$, $g:N\to P$は線形写像で$\operatorname{im}f=\ker g$
+  - $g$は全射
+  quantifiers:
+  - 任意の$R$加群$M,N,P,Q$
+  - 任意の線形写像$f,g$
+  conclusion: $\mathrm{id}_Q\otimes f$と$\mathrm{id}_Q\otimes g$の列は完全で、$\mathrm{id}_Q\otimes g$は全射である。
   answer: |
-    Q⊗Pは純テンソルで生成され、q⊗g(n)の形なのでQ⊗gは全射である。(Q⊗g)∘(Q⊗f)=0なので、Q⊗gはC=(Q⊗N)/im(Q⊗f)からの写像を誘導する。q⊗g(n)にqとnの類q⊗nを対応させる写像は、g(n)=g(n')ならn-n'∈im fであることから定義でき、誘導写像の逆を与える。よって核はim(Q⊗f)に等しい。
+    $R$を可換環、$M,N,P,Q$を$R$加群とし、$f:M\to N$, $g:N\to P$を$\operatorname{im}f=\ker g$を満たす線形写像で、$g$は全射とする。$\mathrm{id}_Q\otimes f$と$\mathrm{id}_Q\otimes g$をそれぞれ$\alpha,\beta$と書く。
+    $Q\otimes P$は純テンソル$q\otimes p$で生成され、$g$は全射なので$q\otimes p=\beta(q\otimes n)$($g(n)=p$)と書ける。よって$\beta$は全射である。
+    $g\circ f=0$より$\beta\circ\alpha=0$である。$C=(Q\otimes N)/\operatorname{im}\alpha$とし、$\beta$から誘導される写像を$\theta:C\to Q\otimes P$とする。$\ker\beta=\operatorname{im}\alpha$を示すには$\theta$の単射性を示せばよい。写像$Q\times P\to C$を、$g(n)=p$となる$n$を選んで$(q,p)\mapsto[q\otimes n]$と定める。$g(n)=g(n')$なら$n-n'=f(m)$となる$m\in M$があり、$q\otimes n-q\otimes n'=\alpha(q\otimes m)$なので、この写像は$n$の選び方によらない。また双線形である。テンソル積の普遍性から、$\varphi(q\otimes p)=[q\otimes n]$を満たす線形写像$\varphi:Q\otimes P\to C$が得られる。$C$の生成元$[q\otimes n]$について$\varphi(\theta([q\otimes n]))=\varphi(q\otimes g(n))=[q\otimes n]$なので、$\varphi\circ\theta=\mathrm{id}_C$である。よって$\theta$は単射である。
   strategy: Construct an inverse on the cokernel using exactness on pure tensors.
   sketch:
-    - "derive: Pure tensors q⊗g(n) generate Q⊗P, so Q⊗g is surjective."
-    - "derive: The composite (Q⊗g)∘(Q⊗f) is zero, which induces a map from the cokernel C."
-    - "construct: Define q⊗p ↦ class of q⊗n for any n with g(n)=p, well defined by exactness."
-    - "conclude: This inverts the induced map, so ker(Q⊗g) = im(Q⊗f)."
+  - 'derive: Pure tensors q⊗g(n) generate Q⊗P, so Q⊗g is surjective.'
+  - 'derive: The composite (Q⊗g)∘(Q⊗f) is zero, which induces a map from the cokernel C.'
+  - 'construct: Define q⊗p ↦ class of q⊗n for any n with g(n)=p, well defined by exactness.'
+  - 'conclude: This inverts the induced map, so ker(Q⊗g) = im(Q⊗f).'
   openmath: (forall (R M N P Q f g) (-> (and (is_comm_ring R) (is_module R M) (is_module R N) (is_module R P) (is_module R Q) (module_hom f R M N) (module_hom g R N P) (exact_pair f g) (surjective_map g)) (and (exact_pair (tensor_identity_map Q f) (tensor_identity_map Q g)) (surjective_map (tensor_identity_map Q g)))))
   hard_negative:
     statement: fが単射ならQ⊗fも単射である。
@@ -570,19 +729,27 @@
   kind: gap
   level: 3
   topic: 加群論・テンソル積
-  statement: 双線形写像f:M×N→Pに対し、g(m⊗n)=f(m,n)を満たす線形写像g:M⊗N→Pがただ1つ存在する。
+  statement: $R$を可換環、$M,N,P$を$R$加群とする。$R$双線形写像$f:M\times N\to P$に対し、$g(m\otimes n)=f(m,n)$を満たす線形写像$g:M\otimes N\to P$がただ$1$つ存在する。
   statement_en: For every R-bilinear map f from M and N to P over a commutative ring, there is a unique linear map g from M⊗N to P with g(m⊗n)=f(m,n).
-  assumptions: [Rは可換環, fはR双線形]
-  quantifiers: [任意のR加群M, N, P, 双線形写像f]
-  conclusion: g(m⊗n)=f(m,n)を満たす線形写像gがただ1つ存在する。
+  assumptions:
+  - $R$は可換環
+  - $M,N,P$は$R$加群
+  - $f:M\times N\to P$は$R$双線形
+  quantifiers:
+  - 任意の$R$加群$M,N,P$
+  - 任意の双線形写像$f$
+  conclusion: すべての$m\in M$, $n\in N$で$g(m\otimes n)=f(m,n)$を満たす線形写像$g$がただ$1$つ存在する。
   answer: |
-    M⊗Nは記号m⊗nが生成する自由加群を、双線形性の関係式で割ったものである。fは関係式を0へ送るので、m⊗nをf(m,n)へ送る線形写像gが定まる。純テンソルはM⊗Nを生成するので、この値を指定する線形写像は1つしかない。
+    $R$を可換環、$M,N,P$を$R$加群、$f:M\times N\to P$を$R$双線形写像とする。
+    $M\otimes N$は、記号$m\otimes n$を基底とする自由加群を、双線形性の関係式で生成される部分加群で割ったものである。その関係式は$(m+m')\otimes n-m\otimes n-m'\otimes n$、$m\otimes(n+n')-m\otimes n-m\otimes n'$、$(rm)\otimes n-r(m\otimes n)$、$m\otimes(rn)-r(m\otimes n)$である。
+    自由加群から$P$への線形写像を基底上で$m\otimes n\mapsto f(m,n)$と定める。$f$の双線形性から、この写像は関係式をすべて$0$へ送る。よって$g(m\otimes n)=f(m,n)$を満たす線形写像$g:M\otimes N\to P$が誘導される。
+    純テンソルは$M\otimes N$を生成するので、純テンソル上の値を指定する線形写像は$1$つしかない。よって$g$は一意である。
   strategy: Use the presentation of the tensor product for existence and generation by pure tensors for uniqueness.
   sketch:
-    - "translate: M⊗N is the free module on symbols m⊗n modulo the bilinearity relations."
-    - "construct: f kills the relations, so m⊗n ↦ f(m,n) defines a linear map."
-    - "derive: Pure tensors generate M⊗N."
-    - "conclude: Hence g is unique."
+  - 'translate: M⊗N is the free module on symbols m⊗n modulo the bilinearity relations.'
+  - 'construct: f kills the relations, so m⊗n ↦ f(m,n) defines a linear map.'
+  - 'derive: Pure tensors generate M⊗N.'
+  - 'conclude: Hence g is unique.'
   openmath: (forall (R M N P f) (-> (and (is_comm_ring R) (is_module R M) (is_module R N) (is_module R P) (bilinear_map f R M N P)) (exists (g) (and (module_hom g R (tensor_product_module R M N) P) (forall (m n) (= (fn_value g (pure_tensor m n)) (fn_value (fn_value f m) n))) (forall (h) (-> (and (module_hom h R (tensor_product_module R M N) P) (forall (m n) (= (fn_value h (pure_tensor m n)) (fn_value (fn_value f m) n)))) (= h g)))))))
   hard_negative:
     statement: M⊗Nの任意の元は純テンソルm⊗nの形である。
@@ -601,21 +768,30 @@
   kind: named
   level: 4
   topic: 加群論・単項イデアル整域上の加群
-  statement: 単項イデアル整域R上の有限生成加群Mは、ある自然数nと既約元p_i、自然数e_iによりR^n⊕⊕_i R/(p_i^{e_i})と同型である(構造定理)。
+  statement: 単項イデアル整域$R$上の有限生成加群$M$は、ある自然数$n,m$と既約元$p_1,\dots,p_m$、自然数$e_1,\dots,e_m$により$R^n\oplus\bigoplus_{j=1}^mR/(p_j^{e_j})$と同型である(構造定理)。
   statement_en: Every finitely generated module M over a principal ideal domain R is isomorphic to R^n ⊕ ⊕_i R/(p_i^{e_i}) for some natural numbers n and e_i and finitely many irreducible elements p_i.
-  assumptions: [Rは単項イデアル整域, Mは有限生成R加群]
-  quantifiers: [任意の単項イデアル整域R, 有限生成R加群M]
-  conclusion: あるn, m, 既約元p_i, 自然数e_iでM≅R^n⊕⊕_{i<m}R/(p_i^{e_i})となる。
+  assumptions:
+  - $R$は単項イデアル整域
+  - $M$は有限生成$R$加群
+  quantifiers:
+  - 任意の単項イデアル整域$R$
+  - 任意の有限生成$R$加群$M$
+  conclusion: ある自然数$n,m$、既約元$p_1,\dots,p_m$、自然数$e_1,\dots,e_m$について$M\cong R^n\oplus\bigoplus_{j=1}^mR/(p_j^{e_j})$となる。
   answer: |
-    概略を述べる。主な段階は3つである。ねじれ部分加群T(M)についてM/T(M)は有限生成でねじれなしなので自由となり、射影性からMはT(M)と自由加群の直和に分かれる。有限生成ねじれ加群T(M)は既約元ごとの準素成分の直和に分解する。各準素成分は巡回加群R/(p^e)の直和に分解する。これらを合わせると主張を得る。
+    $R$を単項イデアル整域、$M$を有限生成$R$加群とする。証明は$4$段階からなる。
+    第一に、$R^k$の部分加群$N$は階数$k$以下の自由加群である。$k$についての帰納法で示す。最後の座標への射影による$N$の像は$R$のイデアルなので$(a)$と書ける。$a=0$なら$N\subseteq R^{k-1}$である。$a\neq0$なら最後の座標が$a$である$x\in N$を取ると、$N=Rx\oplus(N\cap R^{k-1})$となる。特に、有限生成$R$加群の部分加群は有限生成である。
+    第二に、$M$のねじれ部分加群を$T$とすると、$M\cong T\oplus R^n$である。$M/T$は有限生成でねじれをもたない。その生成元$x_1,\dots,x_t$のうち$R$上線形独立な極大部分$y_1,\dots,y_r$を取ると、各$x_i$に$a_ix_i\in\sum_jRy_j$となる$a_i\neq0$がある。$a=\prod_ia_i$とおくと、$a$倍は$M/T$上で単射であり、その像は自由加群$\sum_jRy_j$に含まれる。第一の段階から$M/T$は自由加群である。自由加群への全射は分裂するので$M\cong T\oplus R^n$であり、$T$は$M$の商として有限生成である。
+    第三に、$T$は既約元の冪で消える部分加群の直和に分かれる。$T$の生成元の零化元の積として$aT=0$となる$a\neq0$を取る。$a$が単元なら$T=0$である。そうでなければ$R$は一意分解整域なので、$a=u\prod_lp_l^{k_l}$($u$は単元、$p_l$は互いに同伴でない既約元)と書ける。$T_l=\{x\in T\mid p_l^{k_l}x=0\}$、$b_l=a/p_l^{k_l}$とおく。$b_l$全体の最大公約元は$1$なので$\sum_lc_lb_l=1$となる$c_l$があり、$x=\sum_lc_lb_lx$と$b_lx\in T_l$から$T=\sum_lT_l$である。$\sum_lx_l=0$($x_l\in T_l$)なら、$x_1$は$p_1^{k_1}$と$b_1$の両方で消え、両者は互いに素なので$x_1=0$である。他の成分も同様なので、和は直和である。
+    第四に、$p$を既約元とし、$V$を$p^kV=0$を満たす有限生成加群とすると、$V$は$R/(p^e)$の形の加群の直和である。生成元の個数$t$についての帰納法で示す。$V=0$なら空の直和である。$V\neq0$とし、$p^eV=0$となる最小の$e$を取る。ある生成元$x$は$p^{e-1}x\neq0$を満たし、$x$の零化イデアルは$(p^e)$である。$V/Rx$は$t-1$個の元で生成されるので、帰納法の仮定から$V/Rx=\bigoplus_sR\bar v_s$と書け、$\bar v_s$の零化イデアルは$(p^{f_s})$である。$\bar v_s$の持ち上げ$v$を取ると$p^{f_s}v=cx$となる$c\in R$がある。$p^ev=0$より$p^{e-f_s}cx=0$なので$p^e\mid p^{e-f_s}c$、すなわち$c=p^{f_s}c'$と書ける。$v_s=v-c'x$は$\bar v_s$の持ち上げで、$p^{f_s}v_s=0$を満たす。$V=Rx+\sum_sRv_s$は明らかである。$rx+\sum_sr_sv_s=0$なら、$V/Rx$で考えて$r_s\in(p^{f_s})$なので$r_sv_s=0$であり、$rx=0$である。よって$V=Rx\oplus\bigoplus_sRv_s\cong R/(p^e)\oplus\bigoplus_sR/(p^{f_s})$である。
+    第三と第四の段階を各$T_l$に適用し、第二の段階と合わせると主張を得る。
   strategy: Split off the free part, decompose torsion into primary parts, and split each primary part into cyclic modules.
   sketch:
-    - "setup: Let T(M) be the torsion submodule of M."
-    - "apply_theorem: M/T(M) is finitely generated torsion free over a PID, hence free."
-    - "derive: Projectivity of the free quotient gives M ≅ T(M) ⊕ R^n."
-    - "derive: T(M) is the direct sum of its primary components."
-    - "derive: Each primary component is a direct sum of cyclic modules R/(p^e)."
-    - "conclude: Combining gives M ≅ R^n ⊕ ⊕ R/(p_i^{e_i})."
+  - 'setup: Let T(M) be the torsion submodule of M.'
+  - 'apply_theorem: M/T(M) is finitely generated torsion free over a PID, hence free.'
+  - 'derive: Projectivity of the free quotient gives M ≅ T(M) ⊕ R^n.'
+  - 'derive: T(M) is the direct sum of its primary components.'
+  - 'derive: Each primary component is a direct sum of cyclic modules R/(p^e).'
+  - 'conclude: Combining gives M ≅ R^n ⊕ ⊕ R/(p_i^{e_i}).'
   openmath: (forall (R M) (-> (and (is_pid R) (is_module R M) (finitely_generated_module R M)) (exists (n m p e) (and (in n N) (in m N) (forall (i) (-> (< i m) (irreducible_element (seq_value p i) R))) (module_iso R M (direct_sum_modules (free_rank_module R n) (prime_power_quotient_sum R p e m)))))))
   hard_negative:
     statement: 単項イデアル整域上の任意の加群は巡回加群の直和である。
@@ -634,19 +810,24 @@
   kind: gap
   level: 3
   topic: 加群論・ねじれ部分加群
-  statement: 可換環R上の加群Mをねじれ部分加群T(M)で割った加群M/T(M)のねじれ部分加群は0である。
+  statement: $R$を可換環、$M$を$R$加群、$T(M)$をそのねじれ部分加群とする。$M/T(M)$のねじれ部分加群は$0$である。
   statement_en: For a module M over a commutative ring, the torsion submodule of M/T(M) is zero.
-  assumptions: [Rは可換環, MはR加群]
-  quantifiers: [任意の可換環R, R加群M]
-  conclusion: T(M/T(M))=0である。
+  assumptions:
+  - $R$は可換環
+  - $M$は$R$加群
+  quantifiers:
+  - 任意の可換環$R$
+  - 任意の$R$加群$M$
+  conclusion: $T(M/T(M))=0$である。
   answer: |
-    [x]がねじれ元で、非零因子aでa[x]=0とする。するとax∈T(M)なので、非零因子bでb(ax)=0となる。abは非零因子で(ab)x=0だからx∈T(M)であり、[x]=0である。
+    $R$を可換環、$M$を$R$加群とする。$T(M)$は、ある非零因子$a\in R$で$ax=0$となる$x\in M$全体である。$x\in M$の$M/T(M)$での類を$[x]$と書く。
+    $[x]$がねじれ元であるとし、非零因子$a$で$a[x]=0$とする。すると$ax\in T(M)$なので、ある非零因子$b$で$b(ax)=0$となる。非零因子の積$ab$は非零因子であり、$(ab)x=0$である。したがって$x\in T(M)$であり、$[x]=0$である。
   strategy: Multiply two annihilating non-zero-divisors.
   sketch:
-    - "setup: Let a be a non-zero-divisor with a[x]=0."
-    - "derive: Then ax lies in T(M), so b(ax)=0 for a non-zero-divisor b."
-    - "derive: ab is a non-zero-divisor with (ab)x=0."
-    - "conclude: x lies in T(M), so [x]=0."
+  - 'setup: Let a be a non-zero-divisor with a[x]=0.'
+  - 'derive: Then ax lies in T(M), so b(ax)=0 for a non-zero-divisor b.'
+  - 'derive: ab is a non-zero-divisor with (ab)x=0.'
+  - 'conclude: x lies in T(M), so [x]=0.'
   openmath: (forall (R M) (-> (and (is_comm_ring R) (is_module R M)) (= (torsion_submodule R (quotient_module M (torsion_submodule R M))) zero_module)))
   hard_negative:
     statement: 任意の部分加群NについてM/Nはねじれなしである。
@@ -661,20 +842,29 @@
   kind: gap
   level: 3
   topic: 加群論・ネーター加群
-  statement: im f=ker gとなる線形写像の列M→N→Pで、MとPがネーター加群ならば、Nもネーター加群である。
+  statement: $R$を環とし、$R$加群の線形写像の列$M\xrightarrow{f}N\xrightarrow{g}P$が$\operatorname{im}f=\ker g$を満たすとする。$M$と$P$がネーター加群ならば、$N$もネーター加群である。
   statement_en: If M→N→P is exact at N and M and P are Noetherian, then N is Noetherian.
-  assumptions: [Rは環, im f=ker g, MとPはネーター加群]
-  quantifiers: [任意のR加群M, N, P, 線形写像f, g]
-  conclusion: Nはネーター加群である。
+  assumptions:
+  - $R$は環
+  - $f:M\to N$, $g:N\to P$は線形写像
+  - $\operatorname{im}f=\ker g$
+  - $M,P$はネーター加群
+  quantifiers:
+  - 任意の$R$加群$M,N,P$
+  - 任意の線形写像$f,g$
+  conclusion: $N$はネーター加群である。
   answer: |
-    im fはMの商なのでネーターであり、Nの部分加群の昇鎖L_iを考える。L_i∩im fとg(L_i)はそれぞれネーター加群の中の昇鎖なので、ある番号以降一定である。L_i⊆L_jでL_i∩im f=L_j∩im fかつg(L_i)=g(L_j)ならL_i=L_jなので、昇鎖は止まる。
+    $R$を環、$M,N,P$を$R$加群とし、$f:M\to N$, $g:N\to P$を$\operatorname{im}f=\ker g$を満たす線形写像とする。$M,P$はネーター加群とする。
+    $\operatorname{im}f$は$M$の商なのでネーター加群である。$N$の部分加群の昇鎖$L_1\subseteq L_2\subseteq\cdots$を取る。$L_i\cap\operatorname{im}f$は$\operatorname{im}f$の昇鎖、$g(L_i)$は$P$の昇鎖なので、ある番号以降はどちらも一定である。
+    $L\subseteq L'$が$L\cap\operatorname{im}f=L'\cap\operatorname{im}f$と$g(L)=g(L')$を満たせば$L=L'$であることを示す。$x\in L'$を取ると、$g(x)=g(y)$となる$y\in L$がある。$x-y\in\ker g=\operatorname{im}f$かつ$x-y\in L'$なので、$x-y\in L\cap\operatorname{im}f\subseteq L$である。よって$x\in L$である。
+    したがって昇鎖$(L_i)$はある番号以降一定であり、$N$はネーター加群である。
   strategy: Stabilize the intersection with im f and the image under g separately.
   sketch:
-    - "setup: Take an ascending chain L_i of submodules of N."
-    - "derive: L_i ∩ im f stabilizes because im f is a quotient of M."
-    - "derive: g(L_i) stabilizes because P is Noetherian."
-    - "derive: If L_i ≤ L_j agree on both, then L_i = L_j, using ker g = im f."
-    - "conclude: The chain stabilizes, so N is Noetherian."
+  - 'setup: Take an ascending chain L_i of submodules of N.'
+  - 'derive: L_i ∩ im f stabilizes because im f is a quotient of M.'
+  - 'derive: g(L_i) stabilizes because P is Noetherian.'
+  - 'derive: If L_i ≤ L_j agree on both, then L_i = L_j, using ker g = im f.'
+  - 'conclude: The chain stabilizes, so N is Noetherian.'
   openmath: (forall (R M N P f g) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_module R P) (module_hom f R M N) (module_hom g R N P) (exact_pair f g) (noetherian_module R M) (noetherian_module R P)) (noetherian_module R N)))
   hard_negative:
     statement: im f=ker gでMだけがネーターならNもネーターである。
@@ -689,19 +879,26 @@
   kind: gap
   level: 4
   topic: 加群論・アルティン加群
-  statement: アルティン加群Mの単射な自己準同型は全射である。
+  statement: $R$を環、$M$をアルティン$R$加群とする。$M$の単射な自己準同型は全射である。
   statement_en: Every injective endomorphism of an Artinian module is surjective.
-  assumptions: [Rは環, Mはアルティン加群, fはMの単射自己準同型]
-  quantifiers: [任意の環R, アルティン加群M, 自己準同型f]
-  conclusion: fは全射である。
+  assumptions:
+  - $R$は環
+  - $M$はアルティン$R$加群
+  - $f:M\to M$は単射な線形写像
+  quantifiers:
+  - 任意の環$R$
+  - 任意のアルティン加群$M$
+  - 任意の自己準同型$f$
+  conclusion: $f$は全射である。
   answer: |
-    降鎖im f^nは止まるので、im f^n=im f^{n+1}となるnがある。x∈Mに対しf^n(x)=f^{n+1}(y)となるyを取る。f^nは単射なのでx=f(y)である。よってfは全射である。
+    $R$を環、$M$をアルティン$R$加群、$f:M\to M$を単射な線形写像とする。
+    部分加群の降鎖$\operatorname{im}f\supseteq\operatorname{im}f^2\supseteq\cdots$はアルティン性から止まるので、$\operatorname{im}f^n=\operatorname{im}f^{n+1}$となる$n$がある。$x\in M$に対し$f^n(x)=f^{n+1}(y)$となる$y\in M$を取る。$f^n$は単射なので$x=f(y)$である。よって$f$は全射である。
   strategy: Stabilize the descending chain of images and cancel the injective power.
   sketch:
-    - "setup: Consider the descending chain im f^n."
-    - "derive: Artinian gives n with im f^n = im f^(n+1)."
-    - "derive: For x, write f^n(x)=f^(n+1)(y)."
-    - "conclude: Injectivity of f^n gives x=f(y)."
+  - 'setup: Consider the descending chain im f^n.'
+  - 'derive: Artinian gives n with im f^n = im f^(n+1).'
+  - 'derive: For x, write f^n(x)=f^(n+1)(y).'
+  - 'conclude: Injectivity of f^n gives x=f(y).'
   openmath: (forall (R M f) (-> (and (is_ring R) (is_module R M) (artinian_module R M) (module_hom f R M M) (injective_map f)) (surjective_map f)))
   hard_negative:
     statement: 任意の加群の単射な自己準同型は全射である。
@@ -716,19 +913,23 @@
   kind: named
   level: 3
   topic: 加群論・単純加群
-  statement: 単純加群の間の線形写像は零写像か全単射である(シューアの補題)。
+  statement: $R$を環、$M,N$を単純$R$加群とする。線形写像$f:M\to N$は全単射であるか零写像である(シューアの補題)。
   statement_en: A linear map between simple modules is either zero or bijective.
-  assumptions: [Rは環, MとNは単純R加群]
-  quantifiers: [任意の線形写像f:M→N]
-  conclusion: fは全単射であるか零写像である。
+  assumptions:
+  - $R$は環
+  - $M,N$は単純$R$加群
+  quantifiers:
+  - 任意の線形写像$f:M\to N$
+  conclusion: $f$は全単射であるか零写像である。
   answer: |
-    ker fはMの部分加群なので0かMである。ker f=Mならf=0である。ker f=0ならfは単射で、im fはNの非零部分加群なのでNに等しく、fは全射である。
+    $R$を環、$M,N$を単純$R$加群、$f:M\to N$を線形写像とする。
+    $\ker f$は$M$の部分加群なので$0$か$M$である。$\ker f=M$なら$f=0$である。$\ker f=0$なら$f$は単射である。このとき$M\neq0$より$\operatorname{im}f$は$N$の非零部分加群なので、$N$の単純性から$\operatorname{im}f=N$となり、$f$は全射である。
   strategy: Apply simplicity to the kernel and the image.
   sketch:
-    - "derive: ker f is 0 or M by simplicity of M."
-    - "case_split: If ker f = M then f = 0."
-    - "derive: If ker f = 0 then im f is a nonzero submodule of N."
-    - "conclude: Simplicity of N gives im f = N, so f is bijective."
+  - 'derive: ker f is 0 or M by simplicity of M.'
+  - 'case_split: If ker f = M then f = 0.'
+  - 'derive: If ker f = 0 then im f is a nonzero submodule of N.'
+  - 'conclude: Simplicity of N gives im f = N, so f is bijective.'
   openmath: (forall (R M N f) (-> (and (is_ring R) (is_module R M) (is_module R N) (simple_module R M) (simple_module R N) (module_hom f R M N)) (or (bijective_map f) (= f (zero_map M N)))))
   hard_negative:
     statement: Mだけが単純ならf:M→Nは零写像か全単射である。
@@ -743,18 +944,23 @@
   kind: gap
   level: 3
   topic: 加群論・単純加群
-  statement: 単純加群の非零な自己準同型は、自己準同型環の可逆元である。
+  statement: $R$を環、$M$を単純$R$加群とする。$M$の非零な自己準同型は、自己準同型環の可逆元である。
   statement_en: Every nonzero endomorphism of a simple module is a unit of the endomorphism ring.
-  assumptions: [Rは環, Mは単純R加群, f≠0]
-  quantifiers: [任意の自己準同型f]
-  conclusion: fは自己準同型環で可逆である。
+  assumptions:
+  - $R$は環
+  - $M$は単純$R$加群
+  - $f$は$M$の自己準同型で$f\neq0$
+  quantifiers:
+  - 任意の自己準同型$f$
+  conclusion: $f$は自己準同型環で可逆である。
   answer: |
-    シューアの補題によりfは全単射である。全単射な線形写像の逆写像は線形なので、fの逆元が自己準同型環に存在する。
+    $R$を環、$M$を単純$R$加群、$f:M\to M$を$f\neq0$である線形写像とする。
+    シューアの補題(単純加群の間の線形写像は全単射か零写像である)により、$f$は全単射である。全単射な線形写像の逆写像は線形なので、$f^{-1}$は自己準同型環の元であり、$f$の逆元である。
   strategy: Combine Schur's lemma with the linear inverse.
   sketch:
-    - "apply_theorem: f is bijective by Schur's lemma."
-    - "derive: The set-theoretic inverse is linear."
-    - "conclude: f is a unit."
+  - 'apply_theorem: f is bijective by Schur''s lemma.'
+  - 'derive: The set-theoretic inverse is linear.'
+  - 'conclude: f is a unit.'
   openmath: (forall (R M f) (-> (and (is_ring R) (is_module R M) (simple_module R M) (module_hom f R M M) (!= f (zero_map M M))) (exists (g) (and (module_hom g R M M) (= (map_compose f g) (identity_map M)) (= (map_compose g f) (identity_map M))))))
   hard_negative:
     statement: 単純でない加群でも非零自己準同型は可逆である。
@@ -769,19 +975,26 @@
   kind: gap
   level: 3
   topic: 加群論・半単純加群
-  statement: 半単純加群の任意の部分加群は直和補因子をもつ。
+  statement: $R$を環、$M$を半単純$R$加群とする。$M$の任意の部分加群は補部分加群をもつ。
   statement_en: Every submodule of a semisimple module has a complement.
-  assumptions: [Rは環, Mは半単純R加群, NはMの部分加群]
-  quantifiers: [任意の部分加群N]
-  conclusion: N∩N'=0かつN+N'=Mとなる部分加群N'が存在する。
+  assumptions:
+  - $R$は環
+  - $M$は半単純$R$加群
+  - $N$は$M$の部分加群
+  quantifiers:
+  - 任意の部分加群$N$
+  conclusion: $N\cap N'=0$かつ$N+N'=M$となる部分加群$N'$が存在する。
   answer: |
-    Mは単純部分加群の和である。ツォルンの補題でNと直和をなす部分加群の極大元N'を取る。単純部分加群SがN+N'に含まれなければ、S∩(N+N')=0よりN'+SがN'より大きな直和成分となり極大性に反する。したがってN+N'=Mである。
+    $R$を環、$M$を半単純$R$加群、$N$を$M$の部分加群とする。半単純の定義を「すべての部分加群が補部分加群をもつ」とする場合、主張は定義そのものである。そこで「$M$は単純部分加群の和である」という定義から示す。
+    $N\cap N'=0$を満たす部分加群$N'$全体は、$0$を含み、鎖の和集合で閉じている。ツォルンの補題により極大元$N'$がある。
+    $S$を$M$の単純部分加群とする。$S\cap(N+N')$は$S$の部分加群なので$0$か$S$である。$0$と仮定する。$n=n'+s$($n\in N$, $n'\in N'$, $s\in S$)なら、$s=n-n'\in S\cap(N+N')=0$なので$n=n'\in N\cap N'=0$である。よって$N\cap(N'+S)=0$である。また$S\neq0$かつ$S\cap N'=0$なので$N'+S$は$N'$より真に大きく、極大性に反する。したがって$S\subseteq N+N'$である。
+    $M$は単純部分加群の和なので$N+N'=M$である。
   strategy: Choose a maximal submodule meeting N trivially and test it on simple submodules.
   sketch:
-    - "construct: Zorn's lemma gives N' maximal with N ∩ N' = 0."
-    - "contradiction: A simple S outside N+N' would meet it trivially and enlarge N'."
-    - "derive: Hence every simple submodule lies in N+N'."
-    - "conclude: Since M is the sum of simple submodules, N+N' = M."
+  - 'construct: Zorn''s lemma gives N'' maximal with N ∩ N'' = 0.'
+  - 'contradiction: A simple S outside N+N'' would meet it trivially and enlarge N''.'
+  - 'derive: Hence every simple submodule lies in N+N''.'
+  - 'conclude: Since M is the sum of simple submodules, N+N'' = M.'
   openmath: (forall (R M K) (-> (and (is_ring R) (is_module R M) (semisimple_module R M) (is_submodule K M)) (exists (L) (and (is_submodule L M) (direct_complement K L M)))))
   hard_negative:
     statement: 任意の加群の任意の部分加群は直和補因子をもつ。
@@ -796,20 +1009,26 @@
   kind: textbook
   level: 3
   topic: 加群論・半単純加群
-  statement: 加群Mが半単純であることと、Mが単純部分加群の和であることは同値である。
+  statement: $R$を環とする。$R$加群$M$が半単純であることと、$M$が単純部分加群の和であることは同値である。ここで半単純とは、すべての部分加群が補部分加群をもつことである。
   statement_en: A module M is semisimple if and only if M is the sum of its simple submodules.
-  assumptions: [Rは環, MはR加群]
-  quantifiers: [任意の環R, R加群M]
-  conclusion: Mの半単純性と、単純部分加群全体の和がMであることは同値である。
+  assumptions:
+  - $R$は環
+  - $M$は$R$加群
+  quantifiers:
+  - 任意の環$R$
+  - 任意の$R$加群$M$
+  conclusion: $M$の半単純性と、単純部分加群全体の和が$M$に等しいことは同値である。
   answer: |
-    Mが半単純とする。単純部分加群の和をLとし、補因子L'を取る。L'≠0なら0でないx∈L'とRxの極大な真部分加群K(ツォルンの補題)を取り、MでのKの補因子K'を使うとRx=K⊕(Rx∩K')となる。S=Rx∩K'≅Rx/Kは単純でL∩L'に含まれるので、L∩L'=0に反する。よってL=Mである。逆にMが単純部分加群の和なら、任意の部分加群Nに対し、ツォルンの補題でNと交わらない極大の部分加群を取ると、単純部分加群がすべてその和に含まれるのでNの補因子となる。
+    $R$を環、$M$を$R$加群とする。半単純とは、$M$のすべての部分加群が補部分加群をもつことである。
+    $M$が半単純とする。単純部分加群全体の和を$L$とし、$L$の補部分加群$L'$を取る。$L'\neq0$と仮定し、$0$でない$x\in L'$を取る。$Rx$の真部分加群の鎖の和集合は$x$を含まないので真部分加群である。ツォルンの補題から$Rx$の極大真部分加群$K$がある。$M$における$K$の補部分加群を$K'$とし、$S=Rx\cap K'$とおく。$y\in Rx$を$y=k+k'$($k\in K$, $k'\in K'$)と書くと$k'=y-k\in S$なので、$Rx=K+S$である。$K\cap S\subseteq K\cap K'=0$なので$S\cong Rx/K$であり、$S$は単純である。すると$S\subseteq L$かつ$S\subseteq Rx\subseteq L'$となり、$S\neq0$は$L\cap L'=0$に反する。よって$L'=0$であり、$L=M$である。
+    逆に$M$が単純部分加群の和とし、$N$を部分加群とする。$N\cap N'=0$を満たす部分加群$N'$全体はツォルンの補題により極大元$N'$をもつ。単純部分加群$S$が$N+N'$に含まれなければ$S\cap(N+N')=0$である。このとき$N\cap(N'+S)=0$であり、$N'+S$は$N'$より真に大きいので、極大性に反する。よってすべての単純部分加群は$N+N'$に含まれ、$N+N'=M$である。したがって$N'$は$N$の補部分加群であり、$M$は半単純である。
   strategy: Use a complement of the sum for one direction and Zorn's lemma for the other.
   sketch:
-    - "setup: Let L be the sum of all simple submodules."
-    - "derive: If M is semisimple and L' complements L, a simple submodule of L' lies in L, so L' = 0."
-    - "construct: Conversely, for N take N' maximal with N ∩ N' = 0."
-    - "derive: Every simple submodule lies in N+N'."
-    - "conclude: So N+N' = M and M is semisimple."
+  - 'setup: Let L be the sum of all simple submodules.'
+  - 'derive: If M is semisimple and L'' complements L, a simple submodule of L'' lies in L, so L'' = 0.'
+  - 'construct: Conversely, for N take N'' maximal with N ∩ N'' = 0.'
+  - 'derive: Every simple submodule lies in N+N''.'
+  - 'conclude: So N+N'' = M and M is semisimple.'
   openmath: (forall (R M) (-> (and (is_ring R) (is_module R M)) (<-> (semisimple_module R M) (= (sum_of_simple_submodules R M) M))))
   hard_negative:
     statement: 半単純加群は有限個の単純加群の直和である。
@@ -824,18 +1043,25 @@
   kind: gap
   level: 3
   topic: 圏論・同型射
-  statement: 射fの左逆射gと右逆射hは一致する。とくに両側逆射は一意である。
+  statement: 圏$\mathcal{C}$の射$f:X\to Y$について、$g\circ f=\mathrm{id}_X$を満たす左逆射$g$と、$f\circ h=\mathrm{id}_Y$を満たす右逆射$h$は一致する。とくに両側逆射は一意である。
   statement_en: If a morphism f in a category satisfies g∘f = id and f∘h = id, then the left inverse g and the right inverse h coincide, so a two-sided inverse is unique.
-  assumptions: [Cは圏, f:X→Y, g:Y→Xはg∘f=idを満たす, h:Y→Xはf∘h=idを満たす]
-  quantifiers: [任意の圏C, 対象X, Y, 射f, g, h]
-  conclusion: g=hである。
+  assumptions:
+  - $\mathcal{C}$は圏
+  - $f:X\to Y$, $g:Y\to X$は$g\circ f=\mathrm{id}_X$を満たす
+  - $h:Y\to X$は$f\circ h=\mathrm{id}_Y$を満たす
+  quantifiers:
+  - 任意の圏$\mathcal{C}$
+  - 任意の対象$X,Y$
+  - 任意の射$f,g,h$
+  conclusion: $g=h$である。
   answer: |
-    g=g∘id=g∘(f∘h)=(g∘f)∘h=id∘h=hである。結合律と単位律だけを用いた。
+    $\mathcal{C}$を圏、$X,Y$を対象とし、射$f:X\to Y$, $g,h:Y\to X$は$g\circ f=\mathrm{id}_X$と$f\circ h=\mathrm{id}_Y$を満たすとする。
+    単位律と結合律から$g=g\circ\mathrm{id}_Y=g\circ(f\circ h)=(g\circ f)\circ h=\mathrm{id}_X\circ h=h$である。
   strategy: Insert the identity and use associativity.
   sketch:
-    - "derive: g = g∘(f∘h) by the right inverse identity."
-    - "derive: g∘(f∘h) = (g∘f)∘h by associativity."
-    - "conclude: (g∘f)∘h = h, so g = h."
+  - 'derive: g = g∘(f∘h) by the right inverse identity.'
+  - 'derive: g∘(f∘h) = (g∘f)∘h by associativity.'
+  - 'conclude: (g∘f)∘h = h, so g = h.'
   openmath: (forall (C X Y f g h) (-> (and (is_category C) (object_of X C) (object_of Y C) (morphism_between f X Y) (morphism_between g Y X) (morphism_between h Y X) (= (cat_compose g f) (cat_identity X)) (= (cat_compose f h) (cat_identity Y))) (= g h)))
   hard_negative:
     statement: 射の左逆射は一意である。
@@ -854,18 +1080,25 @@
   kind: gap
   level: 3
   topic: 圏論・モノ射とエピ射
-  statement: モノ射fが右逆射sをもつならば、fは同型射である。
+  statement: 圏$\mathcal{C}$のモノ射$f:X\to Y$が、$f\circ s=\mathrm{id}_Y$を満たす右逆射$s:Y\to X$をもつならば、$f$は同型射である。
   statement_en: A monomorphism f with a right inverse s, meaning f∘s = id, is an isomorphism.
-  assumptions: [Cは圏, fはモノ射, f∘s=id]
-  quantifiers: [任意の圏C, 対象X, Y, 射f:X→Y, s:Y→X]
-  conclusion: fは同型射である。
+  assumptions:
+  - $\mathcal{C}$は圏
+  - $f:X\to Y$はモノ射
+  - $s:Y\to X$は$f\circ s=\mathrm{id}_Y$を満たす
+  quantifiers:
+  - 任意の圏$\mathcal{C}$
+  - 任意の対象$X,Y$
+  - 任意の射$f,s$
+  conclusion: $f$は同型射である。
   answer: |
-    f∘(s∘f)=(f∘s)∘f=f=f∘idであり、fはモノ射なのでs∘f=idである。f∘s=idと合わせて、sはfの両側逆射である。
+    $\mathcal{C}$を圏、$f:X\to Y$をモノ射、$s:Y\to X$を$f\circ s=\mathrm{id}_Y$を満たす射とする。
+    $f\circ(s\circ f)=(f\circ s)\circ f=f=f\circ\mathrm{id}_X$であり、$f$はモノ射なので$s\circ f=\mathrm{id}_X$である。$f\circ s=\mathrm{id}_Y$と合わせて、$s$は$f$の両側逆射である。
   strategy: Cancel the monomorphism from f∘(s∘f) = f∘id.
   sketch:
-    - "derive: f∘(s∘f) = (f∘s)∘f = f = f∘id."
-    - "derive: Since f is mono, s∘f = id."
-    - "conclude: s is a two-sided inverse of f."
+  - 'derive: f∘(s∘f) = (f∘s)∘f = f = f∘id.'
+  - 'derive: Since f is mono, s∘f = id.'
+  - 'conclude: s is a two-sided inverse of f.'
   openmath: (forall (C X Y f s) (-> (and (is_category C) (object_of X C) (object_of Y C) (morphism_between f X Y) (morphism_between s Y X) (mono_morphism f) (= (cat_compose f s) (cat_identity Y))) (iso_morphism f)))
   hard_negative:
     statement: モノ射かつエピ射である射は同型射である。
@@ -881,19 +1114,26 @@
   kind: gap
   level: 3
   topic: 圏論・関手
-  statement: 忠実充満関手Fについて、F(f)が同型射ならばfは同型射である。
+  statement: $F:\mathcal{C}\to\mathcal{D}$を忠実充満関手、$f$を$\mathcal{C}$の射とする。$F(f)$が同型射ならば、$f$は同型射である。
   statement_en: If F is a fully faithful functor and F(f) is an isomorphism, then f is an isomorphism.
-  assumptions: [Fは忠実かつ充満な関手, F(f)は同型射]
-  quantifiers: [任意の圏C, D, 関手F, Cの射f]
-  conclusion: fは同型射である。
+  assumptions:
+  - $F:\mathcal{C}\to\mathcal{D}$は忠実かつ充満な関手
+  - $f:X\to Y$は$\mathcal{C}$の射
+  - $F(f)$は同型射
+  quantifiers:
+  - 任意の圏$\mathcal{C},\mathcal{D}$
+  - 任意の関手$F$
+  - $\mathcal{C}$の任意の射$f$
+  conclusion: $f$は同型射である。
   answer: |
-    F(f)の逆射をkとする。充満性からk=F(g)となるgがある。F(g∘f)=F(g)∘F(f)=id=F(id)と忠実性からg∘f=idであり、同様にf∘g=idである。
+    $F:\mathcal{C}\to\mathcal{D}$を忠実充満関手、$f:X\to Y$を$\mathcal{C}$の射とし、$F(f)$は同型射で逆射を$k:F(Y)\to F(X)$とする。
+    $F$は充満なので、$k=F(g)$となる射$g:Y\to X$がある。$F(g\circ f)=F(g)\circ F(f)=\mathrm{id}_{F(X)}=F(\mathrm{id}_X)$と$F$の忠実性から$g\circ f=\mathrm{id}_X$である。同様に$F(f\circ g)=\mathrm{id}_{F(Y)}=F(\mathrm{id}_Y)$から$f\circ g=\mathrm{id}_Y$である。よって$f$は同型射である。
   strategy: Pull the inverse of F(f) back along F.
   sketch:
-    - "setup: Let k be the inverse of F(f)."
-    - "derive: Fullness gives g with F(g) = k."
-    - "derive: F(g∘f) = id = F(id) and F(f∘g) = id = F(id)."
-    - "conclude: Faithfulness gives g∘f = id and f∘g = id."
+  - 'setup: Let k be the inverse of F(f).'
+  - 'derive: Fullness gives g with F(g) = k.'
+  - 'derive: F(g∘f) = id = F(id) and F(f∘g) = id = F(id).'
+  - 'conclude: Faithfulness gives g∘f = id and f∘g = id.'
   openmath: (forall (C D F X Y f) (-> (and (is_category C) (is_category D) (functor_between F C D) (full_functor F) (faithful_functor F) (morphism_between f X Y) (iso_morphism (functor_on_morphism F f))) (iso_morphism f)))
   hard_negative:
     statement: 任意の関手FについてF(f)が同型ならfは同型である。
@@ -908,19 +1148,26 @@
   kind: gap
   level: 3
   topic: 圏論・自然変換
-  statement: 自然変換τが自然同型であることと、すべての成分τ_Xが同型射であることは同値である。
+  statement: $F,G:\mathcal{C}\to\mathcal{D}$を関手、$\tau:F\Rightarrow G$を自然変換とする。$\tau$が自然同型であることと、すべての対象$X$で成分$\tau_X$が同型射であることは同値である。
   statement_en: A natural transformation τ between functors is a natural isomorphism if and only if every component τ_X is an isomorphism.
-  assumptions: [FとGは圏CからDへの関手, τはFからGへの自然変換]
-  quantifiers: [任意の圏C, D, 関手F, G, 自然変換τ]
-  conclusion: τが同型であることと各τ_Xが同型であることは同値である。
+  assumptions:
+  - $F,G$は圏$\mathcal{C}$から$\mathcal{D}$への関手
+  - $\tau$は$F$から$G$への自然変換
+  quantifiers:
+  - 任意の圏$\mathcal{C},\mathcal{D}$
+  - 任意の関手$F,G$
+  - 任意の自然変換$\tau$
+  conclusion: $\tau$が同型であることと、各$\tau_X$が同型であることは同値である。
   answer: |
-    τの逆σがあれば、各対象で成分を取るとσ_Xがτ_Xの逆である。逆に各τ_Xが同型のとき、σ_X=τ_X^{-1}と定める。射f:X→Yについて、τの自然性G(f)∘τ_X=τ_Y∘F(f)の両側にσ_Yとσ_Xを合成するとσ_Y∘G(f)=F(f)∘σ_Xが得られるので、σは自然変換であり、τの逆である。
+    $\mathcal{C},\mathcal{D}$を圏、$F,G:\mathcal{C}\to\mathcal{D}$を関手、$\tau:F\Rightarrow G$を自然変換とする。
+    $\tau$に逆の自然変換$\sigma$があれば、各対象$X$で成分を取ることで、$\sigma_X$は$\tau_X$の逆射である。
+    逆に各$\tau_X$が同型射とし、$\sigma_X=\tau_X^{-1}$とおく。射$f:X\to Y$について、$\tau$の自然性$G(f)\circ\tau_X=\tau_Y\circ F(f)$の左から$\sigma_Y$を、右から$\sigma_X$を合成すると、$\sigma_Y\circ G(f)=F(f)\circ\sigma_X$となる。よって$\sigma$は自然変換であり、成分ごとに$\tau$の逆なので、$\tau$の逆である。
   strategy: Assemble the inverse components and check naturality.
   sketch:
-    - "derive: An inverse of τ restricts to inverses of the components."
-    - "construct: Conversely set σ_X to be the inverse of τ_X."
-    - "derive: Composing the naturality square with σ_Y and σ_X gives naturality of σ."
-    - "conclude: σ is the inverse of τ."
+  - 'derive: An inverse of τ restricts to inverses of the components.'
+  - 'construct: Conversely set σ_X to be the inverse of τ_X.'
+  - 'derive: Composing the naturality square with σ_Y and σ_X gives naturality of σ.'
+  - 'conclude: σ is the inverse of τ.'
   openmath: (forall (C D F G t) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G C D) (nat_trans_between t F G)) (<-> (iso_morphism t) (forall (X) (-> (object_of X C) (iso_morphism (nat_trans_component t X)))))))
   hard_negative:
     statement: 各対象XでF(X)とG(X)が同型ならFとGは自然同型である。
@@ -935,19 +1182,26 @@
   kind: textbook
   level: 4
   topic: 圏論・随伴
-  statement: 関手Gの左随伴は自然同型を除いて一意である。
+  statement: 関手$G:\mathcal{D}\to\mathcal{C}$の左随伴は、自然同型を除いて一意である。すなわち$F,F':\mathcal{C}\to\mathcal{D}$がともに$G$の左随伴ならば、$F$と$F'$は自然同型である。
   statement_en: Any two left adjoints of a functor G are naturally isomorphic.
-  assumptions: [FとF'はともにGの左随伴]
-  quantifiers: [任意の圏C, D, 関手F, F', G]
-  conclusion: FとF'は自然同型である。
+  assumptions:
+  - $F,F':\mathcal{C}\to\mathcal{D}$と$G:\mathcal{D}\to\mathcal{C}$は関手
+  - $F\dashv G$かつ$F'\dashv G$
+  quantifiers:
+  - 任意の圏$\mathcal{C},\mathcal{D}$
+  - 任意の関手$F,F',G$
+  conclusion: $F$と$F'$は自然同型である。
   answer: |
-    随伴より、各Yについて自然にHom(F(X),Y)≅Hom(X,G(Y))≅Hom(F'(X),Y)である。これはXについても自然である。米田の補題によりF(X)≅F'(X)がXについて自然に得られる。
+    $\mathcal{C},\mathcal{D}$を圏、$F,F':\mathcal{C}\to\mathcal{D}$と$G:\mathcal{D}\to\mathcal{C}$を関手とし、$F\dashv G$かつ$F'\dashv G$とする。
+    $2$つの随伴を合成すると、$X,Y$について自然な全単射$\psi_{X,Y}:\mathrm{Hom}(F(X),Y)\to\mathrm{Hom}(X,G(Y))\to\mathrm{Hom}(F'(X),Y)$が得られる。$\tau_X=\psi_{X,F(X)}(\mathrm{id}_{F(X)}):F'(X)\to F(X)$とおく。
+    $Y$についての自然性から、$h:F(X)\to Y$に対し$\psi_{X,Y}(h)=h\circ\tau_X$である。$\psi_{X,F'(X)}$は全単射なので、$\kappa\circ\tau_X=\mathrm{id}_{F'(X)}$となる$\kappa:F(X)\to F'(X)$がある。すると$\psi_{X,F(X)}(\tau_X\circ\kappa)=\tau_X\circ\kappa\circ\tau_X=\tau_X=\psi_{X,F(X)}(\mathrm{id}_{F(X)})$であり、$\psi_{X,F(X)}$の単射性から$\tau_X\circ\kappa=\mathrm{id}_{F(X)}$である。よって$\tau_X$は同型射である(これは米田の補題の議論である)。
+    $X$についての自然性を示す。$u:X\to X'$について、$\psi$の$X$についての自然性から$\tau_{X'}\circ F'(u)=\psi_{X,F(X')}(\mathrm{id}_{F(X')}\circ F(u))=\psi_{X,F(X')}(F(u))=F(u)\circ\tau_X$である。したがって$\tau:F'\Rightarrow F$は自然同型である。
   strategy: Compare representable functors and apply the Yoneda lemma.
   sketch:
-    - "translate: The adjunctions give Hom(F(X),Y) ≅ Hom(X,G(Y)) ≅ Hom(F'(X),Y)."
-    - "derive: The composite is natural in X and Y."
-    - "apply_theorem: The Yoneda lemma gives isomorphisms F(X) ≅ F'(X)."
-    - "conclude: Naturality in X gives F ≅ F'."
+  - 'translate: The adjunctions give Hom(F(X),Y) ≅ Hom(X,G(Y)) ≅ Hom(F''(X),Y).'
+  - 'derive: The composite is natural in X and Y.'
+  - 'apply_theorem: The Yoneda lemma gives isomorphisms F(X) ≅ F''(X).'
+  - 'conclude: Naturality in X gives F ≅ F''.'
   openmath: (forall (C D F Fp G) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between Fp C D) (functor_between G D C) (adjoint_pair F G) (adjoint_pair Fp G)) (naturally_isomorphic F Fp)))
   hard_negative:
     statement: 関手Gの左随伴と右随伴は自然同型である。
@@ -962,19 +1216,24 @@
   kind: gap
   level: 3
   topic: 圏論・随伴
-  statement: 随伴F⊣Gに対し、f:F(X)→YをG(f)∘η_Xへ送る写像はHom(F(X),Y)からHom(X,G(Y))への全単射である。
+  statement: $F:\mathcal{C}\to\mathcal{D}$, $G:\mathcal{D}\to\mathcal{C}$を随伴$F\dashv G$とし、$\eta$をその単位とする。$f:F(X)\to Y$を$G(f)\circ\eta_X$へ送る写像は、$\mathrm{Hom}(F(X),Y)$から$\mathrm{Hom}(X,G(Y))$への全単射である。
   statement_en: For an adjunction F⊣G with unit η, the assignment sending f from F(X) to Y to G(f)∘η_X is a bijection from Hom(F(X),Y) to Hom(X,G(Y)).
-  assumptions: [F⊣Gは随伴, ηは単位]
-  quantifiers: [任意の対象X, Y]
-  conclusion: f↦G(f)∘η_Xは全単射である。
+  assumptions:
+  - $F\dashv G$は随伴
+  - $\eta$はその単位
+  quantifiers:
+  - 任意の対象$X\in\mathcal{C}$, $Y\in\mathcal{D}$
+  conclusion: $f\mapsto G(f)\circ\eta_X$は全単射である。
   answer: |
-    逆写像としてg:X→G(Y)にε_Y∘F(g)を対応させる。ηとεの自然性と三角等式により、ε_Y∘F(G(f)∘η_X)=f∘ε_{F(X)}∘F(η_X)=fである。同様にG(ε_Y∘F(g))∘η_X=gも成り立つ。
+    $\mathcal{C},\mathcal{D}$を圏、$F\dashv G$を随伴、$\eta$を単位、$\varepsilon$を余単位とし、$X\in\mathcal{C}$, $Y\in\mathcal{D}$とする。三角等式は$\varepsilon_{F(X)}\circ F(\eta_X)=\mathrm{id}_{F(X)}$と$G(\varepsilon_Y)\circ\eta_{G(Y)}=\mathrm{id}_{G(Y)}$である。
+    逆写像として、$g:X\to G(Y)$に$\varepsilon_Y\circ F(g)$を対応させる。$f:F(X)\to Y$について、$\varepsilon$の自然性$\varepsilon_Y\circ FG(f)=f\circ\varepsilon_{F(X)}$と三角等式から、$\varepsilon_Y\circ F(G(f)\circ\eta_X)=f\circ\varepsilon_{F(X)}\circ F(\eta_X)=f$である。
+    $g:X\to G(Y)$について、$\eta$の自然性$GF(g)\circ\eta_X=\eta_{G(Y)}\circ g$と三角等式から、$G(\varepsilon_Y\circ F(g))\circ\eta_X=G(\varepsilon_Y)\circ\eta_{G(Y)}\circ g=g$である。よって両者は互いに逆の写像である。
   strategy: Define the inverse with the counit and verify with the triangle identities.
   sketch:
-    - "construct: Send g from X to G(Y) to ε_Y∘F(g)."
-    - "derive: Naturality of ε and the first triangle identity give one composite as the identity."
-    - "derive: Naturality of η and the second triangle identity give the other composite as the identity."
-    - "conclude: The map is a bijection."
+  - 'construct: Send g from X to G(Y) to ε_Y∘F(g).'
+  - 'derive: Naturality of ε and the first triangle identity give one composite as the identity.'
+  - 'derive: Naturality of η and the second triangle identity give the other composite as the identity.'
+  - 'conclude: The map is a bijection.'
   openmath: (forall (C D F G X Y) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (object_of X C) (object_of Y D)) (exists (e) (and (bijection_between e (hom_set (functor_on_object F X) Y) (hom_set X (functor_on_object G Y))) (forall (f) (= (fn_value e f) (cat_compose (functor_on_morphism G f) (adjunction_unit F G X))))))))
   hard_negative:
     statement: 随伴F⊣Gがあれば、Hom(X,F(Y))とHom(G(X),Y)が全単射である。
@@ -989,19 +1248,26 @@
   kind: textbook
   level: 4
   topic: 圏論・随伴と極限
-  statement: 右随伴関手は極限を保つ。すなわち随伴F⊣Gと図式Kの極限錐cについて、G(c)はG∘Kの極限錐である。
+  statement: 右随伴関手は極限を保つ。すなわち随伴$F\dashv G$と図式$K:\mathcal{J}\to\mathcal{D}$の極限錐$c$について、$G(c)$は$G\circ K$の極限錐である。
   statement_en: A right adjoint preserves limits; for an adjunction F⊣G and a limit cone c of a diagram K, the image cone G(c) is a limit cone of G∘K.
-  assumptions: [F⊣Gは随伴, cは図式Kの極限錐]
-  quantifiers: [任意の添字圏J, 図式K, 錐c]
-  conclusion: G(c)はG∘Kの極限錐である。
+  assumptions:
+  - $F:\mathcal{C}\to\mathcal{D}$, $G:\mathcal{D}\to\mathcal{C}$は随伴$F\dashv G$をなす
+  - $c$は図式$K:\mathcal{J}\to\mathcal{D}$の極限錐
+  quantifiers:
+  - 任意の添字圏$\mathcal{J}$
+  - 任意の図式$K$
+  - 任意の錐$c$
+  conclusion: $G(c)$は$G\circ K$の極限錐である。
   answer: |
-    対象Xからの錐X→G(K_j)は、随伴により錐F(X)→K_jと自然に対応する。cが極限なので、後者は頂点への射F(X)→c_0とただ1通りに対応する。これを随伴で戻すとX→G(c_0)である。よってG(c)は極限錐である。
+    $F:\mathcal{C}\to\mathcal{D}$, $G:\mathcal{D}\to\mathcal{C}$を随伴$F\dashv G$とし、$K:\mathcal{J}\to\mathcal{D}$を図式、$c$を頂点$c_0$と脚$\pi_j:c_0\to K(j)$をもつ$K$の極限錐とする。射$t:X\to G(D)$の随伴による対応物を$\bar t:F(X)\to D$と書く。
+    頂点を$X\in\mathcal{C}$とする$G\circ K$の錐$(t_j:X\to G(K(j)))_j$を取る。随伴の自然性から、$u:i\to j$について$K(u)\circ\bar t_i=\overline{G(K(u))\circ t_i}=\bar t_j$である。よって$(\bar t_j)_j$は$K$の錐である。$c$は極限なので、すべての$j$で$\pi_j\circ w=\bar t_j$となる$w:F(X)\to c_0$がただ$1$つある。
+    $w$の対応物を$w':X\to G(c_0)$とする。自然性から$G(\pi_j)\circ w'$の対応物は$\pi_j\circ w=\bar t_j$なので、$G(\pi_j)\circ w'=t_j$である。逆に$v:X\to G(c_0)$が$G(\pi_j)\circ v=t_j$を満たせば、$\pi_j\circ\bar v=\bar t_j$なので$\bar v=w$となり、$v=w'$である。よって$G(c)$は極限錐である。
   strategy: Transpose cones along the adjunction.
   sketch:
-    - "translate: Cones from X over G∘K correspond to cones from F(X) over K by the adjunction."
-    - "apply_theorem: Since c is a limit, such a cone factors uniquely through the apex of c."
-    - "translate: Transposing back gives a unique map from X to the apex of G(c)."
-    - "conclude: G(c) is a limit cone."
+  - 'translate: Cones from X over G∘K correspond to cones from F(X) over K by the adjunction.'
+  - 'apply_theorem: Since c is a limit, such a cone factors uniquely through the apex of c.'
+  - 'translate: Transposing back gives a unique map from X to the apex of G(c).'
+  - 'conclude: G(c) is a limit cone.'
   openmath: (forall (C D F G J K c) (-> (and (is_category C) (is_category D) (is_category J) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (functor_between K J D) (limit_cone c K)) (limit_cone (functor_image_cone G c) (functor_image_diagram G K))))
   hard_negative:
     statement: 右随伴関手は余極限も保つ。
@@ -1017,20 +1283,26 @@
   kind: gap
   level: 3
   topic: 圏論・極限
-  statement: 同じ図式の2つの極限錐s,tの頂点は、錐の脚と両立する同型で結ばれる。
+  statement: 同じ図式の$2$つの極限錐$s,t$の頂点は、錐の脚と両立する同型で結ばれる。
   statement_en: The apexes of two limit cones s and t of the same diagram are isomorphic through an isomorphism compatible with the legs of the cones.
-  assumptions: [sとtは図式Fの極限錐]
-  quantifiers: [任意の圏C, J, 図式F, 錐s, t]
-  conclusion: すべてのjでt_j∘i=s_jを満たす同型i:頂点(s)→頂点(t)が存在する。
+  assumptions:
+  - $s,t$は図式$K:\mathcal{J}\to\mathcal{C}$の極限錐
+  quantifiers:
+  - 任意の圏$\mathcal{C},\mathcal{J}$
+  - 任意の図式$K$
+  - 任意の錐$s,t$
+  conclusion: すべての$j$で$t_j\circ i=s_j$を満たす同型射$i:s_0\to t_0$が存在する。ここで$s_0,t_0$は頂点、$s_j,t_j$は脚である。
   answer: |
-    tが極限なのでsはtを経由し、t_j∘i=s_jとなるi:頂点(s)→頂点(t)がただ1つある。同様にs_j∘k=t_jとなるkがある。k∘iとsの頂点の恒等射はともにsをsへ経由させるので、極限の一意性から一致する。i∘kについても同様である。
+    $\mathcal{C},\mathcal{J}$を圏、$K:\mathcal{J}\to\mathcal{C}$を図式、$s,t$を$K$の極限錐とする。頂点を$s_0,t_0$、脚を$s_j:s_0\to K(j)$, $t_j:t_0\to K(j)$と書く。
+    $t$は極限なので、すべての$j$で$t_j\circ i=s_j$となる射$i:s_0\to t_0$がただ$1$つある。同様に、すべての$j$で$s_j\circ k=t_j$となる射$k:t_0\to s_0$がただ$1$つある。
+    $s_j\circ(k\circ i)=t_j\circ i=s_j=s_j\circ\mathrm{id}_{s_0}$なので、$s$の極限性の一意性から$k\circ i=\mathrm{id}_{s_0}$である。同様に$i\circ k=\mathrm{id}_{t_0}$である。よって$i$は脚と両立する同型射である。
   strategy: Factor each cone through the other and use uniqueness.
   sketch:
-    - "construct: t being limit gives i with t_j∘i = s_j."
-    - "construct: s being limit gives k with s_j∘k = t_j."
-    - "derive: k∘i and the identity both factor s through s, so they coincide."
-    - "derive: Likewise i∘k is the identity."
-    - "conclude: i is an isomorphism compatible with the legs."
+  - 'construct: t being limit gives i with t_j∘i = s_j.'
+  - 'construct: s being limit gives k with s_j∘k = t_j.'
+  - 'derive: k∘i and the identity both factor s through s, so they coincide.'
+  - 'derive: Likewise i∘k is the identity.'
+  - 'conclude: i is an isomorphism compatible with the legs.'
   openmath: (forall (C J K s t) (-> (and (is_category C) (is_category J) (functor_between K J C) (limit_cone s K) (limit_cone t K)) (exists (i) (and (morphism_between i (cone_apex s) (cone_apex t)) (iso_morphism i) (forall (j) (-> (object_of j J) (= (cat_compose (cone_leg t j) i) (cone_leg s j))))))))
   hard_negative:
     statement: 同じ図式の極限の頂点は等しい。
@@ -1045,19 +1317,24 @@
   kind: gap
   level: 3
   topic: 圏論・極限
-  statement: モノ射fのgに沿った引き戻しの射影はモノ射である。
+  statement: 圏$\mathcal{C}$のモノ射$f:X\to Z$と射$g:Y\to Z$の引き戻しが存在するとき、その射影$X\times_ZY\to Y$はモノ射である。
   statement_en: The pullback of a monomorphism f along any morphism g is a monomorphism, that is, the projection from the pullback to the domain of g is mono.
-  assumptions: [fはモノ射, fとgの引き戻しが存在する]
-  quantifiers: [任意の圏C, 射f:X→Z, g:Y→Z]
-  conclusion: 射影X×_Z Y→Yはモノ射である。
+  assumptions:
+  - $f:X\to Z$はモノ射
+  - $f$と$g:Y\to Z$の引き戻しが存在する
+  quantifiers:
+  - 任意の圏$\mathcal{C}$
+  - 任意の射$f:X\to Z$, $g:Y\to Z$
+  conclusion: 射影$X\times_ZY\to Y$はモノ射である。
   answer: |
-    a,b:W→X×_Z Yがq∘a=q∘bを満たすとする(qはYへの射影、pはXへの射影)。f∘p∘a=g∘q∘a=g∘q∘b=f∘p∘bであり、fはモノ射なのでp∘a=p∘bである。引き戻しの普遍性からa=bである。
+    $\mathcal{C}$を圏、$f:X\to Z$をモノ射、$g:Y\to Z$を射とし、引き戻し$X\times_ZY$が存在するとする。射影を$p:X\times_ZY\to X$, $q:X\times_ZY\to Y$と書く。このとき$f\circ p=g\circ q$である。
+    射$a,b:W\to X\times_ZY$が$q\circ a=q\circ b$を満たすとする。$f\circ p\circ a=g\circ q\circ a=g\circ q\circ b=f\circ p\circ b$であり、$f$はモノ射なので$p\circ a=p\circ b$である。$p,q$との合成がともに一致するので、引き戻しの普遍性から$a=b$である。
   strategy: Compare both projections and use the universal property.
   sketch:
-    - "setup: Take a, b into the pullback with q∘a = q∘b."
-    - "derive: The pullback square gives f∘p∘a = f∘p∘b."
-    - "derive: Since f is mono, p∘a = p∘b."
-    - "conclude: The universal property gives a = b."
+  - 'setup: Take a, b into the pullback with q∘a = q∘b.'
+  - 'derive: The pullback square gives f∘p∘a = f∘p∘b.'
+  - 'derive: Since f is mono, p∘a = p∘b.'
+  - 'conclude: The universal property gives a = b.'
   openmath: (forall (C X Y Z f g) (-> (and (is_category C) (morphism_between f X Z) (morphism_between g Y Z) (mono_morphism f)) (mono_morphism (pullback_projection_right f g))))
   hard_negative:
     statement: エピ射の引き戻しはエピ射である。
@@ -1072,20 +1349,28 @@
   kind: named
   level: 4
   topic: 圏論・米田の補題
-  statement: 圏Cの対象Xと前層Fについて、α↦α_X(id_X)は自然変換の集合Nat(Hom(-,X),F)からF(X)への全単射である(米田の補題)。
+  statement: 圏$\mathcal{C}$の対象$X$と集合値の前層$F$について、$\alpha\mapsto\alpha_X(\mathrm{id}_X)$は自然変換の集合$\mathrm{Nat}(\mathrm{Hom}(-,X),F)$から$F(X)$への全単射である(米田の補題)。
   statement_en: For an object X of a category C and a set-valued presheaf F on C, the map α ↦ α_X(id_X) is a bijection from the natural transformations Hom(-,X) to F onto F(X).
-  assumptions: [Cは圏, XはCの対象, FはCの前層]
-  quantifiers: [任意の圏C, 対象X, 前層F]
-  conclusion: α↦α_X(id_X)はNat(Hom(-,X),F)からF(X)への全単射である。
+  assumptions:
+  - $\mathcal{C}$は圏
+  - $X$は$\mathcal{C}$の対象
+  - $F$は$\mathcal{C}$上の集合値の前層
+  quantifiers:
+  - 任意の圏$\mathcal{C}$
+  - 任意の対象$X$
+  - 任意の前層$F$
+  conclusion: $\alpha\mapsto\alpha_X(\mathrm{id}_X)$は$\mathrm{Nat}(\mathrm{Hom}(-,X),F)$から$F(X)$への全単射である。
   answer: |
-    a∈F(X)に対し、f:Y→XをF(f)(a)へ送る族を考えると、Fの関手性から自然変換となる。これが逆写像である。実際、この族のXでの成分でid_Xの値はaである。また自然変換αについて、自然性からα_Y(f)=α_Y(id_X∘f)=F(f)(α_X(id_X))となるので、αはα_X(id_X)から復元される。
+    $\mathcal{C}$を圏、$X$を対象、$F$を$\mathcal{C}$上の集合値の前層とする。
+    $a\in F(X)$に対し、$\Phi(a)_Y:\mathrm{Hom}(Y,X)\to F(Y)$を$f\mapsto F(f)(a)$と定める。$g:Z\to Y$について$\Phi(a)_Z(f\circ g)=F(f\circ g)(a)=F(g)(F(f)(a))$なので、$\Phi(a)$は自然変換である。これが逆写像であることを示す。
+    $\Phi(a)_X(\mathrm{id}_X)=F(\mathrm{id}_X)(a)=a$である。自然変換$\alpha$と$f:Y\to X$については、$\alpha$の自然性から$\alpha_Y(f)=\alpha_Y(\mathrm{id}_X\circ f)=F(f)(\alpha_X(\mathrm{id}_X))=\Phi(\alpha_X(\mathrm{id}_X))_Y(f)$である。よって$\alpha\mapsto\alpha_X(\mathrm{id}_X)$と$\Phi$は互いに逆である。
   strategy: Build the inverse from a ∈ F(X) by f ↦ F(f)(a).
   sketch:
-    - "construct: For a in F(X), define Φ(a)_Y(f) = F(f)(a)."
-    - "derive: Functoriality of F makes Φ(a) natural."
-    - "derive: Evaluating Φ(a) at id_X returns a."
-    - "derive: Naturality of α gives α_Y(f) = F(f)(α_X(id_X))."
-    - "conclude: The two maps are mutually inverse."
+  - 'construct: For a in F(X), define Φ(a)_Y(f) = F(f)(a).'
+  - 'derive: Functoriality of F makes Φ(a) natural.'
+  - 'derive: Evaluating Φ(a) at id_X returns a.'
+  - 'derive: Naturality of α gives α_Y(f) = F(f)(α_X(id_X)).'
+  - 'conclude: The two maps are mutually inverse.'
   openmath: (forall (C X F) (-> (and (is_category C) (object_of X C) (presheaf_on F C)) (exists (e) (and (bijection_between e (nat_trans_set (hom_functor X) F) (functor_on_object F X)) (forall (t) (= (fn_value e t) (fn_value (nat_trans_component t X) (cat_identity X))))))))
   hard_negative:
     statement: 任意の前層GとG(X)の元aについて、α↦α_X(a)はNat(G,F)からF(X)への全単射である。
@@ -1100,18 +1385,23 @@
   kind: gap
   level: 4
   topic: 圏論・米田の補題
-  statement: 対象X,Yについて、射f:X→Yに自然変換Hom(-,f)を対応させる写像は全単射である。
+  statement: 圏$\mathcal{C}$の対象$X,Y$について、射$f:X\to Y$に自然変換$\mathrm{Hom}(-,f)$を対応させる写像は、$\mathrm{Hom}(X,Y)$から$\mathrm{Nat}(\mathrm{Hom}(-,X),\mathrm{Hom}(-,Y))$への全単射である。
   statement_en: For objects X and Y, the assignment sending f from X to Y to the natural transformation Hom(-,f) is a bijection onto natural transformations Hom(-,X) to Hom(-,Y).
-  assumptions: [Cは圏, XとYはCの対象]
-  quantifiers: [任意の圏C, 対象X, Y]
-  conclusion: f↦Hom(-,f)はHom(X,Y)からNat(Hom(-,X),Hom(-,Y))への全単射である。
+  assumptions:
+  - $\mathcal{C}$は圏
+  - $X,Y$は$\mathcal{C}$の対象
+  quantifiers:
+  - 任意の圏$\mathcal{C}$
+  - 任意の対象$X,Y$
+  conclusion: $f\mapsto\mathrm{Hom}(-,f)$は$\mathrm{Hom}(X,Y)$から$\mathrm{Nat}(\mathrm{Hom}(-,X),\mathrm{Hom}(-,Y))$への全単射である。
   answer: |
-    米田の補題をF=Hom(-,Y)に適用すると、αをα_X(id_X)∈Hom(X,Y)へ送る写像が全単射である。Hom(-,f)のXでのid_Xの値はfなので、f↦Hom(-,f)はこの全単射の逆である。
+    $\mathcal{C}$を圏、$X,Y$を対象とする。米田の補題は、前層$F$について$\alpha\mapsto\alpha_X(\mathrm{id}_X)$が$\mathrm{Nat}(\mathrm{Hom}(-,X),F)$から$F(X)$への全単射であることを述べる。
+    これを$F=\mathrm{Hom}(-,Y)$に適用すると、$\alpha\mapsto\alpha_X(\mathrm{id}_X)$は$\mathrm{Nat}(\mathrm{Hom}(-,X),\mathrm{Hom}(-,Y))$から$\mathrm{Hom}(X,Y)$への全単射である。$f:X\to Y$について$\mathrm{Hom}(-,f)_X(\mathrm{id}_X)=f\circ\mathrm{id}_X=f$なので、$f\mapsto\mathrm{Hom}(-,f)$はこの全単射の右逆写像である。全単射の右逆写像は逆写像に等しいので、$f\mapsto\mathrm{Hom}(-,f)$は全単射である。
   strategy: Apply the Yoneda lemma to F = Hom(-,Y).
   sketch:
-    - "apply_theorem: The Yoneda lemma for F = Hom(-,Y) gives a bijection Nat(Hom(-,X),Hom(-,Y)) to Hom(X,Y)."
-    - "derive: Hom(-,f) evaluates at id_X to f."
-    - "conclude: f ↦ Hom(-,f) is the inverse bijection."
+  - 'apply_theorem: The Yoneda lemma for F = Hom(-,Y) gives a bijection Nat(Hom(-,X),Hom(-,Y)) to Hom(X,Y).'
+  - 'derive: Hom(-,f) evaluates at id_X to f.'
+  - 'conclude: f ↦ Hom(-,f) is the inverse bijection.'
   openmath: (forall (C X Y) (-> (and (is_category C) (object_of X C) (object_of Y C)) (exists (e) (and (bijection_between e (hom_set X Y) (nat_trans_set (hom_functor X) (hom_functor Y))) (forall (f) (= (fn_value e f) (yoneda_map f)))))))
   hard_negative:
     statement: 米田埋め込みは本質的全射である。
@@ -1126,21 +1416,27 @@
   kind: textbook
   level: 4
   topic: 圏論・圏同値
-  statement: 関手Fが忠実充満かつ本質的全射であることと、id_C≅G∘FかつF∘G≅id_Dを満たす関手Gが存在することは同値である。
+  statement: 関手$F:\mathcal{C}\to\mathcal{D}$が忠実充満かつ本質的全射であることと、$\mathrm{id}_{\mathcal{C}}\cong G\circ F$かつ$F\circ G\cong\mathrm{id}_{\mathcal{D}}$を満たす関手$G:\mathcal{D}\to\mathcal{C}$が存在することは同値である。
   statement_en: A functor F is fully faithful and essentially surjective if and only if there is a functor G with id_C ≅ G∘F and F∘G ≅ id_D.
-  assumptions: [Fは圏CからDへの関手]
-  quantifiers: [任意の圏C, D, 関手F]
-  conclusion: Fが忠実充満かつ本質的全射であることと、準逆関手Gの存在は同値である。
+  assumptions:
+  - $F$は圏$\mathcal{C}$から$\mathcal{D}$への関手
+  quantifiers:
+  - 任意の圏$\mathcal{C},\mathcal{D}$
+  - 任意の関手$F$
+  conclusion: $F$が忠実充満かつ本質的全射であることと、$\mathrm{id}_{\mathcal{C}}\cong G\circ F$, $F\circ G\cong\mathrm{id}_{\mathcal{D}}$を満たす$G$の存在は同値である。
   answer: |
-    Fが忠実充満かつ本質的全射なら、各YにF(G(Y))≅Yとなる対象G(Y)を選び、射は忠実充満性で一意に持ち上げてGを定める。このときF∘G≅idであり、さらに忠実充満性からG∘F≅idである。逆にGがあれば、G∘F≅idからFは忠実であり、対称的にGも忠実である。F∘G≅idから本質的全射性が従い、Gの忠実性を使ってFの充満性が示せる。
+    $\mathcal{C},\mathcal{D}$を圏、$F:\mathcal{C}\to\mathcal{D}$を関手とする。
+    $F$が忠実充満かつ本質的全射とする。各$Y\in\mathcal{D}$について、対象$G(Y)\in\mathcal{C}$と同型射$\varepsilon_Y:F(G(Y))\to Y$を選ぶ。$v:Y\to Y'$に対し、$F(G(v))=\varepsilon_{Y'}^{-1}\circ v\circ\varepsilon_Y$を満たす射$G(v):G(Y)\to G(Y')$がただ$1$つある。この一意性から$G$は関手であり、定義の式から$\varepsilon:F\circ G\Rightarrow\mathrm{id}_{\mathcal{D}}$は自然同型である。
+    次に$X\in\mathcal{C}$について、$F(\eta_X)=\varepsilon_{F(X)}$を満たす射$\eta_X:G(F(X))\to X$がただ$1$つある。忠実充満関手は同型射を反映するので$\eta_X$は同型射である。$u:X\to X'$について、$\varepsilon$の自然性から$F(u\circ\eta_X)=F(u)\circ\varepsilon_{F(X)}=\varepsilon_{F(X')}\circ F(G(F(u)))=F(\eta_{X'}\circ G(F(u)))$であり、忠実性から$u\circ\eta_X=\eta_{X'}\circ G(F(u))$である。よって$\mathrm{id}_{\mathcal{C}}\cong G\circ F$である。
+    逆に自然同型$\eta:\mathrm{id}_{\mathcal{C}}\Rightarrow G\circ F$と$\varepsilon:F\circ G\Rightarrow\mathrm{id}_{\mathcal{D}}$があるとする。各$Y$で$F(G(Y))\cong Y$なので、$F$は本質的全射である。$\eta$の自然性から$u:X\to X'$について$u=\eta_{X'}^{-1}\circ G(F(u))\circ\eta_X$である。よって$F(u)=F(u')$なら$u=u'$であり、$F$は忠実である。$\varepsilon$の自然性から、同様に$G$も忠実である。$F$の充満性を示す。$w:F(X)\to F(X')$に対し$u=\eta_{X'}^{-1}\circ G(w)\circ\eta_X$とおく。$\eta$の自然性から$G(F(u))=\eta_{X'}\circ u\circ\eta_X^{-1}=G(w)$であり、$G$の忠実性から$F(u)=w$である。
   strategy: Choose preimages to build G, and use the natural isomorphisms for the converse.
   sketch:
-    - "construct: Choose G(Y) with F(G(Y)) ≅ Y for each Y."
-    - "construct: Define G on morphisms by full faithfulness."
-    - "derive: The chosen isomorphisms give F∘G ≅ id, and full faithfulness gives G∘F ≅ id."
-    - "derive: Conversely id ≅ G∘F makes F faithful and G faithful by symmetry."
-    - "derive: F∘G ≅ id gives essential surjectivity and faithfulness of G gives fullness of F."
-    - "conclude: The two conditions are equivalent."
+  - 'construct: Choose G(Y) with F(G(Y)) ≅ Y for each Y.'
+  - 'construct: Define G on morphisms by full faithfulness.'
+  - 'derive: The chosen isomorphisms give F∘G ≅ id, and full faithfulness gives G∘F ≅ id.'
+  - 'derive: Conversely id ≅ G∘F makes F faithful and G faithful by symmetry.'
+  - 'derive: F∘G ≅ id gives essential surjectivity and faithfulness of G gives fullness of F.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (C D F) (-> (and (is_category C) (is_category D) (functor_between F C D)) (<-> (equivalence_functor F) (exists (G) (and (functor_between G D C) (naturally_isomorphic (identity_functor C) (functor_compose G F)) (naturally_isomorphic (functor_compose F G) (identity_functor D)))))))
   hard_negative:
     statement: 圏同値は対象の間の全単射を与える。
@@ -1159,19 +1455,24 @@
   kind: gap
   level: 4
   topic: 圏論・アーベル圏
-  statement: アーベル圏では、モノ射かつエピ射である射は同型射である。
+  statement: アーベル圏$\mathcal{C}$では、モノ射かつエピ射である射は同型射である。
   statement_en: In an abelian category, a morphism that is both mono and epi is an isomorphism.
-  assumptions: [Cはアーベル圏, fはモノ射かつエピ射]
-  quantifiers: [任意のアーベル圏C, 射f]
-  conclusion: fは同型射である。
+  assumptions:
+  - $\mathcal{C}$はアーベル圏
+  - $f:X\to Y$はモノ射かつエピ射
+  quantifiers:
+  - 任意のアーベル圏$\mathcal{C}$
+  - 任意の射$f$
+  conclusion: $f$は同型射である。
   answer: |
-    アーベル圏ではモノ射はある射の核である。fをgの核とする。fがエピ射でg∘f=0なのでg=0である。零射の核は恒等射なので、fは恒等射と同型であり、同型射である。
+    $\mathcal{C}$をアーベル圏、$f:X\to Y$をモノ射かつエピ射である射とする。
+    アーベル圏ではすべてのモノ射はある射の核なので、$f$はある射$g:Y\to Z$の核である。$g\circ f=0=0\circ f$であり、$f$はエピ射なので$g=0$である。零射$g:Y\to Z$の核としては$\mathrm{id}_Y$も取れる。核は同型を除いて一意なので、$f=\mathrm{id}_Y\circ\kappa$となる同型射$\kappa:X\to Y$がある。よって$f=\kappa$は同型射である。
   strategy: Write f as a kernel and use that f is epi to force the other map to be zero.
   sketch:
-    - "translate: The monomorphism f is the kernel of some g."
-    - "derive: g∘f = 0 and f is epi, so g = 0."
-    - "derive: The kernel of a zero morphism is an isomorphism."
-    - "conclude: f is an isomorphism."
+  - 'translate: The monomorphism f is the kernel of some g.'
+  - 'derive: g∘f = 0 and f is epi, so g = 0.'
+  - 'derive: The kernel of a zero morphism is an isomorphism.'
+  - 'conclude: f is an isomorphism.'
   openmath: (forall (C f) (-> (and (abelian_category C) (mono_morphism f) (epi_morphism f)) (iso_morphism f)))
   hard_negative:
     statement: 任意の圏でモノ射かつエピ射は同型である。
@@ -1186,19 +1487,25 @@
   kind: gap
   level: 4
   topic: 圏論・アーベル圏
-  statement: アーベル圏で射fがモノ射であることと、fの核の射が零射であることは同値である。
+  statement: アーベル圏$\mathcal{C}$で射$f$がモノ射であることと、$f$の核の射が零射であることは同値である。
   statement_en: In an abelian category, a morphism f is mono if and only if the kernel morphism of f is zero.
-  assumptions: [Cはアーベル圏, fはCの射]
-  quantifiers: [任意のアーベル圏C, 射f]
-  conclusion: fがモノ射であることとker(f)→Xが零射であることは同値である。
+  assumptions:
+  - $\mathcal{C}$はアーベル圏
+  - $f:X\to Y$は$\mathcal{C}$の射
+  quantifiers:
+  - 任意のアーベル圏$\mathcal{C}$
+  - 任意の射$f$
+  conclusion: $f$がモノ射であることと、核の射$\ker f\to X$が零射であることは同値である。
   answer: |
-    ιをfの核の射とする。fがモノ射ならf∘ι=0=f∘0よりι=0である。逆にι=0とする。f∘g=0ならgはιを経由するのでg=ι∘h=0である。すると、f∘a=f∘bならf∘(a-b)=0からa=bとなり、fはモノ射である。
+    $\mathcal{C}$をアーベル圏、$f:X\to Y$を射、$\iota:\ker f\to X$を核の射とする。
+    $f$がモノ射なら、$f\circ\iota=0=f\circ0$より$\iota=0$である。
+    逆に$\iota=0$とする。射$g:W\to X$が$f\circ g=0$を満たせば、核の普遍性から$g=\iota\circ h$と書けるので$g=0$である。射$a,b:W\to X$が$f\circ a=f\circ b$を満たせば、$f\circ(a-b)=0$より$a-b=0$であり、$a=b$である。よって$f$はモノ射である。
   strategy: Cancel f on one side and factor through the kernel on the other.
   sketch:
-    - "derive: If f is mono, f∘ι = f∘0 gives ι = 0."
-    - "setup: Assume ι = 0 and f∘g = 0."
-    - "derive: g factors through ι, hence g = 0."
-    - "conclude: Subtracting two morphisms shows f is mono."
+  - 'derive: If f is mono, f∘ι = f∘0 gives ι = 0.'
+  - 'setup: Assume ι = 0 and f∘g = 0.'
+  - 'derive: g factors through ι, hence g = 0.'
+  - 'conclude: Subtracting two morphisms shows f is mono.'
   openmath: (forall (C f) (-> (abelian_category C) (<-> (mono_morphism f) (= (kernel_inclusion f) zero_morphism_cat))))
   hard_negative:
     statement: 射fについて、核が零射ならfは同型である。

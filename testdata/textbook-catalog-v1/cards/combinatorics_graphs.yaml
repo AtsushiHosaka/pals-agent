@@ -2,21 +2,20 @@
   kind: gap
   level: 1
   topic: 有限集合の個数・和集合
-  statement: 有限集合A,Bについて、|A∪B|+|A∩B|=|A|+|B|が成り立つ。
+  statement: 有限集合$A,B$について、$|A\cup B|+|A\cap B|=|A|+|B|$が成り立つ。
   statement_en: For finite sets A and B, |A ∪ B| + |A ∩ B| = |A| + |B|.
   assumptions:
-    - AとBは有限集合
+  - $A$と$B$は有限集合
   quantifiers:
-    - 任意の有限集合A, B
-  conclusion: |
-    |A∪B|+|A∩B|=|A|+|B|が成り立つ。
+  - 任意の有限集合$A,B$
+  conclusion: $|A\cup B|+|A\cap B|=|A|+|B|$が成り立つ。
   answer: |
-    A∪Bの各元を、Aだけに属するもの、Bだけに属するもの、両方に属するものに分ける。それぞれの個数をa,b,cとすると|A|=a+c、|B|=b+c、|A∪B|=a+b+c、|A∩B|=cである。両辺はともにa+b+2cに等しい。
+    $A,B$を有限集合とする。$A\cup B$の元を、$A$だけに属するもの、$B$だけに属するもの、$A$と$B$の両方に属するものに分け、それぞれの個数を$a,b,c$とする。このとき$|A|=a+c$、$|B|=b+c$、$|A\cup B|=a+b+c$、$|A\cap B|=c$である。したがって示すべき等式の両辺はともに$a+b+2c$に等しい。
   strategy: Partition the union into the parts lying only in A, only in B and in both, then compare counts.
   sketch:
-    - "setup: Split A ∪ B into A only, B only and A ∩ B, with sizes a, b and c."
-    - "derive: Then |A| = a + c, |B| = b + c and |A ∪ B| = a + b + c."
-    - "conclude: Both sides of the identity equal a + b + 2c."
+  - 'setup: Split A ∪ B into A only, B only and A ∩ B, with sizes a, b and c.'
+  - 'derive: Then |A| = a + c, |B| = b + c and |A ∪ B| = a + b + c.'
+  - 'conclude: Both sides of the identity equal a + b + 2c.'
   openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N)) (= (+ (size (union A B)) (size (inter A B))) (+ (size A) (size B)))))
   hard_negative:
     statement: 有限集合A,Bについて常に|A∪B|=|A|+|B|が成り立つ。
@@ -31,22 +30,23 @@
   kind: gap
   level: 1
   topic: 有限集合の個数・包除原理
-  statement: 有限集合A,B,Cについて、|A∪B∪C|+|A∩B|+|A∩C|+|B∩C|=|A|+|B|+|C|+|A∩B∩C|が成り立つ。
+  statement: 有限集合$A,B,C$について、$|A\cup B\cup C|+|A\cap B|+|A\cap C|+|B\cap C|=|A|+|B|+|C|+|A\cap B\cap C|$が成り立つ。
   statement_en: For finite sets A, B and C, |A ∪ B ∪ C| + |A ∩ B| + |A ∩ C| + |B ∩ C| = |A| + |B| + |C| + |A ∩ B ∩ C|.
   assumptions:
-    - A, B, Cは有限集合
+  - $A,B,C$は有限集合
   quantifiers:
-    - 任意の有限集合A, B, C
-  conclusion: |
-    |A∪B∪C|+|A∩B|+|A∩C|+|B∩C|=|A|+|B|+|C|+|A∩B∩C|が成り立つ。
+  - 任意の有限集合$A,B,C$
+  conclusion: $|A\cup B\cup C|+|A\cap B|+|A\cap C|+|B\cap C|=|A|+|B|+|C|+|A\cap B\cap C|$が成り立つ。
   answer: |
-    二つの集合に対する等式|X∪Y|+|X∩Y|=|X|+|Y|をX=A∪B, Y=Cに用いる。分配法則より(A∪B)∩C=(A∩C)∪(B∩C)であり、(A∩C)∩(B∩C)=A∩B∩Cである。この和集合と|A∪B|にも同じ等式を用いて整理すると、求める等式を得る。
+    $A,B,C$を有限集合とする。有限集合$X,Y$について成り立つ等式$|X\cup Y|+|X\cap Y|=|X|+|Y|$を三回用いる。
+    $X=A\cup B$、$Y=C$とすると、$|A\cup B\cup C|+|(A\cup B)\cap C|=|A\cup B|+|C|$である。分配法則より$(A\cup B)\cap C=(A\cap C)\cup(B\cap C)$であり、$(A\cap C)\cap(B\cap C)=A\cap B\cap C$である。そこで$X=A\cap C$、$Y=B\cap C$とすると、$|(A\cup B)\cap C|+|A\cap B\cap C|=|A\cap C|+|B\cap C|$を得る。最後に$X=A$、$Y=B$とすると、$|A\cup B|+|A\cap B|=|A|+|B|$である。
+    第一の等式の両辺に$|A\cap B\cap C|+|A\cap B|$を加え、第二の等式と第三の等式で書き換えると、$|A\cup B\cup C|+|A\cap C|+|B\cap C|+|A\cap B|=|A|+|B|+|C|+|A\cap B\cap C|$を得る。
   strategy: Apply the two-set identity three times and use distributivity of intersection over union.
   sketch:
-    - "apply_theorem: Apply the two-set identity to A ∪ B and C."
-    - "translate: Rewrite (A ∪ B) ∩ C as (A ∩ C) ∪ (B ∩ C)."
-    - "apply_theorem: Apply the two-set identity to A and B and to A ∩ C and B ∩ C."
-    - "conclude: Add the three equalities and cancel the common terms."
+  - 'apply_theorem: Apply the two-set identity to A ∪ B and C.'
+  - 'translate: Rewrite (A ∪ B) ∩ C as (A ∩ C) ∪ (B ∩ C).'
+  - 'apply_theorem: Apply the two-set identity to A and B and to A ∩ C and B ∩ C.'
+  - 'conclude: Add the three equalities and cancel the common terms.'
   openmath: (forall (A B C) (-> (and (in (size A) N) (in (size B) N) (in (size C) N)) (= (+ (size (union (union A B) C)) (+ (size (inter A B)) (+ (size (inter A C)) (size (inter B C))))) (+ (size A) (+ (size B) (+ (size C) (size (inter (inter A B) C))))))))
   hard_negative:
     statement: |
@@ -75,21 +75,20 @@
   kind: gap
   level: 1
   topic: 有限集合の個数・積の法則
-  statement: 有限集合A,Bの直積の元の個数は|A×B|=|A||B|である。
+  statement: 有限集合$A,B$の直積の元の個数は$|A\times B|=|A||B|$である。
   statement_en: For finite sets A and B, the Cartesian product satisfies |A × B| = |A|·|B|.
   assumptions:
-    - AとBは有限集合
+  - $A$と$B$は有限集合
   quantifiers:
-    - 任意の有限集合A, B
-  conclusion: |
-    |A×B|=|A||B|が成り立つ。
+  - 任意の有限集合$A,B$
+  conclusion: $|A\times B|=|A||B|$が成り立つ。
   answer: |
-    A×Bを第一成分で分類する。各a∈Aについて第一成分がaである元は(a,b)の形でb∈Bと一対一に対応するので、|B|個ある。Aの元は|A|個あるので、全体の個数は|A||B|である。
+    $A,B$を有限集合とする。$A\times B$の元を第一成分で分類する。各$a\in A$について、第一成分が$a$である元は$(a,b)$の形をしており、$b\in B$と一対一に対応するので$|B|$個ある。$a$の取り方は$|A|$通りであり、この分類は$A\times B$を互いに素な部分に分ける。したがって全体の個数は$|A||B|$である。
   strategy: Group the pairs by first coordinate; every group has |B| elements.
   sketch:
-    - "setup: For a in A, consider the fibre of pairs with first coordinate a."
-    - "derive: Each fibre is in bijection with B."
-    - "conclude: Summing over the |A| disjoint fibres gives |A|·|B|."
+  - 'setup: For a in A, consider the fibre of pairs with first coordinate a.'
+  - 'derive: Each fibre is in bijection with B.'
+  - 'conclude: Summing over the |A| disjoint fibres gives |A|·|B|.'
   openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N)) (= (size (cartesian A B)) (* (size A) (size B)))))
   hard_negative:
     statement: |
@@ -105,24 +104,24 @@
   kind: gap
   level: 1
   topic: 有限集合の個数・写像の個数
-  statement: 有限集合Aから有限集合Bへの写像の個数は|B|^{|A|}である。
+  statement: 有限集合$A$から有限集合$B$への写像の個数は$|B|^{|A|}$である。
   statement_en: The number of functions from a finite set A to a finite set B is |B|^|A|.
   assumptions:
-    - AとBは有限集合
+  - $A$と$B$は有限集合
   quantifiers:
-    - 任意の有限集合A, B
-  conclusion: AからBへの写像全体の個数は|B|^{|A|}である。
+  - 任意の有限集合$A,B$
+  conclusion: $A$から$B$への写像全体の個数は$|B|^{|A|}$である。
   answer: |
-    写像はAの各元の行き先をBから一つずつ選ぶことで一意に定まる。各元の行き先はほかの元の行き先と無関係に|B|通り選べる。Aの元は|A|個あるので、積の法則より写像は|B|^{|A|}個ある。
+    $A,B$を有限集合とする。写像$f:A\to B$は、$A$の各元の行き先を$B$から一つずつ選ぶことで一意に定まる。各元の行き先は他の元の行き先と無関係に$|B|$通り選べる。$A$の元は$|A|$個あるので、積の法則より写像は$|B|^{|A|}$個ある。$A$が空集合のときは空写像だけがあり、$|B|^0=1$に一致する。
   strategy: A function is an independent choice of a value in B for each element of A.
   sketch:
-    - "translate: Identify a function with the tuple of its values indexed by A."
-    - "apply_theorem: The product rule gives one factor |B| for each element of A."
-    - "conclude: The total is |B|^|A|."
+  - 'translate: Identify a function with the tuple of its values indexed by A.'
+  - 'apply_theorem: The product rule gives one factor |B| for each element of A.'
+  - 'conclude: The total is |B|^|A|.'
   openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N)) (= (size (function_set A B)) (^ (size B) (size A)))))
   hard_negative:
     statement: AからBへの写像の個数は|A|^{|B|}である。
-    reason: "|A|=1, |B|=3では写像は3個だが、|A|^{|B|}=1である。底と指数が逆である。"
+    reason: '|A|=1, |B|=3では写像は3個だが、|A|^{|B|}=1である。底と指数が逆である。'
   target: |
     ∀ (α β : Type*) [Fintype α] [Fintype β] [DecidableEq α], Fintype.card (α → β) = Fintype.card β ^ Fintype.card α
   proof: |
@@ -133,24 +132,24 @@
   kind: textbook
   level: 1
   topic: 有限集合の個数・部分集合の総数
-  statement: 有限集合Aの部分集合全体の個数は2^{|A|}である。
+  statement: 有限集合$A$の部分集合全体の個数は$2^{|A|}$である。
   statement_en: A finite set A has exactly 2^|A| subsets.
   assumptions:
-    - Aは有限集合
+  - $A$は有限集合
   quantifiers:
-    - 任意の有限集合A
-  conclusion: Aの部分集合の個数は2^{|A|}である。
+  - 任意の有限集合$A$
+  conclusion: $A$の部分集合の個数は$2^{|A|}$である。
   answer: |
-    部分集合はAの各元について「含める」か「含めない」かを決めることで一意に定まる。各元の選び方は2通りで、互いに独立である。Aの元は|A|個あるので、部分集合は2^{|A|}個ある。
+    $A$を有限集合とする。$A$の部分集合は、$A$の各元について「含める」か「含めない」かを決めることで一意に定まる。各元の選び方は$2$通りで、他の元の選び方とは無関係である。$A$の元は$|A|$個あるので、積の法則より部分集合は$2^{|A|}$個ある。
   strategy: Encode a subset by its membership choices and apply the product rule.
   sketch:
-    - "translate: Identify a subset with its characteristic function A → {0,1}."
-    - "apply_theorem: Count these functions by the product rule."
-    - "conclude: There are 2^|A| of them."
+  - 'translate: Identify a subset with its characteristic function A → {0,1}.'
+  - 'apply_theorem: Count these functions by the product rule.'
+  - 'conclude: There are 2^|A| of them.'
   openmath: (forall (A) (-> (in (size A) N) (= (size (powerset A)) (^ 2 (size A)))))
   hard_negative:
     statement: 有限集合Aの空でない部分集合の個数は2^{|A|}である。
-    reason: "|A|=1の空でない部分集合は1個だけで、2^1=2ではない。空集合を除くと2^{|A|}-1個になる。"
+    reason: '|A|=1の空でない部分集合は1個だけで、2^1=2ではない。空集合を除くと2^{|A|}-1個になる。'
   target: |
     ∀ (α : Type*) (A : Finset α), A.powerset.card = 2 ^ A.card
   proof: |
@@ -161,25 +160,25 @@
   kind: textbook
   level: 1
   topic: 順列・置換の個数
-  statement: 有限集合Aからそれ自身への全単射の個数は|A|!である。
+  statement: 有限集合$A$からそれ自身への全単射の個数は$|A|!$である。
   statement_en: The number of bijections of a finite set A onto itself is |A|!.
   assumptions:
-    - Aは有限集合
+  - $A$は有限集合
   quantifiers:
-    - 任意の有限集合A
-  conclusion: Aの置換の個数は|A|!である。
+  - 任意の有限集合$A$
+  conclusion: $A$の置換の個数は$|A|!$である。
   answer: |
-    |A|=nとして元を順に並べ、それぞれの行き先を決める。一つ目の行き先はn通り、二つ目はそれ以外のn-1通りと続き、最後は1通りである。単射を選ぶことと全単射を選ぶことは有限集合では同じなので、個数はn!である。
+    $A$を有限集合とし、$n=|A|$とする。有限集合からそれ自身への写像については、単射であることと全単射であることは同値なので、単射の個数を数えればよい。$n=0$のときは空写像だけがあり、$0!=1$に一致する。$n\geq 1$のとき、$A$の元を順に並べてそれぞれの行き先を決める。一つ目の行き先は$n$通り、二つ目は一つ目の行き先を除く$n-1$通りと続き、最後は$1$通りである。積の法則より単射は$n!$個ある。
   strategy: Choose images one at a time, excluding those already used.
   sketch:
-    - "setup: Enumerate the n elements of A."
-    - "induction: The k-th element has n-k+1 possible images not yet used."
-    - "derive: An injective self-map of a finite set is automatically bijective."
-    - "conclude: Multiplying the numbers of choices gives n!."
+  - 'setup: Enumerate the n elements of A.'
+  - 'induction: The k-th element has n-k+1 possible images not yet used.'
+  - 'derive: An injective self-map of a finite set is automatically bijective.'
+  - 'conclude: Multiplying the numbers of choices gives n!.'
   openmath: (forall (A) (-> (in (size A) N) (= (size (permutation_set A)) (factorial (size A)))))
   hard_negative:
     statement: 有限集合Aからそれ自身への写像の個数は|A|!である。
-    reason: "|A|=2では写像は4個あるが2!=2である。|A|!個となるのは全単射だけである。"
+    reason: '|A|=2では写像は4個あるが2!=2である。|A|!個となるのは全単射だけである。'
   target: |
     ∀ (α : Type*) [Fintype α] [DecidableEq α], Fintype.card (Equiv.Perm α) = (Fintype.card α).factorial
   proof: |
@@ -190,28 +189,30 @@
   kind: textbook
   level: 1
   topic: 組合せ・k元部分集合の個数
-  statement: 有限集合Aのk元部分集合の個数は二項係数C(|A|,k)である。
+  statement: 有限集合$A$の$k$元部分集合の個数は二項係数$\binom{|A|}{k}$である。
   statement_en: The number of k-element subsets of a finite set A is the binomial coefficient C(|A|, k).
   assumptions:
-    - Aは有限集合
-    - kは自然数
+  - $A$は有限集合
+  - $k$は自然数
   quantifiers:
-    - 任意の有限集合Aと自然数k
-  conclusion: Aのk元部分集合の個数はC(|A|,k)である。
+  - 任意の有限集合$A$と自然数$k$
+  conclusion: $A$の$k$元部分集合の個数は$\binom{|A|}{k}$である。
   answer: |
-    |A|についての帰納法で示す。a∈Aを一つ固定すると、k元部分集合はaを含むものと含まないものに分かれる。前者はA\{a}の(k-1)元部分集合と、後者はA\{a}のk元部分集合と一対一に対応する。帰納法の仮定とパスカルの等式より、個数はC(|A|,k)である。
+    $A$を有限集合、$k$を自然数とする。二項係数は$\binom{n}{0}=1$、$\binom{0}{k+1}=0$、$\binom{n+1}{k+1}=\binom{n}{k}+\binom{n}{k+1}$で定まる数である。主張を$|A|$についての帰納法で示す。
+    $|A|=0$のとき、部分集合は$\emptyset$だけなので、$k=0$なら個数は$1$、$k\geq 1$なら個数は$0$であり、二項係数に一致する。
+    $|A|=n+1$とし、$n$元集合では主張が成り立つとする。$k=0$のとき、部分集合は$\emptyset$だけで$\binom{n+1}{0}=1$に一致する。$k\geq 1$のとき、$a\in A$を一つ固定すると、$k$元部分集合は$a$を含むものと含まないものに分かれる。$a$を含むものは$a$を取り除くことで$A\setminus\{a\}$の$(k-1)$元部分集合と一対一に対応し、$a$を含まないものは$A\setminus\{a\}$の$k$元部分集合そのものである。帰納法の仮定より個数は$\binom{n}{k-1}+\binom{n}{k}$であり、これは$\binom{n+1}{k}$に等しい。
   strategy: Induct on |A| by splitting subsets according to whether they contain a fixed element.
   sketch:
-    - "induction: Induct on the size of A; the empty case is immediate."
-    - "case_split: Split k-subsets by whether they contain a fixed element a."
-    - "derive: The two classes correspond to (k-1)-subsets and k-subsets of A \\ {a}."
-    - "apply_theorem: Pascal's identity adds the two counts."
-    - "conclude: The total is C(|A|, k)."
+  - 'induction: Induct on the size of A; the empty case is immediate.'
+  - 'case_split: Split k-subsets by whether they contain a fixed element a.'
+  - 'derive: The two classes correspond to (k-1)-subsets and k-subsets of A \ {a}.'
+  - 'apply_theorem: Pascal''s identity adds the two counts.'
+  - 'conclude: The total is C(|A|, k).'
   openmath: (forall (A k) (-> (and (in (size A) N) (in k N)) (= (size (k_subsets A k)) (binom (size A) k))))
   hard_negative:
     statement: |
       有限集合Aから相異なるk個を順に並べる並べ方の個数はC(|A|,k)である。
-    reason: "|A|=2, k=2では並べ方は2通りあるがC(2,2)=1である。順序を区別すると個数はk!倍になる。"
+    reason: '|A|=2, k=2では並べ方は2通りあるがC(2,2)=1である。順序を区別すると個数はk!倍になる。'
   target: |
     ∀ (α : Type*) (k : ℕ) (A : Finset α), (A.powersetCard k).card = A.card.choose k
   proof: |
@@ -222,20 +223,20 @@
   kind: gap
   level: 1
   topic: 二項係数・パスカルの等式
-  statement: 自然数n,kについてC(n+1,k+1)=C(n,k)+C(n,k+1)である。
+  statement: 自然数$n,k$について$\binom{n+1}{k+1}=\binom{n}{k}+\binom{n}{k+1}$である。
   statement_en: For natural numbers n and k, C(n+1, k+1) = C(n, k) + C(n, k+1).
   assumptions:
-    - nとkは自然数
+  - $n$と$k$は自然数
   quantifiers:
-    - 任意の自然数n, k
-  conclusion: C(n+1,k+1)=C(n,k)+C(n,k+1)が成り立つ。
+  - 任意の自然数$n,k$
+  conclusion: $\binom{n+1}{k+1}=\binom{n}{k}+\binom{n}{k+1}$が成り立つ。
   answer: |
-    n+1元集合のk+1元部分集合を数える。一つの元aを固定すると、aを含む部分集合は残りのn元からk個選ぶのでC(n,k)個ある。aを含まない部分集合は残りのn元からk+1個選ぶのでC(n,k+1)個ある。両者を合わせると等式を得る。
+    $n,k$を自然数とし、$\binom{n}{k}$を$n$元集合の$k$元部分集合の個数とする。$k>n$なら$\binom{n}{k}=0$である。$n+1$元集合の$(k+1)$元部分集合を数える。一つの元$a$を固定すると、$a$を含む部分集合は残りの$n$元から$k$個選ぶので$\binom{n}{k}$個ある。$a$を含まない部分集合は残りの$n$元から$k+1$個選ぶので$\binom{n}{k+1}$個ある。この二種類は重ならず全体を尽くすので、等式を得る。
   strategy: Count (k+1)-subsets of an (n+1)-set according to a fixed element.
   sketch:
-    - "setup: Fix an element a of an (n+1)-element set."
-    - "case_split: Subsets containing a number C(n, k); those omitting a number C(n, k+1)."
-    - "conclude: Adding the two classes gives C(n+1, k+1)."
+  - 'setup: Fix an element a of an (n+1)-element set.'
+  - 'case_split: Subsets containing a number C(n, k); those omitting a number C(n, k+1).'
+  - 'conclude: Adding the two classes gives C(n+1, k+1).'
   openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (binom (+ n 1) (+ k 1)) (+ (binom n k) (binom n (+ k 1))))))
   hard_negative:
     statement: C(n+1,k+1)=C(n,k)+C(n,k-1)である。
@@ -250,21 +251,21 @@
   kind: gap
   level: 1
   topic: 二項係数・対称性
-  statement: k≤nならばC(n,n-k)=C(n,k)である。
+  statement: $k\leq n$ならば$\binom{n}{n-k}=\binom{n}{k}$である。
   statement_en: If k ≤ n, then C(n, n-k) = C(n, k).
   assumptions:
-    - nとkは自然数
-    - k≤n
+  - $n$と$k$は自然数
+  - $k\leq n$
   quantifiers:
-    - k≤nをみたす任意の自然数n, k
-  conclusion: C(n,n-k)=C(n,k)が成り立つ。
+  - $k\leq n$をみたす任意の自然数$n,k$
+  conclusion: $\binom{n}{n-k}=\binom{n}{k}$が成り立つ。
   answer: |
-    n元集合の部分集合Sに補集合を対応させる写像は、全単射でありそれ自身が逆写像である。この写像はk元部分集合と(n-k)元部分集合を一対一に対応させる。したがって両者の個数は等しい。
+    $n,k$を$k\leq n$をみたす自然数とし、$\binom{n}{k}$を$n$元集合$X$の$k$元部分集合の個数とする。$X$の部分集合$S$に補集合$X\setminus S$を対応させる写像は、それ自身が逆写像なので全単射である。$|S|=k$と$|X\setminus S|=n-k$は同値なので、この写像は$k$元部分集合全体と$(n-k)$元部分集合全体を一対一に対応させる。したがって両者の個数は等しい。
   strategy: Taking complements is a bijection between k-subsets and (n-k)-subsets.
   sketch:
-    - "construct: Send each subset of an n-set to its complement."
-    - "derive: This involution exchanges size k with size n - k."
-    - "conclude: Hence the two binomial coefficients agree."
+  - 'construct: Send each subset of an n-set to its complement.'
+  - 'derive: This involution exchanges size k with size n - k.'
+  - 'conclude: Hence the two binomial coefficients agree.'
   openmath: (forall (n k) (-> (and (in n N) (in k N) (<= k n)) (= (binom n (- n k)) (binom n k))))
   hard_negative:
     statement: すべての自然数n,kでC(n,n+k)=C(n,k)である。
@@ -279,22 +280,22 @@
   kind: gap
   level: 1
   topic: 二項係数・階乗表示
-  statement: k≤nならばC(n,k)・k!・(n-k)!=n!である。
+  statement: $k\leq n$ならば$\binom{n}{k}\,k!\,(n-k)!=n!$である。
   statement_en: If k ≤ n, then C(n, k) · k! · (n-k)! = n!.
   assumptions:
-    - nとkは自然数
-    - k≤n
+  - $n$と$k$は自然数
+  - $k\leq n$
   quantifiers:
-    - k≤nをみたす任意の自然数n, k
-  conclusion: C(n,k)・k!・(n-k)!=n!が成り立つ。
+  - $k\leq n$をみたす任意の自然数$n,k$
+  conclusion: $\binom{n}{k}\,k!\,(n-k)!=n!$が成り立つ。
   answer: |
-    n元集合の元の並べ方n!通りを次のように数える。まず先頭k個に入る元の集合をC(n,k)通りに選ぶ。次にその内部の順序をk!通り、残りのn-k個の順序を(n-k)!通りに定める。この手順は並べ方を一度ずつ与えるので等式が成り立つ。
+    $n,k$を$k\leq n$をみたす自然数とし、$\binom{n}{k}$を$n$元集合の$k$元部分集合の個数とする。$n$元集合の元を一列に並べる方法は$n!$通りある。これを次の手順で数える。まず先頭$k$個に入る元の集合を$\binom{n}{k}$通りに選ぶ。次にその内部の順序を$k!$通りに定め、残りの$n-k$個の順序を$(n-k)!$通りに定める。どの並べ方もこの手順でちょうど一度ずつ得られるので、等式が成り立つ。
   strategy: Count permutations by first choosing which elements occupy the first k positions.
   sketch:
-    - "setup: Count the n! orderings of an n-element set."
-    - "construct: Choose the set in the first k positions in C(n, k) ways."
-    - "derive: Order that set in k! ways and the rest in (n-k)! ways."
-    - "conclude: Each ordering arises exactly once, giving the identity."
+  - 'setup: Count the n! orderings of an n-element set.'
+  - 'construct: Choose the set in the first k positions in C(n, k) ways.'
+  - 'derive: Order that set in k! ways and the rest in (n-k)! ways.'
+  - 'conclude: Each ordering arises exactly once, giving the identity.'
   openmath: (forall (n k) (-> (and (in n N) (in k N) (<= k n)) (= (* (binom n k) (* (factorial k) (factorial (- n k)))) (factorial n))))
   hard_negative:
     statement: すべての自然数n,kでC(n,k)・k!・(n-k)!=n!である。
@@ -309,21 +310,21 @@
   kind: gap
   level: 1
   topic: 二項係数・吸収公式
-  statement: 自然数n,kについて(n+1)C(n,k)=(k+1)C(n+1,k+1)である。
+  statement: 自然数$n,k$について$(n+1)\binom{n}{k}=(k+1)\binom{n+1}{k+1}$である。
   statement_en: For natural numbers n and k, (n+1)·C(n, k) = (k+1)·C(n+1, k+1).
   assumptions:
-    - nとkは自然数
+  - $n$と$k$は自然数
   quantifiers:
-    - 任意の自然数n, k
-  conclusion: (n+1)C(n,k)=(k+1)C(n+1,k+1)が成り立つ。
+  - 任意の自然数$n,k$
+  conclusion: $(n+1)\binom{n}{k}=(k+1)\binom{n+1}{k+1}$が成り立つ。
   answer: |
-    n+1人からk+1人の委員会と委員長一人を選ぶ方法を二通りに数える。先に委員会を選ぶとC(n+1,k+1)通りで、委員長の選び方がk+1通りある。先に委員長を選ぶとn+1通りで、残りn人から委員k人を選ぶ方法がC(n,k)通りある。両者は等しい。
+    $n,k$を自然数とし、$\binom{n}{k}$を$n$元集合の$k$元部分集合の個数とする。$n+1$人から$k+1$人の委員会と、その中の委員長一人を選ぶ方法を二通りに数える。先に委員会を選ぶと$\binom{n+1}{k+1}$通りあり、委員長の選び方は$k+1$通りである。先に委員長を選ぶと$n+1$通りあり、残り$n$人から委員$k$人を選ぶ方法は$\binom{n}{k}$通りである。同じものを数えているので、両者は等しい。
   strategy: Double count pairs consisting of a (k+1)-subset and a distinguished member.
   sketch:
-    - "setup: Count pairs (S, x) with S a (k+1)-subset of an (n+1)-set and x in S."
-    - "derive: Choosing S first gives (k+1)·C(n+1, k+1)."
-    - "derive: Choosing x first gives (n+1)·C(n, k)."
-    - "conclude: The two counts are equal."
+  - 'setup: Count pairs (S, x) with S a (k+1)-subset of an (n+1)-set and x in S.'
+  - 'derive: Choosing S first gives (k+1)·C(n+1, k+1).'
+  - 'derive: Choosing x first gives (n+1)·C(n, k).'
+  - 'conclude: The two counts are equal.'
   openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (* (+ n 1) (binom n k)) (* (+ k 1) (binom (+ n 1) (+ k 1))))))
   hard_negative:
     statement: (n+1)C(n,k)=(k+1)C(n+1,k)である。
@@ -338,23 +339,26 @@
   kind: named
   level: 1
   topic: 二項係数・二項定理
-  statement: 可換半環の元x,yと自然数nについて(x+y)^n=Σ_{m=0}^{n}C(n,m)x^m y^{n-m}である。
+  statement: 可換半環の元$x,y$と自然数$n$について$(x+y)^n=\sum_{m=0}^{n}\binom{n}{m}x^m y^{n-m}$である。
   statement_en: For x and y in a commutative semiring and a natural number n, (x+y)^n = Σ_{m=0}^{n} C(n, m) x^m y^(n-m).
   assumptions:
-    - Rは可換半環
-    - xとyはRの元
-    - nは自然数
+  - $R$は可換半環
+  - $x$と$y$は$R$の元
+  - $n$は自然数
   quantifiers:
-    - 任意の可換半環Rの元x, yと自然数n
-  conclusion: (x+y)^n=Σ_{m=0}^{n}C(n,m)x^m y^{n-m}が成り立つ。
+  - 任意の可換半環$R$の元$x,y$と自然数$n$
+  conclusion: $(x+y)^n=\sum_{m=0}^{n}\binom{n}{m}x^m y^{n-m}$が成り立つ。
   answer: |
-    nについての帰納法で示す。n=0では両辺とも1である。(x+y)^{n+1}=(x+y)(x+y)^nに帰納法の仮定を代入して展開すると、x^m y^{n+1-m}の係数はC(n,m-1)+C(n,m)となる。パスカルの等式によりこれはC(n+1,m)に等しいので、n+1でも成り立つ。
+    $R$を可換半環、$x,y\in R$とし、$\binom{n}{m}$は自然数の$R$での像を表すものとする。$n$についての帰納法で示す。
+    $n=0$では両辺とも$1$である。$n$で成り立つとすると、
+    $(x+y)^{n+1}=(x+y)\sum_{m=0}^{n}\binom{n}{m}x^m y^{n-m}=\sum_{m=0}^{n}\binom{n}{m}x^{m+1} y^{n-m}+\sum_{m=0}^{n}\binom{n}{m}x^m y^{n+1-m}$
+    である。$1\leq m\leq n$のとき、$x^m y^{n+1-m}$の係数は第一の和から$\binom{n}{m-1}$、第二の和から$\binom{n}{m}$が出て、パスカルの等式より合計は$\binom{n+1}{m}$である。$x^{n+1}$の係数は$\binom{n}{n}=1=\binom{n+1}{n+1}$、$y^{n+1}$の係数は$\binom{n}{0}=1=\binom{n+1}{0}$である。したがって$n+1$でも成り立つ。
   strategy: Induct on n and collect coefficients with Pascal's identity.
   sketch:
-    - "induction: The case n = 0 is immediate."
-    - "derive: Multiply the expansion for n by x + y."
-    - "derive: The coefficient of x^m y^(n+1-m) is C(n, m-1) + C(n, m)."
-    - "apply_theorem: Pascal's identity turns it into C(n+1, m)."
+  - 'induction: The case n = 0 is immediate.'
+  - 'derive: Multiply the expansion for n by x + y.'
+  - 'derive: The coefficient of x^m y^(n+1-m) is C(n, m-1) + C(n, m).'
+  - 'apply_theorem: Pascal''s identity turns it into C(n+1, m).'
   openmath: (forall (R x y n) (-> (and (comm_semiring R) (in x R) (in y R) (in n N)) (= (^ (+ x y) n) (sum (integer_range 0 n) (lambda (m) (* (binom n m) (* (^ x m) (^ y (- n m)))))))))
   hard_negative:
     statement: 可換とは限らない環で(x+y)^n=Σ C(n,m)x^m y^{n-m}が常に成り立つ。
@@ -369,20 +373,20 @@
   kind: gap
   level: 1
   topic: 二項係数・総和
-  statement: 自然数nについてΣ_{k=0}^{n}C(n,k)=2^nである。
+  statement: 自然数$n$について$\sum_{k=0}^{n}\binom{n}{k}=2^n$である。
   statement_en: For a natural number n, Σ_{k=0}^{n} C(n, k) = 2^n.
   assumptions:
-    - nは自然数
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: Σ_{k=0}^{n}C(n,k)=2^nが成り立つ。
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=0}^{n}\binom{n}{k}=2^n$が成り立つ。
   answer: |
-    n元集合の部分集合全体を元の個数で分類する。k元部分集合はC(n,k)個あるので、総数はΣC(n,k)である。一方、部分集合の総数は2^nである。よって両者は等しい。
+    $n$を自然数とし、$\binom{n}{k}$を$n$元集合の$k$元部分集合の個数とする。$n$元集合の部分集合全体を元の個数で分類すると、$k$元部分集合は$\binom{n}{k}$個あるので、総数は$\sum_{k=0}^{n}\binom{n}{k}$である。一方、各元を含めるか含めないかを決めれば部分集合が一意に定まるので、総数は$2^n$である。よって両者は等しい。
   strategy: Count all subsets of an n-set, grouped by size.
   sketch:
-    - "setup: Classify subsets of an n-set by their size k."
-    - "derive: There are C(n, k) subsets of size k."
-    - "conclude: Summing over k gives the total number 2^n of subsets."
+  - 'setup: Classify subsets of an n-set by their size k.'
+  - 'derive: There are C(n, k) subsets of size k.'
+  - 'conclude: Summing over k gives the total number 2^n of subsets.'
   openmath: (forall (n) (-> (in n N) (= (sum (integer_range 0 n) (lambda (k) (binom n k))) (^ 2 n))))
   hard_negative:
     statement: Σ_{k=1}^{n}C(n,k)=2^nである。
@@ -397,20 +401,20 @@
   kind: gap
   level: 1
   topic: 二項係数・交代和
-  statement: n≥1ならばΣ_{k=0}^{n}(-1)^k C(n,k)=0である。
+  statement: $n\geq 1$ならば$\sum_{k=0}^{n}(-1)^k\binom{n}{k}=0$である。
   statement_en: If n ≥ 1, then Σ_{k=0}^{n} (-1)^k C(n, k) = 0.
   assumptions:
-    - nは正の整数
+  - $n$は正の整数
   quantifiers:
-    - 任意の正の整数n
-  conclusion: Σ_{k=0}^{n}(-1)^k C(n,k)=0が成り立つ。
+  - 任意の正の整数$n$
+  conclusion: $\sum_{k=0}^{n}(-1)^k\binom{n}{k}=0$が成り立つ。
   answer: |
-    二項定理にx=-1, y=1を代入すると、(−1+1)^n=Σ(-1)^k C(n,k)を得る。n≥1より左辺は0^n=0である。よって交代和は0である。
+    $n$を正の整数とする。二項定理$(x+y)^n=\sum_{k=0}^{n}\binom{n}{k}x^k y^{n-k}$に$x=-1$、$y=1$を代入すると、$(-1+1)^n=\sum_{k=0}^{n}(-1)^k\binom{n}{k}$を得る。$n\geq 1$より左辺は$0^n=0$である。よって交代和は$0$である。
   strategy: Substitute x = -1 and y = 1 into the binomial theorem.
   sketch:
-    - "apply_theorem: The binomial theorem gives Σ (-1)^k C(n, k) = (-1 + 1)^n."
-    - "derive: The base is 0 and the exponent n is positive."
-    - "conclude: The alternating sum vanishes."
+  - 'apply_theorem: The binomial theorem gives Σ (-1)^k C(n, k) = (-1 + 1)^n.'
+  - 'derive: The base is 0 and the exponent n is positive.'
+  - 'conclude: The alternating sum vanishes.'
   openmath: (forall (n) (-> (and (in n N) (>= n 1)) (= (sum (integer_range 0 n) (lambda (k) (* (^ (neg 1) k) (binom n k)))) 0)))
   hard_negative:
     statement: すべての自然数nでΣ_{k=0}^{n}(-1)^k C(n,k)=0である。
@@ -425,21 +429,22 @@
   kind: gap
   level: 1
   topic: 二項係数・ホッケースティック恒等式
-  statement: 自然数n,kについてΣ_{m=k}^{n}C(m,k)=C(n+1,k+1)である。k>nでは左辺は空和で、両辺とも0である。
+  statement: 自然数$n,k$について$\sum_{m=k}^{n}\binom{m}{k}=\binom{n+1}{k+1}$である。$k>n$では左辺は空和で、両辺とも$0$である。
   statement_en: For natural numbers n and k, Σ_{m=k}^{n} C(m, k) = C(n+1, k+1); for k > n both sides are 0.
   assumptions:
-    - nとkは自然数
+  - $n$と$k$は自然数
   quantifiers:
-    - 任意の自然数n, k
-  conclusion: Σ_{m=k}^{n}C(m,k)=C(n+1,k+1)が成り立つ。
+  - 任意の自然数$n,k$
+  conclusion: $\sum_{m=k}^{n}\binom{m}{k}=\binom{n+1}{k+1}$が成り立つ。
   answer: |
-    k>nならば両辺とも0である。k≤nのとき、{0,1,…,n}のk+1元部分集合を最大元で分類する。最大元がmである部分集合は、残りのk個を{0,…,m-1}から選ぶのでC(m,k)個ある。mの取り得る値はkからnまでである。これらを合計すると部分集合の総数C(n+1,k+1)に等しい。
+    $n,k$を自然数とし、$\binom{a}{b}$を$a$元集合の$b$元部分集合の個数とする。$k>n$ならば左辺は空和で$0$であり、$k+1>n+1$より右辺も$0$である。
+    $k\leq n$とする。$\{0,1,\dots,n\}$の$(k+1)$元部分集合は全部で$\binom{n+1}{k+1}$個あり、これを最大元で分類する。最大元が$m$である部分集合は、残りの$k$個を$\{0,1,\dots,m-1\}$の$m$個の元から選ぶので$\binom{m}{k}$個ある。$(k+1)$元部分集合の最大元は$k$以上$n$以下の値をとる。これらを合計すると$\sum_{m=k}^{n}\binom{m}{k}=\binom{n+1}{k+1}$を得る。
   strategy: Classify (k+1)-subsets of {0, ..., n} by their largest element.
   sketch:
-    - "setup: Consider (k+1)-subsets of {0, ..., n}."
-    - "case_split: Classify them by the largest element m, which ranges from k to n."
-    - "derive: Exactly C(m, k) subsets have largest element m."
-    - "conclude: Summing over m gives C(n+1, k+1)."
+  - 'setup: Consider (k+1)-subsets of {0, ..., n}.'
+  - 'case_split: Classify them by the largest element m, which ranges from k to n.'
+  - 'derive: Exactly C(m, k) subsets have largest element m.'
+  - 'conclude: Summing over m gives C(n+1, k+1).'
   openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (sum (integer_range k n) (lambda (m) (binom m k))) (binom (+ n 1) (+ k 1)))))
   hard_negative:
     statement: Σ_{m=k}^{n}C(m,k)=C(n+1,k)である。
@@ -454,21 +459,21 @@
   kind: gap
   level: 1
   topic: 二項係数・重み付き総和
-  statement: 自然数nについてΣ_{k=0}^{n+1}k・C(n+1,k)=(n+1)2^nである。
+  statement: 自然数$n$について$\sum_{k=0}^{n+1}k\binom{n+1}{k}=(n+1)2^n$である。
   statement_en: For a natural number n, Σ_{k=0}^{n+1} k·C(n+1, k) = (n+1)·2^n.
   assumptions:
-    - nは自然数
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: Σ_{k=0}^{n+1}k・C(n+1,k)=(n+1)2^nが成り立つ。
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=0}^{n+1}k\binom{n+1}{k}=(n+1)2^n$が成り立つ。
   answer: |
-    k=0の項は0なので、和はk≥1の項だけである。k≥1では吸収公式よりk・C(n+1,k)=(n+1)C(n,k-1)である。したがって和は(n+1)Σ_{j=0}^{n}C(n,j)に等しい。二項係数の総和は2^nなので、和は(n+1)2^nである。
+    $n$を自然数とする。$k=0$の項は$0$なので、和は$k\geq 1$の項だけである。$k\geq 1$では吸収公式より$k\binom{n+1}{k}=(n+1)\binom{n}{k-1}$である。$j=k-1$とおくと、和は$(n+1)\sum_{j=0}^{n}\binom{n}{j}$に等しい。二項係数の総和$\sum_{j=0}^{n}\binom{n}{j}$は$2^n$なので、和は$(n+1)2^n$である。
   strategy: Remove the zero term, absorb the factor k, and use the sum of binomials.
   sketch:
-    - "derive: The term k = 0 vanishes."
-    - "apply_theorem: The absorption identity gives k·C(n+1, k) = (n+1)·C(n, k-1) for k ≥ 1."
-    - "translate: Factor out n + 1 and reindex by j = k - 1."
-    - "conclude: Σ_j C(n, j) = 2^n yields the claim."
+  - 'derive: The term k = 0 vanishes.'
+  - 'apply_theorem: The absorption identity gives k·C(n+1, k) = (n+1)·C(n, k-1) for k ≥ 1.'
+  - 'translate: Factor out n + 1 and reindex by j = k - 1.'
+  - 'conclude: Σ_j C(n, j) = 2^n yields the claim.'
   openmath: (forall (n) (-> (in n N) (= (sum (integer_range 0 (+ n 1)) (lambda (k) (* k (binom (+ n 1) k)))) (* (+ n 1) (^ 2 n)))))
   hard_negative:
     statement: Σ_{k=0}^{n}k・C(n,k)=n・2^nである。
@@ -489,22 +494,22 @@
   kind: gap
   level: 2
   topic: 二項係数・平方和
-  statement: 自然数nについてΣ_{k=0}^{n}C(n,k)^2=C(2n,n)である。
+  statement: 自然数$n$について$\sum_{k=0}^{n}\binom{n}{k}^2=\binom{2n}{n}$である。
   statement_en: For a natural number n, Σ_{k=0}^{n} C(n, k)^2 = C(2n, n).
   assumptions:
-    - nは自然数
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: Σ_{k=0}^{n}C(n,k)^2=C(2n,n)が成り立つ。
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=0}^{n}\binom{n}{k}^2=\binom{2n}{n}$が成り立つ。
   answer: |
-    2n人をn人ずつ二組に分けておき、全体からn人選ぶ方法を数える。一組目からk人選ぶと、二組目からはn-k人選ぶので、選び方はC(n,k)C(n,n-k)=C(n,k)^2通りである。kについて合計したものが全体の選び方C(2n,n)に等しい。
+    $n$を自然数とし、$\binom{a}{b}$を$a$元集合の$b$元部分集合の個数とする。$2n$人を$n$人ずつ二組に分けておき、全体から$n$人選ぶ方法を数える。一組目から$k$人選ぶと二組目からは$n-k$人選ぶので、その選び方は$\binom{n}{k}\binom{n}{n-k}=\binom{n}{k}^2$通りである。$k$は$0$以上$n$以下の値をとり、$k$について合計したものが全体の選び方$\binom{2n}{n}$に等しい。
   strategy: Choose n people from two groups of size n and classify by the number taken from the first group.
   sketch:
-    - "setup: Split a 2n-element set into two n-element parts."
-    - "case_split: Classify n-subsets by the number k of elements in the first part."
-    - "apply_theorem: Each class has C(n, k)·C(n, n-k) members."
-    - "derive: Symmetry gives C(n, n-k) = C(n, k)."
-    - "conclude: Summing over k gives C(2n, n)."
+  - 'setup: Split a 2n-element set into two n-element parts.'
+  - 'case_split: Classify n-subsets by the number k of elements in the first part.'
+  - 'apply_theorem: Each class has C(n, k)·C(n, n-k) members.'
+  - 'derive: Symmetry gives C(n, n-k) = C(n, k).'
+  - 'conclude: Summing over k gives C(2n, n).'
   openmath: (forall (n) (-> (in n N) (= (sum (integer_range 0 n) (lambda (k) (^ (binom n k) 2))) (binom (* 2 n) n))))
   hard_negative:
     statement: Σ_{k=0}^{n}C(n,k)^2=2^{2n}である。
@@ -519,21 +524,21 @@
   kind: textbook
   level: 2
   topic: 二項係数・ヴァンデルモンドの等式
-  statement: 自然数m,n,kについてC(m+n,k)=Σ_{i+j=k}C(m,i)C(n,j)である。
+  statement: 自然数$m,n,k$について$\binom{m+n}{k}=\sum_{i+j=k}\binom{m}{i}\binom{n}{j}$である。
   statement_en: For natural numbers m, n and k, C(m+n, k) = Σ_{i+j=k} C(m, i)·C(n, j).
   assumptions:
-    - m, n, kは自然数
+  - $m,n,k$は自然数
   quantifiers:
-    - 任意の自然数m, n, k
-  conclusion: C(m+n,k)=Σ_{i+j=k}C(m,i)C(n,j)が成り立つ。
+  - 任意の自然数$m,n,k$
+  conclusion: $\binom{m+n}{k}=\sum_{i+j=k}\binom{m}{i}\binom{n}{j}$が成り立つ。和は$i+j=k$をみたす自然数の組$(i,j)$全体にわたる。
   answer: |
-    m元集合とn元集合の互いに素な和集合からk元部分集合を選ぶ。m元集合からi個、n元集合からj個取るとi+j=kであり、その選び方はC(m,i)C(n,j)通りである。(i,j)について合計すると全体の選び方C(m+n,k)に等しい。
+    $m,n,k$を自然数とし、$\binom{a}{b}$を$a$元集合の$b$元部分集合の個数とする。互いに素な$m$元集合$X$と$n$元集合$Y$をとり、$X\cup Y$の$k$元部分集合を数える。総数は$\binom{m+n}{k}$である。各$k$元部分集合から$X$に属する元を$i$個、$Y$に属する元を$j$個取り出すと$i+j=k$であり、$i,j$を固定したときの選び方は$\binom{m}{i}\binom{n}{j}$通りである。$i+j=k$をみたす自然数の組$(i,j)$全体で合計すると、等式を得る。
   strategy: Classify k-subsets of a disjoint union by how many elements come from each part.
   sketch:
-    - "setup: Take a disjoint union of an m-element set and an n-element set."
-    - "case_split: Classify k-subsets by the pair (i, j) of counts in the two parts."
-    - "derive: The pair (i, j) with i + j = k accounts for C(m, i)·C(n, j) subsets."
-    - "conclude: Summing over all such pairs gives C(m+n, k)."
+  - 'setup: Take a disjoint union of an m-element set and an n-element set.'
+  - 'case_split: Classify k-subsets by the pair (i, j) of counts in the two parts.'
+  - 'derive: The pair (i, j) with i + j = k accounts for C(m, i)·C(n, j) subsets.'
+  - 'conclude: Summing over all such pairs gives C(m+n, k).'
   openmath: (forall (m n k) (-> (and (in m N) (in n N) (in k N)) (= (binom (+ m n) k) (sum (integer_range 0 k) (lambda (i) (* (binom m i) (binom n (- k i))))))))
   hard_negative:
     statement: C(m+n,k)=C(m,k)+C(n,k)である。
@@ -548,23 +553,24 @@
   kind: textbook
   level: 2
   topic: 多項係数・階乗表示
-  statement: 有限集合I上の自然数値関数fについて、多項係数M(f)は(Π_{i∈I}f(i)!)・M(f)=(Σ_{i∈I}f(i))!をみたす。
+  statement: 有限集合$I$上の自然数値関数$f$について、多項係数$M(f)$は$\left(\prod_{i\in I}f(i)!\right)M(f)=\left(\sum_{i\in I}f(i)\right)!$をみたす。
   statement_en: For a natural-valued function f on a finite index set I, the multinomial coefficient M(f) satisfies (Π_{i∈I} f(i)!)·M(f) = (Σ_{i∈I} f(i))!.
   assumptions:
-    - Iは有限集合
-    - fはI上の自然数値関数
-    - M(f)は(Σf(i))!を自然数の除法でΠf(i)!で割った商
+  - $I$は有限集合
+  - $f$は$I$上の自然数値関数
+  - $M(f)$は$\left(\sum_{i\in I}f(i)\right)!$を自然数の除法で$\prod_{i\in I}f(i)!$で割った商
   quantifiers:
-    - 任意の有限集合Iと関数f
-  conclusion: (Π_{i∈I}f(i)!)・M(f)=(Σ_{i∈I}f(i))!が成り立つ。
+  - 任意の有限集合$I$と関数$f$
+  conclusion: $\left(\prod_{i\in I}f(i)!\right)M(f)=\left(\sum_{i\in I}f(i)\right)!$が成り立つ。
   answer: |
-    示すべきことは、Πf(i)!が(Σf(i))!を割り切ることである。Iの元の個数についての帰納法を用いる。a!b!が(a+b)!を割り切ることは二項係数が整数であることから従う。元を一つ加えるたびにこの事実を適用すると、整除性が得られる。
+    $I$を有限集合、$f$を$I$上の自然数値関数とし、$M(f)$を$\left(\sum_{i\in I}f(i)\right)!$を自然数の除法で$\prod_{i\in I}f(i)!$で割った商とする。$d$が$N$を割り切るなら$d$と商$N/d$の積は$N$に等しいので、$\prod_{i\in I}f(i)!$が$\left(\sum_{i\in I}f(i)\right)!$を割り切ることを示せばよい。
+    $|I|$についての帰納法を用いる。$I$が空集合のとき、$1$は$0!$を割り切る。$a\notin I$とし、$I$では成り立つとする。$b=f(a)$、$c=\sum_{i\in I}f(i)$とおくと、$(b+c)!=\binom{b+c}{b}\,b!\,c!$であり、二項係数は整数なので$b!\,c!$は$(b+c)!$を割り切る。帰納法の仮定より$\prod_{i\in I}f(i)!$は$c!$を割り切るので、$f(a)!\prod_{i\in I}f(i)!$は$\left(f(a)+\sum_{i\in I}f(i)\right)!$を割り切る。これは$I\cup\{a\}$での主張である。
   strategy: Reduce to the divisibility of (Σ f i)! by Π (f i)! and induct on the index set.
   sketch:
-    - "translate: The identity says the division defining M(f) is exact."
-    - "induction: Induct on the finite set I; the empty case is trivial."
-    - "apply_theorem: Use a!·b! ∣ (a+b)! from integrality of binomial coefficients."
-    - "conclude: Combining with the induction hypothesis gives divisibility."
+  - 'translate: The identity says the division defining M(f) is exact.'
+  - 'induction: Induct on the finite set I; the empty case is trivial.'
+  - 'apply_theorem: Use a!·b! ∣ (a+b)! from integrality of binomial coefficients.'
+  - 'conclude: Combining with the induction hypothesis gives divisibility.'
   openmath: (forall (I f) (-> (and (in (size I) N) (forall (i) (-> (in i I) (in (fn_value f i) N)))) (= (* (product I (lambda (i) (factorial (fn_value f i)))) (multinomial_coeff I f)) (factorial (sum I (lambda (i) (fn_value f i)))))))
   hard_negative:
     statement: Σf(i)=nのときM(f)=n!/Σf(i)!である。
@@ -579,24 +585,25 @@
   kind: named
   level: 2
   topic: 包除原理
-  statement: 有限集合Iで添字付けられた有限集合族(S_i)について、|∪_{i∈I}S_i|=Σ_{∅≠T⊆I}(-1)^{|T|+1}|∩_{i∈T}S_i|である。
+  statement: 有限集合$I$で添字付けられた有限集合族$(S_i)_{i\in I}$について、$\left|\bigcup_{i\in I}S_i\right|=\sum_{\emptyset\neq T\subseteq I}(-1)^{|T|+1}\left|\bigcap_{i\in T}S_i\right|$である。
   statement_en: For a family of finite sets (S_i) indexed by a finite set I, |⋃_{i∈I} S_i| = Σ_{∅≠T⊆I} (-1)^(|T|+1) |⋂_{i∈T} S_i|.
   assumptions:
-    - Iは有限集合
-    - 各S_iは有限集合
+  - $I$は有限集合
+  - 各$S_i$は有限集合
   quantifiers:
-    - 任意の有限集合Iと有限集合族(S_i)
-  conclusion: |
-    |∪S_i|=Σ_{∅≠T⊆I}(-1)^{|T|+1}|∩_{i∈T}S_i|が成り立つ。
+  - 任意の有限集合$I$と有限集合族$(S_i)_{i\in I}$
+  conclusion: $\left|\bigcup_{i\in I}S_i\right|=\sum_{\emptyset\neq T\subseteq I}(-1)^{|T|+1}\left|\bigcap_{i\in T}S_i\right|$が成り立つ。
   answer: |
-    右辺で各元xが何回数えられるかを調べる。xを含むS_iの添字全体をJとすると、xが∩_{i∈T}S_iに属するのはT⊆Jのときである。J≠∅ならばxの寄与はΣ_{∅≠T⊆J}(-1)^{|T|+1}=1である。これは二項係数の交代和が0であることから従う。J=∅ならば寄与は0なので、右辺は和集合の元をちょうど一度ずつ数える。
+    $I$を有限集合、$(S_i)_{i\in I}$を有限集合の族とする。$U=\bigcup_{i\in I}S_i$とおく。$T\neq\emptyset$なら$\bigcap_{i\in T}S_i\subseteq U$なので、右辺は$U$の各元$x$の寄与の和に書き直せる。そこで$x\in U$が右辺で何回数えられるかを調べる。
+    $x$を含む$S_i$の添字全体を$J$とすると、$x\in U$より$J\neq\emptyset$である。$x\in\bigcap_{i\in T}S_i$となるのは$T\subseteq J$のときだけなので、$x$の寄与は$\sum_{\emptyset\neq T\subseteq J}(-1)^{|T|+1}=-\sum_{k=1}^{|J|}(-1)^k\binom{|J|}{k}$である。$|J|\geq 1$より二項係数の交代和$\sum_{k=0}^{|J|}(-1)^k\binom{|J|}{k}$は$0$なので、この値は$\binom{|J|}{0}=1$に等しい。
+    よって右辺は$U$の元をちょうど一度ずつ数え、$|U|$に等しい。
   strategy: Compute the contribution of each element to the right side using the alternating sum of binomials.
   sketch:
-    - "setup: Fix an element x and let J be the set of indices i with x in S_i."
-    - "translate: x lies in the intersection over T exactly when T ⊆ J."
-    - "derive: The contribution of x is the sum of (-1)^(|T|+1) over nonempty T ⊆ J."
-    - "apply_theorem: The alternating binomial sum makes this 1 when J is nonempty."
-    - "conclude: The right side counts each element of the union exactly once."
+  - 'setup: Fix an element x and let J be the set of indices i with x in S_i.'
+  - 'translate: x lies in the intersection over T exactly when T ⊆ J.'
+  - 'derive: The contribution of x is the sum of (-1)^(|T|+1) over nonempty T ⊆ J.'
+  - 'apply_theorem: The alternating binomial sum makes this 1 when J is nonempty.'
+  - 'conclude: The right side counts each element of the union exactly once.'
   openmath: (forall (I S) (-> (and (in (size I) N) (forall (i) (-> (in i I) (in (size (family_value S i)) N)))) (= (size (indexed_union_over I S)) (sum (setdiff (powerset I) (set emptyset)) (lambda (T) (* (^ (neg 1) (+ (size T) 1)) (size (indexed_inter_over T S))))))))
   hard_negative:
     statement: |
@@ -612,21 +619,22 @@
   kind: textbook
   level: 2
   topic: 攪乱順列・個数の明示式
-  statement: n元集合の固定点をもたない置換の個数はΣ_{k=0}^{n}(-1)^k n!/k!である。
+  statement: $n$元集合の固定点をもたない置換の個数は$\sum_{k=0}^{n}(-1)^k\dfrac{n!}{k!}$である。
   statement_en: The number of fixed-point-free permutations of an n-element set is Σ_{k=0}^{n} (-1)^k n!/k!.
   assumptions:
-    - Aは有限集合で|A|=n
+  - $A$は有限集合で$|A|=n$
   quantifiers:
-    - 任意の有限集合A
-  conclusion: Aの攪乱順列の個数はΣ_{k=0}^{n}(-1)^k n!/k!である。
+  - 任意の有限集合$A$
+  conclusion: $A$の固定点をもたない置換の個数は$\sum_{k=0}^{n}(-1)^k\dfrac{n!}{k!}$である。
   answer: |
-    各a∈Aについて、aを固定する置換全体をS_aとする。k個の元を指定して固定する置換は(n-k)!個あり、指定の仕方はC(n,k)通りである。包除原理より固定点をもつ置換を除くと、個数はΣ_{k=0}^{n}(-1)^k C(n,k)(n-k)!である。C(n,k)(n-k)!=n!/k!なので、求める式を得る。
+    $A$を有限集合、$n=|A|$とする。各$a\in A$について、$a$を固定する$A$の置換全体を$S_a$とする。$A$の部分集合$T$の元をすべて固定する置換は$A\setminus T$の置換と一対一に対応するので、$|T|=k$なら$\left|\bigcap_{a\in T}S_a\right|=(n-k)!$である。$k$元部分集合$T$は$\binom{n}{k}$個ある。
+    包除原理より、固定点をもつ置換の個数は$\left|\bigcup_{a\in A}S_a\right|=\sum_{k=1}^{n}(-1)^{k+1}\binom{n}{k}(n-k)!$である。置換は全部で$n!$個あり、これは$k=0$の項$\binom{n}{0}(n-0)!$に等しい。したがって固定点をもたない置換の個数は$\sum_{k=0}^{n}(-1)^k\binom{n}{k}(n-k)!$である。$\binom{n}{k}(n-k)!=\dfrac{n!}{k!}$なので、求める式を得る。
   strategy: Apply inclusion–exclusion to the sets of permutations fixing a given element.
   sketch:
-    - "setup: Let S_a be the permutations fixing a in A."
-    - "derive: The permutations fixing k given elements number (n-k)!."
-    - "apply_theorem: Inclusion–exclusion gives Σ (-1)^k C(n, k) (n-k)!."
-    - "conclude: Simplify using C(n, k)·(n-k)! = n!/k!."
+  - 'setup: Let S_a be the permutations fixing a in A.'
+  - 'derive: The permutations fixing k given elements number (n-k)!.'
+  - 'apply_theorem: Inclusion–exclusion gives Σ (-1)^k C(n, k) (n-k)!.'
+  - 'conclude: Simplify using C(n, k)·(n-k)! = n!/k!.'
   openmath: (forall (A) (-> (in (size A) N) (= (size (derangement_set A)) (sum (integer_range 0 (size A)) (lambda (k) (* (^ (neg 1) k) (/ (factorial (size A)) (factorial k))))))))
   hard_negative:
     statement: n元集合の攪乱順列の個数はn!/eである。
@@ -660,23 +668,23 @@
   kind: gap
   level: 1
   topic: 鳩の巣原理
-  statement: 有限集合A,Bについて|B|<|A|で写像fがAをBの中へ写すなら、Aの相異なる元x,yでf(x)=f(y)となるものが存在する。
+  statement: 有限集合$A,B$について$|B|<|A|$で写像$f$が$A$を$B$の中へ写すなら、$A$の相異なる元$x,y$で$f(x)=f(y)$となるものが存在する。
   statement_en: If A and B are finite sets with |B| < |A| and f maps A into B, then there are distinct x, y in A with f(x) = f(y).
   assumptions:
-    - AとBは有限集合
-    - "|B|<|A|"
-    - fはAをBの中へ写す
+  - $A$と$B$は有限集合
+  - $|B|<|A|$
+  - $f$は$A$を$B$の中へ写す
   quantifiers:
-    - 任意の有限集合A, Bと写像f
-  conclusion: x≠yかつf(x)=f(y)をみたすx,y∈Aが存在する。
+  - 任意の有限集合$A,B$と写像$f$
+  conclusion: $x\neq y$かつ$f(x)=f(y)$をみたす$x,y\in A$が存在する。
   answer: |
-    背理法で示す。fがA上で単射だとすると、f(A)⊆Bかつ|f(A)|=|A|である。すると|A|≤|B|となり、仮定|B|<|A|に反する。よってfはA上で単射ではなく、相異なるx,yでf(x)=f(y)となるものがある。
+    $A,B$を$|B|<|A|$をみたす有限集合とし、$f$を$A$の各元を$B$の元へ写す写像とする。背理法で示す。$f$が$A$上で単射だとすると、$f(A)\subseteq B$かつ$|f(A)|=|A|$である。すると$|A|\leq|B|$となり、仮定$|B|<|A|$に反する。よって$f$は$A$上で単射ではなく、$A$の相異なる元$x,y$で$f(x)=f(y)$となるものがある。
   strategy: An injective map cannot send a larger finite set into a smaller one.
   sketch:
-    - "contradiction: Suppose f is injective on A."
-    - "derive: Then f(A) is a subset of B of size |A|."
-    - "derive: This gives |A| ≤ |B|, contradicting |B| < |A|."
-    - "conclude: So two distinct elements of A share a value."
+  - 'contradiction: Suppose f is injective on A.'
+  - 'derive: Then f(A) is a subset of B of size |A|.'
+  - 'derive: This gives |A| ≤ |B|, contradicting |B| < |A|.'
+  - 'conclude: So two distinct elements of A share a value.'
   openmath: (forall (A B f) (-> (and (in (size A) N) (in (size B) N) (< (size B) (size A)) (fn_maps_to f A B)) (exists (x y) (and (in x A) (in y A) (!= x y) (= (fn_value f x) (fn_value f y))))))
   hard_negative:
     statement: |
@@ -692,25 +700,24 @@
   kind: gap
   level: 1
   topic: 鳩の巣原理・一般形
-  statement: 有限集合A,Bと自然数nについて|B|・n<|A|でfがAをBの中へ写すなら、あるy∈Bでf(x)=yとなるx∈Aがn個より多い。
+  statement: 有限集合$A,B$と自然数$n$について$|B|n<|A|$で$f$が$A$を$B$の中へ写すなら、ある$y\in B$で$f(x)=y$となる$x\in A$が$n$個より多い。
   statement_en: If A and B are finite sets, n is a natural number, |B|·n < |A| and f maps A into B, then some y in B has more than n preimages in A.
   assumptions:
-    - AとBは有限集合
-    - nは自然数
-    - "|B|・n<|A|"
-    - fはAをBの中へ写す
+  - $A$と$B$は有限集合
+  - $n$は自然数
+  - $|B|n<|A|$
+  - $f$は$A$を$B$の中へ写す
   quantifiers:
-    - 任意の有限集合A, B、写像f、自然数n
-  conclusion: |
-    |{x∈A | f(x)=y}|>nとなるy∈Bが存在する。
+  - 任意の有限集合$A,B$、写像$f$、自然数$n$
+  conclusion: $|\{x\in A\mid f(x)=y\}|>n$となる$y\in B$が存在する。
   answer: |
-    背理法で示す。すべてのy∈Bについて|f^{-1}(y)∩A|≤nだとする。Aはこれらのファイバーの互いに素な和集合なので、|A|=Σ_{y∈B}|f^{-1}(y)∩A|≤|B|nとなる。これは仮定|B|n<|A|に反する。
+    $A,B$を有限集合、$n$を$|B|n<|A|$をみたす自然数とし、$f$を$A$の各元を$B$の元へ写す写像とする。背理法で示す。すべての$y\in B$について$|\{x\in A\mid f(x)=y\}|\leq n$だとする。$f$は$A$の各元を$B$へ写すので、$A$は集合$\{x\in A\mid f(x)=y\}$ ($y\in B$) の互いに素な和集合である。したがって$|A|=\sum_{y\in B}|\{x\in A\mid f(x)=y\}|\leq|B|n$となり、仮定$|B|n<|A|$に反する。
   strategy: Sum fibre sizes over B and compare with the bound |B|·n.
   sketch:
-    - "contradiction: Suppose every fibre over B has at most n elements."
-    - "derive: A is the disjoint union of its fibres over B."
-    - "derive: Thus |A| ≤ |B|·n."
-    - "conclude: This contradicts |B|·n < |A|."
+  - 'contradiction: Suppose every fibre over B has at most n elements.'
+  - 'derive: A is the disjoint union of its fibres over B.'
+  - 'derive: Thus |A| ≤ |B|·n.'
+  - 'conclude: This contradicts |B|·n < |A|.'
   openmath: (forall (A B f n) (-> (and (in (size A) N) (in (size B) N) (in n N) (< (* (size B) n) (size A)) (fn_maps_to f A B)) (exists (y) (and (in y B) (> (size (suchthat A (lambda (x) (= (fn_value f x) y)))) n)))))
   hard_negative:
     statement: |
@@ -726,23 +733,23 @@
   kind: gap
   level: 1
   topic: 鳩の巣原理・合同
-  statement: 正の整数nに対し、n個より多い整数からなる有限集合には、差がnで割り切れる相異なる二元がある。
+  statement: 正の整数$n$に対し、$n$個より多い整数からなる有限集合には、差が$n$で割り切れる相異なる二元がある。
   statement_en: For a positive integer n, any finite set of more than n integers contains two distinct elements whose difference is divisible by n.
   assumptions:
-    - nは正の整数
-    - Sは整数の有限集合
-    - n<|S|
+  - $n$は正の整数
+  - $S$は整数の有限集合
+  - $n<|S|$
   quantifiers:
-    - 任意の正の整数nと整数の有限集合S
-  conclusion: a≠bかつnがa-bを割り切るa,b∈Sが存在する。
+  - 任意の正の整数$n$と整数の有限集合$S$
+  conclusion: $a\neq b$かつ$n$が$a-b$を割り切る$a,b\in S$が存在する。
   answer: |
-    整数をnで割った余りは0,1,…,n-1のn通りである。Sの元の個数はnより多いので、鳩の巣原理より余りが等しい相異なる二元a,bがある。余りが等しいのでnはa-bを割り切る。
+    $n$を正の整数、$S$を$n<|S|$をみたす整数の有限集合とする。整数を$n$で割った余りは$0,1,\dots,n-1$の$n$通りである。$S$の元の個数は$n$より多いので、鳩の巣原理より余りが等しい相異なる二元$a,b\in S$がある。余りが等しいので$n$は$a-b$を割り切る。
   strategy: Apply the pigeonhole principle to the remainder map modulo n.
   sketch:
-    - "setup: Send x in S to its remainder modulo n."
-    - "derive: There are exactly n possible remainders."
-    - "apply_theorem: Since |S| > n, the pigeonhole principle gives distinct a and b with the same remainder."
-    - "conclude: Equal remainders mean n divides a - b."
+  - 'setup: Send x in S to its remainder modulo n.'
+  - 'derive: There are exactly n possible remainders.'
+  - 'apply_theorem: Since |S| > n, the pigeonhole principle gives distinct a and b with the same remainder.'
+  - 'conclude: Equal remainders mean n divides a - b.'
   openmath: (forall (S n) (-> (and (subset S Z) (in (size S) N) (in n N) (> n 0) (< n (size S))) (exists (a b c) (and (in a S) (in b S) (!= a b) (in c Z) (= (- a b) (* n c))))))
   hard_negative:
     statement: n個の整数からなる集合には、差がnで割り切れる相異なる二元が必ずある。
@@ -763,23 +770,22 @@
   kind: textbook
   level: 2
   topic: 二重計数
-  statement: 有限集合A,Bと関係rについて、各a∈Aと関係するbの個数の総和は、各b∈Bと関係するaの個数の総和に等しい。
+  statement: 有限集合$A,B$と関係$r$について、各$a\in A$と関係する$b\in B$の個数の総和は、各$b\in B$と関係する$a\in A$の個数の総和に等しい。
   statement_en: For finite sets A and B and a relation r, the sum over a in A of the number of b in B related to a equals the sum over b in B of the number of a in A related to b.
   assumptions:
-    - AとBは有限集合
-    - rはAとBの間の関係
+  - $A$と$B$は有限集合
+  - $r$は$A$と$B$の間の関係
   quantifiers:
-    - 任意の有限集合A, Bと関係r
-  conclusion: |
-    Σ_{a∈A}|{b∈B | r(a,b)}|=Σ_{b∈B}|{a∈A | r(a,b)}|が成り立つ。
+  - 任意の有限集合$A,B$と関係$r$
+  conclusion: $\sum_{a\in A}|\{b\in B\mid r(a,b)\}|=\sum_{b\in B}|\{a\in A\mid r(a,b)\}|$が成り立つ。
   answer: |
-    r(a,b)が成り立つ組(a,b)∈A×B全体の集合Eを考える。Eを第一成分で分類すると、個数は左辺に等しい。第二成分で分類すると、個数は右辺に等しい。同じ集合Eの個数なので両辺は等しい。
+    $A,B$を有限集合、$r$を$A$と$B$の間の関係とする。$r(a,b)$が成り立つ組$(a,b)\in A\times B$全体の集合を$E$とする。$E$を第一成分で分類すると、第一成分が$a$である組は$|\{b\in B\mid r(a,b)\}|$個あるので、$|E|$は左辺に等しい。第二成分で分類すると、同様に$|E|$は右辺に等しい。同じ集合$E$の個数なので両辺は等しい。
   strategy: Count the set of related pairs by first coordinate and by second coordinate.
   sketch:
-    - "setup: Let E be the set of pairs (a, b) with r(a, b)."
-    - "derive: Grouping E by a gives the left side."
-    - "derive: Grouping E by b gives the right side."
-    - "conclude: Both sides equal |E|."
+  - 'setup: Let E be the set of pairs (a, b) with r(a, b).'
+  - 'derive: Grouping E by a gives the left side.'
+  - 'derive: Grouping E by b gives the right side.'
+  - 'conclude: Both sides equal |E|.'
   openmath: (forall (A B r) (-> (and (in (size A) N) (in (size B) N)) (= (sum A (lambda (a) (size (suchthat B (lambda (b) (binary_relation_holds r a b)))))) (sum B (lambda (b) (size (suchthat A (lambda (a) (binary_relation_holds r a b)))))))))
   hard_negative:
     statement: |
@@ -795,22 +801,25 @@
   kind: textbook
   level: 2
   topic: カタラン数・閉じた式
-  statement: 漸化式C_0=1, C_{n+1}=Σ_{i=0}^{n}C_i C_{n-i}で定まるカタラン数は(n+1)C_n=C(2n,n)をみたす。
+  statement: 漸化式$C_0=1$、$C_{n+1}=\sum_{i=0}^{n}C_i C_{n-i}$で定まるカタラン数は$(n+1)C_n=\binom{2n}{n}$をみたす。
   statement_en: The Catalan numbers defined by C_0 = 1 and C_{n+1} = Σ_{i=0}^{n} C_i C_{n-i} satisfy (n+1)·C_n = C(2n, n).
   assumptions:
-    - C_nは与えられた畳み込み漸化式で定まる
-    - nは自然数
+  - $(C_n)$は$C_0=1$、$C_{n+1}=\sum_{i=0}^{n}C_i C_{n-i}$で定まる
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: (n+1)C_n=C(2n,n)が成り立つ。
+  - 任意の自然数$n$
+  conclusion: $(n+1)C_n=\binom{2n}{n}$が成り立つ。
   answer: |
-    概略を述べる。主な手順は二つある。第一に、D_n=C(2n,n)/(n+1)が畳み込み漸化式をみたすことを、中心二項係数の分割和の恒等式で確かめる。第二に、D_0=1であり同じ漸化式をみたす数列は一意なので、D_n=C_nとなる。分母を払えば(n+1)C_n=C(2n,n)を得る。
+    数列$(C_n)$を$C_0=1$、$C_{n+1}=\sum_{i=0}^{n}C_i C_{n-i}$で定め、$n$を自然数とする。$\pm 1$からなる長さ$2n$の列$(x_1,\dots,x_{2n})$で、すべての部分和$x_1+\dots+x_j$が$0$以上であり全体の和が$0$であるものを良い列とよび、その個数を$a_n$とする。空列を数えるので$a_0=1$である。
+    第一に、$a_n=C_n$を示す。長さ$2(n+1)$の良い列について、$j\geq 1$で部分和が初めて$0$になる添字を$j=2(i+1)$とする ($0\leq i\leq n$)。このとき$x_1=1$、$x_{2i+2}=-1$であり、$x_2,\dots,x_{2i+1}$は長さ$2i$の良い列、$x_{2i+3},\dots,x_{2n+2}$は長さ$2(n-i)$の良い列である。逆に長さ$2i$の良い列と長さ$2(n-i)$の良い列から、$1$と$-1$を補って元の形の列がただ一つ得られる。よって$a_{n+1}=\sum_{i=0}^{n}a_i a_{n-i}$である。これは$C_n$と同じ漸化式と初期値なので、$a_n=C_n$である。
+    第二に、$a_n$を数える。$+1$を$n$個、$-1$を$n$個含む列は$\binom{2n}{n}$個あり、そのうち良い列でないものは、部分和がどこかで$-1$になる列である。そのような列に対し、部分和が初めて$-1$になる添字を$j$とし、$x_1,\dots,x_j$の符号を反転する。反転後の第$j$部分和は$1$、全体の和は$2$なので、$+1$を$n+1$個、$-1$を$n-1$個含む列が得られる。逆にそのような列では、全体の和が$2$なので部分和が初めて$1$になる添字$j$が存在し、$x_1,\dots,x_j$の符号を反転すると元の種類の列に戻る。反転の前後で、第$j$部分和より前の部分和は符号が変わるだけなので、$j$は「初めて$-1$になる添字」と「初めて$1$になる添字」として互いに対応し、二つの操作は互いに逆である。$+1$を$n+1$個含む長さ$2n$の列は$\binom{2n}{n+1}$個あるので、$a_n=\binom{2n}{n}-\binom{2n}{n+1}$を得る。
+    最後に、$\binom{N}{k+1}(k+1)=\binom{N}{k}(N-k)$で$N=2n$、$k=n$とすると$(n+1)\binom{2n}{n+1}=n\binom{2n}{n}$である。したがって$(n+1)C_n=(n+1)a_n=(n+1)\binom{2n}{n}-n\binom{2n}{n}=\binom{2n}{n}$である。
   strategy: Verify that C(2n, n)/(n+1) satisfies the convolution recurrence, then use uniqueness.
   sketch:
-    - "setup: Put D_n = C(2n, n)/(n+1)."
-    - "derive: Show that D_0 = 1 and that D satisfies the convolution recurrence."
-    - "induction: Strong induction shows D_n = C_n."
-    - "conclude: Clearing the denominator gives the identity."
+  - 'setup: Put D_n = C(2n, n)/(n+1).'
+  - 'derive: Show that D_0 = 1 and that D satisfies the convolution recurrence.'
+  - 'induction: Strong induction shows D_n = C_n.'
+  - 'conclude: Clearing the denominator gives the identity.'
   openmath: (forall (n) (-> (in n N) (= (* (+ n 1) (catalan_number n)) (binom (* 2 n) n))))
   hard_negative:
     statement: カタラン数はC_n=C(2n,n)をみたす。
@@ -825,21 +834,21 @@
   kind: gap
   level: 1
   topic: フィボナッチ数・部分和
-  statement: フィボナッチ数F_0=0,F_1=1についてΣ_{k=0}^{n-1}F_k+1=F_{n+1}である。
+  statement: $F_0=0$、$F_1=1$、$F_{n+2}=F_n+F_{n+1}$で定まるフィボナッチ数について$\sum_{k=0}^{n-1}F_k+1=F_{n+1}$である。
   statement_en: For the Fibonacci numbers with F_0 = 0 and F_1 = 1, Σ_{k=0}^{n-1} F_k + 1 = F_{n+1}.
   assumptions:
-    - F_nはF_0=0, F_1=1, F_{n+2}=F_n+F_{n+1}で定まる
-    - nは自然数
+  - $(F_n)$は$F_0=0$、$F_1=1$、$F_{n+2}=F_n+F_{n+1}$で定まる
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: F_{n+1}=Σ_{k=0}^{n-1}F_k+1が成り立つ。
+  - 任意の自然数$n$
+  conclusion: $F_{n+1}=\sum_{k=0}^{n-1}F_k+1$が成り立つ。$n=0$では和は空和である。
   answer: |
-    nについての帰納法で示す。n=0では左辺は空和に1を加えた1で、F_1=1に等しい。nで成り立つとすると、Σ_{k=0}^{n}F_k+1=F_n+F_{n+1}=F_{n+2}である。よってn+1でも成り立つ。
+    $(F_n)$を$F_0=0$、$F_1=1$、$F_{n+2}=F_n+F_{n+1}$で定まる数列とする。自然数$n$についての帰納法で示す。$n=0$では和は空和なので右辺は$1$であり、$F_1=1$に等しい。$n$で成り立つとすると、$\sum_{k=0}^{n}F_k+1=F_n+\left(\sum_{k=0}^{n-1}F_k+1\right)=F_n+F_{n+1}=F_{n+2}$である。よって$n+1$でも成り立つ。
   strategy: Induct on n using the Fibonacci recurrence.
   sketch:
-    - "induction: For n = 0 both sides equal 1."
-    - "derive: Adding F_n to the identity for n gives F_n + F_{n+1}."
-    - "conclude: The recurrence turns this into F_{n+2}."
+  - 'induction: For n = 0 both sides equal 1.'
+  - 'derive: Adding F_n to the identity for n gives F_n + F_{n+1}.'
+  - 'conclude: The recurrence turns this into F_{n+2}.'
   openmath: (forall (n) (-> (in n N) (= (fibonacci (+ n 1)) (+ (sum (suchthat N (lambda (k) (< k n))) (lambda (k) (fibonacci k))) 1))))
   hard_negative:
     statement: Σ_{k=0}^{n-1}F_k=F_{n+1}である。
@@ -854,22 +863,24 @@
   kind: gap
   level: 1
   topic: フィボナッチ数・カッシーニの恒等式
-  statement: フィボナッチ数についてF_{n+2}F_n-F_{n+1}^2=(-1)^{n+1}である。
+  statement: フィボナッチ数について$F_{n+2}F_n-F_{n+1}^2=(-1)^{n+1}$である。
   statement_en: For the Fibonacci numbers, F_{n+2}·F_n - F_{n+1}^2 = (-1)^(n+1).
   assumptions:
-    - F_nはF_0=0, F_1=1, F_{n+2}=F_n+F_{n+1}で定まる
-    - nは自然数
+  - $(F_n)$は$F_0=0$、$F_1=1$、$F_{n+2}=F_n+F_{n+1}$で定まる
+  - $n$は自然数
   quantifiers:
-    - 任意の自然数n
-  conclusion: F_{n+2}F_n-F_{n+1}^2=(-1)^{n+1}が成り立つ。
+  - 任意の自然数$n$
+  conclusion: $F_{n+2}F_n-F_{n+1}^2=(-1)^{n+1}$が成り立つ。
   answer: |
-    nについての帰納法で示す。n=0では左辺は1・0-1=-1で、右辺に等しい。a=F_n, b=F_{n+1}とおくとF_{n+2}=a+b, F_{n+3}=a+2bである。するとF_{n+3}F_{n+1}-F_{n+2}^2=(a+2b)b-(a+b)^2=-((a+b)a-b^2)となる。これは帰納法の仮定より(-1)^{n+2}に等しい。
+    $(F_n)$を$F_0=0$、$F_1=1$、$F_{n+2}=F_n+F_{n+1}$で定まる数列とする。自然数$n$についての帰納法で示す。$n=0$では左辺は$1\cdot 0-1^2=-1$で、右辺に等しい。$n$で成り立つとし、$a=F_n$、$b=F_{n+1}$とおくと、$F_{n+2}=a+b$、$F_{n+3}=a+2b$である。すると
+    $F_{n+3}F_{n+1}-F_{n+2}^2=(a+2b)b-(a+b)^2=-\left((a+b)a-b^2\right)=-\left(F_{n+2}F_n-F_{n+1}^2\right)$
+    となる。帰納法の仮定より、これは$-(-1)^{n+1}=(-1)^{n+2}$に等しい。
   strategy: Induct on n, expressing the next terms in F_n and F_{n+1}.
   sketch:
-    - "induction: Check the base case n = 0."
-    - "setup: Put a = F_n and b = F_{n+1}, so F_{n+2} = a + b and F_{n+3} = a + 2b."
-    - "derive: The expression at n + 1 equals minus the expression at n."
-    - "conclude: The induction hypothesis gives (-1)^(n+2)."
+  - 'induction: Check the base case n = 0.'
+  - 'setup: Put a = F_n and b = F_{n+1}, so F_{n+2} = a + b and F_{n+3} = a + 2b.'
+  - 'derive: The expression at n + 1 equals minus the expression at n.'
+  - 'conclude: The induction hypothesis gives (-1)^(n+2).'
   openmath: (forall (n) (-> (in n N) (= (- (* (fibonacci (+ n 2)) (fibonacci n)) (^ (fibonacci (+ n 1)) 2)) (^ (neg 1) (+ n 1)))))
   hard_negative:
     statement: F_{n+2}F_n-F_{n+1}^2=1がすべてのnで成り立つ。
@@ -897,25 +908,28 @@
   kind: gap
   level: 2
   topic: 漸化式・二階線形漸化式の解
-  statement: 実数列aがa_{n+2}=p a_{n+1}+q a_nをみたし、r≠sが特性方程式x^2=px+qの解ならば、ある実数A,Bですべてのnについてa_n=A r^n+B s^nとなる。
+  statement: 実数列$(a_n)$が$a_{n+2}=pa_{n+1}+qa_n$をみたし、$r\neq s$が特性方程式$x^2=px+q$の解ならば、ある実数$A,B$ですべての自然数$n$について$a_n=Ar^n+Bs^n$となる。
   statement_en: If a real sequence satisfies a_{n+2} = p·a_{n+1} + q·a_n and r ≠ s are roots of x^2 = p·x + q, then there are real numbers A and B with a_n = A·r^n + B·s^n for all n.
   assumptions:
-    - aは実数列でa_{n+2}=p a_{n+1}+q a_nをみたす
-    - rとsはx^2=px+qの解
-    - r≠s
+  - $(a_n)$は実数列で$a_{n+2}=pa_{n+1}+qa_n$をみたす
+  - $r$と$s$は$x^2=px+q$の解
+  - $r\neq s$
   quantifiers:
-    - 任意の実数p, q, r, sと実数列a
-    - ある実数A, B
-    - 任意の自然数n
-  conclusion: a_n=A r^n+B s^nとなる実数A,Bが存在する。
+  - 任意の実数$p,q,r,s$と実数列$(a_n)$
+  - ある実数$A,B$
+  - 任意の自然数$n$
+  conclusion: すべての自然数$n$について$a_n=Ar^n+Bs^n$となる実数$A,B$が存在する。
   answer: |
-    r≠sなので、連立方程式A+B=a_0, Ar+Bs=a_1は解A=(a_1-s a_0)/(r-s), B=(r a_0-a_1)/(r-s)をもつ。nとn+1で等式が成り立つと仮定する。漸化式とr^2=pr+q, s^2=ps+qより、a_{n+2}=A r^n(pr+q)+B s^n(ps+q)=A r^{n+2}+B s^{n+2}である。よって帰納法ですべてのnについて成り立つ。
+    $p,q,r,s$を実数とし、$r\neq s$、$r^2=pr+q$、$s^2=ps+q$とする。$(a_n)$をすべての自然数$n$で$a_{n+2}=pa_{n+1}+qa_n$をみたす実数列とする。$r\neq s$なので$A=\dfrac{a_1-sa_0}{r-s}$、$B=\dfrac{ra_0-a_1}{r-s}$と定められ、$A+B=a_0$、$Ar+Bs=a_1$が成り立つ。よって$n=0,1$で$a_n=Ar^n+Bs^n$である。
+    $n$と$n+1$でこの等式が成り立つと仮定する。漸化式と$r^2=pr+q$、$s^2=ps+q$より、
+    $a_{n+2}=p(Ar^{n+1}+Bs^{n+1})+q(Ar^n+Bs^n)=Ar^n(pr+q)+Bs^n(ps+q)=Ar^{n+2}+Bs^{n+2}$
+    である。よって帰納法によりすべての自然数$n$について成り立つ。
   strategy: Fit A and B to the first two terms and propagate by two-step induction.
   sketch:
-    - "construct: Solve A + B = a_0 and A·r + B·s = a_1 using r ≠ s."
-    - "setup: Prove the formula for n and n + 1 together by induction."
-    - "derive: Substitute into the recurrence and use r^2 = p·r + q and s^2 = p·s + q."
-    - "conclude: The formula holds for all n."
+  - 'construct: Solve A + B = a_0 and A·r + B·s = a_1 using r ≠ s.'
+  - 'setup: Prove the formula for n and n + 1 together by induction.'
+  - 'derive: Substitute into the recurrence and use r^2 = p·r + q and s^2 = p·s + q.'
+  - 'conclude: The formula holds for all n.'
   openmath: (forall (p q r s a) (-> (and (in p R) (in q R) (in r R) (in s R) (!= r s) (= (^ r 2) (+ (* p r) q)) (= (^ s 2) (+ (* p s) q)) (forall (n) (-> (in n N) (= (seq_value a (+ n 2)) (+ (* p (seq_value a (+ n 1))) (* q (seq_value a n))))))) (exists (A B) (and (in A R) (in B R) (forall (n) (-> (in n N) (= (seq_value a n) (+ (* A (^ r n)) (* B (^ s n))))))))))
   hard_negative:
     statement: 特性方程式が重解r=sをもつときも、a_n=A r^n+B s^nの形で必ず表せる。
@@ -949,22 +963,24 @@
   kind: textbook
   level: 2
   topic: 母関数・負の二項展開
-  statement: 可換環S上の形式的冪級数としてΣ_{n≥0}C(d+n,d)X^nと(1-X)^{d+1}の積は1である。
+  statement: 可換環$S$上の形式的冪級数として$\sum_{n\geq 0}\binom{d+n}{d}X^n$と$(1-X)^{d+1}$の積は$1$である。
   statement_en: Over a commutative ring S, the formal power series Σ_{n≥0} C(d+n, d) X^n times (1-X)^(d+1) equals 1.
   assumptions:
-    - Sは可換環
-    - dは自然数
+  - $S$は可換環
+  - $d$は自然数
   quantifiers:
-    - 任意の可換環Sと自然数d
-  conclusion: (Σ_{n≥0}C(d+n,d)X^n)(1-X)^{d+1}=1が成り立つ。
+  - 任意の可換環$S$と自然数$d$
+  conclusion: $\left(\sum_{n\geq 0}\binom{d+n}{d}X^n\right)(1-X)^{d+1}=1$が成り立つ。
   answer: |
-    dについての帰納法で示す。d=0ではΣX^nと1-Xの積が1であり、これは幾何級数の等式である。(1-X)Σ C(d+1+n,d+1)X^nのX^nの係数はC(d+1+n,d+1)-C(d+n,d+1)である。パスカルの等式よりこれはC(d+n,d)に等しいので、dの場合に帰着する。
+    $S$を可換環、$d$を自然数とし、$\binom{d+n}{d}$は自然数の$S$での像を表すものとする。$G_d=\sum_{n\geq 0}\binom{d+n}{d}X^n$とおき、$d$についての帰納法で$G_d(1-X)^{d+1}=1$を示す。
+    $d=0$では$G_0=\sum_{n\geq 0}X^n$であり、$X^n$の係数を比べると$G_0(1-X)=1$である。
+    次に$G_{d+1}(1-X)=G_d$を示す。定数項はどちらも$1$である。$n\geq 1$のとき、左辺の$X^n$の係数は$\binom{d+1+n}{d+1}-\binom{d+n}{d+1}$である。パスカルの等式$\binom{d+n+1}{d+1}=\binom{d+n}{d}+\binom{d+n}{d+1}$より、これは$\binom{d+n}{d}$に等しい。したがって$G_{d+1}(1-X)^{d+2}=G_d(1-X)^{d+1}$であり、帰納法の仮定より$1$に等しい。
   strategy: Induct on d, multiplying by 1 - X and using Pascal's identity on coefficients.
   sketch:
-    - "induction: The case d = 0 is the geometric series identity."
-    - "derive: Multiply the series for d + 1 by 1 - X and compare coefficients."
-    - "apply_theorem: Pascal's identity gives the series for d."
-    - "conclude: The induction hypothesis finishes the proof."
+  - 'induction: The case d = 0 is the geometric series identity.'
+  - 'derive: Multiply the series for d + 1 by 1 - X and compare coefficients.'
+  - 'apply_theorem: Pascal''s identity gives the series for d.'
+  - 'conclude: The induction hypothesis finishes the proof.'
   openmath: (forall (S d) (-> (and (comm_ring S) (in d N)) (= (* (formal_power_series_mk (lambda (n) (binom (+ d n) d))) (^ (- 1 power_series_x) (+ d 1))) 1)))
   hard_negative:
     statement: (Σ_{n≥0}C(d+n,d)X^n)(1-X)^d=1である。
@@ -979,21 +995,21 @@
   kind: named
   level: 2
   topic: グラフ理論・握手補題
-  statement: 有限単純グラフGについて、全頂点の次数の和は辺の個数の2倍に等しい。
+  statement: 有限単純グラフ$G$について、全頂点の次数の和は辺の個数の$2$倍に等しい。
   statement_en: In a finite simple graph G, the sum of the degrees of all vertices equals twice the number of edges.
   assumptions:
-    - Gは有限単純グラフ
+  - $G$は有限単純グラフ
   quantifiers:
-    - 任意の有限単純グラフG
-  conclusion: Σ_v deg(v)=2|E(G)|が成り立つ。
+  - 任意の有限単純グラフ$G$
+  conclusion: $\sum_{v}\deg(v)=2|E(G)|$が成り立つ。
   answer: |
-    頂点vとvに接続する辺eの組(v,e)の個数を二通りに数える。頂点ごとに数えると、vを含む組はdeg(v)個なので総数はΣdeg(v)である。辺ごとに数えると、各辺は端点を二つもつので総数は2|E(G)|である。両者は等しい。
+    $G$を有限単純グラフとする。頂点$v$と$v$に接続する辺$e$の組$(v,e)$の個数を二通りに数える。頂点ごとに数えると、$v$を含む組は$\deg(v)$個なので、総数は$\sum_{v}\deg(v)$である。辺ごとに数えると、各辺は相異なる端点をちょうど二つもつので、総数は$2|E(G)|$である。両者は等しい。
   strategy: Double count incident vertex–edge pairs.
   sketch:
-    - "setup: Consider the pairs (v, e) with v an endpoint of the edge e."
-    - "derive: Grouping by v gives Σ deg(v)."
-    - "derive: Grouping by e gives 2|E|, since a simple graph edge has two distinct endpoints."
-    - "conclude: The two counts agree."
+  - 'setup: Consider the pairs (v, e) with v an endpoint of the edge e.'
+  - 'derive: Grouping by v gives Σ deg(v).'
+  - 'derive: Grouping by e gives 2|E|, since a simple graph edge has two distinct endpoints.'
+  - 'conclude: The two counts agree.'
   openmath: (forall (G) (-> (finite_simple_graph G) (= (sum (graph_vertices G) (lambda (v) (graph_degree G v))) (* 2 (size (graph_edges G))))))
   hard_negative:
     statement: 有限単純グラフでは次数の和は辺の個数に等しい。
@@ -1011,17 +1027,17 @@
   statement: 有限単純グラフにおいて、次数が奇数である頂点の個数は偶数である。
   statement_en: In a finite simple graph, the number of vertices of odd degree is even.
   assumptions:
-    - Gは有限単純グラフ
+  - $G$は有限単純グラフ
   quantifiers:
-    - 任意の有限単純グラフG
+  - 任意の有限単純グラフ$G$
   conclusion: 次数が奇数の頂点の個数は偶数である。
   answer: |
-    次数の和は辺の個数の2倍なので偶数である。次数が偶数の頂点の次数の和も偶数なので、次数が奇数の頂点の次数の和も偶数である。奇数を奇数個足すと奇数になるので、次数が奇数の頂点の個数は偶数である。
+    $G$を有限単純グラフとする。握手補題より次数の和は辺の個数の$2$倍なので偶数である。次数が偶数の頂点の次数の和も偶数なので、次数が奇数の頂点の次数の和も偶数である。奇数を奇数個足すと奇数になるので、次数が奇数の頂点の個数は偶数である。
   strategy: Reduce the degree-sum formula modulo 2.
   sketch:
-    - "apply_theorem: The degree sum equals 2|E| and is therefore even."
-    - "derive: Removing the even-degree vertices leaves an even sum of odd numbers."
-    - "conclude: An even sum of odd numbers has an even number of terms."
+  - 'apply_theorem: The degree sum equals 2|E| and is therefore even.'
+  - 'derive: Removing the even-degree vertices leaves an even sum of odd numbers.'
+  - 'conclude: An even sum of odd numbers has an even number of terms.'
   openmath: (forall (G) (-> (finite_simple_graph G) (exists (m) (and (in m N) (= (size (suchthat (graph_vertices G) (lambda (v) (exists (k) (and (in k N) (= (graph_degree G v) (+ (* 2 k) 1))))))) (* 2 m))))))
   hard_negative:
     statement: 有限単純グラフでは次数が偶数である頂点の個数も常に偶数である。
@@ -1036,23 +1052,23 @@
   kind: gap
   level: 2
   topic: グラフ理論・同じ次数の頂点
-  statement: 頂点が2個以上の有限単純グラフには、次数の等しい相異なる二頂点が存在する。
+  statement: 頂点が$2$個以上の有限単純グラフには、次数の等しい相異なる二頂点が存在する。
   statement_en: A finite simple graph with at least two vertices has two distinct vertices of equal degree.
   assumptions:
-    - Gは有限単純グラフ
-    - Gの頂点は2個以上
+  - $G$は有限単純グラフ
+  - $G$の頂点は$2$個以上
   quantifiers:
-    - 任意の有限単純グラフG
-  conclusion: u≠vかつdeg(u)=deg(v)をみたす頂点u,vが存在する。
+  - 任意の有限単純グラフ$G$
+  conclusion: $u\neq v$かつ$\deg(u)=\deg(v)$をみたす頂点$u,v$が存在する。
   answer: |
-    頂点数をnとし、すべての次数が相異なると仮定する。次数は0以上n-1以下なので、次数は0からn-1までの値をちょうど一度ずつとる。次数0の頂点uと次数n-1の頂点wがあり、n≥2よりu≠wである。wは自分以外のすべての頂点と隣接するのでuとも隣接するが、これはdeg(u)=0に反する。
+    $G$を頂点数$n\geq 2$の有限単純グラフとする。すべての頂点の次数が相異なると仮定する。次数は$0$以上$n-1$以下なので、次数は$0$から$n-1$までの$n$個の値をちょうど一度ずつとる。よって次数$0$の頂点$u$と次数$n-1$の頂点$w$があり、$n\geq 2$より$u\neq w$である。$w$は自分以外のすべての頂点と隣接するので$u$とも隣接するが、これは$\deg(u)=0$に反する。
   strategy: If all degrees differ, both 0 and n-1 occur, which is impossible.
   sketch:
-    - "contradiction: Suppose all n degrees are distinct."
-    - "derive: Degrees lie in {0, ..., n-1}, so injectivity makes every value occur."
-    - "setup: Take u of degree 0 and w of degree n-1; they are distinct since n ≥ 2."
-    - "derive: The vertex w is adjacent to every other vertex, including u."
-    - "conclude: This contradicts deg(u) = 0."
+  - 'contradiction: Suppose all n degrees are distinct.'
+  - 'derive: Degrees lie in {0, ..., n-1}, so injectivity makes every value occur.'
+  - 'setup: Take u of degree 0 and w of degree n-1; they are distinct since n ≥ 2.'
+  - 'derive: The vertex w is adjacent to every other vertex, including u.'
+  - 'conclude: This contradicts deg(u) = 0.'
   openmath: (forall (G) (-> (and (finite_simple_graph G) (>= (size (graph_vertices G)) 2)) (exists (u v) (and (in u (graph_vertices G)) (in v (graph_vertices G)) (!= u v) (= (graph_degree G u) (graph_degree G v))))))
   hard_negative:
     statement: 頂点が2個以上の有限単純グラフには、次数の等しい隣接する二頂点が必ず存在する。
@@ -1110,23 +1126,24 @@
   kind: textbook
   level: 2
   topic: グラフ理論・木の辺数
-  statement: 有限の木の辺の個数は頂点の個数より1少ない。
+  statement: 有限の木の辺の個数は頂点の個数より$1$少ない。
   statement_en: A finite tree has exactly one edge fewer than it has vertices.
   assumptions:
-    - Gは有限グラフ
-    - Gは木
+  - $G$は有限グラフ
+  - $G$は木
   quantifiers:
-    - 任意の有限の木G
-  conclusion: |
-    |E(G)|+1=|V(G)|が成り立つ。
+  - 任意の有限の木$G$
+  conclusion: $|E(G)|+1=|V(G)|$が成り立つ。
   answer: |
-    頂点数についての帰納法で示す。頂点が1個の木に辺はないので成り立つ。頂点が2個以上の木で最長の道の端点vをとると、vの次数は1である。次数が2以上なら、道を延ばせるか閉路ができるからである。vとその辺を除いたグラフも連結で閉路をもたないので木であり、帰納法の仮定が使える。vと辺を一つずつ戻せば等式が保たれる。
+    $G$を有限の木、すなわち頂点集合が空でなく連結で閉路をもたない有限単純グラフとする。頂点数についての帰納法で$|E(G)|+1=|V(G)|$を示す。頂点が$1$個の木に辺はないので成り立つ。
+    頂点が$2$個以上の木$G$で、最長の道の端点を$v$とする。$G$は連結なのでこの道の長さは$1$以上で、$v$は道の上の隣の頂点と隣接する。$v$が他の頂点$u$とも隣接するとする。$u$が道の上になければ道を延ばせるので最長性に反し、$u$が道の上にあれば閉路ができるので矛盾する。よって$\deg(v)=1$である。
+    $G$から$v$とその辺を除いたグラフを$H$とする。$H$の二頂点を結ぶ$G$の道は次数$1$の$v$を通らないので、$H$は連結である。閉路をもたないことは部分グラフに引き継がれるので、$H$は木である。帰納法の仮定より$|E(H)|+1=|V(H)|$であり、$|E(G)|=|E(H)|+1$、$|V(G)|=|V(H)|+1$なので、$G$でも等式が成り立つ。
   strategy: Remove a leaf and induct on the number of vertices.
   sketch:
-    - "induction: A single-vertex tree has no edges."
-    - "construct: In a tree with at least two vertices, an endpoint of a longest path has degree one, since another neighbor would extend the path or close a cycle."
-    - "derive: Deleting that vertex and its edge leaves a tree."
-    - "conclude: Restoring one vertex and one edge preserves the identity."
+  - 'induction: A single-vertex tree has no edges.'
+  - 'construct: In a tree with at least two vertices, an endpoint of a longest path has degree one, since another neighbor would extend the path or close a cycle.'
+  - 'derive: Deleting that vertex and its edge leaves a tree.'
+  - 'conclude: Restoring one vertex and one edge preserves the identity.'
   openmath: (forall (G) (-> (and (finite_simple_graph G) (graph_tree G)) (= (+ (size (graph_edges G)) 1) (size (graph_vertices G)))))
   hard_negative:
     statement: 頂点数nで辺数n-1の有限グラフは必ず木である。
@@ -1141,22 +1158,24 @@
   kind: textbook
   level: 2
   topic: グラフ理論・木と道の一意性
-  statement: 単純グラフGが木であることと、頂点集合が空でなく任意の二頂点を結ぶ道がちょうど一つ存在することは同値である。
+  statement: 単純グラフ$G$が木であることと、頂点集合が空でなく任意の二頂点を結ぶ道がちょうど一つ存在することは同値である。
   statement_en: A simple graph is a tree if and only if its vertex set is nonempty and any two vertices are joined by exactly one path.
   assumptions:
-    - Gは単純グラフ
+  - $G$は単純グラフ
   quantifiers:
-    - 任意の単純グラフG
-  conclusion: Gが木であることと、頂点集合が空でなく各二頂点を結ぶ道が一意に存在することは同値である。
+  - 任意の単純グラフ$G$
+  conclusion: $G$が木であることと、頂点集合が空でなく各二頂点を結ぶ道が一意に存在することは同値である。
   answer: |
-    Gを木とする。連結性より二頂点を結ぶ道は存在し、相異なる二本の道があれば、それらが分かれてから再び合流する部分から閉路が得られるので、道は一意である。逆に道が一意に存在するとする。存在よりGは連結である。閉路があれば、閉路上の隣接する二頂点を結ぶ道として、辺そのものと閉路の残りの部分の二本が得られ、一意性に反する。よってGは木である。
+    $G$を単純グラフとする。頂点集合は無限でもよい。$G$が木であるとは、頂点集合が空でなく連結で閉路をもたないことであり、道とは同じ頂点を二度通らない歩道のことである。
+    $G$を木とする。頂点集合は定義より空でない。連結性より二頂点を結ぶ歩道が存在し、その中で最短のものは道である。$v$から$w$への相異なる道$P,Q$があるとする。どちらも$w$で終わり頂点を繰り返さないので、一方が他方の先頭部分になることはない。よって共通の先頭部分の最後の頂点$x$があり、$x$の次の頂点は$P$では$a$、$Q$では$b$で、$a\neq b$である。$P$を$x$から先へたどり、$Q$の$x$より後の部分に初めて現れる頂点を$y$とする ($w$が候補なので存在する)。$P$の$x$から$y$までの区間と$Q$の$x$から$y$までの区間は、端点以外に共通の頂点をもたない。$a\neq b$より二つの区間の少なくとも一方は長さ$2$以上なので、これらをつなぐと閉路が得られ、$G$が閉路をもたないことに反する。したがって道は一意である。
+    逆に、頂点集合が空でなく任意の二頂点を結ぶ道が一意に存在するとする。道の存在より$G$は連結である。$G$に閉路があるとすると、閉路上の隣接する二頂点を結ぶ道として、その辺そのものと閉路の残りの部分の二本が得られる。閉路の長さは$3$以上なのでこの二本は異なり、一意性に反する。よって$G$は閉路をもたず、木である。
   strategy: Turn two distinct paths into a cycle, and a cycle into two distinct paths.
   sketch:
-    - "derive: In a tree, connectivity gives a path between any two vertices."
-    - "contradiction: Two distinct paths with the same endpoints would produce a cycle."
-    - "derive: Conversely, existence of paths gives connectivity."
-    - "contradiction: A cycle gives two distinct paths between adjacent vertices on it."
-    - "conclude: Therefore the two conditions are equivalent."
+  - 'derive: In a tree, connectivity gives a path between any two vertices.'
+  - 'contradiction: Two distinct paths with the same endpoints would produce a cycle.'
+  - 'derive: Conversely, existence of paths gives connectivity.'
+  - 'contradiction: A cycle gives two distinct paths between adjacent vertices on it.'
+  - 'conclude: Therefore the two conditions are equivalent.'
   openmath: (forall (G) (-> (simple_graph G) (<-> (graph_tree G) (and (!= (graph_vertices G) emptyset) (forall (u v) (-> (and (in u (graph_vertices G)) (in v (graph_vertices G))) (exists (p) (and (graph_path p G u v) (forall (q) (-> (graph_path q G u v) (= q p)))))))))))
   hard_negative:
     statement: 木では任意の二頂点を結ぶ歩道もちょうど一つである。
@@ -1171,22 +1190,22 @@
   kind: gap
   level: 2
   topic: グラフ理論・木の葉
-  statement: 頂点が2個以上の有限の木には次数1の頂点が存在する。
+  statement: 頂点が$2$個以上の有限の木には次数$1$の頂点が存在する。
   statement_en: A finite tree with at least two vertices has a vertex of degree one.
   assumptions:
-    - Gは有限の木
-    - Gの頂点は2個以上
+  - $G$は有限の木
+  - $G$の頂点は$2$個以上
   quantifiers:
-    - 任意の有限の木G
-  conclusion: deg(v)=1となる頂点vが存在する。
+  - 任意の有限の木$G$
+  conclusion: $\deg(v)=1$となる頂点$v$が存在する。
   answer: |
-    頂点数をnとする。Gは連結でn≥2なので、すべての頂点の次数は1以上である。すべての次数が2以上だとすると次数の和は2n以上になる。一方、次数の和は辺の個数の2倍で、木の辺数はn-1なので2n-2である。これは矛盾なので、次数がちょうど1の頂点がある。
+    $G$を頂点数$n\geq 2$の有限の木とする。$G$は連結で$n\geq 2$なので、すべての頂点の次数は$1$以上である。すべての次数が$2$以上だとすると、次数の和は$2n$以上になる。一方、握手補題より次数の和は辺の個数の$2$倍であり、木の辺数は$n-1$なので、次数の和は$2n-2$である。これは矛盾なので、次数がちょうど$1$の頂点がある。
   strategy: Compare the degree sum 2n-2 with the lower bound from minimum degree two.
   sketch:
-    - "derive: Connectivity and n ≥ 2 force every degree to be at least 1."
-    - "apply_theorem: The degree sum of a tree equals 2(n-1)."
-    - "contradiction: If all degrees were at least 2, the sum would be at least 2n."
-    - "conclude: Hence some vertex has degree exactly 1."
+  - 'derive: Connectivity and n ≥ 2 force every degree to be at least 1.'
+  - 'apply_theorem: The degree sum of a tree equals 2(n-1).'
+  - 'contradiction: If all degrees were at least 2, the sum would be at least 2n.'
+  - 'conclude: Hence some vertex has degree exactly 1.'
   openmath: (forall (G) (-> (and (finite_simple_graph G) (graph_tree G) (>= (size (graph_vertices G)) 2)) (exists (v) (and (in v (graph_vertices G)) (= (graph_degree G v) 1)))))
   hard_negative:
     statement: 頂点が2個以上の連結な有限グラフには次数1の頂点が存在する。
@@ -1201,26 +1220,25 @@
   kind: gap
   level: 2
   topic: グラフ理論・連結グラフの辺数
-  statement: 有限の連結単純グラフでは|V|≤|E|+1が成り立つ。
+  statement: 有限の連結単純グラフでは$|V|\leq|E|+1$が成り立つ。
   statement_en: A finite connected simple graph satisfies |V| ≤ |E| + 1.
   assumptions:
-    - Gは有限単純グラフ
-    - Gは連結
+  - $G$は有限単純グラフ
+  - $G$は連結
   quantifiers:
-    - 任意の有限連結単純グラフG
-  conclusion: |
-    |V(G)|≤|E(G)|+1が成り立つ。
+  - 任意の有限連結単純グラフ$G$
+  conclusion: $|V(G)|\leq|E(G)|+1$が成り立つ。
   answer: |
-    連結グラフに閉路があれば、閉路上の辺を一本除いても連結性は保たれる。これを閉路がなくなるまで繰り返すと、全頂点を含む木が辺を減らして得られる。木の辺数は|V|-1なので、|V|-1≤|E|である。
+    $G$を有限の連結単純グラフとし、$V,E$をその頂点集合と辺集合とする。$G$に閉路があるとき、閉路上の辺を一本除いても連結性は保たれる。その辺を使う歩道は、閉路の残りの部分を通るように迂回できるからである。辺は有限個なので、この操作を閉路がなくなるまで繰り返すと、頂点集合が$V$で辺集合が$E$の部分集合である木が得られる。有限の木の辺数は頂点数より$1$少ないので、$|V|-1\leq|E|$である。
   strategy: Delete cycle edges to reach a spanning tree and apply the tree edge count.
   sketch:
-    - "derive: Removing an edge on a cycle keeps a graph connected."
-    - "construct: Repeating this produces a spanning tree of G."
-    - "apply_theorem: The spanning tree has |V| - 1 edges."
-    - "conclude: Since its edges are edges of G, |V| - 1 ≤ |E|."
+  - 'derive: Removing an edge on a cycle keeps a graph connected.'
+  - 'construct: Repeating this produces a spanning tree of G.'
+  - 'apply_theorem: The spanning tree has |V| - 1 edges.'
+  - 'conclude: Since its edges are edges of G, |V| - 1 ≤ |E|.'
   openmath: (forall (G) (-> (and (finite_simple_graph G) (graph_connected G)) (<= (size (graph_vertices G)) (+ (size (graph_edges G)) 1))))
   hard_negative:
-    statement: "|V|≤|E|+1をみたす有限グラフは連結である。"
+    statement: '|V|≤|E|+1をみたす有限グラフは連結である。'
     reason: 三角形と孤立点からなるグラフは|V|=4, |E|=3で不等式をみたすが連結でない。逆は成り立たない。
   target: |
     ∀ (V : Type*) [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj], G.Connected → Fintype.card V ≤ G.edgeFinset.card + 1
@@ -1234,22 +1252,24 @@
   kind: textbook
   level: 3
   topic: グラフ理論・二部グラフの特徴付け
-  statement: 単純グラフが2彩色可能であることと、すべての閉歩道の長さが偶数であることは同値である。
+  statement: 単純グラフが$2$彩色可能であることと、すべての閉歩道の長さが偶数であることは同値である。
   statement_en: A simple graph is 2-colorable if and only if every closed walk has even length.
   assumptions:
-    - Gは単純グラフ
+  - $G$は単純グラフ
   quantifiers:
-    - 任意の単純グラフG
-  conclusion: Gが2彩色可能であることと、すべての閉歩道の長さが偶数であることは同値である。
+  - 任意の単純グラフ$G$
+  conclusion: $G$が$2$彩色可能であることと、すべての閉歩道の長さが偶数であることは同値である。
   answer: |
-    2彩色があれば、歩道を一歩進むごとに色が変わるので、始点に戻る歩道の長さは偶数である。逆にすべての閉歩道が偶数長だとする。各連結成分に基点を一つ選び、頂点の色を基点からの歩道の長さの偶奇で定める。同じ頂点への二つの歩道をつなぐと閉歩道になるので、偶奇は歩道によらない。隣接する頂点では歩道の長さの偶奇が変わるので、これは正しい2彩色である。
+    $G$を単純グラフとする。頂点集合は無限でもよい。$2$彩色とは、隣接する頂点に異なる色を与える$2$色の塗り分けのことである。
+    $2$彩色があるとする。歩道を一歩進むごとに色が変わるので、始点に戻る歩道の長さは偶数である。
+    逆に、すべての閉歩道の長さが偶数であるとする。各連結成分に基点を一つ選び、頂点$v$の色を、基点から$v$への歩道の長さの偶奇で定める。基点から$v$への二つの歩道$p,q$について、$p$に$q$の逆向きをつなぐと長さ$|p|+|q|$の閉歩道になるので$|p|+|q|$は偶数であり、偶奇は歩道によらない。隣接する頂点$u,v$は同じ連結成分にあり、$u$への歩道に辺$uv$をつなぐと$v$への歩道になるので、$u$と$v$の色は異なる。よってこれは$2$彩色である。
   strategy: Colors alternate along walks; conversely, color each vertex by the parity of a walk from a base point.
   sketch:
-    - "derive: A proper 2-coloring changes color at each step, so closed walks are even."
-    - "setup: Conversely, choose a base point in each connected component."
-    - "construct: Color each vertex by the parity of a walk from the base point."
-    - "derive: Evenness of closed walks makes this parity independent of the walk."
-    - "conclude: Adjacent vertices get different colors, so the coloring is proper."
+  - 'derive: A proper 2-coloring changes color at each step, so closed walks are even.'
+  - 'setup: Conversely, choose a base point in each connected component.'
+  - 'construct: Color each vertex by the parity of a walk from the base point.'
+  - 'derive: Evenness of closed walks makes this parity independent of the walk.'
+  - 'conclude: Adjacent vertices get different colors, so the coloring is proper.'
   openmath: (forall (G) (-> (simple_graph G) (<-> (graph_colorable G 2) (forall (u w) (-> (graph_closed_walk w G u) (exists (k) (and (in k N) (= (walk_length w) (* 2 k)))))))))
   hard_negative:
     statement: 長さ3の閉路をもたない単純グラフは2彩色可能である。
@@ -1267,20 +1287,22 @@
   statement: 有限単純グラフにすべての辺をちょうど一度ずつ通る閉じた歩道があれば、すべての頂点の次数は偶数である。
   statement_en: If a finite simple graph has a closed walk using every edge exactly once, then every vertex has even degree.
   assumptions:
-    - Gは有限単純グラフ
-    - pはuからuへの歩道で、すべての辺をちょうど一度ずつ通る
+  - $G$は有限単純グラフ
+  - $p$は$u$から$u$への歩道で、すべての辺をちょうど一度ずつ通る
   quantifiers:
-    - 任意の有限単純グラフG、頂点u、歩道p
-    - 任意の頂点x
-  conclusion: deg(x)は偶数である。
+  - 任意の有限単純グラフ$G$、頂点$u$、歩道$p$
+  - 任意の頂点$x$
+  conclusion: $\deg(x)$は偶数である。
   answer: |
-    歩道pをたどると、頂点xを通過するたびにxに接続する辺を入る辺と出る辺の二本ずつ使う。始点と終点は同じなので、最初の出る辺と最後の入る辺も一組になる。pはすべての辺をちょうど一度ずつ使うので、xに接続する辺はこの組に過不足なく分かれる。よってdeg(x)は偶数である。
+    $G$を有限単純グラフ、$p$をすべての辺をちょうど一度ずつ通る$u$から$u$への歩道とし、$x$を頂点とする。$p$の頂点の列を$v_0=u,v_1,\dots,v_m=u$とする。条件$Q$が真なら$1$、偽なら$0$を表す記号を$[Q]$とする。
+    $p$は各辺をちょうど一度ずつ通るので、$\deg(x)$は辺$v_{i-1}v_i$のうち$x$を端点とするものの個数に等しい。単純グラフなので$v_{i-1}\neq v_i$であり、この個数は$\sum_{i=1}^{m}\left([v_{i-1}=x]+[v_i=x]\right)$と書ける。
+    $2$を法として考えると、$[v_{i-1}=x]+[v_i=x]\equiv[v_i=x]-[v_{i-1}=x]$なので、和は望遠鏡和になり、$\deg(x)\equiv[v_m=x]-[v_0=x]\pmod 2$である。$v_0=v_m=u$より右辺は$0$であり、$\deg(x)$は偶数である。
   strategy: Pair the edges at each vertex as consecutive entries and exits of the closed walk.
   sketch:
-    - "setup: Follow the closed walk p and record the visits to x."
-    - "derive: Each visit uses one incoming and one outgoing edge at x."
-    - "derive: At the base point the first and last edges also pair up."
-    - "conclude: Since p uses each edge once, deg(x) is even."
+  - 'setup: Follow the closed walk p and record the visits to x.'
+  - 'derive: Each visit uses one incoming and one outgoing edge at x.'
+  - 'derive: At the base point the first and last edges also pair up.'
+  - 'conclude: Since p uses each edge once, deg(x) is even.'
   openmath: (forall (G p u x) (-> (and (finite_simple_graph G) (graph_eulerian_walk p G u u) (in x (graph_vertices G))) (exists (k) (and (in k N) (= (graph_degree G x) (* 2 k))))))
   hard_negative:
     statement: すべての頂点の次数が偶数である有限単純グラフには、必ずオイラー回路がある。
@@ -1295,23 +1317,25 @@
   kind: textbook
   level: 2
   topic: グラフ理論・オイラー路
-  statement: 有限単純グラフにすべての辺をちょうど一度ずつ通る歩道があれば、次数が奇数の頂点は0個または2個である。
+  statement: 有限単純グラフにすべての辺をちょうど一度ずつ通る歩道があれば、次数が奇数の頂点は$0$個または$2$個である。
   statement_en: If a finite simple graph has a walk using every edge exactly once, then it has either zero or two vertices of odd degree.
   assumptions:
-    - Gは有限単純グラフ
-    - pはuからvへの歩道で、すべての辺をちょうど一度ずつ通る
+  - $G$は有限単純グラフ
+  - $p$は$u$から$v$への歩道で、すべての辺をちょうど一度ずつ通る
   quantifiers:
-    - 任意の有限単純グラフG、頂点u, v、歩道p
-  conclusion: 次数が奇数の頂点の個数は0または2である。
+  - 任意の有限単純グラフ$G$、頂点$u,v$、歩道$p$
+  conclusion: 次数が奇数の頂点の個数は$0$または$2$である。
   answer: |
-    pの途中で頂点を通過するたびに、その頂点に接続する辺を二本ずつ使う。したがってu,v以外の頂点の次数は偶数である。u=vならば始点と終点でも辺が一組になるので、奇数次数の頂点は0個である。u≠vならばu,vでは一本ずつ余るので、奇数次数の頂点はちょうどu,vの2個である。
+    $G$を有限単純グラフ、$p$をすべての辺をちょうど一度ずつ通る$u$から$v$への歩道とする。$p$の頂点の列を$v_0=u,v_1,\dots,v_m=v$とし、条件$Q$が真なら$1$、偽なら$0$を表す記号を$[Q]$とする。
+    頂点$x$について、$p$は各辺をちょうど一度ずつ通り、単純グラフでは$v_{i-1}\neq v_i$なので、$\deg(x)=\sum_{i=1}^{m}\left([v_{i-1}=x]+[v_i=x]\right)$である。$2$を法として考えると、$[v_{i-1}=x]+[v_i=x]\equiv[v_i=x]-[v_{i-1}=x]$なので、望遠鏡和より$\deg(x)\equiv[v=x]-[u=x]\pmod 2$である。
+    $u=v$ならば右辺はすべての$x$で$0$なので、次数が奇数の頂点は$0$個である。$u\neq v$ならば右辺が$0$でないのは$x=u$と$x=v$のときだけなので、次数が奇数の頂点はちょうど$u,v$の$2$個である。
   strategy: Pair edges along the walk and treat the endpoints separately.
   sketch:
-    - "derive: Each interior passage through a vertex uses two of its edges."
-    - "derive: Vertices other than u and v therefore have even degree."
-    - "case_split: If u = v, the endpoint edges pair up and no vertex has odd degree."
-    - "case_split: If u ≠ v, exactly u and v have odd degree."
-    - "conclude: The number of odd-degree vertices is 0 or 2."
+  - 'derive: Each interior passage through a vertex uses two of its edges.'
+  - 'derive: Vertices other than u and v therefore have even degree.'
+  - 'case_split: If u = v, the endpoint edges pair up and no vertex has odd degree.'
+  - 'case_split: If u ≠ v, exactly u and v have odd degree.'
+  - 'conclude: The number of odd-degree vertices is 0 or 2.'
   openmath: (forall (G p u v) (-> (and (finite_simple_graph G) (graph_eulerian_walk p G u v)) (or (= (size (suchthat (graph_vertices G) (lambda (x) (exists (k) (and (in k N) (= (graph_degree G x) (+ (* 2 k) 1))))))) 0) (= (size (suchthat (graph_vertices G) (lambda (x) (exists (k) (and (in k N) (= (graph_degree G x) (+ (* 2 k) 1))))))) 2))))
   hard_negative:
     statement: 次数が奇数の頂点が2個である有限単純グラフには、必ずオイラー路がある。
@@ -1326,23 +1350,25 @@
   kind: textbook
   level: 3
   topic: ラムゼー理論・6頂点の三角形
-  statement: 頂点が6個以上の有限単純グラフには、互いに隣接する三頂点か、互いに隣接しない三頂点が存在する。
+  statement: 頂点が$6$個以上の有限単純グラフには、互いに隣接する三頂点か、互いに隣接しない三頂点が存在する。
   statement_en: A finite simple graph with at least six vertices contains three mutually adjacent vertices or three mutually non-adjacent vertices.
   assumptions:
-    - Gは有限単純グラフ
-    - Gの頂点は6個以上
+  - $G$は有限単純グラフ
+  - $G$の頂点は$6$個以上
   quantifiers:
-    - 任意の有限単純グラフG
+  - 任意の有限単純グラフ$G$
   conclusion: 互いに隣接する相異なる三頂点、または互いに隣接しない相異なる三頂点が存在する。
   answer: |
-    頂点vを一つ固定する。残りの5個以上の頂点は、vと隣接するものとしないものに分かれるので、どちらかが3個以上ある。vと隣接する3頂点a,b,cがある場合、その中に隣接する二頂点があればvとともに三角形をなし、なければa,b,cが互いに隣接しない三頂点である。vと隣接しない3頂点がある場合も、隣接と非隣接を入れ替えて同様である。
+    $G$を頂点が$6$個以上の有限単純グラフとする。頂点$v$を一つ固定する。残りの$5$個以上の頂点は$v$と隣接するものとしないものに分かれるので、どちらかが$3$個以上ある。
+    $v$と隣接する相異なる$3$頂点$a,b,c$がある場合を考える。$a,b,c$の中に隣接する二頂点があれば、それらと$v$は互いに隣接する三頂点である。なければ$a,b,c$が互いに隣接しない三頂点である。
+    $v$と隣接しない相異なる$3$頂点$a,b,c$がある場合を考える。$a,b,c$の中に隣接しない二頂点があれば、それらと$v$は互いに隣接しない三頂点である。なければ$a,b,c$が互いに隣接する三頂点である。
   strategy: Apply the pigeonhole principle to the neighbours of a fixed vertex and split on adjacency among three of them.
   sketch:
-    - "setup: Fix a vertex v; at least five other vertices remain."
-    - "apply_theorem: The pigeonhole principle gives three neighbours or three non-neighbours of v."
-    - "case_split: For three neighbours, any edge among them forms a triangle with v."
-    - "derive: Otherwise those three are mutually non-adjacent."
-    - "conclude: The case of three non-neighbours is symmetric."
+  - 'setup: Fix a vertex v; at least five other vertices remain.'
+  - 'apply_theorem: The pigeonhole principle gives three neighbours or three non-neighbours of v.'
+  - 'case_split: For three neighbours, any edge among them forms a triangle with v.'
+  - 'derive: Otherwise those three are mutually non-adjacent.'
+  - 'conclude: The case of three non-neighbours is symmetric.'
   openmath: (forall (G) (-> (and (finite_simple_graph G) (>= (size (graph_vertices G)) 6)) (exists (a b c) (and (in a (graph_vertices G)) (in b (graph_vertices G)) (in c (graph_vertices G)) (!= a b) (!= a c) (!= b c) (or (and (graph_adjacent G a b) (graph_adjacent G a c) (graph_adjacent G b c)) (and (not (graph_adjacent G a b)) (not (graph_adjacent G a c)) (not (graph_adjacent G b c))))))))
   hard_negative:
     statement: 頂点が5個の単純グラフにも、互いに隣接する三頂点か互いに隣接しない三頂点が必ず存在する。
@@ -1380,26 +1406,35 @@
   kind: named
   level: 4
   topic: 極値グラフ理論・トゥランの定理
-  statement: rを正の整数、nを頂点数とする。K_{r+1}を含まない有限単純グラフの辺数は(n^2-s^2)(r-1)/(2r)+C(s,2)以下である。ここでsはnをrで割った余りである。
+  statement: $r$を正の整数、$n$を頂点数とする。$K_{r+1}$を含まない有限単純グラフの辺数は$\dfrac{(n^2-s^2)(r-1)}{2r}+\binom{s}{2}$以下である。ここで$s$は$n$を$r$で割った余りである。
   statement_en: Let r be a positive integer, n the number of vertices and s the remainder of n modulo r. A finite simple graph with no clique on r+1 vertices has at most (n^2 - s^2)(r-1)/(2r) + C(s, 2) edges.
   assumptions:
-    - Gは有限単純グラフ
-    - rは正の整数
-    - Gはr+1頂点のクリークを含まない
-    - sはnをrで割った余り
+  - $G$は有限単純グラフ
+  - $r$は正の整数
+  - $G$は$r+1$頂点のクリークを含まない
+  - $s$は$n$を$r$で割った余り
   quantifiers:
-    - 任意の有限単純グラフGと正の整数r
-  conclusion: |
-    |E(G)|≤(n^2-s^2)(r-1)/(2r)+C(s,2)が成り立つ。
+  - 任意の有限単純グラフ$G$と正の整数$r$
+  conclusion: $|E(G)|\leq\dfrac{(n^2-s^2)(r-1)}{2r}+\binom{s}{2}$が成り立つ。
   answer: |
-    証明の概略を述べる。第一に、K_{r+1}を含まない辺数最大のグラフでは、非隣接の関係が同値関係になることを示す。第二に、同値類の間の頂点を移す操作で辺数が増えないことから、同値類の大きさの差は高々1で、個数はr以下だと分かる。第三に、このグラフはn頂点のトゥラングラフと同型である。最後にその辺数を数えると、右辺の値に等しい。
+    $r$を正の整数、$G$を$K_{r+1}$を含まない有限単純グラフ、$n$をその頂点数とする。$n=qr+s$ ($q$は自然数、$0\leq s<r$) と書くと、$n^2-s^2=qr(qr+2s)$より
+    $t(n):=\dfrac{(n^2-s^2)(r-1)}{2r}+\binom{s}{2}=q^2\binom{r}{2}+qs(r-1)+\binom{s}{2}$
+    である。特に右辺の分数は整数である。$n\geq r$のとき、$n-r$は$q-1$と同じ$s$で表されるので、直接計算により
+    $t(n)-t(n-r)=(2q-1)\binom{r}{2}+s(r-1)=\binom{r}{2}+(n-r)(r-1)$
+    が成り立つ。$r$を固定し、$K_{r+1}$を含まない$n$頂点のグラフの辺数が$t(n)$以下であることを$n$についての強帰納法で示す。
+    $n<r$のとき、$q=0$、$s=n$なので$t(n)=\binom{n}{2}$であり、これは$n$頂点の単純グラフの辺数の上限である。
+    $n\geq r$とする。同じ頂点集合上で$G$を含み$K_{r+1}$を含まないグラフのうち、辺数が最大のものを$H$とする。$|E(G)|\leq|E(H)|$なので、$H$について示せばよい。
+    まず$H$が$K_r$を含むことを示す。含まないとする。$H$が完全グラフなら$n\geq r$より$K_r$を含むので、隣接しない二頂点$u,v$がある。辺数の最大性より、$H$に辺$uv$を加えたグラフは$K_{r+1}$を含み、その$K_{r+1}$は辺$uv$を使う。そこから$u$を除くと$H$に含まれる$K_r$が得られ、矛盾する。
+    $H$の中の$K_r$の頂点集合を$A$とする。$A$の外の各頂点が$A$の$r$個の頂点すべてと隣接すると$K_{r+1}$ができるので、各頂点の$A$への隣接は$r-1$個以下である。$H$の辺を、$A$の内部の辺、$A$とその外を結ぶ辺、$A$の外の辺に分けると、それぞれ$\binom{r}{2}$個、$(n-r)(r-1)$個以下、$H-A$の辺数である。$H-A$は$n-r$頂点で$K_{r+1}$を含まないので、帰納法の仮定より辺数は$t(n-r)$以下である。合計すると
+    $|E(H)|\leq\binom{r}{2}+(n-r)(r-1)+t(n-r)=t(n)$
+    となる。
   strategy: Show that an edge-maximal clique-free graph is complete multipartite and balanced, then count its edges.
   sketch:
-    - "setup: Take a graph with no (r+1)-clique and the maximum number of edges."
-    - "derive: Non-adjacency in such a graph is an equivalence relation."
-    - "derive: Moving a vertex between classes shows that class sizes differ by at most 1."
-    - "derive: Hence the graph is isomorphic to the Turán graph T(n, r)."
-    - "conclude: Counting the edges of T(n, r) gives the stated bound."
+  - 'setup: Take a graph with no (r+1)-clique and the maximum number of edges.'
+  - 'derive: Non-adjacency in such a graph is an equivalence relation.'
+  - 'derive: Moving a vertex between classes shows that class sizes differ by at most 1.'
+  - 'derive: Hence the graph is isomorphic to the Turán graph T(n, r).'
+  - 'conclude: Counting the edges of T(n, r) gives the stated bound.'
   openmath: (forall (G r) (-> (and (finite_simple_graph G) (in r N) (> r 0) (graph_clique_free G (+ r 1))) (<= (size (graph_edges G)) (+ (/ (* (- (^ (size (graph_vertices G)) 2) (^ (nat_mod (size (graph_vertices G)) r) 2)) (- r 1)) (* 2 r)) (binom (nat_mod (size (graph_vertices G)) r) 2)))))
   hard_negative:
     statement: K_{r+1}を含まない有限単純グラフの辺数は(n^2-s^2)(r-1)/(2r)+C(s,2)に常に等しい。
@@ -1414,24 +1449,31 @@
   kind: named
   level: 3
   topic: 組合せ論・ホールの結婚定理
-  statement: 有限集合の族(t_i)_{i∈I}が相異なる代表系をもつことと、Iの任意の有限部分集合Sについて|S|≤|∪_{i∈S}t_i|となることは同値である。
+  statement: 有限集合の族$(t_i)_{i\in I}$が相異なる代表系をもつことと、$I$の任意の有限部分集合$S$について$|S|\leq\left|\bigcup_{i\in S}t_i\right|$となることは同値である。
   statement_en: A family (t_i)_{i∈I} of finite sets has a system of distinct representatives if and only if |S| ≤ |⋃_{i∈S} t_i| for every finite subset S of I.
   assumptions:
-    - 各t_iは有限集合
-    - 添字集合Iは無限でもよい
+  - 各$t_i$は有限集合
+  - 添字集合$I$は無限でもよい
   quantifiers:
-    - 任意の添字集合Iと有限集合の族(t_i)
-  conclusion: f(i)∈t_iをみたす単射fが存在することと、ホールの条件は同値である。
+  - 任意の添字集合$I$と有限集合の族$(t_i)_{i\in I}$
+  conclusion: $f(i)\in t_i$をみたす単射$f$が存在することと、ホールの条件は同値である。
   answer: |
-    証明の概略を述べる。相異なる代表系があれば、Sの代表元は∪_{i∈S}t_iの中の相異なる|S|個の元なので条件が成り立つ。逆はまずIが有限の場合に|I|の帰納法で示す。すべての真部分集合で余裕があるなら一元を代表に選んで取り除き、余裕のない真部分集合Sがあるなら、Sとその補集合に分けて帰納法の仮定を使う。Iが無限の場合は、有限部分集合上の代表系の逆極限が空でないことから得る。
+    $I$を添字集合 (無限でもよい)、$(t_i)_{i\in I}$を集合$X$の有限部分集合の族とする。相異なる代表系とは、すべての$i\in I$で$f(i)\in t_i$となる単射$f:I\to X$のことである。ホールの条件とは、$I$の任意の有限部分集合$S$について$|S|\leq\left|\bigcup_{i\in S}t_i\right|$となることである。
+    相異なる代表系$f$があれば、$f(S)$は$\bigcup_{i\in S}t_i$の中の相異なる$|S|$個の元なので、ホールの条件が成り立つ。
+    逆にホールの条件を仮定する。まず$I$が有限の場合を$|I|$についての帰納法で示す。$|I|=0$なら空写像でよい。$|I|\geq 1$とし、次の二つの場合に分ける。
+    第一の場合として、$I$の空でない真部分集合$S$がすべて$\left|\bigcup_{i\in S}t_i\right|\geq|S|+1$をみたすとする。$i_0\in I$をとる。$\{i_0\}$での条件より$t_{i_0}$は空でないので、$x\in t_{i_0}$をとる。$I\setminus\{i_0\}$上の族$t_i\setminus\{x\}$は、空でない$S$について$\left|\bigcup_{i\in S}(t_i\setminus\{x\})\right|\geq|S|+1-1=|S|$をみたす。帰納法の仮定より代表系が得られ、$f(i_0)=x$を加えれば$I$の代表系になる。
+    第二の場合として、$I$の空でない真部分集合$S$で$T=\bigcup_{i\in S}t_i$が$|T|=|S|$をみたすものがあるとする。$S$上の族はホールの条件をみたすので、帰納法の仮定より値が$T$に入る代表系がある。$I\setminus S$上の族$t_i\setminus T$を考える。有限集合$U\subseteq I\setminus S$について
+    $\left|\bigcup_{i\in U}(t_i\setminus T)\right|=\left|\bigcup_{i\in U\cup S}t_i\right|-|T|\geq|U|+|S|-|S|=|U|$
+    なので、この族もホールの条件をみたす。帰納法の仮定より値が$T$に入らない代表系があり、二つを合わせると$I$の代表系になる。
+    次に$I$が無限の場合を示す。条件より各$t_i$は空でない。$t_i$に離散位相を入れると、$t_i$は有限なのでコンパクトである。チコノフの定理 (コンパクト空間の任意の族の直積はコンパクトである) より、直積$Y=\prod_{i\in I}t_i$はコンパクトである。$I$の有限部分集合$S$について、$S$上で単射である$f\in Y$全体を$C_S$とする。$C_S$は$S$の成分だけで決まるので閉集合である。有限の場合の結果を$S$上の族に用い、$S$の外の成分を任意に選ぶと、$C_S$は空でないと分かる。$C_{S_1}\cap\dots\cap C_{S_k}\supseteq C_{S_1\cup\dots\cup S_k}$なので、族$(C_S)$は有限交叉性をもつ。コンパクト性より、すべての$C_S$に属する$f$が存在する。この$f$は任意の二元$\{i,j\}$上で単射なので単射であり、相異なる代表系である。
   strategy: Necessity is direct; sufficiency uses induction on finite index sets, then an inverse limit for infinite ones.
   sketch:
-    - "derive: Distinct representatives of S lie in the union, which gives Hall's condition."
-    - "induction: For finite I, induct on |I|."
-    - "case_split: If every proper subset has surplus, choose one representative and delete it."
-    - "case_split: If a proper subset S is tight, split into S and its complement."
-    - "derive: For infinite I, use compactness of the inverse system of finite matchings."
-    - "conclude: Both directions of the equivalence hold."
+  - 'derive: Distinct representatives of S lie in the union, which gives Hall''s condition.'
+  - 'induction: For finite I, induct on |I|.'
+  - 'case_split: If every proper subset has surplus, choose one representative and delete it.'
+  - 'case_split: If a proper subset S is tight, split into S and its complement.'
+  - 'derive: For infinite I, use compactness of the inverse system of finite matchings.'
+  - 'conclude: Both directions of the equivalence hold.'
   openmath: (forall (I t) (-> (forall (i) (-> (in i I) (in (size (family_value t i)) N))) (<-> (forall (S) (-> (and (subset S I) (in (size S) N)) (<= (size S) (size (indexed_union_over S t))))) (exists (f) (and (injective_on f I) (forall (i) (-> (in i I) (in (fn_value f i) (family_value t i)))))))))
   hard_negative:
     statement: 無限集合も許す族でもホールの条件から相異なる代表系が得られる。
@@ -1446,26 +1488,28 @@
   kind: named
   level: 3
   topic: 集合族・シュペルナーの定理
-  statement: n元集合の部分集合族Fが包含関係について反鎖ならば、|F|≤C(n,⌊n/2⌋)である。
+  statement: $n$元集合の部分集合族$\mathcal{F}$が包含関係について反鎖ならば、$|\mathcal{F}|\leq\binom{n}{\lfloor n/2\rfloor}$である。
   statement_en: If a family F of subsets of an n-element set is an antichain under inclusion, then |F| ≤ C(n, ⌊n/2⌋).
   assumptions:
-    - Xはn元集合
-    - FはXの部分集合族
-    - Fは包含関係について反鎖
+  - $X$は$n$元集合
+  - $\mathcal{F}$は$X$の部分集合族
+  - $\mathcal{F}$は包含関係について反鎖
   quantifiers:
-    - 任意の有限集合Xと部分集合族F
-  conclusion: |
-    |F|≤C(n,⌊n/2⌋)が成り立つ。
+  - 任意の有限集合$X$と部分集合族$\mathcal{F}$
+  conclusion: $|\mathcal{F}|\leq\binom{n}{\lfloor n/2\rfloor}$が成り立つ。
   answer: |
-    証明の概略を述べる。Xの元の並べ方n!通りを考え、k元集合A∈Fが先頭k個に現れる並べ方はk!(n-k)!通りである。Fは反鎖なので、一つの並べ方の先頭部分にFの元は高々一つしか現れない。したがってΣ_{A∈F}1/C(n,|A|)≤1である。C(n,k)≤C(n,⌊n/2⌋)を用いると|F|≤C(n,⌊n/2⌋)を得る。
+    $X$を$n$元集合、$\mathcal{F}$を$X$の部分集合族で、相異なる二つの元の間に包含関係がないものとする。
+    $X$の元の並べ方$n!$通りを考える。$A\in\mathcal{F}$の元が先頭$|A|$個を占める並べ方は$|A|!\,(n-|A|)!$通りある。一つの並べ方の先頭部分全体は包含関係について一列に並ぶので、先頭部分として現れる$\mathcal{F}$の元は、$\mathcal{F}$が反鎖であることから高々一つである。したがって$\sum_{A\in\mathcal{F}}|A|!\,(n-|A|)!\leq n!$であり、両辺を$n!$で割ると$\sum_{A\in\mathcal{F}}\dfrac{1}{\binom{n}{|A|}}\leq 1$を得る。
+    次に$m=\lfloor n/2\rfloor$として、$0\leq k\leq n$で$\binom{n}{k}\leq\binom{n}{m}$を示す。$0\leq k<n$では$\binom{n}{k+1}=\binom{n}{k}\dfrac{n-k}{k+1}$である。$k<m$なら$2k+1\leq n$なので$\binom{n}{k}\leq\binom{n}{k+1}$であり、$k\geq m$なら$2k+1\geq n$なので$\binom{n}{k+1}\leq\binom{n}{k}$である。よって$\binom{n}{k}$は$k=m$で最大である。
+    以上より$\dfrac{|\mathcal{F}|}{\binom{n}{m}}\leq\sum_{A\in\mathcal{F}}\dfrac{1}{\binom{n}{|A|}}\leq 1$であり、$|\mathcal{F}|\leq\binom{n}{\lfloor n/2\rfloor}$を得る。
   strategy: Count orderings whose initial segment lies in F to get the LYM inequality, then bound by the middle binomial coefficient.
   sketch:
-    - "setup: Consider all n! orderings of X."
-    - "derive: A set A of size k is an initial segment of k!(n-k)! orderings."
-    - "derive: The antichain condition allows at most one member of F per ordering."
-    - "derive: Therefore Σ_{A∈F} 1/C(n, |A|) ≤ 1."
-    - "apply_theorem: Each C(n, |A|) is at most C(n, ⌊n/2⌋)."
-    - "conclude: Hence |F| ≤ C(n, ⌊n/2⌋)."
+  - 'setup: Consider all n! orderings of X.'
+  - 'derive: A set A of size k is an initial segment of k!(n-k)! orderings.'
+  - 'derive: The antichain condition allows at most one member of F per ordering.'
+  - 'derive: Therefore Σ_{A∈F} 1/C(n, |A|) ≤ 1.'
+  - 'apply_theorem: Each C(n, |A|) is at most C(n, ⌊n/2⌋).'
+  - 'conclude: Hence |F| ≤ C(n, ⌊n/2⌋).'
   openmath: (forall (X F) (-> (and (in (size X) N) (subset_antichain F X)) (<= (size F) (binom (size X) (nat_div (size X) 2)))))
   hard_negative:
     statement: n元集合の部分集合族Fが包含関係について鎖ならば、|F|≤C(n,⌊n/2⌋)である。
@@ -1480,27 +1524,27 @@
   kind: gap
   level: 2
   topic: 半順序集合・鎖と反鎖
-  statement: 半順序集合の鎖と反鎖の共通部分は高々1元である。
+  statement: 半順序集合の鎖と反鎖の共通部分は高々$1$元である。
   statement_en: In a partially ordered set, a chain and an antichain have at most one common element.
   assumptions:
-    - Pは半順序集合
-    - CはPの鎖
-    - AはPの反鎖
+  - $P$は半順序集合
+  - $C$は$P$の鎖
+  - $A$は$P$の反鎖
   quantifiers:
-    - 任意の半順序集合Pとその鎖C、反鎖A
-  conclusion: C∩Aは高々1元である。
+  - 任意の半順序集合$P$とその鎖$C$、反鎖$A$
+  conclusion: $C\cap A$は高々$1$元である。
   answer: |
-    x,y∈C∩Aでx≠yとする。x,yはCの元なのでx≤yまたはy≤xである。一方、x,yはAの相異なる元なので比較不能である。これは矛盾なので、C∩Aは高々1元である。
+    $P$を半順序集合、$C$を鎖 (相異なる二元が常に比較可能な部分集合)、$A$を反鎖 (相異なる二元が常に比較不能な部分集合) とする。$x,y\in C\cap A$で$x\neq y$とする。$x,y$は$C$の相異なる元なので$x\leq y$または$y\leq x$である。一方、$x,y$は$A$の相異なる元なので比較不能である。これは矛盾なので、$C\cap A$は高々$1$元である。
   strategy: Two distinct common elements would be both comparable and incomparable.
   sketch:
-    - "contradiction: Suppose x ≠ y both lie in C ∩ A."
-    - "derive: Since C is a chain, x and y are comparable."
-    - "derive: Since A is an antichain, x and y are incomparable."
-    - "conclude: This contradiction shows that C ∩ A has at most one element."
+  - 'contradiction: Suppose x ≠ y both lie in C ∩ A.'
+  - 'derive: Since C is a chain, x and y are comparable.'
+  - 'derive: Since A is an antichain, x and y are incomparable.'
+  - 'conclude: This contradiction shows that C ∩ A has at most one element.'
   openmath: (forall (P C A) (-> (and (poset P) (order_chain_in C P) (order_antichain_in A P)) (forall (x y) (-> (and (in x (inter C A)) (in y (inter C A))) (= x y)))))
   hard_negative:
     statement: 半順序集合の鎖と反鎖の共通部分はちょうど1元である。
-    reason: "{1,2}の離散順序で鎖{1}と反鎖{2}をとると共通部分は空である。高々1元であり、存在までは言えない。"
+    reason: '{1,2}の離散順序で鎖{1}と反鎖{2}をとると共通部分は空である。高々1元であり、存在までは言えない。'
   target: |
     ∀ (α : Type*) [PartialOrder α] (C A : Set α), IsChain (· ≤ ·) C → IsAntichain (· ≤ ·) A → (C ∩ A).Subsingleton
   proof: |
@@ -1514,25 +1558,24 @@
   kind: gap
   level: 2
   topic: 半順序集合・鎖被覆と反鎖
-  statement: 半順序集合の有限反鎖Aが有限個の鎖C_i (i∈I)で覆われるならば、|A|≤|I|である。
+  statement: 半順序集合の有限反鎖$A$が有限個の鎖$C_i$ ($i\in I$) で覆われるならば、$|A|\leq|I|$である。
   statement_en: If a finite antichain A of a partially ordered set is covered by chains C_i indexed by a finite set I, then |A| ≤ |I|.
   assumptions:
-    - Pは半順序集合
-    - Aは有限反鎖
-    - Iは有限集合で各C_iは鎖
-    - Aの各元はあるC_iに属する
+  - $P$は半順序集合
+  - $A$は有限反鎖
+  - $I$は有限集合で各$C_i$は鎖
+  - $A$の各元はある$C_i$に属する
   quantifiers:
-    - 任意の半順序集合P、有限反鎖A、有限個の鎖の族(C_i)
-  conclusion: |
-    |A|≤|I|が成り立つ。
+  - 任意の半順序集合$P$、有限反鎖$A$、有限個の鎖の族$(C_i)_{i\in I}$
+  conclusion: $|A|\leq|I|$が成り立つ。
   answer: |
-    各x∈Aに、xを含む鎖の添字g(x)を一つ選ぶ。g(x)=g(y)ならばx,yは同じ鎖に属するので比較可能である。Aは反鎖なのでx=yとなり、gは単射である。したがって|A|≤|I|である。
+    $P$を半順序集合、$A$を有限反鎖、$I$を有限集合、$(C_i)_{i\in I}$を鎖の族とし、$A$の各元がある$C_i$に属するとする。各$x\in A$に、$x$を含む鎖の添字$g(x)\in I$を一つ選ぶ。$g(x)=g(y)$かつ$x\neq y$とすると、$x,y$は同じ鎖に属する相異なる元なので比較可能であり、$A$が反鎖であることに反する。よって$g:A\to I$は単射であり、$|A|\leq|I|$である。
   strategy: Assign each antichain element a chain containing it and show that the assignment is injective.
   sketch:
-    - "construct: Choose for each x in A an index g(x) with x in C_{g(x)}."
-    - "derive: Two elements with the same index lie in one chain and are comparable."
-    - "derive: The antichain condition forces them to be equal, so g is injective."
-    - "conclude: Injectivity gives |A| ≤ |I|."
+  - 'construct: Choose for each x in A an index g(x) with x in C_{g(x)}.'
+  - 'derive: Two elements with the same index lie in one chain and are comparable.'
+  - 'derive: The antichain condition forces them to be equal, so g is injective.'
+  - 'conclude: Injectivity gives |A| ≤ |I|.'
   openmath: (forall (P I c A) (-> (and (poset P) (in (size I) N) (in (size A) N) (order_antichain_in A P) (forall (i) (-> (in i I) (order_chain_in (family_value c i) P))) (forall (x) (-> (in x A) (exists (i) (and (in i I) (in x (family_value c i))))))) (<= (size A) (size I))))
   hard_negative:
     statement: 半順序集合の有限鎖Cが有限個の反鎖で覆われるとき、反鎖の個数は|C|以下である。
