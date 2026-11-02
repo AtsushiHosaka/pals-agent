@@ -13,13 +13,18 @@ from typing import Any
 from uuid import uuid4
 
 from pals_agent.math_conventions import known_readings, parse_claim
-from pals_agent.model_roles import RECIPE_SEMANTIC_MODEL, RECIPE_SEMANTIC_REASONING_EFFORT
+from pals_agent.model_roles import (
+    RECIPE_SEMANTIC_MODEL,
+    RECIPE_SEMANTIC_REASONING_EFFORT,
+    RECIPE_SEMANTIC_REVIEW_MODEL,
+)
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.proof_reuse_usage import model_role
 from pals_agent.recipe_retrieval import query_embedding
 from pals_agent.recipe_semantic_contract import (
     MAX_OUTPUT_TOKENS,
     SCHEMA,
+    applied_conventions,
     consensus,
     fresh_plain_request,
     parse,
@@ -31,6 +36,7 @@ from pals_agent.usage import capture_usage
 
 RecipeBatch = Callable[[list[float] | None], dict[str, Any]]
 _ROLES = {"assessment": "recipe_semantic_assessment", "review": "token_answer_qa"}
+_MODELS = {"assessment": RECIPE_SEMANTIC_MODEL, "review": RECIPE_SEMANTIC_REVIEW_MODEL}
 
 
 class SemanticReuseError(RuntimeError):
@@ -93,7 +99,7 @@ def attempt(
         provider_ids: list[str] = []
         with model_role(_ROLES[position]), capture_usage() as records:
             raw = fixed_client.generate(
-                model=RECIPE_SEMANTIC_MODEL,
+                model=_MODELS[position],
                 prompt=inputs[position],
                 response_schema=SCHEMA,
                 timeout_seconds=remaining,
@@ -107,7 +113,7 @@ def attempt(
         record = records[0]
         if (
             not uuid(record.get("call_id"))
-            or record.get("model") != RECIPE_SEMANTIC_MODEL
+            or record.get("model") != _MODELS[position]
             or record.get("provider") != "openai"
             or record.get("provider_request_id") != provider_ids[0]
             or re.fullmatch(r"resp_[A-Za-z0-9_-]+", provider_ids[0]) is None
@@ -184,7 +190,7 @@ def attempt(
             "recipe_semantic_correspondence": receipt,
             "applied_conventions": [
                 {"id": key, "choice": known[key]}
-                for key in sorted(assessment["result"]["relevant_conventions"])
+                for key in applied_conventions(assessment["result"], review["result"])
             ],
             "token_qa": {
                 "approved": True,

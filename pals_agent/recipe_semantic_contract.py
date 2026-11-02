@@ -399,6 +399,23 @@ _LIBRARY_LEMMA_POLICY = (
     "the exact stored Lean source; no new compile is claimed for this request.\n\n"
 )
 
+_SCOPE_GATE = (
+    "SCOPE GATE. Read the ORIGINAL request by itself before comparing it with any candidate. A "
+    "scope-determining\nterm the request leaves open stays open: how many objects or terms, which "
+    "dimension, whether an index set is\nfinite or infinite, which ambient type or domain. A value "
+    "fixed by a candidate must not fill it in. A plural or\na collective phrase without a stated "
+    'count ("the numbers", "all of them", "sum everything") does not mean a\nparticular small '
+    'count, and "two lists" states how many lists, not how long they are. Reuse only when the\n'
+    "candidate covers every reading a learner could reasonably mean. Proving one such reading is "
+    "specialization even\nwhen that reading is the one the candidate makes easiest. If a candidate "
+    "covers only some readings, record the\nopen term in unresolved and use needs_input, or miss "
+    "if another shown candidate would be needed. This gate does\nnot apply when the request states "
+    "the scope, when standard notation or a standard theorem name fixes it, or when\nthe only "
+    "difference is a representation change or bound-variable naming allowed above.\n\n"
+)
+
+_REUSE_GATE_ANCHOR = "Set reuse ONLY if one unique candidate is certainly suitable"
+
 _COMPLETE_CATALOG_POLICY = (
     "The batch is COMPLETE for the current bounded catalog. Inspect every candida"
     "te; ranking/position, familiar\nnames, topical similarity and repeated keywor"
@@ -412,8 +429,11 @@ _ANSWER_GATE_ANCHOR = (
 
 need(BASE.count(_COMPLETE_CATALOG_POLICY) == 1, "complete_catalog_policy_anchor_changed")
 need(BASE.count(_ANSWER_GATE_ANCHOR) == 1, "answer_gate_policy_anchor_changed")
-BASE = BASE.replace(_COMPLETE_CATALOG_POLICY, SUBSET_POLICY).replace(
-    _ANSWER_GATE_ANCHOR, _LIBRARY_LEMMA_POLICY + _ANSWER_GATE_ANCHOR
+need(BASE.count(_REUSE_GATE_ANCHOR) == 1, "reuse_gate_policy_anchor_changed")
+BASE = (
+    BASE.replace(_COMPLETE_CATALOG_POLICY, SUBSET_POLICY)
+    .replace(_ANSWER_GATE_ANCHOR, _LIBRARY_LEMMA_POLICY + _ANSWER_GATE_ANCHOR)
+    .replace(_REUSE_GATE_ANCHOR, _SCOPE_GATE + _REUSE_GATE_ANCHOR)
 )
 
 ROLE = {
@@ -716,21 +736,21 @@ def parse(
             == (value["recipe_id"], value["recipe_revision"])
         ]
         need(len(selected) == 1, "response_selected_unknown")
+        # The recipe id and revision select the entry. Models miscopy a long digest, so only a
+        # digest naming another shown entry conflicts; the receipt keeps the computed one.
+        target = hashlib.sha256(selected[0]["target_source"].encode()).hexdigest()
         need(
-            value["source_target_sha256"]
-            == hashlib.sha256(selected[0]["target_source"].encode()).hexdigest(),
+            value["source_target_sha256"] == target
+            or value["source_target_sha256"]
+            not in {hashlib.sha256(r["target_source"].encode()).hexdigest() for r in batch["recipes"]},
             "response_selected_target_changed",
         )
+        value["source_target_sha256"] = target
         kinds = [task["kind"] for task in value["tasks"]]
         need(len(set(kinds)) == len(kinds), "response_duplicate_task_kind")
     else:
-        need(
-            value["recipe_id"] is None
-            and value["recipe_revision"] is None
-            and value["answer_qa"] is False
-            and value["source_target_sha256"] is None,
-            "response_nonreuse_selection_invalid",
-        )
+        # A rejection selects nothing, whatever its stray fields say; the request stays routable.
+        value.update(recipe_id=None, recipe_revision=None, source_target_sha256=None, answer_qa=False)
     return cast(dict[str, Any], value)
 
 
@@ -748,8 +768,6 @@ def consensus(
 
     if tasks(left) != tasks(right):
         return None
-    if set(left["relevant_conventions"]) != set(right["relevant_conventions"]):
-        return None
     # Different valid paraphrase scope wording is diagnostic; it is not a fabricated
     # canonical AST. Both independent full-scope/answer approvals remain required.
     selected = [
@@ -759,6 +777,11 @@ def consensus(
     ]
     need(len(selected) == 1, "consensus_selected_unknown")
     return cast(dict[str, Any], selected[0])
+
+
+def applied_conventions(left: dict[str, Any], right: dict[str, Any]) -> list[str]:
+    """Every reading either approving judge called relevant; none is dropped by disagreement."""
+    return sorted({*left["relevant_conventions"], *right["relevant_conventions"]})
 
 
 def fresh_plain_request(request: dict[str, Any]) -> bool:

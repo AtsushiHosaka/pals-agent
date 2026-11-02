@@ -189,9 +189,9 @@ def test_real_two_call_path_matches_stored_source_and_complete_usage_without_int
     assert result.outcome == "answered"
     assert result.answer["text"] == batch["recipes"][0]["answer"]
     assert len(provider.calls) == len(records) == 2
+    assert sorted(call["model"] for call in provider.calls) == ["gpt-6-luna", "gpt-6.1-terra"]
     assert all(
-        call["model"] == "gpt-6-luna"
-        and call["reasoning"] == {"effort": "low"}
+        call["reasoning"] == {"effort": "low"}
         and call["service_tier"] == "default"
         and call["store"] is False
         and call["max_output_tokens"] == 1536
@@ -447,6 +447,111 @@ def test_independent_nonacceptance_stays_diagnostic_and_retains_costs():
     assert result.evidence["recipe_semantic_attempt"]["review"]["result"]["action"] == "miss"
 
 
+def _with_review(provider, change):
+    original = provider.request
+
+    def changed(**kwargs):
+        response = original(**kwargs)
+        body = json.loads(response.body)
+        if body.get("id") == "resp_review_b":
+            value = json.loads(body["output"][0]["content"][0]["text"])
+            change(value)
+            body["output"][0]["content"][0]["text"] = json.dumps(value)
+        return HttpResponse(200, json.dumps(body).encode())
+
+    provider.request = changed
+
+
+def _attempt(provider, r, batch):
+    return attempt(
+        OpenAIResponsesClient(api_key="test", transport=provider),
+        r,
+        batch["claim_id"],
+        lambda _vector: batch,
+        deadline=time.monotonic() + 30,
+    )
+
+
+def test_a_reading_only_one_approving_judge_called_relevant_still_applies():
+    r, batch, verdict = inputs()
+    provider = Provider(verdict)
+
+    def change(value):
+        value["relevant_conventions"] = ["natural_zero"]
+
+    _with_review(provider, change)
+    result = _attempt(provider, r, batch)
+    assert result.answer is not None
+    assert [v["id"] for v in result.evidence["applied_conventions"]] == [
+        "natural_zero",
+        "zero_pow_zero",
+    ]
+
+
+def test_opposite_verdicts_on_the_request_never_reach_consensus():
+    r, batch, verdict = inputs()
+    verdict["tasks"] = [{"kind": "decide", "answer_relation": "answers_true"}]
+    provider = Provider(verdict)
+
+    def change(value):
+        value["tasks"] = [{"kind": "decide", "answer_relation": "answers_false"}]
+
+    _with_review(provider, change)
+    result = _attempt(provider, r, batch)
+    assert result.answer is None and set(result.evidence) == {"recipe_semantic_attempt"}
+
+
+def test_a_miscopied_target_digest_is_not_a_failed_request():
+    r, batch, verdict = inputs()
+    target = verdict["source_target_sha256"]
+    provider = Provider(verdict)
+
+    def change(value):
+        value["source_target_sha256"] = target[:40] + target[48:] + target[40:48]
+
+    _with_review(provider, change)
+    result = _attempt(provider, r, batch)
+    assert result.answer is not None
+    receipt = result.evidence["recipe_semantic_correspondence"]
+    assert receipt["review"]["result"]["source_target_sha256"] == target
+
+
+def test_a_digest_of_another_shown_candidate_conflicts_with_the_selection():
+    r, batch, verdict = inputs()
+    other = {
+        **batch["recipes"][0],
+        "recipe_id": "other.recipe",
+        "entry_sha256": "d" * 64,
+        "target_source": "theorem other : True",
+    }
+    batch["recipes"] = [*batch["recipes"], other]
+    batch["catalog_count"] = 2
+    batch["batch_sha256"] = digest(
+        {"schema_version": CONTENT_SCHEMA, **{k: batch[k] for k in CONTENT_FIELDS}}
+    )
+    verdict["source_target_sha256"] = hashlib.sha256(other["target_source"].encode()).hexdigest()
+    with pytest.raises(SemanticReuseError):
+        _attempt(Provider(verdict), r, batch)
+
+
+def test_a_rejection_with_stray_selection_fields_selects_nothing():
+    r, batch, verdict = inputs()
+    provider = Provider(verdict)
+
+    def change(value):
+        value.update(action="miss", answer_qa=True)
+
+    _with_review(provider, change)
+    result = _attempt(provider, r, batch)
+    assert result.answer is None
+    review = result.evidence["recipe_semantic_attempt"]["review"]["result"]
+    assert (review["recipe_id"], review["source_target_sha256"], review["answer_qa"]) == (
+        None,
+        None,
+        False,
+    )
+
+
 def test_shared_actual_provider_id_cannot_be_recast_as_two_independent_reviews():
     r, batch, verdict = inputs()
     provider = Provider(verdict)
@@ -535,7 +640,7 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
 
 
 def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
-    """Explicit compound-task delta from v12; static schema remains v6.
+    """Explicit compound-task and scope-gate delta from v12; static schema remains v6.
 
     New golden bytes identify the changed prompt, not a new provider measurement,
     catalog admission or production latency result.
@@ -545,7 +650,7 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
     from pals_agent import recipe_semantic_contract as contract
 
     assert hashlib.sha256(contract.BASE.encode()).hexdigest() == (
-        "192fb0dcbe66bce67bad32098995ae2136900a79c1dc2dd5fdf777539beb989f"
+        "cd114940fec1aa7ecdcaa26a9c234c5c560d0163781c5cee1fcbf30f5fe34970"
     )
     assert hashlib.sha256(rfc8785.dumps(contract.SCHEMA)).hexdigest() == (
         "800d484003ee988403d102d99d4dc071dfc572c3dfa9e756932accde775ab2df"
@@ -563,6 +668,6 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
         review_session="00000000-0000-4000-8000-000000000002",
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "b12c6ce8f03c0d541f65cd14ebe96d434f187901c9a8cd61a61d4e2da91ba12a",
-        "review": "6d585e81921b8ec8eca147aa47dcfafa62572921a468117ac6317c33ac80c6f6",
+        "assessment": "eec229854519ece1cc9f349c00e1ec5ada78463bc06969a961dfc76c0a944280",
+        "review": "18fe8736be22cd44d9a94df438c76c3a298785a7dcce00ee7b77c2f1fcc001ae",
     }

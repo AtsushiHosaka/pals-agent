@@ -83,4 +83,6 @@ def fixed_model_default(role: ModelRole) -> RoleModelDefault:
 # PFR-019's measured dual review configuration is static, separate from the
 # learner-selected Lean generator and the ordinary explanation/review policy.
 RECIPE_SEMANTIC_MODEL: Final = RELEASE_MODEL
+# A different model for the second judge: two Luna judges agreed on the same false reuse.
+RECIPE_SEMANTIC_REVIEW_MODEL: Final = LEAN_GENERATION_MODEL
 RECIPE_SEMANTIC_REASONING_EFFORT: Final[ReasoningEffort] = "low"
