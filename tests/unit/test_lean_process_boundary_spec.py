@@ -80,7 +80,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         "--cpu=3:3",
         f"--as={16 * _GIB}:{16 * _GIB}",
         f"--fsize={16 * _MIB}:{16 * _MIB}",
-        "--nproc=64:64",
+        "--nproc=4096:4096",
         "--nofile=1024:1024",
         "--core=0:0",
         "--",

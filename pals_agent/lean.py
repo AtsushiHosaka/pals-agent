@@ -50,7 +50,10 @@ _MIB = 1024 * 1024
 _GIB = 1024 * _MIB
 _ADDRESS_SPACE_LIMIT_BYTES = 16 * _GIB
 _FILE_SIZE_LIMIT_BYTES = 16 * _MIB
-_PROCESS_LIMIT = 64
+# RLIMIT_NPROC counts every process of the UID on the host, and all containers there share one UID,
+# so a low value makes Lean fail on the other containers' threads. The per-container bound is the
+# 64-process cgroup limit that the verifier boundary attests; this only stops a runaway elsewhere.
+_PROCESS_LIMIT = 4096
 _OPEN_FILE_LIMIT = 1024
 _OUTPUT_LIMIT_BYTES = _MIB
 _DEFAULT_CHILD_PATH = "/opt/elan/bin:/usr/local/bin:/usr/bin:/bin"
