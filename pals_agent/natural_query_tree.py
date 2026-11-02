@@ -25,6 +25,7 @@ def _object(properties: dict[str, Any]) -> dict[str, Any]:
 
 # Generic retrieval is distinct from typed continuity-v1. Never advertise typed-only
 # function/sequence operators to this grammar merely because they share a registry.
+# The stored-Draft dictionary pals2 stays out too: it would multiply this prompt and schema.
 _GENERIC_PALS = {
     "continuous_on",
     "compact",
@@ -39,7 +40,7 @@ SYMBOLS = tuple(
     sorted(
         f"{cd}:{name}"
         for _, cd, name in _SUPPORTED_SYMBOLS
-        if cd != "pals1" or name in _GENERIC_PALS
+        if cd not in {"pals1", "pals2"} or name in _GENERIC_PALS
     )
 )
 BINDERS = ("quant1:forall", "quant1:exists", "fns1:lambda")

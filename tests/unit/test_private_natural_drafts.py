@@ -9,7 +9,11 @@ import rfc8785
 from pals_agent.draft_catalog import SeedDraftCatalog
 from pals_agent.http_transport import HttpResponse
 from pals_agent.openmath import canonicalize_openmath_xml, canonicalize_retrieval_openmath_xml
-from pals_agent.private_natural_drafts import EMBEDDING_BINDING, NaturalDraftCandidateClient
+from pals_agent.private_natural_drafts import (
+    EMBEDDING_BINDING,
+    STATEMENT_EMBEDDING_BINDING,
+    NaturalDraftCandidateClient,
+)
 from pals_agent.proof_instantiation import instantiate_universal
 from pals_agent.proof_reuse import ProofReuseError, _candidate_payloads
 from tests.unit.test_proof_instantiation import integer
@@ -129,3 +133,73 @@ def test_untrusted_search_hint_does_not_require_formal_theorem_admission():
     assert result.query_openmath == hint
     assert result.contexts[0].candidate.draft.id == "power"
     assert result.as_json()["query_evidence_kind"] == "untrusted_retrieval_hint"
+
+
+def statement_payload():
+    return {**payload(), "embedding_binding": dict(STATEMENT_EMBEDDING_BINDING)}
+
+
+def pals2_row(xml_symbol):
+    xml = canonicalize_retrieval_openmath_xml(
+        '<OMOBJ xmlns="http://www.openmath.org/OpenMath" version="2.0"><OMBIND>'
+        '<OMS cd="quant1" name="forall"/><OMBVAR><OMV name="G"/></OMBVAR><OMA>'
+        '<OMS cdbase="urn:pals:openmath:cd:v1" cd="pals2" name="abelian_group"/>'
+        '<OMV name="G"/></OMA></OMBIND></OMOBJ>'
+    ).replace("abelian_group", xml_symbol)
+    source = {
+        "id": "group_row",
+        "canonical_statement": "Every group is abelian in this sketch fixture.",
+        "openmath_xml": xml,
+        "proof_strategy": "Use the fixture.",
+        "sketch_steps": ["Read it."],
+    }
+    digest = hashlib.sha256(rfc8785.dumps(source)).hexdigest()
+    return dict(source, payload_sha256=digest, distance=0.1)
+
+
+def test_statement_search_uses_its_own_route_and_binding_and_keeps_the_query_text():
+    adapter, transport = client(statement_payload())
+    result = adapter.retrieve_by_statement("Every power is continuous.", [0.5] * 384)
+    call = transport.calls[0]
+    assert call["url"].endswith("/v1/internal/proof-requests/statement-draft-candidates")
+    assert json.loads(call["body"])["embedding_binding"] == STATEMENT_EMBEDDING_BINDING
+    assert result.query_openmath == ""
+    assert result.as_json()["query_statement"] == "Every power is continuous."
+    assert result.outcome == "match" and result.compatibility["rejected_rows"] == 0
+
+
+def test_statement_search_rejects_a_response_with_the_xml_binding():
+    adapter, _transport = client(payload())
+    with pytest.raises(ProofReuseError, match="catalog_invalid"):
+        adapter.retrieve_by_statement("Every power is continuous.", [0.5] * 384)
+
+
+def test_registered_pals2_row_is_served_and_unknown_symbol_only_loses_its_own_row():
+    data = statement_payload()
+    data["candidates"] = [pals2_row("abelian_group"), {**pals2_row("unsealed_symbol"), "id": "x"}]
+    data["candidates"][1]["payload_sha256"] = hashlib.sha256(
+        rfc8785.dumps(
+            {k: data["candidates"][1][k] for k in (
+                "id", "canonical_statement", "openmath_xml", "proof_strategy", "sketch_steps"
+            )}
+        )
+    ).hexdigest()
+    adapter, _transport = client(data)
+    result = adapter.retrieve_by_statement("Groups.", [0.5] * 384)
+    assert [item.candidate.draft.id for item in result.contexts] == ["group_row"]
+    assert result.compatibility["rejected_rows"] == 1
+
+
+def test_xml_search_still_fails_closed_on_an_unknown_symbol():
+    data = payload()
+    data["candidates"] = [pals2_row("unsealed_symbol")]
+    adapter, _transport = client(data)
+    with pytest.raises(ProofReuseError, match="catalog_invalid"):
+        adapter.retrieve(canonicalize_openmath_xml(power_source()), [0.5] * 384)
+
+
+def test_pals2_stays_out_of_the_query_structuring_vocabulary():
+    from pals_agent.natural_query_tree import SYMBOLS, VOCABULARY
+
+    assert not any(symbol.startswith("pals2:") for symbol in SYMBOLS)
+    assert "pals2" not in VOCABULARY

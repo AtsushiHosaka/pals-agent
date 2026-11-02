@@ -287,13 +287,6 @@
    "meaning": "the element x is algebraic over the field F",
    "returns": "prop"
   },
-  "algebraically_closed": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the field K is algebraically closed",
-   "returns": "prop"
-  },
   "alternating_group": {
    "args": [
     "term"
@@ -424,13 +417,6 @@
    "meaning": "f is bijective",
    "returns": "prop"
   },
-  "bijective_map": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the map is bijective",
-   "returns": "prop"
-  },
   "bijective_on": {
    "args": [
     "term",
@@ -475,22 +461,6 @@
     "term"
    ],
    "meaning": "binomial coefficient n choose k",
-   "returns": "term"
-  },
-  "binomial": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "binomial coefficient C(n,k)",
-   "returns": "term"
-  },
-  "binomial_coefficient": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "(binomial_coefficient n k) is n choose k",
    "returns": "term"
   },
   "binomial_prob_seq": {
@@ -796,13 +766,6 @@
    "meaning": "R is a commutative semiring",
    "returns": "prop"
   },
-  "commutative_ring": {
-   "args": [
-    "term"
-   ],
-   "meaning": "R is a commutative ring",
-   "returns": "prop"
-  },
   "commutator_subgroup": {
    "args": [
     "term"
@@ -921,11 +884,6 @@
    "meaning": "the imaginary unit i of the complex numbers",
    "returns": "term"
   },
-  "complex_imaginary_unit": {
-   "args": [],
-   "meaning": "the imaginary unit i",
-   "returns": "term"
-  },
   "complex_polynomial": {
    "args": [
     "term"
@@ -972,13 +930,6 @@
     "term"
    ],
    "meaning": "leg of a cone at an index",
-   "returns": "term"
-  },
-  "conjugate": {
-   "args": [
-    "term"
-   ],
-   "meaning": "complex conjugate",
    "returns": "term"
   },
   "conjugate_subgroup": {
@@ -1137,14 +1088,6 @@
    "meaning": "convex hull of the set S",
    "returns": "term"
   },
-  "convex_on_set": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "(convex_on_set g s): g is convex on the set s",
-   "returns": "prop"
-  },
   "convex_set": {
    "args": [
     "term"
@@ -1188,13 +1131,6 @@
    ],
    "meaning": "number of indices with positive coefficient in the family",
    "returns": "term"
-  },
-  "countable": {
-   "args": [
-    "term"
-   ],
-   "meaning": "A is finite or countably infinite",
-   "returns": "prop"
   },
   "countable_set": {
    "args": [
@@ -1370,15 +1306,6 @@
    ],
    "meaning": "dimension of V over K (arguments K, V)",
    "returns": "term"
-  },
-  "direct_complement": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "N and N' are direct complements in M, in the order N N' M",
-   "returns": "prop"
   },
   "direct_product": {
    "args": [
@@ -1660,14 +1587,6 @@
    "meaning": "positive infinity in the extended nonnegative reals",
    "returns": "term"
   },
-  "extension_degree": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "degree [L:K] of a field extension, in the order L K",
-   "returns": "term"
-  },
   "exterior_generator": {
    "args": [
     "term"
@@ -1800,13 +1719,6 @@
    "meaning": "n-th Fibonacci number with F_0=0 and F_1=1",
    "returns": "term"
   },
-  "field": {
-   "args": [
-    "term"
-   ],
-   "meaning": "K is a field",
-   "returns": "prop"
-  },
   "field_characteristic": {
    "args": [
     "term"
@@ -1938,13 +1850,6 @@
    "meaning": "the module N is finitely generated",
    "returns": "prop"
   },
-  "finset_range": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the index set {0, ..., n-1}",
-   "returns": "term"
-  },
   "first_coord": {
    "args": [
     "term"
@@ -2025,14 +1930,6 @@
     "term"
    ],
    "meaning": "pointwise absolute value of a function",
-   "returns": "term"
-  },
-  "fn_comp": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "composition g after f",
    "returns": "term"
   },
   "fn_continuous": {
@@ -2303,22 +2200,6 @@
    "meaning": "K is a field of fractions of the integral domain A",
    "returns": "prop"
   },
-  "frechet_derivative": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "Frechet derivative of f at x",
-   "returns": "term"
-  },
-  "frechet_differentiable_at": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "f between normed spaces is Frechet differentiable at x",
-   "returns": "prop"
-  },
   "free_module": {
    "args": [
     "term",
@@ -2365,14 +2246,6 @@
    ],
    "meaning": "F is full",
    "returns": "prop"
-  },
-  "function_compose_map": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "composite g after f",
-   "returns": "term"
   },
   "function_set": {
    "args": [
@@ -2689,14 +2562,6 @@
    "meaning": "e is a group isomorphism from G to H, in the order (e, G, H)",
    "returns": "prop"
   },
-  "group_isomorphic": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "groups G and H are isomorphic",
-   "returns": "prop"
-  },
   "group_kernel": {
    "args": [
     "term"
@@ -2796,15 +2661,6 @@
     "term"
    ],
    "meaning": "f restricted to S has derivative L at a; arguments f, L, S, a",
-   "returns": "prop"
-  },
-  "has_frechet_derivative_at": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "f has Frechet derivative L at the point a",
    "returns": "prop"
   },
   "has_law": {
@@ -3095,20 +2951,6 @@
    "meaning": "identity matrix of the size fixed by context",
    "returns": "term"
   },
-  "identity_morphism": {
-   "args": [
-    "term"
-   ],
-   "meaning": "identity morphism of the object X",
-   "returns": "term"
-  },
-  "identity_operator": {
-   "args": [
-    "term"
-   ],
-   "meaning": "identity operator on E",
-   "returns": "term"
-  },
   "identity_rv": {
    "args": [],
    "meaning": "the identity map viewed as a random variable on the real line",
@@ -3259,20 +3101,6 @@
    "meaning": "f is injective",
    "returns": "prop"
   },
-  "injective_function": {
-   "args": [
-    "term"
-   ],
-   "meaning": "f is injective",
-   "returns": "prop"
-  },
-  "injective_map": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the map is injective",
-   "returns": "prop"
-  },
   "injective_module": {
    "args": [
     "term",
@@ -3287,14 +3115,6 @@
     "term"
    ],
    "meaning": "f is injective on the set A",
-   "returns": "prop"
-  },
-  "injective_on_set": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "f is injective on the set S; arguments f, S",
    "returns": "prop"
   },
   "inner_product": {
@@ -3386,14 +3206,6 @@
     "term_function"
    ],
    "meaning": "f is integrable on the whole real line",
-   "returns": "prop"
-  },
-  "integrable_rv": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "(integrable_rv X P): X is integrable under P",
    "returns": "prop"
   },
   "integral_circle": {
@@ -3627,13 +3439,6 @@
    "meaning": "C is a category",
    "returns": "prop"
   },
-  "is_comm_ring": {
-   "args": [
-    "term"
-   ],
-   "meaning": "R is a commutative ring",
-   "returns": "prop"
-  },
   "is_complement": {
    "args": [
     "term",
@@ -3687,26 +3492,11 @@
    "meaning": "a is an ordinal number",
    "returns": "prop"
   },
-  "is_pid": {
-   "args": [
-    "term"
-   ],
-   "meaning": "R is a principal ideal domain",
-   "returns": "prop"
-  },
   "is_ring": {
    "args": [
     "term"
    ],
    "meaning": "R is a ring",
-   "returns": "prop"
-  },
-  "is_submodule": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "N is a submodule of the module M",
    "returns": "prop"
   },
   "iso_morphism": {
@@ -3984,15 +3774,6 @@
    "meaning": "L is a K-linear map from X to Y (arguments K, X, Y, L)",
    "returns": "prop"
   },
-  "linear_operator": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "T is a linear map from E to F",
-   "returns": "prop"
-  },
   "linear_order": {
    "args": [
     "term",
@@ -4258,13 +4039,6 @@
    "meaning": "image of a linear map",
    "returns": "term"
   },
-  "map_kernel": {
-   "args": [
-    "term"
-   ],
-   "meaning": "kernel of a linear map",
-   "returns": "term"
-  },
   "martingale": {
    "args": [
     "term",
@@ -4457,14 +4231,6 @@
    "meaning": "transpose of a matrix",
    "returns": "term"
   },
-  "matrix_vector": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "matrix A applied to the coordinate vector x (arguments A, x)",
-   "returns": "term"
-  },
   "matrix_vector_mul": {
    "args": [
     "term",
@@ -4506,25 +4272,11 @@
    "meaning": "map f between manifolds is differentiable at x",
    "returns": "prop"
   },
-  "measurable_event": {
-   "args": [
-    "term"
-   ],
-   "meaning": "A is a measurable set of the sample space",
-   "returns": "prop"
-  },
   "measurable_fn": {
    "args": [
     "term"
    ],
    "meaning": "f is a measurable function",
-   "returns": "prop"
-  },
-  "measurable_map": {
-   "args": [
-    "term"
-   ],
-   "meaning": "f is a measurable map",
    "returns": "prop"
   },
   "measurable_set": {
@@ -5067,14 +4819,6 @@
    "meaning": "sum of two operators",
    "returns": "term"
   },
-  "operator_comp": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "composition of operators S after T",
-   "returns": "term"
-  },
   "operator_tends_to": {
    "args": [
     "term",
@@ -5136,14 +4880,6 @@
     "term"
    ],
    "meaning": "e is an orthonormal family in E",
-   "returns": "prop"
-  },
-  "orthonormal_set": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "v is an orthonormal subset of the inner product space E (arguments v, E)",
    "returns": "prop"
   },
   "p_group": {
@@ -5309,11 +5045,6 @@
    "meaning": "the circle constant pi",
    "returns": "term"
   },
-  "pi_constant": {
-   "args": [],
-   "meaning": "the circle constant pi",
-   "returns": "term"
-  },
   "point_add": {
    "args": [
     "term",
@@ -5442,21 +5173,6 @@
    "meaning": "the indeterminate X of a polynomial ring",
    "returns": "term"
   },
-  "polynomial_degree": {
-   "args": [
-    "term"
-   ],
-   "meaning": "degree of a polynomial p",
-   "returns": "term"
-  },
-  "polynomial_eval": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "polynomial p evaluated at the element a",
-   "returns": "term"
-  },
   "polynomial_galois_group": {
    "args": [
     "term",
@@ -5562,14 +5278,6 @@
     "term"
    ],
    "meaning": "inverse image of B under f",
-   "returns": "term"
-  },
-  "preimage_of": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "preimage of the set S under f",
    "returns": "term"
   },
   "preimage_submodule": {
@@ -6142,22 +5850,6 @@
    "meaning": "L is a finite product of elementary matrices that add a multiple of one row to another",
    "returns": "prop"
   },
-  "scalar_action": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "scalar multiple c v",
-   "returns": "term"
-  },
-  "scalar_multiple": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "scalar multiple c v of a vector or linear functional",
-   "returns": "term"
-  },
   "second_coord": {
    "args": [
     "term"
@@ -6277,14 +5969,6 @@
    "meaning": "limit inferior of the real sequence a",
    "returns": "term"
   },
-  "seq_limit_of": {
-   "args": [
-    "term_function",
-    "term"
-   ],
-   "meaning": "the real sequence n maps to s(n), given as a lambda, converges to L",
-   "returns": "prop"
-  },
   "seq_limsup": {
    "args": [
     "term"
@@ -6374,13 +6058,6 @@
    "meaning": "the series of the indexed expression converges unconditionally",
    "returns": "prop"
   },
-  "set_closure": {
-   "args": [
-    "term"
-   ],
-   "meaning": "topological closure of a set",
-   "returns": "term"
-  },
   "set_compl": {
    "args": [
     "term"
@@ -6416,21 +6093,6 @@
     "term_function"
    ],
    "meaning": "integral of f over the set S with Lebesgue measure; arguments S, f",
-   "returns": "term"
-  },
-  "set_interior": {
-   "args": [
-    "term"
-   ],
-   "meaning": "interior of a set",
-   "returns": "term"
-  },
-  "set_preimage": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "preimage of the set A under f",
    "returns": "term"
   },
   "set_seq_inter": {
@@ -6692,13 +6354,6 @@
    "meaning": "the index map from naturals to naturals is strictly increasing",
    "returns": "prop"
   },
-  "strictly_increasing_index": {
-   "args": [
-    "term"
-   ],
-   "meaning": "p is a strictly increasing map from the natural numbers to themselves",
-   "returns": "prop"
-  },
   "sub_sigma_algebra": {
    "args": [
     "term"
@@ -6820,14 +6475,6 @@
    "meaning": "the family F of subsets of X is an antichain under inclusion",
    "returns": "prop"
   },
-  "subspace_in": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "S is a linear subspace of E (arguments S, E)",
-   "returns": "prop"
-  },
   "subspace_inter": {
    "args": [
     "term",
@@ -6900,32 +6547,11 @@
    "meaning": "projection of the direct sum of A and C onto C",
    "returns": "term"
   },
-  "summable_sequence": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the real sequence u is summable",
-   "returns": "prop"
-  },
   "surjective": {
    "args": [
     "term"
    ],
    "meaning": "f is surjective onto its codomain",
-   "returns": "prop"
-  },
-  "surjective_function": {
-   "args": [
-    "term"
-   ],
-   "meaning": "f is surjective",
-   "returns": "prop"
-  },
-  "surjective_map": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the map is surjective",
    "returns": "prop"
   },
   "surjective_on": {

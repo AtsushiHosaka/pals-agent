@@ -45,6 +45,7 @@ packages = ["pals_agent"]
 "pals_agent/content_dictionaries/typed-linear-algebra-v2-registry.json" = "pals_agent/content_dictionaries/typed-linear-algebra-v2-registry.json"
 "pals_agent/content_dictionaries/typed-commalg-modules-v2-registry.json" = "pals_agent/content_dictionaries/typed-commalg-modules-v2-registry.json"
 "pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json" = "pals_agent/contracts/openmath-cdbase-alpha-c14n-v4-vectors.json"
+"pals_agent/contracts/openmath-pals2-symbols-v1.json" = "pals_agent/contracts/openmath-pals2-symbols-v1.json"
 "pals_agent/seed/dsp_drafts.json" = "pals_agent/seed/dsp_drafts.json"
 "pals_agent/content_dictionaries/pals1.ocd" = "pals_agent/content_dictionaries/pals1.ocd"
 "pals_agent/content_dictionaries/typed-math-v1-registry.json" = "pals_agent/content_dictionaries/typed-math-v1-registry.json"

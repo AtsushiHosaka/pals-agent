@@ -17,12 +17,14 @@ class NaturalDraftRetrievalResult:
     query_openmath: str
     contexts: tuple[NaturalDraftContext, ...]
     compatibility: dict[str, str | int]
+    query_statement: str = ""
 
     def as_json(self) -> dict[str, object]:
         return {
             "schema_version": "pals.natural-draft-retrieval.v1",
             "outcome": self.outcome,
             "query_openmath": self.query_openmath,
+            **({"query_statement": self.query_statement} if self.query_statement else {}),
             "query_evidence_kind": "untrusted_retrieval_hint",
             "contexts": [
                 {

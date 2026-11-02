@@ -4,11 +4,13 @@ import base64
 import binascii
 import copy
 import hashlib
+import json
 import re
 import xml.etree.ElementTree as ET
 from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
+from importlib import resources
 from typing import Literal, Protocol, cast
 
 import rfc8785
@@ -308,6 +310,32 @@ _RETRIEVAL_FUNCTION_ARGUMENT_SORTS: dict[_SymbolIdentity, tuple[_RetrievalSort, 
         "term_function",
     ),
 }
+_PALS2_SYMBOLS_SHA256 = "13dd73084d82b545355530044400edde166f717332e28d0f519b9f75ad44de78"
+
+
+def _register_pals2_symbols() -> None:
+    """Add the sealed additive dictionary; canonical bytes of other symbols cannot change."""
+    raw = (
+        resources.files("pals_agent.contracts")
+        .joinpath("openmath-pals2-symbols-v1.json")
+        .read_bytes()
+    )
+    if hashlib.sha256(raw).hexdigest() != _PALS2_SYMBOLS_SHA256:
+        raise RuntimeError("OpenMath pals2 symbol registry digest does not match")
+    for name, signature in json.loads(raw)["symbols"].items():
+        identity = (PALS_OPENMATH_CDBASE, "pals2", name)
+        arity = len(signature["args"])
+        proposition = signature["returns"] == "prop"
+        _SUPPORTED_SYMBOLS[identity] = (
+            _SymbolSpec("application", arity, arity, returns_proposition=proposition)
+            if arity
+            else _SymbolSpec("constant", returns_proposition=proposition)
+        )
+        if any(sort != "term" for sort in signature["args"]):
+            _RETRIEVAL_FUNCTION_ARGUMENT_SORTS[identity] = tuple(signature["args"])
+
+
+_register_pals2_symbols()
 _PROFILE_CONTENT_DICTIONARIES = frozenset((cdbase, cd) for cdbase, cd, _name in _SUPPORTED_SYMBOLS)
 
 

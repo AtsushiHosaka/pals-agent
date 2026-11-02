@@ -109,6 +109,29 @@ class CardError(ValueError):
     pass
 
 
+def load_aliases() -> dict[str, str]:
+    """Synonyms kept readable in cards but emitted under one symbol, so cards need no rewrite."""
+    aliases = yaml.safe_load((ROOT / "aliases.yaml").read_text()) or {}
+    if not isinstance(aliases, dict) or any(target in aliases for target in aliases.values()):
+        raise CardError("aliases.yaml: an alias target must not itself be an alias")
+    return aliases
+
+
+ALIASES = load_aliases()
+
+
+def canonical_symbol(name: str) -> str:
+    return ALIASES.get(name, name)
+
+
+def draft_id_for(recipe_id: str) -> str:
+    """Fit the API's closed 64-character Draft ID without changing the Recipe identity."""
+    draft_id = recipe_id.replace(".", "_")
+    if len(draft_id) <= 64:
+        return draft_id
+    return f"{draft_id[:55]}_{hashlib.sha256(draft_id.encode()).hexdigest()[:8]}"
+
+
 def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
     """Merge all vocabulary files, or only core plus one domain while authoring that domain."""
     merged: dict[str, dict] = {}
@@ -138,11 +161,11 @@ def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
 
 @contextlib.contextmanager
 def extended_profile(vocabulary: dict[str, dict]):
-    """Layer the proposed vocabulary over the runtime tables for authoring validation only."""
+    """Layer vocabulary not yet in the sealed registry over the runtime tables for authoring."""
     symbols, sorts = dict(om._SUPPORTED_SYMBOLS), dict(om._RETRIEVAL_FUNCTION_ARGUMENT_SORTS)
     dictionaries = om._PROFILE_CONTENT_DICTIONARIES
     for name, spec in vocabulary.items():
-        identity = (om.PALS_OPENMATH_CDBASE, "pals2", name)
+        identity = (om.PALS_OPENMATH_CDBASE, "pals2", canonical_symbol(name))
         arity = len(spec["args"])
         proposition = spec["returns"] == "prop"
         om._SUPPORTED_SYMBOLS[identity] = (
@@ -203,7 +226,7 @@ def to_xml(node, scope: frozenset[str], vocabulary: dict[str, dict]) -> str:
         if node in PALS1_CONSTANTS:
             return _oms("pals1", node, pals=True)
         if node in vocabulary and not vocabulary[node]["args"]:
-            return _oms("pals2", node, pals=True)
+            return _oms("pals2", canonical_symbol(node), pals=True)
         raise CardError(f"openmath: `{node}` is neither bound nor a known constant")
     if not node or not isinstance(node[0], str):
         raise CardError("openmath: an application needs a symbol head")
@@ -226,7 +249,7 @@ def to_xml(node, scope: frozenset[str], vocabulary: dict[str, dict]) -> str:
     elif head in PALS1:
         operator = _oms("pals1", head, pals=True)
     elif head in vocabulary:
-        operator = _oms("pals2", head, pals=True)
+        operator = _oms("pals2", canonical_symbol(head), pals=True)
     else:
         raise CardError(f"openmath: unknown head `{head}` (add it to your vocabulary file)")
     return f"<OMA>{operator}{''.join(to_xml(item, scope, vocabulary) for item in rest)}</OMA>"
@@ -467,7 +490,7 @@ def command_build(_: argparse.Namespace) -> int:
     for entry in entries:
         card = entry["card"]
         (GENERATED / "manifests" / f"{entry['recipe_id']}.json").write_bytes(entry["manifest"])
-        draft_id = entry["recipe_id"].replace(".", "_")
+        draft_id = draft_id_for(entry["recipe_id"])
         index.append(
             {
                 "recipe_id": entry["recipe_id"],

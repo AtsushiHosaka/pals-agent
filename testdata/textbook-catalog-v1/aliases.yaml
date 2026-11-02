@@ -1,0 +1,54 @@
+# Synonyms found after authoring. A card may keep either name; the catalog emits the target.
+# Every pair was checked against card usage for argument order and mathematical scope. Pairs whose
+# arguments are reversed (module_over, vector_space, morphism_comp) or whose scope differs
+# (open_ball, closed_ball, quotient_map, has_sum_fn, op_comp, trace_of) must stay separate.
+algebraically_closed: alg_closed_field
+binomial: binom
+binomial_coefficient: binom
+bijective_map: bijective
+commutative_ring: comm_ring
+complex_imaginary_unit: complex_i
+conjugate: complex_conj
+convex_on_set: convex_function_on
+countable: countable_set
+direct_complement: complementary_submodules
+extension_degree: ext_degree
+field: is_field
+finset_range: natural_range
+fn_comp: map_compose
+frechet_derivative: fderiv_at
+frechet_differentiable_at: differentiable_at
+function_compose_map: map_compose
+group_isomorphic: isomorphic_groups
+has_frechet_derivative_at: has_fderiv_at
+identity_morphism: cat_identity
+identity_operator: identity_map
+injective_function: injective
+injective_map: injective
+injective_on_set: injective_on
+integrable_rv: integrable_fn
+is_comm_ring: comm_ring
+is_pid: principal_ideal_domain
+is_submodule: submodule_of
+linear_operator: linear_map_between
+map_kernel: kernel
+matrix_vector: matrix_vector_mul
+measurable_event: measurable_set
+measurable_map: measurable_fn
+operator_comp: map_compose
+orthonormal_set: orthonormal_family
+pi_constant: pi
+polynomial_degree: poly_degree
+polynomial_eval: poly_eval
+preimage_of: preimage
+scalar_action: smul
+scalar_multiple: smul
+seq_limit_of: seq_fn_tends_to
+set_closure: closure_of
+set_interior: interior_of
+set_preimage: preimage
+strictly_increasing_index: strict_mono_index
+subspace_in: subspace_of
+summable_sequence: series_summable
+surjective_function: surjective
+surjective_map: surjective
