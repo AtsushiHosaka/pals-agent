@@ -17,8 +17,10 @@ from pals_agent.recipe_semantic import SemanticReuseError, attempt
 from pals_agent.recipe_semantic_contract import (
     CONTENT_SCHEMA,
     SCHEMA_VERSION,
+    STATED_READING_POLICY,
     digest,
     fresh_plain_request,
+    prompts,
     read_batch,
 )
 from pals_agent.token_meter import TokenMeter, token_meter_scope
@@ -29,8 +31,8 @@ from tests.unit.test_recipe_exact_input import recipe, request
 from tests.unit.test_token_meter import OP, Ledger
 
 
-def inputs():
-    r = request("任意の非負整数 n に対して、実数上の x^n の連続性を証明してください。")
+def inputs(statement="任意の非負整数 n に対して、実数上の x^n の連続性を証明してください。"):
+    r = request(statement)
     r["generation_model"] = "gpt-6.1-sol"
     r["generation_reasoning_effort"] = "high"
     row = recipe()
@@ -615,3 +617,51 @@ def test_genuinely_invalid_reuse_output_still_fails_closed(policy, change):
     with pytest.raises(SemanticReuseError) as error:
         run_attempt(r, batch, verdict)
     assert error.value.code == "proof_reuse_invalid_response"
+
+
+STATED = "0^0=1 とする。任意の自然数 n に対して、実数上の関数 x^n の連続性を証明してください。"
+
+
+@pytest.mark.parametrize(
+    ("statement", "known", "reaches_reviewers"),
+    [
+        (STATED, {}, True),
+        (STATED, {"natural_zero": "include"}, True),
+        (STATED, {"zero_pow_zero": "include"}, False),
+        (STATED, {"zero_pow_zero": "exclude"}, False),
+        ("任意の自然数 n に対して、実数上の x^n の連続性を証明してください。", {}, False),
+    ],
+)
+def test_stated_reading_policy_only_reaches_a_statement_naming_an_unknown_reading(
+    statement, known, reaches_reviewers
+):
+    r, batch, _ = inputs(statement)
+    result = prompts(
+        r,
+        batch,
+        known,
+        assessment_session="00000000-0000-4000-8000-000000000001",
+        review_session="00000000-0000-4000-8000-000000000002",
+        retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
+    )
+    for prompt in result.values():
+        assert (STATED_READING_POLICY in prompt) is reaches_reviewers
+        assert ("conventions_named_in_request" in prompt) is reaches_reviewers
+
+
+def test_reviews_treating_a_stated_reading_as_a_premise_publish_without_a_recorded_setting():
+    r, batch, verdict = inputs(STATED)
+    r["math_conventions"] = {"policy": "ask", "choices": {}}
+    verdict["relevant_conventions"] = []
+    result = run_attempt(r, batch, verdict)
+    assert result.answer is not None
+    # The learner's text carries the reading; no setting, answer or default was applied.
+    assert result.evidence["applied_conventions"] == []
+
+
+def test_naming_a_reading_supplies_nothing_when_reviews_still_list_it():
+    r, batch, verdict = inputs(STATED)
+    r["math_conventions"] = {"policy": "ask", "choices": {}}
+    verdict["relevant_conventions"] = ["zero_pow_zero"]
+    result = run_attempt(r, batch, verdict)
+    assert result.answer is None

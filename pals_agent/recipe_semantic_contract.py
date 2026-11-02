@@ -14,7 +14,7 @@ from uuid import UUID
 
 import rfc8785
 
-from pals_agent.math_conventions import MEANINGS
+from pals_agent.math_conventions import MEANINGS, unknown_readings_named
 
 CONVENTION_IDS = tuple(MEANINGS)
 
@@ -398,6 +398,17 @@ BASE = BASE.replace(_COMPLETE_CATALOG_POLICY, SUBSET_POLICY).replace(
     _ANSWER_GATE_ANCHOR, _LIBRARY_LEMMA_POLICY + _ANSWER_GATE_ANCHOR
 )
 
+# Sent only for a statement that spells out a convention with no known reading, so every
+# other request keeps the exact policy bytes above.
+STATED_READING_POLICY = (
+    "\nEach ID in conventions_named_in_request appears in the request text and has no effective "
+    "reading.\nIf the ORIGINAL request explicitly states a reading of that convention, that "
+    "reading is a premise:\nrecord it in request_scope.assumptions, leave that ID out of "
+    "relevant_conventions, and reuse only if\nthe Lean target and stored answer respect it. A "
+    "mention, question or denial does not state a reading;\nthen the reading stays unknown. "
+    "Every other convention follows the rules above unchanged."
+)
+
 ROLE = {
     "assessment": "Assess mathematical scope and independently check the whole stored explanation.",
     "review": (
@@ -589,15 +600,18 @@ def prompts(
         "candidates": candidates,
     }
     need(set(known_conventions) <= MEANINGS.keys(), "unknown_convention_id")
-    request_data = {
+    named = unknown_readings_named(request["statement"], known_conventions)
+    request_data: dict[str, Any] = {
         "request": {
             "statement": request["statement"],
             "output_language": "ja",
             "context_turns": [],
         },
         "effective_conventions": known_conventions,
-        "convention_meanings": {k: MEANINGS[k] for k in known_conventions},
+        "convention_meanings": {k: MEANINGS[k] for k in (*known_conventions, *named)},
     }
+    if named:
+        request_data["conventions_named_in_request"] = named
     # Only automatic provider input-prefix caching is eligible here. No model
     # verdict, request, usage or correspondence result is reused across calls.
     policy = BASE.replace(SUBSET_POLICY, FULL_SHOWN_POLICY) if all_shown else BASE
@@ -612,6 +626,7 @@ def prompts(
         + ROLE[role]
         + "\nSession: "
         + session
+        + (STATED_READING_POLICY if named else "")
         + "\nREQUEST_DATA:\n"
         + json.dumps(request_data, ensure_ascii=False, separators=(",", ":"))
         for role, session in (("assessment", assessment_session), ("review", review_session))

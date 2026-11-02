@@ -6,6 +6,7 @@ order. "include" adopts the reading the item names; "exclude" keeps the other on
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 CONVENTIONS: tuple[tuple[str, str, str], ...] = (
@@ -38,6 +39,16 @@ CONVENTIONS: tuple[tuple[str, str, str], ...] = (
      "include: 'increasing' means x <= y implies f(x) <= f(y); "
      "exclude: 'increasing' means strictly increasing."),
 )
+# Literal spellings only. A match lets a model weigh the statement; it never supplies a reading.
+_NAMED_IN_STATEMENT = {
+    "zero_pow_zero": re.compile(
+        r"(?<![0-9０-９.．])[0０]\s*(?:[\^＾]|\*\*)\s*\{?\s*[0０](?![0-9０-９.．])"
+        r"|(?<![0-9０-９.．])[0０]⁰"
+        r"|(?<![0-9０-９.．])[0０零]\s*[の的]\s*[0０零]\s*(?:乗|次)"
+        r"|\bzero\s+to\s+the\s+(?:power\s+of\s+)?zero\b",
+        re.IGNORECASE,
+    ),
+}
 IDS = tuple(item[0] for item in CONVENTIONS)
 DEFAULTS = {item[0]: item[1] for item in CONVENTIONS}
 MEANINGS = {item[0]: item[2] for item in CONVENTIONS}
@@ -84,3 +95,13 @@ def known_readings(conventions: dict[str, Any]) -> dict[str, str]:
     if conventions["policy"] == "default":
         return {**DEFAULTS, **conventions["choices"]}
     return dict(conventions["choices"])
+
+
+def unknown_readings_named(statement: str, known: dict[str, str]) -> list[str]:
+    """Conventions the statement spells out but no setting, answer or default supplies."""
+
+    return [
+        convention_id
+        for convention_id, pattern in _NAMED_IN_STATEMENT.items()
+        if convention_id not in known and pattern.search(statement) is not None
+    ]
