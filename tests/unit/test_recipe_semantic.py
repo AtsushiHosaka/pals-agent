@@ -665,3 +665,56 @@ def test_naming_a_reading_supplies_nothing_when_reviews_still_list_it():
     verdict["relevant_conventions"] = ["zero_pow_zero"]
     result = run_attempt(r, batch, verdict)
     assert result.answer is None
+
+
+NONREUSE = {
+    "recipe_id": None,
+    "recipe_revision": None,
+    "source_target_sha256": None,
+}
+
+
+@pytest.mark.parametrize("action", ["miss", "needs_input", "nonproof"])
+def test_a_review_declining_reuse_is_nonacceptance_whatever_its_answer_qa(action):
+    r, batch, verdict = inputs()
+    verdict.update(NONREUSE, action=action, answer_qa=True)
+    result = run_attempt(r, batch, verdict)
+    assert result.answer is None
+    assert set(result.evidence) == {"recipe_semantic_attempt"}
+
+
+def test_a_declining_peer_with_answer_qa_withholds_the_other_reviews_reuse():
+    r, batch, verdict = inputs()
+    provider = Provider(verdict)
+    original = provider.request
+
+    def declining(**kwargs):
+        response = original(**kwargs)
+        body = json.loads(response.body)
+        if body.get("id") == "resp_review_b":
+            value = json.loads(body["output"][0]["content"][0]["text"])
+            value.update(NONREUSE, action="miss", answer_qa=True)
+            body["output"][0]["content"][0]["text"] = json.dumps(value)
+        return HttpResponse(200, json.dumps(body).encode())
+
+    provider.request = declining
+    result = attempt(
+        OpenAIResponsesClient(api_key="test", transport=provider),
+        r,
+        batch["claim_id"],
+        lambda: batch,
+        deadline=time.monotonic() + 30,
+    )
+    assert result.answer is None
+
+
+@pytest.mark.parametrize("answer_qa", [True, False])
+@pytest.mark.parametrize("kept", ["recipe_id", "recipe_revision", "source_target_sha256"])
+def test_a_review_declining_reuse_cannot_still_select_a_recipe(kept, answer_qa):
+    r, batch, verdict = inputs()
+    selection = {key: verdict[key] for key in NONREUSE}
+    verdict.update(NONREUSE, action="miss", answer_qa=answer_qa)
+    verdict[kept] = selection[kept]
+    with pytest.raises(SemanticReuseError) as error:
+        run_attempt(r, batch, verdict)
+    assert error.value.code == "proof_reuse_invalid_response"

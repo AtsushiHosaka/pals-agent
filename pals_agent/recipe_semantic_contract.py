@@ -726,10 +726,10 @@ def parse(
         kinds = [task["kind"] for task in value["tasks"]]
         need(len(set(kinds)) == len(kinds), "response_duplicate_task_kind")
     else:
+        # answer_qa authorizes nothing here: consensus publishes only two reuse actions.
         need(
             value["recipe_id"] is None
             and value["recipe_revision"] is None
-            and value["answer_qa"] is False
             and value["source_target_sha256"] is None,
             "response_nonreuse_selection_invalid",
         )
