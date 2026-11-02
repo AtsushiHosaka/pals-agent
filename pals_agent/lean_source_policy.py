@@ -363,6 +363,12 @@ def _lex(source: str) -> tuple[str, str | None]:
     while index < length:
         character = source[index]
         pair = source[index : index + 2]
+        # A symbol before `--` or `/-` may end a longer Lean token, as in `<--` and `//-`, which
+        # then opens no comment. An adjoining comment must also still separate the words around it.
+        if pair in ("--", "/-"):
+            if index and not _comment_may_follow(source[index - 1]):
+                flag("comment syntax attached to a preceding symbol")
+            output.append(" ")
         if pair == "--":
             newline = source.find("\n", index)
             if newline < 0:
@@ -435,6 +441,10 @@ def _lex(source: str) -> tuple[str, str | None]:
             last_visible = character
         index += 1
     return "".join(output), ambiguity
+
+
+def _comment_may_follow(character: str) -> bool:
+    return character.isspace() or character.isalnum() or character in "_'!?()[]{}⟨⟩⦃⦄,;."
 
 
 def _closing_brackets(code: str) -> dict[int, int]:

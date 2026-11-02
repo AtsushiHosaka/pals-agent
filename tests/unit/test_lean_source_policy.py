@@ -397,3 +397,33 @@ def test_policy_stays_fast_on_adversarial_input(source: str) -> None:
     started = time.monotonic()
     find_source_violation(source)
     assert time.monotonic() - started < 5
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "def w := {n : Int //- n = n}\n#eval 1\n-- -/\n",
+        "def w := {n : Int ///- n = n}\n#eval 1\n-- -/\n",
+        "def w := Nat \\/- x\n#eval 1\n-- -/\n",
+        "def a := 1 <-- x\n",
+        "run_cmd/- -/do pure ()\n",
+        "theorem t : 2 = 2 := by/- -/native_decide\n",
+        "set_option/- -/debug.skipKernelTC true\n",
+    ],
+)
+def test_comment_forms_lean_reads_differently_are_rejected(source: str) -> None:
+    assert find_source_violation(source) is not None
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "theorem t : True := trivial -- note\n",
+        "theorem t : True := by trivial--note\n",
+        "theorem t (a /- first -/ : Nat) : a = a := rfl\n",
+        "theorem t : (/- empty -/ 1 : Nat) = 1 := rfl\n",
+        "/- header -/\ntheorem t : True := trivial\n",
+    ],
+)
+def test_ordinary_comments_stay_accepted(source: str) -> None:
+    assert find_source_violation(source) is None
