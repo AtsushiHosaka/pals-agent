@@ -12,6 +12,9 @@ from pals_agent.artifacts import (
     ArtifactStore,
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
+from pals_agent.lean_source_policy import (
+    strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
+)
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
     BenchmarkProblem,
@@ -1563,76 +1566,6 @@ def _normalize_lean_text(text: str) -> str:
 
 def _strip_lean_comments(text: str) -> str:
     return _strip_lean_comments_and_strings(text)
-
-
-def _strip_lean_comments_and_strings(text: str) -> str:
-    lines = []
-    current: list[str] = []
-    index = 0
-    block_depth = 0
-    in_string = False
-    while index < len(text):
-        current_pair = text[index : index + 2]
-        char = text[index]
-
-        if block_depth > 0:
-            if current_pair == "/-":
-                block_depth += 1
-                index += 2
-                continue
-            if current_pair == "-/":
-                block_depth -= 1
-                index += 2
-                continue
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if in_string:
-            if char == "\\":
-                index += 2
-                continue
-            if char == '"':
-                in_string = False
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if current_pair == "/-":
-            block_depth = 1
-            index += 2
-            continue
-
-        if current_pair == "--":
-            newline_index = text.find("\n", index)
-            if newline_index == -1:
-                break
-            lines.append("".join(current))
-            current = []
-            index = newline_index + 1
-            continue
-
-        if char == '"':
-            in_string = True
-            current.append(" ")
-            index += 1
-            continue
-
-        if char == "\n":
-            lines.append("".join(current))
-            current = []
-            index += 1
-            continue
-
-        current.append(char)
-        index += 1
-
-    lines.append("".join(current))
-    return "\n".join(lines)
 
 
 def _validate_formal_harness(
