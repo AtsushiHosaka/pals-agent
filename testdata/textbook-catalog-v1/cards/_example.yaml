@@ -1,0 +1,26 @@
+- id: squeeze_sequence
+  kind: gap
+  level: 1
+  topic: 数列の極限・はさみうち
+  statement: 実数列a,b,cについてa_n≤b_n≤c_nが全てのnで成り立ち、aとcが同じ極限Lに収束するならbもLに収束する。
+  statement_en: If real sequences satisfy a_n ≤ b_n ≤ c_n for all n and a and c both converge to L, then b converges to L.
+  assumptions: [a, b, cは実数列, 全てのnでa_n≤b_n≤c_n, aとcはLに収束]
+  quantifiers: [任意の実数列a, b, cと実数L]
+  conclusion: bはLに収束する。
+  answer: |
+    任意のε>0に対し、十分大きなnでL-ε<a_nかつc_n<L+εとなる。このときL-ε<a_n≤b_n≤c_n<L+εなので|b_n-L|<εであり、bはLに収束する。
+  strategy: Trap b_n between the two convergent bounds in an arbitrary epsilon band.
+  sketch:
+    - "setup: Fix ε > 0 and choose N beyond which a_n and c_n are within ε of L."
+    - "derive: For n ≥ N, L-ε < a_n ≤ b_n ≤ c_n < L+ε."
+    - "conclude: Hence |b_n - L| < ε for n ≥ N."
+  openmath: (forall (a b c L) (-> (and (forall (n) (and (<= (seq_value a n) (seq_value b n)) (<= (seq_value b n) (seq_value c n)))) (seq_tends_to a L) (seq_tends_to c L)) (seq_tends_to b L)))
+  hard_negative:
+    statement: a_n≤b_n≤c_nでaとcが収束すれば、極限が異なっていてもbは収束する。
+    reason: a_n=-1, c_n=1, b_n=(-1)^nではbは収束しない。
+  target: |
+    ∀ (a b c : ℕ → ℝ) (L : ℝ), (∀ n, a n ≤ b n) → (∀ n, b n ≤ c n) → Filter.Tendsto a Filter.atTop (nhds L) → Filter.Tendsto c Filter.atTop (nhds L) → Filter.Tendsto b Filter.atTop (nhds L)
+  proof: |
+    by
+      intro a b c L hab hbc ha hc
+      exact tendsto_of_tendsto_of_tendsto_of_le_of_le ha hc hab hbc

@@ -1,0 +1,6 @@
+# Proposed additive OpenMath vocabulary (cd=pals2). The deployed validator does not accept it yet.
+fn_value: {args: [term, term], returns: term, meaning: "function value f(x)"}
+subgroup_of: {args: [term, term], returns: prop, meaning: "H is a subgroup of G"}
+dvd: {args: [term, term], returns: prop, meaning: "a divides b"}
+seq_value: {args: [term, term], returns: term, meaning: "n-th term a_n of a sequence"}
+seq_tends_to: {args: [term, term], returns: prop, meaning: "sequence a converges to L"}
