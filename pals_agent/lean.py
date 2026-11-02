@@ -50,7 +50,11 @@ _MIB = 1024 * 1024
 _GIB = 1024 * _MIB
 _ADDRESS_SPACE_LIMIT_BYTES = 16 * _GIB
 _FILE_SIZE_LIMIT_BYTES = 16 * _MIB
-_PROCESS_LIMIT = 64
+# RLIMIT_NPROC counts every task of the UID across the host, not this compile's descendants, and
+# every compute container runs as UID 65532. Four containers of 64 tasks each can never reach this,
+# so the verifier cgroup's PID limit stays the binding bound and a sibling cannot abort Lean's
+# thread creation. A compile cannot exceed that cgroup limit regardless of this value.
+_PROCESS_LIMIT = 256
 _OPEN_FILE_LIMIT = 1024
 _OUTPUT_LIMIT_BYTES = _MIB
 _DEFAULT_CHILD_PATH = "/opt/elan/bin:/usr/local/bin:/usr/bin:/bin"

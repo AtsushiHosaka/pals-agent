@@ -34,6 +34,10 @@ marker.unlink(missing_ok=True)
 '''
 
 
+class _ChildStarted(Exception):
+    """The ordinary single-worker path was reached without a nested supervisor."""
+
+
 def launch(tmp_path: Path, mode: str = "normal") -> subprocess.Popen[bytes]:
     code = (
         "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
@@ -146,11 +150,18 @@ def test_factory_uses_fresh_exec_and_does_not_pass_parent_runtime(monkeypatch, t
         return 0
 
     monkeypatch.setattr(worker_processes, "_supervise", supervise)
-    assert worker_processes.run_proof_workers(processes=3, ready_file=tmp_path / "ready") == 0
-    assert seen == {
-        "command": [sys.executable, "-m", "pals_agent.cli", "worker", "--lane", "proof"],
-        "processes": 3, "ready_file": tmp_path / "ready",
-    }
+    for lane in ("proof", "assessment"):
+        assert worker_processes.run_lane_workers(
+            lane=lane, processes=3, ready_file=tmp_path / "ready",
+        ) == 0
+        # An explicit child count keeps an inherited environment value from nesting supervisors.
+        assert seen == {
+            "command": [sys.executable, "-m", "pals_agent.cli", "worker",
+                        "--lane", lane, "--processes", "1"],
+            "processes": 3, "ready_file": tmp_path / "ready",
+        }
+    with pytest.raises(ValueError):
+        worker_processes.run_lane_workers(lane="all", processes=2, ready_file=None)
 
 
 @pytest.mark.parametrize("count", [0, 1, 9, True, 2.0])
@@ -159,11 +170,59 @@ def test_process_count_is_closed(count):
         worker_processes._supervise(command=[], processes=count, ready_file=None)
 
 
-@pytest.mark.parametrize("lane", ["all", "assessment"])
-def test_cli_refuses_nonproof_parallel_lanes(lane):
+def test_cli_refuses_parallel_mixed_lane():
     with pytest.raises(SystemExit) as error:
-        cli.main(["worker", "--lane", lane, "--processes", "2"])
+        cli.main(["worker", "--lane", "all", "--processes", "2"])
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize("value", ["0", "9", "02", "two", "", " 2", "-1", "\u0662"])
+def test_process_count_environment_is_closed(monkeypatch, value):
+    monkeypatch.setenv("PALS_WORKER_PROCESSES", value)
+    monkeypatch.setattr(cli, "run_lane_workers", lambda **kwargs: pytest.fail("supervised"))
+    with pytest.raises(SystemExit) as error:
+        cli.main(["worker", "--lane", "assessment"])
+    assert error.value.code == 2
+
+
+def test_process_count_environment_omission_keeps_one_worker(monkeypatch):
+    monkeypatch.delenv("PALS_WORKER_PROCESSES", raising=False)
+    assert worker_processes.worker_processes_from_env() == 1
+
+
+@pytest.mark.parametrize(("lane", "argv", "environment", "expected"), [
+    ("assessment", ["--processes", "4"], None, 4),
+    ("assessment", [], "4", 4),
+    ("proof", [], "2", 2),
+    ("proof", ["--processes", "3"], "2", 3),
+])
+def test_cli_selects_lane_supervisor(monkeypatch, tmp_path, lane, argv, environment, expected):
+    seen = {}
+
+    def supervise(**kwargs):
+        seen.update(kwargs)
+        return 0
+
+    if environment is None:
+        monkeypatch.delenv("PALS_WORKER_PROCESSES", raising=False)
+    else:
+        monkeypatch.setenv("PALS_WORKER_PROCESSES", environment)
+    monkeypatch.setattr(cli, "run_lane_workers", supervise)
+    monkeypatch.setattr(
+        cli, "SqsProofWorker", lambda **kwargs: pytest.fail("parent runtime constructed")
+    )
+    assert cli.main(["worker", "--lane", lane, *argv,
+                     "--ready-file", str(tmp_path / "ready")]) == 0
+    assert seen == {"lane": lane, "processes": expected, "ready_file": tmp_path / "ready"}
+
+
+def test_supervised_child_with_inherited_environment_never_nests(monkeypatch):
+    monkeypatch.setenv("PALS_WORKER_PROCESSES", "4")
+    monkeypatch.setattr(cli, "run_lane_workers", lambda **kwargs: pytest.fail("nested"))
+    monkeypatch.setattr(cli, "worker_queue_url", lambda *a: (_ for _ in ()).throw(_ChildStarted()))
+    monkeypatch.setattr(cli, "configure_worker_api_trust", lambda *a: None)
+    with pytest.raises(_ChildStarted):
+        cli.main(["worker", "--lane", "assessment", "--processes", "1"])
 
 
 def test_cli_selects_supervisor_before_constructing_any_worker(monkeypatch, tmp_path):
@@ -173,13 +232,13 @@ def test_cli_selects_supervisor_before_constructing_any_worker(monkeypatch, tmp_
         seen.update(kwargs)
         return 0
 
-    monkeypatch.setattr(cli, "run_proof_workers", supervise)
+    monkeypatch.setattr(cli, "run_lane_workers", supervise)
     monkeypatch.setattr(
         cli, "SqsProofWorker", lambda **kwargs: pytest.fail("parent runtime constructed")
     )
     assert cli.main(["worker", "--lane", "proof", "--processes", "2",
                      "--ready-file", str(tmp_path / "ready")]) == 0
-    assert seen == {"processes": 2, "ready_file": tmp_path / "ready"}
+    assert seen == {"lane": "proof", "processes": 2, "ready_file": tmp_path / "ready"}
 
 
 @pytest.mark.parametrize("payload", [b"", b"wrong pid", b"\xff", b"1" * 33])

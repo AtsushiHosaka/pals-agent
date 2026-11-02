@@ -42,6 +42,7 @@ _PROOF_JOB_ID_RE: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$")
 _SHA256_RE: Final = re.compile(r"^[0-9a-f]{64}$")
 _IMAGE_DIGEST_RE: Final = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MAX_ADMISSION_SOURCE_BYTES: Final = 480_000
+MAX_CONCURRENT_COMPILES: Final = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -159,8 +160,11 @@ class IsolatedVerifierHttpSettings:
             raise ValueError("bind_host must be a nonblank private endpoint host")
         if self.port != _VERIFIER_PORT:
             raise ValueError("isolated verifier must bind port 18117")
-        if self.max_concurrent_compiles != 1:
-            raise ValueError("isolated verifier accepts exactly one concurrent compile")
+        if (
+            type(self.max_concurrent_compiles) is not int
+            or not 1 <= self.max_concurrent_compiles <= MAX_CONCURRENT_COMPILES
+        ):
+            raise ValueError("isolated verifier concurrent compiles are outside their bound")
         if _SHA256_RE.fullmatch(self.reconciler_client_spki_sha256) is None:
             raise ValueError("reconciler client SPKI must be a lowercase SHA-256")
         if not self.reconciler_client_spiffe_uri.startswith("spiffe://pals/"):
@@ -175,7 +179,10 @@ class IsolatedVerifierHttpSettings:
 
 
 class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
-    """A one-slot TLS server which rejects every caller except the reconciler certificate."""
+    """A bounded-slot TLS server which rejects every caller except the reconciler certificate.
+
+    A request beyond the configured slots is refused with the retryable 503, never queued.
+    """
 
     daemon_threads = False
     block_on_close = True
@@ -191,7 +198,7 @@ class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
         self.verifier = verifier
         self.admission_verifier = admission_verifier if admission_verifier is not None else verifier
         self.recipe_admission_context = settings.recipe_admission_context
-        self.compile_slot = threading.BoundedSemaphore(1)
+        self.compile_slot = threading.BoundedSemaphore(settings.max_concurrent_compiles)
         self.ready = True
         super().__init__((settings.bind_host, settings.port), _RequestHandler)
 

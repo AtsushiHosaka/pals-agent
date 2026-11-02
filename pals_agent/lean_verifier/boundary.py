@@ -9,6 +9,7 @@ from pathlib import Path
 _GIB = 1024 * 1024 * 1024
 _MAX_CPU_COUNT = 2.0
 _MAX_MEMORY_BYTES = 4 * _GIB
+_MAX_CONCURRENT_COMPILES = 4
 _MAX_PIDS = 64
 _MAX_NOFILE = 1024
 _CREDENTIAL_ENV_RE = re.compile(
@@ -151,12 +152,23 @@ def attest_runtime_boundary(
     return evidence
 
 
+def maximum_memory_bytes(concurrent_compiles: int) -> int:
+    """Each compile slot keeps the single-slot budget; one slot keeps the original ceiling."""
+    if (
+        type(concurrent_compiles) is not int
+        or not 1 <= concurrent_compiles <= _MAX_CONCURRENT_COMPILES
+    ):
+        raise ValueError("verifier concurrent compiles are outside their bound")
+    return concurrent_compiles * _MAX_MEMORY_BYTES
+
+
 def attest_http_runtime_boundary(
     *,
     project_dir: Path,
     scratch_dir: Path,
     scratch_max_bytes: int,
     allowed_reference_environment_names: frozenset[str],
+    concurrent_compiles: int = 1,
 ) -> RuntimeBoundaryEvidence:
     """Attest the verifier's outer mTLS-server isolation without a Unix socket exception.
 
@@ -187,7 +199,7 @@ def attest_http_runtime_boundary(
         memory_cgroup_limited=_integer_cgroup_limited(
             "memory.max",
             "memory.limit_in_bytes",
-            maximum=_MAX_MEMORY_BYTES,
+            maximum=maximum_memory_bytes(concurrent_compiles),
             controllers=("memory",),
         ),
         pids_cgroup_limited=_integer_cgroup_limited(

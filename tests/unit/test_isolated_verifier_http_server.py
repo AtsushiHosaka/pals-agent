@@ -8,9 +8,9 @@ import ssl
 import subprocess
 import tempfile
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from pathlib import Path
-from threading import Event, Thread
+from threading import Event, Lock, Thread
 from typing import Any, cast
 from uuid import UUID
 
@@ -108,6 +108,8 @@ def _running_server(
     client_spki_sha256: str,
     verifier: StubVerifier,
     admission_verifier: StubVerifier | None = None,
+    *,
+    max_concurrent_compiles: int = 1,
 ) -> Iterator[object]:
     settings = IsolatedVerifierHttpSettings(
         bind_host="127.0.0.1",
@@ -121,6 +123,7 @@ def _running_server(
         reconciler_client_spki_sha256=client_spki_sha256,
         reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
         recipe_admission_context=_admission_context(),
+        max_concurrent_compiles=max_concurrent_compiles,
     )
     server = create_server(settings, verifier=verifier, admission_verifier=admission_verifier)
     thread = Thread(target=server.serve_forever, daemon=True)
@@ -260,6 +263,166 @@ def test_busy_and_compiler_failure_use_the_closed_error_registry(
         },
     )
     assert verifier.calls == ["first", "third"]
+
+
+class _CountingVerifier(StubVerifier):
+    """Hold every compile until the test observes the expected overlap."""
+
+    def __init__(self, expected: int) -> None:
+        super().__init__(_success())
+        self.lock = Lock()
+        self.running = 0
+        self.peak = 0
+        self.expected = expected
+        self.overlapped = Event()
+        self.release = Event()
+
+    def verify(self, lean_code: str) -> VerificationResult:
+        with self.lock:
+            self.calls.append(lean_code)
+            self.running += 1
+            self.peak = max(self.peak, self.running)
+            if self.running >= self.expected:
+                self.overlapped.set()
+        try:
+            assert self.release.wait(timeout=5)
+            return self.result
+        finally:
+            with self.lock:
+                self.running -= 1
+
+
+def test_configured_slots_run_concurrently_and_the_next_request_is_refused_retryably(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = _CountingVerifier(expected=2)
+    responses: list[tuple[int, dict[str, object]]] = []
+    with _running_server(
+        server_context, client_spki_sha256, verifier, max_concurrent_compiles=2,
+    ):
+        threads = [
+            Thread(
+                target=lambda code=code: responses.append(
+                    _request(client_context, _verify_request(code))
+                )
+            )
+            for code in ("first", "second")
+        ]
+        for thread in threads:
+            thread.start()
+        assert verifier.overlapped.wait(timeout=3)
+        refused = _request(client_context, _verify_request("third"))
+        ready = _request(
+            client_context,
+            b"GET /ready HTTP/1.1\r\nHost: verifier.internal\r\n" + _headers() + b"\r\n",
+        )
+        verifier.release.set()
+        for thread in threads:
+            thread.join(timeout=3)
+            assert not thread.is_alive()
+        after = _request(client_context, _verify_request("fourth"))
+
+    assert refused[0] == 503
+    assert refused[1]["error_code"] == "verifier_unavailable"
+    assert refused[1]["retryable"] is True
+    # A compile in every slot must not make the readiness endpoint report anything else.
+    assert ready[0] == 200
+    assert [status for status, _ in responses] == [200, 200]
+    assert after[0] == 200
+    assert verifier.peak == 2
+    assert sorted(verifier.calls) == ["first", "fourth", "second"]
+
+
+def test_admission_and_proof_compiles_share_the_same_bound(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = _CountingVerifier(expected=2)
+    with _running_server(
+        server_context, client_spki_sha256, verifier, max_concurrent_compiles=2,
+    ):
+        threads = [
+            Thread(target=lambda code=code: _request(client_context, _verify_request(code)))
+            for code in ("first", "second")
+        ]
+        for thread in threads:
+            thread.start()
+        assert verifier.overlapped.wait(timeout=3)
+        refused = _request(
+            client_context,
+            _recipe_admission_request("example : True := by trivial\n", _admission_context()),
+        )
+        verifier.release.set()
+        for thread in threads:
+            thread.join(timeout=3)
+    assert refused[0] == 503
+    assert refused[1]["failure_code"] == "verifier_not_ready"
+    assert refused[1]["retryable"] is True
+
+
+class _RaisingVerifier(StubVerifier):
+    def verify(self, lean_code: str) -> VerificationResult:
+        self.calls.append(lean_code)
+        raise RuntimeError("cleanup failed")
+
+
+@pytest.mark.parametrize(
+    "result",
+    [
+        VerificationResult(
+            success=False,
+            diagnostics=[Diagnostic(severity="error", code="lean.timeout", message="timed out")],
+            stdout="",
+            stderr="",
+            elapsed_ms=1,
+        ),
+        None,
+    ],
+    ids=["timeout", "error"],
+)
+def test_every_slot_is_released_after_a_timeout_or_compiler_error(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    result: VerificationResult | None,
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = _RaisingVerifier(_success()) if result is None else StubVerifier(result)
+    with _running_server(
+        server_context, client_spki_sha256, verifier, max_concurrent_compiles=2,
+    ) as server:
+        for attempt in range(5):
+            with suppress(http.client.HTTPException, OSError):
+                _request(client_context, _verify_request(f"attempt-{attempt}"))
+        slot = server.compile_slot  # type: ignore[attr-defined]
+        assert slot.acquire(blocking=False)
+        assert slot.acquire(blocking=False)
+        assert not slot.acquire(blocking=False)
+        slot.release()
+        slot.release()
+    assert len(verifier.calls) == 5
+
+
+@pytest.mark.parametrize("value", [0, 5, -1, True, 2.0, "2"])
+def test_concurrent_compile_setting_is_closed(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    value: object,
+) -> None:
+    server_context, _, _, client_spki_sha256 = tls_contexts
+    with pytest.raises(ValueError, match="concurrent compiles"):
+        IsolatedVerifierHttpSettings(
+            bind_host="127.0.0.1",
+            binding=VerifierDeploymentBinding(
+                release_id=_RELEASE_ID,
+                deployment_binding_sha256=_DEPLOYMENT_SHA,
+                verifier_image_digest="sha256:" + "b" * 64,
+                verifier_toolchain_sha256="c" * 64,
+            ),
+            ssl_context=server_context,
+            reconciler_client_spki_sha256=client_spki_sha256,
+            reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
+            recipe_admission_context=_admission_context(),
+            max_concurrent_compiles=value,  # type: ignore[arg-type]
+        )
 
 
 def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(

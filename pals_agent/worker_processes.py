@@ -1,4 +1,4 @@
-"""Fresh-exec proof workers with independent runtimes and graceful delivery drain.
+"""Fresh-exec lane workers with independent runtimes and graceful delivery drain.
 
 This supervisor owns processes and readiness only. Claims, SQS visibility,
 provider clients and mathematical/billing admission remain owned by each ordinary
@@ -18,6 +18,19 @@ from contextlib import suppress
 from pathlib import Path
 
 MAX_PROOF_WORKERS = 8
+_PROCESSES_ENV = "PALS_WORKER_PROCESSES"
+_SUPERVISED_LANES = frozenset({"proof", "assessment"})
+
+
+def worker_processes_from_env() -> int:
+    """Omission keeps one process; anything unexpected refuses startup."""
+    value = os.environ.get(_PROCESSES_ENV, "1")
+    if not value.isascii() or not value.isdecimal() or str(int(value)) != value:
+        raise ValueError(f"{_PROCESSES_ENV} must be a canonical integer")
+    parsed = int(value)
+    if not 1 <= parsed <= MAX_PROOF_WORKERS:
+        raise ValueError(f"{_PROCESSES_ENV} is outside its bound")
+    return parsed
 
 
 def _marker_ready(marker: Path, pid: int) -> bool | None:
@@ -35,10 +48,19 @@ def _marker_ready(marker: Path, pid: int) -> bool | None:
         return stream.read(33) == str(pid).encode("ascii")
 
 
-def run_proof_workers(*, processes: int, ready_file: Path | None) -> int:
-    """Exec a new interpreter per worker; never fork initialized agent state."""
+def run_lane_workers(*, lane: str, processes: int, ready_file: Path | None) -> int:
+    """Exec a new interpreter per worker; never fork initialized agent state.
+
+    A child names its count explicitly, so an inherited process-count environment value can
+    never make it another supervisor.
+    """
+    if lane not in _SUPERVISED_LANES:
+        raise ValueError("multiple worker processes require an explicit single lane")
     return _supervise(
-        command=[sys.executable, "-m", "pals_agent.cli", "worker", "--lane", "proof"],
+        command=[
+            sys.executable, "-m", "pals_agent.cli", "worker",
+            "--lane", lane, "--processes", "1",
+        ],
         processes=processes,
         ready_file=ready_file,
     )
@@ -53,9 +75,9 @@ def _supervise(
     poll_seconds: float = 0.1,
 ) -> int:
     if type(processes) is not int or not 2 <= processes <= MAX_PROOF_WORKERS:
-        raise ValueError("proof worker process count is outside its bound")
+        raise ValueError("worker process count is outside its bound")
     if startup_seconds <= 0 or poll_seconds <= 0:
-        raise ValueError("proof worker supervisor timing is invalid")
+        raise ValueError("worker supervisor timing is invalid")
     stopping = False
     children: list[subprocess.Popen[bytes]] = []
     previous = {}
