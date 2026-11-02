@@ -100,6 +100,7 @@ def _phase(service: str, base_origin: Any, method: str, url: str, request_id: st
     fixed = {
         "/v1/internal/billing/token-permits": "permit",
         "/v1/internal/billing/token-receipts": "receipt",
+        "/v1/internal/billing/semantic-call-results": "semantic_result",
     }
     if path in fixed:
         return fixed[path]

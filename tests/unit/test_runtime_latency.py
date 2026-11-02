@@ -64,7 +64,11 @@ def test_real_original_paid_runtime_has_count_permit_generation_usage_receipt_an
 
     provider = Provider(verdict)
     reports = []
-    api = PalsApiClient(
+    class LegacyPaidApiClient(PalsApiClient):
+        # Exercise the unchanged pre-atomic capability and its original 13 spans.
+        record_semantic_token_result = None
+
+    api = LegacyPaidApiClient(
         "https://api.fixture.invalid",
         "private-api-fixture",
         transport=h.TimedTransport(Api(), "api", "https://api.fixture.invalid"),
@@ -249,6 +253,22 @@ def test_trace_and_logger_failures_cannot_change_successful_ack(monkeypatch):
         ("provider", "https://other.invalid/v1/responses", "other_origin"),
         ("api", "https://api.openai.com/v1/internal/proof-requests/other/usage", "api_other"),
         ("provider", "https://api.openai.com/v1/responses?secret=private", "provider_other"),
+        (
+            "api", "https://api.openai.com/v1/internal/billing/semantic-call-results",
+            "semantic_result",
+        ),
+        (
+            "api", "https://other.invalid/v1/internal/billing/semantic-call-results",
+            "other_origin",
+        ),
+        (
+            "api", "https://api.openai.com/v1/internal/billing/semantic-call-results?secret=x",
+            "api_other",
+        ),
+        (
+            "api", "https://api.openai.com/v1/internal/billing/semantic-call-results/",
+            "api_other",
+        ),
     ],
 )
 def test_classification_is_closed_and_never_emits_paths_or_arbitrary_values(service, url, expected):
@@ -532,3 +552,11 @@ def test_concurrent_requests_keep_correlation_and_phase_aggregates_separate():
                and r["phases"][0]["calls"] == 1 for r in reports)
     assert all(identifier not in json.dumps(reports) for identifier in identifiers)
     assert h._ACTIVE.get() is None
+
+
+def test_semantic_result_phase_requires_same_api_origin_and_post():
+    url = "https://api.fixture.invalid/v1/internal/billing/semantic-call-results"
+    origin = h._origin("https://api.fixture.invalid")
+    assert h._phase("api", origin, "POST", url, "request") == "semantic_result"
+    assert h._phase("api", origin, "GET", url, "request") == "api_other"
+    assert h._phase("provider", origin, "POST", url, "request") == "provider_other"

@@ -151,6 +151,21 @@ class PalsApiClient:
         if set(result) != {"recorded"} or result["recorded"] is not True:
             raise PalsApiError("Token receipt was malformed")
 
+    def record_semantic_token_result(
+        self, payload: dict[str, Any], *, timeout_seconds: float,
+    ) -> None:
+        result = self._request(
+            "POST", "/v1/internal/billing/semantic-call-results", payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds,
+        )
+        if (
+            set(result) != {"usage_recorded", "receipt_recorded"}
+            or result["usage_recorded"] is not True
+            or result["receipt_recorded"] is not True
+        ):
+            raise PalsApiError("Semantic token result was malformed")
+
     def acquire_proof_request_claim(
         self, *, request_id: str, claim_id: str, lease_ms: int = 240000
     ) -> dict[str, Any]:

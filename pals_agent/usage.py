@@ -14,6 +14,32 @@ logger = logging.getLogger(__name__)
 _reporter: ContextVar[Callable[[dict[str, Any]], None] | None] = ContextVar(
     "pals_usage_reporter", default=None
 )
+_acknowledged_call: ContextVar[str | None] = ContextVar("pals_acknowledged_usage", default=None)
+
+
+@contextmanager
+def acknowledged_usage_scope(call_id: str) -> Iterator[None]:
+    """Emit local telemetry after this exact call's atomic persistence acknowledgement.
+
+    This is process-local routing metadata, never a worker-supplied API receipt or
+    settlement authority. Only the matching call ID can suppress its redundant write;
+    the context is reset immediately after that local report.
+    """
+    if not isinstance(call_id, str) or re.fullmatch(
+        r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", call_id
+    ) is None:
+        raise ValueError("acknowledged_usage_call_invalid")
+    token = _acknowledged_call.set(call_id)
+    try:
+        yield
+    finally:
+        _acknowledged_call.reset(token)
+
+
+def usage_is_acknowledged(call_id: str) -> bool:
+    return isinstance(call_id, str) and _acknowledged_call.get() == call_id
+
+
 # Exact model identities only; never infer prices for unknown dated releases.
 # Official pricing provenance: docs/billing-model-price-snapshots-2026-09-29.md.
 PRICE_SNAPSHOTS = {

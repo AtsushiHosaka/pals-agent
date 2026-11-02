@@ -32,7 +32,7 @@ from pals_agent.token_meter import (
     TokenMeterError,
     token_meter_scope,
 )
-from pals_agent.usage import usage_scope
+from pals_agent.usage import usage_is_acknowledged, usage_scope
 
 _logger = logging.getLogger(__name__)
 _SAFE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_]{0,79}$", re.ASCII)
@@ -181,6 +181,11 @@ class ProofRequestProcessor:
                 "provider_request_id": item.get("provider_request_id"),
             }
             usage.append(record)
+            if usage_is_acknowledged(item["call_id"]):
+                # The same worker-authenticated transaction already stored this
+                # exact call's usage and successful paid receipt. Keep local usage
+                # for settlement revalidation without a second HTTP transaction.
+                return
             # The settlement repeats these IDs so temporary metering failures can be
             # recovered without double charging. Already-incurred usage survives failures.
             with suppress(PalsApiError):

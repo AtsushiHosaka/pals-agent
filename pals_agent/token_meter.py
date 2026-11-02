@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from _thread import LockType
 from collections.abc import Iterator
@@ -21,7 +22,7 @@ from uuid import UUID
 from pals_agent.api_client import PalsApiError
 from pals_agent.http_transport import HttpResponse, HttpTransport
 from pals_agent.proof_reuse_usage import current_role
-from pals_agent.usage import PRICE_SNAPSHOTS, report_usage
+from pals_agent.usage import PRICE_SNAPSHOTS, acknowledged_usage_scope, report_usage
 
 
 class TokenMeterError(RuntimeError):
@@ -168,6 +169,27 @@ class TokenMeter:
         )
         permitted = False
         receipt_attempted = False
+        provider_body: dict[str, Any] | None = None
+        telemetry_usage: Any = None
+        usage_reported = False
+
+        def report_provider_usage(*, acknowledged: bool = False) -> None:
+            nonlocal usage_reported
+            if provider_body is None or usage_reported:
+                return
+            usage_reported = True
+            if acknowledged:
+                with acknowledged_usage_scope(call_id):
+                    report_usage(
+                        call_id, str(provider_body.get("model", "")), telemetry_usage,
+                        provider_request_id=provider_body.get("id"),
+                    )
+            else:
+                report_usage(
+                    call_id, str(provider_body.get("model", "")), telemetry_usage,
+                    provider_request_id=provider_body.get("id"),
+                )
+
         try:
             self._remaining(deadline)
             model = payload.get("model")
@@ -255,18 +277,22 @@ class TokenMeter:
             body = _object(response.body)
             if not 200 <= response.status_code < 300:
                 raise TokenMeterError("token_provider_unavailable")
+            provider_body = body
             usage = body.get("usage")
             telemetry_usage = (
                 {"input_tokens": usage.get("prompt_tokens"), "output_tokens": 0}
                 if embedding and isinstance(usage, dict)
                 else usage
             )
-            # Keep provider cost evidence even when customer accounting subsequently
-            # fails (including usage above a permit or a lost receipt acknowledgement).
-            report_usage(
-                call_id, str(body.get("model", "")), telemetry_usage,
-                provider_request_id=body.get("id"),
+            atomic_method = getattr(self.api, "record_semantic_token_result", None)
+            atomic = (
+                not embedding
+                and model == "gpt-6-luna"
+                and current_role() in {"recipe_semantic_assessment", "token_answer_qa"}
+                and callable(atomic_method)
             )
+            if not atomic:
+                report_provider_usage()
             if body.get("model") != model:
                 raise TokenMeterError("token_provider_unavailable")
             if not isinstance(usage, dict):
@@ -282,24 +308,54 @@ class TokenMeter:
                 or reasoning > actual_output
             ):
                 raise TokenMeterError("token_usage_exceeds_permit")
+            if atomic and (
+                not isinstance(body.get("id"), str)
+                or re.fullmatch(r"resp_[A-Za-z0-9_-]{1,251}", body["id"]) is None
+            ):
+                raise TokenMeterError("token_provider_unavailable")
             receipt_timeout = self._remaining(deadline)
             receipt_attempted = True
-            self.api.record_token_receipt(
-                dict(
-                    binding,
-                    status="success",
-                    input_tokens=actual_input,
-                    output_tokens=actual_output,
-                    cached_input_tokens=cached,
-                    reasoning_output_tokens=reasoning,
-                ),
-                timeout_seconds=receipt_timeout,
+            actual_receipt = dict(
+                binding,
+                status="success",
+                input_tokens=actual_input,
+                output_tokens=actual_output,
+                cached_input_tokens=cached,
+                reasoning_output_tokens=reasoning,
             )
+            if atomic:
+                if not callable(atomic_method):
+                    raise TokenMeterError("token_accounting_unavailable")
+                atomic_method(
+                    {
+                        "usage": {
+                            "call_id": call_id,
+                            "model_role": current_role(),
+                            "provider": "openai",
+                            "model": model,
+                            "price_snapshot_id": snapshot,
+                            "provider_request_id": body["id"],
+                            "input_tokens": actual_input,
+                            "output_tokens": actual_output,
+                            "cached_input_tokens": cached,
+                            "reasoning_tokens": reasoning,
+                        },
+                        "receipt": actual_receipt,
+                    },
+                    timeout_seconds=receipt_timeout,
+                )
+                report_provider_usage(acknowledged=True)
+            else:
+                self.api.record_token_receipt(actual_receipt, timeout_seconds=receipt_timeout)
             with self._state_lock:
                 self.completed_calls[call_id] = current_role()
                 self.last_call_id = call_id
             return response
         except Exception as error:
+            # Preserve incurred cost through the ordinary usage path on every
+            # failure, including an atomic transaction whose acknowledgement was
+            # lost. Exact usage replay is idempotent; the provider is never retried.
+            report_provider_usage()
             # A lost success acknowledgement is NOT rewritten as unknown. The API
             # may have committed it; final failure releases the operation regardless.
             if permitted and not receipt_attempted:
