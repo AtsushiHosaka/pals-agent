@@ -18,6 +18,11 @@ CALCULATE = {"kind": "compute", "answer_relation": "computes_value"}
 PROVE = {"kind": "prove", "answer_relation": "proves_assertion"}
 
 
+@pytest.fixture(autouse=True)
+def judges_only(monkeypatch):
+    monkeypatch.setattr("pals_agent.recipe_semantic.query_embedding", lambda *a, **k: None)
+
+
 def cubic_inputs():
     request, batch, verdict = inputs()
     request["statement"] = (
@@ -59,7 +64,7 @@ def cubic_inputs():
     batch["batch_sha256"] = contract.digest(
         {
             "schema_version": contract.CONTENT_SCHEMA,
-            **{k: batch[k] for k in ("output_language", "toolchain_sha256", "recipes")},
+            **{k: batch[k] for k in contract.CONTENT_FIELDS},
         }
     )
     verdict.update(
@@ -115,7 +120,7 @@ def run_cubic(provider):
             OpenAIResponsesClient(api_key="isolated-boundary", transport=provider),
             request,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     return result, records, batch
