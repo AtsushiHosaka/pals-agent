@@ -65,8 +65,8 @@ def test_pae_017_compose_uses_bounded_cold_compile_deadline_pair() -> None:
     verifier = compose.split("\n  verifier:\n", 1)[1].split("\n  reconciler:\n", 1)[0]
     assert 'PALS_LEAN_TIMEOUT_SECONDS: "300"' in verifier
     assert "cpus: 2.0" in verifier
-    assert "mem_limit: 4g" in verifier
-    assert "memswap_limit: 4g" in verifier
+    assert "mem_limit: 8g" in verifier
+    assert "memswap_limit: 8g" in verifier
     from pals_agent.lean_verifier.http_runtime import _MAX_TIMEOUT_SECONDS
 
     assert _MAX_TIMEOUT_SECONDS == 300
