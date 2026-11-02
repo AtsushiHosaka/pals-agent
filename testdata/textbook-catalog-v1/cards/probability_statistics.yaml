@@ -1,0 +1,1540 @@
+- id: prob_compl
+  kind: gap
+  level: 2
+  topic: 確率測度・余事象
+  statement: 確率測度Pと事象Aについて、P(Aᶜ)=1-P(A)が成り立つ。
+  statement_en: For a probability measure P and a measurable event A, P(Aᶜ) = 1 - P(A).
+  assumptions: [Pは確率測度, Aは可測な事象]
+  quantifiers: [任意の確率空間と事象A]
+  conclusion: P(Aᶜ)=1-P(A)である。
+  answer: |
+    AとAᶜは互いに素で、和集合は全事象である。有限加法性よりP(A)+P(Aᶜ)=P(Ω)=1となる。移項するとP(Aᶜ)=1-P(A)を得る。
+  strategy: Split the whole space into A and its complement and use additivity.
+  sketch:
+    - "setup: Note that A and Aᶜ are disjoint with union Ω."
+    - "apply_theorem: Additivity gives P(A) + P(Aᶜ) = P(Ω) = 1."
+    - "conclude: Rearrange to obtain P(Aᶜ) = 1 - P(A)."
+  openmath: (forall (P A) (-> (and (probability_measure P) (measurable_event A)) (= (prob P (set_compl A)) (- 1 (prob P A)))))
+  hard_negative:
+    statement: 確率測度でない有限測度μでもμ(Aᶜ)=1-μ(A)が成り立つ。
+    reason: 全測度が1とは限らず、正しくはμ(Aᶜ)=μ(Ω)-μ(A)である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A : Set Ω), MeasurableSet A → μ.real Aᶜ = 1 - μ.real A
+  proof: |
+    by
+      intro Ω _ μ _ A hA
+      have h := MeasureTheory.probReal_add_probReal_compl (μ := μ) hA
+      linarith
+- id: prob_union_add_inter
+  kind: gap
+  level: 2
+  topic: 確率測度・包除原理
+  statement: 事象A,Bについて、P(A∪B)=P(A)+P(B)-P(A∩B)が成り立つ。
+  statement_en: For measurable events A and B, P(A ∪ B) = P(A) + P(B) - P(A ∩ B).
+  assumptions: [Pは確率測度, AとBは可測な事象]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: P(A∪B)=P(A)+P(B)-P(A∩B)である。
+  answer: |
+    A∪BはAとB\Aの互いに素な和なのでP(A∪B)=P(A)+P(B\A)である。またBはA∩BとB\Aの互いに素な和なのでP(B)=P(A∩B)+P(B\A)である。二式からP(B\A)を消去すると結論を得る。
+  strategy: Use two disjoint decompositions sharing the piece B \ A.
+  sketch:
+    - "setup: Decompose A ∪ B = A ⊔ (B \\ A) and B = (A ∩ B) ⊔ (B \\ A)."
+    - "apply_theorem: Apply additivity to both decompositions."
+    - "derive: Eliminate P(B \\ A) between the two equations."
+    - "conclude: This yields P(A ∪ B) = P(A) + P(B) - P(A ∩ B)."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B)) (= (prob P (union A B)) (- (+ (prob P A) (prob P B)) (prob P (inter A B))))))
+  hard_negative:
+    statement: 任意の事象A,BについてP(A∪B)=P(A)+P(B)である。
+    reason: これはAとBが互いに素な場合などP(A∩B)=0のときに限る。A=Bで確率が正なら成り立たない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → μ.real (A ∪ B) = μ.real A + μ.real B - μ.real (A ∩ B)
+  proof: |
+    by
+      intro Ω _ μ _ A B _ hB
+      have h := MeasureTheory.measureReal_union_add_inter (μ := μ) (s := A) hB
+      linarith
+- id: prob_union_bound_finite
+  kind: gap
+  level: 2
+  topic: 確率測度・和集合の上界
+  statement: 集合の有限族A_iについて、P(⋃A_i)≤ΣP(A_i)が成り立つ。
+  statement_en: For a finite family of sets A_i, P(⋃_i A_i) ≤ Σ_i P(A_i).
+  assumptions: [Pは確率測度, sは有限な添字集合]
+  quantifiers: [任意の確率空間, 有限集合s, 集合族A]
+  conclusion: P(⋃_{i∈s}A_i)≤Σ_{i∈s}P(A_i)である。
+  answer: |
+    sの要素数に関する帰納法で示す。空の場合は両辺とも0である。要素を一つ加えるときは、二つの集合についてP(B∪C)≤P(B)+P(C)を用いて帰納法の仮定につなげる。この二集合の不等式は測度の劣加法性である。
+  strategy: Induct on the finite index set using subadditivity for two sets.
+  sketch:
+    - "induction: Induct on the finite set s."
+    - "setup: The empty union has probability 0, which settles the base case."
+    - "apply_theorem: For the step, use P(B ∪ C) ≤ P(B) + P(C)."
+    - "conclude: Combine with the induction hypothesis."
+  openmath: (forall (P s A) (-> (and (probability_measure P) (finite_set s)) (<= (prob P (union_over s A)) (sum s (lambda (i) (prob P (seq_value A i)))))))
+  hard_negative:
+    statement: 有限族についてP(⋃A_i)=ΣP(A_i)が常に成り立つ。
+    reason: 等号には互いに素であることなどが必要で、共通部分が正の確率をもつと右辺の方が大きくなる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (ι : Type*) (s : Finset ι) (A : ι → Set Ω), μ.real (⋃ i ∈ s, A i) ≤ ∑ i ∈ s, μ.real (A i)
+  proof: |
+    by
+      intro Ω _ μ _ ι s A
+      exact MeasureTheory.measureReal_biUnion_finset_le s A
+- id: cond_mul_rule
+  kind: gap
+  level: 2
+  topic: 条件付き確率・乗法公式
+  statement: 事象Aが正の確率をもつとき、P(B|A)P(A)=P(A∩B)が成り立つ。
+  statement_en: If the event A has positive probability, then P(B|A) P(A) = P(A ∩ B).
+  assumptions: [Pは確率測度, Aは可測な事象, P(A)>0]
+  quantifiers: [任意の確率空間, 事象A, 集合B]
+  conclusion: P(B|A)P(A)=P(A∩B)である。
+  answer: |
+    条件付き確率の定義はP(B|A)=P(A∩B)/P(A)である。P(A)>0なので両辺にP(A)を掛けると結論を得る。
+  strategy: Clear the denominator in the definition of conditional probability.
+  sketch:
+    - "translate: Write P(B|A) = P(A ∩ B) / P(A)."
+    - "derive: Multiply by P(A), which is nonzero."
+    - "conclude: This gives P(B|A) P(A) = P(A ∩ B)."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (> (prob P A) 0)) (= (* (cond_prob P B A) (prob P A)) (prob P (inter A B)))))
+  hard_negative:
+    statement: P(B|A)P(A)=P(B)が成り立つ。
+    reason: 左辺はP(A∩B)であり、P(B)に等しいのはP(B\A)=0のときに限られる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → 0 < μ.real A → (ProbabilityTheory.cond μ A).real B * μ.real A = μ.real (A ∩ B)
+  proof: |
+    by
+      intro Ω _ μ _ A B hA _
+      simp only [MeasureTheory.Measure.real]
+      rw [← ENNReal.toReal_mul, ProbabilityTheory.cond_mul_eq_inter hA B μ]
+- id: total_probability_two
+  kind: gap
+  level: 2
+  topic: 条件付き確率・全確率の公式
+  statement: 0<P(A)<1のとき、事象Bについて P(B)=P(B|A)P(A)+P(B|Aᶜ)P(Aᶜ) が成り立つ。
+  statement_en: If A and Aᶜ both have positive probability, then for an event B, P(B) = P(B|A) P(A) + P(B|Aᶜ) P(Aᶜ).
+  assumptions: [Pは確率測度, AとBは可測な事象, P(A)>0かつP(Aᶜ)>0]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: P(B)=P(B|A)P(A)+P(B|Aᶜ)P(Aᶜ)である。
+  answer: |
+    BはB∩AとB∩Aᶜの互いに素な和なのでP(B)=P(A∩B)+P(Aᶜ∩B)である。乗法公式よりP(A∩B)=P(B|A)P(A)、P(Aᶜ∩B)=P(B|Aᶜ)P(Aᶜ)である。これらを代入すると結論を得る。
+  strategy: Split B along A and Aᶜ, then apply the multiplication rule to each piece.
+  sketch:
+    - "case_split: Decompose B into B ∩ A and B ∩ Aᶜ."
+    - "apply_theorem: Use additivity for the disjoint union."
+    - "derive: Rewrite each piece with the multiplication rule."
+    - "conclude: Sum the two terms."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (> (prob P A) 0) (> (prob P (set_compl A)) 0)) (= (prob P B) (+ (* (cond_prob P B A) (prob P A)) (* (cond_prob P B (set_compl A)) (prob P (set_compl A)))))))
+  hard_negative:
+    statement: P(B)=P(B|A)+P(B|Aᶜ)が成り立つ。
+    reason: 重みP(A),P(Aᶜ)が抜けている。B=Ωなら左辺は1だが右辺は2になる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → 0 < μ.real A → 0 < μ.real Aᶜ → μ.real B = (ProbabilityTheory.cond μ A).real B * μ.real A + (ProbabilityTheory.cond μ Aᶜ).real B * μ.real Aᶜ
+  proof: |
+    by
+      intro Ω _ μ _ A B hA _ _ _
+      simp only [MeasureTheory.Measure.real]
+      rw [← ENNReal.toReal_mul, ← ENNReal.toReal_mul,
+        ← ENNReal.toReal_add (ENNReal.mul_ne_top (MeasureTheory.measure_ne_top _ _) (MeasureTheory.measure_ne_top _ _))
+          (ENNReal.mul_ne_top (MeasureTheory.measure_ne_top _ _) (MeasureTheory.measure_ne_top _ _)),
+        ProbabilityTheory.cond_add_cond_compl_eq hA μ]
+- id: total_probability_partition
+  kind: textbook
+  level: 2
+  topic: 条件付き確率・全確率の公式
+  statement: 全事象の有限分割A_iの各P(A_i)が正のとき、事象Bについて P(B)=Σ_iP(B|A_i)P(A_i) が成り立つ。
+  statement_en: If the finitely many measurable events A_i partition the sample space and each has positive probability, then P(B) = Σ_i P(B|A_i) P(A_i) for every event B.
+  assumptions: [Pは確率測度, A_iは可測で互いに素, ⋃A_i=Ω, P(A_i)>0, Bは可測な事象]
+  quantifiers: [任意の確率空間, 有限添字集合ι, 分割A, 事象B]
+  conclusion: P(B)=Σ_iP(B|A_i)P(A_i)である。
+  answer: |
+    A_iが全事象を覆うのでB=⋃_i(A_i∩B)である。A_iは互いに素なのでA_i∩Bも互いに素で、加法性からP(B)=Σ_iP(A_i∩B)となる。各項に乗法公式P(A_i∩B)=P(B|A_i)P(A_i)を適用すると結論を得る。
+  strategy: Intersect B with the partition, add up, and apply the multiplication rule termwise.
+  sketch:
+    - "setup: Write B as the union of the sets A_i ∩ B."
+    - "derive: These sets are measurable and pairwise disjoint because the A_i are."
+    - "apply_theorem: Finite additivity gives P(B) = Σ P(A_i ∩ B)."
+    - "apply_theorem: The multiplication rule rewrites each term as P(B|A_i) P(A_i)."
+    - "conclude: Summing the rewritten terms gives the formula."
+  openmath: (forall (P I A B) (-> (and (probability_measure P) (event_partition A I) (measurable_event B) (forall (i) (-> (in i I) (> (prob P (seq_value A i)) 0)))) (= (prob P B) (sum I (lambda (i) (* (cond_prob P B (seq_value A i)) (prob P (seq_value A i))))))))
+  hard_negative:
+    statement: A_iが全事象を覆えば、互いに素でなくても同じ公式が成り立つ。
+    reason: 重なりがあると二重に数える。A_1=A_2=ΩならB=Ωで右辺は2になる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (ι : Type*) [Fintype ι] (A : ι → Set Ω) (B : Set Ω), (∀ i, MeasurableSet (A i)) → Pairwise (fun i j => Disjoint (A i) (A j)) → (⋃ i, A i) = Set.univ → MeasurableSet B → (∀ i, 0 < μ.real (A i)) → μ.real B = ∑ i, (ProbabilityTheory.cond μ (A i)).real B * μ.real (A i)
+  proof: |
+    by
+      intro Ω _ μ _ ι _ A B hA hd hu hB _
+      have hmul : ∀ i, (ProbabilityTheory.cond μ (A i)).real B * μ.real (A i) = μ.real (A i ∩ B) := by
+        intro i
+        simp only [MeasureTheory.Measure.real]
+        rw [← ENNReal.toReal_mul, ProbabilityTheory.cond_mul_eq_inter (hA i) B μ]
+      simp_rw [hmul]
+      have hB' : (⋃ i, A i ∩ B) = B := by
+        rw [← Set.iUnion_inter, hu, Set.univ_inter]
+      have hsum : μ (⋃ i, A i ∩ B) = ∑' i, μ (A i ∩ B) :=
+        MeasureTheory.measure_iUnion
+          (fun i j hij => (hd hij).mono Set.inter_subset_left Set.inter_subset_left)
+          (fun i => (hA i).inter hB)
+      rw [hB', tsum_fintype] at hsum
+      simp only [MeasureTheory.Measure.real]
+      rw [hsum, ENNReal.toReal_sum (fun _ _ => MeasureTheory.measure_ne_top _ _)]
+- id: bayes_theorem
+  kind: named
+  level: 2
+  topic: 条件付き確率・ベイズの定理
+  statement: 事象A,Bの確率がともに正のとき、P(B|A)=P(A|B)P(B)/P(A)が成り立つ（ベイズの定理）。
+  statement_en: "Bayes' theorem: if the events A and B have positive probability, then P(B|A) = P(A|B) P(B) / P(A)."
+  assumptions: [Pは確率測度, AとBは可測な事象, P(A)>0, P(B)>0]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: P(B|A)=P(A|B)P(B)/P(A)である。
+  answer: |
+    乗法公式からP(B|A)P(A)=P(A∩B)、P(A|B)P(B)=P(B∩A)である。A∩B=B∩Aなので両者は等しい。P(A)>0で割ると結論を得る。
+  strategy: Express the same intersection in two ways by the multiplication rule.
+  sketch:
+    - "apply_theorem: Write P(A ∩ B) = P(B|A) P(A)."
+    - "apply_theorem: Write P(B ∩ A) = P(A|B) P(B)."
+    - "derive: Equate the right-hand sides since A ∩ B = B ∩ A."
+    - "conclude: Divide by P(A) > 0."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (> (prob P A) 0) (> (prob P B) 0)) (= (cond_prob P B A) (/ (* (cond_prob P A B) (prob P B)) (prob P A)))))
+  hard_negative:
+    statement: 常にP(B|A)=P(A|B)である。
+    reason: 両者の比はP(B)/P(A)であり、P(A)≠P(B)かつP(A∩B)>0なら等しくない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → 0 < μ.real A → 0 < μ.real B → (ProbabilityTheory.cond μ A).real B = (ProbabilityTheory.cond μ B).real A * μ.real B / μ.real A
+  proof: |
+    by
+      intro Ω _ μ _ A B hA hB hPA _
+      have h1 : (ProbabilityTheory.cond μ A).real B * μ.real A = μ.real (A ∩ B) := by
+        simp only [MeasureTheory.Measure.real]
+        rw [← ENNReal.toReal_mul, ProbabilityTheory.cond_mul_eq_inter hA B μ]
+      have h2 : (ProbabilityTheory.cond μ B).real A * μ.real B = μ.real (B ∩ A) := by
+        simp only [MeasureTheory.Measure.real]
+        rw [← ENNReal.toReal_mul, ProbabilityTheory.cond_mul_eq_inter hB A μ]
+      rw [eq_div_iff hPA.ne', h1, h2, Set.inter_comm]
+- id: indep_set_iff_mul
+  kind: gap
+  level: 2
+  topic: 独立性・事象の独立
+  statement: 可測な事象A,Bが独立であることと、P(A∩B)=P(A)P(B)は同値である。
+  statement_en: Measurable events A and B are independent if and only if P(A ∩ B) = P(A) P(B).
+  assumptions: [Pは確率測度, AとBは可測な事象]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: AとBの独立性はP(A∩B)=P(A)P(B)と同値である。
+  answer: |
+    独立性を生成するσ加法族の独立と定めると、A,B自身に適用して積の等式を得る。逆に積の等式があれば、{A}と{B}はそれぞれ共通部分について閉じた生成系なので、π-λ定理により生成するσ加法族も独立になる。
+  strategy: Use the pi-lambda theorem to pass between generators and generated sigma-algebras.
+  sketch:
+    - "translate: Interpret independence of events through the sigma-algebras they generate."
+    - "derive: The forward direction specializes to A and B."
+    - "apply_theorem: The backward direction uses that singletons are pi-systems and the pi-lambda theorem."
+    - "conclude: Hence the two conditions are equivalent."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B)) (<-> (indep_events P A B) (= (prob P (inter A B)) (* (prob P A) (prob P B))))))
+  hard_negative:
+    statement: 互いに素な事象は独立である。
+    reason: P(A),P(B)>0で互いに素ならP(A∩B)=0≠P(A)P(B)なので独立でない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → (ProbabilityTheory.IndepSet A B μ ↔ μ.real (A ∩ B) = μ.real A * μ.real B)
+  proof: |
+    by
+      intro Ω _ μ _ A B hA hB
+      rw [ProbabilityTheory.indepSet_iff_measure_inter_eq_mul hA hB μ]
+      constructor
+      · intro h
+        simp only [MeasureTheory.Measure.real]
+        rw [h, ENNReal.toReal_mul]
+      · intro h
+        simp only [MeasureTheory.Measure.real] at h
+        rw [← ENNReal.toReal_mul] at h
+        exact (ENNReal.toReal_eq_toReal_iff' (MeasureTheory.measure_ne_top _ _)
+          (ENNReal.mul_ne_top (MeasureTheory.measure_ne_top _ _) (MeasureTheory.measure_ne_top _ _))).mp h
+- id: indep_event_compl
+  kind: gap
+  level: 2
+  topic: 独立性・余事象
+  statement: 事象AとBが独立ならば、AとBᶜも独立である。
+  statement_en: If the measurable events A and B are independent, then A and Bᶜ are independent.
+  assumptions: [Pは確率測度, AとBは可測な事象, AとBは独立]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: AとBᶜは独立である。
+  answer: |
+    AはA∩BとA∩Bᶜの互いに素な和なのでP(A∩Bᶜ)=P(A)-P(A∩B)である。独立性よりこれはP(A)-P(A)P(B)=P(A)(1-P(B))=P(A)P(Bᶜ)に等しい。よってAとBᶜは独立である。
+  strategy: Subtract the independent intersection from P(A) and factor.
+  sketch:
+    - "setup: Decompose A into A ∩ B and A ∩ Bᶜ."
+    - "derive: Additivity gives P(A ∩ Bᶜ) = P(A) - P(A ∩ B)."
+    - "apply_theorem: Independence turns this into P(A)(1 - P(B))."
+    - "conclude: Since 1 - P(B) = P(Bᶜ), the events A and Bᶜ are independent."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (indep_events P A B)) (indep_events P A (set_compl B))))
+  hard_negative:
+    statement: AとB、AとCがそれぞれ独立ならば、AとB∩Cも独立である。
+    reason: 対ごとの独立だけでは足りない。2枚のコインでA=「表裏が一致」、B=「1枚目が表」、C=「2枚目が表」とすると反例になる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → ProbabilityTheory.IndepSet A B μ → ProbabilityTheory.IndepSet A Bᶜ μ
+  proof: |
+    by
+      intro Ω _ μ _ A B _ _ h
+      rw [ProbabilityTheory.IndepSet_iff_Indep] at h ⊢
+      refine ProbabilityTheory.indep_of_indep_of_le_right h ?_
+      apply MeasurableSpace.generateFrom_le
+      intro t ht
+      rw [Set.mem_singleton_iff] at ht
+      rw [ht]
+      exact (MeasurableSpace.measurableSet_generateFrom (Set.mem_singleton B)).compl
+- id: indep_event_cond_eq
+  kind: gap
+  level: 2
+  topic: 独立性・条件付き確率
+  statement: 事象AとBが独立でP(A)>0ならば、P(B|A)=P(B)である。
+  statement_en: If the measurable events A and B are independent and P(A) > 0, then P(B|A) = P(B).
+  assumptions: [Pは確率測度, AとBは可測な事象, AとBは独立, P(A)>0]
+  quantifiers: [任意の確率空間と事象A, B]
+  conclusion: P(B|A)=P(B)である。
+  answer: |
+    定義と独立性からP(B|A)=P(A∩B)/P(A)=P(A)P(B)/P(A)である。P(A)>0なので約分でき、P(B|A)=P(B)を得る。
+  strategy: Substitute the product formula into the definition of conditional probability.
+  sketch:
+    - "translate: Write P(B|A) P(A) = P(A ∩ B)."
+    - "apply_theorem: Independence gives P(A ∩ B) = P(B) P(A)."
+    - "conclude: Cancel P(A) > 0."
+  openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (indep_events P A B) (> (prob P A) 0)) (= (cond_prob P B A) (prob P B))))
+  hard_negative:
+    statement: 互いに素な事象A,BについてP(A)>0ならP(B|A)=P(B)である。
+    reason: 互いに素ならP(B|A)=0であり、P(B)>0のときP(B)と異なる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → ProbabilityTheory.IndepSet A B μ → 0 < μ.real A → (ProbabilityTheory.cond μ A).real B = μ.real B
+  proof: |
+    by
+      intro Ω _ μ _ A B hA _ h hPA
+      have h1 : (ProbabilityTheory.cond μ A).real B * μ.real A = μ.real (A ∩ B) := by
+        simp only [MeasureTheory.Measure.real]
+        rw [← ENNReal.toReal_mul, ProbabilityTheory.cond_mul_eq_inter hA B μ]
+      have h2 : μ.real (A ∩ B) = μ.real A * μ.real B := by
+        simp only [MeasureTheory.Measure.real]
+        rw [h.measure_inter_eq_mul, ENNReal.toReal_mul]
+      have h3 : (ProbabilityTheory.cond μ A).real B * μ.real A = μ.real B * μ.real A := by
+        rw [h1, h2, mul_comm]
+      exact mul_right_cancel₀ hPA.ne' h3
+- id: indep_fun_comp
+  kind: gap
+  level: 2
+  topic: 独立性・確率変数の変換
+  statement: 確率変数XとYが独立で、φとψが可測写像ならば、φ(X)とψ(Y)も独立である。
+  statement_en: If random variables X and Y are independent and φ, ψ are measurable maps, then φ(X) and ψ(Y) are independent.
+  assumptions: [Pは確率測度, XとYは独立, φとψは可測]
+  quantifiers: [任意の確率空間, 確率変数X, Y, 可測写像φ, ψ]
+  conclusion: φ∘Xとψ∘Yは独立である。
+  answer: |
+    可測集合C,Dに対し、{φ(X)∈C}={X∈φ⁻¹(C)}、{ψ(Y)∈D}={Y∈ψ⁻¹(D)}である。φ⁻¹(C)とψ⁻¹(D)は可測なので、XとYの独立性から両事象の共通部分の確率は積に分解する。これはφ(X)とψ(Y)の独立性そのものである。
+  strategy: Pull events back through the measurable maps and use independence of X and Y.
+  sketch:
+    - "setup: Fix measurable sets C and D in the target spaces."
+    - "translate: Rewrite the events through the preimages under φ and ψ."
+    - "apply_theorem: Apply independence of X and Y to those measurable preimages."
+    - "conclude: The product formula is exactly independence of φ(X) and ψ(Y)."
+  openmath: (forall (P X Y f g) (-> (and (probability_measure P) (indep_rv P X Y) (measurable_map f) (measurable_map g)) (indep_rv P (map_compose f X) (map_compose g Y))))
+  hard_negative:
+    statement: φ(X)とψ(Y)が独立ならXとYも独立である。
+    reason: φとψが定数写像なら像は常に独立だが、XとYは任意である。
+  target: |
+    ∀ (Ω β β' γ γ' : Type*) [MeasurableSpace Ω] [MeasurableSpace β] [MeasurableSpace β'] [MeasurableSpace γ] [MeasurableSpace γ'] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → β) (Y : Ω → β') (φ : β → γ) (ψ : β' → γ'), ProbabilityTheory.IndepFun X Y μ → Measurable φ → Measurable ψ → ProbabilityTheory.IndepFun (φ ∘ X) (ψ ∘ Y) μ
+  proof: |
+    by
+      intro Ω β β' γ γ' _ _ _ _ _ μ _ X Y φ ψ h hφ hψ
+      exact h.comp hφ hψ
+- id: expectation_linear
+  kind: gap
+  level: 2
+  topic: 期待値・線形性
+  statement: 可積分な確率変数X,Yと実数a,bについて、E[aX+bY]=aE[X]+bE[Y]が成り立つ。
+  statement_en: For integrable random variables X, Y and real numbers a, b, E[aX + bY] = a E[X] + b E[Y].
+  assumptions: [Pは確率測度, XとYは可積分]
+  quantifiers: [任意の確率空間, 確率変数X, Y, 実数a, b]
+  conclusion: E[aX+bY]=aE[X]+bE[Y]である。
+  answer: |
+    XとYが可積分なのでaXとbYも可積分である。積分の加法性と定数倍の性質からE[aX+bY]=E[aX]+E[bY]=aE[X]+bE[Y]となる。独立性はこの議論に現れない。
+  strategy: Apply additivity and homogeneity of the integral.
+  sketch:
+    - "setup: Note that aX and bY are integrable."
+    - "apply_theorem: Additivity of the integral splits the sum."
+    - "conclude: Homogeneity pulls out the constants a and b."
+  openmath: (forall (P X Y a b) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P)) (= (expectation P (+ (* a X) (* b Y))) (+ (* a (expectation P X)) (* b (expectation P Y))))))
+  hard_negative:
+    statement: 可積分なX,YについてE[XY]=E[X]E[Y]が常に成り立つ。
+    reason: 線形性と違い積の公式には独立性などが要る。X=Yが非定数ならE[X²]>E[X]²である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ) (a b : ℝ), MeasureTheory.Integrable X μ → MeasureTheory.Integrable Y μ → ∫ ω, (a * X ω + b * Y ω) ∂μ = a * ∫ ω, X ω ∂μ + b * ∫ ω, Y ω ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y a b hX hY
+      rw [MeasureTheory.integral_add (hX.const_mul a) (hY.const_mul b),
+        MeasureTheory.integral_const_mul, MeasureTheory.integral_const_mul]
+- id: expectation_mono_ae
+  kind: gap
+  level: 2
+  topic: 期待値・単調性
+  statement: 可積分なX,Yがほとんど確実にX≤Yを満たすならば、E[X]≤E[Y]である。
+  statement_en: If integrable random variables satisfy X ≤ Y almost surely, then E[X] ≤ E[Y].
+  assumptions: [Pは確率測度, XとYは可積分, ほとんど確実にX≤Y]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: E[X]≤E[Y]である。
+  answer: |
+    Y-Xは可積分で、ほとんど確実に非負である。ほとんど確実に非負な関数の積分は非負なので0≤E[Y-X]である。線形性からE[Y-X]=E[Y]-E[X]となり、E[X]≤E[Y]を得る。
+  strategy: Reduce to nonnegativity of the integral of Y - X.
+  sketch:
+    - "setup: Consider Y - X, which is integrable and almost surely nonnegative."
+    - "apply_theorem: The integral of an almost surely nonnegative function is nonnegative."
+    - "conclude: Linearity gives E[Y] - E[X] ≥ 0."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P) (ae_le P X Y)) (<= (expectation P X) (expectation P Y))))
+  hard_negative:
+    statement: E[X]≤E[Y]ならばほとんど確実にX≤Yである。
+    reason: Xが±1を等確率でとり、Y=0ならE[X]=E[Y]だが、確率1/2でX>Yとなる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.Integrable X μ → MeasureTheory.Integrable Y μ → (∀ᵐ ω ∂μ, X ω ≤ Y ω) → ∫ ω, X ω ∂μ ≤ ∫ ω, Y ω ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY h
+      exact MeasureTheory.integral_mono_ae hX hY h
+- id: expectation_indicator
+  kind: gap
+  level: 2
+  topic: 期待値・指示関数
+  statement: 事象Aの指示関数1_Aについて、E[1_A]=P(A)が成り立つ。
+  statement_en: For a measurable event A, the expectation of its indicator function equals P(A).
+  assumptions: [Pは確率測度, Aは可測な事象]
+  quantifiers: [任意の確率空間と事象A]
+  conclusion: E[1_A]=P(A)である。
+  answer: |
+    1_AはA上で1、Aの外で0をとる単関数である。単関数の積分の定義から、その積分は1·P(A)+0·P(Aᶜ)=P(A)である。
+  strategy: Compute the integral of a two-valued simple function.
+  sketch:
+    - "translate: View the indicator as a simple function with values 1 and 0."
+    - "derive: Its integral is 1·P(A) + 0·P(Aᶜ)."
+    - "conclude: This equals P(A)."
+  openmath: (forall (P A) (-> (and (probability_measure P) (measurable_event A)) (= (expectation P (indicator_of A)) (prob P A))))
+  hard_negative:
+    statement: E[1_A 1_B]=P(A)P(B)が常に成り立つ。
+    reason: 左辺はP(A∩B)であり、積に等しいのはAとBが独立なときである。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A : Set Ω), MeasurableSet A → ∫ ω, A.indicator (1 : Ω → ℝ) ω ∂μ = μ.real A
+  proof: |
+    by
+      intro Ω _ μ _ A hA
+      exact MeasureTheory.integral_indicator_one hA
+- id: expectation_indep_mul
+  kind: textbook
+  level: 2
+  topic: 期待値・独立な確率変数の積
+  statement: 可積分な確率変数XとYが独立ならば、XYも可積分でE[XY]=E[X]E[Y]である。
+  statement_en: If integrable random variables X and Y are independent, then XY is integrable and E[XY] = E[X] E[Y].
+  assumptions: [Pは確率測度, XとYは可積分, XとYは独立]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: XYは可積分でE[XY]=E[X]E[Y]である。
+  answer: |
+    指示関数の場合は独立性の定義そのものである。線形性から単関数に、単調収束定理から非負可測関数に広がる。これを|X|,|Y|に適用するとE[|XY|]=E[|X|]E[|Y|]<∞なのでXYは可積分である。正部分と負部分に分けて線形性を使うと、一般のXとYでE[XY]=E[X]E[Y]を得る。
+  strategy: Run the standard machine from indicators to integrable functions.
+  sketch:
+    - "setup: For indicators of events the identity is the definition of independence."
+    - "derive: Extend to simple functions by bilinearity."
+    - "apply_theorem: Extend to nonnegative measurable functions by monotone convergence."
+    - "derive: Applying this to |X| and |Y| gives integrability of XY."
+    - "conclude: Split into positive and negative parts to finish."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (integrable_rv X P) (integrable_rv Y P) (indep_rv P X Y)) (and (integrable_rv (* X Y) P) (= (expectation P (* X Y)) (* (expectation P X) (expectation P Y))))))
+  hard_negative:
+    statement: E[XY]=E[X]E[Y]ならばXとYは独立である。
+    reason: Xが-1,0,1を等確率でとりY=X²なら積の等式は成り立つが、YはXで決まるので独立でない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.Integrable X μ → MeasureTheory.Integrable Y μ → ProbabilityTheory.IndepFun X Y μ → MeasureTheory.Integrable (fun ω => X ω * Y ω) μ ∧ ∫ ω, X ω * Y ω ∂μ = (∫ ω, X ω ∂μ) * ∫ ω, Y ω ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY h
+      exact ⟨h.integrable_mul hX hY, h.integral_fun_mul_eq_mul_integral hX.1 hY.1⟩
+- id: variance_eq_sub
+  kind: gap
+  level: 2
+  topic: 分散・基本公式
+  statement: 2乗可積分な確率変数Xについて、V[X]=E[X²]-E[X]²が成り立つ。
+  statement_en: For a square-integrable random variable X, Var(X) = E[X²] - E[X]².
+  assumptions: [Pは確率測度, Xは2乗可積分]
+  quantifiers: [任意の確率空間と確率変数X]
+  conclusion: V[X]=E[X²]-E[X]²である。
+  answer: |
+    m=E[X]とおくと(X-m)²=X²-2mX+m²である。両辺の期待値をとり線形性を使うとV[X]=E[X²]-2m·m+m²=E[X²]-m²を得る。
+  strategy: Expand the square in the definition and apply linearity.
+  sketch:
+    - "setup: Put m = E[X]."
+    - "derive: Expand (X - m)² = X² - 2mX + m²."
+    - "apply_theorem: Take expectations with linearity."
+    - "conclude: Simplify to E[X²] - m²."
+  openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (variance P X) (- (expectation P (^ X 2)) (^ (expectation P X) 2)))))
+  hard_negative:
+    statement: V[X]=E[X²]が常に成り立つ。
+    reason: これはE[X]=0のときに限る。定数X=1ならV[X]=0だがE[X²]=1である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ), MeasureTheory.MemLp X 2 μ → ProbabilityTheory.variance X μ = ∫ ω, X ω ^ 2 ∂μ - (∫ ω, X ω ∂μ) ^ 2
+  proof: |
+    by
+      intro Ω _ μ _ X hX
+      exact ProbabilityTheory.variance_eq_sub hX
+- id: variance_affine
+  kind: gap
+  level: 2
+  topic: 分散・一次変換
+  statement: 2乗可積分なXと実数a,bについて、V[aX+b]=a²V[X]が成り立つ。
+  statement_en: For a square-integrable random variable X and real numbers a, b, Var(aX + b) = a² Var(X).
+  assumptions: [Pは確率測度, Xは2乗可積分]
+  quantifiers: [任意の確率空間, 確率変数X, 実数a, b]
+  conclusion: V[aX+b]=a²V[X]である。
+  answer: |
+    E[aX+b]=aE[X]+bなので、(aX+b)-E[aX+b]=a(X-E[X])である。両辺を2乗して期待値をとるとV[aX+b]=a²E[(X-E[X])²]=a²V[X]となる。
+  strategy: The shift cancels when centering, and the scale factor comes out squared.
+  sketch:
+    - "derive: Compute E[aX + b] = a E[X] + b."
+    - "derive: Hence the centered variable is a (X - E[X])."
+    - "conclude: Squaring and taking expectations gives a² Var(X)."
+  openmath: (forall (P X a b) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (variance P (+ (* a X) b)) (* (^ a 2) (variance P X)))))
+  hard_negative:
+    statement: V[aX+b]=aV[X]+bが成り立つ。
+    reason: 定数は分散に影響せず係数は2乗で効く。a=2,b=0でV[2X]=4V[X]である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (a b : ℝ), MeasureTheory.MemLp X 2 μ → ProbabilityTheory.variance (fun ω => a * X ω + b) μ = a ^ 2 * ProbabilityTheory.variance X μ
+  proof: |
+    by
+      intro Ω _ μ _ X a b hX
+      rw [ProbabilityTheory.variance_add_const (hX.1.const_mul a) b]
+      exact ProbabilityTheory.variance_const_mul a X μ
+- id: variance_add_covariance
+  kind: gap
+  level: 2
+  topic: 分散・共分散との関係
+  statement: 2乗可積分なX,Yについて、V[X+Y]=V[X]+2Cov(X,Y)+V[Y]が成り立つ。
+  statement_en: For square-integrable random variables X and Y, Var(X + Y) = Var(X) + 2 Cov(X, Y) + Var(Y).
+  assumptions: [Pは確率測度, XとYは2乗可積分]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: V[X+Y]=V[X]+2Cov(X,Y)+V[Y]である。
+  answer: |
+    U=X-E[X]、W=Y-E[Y]とおくと、X+Yの中心化はU+Wである。(U+W)²=U²+2UW+W²の期待値をとると、E[U²]=V[X]、E[W²]=V[Y]、E[UW]=Cov(X,Y)から結論を得る。
+  strategy: Center both variables and expand the square of the sum.
+  sketch:
+    - "setup: Center X and Y to get U and W."
+    - "derive: The centered sum is U + W."
+    - "derive: Expand (U + W)² and take expectations."
+    - "conclude: Identify the terms as the variances and the covariance."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (= (variance P (+ X Y)) (+ (variance P X) (* 2 (covariance P X Y)) (variance P Y)))))
+  hard_negative:
+    statement: 任意のX,YでV[X+Y]=V[X]+V[Y]である。
+    reason: 無相関でないと成り立たない。Y=XならV[2X]=4V[X]で、右辺の2V[X]と異なる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.MemLp X 2 μ → MeasureTheory.MemLp Y 2 μ → ProbabilityTheory.variance (fun ω => X ω + Y ω) μ = ProbabilityTheory.variance X μ + 2 * ProbabilityTheory.covariance X Y μ + ProbabilityTheory.variance Y μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY
+      exact ProbabilityTheory.variance_fun_add hX hY
+- id: variance_indep_sum
+  kind: textbook
+  level: 2
+  topic: 分散・独立な和
+  statement: 対ごとに独立で2乗可積分な確率変数の有限和の分散は、各分散の和に等しい。
+  statement_en: The variance of a finite sum of pairwise independent square-integrable random variables equals the sum of their variances.
+  assumptions: [Pは確率測度, 各X_iは2乗可積分, X_iは対ごとに独立]
+  quantifiers: [任意の確率空間, 有限な添字集合s, 確率変数族X]
+  conclusion: V[Σ_{i∈s}X_i]=Σ_{i∈s}V[X_i]である。
+  answer: |
+    Σ_iX_iの中心化はΣ_iU_i（U_i=X_i-E[X_i]）である。2乗を展開するとV[Σ_iX_i]=Σ_iE[U_i²]+Σ_{i≠j}E[U_iU_j]となる。i≠jではX_iとX_jが独立なのでE[U_iU_j]=E[U_i]E[U_j]=0である。よって残るのは各分散の和である。
+  strategy: Expand the square of the centered sum; independence kills the cross terms.
+  sketch:
+    - "setup: Center each variable as U_i = X_i - E[X_i]."
+    - "derive: Expand the square of the sum into diagonal and off-diagonal terms."
+    - "apply_theorem: Pairwise independence gives E[U_i U_j] = 0 for i ≠ j."
+    - "conclude: Only the diagonal terms remain, which are the variances."
+  openmath: (forall (P s X) (-> (and (probability_measure P) (finite_set s) (forall (i) (-> (in i s) (square_integrable_rv (seq_value X i) P))) (pairwise_indep_rv P X)) (= (variance P (sum s (lambda (i) (seq_value X i)))) (sum s (lambda (i) (variance P (seq_value X i)))))))
+  hard_negative:
+    statement: 独立性なしで分散は和について加法的である。
+    reason: 交差項が残る。X_2=-X_1なら和は0で分散0だが、右辺は2V[X_1]である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (ι : Type*) (s : Finset ι) (X : ι → Ω → ℝ), (∀ i ∈ s, MeasureTheory.MemLp (X i) 2 μ) → Set.Pairwise (↑s : Set ι) (fun i j => ProbabilityTheory.IndepFun (X i) (X j) μ) → ProbabilityTheory.variance (fun ω => ∑ i ∈ s, X i ω) μ = ∑ i ∈ s, ProbabilityTheory.variance (X i) μ
+  proof: |
+    by
+      intro Ω _ μ _ ι s X hX h
+      have e : (fun ω => ∑ i ∈ s, X i ω) = ∑ i ∈ s, X i := by
+        ext ω
+        simp [Finset.sum_apply]
+      rw [e]
+      exact ProbabilityTheory.IndepFun.variance_sum hX h
+- id: variance_zero_ae_const
+  kind: gap
+  level: 2
+  topic: 分散・退化
+  statement: 2乗可積分なXの分散が0ならば、Xはほとんど確実にE[X]に等しい。
+  statement_en: If a square-integrable random variable X has variance 0, then X = E[X] almost surely.
+  assumptions: [Pは確率測度, Xは2乗可積分, "V[X]=0"]
+  quantifiers: [任意の確率空間と確率変数X]
+  conclusion: ほとんど確実にX=E[X]である。
+  answer: |
+    V[X]=E[(X-E[X])²]=0で、(X-E[X])²は非負である。非負関数の積分が0ならその関数はほとんど至るところ0なので、ほとんど確実にX=E[X]である。
+  strategy: A nonnegative function with zero integral vanishes almost everywhere.
+  sketch:
+    - "translate: Write the hypothesis as E[(X - E[X])²] = 0."
+    - "apply_theorem: A nonnegative function with zero integral is zero almost everywhere."
+    - "conclude: Therefore X = E[X] almost surely."
+  openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P) (= (variance P X) 0)) (ae_eq P X (expectation P X))))
+  hard_negative:
+    statement: 分散が0ならXは全ての標本点でE[X]に等しい。
+    reason: 確率0の集合上では異なる値をとれるので、言えるのはほとんど確実な等号までである。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ), MeasureTheory.MemLp X 2 μ → ProbabilityTheory.variance X μ = 0 → ∀ᵐ ω ∂μ, X ω = ∫ ω', X ω' ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X hX h
+      exact ProbabilityTheory.ae_eq_integral_of_variance_eq_zero hX h
+- id: mse_decomposition
+  kind: gap
+  level: 2
+  topic: 分散・平均二乗誤差
+  statement: 2乗可積分なXと実数aについて、E[(X-a)²]=V[X]+(E[X]-a)²が成り立つ。
+  statement_en: For a square-integrable random variable X and a real number a, E[(X - a)²] = Var(X) + (E[X] - a)².
+  assumptions: [Pは確率測度, Xは2乗可積分]
+  quantifiers: [任意の確率空間, 確率変数X, 実数a]
+  conclusion: E[(X-a)²]=V[X]+(E[X]-a)²である。
+  answer: |
+    m=E[X]とおくと(X-a)²=(X-m)²+2(m-a)(X-m)+(m-a)²である。期待値をとるとE[X-m]=0より中央の項が消え、E[(X-a)²]=V[X]+(m-a)²となる。特にE[(X-a)²]はa=E[X]で最小になる。
+  strategy: Insert the mean into the square and note that the cross term has zero expectation.
+  sketch:
+    - "setup: Put m = E[X] and write X - a = (X - m) + (m - a)."
+    - "derive: Expand the square into three terms."
+    - "derive: The cross term has zero expectation because E[X - m] = 0."
+    - "conclude: The remaining terms are Var(X) and (m - a)²."
+  openmath: (forall (P X a) (-> (and (probability_measure P) (square_integrable_rv X P)) (= (expectation P (^ (- X a) 2)) (+ (variance P X) (^ (- (expectation P X) a) 2)))))
+  hard_negative:
+    statement: E[(X-a)²]はXの中央値で常に最小になる。
+    reason: 2乗誤差を最小にするのは平均である。中央値が最小にするのは絶対誤差E[|X-a|]である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (a : ℝ), MeasureTheory.MemLp X 2 μ → ∫ ω, (X ω - a) ^ 2 ∂μ = ProbabilityTheory.variance X μ + (∫ ω, X ω ∂μ - a) ^ 2
+  proof: |
+    by
+      intro Ω _ μ _ X a hX
+      have hX2 : MeasureTheory.Integrable (fun ω => X ω ^ 2) μ := hX.integrable_sq
+      have hX1 : MeasureTheory.Integrable X μ := hX.integrable one_le_two
+      have hv : ProbabilityTheory.variance X μ = ∫ ω, X ω ^ 2 ∂μ - (∫ ω, X ω ∂μ) ^ 2 :=
+        ProbabilityTheory.variance_eq_sub hX
+      have e : (fun ω => (X ω - a) ^ 2) = fun ω => X ω ^ 2 + (-(2 * a) * X ω + a ^ 2) := by
+        ext ω
+        ring
+      have hlin : MeasureTheory.Integrable (fun ω => -(2 * a) * X ω + a ^ 2) μ :=
+        (hX1.const_mul _).add (MeasureTheory.integrable_const _)
+      rw [e, MeasureTheory.integral_add hX2 hlin,
+        MeasureTheory.integral_add (hX1.const_mul _) (MeasureTheory.integrable_const _),
+        MeasureTheory.integral_const_mul, MeasureTheory.integral_const, hv]
+      simp
+      ring
+- id: covariance_eq_sub
+  kind: gap
+  level: 2
+  topic: 共分散・基本公式
+  statement: 2乗可積分なX,Yについて、Cov(X,Y)=E[XY]-E[X]E[Y]が成り立つ。
+  statement_en: For square-integrable random variables X and Y, Cov(X, Y) = E[XY] - E[X] E[Y].
+  assumptions: [Pは確率測度, XとYは2乗可積分]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: Cov(X,Y)=E[XY]-E[X]E[Y]である。
+  answer: |
+    (X-E[X])(Y-E[Y])=XY-E[Y]X-E[X]Y+E[X]E[Y]である。コーシー・シュワルツの不等式からXYは可積分で、各項の期待値がとれる。線形性からCov(X,Y)=E[XY]-E[X]E[Y]-E[X]E[Y]+E[X]E[Y]=E[XY]-E[X]E[Y]となる。
+  strategy: Expand the product in the definition and apply linearity.
+  sketch:
+    - "setup: Expand the product of the two centered variables."
+    - "derive: Integrability of XY follows from square integrability."
+    - "apply_theorem: Take expectations by linearity."
+    - "conclude: Two of the product terms cancel."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (= (covariance P X Y) (- (expectation P (* X Y)) (* (expectation P X) (expectation P Y))))))
+  hard_negative:
+    statement: Cov(X,Y)=0ならばXとYは独立である。
+    reason: Xが-1,0,1を等確率でとりY=X²なら共分散は0だが、YはXの関数で独立でない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.MemLp X 2 μ → MeasureTheory.MemLp Y 2 μ → ProbabilityTheory.covariance X Y μ = ∫ ω, X ω * Y ω ∂μ - (∫ ω, X ω ∂μ) * ∫ ω, Y ω ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY
+      exact ProbabilityTheory.covariance_eq_sub hX hY
+- id: covariance_indep_zero
+  kind: gap
+  level: 2
+  topic: 共分散・独立性
+  statement: 2乗可積分なXとYが独立ならば、Cov(X,Y)=0である。
+  statement_en: If square-integrable random variables X and Y are independent, then Cov(X, Y) = 0.
+  assumptions: [Pは確率測度, XとYは2乗可積分, XとYは独立]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: Cov(X,Y)=0である。
+  answer: |
+    Cov(X,Y)=E[XY]-E[X]E[Y]である。XとYが独立なのでE[XY]=E[X]E[Y]であり、差は0になる。
+  strategy: Combine the covariance formula with the product rule for independent variables.
+  sketch:
+    - "translate: Write Cov(X, Y) = E[XY] - E[X] E[Y]."
+    - "apply_theorem: Independence gives E[XY] = E[X] E[Y]."
+    - "conclude: The difference vanishes."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P) (indep_rv P X Y)) (= (covariance P X Y) 0)))
+  hard_negative:
+    statement: 無相関な確率変数は独立である。
+    reason: 独立から無相関は従うが逆は偽である。Xが-1,0,1を等確率でとるときのXとX²が反例である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.MemLp X 2 μ → MeasureTheory.MemLp Y 2 μ → ProbabilityTheory.IndepFun X Y μ → ProbabilityTheory.covariance X Y μ = 0
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY h
+      exact h.covariance_eq_zero hX hY
+- id: covariance_cauchy_schwarz
+  kind: gap
+  level: 3
+  topic: 共分散・コーシー・シュワルツ
+  statement: 2乗可積分なX,Yについて、Cov(X,Y)²≤V[X]V[Y]が成り立つ。
+  statement_en: For square-integrable random variables X and Y, Cov(X, Y)² ≤ Var(X) Var(Y).
+  assumptions: [Pは確率測度, XとYは2乗可積分]
+  quantifiers: [任意の確率空間と確率変数X, Y]
+  conclusion: Cov(X,Y)²≤V[X]V[Y]である。
+  answer: |
+    任意の実数tについて0≤V[tY+X]=t²V[Y]+2tCov(X,Y)+V[X]である。tの2次式が常に非負なので判別式は0以下であり、4Cov(X,Y)²-4V[X]V[Y]≤0となる。これは結論そのものである。V[Y]=0の場合も、1次式が常に非負ならCov(X,Y)=0となるので同じ不等式が成り立つ。
+  strategy: A quadratic in t that is always nonnegative has nonpositive discriminant.
+  sketch:
+    - "construct: Consider the variance of tY + X as a function of t."
+    - "derive: Expand it to t² Var(Y) + 2t Cov(X, Y) + Var(X)."
+    - "apply_theorem: Nonnegativity for all t forces the discriminant to be nonpositive."
+    - "conclude: Rearranging gives Cov(X, Y)² ≤ Var(X) Var(Y)."
+  openmath: (forall (P X Y) (-> (and (probability_measure P) (square_integrable_rv X P) (square_integrable_rv Y P)) (<= (^ (covariance P X Y) 2) (* (variance P X) (variance P Y)))))
+  hard_negative:
+    statement: 常にCov(X,Y)≤V[X]である。
+    reason: 相関の上界は分散の積の平方根である。Y=2Xなら、V[X]>0のときCov(X,Y)=2V[X]>V[X]となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ), MeasureTheory.MemLp X 2 μ → MeasureTheory.MemLp Y 2 μ → ProbabilityTheory.covariance X Y μ ^ 2 ≤ ProbabilityTheory.variance X μ * ProbabilityTheory.variance Y μ
+  proof: |
+    by
+      intro Ω _ μ _ X Y hX hY
+      have h : ∀ t : ℝ, 0 ≤ ProbabilityTheory.variance Y μ * (t * t) + (2 * ProbabilityTheory.covariance X Y μ) * t + ProbabilityTheory.variance X μ := by
+        intro t
+        have h0 := ProbabilityTheory.variance_nonneg (fun ω => t * Y ω + X ω) μ
+        rw [ProbabilityTheory.variance_fun_add (hY.const_mul t) hX,
+          ProbabilityTheory.variance_const_mul, ProbabilityTheory.covariance_const_mul_left,
+          ProbabilityTheory.covariance_comm Y X] at h0
+        nlinarith [h0]
+      have hd := discrim_le_zero h
+      unfold discrim at hd
+      nlinarith [hd]
+- id: sq_expectation_le
+  kind: gap
+  level: 2
+  topic: 期待値・2次モーメント
+  statement: 2乗可積分なXについて、E[X]²≤E[X²]が成り立つ。
+  statement_en: For a square-integrable random variable X, E[X]² ≤ E[X²].
+  assumptions: [Pは確率測度, Xは2乗可積分]
+  quantifiers: [任意の確率空間と確率変数X]
+  conclusion: E[X]²≤E[X²]である。
+  answer: |
+    分散は非負の確率変数の期待値なのでV[X]≥0である。V[X]=E[X²]-E[X]²なので、移項するとE[X]²≤E[X²]を得る。
+  strategy: Rearrange nonnegativity of the variance.
+  sketch:
+    - "apply_theorem: The variance is the expectation of a square, so it is nonnegative."
+    - "translate: Use Var(X) = E[X²] - E[X]²."
+    - "conclude: Rearrange the inequality."
+  openmath: (forall (P X) (-> (and (probability_measure P) (square_integrable_rv X P)) (<= (^ (expectation P X) 2) (expectation P (^ X 2)))))
+  hard_negative:
+    statement: 常にE[X²]≤E[X]²である。
+    reason: 不等号の向きが逆である。Xが±1を等確率でとるとE[X²]=1、E[X]²=0となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ), MeasureTheory.MemLp X 2 μ → (∫ ω, X ω ∂μ) ^ 2 ≤ ∫ ω, X ω ^ 2 ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X hX
+      have h0 := ProbabilityTheory.variance_nonneg X μ
+      have h1 : ProbabilityTheory.variance X μ = ∫ ω, X ω ^ 2 ∂μ - (∫ ω, X ω ∂μ) ^ 2 :=
+        ProbabilityTheory.variance_eq_sub hX
+      linarith
+- id: markov_inequality
+  kind: textbook
+  level: 2
+  topic: 確率不等式・マルコフの不等式
+  statement: ほとんど確実に非負で可積分なXと実数ε>0について、P(X≥ε)≤E[X]/εが成り立つ。
+  statement_en: "Markov's inequality: for an integrable, almost surely nonnegative random variable X and ε > 0, P(X ≥ ε) ≤ E[X] / ε."
+  assumptions: [Pは確率測度, Xは可積分, ほとんど確実にX≥0, ε>0]
+  quantifiers: [任意の確率空間, 確率変数X, 正の実数ε]
+  conclusion: P(X≥ε)≤E[X]/εである。
+  answer: |
+    A={X≥ε}とおくと、ほとんど確実にε1_A≤Xである。A上ではε≤Xであり、Aの外では1_A=0かつほとんど確実にX≥0だからである。期待値をとるとεP(A)≤E[X]となり、ε>0で割ると結論を得る。
+  strategy: Bound X from below by a multiple of the indicator of the tail event.
+  sketch:
+    - "setup: Let A = {X ≥ ε}."
+    - "derive: Almost surely ε 1_A ≤ X because X is nonnegative."
+    - "apply_theorem: Monotonicity of expectation gives ε P(A) ≤ E[X]."
+    - "conclude: Divide by ε > 0."
+  openmath: (forall (P X e) (-> (and (probability_measure P) (integrable_rv X P) (ae_le P 0 X) (> e 0)) (<= (prob P (tail_event X e)) (/ (expectation P X) e))))
+  hard_negative:
+    statement: 非負性を仮定しない可積分なXでもP(X≥ε)≤E[X]/εが成り立つ。
+    reason: Xが±1を等確率でとるとE[X]=0だが、P(X≥1)=1/2である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (ε : ℝ), MeasureTheory.Integrable X μ → (∀ᵐ ω ∂μ, 0 ≤ X ω) → 0 < ε → μ.real {ω | ε ≤ X ω} ≤ (∫ ω, X ω ∂μ) / ε
+  proof: |
+    by
+      intro Ω _ μ _ X ε hX h0 hε
+      have h := MeasureTheory.mul_meas_ge_le_integral_of_nonneg (μ := μ) (f := X) h0 hX ε
+      rw [le_div_iff₀ hε, mul_comm]
+      exact h
+- id: chebyshev_inequality
+  kind: named
+  level: 2
+  topic: 確率不等式・チェビシェフの不等式
+  statement: 2乗可積分なXと実数c>0について、P(|X-E[X]|≥c)≤V[X]/c²が成り立つ（チェビシェフの不等式）。
+  statement_en: "Chebyshev's inequality: for a square-integrable random variable X and c > 0, P(|X - E[X]| ≥ c) ≤ Var(X) / c²."
+  assumptions: [Pは確率測度, Xは2乗可積分, c>0]
+  quantifiers: [任意の確率空間, 確率変数X, 正の実数c]
+  conclusion: P(|X-E[X]|≥c)≤V[X]/c²である。
+  answer: |
+    Y=(X-E[X])²は非負で可積分である。|X-E[X]|≥cはY≥c²と同値である。Yにマルコフの不等式を適用するとP(Y≥c²)≤E[Y]/c²=V[X]/c²を得る。
+  strategy: Apply Markov's inequality to the squared deviation.
+  sketch:
+    - "setup: Put Y = (X - E[X])², which is nonnegative and integrable."
+    - "translate: The event |X - E[X]| ≥ c equals Y ≥ c²."
+    - "apply_theorem: Markov's inequality bounds its probability by E[Y] / c²."
+    - "conclude: E[Y] is the variance of X."
+  openmath: (forall (P X c) (-> (and (probability_measure P) (square_integrable_rv X P) (> c 0)) (<= (prob P (tail_event (abs (- X (expectation P X))) c)) (/ (variance P X) (^ c 2)))))
+  hard_negative:
+    statement: c>0についてP(|X-E[X]|≥c)≤V[X]/cが成り立つ。
+    reason: 分母は2乗である。Xが±1/2を等確率でとりc=1/2なら、左辺は1で右辺は1/2となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (c : ℝ), MeasureTheory.MemLp X 2 μ → 0 < c → μ.real {ω | c ≤ |X ω - ∫ ω', X ω' ∂μ|} ≤ ProbabilityTheory.variance X μ / c ^ 2
+  proof: |
+    by
+      intro Ω _ μ _ X c hX hc
+      have h := ProbabilityTheory.meas_ge_le_variance_div_sq hX hc
+      exact ENNReal.toReal_le_of_le_ofReal
+        (div_nonneg (ProbabilityTheory.variance_nonneg X μ) (sq_nonneg c)) h
+- id: jensen_inequality
+  kind: named
+  level: 3
+  topic: 確率不等式・イェンセンの不等式
+  statement: 閉凸集合s上で凸かつ連続なgと、ほとんど確実にsに値をとる可積分なXについて、g(X)が可積分ならばg(E[X])≤E[g(X)]である。
+  statement_en: "Jensen's inequality: if g is convex and continuous on a closed convex set s, X is integrable with values almost surely in s, and g(X) is integrable, then g(E[X]) ≤ E[g(X)]."
+  assumptions: [Pは確率測度, sは実数直線の閉凸集合, gはs上で凸かつ連続, Xは可積分, ほとんど確実にX∈s, g(X)は可積分]
+  quantifiers: [任意の確率空間, 確率変数X, 関数g, 集合s]
+  conclusion: g(E[X])≤E[g(X)]である。
+  answer: |
+    （概略）エピグラフ{(x,y):x∈s, g(x)≤y}は凸であり、gの連続性とsが閉であることから閉集合である。(X,g(X))はほとんど確実にこの閉凸集合に値をとる。確率測度による平均は閉凸集合に属するので、(E[X],E[g(X)])もエピグラフに属する。これはg(E[X])≤E[g(X)]を意味する。
+  strategy: The mean of a random point in a closed convex set stays in that set; apply this to the epigraph.
+  sketch:
+    - "construct: Form the epigraph of g over s."
+    - "derive: The epigraph is convex by convexity of g and closed by continuity and closedness of s."
+    - "translate: The pair (X, g(X)) lies almost surely in the epigraph."
+    - "apply_theorem: The mean of a probability measure on a closed convex set lies in that set."
+    - "conclude: Membership of (E[X], E[g(X)]) in the epigraph is the claim."
+  openmath: (forall (P X g s) (-> (and (probability_measure P) (closed_set s) (convex_on_set g s) (continuous_on_set g s) (ae_in P X s) (integrable_rv X P) (integrable_rv (map_compose g X) P)) (<= (fn_value g (expectation P X)) (expectation P (map_compose g X)))))
+  hard_negative:
+    statement: 任意の連続関数gについてg(E[X])≤E[g(X)]である。
+    reason: 凸性が必要である。g(x)=-x²でXが±1を等確率でとると、左辺0、右辺-1となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (g : ℝ → ℝ) (s : Set ℝ), ConvexOn ℝ s g → ContinuousOn g s → IsClosed s → (∀ᵐ ω ∂μ, X ω ∈ s) → MeasureTheory.Integrable X μ → MeasureTheory.Integrable (g ∘ X) μ → g (∫ ω, X ω ∂μ) ≤ ∫ ω, g (X ω) ∂μ
+  proof: |
+    by
+      intro Ω _ μ _ X g s hg hc hs hXs hX hgX
+      exact hg.map_integral_le hc hs hXs hX hgX
+- id: chernoff_bound
+  kind: textbook
+  level: 3
+  topic: 確率不等式・チェルノフ限界
+  statement: t≥0でexp(tX)が可積分なら、任意の実数εについてP(X≥ε)≤exp(-tε)M_X(t)が成り立つ。
+  statement_en: "Chernoff bound: if t ≥ 0 and exp(tX) is integrable, then P(X ≥ ε) ≤ exp(-tε) M_X(t) for every real ε, where M_X is the moment generating function."
+  assumptions: [Pは確率測度, t≥0, exp(tX)は可積分]
+  quantifiers: [任意の確率空間, 確率変数X, 実数ε, 非負実数t]
+  conclusion: P(X≥ε)≤exp(-tε)M_X(t)である。
+  answer: |
+    X≥εのときtX≥tεなのでexp(tX)≥exp(tε)である。つまり{X≥ε}⊆{exp(tX)≥exp(tε)}である。exp(tX)は非負で可積分なので、マルコフの不等式からP(X≥ε)≤E[exp(tX)]/exp(tε)=exp(-tε)M_X(t)を得る。
+  strategy: Apply Markov's inequality to the exponential of tX.
+  sketch:
+    - "derive: If X ≥ ε then exp(tX) ≥ exp(tε), since t ≥ 0."
+    - "translate: Hence the tail event is contained in {exp(tX) ≥ exp(tε)}."
+    - "apply_theorem: Markov's inequality applies to the nonnegative variable exp(tX)."
+    - "conclude: The bound is exp(-tε) M_X(t)."
+  openmath: (forall (P X e t) (-> (and (probability_measure P) (>= t 0) (integrable_rv (exp (* t X)) P)) (<= (prob P (tail_event X e)) (* (exp (neg (* t e))) (mgf P X t)))))
+  hard_negative:
+    statement: t<0でも同じ形でP(X≥ε)≤exp(-tε)M_X(t)が成り立つ。
+    reason: t<0ではexp(tx)がxについて減少するので包含が成り立たない。Xが0か2を等確率でとりε=0なら、左辺は1で右辺は(1+exp(2t))/2<1となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : Ω → ℝ) (ε t : ℝ), 0 ≤ t → MeasureTheory.Integrable (fun ω => Real.exp (t * X ω)) μ → μ.real {ω | ε ≤ X ω} ≤ Real.exp (-t * ε) * ProbabilityTheory.mgf X μ t
+  proof: |
+    by
+      intro Ω _ μ _ X ε t ht h
+      exact ProbabilityTheory.measure_ge_le_exp_mul_mgf ε ht h
+- id: mgf_indep_add
+  kind: gap
+  level: 3
+  topic: モーメント母関数・独立な和
+  statement: XとYが独立で、tについてexp(tX),exp(tY)が可積分ならば、M_{X+Y}(t)=M_X(t)M_Y(t)である。
+  statement_en: If X and Y are independent and exp(tX), exp(tY) are integrable, then M_{X+Y}(t) = M_X(t) M_Y(t).
+  assumptions: [Pは確率測度, XとYは独立, exp(tX)とexp(tY)は可積分]
+  quantifiers: [任意の確率空間, 確率変数X, Y, 実数t]
+  conclusion: M_{X+Y}(t)=M_X(t)M_Y(t)である。
+  answer: |
+    exp(t(X+Y))=exp(tX)exp(tY)である。XとYが独立なので、その可測関数であるexp(tX)とexp(tY)も独立である。独立な可積分確率変数の積の期待値は期待値の積なので、結論を得る。
+  strategy: Factor the exponential and use the product rule for independent variables.
+  sketch:
+    - "derive: Write exp(t(X + Y)) = exp(tX) exp(tY)."
+    - "apply_theorem: Measurable functions of independent variables are independent."
+    - "apply_theorem: Expectation of a product of independent integrable variables factors."
+    - "conclude: The result is M_X(t) M_Y(t)."
+  openmath: (forall (P X Y t) (-> (and (probability_measure P) (indep_rv P X Y) (integrable_rv (exp (* t X)) P) (integrable_rv (exp (* t Y)) P)) (= (mgf P (+ X Y) t) (* (mgf P X t) (mgf P Y t)))))
+  hard_negative:
+    statement: 独立性なしでM_{X+Y}(t)=M_X(t)M_Y(t)が成り立つ。
+    reason: Y=Xなら左辺はM_X(2t)で、一般にM_X(t)²と異なる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X Y : Ω → ℝ) (t : ℝ), ProbabilityTheory.IndepFun X Y μ → MeasureTheory.Integrable (fun ω => Real.exp (t * X ω)) μ → MeasureTheory.Integrable (fun ω => Real.exp (t * Y ω)) μ → ProbabilityTheory.mgf (X + Y) μ t = ProbabilityTheory.mgf X μ t * ProbabilityTheory.mgf Y μ t
+  proof: |
+    by
+      intro Ω _ μ _ X Y t h hX hY
+      exact h.mgf_add hX.1 hY.1
+- id: borel_cantelli_second
+  kind: named
+  level: 3
+  topic: ボレル・カンテリの補題・第二補題
+  statement: 独立な事象列A_nについてΣP(A_n)=∞ならば、P(limsup A_n)=1である（第二補題）。
+  statement_en: "Second Borel–Cantelli lemma: if the events A_n are independent and Σ_n P(A_n) = ∞, then P(limsup A_n) = 1."
+  assumptions: [Pは確率測度, A_nは可測で独立, ΣP(A_n)=∞]
+  quantifiers: [任意の確率空間と事象列A]
+  conclusion: P(limsup A_n)=1である。
+  answer: |
+    (limsup A_n)ᶜ=⋃_N⋂_{n≥N}A_nᶜなので、各NについてP(⋂_{n≥N}A_nᶜ)=0を示せばよい。独立性からM≥Nに対しP(⋂_{N≤n≤M}A_nᶜ)=Π(1-P(A_n))≤exp(-Σ_{N≤n≤M}P(A_n))である。級数の発散よりM→∞で右辺は0に近づく。よって余事象の確率は0であり、P(limsup A_n)=1である。
+  strategy: Bound the probability of the complement with a product and 1 - x ≤ exp(-x).
+  sketch:
+    - "translate: Express the complement of limsup as a union of tail intersections of complements."
+    - "apply_theorem: Independence factors the probability of finite intersections of complements."
+    - "derive: Use 1 - x ≤ exp(-x) to bound the product by exp of minus the partial sum."
+    - "derive: Divergence of the series forces this bound to 0."
+    - "conclude: Countable subadditivity gives P((limsup A_n)ᶜ) = 0."
+  openmath: (forall (P A) (-> (and (probability_measure P) (forall (n) (measurable_event (seq_value A n))) (mutually_indep_events P A) (= (sum N (lambda (n) (prob P (seq_value A n)))) positive_infinity)) (= (prob P (limsup_events A)) 1)))
+  hard_negative:
+    statement: 独立性なしでもΣP(A_n)=∞ならP(limsup A_n)=1である。
+    reason: 全てのnでA_n=Aかつ0<P(A)<1とすると級数は発散するが、limsup A_n=AでP(A)<1である。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A : ℕ → Set Ω), (∀ n, MeasurableSet (A n)) → ProbabilityTheory.iIndepSet A μ → (∑' n, μ (A n)) = ⊤ → μ (Filter.limsup A Filter.atTop) = 1
+  proof: |
+    by
+      intro Ω _ μ _ A hA hi h
+      exact ProbabilityTheory.measure_limsup_eq_one hA hi h
+- id: strong_law_large_numbers
+  kind: named
+  level: 4
+  topic: 極限定理・大数の強法則
+  statement: 対ごとに独立で同分布な可積分確率変数列の標本平均は、ほとんど確実にE[X_0]に収束する（大数の強法則）。
+  statement_en: "Strong law of large numbers (Etemadi): if the X_i are pairwise independent, identically distributed and integrable, then (X_0 + ... + X_{n-1}) / n converges to E[X_0] almost surely."
+  assumptions: [Pは確率測度, X_0は可積分, X_iは対ごとに独立, 各X_iはX_0と同分布]
+  quantifiers: [任意の確率空間と確率変数列X]
+  conclusion: ほとんど確実に(X_0+…+X_{n-1})/nはE[X_0]に収束する。
+  answer: |
+    （概略）正部分と負部分に分けてX_i≥0としてよい。Y_i=X_i1_{X_i<i}と切り詰めると、ΣP(X_i≠Y_i)≤E[X_0]+1<∞なのでボレル・カンテリの第一補題により、有限個を除きX_i=Y_iである。切り詰めた変数の和について、等比的な部分列n_k上でチェビシェフの不等式と第一補題を使うと標本平均の収束を得る。最後にX_i≥0から標本平均の単調性を用いて部分列の間を挟み、全体の収束を導く。
+  strategy: Truncate, control variances along a geometric subsequence, then interpolate by monotonicity.
+  sketch:
+    - "setup: Reduce to nonnegative variables by positive and negative parts."
+    - "construct: Truncate X_i at level i to obtain Y_i."
+    - "apply_theorem: The first Borel–Cantelli lemma shows X_i = Y_i for all but finitely many i."
+    - "apply_theorem: Chebyshev and Borel–Cantelli give convergence along a geometric subsequence."
+    - "derive: Monotonicity of partial sums fills the gaps between subsequence terms."
+    - "conclude: Hence the sample mean converges to E[X_0] almost surely."
+  openmath: (forall (P X) (-> (and (probability_measure P) (integrable_rv (seq_value X 0) P) (pairwise_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0)))) (ae_tends_to P (lambda (n) (/ (partial_sum_rv X n) n)) (expectation P (seq_value X 0)))))
+  hard_negative:
+    statement: 可積分性を仮定しなくても、独立同分布な列の標本平均はほとんど確実に収束する。
+    reason: コーシー分布の独立同分布列では標本平均が再びコーシー分布に従い、定数に収束しない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ), MeasureTheory.Integrable (X 0) μ → Pairwise (fun i j => ProbabilityTheory.IndepFun (X i) (X j) μ) → (∀ i, ProbabilityTheory.IdentDistrib (X i) (X 0) μ μ) → ∀ᵐ ω ∂μ, Filter.Tendsto (fun n : ℕ => (∑ i ∈ Finset.range n, X i ω) / n) Filter.atTop (nhds (∫ ω', X 0 ω' ∂μ))
+  proof: |
+    by
+      intro Ω _ μ _ X hi hp hd
+      exact ProbabilityTheory.strong_law_ae_real X hi hp hd
+- id: weak_law_large_numbers
+  kind: textbook
+  level: 3
+  topic: 極限定理・大数の弱法則
+  statement: 対ごとに独立で同分布な可積分確率変数列について、任意のε>0でP(|標本平均-E[X_0]|≥ε)は0に収束する（大数の弱法則）。
+  statement_en: "Weak law of large numbers: if the X_i are pairwise independent, identically distributed and integrable, then for every ε > 0, P(|(X_0 + ... + X_{n-1}) / n - E[X_0]| ≥ ε) tends to 0."
+  assumptions: [Pは確率測度, X_0は可積分, X_iは対ごとに独立, 各X_iはX_0と同分布, ε>0]
+  quantifiers: [任意の確率空間, 確率変数列X, 正の実数ε]
+  conclusion: nを大きくするとP(|(X_0+…+X_{n-1})/n-E[X_0]|≥ε)は0に収束する。
+  answer: |
+    仮定（対ごとの独立性、同分布性、X_0の可積分性）は、対ごとに独立な形の大数の強法則の仮定と同じである。これを引用すると、標本平均はほとんど確実にE[X_0]に収束する。E_n={|標本平均-E[X_0]|≥ε}とおくと、この収束からE_nが無限回起こる確率は0である。確率測度は有限なので、上からの連続性によりP(E_n)≤P(⋃_{k≥n}E_k)→0となる。分散が有限な場合は、チェビシェフの不等式から確率がV[X_0]/(nε²)以下になることでも直接示せる。
+  strategy: Almost sure convergence from the strong law implies convergence in probability on a finite measure space.
+  sketch:
+    - "apply_theorem: The strong law for pairwise independent variables has exactly these hypotheses and gives almost sure convergence of the sample mean."
+    - "derive: Each sample mean is almost everywhere strongly measurable."
+    - "apply_theorem: On a finite measure space, almost sure convergence implies convergence in measure."
+    - "translate: Rewrite the distance as the absolute deviation."
+    - "conclude: The tail probabilities tend to 0 for every ε > 0."
+  openmath: (forall (P X) (-> (and (probability_measure P) (integrable_rv (seq_value X 0) P) (pairwise_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0)))) (prob_tends_to P (lambda (n) (/ (partial_sum_rv X n) n)) (expectation P (seq_value X 0)))))
+  hard_negative:
+    statement: 確率収束するならほとんど確実にも収束する。
+    reason: 逆は偽である。[0,1]を順に細かく区切った区間の指示関数を動かす「タイプライター列」は確率収束するが、どの点でも収束しない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ), MeasureTheory.Integrable (X 0) μ → Pairwise (fun i j => ProbabilityTheory.IndepFun (X i) (X j) μ) → (∀ i, ProbabilityTheory.IdentDistrib (X i) (X 0) μ μ) → ∀ ε : ℝ, 0 < ε → Filter.Tendsto (fun n : ℕ => μ.real {ω | ε ≤ |(∑ i ∈ Finset.range n, X i ω) / n - ∫ ω', X 0 ω' ∂μ|}) Filter.atTop (nhds 0)
+  proof: |
+    by
+      intro Ω _ μ _ X hi hp hd ε hε
+      have hae := ProbabilityTheory.strong_law_ae_real X hi hp hd
+      have hm : ∀ n : ℕ, MeasureTheory.AEStronglyMeasurable (fun ω => (∑ i ∈ Finset.range n, X i ω) / n) μ := by
+        intro n
+        have hs : MeasureTheory.AEStronglyMeasurable (fun ω => ∑ i ∈ Finset.range n, X i ω) μ :=
+          Finset.aestronglyMeasurable_fun_sum _ (fun i _ => (hd i).aestronglyMeasurable_fst)
+        simp_rw [div_eq_mul_inv]
+        exact hs.mul_const _
+      have ht := MeasureTheory.tendstoInMeasure_of_tendsto_ae (g := fun _ => ∫ ω', X 0 ω' ∂μ) hm hae
+      have := MeasureTheory.tendstoInMeasure_iff_measureReal_dist.mp ht ε hε
+      simpa [Real.dist_eq] using this
+- id: central_limit_theorem
+  kind: named
+  level: 4
+  topic: 極限定理・中心極限定理
+  statement: 独立同分布で2乗可積分な確率変数列について、(S_n-nE[X_0])/√nは平均0、分散V[X_0]の正規分布に法則収束する（中心極限定理）。
+  statement_en: "Central limit theorem: if the X_i are independent, identically distributed and square-integrable, then (X_0 + ... + X_{n-1} - n E[X_0]) / √n converges in distribution to a normal law with mean 0 and variance Var(X_0)."
+  assumptions: [Pは確率測度, X_0は2乗可積分, X_iは独立, 各X_iはX_0と同分布, "Yは平均0で分散V[X_0]の正規分布に従う"]
+  quantifiers: [任意の確率空間, 確率変数列X, 極限の確率変数Y]
+  conclusion: (S_n-nE[X_0])/√nはYに法則収束する。
+  answer: |
+    （概略）まず分散が0の場合は全X_iがほとんど確実に定数で自明である。分散が正なら標準化してE[X_0]=0、V[X_0]=1としてよい。独立性から標準化和の特性関数はφ(t/√n)^nに等しく、φはX_0の特性関数である。テイラー展開φ(s)=1-s²/2+o(s²)から、この値はexp(-t²/2)に収束する。レヴィの連続性定理により法則収束を得る。
+  strategy: Compute the limit of characteristic functions and apply Lévy's continuity theorem.
+  sketch:
+    - "case_split: Treat the zero-variance case separately since all variables are almost surely constant."
+    - "setup: Standardize to mean 0 and variance 1."
+    - "apply_theorem: Independence turns the characteristic function of the normalized sum into a power."
+    - "derive: A second-order Taylor expansion gives the limit exp(-t²/2)."
+    - "apply_theorem: Lévy's continuity theorem turns this into convergence in distribution."
+    - "conclude: Undo the standardization."
+  openmath: (forall (P X Q Y) (-> (and (probability_measure P) (probability_measure Q) (square_integrable_rv (seq_value X 0) P) (mutually_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0))) (has_law Q Y (gaussian_measure 0 (variance P (seq_value X 0))))) (dist_tends_to P (lambda (n) (/ (- (partial_sum_rv X n) (* n (expectation P (seq_value X 0)))) (root n 2))) (gaussian_measure 0 (variance P (seq_value X 0))))))
+  hard_negative:
+    statement: 独立同分布なら分散が無限でも同じ正規化で正規分布に収束する。
+    reason: 2次モーメントが必要である。コーシー分布の和を√nで割ると発散し、正規分布に収束しない。
+  target: |
+    ∀ (Ω Ω' : Type*) [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure P] (P' : MeasureTheory.Measure Ω') [MeasureTheory.IsProbabilityMeasure P'] (X : ℕ → Ω → ℝ) (Y : Ω' → ℝ), ProbabilityTheory.HasLaw Y (ProbabilityTheory.gaussianReal 0 (ProbabilityTheory.variance (X 0) P).toNNReal) P' → MeasureTheory.MemLp (X 0) 2 P → ProbabilityTheory.iIndepFun X P → (∀ i, ProbabilityTheory.IdentDistrib (X i) (X 0) P P) → MeasureTheory.TendstoInDistribution (fun (n : ℕ) ω => (Real.sqrt n)⁻¹ * (∑ k ∈ Finset.range n, X k ω - n * ∫ ω', X 0 ω' ∂P)) Filter.atTop Y (fun _ => P) P'
+  proof: |
+    by
+      intro Ω Ω' _ _ P _ P' _ X Y hY hX hi hd
+      exact ProbabilityTheory.tendstoInDistribution_inv_sqrt_mul_sum_sub hY hX hi hd
+- id: uniform_on_finset_prob
+  kind: gap
+  level: 2
+  topic: 有限分布・一様分布
+  statement: 空でない有限集合s上の一様分布について、事象tの確率は|s∩t|/|s|である。
+  statement_en: For the uniform distribution on a nonempty finite set s, the probability of t is |s ∩ t| / |s|.
+  assumptions: [sは空でない有限集合, tは有限集合, 全ての一点集合は可測]
+  quantifiers: [任意の標本空間, 有限集合s, t]
+  conclusion: s上の一様分布でのtの確率は|s∩t|/|s|である。
+  answer: |
+    s上の一様分布は計数測度をsで条件付けたものである。条件付き確率の定義より、tの確率はs∩tの要素数をsの要素数で割った値である。これは同様に確からしい場合の確率の定義に一致する。
+  strategy: Unfold the uniform measure as the counting measure conditioned on s.
+  sketch:
+    - "translate: Identify the uniform measure with the counting measure conditioned on s."
+    - "derive: Apply the conditional probability formula to t."
+    - "conclude: The counting measure turns the quotient into |s ∩ t| / |s|."
+  openmath: (forall (s t) (-> (and (finite_set s) (finite_set t) (not (= s emptyset))) (= (prob (uniform_measure_on s) t) (/ (size (inter s t)) (size s)))))
+  hard_negative:
+    statement: s上の一様分布でのtの確率は|t|/|s|である。
+    reason: sの外にあるtの要素は数えない。s={1}、t={1,2}なら確率は1だが、|t|/|s|=2となる。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] [MeasurableSingletonClass Ω] [DecidableEq Ω] (s t : Finset Ω), s.Nonempty → ProbabilityTheory.uniformOn (↑s : Set Ω) (↑t : Set Ω) = ((s ∩ t).card : ENNReal) / (s.card : ENNReal)
+  proof: |
+    by
+      intro Ω _ _ _ s t _
+      exact ProbabilityTheory.uniformOn_apply_finset
+- id: binomial_mean_finite
+  kind: textbook
+  level: 2
+  topic: 有限分布・二項分布の平均
+  statement: 0≤p≤1のとき、Σ_{k=0}^{n}k·C(n,k)p^k(1-p)^{n-k}=npが成り立つ。
+  statement_en: For 0 ≤ p ≤ 1, Σ_{k=0}^{n} k C(n,k) p^k (1-p)^{n-k} = n p, the mean of the binomial distribution.
+  assumptions: [nは自然数, 0≤p≤1]
+  quantifiers: [任意の自然数nと実数p]
+  conclusion: Σ_{k=0}^{n}k·C(n,k)p^k(1-p)^{n-k}=npである。
+  answer: |
+    二項定理(x+y)^n=Σ_kC(n,k)x^ky^{n-k}をxで微分してxを掛けると、nx(x+y)^{n-1}=Σ_kkC(n,k)x^ky^{n-k}となる。x=p、y=1-pを代入するとx+y=1なので、右辺が求める和で、左辺がnpである。
+  strategy: Differentiate the binomial theorem in x and substitute y = 1 - x.
+  sketch:
+    - "apply_theorem: Start from the binomial theorem for (x + y)^n."
+    - "derive: Differentiate in x and multiply by x."
+    - "derive: Substitute x = p and y = 1 - p so that x + y = 1."
+    - "conclude: The left side becomes n p and the right side is the required sum."
+  openmath: (forall (n p) (-> (and (in n N) (<= 0 p) (<= p 1)) (= (sum (finset_range (+ n 1)) (lambda (k) (* k (binomial_coefficient n k) (^ p k) (^ (- 1 p) (- n k))))) (* n p))))
+  hard_negative:
+    statement: 二項分布の平均はnp(1-p)である。
+    reason: それは分散である。n=1,p=1では平均1だが、np(1-p)=0である。
+  target: |
+    ∀ (n : ℕ) (p : ℝ), 0 ≤ p → p ≤ 1 → ∑ k ∈ Finset.range (n + 1), (k : ℝ) * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) = n * p
+  proof: |
+    by
+      intro n p _ _
+      have h := congrArg (Polynomial.eval p) (bernsteinPolynomial.sum_smul ℝ n)
+      simpa [bernsteinPolynomial, Polynomial.eval_finset_sum, nsmul_eq_mul] using h
+- id: binomial_variance_finite
+  kind: textbook
+  level: 2
+  topic: 有限分布・二項分布の分散
+  statement: 0≤p≤1のとき、Σ_{k=0}^{n}(k-np)²C(n,k)p^k(1-p)^{n-k}=np(1-p)が成り立つ。
+  statement_en: For 0 ≤ p ≤ 1, Σ_{k=0}^{n} (k - np)² C(n,k) p^k (1-p)^{n-k} = n p (1 - p), the variance of the binomial distribution.
+  assumptions: [nは自然数, 0≤p≤1]
+  quantifiers: [任意の自然数nと実数p]
+  conclusion: Σ_{k=0}^{n}(k-np)²C(n,k)p^k(1-p)^{n-k}=np(1-p)である。
+  answer: |
+    b_k=C(n,k)p^k(1-p)^{n-k}とおく。二項定理からΣb_k=1である。二項定理をxで1回と2回微分してx=p、y=1-pを代入すると、Σkb_k=np、Σk(k-1)b_k=n(n-1)p²を得る。(k-np)²=k(k-1)+(1-2np)k+(np)²なので、和はn(n-1)p²+(1-2np)np+(np)²=np(1-p)となる。
+  strategy: Express the second central moment through the factorial moments obtained from the binomial theorem.
+  sketch:
+    - "setup: Put b_k = C(n,k) p^k (1-p)^{n-k}."
+    - "apply_theorem: The binomial theorem gives Σ b_k = 1."
+    - "derive: Differentiating once and twice gives Σ k b_k = np and Σ k(k-1) b_k = n(n-1)p²."
+    - "derive: Decompose (k - np)² = k(k-1) + (1 - 2np) k + (np)²."
+    - "conclude: Substitute and simplify to n p (1 - p)."
+  openmath: (forall (n p) (-> (and (in n N) (<= 0 p) (<= p 1)) (= (sum (finset_range (+ n 1)) (lambda (k) (* (^ (- k (* n p)) 2) (binomial_coefficient n k) (^ p k) (^ (- 1 p) (- n k))))) (* n p (- 1 p)))))
+  hard_negative:
+    statement: 二項分布の分散はnpである。
+    reason: 係数1-pが抜けている。p=1なら分布は一点に集中して分散0だが、npはnである。
+  target: |
+    ∀ (n : ℕ) (p : ℝ), 0 ≤ p → p ≤ 1 → ∑ k ∈ Finset.range (n + 1), ((k : ℝ) - n * p) ^ 2 * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) = n * p * (1 - p)
+  proof: |
+    by
+      intro n p _ _
+      have h0 : ∑ k ∈ Finset.range (n + 1), ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) = 1 := by
+        have h := congrArg (Polynomial.eval p) (bernsteinPolynomial.sum ℝ n)
+        simpa [bernsteinPolynomial, Polynomial.eval_finset_sum] using h
+      have h1 : ∑ k ∈ Finset.range (n + 1), (k : ℝ) * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) = n * p := by
+        have h := congrArg (Polynomial.eval p) (bernsteinPolynomial.sum_smul ℝ n)
+        simpa [bernsteinPolynomial, Polynomial.eval_finset_sum, nsmul_eq_mul] using h
+      have h2 : ∑ k ∈ Finset.range (n + 1), ((k : ℝ) * ((k : ℝ) - 1)) * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) = n * (n - 1) * p ^ 2 := by
+        have h := congrArg (Polynomial.eval p) (bernsteinPolynomial.sum_mul_smul ℝ n)
+        have hc : ∀ k : ℕ, (k : ℝ) * ((k : ℝ) - 1) = (k : ℝ) * ((k - 1 : ℕ) : ℝ) := by
+          intro k
+          cases k <;> simp
+        simp_rw [hc]
+        simpa [bernsteinPolynomial, Polynomial.eval_finset_sum, nsmul_eq_mul, Nat.cast_mul] using h
+      have hsplit : ∑ k ∈ Finset.range (n + 1), ((k : ℝ) - n * p) ^ 2 * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k))
+          = ∑ k ∈ Finset.range (n + 1), ((k : ℝ) * ((k : ℝ) - 1)) * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k))
+            + (1 - 2 * (n * p)) * ∑ k ∈ Finset.range (n + 1), (k : ℝ) * ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k))
+            + (n * p) ^ 2 * ∑ k ∈ Finset.range (n + 1), ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k)) := by
+        rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro k _
+        ring
+      rw [hsplit, h0, h1, h2]
+      ring
+- id: gaussian_mean_variance
+  kind: textbook
+  level: 3
+  topic: 正規分布・平均と分散
+  statement: パラメータm,v(v≥0)の正規分布N(m,v)の期待値はmで、分散はvである。
+  statement_en: The normal distribution with parameters m and v ≥ 0 has mean m and variance v.
+  assumptions: [mは実数, vは非負実数]
+  quantifiers: [任意の実数mと非負実数v]
+  conclusion: N(m,v)の期待値はm、分散はvである。
+  answer: |
+    v=0のとき分布はmの一点分布で明らかである。v>0のときモーメント母関数はM(t)=exp(mt+vt²/2)であり、原点の近くで解析的である。M'(0)=mから期待値はmである。M''(0)=v+m²から2次モーメントがv+m²となり、分散は(v+m²)-m²=vである。
+  strategy: Read the first two moments off the moment generating function.
+  sketch:
+    - "case_split: The case v = 0 is a point mass at m."
+    - "apply_theorem: For v > 0 the moment generating function is exp(mt + vt²/2)."
+    - "derive: Differentiate at 0 to get the first moment m."
+    - "derive: Differentiate twice to get the second moment v + m²."
+    - "conclude: The variance is therefore v."
+  openmath: (forall (m v) (-> (>= v 0) (and (= (expectation (gaussian_measure m v) identity_rv) m) (= (variance (gaussian_measure m v) identity_rv) v))))
+  hard_negative:
+    statement: 平均m、標準偏差vの正規分布の分散はvである。
+    reason: 標準偏差がvなら分散はv²である。パラメータが分散か標準偏差かで値が変わる。
+  target: |
+    ∀ (m : ℝ) (v : NNReal), ∫ x, x ∂(ProbabilityTheory.gaussianReal m v) = m ∧ ProbabilityTheory.variance (fun x => x) (ProbabilityTheory.gaussianReal m v) = v
+  proof: |
+    by
+      intro m v
+      exact ⟨ProbabilityTheory.integral_id_gaussianReal, ProbabilityTheory.variance_fun_id_gaussianReal⟩
+- id: gaussian_indep_add
+  kind: gap
+  level: 3
+  topic: 正規分布・再生性
+  statement: 独立なX,Yがそれぞれ正規分布N(m₁,v₁),N(m₂,v₂)に従うならば、X+YはN(m₁+m₂,v₁+v₂)に従う。
+  statement_en: If independent X and Y have laws N(m₁, v₁) and N(m₂, v₂), then X + Y has law N(m₁ + m₂, v₁ + v₂).
+  assumptions: [Pは確率測度, XとYは独立, XはN(m₁,v₁)に従う, YはN(m₂,v₂)に従う]
+  quantifiers: [任意の確率空間, 確率変数X, Y, 実数m₁, m₂, 非負実数v₁, v₂]
+  conclusion: X+YはN(m₁+m₂,v₁+v₂)に従う。
+  answer: |
+    独立性からX+Yのモーメント母関数はM_X(t)M_Y(t)=exp((m₁+m₂)t+(v₁+v₂)t²/2)である。これはN(m₁+m₂,v₁+v₂)のモーメント母関数に等しい。至るところ有限なモーメント母関数は分布を決定するので、X+Yの分布はN(m₁+m₂,v₁+v₂)である。
+  strategy: Multiply moment generating functions and use uniqueness.
+  sketch:
+    - "apply_theorem: Independence makes the moment generating function of X + Y a product."
+    - "derive: The product is exp((m₁+m₂)t + (v₁+v₂)t²/2)."
+    - "apply_theorem: A moment generating function that is finite everywhere determines the law."
+    - "conclude: Hence X + Y is normal with the summed parameters."
+  openmath: (forall (P X Y m1 m2 v1 v2) (-> (and (probability_measure P) (indep_rv P X Y) (has_law P X (gaussian_measure m1 v1)) (has_law P Y (gaussian_measure m2 v2))) (has_law P (+ X Y) (gaussian_measure (+ m1 m2) (+ v1 v2)))))
+  hard_negative:
+    statement: X,Yがそれぞれ正規分布に従えば、独立でなくてもX+Yは正規分布に従う。
+    reason: Xが標準正規でSが独立な±1の符号ならY=SXも標準正規だが、X+Yは確率1/2で0となり正規分布でない。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (P : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure P] (X Y : Ω → ℝ) (m₁ m₂ : ℝ) (v₁ v₂ : NNReal), ProbabilityTheory.IndepFun X Y P → P.map X = ProbabilityTheory.gaussianReal m₁ v₁ → P.map Y = ProbabilityTheory.gaussianReal m₂ v₂ → P.map (X + Y) = ProbabilityTheory.gaussianReal (m₁ + m₂) (v₁ + v₂)
+  proof: |
+    by
+      intro Ω _ P _ X Y m₁ m₂ v₁ v₂ h hX hY
+      exact ProbabilityTheory.gaussianReal_add_gaussianReal_of_indepFun h hX hY
+- id: poisson_limit_binomial
+  kind: textbook
+  level: 3
+  topic: 有限分布・ポアソンの極限定理
+  statement: np_nがrに収束するとき、二項分布Bin(n,p_n)のkでの確率はnを大きくするとパラメータrのポアソン分布のkでの確率に収束する。
+  statement_en: If n p_n converges to r ≥ 0, then for each k the probability that Bin(n, p_n) equals k converges to the probability that Poisson(r) equals k.
+  assumptions: ["p_nは[0,1]の数列", n p_nはrに収束, rは非負実数]
+  quantifiers: [任意の数列p, 非負実数r, 自然数k]
+  conclusion: Bin(n,p_n)({k})はPoisson(r)({k})=exp(-r)r^k/k!に収束する。
+  answer: |
+    C(n,k)p_n^k(1-p_n)^{n-k}をC(n,k)/n^k・(np_n)^k・(1-p_n)^{n-k}と分ける。kを固定するとC(n,k)/n^kは1/k!に、(np_n)^kはr^kに収束する。p_n→0なので(1-p_n)^{-k}は1に収束し、(1-p_n)^nはexp(-r)に収束する。これらの積の極限はexp(-r)r^k/k!である。
+  strategy: Factor the binomial probability into three pieces with explicit limits.
+  sketch:
+    - "setup: Fix k and write the binomial probability as a product of three factors."
+    - "derive: C(n,k)/n^k tends to 1/k!."
+    - "derive: (n p_n)^k tends to r^k."
+    - "derive: (1 - p_n)^{n-k} tends to exp(-r)."
+    - "conclude: Multiply the limits to get the Poisson probability."
+  openmath: (forall (p r k) (-> (and (forall (n) (and (<= 0 (seq_value p n)) (<= (seq_value p n) 1))) (>= r 0) (seq_tends_to (binomial_rate_seq p) r)) (seq_tends_to (binomial_prob_seq p k) (prob (poisson_measure r) (set k)))))
+  hard_negative:
+    statement: pを固定してnを大きくしても、Bin(n,p)の確率はポアソン分布の確率に収束する。
+    reason: 0<p<1を固定するとnpは発散し、kでの確率は0に収束する。極限はポアソン分布の確率でない。
+  target: |
+    ∀ (r : NNReal) (p : ℕ → unitInterval) (k : ℕ), Filter.Tendsto (fun n : ℕ => (n : ℝ) * (p n : ℝ)) Filter.atTop (nhds (r : ℝ)) → Filter.Tendsto (fun n : ℕ => ProbabilityTheory.binomial n (p n) {k}) Filter.atTop (nhds (ProbabilityTheory.poissonMeasure r {k}))
+  proof: |
+    by
+      intro r p k h
+      exact ProbabilityTheory.binomial_tendsto_poissonPMFReal_atTop k h
+- id: integral_condexp
+  kind: gap
+  level: 3
+  topic: 条件付き期待値・全期待値の法則
+  statement: 可積分なXと部分σ加法族Gについて、E[E[X|G]]=E[X]が成り立つ。
+  statement_en: For an integrable random variable X and a sub-sigma-algebra G, E[E[X|G]] = E[X].
+  assumptions: [Pは確率測度, Gは部分σ加法族, Xは可積分]
+  quantifiers: [任意の確率空間, 部分σ加法族G, 確率変数X]
+  conclusion: E[E[X|G]]=E[X]である。
+  answer: |
+    条件付き期待値の定義から、任意のA∈Gについて∫_AE[X|G]dP=∫_AXdPである。全事象ΩはGに属するので、A=Ωとすると結論を得る。
+  strategy: Apply the defining property of conditional expectation to the whole space.
+  sketch:
+    - "translate: Recall the defining identity on every set in G."
+    - "derive: The whole space Ω belongs to G."
+    - "conclude: Taking A = Ω gives E[E[X|G]] = E[X]."
+  openmath: (forall (P G X) (-> (and (probability_measure P) (sub_sigma_algebra G) (integrable_rv X P)) (= (expectation P (cond_expectation P X G)) (expectation P X))))
+  hard_negative:
+    statement: E[X|G]=E[X]がほとんど確実に成り立つ。
+    reason: それはXがGと独立な場合などに限る。XがG可測ならE[X|G]=Xで、一般に定数でない。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (G : MeasurableSpace Ω) (X : Ω → ℝ), G ≤ m0 → MeasureTheory.Integrable X μ → ∫ ω, MeasureTheory.condExp G μ X ω ∂μ = ∫ ω, X ω ∂μ
+  proof: |
+    by
+      intro Ω m0 μ _ G X hG _
+      exact MeasureTheory.integral_condExp hG
+- id: condexp_tower
+  kind: textbook
+  level: 3
+  topic: 条件付き期待値・タワー法則
+  statement: 部分σ加法族G⊆Hと可積分なXについて、ほとんど確実にE[E[X|H]|G]=E[X|G]である（タワー法則）。
+  statement_en: "Tower law: for sub-sigma-algebras G ⊆ H and an integrable random variable X, E[E[X|H]|G] = E[X|G] almost surely."
+  assumptions: [Pは確率測度, G⊆Hは部分σ加法族, Xは可積分]
+  quantifiers: [任意の確率空間, 部分σ加法族G, H, 確率変数X]
+  conclusion: ほとんど確実にE[E[X|H]|G]=E[X|G]である。
+  answer: |
+    A∈Gを任意にとる。G⊆HなのでA∈Hでもある。定義から∫_AE[E[X|H]|G]dP=∫_AE[X|H]dP=∫_AXdP=∫_AE[X|G]dPである。両辺の被積分関数はどちらもG可測で可積分なので、一意性からほとんど確実に等しい。
+  strategy: Check the defining integrals on sets of the smaller sigma-algebra and use uniqueness.
+  sketch:
+    - "setup: Fix a set A in G; it also lies in H."
+    - "derive: Chain the defining identities of the three conditional expectations on A."
+    - "apply_theorem: Conditional expectation is unique among G-measurable integrable functions."
+    - "conclude: The two sides agree almost surely."
+  openmath: (forall (P G H X) (-> (and (probability_measure P) (sigma_le G H) (sub_sigma_algebra H) (integrable_rv X P)) (ae_eq P (cond_expectation P (cond_expectation P X H) G) (cond_expectation P X G))))
+  hard_negative:
+    statement: G⊆Hでなくても、E[E[X|H]|G]=E[X|G]が成り立つ。
+    reason: 包含が必要である。Gが自明でHがX自身を生成するときは成り立つが、H自明でG=σ(X)なら左辺はE[X]、右辺はXとなる。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (G H : MeasurableSpace Ω) (X : Ω → ℝ), G ≤ H → H ≤ m0 → MeasureTheory.Integrable X μ → MeasureTheory.condExp G μ (MeasureTheory.condExp H μ X) =ᵐ[μ] MeasureTheory.condExp G μ X
+  proof: |
+    by
+      intro Ω m0 μ _ G H X hGH hH _
+      exact MeasureTheory.condExp_condExp_of_le hGH hH
+- id: condexp_pull_out
+  kind: textbook
+  level: 3
+  topic: 条件付き期待値・既知の因子の取り出し
+  statement: XがG可測で、YとXYが可積分ならば、ほとんど確実にE[XY|G]=XE[Y|G]である。
+  statement_en: If X is G-measurable and Y and XY are integrable, then E[XY|G] = X E[Y|G] almost surely.
+  assumptions: [Pは確率測度, Gは部分σ加法族, XはG可測, YとXYは可積分]
+  quantifiers: [任意の確率空間, 部分σ加法族G, 確率変数X, Y]
+  conclusion: ほとんど確実にE[XY|G]=XE[Y|G]である。
+  answer: |
+    （概略）X=1_B（B∈G）の場合、A∈Gについて∫_A1_BE[Y|G]dP=∫_{A∩B}E[Y|G]dP=∫_{A∩B}YdP=∫_A1_BYdPなので成り立つ。線形性から単関数に広がる。一般のXは単関数で近似し、優収束定理でE[XY|G]とXE[Y|G]の等式へ極限移行する。
+  strategy: Prove the identity for indicators and extend by approximation.
+  sketch:
+    - "setup: Treat X = 1_B with B in G using the defining identity on A ∩ B."
+    - "derive: Extend to simple functions by linearity."
+    - "apply_theorem: Approximate X by simple functions and pass to the limit by dominated convergence."
+    - "conclude: The identity holds almost surely for general X."
+  openmath: (forall (P G X Y) (-> (and (probability_measure P) (sub_sigma_algebra G) (measurable_wrt X G) (integrable_rv Y P) (integrable_rv (* X Y) P)) (ae_eq P (cond_expectation P (* X Y) G) (* X (cond_expectation P Y G)))))
+  hard_negative:
+    statement: G可測でないXについてもE[XY|G]=XE[Y|G]が成り立つ。
+    reason: Gが自明でY=1なら左辺はE[X]で右辺はXであり、Xが定数でないと一致しない。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (G : MeasurableSpace Ω) (X Y : Ω → ℝ), G ≤ m0 → @MeasureTheory.StronglyMeasurable Ω ℝ _ G X → MeasureTheory.Integrable (X * Y) μ → MeasureTheory.Integrable Y μ → MeasureTheory.condExp G μ (X * Y) =ᵐ[μ] X * MeasureTheory.condExp G μ Y
+  proof: |
+    by
+      intro Ω m0 μ _ G X Y _ hX hXY hY
+      exact MeasureTheory.condExp_mul_of_stronglyMeasurable_left hX hXY hY
+- id: condexp_indep_eq
+  kind: gap
+  level: 3
+  topic: 条件付き期待値・独立性
+  statement: σ加法族H可測で可積分なXについて、HとGが独立ならば、ほとんど確実にE[X|G]=E[X]である。
+  statement_en: If X is integrable and measurable with respect to a sigma-algebra H independent of G, then E[X|G] = E[X] almost surely.
+  assumptions: [Pは確率測度, GとHは部分σ加法族, XはH可測で可積分, HとGは独立]
+  quantifiers: [任意の確率空間, 部分σ加法族G, H, 確率変数X]
+  conclusion: ほとんど確実にE[X|G]=E[X]である。
+  answer: |
+    定数E[X]はG可測である。A∈Gについて、1_AとXは独立なので∫_AXdP=E[1_AX]=P(A)E[X]=∫_AE[X]dPである。条件付き期待値の一意性から、ほとんど確実にE[X|G]=E[X]である。
+  strategy: Verify that the constant E[X] satisfies the defining property, using independence of 1_A and X.
+  sketch:
+    - "setup: The constant E[X] is G-measurable and integrable."
+    - "derive: For A in G, independence gives E[1_A X] = P(A) E[X]."
+    - "apply_theorem: Uniqueness of conditional expectation identifies E[X|G] with the constant."
+    - "conclude: Hence E[X|G] = E[X] almost surely."
+  openmath: (forall (P G H X) (-> (and (probability_measure P) (sub_sigma_algebra G) (sub_sigma_algebra H) (measurable_wrt X H) (integrable_rv X P) (indep_sigma P H G)) (ae_eq P (cond_expectation P X G) (expectation P X))))
+  hard_negative:
+    statement: E[X|G]が定数ならばXはGと独立である。
+    reason: 条件付き期待値は1次の情報だけを見る。条件付き分散がGに依存する場合、E[X|G]=0でも独立でない。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (G H : MeasurableSpace Ω) (X : Ω → ℝ), H ≤ m0 → G ≤ m0 → @MeasureTheory.StronglyMeasurable Ω ℝ _ H X → MeasureTheory.Integrable X μ → ProbabilityTheory.Indep H G μ → MeasureTheory.condExp G μ X =ᵐ[μ] fun _ => ∫ ω, X ω ∂μ
+  proof: |
+    by
+      intro Ω m0 μ _ G H X hH hG hX _ hI
+      exact MeasureTheory.condExp_indep_eq hH hG hX hI
+- id: martingale_expectation_const
+  kind: gap
+  level: 3
+  topic: マルチンゲール・期待値の保存
+  statement: マルチンゲールX_nの期待値は一定で、E[X_n]=E[X_0]が成り立つ。
+  statement_en: A martingale has constant expectation, that is, E[X_n] = E[X_0] for all n.
+  assumptions: [Pは確率測度, Fはフィルトレーション, XはFに関するマルチンゲール]
+  quantifiers: [任意の確率空間, フィルトレーションF, マルチンゲールX, 自然数n]
+  conclusion: E[X_n]=E[X_0]である。
+  answer: |
+    マルチンゲール性からE[X_n|F_0]=X_0がほとんど確実に成り立つ。両辺の期待値をとり、条件付き期待値の期待値が元の期待値に等しいことを使うとE[X_n]=E[X_0]を得る。
+  strategy: Take expectations in the martingale identity and use the law of total expectation.
+  sketch:
+    - "translate: The martingale property gives E[X_n | F_0] = X_0."
+    - "apply_theorem: Taking expectations removes the conditioning."
+    - "conclude: Hence E[X_n] = E[X_0]."
+  openmath: (forall (P F X n) (-> (and (probability_measure P) (filtration_of F) (martingale P X F) (in n N)) (= (expectation P (seq_value X n)) (expectation P (seq_value X 0)))))
+  hard_negative:
+    statement: 期待値が一定の適合過程はマルチンゲールである。
+    reason: X_n=(-1)^nZ（ZはF_0可測で平均0、非定数）は期待値0で一定だが、E[X_{n+1}|F_n]=-X_nである。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (F : MeasureTheory.Filtration ℕ m0) (X : ℕ → Ω → ℝ) (n : ℕ), MeasureTheory.Martingale X F μ → ∫ ω, X n ω ∂μ = ∫ ω, X 0 ω ∂μ
+  proof: |
+    by
+      intro Ω m0 μ _ F X n h
+      have h1 := h.setIntegral_eq (Nat.zero_le n) (MeasurableSet.univ)
+      simpa using h1.symm
+- id: submartingale_expectation_mono
+  kind: gap
+  level: 3
+  topic: マルチンゲール・劣マルチンゲール
+  statement: 劣マルチンゲールX_nとi≤jについて、E[X_i]≤E[X_j]が成り立つ。
+  statement_en: For a submartingale X and i ≤ j, E[X_i] ≤ E[X_j].
+  assumptions: [Pは確率測度, Fはフィルトレーション, XはFに関する劣マルチンゲール, i≤j]
+  quantifiers: [任意の確率空間, フィルトレーションF, 劣マルチンゲールX, 自然数i, j]
+  conclusion: E[X_i]≤E[X_j]である。
+  answer: |
+    劣マルチンゲール性からほとんど確実にX_i≤E[X_j|F_i]である。両辺の期待値をとると、右辺の期待値は全期待値の法則からE[X_j]に等しい。よってE[X_i]≤E[X_j]である。
+  strategy: Take expectations in the submartingale inequality.
+  sketch:
+    - "translate: The submartingale property gives X_i ≤ E[X_j | F_i] almost surely."
+    - "apply_theorem: Monotonicity of expectation preserves the inequality."
+    - "apply_theorem: The law of total expectation simplifies the right side."
+    - "conclude: Hence E[X_i] ≤ E[X_j]."
+  openmath: (forall (P F X i j) (-> (and (probability_measure P) (filtration_of F) (submartingale P X F) (<= i j)) (<= (expectation P (seq_value X i)) (expectation P (seq_value X j)))))
+  hard_negative:
+    statement: 期待値が単調増加な適合過程は劣マルチンゲールである。
+    reason: 条件付きの不等式は期待値の不等式より強い。X_n=(-1)^nZ（ZはF_0可測で平均0、非定数）は期待値が一定だが、E[X_{n+1}|F_n]=-X_nとなり劣マルチンゲールでない。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (F : MeasureTheory.Filtration ℕ m0) (X : ℕ → Ω → ℝ) (i j : ℕ), MeasureTheory.Submartingale X F μ → i ≤ j → ∫ ω, X i ω ∂μ ≤ ∫ ω, X j ω ∂μ
+  proof: |
+    by
+      intro Ω m0 μ _ F X i j h hij
+      have h1 := h.setIntegral_le hij (MeasurableSet.univ)
+      simpa using h1
+- id: doob_martingale
+  kind: gap
+  level: 3
+  topic: マルチンゲール・ドゥーブのマルチンゲール
+  statement: 可積分なYとフィルトレーションF_nについて、E[Y|F_n]はマルチンゲールである。
+  statement_en: For an integrable random variable Y and a filtration F_n, the process E[Y | F_n] is a martingale.
+  assumptions: [Pは確率測度, Fはフィルトレーション, Yは可積分]
+  quantifiers: [任意の確率空間, フィルトレーションF, 確率変数Y]
+  conclusion: M_n=E[Y|F_n]はFに関するマルチンゲールである。
+  answer: |
+    M_nはF_n可測かつ可積分なので適合過程である。i≤jならF_i⊆F_jなので、タワー法則からE[M_j|F_i]=E[E[Y|F_j]|F_i]=E[Y|F_i]=M_iがほとんど確実に成り立つ。よってM_nはマルチンゲールである。
+  strategy: Measurability is built in, and the martingale identity is the tower law.
+  sketch:
+    - "derive: Each M_n is F_n-measurable and integrable, so the process is adapted."
+    - "apply_theorem: For i ≤ j the tower law gives E[M_j | F_i] = M_i."
+    - "conclude: Hence M is a martingale."
+  openmath: (forall (P F Y) (-> (and (probability_measure P) (filtration_of F) (integrable_rv Y P)) (martingale P (doob_process P Y F) F)))
+  hard_negative:
+    statement: 任意のマルチンゲールはある可積分なYによりX_n=E[Y|F_n]と表せる。
+    reason: 一様可積分性などが必要である。単純ランダムウォークは一様可積分でなくこの形に書けない。
+  target: |
+    ∀ (Ω : Type*) [m0 : MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (F : MeasureTheory.Filtration ℕ m0) (Y : Ω → ℝ), MeasureTheory.Integrable Y μ → MeasureTheory.Martingale (fun n => MeasureTheory.condExp (F n) μ Y) F μ
+  proof: |
+    by
+      intro Ω m0 μ _ F Y _
+      exact MeasureTheory.martingale_condExp Y F μ
+- id: sample_mean_unbiased
+  kind: gap
+  level: 2
+  topic: 統計・標本平均の不偏性
+  statement: 可積分で期待値がmの確率変数X_0,…,X_{n-1}（n≥1）について、標本平均の期待値はmである。
+  statement_en: If X_0, ..., X_{n-1} with n ≥ 1 are integrable with common mean m, then the sample mean has expectation m.
+  assumptions: [Pは確率測度, n≥1, 各X_iは可積分, "E[X_i]=m"]
+  quantifiers: [任意の確率空間, 確率変数列X, 自然数n, 実数m]
+  conclusion: E[(X_0+…+X_{n-1})/n]=mである。
+  answer: |
+    期待値の線形性からE[(ΣX_i)/n]=(ΣE[X_i])/n=(nm)/n=mである。この計算に独立性は使わない。
+  strategy: Linearity of expectation with no independence assumption.
+  sketch:
+    - "apply_theorem: Pull out 1/n and split the sum by linearity."
+    - "derive: Each term equals m, so the sum is n m."
+    - "conclude: Divide by n ≥ 1 to get m."
+  openmath: (forall (P X n m) (-> (and (probability_measure P) (>= n 1) (forall (i) (-> (in i (finset_range n)) (and (integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m))))) (= (expectation P (/ (partial_sum_rv X n) n)) m)))
+  hard_negative:
+    statement: 標本平均の分散は母分散に等しい。
+    reason: 対ごとに独立なら標本平均の分散はσ²/nであり、n≥2でσ²>0のとき母分散より小さい。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ) (n : ℕ) (m : ℝ), 0 < n → (∀ i ∈ Finset.range n, MeasureTheory.Integrable (X i) μ) → (∀ i ∈ Finset.range n, ∫ ω, X i ω ∂μ = m) → ∫ ω, (∑ i ∈ Finset.range n, X i ω) / n ∂μ = m
+  proof: |
+    by
+      intro Ω _ μ _ X n m hn hi he
+      have hn' : (n : ℝ) ≠ 0 := by positivity
+      rw [MeasureTheory.integral_div, MeasureTheory.integral_finset_sum _ hi, Finset.sum_congr rfl he]
+      simp
+      field_simp
+- id: sample_variance_algebra
+  kind: gap
+  level: 2
+  topic: 統計・偏差平方和の分解
+  statement: 標本平均をx̄とすると、実数aについてΣ(x_i-a)²=Σ(x_i-x̄)²+n(x̄-a)²が成り立つ。
+  statement_en: With sample mean x̄ of x_0, ..., x_{n-1} and n ≥ 1, Σ_i (x_i - a)² = Σ_i (x_i - x̄)² + n (x̄ - a)² for every real a.
+  assumptions: [n≥1, x̄は標本平均]
+  quantifiers: [任意の実数列x, 自然数n, 実数a]
+  conclusion: Σ(x_i-a)²=Σ(x_i-x̄)²+n(x̄-a)²である。
+  answer: |
+    x_i-a=(x_i-x̄)+(x̄-a)として2乗の展開を和にとると、Σ(x_i-a)²=Σ(x_i-x̄)²+2(x̄-a)Σ(x_i-x̄)+n(x̄-a)²となる。x̄の定義からΣ(x_i-x̄)=0なので中央の項が消える。よって結論を得る。
+  strategy: Insert the sample mean and use that deviations from it sum to zero.
+  sketch:
+    - "setup: Write x_i - a = (x_i - x̄) + (x̄ - a)."
+    - "derive: Expand the square and sum over i."
+    - "derive: The cross term vanishes since deviations from x̄ sum to 0."
+    - "conclude: This yields the decomposition."
+  openmath: (forall (x n a m) (-> (and (>= n 1) (= m (/ (sum (finset_range n) (lambda (i) (seq_value x i))) n))) (= (sum (finset_range n) (lambda (i) (^ (- (seq_value x i) a) 2))) (+ (sum (finset_range n) (lambda (i) (^ (- (seq_value x i) m) 2))) (* n (^ (- m a) 2))))))
+  hard_negative:
+    statement: 実数aについてΣ(x_i-a)²≤Σ(x_i-x̄)²が成り立つ。
+    reason: 不等号が逆である。分解からΣ(x_i-a)²は平均x̄で最小となり、a≠x̄なら真に大きい。
+  target: |
+    ∀ (x : ℕ → ℝ) (n : ℕ) (a m : ℝ), 0 < n → m = (∑ i ∈ Finset.range n, x i) / n → ∑ i ∈ Finset.range n, (x i - a) ^ 2 = ∑ i ∈ Finset.range n, (x i - m) ^ 2 + n * (m - a) ^ 2
+  proof: |
+    by
+      intro x n a m hn hm
+      have hn' : (n : ℝ) ≠ 0 := by positivity
+      have hs : ∑ i ∈ Finset.range n, x i = n * m := by
+        rw [hm]
+        field_simp
+      have h : ∑ i ∈ Finset.range n, (x i - a) ^ 2 = ∑ i ∈ Finset.range n, (x i - m) ^ 2 + ∑ i ∈ Finset.range n, (2 * (m - a) * x i + (a ^ 2 - m ^ 2)) := by
+        rw [← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro i _
+        ring
+      rw [h, Finset.sum_add_distrib, ← Finset.mul_sum, hs]
+      simp
+      ring
+- id: sample_variance_unbiased
+  kind: textbook
+  level: 3
+  topic: 統計・不偏分散
+  statement: 対ごとに独立で2乗可積分、平均m、分散σ²のX_0,…,X_{n-1}（n≥2）について、S²=Σ(X_i-X̄)²/(n-1)の期待値はσ²である。
+  statement_en: If X_0, ..., X_{n-1} with n ≥ 2 are pairwise independent and square-integrable with common mean m and variance σ², then S² = Σ_i (X_i - X̄)² / (n - 1) has expectation σ².
+  assumptions: [Pは確率測度, n≥2, 各X_iは2乗可積分, X_iは対ごとに独立, "E[X_i]=m", "V[X_i]=σ²"]
+  quantifiers: [任意の確率空間, 確率変数列X, 自然数n, 実数m, σ²]
+  conclusion: E[S²]=σ²である。
+  answer: |
+    偏差平方和の分解からΣ(X_i-X̄)²=Σ(X_i-m)²-n(X̄-m)²である。第1項の期待値はΣV[X_i]=nσ²である。対ごとの独立性からV[X̄]=σ²/nなので、第2項の期待値はn·σ²/n=σ²である。よってE[Σ(X_i-X̄)²]=(n-1)σ²となり、n-1で割ると結論を得る。
+  strategy: Decompose the sum of squares about the true mean and compute both expectations.
+  sketch:
+    - "setup: Let S be the sum of the X_i, and note that its mean is n m."
+    - "apply_theorem: Pairwise independence gives Var(S) = n σ²."
+    - "derive: Pointwise, Σ(X_i - X̄)² = Σ(X_i - m)² - (S - nm)² / n."
+    - "derive: The first term has expectation n σ²."
+    - "derive: The second term has expectation Var(S) / n = σ²."
+    - "conclude: Dividing (n - 1) σ² by n - 1 gives σ²."
+  openmath: (forall (P X n m v) (-> (and (probability_measure P) (>= n 2) (pairwise_indep_rv P X) (forall (i) (-> (in i (finset_range n)) (and (square_integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m) (= (variance P (seq_value X i)) v))))) (= (expectation P (/ (sum (finset_range n) (lambda (i) (^ (- (seq_value X i) (/ (partial_sum_rv X n) n)) 2))) (- n 1))) v)))
+  hard_negative:
+    statement: n-1でなくnで割った標本分散も母分散の不偏推定量である。
+    reason: nで割るとその期待値は(n-1)σ²/nとなり、σ²>0のとき母分散より小さい。
+  target: |
+    ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ) (n : ℕ) (m v : ℝ), 2 ≤ n → (∀ i ∈ Finset.range n, MeasureTheory.MemLp (X i) 2 μ) → Set.Pairwise (↑(Finset.range n) : Set ℕ) (fun i j => ProbabilityTheory.IndepFun (X i) (X j) μ) → (∀ i ∈ Finset.range n, ∫ ω, X i ω ∂μ = m) → (∀ i ∈ Finset.range n, ProbabilityTheory.variance (X i) μ = v) → ∫ ω, (∑ i ∈ Finset.range n, (X i ω - (∑ j ∈ Finset.range n, X j ω) / n) ^ 2) / ((n : ℝ) - 1) ∂μ = v
+  proof: |
+    by
+      intro Ω _ μ _ X n m v hn hX hI hm hv
+      have hn0 : (n : ℝ) ≠ 0 := by
+        have : 0 < n := by omega
+        positivity
+      have hn1 : (n : ℝ) - 1 ≠ 0 := by
+        have : (2 : ℝ) ≤ n := by exact_mod_cast hn
+        linarith
+      set S : Ω → ℝ := fun ω => ∑ i ∈ Finset.range n, X i ω with hS
+      have hSfun : S = ∑ i ∈ Finset.range n, X i := by
+        ext ω
+        simp [hS, Finset.sum_apply]
+      have hSmem : MeasureTheory.MemLp S 2 μ := by
+        rw [hSfun]
+        exact MeasureTheory.memLp_finsetSum' _ hX
+      have hVarS : ProbabilityTheory.variance S μ = n * v := by
+        rw [hSfun, ProbabilityTheory.IndepFun.variance_sum hX hI, Finset.sum_congr rfl hv]
+        simp
+      have hES : ∫ ω, S ω ∂μ = n * m := by
+        rw [hS, MeasureTheory.integral_finset_sum _ (fun i hi => (hX i hi).integrable one_le_two),
+          Finset.sum_congr rfl hm]
+        simp
+      have hS2 : ∫ ω, (S ω - n * m) ^ 2 ∂μ = n * v := by
+        rw [← hVarS, ProbabilityTheory.variance_eq_integral hSmem.aemeasurable, hES]
+      have hIntS : MeasureTheory.Integrable (fun ω => (S ω - n * m) ^ 2) μ :=
+        (hSmem.sub (MeasureTheory.memLp_const _)).integrable_sq
+      have hInt : ∀ i ∈ Finset.range n, MeasureTheory.Integrable (fun ω => (X i ω - m) ^ 2) μ :=
+        fun i hi => ((hX i hi).sub (MeasureTheory.memLp_const _)).integrable_sq
+      have hEach : ∀ i ∈ Finset.range n, ∫ ω, (X i ω - m) ^ 2 ∂μ = v := by
+        intro i hi
+        rw [← hv i hi, ProbabilityTheory.variance_eq_integral (hX i hi).aemeasurable, hm i hi]
+      have hSum : ∫ ω, ∑ i ∈ Finset.range n, (X i ω - m) ^ 2 ∂μ = n * v := by
+        rw [MeasureTheory.integral_finset_sum _ hInt, Finset.sum_congr rfl hEach]
+        simp
+      have hpt : ∀ ω, ∑ i ∈ Finset.range n, (X i ω - (∑ j ∈ Finset.range n, X j ω) / n) ^ 2
+          = ∑ i ∈ Finset.range n, (X i ω - m) ^ 2 - (S ω - n * m) ^ 2 / n := by
+        intro ω
+        have hSω : ∑ i ∈ Finset.range n, X i ω = S ω := rfl
+        rw [hSω]
+        obtain ⟨a, ha⟩ : ∃ a, a = S ω / n := ⟨_, rfl⟩
+        have hna : S ω = n * a := by
+          rw [ha]
+          field_simp
+        rw [← ha]
+        have hsp : ∑ i ∈ Finset.range n, (X i ω - m) ^ 2
+            = ∑ i ∈ Finset.range n, (X i ω - a) ^ 2
+              + ∑ i ∈ Finset.range n, (2 * (a - m) * X i ω + (m ^ 2 - a ^ 2)) := by
+          rw [← Finset.sum_add_distrib]
+          apply Finset.sum_congr rfl
+          intro i _
+          ring
+        rw [hsp, Finset.sum_add_distrib, ← Finset.mul_sum, hSω, hna]
+        simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+        have hq : ((n : ℝ) * a - n * m) ^ 2 / n = n * (a - m) ^ 2 := by
+          field_simp
+        rw [hq]
+        ring
+      simp_rw [hpt]
+      rw [MeasureTheory.integral_div,
+        MeasureTheory.integral_sub (MeasureTheory.integrable_finsetSum _ hInt) (hIntS.div_const _),
+        hSum, MeasureTheory.integral_div, hS2]
+      field_simp

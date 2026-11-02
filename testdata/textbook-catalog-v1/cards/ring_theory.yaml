@@ -1,0 +1,1624 @@
+- id: ring_hom_injective_iff_ker_bot
+  kind: gap
+  level: 2
+  topic: 環論・環準同型と核
+  statement: 環準同型fが単射であることと、fの核が零イデアルであることは同値である。
+  statement_en: A ring homomorphism f between commutative rings is injective if and only if its kernel is the zero ideal.
+  assumptions: ["R, Sは可換環", "f: R→Sは環準同型"]
+  quantifiers: ["任意の可換環R, Sと環準同型f"]
+  conclusion: fが単射であることとKer f=0は同値である。
+  answer: |
+    fが単射でxがKer fの元なら、f(x)=0=f(0)よりx=0である。逆にKer f=0とし、f(x)=f(y)とすると、f(x-y)=0よりx-yは核に属するのでx=yである。
+  strategy: Translate equality of images into membership of the difference in the kernel.
+  sketch:
+    - "setup: Suppose f is injective and x lies in the kernel."
+    - "derive: Then f(x) = 0 = f(0), so x = 0."
+    - "translate: Conversely, f(x) = f(y) gives f(x - y) = 0."
+    - "conclude: A zero kernel forces x - y = 0, so f is injective."
+  openmath: (forall (R S f) (-> (and (comm_ring R) (comm_ring S) (ring_hom f R S)) (<-> (ring_hom_injective f) (= (ring_kernel f) (zero_ideal R)))))
+  hard_negative:
+    statement: 環準同型の核が零イデアルならば、その準同型は環の同型である。
+    reason: 包含写像ℤ→ℚの核は零だが全射でなく、同型ではない。
+  target: |
+    ∀ (R S : Type*) [CommRing R] [CommRing S] (f : R →+* S), Function.Injective f ↔ RingHom.ker f = ⊥
+  proof: |
+    by
+      intro R S _ _ f
+      exact RingHom.injective_iff_ker_eq_bot f
+- id: comap_prime_ideal
+  kind: gap
+  level: 3
+  topic: 環論・素イデアルの逆像
+  statement: 環準同型f:R→Sによる、Sの素イデアルPの逆像はRの素イデアルである。
+  statement_en: The preimage of a prime ideal P of S under a ring homomorphism f from R to S is a prime ideal of R.
+  assumptions: ["R, Sは可換環", "f: R→Sは環準同型", "PはSの素イデアル"]
+  quantifiers: ["任意の可換環R, S、環準同型f、素イデアルP"]
+  conclusion: f^{-1}(P)はRの素イデアルである。
+  answer: |
+    f(1)=1はPに属さないので、f^{-1}(P)はRと異なるイデアルである。abがf^{-1}(P)に属せばf(a)f(b)=f(ab)はPに属する。Pは素イデアルなのでf(a)またはf(b)がPに属し、aまたはbがf^{-1}(P)に属する。
+  strategy: Check properness through f(1) = 1 and transport the prime property along multiplicativity.
+  sketch:
+    - "setup: The preimage of an ideal under f is an ideal of R."
+    - "derive: Since f(1) = 1 is not in P, the preimage is proper."
+    - "translate: If ab is in the preimage, then f(a)f(b) lies in P."
+    - "conclude: Primality of P puts f(a) or f(b) in P, so a or b is in the preimage."
+  openmath: (forall (R S f P) (-> (and (comm_ring R) (comm_ring S) (ring_hom f R S) (prime_ideal P S)) (prime_ideal (ideal_comap f P) R)))
+  hard_negative:
+    statement: 環準同型による極大イデアルの逆像は常に極大イデアルである。
+    reason: 包含写像ℤ→ℚで極大イデアル(0)の逆像は(0)であり、ℤでは素イデアルだが極大ではない。
+  target: |
+    ∀ (R S : Type*) [CommRing R] [CommRing S] (f : R →+* S) (P : Ideal S), P.IsPrime → (P.comap f).IsPrime
+  proof: |
+    by
+      intro R S _ _ f P hP
+      exact Ideal.comap_isPrime f P
+- id: ideal_top_iff_contains_unit
+  kind: gap
+  level: 2
+  topic: 環論・イデアルと単元
+  statement: 可換環のイデアルIが環全体に等しいことと、Iが単元を含むことは同値である。
+  statement_en: An ideal I of a commutative ring equals the whole ring if and only if I contains a unit.
+  assumptions: ["Rは可換環", "IはRのイデアル"]
+  quantifiers: ["任意の可換環RとイデアルI"]
+  conclusion: I=Rであることと、Iが単元を含むことは同値である。
+  answer: |
+    I=Rなら単元1がIに属する。逆に単元uがIに属すれば、1=u^{-1}uはIに属する。すると任意のxについてx=x·1がIに属するので、I=Rである。
+  strategy: Multiply a unit by its inverse to place 1 in the ideal.
+  sketch:
+    - "setup: If I = R then 1 is a unit in I."
+    - "derive: If u in I is a unit, then 1 = u⁻¹u lies in I."
+    - "conclude: Then x = x·1 lies in I for every x, so I = R."
+  openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R)) (<-> (= I (unit_ideal R)) (exists (u) (and (in u I) (unit_element u R))))))
+  hard_negative:
+    statement: イデアルが0でない元を含めば、そのイデアルは環全体である。
+    reason: ℤのイデアル2ℤは0でない元2を含むが、環全体ではない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I : Ideal R), I = ⊤ ↔ ∃ u ∈ I, IsUnit u
+  proof: |
+    by
+      intro R _ I
+      constructor
+      · rintro rfl
+        exact ⟨1, Submodule.mem_top, isUnit_one⟩
+      · rintro ⟨u, hu, hunit⟩
+        exact I.eq_top_of_isUnit_mem hu hunit
+- id: coprime_ideals_inf_eq_mul
+  kind: gap
+  level: 3
+  topic: 環論・イデアルの積と共通部分
+  statement: 可換環のイデアルI, JがI+J=Rを満たすならば、I∩J=IJである。
+  statement_en: If ideals I and J of a commutative ring satisfy I + J = R, then their intersection equals their product.
+  assumptions: ["Rは可換環", "I, JはRのイデアル", "I+J=R"]
+  quantifiers: ["任意の可換環RとイデアルI, J"]
+  conclusion: I∩J=IJが成り立つ。
+  answer: |
+    IJがI∩Jに含まれることは常に成り立つ。逆を示す。I+J=Rよりi+j=1となるiとjをそれぞれI, Jからとる。xがI∩Jに属すれば、x=xi+xjであり、xiとxjはどちらもIJに属するので、xはIJに属する。
+  strategy: Write 1 = i + j and split an element of the intersection into two products.
+  sketch:
+    - "setup: The inclusion IJ ⊆ I ∩ J holds for any ideals."
+    - "construct: Choose i in I and j in J with i + j = 1."
+    - "derive: For x in I ∩ J, x = xi + xj."
+    - "conclude: Both xi and xj lie in IJ, so x lies in IJ."
+  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (= (ideal_sum I J) (unit_ideal R))) (= (inter I J) (ideal_product I J))))
+  hard_negative:
+    statement: 可換環の任意のイデアルI, Jに対してI∩J=IJである。
+    reason: ℤでI=J=2ℤとするとI∩J=2ℤだがIJ=4ℤである。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ⊔ J = ⊤ → I ⊓ J = I * J
+  proof: |
+    by
+      intro R _ I J h
+      exact (Ideal.mul_eq_inf_of_isCoprime (Ideal.isCoprime_iff_sup_eq.mpr h)).symm
+- id: principal_ideal_le_iff_dvd
+  kind: gap
+  level: 2
+  topic: 環論・単項イデアルと整除
+  statement: 可換環の元a, bについて、単項イデアルの包含(a)⊆(b)はbがaを割り切ることと同値である。
+  statement_en: For elements a and b of a commutative ring, the principal ideal (a) is contained in (b) if and only if b divides a.
+  assumptions: ["Rは可換環", "a, bはRの元"]
+  quantifiers: ["任意の可換環Rと元a, b"]
+  conclusion: (a)⊆(b)であることとb∣aは同値である。
+  answer: |
+    (a)⊆(b)ならaは(b)に属するので、a=bcとなるcがあり、bはaを割り切る。逆にa=bcなら、aの倍数はすべてbの倍数なので(a)⊆(b)である。
+  strategy: Unfold membership in a principal ideal as divisibility.
+  sketch:
+    - "translate: Membership of a in (b) means a = bc for some c."
+    - "derive: If b divides a, every multiple of a is a multiple of b."
+    - "conclude: Hence (a) ⊆ (b) is equivalent to b dividing a."
+  openmath: (forall (R a b) (-> (and (comm_ring R) (in a R) (in b R)) (<-> (subset (principal_ideal a) (principal_ideal b)) (dvd b a))))
+  hard_negative:
+    statement: (a)⊆(b)であることはaがbを割り切ることと同値である。
+    reason: ℤで(4)⊆(2)だが4は2を割り切らない。割り切る向きが逆である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (a b : R), Ideal.span {a} ≤ Ideal.span {b} ↔ b ∣ a
+  proof: |
+    by
+      intro R _ a b
+      exact Ideal.span_singleton_le_span_singleton
+- id: quotient_mk_eq_iff_sub_mem
+  kind: gap
+  level: 2
+  topic: 環論・剰余環の元の相等
+  statement: 剰余環R/Iにおいてxとyの剰余類が等しいことと、x-yがIに属することは同値である。
+  statement_en: In the quotient ring R/I, the residue classes of x and y coincide if and only if x - y belongs to I.
+  assumptions: ["Rは可換環", "IはRのイデアル", "x, yはRの元"]
+  quantifiers: ["任意の可換環R、イデアルI、元x, y"]
+  conclusion: x+I=y+Iであることとx-y∈Iは同値である。
+  answer: |
+    x+I=y+Iならxはy+Iに属するので、x-yはIに属する。逆にx-yがIに属すれば、i=x-yとしてx+I=y+i+I=y+Iである。
+  strategy: Compare cosets of the additive subgroup I.
+  sketch:
+    - "translate: Equal cosets means x lies in y + I."
+    - "derive: Then x - y lies in I."
+    - "conclude: Conversely, x = y + i with i in I gives x + I = y + I."
+  openmath: (forall (R I x y) (-> (and (comm_ring R) (ideal_of I R) (in x R) (in y R)) (<-> (= (residue_class I x) (residue_class I y)) (in (- x y) I))))
+  hard_negative:
+    statement: xとyの剰余類が等しいことは、xとyがともにIに属することと同値である。
+    reason: ℤでI=2ℤ, x=y=1とすると剰余類は等しいが、1はIに属さない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I : Ideal R) (x y : R), Ideal.Quotient.mk I x = Ideal.Quotient.mk I y ↔ x - y ∈ I
+  proof: |
+    by
+      intro R _ I x y
+      exact Ideal.Quotient.eq
+- id: quotient_lift_unique
+  kind: textbook
+  level: 3
+  topic: 環論・剰余環の普遍性
+  statement: 環準同型f:R→SがイデアルIの元をすべて0に写すならば、g(x+I)=f(x)を満たす環準同型g:R/I→Sがただ一つ存在する。
+  statement_en: If a ring homomorphism f from R to S vanishes on an ideal I, then there is a unique ring homomorphism g from R/I to S with g(x + I) = f(x) for all x.
+  assumptions: ["R, Sは可換環", "IはRのイデアル", "f: R→Sは環準同型", "Iの元はfで0に写る"]
+  quantifiers: ["任意の可換環R, S、イデアルI、環準同型f"]
+  conclusion: g∘π=fを満たす環準同型g:R/I→Sがただ一つ存在する。ここでπは自然な射影である。
+  answer: |
+    x+I=y+Iならx-yはIに属するのでf(x)=f(y)となり、g(x+I)=f(x)は代表元によらず定まる。fが環準同型であることから、gも環準同型である。条件g(x+I)=f(x)はR/Iの全ての元での値を決めるので、gは一意である。
+  strategy: Define the map on representatives, check it is well defined, and use surjectivity of the projection for uniqueness.
+  sketch:
+    - "construct: Set g(x + I) = f(x)."
+    - "derive: If x - y lies in I then f(x) = f(y), so g is well defined."
+    - "derive: Additivity and multiplicativity of g follow from those of f."
+    - "conclude: Every element of R/I is a residue class, so the condition determines g uniquely."
+  openmath: (forall (R S I f) (-> (and (comm_ring R) (comm_ring S) (ideal_of I R) (ring_hom f R S) (forall (a) (-> (in a I) (= (fn_value f a) 0)))) (exists (g) (and (ring_hom g (quotient_ring R I) S) (forall (x) (= (fn_value g (residue_class I x)) (fn_value f x))) (forall (h) (-> (and (ring_hom h (quotient_ring R I) S) (forall (x) (= (fn_value h (residue_class I x)) (fn_value f x)))) (= h g)))))))
+  hard_negative:
+    statement: Iがfの核に含まれなくても、fはR/Iを経由する環準同型に分解する。
+    reason: f=id:ℤ→ℤ, I=2ℤでは、g(1+I)=1とすると0=g(2+I)=2となり矛盾する。
+  target: |
+    ∀ (R S : Type*) [CommRing R] [CommRing S] (I : Ideal R) (f : R →+* S), (∀ a ∈ I, f a = 0) → ∃! g : (R ⧸ I) →+* S, g.comp (Ideal.Quotient.mk I) = f
+  proof: |
+    by
+      intro R S _ _ I f h
+      refine ⟨Ideal.Quotient.lift I f h, ?_, ?_⟩
+      · ext x
+        simp
+      · intro g hg
+        apply Ideal.Quotient.ringHom_ext
+        ext x
+        simp [← hg]
+- id: first_isomorphism_theorem_ring
+  kind: named
+  level: 3
+  topic: 環論・準同型定理
+  statement: 環の準同型定理。環準同型f:R→Sについて、x+Ker fをf(x)に写す写像はR/Ker fからfの像への環同型である。
+  statement_en: First isomorphism theorem for rings. For a ring homomorphism f from R to S, sending x + ker f to f(x) gives a ring isomorphism from R/ker f onto the image of f.
+  assumptions: ["R, Sは可換環", "f: R→Sは環準同型"]
+  quantifiers: ["任意の可換環R, Sと環準同型f"]
+  conclusion: x+Ker fをf(x)に写す環同型R/Ker f≅Im fが存在する。
+  answer: |
+    x-yがKer fに属することとf(x)=f(y)は同値なので、x+Ker fをf(x)に写す写像は矛盾なく定まり、しかも単射である。この写像はfが環準同型であることから環準同型であり、像への写像としては定義から全射である。よって環同型である。
+  strategy: Use the equivalence between equal values and differences in the kernel to get a well-defined injective map.
+  sketch:
+    - "translate: f(x) = f(y) holds exactly when x - y lies in ker f."
+    - "construct: Define the map on residue classes by x + ker f ↦ f(x)."
+    - "derive: The equivalence shows the map is well defined and injective."
+    - "derive: It is a ring homomorphism because f is."
+    - "conclude: It is onto the image by definition, hence an isomorphism."
+  openmath: (forall (R S f) (-> (and (comm_ring R) (comm_ring S) (ring_hom f R S)) (exists (e) (and (ring_iso e (quotient_ring R (ring_kernel f)) (ring_image f)) (forall (x) (= (fn_value e (residue_class (ring_kernel f) x)) (fn_value f x)))))))
+  hard_negative:
+    statement: 任意の環準同型f:R→SについてR/Ker fはS全体と同型である。
+    reason: 包含写像ℤ→ℚでは核が0でR/Ker f=ℤとなるが、ℤとℚは同型でない。全射の仮定が必要である。
+  target: |
+    ∀ (R S : Type*) [CommRing R] [CommRing S] (f : R →+* S), ∃ e : (R ⧸ RingHom.ker f) ≃+* f.range, ∀ x : R, ((e (Ideal.Quotient.mk (RingHom.ker f) x) : f.range) : S) = f x
+  proof: |
+    by
+      intro R S _ _ f
+      refine ⟨RingHom.quotientKerEquivRange f, ?_⟩
+      intro x
+      rfl
+- id: third_isomorphism_theorem_ring
+  kind: textbook
+  level: 3
+  topic: 環論・第三同型定理
+  statement: 可換環のイデアルI⊆Jについて、Jの像J/IでR/Iを割った環はR/Jと同型である。同型は剰余類を対応させて与えられる。
+  statement_en: For ideals I ⊆ J of a commutative ring, the quotient of R/I by the image of J is isomorphic to R/J, compatibly with residue classes.
+  assumptions: ["Rは可換環", "I, JはRのイデアル", "I⊆J"]
+  quantifiers: ["任意の可換環RとイデアルI, J"]
+  conclusion: (R/I)/(J/I)≅R/Jであり、xの二重の剰余類はx+Jに対応する。
+  answer: |
+    I⊆Jなので、x+Iをx+Jに写す環準同型R/I→R/Jが定まる。この準同型は全射であり、その核はx∈Jとなるx+I全体、すなわちJの像である。準同型定理を適用すると求める同型が得られる。
+  strategy: Apply the first isomorphism theorem to the induced surjection from R/I onto R/J.
+  sketch:
+    - "construct: Since I ⊆ J, define R/I → R/J by x + I ↦ x + J."
+    - "derive: This map is surjective."
+    - "derive: Its kernel is the image of J in R/I."
+    - "apply_theorem: The first isomorphism theorem gives the claimed isomorphism."
+  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (subset I J)) (exists (e) (and (ring_iso e (quotient_ring (quotient_ring R I) (ideal_map (ring_quotient_map I) J)) (quotient_ring R J)) (forall (x) (= (fn_value e (residue_class (ideal_map (ring_quotient_map I) J) (residue_class I x))) (residue_class J x)))))))
+  hard_negative:
+    statement: I⊆Jを仮定しなくても、(R/I)/(Jの像)はR/Jと同型である。
+    reason: ℤでI=2ℤ, J=3ℤとするとJの像はℤ/2ℤ全体で商は零環だが、ℤ/3ℤは零環でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ≤ J → ∃ e : ((R ⧸ I) ⧸ J.map (Ideal.Quotient.mk I)) ≃+* (R ⧸ J), ∀ x : R, e (Ideal.Quotient.mk _ (Ideal.Quotient.mk I x)) = Ideal.Quotient.mk J x
+  proof: |
+    by
+      intro R _ I J h
+      refine ⟨DoubleQuot.quotQuotEquivQuotOfLE h, ?_⟩
+      intro x
+      rfl
+- id: quotient_ideal_correspondence
+  kind: gap
+  level: 3
+  topic: 環論・イデアルの対応
+  statement: Iを含むイデアルJについて、自然な射影π:R→R/Iによる像π(J)の逆像はJに等しい。
+  statement_en: If J is an ideal containing I, then the preimage under the projection from R to R/I of the image of J equals J.
+  assumptions: ["Rは可換環", "I, JはRのイデアル", "I⊆J", "π: R→R/Iは自然な射影"]
+  quantifiers: ["任意の可換環RとイデアルI, J"]
+  conclusion: π^{-1}(π(J))=Jが成り立つ。
+  answer: |
+    πは全射なので、π(J)はJの元の剰余類全体である。Jがπ^{-1}(π(J))に含まれることは明らかである。xがπ^{-1}(π(J))に属すれば、π(x)=π(j)となるJの元jがあり、x-jはIに属する。I⊆Jよりx-jはJに属するので、xもJに属する。
+  strategy: Compare residue classes and use I ⊆ J to absorb the difference.
+  sketch:
+    - "setup: The inclusion J ⊆ π⁻¹(π(J)) is immediate."
+    - "translate: For x in π⁻¹(π(J)), choose j in J with π(x) = π(j)."
+    - "derive: Then x - j lies in I, hence in J."
+    - "conclude: So x = (x - j) + j lies in J."
+  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (subset I J)) (= (ideal_comap (ring_quotient_map I) (ideal_map (ring_quotient_map I) J)) J)))
+  hard_negative:
+    statement: I⊆Jを仮定しなくても、π^{-1}(π(J))=Jである。
+    reason: 一般にはπ^{-1}(π(J))=I+Jであり、ℤでI=2ℤ, J=3ℤならℤとなって3ℤと異なる。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ≤ J → (J.map (Ideal.Quotient.mk I)).comap (Ideal.Quotient.mk I) = J
+  proof: |
+    by
+      intro R _ I J h
+      rw [Ideal.comap_map_of_surjective _ Ideal.Quotient.mk_surjective, ← RingHom.ker_eq_comap_bot, Ideal.mk_ker]
+      exact sup_eq_left.mpr h
+- id: chinese_remainder_two_ideals
+  kind: named
+  level: 3
+  topic: 環論・中国剰余定理
+  statement: 中国剰余定理。可換環のイデアルI, JがI+J=Rを満たすならば、x+I∩Jを(x+I, x+J)に写す写像はR/(I∩J)からR/I×R/Jへの環同型である。
+  statement_en: Chinese remainder theorem. If ideals I and J of a commutative ring satisfy I + J = R, then x + (I ∩ J) ↦ (x + I, x + J) is a ring isomorphism from R/(I ∩ J) onto R/I × R/J.
+  assumptions: ["Rは可換環", "I, JはRのイデアル", "I+J=R"]
+  quantifiers: ["任意の可換環RとイデアルI, J"]
+  conclusion: 剰余類を対応させる環同型R/(I∩J)≅R/I×R/Jが存在する。
+  answer: |
+    xを(x+I, x+J)に写す環準同型R→R/I×R/Jの核はI∩Jである。i+j=1となるi∈I, j∈Jをとる。任意のa, bに対してx=aj+biとおくと、x≡a (mod I)かつx≡b (mod J)なので、この準同型は全射である。準同型定理から求める同型が得られる。
+  strategy: Build the map to the product, identify its kernel, and prove surjectivity from i + j = 1.
+  sketch:
+    - "construct: Consider R → R/I × R/J sending x to its two residue classes."
+    - "derive: Its kernel is I ∩ J."
+    - "construct: Choose i in I and j in J with i + j = 1."
+    - "derive: The element aj + bi reduces to a mod I and b mod J, so the map is surjective."
+    - "apply_theorem: The first isomorphism theorem gives the isomorphism."
+  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (= (ideal_sum I J) (unit_ideal R))) (exists (e) (and (ring_iso e (quotient_ring R (inter I J)) (cartesian (quotient_ring R I) (quotient_ring R J))) (forall (x) (and (= (fn_value (fn_value e (residue_class (inter I J) x)) 1) (residue_class I x)) (= (fn_value (fn_value e (residue_class (inter I J) x)) 2) (residue_class J x))))))))
+  hard_negative:
+    statement: 任意のイデアルI, Jに対してR/(I∩J)はR/I×R/Jと同型である。
+    reason: ℤでI=J=2ℤとすると左辺は位数2、右辺は位数4であり同型でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ⊔ J = ⊤ → ∃ e : (R ⧸ (I ⊓ J)) ≃+* (R ⧸ I) × (R ⧸ J), ∀ x : R, e (Ideal.Quotient.mk (I ⊓ J) x) = (Ideal.Quotient.mk I x, Ideal.Quotient.mk J x)
+  proof: |
+    by
+      intro R _ I J h
+      refine ⟨Ideal.quotientInfEquivQuotientProd I J (Ideal.isCoprime_iff_sup_eq.mpr h), ?_⟩
+      intro x
+      rfl
+- id: coprime_ideals_simultaneous_congruence
+  kind: gap
+  level: 3
+  topic: 環論・連立合同式
+  statement: I+J=Rならば、任意のa, bに対してx-a∈Iかつx-b∈Jを満たすxが存在する。
+  statement_en: If ideals I and J satisfy I + J = R, then for all a and b there is an x with x - a in I and x - b in J.
+  assumptions: ["Rは可換環", "I, JはRのイデアル", "I+J=R"]
+  quantifiers: ["任意の可換環R、イデアルI, J、元a, b"]
+  conclusion: x-a∈Iかつx-b∈Jを満たすxが存在する。
+  answer: |
+    i+j=1となるi∈I, j∈Jをとり、x=aj+biとおく。x-a=(b-a)iはIに属する。またx-b=(a-b)jはJに属する。
+  strategy: Use the decomposition of 1 to interpolate a and b explicitly.
+  sketch:
+    - "construct: Choose i in I and j in J with i + j = 1, and put x = aj + bi."
+    - "derive: Then x - a = (b - a)i lies in I."
+    - "conclude: Likewise x - b = (a - b)j lies in J."
+  openmath: (forall (R I J a b) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (= (ideal_sum I J) (unit_ideal R)) (in a R) (in b R)) (exists (x) (and (in (- x a) I) (in (- x b) J)))))
+  hard_negative:
+    statement: 任意のイデアルI, Jと元a, bに対してx-a∈Iかつx-b∈Jを満たすxが存在する。
+    reason: ℤでI=J=2ℤ, a=0, b=1とすると、xは偶数かつ奇数となり存在しない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ⊔ J = ⊤ → ∀ a b : R, ∃ x : R, x - a ∈ I ∧ x - b ∈ J
+  proof: |
+    by
+      intro R _ I J h a b
+      have h1 : (1 : R) ∈ I ⊔ J := by
+        rw [h]
+        exact Submodule.mem_top
+      obtain ⟨i, hi, j, hj, hij⟩ := Submodule.mem_sup.mp h1
+      refine ⟨a * j + b * i, ?_, ?_⟩
+      · have : a * j + b * i - a = (b - a) * i := by
+          linear_combination a * hij
+        rw [this]
+        exact I.mul_mem_left _ hi
+      · have : a * j + b * i - b = (a - b) * j := by
+          linear_combination b * hij
+        rw [this]
+        exact J.mul_mem_left _ hj
+- id: quotient_domain_iff_prime
+  kind: textbook
+  level: 3
+  topic: 環論・素イデアルと整域
+  statement: 可換環RのイデアルIについて、R/Iが整域であることとIが素イデアルであることは同値である。
+  statement_en: For an ideal I of a commutative ring R, the quotient R/I is an integral domain if and only if I is a prime ideal.
+  assumptions: ["Rは可換環", "IはRのイデアル"]
+  quantifiers: ["任意の可換環RとイデアルI"]
+  conclusion: R/Iが整域であることとIが素イデアルであることは同値である。
+  answer: |
+    R/Iが零環でないことはI≠Rと同値である。また(a+I)(b+I)=0はabがIに属することと同値であり、a+I=0はaがIに属することと同値である。したがってR/Iに零因子がないことは、「abがIに属せばaまたはbがIに属する」ことと同値である。
+  strategy: Translate zero products in the quotient into memberships in I.
+  sketch:
+    - "translate: R/I is nonzero exactly when I ≠ R."
+    - "translate: (a + I)(b + I) = 0 means ab lies in I."
+    - "translate: a + I = 0 means a lies in I."
+    - "conclude: Absence of zero divisors in R/I is the prime condition on I."
+  openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R)) (<-> (integral_domain (quotient_ring R I)) (prime_ideal I R))))
+  hard_negative:
+    statement: R/Iが整域であることとIが極大イデアルであることは同値である。
+    reason: ℤ/(0)=ℤは整域だが、(0)はℤの極大イデアルではない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I : Ideal R), IsDomain (R ⧸ I) ↔ I.IsPrime
+  proof: |
+    by
+      intro R _ I
+      exact Ideal.Quotient.isDomain_iff_prime I
+- id: quotient_field_iff_maximal
+  kind: textbook
+  level: 3
+  topic: 環論・極大イデアルと体
+  statement: 可換環RのイデアルIについて、R/Iが体であることとIが極大イデアルであることは同値である。
+  statement_en: For an ideal I of a commutative ring R, the quotient R/I is a field if and only if I is a maximal ideal.
+  assumptions: ["Rは可換環", "IはRのイデアル"]
+  quantifiers: ["任意の可換環RとイデアルI"]
+  conclusion: R/Iが体であることとIが極大イデアルであることは同値である。
+  answer: |
+    Iが極大とする。aがIに属さなければI+(a)=Rなので、ab+i=1となるbとi∈Iがあり、a+Iは逆元b+Iをもつ。またI≠Rより1≠0なのでR/Iは体である。逆にR/Iが体でJがIを真に含むイデアルなら、Jの元aでIに属さないものはab-1∈Iとなるbをもつ。すると1がJに属してJ=Rとなる。R/Iは零環でないのでI≠Rであり、Iは極大である。
+  strategy: Convert maximality into invertibility of nonzero residue classes, in both directions.
+  sketch:
+    - "setup: Assume I is maximal and a is not in I."
+    - "derive: Then I + (a) = R, so ab + i = 1 with i in I."
+    - "translate: Thus b + I inverts a + I, and R/I is a field."
+    - "setup: Conversely assume R/I is a field and J strictly contains I."
+    - "derive: Taking a in J outside I, ab - 1 lies in I for some b."
+    - "conclude: So 1 lies in J, J = R, and I is maximal."
+  openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R)) (<-> (is_field (quotient_ring R I)) (maximal_ideal I R))))
+  hard_negative:
+    statement: R/Iが体であることとIが素イデアルであることは同値である。
+    reason: ℤの(0)は素イデアルだが、ℤ/(0)=ℤは体でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I : Ideal R), IsField (R ⧸ I) ↔ I.IsMaximal
+  proof: |
+    by
+      intro R _ I
+      exact (Ideal.Quotient.maximal_ideal_iff_isField_quotient I).symm
+- id: maximal_ideal_is_prime
+  kind: gap
+  level: 3
+  topic: 環論・極大イデアルと素イデアル
+  statement: 可換環の極大イデアルは素イデアルである。
+  statement_en: Every maximal ideal of a commutative ring is a prime ideal.
+  assumptions: ["Rは可換環", "MはRの極大イデアル"]
+  quantifiers: ["任意の可換環Rと極大イデアルM"]
+  conclusion: Mは素イデアルである。
+  answer: |
+    Mが極大なのでR/Mは体であり、体は整域である。整域を与える剰余環の法は素イデアルなので、Mは素イデアルである。
+  strategy: Pass through the quotient, which is a field and therefore a domain.
+  sketch:
+    - "apply_theorem: R/M is a field because M is maximal."
+    - "derive: Every field is an integral domain."
+    - "conclude: R/M being a domain means M is prime."
+  openmath: (forall (R M) (-> (and (comm_ring R) (maximal_ideal M R)) (prime_ideal M R)))
+  hard_negative:
+    statement: 可換環の素イデアルは極大イデアルである。
+    reason: ℤの(0)は素イデアルだが、2ℤに真に含まれるので極大ではない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (M : Ideal R), M.IsMaximal → M.IsPrime
+  proof: |
+    by
+      intro R _ M h
+      exact h.isPrime
+- id: exists_maximal_ideal_containing
+  kind: named
+  level: 3
+  topic: 環論・極大イデアルの存在
+  statement: クルルの定理。可換環のイデアルIがRと異なるならば、Iを含む極大イデアルが存在する。
+  statement_en: Krull's theorem. Every proper ideal I of a commutative ring is contained in a maximal ideal.
+  assumptions: ["Rは可換環", "IはRのイデアル", "I≠R"]
+  quantifiers: ["任意の可換環RとイデアルI"]
+  conclusion: I⊆Mを満たす極大イデアルMが存在する。
+  answer: |
+    Iを含みRと異なるイデアル全体を包含で順序づける。この集合はIを含むので空でない。鎖の和集合はイデアルであり、1を含まないのでRと異なる。ツォルンの補題から極大元Mが存在し、これがIを含む極大イデアルである。
+  strategy: Apply Zorn's lemma to proper ideals containing I.
+  sketch:
+    - "setup: Order proper ideals containing I by inclusion."
+    - "derive: The union of a chain is an ideal."
+    - "derive: The union does not contain 1, so it is proper."
+    - "apply_theorem: Zorn's lemma gives a maximal element M."
+    - "conclude: M is a maximal ideal containing I."
+  openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R) (!= I (unit_ideal R))) (exists (M) (and (maximal_ideal M R) (subset I M)))))
+  hard_negative:
+    statement: 環全体を含め、任意のイデアルは極大イデアルに含まれる。
+    reason: 極大イデアルはRと異なるので、I=Rを含む極大イデアルは存在しない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (I : Ideal R), I ≠ ⊤ → ∃ M : Ideal R, M.IsMaximal ∧ I ≤ M
+  proof: |
+    by
+      intro R _ I h
+      exact Ideal.exists_le_maximal I h
+- id: nonunit_in_maximal_ideal
+  kind: gap
+  level: 3
+  topic: 環論・非単元と極大イデアル
+  statement: 可換環の単元でない元は、ある極大イデアルに属する。
+  statement_en: Every non-unit of a commutative ring lies in some maximal ideal.
+  assumptions: ["Rは可換環", "aはRの単元でない元"]
+  quantifiers: ["任意の可換環Rと非単元a"]
+  conclusion: a∈Mを満たす極大イデアルMが存在する。
+  answer: |
+    aが単元でないので、単項イデアル(a)は1を含まず、Rと異なる。極大イデアルの存在定理により、(a)を含む極大イデアルMが存在する。このMはaを含む。
+  strategy: Enlarge the principal ideal generated by a to a maximal ideal.
+  sketch:
+    - "derive: Since a is not a unit, (a) does not contain 1."
+    - "apply_theorem: The proper ideal (a) lies in a maximal ideal M."
+    - "conclude: Therefore a lies in M."
+  openmath: (forall (R a) (-> (and (comm_ring R) (in a R) (not (unit_element a R))) (exists (M) (and (maximal_ideal M R) (in a M)))))
+  hard_negative:
+    statement: 可換環の非単元全体はイデアルをなす。
+    reason: ℤで3と-2は非単元だが、和1は単元である。非単元全体がイデアルになるのは局所環のときである。
+  target: |
+    ∀ (R : Type*) [CommRing R] (a : R), ¬ IsUnit a → ∃ M : Ideal R, M.IsMaximal ∧ a ∈ M
+  proof: |
+    by
+      intro R _ a h
+      exact exists_max_ideal_of_mem_nonunits h
+- id: prime_ideal_contains_product
+  kind: gap
+  level: 3
+  topic: 環論・素イデアルとイデアルの積
+  statement: 素イデアルPがイデアルの積IJを含むならば、PはIまたはJを含む。
+  statement_en: If a prime ideal P contains the product IJ of two ideals, then P contains I or J.
+  assumptions: ["Rは可換環", "PはRの素イデアル", "I, JはRのイデアル", "IJ⊆P"]
+  quantifiers: ["任意の可換環R、素イデアルP、イデアルI, J"]
+  conclusion: I⊆PまたはJ⊆Pである。
+  answer: |
+    IがPに含まれないとして、Pに属さないIの元aをとる。Jの任意の元bについて、abはIJに属するのでPに属する。Pは素イデアルでaはPに属さないから、bはPに属する。よってJ⊆Pである。
+  strategy: Pick an element of I outside P and apply the prime condition to its products with J.
+  sketch:
+    - "case_split: Assume I is not contained in P and take a in I outside P."
+    - "derive: For b in J, ab lies in IJ and hence in P."
+    - "derive: Primality of P forces b into P."
+    - "conclude: Thus J is contained in P."
+  openmath: (forall (R P I J) (-> (and (comm_ring R) (prime_ideal P R) (ideal_of I R) (ideal_of J R) (subset (ideal_product I J) P)) (or (subset I P) (subset J P))))
+  hard_negative:
+    statement: 任意のイデアルPについて、IJ⊆PならI⊆PまたはJ⊆Pである。
+    reason: ℤでP=6ℤ, I=2ℤ, J=3ℤとするとIJ=Pだが、IもJもPに含まれない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (P I J : Ideal R), P.IsPrime → I * J ≤ P → I ≤ P ∨ J ≤ P
+  proof: |
+    by
+      intro R _ P I J hP h
+      exact hP.mul_le.mp h
+- id: finite_domain_is_field
+  kind: textbook
+  level: 2
+  topic: 環論・有限整域
+  statement: 有限整域は体である。
+  statement_en: Every finite integral domain is a field.
+  assumptions: ["Rは整域", "Rは有限集合"]
+  quantifiers: ["任意の有限整域R"]
+  conclusion: Rは体である。
+  answer: |
+    aをRの0でない元とする。整域なので、xをaxに写す写像は単射である。Rは有限なのでこの写像は全射でもあり、ab=1となるbが存在する。よって0でない元はすべて単元であり、Rは体である。
+  strategy: Multiplication by a nonzero element is injective, hence surjective on a finite set.
+  sketch:
+    - "setup: Fix a nonzero element a of R."
+    - "derive: Cancellation makes x ↦ ax injective."
+    - "derive: Finiteness makes the map surjective."
+    - "conclude: Some b satisfies ab = 1, so a is a unit."
+  openmath: (forall (R) (-> (and (integral_domain R) (finite_ring R)) (is_field R)))
+  hard_negative:
+    statement: 整域は体である。
+    reason: ℤは無限個の元をもつ整域だが、2が逆元をもたないので体でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [Finite R], IsField R
+  proof: |
+    by
+      intro R _ _ _
+      exact Finite.isField_of_domain R
+- id: unit_add_nilpotent_is_unit
+  kind: gap
+  level: 3
+  topic: 環論・単元と冪零元
+  statement: 可換環において、単元と冪零元の和は単元である。
+  statement_en: In a commutative ring, the sum of a unit and a nilpotent element is a unit.
+  assumptions: ["Rは可換環", "uはRの単元", "nはRの冪零元"]
+  quantifiers: ["任意の可換環R、単元u、冪零元n"]
+  conclusion: u+nは単元である。
+  answer: |
+    m=-u^{-1}nとおくと、mは冪零でu+n=u(1-m)である。m^k=0となるkをとると、(1-m)(1+m+…+m^{k-1})=1-m^k=1なので、1-mは単元である。したがってu+nは単元の積として単元である。
+  strategy: Factor out u and invert 1 - m by the finite geometric series.
+  sketch:
+    - "setup: Put m = -u⁻¹n, which is nilpotent by commutativity."
+    - "derive: Then u + n = u(1 - m)."
+    - "construct: If m^k = 0, the sum 1 + m + ... + m^(k-1) inverts 1 - m."
+    - "conclude: So u + n is a product of units."
+  openmath: (forall (R u n) (-> (and (comm_ring R) (unit_element u R) (nilpotent_element n R)) (unit_element (+ u n) R)))
+  hard_negative:
+    statement: 可換環において単元と単元の和は単元である。
+    reason: ℤで1+1=2は単元でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (u n : R), IsUnit u → IsNilpotent n → IsUnit (u + n)
+  proof: |
+    by
+      intro R _ u n hu hn
+      exact hn.isUnit_add_left_of_commute hu (Commute.all _ _)
+- id: prime_element_irreducible
+  kind: gap
+  level: 3
+  topic: 環論・素元と既約元
+  statement: 整域の素元は既約元である。
+  statement_en: Every prime element of an integral domain is irreducible.
+  assumptions: ["Rは整域", "pはRの素元"]
+  quantifiers: ["任意の整域Rと素元p"]
+  conclusion: pは既約元である。
+  answer: |
+    p=abとすると、pはabを割り切るので、aまたはbを割り切る。pがaを割り切るとしてa=pcとおくと、p=pcbである。整域でp≠0なのでcb=1となり、bは単元である。pがbを割り切る場合も同様にaが単元となる。
+  strategy: Use primality on a factorization and cancel p.
+  sketch:
+    - "setup: Suppose p = ab."
+    - "derive: Primality gives p | a or p | b."
+    - "case_split: If a = pc, then p = pcb."
+    - "derive: Cancelling p shows b is a unit."
+    - "conclude: The other case is symmetric, so p is irreducible."
+  openmath: (forall (R p) (-> (and (integral_domain R) (prime_element p R)) (irreducible_element p R)))
+  hard_negative:
+    statement: 整域でない可換環でも、素元は既約元である。
+    reason: ℤ/6ℤで2は素元だが、2=2·4で2も4も単元でないので既約でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (p : R), Prime p → Irreducible p
+  proof: |
+    by
+      intro R _ _ p h
+      exact h.irreducible
+- id: pid_irreducible_is_prime
+  kind: gap
+  level: 3
+  topic: 環論・単項イデアル整域の既約元
+  statement: 単項イデアル整域の既約元は素元である。
+  statement_en: Every irreducible element of a principal ideal domain is prime.
+  assumptions: ["Rは単項イデアル整域", "pはRの既約元"]
+  quantifiers: ["任意の単項イデアル整域Rと既約元p"]
+  conclusion: pは素元である。
+  answer: |
+    pがabを割り切り、aを割り切らないとする。(p, a)=(d)とおくと、dはpを割り切るので、既約性からdは単元またはpの単元倍である。dがpの単元倍ならpがaを割り切るので、dは単元である。よって1=px+ayと書け、b=pbx+abyはpで割り切れる。
+  strategy: Generate the ideal (p, a) by one element and extract a Bezout identity.
+  sketch:
+    - "setup: Suppose p divides ab but not a."
+    - "construct: Write the ideal (p, a) as (d)."
+    - "derive: Since d divides p and p does not divide a, irreducibility makes d a unit."
+    - "derive: Hence 1 = px + ay."
+    - "conclude: Multiplying by b shows p divides b."
+  openmath: (forall (R p) (-> (and (principal_ideal_domain R) (irreducible_element p R)) (prime_element p R)))
+  hard_negative:
+    statement: 任意の整域において既約元は素元である。
+    reason: ℤ[√-5]で2は既約だが、2は(1+√-5)(1-√-5)=6を割り切るのにどちらの因子も割り切らない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] (p : R), Irreducible p → Prime p
+  proof: |
+    by
+      intro R _ _ _ p h
+      exact h.prime
+- id: ufd_irreducible_iff_prime
+  kind: gap
+  level: 3
+  topic: 環論・一意分解整域の既約元
+  statement: 一意分解整域では、元が既約であることと素元であることは同値である。
+  statement_en: In a unique factorization domain, an element is irreducible if and only if it is prime.
+  assumptions: ["Rは一意分解整域", "pはRの元"]
+  quantifiers: ["任意の一意分解整域Rと元p"]
+  conclusion: pが既約元であることとpが素元であることは同値である。
+  answer: |
+    素元は整域で既約である。逆にpを既約とし、pがabを割り切るとする。a=0またはb=0の場合、pは0を割り切るので結論は成り立つ。そうでないときab=pcとして、abとpcの既約元分解を比べると、一意性からpは同伴を除きaかbの既約因子に現れる。よってpはaまたはbを割り切り、素元である。
+  strategy: Compare the factorizations of ab and pc using uniqueness.
+  sketch:
+    - "derive: Prime elements are irreducible in any domain."
+    - "setup: Let p be irreducible with p | ab, and write ab = pc."
+    - "case_split: The case a = 0 or b = 0 is immediate."
+    - "derive: Uniqueness of factorization makes p an associate of an irreducible factor of a or b."
+    - "conclude: So p divides a or b."
+  openmath: (forall (R p) (-> (unique_factorization_domain R) (<-> (irreducible_element p R) (prime_element p R))))
+  hard_negative:
+    statement: 一意分解整域では、既約元が生成するイデアルは極大イデアルである。
+    reason: ℤ[X]は一意分解整域でXは既約だが、ℤ[X]/(X)≅ℤは体でなく、(X)は極大でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R] (p : R), Irreducible p ↔ Prime p
+  proof: |
+    by
+      intro R _ _ _ p
+      exact UniqueFactorizationMonoid.irreducible_iff_prime
+- id: two_irreducible_not_prime_z_sqrt_neg5
+  kind: textbook
+  level: 3
+  topic: 環論・既約元と素元の違い
+  statement: ℤ[√-5]において2は既約元であるが素元ではない。
+  statement_en: In the ring Z[√-5], the element 2 is irreducible but not prime.
+  assumptions: ["環はℤ[√-5]である"]
+  quantifiers: ["元2について述べる"]
+  conclusion: 2は既約であり、素元でない。
+  answer: |
+    ノルムN(a+b√-5)=a²+5b²は乗法的で、単元はノルム1の元である。N(2)=4より2は単元でない。2=αβならN(α)N(β)=4である。a²+5b²=2は整数解をもたないので、N(α)かN(β)が1となり、2は既約である。一方、2は(1+√-5)(1-√-5)=6を割り切るが、1±√-5の√-5の係数が奇数なのでどちらの因子も割り切らない。よって2は素元でない。
+  strategy: Use the multiplicative norm for irreducibility and the factorization of 6 for non-primality.
+  sketch:
+    - "setup: Use the multiplicative norm N(a + b√-5) = a² + 5b²."
+    - "derive: A factorization of 2 gives norms multiplying to 4."
+    - "derive: The equation a² + 5b² = 2 has no integer solution, so one factor has norm 1 and is a unit."
+    - "derive: The element 2 divides (1 + √-5)(1 - √-5) = 6."
+    - "contradiction: Neither factor is divisible by 2 because its √-5 coefficient is odd."
+    - "conclude: So 2 is irreducible but not prime."
+  openmath: (and (irreducible_element 2 (int_adjoin_sqrt -5)) (not (prime_element 2 (int_adjoin_sqrt -5))))
+  hard_negative:
+    statement: ガウス整数環ℤ[i]でも2は既約元で素元でない。
+    reason: ℤ[i]では2=(1+i)(1-i)と非単元の積に分解するので、2は既約でない。
+  target: |
+    Irreducible (2 : Zsqrtd (-5)) ∧ ¬ Prime (2 : Zsqrtd (-5))
+  proof: |
+    by
+      have nrm2 : ∀ z : Zsqrtd (-5), z.norm ≠ 2 := by
+        intro z hz
+        have h : z.re * z.re + 5 * (z.im * z.im) = 2 := by
+          have := hz
+          rw [Zsqrtd.norm_def] at this
+          linarith
+        have h1 : z.im * z.im = 0 := by nlinarith [mul_self_nonneg z.re, mul_self_nonneg z.im]
+        have h2 : z.re * z.re = 2 := by
+          rw [h1] at h
+          linarith
+        have h3 : z.re ≤ 1 := by nlinarith
+        have h4 : -1 ≤ z.re := by nlinarith
+        generalize z.re = r at *
+        interval_cases r <;> omega
+      have hnorm2 : Zsqrtd.norm (2 : Zsqrtd (-5)) = 4 := by decide
+      constructor
+      · refine ⟨?_, ?_⟩
+        · intro h
+          have := (Zsqrtd.isUnit_iff_norm_isUnit (2 : Zsqrtd (-5))).mp h
+          rw [hnorm2] at this
+          exact absurd this (by decide)
+        · intro a b hab
+          have hn : a.norm * b.norm = 4 := by rw [← Zsqrtd.norm_mul, ← hab, hnorm2]
+          have ha : 0 ≤ a.norm := Zsqrtd.norm_nonneg (by norm_num) a
+          have hb : 0 ≤ b.norm := Zsqrtd.norm_nonneg (by norm_num) b
+          have hbpos : 0 < b.norm := by
+            rcases hb.lt_or_eq with h | h
+            · exact h
+            · rw [← h] at hn
+              simp at hn
+          have ha4 : a.norm ≤ 4 := by nlinarith
+          have ha2 := nrm2 a
+          have hb2 := nrm2 b
+          have hcases : a.norm = 1 ∨ b.norm = 1 := by
+            generalize a.norm = u at *
+            generalize b.norm = v at *
+            interval_cases u
+            · simp at hn
+            · left
+              rfl
+            · exact absurd rfl ha2
+            · omega
+            · right
+              omega
+          rcases hcases with h | h
+          · left
+            exact (Zsqrtd.norm_eq_one_iff' (by norm_num) a).mp h
+          · right
+            exact (Zsqrtd.norm_eq_one_iff' (by norm_num) b).mp h
+      · intro hp
+        have hprod : (⟨1, 1⟩ : Zsqrtd (-5)) * ⟨1, -1⟩ = 2 * 3 := by
+          ext <;> simp
+        rcases hp.2.2 _ _ ⟨3, hprod⟩ with ⟨c, hc⟩ | ⟨c, hc⟩
+        · have := congrArg Zsqrtd.im hc
+          simp at this
+          omega
+        · have := congrArg Zsqrtd.im hc
+          simp at this
+          omega
+- id: euclidean_domain_is_pid
+  kind: textbook
+  level: 3
+  topic: 環論・ユークリッド整域
+  statement: ユークリッド整域は単項イデアル整域である。
+  statement_en: Every Euclidean domain is a principal ideal domain.
+  assumptions: ["Rはユークリッド整域"]
+  quantifiers: ["任意のユークリッド整域R"]
+  conclusion: Rの任意のイデアルは単項である。
+  answer: |
+    零イデアルは単項である。Iを0でないイデアルとし、Iの0でない元のうちユークリッド関数の値が最小のものをdとする。xをIの元としてx=dq+rと割ると、r=x-dqはIに属する。rが0でなければ関数の値がdより小さくなり、最小性に反する。よってr=0でありI=(d)である。
+  strategy: Generate the ideal by a nonzero element of minimal Euclidean size.
+  sketch:
+    - "setup: Let I be a nonzero ideal."
+    - "construct: Pick a nonzero d in I of minimal Euclidean size."
+    - "derive: For x in I, divide to get x = dq + r with r in I."
+    - "contradiction: A nonzero r would have smaller size than d."
+    - "conclude: So r = 0 and I = (d)."
+  openmath: (forall (R) (-> (euclidean_domain R) (principal_ideal_domain R)))
+  hard_negative:
+    statement: 単項イデアル整域はユークリッド整域である。
+    reason: ℤ[(1+√-19)/2]は単項イデアル整域だが、ユークリッド整域でないことが知られている。
+  target: |
+    ∀ (R : Type*) [EuclideanDomain R], IsPrincipalIdealRing R
+  proof: |
+    by
+      intro R _
+      infer_instance
+- id: pid_is_ufd
+  kind: textbook
+  level: 3
+  topic: 環論・一意分解整域
+  statement: 単項イデアル整域は一意分解整域である。
+  statement_en: Every principal ideal domain is a unique factorization domain.
+  assumptions: ["Rは単項イデアル整域"]
+  quantifiers: ["任意の単項イデアル整域R"]
+  conclusion: Rは一意分解整域である。
+  answer: |
+    単項イデアルの昇鎖は、和集合が単項イデアルになることから停止する。既約元の積に書けない0でない非単元aがあれば、a=bcと非単元の積に書け、bかcも既約元の積に書けない。これを繰り返すと単項イデアルの真の昇鎖が無限に続き、矛盾する。一意性については、既約元は素元なので、p_1…p_m=q_1…q_nならp_1はあるq_jを割り切り、既約性からp_1とq_jは同伴である。これを消去して帰納法を用いると、分解は順序と同伴を除いて一意である。
+  strategy: Get existence from the ascending chain condition and uniqueness from irreducible elements being prime.
+  sketch:
+    - "derive: Every ascending chain of principal ideals stabilizes because its union is principal."
+    - "derive: A nonzero non-unit therefore factors into irreducibles in finitely many steps."
+    - "apply_theorem: Irreducible elements of a principal ideal domain are prime."
+    - "induction: Cancel prime factors one at a time to compare two factorizations."
+    - "conclude: The factorization is unique up to order and associates."
+  openmath: (forall (R) (-> (principal_ideal_domain R) (unique_factorization_domain R)))
+  hard_negative:
+    statement: 一意分解整域は単項イデアル整域である。
+    reason: ℤ[X]は一意分解整域だが、イデアル(2, X)は単項でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R], UniqueFactorizationMonoid R
+  proof: |
+    by
+      intro R _ _ _
+      infer_instance
+- id: pid_nonzero_prime_is_maximal
+  kind: gap
+  level: 3
+  topic: 環論・単項イデアル整域の素イデアル
+  statement: 単項イデアル整域の0でない素イデアルは極大イデアルである。
+  statement_en: Every nonzero prime ideal of a principal ideal domain is maximal.
+  assumptions: ["Rは単項イデアル整域", "PはRの素イデアル", "P≠0"]
+  quantifiers: ["任意の単項イデアル整域Rと0でない素イデアルP"]
+  conclusion: Pは極大イデアルである。
+  answer: |
+    P=(p)とする。Pを含むイデアルを(a)とすると、p=abと書ける。Pは素イデアルなのでaかbがPに属する。aがPに属すれば(a)=Pである。bがPに属すればb=pcとなり、p≠0を消去してac=1となるので(a)=Rである。
+  strategy: Write P = (p), factor p through any larger ideal, and use primality with cancellation.
+  sketch:
+    - "setup: Write P = (p) with p nonzero and take (a) containing P."
+    - "derive: Then p = ab for some b."
+    - "case_split: Primality puts a or b in P."
+    - "derive: If a is in P then (a) = P."
+    - "derive: If b = pc then cancelling p gives ac = 1, so (a) = R."
+    - "conclude: Hence P is maximal."
+  openmath: (forall (R P) (-> (and (principal_ideal_domain R) (prime_ideal P R) (!= P (zero_ideal R))) (maximal_ideal P R)))
+  hard_negative:
+    statement: 単項イデアル整域の素イデアルはすべて極大イデアルである。
+    reason: ℤの(0)は素イデアルだが極大でない。P≠0の仮定が必要である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] (P : Ideal R), P.IsPrime → P ≠ ⊥ → P.IsMaximal
+  proof: |
+    by
+      intro R _ _ _ P hP h
+      exact IsPrime.to_maximal_ideal h
+- id: polynomial_ring_over_ufd_is_ufd
+  kind: named
+  level: 3
+  topic: 環論・多項式環の一意分解性
+  statement: ガウスの定理。Rが一意分解整域ならば、多項式環R[X]も一意分解整域である。
+  statement_en: Gauss's theorem. If R is a unique factorization domain, then the polynomial ring R[X] is also a unique factorization domain.
+  assumptions: ["Rは一意分解整域"]
+  quantifiers: ["任意の一意分解整域R"]
+  conclusion: R[X]は一意分解整域である。
+  answer: |
+    概略を述べる。Rの商体をKとする。主要な手順は、f∈R[X]を内容と原始多項式に分けること、原始多項式をK[X]で既約分解すること、ガウスの補題で分解をR[X]に戻すことである。K[X]とRの分解の一意性を合わせると、R[X]での分解の一意性が得られる。
+  strategy: Reduce to the Euclidean ring K[X] and to R through contents and Gauss's lemma.
+  sketch:
+    - "setup: Let K be the field of fractions of R."
+    - "derive: Write a polynomial as its content times a primitive polynomial."
+    - "apply_theorem: Factor the primitive part in the unique factorization domain K[X]."
+    - "apply_theorem: Gauss's lemma brings the factorization back to R[X]."
+    - "conclude: Uniqueness in R and K[X] gives uniqueness in R[X]."
+  openmath: (forall (R) (-> (unique_factorization_domain R) (unique_factorization_domain (polynomial_ring R))))
+  hard_negative:
+    statement: Rが単項イデアル整域ならば、R[X]も単項イデアル整域である。
+    reason: ℤは単項イデアル整域だが、ℤ[X]のイデアル(2, X)は単項でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R], UniqueFactorizationMonoid (Polynomial R)
+  proof: |
+    by
+      intro R _ _ _
+      infer_instance
+- id: polynomial_monic_division
+  kind: textbook
+  level: 2
+  topic: 環論・多項式の割り算
+  statement: 零環でない可換環R上の多項式fとモニック多項式gに対して、f=gq+rかつdeg r<deg gを満たす多項式q, rが存在する。
+  statement_en: For a polynomial f and a monic polynomial g over a nontrivial commutative ring, there are polynomials q and r with f = gq + r and deg r < deg g.
+  assumptions: ["Rは零環でない可換環", "f, gはR[X]の元", "gはモニック"]
+  quantifiers: ["任意の可換環Rと多項式f, g"]
+  conclusion: f=gq+rかつdeg r<deg gとなるq, rが存在する。
+  answer: |
+    fの次数に関する帰納法で示す。deg f<deg gならq=0, r=fでよい。deg f=n≥m=deg gのとき、fの主係数をaとして、f-aX^{n-m}gの次数はnより小さい。これに帰納法の仮定を適用し、商にaX^{n-m}を加えると求める分解が得られる。
+  strategy: Induct on the degree of f and remove the leading term using the monic divisor.
+  sketch:
+    - "induction: Induct on the degree of f."
+    - "case_split: If deg f < deg g, take q = 0 and r = f."
+    - "derive: Otherwise subtract aX^(n-m)g, which lowers the degree because g is monic."
+    - "conclude: Add aX^(n-m) to the quotient from the induction hypothesis."
+  openmath: (forall (R f g) (-> (and (comm_ring R) (nontrivial_ring R) (in f (polynomial_ring R)) (in g (polynomial_ring R)) (monic_polynomial g)) (exists (q r) (and (= f (+ (* g q) r)) (< (poly_degree r) (poly_degree g))))))
+  hard_negative:
+    statement: 任意の可換環上で、0でない任意のgについてf=gq+r, deg r<deg gと割り算できる。
+    reason: ℤ[X]でf=X, g=2Xとすると、Xの係数の比較から1=2q_0となり不可能である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [Nontrivial R] (f g : Polynomial R), g.Monic → ∃ q r : Polynomial R, f = g * q + r ∧ r.degree < g.degree
+  proof: |
+    by
+      intro R _ _ f g hg
+      refine ⟨f /ₘ g, f %ₘ g, ?_, Polynomial.degree_modByMonic_lt f hg⟩
+      rw [add_comm]
+      exact (Polynomial.modByMonic_add_div f g).symm
+- id: polynomial_remainder_theorem
+  kind: gap
+  level: 2
+  topic: 環論・剰余の定理
+  statement: 可換環上の多項式fと元aについて、f=(X-a)q+f(a)を満たす多項式qが存在する。
+  statement_en: For a polynomial f over a commutative ring and an element a, there is a polynomial q with f = (X - a)q + f(a).
+  assumptions: ["Rは可換環", "fはR[X]の元", "aはRの元"]
+  quantifiers: ["任意の可換環R、多項式f、元a"]
+  conclusion: f=(X-a)q+f(a)となるqが存在する。
+  answer: |
+    X-aはモニックなので、f=(X-a)q+rと割れる。ここでrは定数である。両辺にX=aを代入するとf(a)=rとなる。よってf=(X-a)q+f(a)である。
+  strategy: Divide by the monic polynomial X - a and substitute X = a.
+  sketch:
+    - "apply_theorem: Divide f by the monic polynomial X - a."
+    - "derive: The remainder r has degree below 1, so it is a constant."
+    - "conclude: Substituting X = a shows r = f(a)."
+  openmath: (forall (R f a) (-> (and (comm_ring R) (in f (polynomial_ring R)) (in a R)) (exists (q) (= f (+ (* (- poly_var (poly_const a)) q) (poly_const (poly_eval f a)))))))
+  hard_negative:
+    statement: fをX-aで割った余りはf(-a)である。
+    reason: f=X, a=1では余りは1だが、f(-1)=-1である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R) (a : R), ∃ q : Polynomial R, f = (Polynomial.X - Polynomial.C a) * q + Polynomial.C (f.eval a)
+  proof: |
+    by
+      intro R _ f a
+      refine ⟨f /ₘ (Polynomial.X - Polynomial.C a), ?_⟩
+      rw [← Polynomial.modByMonic_X_sub_C_eq_C_eval, add_comm]
+      exact (Polynomial.modByMonic_add_div f _).symm
+- id: polynomial_factor_theorem
+  kind: textbook
+  level: 2
+  topic: 環論・因数定理
+  statement: 因数定理。可換環上の多項式fと元aについて、X-aがfを割り切ることとf(a)=0は同値である。
+  statement_en: Factor theorem. For a polynomial f over a commutative ring and an element a, X - a divides f if and only if f(a) = 0.
+  assumptions: ["Rは可換環", "fはR[X]の元", "aはRの元"]
+  quantifiers: ["任意の可換環R、多項式f、元a"]
+  conclusion: X-aがfを割り切ることとf(a)=0は同値である。
+  answer: |
+    f=(X-a)gならば、X=aを代入してf(a)=0である。逆に、剰余の定理よりf=(X-a)q+f(a)と書けるので、f(a)=0ならf=(X-a)qとなる。
+  strategy: Substitute in one direction and use the remainder theorem in the other.
+  sketch:
+    - "derive: If f = (X - a)g, substituting a gives f(a) = 0."
+    - "apply_theorem: The remainder theorem gives f = (X - a)q + f(a)."
+    - "conclude: If f(a) = 0 this says X - a divides f."
+  openmath: (forall (R f a) (-> (and (comm_ring R) (in f (polynomial_ring R)) (in a R)) (<-> (dvd (- poly_var (poly_const a)) f) (= (poly_eval f a) 0))))
+  hard_negative:
+    statement: f(a)=0ならば(X-a)²はfを割り切る。
+    reason: f=X, a=0ではf(0)=0だが、X²はXを割り切らない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R) (a : R), (Polynomial.X - Polynomial.C a) ∣ f ↔ f.eval a = 0
+  proof: |
+    by
+      intro R _ f a
+      exact Polynomial.dvd_iff_isRoot
+- id: polynomial_root_count_le_degree
+  kind: textbook
+  level: 2
+  topic: 環論・多項式の根の個数
+  statement: 整域上の0でない多項式の相異なる根の個数は、その次数以下である。
+  statement_en: A nonzero polynomial over an integral domain has at most as many distinct roots as its degree.
+  assumptions: ["Rは整域", "fはR[X]の0でない元", "Sはfの根からなるRの有限部分集合"]
+  quantifiers: ["任意の整域R、多項式f、根の有限集合S"]
+  conclusion: Sの元の個数はdeg f以下である。
+  answer: |
+    次数の帰納法で示す。fの根aがあれば因数定理からf=(X-a)gであり、deg g=deg f-1である。a以外の根bについて、0=(b-a)g(b)で整域なのでg(b)=0となる。よってa以外の根はgの根であり、帰納法の仮定から個数はdeg gで抑えられる。
+  strategy: Peel off one root by the factor theorem and use that a domain has no zero divisors.
+  sketch:
+    - "induction: Induct on the degree of f."
+    - "apply_theorem: If a is a root, the factor theorem gives f = (X - a)g."
+    - "derive: For another root b, 0 = (b - a)g(b), so g(b) = 0."
+    - "conclude: The remaining roots are roots of g, so the bound follows."
+  openmath: (forall (R f S) (-> (and (integral_domain R) (in f (polynomial_ring R)) (!= f 0) (subset S R) (forall (a) (-> (in a S) (= (poly_eval f a) 0)))) (<= (size S) (poly_degree f))))
+  hard_negative:
+    statement: 任意の可換環上で、0でない多項式の根の個数は次数以下である。
+    reason: ℤ/8ℤではX²-1は1, 3, 5, 7の4個の根をもつ。整域の仮定が必要である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f : Polynomial R) (S : Finset R), f ≠ 0 → (∀ a ∈ S, f.eval a = 0) → S.card ≤ f.natDegree
+  proof: |
+    by
+      intro R _ _ f S hf hS
+      classical
+      have hsub : S ⊆ f.roots.toFinset := by
+        intro a ha
+        rw [Multiset.mem_toFinset, Polynomial.mem_roots hf]
+        exact hS a ha
+      calc S.card ≤ f.roots.toFinset.card := Finset.card_le_card hsub
+        _ ≤ Multiset.card f.roots := Multiset.toFinset_card_le _
+        _ ≤ f.natDegree := Polynomial.card_roots' f
+- id: gauss_lemma_primitive_product
+  kind: named
+  level: 3
+  topic: 環論・ガウスの補題
+  statement: ガウスの補題。GCD整域（一意分解整域を含む）上の原始多項式の積は原始多項式である。
+  statement_en: Gauss's lemma. Over a GCD domain, which includes every unique factorization domain, the product of two primitive polynomials is primitive.
+  assumptions: ["RはGCD整域", "f, gはR[X]の原始多項式"]
+  quantifiers: ["任意のGCD整域Rと原始多項式f, g"]
+  conclusion: fgは原始多項式である。
+  answer: |
+    一意分解整域の場合を示す。fgが原始的でないとすると、fgの係数をすべて割り切る素元pが存在する。Rを(p)で割った環は整域なので、その多項式環も整域である。fgの像は0だから、fまたはgの像が0となり、pがfまたはgの係数をすべて割り切る。これは原始性に反する。一般のGCD整域については概略にとどめる。fとgの次数の和に関する帰納法で内容の乗法性c(fg)=c(f)c(g)を示すと、原始多項式の積の内容は単元となるので、積は原始的である。
+  strategy: Reduce modulo a prime divisor of the content and use that the reduced polynomial ring is a domain.
+  sketch:
+    - "setup: Suppose fg is not primitive, and take a prime p dividing all its coefficients."
+    - "translate: Reduce coefficients modulo p."
+    - "derive: The polynomial ring over the domain R/(p) is a domain."
+    - "derive: The image of fg vanishes, so the image of f or g vanishes."
+    - "contradiction: Then p divides every coefficient of f or g."
+    - "conclude: The general GCD case follows by multiplicativity of content."
+  openmath: (forall (R f g) (-> (and (gcd_domain R) (in f (polynomial_ring R)) (in g (polynomial_ring R)) (primitive_polynomial f) (primitive_polynomial g)) (primitive_polynomial (* f g))))
+  hard_negative:
+    statement: 原始多項式の和は原始多項式である。
+    reason: ℤ[X]でf=g=2X+1は原始的だが、和4X+2の係数は2で割り切れる。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [NormalizedGCDMonoid R] (f g : Polynomial R), f.IsPrimitive → g.IsPrimitive → (f * g).IsPrimitive
+  proof: |
+    by
+      intro R _ _ _ f g hf hg
+      exact hf.mul hg
+- id: primitive_irreducible_over_int_iff_rat
+  kind: textbook
+  level: 3
+  topic: 環論・ℤ上とℚ上の既約性
+  statement: ℤ係数の原始多項式fについて、fがℤ[X]で既約であることとℚ[X]で既約であることは同値である。
+  statement_en: A primitive polynomial with integer coefficients is irreducible in Z[X] if and only if it is irreducible in Q[X].
+  assumptions: ["fはℤ[X]の原始多項式"]
+  quantifiers: ["任意のℤ[X]の原始多項式f"]
+  conclusion: fがℤ[X]で既約であることとℚ[X]で既約であることは同値である。
+  answer: |
+    ℚ[X]でf=ghと正の次数の因子に分解したとする。g, hに有理数を掛けて分母を払うと、原始多項式g_0, h_0と有理数cでf=cg_0h_0と書ける。ガウスの補題からg_0h_0は原始的なのでcは±1となり、fはℤ[X]でも正の次数の因子に分解する。逆に、原始的なfのℤ[X]での非単元因子はどちらも定数でないので、そのままℚ[X]での分解になる。
+  strategy: Clear denominators to primitive factors and apply Gauss's lemma.
+  sketch:
+    - "setup: Suppose f = gh in Q[X] with both factors of positive degree."
+    - "construct: Rescale g and h to primitive integer polynomials g₀ and h₀, so f = c g₀ h₀."
+    - "apply_theorem: Gauss's lemma makes g₀h₀ primitive."
+    - "derive: Since f is primitive, c = ±1, which factors f in Z[X]."
+    - "derive: Conversely, non-unit factors of primitive f in Z[X] are nonconstant."
+    - "conclude: So such a factorization remains proper in Q[X]."
+  openmath: (forall (f) (-> (and (in f (polynomial_ring Z)) (primitive_polynomial f)) (<-> (irreducible_element f (polynomial_ring Z)) (irreducible_element f (polynomial_ring Q)))))
+  hard_negative:
+    statement: 任意のf∈ℤ[X]について、ℤ[X]で既約であることとℚ[X]で既約であることは同値である。
+    reason: 2Xはℚ[X]で既約だが、ℤ[X]では非単元2とXの積であり既約でない。
+  target: |
+    ∀ (f : Polynomial ℤ), f.IsPrimitive → (Irreducible f ↔ Irreducible (f.map (Int.castRingHom ℚ)))
+  proof: |
+    by
+      intro f hf
+      exact Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hf
+- id: eisenstein_criterion_prime_ideal
+  kind: named
+  level: 3
+  topic: 環論・アイゼンシュタインの判定法
+  statement: アイゼンシュタインの判定法。整域Rの素イデアルPと正の次数の原始多項式fについて、主係数がPに属さず、他の係数がPに属し、定数項がP²に属さなければ、fはR[X]で既約である。
+  statement_en: Eisenstein's criterion. Let P be a prime ideal of an integral domain R and f a primitive polynomial of positive degree. If the leading coefficient is not in P, all other coefficients are in P and the constant term is not in P², then f is irreducible in R[X].
+  assumptions: ["Rは整域", "PはRの素イデアル", "fは正の次数の原始多項式", "主係数はPに属さない", "主係数以外の係数はPに属する", "定数項はP²に属さない"]
+  quantifiers: ["任意の整域R、素イデアルP、多項式f"]
+  conclusion: fはR[X]で既約である。
+  answer: |
+    fは正の次数をもつので単元でない。f=ghと非単元の積に分解したとする。fは原始的なので定数の非単元因子をもたず、gとhはどちらも正の次数をもつ。整域R/Pの商体上でfの像はcX^nの形である。そのためgとhの像も単項式であり、主係数がPに属さないので次数は保たれる。よってgとhの定数項はどちらもPに属し、fの定数項がP²に属することになって矛盾する。
+  strategy: Reduce modulo P, where the polynomial becomes a monomial, and deduce that both constant terms lie in P.
+  sketch:
+    - "setup: Suppose f = gh with non-units g and h."
+    - "derive: Primitivity forces both factors to have positive degree."
+    - "translate: Modulo P the image of f is a nonzero monomial cXⁿ."
+    - "derive: Over the fraction field of R/P, the images of g and h are monomials of positive degree."
+    - "derive: Hence the constant terms of g and h both lie in P."
+    - "contradiction: The constant term of f then lies in P²."
+  openmath: (forall (R P f) (-> (and (integral_domain R) (prime_ideal P R) (in f (polynomial_ring R)) (primitive_polynomial f) (> (poly_degree f) 0) (notin (poly_leading_coeff f) P) (forall (n) (-> (< n (poly_degree f)) (in (poly_coeff f n) P))) (notin (poly_coeff f 0) (^ P 2))) (irreducible_element f (polynomial_ring R))))
+  hard_negative:
+    statement: 原始性を仮定しなくても、他の条件を満たす多項式はR[X]で既約である。
+    reason: ℤ[X]でf=2X+6, P=(3)は他の条件を満たすが、f=2(X+3)で2は非単元なので既約でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f : Polynomial R) (P : Ideal R), P.IsPrime → f.leadingCoeff ∉ P → (∀ n : ℕ, (n : WithBot ℕ) < f.degree → f.coeff n ∈ P) → 0 < f.degree → f.coeff 0 ∉ P ^ 2 → f.IsPrimitive → Irreducible f
+  proof: |
+    by
+      intro R _ _ f P hP hl hc hd h0 hu
+      exact Polynomial.irreducible_of_eisenstein_criterion hP hl hc hd h0 hu
+- id: eisenstein_integer_monic_over_rat
+  kind: gap
+  level: 3
+  topic: 環論・ℤ係数のアイゼンシュタイン判定
+  statement: 正の次数のモニック多項式f∈ℤ[X]と素数pについて、主係数以外の係数がpで割り切れ、定数項がp²で割り切れなければ、fはℚ[X]で既約である。
+  statement_en: Let f in Z[X] be monic of positive degree and p a prime. If p divides every non-leading coefficient and p² does not divide the constant term, then f is irreducible in Q[X].
+  assumptions: ["fはℤ[X]のモニック多項式", "deg f>0", "pは素数", "主係数以外の係数はpで割り切れる", "定数項はp²で割り切れない"]
+  quantifiers: ["任意のf∈ℤ[X]と素数p"]
+  conclusion: fはℚ[X]で既約である。
+  answer: |
+    モニック多項式は原始的である。主係数1はpで割り切れないので、素イデアル(p)についてアイゼンシュタインの判定法の仮定が成り立ち、fはℤ[X]で既約である。原始多項式についてはℤ[X]での既約性とℚ[X]での既約性は同値なので、fはℚ[X]で既約である。
+  strategy: Apply Eisenstein at the ideal (p), then transfer irreducibility to Q[X] by Gauss.
+  sketch:
+    - "derive: A monic polynomial is primitive."
+    - "translate: The divisibility conditions say the coefficients lie in (p) and the constant term is not in (p²)."
+    - "apply_theorem: Eisenstein's criterion gives irreducibility in Z[X]."
+    - "apply_theorem: Gauss's lemma transfers irreducibility to Q[X]."
+  openmath: (forall (f p) (-> (and (in f (polynomial_ring Z)) (monic_polynomial f) (> (poly_degree f) 0) (in p P) (forall (n) (-> (< n (poly_degree f)) (dvd p (poly_coeff f n)))) (not (dvd (^ p 2) (poly_coeff f 0)))) (irreducible_element f (polynomial_ring Q))))
+  hard_negative:
+    statement: 定数項がp²で割り切れる場合も、他の条件を満たせばfはℚ[X]で既約である。
+    reason: f=X²-4, p=2は他の条件を満たすが、f=(X-2)(X+2)と分解する。
+  target: |
+    ∀ (f : Polynomial ℤ) (p : ℤ), Prime p → f.Monic → 0 < f.natDegree → (∀ n, n < f.natDegree → p ∣ f.coeff n) → ¬ p ^ 2 ∣ f.coeff 0 → Irreducible (f.map (Int.castRingHom ℚ))
+  proof: |
+    by
+      intro f p hp hm hd hc h0
+      have hprim : f.IsPrimitive := hm.isPrimitive
+      rw [← Polynomial.IsPrimitive.Int.irreducible_iff_irreducible_map_cast hprim]
+      have hP : (Ideal.span {p}).IsPrime := (Ideal.span_singleton_prime hp.ne_zero).mpr hp
+      refine Polynomial.irreducible_of_eisenstein_criterion hP ?_ ?_ ?_ ?_ hprim
+      · rw [hm.leadingCoeff, Ideal.mem_span_singleton]
+        exact hp.not_dvd_one
+      · intro n hn
+        rw [Ideal.mem_span_singleton]
+        apply hc
+        rw [Polynomial.degree_eq_natDegree hm.ne_zero] at hn
+        exact_mod_cast hn
+      · exact Polynomial.natDegree_pos_iff_degree_pos.mp hd
+      · rw [Ideal.span_singleton_pow, Ideal.mem_span_singleton]
+        exact h0
+- id: monic_irreducible_of_reduction
+  kind: gap
+  level: 3
+  topic: 環論・還元による既約性判定
+  statement: 整域の間の環準同型φ:R→Sとモニック多項式f∈R[X]について、係数をφで写した多項式がS[X]で既約ならば、fはR[X]で既約である。
+  statement_en: Let φ from R to S be a ring homomorphism between integral domains and f in R[X] monic. If the polynomial obtained by applying φ to the coefficients is irreducible in S[X], then f is irreducible in R[X].
+  assumptions: ["R, Sは整域", "φ: R→Sは環準同型", "fはR[X]のモニック多項式", "φ(f)はS[X]で既約"]
+  quantifiers: ["任意の整域R, S、環準同型φ、多項式f"]
+  conclusion: fはR[X]で既約である。
+  answer: |
+    φ(f)が単元でないので、fも単元でない。f=ghとすると、主係数の積が1なのでgとhの主係数は単元であり、φで写しても次数は変わらない。φ(f)=φ(g)φ(h)は既約なので、例えばφ(g)が単元で次数0である。するとgは次数0で主係数が単元なので、単元である。
+  strategy: Use that a monic factorization preserves degrees under reduction.
+  sketch:
+    - "setup: Suppose f = gh."
+    - "derive: The leading coefficients of g and h multiply to 1, so they are units."
+    - "derive: Hence φ preserves the degrees of g and h."
+    - "apply_theorem: Irreducibility of φ(f) makes one image a unit of degree 0."
+    - "conclude: The corresponding factor has degree 0 and unit leading coefficient, so it is a unit."
+  openmath: (forall (R S phi f) (-> (and (integral_domain R) (integral_domain S) (ring_hom phi R S) (in f (polynomial_ring R)) (monic_polynomial f) (irreducible_element (poly_map phi f) (polynomial_ring S))) (irreducible_element f (polynomial_ring R))))
+  hard_negative:
+    statement: fがモニックでなくても、還元した多項式が既約ならfは既約である。
+    reason: f=2X+2∈ℤ[X]はmod 3で次数1なので既約だが、f=2(X+1)で2は非単元である。
+  target: |
+    ∀ (R S : Type*) [CommRing R] [IsDomain R] [CommRing S] [IsDomain S] (φ : R →+* S) (f : Polynomial R), f.Monic → Irreducible (f.map φ) → Irreducible f
+  proof: |
+    by
+      intro R S _ _ _ _ φ f hf h
+      exact Polynomial.Monic.irreducible_of_irreducible_map φ f hf h
+- id: low_degree_irreducible_iff_no_root
+  kind: gap
+  level: 3
+  topic: 環論・低次多項式の既約性
+  statement: 体K上の次数2または3の多項式fについて、fが既約であることとKに根をもたないことは同値である。
+  statement_en: A polynomial of degree 2 or 3 over a field K is irreducible if and only if it has no root in K.
+  assumptions: ["Kは体", "fはK[X]の元", "2≤deg f≤3"]
+  quantifiers: ["任意の体Kと多項式f"]
+  conclusion: fが既約であることと、任意のa∈Kでf(a)≠0であることは同値である。
+  answer: |
+    根aがあればf=(X-a)gで、deg g≥1なのでfは既約でない。逆にf=ghと非単元に分解すると、体上では非単元の次数は1以上で、次数の和は3以下である。よって一方の因子は次数1であり、体上の1次式は根をもつので、fも根をもつ。
+  strategy: Link roots to linear factors and use the small degree to force a linear factor.
+  sketch:
+    - "apply_theorem: A root a gives f = (X - a)g by the factor theorem."
+    - "derive: Since deg g ≥ 1, f is reducible."
+    - "setup: Conversely suppose f = gh with non-units g and h."
+    - "derive: Degrees are at least 1 and sum to at most 3, so one factor is linear."
+    - "conclude: A linear factor over a field has a root, which is a root of f."
+  openmath: (forall (K f) (-> (and (is_field K) (in f (polynomial_ring K)) (<= 2 (poly_degree f)) (<= (poly_degree f) 3)) (<-> (irreducible_element f (polynomial_ring K)) (forall (a) (-> (in a K) (!= (poly_eval f a) 0))))))
+  hard_negative:
+    statement: 体上の次数4の多項式についても、既約であることと根をもたないことは同値である。
+    reason: (X²+1)²はℝ上で根をもたないが既約でない。
+  target: |
+    ∀ (K : Type*) [Field K] (f : Polynomial K), 2 ≤ f.natDegree → f.natDegree ≤ 3 → (Irreducible f ↔ ∀ a : K, f.eval a ≠ 0)
+  proof: |
+    by
+      intro K _ f h2 h3
+      rw [Polynomial.irreducible_iff_roots_eq_zero_of_degree_le_three h2 h3, Multiset.eq_zero_iff_forall_notMem]
+      have hf : f ≠ 0 := by
+        rintro rfl
+        simp at h2
+      simp only [Polynomial.mem_roots hf, Polynomial.IsRoot.def]
+- id: polynomial_quotient_field_iff_irreducible
+  kind: textbook
+  level: 3
+  topic: 環論・多項式環の剰余体
+  statement: 体K上の多項式fについて、K[X]/(f)が体であることとfが既約であることは同値である。
+  statement_en: For a polynomial f over a field K, the quotient K[X]/(f) is a field if and only if f is irreducible.
+  assumptions: ["Kは体", "fはK[X]の元"]
+  quantifiers: ["任意の体Kと多項式f"]
+  conclusion: K[X]/(f)が体であることとfが既約であることは同値である。
+  answer: |
+    K[X]/(f)が体であることは(f)が極大イデアルであることと同値である。f=0なら(f)=0で、K[X]は体でないので(0)は極大でなく、0も既約でないから両辺とも偽である。f≠0とする。(f)が極大なら素イデアルなのでfは素元であり、既約である。逆にfが既約なら、単項イデアル整域K[X]で既約元の生成するイデアルは極大である。
+  strategy: Reduce to maximality of (f) in the principal ideal domain K[X], treating f = 0 separately.
+  sketch:
+    - "apply_theorem: The quotient is a field exactly when (f) is maximal."
+    - "case_split: If f = 0, both sides fail because K[X] is not a field and 0 is not irreducible."
+    - "derive: If f ≠ 0 and (f) is maximal, then (f) is prime, so f is prime and irreducible."
+    - "derive: If f is irreducible and (f) ⊆ (g), then g is a unit or an associate of f."
+    - "conclude: Hence (f) is maximal exactly when f is irreducible."
+  openmath: (forall (K f) (-> (and (is_field K) (in f (polynomial_ring K))) (<-> (is_field (quotient_ring (polynomial_ring K) (principal_ideal f))) (irreducible_element f (polynomial_ring K)))))
+  hard_negative:
+    statement: ℤ上の多項式fについても、ℤ[X]/(f)が体であることとfが既約であることは同値である。
+    reason: Xはℤ[X]で既約だが、ℤ[X]/(X)≅ℤは体でない。
+  target: |
+    ∀ (K : Type*) [Field K] (f : Polynomial K), IsField (Polynomial K ⧸ Ideal.span {f}) ↔ Irreducible f
+  proof: |
+    by
+      intro K _ f
+      rw [← Ideal.Quotient.maximal_ideal_iff_isField_quotient]
+      constructor
+      · intro h
+        have hf : f ≠ 0 := by
+          rintro rfl
+          have hb : (⊥ : Ideal (Polynomial K)).IsMaximal := by simpa using h
+          exact Polynomial.not_isField K (Ring.isField_iff_maximal_bot.mpr hb)
+        exact ((Ideal.span_singleton_prime hf).mp h.isPrime).irreducible
+      · intro h
+        exact PrincipalIdealRing.isMaximal_of_irreducible h
+- id: domain_characteristic_prime_or_zero
+  kind: gap
+  level: 3
+  topic: 環論・環の標数
+  statement: 整域の標数は0または素数である。
+  statement_en: The characteristic of an integral domain is either zero or a prime number.
+  assumptions: ["Rは整域", "pはRの標数"]
+  quantifiers: ["任意の整域Rとその標数p"]
+  conclusion: pは素数または0である。
+  answer: |
+    整域は零環でないので1≠0であり、pは1でない。p≠0がp=abと分解し1<a, b<pとすると、(a·1)(b·1)=p·1=0である。整域なのでa·1=0またはb·1=0となり、pの最小性に反する。よってpは素数である。
+  strategy: Factor the characteristic and use the absence of zero divisors.
+  sketch:
+    - "setup: Assume p ≠ 0; since 1 ≠ 0, also p ≠ 1."
+    - "case_split: Suppose p = ab with 1 < a, b < p."
+    - "derive: Then (a·1)(b·1) = 0 in R."
+    - "contradiction: One factor vanishes, against minimality of p."
+    - "conclude: So p is prime."
+  openmath: (forall (R p) (-> (and (integral_domain R) (ring_characteristic R p)) (or (in p P) (= p 0))))
+  hard_negative:
+    statement: 任意の可換環の標数は0または素数である。
+    reason: ℤ/6ℤの標数は6であり、素数でも0でもない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (p : ℕ) [CharP R p], p.Prime ∨ p = 0
+  proof: |
+    by
+      intro R _ _ p _
+      exact CharP.char_is_prime_or_zero R p
+- id: add_pow_prime_characteristic
+  kind: gap
+  level: 3
+  topic: 環論・標数pとフロベニウス
+  statement: 素数pを標数とする可換環では、(x+y)^p=x^p+y^pが成り立つ。
+  statement_en: In a commutative ring of prime characteristic p, one has (x + y)^p = x^p + y^p.
+  assumptions: ["Rは可換環", "pは素数", "Rの標数はp"]
+  quantifiers: ["任意の可換環R、素数p、元x, y"]
+  conclusion: (x+y)^p=x^p+y^pが成り立つ。
+  answer: |
+    二項定理で展開すると、0<k<pの項の係数は二項係数C(p,k)である。pは素数なのでC(p,k)はpで割り切れる。標数がpなのでこれらの項は0となり、x^p+y^pだけが残る。
+  strategy: Expand by the binomial theorem and kill the middle binomial coefficients.
+  sketch:
+    - "apply_theorem: Expand (x + y)^p by the binomial theorem."
+    - "derive: For 0 < k < p, the prime p divides the binomial coefficient C(p, k)."
+    - "conclude: In characteristic p only x^p and y^p remain."
+  openmath: (forall (R p x y) (-> (and (comm_ring R) (in p P) (ring_characteristic R p) (in x R) (in y R)) (= (^ (+ x y) p) (+ (^ x p) (^ y p)))))
+  hard_negative:
+    statement: 合成数nを標数とする可換環でも(x+y)^n=x^n+y^nが成り立つ。
+    reason: ℤ/4ℤでx=y=1とすると、(1+1)^4=0だが1^4+1^4=2である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (p : ℕ) [Fact p.Prime] [CharP R p] (x y : R), (x + y) ^ p = x ^ p + y ^ p
+  proof: |
+    by
+      intro R _ p _ _ x y
+      exact add_pow_char x y p
+- id: frobenius_injective_reduced
+  kind: gap
+  level: 3
+  topic: 環論・フロベニウス写像の単射性
+  statement: 素数pを標数とする被約な可換環では、フロベニウス写像は単射である。すなわちx^p=y^pならx=yである。
+  statement_en: In a reduced commutative ring of prime characteristic p, the Frobenius map is injective, that is, x^p = y^p implies x = y.
+  assumptions: ["Rは被約な可換環", "pは素数", "Rの標数はp", "x^p=y^p"]
+  quantifiers: ["任意の被約可換環R、素数p、元x, y"]
+  conclusion: x=yである。
+  answer: |
+    標数pでは(x-y)^p=x^p-y^pが成り立つので、x^p=y^pから(x-y)^p=0を得る。つまりx-yは冪零である。Rは被約なのでx-y=0であり、x=yである。
+  strategy: Turn equal p-th powers into nilpotence of the difference.
+  sketch:
+    - "derive: In characteristic p, (x - y)^p = x^p - y^p."
+    - "translate: The hypothesis gives (x - y)^p = 0, so x - y is nilpotent."
+    - "conclude: Reducedness gives x = y."
+  openmath: (forall (R p x y) (-> (and (comm_ring R) (reduced_ring R) (in p P) (ring_characteristic R p) (in x R) (in y R) (= (^ x p) (^ y p))) (= x y)))
+  hard_negative:
+    statement: 素数標数の任意の可換環でフロベニウス写像は単射である。
+    reason: 𝔽_2[Y]/(Y²)ではYの像の2乗は0=0²だが、Yの像は0でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsReduced R] (p : ℕ) [Fact p.Prime] [CharP R p] (x y : R), x ^ p = y ^ p → x = y
+  proof: |
+    by
+      intro R _ _ p _ _ x y h
+      exact frobenius_inj R p h
+- id: fraction_field_element_as_quotient
+  kind: gap
+  level: 3
+  topic: 環論・商体の元の表示
+  statement: 整域Aの商体Kの任意の元は、Aの元a, b(b≠0)の像の商a/bと書ける。
+  statement_en: Every element of the field of fractions K of an integral domain A has the form a/b with a and b in A and b nonzero.
+  assumptions: ["Aは整域", "KはAの商体"]
+  quantifiers: ["任意の整域A、商体K、元z"]
+  conclusion: z=a/bとなるa, b∈A(b≠0)が存在する。
+  answer: |
+    商体の定義より、Kの元はAの元の組(a, b)(b≠0)の同値類であり、その類はAの像の商a/bに等しい。したがって任意のzはこの形に書ける。
+  strategy: Unfold the definition of the field of fractions as equivalence classes of pairs.
+  sketch:
+    - "translate: An element of K is a class of a pair (a, b) with b nonzero."
+    - "conclude: This class equals the quotient of the images of a and b."
+  openmath: (forall (A K z) (-> (and (integral_domain A) (fraction_field_of K A) (in z K)) (exists (a b) (and (in a A) (in b A) (!= b 0) (= z (/ (fn_value (fraction_embedding A K) a) (fn_value (fraction_embedding A K) b)))))))
+  hard_negative:
+    statement: 商体の任意の元は、Aの元aとAの単元bによってa/bと書ける。
+    reason: ℚの元1/2は、ℤの単元±1を分母とする形に書けない。
+  target: |
+    ∀ (A K : Type*) [CommRing A] [IsDomain A] [Field K] [Algebra A K] [IsFractionRing A K] (z : K), ∃ a b : A, b ≠ 0 ∧ z = algebraMap A K a / algebraMap A K b
+  proof: |
+    by
+      intro A K _ _ _ _ _ z
+      obtain ⟨a, b, hb, h⟩ := IsFractionRing.div_surjective A z
+      exact ⟨a, b, nonZeroDivisors.ne_zero hb, h.symm⟩
+- id: fraction_field_universal_property
+  kind: textbook
+  level: 3
+  topic: 環論・商体の普遍性
+  statement: 整域Aの商体をKとする。体Lへの単射環準同型g:A→Lは、K→Lの環準同型にただ一通りに拡張される。
+  statement_en: Let K be the field of fractions of an integral domain A. Every injective ring homomorphism g from A to a field L extends uniquely to a ring homomorphism from K to L.
+  assumptions: ["Aは整域", "KはAの商体", "Lは体", "g: A→Lは単射環準同型"]
+  quantifiers: ["任意の整域A、商体K、体L、単射環準同型g"]
+  conclusion: h(a)=g(a)を満たす環準同型h:K→Lがただ一つ存在する。
+  answer: |
+    gは単射なので、b≠0ならg(b)≠0であり、h(a/b)=g(a)/g(b)と定められる。a/b=c/dならad=bcなのでg(a)g(d)=g(b)g(c)となり、値は表示によらない。和と積を保つことは分数の計算から確かめられる。Kの元はa/bの形なので、拡張はこの式に限られ一意である。
+  strategy: Define the extension on fractions and use injectivity to keep denominators invertible.
+  sketch:
+    - "derive: Injectivity gives g(b) ≠ 0 for b ≠ 0."
+    - "construct: Set h(a/b) = g(a)/g(b)."
+    - "derive: The cross-multiplication relation shows h is well defined."
+    - "derive: Fraction arithmetic shows h is a ring homomorphism."
+    - "conclude: Any extension must satisfy the same formula, so it is unique."
+  openmath: (forall (A K L g) (-> (and (integral_domain A) (fraction_field_of K A) (is_field L) (ring_hom g A L) (ring_hom_injective g)) (exists (h) (and (ring_hom h K L) (forall (a) (-> (in a A) (= (fn_value h (fn_value (fraction_embedding A K) a)) (fn_value g a)))) (forall (k) (-> (and (ring_hom k K L) (forall (a) (-> (in a A) (= (fn_value k (fn_value (fraction_embedding A K) a)) (fn_value g a))))) (= k h)))))))
+  hard_negative:
+    statement: 単射でない環準同型g:A→Lも商体Kに拡張される。
+    reason: ℤ→𝔽_pはpを0に写すが、拡張があれば1=h(p)h(1/p)=0となり矛盾する。
+  target: |
+    ∀ (A K L : Type*) [CommRing A] [IsDomain A] [Field K] [Algebra A K] [IsFractionRing A K] [Field L] (g : A →+* L), Function.Injective g → ∃! h : K →+* L, ∀ a : A, h (algebraMap A K a) = g a
+  proof: |
+    by
+      intro A K L _ _ _ _ _ _ g hg
+      refine ⟨IsFractionRing.lift hg, fun a => IsFractionRing.lift_algebraMap hg a, ?_⟩
+      intro h' hh'
+      apply IsFractionRing.ringHom_ext (A := A)
+      intro a
+      rw [hh', IsFractionRing.lift_algebraMap]
+- id: nilradical_eq_inter_primes
+  kind: textbook
+  level: 4
+  topic: 環論・冪零根基
+  statement: 可換環の冪零根基（冪零元全体）は、すべての素イデアルの共通部分に等しい。
+  statement_en: The nilradical of a commutative ring, that is, the set of its nilpotent elements, equals the intersection of all prime ideals.
+  assumptions: ["Rは可換環"]
+  quantifiers: ["任意の可換環R"]
+  conclusion: 冪零根基はRの素イデアル全体の共通部分に等しい。
+  answer: |
+    x^n=0なら、0は任意の素イデアルに属するのでxも属する。逆にxが冪零でないとする。{x^n}と交わらないイデアルのうち極大なものPをツォルンの補題でとる。a, bがPに属さなければ、P+(a)とP+(b)はそれぞれあるx^mとx^nを含むので、abがPに属するとx^{m+n}がPに属して矛盾する。よってPはxを含まない素イデアルである。
+  strategy: The easy inclusion uses primality; the other builds a prime ideal avoiding the powers of x by Zorn's lemma.
+  sketch:
+    - "derive: If x^n = 0, then x lies in every prime ideal."
+    - "setup: Conversely, let x be non-nilpotent."
+    - "apply_theorem: Zorn's lemma gives an ideal P maximal among those missing all powers of x."
+    - "derive: If a, b are outside P, then P + (a) and P + (b) contain powers of x."
+    - "contradiction: If ab were in P, a power of x would lie in P."
+    - "conclude: So P is a prime ideal not containing x."
+  openmath: (forall (R x) (-> (and (comm_ring R) (in x R)) (<-> (in x (nilradical_of R)) (forall (P) (-> (prime_ideal P R) (in x P))))))
+  hard_negative:
+    statement: 冪零根基はすべての極大イデアルの共通部分に等しい。
+    reason: それはジャコブソン根基であり、局所環ℤ_(p)では冪零根基は0だがジャコブソン根基はpℤ_(p)である。
+  target: |
+    ∀ (R : Type*) [CommRing R], nilradical R = sInf {P : Ideal R | P.IsPrime}
+  proof: |
+    by
+      intro R _
+      exact nilradical_eq_sInf R
+- id: jacobson_radical_mem_iff
+  kind: gap
+  level: 4
+  topic: 環論・ジャコブソン根基
+  statement: 可換環のジャコブソン根基にxが属することと、任意のyに対してxy+1が単元であることは同値である。
+  statement_en: An element x lies in the Jacobson radical of a commutative ring if and only if xy + 1 is a unit for every y.
+  assumptions: ["Rは可換環", "xはRの元"]
+  quantifiers: ["任意の可換環Rと元x"]
+  conclusion: xがジャコブソン根基に属することと、全てのyでxy+1が単元であることは同値である。
+  answer: |
+    xがジャコブソン根基に属するとする。xy+1が単元でなければある極大イデアルMに属し、xもMに属するので1がMに属して矛盾する。逆にxが極大イデアルMに属さないとすると、M+(x)=Rよりm+xz=1となるm∈Mとzがある。y=-zとおくとxy+1=mはMに属するので単元でない。
+  strategy: Put a non-unit into a maximal ideal for one direction and use M + (x) = R for the other.
+  sketch:
+    - "setup: Assume x is in every maximal ideal."
+    - "contradiction: A non-unit xy + 1 lies in a maximal ideal containing x, which would contain 1."
+    - "setup: Conversely, suppose x is not in a maximal ideal M."
+    - "derive: Then M + (x) = R, so m + xz = 1 with m in M."
+    - "conclude: With y = -z, xy + 1 = m is not a unit."
+  openmath: (forall (R x) (-> (and (comm_ring R) (in x R)) (<-> (in x (jacobson_radical R)) (forall (y) (-> (in y R) (unit_element (+ (* x y) 1) R))))))
+  hard_negative:
+    statement: xがジャコブソン根基に属することとx+1が単元であることは同値である。
+    reason: ℤでx=-2とするとx+1=-1は単元だが、ℤのジャコブソン根基は0である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (x : R), x ∈ Ideal.jacobson (⊥ : Ideal R) ↔ ∀ y : R, IsUnit (x * y + 1)
+  proof: |
+    by
+      intro R _ x
+      exact Ideal.mem_jacobson_bot
+- id: nakayama_lemma
+  kind: named
+  level: 4
+  topic: 環論・中山の補題
+  statement: 中山の補題。可換環RのイデアルIがジャコブソン根基に含まれ、有限生成部分加群NがN⊆INを満たすならば、N=0である。
+  statement_en: Nakayama's lemma. If an ideal I of a commutative ring R lies in the Jacobson radical and a finitely generated submodule N satisfies N ⊆ IN, then N = 0.
+  assumptions: ["Rは可換環", "MはR加群", "NはMの有限生成部分加群", "IはRのイデアルでジャコブソン根基に含まれる", "N⊆IN"]
+  quantifiers: ["任意の可換環R、加群M、部分加群N、イデアルI"]
+  conclusion: N=0である。
+  answer: |
+    N≠0としてNの生成元の個数が最小となる生成系u_1, …, u_nをとる。u_nはINに属するので、Iの元a_iによりu_n=Σa_iu_iと書ける。(1-a_n)u_n=Σ_{i<n}a_iu_iであり、a_nはジャコブソン根基に属するので1-a_nは単元である。するとu_nは他の生成元で書け、生成元の個数の最小性に反する。
+  strategy: Take a minimal generating set and eliminate one generator using that 1 - a is a unit.
+  sketch:
+    - "setup: Suppose N ≠ 0 and choose a generating set of minimal size."
+    - "derive: Since N ⊆ IN, the last generator is an I-combination of all generators."
+    - "derive: Moving terms gives (1 - a) uₙ as a combination of the others."
+    - "apply_theorem: The element 1 - a is a unit because a lies in the Jacobson radical."
+    - "contradiction: Then uₙ is redundant, against minimality."
+  openmath: (forall (R M N I) (-> (and (comm_ring R) (module_over M R) (submodule_of N M) (finitely_generated_submodule N) (ideal_of I R) (subset I (jacobson_radical R)) (subset N (ideal_smul_submodule I N))) (= N (zero_submodule M))))
+  hard_negative:
+    statement: 有限生成を仮定しなくても、N⊆INならN=0である。
+    reason: 局所環ℤ_(p)上の加群ℚでは、I=(p)についてIℚ=ℚだがℚ≠0である。
+  target: |
+    ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M] (I : Ideal R) (N : Submodule R M), N.FG → N ≤ I • N → I ≤ Ideal.jacobson ⊥ → N = ⊥
+  proof: |
+    by
+      intro R M _ _ _ I N hN h hI
+      exact Submodule.eq_bot_of_le_smul_of_le_jacobson_bot I N hN h hI
+- id: domain_idempotent_zero_or_one
+  kind: gap
+  level: 2
+  topic: 環論・冪等元
+  statement: 整域の冪等元は0または1である。
+  statement_en: The only idempotents of an integral domain are 0 and 1.
+  assumptions: ["Rは整域", "e²=e"]
+  quantifiers: ["任意の整域Rと元e"]
+  conclusion: e=0またはe=1である。
+  answer: |
+    e²=eよりe(e-1)=0である。整域なのでe=0またはe-1=0であり、e=0またはe=1である。
+  strategy: Factor e² - e and use that a domain has no zero divisors.
+  sketch:
+    - "derive: The hypothesis gives e(e - 1) = 0."
+    - "conclude: With no zero divisors, e = 0 or e = 1."
+  openmath: (forall (R e) (-> (and (integral_domain R) (in e R) (= (* e e) e)) (or (= e 0) (= e 1))))
+  hard_negative:
+    statement: 任意の可換環の冪等元は0または1である。
+    reason: ℤ/6ℤで3²=3であり、3は0でも1でもない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (e : R), e * e = e → e = 0 ∨ e = 1
+  proof: |
+    by
+      intro R _ _ e h
+      by_cases he : e = 0
+      · exact Or.inl he
+      · exact Or.inr (mul_left_cancel₀ he (by rw [h, mul_one]))
+- id: idempotent_ideal_decomposition
+  kind: gap
+  level: 3
+  topic: 環論・冪等元とイデアル分解
+  statement: 可換環の冪等元eについて、(e)+(1-e)=Rかつ(e)∩(1-e)=0が成り立つ。
+  statement_en: For an idempotent e of a commutative ring, one has (e) + (1 - e) = R and (e) ∩ (1 - e) = 0.
+  assumptions: ["Rは可換環", "e²=e"]
+  quantifiers: ["任意の可換環Rと冪等元e"]
+  conclusion: (e)+(1-e)=Rかつ(e)∩(1-e)=0である。
+  answer: |
+    1=e+(1-e)より和はRである。xが共通部分に属するとし、x=ea=(1-e)bと書く。ex=e²a=ea=xである。一方でex=e(1-e)b=0なので、x=0である。
+  strategy: Use 1 = e + (1 - e) and e(1 - e) = 0.
+  sketch:
+    - "derive: The identity 1 = e + (1 - e) shows the sum is R."
+    - "setup: Take x = ea = (1 - e)b in the intersection."
+    - "derive: Idempotence gives ex = x."
+    - "conclude: Also ex = e(1 - e)b = 0, so x = 0."
+  openmath: (forall (R e) (-> (and (comm_ring R) (in e R) (= (* e e) e)) (and (= (ideal_sum (principal_ideal e) (principal_ideal (- 1 e))) (unit_ideal R)) (= (inter (principal_ideal e) (principal_ideal (- 1 e))) (zero_ideal R)))))
+  hard_negative:
+    statement: 可換環の任意の元eについて(e)∩(1-e)=0である。
+    reason: ℤでe=2とすると(1-e)=(-1)=ℤなので、共通部分は2ℤであり0でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (e : R), e * e = e → Ideal.span {e} ⊔ Ideal.span {1 - e} = ⊤ ∧ Ideal.span {e} ⊓ Ideal.span {1 - e} = ⊥
+  proof: |
+    by
+      intro R _ e h
+      constructor
+      · rw [Ideal.eq_top_iff_one, Submodule.mem_sup]
+        exact ⟨e, Ideal.mem_span_singleton_self e, 1 - e, Ideal.mem_span_singleton_self _, by ring⟩
+      · rw [eq_bot_iff]
+        intro x hx
+        obtain ⟨hx1, hx2⟩ := Submodule.mem_inf.mp hx
+        obtain ⟨a, ha⟩ := Ideal.mem_span_singleton.mp hx1
+        obtain ⟨b, hb⟩ := Ideal.mem_span_singleton.mp hx2
+        have h0 : x = 0 := by
+          have hex : e * x = x := by rw [ha, ← mul_assoc, h]
+          have hz : e * x = 0 := by
+            rw [hb]
+            linear_combination (-b) * h
+          rw [← hex, hz]
+        rw [h0]
+        exact Submodule.zero_mem _
+- id: matrix_unit_iff_det_unit
+  kind: gap
+  level: 2
+  topic: 環論・行列環の単元
+  statement: 可換環R上の正方行列Aについて、Aが行列環の単元であることとdet AがRの単元であることは同値である。
+  statement_en: A square matrix A over a commutative ring R is a unit of the matrix ring if and only if det A is a unit of R.
+  assumptions: ["Rは可換環", "AはR上の正方行列"]
+  quantifiers: ["任意の可換環Rと正方行列A"]
+  conclusion: Aが単元であることとdet Aが単元であることは同値である。
+  answer: |
+    AB=Eならdet A·det B=1なので、det Aは単元である。逆にdet Aが単元なら、余因子行列adj Aについて A·adj A=adj A·A=(det A)Eなので、(det A)^{-1}adj AがAの逆行列である。
+  strategy: Use multiplicativity of the determinant and the adjugate formula.
+  sketch:
+    - "derive: AB = E gives det A · det B = 1."
+    - "apply_theorem: The adjugate satisfies A adj A = adj A A = (det A) E."
+    - "conclude: If det A is a unit, then (det A)⁻¹ adj A inverts A."
+  openmath: (forall (n R A) (-> (and (comm_ring R) (in A (matrix_ring n R))) (<-> (unit_element A (matrix_ring n R)) (unit_element (matrix_det A) R))))
+  hard_negative:
+    statement: 可換環上の正方行列が可逆であることとdet A≠0は同値である。
+    reason: ℤ上の1次行列(2)はdet=2≠0だが、ℤ上で逆行列をもたない。
+  target: |
+    ∀ (n R : Type*) [Fintype n] [DecidableEq n] [CommRing R] (A : Matrix n n R), IsUnit A ↔ IsUnit A.det
+  proof: |
+    by
+      intro n R _ _ _ A
+      exact Matrix.isUnit_iff_isUnit_det A
+- id: matrix_ring_nonzero_square_zero
+  kind: gap
+  level: 2
+  topic: 環論・行列環の冪零元
+  statement: 零環でない可換環R上で、添字が2個以上ある行列環には、A≠0かつA²=0を満たす行列Aが存在する。
+  statement_en: Over a nontrivial commutative ring, a matrix ring with at least two distinct indices contains a nonzero matrix A with A² = 0.
+  assumptions: ["Rは零環でない可換環", "i, jは相異なる添字"]
+  quantifiers: ["任意の可換環R、添字集合n、相異なるi, j"]
+  conclusion: A≠0かつA²=0を満たす行列Aが存在する。
+  answer: |
+    (i, j)成分だけが1で他の成分が0の行列E_{ij}をとる。R≠0よりE_{ij}≠0である。行列単位の積の公式からE_{ij}E_{ij}はj=iのときに限り0でないので、i≠jよりE_{ij}²=0である。
+  strategy: Exhibit an off-diagonal matrix unit.
+  sketch:
+    - "construct: Take the matrix unit E_ij with i ≠ j."
+    - "derive: It is nonzero because 1 ≠ 0 in R."
+    - "conclude: The product rule for matrix units gives E_ij² = 0."
+  openmath: (forall (n R i j) (-> (and (comm_ring R) (nontrivial_ring R) (in i n) (in j n) (!= i j)) (exists (A) (and (in A (matrix_ring n R)) (!= A 0) (= (* A A) 0)))))
+  hard_negative:
+    statement: 添字が1個の行列環でも、零環でなければA≠0かつA²=0となる行列が存在する。
+    reason: ℝ上の1次行列環はℝと同じであり、0でない元の2乗は0でない。
+  target: |
+    ∀ (n R : Type*) [Fintype n] [DecidableEq n] [CommRing R] [Nontrivial R] (i j : n), i ≠ j → ∃ A : Matrix n n R, A ≠ 0 ∧ A * A = 0
+  proof: |
+    by
+      intro n R _ _ _ _ i j hij
+      refine ⟨Matrix.single i j 1, ?_, ?_⟩
+      · intro h
+        have := congrFun (congrFun h i) j
+        simp at this
+      · rw [Matrix.single_mul_single_of_ne]
+        exact hij.symm
+- id: noetherian_iff_ideals_fg
+  kind: textbook
+  level: 3
+  topic: 環論・ネーター環
+  statement: 可換環がネーター環であることと、すべてのイデアルが有限生成であることは同値である。
+  statement_en: A commutative ring is Noetherian if and only if every ideal is finitely generated.
+  assumptions: ["Rは可換環"]
+  quantifiers: ["任意の可換環R"]
+  conclusion: Rがネーター環であることと、全てのイデアルが有限生成であることは同値である。
+  answer: |
+    ネーター環をイデアルの昇鎖条件で定める。Iが有限生成でないとすると、元を一つずつ加えて有限生成イデアルの真の昇鎖が無限に続き、昇鎖条件に反する。逆に全てのイデアルが有限生成なら、昇鎖の和集合も有限生成であり、その生成元はある段階の項にすべて含まれるので、鎖はそこで停止する。
+  strategy: Build a strict chain from a non-finitely-generated ideal, and conversely use generators of the union.
+  sketch:
+    - "contradiction: A non-finitely-generated ideal gives an infinite strict chain of finitely generated subideals."
+    - "setup: Conversely assume every ideal is finitely generated and take an ascending chain."
+    - "derive: The union is an ideal with finitely many generators."
+    - "derive: All generators appear at some stage of the chain."
+    - "conclude: The chain stabilizes there."
+  openmath: (forall (R) (-> (comm_ring R) (<-> (noetherian_ring R) (forall (I) (-> (ideal_of I R) (finitely_generated_ideal I))))))
+  hard_negative:
+    statement: ネーター環のイデアルはすべて単項である。
+    reason: ℤ[X]はネーター環だが、イデアル(2, X)は単項でない。
+  target: |
+    ∀ (R : Type*) [CommRing R], IsNoetherianRing R ↔ ∀ I : Ideal R, I.FG
+  proof: |
+    by
+      intro R _
+      exact isNoetherianRing_iff_ideal_fg R
+- id: noetherian_ascending_chain_stabilizes
+  kind: gap
+  level: 3
+  topic: 環論・昇鎖条件
+  statement: ネーター環のイデアルの昇鎖I_0⊆I_1⊆…は、ある番号から先で一定になる。
+  statement_en: Every ascending chain of ideals I_0 ⊆ I_1 ⊆ ... in a Noetherian ring is eventually constant.
+  assumptions: ["Rはネーター環", "(I_n)はイデアルの昇鎖"]
+  quantifiers: ["任意のネーター環Rと昇鎖(I_n)"]
+  conclusion: あるNが存在し、m≥NならI_N=I_mである。
+  answer: |
+    昇鎖の和集合Iはイデアルである。Rはネーター環なのでIは有限生成である。有限個の生成元はすべてある項I_Nに含まれるのでI=I_Nとなり、m≥NならI_N⊆I_m⊆I=I_Nである。
+  strategy: Take the union, which is finitely generated, and locate its generators.
+  sketch:
+    - "derive: The union I of the chain is an ideal."
+    - "apply_theorem: Since R is Noetherian, I is finitely generated."
+    - "derive: The generators all lie in some I_N, so I = I_N."
+    - "conclude: For m ≥ N, I_N ⊆ I_m ⊆ I = I_N."
+  openmath: (forall (R I) (-> (and (noetherian_ring R) (forall (n) (and (ideal_of (ideal_sequence_term I n) R) (subset (ideal_sequence_term I n) (ideal_sequence_term I (+ n 1)))))) (exists (N) (forall (m) (-> (<= N m) (= (ideal_sequence_term I N) (ideal_sequence_term I m)))))))
+  hard_negative:
+    statement: ネーター環のイデアルの降鎖は、ある番号から先で一定になる。
+    reason: ℤはネーター環だが、(2)⊋(4)⊋(8)⊋…は一定にならない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsNoetherianRing R] (I : ℕ → Ideal R), (∀ n, I n ≤ I (n + 1)) → ∃ N, ∀ m, N ≤ m → I N = I m
+  proof: |
+    by
+      intro R _ _ I h
+      exact monotone_stabilizes_iff_noetherian.mpr inferInstance ⟨I, monotone_nat_of_le_succ h⟩
+- id: hilbert_basis_theorem
+  kind: named
+  level: 4
+  topic: 環論・ヒルベルトの基底定理
+  statement: ヒルベルトの基底定理。Rがネーター環ならば、多項式環R[X]もネーター環である。
+  statement_en: Hilbert's basis theorem. If R is a Noetherian ring, then the polynomial ring R[X] is Noetherian.
+  assumptions: ["Rはネーター環"]
+  quantifiers: ["任意のネーター環R"]
+  conclusion: R[X]はネーター環である。
+  answer: |
+    R[X]のイデアルIが有限生成でないと仮定する。Iから次数最小の元f_1をとり、以下f_{k+1}を(f_1, …, f_k)に属さないIの元のうち次数最小にとる。f_kの主係数a_kのなすRのイデアルは有限生成なので、a_{k+1}=Σ_{i≤k}r_ia_iとなるkがある。f_{k+1}からΣr_iX^{deg f_{k+1}-deg f_i}f_iを引くと、(f_1, …, f_k)に属さないIの元で次数がより小さいものができ、最小性に反する。
+  strategy: Choose generators of minimal degree and use finite generation of the ideal of leading coefficients.
+  sketch:
+    - "setup: Suppose an ideal I of R[X] is not finitely generated."
+    - "construct: Pick f_{k+1} of minimal degree in I outside (f_1, ..., f_k)."
+    - "apply_theorem: The ideal of leading coefficients of the f_i is finitely generated."
+    - "derive: So some leading coefficient a_{k+1} is an R-combination of the earlier ones."
+    - "contradiction: Subtracting the matching combination gives an element of smaller degree outside (f_1, ..., f_k)."
+  openmath: (forall (R) (-> (and (comm_ring R) (noetherian_ring R)) (noetherian_ring (polynomial_ring R))))
+  hard_negative:
+    statement: Rがネーター環ならば、無限個の変数をもつ多項式環R[x_1, x_2, …]もネーター環である。
+    reason: イデアル(x_1, x_2, …)は有限生成でないので、ネーター環にならない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsNoetherianRing R], IsNoetherianRing (Polynomial R)
+  proof: |
+    by
+      intro R _ _
+      infer_instance

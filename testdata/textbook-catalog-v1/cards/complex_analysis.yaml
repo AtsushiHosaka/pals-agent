@@ -1,0 +1,1385 @@
+- id: conj_mul_self_eq_norm_sq
+  kind: gap
+  level: 2
+  topic: 複素数・共役と絶対値
+  statement: 複素数zについて、zとその共役の積は|z|^2に等しい。
+  statement_en: For every complex number z, the product of z and its conjugate equals |z|^2.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: z·conj(z)=|z|^2が成り立つ。
+  answer: |
+    z=x+iy(x, yは実数)と書くと、conj(z)=x-iyである。積を展開すると(x+iy)(x-iy)=x^2+y^2となる。絶対値の定義から|z|^2=x^2+y^2なので、両者は等しい。
+  strategy: Expand the product in real and imaginary parts and compare with the definition of the modulus.
+  sketch:
+    - "setup: Write z = x + iy with real x, y."
+    - "derive: Expanding gives z·conj(z) = x^2 + y^2."
+    - "conclude: This equals |z|^2 by the definition of the modulus."
+  openmath: (forall (z) (-> (in z C) (= (* z (complex_conj z)) (^ (abs z) 2))))
+  hard_negative:
+    statement: 複素数zについてz^2=|z|^2が成り立つ。
+    reason: z=iではz^2=-1だが|z|^2=1である。共役を取らなければ等式は成り立たない。
+  target: |
+    ∀ (z : ℂ), z * (starRingEnd ℂ) z = ((‖z‖ : ℝ) : ℂ) ^ 2
+  proof: |
+    by
+      intro z
+      exact Complex.mul_conj' z
+- id: inv_eq_conj_div_norm_sq
+  kind: gap
+  level: 2
+  topic: 複素数・逆数の公式
+  statement: 0でない複素数zの逆数は、共役を|z|^2で割った値に等しい。
+  statement_en: For a nonzero complex number z, the inverse of z equals conj(z) / |z|^2.
+  assumptions: [zは0でない複素数]
+  quantifiers: [任意の0でない複素数z]
+  conclusion: z^{-1}=conj(z)/|z|^2が成り立つ。
+  answer: |
+    z·conj(z)=|z|^2であり、z≠0より|z|^2≠0である。両辺を|z|^2で割るとz·(conj(z)/|z|^2)=1となる。したがってconj(z)/|z|^2はzの逆数である。
+  strategy: Divide the identity z·conj(z) = |z|^2 by the nonzero number |z|^2.
+  sketch:
+    - "setup: Note that |z|^2 is nonzero because z is nonzero."
+    - "apply_theorem: Use z·conj(z) = |z|^2."
+    - "conclude: Dividing by |z|^2 shows that conj(z)/|z|^2 is the inverse of z."
+  openmath: (forall (z) (-> (and (in z C) (!= z 0)) (= (/ 1 z) (/ (complex_conj z) (^ (abs z) 2)))))
+  hard_negative:
+    statement: 0でない複素数zの逆数は共役conj(z)に等しい。
+    reason: z=2では逆数が1/2、共役が2である。|z|=1の場合にしか成り立たない。
+  target: |
+    ∀ (z : ℂ), z ≠ 0 → z⁻¹ = (starRingEnd ℂ) z / ((‖z‖ : ℝ) : ℂ) ^ 2
+  proof: |
+    by
+      intro z hz
+      have hn : ((‖z‖ : ℝ) : ℂ) ^ 2 ≠ 0 :=
+        pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hz))
+      rw [eq_div_iff hn, ← Complex.mul_conj' z, inv_mul_cancel_left₀ hz]
+- id: re_im_norm_bounds
+  kind: gap
+  level: 2
+  topic: 複素数・実部と虚部の評価
+  statement: 複素数zについて、|Re z|≤|z|、|Im z|≤|z|、|z|≤|Re z|+|Im z|が成り立つ。
+  statement_en: For every complex number z, |Re z| ≤ |z|, |Im z| ≤ |z| and |z| ≤ |Re z| + |Im z|.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: 実部と虚部の絶対値は|z|以下であり、|z|はそれらの和以下である。
+  answer: |
+    z=x+iyとすると|z|^2=x^2+y^2である。x^2≤x^2+y^2、y^2≤x^2+y^2の平方根を取ると|x|≤|z|、|y|≤|z|を得る。また(|x|+|y|)^2=x^2+y^2+2|x||y|≥|z|^2なので、平方根を取ると|z|≤|x|+|y|を得る。
+  strategy: Compare squares using |z|^2 = x^2 + y^2 and take square roots.
+  sketch:
+    - "setup: Write z = x + iy, so |z|^2 = x^2 + y^2."
+    - "derive: x^2 and y^2 are each at most x^2 + y^2, which gives the first two bounds."
+    - "derive: (|x| + |y|)^2 is at least x^2 + y^2."
+    - "conclude: Taking square roots gives |z| ≤ |x| + |y|."
+  openmath: (forall (z) (-> (in z C) (and (<= (abs (real_part z)) (abs z)) (<= (abs (imag_part z)) (abs z)) (<= (abs z) (+ (abs (real_part z)) (abs (imag_part z)))))))
+  hard_negative:
+    statement: 複素数zについて|z|=|Re z|+|Im z|が成り立つ。
+    reason: z=1+iでは|z|=√2だが、|Re z|+|Im z|=2である。一般には不等式しか成り立たない。
+  target: |
+    ∀ (z : ℂ), |z.re| ≤ ‖z‖ ∧ |z.im| ≤ ‖z‖ ∧ ‖z‖ ≤ |z.re| + |z.im|
+  proof: |
+    by
+      intro z
+      exact ⟨Complex.abs_re_le_norm z, Complex.abs_im_le_norm z, Complex.norm_le_abs_re_add_abs_im z⟩
+- id: norm_exp_eq_exp_re
+  kind: gap
+  level: 2
+  topic: 複素指数関数・絶対値
+  statement: 複素数zについて、exp zの絶対値はexp(Re z)に等しい。
+  statement_en: For every complex number z, |exp z| = exp(Re z).
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: "|exp z|=exp(Re z)が成り立つ。"
+  answer: |
+    z=x+iyとすると、指数法則とオイラーの公式からexp z=exp x·(cos y+i sin y)である。exp xは正の実数であり、cos y+i sin yの絶対値はcos^2 y+sin^2 y=1の平方根だから1である。よって|exp z|=exp xである。
+  strategy: Factor exp z into exp(x) and a unimodular factor exp(iy).
+  sketch:
+    - "setup: Write z = x + iy and use exp z = exp x · exp(iy)."
+    - "apply_theorem: Euler's formula gives |exp(iy)| = 1."
+    - "conclude: Multiplicativity of the modulus gives |exp z| = exp x."
+  openmath: (forall (z) (-> (in z C) (= (abs (exp z)) (exp (real_part z)))))
+  hard_negative:
+    statement: 複素数zについて|exp z|=exp|z|が成り立つ。
+    reason: z=iでは左辺が1、右辺がeである。絶対値に現れるのはzの実部だけである。
+  target: |
+    ∀ (z : ℂ), ‖Complex.exp z‖ = Real.exp z.re
+  proof: |
+    by
+      intro z
+      exact Complex.norm_exp z
+- id: exp_eq_one_iff
+  kind: gap
+  level: 2
+  topic: 複素指数関数・周期性
+  statement: 複素数zについて、exp z=1となるのは、ある整数nによりz=2πinと書けるときであり、そのときに限る。
+  statement_en: For a complex number z, exp z = 1 if and only if z = 2πin for some integer n.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z, ある整数n]
+  conclusion: exp z=1とz∈2πiZは同値である。
+  answer: |
+    z=2πinならば、オイラーの公式からexp z=cos 2πn+i sin 2πn=1である。逆にz=x+iyでexp z=1とすると、絶対値を比べてexp x=1となるのでx=0である。するとcos y=1かつsin y=0となり、y=2πn(nは整数)を得る。
+  strategy: Separate modulus and argument of exp z and use the zeros of the real exponential and trigonometric equations.
+  sketch:
+    - "derive: If z = 2πin, Euler's formula gives exp z = 1."
+    - "setup: Conversely let z = x + iy with exp z = 1."
+    - "derive: Taking moduli gives exp x = 1, so x = 0."
+    - "derive: Then cos y = 1 and sin y = 0, so y = 2πn for an integer n."
+    - "conclude: Hence z = 2πin."
+  openmath: (forall (z) (-> (in z C) (<-> (= (exp z) 1) (exists (n) (and (in n Z) (= z (* n (* 2 (* pi_constant complex_imaginary_unit)))))))))
+  hard_negative:
+    statement: exp z=1となる複素数zはz=0だけである。
+    reason: z=2πiでもexp z=1となる。この一意性が成り立つのは実数の範囲に限った指数関数である。
+  target: |
+    ∀ (z : ℂ), Complex.exp z = 1 ↔ ∃ n : ℤ, z = n * (2 * Real.pi * Complex.I)
+  proof: |
+    by
+      intro z
+      exact Complex.exp_eq_one_iff
+- id: complex_cos_exp_formula
+  kind: gap
+  level: 2
+  topic: 複素三角関数・指数関数表示
+  statement: 複素数zについて、cos z=(exp(iz)+exp(-iz))/2が成り立つ。
+  statement_en: For every complex number z, cos z = (exp(iz) + exp(-iz)) / 2.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: cos zは指数関数でcos z=(exp(iz)+exp(-iz))/2と表される。
+  answer: |
+    べき級数exp w=Σw^n/n!にw=izとw=-izを代入して足すと、奇数次の項は打ち消し合う。偶数次の項n=2mでは(iz)^{2m}=(-1)^m z^{2m}なので、和は2Σ(-1)^m z^{2m}/(2m)!となる。これはcos zのべき級数の2倍だから、2で割ると等式を得る。
+  strategy: Add the exponential series at iz and -iz and compare with the cosine series.
+  sketch:
+    - "setup: Substitute iz and -iz in the power series of exp."
+    - "derive: Odd-degree terms cancel when the two series are added."
+    - "derive: Even-degree terms give twice the cosine series."
+    - "conclude: Dividing by 2 yields the formula."
+  openmath: (forall (z) (-> (in z C) (= (cos z) (/ (+ (exp (* complex_imaginary_unit z)) (exp (neg (* complex_imaginary_unit z)))) 2))))
+  hard_negative:
+    statement: 複素数zについて|cos z|≤1が成り立つ。
+    reason: z=iyでcos z=(exp(-y)+exp y)/2はyとともにいくらでも大きくなる。この評価は実数zに限る。
+  target: |
+    ∀ (z : ℂ), Complex.cos z = (Complex.exp (Complex.I * z) + Complex.exp (-(Complex.I * z))) / 2
+  proof: |
+    by
+      intro z
+      rw [Complex.cos, mul_comm Complex.I z, neg_mul]
+- id: euler_formula
+  kind: textbook
+  level: 2
+  topic: 複素指数関数・オイラーの公式
+  statement: 実数θについて、exp(iθ)=cos θ+i sin θが成り立つ。
+  statement_en: For every real number θ, exp(iθ) = cos θ + i sin θ.
+  assumptions: [θは実数]
+  quantifiers: [任意の実数θ]
+  conclusion: exp(iθ)=cos θ+i sin θが成り立つ。
+  answer: |
+    exp wのべき級数にw=iθを代入する。i^{2m}=(-1)^m、i^{2m+1}=(-1)^m iに注意して偶数次と奇数次の項に分ける。偶数次の和はcos θのべき級数、奇数次の和はi sin θのべき級数になるので、等式が成り立つ。
+  strategy: Split the exponential series at iθ into even and odd degree terms.
+  sketch:
+    - "setup: Substitute iθ in the power series of exp."
+    - "case_split: Separate even and odd degree terms using powers of i."
+    - "derive: The even part is the series of cos θ and the odd part is i times the series of sin θ."
+    - "conclude: Adding them gives Euler's formula."
+  openmath: (forall (t) (-> (in t R) (= (exp (* complex_imaginary_unit t)) (+ (cos t) (* complex_imaginary_unit (sin t))))))
+  hard_negative:
+    statement: 複素数wについて|exp(iw)|=1が成り立つ。
+    reason: w=iではexp(iw)=exp(-1)で絶対値は1ではない。絶対値が1になるのはwが実数のときである。
+  target: |
+    ∀ (t : ℝ), Complex.exp (t * Complex.I) = (Real.cos t : ℂ) + (Real.sin t : ℂ) * Complex.I
+  proof: |
+    by
+      intro t
+      exact Complex.exp_ofReal_mul_I t
+- id: de_moivre_formula
+  kind: textbook
+  level: 2
+  topic: 複素数・ド・モアブルの公式
+  statement: 複素数zと自然数nについて、(cos z+i sin z)^n=cos nz+i sin nzが成り立つ。
+  statement_en: For every complex number z and natural number n, (cos z + i sin z)^n = cos(nz) + i sin(nz).
+  assumptions: [zは複素数, nは自然数]
+  quantifiers: [任意の複素数z, 任意の自然数n]
+  conclusion: (cos z+i sin z)^n=cos nz+i sin nzが成り立つ。
+  answer: |
+    複素数wについてexp(iw)=cos w+i sin wが成り立つ。w=zとすると左辺の底はexp(iz)に等しい。指数法則によりexp(iz)^n=exp(inz)であり、w=nzとするとこれはcos nz+i sin nzに等しい。
+  strategy: Rewrite the base as exp(iz) and apply the law of exponents.
+  sketch:
+    - "translate: cos z + i sin z = exp(iz)."
+    - "apply_theorem: exp(iz)^n = exp(inz) by the law of exponents."
+    - "conclude: exp(inz) = cos(nz) + i sin(nz)."
+  openmath: (forall (z n) (-> (and (in z C) (in n N)) (= (^ (+ (cos z) (* complex_imaginary_unit (sin z))) n) (+ (cos (* n z)) (* complex_imaginary_unit (sin (* n z)))))))
+  hard_negative:
+    statement: 複素数zと実数rについて(cos z+i sin z)^r=cos rz+i sin rzが成り立つ。
+    reason: 非整数のべきは主値の取り方に依存する。z=2π、r=1/2では左辺は1^{1/2}の主値1だが、右辺はcos π+i sin π=-1である。
+  target: |
+    ∀ (z : ℂ) (n : ℕ), (Complex.cos z + Complex.sin z * Complex.I) ^ n = Complex.cos (n * z) + Complex.sin (n * z) * Complex.I
+  proof: |
+    by
+      intro z n
+      exact Complex.cos_add_sin_mul_I_pow n z
+- id: root_of_unity_norm_one
+  kind: gap
+  level: 2
+  topic: 1のべき根・絶対値
+  statement: 正の整数nについてz^n=1を満たす複素数zの絶対値は1である。
+  statement_en: If z is a complex number with z^n = 1 for a positive integer n, then |z| = 1.
+  assumptions: [zは複素数, nは正の整数, z^n=1]
+  quantifiers: [任意の複素数z, 任意の正の整数n]
+  conclusion: "|z|=1が成り立つ。"
+  answer: |
+    絶対値は積を保つので|z|^n=|z^n|=1である。|z|は0以上の実数であり、nが正のとき非負の実数のn乗が1になるのはその実数が1の場合だけである。よって|z|=1である。
+  strategy: Take moduli in z^n = 1 and use injectivity of the n-th power on nonnegative reals.
+  sketch:
+    - "derive: Multiplicativity of the modulus gives |z|^n = 1."
+    - "apply_theorem: The n-th power is injective on nonnegative reals for n > 0."
+    - "conclude: Hence |z| = 1."
+  openmath: (forall (z n) (-> (and (in z C) (in n N) (> n 0) (= (^ z n) 1)) (= (abs z) 1)))
+  hard_negative:
+    statement: "|z|=1である複素数zは、ある正の整数nでz^n=1を満たす。"
+    reason: z=exp(i)は絶対値1だが、z^n=1とするとn/(2π)が整数となりπの無理性に反する。逆は成り立たない。
+  target: |
+    ∀ (z : ℂ) (n : ℕ), 0 < n → z ^ n = 1 → ‖z‖ = 1
+  proof: |
+    by
+      intro z n hn h
+      exact Complex.norm_eq_one_of_pow_eq_one h hn.ne'
+- id: root_of_unity_geometric_sum_zero
+  kind: gap
+  level: 2
+  topic: 1のべき根・和
+  statement: 複素数ζがζ^n=1かつζ≠1を満たすとき、1+ζ+…+ζ^{n-1}=0である。
+  statement_en: If a complex number ζ satisfies ζ^n = 1 and ζ ≠ 1, then 1 + ζ + ... + ζ^(n-1) = 0.
+  assumptions: [ζは複素数, nは自然数, ζ^n=1, ζ≠1]
+  quantifiers: [任意の複素数ζ, 任意の自然数n]
+  conclusion: 和1+ζ+…+ζ^{n-1}は0である。
+  answer: |
+    和をSとおくと、展開により(ζ-1)S=ζ^n-1が成り立つ。仮定から右辺は0である。ζ-1≠0なのでS=0である。なおn=0のときSは空和で0である。
+  strategy: Multiply the sum by ζ - 1 and cancel the nonzero factor.
+  sketch:
+    - "setup: Let S be the sum of ζ^k for 0 ≤ k < n."
+    - "derive: Telescoping gives S(ζ - 1) = ζ^n - 1 = 0."
+    - "conclude: Since ζ - 1 is nonzero, S = 0."
+  openmath: (forall (w n) (-> (and (in w C) (in n N) (= (^ w n) 1) (!= w 1)) (= (range_sum n (lambda (k) (^ w k))) 0)))
+  hard_negative:
+    statement: ζ^n=1を満たす任意の複素数ζについて1+ζ+…+ζ^{n-1}=0である。
+    reason: ζ=1では和がnとなる。ζ≠1の仮定は外せない。
+  target: |
+    ∀ (w : ℂ) (n : ℕ), w ^ n = 1 → w ≠ 1 → ∑ k ∈ Finset.range n, w ^ k = 0
+  proof: |
+    by
+      intro w n h hne
+      have hs := geom_sum_mul w n
+      rw [h, sub_self] at hs
+      exact (mul_eq_zero.mp hs).resolve_right (sub_ne_zero.mpr hne)
+- id: roots_of_unity_explicit
+  kind: textbook
+  level: 2
+  topic: 1のべき根・具体的な表示
+  statement: 正の整数nについて、z^n=1を満たす複素数zは、0≤k<nとなる整数kを用いてz=exp(2πik/n)と書けるものに一致する。
+  statement_en: For a positive integer n, the complex solutions of z^n = 1 are exactly the numbers exp(2πik/n) with 0 ≤ k < n.
+  assumptions: [nは正の整数, zは複素数]
+  quantifiers: [任意の正の整数n, 任意の複素数z, ある自然数k]
+  conclusion: z^n=1とz=exp(2πik/n)(0≤k<n)の成立は同値である。
+  answer: |
+    z=exp(2πik/n)ならば指数法則によりz^n=exp(2πik)=1である。逆にz^n=1とすると|z|=1なので、実数θによりz=exp(iθ)と書ける。するとexp(inθ)=1からnθ=2πm(mは整数)となる。mをnで割った余りをkとすると、周期性によりz=exp(2πik/n)かつ0≤k<nである。
+  strategy: Verify the forward direction by the law of exponents and reduce the argument modulo 2π for the converse.
+  sketch:
+    - "derive: If z = exp(2πik/n), then z^n = exp(2πik) = 1."
+    - "setup: Conversely, z^n = 1 gives |z| = 1, so z = exp(iθ) for a real θ."
+    - "derive: exp(inθ) = 1 gives nθ = 2πm for an integer m."
+    - "construct: Let k be the remainder of m modulo n."
+    - "conclude: Periodicity of exp gives z = exp(2πik/n) with 0 ≤ k < n."
+  openmath: (forall (n z) (-> (and (in n N) (> n 0) (in z C)) (<-> (= (^ z n) 1) (exists (k) (and (in k N) (< k n) (= z (exp (* 2 (* pi_constant (* complex_imaginary_unit (/ k n)))))))))))
+  hard_negative:
+    statement: z^n=1の複素数解はz=1とz=-1だけである。
+    reason: n=4ではz=iも解である。実数解だけを考えた場合の主張であり、複素数解は全部でn個ある。
+  target: |
+    ∀ (n : ℕ), 0 < n → ∀ z : ℂ, z ^ n = 1 ↔ ∃ k : ℕ, k < n ∧ z = Complex.exp (2 * Real.pi * Complex.I * (k / n))
+  proof: |
+    by
+      intro n hn z
+      haveI : NeZero n := ⟨hn.ne'⟩
+      constructor
+      · intro h
+        have hz : z ≠ 0 := by
+          rintro rfl
+          rw [zero_pow hn.ne'] at h
+          exact zero_ne_one h
+        have hm : Units.mk0 z hz ∈ rootsOfUnity n ℂ := by
+          rw [mem_rootsOfUnity']
+          simpa using h
+        obtain ⟨k, hk, he⟩ := (Complex.mem_rootsOfUnity n _).1 hm
+        exact ⟨k, hk, by simpa using he.symm⟩
+      · rintro ⟨k, _, rfl⟩
+        rw [← Complex.exp_nat_mul]
+        have hn' : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn.ne'
+        have he : (n : ℂ) * (2 * Real.pi * Complex.I * (k / n)) = (k : ℤ) * (2 * Real.pi * Complex.I) := by
+          push_cast
+          field_simp
+        rw [he, Complex.exp_eq_one_iff]
+        exact ⟨k, rfl⟩
+- id: polar_form
+  kind: gap
+  level: 2
+  topic: 複素数・極形式
+  statement: 複素数zは、絶対値と偏角の主値を用いてz=|z|exp(i Arg z)と表される。
+  statement_en: Every complex number z satisfies z = |z| exp(i Arg z), where Arg is the principal argument.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: z=|z|exp(i Arg z)が成り立つ。
+  answer: |
+    z=0なら|z|=0なので、Arg 0の値によらず両辺は0である。z≠0のとき、偏角の主値は(-π, π]の実数で、z/|z|=cos(Arg z)+i sin(Arg z)を満たすものとして定まる。オイラーの公式により右辺はexp(i Arg z)に等しい。両辺に|z|を掛けると等式を得る。
+  strategy: Treat z = 0 separately and otherwise use the defining property of the principal argument with Euler's formula.
+  sketch:
+    - "case_split: If z = 0 both sides are 0."
+    - "setup: For z ≠ 0 the unit vector z/|z| equals cos(Arg z) + i sin(Arg z)."
+    - "apply_theorem: Euler's formula rewrites this as exp(i Arg z)."
+    - "conclude: Multiply by |z|."
+  openmath: (forall (z) (-> (in z C) (= z (* (abs z) (exp (* complex_imaginary_unit (principal_arg z)))))))
+  hard_negative:
+    statement: 実数r>0とθについてz=r exp(iθ)ならばArg z=θである。
+    reason: θ=3πのときArg z=πとなる。偏角の主値に一致するのはθが(-π, π]にあるときに限る。
+  target: |
+    ∀ (z : ℂ), ((‖z‖ : ℝ) : ℂ) * Complex.exp ((Complex.arg z : ℂ) * Complex.I) = z
+  proof: |
+    by
+      intro z
+      exact Complex.norm_mul_exp_arg_mul_I z
+- id: exp_principal_log
+  kind: gap
+  level: 2
+  topic: 複素対数・指数関数との関係
+  statement: 0でない複素数zについて、exp(Log z)=zが成り立つ。ここでLogは対数の主値である。
+  statement_en: For every nonzero complex number z, exp(Log z) = z, where Log is the principal logarithm.
+  assumptions: [zは0でない複素数]
+  quantifiers: [任意の0でない複素数z]
+  conclusion: exp(Log z)=zが成り立つ。
+  answer: |
+    対数の主値はLog z=ln|z|+i Arg zで定義される。指数法則よりexp(Log z)=exp(ln|z|)exp(i Arg z)=|z|exp(i Arg z)となる。これは極形式によりzに等しい。z≠0はln|z|が意味を持つために必要である。
+  strategy: Expand the definition of the principal logarithm and use the polar form.
+  sketch:
+    - "setup: Log z = ln|z| + i Arg z, which makes sense because z ≠ 0."
+    - "derive: exp(Log z) = |z| exp(i Arg z) by the law of exponents."
+    - "conclude: The polar form gives exp(Log z) = z."
+  openmath: (forall (z) (-> (and (in z C) (!= z 0)) (= (exp (principal_log z)) z)))
+  hard_negative:
+    statement: 任意の複素数wについてLog(exp w)=wが成り立つ。
+    reason: w=2πiではexp w=1でLog 1=0である。これが成り立つのはIm wが(-π, π]にあるときに限る。
+  target: |
+    ∀ (z : ℂ), z ≠ 0 → Complex.exp (Complex.log z) = z
+  proof: |
+    by
+      intro z hz
+      exact Complex.exp_log hz
+- id: principal_log_exp
+  kind: gap
+  level: 2
+  topic: 複素対数・主値の範囲
+  statement: 複素数zの虚部が-π<Im z≤πを満たすとき、Log(exp z)=zが成り立つ。
+  statement_en: If a complex number z satisfies -π < Im z ≤ π, then Log(exp z) = z.
+  assumptions: [zは複素数, -π<Im z≤π]
+  quantifiers: [任意の複素数z]
+  conclusion: Log(exp z)=zが成り立つ。
+  answer: |
+    z=x+iyとするとexp z=exp x·exp(iy)であり、|exp z|=exp xとなる。yが(-π, π]にあるのでArg(exp z)=yである。したがってLog(exp z)=ln(exp x)+iy=x+iy=zである。
+  strategy: Identify the modulus and the principal argument of exp z.
+  sketch:
+    - "setup: Write z = x + iy, so |exp z| = exp x."
+    - "derive: Since y lies in (-π, π], Arg(exp z) = y."
+    - "conclude: Log(exp z) = x + iy = z."
+  openmath: (forall (z) (-> (and (in z C) (< (neg pi_constant) (imag_part z)) (<= (imag_part z) pi_constant)) (= (principal_log (exp z)) z)))
+  hard_negative:
+    statement: 任意の複素数z, wについてLog(zw)=Log z+Log wが成り立つ。
+    reason: z=w=-1ではLog(zw)=0だが、Log z+Log w=2πiである。偏角の和が(-π, π]に入らないと成り立たない。
+  target: |
+    ∀ (z : ℂ), -Real.pi < z.im → z.im ≤ Real.pi → Complex.log (Complex.exp z) = z
+  proof: |
+    by
+      intro z h1 h2
+      exact Complex.log_exp h1 h2
+- id: principal_log_derivative
+  kind: gap
+  level: 2
+  topic: 複素対数・微分
+  statement: 複素数zが0以下の実数でないとき、対数の主値Logはzで複素微分可能で、微分係数は1/zである。
+  statement_en: If a complex number z is not a nonpositive real number, the principal logarithm is complex differentiable at z with derivative 1/z.
+  assumptions: [zは複素数, Re z>0またはIm z≠0]
+  quantifiers: [任意の複素数z]
+  conclusion: Logのzでの微分係数は1/zである。
+  answer: |
+    この範囲ではLogは連続であり、exp(Log w)=wを満たす。expの微分係数はexp自身で0にならないので、逆関数の微分公式が使える。よってLogのzでの微分係数は1/exp(Log z)=1/zである。
+  strategy: Apply the inverse function rule to exp on the slit plane, where Log is a continuous inverse.
+  sketch:
+    - "setup: On the slit plane Log is continuous and is a right inverse of exp."
+    - "derive: The derivative of exp at Log z is exp(Log z) = z, which is nonzero."
+    - "apply_theorem: The inverse function rule gives a derivative of 1/z at z."
+    - "conclude: Hence Log has derivative 1/z at z."
+  openmath: (forall (z) (-> (and (in z C) (or (> (real_part z) 0) (!= (imag_part z) 0))) (has_complex_deriv_at principal_log_fn (/ 1 z) z)))
+  hard_negative:
+    statement: Logは0でない任意の複素数で微分可能である。
+    reason: 負の実軸上ではArgが±πの間で跳ぶのでLogは連続ですらない。微分可能性の主張には負の実軸を除く必要がある。
+  target: |
+    ∀ (z : ℂ), (0 < z.re ∨ z.im ≠ 0) → HasDerivAt Complex.log z⁻¹ z
+  proof: |
+    by
+      intro z hz
+      exact (Complex.hasStrictDerivAt_log (Complex.mem_slitPlane_iff.mpr hz)).hasDerivAt
+- id: cauchy_riemann_necessary
+  kind: textbook
+  level: 2
+  topic: 複素微分・コーシー・リーマン方程式
+  statement: f=u+ivがz=x+iyで複素微分可能で微分係数がf'(z)ならば、uとvはそこで偏微分可能で、u_x=v_y=Re f'(z)、u_y=-v_x=-Im f'(z)が成り立つ。
+  statement_en: If f = u + iv has complex derivative f'(z) at z = x + iy, then u and v have partial derivatives there with u_x = v_y = Re f'(z) and u_y = -v_x = -Im f'(z).
+  assumptions: [fは複素関数, x+iyでの複素微分係数がf'である]
+  quantifiers: [任意の関数f, 任意の実数x、y, 任意の複素数f']
+  conclusion: "u_x=v_y=Re f'、u_y=-v_x=-Im f'が成り立つ。"
+  answer: |
+    f(z+h)-f(z)をhで割った商はh→0で方向によらずf'(z)に近づく。hを実数に制限するとf_x=f'(z)、h=it(tは実数)に制限するとf_y=if'(z)を得る。f'(z)=a+ibとすると、実部と虚部を比べてu_x=a、v_x=b、u_y=-b、v_y=aとなる。これが求める等式である。
+  strategy: Restrict the difference quotient to the real and imaginary directions and compare real and imaginary parts.
+  sketch:
+    - "setup: Write f'(z) = a + ib."
+    - "derive: Restricting h to real values gives f_x = f'(z)."
+    - "derive: Restricting h to imaginary values gives f_y = i f'(z)."
+    - "translate: Taking real and imaginary parts gives u_x = a, v_x = b, u_y = -b and v_y = a."
+    - "conclude: Hence u_x = v_y and u_y = -v_x."
+  openmath: (forall (f d x y) (-> (and (in x R) (in y R) (has_complex_deriv_at f d (+ x (* complex_imaginary_unit y)))) (and (has_partial_x (re_component f) (real_part d) x y) (has_partial_y (im_component f) (real_part d) x y) (has_partial_y (re_component f) (neg (imag_part d)) x y) (has_partial_x (im_component f) (imag_part d) x y))))
+  hard_negative:
+    statement: uとvが1点で偏微分可能でコーシー・リーマン方程式を満たせば、fはその点で複素微分可能である。
+    reason: f(x+iy)=√|xy|は原点でu_x=u_y=v_x=v_y=0だが複素微分可能でない。実全微分可能性が必要である。
+  target: |
+    ∀ (f : ℂ → ℂ) (x y : ℝ) (d : ℂ), HasDerivAt f d (x + y * Complex.I) → HasDerivAt (fun s : ℝ => (f (s + y * Complex.I)).re) d.re x ∧ HasDerivAt (fun t : ℝ => (f (x + t * Complex.I)).im) d.re y ∧ HasDerivAt (fun t : ℝ => (f (x + t * Complex.I)).re) (-d.im) y ∧ HasDerivAt (fun s : ℝ => (f (s + y * Complex.I)).im) d.im x
+  proof: |
+    by
+      intro f x y d h
+      have h1 : HasDerivAt (fun s : ℝ => f (s + y * Complex.I)) d x :=
+        (h.comp_add_const (x : ℂ) (y * Complex.I)).comp_ofReal
+      have hin : HasDerivAt (fun w : ℂ => (x : ℂ) + w * Complex.I) Complex.I (y : ℂ) := by
+        simpa using ((hasDerivAt_id (y : ℂ)).mul_const Complex.I).const_add (x : ℂ)
+      have h2' : HasDerivAt (fun w : ℂ => f ((x : ℂ) + w * Complex.I)) (d * Complex.I) (y : ℂ) :=
+        HasDerivAt.comp (y : ℂ) h hin
+      have h2 : HasDerivAt (fun t : ℝ => f (x + t * Complex.I)) (d * Complex.I) y := h2'.comp_ofReal
+      have a1 := Complex.reCLM.hasFDerivAt.comp_hasDerivAt x h1
+      have a2 := Complex.imCLM.hasFDerivAt.comp_hasDerivAt y h2
+      have a3 := Complex.reCLM.hasFDerivAt.comp_hasDerivAt y h2
+      have a4 := Complex.imCLM.hasFDerivAt.comp_hasDerivAt x h1
+      have e1 : (d * Complex.I).im = d.re := by simp
+      have e2 : (d * Complex.I).re = -d.im := by simp
+      refine ⟨a1, ?_, ?_, a4⟩
+      · rw [← e1]
+        exact a2
+      · rw [← e2]
+        exact a3
+- id: cauchy_riemann_sufficient
+  kind: textbook
+  level: 3
+  topic: 複素微分・コーシー・リーマン方程式
+  statement: 複素関数fがzで複素微分可能であることは、fがzで実全微分可能で、全微分Df(z)がDf(z)(i)=i·Df(z)(1)を満たすことと同値である。
+  statement_en: A function f on the complex plane is complex differentiable at z if and only if it is real differentiable at z and its real differential satisfies Df(z)(i) = i·Df(z)(1).
+  assumptions: [fは複素関数, zは複素数]
+  quantifiers: [任意の関数f, 任意の複素数z]
+  conclusion: 複素微分可能性は、実全微分可能性とDf(z)(i)=i·Df(z)(1)の組と同値である。
+  answer: |
+    複素微分可能ならば、全微分はh↦f'(z)hであり、複素線形なのでDf(z)(i)=i·Df(z)(1)となる。逆に、実線形写像Lが条件L(i)=iL(1)を満たすとき、h=a+ibに対してL(h)=aL(1)+bL(i)=(a+ib)L(1)=hL(1)である。よってf(z+h)-f(z)=hL(1)+o(|h|)となり、fはzで複素微分可能で微分係数はL(1)である。
+  strategy: Show that the real linear differential is complex linear exactly under the stated condition.
+  sketch:
+    - "derive: A complex derivative makes the differential multiplication by f'(z), which is complex linear."
+    - "setup: Conversely let L be the real differential with L(i) = iL(1)."
+    - "derive: For h = a + ib, linearity gives L(h) = hL(1)."
+    - "translate: The real differentiability expansion becomes f(z+h) - f(z) = hL(1) + o(|h|)."
+    - "conclude: Hence f is complex differentiable with derivative L(1)."
+  openmath: (forall (f z) (-> (in z C) (<-> (holomorphic_at f z) (and (real_differentiable_at f z) (= (real_differential f z complex_imaginary_unit) (* complex_imaginary_unit (real_differential f z 1)))))))
+  hard_negative:
+    statement: 実全微分可能な複素関数は複素微分可能である。
+    reason: f(z)=conj(z)は実線形なので実全微分可能だが、L(i)=-iでiL(1)=iと一致せず、複素微分可能でない。
+  target: |
+    ∀ (f : ℂ → ℂ) (z : ℂ), DifferentiableAt ℂ f z ↔ DifferentiableAt ℝ f z ∧ fderiv ℝ f z Complex.I = Complex.I * fderiv ℝ f z 1
+  proof: |
+    by
+      intro f z
+      simpa [smul_eq_mul] using (differentiableAt_complex_iff_differentiableAt_real (f := f) (x := z))
+- id: conj_not_complex_differentiable
+  kind: gap
+  level: 2
+  topic: 複素微分・反例
+  statement: 共役写像z↦conj(z)はどの点でも複素微分可能でない。
+  statement_en: The conjugation map z ↦ conj(z) is not complex differentiable at any point.
+  assumptions: [zは複素数]
+  quantifiers: [任意の複素数z]
+  conclusion: 共役写像はzで複素微分可能でない。
+  answer: |
+    差分商は(conj(z+h)-conj(z))/h=conj(h)/hである。hを実数として0に近づけると値は常に1である。h=it(tは実数)として0に近づけると値は常に-1である。極限が方向によって異なるので、差分商はh→0で収束しない。
+  strategy: Compute the difference quotient along the real and imaginary directions.
+  sketch:
+    - "setup: The difference quotient at z equals conj(h)/h."
+    - "derive: Along real h it is identically 1."
+    - "derive: Along imaginary h it is identically -1."
+    - "conclude: The limit does not exist, so conjugation is not complex differentiable at z."
+  openmath: (forall (f z) (-> (and (in z C) (forall (w) (= (fn_value f w) (complex_conj w)))) (not (holomorphic_at f z))))
+  hard_negative:
+    statement: 共役写像は連続でないので複素微分可能でない。
+    reason: "|conj(z)-conj(w)|=|z-w|より共役写像は連続である。微分不可能の理由は連続性ではなく、差分商の方向依存性である。"
+  target: |
+    ∀ (z : ℂ), ¬ DifferentiableAt ℂ (fun w : ℂ => (starRingEnd ℂ) w) z
+  proof: |
+    by
+      intro z h
+      have h1 := h.hasDerivAt.complexToReal_fderiv
+      have h2 : HasFDerivAt (fun w : ℂ => (starRingEnd ℂ) w) (Complex.conjCLE : ℂ →L[ℝ] ℂ) z :=
+        Complex.conjCLE.hasFDerivAt
+      have h3 := h1.unique h2
+      have a := congrArg (fun L : ℂ →L[ℝ] ℂ => L 1) h3
+      have b := congrArg (fun L : ℂ →L[ℝ] ℂ => L Complex.I) h3
+      simp at a b
+      rw [a] at b
+      have c := congrArg Complex.im b
+      norm_num at c
+- id: const_of_zero_complex_derivative
+  kind: gap
+  level: 2
+  topic: 正則関数・導関数と定数
+  statement: 連結開集合U上で正則な関数fの導関数がU上で恒等的に0ならば、fはU上で定数である。
+  statement_en: If f is holomorphic on a connected open set U and f' vanishes identically on U, then f is constant on U.
+  assumptions: [Uは連結開集合, fはU上で正則, U上でf'=0]
+  quantifiers: [任意の関数f, 任意の集合U, 任意のz、w∈U]
+  conclusion: U上でf(z)=f(w)が成り立つ。
+  answer: |
+    点aの周りの円板Dに含まれる点bについて、線分に沿った微分積分学の基本定理からf(b)-f(a)=(b-a)∫_0^1 f'(a+t(b-a))dt=0である。よってfは局所定数である。z∈Uを固定すると、{w∈U|f(w)=f(z)}はUの中で開かつ閉で空でない。Uは連結なのでこの集合はU全体である。
+  strategy: Show that f is locally constant by integrating along segments and then use connectedness.
+  sketch:
+    - "derive: On a disc in U, integrating f' along a segment shows that f is constant on the disc."
+    - "setup: Fix z in U and consider the level set of f through z."
+    - "derive: The level set is open by the local step and closed in U by continuity."
+    - "conclude: Connectedness makes the level set all of U."
+  openmath: (forall (f U z w) (-> (and (open_set U) (connected_set U) (holomorphic_on f U) (forall (a) (-> (in a U) (= (complex_deriv f a) 0))) (in z U) (in w U)) (= (fn_value f z) (fn_value f w))))
+  hard_negative:
+    statement: 開集合U上で正則な関数の導関数が0ならば、fはU上で定数である。
+    reason: Uが互いに素な2つの円板で、各円板上で異なる定数を取る関数が反例である。Uの連結性が必要である。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ), IsOpen U → IsPreconnected U → DifferentiableOn ℂ f U → (∀ a ∈ U, deriv f a = 0) → ∀ z ∈ U, ∀ w ∈ U, f z = f w
+  proof: |
+    by
+      intro f U hU hC hf h0 z hz w hw
+      exact hU.is_const_of_deriv_eq_zero hC hf (fun a ha => by simpa using h0 a ha) hz hw
+- id: circle_integral_simple_pole
+  kind: gap
+  level: 2
+  topic: 周回積分・1位の極の留数
+  statement: wが円板|z-c|<Rの内部の点ならば、円周|z-c|=Rを正の向きに一周する積分について∮dz/(z-w)=2πiが成り立つ。
+  statement_en: If w lies in the open disc |z-c| < R, then the integral of 1/(z-w) over the positively oriented circle |z-c| = R equals 2πi.
+  assumptions: [wは円板|z-c|<Rの点]
+  quantifiers: [任意の複素数c、w, 任意の実数R]
+  conclusion: ∮dz/(z-w)=2πiが成り立つ。
+  answer: |
+    円周上では|w-c|/|z-c|=|w-c|/R<1なので、1/(z-w)=Σ_{n≥0}(w-c)^n/(z-c)^{n+1}は円周上で一様収束する。項別積分すると、z=c+Re^{iθ}の代入により∮dz/(z-c)=∫_0^{2π}i dθ=2πiであり、n≥1の項∮(z-c)^{-n-1}dzは0である。したがって積分の値は2πiである。
+  strategy: Expand 1/(z-w) as a geometric series around c, integrate termwise and evaluate each term by parametrization.
+  sketch:
+    - "derive: On the circle, |w-c|/|z-c| < 1 gives a uniformly convergent geometric series for 1/(z-w)."
+    - "apply_theorem: Uniform convergence allows termwise integration."
+    - "derive: Parametrizing z = c + Re^(iθ) gives 2πi for the term n = 0."
+    - "derive: The terms with n ≥ 1 have primitives on the circle and integrate to 0."
+    - "conclude: The integral equals 2πi."
+  openmath: (forall (c w R) (-> (in w (open_disc c R)) (= (circle_integral (lambda (z) (/ 1 (- z w))) c R) (* 2 (* pi_constant complex_imaginary_unit)))))
+  hard_negative:
+    statement: wが円板の外部にあっても∮dz/(z-w)=2πiである。
+    reason: wが閉円板の外部にあると1/(z-w)は閉円板の近傍で正則なので、積分は0になる。
+  target: |
+    ∀ (c w : ℂ) (R : ℝ), w ∈ Metric.ball c R → circleIntegral (fun z => (z - w)⁻¹) c R = 2 * Real.pi * Complex.I
+  proof: |
+    by
+      intro c w R hw
+      exact circleIntegral.integral_sub_inv_of_mem_ball hw
+- id: circle_integral_zpow_vanishes
+  kind: gap
+  level: 2
+  topic: 周回積分・整数べき
+  statement: 整数n≠-1と、円周|z-c|=R(R>0)の上にない点wについて、∮(z-w)^n dz=0である。
+  statement_en: For an integer n ≠ -1, R > 0 and a point w not on the circle |z-c| = R, the integral of (z-w)^n over that circle is 0.
+  assumptions: [nは整数でn≠-1, R>0, wは円周上にない]
+  quantifiers: [任意の整数n, 任意の複素数c、w, 任意の実数R]
+  conclusion: ∮(z-w)^n dz=0が成り立つ。
+  answer: |
+    wは円周上にないので、円周の近くの各点で(z-w)^{n+1}/(n+1)は正則であり、導関数は(z-w)^nである。n≠-1なのでこの原始関数は1価に定まる。閉曲線に沿う積分は、原始関数の始点と終点での値の差に等しい。始点と終点は一致するので積分は0である。
+  strategy: Exhibit an explicit primitive near the circle and use that the path is closed.
+  sketch:
+    - "construct: Since n ≠ -1, (z-w)^(n+1)/(n+1) is a single-valued function."
+    - "derive: Since w is off the circle, it is a primitive of (z-w)^n near the circle."
+    - "apply_theorem: The integral along a path equals the difference of the primitive at the endpoints."
+    - "conclude: The circle is closed, so the integral is 0."
+  openmath: (forall (n c w R) (-> (and (in n Z) (!= n (neg 1)) (> R 0) (notin w (circle_set c R))) (= (circle_integral (lambda (z) (^ (- z w) n)) c R) 0)))
+  hard_negative:
+    statement: 任意の整数nについて∮(z-w)^n dz=0である。
+    reason: n=-1でwが円の内部にあると積分は2πiである。n=-1では1価の原始関数が取れない。
+  target: |
+    ∀ (n : ℤ) (c w : ℂ) (R : ℝ), n ≠ -1 → 0 < R → w ∉ Metric.sphere c R → circleIntegral (fun z => (z - w) ^ n) c R = 0
+  proof: |
+    by
+      intro n c w R hn _ _
+      exact circleIntegral.integral_sub_zpow_of_ne hn c w R
+- id: circle_integral_ml_bound
+  kind: gap
+  level: 2
+  topic: 周回積分・長さと最大値による評価
+  statement: 円周|z-c|=R上で連続な関数fが|f|≤Cを満たすならば、|∮f(z)dz|≤2πRCである。
+  statement_en: If f is continuous on the circle |z-c| = R, R ≥ 0, and |f| ≤ C on it, then the modulus of the integral of f over the circle is at most 2πRC.
+  assumptions: [R≥0, fは円周上で連続, 円周上で|f|≤C]
+  quantifiers: [任意の関数f, 任意の複素数c, 任意の実数R、C]
+  conclusion: "|∮f(z)dz|≤2πRCが成り立つ。"
+  answer: |
+    z=c+Re^{iθ}と置くと、∮f(z)dz=∫_0^{2π}f(c+Re^{iθ})iRe^{iθ}dθである。積分の絶対値は絶対値の積分以下で、被積分関数の絶対値はCR以下である。積分区間の長さが2πなので、評価2πRCを得る。
+  strategy: Parametrize the circle and bound the modulus of the integrand.
+  sketch:
+    - "translate: Parametrize the circle by z = c + Re^(iθ)."
+    - "derive: The integrand has modulus at most CR."
+    - "apply_theorem: The modulus of an integral is at most the integral of the modulus."
+    - "conclude: Integrating over an interval of length 2π gives 2πRC."
+  openmath: (forall (f c R B) (-> (and (>= R 0) (continuous_on_set f (circle_set c R)) (forall (z) (-> (in z (circle_set c R)) (<= (abs (fn_value f z)) B)))) (<= (abs (circle_integral (lambda (z) (fn_value f z)) c R)) (* 2 (* pi_constant (* R B))))))
+  hard_negative:
+    statement: 円周上で|f|≤Cならば|∮f(z)dz|≤Cである。
+    reason: f(z)=1/(z-c)、R=1、C=1では積分の絶対値が2πとなる。円周の長さ2πRの因子は省けない。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ) (R C : ℝ), 0 ≤ R → ContinuousOn f (Metric.sphere c R) → (∀ z ∈ Metric.sphere c R, ‖f z‖ ≤ C) → ‖circleIntegral f c R‖ ≤ 2 * Real.pi * R * C
+  proof: |
+    by
+      intro f c R C hR _ hf
+      exact circleIntegral.norm_integral_le_of_norm_le_const hR hf
+- id: cauchy_integral_theorem_disc
+  kind: named
+  level: 3
+  topic: コーシーの積分定理・円板
+  statement: 開円板で正則かつ閉円板で連続な関数の、境界の円周に沿う積分は0である(円板上のコーシーの積分定理)。
+  statement_en: "Cauchy's integral theorem on a disc: if f is holomorphic on an open disc of radius R > 0 and continuous on its closure, then the integral of f over the boundary circle is 0."
+  assumptions: [R>0, fは開円板で正則, fは閉円板で連続]
+  quantifiers: [任意の関数f, 任意の複素数c, 任意の実数R]
+  conclusion: ∮f(z)dz=0が成り立つ。
+  answer: |
+    概略を述べる。まずグルサの補題として、正則関数の長方形の周に沿う積分が0であることを、長方形の4等分の繰り返しと複素微分の定義で示す。次に、中心から長方形の辺に沿って積分して円板上の原始関数を作る。原始関数を持つので、半径r<Rの円周に沿う積分は0である。最後に閉円板上の一様連続性によりr→Rの極限を取ると、半径Rの円周に沿う積分も0である。
+  strategy: Use Goursat's lemma to build a primitive on the open disc and pass to the boundary by continuity.
+  sketch:
+    - "apply_theorem: Goursat's lemma gives vanishing integrals over rectangles in the disc."
+    - "construct: Integrating along horizontal and vertical segments from the centre defines a primitive."
+    - "derive: The integral over each smaller circle of radius r < R is 0 because a primitive exists."
+    - "derive: Uniform continuity on the closed disc shows that these integrals converge as r tends to R."
+    - "conclude: The integral over the circle of radius R is 0."
+  openmath: (forall (f c R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R))) (= (circle_integral (lambda (z) (fn_value f z)) c R) 0)))
+  hard_negative:
+    statement: 円周の上で連続な関数の周回積分は常に0である。
+    reason: f(z)=1/zは単位円周上で連続だが積分は2πiである。円板の内部での正則性が必要である。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ) (R : ℝ), 0 < R → DifferentiableOn ℂ f (Metric.ball c R) → ContinuousOn f (Metric.closedBall c R) → circleIntegral f c R = 0
+  proof: |
+    by
+      intro f c R hR hd hc
+      have h : DiffContOnCl ℂ f (Metric.ball c R) := ⟨hd, by rwa [closure_ball c hR.ne']⟩
+      exact h.circleIntegral_eq_zero hR.le
+- id: cauchy_integral_formula_disc
+  kind: named
+  level: 3
+  topic: コーシーの積分公式・円板
+  statement: 開円板で正則かつ閉円板で連続な関数fと円板内の点wについて、∮f(z)/(z-w)dz=2πi f(w)が成り立つ(コーシーの積分公式)。
+  statement_en: "Cauchy's integral formula: if f is holomorphic on an open disc and continuous on its closure, then for w in the open disc, the integral of f(z)/(z-w) over the boundary circle equals 2πi f(w)."
+  assumptions: [R>0, fは開円板で正則, fは閉円板で連続, wは開円板の点]
+  quantifiers: [任意の関数f, 任意の複素数c、w, 任意の実数R]
+  conclusion: ∮f(z)/(z-w)dz=2πi f(w)が成り立つ。
+  answer: |
+    概略を述べる。g(z)=(f(z)-f(w))/(z-w)、g(w)=f'(w)とおくと、gは閉円板で連続で、開円板のw以外で正則である。1点を除いて正則な連続関数にもコーシーの積分定理が成り立つので、∮g(z)dz=0となる。よって∮f(z)/(z-w)dz=f(w)∮dz/(z-w)である。この積分は2πiなので公式を得る。
+  strategy: Apply Cauchy's theorem to the difference quotient at w and evaluate the remaining simple pole integral.
+  sketch:
+    - "construct: Define g as the difference quotient of f at w, with g(w) = f'(w)."
+    - "derive: g is continuous on the closed disc and holomorphic off the single point w."
+    - "apply_theorem: Cauchy's integral theorem, which tolerates one exceptional point, gives that the integral of g is 0."
+    - "derive: Hence the integral of f(z)/(z-w) equals f(w) times the integral of 1/(z-w)."
+    - "conclude: The latter integral equals 2πi, which gives the formula."
+  openmath: (forall (f c w R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R)) (in w (open_disc c R))) (= (circle_integral (lambda (z) (/ (fn_value f z) (- z w))) c R) (* 2 (* pi_constant (* complex_imaginary_unit (fn_value f w)))))))
+  hard_negative:
+    statement: 閉円板の外の点wについても∮f(z)/(z-w)dz=2πi f(w)が成り立つ。
+    reason: wが閉円板の外にあると被積分関数は閉円板の近くで正則になり、積分は0である。f(w)≠0ならば公式と一致しない。
+  target: |
+    ∀ (f : ℂ → ℂ) (c w : ℂ) (R : ℝ), 0 < R → DifferentiableOn ℂ f (Metric.ball c R) → ContinuousOn f (Metric.closedBall c R) → w ∈ Metric.ball c R → circleIntegral (fun z => (z - w)⁻¹ * f z) c R = 2 * Real.pi * Complex.I * f w
+  proof: |
+    by
+      intro f c w R hR hd hc hw
+      have h : DiffContOnCl ℂ f (Metric.ball c R) := ⟨hd, by rwa [closure_ball c hR.ne']⟩
+      simpa only [smul_eq_mul] using h.circleIntegral_sub_inv_smul hw
+- id: cauchy_derivative_formula
+  kind: gap
+  level: 3
+  topic: コーシーの積分公式・導関数
+  statement: 閉円板を含む開集合で正則な関数fと円板内の点wについて、f'(w)=(1/2πi)∮f(z)/(z-w)^2 dzが成り立つ。
+  statement_en: If f is holomorphic on an open set containing the closed disc of radius R about c and w lies in the open disc, then f'(w) = (1/(2πi)) times the integral over the circle of f(z)/(z-w)^2.
+  assumptions: [Uは開集合, 閉円板はUに含まれる, fはU上で正則, wは開円板の点]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の複素数c、w, 任意の実数R]
+  conclusion: "f'(w)=(1/2πi)∮f(z)/(z-w)^2 dzが成り立つ。"
+  answer: |
+    wに十分近いw+hについてコーシーの積分公式を差し引くと、(f(w+h)-f(w))/h=(1/2πi)∮f(z)/((z-w-h)(z-w))dzとなる。円周上でz-wとz-w-hの絶対値は正の数で下から押さえられ、fは有界である。よってh→0で被積分関数は円周上一様にf(z)/(z-w)^2へ収束する。積分と極限を交換して公式を得る。
+  strategy: Subtract Cauchy's formula at w + h and w, then pass to the limit uniformly on the circle.
+  sketch:
+    - "apply_theorem: Use Cauchy's integral formula at w + h and at w."
+    - "derive: The difference quotient equals the integral of f(z)/((z-w-h)(z-w)) divided by 2πi."
+    - "derive: The denominators are bounded below on the circle and f is bounded there."
+    - "derive: So the integrand converges uniformly to f(z)/(z-w)^2 as h tends to 0."
+    - "conclude: Interchanging limit and integral gives the formula."
+  openmath: (forall (f U c w R) (-> (and (open_set U) (subset (closed_disc c R) U) (holomorphic_on f U) (in w (open_disc c R))) (= (complex_deriv f w) (/ (circle_integral (lambda (z) (/ (fn_value f z) (^ (- z w) 2))) c R) (* 2 (* pi_constant complex_imaginary_unit))))))
+  hard_negative:
+    statement: f'(w)=(1/2πi)∮f(z)/(z-w)dzが成り立つ。
+    reason: この右辺はコーシーの積分公式によりf(w)である。導関数の公式ではz-wの指数が2になる。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (c w : ℂ) (R : ℝ), IsOpen U → Metric.closedBall c R ⊆ U → DifferentiableOn ℂ f U → w ∈ Metric.ball c R → deriv f w = (2 * Real.pi * Complex.I)⁻¹ * circleIntegral (fun z => ((z - w) ^ 2)⁻¹ * f z) c R
+  proof: |
+    by
+      intro f U c w R hU hc hf hw
+      have h := Complex.two_pi_I_inv_smul_circleIntegral_sub_sq_inv_smul_of_differentiable hU hc hf hw
+      simp only [smul_eq_mul] at h
+      exact h.symm
+- id: cauchy_estimate_iterated_derivative
+  kind: textbook
+  level: 3
+  topic: コーシーの評価式
+  statement: 開円板で正則かつ閉円板で連続な関数fが円周|z-c|=R上で|f|≤Cを満たすならば、自然数nについて|f^{(n)}(c)|≤n!C/R^nである。
+  statement_en: If f is holomorphic on the open disc of radius R > 0 about c, continuous on its closure and |f| ≤ C on the boundary circle, then |f^(n)(c)| ≤ n! C / R^n for every natural number n.
+  assumptions: [R>0, fは開円板で正則, fは閉円板で連続, 円周上で|f|≤C]
+  quantifiers: [任意の関数f, 任意の複素数c, 任意の実数R、C, 任意の自然数n]
+  conclusion: "|f^{(n)}(c)|≤n!C/R^nが成り立つ。"
+  answer: |
+    高階導関数についてのコーシーの積分公式からf^{(n)}(c)=(n!/2πi)∮f(z)/(z-c)^{n+1}dzである。円周上で被積分関数の絶対値はC/R^{n+1}以下で、円周の長さは2πRである。積分の評価を当てはめると|f^{(n)}(c)|≤(n!/2π)·2πR·C/R^{n+1}=n!C/R^nを得る。
+  strategy: Apply the length-times-maximum bound to Cauchy's formula for the n-th derivative.
+  sketch:
+    - "apply_theorem: Cauchy's formula expresses the n-th derivative as a circle integral."
+    - "derive: The integrand has modulus at most C/R^(n+1) on the circle."
+    - "apply_theorem: The length-times-maximum bound applies with length 2πR."
+    - "conclude: Simplifying gives n! C / R^n."
+  openmath: (forall (f c R B n) (-> (and (> R 0) (in n N) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R)) (forall (z) (-> (in z (circle_set c R)) (<= (abs (fn_value f z)) B)))) (<= (abs (iterated_complex_deriv n f c)) (/ (* (factorial n) B) (^ R n)))))
+  hard_negative:
+    statement: 同じ仮定のもとで円板内の任意の点wについて|f'(w)|≤C/Rである。
+    reason: f(z)=z^2をc=0, R=1で考えると、C=1だがw→1で|f'(w)|→2である。この評価は中心でのみ成り立ち、wでは距離R-|w-c|に依存する。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ) (R C : ℝ) (n : ℕ), 0 < R → DifferentiableOn ℂ f (Metric.ball c R) → ContinuousOn f (Metric.closedBall c R) → (∀ z ∈ Metric.sphere c R, ‖f z‖ ≤ C) → ‖iteratedDeriv n f c‖ ≤ n.factorial * C / R ^ n
+  proof: |
+    by
+      intro f c R C n hR hd hc hC
+      have h : DiffContOnCl ℂ f (Metric.ball c R) := ⟨hd, by rwa [closure_ball c hR.ne']⟩
+      exact Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le n hR h hC
+- id: holomorphic_mean_value_property
+  kind: gap
+  level: 3
+  topic: 正則関数・平均値の性質
+  statement: 開円板で正則かつ閉円板で連続な関数fについて、中心の値f(c)は円周上の平均(1/2π)∫_0^{2π}f(c+Re^{iθ})dθに等しい。
+  statement_en: If f is holomorphic on the open disc of radius R > 0 about c and continuous on its closure, then f(c) equals the mean (1/(2π)) times the integral over [0, 2π] of f(c + Re^(iθ)).
+  assumptions: [R>0, fは開円板で正則, fは閉円板で連続]
+  quantifiers: [任意の関数f, 任意の複素数c, 任意の実数R]
+  conclusion: f(c)は円周上のfの平均値に等しい。
+  answer: |
+    コーシーの積分公式をw=cに適用するとf(c)=(1/2πi)∮f(z)/(z-c)dzである。z=c+Re^{iθ}と置くとdz=iRe^{iθ}dθ、z-c=Re^{iθ}なので、右辺は(1/2π)∫_0^{2π}f(c+Re^{iθ})dθとなる。
+  strategy: Parametrize Cauchy's integral formula at the centre.
+  sketch:
+    - "apply_theorem: Cauchy's integral formula at the centre gives f(c) as a circle integral."
+    - "translate: Substitute z = c + Re^(iθ) in the integral."
+    - "derive: The factors iRe^(iθ) cancel against z - c and i."
+    - "conclude: This leaves the mean of f over the circle."
+  openmath: (forall (f c R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R))) (= (fn_value f c) (circle_mean f c R))))
+  hard_negative:
+    statement: 開円板で正則なfの円周上の平均は、円板内の任意の点wでの値f(w)に等しい。
+    reason: f(z)=zと中心0の円では平均は0だが、f(w)=wである。平均値と一致するのは中心の値である。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ) (R : ℝ), 0 < R → DifferentiableOn ℂ f (Metric.ball c R) → ContinuousOn f (Metric.closedBall c R) → ((2 * Real.pi)⁻¹ : ℝ) • ∫ t in (0 : ℝ)..(2 * Real.pi), f (c + R * Complex.exp (t * Complex.I)) = f c
+  proof: |
+    by
+      intro f c R hR hd hc
+      have h : DiffContOnCl ℂ f (Metric.ball c |R|) := by
+        rw [abs_of_pos hR]
+        exact ⟨hd, by rwa [closure_ball c hR.ne']⟩
+      exact h.circleAverage
+- id: liouville_theorem
+  kind: named
+  level: 3
+  topic: リウヴィルの定理
+  statement: 複素平面全体で正則な関数が有界ならば定数である(リウヴィルの定理)。
+  statement_en: "Liouville's theorem: a bounded function holomorphic on the whole complex plane is constant."
+  assumptions: [fは複素平面全体で正則, ある実数Mで全てのzについて|f(z)|≤M]
+  quantifiers: [任意の関数f, ある実数M, 任意の複素数z、w]
+  conclusion: f(z)=f(w)が全てのz, wで成り立つ。
+  answer: |
+    任意の点zと半径R>0についてコーシーの評価式を使うと|f'(z)|≤M/Rである。Rはいくらでも大きく取れるのでf'(z)=0である。よってfの導関数は恒等的に0であり、複素平面は連結だからfは定数である。
+  strategy: Let the radius in Cauchy's estimate tend to infinity to get f' = 0.
+  sketch:
+    - "setup: Fix z and let M bound |f| on the plane."
+    - "apply_theorem: Cauchy's estimate on a circle of radius R about z gives |f'(z)| ≤ M/R."
+    - "derive: Letting R tend to infinity gives f'(z) = 0 for every z."
+    - "conclude: A holomorphic function with zero derivative on the plane is constant."
+  openmath: (forall (f M) (-> (and (entire_function f) (forall (z) (<= (abs (fn_value f z)) M))) (forall (z w) (= (fn_value f z) (fn_value f w)))))
+  hard_negative:
+    statement: 実数直線上で微分可能かつ有界な関数は定数である。
+    reason: sin xは実数直線上で微分可能かつ有界だが定数でない。複素平面全体での正則性が必要である。sin zは複素平面上で有界でない。
+  target: |
+    ∀ (f : ℂ → ℂ) (M : ℝ), Differentiable ℂ f → (∀ z, ‖f z‖ ≤ M) → ∀ z w, f z = f w
+  proof: |
+    by
+      intro f M hf hM z w
+      refine hf.apply_eq_apply_of_bounded (isBounded_iff_forall_norm_le.mpr ⟨M, ?_⟩) z w
+      rintro _ ⟨x, rfl⟩
+      exact hM x
+- id: entire_constant_of_limit_at_infinity
+  kind: gap
+  level: 3
+  topic: 整関数・無限遠での極限
+  statement: 複素平面全体で正則な関数fが|z|→∞でf(z)→cとなるならば、fは定数cである。
+  statement_en: If f is holomorphic on the whole complex plane and f(z) tends to c as |z| tends to infinity, then f is identically c.
+  assumptions: [fは複素平面全体で正則, "|z|→∞でf(z)→c"]
+  quantifiers: [任意の関数f, 任意の複素数c、z]
+  conclusion: f(z)=cが全てのzで成り立つ。
+  answer: |
+    極限の仮定から、十分大きいRをとると|z|>Rで|f(z)-c|≤1である。閉円板|z|≤R上ではfは連続なので有界である。よってfは複素平面全体で有界であり、リウヴィルの定理により定数である。定数の極限はその定数だからf=cである。
+  strategy: Prove boundedness from the limit and compactness, then apply Liouville's theorem.
+  sketch:
+    - "derive: Outside a large disc, |f - c| ≤ 1."
+    - "derive: On the closed disc, f is bounded by continuity."
+    - "apply_theorem: f is bounded and entire, so Liouville's theorem makes it constant."
+    - "conclude: The limit at infinity identifies the constant as c."
+  openmath: (forall (f c z) (-> (and (entire_function f) (tends_to_at_infinity f c)) (= (fn_value f z) c)))
+  hard_negative:
+    statement: 複素平面全体で正則なfが正の実軸に沿ってcに収束すれば、fは定数である。
+    reason: f(z)=exp(-z)は正の実軸に沿って0に収束するが定数でない。全方向での極限が必要である。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ), Differentiable ℂ f → Filter.Tendsto f (Filter.cocompact ℂ) (nhds c) → ∀ z, f z = c
+  proof: |
+    by
+      intro f c hf hc z
+      exact hf.apply_eq_of_tendsto_cocompact z hc
+- id: entire_bounded_below_constant
+  kind: gap
+  level: 3
+  topic: 整関数・下からの評価
+  statement: 複素平面全体で正則な関数fについて、正の定数mで全てのzに|f(z)|≥mが成り立つならば、fは定数である。
+  statement_en: If f is holomorphic on the whole complex plane and |f(z)| ≥ m for all z with a constant m > 0, then f is constant.
+  assumptions: [fは複素平面全体で正則, m>0, 全てのzについて|f(z)|≥m]
+  quantifiers: [任意の関数f, 任意の正の実数m, 任意の複素数z、w]
+  conclusion: f(z)=f(w)が全てのz, wで成り立つ。
+  answer: |
+    仮定からfは零点を持たないので、g=1/fは複素平面全体で正則である。|g(z)|≤1/mよりgは有界であり、リウヴィルの定理により定数である。よってg(z)=g(w)となり、逆数を取るとf(z)=f(w)である。
+  strategy: Apply Liouville's theorem to the reciprocal of f.
+  sketch:
+    - "derive: The bound shows that f has no zeros."
+    - "construct: Hence g = 1/f is entire and bounded by 1/m."
+    - "apply_theorem: Liouville's theorem makes g constant."
+    - "conclude: Taking reciprocals, f is constant."
+  openmath: (forall (f m) (-> (and (entire_function f) (> m 0) (forall (z) (>= (abs (fn_value f z)) m))) (forall (z w) (= (fn_value f z) (fn_value f w)))))
+  hard_negative:
+    statement: 複素平面全体で正則なfが零点を持たなければ、fは定数である。
+    reason: exp zは零点を持たないが定数でない。|exp z|の下限は0で、正の下界がない。
+  target: |
+    ∀ (f : ℂ → ℂ) (m : ℝ), Differentiable ℂ f → 0 < m → (∀ z, m ≤ ‖f z‖) → ∀ z w, f z = f w
+  proof: |
+    by
+      intro f m hf hm hb z w
+      have hne : ∀ x, f x ≠ 0 := fun x h0 => by
+        have := hb x
+        rw [h0, norm_zero] at this
+        linarith
+      have hg : Differentiable ℂ (fun x => (f x)⁻¹) := hf.inv hne
+      have hbd : Bornology.IsBounded (Set.range (fun x => (f x)⁻¹)) := by
+        refine isBounded_iff_forall_norm_le.mpr ⟨m⁻¹, ?_⟩
+        rintro _ ⟨x, rfl⟩
+        rw [norm_inv]
+        exact inv_anti₀ hm (hb x)
+      exact inv_injective (hg.apply_eq_apply_of_bounded hbd z w)
+- id: fundamental_theorem_of_algebra
+  kind: named
+  level: 3
+  topic: 代数学の基本定理
+  statement: 次数が1以上の複素係数多項式は複素数の根を持つ(代数学の基本定理)。
+  statement_en: "The fundamental theorem of algebra: a complex polynomial of positive degree has a complex root."
+  assumptions: [pは複素係数多項式, pの次数は1以上]
+  quantifiers: [任意の多項式p, ある複素数z]
+  conclusion: p(z)=0となる複素数zが存在する。
+  answer: |
+    pが根を持たないと仮定する。すると1/pは複素平面全体で正則である。次数が1以上なので|z|→∞で|p(z)|→∞であり、1/p(z)→0となる。よって無限遠で極限を持つ整関数として1/pは定数0になるが、1/pは0の値を取らないので矛盾する。したがってpは根を持つ。
+  strategy: Assume no root and apply Liouville's theorem to 1/p.
+  sketch:
+    - "contradiction: Suppose that p has no complex root."
+    - "construct: Then 1/p is entire."
+    - "derive: Positive degree gives |p(z)| → ∞, so 1/p(z) → 0 as |z| → ∞."
+    - "apply_theorem: Liouville's theorem forces 1/p to be identically 0."
+    - "conclude: This is impossible, so p has a root."
+  openmath: (forall (p) (-> (and (complex_polynomial p) (>= (polynomial_degree p) 1)) (exists (z) (and (in z C) (= (poly_eval p z) 0)))))
+  hard_negative:
+    statement: 次数が1以上の実係数多項式は実数の根を持つ。
+    reason: x^2+1は実数の根を持たない。根の存在は複素数の範囲で保証される。
+  target: |
+    ∀ (p : Polynomial ℂ), 0 < p.degree → ∃ z : ℂ, p.IsRoot z
+  proof: |
+    by
+      intro p hp
+      exact Complex.exists_root hp
+
+- id: holomorphic_implies_analytic
+  kind: textbook
+  level: 3
+  topic: 正則関数・解析性
+  statement: 開集合U上で正則な関数は、U上で解析的である。すなわち各点の近くで収束べき級数の和として表される。
+  statement_en: A function holomorphic on an open set U is analytic on U, that is, near each point of U it is the sum of a convergent power series.
+  assumptions: [Uは開集合, fはU上で正則]
+  quantifiers: [任意の関数f, 任意の集合U]
+  conclusion: fはU上で解析的である。
+  answer: |
+    a∈Uに対し、閉円板|z-a|≤RがUに含まれるようにRをとる。|w-a|<Rのとき、コーシーの積分公式からf(w)=(1/2πi)∮f(z)/(z-w)dzである。円周上で1/(z-w)=Σ(w-a)^n/(z-a)^{n+1}は一様収束するので、項別積分するとf(w)=Σc_n(w-a)^nという収束べき級数が得られる。
+  strategy: Expand the Cauchy kernel into a geometric series on a circle around each point.
+  sketch:
+    - "setup: Choose a closed disc about a inside U."
+    - "apply_theorem: Cauchy's integral formula represents f(w) by a circle integral."
+    - "derive: The kernel 1/(z-w) is a uniformly convergent geometric series on the circle."
+    - "derive: Termwise integration gives a power series in w - a."
+    - "conclude: f is analytic near a."
+  openmath: (forall (f U) (-> (and (open_set U) (holomorphic_on f U)) (analytic_on f U)))
+  hard_negative:
+    statement: 実数全体で無限回微分可能な実関数は解析的である。
+    reason: x>0でexp(-1/x)、x≤0で0となる関数は無限回微分可能だが、原点でテイラー級数が0となり関数に一致しない。正則関数の性質は実関数では成り立たない。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ), IsOpen U → DifferentiableOn ℂ f U → AnalyticOnNhd ℂ f U
+  proof: |
+    by
+      intro f U hU hf
+      exact hf.analyticOnNhd hU
+- id: taylor_series_on_disc
+  kind: textbook
+  level: 3
+  topic: 正則関数・テイラー展開
+  statement: 開円板|z-c|<r上で正則な関数fは、その円板の各点zでf(z)=Σ_{n≥0}f^{(n)}(c)(z-c)^n/n!と展開される。
+  statement_en: If f is holomorphic on the open disc |z-c| < r, then at each z in the disc the Taylor series of f at c converges to f(z).
+  assumptions: [fは開円板|z-c|<rで正則, zはその円板の点]
+  quantifiers: [任意の関数f, 任意の複素数c、z, 任意の実数r]
+  conclusion: f(z)=Σf^{(n)}(c)(z-c)^n/n!が成り立つ。
+  answer: |
+    |z-c|<ρ<rとなるρをとる。半径ρの円周でコーシーの積分公式を使い、核を(z-c)のべきで展開して項別積分すると、f(z)=Σa_n(z-c)^nを得る。このときa_nはzによらず、べき級数を項別微分してz=cを代入するとa_n=f^{(n)}(c)/n!である。ρはrより小さい範囲で自由に取れるので、円板全体で展開が成り立つ。
+  strategy: Use Cauchy's formula on an intermediate circle to get a series and identify the coefficients by termwise differentiation.
+  sketch:
+    - "setup: Choose ρ with |z-c| < ρ < r."
+    - "apply_theorem: Cauchy's integral formula on the circle of radius ρ applies."
+    - "derive: Expanding the kernel and integrating termwise gives a power series at c."
+    - "derive: Termwise differentiation identifies the coefficients as f^(n)(c)/n!."
+    - "conclude: The series converges to f(z) on the whole disc."
+  openmath: (forall (f c z r) (-> (and (holomorphic_on f (open_disc c r)) (in z (open_disc c r))) (series_has_sum (lambda (n) (* (/ (iterated_complex_deriv n f c) (factorial n)) (^ (- z c) n))) (fn_value f z))))
+  hard_negative:
+    statement: 開円板で正則な関数のテイラー級数は、閉円板の境界でも必ず収束する。
+    reason: 単位円板でf(z)=1/(1-z)のテイラー級数Σz^nは、|z|=1の全ての点で発散する。
+  target: |
+    ∀ (f : ℂ → ℂ) (c z : ℂ) (r : ℝ), DifferentiableOn ℂ f (Metric.ball c r) → z ∈ Metric.ball c r → HasSum (fun n : ℕ => iteratedDeriv n f c / (n.factorial : ℂ) * (z - c) ^ n) (f z)
+  proof: |
+    by
+      intro f c z r hf hz
+      have h := Complex.hasSum_taylorSeries_on_ball hf hz
+      have he : (fun n : ℕ => iteratedDeriv n f c / (n.factorial : ℂ) * (z - c) ^ n) = fun n : ℕ => ((n.factorial : ℂ))⁻¹ • (z - c) ^ n • iteratedDeriv n f c := by
+        funext n
+        simp only [smul_eq_mul]
+        ring
+      rw [he]
+      exact h
+- id: derivative_of_holomorphic_is_holomorphic
+  kind: gap
+  level: 3
+  topic: 正則関数・導関数の正則性
+  statement: 開集合U上で正則な関数の導関数は、U上で再び正則である。
+  statement_en: The derivative of a function holomorphic on an open set U is again holomorphic on U.
+  assumptions: [Uは開集合, fはU上で正則]
+  quantifiers: [任意の関数f, 任意の集合U]
+  conclusion: "f'はU上で正則である。"
+  answer: |
+    a∈Uに対し、正則関数は解析的なのでaの近くでf(z)=Σc_n(z-a)^nと表される。収束べき級数は収束円の内部で項別微分でき、f'(z)=Σnc_n(z-a)^{n-1}もまた収束べき級数である。収束べき級数は複素微分可能なので、f'はaの近くで正則である。aは任意なのでf'はU上で正則である。
+  strategy: Use the power series expansion of f near each point and differentiate it termwise.
+  sketch:
+    - "apply_theorem: Near a point a of U, f is the sum of a convergent power series."
+    - "derive: Termwise differentiation shows that f' is a convergent power series near a."
+    - "derive: A convergent power series is complex differentiable."
+    - "conclude: Since a is arbitrary, f' is holomorphic on U."
+  openmath: (forall (f g U) (-> (and (open_set U) (holomorphic_on f U) (forall (z) (-> (in z U) (= (fn_value g z) (complex_deriv f z))))) (holomorphic_on g U)))
+  hard_negative:
+    statement: 実数の開区間上で微分可能な実関数の導関数は微分可能である。
+    reason: f(x)=x|x|は微分可能だが、導関数2|x|は0で微分可能でない。この性質は複素微分に特有である。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ), IsOpen U → DifferentiableOn ℂ f U → DifferentiableOn ℂ (deriv f) U
+  proof: |
+    by
+      intro f U hU hf
+      exact hf.deriv hU
+- id: identity_theorem
+  kind: textbook
+  level: 3
+  topic: 正則関数・一致の定理
+  statement: 連結開集合U上の正則関数f, gが、U内に集積点を持つ集合の上で一致するならば、U全体で一致する。
+  statement_en: If f and g are holomorphic on a connected open set U and the set where f = g has an accumulation point in U, then f = g on U.
+  assumptions: [Uは連結開集合, fとgはU上で正則, z₀∈Uはf=gとなる点の集合の集積点]
+  quantifiers: [任意の関数f、g, 任意の集合U, 任意の点z₀]
+  conclusion: U上でf=gが成り立つ。
+  answer: |
+    h=f-gとおく。z₀でのhのべき級数が0でないと、最小次数の項を取り出してh(z)=(z-z₀)^k u(z)、u(z₀)≠0と書ける。するとz₀の近くの他の点でhは0にならず、集積点の仮定に反する。よってhはz₀の近くで恒等的に0である。A={z∈U|hはzの近くで恒等的に0}は開であり、同じ議論でUの中で閉であって、z₀を含み空でない。Uは連結なのでA=Uである。
+  strategy: Show that h = f - g vanishes near z₀ by its power series, then use a connectedness argument on the set where h vanishes locally.
+  sketch:
+    - "setup: Let h = f - g."
+    - "contradiction: If the power series of h at z₀ were nonzero, z₀ would be an isolated zero of h."
+    - "derive: So h vanishes identically near z₀."
+    - "construct: Let A be the set of points of U near which h vanishes identically."
+    - "derive: A is open, nonempty and closed in U."
+    - "conclude: By connectedness A = U, so f = g on U."
+  openmath: (forall (f g U a) (-> (and (open_set U) (connected_set U) (holomorphic_on f U) (holomorphic_on g U) (in a U) (accumulation_point_of_agreement f g a)) (forall (z) (-> (in z U) (= (fn_value f z) (fn_value g z))))))
+  hard_negative:
+    statement: 正則関数f, gが、集積点を持つ集合の上で一致すれば、集積点がUの境界にあってもU全体で一致する。
+    reason: U=C\{0}でf(z)=sin(1/z)、g=0は、0に集積する点1/(nπ)で一致するが、一致しない。集積点はUの中になければならない。
+  target: |
+    ∀ (f g : ℂ → ℂ) (U : Set ℂ) (a : ℂ), IsOpen U → IsPreconnected U → DifferentiableOn ℂ f U → DifferentiableOn ℂ g U → a ∈ U → a ∈ closure ({z | f z = g z} \ {a}) → Set.EqOn f g U
+  proof: |
+    by
+      intro f g U a hU hC hf hg ha h
+      exact (hf.analyticOnNhd hU).eqOn_of_preconnected_of_mem_closure (hg.analyticOnNhd hU) hC ha h
+- id: isolated_zeros
+  kind: gap
+  level: 3
+  topic: 正則関数・零点の孤立性
+  statement: 開集合上の正則関数は、その集合の点z₀の近くで恒等的に0であるか、z₀を除くz₀の近くで0にならないかのどちらかである。
+  statement_en: A function holomorphic on an open set either vanishes identically near a given point z₀ of the set or has no zeros in a punctured neighbourhood of z₀.
+  assumptions: [Uは開集合, fはU上で正則, z₀はUの点]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の点z₀]
+  conclusion: fはz₀の近くで恒等的に0であるか、z₀の近くでz₀以外に零点を持たない。
+  answer: |
+    z₀の近くでf(z)=Σc_n(z-z₀)^nと展開する。全てのc_nが0ならfはz₀の近くで恒等的に0である。そうでなければc_k≠0となる最小のkをとると、f(z)=(z-z₀)^k u(z)と書け、uはz₀で連続でu(z₀)=c_k≠0である。したがってz₀の近くでu≠0であり、z≠z₀ならf(z)≠0である。
+  strategy: Factor out the lowest nonzero term of the power series at z₀.
+  sketch:
+    - "apply_theorem: Expand f in a power series at z₀."
+    - "case_split: If all coefficients vanish, f is identically zero near z₀."
+    - "construct: Otherwise write f(z) = (z-z₀)^k u(z) with u(z₀) ≠ 0."
+    - "derive: Continuity of u keeps it nonzero near z₀."
+    - "conclude: f has no zeros near z₀ other than z₀."
+  openmath: (forall (f U a) (-> (and (open_set U) (holomorphic_on f U) (in a U)) (or (eventually_zero_near f a) (eventually_nonzero_punctured f a))))
+  hard_negative:
+    statement: 実数全体で無限回微分可能な実関数の零点は、恒等的に0でない限り孤立している。
+    reason: x≠0でexp(-1/x^2)sin(1/x)、x=0で0とする関数は無限回微分可能で恒等的に0でないが、零点が0に集積する。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (a : ℂ), IsOpen U → DifferentiableOn ℂ f U → a ∈ U → (∀ᶠ z in nhds a, f z = 0) ∨ (∀ᶠ z in nhdsWithin a {a}ᶜ, f z ≠ 0)
+  proof: |
+    by
+      intro f U a hU hf ha
+      exact (hf.analyticOnNhd hU a ha).eventually_eq_zero_or_eventually_ne_zero
+- id: maximum_modulus_principle
+  kind: named
+  level: 3
+  topic: 最大値の原理
+  statement: 連結開集合U上の正則関数の絶対値がUの点cで最大値を取るならば、関数はU上で定数である(最大値の原理)。
+  statement_en: "The maximum modulus principle: if f is holomorphic on a connected open set U and |f| attains its maximum over U at a point c of U, then f is constant on U."
+  assumptions: [Uは連結開集合, fはU上で正則, cはUの点, U上で|f|≤|f(c)|]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の点c, 任意のz∈U]
+  conclusion: f(z)=f(c)が全てのz∈Uで成り立つ。
+  answer: |
+    cを中心にUに含まれる閉円板をとり、半径rの円周で平均値の性質を使うと、f(c)はfの円周上の平均である。|f|≤|f(c)|なので、平均の絶対値が|f(c)|に達するためには円周上で|f|=|f(c)|でなければならず、さらに偏角も一定となってf=f(c)である。よってfはcの近くで定数である。一致の定理によりfはU全体で定数である。
+  strategy: Use the mean value property to show that f is constant near c, then extend by the identity theorem.
+  sketch:
+    - "apply_theorem: The mean value property expresses f(c) as a mean of f on small circles about c."
+    - "derive: The bound |f| ≤ |f(c)| forces equality in the estimate of the mean."
+    - "derive: Equality gives f = f(c) on these circles, so f is constant near c."
+    - "apply_theorem: The identity theorem applies on the connected set U."
+    - "conclude: f is constant on U."
+  openmath: (forall (f U c z) (-> (and (open_set U) (connected_set U) (holomorphic_on f U) (in c U) (forall (w) (-> (in w U) (<= (abs (fn_value f w)) (abs (fn_value f c))))) (in z U)) (= (fn_value f z) (fn_value f c))))
+  hard_negative:
+    statement: 連結開集合上の正則関数の絶対値が最小値を内部の点で取れば、関数は定数である。
+    reason: f(z)=zと単位円板では、絶対値は0で最小値を取るが定数でない。最小値については零点でない場合に限り成り立つ。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (c : ℂ), IsOpen U → IsPreconnected U → DifferentiableOn ℂ f U → c ∈ U → (∀ w ∈ U, ‖f w‖ ≤ ‖f c‖) → ∀ z ∈ U, f z = f c
+  proof: |
+    by
+      intro f U c hU hC hf hc hm z hz
+      have hmax : IsMaxOn (norm ∘ f) U c := isMaxOn_iff.mpr hm
+      exact Complex.eqOn_of_isPreconnected_of_isMaxOn_norm hC hU hf hc hmax hz
+- id: modulus_bounded_by_boundary
+  kind: gap
+  level: 3
+  topic: 最大値の原理・境界での評価
+  statement: 有界開集合U上で正則でUの閉包上で連続な関数fが、境界上で|f|≤Cを満たすならば、閉包全体で|f|≤Cである。
+  statement_en: If U is a bounded open set, f is holomorphic on U and continuous on the closure of U, and |f| ≤ C on the boundary of U, then |f| ≤ C on the closure of U.
+  assumptions: [Uは有界開集合, fはU上で正則, fはUの閉包上で連続, 境界上で|f|≤C]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の実数C, 任意のz∈closure U]
+  conclusion: "|f(z)|≤Cが閉包の全ての点で成り立つ。"
+  answer: |
+    Uの閉包はコンパクトなので、連続関数|f|はある点aで最大値を取る。aが境界にあれば最大値はC以下である。aがUの内部にあるときは、aを含むUの連結成分Vの上で最大値の原理によりfは定数である。Vは有界で空でないので境界の点bを持ち、bはUの境界の点である。連続性から最大値は|f(b)|≤C以下である。いずれの場合も|f|≤Cである。
+  strategy: Take a maximum on the compact closure and move it to the boundary with the maximum modulus principle.
+  sketch:
+    - "derive: The closure of U is compact, so |f| attains a maximum at a point a."
+    - "case_split: If a is on the boundary the bound follows directly."
+    - "apply_theorem: If a is in U, the maximum modulus principle makes f constant on the component of a."
+    - "derive: This component has a boundary point, which lies on the boundary of U."
+    - "conclude: Continuity transfers the bound C to the maximum."
+  openmath: (forall (f U B z) (-> (and (open_set U) (bounded_set U) (holomorphic_on f U) (continuous_on_set f (set_closure U)) (forall (w) (-> (in w (set_frontier U)) (<= (abs (fn_value f w)) B))) (in z (set_closure U))) (<= (abs (fn_value f z)) B)))
+  hard_negative:
+    statement: 非有界な開集合でも、境界上で|f|≤Cなら全体で|f|≤Cである。
+    reason: 右半平面でf(z)=exp zは虚軸上で|f|=1だが、実軸上で非有界である。有界性の仮定は外せない。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (C : ℝ), IsOpen U → Bornology.IsBounded U → DifferentiableOn ℂ f U → ContinuousOn f (closure U) → (∀ w ∈ frontier U, ‖f w‖ ≤ C) → ∀ z ∈ closure U, ‖f z‖ ≤ C
+  proof: |
+    by
+      intro f U C _ hB hd hc hC z hz
+      exact Complex.norm_le_of_forall_mem_frontier_norm_le hB ⟨hd, hc⟩ hC hz
+- id: open_mapping_theorem
+  kind: textbook
+  level: 3
+  topic: 開写像定理
+  statement: 連結開集合U上の正則関数は、定数であるか、Uに含まれる開集合を開集合に写すかのどちらかである。
+  statement_en: A function holomorphic on a connected open set U is either constant on U or maps every open subset of U to an open set.
+  assumptions: [Uは連結開集合, fはU上で正則]
+  quantifiers: [任意の関数f, 任意の集合U]
+  conclusion: fはU上で定数であるか、開部分集合の像は開である。
+  answer: |
+    fが定数でないとする。z₀を含む開集合sに対し、g(z)=f(z)-f(z₀)を考える。一致の定理より、z₀を中心とする小さな円周で|g|≥2δ>0とできる。|w-f(z₀)|<δとするとh(z)=f(z)-wは、円周上で|h|≥δ、中心で|h|<δである。hが円板内で零点を持たないと1/hに最大値の原理が適用でき、中心での値の評価に矛盾する。よってwは像に入り、f(z₀)の周りの円板が像に含まれる。
+  strategy: Compare |f - w| on a small circle and at the centre and apply the maximum modulus principle to the reciprocal.
+  sketch:
+    - "setup: Assume that f is not constant and fix z₀ in an open subset s of U."
+    - "derive: Isolated zeros give a small circle about z₀ on which |f - f(z₀)| ≥ 2δ."
+    - "setup: For |w - f(z₀)| < δ consider h = f - w."
+    - "contradiction: If h had no zero inside, the maximum modulus principle for 1/h would fail at the centre."
+    - "conclude: Hence w is attained, and the image contains a disc about f(z₀)."
+  openmath: (forall (f U) (-> (and (open_set U) (connected_set U) (holomorphic_on f U)) (or (exists (w) (forall (z) (-> (in z U) (= (fn_value f z) w)))) (forall (s) (-> (and (subset s U) (open_set s)) (open_set (image (lambda (x) (fn_value f x)) s)))))))
+  hard_negative:
+    statement: 実数の開区間上で定数でない解析的な実関数は開写像である。
+    reason: f(x)=x^2は実解析的だが、開区間(-1,1)の像は[0,1)で開集合でない。複素の場合にのみ成り立つ。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ), IsOpen U → IsPreconnected U → DifferentiableOn ℂ f U → (∃ w, ∀ z ∈ U, f z = w) ∨ ∀ s ⊆ U, IsOpen s → IsOpen (f '' s)
+  proof: |
+    by
+      intro f U hU hC hf
+      exact (hf.analyticOnNhd hU).is_constant_or_isOpen hC
+- id: constant_real_part_implies_constant
+  kind: gap
+  level: 3
+  topic: 正則関数・実部一定
+  statement: 連結開集合U上の正則関数の実部がU上で一定ならば、関数はU上で定数である。
+  statement_en: If the real part of a holomorphic function on a connected open set U is constant on U, then the function is constant on U.
+  assumptions: [Uは空でない連結開集合, fはU上で正則, U上でRe fは一定]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の実数a, ある複素数w]
+  conclusion: fはU上で定数である。
+  answer: |
+    Re f=aとする。fが定数でなければ開写像定理によりf(U)は複素平面の開集合である。しかしf(U)は直線Re w=aに含まれ、直線は空でない開集合を含まない。これは矛盾なので、fはU上で定数である。
+  strategy: Apply the open mapping theorem and observe that a vertical line contains no open set.
+  sketch:
+    - "contradiction: Suppose that f is not constant."
+    - "apply_theorem: The open mapping theorem makes f(U) a nonempty open set."
+    - "derive: But f(U) lies in the vertical line Re w = a, which has empty interior."
+    - "conclude: Hence f is constant."
+  openmath: (forall (f U a) (-> (and (open_set U) (connected_set U) (exists (p) (in p U)) (holomorphic_on f U) (forall (z) (-> (in z U) (= (real_part (fn_value f z)) a)))) (exists (w) (forall (z) (-> (in z U) (= (fn_value f z) w))))))
+  hard_negative:
+    statement: 連結でない開集合U上の正則関数でも、実部が一定なら定数である。
+    reason: Uを互いに素な2つの円板とし、一方でf=i、他方でf=2iとすると、実部は0で一定だがfは定数でない。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (a : ℝ), IsOpen U → IsConnected U → DifferentiableOn ℂ f U → (∀ z ∈ U, (f z).re = a) → ∃ w, ∀ z ∈ U, f z = w
+  proof: |
+    by
+      intro f U a hU hC hf h
+      exact (hf.analyticOnNhd hU).eq_const_of_re_eq_const h hU hC
+- id: schwarz_lemma
+  kind: named
+  level: 3
+  topic: シュワルツの補題
+  statement: 単位円板から単位円板への正則関数fがf(0)=0を満たすならば、|f(z)|≤|z|かつ|f'(0)|≤1である(シュワルツの補題)。
+  statement_en: "The Schwarz lemma: if f is holomorphic from the open unit disc to itself with f(0) = 0, then |f(z)| ≤ |z| on the disc and |f'(0)| ≤ 1."
+  assumptions: [fは単位円板上で正則, 単位円板の点で|f(z)|<1, f(0)=0]
+  quantifiers: [任意の関数f, 単位円板の任意の点z]
+  conclusion: "|f(z)|≤|z|かつ|f'(0)|≤1が成り立つ。"
+  answer: |
+    g(z)=f(z)/z(z≠0)、g(0)=f'(0)とおくと、f(0)=0からgは単位円板上で正則である。0<r<1とすると、|z|=rで|g|≤1/rなので、最大値の原理により|z|≤rで|g|≤1/rである。r→1とすると単位円板上で|g|≤1となる。これは|f(z)|≤|z|と|f'(0)|≤1を意味する。
+  strategy: Apply the maximum modulus principle to f(z)/z on circles of radius r and let r tend to 1.
+  sketch:
+    - "construct: Define g(z) = f(z)/z with g(0) = f'(0), which is holomorphic on the disc."
+    - "derive: On |z| = r we have |g| ≤ 1/r."
+    - "apply_theorem: The maximum modulus principle extends the bound to |z| ≤ r."
+    - "derive: Letting r tend to 1 gives |g| ≤ 1 on the disc."
+    - "conclude: This is equivalent to the two stated inequalities."
+  openmath: (forall (f) (-> (and (holomorphic_on f (open_disc 0 1)) (forall (z) (-> (in z (open_disc 0 1)) (< (abs (fn_value f z)) 1))) (= (fn_value f 0) 0)) (and (forall (z) (-> (in z (open_disc 0 1)) (<= (abs (fn_value f z)) (abs z)))) (<= (abs (complex_deriv f 0)) 1))))
+  hard_negative:
+    statement: 単位円板から単位円板への正則関数は常に|f(z)|≤|z|を満たす。
+    reason: 定数関数f=1/2はz=0で|f(0)|=1/2>0である。f(0)=0の仮定が必要である。
+  target: |
+    ∀ (f : ℂ → ℂ), DifferentiableOn ℂ f (Metric.ball 0 1) → (∀ z ∈ Metric.ball (0 : ℂ) 1, ‖f z‖ < 1) → f 0 = 0 → (∀ z ∈ Metric.ball (0 : ℂ) 1, ‖f z‖ ≤ ‖z‖) ∧ ‖deriv f 0‖ ≤ 1
+  proof: |
+    by
+      intro f hd hb h0
+      have hm0 : Set.MapsTo f (Metric.ball 0 1) (Metric.closedBall 0 1) := fun z hz => by
+        simpa using (hb z hz).le
+      have hm1 : Set.MapsTo f (Metric.ball 0 1) (Metric.closedBall (f 0) 1) := by
+        rw [h0]
+        exact hm0
+      refine ⟨fun z hz => Complex.norm_le_norm_of_mapsTo_ball hd hm0 h0 (by simpa using hz), ?_⟩
+      exact Complex.norm_deriv_le_one_of_mapsTo_ball hd hm1 one_pos
+- id: schwarz_lemma_equality
+  kind: textbook
+  level: 3
+  topic: シュワルツの補題・等号条件
+  statement: シュワルツの補題の仮定のもとで、z₀≠0で|f(z₀)|=|z₀|となるならば、絶対値1の定数Cによりf(z)=Czが単位円板上で成り立つ。
+  statement_en: Under the hypotheses of the Schwarz lemma, if |f(z₀)| = |z₀| for some nonzero z₀ in the disc, then f(z) = Cz on the disc for a constant C with |C| = 1.
+  assumptions: [fは単位円板上で正則, 単位円板の点で|f(z)|<1, f(0)=0, z₀は単位円板の0でない点, "|f(z₀)|=|z₀|"]
+  quantifiers: [任意の関数f, 任意の点z₀, ある複素数C]
+  conclusion: 単位円板上でf(z)=Czが成り立つ。
+  answer: |
+    g(z)=f(z)/z、g(0)=f'(0)は単位円板上で正則であり、シュワルツの補題の証明から|g|≤1である。仮定より|g(z₀)|=1なので、|g|はz₀で最大値を取る。単位円板は連結なので、最大値の原理によりgは定数Cで、|C|=1である。よってf(z)=Czである。
+  strategy: Apply the maximum modulus principle to f(z)/z, whose modulus attains 1 at z₀.
+  sketch:
+    - "construct: Let g(z) = f(z)/z with g(0) = f'(0)."
+    - "derive: The proof of the Schwarz lemma gives |g| ≤ 1 on the disc."
+    - "derive: The assumption gives |g(z₀)| = 1, so |g| attains its maximum at z₀."
+    - "apply_theorem: The maximum modulus principle makes g a constant C with |C| = 1."
+    - "conclude: Hence f(z) = Cz."
+  openmath: (forall (f a) (-> (and (holomorphic_on f (open_disc 0 1)) (forall (z) (-> (in z (open_disc 0 1)) (< (abs (fn_value f z)) 1))) (= (fn_value f 0) 0) (in a (open_disc 0 1)) (!= a 0) (= (abs (fn_value f a)) (abs a))) (exists (u) (and (= (abs u) 1) (forall (z) (-> (in z (open_disc 0 1)) (= (fn_value f z) (* u z))))))))
+  hard_negative:
+    statement: シュワルツの補題の仮定のもとで、z₀≠0で|f(z₀)|=|z₀|ならばf(z)=zである。
+    reason: f(z)=izもこの条件を満たす。結論はf(z)=Czで、Cは絶対値1の任意の定数である。
+  target: |
+    ∀ (f : ℂ → ℂ) (a : ℂ), DifferentiableOn ℂ f (Metric.ball 0 1) → (∀ z ∈ Metric.ball (0 : ℂ) 1, ‖f z‖ < 1) → f 0 = 0 → a ∈ Metric.ball (0 : ℂ) 1 → a ≠ 0 → ‖f a‖ = ‖a‖ → ∃ u : ℂ, ‖u‖ = 1 ∧ ∀ z ∈ Metric.ball (0 : ℂ) 1, f z = u * z
+  proof: |
+    by
+      intro f a hd hb h0 ha hne hn
+      have hm : Set.MapsTo f (Metric.ball 0 1) (Metric.closedBall (f 0) (1 : ℝ)) := by
+        rw [h0]
+        exact fun z hz => by simpa using (hb z hz).le
+      have hs : ‖dslope f 0 a‖ = (1 : ℝ) / 1 := by
+        rw [dslope_of_ne f hne, slope_def_module, h0]
+        simp only [sub_zero, norm_smul, norm_inv, hn]
+        field_simp [norm_ne_zero_iff.mpr hne]
+      obtain ⟨C, hC, hEq⟩ := Complex.affine_of_mapsTo_ball_of_exists_norm_dslope_eq_div' hd hm ⟨a, ha, hs⟩
+      refine ⟨C, by simpa using hC, fun z hz => ?_⟩
+      have := hEq hz
+      simpa [h0, smul_eq_mul, mul_comm] using this
+- id: riemann_removable_singularity
+  kind: textbook
+  level: 3
+  topic: 除去可能特異点・リーマンの定理
+  statement: 開集合sの点cを除いた集合で正則かつ有界な関数fは、ある関数gに延長でき、gはs全体で正則でcを除いてfに一致する。
+  statement_en: If s is an open set containing c and f is holomorphic and bounded on s minus {c}, then there is a function g holomorphic on s that agrees with f on s minus {c}.
+  assumptions: [sは開集合, cはsの点, fはcを除いたsで正則, fはcを除いたsで有界]
+  quantifiers: [任意の関数f, 任意の集合s, 任意の点c, ある関数g]
+  conclusion: s全体で正則でs\{c}でfに一致する関数gが存在する。
+  answer: |
+    h(z)=(z-c)^2 f(z)(z≠c)、h(c)=0とおく。fが有界なのでh(z)=o(|z-c|)となり、hはcでも複素微分可能でh'(c)=0である。よってhはcの近くで正則で、h(c)=h'(c)=0からh(z)=(z-c)^2 g(z)となる正則関数gがある。z≠cでg=fなので、gが求める延長である。
+  strategy: Multiply by (z-c)^2 to obtain a holomorphic function with a double zero and divide it out.
+  sketch:
+    - "construct: Define h(z) = (z-c)^2 f(z) with h(c) = 0."
+    - "derive: Boundedness of f gives h(z) = o(|z-c|), so h is complex differentiable at c with h'(c) = 0."
+    - "apply_theorem: The power series of h at c starts at degree 2."
+    - "construct: So h(z) = (z-c)^2 g(z) with g holomorphic near c."
+    - "conclude: g agrees with f off c and gives the extension."
+  openmath: (forall (f s c M) (-> (and (open_set s) (in c s) (holomorphic_on f (setdiff s (set c))) (forall (z) (-> (in z (setdiff s (set c))) (<= (abs (fn_value f z)) M)))) (exists (g) (and (holomorphic_on g s) (forall (z) (-> (in z (setdiff s (set c))) (= (fn_value g z) (fn_value f z))))))))
+  hard_negative:
+    statement: cを除いた近傍で正則な関数は、常にcへ正則に延長できる。
+    reason: f(z)=1/zは0を除いた複素平面で正則だが、0の近くで有界でなく延長できない。
+  target: |
+    ∀ (f : ℂ → ℂ) (s : Set ℂ) (c : ℂ) (M : ℝ), IsOpen s → c ∈ s → DifferentiableOn ℂ f (s \ {c}) → (∀ z ∈ s \ {c}, ‖f z‖ ≤ M) → ∃ g : ℂ → ℂ, DifferentiableOn ℂ g s ∧ ∀ z ∈ s \ {c}, g z = f z
+  proof: |
+    by
+      intro f s c M hs hc hd hM
+      refine ⟨Function.update f c (Filter.limUnder (nhdsWithin c {c}ᶜ) f), ?_, ?_⟩
+      · refine Complex.differentiableOn_update_limUnder_of_bddAbove (hs.mem_nhds hc) hd ⟨M, ?_⟩
+        rintro _ ⟨z, hz, rfl⟩
+        exact hM z hz
+      · intro z hz
+        exact Function.update_of_ne hz.2 _ _
+- id: holomorphic_zero_factor
+  kind: gap
+  level: 3
+  topic: 正則関数・零点の因数分解
+  statement: 開集合U上の正則関数fがcでf(c)=0を満たすならば、U上の正則関数gによりf(z)=(z-c)g(z)と書ける。
+  statement_en: If f is holomorphic on an open set U and f(c) = 0 for c in U, then f(z) = (z-c) g(z) on U for a function g holomorphic on U.
+  assumptions: [Uは開集合, fはU上で正則, cはUの点, f(c)=0]
+  quantifiers: [任意の関数f, 任意の集合U, 任意の点c, ある関数g]
+  conclusion: U上でf(z)=(z-c)g(z)となる正則関数gが存在する。
+  answer: |
+    g(z)=f(z)/(z-c)(z≠c)、g(c)=f'(c)と定める。gはU\{c}で正則であり、f'(c)の定義からz→cでg(z)→g(c)なのでcでも連続である。除去可能特異点の定理によりgはUで正則である。f(c)=0よりz≠cでf(z)=(z-c)g(z)が成り立ち、z=cでも両辺は0である。
+  strategy: Define g as the difference quotient and use the removable singularity theorem.
+  sketch:
+    - "construct: Define g(z) = f(z)/(z-c) for z ≠ c and g(c) = f'(c)."
+    - "derive: g is holomorphic off c and continuous at c by the definition of the derivative."
+    - "apply_theorem: The removable singularity theorem makes g holomorphic on U."
+    - "conclude: Since f(c) = 0, f(z) = (z-c)g(z) on U."
+  openmath: (forall (f U c) (-> (and (open_set U) (holomorphic_on f U) (in c U) (= (fn_value f c) 0)) (exists (g) (and (holomorphic_on g U) (forall (z) (-> (in z U) (= (fn_value f z) (* (- z c) (fn_value g z)))))))))
+  hard_negative:
+    statement: 実数の開区間上で微分可能な実関数fがf(c)=0を満たせば、微分可能なgでf(x)=(x-c)g(x)と書ける。
+    reason: f(x)=x|x|、c=0では、g(x)=|x|となり0で微分可能でない。実微分可能性では商の微分可能性が失われる。
+  target: |
+    ∀ (f : ℂ → ℂ) (U : Set ℂ) (c : ℂ), IsOpen U → DifferentiableOn ℂ f U → c ∈ U → f c = 0 → ∃ g : ℂ → ℂ, DifferentiableOn ℂ g U ∧ ∀ z ∈ U, f z = (z - c) * g z
+  proof: |
+    by
+      intro f U c hU hf hc h0
+      refine ⟨dslope f c, (Complex.differentiableOn_dslope (hU.mem_nhds hc)).mpr hf, ?_⟩
+      intro z _
+      have h := sub_smul_dslope f c z
+      rw [h0, sub_zero, smul_eq_mul] at h
+      exact h.symm
+- id: weierstrass_locally_uniform_limit
+  kind: textbook
+  level: 3
+  topic: 正則関数列・ワイエルシュトラスの定理
+  statement: 開集合U上の正則関数列F_nがfに広義一様収束するならば、fはU上で正則であり、導関数F_n'もf'に広義一様収束する。
+  statement_en: If holomorphic functions F_n on an open set U converge locally uniformly to f, then f is holomorphic on U and F_n' converges locally uniformly to f'.
+  assumptions: [Uは開集合, 各F_nはU上で正則, F_nはU上でfに広義一様収束]
+  quantifiers: [任意の関数列F_n, 任意の関数f, 任意の集合U]
+  conclusion: "fはU上で正則であり、F_n'はf'に広義一様収束する。"
+  answer: |
+    閉円板DがUに含まれるとする。Dの円周はコンパクトなので、F_nはその上で一様収束する。コーシーの積分公式の極限を取ると、fもDの内部で積分公式を満たし、その積分表示からfはDの内部で正則である。また導関数の積分公式により、Dより小さい同心閉円板上で|F_n'-f'|は円周上の|F_n-f|の最大値の定数倍以下である。コンパクト集合を有限個の円板で覆うと、F_n'はf'に広義一様収束する。
+  strategy: Pass to the limit in Cauchy's integral formula and bound derivatives through Cauchy's estimate.
+  sketch:
+    - "setup: Take a closed disc D in U; the F_n converge uniformly on its boundary circle."
+    - "derive: Cauchy's formula passes to the limit f inside D."
+    - "derive: The integral representation shows that f is holomorphic inside D."
+    - "apply_theorem: On a smaller concentric closed disc, the derivative formula bounds |F_n' - f'| by a constant times the maximum of |F_n - f| on the circle."
+    - "conclude: Covering compact sets by finitely many discs gives locally uniform convergence of the derivatives."
+  openmath: (forall (F f U) (-> (and (open_set U) (forall (n) (-> (in n N) (holomorphic_on (seq_value F n) U))) (locally_uniform_limit F f U)) (and (holomorphic_on f U) (locally_uniform_limit (derivative_sequence F) (derivative_function f) U))))
+  hard_negative:
+    statement: 実数の開区間上で微分可能な関数列の一様極限は微分可能である。
+    reason: 関数√(x^2+1/n)はC^1級で|x|に一様収束するが、|x|は0で微分可能でない。実関数では成り立たない。
+  target: |
+    ∀ (F : ℕ → ℂ → ℂ) (f : ℂ → ℂ) (U : Set ℂ), IsOpen U → (∀ n, DifferentiableOn ℂ (F n) U) → TendstoLocallyUniformlyOn F f Filter.atTop U → DifferentiableOn ℂ f U ∧ TendstoLocallyUniformlyOn (fun n => deriv (F n)) (deriv f) Filter.atTop U
+  proof: |
+    by
+      intro F f U hU hF hl
+      have hev : ∀ᶠ n in Filter.atTop, DifferentiableOn ℂ (F n) U := Filter.Eventually.of_forall hF
+      exact ⟨hl.differentiableOn hev hU, hl.deriv hev hU⟩
+- id: holomorphic_series_m_test
+  kind: gap
+  level: 3
+  topic: 正則関数項級数・優級数
+  statement: 開集合U上の正則関数F_nが、総和有限な数列uにより全てのz∈Uで|F_n(z)|≤u_nを満たすならば、ΣF_nはU上で正則である。
+  statement_en: If F_n are holomorphic on an open set U and |F_n(z)| ≤ u_n on U with a summable sequence u, then the sum of the F_n is holomorphic on U.
+  assumptions: [Uは開集合, 各F_nはU上で正則, uは総和可能な実数列, U上で|F_n|≤u_n]
+  quantifiers: [任意の関数列F_n, 任意の実数列u, 任意の集合U]
+  conclusion: ΣF_nはU上で正則である。
+  answer: |
+    ワイエルシュトラスの優級数判定法により、部分和はU上で一様収束する。各部分和は有限和なので正則である。正則関数列の広義一様極限は正則なので、ΣF_nはU上で正則である。
+  strategy: Combine the Weierstrass M-test with the theorem on locally uniform limits of holomorphic functions.
+  sketch:
+    - "apply_theorem: The M-test gives uniform convergence of the partial sums on U."
+    - "derive: Each partial sum is a finite sum of holomorphic functions."
+    - "apply_theorem: The locally uniform limit of holomorphic functions is holomorphic."
+    - "conclude: The sum of the F_n is holomorphic on U."
+  openmath: (forall (F u U g) (-> (and (open_set U) (forall (n) (-> (in n N) (holomorphic_on (seq_value F n) U))) (summable_sequence u) (forall (n z) (-> (and (in n N) (in z U)) (<= (abs (fn_value (seq_value F n) z)) (seq_value u n)))) (forall (z) (-> (in z U) (series_has_sum (lambda (n) (fn_value (seq_value F n) z)) (fn_value g z))))) (holomorphic_on g U)))
+  hard_negative:
+    statement: 実数の開区間上で微分可能な関数項級数が優級数を持てば、和は微分可能である。
+    reason: Σ2^{-n}cos(13^n x)は優級数Σ2^{-n}を持つが、和はワイエルシュトラスの関数でどの点でも微分可能でない。実関数では成り立たない。
+  target: |
+    ∀ (F : ℕ → ℂ → ℂ) (u : ℕ → ℝ) (U : Set ℂ), IsOpen U → Summable u → (∀ n, DifferentiableOn ℂ (F n) U) → (∀ n, ∀ z ∈ U, ‖F n z‖ ≤ u n) → DifferentiableOn ℂ (fun z => ∑' n, F n z) U
+  proof: |
+    by
+      intro F u U hU hu hF hb
+      exact Complex.differentiableOn_tsum_of_summable_norm hu hF hU hb
+- id: primitive_on_disc
+  kind: textbook
+  level: 3
+  topic: 正則関数・原始関数の存在
+  statement: 開円板上で正則な関数は、その円板上で原始関数を持つ。
+  statement_en: A function holomorphic on an open disc has a primitive on that disc.
+  assumptions: [fは開円板で正則]
+  quantifiers: [任意の関数f, 任意の複素数c, 任意の実数r, ある関数g]
+  conclusion: 円板上でg'=fとなる関数gが存在する。
+  answer: |
+    fは円板上で中心cのべき級数Σa_n(z-c)^nに展開され、円板全体で収束する。g(z)=Σa_n(z-c)^{n+1}/(n+1)とおくと、係数の絶対値は小さくなるだけなので収束半径は変わらない。べき級数の項別微分によりg'=fである。
+  strategy: Integrate the Taylor series of f at the centre term by term.
+  sketch:
+    - "apply_theorem: f has a Taylor series at c that converges on the whole disc."
+    - "construct: Define g by termwise integration of this series."
+    - "derive: The radius of convergence does not decrease."
+    - "conclude: Termwise differentiation gives g' = f on the disc."
+  openmath: (forall (f c r) (-> (holomorphic_on f (open_disc c r)) (exists (g) (forall (z) (-> (in z (open_disc c r)) (has_complex_deriv_at g (fn_value f z) z))))))
+  hard_negative:
+    statement: 0を除く複素平面で正則な関数は、その領域上で原始関数を持つ。
+    reason: f(z)=1/zの単位円周に沿う積分は2πiで0でないので、原始関数を持たない。領域が円板であるという仮定は外せない。
+  target: |
+    ∀ (f : ℂ → ℂ) (c : ℂ) (r : ℝ), DifferentiableOn ℂ f (Metric.ball c r) → ∃ g : ℂ → ℂ, ∀ z ∈ Metric.ball c r, HasDerivAt g (f z) z
+  proof: |
+    by
+      intro f c r hf
+      exact hf.isExactOn_ball

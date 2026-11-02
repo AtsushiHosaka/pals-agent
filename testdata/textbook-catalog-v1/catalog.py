@@ -104,9 +104,12 @@ class CardError(ValueError):
     pass
 
 
-def load_vocabulary() -> dict[str, dict]:
+def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
+    """Merge all vocabulary files, or only core plus one domain while authoring that domain."""
     merged: dict[str, dict] = {}
     for path in sorted((ROOT / "vocabulary").glob("*.yaml")):
+        if domain is not None and path.stem not in {"core", domain}:
+            continue
         for name, spec in (yaml.safe_load(path.read_text()) or {}).items():
             if not CD_NAME.match(name) or name in STANDARD or name in PALS1 or name in BINDERS or name in PALS1_BINDERS:
                 raise CardError(f"{path.name}: invalid or built-in vocabulary name {name}")
@@ -317,7 +320,7 @@ AXIOMS = re.compile(
     r"'(pals_card_\d+)' (?:depends on axioms: \[([^\]]*)\]|does not depend on any axioms)", re.S
 )
 DIAGNOSTIC = re.compile(
-    r"^[^\n:]*:(\d+):(\d+): error: (.*?)(?=^[^\n:]*:\d+:\d+: |^'pals_card_|\Z)", re.S | re.M
+    r"^[^\n:]*:(\d+):(\d+): error(?:\([^)\n]*\))?: (.*?)(?=^[^\n:]*:\d+:\d+: |^'pals_card_|\Z)", re.S | re.M
 )
 
 
@@ -380,7 +383,7 @@ def load_file(path: Path, vocabulary: dict[str, dict]) -> tuple[list[dict], dict
 
 
 def command_check(args: argparse.Namespace) -> int:
-    vocabulary = load_vocabulary()
+    vocabulary = load_vocabulary(args.domain)
     entries, errors = load_file(CARDS / f"{args.domain}.yaml", vocabulary)
     selected = [entry for entry in entries if not args.only or entry["card"]["id"] in args.only]
     if selected and not args.no_compile:
@@ -551,7 +554,7 @@ def _replay(entry: dict, binary: str, env: dict[str, str], temp: str) -> dict:
         "exit_code": code,
         "seconds": round(time.monotonic() - started, 3),
         "materialized_source_sha256": hashlib.sha256(entry["source"]).hexdigest(),
-        "has_error": code != 0 or " error:" in output,
+        "has_error": code != 0 or re.search(r" error(?:\([^)\n]*\))?:", output) is not None,
         "warned_sorry": "declaration uses" in output and "sorry" in output,
         "output_tail": output[-600:] if code != 0 else "",
     }
@@ -598,6 +601,232 @@ def command_verify(args: argparse.Namespace) -> int:
     return 1 if bad or failures else 0
 
 
+MIN_IMPORT_LINE = re.compile(r"^(?:public )?import ([A-Za-z0-9_.]+)$", re.M)
+MIN_IMPORTS_NAME = "pals_min_import_card"
+TIME_RSS = re.compile(r"(\d+)\s+maximum resident set size")
+TIME_FOOTPRINT = re.compile(r"(\d+)\s+peak memory footprint")
+
+
+def _lean_text(entry: dict) -> str:
+    target, proof = clean(entry["card"], "target"), clean(entry["card"], "proof")
+    return f"theorem {MIN_IMPORTS_NAME} : {target} := {proof}\n"
+
+
+def _statement_probe() -> str:
+    return f"\nset_option pp.all true in\n#check @{MIN_IMPORTS_NAME}\n"
+
+
+def _run_lean(source: str, binary: str, env: dict[str, str], temp: str, label: str) -> tuple[int, str]:
+    path = Path(temp) / f"{label}.lean"
+    path.write_text(source)
+    try:
+        done = subprocess.run(
+            [binary, str(path)], env=env, capture_output=True, text=True, timeout=600
+        )
+    except subprocess.TimeoutExpired:
+        return -1, "timeout"
+    finally:
+        path.unlink(missing_ok=True)
+    return done.returncode, done.stdout + done.stderr
+
+
+def _statement_text(output: str) -> str | None:
+    match = re.search(rf"{MIN_IMPORTS_NAME}(?:\.\{{[^}}]*\}})? :.*\Z", output, re.S)
+    return re.sub(r"\s+", " ", match[0]).strip() if match else None
+
+
+def _first_error(output: str) -> str:
+    match = re.search(r"error(?:\([^)\n]*\))?: ([^\n]*)", output)
+    return (match[1] if match else output.strip()[:200])[:240]
+
+
+def _minimal_imports(entry: dict, binary: str, env: dict[str, str], temp: str) -> dict:
+    """Adopt a narrow import list only when the statement elaborates to identical terms."""
+    label = "M" + hashlib.sha256(entry["recipe_id"].encode()).hexdigest()[:24]
+    row = {
+        "recipe_id": entry["recipe_id"],
+        "materialized_source_sha256": hashlib.sha256(entry["source"]).hexdigest(),
+        "imports": None,
+        "status": "kept_mathlib",
+        "reason": None,
+        "statement_pp_all_sha256": None,
+    }
+    text = _lean_text(entry)
+    broad = f"import Mathlib\n\n#min_imports in\n{text}{_statement_probe()}"
+    code, output = _run_lean(broad, binary, env, temp, f"{label}B")
+    imports = sorted(set(MIN_IMPORT_LINE.findall(output)))
+    expected = _statement_text(output)
+    if code != 0 or not imports or expected is None:
+        row["reason"] = f"min_imports_failed: {_first_error(output)}"
+        return row
+    row["statement_pp_all_sha256"] = hashlib.sha256(expected.encode()).hexdigest()
+    header = "".join(f"import {name}\n" for name in imports)
+    code, output = _run_lean(f"{header}\n{text}{_statement_probe()}", binary, env, temp, f"{label}N")
+    if code != 0:
+        row["reason"] = f"narrow_compile_error: {_first_error(output)}"
+        return row
+    actual = _statement_text(output)
+    if actual != expected:
+        row["reason"] = "statement_type_differs"
+        return row
+    row.update(imports=imports, status="adopted")
+    return row
+
+
+def _measure(source: bytes, binary: str, env: dict[str, str], temp: str, label: str) -> dict:
+    path = Path(temp) / f"{label}.lean"
+    path.write_bytes(source)
+    started = time.monotonic()
+    done = subprocess.run(
+        ["/usr/bin/time", "-l", binary, str(path)], env=env, capture_output=True, text=True, timeout=600
+    )
+    seconds = round(time.monotonic() - started, 3)
+    path.unlink(missing_ok=True)
+    rss, footprint = TIME_RSS.search(done.stderr), TIME_FOOTPRINT.search(done.stderr)
+    return {
+        "seconds": seconds,
+        "max_rss_bytes": int(rss[1]) if rss else None,
+        "peak_footprint_bytes": int(footprint[1]) if footprint else None,
+        "exit_code": done.returncode,
+    }
+
+
+def _percentile(values: list[float], fraction: float) -> float:
+    ordered = sorted(values)
+    return ordered[min(len(ordered) - 1, int(fraction * len(ordered)))]
+
+
+def command_min_imports(args: argparse.Namespace) -> int:
+    entries = all_entries() if not args.domain else load_file(CARDS / f"{args.domain}.yaml", load_vocabulary(args.domain))[0]
+    binary, env = lean_environment()
+    with (
+        tempfile.TemporaryDirectory() as temp,
+        concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool,
+    ):
+        rows = list(pool.map(lambda entry: _minimal_imports(entry, binary, env, temp), entries))
+        adopted = [row for row in rows if row["status"] == "adopted"]
+        by_id = {entry["recipe_id"]: entry for entry in entries}
+        step = max(1, len(adopted) // args.measure_sample) if adopted else 1
+        sample = adopted[::step][: args.measure_sample]
+        measurements = []
+        for row in sample:  # sequential: concurrent runs would distort the time and memory figures
+            entry = by_id[row["recipe_id"]]
+            header = "".join(f"import {name}\n" for name in row["imports"])
+            narrow = (header + "\n" + _lean_text(entry)).encode()
+            label = "T" + hashlib.sha256(entry["recipe_id"].encode()).hexdigest()[:24]
+            measurements.append(
+                {
+                    "recipe_id": row["recipe_id"],
+                    "broad": _measure(entry["source"], binary, env, temp, f"{label}B"),
+                    "narrow": _measure(narrow, binary, env, temp, f"{label}N"),
+                }
+            )
+    reasons = Counter((row["reason"] or "").split(":")[0] for row in rows if row["reason"])
+    summary = {
+        "cases": len(rows),
+        "adopted": len(adopted),
+        "kept_mathlib": len(rows) - len(adopted),
+        "kept_reasons": reasons,
+        "import_count_median": _percentile([len(row["imports"]) for row in adopted], 0.5) if adopted else None,
+    }
+    for side in ("broad", "narrow"):
+        for key in ("seconds", "max_rss_bytes", "peak_footprint_bytes"):
+            values = [m[side][key] for m in measurements if m[side][key] is not None]
+            if values:
+                summary[f"{side}_{key}"] = {
+                    "median": _percentile(values, 0.5),
+                    "p95": _percentile(values, 0.95),
+                    "max": max(values),
+                }
+    summary["measured"] = len(measurements)
+    if not args.domain:
+        write_json(
+            GENERATED / "min-imports.json",
+            {"schema_version": "pals.textbook-min-imports.v1", "materializer_unchanged": True, "cases": rows},
+        )
+    report = {"summary": summary, "rows": rows, "measurements": measurements}
+    Path(args.output).write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n")
+    print(json.dumps(summary, ensure_ascii=False, indent=1))
+    return 0
+
+
+TEXT_FIELDS = {"statement", "assumptions", "quantifiers", "conclusion", "answer"}
+OUTSIDE_MATH = re.compile(r"[A-Za-zα-ωΑ-Ω≤≥≠∈∉⊂⊆⊇∑∏∫√→↦∀∃∞×±^_=<>|]")
+PROPER_NAME = re.compile(
+    r"\b(?:[A-Z][a-zé\-]+(?:[ -][A-Z][a-zé\-]+)*|QED|Lean|Mathlib|OK|cf|i\.e|e\.g)\b"
+)
+
+
+class _LiteralDumper(yaml.SafeDumper):
+    pass
+
+
+def _represent_text(dumper: yaml.SafeDumper, value: str) -> yaml.ScalarNode:
+    style = "|" if "\n" in value else None
+    return dumper.represent_scalar("tag:yaml.org,2002:str", value, style=style)
+
+
+_LiteralDumper.add_representer(str, _represent_text)
+
+
+def command_apply_text(args: argparse.Namespace) -> int:
+    """Replace only learner-facing Japanese fields, so Lean and Draft data cannot change."""
+    path = CARDS / f"{args.domain}.yaml"
+    cards = yaml.safe_load(path.read_text())
+    patch = yaml.safe_load(Path(args.patch).read_text()) or {}
+    by_id = {card["id"]: card for card in cards}
+    unknown = sorted(set(patch) - set(by_id))
+    if unknown:
+        raise SystemExit(f"unknown card ids: {unknown}")
+    for card_id, fields in patch.items():
+        extra = sorted(set(fields) - TEXT_FIELDS)
+        if extra:
+            raise SystemExit(f"{card_id}: only {sorted(TEXT_FIELDS)} may change, got {extra}")
+        for key, value in fields.items():
+            if key in {"assumptions", "quantifiers"}:
+                if not isinstance(value, list) or any(not isinstance(x, str) for x in value):
+                    raise SystemExit(f"{card_id}.{key} must be a list of text")
+            elif not isinstance(value, str):
+                raise SystemExit(f"{card_id}.{key} must be text")
+            by_id[card_id][key] = value
+    body = yaml.dump(cards, Dumper=_LiteralDumper, allow_unicode=True, sort_keys=False, width=100000)
+    path.write_text(body)
+    print(f"patched {len(patch)} cards in {path.name}")
+    return 0
+
+
+def _text_problems(value: str) -> list[str]:
+    problems = []
+    if value.count("$") % 2:
+        problems.append("unbalanced $")
+    outside = PROPER_NAME.sub("", re.sub(r"\$[^$]*\$", "", value))
+    found = OUTSIDE_MATH.findall(outside)
+    if found:
+        problems.append("math-like text outside $: " + "".join(sorted(set(found)))[:30])
+    return problems
+
+
+def command_lint_text(args: argparse.Namespace) -> int:
+    failed = 0
+    domains = [args.domain] if args.domain else sorted(
+        p.stem for p in CARDS.glob("*.yaml") if not p.stem.startswith("_")
+    )
+    for domain in domains:
+        for card in yaml.safe_load((CARDS / f"{domain}.yaml").read_text()):
+            problems = []
+            for key in sorted(TEXT_FIELDS):
+                values = card[key] if isinstance(card[key], list) else [card[key]]
+                for value in values:
+                    problems += [f"{key}: {problem}" for problem in _text_problems(value)]
+            if "概略" in card["answer"]:
+                problems.append("answer: 概略")
+            if problems:
+                failed += 1
+                print(f"{domain}.{card['id']}: " + "; ".join(problems))
+    print(json.dumps({"cards_with_problems": failed}))
+    return 1 if failed else 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     commands = parser.add_subparsers(required=True)
@@ -611,6 +840,19 @@ def main() -> int:
     verify.add_argument("--output", required=True)
     verify.add_argument("--jobs", type=int, default=8)
     verify.set_defaults(run=command_verify)
+    apply_text = commands.add_parser("apply-text")
+    apply_text.add_argument("domain")
+    apply_text.add_argument("patch")
+    apply_text.set_defaults(run=command_apply_text)
+    lint = commands.add_parser("lint-text")
+    lint.add_argument("domain", nargs="?")
+    lint.set_defaults(run=command_lint_text)
+    minimal = commands.add_parser("min-imports")
+    minimal.add_argument("--output", required=True)
+    minimal.add_argument("--jobs", type=int, default=8)
+    minimal.add_argument("--domain")
+    minimal.add_argument("--measure-sample", type=int, default=60)
+    minimal.set_defaults(run=command_min_imports)
     args = parser.parse_args()
     return args.run(args)
 

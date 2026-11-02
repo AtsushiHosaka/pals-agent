@@ -1,0 +1,955 @@
+- id: maschke_invariant_complement
+  kind: named
+  level: 4
+  topic: 表現論・マシュケの定理
+  statement: 体k上で有限群Gの位数が0でないとき、群環k[G]上の加群Vの任意の部分加群pには、k[G]部分加群である補加群qが存在する。
+  statement_en: Let G be a finite group whose order is nonzero in the field k. Every k[G]-submodule p of a k[G]-module V has a complementary k[G]-submodule q.
+  assumptions:
+    - kは体、Gは有限群
+    - Gの位数はkで0でない
+    - Vはk[G]加群、pはその部分加群
+  quantifiers:
+    - 任意のk, G, Vと任意の部分加群p
+  conclusion: V=p⊕qとなるk[G]部分加群qが存在する。
+  answer: |
+    pのk線形な補空間を選び、Vからpへのk線形な射影πをとる。$|G|$はkで可逆なので、$\tilde\pi(v)=|G|^{-1}\sum_{g\in G}g^{-1}\pi(gv)$と定義できる。この$\tilde\pi$はk[G]線形で、像はpに含まれ、p上では恒等写像である。したがって$q=\ker\tilde\pi$はk[G]部分加群であり、$V=p\oplus q$が成り立つ。
+  strategy: Average a k-linear projection onto p over the group to obtain an equivariant projection, then take its kernel.
+  sketch:
+    - "setup: Choose a k-linear projection π from V onto p."
+    - "construct: Define π̃(v) = |G|⁻¹ Σ_g g⁻¹ π(g v), which makes sense because |G| is invertible in k."
+    - "derive: Check that π̃ is k[G]-linear, has image in p, and restricts to the identity on p."
+    - "conclude: The kernel of π̃ is a k[G]-submodule complementary to p."
+  openmath: (forall (k G V p) (-> (and (field k) (finite_group G) (order_invertible_in G k) (module_over V (group_algebra k G)) (submodule_of p V)) (exists (q) (and (submodule_of q V) (complementary_submodules p q V)))))
+  hard_negative:
+    statement: 体kの標数がGの位数を割るときでも、k[G]加群の部分加群には常に補加群がある。
+    reason: k=F_2, G=Z/2のとき、k[G]は局所環であり、部分加群(1+g)k[G]はk[G]の直和因子にならない。
+  target: |
+    ∀ (k G V : Type*) [Field k] [Group G] [Finite G] [NeZero (Nat.card G : k)] [AddCommGroup V] [Module (MonoidAlgebra k G) V] (p : Submodule (MonoidAlgebra k G) V), ∃ q : Submodule (MonoidAlgebra k G) V, IsCompl p q
+  proof: |
+    by
+      intro k G V _ _ _ _ _ _ p
+      exact MonoidAlgebra.Submodule.exists_isCompl p
+- id: schur_intertwiner_bijective_or_zero
+  kind: textbook
+  level: 4
+  topic: 表現論・シューアの補題
+  statement: 同じ群の体k上の既約表現ρ, σの間の絡作用素fは、全単射であるか零写像である。
+  statement_en: An intertwining map between two irreducible representations of a monoid or group over a field is either bijective or zero.
+  assumptions:
+    - kは体、ρとσは同じ群のk上の既約表現
+    - fはρからσへの絡作用素
+  quantifiers:
+    - 任意のρ, σと任意の絡作用素f
+  conclusion: fは全単射または零写像である。
+  answer: |
+    fの核はρの部分表現であり、fの像はσの部分表現である。ρは既約なので核は0か全体である。核が全体ならfは零写像である。核が0ならfは単射で、像は0でない。このときσの既約性から像は全体となり、fは全単射である。
+  strategy: Apply irreducibility to the kernel in the source and the image in the target.
+  sketch:
+    - "setup: Note that ker f and im f are subrepresentations of ρ and σ."
+    - "case_split: By irreducibility of ρ, ker f is either the whole space or zero."
+    - "derive: If ker f is everything then f = 0."
+    - "conclude: Otherwise f is injective with nonzero image, so irreducibility of σ makes f surjective."
+  openmath: (forall (k G V W r s f) (-> (and (field k) (group G) (linear_representation r k G V) (linear_representation s k G W) (irreducible_representation r) (irreducible_representation s) (intertwining_map f r s)) (or (bijective f) (= f 0))))
+  hard_negative:
+    statement: 既約表現σへの絡作用素は、ρが既約でなくても全単射または零写像である。
+    reason: ρ=σ⊕σから第1成分への射影は絡作用素だが、0でも単射でもない。
+  target: |
+    ∀ (k G V W : Type*) [Field k] [Monoid G] [AddCommGroup V] [Module k V] [AddCommGroup W] [Module k W] (ρ : Representation k G V) (σ : Representation k G W) [ρ.IsIrreducible] [σ.IsIrreducible] (f : Representation.IntertwiningMap ρ σ), Function.Bijective f ∨ f = 0
+  proof: |
+    by
+      intro k G V W _ _ _ _ _ _ ρ σ _ _ f
+      exact Representation.IsIrreducible.bijective_or_eq_zero f
+- id: schur_endomorphism_is_scalar
+  kind: textbook
+  level: 4
+  topic: 表現論・シューアの補題
+  statement: 代数閉体k上の有限次元既約表現ρの自己絡作用素は、スカラー倍写像である。
+  statement_en: Over an algebraically closed field, every intertwining endomorphism of a finite-dimensional irreducible representation is multiplication by a scalar.
+  assumptions:
+    - kは代数閉体
+    - ρは有限次元空間V上の既約表現
+    - fはρからρへの絡作用素
+  quantifiers:
+    - 任意のρと任意の自己絡作用素f
+  conclusion: あるc∈kがあり、全てのv∈Vでf(v)=cvとなる。
+  answer: |
+    Vは有限次元で0でなく、kは代数閉体なので、fは固有値cをもつ。このときf-cは絡作用素であり、核が0でないから単射ではない。ρは既約なので、核はV全体である。よって全てのvでf(v)=cvとなる。
+  strategy: Take an eigenvalue of f and apply irreducibility to the kernel of f minus that scalar.
+  sketch:
+    - "setup: The space V is nonzero and finite dimensional over an algebraically closed field."
+    - "apply_theorem: Choose an eigenvalue c of f."
+    - "derive: The map f - c is an intertwiner with nonzero kernel."
+    - "conclude: Irreducibility forces that kernel to be all of V, so f = c."
+  openmath: (forall (k G V r f) (-> (and (field k) (algebraically_closed k) (group G) (finite_dim_space V) (linear_representation r k G V) (irreducible_representation r) (intertwining_map f r r)) (exists (c) (and (in c k) (forall (v) (-> (in v V) (= (fn_value f v) (scalar_action c v))))))))
+  hard_negative:
+    statement: 実数体上の有限次元既約表現の自己絡作用素はスカラー倍写像である。
+    reason: Z/4を平面の90度回転で表すと実既約だが、回転自身は実スカラー倍でない絡作用素である。
+  target: |
+    ∀ (k G V : Type*) [Field k] [IsAlgClosed k] [Monoid G] [AddCommGroup V] [Module k V] [FiniteDimensional k V] (ρ : Representation k G V) [ρ.IsIrreducible] (f : Representation.IntertwiningMap ρ ρ), ∃ c : k, ∀ v : V, f v = c • v
+  proof: |
+    by
+      intro k G V _ _ _ _ _ _ ρ _ f
+      obtain ⟨c, rfl⟩ := (Representation.IsIrreducible.algebraMap_intertwiningMap_bijective_of_isAlgClosed (ρ := ρ)).2 f
+      exact ⟨c, fun v => rfl⟩
+- id: character_is_class_function
+  kind: gap
+  level: 4
+  topic: 表現論・指標
+  statement: 有限次元表現の指標は共役類の上で一定である。すなわちχ(hgh⁻¹)=χ(g)が成り立つ。
+  statement_en: The character of a finite-dimensional representation is a class function, that is, χ(h g h⁻¹) = χ(g) for all group elements g and h.
+  assumptions:
+    - kは体、Gは群
+    - ρは有限次元空間V上のGの表現
+  quantifiers:
+    - 任意のg, h∈G
+  conclusion: χ_ρ(hgh⁻¹)=χ_ρ(g)が成り立つ。
+  answer: |
+    ρは準同型なので$\rho(hgh^{-1})=\rho(h)\rho(g)\rho(h)^{-1}$である。トレースは$\mathrm{tr}(AB)=\mathrm{tr}(BA)$を満たすから、$\mathrm{tr}(\rho(h)\rho(g)\rho(h)^{-1})=\mathrm{tr}(\rho(g))$となる。よって$\chi_\rho(hgh^{-1})=\chi_\rho(g)$である。
+  strategy: Expand the conjugate with the homomorphism property and use cyclicity of the trace.
+  sketch:
+    - "translate: Write ρ(h g h⁻¹) as ρ(h) ρ(g) ρ(h)⁻¹."
+    - "derive: Cyclicity of the trace removes the conjugation."
+    - "conclude: Hence the character takes the same value on g and h g h⁻¹."
+  openmath: (forall (k G V r g h) (-> (and (field k) (group G) (finite_dim_space V) (linear_representation r k G V) (in g G) (in h G)) (= (rep_character r (group_mul (group_mul h g) (group_inv h))) (rep_character r g))))
+  hard_negative:
+    statement: 指標が等しい2元g, hは必ず共役である。
+    reason: 自明表現の指標は全ての元で1なので、Gが自明でなければ、共役でない単位元と他の元でも値が等しい。
+  target: |
+    ∀ (k G V : Type*) [Field k] [Group G] [AddCommGroup V] [Module k V] [FiniteDimensional k V] (ρ : Representation k G V) (g h : G), ρ.character (h * g * h⁻¹) = ρ.character g
+  proof: |
+    by
+      intro k G V _ _ _ _ _ ρ g h
+      exact ρ.char_conj g h
+- id: character_orthogonality_irreducible
+  kind: textbook
+  level: 4
+  topic: 表現論・指標の直交関係
+  statement: 代数閉体k上で有限群Gの位数が0でないとき、有限次元既約表現ρ, σに対し|G|⁻¹Σχ_ρ(g)χ_σ(g⁻¹)は、ρとσが同型なら1、同型でなければ0である。
+  statement_en: Let G be a finite group whose order is nonzero in an algebraically closed field k, and let ρ, σ be finite-dimensional irreducible representations. Then |G|⁻¹ Σ_g χ_ρ(g) χ_σ(g⁻¹) equals 1 if ρ and σ are isomorphic and 0 otherwise.
+  assumptions:
+    - kは代数閉体、Gは有限群
+    - Gの位数はkで0でない
+    - ρ, σは有限次元既約表現
+  quantifiers:
+    - 任意の既約表現ρ, σ
+  conclusion: 上の和はρとσが同型なら1、同型でなければ0である。
+  answer: |
+    σからρへの線形写像全体Hom(σ,ρ)にGが作用する表現を考えると、その指標は$\chi_\rho(g)\chi_\sigma(g^{-1})$である。Gの平均化作用素は不変部分空間への射影なので、そのトレースである$|G|^{-1}\sum_g\chi_\rho(g)\chi_\sigma(g^{-1})$は絡作用素の空間の次元をkの元とみたものに等しい。シューアの補題より、この次元はρとσが同型なら1、同型でなければ0である。
+  strategy: Identify the sum with the dimension of the space of intertwiners through the trace of the averaging projection, then apply Schur's lemma.
+  sketch:
+    - "translate: The function g ↦ χ_ρ(g) χ_σ(g⁻¹) is the character of the Hom representation."
+    - "derive: The averaging operator is a projection onto invariants, so its trace is the dimension of the invariants."
+    - "translate: The invariants of the Hom representation are exactly the intertwining maps."
+    - "apply_theorem: Schur's lemma gives dimension 1 for isomorphic representations and 0 otherwise."
+    - "conclude: The normalized sum equals that dimension viewed in k."
+  openmath: (forall (k G V W r s) (-> (and (field k) (algebraically_closed k) (finite_group G) (order_invertible_in G k) (finite_dim_space V) (finite_dim_space W) (linear_representation r k G V) (linear_representation s k G W) (irreducible_representation r) (irreducible_representation s)) (and (-> (equivalent_representations s r) (= (group_average_inner_product G r s) 1)) (-> (not (equivalent_representations s r)) (= (group_average_inner_product G r s) 0)))))
+  hard_negative:
+    statement: 代数閉体でない体の上でも、既約表現の自己内積は常に1である。
+    reason: Z/3の実2次元回転表現は実既約だが、指標の自己内積は2である。
+  target: |
+    ∀ (k G V W : Type*) [Field k] [IsAlgClosed k] [Group G] [Fintype G] [NeZero (Nat.card G : k)] [AddCommGroup V] [Module k V] [FiniteDimensional k V] [AddCommGroup W] [Module k W] [FiniteDimensional k W] (ρ : Representation k G V) (σ : Representation k G W) [ρ.IsIrreducible] [σ.IsIrreducible], (Nonempty (Representation.Equiv σ ρ) → (Nat.card G : k)⁻¹ * ∑ g : G, ρ.character g * σ.character g⁻¹ = 1) ∧ (IsEmpty (Representation.Equiv σ ρ) → (Nat.card G : k)⁻¹ * ∑ g : G, ρ.character g * σ.character g⁻¹ = 0)
+  proof: |
+    by
+      intro k G V W _ _ _ _ _ _ _ _ _ _ _ ρ σ _ _
+      haveI : Invertible (Nat.card G : k) := invertibleOfNonzero (NeZero.ne _)
+      have h := Representation.char_orthonormal ρ σ
+      constructor
+      · intro hn
+        rw [h, if_pos hn]
+      · intro he
+        rw [h, if_neg (not_nonempty_iff.mpr he)]
+- id: lie_bracket_anticommutative
+  kind: gap
+  level: 3
+  topic: リー代数・括弧積の基本性質
+  statement: リー環Lの任意の元x, yについて[x,y]=-[y,x]が成り立つ。
+  statement_en: In a Lie ring L, the bracket is anticommutative, that is, [x,y] = -[y,x] for all x and y.
+  assumptions:
+    - Lはリー環
+  quantifiers:
+    - 任意のx, y∈L
+  conclusion: "[x,y]=-[y,x]が成り立つ。"
+  answer: |
+    双線形性と[z,z]=0より、$0=[x+y,x+y]=[x,x]+[x,y]+[y,x]+[y,y]=[x,y]+[y,x]$である。よって$[x,y]=-[y,x]$が成り立つ。
+  strategy: Expand the alternating identity for x + y using biadditivity.
+  sketch:
+    - "setup: Start from [x+y, x+y] = 0."
+    - "derive: Biadditivity expands this into four terms, two of which vanish."
+    - "conclude: The remaining relation is [x,y] + [y,x] = 0."
+  openmath: (forall (L x y) (-> (and (lie_ring L) (in x L) (in y L)) (= (lie_bracket x y) (neg (lie_bracket y x)))))
+  hard_negative:
+    statement: リー環では[x,y]=[y,x]が常に成り立つ。
+    reason: 2次正方行列の交換子[A,B]=AB-BAでは、一般に[A,B]=-[B,A]≠[B,A]である。
+  target: |
+    ∀ (L : Type*) [LieRing L] (x y : L), ⁅x, y⁆ = -⁅y, x⁆
+  proof: |
+    by
+      intro L _ x y
+      exact (lie_skew x y).symm
+- id: lie_jacobi_cyclic_sum
+  kind: gap
+  level: 3
+  topic: リー代数・ヤコビ恒等式
+  statement: リー環Lの任意の元x, y, zについて[x,[y,z]]+[y,[z,x]]+[z,[x,y]]=0が成り立つ。
+  statement_en: In a Lie ring, the Jacobi identity [x,[y,z]] + [y,[z,x]] + [z,[x,y]] = 0 holds, derived here from the Leibniz form of the axiom.
+  assumptions:
+    - Lはリー環で、ライプニッツ則[x,[y,z]]=[[x,y],z]+[y,[x,z]]を満たす
+  quantifiers:
+    - 任意のx, y, z∈L
+  conclusion: 巡回和が0になる。
+  answer: |
+    ライプニッツ則より$[x,[y,z]]=[[x,y],z]+[y,[x,z]]$である。反可換性から$[[x,y],z]=-[z,[x,y]]$かつ$[y,[x,z]]=-[y,[z,x]]$となる。これらを移項すれば$[x,[y,z]]+[y,[z,x]]+[z,[x,y]]=0$が得られる。
+  strategy: Rewrite the Leibniz rule with anticommutativity and move all terms to one side.
+  sketch:
+    - "setup: Write the Leibniz rule for x acting on [y,z]."
+    - "derive: Replace [[x,y],z] by -[z,[x,y]] and [x,z] by -[z,x] using anticommutativity."
+    - "conclude: Collecting terms gives the cyclic sum equal to zero."
+  openmath: (forall (L x y z) (-> (and (lie_ring L) (in x L) (in y L) (in z L)) (= (+ (+ (lie_bracket x (lie_bracket y z)) (lie_bracket y (lie_bracket z x))) (lie_bracket z (lie_bracket x y))) 0)))
+  hard_negative:
+    statement: リー環では括弧積は結合的で、[x,[y,z]]=[[x,y],z]が成り立つ。
+    reason: ヤコビ恒等式によれば差は[y,[x,z]]であり、3次元ベクトルの外積ではこの項が一般に0でない。
+  target: |
+    ∀ (L : Type*) [LieRing L] (x y z : L), ⁅x, ⁅y, z⁆⁆ + ⁅y, ⁅z, x⁆⁆ + ⁅z, ⁅x, y⁆⁆ = 0
+  proof: |
+    by
+      intro L _ x y z
+      exact lie_jacobi x y z
+- id: lie_ideal_bracket_le_inf
+  kind: gap
+  level: 4
+  topic: リー代数・イデアル
+  statement: リー代数Lのイデアル I, Jについて[I,J]はI∩Jに含まれる。
+  statement_en: For Lie ideals I and J of a Lie algebra, the ideal [I,J] is contained in the intersection of I and J.
+  assumptions:
+    - Lは可換環R上のリー代数
+    - I, JはLのイデアル
+  quantifiers:
+    - 任意のイデアルI, J
+  conclusion: "[I,J]⊆I∩Jが成り立つ。"
+  answer: |
+    x∈I, y∈Jとする。Jはイデアルなので[x,y]∈Jである。反可換性より[x,y]=-[y,x]であり、Iはイデアルなので[y,x]∈Iから[x,y]∈Iとなる。[I,J]はこのような元で生成され、I∩Jはイデアルだから、[I,J]⊆I∩Jが成り立つ。
+  strategy: Check the generators [x,y] lie in both ideals using the ideal property and anticommutativity.
+  sketch:
+    - "setup: Take generators [x,y] with x in I and y in J."
+    - "derive: The ideal property of J gives [x,y] in J."
+    - "derive: Anticommutativity and the ideal property of I give [x,y] in I."
+    - "conclude: Since I ∩ J is an ideal, it contains the ideal generated by these brackets."
+  openmath: (forall (R L I J) (-> (and (commutative_ring R) (lie_algebra L R) (lie_ideal I L) (lie_ideal J L)) (subset (lie_ideal_bracket I J) (inter I J))))
+  hard_negative:
+    statement: リー代数のイデアルI, Jについて常に[I,J]=I∩Jが成り立つ。
+    reason: 可換リー代数ではI=J=Lでも[I,J]=0であり、I∩J=Lと一致しない。
+  target: |
+    ∀ (R L : Type*) [CommRing R] [LieRing L] [LieAlgebra R L] (I J : LieIdeal R L), ⁅I, J⁆ ≤ I ⊓ J
+  proof: |
+    by
+      intro R L _ _ _ I J
+      exact LieSubmodule.lie_le_inf I J
+- id: lie_derived_series_antitone
+  kind: gap
+  level: 4
+  topic: リー代数・導来列
+  statement: リー代数Lの導来列は減少列である。すなわちl≤kならL^(k)⊆L^(l)が成り立つ。
+  statement_en: The derived series of a Lie algebra is decreasing, so L^(k) is contained in L^(l) whenever l ≤ k.
+  assumptions:
+    - Lは可換環R上のリー代数
+    - l≤k
+  quantifiers:
+    - 任意の自然数k, l
+  conclusion: L^(k)⊆L^(l)が成り立つ。
+  answer: |
+    隣り合う項について$L^{(n+1)}\subseteq L^{(n)}$を示せば十分である。$L^{(n)}$はイデアルなので、$L^{(n+1)}=[L^{(n)},L^{(n)}]\subseteq L^{(n)}$が成り立つ。これをlからkまで繰り返すと、$L^{(k)}\subseteq L^{(l)}$が得られる。
+  strategy: Show each term contains the next and iterate between l and k.
+  sketch:
+    - "derive: Each L^(n) is an ideal, so its bracket with itself stays inside it."
+    - "induction: Iterate the one-step inclusion from l up to k."
+    - "conclude: Therefore L^(k) lies in L^(l)."
+  openmath: (forall (R L k l) (-> (and (commutative_ring R) (lie_algebra L R) (in k N) (in l N) (<= l k)) (subset (lie_derived_series L k) (lie_derived_series L l))))
+  hard_negative:
+    statement: リー代数の導来列は必ず有限回で0に到達する。
+    reason: 体上のsl_2では[sl_2,sl_2]=sl_2（標数2を除く）なので、導来列は減少するが0に到達しない。
+  target: |
+    ∀ (R L : Type*) [CommRing R] [LieRing L] [LieAlgebra R L] (k l : ℕ), l ≤ k → LieAlgebra.derivedSeries R L k ≤ LieAlgebra.derivedSeries R L l
+  proof: |
+    by
+      intro R L _ _ _ k l h
+      exact LieAlgebra.derivedSeriesOfIdeal_antitone (⊤ : LieIdeal R L) h
+- id: solvable_lie_algebra_surjective_image
+  kind: gap
+  level: 4
+  topic: リー代数・可解性
+  statement: 可解リー代数の全射準同型による像は可解である。
+  statement_en: If there is a surjective Lie algebra homomorphism from a solvable Lie algebra L to M, then M is solvable.
+  assumptions:
+    - L, Mは可換環R上のリー代数で、Lは可解
+    - f:L→Mは全射準同型
+  quantifiers:
+    - 任意のL, M, f
+  conclusion: Mは可解である。
+  answer: |
+    fは全射準同型なので、帰納法により全てのkで$f(L^{(k)})=M^{(k)}$が成り立つ。Lは可解だから、あるkで$L^{(k)}=0$である。このとき$M^{(k)}=f(0)=0$となり、Mは可解である。
+  strategy: Transport the derived series along the surjection and use the vanishing term of L.
+  sketch:
+    - "induction: Show f maps L^(k) onto M^(k) for every k using surjectivity."
+    - "apply_theorem: Solvability of L gives a k with L^(k) = 0."
+    - "conclude: Then M^(k) = 0, so M is solvable."
+  openmath: (forall (R L M f) (-> (and (commutative_ring R) (lie_algebra L R) (lie_algebra M R) (lie_algebra_hom f L M) (surjective f) (solvable_lie_algebra L)) (solvable_lie_algebra M)))
+  hard_negative:
+    statement: Mが可解でf:L→Mが全射準同型なら、Lも可解である。
+    reason: 標数0の体上でsl_2から0への全射を考えると、0は可解だがsl_2は可解でない。
+  target: |
+    ∀ (R L M : Type*) [CommRing R] [LieRing L] [LieAlgebra R L] [LieRing M] [LieAlgebra R M] [LieAlgebra.IsSolvable L] (f : L →ₗ⁅R⁆ M), Function.Surjective f → LieAlgebra.IsSolvable M
+  proof: |
+    by
+      intro R L M _ _ _ _ _ _ f hf
+      exact hf.lieAlgebra_isSolvable (f := f)
+- id: engel_nilpotent_iff_ad_nilpotent
+  kind: textbook
+  level: 4
+  topic: リー代数・エンゲルの定理
+  statement: 可換環R上でネーター加群であるリー代数Lがべき零であることは、全てのx∈Lでad xがべき零であることと同値である。
+  statement_en: Engel's theorem. A Lie algebra that is Noetherian as a module over a commutative ring is nilpotent if and only if ad x is a nilpotent endomorphism for every element x.
+  assumptions:
+    - Rは可換環、LはR上のリー代数
+    - LはR加群としてネーター
+  quantifiers:
+    - 任意のR, L
+  conclusion: Lがべき零であることと、全てのxでad xがべき零であることは同値である。
+  answer: |
+    証明の概略を述べる。Lがべき零なら、ad xのべき乗の像は降中心列の項に入るので、ad xはべき零である。逆向きでは、「各元がべき零に作用する加群はべき零加群である」という性質をもつ部分リー代数のうち、ネーター性によって極大なものKをとる。KがLと異なれば、Kの正規化子の中にKより真に大きい同じ性質の部分リー代数が得られ、極大性に反する。よってK=Lとなり、Lを随伴作用で自身の上の加群とみればLはべき零である。
+  strategy: The forward direction reads off the lower central series; the converse takes a maximal subalgebra with the Engel property and grows it inside its normalizer.
+  sketch:
+    - "derive: If L is nilpotent, iterated ad x maps L into the lower central series, which vanishes."
+    - "setup: For the converse, consider subalgebras on which the conclusion holds."
+    - "apply_theorem: Noetherianity gives a maximal such subalgebra K."
+    - "contradiction: If K is proper, its normalizer yields a strictly larger subalgebra with the same property."
+    - "conclude: Therefore K = L and L is nilpotent."
+  openmath: (forall (R L) (-> (and (commutative_ring R) (lie_algebra L R) (noetherian_module R L)) (<-> (nilpotent_lie_algebra L) (forall (x) (-> (in x L) (nilpotent_op (adjoint_map L x)))))))
+  hard_negative:
+    statement: 全てのad xがべき零なら、Lの任意の表現の各元の作用もべき零である。
+    reason: 可換リー代数ではadは0だが、1次元表現で0でないスカラーを作用させれば、その作用はべき零でない。
+  target: |
+    ∀ (R L : Type*) [CommRing R] [LieRing L] [LieAlgebra R L] [IsNoetherian R L], LieRing.IsNilpotent L ↔ ∀ x : L, IsNilpotent (LieAlgebra.ad R L x)
+  proof: |
+    by
+      intro R L _ _ _ _
+      exact LieAlgebra.isNilpotent_iff_forall
+- id: ring_of_integers_is_dedekind
+  kind: gap
+  level: 4
+  topic: 代数的整数論・整数環
+  statement: 数体Kの整数環はデデキント整域である。
+  statement_en: The ring of integers of a number field is a Dedekind domain.
+  assumptions:
+    - Kは数体
+  quantifiers:
+    - 任意の数体K
+  conclusion: Kの整数環はデデキント整域である。
+  answer: |
+    整数環$\mathcal{O}_K$は整数基底をもち、Z上有限生成の加群なのでネーター環である。定義から$\mathcal{O}_K$はKの中で整閉である。0でない素イデアルPは0でない整数を含むから$\mathcal{O}_K/P$は有限整域であり、体になる。よってPは極大イデアルであり、$\mathcal{O}_K$はデデキント整域である。
+  strategy: Verify the three defining properties, Noetherian, integrally closed, and dimension at most one.
+  sketch:
+    - "derive: An integral basis makes the ring a finitely generated Z-module, hence Noetherian."
+    - "translate: The ring is integrally closed in K by definition."
+    - "derive: A nonzero prime contains a nonzero integer, so the quotient is a finite domain."
+    - "conclude: Finite domains are fields, so nonzero primes are maximal."
+  openmath: (forall (K) (-> (number_field K) (dedekind_domain (ring_of_integers K))))
+  hard_negative:
+    statement: 代数的整数αで生成された数体の部分環Z[α]は常にデデキント整域である。
+    reason: Z[√-3]の分数体の元(1+√-3)/2は整元だがZ[√-3]に含まれないので、Z[√-3]は整閉でない。
+  target: |
+    ∀ (K : Type*) [Field K] [NumberField K], IsDedekindDomain (NumberField.RingOfIntegers K)
+  proof: |
+    by
+      intro K _ _
+      infer_instance
+- id: class_group_of_number_field_finite
+  kind: textbook
+  level: 4
+  topic: 代数的整数論・イデアル類群
+  statement: 数体Kの整数環のイデアル類群は有限群である。
+  statement_en: The ideal class group of the ring of integers of a number field is finite.
+  assumptions:
+    - Kは数体
+  quantifiers:
+    - 任意の数体K
+  conclusion: Kの整数環のイデアル類群は有限である。
+  answer: |
+    証明の概略を述べる。整数基底から定数Mをとると、任意のαと0でないβに対して、1以上M以下の整数mと整数環の元γで$|N(m\alpha-\beta\gamma)|<|N(\beta)|$を満たすものがとれる。0でないイデアルIの中でノルムの絶対値が最小の0でない元βをとると、この不等式から$M!\,I\subseteq(\beta)$が従う。したがって各イデアル類は$M!$を含むイデアルで代表される。$\mathcal{O}_K/(M!)$は有限なので、そのようなイデアルは有限個である。
+  strategy: Use a norm approximation bound from an integral basis to represent each class by an ideal containing a fixed integer.
+  sketch:
+    - "setup: Fix an integral basis and derive a constant M for approximation in the norm."
+    - "derive: For a nonzero ideal I, take a nonzero element β of minimal absolute norm."
+    - "derive: The approximation bound and minimality give M! I contained in (β)."
+    - "translate: Thus the class of I is represented by an ideal containing M!."
+    - "conclude: Only finitely many ideals contain M!, so the class group is finite."
+  openmath: (forall (K) (-> (number_field K) (finite_set (class_group (ring_of_integers K)))))
+  hard_negative:
+    statement: 任意のデデキント整域のイデアル類群は有限である。
+    reason: 複素数体上の楕円曲線の座標環はデデキント整域だが、その類群は曲線の点の群と同型で無限である。
+  target: |
+    ∀ (K : Type*) [Field K] [NumberField K], Finite (ClassGroup (NumberField.RingOfIntegers K))
+  proof: |
+    by
+      intro K _ _
+      infer_instance
+- id: class_number_one_iff_pid
+  kind: gap
+  level: 4
+  topic: 代数的整数論・類数
+  statement: 数体Kの類数が1であることは、Kの整数環が単項イデアル整域であることと同値である。
+  statement_en: A number field has class number one if and only if its ring of integers is a principal ideal domain.
+  assumptions:
+    - Kは数体
+  quantifiers:
+    - 任意の数体K
+  conclusion: 類数が1であることと、整数環が単項イデアル整域であることは同値である。
+  answer: |
+    類数が1であることは、類群が自明であること、すなわち0でない全ての分数イデアルが単項であることを意味する。分数イデアルが全て単項なら、特に整イデアルも全て単項である。逆に整イデアルが全て単項なら、分数イデアルは整イデアルを0でない元で割ったものなので単項である。よって両者は同値である。
+  strategy: Read triviality of the class group as principality of all fractional ideals and pass between integral and fractional ideals.
+  sketch:
+    - "translate: Class number one means every nonzero fractional ideal is principal."
+    - "derive: Integral ideals are fractional ideals, so they are principal."
+    - "derive: A fractional ideal is an integral ideal divided by a nonzero element, which gives the converse."
+    - "conclude: The two conditions are equivalent."
+  openmath: (forall (K) (-> (number_field K) (<-> (= (class_number K) 1) (principal_ideal_domain (ring_of_integers K)))))
+  hard_negative:
+    statement: 類数1の数体の整数環は常にユークリッド整域である。
+    reason: Q(√-19)の整数環は単項イデアル整域だが、ユークリッド整域ではない。
+  target: |
+    ∀ (K : Type*) [Field K] [NumberField K], NumberField.classNumber K = 1 ↔ IsPrincipalIdealRing (NumberField.RingOfIntegers K)
+  proof: |
+    by
+      intro K _ _
+      exact NumberField.classNumber_eq_one_iff
+- id: field_norm_of_base_element
+  kind: gap
+  level: 4
+  topic: 代数的整数論・ノルム
+  statement: 有限次拡大L/Kとx∈Kに対し、N_{L/K}(x)=x^{[L:K]}が成り立つ。
+  statement_en: For a finite field extension L/K and x in K, the norm of x from L to K equals x raised to the degree [L:K].
+  assumptions:
+    - L/Kは有限次拡大
+    - x∈K
+  quantifiers:
+    - 任意のx∈K
+  conclusion: N_{L/K}(x)=x^{[L:K]}が成り立つ。
+  answer: |
+    ノルムは、xによる掛け算をLのK線形写像とみたときの行列式である。KはLの中で可換なので、K上の基底についてこの写像の表現行列はスカラー行列$xI_n$であり、$n=[L:K]$である。その行列式は$x^n$である。
+  strategy: Compute the determinant of multiplication by x, which is a scalar matrix.
+  sketch:
+    - "translate: The norm is the determinant of multiplication by x on L as a K-vector space."
+    - "derive: In any K-basis this map has matrix x times the identity."
+    - "conclude: Its determinant is x to the power [L:K]."
+  openmath: (forall (K L x) (-> (and (field K) (field L) (finite_extension L K) (in x K)) (= (relative_norm K L x) (^ x (extension_degree L K)))))
+  hard_negative:
+    statement: x∈KならN_{L/K}(x)=xである。
+    reason: L/Kが2次拡大ならN_{L/K}(2)=4であり、標数2以外では2と異なる。
+  target: |
+    ∀ (K L : Type*) [Field K] [Field L] [Algebra K L] [FiniteDimensional K L] (x : K), Algebra.norm K (algebraMap K L x) = x ^ Module.finrank K L
+  proof: |
+    by
+      intro K L _ _ _ _ x
+      exact Algebra.norm_algebraMap x
+- id: integer_unit_iff_norm_abs_one
+  kind: gap
+  level: 4
+  topic: 代数的整数論・単数とノルム
+  statement: 数体Kの整数環の元xが単数であることは、|N_{K/Q}(x)|=1であることと同値である。
+  statement_en: An element x of the ring of integers of a number field K is a unit if and only if the absolute value of its norm to the rationals equals 1.
+  assumptions:
+    - Kは数体
+    - xはKの整数環の元
+  quantifiers:
+    - 任意のK, x
+  conclusion: xが単数であることと|N_{K/Q}(x)|=1は同値である。
+  answer: |
+    xの逆元yが整数環にあれば$N(x)N(y)=1$であり、$N(x), N(y)$は整数なので$|N(x)|=1$である。逆に$|N(x)|=1$とする。$N(x)$はxの共役全ての積であり、$y=N(x)/x$はxの他の共役の積に等しいので、代数的整数である。yはKの元でもあるから整数環に属し、$xy=N(x)=\pm1$よりxは単数である。
+  strategy: Use multiplicativity for one direction and the product of the other conjugates as a cofactor for the other.
+  sketch:
+    - "derive: If xy = 1 with y integral then N(x)N(y) = 1 in the integers, so |N(x)| = 1."
+    - "setup: Conversely assume |N(x)| = 1."
+    - "construct: Put y = N(x)/x, the product of the remaining conjugates, which is an algebraic integer lying in K."
+    - "conclude: Since xy = ±1, the element x is a unit."
+  openmath: (forall (K x) (-> (and (number_field K) (in x (ring_of_integers K))) (<-> (unit_element x (ring_of_integers K)) (= (abs (relative_norm Q K x)) 1))))
+  hard_negative:
+    statement: 数体Kの元xが|N_{K/Q}(x)|=1を満たせば、xは整数環の単数である。
+    reason: Q(i)の元(3+4i)/5はノルム1だが代数的整数でない。
+  target: |
+    ∀ (K : Type*) [Field K] [NumberField K] (x : NumberField.RingOfIntegers K), IsUnit x ↔ |Algebra.norm ℚ (algebraMap (NumberField.RingOfIntegers K) K x)| = 1
+  proof: |
+    by
+      intro K _ _ x
+      rw [NumberField.isUnit_iff_norm, RingOfIntegers.coe_norm]
+- id: cyclotomic_norm_zeta_sub_one
+  kind: gap
+  level: 4
+  topic: 代数的整数論・円分体
+  statement: pを奇素数、ζをp次円分体Kの原始p乗根とすると、整数環におけるζ-1のZへのノルムはpである。
+  statement_en: Let p be an odd prime and ζ a primitive p-th root of unity in the p-th cyclotomic field K. The norm of ζ - 1 from the ring of integers of K to Z equals p.
+  assumptions:
+    - pは奇素数
+    - KはQのp次円分拡大
+    - ζはKの原始p乗根
+  quantifiers:
+    - 任意のp, K, ζ
+  conclusion: N(ζ-1)=pが成り立つ。
+  answer: |
+    ζの最小多項式は$\Phi_p(X)=1+X+\cdots+X^{p-1}$で、その根はζの共役全体である。よって$\prod_{\sigma}(1-\sigma\zeta)=\Phi_p(1)=p$、すなわち$N(1-\zeta)=p$である。pは奇数なので拡大次数$p-1$は偶数であり、$N(\zeta-1)=(-1)^{p-1}N(1-\zeta)=p$が成り立つ。
+  strategy: Evaluate the p-th cyclotomic polynomial at 1 and track the sign from the even degree.
+  sketch:
+    - "setup: The minimal polynomial of ζ over Q is Φ_p, of degree p - 1."
+    - "derive: The product of 1 - σζ over the conjugates equals Φ_p(1) = p."
+    - "derive: Since p - 1 is even, replacing 1 - ζ by ζ - 1 does not change the norm."
+    - "conclude: Hence the norm of ζ - 1 is p."
+  openmath: (forall (p K z) (-> (and (in p P) (!= p 2) (cyclotomic_over_rationals K p) (primitive_root_of_unity z p)) (= (relative_norm Z K (- z 1)) p)))
+  hard_negative:
+    statement: p=2でも原始p乗根ζについてN(ζ-1)=pである。
+    reason: p=2ではK=Q, ζ=-1であり、N(ζ-1)=-2となる。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime] (K : Type*) [Field K] [CharZero K] [IsCyclotomicExtension {p} ℚ K] (ζ : K) (hζ : IsPrimitiveRoot ζ p), p ≠ 2 → Algebra.norm ℤ (hζ.toInteger - 1) = (p : ℤ)
+  proof: |
+    by
+      intro p _ K _ _ _ ζ hζ h
+      exact hζ.norm_toInteger_sub_one_of_prime_ne_two' h
+- id: cyclotomic_integers_are_z_zeta
+  kind: textbook
+  level: 4
+  topic: 代数的整数論・円分体の整数環
+  statement: n次円分体Kの原始n乗根ζについて、Kの元が代数的整数であることはZ[ζ]に属することと同値である。
+  statement_en: Let K be the n-th cyclotomic field and ζ a primitive n-th root of unity in K. An element of K is an algebraic integer if and only if it lies in Z[ζ].
+  assumptions:
+    - nは正の整数
+    - KはQのn次円分拡大
+    - ζはKの原始n乗根
+  quantifiers:
+    - 任意のx∈K
+  conclusion: xが代数的整数であることとx∈Z[ζ]は同値である。
+  answer: |
+    証明の概略を述べる。ζは代数的整数なのでZ[ζ]の元は全て代数的整数である。逆の包含については、まずnが素数べきの場合を扱う。このときZ[ζ]の判別式はpのべきであり、さらに1-ζでのアイゼンシュタイン型の議論からpの部分でも指数が1であるとわかる。一般のnは、互いに素な次数の円分体の合成に分解し、判別式が互いに素であることを使って素数べきの場合に帰着する。
+  strategy: Treat prime powers by a discriminant and Eisenstein argument, then reduce the general case to coprime composita.
+  sketch:
+    - "derive: Elements of Z[ζ] are algebraic integers because ζ is one."
+    - "apply_theorem: For n a prime power, the discriminant of Z[ζ] is a power of p."
+    - "derive: An Eisenstein argument at 1 - ζ shows the index of Z[ζ] is prime to p, so Z[ζ] is the full ring of integers."
+    - "translate: For general n, write K as a compositum of cyclotomic fields of coprime prime-power orders."
+    - "apply_theorem: Coprime discriminants make the ring of integers of the compositum the product of the two rings."
+    - "conclude: Induction on the number of prime factors gives the claim for all n."
+  openmath: (forall (n K z x) (-> (and (in n N) (> n 0) (cyclotomic_over_rationals K n) (primitive_root_of_unity z n) (in x K)) (<-> (algebraic_integer x) (in x (integer_adjoin z)))))
+  hard_negative:
+    statement: 代数的整数αで生成される任意の数体Q(α)の整数環はZ[α]である。
+    reason: Q(√5)では(1+√5)/2が代数的整数だがZ[√5]に属さない。
+  target: |
+    ∀ (n : ℕ) [NeZero n] (K : Type*) [Field K] [CharZero K] [IsCyclotomicExtension {n} ℚ K] (ζ : K), IsPrimitiveRoot ζ n → ∀ x : K, IsIntegral ℤ x ↔ x ∈ Algebra.adjoin ℤ ({ζ} : Set K)
+  proof: |
+    by
+      intro n _ K _ _ _ ζ hζ x
+      have hc := IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton hζ
+      rw [hc.isIntegral_iff]
+      constructor
+      · rintro ⟨y, rfl⟩
+        exact y.2
+      · intro hx
+        exact ⟨⟨x, hx⟩, rfl⟩
+- id: padic_norm_ultrametric
+  kind: gap
+  level: 4
+  topic: p進数・超距離不等式
+  statement: 素数pとp進数x, yについて‖x+y‖≤max(‖x‖,‖y‖)が成り立つ。
+  statement_en: For a prime p and p-adic numbers x and y, the ultrametric inequality ‖x+y‖ ≤ max(‖x‖, ‖y‖) holds.
+  assumptions:
+    - pは素数
+    - x, y∈Q_p
+  quantifiers:
+    - 任意のx, y∈Q_p
+  conclusion: ‖x+y‖≤max(‖x‖,‖y‖)が成り立つ。
+  answer: |
+    有理数x, yについて、$p^m$が両方を割るなら和も割るので$v_p(x+y)\ge\min(v_p(x),v_p(y))$である。$\|x\|=p^{-v_p(x)}$なので、これは求める不等式を意味する。Q_pではQが稠密でノルムは連続だから、不等式は極限をとっても保たれる。
+  strategy: Prove the valuation inequality on rationals and extend it by density and continuity.
+  sketch:
+    - "derive: For rationals, a power of p dividing both terms divides the sum."
+    - "translate: The valuation inequality becomes the ultrametric inequality for the norm."
+    - "conclude: Density of Q and continuity of the norm extend it to Q_p."
+  openmath: (forall (p x y) (-> (and (in p P) (in x (padic_field p)) (in y (padic_field p))) (or (<= (padic_norm p (+ x y)) (padic_norm p x)) (<= (padic_norm p (+ x y)) (padic_norm p y)))))
+  hard_negative:
+    statement: p進ノルムでは常に‖x+y‖=max(‖x‖,‖y‖)が成り立つ。
+    reason: p=2, x=y=1では‖2‖=1/2であり、右辺の1と異なる。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime] (x y : ℚ_[p]), ‖x + y‖ ≤ max ‖x‖ ‖y‖
+  proof: |
+    by
+      intro p _ x y
+      exact Padic.nonarchimedean x y
+- id: padic_norm_sum_of_distinct_norms
+  kind: gap
+  level: 4
+  topic: p進数・二等辺三角形の原理
+  statement: p進数x, yのノルムが異なれば、‖x+y‖=max(‖x‖,‖y‖)である。
+  statement_en: If two p-adic numbers have different norms, then the norm of their sum equals the larger of the two norms.
+  assumptions:
+    - pは素数
+    - x, y∈Q_pで‖x‖≠‖y‖
+  quantifiers:
+    - 任意のx, y∈Q_p
+  conclusion: ‖x+y‖=max(‖x‖,‖y‖)が成り立つ。
+  answer: |
+    対称性から$\|x\|<\|y\|$としてよい。超距離不等式より$\|x+y\|\le\|y\|$である。また$\|y\|=\|(x+y)-x\|\le\max(\|x+y\|,\|x\|)$であり、$\|x\|<\|y\|$なので右辺の最大値は$\|x+y\|$でなければならない。したがって$\|y\|\le\|x+y\|$となり、等号が成り立つ。
+  strategy: Apply the ultrametric inequality in both directions, writing y as (x+y) - x.
+  sketch:
+    - "setup: Assume without loss of generality that ‖x‖ < ‖y‖."
+    - "derive: The ultrametric inequality gives ‖x+y‖ ≤ ‖y‖."
+    - "derive: Writing y = (x+y) - x gives ‖y‖ ≤ max(‖x+y‖, ‖x‖), which forces ‖y‖ ≤ ‖x+y‖."
+    - "conclude: Hence ‖x+y‖ = ‖y‖ = max(‖x‖, ‖y‖)."
+  openmath: (forall (p x y) (-> (and (in p P) (in x (padic_field p)) (in y (padic_field p)) (!= (padic_norm p x) (padic_norm p y))) (or (and (= (padic_norm p (+ x y)) (padic_norm p x)) (>= (padic_norm p x) (padic_norm p y))) (and (= (padic_norm p (+ x y)) (padic_norm p y)) (>= (padic_norm p y) (padic_norm p x))))))
+  hard_negative:
+    statement: ‖x‖=‖y‖のときも‖x+y‖=max(‖x‖,‖y‖)である。
+    reason: p=3, x=1, y=2では両者のノルムは1だが、‖3‖=1/3である。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime] (x y : ℚ_[p]), ‖x‖ ≠ ‖y‖ → ‖x + y‖ = max ‖x‖ ‖y‖
+  proof: |
+    by
+      intro p _ x y h
+      exact Padic.add_eq_max_of_ne h
+- id: padic_integer_unit_iff_norm_one
+  kind: gap
+  level: 4
+  topic: p進数・p進整数の単数
+  statement: p進整数zが単数であることは、‖z‖=1であることと同値である。
+  statement_en: A p-adic integer z is a unit of Z_p if and only if ‖z‖ = 1.
+  assumptions:
+    - pは素数
+    - z∈Z_p
+  quantifiers:
+    - 任意のz∈Z_p
+  conclusion: zが単数であることと‖z‖=1は同値である。
+  answer: |
+    zがZ_pに逆元wをもてば$\|z\|\|w\|=1$である。$\|z\|, \|w\|\le1$なので$\|z\|=1$となる。逆に$\|z\|=1$なら、zは0でなくQ_pに逆元$z^{-1}$をもつ。$\|z^{-1}\|=1$なので$z^{-1}\in\mathbb{Z}_p$であり、zは単数である。
+  strategy: Use multiplicativity of the norm and the description of Z_p as the closed unit ball.
+  sketch:
+    - "derive: If zw = 1 in Z_p then ‖z‖‖w‖ = 1 with both factors at most 1, so ‖z‖ = 1."
+    - "setup: Conversely suppose ‖z‖ = 1, so z has an inverse in Q_p."
+    - "conclude: The inverse has norm 1, hence lies in Z_p."
+  openmath: (forall (p z) (-> (and (in p P) (in z (padic_integers p))) (<-> (unit_element z (padic_integers p)) (= (padic_norm p z) 1))))
+  hard_negative:
+    statement: Z_pの0でない元は全て単数である。
+    reason: pは0でないが‖p‖=1/pであり、逆元1/pはZ_pに属さない。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime] (z : ℤ_[p]), IsUnit z ↔ ‖z‖ = 1
+  proof: |
+    by
+      intro p _ z
+      exact PadicInt.isUnit_iff
+- id: padic_numbers_complete
+  kind: gap
+  level: 4
+  topic: p進数・完備性
+  statement: p進数体Q_pはp進距離について完備である。
+  statement_en: The field Q_p of p-adic numbers is complete with respect to the p-adic metric.
+  assumptions:
+    - pは素数
+  quantifiers:
+    - 任意の素数p
+  conclusion: Q_pは完備距離空間である。
+  answer: |
+    Q_pは、p進ノルムに関するQのコーシー列を同値関係で割って構成される。Q_pのコーシー列$(x_n)$に対し、QはQ_pで稠密なので$\|x_n-q_n\|<1/(n+1)$を満たす有理数$q_n$がとれる。$(q_n)$はQのコーシー列であり、その類qがQ_pの元を定める。このとき$(x_n)$はqに収束する。
+  strategy: Approximate a Cauchy sequence in Q_p by rationals and take the class of the resulting rational Cauchy sequence.
+  sketch:
+    - "setup: Take a Cauchy sequence x_n in Q_p."
+    - "construct: Choose rationals q_n with ‖x_n - q_n‖ < 1/(n+1) by density."
+    - "derive: The sequence q_n is Cauchy in the p-adic norm on Q, so it defines an element q of Q_p."
+    - "conclude: The sequence x_n converges to q."
+  openmath: (forall (p) (-> (in p P) (complete_space (padic_field p))))
+  hard_negative:
+    statement: 有理数体Qはp進距離について完備である。
+    reason: 級数Σp^{n²}の部分和はコーシー列だが、p進展開が周期的でないので極限は有理数でない。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime], CompleteSpace ℚ_[p]
+  proof: |
+    by
+      intro p _
+      infer_instance
+- id: hensel_lifting_padic_integers
+  kind: named
+  level: 4
+  topic: p進数・ヘンゼルの補題
+  statement: F∈Z_p[X], a∈Z_pが‖F(a)‖<‖F'(a)‖²を満たすなら、F(z)=0かつ‖z-a‖<‖F'(a)‖を満たすz∈Z_pがただ1つ存在し、‖F'(z)‖=‖F'(a)‖である。
+  statement_en: Hensel's lemma. If F is a polynomial over Z_p and a in Z_p satisfies ‖F(a)‖ < ‖F'(a)‖², then there is a unique root z of F in Z_p with ‖z-a‖ < ‖F'(a)‖, and it also satisfies ‖F'(z)‖ = ‖F'(a)‖.
+  assumptions:
+    - pは素数
+    - FはZ_p係数の多項式、a∈Z_p
+    - ‖F(a)‖<‖F'(a)‖²
+  quantifiers:
+    - 任意のF, a
+  conclusion: 条件を満たす根zが存在し、‖z-a‖<‖F'(a)‖の範囲で一意である。
+  answer: |
+    証明の概略を述べる。ニュートン法で$z_0=a$, $z_{n+1}=z_n-F(z_n)/F'(z_n)$と定める。テイラー展開と超距離不等式から、$t=\|F(a)\|/\|F'(a)\|^2<1$について$\|F'(z_n)\|=\|F'(a)\|$と$\|F(z_n)\|\le\|F'(a)\|^2t^{2^n}$が帰納的に示される。よって$(z_n)$はコーシー列であり、Z_pの完備性から極限zをもち、zはFの根である。一意性は、2つの根の差に対するテイラー展開から従う。
+  strategy: Run Newton iteration, control the norms by Taylor expansion, and pass to the limit using completeness.
+  sketch:
+    - "setup: Define the Newton sequence starting at a."
+    - "induction: Taylor expansion shows ‖F'(z_n)‖ stays constant and ‖F(z_n)‖ decays doubly exponentially."
+    - "derive: The sequence is Cauchy, so it converges in Z_p by completeness."
+    - "derive: Continuity shows the limit z is a root with ‖z-a‖ < ‖F'(a)‖."
+    - "conclude: Taylor expansion at z shows any other root in that ball equals z."
+  openmath: (forall (p F a) (-> (and (in p P) (polynomial_over F (padic_integers p)) (in a (padic_integers p)) (< (padic_norm p (poly_eval F a)) (^ (padic_norm p (poly_eval (poly_derivative F) a)) 2))) (exists (z) (and (in z (padic_integers p)) (= (poly_eval F z) 0) (< (padic_norm p (- z a)) (padic_norm p (poly_eval (poly_derivative F) a))) (= (padic_norm p (poly_eval (poly_derivative F) z)) (padic_norm p (poly_eval (poly_derivative F) a))) (forall (w) (-> (and (in w (padic_integers p)) (= (poly_eval F w) 0) (< (padic_norm p (- w a)) (padic_norm p (poly_eval (poly_derivative F) a)))) (= w z)))))))
+  hard_negative:
+    statement: ‖F(a)‖<1だけを仮定してもFはZ_pに根をもつ。
+    reason: p=2, F=X²-3, a=1では‖F(a)‖=1/2<1だが、3はZ_2で平方数でない。
+  target: |
+    ∀ (p : ℕ) [Fact p.Prime] (F : Polynomial ℤ_[p]) (a : ℤ_[p]), ‖Polynomial.aeval a F‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ ^ 2 → ∃ z : ℤ_[p], Polynomial.aeval z F = 0 ∧ ‖z - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ ∧ ‖Polynomial.aeval z (Polynomial.derivative F)‖ = ‖Polynomial.aeval a (Polynomial.derivative F)‖ ∧ ∀ w : ℤ_[p], Polynomial.aeval w F = 0 → ‖w - a‖ < ‖Polynomial.aeval a (Polynomial.derivative F)‖ → w = z
+  proof: |
+    by
+      intro p _ F a h
+      exact hensels_lemma h
+- id: dirichlet_primes_in_progression
+  kind: named
+  level: 4
+  topic: 解析的整数論・ディリクレの算術級数定理
+  statement: 正の整数qとqと互いに素な自然数aに対し、p≡a (mod q)を満たす素数pは無限に存在する。
+  statement_en: Dirichlet's theorem. If q is a positive integer and a is coprime to q, then there are infinitely many primes p with p ≡ a modulo q.
+  assumptions:
+    - q≠0
+    - aとqは互いに素
+  quantifiers:
+    - 任意の自然数q, a
+  conclusion: p≡a (mod q)を満たす素数は無限に存在する。
+  answer: |
+    証明の概略を述べる。mod qのディリクレ指標の直交関係により、$\sum_{p\equiv a}p^{-s}$は各指標χの$\log L(s,\chi)$の線形結合で表せる。自明指標の項は$s\to1+0$で発散する。自明でない指標については$L(1,\chi)\neq0$であることが要点で、このとき対応する項は有界にとどまる。したがって$\sum_{p\equiv a}1/p$は発散し、そのような素数は無限に存在する。
+  strategy: Isolate the residue class with Dirichlet characters and use nonvanishing of L(1, χ) to show the prime sum diverges.
+  sketch:
+    - "translate: Character orthogonality expresses the prime sum over the class as a combination of log L(s, χ)."
+    - "derive: The principal character contributes a term diverging as s tends to 1 from above."
+    - "apply_theorem: For nonprincipal χ, L(1, χ) is nonzero, so its term stays bounded."
+    - "derive: Therefore the sum of 1/p over primes p ≡ a diverges."
+    - "conclude: A divergent sum has infinitely many terms, so there are infinitely many such primes."
+  openmath: (forall (q a) (-> (and (in q N) (in a N) (!= q 0) (= (gcd a q) 1)) (forall (n) (-> (in n N) (exists (p) (and (in p P) (> p n) (exists (k) (and (in k Z) (= (- p a) (* q k))))))))))
+  hard_negative:
+    statement: 互いに素とは限らないa, qについても、p≡a (mod q)を満たす素数は無限に存在する。
+    reason: q=4, a=2ではp≡2 (mod 4)を満たす素数は2だけである。
+  target: |
+    ∀ q a : ℕ, q ≠ 0 → Nat.Coprime a q → Set.Infinite {p : ℕ | p.Prime ∧ p ≡ a [MOD q]}
+  proof: |
+    by
+      intro q a hq h
+      exact Nat.infinite_setOf_prime_and_modEq hq h
+- id: elliptic_curve_points_group_law
+  kind: textbook
+  level: 4
+  topic: 楕円曲線・群法則
+  statement: 体F上のワイエルシュトラス曲線の非特異点と無限遠点の集合は、弦と接線の加法について可換群をなす。すなわち交換法則、結合法則、単位元、逆元の性質が成り立つ。
+  statement_en: The nonsingular points of a Weierstrass curve over a field, together with the point at infinity, form an abelian group under the chord-tangent addition. Addition is commutative and associative, the point at infinity is the identity, and every point has a negative.
+  assumptions:
+    - Fは体
+    - WはF上のワイエルシュトラス曲線
+    - P, Q, RはWの非特異点または無限遠点
+  quantifiers:
+    - 任意のP, Q, R
+  conclusion: 交換法則、結合法則、単位元、逆元の等式が成り立つ。
+  answer: |
+    証明の概略を述べる。交換法則、単位元、逆元は弦と接線の公式から直接確かめられる。結合法則が要点であり、公式の直接計算は場合分けが多い。そこで各点に曲線の座標環のイデアル類を対応させ、この対応が単射で加法を類群の積に移すことを示す。類群の積は結合的なので、点の加法も結合的である。
+  strategy: Check the easy axioms from the formulas and deduce associativity by embedding the points into the class group of the coordinate ring.
+  sketch:
+    - "derive: Commutativity, the identity, and negatives follow from the explicit formulas."
+    - "construct: Assign to each point the class of an ideal in the coordinate ring."
+    - "derive: Ideal computations show this map sends the chord-tangent sum to the product of classes."
+    - "derive: A norm degree argument shows the map is injective."
+    - "conclude: Associativity in the class group transfers to the point addition."
+  openmath: (forall (F W A B D) (-> (and (field F) (weierstrass_curve W F) (in A (weierstrass_points W)) (in B (weierstrass_points W)) (in D (weierstrass_points W))) (and (= (point_add A B) (point_add B A)) (= (point_add (point_add A B) D) (point_add A (point_add B D))) (= (point_add A (point_zero W)) A) (= (point_add A (point_neg A)) (point_zero W)))))
+  hard_negative:
+    statement: 特異点も含めた曲線上の全ての点で弦と接線の加法は群をなす。
+    reason: y²=x³の原点では接線が一意に定まらず、原点を通る直線が曲線と重複度2以上で交わるので加法が定義できない。
+  target: |
+    ∀ (F : Type*) [Field F] [DecidableEq F] (W : WeierstrassCurve.Affine F) (P Q R : W.Point), P + Q = Q + P ∧ (P + Q) + R = P + (Q + R) ∧ P + 0 = P ∧ P + -P = 0
+  proof: |
+    by
+      intro F _ _ W P Q R
+      exact ⟨add_comm P Q, add_assoc P Q R, add_zero P, add_neg_cancel P⟩
+- id: first_order_compactness
+  kind: named
+  level: 4
+  topic: 数理論理学・コンパクト性定理
+  statement: 一階の理論Tがモデルをもつことは、Tの全ての有限部分集合がモデルをもつことと同値である。
+  statement_en: Compactness theorem. A first-order theory has a model if and only if each of its finite subsets has a model.
+  assumptions:
+    - Lは一階の言語
+    - TはL文の集合
+  quantifiers:
+    - 任意のL, T
+  conclusion: Tが充足可能であることと、Tが有限充足可能であることは同値である。
+  answer: |
+    証明の概略を述べる。Tのモデルは各有限部分集合のモデルでもあるので、一方向は明らかである。逆向きでは、Tの有限部分集合全体を添字集合とし、各有限部分集合Sに対してそのモデル$M_S$をとる。「Sを含む有限部分集合全体」が生成するフィルターを超フィルターに拡張し、$M_S$の超積をつくる。ウォシュの定理より、Tの各文はこの超積で成り立つ。したがって超積がTのモデルである。
+  strategy: Take an ultraproduct of models of the finite subsets along an ultrafilter that contains every tail, and apply Łoś's theorem.
+  sketch:
+    - "derive: A model of T is a model of every finite subset."
+    - "setup: For the converse, index by the finite subsets S of T and choose a model M_S of each."
+    - "construct: Extend the sets of finite subsets containing a given S to an ultrafilter."
+    - "apply_theorem: Łoś's theorem shows each sentence of T holds in the ultraproduct."
+    - "conclude: The ultraproduct is a model of T."
+  openmath: (forall (L T) (-> (and (first_order_language L) (first_order_theory T L)) (<-> (first_order_satisfiable T) (first_order_finitely_satisfiable T))))
+  hard_negative:
+    statement: 二階論理の理論についても、全ての有限部分集合がモデルをもてば全体がモデルをもつ。
+    reason: 二階のペアノ公理は自然数を同型を除いて特徴づけるので、新しい定数cとc≠0, c≠1, ...を加えた理論は有限充足可能だがモデルをもたない。
+  target: |
+    ∀ (L : FirstOrder.Language) (T : L.Theory), T.IsSatisfiable ↔ T.IsFinitelySatisfiable
+  proof: |
+    by
+      intro L T
+      exact FirstOrder.Language.Theory.isSatisfiable_iff_isFinitelySatisfiable
+- id: lowenheim_skolem_up_and_down
+  kind: textbook
+  level: 4
+  topic: 数理論理学・レーヴェンハイム・スコーレムの定理
+  statement: 言語L、L構造M、Lの濃度以上の無限基数κは、いずれも最小の宇宙に属するものとする。κ≤|M|かつMが空でないならMへの初等埋め込みをもつ濃度κの構造があり、|M|≤κかつMが無限ならMからの初等埋め込みをもつ濃度κの構造がある。得られる構造も同じ宇宙に属する。
+  statement_en: Löwenheim–Skolem theorem, stated for structures in the lowest universe. Let κ be an infinite cardinal at least the cardinality of L, and let M be an L-structure. If M is nonempty and κ ≤ |M|, some structure of cardinality κ embeds elementarily into M. If M is infinite and |M| ≤ κ, then M embeds elementarily into some structure of cardinality κ.
+  assumptions:
+    - Lは一階の言語、MはL構造
+    - κは無限基数で|L|≤κ
+    - L, M, κは最小の宇宙に属する
+  quantifiers:
+    - 任意のL, M, κ
+  conclusion: 下降方向と上昇方向のそれぞれで、濃度κの構造と初等埋め込みが存在する。
+  answer: |
+    証明の概略を述べる。下降方向では、Mの濃度κの部分集合を、スコーレム関数で閉じた部分構造まで広げる。閉包の濃度はκのままであり、タルスキー・ヴォートの判定法からこれは初等部分構造である。上昇方向では、Mの初等図式にκ個の異なる新定数を加えた理論を考える。コンパクト性定理によりこの理論はモデルをもち、そのモデルにMが初等的に埋め込まれる。濃度κ以上のモデルに下降方向を適用すれば、Mを含む濃度κの構造が得られる。
+  strategy: Close under Skolem functions for the downward direction, and combine compactness on the elementary diagram with the downward direction for the upward one.
+  sketch:
+    - "construct: For the downward direction, close a subset of size κ under Skolem functions."
+    - "apply_theorem: The Tarski–Vaught test shows the closure is an elementary substructure of size κ."
+    - "construct: For the upward direction, add κ new distinct constants to the elementary diagram of M."
+    - "apply_theorem: Compactness gives a model of size at least κ into which M embeds elementarily."
+    - "conclude: Apply the downward direction above the image of M to reach size exactly κ."
+  openmath: (forall (L M k) (-> (and (first_order_language L) (first_order_structure M L) (>= k aleph_zero) (<= (language_cardinality L) k)) (and (-> (and (!= M emptyset) (<= k (size M))) (exists (N) (and (first_order_structure N L) (= (size N) k) (elementary_embedding L N M)))) (-> (and (infinite_set M) (<= (size M) k)) (exists (N) (and (first_order_structure N L) (= (size N) k) (elementary_embedding L M N)))))))
+  hard_negative:
+    statement: 無限構造Mと任意の無限基数κに対し、Mと初等同値で濃度κの構造がある。言語の濃度は問わない。
+    reason: 非可算個の定数が互いに異なるという文を満たす構造は非可算なので、κ=ℵ₀では成り立たない。
+  target: |
+    ∀ (L : FirstOrder.Language.{0, 0}) (M : Type) [L.Structure M] (κ : Cardinal.{0}), Cardinal.aleph0 ≤ κ → L.card ≤ κ → (Nonempty M → κ ≤ Cardinal.mk M → ∃ (N : Type) (_ : L.Structure N), Nonempty (L.ElementaryEmbedding N M) ∧ Cardinal.mk N = κ) ∧ (Infinite M → Cardinal.mk M ≤ κ → ∃ (N : Type) (_ : L.Structure N), Nonempty (L.ElementaryEmbedding M N) ∧ Cardinal.mk N = κ)
+  proof: |
+    by
+      intro L M _ κ h1 h2
+      constructor
+      · intro hM h3
+        obtain ⟨N, hN, hc⟩ := FirstOrder.Language.exists_elementaryEmbedding_card_eq_of_le L M κ h1 (by simpa using h2) (by simpa using h3)
+        exact ⟨N, N.str, hN, hc⟩
+      · intro hM h3
+        obtain ⟨N, hN, hc⟩ := FirstOrder.Language.exists_elementaryEmbedding_card_eq_of_ge L M κ (by simpa using h2) (by simpa using h3)
+        exact ⟨N, N.str, hN, hc⟩
+- id: godel_beta_function_coding
+  kind: gap
+  level: 4
+  topic: 数理論理学・ゲーデルのβ関数
+  statement: 自然数の有限列l_0,…,l_{m-1}に対し、全てのi<mでa mod ((i+1)b+1)=l_iとなる自然数a, bが存在する。
+  statement_en: Gödel's β-function lemma. For every finite list of natural numbers l_0, ..., l_{m-1}, there exist natural numbers a and b with a mod ((i+1)b+1) = l_i for all i < m.
+  assumptions:
+    - lは自然数の有限列
+  quantifiers:
+    - 任意の有限列l
+  conclusion: 全てのi<mでa mod ((i+1)b+1)=l_iを満たすa, bが存在する。
+  answer: |
+    mとlの各項のうち最大のものをsとし、$b=s!$とおく。$i<j<m$のとき、$(i+1)b+1$と$(j+1)b+1$の公約数の素因子qは$(j-i)b$を割る。$j-i\le s$より$j-i$は$b$を割るので、qは$b^2$を割り、したがってbを割る。するとqは1も割ることになり矛盾するから、これらの法は互いに素である。また各法は$l_i$より大きい。中国剰余定理により、全てのiで$a\equiv l_i$となるaがとれ、$a$をその法で割った余りは$l_i$である。
+  strategy: Choose b divisible by all small differences so the moduli are pairwise coprime, then apply the Chinese remainder theorem.
+  sketch:
+    - "construct: Let s bound m and every entry of the list and put b = s!."
+    - "derive: A prime dividing two moduli divides (j-i)b, hence divides b, hence divides 1, which is impossible."
+    - "derive: The moduli are therefore pairwise coprime, and each exceeds the corresponding entry."
+    - "apply_theorem: The Chinese remainder theorem yields a with a ≡ l_i for every i."
+    - "conclude: Since l_i is below the modulus, the remainder equals l_i exactly."
+  openmath: (forall (l) (exists (a b) (and (in a N) (in b N) (forall (i) (-> (and (in i N) (< i (seq_length l))) (= (nat_mod a (+ (* (+ i 1) b) 1)) (seq_value l i)))))))
+  hard_negative:
+    statement: 法を(i+1)+bとしても、同じ形のa, bが任意の有限列に対して存在する。
+    reason: 列(0,0,1,1)を考える。bが奇数ならi=0とi=2の法がともに偶数になり、bが偶数ならi=1とi=3の法がともに偶数になるので、どちらでもaの偶奇が矛盾する。
+  target: |
+    ∀ l : List ℕ, ∃ a b : ℕ, ∀ i : Fin l.length, a % ((i.val + 1) * b + 1) = l[i]
+  proof: |
+    by
+      intro l
+      refine ⟨(Nat.unbeta l).unpair.1, (Nat.unbeta l).unpair.2, fun i => ?_⟩
+      exact Nat.beta_unbeta_coe l i
+- id: homology_map_functorial
+  kind: gap
+  level: 4
+  topic: ホモロジー代数・ホモロジーの関手性
+  statement: 鎖写像φ:K→L, ψ:L→Mについて、誘導写像はH_i(ψφ)=H_i(ψ)H_i(φ)とH_i(id_K)=idを満たす。
+  statement_en: Homology is functorial. For chain maps φ from K to L and ψ from L to M, the induced maps satisfy H_i(ψ∘φ) = H_i(ψ)∘H_i(φ), and the identity of K induces the identity on H_i(K).
+  assumptions:
+    - K, L, Mは零射をもつ圏の複体で、次数iのホモロジーをもつ
+    - φ:K→L, ψ:L→Mは鎖写像
+  quantifiers:
+    - 任意のK, L, M, φ, ψ, i
+  conclusion: 誘導写像は合成と恒等写像を保つ。
+  answer: |
+    加群の複体で説明する。鎖写像は輪体を輪体へ、境界を境界へ移すので、$H_i(\varphi)[z]=[\varphi(z)]$は矢印として定義できる。輪体zについて$H_i(\psi\varphi)[z]=[\psi(\varphi(z))]=H_i(\psi)H_i(\varphi)[z]$である。恒等写像については$H_i(\mathrm{id})[z]=[z]$である。一般の圏でも、同じ議論を輪体と余輪体の普遍性で述べれば成り立つ。
+  strategy: Check on representative cycles, or equivalently by the universal properties of cycles and homology.
+  sketch:
+    - "setup: A chain map sends cycles to cycles and boundaries to boundaries, which defines the induced map."
+    - "derive: On a representative cycle, both sides of the composition formula give the class of ψ(φ(z))."
+    - "derive: The identity chain map sends each class to itself."
+    - "conclude: Uniqueness in the universal properties gives the same identities in the general setting."
+  openmath: (forall (C K L M f g i) (-> (and (homological_complex K C) (homological_complex L C) (homological_complex M C) (chain_map f K L) (chain_map g L M)) (and (= (homology_map (morphism_comp f g) i) (morphism_comp (homology_map f i) (homology_map g i))) (= (homology_map (identity_morphism K) i) (identity_morphism (homology_object K i))))))
+  hard_negative:
+    statement: 全ての次数で誘導写像H_i(f)が0なら、鎖写像fは0である。
+    reason: 完全な複体の恒等写像はホモロジーが全て0なので誘導写像も0だが、複体が0でなければ恒等写像は0でない。
+  target: |
+    ∀ (C ι : Type*) [CategoryTheory.Category C] [CategoryTheory.Limits.HasZeroMorphisms C] (c : ComplexShape ι) (K L M : HomologicalComplex C c) (φ : K ⟶ L) (ψ : L ⟶ M) (i : ι) [K.HasHomology i] [L.HasHomology i] [M.HasHomology i], HomologicalComplex.homologyMap (CategoryTheory.CategoryStruct.comp φ ψ) i = CategoryTheory.CategoryStruct.comp (HomologicalComplex.homologyMap φ i) (HomologicalComplex.homologyMap ψ i) ∧ HomologicalComplex.homologyMap (CategoryTheory.CategoryStruct.id K) i = CategoryTheory.CategoryStruct.id (K.homology i)
+  proof: |
+    by
+      intro C ι _ _ c K L M φ ψ i _ _ _
+      exact ⟨HomologicalComplex.homologyMap_comp φ ψ i, HomologicalComplex.homologyMap_id K i⟩
+- id: homotopic_chain_maps_same_homology
+  kind: gap
+  level: 4
+  topic: ホモロジー代数・鎖ホモトピー
+  statement: 鎖ホモトピックな鎖写像f, gはホモロジーに同じ写像を誘導する。
+  statement_en: Chain homotopic chain maps induce the same map on homology in every degree.
+  assumptions:
+    - K, Lは前加法圏の複体で、次数iのホモロジーをもつ
+    - f, g:K→Lは鎖ホモトピック
+  quantifiers:
+    - 任意のf, g, i
+  conclusion: H_i(f)=H_i(g)が成り立つ。
+  answer: |
+    加群の複体で説明する。ホモトピーhは$f-g=dh+hd$を満たす。輪体zでは$dz=0$なので$f(z)-g(z)=d(h(z))$となり、これは境界である。よって$[f(z)]=[g(z)]$であり、$H_i(f)=H_i(g)$が成り立つ。一般の前加法圏でも、同じ議論を輪体と余輪体の普遍性で述べれば成り立つ。
+  strategy: Apply the homotopy identity to a cycle and observe the difference is a boundary.
+  sketch:
+    - "setup: The homotopy h satisfies f - g = dh + hd."
+    - "derive: On a cycle z the term hd z vanishes, so f(z) - g(z) = d h(z)."
+    - "conclude: The two images differ by a boundary, so they define the same homology class."
+  openmath: (forall (C K L f g i) (-> (and (preadditive_category C) (homological_complex K C) (homological_complex L C) (chain_map f K L) (chain_map g K L) (chain_homotopic f g)) (= (homology_map f i) (homology_map g i))))
+  hard_negative:
+    statement: ホモロジーに同じ写像を誘導する鎖写像は鎖ホモトピックである。
+    reason: 完全列0→Z→(2倍)Z→Z/2→0を複体とみるとホモロジーは全て0なので、恒等写像と零写像の誘導写像は等しい。両者がホモトピックならこの列は分裂するが、実際には分裂しない。
+  target: |
+    ∀ (C ι : Type*) [CategoryTheory.Category C] [CategoryTheory.Preadditive C] (c : ComplexShape ι) (K L : HomologicalComplex C c) (f g : K ⟶ L), Homotopy f g → ∀ (i : ι) [K.HasHomology i] [L.HasHomology i], HomologicalComplex.homologyMap f i = HomologicalComplex.homologyMap g i
+  proof: |
+    by
+      intro C ι _ _ c K L f g h i _ _
+      exact h.homologyMap_eq i
+- id: long_exact_homology_sequence
+  kind: textbook
+  level: 4
+  topic: ホモロジー代数・長完全列
+  statement: アーベル圏の複体の短完全列0→X₁→X₂→X₃→0と、複体の微分がiからjへ向かう次数i, jに対し、射δ:H_i(X₃)→H_j(X₁)が存在し、H_i(X₁)→H_i(X₂)→H_i(X₃)→H_j(X₁)→H_j(X₂)は完全である。
+  statement_en: Long exact homology sequence. For a short exact sequence of complexes in an abelian category and degrees i, j related by the complex shape, there is a morphism δ from H_i(X₃) to H_j(X₁) such that H_i(X₁) → H_i(X₂) → H_i(X₃) → H_j(X₁) → H_j(X₂) is exact at H_i(X₂), H_i(X₃), and H_j(X₁).
+  assumptions:
+    - Cはアーベル圏
+    - SはCの複体の短完全列
+    - 複体の微分は次数iから次数jへ向かう
+  quantifiers:
+    - 任意のS, i, j
+  conclusion: 射δが存在し、列はH_i(X₂), H_i(X₃), H_j(X₁)で完全である。
+  answer: |
+    証明の概略を述べる。短完全列に余輪体と輪体の関手を適用すると、次数iの余輪体の列は右完全で、次数jの輪体の列は左完全である。微分が誘導する射でこの2列を結ぶと蛇の補題の図式になり、その核はH_i、余核はH_jである。蛇の補題が連結射δと、H_i(X₁)からH_j(X₃)までの6項の完全列を与える。主張の3か所の完全性はここから読み取れる。
+  strategy: Build a snake diagram from opcycles in degree i and cycles in degree j, and apply the snake lemma.
+  sketch:
+    - "setup: Apply the opcycles functor in degree i and the cycles functor in degree j to the short exact sequence."
+    - "derive: The first row is right exact and the second row is left exact."
+    - "construct: The differential induces vertical maps whose kernels are H_i and whose cokernels are H_j."
+    - "apply_theorem: The snake lemma produces the connecting morphism δ and an exact sequence."
+    - "conclude: Reading off the sequence gives exactness at H_i(X₂), H_i(X₃), and H_j(X₁)."
+  openmath: (forall (C A B D f g i j) (-> (and (abelian_category C) (homological_complex A C) (homological_complex B C) (homological_complex D C) (chain_map f A B) (chain_map g B D) (short_exact_complexes f g) (successive_degrees i j)) (exists (d) (and (morphism_between d (homology_object D i) (homology_object A j)) (exact_pair (homology_map f i) (homology_map g i)) (exact_pair (homology_map g i) d) (exact_pair d (homology_map f j))))))
+  hard_negative:
+    statement: 複体の短完全列があれば、各次数のホモロジーの列0→H_i(X₁)→H_i(X₂)→H_i(X₃)→0も短完全である。
+    reason: X₁を次数0のZ、X₂を次数1から0への2倍写像Z→Z、X₃を次数1のZとする。次数1の列は0→0→0→Z→0となり、H_1(X₃)=Zへの写像は全射でない。
+  target: |
+    ∀ (C ι : Type*) [CategoryTheory.Category C] [CategoryTheory.Abelian C] (c : ComplexShape ι) (S : CategoryTheory.ShortComplex (HomologicalComplex C c)), S.ShortExact → ∀ i j : ι, c.Rel i j → ∃ (δ : S.X₃.homology i ⟶ S.X₁.homology j) (w₁ : CategoryTheory.CategoryStruct.comp (HomologicalComplex.homologyMap S.f i) (HomologicalComplex.homologyMap S.g i) = 0) (w₂ : CategoryTheory.CategoryStruct.comp (HomologicalComplex.homologyMap S.g i) δ = 0) (w₃ : CategoryTheory.CategoryStruct.comp δ (HomologicalComplex.homologyMap S.f j) = 0), (CategoryTheory.ShortComplex.mk _ _ w₁).Exact ∧ (CategoryTheory.ShortComplex.mk _ _ w₂).Exact ∧ (CategoryTheory.ShortComplex.mk _ _ w₃).Exact
+  proof: |
+    by
+      intro C ι _ _ c S hS i j hij
+      exact ⟨hS.δ i j hij, by rw [← HomologicalComplex.homologyMap_comp, S.zero, HomologicalComplex.homologyMap_zero], hS.comp_δ i j hij, hS.δ_comp i j hij, hS.homology_exact₂ i, hS.homology_exact₃ i j hij, hS.homology_exact₁ i j hij⟩

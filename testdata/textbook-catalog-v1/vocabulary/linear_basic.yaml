@@ -1,0 +1,55 @@
+# Proposed additive OpenMath vocabulary for undergraduate linear algebra (cd=pals2).
+vector_space_over: {args: [term, term], returns: prop, meaning: "V is a vector space over the field K"}
+finite_dim_space: {args: [term], returns: prop, meaning: "E is finite dimensional"}
+subspace_of: {args: [term, term], returns: prop, meaning: "K is a linear subspace of E"}
+subspace_sum: {args: [term, term], returns: term, meaning: "sum of two subspaces"}
+complementary_subspaces: {args: [term, term, term], returns: prop, meaning: "S and T are complementary subspaces of V, in the order (S, T, V)"}
+quotient_space: {args: [term, term], returns: term, meaning: "quotient vector space V/S, in the order (V, S)"}
+isomorphic_spaces: {args: [term, term], returns: prop, meaning: "the vector spaces V and W are linearly isomorphic"}
+linear_span: {args: [term], returns: term, meaning: "linear span of a set or family of vectors"}
+linear_combination: {args: [term, term], returns: term, meaning: "linear combination of the family v with coefficients c, in the order (c, v)"}
+linearly_independent_family: {args: [term], returns: prop, meaning: "the family v is linearly independent"}
+family_cons: {args: [term, term], returns: term, meaning: "family obtained by putting the vector x in front of the family v"}
+family_image: {args: [term, term], returns: term, meaning: "family (f(v_i)) of images of the family v under f, in the order (f, v)"}
+basis_family: {args: [term, term], returns: prop, meaning: "the family b is a basis of V"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+kernel: {args: [term], returns: term, meaning: "kernel of a linear map"}
+range_of: {args: [term], returns: term, meaning: "range of a map"}
+injective_function: {args: [term], returns: prop, meaning: "f is injective"}
+surjective_function: {args: [term], returns: prop, meaning: "f is surjective"}
+linear_map_between: {args: [term, term, term], returns: prop, meaning: "f is a linear map from V to W"}
+matrix_mul: {args: [term, term], returns: term, meaning: "matrix product AB"}
+matrix_vector_mul: {args: [term, term], returns: term, meaning: "matrix-vector product Ax"}
+matrix_transpose: {args: [term], returns: term, meaning: "transpose of a matrix"}
+matrix_trace: {args: [term], returns: term, meaning: "trace of a square matrix"}
+matrix_det: {args: [term], returns: term, meaning: "determinant of a square matrix"}
+matrix_inverse: {args: [term], returns: term, meaning: "inverse of an invertible square matrix"}
+matrix_adjugate: {args: [term], returns: term, meaning: "adjugate (classical adjoint) of a square matrix"}
+matrix_rank: {args: [term], returns: term, meaning: "rank of a matrix"}
+matrix_scale: {args: [term, term], returns: term, meaning: "scalar multiple cA, in the order (c, A)"}
+matrix_entry: {args: [term, term, term], returns: term, meaning: "entry of A in row i and column j, in the order (A, i, j)"}
+matrix_order: {args: [term], returns: term, meaning: "number of rows of a square matrix"}
+matrix_column_count: {args: [term], returns: term, meaning: "number of columns of a matrix"}
+matrix_row_count: {args: [term], returns: term, meaning: "number of rows of a matrix"}
+matrix_columns: {args: [term], returns: term, meaning: "family of column vectors of a matrix"}
+matrix_rows: {args: [term], returns: term, meaning: "family of row vectors of a matrix"}
+matrix_null_space: {args: [term], returns: term, meaning: "solution space of Ax = 0"}
+matrix_row_replaced: {args: [term, term, term], returns: term, meaning: "A with row i replaced by u, in the order (A, i, u)"}
+matrix_column_replaced: {args: [term, term, term], returns: term, meaning: "A with column j replaced by u, in the order (A, j, u)"}
+matrix_rows_swapped: {args: [term, term, term], returns: term, meaning: "A with rows i and j exchanged, in the order (A, i, j)"}
+matrix_minor_deleted: {args: [term, term, term], returns: term, meaning: "A with row i and column j deleted, in the order (A, i, j)"}
+augmented_matrix: {args: [term, term], returns: term, meaning: "matrix (A | b) with the column b appended to A"}
+block_matrix: {args: [term, term, term, term], returns: term, meaning: "block matrix with blocks A, B in the first row and C, D in the second"}
+identity_matrix: {args: [], returns: term, meaning: "identity matrix of the size fixed by context"}
+zero_matrix: {args: [], returns: term, meaning: "zero matrix of the size fixed by context"}
+zero_vector: {args: [], returns: term, meaning: "zero vector of the space fixed by context"}
+upper_triangular_matrix: {args: [term], returns: prop, meaning: "A is an upper triangular square matrix"}
+diagonal_matrix: {args: [term], returns: prop, meaning: "A is a diagonal matrix"}
+matrix_diagonal_product: {args: [term], returns: term, meaning: "product of the diagonal entries of a square matrix"}
+row_addition_product: {args: [term], returns: prop, meaning: "L is a finite product of elementary matrices that add a multiple of one row to another"}
+vandermonde_matrix: {args: [term], returns: term, meaning: "Vandermonde matrix with rows (1, v_i, v_i^2, ...)"}
+vandermonde_difference_product: {args: [term], returns: term, meaning: "product of v_j - v_i over all index pairs i < j"}
+field: {args: [term], returns: prop, meaning: "K is a field"}
+matrix_over_field: {args: [term, term], returns: prop, meaning: "A is a matrix of any size with entries in the field K, in the order (A, K)"}
+linear_equiv_between: {args: [term, term, term], returns: prop, meaning: "e is a linear isomorphism from V onto W, in the order (e, V, W)"}
+quotient_class: {args: [term, term], returns: term, meaning: "coset x + S in the quotient by the subspace S, in the order (x, S)"}

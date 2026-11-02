@@ -1,0 +1,1338 @@
+- id: continuous_iff_components
+  kind: gap
+  level: 1
+  topic: 多変数関数・連続性と成分
+  statement: 写像f:R^n→R^mが連続であることと、fの各成分関数が連続であることは同値である。
+  statement_en: A map f from R^n to R^m is continuous if and only if each of its component functions is continuous.
+  assumptions:
+    - f:R^n→R^m
+  quantifiers:
+    - 任意の自然数n, mと写像f
+  conclusion: fが連続であることと、全てのiでf_iが連続であることは同値である。
+  answer: |
+    各点x, aについて|f_i(x)-f_i(a)|≤‖f(x)-f(a)‖≤Σ_i|f_i(x)-f_i(a)|が成り立つ。左の不等式から、fが連続なら各f_iは連続である。右の不等式から、全てのf_iが連続ならfは連続である。
+  strategy: Compare the Euclidean norm of the difference with the absolute values of its coordinates.
+  sketch:
+    - "setup: Fix points x and a and write out the coordinates of f(x)-f(a)."
+    - "derive: Each coordinate is bounded by the norm, and the norm is bounded by the sum of the coordinates."
+    - "conclude: The two bounds transfer continuity in each direction."
+  openmath: (forall (n m f) (-> (map_between f (euclidean_space n) (euclidean_space m)) (<-> (continuous_map f) (forall (i) (continuous_map (component_fn f i))))))
+  hard_negative:
+    statement: f:R^2→Rが各変数を固定するごとに他方の変数について連続なら、fは連続である。
+    reason: f(x,y)=xy/(x^2+y^2), f(0,0)=0は各変数ごとに連続だが、直線y=x上で値が1/2なので原点で連続でない。
+  target: |
+    ∀ (n m : ℕ) (f : EuclideanSpace ℝ (Fin n) → EuclideanSpace ℝ (Fin m)), Continuous f ↔ ∀ i : Fin m, Continuous (fun x => f x i)
+  proof: |
+    by
+      intro n m f
+      constructor
+      · intro hf i
+        exact (PiLp.continuous_apply 2 (fun _ : Fin m => ℝ) i).comp hf
+      · intro hf
+        have h : Continuous (fun x => WithLp.toLp 2 (fun i => f x i)) :=
+          (PiLp.continuous_toLp 2 (fun _ : Fin m => ℝ)).comp (continuous_pi hf)
+        exact h
+- id: fderiv_little_o
+  kind: gap
+  level: 2
+  topic: 多変数関数・全微分の定義
+  statement: 実ノルム空間の間の写像fと有界線形写像Lについて、fがaで微分可能で微分がLであることは、f(a+h)-f(a)-L(h)がh→0で‖h‖のo(スモールオー)であることと同値である。
+  statement_en: For a map f between real normed spaces and a bounded linear map L, f has Fréchet derivative L at a if and only if f(a+h)-f(a)-L(h) is little-o of h as h tends to 0.
+  assumptions:
+    - E, Fは実ノルム空間
+    - f:E→Fは写像
+    - L:E→Fは有界線形写像
+  quantifiers:
+    - 任意のf, L, 点a
+  conclusion: fのaでの微分がLであることと、f(a+h)-f(a)-L(h)=o(‖h‖)(h→0)は同値である。
+  answer: |
+    微分の定義は、x→aのときf(x)-f(a)-L(x-a)=o(‖x-a‖)となることである。x=a+hと置くと、x→aとh→0は対応し、x-a=hである。したがって定義の条件はf(a+h)-f(a)-L(h)=o(‖h‖)と言い換えられる。
+  strategy: Substitute x = a + h in the definition of the Fréchet derivative.
+  sketch:
+    - "setup: Recall that the derivative is defined by a little-o condition as x tends to a."
+    - "translate: Put x = a + h, so that x tends to a exactly when h tends to 0."
+    - "conclude: The two little-o conditions coincide."
+  openmath: (forall (E F f L a) (-> (and (normed_space E) (normed_space F) (map_between f E F) (continuous_linear_map L)) (<-> (has_fderiv_at f L a) (little_o_at (lambda (h) (- (- (fn_value f (+ a h)) (fn_value f a)) (fn_value L h))) (lambda (h) h) 0))))
+  hard_negative:
+    statement: 全ての方向vでaにおける方向微分係数がL(v)に等しければ、fはaで微分可能で微分はLである。
+    reason: f(x,y)=x^3y/(x^6+y^2), f(0,0)=0は原点の全方向微分係数が0だが、曲線y=x^3上で値が1/2なので原点で連続ですらない。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (L : E →L[ℝ] F) (a : E), HasFDerivAt f L a ↔ Asymptotics.IsLittleO (nhds (0 : E)) (fun h : E => f (a + h) - f a - L h) (fun h : E => h)
+  proof: |
+    by
+      intro E F _ _ _ _ f L a
+      exact hasFDerivAt_iff_isLittleO_nhds_zero
+- id: differentiable_implies_continuous
+  kind: textbook
+  level: 1
+  topic: 多変数関数・微分可能性と連続性
+  statement: 実ノルム空間の間の写像fが点aで微分可能ならば、fはaで連続である。
+  statement_en: If a map f between real normed spaces is Fréchet differentiable at a, then f is continuous at a.
+  assumptions:
+    - E, Fは実ノルム空間
+    - fはaで微分可能
+  quantifiers:
+    - 任意のf:E→Fと点a
+  conclusion: fはaで連続である。
+  answer: |
+    Lをaでの微分とすると、f(x)-f(a)=L(x-a)+o(‖x-a‖)である。Lは有界なので‖L(x-a)‖≤‖L‖‖x-a‖はx→aで0に収束し、剰余項も0に収束する。したがってf(x)→f(a)である。
+  strategy: Bound the increment by the operator norm of the derivative plus the little-o remainder.
+  sketch:
+    - "setup: Let L be the derivative of f at a."
+    - "derive: Write f(x)-f(a) as L(x-a) plus a little-o remainder."
+    - "derive: Boundedness of L makes L(x-a) tend to 0."
+    - "conclude: The increment tends to 0, so f is continuous at a."
+  openmath: (forall (E F f a) (-> (and (normed_space E) (normed_space F) (map_between f E F) (differentiable_at f a)) (continuous_map_at f a)))
+  hard_negative:
+    statement: f:R^2→Rの偏微分係数が点aで全て存在すれば、fはaで連続である。
+    reason: f(x,y)=xy/(x^2+y^2), f(0,0)=0は原点で両方の偏微分係数が0だが、原点で連続でない。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (a : E), DifferentiableAt ℝ f a → ContinuousAt f a
+  proof: |
+    by
+      intro E F _ _ _ _ f a hf
+      exact hf.continuousAt
+- id: product_rule
+  kind: textbook
+  level: 1
+  topic: 多変数関数・積の微分法則
+  statement: 実ノルム空間E上の実数値関数f, gが点aで微分可能で微分がL, Mならば、積fgもaで微分可能で、微分はf(a)M+g(a)Lである。
+  statement_en: If real-valued functions f and g on a real normed space have derivatives L and M at a, then the product fg has derivative f(a)M + g(a)L at a.
+  assumptions:
+    - Eは実ノルム空間
+    - f, g:E→Rのaでの微分はL, M
+  quantifiers:
+    - 任意のf, g, L, M, 点a
+  conclusion: fgのaでの微分はf(a)M+g(a)Lである。
+  answer: |
+    f(a+h)=f(a)+L(h)+o(‖h‖), g(a+h)=g(a)+M(h)+o(‖h‖)を掛け合わせる。積はf(a)g(a)+f(a)M(h)+g(a)L(h)に、L(h)M(h)と剰余項を含む項を加えたものである。|L(h)M(h)|≤‖L‖‖M‖‖h‖^2なので、これらの項は全てo(‖h‖)である。したがってfgの微分はf(a)M+g(a)Lである。
+  strategy: Multiply the first-order expansions of f and g and collect the terms of order o(h).
+  sketch:
+    - "setup: Write the first-order expansions of f and g at a."
+    - "derive: Multiply them and isolate f(a)g(a) + f(a)M(h) + g(a)L(h)."
+    - "derive: Bound every remaining term by a constant times the square of the norm of h or by a little-o term."
+    - "conclude: The linear part is f(a)M + g(a)L."
+  openmath: (forall (E f g L M a) (-> (and (normed_space E) (has_fderiv_at f L a) (has_fderiv_at g M a)) (has_fderiv_at (pointwise_product f g) (operator_add (scalar_multiple (fn_value f a) M) (scalar_multiple (fn_value g a) L)) a)))
+  hard_negative:
+    statement: fgのaでの微分はL·M(同じ方向の値どうしの積h↦L(h)M(h))である。
+    reason: h↦L(h)M(h)は線形でなく2次である。f=g=xではfgの微分は2x h(xは点)であり、h^2ではない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f g : E → ℝ) (L M : E →L[ℝ] ℝ) (a : E), HasFDerivAt f L a → HasFDerivAt g M a → HasFDerivAt (fun x => f x * g x) (f a • M + g a • L) a
+  proof: |
+    by
+      intro E _ _ f g L M a hf hg
+      exact hf.mul hg
+- id: chain_rule
+  kind: textbook
+  level: 1
+  topic: 多変数関数・連鎖律
+  statement: fが点aで微分可能で微分がL、gが点f(a)で微分可能で微分がMならば、合成g∘fはaで微分可能で、微分はM∘Lである。
+  statement_en: If f has derivative L at a and g has derivative M at f(a), then the composite g∘f has derivative M∘L at a.
+  assumptions:
+    - E, F, Gは実ノルム空間
+    - f:E→Fのaでの微分はL
+    - g:F→Gのf(a)での微分はM
+  quantifiers:
+    - 任意のf, g, L, M, 点a
+  conclusion: g∘fのaでの微分はM∘Lである。
+  answer: |
+    k=f(a+h)-f(a)と置くと、k=L(h)+o(‖h‖)であり、‖k‖≤C‖h‖がhの十分小さい範囲で成り立つ。gの展開からg(f(a+h))-g(f(a))=M(k)+o(‖k‖)である。M(k)=M(L(h))+M(o(‖h‖))=M(L(h))+o(‖h‖)で、o(‖k‖)もo(‖h‖)である。したがって合成の微分はM∘Lである。
+  strategy: Substitute the expansion of f into the expansion of g and absorb the remainders using the Lipschitz bound on the increment of f.
+  sketch:
+    - "setup: Put k = f(a+h) - f(a) and expand it as L(h) plus a little-o term."
+    - "derive: Near 0 the norm of k is at most a constant times the norm of h."
+    - "apply_theorem: Expand g at f(a) and evaluate at k."
+    - "derive: Boundedness of M and the bound on k turn every remainder into o(h)."
+    - "conclude: The linear part of the composite is M∘L."
+  openmath: (forall (E F G f g L M a) (-> (and (normed_space E) (normed_space F) (normed_space G) (has_fderiv_at f L a) (has_fderiv_at g M (fn_value f a))) (has_fderiv_at (function_compose_map g f) (operator_comp M L) a)))
+  hard_negative:
+    statement: g∘fがaで微分可能でfがaで微分可能なら、gはf(a)で微分可能である。
+    reason: f≡0, g(y)=|y|では合成は恒等的に0で微分可能だが、gは0で微分可能でない。
+  target: |
+    ∀ (E F G : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] [NormedAddCommGroup G] [NormedSpace ℝ G] (f : E → F) (g : F → G) (L : E →L[ℝ] F) (M : F →L[ℝ] G) (a : E), HasFDerivAt f L a → HasFDerivAt g M (f a) → HasFDerivAt (fun x => g (f x)) (M.comp L) a
+  proof: |
+    by
+      intro E F G _ _ _ _ _ _ f g L M a hf hg
+      exact hg.comp a hf
+- id: curve_chain_rule
+  kind: gap
+  level: 1
+  topic: 多変数関数・曲線に沿う微分
+  statement: 曲線γがtで微分可能で速度がv、実数値関数fが点γ(t)で微分可能で微分がLならば、関数s↦f(γ(s))はtで微分可能で、微分係数はL(v)である。
+  statement_en: If a curve γ has velocity v at t and a real-valued function f has derivative L at γ(t), then s ↦ f(γ(s)) has derivative L(v) at t.
+  assumptions:
+    - Eは実ノルム空間
+    - γ:R→Eのtでの微分係数はv
+    - f:E→Rのγ(t)での微分はL
+  quantifiers:
+    - 任意のf, γ, L, v, 実数t
+  conclusion: s↦f(γ(s))のtでの微分係数はL(v)である。
+  answer: |
+    γの微分係数がvであることは、γのtでの微分がh↦hvであることを意味する。連鎖律より、f∘γのtでの微分はh↦L(hv)=hL(v)である。実数上の線形写像h↦hL(v)に対応する微分係数はL(v)である。
+  strategy: Apply the chain rule, viewing the velocity as the linear map h ↦ hv.
+  sketch:
+    - "translate: View the velocity v as the derivative h ↦ hv of γ at t."
+    - "apply_theorem: Apply the chain rule to f∘γ."
+    - "conclude: The resulting linear map h ↦ hL(v) corresponds to the derivative L(v)."
+  openmath: (forall (E f gamma L v t) (-> (and (normed_space E) (has_deriv_at (lambda (s) (fn_value gamma s)) v t) (has_fderiv_at f L (fn_value gamma t))) (has_deriv_at (lambda (s) (fn_value f (fn_value gamma s))) (fn_value L v) t)))
+  hard_negative:
+    statement: fの偏微分係数が点γ(t)に存在してγが微分可能なら、f(γ(s))のtでの微分係数は偏微分係数と速度の成分の積の和である。
+    reason: f(x,y)=xy/(x^2+y^2), f(0,0)=0, γ(s)=(s,s)では、偏微分係数は0だがf(γ(s))はs=0で不連続である。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (γ : ℝ → E) (L : E →L[ℝ] ℝ) (v : E) (t : ℝ), HasDerivAt γ v t → HasFDerivAt f L (γ t) → HasDerivAt (fun s => f (γ s)) (L v) t
+  proof: |
+    by
+      intro E _ _ f γ L v t hγ hf
+      exact hf.comp_hasDerivAt t hγ
+- id: fderiv_iff_components
+  kind: gap
+  level: 1
+  topic: 多変数関数・ベクトル値写像の成分
+  statement: 写像f:E→R^mのaでの微分がLであることと、全ての成分iについてf_iのaでの微分がLの第i成分であることは同値である。
+  statement_en: A map f from a real normed space to R^m has derivative L at a if and only if for every i the component f_i has as derivative at a the i-th component of L.
+  assumptions:
+    - Eは実ノルム空間
+    - f:E→R^m
+    - L:E→R^mは有界線形写像
+  quantifiers:
+    - 任意のf, L, 点a
+  conclusion: fのaでの微分がLであることと、各iでf_iのaでの微分がL_iであることは同値である。
+  answer: |
+    r(h)=f(a+h)-f(a)-L(h)と置くと、rの第i成分はf_i(a+h)-f_i(a)-L_i(h)である。R^mではベクトルのノルムが0に近づくことと全成分の絶対値が0に近づくことは同じであり、成分は有限個である。したがってr(h)=o(‖h‖)であることと、全てのiで第i成分がo(‖h‖)であることは同値である。
+  strategy: Apply the definition of the derivative to the remainder coordinate by coordinate.
+  sketch:
+    - "setup: Define the remainder r(h) = f(a+h) - f(a) - L(h)."
+    - "translate: The i-th coordinate of r is the remainder for f_i and L_i."
+    - "derive: Finitely many coordinates are little-o exactly when the vector is little-o."
+    - "conclude: Hence the two differentiability statements are equivalent."
+  openmath: (forall (E m f L a) (-> (and (normed_space E) (map_between f E (euclidean_space m))) (<-> (has_fderiv_at f L a) (forall (i) (has_fderiv_at (component_fn f i) (component_fn L i) a)))))
+  hard_negative:
+    statement: 実数値関数f:R^2→Rの偏微分係数が全て存在すれば、fは全微分可能である。
+    reason: ここでの成分は値域の成分であり、定義域の座標方向の偏微分ではない。xy/(x^2+y^2)は偏微分係数が存在するが全微分可能でない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (m : ℕ) (f : E → Fin m → ℝ) (L : E →L[ℝ] (Fin m → ℝ)) (a : E), HasFDerivAt f L a ↔ ∀ i, HasFDerivAt (fun x => f x i) ((ContinuousLinearMap.proj i).comp L) a
+  proof: |
+    by
+      intro E _ _ m f L a
+      exact hasFDerivAt_pi'
+- id: directional_derivative
+  kind: gap
+  level: 1
+  topic: 多変数関数・方向微分
+  statement: fが点aで微分可能で微分がLならば、任意のベクトルvについて、t↦f(a+tv)はt=0で微分可能で、微分係数はL(v)である。
+  statement_en: If f has derivative L at a, then for every vector v the function t ↦ f(a+tv) has derivative L(v) at t=0.
+  assumptions:
+    - E, Fは実ノルム空間
+    - f:E→Fのaでの微分はL
+  quantifiers:
+    - 任意のf, L, 点a, ベクトルv
+  conclusion: t↦f(a+tv)のt=0での微分係数はL(v)である。
+  answer: |
+    微分の定義よりf(a+tv)-f(a)=L(tv)+o(‖tv‖)=tL(v)+o(|t|)である。t≠0で両辺をtで割ると(f(a+tv)-f(a))/t=L(v)+o(1)となる。t→0とするとL(v)に収束する。
+  strategy: Evaluate the first-order expansion along the line through a in direction v.
+  sketch:
+    - "setup: Apply the definition of the derivative at the increment h = tv."
+    - "derive: Linearity gives L(tv) = tL(v), and the remainder is o(|t|)."
+    - "conclude: Dividing by t and letting t tend to 0 gives L(v)."
+  openmath: (forall (E F f L a v) (-> (and (normed_space E) (normed_space F) (has_fderiv_at f L a)) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t v)))) (fn_value L v) 0)))
+  hard_negative:
+    statement: 方向微分係数が全ての方向vに存在すれば、v↦(方向微分係数)は線形である。
+    reason: f(x,y)=x^2y/(x^2+y^2), f(0,0)=0では原点の方向(v,w)の微分係数はv^2w/(v^2+w^2)で、これは線形でない。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (L : E →L[ℝ] F) (a v : E), HasFDerivAt f L a → HasDerivAt (fun t : ℝ => f (a + t • v)) (L v) 0
+  proof: |
+    by
+      intro E F _ _ _ _ f L a v hf
+      exact hf.hasLineDerivAt v
+- id: partials_from_total_derivative
+  kind: gap
+  level: 1
+  topic: 多変数関数・偏微分と全微分
+  statement: f:R^2→Rが点(a,b)で微分可能で微分がLならば、xについての偏微分係数はL(1,0)、yについての偏微分係数はL(0,1)である。
+  statement_en: If f from R^2 to R has derivative L at (a,b), then its partial derivatives at (a,b) with respect to x and y are L(1,0) and L(0,1).
+  assumptions:
+    - f:R^2→Rの(a,b)での微分はL
+  quantifiers:
+    - 任意のf, L, 実数a, b
+  conclusion: x↦f(x,b)のaでの微分係数はL(1,0)、y↦f(a,y)のbでの微分係数はL(0,1)である。
+  answer: |
+    x↦(x,b)はaで微分可能で、速度は(1,0)である。fとの合成に連鎖律を使うと、x↦f(x,b)のaでの微分係数はL(1,0)である。同様にy↦(a,y)の速度は(0,1)なので、y↦f(a,y)のbでの微分係数はL(0,1)である。
+  strategy: Compose f with the two coordinate lines through (a,b) and use the chain rule.
+  sketch:
+    - "construct: Parametrize the coordinate lines x ↦ (x,b) and y ↦ (a,y)."
+    - "derive: Their velocities are (1,0) and (0,1)."
+    - "apply_theorem: The chain rule along each line gives the values of L."
+    - "conclude: These values are the partial derivatives."
+  openmath: (forall (f L a b) (-> (has_fderiv_at f L (ordered_pair a b)) (and (has_deriv_at (lambda (x) (fn_value f (ordered_pair x b))) (fn_value L (ordered_pair 1 0)) a) (has_deriv_at (lambda (y) (fn_value f (ordered_pair a y))) (fn_value L (ordered_pair 0 1)) b))))
+  hard_negative:
+    statement: 両方の偏微分係数が(a,b)で存在すれば、fは(a,b)で微分可能で、Lは偏微分係数で定まる。
+    reason: xy/(x^2+y^2)は原点で偏微分係数が0だが連続でなく、微分可能でない。
+  target: |
+    ∀ (f : ℝ × ℝ → ℝ) (L : ℝ × ℝ →L[ℝ] ℝ) (a b : ℝ), HasFDerivAt f L (a, b) → HasDerivAt (fun x : ℝ => f (x, b)) (L (1, 0)) a ∧ HasDerivAt (fun y : ℝ => f (a, y)) (L (0, 1)) b
+  proof: |
+    by
+      intro f L a b hf
+      constructor
+      · have h : HasDerivAt (fun x : ℝ => (x, b)) ((1 : ℝ), (0 : ℝ)) a :=
+          (hasDerivAt_id a).prodMk (hasDerivAt_const a b)
+        exact HasFDerivAt.comp_hasDerivAt a hf h
+      · have h : HasDerivAt (fun y : ℝ => (a, y)) ((0 : ℝ), (1 : ℝ)) b :=
+          (hasDerivAt_const b a).prodMk (hasDerivAt_id b)
+        exact HasFDerivAt.comp_hasDerivAt b hf h
+- id: total_differential_formula
+  kind: gap
+  level: 1
+  topic: 多変数関数・全微分の公式
+  statement: f:R^n→Rが点aで微分可能で微分がL、第i座標方向の偏微分係数がp_iならば、全てのベクトルvについてL(v)=Σ_i v_i p_iである。
+  statement_en: If f from R^n to R has derivative L at a and partial derivatives p_i at a, then L(v) equals the sum of v_i p_i for every vector v.
+  assumptions:
+    - f:R^n→Rのaでの微分はL
+    - t↦f(a+te_i)のt=0での微分係数はp_i
+  quantifiers:
+    - 任意のn, f, L, 点a, p, ベクトルv
+  conclusion: L(v)=Σ_i v_i p_iである。
+  answer: |
+    方向微分の公式より、t↦f(a+te_i)のt=0での微分係数はL(e_i)である。微分係数は一意なのでp_i=L(e_i)である。v=Σ_i v_i e_iとLの線形性からL(v)=Σ_i v_i L(e_i)=Σ_i v_i p_iである。
+  strategy: Identify each partial derivative with L on a basis vector and expand v in the standard basis.
+  sketch:
+    - "apply_theorem: The directional derivative along e_i is L(e_i)."
+    - "derive: Uniqueness of the derivative gives p_i = L(e_i)."
+    - "setup: Expand v in the standard basis."
+    - "conclude: Linearity of L gives the sum formula."
+  openmath: (forall (n f L a p v) (-> (and (has_fderiv_at f L a) (forall (i) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t (basis_vector i))))) (fn_value p i) 0))) (= (fn_value L v) (sum (index_set n) (lambda (i) (* (coordinate_of v i) (fn_value p i)))))))
+  hard_negative:
+    statement: 偏微分係数p_iが全て存在すれば、全ての方向vの方向微分係数はΣ_i v_i p_iである。
+    reason: 微分可能性がないと成り立たない。x^2y/(x^2+y^2)は原点でp=0だが、方向(1,1)の微分係数は1/2である。
+  target: |
+    ∀ (n : ℕ) (f : (Fin n → ℝ) → ℝ) (L : (Fin n → ℝ) →L[ℝ] ℝ) (a p : Fin n → ℝ), HasFDerivAt f L a → (∀ i, HasDerivAt (fun t : ℝ => f (a + t • (Pi.single i (1 : ℝ) : Fin n → ℝ))) (p i) 0) → ∀ v : Fin n → ℝ, L v = ∑ i, v i * p i
+  proof: |
+    by
+      intro n f L a p hL hp v
+      have hv : v = ∑ i, v i • (Pi.single i (1 : ℝ) : Fin n → ℝ) := by
+        ext j
+        simp [Finset.sum_apply, Pi.single_apply]
+      have hpi : ∀ i, p i = L (Pi.single i (1 : ℝ)) := fun i =>
+        (hp i).unique (hL.hasLineDerivAt _)
+      calc L v = L (∑ i, v i • (Pi.single i (1 : ℝ) : Fin n → ℝ)) := congrArg L hv
+        _ = ∑ i, v i * p i := by simp [map_sum, hpi]
+- id: partials_exist_not_continuous
+  kind: gap
+  level: 1
+  topic: 多変数関数・偏微分可能だが不連続な例
+  statement: f(x,y)=xy/(x^2+y^2), f(0,0)=0で定まる関数は、原点で両方の偏微分係数が0であるが、原点で連続でない。
+  statement_en: The function f(x,y) = xy/(x^2+y^2) with f(0,0) = 0 has both partial derivatives equal to 0 at the origin but is not continuous at the origin.
+  assumptions:
+    - f(x,y)=xy/(x^2+y^2), f(0,0)=0
+  quantifiers:
+    - 関数fは具体的に与えられている
+  conclusion: 原点でf_x=f_y=0であり、fは原点で連続でない。
+  answer: |
+    全てのxでf(x,0)=0、全てのyでf(0,y)=0なので、原点での偏微分係数はどちらも0である。一方、t≠0ではf(t,t)=t^2/(2t^2)=1/2である。t→0で(t,t)は原点に近づくがf(t,t)は1/2のままであり、f(0,0)=0に収束しない。したがってfは原点で連続でない。
+  strategy: The function vanishes on both axes but is constant 1/2 on the diagonal away from the origin.
+  sketch:
+    - "derive: On each coordinate axis f vanishes identically, so both partial derivatives are 0."
+    - "derive: For t different from 0, f(t,t) = 1/2."
+    - "contradiction: Continuity at the origin would force the limit along the diagonal to be f(0,0) = 0."
+    - "conclude: Hence f is not continuous at the origin."
+  openmath: (forall (f) (-> (and (= (fn_value f (ordered_pair 0 0)) 0) (forall (x y) (-> (or (!= x 0) (!= y 0)) (= (fn_value f (ordered_pair x y)) (/ (* x y) (+ (^ x 2) (^ y 2))))))) (and (has_deriv_at (lambda (x) (fn_value f (ordered_pair x 0))) 0 0) (has_deriv_at (lambda (y) (fn_value f (ordered_pair 0 y))) 0 0) (not (continuous_map_at f (ordered_pair 0 0))))))
+  hard_negative:
+    statement: この関数は原点の近くで偏導関数が連続である。
+    reason: x≠0でf_y(x,0)=1/xなのでf_yは原点の近くで有界でない。連続な偏導関数を持てば微分可能で連続になるので、結論にも矛盾する。
+  target: |
+    HasDerivAt (fun x : ℝ => (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (x, 0)) 0 0 ∧ HasDerivAt (fun y : ℝ => (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (0, y)) 0 0 ∧ ¬ ContinuousAt (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (0, 0)
+  proof: |
+    by
+      refine ⟨?_, ?_, ?_⟩
+      · simpa using hasDerivAt_const (0 : ℝ) (0 : ℝ)
+      · simpa using hasDerivAt_const (0 : ℝ) (0 : ℝ)
+      · intro h
+        have hc : Filter.Tendsto (fun t : ℝ => (t, t)) (nhdsWithin 0 {0}ᶜ) (nhds ((0 : ℝ), (0 : ℝ))) := by
+          have : ContinuousAt (fun t : ℝ => (t, t)) 0 := by fun_prop
+          exact this.tendsto.mono_left nhdsWithin_le_nhds
+        have h3 := h.tendsto.comp hc
+        have hev : (fun t : ℝ => (1 / 2 : ℝ)) =ᶠ[nhdsWithin 0 {0}ᶜ] ((fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) ∘ fun t : ℝ => (t, t)) := by
+          filter_upwards [self_mem_nhdsWithin] with t ht
+          have ht' : t ≠ 0 := ht
+          simp only [Function.comp]
+          field_simp
+          ring
+        have h4 := tendsto_nhds_unique (h3.congr' hev.symm) tendsto_const_nhds
+        norm_num at h4
+- id: gradient_inner_fderiv
+  kind: gap
+  level: 1
+  topic: 多変数関数・勾配と方向微分
+  statement: 完備な実内積空間上の実数値関数fが点aで微分可能ならば、全てのベクトルvについて⟨∇f(a),v⟩=df(a)(v)である。
+  statement_en: If a real-valued function f on a real Hilbert space is differentiable at a, then the inner product of the gradient at a with v equals the derivative of f at a applied to v, for every v.
+  assumptions:
+    - Eは完備な実内積空間
+    - f:E→Rはaで微分可能
+  quantifiers:
+    - 任意のf, 点a, ベクトルv
+  conclusion: ⟨∇f(a),v⟩=df(a)(v)である。
+  answer: |
+    勾配∇f(a)は、有界線形汎関数df(a)をリースの表現定理で内積の形に表すベクトルとして定義される。すなわち全てのvでdf(a)(v)=⟨∇f(a),v⟩となるベクトルである。主張はこの定義そのものである。R^nでは∇f(a)の成分は偏微分係数であり、df(a)(v)=Σ_i ∂_if(a)v_iという通常の公式と一致する。
+  strategy: Unfold the definition of the gradient as the Riesz representative of the derivative.
+  sketch:
+    - "setup: Recall that the gradient is the Riesz representative of the derivative."
+    - "translate: Riesz representation says the functional is the inner product with this vector."
+    - "conclude: Evaluating at v gives the formula."
+  openmath: (forall (E f a v) (-> (and (hilbert_space E) (differentiable_at f a)) (= (inner_product (gradient_at f a) v) (fn_value (fderiv_at f a) v))))
+  hard_negative:
+    statement: fの微分df(a)と勾配∇f(a)は、どの実ノルム空間でも定義され、同じ空間の元である。
+    reason: df(a)は双対空間の元であり、勾配を定めるには内積とリースの表現定理が必要である。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E] (f : E → ℝ) (a v : E), DifferentiableAt ℝ f a → inner ℝ (gradient f a) v = fderiv ℝ f a v
+  proof: |
+    by
+      intro E _ _ _ f a v _
+      exact inner_gradient_left
+- id: gradient_components
+  kind: gap
+  level: 1
+  topic: 多変数関数・勾配の成分
+  statement: f:R^n→Rが点aで微分可能ならば、勾配∇f(a)の第i成分は第i座標方向の偏微分係数df(a)(e_i)である。
+  statement_en: If f from R^n to R is differentiable at a, then the i-th component of the gradient at a is the partial derivative df(a)(e_i).
+  assumptions:
+    - f:R^n→Rはaで微分可能
+  quantifiers:
+    - 任意のn, f, 点a, 添字i
+  conclusion: (∇f(a))_i=df(a)(e_i)である。
+  answer: |
+    勾配の定義より、df(a)(e_i)=⟨∇f(a),e_i⟩である。標準基底e_iとの内積はベクトルの第i成分を取り出す。したがってdf(a)(e_i)=(∇f(a))_iである。
+  strategy: Take the inner product of the gradient with the standard basis vector.
+  sketch:
+    - "apply_theorem: The defining property of the gradient gives df(a)(e_i) as an inner product."
+    - "derive: The inner product with e_i is the i-th coordinate."
+    - "conclude: So the component of the gradient is the partial derivative."
+  openmath: (forall (n f a i) (-> (and (map_between f (euclidean_space n) R) (differentiable_at f a)) (= (coordinate_of (gradient_at f a) i) (fn_value (fderiv_at f a) (basis_vector i)))))
+  hard_negative:
+    statement: fの偏微分係数が全て存在すれば、その偏微分係数を並べたベクトルvは全ての方向でdf(a)(w)=⟨v,w⟩を満たす。
+    reason: 微分可能性がなければdf(a)は存在しない。xy/(x^2+y^2)はv=0となるが原点で微分可能でない。
+  target: |
+    ∀ (n : ℕ) (f : EuclideanSpace ℝ (Fin n) → ℝ) (a : EuclideanSpace ℝ (Fin n)) (i : Fin n), DifferentiableAt ℝ f a → gradient f a i = fderiv ℝ f a (EuclideanSpace.single i (1 : ℝ))
+  proof: |
+    by
+      intro n f a i _
+      have h := inner_gradient_left (𝕜 := ℝ) (f := f) (x := a) (y := EuclideanSpace.single i (1 : ℝ))
+      rw [← h, EuclideanSpace.inner_single_right]
+      simp
+- id: gradient_along_curve
+  kind: gap
+  level: 2
+  topic: 多変数関数・勾配と曲線
+  statement: 完備な実内積空間上の実数値関数fが点γ(t)で微分可能で、曲線γのtでの速度がvならば、s↦f(γ(s))のtでの微分係数は⟨∇f(γ(t)),v⟩である。
+  statement_en: If a real-valued function f on a real Hilbert space is differentiable at γ(t) and the curve γ has velocity v at t, then s ↦ f(γ(s)) has derivative equal to the inner product of the gradient of f at γ(t) with v.
+  assumptions:
+    - Eは完備な実内積空間
+    - f:E→Rはγ(t)で微分可能
+    - γ:R→Eのtでの微分係数はv
+  quantifiers:
+    - 任意のf, γ, v, 実数t
+  conclusion: f∘γのtでの微分係数は⟨∇f(γ(t)),v⟩である。
+  answer: |
+    連鎖律より、f∘γのtでの微分係数はdf(γ(t))(v)である。勾配の定義よりdf(γ(t))(v)=⟨∇f(γ(t)),v⟩である。よって主張が成り立つ。
+  strategy: Combine the chain rule along a curve with the defining property of the gradient.
+  sketch:
+    - "apply_theorem: The chain rule gives the derivative df(γ(t))(v)."
+    - "translate: Rewrite df(γ(t))(v) as an inner product with the gradient."
+    - "conclude: This is the stated formula."
+  openmath: (forall (E f gamma v t) (-> (and (hilbert_space E) (differentiable_at f (fn_value gamma t)) (has_deriv_at (lambda (s) (fn_value gamma s)) v t)) (has_deriv_at (lambda (s) (fn_value f (fn_value gamma s))) (inner_product (gradient_at f (fn_value gamma t)) v) t)))
+  hard_negative:
+    statement: f∘γのtでの微分係数は‖∇f(γ(t))‖‖v‖である。
+    reason: 内積と積は角度の分だけ異なる。f(x,y)=x, γ(s)=(0,s)では、∇f=(1,0), v=(0,1)でノルムの積は1だが、微分係数は0である。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E] (f : E → ℝ) (γ : ℝ → E) (v : E) (t : ℝ), DifferentiableAt ℝ f (γ t) → HasDerivAt γ v t → HasDerivAt (fun s => f (γ s)) (inner ℝ (gradient f (γ t)) v) t
+  proof: |
+    by
+      intro E _ _ _ f γ v t hf hγ
+      rw [inner_gradient_left]
+      exact hf.hasFDerivAt.comp_hasDerivAt t hγ
+- id: gradient_steepest_ascent
+  kind: textbook
+  level: 2
+  topic: 多変数関数・勾配と最大増加方向
+  statement: fが点aで微分可能ならば、単位ベクトルvについてdf(a)(v)≤‖∇f(a)‖が成り立つ。さらに∇f(a)≠0のとき、u=∇f(a)/‖∇f(a)‖は単位ベクトルで、df(a)(u)=‖∇f(a)‖となる。
+  statement_en: If f is differentiable at a, then df(a)(v) is at most the norm of the gradient for every unit vector v. If the gradient is nonzero, the normalized gradient u is a unit vector with df(a)(u) equal to the norm of the gradient.
+  assumptions:
+    - Eは完備な実内積空間
+    - f:E→Rはaで微分可能
+  quantifiers:
+    - 任意のf, 点a
+  conclusion: 単位ベクトルvについてdf(a)(v)≤‖∇f(a)‖であり、∇f(a)≠0なら勾配方向で等号が成り立つ。
+  answer: |
+    コーシー・シュワルツの不等式より、単位ベクトルvについてdf(a)(v)=⟨∇f(a),v⟩≤‖∇f(a)‖‖v‖=‖∇f(a)‖である。∇f(a)≠0のとき、uのノルムは‖∇f(a)‖/‖∇f(a)‖=1である。また、df(a)(u)=⟨∇f(a),∇f(a)⟩/‖∇f(a)‖=‖∇f(a)‖である。
+  strategy: Apply Cauchy-Schwarz to the inner product representation and check equality at the normalized gradient.
+  sketch:
+    - "translate: Write df(a)(v) as the inner product of the gradient with v."
+    - "apply_theorem: Cauchy-Schwarz bounds it by the norm of the gradient for unit v."
+    - "construct: Assuming the gradient is nonzero, normalize it to get u."
+    - "derive: Compute the norm of u and the value df(a)(u)."
+    - "conclude: The bound is attained in the gradient direction."
+  openmath: (forall (E f a) (-> (and (hilbert_space E) (differentiable_at f a)) (and (forall (v) (-> (= (norm v) 1) (<= (fn_value (fderiv_at f a) v) (norm (gradient_at f a))))) (-> (!= (gradient_at f a) 0) (and (= (norm (scalar_multiple (/ 1 (norm (gradient_at f a))) (gradient_at f a))) 1) (= (fn_value (fderiv_at f a) (scalar_multiple (/ 1 (norm (gradient_at f a))) (gradient_at f a))) (norm (gradient_at f a))))))))
+  hard_negative:
+    statement: 方向微分係数が最大となる単位ベクトルは、∇f(a)=0でも一意に定まる。
+    reason: ∇f(a)=0なら全ての方向の微分係数が0なので、全ての単位ベクトルが最大を与える。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E] (f : E → ℝ) (a : E), DifferentiableAt ℝ f a → (∀ v : E, ‖v‖ = 1 → fderiv ℝ f a v ≤ ‖gradient f a‖) ∧ (gradient f a ≠ 0 → ‖(‖gradient f a‖)⁻¹ • gradient f a‖ = 1 ∧ fderiv ℝ f a ((‖gradient f a‖)⁻¹ • gradient f a) = ‖gradient f a‖)
+  proof: |
+    by
+      intro E _ _ _ f a _
+      constructor
+      · intro v hv
+        rw [← inner_gradient_left]
+        calc inner ℝ (gradient f a) v ≤ ‖gradient f a‖ * ‖v‖ := real_inner_le_norm _ _
+          _ = ‖gradient f a‖ := by rw [hv, mul_one]
+      · intro hne
+        have hn : ‖gradient f a‖ ≠ 0 := norm_ne_zero_iff.mpr hne
+        constructor
+        · rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ hn]
+        · rw [← inner_gradient_left, inner_smul_right, real_inner_self_eq_norm_sq]
+          field_simp
+- id: local_extremum_gradient_zero
+  kind: textbook
+  level: 1
+  topic: 多変数関数・極値と勾配
+  statement: 完備な実内積空間上の実数値関数fが点aで微分可能で、aで極大または極小となるならば、∇f(a)=0である。
+  statement_en: If a real-valued function on a real Hilbert space is differentiable at a and has a local maximum or minimum at a, then its gradient at a is 0.
+  assumptions:
+    - Eは完備な実内積空間
+    - f:E→Rはaで微分可能
+    - fはaで極値をとる
+  quantifiers:
+    - 任意のf, 点a
+  conclusion: ∇f(a)=0である。
+  answer: |
+    任意のベクトルvについて、g(t)=f(a+tv)はt=0で極値をとり、微分係数はdf(a)(v)である。1変数の極値の必要条件よりdf(a)(v)=0である。よってdf(a)=0であり、全てのvで⟨∇f(a),v⟩=0となる。v=∇f(a)と取ると‖∇f(a)‖^2=0なので、∇f(a)=0である。
+  strategy: Restrict to lines through a, use the one-variable criterion, then test the gradient against itself.
+  sketch:
+    - "setup: Fix a vector v and define g(t) = f(a+tv)."
+    - "apply_theorem: g has a local extremum at 0, so g'(0) = df(a)(v) = 0."
+    - "derive: Hence the inner product of the gradient with every v vanishes."
+    - "conclude: Taking v equal to the gradient shows that the gradient is 0."
+  openmath: (forall (E f a) (-> (and (hilbert_space E) (differentiable_at f a) (local_extremum_at f a)) (= (gradient_at f a) 0)))
+  hard_negative:
+    statement: ∇f(a)=0ならばfはaで極値をとる。
+    reason: f(x,y)=x^2-y^2は原点で勾配が0だが、原点は鞍点で極値でない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E] (f : E → ℝ) (a : E), DifferentiableAt ℝ f a → IsLocalExtr f a → gradient f a = 0
+  proof: |
+    by
+      intro E _ _ _ f a _ hx
+      simp [gradient, hx.fderiv_eq_zero]
+- id: local_extremum_directional_zero
+  kind: gap
+  level: 1
+  topic: 多変数関数・極値と偏微分
+  statement: fが点aで極値をとり、方向vの微分係数pが存在するならば、p=0である。特にaに存在する偏微分係数は全て0である。
+  statement_en: If f has a local extremum at a and the directional derivative p in direction v exists at a, then p = 0. In particular every existing partial derivative at a vanishes.
+  assumptions:
+    - Eは実ノルム空間
+    - f:E→Rはaで極値をとる
+    - t↦f(a+tv)のt=0での微分係数はp
+  quantifiers:
+    - 任意のf, 点a, ベクトルv, 実数p
+  conclusion: p=0である。
+  answer: |
+    g(t)=f(a+tv)と置く。t→a+tvは連続でt=0でaを通るので、gはt=0で極値をとる。1変数関数が極値点で微分可能なら微分係数は0である。したがってp=g'(0)=0である。座標方向のvを取れば偏微分係数についての主張が得られる。
+  strategy: Reduce to the one-variable extremum criterion along the line through a in direction v.
+  sketch:
+    - "construct: Define g(t) = f(a+tv)."
+    - "derive: Continuity of the line implies that g has a local extremum at 0."
+    - "apply_theorem: The one-variable criterion gives g'(0) = 0."
+    - "conclude: Therefore p = 0."
+  openmath: (forall (E f a v p) (-> (and (normed_space E) (local_extremum_at f a) (has_deriv_at (lambda (t) (fn_value f (+ a (scalar_multiple t v)))) p 0)) (= p 0)))
+  hard_negative:
+    statement: 全ての偏微分係数が0である点でfは極値をとる。
+    reason: f(x,y)=xyは原点で両方の偏微分係数が0だが、原点の任意の近傍で正負の値をとる。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (a v : E) (p : ℝ), IsLocalExtr f a → HasDerivAt (fun t : ℝ => f (a + t • v)) p 0 → p = 0
+  proof: |
+    by
+      intro E _ _ f a v p hx hp
+      have hc : ContinuousAt (fun t : ℝ => a + t • v) 0 := by fun_prop
+      have hx' : IsLocalExtr f (a + (0 : ℝ) • v) := by simpa using hx
+      have h2 := IsLocalExtr.comp_continuous (g := fun t : ℝ => a + t • v) (b := 0) hx' hc
+      exact h2.hasDerivAt_eq_zero hp
+- id: mean_value_inequality
+  kind: textbook
+  level: 2
+  topic: 多変数関数・平均値の不等式
+  statement: 実ノルム空間の凸集合sの各点でfが微分可能で‖df(x)‖≤Cならば、s内の任意のx, yについて‖f(y)-f(x)‖≤C‖y-x‖である。
+  statement_en: If f is differentiable at each point of a convex subset s of a real normed space with operator norm of the derivative at most C, then the norm of f(y)-f(x) is at most C times the norm of y-x for x, y in s.
+  assumptions:
+    - E, Fは実ノルム空間
+    - sはEの凸集合
+    - fはsの各点で微分可能
+    - sの各点で‖df(x)‖≤C
+  quantifiers:
+    - 任意のf, s, 実数C, sの点x, y
+  conclusion: ‖f(y)-f(x)‖≤C‖y-x‖である。
+  answer: |
+    凸性より線分x+t(y-x)(0≤t≤1)はsに含まれる。g(t)=f(x+t(y-x))は微分可能で、g'(t)=df(x+t(y-x))(y-x)なので‖g'(t)‖≤C‖y-x‖である。ベクトル値の1変数関数についての平均値の不等式より‖g(1)-g(0)‖≤C‖y-x‖である。これが主張である。
+  strategy: Restrict f to the segment from x to y and apply the one-variable mean value inequality.
+  sketch:
+    - "setup: The segment from x to y lies in s by convexity."
+    - "construct: Define g(t) = f(x + t(y-x)) on [0,1]."
+    - "derive: The chain rule bounds the norm of g'(t) by C times the norm of y-x."
+    - "apply_theorem: The one-variable mean value inequality bounds g(1)-g(0)."
+    - "conclude: Since g(1)-g(0) = f(y)-f(x), the inequality follows."
+  openmath: (forall (E F f s C x y) (-> (and (normed_space E) (normed_space F) (convex_set s) (forall (z) (-> (in z s) (and (differentiable_at f z) (<= (norm (fderiv_at f z)) C)))) (in x s) (in y s)) (<= (norm (- (fn_value f y) (fn_value f x))) (* C (norm (- y x))))))
+  hard_negative:
+    statement: ベクトル値写像f:s→Fについて、ある線分上の点zでf(y)-f(x)=df(z)(y-x)が成り立つ。
+    reason: 値域が2次元以上では等式は一般に成り立たない。f(t)=(cos t, sin t)はf(2π)-f(0)=0だが、df(z)(2π)≠0である。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (s : Set E) (C : ℝ), Convex ℝ s → (∀ x ∈ s, DifferentiableAt ℝ f x) → (∀ x ∈ s, ‖fderiv ℝ f x‖ ≤ C) → ∀ x ∈ s, ∀ y ∈ s, ‖f y - f x‖ ≤ C * ‖y - x‖
+  proof: |
+    by
+      intro E F _ _ _ _ f s C hs hd hb x hx y hy
+      exact hs.norm_image_sub_le_of_norm_fderiv_le hd hb hx hy
+- id: zero_derivative_constant_on_connected
+  kind: gap
+  level: 2
+  topic: 多変数関数・微分が0の写像
+  statement: 実ノルム空間の連結な開集合s上でfが微分可能で、sの全ての点で微分が0ならば、fはs上で定数である。
+  statement_en: If f is differentiable on a connected open subset s of a real normed space and its derivative vanishes at each point of s, then f is constant on s.
+  assumptions:
+    - E, Fは実ノルム空間
+    - sはEの連結な開集合
+    - fはs上で微分可能
+    - s上でdf=0
+  quantifiers:
+    - 任意のf, s, sの点x, y
+  conclusion: f(x)=f(y)である。
+  answer: |
+    点x_0∈sを固定し、A={x∈s | f(x)=f(x_0)}と置く。fは連続なのでAはsで閉である。また、x∈Aを中心としsに含まれる球は凸なので、平均値の不等式を定数C=0で使うと球の上でfは定数であり、球はAに含まれる。よってAはsで開かつ閉で空でない。sは連結なのでA=sである。
+  strategy: Show that a level set of f is open and closed in s, using the mean value inequality on small balls.
+  sketch:
+    - "setup: Fix x_0 in s and define A as the set of points of s where f equals f(x_0)."
+    - "derive: Continuity makes A closed in s."
+    - "apply_theorem: The mean value inequality with C = 0 makes f constant on balls in s, so A is open."
+    - "derive: A contains x_0, so it is nonempty."
+    - "conclude: Connectedness of s gives A = s."
+  openmath: (forall (E F f s x y) (-> (and (normed_space E) (normed_space F) (open_set s) (preconnected_in s E) (forall (z) (-> (in z s) (and (differentiable_at f z) (= (fderiv_at f z) 0)))) (in x s) (in y s)) (= (fn_value f x) (fn_value f y))))
+  hard_negative:
+    statement: 開集合s上でdf=0ならばfはs上で定数である。
+    reason: 連結性が必要である。2つの互いに素な開球の和集合上で、球ごとに異なる定数を値とする関数が反例である。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (s : Set E), IsOpen s → IsPreconnected s → DifferentiableOn ℝ f s → (∀ x ∈ s, fderiv ℝ f x = 0) → ∀ x ∈ s, ∀ y ∈ s, f x = f y
+  proof: |
+    by
+      intro E F _ _ _ _ f s ho hc hd hz x hx y hy
+      exact ho.is_const_of_fderiv_eq_zero hc hd (fun z hz' => hz z hz') hx hy
+- id: c1_partials_imply_differentiable
+  kind: textbook
+  level: 2
+  topic: 多変数関数・C1級と全微分可能性
+  statement: f:R^2→Rの偏導関数f_x, f_yが全ての点に存在し連続ならば、fは全ての点pで微分可能で、微分は(h,k)↦f_x(p)h+f_y(p)kである。
+  statement_en: If the partial derivatives f_x and f_y of f from R^2 to R exist everywhere and are continuous, then f is differentiable at each point p with derivative (h,k) ↦ f_x(p)h + f_y(p)k.
+  assumptions:
+    - f:R^2→R
+    - f_x, f_yは全ての点に存在し連続
+  quantifiers:
+    - 任意のf, f_x, f_y, 点p
+  conclusion: fはpで微分可能で、微分はf_x(p)h+f_y(p)kである。
+  answer: |
+    p=(a,b)に対してf(a+h,b+k)-f(a,b)をf(a+h,b+k)-f(a,b+k)とf(a,b+k)-f(a,b)に分ける。1変数の平均値の定理より、前者はf_x(a+θh,b+k)h、後者はf_y(a,b+θ'k)kと書ける(0<θ,θ'<1)。f_x, f_yは連続なので、これらはf_x(a,b)h+o(‖(h,k)‖)とf_y(a,b)k+o(‖(h,k)‖)である。よってfはpで微分可能で、微分は主張の形になる。
+  strategy: Change one variable at a time, apply the one-variable mean value theorem, and use continuity of the partial derivatives.
+  sketch:
+    - "setup: Split the increment of f into a change in x followed by a change in y."
+    - "apply_theorem: The one-variable mean value theorem expresses each piece through a partial derivative at an intermediate point."
+    - "derive: Continuity of the partial derivatives replaces the intermediate points by p up to o(h,k)."
+    - "conclude: The sum is the claimed linear map plus a little-o remainder."
+  openmath: (forall (f fx fy p) (-> (and (forall (q) (has_deriv_at (lambda (s) (fn_value f (ordered_pair s (second_coord q)))) (fn_value fx q) (first_coord q))) (forall (q) (has_deriv_at (lambda (s) (fn_value f (ordered_pair (first_coord q) s))) (fn_value fy q) (second_coord q))) (continuous_map fx) (continuous_map fy)) (and (differentiable_at f p) (forall (h k) (= (fn_value (fderiv_at f p) (ordered_pair h k)) (+ (* (fn_value fx p) h) (* (fn_value fy p) k)))))))
+  hard_negative:
+    statement: 偏導関数が全ての点に存在すれば、連続でなくてもfは微分可能である。
+    reason: xy/(x^2+y^2), f(0,0)=0は偏導関数が全ての点に存在するが、原点で連続でなく微分可能でない。
+  target: |
+    ∀ (f fx fy : ℝ × ℝ → ℝ), (∀ p : ℝ × ℝ, HasDerivAt (fun s : ℝ => f (s, p.2)) (fx p) p.1) → (∀ p : ℝ × ℝ, HasDerivAt (fun s : ℝ => f (p.1, s)) (fy p) p.2) → Continuous fx → Continuous fy → ∀ p : ℝ × ℝ, HasFDerivAt f (fx p • ContinuousLinearMap.fst ℝ ℝ ℝ + fy p • ContinuousLinearMap.snd ℝ ℝ ℝ) p
+  proof: |
+    by
+      intro f fx fy hx hy cx cy p
+      have hxF : ∀ v : ℝ × ℝ, HasFDerivAt (fun s : ℝ => f (s, v.2)) (fx v • ContinuousLinearMap.id ℝ ℝ) v.1 := fun v => by
+        have h := (hx v).hasFDerivAt
+        have e : ContinuousLinearMap.toSpanSingleton ℝ (fx v) = fx v • ContinuousLinearMap.id ℝ ℝ := by
+          ext
+          simp
+        rw [e] at h
+        exact h
+      have hyF : ∀ v : ℝ × ℝ, HasFDerivAt (fun s : ℝ => f (v.1, s)) (fy v • ContinuousLinearMap.id ℝ ℝ) v.2 := fun v => by
+        have h := (hy v).hasFDerivAt
+        have e : ContinuousLinearMap.toSpanSingleton ℝ (fy v) = fy v • ContinuousLinearMap.id ℝ ℝ := by
+          ext
+          simp
+        rw [e] at h
+        exact h
+      have ccx : Continuous fun v : ℝ × ℝ => fx v • ContinuousLinearMap.id ℝ ℝ := cx.smul continuous_const
+      have ccy : Continuous fun v : ℝ × ℝ => fy v • ContinuousLinearMap.id ℝ ℝ := cy.smul continuous_const
+      have key := hasStrictFDerivAt_uncurry_coprod (𝕜 := ℝ) (u := p)
+        (f := fun x y => f (x, y))
+        (f₁ := fun x y => fx (x, y) • ContinuousLinearMap.id ℝ ℝ)
+        (f₂ := fun x y => fy (x, y) • ContinuousLinearMap.id ℝ ℝ)
+        (Filter.Eventually.of_forall hxF) (Filter.Eventually.of_forall hyF)
+        ccx.continuousAt ccy.continuousAt
+      have h : HasFDerivAt f _ p := key.hasFDerivAt
+      refine h.congr_fderiv ?_
+      ext <;> simp [Function.HasUncurry.uncurry]
+- id: schwarz_mixed_partials
+  kind: named
+  level: 2
+  topic: 多変数関数・シュワルツの定理
+  statement: (シュワルツの定理)f:R^2→RがC^2級ならば、全ての点(a,b)でf_{xy}(a,b)=f_{yx}(a,b)である。すなわち偏微分の順序を交換できる。
+  statement_en: (Schwarz) If f from R^2 to R is of class C^2, then the mixed partial derivatives at each point agree, that is, the order of partial differentiation can be interchanged.
+  assumptions:
+    - f:R^2→RはC^2級
+  quantifiers:
+    - 任意のf, 実数a, b
+  conclusion: xで微分する前にyで微分した結果と、yで微分する前にxで微分した結果は(a,b)で一致する。
+  answer: |
+    (概略)差分D(h,k)=f(a+h,b+k)-f(a+h,b)-f(a,b+k)+f(a,b)を考える。φ(x)=f(x,b+k)-f(x,b)に平均値の定理を使い、さらにyについて平均値の定理を使うと、D(h,k)=f_{yx}(a+θh,b+θ'k)hkと書ける。xとyの役割を入れ替えると、D(h,k)=f_{xy}(a+σh,b+σ'k)hkとも書ける。hkで割ってh,k→0とすると、二階偏導関数の連続性から両者は(a,b)で一致する。
+  strategy: Express the symmetric second difference through both mixed partials using the mean value theorem twice, then pass to the limit by continuity.
+  sketch:
+    - "construct: Define the second difference D(h,k) of f around (a,b)."
+    - "apply_theorem: The mean value theorem in x, then in y, expresses D through one mixed partial."
+    - "apply_theorem: The same argument in the other order expresses D through the other mixed partial."
+    - "derive: Divide by hk and let h and k tend to 0."
+    - "conclude: Continuity of the second partial derivatives makes the two limits equal."
+  openmath: (forall (f a b) (-> (cont_diff 2 f) (= (deriv_at_point (lambda (x) (deriv_at_point (lambda (y) (fn_value f (ordered_pair x y))) b)) a) (deriv_at_point (lambda (y) (deriv_at_point (lambda (x) (fn_value f (ordered_pair x y))) a)) b))))
+  hard_negative:
+    statement: 二階偏導関数f_{xy}, f_{yx}が全ての点に存在すれば、連続でなくてもf_{xy}=f_{yx}である。
+    reason: f(x,y)=xy(x^2-y^2)/(x^2+y^2), f(0,0)=0は二階偏導関数が存在するが、f_{xy}(0,0)とf_{yx}(0,0)は符号が異なる±1である。
+  target: |
+    ∀ (f : ℝ × ℝ → ℝ) (a b : ℝ), ContDiff ℝ 2 f → deriv (fun x : ℝ => deriv (fun y : ℝ => f (x, y)) b) a = deriv (fun y : ℝ => deriv (fun x : ℝ => f (x, y)) a) b
+  proof: |
+    by
+      intro f a b hf
+      have hd : Differentiable ℝ f := hf.differentiable two_ne_zero
+      have hf' : ContDiff ℝ 1 (fderiv ℝ f) := hf.fderiv_right (by norm_num)
+      have hd2 : Differentiable ℝ (fderiv ℝ f) := hf'.differentiable one_ne_zero
+      have h1 : ∀ x y : ℝ, deriv (fun s : ℝ => f (x, s)) y = fderiv ℝ f (x, y) (0, 1) := fun x y =>
+        (HasFDerivAt.comp_hasDerivAt (f := fun s : ℝ => (x, s)) y (hd (x, y)).hasFDerivAt
+          ((hasDerivAt_const y x).prodMk (hasDerivAt_id y))).deriv
+      have h2 : ∀ x y : ℝ, deriv (fun s : ℝ => f (s, y)) x = fderiv ℝ f (x, y) (1, 0) := fun x y =>
+        (HasFDerivAt.comp_hasDerivAt (f := fun s : ℝ => (s, y)) x (hd (x, y)).hasFDerivAt
+          ((hasDerivAt_id x).prodMk (hasDerivAt_const x y))).deriv
+      simp only [h1, h2]
+      have h3 : HasDerivAt (fun x : ℝ => fderiv ℝ f (x, b)) (fderiv ℝ (fderiv ℝ f) (a, b) (1, 0)) a :=
+        HasFDerivAt.comp_hasDerivAt (f := fun s : ℝ => (s, b)) a (hd2 (a, b)).hasFDerivAt
+          ((hasDerivAt_id a).prodMk (hasDerivAt_const a b))
+      have h4 : HasDerivAt (fun y : ℝ => fderiv ℝ f (a, y)) (fderiv ℝ (fderiv ℝ f) (a, b) (0, 1)) b :=
+        HasFDerivAt.comp_hasDerivAt (f := fun s : ℝ => (a, s)) b (hd2 (a, b)).hasFDerivAt
+          ((hasDerivAt_const b a).prodMk (hasDerivAt_id b))
+      have h5 := (h3.clm_apply (hasDerivAt_const a ((0 : ℝ), (1 : ℝ)))).deriv
+      have h6 := (h4.clm_apply (hasDerivAt_const b ((1 : ℝ), (0 : ℝ)))).deriv
+      rw [h5, h6]
+      simp only [map_zero, add_zero]
+      exact hf.contDiffAt.isSymmSndFDerivAt (by simp) _ _
+- id: gradient_field_is_curl_free
+  kind: gap
+  level: 2
+  topic: 多変数関数・勾配場の積分可能条件
+  statement: C^2級関数f:R^2→Rについて、P=f_x, Q=f_yならば全ての点でP_y=Q_xである。すなわち勾配場は渦なしである。
+  statement_en: If f from R^2 to R is of class C^2 with partial derivatives P = f_x and Q = f_y, then P_y = Q_x everywhere, so a gradient field is curl-free.
+  assumptions:
+    - f:R^2→RはC^2級
+    - P=f_x, Q=f_y
+  quantifiers:
+    - 任意のf, P, Q, 点p
+  conclusion: dP(p)(0,1)=dQ(p)(1,0)である。
+  answer: |
+    P(q)=df(q)(1,0)をqで微分すると、dP(p)(v)=d^2f(p)(v)(1,0)である。同様にdQ(p)(w)=d^2f(p)(w)(0,1)である。C^2級関数の二階微分は対称なので、d^2f(p)(0,1)(1,0)=d^2f(p)(1,0)(0,1)である。これはdP(p)(0,1)=dQ(p)(1,0)を意味する。
+  strategy: Express P and Q through the first derivative of f and use symmetry of the second derivative.
+  sketch:
+    - "translate: Write P(q) = df(q)(1,0) and Q(q) = df(q)(0,1)."
+    - "derive: Differentiating gives dP(p)(v) = d^2f(p)(v)(1,0) and dQ(p)(w) = d^2f(p)(w)(0,1)."
+    - "apply_theorem: The second derivative of a C^2 function is symmetric."
+    - "conclude: Hence P_y = Q_x."
+  openmath: (forall (f P Q p) (-> (and (cont_diff 2 f) (forall (q) (= (fn_value (fderiv_at f q) (ordered_pair 1 0)) (fn_value P q))) (forall (q) (= (fn_value (fderiv_at f q) (ordered_pair 0 1)) (fn_value Q q)))) (= (fn_value (fderiv_at P p) (ordered_pair 0 1)) (fn_value (fderiv_at Q p) (ordered_pair 1 0)))))
+  hard_negative:
+    statement: R^2から原点を除いた領域で滑らかな場(P,Q)がP_y=Q_xを満たせば、そこで勾配場である。
+    reason: P=-y/(x^2+y^2), Q=x/(x^2+y^2)はP_y=Q_xを満たすが、単位円上の線積分が2πなので勾配場でない。
+  target: |
+    ∀ (f P Q : ℝ × ℝ → ℝ), ContDiff ℝ 2 f → (∀ q, fderiv ℝ f q (1, 0) = P q) → (∀ q, fderiv ℝ f q (0, 1) = Q q) → ∀ p, fderiv ℝ P p (0, 1) = fderiv ℝ Q p (1, 0)
+  proof: |
+    by
+      intro f P Q hf hP hQ p
+      have hf' : ContDiff ℝ 1 (fderiv ℝ f) := hf.fderiv_right (by norm_num)
+      have hd2 : DifferentiableAt ℝ (fderiv ℝ f) p := (hf'.differentiable one_ne_zero) p
+      have e : ∀ w v : ℝ × ℝ, fderiv ℝ (fun q => fderiv ℝ f q w) p v = fderiv ℝ (fderiv ℝ f) p v w := by
+        intro w v
+        rw [(hd2.hasFDerivAt.clm_apply (hasFDerivAt_const w p)).fderiv]
+        simp
+      have eP : P = fun q => fderiv ℝ f q (1, 0) := funext fun q => (hP q).symm
+      have eQ : Q = fun q => fderiv ℝ f q (0, 1) := funext fun q => (hQ q).symm
+      rw [eP, eQ, e, e]
+      exact hf.contDiffAt.isSymmSndFDerivAt (by simp) _ _
+- id: euler_homogeneous_function
+  kind: gap
+  level: 2
+  topic: 多変数関数・同次関数
+  statement: 実ノルム空間E上の実数値関数fがk次同次、すなわち全てのt>0と全てのyでf(ty)=t^k f(y)を満たし、点xでの微分がLならば、L(x)=k f(x)である。
+  statement_en: If a real-valued function f on a real normed space is homogeneous of degree k, that is f(ty) = t^k f(y) for all t > 0 and all y, and f has derivative L at x, then L(x) = k f(x).
+  assumptions:
+    - Eは実ノルム空間
+    - 全てのt>0とyでf(ty)=t^k f(y)
+    - fのxでの微分はL
+  quantifiers:
+    - 任意のf, 自然数k, 点x, L
+  conclusion: L(x)=k f(x)である。
+  answer: |
+    g(t)=f(tx)と置く。連鎖律より、g'(1)=L(x)である。一方、t>0ではg(t)=t^k f(x)なので、t=1の近くで微分してg'(1)=k f(x)である。したがってL(x)=k f(x)である。
+  strategy: Differentiate the identity f(tx) = t^k f(x) at t = 1 in two ways.
+  sketch:
+    - "construct: Define g(t) = f(tx) for real t."
+    - "apply_theorem: The chain rule along the ray gives g'(1) = L(x)."
+    - "derive: Near t = 1 we have g(t) = t^k f(x), so g'(1) = k f(x)."
+    - "conclude: Uniqueness of the derivative gives L(x) = k f(x)."
+  openmath: (forall (E f k x L) (-> (and (normed_space E) (in k N) (homogeneous_of_degree f k) (has_fderiv_at f L x)) (= (fn_value L x) (* k (fn_value f x)))))
+  hard_negative:
+    statement: L(x)=k f(x)が1点xで成り立てばfはk次同次である。
+    reason: 同次性は全ての点と全てのtについての条件である。f(y)=y^2+1はx=0, k=0でL(x)=0=k f(x)を満たすが、0次同次でない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (k : ℕ) (x : E) (L : E →L[ℝ] ℝ), (∀ t : ℝ, 0 < t → ∀ y : E, f (t • y) = t ^ k * f y) → HasFDerivAt f L x → L x = k * f x
+  proof: |
+    by
+      intro E _ _ f k x L hom hL
+      have h1 : HasDerivAt (fun t : ℝ => t • x) x 1 := by
+        simpa using (hasDerivAt_id (1 : ℝ)).smul_const x
+      have hL' : HasFDerivAt f L ((1 : ℝ) • x) := by simpa using hL
+      have h2 : HasDerivAt (fun t : ℝ => f (t • x)) (L x) 1 := hL'.comp_hasDerivAt 1 h1
+      have h3 := (hasDerivAt_pow k (1 : ℝ)).mul_const (f x)
+      have h4 : (fun t : ℝ => f (t • x)) =ᶠ[nhds 1] fun t : ℝ => t ^ k * f x := by
+        filter_upwards [lt_mem_nhds (one_pos : (0 : ℝ) < 1)] with t ht
+        exact hom t ht x
+      have h5 := h2.unique (h3.congr_of_eventuallyEq h4)
+      simpa using h5
+- id: inverse_function_theorem
+  kind: named
+  level: 2
+  topic: 多変数関数・逆関数定理
+  statement: (逆関数定理)Banach空間の間のC^1級写像fの点aでの微分Lが有界な逆を持つならば、g(f(a))=aであるgが存在し、aの近くでg(f(x))=x、f(a)の近くでf(g(y))=yを満たす。さらにgはf(a)の近くでC^1級で、f(a)での微分はL^{-1}である。
+  statement_en: (Inverse function theorem) If a C^1 map f between Banach spaces has at a a derivative L with bounded inverse, then there is g with g(f(a)) = a that inverts f near a and near f(a), g is C^1 at f(a), and its derivative there is the inverse of L.
+  assumptions:
+    - E, FはBanach空間
+    - fはaの近くでC^1級
+    - fのaでの微分Lは連続線形同型
+  quantifiers:
+    - 任意のf, L, 点a
+  conclusion: fの局所逆写像gが存在し、f(a)でC^1級で、微分はL^{-1}である。
+  answer: |
+    (概略)F(x)=x-L^{-1}(f(x)-y)と置くと、Fの不動点はf(x)=yの解である。fはC^1級なのでdF(a)=0であり、aの小さな閉球でFは縮小写像となる。バナッハの不動点定理により、f(a)に近いyごとに解xが一意に定まり、これがgを与える。gの微分可能性は、fの一次近似を逆に解いて確かめ、微分は(df)^{-1}である。この式と逆写像の連続性からgはC^1級である。
+  strategy: Solve f(x) = y as a fixed point problem and apply the contraction mapping principle near a.
+  sketch:
+    - "translate: Rewrite f(x) = y as the fixed point equation x = x - L^{-1}(f(x) - y)."
+    - "derive: Since f is C^1, this map is a contraction on a small closed ball around a."
+    - "apply_theorem: The contraction mapping principle gives a unique solution for each y near f(a)."
+    - "construct: Let g(y) be this solution, a local inverse of f."
+    - "derive: Inverting the linear approximation of f gives the derivative of g."
+    - "conclude: The formula for the derivative shows that g is C^1 at f(a)."
+  openmath: (forall (E F f L a) (-> (and (banach_space E) (normed_space F) (cont_diff_at 1 f a) (has_fderiv_at f L a) (linear_iso L)) (exists (g) (and (= (fn_value g (fn_value f a)) a) (local_inverse_of g f a) (has_fderiv_at g (inverse_operator L) (fn_value f a)) (cont_diff_at 1 g (fn_value f a))))))
+  hard_negative:
+    statement: 全ての点で微分が可逆なC^1級写像は、全体で単射である。
+    reason: f(x,y)=(e^x cos y, e^x sin y)はヤコビ行列式e^{2x}が常に正だが、yについて周期2πなので単射でない。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (L : E ≃L[ℝ] F) (a : E), ContDiffAt ℝ 1 f a → HasFDerivAt f (L : E →L[ℝ] F) a → ∃ g : F → E, g (f a) = a ∧ (∀ᶠ x in nhds a, g (f x) = x) ∧ (∀ᶠ y in nhds (f a), f (g y) = y) ∧ HasFDerivAt g (L.symm : F →L[ℝ] E) (f a) ∧ ContDiffAt ℝ 1 g (f a)
+  proof: |
+    by
+      intro E F _ _ _ _ _ f L a hf hL
+      have hs := hf.hasStrictFDerivAt' hL one_ne_zero
+      exact ⟨hf.localInverse hL one_ne_zero, hf.localInverse_apply_image hL one_ne_zero,
+        hs.eventually_left_inverse, hs.eventually_right_inverse,
+        hs.to_localInverse.hasFDerivAt, hf.to_localInverse hL one_ne_zero⟩
+- id: derivative_of_local_inverse
+  kind: gap
+  level: 2
+  topic: 多変数関数・逆写像の微分
+  statement: gが点bで連続で、bの近くでf(g(y))=yを満たし、fのg(b)での微分が連続線形同型Lならば、gはbで微分可能で、微分はL^{-1}である。
+  statement_en: If g is continuous at b, f(g(y)) = y for y near b, and f has at g(b) a derivative L that is a continuous linear isomorphism, then g is differentiable at b with derivative the inverse of L.
+  assumptions:
+    - E, Fは実ノルム空間
+    - gはbで連続
+    - bの近くでf(g(y))=y
+    - fのg(b)での微分は連続線形同型L
+  quantifiers:
+    - 任意のf, g, L, 点b
+  conclusion: gのbでの微分はL^{-1}である。
+  answer: |
+    k=y-b, h=g(y)-g(b)と置く。fの展開からk=f(g(y))-f(g(b))=L(h)+o(‖h‖)である。gの連続性よりk→0でh→0なので、この展開はk→0で使える。L^{-1}を作用させるとh=L^{-1}(k)+o(‖h‖)である。L^{-1}は有界なので、kが小さいとき‖h‖≤C‖k‖となる。したがってh=L^{-1}(k)+o(‖k‖)であり、gのbでの微分はL^{-1}である。
+  strategy: Invert the first-order expansion of f at g(b) and use continuity of g to control the remainder.
+  sketch:
+    - "setup: Put k = y - b and h = g(y) - g(b)."
+    - "derive: The expansion of f gives k = L(h) + o(h)."
+    - "derive: Applying the inverse of L gives h = L^{-1}(k) + o(h)."
+    - "derive: Continuity of g and boundedness of the inverse give a bound of h by a constant times k."
+    - "conclude: Therefore h = L^{-1}(k) + o(k), which is differentiability with the stated derivative."
+  openmath: (forall (E F f g L b) (-> (and (normed_space E) (normed_space F) (continuous_map_at g b) (linear_iso L) (has_fderiv_at f L (fn_value g b)) (right_inverse_near f g b)) (has_fderiv_at g (inverse_operator L) b)))
+  hard_negative:
+    statement: gがbで連続でf(g(y))=yならば、fの微分が可逆でなくてもgはbで微分可能である。
+    reason: f(x)=x^3, g(y)=y^{1/3}はf(g(y))=yで連続だが、f'(0)=0でありgは0で微分可能でない。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F) (g : F → E) (L : E ≃L[ℝ] F) (b : F), ContinuousAt g b → HasFDerivAt f (L : E →L[ℝ] F) (g b) → (∀ᶠ y in nhds b, f (g y) = y) → HasFDerivAt g (L.symm : F →L[ℝ] E) b
+  proof: |
+    by
+      intro E F _ _ _ _ f g L b hg hf hfg
+      exact HasFDerivAt.of_local_left_inverse hg hf hfg
+- id: implicit_function_theorem
+  kind: named
+  level: 2
+  topic: 多変数関数・陰関数定理
+  statement: (陰関数定理)E_1, E_2, FをBanach空間とする。f:E_1×E_2→Fが点uの近くでC^1級で、uでの微分Lの第2変数方向の部分M=L(0,·)が有界な逆を持つとする。このときφが存在し、uの近くの点vについてf(v)=f(u)はφ(v_1)=v_2と同値である。さらにφはu_1で微分可能で、微分は-M^{-1}∘L(·,0)である。
+  statement_en: (Implicit function theorem) Let E_1, E_2, F be Banach spaces, f from E_1×E_2 to F be C^1 near u, and suppose the partial derivative M of the derivative L at u in the second variable has a bounded inverse. Then there is φ with φ(u_1) = u_2 such that, for v near u, f(v) = f(u) if and only if φ(v_1) = v_2. Moreover φ is differentiable at u_1 with derivative -M^{-1} composed with the partial derivative of L in the first variable.
+  assumptions:
+    - E_1, E_2, FはBanach空間
+    - fはuの近くでC^1級で、uでの微分はL
+    - M=L(0,·)はE_2からFへの有界な逆を持つ
+  quantifiers:
+    - 任意のf, L, 点u
+  conclusion: uの近くでf(v)=f(u)の解はφのグラフで与えられ、φ'(u_1)=-M^{-1}∘L(·,0)である。
+  answer: |
+    (概略)写像G(x,y)=(x,f(x,y))を考える。Gのuでの微分は(h,k)↦(h,L(h,k))で、Mが可逆なので有界な逆を持つ。逆関数定理からGは局所逆写像を持つ。その第2成分でφ(x)を定めると、u_1の近くでf(x,φ(x))=f(u)であり、uの近くの解はこれに限られる。φの微分はf(x,φ(x))=f(u)を連鎖律で微分して、L(h,0)+M(φ'(u_1)h)=0から得られる。
+  strategy: Apply the inverse function theorem to G(x,y) = (x, f(x,y)) and read off the implicit function from its local inverse.
+  sketch:
+    - "construct: Define G(x,y) = (x, f(x,y))."
+    - "derive: The invertibility of M makes the derivative of G at u invertible."
+    - "apply_theorem: The inverse function theorem gives a local inverse of G."
+    - "construct: Define φ from the second component of this local inverse at (x, f(u))."
+    - "derive: Near u the level set of f through u is the graph of φ."
+    - "conclude: Differentiating f(x, φ(x)) = f(u) by the chain rule gives the derivative of φ."
+  openmath: (forall (E1 E2 F f L u) (-> (and (banach_space E1) (banach_space E2) (banach_space F) (cont_diff_at 1 f u) (has_fderiv_at f L u) (linear_iso (restricted_to_second L))) (exists (phi) (and (= (fn_value phi (first_coord u)) (second_coord u)) (locally_graph_of f phi u) (has_fderiv_at phi (operator_comp (scalar_multiple (neg 1) (inverse_operator (restricted_to_second L))) (restricted_to_first L)) (first_coord u))))))
+  hard_negative:
+    statement: f(x,y)=0でf_x≠0, f_y=0の点の近くでも、解集合はy=φ(x)の形のグラフで書ける。
+    reason: f(x,y)=x-y^2は原点でf_y=0であり、解集合x=y^2は原点の近くでyをxの関数として一価に表せない。
+  target: |
+    ∀ (E₁ E₂ F : Type*) [NormedAddCommGroup E₁] [NormedSpace ℝ E₁] [CompleteSpace E₁] [NormedAddCommGroup E₂] [NormedSpace ℝ E₂] [CompleteSpace E₂] [NormedAddCommGroup F] [NormedSpace ℝ F] [CompleteSpace F] (f : E₁ × E₂ → F) (L : E₁ × E₂ →L[ℝ] F) (u : E₁ × E₂), ContDiffAt ℝ 1 f u → HasFDerivAt f L u → (L.comp (ContinuousLinearMap.inr ℝ E₁ E₂)).IsInvertible → ∃ φ : E₁ → E₂, φ u.1 = u.2 ∧ (∀ᶠ v in nhds u, f v = f u ↔ φ v.1 = v.2) ∧ HasFDerivAt φ (-((L.comp (ContinuousLinearMap.inr ℝ E₁ E₂)).inverse.comp (L.comp (ContinuousLinearMap.inl ℝ E₁ E₂)))) u.1
+  proof: |
+    by
+      intro E₁ E₂ F _ _ _ _ _ _ _ _ _ f L u hf hL hinv
+      have hs : HasStrictFDerivAt f L u := hf.hasStrictFDerivAt' hL one_ne_zero
+      have he := hs.eventually_apply_eq_iff_implicitFunctionOfProdDomain hinv
+      refine ⟨hs.implicitFunctionOfProdDomain hinv, he.self_of_nhds.mp rfl, he, ?_⟩
+      have hd := (hs.hasStrictFDerivAt_implicitFunctionOfProdDomain hinv).hasFDerivAt
+      convert hd using 1
+- id: lagrange_multiplier
+  kind: named
+  level: 2
+  topic: 多変数関数・ラグランジュの未定乗数法
+  statement: (ラグランジュの未定乗数法)Banach空間E上の実数値関数φ, gが点aで強微分可能で微分がφ', g'であり、g'≠0とする。φが等高集合{x | g(x)=g(a)}上でaで極値をとるならば、φ'=λg'となる実数λが存在する。
+  statement_en: (Lagrange multipliers) Let φ and g be real-valued functions on a Banach space, strictly differentiable at a with derivatives φ' and g', and suppose g' is nonzero. If φ restricted to the level set of g through a has a local extremum at a, then φ' = λ g' for some real λ.
+  assumptions:
+    - EはBanach空間
+    - φ, gはaで強微分可能(C^1級ならば成り立つ)
+    - g'≠0
+    - φは{x | g(x)=g(a)}上でaで極値をとる
+  quantifiers:
+    - 任意のφ, g, φ', g', 点a
+  conclusion: φ'=λg'となる実数λが存在する。
+  answer: |
+    (概略)x↦(g(x),φ(x))のaでの微分(g',φ')を考える。これがR^2への全射なら、強微分可能性と開写像型の定理より、像はg(a)を固定してもφ(a)の前後の値をとり、極値であることに矛盾する。よって(g',φ')は全射でなく、ある(p,q)≠0でpg'+qφ'=0となる。q=0ならp≠0でg'=0となり仮定に反するのでq≠0である。したがってφ'=(-p/q)g'である。
+  strategy: Show that the pair of derivatives is not surjective onto R^2, obtain a linear dependence, and exclude the vanishing coefficient of φ'.
+  sketch:
+    - "construct: Consider the map x ↦ (g(x), φ(x)) and its derivative at a."
+    - "contradiction: If the derivative were surjective, an open mapping argument would contradict the local extremum on the level set."
+    - "derive: Hence there is a nonzero pair (p,q) with p g' + q φ' = 0."
+    - "case_split: If q = 0 then p is nonzero and g' = 0, against the hypothesis."
+    - "conclude: So q is nonzero and φ' = (-p/q) g'."
+  openmath: (forall (E phi g dphi dg a) (-> (and (banach_space E) (has_strict_fderiv_at g dg a) (has_strict_fderiv_at phi dphi a) (!= dg 0) (local_extremum_on phi (level_set_through g a) a)) (exists (l) (= dphi (scalar_multiple l dg)))))
+  hard_negative:
+    statement: g'=0の点でも、制約付き極値点ならφ'=λg'となるλが存在する。
+    reason: g(x,y)=y^2-x^3, φ=xでは曲線上の原点で最小値をとるが、g'(0,0)=0, φ'(0,0)≠0なのでλは存在しない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E] (φ g : E → ℝ) (φ' g' : E →L[ℝ] ℝ) (a : E), IsLocalExtrOn φ {x | g x = g a} a → HasStrictFDerivAt g g' a → HasStrictFDerivAt φ φ' a → g' ≠ 0 → ∃ l : ℝ, φ' = l • g'
+  proof: |
+    by
+      intro E _ _ _ φ g φ' g' a hex hg hφ hne
+      obtain ⟨p, q, hpq, h⟩ := hex.exists_multipliers_of_hasStrictFDerivAt_1d hg hφ
+      have hq : q ≠ 0 := by
+        rintro rfl
+        have hp : p ≠ 0 := by
+          rintro rfl
+          exact hpq rfl
+        rw [zero_smul, add_zero] at h
+        exact hne ((smul_eq_zero.mp h).resolve_left hp)
+      refine ⟨-(p / q), ?_⟩
+      ext x
+      have hx := congrArg (fun T : E →L[ℝ] ℝ => T x) h
+      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul,
+        ContinuousLinearMap.zero_apply] at hx ⊢
+      field_simp
+      linarith
+- id: continuous_on_box_integrable
+  kind: gap
+  level: 2
+  topic: 重積分・連続関数の可積分性
+  statement: R^nの閉直方体[a,b]上で連続な関数fは、[a,b]上で可積分である。
+  statement_en: A function continuous on a closed box [a,b] in R^n is integrable on [a,b].
+  assumptions:
+    - f:R^n→Rは閉直方体[a,b]上で連続
+  quantifiers:
+    - 任意のn, f, a, b
+  conclusion: fは[a,b]上で可積分である。
+  answer: |
+    閉直方体は有界閉集合なのでコンパクトである。コンパクト集合上の連続関数は有界であり、Mで抑えられる。fは連続なので[a,b]上で可測であり、閉直方体の体積は有限なので、|f|の積分はM×体積以下で有限である。よってfは可積分である。
+  strategy: Compactness gives boundedness, and a bounded measurable function on a set of finite measure is integrable.
+  sketch:
+    - "derive: The closed box is compact."
+    - "apply_theorem: A continuous function on a compact set is bounded."
+    - "derive: The box has finite volume, so the integral of the absolute value of f is finite."
+    - "conclude: Hence f is integrable on the box."
+  openmath: (forall (n f a b) (-> (continuous_on_set f (box_region a b)) (integrable_on_set (lambda (x) (fn_value f x)) (box_region a b))))
+  hard_negative:
+    statement: 開直方体上で連続な関数は、その開直方体上で可積分である。
+    reason: 開区間(0,1)上のf(x)=1/xは連続だが可積分でない。
+  target: |
+    ∀ (n : ℕ) (f : (Fin n → ℝ) → ℝ) (a b : Fin n → ℝ), ContinuousOn f (Set.Icc a b) → MeasureTheory.IntegrableOn f (Set.Icc a b)
+  proof: |
+    by
+      intro n f a b hf
+      exact hf.integrableOn_compact isCompact_Icc
+- id: fubini_continuous_on_box
+  kind: textbook
+  level: 2
+  topic: 重積分・フビニの定理
+  statement: f:R^2→Rが長方形[a,b]×[c,d]上で連続ならば、長方形上の重積分は累次積分∫_{[a,b]}∫_{[c,d]}f(x,y)dydxに等しく、積分の順序を交換した∫_{[c,d]}∫_{[a,b]}f(x,y)dxdyにも等しい。
+  statement_en: If f from R^2 to R is continuous on the rectangle [a,b]×[c,d], then its double integral equals the iterated integral in either order.
+  assumptions:
+    - fは[a,b]×[c,d]上で連続
+  quantifiers:
+    - 任意のf, 実数a, b, c, d
+  conclusion: 重積分と2つの累次積分は全て等しい。
+  answer: |
+    長方形はコンパクトなのでfは有界で、長方形上で可積分である。可積分関数についてのフビニの定理より、重積分はどちらの順序の累次積分にも等しい。
+  strategy: Establish integrability on the compact rectangle and apply Fubini in both orders.
+  sketch:
+    - "derive: The rectangle is compact, so continuous f is bounded and integrable on it."
+    - "apply_theorem: Fubini expresses the double integral as the iterated integral in x then y."
+    - "apply_theorem: Fubini also lets the order of the iterated integrals be exchanged."
+    - "conclude: All three integrals agree."
+  openmath: (forall (f a b c d) (-> (continuous_on_set f (product_set (closed_interval a b) (closed_interval c d))) (and (= (set_integral (product_set (closed_interval a b) (closed_interval c d)) (lambda (z) (fn_value f z))) (set_integral (closed_interval a b) (lambda (x) (set_integral (closed_interval c d) (lambda (y) (fn_value f (ordered_pair x y))))))) (= (set_integral (closed_interval a b) (lambda (x) (set_integral (closed_interval c d) (lambda (y) (fn_value f (ordered_pair x y)))))) (set_integral (closed_interval c d) (lambda (y) (set_integral (closed_interval a b) (lambda (x) (fn_value f (ordered_pair x y))))))))))
+  hard_negative:
+    statement: 累次積分が両方の順序で存在すれば、2つの累次積分は常に等しい。
+    reason: f(x,y)=(x^2-y^2)/(x^2+y^2)^2の[0,1]^2上の累次積分はπ/4と-π/4で異なる。このfは可積分でない。
+  target: |
+    ∀ (f : ℝ × ℝ → ℝ) (a b c d : ℝ), ContinuousOn f (Set.Icc a b ×ˢ Set.Icc c d) → (∫ z in Set.Icc a b ×ˢ Set.Icc c d, f z) = (∫ x in Set.Icc a b, ∫ y in Set.Icc c d, f (x, y)) ∧ (∫ x in Set.Icc a b, ∫ y in Set.Icc c d, f (x, y)) = ∫ y in Set.Icc c d, ∫ x in Set.Icc a b, f (x, y)
+  proof: |
+    by
+      intro f a b c d hf
+      have hi : MeasureTheory.IntegrableOn f (Set.Icc a b ×ˢ Set.Icc c d)
+          ((MeasureTheory.volume : MeasureTheory.Measure ℝ).prod MeasureTheory.volume) :=
+        hf.integrableOn_compact (isCompact_Icc.prod isCompact_Icc)
+      constructor
+      · exact MeasureTheory.setIntegral_prod f hi
+      · have hi' : MeasureTheory.Integrable (Function.uncurry fun x y => f (x, y))
+            (((MeasureTheory.volume : MeasureTheory.Measure ℝ).restrict (Set.Icc a b)).prod
+              ((MeasureTheory.volume : MeasureTheory.Measure ℝ).restrict (Set.Icc c d))) := by
+          rw [MeasureTheory.Measure.prod_restrict]
+          exact hi
+        exact MeasureTheory.integral_integral_swap hi'
+- id: separated_double_integral
+  kind: gap
+  level: 2
+  topic: 重積分・変数分離型の積分
+  statement: fが[a,b]上で、gが[c,d]上で連続ならば、[a,b]×[c,d]上のf(x)g(y)の重積分は、∫_{[a,b]}f(x)dxと∫_{[c,d]}g(y)dyの積に等しい。
+  statement_en: If f is continuous on [a,b] and g is continuous on [c,d], then the double integral of f(x)g(y) over [a,b]×[c,d] is the product of the integral of f over [a,b] and the integral of g over [c,d].
+  assumptions:
+    - fは[a,b]上で連続
+    - gは[c,d]上で連続
+  quantifiers:
+    - 任意のf, g, 実数a, b, c, d
+  conclusion: 重積分は∫_{[a,b]}f(x)dx·∫_{[c,d]}g(y)dyに等しい。
+  answer: |
+    f(x)g(y)は長方形上で可積分なので、フビニの定理より重積分は累次積分∫_{[a,b]}(∫_{[c,d]}f(x)g(y)dy)dxに等しい。内側の積分ではf(x)は定数なのでf(x)∫_{[c,d]}g(y)dyとなる。外側の積分で定数∫_{[c,d]}g(y)dyを外に出すと、主張の積が得られる。
+  strategy: Apply Fubini and pull out the factor that is constant in each inner integral.
+  sketch:
+    - "apply_theorem: Fubini rewrites the double integral as an iterated integral."
+    - "derive: In the inner integral f(x) is constant."
+    - "derive: The integral of g is a constant in the outer integral."
+    - "conclude: The result is the product of the two single integrals."
+  openmath: (forall (f g a b c d) (-> (and (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval c d))) (= (set_integral (product_set (closed_interval a b) (closed_interval c d)) (lambda (z) (* (fn_value f (first_coord z)) (fn_value g (second_coord z))))) (* (set_integral (closed_interval a b) (lambda (x) (fn_value f x))) (set_integral (closed_interval c d) (lambda (y) (fn_value g y)))))))
+  hard_negative:
+    statement: 一般のh(x,y)について、長方形上の重積分は∫_{[a,b]}h(x,c)dxと∫_{[c,d]}h(a,y)dyの積である。
+    reason: h(x,y)=x+yは変数分離型でなく、[0,1]^2上で重積分は1だが、右辺は(1/2)(1/2)=1/4である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b c d : ℝ), ContinuousOn f (Set.Icc a b) → ContinuousOn g (Set.Icc c d) → (∫ z in Set.Icc a b ×ˢ Set.Icc c d, f z.1 * g z.2) = (∫ x in Set.Icc a b, f x) * ∫ y in Set.Icc c d, g y
+  proof: |
+    by
+      intro f g a b c d _ _
+      exact MeasureTheory.setIntegral_prod_mul f g (Set.Icc a b) (Set.Icc c d)
+- id: change_of_variables
+  kind: textbook
+  level: 3
+  topic: 重積分・変数変換公式
+  statement: sをR^nの可測集合、f:R^n→R^nをs上で微分可能かつ単射とし、微分をf'とする。gがf(s)上で可積分ならば、∫_{f(s)}g(y)dy=∫_s|det f'(x)|g(f(x))dxである。
+  statement_en: Let s be a measurable subset of R^n and f be differentiable and injective on s with derivative f'. If g is integrable on f(s), then the integral of g over f(s) equals the integral over s of the absolute determinant of f' times g composed with f.
+  assumptions:
+    - sはR^nの可測集合
+    - fはs上で微分可能で、微分はf'
+    - fはs上で単射
+    - gはf(s)上で可積分
+  quantifiers:
+    - 任意のn, s, f, f', g
+  conclusion: ∫_{f(s)}g(y)dy=∫_s|det f'(x)|g(f(x))dxである。
+  answer: |
+    (概略)線形写像Lによる集合の像の体積は|det L|倍になる。sを小さな可測集合に分けると、各部分でfはf'(x)で近似されるので、f(s)の小部分の体積は|det f'(x)|倍で近似される。これから測度の等式vol(f(A))=∫_A|det f'(x)|dxが可測なA⊂sについて得られる。gを単関数で近似すると積分の公式になる。
+  strategy: Approximate f locally by its derivative, deduce the measure formula, and extend from indicator functions to integrable functions.
+  sketch:
+    - "apply_theorem: A linear map scales the volume of every set by the absolute value of its determinant."
+    - "setup: Partition s into small measurable pieces where f is close to its linearization."
+    - "derive: Summing gives the measure of f(A) as the integral of the absolute determinant over A."
+    - "derive: This is the integral formula for indicator functions."
+    - "conclude: Approximation by simple functions extends the formula to integrable g."
+  openmath: (forall (n s f df g) (-> (and (measurable_set s) (forall (x) (-> (in x s) (has_fderiv_within f (fn_value df x) s x))) (injective_on_set f s) (integrable_on_set (lambda (y) (fn_value g y)) (image_of f s))) (= (set_integral (image_of f s) (lambda (y) (fn_value g y))) (set_integral s (lambda (x) (* (abs (linear_det (fn_value df x))) (fn_value g (fn_value f x))))))))
+  hard_negative:
+    statement: fがs上で単射でなくても、同じ公式が成り立つ。
+    reason: f(x)=x^2, s=[-1,1], g=1では左辺はf(s)=[0,1]の長さ1だが、右辺は∫_{-1}^{1}|2x|dx=2である。
+  target: |
+    ∀ (n : ℕ) (s : Set (Fin n → ℝ)) (f : (Fin n → ℝ) → Fin n → ℝ) (f' : (Fin n → ℝ) → (Fin n → ℝ) →L[ℝ] (Fin n → ℝ)) (g : (Fin n → ℝ) → ℝ), MeasurableSet s → (∀ x ∈ s, HasFDerivWithinAt f (f' x) s x) → Set.InjOn f s → MeasureTheory.IntegrableOn g (f '' s) → (∫ y in f '' s, g y) = ∫ x in s, |(f' x).det| * g (f x)
+  proof: |
+    by
+      intro n s f f' g hs hd hi _
+      exact MeasureTheory.integral_image_eq_integral_abs_det_fderiv_smul MeasureTheory.volume hs hd hi g
+- id: polar_coordinates_jacobian
+  kind: gap
+  level: 2
+  topic: 重積分・極座標のヤコビアン
+  statement: 写像Φ(r,θ)=(r cos θ, r sin θ)は全ての点(r,θ)で微分可能で、微分の行列式はrである。
+  statement_en: The map Φ(r,θ) = (r cos θ, r sin θ) is differentiable at every point (r,θ), and the determinant of its derivative is r.
+  assumptions:
+    - Φ(r,θ)=(r cos θ, r sin θ)
+  quantifiers:
+    - 任意の点(r,θ)
+  conclusion: Φは(r,θ)で微分可能で、微分の行列式はrである。
+  answer: |
+    Φの成分は滑らかなので微分可能で、ヤコビ行列は第1行が(cos θ, -r sin θ)、第2行が(sin θ, r cos θ)である。行列式はr cos^2 θ+r sin^2 θ=rである。
+  strategy: Compute the Jacobian matrix of Φ and its determinant.
+  sketch:
+    - "derive: The partial derivatives of the components give the Jacobian matrix."
+    - "derive: Its determinant is r cos^2 θ + r sin^2 θ."
+    - "conclude: The identity cos^2 θ + sin^2 θ = 1 reduces the determinant to r."
+  openmath: (forall (r t) (exists (L) (and (has_fderiv_at polar_map L (ordered_pair r t)) (= (linear_det L) r))))
+  hard_negative:
+    statement: Φの微分の行列式はr^2である。
+    reason: r^2は3次元の極座標のヤコビアンに現れる形で、2次元の行列式はrである。r=2, θ=0では行列は対角(1,2)で行列式は2である。
+  target: |
+    ∀ p : ℝ × ℝ, ∃ L : ℝ × ℝ →L[ℝ] ℝ × ℝ, HasFDerivAt (fun q : ℝ × ℝ => (q.1 * Real.cos q.2, q.1 * Real.sin q.2)) L p ∧ L.det = p.1
+  proof: |
+    by
+      intro p
+      exact ⟨fderivPolarCoordSymm p, hasFDerivAt_polarCoord_symm p, det_fderivPolarCoordSymm p⟩
+- id: polar_coordinates_integral
+  kind: textbook
+  level: 2
+  topic: 重積分・極座標変換
+  statement: f:R^2→Rが可積分ならば、∫_{R^2}f(x,y)dxdy=∫_{(0,∞)×(-π,π)}r f(r cos θ, r sin θ)drdθである。
+  statement_en: If f from R^2 to R is integrable, then its integral over the plane equals the integral over (0,∞)×(-π,π) of r f(r cos θ, r sin θ).
+  assumptions:
+    - f:R^2→Rは可積分
+  quantifiers:
+    - 任意のf
+  conclusion: ∫_{R^2}f dxdy=∫_{(0,∞)×(-π,π)}r f(r cos θ, r sin θ)drdθである。
+  answer: |
+    Φ(r,θ)=(r cos θ, r sin θ)は(0,∞)×(-π,π)上で単射で、ヤコビアンはr>0である。その像は平面から半直線{(x,0) | x≤0}を除いた集合で、除いた半直線の面積は0である。変数変換公式を使うと、平面上の積分は(0,∞)×(-π,π)上のr f(Φ(r,θ))の積分に等しい。
+  strategy: Apply the change of variables formula to polar coordinates and discard a null set.
+  sketch:
+    - "setup: Let Φ be the polar map on (0,∞)×(-π,π)."
+    - "derive: Φ is injective there with Jacobian determinant r > 0."
+    - "derive: Its image is the plane minus a closed half-line, which has measure zero."
+    - "apply_theorem: The change of variables formula gives the integral of r f(Φ) over the domain."
+    - "conclude: This equals the integral of f over the plane."
+  openmath: (forall (f) (-> (integrable_on_whole_space f) (= (set_integral polar_domain (lambda (p) (* (first_coord p) (fn_value f (fn_value polar_map p))))) (integral_whole_space (lambda (z) (fn_value f z))))))
+  hard_negative:
+    statement: ∫_{R^2}f dxdy=∫_{(0,∞)×(-π,π)}f(r cos θ, r sin θ)drdθである(rの因子は不要である)。
+    reason: 半径1の円板の定義関数fでは左辺はπだが、右辺は1×2π=2πである。
+  target: |
+    ∀ f : ℝ × ℝ → ℝ, MeasureTheory.Integrable f → (∫ p in Set.Ioi (0 : ℝ) ×ˢ Set.Ioo (-Real.pi) Real.pi, p.1 * f (p.1 * Real.cos p.2, p.1 * Real.sin p.2)) = ∫ z, f z
+  proof: |
+    by
+      intro f _
+      exact integral_comp_polarCoord_symm f
+- id: gaussian_integral
+  kind: named
+  level: 2
+  topic: 重積分・ガウス積分
+  statement: (ガウス積分)b>0ならば、∫_{-∞}^{∞}exp(-bx^2)dx=√(π/b)である。
+  statement_en: (Gaussian integral) For b > 0, the integral of exp(-b x^2) over the real line equals the square root of π/b.
+  assumptions:
+    - b>0
+  quantifiers:
+    - 任意の実数b
+  conclusion: ∫_{-∞}^{∞}exp(-bx^2)dx=√(π/b)である。
+  answer: |
+    I=∫exp(-bx^2)dxと置く。I>0である。フビニの定理よりI^2=∫∫exp(-b(x^2+y^2))dxdyである。極座標に変換すると、I^2=∫_{-π}^{π}∫_0^∞ r exp(-br^2)drdθ=2π·1/(2b)=π/bである。I>0より、I=√(π/b)である。
+  strategy: Square the integral, pass to polar coordinates, and take the positive root.
+  sketch:
+    - "setup: Let I be the integral, and note that I is positive."
+    - "apply_theorem: Fubini writes I^2 as a double integral over the plane."
+    - "apply_theorem: Polar coordinates turn it into an elementary integral of r exp(-b r^2)."
+    - "derive: Evaluating gives I^2 = π/b."
+    - "conclude: Positivity of I gives the square root."
+  openmath: (forall (b) (-> (> b 0) (= (integral_real_line (lambda (x) (exp (* (neg b) (^ x 2))))) (root (/ pi b) 2))))
+  hard_negative:
+    statement: 全ての実数bについて∫exp(-bx^2)dx=√(π/b)が可積分性とともに成り立つ。
+    reason: b≤0ではexp(-bx^2)は0に減衰せず、実数全体で可積分でない。
+  target: |
+    ∀ b : ℝ, 0 < b → (∫ x : ℝ, Real.exp (-b * x ^ 2)) = Real.sqrt (Real.pi / b)
+  proof: |
+    by
+      intro b _
+      exact integral_gaussian b
+- id: gaussian_integral_plane
+  kind: gap
+  level: 2
+  topic: 重積分・平面上のガウス積分
+  statement: ∫_{R^2}exp(-(x^2+y^2))dxdy=πである。
+  statement_en: The integral of exp(-(x^2+y^2)) over the plane equals π.
+  assumptions:
+    - 被積分関数はexp(-(x^2+y^2))
+  quantifiers:
+    - 定数の等式であり、量化する変数はない
+  conclusion: ∫_{R^2}exp(-(x^2+y^2))dxdy=πである。
+  answer: |
+    exp(-(x^2+y^2))=exp(-x^2)exp(-y^2)である。変数分離型の積分なので、重積分は(∫exp(-x^2)dx)(∫exp(-y^2)dy)に等しい。ガウス積分より各因子は√πである。したがって重積分は√π·√π=πである。
+  strategy: Separate the variables and use the one-dimensional Gaussian integral.
+  sketch:
+    - "derive: Factor the integrand as exp(-x^2) exp(-y^2)."
+    - "apply_theorem: The integral of a product of functions of separate variables is the product of the integrals."
+    - "apply_theorem: Each factor equals the square root of π."
+    - "conclude: The double integral equals π."
+  openmath: (= (integral_whole_space (lambda (z) (exp (neg (+ (^ (first_coord z) 2) (^ (second_coord z) 2)))))) pi)
+  hard_negative:
+    statement: ∫_{R^2}exp(-(x^2+y^2))dxdy=√πである。
+    reason: √πは1次元の積分の値である。2次元では2つの因子の積になるのでπである。
+  target: |
+    (∫ z : ℝ × ℝ, Real.exp (-(z.1 ^ 2 + z.2 ^ 2))) = Real.pi
+  proof: |
+    by
+      have h : (fun z : ℝ × ℝ => Real.exp (-(z.1 ^ 2 + z.2 ^ 2))) =
+          fun z : ℝ × ℝ => Real.exp (-1 * z.1 ^ 2) * Real.exp (-1 * z.2 ^ 2) := by
+        funext z
+        rw [← Real.exp_add]
+        congr 1
+        ring
+      rw [h, MeasureTheory.Measure.volume_eq_prod]
+      rw [MeasureTheory.integral_prod_mul (fun x : ℝ => Real.exp (-1 * x ^ 2)) (fun y : ℝ => Real.exp (-1 * y ^ 2))]
+      rw [integral_gaussian 1]
+      rw [div_one]
+      exact Real.mul_self_sqrt Real.pi_pos.le
+- id: green_theorem_rectangle
+  kind: textbook
+  level: 3
+  topic: ベクトル解析・長方形上のグリーンの定理
+  statement: P, Q:R^2→RがC^1級でa_1≤b_1, a_2≤b_2ならば、長方形[a_1,b_1]×[a_2,b_2]上でQ_x-P_yの重積分は、長方形の境界を反時計回りに一周するPdx+Qdyの線積分に等しい。すなわち∫_{a_1}^{b_1}P(x,a_2)dx+∫_{a_2}^{b_2}Q(b_1,y)dy-∫_{a_1}^{b_1}P(x,b_2)dx-∫_{a_2}^{b_2}Q(a_1,y)dyに等しい。
+  statement_en: If P and Q from R^2 to R are C^1 and a_1≤b_1, a_2≤b_2, then the double integral of Q_x - P_y over the rectangle equals the counterclockwise boundary line integral of P dx + Q dy.
+  assumptions:
+    - P, QはC^1級
+    - a_1≤b_1, a_2≤b_2
+  quantifiers:
+    - 任意のP, Q, 実数a_1, b_1, a_2, b_2
+  conclusion: 重積分は境界の4つの線積分の符号付き和に等しい。
+  answer: |
+    フビニの定理より、Q_xの重積分は∫_{a_2}^{b_2}(∫_{a_1}^{b_1}Q_x(x,y)dx)dyである。微積分の基本定理より、これは∫_{a_2}^{b_2}(Q(b_1,y)-Q(a_1,y))dyである。同様に、P_yの重積分は∫_{a_1}^{b_1}(P(x,b_2)-P(x,a_2))dxである。差をとると主張の式が得られる。
+  strategy: Apply Fubini and the fundamental theorem of calculus to Q_x and P_y separately.
+  sketch:
+    - "derive: The integrands are continuous on the compact rectangle, so they are integrable."
+    - "apply_theorem: Fubini integrates Q_x first in x and P_y first in y."
+    - "apply_theorem: The fundamental theorem of calculus evaluates the inner integrals."
+    - "conclude: Subtracting gives the four boundary integrals with the stated signs."
+  openmath: (forall (P Q a1 b1 a2 b2) (-> (and (<= a1 b1) (<= a2 b2) (cont_diff 1 P) (cont_diff 1 Q)) (= (set_integral (product_set (closed_interval a1 b1) (closed_interval a2 b2)) (lambda (z) (- (fn_value (fderiv_at Q z) (ordered_pair 1 0)) (fn_value (fderiv_at P z) (ordered_pair 0 1))))) (- (- (+ (interval_integral a1 b1 (lambda (x) (fn_value P (ordered_pair x a2)))) (interval_integral a2 b2 (lambda (y) (fn_value Q (ordered_pair b1 y))))) (interval_integral a1 b1 (lambda (x) (fn_value P (ordered_pair x b2))))) (interval_integral a2 b2 (lambda (y) (fn_value Q (ordered_pair a1 y))))))))
+  hard_negative:
+    statement: 原点を含む長方形でも、原点を除いて滑らかな場P=-y/(x^2+y^2), Q=x/(x^2+y^2)について同じ等式が成り立つ。
+    reason: このときQ_x-P_yは原点以外で0だが、境界の線積分は2πである。原点で滑らかでないので定理の仮定を満たさない。
+  target: |
+    ∀ (P Q : ℝ × ℝ → ℝ) (a₁ b₁ a₂ b₂ : ℝ), a₁ ≤ b₁ → a₂ ≤ b₂ → ContDiff ℝ 1 P → ContDiff ℝ 1 Q → (∫ z in Set.Icc a₁ b₁ ×ˢ Set.Icc a₂ b₂, (fderiv ℝ Q z (1, 0) - fderiv ℝ P z (0, 1))) = (∫ x in a₁..b₁, P (x, a₂)) + (∫ y in a₂..b₂, Q (b₁, y)) - (∫ x in a₁..b₁, P (x, b₂)) - ∫ y in a₂..b₂, Q (a₁, y)
+  proof: |
+    by
+      intro P Q a₁ b₁ a₂ b₂ h₁ h₂ hP hQ
+      have hdP := hP.differentiable one_ne_zero
+      have hdQ := hQ.differentiable one_ne_zero
+      have cP := hP.continuous_fderiv one_ne_zero
+      have cQ := hQ.continuous_fderiv one_ne_zero
+      have hc : Continuous (fun z : ℝ × ℝ => fderiv ℝ Q z (1, 0) + (-fderiv ℝ P z) (0, 1)) :=
+        (cQ.clm_apply continuous_const).add (cP.neg.clm_apply continuous_const)
+      have key := MeasureTheory.integral_divergence_prod_Icc_of_hasFDerivAt_of_le Q (fun z => -P z)
+        (fderiv ℝ Q) (fun z => -fderiv ℝ P z) (a₁, a₂) (b₁, b₂) (Prod.mk_le_mk.2 ⟨h₁, h₂⟩)
+        hQ.continuous.continuousOn hP.continuous.neg.continuousOn
+        (fun x _ => (hdQ x).hasFDerivAt) (fun x _ => (hdP x).hasFDerivAt.neg)
+        (hc.continuousOn.integrableOn_compact isCompact_Icc)
+      simp only [ContinuousLinearMap.neg_apply, intervalIntegral.integral_neg] at key
+      rw [Set.Icc_prod_Icc]
+      have e : (fun z : ℝ × ℝ => fderiv ℝ Q z (1, 0) - fderiv ℝ P z (0, 1)) =
+          fun z : ℝ × ℝ => fderiv ℝ Q z (1, 0) + -fderiv ℝ P z (0, 1) := by
+        funext z
+        ring
+      rw [e, key]
+      ring
+- id: divergence_theorem_box
+  kind: textbook
+  level: 3
+  topic: ベクトル解析・直方体上の発散定理
+  statement: F:R^{n+1}→R^{n+1}がC^1級でa≤bならば、直方体[a,b]上でのdiv Fの積分は、各座標iについて、面x_i=b_i上のF_iの積分から面x_i=a_i上のF_iの積分を引いたものの総和に等しい。
+  statement_en: If F from R^{n+1} to R^{n+1} is C^1 and a≤b, then the integral of div F over the box [a,b] equals the sum over the coordinates i of the integral of F_i over the face x_i = b_i minus the integral of F_i over the face x_i = a_i.
+  assumptions:
+    - F:R^{n+1}→R^{n+1}はC^1級
+    - a≤b(各成分で)
+  quantifiers:
+    - 任意のn, F, a, b
+  conclusion: ∫_{[a,b]}div F dx=Σ_i(∫_{x_i=b_i}F_i-∫_{x_i=a_i}F_i)である。
+  answer: |
+    div F=Σ_i∂_iF_iであり、∂_iF_iは連続なので直方体上で可積分である。各iについて、フビニの定理によりx_iを最初に積分する。微積分の基本定理より、x_iについての積分はF_i(x_i=b_i)-F_i(x_i=a_i)になる。残りの変数で積分すると面上の積分の差となり、iについて足すと主張が得られる。
+  strategy: For each coordinate, integrate the i-th partial derivative first in x_i using Fubini and the fundamental theorem of calculus.
+  sketch:
+    - "setup: Write the divergence as the sum of the i-th partial derivatives of F_i."
+    - "derive: Continuity on the compact box gives integrability."
+    - "apply_theorem: Fubini lets x_i be integrated first."
+    - "apply_theorem: The fundamental theorem of calculus turns this into the difference of F_i on the two faces."
+    - "conclude: Summing over i gives the boundary expression."
+  openmath: (forall (n F a b) (-> (and (cont_diff 1 F) (forall (i) (<= (coordinate_of a i) (coordinate_of b i)))) (= (set_integral (box_region a b) (lambda (x) (divergence_at F x))) (box_boundary_flux F a b))))
+  hard_negative:
+    statement: Fが直方体の境界上で0ならばF自身が直方体上で恒等的に0である。
+    reason: 発散定理から分かるのはdiv Fの積分が0であることだけである。n=0の[0,1]上でF(x)=x(1-x)は端点で0だが恒等的に0でない。
+  target: |
+    ∀ (n : ℕ) (F : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (a b : Fin (n + 1) → ℝ), a ≤ b → ContDiff ℝ 1 F → (∫ x in Set.Icc a b, ∑ i, fderiv ℝ F x (Pi.single i 1) i) = ∑ i : Fin (n + 1), ((∫ x in Set.Icc (a ∘ Fin.succAbove i) (b ∘ Fin.succAbove i), F (Fin.insertNth i (b i) x) i) - ∫ x in Set.Icc (a ∘ Fin.succAbove i) (b ∘ Fin.succAbove i), F (Fin.insertNth i (a i) x) i)
+  proof: |
+    by
+      intro n F a b hab hF
+      have cF := hF.continuous_fderiv one_ne_zero
+      have hc : Continuous (fun x => ∑ i, fderiv ℝ F x (Pi.single i 1) i) :=
+        continuous_finset_sum _ fun i _ =>
+          (continuous_apply i).comp (cF.clm_apply continuous_const)
+      exact MeasureTheory.integral_divergence_of_hasFDerivAt_off_countable a b hab F (fderiv ℝ F) ∅
+        Set.countable_empty hF.continuous.continuousOn
+        (fun x _ => ((hF.differentiable one_ne_zero) x).hasFDerivAt)
+        (hc.continuousOn.integrableOn_compact isCompact_Icc)
+- id: gradient_line_integral
+  kind: gap
+  level: 2
+  topic: ベクトル解析・勾配場の線積分
+  statement: f:E→RとC^1級の曲線γ:R→Eについて、fがC^1級ならば、∫_a^b df(γ(t))(γ'(t))dt=f(γ(b))-f(γ(a))である。
+  statement_en: If f from a real normed space E to R is C^1 and γ from R to E is a C^1 curve, then the integral from a to b of df(γ(t))(γ'(t)) equals f(γ(b)) - f(γ(a)).
+  assumptions:
+    - Eは実ノルム空間
+    - f:E→RはC^1級
+    - γ:R→EはC^1級
+  quantifiers:
+    - 任意のf, γ, 実数a, b
+  conclusion: 勾配場の線積分は端点でのfの値の差に等しい。
+  answer: |
+    h(t)=f(γ(t))と置くと、連鎖律よりh'(t)=df(γ(t))(γ'(t))である。df, γ, γ'は連続なのでh'も連続である。微積分の基本定理より、∫_a^b h'(t)dt=h(b)-h(a)=f(γ(b))-f(γ(a))である。
+  strategy: Apply the chain rule to f∘γ and then the fundamental theorem of calculus.
+  sketch:
+    - "construct: Define h(t) = f(γ(t))."
+    - "apply_theorem: The chain rule gives h'(t) = df(γ(t))(γ'(t))."
+    - "derive: Continuity of df, γ and γ' makes h' continuous."
+    - "conclude: The fundamental theorem of calculus gives h(b) - h(a)."
+  openmath: (forall (E f gamma a b) (-> (and (normed_space E) (cont_diff 1 f) (cont_diff 1 gamma)) (= (interval_integral a b (lambda (t) (fn_value (fderiv_at f (fn_value gamma t)) (deriv_at_point (lambda (s) (fn_value gamma s)) t)))) (- (fn_value f (fn_value gamma b)) (fn_value f (fn_value gamma a))))))
+  hard_negative:
+    statement: 一般のベクトル場の線積分は、端点が同じなら曲線の取り方によらない。
+    reason: 勾配場でなければ成り立たない。(P,Q)=(-y,x)の線積分は単位円の上半分と下半分で値がπと-πになる。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (γ : ℝ → E) (a b : ℝ), ContDiff ℝ 1 f → ContDiff ℝ 1 γ → (∫ t in a..b, fderiv ℝ f (γ t) (deriv γ t)) = f (γ b) - f (γ a)
+  proof: |
+    by
+      intro E _ _ f γ a b hf hγ
+      apply intervalIntegral.integral_eq_sub_of_hasDerivAt (f := fun t => f (γ t))
+      · intro t _
+        exact ((hf.differentiable one_ne_zero) (γ t)).hasFDerivAt.comp_hasDerivAt t
+          ((hγ.differentiable one_ne_zero) t).hasDerivAt
+      · apply Continuous.intervalIntegrable
+        exact ((hf.continuous_fderiv one_ne_zero).comp hγ.continuous).clm_apply
+          (hγ.continuous_deriv le_rfl)

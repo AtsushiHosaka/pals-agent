@@ -1,0 +1,1663 @@
+- id: real_sup_exists
+  kind: textbook
+  level: 1
+  topic: 実数の完備性・上限の存在
+  statement: 上に有界で空でない実数の集合は上限をもつ。
+  statement_en: Every nonempty subset of ℝ that is bounded above has a least upper bound.
+  assumptions: ["Sは実数の部分集合", "Sは空でない", "Sは上に有界"]
+  quantifiers: ["任意の実数の部分集合S"]
+  conclusion: Sの最小上界aが存在する。
+  answer: |
+    Sの元x_0と上界Mをとり、a_0=x_0-1, b_0=Mとする。a_0は上界でない。区間[a_k,b_k]を二等分していき、中点が上界ならそれを右端に、そうでなければ左端にすると、左端a_kは上界でなく右端b_kは上界で、b_k-a_k=(M-x_0+1)/2^kが成り立つ。a_kとb_kは同じ極限cをもつコーシー列であり、実数の完備性からcが存在する。各x∈Sはx≤b_kを満たすので極限をとってx≤cであり、任意の上界uはa_k<uを満たすのでc≤uである。よってcがSの上限である。
+  strategy: Bisect an interval from a non-upper-bound to an upper bound, keeping both properties, and pass to the common limit.
+  sketch:
+    - "setup: Pick x₀ in S and an upper bound M, and start from [x₀ - 1, M], whose left end is not an upper bound."
+    - "construct: Bisect repeatedly, keeping the left end a non-upper-bound and the right end an upper bound."
+    - "derive: The ends form Cauchy sequences with a common limit c by completeness."
+    - "derive: Passing to the limit in x ≤ b_k shows c is an upper bound."
+    - "conclude: Any upper bound u exceeds each a_k, so c ≤ u and c is the supremum."
+  openmath: (forall (S) (-> (and (exists (x) (in x S)) (exists (M) (forall (x) (-> (in x S) (<= x M))))) (exists (a) (is_lub S a))))
+  hard_negative:
+    statement: 上に有界で空でない有理数の集合は、有理数の範囲に上限をもつ。
+    reason: 有理数xでx^2<2を満たすものの集合は、有理数の範囲に最小上界をもたない。
+  target: |
+    ∀ (s : Set ℝ), s.Nonempty → BddAbove s → ∃ a : ℝ, IsLUB s a
+  proof: |
+    by
+      intro s h₁ h₂
+      exact Real.exists_isLUB h₁ h₂
+- id: real_inf_exists
+  kind: textbook
+  level: 1
+  topic: 実数の完備性・下限の存在
+  statement: 下に有界で空でない実数の集合は下限をもつ。
+  statement_en: Every nonempty subset of ℝ that is bounded below has a greatest lower bound.
+  assumptions: ["Sは実数の部分集合", "Sは空でない", "Sは下に有界"]
+  quantifiers: ["任意の実数の部分集合S"]
+  conclusion: Sの最大下界aが存在する。
+  answer: |
+    Sの各元の符号を変えた集合-Sは空でなく上に有界である。上限の存在から-Sの上限bが存在する。x∈Sなら-x≤bなので-b≤xであり、-bはSの下界である。Sの任意の下界lに対して-lは-Sの上界なのでb≤-l、すなわちl≤-bである。よって-bがSの下限である。
+  strategy: Reflect the set through zero and apply the existence of suprema.
+  sketch:
+    - "translate: The set -S is nonempty and bounded above."
+    - "apply_theorem: Take b as the supremum of -S."
+    - "derive: The number -b is a lower bound of S, and each lower bound is at most -b."
+    - "conclude: Hence -b is the infimum of S."
+  openmath: (forall (S) (-> (and (exists (x) (in x S)) (exists (M) (forall (x) (-> (in x S) (<= M x))))) (exists (a) (is_glb S a))))
+  hard_negative:
+    statement: 空でない実数の集合は必ず下限をもつ。
+    reason: 実数全体や負の整数全体のように下に有界でない集合には実数の下限がない。
+  target: |
+    ∀ (s : Set ℝ), s.Nonempty → BddBelow s → ∃ a : ℝ, IsGLB s a
+  proof: |
+    by
+      intro s h₁ h₂
+      exact ⟨sInf s, isGLB_csInf h₁ h₂⟩
+- id: is_lub_iff_eps
+  kind: gap
+  level: 1
+  topic: 上限・ε特徴づけ
+  statement: 実数aが集合Sの上限であることは、aがSの上界であり、かつ任意のε>0に対してa-ε<xとなるx∈Sが存在することと同値である。
+  statement_en: A real a is the supremum of S if and only if a is an upper bound of S and for every ε > 0 there is x in S with a - ε < x.
+  assumptions: ["Sは実数の部分集合", "aは実数"]
+  quantifiers: ["任意の集合Sと実数a"]
+  conclusion: aがSの上限であることと、aが上界かつ任意のε>0でa-ε<xなるx∈Sがあることは同値である。
+  answer: |
+    aが上限でε>0とする。a-ε<aなのでa-εは上界でなく、a-ε<xとなるx∈Sがある。逆にaが上界でε条件を満たすとし、bを上界とする。もしb<aならε=a-bに対してb=a-ε<xとなるx∈Sがあり、bが上界であることに反する。よってa≤bであり、aは上限である。
+  strategy: Use that a - ε is not an upper bound, and conversely take ε equal to the gap with a smaller upper bound.
+  sketch:
+    - "derive: If a is the supremum, a - ε lies below a and so is not an upper bound."
+    - "construct: That produces x in S with a - ε < x."
+    - "contradiction: Conversely, an upper bound b < a contradicts the condition with ε = a - b."
+    - "conclude: Hence a is the least upper bound."
+  openmath: (forall (S a) (<-> (is_lub S a) (and (forall (x) (-> (in x S) (<= x a))) (forall (e) (-> (> e 0) (exists (x) (and (in x S) (< (- a e) x))))))))
+  hard_negative:
+    statement: aがSの上界で、任意のε>0に対してa-ε<xとなる実数xが存在すれば、aはSの上限である。
+    reason: xがSに属することを要求しないと条件は常に成り立つ。S=[0,1]、a=2が反例である。
+  target: |
+    ∀ (s : Set ℝ) (a : ℝ), IsLUB s a ↔ ((∀ x ∈ s, x ≤ a) ∧ ∀ ε : ℝ, 0 < ε → ∃ x ∈ s, a - ε < x)
+  proof: |
+    by
+      intro s a
+      constructor
+      · intro h
+        refine ⟨fun x hx => h.1 hx, fun ε hε => ?_⟩
+        by_contra hc
+        push_neg at hc
+        have h' : a ≤ a - ε := h.2 (fun x hx => hc x hx)
+        linarith
+      · rintro ⟨h₁, h₂⟩
+        refine ⟨fun x hx => h₁ x hx, fun b hb => ?_⟩
+        by_contra hc
+        push_neg at hc
+        obtain ⟨x, hx, hx'⟩ := h₂ (a - b) (by linarith)
+        have h' : x ≤ b := hb hx
+        linarith
+- id: lub_approx_sequence
+  kind: gap
+  level: 1
+  topic: 上限・近似列
+  statement: 実数aが空でない集合Sの上限なら、Sの元からなる単調増加列でaに収束するものが存在する。
+  statement_en: If a is the supremum of a nonempty set S of reals, then there is a nondecreasing sequence in S converging to a.
+  assumptions: ["Sは空でない実数の部分集合", "aはSの上限"]
+  quantifiers: ["任意の集合Sと実数a"]
+  conclusion: 全ての項がSに属しaに収束する単調増加列が存在する。
+  answer: |
+    各nについてa-1/(n+1)はaより小さく上界でないので、a-1/(n+1)<x_n≤aとなるx_n∈Sをとれる。u_n=max(x_0,…,x_n)と置くとuは単調増加で、各項はx_0,…,x_nのいずれかなのでSに属する。さらにa-1/(n+1)<u_n≤aが成り立つので、はさみうちによりu_nはaに収束する。
+  strategy: Choose points of S within 1/(n+1) of the supremum and take running maxima.
+  sketch:
+    - "construct: For each n pick x_n in S with a - 1/(n+1) < x_n ≤ a."
+    - "construct: Set u_n to the maximum of x_0, ..., x_n, which is monotone and lies in S."
+    - "derive: The bound a - 1/(n+1) < u_n ≤ a still holds."
+    - "conclude: The squeeze theorem gives u_n → a."
+  openmath: (forall (S a) (-> (and (exists (x) (in x S)) (is_lub S a)) (exists (u) (and (forall (n) (in (seq_value u n) S)) (seq_monotone u) (seq_tends_to u a)))))
+  hard_negative:
+    statement: aがSの上限なら、aはSに属する。
+    reason: S=(0,1)の上限1はSに属さない。近似列の存在と上限の所属は別である。
+  target: |
+    ∀ (s : Set ℝ) (a : ℝ), s.Nonempty → IsLUB s a → ∃ u : ℕ → ℝ, (∀ n, u n ∈ s) ∧ Monotone u ∧ Filter.Tendsto u Filter.atTop (nhds a)
+  proof: |
+    by
+      intro s a hne h
+      obtain ⟨u, hm, -, ht, hs⟩ := h.exists_seq_monotone_tendsto hne
+      exact ⟨u, hs, hm, ht⟩
+- id: nested_intervals
+  kind: textbook
+  level: 1
+  topic: 実数の完備性・区間縮小法
+  statement: 実数列aが単調増加、bが単調減少で全てのnでa_n≤b_nなら、全ての閉区間[a_n,b_n]に属する実数が存在する。
+  statement_en: If a is nondecreasing, b is nonincreasing and a_n ≤ b_n for all n, then some real lies in every closed interval [a_n, b_n].
+  assumptions: ["aは単調増加な実数列", "bは単調減少な実数列", "全てのnでa_n≤b_n"]
+  quantifiers: ["任意の実数列a, b"]
+  conclusion: 全てのnでa_n≤x≤b_nとなる実数xが存在する。
+  answer: |
+    任意のm,nについてkをmとnの大きい方とすると、a_m≤a_k≤b_k≤b_nである。したがって各b_nは集合{a_m}の上界であり、この集合は上限xをもつ。xは上界なのでa_n≤xであり、各b_nが上界なのでx≤b_nである。よってxは全ての区間に属する。
+  strategy: Show every right end bounds every left end, then take the supremum of the left ends.
+  sketch:
+    - "derive: For any m and n, a_m ≤ a_k ≤ b_k ≤ b_n with k = max(m, n)."
+    - "apply_theorem: The left ends are bounded above, so they have a supremum x."
+    - "derive: a_n ≤ x because x is an upper bound, and x ≤ b_n because b_n is one."
+    - "conclude: x lies in every interval."
+  openmath: (forall (a b) (-> (and (seq_monotone a) (seq_antitone b) (forall (n) (<= (seq_value a n) (seq_value b n)))) (exists (x) (forall (n) (and (<= (seq_value a n) x) (<= x (seq_value b n)))))))
+  hard_negative:
+    statement: 減少する開区間(a_n,b_n)の列の共通部分は常に空でない。
+    reason: 開区間(0,1/(n+1))の列の共通部分は空である。閉区間であることが必要である。
+  target: |
+    ∀ (a b : ℕ → ℝ), Monotone a → Antitone b → (∀ n, a n ≤ b n) → ∃ x : ℝ, ∀ n, a n ≤ x ∧ x ≤ b n
+  proof: |
+    by
+      intro a b ha hb hab
+      have h := Monotone.ciSup_mem_iInter_Icc_of_antitone ha hb (fun n => hab n)
+      exact ⟨⨆ n, a n, fun n => Set.mem_iInter.1 h n⟩
+- id: archimedean_property
+  kind: gap
+  level: 1
+  topic: 実数・アルキメデスの性質
+  statement: 任意の正の実数aと実数bに対して、na>bとなる自然数nが存在する。
+  statement_en: For every positive real a and every real b there is a natural number n with b < n a.
+  assumptions: ["aは正の実数", "bは実数"]
+  quantifiers: ["任意の実数a, b"]
+  conclusion: b<naとなる自然数nが存在する。
+  answer: |
+    そのようなnがないと仮定すると、全ての自然数nでna≤bであり、集合{na}は上に有界なので上限sをもつ。a>0よりs-aはsより小さいので上界でなく、s-a<naとなるnがある。するとs<(n+1)aとなり、sが上界であることに反する。よってb<naとなるnが存在する。
+  strategy: Assume all multiples are bounded and contradict the supremum of the multiples.
+  sketch:
+    - "contradiction: Suppose n a ≤ b for all natural n."
+    - "apply_theorem: The multiples of a have a supremum s."
+    - "derive: Since s - a is not an upper bound, s - a < n a for some n."
+    - "conclude: Then s < (n+1) a contradicts s being an upper bound."
+  openmath: (forall (a b) (-> (> a 0) (exists (n) (and (in n N) (< b (* n a))))))
+  hard_negative:
+    statement: 任意の順序体でも、正の元aと元bに対してna>bとなる自然数nが存在する。
+    reason: 実係数有理関数の順序体では、変数xは全ての自然数nより大きく、a=1、b=xで成り立たない。完備性に由来する性質である。
+  target: |
+    ∀ (a b : ℝ), 0 < a → ∃ n : ℕ, b < (n : ℝ) * a
+  proof: |
+    by
+      intro a b ha
+      obtain ⟨n, hn⟩ := exists_nat_gt (b / a)
+      refine ⟨n, ?_⟩
+      rwa [div_lt_iff₀ ha] at hn
+- id: le_of_forall_pos_add
+  kind: gap
+  level: 1
+  topic: 実数・εによる不等式
+  statement: 実数a,bが任意のε>0についてa≤b+εを満たすなら、a≤bである。
+  statement_en: If reals a and b satisfy a ≤ b + ε for every ε > 0, then a ≤ b.
+  assumptions: ["a, bは実数", "任意のε>0でa≤b+ε"]
+  quantifiers: ["任意の実数a, b"]
+  conclusion: a≤bである。
+  answer: |
+    a>bと仮定し、ε=(a-b)/2>0とおく。仮定からa≤b+(a-b)/2であり、整理するとa≤bとなって矛盾する。よってa≤bである。
+  strategy: Argue by contradiction with half of the supposed gap.
+  sketch:
+    - "contradiction: Suppose a > b."
+    - "derive: Taking ε = (a-b)/2 in the hypothesis gives a ≤ (a+b)/2."
+    - "conclude: This forces a ≤ b, a contradiction."
+  openmath: (forall (a b) (-> (forall (e) (-> (> e 0) (<= a (+ b e)))) (<= a b)))
+  hard_negative:
+    statement: 任意のε>0でa<b+εなら、a<bである。
+    reason: a=bのとき仮定は成り立つが結論は成り立たない。結論は非狭義の不等式までである。
+  target: |
+    ∀ (a b : ℝ), (∀ ε : ℝ, 0 < ε → a ≤ b + ε) → a ≤ b
+  proof: |
+    by
+      intro a b h
+      by_contra hc
+      push_neg at hc
+      have h' := h ((a - b) / 2) (by linarith)
+      linarith
+- id: rational_density
+  kind: gap
+  level: 1
+  topic: 実数・有理数の稠密性
+  statement: 異なる2つの実数a<bの間には有理数が存在する。
+  statement_en: For reals a < b there is a rational q with a < q < b.
+  assumptions: ["a, bは実数", "a<b"]
+  quantifiers: ["任意の実数a, b"]
+  conclusion: a<q<bとなる有理数qが存在する。
+  answer: |
+    アルキメデスの性質からn(b-a)>1となる正の整数nをとる。naより大きい最小の整数をmとすると、m-1≤na<mである。するとna<m≤na+1<nbとなる。nで割るとa<m/n<bであり、q=m/nが求める有理数である。
+  strategy: Clear denominators with the Archimedean property and take the least integer above n a.
+  sketch:
+    - "apply_theorem: Choose a positive integer n with n(b-a) > 1."
+    - "construct: Let m be the least integer greater than n a."
+    - "derive: Then n a < m ≤ n a + 1 < n b."
+    - "conclude: Dividing by n gives a < m/n < b."
+  openmath: (forall (a b) (-> (< a b) (exists (q) (and (in q Q) (< a q) (< q b)))))
+  hard_negative:
+    statement: a≤bならa≤q≤bを満たす有理数qが常に存在する。
+    reason: a=b=√2のとき、区間は無理数1点だけで有理数を含まない。
+  target: |
+    ∀ (a b : ℝ), a < b → ∃ q : ℚ, a < (q : ℝ) ∧ (q : ℝ) < b
+  proof: |
+    by
+      intro a b h
+      exact exists_rat_btwn h
+- id: continuous_agree_on_rationals
+  kind: gap
+  level: 1
+  topic: 連続関数・稠密集合上の一致
+  statement: 実数全体で連続な関数f,gが全ての有理数で一致するなら、f=gである。
+  statement_en: If continuous functions f, g on ℝ agree at every rational, then f = g.
+  assumptions: ["f, gは実数全体で連続", "全ての有理数qでf(q)=g(q)"]
+  quantifiers: ["任意の関数f, g"]
+  conclusion: f=gである。
+  answer: |
+    実数xを任意にとる。有理数の稠密性からxに収束する有理数列q_nがある。連続性からf(q_n)→f(x)、g(q_n)→g(x)であり、f(q_n)=g(q_n)なので極限の一意性からf(x)=g(x)である。
+  strategy: Approximate an arbitrary real by rationals and pass to the limit on both sides.
+  sketch:
+    - "setup: Fix a real x."
+    - "construct: Choose rationals q_n converging to x by density."
+    - "derive: Continuity gives f(q_n) → f(x) and g(q_n) → g(x)."
+    - "conclude: Since f(q_n) = g(q_n), uniqueness of limits gives f(x) = g(x)."
+  openmath: (forall (f g) (-> (and (fn_continuous (lambda (x) (fn_value f x))) (fn_continuous (lambda (x) (fn_value g x))) (forall (q) (-> (in q Q) (= (fn_value f q) (fn_value g q))))) (forall (x) (= (fn_value f x) (fn_value g x)))))
+  hard_negative:
+    statement: 関数f,gが全ての有理数で一致するならf=gである。
+    reason: 連続性がないと、f=0と有理数で0・無理数で1をとる関数が反例になる。
+  target: |
+    ∀ (f g : ℝ → ℝ), Continuous f → Continuous g → (∀ q : ℚ, f (q : ℝ) = g (q : ℝ)) → f = g
+  proof: |
+    by
+      intro f g hf hg h
+      exact (Rat.denseRange_cast (𝕜 := ℝ)).equalizer hf hg (funext h)
+- id: seq_limit_eps
+  kind: gap
+  level: 1
+  topic: 数列の極限・ε-N論法
+  statement: 実数列aがLに収束することは、任意のε>0に対してあるNが存在し、n≥Nなら|a_n-L|<εとなることと同値である。
+  statement_en: A real sequence a converges to L if and only if for every ε > 0 there is N with |a_n - L| < ε for all n ≥ N.
+  assumptions: ["aは実数列", "Lは実数"]
+  quantifiers: ["任意の実数列aと実数L"]
+  conclusion: 収束とε-N条件は同値である。
+  answer: |
+    Lの近傍は開区間(L-ε,L+ε)を含む集合である。したがってaがLに収束するとは、任意のε>0についてa_nが有限個を除いて(L-ε,L+ε)に属することである。これはあるNが存在してn≥Nなら|a_n-L|<εとなることと同じである。
+  strategy: Unfold neighbourhoods of L into symmetric open intervals.
+  sketch:
+    - "translate: Neighbourhoods of L are generated by the intervals (L-ε, L+ε)."
+    - "translate: Membership in the interval means |a_n - L| < ε."
+    - "conclude: Being eventually in each interval is the ε-N condition."
+  openmath: (forall (a L) (<-> (seq_tends_to a L) (forall (e) (-> (> e 0) (exists (K) (forall (n) (-> (>= n K) (< (abs (- (seq_value a n) L)) e))))))))
+  hard_negative:
+    statement: あるNが存在して、任意のε>0とn≥Nについて|a_n-L|<εとなることは、aがLに収束することと同値である。
+    reason: Nをεより先に選ぶとn≥Nでa_n=Lとなる数列しか満たさない。a_n=1/(n+1)は0に収束するがこの条件を満たさない。
+  target: |
+    ∀ (a : ℕ → ℝ) (L : ℝ), Filter.Tendsto a Filter.atTop (nhds L) ↔ ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → |a n - L| < ε
+  proof: |
+    by
+      intro a L
+      rw [Metric.tendsto_atTop]
+      simp only [Real.dist_eq, ge_iff_le, gt_iff_lt]
+- id: seq_limit_add_mul
+  kind: gap
+  level: 1
+  topic: 数列の極限・和と積
+  statement: 実数列a,bがそれぞれL,Mに収束するなら、a_n+b_nはL+Mに、a_nb_nはLMに収束する。
+  statement_en: If real sequences a and b converge to L and M, then a_n + b_n → L + M and a_n b_n → L M.
+  assumptions: ["a, bは実数列", "aはLに収束", "bはMに収束"]
+  quantifiers: ["任意の実数列a, bと実数L, M"]
+  conclusion: 和はL+Mに、積はLMに収束する。
+  answer: |
+    和については|a_n+b_n-L-M|≤|a_n-L|+|b_n-M|なので、両項をε/2未満にすればよい。積についてはa_n b_n-LM=a_n(b_n-M)+M(a_n-L)と分解する。収束列aは有界なので|a_n|≤Kとなる定数Kがあり、|a_n b_n-LM|≤K|b_n-M|+|M||a_n-L|となる。右辺は0に収束するので積はLMに収束する。
+  strategy: Split the error with the triangle inequality, using boundedness of a for the product.
+  sketch:
+    - "derive: |a_n + b_n - L - M| ≤ |a_n - L| + |b_n - M|."
+    - "derive: a_n b_n - L M = a_n (b_n - M) + M (a_n - L)."
+    - "apply_theorem: The convergent sequence a is bounded by some K."
+    - "conclude: Both error bounds tend to 0."
+  openmath: (forall (a b L M) (-> (and (seq_tends_to a L) (seq_tends_to b M)) (and (seq_fn_tends_to (lambda (n) (+ (seq_value a n) (seq_value b n))) (+ L M)) (seq_fn_tends_to (lambda (n) (* (seq_value a n) (seq_value b n))) (* L M)))))
+  hard_negative:
+    statement: a_n+b_nが収束するならa_nとb_nも収束する。
+    reason: a_n=(-1)^n、b_n=-(-1)^nでは和は0に収束するが各列は発散する。
+  target: |
+    ∀ (a b : ℕ → ℝ) (L M : ℝ), Filter.Tendsto a Filter.atTop (nhds L) → Filter.Tendsto b Filter.atTop (nhds M) → Filter.Tendsto (fun n => a n + b n) Filter.atTop (nhds (L + M)) ∧ Filter.Tendsto (fun n => a n * b n) Filter.atTop (nhds (L * M))
+  proof: |
+    by
+      intro a b L M ha hb
+      exact ⟨ha.add hb, ha.mul hb⟩
+- id: seq_limit_le
+  kind: gap
+  level: 1
+  topic: 数列の極限・順序の保存
+  statement: 全てのnでa_n≤b_nであり、aがLに、bがMに収束するなら、L≤Mである。
+  statement_en: If a_n ≤ b_n for all n, a converges to L and b converges to M, then L ≤ M.
+  assumptions: ["a, bは実数列", "全てのnでa_n≤b_n", "aはLに収束", "bはMに収束"]
+  quantifiers: ["任意の実数列a, bと実数L, M"]
+  conclusion: L≤Mである。
+  answer: |
+    L>Mと仮定してε=(L-M)/2とおく。十分大きいnでa_n>L-εかつb_n<M+εである。L-ε=M+εなのでa_n>b_nとなり、仮定に反する。よってL≤Mである。
+  strategy: Separate L and M by a gap of 2ε and contradict the termwise inequality.
+  sketch:
+    - "contradiction: Suppose L > M and set ε = (L-M)/2."
+    - "derive: For large n, a_n > L - ε and b_n < M + ε."
+    - "derive: The two bounds coincide, so a_n > b_n."
+    - "conclude: This contradicts a_n ≤ b_n, so L ≤ M."
+  openmath: (forall (a b L M) (-> (and (forall (n) (<= (seq_value a n) (seq_value b n))) (seq_tends_to a L) (seq_tends_to b M)) (<= L M)))
+  hard_negative:
+    statement: 全てのnでa_n<b_nならL<Mである。
+    reason: a_n=0、b_n=1/(n+1)はa_n<b_nだが極限はともに0で、狭義の不等式は保存されない。
+  target: |
+    ∀ (a b : ℕ → ℝ) (L M : ℝ), (∀ n, a n ≤ b n) → Filter.Tendsto a Filter.atTop (nhds L) → Filter.Tendsto b Filter.atTop (nhds M) → L ≤ M
+  proof: |
+    by
+      intro a b L M h ha hb
+      exact le_of_tendsto_of_tendsto' ha hb h
+- id: convergent_seq_bounded
+  kind: gap
+  level: 1
+  topic: 数列の極限・有界性
+  statement: 収束する実数列は有界である。
+  statement_en: Every convergent real sequence is bounded.
+  assumptions: ["aは実数列", "aはLに収束"]
+  quantifiers: ["任意の実数列aと実数L"]
+  conclusion: 全てのnで|a_n|≤Mとなる実数Mが存在する。
+  answer: |
+    ε=1に対してNをとると、n≥Nで|a_n-L|<1なので|a_n|<|L|+1である。残りの有限個の項a_0,…,a_{N-1}の絶対値と|L|+1の最大値をMとする。すると全てのnで|a_n|≤Mである。
+  strategy: Bound the tail with ε = 1 and take a maximum with the finitely many initial terms.
+  sketch:
+    - "setup: Choose N with |a_n - L| < 1 for n ≥ N."
+    - "derive: The tail satisfies |a_n| < |L| + 1."
+    - "construct: Let M be the maximum of |L| + 1 and the first N absolute values."
+    - "conclude: M bounds every term."
+  openmath: (forall (a L) (-> (seq_tends_to a L) (exists (M) (forall (n) (<= (abs (seq_value a n)) M)))))
+  hard_negative:
+    statement: 有界な実数列は収束する。
+    reason: a_n=(-1)^nは有界だが収束しない。
+  target: |
+    ∀ (a : ℕ → ℝ) (L : ℝ), Filter.Tendsto a Filter.atTop (nhds L) → ∃ M : ℝ, ∀ n, |a n| ≤ M
+  proof: |
+    by
+      intro a L h
+      obtain ⟨M, hM⟩ := h.norm.bddAbove_range
+      exact ⟨M, fun n => hM (Set.mem_range_self n)⟩
+- id: bounded_mul_null_seq
+  kind: gap
+  level: 1
+  topic: 数列の極限・有界列と零列の積
+  statement: 実数列aが有界で実数列bが0に収束するなら、a_nb_nは0に収束する。
+  statement_en: If a real sequence a is bounded and b converges to 0, then a_n b_n converges to 0.
+  assumptions: ["全てのnで|a_n|≤M", "bは0に収束"]
+  quantifiers: ["任意の実数列a, bと実数M"]
+  conclusion: a_nb_nは0に収束する。
+  answer: |
+    全てのnで|a_n b_n|≤M|b_n|である。bが0に収束するので|b_n|も0に収束し、右辺は0に収束する。はさみうちにより|a_n b_n|は0に収束し、a_n b_nも0に収束する。
+  strategy: Dominate the product by M times |b_n| and squeeze.
+  sketch:
+    - "derive: |a_n b_n| ≤ M |b_n| for every n."
+    - "derive: M |b_n| → 0 because b_n → 0."
+    - "conclude: Squeezing gives a_n b_n → 0."
+  openmath: (forall (a b M) (-> (and (forall (n) (<= (abs (seq_value a n)) M)) (seq_tends_to b 0)) (seq_fn_tends_to (lambda (n) (* (seq_value a n) (seq_value b n))) 0)))
+  hard_negative:
+    statement: bが0に収束すればaが何であってもa_nb_nは0に収束する。
+    reason: a_n=n+1、b_n=1/(n+1)では積は常に1である。aの有界性が必要である。
+  target: |
+    ∀ (a b : ℕ → ℝ) (M : ℝ), (∀ n, |a n| ≤ M) → Filter.Tendsto b Filter.atTop (nhds 0) → Filter.Tendsto (fun n => a n * b n) Filter.atTop (nhds 0)
+  proof: |
+    by
+      intro a b M h hb
+      have h₂ : Filter.Tendsto (fun n => M * |b n|) Filter.atTop (nhds 0) := by
+        simpa using hb.abs.const_mul M
+      refine squeeze_zero_norm (fun n => ?_) h₂
+      rw [Real.norm_eq_abs, abs_mul]
+      exact mul_le_mul_of_nonneg_right (h n) (abs_nonneg _)
+- id: monotone_convergence
+  kind: textbook
+  level: 1
+  topic: 数列の極限・単調収束定理
+  statement: 上に有界な単調増加実数列は、値の集合の上限に収束する。
+  statement_en: A nondecreasing real sequence that is bounded above converges to the supremum of its values.
+  assumptions: ["aは単調増加な実数列", "aは上に有界"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: aは項の集合の上限に収束する。
+  answer: |
+    項の集合は空でなく上に有界なので上限sをもつ。ε>0を任意にとると、s-εは上界でないのでs-ε<a_Nとなる番号Nがある。単調性からn≥Nではs-ε<a_N≤a_n≤sである。よって|a_n-s|<εであり、aはsに収束する。
+  strategy: Take the supremum of the values and use monotonicity to keep the tail near it.
+  sketch:
+    - "apply_theorem: The set of values has a supremum s."
+    - "setup: Fix ε > 0 and pick N with s - ε < a_N."
+    - "derive: Monotonicity gives s - ε < a_n ≤ s for n ≥ N."
+    - "conclude: Hence a_n → s."
+  openmath: (forall (a S s) (-> (and (seq_monotone a) (forall (x) (<-> (in x S) (exists (n) (= x (seq_value a n))))) (is_lub S s)) (seq_tends_to a s)))
+  hard_negative:
+    statement: 単調増加な実数列は常に収束する。
+    reason: a_n=nは単調増加だが上に有界でなく収束しない。
+  target: |
+    ∀ (a : ℕ → ℝ), Monotone a → BddAbove (Set.range a) → Filter.Tendsto a Filter.atTop (nhds (⨆ n, a n))
+  proof: |
+    by
+      intro a h₁ h₂
+      exact tendsto_atTop_ciSup h₁ h₂
+- id: bolzano_weierstrass
+  kind: named
+  level: 1
+  topic: 数列・ボルツァーノ–ワイエルシュトラスの定理
+  statement: 有界な実数列は収束する部分列をもつ。
+  statement_en: Every bounded real sequence has a convergent subsequence.
+  assumptions: ["aは実数列", "全てのnで|a_n|≤M"]
+  quantifiers: ["任意の実数列aと実数M"]
+  conclusion: 狭義単調増加な添字列φと実数xが存在して、a_φ(n)はxに収束する。
+  answer: |
+    概略を述べる。区間[-M,M]を二等分すると、無限個のnについてa_nが属する半分が少なくとも一方ある。それを選んで二等分を繰り返すと、幅が半分ずつになる閉区間の減少列が得られる。区間縮小法から共通の点xが存在する。各段階の区間から前の添字より大きい添字を選ぶと、部分列はxに収束する。
+  strategy: Bisect the bounding interval, always keeping a half containing infinitely many terms.
+  sketch:
+    - "setup: All terms lie in [-M, M]."
+    - "construct: Repeatedly bisect, keeping a half with infinitely many terms."
+    - "apply_theorem: The nested closed intervals share a point x."
+    - "construct: Choose increasing indices with terms in successive intervals."
+    - "conclude: The widths tend to 0, so the subsequence converges to x."
+  openmath: (forall (a M) (-> (forall (n) (<= (abs (seq_value a n)) M)) (exists (x p) (and (strict_mono_index p) (seq_fn_tends_to (lambda (n) (seq_value a (fn_value p n))) x)))))
+  hard_negative:
+    statement: 有界な実数列の全ての部分列は収束する。
+    reason: a_n=(-1)^nは有界だが、それ自身が発散する部分列である。保証されるのは収束する部分列の存在だけである。
+  target: |
+    ∀ (a : ℕ → ℝ) (M : ℝ), (∀ n, |a n| ≤ M) → ∃ (x : ℝ) (φ : ℕ → ℕ), StrictMono φ ∧ Filter.Tendsto (fun n => a (φ n)) Filter.atTop (nhds x)
+  proof: |
+    by
+      intro a M h
+      have hs : Bornology.IsBounded (Set.Icc (-M) M) := Metric.isBounded_Icc _ _
+      obtain ⟨x, -, φ, hφ, hx⟩ := tendsto_subseq_of_bounded hs (fun n => abs_le.1 (h n))
+      exact ⟨x, φ, hφ, hx⟩
+- id: cauchy_iff_convergent
+  kind: textbook
+  level: 1
+  topic: 数列・コーシーの収束条件
+  statement: 実数列はコーシー列であるとき、かつそのときに限り収束する。
+  statement_en: A real sequence is a Cauchy sequence if and only if it converges.
+  assumptions: ["aは実数列"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: aがコーシー列であることと、ある実数に収束することは同値である。
+  answer: |
+    aがLに収束するなら、|a_m-a_n|≤|a_m-L|+|L-a_n|なのでコーシー列である。逆にaがコーシー列とすると有界であり、ボルツァーノ–ワイエルシュトラスの定理から収束部分列をもつ。その極限をLとする。n,φ(k)を十分大きくとれば|a_n-L|≤|a_n-a_φ(k)|+|a_φ(k)-L|は任意に小さいので、aはLに収束する。
+  strategy: The triangle inequality gives one direction; a convergent subsequence of a bounded Cauchy sequence gives the other.
+  sketch:
+    - "derive: A convergent sequence is Cauchy by the triangle inequality."
+    - "setup: Conversely let a be Cauchy, hence bounded."
+    - "apply_theorem: Bolzano-Weierstrass gives a subsequence converging to L."
+    - "derive: Compare a_n with a far term of the subsequence."
+    - "conclude: Hence a_n → L."
+  openmath: (forall (a) (<-> (seq_cauchy a) (exists (L) (seq_tends_to a L))))
+  hard_negative:
+    statement: 隣り合う項の差a_{n+1}-a_nが0に収束する実数列は収束する。
+    reason: a_nを調和級数の部分和とすると差は0に収束するが発散する。コーシー列の条件は全ての組の差を制御する。
+  target: |
+    ∀ (a : ℕ → ℝ), CauchySeq a ↔ ∃ L : ℝ, Filter.Tendsto a Filter.atTop (nhds L)
+  proof: |
+    by
+      intro a
+      constructor
+      · intro h
+        exact cauchySeq_tendsto_of_complete h
+      · rintro ⟨L, h⟩
+        exact h.cauchySeq
+- id: cauchy_eps
+  kind: gap
+  level: 1
+  topic: 数列・コーシー列のε定義
+  statement: 実数列aがコーシー列であることは、任意のε>0に対してNが存在し、m,n≥Nなら|a_m-a_n|<εとなることと同値である。
+  statement_en: A real sequence a is Cauchy if and only if for every ε > 0 there is N with |a_m - a_n| < ε for all m, n ≥ N.
+  assumptions: ["aは実数列"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: コーシー列であることとε-N条件は同値である。
+  answer: |
+    コーシー列とは、十分先の項どうしの距離がいくらでも小さくなる列のことである。すなわち任意のε>0について、あるNから先の全ての項の組の距離がε未満となる。実数の距離は|x-y|で与えられるので、この条件はm,n≥Nで|a_m-a_n|<εと書ける。
+  strategy: Unfold the Cauchy condition using the metric on ℝ.
+  sketch:
+    - "translate: Entourages of ℝ are generated by pairs at distance less than ε."
+    - "translate: The distance of a_m and a_n is |a_m - a_n|."
+    - "conclude: The Cauchy condition becomes the ε-N statement."
+  openmath: (forall (a) (<-> (seq_cauchy a) (forall (e) (-> (> e 0) (exists (K) (forall (m n) (-> (and (>= m K) (>= n K)) (< (abs (- (seq_value a m) (seq_value a n))) e))))))))
+  hard_negative:
+    statement: 任意のε>0に対してNが存在してn≥Nなら|a_{n+1}-a_n|<εとなることは、コーシー列の定義と同値である。
+    reason: 調和級数の部分和はこの条件を満たすが、コーシー列ではない。
+  target: |
+    ∀ (a : ℕ → ℝ), CauchySeq a ↔ ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ m : ℕ, N ≤ m → ∀ n : ℕ, N ≤ n → |a m - a n| < ε
+  proof: |
+    by
+      intro a
+      rw [Metric.cauchySeq_iff]
+      simp only [Real.dist_eq, ge_iff_le, gt_iff_lt]
+- id: cauchy_bounded
+  kind: gap
+  level: 1
+  topic: 数列・コーシー列の有界性
+  statement: 実数のコーシー列は有界である。
+  statement_en: Every real Cauchy sequence is bounded.
+  assumptions: ["aは実数のコーシー列"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: 全てのnで|a_n|≤Mとなる実数Mが存在する。
+  answer: |
+    ε=1に対してNをとると、n≥Nで|a_n-a_N|<1なので|a_n|<|a_N|+1である。最初のN個の項の絶対値と|a_N|+1の最大値をMとする。すると全てのnで|a_n|≤Mである。
+  strategy: Bound the tail by comparing with one fixed far term, then take a maximum.
+  sketch:
+    - "setup: Choose N with |a_m - a_n| < 1 for m, n ≥ N."
+    - "derive: For n ≥ N, |a_n| < |a_N| + 1."
+    - "construct: Let M be the maximum of this bound and the first N absolute values."
+    - "conclude: M bounds all terms."
+  openmath: (forall (a) (-> (seq_cauchy a) (exists (M) (forall (n) (<= (abs (seq_value a n)) M)))))
+  hard_negative:
+    statement: 有界な実数列はコーシー列である。
+    reason: a_n=(-1)^nは有界だがコーシー列ではない。
+  target: |
+    ∀ (a : ℕ → ℝ), CauchySeq a → ∃ M : ℝ, ∀ n, |a n| ≤ M
+  proof: |
+    by
+      intro a h
+      obtain ⟨M, hM⟩ := h.norm_bddAbove
+      exact ⟨M, fun n => hM (Set.mem_range_self n)⟩
+- id: lub_add
+  kind: gap
+  level: 1
+  topic: 上限・和集合の上限
+  statement: 実数の集合S,Tの上限がそれぞれa,bなら、集合{x+y|x∈S,y∈T}の上限はa+bである。
+  statement_en: If a and b are the suprema of sets S and T of reals, then a + b is the supremum of the set of all sums x + y with x in S and y in T.
+  assumptions: ["aはSの上限", "bはTの上限"]
+  quantifiers: ["任意の実数の集合S, Tと実数a, b"]
+  conclusion: a+bは和の集合の上限である。
+  answer: |
+    x≤a、y≤bからx+y≤a+bであり、a+bは上界である。cを和の集合の上界とする。y∈Tを固定すると全てのx∈Sでx≤c-yなのでa≤c-yである。これはy≤c-aを意味し、yは任意なのでb≤c-aとなる。したがってa+b≤cであり、a+bは最小の上界である。
+  strategy: Fix one summand at a time and use the least-upper-bound property twice.
+  sketch:
+    - "derive: x + y ≤ a + b, so a + b is an upper bound."
+    - "setup: Let c be any upper bound of the sums."
+    - "derive: For fixed y, x ≤ c - y for all x in S, so a ≤ c - y."
+    - "derive: Then y ≤ c - a for all y in T, so b ≤ c - a."
+    - "conclude: Hence a + b ≤ c."
+  openmath: (forall (S T W a b) (-> (and (is_lub S a) (is_lub T b) (forall (z) (<-> (in z W) (exists (x y) (and (in x S) (in y T) (= z (+ x y))))))) (is_lub W (+ a b))))
+  hard_negative:
+    statement: 集合{xy|x∈S,y∈T}の上限はabである。
+    reason: S=T=[-2,1]では上限はともに1で積は1だが、{xy}の上限は(-2)(-2)=4である。
+  target: |
+    ∀ (s t : Set ℝ) (a b : ℝ), IsLUB s a → IsLUB t b → IsLUB {z : ℝ | ∃ x ∈ s, ∃ y ∈ t, z = x + y} (a + b)
+  proof: |
+    by
+      intro s t a b ha hb
+      constructor
+      · rintro z ⟨x, hx, y, hy, rfl⟩
+        have h₁ : x ≤ a := ha.1 hx
+        have h₂ : y ≤ b := hb.1 hy
+        linarith
+      · intro c hc
+        have h₁ : b ≤ c - a := by
+          apply hb.2
+          intro y hy
+          have h₂ : a ≤ c - y := by
+            apply ha.2
+            intro x hx
+            have h₃ : x + y ≤ c := hc ⟨x, hx, y, hy, rfl⟩
+            linarith
+          linarith
+        linarith
+- id: limsup_liminf_of_tendsto
+  kind: gap
+  level: 2
+  topic: 上極限・下極限・収束列
+  statement: 実数列aがLに収束するなら、aの上極限と下極限はともにLである。
+  statement_en: If a real sequence a converges to L, then both its limit superior and its limit inferior equal L.
+  assumptions: ["aは実数列", "aはLに収束"]
+  quantifiers: ["任意の実数列aと実数L"]
+  conclusion: 上極限と下極限はともにLである。
+  answer: |
+    ε>0に対してNをとると、n≥NでL-ε<a_n<L+εである。よって全てのm≥Nで、m以降の項の上限と下限はともに[L-ε,L+ε]に入る。上極限と下極限はこれらのm→∞の極限なので、ともに[L-ε,L+ε]に入る。εは任意なので両者はLに等しい。
+  strategy: Trap the tail suprema and infima in an ε-band around L.
+  sketch:
+    - "setup: Fix ε > 0 and N with L - ε < a_n < L + ε for n ≥ N."
+    - "derive: Tail suprema and infima beyond N lie in [L-ε, L+ε]."
+    - "derive: Their limits, limsup and liminf, lie in the same interval."
+    - "conclude: Since ε is arbitrary both equal L."
+  openmath: (forall (a L) (-> (seq_tends_to a L) (and (= (seq_limsup a) L) (= (seq_liminf a) L))))
+  hard_negative:
+    statement: 上極限が有限なら数列は収束する。
+    reason: a_n=(-1)^nの上極限は1だが、下極限は-1で収束しない。
+  target: |
+    ∀ (a : ℕ → ℝ) (L : ℝ), Filter.Tendsto a Filter.atTop (nhds L) → Filter.limsup a Filter.atTop = L ∧ Filter.liminf a Filter.atTop = L
+  proof: |
+    by
+      intro a L h
+      exact ⟨h.limsup_eq, h.liminf_eq⟩
+- id: tendsto_of_liminf_eq_limsup
+  kind: textbook
+  level: 2
+  topic: 上極限・下極限・収束判定
+  statement: 有界な実数列の上極限と下極限がともにLなら、その数列はLに収束する。
+  statement_en: A bounded real sequence whose limit superior and limit inferior both equal L converges to L.
+  assumptions: ["全てのnで|a_n|≤M", "aの下極限はL", "aの上極限はL"]
+  quantifiers: ["任意の実数列aと実数M, L"]
+  conclusion: aはLに収束する。
+  answer: |
+    ε>0とする。上極限がL<L+εなので、十分大きいmについてm以降の項の上限はL+ε未満であり、十分大きいnでa_n<L+εである。同様に下極限がL>L-εなので、十分大きいnでa_n>L-εである。よって十分大きいnで|a_n-L|<εであり、aはLに収束する。
+  strategy: Translate limsup and liminf into eventual upper and lower bounds.
+  sketch:
+    - "setup: Fix ε > 0."
+    - "derive: limsup a = L < L + ε gives a_n < L + ε eventually."
+    - "derive: liminf a = L > L - ε gives a_n > L - ε eventually."
+    - "conclude: Hence |a_n - L| < ε eventually."
+  openmath: (forall (a M L) (-> (and (forall (n) (<= (abs (seq_value a n)) M)) (= (seq_liminf a) L) (= (seq_limsup a) L)) (seq_tends_to a L)))
+  hard_negative:
+    statement: 有界な実数列の下極限が上極限以下であれば、その数列は収束する。
+    reason: 下極限≤上極限は有界列なら常に成り立つ。a_n=(-1)^nは発散する。等号が必要である。
+  target: |
+    ∀ (a : ℕ → ℝ) (M L : ℝ), (∀ n, |a n| ≤ M) → Filter.liminf a Filter.atTop = L → Filter.limsup a Filter.atTop = L → Filter.Tendsto a Filter.atTop (nhds L)
+  proof: |
+    by
+      intro a M L h h₁ h₂
+      have hu : Filter.IsBoundedUnder (· ≤ ·) Filter.atTop a :=
+        Filter.isBoundedUnder_of ⟨M, fun n => (abs_le.1 (h n)).2⟩
+      have hl : Filter.IsBoundedUnder (· ≥ ·) Filter.atTop a :=
+        Filter.isBoundedUnder_of ⟨-M, fun n => (abs_le.1 (h n)).1⟩
+      exact tendsto_of_liminf_eq_limsup h₁ h₂ hu hl
+- id: eventually_lt_of_limsup_lt
+  kind: gap
+  level: 2
+  topic: 上極限・末尾の上界
+  statement: 上に有界な実数列の上極限がcより小さいなら、十分先の全ての項はcより小さい。
+  statement_en: If the limit superior of a real sequence bounded above is less than c, then all sufficiently late terms are less than c.
+  assumptions: ["全てのnでa_n≤M", "aの上極限<c"]
+  quantifiers: ["任意の実数列aと実数M, c"]
+  conclusion: あるNが存在し、n≥Nならa_n<cである。
+  answer: |
+    s_mをm以降の項の上限とする。上極限はs_mの下限であり、それがcより小さいのでs_N<cとなる番号Nがある。n≥Nならa_n≤s_N<cである。
+  strategy: The limsup is the infimum of tail suprema, so some tail supremum is below c.
+  sketch:
+    - "translate: limsup a is the infimum of the tail suprema s_m."
+    - "derive: Since it is below c, some s_N < c."
+    - "conclude: For n ≥ N, a_n ≤ s_N < c."
+  openmath: (forall (a M c) (-> (and (forall (n) (<= (seq_value a n) M)) (< (seq_limsup a) c)) (exists (K) (forall (n) (-> (>= n K) (< (seq_value a n) c))))))
+  hard_negative:
+    statement: 実数列の上極限がcなら、十分先の全ての項はc以下である。
+    reason: a_n=1/(n+1)の上極限は0だが、全ての項は0より大きい。上極限より真に大きい値でなければならない。
+  target: |
+    ∀ (a : ℕ → ℝ) (M c : ℝ), (∀ n, a n ≤ M) → Filter.limsup a Filter.atTop < c → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → a n < c
+  proof: |
+    by
+      intro a M c h h₁
+      have hu : Filter.IsBoundedUnder (· ≤ ·) Filter.atTop a :=
+        Filter.isBoundedUnder_of ⟨M, h⟩
+      have h₂ := Filter.eventually_lt_of_limsup_lt h₁ hu
+      obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 h₂
+      exact ⟨N, fun n hn => hN n hn⟩
+- id: series_terms_tend_zero
+  kind: gap
+  level: 1
+  topic: 級数・一般項の極限
+  statement: 実数の級数が収束するなら、その一般項は0に収束する。
+  statement_en: If the partial sums of a real series converge, then its terms converge to 0.
+  assumptions: ["部分和a_0+…+a_{N-1}はある実数に収束する"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: a_nは0に収束する。
+  answer: |
+    部分和S_N=a_0+…+a_{N-1}は和Sに収束する。a_N=S_{N+1}-S_Nであり、右辺はS-S=0に収束する。よってa_nは0に収束する。
+  strategy: Write a term as the difference of consecutive partial sums.
+  sketch:
+    - "setup: Let S_N be the partial sums converging to S."
+    - "derive: a_N = S_{N+1} - S_N."
+    - "conclude: The right side tends to S - S = 0."
+  openmath: (forall (a) (-> (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (seq_value a n)) K)) S)) (seq_tends_to a 0)))
+  hard_negative:
+    statement: 一般項が0に収束する実数の級数は収束する。
+    reason: 調和級数は一般項1/(n+1)が0に収束するが発散する。
+  target: |
+    ∀ (a : ℕ → ℝ), (∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n) Filter.atTop (nhds S)) → Filter.Tendsto a Filter.atTop (nhds 0)
+  proof: |
+    by
+      rintro a ⟨S, hS⟩
+      have h₁ := (hS.comp (Filter.tendsto_add_atTop_nat 1)).sub hS
+      simpa [Function.comp_def, Finset.sum_range_succ] using h₁
+- id: series_comparison
+  kind: gap
+  level: 1
+  topic: 級数・比較判定法
+  statement: 全てのnで0≤a_n≤b_nであり、Σb_nが収束するなら、Σa_nも収束する。
+  statement_en: If 0 ≤ a_n ≤ b_n for all n and the series of b_n converges, then the series of a_n converges.
+  assumptions: ["全てのnで0≤a_n", "全てのnでa_n≤b_n", "Σb_nは収束する"]
+  quantifiers: ["任意の実数列a, b"]
+  conclusion: Σa_nは収束する。
+  answer: |
+    Σa_nの部分和はa_n≥0より単調増加である。各部分和はΣb_nの部分和以下であり、さらにその和以下である。上に有界な単調増加列は収束するので、Σa_nは収束する。
+  strategy: The partial sums of a are monotone and bounded by the sum of b.
+  sketch:
+    - "derive: Partial sums of a are nondecreasing because a_n ≥ 0."
+    - "derive: They are bounded above by the sum of the series of b."
+    - "apply_theorem: Monotone convergence gives convergence."
+  openmath: (forall (a b) (-> (and (forall (n) (<= 0 (seq_value a n))) (forall (n) (<= (seq_value a n) (seq_value b n))) (real_series_summable (lambda (n) (seq_value b n)))) (real_series_summable (lambda (n) (seq_value a n)))))
+  hard_negative:
+    statement: 全てのnでa_n≤b_nでΣb_nが収束すれば、Σa_nも収束する。
+    reason: a_nが非負とは限らないと、a_n=-1、b_n=0が反例である。
+  target: |
+    ∀ (a b : ℕ → ℝ), (∀ n, 0 ≤ a n) → (∀ n, a n ≤ b n) → Summable b → Summable a
+  proof: |
+    by
+      intro a b h₀ h₁ h₂
+      exact Summable.of_nonneg_of_le h₀ h₁ h₂
+- id: absolute_convergence
+  kind: gap
+  level: 1
+  topic: 級数・絶対収束
+  statement: 実数の級数が絶対収束するなら収束し、その和の絶対値は項の絶対値の和以下である。
+  statement_en: An absolutely convergent real series converges, and the absolute value of its sum is at most the sum of the absolute values.
+  assumptions: ["Σ|a_n|は収束する"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: Σa_nは収束し、|Σa_n|≤Σ|a_n|である。
+  answer: |
+    m≤nについて部分和の差の絶対値は三角不等式から|a_m+…+a_{n-1}|≤|a_m|+…+|a_{n-1}|である。右辺はΣ|a_n|がコーシーの条件を満たすので小さくでき、Σa_nの部分和はコーシー列になって収束する。また各部分和について|a_0+…+a_{N-1}|≤|a_0|+…+|a_{N-1}|≤Σ|a_n|である。Nについて極限をとると和の不等式が得られる。
+  strategy: Control differences of partial sums by the triangle inequality and use the Cauchy criterion.
+  sketch:
+    - "derive: Differences of partial sums are bounded by sums of absolute values."
+    - "apply_theorem: The Cauchy criterion gives convergence of the series."
+    - "derive: Each partial sum has absolute value at most the sum of absolute values."
+    - "conclude: Passing to the limit gives the inequality."
+  openmath: (forall (a) (-> (real_series_summable (lambda (n) (abs (seq_value a n)))) (and (real_series_summable (lambda (n) (seq_value a n))) (<= (abs (real_series_sum (lambda (n) (seq_value a n)))) (real_series_sum (lambda (n) (abs (seq_value a n))))))))
+  hard_negative:
+    statement: 部分和が収束する実数の級数は絶対収束する。
+    reason: 交代調和級数の部分和は収束するが、絶対値をとると調和級数になり発散する。
+  target: |
+    ∀ (a : ℕ → ℝ), Summable (fun n => |a n|) → Summable a ∧ |∑' n, a n| ≤ ∑' n, |a n|
+  proof: |
+    by
+      intro a h
+      have h₁ : Summable a := h.of_abs
+      refine ⟨h₁, ?_⟩
+      have h₂ := norm_tsum_le_tsum_norm (f := a) (by simpa [Real.norm_eq_abs] using h)
+      simpa [Real.norm_eq_abs] using h₂
+- id: ratio_test
+  kind: textbook
+  level: 1
+  topic: 級数・ダランベールの比判定法
+  statement: 全てのnでa_n≠0とし、|a_{n+1}|/|a_n|がlに収束するとする。l<1ならΣa_nは収束し、l>1ならΣa_nは収束しない。
+  statement_en: Let a_n ≠ 0 for all n and let |a_{n+1}|/|a_n| converge to l. If l < 1 the series of a_n converges, and if l > 1 it does not converge.
+  assumptions: ["全てのnでa_n≠0", "比|a_{n+1}|/|a_n|はlに収束"]
+  quantifiers: ["任意の実数列aと実数l"]
+  conclusion: l<1なら収束し、l>1なら収束しない。
+  answer: |
+    l<1のときl<r<1となるrをとると、あるNとn≥Nで|a_{n+1}|≤r|a_n|である。帰納法で|a_{N+k}|≤|a_N|r^kとなり、等比級数との比較から絶対収束する。l>1のときはl>r>1となるrをとると、十分先で|a_{n+1}|≥r|a_n|なので|a_n|は増加して0に収束しない。一般項が0に収束しないので級数は収束しない。
+  strategy: Compare the tail with a geometric series whose ratio lies between l and 1.
+  sketch:
+    - "setup: Pick r strictly between l and 1."
+    - "derive: Eventually |a_{n+1}| ≤ r |a_n| when l < 1."
+    - "induction: Hence |a_{N+k}| ≤ |a_N| r^k."
+    - "apply_theorem: Compare with the geometric series."
+    - "case_split: When l > 1, eventually |a_{n+1}| ≥ r |a_n| with r > 1."
+    - "conclude: The terms do not tend to 0, so the series diverges."
+  openmath: (forall (a l) (-> (and (forall (n) (!= (seq_value a n) 0)) (seq_fn_tends_to (lambda (n) (/ (abs (seq_value a (+ n 1))) (abs (seq_value a n)))) l)) (and (-> (< l 1) (real_series_summable (lambda (n) (seq_value a n)))) (-> (> l 1) (not (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (seq_value a n)) K)) S)))))))
+  hard_negative:
+    statement: l=1ならΣa_nは発散する。
+    reason: a_n=1/(n+1)^2ではl=1だが収束する。l=1の場合、比判定法は判定できない。
+  target: |
+    ∀ (a : ℕ → ℝ) (l : ℝ), (∀ n, a n ≠ 0) → Filter.Tendsto (fun n => |a (n + 1)| / |a n|) Filter.atTop (nhds l) → (l < 1 → Summable a) ∧ (1 < l → ¬ ∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n) Filter.atTop (nhds S))
+  proof: |
+    by
+      intro a l h₀ h
+      have h' : Filter.Tendsto (fun n => ‖a (n + 1)‖ / ‖a n‖) Filter.atTop (nhds l) := by
+        simpa [Real.norm_eq_abs] using h
+      refine ⟨fun hl => summable_of_ratio_test_tendsto_lt_one hl (Filter.Eventually.of_forall h₀) h', ?_⟩
+      rintro hl ⟨S, hS⟩
+      have hz : Filter.Tendsto a Filter.atTop (nhds 0) := by
+        have h₁ := (hS.comp (Filter.tendsto_add_atTop_nat 1)).sub hS
+        simpa [Function.comp_def, Finset.sum_range_succ] using h₁
+      obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 (h.eventually (lt_mem_nhds hl))
+      have hmono : ∀ n, N ≤ n → |a N| ≤ |a n| := by
+        intro n hn
+        induction n, hn using Nat.le_induction with
+        | base => exact le_rfl
+        | succ n hn ih =>
+          have h₁ := hN n hn
+          have h₂ : 0 < |a n| := abs_pos.2 (h₀ n)
+          rw [one_lt_div h₂] at h₁
+          exact ih.trans h₁.le
+      have h₃ : |a N| ≤ |(0 : ℝ)| := ge_of_tendsto hz.abs (Filter.eventually_atTop.2 ⟨N, hmono⟩)
+      have h₄ : 0 < |a N| := abs_pos.2 (h₀ N)
+      rw [abs_zero] at h₃
+      linarith
+- id: root_test
+  kind: textbook
+  level: 1
+  topic: 級数・コーシーの根判定法
+  statement: "|a_n|のn乗根がl<1に収束するなら、Σa_nは絶対収束する。"
+  statement_en: If the n-th root of |a_n| converges to some l < 1, then the series of a_n converges absolutely.
+  assumptions: ["|a_n|^(1/n)はlに収束", "l<1"]
+  quantifiers: ["任意の実数列aと実数l"]
+  conclusion: Σ|a_n|は収束する。
+  answer: |
+    l<r<1となるrをとる。n乗根はlに収束するので、十分大きいnで|a_n|^(1/n)<rであり、n乗して|a_n|<r^nとなる。r≥0かつr<1なので等比級数Σr^nは収束する。比較判定法からΣ|a_n|は収束する。
+  strategy: Eventually bound |a_n| by r^n for some r in (l, 1) and compare with a geometric series.
+  sketch:
+    - "setup: Choose r with l < r < 1."
+    - "derive: For large n, |a_n|^(1/n) < r."
+    - "derive: Raising to the n-th power gives |a_n| ≤ r^n."
+    - "apply_theorem: Compare with the convergent geometric series."
+    - "conclude: The series converges absolutely."
+  openmath: (forall (a l) (-> (and (seq_fn_tends_to (lambda (n) (^ (abs (seq_value a n)) (/ 1 n))) l) (< l 1)) (real_series_summable (lambda (n) (abs (seq_value a n))))))
+  hard_negative:
+    statement: "|a_n|のn乗根が1に収束するならΣa_nは発散する。"
+    reason: a_n=1/(n+1)^2ではn乗根は1に収束するが、級数は収束する。l=1では判定できない。
+  target: |
+    ∀ (a : ℕ → ℝ) (l : ℝ), Filter.Tendsto (fun n : ℕ => |a n| ^ ((1 : ℝ) / (n : ℝ))) Filter.atTop (nhds l) → l < 1 → Summable (fun n => |a n|)
+  proof: |
+    by
+      intro a l h hl
+      obtain ⟨r, hlr, hr1⟩ := exists_between hl
+      have hl0 : 0 ≤ l := ge_of_tendsto' h (fun n => Real.rpow_nonneg (abs_nonneg _) _)
+      have hr0 : 0 ≤ r := by linarith
+      refine Summable.of_norm_bounded_eventually_nat (g := fun n => r ^ n) (summable_geometric_of_lt_one hr0 hr1) ?_
+      filter_upwards [h.eventually (gt_mem_nhds hlr), Filter.eventually_gt_atTop 0] with n hn hn0
+      have hn' : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn0
+      have h₁ := Real.rpow_le_rpow (Real.rpow_nonneg (abs_nonneg (a n)) _) hn.le hn'.le
+      rw [← Real.rpow_mul (abs_nonneg _), one_div, inv_mul_cancel₀ hn'.ne', Real.rpow_one, Real.rpow_natCast] at h₁
+      simpa [Real.norm_eq_abs] using h₁
+- id: alternating_series_test
+  kind: textbook
+  level: 1
+  topic: 級数・ライプニッツの交代級数判定法
+  statement: 実数列aが単調減少で0に収束するなら、交代級数Σ(-1)^k a_kの部分和は収束する。
+  statement_en: If a real sequence a is nonincreasing and converges to 0, then the partial sums of the alternating series of (-1)^k a_k converge.
+  assumptions: ["aは単調減少", "aは0に収束"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: 部分和Σ_{k<N}(-1)^k a_kはある実数に収束する。
+  answer: |
+    aは単調減少で0に収束するのでa_k≥0である。偶数番目の部分和S_{2m}は(a_{2m}-a_{2m+1})≥0を加えていくので単調増加し、奇数番目の部分和S_{2m+1}は単調減少する。S_{2m}≤S_{2m+1}≤S_1より両者は有界で、単調収束定理からそれぞれ収束する。差はa_{2m}で0に収束するので極限は一致し、部分和全体が収束する。
+  strategy: Show even and odd partial sums are monotone and bounded with a vanishing difference.
+  sketch:
+    - "derive: a_k ≥ 0 since a is nonincreasing with limit 0."
+    - "derive: Even partial sums increase and odd partial sums decrease."
+    - "derive: The even ones stay below the odd ones, so both are bounded."
+    - "apply_theorem: Monotone convergence gives limits of both."
+    - "conclude: The difference a_{2m} tends to 0, so the limits coincide."
+  openmath: (forall (a) (-> (and (seq_antitone a) (seq_tends_to a 0)) (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (k) (* (^ (neg 1) k) (seq_value a k))) K)) S))))
+  hard_negative:
+    statement: 実数列aが0に収束すれば、単調でなくても交代級数は収束する。
+    reason: aの偶数番目を1/(n+1)、奇数番目を1/(n+1)^2とすると、部分和は調和級数的に発散する。
+  target: |
+    ∀ (a : ℕ → ℝ), Antitone a → Filter.Tendsto a Filter.atTop (nhds 0) → ∃ S : ℝ, Filter.Tendsto (fun N => ∑ k ∈ Finset.range N, (-1 : ℝ) ^ k * a k) Filter.atTop (nhds S)
+  proof: |
+    by
+      intro a h₁ h₂
+      exact h₁.tendsto_alternating_series_of_tendsto_zero h₂
+- id: geometric_series
+  kind: gap
+  level: 1
+  topic: 級数・等比級数
+  statement: "|r|<1なら、等比級数Σr^nは1/(1-r)に収束する。"
+  statement_en: If |r| < 1, then the geometric series of r^n converges to 1/(1-r).
+  assumptions: ["rは実数", "|r|<1"]
+  quantifiers: ["任意の実数r"]
+  conclusion: Σr^n=1/(1-r)である。
+  answer: |
+    部分和はS_N=(1-r^N)/(1-r)である。これはS_N(1-r)が打ち消し合って1-r^Nになることからわかる。|r|<1よりr^Nは0に収束するので、S_Nは1/(1-r)に収束する。また|r|についても同じ計算が成り立つので、この級数は絶対収束する。
+  strategy: Use the closed form for the partial sums and the limit of r^N.
+  sketch:
+    - "derive: S_N (1-r) = 1 - r^N by telescoping."
+    - "derive: r^N → 0 because |r| < 1."
+    - "conclude: S_N → 1/(1-r), and the same computation for |r| gives absolute convergence."
+  openmath: (forall (r) (-> (< (abs r) 1) (and (real_series_summable (lambda (n) (^ r n))) (= (real_series_sum (lambda (n) (^ r n))) (/ 1 (- 1 r))))))
+  hard_negative:
+    statement: 全ての実数r≠1についてΣr^n=1/(1-r)である。
+    reason: r=2では部分和が発散する。公式が成り立つのは|r|<1のときだけである。
+  target: |
+    ∀ (r : ℝ), |r| < 1 → HasSum (fun n : ℕ => r ^ n) (1 - r)⁻¹
+  proof: |
+    by
+      intro r h
+      exact hasSum_geometric_of_abs_lt_one h
+- id: harmonic_divergence
+  kind: textbook
+  level: 1
+  topic: 級数・調和級数の発散
+  statement: 調和級数の部分和Σ_{k<N}1/(k+1)は正の無限大に発散する。
+  statement_en: The partial sums of the harmonic series, the sums over k < N of 1/(k+1), diverge to plus infinity.
+  assumptions: ["仮定はない"]
+  quantifiers: ["自然数N"]
+  conclusion: 部分和はN→∞で+∞に発散する。
+  answer: |
+    2^m<k≤2^{m+1}を満たすkは2^m個あり、各項1/kは1/2^{m+1}以上なので、この範囲の和は1/2以上である。よって最初の2^m項の和はm/2以上で、部分和は上に有界でない。部分和は単調増加なので+∞に発散する。
+  strategy: Group terms into dyadic blocks each contributing at least one half.
+  sketch:
+    - "construct: Group the terms with 2^m < k ≤ 2^(m+1)."
+    - "derive: Each block sums to at least 1/2."
+    - "derive: The partial sum of the first 2^m terms is at least m/2."
+    - "conclude: Partial sums are monotone and unbounded, so they diverge to plus infinity."
+  openmath: (seq_fn_tends_to_infinity (lambda (K) (real_partial_sum (lambda (k) (/ 1 (+ k 1))) K)))
+  hard_negative:
+    statement: Σ1/(k+1)^2も部分和が+∞に発散する。
+    reason: p=2のp級数は収束する。ブロックごとの和が幾何的に小さくなり、部分和は有界である。
+  target: |
+    Filter.Tendsto (fun N : ℕ => ∑ k ∈ Finset.range N, (1 : ℝ) / ((k : ℝ) + 1)) Filter.atTop Filter.atTop
+  proof: |
+    by
+      simpa using Real.tendsto_sum_range_one_div_nat_succ_atTop
+- id: rearrangement_absolute
+  kind: textbook
+  level: 2
+  topic: 級数・絶対収束級数の項の並べ替え
+  statement: 絶対収束する実数の級数の項を任意に並べ替えても、部分和は元の和に収束する。
+  statement_en: The partial sums of any rearrangement of an absolutely convergent real series converge to the original sum.
+  assumptions: ["Σ|a_n|は収束する", "σは自然数の全単射"]
+  quantifiers: ["任意の実数列aと全単射σ"]
+  conclusion: 部分和Σ_{n<N}a_{σ(n)}はΣa_nに収束する。
+  answer: |
+    Sを和としε>0とする。絶対収束からKをとると、K以上の添字についての|a_n|の和はε/2未満で、|Σ_{n<K}a_n-S|<ε/2である。σは全単射なので、十分大きいNで{σ(0),…,σ(N-1)}は{0,…,K-1}を含む。このとき部分和とΣ_{n<K}a_nの差はK以上の添字の項の和なので絶対値はε/2未満である。よって部分和とSの差はε未満である。
+  strategy: Choose N so large that the rearranged partial sum contains all small indices, and control the rest by the absolute tail.
+  sketch:
+    - "setup: Fix ε > 0 and K with absolute tail below ε/2 and partial sum within ε/2 of S."
+    - "construct: Choose N with σ(0), ..., σ(N-1) containing 0, ..., K-1."
+    - "derive: The rearranged partial sum differs from the K-th partial sum only by terms with index at least K."
+    - "derive: This difference is at most the absolute tail."
+    - "conclude: The rearranged partial sum is within ε of S."
+  openmath: (forall (a s) (-> (and (real_series_summable (lambda (n) (abs (seq_value a n)))) (permutation_of_naturals s)) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (seq_value a (fn_value s n))) K)) (real_series_sum (lambda (n) (seq_value a n))))))
+  hard_negative:
+    statement: 部分和が収束する実数の級数は、項を並べ替えても同じ和に収束する。
+    reason: 交代調和級数は条件収束であり、リーマンの再配列定理により並べ替えで和が変わる。
+  target: |
+    ∀ (a : ℕ → ℝ) (σ : Equiv.Perm ℕ), Summable (fun n => |a n|) → Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a (σ n)) Filter.atTop (nhds (∑' n, a n))
+  proof: |
+    by
+      intro a σ h
+      have h₁ : Summable a := h.of_abs
+      have h₂ : Summable (fun n => a (σ n)) := σ.summable_iff.2 h₁
+      have h₃ : (∑' n, a (σ n)) = ∑' n, a n := σ.tsum_eq a
+      rw [← h₃]
+      exact h₂.hasSum.tendsto_sum_nat
+- id: cauchy_product
+  kind: textbook
+  level: 2
+  topic: 級数・コーシー積
+  statement: 絶対収束する2つの実数の級数のコーシー積は収束し、その和は2つの和の積に等しい。
+  statement_en: The Cauchy product of two absolutely convergent real series converges, and its sum is the product of the two sums.
+  assumptions: ["Σ|a_n|は収束する", "Σ|b_n|は収束する"]
+  quantifiers: ["任意の実数列a, b"]
+  conclusion: c_n=Σ_{k≤n}a_k b_{n-k}としてΣc_nは収束し、Σc_n=(Σa_n)(Σb_n)である。
+  answer: |
+    添字の組(k,l)を全体にわたる族a_k b_lは、|a_k||b_l|の和が(Σ|a_n|)(Σ|b_n|)以下なので絶対総和可能である。絶対総和可能な族は、どの順序やまとめ方で和をとっても同じ値になる。k+l=nごとにまとめるとΣc_nとなり、kとlで別々に和をとると(Σa_n)(Σb_n)となる。よって両者は等しい。
+  strategy: Treat the product as an absolutely summable double family and regroup along anti-diagonals.
+  sketch:
+    - "derive: The family a_k b_l over pairs is absolutely summable, bounded by the product of the absolute sums."
+    - "apply_theorem: Absolutely summable families can be regrouped freely."
+    - "derive: Summing over k + l = n gives the Cauchy product terms."
+    - "derive: Summing over k and l separately gives the product of sums."
+    - "conclude: The two results agree."
+  openmath: (forall (a b) (-> (and (real_series_summable (lambda (n) (abs (seq_value a n)))) (real_series_summable (lambda (n) (abs (seq_value b n))))) (and (real_series_summable (lambda (n) (real_partial_sum (lambda (k) (* (seq_value a k) (seq_value b (- n k)))) (+ n 1)))) (= (real_series_sum (lambda (n) (real_partial_sum (lambda (k) (* (seq_value a k) (seq_value b (- n k)))) (+ n 1)))) (* (real_series_sum (lambda (n) (seq_value a n))) (real_series_sum (lambda (n) (seq_value b n))))))))
+  hard_negative:
+    statement: 部分和が収束する2つの級数のコーシー積は常に収束する。
+    reason: a_n=b_n=(-1)^n/√(n+1)のコーシー積の一般項は0に収束せず、級数は発散する。
+  target: |
+    ∀ (a b : ℕ → ℝ), Summable (fun n => |a n|) → Summable (fun n => |b n|) → Summable (fun n => ∑ k ∈ Finset.range (n + 1), a k * b (n - k)) ∧ (∑' n, a n) * (∑' n, b n) = ∑' n, ∑ k ∈ Finset.range (n + 1), a k * b (n - k)
+  proof: |
+    by
+      intro a b ha hb
+      have ha' : Summable (fun n => ‖a n‖) := by simpa [Real.norm_eq_abs] using ha
+      have hb' : Summable (fun n => ‖b n‖) := by simpa [Real.norm_eq_abs] using hb
+      exact ⟨summable_norm_sum_mul_range_of_summable_norm ha' hb' |>.of_norm,
+        tsum_mul_tsum_eq_tsum_sum_range_of_summable_norm ha' hb'⟩
+- id: uniform_convergence_eps
+  kind: gap
+  level: 2
+  topic: 一様収束・ε-N論法
+  statement: 関数列F_nがfに集合S上で一様収束することは、任意のε>0に対してNが存在し、n≥Nと全てのx∈Sで|F_n(x)-f(x)|<εとなることと同値である。
+  statement_en: A sequence of real functions F_n converges uniformly to f on S if and only if for every ε > 0 there is N with |F_n(x) - f(x)| < ε for all n ≥ N and all x in S.
+  assumptions: ["F_nとfは実関数", "Sは実数の部分集合"]
+  quantifiers: ["任意の関数列F, 関数f, 集合S"]
+  conclusion: 一様収束とε-N条件は同値である。
+  answer: |
+    実数上の距離は|x-y|で与えられ、一様収束は距離についての条件である。すなわち、任意のε>0についてある番号から先の全てのnで、全てのx∈SについてF_n(x)とf(x)の距離がε未満となる。距離を絶対値で書き直すと、右辺の条件そのものになる。Nがxによらず選べる点が各点収束との違いである。
+  strategy: Unfold uniform convergence through the metric of ℝ, keeping N independent of x.
+  sketch:
+    - "translate: Uniform convergence means that for each ε eventually all x in S are within ε."
+    - "translate: Eventually along the naturals means there is a threshold N."
+    - "conclude: Writing the distance as an absolute value gives the stated condition."
+  openmath: (forall (F f S) (<-> (uniform_converges_on (lambda (n x) (fn_value (seq_value F n) x)) (lambda (x) (fn_value f x)) S) (forall (e) (-> (> e 0) (exists (K) (forall (n x) (-> (and (>= n K) (in x S)) (< (abs (- (fn_value (seq_value F n) x) (fn_value f x))) e))))))))
+  hard_negative:
+    statement: 各x∈Sごとに、任意のε>0に対してNが存在してn≥Nで|F_n(x)-f(x)|<εとなることは、S上の一様収束と同値である。
+    reason: これは各点収束の条件で、Nがxに依存してよい。[0,1)上のx^nは各点収束するが一様収束しない。
+  target: |
+    ∀ (F : ℕ → ℝ → ℝ) (f : ℝ → ℝ) (S : Set ℝ), TendstoUniformlyOn F f Filter.atTop S ↔ ∀ ε : ℝ, 0 < ε → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → ∀ x ∈ S, |F n x - f x| < ε
+  proof: |
+    by
+      intro F f S
+      rw [Metric.tendstoUniformlyOn_iff]
+      simp only [Filter.eventually_atTop, Real.dist_eq, abs_sub_comm (f _), ge_iff_le, gt_iff_lt]
+- id: uniform_limit_continuous
+  kind: textbook
+  level: 2
+  topic: 一様収束・極限関数の連続性
+  statement: 集合S上で連続な関数列がS上でfに一様収束するなら、fはS上で連続である。
+  statement_en: If functions continuous on S converge uniformly on S to f, then f is continuous on S.
+  assumptions: ["各F_nはS上で連続", "F_nはS上でfに一様収束"]
+  quantifiers: ["任意の関数列F, 関数f, 集合S"]
+  conclusion: fはS上で連続である。
+  answer: |
+    x∈Sとε>0をとる。一様収束からNを選ぶと、全てのy∈Sで|F_N(y)-f(y)|<ε/3である。F_Nはxで連続なので、xに十分近いy∈Sで|F_N(y)-F_N(x)|<ε/3である。三角不等式により|f(y)-f(x)|≤|f(y)-F_N(y)|+|F_N(y)-F_N(x)|+|F_N(x)-f(x)|<εとなる。よってfはxで連続である。
+  strategy: Use the three-epsilon argument with one sufficiently late continuous function.
+  sketch:
+    - "setup: Fix x in S and ε > 0."
+    - "apply_theorem: Uniform convergence gives N with |F_N - f| < ε/3 on S."
+    - "derive: Continuity of F_N gives |F_N(y) - F_N(x)| < ε/3 for y near x."
+    - "derive: The triangle inequality bounds |f(y) - f(x)| by three terms."
+    - "conclude: Thus f is continuous at x."
+  openmath: (forall (F f S) (-> (and (forall (n) (fn_continuous_on (lambda (x) (fn_value (seq_value F n) x)) S)) (uniform_converges_on (lambda (n x) (fn_value (seq_value F n) x)) (lambda (x) (fn_value f x)) S)) (fn_continuous_on (lambda (x) (fn_value f x)) S)))
+  hard_negative:
+    statement: 連続関数列の各点収束極限は連続である。
+    reason: "[0,1]上のx^nは各点収束するが、極限はx=1で不連続である。"
+  target: |
+    ∀ (F : ℕ → ℝ → ℝ) (f : ℝ → ℝ) (S : Set ℝ), (∀ n, ContinuousOn (F n) S) → TendstoUniformlyOn F f Filter.atTop S → ContinuousOn f S
+  proof: |
+    by
+      intro F f S hc hu
+      exact hu.continuousOn (Filter.Frequently.of_forall hc)
+- id: pow_not_uniform
+  kind: gap
+  level: 2
+  topic: 一様収束・各点収束との違い
+  statement: 区間[0,1)上の関数列x^nは0に各点収束するが、一様収束はしない。
+  statement_en: On [0,1) the functions x^n converge pointwise to 0 but do not converge uniformly to 0.
+  assumptions: ["仮定はない"]
+  quantifiers: ["関数列x^n"]
+  conclusion: 各点収束するが一様収束しない。
+  answer: |
+    0≤x<1ならx^nは0に収束するので各点収束である。一様収束すると仮定すると、あるNで全てのx∈[0,1)についてx^N<1/2となる。x^Nはxの連続関数なので、xを1に近づけると1≤1/2が得られて矛盾する。よって一様収束しない。
+  strategy: Assume a uniform threshold and let x tend to 1 in the single power x^N.
+  sketch:
+    - "derive: For 0 ≤ x < 1, x^n → 0, giving pointwise convergence."
+    - "contradiction: Suppose x^N < 1/2 for all x in [0,1) and some N."
+    - "derive: Continuity of x^N at 1 gives 1 ≤ 1/2."
+    - "conclude: The convergence is not uniform."
+  openmath: (exists (S) (and (forall (x) (<-> (in x S) (and (<= 0 x) (< x 1)))) (forall (x) (-> (in x S) (seq_fn_tends_to (lambda (n) (^ x n)) 0))) (not (uniform_converges_on (lambda (n x) (^ x n)) (lambda (x) 0) S))))
+  hard_negative:
+    statement: 区間[0,r]でr<1のときもx^nは一様収束しない。
+    reason: 0≤x≤rではx^n≤r^n→0なので、r<1なら一様収束する。問題は1の近くだけで起きる。
+  target: |
+    (∀ x ∈ Set.Ico (0 : ℝ) 1, Filter.Tendsto (fun n : ℕ => x ^ n) Filter.atTop (nhds 0)) ∧ ¬ TendstoUniformlyOn (fun (n : ℕ) (x : ℝ) => x ^ n) (fun _ => (0 : ℝ)) Filter.atTop (Set.Ico (0 : ℝ) 1)
+  proof: |
+    by
+      refine ⟨fun x hx => tendsto_pow_atTop_nhds_zero_of_lt_one hx.1 hx.2, fun h => ?_⟩
+      rw [Metric.tendstoUniformlyOn_iff] at h
+      obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 (h (1 / 2) (by norm_num))
+      have hN' := hN N le_rfl
+      have hlim : Filter.Tendsto (fun x : ℝ => x ^ N) (nhdsWithin 1 (Set.Ico 0 1)) (nhds 1) := by
+        have h₁ := (continuous_pow N).tendsto (1 : ℝ)
+        simpa using h₁.mono_left nhdsWithin_le_nhds
+      haveI hne : (nhdsWithin (1 : ℝ) (Set.Ico 0 1)).NeBot := right_nhdsWithin_Ico_neBot (by norm_num)
+      have h₂ : (1 : ℝ) ≤ 1 / 2 := by
+        refine le_of_tendsto hlim ?_
+        filter_upwards [self_mem_nhdsWithin] with x hx
+        have h₃ := hN' x hx
+        rw [Real.dist_eq] at h₃
+        have h₄ := abs_lt.1 h₃
+        linarith [h₄.1]
+      norm_num at h₂
+- id: weierstrass_m_test
+  kind: named
+  level: 2
+  topic: 関数項級数・ワイエルシュトラスのM判定法
+  statement: 全てのnとx∈Sで|f_n(x)|≤M_nであり、ΣM_nが収束するなら、Σf_nの部分和はS上で一様収束する。
+  statement_en: If |f_n(x)| ≤ M_n for all n and all x in S and the series of M_n converges, then the partial sums of the series of f_n converge uniformly on S.
+  assumptions: ["全てのnとx∈Sで|f_n(x)|≤M_n", "ΣM_nは収束する"]
+  quantifiers: ["任意の関数列f, 実数列M, 集合S"]
+  conclusion: 部分和Σ_{n<N}f_nはS上でΣf_nに一様収束する。
+  answer: |
+    各x∈Sについて比較判定法からΣf_n(x)は絶対収束する。N≥1について、和との差は|Σ_{n≥N}f_n(x)|≤Σ_{n≥N}|f_n(x)|≤Σ_{n≥N}M_nである。右辺はxによらず、ΣM_nの収束からN→∞で0に収束する。よって部分和はS上で一様収束する。
+  strategy: Bound the tail of the function series by the tail of the numerical series, independently of x.
+  sketch:
+    - "apply_theorem: Each series at x converges absolutely by comparison."
+    - "derive: The error at x is at most the sum of M_n over n ≥ N."
+    - "derive: This tail is independent of x and tends to 0."
+    - "conclude: The partial sums converge uniformly on S."
+  openmath: (forall (f c S) (-> (and (forall (n x) (-> (in x S) (<= (abs (fn_value (seq_value f n) x)) (seq_value c n)))) (real_series_summable (lambda (n) (seq_value c n)))) (uniform_converges_on (lambda (K x) (real_partial_sum (lambda (n) (fn_value (seq_value f n) x)) K)) (lambda (x) (real_series_sum (lambda (n) (fn_value (seq_value f n) x)))) S)))
+  hard_negative:
+    statement: 各xでΣf_n(x)が絶対収束すれば、部分和は一様収束する。
+    reason: f_n(x)=(1-x)x^nは[0,1]で各点絶対収束するが、極限が不連続で一様収束しない。上界M_nがxによらないことが必要である。
+  target: |
+    ∀ (f : ℕ → ℝ → ℝ) (M : ℕ → ℝ) (S : Set ℝ), (∀ n, ∀ x ∈ S, |f n x| ≤ M n) → Summable M → TendstoUniformlyOn (fun (N : ℕ) (x : ℝ) => ∑ n ∈ Finset.range N, f n x) (fun x => ∑' n, f n x) Filter.atTop S
+  proof: |
+    by
+      intro f M S hb hM
+      exact tendstoUniformlyOn_tsum_nat hM (fun n x hx => hb n x hx)
+- id: term_by_term_derivative
+  kind: textbook
+  level: 2
+  topic: 関数項級数・項別微分
+  statement: 実数全体で微分可能な関数g_nが|g_n'(y)|≤u_nを満たし、Σu_nが収束し、ある点y_0でΣg_n(y_0)が絶対収束するなら、Σg_nは全ての点で絶対収束し、項別微分できる。
+  statement_en: If functions g_n are differentiable on ℝ with |g_n'(y)| ≤ u_n, the series of u_n converges and the series of g_n(y_0) converges absolutely at one point, then the series of g_n converges absolutely everywhere and may be differentiated term by term.
+  assumptions: ["各g_nは導関数g'_nをもつ", "全てのn,yで|g'_n(y)|≤u_n", "Σu_nは収束する", "Σg_n(y_0)は絶対収束する"]
+  quantifiers: ["任意の関数列g, g'と実数列uと実数y_0"]
+  conclusion: 全てのyでΣg_n(y)は絶対収束し、その和の導関数はΣg'_n(y)である。
+  answer: |
+    平均値の定理から|g_n(y)|≤|g_n(y_0)|+u_n|y-y_0|なので、比較によりΣg_n(y)は全ての点で絶対収束する。導関数の級数はM判定法により一様収束する。部分和S_Nについて、S_N'は一様収束し、S_Nは各点収束する。導関数が一様収束する関数列では、極限関数が微分可能で導関数は導関数の極限に等しいので、結論が得られる。
+  strategy: Use the mean value theorem for convergence and uniform convergence of derivatives for differentiation.
+  sketch:
+    - "derive: The mean value theorem bounds |g_n(y)| by |g_n(y_0)| + u_n |y - y_0|."
+    - "derive: Hence the series of g_n converges absolutely at every y."
+    - "apply_theorem: The M-test gives uniform convergence of the series of derivatives."
+    - "apply_theorem: The limit of functions with uniformly convergent derivatives is differentiable."
+    - "conclude: The derivative of the sum is the sum of the derivatives."
+  openmath: (forall (g h u y0) (-> (and (forall (n y) (has_deriv_at (lambda (x) (fn_value (seq_value g n) x)) (fn_value (seq_value h n) y) y)) (forall (n y) (<= (abs (fn_value (seq_value h n) y)) (seq_value u n))) (real_series_summable (lambda (n) (seq_value u n))) (real_series_summable (lambda (n) (fn_value (seq_value g n) y0)))) (forall (y) (and (real_series_summable (lambda (n) (fn_value (seq_value g n) y))) (has_deriv_at (lambda (z) (real_series_sum (lambda (n) (fn_value (seq_value g n) z)))) (real_series_sum (lambda (n) (fn_value (seq_value h n) y))) y)))))
+  hard_negative:
+    statement: Σg_nが一様収束すれば項別微分できる。
+    reason: g_n(x)=sin(n^2 x)/n^2はM判定法で一様収束するが、項別微分した級数Σcos(n^2 x)は0でも発散する。導関数の級数の一様収束が必要である。
+  target: |
+    ∀ (g g' : ℕ → ℝ → ℝ) (u : ℕ → ℝ) (y₀ : ℝ), Summable u → (∀ n y, HasDerivAt (g n) (g' n y) y) → (∀ n y, |g' n y| ≤ u n) → Summable (fun n => g n y₀) → ∀ y, Summable (fun n => g n y) ∧ HasDerivAt (fun z => ∑' n, g n z) (∑' n, g' n y) y
+  proof: |
+    by
+      intro g g' u y₀ hu hg hb h₀ y
+      exact ⟨summable_of_summable_hasDerivAt hu hg (fun n y => hb n y) h₀ y,
+        hasDerivAt_tsum hu hg (fun n y => hb n y) h₀ y⟩
+- id: term_by_term_integral
+  kind: textbook
+  level: 2
+  topic: 関数項級数・項別積分
+  statement: 閉区間[a,b]上で連続な関数f_nが|f_n(x)|≤M_nを満たし、ΣM_nが収束するなら、Σf_nは項別積分できる。
+  statement_en: If functions f_n continuous on [a, b] satisfy |f_n(x)| ≤ M_n there and the series of M_n converges, then the series of f_n can be integrated term by term over [a, b].
+  assumptions: ["a≤b", "各f_nは[a,b]で連続", "全てのnとx∈[a,b]で|f_n(x)|≤M_n", "ΣM_nは収束する"]
+  quantifiers: ["任意の関数列f, 実数列M, 実数a, b"]
+  conclusion: Σ∫_a^b f_n dxは収束し、その和は∫_a^b Σf_n dxに等しい。
+  answer: |
+    M判定法から部分和S_NはΣf_nに[a,b]上で一様収束するので、極限は連続で積分できる。|∫_a^b(Σf_n-S_N)dx|は、差の上界Σ_{n≥N}M_nと区間の長さb-aの積以下である。これは0に収束するので∫_a^b S_N dxは∫_a^b Σf_n dxに収束する。∫_a^b S_N dx=Σ_{n<N}∫_a^b f_n dxなので結論が得られ、絶対収束も|∫_a^b f_n dx|≤M_n(b-a)から従う。
+  strategy: Apply the M-test and bound the integral of the remainder by the numerical tail times the length.
+  sketch:
+    - "apply_theorem: The M-test gives uniform convergence of the partial sums."
+    - "derive: The limit is continuous, so its integral exists."
+    - "derive: The integral of the remainder is at most the tail of M_n times (b-a)."
+    - "derive: Linearity turns the integral of a partial sum into a sum of integrals."
+    - "conclude: The series of integrals converges to the integral of the sum."
+  openmath: (forall (f c a b) (-> (and (<= a b) (forall (n) (fn_continuous_on (lambda (x) (fn_value (seq_value f n) x)) (closed_interval a b))) (forall (n x) (-> (in x (closed_interval a b)) (<= (abs (fn_value (seq_value f n) x)) (seq_value c n)))) (real_series_summable (lambda (n) (seq_value c n)))) (and (real_series_summable (lambda (n) (interval_integral a b (lambda (x) (fn_value (seq_value f n) x))))) (= (real_series_sum (lambda (n) (interval_integral a b (lambda (x) (fn_value (seq_value f n) x))))) (interval_integral a b (lambda (x) (real_series_sum (lambda (n) (fn_value (seq_value f n) x)))))))))
+  hard_negative:
+    statement: 各点収束する連続関数の級数は常に項別積分できる。
+    reason: 部分和がn^2 x(1-x^2)^nに相当する級数は[0,1]で0に各点収束するが、積分はn^2/(2n+2)となり発散する。
+  target: |
+    ∀ (f : ℕ → ℝ → ℝ) (M : ℕ → ℝ) (a b : ℝ), a ≤ b → (∀ n, ContinuousOn (f n) (Set.Icc a b)) → (∀ n, ∀ x ∈ Set.Icc a b, |f n x| ≤ M n) → Summable M → HasSum (fun n => ∫ x in a..b, f n x) (∫ x in a..b, ∑' n, f n x)
+  proof: |
+    by
+      intro f M a b hab hc hb hM
+      have hsub : Set.uIoc a b ⊆ Set.Icc a b := by
+        rw [Set.uIoc_of_le hab]
+        exact Set.Ioc_subset_Icc_self
+      refine intervalIntegral.hasSum_integral_of_dominated_convergence (fun n _ => M n) ?_ ?_ ?_ ?_ ?_
+      · intro n
+        exact ((hc n).mono hsub).aestronglyMeasurable measurableSet_uIoc
+      · intro n
+        exact Filter.Eventually.of_forall (fun x hx => hb n x (hsub hx))
+      · exact Filter.Eventually.of_forall (fun x _ => hM)
+      · exact intervalIntegrable_const
+      · exact Filter.Eventually.of_forall (fun x hx =>
+          (Summable.of_norm_bounded hM (fun n => hb n x (hsub hx))).hasSum)
+- id: uniform_limit_integral
+  kind: gap
+  level: 2
+  topic: 一様収束・積分と極限の交換
+  statement: 閉区間[a,b]上で連続な関数列F_nがfに一様収束するなら、∫_a^b F_n dxは∫_a^b f dxに収束する。
+  statement_en: If functions F_n continuous on [a, b] converge uniformly to f on [a, b], then the integrals of F_n over [a, b] converge to the integral of f.
+  assumptions: ["a≤b", "各F_nは[a,b]で連続", "F_nは[a,b]上でfに一様収束"]
+  quantifiers: ["任意の関数列F, 関数f, 実数a, b"]
+  conclusion: ∫_a^b F_n dxは∫_a^b f dxに収束する。
+  answer: |
+    一様収束の極限としてfは[a,b]で連続なので積分できる。ε>0に対してδ=ε/(b-a+1)とおき、n≥Nで全てのx∈[a,b]について|F_n(x)-f(x)|<δとなるNをとる。すると|∫_a^b F_n dx-∫_a^b f dx|≤δ(b-a)<εである。よって積分は収束する。
+  strategy: Bound the difference of integrals by the uniform error times the length.
+  sketch:
+    - "derive: f is continuous as a uniform limit, so it is integrable."
+    - "setup: Fix ε > 0 and put δ = ε/(b-a+1)."
+    - "apply_theorem: Uniform convergence gives N with |F_n - f| < δ on [a,b] for n ≥ N."
+    - "derive: The integral of the difference is at most δ(b-a)."
+    - "conclude: This is less than ε."
+  openmath: (forall (F f a b) (-> (and (<= a b) (forall (n) (fn_continuous_on (lambda (x) (fn_value (seq_value F n) x)) (closed_interval a b))) (uniform_converges_on (lambda (n x) (fn_value (seq_value F n) x)) (lambda (x) (fn_value f x)) (closed_interval a b))) (seq_fn_tends_to (lambda (n) (interval_integral a b (lambda (x) (fn_value (seq_value F n) x)))) (interval_integral a b (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: 非有界区間[0,∞)でも、一様収束なら積分と極限を交換できる。
+    reason: F_nを[0,n]で1/n、それ以外で0に近い連続関数とすると0に一様収束するが、積分は1に近いままである。区間の長さが有限であることが必要である。
+  target: |
+    ∀ (F : ℕ → ℝ → ℝ) (f : ℝ → ℝ) (a b : ℝ), a ≤ b → (∀ n, ContinuousOn (F n) (Set.Icc a b)) → TendstoUniformlyOn F f Filter.atTop (Set.Icc a b) → Filter.Tendsto (fun n => ∫ x in a..b, F n x) Filter.atTop (nhds (∫ x in a..b, f x))
+  proof: |
+    by
+      intro F f a b hab hF hu
+      have hf : ContinuousOn f (Set.Icc a b) := hu.continuousOn (Filter.Frequently.of_forall hF)
+      have hfi : IntervalIntegrable f MeasureTheory.volume a b := hf.intervalIntegrable_of_Icc hab
+      rw [Metric.tendsto_atTop]
+      intro ε hε
+      have hpos : 0 < b - a + 1 := by linarith
+      have hδ : 0 < ε / (b - a + 1) := div_pos hε hpos
+      rw [Metric.tendstoUniformlyOn_iff] at hu
+      obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 (hu _ hδ)
+      refine ⟨N, fun n hn => ?_⟩
+      rw [Real.dist_eq, ← intervalIntegral.integral_sub ((hF n).intervalIntegrable_of_Icc hab) hfi]
+      have hb : ∀ x ∈ Set.uIoc a b, ‖F n x - f x‖ ≤ ε / (b - a + 1) := by
+        intro x hx
+        rw [Set.uIoc_of_le hab] at hx
+        have h₁ := hN n hn x ⟨hx.1.le, hx.2⟩
+        rw [Real.dist_eq, abs_sub_comm] at h₁
+        exact h₁.le
+      have h₂ := intervalIntegral.norm_integral_le_of_norm_le_const hb
+      rw [Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.2 hab)] at h₂
+      calc |∫ x in a..b, F n x - f x| ≤ ε / (b - a + 1) * (b - a) := h₂
+        _ < ε := by
+          rw [div_mul_eq_mul_div, div_lt_iff₀ hpos]
+          nlinarith
+- id: dini_theorem
+  kind: named
+  level: 2
+  topic: 一様収束・ディニの定理
+  statement: コンパクト集合S上の連続関数列が各点で単調増加し、連続関数fに各点収束するなら、S上で一様収束する。
+  statement_en: If continuous functions on a compact set S increase pointwise and converge pointwise to a continuous function f, then the convergence is uniform on S.
+  assumptions: ["Sはコンパクト", "各F_nはS上で連続", "各x∈SでF_n(x)はnについて単調増加", "fはS上で連続", "各x∈SでF_n(x)はf(x)に収束"]
+  quantifiers: ["任意の関数列F, 関数f, 集合S"]
+  conclusion: F_nはS上でfに一様収束する。
+  answer: |
+    ε>0とし、U_n={x∈S|f(x)-F_n(x)<ε}とおく。連続性からU_nはSの相対開集合で、単調性からnについて増加し、各点収束からSを被覆する。コンパクト性から有限個で被覆でき、増加性からあるNでU_N=Sとなる。n≥Nでは単調性から0≤f(x)-F_n(x)≤f(x)-F_N(x)<εである。よって一様収束する。
+  strategy: Cover the compact set by the increasing open sets where the error is below ε.
+  sketch:
+    - "setup: Fix ε > 0 and define U_n by f - F_n < ε on S."
+    - "derive: The U_n are relatively open, increasing and cover S."
+    - "apply_theorem: Compactness gives a single U_N equal to S."
+    - "derive: Monotonicity gives 0 ≤ f - F_n < ε on S for n ≥ N."
+    - "conclude: The convergence is uniform."
+  openmath: (forall (F f S) (-> (and (compact_set S) (forall (n) (fn_continuous_on (lambda (x) (fn_value (seq_value F n) x)) S)) (forall (x m n) (-> (and (in x S) (<= m n)) (<= (fn_value (seq_value F m) x) (fn_value (seq_value F n) x)))) (fn_continuous_on (lambda (x) (fn_value f x)) S) (forall (x) (-> (in x S) (seq_fn_tends_to (lambda (n) (fn_value (seq_value F n) x)) (fn_value f x))))) (uniform_converges_on (lambda (n x) (fn_value (seq_value F n) x)) (lambda (x) (fn_value f x)) S)))
+  hard_negative:
+    statement: 極限関数が連続でなくても、[0,1]上の単調な連続関数列なら一様収束する。
+    reason: 1-x^nは単調増加で各点収束するが、極限はx=1で不連続であり一様収束しない。
+  target: |
+    ∀ (F : ℕ → ℝ → ℝ) (f : ℝ → ℝ) (S : Set ℝ), IsCompact S → (∀ n, ContinuousOn (F n) S) → (∀ x ∈ S, Monotone (fun n => F n x)) → ContinuousOn f S → (∀ x ∈ S, Filter.Tendsto (fun n => F n x) Filter.atTop (nhds (f x))) → TendstoUniformlyOn F f Filter.atTop S
+  proof: |
+    by
+      intro F f S hS hc hm hf ht
+      exact Monotone.tendstoUniformlyOn_of_forall_tendsto hS hc hm hf ht
+- id: abel_power_series_lemma
+  kind: textbook
+  level: 2
+  topic: べき級数・アーベルの補題
+  statement: べき級数Σa_n x^nがx_0で収束するなら、|x|<|x_0|を満たす全てのxで絶対収束する。
+  statement_en: If the power series of a_n x^n converges at x_0, then it converges absolutely at every x with |x| < |x_0|.
+  assumptions: ["Σa_n x_0^nは収束する", "|x|<|x_0|"]
+  quantifiers: ["任意の実数列aと実数x_0, x"]
+  conclusion: Σ|a_n x^n|は収束する。
+  answer: |
+    Σa_n x_0^nが収束するのでa_n x_0^nは0に収束し、全てのnで|a_n x_0^n|≤Mとなる定数Mがある。r=|x|/|x_0|<1とおくと、|a_n x^n|=|a_n x_0^n|r^n≤Mr^nである。等比級数ΣMr^nは収束するので、比較判定法からΣ|a_n x^n|は収束する。
+  strategy: Bound the terms at x_0 and compare with a geometric series of ratio |x|/|x_0|.
+  sketch:
+    - "derive: The terms a_n x_0^n tend to 0, so they are bounded by some M."
+    - "setup: Put r = |x|/|x_0| < 1."
+    - "derive: |a_n x^n| = |a_n x_0^n| r^n ≤ M r^n."
+    - "apply_theorem: Compare with the geometric series."
+    - "conclude: The series converges absolutely at x."
+  openmath: (forall (a x0 x) (-> (and (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (* (seq_value a n) (^ x0 n))) K)) S)) (< (abs x) (abs x0))) (real_series_summable (lambda (n) (abs (* (seq_value a n) (^ x n)))))))
+  hard_negative:
+    statement: Σa_n x_0^nが収束するなら、|x|=|x_0|でも収束する。
+    reason: Σx^n/(n+1)はx_0=-1で収束するが、x=1では調和級数となり発散する。
+  target: |
+    ∀ (a : ℕ → ℝ) (x₀ x : ℝ), (∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n * x₀ ^ n) Filter.atTop (nhds S)) → |x| < |x₀| → Summable (fun n => |a n * x ^ n|)
+  proof: |
+    by
+      rintro a x₀ x ⟨S, hS⟩ hx
+      have hz : Filter.Tendsto (fun n => a n * x₀ ^ n) Filter.atTop (nhds 0) := by
+        have h₁ := (hS.comp (Filter.tendsto_add_atTop_nat 1)).sub hS
+        simpa [Function.comp_def, Finset.sum_range_succ] using h₁
+      obtain ⟨M, hM⟩ := hz.norm.bddAbove_range
+      have hx₀ : 0 < |x₀| := lt_of_le_of_lt (abs_nonneg _) hx
+      have hr₀ : 0 ≤ |x| / |x₀| := div_nonneg (abs_nonneg _) hx₀.le
+      have hr₁ : |x| / |x₀| < 1 := (div_lt_one hx₀).2 hx
+      refine Summable.of_nonneg_of_le (fun n => abs_nonneg _) (fun n => ?_) ((summable_geometric_of_lt_one hr₀ hr₁).mul_left M)
+      have hne : |x₀| ≠ 0 := hx₀.ne'
+      have h₁ : |a n * x ^ n| = |a n * x₀ ^ n| * (|x| / |x₀|) ^ n := by
+        rw [abs_mul, abs_mul, abs_pow, abs_pow, div_pow]
+        field_simp
+      rw [h₁]
+      exact mul_le_mul_of_nonneg_right (hM (Set.mem_range_self n)) (pow_nonneg hr₀ n)
+- id: radius_of_convergence
+  kind: textbook
+  level: 2
+  topic: べき級数・収束半径の存在
+  statement: 実数列aに対して、0以上∞以下の値Rが存在し、|x|<Rでべき級数Σa_n x^nは絶対収束し、|x|>Rでは収束しない。
+  statement_en: For every real sequence a there is R in [0, ∞] such that the power series of a_n x^n converges absolutely for |x| < R and does not converge for |x| > R.
+  assumptions: ["aは実数列"]
+  quantifiers: ["任意の実数列a"]
+  conclusion: 収束半径Rが存在する。
+  answer: |
+    Rを、Σa_n x^nが収束するxについての|x|の上限（値は[0,∞]）とする。|x|<Rなら、上限の性質から|x|<|x_0|かつΣa_n x_0^nが収束するx_0があり、アーベルの補題からxで絶対収束する。|x|>Rなら、xで収束すると|x|≤Rとなり矛盾するので、xでは収束しない。
+  strategy: Take the supremum of |x| over points of convergence and apply Abel's lemma.
+  sketch:
+    - "construct: Let R be the supremum in [0, ∞] of |x| over points where the series converges."
+    - "derive: If |x| < R, there is a point x_0 of convergence with |x| < |x_0|."
+    - "apply_theorem: Abel's lemma gives absolute convergence at x."
+    - "contradiction: If |x| > R and the series converged at x, then |x| ≤ R."
+    - "conclude: R has the required properties."
+  openmath: (forall (a) (exists (r) (and (forall (x) (-> (< (abs x) r) (real_series_summable (lambda (n) (abs (* (seq_value a n) (^ x n))))))) (forall (x) (-> (< r (abs x)) (not (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (* (seq_value a n) (^ x n))) K)) S))))))))
+  hard_negative:
+    statement: "|x|=Rでもべき級数は必ず収束する。"
+    reason: Σx^nはR=1でx=1でもx=-1でも発散し、Σx^n/(n+1)はx=-1で収束しx=1で発散する。境界では個別に調べる必要がある。
+  target: |
+    ∀ (a : ℕ → ℝ), ∃ R : ENNReal, (∀ x : ℝ, ENNReal.ofReal |x| < R → Summable (fun n => |a n * x ^ n|)) ∧ (∀ x : ℝ, R < ENNReal.ofReal |x| → ¬ ∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n * x ^ n) Filter.atTop (nhds S))
+  proof: |
+    by
+      intro a
+      have abel : ∀ x₀ x : ℝ, (∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n * x₀ ^ n) Filter.atTop (nhds S)) → |x| < |x₀| → Summable (fun n => |a n * x ^ n|) := by
+        rintro x₀ x ⟨S, hS⟩ hx
+        have hz : Filter.Tendsto (fun n => a n * x₀ ^ n) Filter.atTop (nhds 0) := by
+          have h₁ := (hS.comp (Filter.tendsto_add_atTop_nat 1)).sub hS
+          simpa [Function.comp_def, Finset.sum_range_succ] using h₁
+        obtain ⟨M, hM⟩ := hz.norm.bddAbove_range
+        have hx₀ : 0 < |x₀| := lt_of_le_of_lt (abs_nonneg _) hx
+        have hr₀ : 0 ≤ |x| / |x₀| := div_nonneg (abs_nonneg _) hx₀.le
+        have hr₁ : |x| / |x₀| < 1 := (div_lt_one hx₀).2 hx
+        refine Summable.of_nonneg_of_le (fun n => abs_nonneg _) (fun n => ?_) ((summable_geometric_of_lt_one hr₀ hr₁).mul_left M)
+        have hne : |x₀| ≠ 0 := hx₀.ne'
+        have h₁ : |a n * x ^ n| = |a n * x₀ ^ n| * (|x| / |x₀|) ^ n := by
+          rw [abs_mul, abs_mul, abs_pow, abs_pow, div_pow]
+          field_simp
+        rw [h₁]
+        exact mul_le_mul_of_nonneg_right (hM (Set.mem_range_self n)) (pow_nonneg hr₀ n)
+      refine ⟨sSup {r | ∃ x : ℝ, (∃ S : ℝ, Filter.Tendsto (fun N => ∑ n ∈ Finset.range N, a n * x ^ n) Filter.atTop (nhds S)) ∧ r = ENNReal.ofReal |x|}, ?_, ?_⟩
+      · intro x hx
+        obtain ⟨r, ⟨x₀, hs, rfl⟩, hr⟩ := lt_sSup_iff.1 hx
+        exact abel x₀ x hs ((ENNReal.ofReal_lt_ofReal_iff_of_nonneg (abs_nonneg x)).1 hr)
+      · intro x hx hs
+        exact absurd hx (not_lt.2 (le_sSup ⟨x, hs, rfl⟩))
+- id: power_series_uniform_on_interval
+  kind: gap
+  level: 2
+  topic: べき級数・閉区間上の一様収束
+  statement: Σ|a_n|r^nが収束するなら、べき級数Σa_n x^nの部分和は[-r,r]上で一様収束する。
+  statement_en: If the series of |a_n| r^n converges, then the partial sums of the power series of a_n x^n converge uniformly on [-r, r].
+  assumptions: ["Σ|a_n|r^nは収束する"]
+  quantifiers: ["任意の実数列aと実数r"]
+  conclusion: 部分和は[-r,r]上でΣa_n x^nに一様収束する。
+  answer: |
+    x∈[-r,r]なら|x|≤rなので|a_n x^n|≤|a_n|r^nである。右辺の級数はxによらず収束する。ワイエルシュトラスのM判定法を適用すると、部分和は[-r,r]上で一様収束する。
+  strategy: Apply the M-test with bounds |a_n| r^n.
+  sketch:
+    - "derive: For |x| ≤ r, |a_n x^n| ≤ |a_n| r^n."
+    - "apply_theorem: The bounds are summable and independent of x, so the M-test applies."
+    - "conclude: The partial sums converge uniformly on [-r, r]."
+  openmath: (forall (a r) (-> (real_series_summable (lambda (n) (* (abs (seq_value a n)) (^ r n)))) (uniform_converges_on (lambda (K x) (real_partial_sum (lambda (n) (* (seq_value a n) (^ x n))) K)) (lambda (x) (real_series_sum (lambda (n) (* (seq_value a n) (^ x n))))) (closed_interval (neg r) r))))
+  hard_negative:
+    statement: べき級数は収束半径の開区間全体で常に一様収束する。
+    reason: Σx^nは(-1,1)で各点収束するが、1の近くで和が非有界なので一様収束しない。
+  target: |
+    ∀ (a : ℕ → ℝ) (r : ℝ), Summable (fun n => |a n| * r ^ n) → TendstoUniformlyOn (fun (N : ℕ) (x : ℝ) => ∑ n ∈ Finset.range N, a n * x ^ n) (fun x => ∑' n, a n * x ^ n) Filter.atTop (Set.Icc (-r) r)
+  proof: |
+    by
+      intro a r h
+      refine tendstoUniformlyOn_tsum_nat (f := fun n x => a n * x ^ n) h (fun n x hx => ?_)
+      rw [Real.norm_eq_abs, abs_mul, abs_pow]
+      exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (abs_nonneg x) (abs_le.2 hx) n) (abs_nonneg _)
+- id: uniform_continuity_eps
+  kind: gap
+  level: 1
+  topic: 一様連続性・ε-δ論法
+  statement: 実関数fが一様連続であることは、任意のε>0に対してδ>0が存在し、|x-y|<δなら|f(x)-f(y)|<εとなることと同値である。
+  statement_en: A real function f is uniformly continuous if and only if for every ε > 0 there is δ > 0 with |f(x) - f(y)| < ε whenever |x - y| < δ.
+  assumptions: ["fは実関数"]
+  quantifiers: ["任意の関数f"]
+  conclusion: 一様連続性とε-δ条件は同値である。
+  answer: |
+    fが一様連続とは、任意のε>0に対して、2点の距離が正数δ未満なら像の距離がε未満となるようなδが、点の位置によらずとれることである。実数の距離は|x-y|で与えられるので、これは右辺の条件そのものである。δがxとyの位置によらない点が各点の連続性との違いである。
+  strategy: Unfold uniform continuity through the metric of ℝ.
+  sketch:
+    - "translate: Uniformity on ℝ is generated by pairs at distance below a positive number."
+    - "translate: Uniform continuity pulls pairs at distance below ε back to pairs at distance below δ."
+    - "conclude: Writing distances as absolute values gives the stated condition."
+  openmath: (forall (f) (<-> (uniform_continuous f) (forall (e) (-> (> e 0) (exists (d) (and (> d 0) (forall (x y) (-> (< (abs (- x y)) d) (< (abs (- (fn_value f x) (fn_value f y))) e)))))))))
+  hard_negative:
+    statement: 全ての点で連続な関数は一様連続である。
+    reason: f(x)=x^2は実数全体で連続だが一様連続ではない。δがxに依存するためである。
+  target: |
+    ∀ (f : ℝ → ℝ), UniformContinuous f ↔ ∀ ε : ℝ, 0 < ε → ∃ δ : ℝ, 0 < δ ∧ ∀ x y : ℝ, |x - y| < δ → |f x - f y| < ε
+  proof: |
+    by
+      intro f
+      rw [Metric.uniformContinuous_iff]
+      simp only [Real.dist_eq, gt_iff_lt, exists_prop]
+- id: heine_cantor
+  kind: named
+  level: 2
+  topic: 一様連続性・ハイネ–カントールの定理
+  statement: 距離空間のコンパクト集合上で連続な写像は、その集合上で一様連続である。
+  statement_en: A map between metric spaces that is continuous on a compact set is uniformly continuous on that set.
+  assumptions: ["X, Yは距離空間", "SはXのコンパクト部分集合", "fはS上で連続"]
+  quantifiers: ["任意の距離空間X, Y, 写像f, 集合S"]
+  conclusion: fはS上で一様連続である。
+  answer: |
+    ε>0とする。各x∈Sに対し、d(y,x)<δ_xかつy∈Sならd(f(y),f(x))<ε/2となるδ_x>0をとる。開球B(x,δ_x/2)はSを覆うので、コンパクト性から有限個x_1,…,x_mで覆える。δをδ_{x_i}/2の最小値とする。y,z∈S、d(y,z)<δなら、yはあるB(x_i,δ_{x_i}/2)に属し、zはB(x_i,δ_{x_i})に属するので、d(f(y),f(z))<εである。
+  strategy: Cover the compact set by half-radius balls from pointwise continuity and take the minimum radius.
+  sketch:
+    - "setup: Fix ε > 0 and choose δ_x from continuity at each x in S."
+    - "apply_theorem: Finitely many balls of radius δ_x/2 cover S."
+    - "construct: Let δ be the smallest of the finitely many half radii."
+    - "derive: Points y, z with d(y,z) < δ both lie in one ball of radius δ_x around a centre."
+    - "conclude: The triangle inequality gives d(f(y), f(z)) < ε."
+  openmath: (forall (f S) (-> (and (compact_set S) (fn_continuous_on (lambda (x) (fn_value f x)) S)) (uniform_continuous_on f S)))
+  hard_negative:
+    statement: 開区間(0,1)上の連続関数は一様連続である。
+    reason: f(x)=1/xは(0,1)で連続だが一様連続ではない。コンパクト性が必要である。
+  target: |
+    ∀ (X Y : Type*) [MetricSpace X] [MetricSpace Y] (f : X → Y) (S : Set X), IsCompact S → ContinuousOn f S → UniformContinuousOn f S
+  proof: |
+    by
+      intro X Y _ _ f S hS hf
+      exact hS.uniformContinuousOn_of_continuous hf
+- id: lipschitz_uniform_continuous
+  kind: gap
+  level: 1
+  topic: リプシッツ連続性・一様連続性
+  statement: 全てのx,yで|f(x)-f(y)|≤K|x-y|を満たす実関数fは一様連続である。
+  statement_en: A real function f satisfying |f(x) - f(y)| ≤ K |x - y| for all x, y is uniformly continuous.
+  assumptions: ["全てのx,yで|f(x)-f(y)|≤K|x-y|"]
+  quantifiers: ["任意の関数fと実数K"]
+  conclusion: fは一様連続である。
+  answer: |
+    ε>0に対してδ=ε/(|K|+1)>0とおく。|x-y|<δなら|f(x)-f(y)|≤K|x-y|≤(|K|+1)|x-y|<(|K|+1)δ=εである。δはxとyによらないのでfは一様連続である。
+  strategy: Choose δ inversely proportional to the Lipschitz constant.
+  sketch:
+    - "construct: Put δ = ε/(|K|+1)."
+    - "derive: If |x - y| < δ then |f(x) - f(y)| ≤ (|K|+1)|x - y| < ε."
+    - "conclude: Since δ does not depend on x or y, f is uniformly continuous."
+  openmath: (forall (f K) (-> (forall (x y) (<= (abs (- (fn_value f x) (fn_value f y))) (* K (abs (- x y))))) (uniform_continuous f)))
+  hard_negative:
+    statement: 一様連続な関数はリプシッツ連続である。
+    reason: √xは[0,1]で一様連続だが、0の近くで差分商が非有界なのでリプシッツ連続ではない。
+  target: |
+    ∀ (f : ℝ → ℝ) (K : ℝ), (∀ x y : ℝ, |f x - f y| ≤ K * |x - y|) → UniformContinuous f
+  proof: |
+    by
+      intro f K h
+      rw [Metric.uniformContinuous_iff]
+      intro ε hε
+      have hK : 0 < |K| + 1 := by positivity
+      refine ⟨ε / (|K| + 1), div_pos hε hK, fun {x y} hxy => ?_⟩
+      rw [Real.dist_eq] at hxy ⊢
+      calc |f x - f y| ≤ K * |x - y| := h x y
+        _ ≤ (|K| + 1) * |x - y| := by
+            apply mul_le_mul_of_nonneg_right _ (abs_nonneg _)
+            linarith [le_abs_self K]
+        _ < (|K| + 1) * (ε / (|K| + 1)) := mul_lt_mul_of_pos_left hxy hK
+        _ = ε := mul_div_cancel₀ ε hK.ne'
+- id: square_not_uniform_continuous
+  kind: gap
+  level: 1
+  topic: 一様連続性・反例
+  statement: 関数f(x)=x^2は実数全体で連続だが一様連続ではない。
+  statement_en: The function f(x) = x^2 is continuous on ℝ but not uniformly continuous.
+  assumptions: ["仮定はない"]
+  quantifiers: ["関数f(x)=x^2"]
+  conclusion: fは連続かつ一様連続でない。
+  answer: |
+    連続性は多項式であることから従う。一様連続とするとε=1に対するδ>0がある。x=1/δ、y=1/δ+δ/2とすると|x-y|=δ/2<δであるが、y^2-x^2=(y-x)(y+x)=1+δ^2/4>1である。これはδの性質に反する。
+  strategy: Take two points at distance δ/2 far from the origin so that their squares differ by more than 1.
+  sketch:
+    - "contradiction: Suppose δ > 0 works for ε = 1."
+    - "construct: Take x = 1/δ and y = 1/δ + δ/2."
+    - "derive: |x - y| < δ but y² - x² = (y - x)(y + x) = 1 + δ²/4 > 1."
+    - "conclude: This contradicts the choice of δ."
+  openmath: (and (fn_continuous (lambda (x) (^ x 2))) (not (forall (e) (-> (> e 0) (exists (d) (and (> d 0) (forall (x y) (-> (< (abs (- x y)) d) (< (abs (- (^ x 2) (^ y 2))) e)))))))))
+  hard_negative:
+    statement: 関数x^2は閉区間[0,1]上でも一様連続ではない。
+    reason: コンパクト集合上の連続関数は一様連続であり、[0,1]上で|x^2-y^2|≤2|x-y|が成り立つ。
+  target: |
+    Continuous (fun x : ℝ => x ^ 2) ∧ ¬ UniformContinuous (fun x : ℝ => x ^ 2)
+  proof: |
+    by
+      refine ⟨continuous_pow 2, fun h => ?_⟩
+      rw [Metric.uniformContinuous_iff] at h
+      obtain ⟨δ, hδ, hd⟩ := h 1 one_pos
+      have h₁ : dist (1 / δ + δ / 2) (1 / δ) < δ := by
+        rw [Real.dist_eq]
+        have h₂ : 1 / δ + δ / 2 - 1 / δ = δ / 2 := by ring
+        rw [h₂, abs_of_pos (by positivity)]
+        linarith
+      have h₃ := hd h₁
+      rw [Real.dist_eq] at h₃
+      have h₄ : (1 / δ + δ / 2) ^ 2 - (1 / δ) ^ 2 = 1 + δ ^ 2 / 4 := by
+        field_simp
+        ring
+      rw [h₄, abs_of_pos (by positivity)] at h₃
+      have h₅ : 0 < δ ^ 2 / 4 := by positivity
+      linarith
+- id: continuous_pos_near
+  kind: gap
+  level: 1
+  topic: 連続関数・正値の近傍での保存
+  statement: fが点aで連続でf(a)>0なら、δ>0が存在して|x-a|<δの全てのxでf(x)>f(a)/2である。特にf(x)>0である。
+  statement_en: If f is continuous at a and f(a) > 0, then there is δ > 0 such that f(x) > f(a)/2 for all x with |x - a| < δ; in particular f(x) > 0 there.
+  assumptions: ["fはaで連続", "f(a)>0"]
+  quantifiers: ["任意の関数fと実数a"]
+  conclusion: あるδ>0で|x-a|<δならf(a)/2<f(x)である。
+  answer: |
+    ε=f(a)/2>0に連続性を適用すると、|x-a|<δなら|f(x)-f(a)|<f(a)/2となるδ>0がある。このときf(x)>f(a)-f(a)/2=f(a)/2>0である。
+  strategy: Apply the ε-δ definition with ε = f(a)/2.
+  sketch:
+    - "setup: Put ε = f(a)/2 > 0."
+    - "apply_theorem: Continuity gives δ > 0 with |f(x) - f(a)| < ε for |x - a| < δ."
+    - "conclude: Then f(x) > f(a) - f(a)/2 = f(a)/2 > 0."
+  openmath: (forall (f a) (-> (and (fn_continuous_at (lambda (x) (fn_value f x)) a) (> (fn_value f a) 0)) (exists (d) (and (> d 0) (forall (x) (-> (< (abs (- x a)) d) (< (/ (fn_value f a) 2) (fn_value f x))))))))
+  hard_negative:
+    statement: f(a)>0でfがaの近傍で定義されていれば、連続でなくてもaの近くでf>0である。
+    reason: x≠0で-1、x=0で1をとる関数はf(0)>0だが0の近くで負である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a : ℝ), ContinuousAt f a → 0 < f a → ∃ δ : ℝ, 0 < δ ∧ ∀ x : ℝ, |x - a| < δ → f a / 2 < f x
+  proof: |
+    by
+      intro f a hf hp
+      obtain ⟨δ, hδ, h⟩ := Metric.continuousAt_iff.1 hf (f a / 2) (half_pos hp)
+      refine ⟨δ, hδ, fun x hx => ?_⟩
+      have h₁ := h (x := x) (by rwa [Real.dist_eq])
+      rw [Real.dist_eq] at h₁
+      have h₂ := (abs_lt.1 h₁).1
+      linarith
+- id: compact_positive_min
+  kind: gap
+  level: 2
+  topic: 連続関数・コンパクト集合上の正の下界
+  statement: 空でないコンパクト集合S上で連続かつ正の関数fには、正の定数cが存在して全てのx∈Sでc≤f(x)である。
+  statement_en: A continuous positive function f on a nonempty compact set S has a positive constant c with c ≤ f(x) for all x in S.
+  assumptions: ["Sは空でないコンパクト集合", "fはS上で連続", "全てのx∈Sで0<f(x)"]
+  quantifiers: ["任意の関数fと集合S"]
+  conclusion: あるc>0で全てのx∈Sについてc≤f(x)である。
+  answer: |
+    コンパクト集合上の連続関数は最小値をとるので、全てのx∈Sでf(x_0)≤f(x)となるx_0∈Sがある。c=f(x_0)とおくと、仮定からc>0である。よってcが求める定数である。
+  strategy: Take c as the minimum value attained on the compact set.
+  sketch:
+    - "apply_theorem: f attains a minimum at some x_0 in S."
+    - "derive: c = f(x_0) is positive by hypothesis."
+    - "conclude: c ≤ f(x) for all x in S."
+  openmath: (forall (f S) (-> (and (compact_set S) (exists (x) (in x S)) (fn_continuous_on (lambda (x) (fn_value f x)) S) (forall (x) (-> (in x S) (> (fn_value f x) 0)))) (exists (c) (and (> c 0) (forall (x) (-> (in x S) (<= c (fn_value f x))))))))
+  hard_negative:
+    statement: 開区間(0,1)上で連続かつ正の関数には正の下界がある。
+    reason: f(x)=xは(0,1)で連続かつ正だが、下限は0である。コンパクト性が必要である。
+  target: |
+    ∀ (f : ℝ → ℝ) (S : Set ℝ), IsCompact S → S.Nonempty → ContinuousOn f S → (∀ x ∈ S, 0 < f x) → ∃ c : ℝ, 0 < c ∧ ∀ x ∈ S, c ≤ f x
+  proof: |
+    by
+      intro f S hS hne hf hp
+      obtain ⟨x₀, hx₀, hmin⟩ := hS.exists_isMinOn hne hf
+      exact ⟨f x₀, hp x₀ hx₀, fun x hx => hmin hx⟩
+- id: continuous_bump_function
+  kind: gap
+  level: 1
+  topic: 連続関数・三角形のこぶ関数
+  statement: 任意の点aとδ>0に対して、連続で非負、φ(a)=1、|x-a|≥δでφ(x)=0となる関数φが存在する。
+  statement_en: For every point a and δ > 0 there is a continuous nonnegative function φ with φ(a) = 1 and φ(x) = 0 whenever |x - a| ≥ δ.
+  assumptions: ["δ>0"]
+  quantifiers: ["任意の実数a, δ"]
+  conclusion: 条件を満たす連続関数φが存在する。
+  answer: |
+    φ(x)=max(0,1-|x-a|/δ)とおく。連続関数の合成と最大値なのでφは連続であり、定義から非負である。x=aではφ(a)=max(0,1)=1である。|x-a|≥δなら1-|x-a|/δ≤0なのでφ(x)=0である。
+  strategy: Use the explicit triangular function centred at a.
+  sketch:
+    - "construct: Put φ(x) = max(0, 1 - |x-a|/δ)."
+    - "derive: φ is continuous and nonnegative."
+    - "derive: φ(a) = 1."
+    - "conclude: If |x - a| ≥ δ the second argument is nonpositive, so φ(x) = 0."
+  openmath: (forall (a d) (-> (> d 0) (exists (g) (and (fn_continuous (lambda (x) (fn_value g x))) (forall (x) (<= 0 (fn_value g x))) (= (fn_value g a) 1) (forall (x) (-> (<= d (abs (- x a))) (= (fn_value g x) 0)))))))
+  hard_negative:
+    statement: f(a)=1で|x-a|≥δなら0となる連続関数は、全ての点で微分可能である。
+    reason: 三角形の関数max(0,1-|x-a|/δ)はx=aとx=a±δで微分可能でない。
+  target: |
+    ∀ (a δ : ℝ), 0 < δ → ∃ φ : ℝ → ℝ, Continuous φ ∧ (∀ x, 0 ≤ φ x) ∧ φ a = 1 ∧ ∀ x, δ ≤ |x - a| → φ x = 0
+  proof: |
+    by
+      intro a δ hδ
+      refine ⟨fun x => max 0 (1 - |x - a| / δ), ?_, fun x => le_max_left _ _, ?_, fun x hx => ?_⟩
+      · exact continuous_const.max (continuous_const.sub (((continuous_id.sub continuous_const).abs).div_const δ))
+      · simp
+      · have h₁ : 1 ≤ |x - a| / δ := (one_le_div hδ).2 hx
+        exact max_eq_left (by linarith)
+- id: weierstrass_approximation
+  kind: named
+  level: 2
+  topic: 関数近似・ワイエルシュトラスの多項式近似定理
+  statement: 閉区間[a,b]上の連続関数は、任意のε>0に対して、[a,b]上で誤差ε未満の実係数多項式で近似できる。
+  statement_en: Every continuous function on [a, b] can be approximated on [a, b] within any ε > 0 by a polynomial with real coefficients.
+  assumptions: ["fは[a,b]で連続", "ε>0"]
+  quantifiers: ["任意の関数f, 実数a, b, ε"]
+  conclusion: 全てのx∈[a,b]で|p(x)-f(x)|<εとなる多項式pが存在する。
+  answer: |
+    概略を述べる。変数変換で[0,1]の場合に帰着し、ベルンシュタイン多項式B_n(x)=Σ_k f(k/n)C(n,k)x^k(1-x)^{n-k}を考える。Σ_k C(n,k)x^k(1-x)^{n-k}=1から、誤差はk/nがxに近い項と遠い項に分けて評価できる。近い項は一様連続性で小さく、遠い項は二項分布の分散x(1-x)/n≤1/(4n)を使ったチェビシェフ型の評価で小さい。よってB_nはfに一様収束する。
+  strategy: Use Bernstein polynomials and split the error into near and far terms.
+  sketch:
+    - "translate: Rescale the interval to [0, 1]."
+    - "construct: Form the Bernstein polynomials B_n of f."
+    - "derive: Near terms are small by uniform continuity."
+    - "derive: Far terms are small by the variance bound of the binomial distribution."
+    - "conclude: B_n converges to f uniformly on [0, 1]."
+  openmath: (forall (f a b e) (-> (and (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (> e 0)) (exists (p) (and (real_polynomial p) (forall (x) (-> (in x (closed_interval a b)) (< (abs (- (fn_value p x) (fn_value f x))) e)))))))
+  hard_negative:
+    statement: 実数全体で連続な関数は、実数全体で一様に多項式で近似できる。
+    reason: 指数関数と任意の多項式の差は実数全体で有界にならない。一様近似はコンパクト集合上の主張である。
+  target: |
+    ∀ (a b : ℝ) (f : ℝ → ℝ) (ε : ℝ), ContinuousOn f (Set.Icc a b) → 0 < ε → ∃ p : Polynomial ℝ, ∀ x ∈ Set.Icc a b, |p.eval x - f x| < ε
+  proof: |
+    by
+      intro a b f ε hf hε
+      exact exists_polynomial_near_of_continuousOn a b f hf ε hε
+- id: arzela_ascoli
+  kind: named
+  level: 3
+  topic: 関数列・アスコリ–アルツェラの定理
+  statement: コンパクト空間X上の有界連続実関数の列が一様に有界かつ同程度連続なら、一様収束する部分列をもつ。
+  statement_en: A uniformly bounded equicontinuous sequence of bounded continuous real functions on a compact space X has a uniformly convergent subsequence.
+  assumptions: ["Xはコンパクト空間", "f_nはX上の有界連続実関数", "全てのnとxで|f_n(x)|≤M", "列fは同程度連続"]
+  quantifiers: ["任意の空間X, 関数列f, 実数M"]
+  conclusion: 狭義単調増加な添字列φと有界連続関数gが存在して、f_φ(n)はgに一様収束する。
+  answer: |
+    概略を述べる。同程度連続性とXのコンパクト性から、任意のε>0についてXを有限個の開集合で覆い、各開集合の中では全てのf_nの変動がε未満となるようにできる。各開集合から代表点をとると、関数列の値は有界な有限次元の箱に入るので、族は一様ノルムで全有界になる。完備距離空間の全有界集合の閉包はコンパクトである。したがって列は一様ノルムで収束する部分列をもつ。
+  strategy: Show total boundedness in the sup norm from equicontinuity on a finite cover, then use compactness.
+  sketch:
+    - "setup: Fix ε > 0 and cover X by finitely many open sets where all f_n vary by less than ε."
+    - "construct: Sample each f_n at one point of each set."
+    - "derive: Boundedness makes the samples range in a compact box, so finitely many patterns suffice."
+    - "derive: Therefore the family is totally bounded in the sup norm."
+    - "apply_theorem: The closure of the family is compact in the complete space."
+    - "conclude: The sequence has a subsequence converging uniformly."
+  openmath: (forall (X f M) (-> (and (compact_space X) (forall (n) (bounded_continuous_on (seq_value f n) X)) (forall (n x) (<= (abs (fn_value (seq_value f n) x)) M)) (equicontinuous_family f)) (exists (g p) (and (bounded_continuous_on g X) (strict_mono_index p) (uniform_converges_on (lambda (n x) (fn_value (seq_value f (fn_value p n)) x)) (lambda (x) (fn_value g x)) X)))))
+  hard_negative:
+    statement: "[0,1]上の一様有界な連続関数列は一様収束する部分列をもつ。"
+    reason: f_n(x)=x^nは一様有界だが同程度連続でなく、どの部分列も連続関数に一様収束しない。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] [CompactSpace X] (f : ℕ → BoundedContinuousFunction X ℝ) (M : ℝ), (∀ n x, |f n x| ≤ M) → Equicontinuous (fun n x => f n x) → ∃ (g : BoundedContinuousFunction X ℝ) (φ : ℕ → ℕ), StrictMono φ ∧ TendstoUniformly (fun n x => f (φ n) x) (fun x => g x) Filter.atTop
+  proof: |
+    by
+      intro X _ _ f M hb he
+      have hA : Equicontinuous ((↑) : (Set.range f) → X → ℝ) := by
+        intro x U hU
+        filter_upwards [he x U hU] with y hy
+        rintro ⟨_, n, rfl⟩
+        exact hy n
+      have hcl : IsCompact (closure (Set.range f)) :=
+        BoundedContinuousFunction.arzela_ascoli (Set.Icc (-M) M) isCompact_Icc (Set.range f)
+          (by
+            rintro _ x ⟨n, rfl⟩
+            exact abs_le.1 (hb n x)) hA
+      obtain ⟨g, -, φ, hφ, hg⟩ := hcl.tendsto_subseq (x := f) (fun n => subset_closure (Set.mem_range_self n))
+      exact ⟨g, φ, hφ, (BoundedContinuousFunction.tendsto_iff_tendstoUniformly).1 hg⟩

@@ -1,0 +1,29 @@
+# Proposed additive OpenMath vocabulary for undergraduate real analysis.
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of reals"}
+fn_continuous_at: {args: [term_function, term], returns: prop, meaning: "f is continuous at the point a"}
+fn_continuous_on: {args: [term_function, term], returns: prop, meaning: "f is continuous on the set S"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u"}
+is_lub: {args: [term, term], returns: prop, meaning: "a is the least upper bound of the set S"}
+is_glb: {args: [term, term], returns: prop, meaning: "a is the greatest lower bound of the set S"}
+seq_monotone: {args: [term], returns: prop, meaning: "the real sequence a is nondecreasing"}
+seq_antitone: {args: [term], returns: prop, meaning: "the real sequence a is nonincreasing"}
+seq_cauchy: {args: [term], returns: prop, meaning: "the real sequence a is a Cauchy sequence"}
+strict_mono_index: {args: [term], returns: prop, meaning: "the index map from naturals to naturals is strictly increasing"}
+seq_limsup: {args: [term], returns: term, meaning: "limit superior of the real sequence a"}
+seq_liminf: {args: [term], returns: term, meaning: "limit inferior of the real sequence a"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by a lambda converges to L"}
+seq_fn_tends_to_infinity: {args: [term_function], returns: prop, meaning: "the sequence given by a lambda diverges to plus infinity"}
+real_series_summable: {args: [term_function], returns: prop, meaning: "the series of the terms given by a lambda converges unconditionally"}
+real_series_sum: {args: [term_function], returns: term, meaning: "the sum of the series of the terms given by a lambda"}
+real_partial_sum: {args: [term_function, term], returns: term, meaning: "sum of the first N terms given by a lambda"}
+permutation_of_naturals: {args: [term], returns: prop, meaning: "s is a bijection from the naturals to the naturals"}
+uniform_converges_on: {args: [term_function, term_function, term], returns: prop, meaning: "the function sequence given by a two-variable lambda converges uniformly on S to the function given by a lambda"}
+uniform_continuous: {args: [term], returns: prop, meaning: "f is uniformly continuous"}
+uniform_continuous_on: {args: [term, term], returns: prop, meaning: "f is uniformly continuous on the set S"}
+compact_set: {args: [term], returns: prop, meaning: "S is a compact set"}
+real_polynomial: {args: [term], returns: prop, meaning: "p is a polynomial function with real coefficients"}
+equicontinuous_family: {args: [term], returns: prop, meaning: "the family of functions F is equicontinuous"}
+compact_space: {args: [term], returns: prop, meaning: "X is a compact topological space"}
+bounded_continuous_on: {args: [term, term], returns: prop, meaning: "f is a bounded continuous real function on the space X"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b; arguments a, b, f"}

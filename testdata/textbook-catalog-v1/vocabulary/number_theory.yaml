@@ -1,0 +1,15 @@
+# Proposed additive OpenMath vocabulary for elementary number theory.
+binomial: {args: [term, term], returns: term, meaning: "binomial coefficient C(n,k)"}
+prime_multiset: {args: [term], returns: prop, meaning: "s is a finite multiset all of whose elements are prime"}
+multiset_prod: {args: [term], returns: term, meaning: "product of the elements of a finite multiset"}
+euler_phi: {args: [term], returns: term, meaning: "Euler totient function of n"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+multiplicative_order: {args: [term, term], returns: term, meaning: "multiplicative order of a modulo n"}
+sum_over_divisors: {args: [term, term_function], returns: term, meaning: "sum of f(d) over the positive divisors d of n"}
+legendre_symbol: {args: [term, term], returns: term, meaning: "Legendre symbol (a/p)"}
+moebius: {args: [term], returns: term, meaning: "Moebius function of n"}
+padic_valuation: {args: [term, term], returns: term, meaning: "exponent of the prime q in the factorization of n"}
+gaussian_int: {args: [], returns: term, meaning: "the ring of Gaussian integers Z[i]"}
+gaussian_norm: {args: [term], returns: term, meaning: "norm a^2+b^2 of the Gaussian integer a+bi"}
+gaussian_prime: {args: [term], returns: prop, meaning: "x is a prime element of Z[i]"}
+holds_at: {args: [term, term], returns: prop, meaning: "the predicate P holds at n"}

@@ -1,0 +1,1923 @@
+- id: subgroup_one_step_test
+  kind: gap
+  level: 2
+  topic: 群論・部分群の判定
+  statement: 群Gの空でない部分集合Sが、任意のa,b∈Sでab⁻¹∈Sを満たすなら、SはGの部分群である。
+  statement_en: A nonempty subset S of a group G with ab⁻¹ ∈ S for all a, b ∈ S is the underlying set of a subgroup of G.
+  assumptions: [Gは群, SはGの空でない部分集合, 任意のa∈Sとb∈Sでab⁻¹∈S]
+  quantifiers: [任意の群Gと部分集合S]
+  conclusion: Sを台集合とするGの部分群が存在する。
+  answer: |
+    Sの元xを1つとると、x x⁻¹=1がSに入る。次にb∈Sなら1·b⁻¹=b⁻¹もSに入る。さらにa,b∈Sならb⁻¹∈Sなので、a(b⁻¹)⁻¹=abもSに入る。単位元、逆元、積で閉じているから、Sは部分群である。
+  strategy: Derive the identity, then inverses, then products from the single closure condition.
+  sketch:
+    - "setup: Pick x in S, which exists because S is nonempty."
+    - "derive: Apply the condition to (x, x) to get 1 in S."
+    - "derive: Apply it to (1, b) to get b⁻¹ in S for each b in S."
+    - "derive: Apply it to (a, b⁻¹) to get ab in S."
+    - "conclude: S satisfies the subgroup axioms."
+  openmath: (forall (G S) (-> (and (group G) (subset S G) (exists (x) (in x S)) (forall (a b) (-> (and (in a S) (in b S)) (in (group_mul a (group_inv b)) S)))) (subgroup_of S G)))
+  hard_negative:
+    statement: 群Gの空でない部分集合で積について閉じていれば、常に部分群である。
+    reason: 整数の加法群で正の整数全体は和で閉じているが、逆元を含まないので部分群ではない。
+  target: |
+    ∀ (G : Type*) [Group G] (S : Set G), S.Nonempty → (∀ a ∈ S, ∀ b ∈ S, a * b⁻¹ ∈ S) → ∃ H : Subgroup G, (H : Set G) = S
+  proof: |
+    by
+      intro G _ S hne hS
+      obtain ⟨x, hx⟩ := hne
+      have h1 : (1 : G) ∈ S := by simpa using hS x hx x hx
+      have hinv : ∀ b ∈ S, b⁻¹ ∈ S := fun b hb => by simpa using hS 1 h1 b hb
+      exact ⟨{ carrier := S
+               mul_mem' := fun {a b} ha hb => by simpa using hS a ha b⁻¹ (hinv b hb)
+               one_mem' := h1
+               inv_mem' := fun {b} hb => hinv b hb }, rfl⟩
+- id: finite_closed_subset_is_subgroup
+  kind: gap
+  level: 2
+  topic: 群論・部分群の判定
+  statement: 群Gの空でない有限部分集合Sが積について閉じていれば、SはGの部分群である。
+  statement_en: A nonempty finite subset of a group that is closed under multiplication is the underlying set of a subgroup.
+  assumptions: [Gは群, SはGの空でない有限部分集合, Sは積について閉じている]
+  quantifiers: [任意の群Gと部分集合S]
+  conclusion: Sを台集合とするGの部分群が存在する。
+  answer: |
+    a∈Sとすると、正の冪a, a², a³, ... はすべてSに入る。Sは有限なので、ある自然数i<jでa^i=a^jとなり、消去するとa^(j-i)=1を得る。したがって1はSに入る。j-i=1ならa=1なのでa⁻¹=a∈Sであり、j-i≥2ならa⁻¹=a^(j-i-1)∈Sである。よってSは単位元と逆元を含み、部分群である。
+  strategy: Use the pigeonhole principle on powers of an element to produce a positive power equal to 1.
+  sketch:
+    - "setup: Fix a in S and note that every positive power of a lies in S."
+    - "derive: Finiteness of S gives i < j with a^i = a^j."
+    - "derive: Cancel to obtain a^(j-i) = 1, so 1 lies in S."
+    - "case_split: If j-i = 1 then a = 1; otherwise a⁻¹ = a^(j-i-1) is a positive power."
+    - "conclude: S contains the identity and inverses and is closed under products."
+  openmath: (forall (G S) (-> (and (group G) (subset S G) (exists (n) (and (in n N) (= (size S) n))) (exists (x) (in x S)) (forall (a b) (-> (and (in a S) (in b S)) (in (group_mul a b) S)))) (subgroup_of S G)))
+  hard_negative:
+    statement: 群の空でない部分集合が積で閉じていれば、無限集合でも部分群である。
+    reason: 有限性が必要である。整数の加法群の正の整数全体は和で閉じるが部分群ではない。
+  target: |
+    ∀ (G : Type*) [Group G] (S : Set G), S.Finite → S.Nonempty → (∀ a ∈ S, ∀ b ∈ S, a * b ∈ S) → ∃ H : Subgroup G, (H : Set G) = S
+  proof: |
+    by
+      intro G _ S hfin hne hmul
+      have hpow : ∀ a ∈ S, ∀ n : ℕ, a ^ (n + 1) ∈ S := by
+        intro a ha n
+        induction n with
+        | zero => simpa using ha
+        | succ n ih =>
+          rw [pow_succ]
+          exact hmul _ ih _ ha
+      have hinv : ∀ a ∈ S, a⁻¹ ∈ S ∧ (1 : G) ∈ S := by
+        intro a ha
+        obtain ⟨i, j, hij, h⟩ := hfin.exists_lt_map_eq_of_forall_mem (fun n => hpow a ha n)
+        obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_lt hij
+        have h0 : a ^ (i + 1) = a ^ (i + k + 1 + 1) := h
+        have hk : a ^ (k + 1) = 1 := by
+          have h' : a ^ (i + 1) * a ^ (k + 1) = a ^ (i + 1) * 1 := by
+            rw [mul_one, ← pow_add, h0]
+            congr 1
+            omega
+          exact mul_left_cancel h'
+        refine ⟨?_, hk ▸ hpow a ha k⟩
+        cases k with
+        | zero =>
+          have ha1 : a = 1 := by simpa using hk
+          simpa [ha1] using ha
+        | succ m =>
+          have : a⁻¹ = a ^ (m + 1) := by
+            apply inv_eq_of_mul_eq_one_right
+            rw [← pow_succ']
+            exact hk
+          rw [this]
+          exact hpow a ha m
+      obtain ⟨x, hx⟩ := hne
+      exact ⟨{ carrier := S
+               mul_mem' := fun {a b} ha hb => hmul a ha b hb
+               one_mem' := (hinv x hx).2
+               inv_mem' := fun {a} ha => (hinv a ha).1 }, rfl⟩
+- id: subgroup_union_iff_comparable
+  kind: gap
+  level: 2
+  topic: 群論・部分群の和集合
+  statement: 群Gの部分群H,Kについて、和集合H∪Kが部分群であることと、H⊆KまたはK⊆Hであることは同値である。
+  statement_en: For subgroups H and K of a group, the union H ∪ K is a subgroup if and only if H ⊆ K or K ⊆ H.
+  assumptions: [Gは群, HとKはGの部分群]
+  quantifiers: [任意の群Gと部分群H, K]
+  conclusion: H∪Kが部分群であることと、HとKの一方が他方に含まれることは同値である。
+  answer: |
+    一方が他方に含まれるなら、和集合は大きい方の部分群に等しい。逆に、H∪Kが部分群でH⊆KもK⊆Hも成り立たないと仮定し、a∈H∖Kとb∈K∖Hをとる。積abはH∪Kに入る。ab∈Hならb=a⁻¹(ab)∈Hとなり矛盾する。ab∈Kならa=(ab)b⁻¹∈Kとなり、これも矛盾する。
+  strategy: Argue by contradiction with witnesses a in H outside K and b in K outside H, and locate ab.
+  sketch:
+    - "translate: If one subgroup contains the other, the union equals the larger subgroup."
+    - "setup: Assume the union L is a subgroup and neither inclusion holds."
+    - "construct: Choose a in H outside K and b in K outside H."
+    - "case_split: The product ab lies in H or in K."
+    - "contradiction: In the first case b lies in H; in the second case a lies in K."
+  openmath: (forall (G H K) (-> (and (group G) (subgroup_of H G) (subgroup_of K G)) (<-> (subgroup_of (union H K) G) (or (subset H K) (subset K H)))))
+  hard_negative:
+    statement: 群の2つの部分群の和集合は常に部分群である。
+    reason: Z/2×Z/2の異なる位数2の部分群2つの和集合は元を3個しか持たず、位数がラグランジュの定理に反するので部分群にならない。
+  target: |
+    ∀ (G : Type*) [Group G] (H K : Subgroup G), (∃ L : Subgroup G, (L : Set G) = (H : Set G) ∪ (K : Set G)) ↔ (H ≤ K ∨ K ≤ H)
+  proof: |
+    by
+      intro G _ H K
+      constructor
+      · rintro ⟨L, hL⟩
+        by_contra hcon
+        rw [not_or] at hcon
+        obtain ⟨h1, h2⟩ := hcon
+        obtain ⟨a, haH, haK⟩ := SetLike.not_le_iff_exists.mp h1
+        obtain ⟨b, hbK, hbH⟩ := SetLike.not_le_iff_exists.mp h2
+        have haL : a ∈ L := by
+          have : a ∈ (L : Set G) := by
+            rw [hL]
+            exact Or.inl haH
+          exact this
+        have hbL : b ∈ L := by
+          have : b ∈ (L : Set G) := by
+            rw [hL]
+            exact Or.inr hbK
+          exact this
+        have hab : a * b ∈ (L : Set G) := L.mul_mem haL hbL
+        rw [hL] at hab
+        rcases hab with h | h
+        · exact hbH (by simpa using H.mul_mem (H.inv_mem haH) h)
+        · exact haK (by simpa using K.mul_mem h (K.inv_mem hbK))
+      · rintro (h | h)
+        · exact ⟨K, (Set.union_eq_self_of_subset_left (SetLike.coe_subset_coe.mpr h)).symm⟩
+        · exact ⟨H, (Set.union_eq_self_of_subset_right (SetLike.coe_subset_coe.mpr h)).symm⟩
+- id: subgroup_product_iff_permutable
+  kind: gap
+  level: 3
+  topic: 群論・部分群の積
+  statement: 群Gの部分群H,Kについて、積集合HKが部分群であることとHK=KHであることは同値である。
+  statement_en: For subgroups H and K of a group, the product set HK is a subgroup if and only if HK = KH.
+  assumptions: [Gは群, HとKはGの部分群]
+  quantifiers: [任意の群Gと部分群H, K]
+  conclusion: HKが部分群であることとHK=KHは同値である。
+  answer: |
+    HKが部分群とする。x∈HKならx⁻¹∈HKなのでx⁻¹=hkと書け、x=k⁻¹h⁻¹∈KHとなる。逆にkh∈KHではk,hがともにHKに入るから、積khもHKに入る。よってHK=KHである。逆にHK=KHとすると、(h₁k₁)(h₂k₂)のk₁h₂はKH=HKに入るのでh₃k₃と書け、積は(h₁h₃)(k₃k₂)∈HKとなる。逆元(hk)⁻¹=k⁻¹h⁻¹もKH=HKに入り、1=1·1∈HKだからHKは部分群である。
+  strategy: Use inversion for the forward direction and swap the middle factors for the converse.
+  sketch:
+    - "setup: Let HK be the set of products hk and KH the set of products kh."
+    - "derive: If HK is a subgroup, then inverting x in HK writes x as an element of KH."
+    - "derive: If HK is a subgroup, it contains H and K and so contains every kh."
+    - "construct: If HK = KH, define the subgroup with carrier HK."
+    - "derive: Rewrite k₁h₂ as h₃k₃ to show closure under products."
+    - "derive: Inverses of hk lie in KH = HK."
+    - "conclude: Both implications hold."
+  openmath: (forall (G H K) (-> (and (group G) (subgroup_of H G) (subgroup_of K G)) (<-> (subgroup_of (subgroup_product H K) G) (= (subgroup_product H K) (subgroup_product K H)))))
+  hard_negative:
+    statement: 群の2つの部分群の積集合HKは常に部分群である。
+    reason: S₃で異なる互換が生成する位数2の部分群H,Kでは、HKは4元で6の約数でない位数を持つので部分群にならない。
+  target: |
+    ∀ (G : Type*) [Group G] (H K : Subgroup G), (∃ L : Subgroup G, (L : Set G) = {x : G | ∃ h ∈ H, ∃ k ∈ K, x = h * k}) ↔ {x : G | ∃ h ∈ H, ∃ k ∈ K, x = h * k} = {x : G | ∃ k ∈ K, ∃ h ∈ H, x = k * h}
+  proof: |
+    by
+      intro G _ H K
+      constructor
+      · rintro ⟨L, hL⟩
+        have hmem : ∀ x : G, x ∈ L ↔ ∃ h ∈ H, ∃ k ∈ K, x = h * k := fun x => by
+          have : x ∈ (L : Set G) ↔ x ∈ {x : G | ∃ h ∈ H, ∃ k ∈ K, x = h * k} := by rw [hL]
+          exact this
+        ext x
+        constructor
+        · rintro ⟨h, hh, k, hk, rfl⟩
+          have hx : h * k ∈ L := (hmem _).2 ⟨h, hh, k, hk, rfl⟩
+          obtain ⟨h', hh', k', hk', he⟩ := (hmem _).1 (L.inv_mem hx)
+          refine ⟨k'⁻¹, K.inv_mem hk', h'⁻¹, H.inv_mem hh', ?_⟩
+          rw [← mul_inv_rev, ← he, inv_inv]
+        · rintro ⟨k, hk, h, hh, rfl⟩
+          have hkL : k ∈ L := (hmem _).2 ⟨1, H.one_mem, k, hk, by simp⟩
+          have hhL : h ∈ L := (hmem _).2 ⟨h, hh, 1, K.one_mem, by simp⟩
+          exact (hmem _).1 (L.mul_mem hkL hhL)
+      · intro hcomm
+        have hswap : ∀ k ∈ K, ∀ h ∈ H, ∃ h' ∈ H, ∃ k' ∈ K, k * h = h' * k' := by
+          intro k hk h hh
+          have : k * h ∈ {x : G | ∃ k ∈ K, ∃ h ∈ H, x = k * h} := ⟨k, hk, h, hh, rfl⟩
+          rw [← hcomm] at this
+          exact this
+        refine ⟨{ carrier := {x : G | ∃ h ∈ H, ∃ k ∈ K, x = h * k}
+                  mul_mem' := ?_
+                  one_mem' := ⟨1, H.one_mem, 1, K.one_mem, by simp⟩
+                  inv_mem' := ?_ }, rfl⟩
+        · rintro _ _ ⟨h₁, hh₁, k₁, hk₁, rfl⟩ ⟨h₂, hh₂, k₂, hk₂, rfl⟩
+          obtain ⟨h₃, hh₃, k₃, hk₃, he⟩ := hswap k₁ hk₁ h₂ hh₂
+          refine ⟨h₁ * h₃, H.mul_mem hh₁ hh₃, k₃ * k₂, K.mul_mem hk₃ hk₂, ?_⟩
+          calc h₁ * k₁ * (h₂ * k₂) = h₁ * (k₁ * h₂) * k₂ := by group
+            _ = h₁ * (h₃ * k₃) * k₂ := by rw [he]
+            _ = h₁ * h₃ * (k₃ * k₂) := by group
+        · rintro _ ⟨h, hh, k, hk, rfl⟩
+          obtain ⟨h', hh', k', hk', he⟩ := hswap k⁻¹ (K.inv_mem hk) h⁻¹ (H.inv_mem hh)
+          exact ⟨h', hh', k', hk', by rw [mul_inv_rev, he]⟩
+- id: left_coset_eq_iff_inv_mul_mem
+  kind: gap
+  level: 2
+  topic: 群論・剰余類
+  statement: 群Gの部分群Hとa,b∈Gについて、aH=bHであることとa⁻¹b∈Hであることは同値である。
+  statement_en: For a subgroup H of a group and elements a, b, the left cosets aH and bH are equal if and only if a⁻¹b ∈ H.
+  assumptions: [Gは群, HはGの部分群, a, bはGの元]
+  quantifiers: [任意の群G、部分群H、元a, b]
+  conclusion: aH=bHとa⁻¹b∈Hは同値である。
+  answer: |
+    aH=bHならb=b·1はaHに入るので、b=ahとなるh∈Hがあり、a⁻¹b=h∈Hである。逆にa⁻¹b=c∈Hとする。元ahはb c⁻¹hと書けて、c⁻¹h∈HなのでbHに入る。元bhはa c hと書けるのでaHに入る。したがってaH=bHである。
+  strategy: Extract b as an element of aH for one direction and translate coset elements by a⁻¹b for the other.
+  sketch:
+    - "derive: If aH = bH, then b lies in aH, so a⁻¹b is in H."
+    - "setup: Conversely set c = a⁻¹b in H."
+    - "derive: Each ah equals b(c⁻¹h), which lies in bH."
+    - "derive: Each bh equals a(ch), which lies in aH."
+    - "conclude: The two cosets coincide."
+  openmath: (forall (G H a b) (-> (and (group G) (subgroup_of H G) (in a G) (in b G)) (<-> (= (left_coset a H) (left_coset b H)) (in (group_mul (group_inv a) b) H))))
+  hard_negative:
+    statement: aH=bHであることとab⁻¹∈Hであることは同値である。
+    reason: ab⁻¹∈Hが対応するのは右剰余類の等式Ha=Hbである。Hが正規でないとき、S₃などで左剰余類の条件とは一致しない。
+  target: |
+    ∀ (G : Type*) [Group G] (H : Subgroup G) (a b : G), {x : G | ∃ h ∈ H, x = a * h} = {x : G | ∃ h ∈ H, x = b * h} ↔ a⁻¹ * b ∈ H
+  proof: |
+    by
+      intro G _ H a b
+      constructor
+      · intro h
+        have hb : b ∈ {x : G | ∃ h ∈ H, x = b * h} := ⟨1, H.one_mem, by simp⟩
+        rw [← h] at hb
+        obtain ⟨c, hc, he⟩ := hb
+        rw [he]
+        simpa using hc
+      · intro hab
+        ext x
+        constructor
+        · rintro ⟨c, hc, rfl⟩
+          exact ⟨(a⁻¹ * b)⁻¹ * c, H.mul_mem (H.inv_mem hab) hc, by group⟩
+        · rintro ⟨c, hc, rfl⟩
+          exact ⟨(a⁻¹ * b) * c, H.mul_mem hab hc, by group⟩
+- id: left_cosets_eq_or_disjoint
+  kind: gap
+  level: 2
+  topic: 群論・剰余類
+  statement: 群Gの部分群Hの2つの左剰余類aH,bHは、一致するか互いに素である。
+  statement_en: Two left cosets aH and bH of a subgroup H are either equal or disjoint.
+  assumptions: [Gは群, HはGの部分群, a, bはGの元]
+  quantifiers: [任意の群G、部分群H、元a, b]
+  conclusion: aH=bHであるか、aHとbHの共通部分は空である。
+  answer: |
+    a⁻¹b∈Hのときは、ah=b((a⁻¹b)⁻¹h)とbh=a((a⁻¹b)h)からaH=bHである。a⁻¹b∉Hとする。共通元があればac=bdとなるc,d∈Hがとれ、a⁻¹b=cd⁻¹∈Hとなって矛盾する。したがってこの場合aHとbHは互いに素である。
+  strategy: Case split on whether a⁻¹b lies in H.
+  sketch:
+    - "case_split: Either a⁻¹b lies in H or it does not."
+    - "derive: In the first case translating by a⁻¹b identifies the two cosets."
+    - "setup: In the second case suppose ac = bd with c, d in H."
+    - "contradiction: Then a⁻¹b = cd⁻¹ lies in H."
+    - "conclude: The cosets are equal or disjoint."
+  openmath: (forall (G H a b) (-> (and (group G) (subgroup_of H G) (in a G) (in b G)) (or (= (left_coset a H) (left_coset b H)) (= (inter (left_coset a H) (left_coset b H)) emptyset))))
+  hard_negative:
+    statement: 左剰余類aHと右剰余類Hbは、一致するか互いに素である。
+    reason: S₃で非正規な位数2の部分群Hをとると、左剰余類と右剰余類はちょうど1元だけ共有することがある。
+  target: |
+    ∀ (G : Type*) [Group G] (H : Subgroup G) (a b : G), {x : G | ∃ h ∈ H, x = a * h} = {x : G | ∃ h ∈ H, x = b * h} ∨ Disjoint {x : G | ∃ h ∈ H, x = a * h} {x : G | ∃ h ∈ H, x = b * h}
+  proof: |
+    by
+      intro G _ H a b
+      by_cases hab : a⁻¹ * b ∈ H
+      · left
+        ext x
+        constructor
+        · rintro ⟨c, hc, rfl⟩
+          exact ⟨(a⁻¹ * b)⁻¹ * c, H.mul_mem (H.inv_mem hab) hc, by group⟩
+        · rintro ⟨c, hc, rfl⟩
+          exact ⟨(a⁻¹ * b) * c, H.mul_mem hab hc, by group⟩
+      · right
+        rw [Set.disjoint_left]
+        rintro x ⟨c, hc, rfl⟩ ⟨d, hd, hx⟩
+        apply hab
+        have hb : b = a * c * d⁻¹ := by
+          rw [hx]
+          group
+        rw [hb]
+        have : a⁻¹ * (a * c * d⁻¹) = c * d⁻¹ := by group
+        rw [this]
+        exact H.mul_mem hc (H.inv_mem hd)
+- id: lagrange_theorem
+  kind: named
+  level: 2
+  topic: 群論・ラグランジュの定理
+  statement: ラグランジュの定理。有限群Gの部分群Hについて、指数と位数の積[G:H]|H|は|G|に等しく、特に|H|は|G|を割り切る。
+  statement_en: "Lagrange's theorem: for a subgroup H of a finite group G, [G:H]·|H| = |G|, and in particular |H| divides |G|."
+  assumptions: [Gは有限群, HはGの部分群]
+  quantifiers: [任意の有限群Gと部分群H]
+  conclusion: "[G:H]|H|=|G|であり、|H|は|G|を割り切る。"
+  answer: |
+    左剰余類はGを互いに素な部分集合に分割する。各左剰余類aHは写像h↦ahによりHと全単射で対応するので、元の個数は|H|である。左剰余類の個数は定義より[G:H]だから、元の個数を数えて|G|=[G:H]|H|を得る。特に|H|は|G|を割り切る。
+  strategy: Partition G into left cosets of equal size.
+  sketch:
+    - "translate: The left cosets of H partition G."
+    - "derive: Every coset is in bijection with H."
+    - "derive: Count elements coset by coset to get |G| = [G:H]·|H|."
+    - "conclude: Divisibility of |G| by |H| follows."
+  openmath: (forall (G H) (-> (and (finite_group G) (subgroup_of H G)) (and (= (* (subgroup_index H G) (size H)) (size G)) (dvd (size H) (size G)))))
+  hard_negative:
+    statement: 有限群の位数の任意の約数dに対して、位数dの部分群が存在する。
+    reason: ラグランジュの定理の逆は成り立たない。A₄の位数は12だが位数6の部分群を持たない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (H : Subgroup G), H.index * Nat.card H = Nat.card G ∧ Nat.card H ∣ Nat.card G
+  proof: |
+    by
+      intro G _ _ H
+      exact ⟨H.index_mul_card, Subgroup.card_subgroup_dvd_card H⟩
+- id: element_order_dvd_group_order
+  kind: textbook
+  level: 2
+  topic: 群論・元の位数
+  statement: 有限群Gの元gの位数は|G|を割り切り、g^|G|=1が成り立つ。
+  statement_en: In a finite group G, the order of every element g divides |G|, and g^|G| = 1.
+  assumptions: [Gは有限群, gはGの元]
+  quantifiers: [任意の有限群Gと元g]
+  conclusion: gの位数は|G|を割り切り、g^|G|=1である。
+  answer: |
+    gの生成する巡回部分群⟨g⟩の位数はgの位数に等しい。ラグランジュの定理より⟨g⟩の位数は|G|を割り切るので、gの位数mは|G|を割り切る。|G|=mqと書くと、g^|G|=(g^m)^q=1である。
+  strategy: Apply Lagrange to the cyclic subgroup generated by g.
+  sketch:
+    - "translate: The order of g equals the order of the cyclic subgroup generated by g."
+    - "apply_theorem: Lagrange gives that this order divides |G|."
+    - "derive: Write |G| = mq with m the order of g."
+    - "conclude: Then g^|G| = (g^m)^q = 1."
+  openmath: (forall (G g) (-> (and (finite_group G) (in g G)) (and (dvd (element_order g) (size G)) (= (group_pow g (size G)) (group_identity G)))))
+  hard_negative:
+    statement: 有限群Gの位数|G|の任意の約数は、ある元の位数である。
+    reason: Z/2×Z/2の位数は4だが位数4の元を持たない。この主張は巡回群でしか一般には成り立たない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (g : G), orderOf g ∣ Nat.card G ∧ g ^ Nat.card G = 1
+  proof: |
+    by
+      intro G _ _ g
+      exact ⟨orderOf_dvd_natCard g, pow_card_eq_one'⟩
+- id: prime_order_group_facts
+  kind: textbook
+  level: 2
+  topic: 群論・素数位数の群
+  statement: 位数が素数pの群は巡回群であり、部分群は自明群と全体しかなく、単位元でない元はすべて生成元である。
+  statement_en: A group of prime order p is cyclic, has only the trivial subgroup and itself as subgroups, and every non-identity element generates it.
+  assumptions: [pは素数, Gは位数pの群]
+  quantifiers: [任意の素数pと位数pの群G]
+  conclusion: Gは巡回群で、部分群は自明群とGのみであり、g≠1なら⟨g⟩=Gである。
+  answer: |
+    部分群の位数はラグランジュの定理によりpの約数であるから1かpであり、部分群は自明群か全体に限る。g≠1なら⟨g⟩は自明群でないのでGに等しく、gは生成元である。pは2以上なので単位元でない元が存在し、Gは巡回群である。
+  strategy: Lagrange restricts subgroup orders to 1 or p.
+  sketch:
+    - "apply_theorem: By Lagrange a subgroup has order 1 or p."
+    - "derive: So every subgroup is trivial or all of G."
+    - "derive: For g ≠ 1 the subgroup generated by g is nontrivial, hence equals G."
+    - "conclude: A non-identity element exists since p ≥ 2, so G is cyclic."
+  openmath: (forall (G p) (-> (and (group G) (in p P) (= (size G) p)) (and (cyclic_group G) (forall (H) (-> (subgroup_of H G) (or (= H (trivial_subgroup G)) (= H G)))) (forall (g) (-> (and (in g G) (!= g (group_identity G))) (= (cyclic_subgroup g) G))))))
+  hard_negative:
+    statement: 位数が素数冪p²の群も、部分群が自明群と全体しかない。
+    reason: 巡回群Z/p²にはpZ/p²という位数pの部分群がある。
+  target: |
+    ∀ (G : Type*) [Group G] (p : ℕ), p.Prime → Nat.card G = p → IsCyclic G ∧ (∀ H : Subgroup G, H = ⊥ ∨ H = ⊤) ∧ (∀ g : G, g ≠ 1 → Subgroup.zpowers g = ⊤)
+  proof: |
+    by
+      intro G _ p hp hG
+      haveI : Fact p.Prime := ⟨hp⟩
+      haveI : Fact (Nat.card G).Prime := ⟨hG ▸ hp⟩
+      exact ⟨isCyclic_of_prime_card hG, fun H => H.eq_bot_or_eq_top_of_prime_card, fun g hg => zpowers_eq_top_of_prime_card hG hg⟩
+- id: index_tower_law
+  kind: gap
+  level: 2
+  topic: 群論・指数
+  statement: 有限群Gの部分群H≤Kについて、[G:H]=[K:H][G:K]が成り立つ。
+  statement_en: For subgroups H ≤ K of a finite group G, [G:H] = [K:H]·[G:K].
+  assumptions: [Gは有限群, HとKはGの部分群, H≤K]
+  quantifiers: [任意の有限群Gと部分群H, K]
+  conclusion: "[G:H]=[K:H][G:K]である。"
+  answer: |
+    ラグランジュの定理より|G|=[G:H]|H|、|G|=[G:K]|K|、|K|=[K:H]|H|が成り立つ。これらから[G:H]|H|=[G:K][K:H]|H|である。|H|は正なので消去でき、[G:H]=[K:H][G:K]を得る。
+  strategy: Apply Lagrange three times and cancel |H|.
+  sketch:
+    - "apply_theorem: Write Lagrange for H in G, K in G and H in K."
+    - "derive: Substitute to get [G:H]|H| = [G:K][K:H]|H|."
+    - "conclude: Cancel the positive integer |H|."
+  openmath: (forall (G H K) (-> (and (finite_group G) (subgroup_of H G) (subgroup_of K G) (subset H K)) (= (subgroup_index H G) (* (subgroup_index H K) (subgroup_index K G)))))
+  hard_negative:
+    statement: 有限群の任意の部分群H,Kで[G:H]=[K:H∩K][G:K]がH≤Kなしでも成り立つ。
+    reason: G=S₃でH,Kを位数2の異なる部分群とすると、左辺は3、右辺は2·3=6で一致しない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (H K : Subgroup G), H ≤ K → H.index = H.relIndex K * K.index
+  proof: |
+    by
+      intro G _ _ H K h
+      exact (Subgroup.relIndex_mul_index h).symm
+- id: coprime_order_subgroups_trivial_intersection
+  kind: gap
+  level: 2
+  topic: 群論・ラグランジュの定理
+  statement: 有限群の部分群H,Kの位数が互いに素なら、H∩Kは自明群である。
+  statement_en: If two subgroups of a finite group have coprime orders, their intersection is trivial.
+  assumptions: [Gは有限群, HとKはGの部分群, HとKの位数は互いに素]
+  quantifiers: [任意の有限群Gと部分群H, K]
+  conclusion: H∩K={1}である。
+  answer: |
+    H∩KはHとKの両方の部分群である。ラグランジュの定理より|H∩K|は|H|と|K|の公約数であり、互いに素の仮定から1に等しい。よってH∩Kは単位元だけからなる。
+  strategy: The order of the intersection is a common divisor of the two orders.
+  sketch:
+    - "translate: H ∩ K is a subgroup of both H and K."
+    - "apply_theorem: Lagrange shows its order divides |H| and |K|."
+    - "conclude: Coprimality forces the order to be 1."
+  openmath: (forall (G H K) (-> (and (finite_group G) (subgroup_of H G) (subgroup_of K G) (= (gcd (size H) (size K)) 1)) (= (inter H K) (trivial_subgroup G))))
+  hard_negative:
+    statement: H∩Kが自明群なら、|H|と|K|は互いに素である。
+    reason: 逆は成り立たない。Z/2×Z/2の異なる位数2の部分群は共通部分が自明だが、位数は等しく2である。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (H K : Subgroup G), Nat.Coprime (Nat.card H) (Nat.card K) → H ⊓ K = ⊥
+  proof: |
+    by
+      intro G _ _ H K h
+      exact disjoint_iff.mp (Subgroup.disjoint_of_coprime_natCard h)
+- id: order_of_power_formula
+  kind: gap
+  level: 2
+  topic: 群論・元の位数
+  statement: 群の有限位数の元gと自然数nについて、g^nの位数はord(g)/gcd(ord(g),n)である。
+  statement_en: If g has finite order in a group and n is a natural number, the order of g^n is ord(g)/gcd(ord(g), n).
+  assumptions: [Gは群, gは有限位数の元, nは自然数]
+  quantifiers: [任意の群G、有限位数の元g、自然数n]
+  conclusion: ord(g^n)=ord(g)/gcd(ord(g),n)である。
+  answer: |
+    m=ord(g)、d=gcd(m,n)とする。(g^n)^k=1はmがnkを割り切ることと同値であり、これはm/dがk(n/d)を割り切ることと同値である。m/dとn/dは互いに素なので、この条件はm/dがkを割り切ることと同値になる。よってg^nの位数はm/dである。n=0の場合はg^0=1の位数が1で、右辺もm/m=1である。
+  strategy: Translate (g^n)^k = 1 into a divisibility statement and divide by the gcd.
+  sketch:
+    - "setup: Let m be the order of g and d = gcd(m, n)."
+    - "translate: (g^n)^k = 1 holds exactly when m divides nk."
+    - "derive: This is equivalent to m/d dividing k(n/d)."
+    - "derive: Since m/d and n/d are coprime, it is equivalent to m/d dividing k."
+    - "conclude: Therefore the order of g^n is m/d."
+  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N) (exists (m) (and (in m N) (> m 0) (= (element_order g) m)))) (= (element_order (group_pow g n)) (/ (element_order g) (gcd (element_order g) n)))))
+  hard_negative:
+    statement: g^nの位数は常にord(g)/nである。
+    reason: nがord(g)を割り切らないと成り立たない。ord(g)=4、n=3ではg³の位数は4である。
+  target: |
+    ∀ (G : Type*) [Group G] (g : G) (n : ℕ), IsOfFinOrder g → orderOf (g ^ n) = orderOf g / Nat.gcd (orderOf g) n
+  proof: |
+    by
+      intro G _ g n hg
+      by_cases hn : n = 0
+      · subst hn
+        simp [Nat.div_self hg.orderOf_pos]
+      · exact orderOf_pow' g hn
+- id: pow_eq_one_iff_order_dvd
+  kind: gap
+  level: 2
+  topic: 群論・元の位数
+  statement: 群の元gと自然数nについて、gの位数が有限ならg^n=1とord(g)∣nは同値であり、gの位数が無限ならg^n=1とn=0は同値である。
+  statement_en: "For a group element g and a natural number n: if g has finite order, then g^n = 1 if and only if ord(g) divides n; if g has infinite order, then g^n = 1 if and only if n = 0."
+  assumptions: [Gは群, gはGの元, nは自然数]
+  quantifiers: [任意の群G、元g、自然数n]
+  conclusion: 位数が有限ならg^n=1とord(g)∣nは同値であり、位数が無限ならg^n=1とn=0は同値である。
+  answer: |
+    gの位数が有限でmとする。n=mq+r、0≤r<mと割り算すると、g^n=g^rである。g^n=1ならg^r=1となり、mの最小性からr=0、すなわちm∣nである。逆にm∣nならg^n=(g^m)^q=1である。無限位数の場合は正のnでg^n≠1であり、g^0=1なので、g^n=1とn=0は同値である。
+  strategy: Divide n by the order with remainder and use minimality.
+  sketch:
+    - "setup: Let m be the order of g and write n = mq + r with 0 ≤ r < m."
+    - "derive: Then g^n = g^r."
+    - "derive: Minimality of m forces r = 0 when g^n = 1."
+    - "derive: Conversely m | n gives g^n = (g^m)^q = 1."
+    - "case_split: In infinite order no positive power of g equals 1, so g^n = 1 exactly when n = 0."
+  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N)) (and (-> (> (element_order g) 0) (<-> (= (group_pow g n) (group_identity G)) (dvd (element_order g) n))) (-> (not (> (element_order g) 0)) (<-> (= (group_pow g n) (group_identity G)) (= n 0))))))
+  hard_negative:
+    statement: g^n=1ならnはgの位数に等しい。
+    reason: nは位数の倍数であればよい。位数2の元gではg⁴=1だが4≠2である。
+  target: |
+    ∀ (G : Type*) [Group G] (g : G) (n : ℕ), (IsOfFinOrder g → (g ^ n = 1 ↔ orderOf g ∣ n)) ∧ (¬ IsOfFinOrder g → (g ^ n = 1 ↔ n = 0))
+  proof: |
+    by
+      intro G _ g n
+      refine ⟨fun _ => orderOf_dvd_iff_pow_eq_one.symm, fun hg => ?_⟩
+      rw [← orderOf_dvd_iff_pow_eq_one, orderOf_eq_zero hg, zero_dvd_iff]
+- id: commuting_coprime_order_product
+  kind: gap
+  level: 2
+  topic: 群論・元の位数
+  statement: 群の可換な元a,bの位数が有限で互いに素なら、abの位数は位数の積ord(a)ord(b)である。
+  statement_en: If commuting group elements a and b have finite coprime orders, then the order of ab is ord(a)·ord(b).
+  assumptions: [Gは群, a, bは可換, a, bの位数は有限で互いに素]
+  quantifiers: [任意の群Gと元a, b]
+  conclusion: ord(ab)=ord(a)ord(b)である。
+  answer: |
+    m=ord(a)、n=ord(b)とする。可換なので(ab)^(mn)=(a^m)^n(b^n)^m=1である。逆に(ab)^k=1とすると、a^k=b^(-k)の両辺をn乗してa^(kn)=1となり、m∣knから互いに素よりm∣kを得る。同様にn∣kである。mとnは互いに素だからmn∣kとなり、abの位数はmnである。
+  strategy: Show mn kills ab, then force any exponent killing ab to be divisible by m and n.
+  sketch:
+    - "setup: Let m and n be the orders of a and b."
+    - "derive: Commutativity gives (ab)^(mn) = 1."
+    - "setup: Suppose (ab)^k = 1."
+    - "derive: Raising a^k = b^(-k) to the n-th power gives a^(kn) = 1."
+    - "derive: Coprimality gives m | k, and symmetrically n | k."
+    - "conclude: Then mn | k, so the order of ab is mn."
+  openmath: (forall (G a b) (-> (and (group G) (in a G) (in b G) (= (group_mul a b) (group_mul b a)) (> (element_order a) 0) (> (element_order b) 0) (= (gcd (element_order a) (element_order b)) 1)) (= (element_order (group_mul a b)) (* (element_order a) (element_order b)))))
+  hard_negative:
+    statement: 非可換な群でも位数が互いに素な元a,bの積の位数はord(a)ord(b)である。
+    reason: 可換性が必要である。S₃の位数2の元と位数3の元の積は互換になり、位数は6でなく2である。
+  target: |
+    ∀ (G : Type*) [Group G] (a b : G), Commute a b → IsOfFinOrder a → IsOfFinOrder b → Nat.Coprime (orderOf a) (orderOf b) → orderOf (a * b) = orderOf a * orderOf b
+  proof: |
+    by
+      intro G _ a b hab _ _ hc
+      exact hab.orderOf_mul_eq_mul_orderOf_of_coprime hc
+- id: exponent_two_group_is_abelian
+  kind: gap
+  level: 2
+  topic: 群論・可換性
+  statement: 群Gの任意の元gがg²=1を満たすなら、Gは可換群である。
+  statement_en: A group in which every element squares to the identity is abelian.
+  assumptions: [Gは群, 任意のg∈Gでg²=1]
+  quantifiers: [任意の群G, 任意のa, b∈G]
+  conclusion: ab=baである。
+  answer: |
+    g²=1からg⁻¹=gが任意の元で成り立つ。したがってab=(ab)⁻¹=b⁻¹a⁻¹=baである。
+  strategy: Every element is its own inverse, so inverting a product swaps its factors.
+  sketch:
+    - "translate: g² = 1 means g⁻¹ = g for every g."
+    - "derive: ab = (ab)⁻¹ = b⁻¹a⁻¹ = ba."
+  openmath: (forall (G) (-> (and (group G) (forall (g) (-> (in g G) (= (group_pow g 2) (group_identity G))))) (forall (a b) (-> (and (in a G) (in b G)) (= (group_mul a b) (group_mul b a))))))
+  hard_negative:
+    statement: 任意の元がg³=1を満たす群は可換群である。
+    reason: F₃上の3次上三角ユニポテント行列のなす位数27の群は、任意の元がg³=1を満たすが非可換である。
+  target: |
+    ∀ (G : Type*) [Group G], (∀ g : G, g ^ 2 = 1) → ∀ a b : G, a * b = b * a
+  proof: |
+    by
+      intro G _ h a b
+      have hinv : ∀ g : G, g⁻¹ = g := fun g => inv_eq_of_mul_eq_one_left (by rw [← pow_two]; exact h g)
+      calc a * b = (a * b)⁻¹ := (hinv _).symm
+        _ = b⁻¹ * a⁻¹ := mul_inv_rev _ _
+        _ = b * a := by rw [hinv, hinv]
+- id: cyclic_group_abelian_subgroups_quotients
+  kind: gap
+  level: 2
+  topic: 群論・巡回群
+  statement: 巡回群は可換であり、その部分群と剰余群はすべて巡回群である。
+  statement_en: A cyclic group is abelian, and all of its subgroups and quotient groups are cyclic.
+  assumptions: [Gは巡回群]
+  quantifiers: [任意の巡回群G、部分群H、正規部分群N]
+  conclusion: Gは可換で、HとG/Nは巡回群である。
+  answer: |
+    Gの生成元をgとすると、任意の2元はg^m, g^nと書けて、g^m g^n=g^(m+n)=g^n g^mである。部分群Hについて、H≠{1}ならHに属するgの正の冪のうち指数が最小のものをg^dとする。割り算によりHの元の指数はdの倍数となるので、H=⟨g^d⟩である。G/Nは自然な全射によるgの像で生成されるから巡回群である。
+  strategy: Use powers of a generator; for subgroups take the least positive exponent.
+  sketch:
+    - "setup: Fix a generator g of G."
+    - "derive: Powers of g commute, so G is abelian."
+    - "construct: For a nontrivial subgroup H take the least positive d with g^d in H."
+    - "derive: Division with remainder shows H is generated by g^d."
+    - "derive: The image of g generates the quotient G/N."
+  openmath: (forall (G) (-> (cyclic_group G) (and (abelian_group G) (forall (H) (-> (subgroup_of H G) (cyclic_group H))) (forall (N) (-> (normal_subgroup N G) (cyclic_group (quotient_group G N)))))))
+  hard_negative:
+    statement: 真の部分群と真の剰余群がすべて巡回群である群は、常に巡回群である。
+    reason: pを素数とするZ/p×Z/pでは、真の部分群と真の剰余群はすべて巡回群だが、全体は巡回群でない。
+  target: |
+    ∀ (G : Type*) [Group G] [IsCyclic G], (∀ a b : G, a * b = b * a) ∧ (∀ H : Subgroup G, IsCyclic H) ∧ (∀ (N : Subgroup G) [N.Normal], IsCyclic (G ⧸ N))
+  proof: |
+    by
+      intro G _ _
+      refine ⟨?_, fun H => inferInstance, ?_⟩
+      · intro a b
+        obtain ⟨g, hg⟩ := IsCyclic.exists_generator (α := G)
+        obtain ⟨m, rfl⟩ := Subgroup.mem_zpowers_iff.mp (hg a)
+        obtain ⟨n, rfl⟩ := Subgroup.mem_zpowers_iff.mp (hg b)
+        exact zpow_mul_comm g m n
+      · intro N _
+        exact isCyclic_of_surjective (QuotientGroup.mk' N) (QuotientGroup.mk'_surjective N)
+- id: finite_cyclic_unique_subgroup_of_each_order
+  kind: textbook
+  level: 3
+  topic: 群論・巡回群
+  statement: 有限巡回群Gの位数の各約数dに対して、位数dの部分群がただ1つ存在する。
+  statement_en: A finite cyclic group G has exactly one subgroup of order d for each divisor d of |G|.
+  assumptions: [Gは有限巡回群, dは|G|の約数]
+  quantifiers: [任意の有限巡回群Gと|G|の約数d]
+  conclusion: 位数dの部分群がただ1つ存在する。
+  answer: |
+    生成元gの位数をn=|G|とする。g^(n/d)の位数はn/(n/d)=dなので、⟨g^(n/d)⟩は位数dの部分群である。一意性を示す。方程式x^d=1の解はx=g^kでnがkdを割り切るものであり、解の個数は高々dである。位数dの部分群Hの元はすべてこの方程式を満たす。Hはd個の元を持つから、Hは解全体の集合に一致する。したがって位数dの部分群は1つに定まる。
+  strategy: Construct the subgroup from a power of a generator and identify any such subgroup with the solutions of x^d = 1.
+  sketch:
+    - "construct: Take a generator g and the subgroup generated by g^(n/d)."
+    - "derive: Its order is d by the formula for the order of a power."
+    - "derive: The equation x^d = 1 has at most d solutions in a cyclic group."
+    - "derive: A subgroup of order d lies in the solution set by Lagrange."
+    - "conclude: By counting, the subgroup equals the solution set, so it is unique."
+  openmath: (forall (G d) (-> (and (finite_group G) (cyclic_group G) (dvd d (size G))) (and (exists (H) (and (subgroup_of H G) (= (size H) d))) (forall (H K) (-> (and (subgroup_of H G) (subgroup_of K G) (= (size H) d) (= (size K) d)) (= H K))))))
+  hard_negative:
+    statement: 有限アーベル群でも、位数の各約数に対して部分群がただ1つ存在する。
+    reason: 存在は成り立つが一意性は成り立たない。Z/2×Z/2には位数2の部分群が3個ある。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] [IsCyclic G] (d : ℕ), d ∣ Nat.card G → ∃! H : Subgroup G, Nat.card H = d
+  proof: |
+    by
+      classical
+      intro G _ _ _ d hd
+      haveI : Fintype G := Fintype.ofFinite G
+      have hn : 0 < Nat.card G := Nat.card_pos
+      have hd0 : 0 < d := Nat.pos_of_dvd_of_pos hd hn
+      obtain ⟨g, hg⟩ := IsCyclic.exists_ofOrder_eq_natCard (α := G)
+      have hq : Nat.card G / d ∣ orderOf g := by
+        rw [hg]
+        exact Nat.div_dvd_of_dvd hd
+      have hq0 : Nat.card G / d ≠ 0 := (Nat.div_pos (Nat.le_of_dvd hn hd) hd0).ne'
+      have hcard : ∀ H : Subgroup G, Nat.card H = d → (H : Set G) = {a : G | a ^ d = 1} := by
+        intro H hH
+        have hsub : (H : Set G) ⊆ {a : G | a ^ d = 1} := by
+          intro x hx
+          have hx' : (⟨x, hx⟩ : H) ^ Nat.card H = 1 := pow_card_eq_one'
+          rw [hH] at hx'
+          simpa using congrArg Subtype.val hx'
+        have hle : (Finset.univ.filter fun a : G => a ^ d = 1).card ≤ d := IsCyclic.card_pow_eq_one_le hd0
+        have hset : {a : G | a ^ d = 1} = ↑(Finset.univ.filter fun a : G => a ^ d = 1) := by
+          ext a
+          simp
+        have hHcard : (H : Set G).ncard = d := by
+          rw [← Nat.card_coe_set_eq]
+          exact hH
+        apply Set.eq_of_subset_of_ncard_le hsub
+        rw [hHcard, hset, Set.ncard_coe_finset]
+        exact hle
+      refine ⟨Subgroup.zpowers (g ^ (Nat.card G / d)), ?_, ?_⟩
+      · change Nat.card (Subgroup.zpowers (g ^ (Nat.card G / d))) = d
+        rw [Nat.card_zpowers, orderOf_pow_of_dvd hq0 hq, hg]
+        exact Nat.div_div_self hd hn.ne'
+      · intro K hK
+        have h1 := hcard K hK
+        have h2 : Nat.card (Subgroup.zpowers (g ^ (Nat.card G / d))) = d := by
+          rw [Nat.card_zpowers, orderOf_pow_of_dvd hq0 hq, hg]
+          exact Nat.div_div_self hd hn.ne'
+        have h3 := hcard _ h2
+        exact SetLike.coe_injective (h1.trans h3.symm)
+- id: cyclic_center_quotient_implies_abelian
+  kind: gap
+  level: 3
+  topic: 群論・中心
+  statement: 群Gの中心Z(G)による剰余群G/Z(G)が巡回群なら、Gは可換群である。
+  statement_en: If the quotient of a group by its center is cyclic, then the group is abelian.
+  assumptions: [Gは群, G/Z(G)は巡回群]
+  quantifiers: [任意の群G, 任意のa, b∈G]
+  conclusion: ab=baである。
+  answer: |
+    G/Z(G)の生成元の代表元をgとする。Gの任意の元はg^m zの形に書ける。ここでzはZ(G)の元である。2元g^m zとg^n wの積では、zとwが中心の元でありgの冪どうしは可換なので、順序を入れ替えても値が変わらない。よってGは可換である。
+  strategy: Write elements as a power of a coset representative times a central element.
+  sketch:
+    - "setup: Choose g whose image generates G/Z(G)."
+    - "translate: Every element has the form g^m z with z central."
+    - "derive: Products of two such elements commute."
+    - "conclude: G is abelian."
+  openmath: (forall (G) (-> (and (group G) (cyclic_group (quotient_group G (group_center G)))) (abelian_group G)))
+  hard_negative:
+    statement: 群Gの任意の正規部分群Nについて、G/Nが巡回群ならGは可換群である。
+    reason: Nが中心に含まれることが必要である。S₃とN=A₃ではG/Nは位数2の巡回群だがS₃は非可換である。
+  target: |
+    ∀ (G : Type*) [Group G], IsCyclic (G ⧸ Subgroup.center G) → ∀ a b : G, a * b = b * a
+  proof: |
+    by
+      intro G _ hc a b
+      haveI := hc
+      exact (isMulCommutative_of_isCyclic_quotient_center_self (G := G)).is_comm.comm a b
+- id: normal_iff_left_coset_eq_right_coset
+  kind: gap
+  level: 2
+  topic: 群論・正規部分群
+  statement: 群Gの部分群Hが正規であることと、任意のg∈GでgH=Hgであることは同値である。
+  statement_en: A subgroup H of a group G is normal if and only if gH = Hg for every g in G.
+  assumptions: [Gは群, HはGの部分群]
+  quantifiers: [任意の群Gと部分群H]
+  conclusion: Hが正規であることと、すべてのgでgH=Hgであることは同値である。
+  answer: |
+    Hが正規とする。gh=(ghg⁻¹)gでghg⁻¹∈Hなのでgh∈Hgである。hg=g(g⁻¹hg)でg⁻¹hg∈Hなのでhg∈gHである。よってgH=Hgである。逆にgH=Hgなら、n∈Hに対しgn∈Hgなのでgn=hgとなるh∈Hがあり、gng⁻¹=h∈Hである。
+  strategy: Move g across elements of H using conjugation.
+  sketch:
+    - "derive: If H is normal, gh = (ghg⁻¹)g lies in Hg."
+    - "derive: If H is normal, hg = g(g⁻¹hg) lies in gH."
+    - "setup: Conversely assume gH = Hg and take n in H."
+    - "derive: Writing gn = hg gives gng⁻¹ = h in H."
+    - "conclude: The two conditions are equivalent."
+  openmath: (forall (G H) (-> (and (group G) (subgroup_of H G)) (<-> (normal_subgroup H G) (forall (g) (-> (in g G) (= (left_coset g H) (right_coset H g)))))))
+  hard_negative:
+    statement: Hが正規ならば、任意のg∈Gとh∈Hでgh=hgである。
+    reason: 集合として等しいだけで元ごとの可換性は言えない。S₃のA₃は正規だが、互換と3サイクルは可換でない。
+  target: |
+    ∀ (G : Type*) [Group G] (H : Subgroup G), H.Normal ↔ ∀ g : G, {x : G | ∃ h ∈ H, x = g * h} = {x : G | ∃ h ∈ H, x = h * g}
+  proof: |
+    by
+      intro G _ H
+      constructor
+      · intro hN g
+        ext x
+        constructor
+        · rintro ⟨h, hh, rfl⟩
+          exact ⟨g * h * g⁻¹, hN.conj_mem h hh g, by group⟩
+        · rintro ⟨h, hh, rfl⟩
+          exact ⟨g⁻¹ * h * g, by simpa using hN.conj_mem h hh g⁻¹, by group⟩
+      · intro hc
+        refine ⟨fun n hn g => ?_⟩
+        have hmem : g * n ∈ {x : G | ∃ h ∈ H, x = g * h} := ⟨n, hn, rfl⟩
+        rw [hc g] at hmem
+        obtain ⟨h, hh, he⟩ := hmem
+        rw [he]
+        simpa using hh
+- id: index_two_subgroup_is_normal
+  kind: gap
+  level: 2
+  topic: 群論・正規部分群
+  statement: 群Gの指数2の部分群は正規部分群である。
+  statement_en: Every subgroup of index 2 in a group is normal.
+  assumptions: [Gは群, HはGの部分群, 指数は2]
+  quantifiers: [任意の群Gと部分群H]
+  conclusion: Hは正規部分群である。
+  answer: |
+    左剰余類はHとその補集合の2つであり、右剰余類も同じくHとその補集合である。g∈HならgH=H=Hgである。g∉HならgHとHgはどちらもHの補集合に等しい。したがって常にgH=Hgが成り立ち、Hは正規である。
+  strategy: The cosets of an index-two subgroup are forced to be H and its complement on both sides.
+  sketch:
+    - "translate: With index 2, the left cosets and the right cosets are both H and its complement."
+    - "case_split: Either g lies in H or it does not."
+    - "derive: In each case gH = Hg."
+    - "conclude: H is normal."
+  openmath: (forall (G H) (-> (and (group G) (subgroup_of H G) (= (subgroup_index H G) 2)) (normal_subgroup H G)))
+  hard_negative:
+    statement: 指数3の部分群は常に正規部分群である。
+    reason: S₃の位数2の部分群は指数3だが正規でない。
+  target: |
+    ∀ (G : Type*) [Group G] (H : Subgroup G), H.index = 2 → H.Normal
+  proof: |
+    by
+      intro G _ H h
+      exact Subgroup.normal_of_index_eq_two h
+- id: kernel_normal_and_injective_iff_trivial
+  kind: gap
+  level: 2
+  topic: 群論・準同型
+  statement: 群準同型fの核は正規部分群であり、fが単射であることと核が自明であることは同値である。
+  statement_en: The kernel of a group homomorphism f is a normal subgroup, and f is injective if and only if its kernel is trivial.
+  assumptions: [GとHは群, f:G→Hは準同型]
+  quantifiers: [任意の群G, Hと準同型f]
+  conclusion: ker fは正規で、fが単射であることとker f={1}は同値である。
+  answer: |
+    n∈ker fとg∈Gについてf(gng⁻¹)=f(g)f(g)⁻¹=1なので、核は正規である。fが単射ならf(x)=1=f(1)からx=1である。逆に核が自明でf(x)=f(y)ならf(x⁻¹y)=1なのでx⁻¹y=1となり、x=yである。
+  strategy: Compute f on conjugates and on quotients x⁻¹y.
+  sketch:
+    - "derive: f(gng⁻¹) = f(g)f(n)f(g)⁻¹ = 1 for n in the kernel."
+    - "derive: If f is injective, f(x) = 1 = f(1) gives x = 1."
+    - "derive: If the kernel is trivial, f(x) = f(y) gives x⁻¹y = 1."
+    - "conclude: The kernel is normal and the equivalence holds."
+  openmath: (forall (f G H) (-> (group_hom f G H) (and (normal_subgroup (group_kernel f) G) (<-> (injective_function f) (= (group_kernel f) (trivial_subgroup G))))))
+  hard_negative:
+    statement: 群準同型の像は常に終域の正規部分群である。
+    reason: 位数2の部分群をS₃へ包含する写像の像は正規でない。像が部分群になることしか言えない。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (f : G →* H), f.ker.Normal ∧ (Function.Injective f ↔ f.ker = ⊥)
+  proof: |
+    by
+      intro G H _ _ f
+      exact ⟨inferInstance, (MonoidHom.ker_eq_bot_iff f).symm⟩
+- id: normal_subgroup_under_hom
+  kind: gap
+  level: 2
+  topic: 群論・正規部分群
+  statement: 群準同型f:G→Hについて、Hの正規部分群の逆像はGの正規部分群であり、fが全射ならGの正規部分群の像はHの正規部分群である。
+  statement_en: For a group homomorphism f from G to H, the preimage of a normal subgroup of H is normal in G, and if f is surjective the image of a normal subgroup of G is normal in H.
+  assumptions: [GとHは群, f:G→Hは準同型]
+  quantifiers: [任意の群G, H、準同型f、正規部分群]
+  conclusion: 逆像は正規であり、全射なら像も正規である。
+  answer: |
+    NがHの正規部分群でf(x)∈Nなら、f(gxg⁻¹)=f(g)f(x)f(g)⁻¹∈Nなので逆像は正規である。fが全射でMがGの正規部分群とする。h∈Hはh=f(g)と書けて、m∈Mに対しh f(m) h⁻¹=f(gmg⁻¹)∈f(M)となる。よって像も正規である。
+  strategy: Conjugate through f, using surjectivity to lift the conjugating element.
+  sketch:
+    - "derive: For x in the preimage, f(gxg⁻¹) = f(g)f(x)f(g)⁻¹ lies in N."
+    - "setup: Assume f is surjective and write h = f(g)."
+    - "derive: Then h f(m) h⁻¹ = f(gmg⁻¹) lies in f(M)."
+    - "conclude: Preimages and surjective images of normal subgroups are normal."
+  openmath: (forall (f G H) (-> (group_hom f G H) (and (forall (N) (-> (normal_subgroup N H) (normal_subgroup (subgroup_preimage f N) G))) (-> (surjective_function f) (forall (M) (-> (normal_subgroup M G) (normal_subgroup (subgroup_image f M) H)))))))
+  hard_negative:
+    statement: 全射でない準同型でも、正規部分群の像は常に正規である。
+    reason: 位数2の群からS₃への単射で、位数2の群全体は正規だが、像は正規でない。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (f : G →* H), (∀ N : Subgroup H, N.Normal → (N.comap f).Normal) ∧ (Function.Surjective f → ∀ M : Subgroup G, M.Normal → (M.map f).Normal)
+  proof: |
+    by
+      intro G H _ _ f
+      exact ⟨fun N hN => hN.comap f, fun hf M hM => hM.map f hf⟩
+- id: disjoint_normal_subgroups_commute
+  kind: gap
+  level: 2
+  topic: 群論・正規部分群
+  statement: 群Gの正規部分群H,KがH∩K={1}を満たすなら、Hの元とKの元は可換である。
+  statement_en: If normal subgroups H and K of a group intersect trivially, then every element of H commutes with every element of K.
+  assumptions: [Gは群, HとKはGの正規部分群, H∩Kは自明群]
+  quantifiers: [任意のh∈Hとk∈K]
+  conclusion: hk=khである。
+  answer: |
+    交換子c=hkh⁻¹k⁻¹を考える。Kが正規なのでhkh⁻¹∈Kであり、c∈Kとなる。Hが正規なのでkh⁻¹k⁻¹∈Hであり、c∈Hとなる。よってc∈H∩K={1}で、hk=khである。
+  strategy: Show the commutator lies in both normal subgroups.
+  sketch:
+    - "setup: Let c = hkh⁻¹k⁻¹."
+    - "derive: Normality of K puts c in K."
+    - "derive: Normality of H puts c in H."
+    - "conclude: Then c = 1, so hk = kh."
+  openmath: (forall (G H K h k) (-> (and (normal_subgroup H G) (normal_subgroup K G) (= (inter H K) (trivial_subgroup G)) (in h H) (in k K)) (= (group_mul h k) (group_mul k h))))
+  hard_negative:
+    statement: 群Gの部分群H,KがH∩K={1}なら、正規でなくてもHの元とKの元は可換である。
+    reason: S₃の異なる位数2の部分群は共通部分が自明だが、互換どうしは可換でない。
+  target: |
+    ∀ (G : Type*) [Group G] (H K : Subgroup G), H.Normal → K.Normal → H ⊓ K = ⊥ → ∀ h ∈ H, ∀ k ∈ K, h * k = k * h
+  proof: |
+    by
+      intro G _ H K hH hK hdis h hh k hk
+      exact Subgroup.commute_of_normal_of_disjoint H K hH hK (disjoint_iff.mpr hdis) h k hh hk
+- id: quotient_abelian_iff_contains_commutator
+  kind: gap
+  level: 3
+  topic: 群論・交換子部分群
+  statement: 群Gの正規部分群Nについて、G/Nが可換であることと、交換子部分群[G,G]がNに含まれることは同値である。
+  statement_en: For a normal subgroup N of a group G, the quotient G/N is abelian if and only if the commutator subgroup [G,G] is contained in N.
+  assumptions: [Gは群, NはGの正規部分群]
+  quantifiers: [任意の群Gと正規部分群N]
+  conclusion: G/Nが可換であることと[G,G]⊆Nは同値である。
+  answer: |
+    a,b∈Gについて、G/Nでの像が可換であることは、交換子aba⁻¹b⁻¹の像が単位元であること、すなわちaba⁻¹b⁻¹∈Nであることと同値である。G/Nが可換なら、すべての交換子がNに入り、それらが生成する[G,G]もNに含まれる。逆に[G,G]⊆Nならすべての交換子がNに入るので、G/Nの任意の2元は可換である。
+  strategy: Rewrite commutativity in the quotient as membership of commutators in N.
+  sketch:
+    - "translate: The images of a and b commute exactly when aba⁻¹b⁻¹ lies in N."
+    - "derive: If G/N is abelian, all commutators lie in N, so N contains the subgroup they generate."
+    - "derive: If N contains [G,G], then all images commute."
+    - "conclude: The two conditions are equivalent."
+  openmath: (forall (G N) (-> (normal_subgroup N G) (<-> (abelian_group (quotient_group G N)) (subset (commutator_subgroup G) N))))
+  hard_negative:
+    statement: G/Nが可換なら、Nは[G,G]に含まれる。
+    reason: 包含の向きが逆である。N=Gとすると、G/Nは自明群で可換だが、非自明な可換群ではGは[G,G]={1}に含まれない。
+  target: |
+    ∀ (G : Type*) [Group G] (N : Subgroup G) [N.Normal], (∀ a b : G ⧸ N, a * b = b * a) ↔ commutator G ≤ N
+  proof: |
+    by
+      intro G _ N _
+      constructor
+      · intro h
+        rw [commutator_def, Subgroup.commutator_le]
+        intro a _ b _
+        rw [← QuotientGroup.eq_one_iff, commutatorElement_def]
+        simp only [QuotientGroup.mk_mul, QuotientGroup.mk_inv]
+        rw [h (a : G ⧸ N) (b : G ⧸ N)]
+        group
+      · intro h a b
+        induction a using QuotientGroup.induction_on with
+        | H a =>
+          induction b using QuotientGroup.induction_on with
+          | H b =>
+            have hm : a * b * a⁻¹ * b⁻¹ ∈ N := by
+              apply h
+              rw [commutator_def]
+              exact Subgroup.commutator_mem_commutator (Subgroup.mem_top a) (Subgroup.mem_top b)
+            have hq := (QuotientGroup.eq_one_iff _).mpr hm
+            simp only [QuotientGroup.mk_mul, QuotientGroup.mk_inv] at hq
+            calc (a : G ⧸ N) * b = (a : G ⧸ N) * b * (a : G ⧸ N)⁻¹ * (b : G ⧸ N)⁻¹ * (b * a) := by group
+              _ = b * a := by rw [hq, one_mul]
+- id: abelianization_universal_property
+  kind: textbook
+  level: 3
+  topic: 群論・アーベル化
+  statement: 群Gから可換群Aへの準同型fは、アーベル化G/[G,G]からAへの準同型を一意に引き起こし、その準同型は自然な写像との合成がfに等しい。
+  statement_en: Every homomorphism f from a group G to an abelian group A factors uniquely through the abelianization G/[G,G].
+  assumptions: [Gは群, Aは可換群, f:G→Aは準同型]
+  quantifiers: [任意の群G、可換群A、準同型f]
+  conclusion: 自然な写像π:G→G/[G,G]についてφ∘π=fとなる準同型φがただ1つ存在する。
+  answer: |
+    Aは可換なのでf(aba⁻¹b⁻¹)=1となり、すべての交換子はker fに入る。よって[G,G]⊆ker fであり、φ(x[G,G])=f(x)は矛盾なく定義された準同型である。πは全射なので、φ∘π=fを満たす写像はこれに限る。
+  strategy: Show the commutator subgroup lies in the kernel and descend f to the quotient.
+  sketch:
+    - "derive: Commutativity of A puts every commutator in the kernel of f."
+    - "derive: Hence the commutator subgroup is contained in the kernel of f."
+    - "construct: Define φ on cosets of [G,G] by φ(x[G,G]) = f(x)."
+    - "derive: Surjectivity of the projection gives uniqueness."
+  openmath: (forall (G A f) (-> (and (group G) (abelian_group A) (group_hom f G A)) (exists (g) (and (group_hom g (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value g (left_coset x (commutator_subgroup G))) (fn_value f x)))) (forall (h) (-> (and (group_hom h (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value h (left_coset x (commutator_subgroup G))) (fn_value f x))))) (= h g)))))))
+  hard_negative:
+    statement: 群Gから非可換群Bへの準同型もすべてアーベル化を経由する。
+    reason: S₃の恒等写像はS₃の交換子A₃を潰さないので、アーベル化を経由しない。
+  target: |
+    ∀ (G A : Type*) [Group G] [CommGroup A] (f : G →* A), ∃! g : Abelianization G →* A, ∀ x : G, g (Abelianization.of x) = f x
+  proof: |
+    by
+      intro G A _ _ f
+      refine ⟨Abelianization.lift f, fun x => Abelianization.lift_apply_of f x, ?_⟩
+      intro φ hφ
+      apply MonoidHom.ext
+      intro x
+      exact Abelianization.lift_unique f φ hφ
+- id: first_isomorphism_theorem
+  kind: named
+  level: 2
+  topic: 群論・準同型定理
+  statement: 第一同型定理（準同型定理）。群準同型f:G→Hについて、x ker f↦f(x)は同型G/ker f≅im fを与える。
+  statement_en: "First isomorphism theorem: for a group homomorphism f from G to H, the map x ker f ↦ f(x) is an isomorphism from G/ker f onto the image of f."
+  assumptions: [GとHは群, f:G→Hは準同型]
+  quantifiers: [任意の群G, Hと準同型f]
+  conclusion: x ker f↦f(x)はG/ker fからim fへの同型である。
+  answer: |
+    x ker f=y ker fはx⁻¹y∈ker f、すなわちf(x)=f(y)と同値である。したがって写像φ(x ker f)=f(x)は矛盾なく定義され、単射である。fは準同型だからφも準同型であり、像は定義よりim fである。よってφは同型である。
+  strategy: Check that equality of cosets matches equality of values under f.
+  sketch:
+    - "translate: x ker f = y ker f is equivalent to f(x) = f(y)."
+    - "construct: Define φ(x ker f) = f(x) on the quotient."
+    - "derive: The translation gives well-definedness and injectivity."
+    - "derive: φ is a homomorphism because f is."
+    - "conclude: φ maps onto the image of f, so it is an isomorphism."
+  openmath: (forall (f G H) (-> (group_hom f G H) (exists (e) (and (group_iso e (quotient_group G (group_kernel f)) (group_image f)) (forall (x) (-> (in x G) (= (fn_value e (left_coset x (group_kernel f))) (fn_value f x))))))))
+  hard_negative:
+    statement: 群準同型f:G→Hについて常にG/ker f≅Hである。
+    reason: fが全射のときに限る。自明群からS₃への準同型ではG/ker fは自明群だがHはS₃である。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (f : G →* H), ∃ e : G ⧸ f.ker ≃* f.range, ∀ x : G, ((e (x : G ⧸ f.ker) : f.range) : H) = f x
+  proof: |
+    by
+      intro G H _ _ f
+      exact ⟨QuotientGroup.quotientKerEquivRange f, fun x => rfl⟩
+- id: second_isomorphism_theorem
+  kind: textbook
+  level: 3
+  topic: 群論・同型定理
+  statement: 第二同型定理。群Gの部分群Hと正規部分群Nについて、H/(H∩N)≅HN/Nである。
+  statement_en: "Second isomorphism theorem: for a subgroup H and a normal subgroup N of a group G, H/(H ∩ N) is isomorphic to HN/N."
+  assumptions: [Gは群, HはGの部分群, NはGの正規部分群]
+  quantifiers: [任意の群G、部分群H、正規部分群N]
+  conclusion: H/(H∩N)とHN/Nは同型である。
+  answer: |
+    Nが正規なのでHNは部分群で、Nはその正規部分群である。写像H→HN/N, h↦hNは準同型である。hnN=hNより全射である。核はh∈Nとなるh∈H全体、すなわちH∩Nである。第一同型定理からH/(H∩N)≅HN/Nが従う。
+  strategy: Apply the first isomorphism theorem to h ↦ hN.
+  sketch:
+    - "translate: Since N is normal, HN is a subgroup containing N as a normal subgroup."
+    - "construct: Define φ from H to HN/N by φ(h) = hN."
+    - "derive: φ is surjective because hnN = hN."
+    - "derive: The kernel of φ is H ∩ N."
+    - "apply_theorem: The first isomorphism theorem gives the result."
+  openmath: (forall (G H N) (-> (and (subgroup_of H G) (normal_subgroup N G)) (isomorphic_groups (quotient_group H (inter H N)) (quotient_group (subgroup_product H N) N))))
+  hard_negative:
+    statement: H,Kが正規とは限らない部分群のとき、H/(H∩K)≅HK/Kである。
+    reason: 正規性がないと右辺が群にならない。S₃の異なる位数2の部分群では、HKが部分群でない。
+  target: |
+    ∀ (G : Type*) [Group G] (H N : Subgroup G) [N.Normal], Nonempty ((H ⧸ N.subgroupOf H) ≃* ((H ⊔ N : Subgroup G) ⧸ N.subgroupOf (H ⊔ N)))
+  proof: |
+    by
+      intro G _ H N _
+      exact ⟨QuotientGroup.quotientInfEquivProdNormalQuotient H N⟩
+- id: third_isomorphism_theorem
+  kind: textbook
+  level: 3
+  topic: 群論・同型定理
+  statement: 第三同型定理。群Gの正規部分群N≤Mについて、(G/N)/(M/N)≅G/Mである。
+  statement_en: "Third isomorphism theorem: for normal subgroups N ≤ M of a group G, (G/N)/(M/N) is isomorphic to G/M."
+  assumptions: [Gは群, NとMはGの正規部分群, N≤M]
+  quantifiers: [任意の群Gと正規部分群N, M]
+  conclusion: (G/N)/(M/N)とG/Mは同型である。
+  answer: |
+    N≤Mなので、写像G/N→G/M, gN↦gMは矛盾なく定義された全射準同型である。その核はgM=Mとなる剰余類gN全体、すなわちM/Nである。第一同型定理を適用すると(G/N)/(M/N)≅G/Mを得る。
+  strategy: Apply the first isomorphism theorem to the natural map G/N → G/M.
+  sketch:
+    - "construct: Define gN ↦ gM using N ≤ M."
+    - "derive: The map is a surjective homomorphism."
+    - "derive: Its kernel is M/N."
+    - "apply_theorem: The first isomorphism theorem gives the isomorphism."
+  openmath: (forall (G N M) (-> (and (normal_subgroup N G) (normal_subgroup M G) (subset N M)) (isomorphic_groups (quotient_group (quotient_group G N) (quotient_group M N)) (quotient_group G M))))
+  hard_negative:
+    statement: 群Gの正規部分群N≤Mについて、(G/N)/(M/N)≅M/Nである。
+    reason: 右辺はG/Mでなければならない。M=GかつN≠Gのとき、左辺は自明群だが右辺はG/Nで自明でない。
+  target: |
+    ∀ (G : Type*) [Group G] (N M : Subgroup G) [N.Normal] [M.Normal], N ≤ M → Nonempty (((G ⧸ N) ⧸ M.map (QuotientGroup.mk' N)) ≃* (G ⧸ M))
+  proof: |
+    by
+      intro G _ N M _ _ h
+      exact ⟨QuotientGroup.quotientQuotientEquivQuotient N M h⟩
+- id: correspondence_theorem
+  kind: textbook
+  level: 3
+  topic: 群論・対応定理
+  statement: 対応定理。群Gの正規部分群Nについて、K↦π⁻¹(K)はG/Nの部分群とNを含むGの部分群の間の包含を保つ全単射を与える。ここでπ:G→G/Nは自然な全射である。
+  statement_en: "Correspondence theorem: for a normal subgroup N of G with projection π, the map K ↦ π⁻¹(K) is an inclusion-preserving bijection from subgroups of G/N onto subgroups of G containing N."
+  assumptions: [Gは群, NはGの正規部分群, π:G→G/Nは自然な全射]
+  quantifiers: [任意の群Gと正規部分群N]
+  conclusion: K↦π⁻¹(K)はG/Nの部分群とNを含むGの部分群の間の順序同型である。
+  answer: |
+    Kの逆像π⁻¹(K)はNを含む部分群である。πが全射なのでπ(π⁻¹(K))=Kである。逆にN≤LならLはNの剰余類の和集合なので、π⁻¹(π(L))=Lである。よってK↦π⁻¹(K)とL↦π(L)は互いに逆であり、どちらも包含を保つ。
+  strategy: Use image and preimage under the projection as inverse maps.
+  sketch:
+    - "construct: Send K to its preimage and L to its image."
+    - "derive: Surjectivity of π gives π(π⁻¹(K)) = K."
+    - "derive: N ≤ L makes L a union of cosets of N, so π⁻¹(π(L)) = L."
+    - "derive: Both maps preserve inclusion."
+    - "conclude: They give an order isomorphism."
+  openmath: (forall (G N) (-> (normal_subgroup N G) (and (forall (K) (-> (subgroup_of K (quotient_group G N)) (and (subgroup_of (subgroup_preimage (quotient_map G N) K) G) (subset N (subgroup_preimage (quotient_map G N) K)) (= (subgroup_image (quotient_map G N) (subgroup_preimage (quotient_map G N) K)) K)))) (forall (L) (-> (and (subgroup_of L G) (subset N L)) (= (subgroup_preimage (quotient_map G N) (subgroup_image (quotient_map G N) L)) L))))))
+  hard_negative:
+    statement: Gの任意の部分群Lについてπ⁻¹(π(L))=Lである。
+    reason: Nを含まないLでは成り立たない。一般にはπ⁻¹(π(L))=LNである。
+  target: |
+    ∀ (G : Type*) [Group G] (N : Subgroup G) [N.Normal], ∃ e : Subgroup (G ⧸ N) ≃o {H : Subgroup G // N ≤ H}, ∀ K : Subgroup (G ⧸ N), ((e K : {H : Subgroup G // N ≤ H}) : Subgroup G) = K.comap (QuotientGroup.mk' N)
+  proof: |
+    by
+      intro G _ N _
+      exact ⟨QuotientGroup.comapMk'OrderIso N, fun K => rfl⟩
+- id: abelian_iff_center_top_iff_commutator_trivial
+  kind: gap
+  level: 2
+  topic: 群論・中心と交換子
+  statement: 群Gについて、Gが可換であることは、中心Z(G)がGに等しいことと同値であり、交換子部分群[G,G]が自明であることとも同値である。
+  statement_en: A group G is abelian if and only if Z(G) = G, and if and only if the commutator subgroup [G,G] is trivial.
+  assumptions: [Gは群]
+  quantifiers: [任意の群G]
+  conclusion: Gが可換であることと、Z(G)=Gであることと、[G,G]が自明であることは同値である。
+  answer: |
+    Z(G)はすべての元と可換な元の集合なので、Gが可換であることとZ(G)=Gは定義から同値である。Gが可換なら交換子aba⁻¹b⁻¹はすべて1となり、[G,G]は自明である。逆に[G,G]が自明ならaba⁻¹b⁻¹=1からab=baであり、Gは可換である。
+  strategy: Unfold the definitions of center and commutator.
+  sketch:
+    - "translate: Membership of every element in Z(G) says that every two elements commute."
+    - "derive: If G is abelian, every commutator aba⁻¹b⁻¹ equals 1."
+    - "derive: If [G,G] is trivial, aba⁻¹b⁻¹ = 1 gives ab = ba."
+    - "conclude: The three conditions are equivalent."
+  openmath: (forall (G) (-> (group G) (and (<-> (abelian_group G) (= (group_center G) G)) (<-> (abelian_group G) (= (commutator_subgroup G) (trivial_subgroup G))))))
+  hard_negative:
+    statement: 群Gの中心が自明であることと、[G,G]=Gであることは同値である。
+    reason: S₃は中心が自明だが、[S₃,S₃]=A₃≠S₃である。
+  target: |
+    ∀ (G : Type*) [Group G], ((∀ a b : G, a * b = b * a) ↔ Subgroup.center G = ⊤) ∧ ((∀ a b : G, a * b = b * a) ↔ commutator G = ⊥)
+  proof: |
+    by
+      intro G _
+      have h1 : (∀ a b : G, a * b = b * a) ↔ Subgroup.center G = ⊤ := by
+        constructor
+        · intro h
+          rw [Subgroup.eq_top_iff']
+          intro z
+          exact Subgroup.mem_center_iff.mpr fun g => h g z
+        · intro h a b
+          have hb : b ∈ Subgroup.center G := by
+            rw [h]
+            exact Subgroup.mem_top b
+          exact Subgroup.mem_center_iff.mp hb a
+      exact ⟨h1, by rw [commutator_eq_bot_iff_center_eq_top]; exact h1⟩
+- id: action_orbits_eq_or_disjoint
+  kind: gap
+  level: 2
+  topic: 群論・群作用
+  statement: 群Gの集合Xへの作用について、2つの軌道は一致するか互いに素である。
+  statement_en: For a group action on a set, two orbits are either equal or disjoint.
+  assumptions: [Gは群, GはXに作用する, x, yはXの元]
+  quantifiers: [任意の群G、集合X、元x, y]
+  conclusion: GxとGyは一致するか、共通部分が空である。
+  answer: |
+    z∈Gx∩Gyとし、z=gx=hyと書く。このときx=g⁻¹hyなので、任意のkについてkx=(kg⁻¹h)y∈Gyである。よってGx⊆Gyであり、対称性からGy⊆Gxも成り立つ。したがって共通元があれば2つの軌道は一致する。
+  strategy: A common point lets one translate each orbit into the other.
+  sketch:
+    - "setup: Suppose z lies in both orbits and write z = gx = hy."
+    - "derive: Then x = g⁻¹hy, so the orbit of x lies in the orbit of y."
+    - "derive: The reverse inclusion follows by symmetry."
+    - "conclude: Orbits with a common point coincide."
+  openmath: (forall (G X x y) (-> (and (group_action G X) (in x X) (in y X)) (or (= (action_orbit G x) (action_orbit G y)) (= (inter (action_orbit G x) (action_orbit G y)) emptyset))))
+  hard_negative:
+    statement: 群作用の2つの軌道は常に同じ元の個数を持つ。
+    reason: S₃の{1,2,3}∪{4}への作用では軌道{1,2,3}と{4}で元の個数が異なる。
+  target: |
+    ∀ (G X : Type*) [Group G] [MulAction G X] (x y : X), MulAction.orbit G x = MulAction.orbit G y ∨ Disjoint (MulAction.orbit G x) (MulAction.orbit G y)
+  proof: |
+    by
+      intro G X _ _ x y
+      by_cases h : x ∈ MulAction.orbit G y
+      · exact Or.inl (MulAction.orbit_eq_iff.mpr h)
+      · right
+        rw [Set.disjoint_left]
+        intro z hx hy
+        apply h
+        have h1 : MulAction.orbit G z = MulAction.orbit G x := MulAction.orbit_eq_iff.mpr hx
+        have h2 : MulAction.orbit G z = MulAction.orbit G y := MulAction.orbit_eq_iff.mpr hy
+        exact MulAction.orbit_eq_iff.mp (h1.symm.trans h2)
+- id: orbit_stabilizer_theorem
+  kind: textbook
+  level: 2
+  topic: 群論・群作用
+  statement: 軌道安定化群定理。有限群Gの作用とx∈Xについて、|Gx||G_x|=|G|である。
+  statement_en: "Orbit-stabilizer theorem: for an action of a finite group G and a point x, the size of the orbit of x times the size of the stabilizer of x equals |G|."
+  assumptions: [Gは有限群, GはXに作用する, xはXの元]
+  quantifiers: [任意の有限群G、集合X、元x]
+  conclusion: 軌道の大きさと安定化群の位数の積は|G|に等しい。
+  answer: |
+    gx=hxはg⁻¹h∈G_x、すなわちgG_x=hG_xと同値である。したがってgG_x↦gxは左剰余類全体から軌道Gxへの全単射である。左剰余類の個数は[G:G_x]なので|Gx|=[G:G_x]である。ラグランジュの定理より|Gx||G_x|=[G:G_x]|G_x|=|G|となる。
+  strategy: Identify the orbit with the left cosets of the stabilizer and apply Lagrange.
+  sketch:
+    - "translate: gx = hx is equivalent to gG_x = hG_x."
+    - "construct: The map gG_x ↦ gx is a bijection onto the orbit."
+    - "derive: Hence the orbit size equals the index of the stabilizer."
+    - "apply_theorem: Lagrange gives the product formula."
+  openmath: (forall (G X x) (-> (and (finite_group G) (group_action G X) (in x X)) (= (* (size (action_orbit G x)) (size (action_stabilizer G x))) (size G))))
+  hard_negative:
+    statement: 有限群の作用で、軌道の大きさは常に|G|に等しい。
+    reason: 安定化群が自明なときに限る。自明な作用では軌道の大きさは1である。
+  target: |
+    ∀ (G X : Type*) [Group G] [Finite G] [MulAction G X] (x : X), Nat.card (MulAction.orbit G x) * Nat.card (MulAction.stabilizer G x) = Nat.card G
+  proof: |
+    by
+      intro G X _ _ _ x
+      rw [← Nat.card_prod]
+      exact Nat.card_congr (MulAction.orbitProdStabilizerEquivGroup G x)
+- id: burnside_lemma
+  kind: named
+  level: 3
+  topic: 群論・群作用
+  statement: バーンサイドの補題。有限群Gの有限集合Xへの作用について、固定点の個数の総和Σ_{g∈G}|X^g|は、軌道の個数と|G|の積に等しい。
+  statement_en: "Burnside's lemma: for a finite group G acting on a finite set X, the sum over g in G of the number of points fixed by g equals the number of orbits times |G|."
+  assumptions: [Gは有限群, Xは有限集合, GはXに作用する]
+  quantifiers: [任意の有限群Gと有限集合X]
+  conclusion: Σ_{g∈G}|X^g|=(軌道の個数)|G|である。
+  answer: |
+    gx=xを満たす組(g,x)の個数を2通りに数える。gごとに数えるとΣ_g|X^g|であり、xごとに数えるとΣ_x|G_x|である。軌道安定化群定理より|G_x|=|G|/|Gx|である。1つの軌道Oの上でΣ_{x∈O}1/|O|=1だから、Σ_x|G_x|=|G|×(軌道の個数)となる。
+  strategy: Double count pairs (g, x) with gx = x and use orbit-stabilizer.
+  sketch:
+    - "setup: Consider the set of pairs (g, x) with gx = x."
+    - "derive: Counting by g gives the sum of |X^g|."
+    - "derive: Counting by x gives the sum of |G_x|."
+    - "apply_theorem: Orbit-stabilizer gives |G_x| = |G|/|Gx|."
+    - "derive: Each orbit contributes exactly |G| to the sum."
+    - "conclude: The sum equals |G| times the number of orbits."
+  openmath: (forall (G X) (-> (and (finite_group G) (group_action G X) (exists (n) (and (in n N) (= (size X) n)))) (= (sum G (lambda (g) (size (action_fixed_points g X)))) (* (size (action_orbit_set G X)) (size G)))))
+  hard_negative:
+    statement: 軌道の個数は、単位元の固定点の個数|X|を|G|で割った値である。
+    reason: 作用が自由なときに限る。自明な作用では軌道の個数は|X|であり、|X|/|G|ではない。
+  target: |
+    ∀ (G X : Type*) [Group G] [Fintype G] [Finite X] [MulAction G X], ∑ g : G, Nat.card (MulAction.fixedBy X g) = Nat.card (MulAction.orbitRel.Quotient G X) * Nat.card G
+  proof: |
+    by
+      classical
+      intro G X _ _ _ _
+      haveI : Fintype X := Fintype.ofFinite X
+      haveI : Fintype (MulAction.orbitRel.Quotient G X) := Fintype.ofFinite _
+      simp only [Nat.card_eq_fintype_card]
+      convert MulAction.sum_card_fixedBy_eq_card_orbits_mul_card_group G X
+- id: cayley_theorem
+  kind: textbook
+  level: 2
+  topic: 群論・群作用
+  statement: ケーリーの定理。任意の群Gは、G上の対称群の部分群と同型である。すなわちGからSym(G)への単射準同型が存在する。
+  statement_en: "Cayley's theorem: every group G admits an injective homomorphism into the symmetric group on G."
+  assumptions: [Gは群]
+  quantifiers: [任意の群G]
+  conclusion: 単射準同型G→Sym(G)が存在する。
+  answer: |
+    g∈Gに左乗法L_g(x)=gxを対応させる。L_gはL_{g⁻¹}を逆に持つのでGの置換であり、L_{gh}=L_gL_hより対応は準同型である。L_g=L_hならg=L_g(1)=L_h(1)=hなので単射である。
+  strategy: Use the left regular action.
+  sketch:
+    - "construct: Send g to left multiplication L_g."
+    - "derive: L_g is a permutation with inverse L_{g⁻¹}."
+    - "derive: L_{gh} = L_g L_h, so the map is a homomorphism."
+    - "derive: Evaluating at 1 shows injectivity."
+  openmath: (forall (G) (-> (group G) (exists (f) (and (group_hom f G (symmetric_group G)) (injective_function f)))))
+  hard_negative:
+    statement: 任意の有限群GはS_{|G|}より小さい対称群S_mに必ず単射で埋め込める。
+    reason: 素数位数pの巡回群はp未満のmではS_mに埋め込めない。S_mの位数m!がpで割れないからである。
+  target: |
+    ∀ (G : Type*) [Group G], ∃ f : G →* Equiv.Perm G, Function.Injective f
+  proof: |
+    by
+      intro G _
+      refine ⟨MulAction.toPermHom G G, ?_⟩
+      intro a b h
+      have h1 : (MulAction.toPermHom G G a) 1 = (MulAction.toPermHom G G b) 1 := by rw [h]
+      simpa using h1
+- id: class_equation
+  kind: textbook
+  level: 3
+  topic: 群論・類等式
+  statement: 類等式。有限群Gについて、|G|は中心の位数と、元が2個以上の共役類の大きさの総和との和に等しい。
+  statement_en: "Class equation: for a finite group G, |G| equals |Z(G)| plus the sum of the sizes of the conjugacy classes with more than one element."
+  assumptions: [Gは有限群]
+  quantifiers: [任意の有限群G]
+  conclusion: "|G|=|Z(G)|+Σ|C|であり、和は元が2個以上の共役類Cを動く。"
+  answer: |
+    共役類はGを互いに素な部分集合に分割するから、|G|は共役類の大きさの総和である。元gの共役類が1元であることはすべてのhでhgh⁻¹=gであること、すなわちg∈Z(G)と同値である。よって1元の共役類の総数は|Z(G)|であり、残りの共役類を別に足すと類等式を得る。
+  strategy: Partition G into conjugacy classes and separate the singleton classes.
+  sketch:
+    - "translate: Conjugacy classes partition G."
+    - "derive: A class is a singleton exactly when its element is central."
+    - "derive: Singleton classes contribute |Z(G)| in total."
+    - "conclude: Add the remaining classes to obtain the equation."
+  openmath: (forall (G) (-> (finite_group G) (= (size G) (+ (size (group_center G)) (sum (noncentral_conjugacy_classes G) (lambda (c) (size c)))))))
+  hard_negative:
+    statement: 有限群のすべての共役類の大きさは等しい。
+    reason: S₃の共役類の大きさは1,2,3で異なる。単位元の共役類は常に1元である。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G], Nat.card (Subgroup.center G) + ∑ᶠ x ∈ ConjClasses.noncenter G, Nat.card x.carrier = Nat.card G
+  proof: |
+    by
+      intro G _ _
+      exact Group.nat_card_center_add_sum_card_noncenter_eq_card G
+- id: nontrivial_p_group_has_nontrivial_center
+  kind: textbook
+  level: 3
+  topic: 群論・p群
+  statement: pを素数、nを正の整数とする。位数p^nの群の中心は自明でない。
+  statement_en: For a prime p and a positive integer n, the center of a group of order p^n is nontrivial.
+  assumptions: [pは素数, nは正の整数, "|G|=p^n"]
+  quantifiers: [任意の素数p、正の整数n、位数p^nの群G]
+  conclusion: 中心Z(G)は単位元以外の元を含む。
+  answer: |
+    類等式より|G|=|Z(G)|+Σ|C|であり、Cは元が2個以上の共役類を動く。|C|は軌道として|G|の約数なので、pの正の冪である。|G|もpで割れるから、|Z(G)|はpで割り切れる。単位元がZ(G)に属するので|Z(G)|≥1であり、よって|Z(G)|≥pとなる。
+  strategy: Reduce the class equation modulo p.
+  sketch:
+    - "apply_theorem: Write the class equation for G."
+    - "derive: Each non-singleton class has size a positive power of p."
+    - "derive: Therefore p divides |Z(G)|."
+    - "conclude: Since |Z(G)| ≥ 1, it is at least p."
+  openmath: (forall (G p n) (-> (and (group G) (in p P) (in n N) (> n 0) (= (size G) (^ p n))) (!= (group_center G) (trivial_subgroup G))))
+  hard_negative:
+    statement: 位数が2つの異なる素数の積である群の中心は常に自明でない。
+    reason: S₃の位数は2·3だが、中心は自明である。
+  target: |
+    ∀ (G : Type*) [Group G] (p n : ℕ), p.Prime → 0 < n → Nat.card G = p ^ n → Nontrivial (Subgroup.center G)
+  proof: |
+    by
+      intro G _ p n hp hn hG
+      haveI : Fact p.Prime := ⟨hp⟩
+      have hpos : Nat.card G ≠ 0 := by
+        rw [hG]
+        exact pow_ne_zero n hp.ne_zero
+      haveI : Finite G := Nat.finite_of_card_ne_zero hpos
+      haveI : Nontrivial G := by
+        apply Finite.one_lt_card_iff_nontrivial.mp
+        rw [hG]
+        exact Nat.one_lt_pow hn.ne' hp.one_lt
+      exact (IsPGroup.of_card hG).center_nontrivial
+- id: order_prime_square_group_is_abelian
+  kind: gap
+  level: 3
+  topic: 群論・p群
+  statement: pを素数とする。位数p²の群は可換群である。
+  statement_en: For a prime p, every group of order p² is abelian.
+  assumptions: [pは素数, "|G|=p²"]
+  quantifiers: [任意の素数pと位数p²の群G]
+  conclusion: Gは可換群である。
+  answer: |
+    Gはp群なので中心Z(G)は自明でなく、|Z(G)|はpまたはp²である。|Z(G)|=pならG/Z(G)の位数はpとなり巡回群である。G/Z(G)が巡回群ならGは可換なのでZ(G)=Gとなり、|Z(G)|=pと矛盾する。よってZ(G)=Gであり、Gは可換である。
+  strategy: Combine the nontrivial center of a p-group with the cyclic quotient criterion.
+  sketch:
+    - "apply_theorem: The center of a p-group is nontrivial."
+    - "case_split: The center has order p or p²."
+    - "derive: If it has order p, the quotient G/Z(G) is cyclic of order p."
+    - "contradiction: A cyclic quotient by the center forces G to be abelian, so Z(G) = G."
+    - "conclude: Therefore Z(G) = G."
+  openmath: (forall (G p) (-> (and (group G) (in p P) (= (size G) (^ p 2))) (abelian_group G)))
+  hard_negative:
+    statement: pを素数とすると、位数p³の群は可換群である。
+    reason: 位数8の二面体群や四元数群は非可換である。
+  target: |
+    ∀ (G : Type*) [Group G] (p : ℕ), p.Prime → Nat.card G = p ^ 2 → ∀ a b : G, a * b = b * a
+  proof: |
+    by
+      intro G _ p hp hG a b
+      haveI : Fact p.Prime := ⟨hp⟩
+      exact (IsPGroup.isMulCommutative_of_card_eq_prime_sq hG).is_comm.comm a b
+- id: cauchy_theorem
+  kind: named
+  level: 3
+  topic: 群論・コーシーの定理
+  statement: コーシーの定理。有限群Gの位数を素数pが割り切るなら、位数pの元が存在する。
+  statement_en: "Cauchy's theorem: if a prime p divides the order of a finite group G, then G has an element of order p."
+  assumptions: [Gは有限群, pは素数, pは|G|を割り切る]
+  quantifiers: [任意の有限群Gと素数p]
+  conclusion: 位数pの元が存在する。
+  answer: |
+    積が1であるp個組(x₁,...,x_p)の集合Sを考える。先頭のp-1個を自由に選べば最後は定まるので|S|=|G|^(p-1)であり、pで割り切れる。巡回シフトはZ/pのSへの作用を与え、軌道の大きさは1かpである。したがって固定点の個数はpで割り切れる。固定点はx^p=1を満たす(x,...,x)の形で、(1,...,1)が固定点だから、1以外のxによる固定点もある。そのxの位数はpである。
+  strategy: Let Z/p act by cyclic shift on p-tuples with product 1 and count fixed points modulo p.
+  sketch:
+    - "setup: Let S be the set of p-tuples of elements of G with product 1."
+    - "derive: |S| = |G|^(p-1) is divisible by p."
+    - "construct: Cyclic shift gives an action of Z/p on S."
+    - "derive: Orbits have size 1 or p, so the number of fixed points is divisible by p."
+    - "derive: Fixed points are constant tuples (x, ..., x) with x^p = 1."
+    - "conclude: Since (1, ..., 1) is fixed, some x ≠ 1 satisfies x^p = 1, and it has order p."
+  openmath: (forall (G p) (-> (and (finite_group G) (in p P) (dvd p (size G))) (exists (x) (and (in x G) (= (element_order x) p)))))
+  hard_negative:
+    statement: 有限群の位数を割り切る任意の自然数dに対し、位数dの元が存在する。
+    reason: dが素数でないと成り立たない。Z/2×Z/2の位数は4だが位数4の元はない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p : ℕ), p.Prime → p ∣ Nat.card G → ∃ x : G, orderOf x = p
+  proof: |
+    by
+      intro G _ _ p hp hd
+      haveI : Fact p.Prime := ⟨hp⟩
+      exact exists_prime_orderOf_dvd_card' p hd
+- id: sylow_first_theorem
+  kind: named
+  level: 3
+  topic: 群論・シローの定理
+  statement: シローの第一定理。pを素数とする。有限群Gの位数をp^nが割り切るなら、位数p^nの部分群が存在する。特にシローp部分群が存在する。
+  statement_en: "Sylow's first theorem: if p is prime and p^n divides the order of a finite group G, then G has a subgroup of order p^n."
+  assumptions: [Gは有限群, pは素数, p^nは|G|を割り切る]
+  quantifiers: [任意の有限群G、素数p、自然数n]
+  conclusion: 位数p^nの部分群が存在する。
+  answer: |
+    概略を述べる。nに関する帰納法を用いる。n=0は自明群でよい。位数p^kの部分群Hをとり、p^(k+1)が|G|を割り切るとする。Hの左剰余類全体へのHの作用を考えると、固定点の個数は[G:H]とpを法として合同であり、固定点全体はN_G(H)/Hに対応する。よってpは|N_G(H)/H|を割り切る。コーシーの定理からN_G(H)/Hに位数pの部分群があり、その逆像が位数p^(k+1)の部分群である。
+  strategy: Induct on the exponent, enlarging a p-subgroup inside its normalizer via Cauchy's theorem.
+  sketch:
+    - "induction: Start from the trivial subgroup and assume H has order p^k."
+    - "setup: Let H act on the left cosets of H."
+    - "derive: The fixed points correspond to N_G(H)/H and their number is congruent to [G:H] modulo p."
+    - "derive: Hence p divides the order of N_G(H)/H."
+    - "apply_theorem: Cauchy gives a subgroup of order p in N_G(H)/H."
+    - "construct: Its preimage in N_G(H) has order p^(k+1)."
+  openmath: (forall (G p n) (-> (and (finite_group G) (in p P) (in n N) (dvd (^ p n) (size G))) (exists (H) (and (subgroup_of H G) (= (size H) (^ p n))))))
+  hard_negative:
+    statement: 有限群の位数を割り切る任意の自然数dに対し、位数dの部分群が存在する。
+    reason: 素数冪でないと成り立たない。A₄の位数は12だが位数6の部分群を持たない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p n : ℕ), p.Prime → p ^ n ∣ Nat.card G → ∃ H : Subgroup G, Nat.card H = p ^ n
+  proof: |
+    by
+      intro G _ _ p n hp hd
+      haveI : Fact p.Prime := ⟨hp⟩
+      exact Sylow.exists_subgroup_card_pow_prime p hd
+- id: sylow_second_theorem
+  kind: named
+  level: 3
+  topic: 群論・シローの定理
+  statement: シローの第二定理。有限群Gの任意の2つのシローp部分群は共役である。
+  statement_en: "Sylow's second theorem: any two Sylow p-subgroups of a finite group are conjugate."
+  assumptions: [Gは有限群, pは素数, PとQはGのシローp部分群]
+  quantifiers: [任意の有限群G、素数p、シローp部分群P, Q]
+  conclusion: あるg∈GでQ=gPg⁻¹である。
+  answer: |
+    Qを左剰余類全体G/Pに左乗法で作用させる。Qはp群なので、固定点の個数は|G/P|とpを法として合同である。|G/P|はpで割り切れないから、固定点が存在する。固定点gPをとると、QgP=gPよりg⁻¹Qg⊆Pである。位数が等しいのでQ=gPg⁻¹となる。
+  strategy: Let one Sylow subgroup act on the cosets of the other and find a fixed point modulo p.
+  sketch:
+    - "setup: Let Q act on the left cosets of P by left multiplication."
+    - "derive: The number of fixed points is congruent to [G:P] modulo p, which is nonzero."
+    - "construct: Take a fixed coset gP."
+    - "derive: Then g⁻¹Qg is contained in P."
+    - "conclude: Equal orders give Q = gPg⁻¹."
+  openmath: (forall (G p S T) (-> (and (finite_group G) (in p P) (sylow_subgroup p S G) (sylow_subgroup p T G)) (exists (g) (and (in g G) (= T (conjugate_subgroup g S))))))
+  hard_negative:
+    statement: 有限群の同じ位数の部分群はすべて共役である。
+    reason: シロー部分群でないと成り立たない。Z/2×Z/2は可換群なので部分群の共役はその部分群自身に限られ、位数2の異なる部分群どうしは共役でない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p : ℕ) [Fact p.Prime] (S T : Sylow p G), ∃ g : G, (T : Subgroup G) = (S : Subgroup G).map (MulAut.conj g).toMonoidHom
+  proof: |
+    by
+      intro G _ _ p _ S T
+      obtain ⟨g, hg⟩ := MulAction.exists_smul_eq G S T
+      exact ⟨g, by rw [← hg]; rfl⟩
+- id: sylow_third_theorem
+  kind: named
+  level: 3
+  topic: 群論・シローの定理
+  statement: シローの第三定理。pを素数とし、有限群Gの位数を|G|=p^n m、pはmを割り切らないとする。シローp部分群の個数はpを法として1と合同で、mを割り切る。
+  statement_en: "Sylow's third theorem: if |G| = p^n m with p prime and p not dividing m, the number of Sylow p-subgroups is congruent to 1 modulo p and divides m."
+  assumptions: [Gは有限群, pは素数, "|G|=p^n m", pはmを割り切らない]
+  quantifiers: [任意の有限群G、素数p、自然数n, m]
+  conclusion: シローp部分群の個数n_pはn_p≡1 (mod p)かつn_p∣mを満たす。
+  answer: |
+    シローp部分群全体へのPの共役作用を考える。固定点Qでは、PがN_G(Q)に含まれ、N_G(Q)の中でPとQはともにシロー部分群である。QはN_G(Q)で正規なのでP=Qとなり、固定点はPだけである。p群の作用の固定点の個数は全体とpを法として合同だから、n_p≡1 (mod p)である。一方Gの共役作用は第二定理より推移的なので、n_p=[G:N_G(P)]は[G:P]=mを割り切る。
+  strategy: Count fixed points of P acting by conjugation, then use transitivity of G.
+  sketch:
+    - "setup: Let P act by conjugation on the set of Sylow p-subgroups."
+    - "derive: A fixed point Q has P in its normalizer, and then P = Q."
+    - "apply_theorem: The count is congruent modulo p to the number of fixed points, which is 1."
+    - "apply_theorem: The second theorem makes G act transitively, so n_p = [G:N_G(P)]."
+    - "conclude: Since P ≤ N_G(P), n_p divides [G:P] = m."
+  openmath: (forall (G p n m) (-> (and (finite_group G) (in p P) (in n N) (in m N) (= (size G) (* (^ p n) m)) (not (dvd p m))) (and (exists (k) (and (in k N) (= (size (sylow_set p G)) (+ (* k p) 1)))) (dvd (size (sylow_set p G)) m))))
+  hard_negative:
+    statement: シローp部分群の個数はpを法として0と合同である。
+    reason: 個数は1と合同である。可換群ではシローp部分群は1個である。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p n m : ℕ), p.Prime → Nat.card G = p ^ n * m → ¬ p ∣ m → Nat.card (Sylow p G) ≡ 1 [MOD p] ∧ Nat.card (Sylow p G) ∣ m
+  proof: |
+    by
+      intro G _ _ p n m hp hG hm
+      haveI : Fact p.Prime := ⟨hp⟩
+      refine ⟨card_sylow_modEq_one p G, ?_⟩
+      obtain ⟨P⟩ : Nonempty (Sylow p G) := inferInstance
+      have hm0 : m ≠ 0 := fun h => hm (h ▸ dvd_zero p)
+      have hfac : Nat.factorization (Nat.card G) p = n := by
+        rw [hG, Nat.factorization_mul (pow_ne_zero n hp.ne_zero) hm0]
+        simp [hp.factorization_self, Nat.factorization_eq_zero_of_not_dvd hm]
+      have hcard : Nat.card (P : Subgroup G) = p ^ n := by
+        rw [← hfac]
+        exact P.card_eq_multiplicity
+      have hindex : (P : Subgroup G).index = m := by
+        have h := (P : Subgroup G).index_mul_card
+        rw [hcard, hG, mul_comm] at h
+        exact Nat.eq_of_mul_eq_mul_left (pow_pos hp.pos n) h
+      rw [← hindex]
+      exact P.card_dvd_index
+- id: unique_sylow_subgroup_is_normal
+  kind: gap
+  level: 3
+  topic: 群論・シローの定理
+  statement: 有限群Gのシローp部分群がただ1つなら、それは正規部分群である。
+  statement_en: If a finite group has exactly one Sylow p-subgroup, then that subgroup is normal.
+  assumptions: [Gは有限群, pは素数, シローp部分群はただ1つ]
+  quantifiers: [任意の有限群G、素数p、シローp部分群S]
+  conclusion: Sは正規部分群である。
+  answer: |
+    Sの共役gSg⁻¹はSと同じ位数の部分群であり、再びシローp部分群である。シローp部分群はただ1つなのでgSg⁻¹=Sがすべてのgで成り立つ。したがってSは正規である。
+  strategy: Conjugates of a Sylow subgroup are Sylow subgroups.
+  sketch:
+    - "derive: Each conjugate gSg⁻¹ has the same order as S, so it is a Sylow p-subgroup."
+    - "derive: Uniqueness gives gSg⁻¹ = S."
+    - "conclude: S is normal."
+  openmath: (forall (G p S) (-> (and (finite_group G) (in p P) (sylow_subgroup p S G) (= (size (sylow_set p G)) 1)) (normal_subgroup S G)))
+  hard_negative:
+    statement: 有限群のシローp部分群は常に正規部分群である。
+    reason: S₃のシロー2部分群は3個あり、どれも正規でない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p : ℕ), p.Prime → Nat.card (Sylow p G) = 1 → ∀ S : Sylow p G, (S : Subgroup G).Normal
+  proof: |
+    by
+      intro G _ _ p _ h S
+      haveI : Subsingleton (Sylow p G) := (Nat.card_eq_one_iff_unique.mp h).1
+      exact Sylow.normal_of_subsingleton S
+- id: hom_from_simple_group_trivial_or_injective
+  kind: gap
+  level: 3
+  topic: 群論・単純群
+  statement: 単純群Gからの群準同型は、自明であるか単射である。
+  statement_en: A group homomorphism from a simple group is either trivial or injective.
+  assumptions: [Gは単純群, Hは群, f:G→Hは準同型]
+  quantifiers: [任意の単純群G、群H、準同型f]
+  conclusion: fは自明準同型であるか単射である。
+  answer: |
+    ker fはGの正規部分群である。Gは単純なのでker fは自明群またはGである。ker f=Gならfは自明準同型であり、ker fが自明ならfは単射である。
+  strategy: Apply simplicity to the kernel.
+  sketch:
+    - "translate: The kernel of f is a normal subgroup of G."
+    - "case_split: Simplicity makes it trivial or all of G."
+    - "conclude: These cases give injective and trivial respectively."
+  openmath: (forall (G H f) (-> (and (simple_group G) (group_hom f G H)) (or (= (group_kernel f) G) (injective_function f))))
+  hard_negative:
+    statement: 単純群への群準同型は、自明であるか全射である。
+    reason: 像が正規とは限らない。Z/2からA₅への単射準同型は自明でも全射でもない。
+  target: |
+    ∀ (G H : Type*) [Group G] [IsSimpleGroup G] [Group H] (f : G →* H), (∀ x, f x = 1) ∨ Function.Injective f
+  proof: |
+    by
+      intro G H _ _ _ f
+      rcases (inferInstance : f.ker.Normal).eq_bot_or_eq_top with h | h
+      · exact Or.inr ((MonoidHom.ker_eq_bot_iff f).mp h)
+      · left
+        intro x
+        have hx : x ∈ f.ker := by
+          rw [h]
+          exact Subgroup.mem_top x
+        exact hx
+- id: abelian_group_simple_iff_prime_order
+  kind: gap
+  level: 3
+  topic: 群論・単純群
+  statement: 可換群Gが単純群であることと、位数|G|が素数であることは同値である。
+  statement_en: An abelian group is simple if and only if its order is prime.
+  assumptions: [Gは可換群]
+  quantifiers: [任意の可換群G]
+  conclusion: Gが単純であることと|G|が素数であることは同値である。
+  answer: |
+    Gが単純な可換群とする。可換群の部分群はすべて正規なので、Gの部分群は自明群とGのみである。g≠1をとると⟨g⟩=Gなので巡回群である。無限巡回群Zは2Zを非自明な真の部分群に持つから、Gは有限である。Gの位数が合成数なら約数の位数の部分群が存在するので矛盾し、位数は素数である。逆に位数が素数なら部分群は自明群と全体のみであり、Gは単純である。
+  strategy: In an abelian group every subgroup is normal, so simplicity means no proper nontrivial subgroups.
+  sketch:
+    - "translate: In an abelian group all subgroups are normal."
+    - "derive: A simple abelian group is generated by any non-identity element, so it is cyclic."
+    - "derive: The infinite cyclic group has the subgroup 2Z, so G is finite."
+    - "derive: A cyclic group of composite order has a proper nontrivial subgroup, so the order is prime."
+    - "derive: Conversely Lagrange shows a group of prime order has only trivial subgroups."
+  openmath: (forall (G) (-> (abelian_group G) (<-> (simple_group G) (in (size G) P))))
+  hard_negative:
+    statement: 単純群の位数は素数である。
+    reason: 可換性が必要である。A₅は単純群で位数は60である。
+  target: |
+    ∀ (G : Type*) [CommGroup G], IsSimpleGroup G ↔ (Nat.card G).Prime
+  proof: |
+    by
+      intro G _
+      exact CommGroup.is_simple_iff_prime_card
+- id: alternating_group_simple
+  kind: textbook
+  level: 4
+  topic: 群論・交代群
+  statement: 有限集合Xの元の個数が5以上なら、交代群A(X)は単純群である。
+  statement_en: The alternating group on a finite set with at least 5 elements is simple.
+  assumptions: [Xは有限集合, Xの元の個数は5以上]
+  quantifiers: [元の個数が5以上の任意の有限集合X]
+  conclusion: A(X)は単純群である。
+  answer: |
+    概略を述べる。A(X)は3サイクルで生成され、元の個数が5以上なら3サイクルはすべてA(X)の中で共役である。したがって自明でない正規部分群Nが3サイクルを1つ含めば、N=A(X)となる。残る手順は、Nの単位元でない元と適切な元との交換子をとり、支持集合の小さい元へ順に移して、Nが3サイクルを含むことを示す場合分けである。
+  strategy: Show that a nontrivial normal subgroup contains a 3-cycle, and that 3-cycles are conjugate and generate.
+  sketch:
+    - "translate: The alternating group is generated by 3-cycles."
+    - "derive: With at least 5 points all 3-cycles are conjugate in the alternating group."
+    - "setup: Let N be a nontrivial normal subgroup and take a non-identity element."
+    - "case_split: According to its cycle type, form commutators with suitable elements."
+    - "derive: These commutators lie in N and lead to a 3-cycle in N."
+    - "conclude: Then N contains all 3-cycles, so it is the whole group."
+  openmath: (forall (X) (-> (>= (size X) 5) (simple_group (alternating_group X))))
+  hard_negative:
+    statement: A₄は単純群である。
+    reason: A₄はクラインの4元群を自明でない真の正規部分群に持つ。
+  target: |
+    ∀ (X : Type*) [Fintype X] [DecidableEq X], 5 ≤ Nat.card X → IsSimpleGroup (alternatingGroup X)
+  proof: |
+    by
+      intro X _ _ h
+      exact alternatingGroup.isSimpleGroup h
+- id: transpositions_generate_symmetric_group
+  kind: gap
+  level: 2
+  topic: 群論・対称群
+  statement: 有限集合上の対称群は互換全体で生成される。
+  statement_en: The symmetric group on a finite set is generated by the transpositions.
+  assumptions: [Xは有限集合]
+  quantifiers: [任意の有限集合X]
+  conclusion: 互換全体が生成する部分群はSym(X)全体である。
+  answer: |
+    置換σが動かす元の個数に関する帰納法を用いる。σが恒等置換なら空積である。σ(x)≠xとなるxをとりτ=(x σ(x))とすると、τσはxを固定し、σが固定する元も固定する。よってτσが動かす元はσより少なく、帰納法の仮定からτσは互換の積である。σ=τ(τσ)なのでσも互換の積である。
+  strategy: Induct on the number of points moved, peeling off one transposition.
+  sketch:
+    - "induction: Induct on the number of points moved by σ."
+    - "setup: If σ(x) ≠ x, let τ swap x and σ(x)."
+    - "derive: τσ fixes x and every point fixed by σ, so it moves fewer points."
+    - "conclude: Then σ = τ(τσ) is a product of transpositions."
+  openmath: (forall (X) (-> (exists (n) (and (in n N) (= (size X) n))) (= (generated_subgroup (suchthat (symmetric_group X) (lambda (s) (transposition s)))) (symmetric_group X))))
+  hard_negative:
+    statement: 対称群S_nは任意の1つの互換とn-サイクル1つで生成される。
+    reason: S₄で互換(1 3)と4サイクル(1 2 3 4)は位数8の二面体群しか生成しない。
+  target: |
+    ∀ (X : Type*) [Fintype X] [DecidableEq X], Subgroup.closure {σ : Equiv.Perm X | σ.IsSwap} = ⊤
+  proof: |
+    by
+      intro X _ _
+      exact Equiv.Perm.closure_isSwap
+- id: sign_of_transposition_and_cycle
+  kind: gap
+  level: 2
+  topic: 群論・置換の符号
+  statement: 互換の符号は-1であり、長さkの巡回置換の符号は(-1)^(k-1)である。
+  statement_en: A transposition has sign -1, and a cycle of length k has sign (-1)^(k-1).
+  assumptions: [Xは有限集合]
+  quantifiers: [任意の有限集合X、異なる元x, y、巡回置換c]
+  conclusion: sgn((x y))=-1であり、sgn(c)=(-1)^(k-1)である。ここでkはcの長さである。
+  answer: |
+    互換の符号が-1であることは、互換が転倒数を奇数個変えることから分かる。長さkの巡回置換(a₁ a₂ ... a_k)は、k-1個の互換の積(a₁ a₂)(a₂ a₃)...(a_{k-1} a_k)に書ける。符号は準同型なので、その値は(-1)^(k-1)である。
+  strategy: Write a k-cycle as a product of k-1 transpositions.
+  sketch:
+    - "derive: A transposition changes the parity of the number of inversions, so its sign is -1."
+    - "translate: A k-cycle is a product of k-1 transpositions."
+    - "conclude: Multiplicativity of the sign gives (-1)^(k-1)."
+  openmath: (forall (t c) (and (-> (transposition t) (= (permutation_sign t) -1)) (-> (cycle_permutation c) (= (permutation_sign c) (^ -1 (- (cycle_length c) 1))))))
+  hard_negative:
+    statement: 長さkの巡回置換の符号は(-1)^kである。
+    reason: 互換はk=2の巡回置換で符号は-1だが、(-1)²=1である。
+  target: |
+    ∀ (X : Type*) [Fintype X] [DecidableEq X], (∀ x y : X, x ≠ y → Equiv.Perm.sign (Equiv.swap x y) = -1) ∧ (∀ c : Equiv.Perm X, c.IsCycle → Equiv.Perm.sign c = -(-1) ^ c.support.card)
+  proof: |
+    by
+      intro X _ _
+      exact ⟨fun x y h => Equiv.Perm.sign_swap h, fun c hc => hc.sign⟩
+- id: alternating_group_index_and_order
+  kind: gap
+  level: 2
+  topic: 群論・交代群
+  statement: 元の個数がn≥2の有限集合上の交代群は指数2の正規部分群で、位数n!/2を持つ。
+  statement_en: The alternating group on a finite set with n ≥ 2 elements is a normal subgroup of index 2 and satisfies 2·|A_n| = n!.
+  assumptions: [Xは2個以上の元を持つ有限集合, nはXの元の個数]
+  quantifiers: [任意の有限集合X]
+  conclusion: A(X)は正規で、指数は2であり、2|A(X)|=n!である。
+  answer: |
+    交代群は符号準同型sgn:Sym(X)→{±1}の核なので正規である。元が2個以上あるので互換が存在し、sgnは全射である。第一同型定理からSym(X)/A(X)≅{±1}となり、指数は2である。|Sym(X)|=n!とラグランジュの定理から2|A(X)|=n!を得る。
+  strategy: Realize the alternating group as the kernel of the surjective sign map.
+  sketch:
+    - "translate: The alternating group is the kernel of the sign homomorphism."
+    - "derive: A transposition exists, so the sign is surjective."
+    - "apply_theorem: The first isomorphism theorem gives index 2."
+    - "conclude: Lagrange and |Sym(X)| = n! give 2|A(X)| = n!."
+  openmath: (forall (X) (-> (>= (size X) 2) (and (normal_subgroup (alternating_group X) (symmetric_group X)) (= (subgroup_index (alternating_group X) (symmetric_group X)) 2) (= (* 2 (size (alternating_group X))) (size (symmetric_group X))))))
+  hard_negative:
+    statement: 元の個数が1の集合上でも交代群の指数は2である。
+    reason: このときSym(X)は自明群で互換が存在せず、指数は1である。
+  target: |
+    ∀ (X : Type*) [Fintype X] [DecidableEq X] [Nontrivial X], (alternatingGroup X).Normal ∧ (alternatingGroup X).index = 2 ∧ 2 * Nat.card (alternatingGroup X) = (Fintype.card X).factorial
+  proof: |
+    by
+      intro X _ _ _
+      refine ⟨Subgroup.normal_of_index_eq_two alternatingGroup.index_eq_two, alternatingGroup.index_eq_two, ?_⟩
+      rw [two_mul_nat_card_alternatingGroup, Nat.card_eq_fintype_card, Fintype.card_perm]
+- id: three_cycles_generate_alternating_group
+  kind: textbook
+  level: 3
+  topic: 群論・交代群
+  statement: 有限集合上の交代群は3サイクル全体で生成される。
+  statement_en: The alternating group on a finite set is generated by the 3-cycles.
+  assumptions: [Xは有限集合]
+  quantifiers: [任意の有限集合X]
+  conclusion: 3サイクル全体が生成する部分群はA(X)である。
+  answer: |
+    3サイクルは2つの互換の積なので偶置換である。逆に偶置換は偶数個の互換の積なので、2つの互換の積が3サイクルの積であることを示せばよい。(a b)(a c)と(a b)(c d)について、(a b)(a c)=(a c b)、(a b)(c d)=(a c b)(a c d)となる。同じ互換の積は恒等置換である。よって偶置換はすべて3サイクルの積である。
+  strategy: Pair up transpositions in an even permutation and rewrite each pair as 3-cycles.
+  sketch:
+    - "derive: A 3-cycle is a product of two transpositions, so it is even."
+    - "translate: An even permutation is a product of an even number of transpositions."
+    - "case_split: Two transpositions are equal, share one point, or are disjoint."
+    - "derive: In each case their product is a product of 3-cycles."
+    - "conclude: The 3-cycles generate the alternating group."
+  openmath: (forall (X) (-> (exists (n) (and (in n N) (= (size X) n))) (= (generated_subgroup (suchthat (symmetric_group X) (lambda (s) (three_cycle s)))) (alternating_group X))))
+  hard_negative:
+    statement: 対称群全体が3サイクルで生成される。
+    reason: 3サイクルは偶置換なので生成されるのは交代群までであり、互換は得られない。
+  target: |
+    ∀ (X : Type*) [Fintype X] [DecidableEq X], Subgroup.closure {σ : Equiv.Perm X | σ.IsThreeCycle} = alternatingGroup X
+  proof: |
+    by
+      intro X _ _
+      exact Equiv.Perm.closure_three_cycles_eq_alternating
+- id: internal_direct_product
+  kind: gap
+  level: 3
+  topic: 群論・直積
+  statement: 群Gの正規部分群H,KがH∩K={1}かつHK=Gを満たすなら、G≅H×Kである。
+  statement_en: If normal subgroups H and K of a group G satisfy H ∩ K = 1 and HK = G, then G is isomorphic to H × K.
+  assumptions: [Gは群, HとKは正規部分群, H∩Kは自明群, HとKの生成する部分群はG]
+  quantifiers: [任意の群Gと正規部分群H, K]
+  conclusion: G≅H×Kである。
+  answer: |
+    H∩K={1}で両者が正規なので、Hの元とKの元は可換である。したがって(h,k)↦hkは準同型である。hk=1ならh=k⁻¹∈H∩K={1}なので単射である。Kが正規なのでHとKの生成する部分群はHKに等しく、仮定からHK=Gとなる。よって全射であり、同型である。
+  strategy: Use commuting of H and K to make multiplication a homomorphism and check bijectivity.
+  sketch:
+    - "apply_theorem: Normal subgroups with trivial intersection commute elementwise."
+    - "construct: Define φ(h, k) = hk."
+    - "derive: Commutativity makes φ a homomorphism."
+    - "derive: hk = 1 gives h = k⁻¹ in H ∩ K, so φ is injective."
+    - "derive: The subgroup generated by H and K equals HK, so φ is surjective."
+  openmath: (forall (G H K) (-> (and (normal_subgroup H G) (normal_subgroup K G) (= (inter H K) (trivial_subgroup G)) (= (subgroup_join H K) G)) (isomorphic_groups (direct_product H K) G)))
+  hard_negative:
+    statement: H∩K={1}かつHK=Gなら、Kだけが正規でもG≅H×Kである。
+    reason: S₃のA₃と位数2の部分群はこの条件を満たすが、S₃は可換群Z/3×Z/2と同型でない。半直積になる。
+  target: |
+    ∀ (G : Type*) [Group G] (H K : Subgroup G), H.Normal → K.Normal → H ⊓ K = ⊥ → H ⊔ K = ⊤ → Nonempty ((H × K) ≃* G)
+  proof: |
+    by
+      intro G _ H K hH hK hinf hsup
+      haveI := hK
+      have hc : ∀ (x : H) (y : K), Commute (H.subtype x) (K.subtype y) := fun x y =>
+        Subgroup.commute_of_normal_of_disjoint H K hH hK (disjoint_iff.mpr hinf) x y x.2 y.2
+      refine ⟨MulEquiv.ofBijective (MonoidHom.noncommCoprod H.subtype K.subtype hc) ⟨?_, ?_⟩⟩
+      · rintro ⟨a, b⟩ ⟨c, d⟩ he
+        have he' : (a : G) * b = c * d := he
+        have h1 : (c : G)⁻¹ * a = d * (b : G)⁻¹ := by
+          calc (c : G)⁻¹ * a = (c : G)⁻¹ * (a * b) * (b : G)⁻¹ := by group
+            _ = (c : G)⁻¹ * (c * d) * (b : G)⁻¹ := by rw [he']
+            _ = d * (b : G)⁻¹ := by group
+        have hmem : (c : G)⁻¹ * a ∈ H ⊓ K := by
+          refine ⟨H.mul_mem (H.inv_mem c.2) a.2, ?_⟩
+          rw [h1]
+          exact K.mul_mem d.2 (K.inv_mem b.2)
+        rw [hinf, Subgroup.mem_bot] at hmem
+        have hac : (a : G) = c := by
+          have := inv_mul_eq_one.mp hmem
+          exact this.symm
+        have hbd : (b : G) = d := by
+          rw [hac] at he'
+          exact mul_left_cancel he'
+        exact Prod.ext (Subtype.ext hac) (Subtype.ext hbd)
+      · intro g
+        have hg : g ∈ ((H ⊔ K : Subgroup G) : Set G) := by
+          rw [hsup]
+          trivial
+        rw [Subgroup.mul_normal] at hg
+        obtain ⟨a, ha, b, hb, e⟩ := Set.mem_mul.mp hg
+        exact ⟨(⟨a, ha⟩, ⟨b, hb⟩), e⟩
+- id: internal_semidirect_product
+  kind: textbook
+  level: 3
+  topic: 群論・半直積
+  statement: 群Gの正規部分群Nと部分群HがN∩H={1}かつNH=Gを満たすなら、Gは共役作用φ(h)(n)=hnh⁻¹に関する半直積N⋊Hと同型である。
+  statement_en: If a normal subgroup N and a subgroup H of G satisfy N ∩ H = 1 and NH = G, then G is isomorphic to the semidirect product of N by H for the conjugation action φ(h)(n) = hnh⁻¹.
+  assumptions: [Gは群, Nは正規部分群, Hは部分群, N∩Hは自明群, NとHの生成する部分群はG]
+  quantifiers: [任意の群G、正規部分群N、部分群H]
+  conclusion: GはN⋊_φ Hと同型である。
+  answer: |
+    N⋊_φ Hの積は(n,h)(n',h')=(n φ(h)(n'),hh')で定まる。写像(n,h)↦nhは、nh n'h'=n(hn'h⁻¹)hh'より準同型である。nh=1ならn=h⁻¹∈N∩H={1}なので、核は自明である。Nが正規なのでNとHの生成する部分群はNHに等しく、仮定からこの写像は全射である。よって同型である。
+  strategy: Show that (n, h) ↦ nh is a bijective homomorphism from the semidirect product.
+  sketch:
+    - "construct: Let φ(h) be conjugation by h on N and form the semidirect product."
+    - "derive: The map (n, h) ↦ nh is a homomorphism because nhn'h' = n(hn'h⁻¹)hh'."
+    - "derive: nh = 1 forces n = h⁻¹ in N ∩ H, so the map is injective."
+    - "derive: The subgroup generated by N and H is NH, so the map is surjective."
+  openmath: (forall (G N H) (-> (and (normal_subgroup N G) (subgroup_of H G) (= (inter N H) (trivial_subgroup G)) (= (subgroup_join N H) G)) (isomorphic_groups (semidirect_product N H) G)))
+  hard_negative:
+    statement: N∩H={1}かつNH=Gなら、GはN×Hと同型である。
+    reason: Hも正規でないと成り立たない。S₃はA₃とZ/2の半直積だが、直積は可換群Z/6である。
+  target: |
+    ∀ (G : Type*) [Group G] (N H : Subgroup G) [N.Normal], N ⊓ H = ⊥ → N ⊔ H = ⊤ → ∃ φ : H →* MulAut N, (∀ (h : H) (n : N), ((φ h n : N) : G) = h * n * (h : G)⁻¹) ∧ Nonempty (N ⋊[φ] H ≃* G)
+  proof: |
+    by
+      intro G _ N H _ hinf hsup
+      have hc : N.IsComplement' H := by
+        apply Subgroup.isComplement'_of_disjoint_and_mul_eq_univ (disjoint_iff.mpr hinf)
+        rw [← Subgroup.normal_mul, hsup]
+        rfl
+      exact ⟨_, fun h n => rfl, ⟨SemidirectProduct.mulEquivSubgroup hc⟩⟩
+- id: finite_abelian_group_structure
+  kind: textbook
+  level: 3
+  topic: 群論・有限アーベル群
+  statement: 有限アーベル群の基本定理。有限アーベル群は、素数冪位数の巡回群の有限個の直和と同型である。
+  statement_en: "Structure theorem: every finite abelian group is isomorphic to a finite direct sum of cyclic groups Z/p_i^(e_i) with each p_i prime."
+  assumptions: [Gは有限アーベル群]
+  quantifiers: [任意の有限アーベル群G]
+  conclusion: 素数p_iと指数e_iがあってG≅⊕_i Z/p_i^(e_i)である。
+  answer: |
+    概略を述べる。まずGを各素数pのp部分の直和に分解する。これは位数の素因数分解と中国剰余定理の議論で得られる。次に有限アーベルp群Aについて、最大位数の元xをとると、⟨x⟩がAの直和因子であることを示す。補因子の位数はAより小さいので、帰納法で巡回群の直和に分解できる。
+  strategy: Decompose into p-primary parts, then split off a cyclic subgroup of maximal order.
+  sketch:
+    - "translate: G is the direct sum of its p-primary components."
+    - "setup: Fix a finite abelian p-group A and choose x of maximal order."
+    - "derive: The cyclic subgroup generated by x is a direct summand of A."
+    - "induction: Apply induction to the complement."
+    - "conclude: G is a direct sum of cyclic groups of prime power order."
+  openmath: (forall (G) (-> (and (finite_group G) (abelian_group G)) (exists (p e) (and (forall (i) (in (seq_value p i) P)) (isomorphic_groups G (prime_power_cyclic_sum p e))))))
+  hard_negative:
+    statement: 有限アーベル群は巡回群である。
+    reason: Z/2×Z/2は有限アーベル群だが巡回群でない。巡回群の直和にしかならない。
+  target: |
+    ∀ (G : Type*) [AddCommGroup G] [Finite G], ∃ (ι : Type) (_ : Fintype ι) (p : ι → ℕ) (_ : ∀ i, (p i).Prime) (e : ι → ℕ), Nonempty (G ≃+ DirectSum ι (fun i => ZMod (p i ^ e i)))
+  proof: |
+    by
+      intro G _ _
+      exact AddCommGroup.equiv_directSum_zmod_of_finite G
+- id: solvable_iff_normal_and_quotient_solvable
+  kind: gap
+  level: 3
+  topic: 群論・可解群
+  statement: 群Gの正規部分群Nについて、Gが可解であることと、NとG/Nがともに可解であることは同値である。
+  statement_en: For a normal subgroup N of a group G, G is solvable if and only if both N and G/N are solvable.
+  assumptions: [Gは群, Nは正規部分群]
+  quantifiers: [任意の群Gと正規部分群N]
+  conclusion: Gが可解であることと、NとG/Nがともに可解であることは同値である。
+  answer: |
+    Gの導来列をG^(k)とする。N^(k)≤G^(k)なので、Gが可解ならNは可解である。G/Nの導来列はG^(k)の像なので、G/Nも可解である。逆に(G/N)^(k)が自明とするとG^(k)≤Nとなる。N^(l)が自明ならG^(k+l)≤N^(l)={1}なので、Gは可解である。
+  strategy: Compare derived series of G, N and G/N.
+  sketch:
+    - "derive: The derived series of N is contained in that of G."
+    - "derive: The derived series of G/N is the image of that of G."
+    - "setup: Conversely assume the k-th derived subgroup of G/N and the l-th derived subgroup of N are trivial."
+    - "derive: Then G^(k) ≤ N, so G^(k+l) ≤ N^(l) = 1."
+    - "conclude: G is solvable exactly when both N and G/N are."
+  openmath: (forall (G N) (-> (normal_subgroup N G) (<-> (solvable_group G) (and (solvable_group N) (solvable_group (quotient_group G N))))))
+  hard_negative:
+    statement: 群Gの正規部分群Nについて、Gが冪零であることと、NとG/Nがともに冪零であることは同値である。
+    reason: 冪零では拡大で閉じない。S₃のN=A₃ではNとG/Nは可換だが、S₃は冪零でない。
+  target: |
+    ∀ (G : Type*) [Group G] (N : Subgroup G) [N.Normal], IsSolvable G ↔ (IsSolvable N ∧ IsSolvable (G ⧸ N))
+  proof: |
+    by
+      intro G _ N _
+      constructor
+      · intro _
+        exact ⟨inferInstance, inferInstance⟩
+      · rintro ⟨_, _⟩
+        refine solvable_of_ker_le_range N.subtype (QuotientGroup.mk' N) ?_
+        rw [QuotientGroup.ker_mk', Subgroup.range_subtype]
+- id: symmetric_group_not_solvable
+  kind: textbook
+  level: 4
+  topic: 群論・可解群
+  statement: n≥5なら対称群S_nは可解でない。
+  statement_en: The symmetric group S_n is not solvable for n ≥ 5.
+  assumptions: [nは5以上の自然数]
+  quantifiers: [5以上の任意の自然数n]
+  conclusion: S_nは可解でない。
+  answer: |
+    n≥5なら任意の3サイクルは2つの3サイクルの交換子に書ける。実際、異なる5点a,b,c,d,eをとり、xy x⁻¹y⁻¹の形の交換子を右から順に合成すると、x=(a b d)、y=(a c e)に対して(a b c)を得る。したがって導来列の項が3サイクルをすべて含めば、次の項も3サイクルをすべて含む。S_n自身は3サイクルをすべて含むから、帰納法により導来列の各項が3サイクルを含む。導来列が単位元に達することはないので、S_nは可解でない。
+  strategy: Show every derived subgroup contains all 3-cycles, using five distinct points.
+  sketch:
+    - "derive: With five points every 3-cycle is a commutator of two 3-cycles."
+    - "induction: Each term of the derived series contains all 3-cycles."
+    - "conclude: The derived series never becomes trivial, so S_n is not solvable."
+  openmath: (forall (X) (-> (>= (size X) 5) (not (solvable_group (symmetric_group X)))))
+  hard_negative:
+    statement: S₄は可解でない。
+    reason: S₄⊃A₄⊃V₄⊃{1}の各商は可換なので、S₄は可解である。
+  target: |
+    ∀ (n : ℕ), 5 ≤ n → ¬ IsSolvable (Equiv.Perm (Fin n))
+  proof: |
+    by
+      intro n hn
+      apply Equiv.Perm.not_solvable
+      rw [Cardinal.mk_fin]
+      exact_mod_cast hn
+- id: finite_p_group_is_nilpotent
+  kind: gap
+  level: 3
+  topic: 群論・冪零群
+  statement: 有限p群は冪零群である。
+  statement_en: Every finite p-group is nilpotent.
+  assumptions: [pは素数, Gは有限p群]
+  quantifiers: [任意の素数pと有限p群G]
+  conclusion: Gは冪零群である。
+  answer: |
+    |G|に関する帰納法を用いる。|G|=1なら自明である。|G|>1なら中心Z(G)は自明でないので、G/Z(G)は位数の小さいp群であり、帰納法の仮定から冪零である。冪零群の中心による拡大は冪零なので、Gも冪零である。
+  strategy: Induct on the order, dividing by the nontrivial center.
+  sketch:
+    - "induction: Induct on |G|, the trivial group being nilpotent."
+    - "apply_theorem: A nontrivial p-group has a nontrivial center."
+    - "derive: G/Z(G) is a smaller p-group, hence nilpotent."
+    - "conclude: A central extension of a nilpotent group is nilpotent."
+  openmath: (forall (G p) (-> (and (finite_group G) (in p P) (p_group p G)) (nilpotent_group G)))
+  hard_negative:
+    statement: 有限可解群は冪零群である。
+    reason: S₃は可解だが冪零でない。下中心列がA₃で止まる。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (p : ℕ), p.Prime → IsPGroup p G → Group.IsNilpotent G
+  proof: |
+    by
+      intro G _ _ p hp hG
+      haveI : Fact p.Prime := ⟨hp⟩
+      exact hG.isNilpotent
+- id: nilpotent_group_solvable_with_nontrivial_center
+  kind: gap
+  level: 3
+  topic: 群論・冪零群
+  statement: 冪零群は可解群であり、自明でない冪零群の中心は自明でない。
+  statement_en: A nilpotent group is solvable, and a nontrivial nilpotent group has nontrivial center.
+  assumptions: [Gは冪零群]
+  quantifiers: [任意の冪零群G]
+  conclusion: Gは可解群であり、Gが自明でないならZ(G)は自明でない。
+  answer: |
+    上中心列Z_kがZ_c=Gに達するとする。Z_{i+1}/Z_iはG/Z_iの中心に含まれるので可換であり、Gは可換商を持つ正規列を持つ。よって可解である。Gが自明でないとき、Z_1=Z(G)が自明ならZ_2=Z(G/{1})=Z_1となり、帰納的にすべてのZ_kが自明である。これはZ_c=Gに反するのでZ(G)は自明でない。
+  strategy: Use the upper central series, whose factors are abelian.
+  sketch:
+    - "setup: Take the upper central series ending at G."
+    - "derive: Its factors are central in the quotients, hence abelian."
+    - "conclude: This abelian series shows G is solvable."
+    - "contradiction: If Z(G) were trivial, every term of the series would be trivial, contradicting that the series reaches a nontrivial G."
+  openmath: (forall (G) (-> (nilpotent_group G) (and (solvable_group G) (-> (!= G (trivial_subgroup G)) (!= (group_center G) (trivial_subgroup G))))))
+  hard_negative:
+    statement: 可解群の中心は自明でない。
+    reason: S₃は可解だが中心は自明である。
+  target: |
+    ∀ (G : Type*) [Group G] [Group.IsNilpotent G], IsSolvable G ∧ (Nontrivial G → Subgroup.center G ≠ ⊥)
+  proof: |
+    by
+      intro G _ _
+      exact ⟨inferInstance, fun _ => Group.IsNilpotent.center_ne_bot G⟩
+- id: finite_group_has_simple_quotient
+  kind: gap
+  level: 3
+  topic: 群論・組成列
+  statement: 自明でない有限群Gには、剰余群G/Nが単純となる正規部分群Nが存在する。
+  statement_en: Every nontrivial finite group G has a normal subgroup N such that G/N is simple. This is the step used to build a composition series.
+  assumptions: [Gは自明でない有限群]
+  quantifiers: [任意の自明でない有限群G]
+  conclusion: G/Nが単純群となる正規部分群Nが存在する。
+  answer: |
+    Gは有限で{1}は真の正規部分群なので、真の正規部分群のうち包含について極大なものNが存在する。G/Nは自明でない。KをG/Nの正規部分群とすると、対応定理より逆像LはNを含むGの正規部分群である。L=Gなら、K=G/Nである。L≠Gなら、Nの極大性からL=Nであり、Kは自明である。よってG/Nは単純である。
+  strategy: Take a maximal proper normal subgroup and apply the correspondence theorem.
+  sketch:
+    - "construct: Finiteness gives a maximal element N among proper normal subgroups."
+    - "derive: G/N is nontrivial because N is proper."
+    - "setup: Let K be a normal subgroup of G/N with preimage L."
+    - "derive: L is a normal subgroup of G containing N."
+    - "case_split: If L = G then K = G/N; otherwise maximality gives L = N and K is trivial."
+    - "conclude: G/N is simple."
+  openmath: (forall (G) (-> (and (finite_group G) (!= G (trivial_subgroup G))) (exists (N) (and (normal_subgroup N G) (simple_group (quotient_group G N))))))
+  hard_negative:
+    statement: 自明でない任意の群には、剰余群が単純となる正規部分群が存在する。
+    reason: 有限性が必要である。有理数の加法群Qには極大な真の部分群がなく、単純な剰余群を持たない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] [Nontrivial G], ∃ N : Subgroup G, ∃ _ : N.Normal, IsSimpleGroup (G ⧸ N)
+  proof: |
+    by
+      intro G _ _ _
+      have hfin : {N : Subgroup G | N.Normal ∧ N ≠ ⊤}.Finite := Set.toFinite _
+      have hne : {N : Subgroup G | N.Normal ∧ N ≠ ⊤}.Nonempty := ⟨⊥, inferInstance, bot_ne_top⟩
+      obtain ⟨N, hN⟩ := hfin.exists_maximal hne
+      refine ⟨N, hN.prop.1, ?_⟩
+      haveI : N.Normal := hN.prop.1
+      have hx : ∃ x : G, x ∉ N := by
+        by_contra h
+        rw [not_exists] at h
+        exact hN.prop.2 ((Subgroup.eq_top_iff' N).mpr fun x => not_not.mp (h x))
+      obtain ⟨x, hx⟩ := hx
+      have hnt : Nontrivial (G ⧸ N) :=
+        ⟨⟨(x : G ⧸ N), 1, fun h => hx ((QuotientGroup.eq_one_iff x).mp h)⟩⟩
+      refine { toNontrivial := hnt, eq_bot_or_eq_top_of_normal := ?_ }
+      intro K hK
+      by_cases hL : K.comap (QuotientGroup.mk' N) = ⊤
+      · right
+        rw [Subgroup.eq_top_iff']
+        intro q
+        induction q using QuotientGroup.induction_on with
+        | H y =>
+          have hy : y ∈ K.comap (QuotientGroup.mk' N) := by
+            rw [hL]
+            exact Subgroup.mem_top y
+          exact hy
+      · left
+        have hle : K.comap (QuotientGroup.mk' N) ≤ N :=
+          hN.le_of_ge ⟨hK.comap _, hL⟩ (QuotientGroup.le_comap_mk' N K)
+        rw [eq_bot_iff]
+        intro q hq
+        induction q using QuotientGroup.induction_on with
+        | H y =>
+          have hy : y ∈ K.comap (QuotientGroup.mk' N) := hq
+          exact Subgroup.mem_bot.mpr ((QuotientGroup.eq_one_iff y).mpr (hle hy))

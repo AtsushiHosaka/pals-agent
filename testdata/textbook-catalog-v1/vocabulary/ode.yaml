@@ -1,0 +1,28 @@
+# Proposed additive OpenMath vocabulary for ordinary differential equations (cd=pals2).
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at x with derivative d; arguments f, d, x"}
+has_right_deriv_at: {args: [term, term, term], returns: prop, meaning: "f has right derivative d at the point x"}
+has_deriv_within_at: {args: [term, term, term, term], returns: prop, meaning: "f has derivative d at x within the set s"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed real interval [a,b]"}
+open_interval: {args: [term, term], returns: term, meaning: "open real interval (a,b)"}
+half_open_interval: {args: [term, term], returns: term, meaning: "half-open real interval [a,b)"}
+continuous_map: {args: [term], returns: prop, meaning: "f is continuous"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set s"}
+normed_space_real: {args: [term], returns: prop, meaning: "E is a real normed vector space"}
+banach_space_real: {args: [term], returns: prop, meaning: "E is a real Banach space"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}
+dist_of: {args: [term, term], returns: term, meaning: "distance between x and y"}
+closed_ball: {args: [term, term], returns: term, meaning: "closed ball with given centre and radius"}
+lipschitz_map: {args: [term, term], returns: prop, meaning: "f is Lipschitz with constant K"}
+lipschitz_on_with: {args: [term, term, term], returns: prop, meaning: "f is Lipschitz with constant K on the set s"}
+max_of: {args: [term, term], returns: term, meaning: "maximum of two real numbers"}
+continuous_on_set_fn: {args: [term_function, term], returns: prop, meaning: "the function given by a lambda is continuous on the set s"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b; arguments a, b, f"}
+matrix_square: {args: [term, term], returns: prop, meaning: "A is a square matrix with entries in K (arguments K, A)"}
+matrix_mul: {args: [term, term], returns: term, meaning: "matrix product AB"}
+matrix_scale: {args: [term, term], returns: term, meaning: "scalar multiple cA, in the order (c, A)"}
+matrix_inverse: {args: [term], returns: term, meaning: "inverse of an invertible square matrix"}
+matrix_vector_mul: {args: [term, term], returns: term, meaning: "matrix-vector product Ax"}
+matrix_exp: {args: [term], returns: term, meaning: "exponential of a square matrix"}
+commuting_matrices: {args: [term, term], returns: prop, meaning: "the square matrices A and B satisfy AB = BA"}
+subspace_of: {args: [term, term], returns: prop, meaning: "K is a linear subspace of E"}
+real_function_space: {args: [], returns: term, meaning: "real vector space of all functions from R to R"}

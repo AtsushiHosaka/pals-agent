@@ -1,0 +1,1458 @@
+- id: linear_continuous_iff_bounded
+  kind: textbook
+  level: 3
+  topic: 関数解析・有界線形作用素
+  statement: ノルム空間の間の線形写像fについて、fが連続であることと、ある定数Cで全てのxに対し‖f x‖≤C‖x‖となることは同値である。
+  statement_en: A linear map f between normed spaces over ℝ or ℂ is continuous if and only if there is a constant C with ‖f x‖ ≤ C‖x‖ for all x.
+  assumptions: [E, Fは実数体または複素数体上のノルム空間, fはEからFへの線形写像]
+  quantifiers: [任意のE, F, f]
+  conclusion: fの連続性と有界性は同値である。
+  answer: |
+    fが連続なら、0での連続性からδ>0があり、‖x‖≤δで‖f x‖≤1となる。x≠0ならδx/‖x‖にこれを適用して線形性を使うと‖f x‖≤(1/δ)‖x‖を得る。逆に‖f x‖≤C‖x‖なら‖f x-f y‖=‖f(x-y)‖≤C‖x-y‖なのでfはリプシッツ連続であり、特に連続である。
+  strategy: Use continuity at 0 to get a bound by scaling, and linearity to turn the bound into a Lipschitz estimate.
+  sketch:
+    - "setup: Assume f is continuous and pick δ > 0 with ‖f x‖ ≤ 1 whenever ‖x‖ ≤ δ."
+    - "derive: Scale a nonzero x to norm δ and use linearity to get ‖f x‖ ≤ (1/δ)‖x‖."
+    - "translate: Conversely, a bound C gives ‖f x - f y‖ = ‖f(x-y)‖ ≤ C‖x-y‖."
+    - "conclude: So f is Lipschitz, hence continuous, and the two conditions are equivalent."
+  openmath: (forall (E F f) (-> (and (normed_space E) (normed_space F) (linear_operator f E F)) (<-> (continuous_map f) (exists (C) (forall (x) (-> (in x E) (<= (norm (fn_value f x)) (* C (norm x)))))))))
+  hard_negative:
+    statement: ノルム空間の間の任意の線形写像は連続である。
+    reason: 多項式全体に[0,1]上の最大値ノルムを入れた空間で微分作用素を考えると、‖x^n‖=1だが‖(x^n)'‖=nとなり有界でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (f : E →ₗ[𝕜] F), Continuous f ↔ ∃ C : ℝ, ∀ x, ‖f x‖ ≤ C * ‖x‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ f
+      constructor
+      · intro hf
+        let g : E →L[𝕜] F := ⟨f, hf⟩
+        exact ⟨‖g‖, fun x => g.le_opNorm x⟩
+      · rintro ⟨C, hC⟩
+        exact (f.mkContinuous C hC).continuous
+- id: linear_continuous_of_continuous_at_zero
+  kind: gap
+  level: 3
+  topic: 関数解析・有界線形作用素
+  statement: ノルム空間の間の線形写像が原点で連続ならば、全空間で連続である。
+  statement_en: A linear map between normed spaces that is continuous at 0 is continuous everywhere.
+  assumptions: [E, Fはノルム空間, fはEからFへの線形写像, fは原点で連続]
+  quantifiers: [任意のE, F, f]
+  conclusion: fは全空間で連続である。
+  answer: |
+    点aとa+hを比べると線形性からf(a+h)-f(a)=f(h)である。h→0のときf(h)→f(0)=0なので、f(a+h)→f(a)となる。aは任意だからfは全空間で連続である。
+  strategy: Translate continuity at a point to continuity at 0 using additivity.
+  sketch:
+    - "translate: For any a, write f(a+h) - f(a) = f(h)."
+    - "apply_theorem: Continuity at 0 and f(0) = 0 give f(h) → 0 as h → 0."
+    - "conclude: Hence f is continuous at every a."
+  openmath: (forall (E F f) (-> (and (normed_space E) (normed_space F) (linear_operator f E F) (continuous_map_at f 0)) (continuous_map f)))
+  hard_negative:
+    statement: 原点で連続な写像はどれも全空間で連続である。
+    reason: 線形性が必要である。実関数g(x)=x·1_ℚ(x)は原点で連続だが、原点以外では連続でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (f : E →ₗ[𝕜] F), ContinuousAt f 0 → Continuous f
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ f hf
+      exact continuous_of_continuousAt_zero f hf
+- id: operator_norm_bound_at_point
+  kind: gap
+  level: 3
+  topic: 関数解析・作用素ノルム
+  statement: 有界線形作用素Tと任意のベクトルxについて‖T x‖≤‖T‖‖x‖が成り立つ。
+  statement_en: For a bounded linear operator T and every vector x, ‖T x‖ ≤ ‖T‖‖x‖.
+  assumptions: [E, Fはノルム空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT, 任意のx∈E]
+  conclusion: ‖T x‖≤‖T‖‖x‖である。
+  answer: |
+    ‖T‖は、全てのxで‖T x‖≤C‖x‖を満たす非負の定数Cの下限である。そのような定数の集合は閉集合なので、下限‖T‖自身もこの不等式を満たす。よって‖T x‖≤‖T‖‖x‖となる。
+  strategy: The operator norm is the least admissible constant, and the infimum is attained because the condition is closed.
+  sketch:
+    - "setup: Recall that ‖T‖ is the infimum of the constants C ≥ 0 with ‖T x‖ ≤ C‖x‖ for all x."
+    - "derive: The inequality is preserved under limits of C, so the infimum is admissible."
+    - "conclude: Thus ‖T x‖ ≤ ‖T‖‖x‖ for every x."
+  openmath: (forall (E F T x) (-> (and (normed_space E) (normed_space F) (bounded_operator T E F) (in x E)) (<= (norm (fn_value T x)) (* (norm T) (norm x)))))
+  hard_negative:
+    statement: 全てのxで‖T x‖=‖T‖‖x‖が成り立つ。
+    reason: 等号はxを選ばないと成り立たない。ℝ²上のT(a,b)=(a,0)ではx=(0,1)のとき左辺は0だが右辺は1である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (T : E →L[𝕜] F) (x : E), ‖T x‖ ≤ ‖T‖ * ‖x‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ T x
+      exact T.le_opNorm x
+- id: operator_norm_le_iff
+  kind: gap
+  level: 3
+  topic: 関数解析・作用素ノルム
+  statement: 有界線形作用素Tと非負の実数Mについて、‖T‖≤Mであることと、全てのxで‖T x‖≤M‖x‖であることは同値である。
+  statement_en: For a bounded linear operator T and M ≥ 0, ‖T‖ ≤ M if and only if ‖T x‖ ≤ M‖x‖ for all x.
+  assumptions: [E, Fはノルム空間, TはEからFへの有界線形作用素, M≥0]
+  quantifiers: [任意のT, 任意のM≥0]
+  conclusion: ‖T‖≤Mと、全てのxでの‖T x‖≤M‖x‖は同値である。
+  answer: |
+    ‖T‖≤Mなら、‖T x‖≤‖T‖‖x‖≤M‖x‖である。逆に全てのxで‖T x‖≤M‖x‖ならMは定義に現れる定数の一つなので、その下限である‖T‖はM以下である。
+  strategy: One direction uses the basic bound; the other uses that the norm is the infimum of admissible constants.
+  sketch:
+    - "derive: If ‖T‖ ≤ M, then ‖T x‖ ≤ ‖T‖‖x‖ ≤ M‖x‖."
+    - "translate: If the inequality holds for all x, then M is an admissible constant."
+    - "conclude: The infimum ‖T‖ of admissible constants is at most M."
+  openmath: (forall (E F T M) (-> (and (normed_space E) (normed_space F) (bounded_operator T E F) (>= M 0)) (<-> (<= (norm T) M) (forall (x) (-> (in x E) (<= (norm (fn_value T x)) (* M (norm x))))))))
+  hard_negative:
+    statement: 負のMも含めて同じ同値が成り立つ。
+    reason: E={0}のときT=0で全てのxについて0≤M·0が成り立つが、M<0なら‖T‖=0≤Mは偽である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (T : E →L[𝕜] F) (M : ℝ), 0 ≤ M → (‖T‖ ≤ M ↔ ∀ x, ‖T x‖ ≤ M * ‖x‖)
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ T M hM
+      exact ContinuousLinearMap.opNorm_le_iff hM
+- id: operator_norm_comp_le
+  kind: gap
+  level: 3
+  topic: 関数解析・作用素ノルム
+  statement: 有界線形作用素の合成について‖S∘T‖≤‖S‖‖T‖が成り立つ。
+  statement_en: For bounded linear operators T from E to F and S from F to G, ‖S∘T‖ ≤ ‖S‖‖T‖.
+  assumptions: [E, F, Gはノルム空間, TはEからFへ、SはFからGへの有界線形作用素]
+  quantifiers: [任意のS, T]
+  conclusion: ‖S∘T‖≤‖S‖‖T‖である。
+  answer: |
+    任意のxについて‖S(T x)‖≤‖S‖‖T x‖≤‖S‖‖T‖‖x‖である。よって‖S‖‖T‖はS∘Tの有界性の定数であり、作用素ノルムの定義から‖S∘T‖≤‖S‖‖T‖となる。
+  strategy: Apply the basic bound twice and use the characterization of the operator norm.
+  sketch:
+    - "derive: For every x, ‖S(T x)‖ ≤ ‖S‖‖T x‖ ≤ ‖S‖‖T‖‖x‖."
+    - "conclude: Hence ‖S‖‖T‖ is an admissible constant, so ‖S∘T‖ ≤ ‖S‖‖T‖."
+  openmath: (forall (E F G S T) (-> (and (normed_space E) (normed_space F) (normed_space G) (bounded_operator T E F) (bounded_operator S F G)) (<= (norm (operator_comp S T)) (* (norm S) (norm T)))))
+  hard_negative:
+    statement: 合成については常に‖S∘T‖=‖S‖‖T‖が成り立つ。
+    reason: ℝ²上でT(a,b)=(a,0)、S(a,b)=(0,b)とするとS∘T=0だが‖S‖‖T‖=1である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F G : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [NormedAddCommGroup G] [NormedSpace 𝕜 G] (S : F →L[𝕜] G) (T : E →L[𝕜] F), ‖S.comp T‖ ≤ ‖S‖ * ‖T‖
+  proof: |
+    by
+      intro 𝕜 _ E F G _ _ _ _ _ _ S T
+      exact S.opNorm_comp_le T
+- id: operator_norm_sup_unit_ball
+  kind: gap
+  level: 3
+  topic: 関数解析・作用素ノルム
+  statement: 有界線形作用素Tの作用素ノルムは、閉単位球上の‖T x‖の上限に等しい。
+  statement_en: The operator norm of a bounded linear operator T equals the supremum of ‖T x‖ over the closed unit ball.
+  assumptions: [E, Fはノルム空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: ‖T‖=sup{‖T x‖ ; ‖x‖≤1}である。
+  answer: |
+    上限をsとする。‖x‖≤1なら‖T x‖≤‖T‖なのでs≤‖T‖である。逆にx≠0のときx/‖x‖は閉単位球にあるから、線形性より‖T x‖≤s‖x‖となる。x=0でもこの不等式は成り立つので、作用素ノルムの定義から‖T‖≤sである。
+  strategy: Compare the supremum with the norm in both directions, normalizing vectors for the harder direction.
+  sketch:
+    - "setup: Let s be the supremum of ‖T x‖ over ‖x‖ ≤ 1."
+    - "derive: The bound ‖T x‖ ≤ ‖T‖‖x‖ gives s ≤ ‖T‖."
+    - "derive: Applying the definition of s to x/‖x‖ gives ‖T x‖ ≤ s‖x‖."
+    - "conclude: Thus ‖T‖ ≤ s and the two values agree."
+  openmath: (forall (E F T) (-> (and (normed_space E) (normed_space F) (bounded_operator T E F)) (and (forall (x) (-> (in x (unit_closed_ball E)) (<= (norm (fn_value T x)) (norm T)))) (forall (s) (-> (forall (x) (-> (in x (unit_closed_ball E)) (<= (norm (fn_value T x)) s))) (<= (norm T) s))))))
+  hard_negative:
+    statement: 作用素ノルムの上限は、閉単位球上で必ず最大値として達成される。
+    reason: ℓ²上の対角作用素で係数が1-1/nのものは、ノルムが1だが‖T x‖=1となる単位ベクトルをもたない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (T : E →L[𝕜] F), sSup ((fun x => ‖T x‖) '' Metric.closedBall (0 : E) 1) = ‖T‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ T
+      exact T.sSup_unitClosedBall_eq_norm
+- id: bounded_operator_space_complete
+  kind: textbook
+  level: 3
+  topic: 関数解析・バナッハ空間
+  statement: Fがバナッハ空間なら、ノルム空間EからFへの有界線形作用素全体は作用素ノルムでバナッハ空間である。
+  statement_en: If F is a Banach space and E is a normed space, the space of bounded linear operators from E to F is complete in the operator norm.
+  assumptions: [Eはノルム空間, Fはバナッハ空間]
+  quantifiers: [任意のE, F]
+  conclusion: EからFへの有界線形作用素全体は完備である。
+  answer: |
+    作用素ノルムのコーシー列T_nをとる。各xで‖T_n x-T_m x‖≤‖T_n-T_m‖‖x‖なので(T_n x)はFのコーシー列であり、極限T xをもつ。Tは線形で、コーシー性の不等式でmを極限にとると‖T_n-T‖→0と有界性が従う。
+  strategy: Build the limit pointwise from completeness of F, then upgrade to operator-norm convergence.
+  sketch:
+    - "setup: Take a Cauchy sequence T_n in operator norm."
+    - "derive: For each x, (T_n x) is Cauchy in F, so define T x as its limit."
+    - "derive: Linearity passes to the limit, so T is linear."
+    - "derive: Letting m → ∞ in ‖T_n x - T_m x‖ ≤ ε‖x‖ gives ‖T_n x - T x‖ ≤ ε‖x‖."
+    - "conclude: T is bounded and T_n → T in operator norm."
+  openmath: (forall (E F) (-> (and (normed_space E) (banach_space F)) (complete_space (bounded_operator_space E F))))
+  hard_negative:
+    statement: Eがバナッハ空間であれば、Fが完備でなくても有界線形作用素全体は完備である。
+    reason: E=𝕜のとき作用素全体はFと等長同型になるので、Fが完備でなければ完備にならない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace F], CompleteSpace (E →L[𝕜] F)
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _
+      infer_instance
+- id: absolutely_summable_implies_summable
+  kind: textbook
+  level: 3
+  topic: 関数解析・バナッハ空間
+  statement: バナッハ空間の点列について、ノルムの級数が収束するならば、もとの級数は項の順序によらず収束する(無条件収束)。
+  statement_en: In a Banach space, if the series of norms of a sequence converges, then the series itself converges unconditionally.
+  assumptions: [Eはバナッハ空間, (a_n)はEの点列, Σ‖a_n‖は収束する]
+  quantifiers: [任意のE, a]
+  conclusion: Σa_nは無条件収束する。
+  answer: |
+    有限な添字集合Sについて‖Σ_{k∈S}a_k‖≤Σ_{k∈S}‖a_k‖である。ノルムの級数は収束するので、任意のε>0に対しNがあり、N以上の添字だけからなる有限集合Sでは右辺がεより小さい。よって有限集合にわたる部分和の族はコーシー族であり、Eの完備性から収束する。この収束は項の順序によらず、通常の部分和の列も同じ和に収束する。
+  strategy: The triangle inequality makes the sums over finite index sets a Cauchy net, and completeness gives the limit.
+  sketch:
+    - "setup: For a finite index set S, bound the norm of the sum over S by the sum of the norms."
+    - "derive: A tail of the convergent series of norms makes this bound small for every finite S beyond some N."
+    - "derive: So the sums over finite index sets form a Cauchy net."
+    - "conclude: Completeness of E gives unconditional convergence of the series."
+  openmath: (forall (E a) (-> (and (banach_space E) (series_abs_summable a)) (series_summable a)))
+  hard_negative:
+    statement: 任意のノルム空間で、絶対収束する級数は収束する。
+    reason: 完備性が必要である。有限列全体にℓ²ノルムを入れた空間では、a_n=2^{-n}e_nの級数は絶対収束するが、極限が有限列にならず収束しない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [CompleteSpace E] (a : ℕ → E), Summable (fun n => ‖a n‖) → Summable a
+  proof: |
+    by
+      intro E _ _ a h
+      exact h.of_norm
+- id: complete_iff_absolutely_summable_converges
+  kind: textbook
+  level: 3
+  topic: 関数解析・バナッハ空間
+  statement: ノルム空間が完備であることと、ノルムの級数が収束する全ての点列について級数の部分和が収束することは同値である。
+  statement_en: A normed space is complete if and only if for every sequence whose series of norms converges, the partial sums converge.
+  assumptions: [Eはノルム空間]
+  quantifiers: [任意のE]
+  conclusion: Eの完備性と、絶対収束する級数の収束は同値である。
+  answer: |
+    完備なら、絶対収束級数の部分和は三角不等式からコーシー列になるので収束する。逆を示す。コーシー列(u_n)をとり、‖u_{n_{k+1}}-u_{n_k}‖≤2^{-k}となる部分列を選ぶ。階差の級数は絶対収束するので仮定より収束し、部分列u_{n_k}が収束する。コーシー列は収束部分列をもてば収束するので、Eは完備である。
+  strategy: For the converse, extract a rapidly converging subsequence of a Cauchy sequence and sum its differences.
+  sketch:
+    - "derive: Completeness makes partial sums of an absolutely summable sequence Cauchy, hence convergent."
+    - "setup: Conversely, take a Cauchy sequence u and a subsequence with consecutive differences at most 2^{-k}."
+    - "apply_theorem: The difference series is absolutely summable, so its partial sums converge by assumption."
+    - "derive: The partial sums telescope, so the subsequence converges."
+    - "conclude: A Cauchy sequence with a convergent subsequence converges, so E is complete."
+  openmath: (forall (E) (-> (normed_space E) (<-> (complete_space E) (forall (a) (-> (series_abs_summable a) (partial_sums_converge a))))))
+  hard_negative:
+    statement: ノルム空間では、完備性と無関係に絶対収束する級数は全て収束する。
+    reason: 有限列全体にℓ²ノルムを入れた完備でない空間では、a_n=2^{-n}e_nの級数は絶対収束するが、部分和の極限が有限列にならないので収束しない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E], CompleteSpace E ↔ ∀ a : ℕ → E, Summable (fun n => ‖a n‖) → ∃ L, Filter.Tendsto (fun n => ∑ i ∈ Finset.range n, a i) Filter.atTop (nhds L)
+  proof: |
+    by
+      intro E _
+      constructor
+      · intro _ a h
+        exact ⟨_, h.of_norm.hasSum.tendsto_sum_nat⟩
+      · exact NormedAddCommGroup.completeSpace_of_summable_imp_tendsto
+- id: finite_dimensional_normed_space_complete
+  kind: textbook
+  level: 3
+  topic: 関数解析・有限次元ノルム空間
+  statement: 実数体または複素数体上の有限次元ノルム空間は完備である。
+  statement_en: A finite-dimensional normed space over ℝ or ℂ is complete.
+  assumptions: [Eは実数体または複素数体上の有限次元ノルム空間]
+  quantifiers: [任意のE]
+  conclusion: Eは完備である。
+  answer: |
+    基底を一つとると、Eは係数の空間𝕜ⁿへの線形全単射をもつ。有限次元ではこの全単射とその逆が連続なので、Eのコーシー列の座標は𝕜ⁿのコーシー列になる。𝕜ⁿは完備だから座標が収束し、逆写像の連続性からもとの列も収束する。
+  strategy: Transfer completeness from the coordinate space along a bicontinuous linear isomorphism.
+  sketch:
+    - "setup: Choose a basis and form the linear isomorphism with the coordinate space."
+    - "apply_theorem: Equivalence of norms makes this isomorphism continuous in both directions."
+    - "derive: A Cauchy sequence in E has Cauchy coordinates, which converge."
+    - "conclude: Applying the inverse gives a limit in E."
+  openmath: (forall (E) (-> (and (normed_space E) (finite_dim_space E)) (complete_space E)))
+  hard_negative:
+    statement: 実ノルム空間は次元によらず全て完備である。
+    reason: 有限列全体に最大値ノルムを入れた無限次元空間は完備でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [FiniteDimensional 𝕜 E], CompleteSpace E
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _
+      exact FiniteDimensional.complete 𝕜 E
+- id: finite_dimensional_closed_ball_compact
+  kind: textbook
+  level: 3
+  topic: 関数解析・有限次元ノルム空間
+  statement: 有限次元ノルム空間の閉球はコンパクトである。特に有限次元ノルム空間は局所コンパクトである。
+  statement_en: Closed balls in a finite-dimensional normed space over ℝ or ℂ are compact; in particular the space is locally compact.
+  assumptions: [Eは実数体または複素数体上の有限次元ノルム空間]
+  quantifiers: [任意のx∈E, 任意の実数r]
+  conclusion: 閉球B(x,r)はコンパクトであり、Eは局所コンパクトである。
+  answer: |
+    基底による線形同型E≅𝕜ⁿは両方向に連続である。閉球はこの同型で𝕜ⁿの有界閉集合に写るので、ハイネ・ボレルの定理によりコンパクトな像をもつ。逆写像の連続性から閉球自身もコンパクトである。各点はコンパクトな近傍として閉球をもつので、Eは局所コンパクトである。
+  strategy: Transport the Heine-Borel theorem from the coordinate space.
+  sketch:
+    - "setup: Fix the bicontinuous linear isomorphism between E and the coordinate space."
+    - "derive: A closed ball maps to a closed bounded set."
+    - "apply_theorem: Heine-Borel makes that image compact."
+    - "conclude: Pull compactness back; closed balls are compact neighbourhoods, so E is locally compact."
+  openmath: (forall (E) (-> (and (normed_space E) (finite_dim_space E)) (and (locally_compact_space E) (forall (x r) (-> (in x E) (compact_set (closed_ball x r)))))))
+  hard_negative:
+    statement: 任意のノルム空間で有界閉集合はコンパクトである。
+    reason: ℓ²の閉単位球は有界閉集合だが、正規直交系が収束部分列をもたないのでコンパクトでない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [FiniteDimensional 𝕜 E], LocallyCompactSpace E ∧ ∀ (x : E) (r : ℝ), IsCompact (Metric.closedBall x r)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _
+      haveI : ProperSpace E := FiniteDimensional.proper 𝕜 E
+      exact ⟨inferInstance, fun x r => isCompact_closedBall x r⟩
+- id: linear_map_on_finite_dimensional_continuous
+  kind: gap
+  level: 3
+  topic: 関数解析・有限次元ノルム空間
+  statement: 有限次元ノルム空間を定義域とする線形写像は連続である。
+  statement_en: Every linear map from a finite-dimensional normed space to a normed space is continuous.
+  assumptions: [Eは有限次元ノルム空間, Fはノルム空間, fはEからFへの線形写像]
+  quantifiers: [任意のf]
+  conclusion: fは連続である。
+  answer: |
+    基底e_1,…,e_nをとり、x=Σc_i e_iと書くと‖f x‖≤Σ|c_i|‖f e_i‖≤(max_i‖f e_i‖)Σ|c_i|である。ノルムの同値性からΣ|c_i|≤C‖x‖となる定数Cがある。よってfは有界であり、連続である。
+  strategy: Bound f on a basis and compare the coordinate norm with the given norm.
+  sketch:
+    - "setup: Expand x in a basis as a sum of c_i e_i."
+    - "derive: The triangle inequality gives ‖f x‖ ≤ (max ‖f e_i‖) Σ|c_i|."
+    - "apply_theorem: Equivalence of norms gives Σ|c_i| ≤ C‖x‖."
+    - "conclude: So f is bounded and hence continuous."
+  openmath: (forall (E F f) (-> (and (normed_space E) (finite_dim_space E) (normed_space F) (linear_operator f E F)) (continuous_map f)))
+  hard_negative:
+    statement: 値域が有限次元であれば、線形写像は必ず連続である。
+    reason: 無限次元ノルム空間には不連続な線形汎関数が存在し、その値域は1次元である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [FiniteDimensional 𝕜 E] (f : E →ₗ[𝕜] F), Continuous f
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ f
+      exact f.continuous_of_finiteDimensional
+- id: finite_dimensional_subspace_closed
+  kind: gap
+  level: 3
+  topic: 関数解析・有限次元ノルム空間
+  statement: ノルム空間の有限次元部分空間は閉集合である。
+  statement_en: A finite-dimensional subspace of a normed space over ℝ or ℂ is closed.
+  assumptions: [Eはノルム空間, KはEの有限次元部分空間]
+  quantifiers: [任意のE, K]
+  conclusion: KはEの閉集合である。
+  answer: |
+    有限次元ノルム空間は完備なのでKは完備である。Kの点列がEのある点xに収束すると、その点列はKのコーシー列であり、Kの点に収束する。極限の一意性からx∈Kとなるので、Kは閉集合である。
+  strategy: Finite-dimensional subspaces are complete, and complete subsets of a metric space are closed.
+  sketch:
+    - "apply_theorem: K is complete because it is a finite-dimensional normed space."
+    - "setup: Take a sequence in K converging to x in E."
+    - "derive: The sequence is Cauchy in K, so it has a limit in K."
+    - "conclude: By uniqueness of limits x lies in K, so K is closed."
+  openmath: (forall (E K) (-> (and (normed_space E) (subspace_of K E) (finite_dim_space K)) (closed_set K)))
+  hard_negative:
+    statement: ノルム空間の部分空間は全て閉集合である。
+    reason: C[0,1]の多項式全体は部分空間だが、ワイエルシュトラスの定理より稠密であり、閉集合でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (K : Submodule 𝕜 E) [FiniteDimensional 𝕜 K], IsClosed (K : Set E)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ K _
+      exact K.closed_of_finiteDimensional
+- id: norm_equivalence_finite_dimensional
+  kind: textbook
+  level: 3
+  topic: 関数解析・有限次元ノルム空間
+  statement: 有限次元実線形空間上の任意の二つのノルムp,qは同値である。すなわち正の定数C,Dがあり、全てのxでp(x)≤C q(x)かつq(x)≤D p(x)となる。
+  statement_en: Any two norms p and q on a finite-dimensional real vector space are equivalent, that is, there are positive constants C and D with p(x) ≤ C q(x) and q(x) ≤ D p(x) for all x.
+  assumptions: [Eは有限次元実線形空間, p, qはE上のノルム]
+  quantifiers: [任意のE, p, q]
+  conclusion: 正の定数C,Dが存在し、全てのxでp(x)≤C q(x)かつq(x)≤D p(x)となる。
+  answer: |
+    基底による座標の最大値ノルムを‖·‖とし、任意のノルムrがこれと同値であることを示せば十分である。三角不等式からr(x)≤a‖x‖であり、rは‖·‖について連続である。‖x‖=1の単位球面はコンパクトで、rはその上で正の最小値mをとる。斉次性からm‖x‖≤r(x)となる。p,qをそれぞれ‖·‖と比べれば結論を得る。
+  strategy: Compare every norm with a fixed coordinate norm, using compactness of the unit sphere for the lower bound.
+  sketch:
+    - "setup: Fix a basis and the sup norm on coordinates."
+    - "derive: The triangle inequality gives r(x) ≤ a‖x‖, so r is continuous for the sup norm."
+    - "apply_theorem: The unit sphere is compact, so r attains a positive minimum m on it."
+    - "derive: Homogeneity gives m‖x‖ ≤ r(x)."
+    - "conclude: Chain the comparisons for p and q to get the constants C and D."
+  openmath: (forall (E p q) (-> (and (finite_dim_space E) (seminorm_definite p E) (seminorm_definite q E)) (exists (C D) (and (> C 0) (> D 0) (forall (x) (-> (in x E) (and (<= (fn_value p x) (* C (fn_value q x))) (<= (fn_value q x) (* D (fn_value p x))))))))))
+  hard_negative:
+    statement: 無限次元の線形空間でも、任意の二つのノルムは同値である。
+    reason: C[0,1]上の最大値ノルムと積分ノルムは同値でない。t^nの積分ノルムは0に近づくが、最大値ノルムは1のままである。
+  target: |
+    ∀ (E : Type*) [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E] (p q : Seminorm ℝ E), (∀ x, p x = 0 → x = 0) → (∀ x, q x = 0 → x = 0) → ∃ C > 0, ∃ D > 0, ∀ x, p x ≤ C * q x ∧ q x ≤ D * p x
+  proof: |
+    by
+      intro E _ _ _ p q hp hq
+      have key : ∀ r : Seminorm ℝ E, (∀ x, r x = 0 → x = 0) →
+          ∃ a > 0, ∃ b > 0, ∀ x, r x ≤ a * ‖(Module.finBasis ℝ E).equivFun x‖ ∧
+            ‖(Module.finBasis ℝ E).equivFun x‖ ≤ b * r x := by
+        intro r hr
+        letI N : NormedAddCommGroup E := AddGroupNorm.toNormedAddCommGroup
+          { r.toAddGroupSeminorm with eq_zero_of_map_eq_zero' := hr }
+        letI S : NormedSpace ℝ E :=
+          { (inferInstance : Module ℝ E) with norm_smul_le := fun c x => (map_smul_eq_mul r c x).le }
+        let L := (Module.finBasis ℝ E).equivFun.toContinuousLinearEquiv
+        let A : E →L[ℝ] (Fin (Module.finrank ℝ E) → ℝ) := L.toContinuousLinearMap
+        let B : (Fin (Module.finrank ℝ E) → ℝ) →L[ℝ] E := L.symm.toContinuousLinearMap
+        refine ⟨‖B‖ + 1, add_pos_of_nonneg_of_pos (norm_nonneg _) one_pos, ‖A‖ + 1,
+          add_pos_of_nonneg_of_pos (norm_nonneg _) one_pos, fun x => ⟨?_, ?_⟩⟩
+        · have h1 : ‖B (A x)‖ ≤ ‖B‖ * ‖A x‖ := B.le_opNorm (A x)
+          have h3 : B (A x) = x := L.symm_apply_apply x
+          rw [h3] at h1
+          exact h1.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right zero_le_one) (norm_nonneg _))
+        · have h1 : ‖A x‖ ≤ ‖A‖ * ‖x‖ := A.le_opNorm x
+          exact h1.trans (mul_le_mul_of_nonneg_right (le_add_of_nonneg_right zero_le_one) (norm_nonneg _))
+      obtain ⟨a, ha, b, hb, h⟩ := key p hp
+      obtain ⟨c, hc, d, hd, h'⟩ := key q hq
+      refine ⟨a * d, mul_pos ha hd, c * b, mul_pos hc hb, fun x => ⟨?_, ?_⟩⟩
+      · calc p x ≤ a * ‖(Module.finBasis ℝ E).equivFun x‖ := (h x).1
+          _ ≤ a * (d * q x) := by gcongr; exact (h' x).2
+          _ = a * d * q x := by ring
+      · calc q x ≤ c * ‖(Module.finBasis ℝ E).equivFun x‖ := (h' x).1
+          _ ≤ c * (b * p x) := by gcongr; exact (h x).2
+          _ = c * b * p x := by ring
+- id: riesz_lemma_almost_orthogonal
+  kind: textbook
+  level: 3
+  topic: 関数解析・リースの補題
+  statement: ノルム空間の閉真部分空間Fとr<1に対し、‖x‖=1かつ全てのy∈Fで‖x-y‖≥rとなるxが存在する。
+  statement_en: For a proper closed subspace F of a normed space and r < 1, there is x with ‖x‖ = 1 and ‖x - y‖ ≥ r for all y in F.
+  assumptions: [Eはノルム空間, FはEの閉真部分空間, r<1]
+  quantifiers: [任意のE, F, r]
+  conclusion: 単位ベクトルxで、Fの全ての点からの距離がr以上であるものが存在する。
+  answer: |
+    r>0としてよい。z∉Fをとると、Fが閉なのでd=dist(z,F)>0である。d/r>dからy₀∈Fで‖z-y₀‖<d/rとなるものを選び、x=(z-y₀)/‖z-y₀‖とおく。y∈Fに対しy₀+‖z-y₀‖y∈Fなので‖x-y‖≥d/‖z-y₀‖>rとなる。
+  strategy: Pick a near-best approximation of a point outside F and normalize the difference.
+  sketch:
+    - "setup: Assume r > 0, take z outside F and set d = dist(z, F) > 0."
+    - "construct: Choose y₀ in F with ‖z - y₀‖ < d/r and let x be the normalized difference."
+    - "derive: For y in F, ‖x - y‖‖z - y₀‖ is the distance from z to a point of F, so it is at least d."
+    - "conclude: Thus ‖x - y‖ ≥ d/‖z - y₀‖ > r."
+  openmath: (forall (E K r) (-> (and (normed_space E) (proper_subspace_of K E) (closed_set K) (< r 1)) (exists (x) (and (in x E) (= (norm x) 1) (forall (y) (-> (in y K) (>= (norm (- x y)) r)))))))
+  hard_negative:
+    statement: 閉部分空間であれば真部分空間でなくても同じ結論が成り立つ。
+    reason: F=Eのときx∈Fなのでy=xととると‖x-y‖=0となり、0<r<1で結論が崩れる。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (F : Submodule 𝕜 E) (r : ℝ), IsClosed (F : Set E) → F ≠ ⊤ → r < 1 → ∃ x : E, ‖x‖ = 1 ∧ ∀ y ∈ F, r ≤ ‖x - y‖
+  proof: |
+    by
+      intro 𝕜 _ E _ _ F r hF hne hr
+      obtain ⟨z, hz⟩ : ∃ z : E, z ∉ F := by
+        by_contra h
+        push Not at h
+        exact hne (Submodule.eq_top_iff'.2 h)
+      obtain ⟨x, _, h1, h2⟩ := riesz_lemma_of_lt_one hF ⟨z, hz⟩ hr
+      exact ⟨x, h1, h2⟩
+- id: compact_unit_ball_implies_finite_dimensional
+  kind: textbook
+  level: 3
+  topic: 関数解析・リースの補題
+  statement: ノルム空間の閉単位球がコンパクトならば、その空間は有限次元である。
+  statement_en: If the closed unit ball of a normed space is compact, then the space is finite dimensional.
+  assumptions: [Eはノルム空間, Eの閉単位球はコンパクト]
+  quantifiers: [任意のE]
+  conclusion: Eは有限次元である。
+  answer: |
+    Eが無限次元だと仮定する。有限次元部分空間は閉で真部分空間なので、リースの補題から単位ベクトルx_1,x_2,…を、x_{n+1}がx_1,…,x_nの張る部分空間から距離1/2以上離れるように帰納的に選べる。この列は‖x_n-x_m‖≥1/2なので収束部分列をもたず、閉単位球のコンパクト性に反する。
+  strategy: Use the Riesz lemma to build a separated sequence in the unit ball when the dimension is infinite.
+  sketch:
+    - "contradiction: Assume E is infinite dimensional."
+    - "derive: The span of finitely many vectors is a proper closed subspace."
+    - "construct: Apply the Riesz lemma inductively to get unit vectors x_n with ‖x_n - x_m‖ ≥ 1/2."
+    - "derive: This sequence has no convergent subsequence."
+    - "conclude: This contradicts compactness of the closed unit ball."
+  openmath: (forall (E) (-> (and (normed_space E) (compact_set (unit_closed_ball E))) (finite_dim_space E)))
+  hard_negative:
+    statement: 閉単位球が有界閉集合であるノルム空間は有限次元である。
+    reason: 閉単位球はどのノルム空間でも有界閉集合である。必要なのはコンパクト性である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E], IsCompact (Metric.closedBall (0 : E) 1) → FiniteDimensional 𝕜 E
+  proof: |
+    by
+      intro 𝕜 _ E _ _ h
+      exact FiniteDimensional.of_isCompact_closedBall 𝕜 one_pos h
+- id: hahn_banach_norm_preserving_extension
+  kind: named
+  level: 4
+  topic: 関数解析・ハーン・バナッハの定理
+  statement: ノルム空間Eの部分空間p上の有界線形汎関数fは、ノルムを変えずにE全体の有界線形汎関数へ拡張できる(ハーン・バナッハの定理)。
+  statement_en: Hahn-Banach theorem. A bounded linear functional f on a subspace p of a normed space E over ℝ or ℂ extends to a bounded linear functional g on E with ‖g‖ = ‖f‖.
+  assumptions: [Eは実数体または複素数体上のノルム空間, pはEの部分空間, fはp上の有界線形汎関数]
+  quantifiers: [任意のE, p, f]
+  conclusion: pでfと一致し‖g‖=‖f‖を満たすE上の有界線形汎関数gが存在する。
+  answer: |
+    概略を述べる。実数体の場合、まず1次元だけ拡張する。x∉pに対しf(y)+c≤‖f‖‖y+x‖が全てのy∈pで成り立つcを、劣線形性を用いて選ぶ。次にツォルンの補題で極大な拡張をとると、1次元拡張の議論から定義域は全空間になる。複素数体の場合は、実部に実の場合を適用しg(x)=u(x)-iu(ix)と戻せばノルムは保たれる。
+  strategy: Extend one dimension at a time under a norm bound, then use Zorn's lemma; reduce the complex case to the real part.
+  sketch:
+    - "setup: Treat the real case with the sublinear bound p(x) = ‖f‖‖x‖."
+    - "construct: For x outside the domain, choose a value c compatible with the bound on the larger subspace."
+    - "apply_theorem: Zorn's lemma gives a maximal norm-bounded extension."
+    - "contradiction: A maximal extension with proper domain could be extended further."
+    - "case_split: For complex scalars, apply the real case to the real part and rebuild g."
+    - "conclude: The resulting g extends f and satisfies ‖g‖ = ‖f‖."
+  openmath: (forall (E K f) (-> (and (normed_space E) (subspace_of K E) (in f (dual_space K))) (exists (g) (and (in g (dual_space E)) (restricts_to g K f) (= (norm g) (norm f))))))
+  hard_negative:
+    statement: 有界線形作用素は値域によらずノルムを変えずに全空間へ拡張できる。
+    reason: 値域がスカラー体でないと一般に成り立たない。例えばc₀はℓ^∞の中で補空間をもたず、c₀上の恒等写像はℓ^∞からc₀への有界線形作用素に拡張できない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (p : Submodule 𝕜 E) (f : StrongDual 𝕜 p), ∃ g : StrongDual 𝕜 E, (∀ x : p, g x = f x) ∧ ‖g‖ = ‖f‖
+  proof: |
+    by
+      intro 𝕜 _ E _ _ p f
+      exact exists_extension_norm_eq p f
+- id: open_mapping_theorem
+  kind: named
+  level: 4
+  topic: 関数解析・開写像定理
+  statement: バナッハ空間の間の全射な有界線形作用素は開写像である(開写像定理)。
+  statement_en: Open mapping theorem. A surjective bounded linear operator between Banach spaces is an open map.
+  assumptions: [E, Fはバナッハ空間, TはEからFへの有界線形作用素, Tは全射]
+  quantifiers: [任意のE, F, T]
+  conclusion: Tは開集合を開集合へ写す。
+  answer: |
+    概略を述べる。全射性からFはT(nB)の閉包の和集合であり、ベールのカテゴリー定理によりある閉包が内点をもつ。線形性から0の近傍がT(B)の閉包に含まれる。次に近似と級数の議論を行い、Eの完備性を使って閉包を外すと、0の近傍がT(B)自身に含まれる。平行移動と拡大により一般の開集合の像も開である。
+  strategy: Apply the Baire category theorem to get an interior point of the closure of an image, then remove the closure by successive approximation.
+  sketch:
+    - "setup: Write F as the union of closures of T(nB), where B is the unit ball of E."
+    - "apply_theorem: The Baire category theorem gives a closure with nonempty interior."
+    - "derive: By symmetry and linearity, a ball around 0 lies in the closure of T(B)."
+    - "construct: Solve T x = y by a geometric series of approximate preimages using completeness of E."
+    - "conclude: A ball around 0 lies in T(B), and translation gives openness of T."
+  openmath: (forall (E F T) (-> (and (banach_space E) (banach_space F) (bounded_operator T E F) (surjective_on T F)) (open_map T)))
+  hard_negative:
+    statement: 全射な有界線形作用素は、定義域が完備でなくても開写像である。
+    reason: Eの完備性は必要である。Fを無限次元バナッハ空間とする。不連続な線形汎関数φをとり、ノルム‖x‖+|φ(x)|を入れた空間からFへの恒等写像は全射で有界だが、開写像でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] [CompleteSpace F] (T : E →L[𝕜] F), Function.Surjective T → IsOpenMap T
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T hT
+      exact T.isOpenMap hT
+- id: closed_graph_theorem
+  kind: named
+  level: 4
+  topic: 関数解析・閉グラフ定理
+  statement: バナッハ空間の間の線形写像は、グラフが閉集合ならば連続である(閉グラフ定理)。
+  statement_en: Closed graph theorem. A linear map between Banach spaces whose graph is closed in the product is continuous.
+  assumptions: [E, Fはバナッハ空間, fはEからFへの線形写像, fのグラフはE×Fの閉集合]
+  quantifiers: [任意のE, F, f]
+  conclusion: fは連続である。
+  answer: |
+    グラフGは閉部分空間なのでバナッハ空間である。射影π(x,f x)=xはGからEへの有界線形な全単射だから、有界逆写像定理により逆写像x↦(x,f x)も連続である。これと第2成分への射影を合成するとfになるので、fは連続である。
+  strategy: Apply the bounded inverse theorem to the projection from the graph onto E.
+  sketch:
+    - "setup: The closed graph G is a closed subspace of the Banach space E×F, hence a Banach space."
+    - "derive: The first projection is a bounded linear bijection from G to E."
+    - "apply_theorem: The bounded inverse theorem makes x ↦ (x, f x) continuous."
+    - "conclude: Composing with the second projection shows f is continuous."
+  openmath: (forall (E F f) (-> (and (banach_space E) (banach_space F) (linear_operator f E F) (closed_graph f)) (continuous_map f)))
+  hard_negative:
+    statement: 閉グラフをもつ写像は、線形でなくても連続である。
+    reason: 実関数f(x)=1/x(x≠0)、f(0)=0のグラフは閉集合だが、fは原点で連続でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] [CompleteSpace F] (f : E →ₗ[𝕜] F), IsClosed (f.graph : Set (E × F)) → Continuous f
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ f hf
+      exact f.continuous_of_isClosed_graph hf
+- id: banach_steinhaus_uniform_boundedness
+  kind: named
+  level: 4
+  topic: 関数解析・一様有界性原理
+  statement: バナッハ空間からノルム空間への有界線形作用素の族が各点で有界ならば、作用素ノルムは一様に有界である(バナッハ・シュタインハウスの定理)。
+  statement_en: Banach-Steinhaus theorem. If a family of bounded linear operators from a Banach space to a normed space is pointwise bounded, then the operator norms are uniformly bounded.
+  assumptions: [Eはバナッハ空間, Fはノルム空間, (g_i)はEからFへの有界線形作用素の族, 各xで(‖g_i x‖)は有界]
+  quantifiers: [任意の族g]
+  conclusion: 全てのiで‖g_i‖≤C'となる定数C'が存在する。
+  answer: |
+    閉集合A_n={x; 全てのiで‖g_i x‖≤n}の和はEに等しいので、ベールのカテゴリー定理からあるA_nが球B(a,r)を含む。‖h‖<rのとき‖g_i h‖≤‖g_i(a+h)‖+‖g_i a‖≤2nである。よって‖g_i‖≤2n/rが全てのiで成り立つ。
+  strategy: Use the Baire category theorem to find a ball on which the family is uniformly bounded, then translate it to the origin.
+  sketch:
+    - "setup: Define closed sets A_n of points where all g_i are bounded by n."
+    - "apply_theorem: Pointwise boundedness gives E as the union of A_n, so Baire yields a ball inside some A_n."
+    - "derive: For small h, g_i h = g_i(a+h) - g_i a has norm at most 2n."
+    - "conclude: Scaling gives ‖g_i‖ ≤ 2n/r for all i."
+  openmath: (forall (E F g) (-> (and (banach_space E) (normed_space F) (forall (i) (bounded_operator (fn_value g i) E F)) (forall (x) (-> (in x E) (exists (C) (forall (i) (<= (norm (fn_value (fn_value g i) x)) C)))))) (exists (D) (forall (i) (<= (norm (fn_value g i)) D)))))
+  hard_negative:
+    statement: 定義域が完備でなくても、各点で有界な有界線形作用素の族は一様に有界である。
+    reason: 最大値ノルムを入れた有限列全体でf_n(x)=n x_nとおく。各xの0でない項は有限個なので各点で有界だが、‖f_n‖=nである。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F ι : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] (g : ι → E →L[𝕜] F), (∀ x, ∃ C, ∀ i, ‖g i x‖ ≤ C) → ∃ C', ∀ i, ‖g i‖ ≤ C'
+  proof: |
+    by
+      intro 𝕜 _ E F ι _ _ _ _ _ g h
+      exact banach_steinhaus h
+- id: banach_alaoglu_theorem
+  kind: named
+  level: 4
+  topic: 関数解析・弱*コンパクト性
+  statement: ノルム空間の双対空間の原点中心の閉球は、弱*位相でコンパクトである(バナッハ・アラオグルの定理)。
+  statement_en: Banach-Alaoglu theorem. The closed ball of any radius about 0 in the dual of a normed space is compact in the weak-* topology.
+  assumptions: [Eは実数体または複素数体上のノルム空間, rは実数]
+  quantifiers: [任意のE, r]
+  conclusion: 双対空間の閉球{f; ‖f‖≤r}は弱*コンパクトである。
+  answer: |
+    概略を述べる。閉球の元fを値の組(f(x))_{x∈E}と見て、積空間Π_{x∈E}{z; |z|≤r‖x‖}へ埋め込む。チコノフの定理によりこの積はコンパクトである。埋め込みは弱*位相と積位相の同相である。像は線形性という閉条件で定まるので閉集合であり、閉球はコンパクトである。
+  strategy: Embed the dual ball into a product of compact discs and apply Tychonoff's theorem.
+  sketch:
+    - "construct: Map f to the family of values (f(x)) in the product of discs of radius r‖x‖."
+    - "apply_theorem: Tychonoff's theorem makes the product compact."
+    - "translate: The weak-* topology on the ball coincides with the product topology."
+    - "derive: Linearity is a closed condition, so the image is closed."
+    - "conclude: The ball is homeomorphic to a closed subset of a compact space, hence compact."
+  openmath: (forall (E r) (-> (normed_space E) (weak_star_compact (closed_ball 0 r) E)))
+  hard_negative:
+    statement: 無限次元ノルム空間の双対空間の閉単位球は、ノルム位相でコンパクトである。
+    reason: コンパクトになるのは弱*位相である。双対空間は無限次元なので、リースの定理からノルム位相の閉単位球はコンパクトでない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (r : ℝ), IsCompact (WeakDual.toStrongDual ⁻¹' Metric.closedBall (0 : StrongDual 𝕜 E) r)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ r
+      exact WeakDual.isCompact_closedBall (𝕜 := 𝕜) (E := E) 0 r
+- id: riesz_representation_theorem
+  kind: named
+  level: 4
+  topic: 関数解析・リースの表現定理
+  statement: ヒルベルト空間上の有界線形汎関数fに対し、全てのxでf(x)=⟨y,x⟩となるyがただ一つ存在し、そのノルムは‖f‖に等しい(リースの表現定理)。
+  statement_en: Riesz representation theorem. For a bounded linear functional f on a Hilbert space there is a unique y with f(x) = ⟨y, x⟩ for all x, and this y satisfies ‖y‖ = ‖f‖.
+  assumptions: [Eは実数体または複素数体上のヒルベルト空間, fはE上の有界線形汎関数, 内積は第1成分について共役線形]
+  quantifiers: [任意のE, f]
+  conclusion: f(x)=⟨y,x⟩を満たすyが一意に存在し、‖y‖=‖f‖である。
+  answer: |
+    f=0ならy=0でよい。f≠0とし、閉部分空間ker fの直交補空間から単位ベクトルzをとる。f(x)z-f(z)x∈ker fなのでzとの内積をとると、f(x)=⟨conj(f z)z,x⟩を得る。これがyである。一意性は⟨y-y',x⟩=0でx=y-y'とすれば従う。コーシー・シュワルツから‖f‖≤‖y‖であり、f(y)=‖y‖²から等号が成り立つ。
+  strategy: Use the orthogonal complement of the kernel to produce the representing vector, then compare norms via Cauchy-Schwarz.
+  sketch:
+    - "case_split: The case f = 0 is settled by y = 0."
+    - "apply_theorem: For f ≠ 0, the projection theorem gives a unit vector z orthogonal to the closed kernel."
+    - "derive: f(x)z - f(z)x lies in the kernel, so its inner product with z vanishes."
+    - "construct: This gives f(x) = ⟨conj(f z) z, x⟩."
+    - "derive: Uniqueness follows by testing the difference of two representers on itself."
+    - "conclude: Cauchy-Schwarz and f(y) = ‖y‖² give ‖f‖ = ‖y‖."
+  openmath: (forall (E f) (-> (and (hilbert_space E) (in f (dual_space E))) (exists (y) (and (in y E) (= (norm y) (norm f)) (forall (x) (-> (in x E) (= (fn_value f x) (inner_product y x)))) (forall (z) (-> (and (in z E) (forall (x) (-> (in x E) (= (fn_value f x) (inner_product z x))))) (= z y)))))))
+  hard_negative:
+    statement: 完備でない内積空間でも、任意の有界線形汎関数は内積で表現できる。
+    reason: 有限列全体にℓ²の内積を入れた空間で、f(x)=Σ2^{-n}x_nは有界だが、表現するベクトルは(2^{-n})となり有限列でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] (f : StrongDual 𝕜 E), (∃! y : E, ∀ x, f x = inner 𝕜 y x) ∧ ∀ y : E, (∀ x, f x = inner 𝕜 y x) → ‖y‖ = ‖f‖
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _ f
+      have key : ∀ y : E, (∀ x, f x = inner 𝕜 y x) → InnerProductSpace.toDual 𝕜 E y = f :=
+        fun y hy => ContinuousLinearMap.ext fun x => by
+          rw [InnerProductSpace.toDual_apply_apply, hy x]
+      refine ⟨⟨(InnerProductSpace.toDual 𝕜 E).symm f,
+        fun x => (InnerProductSpace.toDual_symm_apply).symm, fun y hy => ?_⟩, fun y hy => ?_⟩
+      · rw [← key y hy]
+        exact ((InnerProductSpace.toDual 𝕜 E).symm_apply_apply y).symm
+      · rw [← key y hy]
+        exact ((InnerProductSpace.toDual 𝕜 E).norm_map y).symm
+- id: gelfand_spectral_radius_formula
+  kind: named
+  level: 4
+  topic: 関数解析・スペクトル半径
+  statement: 複素バナッハ環の元aについて、‖a^n‖^{1/n}はaのスペクトル半径に収束する(ゲルファントの公式)。
+  statement_en: Gelfand formula. For an element a of a complex Banach algebra, the sequence ‖a^n‖^{1/n} converges to the spectral radius of a.
+  assumptions: [Aは複素バナッハ環, a∈A]
+  quantifiers: [任意のA, a]
+  conclusion: ‖a^n‖^{1/n}はaのスペクトル半径r(a)に収束する。
+  answer: |
+    概略を述べる。λ∈σ(a)ならλ^n∈σ(a^n)なので|λ|≤‖a^n‖^{1/n}であり、r(a)≤liminf‖a^n‖^{1/n}となる。逆向きには、z↦(1-za)^{-1}が|z|<1/r(a)で正則であることを使う。そのべき級数Σz^n a^nの収束半径についてコーシー・アダマールの公式を用いると、limsup‖a^n‖^{1/n}≤r(a)を得る。
+  strategy: Get the lower bound from the spectral mapping of powers and the upper bound from holomorphy of the resolvent via the power series radius.
+  sketch:
+    - "derive: λ ∈ σ(a) implies λ^n ∈ σ(a^n), so |λ| ≤ ‖a^n‖^{1/n}."
+    - "derive: Hence r(a) ≤ liminf ‖a^n‖^{1/n}."
+    - "apply_theorem: The map z ↦ (1 - z a)^{-1} is holomorphic on |z| < 1/r(a)."
+    - "translate: Its power series is the sum of z^n a^n."
+    - "apply_theorem: The Cauchy-Hadamard formula gives limsup ‖a^n‖^{1/n} ≤ r(a)."
+    - "conclude: Liminf and limsup agree with r(a)."
+  openmath: (forall (A a) (-> (and (complex_banach_algebra A) (in a A)) (seq_fn_tends_to (lambda (n) (^ (norm (^ a n)) (/ 1 n))) (spectral_radius a))))
+  hard_negative:
+    statement: 複素バナッハ環の任意の元でスペクトル半径はノルムに等しい。
+    reason: 冪零行列では‖a‖>0だがスペクトル半径は0である。
+  target: |
+    ∀ (A : Type*) [NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A] (a : A), Filter.Tendsto (fun n : ℕ => ENNReal.ofReal (‖a ^ n‖ ^ (1 / n : ℝ))) Filter.atTop (nhds (spectralRadius ℂ a))
+  proof: |
+    by
+      intro A _ _ _ a
+      exact spectrum.pow_norm_pow_one_div_tendsto_nhds_spectralRadius a
+- id: bounded_inverse_theorem
+  kind: textbook
+  level: 4
+  topic: 関数解析・開写像定理
+  statement: バナッハ空間の間の全単射な有界線形作用素の逆写像は有界である(有界逆写像定理)。
+  statement_en: Bounded inverse theorem. A bijective bounded linear operator between Banach spaces has a bounded linear inverse.
+  assumptions: [E, Fはバナッハ空間, TはEからFへの有界線形作用素, Tは全単射]
+  quantifiers: [任意のE, F, T]
+  conclusion: S∘T=id、T∘S=idを満たす有界線形作用素Sが存在する。
+  answer: |
+    逆写像S=T⁻¹は線形である。開写像定理よりTは開写像なので、開集合Uに対しS⁻¹(U)=T(U)は開集合である。よってSは連続であり、線形性から有界である。
+  strategy: Openness of T is exactly continuity of its inverse.
+  sketch:
+    - "derive: The set-theoretic inverse S of T is linear."
+    - "apply_theorem: By the open mapping theorem T is an open map."
+    - "translate: For open U, the preimage of U under S equals T(U), which is open."
+    - "conclude: So S is continuous, that is, bounded."
+  openmath: (forall (E F T) (-> (and (banach_space E) (banach_space F) (bounded_operator T E F) (bijective_on T E F)) (exists (S) (and (bounded_operator S F E) (forall (x) (-> (in x E) (= (fn_value S (fn_value T x)) x))) (forall (y) (-> (in y F) (= (fn_value T (fn_value S y)) y)))))))
+  hard_negative:
+    statement: ノルム空間の間の全単射な有界線形作用素の逆写像は常に有界である。
+    reason: 有限列全体でT(x_n)=(x_n/n)はℓ²ノルムについて有界な全単射だが、逆写像は‖T⁻¹e_n‖=nで有界でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] [CompleteSpace F] (T : E →L[𝕜] F), Function.Bijective T → ∃ S : F →L[𝕜] E, (∀ x, S (T x) = x) ∧ ∀ y, T (S y) = y
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T h
+      let e := (LinearEquiv.ofBijective (T : E →ₗ[𝕜] F) h).toContinuousLinearEquivOfContinuous T.continuous
+      exact ⟨e.symm.toContinuousLinearMap, fun x => e.symm_apply_apply x, fun y => e.apply_symm_apply y⟩
+- id: surjective_operator_preimage_norm_bound
+  kind: gap
+  level: 4
+  topic: 関数解析・開写像定理
+  statement: バナッハ空間の間の全射な有界線形作用素Tについて、正の定数Cがあり、全てのyはT x=yかつ‖x‖≤C‖y‖を満たすxをもつ。
+  statement_en: For a surjective bounded linear operator T between Banach spaces, there is C > 0 such that every y has a preimage x with T x = y and ‖x‖ ≤ C‖y‖.
+  assumptions: [E, Fはバナッハ空間, TはEからFへの全射な有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: 全てのyに‖x‖≤C‖y‖を満たす逆像xが存在するような正の定数Cがある。
+  answer: |
+    開写像定理からT(単位開球)は0の近傍なので、あるδ>0で‖y‖≤δのyはT(単位開球)に入る。y≠0ならδy/‖y‖=T zとなる‖z‖<1がある。x=(‖y‖/δ)zとおくとT x=yで‖x‖≤(1/δ)‖y‖である。よってC=1/δとすればよく、y=0はx=0でよい。
+  strategy: Rescale the open neighbourhood from the open mapping theorem.
+  sketch:
+    - "apply_theorem: The open mapping theorem gives δ > 0 with all ‖y‖ ≤ δ in the image of the unit ball."
+    - "construct: For y ≠ 0, choose z in the unit ball with T z = δ y/‖y‖."
+    - "derive: Then x = (‖y‖/δ) z satisfies T x = y and ‖x‖ ≤ (1/δ)‖y‖."
+    - "conclude: C = 1/δ works, with x = 0 for y = 0."
+  openmath: (forall (E F T) (-> (and (banach_space E) (banach_space F) (bounded_operator T E F) (surjective_on T F)) (exists (C) (and (> C 0) (forall (y) (-> (in y F) (exists (x) (and (in x E) (= (fn_value T x) y) (<= (norm x) (* C (norm y)))))))))))
+  hard_negative:
+    statement: 同じ定数Cで、任意のxについて‖x‖≤C‖T x‖が成り立つ。
+    reason: Tに核があると成り立たない。T(a,b)=aは全射だが、x=(0,1)でT x=0である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] [CompleteSpace F] (T : E →L[𝕜] F), Function.Surjective T → ∃ C > 0, ∀ y, ∃ x, T x = y ∧ ‖x‖ ≤ C * ‖y‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T h
+      exact T.exists_preimage_norm_le h
+- id: pointwise_limit_of_operators_bounded
+  kind: gap
+  level: 4
+  topic: 関数解析・一様有界性原理
+  statement: バナッハ空間からノルム空間への有界線形作用素の列が各点収束するならば、その極限も有界線形作用素である。
+  statement_en: The pointwise limit of a sequence of bounded linear operators from a Banach space to a normed space is a bounded linear operator.
+  assumptions: [Eはバナッハ空間, Fはノルム空間, 各xでg_n x→f x]
+  quantifiers: [任意の列g, 写像f]
+  conclusion: fは有界線形作用素である。
+  answer: |
+    線形性は極限をとれば従う。各xで(g_n x)は収束するので有界である。バナッハ・シュタインハウスの定理から‖g_n‖≤Cとなる定数Cがある。‖g_n x‖≤C‖x‖でnを極限にとると‖f x‖≤C‖x‖を得るので、fは有界である。
+  strategy: Convergent sequences are bounded, so uniform boundedness passes a norm bound to the limit.
+  sketch:
+    - "derive: Linearity of f follows by passing to the limit."
+    - "derive: Each sequence (g_n x) converges, so it is bounded."
+    - "apply_theorem: The Banach-Steinhaus theorem gives ‖g_n‖ ≤ C for all n."
+    - "conclude: Taking limits in ‖g_n x‖ ≤ C‖x‖ gives ‖f x‖ ≤ C‖x‖."
+  openmath: (forall (E F g f) (-> (and (banach_space E) (normed_space F) (forall (n) (bounded_operator (fn_value g n) E F)) (pointwise_tends_to g f)) (bounded_operator f E F)))
+  hard_negative:
+    statement: 各点収束の極限については、作用素ノルムでも収束する。
+    reason: ℓ²上の座標射影P_nは各点で恒等作用素に収束するが、‖P_n-I‖=1である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E] (g : ℕ → E →L[𝕜] F) (f : E → F), (∀ x, Filter.Tendsto (fun n => g n x) Filter.atTop (nhds (f x))) → ∃ T : E →L[𝕜] F, ∀ x, T x = f x
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ g f h
+      have h' : Filter.Tendsto (fun n x => g n x) Filter.atTop (nhds f) := tendsto_pi_nhds.2 h
+      exact ⟨continuousLinearMapOfTendsto g h', fun x => rfl⟩
+- id: exists_norming_functional
+  kind: gap
+  level: 4
+  topic: 関数解析・双対空間
+  statement: ノルム空間の0でないベクトルxに対し、‖g‖=1かつg(x)=‖x‖を満たす有界線形汎関数gが存在する。
+  statement_en: For a nonzero vector x of a normed space over ℝ or ℂ there is a bounded linear functional g with ‖g‖ = 1 and g(x) = ‖x‖.
+  assumptions: [Eは実数体または複素数体上のノルム空間, x≠0]
+  quantifiers: [任意のE, 0でない任意のx]
+  conclusion: ‖g‖=1かつg(x)=‖x‖となるgが存在する。
+  answer: |
+    xの張る1次元部分空間上でf(cx)=c‖x‖と定めると、|f(cx)|=‖cx‖なのでfはノルム1の有界線形汎関数である。ハーン・バナッハの定理によりfをノルムを変えずにE全体へ拡張したものをgとすれば、‖g‖=1かつg(x)=‖x‖となる。
+  strategy: Define the functional on the line through x and extend it by Hahn-Banach.
+  sketch:
+    - "construct: On the span of x, set f(c x) = c‖x‖."
+    - "derive: Since |f(c x)| = ‖c x‖, f has norm 1."
+    - "apply_theorem: The Hahn-Banach theorem extends f to g on E with ‖g‖ = 1."
+    - "conclude: Then g(x) = f(x) = ‖x‖."
+  openmath: (forall (E x) (-> (and (normed_space E) (in x E) (!= x 0)) (exists (g) (and (in g (dual_space E)) (= (norm g) 1) (= (fn_value g x) (norm x))))))
+  hard_negative:
+    statement: 任意のg∈E*について、ある単位ベクトルxで|g(x)|=‖g‖となる。
+    reason: 汎関数のノルムは一般に達成されない。c₀上のg(x)=Σ2^{-n}x_nは‖g‖=1だが、ノルムを達成する単位ベクトルがない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (x : E), x ≠ 0 → ∃ g : StrongDual 𝕜 E, ‖g‖ = 1 ∧ g x = ((‖x‖ : ℝ) : 𝕜)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ x hx
+      exact exists_dual_vector 𝕜 x (norm_ne_zero_iff.2 hx)
+- id: canonical_embedding_isometric
+  kind: gap
+  level: 4
+  topic: 関数解析・双対空間
+  statement: ノルム空間Eから第2双対空間への標準写像は等長である。すなわちJ(x)(f)=f(x)とおくと‖J(x)‖=‖x‖である。
+  statement_en: The canonical map J from a normed space E to its double dual, given by J(x)(f) = f(x), is isometric, that is ‖J(x)‖ = ‖x‖.
+  assumptions: [Eは実数体または複素数体上のノルム空間]
+  quantifiers: [任意のE, 任意のx∈E]
+  conclusion: ‖J(x)‖=‖x‖である。
+  answer: |
+    |J(x)(f)|=|f(x)|≤‖f‖‖x‖より‖J(x)‖≤‖x‖である。x≠0のときハーン・バナッハの定理から‖g‖=1、g(x)=‖x‖となるgをとると、|J(x)(g)|=‖x‖なので‖J(x)‖≥‖x‖となる。x=0では両辺とも0である。
+  strategy: The upper bound is immediate, and a norming functional gives the lower bound.
+  sketch:
+    - "derive: |J(x)(f)| = |f(x)| ≤ ‖f‖‖x‖ gives ‖J(x)‖ ≤ ‖x‖."
+    - "apply_theorem: For x ≠ 0, Hahn-Banach provides g with ‖g‖ = 1 and g(x) = ‖x‖."
+    - "derive: Evaluating J(x) at g gives ‖J(x)‖ ≥ ‖x‖."
+    - "conclude: Hence ‖J(x)‖ = ‖x‖ for all x."
+  openmath: (forall (E x) (-> (and (normed_space E) (in x E)) (= (norm (fn_value (canonical_embedding E) x)) (norm x))))
+  hard_negative:
+    statement: 標準写像Jは常に全射である。
+    reason: Jが全射なのは回帰的な空間に限る。c₀では第2双対がℓ^∞なのでJは全射でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] (x : E), ‖NormedSpace.inclusionInDoubleDual 𝕜 E x‖ = ‖x‖
+  proof: |
+    by
+      intro 𝕜 _ E _ _ x
+      exact (NormedSpace.inclusionInDoubleDualLi 𝕜).norm_map x
+- id: cauchy_schwarz_inner_product_space
+  kind: gap
+  level: 3
+  topic: 関数解析・内積空間
+  statement: 内積空間の任意のベクトルx,yについて|⟨x,y⟩|≤‖x‖‖y‖が成り立つ(コーシー・シュワルツの不等式)。
+  statement_en: Cauchy-Schwarz inequality. For vectors x and y in an inner product space over ℝ or ℂ, |⟨x, y⟩| ≤ ‖x‖‖y‖.
+  assumptions: [Eは実数体または複素数体上の内積空間]
+  quantifiers: [任意のx, y∈E]
+  conclusion: "|⟨x,y⟩|≤‖x‖‖y‖である。"
+  answer: |
+    x=0なら両辺は0である。x≠0のときc=⟨x,y⟩/‖x‖²とおくと、y-cxはxと直交する。したがって0≤‖y-cx‖²=‖y‖²-|⟨x,y⟩|²/‖x‖²である。両辺に‖x‖²を掛けて平方根をとれば結論を得る。
+  strategy: Subtract from y its component along x and use nonnegativity of the squared norm.
+  sketch:
+    - "case_split: The case x = 0 is trivial."
+    - "construct: For x ≠ 0, let c = ⟨x, y⟩/‖x‖² so that y - c x is orthogonal to x."
+    - "derive: Expanding 0 ≤ ‖y - c x‖² gives |⟨x, y⟩|² ≤ ‖x‖²‖y‖²."
+    - "conclude: Take square roots."
+  openmath: (forall (E x y) (-> (and (inner_product_space E) (in x E) (in y E)) (<= (abs (inner_product x y)) (* (norm x) (norm y)))))
+  hard_negative:
+    statement: 内積空間では任意のx,yで|⟨x,y⟩|=‖x‖‖y‖である。
+    reason: 等号が成り立つのはx,yが線形従属のときだけである。直交する0でないベクトルでは左辺が0で右辺は正である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (x y : E), ‖inner 𝕜 x y‖ ≤ ‖x‖ * ‖y‖
+  proof: |
+    by
+      intro 𝕜 _ E _ _ x y
+      exact norm_inner_le_norm x y
+- id: nearest_point_closed_convex_hilbert
+  kind: gap
+  level: 4
+  topic: 関数解析・射影定理
+  statement: 実ヒルベルト空間の空でない閉凸集合Kと点uに対し、Kの中でuに最も近い点がただ一つ存在する。
+  statement_en: For a nonempty closed convex subset K of a real Hilbert space and a point u, there is exactly one point of K nearest to u.
+  assumptions: [Fは実ヒルベルト空間, KはFの空でない閉凸集合, u∈F]
+  quantifiers: [任意のF, K, u]
+  conclusion: ‖u-v‖≤‖u-w‖が全てのw∈Kで成り立つv∈Kがただ一つ存在する。
+  answer: |
+    d=inf_{w∈K}‖u-w‖とし、K内の列で‖u-v_n‖→dとなるものをとる。中線定理と凸性から(v_n+v_m)/2∈Kなので‖v_n-v_m‖²≤2‖u-v_n‖²+2‖u-v_m‖²-4d²→0となる。列はコーシー列で、完備性と閉性から極限v∈Kをもち‖u-v‖=dである。二つの最近点に同じ不等式を適用すると一致するので、一意性も従う。
+  strategy: Use the parallelogram law and convexity to make a minimizing sequence Cauchy.
+  sketch:
+    - "setup: Let d be the infimum of ‖u - w‖ over K and take a minimizing sequence v_n."
+    - "apply_theorem: The parallelogram law with the midpoint in K gives ‖v_n - v_m‖² ≤ 2‖u - v_n‖² + 2‖u - v_m‖² - 4d²."
+    - "derive: Therefore (v_n) is Cauchy."
+    - "derive: Completeness and closedness give a limit v in K with ‖u - v‖ = d."
+    - "conclude: The same inequality for two minimizers shows they coincide."
+  openmath: (forall (F K u) (-> (and (hilbert_space F) (subset K F) (nonempty_set K) (closed_set K) (convex_set K) (in u F)) (exists (v) (and (in v K) (forall (w) (-> (in w K) (<= (norm (- u v)) (norm (- u w))))) (forall (t) (-> (and (in t K) (forall (w) (-> (in w K) (<= (norm (- u t)) (norm (- u w)))))) (= t v)))))))
+  hard_negative:
+    statement: 凸性がなくても閉集合なら最近点は一意である。
+    reason: ℝ²の単位円周は閉集合だが、原点に最も近い点は円周上の全ての点であり一意でない。
+  target: |
+    ∀ (F : Type*) [NormedAddCommGroup F] [InnerProductSpace ℝ F] [CompleteSpace F] (K : Set F) (u : F), K.Nonempty → IsClosed K → Convex ℝ K → ∃! v, v ∈ K ∧ ∀ w ∈ K, ‖u - v‖ ≤ ‖u - w‖
+  proof: |
+    by
+      intro F _ _ _ K u hne hc hconv
+      have bdd : BddBelow (Set.range fun w : K => ‖u - (w : F)‖) :=
+        ⟨0, by rintro _ ⟨w, rfl⟩; exact norm_nonneg _⟩
+      haveI : Nonempty K := hne.to_subtype
+      have min_iff : ∀ v ∈ K, (∀ w ∈ K, ‖u - v‖ ≤ ‖u - w‖) → ‖u - v‖ = ⨅ w : K, ‖u - (w : F)‖ :=
+        fun v hv h => le_antisymm (le_ciInf fun w => h w w.2) (ciInf_le bdd ⟨v, hv⟩)
+      obtain ⟨v, hv, hv'⟩ := exists_norm_eq_iInf_of_complete_convex hne hc.isComplete hconv u
+      refine ⟨v, ⟨hv, fun w hw => hv' ▸ ciInf_le bdd ⟨w, hw⟩⟩, ?_⟩
+      rintro v2 ⟨hv2, hmin⟩
+      have h1 := (norm_eq_iInf_iff_real_inner_le_zero hconv hv).1 hv' v2 hv2
+      have h2 := (norm_eq_iInf_iff_real_inner_le_zero hconv hv2).1 (min_iff v2 hv2 hmin) v hv
+      have h3 : inner ℝ (v2 - v) (v2 - v) = inner ℝ (u - v) (v2 - v) + inner ℝ (u - v2) (v - v2) := by
+        rw [show v - v2 = -(v2 - v) by abel, inner_neg_right, ← sub_eq_add_neg, ← inner_sub_left]
+        congr 1
+        abel
+      have h4 : inner ℝ (v2 - v) (v2 - v) ≤ 0 := by linarith
+      exact sub_eq_zero.1 (real_inner_self_nonpos.1 h4)
+- id: projection_theorem_orthogonal_decomposition
+  kind: textbook
+  level: 4
+  topic: 関数解析・射影定理
+  statement: ヒルベルト空間の閉部分空間Kについて、全てのxはx=y+z(y∈K、z∈K⊥)と一意に分解される(射影定理)。
+  statement_en: Projection theorem. For a closed subspace K of a Hilbert space, every x has a unique decomposition x = y + z with y in K and z in the orthogonal complement of K.
+  assumptions: [Eはヒルベルト空間, KはEの閉部分空間]
+  quantifiers: [任意のK, 任意のx∈E]
+  conclusion: y∈K、z∈K⊥、y+z=xを満たす組(y,z)がただ一つ存在する。
+  answer: |
+    Kは閉凸集合なのでxに最も近いy∈Kがある。w∈Kと小さいスカラーtについて‖x-y‖²≤‖x-y-tw‖²を展開すると⟨x-y,w⟩=0となるので、z=x-y∈K⊥である。別の分解y'+z'があればy-y'=z'-zはK∩K⊥に属する。この元は自身と直交するので0であり、分解は一意である。
+  strategy: Take the nearest point in K, show the remainder is orthogonal, and use K ∩ K⊥ = 0 for uniqueness.
+  sketch:
+    - "apply_theorem: The nearest point theorem gives y in K closest to x."
+    - "derive: Expanding the minimality inequality in directions of K shows x - y is orthogonal to K."
+    - "construct: Set z = x - y."
+    - "derive: For another decomposition, y - y' = z' - z lies in K ∩ K⊥."
+    - "conclude: A vector orthogonal to itself is 0, so the decomposition is unique."
+  openmath: (forall (E K x) (-> (and (hilbert_space E) (subspace_of K E) (closed_set K) (in x E)) (exists (y z) (and (in y K) (in z (orthogonal_complement K)) (= (+ y z) x) (forall (s t) (-> (and (in s K) (in t (orthogonal_complement K)) (= (+ s t) x)) (and (= s y) (= t z))))))))
+  hard_negative:
+    statement: 閉でない部分空間でも同じ分解ができる。
+    reason: ℓ²の有限列全体Kは稠密なのでK⊥=0であり、有限列でないxはK+K⊥に属さない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] (K : Submodule 𝕜 E) (x : E), IsClosed (K : Set E) → ∃! p : E × E, p.1 ∈ K ∧ p.2 ∈ K.orthogonal ∧ p.1 + p.2 = x
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _ K x hK
+      haveI : CompleteSpace K := hK.isComplete.completeSpace_coe
+      refine ⟨(K.starProjection x, x - K.starProjection x),
+        ⟨K.starProjection_apply_mem x, K.sub_starProjection_mem_orthogonal x, add_sub_cancel _ _⟩, ?_⟩
+      rintro ⟨y, z⟩ ⟨hy, hz, hyz⟩
+      dsimp only at hy hz hyz
+      have hz' : z = x - y := eq_sub_of_add_eq' hyz
+      have h1 : K.starProjection x = y :=
+        K.eq_starProjection_of_mem_orthogonal hy (by rw [← hz']; exact hz)
+      rw [hz', h1]
+- id: best_approximation_iff_orthogonal
+  kind: gap
+  level: 4
+  topic: 関数解析・射影定理
+  statement: 内積空間の部分空間Kとv∈Kについて、vがuのKへの最良近似であることと、u-vがKの全ての元と直交することは同値である。
+  statement_en: For a subspace K of an inner product space and v in K, ‖u - v‖ equals the distance from u to K if and only if u - v is orthogonal to every element of K.
+  assumptions: [Eは内積空間, KはEの部分空間, v∈K]
+  quantifiers: [任意のK, u, v]
+  conclusion: ‖u-v‖=inf_{w∈K}‖u-w‖と、全てのw∈Kでの⟨u-v,w⟩=0は同値である。
+  answer: |
+    w∈Kとスカラーtについて‖u-v-tw‖²=‖u-v‖²-2Re(t⟨u-v,w⟩)+|t|²‖w‖²である。vが最良近似なら、tを小さくとり右辺が‖u-v‖²以上であることから⟨u-v,w⟩=0となる。逆に直交するなら、w∈Kに対しv-w∈Kなのでピタゴラスの定理から‖u-w‖²=‖u-v‖²+‖v-w‖²≥‖u-v‖²となる。
+  strategy: Expand the squared distance along directions of K for one implication and use Pythagoras for the other.
+  sketch:
+    - "derive: Expand ‖u - v - t w‖² for w in K and scalars t."
+    - "derive: Minimality forces ⟨u - v, w⟩ = 0 by letting t be small."
+    - "apply_theorem: Conversely, orthogonality and Pythagoras give ‖u - w‖² = ‖u - v‖² + ‖v - w‖²."
+    - "conclude: Hence v is a best approximation exactly when u - v is orthogonal to K."
+  openmath: (forall (E K u v) (-> (and (inner_product_space E) (subspace_of K E) (in u E) (in v K)) (<-> (forall (w) (-> (in w K) (<= (norm (- u v)) (norm (- u w))))) (forall (w) (-> (in w K) (= (inner_product (- u v) w) 0))))))
+  hard_negative:
+    statement: 部分空間でないKの最良近似でも、u-vはKの全ての元と直交する。
+    reason: ℝのK=[1,2]、u=0ではv=1が最良近似だが⟨u-v,1⟩=-1≠0である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (K : Submodule 𝕜 E) (u v : E), v ∈ K → ((‖u - v‖ = ⨅ w : (K : Set E), ‖u - (w : E)‖) ↔ ∀ w ∈ K, inner 𝕜 (u - v) w = 0)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ K u v hv
+      exact K.norm_eq_iInf_iff_inner_eq_zero hv
+- id: double_orthogonal_complement_closed_subspace
+  kind: gap
+  level: 4
+  topic: 関数解析・射影定理
+  statement: ヒルベルト空間の閉部分空間Kについて(K⊥)⊥=Kである。
+  statement_en: For a closed subspace K of a Hilbert space, the orthogonal complement of the orthogonal complement of K equals K.
+  assumptions: [Eはヒルベルト空間, KはEの閉部分空間]
+  quantifiers: [任意のE, K]
+  conclusion: (K⊥)⊥=Kである。
+  answer: |
+    K⊆(K⊥)⊥は定義から明らかである。x∈(K⊥)⊥をとり、射影定理でx=y+z(y∈K、z∈K⊥)と分解する。‖z‖²=⟨x-y,z⟩=⟨x,z⟩-⟨y,z⟩=0なのでz=0となる。よってx=y∈Kである。
+  strategy: Decompose an element of the double complement by the projection theorem and show the orthogonal part vanishes.
+  sketch:
+    - "derive: The inclusion of K in the double complement follows from the definition."
+    - "apply_theorem: Decompose x in the double complement as y + z with y in K and z in K⊥."
+    - "derive: ‖z‖² = ⟨x, z⟩ - ⟨y, z⟩ = 0."
+    - "conclude: Thus x = y lies in K."
+  openmath: (forall (E K) (-> (and (hilbert_space E) (subspace_of K E) (closed_set K)) (= (orthogonal_complement (orthogonal_complement K)) K)))
+  hard_negative:
+    statement: 閉でない部分空間でも(K⊥)⊥=Kである。
+    reason: (K⊥)⊥はKの閉包に等しい。ℓ²の有限列全体KではK⊥=0なので(K⊥)⊥=ℓ²≠Kである。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] (K : Submodule 𝕜 E), IsClosed (K : Set E) → K.orthogonal.orthogonal = K
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _ K hK
+      haveI : CompleteSpace K := hK.isComplete.completeSpace_coe
+      exact K.orthogonal_orthogonal
+- id: bessel_inequality_orthonormal_family
+  kind: textbook
+  level: 4
+  topic: 関数解析・正規直交系
+  statement: 内積空間の正規直交系(v_i)とxについてΣ|⟨v_i,x⟩|²は収束し、その和は‖x‖²以下である(ベッセルの不等式)。
+  statement_en: Bessel inequality. For an orthonormal family (v_i) in an inner product space and a vector x, the series of |⟨v_i, x⟩|² is summable with sum at most ‖x‖².
+  assumptions: [Eは内積空間, (v_i)はEの正規直交系, x∈E]
+  quantifiers: [任意の正規直交系v, 任意のx]
+  conclusion: Σ|⟨v_i,x⟩|²は収束し、和は‖x‖²以下である。
+  answer: |
+    有限集合Sについてy=Σ_{i∈S}⟨v_i,x⟩v_iとおく。正規直交性からx-yは各v_i(i∈S)と直交するので、‖x‖²=‖y‖²+‖x-y‖²≥‖y‖²=Σ_{i∈S}|⟨v_i,x⟩|²となる。非負項の和の有限部分和が‖x‖²で抑えられるので、級数は収束し和は‖x‖²以下である。
+  strategy: Project onto finite subfamilies and use Pythagoras to bound finite partial sums.
+  sketch:
+    - "construct: For a finite S, let y be the sum of ⟨v_i, x⟩ v_i over S."
+    - "derive: Orthonormality makes x - y orthogonal to y."
+    - "apply_theorem: Pythagoras gives ‖x‖² ≥ ‖y‖² = Σ_S |⟨v_i, x⟩|²."
+    - "conclude: Nonnegative terms with bounded finite sums are summable with sum at most ‖x‖²."
+  openmath: (forall (E v x) (-> (and (inner_product_space E) (orthonormal_family v E) (in x E)) (and (series_summable_fn (lambda (i) (^ (abs (inner_product (fn_value v i) x)) 2))) (<= (series_sum_fn (lambda (i) (^ (abs (inner_product (fn_value v i) x)) 2))) (^ (norm x) 2)))))
+  hard_negative:
+    statement: 正規直交系に対してはΣ|⟨v_i,x⟩|²=‖x‖²が常に成り立つ。
+    reason: 等号には完全性が必要である。ℝ²の正規直交系{e_1}とx=e_2では左辺が0で右辺が1である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (v : ι → E) (x : E), Orthonormal 𝕜 v → Summable (fun i => ‖inner 𝕜 (v i) x‖ ^ 2) ∧ ∑' i, ‖inner 𝕜 (v i) x‖ ^ 2 ≤ ‖x‖ ^ 2
+  proof: |
+    by
+      intro 𝕜 _ E ι _ _ v x hv
+      exact ⟨hv.inner_products_summable x, hv.tsum_inner_products_le x⟩
+- id: parseval_identity_hilbert_basis
+  kind: textbook
+  level: 4
+  topic: 関数解析・正規直交基底
+  statement: ヒルベルト空間の完全正規直交系(b_i)について、全てのxでΣ|⟨b_i,x⟩|²=‖x‖²が成り立つ(パーセバルの等式)。
+  statement_en: Parseval identity. For a Hilbert basis (b_i) of a Hilbert space and every x, the series of |⟨b_i, x⟩|² converges to ‖x‖².
+  assumptions: [Eはヒルベルト空間, (b_i)はEの完全正規直交系, x∈E]
+  quantifiers: [任意の完全正規直交系b, 任意のx]
+  conclusion: Σ|⟨b_i,x⟩|²は‖x‖²に収束する。
+  answer: |
+    ベッセルの不等式から係数は2乗総和可能であり、Eの完備性からy=Σ⟨b_i,x⟩b_iが存在する。x-yは全てのb_iと直交するので、完全性からx=yである。内積の連続性を使ってノルムの2乗を展開すると‖x‖²=Σ|⟨b_i,x⟩|²を得る。
+  strategy: Show the Fourier series converges to x and expand ‖x‖² using continuity of the inner product.
+  sketch:
+    - "apply_theorem: Bessel's inequality makes the coefficients square summable."
+    - "construct: Completeness gives y as the sum of ⟨b_i, x⟩ b_i."
+    - "derive: x - y is orthogonal to every b_i, so completeness of the family gives x = y."
+    - "conclude: Continuity of the inner product gives ‖x‖² = Σ|⟨b_i, x⟩|²."
+  openmath: (forall (E b x) (-> (and (hilbert_space E) (hilbert_basis b E) (in x E)) (and (series_summable_fn (lambda (i) (^ (abs (inner_product (fn_value b i) x)) 2))) (= (series_sum_fn (lambda (i) (^ (abs (inner_product (fn_value b i) x)) 2))) (^ (norm x) 2)))))
+  hard_negative:
+    statement: 完全でない正規直交系でもパーセバルの等式が成り立つ。
+    reason: ℓ²の{e_2,e_3,…}は完全でなく、x=e_1では左辺が0で右辺が1である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (b : HilbertBasis ι 𝕜 E) (x : E), HasSum (fun i => ‖inner 𝕜 (b i) x‖ ^ 2) (‖x‖ ^ 2)
+  proof: |
+    by
+      intro 𝕜 _ E ι _ _ b x
+      have h := RCLike.hasSum_re 𝕜 (b.hasSum_inner_mul_inner x x)
+      have h1 : (fun i => RCLike.re (inner 𝕜 x (b i) * inner 𝕜 (b i) x)) =
+          fun i => ‖inner 𝕜 (b i) x‖ ^ 2 := by
+        funext i
+        rw [← inner_conj_symm x (b i), RCLike.conj_mul, ← RCLike.ofReal_pow, RCLike.ofReal_re]
+      rw [h1, inner_self_eq_norm_sq] at h
+      exact h
+- id: hilbert_basis_fourier_expansion
+  kind: gap
+  level: 4
+  topic: 関数解析・正規直交基底
+  statement: ヒルベルト空間の完全正規直交系(b_i)について、全てのxはx=Σ⟨b_i,x⟩b_iと展開される。
+  statement_en: For a Hilbert basis (b_i) of a Hilbert space, every x equals the convergent sum of ⟨b_i, x⟩ b_i.
+  assumptions: [Eはヒルベルト空間, (b_i)はEの完全正規直交系, x∈E]
+  quantifiers: [任意のb, x]
+  conclusion: Σ⟨b_i,x⟩b_iはxに収束する。
+  answer: |
+    ベッセルの不等式から係数は2乗総和可能である。有限部分和についてピタゴラスの定理を使うと、部分和はコーシー族となり極限yをもつ。⟨b_j,x-y⟩=0が全てのjで成り立つので、完全性からx=yとなる。
+  strategy: Summability follows from Bessel and Pythagoras; the limit is identified by testing against the basis.
+  sketch:
+    - "apply_theorem: Bessel's inequality gives square summable coefficients."
+    - "derive: Pythagoras makes the finite partial sums a Cauchy net, so they converge to some y."
+    - "derive: Continuity gives ⟨b_j, x - y⟩ = 0 for all j."
+    - "conclude: Completeness of the family gives y = x."
+  openmath: (forall (E b x) (-> (and (hilbert_space E) (hilbert_basis b E) (in x E)) (and (series_summable_fn (lambda (i) (* (inner_product (fn_value b i) x) (fn_value b i)))) (= (series_sum_fn (lambda (i) (* (inner_product (fn_value b i) x) (fn_value b i)))) x))))
+  hard_negative:
+    statement: 正規直交系であれば完全でなくても全てのxがこの形に展開できる。
+    reason: 展開で得られるのは閉線形包への射影である。{e_2,e_3,…}でx=e_1とすると和は0となる。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (b : HilbertBasis ι 𝕜 E) (x : E), HasSum (fun i => (inner 𝕜 (b i) x) • b i) x
+  proof: |
+    by
+      intro 𝕜 _ E ι _ _ b x
+      simpa only [b.repr_apply_apply] using b.hasSum_repr x
+- id: exists_complete_orthonormal_system
+  kind: gap
+  level: 4
+  topic: 関数解析・正規直交基底
+  statement: ヒルベルト空間には完全正規直交系が存在する。すなわち正規直交な部分集合で、その線形包が稠密なものが存在する。
+  statement_en: Every Hilbert space has a complete orthonormal system, that is an orthonormal subset whose linear span is dense.
+  assumptions: [Eはヒルベルト空間]
+  quantifiers: [任意のE]
+  conclusion: 正規直交で線形包が稠密な部分集合wが存在する。
+  answer: |
+    ツォルンの補題により、正規直交な部分集合の中で極大なものwがとれる。wの線形包の閉包Kが全空間でないとする。射影定理からK⊥は0でないので、K⊥の単位ベクトルをwに加えられる。これは極大性に反するので、線形包は稠密である。
+  strategy: Take a maximal orthonormal subset by Zorn's lemma and use the projection theorem to rule out a proper closed span.
+  sketch:
+    - "apply_theorem: Zorn's lemma gives a maximal orthonormal subset w."
+    - "setup: Let K be the closure of the span of w and suppose K is proper."
+    - "apply_theorem: The projection theorem gives a unit vector orthogonal to K."
+    - "contradiction: Adding this vector to w contradicts maximality."
+    - "conclude: Hence the span of w is dense."
+  openmath: (forall (E) (-> (hilbert_space E) (exists (w) (hilbert_basis w E))))
+  hard_negative:
+    statement: 全てのヒルベルト空間には可算な完全正規直交系が存在する。
+    reason: 可算な系をもつのは可分な場合に限る。非可算集合上のℓ²は可分でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E], ∃ w : Set E, Orthonormal 𝕜 ((↑) : w → E) ∧ (Submodule.span 𝕜 w).topologicalClosure = ⊤
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _
+      obtain ⟨w, b, hb⟩ := exists_hilbertBasis 𝕜 E
+      refine ⟨w, by rw [← hb]; exact b.orthonormal, ?_⟩
+      have h := b.dense_span
+      rwa [hb, Subtype.range_coe] at h
+- id: adjoint_exists_unique
+  kind: gap
+  level: 4
+  topic: 関数解析・共役作用素
+  statement: ヒルベルト空間の間の有界線形作用素Tに対し、全てのx,yで⟨S y,x⟩=⟨y,T x⟩を満たす有界線形作用素Sがただ一つ存在する。
+  statement_en: For a bounded linear operator T between Hilbert spaces there is a unique bounded linear operator S with ⟨S y, x⟩ = ⟨y, T x⟩ for all x and y.
+  assumptions: [E, Fはヒルベルト空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: 条件を満たすSがただ一つ存在する。
+  answer: |
+    y∈Fを固定するとx↦⟨y,T x⟩はE上の有界線形汎関数である。リースの表現定理からこれを⟨S y,x⟩と書くS y∈Eが一意に定まる。一意性からSは線形である。‖S y‖²=⟨y,T S y⟩≤‖y‖‖T‖‖S y‖なのでSは有界である。Sの一意性も表現の一意性から従う。
+  strategy: Apply the Riesz representation theorem to x ↦ ⟨y, T x⟩ for each fixed y.
+  sketch:
+    - "setup: Fix y and consider the bounded functional x ↦ ⟨y, T x⟩."
+    - "apply_theorem: The Riesz representation theorem gives a unique S y."
+    - "derive: Uniqueness forces S to be linear."
+    - "derive: ‖S y‖² = ⟨y, T S y⟩ ≤ ‖y‖‖T‖‖S y‖ gives boundedness."
+    - "conclude: Uniqueness of S again follows from uniqueness of representers."
+  openmath: (forall (E F T) (-> (and (hilbert_space E) (hilbert_space F) (bounded_operator T E F)) (exists (S) (and (bounded_operator S F E) (forall (x y) (-> (and (in x E) (in y F)) (= (inner_product (fn_value S y) x) (inner_product y (fn_value T x))))) (forall (R) (-> (and (bounded_operator R F E) (forall (x y) (-> (and (in x E) (in y F)) (= (inner_product (fn_value R y) x) (inner_product y (fn_value T x)))))) (= R S)))))))
+  hard_negative:
+    statement: 完備でない内積空間の間の有界線形作用素にも、この等式を満たす有界作用素が必ず存在する。
+    reason: 有限列全体でTx=(Σ2^{-n}x_n)e_1とすると、T*e_1は(2^{-n})となり有限列にならない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] [CompleteSpace F] (T : E →L[𝕜] F), ∃! S : F →L[𝕜] E, ∀ x y, inner 𝕜 (S y) x = inner 𝕜 y (T x)
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T
+      refine ⟨ContinuousLinearMap.adjoint T, fun x y => ContinuousLinearMap.adjoint_inner_left T x y, ?_⟩
+      intro S hS
+      refine ContinuousLinearMap.ext fun y => ext_inner_right 𝕜 fun x => ?_
+      rw [hS x y, ContinuousLinearMap.adjoint_inner_left]
+- id: adjoint_norm_eq
+  kind: gap
+  level: 4
+  topic: 関数解析・共役作用素
+  statement: ヒルベルト空間の間の有界線形作用素Tについて‖T*‖=‖T‖である。
+  statement_en: For a bounded linear operator T between Hilbert spaces, ‖T*‖ = ‖T‖.
+  assumptions: [E, Fはヒルベルト空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: ‖T*‖=‖T‖である。
+  answer: |
+    ‖T*y‖²=⟨T*y,T*y⟩=⟨y,T T*y⟩≤‖y‖‖T‖‖T*y‖なので‖T*y‖≤‖T‖‖y‖であり、‖T*‖≤‖T‖となる。T**=Tなので、同じ不等式をT*に適用すると‖T‖≤‖T*‖を得る。
+  strategy: Estimate ‖T* y‖² by the defining identity and use T** = T for the reverse inequality.
+  sketch:
+    - "derive: ‖T* y‖² = ⟨y, T T* y⟩ ≤ ‖y‖‖T‖‖T* y‖."
+    - "derive: Hence ‖T*‖ ≤ ‖T‖."
+    - "apply_theorem: Since T** = T, the same inequality gives ‖T‖ ≤ ‖T*‖."
+    - "conclude: The norms agree."
+  openmath: (forall (E F T) (-> (and (hilbert_space E) (hilbert_space F) (bounded_operator T E F)) (= (norm (adjoint T)) (norm T))))
+  hard_negative:
+    statement: T*=Tが全ての有界作用素で成り立つのでノルムも等しい。
+    reason: ℂ上のT(z)=izではT*(z)=-izなのでT*≠Tである。ノルムの等式はT*=Tを必要としない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] [CompleteSpace F] (T : E →L[𝕜] F), ‖ContinuousLinearMap.adjoint T‖ = ‖T‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T
+      exact ContinuousLinearMap.adjoint.norm_map T
+- id: adjoint_cstar_identity
+  kind: gap
+  level: 4
+  topic: 関数解析・共役作用素
+  statement: ヒルベルト空間の間の有界線形作用素Tについて‖T*T‖=‖T‖²である。
+  statement_en: For a bounded linear operator T between Hilbert spaces, ‖T* T‖ = ‖T‖².
+  assumptions: [E, Fはヒルベルト空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: ‖T*T‖=‖T‖‖T‖である。
+  answer: |
+    ‖T*T‖≤‖T*‖‖T‖=‖T‖²である。逆に‖T x‖²=⟨T*T x,x⟩≤‖T*T‖‖x‖²である。xについて上限をとると‖T‖²≤‖T*T‖となる。
+  strategy: Combine submultiplicativity with the identity ‖T x‖² = ⟨T*T x, x⟩.
+  sketch:
+    - "derive: ‖T*T‖ ≤ ‖T*‖‖T‖ = ‖T‖²."
+    - "derive: ‖T x‖² = ⟨T*T x, x⟩ ≤ ‖T*T‖‖x‖²."
+    - "conclude: Taking the supremum over unit vectors gives ‖T‖² ≤ ‖T*T‖."
+  openmath: (forall (E F T) (-> (and (hilbert_space E) (hilbert_space F) (bounded_operator T E F)) (= (norm (operator_comp (adjoint T) T)) (* (norm T) (norm T)))))
+  hard_negative:
+    statement: 任意の有界作用素S,Tについて‖S T‖=‖S‖‖T‖である。
+    reason: ℝ²でS(a,b)=(0,b)、T(a,b)=(a,0)とするとS T=0だが‖S‖‖T‖=1である。S=T*の特殊性が必要である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] [CompleteSpace F] (T : E →L[𝕜] F), ‖(ContinuousLinearMap.adjoint T).comp T‖ = ‖T‖ * ‖T‖
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T
+      exact ContinuousLinearMap.norm_adjoint_comp_self T
+- id: orthogonal_range_eq_kernel_adjoint
+  kind: gap
+  level: 4
+  topic: 関数解析・共役作用素
+  statement: ヒルベルト空間の間の有界線形作用素Tについて、Tの値域の直交補空間はT*の核に等しい。
+  statement_en: For a bounded linear operator T between Hilbert spaces, the orthogonal complement of the range of T equals the kernel of T*.
+  assumptions: [E, Fはヒルベルト空間, TはEからFへの有界線形作用素]
+  quantifiers: [任意のT]
+  conclusion: (ran T)⊥=ker T*である。
+  answer: |
+    y∈(ran T)⊥は全てのxで⟨y,T x⟩=0であることと同値である。⟨y,T x⟩=⟨T*y,x⟩なので、これは全てのxで⟨T*y,x⟩=0であることと同値である。x=T*yとすればT*y=0と同値であり、y∈ker T*を得る。
+  strategy: Rewrite orthogonality to the range through the adjoint identity.
+  sketch:
+    - "translate: y in (ran T)⊥ means ⟨y, T x⟩ = 0 for all x."
+    - "derive: The adjoint identity turns this into ⟨T* y, x⟩ = 0 for all x."
+    - "conclude: This holds exactly when T* y = 0."
+  openmath: (forall (E F T) (-> (and (hilbert_space E) (hilbert_space F) (bounded_operator T E F)) (= (orthogonal_complement (range_of T)) (kernel (adjoint T)))))
+  hard_negative:
+    statement: Tの値域はT*の核の直交補空間に常に等しい。
+    reason: 一般には(ker T*)⊥は値域の閉包に等しい。値域が閉でないと等しくならない。ℓ²の(x_n/n)を与える作用素が例である。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] [CompleteSpace F] (T : E →L[𝕜] F), T.range.orthogonal = (ContinuousLinearMap.adjoint T).ker
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ _ T
+      exact T.orthogonal_range
+- id: compact_operators_closed_under_norm_limit
+  kind: gap
+  level: 4
+  topic: 関数解析・コンパクト作用素
+  statement: バナッハ空間を値域とするコンパクト作用素の列が作用素ノルムで収束すれば、極限もコンパクト作用素である。
+  statement_en: If compact operators from a normed space to a Banach space converge in operator norm, then the limit is a compact operator.
+  assumptions: [Eはノルム空間, Fはバナッハ空間, T_nはコンパクト作用素, 作用素ノルムでT_n→T]
+  quantifiers: [任意の列(T_n), T]
+  conclusion: Tはコンパクト作用素である。
+  answer: |
+    Fは完備なので、T(閉単位球)が全有界であることを示せばよい。ε>0に対しnを‖T_n-T‖<εとなるようにとる。T_nはコンパクトなのでT_n(閉単位球)は有限個のε球で覆われる。‖T x-T_n x‖<εより、同じ中心の2ε球がT(閉単位球)を覆う。よって全有界であり、閉包はコンパクトである。
+  strategy: Approximate the image of the unit ball by images under compact operators and use total boundedness.
+  sketch:
+    - "setup: Fix ε and choose n with ‖T_n - T‖ < ε."
+    - "apply_theorem: Compactness of T_n covers its image of the unit ball by finitely many ε-balls."
+    - "derive: The same centres with radius 2ε cover the image under T."
+    - "conclude: Total boundedness and completeness of F give relative compactness."
+  openmath: (forall (E F S T) (-> (and (normed_space E) (banach_space F) (forall (n) (compact_operator (fn_value S n))) (operator_tends_to S T)) (compact_operator T)))
+  hard_negative:
+    statement: コンパクト作用素の列の各点収束極限もコンパクト作用素である。
+    reason: ℓ²の座標射影P_nは有限階数でコンパクトだが、各点極限の恒等作用素はコンパクトでない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace F] (S : ℕ → E →L[𝕜] F) (T : E →L[𝕜] F), (∀ n, IsCompactOperator (S n)) → Filter.Tendsto S Filter.atTop (nhds T) → IsCompactOperator T
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _ S T hS h
+      exact isCompactOperator_of_tendsto h (Filter.Eventually.of_forall hS)
+- id: compact_operator_composition_with_bounded
+  kind: gap
+  level: 4
+  topic: 関数解析・コンパクト作用素
+  statement: 有界線形作用素S,Tの合成S∘Tは、SまたはTがコンパクト作用素ならばコンパクト作用素である。
+  statement_en: The composition S∘T of bounded linear operators is compact whenever S or T is compact.
+  assumptions: [E, F, Gはノルム空間, TはEからFへ、SはFからGへの有界線形作用素]
+  quantifiers: [任意のS, T]
+  conclusion: SまたはTがコンパクトならS∘Tはコンパクトである。
+  answer: |
+    Tがコンパクトなら、T(閉単位球)はコンパクト集合Kに含まれ、連続写像の像S(K)はコンパクトでS∘T(閉単位球)を含む。Sがコンパクトなら、T(閉単位球)は半径‖T‖の球に含まれる。有界集合の像はSにより相対コンパクトになるので、S∘Tもコンパクトである。
+  strategy: A continuous image of a compact set is compact, and a bounded operator sends bounded sets to bounded sets.
+  sketch:
+    - "case_split: Treat compact T and compact S separately."
+    - "derive: If T is compact, S maps the compact set containing T(ball) to a compact set."
+    - "derive: If S is compact, T(ball) is bounded and S sends it to a relatively compact set."
+    - "conclude: In both cases S∘T is compact."
+  openmath: (forall (E F G S T) (-> (and (normed_space E) (normed_space F) (normed_space G) (bounded_operator T E F) (bounded_operator S F G) (or (compact_operator S) (compact_operator T))) (compact_operator (operator_comp S T))))
+  hard_negative:
+    statement: S∘Tがコンパクトならば、SまたはTはコンパクトである。
+    reason: ℓ²⊕ℓ²上でTを第1成分への射影、Sを第2成分への射影とするとS∘T=0はコンパクトだが、S,Tはどちらもコンパクトでない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F G : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [NormedAddCommGroup G] [NormedSpace 𝕜 G] (S : F →L[𝕜] G) (T : E →L[𝕜] F), (IsCompactOperator S ∨ IsCompactOperator T) → IsCompactOperator (S ∘ T)
+  proof: |
+    by
+      intro 𝕜 _ E F G _ _ _ _ _ _ S T h
+      rcases h with hS | hT
+      · exact hS.comp_clm T
+      · exact hT.clm_comp S
+- id: finite_rank_bounded_operator_compact
+  kind: gap
+  level: 4
+  topic: 関数解析・コンパクト作用素
+  statement: 値域が有限次元である有界線形作用素はコンパクト作用素である。
+  statement_en: A bounded linear operator with finite-dimensional range is compact.
+  assumptions: [E, Fはノルム空間, TはEからFへの有界線形作用素, Tの値域は有限次元]
+  quantifiers: [任意のT]
+  conclusion: Tはコンパクト作用素である。
+  answer: |
+    閉単位球の像は、値域R内の半径‖T‖の閉球に含まれる。Rは有限次元ノルム空間なので、その閉球はコンパクトである。コンパクト集合の中に像をもつので、Tはコンパクト作用素である。
+  strategy: The image of the unit ball is inside a closed ball of the finite-dimensional range, which is compact.
+  sketch:
+    - "derive: ‖x‖ ≤ 1 gives ‖T x‖ ≤ ‖T‖, so T(ball) lies in a closed ball of the range R."
+    - "apply_theorem: Closed balls in a finite-dimensional normed space are compact."
+    - "conclude: The inclusion of R into F preserves compactness, so T is compact."
+  openmath: (forall (E F T) (-> (and (normed_space E) (normed_space F) (bounded_operator T E F) (finite_dim_space (range_of T))) (compact_operator T)))
+  hard_negative:
+    statement: 有界性を仮定しなくても、値域が有限次元の線形写像はコンパクト作用素である。
+    reason: コンパクト作用素は連続である。不連続な線形汎関数は値域が1次元だがコンパクトでない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] (T : E →L[𝕜] F), FiniteDimensional 𝕜 (LinearMap.range (T : E →ₗ[𝕜] F)) → IsCompactOperator T
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ T hT
+      let R := LinearMap.range (T : E →ₗ[𝕜] F)
+      haveI : ProperSpace R := FiniteDimensional.proper 𝕜 R
+      refine ⟨(↑) '' Metric.closedBall (0 : R) ‖T‖, (isCompact_closedBall _ _).image continuous_subtype_val, ?_⟩
+      refine Filter.mem_of_superset (Metric.closedBall_mem_nhds (0 : E) one_pos) ?_
+      intro x hx
+      refine ⟨⟨T x, ⟨x, rfl⟩⟩, ?_, rfl⟩
+      have hx' : ‖x‖ ≤ 1 := by simpa using hx
+      rw [mem_closedBall_zero_iff]
+      show ‖T x‖ ≤ ‖T‖
+      calc ‖T x‖ ≤ ‖T‖ * ‖x‖ := T.le_opNorm x
+        _ ≤ ‖T‖ * 1 := by gcongr
+        _ = ‖T‖ := mul_one _
+- id: neumann_series_invertibility
+  kind: textbook
+  level: 4
+  topic: 関数解析・ノイマン級数
+  statement: 完備なノルム環の元tが‖t‖<1を満たすとき、Σt^nは収束し、その和は1-tの両側逆元である(ノイマン級数)。
+  statement_en: Neumann series. If t is an element of a complete normed ring with ‖t‖ < 1, the series of t^n converges and its sum is a two-sided inverse of 1 - t.
+  assumptions: [Rは完備なノルム環, t∈R, ‖t‖<1]
+  quantifiers: [任意のR, t]
+  conclusion: Σt^nは収束し、(1-t)Σt^n=Σt^n(1-t)=1である。
+  answer: |
+    n≥1で‖t^n‖≤‖t‖^nなのでΣt^nは絶対収束し、完備性から和Sをもつ。部分和S_nについて(1-t)S_n=S_n(1-t)=1-t^{n+1}である。t^{n+1}→0なので、極限をとると(1-t)S=S(1-t)=1となる。
+  strategy: Absolute convergence from the geometric bound and the telescoping identity for partial sums.
+  sketch:
+    - "derive: ‖t^n‖ ≤ ‖t‖^n for n ≥ 1 makes the series absolutely convergent."
+    - "apply_theorem: Completeness gives a sum S."
+    - "derive: Partial sums satisfy (1 - t) S_n = S_n (1 - t) = 1 - t^{n+1}."
+    - "conclude: Since t^{n+1} → 0, taking limits gives (1 - t) S = S (1 - t) = 1."
+  openmath: (forall (R t) (-> (and (banach_algebra R) (in t R) (< (norm t) 1)) (and (series_summable_fn (lambda (n) (^ t n))) (= (* (- (unit_of R) t) (series_sum_fn (lambda (n) (^ t n)))) (unit_of R)) (= (* (series_sum_fn (lambda (n) (^ t n))) (- (unit_of R) t)) (unit_of R)))))
+  hard_negative:
+    statement: 1-tが可逆であれば、Σt^nは必ず収束してその逆元となる。
+    reason: 実数でt=2なら1-t=-1は可逆だがΣ2^nは発散する。
+  target: |
+    ∀ (R : Type*) [NormedRing R] [CompleteSpace R] (t : R), ‖t‖ < 1 → Summable (fun n : ℕ => t ^ n) ∧ (1 - t) * ∑' n : ℕ, t ^ n = 1 ∧ (∑' n : ℕ, t ^ n) * (1 - t) = 1
+  proof: |
+    by
+      intro R _ _ t h
+      exact ⟨summable_geometric_of_norm_lt_one h, mul_neg_geom_series t h, geom_series_mul_neg t h⟩
+- id: invertible_operators_open
+  kind: gap
+  level: 4
+  topic: 関数解析・可逆作用素
+  statement: バナッハ空間Eからノルム空間Fへの有界線形作用素のうち、有界な逆をもつものの全体は、作用素ノルムについて開集合である。
+  statement_en: The set of bounded linear operators from a Banach space E to a normed space F that have a bounded inverse is open in the operator norm.
+  assumptions: [Eはバナッハ空間, Fはノルム空間]
+  quantifiers: [任意のE, F]
+  conclusion: 有界な逆をもつ作用素全体は開集合である。
+  answer: |
+    T₀が有界な逆をもつとし、‖T-T₀‖<1/‖T₀⁻¹‖とする。このとき‖T₀⁻¹(T₀-T)‖<1なので、ノイマン級数からI-T₀⁻¹(T₀-T)=T₀⁻¹Tは有界な逆をもつ。T=T₀(T₀⁻¹T)より、Tも有界な逆をもつ。よってT₀の周りの球が可逆作用素全体に含まれる。
+  strategy: Factor a nearby operator through T₀ and apply the Neumann series.
+  sketch:
+    - "setup: Let T₀ be invertible and T satisfy ‖T - T₀‖ < 1/‖T₀⁻¹‖."
+    - "translate: Write T = T₀(I - T₀⁻¹(T₀ - T))."
+    - "apply_theorem: The Neumann series inverts I - T₀⁻¹(T₀ - T)."
+    - "conclude: T is invertible, so a ball about T₀ consists of invertible operators."
+  openmath: (forall (E F) (-> (and (banach_space E) (normed_space F)) (open_set (invertible_operators E F))))
+  hard_negative:
+    statement: 可逆な有界線形作用素の全体は閉集合である。
+    reason: E=F=ℝで1/n·Iは可逆で0に収束するが、0は可逆でない。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [NormedAddCommGroup F] [NormedSpace 𝕜 F] [CompleteSpace E], IsOpen (Set.range ((↑) : (E ≃L[𝕜] F) → E →L[𝕜] F))
+  proof: |
+    by
+      intro 𝕜 _ E F _ _ _ _ _
+      exact ContinuousLinearEquiv.isOpen
+- id: operator_spectrum_iff_not_bijective
+  kind: gap
+  level: 4
+  topic: 関数解析・スペクトル
+  statement: バナッハ空間上の有界線形作用素Tについて、λがTのスペクトルに属することと、λI-Tが全単射でないことは同値である。
+  statement_en: For a bounded linear operator T on a Banach space, λ is in the spectrum of T if and only if λI - T is not bijective.
+  assumptions: [Eは実数体または複素数体上のバナッハ空間, TはE上の有界線形作用素]
+  quantifiers: [任意のT, λ]
+  conclusion: λ∈σ(T)とλI-Tが全単射でないことは同値である。
+  answer: |
+    定義からλ∉σ(T)はλI-Tが有界線形作用素の環で可逆であることを意味する。可逆なら全単射である。逆に全単射なら、有界逆写像定理により逆写像も有界なので可逆である。よって対偶をとれば主張を得る。
+  strategy: Use the bounded inverse theorem to identify invertibility with bijectivity.
+  sketch:
+    - "translate: λ is outside the spectrum when λI - T is invertible in the ring of bounded operators."
+    - "derive: An invertible operator is bijective."
+    - "apply_theorem: The bounded inverse theorem gives a bounded inverse for a bijective operator."
+    - "conclude: Taking the contrapositive gives the stated equivalence."
+  openmath: (forall (E T c) (-> (and (banach_space E) (bounded_operator T E E)) (<-> (in c (spectrum_of T)) (not (bijective_on (- (* c (identity_operator E)) T) E E)))))
+  hard_negative:
+    statement: λがTのスペクトルに属することと、λがTの固有値であることは同値である。
+    reason: ℓ²の右シフトは単射なので0は固有値でないが、全射でないので0はスペクトルに属する。
+  target: |
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E] [CompleteSpace E] (T : E →L[𝕜] E) (c : 𝕜), c ∈ spectrum 𝕜 T ↔ ¬ Function.Bijective (c • (1 : E →L[𝕜] E) - T)
+  proof: |
+    by
+      intro 𝕜 _ E _ _ _ T c
+      rw [spectrum.mem_iff, Algebra.algebraMap_eq_smul_one, ContinuousLinearMap.isUnit_iff_bijective]
+- id: spectrum_compact_banach_algebra
+  kind: gap
+  level: 4
+  topic: 関数解析・スペクトル
+  statement: 複素バナッハ環の元aのスペクトルはコンパクトである。
+  statement_en: The spectrum of an element of a complex Banach algebra is compact.
+  assumptions: [Aは複素バナッハ環, a∈A]
+  quantifiers: [任意のa]
+  conclusion: σ(a)はコンパクトである。
+  answer: |
+    可逆元の全体は開集合で、z↦z1-aは連続なので、レゾルベント集合は開集合であり、σ(a)は閉集合である。また|z|が‖a‖‖1‖より大きいとき、ノイマン級数からz1-aは可逆である。よってσ(a)は有界閉集合であり、ℂではコンパクトである。
+  strategy: Closedness from openness of the units and boundedness from the Neumann series.
+  sketch:
+    - "derive: The resolvent set is the preimage of the open set of units under a continuous map, so σ(a) is closed."
+    - "apply_theorem: The Neumann series makes z1 - a invertible when |z| is larger than ‖a‖‖1‖."
+    - "derive: Hence σ(a) is bounded."
+    - "conclude: A closed bounded subset of ℂ is compact."
+  openmath: (forall (A a) (-> (and (complex_banach_algebra A) (in a A)) (compact_set (spectrum_of a))))
+  hard_negative:
+    statement: 複素バナッハ環の元のスペクトルは常に有限集合である。
+    reason: C[0,1]の元f(t)=tのスペクトルは[0,1]全体である。
+  target: |
+    ∀ (A : Type*) [NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A] (a : A), IsCompact (spectrum ℂ a)
+  proof: |
+    by
+      intro A _ _ _ a
+      exact spectrum.isCompact a
+- id: spectrum_nonempty_banach_algebra
+  kind: gap
+  level: 4
+  topic: 関数解析・スペクトル
+  statement: 0でない複素バナッハ環の任意の元のスペクトルは空でない。
+  statement_en: The spectrum of every element of a nontrivial complex Banach algebra is nonempty.
+  assumptions: [Aは自明でない複素バナッハ環, a∈A]
+  quantifiers: [任意のa]
+  conclusion: σ(a)は空でない。
+  answer: |
+    σ(a)が空だとする。z↦(z1-a)⁻¹はℂ全体で正則であり、|z|→∞で0に収束する。任意の連続線形汎関数との合成はリウヴィルの定理から定数0である。ハーン・バナッハの定理より(z1-a)⁻¹=0となるが、これは可逆元が0になることを意味し、Aが自明でないことに反する。
+  strategy: Apply Liouville's theorem to the resolvent composed with functionals.
+  sketch:
+    - "contradiction: Suppose σ(a) is empty, so the resolvent is defined on all of ℂ."
+    - "derive: The resolvent is entire and tends to 0 at infinity."
+    - "apply_theorem: By Liouville and Hahn-Banach the resolvent vanishes identically."
+    - "conclude: An invertible element would be 0, which contradicts nontriviality of A."
+  openmath: (forall (A a) (-> (and (complex_banach_algebra A) (!= (unit_of A) 0) (in a A)) (nonempty_set (spectrum_of a))))
+  hard_negative:
+    statement: 実バナッハ環の任意の元のスペクトルは空でない。
+    reason: 2次実行列の環で90度回転を表す行列は実固有値をもたず、実スペクトルは空である。
+  target: |
+    ∀ (A : Type*) [NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A] [Nontrivial A] (a : A), (spectrum ℂ a).Nonempty
+  proof: |
+    by
+      intro A _ _ _ _ a
+      exact spectrum.nonempty a
+- id: spectrum_and_spectral_radius_norm_bound
+  kind: gap
+  level: 4
+  topic: 関数解析・スペクトル半径
+  statement: ‖1‖=1である複素バナッハ環の元aについて、スペクトルの全ての元λは|λ|≤‖a‖を満たす。特にスペクトル半径は‖a‖以下である。
+  statement_en: In a complex Banach algebra with ‖1‖ = 1, every λ in the spectrum of a satisfies |λ| ≤ ‖a‖, so the spectral radius of a is at most ‖a‖.
+  assumptions: [Aは複素バナッハ環, ‖1‖=1, a∈A]
+  quantifiers: [任意のa]
+  conclusion: 全てのλ∈σ(a)で|λ|≤‖a‖であり、スペクトル半径r(a)は‖a‖以下である。
+  answer: |
+    |λ|>‖a‖とする。‖a/λ‖<1なのでノイマン級数から1-a/λは可逆であり、λ1-a=λ(1-a/λ)も可逆である。よってλ∉σ(a)である。対偶をとると、σ(a)の元は|λ|≤‖a‖を満たす。スペクトル半径はこの|λ|の上限なので‖a‖以下である。
+  strategy: Show any λ with |λ| > ‖a‖ lies in the resolvent set via the Neumann series.
+  sketch:
+    - "setup: Take |λ| > ‖a‖."
+    - "apply_theorem: The Neumann series inverts 1 - a/λ because ‖a/λ‖ < 1."
+    - "derive: Then λ1 - a is invertible, so λ is not in σ(a)."
+    - "conclude: Elements of σ(a) satisfy |λ| ≤ ‖a‖, and the supremum is at most ‖a‖."
+  openmath: (forall (A a) (-> (and (complex_banach_algebra A) (= (norm (unit_of A)) 1) (in a A)) (and (forall (c) (-> (in c (spectrum_of a)) (<= (abs c) (norm a)))) (<= (spectral_radius a) (norm a)))))
+  hard_negative:
+    statement: スペクトル半径は常に‖a‖に等しい。
+    reason: 0でない冪零行列ではスペクトル半径が0で‖a‖は正である。
+  target: |
+    ∀ (A : Type*) [NormedRing A] [NormedAlgebra ℂ A] [CompleteSpace A] [NormOneClass A] (a : A), (∀ c ∈ spectrum ℂ a, ‖c‖ ≤ ‖a‖) ∧ spectralRadius ℂ a ≤ ‖a‖₊
+  proof: |
+    by
+      intro A _ _ _ _ a
+      exact ⟨fun c hc => spectrum.norm_le_norm_of_mem hc, spectrum.spectralRadius_le_nnnorm a⟩

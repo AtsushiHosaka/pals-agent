@@ -1,0 +1,1211 @@
+- id: first_isomorphism_modules
+  kind: textbook
+  level: 3
+  topic: 加群論・準同型定理
+  statement: R加群の準同型f:M→Nについて、[x]をf(x)へ送る写像はR加群の同型M/ker f≅im fを与える。
+  statement_en: For an R-linear map f from M to N, the assignment [x] to f(x) is a well-defined R-module isomorphism M/ker f to im f.
+  assumptions: [Rは環, MとNはR加群, fはR線形写像]
+  quantifiers: [任意の環R, R加群M, N, R線形写像f]
+  conclusion: M/ker fからim fへの同型eでe([x])=f(x)を満たすものが存在する。
+  answer: |
+    [x]=[y]はx-y∈ker fと同値であり、これはf(x)=f(y)と同値である。したがって[x]をf(x)へ送る写像は定義でき、しかも単射である。線形性はfの線形性から従い、像はim fそのものなので全射でもある。
+  strategy: Pass f to the quotient by its kernel and corestrict to the image.
+  sketch:
+    - "translate: Note that [x]=[y] holds exactly when f(x)=f(y)."
+    - "construct: Define e([x]) = f(x), which is well defined and injective by the previous step."
+    - "derive: Linearity of e follows from linearity of f."
+    - "conclude: The values of e fill im f, so e is an isomorphism onto im f."
+  openmath: (forall (R M N f) (-> (and (is_ring R) (is_module R M) (is_module R N) (module_hom f R M N)) (exists (e) (and (module_hom e R (quotient_module M (map_kernel f)) (map_image f)) (bijective_map e) (forall (x) (-> (in x M) (= (fn_value e (fn_value (quotient_proj M (map_kernel f)) x)) (fn_value f x))))))))
+  hard_negative:
+    statement: R加群の準同型fについてM/ker f≅Nが常に成り立つ。
+    reason: 同型の相手は像im fであり、fが全射でないと成り立たない。零写像Z→Zでは左辺が0、右辺がZである。
+  target: |
+    ∀ (R M N : Type*) [Ring R] [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (f : M →ₗ[R] N), ∃ e : (M ⧸ LinearMap.ker f) ≃ₗ[R] LinearMap.range f, ∀ x : M, ((e (Submodule.Quotient.mk x) : LinearMap.range f) : N) = f x
+  proof: |
+    by
+      intro R M N _ _ _ _ _ f
+      exact ⟨f.quotKerEquivRange, fun x => rfl⟩
+- id: second_isomorphism_modules
+  kind: textbook
+  level: 3
+  topic: 加群論・準同型定理
+  statement: R加群Mの部分加群p,qについて、p/(p∩q)≅(p+q)/qが成り立つ。
+  statement_en: For submodules p and q of an R-module M, there is an isomorphism p/(p∩q) to (p+q)/q.
+  assumptions: [Rは環, MはR加群, pとqはMの部分加群]
+  quantifiers: [任意の環R, R加群M, 部分加群p, q]
+  conclusion: p/(p∩q)と(p+q)/qはR加群として同型である。
+  answer: |
+    合成p→p+q→(p+q)/qを考える。p+qの元はx+y(x∈p, y∈q)と書け、その類はxの類に等しいので、この合成は全射である。pの元xの像が0になるのはx∈qのとき、すなわちx∈p∩qのときだから、核はp∩qである。第一同型定理より主張が従う。
+  strategy: Apply the first isomorphism theorem to p → (p+q)/q.
+  sketch:
+    - "construct: Consider the composite p → p+q → (p+q)/q."
+    - "derive: It is surjective because x+y with x in p and y in q has the same class as x."
+    - "derive: Its kernel is p∩q."
+    - "apply_theorem: The first isomorphism theorem gives p/(p∩q) ≅ (p+q)/q."
+  openmath: (forall (R M p q) (-> (and (is_ring R) (is_module R M) (is_submodule p M) (is_submodule q M)) (module_iso R (quotient_module p (submodule_inter p q)) (quotient_module (submodule_sum p q) q))))
+  hard_negative:
+    statement: 部分加群p,qについてp/(p∩q)≅(p+q)/pが成り立つ。
+    reason: 分母を取り違えている。(p+q)/pと同型なのはq/(p∩q)であり、M=Z, p=2Z, q=Zでは左辺が0、右辺がZ/2Zとなる。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] (p q : Submodule R M), Nonempty ((↥p ⧸ (Submodule.comap p.subtype p ⊓ Submodule.comap p.subtype q)) ≃ₗ[R] (↥(p ⊔ q) ⧸ Submodule.comap (p ⊔ q).subtype q))
+  proof: |
+    by
+      intro R M _ _ _ p q
+      exact ⟨LinearMap.quotientInfEquivSupQuotient p q⟩
+- id: third_isomorphism_modules
+  kind: textbook
+  level: 3
+  topic: 加群論・準同型定理
+  statement: R加群Mの部分加群S⊆Tについて、(M/S)/(T/S)≅M/Tが成り立つ。
+  statement_en: For submodules S ≤ T of an R-module M, there is an isomorphism (M/S)/(T/S) to M/T, where T/S is the image of T in M/S.
+  assumptions: [Rは環, MはR加群, SとTはMの部分加群, S⊆T]
+  quantifiers: [任意の環R, R加群M, 部分加群S, T]
+  conclusion: (M/S)/(T/S)とM/TはR加群として同型である。
+  answer: |
+    S⊆Tなので、射影M→M/TはSの上で0となり、全射M/S→M/Tを誘導する。[x]がこの写像で0になるのはx∈Tのとき、すなわち[x]∈T/Sのときである。よって核はT/Sであり、第一同型定理から同型を得る。
+  strategy: Factor M → M/T through M/S and compute the kernel.
+  sketch:
+    - "construct: Since S ≤ T, the projection M → M/T induces a map M/S → M/T."
+    - "derive: This induced map is surjective."
+    - "derive: Its kernel is the image T/S of T."
+    - "apply_theorem: The first isomorphism theorem gives (M/S)/(T/S) ≅ M/T."
+  openmath: (forall (R M S T) (-> (and (is_ring R) (is_module R M) (is_submodule S M) (is_submodule T M) (is_submodule S T)) (module_iso R (quotient_module (quotient_module M S) (image_submodule (quotient_proj M S) T)) (quotient_module M T))))
+  hard_negative:
+    statement: 包含を仮定しなくても、部分加群S,Tについて(M/S)/(Tの像)≅M/Tが成り立つ。
+    reason: 左辺はM/(S+T)と同型である。M=Z, S=2Z, T=3Zでは左辺が0、右辺がZ/3Zとなる。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] (S T : Submodule R M), S ≤ T → Nonempty (((M ⧸ S) ⧸ Submodule.map S.mkQ T) ≃ₗ[R] (M ⧸ T))
+  proof: |
+    by
+      intro R M _ _ _ S T h
+      exact ⟨Submodule.quotientQuotientEquivQuotient S T h⟩
+- id: quotient_module_universal_property
+  kind: gap
+  level: 3
+  topic: 加群論・剰余加群
+  statement: 線形写像f:M→Nが部分加群Sの上で0ならば、g∘π=fを満たす線形写像g:M/S→Nがただ1つ存在する。
+  statement_en: If an R-linear map f from M to N vanishes on a submodule S, there is a unique R-linear map g from M/S to N with g composed with the projection equal to f.
+  assumptions: [Rは環, MとNはR加群, SはMの部分加群, S⊆ker f]
+  quantifiers: [任意の環R, R加群M, N, 部分加群S, 線形写像f]
+  conclusion: g∘π=fを満たす線形写像g:M/S→Nがただ1つ存在する。
+  answer: |
+    x-y∈Sならf(x)=f(y)なので、g([x])=f(x)は定義でき、線形である。g∘π=fは定義から成り立つ。別のhもh∘π=fを満たすなら、πは全射なので任意の[x]でh([x])=f(x)=g([x])となり、h=gである。
+  strategy: Define g on classes and use surjectivity of the projection for uniqueness.
+  sketch:
+    - "construct: Set g([x]) = f(x), which is well defined because S lies in ker f."
+    - "derive: Linearity of g and g∘π = f follow from the definition."
+    - "derive: If h∘π = f, then h and g agree on every class."
+    - "conclude: Hence g is unique."
+  openmath: (forall (R M N S f) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_submodule S M) (module_hom f R M N) (is_submodule S (map_kernel f))) (exists (g) (and (module_hom g R (quotient_module M S) N) (= (map_compose g (quotient_proj M S)) f) (forall (h) (-> (and (module_hom h R (quotient_module M S) N) (= (map_compose h (quotient_proj M S)) f)) (= h g)))))))
+  hard_negative:
+    statement: 任意の線形写像f:M→Nと部分加群Sに対して、g∘π=fとなるg:M/S→Nが存在する。
+    reason: g∘π=fならfはSの上で0である。M=N=Z, S=2Z, f=idではそのようなgは存在しない。
+  target: |
+    ∀ (R M N : Type*) [Ring R] [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] (S : Submodule R M) (f : M →ₗ[R] N), S ≤ LinearMap.ker f → ∃! g : (M ⧸ S) →ₗ[R] N, g.comp S.mkQ = f
+  proof: |
+    by
+      intro R M N _ _ _ _ _ S f h
+      refine ⟨S.liftQ f h, Submodule.liftQ_mkQ S f h, ?_⟩
+      intro g hg
+      apply Submodule.linearMap_qext
+      rw [hg, Submodule.liftQ_mkQ]
+- id: quotient_submodule_correspondence
+  kind: gap
+  level: 3
+  topic: 加群論・剰余加群
+  statement: 射影π:M→M/Sについて、Sを含む部分加群Tにはπ^{-1}(π(T))=T、M/Sの部分加群Uにはπ(π^{-1}(U))=Uが成り立つ。
+  statement_en: For the projection π from M to M/S, every submodule T containing S satisfies π⁻¹(π(T)) = T, and every submodule U of M/S satisfies π(π⁻¹(U)) = U.
+  assumptions: [Rは環, MはR加群, SはMの部分加群]
+  quantifiers: [Sを含む任意の部分加群T, M/Sの任意の部分加群U]
+  conclusion: π^{-1}(π(T))=Tかつπ(π^{-1}(U))=Uである。
+  answer: |
+    x∈π^{-1}(π(T))ならπ(x)=π(t)となるt∈Tがあり、x-t∈S⊆Tなのでx∈Tである。逆の包含は明らかなので第一の等式が成り立つ。第二の等式では、πが全射だからUの各元はπの値として書け、その元はπ^{-1}(U)に属する。逆の包含も明らかである。
+  strategy: Use S ≤ T for the first identity and surjectivity of π for the second.
+  sketch:
+    - "setup: Let π be the projection with kernel S."
+    - "derive: If π(x)=π(t) with t in T, then x-t lies in S and hence in T, so x lies in T."
+    - "derive: Each element of U is π(x) for some x, and that x lies in π⁻¹(U)."
+    - "conclude: The two composites are identities on the indicated submodules."
+  openmath: (forall (R M S) (-> (and (is_ring R) (is_module R M) (is_submodule S M)) (and (forall (T) (-> (and (is_submodule T M) (is_submodule S T)) (= (preimage_submodule (quotient_proj M S) (image_submodule (quotient_proj M S) T)) T))) (forall (U) (-> (is_submodule U (quotient_module M S)) (= (image_submodule (quotient_proj M S) (preimage_submodule (quotient_proj M S) U)) U))))))
+  hard_negative:
+    statement: Mの任意の部分加群Tについてπ^{-1}(π(T))=Tが成り立つ。
+    reason: 一般に左辺はT+Sである。M=Z, S=2Z, T=0では左辺が2Z、右辺が0となる。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] (S : Submodule R M), (∀ T : Submodule R M, S ≤ T → Submodule.comap S.mkQ (Submodule.map S.mkQ T) = T) ∧ (∀ U : Submodule R (M ⧸ S), Submodule.map S.mkQ (Submodule.comap S.mkQ U) = U)
+  proof: |
+    by
+      intro R M _ _ _ S
+      refine ⟨fun T h => ?_, fun U => ?_⟩
+      · rw [Submodule.comap_map_mkQ, sup_eq_right.2 h]
+      · exact Submodule.map_comap_eq_of_surjective (Submodule.mkQ_surjective S) U
+- id: exact_with_zero_map
+  kind: gap
+  level: 3
+  topic: 加群論・完全列
+  statement: 0→M→Nが完全であることはM→Nの単射性と同値であり、M→N→0が完全であることはM→Nの全射性と同値である。
+  statement_en: The sequence P → M → N with zero first map is exact at M if and only if f from M to N is injective, and M → N → Q with zero second map is exact at N if and only if f is surjective.
+  assumptions: [Rは環, M, N, P, QはR加群, fはM→Nの線形写像]
+  quantifiers: [任意の環R, R加群M, N, P, Q, 線形写像f]
+  conclusion: 零写像に続く完全性はfの単射性と同値であり、零写像の前の完全性はfの全射性と同値である。
+  answer: |
+    零写像P→Mの像は0なので、Mでの完全性はker f=0を意味し、これはfの単射性と同値である。零写像N→Qの核はNなので、Nでの完全性はim f=Nを意味し、これはfの全射性そのものである。
+  strategy: Compute the image and kernel of the zero maps.
+  sketch:
+    - "translate: The image of the zero map into M is 0, so exactness says ker f = 0."
+    - "translate: The kernel of the zero map out of N is N, so exactness says im f = N."
+    - "conclude: These are injectivity and surjectivity of f."
+  openmath: (forall (R M N P Q f) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_module R P) (is_module R Q) (module_hom f R M N)) (and (<-> (exact_pair (zero_map P M) f) (injective_map f)) (<-> (exact_pair f (zero_map N Q)) (surjective_map f)))))
+  hard_negative:
+    statement: M→N→0が完全ならM→Nは単射である。
+    reason: この完全性が与えるのは全射性である。Z→Z/2Zの射影は完全列を与えるが単射ではない。
+  target: |
+    ∀ (R M N P Q : Type*) [Ring R] [AddCommGroup M] [AddCommGroup N] [AddCommGroup P] [AddCommGroup Q] [Module R M] [Module R N] [Module R P] [Module R Q] (f : M →ₗ[R] N), (Function.Exact (0 : P →ₗ[R] M) f ↔ Function.Injective f) ∧ (Function.Exact f (0 : N →ₗ[R] Q) ↔ Function.Surjective f)
+  proof: |
+    by
+      intro R M N P Q _ _ _ _ _ _ _ _ _ f
+      exact ⟨LinearMap.exact_zero_iff_injective P f, LinearMap.exact_zero_iff_surjective Q f⟩
+- id: cokernel_iso_of_right_exact
+  kind: gap
+  level: 3
+  topic: 加群論・完全列
+  statement: A→B→C→0が完全ならば、B/im f≅Cである。
+  statement_en: If A → B → C → 0 is exact with maps f and g, then B/im f is isomorphic to C.
+  assumptions: [Rは環, A, B, CはR加群, im f=ker g, gは全射]
+  quantifiers: [任意の環R, R加群A, B, C, 線形写像f, g]
+  conclusion: B/im fとCはR加群として同型である。
+  answer: |
+    gは全射なので第一同型定理によりB/ker g≅Cである。完全性からker g=im fなので、B/im f≅Cを得る。
+  strategy: Combine exactness with the first isomorphism theorem for g.
+  sketch:
+    - "apply_theorem: Since g is surjective, B/ker g ≅ C."
+    - "translate: Exactness gives ker g = im f."
+    - "conclude: Therefore B/im f ≅ C."
+  openmath: (forall (R A B C f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (module_hom f R A B) (module_hom g R B C) (exact_pair f g) (surjective_map g)) (module_iso R (quotient_module B (map_image f)) C)))
+  hard_negative:
+    statement: A→B→Cがim f=ker gを満たすだけでB/im f≅Cである。
+    reason: gの全射性が必要である。一般にB/im fと同型なのはim gである。A=B=0, C=Zとするとim f=ker gは成り立つが、B/im f=0でありCとは同型でない。
+  target: |
+    ∀ (R A B C : Type*) [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C] [Module R A] [Module R B] [Module R C] (f : A →ₗ[R] B) (g : B →ₗ[R] C), Function.Exact f g → Function.Surjective g → Nonempty ((B ⧸ LinearMap.range f) ≃ₗ[R] C)
+  proof: |
+    by
+      intro R A B C _ _ _ _ _ _ _ f g hfg hg
+      exact ⟨hfg.linearEquivOfSurjective hg⟩
+- id: five_lemma_modules
+  kind: named
+  level: 3
+  topic: 加群論・図式の補題
+  statement: 完全な行をもつ5項の可換図式で、左から1番目の縦の射が全射、2番目と4番目が全単射、5番目が単射ならば、3番目の縦の射は全単射である(五項補題)。
+  statement_en: In a commutative diagram of R-modules with exact rows of five terms, if the first vertical map is surjective, the second and fourth are bijective and the fifth is injective, then the third vertical map is bijective.
+  assumptions: [Rは環, 上下の行は完全, 各正方形は可換, i1は全射, i2とi4は全単射, i5は単射]
+  quantifiers: [任意の環R, 行をなすR加群と線形写像, 縦の線形写像i1からi5]
+  conclusion: i3は全単射である。
+  answer: |
+    単射性を示す。i3(m)=0ならi4(f3(m))=0よりf3(m)=0で、m=f2(x)と書ける。g2(i2(x))=0よりi2(x)=g1(y)となるyがあり、i1の全射性でy=i1(z)と書くと、i2の単射性からx=f1(z)となり、m=f2(f1(z))=0である。全射性も同じ図式追跡で示せる。nに対しg3(n)=i4(x)となるxを取ると、i5の単射性からx=f3(m)と書ける。差n-i3(m)はg3の核すなわちg2の像に入るので、i2の全射性で調整するとnはi3の像に入る。
+  strategy: Chase elements through the diagram for injectivity and surjectivity separately.
+  sketch:
+    - "setup: Fix the two exact rows and the commuting vertical maps."
+    - "derive: If i3(m)=0, injectivity of i4 gives f3(m)=0, so m=f2(x)."
+    - "derive: Then i2(x) lies in the image of g1, and surjectivity of i1 with injectivity of i2 shows x lies in the image of f1, so m=0."
+    - "derive: For n in the target, lift g3(n) through the bijective i4 to an element of the top row, which injectivity of i5 places in the image of f3."
+    - "derive: The difference between n and the resulting value lies in the image of g2 restricted through i2, by exactness of the lower row and surjectivity of i2."
+    - "conclude: Hence i3 is injective and surjective."
+  openmath: (forall (R M1 M2 M3 M4 M5 N1 N2 N3 N4 N5 f1 f2 f3 f4 g1 g2 g3 g4 i1 i2 i3 i4 i5) (-> (and (is_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R M4) (is_module R M5) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R N4) (is_module R N5) (module_hom i3 R M3 N3) (exact_pair f1 f2) (exact_pair f2 f3) (exact_pair f3 f4) (exact_pair g1 g2) (exact_pair g2 g3) (exact_pair g3 g4) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (= (map_compose g3 i3) (map_compose i4 f3)) (= (map_compose g4 i4) (map_compose i5 f4)) (surjective_map i1) (bijective_map i2) (bijective_map i4) (injective_map i5)) (bijective_map i3)))
+  hard_negative:
+    statement: 完全な行の5項可換図式で、i2とi4だけが全単射ならi3は全単射である。
+    reason: i1の全射性を外すと成り立たない。上の行を0→Z→Z→0→0、下の行をZ→Z→0→0→0(Z間はいずれも恒等写像)とし、i1=0, i2=idとすると、i2とi4は全単射で図式は可換だが、i3:Z→0は単射でない。
+  target: |
+    ∀ (R M₁ M₂ M₃ M₄ M₅ N₁ N₂ N₃ N₄ N₅ : Type*) [Ring R] [AddCommGroup M₁] [AddCommGroup M₂] [AddCommGroup M₃] [AddCommGroup M₄] [AddCommGroup M₅] [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃] [AddCommGroup N₄] [AddCommGroup N₅] [Module R M₁] [Module R M₂] [Module R M₃] [Module R M₄] [Module R M₅] [Module R N₁] [Module R N₂] [Module R N₃] [Module R N₄] [Module R N₅] (f₁ : M₁ →ₗ[R] M₂) (f₂ : M₂ →ₗ[R] M₃) (f₃ : M₃ →ₗ[R] M₄) (f₄ : M₄ →ₗ[R] M₅) (g₁ : N₁ →ₗ[R] N₂) (g₂ : N₂ →ₗ[R] N₃) (g₃ : N₃ →ₗ[R] N₄) (g₄ : N₄ →ₗ[R] N₅) (i₁ : M₁ →ₗ[R] N₁) (i₂ : M₂ →ₗ[R] N₂) (i₃ : M₃ →ₗ[R] N₃) (i₄ : M₄ →ₗ[R] N₄) (i₅ : M₅ →ₗ[R] N₅), g₁.comp i₁ = i₂.comp f₁ → g₂.comp i₂ = i₃.comp f₂ → g₃.comp i₃ = i₄.comp f₃ → g₄.comp i₄ = i₅.comp f₄ → Function.Exact f₁ f₂ → Function.Exact f₂ f₃ → Function.Exact f₃ f₄ → Function.Exact g₁ g₂ → Function.Exact g₂ g₃ → Function.Exact g₃ g₄ → Function.Surjective i₁ → Function.Bijective i₂ → Function.Bijective i₄ → Function.Injective i₅ → Function.Bijective i₃
+  proof: |
+    by
+      intro R M₁ M₂ M₃ M₄ M₅ N₁ N₂ N₃ N₄ N₅ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ f₁ f₂ f₃ f₄ g₁ g₂ g₃ g₄ i₁ i₂ i₃ i₄ i₅ hc₁ hc₂ hc₃ hc₄ hf₁ hf₂ hf₃ hg₁ hg₂ hg₃ h₁ h₂ h₄ h₅
+      exact AddMonoidHom.bijective_of_surjective_of_bijective_of_bijective_of_injective f₁.toAddMonoidHom f₂.toAddMonoidHom f₃.toAddMonoidHom f₄.toAddMonoidHom g₁.toAddMonoidHom g₂.toAddMonoidHom g₃.toAddMonoidHom g₄.toAddMonoidHom i₁.toAddMonoidHom i₂.toAddMonoidHom i₃.toAddMonoidHom i₄.toAddMonoidHom i₅.toAddMonoidHom (AddMonoidHom.ext fun x => DFunLike.congr_fun hc₁ x) (AddMonoidHom.ext fun x => DFunLike.congr_fun hc₂ x) (AddMonoidHom.ext fun x => DFunLike.congr_fun hc₃ x) (AddMonoidHom.ext fun x => DFunLike.congr_fun hc₄ x) hf₁ hf₂ hf₃ hg₁ hg₂ hg₃ h₁ h₂ h₄ h₅
+- id: short_five_lemma_modules
+  kind: textbook
+  level: 3
+  topic: 加群論・図式の補題
+  statement: 短完全列の間の射で、両端の縦の射が全単射ならば、中央の縦の射も全単射である。
+  statement_en: Given a morphism of short exact sequences of R-modules whose two outer vertical maps are bijective, the middle vertical map is bijective.
+  assumptions: [Rは環, 0→A→B→C→0と0→A'→B'→C'→0は短完全列, 図式は可換, aとcは全単射]
+  quantifiers: [任意の環R, R加群と線形写像からなる図式]
+  conclusion: bは全単射である。
+  answer: |
+    b(x)=0とする。c(g(x))=g'(b(x))=0よりg(x)=0なので、x=f(y)と書ける。f'(a(y))=b(f(y))=0とf'の単射性からa(y)=0となり、y=0、したがってx=0である。次にyをB'の元とする。g'(y)=c(g(x))となるxを取ると、y-b(x)はg'の核に入るのでf'(a(v))と書ける。すると、b(x+f(v))=yである。
+  strategy: Chase elements using exactness of both rows and bijectivity of the outer maps.
+  sketch:
+    - "setup: Assume b(x)=0 to test injectivity."
+    - "derive: Injectivity of c gives g(x)=0, so x=f(y) by exactness."
+    - "derive: Injectivity of f' and a gives y=0, hence x=0."
+    - "construct: For y in B', pick x with c(g(x))=g'(y) using surjectivity of c and g."
+    - "derive: Then y-b(x) is in ker g', so it equals f'(a(v)) for some v."
+    - "conclude: b(x+f(v))=y, so b is surjective."
+  openmath: (forall (R A B C Ap Bp Cp f g fp gp a b c) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R Ap) (is_module R Bp) (is_module R Cp) (module_hom b R B Bp) (injective_map f) (exact_pair f g) (surjective_map g) (injective_map fp) (exact_pair fp gp) (surjective_map gp) (= (map_compose fp a) (map_compose b f)) (= (map_compose gp b) (map_compose c g)) (bijective_map a) (bijective_map c)) (bijective_map b)))
+  hard_negative:
+    statement: 両端の縦の射が全単射で図式が可換なら、行の完全性を仮定しなくても中央の縦の射は全単射である。
+    reason: 行が完全でなければ成り立たない。A=C=A'=C'=0でB=B'=Z, b=0とすると両端は全単射だがbは全単射でない。
+  target: |
+    ∀ (R A B C A' B' C' : Type*) [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C] [AddCommGroup A'] [AddCommGroup B'] [AddCommGroup C'] [Module R A] [Module R B] [Module R C] [Module R A'] [Module R B'] [Module R C'] (f : A →ₗ[R] B) (g : B →ₗ[R] C) (f' : A' →ₗ[R] B') (g' : B' →ₗ[R] C') (a : A →ₗ[R] A') (b : B →ₗ[R] B') (c : C →ₗ[R] C'), Function.Injective f → Function.Exact f g → Function.Surjective g → Function.Injective f' → Function.Exact f' g' → Function.Surjective g' → f'.comp a = b.comp f → g'.comp b = c.comp g → Function.Bijective a → Function.Bijective c → Function.Bijective b
+  proof: |
+    by
+      intro R A B C A' B' C' _ _ _ _ _ _ _ _ _ _ _ _ _ f g f' g' a b c _ hfg hgs hf' hfg' _ h1 h2 ha hc
+      have h1' : ∀ x, f' (a x) = b (f x) := fun x => LinearMap.congr_fun h1 x
+      have h2' : ∀ x, g' (b x) = c (g x) := fun x => LinearMap.congr_fun h2 x
+      constructor
+      · refine (injective_iff_map_eq_zero b).2 fun x hx => ?_
+        have hgx : g x = 0 := by
+          apply hc.1
+          rw [← h2', hx, map_zero, map_zero]
+        obtain ⟨y, rfl⟩ := (hfg x).1 hgx
+        have hay : a y = 0 := by
+          apply hf'
+          rw [h1', hx, map_zero]
+        have hy : y = 0 := ha.1 (hay.trans (map_zero a).symm)
+        rw [hy, map_zero]
+      · intro y
+        obtain ⟨z, hz⟩ := hc.2 (g' y)
+        obtain ⟨x, rfl⟩ := hgs z
+        have hk : g' (y - b x) = 0 := by rw [map_sub, h2', hz, sub_self]
+        obtain ⟨w, hw⟩ := (hfg' _).1 hk
+        obtain ⟨v, rfl⟩ := ha.2 w
+        refine ⟨x + f v, ?_⟩
+        rw [map_add, ← h1', hw, add_sub_cancel]
+- id: snake_lemma_modules
+  kind: named
+  level: 3
+  topic: 加群論・図式の補題
+  statement: 完全な行M1→M2→M3→0と0→N1→N2→N3の間の可換図式に対し、核の列K2→K3と余核の列C1→C2をつなぐ線形写像δ:K3→C1が存在し、K2→K3→C1→C2は完全である(蛇の補題)。
+  statement_en: Given a commutative diagram with exact rows M1→M2→M3→0 and 0→N1→N2→N3 over a commutative ring, with kernels K2,K3 and cokernels C1,C2 of the vertical maps, there is a linear map δ from K3 to C1 such that K2→K3→C1→C2 is exact.
+  assumptions: [Rは可換環, 上の行は完全でf2は全射, 下の行は完全でg1は単射, 図式は可換, K2とK3はi2とi3の核を与え, C1とC2はi1とi2の余核を与える]
+  quantifiers: [任意の可換環R, 図式をなすR加群と線形写像]
+  conclusion: K2→K3→C1→C2を完全にする線形写像δ:K3→C1が存在する。
+  answer: |
+    概略を述べる。k∈K3に対し、f2の全射性でf2(y)=ι3(k)となるyを取る。g2(i2(y))=i3(ι3(k))=0なので、下の行の完全性からi2(y)=g1(z)となるzがただ1つある。δ(k)=π1(z)と定めると、yの取り方の差はf1の像に入り、zの差はi1の像に入るので、δは定義でき線形である。K3とC1での完全性は、同じ元の取り方を逆にたどる図式追跡で確かめる。
+  strategy: Define δ by lifting along f2, pushing by i2, and pulling back along g1.
+  sketch:
+    - "construct: For k in K3, choose y with f2(y)=ι3(k)."
+    - "derive: g2(i2(y))=0, so i2(y)=g1(z) for a unique z."
+    - "construct: Set δ(k)=π1(z)."
+    - "derive: Another choice of y changes z by an element of im i1, so δ is well defined and linear."
+    - "derive: A diagram chase gives exactness at K3."
+    - "derive: A diagram chase gives exactness at C1."
+    - "conclude: K2→K3→C1→C2 is exact."
+  openmath: (forall (R M1 M2 M3 N1 N2 N3 K2 K3 C1 C2 f1 f2 g1 g2 i1 i2 i3 u2 u3 p1 p2 F G) (-> (and (is_comm_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R K2) (is_module R K3) (is_module R C1) (is_module R C2) (exact_pair f1 f2) (surjective_map f2) (injective_map g1) (exact_pair g1 g2) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (exact_pair u2 i2) (exact_pair u3 i3) (injective_map u3) (exact_pair i1 p1) (exact_pair i2 p2) (surjective_map p1) (= (map_compose f2 u2) (map_compose u3 F)) (= (map_compose G p1) (map_compose p2 g1))) (exists (d) (and (module_hom d R K3 C1) (exact_pair F d) (exact_pair d G)))))
+  hard_negative:
+    statement: f2の全射性とg1の単射性がなくても、同じδがK3からC1へ定義できる。
+    reason: f2が全射でなければι3(k)の持ち上げyが存在しないことがあり、δ(k)を定められない。g1が単射でなければzが一意に決まらず、π1(z)がkだけで決まるとは限らない。
+  target: |
+    ∀ (R M₁ M₂ M₃ N₁ N₂ N₃ K₂ K₃ C₁ C₂ : Type*) [CommRing R] [AddCommGroup M₁] [AddCommGroup M₂] [AddCommGroup M₃] [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃] [AddCommGroup K₂] [AddCommGroup K₃] [AddCommGroup C₁] [AddCommGroup C₂] [Module R M₁] [Module R M₂] [Module R M₃] [Module R N₁] [Module R N₂] [Module R N₃] [Module R K₂] [Module R K₃] [Module R C₁] [Module R C₂] (i₁ : M₁ →ₗ[R] N₁) (i₂ : M₂ →ₗ[R] N₂) (i₃ : M₃ →ₗ[R] N₃) (f₁ : M₁ →ₗ[R] M₂) (f₂ : M₂ →ₗ[R] M₃) (g₁ : N₁ →ₗ[R] N₂) (g₂ : N₂ →ₗ[R] N₃) (ι₂ : K₂ →ₗ[R] M₂) (ι₃ : K₃ →ₗ[R] M₃) (π₁ : N₁ →ₗ[R] C₁) (π₂ : N₂ →ₗ[R] C₂) (F : K₂ →ₗ[R] K₃) (G : C₁ →ₗ[R] C₂), Function.Exact f₁ f₂ → Function.Surjective f₂ → Function.Exact g₁ g₂ → Function.Injective g₁ → g₁.comp i₁ = i₂.comp f₁ → g₂.comp i₂ = i₃.comp f₂ → Function.Exact ι₂ i₂ → Function.Exact ι₃ i₃ → Function.Injective ι₃ → Function.Exact i₁ π₁ → Function.Exact i₂ π₂ → Function.Surjective π₁ → f₂.comp ι₂ = ι₃.comp F → G.comp π₁ = π₂.comp g₁ → ∃ δ : K₃ →ₗ[R] C₁, Function.Exact F δ ∧ Function.Exact δ G
+  proof: |
+    by
+      intro R M₁ M₂ M₃ N₁ N₂ N₃ K₂ K₃ C₁ C₂ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ i₁ i₂ i₃ f₁ f₂ g₁ g₂ ι₂ ι₃ π₁ π₂ F G hf hf₂ hg hg₁ h₁ h₂ hι₂ hι₃ hι₃i hπ₁ hπ₂ hπ₁s hF hG
+      exact ⟨SnakeLemma.δ' i₁ i₂ i₃ f₁ f₂ hf g₁ g₂ hg h₁ h₂ ι₃ hι₃ π₁ hπ₁ hf₂ hg₁,
+        SnakeLemma.exact_δ'_right i₁ i₂ i₃ f₁ f₂ hf g₁ g₂ hg h₁ h₂ ι₂ hι₂ ι₃ hι₃ π₁ hπ₁ hf₂ hg₁ F hF hι₃i,
+        SnakeLemma.exact_δ'_left i₁ i₂ i₃ f₁ f₂ hf g₁ g₂ hg h₁ h₂ ι₃ hι₃ π₁ hπ₁ π₂ hπ₂ hf₂ hg₁ G hG hπ₁s⟩
+- id: splitting_lemma_modules
+  kind: textbook
+  level: 3
+  topic: 加群論・分裂完全列
+  statement: 短完全列0→A→B→C→0について、gの切断の存在、fの引き込みの存在、この列と直和の列を同型にするB≅A⊕Cの存在は同値である。
+  statement_en: For a short exact sequence 0→A→B→C→0 with maps f and g, the existence of a section of g, the existence of a retraction of f, and the existence of an isomorphism B ≅ A⊕C compatible with the inclusion and the projection are equivalent.
+  assumptions: [Rは環, fは単射, im f=ker g, gは全射]
+  quantifiers: [任意の環R, R加群A, B, C, 線形写像f, g]
+  conclusion: 3条件(切断、引き込み、直和分解)は互いに同値である。
+  answer: |
+    切断sがあれば、x-s(g(x))はgの核に入るのでf(r(x))と一意に書け、rがfの引き込みとなる。引き込みrがあれば、xを(r(x),g(x))へ送る写像は線形である。r(x)=0かつg(x)=0ならx=0なので単射であり、(a,c)にはg(x)=cとなるxを取りx+f(a-r(x))を対応させれば全射もわかる。この同型はfとgを直和の包含と射影に移す。逆に直和分解があれば、Cの包含と分解の逆の合成がgの切断となる。
+  strategy: Build the retraction from a section, then the direct sum decomposition, and close the cycle.
+  sketch:
+    - "setup: Assume 0→A→B→C→0 is exact."
+    - "construct: From a section s, define r by x - s(g(x)) = f(r(x))."
+    - "construct: From a retraction r, define B → A⊕C by x ↦ (r(x), g(x))."
+    - "derive: This map is bijective and is compatible with f and g."
+    - "construct: From a decomposition, compose the inclusion of C with the inverse."
+    - "conclude: The three conditions are equivalent."
+  openmath: (forall (R A B C f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g) (surjective_map g)) (and (<-> (exists (s) (and (module_hom s R C B) (= (map_compose g s) (identity_map C)))) (exists (r) (and (module_hom r R B A) (= (map_compose r f) (identity_map A))))) (<-> (exists (r) (and (module_hom r R B A) (= (map_compose r f) (identity_map A)))) (exists (e) (and (module_hom e R B (direct_sum_modules A C)) (bijective_map e) (= (map_compose e f) (sum_inclusion_left A C)) (= (map_compose (sum_projection_right A C) e) g)))))))
+  hard_negative:
+    statement: 任意の短完全列でgの切断が存在する。
+    reason: 分裂しない列がある。0→Z→Z→Z/2Z→0(2倍写像と射影)ではZ/2Z→Zの非零線形写像がなく、切断は存在しない。
+  target: |
+    ∀ (R A B C : Type*) [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C] [Module R A] [Module R B] [Module R C] (f : A →ₗ[R] B) (g : B →ₗ[R] C), Function.Injective f → Function.Exact f g → Function.Surjective g → List.TFAE [∃ s : C →ₗ[R] B, g.comp s = LinearMap.id, ∃ r : B →ₗ[R] A, r.comp f = LinearMap.id, ∃ e : B ≃ₗ[R] A × C, f = e.symm.toLinearMap.comp (LinearMap.inl R A C) ∧ g = (LinearMap.snd R A C).comp e.toLinearMap]
+  proof: |
+    by
+      intro R A B C _ _ _ _ _ _ _ f g hf hfg hg
+      exact Function.Exact.split_tfae hfg hf hg
+- id: hom_covariant_left_exact
+  kind: textbook
+  level: 3
+  topic: 加群論・Hom関手
+  statement: 0→A→B→Cが完全ならば、任意のR加群Xについて0→Hom(X,A)→Hom(X,B)→Hom(X,C)も完全である。
+  statement_en: If 0→A→B→C is exact, then for every R-module X the sequence 0→Hom(X,A)→Hom(X,B)→Hom(X,C) given by postcomposition is exact.
+  assumptions: [Rは環, fは単射, im f=ker g]
+  quantifiers: [任意の環R, R加群A, B, C, X, 線形写像f, g]
+  conclusion: k↦f∘kは単射で、その像はh↦g∘hの核に等しい。
+  answer: |
+    fが単射なのでf∘k=f∘lならk=lである。g∘f=0なのでg∘(f∘k)=0である。逆にg∘h=0なら、各h(x)はker g=im fに入る。fの単射性からh(x)=f(k(x))となるk(x)がただ1つ定まり、kは線形でf∘k=hを満たす。
+  strategy: Factor a map landing in ker g through the injective map f.
+  sketch:
+    - "derive: Injectivity of f makes postcomposition by f injective."
+    - "derive: g∘f=0 makes the composite of the two postcompositions zero."
+    - "setup: Take h with g∘h=0, so h takes values in im f."
+    - "construct: Define k by h(x)=f(k(x)) using injectivity of f."
+    - "conclude: k is linear and f∘k=h."
+  openmath: (forall (R A B C X f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R X) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g)) (and (injective_map (post_compose f)) (exact_pair (post_compose f) (post_compose g)))))
+  hard_negative:
+    statement: A→B→C→0が完全ならHom(X,B)→Hom(X,C)は全射である。
+    reason: Hom(X,-)は一般に右完全でない。X=Z/2Z, Z→Z/2Zの射影ではHom(Z/2Z,Z)=0なので恒等写像が持ち上がらない。
+  target: |
+    ∀ (R A B C X : Type*) [Ring R] [AddCommGroup A] [AddCommGroup B] [AddCommGroup C] [AddCommGroup X] [Module R A] [Module R B] [Module R C] [Module R X] (f : A →ₗ[R] B) (g : B →ₗ[R] C), Function.Injective f → Function.Exact f g → Function.Injective (fun k : X →ₗ[R] A => f.comp k) ∧ Function.Exact (fun k : X →ₗ[R] A => f.comp k) (fun h : X →ₗ[R] B => g.comp h)
+  proof: |
+    by
+      intro R A B C X _ _ _ _ _ _ _ _ _ f g hf hfg
+      constructor
+      · intro k l hkl
+        apply LinearMap.ext
+        intro x
+        exact hf (LinearMap.congr_fun hkl x)
+      · intro h
+        constructor
+        · intro hh
+          have hmem : ∀ x, h x ∈ LinearMap.range f := fun x => (hfg (h x)).1 (LinearMap.congr_fun hh x)
+          refine ⟨(LinearEquiv.ofInjective f hf).symm.toLinearMap.comp (h.codRestrict (LinearMap.range f) hmem), ?_⟩
+          apply LinearMap.ext
+          intro x
+          exact congrArg Subtype.val ((LinearEquiv.ofInjective f hf).apply_symm_apply ⟨h x, hmem x⟩)
+        · rintro ⟨k, rfl⟩
+          apply LinearMap.ext
+          intro x
+          exact (hfg _).2 ⟨k x, rfl⟩
+- id: module_quotient_of_free
+  kind: gap
+  level: 3
+  topic: 加群論・自由加群
+  statement: 任意のR加群Mは、M自身を基底の添字とする自由加群R^{(M)}からの全射線形写像の像である。
+  statement_en: Every R-module M is the image of a surjective R-linear map from the free module on the underlying set of M.
+  assumptions: [Rは環, MはR加群]
+  quantifiers: [任意の環R, R加群M]
+  conclusion: 全射線形写像R^{(M)}→Mが存在する。
+  answer: |
+    基底ベクトルe_mをm∈Mへ送る線形写像を、線形結合Σa_m e_mをΣa_m mへ送る写像として定める。e_mの像がmなので、この写像は全射である。
+  strategy: Send each basis vector to the element that indexes it.
+  sketch:
+    - "construct: Define Σa_m e_m ↦ Σa_m m."
+    - "derive: Linearity holds because the sums are finite."
+    - "conclude: e_m ↦ m shows surjectivity."
+  openmath: (forall (R M) (-> (and (is_ring R) (is_module R M)) (exists (f) (and (module_hom f R (free_module_on R M) M) (surjective_map f)))))
+  hard_negative:
+    statement: 任意のR加群Mは自由加群と同型である。
+    reason: 全射の存在と同型は別である。Z/2ZはZ加群として自由ではない。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M], ∃ f : (M →₀ R) →ₗ[R] M, Function.Surjective f
+  proof: |
+    by
+      intro R M _ _ _
+      exact ⟨Finsupp.linearCombination R id, fun m => ⟨Finsupp.single m 1, by simp⟩⟩
+- id: free_projective_flat_chain
+  kind: gap
+  level: 3
+  topic: 加群論・自由加群と射影加群
+  statement: 可換環上の自由加群は射影加群であり、射影加群は平坦加群である。
+  statement_en: Over a commutative ring, every free module is projective and every projective module is flat.
+  assumptions: [Rは可換環, MはR加群]
+  quantifiers: [任意の可換環R, R加群M]
+  conclusion: Mが自由ならMは射影的であり、Mが射影的ならMは平坦である。
+  answer: |
+    自由加群からの写像は基底の行き先を任意に選んで定まるので、全射に沿って基底の像を持ち上げれば射影性がわかる。射影加群は自由加群Fの直和因子である。Fとのテンソルは直和を与えるので単射を保ち、直和因子についても単射性が保たれる。よって射影加群は平坦である。
+  strategy: Lift basis images for projectivity and use direct summands of free modules for flatness.
+  sketch:
+    - "derive: Maps out of a free module lift along surjections by lifting basis images."
+    - "translate: A projective module is a direct summand of a free module."
+    - "derive: Tensoring with a free module is a direct sum of copies of the identity, so it preserves injections."
+    - "conclude: Direct summands inherit this, so projective modules are flat."
+  openmath: (forall (R M) (-> (and (is_comm_ring R) (is_module R M)) (and (-> (free_module R M) (projective_module R M)) (-> (projective_module R M) (flat_module R M)))))
+  hard_negative:
+    statement: 平坦加群は射影加群である。
+    reason: 逆は成り立たない。QはZ上平坦だが、自由Z加群の直和因子にならないので射影的でない。
+  target: |
+    ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M], (Module.Free R M → Module.Projective R M) ∧ (Module.Projective R M → Module.Flat R M)
+  proof: |
+    by
+      intro R M _ _ _
+      exact ⟨fun _ => Module.Projective.of_free, fun _ => Module.Flat.of_projective⟩
+- id: projective_lifting_property
+  kind: gap
+  level: 3
+  topic: 加群論・射影加群
+  statement: Pが射影加群で、f:M→Nが全射線形写像ならば、任意のg:P→Nはf∘h=gとなるh:P→Mへ持ち上がる。
+  statement_en: If P is projective and f from M to N is a surjective linear map, then every linear map g from P to N lifts to h from P to M with f∘h=g.
+  assumptions: [Rは環, Pは射影R加群, fは全射]
+  quantifiers: [任意のR加群M, N, 線形写像f, g]
+  conclusion: f∘h=gを満たす線形写像h:P→Mが存在する。
+  answer: |
+    Pは自由加群Fと線形写像i:P→F, s:F→Pでs∘i=idを満たすものを持つ。F上の写像は基底の行き先で決まるので、g∘sの基底の像をfで持ち上げてk:F→Mを作り、f∘k=g∘sとする。h=k∘iとおくと、f∘h=g∘s∘i=gである。
+  strategy: Lift on a free module that contains P as a direct summand.
+  sketch:
+    - "translate: Write P as a direct summand of a free module F via i and s."
+    - "construct: Lift the basis images of g∘s through f to get k from F to M."
+    - "construct: Set h = k∘i."
+    - "conclude: f∘h = g∘s∘i = g."
+  openmath: (forall (R P M N f g) (-> (and (is_ring R) (is_module R P) (is_module R M) (is_module R N) (projective_module R P) (module_hom f R M N) (module_hom g R P N) (surjective_map f)) (exists (h) (and (module_hom h R P M) (= (map_compose f h) g)))))
+  hard_negative:
+    statement: 任意のR加群Pについて、全射fに沿って写像g:P→Nが持ち上がる。
+    reason: 射影性が必要である。P=N=Z/2Z, M=Z, fを射影, g=idとするとHom(Z/2Z,Z)=0なので持ち上がらない。
+  target: |
+    ∀ (R P M N : Type*) [Ring R] [AddCommGroup P] [AddCommGroup M] [AddCommGroup N] [Module R P] [Module R M] [Module R N] [Module.Projective R P] (f : M →ₗ[R] N) (g : P →ₗ[R] N), Function.Surjective f → ∃ h : P →ₗ[R] M, f.comp h = g
+  proof: |
+    by
+      intro R P M N _ _ _ _ _ _ _ _ f g hf
+      exact Module.projective_lifting_property f g hf
+- id: projective_iff_summand_of_free
+  kind: textbook
+  level: 3
+  topic: 加群論・射影加群
+  statement: R加群Pが射影的であることと、Pを添字とする自由加群R^{(P)}への線形写像iとs∘i=idとなるsが存在することは同値である。すなわちPは自由加群の直和因子である。
+  statement_en: An R-module P is projective if and only if there are linear maps i from P to the free module on P and s back to P with s∘i = id, that is, P is a direct summand of a free module.
+  assumptions: [Rは環, PはR加群]
+  quantifiers: [任意の環R, R加群P]
+  conclusion: Pの射影性とs∘i=idを満たすi, sの存在は同値である。
+  answer: |
+    Pが射影的なら、全射R^{(P)}→Pに沿って恒等写像が持ち上がり、i, sが得られる。逆にi, sがあるとする。全射f:M→Nとg:P→Nに対し、自由加群の持ち上げ性からf∘k=g∘sとなるk:R^{(P)}→Mを取る。h=k∘iとすればf∘h=g∘s∘i=gなのでPは射影的である。
+  strategy: Lift the identity for one direction and restrict lifts along the summand for the other.
+  sketch:
+    - "construct: If P is projective, lift the identity through the surjection from the free module on P."
+    - "setup: Conversely take i and s with s∘i = id, a surjection f and a map g."
+    - "derive: The free module is projective, so g∘s lifts to k with f∘k = g∘s."
+    - "conclude: h = k∘i lifts g."
+  openmath: (forall (R P) (-> (and (is_ring R) (is_module R P)) (<-> (projective_module R P) (exists (i s) (and (module_hom i R P (free_module_on R P)) (module_hom s R (free_module_on R P) P) (= (map_compose s i) (identity_map P)))))))
+  hard_negative:
+    statement: 射影加群は自由加群である。
+    reason: 直和因子は自由とは限らない。Z/6Z上でZ/2Zは射影的である。一方、自由加群の元の個数は6のべきなのでZ/2Zは自由でない。
+  target: |
+    ∀ (R P : Type*) [Ring R] [AddCommGroup P] [Module R P], Module.Projective R P ↔ ∃ (i : P →ₗ[R] (P →₀ R)) (s : (P →₀ R) →ₗ[R] P), s.comp i = LinearMap.id
+  proof: |
+    by
+      intro R P _ _ _
+      constructor
+      · intro h
+        obtain ⟨s, hs⟩ := Module.projective_def'.1 h
+        exact ⟨s, Finsupp.linearCombination R id, hs⟩
+      · rintro ⟨i, s, h⟩
+        exact Module.Projective.of_split i s h
+- id: injective_module_embedding_splits
+  kind: gap
+  level: 3
+  topic: 加群論・移入加群
+  statement: Qが移入加群で、i:Q→Mが単射線形写像ならば、r∘i=idとなる線形写像r:M→Qが存在する。
+  statement_en: If Q is an injective module, M is a module in the same universe as Q, and i from Q to M is an injective linear map, then there is a linear map r from M to Q with r∘i = id.
+  assumptions: [Rは環, Qは移入R加群, iは単射, QとMは同じ宇宙に属する]
+  quantifiers: [任意のR加群M, 単射線形写像i]
+  conclusion: r∘i=idを満たす線形写像r:M→Qが存在する。
+  answer: |
+    移入性の定義を単射iと恒等写像id:Q→Qに適用すると、r∘i=idとなるr:M→Qが得られる。
+  strategy: Extend the identity of Q along i.
+  sketch:
+    - "apply_theorem: Apply injectivity of Q to the injection i and the identity map."
+    - "conclude: The extension r satisfies r∘i = id."
+  openmath: (forall (R Q M i) (-> (and (is_ring R) (is_module R Q) (is_module R M) (injective_module R Q) (module_hom i R Q M) (injective_map i)) (exists (r) (and (module_hom r R M Q) (= (map_compose r i) (identity_map Q))))))
+  hard_negative:
+    statement: 任意のR加群Qについて、単射i:Q→Mには引き込みが存在する。
+    reason: 移入性が必要である。2倍写像Z→Zには引き込みがない。
+  target: |
+    ∀ (R : Type*) [Ring R] (Q M : Type u) [AddCommGroup Q] [AddCommGroup M] [Module R Q] [Module R M] [Module.Injective R Q] (i : Q →ₗ[R] M), Function.Injective i → ∃ r : M →ₗ[R] Q, r.comp i = LinearMap.id
+  proof: |
+    by
+      intro R _ Q M _ _ _ _ _ i hi
+      obtain ⟨r, hr⟩ := Module.Injective.out i hi (LinearMap.id : Q →ₗ[R] Q)
+      exact ⟨r, LinearMap.ext hr⟩
+- id: flat_tensor_preserves_exact
+  kind: textbook
+  level: 4
+  topic: 加群論・平坦加群
+  statement: Mが平坦加群でN→N'→N''が完全ならば、M⊗N→M⊗N'→M⊗N''も完全である。
+  statement_en: If M is a flat module over a commutative ring and N→N'→N'' is exact, then M⊗N→M⊗N'→M⊗N'' is exact.
+  assumptions: [Rは可換環, Mは平坦R加群, N→N'→N''は完全]
+  quantifiers: [任意のR加群N, N', N'', 線形写像f, g]
+  conclusion: M⊗fとM⊗gの列は完全である。
+  answer: |
+    gをN'→N'/im fとN'/im f→N''の合成に分ける。第二の写像は完全性から単射であり、Mの平坦性によりテンソル後も単射である。右完全性によりM⊗(N'/im f)はM⊗N'をM⊗fの像で割った加群である。したがってM⊗gの核はM⊗fの像に等しい。
+  strategy: Factor g through the cokernel of f, then combine right exactness with flatness.
+  sketch:
+    - "setup: Factor g as N' → N'/im f → N''."
+    - "derive: The second map is injective because the sequence is exact."
+    - "apply_theorem: Flatness keeps it injective after tensoring with M."
+    - "apply_theorem: Right exactness identifies M⊗(N'/im f) with the cokernel of M⊗f."
+    - "conclude: ker(M⊗g) = im(M⊗f)."
+  openmath: (forall (R M N1 N2 N3 f g) (-> (and (is_comm_ring R) (is_module R M) (is_module R N1) (is_module R N2) (is_module R N3) (flat_module R M) (module_hom f R N1 N2) (module_hom g R N2 N3) (exact_pair f g)) (exact_pair (tensor_identity_map M f) (tensor_identity_map M g))))
+  hard_negative:
+    statement: 任意のR加群Mについて、テンソルは完全列を完全列へ移す。
+    reason: 平坦性が必要である。M=Z/2Zで0→Z→Z(2倍)は、テンソル後のZ/2Z→Z/2Zが零写像となり、単射性が失われる。
+  target: |
+    ∀ (R M N N' N'' : Type*) [CommRing R] [AddCommGroup M] [AddCommGroup N] [AddCommGroup N'] [AddCommGroup N''] [Module R M] [Module R N] [Module R N'] [Module R N''] [Module.Flat R M] (f : N →ₗ[R] N') (g : N' →ₗ[R] N''), Function.Exact f g → Function.Exact (f.lTensor M) (g.lTensor M)
+  proof: |
+    by
+      intro R M N N' N'' _ _ _ _ _ _ _ _ _ _ f g hfg
+      exact Module.Flat.lTensor_exact M hfg
+- id: tensor_right_exact
+  kind: textbook
+  level: 3
+  topic: 加群論・テンソル積
+  statement: M→N→P→0が完全ならば、任意のR加群Qについて、Q⊗M→Q⊗N→Q⊗P→0も完全である。
+  statement_en: If M→N→P→0 is exact, then for every module Q over a commutative ring, Q⊗M→Q⊗N→Q⊗P→0 is exact.
+  assumptions: [Rは可換環, M→N→Pは完全, gは全射]
+  quantifiers: [任意のR加群M, N, P, Q, 線形写像f, g]
+  conclusion: Q⊗fとQ⊗gの列は完全で、Q⊗gは全射である。
+  answer: |
+    Q⊗Pは純テンソルで生成され、q⊗g(n)の形なのでQ⊗gは全射である。(Q⊗g)∘(Q⊗f)=0なので、Q⊗gはC=(Q⊗N)/im(Q⊗f)からの写像を誘導する。q⊗g(n)にqとnの類q⊗nを対応させる写像は、g(n)=g(n')ならn-n'∈im fであることから定義でき、誘導写像の逆を与える。よって核はim(Q⊗f)に等しい。
+  strategy: Construct an inverse on the cokernel using exactness on pure tensors.
+  sketch:
+    - "derive: Pure tensors q⊗g(n) generate Q⊗P, so Q⊗g is surjective."
+    - "derive: The composite (Q⊗g)∘(Q⊗f) is zero, which induces a map from the cokernel C."
+    - "construct: Define q⊗p ↦ class of q⊗n for any n with g(n)=p, well defined by exactness."
+    - "conclude: This inverts the induced map, so ker(Q⊗g) = im(Q⊗f)."
+  openmath: (forall (R M N P Q f g) (-> (and (is_comm_ring R) (is_module R M) (is_module R N) (is_module R P) (is_module R Q) (module_hom f R M N) (module_hom g R N P) (exact_pair f g) (surjective_map g)) (and (exact_pair (tensor_identity_map Q f) (tensor_identity_map Q g)) (surjective_map (tensor_identity_map Q g)))))
+  hard_negative:
+    statement: fが単射ならQ⊗fも単射である。
+    reason: テンソルは左完全ではない。2倍写像Z→ZとQ=Z/2Zでは、Q⊗fは零写像である。
+  target: |
+    ∀ (R M N P Q : Type*) [CommRing R] [AddCommGroup M] [AddCommGroup N] [AddCommGroup P] [AddCommGroup Q] [Module R M] [Module R N] [Module R P] [Module R Q] (f : M →ₗ[R] N) (g : N →ₗ[R] P), Function.Exact f g → Function.Surjective g → Function.Exact (f.lTensor Q) (g.lTensor Q) ∧ Function.Surjective (g.lTensor Q)
+  proof: |
+    by
+      intro R M N P Q _ _ _ _ _ _ _ _ _ f g hfg hg
+      exact ⟨lTensor_exact Q hfg hg, LinearMap.lTensor_surjective Q hg⟩
+- id: tensor_universal_property
+  kind: gap
+  level: 3
+  topic: 加群論・テンソル積
+  statement: 双線形写像f:M×N→Pに対し、g(m⊗n)=f(m,n)を満たす線形写像g:M⊗N→Pがただ1つ存在する。
+  statement_en: For every R-bilinear map f from M and N to P over a commutative ring, there is a unique linear map g from M⊗N to P with g(m⊗n)=f(m,n).
+  assumptions: [Rは可換環, fはR双線形]
+  quantifiers: [任意のR加群M, N, P, 双線形写像f]
+  conclusion: g(m⊗n)=f(m,n)を満たす線形写像gがただ1つ存在する。
+  answer: |
+    M⊗Nは記号m⊗nが生成する自由加群を、双線形性の関係式で割ったものである。fは関係式を0へ送るので、m⊗nをf(m,n)へ送る線形写像gが定まる。純テンソルはM⊗Nを生成するので、この値を指定する線形写像は1つしかない。
+  strategy: Use the presentation of the tensor product for existence and generation by pure tensors for uniqueness.
+  sketch:
+    - "translate: M⊗N is the free module on symbols m⊗n modulo the bilinearity relations."
+    - "construct: f kills the relations, so m⊗n ↦ f(m,n) defines a linear map."
+    - "derive: Pure tensors generate M⊗N."
+    - "conclude: Hence g is unique."
+  openmath: (forall (R M N P f) (-> (and (is_comm_ring R) (is_module R M) (is_module R N) (is_module R P) (bilinear_map f R M N P)) (exists (g) (and (module_hom g R (tensor_product_module R M N) P) (forall (m n) (= (fn_value g (pure_tensor m n)) (fn_value (fn_value f m) n))) (forall (h) (-> (and (module_hom h R (tensor_product_module R M N) P) (forall (m n) (= (fn_value h (pure_tensor m n)) (fn_value (fn_value f m) n)))) (= h g)))))))
+  hard_negative:
+    statement: M⊗Nの任意の元は純テンソルm⊗nの形である。
+    reason: 一般の元は純テンソルの有限和である。実2次元空間V上のV⊗Vでe1⊗e1+e2⊗e2は純テンソルではない。
+  target: |
+    ∀ (R M N P : Type*) [CommRing R] [AddCommGroup M] [AddCommGroup N] [AddCommGroup P] [Module R M] [Module R N] [Module R P] (f : M →ₗ[R] N →ₗ[R] P), ∃! g : TensorProduct R M N →ₗ[R] P, ∀ (m : M) (n : N), g (TensorProduct.tmul R m n) = f m n
+  proof: |
+    by
+      intro R M N P _ _ _ _ _ _ _ f
+      refine ⟨TensorProduct.lift f, fun m n => TensorProduct.lift.tmul m n, ?_⟩
+      intro g hg
+      apply TensorProduct.ext'
+      intro m n
+      rw [hg, TensorProduct.lift.tmul]
+- id: structure_theorem_pid_modules
+  kind: named
+  level: 4
+  topic: 加群論・単項イデアル整域上の加群
+  statement: 単項イデアル整域R上の有限生成加群Mは、ある自然数nと既約元p_i、自然数e_iによりR^n⊕⊕_i R/(p_i^{e_i})と同型である(構造定理)。
+  statement_en: Every finitely generated module M over a principal ideal domain R is isomorphic to R^n ⊕ ⊕_i R/(p_i^{e_i}) for some natural numbers n and e_i and finitely many irreducible elements p_i.
+  assumptions: [Rは単項イデアル整域, Mは有限生成R加群]
+  quantifiers: [任意の単項イデアル整域R, 有限生成R加群M]
+  conclusion: あるn, m, 既約元p_i, 自然数e_iでM≅R^n⊕⊕_{i<m}R/(p_i^{e_i})となる。
+  answer: |
+    概略を述べる。主な段階は3つである。ねじれ部分加群T(M)についてM/T(M)は有限生成でねじれなしなので自由となり、射影性からMはT(M)と自由加群の直和に分かれる。有限生成ねじれ加群T(M)は既約元ごとの準素成分の直和に分解する。各準素成分は巡回加群R/(p^e)の直和に分解する。これらを合わせると主張を得る。
+  strategy: Split off the free part, decompose torsion into primary parts, and split each primary part into cyclic modules.
+  sketch:
+    - "setup: Let T(M) be the torsion submodule of M."
+    - "apply_theorem: M/T(M) is finitely generated torsion free over a PID, hence free."
+    - "derive: Projectivity of the free quotient gives M ≅ T(M) ⊕ R^n."
+    - "derive: T(M) is the direct sum of its primary components."
+    - "derive: Each primary component is a direct sum of cyclic modules R/(p^e)."
+    - "conclude: Combining gives M ≅ R^n ⊕ ⊕ R/(p_i^{e_i})."
+  openmath: (forall (R M) (-> (and (is_pid R) (is_module R M) (finitely_generated_module R M)) (exists (n m p e) (and (in n N) (in m N) (forall (i) (-> (< i m) (irreducible_element (seq_value p i) R))) (module_iso R M (direct_sum_modules (free_rank_module R n) (prime_power_quotient_sum R p e m)))))))
+  hard_negative:
+    statement: 単項イデアル整域上の任意の加群は巡回加群の直和である。
+    reason: 有限生成性が必要である。QはZ上有限生成でなく、巡回加群の直和にならない。
+  target: |
+    ∀ (R M : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] [AddCommGroup M] [Module R M] [Module.Finite R M], ∃ (n m : ℕ) (p : Fin m → R) (e : Fin m → ℕ), (∀ i, Irreducible (p i)) ∧ Nonempty (M ≃ₗ[R] ((Fin n → R) × (∀ j : Fin m, R ⧸ Submodule.span R {p j ^ e j})))
+  proof: |
+    by
+      intro R M _ _ _ _ _ _
+      obtain ⟨n, ι, _, p, hp, e, ⟨f⟩⟩ := Module.equiv_free_prod_directSum R M
+      classical
+      let k := Fintype.equivFin ι
+      refine ⟨n, Fintype.card ι, fun j => p (k.symm j), fun j => e (k.symm j), fun j => hp _, ⟨?_⟩⟩
+      exact f.trans ((Finsupp.linearEquivFunOnFinite R R (Fin n)).prodCongr ((DirectSum.linearEquivFunOnFintype R ι _).trans (LinearEquiv.piCongrLeft' R (fun i => R ⧸ Submodule.span R {p i ^ e i}) k)))
+- id: quotient_by_torsion_is_torsion_free
+  kind: gap
+  level: 3
+  topic: 加群論・ねじれ部分加群
+  statement: 可換環R上の加群Mをねじれ部分加群T(M)で割った加群M/T(M)のねじれ部分加群は0である。
+  statement_en: For a module M over a commutative ring, the torsion submodule of M/T(M) is zero.
+  assumptions: [Rは可換環, MはR加群]
+  quantifiers: [任意の可換環R, R加群M]
+  conclusion: T(M/T(M))=0である。
+  answer: |
+    [x]がねじれ元で、非零因子aでa[x]=0とする。するとax∈T(M)なので、非零因子bでb(ax)=0となる。abは非零因子で(ab)x=0だからx∈T(M)であり、[x]=0である。
+  strategy: Multiply two annihilating non-zero-divisors.
+  sketch:
+    - "setup: Let a be a non-zero-divisor with a[x]=0."
+    - "derive: Then ax lies in T(M), so b(ax)=0 for a non-zero-divisor b."
+    - "derive: ab is a non-zero-divisor with (ab)x=0."
+    - "conclude: x lies in T(M), so [x]=0."
+  openmath: (forall (R M) (-> (and (is_comm_ring R) (is_module R M)) (= (torsion_submodule R (quotient_module M (torsion_submodule R M))) zero_module)))
+  hard_negative:
+    statement: 任意の部分加群NについてM/Nはねじれなしである。
+    reason: Nがねじれ部分加群でなければ成り立たない。M=Z, N=2ZではM/N=Z/2Zはねじれ加群である。
+  target: |
+    ∀ (R M : Type*) [CommRing R] [AddCommGroup M] [Module R M], Submodule.torsion R (M ⧸ Submodule.torsion R M) = ⊥
+  proof: |
+    by
+      intro R M _ _ _
+      exact Submodule.QuotientTorsion.torsion_eq_bot
+- id: noetherian_extension
+  kind: gap
+  level: 3
+  topic: 加群論・ネーター加群
+  statement: im f=ker gとなる線形写像の列M→N→Pで、MとPがネーター加群ならば、Nもネーター加群である。
+  statement_en: If M→N→P is exact at N and M and P are Noetherian, then N is Noetherian.
+  assumptions: [Rは環, im f=ker g, MとPはネーター加群]
+  quantifiers: [任意のR加群M, N, P, 線形写像f, g]
+  conclusion: Nはネーター加群である。
+  answer: |
+    im fはMの商なのでネーターであり、Nの部分加群の昇鎖L_iを考える。L_i∩im fとg(L_i)はそれぞれネーター加群の中の昇鎖なので、ある番号以降一定である。L_i⊆L_jでL_i∩im f=L_j∩im fかつg(L_i)=g(L_j)ならL_i=L_jなので、昇鎖は止まる。
+  strategy: Stabilize the intersection with im f and the image under g separately.
+  sketch:
+    - "setup: Take an ascending chain L_i of submodules of N."
+    - "derive: L_i ∩ im f stabilizes because im f is a quotient of M."
+    - "derive: g(L_i) stabilizes because P is Noetherian."
+    - "derive: If L_i ≤ L_j agree on both, then L_i = L_j, using ker g = im f."
+    - "conclude: The chain stabilizes, so N is Noetherian."
+  openmath: (forall (R M N P f g) (-> (and (is_ring R) (is_module R M) (is_module R N) (is_module R P) (module_hom f R M N) (module_hom g R N P) (exact_pair f g) (noetherian_module R M) (noetherian_module R P)) (noetherian_module R N)))
+  hard_negative:
+    statement: im f=ker gでMだけがネーターならNもネーターである。
+    reason: Pの仮定が必要である。M=0, gを恒等写像とし、N=P=可算無限個のZの直和とするとNはネーターでない。
+  target: |
+    ∀ (R M N P : Type*) [Ring R] [AddCommGroup M] [AddCommGroup N] [AddCommGroup P] [Module R M] [Module R N] [Module R P] [IsNoetherian R M] [IsNoetherian R P] (f : M →ₗ[R] N) (g : N →ₗ[R] P), Function.Exact f g → IsNoetherian R N
+  proof: |
+    by
+      intro R M N P _ _ _ _ _ _ _ _ _ f g hfg
+      exact isNoetherian_of_range_eq_ker f g hfg.linearMap_ker_eq.symm
+- id: artinian_injective_endomorphism_surjective
+  kind: gap
+  level: 4
+  topic: 加群論・アルティン加群
+  statement: アルティン加群Mの単射な自己準同型は全射である。
+  statement_en: Every injective endomorphism of an Artinian module is surjective.
+  assumptions: [Rは環, Mはアルティン加群, fはMの単射自己準同型]
+  quantifiers: [任意の環R, アルティン加群M, 自己準同型f]
+  conclusion: fは全射である。
+  answer: |
+    降鎖im f^nは止まるので、im f^n=im f^{n+1}となるnがある。x∈Mに対しf^n(x)=f^{n+1}(y)となるyを取る。f^nは単射なのでx=f(y)である。よってfは全射である。
+  strategy: Stabilize the descending chain of images and cancel the injective power.
+  sketch:
+    - "setup: Consider the descending chain im f^n."
+    - "derive: Artinian gives n with im f^n = im f^(n+1)."
+    - "derive: For x, write f^n(x)=f^(n+1)(y)."
+    - "conclude: Injectivity of f^n gives x=f(y)."
+  openmath: (forall (R M f) (-> (and (is_ring R) (is_module R M) (artinian_module R M) (module_hom f R M M) (injective_map f)) (surjective_map f)))
+  hard_negative:
+    statement: 任意の加群の単射な自己準同型は全射である。
+    reason: アルティン性が必要である。Zの2倍写像は単射だが全射でない。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] [IsArtinian R M] (f : M →ₗ[R] M), Function.Injective f → Function.Surjective f
+  proof: |
+    by
+      intro R M _ _ _ _ f hf
+      exact IsArtinian.surjective_of_injective_endomorphism f hf
+- id: schur_lemma_modules
+  kind: named
+  level: 3
+  topic: 加群論・単純加群
+  statement: 単純加群の間の線形写像は零写像か全単射である(シューアの補題)。
+  statement_en: A linear map between simple modules is either zero or bijective.
+  assumptions: [Rは環, MとNは単純R加群]
+  quantifiers: [任意の線形写像f:M→N]
+  conclusion: fは全単射であるか零写像である。
+  answer: |
+    ker fはMの部分加群なので0かMである。ker f=Mならf=0である。ker f=0ならfは単射で、im fはNの非零部分加群なのでNに等しく、fは全射である。
+  strategy: Apply simplicity to the kernel and the image.
+  sketch:
+    - "derive: ker f is 0 or M by simplicity of M."
+    - "case_split: If ker f = M then f = 0."
+    - "derive: If ker f = 0 then im f is a nonzero submodule of N."
+    - "conclude: Simplicity of N gives im f = N, so f is bijective."
+  openmath: (forall (R M N f) (-> (and (is_ring R) (is_module R M) (is_module R N) (simple_module R M) (simple_module R N) (module_hom f R M N)) (or (bijective_map f) (= f (zero_map M N)))))
+  hard_negative:
+    statement: Mだけが単純ならf:M→Nは零写像か全単射である。
+    reason: 非零なら単射までしか言えない。Z/2Z→Z/4Z(1↦2)は非零だが全射でない。
+  target: |
+    ∀ (R M N : Type*) [Ring R] [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] [IsSimpleModule R M] [IsSimpleModule R N] (f : M →ₗ[R] N), Function.Bijective f ∨ f = 0
+  proof: |
+    by
+      intro R M N _ _ _ _ _ _ _ f
+      exact LinearMap.bijective_or_eq_zero f
+- id: simple_endomorphism_is_unit
+  kind: gap
+  level: 3
+  topic: 加群論・単純加群
+  statement: 単純加群の非零な自己準同型は、自己準同型環の可逆元である。
+  statement_en: Every nonzero endomorphism of a simple module is a unit of the endomorphism ring.
+  assumptions: [Rは環, Mは単純R加群, f≠0]
+  quantifiers: [任意の自己準同型f]
+  conclusion: fは自己準同型環で可逆である。
+  answer: |
+    シューアの補題によりfは全単射である。全単射な線形写像の逆写像は線形なので、fの逆元が自己準同型環に存在する。
+  strategy: Combine Schur's lemma with the linear inverse.
+  sketch:
+    - "apply_theorem: f is bijective by Schur's lemma."
+    - "derive: The set-theoretic inverse is linear."
+    - "conclude: f is a unit."
+  openmath: (forall (R M f) (-> (and (is_ring R) (is_module R M) (simple_module R M) (module_hom f R M M) (!= f (zero_map M M))) (exists (g) (and (module_hom g R M M) (= (map_compose f g) (identity_map M)) (= (map_compose g f) (identity_map M))))))
+  hard_negative:
+    statement: 単純でない加群でも非零自己準同型は可逆である。
+    reason: Z/4Zの2倍写像は非零だが可逆でない。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] [IsSimpleModule R M] (f : Module.End R M), f ≠ 0 → IsUnit f
+  proof: |
+    by
+      intro R M _ _ _ _ f hf
+      exact (Module.End.isUnit_iff f).2 (LinearMap.bijective_of_ne_zero hf)
+- id: semisimple_submodule_has_complement
+  kind: gap
+  level: 3
+  topic: 加群論・半単純加群
+  statement: 半単純加群の任意の部分加群は直和補因子をもつ。
+  statement_en: Every submodule of a semisimple module has a complement.
+  assumptions: [Rは環, Mは半単純R加群, NはMの部分加群]
+  quantifiers: [任意の部分加群N]
+  conclusion: N∩N'=0かつN+N'=Mとなる部分加群N'が存在する。
+  answer: |
+    Mは単純部分加群の和である。ツォルンの補題でNと直和をなす部分加群の極大元N'を取る。単純部分加群SがN+N'に含まれなければ、S∩(N+N')=0よりN'+SがN'より大きな直和成分となり極大性に反する。したがってN+N'=Mである。
+  strategy: Choose a maximal submodule meeting N trivially and test it on simple submodules.
+  sketch:
+    - "construct: Zorn's lemma gives N' maximal with N ∩ N' = 0."
+    - "contradiction: A simple S outside N+N' would meet it trivially and enlarge N'."
+    - "derive: Hence every simple submodule lies in N+N'."
+    - "conclude: Since M is the sum of simple submodules, N+N' = M."
+  openmath: (forall (R M K) (-> (and (is_ring R) (is_module R M) (semisimple_module R M) (is_submodule K M)) (exists (L) (and (is_submodule L M) (direct_complement K L M)))))
+  hard_negative:
+    statement: 任意の加群の任意の部分加群は直和補因子をもつ。
+    reason: Zの部分加群2Zには補因子がない。Zの非零部分加群はどの2つも交わるからである。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M] [IsSemisimpleModule R M] (N : Submodule R M), ∃ N' : Submodule R M, IsCompl N N'
+  proof: |
+    by
+      intro R M _ _ _ _ N
+      exact exists_isCompl N
+- id: semisimple_iff_sum_of_simples
+  kind: textbook
+  level: 3
+  topic: 加群論・半単純加群
+  statement: 加群Mが半単純であることと、Mが単純部分加群の和であることは同値である。
+  statement_en: A module M is semisimple if and only if M is the sum of its simple submodules.
+  assumptions: [Rは環, MはR加群]
+  quantifiers: [任意の環R, R加群M]
+  conclusion: Mの半単純性と、単純部分加群全体の和がMであることは同値である。
+  answer: |
+    Mが半単純とする。単純部分加群の和をLとし、補因子L'を取る。L'≠0なら0でないx∈L'とRxの極大な真部分加群K(ツォルンの補題)を取り、MでのKの補因子K'を使うとRx=K⊕(Rx∩K')となる。S=Rx∩K'≅Rx/Kは単純でL∩L'に含まれるので、L∩L'=0に反する。よってL=Mである。逆にMが単純部分加群の和なら、任意の部分加群Nに対し、ツォルンの補題でNと交わらない極大の部分加群を取ると、単純部分加群がすべてその和に含まれるのでNの補因子となる。
+  strategy: Use a complement of the sum for one direction and Zorn's lemma for the other.
+  sketch:
+    - "setup: Let L be the sum of all simple submodules."
+    - "derive: If M is semisimple and L' complements L, a simple submodule of L' lies in L, so L' = 0."
+    - "construct: Conversely, for N take N' maximal with N ∩ N' = 0."
+    - "derive: Every simple submodule lies in N+N'."
+    - "conclude: So N+N' = M and M is semisimple."
+  openmath: (forall (R M) (-> (and (is_ring R) (is_module R M)) (<-> (semisimple_module R M) (= (sum_of_simple_submodules R M) M))))
+  hard_negative:
+    statement: 半単純加群は有限個の単純加群の直和である。
+    reason: 有限性は従わない。体上の無限次元ベクトル空間は半単純だが、有限個の単純部分加群の直和ではない。
+  target: |
+    ∀ (R M : Type*) [Ring R] [AddCommGroup M] [Module R M], IsSemisimpleModule R M ↔ sSup {m : Submodule R M | IsSimpleModule R m} = ⊤
+  proof: |
+    by
+      intro R M _ _ _
+      exact sSup_simples_eq_top_iff_isSemisimpleModule.symm
+- id: inverse_morphism_unique
+  kind: gap
+  level: 3
+  topic: 圏論・同型射
+  statement: 射fの左逆射gと右逆射hは一致する。とくに両側逆射は一意である。
+  statement_en: If a morphism f in a category satisfies g∘f = id and f∘h = id, then the left inverse g and the right inverse h coincide, so a two-sided inverse is unique.
+  assumptions: [Cは圏, f:X→Y, g:Y→Xはg∘f=idを満たす, h:Y→Xはf∘h=idを満たす]
+  quantifiers: [任意の圏C, 対象X, Y, 射f, g, h]
+  conclusion: g=hである。
+  answer: |
+    g=g∘id=g∘(f∘h)=(g∘f)∘h=id∘h=hである。結合律と単位律だけを用いた。
+  strategy: Insert the identity and use associativity.
+  sketch:
+    - "derive: g = g∘(f∘h) by the right inverse identity."
+    - "derive: g∘(f∘h) = (g∘f)∘h by associativity."
+    - "conclude: (g∘f)∘h = h, so g = h."
+  openmath: (forall (C X Y f g h) (-> (and (is_category C) (object_of X C) (object_of Y C) (morphism_between f X Y) (morphism_between g Y X) (morphism_between h Y X) (= (cat_compose g f) (cat_identity X)) (= (cat_compose f h) (cat_identity Y))) (= g h)))
+  hard_negative:
+    statement: 射の左逆射は一意である。
+    reason: 右逆射がなければ一意とは限らない。包含{0,1}→{0,1,2}の左逆射は、2の行き先を0とするものと1とするものの2つがある。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] (X Y : C) (f : X ⟶ Y) (g h : Y ⟶ X), CategoryTheory.CategoryStruct.comp f g = CategoryTheory.CategoryStruct.id X → CategoryTheory.CategoryStruct.comp h f = CategoryTheory.CategoryStruct.id Y → g = h
+  proof: |
+    by
+      intro C _ X Y f g h hg hh
+      calc g = CategoryTheory.CategoryStruct.comp (CategoryTheory.CategoryStruct.id Y) g := (CategoryTheory.Category.id_comp g).symm
+        _ = CategoryTheory.CategoryStruct.comp (CategoryTheory.CategoryStruct.comp h f) g := by rw [hh]
+        _ = CategoryTheory.CategoryStruct.comp h (CategoryTheory.CategoryStruct.comp f g) := CategoryTheory.Category.assoc h f g
+        _ = CategoryTheory.CategoryStruct.comp h (CategoryTheory.CategoryStruct.id X) := by rw [hg]
+        _ = h := CategoryTheory.Category.comp_id h
+- id: mono_with_section_is_iso
+  kind: gap
+  level: 3
+  topic: 圏論・モノ射とエピ射
+  statement: モノ射fが右逆射sをもつならば、fは同型射である。
+  statement_en: A monomorphism f with a right inverse s, meaning f∘s = id, is an isomorphism.
+  assumptions: [Cは圏, fはモノ射, f∘s=id]
+  quantifiers: [任意の圏C, 対象X, Y, 射f:X→Y, s:Y→X]
+  conclusion: fは同型射である。
+  answer: |
+    f∘(s∘f)=(f∘s)∘f=f=f∘idであり、fはモノ射なのでs∘f=idである。f∘s=idと合わせて、sはfの両側逆射である。
+  strategy: Cancel the monomorphism from f∘(s∘f) = f∘id.
+  sketch:
+    - "derive: f∘(s∘f) = (f∘s)∘f = f = f∘id."
+    - "derive: Since f is mono, s∘f = id."
+    - "conclude: s is a two-sided inverse of f."
+  openmath: (forall (C X Y f s) (-> (and (is_category C) (object_of X C) (object_of Y C) (morphism_between f X Y) (morphism_between s Y X) (mono_morphism f) (= (cat_compose f s) (cat_identity Y))) (iso_morphism f)))
+  hard_negative:
+    statement: モノ射かつエピ射である射は同型射である。
+    reason: 一般の圏では成り立たない。環の圏の包含Z→Qはモノ射かつエピ射だが同型ではない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] (X Y : C) (f : X ⟶ Y) (s : Y ⟶ X), CategoryTheory.CategoryStruct.comp s f = CategoryTheory.CategoryStruct.id Y → CategoryTheory.Mono f → CategoryTheory.IsIso f
+  proof: |
+    by
+      intro C _ X Y f s h hm
+      haveI : CategoryTheory.IsSplitEpi f := CategoryTheory.IsSplitEpi.mk' ⟨s, h⟩
+      exact CategoryTheory.isIso_of_mono_of_isSplitEpi f
+- id: fully_faithful_reflects_isomorphism
+  kind: gap
+  level: 3
+  topic: 圏論・関手
+  statement: 忠実充満関手Fについて、F(f)が同型射ならばfは同型射である。
+  statement_en: If F is a fully faithful functor and F(f) is an isomorphism, then f is an isomorphism.
+  assumptions: [Fは忠実かつ充満な関手, F(f)は同型射]
+  quantifiers: [任意の圏C, D, 関手F, Cの射f]
+  conclusion: fは同型射である。
+  answer: |
+    F(f)の逆射をkとする。充満性からk=F(g)となるgがある。F(g∘f)=F(g)∘F(f)=id=F(id)と忠実性からg∘f=idであり、同様にf∘g=idである。
+  strategy: Pull the inverse of F(f) back along F.
+  sketch:
+    - "setup: Let k be the inverse of F(f)."
+    - "derive: Fullness gives g with F(g) = k."
+    - "derive: F(g∘f) = id = F(id) and F(f∘g) = id = F(id)."
+    - "conclude: Faithfulness gives g∘f = id and f∘g = id."
+  openmath: (forall (C D F X Y f) (-> (and (is_category C) (is_category D) (functor_between F C D) (full_functor F) (faithful_functor F) (morphism_between f X Y) (iso_morphism (functor_on_morphism F f))) (iso_morphism f)))
+  hard_negative:
+    statement: 任意の関手FについてF(f)が同型ならfは同型である。
+    reason: 反例として、すべてを1点圏の恒等射へ送る関手では、任意のfの像が同型になる。
+  target: |
+    ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F : CategoryTheory.Functor C D) [F.Full] [F.Faithful] (X Y : C) (f : X ⟶ Y), CategoryTheory.IsIso (F.map f) → CategoryTheory.IsIso f
+  proof: |
+    by
+      intro C D _ _ F _ _ X Y f h
+      exact CategoryTheory.isIso_of_fully_faithful F f
+- id: natural_transformation_iso_iff_components
+  kind: gap
+  level: 3
+  topic: 圏論・自然変換
+  statement: 自然変換τが自然同型であることと、すべての成分τ_Xが同型射であることは同値である。
+  statement_en: A natural transformation τ between functors is a natural isomorphism if and only if every component τ_X is an isomorphism.
+  assumptions: [FとGは圏CからDへの関手, τはFからGへの自然変換]
+  quantifiers: [任意の圏C, D, 関手F, G, 自然変換τ]
+  conclusion: τが同型であることと各τ_Xが同型であることは同値である。
+  answer: |
+    τの逆σがあれば、各対象で成分を取るとσ_Xがτ_Xの逆である。逆に各τ_Xが同型のとき、σ_X=τ_X^{-1}と定める。射f:X→Yについて、τの自然性G(f)∘τ_X=τ_Y∘F(f)の両側にσ_Yとσ_Xを合成するとσ_Y∘G(f)=F(f)∘σ_Xが得られるので、σは自然変換であり、τの逆である。
+  strategy: Assemble the inverse components and check naturality.
+  sketch:
+    - "derive: An inverse of τ restricts to inverses of the components."
+    - "construct: Conversely set σ_X to be the inverse of τ_X."
+    - "derive: Composing the naturality square with σ_Y and σ_X gives naturality of σ."
+    - "conclude: σ is the inverse of τ."
+  openmath: (forall (C D F G t) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G C D) (nat_trans_between t F G)) (<-> (iso_morphism t) (forall (X) (-> (object_of X C) (iso_morphism (nat_trans_component t X)))))))
+  hard_negative:
+    statement: 各対象XでF(X)とG(X)が同型ならFとGは自然同型である。
+    reason: 対象ごとの同型が自然性を満たすとは限らない。位数2の群を1対象の圏と見て、集合{0,1}への自明な作用をF、入れ替える作用をGとする。値の集合は同型だが、Fの作用には固定点がありGの作用にはないので、自然同型は存在しない。
+  target: |
+    ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F G : CategoryTheory.Functor C D) (τ : F ⟶ G), CategoryTheory.IsIso τ ↔ ∀ X : C, CategoryTheory.IsIso (τ.app X)
+  proof: |
+    by
+      intro C D _ _ F G τ
+      exact CategoryTheory.NatTrans.isIso_iff_isIso_app τ
+- id: left_adjoint_unique
+  kind: textbook
+  level: 4
+  topic: 圏論・随伴
+  statement: 関手Gの左随伴は自然同型を除いて一意である。
+  statement_en: Any two left adjoints of a functor G are naturally isomorphic.
+  assumptions: [FとF'はともにGの左随伴]
+  quantifiers: [任意の圏C, D, 関手F, F', G]
+  conclusion: FとF'は自然同型である。
+  answer: |
+    随伴より、各Yについて自然にHom(F(X),Y)≅Hom(X,G(Y))≅Hom(F'(X),Y)である。これはXについても自然である。米田の補題によりF(X)≅F'(X)がXについて自然に得られる。
+  strategy: Compare representable functors and apply the Yoneda lemma.
+  sketch:
+    - "translate: The adjunctions give Hom(F(X),Y) ≅ Hom(X,G(Y)) ≅ Hom(F'(X),Y)."
+    - "derive: The composite is natural in X and Y."
+    - "apply_theorem: The Yoneda lemma gives isomorphisms F(X) ≅ F'(X)."
+    - "conclude: Naturality in X gives F ≅ F'."
+  openmath: (forall (C D F Fp G) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between Fp C D) (functor_between G D C) (adjoint_pair F G) (adjoint_pair Fp G)) (naturally_isomorphic F Fp)))
+  hard_negative:
+    statement: 関手Gの左随伴と右随伴は自然同型である。
+    reason: 左随伴と右随伴は一般に異なる。忘却関手Top→Setの左随伴は離散位相、右随伴は密着位相を与える関手であり、自然同型でない。
+  target: |
+    ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F F' : CategoryTheory.Functor C D) (G : CategoryTheory.Functor D C), CategoryTheory.Adjunction F G → CategoryTheory.Adjunction F' G → Nonempty (F ≅ F')
+  proof: |
+    by
+      intro C D _ _ F F' G adj adj'
+      exact ⟨adj.leftAdjointUniq adj'⟩
+- id: adjunction_hom_bijection
+  kind: gap
+  level: 3
+  topic: 圏論・随伴
+  statement: 随伴F⊣Gに対し、f:F(X)→YをG(f)∘η_Xへ送る写像はHom(F(X),Y)からHom(X,G(Y))への全単射である。
+  statement_en: For an adjunction F⊣G with unit η, the assignment sending f from F(X) to Y to G(f)∘η_X is a bijection from Hom(F(X),Y) to Hom(X,G(Y)).
+  assumptions: [F⊣Gは随伴, ηは単位]
+  quantifiers: [任意の対象X, Y]
+  conclusion: f↦G(f)∘η_Xは全単射である。
+  answer: |
+    逆写像としてg:X→G(Y)にε_Y∘F(g)を対応させる。ηとεの自然性と三角等式により、ε_Y∘F(G(f)∘η_X)=f∘ε_{F(X)}∘F(η_X)=fである。同様にG(ε_Y∘F(g))∘η_X=gも成り立つ。
+  strategy: Define the inverse with the counit and verify with the triangle identities.
+  sketch:
+    - "construct: Send g from X to G(Y) to ε_Y∘F(g)."
+    - "derive: Naturality of ε and the first triangle identity give one composite as the identity."
+    - "derive: Naturality of η and the second triangle identity give the other composite as the identity."
+    - "conclude: The map is a bijection."
+  openmath: (forall (C D F G X Y) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (object_of X C) (object_of Y D)) (exists (e) (and (bijection_between e (hom_set (functor_on_object F X) Y) (hom_set X (functor_on_object G Y))) (forall (f) (= (fn_value e f) (cat_compose (functor_on_morphism G f) (adjunction_unit F G X))))))))
+  hard_negative:
+    statement: 随伴F⊣Gがあれば、Hom(X,F(Y))とHom(G(X),Y)が全単射である。
+    reason: 左右を取り違えている。この全単射はG⊣Fを述べており、F⊣Gからは従わない。
+  target: |
+    ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F : CategoryTheory.Functor C D) (G : CategoryTheory.Functor D C) (adj : CategoryTheory.Adjunction F G) (X : C) (Y : D), ∃ e : (F.obj X ⟶ Y) ≃ (X ⟶ G.obj Y), ∀ f : F.obj X ⟶ Y, e f = CategoryTheory.CategoryStruct.comp (adj.unit.app X) (G.map f)
+  proof: |
+    by
+      intro C D _ _ F G adj X Y
+      exact ⟨adj.homEquiv X Y, fun f => adj.homEquiv_unit X Y f⟩
+- id: right_adjoint_preserves_limits
+  kind: textbook
+  level: 4
+  topic: 圏論・随伴と極限
+  statement: 右随伴関手は極限を保つ。すなわち随伴F⊣Gと図式Kの極限錐cについて、G(c)はG∘Kの極限錐である。
+  statement_en: A right adjoint preserves limits; for an adjunction F⊣G and a limit cone c of a diagram K, the image cone G(c) is a limit cone of G∘K.
+  assumptions: [F⊣Gは随伴, cは図式Kの極限錐]
+  quantifiers: [任意の添字圏J, 図式K, 錐c]
+  conclusion: G(c)はG∘Kの極限錐である。
+  answer: |
+    対象Xからの錐X→G(K_j)は、随伴により錐F(X)→K_jと自然に対応する。cが極限なので、後者は頂点への射F(X)→c_0とただ1通りに対応する。これを随伴で戻すとX→G(c_0)である。よってG(c)は極限錐である。
+  strategy: Transpose cones along the adjunction.
+  sketch:
+    - "translate: Cones from X over G∘K correspond to cones from F(X) over K by the adjunction."
+    - "apply_theorem: Since c is a limit, such a cone factors uniquely through the apex of c."
+    - "translate: Transposing back gives a unique map from X to the apex of G(c)."
+    - "conclude: G(c) is a limit cone."
+  openmath: (forall (C D F G J K c) (-> (and (is_category C) (is_category D) (is_category J) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (functor_between K J D) (limit_cone c K)) (limit_cone (functor_image_cone G c) (functor_image_diagram G K))))
+  hard_negative:
+    statement: 右随伴関手は余極限も保つ。
+    reason: 一般に保たない。忘却関手Grp→Setは右随伴だが、群の余積(自由積)を集合の直和へ移さない。
+  target: |
+    ∀ (C D J : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] [CategoryTheory.Category J] (F : CategoryTheory.Functor C D) (G : CategoryTheory.Functor D C), CategoryTheory.Adjunction F G → ∀ (K : CategoryTheory.Functor J D) (c : CategoryTheory.Limits.Cone K), CategoryTheory.Limits.IsLimit c → Nonempty (CategoryTheory.Limits.IsLimit (G.mapCone c))
+  proof: |
+    by
+      intro C D J _ _ _ F G adj K c hc
+      haveI := adj.rightAdjoint_preservesLimits
+      exact ⟨CategoryTheory.Limits.isLimitOfPreserves G hc⟩
+- id: limit_cone_unique_up_to_iso
+  kind: gap
+  level: 3
+  topic: 圏論・極限
+  statement: 同じ図式の2つの極限錐s,tの頂点は、錐の脚と両立する同型で結ばれる。
+  statement_en: The apexes of two limit cones s and t of the same diagram are isomorphic through an isomorphism compatible with the legs of the cones.
+  assumptions: [sとtは図式Fの極限錐]
+  quantifiers: [任意の圏C, J, 図式F, 錐s, t]
+  conclusion: すべてのjでt_j∘i=s_jを満たす同型i:頂点(s)→頂点(t)が存在する。
+  answer: |
+    tが極限なのでsはtを経由し、t_j∘i=s_jとなるi:頂点(s)→頂点(t)がただ1つある。同様にs_j∘k=t_jとなるkがある。k∘iとsの頂点の恒等射はともにsをsへ経由させるので、極限の一意性から一致する。i∘kについても同様である。
+  strategy: Factor each cone through the other and use uniqueness.
+  sketch:
+    - "construct: t being limit gives i with t_j∘i = s_j."
+    - "construct: s being limit gives k with s_j∘k = t_j."
+    - "derive: k∘i and the identity both factor s through s, so they coincide."
+    - "derive: Likewise i∘k is the identity."
+    - "conclude: i is an isomorphism compatible with the legs."
+  openmath: (forall (C J K s t) (-> (and (is_category C) (is_category J) (functor_between K J C) (limit_cone s K) (limit_cone t K)) (exists (i) (and (morphism_between i (cone_apex s) (cone_apex t)) (iso_morphism i) (forall (j) (-> (object_of j J) (= (cat_compose (cone_leg t j) i) (cone_leg s j))))))))
+  hard_negative:
+    statement: 同じ図式の極限の頂点は等しい。
+    reason: 一意なのは同型を除いてである。集合A≠Bの積の頂点としてA×BもB×Aも取れるが、この2つは集合として異なる。
+  target: |
+    ∀ (C J : Type*) [CategoryTheory.Category C] [CategoryTheory.Category J] (K : CategoryTheory.Functor J C) (s t : CategoryTheory.Limits.Cone K), CategoryTheory.Limits.IsLimit s → CategoryTheory.Limits.IsLimit t → ∃ i : s.pt ≅ t.pt, ∀ j : J, CategoryTheory.CategoryStruct.comp i.hom (t.π.app j) = s.π.app j
+  proof: |
+    by
+      intro C J _ _ K s t hs ht
+      exact ⟨hs.conePointUniqueUpToIso ht, fun j => hs.conePointUniqueUpToIso_hom_comp ht j⟩
+- id: pullback_of_mono_is_mono
+  kind: gap
+  level: 3
+  topic: 圏論・極限
+  statement: モノ射fのgに沿った引き戻しの射影はモノ射である。
+  statement_en: The pullback of a monomorphism f along any morphism g is a monomorphism, that is, the projection from the pullback to the domain of g is mono.
+  assumptions: [fはモノ射, fとgの引き戻しが存在する]
+  quantifiers: [任意の圏C, 射f:X→Z, g:Y→Z]
+  conclusion: 射影X×_Z Y→Yはモノ射である。
+  answer: |
+    a,b:W→X×_Z Yがq∘a=q∘bを満たすとする(qはYへの射影、pはXへの射影)。f∘p∘a=g∘q∘a=g∘q∘b=f∘p∘bであり、fはモノ射なのでp∘a=p∘bである。引き戻しの普遍性からa=bである。
+  strategy: Compare both projections and use the universal property.
+  sketch:
+    - "setup: Take a, b into the pullback with q∘a = q∘b."
+    - "derive: The pullback square gives f∘p∘a = f∘p∘b."
+    - "derive: Since f is mono, p∘a = p∘b."
+    - "conclude: The universal property gives a = b."
+  openmath: (forall (C X Y Z f g) (-> (and (is_category C) (morphism_between f X Z) (morphism_between g Y Z) (mono_morphism f)) (mono_morphism (pullback_projection_right f g))))
+  hard_negative:
+    statement: エピ射の引き戻しはエピ射である。
+    reason: 一般の圏では成り立たない。ハウスドルフ空間の圏で包含Q→Rはエピ射だが、1点{√2}→Rに沿う引き戻しは空集合から1点への射となり、エピ射でない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] (X Y Z : C) (f : X ⟶ Z) (g : Y ⟶ Z) [CategoryTheory.Limits.HasPullback f g] [CategoryTheory.Mono f], CategoryTheory.Mono (CategoryTheory.Limits.pullback.snd f g)
+  proof: |
+    by
+      intro C _ X Y Z f g _ _
+      infer_instance
+- id: yoneda_lemma
+  kind: named
+  level: 4
+  topic: 圏論・米田の補題
+  statement: 圏Cの対象Xと前層Fについて、α↦α_X(id_X)は自然変換の集合Nat(Hom(-,X),F)からF(X)への全単射である(米田の補題)。
+  statement_en: For an object X of a category C and a set-valued presheaf F on C, the map α ↦ α_X(id_X) is a bijection from the natural transformations Hom(-,X) to F onto F(X).
+  assumptions: [Cは圏, XはCの対象, FはCの前層]
+  quantifiers: [任意の圏C, 対象X, 前層F]
+  conclusion: α↦α_X(id_X)はNat(Hom(-,X),F)からF(X)への全単射である。
+  answer: |
+    a∈F(X)に対し、f:Y→XをF(f)(a)へ送る族を考えると、Fの関手性から自然変換となる。これが逆写像である。実際、この族のXでの成分でid_Xの値はaである。また自然変換αについて、自然性からα_Y(f)=α_Y(id_X∘f)=F(f)(α_X(id_X))となるので、αはα_X(id_X)から復元される。
+  strategy: Build the inverse from a ∈ F(X) by f ↦ F(f)(a).
+  sketch:
+    - "construct: For a in F(X), define Φ(a)_Y(f) = F(f)(a)."
+    - "derive: Functoriality of F makes Φ(a) natural."
+    - "derive: Evaluating Φ(a) at id_X returns a."
+    - "derive: Naturality of α gives α_Y(f) = F(f)(α_X(id_X))."
+    - "conclude: The two maps are mutually inverse."
+  openmath: (forall (C X F) (-> (and (is_category C) (object_of X C) (presheaf_on F C)) (exists (e) (and (bijection_between e (nat_trans_set (hom_functor X) F) (functor_on_object F X)) (forall (t) (= (fn_value e t) (fn_value (nat_trans_component t X) (cat_identity X))))))))
+  hard_negative:
+    statement: 任意の前層GとG(X)の元aについて、α↦α_X(a)はNat(G,F)からF(X)への全単射である。
+    reason: Gが表現可能でなければ成り立たない。GをHom(-,X)の2個の直和とするとNat(G,F)はF(X)×F(X)と全単射であり、F(X)が2元以上あるとこの写像は単射でない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] (X : C) (F : CategoryTheory.Functor (Opposite C) (Type _)), ∃ e : (CategoryTheory.yoneda.obj X ⟶ F) ≃ F.obj (Opposite.op X), ∀ α : CategoryTheory.yoneda.obj X ⟶ F, e α = α.app (Opposite.op X) (CategoryTheory.CategoryStruct.id X)
+  proof: |
+    by
+      intro C _ X F
+      exact ⟨CategoryTheory.yonedaEquiv, fun α => rfl⟩
+- id: yoneda_embedding_fully_faithful
+  kind: gap
+  level: 4
+  topic: 圏論・米田の補題
+  statement: 対象X,Yについて、射f:X→Yに自然変換Hom(-,f)を対応させる写像は全単射である。
+  statement_en: For objects X and Y, the assignment sending f from X to Y to the natural transformation Hom(-,f) is a bijection onto natural transformations Hom(-,X) to Hom(-,Y).
+  assumptions: [Cは圏, XとYはCの対象]
+  quantifiers: [任意の圏C, 対象X, Y]
+  conclusion: f↦Hom(-,f)はHom(X,Y)からNat(Hom(-,X),Hom(-,Y))への全単射である。
+  answer: |
+    米田の補題をF=Hom(-,Y)に適用すると、αをα_X(id_X)∈Hom(X,Y)へ送る写像が全単射である。Hom(-,f)のXでのid_Xの値はfなので、f↦Hom(-,f)はこの全単射の逆である。
+  strategy: Apply the Yoneda lemma to F = Hom(-,Y).
+  sketch:
+    - "apply_theorem: The Yoneda lemma for F = Hom(-,Y) gives a bijection Nat(Hom(-,X),Hom(-,Y)) to Hom(X,Y)."
+    - "derive: Hom(-,f) evaluates at id_X to f."
+    - "conclude: f ↦ Hom(-,f) is the inverse bijection."
+  openmath: (forall (C X Y) (-> (and (is_category C) (object_of X C) (object_of Y C)) (exists (e) (and (bijection_between e (hom_set X Y) (nat_trans_set (hom_functor X) (hom_functor Y))) (forall (f) (= (fn_value e f) (yoneda_map f)))))))
+  hard_negative:
+    statement: 米田埋め込みは本質的全射である。
+    reason: 前層は表現可能とは限らない。空でない圏上ですべての値が空集合である前層は、Hom(X,X)がid_Xを含むのでHom(-,X)と同型にならない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] (X Y : C), Function.Bijective (fun f : X ⟶ Y => CategoryTheory.yoneda.map f)
+  proof: |
+    by
+      intro C _ X Y
+      exact ⟨CategoryTheory.Functor.map_injective CategoryTheory.yoneda, CategoryTheory.Functor.map_surjective CategoryTheory.yoneda⟩
+- id: equivalence_iff_quasi_inverse
+  kind: textbook
+  level: 4
+  topic: 圏論・圏同値
+  statement: 関手Fが忠実充満かつ本質的全射であることと、id_C≅G∘FかつF∘G≅id_Dを満たす関手Gが存在することは同値である。
+  statement_en: A functor F is fully faithful and essentially surjective if and only if there is a functor G with id_C ≅ G∘F and F∘G ≅ id_D.
+  assumptions: [Fは圏CからDへの関手]
+  quantifiers: [任意の圏C, D, 関手F]
+  conclusion: Fが忠実充満かつ本質的全射であることと、準逆関手Gの存在は同値である。
+  answer: |
+    Fが忠実充満かつ本質的全射なら、各YにF(G(Y))≅Yとなる対象G(Y)を選び、射は忠実充満性で一意に持ち上げてGを定める。このときF∘G≅idであり、さらに忠実充満性からG∘F≅idである。逆にGがあれば、G∘F≅idからFは忠実であり、対称的にGも忠実である。F∘G≅idから本質的全射性が従い、Gの忠実性を使ってFの充満性が示せる。
+  strategy: Choose preimages to build G, and use the natural isomorphisms for the converse.
+  sketch:
+    - "construct: Choose G(Y) with F(G(Y)) ≅ Y for each Y."
+    - "construct: Define G on morphisms by full faithfulness."
+    - "derive: The chosen isomorphisms give F∘G ≅ id, and full faithfulness gives G∘F ≅ id."
+    - "derive: Conversely id ≅ G∘F makes F faithful and G faithful by symmetry."
+    - "derive: F∘G ≅ id gives essential surjectivity and faithfulness of G gives fullness of F."
+    - "conclude: The two conditions are equivalent."
+  openmath: (forall (C D F) (-> (and (is_category C) (is_category D) (functor_between F C D)) (<-> (equivalence_functor F) (exists (G) (and (functor_between G D C) (naturally_isomorphic (identity_functor C) (functor_compose G F)) (naturally_isomorphic (functor_compose F G) (identity_functor D)))))))
+  hard_negative:
+    statement: 圏同値は対象の間の全単射を与える。
+    reason: 圏同値は同型を除いて対応するだけである。1点圏と、2対象が互いに同型な圏は同値だが、対象の個数は異なる。
+  target: |
+    ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F : CategoryTheory.Functor C D), F.IsEquivalence ↔ ∃ G : CategoryTheory.Functor D C, Nonempty (CategoryTheory.Functor.id C ≅ F.comp G) ∧ Nonempty (G.comp F ≅ CategoryTheory.Functor.id D)
+  proof: |
+    by
+      intro C D _ _ F
+      constructor
+      · intro h
+        exact ⟨F.asEquivalence.inverse, ⟨F.asEquivalence.unitIso⟩, ⟨F.asEquivalence.counitIso⟩⟩
+      · rintro ⟨G, ⟨η⟩, ⟨ε⟩⟩
+        exact (CategoryTheory.Equivalence.mk F G η ε).isEquivalence_functor
+- id: abelian_mono_epi_is_iso
+  kind: gap
+  level: 4
+  topic: 圏論・アーベル圏
+  statement: アーベル圏では、モノ射かつエピ射である射は同型射である。
+  statement_en: In an abelian category, a morphism that is both mono and epi is an isomorphism.
+  assumptions: [Cはアーベル圏, fはモノ射かつエピ射]
+  quantifiers: [任意のアーベル圏C, 射f]
+  conclusion: fは同型射である。
+  answer: |
+    アーベル圏ではモノ射はある射の核である。fをgの核とする。fがエピ射でg∘f=0なのでg=0である。零射の核は恒等射なので、fは恒等射と同型であり、同型射である。
+  strategy: Write f as a kernel and use that f is epi to force the other map to be zero.
+  sketch:
+    - "translate: The monomorphism f is the kernel of some g."
+    - "derive: g∘f = 0 and f is epi, so g = 0."
+    - "derive: The kernel of a zero morphism is an isomorphism."
+    - "conclude: f is an isomorphism."
+  openmath: (forall (C f) (-> (and (abelian_category C) (mono_morphism f) (epi_morphism f)) (iso_morphism f)))
+  hard_negative:
+    statement: 任意の圏でモノ射かつエピ射は同型である。
+    reason: アーベル性が必要である。環の圏の包含Z→Qはモノ射かつエピ射だが同型でない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] [CategoryTheory.Abelian C] (X Y : C) (f : X ⟶ Y) [CategoryTheory.Mono f] [CategoryTheory.Epi f], CategoryTheory.IsIso f
+  proof: |
+    by
+      intro C _ _ X Y f _ _
+      exact CategoryTheory.isIso_of_mono_of_epi f
+- id: abelian_mono_iff_kernel_zero
+  kind: gap
+  level: 4
+  topic: 圏論・アーベル圏
+  statement: アーベル圏で射fがモノ射であることと、fの核の射が零射であることは同値である。
+  statement_en: In an abelian category, a morphism f is mono if and only if the kernel morphism of f is zero.
+  assumptions: [Cはアーベル圏, fはCの射]
+  quantifiers: [任意のアーベル圏C, 射f]
+  conclusion: fがモノ射であることとker(f)→Xが零射であることは同値である。
+  answer: |
+    ιをfの核の射とする。fがモノ射ならf∘ι=0=f∘0よりι=0である。逆にι=0とする。f∘g=0ならgはιを経由するのでg=ι∘h=0である。すると、f∘a=f∘bならf∘(a-b)=0からa=bとなり、fはモノ射である。
+  strategy: Cancel f on one side and factor through the kernel on the other.
+  sketch:
+    - "derive: If f is mono, f∘ι = f∘0 gives ι = 0."
+    - "setup: Assume ι = 0 and f∘g = 0."
+    - "derive: g factors through ι, hence g = 0."
+    - "conclude: Subtracting two morphisms shows f is mono."
+  openmath: (forall (C f) (-> (abelian_category C) (<-> (mono_morphism f) (= (kernel_inclusion f) zero_morphism_cat))))
+  hard_negative:
+    statement: 射fについて、核が零射ならfは同型である。
+    reason: 核が零射であることはモノ射性に当たる。包含Z→Qは核が零射だが同型でない。
+  target: |
+    ∀ (C : Type*) [CategoryTheory.Category C] [CategoryTheory.Abelian C] (X Y : C) (f : X ⟶ Y), CategoryTheory.Mono f ↔ CategoryTheory.Limits.kernel.ι f = 0
+  proof: |
+    by
+      intro C _ _ X Y f
+      exact (CategoryTheory.Abelian.tfae_mono f X).out 0 1

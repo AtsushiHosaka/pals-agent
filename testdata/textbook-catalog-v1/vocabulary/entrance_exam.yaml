@@ -1,0 +1,15 @@
+# Proposed additive OpenMath vocabulary for entrance-exam style problems.
+pi: {args: [], returns: term, meaning: "the circle constant pi"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+fibonacci: {args: [term], returns: term, meaning: "n-th Fibonacci number with F_0=0 and F_1=1"}
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}
+floor: {args: [term], returns: term, meaning: "greatest integer not exceeding the real number x"}
+polynomial_over: {args: [term, term], returns: prop, meaning: "f is a polynomial with coefficients in F"}
+polynomial_eval: {args: [term, term], returns: term, meaning: "polynomial p evaluated at the element a"}
+complex_i: {args: [], returns: term, meaning: "the imaginary unit i of the complex numbers"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b; arguments a, b, f"}
+seq_limit_of: {args: [term_function, term], returns: prop, meaning: "the real sequence n maps to s(n), given as a lambda, converges to L"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+function_set: {args: [term, term], returns: term, meaning: "set of all functions from A to B"}
+inner_product_space_over: {args: [term, term], returns: prop, meaning: "E is an inner product space over K, where K is R or C (arguments K, E)"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}

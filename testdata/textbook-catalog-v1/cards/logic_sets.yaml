@@ -1,0 +1,1531 @@
+- id: contrapositive_iff
+  kind: gap
+  level: 1
+  topic: 命題論理・対偶
+  statement: 命題P, Qについて、「PならばQ」とその対偶「QでないならばPでない」は同値である。
+  statement_en: For propositions P and Q, the implication P → Q is equivalent to its contrapositive ¬Q → ¬P.
+  assumptions:
+    - P, Qは命題
+  quantifiers:
+    - 任意の命題P, Q
+  conclusion: P→Qと¬Q→¬Pは同値である。
+  answer: |
+    P→Qを仮定する。Qでないとき、もしPならばQとなって矛盾するのでPでない。逆に¬Q→¬Pを仮定し、Pが成り立つとする。Qでないとすると¬Pが従い矛盾するので、排中律によりQが成り立つ。
+  strategy: Prove each direction separately; the converse needs a case split on Q.
+  sketch:
+    - "setup: Assume P → Q and suppose ¬Q."
+    - "contradiction: If P held, Q would follow, contradicting ¬Q, so ¬P."
+    - "case_split: For the converse assume ¬Q → ¬P and P, and split on whether Q holds."
+    - "conclude: The case ¬Q gives ¬P, a contradiction, so Q holds."
+  openmath: (forall (a P Q) (<-> (-> (in a P) (in a Q)) (-> (notin a Q) (notin a P))))
+  hard_negative:
+    statement: 「PならばQ」とその逆「QならばP」は同値である。
+    reason: Pが偽でQが真のとき、P→Qは真だがQ→Pは偽である。
+  target: |
+    ∀ (P Q : Prop), (P → Q) ↔ (¬Q → ¬P)
+  proof: |
+    by
+      intro P Q
+      exact not_imp_not.symm
+- id: prop_de_morgan
+  kind: gap
+  level: 1
+  topic: 命題論理・ド・モルガンの法則
+  statement: 命題P, Qについて、「PかつQ」の否定は「PでないまたはQでない」と同値であり、「PまたはQ」の否定は「PでないかつQでない」と同値である。
+  statement_en: For propositions P and Q, ¬(P ∧ Q) is equivalent to ¬P ∨ ¬Q, and ¬(P ∨ Q) is equivalent to ¬P ∧ ¬Q.
+  assumptions:
+    - P, Qは命題
+  quantifiers:
+    - 任意の命題P, Q
+  conclusion: ¬(P∧Q)と¬P∨¬Qは同値であり、¬(P∨Q)と¬P∧¬Qは同値である。
+  answer: |
+    ¬(P∧Q)を仮定する。Pが成り立つならQは成り立たないので¬Qが従い、Pが成り立たないなら¬Pが従う。逆に¬Pまたは¬Qが成り立てば、PとQが同時に成り立つことはない。後半については、P∨Qが成り立たないことは、PもQも成り立たないことと定義からそのまま対応する。
+  strategy: Split on P for the classical direction; the rest is direct from the connectives.
+  sketch:
+    - "setup: Assume ¬(P ∧ Q)."
+    - "case_split: If P holds then Q fails, giving ¬Q; otherwise ¬P."
+    - "derive: Conversely ¬P ∨ ¬Q rules out P and Q holding together."
+    - "conclude: ¬(P ∨ Q) unfolds to ¬P ∧ ¬Q directly."
+  openmath: (forall (a P Q) (and (<-> (not (and (in a P) (in a Q))) (or (notin a P) (notin a Q))) (<-> (not (or (in a P) (in a Q))) (and (notin a P) (notin a Q)))))
+  hard_negative:
+    statement: 「PかつQ」の否定は「PでないかつQでない」と同値である。
+    reason: Pが真でQが偽のとき、P∧Qの否定は真だが¬P∧¬Qは偽である。
+  target: |
+    ∀ (P Q : Prop), (¬(P ∧ Q) ↔ ¬P ∨ ¬Q) ∧ (¬(P ∨ Q) ↔ ¬P ∧ ¬Q)
+  proof: |
+    by
+      intro P Q
+      exact ⟨not_and_or, not_or⟩
+- id: not_forall_iff_exists_not
+  kind: gap
+  level: 1
+  topic: 述語論理・全称の否定
+  statement: 述語Pについて、「全てのxでP(x)」の否定は「P(x)でないxが存在する」と同値である。
+  statement_en: For a predicate P on a type, the negation of ∀ x, P x is equivalent to ∃ x, ¬P x.
+  assumptions:
+    - Pは型α上の述語
+  quantifiers:
+    - 任意の型αとα上の述語P
+  conclusion: ¬∀x, P(x)と∃x, ¬P(x)は同値である。
+  answer: |
+    P(x)でないxが存在すれば、そのxで全称命題が反証される。逆に、P(x)でないxが存在しないと仮定すると、任意のxについて背理法によりP(x)が成り立つので全称命題が成り立ち、その否定と矛盾する。よって全称命題の否定からP(x)でないxの存在が従う。
+  strategy: The easy direction uses the witness; the other argues by contradiction.
+  sketch:
+    - "derive: A witness x with ¬P x refutes ∀ x, P x."
+    - "contradiction: Assume no such witness exists."
+    - "derive: Then for each x, ¬¬P x and hence P x."
+    - "conclude: This contradicts ¬∀ x, P x, so a witness exists."
+  openmath: (forall (P) (<-> (not (forall (x) (in x P))) (exists (x) (notin x P))))
+  hard_negative:
+    statement: 「全てのxでP(x)」の否定は「全てのxでP(x)でない」と同値である。
+    reason: 実数全体でP(x)をx>0とすると、全称命題の否定は真だが、全てのxでx≤0は偽である。
+  target: |
+    ∀ (α : Type*) (P : α → Prop), (¬∀ x, P x) ↔ ∃ x, ¬P x
+  proof: |
+    by
+      intro α P
+      exact not_forall
+- id: not_exists_iff_forall_not
+  kind: gap
+  level: 1
+  topic: 述語論理・存在の否定
+  statement: 述語Pについて、「P(x)を満たすxが存在する」の否定は「全てのxでP(x)でない」と同値である。
+  statement_en: For a predicate P on a type, the negation of ∃ x, P x is equivalent to ∀ x, ¬P x.
+  assumptions:
+    - Pは型α上の述語
+  quantifiers:
+    - 任意の型αとα上の述語P
+  conclusion: ¬∃x, P(x)と∀x, ¬P(x)は同値である。
+  answer: |
+    存在命題の否定を仮定する。任意のxについてP(x)が成り立つとすると、そのxが存在命題の証拠となり矛盾するので¬P(x)である。逆に全てのxで¬P(x)ならば、P(x)を満たすxをとると矛盾するので、存在命題は成り立たない。
+  strategy: Both directions follow by feeding a hypothetical witness to the hypothesis.
+  sketch:
+    - "setup: Assume ¬∃ x, P x and fix x."
+    - "contradiction: If P x held, x would witness the existential."
+    - "derive: Conversely, a witness of ∃ x, P x contradicts ∀ x, ¬P x."
+    - "conclude: The two statements are equivalent."
+  openmath: (forall (P) (<-> (not (exists (x) (in x P))) (forall (x) (notin x P))))
+  hard_negative:
+    statement: 「P(x)を満たすxが存在する」の否定は「P(x)でないxが存在する」と同値である。
+    reason: 実数全体でP(x)をx>0とすると、存在命題は真だからその否定は偽だが、x≤0を満たすxは存在する。
+  target: |
+    ∀ (α : Type*) (P : α → Prop), (¬∃ x, P x) ↔ ∀ x, ¬P x
+  proof: |
+    by
+      intro α P
+      exact not_exists
+- id: exists_forall_implies_forall_exists
+  kind: gap
+  level: 1
+  topic: 述語論理・量化子の順序
+  statement: 関係Rについて、あるyが全てのxに対してR(x,y)を満たすならば、全てのxに対してR(x,y)を満たすyが存在する。
+  statement_en: For a relation R, if some y satisfies R x y for all x, then for every x there exists y with R x y.
+  assumptions:
+    - Rは型αと型βの間の関係
+    - あるyが全てのxに対してR(x,y)を満たす
+  quantifiers:
+    - 任意の型α, βと関係R
+  conclusion: 全てのxに対してR(x,y)を満たすyが存在する。
+  answer: |
+    仮定のyをとる。任意のxに対して、そのyがR(x,y)を満たすので、このxに対する存在命題の証拠として同じyを使える。よって結論が成り立つ。
+  strategy: Reuse the single uniform witness for every x.
+  sketch:
+    - "setup: Take y with R x y for all x."
+    - "construct: For a given x use this same y as the witness."
+    - "conclude: Hence ∀ x, ∃ y, R x y."
+  openmath: (forall (R) (-> (exists (y) (forall (x) (relates R x y))) (forall (x) (exists (y) (relates R x y)))))
+  hard_negative:
+    statement: 全てのxに対してR(x,y)を満たすyが存在するならば、あるyが全てのxに対してR(x,y)を満たす。
+    reason: 実数上でR(x,y)をx<yとすると、前者は真だが、全ての実数より大きい実数はないので後者は偽である。
+  target: |
+    ∀ (α β : Type*) (R : α → β → Prop), (∃ y, ∀ x, R x y) → ∀ x, ∃ y, R x y
+  proof: |
+    by
+      rintro α β R ⟨y, hy⟩ x
+      exact ⟨y, hy x⟩
+- id: set_distributive
+  kind: gap
+  level: 1
+  topic: 集合算・分配法則
+  statement: 集合A, B, Cについて、A∩(B∪C)=(A∩B)∪(A∩C)かつA∪(B∩C)=(A∪B)∩(A∪C)が成り立つ。
+  statement_en: For sets A, B, C, A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) and A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C).
+  assumptions:
+    - A, B, Cは同じ全体集合の部分集合
+  quantifiers:
+    - 任意の集合A, B, C
+  conclusion: 共通部分と和集合はそれぞれ他方に対して分配する。
+  answer: |
+    xがA∩(B∪C)に属することは、xがAに属し、かつBまたはCに属することである。これは命題の分配法則により、「xがAかつBに属する、またはAかつCに属する」と同値であり、(A∩B)∪(A∩C)への所属を意味する。第二の等式も、「または」の「かつ」に対する分配法則から同様に従う。
+  strategy: Reduce both identities to propositional distributivity by elementwise membership.
+  sketch:
+    - "translate: Rewrite membership in each side as a propositional formula in x."
+    - "derive: Apply the distributive laws of ∧ over ∨ and of ∨ over ∧."
+    - "conclude: Both sides have the same elements, so the sets are equal."
+  openmath: (forall (A B C) (and (= (inter A (union B C)) (union (inter A B) (inter A C))) (= (union A (inter B C)) (inter (union A B) (union A C)))))
+  hard_negative:
+    statement: A∪(B∩C)=(A∪B)∩Cが成り立つ。
+    reason: A={1}, B=C=∅とすると左辺は{1}で右辺は空集合である。
+  target: |
+    ∀ (α : Type*) (A B C : Set α), A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C) ∧ A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C)
+  proof: |
+    by
+      intro α A B C
+      exact ⟨Set.inter_union_distrib_left A B C, Set.union_inter_distrib_left A B C⟩
+- id: set_de_morgan
+  kind: gap
+  level: 1
+  topic: 集合算・ド・モルガンの法則
+  statement: 集合U, A, Bについて、U\(A∪B)=(U\A)∩(U\B)かつU\(A∩B)=(U\A)∪(U\B)が成り立つ。
+  statement_en: For sets U, A, B, U \ (A ∪ B) = (U \ A) ∩ (U \ B) and U \ (A ∩ B) = (U \ A) ∪ (U \ B).
+  assumptions:
+    - U, A, Bは同じ全体集合の部分集合
+  quantifiers:
+    - 任意の集合U, A, B
+  conclusion: 差集合は和集合を共通部分に、共通部分を和集合に変える。
+  answer: |
+    xがU\(A∪B)に属することは、xがUに属し、AにもBにも属さないことである。これはxがU\AとU\Bの両方に属することと同値である。第二の等式では、xがUに属しA∩Bに属さないことを、命題のド・モルガンの法則でxがAに属さないまたはBに属さないと書き換える。すると、xがU\AまたはU\Bに属することと同値になる。
+  strategy: Compare elementwise membership using propositional De Morgan.
+  sketch:
+    - "translate: Unfold membership in differences, unions and intersections."
+    - "apply_theorem: Use propositional De Morgan on the negated part."
+    - "conclude: The two sides have the same elements in both identities."
+  openmath: (forall (U A B) (and (= (setdiff U (union A B)) (inter (setdiff U A) (setdiff U B))) (= (setdiff U (inter A B)) (union (setdiff U A) (setdiff U B)))))
+  hard_negative:
+    statement: U\(A∪B)=(U\A)∪(U\B)が成り立つ。
+    reason: U=A={1}, B=∅とすると左辺は空集合で、右辺はU\Bを含むので{1}である。
+  target: |
+    ∀ (α : Type*) (U A B : Set α), U \ (A ∪ B) = (U \ A) ∩ (U \ B) ∧ U \ (A ∩ B) = (U \ A) ∪ (U \ B)
+  proof: |
+    by
+      intro α U A B
+      constructor <;> ext x <;> simp only [Set.mem_diff, Set.mem_union, Set.mem_inter_iff] <;> tauto
+- id: subset_iff_inter_and_union
+  kind: gap
+  level: 1
+  topic: 集合算・包含の言い換え
+  statement: 集合A, Bについて、A⊆BはA∩B=Aと同値であり、A∪B=Bとも同値である。
+  statement_en: For sets A and B, A ⊆ B is equivalent to A ∩ B = A and also to A ∪ B = B.
+  assumptions:
+    - A, Bは同じ全体集合の部分集合
+  quantifiers:
+    - 任意の集合A, B
+  conclusion: A⊆B⇔A∩B=A、およびA⊆B⇔A∪B=Bが成り立つ。
+  answer: |
+    A⊆Bのとき、Aの元はBにも属するのでA∩B=Aであり、Bに含まれるAを合併しても変わらないのでA∪B=Bである。逆にA∩B=Aならば、Aの元はA∩Bに属するのでBに属する。A∪B=Bならば、Aの元はA∪Bに属するのでBに属する。
+  strategy: Prove each equivalence by double inclusion, using the definition of subset.
+  sketch:
+    - "setup: Assume A ⊆ B."
+    - "derive: Then A ∩ B = A and A ∪ B = B by double inclusion."
+    - "derive: Conversely an element of A lies in A ∩ B, or in A ∪ B, which gives membership in B."
+    - "conclude: Each equation is equivalent to the inclusion."
+  openmath: (forall (A B) (and (<-> (subset A B) (= (inter A B) A)) (<-> (subset A B) (= (union A B) B))))
+  hard_negative:
+    statement: A∩B=AならばA=Bである。
+    reason: A=∅, B={1}のときA∩B=Aだが、A≠Bである。
+  target: |
+    ∀ (α : Type*) (A B : Set α), (A ⊆ B ↔ A ∩ B = A) ∧ (A ⊆ B ↔ A ∪ B = B)
+  proof: |
+    by
+      intro α A B
+      exact ⟨Set.inter_eq_left.symm, Set.union_eq_right.symm⟩
+- id: indexed_de_morgan
+  kind: gap
+  level: 1
+  topic: 集合算・添字付き族のド・モルガンの法則
+  statement: 添字付き集合族(A_i)について、和集合の補集合は補集合の共通部分に等しく、共通部分の補集合は補集合の和集合に等しい。
+  statement_en: For an indexed family of subsets (A_i), the complement of ⋃ A_i equals ⋂ (A_i)ᶜ and the complement of ⋂ A_i equals ⋃ (A_i)ᶜ.
+  assumptions:
+    - (A_i)は全体集合αの部分集合の族で、添字集合は任意
+  quantifiers:
+    - 任意の添字集合ιと部分集合族(A_i)
+  conclusion: (⋃A_i)^c=⋂(A_i)^cかつ(⋂A_i)^c=⋃(A_i)^cが成り立つ。
+  answer: |
+    xが⋃A_iに属さないことは、どのiについてもxがA_iに属さないことであり、xが⋂(A_i)^cに属することと同値である。xが⋂A_iに属さないことは、全称命題の否定により、xがA_iに属さないiが存在することと同値である。これはxが⋃(A_i)^cに属することにほかならない。
+  strategy: Translate membership to quantifiers and negate them.
+  sketch:
+    - "translate: Membership in a union is ∃ and in an intersection is ∀."
+    - "apply_theorem: Negate the existential to get a universal statement."
+    - "apply_theorem: Negate the universal to get an existential statement."
+    - "conclude: Both identities hold elementwise."
+  openmath: (forall (A) (and (= (complement (indexed_union (lambda (i) (fn_value A i)))) (indexed_inter (lambda (i) (complement (fn_value A i))))) (= (complement (indexed_inter (lambda (i) (fn_value A i)))) (indexed_union (lambda (i) (complement (fn_value A i)))))))
+  hard_negative:
+    statement: 添字付き族について、(⋃A_i)^c=⋃(A_i)^cが成り立つ。
+    reason: A_1={1}, A_2={2}で全体集合を{1,2}とすると左辺は空集合で、右辺は{1,2}である。
+  target: |
+    ∀ (ι α : Type*) (A : ι → Set α), (⋃ i, A i)ᶜ = ⋂ i, (A i)ᶜ ∧ (⋂ i, A i)ᶜ = ⋃ i, (A i)ᶜ
+  proof: |
+    by
+      intro ι α A
+      exact ⟨Set.compl_iUnion A, Set.compl_iInter A⟩
+- id: image_union
+  kind: gap
+  level: 1
+  topic: 写像・像と和集合
+  statement: 写像fと部分集合A, Bについて、f(A∪B)=f(A)∪f(B)が成り立つ。
+  statement_en: For a map f and subsets A, B of its domain, f(A ∪ B) = f(A) ∪ f(B).
+  assumptions:
+    - f:α→βは写像
+    - A, Bはαの部分集合
+  quantifiers:
+    - 任意の写像fと部分集合A, B
+  conclusion: f(A∪B)=f(A)∪f(B)が成り立つ。
+  answer: |
+    yがf(A∪B)に属するとき、y=f(x)となるxがAまたはBにあるので、yはf(A)またはf(B)に属する。逆にyがf(A)に属するとき、y=f(x)となるx∈AはA∪Bの元でもあるので、yはf(A∪B)に属する。f(B)の場合も同じである。
+  strategy: Prove double inclusion by splitting on where the preimage point lies.
+  sketch:
+    - "setup: Take y = f(x) with x ∈ A ∪ B."
+    - "case_split: Split on x ∈ A or x ∈ B."
+    - "derive: Conversely x ∈ A or x ∈ B gives x ∈ A ∪ B."
+    - "conclude: The two sets are equal."
+  openmath: (forall (f A B) (= (image (lambda (x) (fn_value f x)) (union A B)) (union (image (lambda (x) (fn_value f x)) A) (image (lambda (x) (fn_value f x)) B))))
+  hard_negative:
+    statement: 写像fについて、f(A∩B)=f(A)∩f(B)が常に成り立つ。
+    reason: f(x)=x², A={1}, B={-1}とすると左辺は空集合で右辺は{1}である。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (A B : Set α), f '' (A ∪ B) = f '' A ∪ f '' B
+  proof: |
+    by
+      intro α β f A B
+      exact Set.image_union f A B
+- id: image_inter_subset
+  kind: gap
+  level: 1
+  topic: 写像・像と共通部分
+  statement: 写像fと部分集合A, Bについて、f(A∩B)⊆f(A)∩f(B)が成り立つ。
+  statement_en: For a map f and subsets A, B of its domain, f(A ∩ B) ⊆ f(A) ∩ f(B).
+  assumptions:
+    - f:α→βは写像
+    - A, Bはαの部分集合
+  quantifiers:
+    - 任意の写像fと部分集合A, B
+  conclusion: f(A∩B)はf(A)∩f(B)に含まれる。
+  answer: |
+    yがf(A∩B)に属するとする。y=f(x)となるx∈A∩Bをとると、xはAにもBにも属する。よってyはf(A)にもf(B)にも属する。
+  strategy: Use the same preimage point for both images.
+  sketch:
+    - "setup: Take y = f(x) with x ∈ A ∩ B."
+    - "derive: Since x ∈ A and x ∈ B, y lies in f(A) and in f(B)."
+    - "conclude: Hence y ∈ f(A) ∩ f(B)."
+  openmath: (forall (f A B) (subset (image (lambda (x) (fn_value f x)) (inter A B)) (inter (image (lambda (x) (fn_value f x)) A) (image (lambda (x) (fn_value f x)) B))))
+  hard_negative:
+    statement: 任意の写像fについて、f(A)∩f(B)⊆f(A∩B)が成り立つ。
+    reason: f(x)=x², A={1}, B={-1}とするとf(A)∩f(B)={1}だが、f(A∩B)は空集合である。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (A B : Set α), f '' (A ∩ B) ⊆ f '' A ∩ f '' B
+  proof: |
+    by
+      intro α β f A B
+      exact Set.image_inter_subset f A B
+- id: image_inter_injective
+  kind: gap
+  level: 1
+  topic: 写像・単射と共通部分の像
+  statement: 単射fと部分集合A, Bについて、f(A∩B)=f(A)∩f(B)が成り立つ。
+  statement_en: If f is injective, then f(A ∩ B) = f(A) ∩ f(B) for all subsets A, B of its domain.
+  assumptions:
+    - f:α→βは単射
+    - A, Bはαの部分集合
+  quantifiers:
+    - 任意の単射fと部分集合A, B
+  conclusion: f(A∩B)=f(A)∩f(B)が成り立つ。
+  answer: |
+    包含f(A∩B)⊆f(A)∩f(B)は像の定義から従う。逆にyがf(A)∩f(B)に属するとし、y=f(a), y=f(b)となるa∈A, b∈Bをとる。fは単射なのでa=bであり、aはA∩Bに属する。よってyはf(A∩B)に属する。
+  strategy: The nontrivial inclusion uses injectivity to identify the two preimage points.
+  sketch:
+    - "derive: f(A ∩ B) ⊆ f(A) ∩ f(B) holds for any map."
+    - "setup: Take y = f(a) = f(b) with a ∈ A and b ∈ B."
+    - "apply_theorem: Injectivity gives a = b."
+    - "conclude: So a ∈ A ∩ B and y ∈ f(A ∩ B)."
+  openmath: (forall (f A B) (-> (injective f) (= (image (lambda (x) (fn_value f x)) (inter A B)) (inter (image (lambda (x) (fn_value f x)) A) (image (lambda (x) (fn_value f x)) B)))))
+  hard_negative:
+    statement: 全射fについて、f(A∩B)=f(A)∩f(B)が成り立つ。
+    reason: 実数上のx↦x³-xは全射だが、A={0}, B={1}とするとf(A)∩f(B)={0}でf(A∩B)は空集合である。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (A B : Set α), Function.Injective f → f '' (A ∩ B) = f '' A ∩ f '' B
+  proof: |
+    by
+      intro α β f A B hf
+      exact Set.image_inter hf
+- id: preimage_set_operations
+  kind: gap
+  level: 1
+  topic: 写像・逆像と集合演算
+  statement: 写像fと値域側の部分集合B, Cについて、逆像は和集合、共通部分、差集合を保つ。
+  statement_en: For a map f and subsets B, C of its codomain, f⁻¹(B ∪ C) = f⁻¹(B) ∪ f⁻¹(C), f⁻¹(B ∩ C) = f⁻¹(B) ∩ f⁻¹(C) and f⁻¹(B \ C) = f⁻¹(B) \ f⁻¹(C).
+  assumptions:
+    - f:α→βは写像
+    - B, Cはβの部分集合
+  quantifiers:
+    - 任意の写像fと部分集合B, C
+  conclusion: 逆像は和集合、共通部分、差集合のいずれとも交換する。
+  answer: |
+    xがf⁻¹(B∪C)に属することは、f(x)がBまたはCに属することであり、xがf⁻¹(B)またはf⁻¹(C)に属することと同値である。共通部分でも同様に、f(x)がBとCの両方に属することと対応する。差集合では、f(x)がBに属しCに属さないことが、xがf⁻¹(B)に属しf⁻¹(C)に属さないことと対応する。
+  strategy: Each identity is just the definition of preimage applied to the point f(x).
+  sketch:
+    - "translate: x ∈ f⁻¹(S) means f(x) ∈ S."
+    - "derive: Apply the definition of ∪, ∩ and \\ to the point f(x)."
+    - "conclude: All three identities hold elementwise."
+  openmath: (forall (f B C) (and (= (preimage f (union B C)) (union (preimage f B) (preimage f C))) (= (preimage f (inter B C)) (inter (preimage f B) (preimage f C))) (= (preimage f (setdiff B C)) (setdiff (preimage f B) (preimage f C)))))
+  hard_negative:
+    statement: 写像fと定義域側の部分集合A, Bについて、f(A\B)=f(A)\f(B)が成り立つ。
+    reason: 差集合を保つのは逆像であって像ではない。f(x)=x², A={1}, B={-1}とすると左辺は{1}で右辺は空集合である。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (B C : Set β), f ⁻¹' (B ∪ C) = f ⁻¹' B ∪ f ⁻¹' C ∧ f ⁻¹' (B ∩ C) = f ⁻¹' B ∩ f ⁻¹' C ∧ f ⁻¹' (B \ C) = f ⁻¹' B \ f ⁻¹' C
+  proof: |
+    by
+      intro α β f B C
+      exact ⟨Set.preimage_union, Set.preimage_inter, Set.preimage_diff f B C⟩
+- id: image_subset_iff_preimage
+  kind: gap
+  level: 1
+  topic: 写像・像と逆像の関係
+  statement: 写像fと部分集合A⊆α, B⊆βについて、f(A)⊆BはA⊆f⁻¹(B)と同値である。
+  statement_en: For a map f, a subset A of the domain and a subset B of the codomain, f(A) ⊆ B holds if and only if A ⊆ f⁻¹(B).
+  assumptions:
+    - f:α→βは写像
+    - Aはαの部分集合で、Bはβの部分集合
+  quantifiers:
+    - 任意の写像fと部分集合A, B
+  conclusion: f(A)⊆BとA⊆f⁻¹(B)は同値である。
+  answer: |
+    f(A)⊆Bと仮定する。xがAに属するならf(x)はf(A)に属するのでBに属し、xはf⁻¹(B)に属する。逆にA⊆f⁻¹(B)と仮定する。f(A)の元はf(x)(x∈A)の形をしており、xがf⁻¹(B)に属することからf(x)はBに属する。
+  strategy: Both inclusions unfold to the same statement, for all x ∈ A, f(x) ∈ B.
+  sketch:
+    - "translate: f(A) ⊆ B means f(x) ∈ B for every x ∈ A."
+    - "translate: A ⊆ f⁻¹(B) means the same thing."
+    - "conclude: The two inclusions are equivalent."
+  openmath: (forall (f A B) (<-> (subset (image (lambda (x) (fn_value f x)) A) B) (subset A (preimage f B))))
+  hard_negative:
+    statement: A⊆f⁻¹(B)はf(A)=Bと同値である。
+    reason: A⊆f⁻¹(B)から従うのは包含f(A)⊆Bまでである。A=∅でBが空でないとき、A⊆f⁻¹(B)は成り立つがf(A)=∅≠Bである。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (A : Set α) (B : Set β), f '' A ⊆ B ↔ A ⊆ f ⁻¹' B
+  proof: |
+    by
+      intro α β f A B
+      exact Set.image_subset_iff
+- id: injective_iff_preimage_image
+  kind: gap
+  level: 1
+  topic: 写像・単射と逆像
+  statement: 写像fが単射であることは、定義域の全ての部分集合Aについてf⁻¹(f(A))=Aが成り立つことと同値である。
+  statement_en: A map f is injective if and only if f⁻¹(f(A)) = A for every subset A of its domain.
+  assumptions:
+    - f:α→βは写像
+  quantifiers:
+    - 任意の写像f
+    - 同値の右辺では全ての部分集合A
+  conclusion: fが単射であることと、全てのAでf⁻¹(f(A))=Aが成り立つことは同値である。
+  answer: |
+    fが単射とする。A⊆f⁻¹(f(A))は常に成り立つ。xがf⁻¹(f(A))に属するとf(x)=f(a)となるa∈Aがあり、単射性からx=aなのでxはAに属する。逆に等式が全てのAで成り立つとし、f(x)=f(y)とする。A={x}とおくとyはf⁻¹(f({x}))={x}に属するので、y=xである。
+  strategy: Use injectivity for the forward direction and singleton sets for the converse.
+  sketch:
+    - "derive: A ⊆ f⁻¹(f(A)) holds for any map."
+    - "apply_theorem: If f(x) = f(a) with a ∈ A, injectivity gives x = a."
+    - "construct: For the converse take A = {x} when f(x) = f(y)."
+    - "conclude: Then y lies in {x}, so x = y."
+  openmath: (forall (f) (<-> (injective f) (forall (A) (= (preimage f (image (lambda (x) (fn_value f x)) A)) A))))
+  hard_negative:
+    statement: 任意の写像fについてf⁻¹(f(A))=Aが成り立つ。
+    reason: 常に成り立つのは包含A⊆f⁻¹(f(A))だけである。f(x)=x², A={1}ではf⁻¹(f(A))={1,-1}となる。
+  target: |
+    ∀ (α β : Type*) (f : α → β), Function.Injective f ↔ ∀ A : Set α, f ⁻¹' (f '' A) = A
+  proof: |
+    by
+      intro α β f
+      constructor
+      · intro h A
+        exact Set.preimage_image_eq A h
+      · intro h x y hxy
+        have hy : y ∈ f ⁻¹' (f '' {x}) := ⟨x, rfl, hxy⟩
+        rw [h {x}] at hy
+        exact (Set.mem_singleton_iff.mp hy).symm
+- id: surjective_iff_image_preimage
+  kind: gap
+  level: 1
+  topic: 写像・全射と像
+  statement: 写像fが全射であることは、値域側の全ての部分集合Bについてf(f⁻¹(B))=Bが成り立つことと同値である。
+  statement_en: A map f is surjective if and only if f(f⁻¹(B)) = B for every subset B of its codomain.
+  assumptions:
+    - f:α→βは写像
+  quantifiers:
+    - 任意の写像f
+    - 同値の右辺では全ての部分集合B
+  conclusion: fが全射であることと、全てのBでf(f⁻¹(B))=Bが成り立つことは同値である。
+  answer: |
+    f(f⁻¹(B))⊆Bは常に成り立つ。fが全射なら、y∈Bに対しf(x)=yとなるxがあり、xはf⁻¹(B)に属するのでyはf(f⁻¹(B))に属する。逆に等式が全てのBで成り立つとき、B={y}とおくとyはf(f⁻¹({y}))に属する。よってf(x)=yとなるxが存在する。
+  strategy: Use surjectivity to lift points for the forward direction, and singletons for the converse.
+  sketch:
+    - "derive: f(f⁻¹(B)) ⊆ B holds for any map."
+    - "apply_theorem: For y ∈ B surjectivity gives x with f(x) = y."
+    - "construct: For the converse take B = {y}."
+    - "conclude: Then y is in the image of f⁻¹({y}), so y has a preimage."
+  openmath: (forall (f) (<-> (surjective f) (forall (B) (= (image (lambda (x) (fn_value f x)) (preimage f B)) B))))
+  hard_negative:
+    statement: 任意の写像fについてf(f⁻¹(B))=Bが成り立つ。
+    reason: 常に成り立つのは包含f(f⁻¹(B))⊆Bだけである。f(x)=x², B={-1}ではf⁻¹(B)が空なので左辺は空集合である。
+  target: |
+    ∀ (α β : Type*) (f : α → β), Function.Surjective f ↔ ∀ B : Set β, f '' (f ⁻¹' B) = B
+  proof: |
+    by
+      intro α β f
+      constructor
+      · intro h B
+        exact Set.image_preimage_eq B h
+      · intro h y
+        have hy : y ∈ f '' (f ⁻¹' {y}) := by
+          rw [h {y}]
+          exact Set.mem_singleton y
+        obtain ⟨x, hx, -⟩ := hy
+        exact ⟨x, hx⟩
+- id: injective_comp
+  kind: gap
+  level: 1
+  topic: 写像・単射の合成
+  statement: 単射f:α→βと単射g:β→γの合成g∘fは単射である。
+  statement_en: The composition g ∘ f of injective maps f and g is injective.
+  assumptions:
+    - f:α→βは単射
+    - g:β→γは単射
+  quantifiers:
+    - 任意の単射f, g
+  conclusion: g∘fは単射である。
+  answer: |
+    g(f(x))=g(f(y))とする。gが単射なのでf(x)=f(y)であり、fが単射なのでx=yである。よってg∘fは単射である。
+  strategy: Cancel g first and then f.
+  sketch:
+    - "setup: Assume g(f(x)) = g(f(y))."
+    - "apply_theorem: Injectivity of g gives f(x) = f(y)."
+    - "apply_theorem: Injectivity of f gives x = y."
+    - "conclude: Hence g ∘ f is injective."
+  openmath: (forall (f g) (-> (and (injective f) (injective g)) (injective (fn_comp g f))))
+  hard_negative:
+    statement: g∘fが単射ならばgも単射である。
+    reason: 単射性が従うのはfだけである。f:{0}→{0,1}を包含、g:{0,1}→{0}とするとg∘fは単射だがgは単射でない。
+  target: |
+    ∀ (α β γ : Type*) (f : α → β) (g : β → γ), Function.Injective f → Function.Injective g → Function.Injective (g ∘ f)
+  proof: |
+    by
+      intro α β γ f g hf hg
+      exact hg.comp hf
+- id: surjective_comp
+  kind: gap
+  level: 1
+  topic: 写像・全射の合成
+  statement: 全射f:α→βと全射g:β→γの合成g∘fは全射である。
+  statement_en: The composition g ∘ f of surjective maps f and g is surjective.
+  assumptions:
+    - f:α→βは全射
+    - g:β→γは全射
+  quantifiers:
+    - 任意の全射f, g
+  conclusion: g∘fは全射である。
+  answer: |
+    z∈γをとる。gが全射なのでg(y)=zとなるy∈βがあり、fが全射なのでf(x)=yとなるx∈αがある。このときg(f(x))=zである。よってg∘fは全射である。
+  strategy: Lift the target point through g and then through f.
+  sketch:
+    - "setup: Fix z in the codomain of g."
+    - "apply_theorem: Surjectivity of g gives y with g(y) = z."
+    - "apply_theorem: Surjectivity of f gives x with f(x) = y."
+    - "conclude: Then g(f(x)) = z."
+  openmath: (forall (f g) (-> (and (surjective f) (surjective g)) (surjective (fn_comp g f))))
+  hard_negative:
+    statement: g∘fが全射ならばfも全射である。
+    reason: 全射性が従うのはgだけである。f:{0}→{0,1}を包含、g:{0,1}→{0}とするとg∘fは全射だがfは全射でない。
+  target: |
+    ∀ (α β γ : Type*) (f : α → β) (g : β → γ), Function.Surjective f → Function.Surjective g → Function.Surjective (g ∘ f)
+  proof: |
+    by
+      intro α β γ f g hf hg
+      exact hg.comp hf
+- id: injective_iff_left_inverse
+  kind: textbook
+  level: 1
+  topic: 写像・左逆写像
+  statement: 定義域が空でないとき、写像f:α→βが単射であることと、g∘f=idとなるg:β→αが存在することは同値である。
+  statement_en: If α is nonempty, a map f from α to β is injective if and only if there is g from β to α with g(f(x)) = x for all x.
+  assumptions:
+    - αは空でない
+    - f:α→βは写像
+  quantifiers:
+    - 任意の写像f
+    - 全てのx∈α
+  conclusion: fが単射であることと、左逆写像gが存在することは同値である。
+  answer: |
+    左逆写像gがあるとき、f(x)=f(y)ならx=g(f(x))=g(f(y))=yなので、fは単射である。逆にfが単射とし、a∈αを一つとる。yがfの像に入るときはg(y)をf(x)=yとなる唯一のxと定め、それ以外のときはg(y)=aと定める。このgはg(f(x))=xを満たす。
+  strategy: Define g on the image using injectivity and send everything else to a fixed point of α.
+  sketch:
+    - "derive: A left inverse cancels f, which gives injectivity."
+    - "setup: Conversely fix a point a of α."
+    - "construct: Send y = f(x) to x and all other y to a."
+    - "conclude: Injectivity makes g well defined and g(f(x)) = x."
+  openmath: (forall (A B f) (-> (and (map_between f A B) (exists (a) (in a A))) (<-> (injective f) (exists (g) (and (map_between g B A) (forall (x) (-> (in x A) (= (fn_value g (fn_value f x)) x))))))))
+  hard_negative:
+    statement: 定義域が空の場合も含めて、単射fには常に左逆写像が存在する。
+    reason: α=∅でβが空でないとき、fは単射だがβからαへの写像は存在しない。
+  target: |
+    ∀ (α β : Type*) [Nonempty α] (f : α → β), Function.Injective f ↔ ∃ g : β → α, ∀ x, g (f x) = x
+  proof: |
+    by
+      intro α β _ f
+      exact Function.injective_iff_hasLeftInverse
+- id: surjective_iff_right_inverse
+  kind: textbook
+  level: 1
+  topic: 写像・右逆写像
+  statement: 写像f:α→βが全射であることと、f∘g=idとなるg:β→αが存在することは同値である。
+  statement_en: A map f from α to β is surjective if and only if there is g from β to α with f(g(y)) = y for all y.
+  assumptions:
+    - f:α→βは写像
+  quantifiers:
+    - 任意の写像f
+    - 全てのy∈β
+  conclusion: fが全射であることと、右逆写像gが存在することは同値である。
+  answer: |
+    右逆写像gがあるとき、y=f(g(y))なのでfは全射である。逆にfが全射とすると、各y∈βについてf⁻¹({y})は空でない。選択公理により各yごとにその元g(y)を選べば、f(g(y))=yを満たすg:β→αが得られる。
+  strategy: The converse chooses a preimage of every point, which uses the axiom of choice.
+  sketch:
+    - "derive: y = f(g(y)) shows that f is surjective."
+    - "setup: Conversely each fiber f⁻¹({y}) is nonempty."
+    - "construct: Choose g(y) in each fiber by the axiom of choice."
+    - "conclude: Then f(g(y)) = y for every y."
+  openmath: (forall (A B f) (-> (map_between f A B) (<-> (surjective f) (exists (g) (and (map_between g B A) (forall (y) (-> (in y B) (= (fn_value f (fn_value g y)) y))))))))
+  hard_negative:
+    statement: 全射fの右逆写像gは一意である。
+    reason: f(x)=x²を実数から非負実数への全射とすると、g(y)=√yもg(y)=-√yも右逆写像である。
+  target: |
+    ∀ (α β : Type*) (f : α → β), Function.Surjective f ↔ ∃ g : β → α, ∀ y, f (g y) = y
+  proof: |
+    by
+      intro α β f
+      exact Function.surjective_iff_hasRightInverse
+- id: bijective_iff_inverse
+  kind: textbook
+  level: 1
+  topic: 写像・逆写像
+  statement: 写像f:α→βが全単射であることと、g∘f=idかつf∘g=idとなるg:β→αが存在することは同値である。
+  statement_en: A map f from α to β is bijective if and only if there is g from β to α with g(f(x)) = x for all x and f(g(y)) = y for all y.
+  assumptions:
+    - f:α→βは写像
+  quantifiers:
+    - 任意の写像f
+    - 全てのx∈α, y∈β
+  conclusion: fが全単射であることと、両側逆写像gが存在することは同値である。
+  answer: |
+    gが存在すれば、f(x)=f(y)からx=g(f(x))=g(f(y))=yとなり、またy=f(g(y))なので、fは全単射である。逆にfが全単射なら、各y∈βに対しf(x)=yとなるxがただ一つ存在する。このxをg(y)と定めると、f(g(y))=yである。さらにg(f(x))はf(z)=f(x)を満たす唯一のzなのでxに等しい。
+  strategy: Define g(y) as the unique preimage of y.
+  sketch:
+    - "derive: A two-sided inverse gives injectivity and surjectivity."
+    - "setup: Conversely each y has exactly one preimage."
+    - "construct: Let g(y) be that preimage."
+    - "derive: f(g(y)) = y by construction."
+    - "conclude: Uniqueness gives g(f(x)) = x."
+  openmath: (forall (A B f) (-> (map_between f A B) (<-> (bijective f) (exists (g) (and (map_between g B A) (forall (x) (-> (in x A) (= (fn_value g (fn_value f x)) x))) (forall (y) (-> (in y B) (= (fn_value f (fn_value g y)) y))))))))
+  hard_negative:
+    statement: g∘f=idとなるgが存在すればfは全単射である。
+    reason: 左逆写像だけでは全射性は従わない。f:{0}→{0,1}を包含、g:{0,1}→{0}とするとg∘f=idだがfは全射でない。
+  target: |
+    ∀ (α β : Type*) (f : α → β), Function.Bijective f ↔ ∃ g : β → α, (∀ x, g (f x) = x) ∧ ∀ y, f (g y) = y
+  proof: |
+    by
+      intro α β f
+      exact Function.bijective_iff_has_inverse
+- id: left_right_inverse_eq
+  kind: gap
+  level: 1
+  topic: 写像・左逆と右逆の一致
+  statement: 写像f:α→βに左逆写像gと右逆写像hがあれば、g=hである。
+  statement_en: If g is a left inverse and h is a right inverse of a map f, then g = h.
+  assumptions:
+    - f:α→βは写像
+    - 全てのxでg(f(x))=x
+    - 全てのyでf(h(y))=y
+  quantifiers:
+    - 任意の写像f, g, h
+  conclusion: g=hである。
+  answer: |
+    任意のy∈βについて、右逆の条件からg(y)=g(f(h(y)))である。左逆の条件をx=h(y)に用いると、これはh(y)に等しい。よってg=hである。
+  strategy: Evaluate g ∘ f ∘ h in two ways.
+  sketch:
+    - "setup: Fix y in β."
+    - "derive: g(y) = g(f(h(y))) by the right inverse identity."
+    - "derive: g(f(h(y))) = h(y) by the left inverse identity."
+    - "conclude: Hence g = h pointwise."
+  openmath: (forall (f g h) (-> (and (forall (x) (= (fn_value g (fn_value f x)) x)) (forall (y) (= (fn_value f (fn_value h y)) y))) (= g h)))
+  hard_negative:
+    statement: 写像fの左逆写像は常に一意である。
+    reason: f:{0,1}→{0,1,2}を包含とすると、g(2)を0としても1としても左逆写像になる。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (g h : β → α), (∀ x, g (f x) = x) → (∀ y, f (h y) = y) → g = h
+  proof: |
+    by
+      intro α β f g h hg hh
+      funext y
+      have h1 := hg (h y)
+      rw [hh y] at h1
+      exact h1
+- id: equiv_class_eq_iff
+  kind: gap
+  level: 1
+  topic: 同値関係・同値類の一致
+  statement: 同値関係~について、xの同値類とyの同値類が等しいことは、x~yと同値である。
+  statement_en: For an equivalence relation ~, the classes of x and y are equal if and only if x ~ y.
+  assumptions:
+    - ~は集合α上の同値関係
+  quantifiers:
+    - 任意の同値関係~と元x, y
+  conclusion: "[x]=[y]とx~yは同値である。"
+  answer: |
+    [x]=[y]とする。反射律によりxは[x]に属するので[y]に属し、x~yである。逆にx~yとする。z~xならば推移律によりz~yであり、z~yならば対称律と推移律によりz~xである。よって[x]=[y]である。
+  strategy: Use reflexivity for one direction, and symmetry and transitivity for the other.
+  sketch:
+    - "derive: Reflexivity puts x in its own class."
+    - "derive: If the classes agree then x is in the class of y, so x ~ y."
+    - "setup: Conversely assume x ~ y."
+    - "conclude: Transitivity and symmetry give both inclusions of the classes."
+  openmath: (forall (R X x y) (-> (and (equivalence_relation R X) (in x X) (in y X)) (<-> (= (equiv_class R x) (equiv_class R y)) (relates R x y))))
+  hard_negative:
+    statement: 反射的で対称的な関係について、x~yならばxの類とyの類は等しい。
+    reason: 推移律が必要である。整数上で|a-b|≤1と定めると0~1だが、{z | z~0}と{z | z~1}は異なる。
+  target: |
+    ∀ (α : Type*) (s : Setoid α) (x y : α), {z | s.r z x} = {z | s.r z y} ↔ s.r x y
+  proof: |
+    by
+      intro α s x y
+      constructor
+      · intro h
+        have hx : x ∈ {z | s.r z y} := by
+          rw [← h]
+          exact s.iseqv.refl x
+        exact hx
+      · intro h
+        ext z
+        exact ⟨fun hz => s.iseqv.trans hz h, fun hz => s.iseqv.trans hz (s.iseqv.symm h)⟩
+- id: equiv_classes_eq_or_disjoint
+  kind: gap
+  level: 1
+  topic: 同値関係・同値類の排他性
+  statement: 同値関係~について、二つの同値類は等しいか、共通部分が空である。
+  statement_en: For an equivalence relation ~, two equivalence classes are either equal or have empty intersection.
+  assumptions:
+    - ~は集合α上の同値関係
+  quantifiers:
+    - 任意の同値関係~と元x, y
+  conclusion: "[x]=[y]または[x]∩[y]=∅である。"
+  answer: |
+    x~yのときは[x]=[y]である。x~yでないときに[x]∩[y]が元zを持つと、z~xかつz~yから対称律と推移律によりx~yとなり矛盾する。よってこのとき共通部分は空である。
+  strategy: Split on whether x ~ y and derive a contradiction from a common element.
+  sketch:
+    - "case_split: Split on whether x ~ y holds."
+    - "derive: If x ~ y, transitivity and symmetry make the classes equal."
+    - "contradiction: Otherwise a common element z gives x ~ z ~ y."
+    - "conclude: So the intersection is empty."
+  openmath: (forall (R X x y) (-> (and (equivalence_relation R X) (in x X) (in y X)) (or (= (equiv_class R x) (equiv_class R y)) (= (inter (equiv_class R x) (equiv_class R y)) emptyset))))
+  hard_negative:
+    statement: 同値関係について、相異なる元x, yの同値類は必ず共通部分が空である。
+    reason: x≠yでもx~yなら同値類は等しく、空でない。整数の偶奇による同値関係で0と2が例である。
+  target: |
+    ∀ (α : Type*) (s : Setoid α) (x y : α), {z | s.r z x} = {z | s.r z y} ∨ {z | s.r z x} ∩ {z | s.r z y} = ∅
+  proof: |
+    by
+      intro α s x y
+      by_cases h : s.r x y
+      · left
+        ext z
+        exact ⟨fun hz => s.iseqv.trans hz h, fun hz => s.iseqv.trans hz (s.iseqv.symm h)⟩
+      · right
+        apply Set.eq_empty_iff_forall_notMem.2
+        intro z hz
+        exact h (s.iseqv.trans (s.iseqv.symm hz.1) hz.2)
+- id: classes_form_partition
+  kind: textbook
+  level: 2
+  topic: 同値関係・商集合と分割
+  statement: 集合α上の同値関係の同値類全体はαの分割をなす。すなわち空集合を含まず、αの各元はちょうど一つの同値類に属する。
+  statement_en: The equivalence classes of an equivalence relation on α form a partition of α, that is, no class is empty and each element lies in exactly one class.
+  assumptions:
+    - ~はα上の同値関係
+  quantifiers:
+    - 任意の同値関係~
+    - 全てのa∈α
+  conclusion: 同値類全体はαの分割である。
+  answer: |
+    同値類[y]は反射律によりyを含むので空でない。a∈αは反射律により[a]に属する。aが同値類[y]に属すればa~yなので、[a]=[y]である。よってaを含む同値類は[a]ただ一つである。
+  strategy: Reflexivity gives nonemptiness and existence, and the class equality gives uniqueness.
+  sketch:
+    - "derive: Each class contains its representative, so it is nonempty."
+    - "derive: Each element a lies in its own class."
+    - "apply_theorem: If a is in the class of y then a ~ y, so the classes of a and y agree."
+    - "conclude: The class containing a is unique."
+  openmath: (forall (R X) (-> (equivalence_relation R X) (partition_of (quotient_set R X) X)))
+  hard_negative:
+    statement: 反射的で対称的な関係の類全体も分割をなす。
+    reason: 整数上で|a-b|≤1と定めると、1は{z | z~0}と{z | z~1}の両方に属し、これらは異なるので分割にならない。
+  target: |
+    ∀ (α : Type*) (s : Setoid α), Setoid.IsPartition s.classes
+  proof: |
+    by
+      intro α s
+      exact Setoid.isPartition_classes s
+- id: partition_gives_equivalence
+  kind: textbook
+  level: 2
+  topic: 同値関係・分割から定まる同値関係
+  statement: 集合αの分割cに対して、同値類全体がちょうどcとなる同値関係が存在する。
+  statement_en: For every partition c of a set α there is an equivalence relation on α whose set of equivalence classes is exactly c.
+  assumptions:
+    - cはαの分割
+  quantifiers:
+    - 任意の分割c
+  conclusion: 同値類全体がcと一致する同値関係が存在する。
+  answer: |
+    x~yを「xとyがcの同じブロックに属する」と定める。各元はちょうど一つのブロックに属するので、~は反射律、対称律、推移律を満たす。xの同値類はxを含むブロックに等しい。ブロックは空でないので各ブロックはその元の同値類として現れ、同値類全体はcと一致する。
+  strategy: Relate two elements when they lie in the same block.
+  sketch:
+    - "construct: Define x ~ y when x and y lie in the same block of c."
+    - "derive: Uniqueness of the block makes ~ an equivalence relation."
+    - "derive: The class of x equals the block containing x."
+    - "derive: Blocks are nonempty, so every block is a class."
+    - "conclude: The set of classes equals c."
+  openmath: (forall (c X) (-> (partition_of c X) (exists (R) (and (equivalence_relation R X) (= (quotient_set R X) c)))))
+  hard_negative:
+    statement: αを覆う部分集合族なら、どれも同値関係の同値類全体として得られる。
+    reason: ブロックの交わりが許されると同値類にならない。{1,2}, {2,3}は{1,2,3}を覆うが、同値類は交わるなら等しくなければならない。
+  target: |
+    ∀ (α : Type*) (c : Set (Set α)), Setoid.IsPartition c → ∃ s : Setoid α, s.classes = c
+  proof: |
+    by
+      intro α c hc
+      exact ⟨Setoid.mkClasses c hc.2, Setoid.classes_mkClasses c hc⟩
+- id: quotient_lift_unique
+  kind: gap
+  level: 2
+  topic: 同値関係・商集合上の写像の持ち上げ
+  statement: 写像f:α→βが同値関係~を保つ(x~yならf(x)=f(y))とき、g([x])=f(x)を満たす商集合からの写像gがただ一つ存在する。
+  statement_en: If a map f from α to β satisfies f(x) = f(y) whenever x ~ y, then there is a unique map g from the quotient α/~ to β with g([x]) = f(x).
+  assumptions:
+    - ~はα上の同値関係
+    - x~yならばf(x)=f(y)
+  quantifiers:
+    - 任意の写像fと同値関係~
+    - 全てのx, y∈α
+  conclusion: g([x])=f(x)を満たす写像g:α/~→βがただ一つ存在する。
+  answer: |
+    g([x])=f(x)と定める。[x]=[y]ならx~yで、仮定からf(x)=f(y)なので、値は代表元の取り方によらず、gは定義できる。別のhも同じ条件を満たすとする。商集合の任意の元は[x]の形をしており、h([x])=f(x)=g([x])なのでh=gである。
+  strategy: Define g on representatives, check well-definedness, and use surjectivity of the projection for uniqueness.
+  sketch:
+    - "construct: Set g([x]) = f(x)."
+    - "derive: The hypothesis makes this independent of the representative."
+    - "setup: Let h satisfy the same equation."
+    - "derive: Every element of the quotient has the form [x]."
+    - "conclude: Hence h = g."
+  openmath: (forall (R X Y f) (-> (and (equivalence_relation R X) (map_between f X Y) (forall (x y) (-> (relates R x y) (= (fn_value f x) (fn_value f y))))) (exists (g) (and (map_between g (quotient_set R X) Y) (forall (x) (-> (in x X) (= (fn_value g (equiv_class R x)) (fn_value f x)))) (forall (h) (-> (and (map_between h (quotient_set R X) Y) (forall (x) (-> (in x X) (= (fn_value h (equiv_class R x)) (fn_value f x))))) (= h g)))))))
+  hard_negative:
+    statement: 任意の写像fについてg([x])=f(x)を満たす商集合からの写像が定まる。
+    reason: 同値関係を保つ条件が必要である。整数の偶奇の商でf(x)=xとすると、[0]=[2]なのにf(0)≠f(2)である。
+  target: |
+    ∀ (α β : Type*) (s : Setoid α) (f : α → β), (∀ x y, s.r x y → f x = f y) → ∃! g : Quotient s → β, ∀ x, g (Quotient.mk s x) = f x
+  proof: |
+    by
+      intro α β s f h
+      refine ExistsUnique.intro (Quotient.lift f (fun a b hab => h a b hab)) (fun x => rfl) ?_
+      intro g hg
+      funext q
+      obtain ⟨x, rfl⟩ := Quotient.exists_rep q
+      exact hg x
+- id: map_factors_through_kernel
+  kind: textbook
+  level: 2
+  topic: 同値関係・写像の標準分解
+  statement: 写像f:α→βに対し、f(x)=f(y)で定まる同値関係の商への射影πは全射であり、f=g∘πとなる単射gが存在する。
+  statement_en: For a map f from α to β, let ~ be the relation f(x) = f(y). The projection π from α to α/~ is surjective, and there is an injective g from α/~ to β with f = g ∘ π.
+  assumptions:
+    - f:α→βは写像
+    - ~はf(x)=f(y)で定まる同値関係
+  quantifiers:
+    - 任意の写像f
+    - 全てのx∈α
+  conclusion: fは全射πと単射gの合成に分解される。
+  answer: |
+    πは商集合の定義から全射である。g([x])=f(x)と定めると、x~yのときf(x)=f(y)なので、値は代表元の取り方によらない。g([x])=g([y])ならf(x)=f(y)なのでx~yであり、[x]=[y]となるからgは単射である。定義よりf(x)=g(π(x))である。
+  strategy: The relation is defined so that well-definedness and injectivity of g are the same condition read in both directions.
+  sketch:
+    - "derive: The projection onto a quotient is surjective."
+    - "construct: Set g([x]) = f(x), well defined because x ~ y means f(x) = f(y)."
+    - "derive: g([x]) = g([y]) gives x ~ y, so g is injective."
+    - "conclude: f = g ∘ π by construction."
+  openmath: (forall (f X Y) (-> (map_between f X Y) (exists (R g) (and (equivalence_relation R X) (forall (x y) (-> (and (in x X) (in y X)) (<-> (relates R x y) (= (fn_value f x) (fn_value f y))))) (forall (q) (-> (in q (quotient_set R X)) (exists (x) (and (in x X) (= q (equiv_class R x)))))) (map_between g (quotient_set R X) Y) (injective g) (forall (x) (-> (in x X) (= (fn_value g (equiv_class R x)) (fn_value f x))))))))
+  hard_negative:
+    statement: 写像fの標準分解f=g∘πにおいて、射影πは常に単射である。
+    reason: πが単射になるのはfが単射のときだけである。f(x)=x²では1と-1が同じ同値類に移る。
+  target: |
+    ∀ (α β : Type*) (f : α → β), ∃ g : Quotient (Setoid.ker f) → β, Function.Injective g ∧ Function.Surjective (Quotient.mk (Setoid.ker f)) ∧ ∀ x, g (Quotient.mk (Setoid.ker f) x) = f x
+  proof: |
+    by
+      intro α β f
+      exact ⟨Setoid.kerLift f, Setoid.kerLift_injective f, fun q => Quotient.exists_rep q, fun _ => rfl⟩
+- id: greatest_is_maximal
+  kind: gap
+  level: 2
+  topic: 順序・最大元と極大元
+  statement: 半順序集合の部分集合Sの最大元はSの極大元である。
+  statement_en: In a partially ordered set, the greatest element of a subset S is a maximal element of S.
+  assumptions:
+    - αは半順序集合
+    - aはSの最大元
+  quantifiers:
+    - 任意の半順序集合αと部分集合S
+  conclusion: aはSの極大元である。
+  answer: |
+    aはSに属する。y∈Sがa≤yを満たすとする。aは最大元なのでy≤aも成り立つ。よってaより真に大きいSの元はなく、aは極大元である。
+  strategy: Being above every element of S rules out strictly larger elements.
+  sketch:
+    - "setup: Take y ∈ S with a ≤ y."
+    - "derive: The greatest property gives y ≤ a."
+    - "conclude: So no element of S lies strictly above a."
+  openmath: (forall (R X S a) (-> (and (partial_order R X) (subset S X) (greatest_element R S a)) (maximal_element R S a)))
+  hard_negative:
+    statement: 半順序集合の極大元は最大元である。
+    reason: 比較できない二元からなる半順序集合では、どちらも極大元だが最大元はない。
+  target: |
+    ∀ (α : Type*) [PartialOrder α] (S : Set α) (a : α), IsGreatest S a → Maximal (· ∈ S) a
+  proof: |
+    by
+      intro α _ S a h
+      exact ⟨h.1, fun y hy _ => h.2 hy⟩
+- id: maximal_is_greatest_of_linear
+  kind: gap
+  level: 2
+  topic: 順序・全順序の極大元
+  statement: 全順序集合の部分集合Sの極大元はSの最大元である。
+  statement_en: In a linearly ordered set, a maximal element of a subset S is the greatest element of S.
+  assumptions:
+    - αは全順序集合
+    - aはSの極大元
+  quantifiers:
+    - 任意の全順序集合αと部分集合S
+  conclusion: aはSの最大元である。
+  answer: |
+    y∈Sをとる。全順序なのでy≤aまたはa≤yである。a≤yのときは、aの極大性からy≤aが従う。いずれの場合もy≤aなので、aはSの最大元である。
+  strategy: Compare a with an arbitrary element and use maximality in the remaining case.
+  sketch:
+    - "setup: Fix y ∈ S."
+    - "case_split: By totality either y ≤ a or a ≤ y."
+    - "apply_theorem: In the second case maximality gives y ≤ a."
+    - "conclude: So a is an upper bound of S lying in S."
+  openmath: (forall (R X S a) (-> (and (linear_order R X) (subset S X) (maximal_element R S a)) (greatest_element R S a)))
+  hard_negative:
+    statement: 半順序集合で極大元がただ一つなら、それは最大元である。
+    reason: 自然数全体に、どの自然数とも比較できない新しい元aを加えると、aは唯一の極大元だが最大元ではない。
+  target: |
+    ∀ (α : Type*) [LinearOrder α] (S : Set α) (a : α), Maximal (· ∈ S) a → IsGreatest S a
+  proof: |
+    by
+      intro α _ S a h
+      exact ⟨h.1, fun y hy => (le_total y a).elim id (fun hay => h.2 hy hay)⟩
+- id: finite_nonempty_has_maximal
+  kind: gap
+  level: 2
+  topic: 順序・有限集合の極大元
+  statement: 半順序集合の空でない有限部分集合は極大元を持つ。
+  statement_en: Every nonempty finite subset of a partially ordered set has a maximal element.
+  assumptions:
+    - αは半順序集合
+    - Sはαの空でない有限部分集合
+  quantifiers:
+    - 任意の半順序集合αと部分集合S
+  conclusion: Sは極大元を持つ。
+  answer: |
+    Sの元の個数に関する帰納法で示す。一元集合ではその元が極大元である。S=T∪{b}でTが空でないとし、Tの極大元をaとする。a≤bならbがSの極大元であり、そうでなければaがSの極大元である。
+  strategy: Induct on the size of S, adding one element at a time.
+  sketch:
+    - "induction: Induct on the number of elements of S."
+    - "setup: Write S = T ∪ {b} with T nonempty and let a be maximal in T."
+    - "case_split: Split on whether a ≤ b."
+    - "derive: If a ≤ b, an element above b would be above a, so b is maximal in S."
+    - "conclude: Otherwise a stays maximal in S."
+  openmath: (forall (R X S) (-> (and (partial_order R X) (subset S X) (finite_set S) (exists (a) (in a S))) (exists (m) (maximal_element R S m))))
+  hard_negative:
+    statement: 半順序集合の空でない部分集合は極大元を持つ。
+    reason: 有限性が必要である。通常の順序の自然数全体には極大元がない。
+  target: |
+    ∀ (α : Type*) [PartialOrder α] (S : Set α), S.Finite → S.Nonempty → ∃ a, Maximal (· ∈ S) a
+  proof: |
+    by
+      intro α _ S hf hn
+      exact hf.exists_maximal hn
+- id: zorn_lemma
+  kind: named
+  level: 3
+  topic: 順序・ツォルンの補題
+  statement: 半順序集合の全ての鎖(空の鎖を含む)が上界を持つならば、極大元が存在する。
+  statement_en: If every chain of a partially ordered set, including the empty chain, has an upper bound, then the set has a maximal element.
+  assumptions:
+    - αは半順序集合
+    - αの全ての鎖は上界を持つ
+  quantifiers:
+    - 任意の半順序集合α
+    - αの全ての鎖C
+  conclusion: αは極大元を持つ。
+  answer: |
+    概略を述べる。極大元がないと仮定すると、各鎖には上界があり、その上界より真に大きい元も存在するので、選択公理により各鎖にその鎖の真の上界を対応させる写像が得られる。超限帰納法でこの写像を繰り返し適用すると、順序数で添字付けられた狭義増大列が作られる。すると全ての順序数がαへ単射で埋め込まれることになり、順序数全体が集合をなさないことに反する。
+  strategy: Assume no maximal element and build an ordinal-indexed strictly increasing chain.
+  sketch:
+    - "contradiction: Assume there is no maximal element."
+    - "construct: Choose a strict upper bound for each chain by the axiom of choice."
+    - "induction: Iterate by transfinite recursion along the ordinals."
+    - "derive: This gives an injection from the ordinals into α."
+    - "conclude: The ordinals do not form a set, a contradiction."
+  openmath: (forall (R X) (-> (and (partial_order R X) (forall (C) (-> (and (subset C X) (chain_of R C)) (exists (u) (and (in u X) (upper_bound R C u)))))) (exists (m) (maximal_element R X m))))
+  hard_negative:
+    statement: 半順序集合の全ての鎖が上界を持つならば、最大元が存在する。
+    reason: 比較できない二元からなる半順序集合では全ての鎖が上界を持つが、最大元はない。
+  target: |
+    ∀ (α : Type*) [PartialOrder α], (∀ c : Set α, IsChain (· ≤ ·) c → BddAbove c) → ∃ m : α, IsMax m
+  proof: |
+    by
+      intro α _ h
+      exact zorn_le h
+- id: zorn_for_subsets
+  kind: textbook
+  level: 3
+  topic: 順序・包含順序に関するツォルンの補題
+  statement: 部分集合族Sの全ての包含鎖がS内に上界を持つならば、Sは包含に関する極大元を持つ。
+  statement_en: If every chain under inclusion of a family S of subsets has an upper bound belonging to S, then S has an element maximal under inclusion.
+  assumptions:
+    - Sは集合αの部分集合の族
+    - Sに含まれる全ての包含鎖cに対し、cの全ての元を含むSの元が存在する
+  quantifiers:
+    - 任意の集合αと部分集合族S
+    - Sに含まれる全ての包含鎖c
+  conclusion: Sは包含に関する極大元を持つ。
+  answer: |
+    Sを包含で順序付けると半順序集合になる。その鎖は包含鎖であり、仮定によりS内に上界を持つ。空の鎖に仮定を使うとSの元が一つ得られるのでSは空でない。よってツォルンの補題から極大元が存在する。
+  strategy: Apply Zorn's lemma to S ordered by inclusion.
+  sketch:
+    - "setup: Order S by inclusion."
+    - "translate: Chains in this order are exactly the inclusion chains contained in S."
+    - "apply_theorem: The hypothesis gives each of them an upper bound in S."
+    - "conclude: Zorn's lemma gives a maximal element of S."
+  openmath: (forall (S) (-> (forall (c) (-> (and (subset c S) (forall (a b) (-> (and (in a c) (in b c)) (or (subset a b) (subset b a))))) (exists (u) (and (in u S) (forall (s) (-> (in s c) (subset s u))))))) (exists (m) (and (in m S) (forall (t) (-> (and (in t S) (subset m t)) (= t m)))))))
+  hard_negative:
+    statement: 部分集合族Sの全ての包含鎖が全体集合の中に上界を持てば、Sは極大元を持つ。
+    reason: 上界はSに属する必要がある。自然数の有限部分集合全体Sは極大元を持たないが、鎖の和集合は全体集合に含まれる。
+  target: |
+    ∀ (α : Type*) (S : Set (Set α)), (∀ c ⊆ S, IsChain (· ⊆ ·) c → ∃ ub ∈ S, ∀ s ∈ c, s ⊆ ub) → ∃ m, Maximal (· ∈ S) m
+  proof: |
+    by
+      intro α S h
+      exact zorn_subset S h
+- id: well_ordering_theorem
+  kind: named
+  level: 3
+  topic: 順序・整列可能定理
+  statement: 任意の集合には整列順序が存在する。
+  statement_en: Every set admits a well-order.
+  assumptions:
+    - αは任意の集合
+  quantifiers:
+    - 任意の集合α
+  conclusion: α上の整列順序rが存在する。
+  answer: |
+    概略を述べる。αの部分集合とその上の整列順序の組全体を考え、一方が他方の始切片になるとき大きいと順序付ける。鎖の和は整列順序を持つ上界になるので、ツォルンの補題から極大元(S,≤)が得られる。Sの外に元xがあれば、xを最大元として付け加えた整列順序が(S,≤)より大きくなって矛盾する。よってS=αである。
+  strategy: Apply Zorn's lemma to well-ordered subsets ordered by initial segment.
+  sketch:
+    - "setup: Consider pairs of a subset of α and a well-order on it."
+    - "construct: Order them by the initial segment relation."
+    - "apply_theorem: Unions of chains are upper bounds, so Zorn's lemma gives a maximal pair."
+    - "contradiction: An element outside the subset could be added on top."
+    - "conclude: The maximal pair well-orders all of α."
+  openmath: (forall (X) (exists (R) (well_order R X)))
+  hard_negative:
+    statement: 実数の通常の順序は整列順序である。
+    reason: 開区間(0,1)は通常の順序で最小元を持たない。定理が述べるのは何らかの整列順序の存在である。
+  target: |
+    ∀ (α : Type*), ∃ r : α → α → Prop, IsWellOrder α r
+  proof: |
+    by
+      intro α
+      exact ⟨WellOrderingRel, inferInstance⟩
+- id: axiom_of_choice
+  kind: named
+  level: 2
+  topic: 集合論・選択公理
+  statement: 空でない集合の族(A_i)に対して、全てのiでf(i)∈A_iとなる選択関数fが存在する。
+  statement_en: For a family (A_i) of nonempty sets there is a choice function f with f(i) ∈ A_i for all i.
+  assumptions:
+    - (A_i)は集合αの部分集合の族
+    - 全てのA_iは空でない
+  quantifiers:
+    - 任意の添字集合ιと族(A_i)
+    - 全てのi∈ι
+  conclusion: 全てのiでf(i)∈A_iとなるf:ι→αが存在する。
+  answer: |
+    この命題は選択公理そのものを述べたものである。証明では公理をそのまま適用し、空でない各A_iから元を一つずつ同時に選ぶ。こうして得られる対応がfである。添字集合が無限の場合、この同時の選択は他の公理からは導けないので、公理として認める必要がある。
+  strategy: This is the axiom of choice stated for an indexed family.
+  sketch:
+    - "setup: Each A_i is nonempty."
+    - "apply_theorem: Apply the axiom of choice to the family."
+    - "conclude: The resulting function f satisfies f(i) ∈ A_i for all i."
+  openmath: (forall (I A) (-> (forall (i) (-> (in i I) (exists (x) (in x (fn_value A i))))) (exists (f) (forall (i) (-> (in i I) (in (fn_value f i) (fn_value A i)))))))
+  hard_negative:
+    statement: 空でない集合の族の選択関数はただ一つである。
+    reason: 存在が述べられているだけである。A_1={0,1}ではf(1)=0もf(1)=1も選択関数を与える。
+  target: |
+    ∀ (ι α : Type*) (A : ι → Set α), (∀ i, (A i).Nonempty) → ∃ f : ι → α, ∀ i, f i ∈ A i
+  proof: |
+    by
+      intro ι α A h
+      choose f hf using h
+      exact ⟨f, hf⟩
+- id: cardinal_comparability
+  kind: textbook
+  level: 3
+  topic: 濃度・比較可能定理
+  statement: 任意の集合α, βについて、αからβへの単射またはβからαへの単射が存在する。
+  statement_en: For any sets α and β there is an injection from α to β or an injection from β to α.
+  assumptions:
+    - α, βは任意の集合
+  quantifiers:
+    - 任意の集合α, β
+  conclusion: 単射α→βまたは単射β→αが存在する。
+  answer: |
+    概略を述べる。αの部分集合からβへの単射全体を、拡張の関係で順序付ける。鎖の和は単射で上界になるので、ツォルンの補題から極大な単射hが得られる。hの定義域がαでも値域がβでもなければ、残りの元の対を加えてhを拡張でき、極大性に反する。定義域がαならhが単射α→βを与え、値域がβならhの逆が単射β→αを与える。
+  strategy: Take a maximal partial injection by Zorn's lemma.
+  sketch:
+    - "setup: Consider injections from subsets of α into β, ordered by extension."
+    - "apply_theorem: Unions of chains are upper bounds, so Zorn's lemma gives a maximal one h."
+    - "contradiction: If h misses points on both sides it could be extended."
+    - "case_split: So its domain is α or its range is β."
+    - "conclude: Then h or its inverse is the required injection."
+  openmath: (forall (A B) (or (exists (f) (and (map_between f A B) (injective f))) (exists (g) (and (map_between g B A) (injective g)))))
+  hard_negative:
+    statement: 任意の集合α, βについて、単射α→βと単射β→αの両方が存在する。
+    reason: 両方あると濃度が等しくなる。α=自然数全体、β=実数全体では単射β→αは存在しない。
+  target: |
+    ∀ (α β : Type*), Nonempty (α ↪ β) ∨ Nonempty (β ↪ α)
+  proof: |
+    by
+      intro α β
+      exact Function.Embedding.total α β
+- id: countable_union_of_countable
+  kind: textbook
+  level: 2
+  topic: 濃度・可算集合の和
+  statement: 高々可算な添字集合で添字付けられた高々可算集合の族の和集合は高々可算である。
+  statement_en: The union of a family of at most countable sets indexed by an at most countable set is at most countable.
+  assumptions:
+    - 添字集合ιは高々可算
+    - 全てのA_iは高々可算
+  quantifiers:
+    - 任意のιと族(A_i)
+  conclusion: 和集合⋃A_iは高々可算である。
+  answer: |
+    空のA_iは和集合に影響しないので除いてよく、全て除かれた場合と添字が空の場合は和集合が空で明らかである。全射e:ℕ→ιをとり、選択公理により各iについて全射g_i:ℕ→A_iを選ぶ。(m,n)↦g_{e(m)}(n)はℕ×ℕから和集合への全射である。ℕ×ℕは可算なので、和集合は高々可算である。
+  strategy: Build a surjection from ℕ × ℕ using chosen enumerations.
+  sketch:
+    - "setup: Discard the empty members and the trivial cases."
+    - "construct: Take a surjection e from ℕ to ι and choose surjections g_i from ℕ to A_i."
+    - "derive: The map (m,n) ↦ g_{e(m)}(n) is onto the union."
+    - "conclude: ℕ × ℕ is countable, so the union is at most countable."
+  openmath: (forall (I A) (-> (and (countable I) (forall (i) (-> (in i I) (countable (fn_value A i))))) (countable (indexed_union (lambda (i) (fn_value A i))))))
+  hard_negative:
+    statement: 任意の添字集合で添字付けられた高々可算集合の族の和集合は高々可算である。
+    reason: 添字の可算性が必要である。実数全体は一元集合{x}の和集合だが非可算である。
+  target: |
+    ∀ (ι α : Type*) [Countable ι] (A : ι → Set α), (∀ i, (A i).Countable) → (⋃ i, A i).Countable
+  proof: |
+    by
+      intro ι α _ A h
+      exact Set.countable_iUnion h
+- id: rationals_countable
+  kind: textbook
+  level: 2
+  topic: 濃度・有理数の可算性
+  statement: 有理数全体の濃度は自然数全体の濃度に等しい。
+  statement_en: The set of rational numbers has the same cardinality as the set of natural numbers.
+  assumptions:
+    - なし
+  quantifiers:
+    - なし
+  conclusion: "|ℚ|=|ℕ|である。"
+  answer: |
+    有理数を既約分数p/q(q>0)で表し、(p,q)を対応させると単射ℚ→ℤ×ℕが得られる。ℤ×ℕは可算なので、|ℚ|≤|ℕ|である。一方ℕ⊆ℚより|ℕ|≤|ℚ|である。カントール・ベルンシュタインの定理より両者は等しい。
+  strategy: Inject in both directions and apply Cantor-Bernstein.
+  sketch:
+    - "construct: Send p/q in lowest terms to (p,q) in ℤ × ℕ."
+    - "derive: Since ℤ × ℕ is countable, |ℚ| ≤ |ℕ|."
+    - "derive: The inclusion of ℕ in ℚ gives |ℕ| ≤ |ℚ|."
+    - "conclude: Cantor-Bernstein gives equality."
+  openmath: (= (size Q) (size N))
+  hard_negative:
+    statement: 実数の中で稠密な部分集合は非可算である。
+    reason: ℚは実数の中で稠密だが可算である。
+  target: |
+    Cardinal.mk ℚ = Cardinal.mk ℕ
+  proof: |
+    by
+      rw [Cardinal.mkRat, Cardinal.mk_nat]
+- id: reals_uncountable
+  kind: named
+  level: 2
+  topic: 濃度・実数の非可算性
+  statement: 自然数全体の濃度は実数全体の濃度より真に小さい。
+  statement_en: The cardinality of the natural numbers is strictly smaller than that of the real numbers.
+  assumptions:
+    - なし
+  quantifiers:
+    - なし
+  conclusion: "|ℕ|<|ℝ|である。"
+  answer: |
+    ℕ⊆ℝより|ℕ|≤|ℝ|なので、全単射がないことを示せばよい。実数列(x_n)が与えられたとする。閉区間I_0⊇I_1⊇…を、x_nがI_nに属さず長さが正になるように順に選ぶ。実数の完備性により共通部分は空でなく、その元はどのx_nとも異なるので、(x_n)は全射でない。
+  strategy: Given a sequence of reals, nested intervals produce a real missing from it.
+  sketch:
+    - "derive: The inclusion of ℕ in ℝ gives |ℕ| ≤ |ℝ|."
+    - "setup: Let (x_n) be any sequence of reals."
+    - "construct: Choose nested closed intervals I_n of positive length with x_n outside I_n."
+    - "apply_theorem: Completeness makes the intersection nonempty."
+    - "conclude: A point of the intersection is not in the sequence, so no bijection exists."
+  openmath: (< (size N) (size R))
+  hard_negative:
+    statement: 無理数全体は可算である。
+    reason: 無理数全体が可算なら、有理数全体との和である実数全体も可算になってしまう。
+  target: |
+    Cardinal.mk ℕ < Cardinal.mk ℝ
+  proof: |
+    by
+      rw [Cardinal.mk_nat, Cardinal.mk_real]
+      exact Cardinal.aleph0_lt_continuum
+- id: cantor_no_surjection_powerset
+  kind: named
+  level: 2
+  topic: 濃度・カントールの定理
+  statement: 任意の集合Aについて、Aからその冪集合への全射は存在しない。
+  statement_en: For any set A there is no surjection from A onto its power set.
+  assumptions:
+    - f:A→𝒫(A)は写像
+  quantifiers:
+    - 任意の集合Aと写像f
+  conclusion: fは全射でない。
+  answer: |
+    D={x∈A | x∉f(x)}とおく。f(a)=Dとなるa∈Aがあると仮定すると、Dの定義からa∈Dとa∉f(a)=Dが同値になり矛盾する。よってDはfの像に入らず、fは全射でない。
+  strategy: Use the diagonal set of points not belonging to their own image.
+  sketch:
+    - "construct: Define D as the set of x with x ∉ f(x)."
+    - "setup: Suppose f(a) = D."
+    - "contradiction: Then a ∈ D if and only if a ∉ D."
+    - "conclude: So D is not in the image of f."
+  openmath: (forall (A f) (-> (map_between f A (powerset A)) (not (surjective f))))
+  hard_negative:
+    statement: 任意の集合Aについて、Aから冪集合への単射は存在しない。
+    reason: x↦{x}は常に単射である。存在しないのは全射である。
+  target: |
+    ∀ (α : Type*) (f : α → Set α), ¬Function.Surjective f
+  proof: |
+    by
+      intro α f
+      exact Function.cantor_surjective f
+- id: cantor_schroeder_bernstein
+  kind: named
+  level: 2
+  topic: 濃度・カントール・ベルンシュタインの定理
+  statement: 単射f:α→βと単射g:β→αが存在すれば、αとβの間に全単射が存在する。
+  statement_en: If there are injections f from α to β and g from β to α, then there is a bijection from α to β.
+  assumptions:
+    - f:α→βは単射
+    - g:β→αは単射
+  quantifiers:
+    - 任意の集合α, βと単射f, g
+  conclusion: 全単射h:α→βが存在する。
+  answer: |
+    概略を述べる。A_0=α\g(β), A_{n+1}=g(f(A_n))と定め、C=⋃A_nとおく。x∈Cならh(x)=f(x)、x∉Cならh(x)=g⁻¹(x)と定める。x∉CのときはxはA_0に属さないのでg⁻¹(x)が定まる。Cと補集合の間で値が衝突しないことからhの単射性が従い、y∉f(C)ならg(y)∉Cとなることから全射性が従う。
+  strategy: Decompose α using the iterates of g ∘ f starting from the complement of the image of g.
+  sketch:
+    - "construct: Let A_0 = α \\ g(β) and A_{n+1} = g(f(A_n))."
+    - "setup: Put C as the union of all A_n."
+    - "construct: Define h as f on C and as the inverse of g off C."
+    - "derive: Points in C and off C have different images, so h is injective."
+    - "derive: For y outside f(C), g(y) is off C and h(g(y)) = y."
+    - "conclude: h is a bijection."
+  openmath: (forall (A B f g) (-> (and (map_between f A B) (injective f) (map_between g B A) (injective g)) (exists (h) (and (map_between h A B) (bijective h)))))
+  hard_negative:
+    statement: 単射f:α→βと単射g:β→αが存在すれば、f自身が全単射である。
+    reason: 定理が述べるのは別の全単射の存在である。自然数上のn↦n+1は単射だが全射でない。
+  target: |
+    ∀ (α β : Type*) (f : α → β) (g : β → α), Function.Injective f → Function.Injective g → ∃ h : α → β, Function.Bijective h
+  proof: |
+    by
+      intro α β f g hf hg
+      exact Function.Embedding.schroeder_bernstein hf hg
+- id: infinite_cardinal_add_mul
+  kind: textbook
+  level: 3
+  topic: 濃度・無限濃度の加法と乗法
+  statement: 無限濃度a, bについて、a+b=max(a,b)かつab=max(a,b)が成り立つ。
+  statement_en: For infinite cardinals a and b, a + b = max(a, b) and a·b = max(a, b).
+  assumptions:
+    - a, bは濃度で、いずれもℵ₀以上
+  quantifiers:
+    - 任意の無限濃度a, b
+  conclusion: a+bとabはいずれもmax(a,b)に等しい。
+  answer: |
+    概略を述べる。核心は無限濃度cについてc·c=cとなることである。cの始順序数の組を最大値、第一成分、第二成分の順に比べる整列順序を入れ、超限帰納法により、この順序型がcを超えないことを示す。c=max(a,b)とおくと、c≤a+b≤c+c≤c·c=cかつc≤ab≤c·c=cである。よって両方の値はcに等しい。
+  strategy: Reduce both identities to c·c = c for the larger cardinal by squeezing.
+  sketch:
+    - "apply_theorem: For infinite c, c·c = c by a well-order on pairs and transfinite induction."
+    - "setup: Put c = max(a, b)."
+    - "derive: c ≤ a + b ≤ c + c ≤ c·c = c."
+    - "derive: c ≤ a·b ≤ c·c = c."
+    - "conclude: Both values equal max(a, b)."
+  openmath: (forall (a b) (-> (and (is_cardinal a) (is_cardinal b) (<= aleph_zero a) (<= aleph_zero b)) (and (-> (<= a b) (and (= (+ a b) b) (= (* a b) b))) (-> (<= b a) (and (= (+ a b) a) (= (* a b) a))))))
+  hard_negative:
+    statement: 無限濃度aと任意の濃度bについてab=max(a,b)が成り立つ。
+    reason: b=0のときab=0で、max(a,b)=aと異なる。
+  target: |
+    ∀ (a b : Cardinal), Cardinal.aleph0 ≤ a → Cardinal.aleph0 ≤ b → a + b = max a b ∧ a * b = max a b
+  proof: |
+    by
+      intro a b ha hb
+      exact ⟨Cardinal.add_eq_max ha, Cardinal.mul_eq_max ha hb⟩
+- id: cardinal_power_laws
+  kind: gap
+  level: 2
+  topic: 濃度・指数法則
+  statement: 濃度a, b, cについて、a^(b+c)=a^b·a^c、a^(bc)=(a^b)^c、(ab)^c=a^c·b^cが成り立つ。
+  statement_en: For cardinals a, b, c we have a^(b+c) = a^b·a^c, a^(b·c) = (a^b)^c and (a·b)^c = a^c·b^c.
+  assumptions:
+    - a, b, cは濃度
+  quantifiers:
+    - 任意の濃度a, b, c
+  conclusion: 3つの指数法則が成り立つ。
+  answer: |
+    濃度a, b, cを持つ集合A, B, Cを互いに素にとる。B⊔CからAへの写像は、BとCへの制限の組と一対一に対応する。B×CからAへの写像は、カリー化によりCからA^Bへの写像と一対一に対応する。CからA×Bへの写像は、成分ごとの写像の組と一対一に対応する。これらの全単射から3つの等式が従う。
+  strategy: Exhibit a natural bijection between the function sets for each law.
+  sketch:
+    - "setup: Take disjoint sets A, B, C with the given cardinalities."
+    - "construct: Restriction to B and C gives the bijection for the first law."
+    - "construct: Currying gives the bijection for the second law."
+    - "construct: Taking components gives the bijection for the third law."
+    - "conclude: Bijective sets have equal cardinalities."
+  openmath: (forall (a b c) (-> (and (is_cardinal a) (is_cardinal b) (is_cardinal c)) (and (= (^ a (+ b c)) (* (^ a b) (^ a c))) (= (^ a (* b c)) (^ (^ a b) c)) (= (^ (* a b) c) (* (^ a c) (^ b c))))))
+  hard_negative:
+    statement: 濃度についてa^(b^c)=(a^b)^cが成り立つ。
+    reason: a=2, b=2, c=3では左辺が256で、右辺が64である。
+  target: |
+    ∀ (a b c : Cardinal), a ^ (b + c) = a ^ b * a ^ c ∧ a ^ (b * c) = (a ^ b) ^ c ∧ (a * b) ^ c = a ^ c * b ^ c
+  proof: |
+    by
+      intro a b c
+      exact ⟨Cardinal.power_add a b c, Cardinal.power_mul, Cardinal.mul_power⟩
+- id: strong_induction
+  kind: gap
+  level: 1
+  topic: 帰納法・累積帰納法
+  statement: 自然数の述語Pについて、全てのnで「n未満の全てのmでP(m)ならばP(n)」が成り立つならば、全てのnでP(n)が成り立つ。
+  statement_en: For a predicate P on the natural numbers, if for every n the truth of P(m) for all m < n implies P(n), then P(n) holds for all n.
+  assumptions:
+    - Pは自然数の述語
+    - 全てのnで、n未満の全てのmでP(m)ならばP(n)
+  quantifiers:
+    - 任意の述語P
+    - 全ての自然数n
+  conclusion: 全ての自然数nでP(n)が成り立つ。
+  answer: |
+    Q(n)を「n未満の全てのmでP(m)」とする。Q(0)は明らかに成り立つ。Q(n)を仮定すると、仮定からP(n)が成り立つので、Q(n+1)が成り立つ。通常の帰納法で全てのnについてQ(n)が成り立つ。よってQ(n+1)からP(n)が従う。
+  strategy: Run ordinary induction on the statement that P holds below n.
+  sketch:
+    - "setup: Let Q(n) say that P(m) holds for all m < n."
+    - "induction: Q(0) is vacuous, and Q(n) gives P(n), hence Q(n+1)."
+    - "conclude: Q(n+1) gives P(n) for every n."
+  openmath: (forall (P) (-> (forall (n) (-> (and (in n N) (forall (m) (-> (and (in m N) (< m n)) (in m P)))) (in n P))) (forall (n) (-> (in n N) (in n P)))))
+  hard_negative:
+    statement: 全てのnでP(n)ならばP(n+1)が成り立てば、全てのnでP(n)が成り立つ。
+    reason: 基底が抜けている。Pが常に偽のとき仮定は成り立つが結論は偽である。
+  target: |
+    ∀ (P : ℕ → Prop), (∀ n, (∀ m, m < n → P m) → P n) → ∀ n, P n
+  proof: |
+    by
+      intro P h n
+      exact Nat.strong_induction_on n h
+- id: shifted_base_induction
+  kind: gap
+  level: 1
+  topic: 帰納法・基底をずらした帰納法
+  statement: 自然数kと述語Pについて、P(k)が成り立ち、k≤nの全てのnでP(n)ならばP(n+1)が成り立つならば、k≤nの全てのnでP(n)が成り立つ。
+  statement_en: For a natural number k and a predicate P, if P(k) holds and P(n) implies P(n+1) for all n ≥ k, then P(n) holds for all n ≥ k.
+  assumptions:
+    - P(k)が成り立つ
+    - k≤nの全てのnでP(n)ならばP(n+1)
+  quantifiers:
+    - 任意の述語Pと自然数k
+    - k≤nを満たす全ての自然数n
+  conclusion: k≤nの全てのnでP(n)が成り立つ。
+  answer: |
+    n=k+jと書き、jに関する帰納法で示す。j=0のときはP(k)である。P(k+j)を仮定すると、k≤k+jなので、仮定からP(k+j+1)が成り立つ。よって全てのjでP(k+j)が成り立つ。
+  strategy: Reindex by n = k + j and apply ordinary induction on j.
+  sketch:
+    - "setup: Write n = k + j."
+    - "induction: The base j = 0 is P(k), and the step uses k ≤ k + j."
+    - "conclude: P(k + j) holds for all j, which covers all n ≥ k."
+  openmath: (forall (P k) (-> (and (in k N) (in k P) (forall (n) (-> (and (in n N) (<= k n) (in n P)) (in (+ n 1) P)))) (forall (n) (-> (and (in n N) (<= k n)) (in n P)))))
+  hard_negative:
+    statement: 同じ仮定のもとで全ての自然数nについてP(n)が成り立つ。
+    reason: k未満のnには何も言えない。P(n)をn≥kとすると仮定は成り立つが、n<kでは偽である。
+  target: |
+    ∀ (P : ℕ → Prop) (k : ℕ), P k → (∀ n, k ≤ n → P n → P (n + 1)) → ∀ n, k ≤ n → P n
+  proof: |
+    by
+      intro P k h0 hs n hn
+      induction n, hn using Nat.le_induction with
+      | base => exact h0
+      | succ n hn ih => exact hs n hn ih
+- id: nat_well_ordering
+  kind: textbook
+  level: 1
+  topic: 帰納法・自然数の整列性
+  statement: 自然数の空でない部分集合は最小元を持つ。
+  statement_en: Every nonempty subset of the natural numbers has a least element.
+  assumptions:
+    - Sは自然数の空でない部分集合
+  quantifiers:
+    - 任意の部分集合S
+  conclusion: Sは最小元を持つ。
+  answer: |
+    Sが最小元を持たないと仮定する。累積帰納法で全てのnがSに属さないことを示す。n未満の自然数がどれもSに属さないとき、nがSに属すればnが最小元となるので、nはSに属さない。これはSが空でないことに反する。
+  strategy: Prove by strong induction that S has no elements if it has no least element.
+  sketch:
+    - "contradiction: Assume S has no least element."
+    - "induction: If no m < n lies in S, then n in S would be least, so n is not in S."
+    - "derive: Hence S is empty."
+    - "conclude: This contradicts the nonemptiness of S."
+  openmath: (forall (S) (-> (and (subset S N) (exists (x) (in x S))) (exists (m) (and (in m S) (forall (x) (-> (in x S) (<= m x)))))))
+  hard_negative:
+    statement: 整数の空でない部分集合は最小元を持つ。
+    reason: 整数全体は最小元を持たない。下に有界であることが必要である。
+  target: |
+    ∀ (S : Set ℕ), S.Nonempty → ∃ m, IsLeast S m
+  proof: |
+    by
+      intro S hS
+      exact ⟨sInf S, Nat.sInf_mem hS, fun x hx => Nat.sInf_le hx⟩
+- id: well_founded_induction
+  kind: textbook
+  level: 3
+  topic: 帰納法・整礎帰納法と超限帰納法
+  statement: 整礎関係rと述語Pについて、全てのxで「r(y,x)となる全てのyでP(y)ならばP(x)」が成り立つならば、全てのxでP(x)が成り立つ。
+  statement_en: For a well-founded relation r and a predicate P, if for every x the truth of P(y) for all y with r(y,x) implies P(x), then P(x) holds for all x.
+  assumptions:
+    - rは整礎関係
+    - 全てのxで、r(y,x)となる全てのyでP(y)ならばP(x)
+  quantifiers:
+    - 任意の整礎関係rと述語P
+    - 全てのx
+  conclusion: 全てのxでP(x)が成り立つ。
+  answer: |
+    P(x)が成り立たないxが存在すると仮定し、そのようなx全体の集合をSとする。rは整礎なのでSにはr-極小元xがある。r(y,x)となるyはSに属さないのでP(y)が成り立ち、仮定からP(x)が従う。これはxがSに属することと矛盾する。順序数の<に適用すれば超限帰納法が得られる。
+  strategy: Argue by contradiction with a minimal counterexample.
+  sketch:
+    - "contradiction: Let S be the set of x where P fails and assume it is nonempty."
+    - "apply_theorem: Well-foundedness gives an r-minimal element x of S."
+    - "derive: All y with r(y,x) lie outside S, so P(y) holds."
+    - "conclude: The hypothesis gives P(x), a contradiction."
+  openmath: (forall (R P) (-> (and (well_founded R) (forall (x) (-> (forall (y) (-> (relates R y x) (in y P))) (in x P)))) (forall (x) (in x P))))
+  hard_negative:
+    statement: 整礎でない関係についても同じ帰納法が成り立つ。
+    reason: 整数上の<でPが常に偽のとき、各xの下にPを満たさないyがあるので仮定は成り立つが、結論は偽である。
+  target: |
+    ∀ (α : Type*) (r : α → α → Prop), WellFounded r → ∀ P : α → Prop, (∀ x, (∀ y, r y x → P y) → P x) → ∀ x, P x
+  proof: |
+    by
+      intro α r hr P h x
+      exact hr.induction x h
+- id: ordinal_zero_succ_or_limit
+  kind: gap
+  level: 3
+  topic: 順序数・零、後続、極限の分類
+  statement: 順序数は0であるか、後続順序数であるか、極限順序数である。
+  statement_en: Every ordinal is zero, a successor ordinal, or a limit ordinal.
+  assumptions:
+    - oは順序数
+  quantifiers:
+    - 任意の順序数o
+  conclusion: o=0、またはo=b+1となるbが存在する、またはoは極限順序数である。
+  answer: |
+    oが0でなく、b+1の形でもないとする。b<oならb+1≤oであり、oはb+1の形でないのでb+1<oである。よってoは最小元でなく、oの下にある順序数の後続もoの下にある。これはoが極限順序数であることを意味する。
+  strategy: Assume the first two cases fail and unfold the definition of a limit ordinal.
+  sketch:
+    - "setup: Assume o is neither zero nor a successor."
+    - "derive: For b < o we have b + 1 ≤ o."
+    - "derive: Since o is not a successor, b + 1 < o."
+    - "conclude: So o is a limit ordinal."
+  openmath: (forall (a) (-> (is_ordinal a) (or (= a 0) (exists (b) (and (is_ordinal b) (= a (+ b 1)))) (limit_ordinal a))))
+  hard_negative:
+    statement: 0でない順序数は全て後続順序数である。
+    reason: 最小の無限順序数ωはどの順序数の後続でもない。
+  target: |
+    ∀ o : Ordinal, o = 0 ∨ (∃ b, o = b + 1) ∨ Order.IsSuccLimit o
+  proof: |
+    by
+      intro o
+      rcases Ordinal.zero_or_succ_or_isSuccLimit o with h | ⟨b, hb⟩ | h
+      · exact Or.inl h
+      · exact Or.inr (Or.inl ⟨b, by rw [← hb, Order.succ_eq_add_one]⟩)
+      · exact Or.inr (Or.inr h)
+- id: ordinal_add_not_commutative
+  kind: gap
+  level: 3
+  topic: 順序数・加法の非可換性
+  statement: 順序数について1+ω=ωであり、ω+1≠ωである。
+  statement_en: For ordinals, 1 + ω = ω while ω + 1 ≠ ω.
+  assumptions:
+    - ωは最小の無限順序数
+  quantifiers:
+    - なし
+  conclusion: 1+ω=ωかつω+1≠ωである。
+  answer: |
+    1+ωは一つの元の後ろに自然数の列を並べた順序型である。先頭の元を0、nをn+1に対応させると自然数の順序と同型になるので、1+ω=ωである。一方ω+1はωより後ろに元を一つ足した順序型で、ω<ω+1である。よってω+1≠ωであり、順序数の加法は可換でない。
+  strategy: Compare order types directly for each sum.
+  sketch:
+    - "translate: 1 + ω is one point followed by a copy of the natural numbers."
+    - "construct: Shifting gives an order isomorphism with ω."
+    - "derive: ω + 1 has a greatest element, or equivalently ω < ω + 1."
+    - "conclude: So the two sums differ."
+  openmath: (and (= (+ 1 omega_ordinal) omega_ordinal) (!= (+ omega_ordinal 1) omega_ordinal))
+  hard_negative:
+    statement: 順序数の加法は可換である。
+    reason: 1+ω=ωだがω+1はωより大きい。
+  target: |
+    (1 : Ordinal) + Ordinal.omega0 = Ordinal.omega0 ∧ (Ordinal.omega0 : Ordinal) + 1 ≠ Ordinal.omega0
+  proof: |
+    by
+      exact ⟨Ordinal.one_add_omega0, (lt_add_of_pos_right _ zero_lt_one).ne'⟩
+- id: ordinal_set_has_least
+  kind: textbook
+  level: 3
+  topic: 順序数・整列性
+  statement: 順序数の空でない集合は最小元を持つ。
+  statement_en: Every nonempty set of ordinals has a least element.
+  assumptions:
+    - Sは順序数の空でない集合
+  quantifiers:
+    - 任意の順序数の集合S
+  conclusion: Sは最小元を持つ。
+  answer: |
+    a∈Sをとる。aがSの最小元でなければ、S∩aは空でない。aより小さい順序数全体はaと同型で整列されているので、S∩aは最小元mを持つ。任意のx∈Sについて、x<aならm≤xであり、a≤xならm<a≤xである。よってmはSの最小元である。
+  strategy: Use that the ordinals below a given ordinal are well-ordered.
+  sketch:
+    - "setup: Take a ∈ S."
+    - "derive: The ordinals below a are well-ordered."
+    - "construct: If a is not least, let m be the least element of the part of S below a."
+    - "case_split: Compare an arbitrary x ∈ S with a."
+    - "conclude: m is the least element of S."
+  openmath: (forall (S) (-> (and (forall (x) (-> (in x S) (is_ordinal x))) (exists (x) (in x S))) (exists (m) (and (in m S) (forall (x) (-> (in x S) (<= m x)))))))
+  hard_negative:
+    statement: 順序数の空でない集合は最大元を持つ。
+    reason: 自然数全体は順序数の集合だが最大元を持たない。
+  target: |
+    ∀ (S : Set Ordinal), S.Nonempty → ∃ m, IsLeast S m
+  proof: |
+    by
+      intro S hS
+      exact ⟨sInf S, isLeast_csInf hS⟩

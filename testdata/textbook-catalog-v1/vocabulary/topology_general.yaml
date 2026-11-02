@@ -1,0 +1,52 @@
+# Proposed additive OpenMath vocabulary for general topology (cd=pals2).
+open_in: {args: [term, term], returns: prop, meaning: "U is an open subset of the topological space X"}
+closed_in: {args: [term, term], returns: prop, meaning: "C is a closed subset of the topological space X"}
+closure_in: {args: [term, term], returns: term, meaning: "closure of S in the topological space X"}
+interior_in: {args: [term, term], returns: term, meaning: "interior of S in the topological space X"}
+frontier_in: {args: [term, term], returns: term, meaning: "boundary of S in the topological space X"}
+dense_in: {args: [term, term], returns: prop, meaning: "S is dense in the topological space X"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+countable_set: {args: [term], returns: prop, meaning: "S is a countable set"}
+family_inter: {args: [term, term], returns: term, meaning: "intersection of the family U indexed by I"}
+family_union: {args: [term, term], returns: term, meaning: "union of the family U indexed by I"}
+image_of: {args: [term, term], returns: term, meaning: "image of the set S under f"}
+preimage_of: {args: [term, term], returns: term, meaning: "preimage of the set S under f"}
+continuous_between: {args: [term, term, term], returns: prop, meaning: "f from X to Y is continuous"}
+homeomorphism: {args: [term, term, term], returns: prop, meaning: "f from X to Y is a homeomorphism"}
+bijection_between: {args: [term, term, term], returns: prop, meaning: "f from X to Y is bijective"}
+topological_basis: {args: [term, term], returns: prop, meaning: "B is a basis of the topology of X"}
+second_countable_space: {args: [term], returns: prop, meaning: "X has a countable basis"}
+separable_space: {args: [term], returns: prop, meaning: "X has a countable dense subset"}
+subspace_topology_on: {args: [term, term], returns: term, meaning: "subset A of X with the subspace topology"}
+product_space: {args: [term, term], returns: term, meaning: "product of X and Y with the product topology"}
+product_family: {args: [term, term], returns: term, meaning: "product of the family X indexed by I with the product topology"}
+product_set: {args: [term, term], returns: term, meaning: "product of the sets S and T as a subset of the product space"}
+projection_first: {args: [term, term], returns: term, meaning: "projection from the product of X and Y onto X"}
+projection_second: {args: [term, term], returns: term, meaning: "projection from the product of X and Y onto Y"}
+function_compose_map: {args: [term, term], returns: term, meaning: "composite g after f"}
+topological_quotient_map: {args: [term, term, term], returns: prop, meaning: "q from X to Y is a quotient map"}
+compact_in: {args: [term, term], returns: prop, meaning: "K is a compact subset of X"}
+compact_space: {args: [term], returns: prop, meaning: "X is a compact topological space"}
+sequentially_compact_in: {args: [term, term], returns: prop, meaning: "K is a sequentially compact subset of X"}
+hausdorff_space: {args: [term], returns: prop, meaning: "X is a Hausdorff space"}
+t1_space: {args: [term], returns: prop, meaning: "X is a T1 space"}
+normal_space: {args: [term], returns: prop, meaning: "X is a normal space"}
+connected_in: {args: [term, term], returns: prop, meaning: "S is a nonempty connected subset of X"}
+preconnected_in: {args: [term, term], returns: prop, meaning: "S is a connected subset of X, the empty set allowed"}
+path_connected_in: {args: [term, term], returns: prop, meaning: "S is a nonempty path-connected subset of X"}
+interval_like: {args: [term], returns: prop, meaning: "the real subset S contains every point between two of its points"}
+euclidean_space: {args: [term], returns: term, meaning: "n-dimensional Euclidean space"}
+metric_space: {args: [term], returns: prop, meaning: "X is a metric space"}
+dist_of: {args: [term, term], returns: term, meaning: "distance between x and y"}
+open_ball: {args: [term, term], returns: term, meaning: "open ball with center x and radius r"}
+closed_ball: {args: [term, term], returns: term, meaning: "closed ball with center x and radius r"}
+complete_space: {args: [term], returns: prop, meaning: "X is a complete metric space"}
+complete_subset: {args: [term, term], returns: prop, meaning: "S is a complete subset of the metric space X"}
+cauchy_seq: {args: [term, term], returns: prop, meaning: "a is a Cauchy sequence in the metric space X"}
+bounded_in: {args: [term, term], returns: prop, meaning: "S is a bounded subset of the metric space X"}
+totally_bounded_in: {args: [term, term], returns: prop, meaning: "S is a totally bounded subset of the metric space X"}
+uniformly_continuous_map: {args: [term, term, term], returns: prop, meaning: "f from X to Y is uniformly continuous"}
+tends_uniformly: {args: [term, term], returns: prop, meaning: "the sequence of functions F converges uniformly to f"}
+iterate_sequence: {args: [term, term], returns: term, meaning: "sequence of iterates of f starting from z"}
+singleton_set: {args: [term], returns: term, meaning: "the singleton set containing x"}
+strictly_increasing_index: {args: [term], returns: prop, meaning: "p is a strictly increasing map from the natural numbers to themselves"}

@@ -1,0 +1,1288 @@
+- id: exp_solution_iff
+  kind: textbook
+  level: 1
+  topic: 常微分方程式・定数係数1階線形
+  statement: 実数aと関数y:ℝ→ℝについて、全実数上でy'=ayが成り立つことと、全てのtでy(t)=y(0)e^{at}となることは同値である。
+  statement_en: "For real a and y : ℝ → ℝ, y is differentiable with y' = a y on all of ℝ if and only if y(t) = y(0) e^{at} for all t."
+  assumptions:
+    - "aは実数"
+    - "yは実数上の実数値関数"
+  quantifiers:
+    - "任意の実数aと関数y"
+  conclusion: 全実数上でy'=ayであることと、y(t)=y(0)e^{at}が全てのtで成り立つことは同値である。
+  answer: |
+    y'=ayならg(t)=y(t)e^{-at}の導関数はay e^{-at}-ay e^{-at}=0である。全実数上で導関数が0の関数は定数なのでg(t)=g(0)=y(0)であり、y(t)=y(0)e^{at}を得る。逆にy(t)=y(0)e^{at}なら、微分してy'(t)=a y(0)e^{at}=ay(t)となる。
+  strategy: Multiply by the integrating factor e^{-at} so the product has zero derivative, then conclude it is constant.
+  sketch:
+    - "setup: Assume y' = a y and put g(t) = y(t) e^{-at}."
+    - "derive: The product rule gives g'(t) = a y e^{-at} - a y e^{-at} = 0."
+    - "apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(0) = y(0)."
+    - "conclude: Multiply by e^{at} to get y(t) = y(0) e^{at}; the converse is direct differentiation."
+  openmath: (forall (a y) (<-> (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* a (fn_value y t)) t)) (forall (t) (= (fn_value y t) (* (fn_value y 0) (exp (* a t)))))))
+  hard_negative:
+    statement: 区間の和(-∞,0)∪(0,∞)の上でy'=ayなら、y(t)=y(1)e^{a(t-1)}が定義域全体で成り立つ。
+    reason: 定義域が連結でないと定数倍が成分ごとに異なってよく、t<0とt>0で別の係数を持つ解が存在する。
+  target: |
+    ∀ (a : ℝ) (y : ℝ → ℝ), (∀ t, HasDerivAt y (a * y t) t) ↔ ∀ t, y t = y 0 * Real.exp (a * t)
+  proof: |
+    by
+      intro a y
+      constructor
+      · intro hy t
+        have hg : ∀ s, HasDerivAt (fun s => y s * Real.exp (-(a * s))) 0 s := by
+          intro s
+          have h1 : HasDerivAt (fun s : ℝ => -(a * s)) (-(a * 1)) s :=
+            ((hasDerivAt_id s).const_mul a).neg
+          have h2 : HasDerivAt (fun s => y s * Real.exp (-(a * s)))
+              (a * y s * Real.exp (-(a * s)) + y s * (Real.exp (-(a * s)) * (-(a * 1)))) s :=
+            (hy s).mul h1.exp
+          exact h2.congr_deriv (by ring)
+        have hc : y t * Real.exp (-(a * t)) = y 0 * Real.exp (-(a * 0)) :=
+          is_const_of_deriv_eq_zero (fun s => (hg s).differentiableAt) (fun s => (hg s).deriv) t 0
+        have hone : Real.exp (-(a * t)) * Real.exp (a * t) = 1 := by
+          rw [← Real.exp_add]; simp
+        calc y t = y t * Real.exp (-(a * t)) * Real.exp (a * t) := by
+              rw [mul_assoc, hone, mul_one]
+          _ = y 0 * Real.exp (a * t) := by rw [hc]; simp
+      · intro h t
+        have hy : y = fun s => y 0 * Real.exp (a * s) := funext h
+        have h1 : HasDerivAt (fun s : ℝ => a * s) (a * 1) t := (hasDerivAt_id t).const_mul a
+        have h2 : HasDerivAt (fun s => y 0 * Real.exp (a * s))
+            (y 0 * (Real.exp (a * t) * (a * 1))) t := h1.exp.const_mul (y 0)
+        rw [h t, hy]
+        simpa [mul_comm, mul_left_comm, mul_assoc] using h2
+- id: homogeneous_linear_formula
+  kind: gap
+  level: 2
+  topic: 常微分方程式・変数係数1階線形
+  statement: Pがpの原始関数で、全実数上でy'=p(t)yならば、任意のs,tについてy(t)=y(s)exp(P(t)-P(s))である。
+  statement_en: "If P' = p on ℝ and y' = p(t) y on ℝ, then y(t) = y(s) exp(P(t) - P(s)) for all s and t."
+  assumptions:
+    - "全実数上でP'=p"
+    - "全実数上でy'=p(t)y"
+  quantifiers:
+    - "任意の関数p, P, y"
+    - "任意の実数s, t"
+  conclusion: y(t)=y(s)exp(P(t)-P(s))が成り立つ。
+  answer: |
+    g(t)=y(t)e^{-P(t)}と置くと、積の微分によりg'(t)=p y e^{-P}-p y e^{-P}=0である。よってgは定数でありg(t)=g(s)となる。両辺にe^{P(t)}を掛けるとy(t)=y(s)exp(P(t)-P(s))を得る。特にyが1点で0なら恒等的に0であり、そうでなければyはどこでも0にならない。
+  strategy: Show that y e^{-P} has zero derivative, hence is constant.
+  sketch:
+    - "setup: Put g = y e^{-P}."
+    - "derive: The product and chain rules give g' = p y e^{-P} - p y e^{-P} = 0."
+    - "apply_theorem: A function with zero derivative on ℝ is constant, so g(t) = g(s)."
+    - "conclude: Multiplying by e^{P(t)} gives the formula."
+  openmath: (forall (p P y) (-> (and (forall (t) (has_deriv_at (lambda (r0) (fn_value P r0)) (fn_value p t) t)) (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* (fn_value p t) (fn_value y t)) t))) (forall (s t) (= (fn_value y t) (* (fn_value y s) (exp (- (fn_value P t) (fn_value P s))))))))
+  hard_negative:
+    statement: y'=p(t)yならばy(t)=y(s)exp(p(t)(t-s))である。
+    reason: pが定数でないと指数はpの原始関数の差であり、例えばp(t)=2t, y=e^{t²}, s=0, t=1ではy(1)=eだがy(0)exp(p(1)·1)=e²である。
+  target: |
+    ∀ (p P y : ℝ → ℝ), (∀ t, HasDerivAt P (p t) t) → (∀ t, HasDerivAt y (p t * y t) t) → ∀ s t, y t = y s * Real.exp (P t - P s)
+  proof: |
+    by
+      intro p P y hP hy s t
+      have hg : ∀ u, HasDerivAt (fun u => y u * Real.exp (-P u)) 0 u := by
+        intro u
+        have h : HasDerivAt (fun u => y u * Real.exp (-P u))
+            (p u * y u * Real.exp (-P u) + y u * (Real.exp (-P u) * (-(p u)))) u :=
+          (hy u).mul (hP u).neg.exp
+        exact h.congr_deriv (by ring)
+      have hc : y t * Real.exp (-P t) = y s * Real.exp (-P s) :=
+        is_const_of_deriv_eq_zero (fun u => (hg u).differentiableAt) (fun u => (hg u).deriv) t s
+      have hone : Real.exp (-P t) * Real.exp (P t) = 1 := by
+        rw [← Real.exp_add]; simp
+      have hE : Real.exp (P t - P s) = Real.exp (-P s) * Real.exp (P t) := by
+        rw [← Real.exp_add]; congr 1; ring
+      calc y t = y t * Real.exp (-P t) * Real.exp (P t) := by rw [mul_assoc, hone, mul_one]
+        _ = y s * Real.exp (-P s) * Real.exp (P t) := by rw [hc]
+        _ = y s * Real.exp (P t - P s) := by rw [hE, mul_assoc]
+- id: integrating_factor_derivative
+  kind: gap
+  level: 2
+  topic: 常微分方程式・積分因子
+  statement: 点tでP'(t)=p(t)かつy'(t)=q(t)-p(t)y(t)なら、e^{P}yの点tでの微分係数はe^{P(t)}q(t)である。
+  statement_en: "If P'(t) = p(t) and y'(t) = q(t) - p(t) y(t) at the point t, then the derivative of e^{P} y at t equals e^{P(t)} q(t)."
+  assumptions:
+    - "点tでP'(t)=p(t)"
+    - "点tでy'(t)=q(t)-p(t)y(t)"
+  quantifiers:
+    - "任意の関数p, q, P, yと実数t"
+  conclusion: 関数e^{P}yは点tで微分可能で、微分係数はe^{P(t)}q(t)である。
+  answer: |
+    積の微分と合成関数の微分により、(e^{P}y)'(t)=e^{P(t)}p(t)y(t)+e^{P(t)}y'(t)である。y'(t)=q(t)-p(t)y(t)を代入するとp(t)y(t)の項が打ち消し合い、e^{P(t)}q(t)が残る。
+  strategy: Differentiate the product e^{P} y and cancel the p y terms using the equation.
+  sketch:
+    - "apply_theorem: The chain rule gives (e^{P})'(t) = e^{P(t)} p(t)."
+    - "derive: The product rule gives (e^{P} y)'(t) = e^{P(t)} p(t) y(t) + e^{P(t)} y'(t)."
+    - "conclude: Substituting y'(t) = q(t) - p(t) y(t) cancels the p y terms."
+  openmath: (forall (p q P y t) (-> (and (has_deriv_at (lambda (s) (fn_value P s)) (fn_value p t) t) (has_deriv_at (lambda (s) (fn_value y s)) (- (fn_value q t) (* (fn_value p t) (fn_value y t))) t)) (has_deriv_at (lambda (s) (* (exp (fn_value P s)) (fn_value y s))) (* (exp (fn_value P t)) (fn_value q t)) t)))
+  hard_negative:
+    statement: Pがpの原始関数でy'=q-pyなら、e^{p}yの導関数はe^{p}qである。
+    reason: 積分因子の指数はpの原始関数でなければならず、指数をpにするとp'yの項が残り、p'yとpyが一致しない限り打ち消されない。
+  target: |
+    ∀ (p q P y : ℝ → ℝ) (t : ℝ), HasDerivAt P (p t) t → HasDerivAt y (q t - p t * y t) t → HasDerivAt (fun s => Real.exp (P s) * y s) (Real.exp (P t) * q t) t
+  proof: |
+    by
+      intro p q P y t hP hy
+      have h : HasDerivAt (fun s => Real.exp (P s) * y s)
+          (Real.exp (P t) * p t * y t + Real.exp (P t) * (q t - p t * y t)) t :=
+        hP.exp.mul hy
+      exact h.congr_deriv (by ring)
+- id: linear_first_order_solution_formula
+  kind: textbook
+  level: 2
+  topic: 常微分方程式・1階線形の解の公式
+  statement: qが連続、P'=pで、全実数上でy'+py=qならば、y(t)=e^{-P(t)}(e^{P(a)}y(a)+∫_a^t e^{P(s)}q(s)ds)である。
+  statement_en: "If q is continuous, P' = p and y' + p y = q on ℝ, then y(t) = e^{-P(t)} (e^{P(a)} y(a) + ∫_a^t e^{P(s)} q(s) ds) for all a and t."
+  assumptions:
+    - "qは連続"
+    - "全実数上でP'=p"
+    - "全実数上でy'=q-py"
+  quantifiers:
+    - "任意の関数p, q, P, y"
+    - "任意の実数a, t"
+  conclusion: y(t)=e^{-P(t)}(e^{P(a)}y(a)+∫_a^t e^{P(s)}q(s)ds)が成り立つ。
+  answer: |
+    積の微分により(e^{P}y)'=e^{P}p y+e^{P}(q-py)=e^{P}qである。右辺は連続なので、微分積分学の基本定理からe^{P(t)}y(t)-e^{P(a)}y(a)=∫_a^t e^{P(s)}q(s)dsとなる。移項してe^{-P(t)}を掛ければ公式を得る。
+  strategy: Use the integrating factor e^{P}, integrate the resulting exact derivative, and solve for y.
+  sketch:
+    - "derive: The product rule gives (e^{P} y)' = e^{P} q on ℝ."
+    - "setup: P is differentiable hence continuous, so e^{P} q is continuous and interval integrable."
+    - "apply_theorem: The fundamental theorem of calculus gives e^{P(t)} y(t) - e^{P(a)} y(a) = ∫_a^t e^{P} q."
+    - "conclude: Rearrange and multiply by e^{-P(t)}."
+  openmath: (forall (p q P y a t) (-> (and (continuous_map q) (forall (s) (has_deriv_at (lambda (r0) (fn_value P r0)) (fn_value p s) s)) (forall (s) (has_deriv_at (lambda (r0) (fn_value y r0)) (- (fn_value q s) (* (fn_value p s) (fn_value y s))) s))) (= (fn_value y t) (* (exp (neg (fn_value P t))) (+ (* (exp (fn_value P a)) (fn_value y a)) (interval_integral a t (lambda (s) (* (exp (fn_value P s)) (fn_value q s)))))))))
+  hard_negative:
+    statement: y'+py=qならy(t)=e^{-P(t)}∫_a^t e^{P(s)}q(s)dsである。
+    reason: 初期値の項e^{P(a)}y(a)が欠けており、q=0でy(a)≠0の解では右辺が0になって成り立たない。
+  target: |
+    ∀ (p q P y : ℝ → ℝ) (a t : ℝ), Continuous q → (∀ s, HasDerivAt P (p s) s) → (∀ s, HasDerivAt y (q s - p s * y s) s) → y t = Real.exp (-P t) * (Real.exp (P a) * y a + ∫ s in a..t, Real.exp (P s) * q s)
+  proof: |
+    by
+      intro p q P y a t hq hP hy
+      have hd : ∀ s, HasDerivAt (fun s => Real.exp (P s) * y s) (Real.exp (P s) * q s) s := by
+        intro s
+        have h : HasDerivAt (fun s => Real.exp (P s) * y s)
+            (Real.exp (P s) * p s * y s + Real.exp (P s) * (q s - p s * y s)) s :=
+          (hP s).exp.mul (hy s)
+        exact h.congr_deriv (by ring)
+      have hPc : Continuous P := continuous_iff_continuousAt.2 fun s => (hP s).continuousAt
+      have hc : Continuous fun s => Real.exp (P s) * q s := (Real.continuous_exp.comp hPc).mul hq
+      have hint : (∫ s in a..t, Real.exp (P s) * q s) = Real.exp (P t) * y t - Real.exp (P a) * y a :=
+        intervalIntegral.integral_eq_sub_of_hasDerivAt (fun s _ => hd s) (hc.intervalIntegrable a t)
+      rw [hint, add_sub_cancel, ← mul_assoc, ← Real.exp_add]
+      simp
+- id: separable_first_integral
+  kind: gap
+  level: 2
+  topic: 常微分方程式・変数分離形
+  statement: y'=g(t)h(y)、h(y(t))≠0で、Hが1/hの原始関数、Gがgの原始関数ならば、H(y(t))-G(t)はtによらず一定である。
+  statement_en: "If y' = g(t) h(y) on ℝ, h(y(t)) ≠ 0 for all t, H has derivative 1/h(y(t)) at y(t), and G' = g, then H(y(t)) - G(t) does not depend on t."
+  assumptions:
+    - "全実数上でy'=g(t)h(y)"
+    - "全てのtでh(y(t))≠0"
+    - "全てのtでHは点y(t)で微分係数1/h(y(t))を持つ"
+    - "全実数上でG'=g"
+  quantifiers:
+    - "任意の関数y, g, h, H, G"
+    - "任意の実数s, t"
+  conclusion: H(y(t))-G(t)=H(y(s))-G(s)が成り立つ。
+  answer: |
+    合成関数の微分により、(H∘y)'(t)=(1/h(y(t)))·g(t)h(y(t))=g(t)である。よってH∘y-Gの導関数はg-g=0となる。全実数上で導関数が0の関数は定数なので、H(y(t))-G(t)はtによらない。
+  strategy: Differentiate H(y(t)) - G(t) by the chain rule and check that the derivative vanishes.
+  sketch:
+    - "apply_theorem: The chain rule gives (H∘y)'(t) = (1/h(y(t))) g(t) h(y(t))."
+    - "derive: Since h(y(t)) ≠ 0 this equals g(t), so (H∘y - G)' = 0."
+    - "apply_theorem: A function with zero derivative on ℝ is constant."
+    - "conclude: Hence H(y(t)) - G(t) = H(y(s)) - G(s)."
+  openmath: (forall (y g h H G) (-> (and (forall (t) (has_deriv_at (lambda (r0) (fn_value y r0)) (* (fn_value g t) (fn_value h (fn_value y t))) t)) (forall (t) (!= (fn_value h (fn_value y t)) 0)) (forall (t) (has_deriv_at (lambda (z) (fn_value H z)) (/ 1 (fn_value h (fn_value y t))) (fn_value y t))) (forall (t) (has_deriv_at (lambda (r0) (fn_value G r0)) (fn_value g t) t))) (forall (s t) (= (- (fn_value H (fn_value y t)) (fn_value G t)) (- (fn_value H (fn_value y s)) (fn_value G s))))))
+  hard_negative:
+    statement: y'=g(t)h(y)ならば、hが零点を持っていても全ての解がH(y)=G(t)+Cの形で得られる。
+    reason: h(c)=0の点では定数解y≡cが存在するが、1/hが定義できないため変数分離の式からは得られない。
+  target: |
+    ∀ (y g h H G : ℝ → ℝ), (∀ t, HasDerivAt y (g t * h (y t)) t) → (∀ t, h (y t) ≠ 0) → (∀ t, HasDerivAt H (1 / h (y t)) (y t)) → (∀ t, HasDerivAt G (g t) t) → ∀ s t, H (y t) - G t = H (y s) - G s
+  proof: |
+    by
+      intro y g h H G hy hne hH hG s t
+      have hd : ∀ u, HasDerivAt (fun u => H (y u) - G u) 0 u := by
+        intro u
+        have h1 : HasDerivAt (fun u => H (y u)) (1 / h (y u) * (g u * h (y u))) u :=
+          HasDerivAt.comp u (hH u) (hy u)
+        have h2 : HasDerivAt (fun u => H (y u) - G u)
+            (1 / h (y u) * (g u * h (y u)) - g u) u := h1.sub (hG u)
+        refine h2.congr_deriv ?_
+        have := hne u
+        field_simp
+        ring
+      exact is_const_of_deriv_eq_zero (fun u => (hd u).differentiableAt) (fun u => (hd u).deriv) t s
+- id: logistic_solution_check
+  kind: gap
+  level: 2
+  topic: 常微分方程式・ロジスティック方程式
+  statement: 1+Ce^{-rt}≠0となる点tで、関数y(s)=1/(1+Ce^{-rs})はロジスティック方程式y'=ry(1-y)を満たす。
+  statement_en: "At any point t with 1 + C e^{-rt} ≠ 0, the function y(s) = 1/(1 + C e^{-rs}) is differentiable and satisfies the logistic equation y'(t) = r y(t) (1 - y(t))."
+  assumptions:
+    - "r, C, tは実数"
+    - "1+Ce^{-rt}≠0"
+  quantifiers:
+    - "任意の実数r, C, t"
+  conclusion: y(s)=1/(1+Ce^{-rs})は点tで微分可能で、y'(t)=ry(t)(1-y(t))である。
+  answer: |
+    D(s)=1+Ce^{-rs}と置くとD'(t)=-rCe^{-rt}であり、商の微分によりy'(t)=rCe^{-rt}/D(t)²となる。一方、1-1/D=(D-1)/D=Ce^{-rt}/Dなので、ry(1-y)=rCe^{-rt}/D²である。両者は一致する。
+  strategy: Differentiate the reciprocal of the denominator and compare with r y (1 - y) after clearing denominators.
+  sketch:
+    - "setup: Put D(s) = 1 + C e^{-rs}, so D'(t) = -r C e^{-rt} and D(t) ≠ 0."
+    - "apply_theorem: The quotient rule gives y'(t) = r C e^{-rt} / D(t)^2."
+    - "derive: Since D - 1 = C e^{-rt}, we have r y (1 - y) = r C e^{-rt} / D(t)^2."
+    - "conclude: The two expressions agree."
+  openmath: (forall (r C t) (-> (!= (+ 1 (* C (exp (neg (* r t))))) 0) (has_deriv_at (lambda (s) (/ 1 (+ 1 (* C (exp (neg (* r s))))))) (* (* r (/ 1 (+ 1 (* C (exp (neg (* r t))))))) (- 1 (/ 1 (+ 1 (* C (exp (neg (* r t)))))))) t)))
+  hard_negative:
+    statement: y(s)=1/(1+Ce^{-rs})は全てのC, rについて全実数上で微分可能である。
+    reason: C<0かつr≠0では分母が0になる点があり、そこでyは定義されず方程式の解にならない。
+  target: |
+    ∀ (r C t : ℝ), 1 + C * Real.exp (-(r * t)) ≠ 0 → HasDerivAt (fun s => 1 / (1 + C * Real.exp (-(r * s)))) (r * (1 / (1 + C * Real.exp (-(r * t)))) * (1 - 1 / (1 + C * Real.exp (-(r * t))))) t
+  proof: |
+    by
+      intro r C t hne
+      have h0 : HasDerivAt (fun s : ℝ => -(r * s)) (-(r * 1)) t :=
+        ((hasDerivAt_id t).const_mul r).neg
+      have h1 : HasDerivAt (fun s => 1 + C * Real.exp (-(r * s)))
+          (C * (Real.exp (-(r * t)) * (-(r * 1)))) t := (h0.exp.const_mul C).const_add 1
+      have h2 : HasDerivAt (fun s => 1 / (1 + C * Real.exp (-(r * s))))
+          ((0 * (1 + C * Real.exp (-(r * t))) - 1 * (C * (Real.exp (-(r * t)) * (-(r * 1))))) /
+            (1 + C * Real.exp (-(r * t))) ^ 2) t := (hasDerivAt_const t (1 : ℝ)).div h1 hne
+      refine h2.congr_deriv ?_
+      field_simp
+      ring
+- id: comparison_exponential_upper_bound
+  kind: gap
+  level: 2
+  topic: 常微分方程式・比較定理
+  statement: fが[s,t]で連続、(s,t)で微分可能でf'≤afならば、f(t)≤f(s)e^{a(t-s)}である。
+  statement_en: "If f is continuous on [s,t], differentiable on (s,t) and f' ≤ a f on (s,t), then f(t) ≤ f(s) e^{a(t-s)}."
+  assumptions:
+    - "s≤t"
+    - "fは[s,t]で連続"
+    - "(s,t)上でf'=f₁かつf₁≤af"
+  quantifiers:
+    - "任意の関数f, f₁と実数a, s, t"
+  conclusion: f(t)≤f(s)e^{a(t-s)}が成り立つ。
+  answer: |
+    g(u)=f(u)e^{-au}と置くと、g'(u)=(f'(u)-af(u))e^{-au}≤0である。gは[s,t]で連続なので単調非増加であり、g(t)≤g(s)となる。両辺に正の数e^{at}を掛けるとf(t)≤f(s)e^{a(t-s)}を得る。aやfの符号についての仮定は不要である。
+  strategy: Show that f e^{-au} is nonincreasing using the sign of its derivative.
+  sketch:
+    - "setup: Put g(u) = f(u) e^{-au} on [s,t]."
+    - "derive: On (s,t) we have g'(u) = (f'(u) - a f(u)) e^{-au} ≤ 0."
+    - "apply_theorem: A continuous function with nonpositive derivative on the interior is nonincreasing."
+    - "conclude: g(t) ≤ g(s), and multiplying by e^{at} > 0 gives the bound."
+  openmath: (forall (f f1 a s t) (-> (and (<= s t) (continuous_on_set f (closed_interval s t)) (forall (u) (-> (in u (open_interval s t)) (and (has_deriv_at (lambda (r) (fn_value f r)) (fn_value f1 u) u) (<= (fn_value f1 u) (* a (fn_value f u))))))) (<= (fn_value f t) (* (fn_value f s) (exp (* a (- t s)))))))
+  hard_negative:
+    statement: f'≤afならば、s>tに対してもf(t)≤f(s)e^{a(t-s)}である。
+    reason: 不等式の向きは時間の向きに依存する。f(u)=-uとa=0ではf'=-1≤0だが、s=1, t=0でf(0)=0≤f(1)=-1は偽である。
+  target: |
+    ∀ (f f₁ : ℝ → ℝ) (a s t : ℝ), s ≤ t → ContinuousOn f (Set.Icc s t) → (∀ u ∈ Set.Ioo s t, HasDerivAt f (f₁ u) u) → (∀ u ∈ Set.Ioo s t, f₁ u ≤ a * f u) → f t ≤ f s * Real.exp (a * (t - s))
+  proof: |
+    by
+      intro f f₁ a s t hst hf hd hle
+      have hcont : ContinuousOn (fun u => f u * Real.exp (-(a * u))) (Set.Icc s t) :=
+        hf.mul (Real.continuous_exp.comp (continuous_const.mul continuous_id).neg).continuousOn
+      have hanti : AntitoneOn (fun u => f u * Real.exp (-(a * u))) (Set.Icc s t) := by
+        refine antitoneOn_of_hasDerivWithinAt_nonpos
+          (f' := fun u => (f₁ u - a * f u) * Real.exp (-(a * u))) (convex_Icc s t) hcont ?_ ?_
+        · rw [interior_Icc]
+          intro u hu
+          have h1 : HasDerivAt (fun u : ℝ => -(a * u)) (-(a * 1)) u :=
+            ((hasDerivAt_id u).const_mul a).neg
+          have h2 : HasDerivAt (fun u => f u * Real.exp (-(a * u)))
+              (f₁ u * Real.exp (-(a * u)) + f u * (Real.exp (-(a * u)) * (-(a * 1)))) u :=
+            (hd u hu).mul h1.exp
+          exact (h2.congr_deriv (by ring)).hasDerivWithinAt
+        · rw [interior_Icc]
+          intro u hu
+          exact mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.2 (hle u hu)) (Real.exp_pos _).le
+      have h : f t * Real.exp (-(a * t)) ≤ f s * Real.exp (-(a * s)) :=
+        hanti (Set.left_mem_Icc.2 hst) (Set.right_mem_Icc.2 hst) hst
+      have hE : Real.exp (a * (t - s)) = Real.exp (a * t) * Real.exp (-(a * s)) := by
+        rw [← Real.exp_add]; congr 1; ring
+      have hone : Real.exp (-(a * t)) * Real.exp (a * t) = 1 := by
+        rw [← Real.exp_add]; simp
+      calc f t = f t * Real.exp (-(a * t)) * Real.exp (a * t) := by rw [mul_assoc, hone, mul_one]
+        _ ≤ f s * Real.exp (-(a * s)) * Real.exp (a * t) :=
+          mul_le_mul_of_nonneg_right h (Real.exp_pos _).le
+        _ = f s * Real.exp (a * (t - s)) := by rw [hE]; ring
+- id: gronwall_integral_inequality
+  kind: named
+  level: 3
+  topic: 常微分方程式・グロンウォールの不等式
+  statement: （グロンウォールの不等式）uが[a,b]で連続、K≥0で、[a,b]上u(t)≤c+K∫_a^t u(s)dsならば、[a,b]上u(t)≤ce^{K(t-a)}である。
+  statement_en: "(Grönwall's inequality) If u is continuous on [a,b], K ≥ 0 and u(t) ≤ c + K ∫_a^t u(s) ds on [a,b], then u(t) ≤ c e^{K(t-a)} on [a,b]."
+  assumptions:
+    - "uは[a,b]で連続"
+    - "K≥0"
+    - "[a,b]上でu(t)≤c+K∫_a^t u(s)ds"
+  quantifiers:
+    - "任意の関数uと実数c, K, a, b"
+    - "[a,b]内の任意のt"
+  conclusion: u(t)≤ce^{K(t-a)}が成り立つ。
+  answer: |
+    v(t)=c+K∫_a^t u(s)dsと置くと、vは微分可能でv'=Ku≤Kvである。ここで仮定u≤vとK≥0を用いた。すると(ve^{-K(t-a)})'=(v'-Kv)e^{-K(t-a)}≤0なので、ve^{-K(t-a)}は[a,b]で単調非増加であり、その値はt=aでのcを超えない。よってu(t)≤v(t)≤ce^{K(t-a)}である。cの符号についての仮定は不要である。
+  strategy: Pass to the integral v(t) = c + K∫_a^t u, which satisfies a differential inequality, and apply the integrating factor e^{-K(t-a)}.
+  sketch:
+    - "setup: Extend u continuously from [a,b] to ℝ so that the integral is differentiable everywhere."
+    - "translate: Put v(t) = c + K ∫_a^t u, so u ≤ v and v' = K u on [a,b]."
+    - "derive: Since K ≥ 0, v' = K u ≤ K v, so (v e^{-K(t-a)})' ≤ 0."
+    - "apply_theorem: A function with nonpositive derivative is nonincreasing, so v(t) e^{-K(t-a)} ≤ v(a) = c."
+    - "conclude: Therefore u(t) ≤ v(t) ≤ c e^{K(t-a)}."
+  openmath: (forall (u c K a b) (-> (and (continuous_on_set u (closed_interval a b)) (<= 0 K) (forall (t) (-> (in t (closed_interval a b)) (<= (fn_value u t) (+ c (* K (interval_integral a t (lambda (s) (fn_value u s))))))))) (forall (t) (-> (in t (closed_interval a b)) (<= (fn_value u t) (* c (exp (* K (- t a)))))))))
+  hard_negative:
+    statement: K<0でも、u(t)≤c+K∫_a^t u(s)dsならばu(t)≤ce^{K(t-a)}である。
+    reason: K=-1, a=0, b=3/5, c=0, u(t)=2t-1が反例である。[0,3/5]上でu(t)≤t-t²=-∫_0^t uが成り立つが、u(3/5)=1/5>0である。
+  target: |
+    ∀ (u : ℝ → ℝ) (c K a b : ℝ), ContinuousOn u (Set.Icc a b) → 0 ≤ K → (∀ t ∈ Set.Icc a b, u t ≤ c + K * ∫ s in a..t, u s) → ∀ t ∈ Set.Icc a b, u t ≤ c * Real.exp (K * (t - a))
+  proof: |
+    by
+      intro u c K a b hu hK h t ht
+      have hab : a ≤ b := ht.1.trans ht.2
+      obtain ⟨w, hw, hwu⟩ : ∃ w : ℝ → ℝ, Continuous w ∧ ∀ s ∈ Set.Icc a b, w s = u s :=
+        ⟨Set.IccExtend hab ((Set.Icc a b).restrict u),
+          (continuousOn_iff_continuous_restrict.1 hu).Icc_extend',
+          fun s hs => Set.IccExtend_of_mem hab _ hs⟩
+      have hint : ∀ s ∈ Set.Icc a b, (∫ r in a..s, u r) = ∫ r in a..s, w r := by
+        intro s hs
+        refine intervalIntegral.integral_congr (fun r hr => ?_)
+        rw [Set.uIcc_of_le hs.1] at hr
+        exact (hwu r ⟨hr.1, hr.2.trans hs.2⟩).symm
+      have hW : ∀ s, HasDerivAt (fun s => ∫ r in a..s, w r) (w s) s :=
+        fun s => (hw.integral_hasStrictDerivAt a s).hasDerivAt
+      have hd : ∀ s, HasDerivAt
+          (fun s => (c + K * ∫ r in a..s, w r) * Real.exp (-(K * (s - a))))
+          ((K * w s - K * (c + K * ∫ r in a..s, w r)) * Real.exp (-(K * (s - a)))) s := by
+        intro s
+        have h1 : HasDerivAt (fun s : ℝ => -(K * (s - a))) (-(K * 1)) s :=
+          (((hasDerivAt_id s).sub_const a).const_mul K).neg
+        have h2 : HasDerivAt
+            (fun s => (c + K * ∫ r in a..s, w r) * Real.exp (-(K * (s - a))))
+            ((K * w s) * Real.exp (-(K * (s - a))) +
+              (c + K * ∫ r in a..s, w r) * (Real.exp (-(K * (s - a))) * (-(K * 1)))) s :=
+          (((hW s).const_mul K).const_add c).mul h1.exp
+        exact h2.congr_deriv (by ring)
+      have hanti : AntitoneOn
+          (fun s => (c + K * ∫ r in a..s, w r) * Real.exp (-(K * (s - a)))) (Set.Icc a b) := by
+        refine antitoneOn_of_hasDerivWithinAt_nonpos
+          (f' := fun s => (K * w s - K * (c + K * ∫ r in a..s, w r)) * Real.exp (-(K * (s - a))))
+          (convex_Icc a b) (fun s _ => (hd s).continuousAt.continuousWithinAt)
+          (fun s _ => (hd s).hasDerivWithinAt) ?_
+        intro s hs
+        rw [interior_Icc] at hs
+        have hs' : s ∈ Set.Icc a b := ⟨hs.1.le, hs.2.le⟩
+        have h3 := h s hs'
+        rw [hint s hs', ← hwu s hs'] at h3
+        refine mul_nonpos_of_nonpos_of_nonneg ?_ (Real.exp_pos _).le
+        have h4 := mul_le_mul_of_nonneg_left h3 hK
+        linarith
+      have h4 : (c + K * ∫ r in a..t, w r) * Real.exp (-(K * (t - a))) ≤
+          (c + K * ∫ r in a..a, w r) * Real.exp (-(K * (a - a))) :=
+        hanti (Set.left_mem_Icc.2 hab) ht ht.1
+      simp only [intervalIntegral.integral_same, mul_zero, add_zero, sub_self, neg_zero,
+        Real.exp_zero, mul_one] at h4
+      have h5 := h t ht
+      rw [hint t ht] at h5
+      have hone : Real.exp (-(K * (t - a))) * Real.exp (K * (t - a)) = 1 := by
+        rw [← Real.exp_add]; simp
+      calc u t ≤ c + K * ∫ r in a..t, w r := h5
+        _ = (c + K * ∫ r in a..t, w r) * Real.exp (-(K * (t - a))) * Real.exp (K * (t - a)) := by
+          rw [mul_assoc, hone, mul_one]
+        _ ≤ c * Real.exp (K * (t - a)) := mul_le_mul_of_nonneg_right h4 (Real.exp_pos _).le
+- id: gronwall_norm_bound
+  kind: textbook
+  level: 3
+  topic: 常微分方程式・微分形のグロンウォール評価
+  statement: ノルム空間値関数fが[a,b]で連続、[a,b)で右微分を持ち、‖f(a)‖≤δ、‖f'‖≤K‖f‖+ε、K≠0ならば、‖f(x)‖≤δe^{K(x-a)}+(ε/K)(e^{K(x-a)}-1)である。
+  statement_en: "If f is a normed-space-valued function continuous on [a,b] with right derivative f' on [a,b), ‖f(a)‖ ≤ δ, ‖f'‖ ≤ K‖f‖ + ε on [a,b) and K ≠ 0, then ‖f(x)‖ ≤ δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) on [a,b]."
+  assumptions:
+    - "Eは実ノルム空間"
+    - "K≠0"
+    - "fは[a,b]で連続"
+    - "[a,b)の各点でfは右微分f'を持つ"
+    - "‖f(a)‖≤δ"
+    - "[a,b)上で‖f'‖≤K‖f‖+ε"
+  quantifiers:
+    - "任意のE, f, f'と実数δ, K, ε, a, b"
+    - "[a,b]内の任意のx"
+  conclusion: ‖f(x)‖≤δe^{K(x-a)}+(ε/K)(e^{K(x-a)}-1)が成り立つ。
+  answer: |
+    これは概略である。関数‖f‖の右上微分は‖f'‖以下なので、仮定から‖f‖の右上微分はK‖f‖+ε以下である。右辺の関数φ(x)はφ'=Kφ+ε、φ(a)=δを満たす。εをわずかに大きくしたφと‖f‖を比較すると、‖f‖が初めてφを超える点で傾きの大小が矛盾する。最後に増やした分を0に近づければ主張を得る。
+  strategy: Compare the norm with the exact solution of φ' = Kφ + ε, φ(a) = δ, using a slope comparison on the right.
+  sketch:
+    - "translate: The upper right slope of ‖f‖ is at most ‖f'‖, hence at most K‖f‖ + ε."
+    - "construct: The bound φ(x) = δ e^{K(x-a)} + (ε/K)(e^{K(x-a)} - 1) satisfies φ' = Kφ + ε and φ(a) = δ."
+    - "contradiction: With ε slightly increased, ‖f‖ cannot cross φ, since at a first crossing the slopes would contradict."
+    - "conclude: Letting the increase tend to 0 gives the bound for ε."
+  openmath: (forall (E f f1 d K e a b) (-> (and (normed_space_real E) (!= K 0) (continuous_on_set f (closed_interval a b)) (forall (x) (-> (in x (half_open_interval a b)) (and (has_right_deriv_at f (fn_value f1 x) x) (<= (norm (fn_value f1 x)) (+ (* K (norm (fn_value f x))) e))))) (<= (norm (fn_value f a)) d)) (forall (x) (-> (in x (closed_interval a b)) (<= (norm (fn_value f x)) (+ (* d (exp (* K (- x a)))) (* (/ e K) (- (exp (* K (- x a))) 1))))))))
+  hard_negative:
+    statement: 同じ仮定のもとで‖f(x)‖≤δe^{K(x-a)}が成り立つ。
+    reason: ε>0の項を落としている。f(x)=εx, a=0, δ=0, K=1では右辺が0になるが、x>0で‖f(x)‖>0である。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f f' : ℝ → E) (δ K ε a b : ℝ), K ≠ 0 → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ico a b, HasDerivWithinAt f (f' x) (Set.Ici x) x) → ‖f a‖ ≤ δ → (∀ x ∈ Set.Ico a b, ‖f' x‖ ≤ K * ‖f x‖ + ε) → ∀ x ∈ Set.Icc a b, ‖f x‖ ≤ δ * Real.exp (K * (x - a)) + ε / K * (Real.exp (K * (x - a)) - 1)
+  proof: |
+    by
+      intro E _ _ f f' δ K ε a b hK hf hd ha hb x hx
+      have h := norm_le_gronwallBound_of_norm_deriv_right_le hf hd ha hb x hx
+      rw [gronwallBound_of_K_ne_0 hK] at h
+      exact h
+- id: ode_uniqueness_lipschitz
+  kind: textbook
+  level: 3
+  topic: 常微分方程式・解の一意性
+  statement: ベクトル場v(t,·)が定数Kで大域リプシッツならば、x'=v(t,x)の[a,b]上の解で初期値f(a)=g(a)が等しいものはfとgで一致する。
+  statement_en: "If each v(t, ·) is globally Lipschitz with a common constant K, two solutions f, g of x' = v(t, x) on [a,b] with f(a) = g(a) coincide on [a,b]."
+  assumptions:
+    - "Eは実ノルム空間"
+    - "全てのtでv(t,·)はリプシッツ定数Kを持つ"
+    - "f, gは[a,b]で連続で、[a,b)で右微分がv(t,f), v(t,g)に等しい"
+    - "f(a)=g(a)"
+  quantifiers:
+    - "任意のE, v, K, f, g, a, b"
+    - "[a,b]内の任意のt"
+  conclusion: f(t)=g(t)が成り立つ。
+  answer: |
+    h=f-gと置くと、[a,b)で右微分h'=v(t,f)-v(t,g)を持ち、リプシッツ条件から‖h'‖≤K‖h‖である。h(a)=0なので、微分形のグロンウォール評価を初期値δ=0, ε=0で適用できる。その結果‖h(t)‖≤0·e^{K(t-a)}=0となり、f=gを得る。
+  strategy: Apply the Grönwall estimate to the difference of the two solutions with zero initial value.
+  sketch:
+    - "setup: Put h = f - g, so h(a) = 0."
+    - "derive: The Lipschitz condition gives ‖h'(t)‖ ≤ K‖h(t)‖ on [a,b)."
+    - "apply_theorem: Grönwall's estimate with δ = 0 and ε = 0 gives ‖h(t)‖ ≤ 0."
+    - "conclude: Hence f = g on [a,b]."
+  openmath: (forall (E v K f g a b) (-> (and (normed_space_real E) (forall (t) (lipschitz_map (fn_value v t) K)) (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval a b)) (forall (t) (-> (in t (half_open_interval a b)) (and (has_right_deriv_at f (fn_value (fn_value v t) (fn_value f t)) t) (has_right_deriv_at g (fn_value (fn_value v t) (fn_value g t)) t)))) (= (fn_value f a) (fn_value g a))) (forall (t) (-> (in t (closed_interval a b)) (= (fn_value f t) (fn_value g t))))))
+  hard_negative:
+    statement: vが連続でさえあれば、x'=v(t,x)の解は初期値から一意に決まる。
+    reason: 連続だけでは足りない。x'=2√|x|, x(0)=0にはx≡0とx=t|t|の2つの解がある。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (v : ℝ → E → E) (K : NNReal) (f g : ℝ → E) (a b : ℝ), (∀ t, LipschitzWith K (v t)) → ContinuousOn f (Set.Icc a b) → (∀ t ∈ Set.Ico a b, HasDerivWithinAt f (v t (f t)) (Set.Ici t) t) → ContinuousOn g (Set.Icc a b) → (∀ t ∈ Set.Ico a b, HasDerivWithinAt g (v t (g t)) (Set.Ici t) t) → f a = g a → ∀ t ∈ Set.Icc a b, f t = g t
+  proof: |
+    by
+      intro E _ _ v K f g a b hv hf hf' hg hg' ha t ht
+      exact ODE_solution_unique hv hf hf' hg hg' ha ht
+- id: ode_continuous_dependence
+  kind: textbook
+  level: 3
+  topic: 常微分方程式・初期値への連続依存性
+  statement: ベクトル場v(t,·)が定数Kで大域リプシッツならば、x'=v(t,x)の[a,b]上の2つの解の距離はdist(f(t),g(t))≤dist(f(a),g(a))e^{K(t-a)}を満たす。
+  statement_en: "If each v(t, ·) is globally Lipschitz with constant K, any two solutions f, g of x' = v(t, x) on [a,b] satisfy dist(f(t), g(t)) ≤ dist(f(a), g(a)) e^{K(t-a)}."
+  assumptions:
+    - "Eは実ノルム空間"
+    - "全てのtでv(t,·)はリプシッツ定数Kを持つ"
+    - "f, gは[a,b]で連続で、[a,b)で右微分がv(t,f), v(t,g)に等しい"
+  quantifiers:
+    - "任意のE, v, K, f, g, a, b"
+    - "[a,b]内の任意のt"
+  conclusion: dist(f(t),g(t))≤dist(f(a),g(a))e^{K(t-a)}が成り立つ。
+  answer: |
+    h=f-gと置くと、リプシッツ条件から‖h'(t)‖=‖v(t,f)-v(t,g)‖≤K‖h(t)‖である。微分形のグロンウォール評価をδ=‖h(a)‖, ε=0で適用すると、‖h(t)‖≤‖h(a)‖e^{K(t-a)}となる。ノルム空間では距離は差のノルムなので、これが主張である。
+  strategy: Apply Grönwall's estimate to the difference of the two solutions with ε = 0.
+  sketch:
+    - "setup: Put h = f - g and δ = ‖h(a)‖."
+    - "derive: The Lipschitz condition gives ‖h'(t)‖ ≤ K‖h(t)‖."
+    - "apply_theorem: Grönwall's estimate with ε = 0 gives ‖h(t)‖ ≤ δ e^{K(t-a)}."
+    - "conclude: Rewrite the norms as distances."
+  openmath: (forall (E v K f g a b) (-> (and (normed_space_real E) (forall (t) (lipschitz_map (fn_value v t) K)) (continuous_on_set f (closed_interval a b)) (continuous_on_set g (closed_interval a b)) (forall (t) (-> (in t (half_open_interval a b)) (and (has_right_deriv_at f (fn_value (fn_value v t) (fn_value f t)) t) (has_right_deriv_at g (fn_value (fn_value v t) (fn_value g t)) t))))) (forall (t) (-> (in t (closed_interval a b)) (<= (dist_of (fn_value f t) (fn_value g t)) (* (dist_of (fn_value f a) (fn_value g a)) (exp (* K (- t a)))))))))
+  hard_negative:
+    statement: 同じ仮定のもとで、解の距離は時間とともに増えない。すなわちdist(f(t),g(t))≤dist(f(a),g(a))である。
+    reason: 指数因子は省けない。x'=xの解e^{t}と2e^{t}の距離はe^{t}で増大する。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (v : ℝ → E → E) (K : NNReal) (f g : ℝ → E) (a b : ℝ), (∀ t, LipschitzWith K (v t)) → ContinuousOn f (Set.Icc a b) → (∀ t ∈ Set.Ico a b, HasDerivWithinAt f (v t (f t)) (Set.Ici t) t) → ContinuousOn g (Set.Icc a b) → (∀ t ∈ Set.Ico a b, HasDerivWithinAt g (v t (g t)) (Set.Ici t) t) → ∀ t ∈ Set.Icc a b, dist (f t) (g t) ≤ dist (f a) (g a) * Real.exp (K * (t - a))
+  proof: |
+    by
+      intro E _ _ v K f g a b hv hf hf' hg hg' t ht
+      exact dist_le_of_trajectories_ODE hv hf hf' hg hg' le_rfl t ht
+- id: picard_lindelof_existence
+  kind: named
+  level: 3
+  topic: 常微分方程式・ピカール＝リンデレーフの定理
+  statement: （ピカール＝リンデレーフの定理）fが閉球上xについてリプシッツ、tについて連続で、ノルムがL以下、L·max(tmax-t₀,t₀-tmin)≤aならば、x'=f(t,x), x(t₀)=x₀の解が[tmin,tmax]上に存在する。
+  statement_en: "(Picard–Lindelöf) Let E be a real Banach space, t₀ ∈ [tmin, tmax], and suppose that on the closed ball B(x₀, a) the field f(t, x) is K-Lipschitz in x, continuous in t and bounded in norm by L, with L·max(tmax - t₀, t₀ - tmin) ≤ a. Then x' = f(t, x), x(t₀) = x₀ has a solution on [tmin, tmax]."
+  assumptions:
+    - "Eは実バナッハ空間"
+    - "t₀∈[tmin,tmax]"
+    - "閉球B(x₀,a)上でf(t,·)はリプシッツ定数Kを持つ"
+    - "閉球上の各xでf(·,x)は[tmin,tmax]で連続"
+    - "‖f(t,x)‖≤L"
+    - "L·max(tmax-t₀,t₀-tmin)≤a"
+  quantifiers:
+    - "任意のE, f, tmin, tmax, t₀, x₀, 非負実数a, L, K"
+  conclusion: α(t₀)=x₀かつ[tmin,tmax]上α'=f(t,α)となる関数αが存在する。
+  answer: |
+    これは概略である。微分方程式を積分方程式α(t)=x₀+∫_{t₀}^t f(s,α(s))dsに書き換え、右辺を与える写像Φを連続関数の空間に定める。ノルムの上界Lと時間幅の条件により、Φは閉球に値を持つ関数の集合を保つ。リプシッツ条件を繰り返し用いると、Φの反復は十分大きい回数で縮小写像になる。バナッハの不動点定理で得た不動点を微分すれば解となる。
+  strategy: Rewrite the initial value problem as a fixed-point equation for the Picard operator and use a contraction argument for an iterate.
+  sketch:
+    - "translate: A solution is the same as a fixed point of Φ(α)(t) = x₀ + ∫_{t₀}^t f(s, α(s)) ds."
+    - "setup: Let X be the complete space of continuous curves with values in the closed ball B(x₀, a)."
+    - "derive: The bound L and the time-width condition show that Φ maps X into X."
+    - "derive: The Lipschitz condition gives ‖Φ^n α - Φ^n β‖ ≤ (K T)^n / n! ‖α - β‖, so an iterate is a contraction."
+    - "apply_theorem: Banach's fixed point theorem gives a fixed point of Φ."
+    - "conclude: Differentiating the integral equation gives the solution."
+  openmath: (forall (E f tmin tmax t0 x0 a L K) (-> (and (banach_space_real E) (in t0 (closed_interval tmin tmax)) (forall (t) (-> (in t (closed_interval tmin tmax)) (lipschitz_on_with (fn_value f t) K (closed_ball x0 a)))) (forall (x) (-> (in x (closed_ball x0 a)) (continuous_on_set_fn (lambda (t) (fn_value (fn_value f t) x)) (closed_interval tmin tmax)))) (forall (t x) (-> (and (in t (closed_interval tmin tmax)) (in x (closed_ball x0 a))) (<= (norm (fn_value (fn_value f t) x)) L))) (<= (* L (max_of (- tmax t0) (- t0 tmin))) a)) (exists (y) (and (= (fn_value y t0) x0) (forall (t) (-> (in t (closed_interval tmin tmax)) (has_deriv_within_at y (fn_value (fn_value f t) (fn_value y t)) (closed_interval tmin tmax) t)))))))
+  hard_negative:
+    statement: fがリプシッツで有界なら、閉球と時間幅の関係によらず、与えた任意の時間区間で解が閉球内に存在する。
+    reason: 時間幅の条件がないと解は閉球を出てしまう。f≡L>0でa=1とすれば、解x₀+Ltは時間1/Lの後に閉球の外に出て、閉球上の仮定が使えない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E] (f : ℝ → E → E) (tmin tmax t₀ : ℝ) (x₀ : E) (a L K : NNReal), t₀ ∈ Set.Icc tmin tmax → (∀ t ∈ Set.Icc tmin tmax, LipschitzOnWith K (f t) (Metric.closedBall x₀ a)) → (∀ x ∈ Metric.closedBall x₀ a, ContinuousOn (fun t => f t x) (Set.Icc tmin tmax)) → (∀ t ∈ Set.Icc tmin tmax, ∀ x ∈ Metric.closedBall x₀ a, ‖f t x‖ ≤ L) → (L : ℝ) * max (tmax - t₀) (t₀ - tmin) ≤ a → ∃ α : ℝ → E, α t₀ = x₀ ∧ ∀ t ∈ Set.Icc tmin tmax, HasDerivWithinAt α (f t (α t)) (Set.Icc tmin tmax) t
+  proof: |
+    by
+      intro E _ _ _ f tmin tmax t₀ x₀ a L K ht₀ hl hc hb hm
+      have hP : IsPicardLindelof f (tmin := tmin) (tmax := tmax) ⟨t₀, ht₀⟩ x₀ a 0 L K :=
+        ⟨hl, hc, hb, by simpa using hm⟩
+      exact hP.exists_eq_forall_mem_Icc_hasDerivWithinAt₀
+- id: non_uniqueness_without_lipschitz
+  kind: gap
+  level: 3
+  topic: 常微分方程式・一意性の反例
+  statement: 方程式y'=2√|y|, y(0)=0には全実数上で異なる2つの解がある。実際にy≡0とy(t)=t|t|がともに解である。
+  statement_en: "The initial value problem y' = 2√|y|, y(0) = 0 has two different solutions on ℝ, for instance y ≡ 0 and y(t) = t|t|."
+  assumptions:
+    - "仮定なし（存在の主張）"
+  quantifiers:
+    - "ある2つの関数y₁, y₂"
+  conclusion: y₁(0)=y₂(0)=0かつy₁≠y₂で、どちらも全実数上でy'=2√|y|を満たす。
+  answer: |
+    y₁≡0は明らかに解である。y₂(t)=t|t|はt≥0でt²、t≤0で-t²に等しく、片側微分はどちらもt=0で0なので全実数上で微分可能であり、y₂'(t)=2|t|である。一方√|y₂(t)|=√(t²)=|t|なので、y₂'=2√|y₂|が成り立つ。y₂(1)=1≠0より2つの解は異なる。
+  strategy: Exhibit the zero function and t|t| and verify the equation for t|t| separately for t < 0, t = 0, t > 0.
+  sketch:
+    - "construct: Take y₁ ≡ 0 and y₂(t) = t|t|."
+    - "case_split: For t > 0 y₂ agrees with t² near t, for t < 0 with -t² near t."
+    - "derive: At t = 0 both one-sided derivatives vanish, so y₂'(t) = 2|t| everywhere."
+    - "derive: Since √|t|t|| = |t|, the equation y₂' = 2√|y₂| holds."
+    - "conclude: y₂(1) = 1 ≠ 0 = y₁(1), so uniqueness fails."
+  openmath: (exists (y1 y2) (and (= (fn_value y1 0) 0) (= (fn_value y2 0) 0) (exists (s) (!= (fn_value y1 s) (fn_value y2 s))) (forall (t) (has_deriv_at (lambda (r0) (fn_value y1 r0)) (* 2 (root (abs (fn_value y1 t)) 2)) t)) (forall (t) (has_deriv_at (lambda (r0) (fn_value y2 r0)) (* 2 (root (abs (fn_value y2 t)) 2)) t))))
+  hard_negative:
+    statement: y'=2√|y|, y(1)=1の解も初期値から全実数上で一意に決まる。
+    reason: y=t|t|とy=(max(t,0))²はどちらもy(1)=1を満たす解であり、t<0で値が異なる。
+  target: |
+    ∃ y₁ y₂ : ℝ → ℝ, y₁ 0 = 0 ∧ y₂ 0 = 0 ∧ y₁ ≠ y₂ ∧ (∀ t, HasDerivAt y₁ (2 * Real.sqrt |y₁ t|) t) ∧ (∀ t, HasDerivAt y₂ (2 * Real.sqrt |y₂ t|) t)
+  proof: |
+    by
+      have hd : ∀ t : ℝ, HasDerivAt (fun s : ℝ => s * |s|) (2 * |t|) t := by
+        intro t
+        have hsq : HasDerivAt (fun s : ℝ => s * s) (1 * t + t * 1) t :=
+          (hasDerivAt_id' t).mul (hasDerivAt_id' t)
+        have hneg : HasDerivAt (fun s : ℝ => -(s * s)) (-(1 * t + t * 1)) t := hsq.neg
+        rcases lt_trichotomy t 0 with ht | ht | ht
+        · have h2 : (fun s : ℝ => s * |s|) =ᶠ[nhds t] fun s => -(s * s) := by
+            filter_upwards [Iio_mem_nhds ht] with s hs
+            rw [abs_of_neg hs]; ring
+          rw [abs_of_neg ht]
+          exact (hneg.congr_of_eventuallyEq h2).congr_deriv (by ring)
+        · subst ht
+          have hl : HasDerivWithinAt (fun s : ℝ => s * |s|) (2 * |(0 : ℝ)|) (Set.Iic 0) 0 := by
+            refine (hneg.hasDerivWithinAt.congr (fun s hs => ?_) (by simp)).congr_deriv (by simp)
+            rw [abs_of_nonpos hs]; ring
+          have hr : HasDerivWithinAt (fun s : ℝ => s * |s|) (2 * |(0 : ℝ)|) (Set.Ici 0) 0 := by
+            refine (hsq.hasDerivWithinAt.congr (fun s hs => ?_) (by simp)).congr_deriv (by simp)
+            rw [abs_of_nonneg hs]
+          have h := hl.union hr
+          rw [Set.Iic_union_Ici, hasDerivWithinAt_univ] at h
+          exact h
+        · have h2 : (fun s : ℝ => s * |s|) =ᶠ[nhds t] fun s => s * s := by
+            filter_upwards [Ioi_mem_nhds ht] with s hs
+            rw [abs_of_pos hs]
+          rw [abs_of_pos ht]
+          exact (hsq.congr_of_eventuallyEq h2).congr_deriv (by ring)
+      refine ⟨fun _ => 0, fun s => s * |s|, rfl, by simp, ?_, ?_, ?_⟩
+      · intro h
+        have := congrFun h 1
+        simp at this
+      · intro t
+        simpa using hasDerivAt_const t (0 : ℝ)
+      · intro t
+        have hs : Real.sqrt (abs (t * abs t)) = abs t := by
+          rw [abs_mul, abs_abs, Real.sqrt_mul_self (abs_nonneg t)]
+        show HasDerivAt (fun s : ℝ => s * |s|) (2 * Real.sqrt (abs (t * abs t))) t
+        rw [hs]
+        exact hd t
+- id: characteristic_root_exponential_solution
+  kind: gap
+  level: 2
+  topic: 常微分方程式・定数係数2階線形
+  statement: rがr²+ar+b=0の根ならば、y(t)=e^{rt}はy''+ay'+by=0の解である。
+  statement_en: "If r is a root of r² + a r + b = 0, then y(t) = e^{rt} satisfies y'' + a y' + b y = 0, with y' = r e^{rt}."
+  assumptions:
+    - "r²+ar+b=0"
+  quantifiers:
+    - "任意の実数a, b, r, t"
+  conclusion: e^{rs}の点tでの微分係数はre^{rt}であり、re^{rs}の点tでの微分係数は-a·re^{rt}-b·e^{rt}である。
+  answer: |
+    合成関数の微分によりy'=re^{rt}, y''=r²e^{rt}である。r²=-ar-bを代入すると、y''=-a·re^{rt}-b·e^{rt}=-ay'-byとなる。よってy''+ay'+by=0が成り立つ。
+  strategy: Differentiate the exponential twice and substitute the characteristic equation.
+  sketch:
+    - "derive: The chain rule gives y' = r e^{rt} and y'' = r² e^{rt}."
+    - "translate: The characteristic equation says r² = -a r - b."
+    - "conclude: Substituting gives y'' = -a y' - b y."
+  openmath: (forall (a b r t) (-> (= (+ (+ (^ r 2) (* a r)) b) 0) (and (has_deriv_at (lambda (s) (exp (* r s))) (* r (exp (* r t))) t) (has_deriv_at (lambda (s) (* r (exp (* r s)))) (- (neg (* a (* r (exp (* r t))))) (* b (exp (* r t)))) t))))
+  hard_negative:
+    statement: 任意の実数rについてe^{rt}はy''+ay'+by=0の解である。
+    reason: rが特性方程式の根でなければ成り立たない。a=0, b=1, r=0ではy≡1であり、y''+y=1≠0である。
+  target: |
+    ∀ (a b r t : ℝ), r ^ 2 + a * r + b = 0 → HasDerivAt (fun s => Real.exp (r * s)) (r * Real.exp (r * t)) t ∧ HasDerivAt (fun s => r * Real.exp (r * s)) (-(a * (r * Real.exp (r * t))) - b * Real.exp (r * t)) t
+  proof: |
+    by
+      intro a b r t hr
+      have he : HasDerivAt (fun s => Real.exp (r * s)) (Real.exp (r * t) * (r * 1)) t :=
+        ((hasDerivAt_id t).const_mul r).exp
+      refine ⟨he.congr_deriv (by ring), (he.const_mul r).congr_deriv ?_⟩
+      linear_combination Real.exp (r * t) * hr
+- id: double_root_solution
+  kind: gap
+  level: 2
+  topic: 常微分方程式・定数係数2階線形
+  statement: y(t)=te^{rt}は重根rを持つ方程式y''-2ry'+r²y=0の解である。
+  statement_en: "The function y(t) = t e^{rt} solves y'' - 2 r y' + r² y = 0, the equation with double characteristic root r, with y' = (1 + r t) e^{rt}."
+  assumptions:
+    - "rは実数"
+  quantifiers:
+    - "任意の実数r, t"
+  conclusion: te^{rt}の導関数は(1+rt)e^{rt}であり、その導関数は2r(1+rt)e^{rt}-r²te^{rt}に等しい。
+  answer: |
+    積の微分によりy'=e^{rt}+rte^{rt}=(1+rt)e^{rt}である。もう一度微分するとy''=re^{rt}+(1+rt)re^{rt}=(2r+r²t)e^{rt}となる。一方、2ry'-r²y=(2r+2r²t-r²t)e^{rt}=(2r+r²t)e^{rt}なので、y''-2ry'+r²y=0が成り立つ。
+  strategy: Differentiate t e^{rt} twice with the product rule and compare the coefficients.
+  sketch:
+    - "derive: The product rule gives y' = (1 + r t) e^{rt}."
+    - "derive: A second application gives y'' = (2 r + r² t) e^{rt}."
+    - "conclude: This equals 2 r y' - r² y."
+  openmath: (forall (r t) (and (has_deriv_at (lambda (s) (* s (exp (* r s)))) (* (+ 1 (* r t)) (exp (* r t))) t) (has_deriv_at (lambda (s) (* (+ 1 (* r s)) (exp (* r s)))) (- (* (* 2 r) (* (+ 1 (* r t)) (exp (* r t)))) (* (^ r 2) (* t (exp (* r t))))) t)))
+  hard_negative:
+    statement: t²e^{rt}もy''-2ry'+r²y=0の解である。
+    reason: t²e^{rt}を左辺に代入すると2e^{rt}が残り、0にならない。
+  target: |
+    ∀ (r t : ℝ), HasDerivAt (fun s => s * Real.exp (r * s)) ((1 + r * t) * Real.exp (r * t)) t ∧ HasDerivAt (fun s => (1 + r * s) * Real.exp (r * s)) (2 * r * ((1 + r * t) * Real.exp (r * t)) - r ^ 2 * (t * Real.exp (r * t))) t
+  proof: |
+    by
+      intro r t
+      have hr : HasDerivAt (fun s : ℝ => r * s) (r * 1) t := (hasDerivAt_id t).const_mul r
+      have he : HasDerivAt (fun s => Real.exp (r * s)) (Real.exp (r * t) * (r * 1)) t := hr.exp
+      have h1 : HasDerivAt (fun s => s * Real.exp (r * s))
+          (1 * Real.exp (r * t) + t * (Real.exp (r * t) * (r * 1))) t :=
+        (hasDerivAt_id' t).mul he
+      have h2 : HasDerivAt (fun s => (1 + r * s) * Real.exp (r * s))
+          ((r * 1) * Real.exp (r * t) + (1 + r * t) * (Real.exp (r * t) * (r * 1))) t :=
+        (hr.const_add 1).mul he
+      exact ⟨h1.congr_deriv (by ring), h2.congr_deriv (by ring)⟩
+- id: complex_root_solution
+  kind: gap
+  level: 2
+  topic: 常微分方程式・定数係数2階線形
+  statement: y(t)=e^{αt}(A cos βt+B sin βt)は、特性根α±iβを持つ方程式y''-2αy'+(α²+β²)y=0の解である。
+  statement_en: "The function y(t) = e^{αt} (A cos βt + B sin βt) solves y'' - 2α y' + (α² + β²) y = 0, the equation with characteristic roots α ± iβ, with y' = e^{αt} ((αA + βB) cos βt + (αB - βA) sin βt)."
+  assumptions:
+    - "α, β, A, Bは実数"
+  quantifiers:
+    - "任意の実数α, β, A, B, t"
+  conclusion: yの導関数はe^{αt}((αA+βB)cos βt+(αB-βA)sin βt)であり、その導関数は2αy'-(α²+β²)yに等しい。
+  answer: |
+    積の微分によりy'=e^{αt}((αA+βB)cos βt+(αB-βA)sin βt)である。y'は同じ形でAをC=αA+βBに、BをD=αB-βAに置き換えたものである。したがってy''=e^{αt}((αC+βD)cos βt+(αD-βC)sin βt)となる。これを展開して係数を比較すると、y''=2αy'-(α²+β²)yが成り立つ。
+  strategy: Note that differentiation maps the family e^{αt}(C cos βt + D sin βt) into itself, then compare coefficients.
+  sketch:
+    - "derive: For any C, D the derivative of e^{αt}(C cos βt + D sin βt) has coefficients (αC + βD, αD - βC)."
+    - "derive: Applying this to (A, B) gives y'."
+    - "derive: Applying it again gives y''."
+    - "conclude: Comparing coefficients of cos βt and sin βt gives y'' = 2α y' - (α² + β²) y."
+  openmath: (forall (al be A B t) (and (has_deriv_at (lambda (s) (* (exp (* al s)) (+ (* A (cos (* be s))) (* B (sin (* be s)))))) (* (exp (* al t)) (+ (* (+ (* al A) (* be B)) (cos (* be t))) (* (- (* al B) (* be A)) (sin (* be t))))) t) (has_deriv_at (lambda (s) (* (exp (* al s)) (+ (* (+ (* al A) (* be B)) (cos (* be s))) (* (- (* al B) (* be A)) (sin (* be s)))))) (- (* (* 2 al) (* (exp (* al t)) (+ (* (+ (* al A) (* be B)) (cos (* be t))) (* (- (* al B) (* be A)) (sin (* be t)))))) (* (+ (^ al 2) (^ be 2)) (* (exp (* al t)) (+ (* A (cos (* be t))) (* B (sin (* be t))))))) t)))
+  hard_negative:
+    statement: e^{αt}cos βtはy''-2αy'+(α²-β²)y=0の解である。
+    reason: 正しい係数はα²+β²である。β≠0のとき、左辺に代入すると-2β²e^{αt}cos βtが残る。
+  target: |
+    ∀ (α β A B t : ℝ), HasDerivAt (fun s => Real.exp (α * s) * (A * Real.cos (β * s) + B * Real.sin (β * s))) (Real.exp (α * t) * ((α * A + β * B) * Real.cos (β * t) + (α * B - β * A) * Real.sin (β * t))) t ∧ HasDerivAt (fun s => Real.exp (α * s) * ((α * A + β * B) * Real.cos (β * s) + (α * B - β * A) * Real.sin (β * s))) (2 * α * (Real.exp (α * t) * ((α * A + β * B) * Real.cos (β * t) + (α * B - β * A) * Real.sin (β * t))) - (α ^ 2 + β ^ 2) * (Real.exp (α * t) * (A * Real.cos (β * t) + B * Real.sin (β * t)))) t
+  proof: |
+    by
+      intro α β A B t
+      have hα : HasDerivAt (fun s : ℝ => α * s) (α * 1) t := (hasDerivAt_id t).const_mul α
+      have hβ : HasDerivAt (fun s : ℝ => β * s) (β * 1) t := (hasDerivAt_id t).const_mul β
+      have key : ∀ C D : ℝ, HasDerivAt
+          (fun s => Real.exp (α * s) * (C * Real.cos (β * s) + D * Real.sin (β * s)))
+          (Real.exp (α * t) * (α * 1) * (C * Real.cos (β * t) + D * Real.sin (β * t)) +
+            Real.exp (α * t) * (C * (-Real.sin (β * t) * (β * 1)) +
+              D * (Real.cos (β * t) * (β * 1)))) t := fun C D =>
+        hα.exp.mul ((hβ.cos.const_mul C).add (hβ.sin.const_mul D))
+      exact ⟨(key A B).congr_deriv (by ring),
+        (key (α * A + β * B) (α * B - β * A)).congr_deriv (by ring)⟩
+- id: superposition_inhomogeneous
+  kind: gap
+  level: 2
+  topic: 常微分方程式・重ね合わせの原理
+  statement: y₁がy''+py'+qy=f₁の解、y₂がy''+py'+qy=f₂の解のとき、c₁y₁+c₂y₂はy''+py'+qy=c₁f₁+c₂f₂の解である。
+  statement_en: "If y₁ solves y'' + p y' + q y = f₁ and y₂ solves y'' + p y' + q y = f₂ at t, then c₁y₁ + c₂y₂ solves y'' + p y' + q y = c₁f₁ + c₂f₂ at t."
+  assumptions:
+    - "点tでy₁'=v₁, v₁'=f₁-pv₁-qy₁"
+    - "点tでy₂'=v₂, v₂'=f₂-pv₂-qy₂"
+  quantifiers:
+    - "任意の関数p, q, f₁, f₂, y₁, v₁, y₂, v₂"
+    - "任意の実数c₁, c₂, t"
+  conclusion: c₁y₁+c₂y₂の導関数はc₁v₁+c₂v₂であり、その導関数は(c₁f₁+c₂f₂)-p(c₁v₁+c₂v₂)-q(c₁y₁+c₂y₂)である。
+  answer: |
+    微分は線形なので、(c₁y₁+c₂y₂)'=c₁v₁+c₂v₂である。同様に(c₁v₁+c₂v₂)'=c₁(f₁-pv₁-qy₁)+c₂(f₂-pv₂-qy₂)となる。これを整理すると(c₁f₁+c₂f₂)-p(c₁v₁+c₂v₂)-q(c₁y₁+c₂y₂)が得られる。c₁=1, c₂=-1, f₁=f₂の場合から、同じ非斉次方程式の2解の差は斉次方程式の解である。
+  strategy: Use linearity of the derivative in both layers of the first-order form and collect terms.
+  sketch:
+    - "translate: Write the equation as the pair y' = v, v' = f - p v - q y."
+    - "apply_theorem: Linearity of the derivative gives (c₁y₁ + c₂y₂)' = c₁v₁ + c₂v₂."
+    - "derive: Linearity also gives the derivative of c₁v₁ + c₂v₂."
+    - "conclude: Collect terms to obtain the right-hand side c₁f₁ + c₂f₂."
+  openmath: (forall (p q f1 f2 y1 v1 y2 v2 c1 c2 t) (-> (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t) t) (has_deriv_at (lambda (s) (fn_value v1 s)) (- (- (fn_value f1 t) (* (fn_value p t) (fn_value v1 t))) (* (fn_value q t) (fn_value y1 t))) t) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t) t) (has_deriv_at (lambda (s) (fn_value v2 s)) (- (- (fn_value f2 t) (* (fn_value p t) (fn_value v2 t))) (* (fn_value q t) (fn_value y2 t))) t)) (and (has_deriv_at (lambda (s) (+ (* c1 (fn_value y1 s)) (* c2 (fn_value y2 s)))) (+ (* c1 (fn_value v1 t)) (* c2 (fn_value v2 t))) t) (has_deriv_at (lambda (s) (+ (* c1 (fn_value v1 s)) (* c2 (fn_value v2 s)))) (- (- (+ (* c1 (fn_value f1 t)) (* c2 (fn_value f2 t))) (* (fn_value p t) (+ (* c1 (fn_value v1 t)) (* c2 (fn_value v2 t))))) (* (fn_value q t) (+ (* c1 (fn_value y1 t)) (* c2 (fn_value y2 t))))) t))))
+  hard_negative:
+    statement: y₁, y₂がともにy''+py'+qy=fの解ならy₁+y₂も同じ方程式の解である。
+    reason: 和が満たすのは右辺が2fの方程式であり、f≠0のとき元の方程式は満たさない。
+  target: |
+    ∀ (p q f₁ f₂ y₁ v₁ y₂ v₂ : ℝ → ℝ) (c₁ c₂ t : ℝ), HasDerivAt y₁ (v₁ t) t → HasDerivAt v₁ (f₁ t - p t * v₁ t - q t * y₁ t) t → HasDerivAt y₂ (v₂ t) t → HasDerivAt v₂ (f₂ t - p t * v₂ t - q t * y₂ t) t → HasDerivAt (fun s => c₁ * y₁ s + c₂ * y₂ s) (c₁ * v₁ t + c₂ * v₂ t) t ∧ HasDerivAt (fun s => c₁ * v₁ s + c₂ * v₂ s) (c₁ * f₁ t + c₂ * f₂ t - p t * (c₁ * v₁ t + c₂ * v₂ t) - q t * (c₁ * y₁ t + c₂ * y₂ t)) t
+  proof: |
+    by
+      intro p q f₁ f₂ y₁ v₁ y₂ v₂ c₁ c₂ t h₁ h₁' h₂ h₂'
+      have h3 : HasDerivAt (fun s => c₁ * v₁ s + c₂ * v₂ s)
+          (c₁ * (f₁ t - p t * v₁ t - q t * y₁ t) + c₂ * (f₂ t - p t * v₂ t - q t * y₂ t)) t :=
+        (h₁'.const_mul c₁).add (h₂'.const_mul c₂)
+      exact ⟨(h₁.const_mul c₁).add (h₂.const_mul c₂), h3.congr_deriv (by ring)⟩
+- id: second_order_solution_space_subspace
+  kind: textbook
+  level: 2
+  topic: 常微分方程式・解空間の線形性
+  statement: 斉次方程式y''+p(t)y'+q(t)y=0の全実数上の解全体は、関数全体のなすベクトル空間の部分空間をなす。
+  statement_en: "The set of solutions on ℝ of the homogeneous equation y'' + p(t) y' + q(t) y = 0 is a linear subspace of the vector space of real functions."
+  assumptions:
+    - "p, qは実数上の実数値関数"
+  quantifiers:
+    - "任意の関数p, q"
+  conclusion: 部分空間Sが存在し、yがSに属することと、yが方程式の解であることは同値である。
+  answer: |
+    y≡0は導関数v≡0とともに方程式を満たす。y₁, y₂が解でv₁, v₂がその導関数なら、y₁+y₂の導関数はv₁+v₂であり、方程式が線形なのでy₁+y₂も解である。実数cについても、cyの導関数はcvで、同じ理由でcyは解である。よって解全体は零を含み、和とスカラー倍で閉じているので部分空間である。
+  strategy: Check the three subspace axioms directly in the first-order form y' = v, v' = -p v - q y.
+  sketch:
+    - "translate: Say y is a solution when some v satisfies y' = v and v' = -p v - q y on ℝ."
+    - "construct: Take the carrier of S to be this set of functions."
+    - "derive: The zero function is a solution with v = 0."
+    - "derive: Sums use v₁ + v₂ and scalar multiples use c v, by linearity of the derivative."
+    - "conclude: The solutions form a subspace."
+  openmath: (forall (p q) (exists (S) (and (subspace_of S real_function_space) (forall (y) (<-> (in y S) (exists (v) (forall (t) (and (has_deriv_at (lambda (s) (fn_value y s)) (fn_value v t) t) (has_deriv_at (lambda (s) (fn_value v s)) (- (neg (* (fn_value p t) (fn_value v t))) (* (fn_value q t) (fn_value y t))) t)))))))))
+  hard_negative:
+    statement: 非斉次方程式y''+py'+qy=fの解全体も部分空間をなす。
+    reason: f≠0ならy≡0は解でないので、解全体は零を含まず部分空間ではない。部分空間の平行移動になるだけである。
+  target: |
+    ∀ (p q : ℝ → ℝ), ∃ S : Submodule ℝ (ℝ → ℝ), ∀ y : ℝ → ℝ, y ∈ S ↔ ∃ v : ℝ → ℝ, ∀ t, HasDerivAt y (v t) t ∧ HasDerivAt v (-(p t * v t) - q t * y t) t
+  proof: |
+    by
+      intro p q
+      refine ⟨{ carrier := {y | ∃ v : ℝ → ℝ, ∀ t, HasDerivAt y (v t) t ∧
+                  HasDerivAt v (-(p t * v t) - q t * y t) t}
+                add_mem' := ?_
+                zero_mem' := ?_
+                smul_mem' := ?_ }, fun y => Iff.rfl⟩
+      · rintro y₁ y₂ ⟨v₁, h₁⟩ ⟨v₂, h₂⟩
+        refine ⟨fun t => v₁ t + v₂ t, fun t => ⟨(h₁ t).1.add (h₂ t).1, ?_⟩⟩
+        have h3 : HasDerivAt (fun s => v₁ s + v₂ s)
+            ((-(p t * v₁ t) - q t * y₁ t) + (-(p t * v₂ t) - q t * y₂ t)) t :=
+          (h₁ t).2.add (h₂ t).2
+        refine h3.congr_deriv ?_
+        simp only [Pi.add_apply]
+        ring
+      · refine ⟨fun _ => 0, fun t => ⟨?_, ?_⟩⟩
+        · exact hasDerivAt_const t (0 : ℝ)
+        · have h := hasDerivAt_const t (0 : ℝ)
+          refine h.congr_deriv ?_
+          simp
+      · rintro c y ⟨v, h⟩
+        refine ⟨fun t => c * v t, fun t => ⟨(h t).1.const_mul c, ?_⟩⟩
+        refine ((h t).2.const_mul c).congr_deriv ?_
+        simp only [Pi.smul_apply, smul_eq_mul]
+        ring
+- id: second_order_constant_coefficient_uniqueness
+  kind: gap
+  level: 2
+  topic: 常微分方程式・定数係数2階線形
+  statement: y''+ay'+by=0の全実数上の2解は、1点での値と微分係数が等しければ全実数上で一致する。
+  statement_en: "Two solutions on ℝ of y'' + a y' + b y = 0 that agree in value and derivative at one point t₀ agree everywhere."
+  assumptions:
+    - "全実数上でy₁'=v₁, v₁'=-av₁-by₁"
+    - "全実数上でy₂'=v₂, v₂'=-av₂-by₂"
+    - "y₁(t₀)=y₂(t₀), v₁(t₀)=v₂(t₀)"
+  quantifiers:
+    - "任意の実数a, b, t₀と関数y₁, v₁, y₂, v₂"
+    - "任意の実数t"
+  conclusion: y₁(t)=y₂(t)が成り立つ。
+  answer: |
+    (y,v)を未知関数とすると、方程式はℝ²上の1階方程式x'=Lxになる。ここでL(y,v)=(v,-av-by)は線形写像なので、大域リプシッツである。リプシッツ条件のもとで1階方程式の解は1点の値から全実数上で一意に決まる。(y₁,v₁)と(y₂,v₂)はt₀で一致するので全実数上で一致し、特にy₁=y₂である。
+  strategy: Rewrite the equation as a linear first-order system on ℝ² and apply uniqueness under a Lipschitz bound.
+  sketch:
+    - "translate: Put x = (y, v), so x' = L x with L(y, v) = (v, -a v - b y)."
+    - "derive: The linear map L on ℝ² is globally Lipschitz."
+    - "apply_theorem: Uniqueness for Lipschitz first-order systems on ℝ applies to the two curves."
+    - "conclude: The curves agree at t₀, so they agree everywhere; take first components."
+  openmath: (forall (a b t0 y1 v1 y2 v2) (-> (and (forall (t) (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t) t) (has_deriv_at (lambda (s) (fn_value v1 s)) (- (neg (* a (fn_value v1 t))) (* b (fn_value y1 t))) t) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t) t) (has_deriv_at (lambda (s) (fn_value v2 s)) (- (neg (* a (fn_value v2 t))) (* b (fn_value y2 t))) t))) (= (fn_value y1 t0) (fn_value y2 t0)) (= (fn_value v1 t0) (fn_value v2 t0))) (forall (t) (= (fn_value y1 t) (fn_value y2 t)))))
+  hard_negative:
+    statement: y''+ay'+by=0の2解は、1点での値だけが等しければ全実数上で一致する。
+    reason: 微分係数の一致も必要である。y''+y=0の解sin tと0はt=0で値が等しいが一致しない。
+  target: |
+    ∀ (a b t₀ : ℝ) (y₁ v₁ y₂ v₂ : ℝ → ℝ), (∀ t, HasDerivAt y₁ (v₁ t) t) → (∀ t, HasDerivAt v₁ (-(a * v₁ t) - b * y₁ t) t) → (∀ t, HasDerivAt y₂ (v₂ t) t) → (∀ t, HasDerivAt v₂ (-(a * v₂ t) - b * y₂ t) t) → y₁ t₀ = y₂ t₀ → v₁ t₀ = v₂ t₀ → ∀ t, y₁ t = y₂ t
+  proof: |
+    by
+      intro a b t₀ y₁ v₁ y₂ v₂ h₁ h₁' h₂ h₂' hy hv t
+      let L : ℝ × ℝ →L[ℝ] ℝ × ℝ := (ContinuousLinearMap.snd ℝ ℝ ℝ).prod
+        ((-a) • ContinuousLinearMap.snd ℝ ℝ ℝ - b • ContinuousLinearMap.fst ℝ ℝ ℝ)
+      have hL : ∀ x : ℝ × ℝ, L x = (x.2, -(a * x.2) - b * x.1) := by
+        intro x
+        simp [L]
+      have hf : ∀ s, HasDerivAt (fun s => (y₁ s, v₁ s)) (L (y₁ s, v₁ s)) s := by
+        intro s
+        rw [hL]
+        exact (h₁ s).prodMk (h₁' s)
+      have hg : ∀ s, HasDerivAt (fun s => (y₂ s, v₂ s)) (L (y₂ s, v₂ s)) s := by
+        intro s
+        rw [hL]
+        exact (h₂ s).prodMk (h₂' s)
+      have heq : (fun s => (y₁ s, v₁ s)) = fun s => (y₂ s, v₂ s) :=
+        ODE_solution_unique_univ (v := fun _ => L) (s := fun _ => Set.univ) (K := ‖L‖₊) (t₀ := t₀)
+          (fun _ => L.lipschitz.lipschitzOnWith) (fun s => ⟨hf s, trivial⟩)
+          (fun s => ⟨hg s, trivial⟩) (by simp [hy, hv])
+      exact congrArg Prod.fst (congrFun heq t)
+- id: distinct_real_roots_general_solution
+  kind: textbook
+  level: 2
+  topic: 常微分方程式・定数係数2階線形
+  statement: r₁≠r₂のとき、(D-r₁)(D-r₂)y=0すなわちy''=(r₁+r₂)y'-r₁r₂yの全実数上の解は、y=c₁e^{r₁t}+c₂e^{r₂t}の形に限る。
+  statement_en: "If r₁ ≠ r₂, every solution on ℝ of y'' = (r₁ + r₂) y' - r₁r₂ y has the form y = c₁ e^{r₁t} + c₂ e^{r₂t}."
+  assumptions:
+    - "r₁≠r₂"
+    - "全実数上でy'=v"
+    - "全実数上でv'=(r₁+r₂)v-r₁r₂y"
+  quantifiers:
+    - "任意の実数r₁, r₂と関数y, v"
+  conclusion: 実数c₁, c₂が存在して、全てのtでy(t)=c₁e^{r₁t}+c₂e^{r₂t}となる。
+  answer: |
+    u=v-r₂yと置くとu'=(r₁+r₂)v-r₁r₂y-r₂v=r₁uであり、同様にw=v-r₁yはw'=r₂wを満たす。1階方程式の解の形からu(t)=u(0)e^{r₁t}, w(t)=w(0)e^{r₂t}である。u-w=(r₁-r₂)yなので、r₁≠r₂より両辺をr₁-r₂で割ることができる。よってc₁=u(0)/(r₁-r₂), c₂=-w(0)/(r₁-r₂)と取れば主張を得る。
+  strategy: Factor the operator into two first-order equations, solve each, and recover y from the difference.
+  sketch:
+    - "construct: Put u = v - r₂y and w = v - r₁y."
+    - "derive: The equation gives u' = r₁u and w' = r₂w."
+    - "apply_theorem: The solutions of z' = r z are z(0) e^{rt}."
+    - "derive: The difference is u - w = (r₁ - r₂) y."
+    - "conclude: Divide by r₁ - r₂ ≠ 0 to obtain c₁ and c₂."
+  openmath: (forall (r1 r2 y v) (-> (and (!= r1 r2) (forall (t) (and (has_deriv_at (lambda (s) (fn_value y s)) (fn_value v t) t) (has_deriv_at (lambda (s) (fn_value v s)) (- (* (+ r1 r2) (fn_value v t)) (* (* r1 r2) (fn_value y t))) t)))) (exists (c1 c2) (forall (t) (= (fn_value y t) (+ (* c1 (exp (* r1 t))) (* c2 (exp (* r2 t)))))))))
+  hard_negative:
+    statement: r₁=r₂=rのときも、解は全てc₁e^{rt}+c₂e^{rt}の形である。
+    reason: 重根の場合はte^{rt}も解であり、これはe^{rt}の定数倍ではない。
+  target: |
+    ∀ (r₁ r₂ : ℝ) (y v : ℝ → ℝ), r₁ ≠ r₂ → (∀ t, HasDerivAt y (v t) t) → (∀ t, HasDerivAt v ((r₁ + r₂) * v t - r₁ * r₂ * y t) t) → ∃ c₁ c₂ : ℝ, ∀ t, y t = c₁ * Real.exp (r₁ * t) + c₂ * Real.exp (r₂ * t)
+  proof: |
+    by
+      intro r₁ r₂ y v hr hy hv
+      have key : ∀ (r : ℝ) (u : ℝ → ℝ), (∀ t, HasDerivAt u (r * u t) t) →
+          ∀ t, u t = u 0 * Real.exp (r * t) := by
+        intro r u hu t
+        have hg : ∀ s, HasDerivAt (fun s => u s * Real.exp (-(r * s))) 0 s := by
+          intro s
+          have h1 : HasDerivAt (fun s : ℝ => -(r * s)) (-(r * 1)) s :=
+            ((hasDerivAt_id s).const_mul r).neg
+          have h2 : HasDerivAt (fun s => u s * Real.exp (-(r * s)))
+              (r * u s * Real.exp (-(r * s)) + u s * (Real.exp (-(r * s)) * (-(r * 1)))) s :=
+            (hu s).mul h1.exp
+          exact h2.congr_deriv (by ring)
+        have hc : u t * Real.exp (-(r * t)) = u 0 * Real.exp (-(r * 0)) :=
+          is_const_of_deriv_eq_zero (fun s => (hg s).differentiableAt) (fun s => (hg s).deriv) t 0
+        have hone : Real.exp (-(r * t)) * Real.exp (r * t) = 1 := by
+          rw [← Real.exp_add]; simp
+        calc u t = u t * Real.exp (-(r * t)) * Real.exp (r * t) := by
+              rw [mul_assoc, hone, mul_one]
+          _ = u 0 * Real.exp (r * t) := by rw [hc]; simp
+      have hd : r₁ - r₂ ≠ 0 := sub_ne_zero.2 hr
+      refine ⟨(v 0 - r₂ * y 0) / (r₁ - r₂), -(v 0 - r₁ * y 0) / (r₁ - r₂), fun t => ?_⟩
+      have hu : v t - r₂ * y t = (v 0 - r₂ * y 0) * Real.exp (r₁ * t) :=
+        key r₁ (fun t => v t - r₂ * y t) (fun s => by
+          have h : HasDerivAt (fun s => v s - r₂ * y s)
+              ((r₁ + r₂) * v s - r₁ * r₂ * y s - r₂ * v s) s :=
+            (hv s).sub ((hy s).const_mul r₂)
+          exact h.congr_deriv (by ring)) t
+      have hw : v t - r₁ * y t = (v 0 - r₁ * y 0) * Real.exp (r₂ * t) :=
+        key r₂ (fun t => v t - r₁ * y t) (fun s => by
+          have h : HasDerivAt (fun s => v s - r₁ * y s)
+              ((r₁ + r₂) * v s - r₁ * r₂ * y s - r₁ * v s) s :=
+            (hv s).sub ((hy s).const_mul r₁)
+          exact h.congr_deriv (by ring)) t
+      field_simp
+      linear_combination hu - hw
+- id: abel_wronskian_identity
+  kind: named
+  level: 3
+  topic: 常微分方程式・ロンスキアン
+  statement: （アーベルの公式）y₁, y₂がy''+p(t)y'+q(t)y=0の解でP'=pならば、ロンスキアンW=y₁y₂'-y₁'y₂はW(t)=W(s)exp(P(s)-P(t))を満たす。
+  statement_en: "(Abel's identity) If y₁, y₂ solve y'' + p(t) y' + q(t) y = 0 on ℝ and P' = p, then the Wronskian W = y₁y₂' - y₁'y₂ satisfies W(t) = W(s) exp(P(s) - P(t))."
+  assumptions:
+    - "全実数上でP'=p"
+    - "全実数上でy₁'=v₁, v₁'=-pv₁-qy₁"
+    - "全実数上でy₂'=v₂, v₂'=-pv₂-qy₂"
+  quantifiers:
+    - "任意の関数p, q, P, y₁, v₁, y₂, v₂"
+    - "任意の実数s, t"
+  conclusion: y₁(t)v₂(t)-v₁(t)y₂(t)=(y₁(s)v₂(s)-v₁(s)y₂(s))exp(P(s)-P(t))が成り立つ。
+  answer: |
+    W'=y₁'v₂+y₁v₂'-v₁'y₂-v₁y₂'である。方程式を代入するとv₁v₂の項とqy₁y₂の項が打ち消し合い、W'=-pWとなる。するとWe^{P}の導関数は-pWe^{P}+Wpe^{P}=0なのでWe^{P}は定数である。s, tでの値を比べればW(t)=W(s)exp(P(s)-P(t))を得る。特にWは恒等的に0か、どこでも0でないかのどちらかである。
+  strategy: Derive the first-order equation W' = -p W for the Wronskian and solve it with the integrating factor e^{P}.
+  sketch:
+    - "derive: The product rule and the equations give W' = -p W, the q terms and v₁v₂ terms cancelling."
+    - "construct: Consider W e^{P}."
+    - "derive: Its derivative is -p W e^{P} + W p e^{P} = 0."
+    - "apply_theorem: A function with zero derivative on ℝ is constant."
+    - "conclude: Compare the values at s and t."
+  openmath: (forall (p q P y1 v1 y2 v2) (-> (forall (t) (and (has_deriv_at (lambda (r) (fn_value P r)) (fn_value p t) t) (has_deriv_at (lambda (r) (fn_value y1 r)) (fn_value v1 t) t) (has_deriv_at (lambda (r) (fn_value v1 r)) (- (neg (* (fn_value p t) (fn_value v1 t))) (* (fn_value q t) (fn_value y1 t))) t) (has_deriv_at (lambda (r) (fn_value y2 r)) (fn_value v2 t) t) (has_deriv_at (lambda (r) (fn_value v2 r)) (- (neg (* (fn_value p t) (fn_value v2 t))) (* (fn_value q t) (fn_value y2 t))) t))) (forall (s t) (= (- (* (fn_value y1 t) (fn_value v2 t)) (* (fn_value v1 t) (fn_value y2 t))) (* (- (* (fn_value y1 s) (fn_value v2 s)) (* (fn_value v1 s) (fn_value y2 s))) (exp (- (fn_value P s) (fn_value P t))))))))
+  hard_negative:
+    statement: 同じ仮定のもとでW(t)=W(s)exp(P(t)-P(s))である。
+    reason: 指数の符号が逆である。y''+y'=0の解y₁=1, y₂=e^{-t}, P=tではW=-e^{-t}であり、Wはtとともに減衰する。
+  target: |
+    ∀ (p q P y₁ v₁ y₂ v₂ : ℝ → ℝ), (∀ t, HasDerivAt P (p t) t) → (∀ t, HasDerivAt y₁ (v₁ t) t) → (∀ t, HasDerivAt v₁ (-(p t * v₁ t) - q t * y₁ t) t) → (∀ t, HasDerivAt y₂ (v₂ t) t) → (∀ t, HasDerivAt v₂ (-(p t * v₂ t) - q t * y₂ t) t) → ∀ s t, y₁ t * v₂ t - v₁ t * y₂ t = (y₁ s * v₂ s - v₁ s * y₂ s) * Real.exp (P s - P t)
+  proof: |
+    by
+      intro p q P y₁ v₁ y₂ v₂ hP h₁ h₁' h₂ h₂' s t
+      have hg : ∀ u, HasDerivAt (fun u => (y₁ u * v₂ u - v₁ u * y₂ u) * Real.exp (P u)) 0 u := by
+        intro u
+        have hW : HasDerivAt (fun u => y₁ u * v₂ u - v₁ u * y₂ u)
+            (v₁ u * v₂ u + y₁ u * (-(p u * v₂ u) - q u * y₂ u) -
+              ((-(p u * v₁ u) - q u * y₁ u) * y₂ u + v₁ u * v₂ u)) u :=
+          ((h₁ u).mul (h₂' u)).sub ((h₁' u).mul (h₂ u))
+        have h : HasDerivAt (fun u => (y₁ u * v₂ u - v₁ u * y₂ u) * Real.exp (P u))
+            ((v₁ u * v₂ u + y₁ u * (-(p u * v₂ u) - q u * y₂ u) -
+              ((-(p u * v₁ u) - q u * y₁ u) * y₂ u + v₁ u * v₂ u)) * Real.exp (P u) +
+              (y₁ u * v₂ u - v₁ u * y₂ u) * (Real.exp (P u) * p u)) u :=
+          hW.mul (hP u).exp
+        exact h.congr_deriv (by ring)
+      have hc : (y₁ t * v₂ t - v₁ t * y₂ t) * Real.exp (P t) =
+          (y₁ s * v₂ s - v₁ s * y₂ s) * Real.exp (P s) :=
+        is_const_of_deriv_eq_zero (fun u => (hg u).differentiableAt) (fun u => (hg u).deriv) t s
+      have hone : Real.exp (P t) * Real.exp (-P t) = 1 := by
+        rw [← Real.exp_add]; simp
+      have hE : Real.exp (P s - P t) = Real.exp (P s) * Real.exp (-P t) := by
+        rw [← Real.exp_add]; congr 1
+      calc y₁ t * v₂ t - v₁ t * y₂ t
+          = (y₁ t * v₂ t - v₁ t * y₂ t) * Real.exp (P t) * Real.exp (-P t) := by
+            rw [mul_assoc, hone, mul_one]
+        _ = (y₁ s * v₂ s - v₁ s * y₂ s) * Real.exp (P s) * Real.exp (-P t) := by rw [hc]
+        _ = (y₁ s * v₂ s - v₁ s * y₂ s) * Real.exp (P s - P t) := by rw [hE, mul_assoc]
+- id: wronskian_nonzero_implies_independent
+  kind: gap
+  level: 2
+  topic: 常微分方程式・ロンスキアン
+  statement: 微分可能なy₁, y₂のロンスキアンが1点t₀で0でなければ、y₁, y₂は一次独立である。すなわちc₁y₁+c₂y₂≡0ならc₁=c₂=0である。
+  statement_en: "If differentiable functions y₁, y₂ have nonzero Wronskian at one point t₀, they are linearly independent: c₁y₁ + c₂y₂ ≡ 0 implies c₁ = c₂ = 0."
+  assumptions:
+    - "点t₀でy₁'=v₁(t₀), y₂'=v₂(t₀)"
+    - "y₁(t₀)v₂(t₀)-v₁(t₀)y₂(t₀)≠0"
+    - "全てのtでc₁y₁(t)+c₂y₂(t)=0"
+  quantifiers:
+    - "任意の関数y₁, v₁, y₂, v₂と実数c₁, c₂, t₀"
+  conclusion: c₁=0かつc₂=0である。
+  answer: |
+    c₁y₁+c₂y₂≡0をt₀で微分するとc₁v₁(t₀)+c₂v₂(t₀)=0である。t₀での値の式c₁y₁(t₀)+c₂y₂(t₀)=0と合わせると、(c₁,c₂)についての斉次連立1次方程式が得られる。その係数行列の行列式はロンスキアンW(t₀)で、0でない。したがって消去法によりc₁W(t₀)=0, c₂W(t₀)=0となり、c₁=c₂=0である。
+  strategy: Differentiate the linear relation at t₀ and solve the resulting 2×2 system, whose determinant is the Wronskian.
+  sketch:
+    - "derive: Differentiating the relation at t₀ gives c₁v₁(t₀) + c₂v₂(t₀) = 0."
+    - "translate: Together with the value at t₀ this is a homogeneous 2×2 linear system."
+    - "derive: Elimination gives c₁W(t₀) = 0 and c₂W(t₀) = 0."
+    - "conclude: Since W(t₀) ≠ 0, both constants vanish."
+  openmath: (forall (y1 v1 y2 v2 c1 c2 t0) (-> (and (has_deriv_at (lambda (s) (fn_value y1 s)) (fn_value v1 t0) t0) (has_deriv_at (lambda (s) (fn_value y2 s)) (fn_value v2 t0) t0) (!= (- (* (fn_value y1 t0) (fn_value v2 t0)) (* (fn_value v1 t0) (fn_value y2 t0))) 0) (forall (t) (= (+ (* c1 (fn_value y1 t)) (* c2 (fn_value y2 t))) 0))) (and (= c1 0) (= c2 0))))
+  hard_negative:
+    statement: 微分可能なy₁, y₂のロンスキアンが恒等的に0なら、y₁, y₂は一次従属である。
+    reason: 一般の微分可能関数では逆は偽である。y₁=t², y₂=t|t|はW≡0だが全実数上で一次独立である。
+  target: |
+    ∀ (y₁ v₁ y₂ v₂ : ℝ → ℝ) (c₁ c₂ t₀ : ℝ), HasDerivAt y₁ (v₁ t₀) t₀ → HasDerivAt y₂ (v₂ t₀) t₀ → y₁ t₀ * v₂ t₀ - v₁ t₀ * y₂ t₀ ≠ 0 → (∀ t, c₁ * y₁ t + c₂ * y₂ t = 0) → c₁ = 0 ∧ c₂ = 0
+  proof: |
+    by
+      intro y₁ v₁ y₂ v₂ c₁ c₂ t₀ h₁ h₂ hW h0
+      have hd : HasDerivAt (fun t => c₁ * y₁ t + c₂ * y₂ t) (c₁ * v₁ t₀ + c₂ * v₂ t₀) t₀ :=
+        (h₁.const_mul c₁).add (h₂.const_mul c₂)
+      have hz : (fun t => c₁ * y₁ t + c₂ * y₂ t) = fun _ => 0 := funext h0
+      rw [hz] at hd
+      have hv : c₁ * v₁ t₀ + c₂ * v₂ t₀ = 0 := hd.unique (hasDerivAt_const t₀ 0)
+      have hy := h0 t₀
+      constructor
+      · have h : c₁ * (y₁ t₀ * v₂ t₀ - v₁ t₀ * y₂ t₀) = 0 := by
+          linear_combination v₂ t₀ * hy - y₂ t₀ * hv
+        exact (mul_eq_zero.1 h).resolve_right hW
+      · have h : c₂ * (y₁ t₀ * v₂ t₀ - v₁ t₀ * y₂ t₀) = 0 := by
+          linear_combination y₁ t₀ * hv - v₁ t₀ * hy
+        exact (mul_eq_zero.1 h).resolve_right hW
+- id: harmonic_oscillator_energy_conservation
+  kind: gap
+  level: 2
+  topic: 常微分方程式・調和振動子
+  statement: y''=-ω²yの全実数上の解について、エネルギーy'²+ω²y²は時間によらず一定である。
+  statement_en: "For a solution on ℝ of y'' = -ω² y, the energy y'² + ω² y² is constant in time."
+  assumptions:
+    - "全実数上でy'=v"
+    - "全実数上でv'=-ω²y"
+  quantifiers:
+    - "任意の実数ωと関数y, v"
+    - "任意の実数s, t"
+  conclusion: v(t)²+ω²y(t)²=v(s)²+ω²y(s)²が成り立つ。
+  answer: |
+    E=v²+ω²y²と置くと、E'=2vv'+2ω²yy'=2v(-ω²y)+2ω²yv=0である。全実数上で導関数が0の関数は定数なので、E(t)=E(s)となる。
+  strategy: Differentiate the energy and use the equation to see that the derivative vanishes.
+  sketch:
+    - "construct: Put E = v² + ω² y²."
+    - "derive: Using y' = v and v' = -ω² y we get E' = 2v(-ω² y) + 2ω² y v = 0."
+    - "conclude: A function with zero derivative on ℝ is constant."
+  openmath: (forall (om y v) (-> (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (neg (* (^ om 2) (fn_value y t))) t))) (forall (s t) (= (+ (^ (fn_value v t) 2) (* (^ om 2) (^ (fn_value y t) 2))) (+ (^ (fn_value v s) 2) (* (^ om 2) (^ (fn_value y s) 2)))))))
+  hard_negative:
+    statement: y''=-ω²yの解についてy'²+y²は常に一定である。
+    reason: ω²の重みが必要である。y=cos ωtではy'²+y²=ω²sin²ωt+cos²ωtであり、ω²≠1なら一定でない。
+  target: |
+    ∀ (ω : ℝ) (y v : ℝ → ℝ), (∀ t, HasDerivAt y (v t) t) → (∀ t, HasDerivAt v (-(ω ^ 2 * y t)) t) → ∀ s t, v t ^ 2 + ω ^ 2 * y t ^ 2 = v s ^ 2 + ω ^ 2 * y s ^ 2
+  proof: |
+    by
+      intro ω y v hy hv s t
+      have he : (fun u => v u ^ 2 + ω ^ 2 * y u ^ 2) = fun u => v u * v u + ω ^ 2 * (y u * y u) := by
+        funext u
+        ring
+      have hE : ∀ u, HasDerivAt (fun u => v u ^ 2 + ω ^ 2 * y u ^ 2) 0 u := by
+        intro u
+        have h : HasDerivAt (fun u => v u * v u + ω ^ 2 * (y u * y u))
+            (-(ω ^ 2 * y u) * v u + v u * -(ω ^ 2 * y u) +
+              ω ^ 2 * (v u * y u + y u * v u)) u :=
+          ((hv u).mul (hv u)).add (((hy u).mul (hy u)).const_mul (ω ^ 2))
+        rw [he]
+        exact h.congr_deriv (by ring)
+      exact is_const_of_deriv_eq_zero (fun u => (hE u).differentiableAt) (fun u => (hE u).deriv) t s
+- id: harmonic_oscillator_general_solution
+  kind: textbook
+  level: 2
+  topic: 常微分方程式・調和振動子
+  statement: ω≠0のとき、y''=-ω²yの全実数上の解はy(t)=y(0)cos ωt+(y'(0)/ω)sin ωtに限る。
+  statement_en: "If ω ≠ 0, every solution on ℝ of y'' = -ω² y is y(t) = y(0) cos ωt + (y'(0)/ω) sin ωt."
+  assumptions:
+    - "ω≠0"
+    - "全実数上でy'=v"
+    - "全実数上でv'=-ω²y"
+  quantifiers:
+    - "任意の実数ωと関数y, v"
+    - "任意の実数t"
+  conclusion: y(t)=y(0)cos ωt+(v(0)/ω)sin ωtが成り立つ。
+  answer: |
+    A(t)=y cos ωt-(v/ω)sin ωtとB(t)=y sin ωt+(v/ω)cos ωtを考える。方程式を使って微分するとA'=0, B'=0なので、AとBは定数でありA=y(0), B=v(0)/ωである。さらにA cos ωt+B sin ωt=y(cos²ωt+sin²ωt)=yとなる。これに定数値を代入すれば公式を得る。
+  strategy: Find two conserved quantities obtained by rotating (y, v/ω), then invert the rotation.
+  sketch:
+    - "construct: Put A = y cos ωt - (v/ω) sin ωt and B = y sin ωt + (v/ω) cos ωt."
+    - "derive: The equation gives A' = 0 and B' = 0."
+    - "apply_theorem: A function with zero derivative on ℝ is constant, so A = y(0) and B = v(0)/ω."
+    - "derive: The identity cos² + sin² = 1 gives A cos ωt + B sin ωt = y."
+    - "conclude: Substituting the constants gives the formula."
+  openmath: (forall (om y v) (-> (and (!= om 0) (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (neg (* (^ om 2) (fn_value y t))) t)))) (forall (t) (= (fn_value y t) (+ (* (fn_value y 0) (cos (* om t))) (* (/ (fn_value v 0) om) (sin (* om t))))))))
+  hard_negative:
+    statement: ω=0のときもv(0)/ωの項を0と読めば、y''=0の解はy(t)=y(0)に限る。
+    reason: y''=0にはy(t)=tのような解があり、y(0)=0なのに定数0ではない。
+  target: |
+    ∀ (ω : ℝ) (y v : ℝ → ℝ), ω ≠ 0 → (∀ t, HasDerivAt y (v t) t) → (∀ t, HasDerivAt v (-(ω ^ 2 * y t)) t) → ∀ t, y t = y 0 * Real.cos (ω * t) + v 0 / ω * Real.sin (ω * t)
+  proof: |
+    by
+      intro ω y v hω hy hv t
+      have hb : ∀ u : ℝ, HasDerivAt (fun s : ℝ => ω * s) (ω * 1) u :=
+        fun u => (hasDerivAt_id u).const_mul ω
+      have hA : ∀ u, HasDerivAt (fun u => y u * Real.cos (ω * u) - v u / ω * Real.sin (ω * u)) 0 u := by
+        intro u
+        have h : HasDerivAt (fun u => y u * Real.cos (ω * u) - v u / ω * Real.sin (ω * u))
+            (v u * Real.cos (ω * u) + y u * (-Real.sin (ω * u) * (ω * 1)) -
+              (-(ω ^ 2 * y u) / ω * Real.sin (ω * u) +
+                v u / ω * (Real.cos (ω * u) * (ω * 1)))) u :=
+          ((hy u).mul (hb u).cos).sub (((hv u).div_const ω).mul (hb u).sin)
+        refine h.congr_deriv ?_
+        field_simp
+        ring
+      have hB : ∀ u, HasDerivAt (fun u => y u * Real.sin (ω * u) + v u / ω * Real.cos (ω * u)) 0 u := by
+        intro u
+        have h : HasDerivAt (fun u => y u * Real.sin (ω * u) + v u / ω * Real.cos (ω * u))
+            (v u * Real.sin (ω * u) + y u * (Real.cos (ω * u) * (ω * 1)) +
+              (-(ω ^ 2 * y u) / ω * Real.cos (ω * u) +
+                v u / ω * (-Real.sin (ω * u) * (ω * 1)))) u :=
+          ((hy u).mul (hb u).sin).add (((hv u).div_const ω).mul (hb u).cos)
+        refine h.congr_deriv ?_
+        field_simp
+        ring
+      have hA0 : y t * Real.cos (ω * t) - v t / ω * Real.sin (ω * t) = y 0 := by
+        have h := is_const_of_deriv_eq_zero (fun u => (hA u).differentiableAt)
+          (fun u => (hA u).deriv) t 0
+        simpa using h
+      have hB0 : y t * Real.sin (ω * t) + v t / ω * Real.cos (ω * t) = v 0 / ω := by
+        have h := is_const_of_deriv_eq_zero (fun u => (hB u).differentiableAt)
+          (fun u => (hB u).deriv) t 0
+        simpa using h
+      rw [← hA0, ← hB0]
+      linear_combination (-y t) * Real.sin_sq_add_cos_sq (ω * t)
+- id: damped_oscillator_energy_decreasing
+  kind: gap
+  level: 2
+  topic: 常微分方程式・減衰振動
+  statement: γ≥0のとき、y''+2γy'+ω²y=0の全実数上の解について、エネルギーy'²+ω²y²は時間について単調非増加である。
+  statement_en: "If γ ≥ 0, then for a solution on ℝ of y'' + 2γ y' + ω² y = 0 the energy y'² + ω² y² is nonincreasing in time."
+  assumptions:
+    - "γ≥0"
+    - "全実数上でy'=v"
+    - "全実数上でv'=-2γv-ω²y"
+    - "s≤t"
+  quantifiers:
+    - "任意の実数γ, ωと関数y, v"
+    - "s≤tを満たす任意の実数s, t"
+  conclusion: v(t)²+ω²y(t)²≤v(s)²+ω²y(s)²が成り立つ。
+  answer: |
+    E=v²+ω²y²と置くと、E'=2v(-2γv-ω²y)+2ω²yv=-4γv²である。γ≥0なのでE'≤0であり、全実数上で導関数が0以下の関数は単調非増加である。よってs≤tならE(t)≤E(s)となる。
+  strategy: Compute the derivative of the energy, which equals -4γ v² ≤ 0, and apply the monotonicity criterion.
+  sketch:
+    - "construct: Put E = v² + ω² y²."
+    - "derive: The equation gives E' = -4γ v²."
+    - "derive: Since γ ≥ 0, E' ≤ 0 on ℝ."
+    - "apply_theorem: A function with nonpositive derivative is nonincreasing."
+    - "conclude: Hence E(t) ≤ E(s) for s ≤ t."
+  openmath: (forall (ga om y v) (-> (and (<= 0 ga) (forall (t) (and (has_deriv_at (lambda (r) (fn_value y r)) (fn_value v t) t) (has_deriv_at (lambda (r) (fn_value v r)) (- (neg (* (* 2 ga) (fn_value v t))) (* (^ om 2) (fn_value y t))) t)))) (forall (s t) (-> (<= s t) (<= (+ (^ (fn_value v t) 2) (* (^ om 2) (^ (fn_value y t) 2))) (+ (^ (fn_value v s) 2) (* (^ om 2) (^ (fn_value y s) 2))))))))
+  hard_negative:
+    statement: γ<0でもエネルギーは単調非増加である。
+    reason: γ<0ではE'=-4γv²≥0となり、v≠0の範囲でエネルギーは増加する。
+  target: |
+    ∀ (γ ω : ℝ) (y v : ℝ → ℝ), 0 ≤ γ → (∀ t, HasDerivAt y (v t) t) → (∀ t, HasDerivAt v (-(2 * γ * v t) - ω ^ 2 * y t) t) → ∀ s t, s ≤ t → v t ^ 2 + ω ^ 2 * y t ^ 2 ≤ v s ^ 2 + ω ^ 2 * y s ^ 2
+  proof: |
+    by
+      intro γ ω y v hγ hy hv s t hst
+      have he : (fun u => v u ^ 2 + ω ^ 2 * y u ^ 2) = fun u => v u * v u + ω ^ 2 * (y u * y u) := by
+        funext u
+        ring
+      have hE : ∀ u, HasDerivAt (fun u => v u ^ 2 + ω ^ 2 * y u ^ 2) (-(4 * γ * v u ^ 2)) u := by
+        intro u
+        have h : HasDerivAt (fun u => v u * v u + ω ^ 2 * (y u * y u))
+            ((-(2 * γ * v u) - ω ^ 2 * y u) * v u + v u * (-(2 * γ * v u) - ω ^ 2 * y u) +
+              ω ^ 2 * (v u * y u + y u * v u)) u :=
+          ((hv u).mul (hv u)).add (((hy u).mul (hy u)).const_mul (ω ^ 2))
+        rw [he]
+        exact h.congr_deriv (by ring)
+      have hanti : Antitone (fun u => v u ^ 2 + ω ^ 2 * y u ^ 2) :=
+        antitone_of_hasDerivAt_nonpos (f' := fun u => -(4 * γ * v u ^ 2)) hE (by
+          intro u
+          have h := mul_nonneg hγ (sq_nonneg (v u))
+          show -(4 * γ * v u ^ 2) ≤ 0
+          linarith)
+      exact hanti hst
+- id: matrix_exponential_derivative
+  kind: textbook
+  level: 3
+  topic: 常微分方程式・行列の指数関数
+  statement: 実正方行列Aについて、t↦exp(tA)は微分可能で、導関数はA exp(tA)である。
+  statement_en: "For a real square matrix A, the map t ↦ exp(tA) is differentiable with derivative A exp(tA)."
+  assumptions:
+    - "Aは有限集合で添字づけられた実正方行列"
+  quantifiers:
+    - "任意の実正方行列Aと実数t"
+  conclusion: exp(sA)の点tでの微分係数はA exp(tA)である。
+  answer: |
+    これは概略である。exp(tA)=Σ_{n≥0} t^nA^n/n!は、行列のノルムについて各有界区間で項別微分の級数が一様収束する。よって項別微分でき、導関数はΣ_{n≥1} t^{n-1}A^n/(n-1)!=A exp(tA)となる。
+  strategy: Differentiate the exponential power series term by term, using its infinite radius of convergence.
+  sketch:
+    - "setup: Fix a submultiplicative norm on the matrix algebra, which is finite-dimensional and complete."
+    - "apply_theorem: The exponential series has infinite radius of convergence, so it may be differentiated term by term."
+    - "derive: The termwise derivative is Σ t^{n-1} A^n / (n-1)!."
+    - "conclude: Factoring out A gives A exp(tA)."
+  openmath: (forall (A t) (-> (matrix_square R A) (has_deriv_at (lambda (s) (matrix_exp (matrix_scale s A))) (matrix_mul A (matrix_exp (matrix_scale t A))) t)))
+  hard_negative:
+    statement: 行列値関数A(t)について、exp(A(t))の導関数は常にA'(t)exp(A(t))である。
+    reason: A(t)とA'(t)が可換でなければ成り立たない。一般には級数の項ごとに積の順序が保てない。
+  target: |
+    ∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ) (t : ℝ), HasDerivAt (fun s : ℝ => NormedSpace.exp (s • A)) (A * NormedSpace.exp (t • A)) t
+  proof: |
+    by
+      intro m _ _ A t
+      letI : NormedRing (Matrix m m ℝ) := Matrix.linftyOpNormedRing
+      letI : NormedAlgebra ℝ (Matrix m m ℝ) := Matrix.linftyOpNormedAlgebra
+      exact hasDerivAt_exp_smul_const' (𝕂 := ℝ) A t
+- id: matrix_exponential_solves_linear_system
+  kind: textbook
+  level: 3
+  topic: 常微分方程式・定数係数線形系
+  statement: 実正方行列Aとベクトルx₀について、x(t)=exp(tA)x₀は線形系x'=Axの解である。
+  statement_en: "For a real square matrix A and a vector x₀, the curve x(t) = exp(tA) x₀ solves the linear system x' = A x."
+  assumptions:
+    - "Aは実正方行列"
+    - "x₀は実ベクトル"
+  quantifiers:
+    - "任意のA, x₀と実数t"
+  conclusion: exp(sA)x₀の点tでの微分係数はA(exp(tA)x₀)である。
+  answer: |
+    exp(tA)の導関数はA exp(tA)である。行列Mをベクトルに対応させる写像M↦Mx₀は連続な線形写像なので、合成の微分により(exp(tA)x₀)'=(A exp(tA))x₀となる。行列積の結合法則によりこれはA(exp(tA)x₀)に等しく、x'=Axが成り立つ。
+  strategy: Compose the derivative of exp(tA) with the continuous linear evaluation map M ↦ M x₀.
+  sketch:
+    - "apply_theorem: The derivative of exp(tA) is A exp(tA)."
+    - "construct: M ↦ M x₀ is a continuous linear map on matrices."
+    - "derive: The chain rule gives (exp(tA) x₀)' = (A exp(tA)) x₀."
+    - "conclude: Associativity rewrites this as A (exp(tA) x₀)."
+  openmath: (forall (A x0 t) (-> (matrix_square R A) (has_deriv_at (lambda (s) (matrix_vector_mul (matrix_exp (matrix_scale s A)) x0)) (matrix_vector_mul A (matrix_vector_mul (matrix_exp (matrix_scale t A)) x0)) t)))
+  hard_negative:
+    statement: 行列値関数A(t)について、exp(∫_0^t A(s)ds)x₀は常にx'=A(t)xの解である。
+    reason: A(t)同士が可換でなければ成り立たない。一般には指数関数の微分の公式が使えない。
+  target: |
+    ∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ) (x₀ : m → ℝ) (t : ℝ), HasDerivAt (fun s : ℝ => (NormedSpace.exp (s • A)).mulVec x₀) (A.mulVec ((NormedSpace.exp (t • A)).mulVec x₀)) t
+  proof: |
+    by
+      intro m _ _ A x₀ t
+      letI : NormedRing (Matrix m m ℝ) := Matrix.linftyOpNormedRing
+      letI : NormedAlgebra ℝ (Matrix m m ℝ) := Matrix.linftyOpNormedAlgebra
+      have h := hasDerivAt_exp_smul_const' (𝕂 := ℝ) A t
+      let L : Matrix m m ℝ →L[ℝ] (m → ℝ) :=
+        { toFun := fun M => M.mulVec x₀
+          map_add' := fun M N => Matrix.add_mulVec M N x₀
+          map_smul' := fun c M => Matrix.smul_mulVec c M x₀
+          cont := continuous_id.matrix_mulVec continuous_const }
+      have h2 := L.hasFDerivAt.comp_hasDerivAt t h
+      rw [Matrix.mulVec_mulVec]
+      exact h2
+- id: matrix_exponential_add_commuting
+  kind: gap
+  level: 3
+  topic: 常微分方程式・行列の指数関数
+  statement: 実正方行列A, BがAB=BAを満たすならば、exp(A+B)=exp(A)exp(B)である。
+  statement_en: "If real square matrices A and B commute, then exp(A + B) = exp(A) exp(B)."
+  assumptions:
+    - "A, Bは実正方行列"
+    - "AB=BA"
+  quantifiers:
+    - "任意の実正方行列A, B"
+  conclusion: exp(A+B)=exp(A)exp(B)が成り立つ。
+  answer: |
+    これは概略である。AとBが可換なので二項定理が使え、(A+B)^n/n!=Σ_{k+l=n}A^kB^l/(k!l!)となる。指数級数は絶対収束するので、級数の積を並べ替えることができる。したがってexp(A)exp(B)の項をk+lごとにまとめるとexp(A+B)に一致する。
+  strategy: Expand with the binomial theorem, valid because A and B commute, and rearrange the absolutely convergent double series.
+  sketch:
+    - "derive: Commutativity gives (A+B)^n / n! = Σ_{k+l=n} A^k B^l / (k! l!)."
+    - "apply_theorem: The exponential series converge absolutely, so their Cauchy product may be rearranged."
+    - "conclude: Grouping by k + l = n gives exp(A) exp(B) = exp(A+B)."
+  openmath: (forall (A B) (-> (and (matrix_square R A) (matrix_square R B) (commuting_matrices A B)) (= (matrix_exp (+ A B)) (matrix_mul (matrix_exp A) (matrix_exp B)))))
+  hard_negative:
+    statement: 任意の実正方行列A, Bについてexp(A+B)=exp(A)exp(B)である。
+    reason: 非可換なら一般に成り立たない。A=[[0,1],[0,0]], B=[[0,0],[1,0]]では両辺が異なる。
+  target: |
+    ∀ (m : Type*) [Fintype m] [DecidableEq m] (A B : Matrix m m ℝ), Commute A B → NormedSpace.exp (A + B) = NormedSpace.exp A * NormedSpace.exp B
+  proof: |
+    by
+      intro m _ _ A B h
+      exact Matrix.exp_add_of_commute A B h
+- id: matrix_exponential_neg_inverse
+  kind: gap
+  level: 3
+  topic: 常微分方程式・行列の指数関数
+  statement: 実正方行列Aについて、exp(-A)はexp(A)の逆行列である。
+  statement_en: "For a real square matrix A, exp(-A) is the inverse matrix of exp(A)."
+  assumptions:
+    - "Aは実正方行列"
+  quantifiers:
+    - "任意の実正方行列A"
+  conclusion: exp(-A)=(exp A)⁻¹が成り立つ。
+  answer: |
+    Aと-Aは可換なので、指数法則によりexp(A)exp(-A)=exp(A-A)=exp(0)=Iである。同様にexp(-A)exp(A)=Iとなる。よってexp(A)は可逆であり、その逆行列はexp(-A)である。
+  strategy: Apply the exponential law to the commuting pair A, -A.
+  sketch:
+    - "translate: A and -A commute."
+    - "apply_theorem: The exponential law gives exp(A) exp(-A) = exp(0) = I."
+    - "conclude: Hence exp(-A) is the inverse of exp(A)."
+  openmath: (forall (A) (-> (matrix_square R A) (= (matrix_exp (neg A)) (matrix_inverse (matrix_exp A)))))
+  hard_negative:
+    statement: 実正方行列Aについてexp(-A)=(exp A)ᵀである。
+    reason: A=Iならexp(I)=eIでその転置もeIだが、exp(-I)=e^{-1}Iなので一致しない。
+  target: |
+    ∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ), NormedSpace.exp (-A) = (NormedSpace.exp A)⁻¹
+  proof: |
+    by
+      intro m _ _ A
+      exact Matrix.exp_neg A

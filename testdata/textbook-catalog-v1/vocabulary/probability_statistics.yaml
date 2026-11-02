@@ -1,0 +1,59 @@
+# Proposed additive OpenMath vocabulary for probability and statistics (cd=pals2).
+# Random variables are terms, and pointwise arithmetic on them uses the standard + * - ^ symbols.
+probability_measure: {args: [term], returns: prop, meaning: "P is a probability measure"}
+measurable_event: {args: [term], returns: prop, meaning: "A is a measurable set of the sample space"}
+prob: {args: [term, term], returns: term, meaning: "(prob P A) is the probability P(A)"}
+cond_prob: {args: [term, term, term], returns: term, meaning: "(cond_prob P B A) is the conditional probability P(B|A)"}
+set_compl: {args: [term], returns: term, meaning: "complement of a set in the sample space"}
+union_over: {args: [term, term], returns: term, meaning: "(union_over s A) is the union of A_i over i in the index set s"}
+union_all: {args: [term], returns: term, meaning: "(union_all A) is the union of all members of the family A"}
+limsup_events: {args: [term], returns: term, meaning: "limsup of a sequence of events: the event that infinitely many occur"}
+event_partition: {args: [term, term], returns: prop, meaning: "(event_partition A I): the family A_i of measurable sets, i in the finite index set I, is pairwise disjoint and covers the sample space"}
+increasing_events: {args: [term], returns: prop, meaning: "the sequence of sets A satisfies A_m subset A_n for m <= n"}
+indep_events: {args: [term, term, term], returns: prop, meaning: "(indep_events P A B): events A and B are independent under P"}
+mutually_indep_events: {args: [term, term], returns: prop, meaning: "(mutually_indep_events P A): the family of events A is mutually independent under P"}
+indicator_of: {args: [term], returns: term, meaning: "indicator function of a set"}
+integrable_rv: {args: [term, term], returns: prop, meaning: "(integrable_rv X P): X is integrable under P"}
+square_integrable_rv: {args: [term, term], returns: prop, meaning: "(square_integrable_rv X P): X has a finite second moment under P"}
+expectation: {args: [term, term], returns: term, meaning: "(expectation P X) is the expectation of X under P"}
+variance: {args: [term, term], returns: term, meaning: "(variance P X) is the variance of X under P"}
+covariance: {args: [term, term, term], returns: term, meaning: "(covariance P X Y) is the covariance of X and Y under P"}
+mgf: {args: [term, term, term], returns: term, meaning: "(mgf P X t) is the moment generating function E[exp(tX)]"}
+ae_eq: {args: [term, term, term], returns: prop, meaning: "(ae_eq P X Y): X = Y almost surely under P"}
+ae_le: {args: [term, term, term], returns: prop, meaning: "(ae_le P X Y): X <= Y almost surely under P"}
+indep_rv: {args: [term, term, term], returns: prop, meaning: "(indep_rv P X Y): random variables X and Y are independent under P"}
+mutually_indep_rv: {args: [term, term], returns: prop, meaning: "(mutually_indep_rv P X): the family of random variables X is mutually independent under P"}
+pairwise_indep_rv: {args: [term, term], returns: prop, meaning: "(pairwise_indep_rv P X): the family of random variables X is pairwise independent under P"}
+identically_distributed: {args: [term, term, term], returns: prop, meaning: "(identically_distributed P X Y): X and Y have the same law under P"}
+measurable_map: {args: [term], returns: prop, meaning: "f is a measurable map"}
+map_compose: {args: [term, term], returns: term, meaning: "(map_compose f X) is the composite f after X"}
+convex_on_set: {args: [term, term], returns: prop, meaning: "(convex_on_set g s): g is convex on the set s"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "(continuous_on_set g s): g is continuous on the set s"}
+closed_set: {args: [term], returns: prop, meaning: "s is a closed set"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+finset_range: {args: [term], returns: term, meaning: "the index set {0, ..., n-1}"}
+binomial_coefficient: {args: [term, term], returns: term, meaning: "(binomial_coefficient n k) is n choose k"}
+partial_sum_rv: {args: [term, term], returns: term, meaning: "(partial_sum_rv X n) is the random variable X_0 + ... + X_{n-1}"}
+ae_tends_to: {args: [term, term_function, term], returns: prop, meaning: "(ae_tends_to P (lambda (n) Y_n) L): Y_n converges to L almost surely under P"}
+prob_tends_to: {args: [term, term_function, term], returns: prop, meaning: "(prob_tends_to P (lambda (n) Y_n) L): Y_n converges to L in probability under P"}
+dist_tends_to: {args: [term, term_function, term], returns: prop, meaning: "(dist_tends_to P (lambda (n) Y_n) m): the law of Y_n converges weakly to the measure m"}
+gaussian_measure: {args: [term, term], returns: term, meaning: "(gaussian_measure m v) is the real normal distribution with mean m and variance v"}
+has_law: {args: [term, term, term], returns: prop, meaning: "(has_law P X m): X has law m under P"}
+poisson_measure: {args: [term], returns: term, meaning: "Poisson distribution with parameter r"}
+uniform_measure_on: {args: [term], returns: term, meaning: "uniform probability measure on a finite set"}
+sub_sigma_algebra: {args: [term], returns: prop, meaning: "G is a sub-sigma-algebra of the ambient sigma-algebra"}
+sigma_le: {args: [term, term], returns: prop, meaning: "(sigma_le G H): sigma-algebra G is contained in sigma-algebra H"}
+measurable_wrt: {args: [term, term], returns: prop, meaning: "(measurable_wrt X G): X is strongly measurable with respect to G"}
+indep_sigma: {args: [term, term, term], returns: prop, meaning: "(indep_sigma P G H): sigma-algebras G and H are independent under P"}
+cond_expectation: {args: [term, term, term], returns: term, meaning: "(cond_expectation P X G) is the conditional expectation E[X|G]"}
+filtration_of: {args: [term], returns: prop, meaning: "F is a filtration indexed by the natural numbers"}
+martingale: {args: [term, term, term], returns: prop, meaning: "(martingale P X F): X is a martingale for the filtration F under P"}
+submartingale: {args: [term, term, term], returns: prop, meaning: "(submartingale P X F): X is a submartingale for the filtration F under P"}
+prob_seq: {args: [term, term], returns: term, meaning: "(prob_seq P A) is the real sequence n -> P(A_n)"}
+tail_event: {args: [term, term], returns: term, meaning: "(tail_event X c) is the event {X >= c}"}
+positive_infinity: {args: [], returns: term, meaning: "the extended real value +infinity"}
+ae_in: {args: [term, term, term], returns: prop, meaning: "(ae_in P X s): X takes values in the set s almost surely under P"}
+binomial_rate_seq: {args: [term], returns: term, meaning: "the real sequence n -> n * p_n"}
+binomial_prob_seq: {args: [term, term], returns: term, meaning: "the sequence n -> Bin(n, p_n)({k})"}
+doob_process: {args: [term, term, term], returns: term, meaning: "(doob_process P Y F) is the process n -> E[Y | F_n]"}
+identity_rv: {args: [], returns: term, meaning: "the identity map viewed as a random variable on the real line"}
