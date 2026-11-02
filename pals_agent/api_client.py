@@ -18,6 +18,7 @@ from pals_agent.http_transport import (
 )
 from pals_agent.models import Diagnostic, ProofJobState
 from pals_agent.recipe_search import LANGUAGES, bounded_text, validate_recipe_candidates
+from pals_agent.recipe_semantic_contract import BINDING
 
 _RESOURCE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$", re.ASCII)
 _VERIFICATION_CANDIDATE_SCHEMA_VERSION = "pals.proof-verification-candidate.v1"
@@ -239,12 +240,18 @@ class PalsApiClient:
         except ValueError as error:
             raise PalsApiError("invalid Recipe search response") from error
 
-    def get_proof_request_recipe_batch(
+    def get_proof_request_recipe_window(
         self, *, request_id: str, claim_id: str, output_language: str,
+        query_embedding: list[float] | None = None,
     ) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "claim_id": _canonical_claim_id(claim_id), "output_language": output_language,
+        }
+        if query_embedding is not None:
+            payload.update(query_embedding=query_embedding, embedding_binding=BINDING)
         return self._request(
-            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/recipe-batch",
-            {"claim_id": _canonical_claim_id(claim_id), "output_language": output_language},
+            "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/recipe-window",
+            payload,
             headers={"X-PALS-Worker-Secret": self.worker_secret},
             max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES,
         )

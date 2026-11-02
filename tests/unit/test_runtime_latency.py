@@ -25,7 +25,10 @@ from tests.unit.test_recipe_semantic import CatalogBoundary, Provider, inputs
 from tests.unit.test_token_meter import OP
 
 
-def test_real_original_paid_runtime_has_count_permit_generation_usage_receipt_and_settle():
+def test_real_original_paid_runtime_has_count_permit_generation_usage_receipt_and_settle(
+    monkeypatch,
+):
+    monkeypatch.setattr("pals_agent.recipe_semantic.query_embedding", lambda *a, **k: None)
     request, batch, verdict = inputs()
     calls = []
     lock = threading.Lock()
@@ -47,7 +50,7 @@ def test_real_original_paid_runtime_has_count_permit_generation_usage_receipt_an
                     "billing_operation_id": OP,
                     "lease_expires_at": (datetime.now(UTC) + timedelta(seconds=240)).isoformat(),
                 }
-            elif url.endswith("/recipe-batch"):
+            elif url.endswith("/recipe-window"):
                 value = batch
             elif url.endswith("/recipe-search"):
                 value = {"recipes": []}

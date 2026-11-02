@@ -60,6 +60,7 @@ class BoundedEmbeddingModel(OpenAIEmbeddingModel):
     """Keep the existing embedding identity/parser with a wall-clock HTTP bound."""
 
     transport: HttpTransport = field(default_factory=HardDeadlineHttpTransport, repr=False)
+    role: str = "draft_embedding"
 
     def embed(self, text: str) -> list[float]:
         meter = active_token_meter()
@@ -72,7 +73,7 @@ class BoundedEmbeddingModel(OpenAIEmbeddingModel):
         request_payload = {"model": self.model, "input": text, "dimensions": self.dimension}
         data = json.dumps(request_payload).encode()
         try:
-            with model_role("draft_embedding"):
+            with model_role(self.role):
                 response = meter.request(
                     transport=self.transport, endpoint=endpoint, headers=headers,
                     payload=request_payload, data=data,
@@ -92,7 +93,7 @@ class BoundedEmbeddingModel(OpenAIEmbeddingModel):
                 raise EmbeddingError("Embedding model identity differs")
             usage = payload.get("usage")
             if meter is None and isinstance(usage, dict):
-                with model_role("draft_embedding"):
+                with model_role(self.role):
                     report_usage(
                         call_id,
                         self.model,

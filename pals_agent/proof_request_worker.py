@@ -211,13 +211,14 @@ class ProofRequestProcessor:
             {"recipe_search": search_recipes, "claim_id": claim_id}
             if claim.get("lean_flow") else {}
         )
-        batch_method = getattr(self.api, "get_proof_request_recipe_batch", None)
-        if claim.get("lean_flow") and callable(batch_method):
-            def load_batch() -> dict[str, Any]:
+        window_method = getattr(self.api, "get_proof_request_recipe_window", None)
+        if claim.get("lean_flow") and callable(window_method):
+            def load_batch(query_embedding: list[float] | None) -> dict[str, Any]:
                 try:
-                    return cast(dict[str, Any], batch_method(
+                    return cast(dict[str, Any], window_method(
                         request_id=request_id, claim_id=claim_id,
                         output_language=request["output_language"],
+                        query_embedding=query_embedding,
                     ))
                 except PalsApiError as error:
                     raise ProofReuseError("proof_reuse_recipe_unavailable") from error

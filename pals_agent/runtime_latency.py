@@ -107,7 +107,7 @@ def _phase(service: str, base_origin: Any, method: str, url: str, request_id: st
     prefix = "/v1/internal/proof-requests/" + request_id + "/"
     return {
         prefix + "claims": "claim",
-        prefix + "recipe-batch": "batch_load",
+        prefix + "recipe-window": "batch_load",
         prefix + "recipe-search": "recipe_search",
         prefix + "usage": "usage",
         prefix + "settlements": "settle",

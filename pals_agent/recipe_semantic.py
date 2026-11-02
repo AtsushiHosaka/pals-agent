@@ -1,4 +1,4 @@
-"""Claim-bound dual review of local candidates from a complete authenticated batch."""
+"""Claim-bound dual review of the API-owned retrieved Recipe window."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from pals_agent.math_conventions import known_readings, parse_claim
 from pals_agent.model_roles import RECIPE_SEMANTIC_MODEL, RECIPE_SEMANTIC_REASONING_EFFORT
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.proof_reuse_usage import model_role
-from pals_agent.recipe_local_retrieval import rank
+from pals_agent.recipe_retrieval import query_embedding
 from pals_agent.recipe_semantic_contract import (
     MAX_OUTPUT_TOKENS,
     SCHEMA,
@@ -29,7 +29,7 @@ from pals_agent.recipe_semantic_contract import (
 )
 from pals_agent.usage import capture_usage
 
-RecipeBatch = Callable[[], dict[str, Any]]
+RecipeBatch = Callable[[list[float] | None], dict[str, Any]]
 _ROLES = {"assessment": "recipe_semantic_assessment", "review": "token_answer_qa"}
 
 
@@ -53,12 +53,12 @@ def attempt(
     *,
     deadline: float,
 ) -> SemanticAttempt | None:
-    """Both real calls inspect the same ranked window; ranking never admits a match."""
+    """Both real calls inspect the same API-ranked window; ranking never admits a match."""
     if not fresh_plain_request(request):
         return None
     if time.monotonic() >= deadline:
         raise SemanticReuseError("proof_reuse_deadline")
-    batch = batch_loader()
+    batch = batch_loader(query_embedding(client, request["statement"], deadline=deadline))
     try:
         rows = read_batch(request, claim_id, batch)
     except (ValueError, TypeError, KeyError, RecursionError) as error:
@@ -71,14 +71,12 @@ def attempt(
     known = known_readings(conventions)
     sessions = {key: str(uuid4()) for key in _ROLES}
     try:
-        retrieved_entry_sha256s = rank(rows, request["statement"])
         inputs = prompts(
             request,
             batch,
             known,
             assessment_session=sessions["assessment"],
             review_session=sessions["review"],
-            retrieved_entry_sha256s=retrieved_entry_sha256s,
         )
     except (ValueError, TypeError, KeyError, RecursionError) as error:
         raise SemanticReuseError("proof_reuse_recipe_invalid") from error
@@ -116,7 +114,7 @@ def attempt(
         ):
             raise SemanticReuseError("proof_reuse_token_accounting_failed")
         try:
-            result = parse(raw, batch, known, retrieved_entry_sha256s=retrieved_entry_sha256s)
+            result = parse(raw, batch, known)
         except (ValueError, TypeError, KeyError, RecursionError) as error:
             raise SemanticReuseError("proof_reuse_invalid_response") from error
         return {
