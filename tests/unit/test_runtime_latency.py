@@ -4,7 +4,10 @@ No real claim, payment, provider call, AWS call, runtime evidence or timing clai
 """
 
 import json
+import sys
 import threading
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
@@ -13,7 +16,8 @@ import pytest
 from pals_agent import runtime_latency as h
 from pals_agent.api_client import PalsApiClient
 from pals_agent.chat_runtime import ChatRuntime
-from pals_agent.http_transport import HttpResponse
+from pals_agent.http_transport import HardDeadlineHttpTransport, HttpResponse
+from pals_agent.lightweight_http_transport import LightweightHttpTransport
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.proof_reuse import ProofReuseRuntime
@@ -322,11 +326,15 @@ def test_unclassifiable_url_keeps_original_transport_startup_and_response_behavi
     assert h._phase("api", h._origin("local"), "POST", "local/path", "request") == "other_origin"
 
 
-def test_factory_shares_same_timed_provider_client_and_preserves_delegate_limits(monkeypatch):
+@pytest.mark.parametrize("platform", ["linux", "darwin"])
+def test_factory_shares_same_timed_provider_client_and_preserves_delegate_limits(
+    monkeypatch, platform,
+):
     from pals_agent.factory import build_proof_request_processor
     from pals_agent.settings import AgentSettings
 
     monkeypatch.setenv("PALS_OPENAI_API_KEY", "offline-fixture-only")
+    monkeypatch.setattr(sys, "platform", platform)
     settings = AgentSettings.from_env()
     api = object()
     processor = build_proof_request_processor(settings, api)
@@ -336,7 +344,10 @@ def test_factory_shares_same_timed_provider_client_and_preserves_delegate_limits
     transport = processor.runtime.client.transport
     assert isinstance(transport, h.TimedTransport) and transport.service == "provider"
     assert transport.delegate.max_response_bytes == 1048576
-    assert transport.delegate.process_start_method == "spawn"
+    expected = LightweightHttpTransport if platform == "linux" else HardDeadlineHttpTransport
+    assert isinstance(transport.delegate, expected)
+    if platform != "linux":
+        assert transport.delegate.process_start_method == "spawn"
 
 
 def test_stderr_reporter_leaves_stdout_and_existing_logging_configuration_untouched(capsys):
@@ -377,13 +388,16 @@ def test_broken_stderr_does_not_change_successful_task_result(monkeypatch):
     )
 
 
+@pytest.mark.parametrize("platform", ["linux", "darwin"])
+@pytest.mark.parametrize("lane", ["proof", "assessment"])
 def test_cli_constructs_one_api_client_after_trust_with_exact_original_transport_limits(
-    monkeypatch,
+    monkeypatch, platform, lane,
 ):
     from pals_agent import cli
     from pals_agent.api_client import RECIPE_SEARCH_RESPONSE_BYTES
 
     events = []
+    monkeypatch.setattr(sys, "platform", platform)
     settings = SimpleNamespace(
         api_base_url="https://api.fixture.invalid",
         api_ca_certificate_path=None,
@@ -402,7 +416,13 @@ def test_cli_constructs_one_api_client_after_trust_with_exact_original_transport
         assert isinstance(transport, h.TimedTransport)
         assert transport.service == "api" and transport.base_url == settings.api_base_url
         assert transport.delegate.max_response_bytes == RECIPE_SEARCH_RESPONSE_BYTES == 2097152
-        assert transport.delegate.process_start_method == "spawn"
+        expected = LightweightHttpTransport if platform == "linux" else HardDeadlineHttpTransport
+        assert isinstance(transport.delegate, expected)
+        assert isinstance(kwargs["attachment_transport"], expected)
+        assert kwargs["attachment_transport"].max_response_bytes == 56_000_000
+        if platform != "linux":
+            assert transport.delegate.process_start_method == "spawn"
+            assert kwargs["attachment_transport"].process_start_method == "spawn"
         return object()
 
     monkeypatch.setattr(cli, "PalsApiClient", api)
@@ -417,5 +437,98 @@ def test_cli_constructs_one_api_client_after_trust_with_exact_original_transport
     monkeypatch.setattr(
         cli, "SqsProofWorker", lambda **kwargs: SimpleNamespace(run_once=lambda: True)
     )
-    assert cli.main(["worker-once", "--lane", "assessment"]) == 0
+    assert cli.main(["worker-once", "--lane", lane]) == 0
     assert events == ["trust", "client"]
+
+
+@pytest.mark.parametrize("platform", ["linux", "darwin"])
+def test_separate_semantic_judge_uses_same_static_transport_without_global_default_changes(
+    monkeypatch, platform,
+):
+    from pals_agent.factory import build_semantic_stage_judge
+    from pals_agent.settings import AgentSettings
+
+    monkeypatch.setattr(sys, "platform", platform)
+    monkeypatch.setenv("PALS_OPENAI_API_KEY", "offline-fixture-only")
+    settings = replace(
+        AgentSettings.from_env(), semantic_evaluator_provider="openai",
+        semantic_evaluator_model="independent-fixture", semantic_evaluator_revision="fixture-v1",
+        semantic_evaluator_base_url="https://provider.fixture.invalid/v1",
+    )
+    judge = build_semantic_stage_judge(settings)
+    expected = LightweightHttpTransport if platform == "linux" else HardDeadlineHttpTransport
+    assert isinstance(judge.client.transport, expected)
+    assert judge.client.transport.max_response_bytes == 1048576
+    assert isinstance(OpenAIResponsesClient(api_key="offline-fixture").transport,
+                      HardDeadlineHttpTransport)
+    assert isinstance(PalsApiClient("https://api.fixture.invalid", "fixture").transport,
+                      HardDeadlineHttpTransport)
+
+
+def test_request_correlation_exact_known_hash_and_no_raw_identifiers(capsys):
+    request = "00000000-0000-4000-8000-000000000001"
+
+    class Process:
+        def process(self, request_id, claim_id, extend_visibility):
+            assert request_id == request and claim_id == "private-claim"
+            return True
+
+    assert h.process_with_latency(Process(), request, "private-claim", lambda _: None,
+                                  emit=h.report_latency) is True
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    report = json.loads(captured.err)["metrics"]
+    assert report["request_correlation_sha256"] == (
+        "11e594f481958c10e3015d0bf0447a22f068a8a647f475df15ce2c7ab4b8f3f1"
+    )
+    assert request not in captured.err and "private-claim" not in captured.err
+
+
+@pytest.mark.parametrize("value", ["private free text", "opaque-invalid-request-id", "0"*32,
+                                    "00000000-0000-1000-8000-000000000001"])
+def test_correlation_only_fingerprints_canonical_request_uuid_without_gating_tasks(value):
+    reports = []
+
+    class Process:
+        def process(self, *args):
+            return True
+
+    assert h.TracedProcessor(Process(), reports.append).process(value, "claim", lambda _: None)
+    assert reports[0]["request_correlation_sha256"] is None
+    assert value not in json.dumps(reports)
+
+
+def test_concurrent_requests_keep_correlation_and_phase_aggregates_separate():
+    identifiers = ("00000000-0000-4000-8000-000000000001", "00000000-0000-4000-8000-000000000002")
+    expected = {
+        "11e594f481958c10e3015d0bf0447a22f068a8a647f475df15ce2c7ab4b8f3f1",
+        "e79acd97ac88086665d85a762f43d533a45195b6bac5961a993e6ed362471439",
+    }
+    barrier = threading.Barrier(2)
+    reports = []
+
+    class Delegate:
+        def request(self, **kwargs):
+            return HttpResponse(200, b"ok")
+
+    transport = h.TimedTransport(Delegate(), "api", "https://api.fixture.invalid")
+
+    class Process:
+        def process(self, request_id, *args):
+            barrier.wait(timeout=2)
+            return transport.request(method="POST", url=(
+                "https://api.fixture.invalid/v1/internal/proof-requests/"+request_id+"/usage"
+            ), headers={}, body=None, timeout_seconds=1).body
+
+    def run(identifier):
+        return h.TracedProcessor(Process(), reports.append).process(
+            identifier, "claim", lambda _: None,
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert list(pool.map(run, identifiers)) == [b"ok", b"ok"]
+    assert {r["request_correlation_sha256"] for r in reports} == expected
+    assert all(r["recorded_spans"] == 1 and r["phases"][0]["phase"] == "usage"
+               and r["phases"][0]["calls"] == 1 for r in reports)
+    assert all(identifier not in json.dumps(reports) for identifier in identifiers)
+    assert h._ACTIVE.get() is None

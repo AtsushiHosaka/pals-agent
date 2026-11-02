@@ -17,6 +17,8 @@ from pals_agent.explanations import (
     LeanProofSemanticReviewer,
 )
 from pals_agent.generator import HybridLeanGenerator
+from pals_agent.http_transport import MAX_HTTP_RESPONSE_BYTES
+from pals_agent.lightweight_http_transport import fresh_process_http_transport
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.ollama import OllamaClient
 from pals_agent.openai import OpenAIResponsesClient
@@ -195,6 +197,9 @@ def build_semantic_stage_judge(settings: AgentSettings) -> SemanticStageJudge:
                 api_key=settings.openai_api_key,
                 base_url=base_url,
                 max_output_tokens=settings.openai_max_output_tokens,
+                transport=fresh_process_http_transport(
+                    max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+                ),
             ),
             model=model,
             provider="openai",
@@ -240,6 +245,9 @@ def _release_openai_client(settings: AgentSettings) -> OpenAIResponsesClient:
         api_key=settings.openai_api_key,
         base_url=settings.openai_base_url,
         max_output_tokens=settings.openai_max_output_tokens,
+        transport=fresh_process_http_transport(
+            max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+        ),
     )
 
 

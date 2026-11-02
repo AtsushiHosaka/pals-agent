@@ -3,12 +3,14 @@
 The SQS dispatcher supplies the original request, claim and visibility callback.
 The wrappers delegate every transport call without changing request or response.
 Only bounded phase aggregates go to the injected existing operational logger.
-No request/claim IDs, URL, headers, body, content hash, credentials, provider ID
-or exception text are included in the emitted report. Nothing is persisted here.
+No raw request/claim IDs, URL, headers, body, content hash, credentials, provider
+ID or exception text are included. A canonical request UUID's SHA-256 provides
+opaque correlation for authorized diagnostics. Nothing is persisted here.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sys
@@ -20,10 +22,25 @@ from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any, Protocol
 from urllib.parse import urlsplit
+from uuid import UUID
 
 MAX_SPANS = 32
 _ACTIVE: ContextVar[_Trace | None] = ContextVar("pals_runtime_latency_trace", default=None)
 _ROLES = {"recipe_semantic_assessment", "token_answer_qa"}
+
+
+def _request_correlation(request_id: str) -> str | None:
+    # Do not turn accidental free text, another identifier, or a malformed
+    # delivery into a log fingerprint. This never changes task eligibility.
+    if type(request_id) is not str:
+        return None
+    try:
+        parsed = UUID(request_id)
+    except ValueError:
+        return None
+    if parsed.version != 4 or str(parsed) != request_id:
+        return None
+    return hashlib.sha256(request_id.encode("ascii")).hexdigest()
 
 
 class Transport(Protocol):
@@ -185,6 +202,7 @@ class _Trace:
             )
         return {
             "schema_version": "pals.runtime-paid-latency-aggregates.v1",
+            "request_correlation_sha256": _request_correlation(self.request_id),
             "processor_elapsed_ms": max(0.0, (finished - self.started) * 1000),
             "recorded_spans": len(spans),
             "dropped_spans": dropped,

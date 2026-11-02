@@ -31,7 +31,7 @@ from pals_agent.factory import (
     build_semantic_stage_judge,
     build_statement_openmath_structurer,
 )
-from pals_agent.http_transport import HardDeadlineHttpTransport
+from pals_agent.lightweight_http_transport import fresh_process_http_transport
 from pals_agent.models import ProofRunResult
 from pals_agent.proof_flow_image import (
     SubprocessDocker,
@@ -376,8 +376,13 @@ def main(argv: list[str] | None = None) -> int:
             base_url=settings.api_base_url,
             worker_secret=settings.worker_shared_secret,
             transport=TimedTransport(
-                HardDeadlineHttpTransport(max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES),
+                fresh_process_http_transport(
+                    max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES, use_lightweight=True,
+                ),
                 "api", settings.api_base_url,
+            ),
+            attachment_transport=fresh_process_http_transport(
+                max_response_bytes=56_000_000, use_lightweight=True,
             ),
         )
         draining = False
