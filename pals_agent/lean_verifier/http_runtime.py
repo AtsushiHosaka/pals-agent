@@ -12,7 +12,7 @@ from uuid import UUID
 
 import boto3  # type: ignore[import-untyped]
 
-from pals_agent.lean import LeanVerifier
+from pals_agent.lean import LeanVerifier, enable_orphan_reaping
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
 from pals_agent.lean_verifier.boundary import attest_http_runtime_boundary
 from pals_agent.lean_verifier.http_server import (
@@ -112,6 +112,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     try:
         settings = HttpVerifierRuntimeSettings.from_env()
+        enable_orphan_reaping()
         if not _SCRATCH_DIRECTORY.is_dir():
             raise ValueError("verifier request scratch tmpfs is unavailable")
         _clear_ready_marker(_READY_MARKER)

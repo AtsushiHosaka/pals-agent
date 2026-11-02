@@ -23,6 +23,7 @@ import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
+from pals_agent.lean import COMPILE_INTERRUPTED
 from pals_agent.models import VerificationResult
 
 _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
@@ -301,6 +302,8 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         failure_code = _failure_code(result)
         if failure_code == "verifier_timeout":
             self._error(504, failure_code, request["proof_job_id"], retryable=True)
+        elif failure_code == "verifier_compile_interrupted":
+            self._error(503, failure_code, request["proof_job_id"], retryable=True)
         else:
             self._error(
                 422,
@@ -367,6 +370,15 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
 
         if not result.success:
             failure_code = _failure_code(result)
+            if failure_code == "verifier_compile_interrupted":
+                # The admission transport's retryable registry is closed; see the busy path above.
+                self._admission_error(
+                    503,
+                    "verifier_not_ready",
+                    admission_id=admission_id,
+                    retryable=True,
+                )
+                return
             self._admission_error(
                 504 if failure_code == "verifier_timeout" else 422,
                 failure_code,
@@ -791,6 +803,8 @@ def _canonical_uuid4(value: UUID) -> str | None:
 
 
 def _failure_code(result: VerificationResult) -> str:
+    if any(item.code == COMPILE_INTERRUPTED for item in result.diagnostics):
+        return "verifier_compile_interrupted"
     if any(item.code in {"lean.timeout", "lean.verifier_timeout"} for item in result.diagnostics):
         return "verifier_timeout"
     return "verifier_compile_failed"

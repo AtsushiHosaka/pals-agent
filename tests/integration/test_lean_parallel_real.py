@@ -23,7 +23,13 @@ from uuid import UUID
 
 import pytest
 
-from pals_agent.lean import LeanVerifier, _limited_command, _run_limited_process
+from pals_agent.lean import (
+    LeanCompileInterrupted,
+    LeanVerifier,
+    _limited_command,
+    _run_limited_process,
+    enable_orphan_reaping,
+)
 from pals_agent.lean_environment import LakeEnvironmentCache
 from pals_agent.lean_verifier.http_server import (
     IsolatedVerifierHttpSettings,
@@ -126,7 +132,9 @@ def test_killing_one_compile_fails_only_that_compile(runtime: tuple[Path, Path])
         survivor = pool.submit(verifier.verify, _TRUE)
         killed = pool.submit(kill_victim)
         assert killed.result() is True
-        assert victim.result().success is False
+        interrupted = victim.result()
+        assert interrupted.success is False
+        assert [item.code for item in interrupted.diagnostics] == ["lean.compile_interrupted"]
         assert survivor.result().success is True
     assert list(runtime[1].glob("pals-lean-*")) == []
 
@@ -177,6 +185,137 @@ def test_a_compile_cannot_reach_a_sibling_scratch_or_process(runtime: tuple[Path
         assert not (Path(sibling) / "planted").exists()
 
 
+def _pids_current() -> int:
+    return int(Path("/sys/fs/cgroup/pids.current").read_text())
+
+
+def _settled_pids(limit: int) -> int:
+    deadline = time.monotonic() + 3
+    while time.monotonic() < deadline and _pids_current() > limit:
+        time.sleep(0.05)
+    return _pids_current()
+
+
+def _run_hostile(
+    runtime: tuple[Path, Path],
+    own: str,
+    *,
+    children: int,
+    parent_stays: bool,
+    timeout: float,
+):
+    """Real Lean spawns detached and attached children that inherit its stdout."""
+    project, _scratch = runtime
+    sleeper = Path(own) / "Sleeper.lean"
+    sleeper.write_text("def main : IO Unit := IO.sleep 120000\n", encoding="utf-8")
+    program = Path(own) / "Hostile.lean"
+    program.write_text(
+        _HOSTILE.format(
+            children=children,
+            sleeper=str(sleeper),
+            parent=("IO.sleep 120000" if parent_stays else "pure ()"),
+        ),
+        encoding="utf-8",
+    )
+    lean = shutil.which("lean")
+    assert lean is not None
+    return _run_limited_process(
+        _limited_command(
+            [lean, "--run", str(program)], timeout_seconds=timeout, scratch_dir=Path(own)
+        ),
+        cwd=project,
+        environment={
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "PATH": os.environ["PATH"],
+            "HOME": own,
+            "TMPDIR": own,
+            "ELAN_HOME": os.environ.get("ELAN_HOME", "/opt/elan"),
+        },
+        timeout_seconds=timeout,
+        output_limit_bytes=65_536,
+    )
+
+
+def test_descendants_cannot_outlive_a_finished_compile_or_starve_a_sibling(
+    runtime: tuple[Path, Path],
+) -> None:
+    baseline = _pids_current()
+    with tempfile.TemporaryDirectory(prefix="pals-lean-", dir=runtime[1]) as own:
+        started = time.monotonic()
+        result = _run_hostile(runtime, own, children=20, parent_stays=False, timeout=90)
+        elapsed = time.monotonic() - started
+    assert result.returncode == 0, result.stderr
+    assert "spawned" in result.stdout
+    assert elapsed < 30
+    assert _settled_pids(baseline + 2) <= baseline + 2
+    assert _verifier(runtime).verify(_TRUE).success is True
+
+
+def test_deadline_kills_detached_descendants_and_a_starved_sibling_is_never_a_verdict(
+    runtime: tuple[Path, Path],
+) -> None:
+    baseline = _pids_current()
+    verifier = _verifier(runtime)
+    with (
+        ThreadPoolExecutor(max_workers=1) as pool,
+        tempfile.TemporaryDirectory(prefix="pals-lean-", dir=runtime[1]) as own,
+    ):
+        hostile = pool.submit(
+            _run_hostile,
+            runtime,
+            own,
+            children=55,
+            parent_stays=True,
+            timeout=15,
+        )
+        deadline = time.monotonic() + 12
+        while time.monotonic() < deadline and _pids_current() < baseline + 30:
+            time.sleep(0.05)
+        neighbour = verifier.verify(_TRUE)
+        started = time.monotonic()
+        result = hostile.result()
+        assert time.monotonic() - started < 25
+    assert result.timed_out is True
+    # While PIDs are exhausted a true proof may be interrupted, never rejected.
+    assert neighbour.success is True or [item.code for item in neighbour.diagnostics] == [
+        "lean.compile_interrupted"
+    ]
+    assert _settled_pids(baseline + 2) <= baseline + 2
+    assert verifier.verify(_TRUE).success is True
+
+
+def test_killed_supervisor_is_an_interruption_and_its_descendants_are_reaped(
+    runtime: tuple[Path, Path],
+) -> None:
+    baseline = _pids_current()
+    enable_orphan_reaping()
+    with (
+        ThreadPoolExecutor(max_workers=1) as pool,
+        tempfile.TemporaryDirectory(prefix="pals-lean-", dir=runtime[1]) as own,
+    ):
+        hostile = pool.submit(
+            _run_hostile,
+            runtime,
+            own,
+            children=5,
+            parent_stays=True,
+            timeout=60,
+        )
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline and _pids_current() < baseline + 6:
+            time.sleep(0.02)
+        supervisors = _pids_with_script("lean_supervisor.py")
+        assert supervisors
+        for pid in supervisors:
+            os.kill(pid, signal.SIGKILL)
+        started = time.monotonic()
+        with pytest.raises(LeanCompileInterrupted):
+            hostile.result()
+        assert time.monotonic() - started < 5
+    assert _settled_pids(baseline + 2) <= baseline + 2
+
+
 def test_a_full_scratch_filesystem_fails_closed(runtime: tuple[Path, Path]) -> None:
     filler = runtime[1] / "pals-parallel-filler"
     try:
@@ -206,6 +345,34 @@ def main (args : List String) : IO UInt32 := do
   attempt "proc" (discard (IO.FS.readFile peer))
   return 0
 """
+
+
+_HOSTILE = """
+def main : IO Unit := do
+  let lean ← IO.appPath
+  for index in [0:{children}] do
+    try
+      discard <| IO.Process.spawn {{
+        cmd := lean.toString, args := #["--run", "{sleeper}"], setsid := index % 2 == 0 }}
+    catch _ => pure ()
+  IO.println "spawned"
+  (← IO.getStdout).flush
+  {parent}
+"""
+
+
+def _pids_with_script(script: str) -> list[int]:
+    found = []
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdecimal() or int(entry.name) == os.getpid():
+            continue
+        try:
+            arguments = (entry / "cmdline").read_bytes().split(b"\0")
+        except OSError:
+            continue
+        if any(item.endswith(script.encode()) for item in arguments[:3]):
+            found.append(int(entry.name))
+    return found
 
 
 def _read(path: Path) -> str:

@@ -159,6 +159,7 @@ def test_factory_uses_fresh_exec_and_does_not_pass_parent_runtime(monkeypatch, t
             "command": [sys.executable, "-m", "pals_agent.cli", "worker",
                         "--lane", lane, "--processes", "1"],
             "processes": 3, "ready_file": tmp_path / "ready",
+            "restart_budget": worker_processes._RESTART_BUDGET,
         }
     with pytest.raises(ValueError):
         worker_processes.run_lane_workers(lane="all", processes=2, ready_file=None)
@@ -275,3 +276,54 @@ def test_disappearing_child_readiness_fails_and_drains_real_children(tmp_path):
         if process.poll() is None:
             process.terminate()
             process.wait(timeout=8)
+
+
+DYING_CHILD = r"""
+import os,sys,time
+from pathlib import Path
+root=Path(sys.argv[1]); dying=int(sys.argv[2]); marker=Path(sys.argv[-1])
+births=len(list(root.glob('birth-*')))
+(root/f'birth-{os.getpid()}').write_text('')
+marker.write_text(str(os.getpid()))
+if births<dying: os._exit(9)
+time.sleep(60)
+"""
+
+
+def test_dead_child_is_replaced_without_stopping_healthy_siblings(tmp_path):
+    code = (
+        "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
+        "raise SystemExit(_supervise(command="
+        + repr([sys.executable, "-c", DYING_CHILD, str(tmp_path), "2"])
+        + ",processes=2,ready_file=Path(" + repr(str(tmp_path / "ready"))
+        + "),startup_seconds=5,poll_seconds=.01,restart_budget=5))"
+    )
+    process = subprocess.Popen([sys.executable, "-c", code], stderr=subprocess.PIPE)
+    try:
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline and len(list(tmp_path.glob("birth-*"))) < 4:
+            assert process.poll() is None
+            time.sleep(.02)
+        assert len(list(tmp_path.glob("birth-*"))) == 4
+        time.sleep(.2)
+        assert process.poll() is None
+        assert (tmp_path / "ready").exists()
+    finally:
+        process.terminate()
+        process.wait(timeout=10)
+    assert process.stderr is not None
+    assert b"worker_child_restarted" in process.stderr.read()
+
+
+def test_exhausted_restart_budget_still_drains_and_exits(tmp_path):
+    code = (
+        "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
+        "raise SystemExit(_supervise(command="
+        + repr([sys.executable, "-c", DYING_CHILD, str(tmp_path), "1000"])
+        + ",processes=2,ready_file=Path(" + repr(str(tmp_path / "ready"))
+        + "),startup_seconds=5,poll_seconds=.01,restart_budget=2))"
+    )
+    process = subprocess.Popen([sys.executable, "-c", code], stderr=subprocess.DEVNULL)
+    assert process.wait(timeout=20) == 1
+    assert 3 <= len(list(tmp_path.glob("birth-*"))) <= 5
+    assert not (tmp_path / "ready").exists()

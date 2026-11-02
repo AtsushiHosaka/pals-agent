@@ -15,6 +15,7 @@ from typing import Any, Final, Literal, Protocol, cast
 
 import boto3  # type: ignore[import-untyped]
 import rfc8785
+from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
 from pals_agent.api_client import (
     PalsApiError,
@@ -75,6 +76,7 @@ ResourceKind = Literal["proof_job", "explanation", "clarification"]
 VisibilityExtender = Callable[[int], None]
 WorkerLane = Literal["all", "proof", "assessment"]
 _logger = logging.getLogger(__name__)
+_SQS_BACKOFF_MAX_SECONDS: Final = 60.0
 
 
 def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
@@ -440,10 +442,32 @@ class SqsProofWorker:
     def run_forever(self) -> None:
         # Drain only at delivery boundaries; never interrupt a model call or
         # acknowledge a delivery merely because shutdown was requested.
+        failures = 0
         while not self.stop_requested():
-            processed = self.run_once()
+            try:
+                processed = self.run_once()
+            except (BotoCoreError, ClientError) as error:
+                # SQS was unreachable. An undeleted receipt returns after its visibility timeout
+                # and the API claim fences a repeat, so waiting here loses nothing.
+                failures += 1
+                delay = min(_SQS_BACKOFF_MAX_SECONDS, 2.0 ** min(failures, 8))
+                _logger.error(
+                    "worker_sqs_unavailable lane=%s error=%s consecutive=%d delay_seconds=%.0f",
+                    self.lane, type(error).__name__, failures, delay,
+                )
+                self._sleep_until_stop(delay)
+                continue
+            failures = 0
             if not processed and not self.stop_requested():
                 self.sleep(self.settings.worker_idle_sleep_seconds)
+
+    def _sleep_until_stop(self, seconds: float) -> None:
+        deadline = self.monotonic() + seconds
+        while not self.stop_requested():
+            remaining = deadline - self.monotonic()
+            if remaining <= 0:
+                return
+            self.sleep(min(1.0, remaining))
 
     def run_once(self) -> bool:
         queue_url = worker_queue_url(self.settings, self.lane)

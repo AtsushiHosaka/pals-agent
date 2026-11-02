@@ -135,3 +135,55 @@ def test_cli_installs_draining_signals_and_restores_handlers_and_readiness(monke
     assert cli.main(["worker", "--ready-file", str(marker)]) == 0
     assert handlers == previous
     assert not marker.exists()
+
+
+def _failing_worker(monkeypatch, errors, *, slept):
+    from botocore.exceptions import EndpointConnectionError
+
+    class Unreachable:
+        def __init__(self):
+            self.calls = 0
+
+        def receive_message(self, **kwargs):
+            self.calls += 1
+            if self.calls <= errors:
+                raise EndpointConnectionError(endpoint_url="https://sqs.invalid")
+            return {"Messages": []}
+
+    queue = Unreachable()
+    monkeypatch.setattr("pals_agent.worker.boto3.client", lambda *a, **kw: queue)
+    clock = [0.0]
+
+    def sleep(seconds):
+        slept.append(seconds)
+        clock[0] += seconds
+
+    settings = SimpleNamespace(
+        aws_endpoint_url=None, aws_region="ap-northeast-1",
+        sqs_proof_jobs_queue_url="proof-queue", worker_idle_sleep_seconds=1.0,
+        proof_capability="full",
+    )
+    worker = SqsProofWorker(
+        settings=settings, api_client=SimpleNamespace(), pipeline=None, explainer=None,
+        lane="proof", sleep=sleep, monotonic=lambda: clock[0],
+        stop_requested=lambda: queue.calls > errors,
+    )
+    return worker, queue
+
+
+def test_transient_sqs_error_backs_off_instead_of_killing_the_worker(monkeypatch):
+    slept = []
+    worker, queue = _failing_worker(monkeypatch, 3, slept=slept)
+    monkeypatch.setattr("pals_agent.worker.worker_queue_url", lambda *a: "proof-queue")
+    worker.run_forever()
+    assert queue.calls == 4
+    assert sum(slept) == 2 + 4 + 8
+
+
+def test_worker_once_still_surfaces_an_sqs_error(monkeypatch):
+    from botocore.exceptions import BotoCoreError
+
+    worker, _queue = _failing_worker(monkeypatch, 1, slept=[])
+    monkeypatch.setattr("pals_agent.worker.worker_queue_url", lambda *a: "proof-queue")
+    with pytest.raises(BotoCoreError):
+        worker.run_once()

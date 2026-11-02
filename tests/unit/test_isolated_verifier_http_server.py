@@ -425,6 +425,43 @@ def test_concurrent_compile_setting_is_closed(
         )
 
 
+def _interrupted() -> VerificationResult:
+    return VerificationResult(
+        success=False,
+        diagnostics=[
+            Diagnostic(severity="error", code="lean.compile_interrupted", message="killed")
+        ],
+        stdout="",
+        stderr="",
+        elapsed_ms=1,
+    )
+
+
+def test_interrupted_compile_is_a_retryable_infrastructure_failure_not_a_verdict(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_interrupted())
+    with _running_server(server_context, client_spki_sha256, verifier):
+        proof = _request(client_context, _verify_request("example : True := by trivial"))
+        admission = _request(
+            client_context,
+            _recipe_admission_request("example : True := by trivial\n", _admission_context()),
+        )
+    assert proof == (
+        503,
+        {
+            "error_code": "verifier_compile_interrupted",
+            "proof_job_id": "proof-1",
+            "retryable": True,
+            "schema_version": "pals.isolated-verifier-error.v1",
+        },
+    )
+    assert admission[0] == 503
+    assert admission[1]["failure_code"] == "verifier_not_ready"
+    assert admission[1]["retryable"] is True
+
+
 def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(
     tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
 ) -> None:
