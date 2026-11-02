@@ -701,6 +701,8 @@ Return exactly one fenced Lean code block. Do not include prose outside the code
 {_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
+State every hypothesis in the theorem header. Do not use `variable`, `include` or a
+local `instance` to supply one; a statement that depends on them is rejected.
 You must prove the exact Lean theorem harness shown below when one is provided.
 Preserve the Draft's proof structure with intermediate `have` statements or local lemmas.
 Leave one or more localized `sorry` gaps for the substantive proof obligations.
@@ -736,6 +738,8 @@ Return exactly one fenced Lean code block. Do not include prose outside the code
 {_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
+State every hypothesis in the theorem header. Do not use `variable`, `include` or a
+local `instance` to supply one; a statement that depends on them is rejected.
 Preserve the Sketch's theorem statement and mathematical target. Fill every gap with
 valid Lean code. Treat every theorem name and proof term in the Sketch as untrusted:
 correct or replace invalid intermediate code before returning. Prefer a small,

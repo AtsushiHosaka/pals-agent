@@ -255,6 +255,8 @@ def test_runtime_marks_ready_only_after_boundary_tls_and_server_setup(
         assert isinstance(admission_verifier, http_runtime.LeanVerifier)
         assert verifier.lake_environment_cache is not None
         assert admission_verifier.lake_environment_cache is None
+        assert verifier.literal_admission_command is False
+        assert admission_verifier.literal_admission_command is True
         return Server()
 
     monkeypatch.setattr(http_runtime, "create_server", capture_server)

@@ -121,9 +121,14 @@ def _simulate_elan_compiler(
                 **environment, "ELAN_TOOLCHAIN": "pinned", "LEAN_PATH": "/trusted/mathlib",
                 "LEAN_RECURSION_COUNT": str(lake_hops),
             })
+        elif "--run" in argv:
+            nonce = argv[argv.index("--run") + 2]
+            stdout = f"theorem target\nbound target\ncomplete {nonce}\n"
         else:
             compiles.append(True)
             returncode = 1 if len(compiles) in rejects else 0
+            if "-o" in argv:
+                Path(argv[argv.index("-o") + 1]).write_bytes(b"olean")
         return lean_module._ProcessResult(returncode, stdout, "", False, False)
 
     monkeypatch.setattr(lean_module, "_run_limited_process", run)
@@ -151,10 +156,14 @@ def test_elan_path_hits_and_every_request_still_compiles(
     assert [e.cache_status for e in events if e.stage == "environment_prepare"] == [
         "miss", "hit", "hit",
     ]
-    assert [argv[:2] for argv, _ in calls] == [
-        [str(lake), "env"], *([[str(lean), "--threads=1"]] * 3),
+    assert calls[0][0][:2] == [str(lake), "env"]
+    # The rejected third compile has no audit, and the audit also reuses the prepared environment.
+    assert [("audit" if "--run" in argv else "compile", argv[0]) for argv, _ in calls[1:]] == [
+        ("compile", str(lean)), ("audit", str(lean)),
+        ("compile", str(lean)), ("audit", str(lean)),
+        ("compile", str(lean)),
     ]
-    compile_environments = [environment for _, environment in calls[1:]]
+    compile_environments = [environment for argv, environment in calls[1:] if "--run" not in argv]
     assert [e["LEAN_RECURSION_COUNT"] for e in compile_environments] == ["1"] * 3
     assert len({e["HOME"] for e in compile_environments}) == 3
 
@@ -179,7 +188,8 @@ def test_unexpected_elan_hop_count_falls_back_to_original_command(
         "fallback", "fallback",
     ]
     compiled = [
-        (argv[:3], environment) for argv, environment in calls if "--threads=1" in argv
+        (argv[:3], environment) for argv, environment in calls
+        if "--threads=1" in argv and "--run" not in argv
     ]
     assert [argv for argv, _ in compiled] == [[str(lake), "env", str(lean)]] * 2
     assert all("LEAN_RECURSION_COUNT" not in environment for _, environment in compiled)

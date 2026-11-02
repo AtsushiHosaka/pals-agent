@@ -304,9 +304,12 @@ benchmark target and proof-method requirements, pass safety validation, and pass
 Lean verification. Hidden targets are evaluator-only and are never included in
 generation prompts. For normal jobs, a catalog Draft is context rather than a
 trusted harness; semantic verification requires an independently supplied user
-formal statement. The verifier also rejects disallowed Lean metaprogramming and
-interactive commands such as `run_cmd` and `#check` as defense in depth. There
-is no deterministic verified template fallback.
+formal statement. The verifier rejects code-executing Lean forms, `#` commands,
+native evaluation and unlisted attributes and options before compiling. Because a
+Lean command can exit the compiler with status 0, an accepted compile is not enough:
+a separate process replays the compiled module through the kernel and allows only
+the `propext`, `Classical.choice` and `Quot.sound` axioms. There is no deterministic
+verified template fallback.
 
 ## Opt-in synthetic geometry domain
 

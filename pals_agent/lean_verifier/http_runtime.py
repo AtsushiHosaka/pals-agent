@@ -157,6 +157,7 @@ def main() -> None:
                 timeout_seconds=settings.timeout_seconds,
                 scratch_dir=_SCRATCH_DIRECTORY,
                 timing_observer=_log_verification_timing,
+                literal_admission_command=True,
             ),
         )
         # The marker is strictly local to the bounded tmpfs.  ECS observes it
