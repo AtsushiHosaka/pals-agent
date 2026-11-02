@@ -524,3 +524,94 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
         "assessment": "d956ec60496799999345f6155b5b724c51d8ad53d28090d16bddfa619439327b",
         "review": "554439c60e639b5a0b1be47f3c0d57ad925bd84b514c9cf5203fa2d6ded215dd",
     }
+
+
+def run_attempt(r, batch, verdict):
+    records = []
+    with usage_scope(records.append):
+        result = attempt(
+            OpenAIResponsesClient(api_key="test", transport=Provider(verdict)),
+            r,
+            batch["claim_id"],
+            lambda: batch,
+            deadline=time.monotonic() + 30,
+        )
+    assert len(records) == 2
+    return result
+
+
+@pytest.mark.parametrize(
+    "choices",
+    [{}, {"natural_zero": "include"}],
+    ids=["no_reading", "one_of_two_readings"],
+)
+def test_reuse_citing_a_reading_the_request_lacks_is_nonacceptance_not_failure(choices):
+    # A signed-in learner's unset setting omits the reading, whereas a guest has every default.
+    r, batch, verdict = inputs()
+    r["math_conventions"] = {"policy": "ask", "choices": choices}
+    result = run_attempt(r, batch, verdict)
+    assert result.answer is None
+    assert set(result.evidence) == {"recipe_semantic_attempt"}
+
+
+def test_reuse_with_every_reading_known_still_publishes_under_ask_policy():
+    r, batch, verdict = inputs()
+    choices = {"natural_zero": "include", "zero_pow_zero": "include"}
+    r["math_conventions"] = {"policy": "ask", "choices": choices}
+    result = run_attempt(r, batch, verdict)
+    assert result.answer is not None
+    assert result.evidence["applied_conventions"] == [
+        {"id": "natural_zero", "choice": "include"},
+        {"id": "zero_pow_zero", "choice": "include"},
+    ]
+
+
+def test_runtime_continues_past_a_reuse_citing_an_unknown_reading():
+    r, batch, verdict = inputs()
+    r["math_conventions"] = {"policy": "ask", "choices": {}}
+    client = OpenAIResponsesClient(api_key="test", transport=Provider(verdict))
+    semantic = ProofReuseRuntime(client, CatalogBoundary()).semantic_recipe_input(
+        r,
+        recipe_batch=lambda: batch,
+        claim_id=batch["claim_id"],
+        deadline=time.monotonic() + 30,
+    )
+    assert semantic is not None and semantic.answer is None
+
+
+@pytest.mark.parametrize("policy", ["ask", "default"])
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"answer_qa": False},
+        {"unresolved": ["unsettled premise"]},
+        {"tasks": []},
+        {"relevant_conventions": ["zero_pow_zero", "zero_pow_zero"]},
+        {"relevant_conventions": ["zero_pow_zero=include"]},
+        {"relevant_conventions": ["not_a_catalog_id"]},
+        {"recipe_id": "requested.not_in_catalog"},
+        {"source_target_sha256": "0" * 64},
+        {"checks": {"objects": False}},
+    ],
+    ids=[
+        "answer_qa_false",
+        "unresolved",
+        "no_tasks",
+        "duplicate_convention",
+        "id_joined_with_reading",
+        "id_outside_catalog",
+        "recipe_outside_catalog",
+        "target_changed",
+        "failed_check",
+    ],
+)
+def test_genuinely_invalid_reuse_output_still_fails_closed(policy, change):
+    r, batch, verdict = inputs()
+    r["math_conventions"] = {"policy": policy, "choices": {}}
+    if "checks" in change:
+        verdict["checks"].update(change["checks"])
+    else:
+        verdict.update(change)
+    with pytest.raises(SemanticReuseError) as error:
+        run_attempt(r, batch, verdict)
+    assert error.value.code == "proof_reuse_invalid_response"

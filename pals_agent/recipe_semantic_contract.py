@@ -678,7 +678,6 @@ def validate_schema(value: Any, schema: dict[str, Any]) -> None:
 def parse(
     raw: str,
     batch: dict[str, Any],
-    known_conventions: dict[str, str],
     *,
     retrieved_entry_sha256s: object,
 ) -> dict[str, Any]:
@@ -694,8 +693,7 @@ def parse(
             1 <= len(value["tasks"]) <= 3
             and value["answer_qa"] is True
             and all(value["checks"].values())
-            and value["unresolved"] == []
-            and all(k in known_conventions for k in value["relevant_conventions"]),
+            and value["unresolved"] == [],
             "response_reuse_not_supported",
         )
         selected = [
@@ -736,7 +734,10 @@ def parse(
 
 
 def consensus(
-    left: dict[str, Any], right: dict[str, Any], batch: dict[str, Any]
+    left: dict[str, Any],
+    right: dict[str, Any],
+    batch: dict[str, Any],
+    known_conventions: dict[str, str],
 ) -> dict[str, Any] | None:
     if left["action"] != "reuse" or right["action"] != "reuse":
         return None
@@ -750,6 +751,11 @@ def consensus(
     if tasks(left) != tasks(right):
         return None
     if set(left["relevant_conventions"]) != set(right["relevant_conventions"]):
+        return None
+    # A well-formed review can cite a reading this request has no setting for, for example
+    # one the learner wrote in the statement. That withholds reuse as needs_input does; it
+    # is not malformed output, and no receipt can record a reading the claim did not supply.
+    if not set(left["relevant_conventions"]) <= known_conventions.keys():
         return None
     # Different valid paraphrase scope wording is diagnostic; it is not a fabricated
     # canonical AST. Both independent full-scope/answer approvals remain required.
