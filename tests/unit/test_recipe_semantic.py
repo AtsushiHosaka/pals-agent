@@ -491,18 +491,18 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
     assert sent["headers"]["X-PALS-Worker-Secret"] == "isolated"
 
 
-def test_runtime_schema_and_retrieved_policy_match_measured_frozen_bytes():
-    """Policy digest matches frozen retrieved-window v12; static schema remains v6.
+def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
+    """Explicit compound-task delta from v12; static schema remains v6.
 
-    This prevents deployment from silently testing a different prompt. It is not
-    additional provider, catalog-admission or production latency evidence.
+    New golden bytes identify the changed prompt, not a new provider measurement,
+    catalog admission or production latency result.
     """
     import rfc8785
 
     from pals_agent import recipe_semantic_contract as contract
 
     assert hashlib.sha256(contract.BASE.encode()).hexdigest() == (
-        "8db72ddc313002e0ca996b6e85ed43081d8052e1e50e2743b4970887b507cdfc"
+        "6ece96d39ce5526c14dbeb8ca6e20ed1e7a22bbe5d3c925fcc3348ffe3c3517a"
     )
     assert hashlib.sha256(rfc8785.dumps(contract.SCHEMA)).hexdigest() == (
         "800d484003ee988403d102d99d4dc071dfc572c3dfa9e756932accde775ab2df"
@@ -521,6 +521,6 @@ def test_runtime_schema_and_retrieved_policy_match_measured_frozen_bytes():
         retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "ec4c50e86675afafef295fed08b590cdecd13bedeb09d7e84880e8955ed66d41",
-        "review": "ecc55bb516432322769f807dee21d3774a59e8a464dce9cb79fe520c618fca2f",
+        "assessment": "d956ec60496799999345f6155b5b724c51d8ad53d28090d16bddfa619439327b",
+        "review": "554439c60e639b5a0b1be47f3c0d57ad925bd84b514c9cf5203fa2d6ded215dd",
     }

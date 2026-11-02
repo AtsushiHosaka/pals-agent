@@ -1,7 +1,7 @@
 """Closed full-authority catalog and retrieved semantic input/review contract.
 
 Model scopes are independent interpretations, not kernel-certified NL equality.
-Policy matches measured retrieved-window v12; the v6 response schema remains static.
+Retrieved-window policy includes explicit compound-task enumeration; schema stays v6.
 """
 
 from __future__ import annotations
@@ -196,8 +196,12 @@ BASE = (
     "questing its proof is a decide task\n"
     "whose VERBATIM answer must include a complete justification; it is not"
     " an imperative to prove a positive\n"
-    "claim. A calculation requesting its proof is a compute task whose answ"
-    "er must justify the value. For a\n"
+    "claim. A calculation-only request is a compute task whose answer must\n"
+    "still justify the value. If the ORIGINAL request separately asks to calculate\n"
+    "a value or formula AND prove that it holds, record BOTH compute AND prove,\n"
+    "even when the same derivation discharges both obligations. Do not replace\n"
+    "either explicit obligation with the other, or invent a separate proof task\n"
+    "when the request only asks for a justified calculation. For a\n"
     "compound request, record each distinct kind of obligation in tasks (pr"
     "ove, decide, compute) and check ALL\n"
     "of them. For example a requested limiting value and a continuity verdi"

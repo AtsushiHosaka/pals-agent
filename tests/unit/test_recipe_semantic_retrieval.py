@@ -223,15 +223,15 @@ def test_no_rank_or_prompt_result_survives_between_claims(monkeypatch):
     assert len(events) == 2
 
 
-def test_twenty_entry_prompt_bytes_match_measured_private_v12_and_v15_golden():
-    """Golden hashes came from frozen private7f678 v12 policy at V15's exact window.
+def test_twenty_entry_compound_task_prompt_bytes_have_explicit_golden():
+    """Golden hashes identify the explicit compound-task delta from v12.
 
-    The fixture is portable, content-free synthetic catalog metadata. This binds
-    production prompt assembly to the measured implementation, not model accuracy.
+    The portable synthetic catalog fixture binds production prompt assembly;
+    it does not measure provider classification accuracy or runtime latency.
     """
     request, batch, _ = batch_inputs(20)
     pair = prompt_pair(request, batch, rank(batch["recipes"], request["statement"]))
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in pair.items()} == {
-        "assessment": "860a34c38f4b91f7bdbb35f0c8505659c370cc88cf1fbfbc65082ee937f25850",
-        "review": "0e5c4502522f301017f990cf5a1238e2870fde5ada5282dbd2dab5a69307d7be",
+        "assessment": "28c68a975f56a6d887674855b629eaf3bc6f539661af51245844ac13fa84f485",
+        "review": "92a6c929c937ad32959ba5cbd4998b555ecfb89a44cc319743ff304614fe5276",
     }
