@@ -141,7 +141,7 @@ def test_valid_catalog_source_outside_window_is_rejected_after_both_spent_calls(
         pytest.raises(SemanticReuseError, match="proof_reuse_invalid_response"),
     ):
         run(request, batch, provider)
-    judged = [item for item in usage if item["model"] == "gpt-6-luna"]
+    judged = [item for item in usage if item["model"] in {"gpt-6-luna", "gpt-6.1-terra"}]
     assert len(provider.calls) == len(judged) == 2
 
 
@@ -301,6 +301,6 @@ def test_twenty_entry_compound_task_prompt_bytes_have_explicit_golden():
     request, batch, _ = window_inputs(5, 20)
     pair = prompt_pair(request, batch)
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in pair.items()} == {
-        "assessment": "637868f42abe82339c4f48bfe09031bc4a3fe5605ef6f3cae59c407c911b69ac",
-        "review": "b1ebf99657832812f20591789c36fdd65840c295d10312c570b87c1c287e1607",
+        "assessment": "eb2ed80ca85b149409e6a13394a21e0192133aa2a844ac12bfeea47e68b35beb",
+        "review": "3fe2699c984984a1318fa64dcaece208435a0a2af1de65fb754f0e1717e4c327",
     }
