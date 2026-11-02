@@ -10,7 +10,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from pals_agent.api_client import PalsApiClient
+from pals_agent.api_client import RECIPE_SEARCH_RESPONSE_BYTES, PalsApiClient
 from pals_agent.benchmarks import BENCHMARK_PROBLEMS
 from pals_agent.draft_catalog import SeedDraftCatalog
 from pals_agent.evaluation import (
@@ -31,6 +31,7 @@ from pals_agent.factory import (
     build_semantic_stage_judge,
     build_statement_openmath_structurer,
 )
+from pals_agent.http_transport import HardDeadlineHttpTransport
 from pals_agent.models import ProofRunResult
 from pals_agent.proof_flow_image import (
     SubprocessDocker,
@@ -43,6 +44,7 @@ from pals_agent.proof_flow_seed import (
     SeedBuildArtifact,
     SeedEmbeddingFingerprint,
 )
+from pals_agent.runtime_latency import TimedTransport
 from pals_agent.settings import AgentSettings
 from pals_agent.worker import SqsProofWorker, worker_queue_url
 from pals_agent.worker_api_trust import configure_worker_api_trust
@@ -373,6 +375,10 @@ def main(argv: list[str] | None = None) -> int:
         api_client = PalsApiClient(
             base_url=settings.api_base_url,
             worker_secret=settings.worker_shared_secret,
+            transport=TimedTransport(
+                HardDeadlineHttpTransport(max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES),
+                "api", settings.api_base_url,
+            ),
         )
         draining = False
 

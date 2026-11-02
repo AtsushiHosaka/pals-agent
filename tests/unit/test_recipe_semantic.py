@@ -491,8 +491,8 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
     assert sent["headers"]["X-PALS-Worker-Secret"] == "isolated"
 
 
-def test_runtime_policy_schema_and_full_prompt_match_measured_frozen_v6_bytes():
-    """Golden digests were extracted independently from frozen provider policy v6.
+def test_runtime_schema_and_retrieved_policy_match_measured_frozen_bytes():
+    """Policy digest matches frozen retrieved-window v12; static schema remains v6.
 
     This prevents deployment from silently testing a different prompt. It is not
     additional provider, catalog-admission or production latency evidence.
@@ -502,7 +502,7 @@ def test_runtime_policy_schema_and_full_prompt_match_measured_frozen_v6_bytes():
     from pals_agent import recipe_semantic_contract as contract
 
     assert hashlib.sha256(contract.BASE.encode()).hexdigest() == (
-        "d51610b1b4002c58dc291c31aa429b7eedc398a1f7017062bf4c3d738760b79b"
+        "8db72ddc313002e0ca996b6e85ed43081d8052e1e50e2743b4970887b507cdfc"
     )
     assert hashlib.sha256(rfc8785.dumps(contract.SCHEMA)).hexdigest() == (
         "800d484003ee988403d102d99d4dc071dfc572c3dfa9e756932accde775ab2df"
@@ -510,6 +510,7 @@ def test_runtime_policy_schema_and_full_prompt_match_measured_frozen_v6_bytes():
     assert hashlib.sha256(rfc8785.dumps(contract.ROLE)).hexdigest() == (
         "fb12bab6629ca2942585e3ee56da413fe4d5f24d5091c88216af1df2122aeea7"
     )
+    # N=1 uses the explicitly truthful full-shown policy extension.
     r, batch, _ = inputs()
     result = contract.prompts(
         r,
@@ -517,8 +518,9 @@ def test_runtime_policy_schema_and_full_prompt_match_measured_frozen_v6_bytes():
         {"natural_zero": "include", "zero_pow_zero": "include"},
         assessment_session="00000000-0000-4000-8000-000000000001",
         review_session="00000000-0000-4000-8000-000000000002",
+        retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "f56ff14edf276864cf1940eebf236c6198fdad8a88aa977c5978c5ec9cdf5560",
-        "review": "a10456f36f8b2ab0f364b52cc7f41c391f8495518448c956b435f3ceb11d8206",
+        "assessment": "ec4c50e86675afafef295fed08b590cdecd13bedeb09d7e84880e8955ed66d41",
+        "review": "ecc55bb516432322769f807dee21d3774a59e8a464dce9cb79fe520c618fca2f",
     }

@@ -39,6 +39,7 @@ from pals_agent.proof_flow_reranker import OpenAIDraftReranker
 from pals_agent.proof_flow_runtime import ProofFlowRuntime, build_private_proof_flow_runtime
 from pals_agent.proof_request_worker import ProofRequestApi, ProofRequestProcessor
 from pals_agent.recipe_attempt import RecipeAttemptPlannerV1
+from pals_agent.runtime_latency import TimedTransport
 from pals_agent.semantic_evaluation import SemanticStageJudge
 from pals_agent.settings import AgentSettings, validate_release_generation_environment
 from pals_agent.typed_runtime import TypedProofFlowRuntime
@@ -114,6 +115,10 @@ def build_proof_request_processor(
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog
 
     client = replace(_release_openai_client(settings), max_output_tokens=6000)
+    client = replace(
+        client,
+        transport=TimedTransport(client.transport, "provider", client.base_url),
+    )
 
     return ProofRequestProcessor(
         api=api_client,

@@ -1,7 +1,7 @@
-"""Closed complete-catalog semantic input/review contract.
+"""Closed full-authority catalog and retrieved semantic input/review contract.
 
 Model scopes are independent interpretations, not kernel-certified NL equality.
-Source policy/schema matches the measured frozen dual_judge_prompt_v6 contract.
+Policy matches measured retrieved-window v12; the v6 response schema remains static.
 """
 
 from __future__ import annotations
@@ -56,6 +56,10 @@ CANDIDATE_FIELDS = {
     "compiler_receipt_sha256",
     "toolchain_sha256",
 }
+OMITTED_MODEL_FIELDS = frozenset(
+    {"entry_sha256", "lean_sha256", "answer_sha256", "compiler_receipt_sha256", "toolchain_sha256"}
+)
+MODEL_CANDIDATE_FIELDS = (CANDIDATE_FIELDS - OMITTED_MODEL_FIELDS) | {"target_sha256"}
 MAX_BATCH_BYTES = 2 * 1024 * 1024
 MAX_RESULT_BYTES = 16384
 MAX_OUTPUT_TOKENS = 1536
@@ -333,6 +337,63 @@ BASE = (
     "to fit; use miss if you cannot represent the full scope. Copy no proof"
     " text into the result.\n"
 )
+
+SUBSET_POLICY = (
+    "The authority input is a validated COMPLETE bounded catalog, identified by c"
+    "atalog_batch_sha256.\nMODEL input below contains ONLY a retrieved subset of t"
+    "hat catalog, not every catalog entry. A suitable\nRecipe may be absent from t"
+    "he shown subset. Inspect every SHOWN candidate; retrieval, its score, positi"
+    "on,\nfamiliar names, topical similarity and repeated keywords are not evidenc"
+    "e of mathematical identity.\nSelect only among the shown candidates when ever"
+    "y original scope and answer gate passes. If no shown\ncandidate certainly qua"
+    "lifies, retain miss/needs_input/nonproof as applicable; never infer a match "
+    "among\nunseen entries or lower a gate because retrieval ranked a candidate hi"
+    "ghly."
+)
+
+FULL_SHOWN_POLICY = (
+    "The authority input is a validated COMPLETE bounded catalog, identified by c"
+    "atalog_batch_sha256.\nMODEL input below contains ALL catalog entries because "
+    "the complete catalog fits in the candidate window.\nInspect every SHOWN candi"
+    "date; retrieval, its score, position, familiar names, topical similarity and"
+    "\nrepeated keywords are not evidence of mathematical identity. Select only am"
+    "ong the shown candidates\nwhen every original scope and answer gate passes. I"
+    "f none certainly qualifies, retain\nmiss/needs_input/nonproof as applicable; "
+    "never lower any gate because a candidate ranked highly."
+)
+
+_LIBRARY_LEMMA_POLICY = (
+    "A compiled source may legitimately cite an already proved mathematical libra"
+    "ry lemma\nwithout reproducing that lemma's proof, unless the original request"
+    " explicitly forbids that method or\nrequires deriving it from specified eleme"
+    "ntary premises. Do not reject the answer solely for such a\ncitation. Still i"
+    "nspect the lemma's stated usable mathematical content, the actual applicatio"
+    "n and all\nrequired hypotheses: the stored answer must state that usable cont"
+    "ent and justify why it applies here,\nwith faithful, noncircular mathematical"
+    " reasoning. A lemma citation cannot silently assume the requested\nconclusion"
+    " as a new hypothesis, omit a necessary premise, replace the requested method"
+    ', or excuse an\nincorrect or incomplete application. Merely saying "Lean prov'
+    'ed it" is not a mathematical explanation.\nThe registration receipt concerns '
+    "the exact stored Lean source; no new compile is claimed for this request.\n\n"
+)
+
+_COMPLETE_CATALOG_POLICY = (
+    "The batch is COMPLETE for the current bounded catalog. Inspect every candida"
+    "te; ranking/position, familiar\nnames, topical similarity and repeated keywor"
+    "ds are not evidence of mathematical identity."
+)
+
+_ANSWER_GATE_ANCHOR = (
+    "answer_qa is true only if the VERBATIM stored answer completely and correctl"
+    "y answers this original request"
+)
+
+need(BASE.count(_COMPLETE_CATALOG_POLICY) == 1, "complete_catalog_policy_anchor_changed")
+need(BASE.count(_ANSWER_GATE_ANCHOR) == 1, "answer_gate_policy_anchor_changed")
+BASE = BASE.replace(_COMPLETE_CATALOG_POLICY, SUBSET_POLICY).replace(
+    _ANSWER_GATE_ANCHOR, _LIBRARY_LEMMA_POLICY + _ANSWER_GATE_ANCHOR
+)
+
 ROLE = {
     "assessment": "Assess mathematical scope and independently check the whole stored explanation.",
     "review": (
@@ -456,6 +517,35 @@ def validate_batch(request: dict[str, Any], batch: dict[str, Any]) -> list[dict[
     return cast(list[dict[str, Any]], rows)
 
 
+def subset_rows(batch: dict[str, Any], retrieved_entry_sha256s: object) -> list[dict[str, Any]]:
+    """Retain full catalog authority while selecting a bounded model window."""
+    rows = batch["recipes"]
+    need(isinstance(rows, list) and 1 <= len(rows) <= 32, "bounded_schema_catalog_required")
+    core = {
+        "schema_version": CONTENT_SCHEMA,
+        **{k: batch[k] for k in ("output_language", "toolchain_sha256", "recipes")},
+    }
+    need(batch["batch_sha256"] == digest(core), "schema_catalog_digest_changed")
+    need(
+        isinstance(retrieved_entry_sha256s, (list, tuple))
+        and 1 <= len(retrieved_entry_sha256s) <= min(5, len(rows)),
+        "retrieval_subset_count_invalid",
+    )
+    pins = cast(list[str] | tuple[str, ...], retrieved_entry_sha256s)
+    need(
+        all(type(pin) is str and sha(pin) for pin in pins),
+        "retrieval_subset_sha_invalid",
+    )
+    need(
+        len(set(pins)) == len(pins),
+        "retrieval_subset_duplicate",
+    )
+    index = {row["entry_sha256"]: row for row in rows}
+    need(len(index) == len(rows), "full_catalog_entry_sha_ambiguous")
+    need(all(pin in index for pin in pins), "retrieval_subset_not_in_full_catalog")
+    return [index[pin] for pin in pins]
+
+
 def prompts(
     request: dict[str, Any],
     batch: dict[str, Any],
@@ -463,8 +553,10 @@ def prompts(
     *,
     assessment_session: str,
     review_session: str,
+    retrieved_entry_sha256s: object,
 ) -> dict[str, str]:
     rows = validate_batch(request, batch)
+    selected = subset_rows(batch, retrieved_entry_sha256s)
     need(
         uuid(assessment_session) and uuid(review_session) and assessment_session != review_session,
         "independent_sessions_required",
@@ -474,13 +566,23 @@ def prompts(
         and all(text(k, 128) and v in {"include", "exclude"} for k, v in known_conventions.items()),
         "known_conventions_invalid",
     )
-    # Full raw question and actual sealed source/answer; NEVER expected benchmark labels.
+    # Drop opaque identity hashes from MODEL JSON only. The full source/answer,
+    # batch digest, compiler/toolchain and settlement bindings remain intact.
+    candidates = []
+    for row in selected:
+        projected = {key: value for key, value in row.items() if key not in OMITTED_MODEL_FIELDS}
+        projected["target_sha256"] = hashlib.sha256(row["target_source"].encode()).hexdigest()
+        need(set(projected) == MODEL_CANDIDATE_FIELDS, "model_catalog_projection_changed")
+        candidates.append(projected)
+    all_shown = len(selected) == len(rows)
     catalog = {
         "catalog_batch_sha256": batch["batch_sha256"],
-        "candidates": [
-            dict(row, target_sha256=hashlib.sha256(row["target_source"].encode()).hexdigest())
-            for row in rows
-        ],
+        "catalog_candidate_count": len(rows),
+        "shown_candidate_count": len(selected),
+        "candidate_scope": "full_catalog_shown"
+        if all_shown
+        else "retrieved_subset_not_complete_catalog",
+        "candidates": candidates,
     }
     need(set(known_conventions) <= MEANINGS.keys(), "unknown_convention_id")
     request_data = {
@@ -494,8 +596,11 @@ def prompts(
     }
     # Only automatic provider input-prefix caching is eligible here. No model
     # verdict, request, usage or correspondence result is reused across calls.
+    policy = BASE.replace(SUBSET_POLICY, FULL_SHOWN_POLICY) if all_shown else BASE
     prefix = (
-        BASE + "\nCATALOG_DATA:\n" + json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
+        policy
+        + "\nCATALOG_DATA:\n"
+        + json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
     )
     return {
         role: prefix
@@ -566,7 +671,13 @@ def validate_schema(value: Any, schema: dict[str, Any]) -> None:
         need(value in schema["enum"], "response_enum_invalid")
 
 
-def parse(raw: str, batch: dict[str, Any], known_conventions: dict[str, str]) -> dict[str, Any]:
+def parse(
+    raw: str,
+    batch: dict[str, Any],
+    known_conventions: dict[str, str],
+    *,
+    retrieved_entry_sha256s: object,
+) -> dict[str, Any]:
     need(text(raw, MAX_RESULT_BYTES), "response_bytes_invalid")
     value = json.loads(raw, object_pairs_hook=unique)
     validate_schema(value, SCHEMA)
@@ -604,6 +715,18 @@ def parse(raw: str, batch: dict[str, Any], known_conventions: dict[str, str]) ->
             and value["answer_qa"] is False
             and value["source_target_sha256"] is None,
             "response_nonreuse_selection_invalid",
+        )
+    # The original static-schema/scope/source gate above is never replaced by
+    # retrieval. A valid but unshown source still cannot be selected by a judge.
+    subset = subset_rows(batch, retrieved_entry_sha256s)
+    if value["action"] == "reuse":
+        need(
+            any(
+                (row["recipe_id"], row["recipe_revision"])
+                == (value["recipe_id"], value["recipe_revision"])
+                for row in subset
+            ),
+            "response_selected_outside_retrieval_subset",
         )
     return cast(dict[str, Any], value)
 

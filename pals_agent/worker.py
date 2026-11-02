@@ -60,6 +60,7 @@ from pals_agent.recipe_attempt import (
     exact_retrieved_draft_reference,
 )
 from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
+from pals_agent.runtime_latency import process_with_latency, report_latency
 from pals_agent.settings import AgentSettings
 from pals_agent.usage import usage_scope
 
@@ -499,8 +500,9 @@ class SqsProofWorker:
             if task.kind == "proof_request":
                 if self.proof_request_processor is None:
                     return True  # Leave the receipt for a worker with this capability.
-                acknowledged = self.proof_request_processor.process(
-                    task.id, claim_id, extend_visibility,
+                acknowledged = process_with_latency(
+                    self.proof_request_processor, task.id, claim_id, extend_visibility,
+                    emit=report_latency,
                 )
             elif task.kind == "proof":
                 acknowledged = self.process_proof_job(
