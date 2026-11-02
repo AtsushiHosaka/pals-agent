@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
+import shutil
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
 
+from pals_agent import lean as lean_module
+from pals_agent.lean import LeanVerifier
 from pals_agent.lean_environment import (
     LakeEnvironmentCache,
+    VerificationTiming,
     environment_identity,
     materialize_lake_environment,
     parse_lake_environment,
@@ -65,6 +69,120 @@ def test_darwin_runtime_key_is_dropped_only_on_darwin(monkeypatch: pytest.Monkey
     monkeypatch.setattr("pals_agent.lean_environment.sys.platform", "linux")
     with pytest.raises(ValueError):
         parse_lake_environment(_encoded(captured), _base())
+
+
+def test_elan_proxy_hop_count_is_a_reviewed_delta() -> None:
+    captured = {**_base(), "ELAN_TOOLCHAIN": "pinned", "LEAN_RECURSION_COUNT": "1"}
+    assert parse_lake_environment(_encoded(captured), _base()) == {
+        "ELAN_TOOLCHAIN": "pinned", "LEAN_RECURSION_COUNT": "1",
+    }
+
+
+@pytest.mark.parametrize("count", ["", "0", "01", "1 ", "2", "20", "one"])
+def test_unexpected_elan_proxy_hop_count_is_rejected(count: str) -> None:
+    captured = {**_base(), "LEAN_RECURSION_COUNT": count}
+    with pytest.raises(ValueError, match="Elan recursion count"):
+        parse_lake_environment(_encoded(captured), _base())
+
+
+def _elan_workspace(tmp_path: Path) -> tuple[Path, Path, Path]:
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "lake-manifest.json").write_text(json.dumps({"packages": []}))
+    (project / "lean-toolchain").write_text("pinned-toolchain")
+    proxy = tmp_path / "elan/bin"
+    proxy.mkdir(parents=True)
+    # Elan installs one multiplexing executable under both names.
+    for name in ("lake", "lean"):
+        (proxy / name).write_text("elan-proxy")
+    return project, proxy / "lean", proxy / "lake"
+
+
+def _simulate_elan_compiler(
+    monkeypatch: pytest.MonkeyPatch, *, lake_hops: int, rejects: tuple[int, ...] = (),
+) -> list[tuple[list[str], dict[str, str]]]:
+    """Replace only process execution; proxies add their hop as the real Elan does."""
+    calls: list[tuple[list[str], dict[str, str]]] = []
+    compiles: list[bool] = []
+    monkeypatch.setattr(
+        shutil, "which",
+        lambda name, path=None: name if name.startswith("/") else f"/usr/bin/{name}",
+    )
+
+    def run(
+        command: list[str], *, environment: dict[str, str], **_: object,
+    ) -> lean_module._ProcessResult:
+        argv = command[len(command) - command[::-1].index("--"):]
+        calls.append((argv, environment))
+        stdout = ""
+        returncode = 0
+        if argv[1:] == ["env", "/usr/bin/env", "-0"]:
+            stdout = _encoded({
+                **environment, "ELAN_TOOLCHAIN": "pinned", "LEAN_PATH": "/trusted/mathlib",
+                "LEAN_RECURSION_COUNT": str(lake_hops),
+            })
+        else:
+            compiles.append(True)
+            returncode = 1 if len(compiles) in rejects else 0
+        return lean_module._ProcessResult(returncode, stdout, "", False, False)
+
+    monkeypatch.setattr(lean_module, "_run_limited_process", run)
+    return calls
+
+
+def test_elan_path_hits_and_every_request_still_compiles(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, lean, lake = _elan_workspace(tmp_path)
+    calls = _simulate_elan_compiler(monkeypatch, lake_hops=1, rejects=(3,))
+    events: list[VerificationTiming] = []
+    verifier = LeanVerifier(
+        lean_binary=str(lean), lake_binary=str(lake), project_dir=project,
+        scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+        timing_observer=events.append,
+    )
+
+    source = "theorem target : True := by trivial"
+    assert verifier.verify(source).success
+    assert verifier.verify(source).success
+    # The identical source is compiled again; the entry holds no earlier verdict.
+    assert not verifier.verify(source).success
+
+    assert [e.cache_status for e in events if e.stage == "environment_prepare"] == [
+        "miss", "hit", "hit",
+    ]
+    assert [argv[:2] for argv, _ in calls] == [
+        [str(lake), "env"], *([[str(lean), "--threads=1"]] * 3),
+    ]
+    compile_environments = [environment for _, environment in calls[1:]]
+    assert [e["LEAN_RECURSION_COUNT"] for e in compile_environments] == ["1"] * 3
+    assert len({e["HOME"] for e in compile_environments}) == 3
+
+
+def test_unexpected_elan_hop_count_falls_back_to_original_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, lean, lake = _elan_workspace(tmp_path)
+    calls = _simulate_elan_compiler(monkeypatch, lake_hops=2, rejects=(2,))
+    events: list[VerificationTiming] = []
+    verifier = LeanVerifier(
+        lean_binary=str(lean), lake_binary=str(lake), project_dir=project,
+        scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+        timing_observer=events.append,
+    )
+
+    source = "theorem target : True := by trivial"
+    assert verifier.verify(source).success
+    assert not verifier.verify(source).success
+
+    assert [e.cache_status for e in events if e.stage == "environment_prepare"] == [
+        "fallback", "fallback",
+    ]
+    compiled = [
+        (argv[:3], environment) for argv, environment in calls if "--threads=1" in argv
+    ]
+    assert [argv for argv, _ in compiled] == [[str(lake), "env", str(lean)]] * 2
+    assert all("LEAN_RECURSION_COUNT" not in environment for _, environment in compiled)
 
 
 def test_cache_has_one_immutable_entry_and_lifecycle_reset() -> None:

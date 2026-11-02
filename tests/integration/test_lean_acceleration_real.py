@@ -7,8 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from pals_agent.lean import LeanVerifier
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
 from tools.lean_acceleration.benchmark import (
+    INVALID_SOURCE,
     check_concurrency_and_reset,
     load_corpus,
     source_for,
@@ -50,3 +52,25 @@ def test_real_concurrent_invalid_source_and_lifecycle_reset() -> None:
     assert result["concurrent_valid_success"]
     assert not result["concurrent_invalid_success"]
     assert result["after_clear_prepare_statuses"] == ["miss"]
+
+
+def test_real_elan_proxy_path_hits_and_every_request_still_compiles() -> None:
+    project = os.environ.get("PALS_ACCELERATION_REAL_PROJECT")
+    elan_home = os.environ.get("PALS_ACCELERATION_REAL_ELAN_HOME")
+    if not (project and elan_home):
+        pytest.skip("set PALS_ACCELERATION_REAL_PROJECT/ELAN_HOME for the production proxy path")
+    proxies = Path(elan_home) / "bin"
+    events: list[VerificationTiming] = []
+    verifier = LeanVerifier(
+        project_dir=Path(project), lean_binary=str(proxies / "lean"),
+        lake_binary=str(proxies / "lake"), elan_home=elan_home,
+        child_path=f"{proxies}:/usr/local/bin:/usr/bin:/bin", timeout_seconds=120,
+        lake_environment_cache=LakeEnvironmentCache(), timing_observer=events.append,
+    )
+    source = source_for(load_corpus()[0], narrow=True)
+    assert verifier.verify(source).success
+    assert verifier.verify(source).success
+    assert not verifier.verify(INVALID_SOURCE).success
+    assert [e.cache_status for e in events if e.stage == "environment_prepare"] == [
+        "miss", "hit", "hit",
+    ]

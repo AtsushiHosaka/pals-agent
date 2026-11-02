@@ -11,8 +11,10 @@ sandboxed Lean compilation. No compiler process is kept alive.
 
 Each child receives a fresh HOME/TMPDIR. Lake's exact default HOME-based config
 path is rebound to that HOME; other scratch-dependent values and unknown keys
-disable reuse. Darwin's known runtime text-encoding key is dropped only on
-Darwin. Setup failure or unsupported topology records `fallback` and executes
+disable reuse. Behind the Elan proxies Lake also reports
+`LEAN_RECURSION_COUNT`; only the one-hop value `1` is accepted, so a hit's `lean`
+proxy sees the same count (`2`) as `lake env lean`. Darwin's known runtime
+text-encoding key is dropped only on Darwin. Setup failure or unsupported topology records `fallback` and executes
 the original command within the same overall deadline. Proof-job source hashes,
 semantic review, admission and API verification ownership are unchanged.
 
@@ -25,6 +27,47 @@ Production logs stage/duration/cache status only, without source or environment
 values. The cache key is setup identity, **not** a proof, dependency-artifact or
 catalog admission certificate. It cannot make mutable/untrusted workspaces
 safe. Installed Mathlib modules retain their deployment trust boundary.
+
+With Elan the key digests the proxy, not the toolchain behind it. The toolchain
+is bound by the `lean-toolchain` bytes, `ELAN_HOME` and the attested read-only
+root, and the entry never outlives the process.
+
+## Production Elan path
+
+Production resolves `lean` and `lake` to the `/opt/elan/bin` proxies. The
+benchmark below takes native toolchain binaries (it derives `ELAN_HOME` from
+their location), so its results do not exercise this path.
+
+Measured in the arm64 verifier image with the production container limits, a
+64 MiB request tmpfs and Lean 4.32.0-rc1 behind Elan 4.2.3. Fresh process per
+arm, order rotated each round, 6 rounds, five sources per round (the four corpus
+cases with explicit imports and one with `import Mathlib`). Another benchmark
+shared the Docker daemon, so read the paired differences rather than the
+absolute values.
+
+| Source | Reuse off | Reuse on, before Elan fix | Reuse on, after fix |
+| --- | --- | --- | --- |
+| group-kernel-injectivity | 2059 ms | 3907 ms | 885 ms |
+| coprime-product-divisibility | 2289 ms | 4250 ms | 1137 ms |
+| linear-kernel-sum | 2612 ms | 4337 ms | 1381 ms |
+| sequence-limit-addition | 2731 ms | 4578 ms | 1540 ms |
+| group-kernel-injectivity, `import Mathlib` | 6721 ms | 7788 ms | 5296 ms |
+
+Each cell is the median `verify` wall time of 6 samples, all hits in the last
+column. Paired by round and source, the fix saves a median 1179 ms against reuse
+off (faster in 29 of 30 pairs) and 2940 ms against the unfixed flag (30 of 30).
+Before the fix the flag only added cost, because every request failed the
+key check and then ran the original command. The first request of a process
+(`miss`) took a median 2635 ms against 2121 ms with reuse off. On a hit,
+`environment_identity` took about 20 ms.
+
+The largest single-process RSS stays near 1050 MiB (one explicit-import source,
+3 samples), because that is Lean itself. A hit does remove a process: `lake env`
+spawns Lean and waits, holding about 823 MiB RSS during the compile, of which
+67 MiB is anonymous and 756 MiB file-backed. File-backed pages may be shared
+with Lean, so only the anonymous part is a firm per-request saving; total
+container memory was not measured. Elan's proxy hop is lost in the noise of a 25-30 ms
+`lean --version`, so calling native binaries would not gain measurable time.
 
 Run from the agent repository using its installed Python dependencies:
 
@@ -68,3 +111,6 @@ PALS_ACCELERATION_REAL_LEAN=/absolute/pinned-toolchain/bin/lean \
 PALS_ACCELERATION_REAL_LAKE=/absolute/pinned-toolchain/bin/lake \
 python -m pytest tests/integration/test_lean_acceleration_real.py
 ```
+
+Set `PALS_ACCELERATION_REAL_ELAN_HOME=/absolute/elan-home` as well to run the
+production proxy path; without it that test is skipped.

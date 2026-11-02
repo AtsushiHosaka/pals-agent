@@ -16,13 +16,15 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-# Closed vocabulary observed with the pinned Lean 4.32.0-rc1 Lake. An upgrade
-# adding keys falls back to the original command until explicitly reviewed.
+# Closed vocabulary observed with the pinned Lean 4.32.0-rc1 Lake, directly and
+# behind the Elan 4.2.3 proxies production runs. An upgrade adding keys falls
+# back to the original command until explicitly reviewed.
 _LAKE_KEYS = frozenset({
     "ELAN", "ELAN_TOOLCHAIN", "LAKE", "LAKE_ARTIFACT_CACHE", "LAKE_CACHE_DIR",
     "LAKE_CONFIG", "LAKE_HOME", "LAKE_NO_CACHE", "LAKE_PKG_URL_MAP",
     "LAKE_RESTORE_ARTIFACTS", "LEAN", "LEAN_AR", "LEAN_GITHASH", "LEAN_PATH",
-    "LEAN_SRC_PATH", "LEAN_SYSROOT", "PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH",
+    "LEAN_RECURSION_COUNT", "LEAN_SRC_PATH", "LEAN_SYSROOT", "PATH", "LD_LIBRARY_PATH",
+    "DYLD_LIBRARY_PATH",
 })
 _CONFIG_NAMES = ("lean-toolchain", "lake-manifest.json", "lakefile.lean", "lakefile.toml")
 _REQUEST_LAKE_CONFIG = "\x01pals-request-home-lake-config"
@@ -112,6 +114,11 @@ def parse_lake_environment(raw: str, base: dict[str, str]) -> dict[str, str]:
         delta.pop("__CF_USER_TEXT_ENCODING")
     if delta.keys() - _LAKE_KEYS:
         raise ValueError("unreviewed Lake environment key")
+    # Elan's proxy counts its own hops: exactly one for the `lake` proxy. Retaining
+    # it gives a directly launched `lean` proxy the count `lake env lean` produces;
+    # any other value is an unreviewed launch chain.
+    if delta.get("LEAN_RECURSION_COUNT", "1") != "1":
+        raise ValueError("unexpected Elan recursion count")
     if _REQUEST_LAKE_CONFIG in delta.values():
         raise ValueError("reserved environment template")
     # The pinned Lake defaults this key to HOME/.lake/config.toml. Rebind the
