@@ -58,6 +58,7 @@ class AgentSettings:
     proof_requests_queue_url: str | None = None
     typed_catalog_enabled: bool = False
     request_linked_typed_catalog_enabled: bool = False
+    natural_draft_statement_search_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     worker_idle_sleep_seconds: float = 2.0
@@ -196,6 +197,9 @@ class AgentSettings:
             typed_catalog_enabled=_strict_bool_env("PALS_TYPED_CATALOG_ENABLED"),
             request_linked_typed_catalog_enabled=_strict_bool_env(
                 "PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED"
+            ),
+            natural_draft_statement_search_enabled=_strict_bool_env(
+                "PALS_NATURAL_DRAFT_STATEMENT_SEARCH_ENABLED"
             ),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
             max_repair_attempts=_bounded_ascii_int_env(

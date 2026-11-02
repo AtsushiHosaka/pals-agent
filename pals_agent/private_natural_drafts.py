@@ -22,7 +22,11 @@ from pals_agent.http_transport import (
 )
 from pals_agent.models import ProofDraft
 from pals_agent.natural_draft_evidence import NaturalDraftContext, NaturalDraftRetrievalResult
-from pals_agent.openmath import canonicalize_openmath_xml, validate_canonical_retrieval_openmath_xml
+from pals_agent.openmath import (
+    MathXMLValidationError,
+    canonicalize_openmath_xml,
+    validate_canonical_retrieval_openmath_xml,
+)
 from pals_agent.private_draft_candidates import DraftCandidate, _validate_api_base_url
 from pals_agent.proof_reuse import ProofReuseError
 
@@ -34,6 +38,11 @@ EMBEDDING_BINDING: dict[str, str | int] = {
     "deployment": "text-embedding-3-small",
     "revision": "openai-release-2024-01-25",
     "canonicalizer_version": "openmath-cdbase-alpha-c14n-v2",
+}
+# Stored vectors embed the exact canonical_statement text, so they never share the XML binding.
+STATEMENT_EMBEDDING_BINDING: dict[str, str | int] = {
+    **EMBEDDING_BINDING,
+    "canonicalizer_version": "draft-canonical-statement-v1",
 }
 _HEX64 = re.compile(r"[0-9a-f]{64}\Z")
 _ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}\Z")
@@ -71,6 +80,37 @@ class NaturalDraftCandidateClient:
         try:
             if len(query.encode()) > 65536 or canonicalize_openmath_xml(query) != query:
                 raise ValueError("Query is not bounded canonical v2 search data")
+        except (ValueError, TypeError, RecursionError) as error:
+            raise ProofReuseError("proof_reuse_catalog_invalid") from error
+        return self._fetch(
+            "draft-candidates",
+            EMBEDDING_BINDING,
+            embedding,
+            query_openmath=query,
+        )
+
+    def retrieve_by_statement(
+        self, statement: str, embedding: list[float]
+    ) -> NaturalDraftRetrievalResult:
+        if not _text(statement, 8000):
+            raise ProofReuseError("proof_reuse_catalog_invalid")
+        return self._fetch(
+            "statement-draft-candidates",
+            STATEMENT_EMBEDDING_BINDING,
+            embedding,
+            query_statement=statement,
+        )
+
+    def _fetch(
+        self,
+        route: str,
+        binding: dict[str, str | int],
+        embedding: list[float],
+        *,
+        query_openmath: str = "",
+        query_statement: str = "",
+    ) -> NaturalDraftRetrievalResult:
+        try:
             if (
                 len(embedding) != 384
                 or not any(embedding)
@@ -82,14 +122,14 @@ class NaturalDraftCandidateClient:
                 raise ValueError("embedding invalid")
             response = self.transport.request(
                 method="POST",
-                url=self.base_url.rstrip("/") + "/v1/internal/proof-requests/draft-candidates",
+                url=f"{self.base_url.rstrip('/')}/v1/internal/proof-requests/{route}",
                 headers={
                     "X-PALS-Worker-Secret": self.worker_secret,
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 },
                 body=rfc8785.dumps(
-                    {"embedding": embedding, "embedding_binding": EMBEDDING_BINDING, "limit": 8}
+                    {"embedding": embedding, "embedding_binding": binding, "limit": 8}
                 ),
                 timeout_seconds=10.0,
             )
@@ -117,7 +157,7 @@ class NaturalDraftCandidateClient:
             if (
                 payload["schema_version"] != "pals.proof-request-draft-candidates.v1"
                 or payload["evidence_kind"] != "unverified_sketches"
-                or payload["embedding_binding"] != EMBEDDING_BINDING
+                or payload["embedding_binding"] != binding
                 or type(payload["actual_row_count"]) is not int
                 or not 1 <= payload["actual_row_count"] <= 4096
                 or not isinstance(payload["catalog_revision_sha256"], str)
@@ -133,6 +173,7 @@ class NaturalDraftCandidateClient:
                 raise ValueError("catalog candidate count invalid")
             candidates: list[DraftCandidate] = []
             revisions: dict[str, str] = {}
+            rejected_rows = 0
             for row in rows:
                 if not isinstance(row, dict) or set(row) != _PAYLOAD_FIELDS | {
                     "payload_sha256",
@@ -161,7 +202,15 @@ class NaturalDraftCandidateClient:
                 digest = hashlib.sha256(canonical_bytes).hexdigest()
                 if row["payload_sha256"] != digest:
                     raise ValueError("catalog source digest differs")
-                validate_canonical_retrieval_openmath_xml(row["openmath_xml"])
+                try:
+                    validate_canonical_retrieval_openmath_xml(row["openmath_xml"])
+                except MathXMLValidationError:
+                    # A statement hit outside this worker's sealed vocabulary is only a lost
+                    # hint, so a rollout gap cannot take the whole search down with it.
+                    if not query_statement:
+                        raise
+                    rejected_rows += 1
+                    continue
                 revisions[row["id"]] = digest
                 candidates.append(
                     DraftCandidate(
@@ -178,7 +227,7 @@ class NaturalDraftCandidateClient:
             evidence = tuple(NaturalDraftContext(candidate) for candidate in candidates)
             return NaturalDraftRetrievalResult(
                 "match" if evidence else "no_match",
-                query,
+                query_openmath,
                 evidence,
                 {
                     "catalog_contract": "pals.proof-request-draft-candidates.v1",
@@ -186,7 +235,9 @@ class NaturalDraftCandidateClient:
                     "catalog_revision_sha256": payload["catalog_revision_sha256"],
                     "actual_row_count": payload["actual_row_count"],
                     "source_revisions_json": json.dumps(revisions, sort_keys=True),
+                    **({"rejected_rows": rejected_rows} if query_statement else {}),
                 },
+                query_statement,
             )
         except ProofReuseError:
             raise

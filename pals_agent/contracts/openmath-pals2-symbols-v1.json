@@ -1,0 +1,6213 @@
+{
+ "schema_version": "pals.openmath-pals2-symbols.v1",
+ "cdbase": "urn:pals:openmath:cd:v1",
+ "cd": "pals2",
+ "symbols": {
+  "abelian_category": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "abelian_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "abelianization": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "abs_continuous": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "accumulation_point_of_agreement": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "action_fixed_points": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "action_orbit": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "action_orbit_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "action_stabilizer": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adic_complete": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "adic_completion": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adjoin_root": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adjoin_root_generator": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adjoint": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adjoint_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "adjoint_pair": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "adjunction_unit": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ae_ball_average_converges": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_eq": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_eventually_outside": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_fn_seq_tends_to": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_holds": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_holds_all_indices": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_in": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_le": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ae_tends_to": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "affine_isometry_equiv": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "aleph_zero": {
+   "args": [],
+   "returns": "term"
+  },
+  "alg_closed_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebra_hom_of": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebra_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "algebra_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebraic_closure_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebraic_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebraic_integer": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "algebraic_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "alternating_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "analytic_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "arctan_value": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "artinian_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "artinian_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "associated_bilinear": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "associated_primes": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "augmented_matrix": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "automorphism_apply": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "banach_algebra": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "banach_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "banach_space_real": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "basis_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "basis_vector": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "big_o_power_decay": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bijection_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bijective": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bijective_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bilinear_form": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bilinear_map": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "binary_relation_holds": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "binom": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "binomial_prob_seq": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "binomial_rate_seq": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "block_matrix": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "bounded_continuous_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bounded_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bounded_operator": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "bounded_operator_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "bounded_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "box_boundary_flux": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "box_region": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "canonical_embedding": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cat_compose": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cat_identity": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "catalan_number": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cauchy_seq": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "chain_homotopic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "chain_map": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "chain_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "char_not_two": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "charpoly": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "chart_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "chart_source": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "chart_target": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "circle_integral": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "circle_mean": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "circle_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "class_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "class_number": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closed_ball": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closed_disc": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closed_graph": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "closed_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "closed_interval": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closed_interval_between": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closed_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "closure_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "closure_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "comm_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "comm_semiring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "commutator_subgroup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "commuting_matrices": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "compact_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "compact_operator": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "compact_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "compact_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "compact_support": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complement": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "complementary_submodules": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complementary_subspaces": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complete_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complete_subset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complex_banach_algebra": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "complex_conj": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "complex_deriv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "complex_i": {
+   "args": [],
+   "returns": "term"
+  },
+  "complex_polynomial": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "component_fn": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cond_expectation": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cond_prob": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cone_apex": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cone_leg": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "conjugate_subgroup": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "connected_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "connected_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "constant_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cont_diff": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cont_diff_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cont_diff_on": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_circle_function": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_linear_functional": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_linear_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_map_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_maps": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "continuous_on_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "continuous_on_set_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "contractible_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "convex_function_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "convex_function_on_line": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "convex_hull": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "convex_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "coordinate_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "coprime_polys": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cospherical_points": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "count_negative": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "count_positive": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "countable_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "covariance": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "covering_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cycle_length": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cycle_permutation": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cyclic_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cyclic_subgroup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "cyclotomic_extension": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cyclotomic_over_rationals": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "cyclotomic_polynomial": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "decreasing_sets": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "dedekind_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "dense_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "derangement_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "deriv_at_point": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "deriv_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "derivative_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "derivative_function": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "derivative_sequence": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "diagonal_matrix": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "differentiable_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "differentiable_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "dim_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "direct_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "direct_sum_modules": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "discrete_valuation_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "dist_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "dist_tends_to": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "divergence_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "doob_process": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "dot_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "double_dual_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "dual_annihilator": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "dual_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "dvd": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "eigenspace": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "eigenvalue_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "eigenvector_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "element_order": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "elementary_embedding": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "endomorphism": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "entire_function": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "epi_morphism": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "equicontinuous_family": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "equiv_class": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "equivalence_functor": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "equivalence_relation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "equivalent_representations": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "euclid_angle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "euclidean_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "euclidean_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "euler_phi": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "event_partition": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "eventually_nonzero_punctured": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "eventually_zero_near": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "exact_pair": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "expectation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ext_degree": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "extended_infinity": {
+   "args": [],
+   "returns": "term"
+  },
+  "exterior_generator": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "exterior_power": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "extreme_points": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "factorial": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "faithful_functor": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "family_cons": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "family_extends_to_onb": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "family_image": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "family_injective": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "family_inter": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "family_span_upto": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "family_union": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "family_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fd_inner_product_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fd_vector_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fderiv_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fibonacci": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "field_characteristic": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "field_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "field_group_action": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "filtration_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_dim_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_ideal_family_inf": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "finite_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_ring_hom": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_simple_graph": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finite_type_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finitely_generated_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finitely_generated_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "finitely_generated_submodule": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "first_coord": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "first_order_finitely_satisfiable": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "first_order_language": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "first_order_satisfiable": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "first_order_structure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "first_order_theory": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fixed_field": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fixing_subgroup": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "flat_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "floor": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_abs": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_continuous": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "fn_continuous_at": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_continuous_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_continuous_real": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_indicator": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_injective": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "fn_le_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_left_limit_at": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_limit_at": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_limit_at_top": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_maps_to": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_monotone": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "fn_monotone_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_right_limit_at": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_seq_increasing": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fn_seq_liminf": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_seq_sum": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_seq_sup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_strict_anti": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "fn_strict_mono": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "fn_subseq": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_superlevel_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fn_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "form_value": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "formal_power_series_mk": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "forms_equivalent": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "fourier_coeff_circle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fourier_coeff_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fourier_coeff_on": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fourier_l2_family": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fourier_mode_circle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fourier_transform": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fraction_embedding": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fraction_field_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "free_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "free_module_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "free_rank_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "frobenius_automorphism": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "frontier_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "full_functor": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "function_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "functor_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "functor_compose": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "functor_image_cone": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "functor_image_diagram": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "functor_on_morphism": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "functor_on_object": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "fundamental_group": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "galois_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "galois_field": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "galois_group": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "gaussian_int": {
+   "args": [],
+   "returns": "term"
+  },
+  "gaussian_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "gaussian_norm": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "gaussian_prime": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "gcd_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "generated_subgroup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "gradient_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "graph_adjacent": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_clique_free": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_closed_walk": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_colorable": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_connected": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_degree": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "graph_edges": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "graph_eulerian_walk": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_path": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_tree": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "graph_vertices": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "greatest_element": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "group_action": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "group_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_average_inner_product": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_center": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_hom": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "group_identity": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_image": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_inv": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_iso": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "group_kernel": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_mul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "group_pow": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "half_line_left": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "half_line_right": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "half_open_interval": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "has_complex_deriv_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_deriv_at": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_deriv_within_at": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_derivative_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_fderiv_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_fderiv_within": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_law": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_partial_x": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_partial_y": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_right_deriv_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_strict_fderiv_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "has_sum_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "hausdorff_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "hilbert_basis": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "hilbert_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "holds_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "holomorphic_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "holomorphic_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "hom_functor": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "hom_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "homeomorphism": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "homogeneous_of_degree": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "homological_complex": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "homology_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "homology_object": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "homotopic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "homotopy_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "homotopy_equivalent": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ideal_comap": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_family_inter": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "ideal_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ideal_power": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_radical": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_sequence_term": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_smul_submodule": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ideal_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "identically_distributed": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "identity_functor": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "identity_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "identity_matrix": {
+   "args": [],
+   "returns": "term"
+  },
+  "identity_rv": {
+   "args": [],
+   "returns": "term"
+  },
+  "im_component": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "imag_part": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "image_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "image_submodule": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "imaginary_unit": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "increasing_sets": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "indep_events": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "indep_rv": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "indep_sigma": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "index_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "indexed_inter": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "indexed_inter_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "indexed_union": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "indexed_union_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "indicator_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "induced_hom": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "infimum_on_right": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "infinite_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "injective": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "injective_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "injective_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "inner_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "inner_product_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "inner_product_space_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "int_adjoin_sqrt": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integer_adjoin": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integer_range": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integrable_circle": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integrable_fn": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integrable_on_ioi": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integrable_on_set": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integrable_on_whole_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integrable_real_line": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "integral_circle": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "integral_closure_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integral_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integral_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integral_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "integral_ioi": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "integral_iterated": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integral_iterated_swap": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integral_real_line": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "integral_seq": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "integral_whole_space": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "integral_wrt": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "interior_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "interior_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "intermediate_field": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "intertwining_map": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "interval_integrable": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "interval_integrable_fn": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "interval_integral": {
+   "args": [
+    "term",
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "interval_like": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "invariant_subspace": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "inverse_operator": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "invertible_operators": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "irreducible_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "irreducible_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "irreducible_representation": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_basis_family": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_cardinal": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_category": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_complement": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_glb": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_lub": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_ordinal": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "is_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "iso_morphism": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "isometry": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "isomorphic_groups": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "isomorphic_over": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "isomorphic_spaces": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "iterate_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "iterate_sequence": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "iterated_complex_deriv": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "iterated_deriv_within": {
+   "args": [
+    "term_function",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "jacobson_radical": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "k_subsets": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "kernel": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "kernel_inclusion": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "l2_circle_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "language_cardinality": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lebesgue_measure": {
+   "args": [],
+   "returns": "term"
+  },
+  "left_coset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "legendre_symbol": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "level_set_through": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lie_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lie_algebra_hom": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lie_bracket": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lie_derived_series": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lie_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lie_ideal_bracket": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lie_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "limit_cone": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "limit_ordinal": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "limsup_events": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "linear_combination": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "linear_det": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "linear_equiv_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_iso": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_map_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_map_over": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_representation": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "linear_span": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "linearly_independent_family": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lintegral": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lintegral_iterated": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lintegral_iterated_swap": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lintegral_seq_liminf": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lintegral_seq_sup": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lipschitz_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lipschitz_on_with": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "little_o_at": {
+   "args": [
+    "term_function",
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_extremum_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_extremum_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_inverse_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_max_at": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_min_at": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_minimizer_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "local_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "localization_at_prime": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "localization_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "localized_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "locally_compact_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "locally_convex_tvs": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "locally_graph_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "locally_integrable": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "locally_uniform_limit": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "lp_norm": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "lp_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "map_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "map_compose": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "map_image": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "martingale": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "matrix_adjugate": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_column_count": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_column_replaced": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_columns": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_det": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_diagonal_product": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_entry": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_exp": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_inverse": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_minor_deleted": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_mul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_null_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_order": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_over_field": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "matrix_rank": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_ring": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_row_count": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_row_replaced": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_rows": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_rows_swapped": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_scale": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_square": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "matrix_trace": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_transpose": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "matrix_vector_mul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "max_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "maximal_element": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "maximal_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mdifferentiable_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "measurable_fn": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "measurable_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "measurable_wrt": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "measure_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "measure_seq": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "mem_lp": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "metric_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mfderiv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "mgf": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "minimal_polynomial": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "minimizer_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "module_hom": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "module_iso": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "module_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "moebius": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "monic_polynomial": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mono_morphism": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "morphism_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "morphism_comp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "multinomial_coeff": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "multiplicative_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "multiset_mem": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "multiset_prod": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "mutually_indep_events": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mutually_indep_rv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mutually_singular": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "mv_eval": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "mv_polynomial_ring": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "nat_div": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "nat_half_lines": {
+   "args": [],
+   "returns": "term"
+  },
+  "nat_mod": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "nat_trans_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nat_trans_component": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "nat_trans_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "natural_range": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "naturally_isomorphic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nilpotent_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nilpotent_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nilpotent_lie_algebra": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nilpotent_op": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nilradical_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "noetherian_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "noetherian_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "noncentral_conjugacy_classes": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "nonempty_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nonneg_on_subsets": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nonpos_on_subsets": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nontrivial_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "nonzero_in_field": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "norm": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "normal_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "normal_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "normal_subgroup": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "normed_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "normed_space_real": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "number_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "object_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "omega_ordinal": {
+   "args": [],
+   "returns": "term"
+  },
+  "on_line": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "op_comp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "op_pow": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_ball": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_cover_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "open_disc": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_half_line_right": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "open_interval": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_interval_between": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "open_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "open_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "operator_add": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "operator_tends_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "order_antichain_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "order_chain_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "order_invertible_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ordered_pair": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "orthogonal_complement": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "orthogonal_projection": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "orthonormal_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "p_group": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "padic_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "padic_integers": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "padic_norm": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "padic_valuation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pairwise_indep_rv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "partial_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "partial_sum_rv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "partial_sums_converge": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "partition_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "path_concat": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "path_connected_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "path_connected_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "path_homotopic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "path_refl": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "path_reverse": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "paths": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "perfect_field": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "permutation_of_naturals": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "permutation_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "permutation_sign": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pi": {
+   "args": [],
+   "returns": "term"
+  },
+  "point_add": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "point_neg": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "point_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "point_zero": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pointwise_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pointwise_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pointwise_tends_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "poisson_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "polar_domain": {
+   "args": [],
+   "returns": "term"
+  },
+  "polar_map": {
+   "args": [],
+   "returns": "term"
+  },
+  "poly_coeff": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_const": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_degree": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_derivative": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_eval": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_leading_coeff": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poly_var": {
+   "args": [],
+   "returns": "term"
+  },
+  "polynomial_galois_group": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "polynomial_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "polynomial_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "polynomial_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "polynomial_x_pow_sub": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "poset": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "positive_definite_matrix": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "positive_infinity": {
+   "args": [],
+   "returns": "term"
+  },
+  "post_compose": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "power_series_x": {
+   "args": [],
+   "returns": "term"
+  },
+  "powerset": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "preadditive_category": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "preconnected_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "preconnected_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "preimage": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "preimage_submodule": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "presheaf_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "primary_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "prime_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "prime_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "prime_multiset": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "prime_power_cyclic_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "prime_power_quotient_sum": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "prime_spectrum": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "primitive_polynomial": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "primitive_root_of_unity": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "principal_arg": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "principal_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "principal_ideal_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "principal_log": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "principal_log_fn": {
+   "args": [],
+   "returns": "term"
+  },
+  "prob": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "prob_tends_to": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "probability_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "product_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "product_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "product_over_divisors": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "product_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "product_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "projection_first": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "projection_second": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "projective_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "proper_subspace_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "pullback_projection_right": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "pure_tensor": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quadratic_form": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "quotient_class": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_group": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_proj": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_ring": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "quotient_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "range_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "range_sum": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "re_component": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "real_differentiable_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "real_differential": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "real_function_space": {
+   "args": [],
+   "returns": "term"
+  },
+  "real_part": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "real_partial_sum": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "real_polynomial": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "real_pos_part": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "real_series_sum": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "real_series_summable": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "real_symmetric_matrix": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "real_vector_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "reduced_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "relates": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "relative_norm": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "rep_character": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "residue_class": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "restricted_to_first": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "restricted_to_second": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "restricts_to": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "right_coset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "right_inverse_near": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_characteristic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_hom": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_hom_injective": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_image": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ring_iso": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_isomorphic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "ring_kernel": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ring_krull_dim": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ring_of_integers": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "ring_quotient_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "row_addition_product": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "second_coord": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "second_countable_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "second_derivative_within": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "semidirect_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "seminorm_definite": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "semisimple_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "semisimple_op": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "separable_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "separable_polynomial": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "separable_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_antitone": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_cauchy": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_fn_tends_to": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_fn_tends_to_infinity": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "seq_length": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "seq_liminf": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "seq_limsup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "seq_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "seq_monotone": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_tends_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "seq_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "sequentially_compact_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "series_abs_summable": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "series_has_sum": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "series_sum": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "series_sum_fn": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "series_summable": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "series_summable_fn": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "set_compl": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_dilate": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_family_inter": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_frontier": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_integral": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "set_seq_inter": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_seq_limsup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_seq_union": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "set_translate": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "short_exact_complexes": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sigma_compact_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sigma_finite_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sigma_le": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "signed_measure": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "simple_extension": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "simple_fn": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "simple_graph": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "simple_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "simple_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "simply_connected_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "singleton_set": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "smooth_function": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "smooth_manifold": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "smooth_partition_of_unity": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "smul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "solvable_by_radicals": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "solvable_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "solvable_lie_algebra": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "span_of_eigenspaces": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "span_of_gen_eigenspaces": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "spectral_radius": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "spectrum_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "spectrum_point_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "spectrum_zero_locus": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "splitting_field": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "square_integrable_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "square_integrable_rv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "squarefree_poly": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "strict_convex_function_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "strict_mono_index": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sub_sigma_algebra": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subgroup_image": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subgroup_index": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subgroup_join": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subgroup_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subgroup_preimage": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subgroup_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "sublevel_set_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "submartingale": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "submodule_inter": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "submodule_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "submodule_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "submonoid_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subordinate_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subset_antichain": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subspace_inter": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subspace_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "subspace_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "subspace_topology_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "successive_degrees": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sum_inclusion_left": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "sum_of_simple_submodules": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "sum_over_divisors": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "returns": "term"
+  },
+  "sum_projection_right": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "surjective": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "surjective_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "sylow_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "sylow_subgroup": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "symmetric_form": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "symmetric_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "symmetric_operator": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "t1_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "tail_event": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "tangent_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "tends_in_measure": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "tends_to_at_infinity": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "tends_to_zero_at_infinity": {
+   "args": [
+    "term_function"
+   ],
+   "returns": "prop"
+  },
+  "tends_uniformly": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "tensor_identity_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "tensor_product_module": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "three_cycle": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "topological_basis": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "topological_quotient_map": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "topological_support": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "topological_vector_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "torsion_submodule": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "total_variation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "totally_bounded_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "trace_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "transposition": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "trapezoid_sum": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "trivial_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "trivial_subgroup": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "twice_continuously_differentiable_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "uniform_continuous": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "uniform_continuous_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "uniform_converges_on": {
+   "args": [
+    "term_function",
+    "term_function",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "uniform_measure_on": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "uniform_tends_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "uniformly_continuous_map": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "union_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "unique_factorization_domain": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "unique_maximal_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "unit_bump_seq": {
+   "args": [],
+   "returns": "term"
+  },
+  "unit_closed_ball": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "unit_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "unit_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "unit_interval": {
+   "args": [],
+   "returns": "term"
+  },
+  "unit_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "units_group": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "upper_bound": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "upper_triangular_matrix": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "valuation_ring": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "vandermonde_difference_product": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "vandermonde_matrix": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "variable_family": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "variance": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "vector_angle": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "vector_finrank": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "vector_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "vector_space_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "walk_length": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "weak_star_compact": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "weierstrass_curve": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "weierstrass_points": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "weighted_squares_form": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "well_founded": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "well_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "whole_space": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "whole_submodule": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "with_density": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "yoneda_map": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "zero_function": {
+   "args": [],
+   "returns": "term"
+  },
+  "zero_ideal": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "zero_linear_map": {
+   "args": [],
+   "returns": "term"
+  },
+  "zero_map": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "returns": "term"
+  },
+  "zero_matrix": {
+   "args": [],
+   "returns": "term"
+  },
+  "zero_module": {
+   "args": [],
+   "returns": "term"
+  },
+  "zero_module_of": {
+   "args": [
+    "term"
+   ],
+   "returns": "prop"
+  },
+  "zero_morphism_cat": {
+   "args": [],
+   "returns": "term"
+  },
+  "zero_submodule": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "zero_subspace": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  },
+  "zero_vector": {
+   "args": [],
+   "returns": "term"
+  },
+  "zmod_units": {
+   "args": [
+    "term"
+   ],
+   "returns": "term"
+  }
+ }
+}

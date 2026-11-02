@@ -18,7 +18,7 @@ _SCHEMA_VERSION = "pals.openmath-cdbase-alpha-c14n-v4-vectors.v2"
 _CANONICALIZER_VERSION = "openmath-cdbase-alpha-c14n-v4"
 _SOURCE_PATH = "pals_agent/openmath.py"
 _ENTRY_POINT = "canonicalize_retrieval_openmath_xml"
-_ARTIFACT_SHA256 = "b61936c81392ddbb6aca727b7919db6ac9c833061fd59446dc47bc31bb1703c3"
+_ARTIFACT_SHA256 = "9ec4f53608a07dc66ee4247d469a641a5532f1dbd82591748642b4b65bfe5a92"
 _HEX64 = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
 
 

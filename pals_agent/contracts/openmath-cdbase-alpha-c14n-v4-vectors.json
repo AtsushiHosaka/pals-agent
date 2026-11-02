@@ -5,7 +5,7 @@
     "repository": "pals-agent",
     "revision": "WORKING: source_sha256 is the immutable authority",
     "source_path": "pals_agent/openmath.py",
-    "source_sha256": "2bbda0e91eac0ab043a2cf5fb256bacdd66e7a9e97000249ecb07ccb5bfbdf57",
+    "source_sha256": "c9d53957330dc4888cb31d997893b2b8ebc617f7d024fb93e586ddab729f868c",
     "entry_point": "canonicalize_retrieval_openmath_xml",
     "runtime": "CPython 3.12 standard-library xml.etree.ElementTree"
   },
@@ -74,6 +74,26 @@
     {
       "id": "c14n_v4_invalid_continuity_lambda_arity",
       "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals1\" name=\"continuous_on\"/><OMS cd=\"set1\" name=\"emptyset\"/><OMBIND><OMS cd=\"fns1\" name=\"lambda\"/><OMBVAR><OMV name=\"x\"/><OMV name=\"y\"/></OMBVAR><OMI>0</OMI></OMBIND></OMA></OMOBJ>",
+      "expected_outcome": "reject"
+    },
+    {
+      "id": "c14n_v4_pals2_additive_symbol",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"G\"/></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals2\" name=\"abelian_group\"/><OMV name=\"G\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals2\" name=\"abelian_group\"/><OMV name=\"G\"/></OMA></OMA></OMBIND></OMOBJ>",
+      "canonical_openmath_xml": "<n1:OMOBJ xmlns:n1=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><n1:OMBIND><n1:OMS cd=\"quant1\" name=\"forall\"></n1:OMS><n1:OMBVAR><n1:OMV name=\"v1\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\"logic1\" name=\"implies\"></n1:OMS><n1:OMA><n1:OMS cd=\"pals2\" cdbase=\"urn:pals:openmath:cd:v1\" name=\"abelian_group\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\"pals2\" cdbase=\"urn:pals:openmath:cd:v1\" name=\"abelian_group\"></n1:OMS><n1:OMV name=\"v1\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>",
+      "payload": {
+        "id": "recipe_c14n_vector_pals2",
+        "canonical_statement": "Every abelian group is abelian.",
+        "proof_strategy": "Use the hypothesis.",
+        "sketch_steps": [
+          "Return the hypothesis."
+        ]
+      },
+      "payload_jcs": "{\"canonical_statement\":\"Every abelian group is abelian.\",\"id\":\"recipe_c14n_vector_pals2\",\"openmath_xml\":\"<n1:OMOBJ xmlns:n1=\\\"http://www.openmath.org/OpenMath\\\" version=\\\"2.0\\\"><n1:OMBIND><n1:OMS cd=\\\"quant1\\\" name=\\\"forall\\\"></n1:OMS><n1:OMBVAR><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMBVAR><n1:OMA><n1:OMS cd=\\\"logic1\\\" name=\\\"implies\\\"></n1:OMS><n1:OMA><n1:OMS cd=\\\"pals2\\\" cdbase=\\\"urn:pals:openmath:cd:v1\\\" name=\\\"abelian_group\\\"></n1:OMS><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMA><n1:OMA><n1:OMS cd=\\\"pals2\\\" cdbase=\\\"urn:pals:openmath:cd:v1\\\" name=\\\"abelian_group\\\"></n1:OMS><n1:OMV name=\\\"v1\\\"></n1:OMV></n1:OMA></n1:OMA></n1:OMBIND></n1:OMOBJ>\",\"proof_strategy\":\"Use the hypothesis.\",\"sketch_steps\":[\"Return the hypothesis.\"]}",
+      "payload_sha256": "e03726de191016406307cbe6f263b80524c9a5f918a45fe7b2c0f0da8bcb4d6e"
+    },
+    {
+      "id": "c14n_v4_invalid_unregistered_pals2_symbol",
+      "input_openmath_xml": "<OMOBJ xmlns=\"http://www.openmath.org/OpenMath\" version=\"2.0\"><OMBIND><OMS cd=\"quant1\" name=\"forall\"/><OMBVAR><OMV name=\"G\"/></OMBVAR><OMA><OMS cd=\"logic1\" name=\"implies\"/><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals2\" name=\"not_a_registered_symbol\"/><OMV name=\"G\"/></OMA><OMA><OMS cdbase=\"urn:pals:openmath:cd:v1\" cd=\"pals2\" name=\"not_a_registered_symbol\"/><OMV name=\"G\"/></OMA></OMA></OMBIND></OMOBJ>",
       "expected_outcome": "reject"
     }
   ]

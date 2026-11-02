@@ -47,15 +47,20 @@ first. Measurements are in `AtsushiHosaka/pals#150`.
 
 ## Draft tiers
 
-Only 87 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
-One more (`tier: duplicate_of_existing`) has the same canonical OpenMath as the existing Draft
-`nt_gcd_lcm_product_identity`, so it is not a new Draft, although its Recipe is. The comparison used
-the 427 canonical records found in this repository's sources, not a read of the production table,
-so it must be repeated at load time. The other 974 (`tier: needs_vocabulary`) use a proposed additive OpenMath dictionary, `pals2`, listed in
-`generated/vocabulary.json` with 976 symbols. The deployed validator rejects unknown symbols when it
-reads a row, so these rows must not be loaded until the validator and query structuring accept that
-vocabulary. `catalog.py` layers the dictionary over the runtime tables for validation only and
-changes nothing at runtime.
+All 1,062 Draft candidates pass the sealed retrieval validator. `tier: generic_now` means every
+symbol is in the runtime profile; `tier: needs_vocabulary` means a card uses a symbol that is not
+sealed yet, so its row must not be loaded. After adding vocabulary, run
+`pals-scripts/reseal-openmath-v4.py` from the parent repository and deploy the worker and API
+together. One card (`tier: duplicate_of_existing`) has the same canonical OpenMath as the existing
+Draft `nt_gcd_lcm_product_identity`, so it is not a new Draft, although its Recipe is. The comparison
+used the 427 canonical records found in this repository's sources, not a read of the production
+table, so it must be repeated at load time.
+
+The additive dictionary `pals2` has 926 symbols, listed in `generated/vocabulary.json`, and the
+registry only grows. `aliases.yaml` maps 50 synonyms onto one symbol at build time, so cards may keep
+either name. Each pair was compared against card usage. Similar names can differ: `module_over` takes
+`M R` while `is_module` takes `R M`, and `open_disc` is complex while `open_ball` is general. Search
+does not need this dictionary in a prompt, because queries are matched on `canonical_statement`.
 
 ## Minimal imports
 

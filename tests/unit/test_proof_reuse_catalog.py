@@ -20,7 +20,11 @@ def test_natural_catalog_is_distinct_from_formal_publication(monkeypatch):
         pytest.fail("Formal pipeline must not serve natural sketch retrieval")
 
     monkeypatch.setattr("pals_agent.factory.build_proof_flow_runtime", forbidden)
-    settings = SimpleNamespace(pfi_runtime_provenance_sha256=None, typed_catalog_enabled=False)
+    settings = SimpleNamespace(
+        pfi_runtime_provenance_sha256=None,
+        typed_catalog_enabled=False,
+        natural_draft_statement_search_enabled=False,
+    )
     catalog = ApiProofReuseCatalog(settings)
     assert catalog.profiles == ("generic-v1",)
     assert catalog.retrieve("P", None, deadline=time.monotonic() + 100).contexts == ()
@@ -98,6 +102,7 @@ def test_search_hint_stays_v2_without_formal_query_admission(monkeypatch):
         openai_max_output_tokens=6000,
         api_base_url="https://api.example.test",
         worker_shared_secret="test",
+        natural_draft_statement_search_enabled=False,
     )
     ApiProofReuseCatalog(settings).retrieve(
         "The original goal", "generic-v1", deadline=time.monotonic() + 180
@@ -180,3 +185,91 @@ def test_malformed_natural_query_still_reports_completed_provider_cost():
     assert usage[0]["model"] == "gpt-6-luna"
     assert usage[0]["input_tokens"] == 100
     assert usage[0]["role"] == "openmath"
+
+
+def _statement_settings(enabled=True):
+    return SimpleNamespace(
+        openai_api_key="test",
+        openai_base_url="https://api.openai.com/v1",
+        openai_max_output_tokens=6000,
+        api_base_url="https://api.example.test",
+        worker_shared_secret="test",
+        natural_draft_statement_search_enabled=enabled,
+    )
+
+
+def _capture_statement_search(monkeypatch, calls):
+    from pals_agent.proof_flow_runtime import DraftRetrievalResult
+
+    def generate(self, *, model, prompt, response_schema=None, **kwargs):
+        calls["prompt"] = prompt
+        calls["response_schema"] = response_schema
+        return "  Every finite group has a composition series.  "
+
+    def embed(self, text):
+        calls["embedding_input"] = text
+        return [0.5] * 384
+
+    def retrieve_by_statement(self, statement, embedding):
+        calls["retrieved"] = statement
+        return DraftRetrievalResult("no_match", "", (), {"reason": "stub"})
+
+    monkeypatch.setattr("pals_agent.openai.OpenAIResponsesClient.generate", generate)
+    monkeypatch.setattr("pals_agent.proof_reuse_catalog.BoundedEmbeddingModel.embed", embed)
+    monkeypatch.setattr(
+        "pals_agent.proof_reuse_catalog.NaturalDraftCandidateClient.retrieve_by_statement",
+        retrieve_by_statement,
+    )
+
+
+def test_statement_search_embeds_the_english_rewrite_without_any_vocabulary(monkeypatch):
+    from pals_agent.natural_query_tree import VOCABULARY
+
+    calls = {}
+    _capture_statement_search(monkeypatch, calls)
+    statement = "有限群は組成列をもつ"
+    ApiProofReuseCatalog(_statement_settings()).retrieve(
+        statement, "generic-v1", deadline=time.monotonic() + 180
+    )
+    assert calls["response_schema"] is None
+    assert statement in calls["prompt"] and VOCABULARY not in calls["prompt"]
+    assert calls["embedding_input"] == "Every finite group has a composition series."
+    assert calls["retrieved"] == calls["embedding_input"]
+
+
+def test_profileless_requests_stay_away_from_paid_search_with_the_flag_on(monkeypatch):
+    calls = {}
+    _capture_statement_search(monkeypatch, calls)
+    result = ApiProofReuseCatalog(_statement_settings()).retrieve(
+        "有限群は組成列をもつ", None, deadline=time.monotonic() + 180
+    )
+    assert result.compatibility == {"reason": "no_catalog_profile"}
+    assert calls == {}
+
+
+def test_failed_statement_search_stays_a_catalog_failure(monkeypatch):
+    calls = {}
+    _capture_statement_search(monkeypatch, calls)
+
+    def unavailable(self, statement, embedding):
+        raise ProofReuseError("proof_reuse_catalog_unavailable")
+
+    monkeypatch.setattr(
+        "pals_agent.proof_reuse_catalog.NaturalDraftCandidateClient.retrieve_by_statement",
+        unavailable,
+    )
+    with pytest.raises(ProofReuseError, match="catalog_unavailable"):
+        ApiProofReuseCatalog(_statement_settings()).retrieve(
+            "有限群は組成列をもつ", "generic-v1", deadline=time.monotonic() + 180
+        )
+
+
+def test_empty_english_rewrite_is_an_invalid_query(monkeypatch):
+    from pals_agent.proof_reuse_catalog import NaturalQueryTranslator
+
+    class Client:
+        def generate(self, **kwargs):
+            return "   "
+
+    with pytest.raises(ProofReuseError, match="query_invalid"):
+        NaturalQueryTranslator(Client()).translate("P")
