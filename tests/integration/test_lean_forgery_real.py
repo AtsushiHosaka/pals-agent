@@ -53,8 +53,8 @@ def _plain(lean: str) -> LeanVerifier:
     return LeanVerifier(lean_binary=lean, elan_home=str(Path(lean).parent.parent))
 
 
-def _codes(result: VerificationResult) -> list[str | None]:
-    return [item.code for item in result.diagnostics]
+def _codes(result: VerificationResult) -> list[str]:
+    return [str(item.code) for item in result.diagnostics]
 
 
 @pytest.fixture
