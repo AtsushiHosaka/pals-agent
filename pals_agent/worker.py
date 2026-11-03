@@ -61,7 +61,16 @@ from pals_agent.recipe_attempt import (
     exact_retrieved_draft_reference,
 )
 from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
-from pals_agent.runtime_latency import process_with_latency, report_latency
+from pals_agent.runtime_latency import (
+    latency_label,
+    latency_stage,
+    link_latency_request,
+    note_latency,
+    process_with_latency,
+    queue_observation,
+    report_latency,
+    traced_delivery,
+)
 from pals_agent.settings import AgentSettings
 from pals_agent.usage import usage_scope
 
@@ -511,6 +520,7 @@ class SqsProofWorker:
             return False
 
         message = messages[0]
+        queue_timing = queue_observation(message)
         try:
             task, receipt_handle = parse_sqs_agent_message(message)
         except (TypeError, ValueError):
@@ -546,27 +556,36 @@ class SqsProofWorker:
                     return True  # Leave the receipt for a worker with this capability.
                 acknowledged = process_with_latency(
                     self.proof_request_processor, task.id, claim_id, extend_visibility,
-                    emit=report_latency,
+                    emit=report_latency, queue=queue_timing,
                 )
             elif task.kind == "proof":
-                acknowledged = self.process_proof_job(
-                    task.id,
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "proof_job", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_proof_job(
+                        task.id,
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             elif task.kind == "explanation":
-                acknowledged = self.process_explanation_retry(
-                    task.id,
-                    retry_id=cast(str, task.retry_id),
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "explanation", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_explanation_retry(
+                        task.id,
+                        retry_id=cast(str, task.retry_id),
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             elif task.kind == "clarification":
-                acknowledged = self.process_clarification(
-                    task.id,
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "clarification", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_clarification(
+                        task.id,
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             else:
                 raise ValueError(f"Unsupported agent task kind: {task.kind}")
         except (ProofJobNotFoundError, PalsApiError):
@@ -596,6 +615,7 @@ class SqsProofWorker:
         context = proof_job.get("request_context", {})
         if not isinstance(context, dict):
             return False
+        link_latency_request(context.get("proof_request_id"))
         with ExitStack() as stack:
             try:
                 payload = (
@@ -679,13 +699,14 @@ class SqsProofWorker:
                 except Exception:
                     return False
             try:
-                review = self._required_proof_reviewer().review_proof(
-                    theorem_statement=statement,
-                    formal_statement=formal_statement,
-                    target_declaration=target_declaration,
-                    lean_code=lean_code,
-                    timeout_seconds=timeout_seconds,
-                )
+                with latency_stage("semantic_review"), latency_label("semantic_review"):
+                    review = self._required_proof_reviewer().review_proof(
+                        theorem_statement=statement,
+                        formal_statement=formal_statement,
+                        target_declaration=target_declaration,
+                        lean_code=lean_code,
+                        timeout_seconds=timeout_seconds,
+                    )
             except Exception as exc:
                 failure = _semantic_review_unavailable_payload(
                     candidate_id=candidate_id, mutation_claim_id=generation_session_id,
@@ -815,10 +836,11 @@ class SqsProofWorker:
         # fresh Recipe selection over that durable attempt, or change its retry semantics.
         if not request_linked and api_repair_seed is None and formal_statement is not None:
             try:
-                recipe_attempt = self._selected_recipe_attempt(
-                    formal_statement=formal_statement,
-                    proof_job_id=proof_job_id, mutation_claim_id=claim_id,
-                )
+                with latency_stage("recipe_attempt_selection"):
+                    recipe_attempt = self._selected_recipe_attempt(
+                        formal_statement=formal_statement,
+                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                    )
             except RuntimeError:
                 return False
             if recipe_attempt is not None:
@@ -914,12 +936,13 @@ class SqsProofWorker:
                     prepared = pipeline.prepare_statement(statement=statement)
                 try:
                     resolved = exact_retrieved_draft_reference(prepared)
-                    decision = self.recipe_attempt_planner.decide(
-                        formal_declaration=None,
-                        draft_revision=resolved[0] if resolved else None,
-                        proof_method_tag=resolved[1] if resolved else None,
-                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
-                    )
+                    with latency_stage("recipe_attempt_selection"):
+                        decision = self.recipe_attempt_planner.decide(
+                            formal_declaration=None,
+                            draft_revision=resolved[0] if resolved else None,
+                            proof_method_tag=resolved[1] if resolved else None,
+                            proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                        )
                 except (ValueError, RecipeSelectionUnavailableError):
                     return False
                 if isinstance(decision, RecipeAttemptV1):
@@ -939,7 +962,7 @@ class SqsProofWorker:
                 run_kwargs["prepared_request"] = prepared
             with usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-            )):
+            )), latency_stage("proof_pipeline"):
                 run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
@@ -1134,19 +1157,23 @@ class SqsProofWorker:
             except Exception:
                 return None
         deadline = self.monotonic() + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
-        while True:
-            try:
-                proof_job = self.api_client.get_proof_job(proof_job_id)
-            except PalsApiError:
-                proof_job = None
-            if isinstance(proof_job, dict) and (
-                proof_job.get("state") != "compiling" or not _has_pending_api_candidate(proof_job)
-            ):
-                return proof_job
-            remaining = deadline - self.monotonic()
-            if remaining <= 0:
-                return None
-            self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
+        with latency_stage("lean_reconciliation_wait"):
+            while True:
+                note_latency("reconciliation_polls", 1)
+                try:
+                    proof_job = self.api_client.get_proof_job(proof_job_id)
+                except PalsApiError:
+                    proof_job = None
+                if isinstance(proof_job, dict) and (
+                    proof_job.get("state") != "compiling"
+                    or not _has_pending_api_candidate(proof_job)
+                ):
+                    _note_verification_elapsed(proof_job)
+                    return proof_job
+                remaining = deadline - self.monotonic()
+                if remaining <= 0:
+                    return None
+                self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -1546,27 +1573,37 @@ class SqsProofWorker:
         private_review_failures: list[dict[str, Any]] = []
         try:
             reviewer = self._required_output_reviewer()
-            explanation, review = _generate_reviewed_candidate(
-                generate=lambda feedback: self._required_explainer().explain(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    verified=True,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                    **_optional_keyword("review_feedback", feedback),
-                ),
-                review=lambda candidate: reviewer.review_explanation(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    explanation=candidate,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                ),
-                content_of=_public_explanation_content,
-                failures=private_review_failures,
-            )
+
+            def generate_explanation(feedback: Any) -> ProofExplanation:
+                with latency_label("explain"):
+                    return self._required_explainer().explain(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        verified=True,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                        **_optional_keyword("review_feedback", feedback),
+                    )
+
+            def review_explanation(candidate: ProofExplanation) -> ProofOutputReview:
+                with latency_label("explanation_review"):
+                    return reviewer.review_explanation(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        explanation=candidate,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                    )
+
+            with latency_stage("explanation"):
+                explanation, review = _generate_reviewed_candidate(
+                    generate=generate_explanation,
+                    review=review_explanation,
+                    content_of=_public_explanation_content,
+                    failures=private_review_failures,
+                )
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -1850,6 +1887,12 @@ class SqsProofWorker:
         if not isinstance(value, uuid.UUID) or value.version != 4:
             raise RuntimeError("Worker claim factory must return a UUIDv4 value")
         return str(value)
+
+
+def _note_verification_elapsed(proof_job: dict[str, Any]) -> None:
+    status_context = proof_job.get("status_context")
+    if isinstance(status_context, dict):
+        note_latency("lean_verification_ms", status_context.get("verification_elapsed_ms"))
 
 
 def _parse_claim_envelope(

@@ -38,6 +38,7 @@ from pals_agent.models import (
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.runtime_latency import latency_stage
 
 _THEOREM_DECLARATION_RE = re.compile(
     r"\btheorem\s+(?P<name>[A-Za-z_][A-Za-z0-9_'.]*)(?P<signature>.*?)\s*:=",
@@ -549,7 +550,8 @@ class ProofPipeline:
 
             verifier = self.verifier
             assert verifier is not None
-            verification = verifier.verify(generated.lean_code)
+            with latency_stage("lean_compile_local"):
+                verification = verifier.verify(generated.lean_code)
             diagnostics = [*diagnostics, *verification.diagnostics]
             attempts.append(
                 _attempt_metadata(
@@ -1699,7 +1701,8 @@ def _request_for_statement(
     normalized = statement.strip()
     formal = formal_statement.strip() if formal_statement else None
     if proof_flow_retriever is not None:
-        retrieval = proof_flow_retriever.retrieve(normalized)
+        with latency_stage("context_retrieval"):
+            retrieval = proof_flow_retriever.retrieve(normalized)
         return ProofRequest(
             id=problem_id or "custom_statement",
             prompt=normalized,
