@@ -45,7 +45,8 @@ def test_all_pdf_pages_reach_classifier_generator_and_independent_review():
     document = pdf_input()
     parsed = parse_chat_images({"attachments": [document]}, [document["id"]])
     runtime, provider = engine([
-        route(), {"text": "The diagram represents a linear map and its kernel.", "figure_json": None},
+        route(),
+        {"text": "The diagram represents a linear map and its kernel.", "figure_json": None},
         {"approved": True, "rationale": "Both pages were considered."},
     ])
     request = {**REQUEST, "chat_images": parsed}

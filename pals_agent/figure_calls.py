@@ -243,7 +243,8 @@ Example: {"version":1,"template":"inscribed-angle","parameters":{"labels":{"chor
 Geometry parameters always include "labels" mapping every required slot to a point name of the
 answer, matching [A-Z][0-9']?. Add "marks" for what the mathematics states: equal_length and
 parallel take vertex pairs; equal_angle and right_angle take triples with the vertex in the middle;
-"at" lists groups even for one, as in [["A","M","B"]]; claim is given or conclusion. "segments" optionally adds [[label,label]]. A mark's optional step
+"at" lists groups even for one, as in [["A","M","B"]]; claim is given or conclusion.
+"segments" optionally adds [[label,label]]. A mark's optional step
 names a stage; a binding links that step_id to a zero-based paragraph of the answer text, and
 bindings may be empty.
 T and slots: triangle a b c, requires "shape": scalene|isosceles|right|equilateral, optional
