@@ -34,6 +34,10 @@ marker.unlink(missing_ok=True)
 '''
 
 
+class _ChildStarted(Exception):
+    """The ordinary single-worker path was reached without a nested supervisor."""
+
+
 def launch(tmp_path: Path, mode: str = "normal") -> subprocess.Popen[bytes]:
     code = (
         "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
@@ -146,11 +150,19 @@ def test_factory_uses_fresh_exec_and_does_not_pass_parent_runtime(monkeypatch, t
         return 0
 
     monkeypatch.setattr(worker_processes, "_supervise", supervise)
-    assert worker_processes.run_proof_workers(processes=3, ready_file=tmp_path / "ready") == 0
-    assert seen == {
-        "command": [sys.executable, "-m", "pals_agent.cli", "worker", "--lane", "proof"],
-        "processes": 3, "ready_file": tmp_path / "ready",
-    }
+    for lane in ("proof", "assessment"):
+        assert worker_processes.run_lane_workers(
+            lane=lane, processes=3, ready_file=tmp_path / "ready",
+        ) == 0
+        # An explicit child count keeps an inherited environment value from nesting supervisors.
+        assert seen == {
+            "command": [sys.executable, "-m", "pals_agent.cli", "worker",
+                        "--lane", lane, "--processes", "1"],
+            "processes": 3, "ready_file": tmp_path / "ready",
+            "restart_budget": worker_processes._RESTART_BUDGET,
+        }
+    with pytest.raises(ValueError):
+        worker_processes.run_lane_workers(lane="all", processes=2, ready_file=None)
 
 
 @pytest.mark.parametrize("count", [0, 1, 9, True, 2.0])
@@ -159,11 +171,59 @@ def test_process_count_is_closed(count):
         worker_processes._supervise(command=[], processes=count, ready_file=None)
 
 
-@pytest.mark.parametrize("lane", ["all", "assessment"])
-def test_cli_refuses_nonproof_parallel_lanes(lane):
+def test_cli_refuses_parallel_mixed_lane():
     with pytest.raises(SystemExit) as error:
-        cli.main(["worker", "--lane", lane, "--processes", "2"])
+        cli.main(["worker", "--lane", "all", "--processes", "2"])
     assert error.value.code == 2
+
+
+@pytest.mark.parametrize("value", ["0", "9", "02", "two", "", " 2", "-1", "\u0662"])
+def test_process_count_environment_is_closed(monkeypatch, value):
+    monkeypatch.setenv("PALS_WORKER_PROCESSES", value)
+    monkeypatch.setattr(cli, "run_lane_workers", lambda **kwargs: pytest.fail("supervised"))
+    with pytest.raises(SystemExit) as error:
+        cli.main(["worker", "--lane", "assessment"])
+    assert error.value.code == 2
+
+
+def test_process_count_environment_omission_keeps_one_worker(monkeypatch):
+    monkeypatch.delenv("PALS_WORKER_PROCESSES", raising=False)
+    assert worker_processes.worker_processes_from_env() == 1
+
+
+@pytest.mark.parametrize(("lane", "argv", "environment", "expected"), [
+    ("assessment", ["--processes", "4"], None, 4),
+    ("assessment", [], "4", 4),
+    ("proof", [], "2", 2),
+    ("proof", ["--processes", "3"], "2", 3),
+])
+def test_cli_selects_lane_supervisor(monkeypatch, tmp_path, lane, argv, environment, expected):
+    seen = {}
+
+    def supervise(**kwargs):
+        seen.update(kwargs)
+        return 0
+
+    if environment is None:
+        monkeypatch.delenv("PALS_WORKER_PROCESSES", raising=False)
+    else:
+        monkeypatch.setenv("PALS_WORKER_PROCESSES", environment)
+    monkeypatch.setattr(cli, "run_lane_workers", supervise)
+    monkeypatch.setattr(
+        cli, "SqsProofWorker", lambda **kwargs: pytest.fail("parent runtime constructed")
+    )
+    assert cli.main(["worker", "--lane", lane, *argv,
+                     "--ready-file", str(tmp_path / "ready")]) == 0
+    assert seen == {"lane": lane, "processes": expected, "ready_file": tmp_path / "ready"}
+
+
+def test_supervised_child_with_inherited_environment_never_nests(monkeypatch):
+    monkeypatch.setenv("PALS_WORKER_PROCESSES", "4")
+    monkeypatch.setattr(cli, "run_lane_workers", lambda **kwargs: pytest.fail("nested"))
+    monkeypatch.setattr(cli, "worker_queue_url", lambda *a: (_ for _ in ()).throw(_ChildStarted()))
+    monkeypatch.setattr(cli, "configure_worker_api_trust", lambda *a: None)
+    with pytest.raises(_ChildStarted):
+        cli.main(["worker", "--lane", "assessment", "--processes", "1"])
 
 
 def test_cli_selects_supervisor_before_constructing_any_worker(monkeypatch, tmp_path):
@@ -173,13 +233,13 @@ def test_cli_selects_supervisor_before_constructing_any_worker(monkeypatch, tmp_
         seen.update(kwargs)
         return 0
 
-    monkeypatch.setattr(cli, "run_proof_workers", supervise)
+    monkeypatch.setattr(cli, "run_lane_workers", supervise)
     monkeypatch.setattr(
         cli, "SqsProofWorker", lambda **kwargs: pytest.fail("parent runtime constructed")
     )
     assert cli.main(["worker", "--lane", "proof", "--processes", "2",
                      "--ready-file", str(tmp_path / "ready")]) == 0
-    assert seen == {"processes": 2, "ready_file": tmp_path / "ready"}
+    assert seen == {"lane": "proof", "processes": 2, "ready_file": tmp_path / "ready"}
 
 
 @pytest.mark.parametrize("payload", [b"", b"wrong pid", b"\xff", b"1" * 33])
@@ -216,3 +276,93 @@ def test_disappearing_child_readiness_fails_and_drains_real_children(tmp_path):
         if process.poll() is None:
             process.terminate()
             process.wait(timeout=8)
+
+
+DYING_CHILD = r"""
+import os,sys,time
+from pathlib import Path
+root=Path(sys.argv[1]); dying=int(sys.argv[2]); marker=Path(sys.argv[-1])
+births=len(list(root.glob('birth-*')))
+(root/f'birth-{os.getpid()}').write_text('')
+marker.write_text(str(os.getpid()))
+if births<dying: os._exit(9)
+time.sleep(60)
+"""
+
+
+def test_dead_child_is_replaced_without_stopping_healthy_siblings(tmp_path):
+    code = (
+        "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
+        "raise SystemExit(_supervise(command="
+        + repr([sys.executable, "-c", DYING_CHILD, str(tmp_path), "2"])
+        + ",processes=2,ready_file=Path(" + repr(str(tmp_path / "ready"))
+        + "),startup_seconds=5,poll_seconds=.01,restart_budget=5))"
+    )
+    process = subprocess.Popen([sys.executable, "-c", code], stderr=subprocess.PIPE)
+    try:
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline and len(list(tmp_path.glob("birth-*"))) < 4:
+            assert process.poll() is None
+            time.sleep(.02)
+        assert len(list(tmp_path.glob("birth-*"))) == 4
+        time.sleep(.2)
+        assert process.poll() is None
+        assert (tmp_path / "ready").exists()
+    finally:
+        process.terminate()
+        process.wait(timeout=10)
+    assert process.stderr is not None
+    assert b"worker_child_restarted" in process.stderr.read()
+
+
+def test_exhausted_restart_budget_still_drains_and_exits(tmp_path):
+    code = (
+        "from pathlib import Path; from pals_agent.worker_processes import _supervise; "
+        "raise SystemExit(_supervise(command="
+        + repr([sys.executable, "-c", DYING_CHILD, str(tmp_path), "1000"])
+        + ",processes=2,ready_file=Path(" + repr(str(tmp_path / "ready"))
+        + "),startup_seconds=5,poll_seconds=.01,restart_budget=2))"
+    )
+    process = subprocess.Popen([sys.executable, "-c", code], stderr=subprocess.DEVNULL)
+    assert process.wait(timeout=20) == 1
+    assert 3 <= len(list(tmp_path.glob("birth-*"))) <= 5
+    assert not (tmp_path / "ready").exists()
+
+
+def test_child_reporting_an_sqs_outage_stops_the_lane_without_a_restart(tmp_path):
+    # Each child waits for its sibling, so the lane's stop cannot race a sibling's first line.
+    outage = (
+        "import sys,pathlib,os,time;"
+        f"root=pathlib.Path({str(tmp_path)!r});"
+        "(root/f'birth-{os.getpid()}').write_text('');"
+        "pathlib.Path(sys.argv[-1]).write_text(str(os.getpid()));"
+        "deadline=time.monotonic()+30;\n"
+        "while len(list(root.glob('birth-*')))<2 and time.monotonic()<deadline: time.sleep(.01)\n"
+        f"os._exit({worker_processes.LANE_UNAVAILABLE_EXIT})"
+    )
+    assert worker_processes._supervise(
+        command=[sys.executable, "-c", outage], processes=2, ready_file=tmp_path / "ready",
+        startup_seconds=60, poll_seconds=.01, restart_budget=5,
+    ) == 1
+    assert len(list(tmp_path.glob("birth-*"))) == 2
+    assert not (tmp_path / "ready").exists()
+
+
+def test_restart_budget_window_reaches_a_crash_every_twelve_minutes():
+    assert worker_processes._RESTART_WINDOW_SECONDS / worker_processes._RESTART_BUDGET == 720
+
+
+def test_ready_marker_appears_complete_and_leaves_no_pending_file(tmp_path, monkeypatch) -> None:
+    marker = tmp_path / "ready"
+    replace = worker_processes.os.replace
+
+    def observed_replace(source, destination):
+        assert not marker.exists()
+        assert worker_processes._marker_ready(marker, os.getpid()) is None
+        replace(source, destination)
+
+    monkeypatch.setattr(worker_processes.os, "replace", observed_replace)
+    worker_processes.write_ready_marker(marker)
+
+    assert worker_processes._marker_ready(marker, os.getpid()) is True
+    assert [path.name for path in tmp_path.iterdir()] == ["ready"]

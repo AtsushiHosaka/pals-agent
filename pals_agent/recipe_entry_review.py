@@ -258,19 +258,33 @@ def main(arguments: list[str] | None = None) -> int:
         key = load_pem_private_key(args.private_key.read_bytes(), password=None)
         if not isinstance(key, Ed25519PrivateKey):
             raise ValueError("review signing key must be Ed25519")
-        result = review_and_seal(
-            entry,
-            source_bytes.decode("utf-8"),
-            client=OpenAIResponsesClient(
-                api_key=os.environ.get("PALS_OPENAI_API_KEY", os.environ.get("OPENAI_API_KEY", "")),
-                base_url=os.environ.get("PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"),
-            ),
-            reviewer_principal=args.reviewer_principal,
-            review_key_id=args.review_key_id,
-            private_key=key,
-        )
-        with args.output.open("xb") as output:
-            output.write(rfc8785.dumps(result))
+        # Claim the output before paying, so an approval can never be lost to an unwritable path.
+        try:
+            output = args.output.open("xb")
+        except OSError:
+            print(json.dumps({"status": "output_unavailable"}))
+            return 1
+        with output:
+            try:
+                result = review_and_seal(
+                    entry,
+                    source_bytes.decode("utf-8"),
+                    client=OpenAIResponsesClient(
+                        api_key=os.environ.get(
+                            "PALS_OPENAI_API_KEY", os.environ.get("OPENAI_API_KEY", "")
+                        ),
+                        base_url=os.environ.get(
+                            "PALS_OPENAI_BASE_URL", "https://api.openai.com/v1"
+                        ),
+                    ),
+                    reviewer_principal=args.reviewer_principal,
+                    review_key_id=args.review_key_id,
+                    private_key=key,
+                )
+                output.write(rfc8785.dumps(result))
+            except BaseException:
+                args.output.unlink(missing_ok=True)
+                raise
         print(json.dumps({"status": "reviewed", "entry_sha256": result["review"]["entry_sha256"]}))
         return 0
     except Exception:

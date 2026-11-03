@@ -905,8 +905,44 @@ def test_worker_waits_for_api_candidate_reconciliation_before_regenerating() -> 
 
     assert acknowledged is False
     assert api.reconciliation_retries == [("job-pending", "22222222-2222-4222-8222-222222222222")]
-    assert visibility == [360]
-    assert sum(sleeps) == 330.0
+    # One extension up front, then one for each 300 s of the wait.
+    assert visibility == [360] * 7
+    # Longer than the API's 425 s of backoff and five 310 s attempts of an ordinary candidate.
+    assert sum(sleeps) == 2000.0
+
+
+def test_candidate_wait_ends_on_shutdown_and_when_visibility_cannot_be_renewed() -> None:
+    clock = [0.0]
+
+    def advance(seconds: float) -> None:
+        clock[0] += seconds
+
+    def worker(**options: Any) -> SqsProofWorker:
+        return SqsProofWorker(
+            settings=cast(AgentSettings, SimpleNamespace()),
+            api_client=cast(Any, PendingCandidateApi()),
+            pipeline=StructuringFailurePipeline(),
+            explainer=ExplainerThatMustNotRun(),
+            monotonic=lambda: clock[0],
+            sleep=advance,
+            **options,
+        )
+
+    stopping = worker(stop_requested=lambda: clock[0] >= 10)
+    assert stopping._wait_for_candidate_reconciliation(
+        proof_job_id="job-pending", extend_visibility=lambda seconds: None,
+        refresh_visibility=False,
+    ) is None
+    assert clock[0] == 10
+
+    def denied(seconds: int) -> None:
+        raise RuntimeError("denied")
+
+    clock[0] = 0.0
+    assert worker()._wait_for_candidate_reconciliation(
+        proof_job_id="job-pending", extend_visibility=denied, refresh_visibility=False,
+    ) is None
+    assert clock[0] == 300
 
 
 def test_worker_stops_candidate_polling_when_api_exposes_compile_failure() -> None:
