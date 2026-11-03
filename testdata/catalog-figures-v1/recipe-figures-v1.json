@@ -143,7 +143,7 @@
    }
   },
   {
-   "answer_sha256": "53726e9bbd57cade8f3a78590a172a06d66dbd87acfefeff08fa50e11c3b606e",
+   "answer_sha256": "e6a01fc9ff2c2d516ab4e1a9713f5f6b510f847874ca3dab2d2796c195e3ef3a",
    "recipe_id": "textbook.geometry_circle.central_angle_twice_inscribed_same_side",
    "visualization": {
     "parameters": {
@@ -159,7 +159,7 @@
    }
   },
   {
-   "answer_sha256": "ac85a379242123b76e3828d0b13aaf1a292e3bcdc464031d95da64a6d4557d4c",
+   "answer_sha256": "8754e846240a10604c466461c5ee78e1b6dd71e0326f1a714ff9eb77693c1b6b",
    "recipe_id": "textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_converse",
    "visualization": {
     "parameters": {
@@ -181,7 +181,7 @@
    }
   },
   {
-   "answer_sha256": "64a730edb5211ca6eef70235019ad6447a2ac857b1cf098e6f1da2125a406062",
+   "answer_sha256": "6542618cd5a6739c42c6760f3e51311f93a6416924fb1efef9ffab36f169fa7c",
    "recipe_id": "textbook.geometry_circle.cyclic_quadrilateral_opposite_angles_sum_pi",
    "visualization": {
     "parameters": {
@@ -203,7 +203,7 @@
    }
   },
   {
-   "answer_sha256": "cc3b867474e3655229477afce284679177b6a2b7e6440f729dd6015adf738d81",
+   "answer_sha256": "fc2843b455dafed0ac3823713932e90bc76920c32f77b4d07ec64372eb334c28",
    "recipe_id": "textbook.geometry_circle.inscribed_angle_same_side",
    "visualization": {
     "parameters": {
@@ -238,7 +238,7 @@
    }
   },
   {
-   "answer_sha256": "502fcb2b56225b39ac703bccd78b4f99d3fdfa4f00b2bd74e481243fb6164f8d",
+   "answer_sha256": "05c206d3c1c3dd05117d9dc8c015666849c7663d32dccfd7668feb69a294e0fc",
    "recipe_id": "textbook.geometry_circle.inscribed_angle_same_side_converse",
    "visualization": {
     "parameters": {
@@ -272,7 +272,7 @@
    }
   },
   {
-   "answer_sha256": "79d8e7da2c8ea2fa1979a4d71a4aa9fc56fe0477d23aad14d4f46e243a92ab0b",
+   "answer_sha256": "867bc7cedc3827ef6357826f04b8955d6d7f789b0705b3811686b91636b4c5cc",
    "recipe_id": "textbook.geometry_circle.intersecting_chords_converse",
    "visualization": {
     "parameters": {
@@ -290,7 +290,7 @@
    }
   },
   {
-   "answer_sha256": "a46ac14128ec6b62b6fe12575e339fa3a3cfd4e9cf44da9e21ce09b2080fed4f",
+   "answer_sha256": "494848ba872a14d78f9fc479868060ae441bd33e6e5c7b89115f89e329ba61b1",
    "recipe_id": "textbook.geometry_circle.intersecting_chords_similar_ratio",
    "visualization": {
     "parameters": {
@@ -318,7 +318,7 @@
    }
   },
   {
-   "answer_sha256": "460faeb4c3cc1f7b994b85cfb3adcff1b55cff6c250619f7f2eda2c01556e63c",
+   "answer_sha256": "c59a551c49824950f5a727c47aa90879aabe49b02af56e44ddeee97d28e2a7af",
    "recipe_id": "textbook.geometry_circle.secants_converse",
    "visualization": {
     "parameters": {
@@ -336,7 +336,7 @@
    }
   },
   {
-   "answer_sha256": "85d8d7e73b69db00a7ef6d1b4381e7a3d4e55efc441646e299c32de300c9f9ae",
+   "answer_sha256": "e36e616c2e64ee18905309755e14f777fabd26b7b5e8494a416de33d4b7af410",
    "recipe_id": "textbook.geometry_circle.tangent_chord_angle",
    "visualization": {
     "parameters": {
@@ -370,7 +370,7 @@
    }
   },
   {
-   "answer_sha256": "8efb5155adf40a30af3c4fa8f246574f24fa3bfccb57d676d4f1ceed05fecdb4",
+   "answer_sha256": "1e6c8b824a8514cdd1666160496de43b23998edae6fe9a48748b440904826bdb",
    "recipe_id": "textbook.geometry_circle.tangent_chord_angle_converse",
    "visualization": {
     "parameters": {
@@ -404,7 +404,7 @@
    }
   },
   {
-   "answer_sha256": "7f1c219165ad44296bb0b520a1de0d1fcd22a81541483fe1d2bd60e1a9b56423",
+   "answer_sha256": "176e4d3fbccc3b7dcc23d6439de1b0beb3ab82866fb5133bdaa07450af1d63b5",
    "recipe_id": "textbook.geometry_circle.tangent_lengths_equal",
    "visualization": {
     "parameters": {
@@ -435,7 +435,7 @@
    }
   },
   {
-   "answer_sha256": "eb316e4c21042c90a0ad25e318d576cb025a9186fc65512d6d65e7cd6c11376f",
+   "answer_sha256": "e055cde8b81848b3aaae9b98183d93c51d6e1f50816af1ca680190990ce99f90",
    "recipe_id": "textbook.geometry_circle.tangent_secant_converse",
    "visualization": {
     "parameters": {
@@ -452,7 +452,7 @@
    }
   },
   {
-   "answer_sha256": "bde292bcc1a6293f8cc540c155522edb4a9a7d6c2599319c356fba4ec353d80a",
+   "answer_sha256": "5a2d3335524ec4a906e1a7df4209351bbc416e95460652db0c7b39508408aa2e",
    "recipe_id": "textbook.geometry_circle.tangent_secant_power",
    "visualization": {
     "parameters": {
@@ -469,7 +469,7 @@
    }
   },
   {
-   "answer_sha256": "d20b842ca9fd4b7cbe5dcaf55d5b4e5af7124e5ad2d882bbaea31ee7bd02fae3",
+   "answer_sha256": "85f075ba22e9c79364fb2389b7f9692eb711fe9d71266e7a7e6d1c4c7bcb1166",
    "recipe_id": "textbook.geometry_circle.tangents_center_line_bisects_angles",
    "visualization": {
     "parameters": {
@@ -525,7 +525,7 @@
    }
   },
   {
-   "answer_sha256": "b19a6f91fd4446c47b1e2341c522db6c79a9e3c3db01967e298d81e805062269",
+   "answer_sha256": "d6b58233630df34e7f0b1e2f330562f59333d8090a4e001456bf70291eb9914e",
    "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
    "visualization": {
     "parameters": {
@@ -541,7 +541,7 @@
    }
   },
   {
-   "answer_sha256": "35f86d29d5e373a9319046ac37e90cfcac7d34f628988995806788eb841b740d",
+   "answer_sha256": "46356af2a0c2d37cfe41b79d138fb427e096c29ae8a74f0a4aace096278433f1",
    "recipe_id": "textbook.geometry_homotopy.power_of_a_point_lines",
    "visualization": {
     "parameters": {
@@ -559,7 +559,7 @@
    }
   },
   {
-   "answer_sha256": "3f481fad2991a9ce020929f67a4487953e397780c2ae7d72fc0b66bceb76c8a3",
+   "answer_sha256": "c280650d128e9fd2547ac2bd57d49d5b2741fe09cf3bd25c73db5fce2d2df5a3",
    "recipe_id": "textbook.geometry_homotopy.ptolemy_cyclic_quadrilateral",
    "visualization": {
     "parameters": {
@@ -585,7 +585,7 @@
    }
   },
   {
-   "answer_sha256": "b4388337e5b597a832ba1ca37f344bab87dda0a977a998e900014082e01fa90b",
+   "answer_sha256": "9db6d6e0f55d66500aa6d10096a15d7df22a52eb06a64d72850a10f8cab929a7",
    "recipe_id": "textbook.geometry_homotopy.pythagoras_angle_iff",
    "visualization": {
     "parameters": {
@@ -601,7 +601,7 @@
    }
   },
   {
-   "answer_sha256": "d3fdc2fce738dcd0d4d316250851b8491e7c3ab370181caa07b97b2186ca937a",
+   "answer_sha256": "449a0af3ea491435aadf5b5307e141ea9e0d04f7b79b4d80c022f5d75c516f40",
    "recipe_id": "textbook.geometry_triangle.angle_bisector_theorem_internal",
    "visualization": {
     "parameters": {
@@ -651,7 +651,7 @@
    }
   },
   {
-   "answer_sha256": "0f17499a8efecc79a0a12f724720fab04862440165935871bd23fc39ed757709",
+   "answer_sha256": "92f7de51c632e073096d9918f5278ec55535360b51bf872412dcde27fef9da61",
    "recipe_id": "textbook.geometry_triangle.isosceles_iff_median_perpendicular",
    "visualization": {
     "parameters": {
@@ -699,7 +699,7 @@
    }
   },
   {
-   "answer_sha256": "64e2ba8103891a9ed6fdf39efc7ddfe13e1701ff329f9898c7cef42f6b190fcc",
+   "answer_sha256": "637aa8a08764d3b02ce74c8b3952dd460a95ae95f09a936b2909731c0d5c4b08",
    "recipe_id": "textbook.geometry_triangle.median_theorem_apollonius",
    "visualization": {
     "parameters": {
@@ -747,7 +747,7 @@
    }
   },
   {
-   "answer_sha256": "9d5b3a1d53e03ad6e592a6f0531f519448e962995b4ced86f332207f3a513f4b",
+   "answer_sha256": "3a3028417fd162542ebfa01b92464bead2ca5ae7f010ae6fc74d7c793f215768",
    "recipe_id": "textbook.geometry_triangle.triangle_congruent_asa",
    "visualization": {
     "parameters": {
@@ -814,7 +814,7 @@
    }
   },
   {
-   "answer_sha256": "1ac4ab5b09dedf8f9c64cc4cdd53ca621d6b669ae2c8c023e76c2ea0a6165398",
+   "answer_sha256": "93bd20450409123c587cd6610b55ca667dd7459db342152e538bc03a514c0136",
    "recipe_id": "textbook.geometry_triangle.triangle_congruent_sas",
    "visualization": {
     "parameters": {
@@ -879,7 +879,7 @@
    }
   },
   {
-   "answer_sha256": "cd0d97862a353a29cf716a733554fdecacc9fae32d3aaec2384672d00eebbca5",
+   "answer_sha256": "b2d9170256c47f4f5e15e4960b9292d598f18de4bde4989e5f781859d13edc6d",
    "recipe_id": "textbook.geometry_triangle.triangle_congruent_sss",
    "visualization": {
     "parameters": {
@@ -942,7 +942,7 @@
    }
   },
   {
-   "answer_sha256": "293a16d3bfee2774490f97ce59f156b9d5cbccfe4f61cf6a43b38f2c7241f015",
+   "answer_sha256": "3edd235d8b45a061bfef87dd14113102d7cd276b07835516085db38a09336dc1",
    "recipe_id": "textbook.geometry_triangle.triangle_similar_aa_ratio",
    "visualization": {
     "parameters": {
@@ -995,7 +995,7 @@
    }
   },
   {
-   "answer_sha256": "5b91def61f6506b1c9b7715dc6ae8e92d1bf4d158758ed3bc5ce07477c8e978b",
+   "answer_sha256": "e8bb993bd3676791c3d17f52ad7b62e9a2dfaf1fc6372f4ab94d180ebb46110a",
    "recipe_id": "textbook.geometry_triangle.triangle_similar_sas_ratio",
    "visualization": {
     "parameters": {
@@ -1032,7 +1032,7 @@
    }
   },
   {
-   "answer_sha256": "eaa38b5bf69329480e91b519f0f04dd9ced21d9ae947feaaef4cbd700d6c908f",
+   "answer_sha256": "6008cec2f771b912d24da1e510786f804fa1f3071d75ba8c52ce5c505ff9b27d",
    "recipe_id": "textbook.geometry_triangle.triangle_similar_sss_ratio",
    "visualization": {
     "parameters": {

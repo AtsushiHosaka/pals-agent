@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -25,8 +26,8 @@ def stored_answer(cards: Path, recipe_id: str) -> str:
         raise ValueError(f"{recipe_id}: unknown Recipe ID")
     deck = yaml.safe_load((cards / f"{domain}.yaml").read_text())
     card = next(card for card in deck if card["id"] == card_id)
-    # catalog.py seals `card["answer"].strip()` as the search entry's answer.
-    return card["answer"].strip()
+    # The same bytes as `stored_answer` in textbook-catalog-v1/catalog.py, or the figure is lost.
+    return re.sub(r"。\n(?!\n)", "。\n\n", card["answer"].strip())
 
 
 def build(cards: Path) -> dict:
