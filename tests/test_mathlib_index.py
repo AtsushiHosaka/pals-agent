@@ -4,6 +4,7 @@ import json
 from typing import Any
 
 from tools.mathlib_index.build_index import build, name_tokens
+from tools.mathlib_index.exact_precheck import closed_source, parse_exact_output, split_sketch
 from tools.mathlib_index.extract_premises import bundle_source
 from tools.mathlib_index.search import (
     Candidate,
@@ -256,3 +257,57 @@ def test_spend_guard_refuses_calls_once_the_limit_is_reached() -> None:
         client.generate(model="gpt-6.1-terra", prompt="p")
     assert inner.calls == 1
     assert guard.stopped
+
+
+def test_split_sketch_drops_sorry_helpers_and_finds_the_top_level_proof() -> None:
+    code = """import Mathlib.Foo
+import Mathlib.Bar
+
+open Real
+
+-- note := here
+lemma helper (x : ℝ) : x = x := by
+  sorry
+
+noncomputable def g (x : ℝ) := x
+
+theorem target {K : Type*} [Field K] (f : K → K := id) (h : ∀ x, f x = x) :
+    f 0 = 0 := by
+  have := h 0
+  sorry
+"""
+    split = split_sketch(code)
+    assert split is not None
+    imports, statement = split
+    assert imports == "import Mathlib.Foo\nimport Mathlib.Bar"
+    assert "helper" not in statement
+    assert "noncomputable def g" in statement
+    assert statement.endswith("f 0 = 0")
+    assert split_sketch("import Mathlib\n") is None
+
+
+def test_parse_exact_output_requires_a_suggestion_and_no_error() -> None:
+    def line(data: str, severity: str) -> str:
+        return json.dumps({"data": data, "severity": severity})
+
+    closed = parse_exact_output(line("Try this:\n  [apply] exact foo h", "information"))
+    assert closed == {"outcome": "closed", "proof": "exact foo h", "error": None}
+    assert parse_exact_output(
+        line("`exact?` could not close the goal.", "error")
+    )["outcome"] == "not_closed"
+    assert parse_exact_output(
+        line("(deterministic) timeout, maximum number of heartbeats", "error")
+    )["outcome"] == "heartbeat_limit"
+    assert parse_exact_output(line("unexpected token", "error"))["outcome"] == "statement_error"
+    assert parse_exact_output(
+        line("Try this:\n  [apply] exact foo", "information")
+        + "\n"
+        + line("unexpected token", "error")
+    )["outcome"] == "statement_error"
+    assert parse_exact_output("")["outcome"] == "no_result"
+
+
+def test_closed_source_indents_every_proof_line() -> None:
+    assert closed_source("import Mathlib", "theorem t : True", "exact\n  trivial") == (
+        "import Mathlib\n\ntheorem t : True := by\n  exact\n    trivial\n"
+    )
