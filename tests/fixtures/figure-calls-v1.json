@@ -17,6 +17,8 @@
     {"version":1,"template":"power-of-point","parameters":{"kind":"tangent_secant","labels":{"p":"P","a":"A","b":"B","c":"T"}}},
     {"version":1,"template":"cyclic-quadrilateral","parameters":{"labels":{"a":"A","b":"B","c":"C","d":"D"},"segments":[["A","C"],["B","D"]]}},
     {"version":1,"template":"tangent-lengths","parameters":{"labels":{"p":"P","touch_1":"S","touch_2":"T","center":"O"},"marks":[{"icon":"equal_length","at":[["P","S"],["P","T"]],"claim":"conclusion"},{"icon":"right_angle","at":[["O","S","P"],["O","T","P"]],"claim":"given"}]}},
+    {"version":1,"template":"power-of-point","parameters":{"kind":"chords","labels":{"p":"p","a":"a","b":"b","c":"c","d":"d"}}},
+    {"version":1,"template":"similar-triangles","parameters":{"labels":{"a":"a","b":"b","c":"c","d":"a'","e":"b'","f":"c'"},"criterion":"aa"}},
     {"version":1,"template":"polynomial","parameters":{"coefficients":[-1,0,1],"domain":[-2.5,2.5],"range":[-2,5]}},
     {"version":1,"template":"polynomial-derivative","parameters":{"coefficients":[0,0,1],"domain":[-2.5,2.5],"range":[-1,6.5],"anchor":1,"offsets":[1,0.5,0.02]}}
   ],
@@ -26,6 +28,7 @@
     {"name":"extra call key","call":{"version":1,"template":"polynomial","parameters":{"coefficients":[1],"domain":[0,1],"range":[0,2]},"html":"<b>"}},
     {"name":"tikz injection through a label","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"|[draw]|A","b":"B","c":"C"}}}},
     {"name":"tex command in a label","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"\\input","b":"B","c":"C"}}}},
+    {"name":"two letters in a label","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"ab","b":"B","c":"C"}}}},
     {"name":"html in a label","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"<i>","b":"B","c":"C"}}}},
     {"name":"missing slot","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"A","b":"B"}}}},
     {"name":"unknown slot","call":{"version":1,"template":"triangle","parameters":{"shape":"scalene","labels":{"a":"A","b":"B","c":"C","z":"Z"}}}},
