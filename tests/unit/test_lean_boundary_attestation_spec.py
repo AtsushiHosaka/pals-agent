@@ -152,8 +152,8 @@ def test_outer_memory_ceiling_scales_only_with_the_validated_slot_count() -> Non
 @pytest.mark.parametrize(
     ("memory_max", "expected"),
     [
-        (str(4 * _GIB), True),
-        (str(4 * _GIB + 1), False),
+        (str(8 * _GIB), True),
+        (str(8 * _GIB + 1), False),
         ("max", False),
     ],
 )
@@ -167,7 +167,7 @@ def test_pae_017_outer_memory_attestation_is_bounded_at_four_gib(
     (cgroup / "memory.max").write_text(memory_max, encoding="ascii")
     monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: cgroup)
 
-    assert boundary_module._MAX_MEMORY_BYTES == 4 * _GIB
+    assert boundary_module._MAX_MEMORY_BYTES == 8 * _GIB
     assert (
         boundary_module._integer_cgroup_limited(
             "memory.max",

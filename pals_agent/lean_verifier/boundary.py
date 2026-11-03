@@ -8,7 +8,9 @@ from pathlib import Path
 
 _GIB = 1024 * 1024 * 1024
 _MAX_CPU_COUNT = 2.0
-_MAX_MEMORY_BYTES = 4 * _GIB
+# Library page cache counts against this limit. A broad Mathlib import needs about 7 GiB of it; at
+# 4 GiB compiles evict each other's pages and took up to 129 s instead of 8 s. Heap peaks near 1.5 GiB.
+_MAX_MEMORY_BYTES = 8 * _GIB
 _MAX_CONCURRENT_COMPILES = 2
 _MAX_PIDS = 64
 _MAX_NOFILE = 1024
