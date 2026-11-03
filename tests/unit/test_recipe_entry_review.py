@@ -9,7 +9,13 @@ import json
 import pytest
 import rfc8785
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives.serialization import (
+    Encoding,
+    NoEncryption,
+    PrivateFormat,
+)
 
+from pals_agent import recipe_entry_review
 from pals_agent.http_transport import HttpResponse
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.recipe_entry_review import main, review_and_seal
@@ -151,3 +157,51 @@ def test_cli_preserves_existing_output_without_reading_keys_or_calling_provider(
         == 1
     )
     assert output.read_text() == "existing"
+
+
+def _cli_arguments(tmp_path, output):
+    entry = tmp_path / "entry.json"
+    source = tmp_path / "source.lean"
+    key = tmp_path / "key.pem"
+    entry.write_text("{}")
+    source.write_text("example")
+    key.write_bytes(
+        Ed25519PrivateKey.generate().private_bytes(
+            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+        )
+    )
+    return [
+        "--entry",
+        str(entry),
+        "--lean-source",
+        str(source),
+        "--output",
+        str(output),
+        "--reviewer-principal",
+        "pals.principal.v1/test-reviewer",
+        "--review-key-id",
+        "unit-key",
+        "--private-key",
+        str(key),
+    ]
+
+
+def test_cli_refuses_an_unwritable_output_before_any_paid_review(tmp_path, monkeypatch, capsys):
+    def never(*_args, **_kwargs):
+        raise AssertionError("the paid review must not run")
+
+    monkeypatch.setattr(recipe_entry_review, "review_and_seal", never)
+    output = tmp_path / "absent" / "sealed.json"
+    assert main(_cli_arguments(tmp_path, output)) == 1
+    assert json.loads(capsys.readouterr().out) == {"status": "output_unavailable"}
+
+
+def test_cli_leaves_no_output_when_the_review_does_not_approve(tmp_path, monkeypatch, capsys):
+    def rejected(*_args, **_kwargs):
+        raise ValueError("independent entry review rejected")
+
+    monkeypatch.setattr(recipe_entry_review, "review_and_seal", rejected)
+    output = tmp_path / "sealed.json"
+    assert main(_cli_arguments(tmp_path, output)) == 1
+    assert json.loads(capsys.readouterr().out) == {"status": "rejected"}
+    assert not output.exists()
