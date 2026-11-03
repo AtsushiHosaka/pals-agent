@@ -330,15 +330,19 @@ def test_exhausted_restart_budget_still_drains_and_exits(tmp_path):
 
 
 def test_child_reporting_an_sqs_outage_stops_the_lane_without_a_restart(tmp_path):
+    # Each child waits for its sibling, so the lane's stop cannot race a sibling's first line.
     outage = (
-        "import sys,pathlib,os;"
-        f"pathlib.Path({str(tmp_path)!r},f'birth-{{os.getpid()}}').write_text('');"
+        "import sys,pathlib,os,time;"
+        f"root=pathlib.Path({str(tmp_path)!r});"
+        "(root/f'birth-{os.getpid()}').write_text('');"
         "pathlib.Path(sys.argv[-1]).write_text(str(os.getpid()));"
+        "deadline=time.monotonic()+30;\n"
+        "while len(list(root.glob('birth-*')))<2 and time.monotonic()<deadline: time.sleep(.01)\n"
         f"os._exit({worker_processes.LANE_UNAVAILABLE_EXIT})"
     )
     assert worker_processes._supervise(
         command=[sys.executable, "-c", outage], processes=2, ready_file=tmp_path / "ready",
-        startup_seconds=5, poll_seconds=.01, restart_budget=5,
+        startup_seconds=60, poll_seconds=.01, restart_budget=5,
     ) == 1
     assert len(list(tmp_path.glob("birth-*"))) == 2
     assert not (tmp_path / "ready").exists()

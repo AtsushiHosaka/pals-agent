@@ -121,7 +121,6 @@ def main() -> None:
             scratch_dir=_SCRATCH_DIRECTORY,
             scratch_max_bytes=_SCRATCH_MAX_BYTES,
             allowed_reference_environment_names=_ALLOWED_REFERENCE_ENVIRONMENT_NAMES,
-            concurrent_compiles=settings.max_concurrent_compiles,
         )
         reader = _tls_reader(settings)
         material = build_verifier_server_tls_material(

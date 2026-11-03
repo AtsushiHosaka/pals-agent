@@ -451,9 +451,15 @@ class SqsProofWorker:
         # acknowledge a delivery merely because shutdown was requested.
         failures = 0
         outage_started = 0.0
+
+        def receive_succeeded() -> None:
+            # A later error on this delivery may come after a long job, not a continuous outage.
+            nonlocal failures
+            failures = 0
+
         while not self.stop_requested():
             try:
-                processed = self.run_once()
+                processed = self.run_once(on_received=receive_succeeded)
             except (BotoCoreError, ClientError) as error:
                 # SQS was unreachable. An undeleted receipt returns after its visibility timeout
                 # and the API claim fences a repeat, so waiting here loses nothing.
@@ -481,7 +487,7 @@ class SqsProofWorker:
                 return
             self.sleep(min(1.0, remaining))
 
-    def run_once(self) -> bool:
+    def run_once(self, *, on_received: Callable[[], None] | None = None) -> bool:
         queue_url = worker_queue_url(self.settings, self.lane)
 
         sqs = boto3.client(
@@ -496,6 +502,8 @@ class SqsProofWorker:
             MessageAttributeNames=["All"],
             MessageSystemAttributeNames=["All"],
         )
+        if on_received is not None:
+            on_received()
         messages = response.get("Messages", []) if isinstance(response, dict) else []
         if not isinstance(messages, list):
             return False

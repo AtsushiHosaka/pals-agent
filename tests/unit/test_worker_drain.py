@@ -191,6 +191,54 @@ def test_sqs_outage_past_its_limit_ends_the_worker_for_a_lane_restart_decision(m
     assert 900 <= sum(slept) < 960
 
 
+def test_run_once_reports_a_receive_only_when_it_succeeded(monkeypatch):
+    from botocore.exceptions import EndpointConnectionError
+
+    worker, _queue = _failing_worker(monkeypatch, 1, slept=[])
+    monkeypatch.setattr("pals_agent.worker.worker_queue_url", lambda *a: "proof-queue")
+    received = []
+    with pytest.raises(EndpointConnectionError):
+        worker.run_once(on_received=lambda: received.append(True))
+    assert received == []
+    worker.run_once(on_received=lambda: received.append(True))
+    assert received == [True]
+
+
+def test_an_error_after_a_long_delivery_is_not_a_continuous_sqs_outage(monkeypatch):
+    from botocore.exceptions import EndpointConnectionError
+    from pals_agent.worker import WorkerSqsUnavailableError
+
+    slept = []
+    worker, queue = _failing_worker(monkeypatch, 0, slept=slept)
+    monkeypatch.setattr("pals_agent.worker.worker_queue_url", lambda *a: "proof-queue")
+    original = queue.receive_message
+    events = iter(["fail", "long-then-fail", "long-then-fail", "stop"])
+
+    def run_once(*, on_received=None):
+        event = next(events)
+        if event == "fail":
+            raise EndpointConnectionError(endpoint_url="https://sqs.invalid")
+        original()
+        on_received()
+        if event == "stop":
+            stops.append(True)
+            return True
+        worker.sleep(1000)  # A job longer than the outage limit, ending in a failed delete.
+        raise EndpointConnectionError(endpoint_url="https://sqs.invalid")
+
+    stops = []
+    runner = SimpleNamespace(
+        run_once=run_once, monotonic=worker.monotonic, sleep=worker.sleep,
+        settings=worker.settings, lane=worker.lane, stop_requested=lambda: bool(stops),
+        _sleep_until_stop=lambda seconds: worker.sleep(seconds),
+    )
+    try:
+        SqsProofWorker.run_forever(runner)
+    except WorkerSqsUnavailableError:  # pragma: no cover
+        pytest.fail("two errors around a successful receive stopped the lane")
+    assert stops == [True]
+
+
 def test_cli_removes_readiness_and_exits_nonzero_on_an_sqs_outage(monkeypatch, tmp_path):
     from pals_agent.worker import WorkerSqsUnavailableError
 

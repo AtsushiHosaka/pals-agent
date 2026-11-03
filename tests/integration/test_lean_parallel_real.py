@@ -299,9 +299,12 @@ def test_deadline_kills_detached_descendants_and_a_starved_sibling_is_never_a_ve
             time.sleep(0.05)
         neighbour = verifier.verify(_TRUE)
         started = time.monotonic()
-        result = hostile.result()
+        # Past its deadline it is killed. Having hit the PID limit, it reports no verdict either.
+        try:
+            assert hostile.result().timed_out is True
+        except LeanCompileInterrupted:
+            pass
         assert time.monotonic() - started < 25
-    assert result.timed_out is True
     # While PIDs are exhausted a true proof may be interrupted, never rejected.
     assert neighbour.success is True or [item.code for item in neighbour.diagnostics] == [
         "lean.compile_interrupted"
@@ -347,16 +350,20 @@ def test_seccomp_denies_every_signal_route_out_of_a_compile() -> None:
         pytest.skip("seccomp is Linux only")
     victim = subprocess.Popen(["sleep", "60"])
     probe = (
-        "import os,signal,sys;"
+        "import fcntl,os,signal,sys;"
         "from pals_agent import lean_child;"
         "lean_child._apply_socket_seccomp();"
         "victim=int(sys.argv[1]);"
+        "pipe=os.pipe()[0];"
         "denied=[];\n"
         "for name,call in (('kill',lambda:os.kill(victim,signal.SIGKILL)),"
         "('stop',lambda:os.kill(victim,signal.SIGSTOP)),"
         "('all',lambda:os.kill(-1,signal.SIGKILL)),"
         "('pidfd',lambda:signal.pidfd_send_signal(os.pidfd_open(victim),signal.SIGKILL)),"
-        "('thread',lambda:signal.pthread_kill(__import__('threading').get_ident(),signal.SIGUSR1))):\n"
+        "('thread',lambda:signal.pthread_kill(__import__('threading').get_ident(),signal.SIGUSR1)),"
+        "('setown',lambda:fcntl.fcntl(pipe,fcntl.F_SETOWN,victim)),"
+        "('setsig',lambda:fcntl.fcntl(pipe,10,int(signal.SIGKILL))),"
+        "('setown_ex',lambda:fcntl.fcntl(pipe,15,bytes(8)))):\n"
         "    try:\n"
         "        call(); denied.append(name+'=allowed')\n"
         "    except PermissionError:\n"
@@ -371,6 +378,7 @@ def test_seccomp_denies_every_signal_route_out_of_a_compile() -> None:
         assert result.returncode == 0, result.stderr
         assert result.stdout.split() == [
             "kill=denied", "stop=denied", "all=denied", "pidfd=denied", "thread=denied",
+            "setown=denied", "setsig=denied", "setown_ex=denied",
         ]
         assert victim.poll() is None
     finally:

@@ -762,11 +762,13 @@ def _run_limited_process(
         _reap_orphans()
         raise LeanCompileInterrupted("Lean supervisor exited without a result")
     returncode, timed_out = status
-    # Above 128 is how Lake and Elan report a child that a signal killed.
-    if not timed_out and not output_limited and (
-        returncode < 0
-        or returncode > 128
-        or (returncode != 0 and _cgroup_pressure() > pressure_before)
+    pressured = _cgroup_pressure() > pressure_before
+    # Above 128 is how Lake and Elan report a child that a signal killed. A deadline missed while
+    # the cgroup refused forks or killed tasks says nothing about the proof either.
+    if not output_limited and (
+        (timed_out and pressured)
+        or (not timed_out and (returncode < 0 or returncode > 128))
+        or (not timed_out and returncode != 0 and pressured)
     ):
         raise LeanCompileInterrupted(f"Lean was terminated with status {returncode}")
     return _ProcessResult(

@@ -60,7 +60,8 @@ _BLOCKED_SOCKET_SYSCALLS = (
     b"recvmmsg",
 )
 # Without these a compile could stop or kill a sibling, its supervisor or the server. An abort in
-# Lean still ends the process: glibc falls through to a faulting instruction.
+# Lean still ends the process: glibc falls through to a faulting instruction. `_BLOCKED_FCNTL_COMMANDS`
+# closes the SIGIO route, which delivers any chosen signal to a same-UID owner.
 _BLOCKED_SIGNAL_SYSCALLS = (
     b"kill",
     b"tkill",
@@ -68,6 +69,14 @@ _BLOCKED_SIGNAL_SYSCALLS = (
     b"rt_sigqueueinfo",
     b"rt_tgsigqueueinfo",
     b"pidfd_send_signal",
+)
+_SCMP_CMP_MASKED_EQ = 7
+_FCNTL_COMMAND_ARGUMENT = 1
+_INT_MASK = 0xFFFFFFFF
+_BLOCKED_FCNTL_COMMANDS = (
+    8,  # F_SETOWN
+    10,  # F_SETSIG
+    15,  # F_SETOWN_EX
 )
 _LIMIT_NAMES = (
     resource.RLIMIT_CPU,
@@ -77,6 +86,15 @@ _LIMIT_NAMES = (
     resource.RLIMIT_NOFILE,
     resource.RLIMIT_CORE,
 )
+
+
+class _ScmpArgCmp(ctypes.Structure):
+    _fields_ = [
+        ("arg", ctypes.c_uint),
+        ("op", ctypes.c_int),
+        ("datum_a", ctypes.c_uint64),
+        ("datum_b", ctypes.c_uint64),
+    ]
 
 
 class _LandlockRulesetAttr(ctypes.Structure):
@@ -363,6 +381,13 @@ def _apply_socket_seccomp() -> None:
         ctypes.c_int,
         ctypes.c_uint,
     ]
+    seccomp.seccomp_rule_add_array.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_uint32,
+        ctypes.c_int,
+        ctypes.c_uint,
+        ctypes.POINTER(_ScmpArgCmp),
+    ]
     seccomp.seccomp_load.argtypes = [ctypes.c_void_p]
 
     context = seccomp.seccomp_init(_SCMP_ACT_ALLOW)
@@ -379,6 +404,21 @@ def _apply_socket_seccomp() -> None:
                     _SCMP_ACT_ERRNO,
                     syscall_number,
                     0,
+                )
+                != 0
+            ):
+                raise OSError(errno.EPERM, "seccomp rule installation failed")
+        fcntl_number = seccomp.seccomp_syscall_resolve_name(b"fcntl")
+        if fcntl_number < 0:
+            raise OSError(errno.ENOSYS, "seccomp cannot resolve fcntl")
+        for command in _BLOCKED_FCNTL_COMMANDS:
+            # The kernel reads this argument as 32 bits, so high bits must not evade the match.
+            comparison = _ScmpArgCmp(
+                _FCNTL_COMMAND_ARGUMENT, _SCMP_CMP_MASKED_EQ, _INT_MASK, command,
+            )
+            if (
+                seccomp.seccomp_rule_add_array(
+                    context, _SCMP_ACT_ERRNO, fcntl_number, 1, ctypes.byref(comparison),
                 )
                 != 0
             ):

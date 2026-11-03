@@ -223,6 +223,20 @@ def test_failure_during_an_oom_kill_is_an_interruption_and_success_stays_success
     assert _run(["/bin/sh", "-c", "exit 0"]).returncode == 0
 
 
+def test_timeout_is_an_interruption_only_under_cgroup_pressure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        lean_module, "_read_supervisor_status", lambda descriptor: (os.close(descriptor), (124, True))[1],
+    )
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: 0)
+    assert _run(["/bin/sh", "-c", "exit 0"]).timed_out is True
+    counts = iter([0, 1])
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: next(counts))
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "exit 0"])
+
+
 def test_cgroup_pressure_counts_oom_kills_and_refused_forks(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
 ) -> None:
