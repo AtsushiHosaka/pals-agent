@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-CURRICULUM_GUIDANCE_VERSION = "2026-11-04.v1"
+CURRICULUM_GUIDANCE_VERSION = "2026-11-04.v2"
 
 
 @dataclass(frozen=True, slots=True)
@@ -30,6 +30,10 @@ CURRICULUM_GUIDANCE = (
             "Lower-secondary geometry uses degrees. In junior year 2, geometric proofs "
             "build on angle and parallel-line properties and triangle congruence; do not "
             "use a result being proved as a prerequisite. Math I treats triangle ratios; "
+            "Mathematical induction is an upper-secondary Math B sequences topic; do not "
+            "use it in lower-secondary proofs unless the learner has explicitly studied it. "
+            "A statement for general n does not itself require induction: use a justified "
+            "direct decomposition or count when those tools suffice. "
             "Math II extends to general angles and introduces radians and trigonometric "
             "functions. Use degrees for elementary/lower-secondary geometry unless the "
             "learner explicitly requests radians; do not impose Math II tools on Math I/A "

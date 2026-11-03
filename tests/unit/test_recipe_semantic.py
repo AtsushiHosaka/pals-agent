@@ -523,8 +523,8 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
         retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "81b38af869496a4e9a10d4d151612eb772d74d207c90cee5e8883a7110060d1d",
-        "review": "8cec432da23a3c35aae4989881268974e35834bf3847544cf01416103cdc400a",
+        "assessment": "c65f12be779c54b40238901c28b69815c0dacb08812dbf1da4203f5186fb92ce",
+        "review": "7f975d375211bd34eda2c395cd906d9c571a88a7e18a142cf6a8fdd88f20df54",
     }
 
 
