@@ -10,6 +10,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -66,6 +67,25 @@ _OPEN_FILE_LIMIT = 1024
 _OUTPUT_LIMIT_BYTES = _MIB
 _DEFAULT_CHILD_PATH = "/opt/elan/bin:/usr/local/bin:/usr/bin:/bin"
 _DEFAULT_ELAN_HOME = "/opt/elan"
+_SUPERVISOR_SCRIPT = Path(__file__).with_name("lean_supervisor.py")
+_SUPERVISOR_GRACE_SECONDS = 5.0
+_DRAIN_GRACE_SECONDS = 0.2
+_SUPERVISOR_STATUS_RE = re.compile(rb"(-?\d{1,4}) ([01])\n")
+_CGROUP_MEMORY_EVENTS = Path("/sys/fs/cgroup/memory.events")
+_CGROUP_PIDS_EVENTS = Path("/sys/fs/cgroup/pids.events")
+COMPILE_INTERRUPTED = "lean.compile_interrupted"
+COMPILE_DEADLINE_INTERRUPTED = "lean.compile_deadline_interrupted"
+_ACTIVE_SUPERVISORS: set[int] = set()
+_ACTIVE_SUPERVISORS_LOCK = threading.Lock()
+_REAP_ORPHANS = False
+
+
+class LeanCompileInterrupted(Exception):
+    """The compile was killed from outside its proof, so its outcome says nothing about it."""
+
+
+class LeanCompileDeadlineInterrupted(LeanCompileInterrupted):
+    """The deadline passed under cgroup pressure, so a retry may cost another full compile."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,6 +130,24 @@ class LeanVerifier:
         started = time.monotonic()
         try:
             return self._verify(lean_code, allow_sorry=allow_sorry)
+        except LeanCompileInterrupted as error:
+            return VerificationResult(
+                success=False,
+                diagnostics=[
+                    Diagnostic(
+                        severity="error",
+                        code=(
+                            COMPILE_DEADLINE_INTERRUPTED
+                            if isinstance(error, LeanCompileDeadlineInterrupted)
+                            else COMPILE_INTERRUPTED
+                        ),
+                        message=str(error),
+                    )
+                ],
+                stdout="",
+                stderr="",
+                elapsed_ms=int((time.monotonic() - started) * 1000),
+            )
         finally:
             self._observe("total", started)
 
@@ -643,18 +681,42 @@ def _run_limited_process(
     output_limit_bytes: int,
 ) -> _ProcessResult:
     _enable_child_subreaper()
-    process = subprocess.Popen(
-        command,
-        cwd=cwd,
-        env=environment,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        start_new_session=True,
-        close_fds=True,
-    )
+    pressure_before = _cgroup_pressure()
+    status_read, status_write = os.pipe()
+    try:
+        with _ACTIVE_SUPERVISORS_LOCK:
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    "-I",
+                    str(_SUPERVISOR_SCRIPT),
+                    str(status_write),
+                    str(timeout_seconds),
+                    "--",
+                    *command,
+                ],
+                cwd=cwd,
+                env=environment,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                start_new_session=True,
+                close_fds=True,
+                pass_fds=(status_write,),
+            )
+            _ACTIVE_SUPERVISORS.add(process.pid)
+    except BlockingIOError as error:
+        # The PID limit is exhausted, possibly by a sibling, so nothing compiled.
+        os.close(status_read)
+        raise LeanCompileInterrupted("Lean supervisor could not start") from error
+    except BaseException:
+        os.close(status_read)
+        raise
+    finally:
+        os.close(status_write)
     if process.stdout is None or process.stderr is None:
         _kill_and_reap_process_group(process)
+        os.close(status_read)
         raise RuntimeError("Lean process pipes were not created")
 
     stdout_descriptor = process.stdout.fileno()
@@ -668,19 +730,23 @@ def _run_limited_process(
         os.set_blocking(stream.fileno(), False)
         selector.register(stream, selectors.EVENT_READ)
 
-    deadline = time.monotonic() + timeout_seconds
-    timed_out = False
+    # The supervisor enforces the deadline. This only bounds a supervisor that cannot.
+    backstop = time.monotonic() + timeout_seconds + _SUPERVISOR_GRACE_SECONDS
+    drain_until: float | None = None
     output_limited = False
     try:
         while selector.get_map() or process.poll() is None:
             now = time.monotonic()
-            if not timed_out and process.poll() is None and now >= deadline:
-                timed_out = True
-                _kill_process_group(process)
-            wait_seconds = 0.02
             if process.poll() is None:
-                wait_seconds = min(wait_seconds, max(0.0, deadline - now))
-            for key, _ in selector.select(wait_seconds):
+                if now >= backstop:
+                    _kill_process_group(process)
+            elif drain_until is None:
+                # Every descendant is gone once it exits, so this normally ends at EOF at once.
+                # A pipe still open after this grace is never waited for.
+                drain_until = now + _DRAIN_GRACE_SECONDS
+            elif now >= drain_until:
+                break
+            for key, _ in selector.select(0.02):
                 descriptor = key.fd
                 try:
                     chunk = os.read(descriptor, 65_536)
@@ -694,22 +760,102 @@ def _run_limited_process(
                 streams[descriptor].extend(chunk[:remaining])
                 if len(chunk) > remaining and not output_limited:
                     output_limited = True
-                    _kill_process_group(process)
-            if process.poll() is not None and not selector.get_map():
-                break
+                    process.terminate()
     finally:
         selector.close()
         process.stdout.close()
         process.stderr.close()
         _reap_process(process)
+        with _ACTIVE_SUPERVISORS_LOCK:
+            _ACTIVE_SUPERVISORS.discard(process.pid)
+        status = _read_supervisor_status(status_read)
 
+    if status is None:
+        # The tree may have outlived its owner, and nothing observed how the command ended.
+        _reap_orphans()
+        raise LeanCompileInterrupted("Lean supervisor exited without a result")
+    returncode, timed_out = status
+    pressured = _cgroup_pressure() > pressure_before
+    # Above 128 is how Lake and Elan report a child that a signal killed. A deadline missed while
+    # the cgroup refused forks or killed tasks says nothing about the proof either.
+    if not output_limited and timed_out and pressured:
+        raise LeanCompileDeadlineInterrupted("Lean missed its deadline under cgroup pressure")
+    if not output_limited and not timed_out and (
+        returncode < 0 or returncode > 128 or (returncode != 0 and pressured)
+    ):
+        raise LeanCompileInterrupted(f"Lean was terminated with status {returncode}")
     return _ProcessResult(
-        returncode=process.returncode if process.returncode is not None else -signal.SIGKILL,
+        returncode=returncode,
         stdout=bytes(streams[stdout_descriptor]).decode("utf-8", errors="replace"),
         stderr=bytes(streams[stderr_descriptor]).decode("utf-8", errors="replace"),
         timed_out=timed_out,
         output_limited=output_limited,
     )
+
+
+def _read_supervisor_status(descriptor: int) -> tuple[int, bool] | None:
+    """Only a complete line from the supervisor's own pipe counts as how the command ended."""
+    try:
+        os.set_blocking(descriptor, False)
+        raw = os.read(descriptor, 64)
+    except OSError:
+        return None
+    finally:
+        os.close(descriptor)
+    match = _SUPERVISOR_STATUS_RE.fullmatch(raw)
+    if match is None:
+        return None
+    return int(match.group(1)), match.group(2) == b"1"
+
+
+def _cgroup_pressure() -> int:
+    """OOM kills and refused forks in this cgroup; either during a failure denies it a verdict."""
+    return _cgroup_event(_CGROUP_MEMORY_EVENTS, "oom_kill") + _cgroup_event(
+        _CGROUP_PIDS_EVENTS, "max",
+    )
+
+
+def _cgroup_event(path: Path, name: str) -> int:
+    try:
+        events = path.read_text(encoding="ascii")
+    except OSError:
+        return 0
+    for line in events.splitlines():
+        key, _, value = line.partition(" ")
+        if key == name and value.isdecimal():
+            return int(value)
+    return 0
+
+
+def enable_orphan_reaping() -> None:
+    """Only for a process whose every other child is a supervisor, such as the verifier server."""
+    global _REAP_ORPHANS
+    _REAP_ORPHANS = True
+
+
+def _reap_orphans() -> None:
+    """Kill what a dead supervisor left behind; the subreaper made those direct children."""
+    if not _REAP_ORPHANS or not _is_linux():
+        return
+    me = os.getpid()
+    deadline = time.monotonic() + 1
+    while time.monotonic() < deadline:
+        found = False
+        with _ACTIVE_SUPERVISORS_LOCK:
+            for entry in Path("/proc").iterdir():
+                if not entry.name.isdecimal() or int(entry.name) in _ACTIVE_SUPERVISORS:
+                    continue
+                try:
+                    fields = (entry / "stat").read_bytes().rpartition(b")")[2].split()
+                    if len(fields) > 1 and int(fields[1]) == me:
+                        found = True
+                        os.kill(int(entry.name), signal.SIGKILL)
+                        os.waitpid(int(entry.name), os.WNOHANG)
+                except OSError:
+                    continue
+        if not found:
+            return
+        time.sleep(0.01)
 
 
 def _kill_process_group(process: subprocess.Popen[bytes]) -> None:
@@ -730,18 +876,6 @@ def _reap_process(process: subprocess.Popen[bytes]) -> None:
     except subprocess.TimeoutExpired:
         _kill_process_group(process)
         process.wait(timeout=2)
-    if not _is_linux():
-        return
-    deadline = time.monotonic() + 1
-    while time.monotonic() < deadline:
-        try:
-            reaped_pid, _ = os.waitpid(-process.pid, os.WNOHANG)
-        except ChildProcessError:
-            return
-        if reaped_pid == 0:
-            time.sleep(0.01)
-        else:
-            return
 
 
 _SUBREAPER_ENABLED = False
