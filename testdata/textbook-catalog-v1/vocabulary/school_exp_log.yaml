@@ -1,0 +1,4 @@
+# Proposed additive OpenMath vocabulary for the school_exp_log domain (cd=pals2).
+floor: {args: [term], returns: term, meaning: "greatest integer not exceeding the real number x"}
+decimal_digit_count: {args: [term], returns: term, meaning: "number of digits of the positive integer N in base ten"}
+digit_length: {args: [term, term], returns: term, meaning: "number of base-b digits of n, in the order (b, n), with 0 having no digits"}

@@ -1,0 +1,1340 @@
+- id: rpow_add_exponent_law
+  kind: textbook
+  level: high
+  topic: 指数・指数法則
+  statement: $a>0$のとき、任意の実数$x,y$について$a^{x+y}=a^xa^y$である。
+  statement_en: If a > 0, then a^(x+y) = a^x a^y for all real x and y.
+  assumptions:
+  - $a>0$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の正の実数$a$と実数$x,y$
+  conclusion: $a^{x+y}=a^xa^y$である。
+  answer: |
+    $a>0$とし、$x,y$を実数とする。実数指数を$a^t=e^{t\log a}$で定める。ここで$\log$は自然対数である。指数関数の加法法則$e^{u+v}=e^ue^v$を$u=x\log a$、$v=y\log a$に用いると、$a^{x+y}=e^{x\log a+y\log a}=e^{x\log a}e^{y\log a}=a^xa^y$である。
+  strategy: Write real powers through the exponential function and use its addition law.
+  sketch:
+  - "translate: Write a^t = exp(t log a), which is meaningful because a > 0."
+  - "apply_theorem: Use exp(u+v) = exp(u) exp(v) with u = x log a and v = y log a."
+  - "conclude: This is a^(x+y) = a^x a^y."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0)) (= (^ a (+ x y)) (* (^ a x) (^ a y)))))
+  hard_negative:
+    statement: $a<0$でも、任意の実数$x,y$について$a^{x+y}=a^xa^y$が成り立つ。
+    reason: $a=-1$、$x=y=\dfrac{1}{2}$のとき$(-1)^{1/2}$は実数にならない。実数指数の底は正に限る。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → a ^ (x + y) = a ^ x * a ^ y
+  proof: |
+    by
+      intro a x y ha
+      exact Real.rpow_add ha x y
+- id: rpow_mul_exponent_law
+  kind: textbook
+  level: high
+  topic: 指数・指数法則
+  statement: $a>0$のとき、任意の実数$x,y$について$(a^x)^y=a^{xy}$である。
+  statement_en: If a > 0, then (a^x)^y = a^(xy) for all real x and y.
+  assumptions:
+  - $a>0$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の正の実数$a$と実数$x,y$
+  conclusion: $(a^x)^y=a^{xy}$である。
+  answer: |
+    $a>0$とし、$x,y$を実数とする。実数指数を$c^t=e^{t\log c}$（$c>0$）で定める。ここで$\log$は自然対数である。$a^x=e^{x\log a}>0$であり、$\log a^x=x\log a$である。よって$(a^x)^y=e^{y\log a^x}=e^{yx\log a}=a^{xy}$である。
+  strategy: Compute the logarithm of a^x and substitute it into the definition of the outer power.
+  sketch:
+  - "translate: Write c^t = exp(t log c) for c > 0."
+  - "derive: a^x is positive and log(a^x) = x log a."
+  - "conclude: (a^x)^y = exp(y x log a) = a^(xy)."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0)) (= (^ (^ a x) y) (^ a (* x y)))))
+  hard_negative:
+    statement: $a<0$でも、任意の実数$x,y$について$(a^x)^y=a^{xy}$が成り立つ。
+    reason: $a=-1$、$x=2$、$y=\dfrac{1}{2}$のとき左辺は$1$で、右辺は$-1$である。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → (a ^ x) ^ y = a ^ (x * y)
+  proof: |
+    by
+      intro a x y ha
+      exact (Real.rpow_mul ha.le x y).symm
+- id: mul_rpow_base_law
+  kind: textbook
+  level: high
+  topic: 指数・指数法則
+  statement: $a,b>0$のとき、任意の実数$x$について$(ab)^x=a^xb^x$である。
+  statement_en: If a, b > 0, then (ab)^x = a^x b^x for every real x.
+  assumptions:
+  - $a>0$
+  - $b>0$
+  - $x$は実数
+  quantifiers:
+  - 任意の正の実数$a,b$と実数$x$
+  conclusion: $(ab)^x=a^xb^x$である。
+  answer: |
+    $a,b>0$とし、$x$を実数とする。実数指数を$c^t=e^{t\log c}$（$c>0$）で定める。ここで$\log$は自然対数である。$\log(ab)=\log a+\log b$なので、$(ab)^x=e^{x\log a+x\log b}=e^{x\log a}e^{x\log b}=a^xb^x$である。
+  strategy: Use log(ab) = log a + log b inside the exponential definition of the power.
+  sketch:
+  - "translate: Write (ab)^x = exp(x log(ab))."
+  - "apply_theorem: Split log(ab) = log a + log b for positive a and b."
+  - "conclude: The addition law of exp gives a^x b^x."
+  openmath: (forall (a b x) (-> (and (in a R) (in b R) (in x R) (> a 0) (> b 0)) (= (^ (* a b) x) (* (^ a x) (^ b x)))))
+  hard_negative:
+    statement: $a,b<0$でも、任意の実数$x$について$(ab)^x=a^xb^x$が成り立つ。
+    reason: $a=b=-1$、$x=\dfrac{1}{2}$のとき左辺は$1$だが、$(-1)^{1/2}$は実数にならない。
+  target: |
+    ∀ (a b x : ℝ), 0 < a → 0 < b → (a * b) ^ x = a ^ x * b ^ x
+  proof: |
+    by
+      intro a b x ha hb
+      exact Real.mul_rpow ha.le hb.le
+- id: nth_root_unique_nonneg_solution
+  kind: textbook
+  level: high
+  topic: 指数・累乗根
+  statement: $a\geq 0$、$n$を正の整数とする。$x\geq 0$について、$x^n=a$であることと$x=\sqrt[n]{a}$であることは同値である。ここで$\sqrt[n]{a}=a^{1/n}$である。
+  statement_en: Let a ≥ 0 and let n be a positive integer. For x ≥ 0, x^n = a holds if and only if x = a^(1/n), the n-th root of a.
+  assumptions:
+  - $a\geq 0$
+  - $x\geq 0$
+  - $n$は正の整数
+  quantifiers:
+  - 任意の非負実数$a,x$と正の整数$n$
+  conclusion: $x^n=a$と$x=\sqrt[n]{a}$は同値である。
+  answer: |
+    $a\geq 0$、$x\geq 0$とし、$n$を正の整数とする。$y=a^{1/n}$とおくと$y\geq 0$である。まず$y^n=a$を示す。$a=0$のときは$y=0$なので成り立つ。$a>0$のときは$y^n=(a^{1/n})^n=a^{(1/n)\cdot n}=a$である。したがって$x=y$なら$x^n=a$である。逆に$x^n=a$なら$x^n=y^n$である。$t\geq 0$の範囲で$t^n$は狭義増加なので、$x=y$である。
+  strategy: Show that a^(1/n) is a nonnegative solution, then use strict monotonicity of t^n on t ≥ 0 for uniqueness.
+  sketch:
+  - "setup: Put y = a^(1/n), which is nonnegative."
+  - "case_split: For a = 0 we have y = 0; for a > 0 the exponent law gives y^n = a."
+  - "derive: Hence x = y implies x^n = a."
+  - "apply_theorem: If x^n = a = y^n, strict monotonicity of t^n on t ≥ 0 gives x = y."
+  openmath: (forall (a x n) (-> (and (in a R) (in x R) (in n N) (>= a 0) (>= x 0) (>= n 1)) (<-> (= (^ x n) a) (= x (root a n)))))
+  hard_negative:
+    statement: $x$の符号を問わず、$x^n=a$と$x=\sqrt[n]{a}$は同値である。
+    reason: $n=2$、$a=1$、$x=-1$のとき$x^n=a$だが$\sqrt[n]{a}=1$である。累乗根は非負の解だけを指す。
+  target: |
+    ∀ (a x : ℝ) (n : ℕ), 0 ≤ a → 0 ≤ x → 1 ≤ n → (x ^ n = a ↔ x = a ^ (1 / (n : ℝ)))
+  proof: |
+    by
+      intro a x n ha hx hn
+      have hn0 : n ≠ 0 := by omega
+      rw [one_div]
+      constructor
+      · intro h
+        rw [← h]
+        exact (Real.pow_rpow_inv_natCast hx hn0).symm
+      · intro h
+        rw [h]
+        exact Real.rpow_inv_natCast_pow ha hn0
+- id: even_root_of_even_power_abs
+  kind: gap
+  level: high
+  topic: 指数・累乗根
+  statement: 指数が偶数の場合に限った形として、任意の実数$a$と正の整数$n$について$\sqrt[2n]{a^{2n}}=|a|$である。
+  statement_en: Special even-exponent form. For every real a and positive integer n, the 2n-th root of a^(2n) equals |a|.
+  assumptions:
+  - $a$は実数
+  - $n$は正の整数
+  quantifiers:
+  - 任意の実数$a$と正の整数$n$
+  conclusion: $\sqrt[2n]{a^{2n}}=|a|$である。
+  answer: |
+    $a$を実数、$n$を正の整数とする。$2n$は偶数なので$a^{2n}=|a|^{2n}$であり、$|a|\geq 0$である。一方、$\sqrt[2n]{a^{2n}}$も$0$以上で、$2n$乗すると$a^{2n}$になる。$t\geq 0$の範囲で$t^{2n}$は狭義増加なので、$t^{2n}=a^{2n}$をみたす$t\geq 0$はただ一つである。よって$\sqrt[2n]{a^{2n}}=|a|$である。
+  strategy: Rewrite the even power with |a| and use that a nonnegative 2n-th root is unique.
+  sketch:
+  - "derive: Since 2n is even, a^(2n) = |a|^(2n)."
+  - "setup: Both |a| and the 2n-th root of a^(2n) are nonnegative solutions of t^(2n) = a^(2n)."
+  - "apply_theorem: t^(2n) is strictly increasing on t ≥ 0, so the nonnegative solution is unique."
+  - "conclude: The root equals |a|."
+  openmath: (forall (a n) (-> (and (in a R) (in n N) (>= n 1)) (= (root (^ a (* 2 n)) (* 2 n)) (abs a))))
+  hard_negative:
+    statement: 任意の実数$a$と正の整数$n$について$\sqrt[2n]{a^{2n}}=a$である。
+    reason: $a=-1$、$n=1$のとき左辺は$1$で右辺は$-1$である。$a$が負のときは絶対値が必要である。
+  target: |
+    ∀ (a : ℝ) (n : ℕ), 1 ≤ n → (a ^ (2 * n)) ^ (1 / ((2 * n : ℕ) : ℝ)) = |a|
+  proof: |
+    by
+      intro a n hn
+      have h : 2 * n ≠ 0 := by omega
+      have he : a ^ (2 * n) = |a| ^ (2 * n) := ((even_two_mul n).pow_abs a).symm
+      rw [he, one_div]
+      exact Real.pow_rpow_inv_natCast (abs_nonneg a) h
+- id: rational_exponent_as_root_of_power
+  kind: gap
+  level: high
+  topic: 指数・有理数の指数
+  statement: $a>0$、$m$を整数、$n$を正の整数とする。このとき$a^{m/n}=(\sqrt[n]{a})^m=\sqrt[n]{a^m}$である。
+  statement_en: Let a > 0, let m be an integer and n a positive integer. Then a^(m/n) = (a^(1/n))^m = (a^m)^(1/n).
+  assumptions:
+  - $a>0$
+  - $m$は整数
+  - $n$は正の整数
+  quantifiers:
+  - 任意の正の実数$a$、整数$m$、正の整数$n$
+  conclusion: $a^{m/n}=(\sqrt[n]{a})^m=\sqrt[n]{a^m}$である。
+  answer: |
+    $a>0$、$m$を整数、$n$を正の整数とする。正の底について成り立つ指数法則$(a^s)^t=a^{st}$を用いる。$s=\dfrac{1}{n}$、$t=m$とすると$(a^{1/n})^m=a^{m/n}$である。$s=m$、$t=\dfrac{1}{n}$とすると$(a^m)^{1/n}=a^{m/n}$である。$\sqrt[n]{c}=c^{1/n}$なので、これが示すべき等式である。
+  strategy: Apply the exponent law (a^s)^t = a^(st) in both orders of the factors 1/n and m.
+  sketch:
+  - "setup: Identify the n-th root with the exponent 1/n."
+  - "apply_theorem: Use (a^s)^t = a^(st) with s = 1/n and t = m."
+  - "apply_theorem: Use the same law with s = m and t = 1/n."
+  - "conclude: Both expressions equal a^(m/n)."
+  openmath: (forall (a m n) (-> (and (in a R) (in m Z) (in n N) (> a 0) (>= n 1)) (and (= (^ a (/ m n)) (^ (root a n) m)) (= (^ a (/ m n)) (root (^ a m) n)))))
+  hard_negative:
+    statement: $a<0$でも$a^{m/n}=\sqrt[n]{a^m}$である。
+    reason: $a=-1$、$m=n=2$のとき、$\dfrac{m}{n}=1$より左辺を$-1$と読むことになるが、右辺は$1$である。底が負だと分数の表し方で値が変わる。
+  target: |
+    ∀ (a : ℝ) (m : ℤ) (n : ℕ), 0 < a → 1 ≤ n → a ^ ((m : ℝ) / (n : ℝ)) = (a ^ (1 / (n : ℝ))) ^ m ∧ a ^ ((m : ℝ) / (n : ℝ)) = (a ^ m) ^ (1 / (n : ℝ))
+  proof: |
+    by
+      intro a m n ha hn
+      constructor
+      · rw [← Real.rpow_intCast, ← Real.rpow_mul ha.le]
+        congr 1
+        ring
+      · rw [← Real.rpow_intCast, ← Real.rpow_mul ha.le]
+        congr 1
+        ring
+- id: power_function_lt_iff_positive_exponent
+  kind: gap
+  level: high
+  topic: 指数・累乗の大小
+  statement: $a,b\geq 0$、$p>0$のとき、$a^p<b^p$であることと$a<b$であることは同値である。$p=\dfrac{1}{n}$とすれば累乗根の大小比較になる。
+  statement_en: If a, b ≥ 0 and p > 0, then a^p < b^p if and only if a < b; the case p = 1/n compares n-th roots.
+  assumptions:
+  - $a,b\geq 0$
+  - $p>0$
+  quantifiers:
+  - 任意の非負実数$a,b$と正の実数$p$
+  conclusion: $a^p<b^p$と$a<b$は同値である。
+  answer: |
+    $a,b\geq 0$、$p>0$とする。$p>0$なので$0^p=0$であり、$c>0$なら$c^p>0$である。$b=0$のときは$a^p<0$も$a<0$も成り立たない。$a=0$、$b>0$のときは$a^p=0<b^p$かつ$a<b$である。$a,b>0$のときは$c^p=e^{p\log c}$であり、$\log$と指数関数は狭義増加で$p>0$なので、$a^p<b^p$と$\log a<\log b$と$a<b$は同値である。
+  strategy: Treat a zero base separately, then use monotonicity of log and exp for positive bases.
+  sketch:
+  - "setup: For p > 0, 0^p = 0 and c^p > 0 when c > 0."
+  - "case_split: Check the cases b = 0 and a = 0 < b directly."
+  - "translate: For a, b > 0 write c^p = exp(p log c)."
+  - "apply_theorem: Since p > 0, exp and log are strictly increasing, so the order is preserved in both directions."
+  openmath: (forall (a b p) (-> (and (in a R) (in b R) (in p R) (>= a 0) (>= b 0) (> p 0)) (<-> (< (^ a p) (^ b p)) (< a b))))
+  hard_negative:
+    statement: $a,b>0$、$p<0$のときも、$a^p<b^p$と$a<b$は同値である。
+    reason: $a=1$、$b=2$、$p=-1$のとき$a<b$だが$a^p=1>\dfrac{1}{2}=b^p$である。指数が負なら向きが逆になる。
+  target: |
+    ∀ (a b p : ℝ), 0 ≤ a → 0 ≤ b → 0 < p → (a ^ p < b ^ p ↔ a < b)
+  proof: |
+    by
+      intro a b p ha hb hp
+      exact Real.rpow_lt_rpow_iff ha hb hp
+- id: exp_lt_iff_base_gt_one
+  kind: textbook
+  level: high
+  topic: 指数関数・単調性
+  statement: $a>1$のとき、任意の実数$x,y$について、$a^x<a^y$であることと$x<y$であることは同値である。
+  statement_en: If a > 1, then a^x < a^y if and only if x < y.
+  assumptions:
+  - $a>1$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の$a>1$と実数$x,y$
+  conclusion: $a^x<a^y$と$x<y$は同値である。
+  answer: |
+    $a>1$とし、$x,y$を実数とする。$a^t=e^{t\log a}$であり、$a>1$より$\log a>0$である。自然対数の底の指数関数は狭義増加なので、$a^x<a^y$は$x\log a<y\log a$と同値である。$\log a>0$で両辺を割ると、これは$x<y$と同値である。
+  strategy: Reduce to the strictly increasing function exp using log a > 0.
+  sketch:
+  - "translate: Write a^t = exp(t log a)."
+  - "derive: a > 1 gives log a > 0."
+  - "apply_theorem: exp is strictly increasing, so a^x < a^y is x log a < y log a."
+  - "conclude: Dividing by log a > 0 gives x < y."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 1)) (<-> (< (^ a x) (^ a y)) (< x y))))
+  hard_negative:
+    statement: $0<a<1$のときも、$a^x<a^y$と$x<y$は同値である。
+    reason: $a=\dfrac{1}{2}$、$x=0$、$y=1$のとき$x<y$だが$a^x=1>\dfrac{1}{2}=a^y$である。
+  target: |
+    ∀ (a x y : ℝ), 1 < a → (a ^ x < a ^ y ↔ x < y)
+  proof: |
+    by
+      intro a x y ha
+      exact Real.rpow_lt_rpow_left_iff ha
+- id: exp_lt_iff_base_lt_one
+  kind: textbook
+  level: high
+  topic: 指数関数・単調性
+  statement: $0<a<1$のとき、任意の実数$x,y$について、$a^x<a^y$であることと$y<x$であることは同値である。
+  statement_en: If 0 < a < 1, then a^x < a^y if and only if y < x.
+  assumptions:
+  - $0<a<1$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の$0<a<1$と実数$x,y$
+  conclusion: $a^x<a^y$と$y<x$は同値である。
+  answer: |
+    $0<a<1$とし、$x,y$を実数とする。$a^t=e^{t\log a}$であり、$0<a<1$より$\log a<0$である。自然対数の底の指数関数は狭義増加なので、$a^x<a^y$は$x\log a<y\log a$と同値である。負の数$\log a$で両辺を割ると不等号の向きが変わるので、これは$y<x$と同値である。
+  strategy: Reduce to exp and divide by the negative number log a, which reverses the inequality.
+  sketch:
+  - "translate: Write a^t = exp(t log a)."
+  - "derive: 0 < a < 1 gives log a < 0."
+  - "apply_theorem: exp is strictly increasing, so a^x < a^y is x log a < y log a."
+  - "conclude: Dividing by log a < 0 gives y < x."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0) (< a 1)) (<-> (< (^ a x) (^ a y)) (< y x))))
+  hard_negative:
+    statement: $a>1$のときも、$a^x<a^y$と$y<x$は同値である。
+    reason: $a=2$、$x=0$、$y=1$のとき$a^x<a^y$だが$y<x$ではない。向きが逆になるのは底が$1$より小さいときだけである。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → a < 1 → (a ^ x < a ^ y ↔ y < x)
+  proof: |
+    by
+      intro a x y ha0 ha1
+      exact Real.rpow_lt_rpow_left_iff_of_base_lt_one ha0 ha1
+- id: exp_eq_iff_exponent_eq
+  kind: gap
+  level: high
+  topic: 指数方程式・底をそろえる
+  statement: $a>0$、$a\neq 1$のとき、実数$x,y$について、$a^x=a^y$であることと$x=y$であることは同値である。
+  statement_en: If a > 0 and a ≠ 1, then for real x and y, a^x = a^y if and only if x = y.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と実数$x,y$
+  conclusion: $a^x=a^y$と$x=y$は同値である。
+  answer: |
+    $a>0$、$a\neq 1$とし、$x,y$を実数とする。$x=y$なら$a^x=a^y$である。逆に$a^x=a^y$とする。両辺の自然対数をとると$x\log a=y\log a$である。$a\neq 1$より$\log a\neq 0$なので、$x=y$である。
+  strategy: Take natural logarithms and cancel the nonzero factor log a.
+  sketch:
+  - "setup: The direction from x = y is immediate."
+  - "translate: Taking log of a^x = a^y gives x log a = y log a."
+  - "derive: a ≠ 1 gives log a ≠ 0."
+  - "conclude: Cancelling log a gives x = y."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0) (!= a 1)) (<-> (= (^ a x) (^ a y)) (= x y))))
+  hard_negative:
+    statement: $a>0$なら、$a=1$の場合も含めて$a^x=a^y$と$x=y$は同値である。
+    reason: $a=1$のときは任意の$x,y$で$a^x=a^y=1$となる。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → a ≠ 1 → (a ^ x = a ^ y ↔ x = y)
+  proof: |
+    by
+      intro a x y ha ha1
+      constructor
+      · intro h
+        have hl : x * Real.log a = y * Real.log a := by
+          rw [← Real.log_rpow ha, ← Real.log_rpow ha, h]
+        have hne : Real.log a ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one ha ha1
+        exact mul_right_cancel₀ hne hl
+      · intro h
+        rw [h]
+- id: exp_eq_positive_has_unique_solution
+  kind: textbook
+  level: high
+  topic: 指数関数・値域と対数の存在
+  statement: $a>0$、$a\neq 1$、$y>0$のとき、$a^x=y$をみたす実数$x$はただ一つ存在する。
+  statement_en: If a > 0, a ≠ 1 and y > 0, there is exactly one real x with a^x = y.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $y>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と$y>0$
+  conclusion: $a^x=y$をみたす実数$x$がただ一つ存在する。
+  answer: |
+    $a>0$、$a\neq 1$、$y>0$とする。$\log$を自然対数とすると、$a\neq 1$より$\log a\neq 0$である。$x_0=\dfrac{\log y}{\log a}$とおくと、$a^{x_0}=e^{x_0\log a}=e^{\log y}=y$である。これで存在がいえた。$a^x=y$をみたす実数$x$があれば、両辺の自然対数をとって$x\log a=\log y$なので$x=x_0$である。
+  strategy: Construct the solution log y / log a, and get uniqueness by taking logarithms.
+  sketch:
+  - "derive: a ≠ 1 gives log a ≠ 0."
+  - "construct: Put x0 = log y / log a."
+  - "derive: a^(x0) = exp(log y) = y."
+  - "derive: Any solution x satisfies x log a = log y."
+  - "conclude: Hence x = x0, so the solution is unique."
+  openmath: (forall (a y) (-> (and (in a R) (in y R) (> a 0) (!= a 1) (> y 0)) (exists (x) (and (in x R) (= (^ a x) y) (forall (z) (-> (and (in z R) (= (^ a z) y)) (= z x)))))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$なら、$y\leq 0$でも$a^x=y$をみたす実数$x$が存在する。
+    reason: $a>0$のとき$a^x$はつねに正なので、$y\leq 0$なら解はない。
+  target: |
+    ∀ (a y : ℝ), 0 < a → a ≠ 1 → 0 < y → ∃! x : ℝ, a ^ x = y
+  proof: |
+    by
+      intro a y ha ha1 hy
+      refine ⟨Real.logb a y, Real.rpow_logb ha ha1 hy, ?_⟩
+      intro z hz
+      rw [← hz]
+      exact (Real.logb_rpow ha ha1).symm
+- id: exp_quadratic_substitution_positive
+  kind: gap
+  level: high
+  topic: 指数方程式・置き換え
+  statement: $a>0$、$p,q,x$を実数とする。$a^{2x}+pa^x+q=0$であることと、$t>0$、$t^2+pt+q=0$、$a^x=t$をみたす実数$t$が存在することは同値である。
+  statement_en: Let a > 0 and let p, q, x be real. Then a^(2x) + p a^x + q = 0 if and only if there is a real t with t > 0, t^2 + pt + q = 0 and a^x = t.
+  assumptions:
+  - $a>0$
+  - $p,q,x$は実数
+  quantifiers:
+  - 任意の正の実数$a$と実数$p,q,x$
+  conclusion: $a^{2x}+pa^x+q=0$と、条件をみたす$t>0$の存在は同値である。
+  answer: |
+    $a>0$とし、$p,q,x$を実数とする。指数法則より$a^{2x}=(a^x)^2$である。$a^{2x}+pa^x+q=0$なら、$t=a^x$とおくと$t>0$で$t^2+pt+q=0$である。逆に$t>0$、$t^2+pt+q=0$、$a^x=t$をみたす$t$があれば、$t=a^x$を代入して$a^{2x}+pa^x+q=0$を得る。
+  strategy: Substitute t = a^x and record the side condition t > 0 coming from positivity of powers.
+  sketch:
+  - "derive: The exponent law gives a^(2x) = (a^x)^2."
+  - "construct: For the forward direction take t = a^x, which is positive."
+  - "derive: Then t^2 + pt + q = 0."
+  - "conclude: For the converse substitute t = a^x back into the quadratic."
+  openmath: (forall (a p q x) (-> (and (in a R) (in p R) (in q R) (in x R) (> a 0)) (<-> (= (+ (+ (^ a (* 2 x)) (* p (^ a x))) q) 0) (exists (t) (and (in t R) (> t 0) (= (+ (+ (^ t 2) (* p t)) q) 0) (= (^ a x) t))))))
+  hard_negative:
+    statement: $a>0$で$t^2+pt+q=0$が実数解をもてば、$a^{2x}+pa^x+q=0$をみたす実数$x$が存在する。
+    reason: $p=3$、$q=2$のとき$t=-1,-2$はともに負で、$a^x>0$なので解$x$はない。条件$t>0$は省けない。
+  target: |
+    ∀ (a p q x : ℝ), 0 < a → (a ^ (2 * x) + p * a ^ x + q = 0 ↔ ∃ t : ℝ, 0 < t ∧ t ^ 2 + p * t + q = 0 ∧ a ^ x = t)
+  proof: |
+    by
+      intro a p q x ha
+      have h2 : a ^ (2 * x) = (a ^ x) ^ 2 := by
+        rw [mul_comm, Real.rpow_mul ha.le, Real.rpow_two]
+      rw [h2]
+      constructor
+      · intro h
+        exact ⟨a ^ x, Real.rpow_pos_of_pos ha x, h, rfl⟩
+      · rintro ⟨t, _, ht, rfl⟩
+        exact ht
+- id: exp_lt_const_iff_base_gt_one
+  kind: gap
+  level: high
+  topic: 指数不等式・対数で解く
+  statement: $a>1$、$b>0$のとき、実数$x$について、$a^x<b$であることと$x<\log_ab$であることは同値である。
+  statement_en: If a > 1 and b > 0, then for real x, a^x < b if and only if x < log_a b.
+  assumptions:
+  - $a>1$
+  - $b>0$
+  - $x$は実数
+  quantifiers:
+  - 任意の$a>1$、$b>0$と実数$x$
+  conclusion: $a^x<b$と$x<\log_ab$は同値である。
+  answer: |
+    $a>1$、$b>0$とし、$x$を実数とする。$\log$を自然対数とし、$\log_ab=\dfrac{\log b}{\log a}$とする。$a>1$より$\log a>0$である。$\log$は狭義増加なので、$a^x<b$は$\log a^x<\log b$、すなわち$x\log a<\log b$と同値である。$\log a>0$で割ると、これは$x<\log_ab$と同値である。
+  strategy: Take natural logarithms and divide by the positive number log a.
+  sketch:
+  - "translate: Write log_a b = log b / log a, with log a > 0."
+  - "apply_theorem: log is strictly increasing, so a^x < b is x log a < log b."
+  - "conclude: Dividing by log a > 0 gives x < log_a b."
+  openmath: (forall (a b x) (-> (and (in a R) (in b R) (in x R) (> a 1) (> b 0)) (<-> (< (^ a x) b) (< x (/ (ln b) (ln a))))))
+  hard_negative:
+    statement: $0<a<1$、$b>0$のときも、$a^x<b$と$x<\log_ab$は同値である。
+    reason: $a=\dfrac{1}{2}$、$b=\dfrac{1}{2}$、$x=2$のとき$a^x=\dfrac{1}{4}<b$だが、$\log_ab=1<x$である。
+  target: |
+    ∀ (a b x : ℝ), 1 < a → 0 < b → (a ^ x < b ↔ x < Real.logb a b)
+  proof: |
+    by
+      intro a b x ha hb
+      exact (Real.lt_logb_iff_rpow_lt ha hb).symm
+- id: exp_lt_const_iff_base_lt_one
+  kind: gap
+  level: high
+  topic: 指数不等式・対数で解く
+  statement: $0<a<1$、$b>0$のとき、実数$x$について、$a^x<b$であることと$\log_ab<x$であることは同値である。
+  statement_en: If 0 < a < 1 and b > 0, then for real x, a^x < b if and only if log_a b < x.
+  assumptions:
+  - $0<a<1$
+  - $b>0$
+  - $x$は実数
+  quantifiers:
+  - 任意の$0<a<1$、$b>0$と実数$x$
+  conclusion: $a^x<b$と$\log_ab<x$は同値である。
+  answer: |
+    $0<a<1$、$b>0$とし、$x$を実数とする。$\log$を自然対数とし、$\log_ab=\dfrac{\log b}{\log a}$とする。$0<a<1$より$\log a<0$である。$\log$は狭義増加なので、$a^x<b$は$x\log a<\log b$と同値である。負の数$\log a$で割ると不等号の向きが変わるので、これは$x>\log_ab$と同値である。
+  strategy: Take natural logarithms and divide by the negative number log a, which reverses the inequality.
+  sketch:
+  - "translate: Write log_a b = log b / log a, with log a < 0."
+  - "apply_theorem: log is strictly increasing, so a^x < b is x log a < log b."
+  - "conclude: Dividing by log a < 0 reverses the inequality and gives log_a b < x."
+  openmath: (forall (a b x) (-> (and (in a R) (in b R) (in x R) (> a 0) (< a 1) (> b 0)) (<-> (< (^ a x) b) (< (/ (ln b) (ln a)) x))))
+  hard_negative:
+    statement: $a>1$、$b>0$のときも、$a^x<b$と$\log_ab<x$は同値である。
+    reason: $a=2$、$b=2$、$x=0$のとき$a^x=1<b$だが$\log_ab=1>x$である。
+  target: |
+    ∀ (a b x : ℝ), 0 < a → a < 1 → 0 < b → (a ^ x < b ↔ Real.logb a b < x)
+  proof: |
+    by
+      intro a b x ha0 ha1 hb
+      exact (Real.logb_lt_iff_lt_rpow_of_base_lt_one ha0 ha1 hb).symm
+- id: exp_factored_quadratic_inequality
+  kind: gap
+  level: high
+  topic: 指数不等式・置き換え
+  statement: $a>1$、$0<\alpha<\beta$のとき、実数$x$について、$(a^x-\alpha)(a^x-\beta)<0$であることと$\log_a\alpha<x<\log_a\beta$であることは同値である。
+  statement_en: If a > 1 and 0 < α < β, then for real x, (a^x - α)(a^x - β) < 0 if and only if log_a α < x < log_a β.
+  assumptions:
+  - $a>1$
+  - $0<\alpha<\beta$
+  - $x$は実数
+  quantifiers:
+  - 任意の$a>1$、$0<\alpha<\beta$と実数$x$
+  conclusion: $(a^x-\alpha)(a^x-\beta)<0$と$\log_a\alpha<x<\log_a\beta$は同値である。
+  answer: |
+    $a>1$、$0<\alpha<\beta$とし、$x$を実数とする。$\alpha<\beta$なので、$t=a^x$について$(t-\alpha)(t-\beta)<0$は$\alpha<t<\beta$と同値である。$a>1$より関数$u\mapsto\log_au$は$u>0$で狭義増加であり、$\log_aa^x=x$である。$\alpha,\beta,a^x$はすべて正なので、$\alpha<a^x<\beta$は$\log_a\alpha<x<\log_a\beta$と同値である。
+  strategy: Solve the quadratic inequality in t = a^x, then apply the increasing function log_a.
+  sketch:
+  - "setup: Put t = a^x."
+  - "derive: Since α < β, the product is negative exactly when α < t < β."
+  - "apply_theorem: log_a is strictly increasing on positive numbers because a > 1."
+  - "conclude: α < a^x < β is equivalent to log_a α < x < log_a β."
+  openmath: (forall (a alpha beta x) (-> (and (in a R) (in alpha R) (in beta R) (in x R) (> a 1) (> alpha 0) (< alpha beta)) (<-> (< (* (- (^ a x) alpha) (- (^ a x) beta)) 0) (and (< (/ (ln alpha) (ln a)) x) (< x (/ (ln beta) (ln a)))))))
+  hard_negative:
+    statement: $a>1$、$\alpha<\beta$なら、$\alpha\leq 0$でも$(a^x-\alpha)(a^x-\beta)<0$は$\log_a\alpha<x<\log_a\beta$と同値である。
+    reason: $\alpha\leq 0$では$\log_a\alpha$が定義されない。$\beta>0$なら$a^x>0\geq\alpha$はつねに成り立つので、解は$x<\log_a\beta$だけになる。
+  target: |
+    ∀ (a α β x : ℝ), 1 < a → 0 < α → α < β → ((a ^ x - α) * (a ^ x - β) < 0 ↔ Real.logb a α < x ∧ x < Real.logb a β)
+  proof: |
+    by
+      intro a α β x ha hα hαβ
+      have hβ : 0 < β := hα.trans hαβ
+      have h1 : Real.logb a α < x ↔ α < a ^ x := Real.logb_lt_iff_lt_rpow ha hα
+      have h2 : x < Real.logb a β ↔ a ^ x < β := Real.lt_logb_iff_rpow_lt ha hβ
+      rw [h1, h2]
+      constructor
+      · intro h
+        constructor
+        · by_contra h3
+          have h4 := not_lt.1 h3
+          nlinarith [mul_nonneg (sub_nonneg.2 h4) (sub_nonneg.2 (h4.trans hαβ.le))]
+        · by_contra h3
+          have h4 := not_lt.1 h3
+          nlinarith [mul_nonneg (sub_nonneg.2 (hαβ.le.trans h4)) (sub_nonneg.2 h4)]
+      · rintro ⟨h3, h4⟩
+        exact mul_neg_of_pos_of_neg (sub_pos.2 h3) (sub_neg.2 h4)
+- id: reciprocal_exponent_sum_common_value
+  kind: gap
+  level: high
+  topic: 指数と対数・共通の値でおく
+  statement: $a,b,k>0$、$k\neq 1$とし、実数$x,y$が$a^x=b^y=k$をみたすとき、$\dfrac{1}{x}+\dfrac{1}{y}=\log_k(ab)$である。
+  statement_en: If a, b, k > 0, k ≠ 1 and real x, y satisfy a^x = b^y = k, then 1/x + 1/y = log_k(ab).
+  assumptions:
+  - $a,b,k>0$
+  - $k\neq 1$
+  - $a^x=k$
+  - $b^y=k$
+  quantifiers:
+  - 条件をみたす任意の実数$a,b,k,x,y$
+  conclusion: $\dfrac{1}{x}+\dfrac{1}{y}=\log_k(ab)$である。
+  answer: |
+    $a,b,k>0$、$k\neq 1$とし、実数$x,y$は$a^x=k$、$b^y=k$をみたすとする。$\log$を自然対数とし、$\log_ku=\dfrac{\log u}{\log k}$とする。$k\neq 1$より$\log k\neq 0$である。$a^x=k$の自然対数をとると$x\log a=\log k$である。右辺が$0$でないので$x\neq 0$であり、$\log a=\dfrac{\log k}{x}$である。同様に$y\neq 0$で$\log b=\dfrac{\log k}{y}$である。よって$\log_k(ab)=\dfrac{\log a+\log b}{\log k}=\dfrac{1}{x}+\dfrac{1}{y}$である。
+  strategy: Take logarithms of both equations; k ≠ 1 forces x, y ≠ 0, then add the expressions for log a and log b.
+  sketch:
+  - "translate: Taking log gives x log a = log k and y log b = log k."
+  - "derive: k ≠ 1 gives log k ≠ 0, hence x ≠ 0 and y ≠ 0."
+  - "derive: So log a = log k / x and log b = log k / y."
+  - "conclude: log_k(ab) = (log a + log b) / log k = 1/x + 1/y."
+  openmath: (forall (a b k x y) (-> (and (in a R) (in b R) (in k R) (in x R) (in y R) (> a 0) (> b 0) (> k 0) (!= k 1) (= (^ a x) k) (= (^ b y) k)) (= (+ (/ 1 x) (/ 1 y)) (/ (ln (* a b)) (ln k)))))
+  hard_negative:
+    statement: $a,b,k>0$で$a^x=b^y=k$なら、$k=1$でも$\dfrac{1}{x}+\dfrac{1}{y}=\log_k(ab)$である。
+    reason: $k=1$では$x=y=0$がありうるうえ、$\log_1$は定義されない。条件$k\neq 1$が$x,y\neq 0$を保証している。
+  target: |
+    ∀ (a b k x y : ℝ), 0 < a → 0 < b → 0 < k → k ≠ 1 → a ^ x = k → b ^ y = k → 1 / x + 1 / y = Real.logb k (a * b)
+  proof: |
+    by
+      intro a b k x y ha hb hk hk1 hx hy
+      have hL : Real.log k ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one hk hk1
+      have h1 : x * Real.log a = Real.log k := by rw [← Real.log_rpow ha, hx]
+      have h2 : y * Real.log b = Real.log k := by rw [← Real.log_rpow hb, hy]
+      have hx0 : x ≠ 0 := by
+        rintro rfl
+        apply hL
+        rw [← h1, zero_mul]
+      have hy0 : y ≠ 0 := by
+        rintro rfl
+        apply hL
+        rw [← h2, zero_mul]
+      rw [Real.logb, Real.log_mul ha.ne' hb.ne']
+      have ea : Real.log a = Real.log k / x := by field_simp; linarith
+      have eb : Real.log b = Real.log k / y := by field_simp; linarith
+      rw [ea, eb]
+      field_simp
+- id: logb_eq_iff_rpow_eq_definition
+  kind: textbook
+  level: high
+  topic: 対数・定義
+  statement: $a>0$、$a\neq 1$、$M>0$のとき、実数$p$について、$\log_aM=p$であることと$a^p=M$であることは同値である。
+  statement_en: If a > 0, a ≠ 1 and M > 0, then log_a M = p if and only if a^p = M.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $M>0$
+  - $p$は実数
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$、$M>0$と実数$p$
+  conclusion: $\log_aM=p$と$a^p=M$は同値である。
+  answer: |
+    $a>0$、$a\neq 1$、$M>0$とし、$p$を実数とする。$\log$を自然対数とし、$\log_aM=\dfrac{\log M}{\log a}$とする。$a\neq 1$より$\log a\neq 0$である。$\log$は正の数の上で単射であり$\log a^p=p\log a$なので、$a^p=M$は$p\log a=\log M$と同値である。$\log a$で割ると、これは$p=\log_aM$と同値である。
+  strategy: Take logarithms, which is injective on positive numbers, and divide by log a.
+  sketch:
+  - "translate: Write log_a M = log M / log a, with log a ≠ 0."
+  - "apply_theorem: Injectivity of log on positive reals turns a^p = M into p log a = log M."
+  - "conclude: Dividing by log a gives p = log_a M."
+  openmath: (forall (a M p) (-> (and (in a R) (in M R) (in p R) (> a 0) (!= a 1) (> M 0)) (<-> (= (/ (ln M) (ln a)) p) (= (^ a p) M))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$なら、$M=0$でも$\log_aM=p$となる実数$p$があって$a^p=M$をみたす。
+    reason: $a^p$はつねに正なので$a^p=0$となる$p$はない。真数は正に限る。
+  target: |
+    ∀ (a M p : ℝ), 0 < a → a ≠ 1 → 0 < M → (Real.logb a M = p ↔ a ^ p = M)
+  proof: |
+    by
+      intro a M p ha ha1 hM
+      exact Real.logb_eq_iff_rpow_eq ha ha1 hM
+- id: rpow_logb_cancel
+  kind: gap
+  level: high
+  topic: 対数・定義
+  statement: $a>0$、$a\neq 1$、$M>0$のとき、$a^{\log_aM}=M$である。
+  statement_en: If a > 0, a ≠ 1 and M > 0, then a^(log_a M) = M.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $M>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$、$M>0$
+  conclusion: $a^{\log_aM}=M$である。
+  answer: |
+    $a>0$、$a\neq 1$、$M>0$とする。$\log$を自然対数とし、$\log_aM=\dfrac{\log M}{\log a}$とする。$a\neq 1$より$\log a\neq 0$である。$a^t=e^{t\log a}$に$t=\log_aM$を代入すると、$a^{\log_aM}=e^{\log M}=M$である。
+  strategy: Substitute log_a M into a^t = exp(t log a) and cancel log a.
+  sketch:
+  - "translate: Write a^t = exp(t log a) and log_a M = log M / log a."
+  - "derive: The factor log a ≠ 0 cancels, leaving exp(log M)."
+  - "conclude: exp(log M) = M because M > 0."
+  openmath: (forall (a M) (-> (and (in a R) (in M R) (> a 0) (!= a 1) (> M 0)) (= (^ a (/ (ln M) (ln a))) M)))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$なら、$M<0$でも$a^{\log_aM}=M$である。
+    reason: $M<0$では$\log_aM$が定義されない。しかも$a$の実数乗はつねに正なので、左辺が負の数$M$になることはない。
+  target: |
+    ∀ (a M : ℝ), 0 < a → a ≠ 1 → 0 < M → a ^ Real.logb a M = M
+  proof: |
+    by
+      intro a M ha ha1 hM
+      exact Real.rpow_logb ha ha1 hM
+- id: logb_mul_positive
+  kind: textbook
+  level: high
+  topic: 対数・基本性質
+  statement: $a>0$、$a\neq 1$、$M,N>0$のとき、$\log_a(MN)=\log_aM+\log_aN$である。
+  statement_en: If a > 0, a ≠ 1 and M, N > 0, then log_a(MN) = log_a M + log_a N.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $M,N>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と$M,N>0$
+  conclusion: $\log_a(MN)=\log_aM+\log_aN$である。
+  answer: |
+    $a>0$、$a\neq 1$、$M,N>0$とする。$p=\log_aM$、$q=\log_aN$とおくと$a^p=M$、$a^q=N$である。指数法則より$MN=a^pa^q=a^{p+q}$である。対数の定義より$\log_a(MN)=p+q$であり、これが示すべき等式である。
+  strategy: Write M and N as powers of a and add the exponents.
+  sketch:
+  - "setup: Put p = log_a M and q = log_a N, so M = a^p and N = a^q."
+  - "apply_theorem: The exponent law gives MN = a^(p+q)."
+  - "conclude: By definition of the logarithm, log_a(MN) = p + q."
+  openmath: (forall (a M K) (-> (and (in a R) (in M R) (in K R) (> a 0) (!= a 1) (> M 0) (> K 0)) (= (/ (ln (* M K)) (ln a)) (+ (/ (ln M) (ln a)) (/ (ln K) (ln a))))))
+  hard_negative:
+    statement: $MN>0$であれば、$M,N$の符号によらず$\log_a(MN)=\log_aM+\log_aN$である。
+    reason: $M=N=-2$のとき左辺は$\log_a4$だが、右辺の$\log_a(-2)$は定義されない。
+  target: |
+    ∀ (a M N : ℝ), 0 < a → a ≠ 1 → 0 < M → 0 < N → Real.logb a (M * N) = Real.logb a M + Real.logb a N
+  proof: |
+    by
+      intro a M N _ _ hM hN
+      exact Real.logb_mul hM.ne' hN.ne'
+- id: logb_div_positive
+  kind: textbook
+  level: high
+  topic: 対数・基本性質
+  statement: $a>0$、$a\neq 1$、$M,N>0$のとき、$\log_a\dfrac{M}{N}=\log_aM-\log_aN$である。
+  statement_en: If a > 0, a ≠ 1 and M, N > 0, then log_a(M/N) = log_a M - log_a N.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $M,N>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と$M,N>0$
+  conclusion: $\log_a\dfrac{M}{N}=\log_aM-\log_aN$である。
+  answer: |
+    $a>0$、$a\neq 1$、$M,N>0$とする。$p=\log_aM$、$q=\log_aN$とおくと$a^p=M$、$a^q=N$である。指数法則より$a^{p-q}a^q=a^p$なので、$\dfrac{M}{N}=a^{p-q}$である。対数の定義より$\log_a\dfrac{M}{N}=p-q$であり、これが示すべき等式である。
+  strategy: Write M and N as powers of a and subtract the exponents.
+  sketch:
+  - "setup: Put p = log_a M and q = log_a N, so M = a^p and N = a^q."
+  - "apply_theorem: The exponent law gives a^(p-q) a^q = a^p, so M/N = a^(p-q)."
+  - "conclude: By definition of the logarithm, log_a(M/N) = p - q."
+  openmath: (forall (a M K) (-> (and (in a R) (in M R) (in K R) (> a 0) (!= a 1) (> M 0) (> K 0)) (= (/ (ln (/ M K)) (ln a)) (- (/ (ln M) (ln a)) (/ (ln K) (ln a))))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$、$M>0$、$N>0$、$N\neq 1$のとき、$\log_a\dfrac{M}{N}=\dfrac{\log_aM}{\log_aN}$である。
+    reason: $a=2$、$M=4$、$N=2$のとき左辺は$1$で右辺は$2$である。
+  target: |
+    ∀ (a M N : ℝ), 0 < a → a ≠ 1 → 0 < M → 0 < N → Real.logb a (M / N) = Real.logb a M - Real.logb a N
+  proof: |
+    by
+      intro a M N _ _ hM hN
+      exact Real.logb_div hM.ne' hN.ne'
+- id: logb_rpow_power_positive
+  kind: textbook
+  level: high
+  topic: 対数・基本性質
+  statement: $a>0$、$a\neq 1$、$M>0$のとき、任意の実数$p$について$\log_a(M^p)=p\log_aM$である。
+  statement_en: If a > 0, a ≠ 1 and M > 0, then log_a(M^p) = p log_a M for every real p.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $M>0$
+  - $p$は実数
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$、$M>0$と実数$p$
+  conclusion: $\log_a(M^p)=p\log_aM$である。
+  answer: |
+    $a>0$、$a\neq 1$、$M>0$とし、$p$を実数とする。$q=\log_aM$とおくと$a^q=M$である。指数法則より$M^p=(a^q)^p=a^{qp}$である。対数の定義より$\log_a(M^p)=qp=p\log_aM$である。
+  strategy: Write M as a power of a and multiply exponents.
+  sketch:
+  - "setup: Put q = log_a M, so M = a^q."
+  - "apply_theorem: The exponent law gives M^p = a^(qp)."
+  - "conclude: By definition of the logarithm, log_a(M^p) = p q."
+  openmath: (forall (a M p) (-> (and (in a R) (in M R) (in p R) (> a 0) (!= a 1) (> M 0)) (= (/ (ln (^ M p)) (ln a)) (* p (/ (ln M) (ln a))))))
+  hard_negative:
+    statement: $M<0$でも、正の偶数$p$については$\log_a(M^p)=p\log_aM$である。
+    reason: $M=-2$、$p=2$のとき左辺は$\log_a4$だが、右辺の$\log_a(-2)$は定義されない。正しい形は$p\log_a|M|$である。
+  target: |
+    ∀ (a M p : ℝ), 0 < a → a ≠ 1 → 0 < M → Real.logb a (M ^ p) = p * Real.logb a M
+  proof: |
+    by
+      intro a M p _ _ hM
+      exact Real.logb_rpow_eq_mul_logb_of_pos hM
+- id: logb_even_power_abs
+  kind: gap
+  level: high
+  topic: 対数・偶数乗の真数
+  statement: 指数が偶数の場合に限った形として、$a>0$、$a\neq 1$、$x\neq 0$、$n$を正の整数とするとき、$\log_a(x^{2n})=2n\log_a|x|$である。
+  statement_en: Special even-exponent form. If a > 0, a ≠ 1, x ≠ 0 and n is a positive integer, then log_a(x^(2n)) = 2n log_a |x|.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x\neq 0$
+  - $n$は正の整数
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$、$x\neq 0$と正の整数$n$
+  conclusion: $\log_a(x^{2n})=2n\log_a|x|$である。
+  answer: |
+    $a>0$、$a\neq 1$、$x\neq 0$とし、$n$を正の整数とする。$2n$は偶数なので$x^{2n}=|x|^{2n}$である。$x\neq 0$より$|x|>0$なので、正の真数についての等式$\log_a(M^p)=p\log_aM$を$M=|x|$、$p=2n$に用いることができる。よって$\log_a(x^{2n})=2n\log_a|x|$である。
+  strategy: Replace x by |x| using the even exponent, then apply the power rule for a positive argument.
+  sketch:
+  - "derive: Since 2n is even, x^(2n) = |x|^(2n)."
+  - "derive: x ≠ 0 gives |x| > 0."
+  - "apply_theorem: The power rule for a positive argument applies to |x|."
+  - "conclude: log_a(x^(2n)) = 2n log_a |x|."
+  openmath: (forall (a x n) (-> (and (in a R) (in x R) (in n N) (> a 0) (!= a 1) (!= x 0) (>= n 1)) (= (/ (ln (^ x (* 2 n))) (ln a)) (* (* 2 n) (/ (ln (abs x)) (ln a))))))
+  hard_negative:
+    statement: $x\neq 0$のとき$\log_a(x^{2n})=2n\log_ax$である。
+    reason: $x<0$では右辺の$\log_ax$が定義されない。解の範囲を誤る典型であり、絶対値を外せるのは$x>0$のときだけである。
+  target: |
+    ∀ (a x : ℝ) (n : ℕ), 0 < a → a ≠ 1 → x ≠ 0 → 1 ≤ n → Real.logb a (x ^ (2 * n)) = ((2 * n : ℕ) : ℝ) * Real.logb a |x|
+  proof: |
+    by
+      intro a x n _ _ _ _
+      rw [← (even_two_mul n).pow_abs x]
+      exact Real.logb_pow a |x| (2 * n)
+- id: logb_change_of_base
+  kind: named
+  level: high
+  topic: 対数・底の変換公式
+  statement: 底の変換公式。$a,c>0$、$a\neq 1$、$c\neq 1$、$b>0$のとき、$\log_ab=\dfrac{\log_cb}{\log_ca}$である。
+  statement_en: Change of base formula. If a, c > 0, a ≠ 1, c ≠ 1 and b > 0, then log_a b = log_c b / log_c a.
+  assumptions:
+  - $a,c>0$
+  - $a\neq 1$
+  - $c\neq 1$
+  - $b>0$
+  quantifiers:
+  - 条件をみたす任意の実数$a,b,c$
+  conclusion: $\log_ab=\dfrac{\log_cb}{\log_ca}$である。
+  answer: |
+    $a,c>0$、$a\neq 1$、$c\neq 1$、$b>0$とする。$p=\log_ab$とおくと$a^p=b$である。両辺の$c$を底とする対数をとると$p\log_ca=\log_cb$である。$a\neq 1$より$\log_ca\neq 0$なので、$p=\dfrac{\log_cb}{\log_ca}$である。
+  strategy: Apply log_c to a^p = b and divide by log_c a, which is nonzero because a ≠ 1.
+  sketch:
+  - "setup: Put p = log_a b, so a^p = b."
+  - "translate: Applying log_c gives p log_c a = log_c b."
+  - "derive: a ≠ 1 gives log_c a ≠ 0."
+  - "conclude: Dividing gives p = log_c b / log_c a."
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (> a 0) (!= a 1) (> b 0) (> c 0) (!= c 1)) (= (/ (ln b) (ln a)) (/ (/ (ln b) (ln c)) (/ (ln a) (ln c))))))
+  hard_negative:
+    statement: $c>0$、$c\neq 1$、$b>0$なら、$a=1$でも$\log_ab=\dfrac{\log_cb}{\log_ca}$である。
+    reason: $a=1$では$\log_1b$が定義されず、右辺の分母$\log_c1$は$0$である。
+  target: |
+    ∀ (a b c : ℝ), 0 < a → a ≠ 1 → 0 < b → 0 < c → c ≠ 1 → Real.logb a b = Real.logb c b / Real.logb c a
+  proof: |
+    by
+      intro a b c ha ha1 _ hc hc1
+      have h1 : Real.log a ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one ha ha1
+      have h2 : Real.log c ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one hc hc1
+      simp only [Real.logb]
+      field_simp
+- id: logb_chain_product
+  kind: gap
+  level: high
+  topic: 対数・底の変換
+  statement: $a,b>0$、$a\neq 1$、$b\neq 1$、$c>0$のとき、$\log_ab\cdot\log_bc=\log_ac$である。$c=a$とすれば$\log_ab\cdot\log_ba=1$である。
+  statement_en: If a, b > 0, a ≠ 1, b ≠ 1 and c > 0, then log_a b · log_b c = log_a c; taking c = a gives log_a b · log_b a = 1.
+  assumptions:
+  - $a,b>0$
+  - $a\neq 1$
+  - $b\neq 1$
+  - $c>0$
+  quantifiers:
+  - 条件をみたす任意の実数$a,b,c$
+  conclusion: $\log_ab\cdot\log_bc=\log_ac$である。
+  answer: |
+    $a,b>0$、$a\neq 1$、$b\neq 1$、$c>0$とする。$p=\log_ab$、$q=\log_bc$とおくと$a^p=b$、$b^q=c$である。指数法則より$a^{pq}=(a^p)^q=b^q=c$である。対数の定義より$\log_ac=pq$である。$c=a$とすると$\log_aa=1$なので、$\log_ab\cdot\log_ba=1$である。
+  strategy: Express b as a power of a and c as a power of b, then compose the exponents.
+  sketch:
+  - "setup: Put p = log_a b and q = log_b c, so a^p = b and b^q = c."
+  - "apply_theorem: The exponent law gives a^(pq) = (a^p)^q = c."
+  - "conclude: By definition of the logarithm, log_a c = pq."
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (> a 0) (!= a 1) (> b 0) (!= b 1) (> c 0)) (= (* (/ (ln b) (ln a)) (/ (ln c) (ln b))) (/ (ln c) (ln a)))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$、$b,c>0$なら、$b=1$でも$\log_ab\cdot\log_bc=\log_ac$である。
+    reason: $b=1$では$\log_1c$が定義されない。中間の底も$1$と異なる必要がある。
+  target: |
+    ∀ (a b c : ℝ), 0 < a → a ≠ 1 → 0 < b → b ≠ 1 → 0 < c → Real.logb a b * Real.logb b c = Real.logb a c
+  proof: |
+    by
+      intro a b c _ _ hb hb1 _
+      have h : Real.log b ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one hb hb1
+      simp only [Real.logb]
+      field_simp
+- id: logb_power_base_power_argument
+  kind: gap
+  level: high
+  topic: 対数・底の変換
+  statement: $a>0$、$a\neq 1$、$b>0$とし、$m$を$0$でない実数とするとき、任意の実数$n$について$\log_{a^m}(b^n)=\dfrac{n}{m}\log_ab$である。
+  statement_en: If a > 0, a ≠ 1, b > 0 and m is a nonzero real, then log_(a^m)(b^n) = (n/m) log_a b for every real n.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $b>0$
+  - $m\neq 0$
+  - $n$は実数
+  quantifiers:
+  - 条件をみたす任意の実数$a,b,m,n$
+  conclusion: $\log_{a^m}(b^n)=\dfrac{n}{m}\log_ab$である。
+  answer: |
+    $a>0$、$a\neq 1$、$b>0$とし、$m$を$0$でない実数、$n$を実数とする。$a\neq 1$、$m\neq 0$より$a^m\neq 1$なので、$a^m$は底にできる。$a$を底とする対数へ底を変換すると$\log_{a^m}(b^n)=\dfrac{\log_a(b^n)}{\log_a(a^m)}=\dfrac{n\log_ab}{m}$である。
+  strategy: Change the base to a and apply the power rule to numerator and denominator.
+  sketch:
+  - "derive: a ≠ 1 and m ≠ 0 give a^m ≠ 1, so a^m is a valid base."
+  - "apply_theorem: Change base to a."
+  - "derive: log_a(b^n) = n log_a b and log_a(a^m) = m."
+  - "conclude: The quotient is (n/m) log_a b."
+  openmath: (forall (a b m n) (-> (and (in a R) (in b R) (in m R) (in n R) (> a 0) (!= a 1) (> b 0) (!= m 0)) (= (/ (ln (^ b n)) (ln (^ a m))) (* (/ n m) (/ (ln b) (ln a))))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$、$b>0$なら、$m=0$でも$\log_{a^m}b=\dfrac{1}{m}\log_ab$である。
+    reason: $m=0$では底が$a^0=1$となって対数が定義されない。右辺の分母も$0$である。
+  target: |
+    ∀ (a b m n : ℝ), 0 < a → a ≠ 1 → 0 < b → m ≠ 0 → Real.logb (a ^ m) (b ^ n) = (n / m) * Real.logb a b
+  proof: |
+    by
+      intro a b m n ha ha1 hb hm
+      have h : Real.log a ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one ha ha1
+      simp only [Real.logb]
+      rw [Real.log_rpow ha, Real.log_rpow hb]
+      field_simp
+- id: logb_lt_iff_base_gt_one
+  kind: textbook
+  level: high
+  topic: 対数関数・単調性
+  statement: $a>1$、$x,y>0$のとき、$\log_ax<\log_ay$であることと$x<y$であることは同値である。
+  statement_en: If a > 1 and x, y > 0, then log_a x < log_a y if and only if x < y.
+  assumptions:
+  - $a>1$
+  - $x,y>0$
+  quantifiers:
+  - 任意の$a>1$と$x,y>0$
+  conclusion: $\log_ax<\log_ay$と$x<y$は同値である。
+  answer: |
+    $a>1$、$x,y>0$とする。$\log$を自然対数とし、$\log_au=\dfrac{\log u}{\log a}$とする。$a>1$より$\log a>0$なので、$\log_ax<\log_ay$は$\log x<\log y$と同値である。$\log$は正の数の上で狭義増加なので、これは$x<y$と同値である。
+  strategy: Multiply by the positive number log a and use strict monotonicity of the natural logarithm.
+  sketch:
+  - "translate: Write log_a u = log u / log a with log a > 0."
+  - "derive: The inequality is equivalent to log x < log y."
+  - "apply_theorem: log is strictly increasing on positive numbers, so this is x < y."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 1) (> x 0) (> y 0)) (<-> (< (/ (ln x) (ln a)) (/ (ln y) (ln a))) (< x y))))
+  hard_negative:
+    statement: $0<a<1$、$x,y>0$のときも、$\log_ax<\log_ay$と$x<y$は同値である。
+    reason: $a=\dfrac{1}{2}$、$x=1$、$y=2$のとき$x<y$だが$\log_ax=0>-1=\log_ay$である。
+  target: |
+    ∀ (a x y : ℝ), 1 < a → 0 < x → 0 < y → (Real.logb a x < Real.logb a y ↔ x < y)
+  proof: |
+    by
+      intro a x y ha hx hy
+      exact Real.logb_lt_logb_iff ha hx hy
+- id: logb_lt_iff_base_lt_one
+  kind: textbook
+  level: high
+  topic: 対数関数・単調性
+  statement: $0<a<1$、$x,y>0$のとき、$\log_ax<\log_ay$であることと$y<x$であることは同値である。
+  statement_en: If 0 < a < 1 and x, y > 0, then log_a x < log_a y if and only if y < x.
+  assumptions:
+  - $0<a<1$
+  - $x,y>0$
+  quantifiers:
+  - 任意の$0<a<1$と$x,y>0$
+  conclusion: $\log_ax<\log_ay$と$y<x$は同値である。
+  answer: |
+    $0<a<1$、$x,y>0$とする。$\log$を自然対数とし、$\log_au=\dfrac{\log u}{\log a}$とする。$0<a<1$より$\log a<0$なので、$\log_ax<\log_ay$は$\log y<\log x$と同値である。$\log$は正の数の上で狭義増加なので、これは$y<x$と同値である。
+  strategy: Multiply by the negative number log a, which reverses the inequality, and use monotonicity of log.
+  sketch:
+  - "translate: Write log_a u = log u / log a with log a < 0."
+  - "derive: The inequality is equivalent to log y < log x."
+  - "apply_theorem: log is strictly increasing on positive numbers, so this is y < x."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0) (< a 1) (> x 0) (> y 0)) (<-> (< (/ (ln x) (ln a)) (/ (ln y) (ln a))) (< y x))))
+  hard_negative:
+    statement: $a>1$、$x,y>0$のときも、$\log_ax<\log_ay$と$y<x$は同値である。
+    reason: $a=2$、$x=1$、$y=2$のとき$\log_ax<\log_ay$だが$y<x$ではない。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → a < 1 → 0 < x → 0 < y → (Real.logb a x < Real.logb a y ↔ y < x)
+  proof: |
+    by
+      intro a x y ha0 ha1 hx hy
+      exact Real.logb_lt_logb_iff_of_base_lt_one ha0 ha1 hx hy
+- id: logb_eq_iff_arguments_eq
+  kind: gap
+  level: high
+  topic: 対数方程式・真数を比べる
+  statement: $a>0$、$a\neq 1$、$x,y>0$のとき、$\log_ax=\log_ay$であることと$x=y$であることは同値である。
+  statement_en: If a > 0, a ≠ 1 and x, y > 0, then log_a x = log_a y if and only if x = y.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x,y>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と$x,y>0$
+  conclusion: $\log_ax=\log_ay$と$x=y$は同値である。
+  answer: |
+    $a>0$、$a\neq 1$、$x,y>0$とする。$x=y$なら$\log_ax=\log_ay$である。逆に$\log_ax=\log_ay$とする。正の数$u$について$a^{\log_au}=u$なので、$x=a^{\log_ax}=a^{\log_ay}=y$である。
+  strategy: Apply the map t to a^t to both sides and use a^(log_a u) = u.
+  sketch:
+  - "setup: The direction from x = y is immediate."
+  - "translate: Raise a to both sides of log_a x = log_a y."
+  - "conclude: a^(log_a u) = u for u > 0 gives x = y."
+  openmath: (forall (a x y) (-> (and (in a R) (in x R) (in y R) (> a 0) (!= a 1) (> x 0) (> y 0)) (<-> (= (/ (ln x) (ln a)) (/ (ln y) (ln a))) (= x y))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$、$x,y\neq 0$のとき、$\log_a(x^2)=\log_a(y^2)$と$x=y$は同値である。
+    reason: $x=2$、$y=-2$のとき$\log_a(x^2)=\log_a(y^2)$だが$x\neq y$である。真数を比べて$x=y$といえるのは、$x,y$がともに正のときである。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → a ≠ 1 → 0 < x → 0 < y → (Real.logb a x = Real.logb a y ↔ x = y)
+  proof: |
+    by
+      intro a x y ha ha1 hx hy
+      constructor
+      · intro h
+        rw [← Real.rpow_logb ha ha1 hx, h, Real.rpow_logb ha ha1 hy]
+      · intro h
+        rw [h]
+- id: logb_pos_iff_sign_product
+  kind: gap
+  level: high
+  topic: 対数・符号の判定
+  statement: $a>0$、$a\neq 1$、$x>0$のとき、$\log_ax>0$であることと$(a-1)(x-1)>0$であることは同値である。
+  statement_en: If a > 0, a ≠ 1 and x > 0, then log_a x > 0 if and only if (a-1)(x-1) > 0.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x>0$
+  quantifiers:
+  - 任意の$a>0$、$a\neq 1$と$x>0$
+  conclusion: $\log_ax>0$と$(a-1)(x-1)>0$は同値である。
+  answer: |
+    $a>0$、$a\neq 1$、$x>0$とする。$\log$を自然対数とし、$\log_ax=\dfrac{\log x}{\log a}$とする。$\log$は狭義増加で$\log 1=0$なので、正の数$u$について$\log u$と$u-1$は符号が等しい。$a\neq 1$より$\log a\neq 0$である。商$\dfrac{\log x}{\log a}$が正であることは、$\log a$と$\log x$が同じ符号で$0$でないことと同値である。これは$(a-1)(x-1)>0$と同値である。
+  strategy: Compare the signs of log a and log x with those of a-1 and x-1.
+  sketch:
+  - "translate: Write log_a x = log x / log a."
+  - "derive: log u has the same sign as u - 1 for u > 0."
+  - "derive: The quotient is positive exactly when log x and log a have the same nonzero sign."
+  - "conclude: This is the condition (a-1)(x-1) > 0."
+  openmath: (forall (a x) (-> (and (in a R) (in x R) (> a 0) (!= a 1) (> x 0)) (<-> (> (/ (ln x) (ln a)) 0) (> (* (- a 1) (- x 1)) 0))))
+  hard_negative:
+    statement: $a>0$、$a\neq 1$、$x>0$のとき、$\log_ax>0$は$x>1$と同値である。
+    reason: $a=\dfrac{1}{2}$、$x=\dfrac{1}{2}$のとき$\log_ax=1>0$だが$x<1$である。底が$1$より小さいと向きが逆になる。
+  target: |
+    ∀ (a x : ℝ), 0 < a → a ≠ 1 → 0 < x → (0 < Real.logb a x ↔ 0 < (a - 1) * (x - 1))
+  proof: |
+    by
+      intro a x ha ha1 hx
+      rcases lt_or_gt_of_ne ha1 with h | h
+      · rw [Real.logb_pos_iff_of_base_lt_one ha h hx]
+        constructor
+        · intro h2
+          exact mul_pos_of_neg_of_neg (sub_neg.2 h) (sub_neg.2 h2)
+        · intro h2
+          by_contra hc
+          have : 0 ≤ x - 1 := by linarith
+          nlinarith
+      · rw [Real.logb_pos_iff h hx]
+        constructor
+        · intro h2
+          exact mul_pos (sub_pos.2 h) (sub_pos.2 h2)
+        · intro h2
+          by_contra hc
+          have : x - 1 ≤ 0 := by linarith
+          nlinarith
+- id: logb_sum_equation_under_true_number_condition
+  kind: gap
+  level: high
+  topic: 対数方程式・真数条件
+  statement: $a>0$、$a\neq 1$とし、実数$x,b,c,p$は真数条件$x+b>0$、$x+c>0$をみたすとする。このとき、$\log_a(x+b)+\log_a(x+c)=p$であることと$(x+b)(x+c)=a^p$であることは同値である。
+  statement_en: Let a > 0, a ≠ 1, and let x, b, c, p be real with x + b > 0 and x + c > 0. Then log_a(x+b) + log_a(x+c) = p if and only if (x+b)(x+c) = a^p.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x+b>0$
+  - $x+c>0$
+  - $p$は実数
+  quantifiers:
+  - 条件をみたす任意の実数$a,b,c,p,x$
+  conclusion: $\log_a(x+b)+\log_a(x+c)=p$と$(x+b)(x+c)=a^p$は同値である。
+  answer: |
+    $a>0$、$a\neq 1$とし、実数$x,b,c,p$は$x+b>0$、$x+c>0$をみたすとする。真数が正なので対数の和は積の対数にまとめられ、$\log_a(x+b)+\log_a(x+c)=\log_a((x+b)(x+c))$である。$(x+b)(x+c)>0$なので、対数の定義より$\log_a((x+b)(x+c))=p$は$(x+b)(x+c)=a^p$と同値である。
+  strategy: Combine the logarithms under the positivity conditions and use the definition of the logarithm.
+  sketch:
+  - "setup: The arguments x + b and x + c are positive."
+  - "apply_theorem: The sum of logarithms is log_a((x+b)(x+c))."
+  - "conclude: The definition of the logarithm turns the equation into (x+b)(x+c) = a^p."
+  openmath: (forall (a b c p x) (-> (and (in a R) (in b R) (in c R) (in p R) (in x R) (> a 0) (!= a 1) (> (+ x b) 0) (> (+ x c) 0)) (<-> (= (+ (/ (ln (+ x b)) (ln a)) (/ (ln (+ x c)) (ln a))) p) (= (* (+ x b) (+ x c)) (^ a p)))))
+  hard_negative:
+    statement: 真数条件を確かめなくても、$(x+b)(x+c)=a^p$の解はすべて$\log_a(x+b)+\log_a(x+c)=p$の解である。
+    reason: $a=2$、$b=0$、$c=-3$、$p=2$では$x=-1$が$(x+b)(x+c)=4$をみたすが、$\log_2(-1)$は定義されない。
+  target: |
+    ∀ (a b c p x : ℝ), 0 < a → a ≠ 1 → 0 < x + b → 0 < x + c → (Real.logb a (x + b) + Real.logb a (x + c) = p ↔ (x + b) * (x + c) = a ^ p)
+  proof: |
+    by
+      intro a b c p x ha ha1 hb hc
+      rw [← Real.logb_mul hb.ne' hc.ne']
+      exact (Real.logb_eq_iff_rpow_eq ha ha1 (mul_pos hb hc)).trans eq_comm
+- id: logb_quadratic_substitution
+  kind: gap
+  level: high
+  topic: 対数方程式・置き換え
+  statement: $a>0$、$a\neq 1$、$x>0$、$p,q$を実数とする。$(\log_ax)^2+p\log_ax+q=0$であることと、$t^2+pt+q=0$、$x=a^t$をみたす実数$t$が存在することは同値である。
+  statement_en: Let a > 0, a ≠ 1, x > 0 and let p, q be real. Then (log_a x)^2 + p log_a x + q = 0 if and only if there is a real t with t^2 + pt + q = 0 and x = a^t.
+  assumptions:
+  - $a>0$
+  - $a\neq 1$
+  - $x>0$
+  - $p,q$は実数
+  quantifiers:
+  - 条件をみたす任意の実数$a,p,q,x$
+  conclusion: $(\log_ax)^2+p\log_ax+q=0$と、条件をみたす実数$t$の存在は同値である。
+  answer: |
+    $a>0$、$a\neq 1$、$x>0$とし、$p,q$を実数とする。$(\log_ax)^2+p\log_ax+q=0$なら、$t=\log_ax$とおくと$t^2+pt+q=0$であり、対数の定義より$x=a^t$である。逆に$t^2+pt+q=0$、$x=a^t$をみたす実数$t$があれば、$\log_ax=t$なので$(\log_ax)^2+p\log_ax+q=0$である。
+  strategy: Substitute t = log_a x; unlike the exponential case, t ranges over all reals.
+  sketch:
+  - "construct: For the forward direction take t = log_a x."
+  - "derive: Then t^2 + pt + q = 0 and x = a^t."
+  - "conclude: For the converse, x = a^t gives log_a x = t, so the quadratic holds."
+  openmath: (forall (a p q x) (-> (and (in a R) (in p R) (in q R) (in x R) (> a 0) (!= a 1) (> x 0)) (<-> (= (+ (+ (^ (/ (ln x) (ln a)) 2) (* p (/ (ln x) (ln a)))) q) 0) (exists (t) (and (in t R) (= (+ (+ (^ t 2) (* p t)) q) 0) (= x (^ a t)))))))
+  hard_negative:
+    statement: $t=\log_ax$と置き換えるときも、指数の場合と同じく$t>0$の解だけをとる。
+    reason: $\log_ax$は負の値もとる。$x=\dfrac{1}{a}$なら$t=-1$である。正の値に制限すると解を落とす。
+  target: |
+    ∀ (a p q x : ℝ), 0 < a → a ≠ 1 → 0 < x → ((Real.logb a x) ^ 2 + p * Real.logb a x + q = 0 ↔ ∃ t : ℝ, t ^ 2 + p * t + q = 0 ∧ x = a ^ t)
+  proof: |
+    by
+      intro a p q x ha ha1 hx
+      constructor
+      · intro h
+        exact ⟨Real.logb a x, h, (Real.rpow_logb ha ha1 hx).symm⟩
+      · rintro ⟨t, ht, rfl⟩
+        rw [Real.logb_rpow ha ha1]
+        exact ht
+- id: logb_compare_different_bases
+  kind: gap
+  level: high
+  topic: 対数・底の異なる大小比較
+  statement: $1<a<b$、$x>1$のとき、$\log_bx<\log_ax$である。
+  statement_en: If 1 < a < b and x > 1, then log_b x < log_a x.
+  assumptions:
+  - $1<a<b$
+  - $x>1$
+  quantifiers:
+  - 任意の$1<a<b$と$x>1$
+  conclusion: $\log_bx<\log_ax$である。
+  answer: |
+    $1<a<b$、$x>1$とする。$\log$を自然対数とすると、$\log$は狭義増加なので$0<\log a<\log b$であり、$\log x>0$である。分子が正で等しい分数は分母が大きいほど小さいので、$\log_bx=\dfrac{\log x}{\log b}<\dfrac{\log x}{\log a}=\log_ax$である。
+  strategy: Change to natural logarithms and compare fractions with the same positive numerator.
+  sketch:
+  - "translate: Write both logarithms as quotients of natural logarithms."
+  - "derive: 0 < log a < log b and log x > 0."
+  - "conclude: The fraction with the larger denominator is smaller."
+  openmath: (forall (a b x) (-> (and (in a R) (in b R) (in x R) (> a 1) (< a b) (> x 1)) (< (/ (ln x) (ln b)) (/ (ln x) (ln a)))))
+  hard_negative:
+    statement: $1<a<b$、$0<x<1$のときも$\log_bx<\log_ax$である。
+    reason: $a=2$、$b=4$、$x=\dfrac{1}{2}$のとき$\log_bx=-\dfrac{1}{2}>-1=\log_ax$である。真数が$1$より小さいと向きが逆になる。
+  target: |
+    ∀ (a b x : ℝ), 1 < a → a < b → 1 < x → Real.logb b x < Real.logb a x
+  proof: |
+    by
+      intro a b x ha hab hx
+      have h1 : 0 < Real.log a := Real.log_pos ha
+      have h2 : Real.log a < Real.log b := Real.log_lt_log (by linarith) hab
+      have h3 : 0 < Real.log x := Real.log_pos hx
+      simp only [Real.logb]
+      exact div_lt_div_of_pos_left h3 h1 h2
+- id: power_compare_via_logb
+  kind: gap
+  level: high
+  topic: 対数・累乗の大小比較
+  statement: $c>1$、$a,b>0$のとき、実数$x,y$について、$a^x<b^y$であることと$x\log_ca<y\log_cb$であることは同値である。
+  statement_en: If c > 1 and a, b > 0, then a^x < b^y if and only if x log_c a < y log_c b.
+  assumptions:
+  - $c>1$
+  - $a,b>0$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の$c>1$、$a,b>0$と実数$x,y$
+  conclusion: $a^x<b^y$と$x\log_ca<y\log_cb$は同値である。
+  answer: |
+    $c>1$、$a,b>0$とし、$x,y$を実数とする。$a^x,b^y$は正である。$c>1$なので関数$u\mapsto\log_cu$は$u>0$で狭義増加であり、$a^x<b^y$は$\log_c(a^x)<\log_c(b^y)$と同値である。$\log_c(a^x)=x\log_ca$、$\log_c(b^y)=y\log_cb$なので、これは$x\log_ca<y\log_cb$と同値である。
+  strategy: Apply the strictly increasing function log_c to both powers and use the power rule.
+  sketch:
+  - "setup: The powers a^x and b^y are positive."
+  - "apply_theorem: c > 1 makes log_c strictly increasing on positive numbers."
+  - "derive: The power rule gives log_c(a^x) = x log_c a and log_c(b^y) = y log_c b."
+  - "conclude: The two inequalities are equivalent."
+  openmath: (forall (a b c x y) (-> (and (in a R) (in b R) (in c R) (in x R) (in y R) (> c 1) (> a 0) (> b 0)) (<-> (< (^ a x) (^ b y)) (< (* x (/ (ln a) (ln c))) (* y (/ (ln b) (ln c)))))))
+  hard_negative:
+    statement: $0<c<1$、$a,b>0$のときも、$a^x<b^y$と$x\log_ca<y\log_cb$は同値である。
+    reason: $c=\dfrac{1}{2}$、$a=1$、$b=2$、$x=y=1$のとき$a^x<b^y$だが$x\log_ca=0>-1=y\log_cb$である。
+  target: |
+    ∀ (a b c x y : ℝ), 1 < c → 0 < a → 0 < b → (a ^ x < b ^ y ↔ x * Real.logb c a < y * Real.logb c b)
+  proof: |
+    by
+      intro a b c x y hc ha hb
+      rw [← Real.logb_rpow_eq_mul_logb_of_pos ha, ← Real.logb_rpow_eq_mul_logb_of_pos hb]
+      exact (Real.logb_lt_logb_iff hc (Real.rpow_pos_of_pos ha x) (Real.rpow_pos_of_pos hb y)).symm
+- id: digit_count_iff_common_log_bounds
+  kind: gap
+  level: high
+  topic: 常用対数・桁数
+  statement: 正の整数$N$と$0$以上の整数$d$について、$N$の十進表記が$d+1$桁であることと$d\leq\log_{10}N<d+1$であることは同値である。
+  statement_en: For a positive integer N and a nonnegative integer d, the decimal expansion of N has d + 1 digits if and only if d ≤ log_10 N < d + 1.
+  assumptions:
+  - $N$は正の整数
+  - $d$は$0$以上の整数
+  quantifiers:
+  - 任意の正の整数$N$と$0$以上の整数$d$
+  conclusion: $N$が$d+1$桁であることと$d\leq\log_{10}N<d+1$は同値である。
+  answer: |
+    $N$を正の整数、$d$を$0$以上の整数とする。十進表記の最高位の数字は$0$でないので、$N$が$d+1$桁であることは$10^d\leq N<10^{d+1}$と同値である。関数$u\mapsto\log_{10}u$は$u>0$で狭義増加であり、$\log_{10}10^t=t$である。したがってこの不等式は$d\leq\log_{10}N<d+1$と同値である。
+  strategy: Translate the digit count into bounds between powers of ten and apply the increasing function log_10.
+  sketch:
+  - "translate: N has d + 1 digits exactly when 10^d ≤ N < 10^(d+1)."
+  - "apply_theorem: log_10 is strictly increasing on positive numbers."
+  - "conclude: The bounds are equivalent to d ≤ log_10 N < d + 1."
+  openmath: (forall (K d) (-> (and (in K N) (in d N) (>= K 1)) (<-> (= (decimal_digit_count K) (+ d 1)) (and (<= d (/ (ln K) (ln 10))) (< (/ (ln K) (ln 10)) (+ d 1))))))
+  hard_negative:
+    statement: $N$が$d+1$桁であることと$d<\log_{10}N\leq d+1$は同値である。
+    reason: $N=10$は$2$桁で$d=1$だが、$\log_{10}N=1$なので$d<\log_{10}N$をみたさない。
+  target: |
+    ∀ (N d : ℕ), 1 ≤ N → ((Nat.digits 10 N).length = d + 1 ↔ (d : ℝ) ≤ Real.logb 10 (N : ℝ) ∧ Real.logb 10 (N : ℝ) < (d : ℝ) + 1)
+  proof: |
+    by
+      intro N d hN
+      have hN0 : N ≠ 0 := by omega
+      have hNr : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hN
+      have h10 : (1 : ℝ) < 10 := by norm_num
+      rw [Nat.length_digits 10 N (by norm_num) hN0, Nat.add_right_cancel_iff,
+        Nat.log_eq_iff (Or.inr ⟨by norm_num, hN0⟩)]
+      rw [Real.le_logb_iff_rpow_le h10 hNr, Real.logb_lt_iff_lt_rpow h10 hNr]
+      have e1 : (10 : ℝ) ^ (d : ℝ) = ((10 ^ d : ℕ) : ℝ) := by
+        rw [Real.rpow_natCast]; norm_cast
+      have e2 : (10 : ℝ) ^ ((d : ℝ) + 1) = ((10 ^ (d + 1) : ℕ) : ℝ) := by
+        have : ((d : ℝ) + 1) = ((d + 1 : ℕ) : ℝ) := by push_cast; ring
+        rw [this, Real.rpow_natCast]; norm_cast
+      rw [e1, e2, Nat.cast_le, Nat.cast_lt]
+- id: digit_count_of_power_floor_formula
+  kind: gap
+  level: high
+  topic: 常用対数・累乗の桁数
+  statement: 正の整数$a$と$0$以上の整数$n$について、$a^n$の十進表記の桁数は$\lfloor n\log_{10}a\rfloor+1$である。
+  statement_en: For a positive integer a and a nonnegative integer n, the decimal expansion of a^n has ⌊n log_10 a⌋ + 1 digits.
+  assumptions:
+  - $a$は正の整数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の正の整数$a$と$0$以上の整数$n$
+  conclusion: $a^n$の桁数は$\lfloor n\log_{10}a\rfloor+1$である。
+  answer: |
+    $a$を正の整数、$n$を$0$以上の整数とする。$\ell=\lfloor n\log_{10}a\rfloor$とおく。$a\geq 1$より$n\log_{10}a\geq 0$なので、$\ell$は$0$以上の整数である。$\log_{10}(a^n)=n\log_{10}a$なので$\ell\leq\log_{10}(a^n)<\ell+1$である。関数$u\mapsto 10^u$は狭義増加なので、$10^\ell\leq a^n<10^{\ell+1}$である。十進表記の最高位の数字は$0$でないから、この不等式は$a^n$が$\ell+1$桁であることを意味する。
+  strategy: Take the floor of n log_10 a, then exponentiate the resulting bounds to read off the digit count.
+  sketch:
+  - "setup: Put l = floor(n log_10 a), a nonnegative integer since a ≥ 1."
+  - "derive: The power rule gives l ≤ log_10(a^n) < l + 1."
+  - "apply_theorem: Exponentiating gives 10^l ≤ a^n < 10^(l+1)."
+  - "conclude: These bounds mean that a^n has l + 1 digits."
+  openmath: (forall (a n) (-> (and (in a N) (in n N) (>= a 1)) (= (decimal_digit_count (^ a n)) (+ (floor (* n (/ (ln a) (ln 10)))) 1))))
+  hard_negative:
+    statement: $a^n$の桁数は、$n\log_{10}a$以上の最小の整数に等しい。
+    reason: $a=10$、$n=1$のとき$n\log_{10}a=1$なのでその値は$1$だが、$a^n=10$は$2$桁である。
+  target: |
+    ∀ (a n : ℕ), 1 ≤ a → (Nat.digits 10 (a ^ n)).length = ⌊(n : ℝ) * Real.logb 10 (a : ℝ)⌋₊ + 1
+  proof: |
+    by
+      intro a n ha
+      have hp : a ^ n ≠ 0 := by positivity
+      rw [Nat.length_digits 10 _ (by norm_num) hp, ← Real.natFloor_logb_natCast]
+      push_cast
+      rw [Real.logb_pow]
+- id: leading_digit_iff_common_log_bounds
+  kind: gap
+  level: high
+  topic: 常用対数・最高位の数字
+  statement: 正の整数$N,m$と$0$以上の整数$k$について、$m\cdot 10^k\leq N<(m+1)\cdot 10^k$であることと$\log_{10}m\leq\log_{10}N-k<\log_{10}(m+1)$であることは同値である。$1\leq m\leq 9$のとき、前者は$N$が$k+1$桁で最高位の数字が$m$であることを表す。
+  statement_en: For positive integers N, m and a nonnegative integer k, m·10^k ≤ N < (m+1)·10^k if and only if log_10 m ≤ log_10 N - k < log_10(m+1). For 1 ≤ m ≤ 9 the first condition says that N has k + 1 digits with leading digit m.
+  assumptions:
+  - $N,m$は正の整数
+  - $k$は$0$以上の整数
+  quantifiers:
+  - 任意の正の整数$N,m$と$0$以上の整数$k$
+  conclusion: $m\cdot 10^k\leq N<(m+1)\cdot 10^k$と$\log_{10}m\leq\log_{10}N-k<\log_{10}(m+1)$は同値である。
+  answer: |
+    $N,m$を正の整数、$k$を$0$以上の整数とする。関数$u\mapsto\log_{10}u$は$u>0$で狭義増加なので、$m\cdot 10^k\leq N<(m+1)\cdot 10^k$は$\log_{10}(m\cdot 10^k)\leq\log_{10}N<\log_{10}((m+1)\cdot 10^k)$と同値である。積の対数の公式と$\log_{10}10^k=k$より、これは$\log_{10}m+k\leq\log_{10}N<\log_{10}(m+1)+k$と同じである。各辺から$k$を引くと示すべき不等式を得る。なお、$m\cdot 10^k\leq N<(m+1)\cdot 10^k$は$N$を$10^k$で割った商が$m$であることと同じである。$1\leq m\leq 9$のとき、これは$N$が$k+1$桁で最高位の数字が$m$であることを表す。
+  strategy: Apply log_10 to the bounds, split the logarithm of each product, and subtract k.
+  sketch:
+  - "apply_theorem: log_10 is strictly increasing on positive numbers."
+  - "derive: log_10(m 10^k) = log_10 m + k, and likewise for m + 1."
+  - "conclude: Subtracting k gives log_10 m ≤ log_10 N - k < log_10(m+1)."
+  openmath: (forall (K m k) (-> (and (in K N) (in m N) (in k N) (>= K 1) (>= m 1)) (<-> (and (<= (* m (^ 10 k)) K) (< K (* (+ m 1) (^ 10 k)))) (and (<= (/ (ln m) (ln 10)) (- (/ (ln K) (ln 10)) k)) (< (- (/ (ln K) (ln 10)) k) (/ (ln (+ m 1)) (ln 10)))))))
+  hard_negative:
+    statement: 上の同値で上端の$\log_{10}(m+1)$を$\log_{10}m+1$に置き換えてもよい。
+    reason: $N=25$、$m=1$、$k=1$のとき$\log_{10}N-k<\log_{10}m+1=1$をみたすが、$N<(m+1)\cdot 10^k=20$はみたさない。
+  target: |
+    ∀ (N m k : ℕ), 1 ≤ N → 1 ≤ m → (((m : ℝ) * 10 ^ k ≤ (N : ℝ) ∧ (N : ℝ) < ((m : ℝ) + 1) * 10 ^ k) ↔ (Real.logb 10 (m : ℝ) ≤ Real.logb 10 (N : ℝ) - (k : ℝ) ∧ Real.logb 10 (N : ℝ) - (k : ℝ) < Real.logb 10 ((m : ℝ) + 1)))
+  proof: |
+    by
+      intro N m k hN hm
+      have h10 : (1 : ℝ) < 10 := by norm_num
+      have hNr : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hN
+      have hmr : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hm
+      have hm1 : (0 : ℝ) < (m : ℝ) + 1 := by linarith
+      have ht : (0 : ℝ) < 10 ^ k := by positivity
+      have hk : Real.logb 10 ((10 : ℝ) ^ k) = (k : ℝ) := by
+        rw [Real.logb_pow, Real.logb_self_eq_one h10, mul_one]
+      have e1 : Real.logb 10 ((m : ℝ) * 10 ^ k) = Real.logb 10 (m : ℝ) + k := by
+        rw [Real.logb_mul hmr.ne' ht.ne', hk]
+      have e2 : Real.logb 10 (((m : ℝ) + 1) * 10 ^ k) = Real.logb 10 ((m : ℝ) + 1) + k := by
+        rw [Real.logb_mul hm1.ne' ht.ne', hk]
+      rw [← Real.logb_le_logb h10 (mul_pos hmr ht) hNr, ← Real.logb_lt_logb_iff h10 hNr (mul_pos hm1 ht), e1, e2]
+      constructor
+      · rintro ⟨h1, h2⟩
+        exact ⟨by linarith, by linarith⟩
+      · rintro ⟨h1, h2⟩
+        exact ⟨by linarith, by linarith⟩
+- id: first_nonzero_decimal_iff_common_log_bounds
+  kind: gap
+  level: high
+  topic: 常用対数・小数の位
+  statement: 実数$x>0$と正の整数$k$について、$10^{-k}\leq x<10^{1-k}$であることと$-k\leq\log_{10}x<1-k$であることは同値である。前者は$x$の小数第$k$位に初めて$0$でない数字が現れることを表す。
+  statement_en: For a real x > 0 and a positive integer k, 10^(-k) ≤ x < 10^(1-k) if and only if -k ≤ log_10 x < 1 - k. The first condition says that the first nonzero decimal digit of x is in the k-th place.
+  assumptions:
+  - $x>0$
+  - $k$は正の整数
+  quantifiers:
+  - 任意の正の実数$x$と正の整数$k$
+  conclusion: $10^{-k}\leq x<10^{1-k}$と$-k\leq\log_{10}x<1-k$は同値である。
+  answer: |
+    $x>0$とし、$k$を正の整数とする。関数$u\mapsto\log_{10}u$は$u>0$で狭義増加であり、実数$t$について$\log_{10}10^t=t$である。不等式$10^{-k}\leq x<10^{1-k}$の各辺に$\log_{10}$を適用すると、これは$-k\leq\log_{10}x<1-k$と同値である。なお、$10^{-k}\leq x<10^{1-k}$は、$x$の整数部分と小数第$k-1$位までの数字がすべて$0$で、小数第$k$位の数字が$0$でないことを表す。
+  strategy: Apply the increasing function log_10 to the bounds between powers of ten.
+  sketch:
+  - "setup: The bounds 10^(-k) and 10^(1-k) are powers of ten."
+  - "apply_theorem: log_10 is strictly increasing on positive numbers and log_10(10^t) = t."
+  - "conclude: The bounds on x are equivalent to the bounds on log_10 x."
+  openmath: (forall (x k) (-> (and (in x R) (in k N) (> x 0) (>= k 1)) (<-> (and (<= (^ 10 (neg k)) x) (< x (^ 10 (- 1 k)))) (and (<= (neg k) (/ (ln x) (ln 10))) (< (/ (ln x) (ln 10)) (- 1 k))))))
+  hard_negative:
+    statement: $x$の小数第$k$位に初めて$0$でない数字が現れることと$-k<\log_{10}x\leq 1-k$は同値である。
+    reason: $x=10^{-k}$は小数第$k$位に初めて$0$でない数字$1$が現れるが、$\log_{10}x=-k$なので左側の不等式をみたさない。
+  target: |
+    ∀ (x : ℝ) (k : ℕ), 0 < x → 1 ≤ k → (((10 : ℝ) ^ (-(k : ℝ)) ≤ x ∧ x < (10 : ℝ) ^ (1 - (k : ℝ))) ↔ (-(k : ℝ) ≤ Real.logb 10 x ∧ Real.logb 10 x < 1 - (k : ℝ)))
+  proof: |
+    by
+      intro x k hx _
+      have h10 : (1 : ℝ) < 10 := by norm_num
+      rw [Real.le_logb_iff_rpow_le h10 hx, Real.logb_lt_iff_lt_rpow h10 hx]
+- id: digit_count_iff_log_bounds_any_base
+  kind: gap
+  level: high
+  topic: 対数・b進法の桁数
+  statement: $2$以上の整数$b$、正の整数$N$、$0$以上の整数$d$について、$N$を$b$進法で表すと$d+1$桁であることと、$d\leq\log_b N<d+1$であることは同値である。
+  statement_en: For an integer b ≥ 2, a positive integer N and a nonnegative integer d, N has d+1 digits in base b if and only if d ≤ log_b N < d+1.
+  assumptions:
+  - $b$は$2$以上の整数
+  - $N$は正の整数
+  - $d$は$0$以上の整数
+  quantifiers:
+  - 任意の$2$以上の整数$b$
+  - 任意の正の整数$N$
+  - 任意の$0$以上の整数$d$
+  conclusion: $N$が$b$進法で$d+1$桁であることと$d\leq\log_b N<d+1$は同値である。
+  answer: |
+    $b\geq 2$、$N\geq 1$、$d\geq 0$を整数とする。$N$が$b$進法で$d+1$桁であることは、最高位が$b^d$の位にあること、すなわち$b^d\leq N<b^{d+1}$と同値である。
+    底$b$は$1$より大きいので$\log_b$は狭義単調増加である。よって$b^d\leq N$は$d\leq\log_b N$と同値であり、$N<b^{d+1}$は$\log_b N<d+1$と同値である。
+  strategy: Translate the digit count into power bounds, then apply the increasing function log_b.
+  sketch:
+  - "setup: Fix b ≥ 2, N ≥ 1 and d ≥ 0."
+  - "derive: N has d+1 digits in base b exactly when b^d ≤ N < b^(d+1)."
+  - "conclude: Applying the strictly increasing log_b gives d ≤ log_b N < d+1."
+  openmath: (forall (b K d) (-> (and (in b N) (in K N) (in d N) (>= b 2) (>= K 1)) (<-> (= (digit_length b K) (+ d 1)) (and (<= d (/ (ln K) (ln b))) (< (/ (ln K) (ln b)) (+ d 1))))))
+  hard_negative:
+    statement: $2$以上の整数$b$、正の整数$N$、$0$以上の整数$d$について、$N$を$b$進法で表すと$d+1$桁であることと、$d<\log_b N\leq d+1$であることは同値である。
+    reason: $N=b^d$は$d+1$桁だが$\log_b N=d$なので$d<\log_b N$を満たさない。等号の位置が逆である。
+  target: |
+    ∀ (b N d : ℕ), 1 < b → 1 ≤ N → ((Nat.digits b N).length = d + 1 ↔ (d : ℝ) ≤ Real.logb b (N : ℝ) ∧ Real.logb b (N : ℝ) < (d : ℝ) + 1)
+  proof: |
+    by
+      intro b N d hb hN
+      have hN0 : N ≠ 0 := by omega
+      have hNr : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hN
+      have hbr : (1 : ℝ) < (b : ℝ) := by exact_mod_cast hb
+      rw [Nat.length_digits b N hb hN0, Nat.add_right_cancel_iff,
+        Nat.log_eq_iff (Or.inr ⟨hb, hN0⟩)]
+      rw [Real.le_logb_iff_rpow_le hbr hNr, Real.logb_lt_iff_lt_rpow hbr hNr]
+      have e1 : (b : ℝ) ^ (d : ℝ) = ((b ^ d : ℕ) : ℝ) := by
+        rw [Real.rpow_natCast]; norm_cast
+      have e2 : (b : ℝ) ^ ((d : ℝ) + 1) = ((b ^ (d + 1) : ℕ) : ℝ) := by
+        have : ((d : ℝ) + 1) = ((d + 1 : ℕ) : ℝ) := by push_cast; ring
+        rw [this, Real.rpow_natCast]; norm_cast
+      rw [e1, e2, Nat.cast_le, Nat.cast_lt]
+- id: digit_count_of_power_floor_any_base
+  kind: gap
+  level: high
+  topic: 対数・累乗のb進法の桁数
+  statement: $2$以上の整数$b$、正の整数$a$、$0$以上の整数$n$について、$a^n$を$b$進法で表したときの桁数は$\lfloor n\log_b a\rfloor+1$である。
+  statement_en: For an integer b ≥ 2, a positive integer a and a nonnegative integer n, the number of base-b digits of a^n is the floor of n log_b a plus 1.
+  assumptions:
+  - $b$は$2$以上の整数
+  - $a$は正の整数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$2$以上の整数$b$
+  - 任意の正の整数$a$
+  - 任意の$0$以上の整数$n$
+  conclusion: $a^n$の$b$進法の桁数は$\lfloor n\log_b a\rfloor+1$である。
+  answer: |
+    $b\geq 2$、$a\geq 1$、$n\geq 0$を整数とする。$a^n$は正の整数なので、$b$進法の桁数を$L\geq 1$とおくと$b^{L-1}\leq a^n<b^L$である。
+    底$b$は$1$より大きいので、$\log_b$をとると$L-1\leq n\log_b a<L$である。$L-1$は整数なので、これは$\lfloor n\log_b a\rfloor=L-1$を意味する。よって$L=\lfloor n\log_b a\rfloor+1$である。
+  strategy: Bound a^n between consecutive powers of b and take logarithms.
+  sketch:
+  - "setup: Let L be the number of base-b digits of a^n."
+  - "derive: b^(L-1) ≤ a^n < b^L."
+  - "derive: Taking log_b gives L-1 ≤ n log_b a < L."
+  - "conclude: The floor of n log_b a is L-1."
+  openmath: (forall (a b n) (-> (and (in a N) (in b N) (in n N) (>= a 1) (>= b 2)) (= (digit_length b (^ a n)) (+ (floor (* n (/ (ln a) (ln b)))) 1))))
+  hard_negative:
+    statement: $2$以上の整数$b$、正の整数$a$、正の整数$n$について、$a^n$を$b$進法で表したときの桁数は$\lceil n\log_b a\rceil$である。
+    reason: $a=b$、$n=1$のとき$a^n=b$は$b$進法で$2$桁だが、$\lceil\log_b b\rceil=1$である。$a^n$が$b$の累乗のとき食い違う。
+  target: |
+    ∀ (a b n : ℕ), 1 < b → 1 ≤ a → (Nat.digits b (a ^ n)).length = ⌊(n : ℝ) * Real.logb b (a : ℝ)⌋₊ + 1
+  proof: |
+    by
+      intro a b n hb ha
+      have hp : a ^ n ≠ 0 := by positivity
+      rw [Nat.length_digits b _ hb hp, ← Real.natFloor_logb_natCast]
+      push_cast
+      rw [Real.logb_pow]

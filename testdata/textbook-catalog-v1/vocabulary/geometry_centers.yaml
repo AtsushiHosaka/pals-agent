@@ -1,0 +1,15 @@
+circumradius_of: {args: [term, term, term], returns: term, meaning: "circumradius of triangle abc"}
+inradius_of: {args: [term, term, term], returns: term, meaning: "inradius of triangle abc"}
+excenter_opposite: {args: [term, term, term], returns: term, meaning: "excenter of triangle abc opposite vertex a"}
+exradius_opposite: {args: [term, term, term], returns: term, meaning: "exradius of triangle abc opposite vertex a"}
+incircle_touchpoint: {args: [term, term, term], returns: term, meaning: "point where the incircle of triangle abc touches side bc"}
+excircle_touchpoint: {args: [term, term, term, term], returns: term, meaning: "foot of the excenter of triangle abc opposite a on the side line opposite vertex d; arguments a b c d"}
+altitude_foot: {args: [term, term, term], returns: term, meaning: "foot of the perpendicular from a to line bc"}
+nine_point_center: {args: [term, term, term], returns: term, meaning: "center of the nine-point circle of triangle abc"}
+nine_point_radius: {args: [term, term, term], returns: term, meaning: "radius of the nine-point circle of triangle abc"}
+oriented_angle: {args: [term, term, term], returns: term, meaning: "oriented angle at b from a to c, modulo two pi, in an oriented plane"}
+reflection_across_line: {args: [term, term, term], returns: term, meaning: "reflection of p in the line through a and b"}
+on_perpendicular_bisector: {args: [term, term, term], returns: prop, meaning: "p is equidistant from a and b"}
+euclidean_plane_ambient: {args: [], returns: prop, meaning: "the ambient Euclidean space has dimension two"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+smul: {args: [term, term], returns: term, meaning: "scalar multiple a x of a vector x"}

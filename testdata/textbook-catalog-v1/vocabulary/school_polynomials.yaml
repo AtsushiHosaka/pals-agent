@@ -1,0 +1,19 @@
+# Proposed additive OpenMath vocabulary for 数II polynomials and complex numbers (cd=pals2).
+polynomial_over: {args: [term, term], returns: prop, meaning: "f is a polynomial with coefficients in F"}
+poly_eval: {args: [term, term], returns: term, meaning: "value f(a) of the polynomial f at a"}
+poly_var: {args: [], returns: term, meaning: "the indeterminate X of a polynomial ring"}
+poly_const: {args: [term], returns: term, meaning: "constant polynomial with value a"}
+poly_degree: {args: [term], returns: term, meaning: "degree of the polynomial f"}
+poly_derivative: {args: [term], returns: term, meaning: "the formal derivative of the polynomial f"}
+poly_coeff: {args: [term, term], returns: term, meaning: "coefficient of X^n in the polynomial f"}
+poly_leading_coeff: {args: [term], returns: term, meaning: "leading coefficient of the polynomial f"}
+monic_polynomial: {args: [term], returns: prop, meaning: "f is a monic polynomial"}
+poly_even_coeff_sum: {args: [term], returns: term, meaning: "sum of the coefficients of the even-degree terms of the polynomial f"}
+poly_odd_coeff_sum: {args: [term], returns: term, meaning: "sum of the coefficients of the odd-degree terms of the polynomial f"}
+complex_imaginary_unit: {args: [], returns: term, meaning: "the imaginary unit i"}
+complex_conj: {args: [term], returns: term, meaning: "complex conjugate of z"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+imag_part: {args: [term], returns: term, meaning: "imaginary part of z"}
+infinite_set: {args: [term], returns: prop, meaning: "S is an infinite set"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}

@@ -1,0 +1,1591 @@
+- id: dvd_add_iff_right
+  kind: gap
+  level: high
+  topic: 整数の性質・約数と倍数
+  statement: 整数$a,b,c$について、$a$が$b$を割り切るならば、$a$が$b+c$を割り切ることと$a$が$c$を割り切ることは同値である。
+  statement_en: For integers a, b, c with a dividing b, a divides b + c if and only if a divides c.
+  assumptions:
+  - $a,b,c$は整数
+  - $a$は$b$を割り切る
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $a$が$b+c$を割り切ることと、$a$が$c$を割り切ることは同値である。
+  answer: |
+    $a,b,c$を整数とし、整数$s$により$b=as$と書けるとする。
+    $a$が$b+c$を割り切るとき、整数$t$により$b+c=at$と書ける。このとき$c=at-as=a(t-s)$なので、$a$は$c$を割り切る。
+    逆に$a$が$c$を割り切るとき、整数$u$により$c=au$と書ける。このとき$b+c=a(s+u)$なので、$a$は$b+c$を割り切る。
+  strategy: Subtract or add the known multiple of a.
+  sketch:
+  - 'setup: Write b = as.'
+  - 'derive: If b + c = at, then c = a(t - s).'
+  - 'derive: If c = au, then b + c = a(s + u).'
+  - 'conclude: The two divisibility statements are equivalent.'
+  openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z) (exists (s) (and (in s Z) (= b (* a s))))) (<-> (exists (t) (and (in t Z) (= (+ b c) (* a t)))) (exists (u) (and (in u Z) (= c (* a u)))))))
+  hard_negative:
+    statement: $a$が$b+c$を割り切るならば、$a$は$c$を割り切る。
+    reason: $a$が$b$を割り切る仮定を外すと成り立たない。$a=2,\ b=c=1$では$2$は$b+c=2$を割り切るが、$c=1$を割り切らない。
+  target: |
+    ∀ (a b c : ℤ), a ∣ b → (a ∣ b + c ↔ a ∣ c)
+  proof: |
+    by
+      intro a b c h
+      exact dvd_add_right h
+- id: coprime_mul_dvd
+  kind: gap
+  level: high
+  topic: 整数の性質・互いに素と倍数
+  statement: 整数$a,b,c$について、$\gcd(a,b)=1$であり$a$と$b$がともに$c$を割り切るならば、積$ab$も$c$を割り切る。
+  statement_en: If integers a and b satisfy gcd(a, b) = 1 and both divide an integer c, then ab divides c.
+  assumptions:
+  - $a,b,c$は整数
+  - $\gcd(a,b)=1$
+  - $a$と$b$はともに$c$を割り切る
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $ab$は$c$を割り切る。
+  answer: |
+    $a,b,c$を整数とし、$\gcd(a,b)=1$、$c=as$、$c=bt$（$s,t$は整数）とする。
+    ベズーの等式により$ax+by=1$を満たす整数$x,y$がある。両辺に$c$を掛けて$c=acx+bcy=a(bt)x+b(as)y=ab(tx+sy)$を得る。よって$ab$は$c$を割り切る。
+  strategy: Multiply a Bezout identity for a and b by c.
+  sketch:
+  - 'setup: Write c = as = bt and take x, y with ax + by = 1.'
+  - 'derive: c = acx + bcy.'
+  - 'derive: Substituting the two forms of c gives c = ab(tx + sy).'
+  - 'conclude: ab divides c.'
+  openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z) (= (gcd a b) 1) (exists (s) (and (in s Z) (= c (* a s)))) (exists (t) (and (in t Z) (= c (* b t))))) (exists (u) (and (in u Z) (= c (* (* a b) u))))))
+  hard_negative:
+    statement: 整数$a,b$がともに$c$を割り切るならば、$ab$は$c$を割り切る。
+    reason: 互いに素の仮定を外すと成り立たない。$a=4,\ b=6,\ c=12$では$ab=24$は$12$を割り切らない。
+  target: |
+    ∀ (a b c : ℤ), Int.gcd a b = 1 → a ∣ c → b ∣ c → a * b ∣ c
+  proof: |
+    by
+      intro a b c h ha hb
+      exact IsCoprime.mul_dvd (Int.isCoprime_iff_gcd_eq_one.mpr h) ha hb
+- id: add_dvd_pow_add_pow_odd
+  kind: gap
+  level: high
+  topic: 整数の性質・累乗の和の倍数性
+  statement: 整数$x,y$と正の奇数$n$について、$x+y$は$x^n+y^n$を割り切る。指数が奇数の場合に限る形である。
+  statement_en: For integers x, y and an odd natural number n, x + y divides x^n + y^n.
+  assumptions:
+  - $x,y$は整数
+  - $n$は正の奇数
+  quantifiers:
+  - 任意の整数$x,y$と正の奇数$n$
+  conclusion: $x+y$は$x^n+y^n$を割り切る。
+  answer: |
+    $x,y$を整数とし、正の奇数$n$について帰納法で示す。$n=1$では$x+y$が$x+y$を割り切るので成り立つ。
+    奇数$n$で成り立つとする。$x^{n+2}+y^{n+2}=x^2(x^n+y^n)-(x+y)(x-y)y^n$であり、右辺の各項は$x+y$で割り切れる。よって$n+2$でも成り立つ。
+  strategy: Induct over odd exponents in steps of two.
+  sketch:
+  - 'induction: The case n = 1 is immediate.'
+  - 'derive: x^(n+2) + y^(n+2) = x^2(x^n + y^n) - (x + y)(x - y)y^n.'
+  - 'conclude: Both terms on the right are multiples of x + y.'
+  openmath: (forall (x y n) (-> (and (in x Z) (in y Z) (in n N) (exists (m) (and (in m N) (= n (+ (* 2 m) 1))))) (exists (k) (and (in k Z) (= (+ (^ x n) (^ y n)) (* (+ x y) k))))))
+  hard_negative:
+    statement: 整数$x,y$と正の整数$n$について、$x+y$は$x^n+y^n$を割り切る。
+    reason: 偶数の指数では成り立たない。$x=2,\ y=1,\ n=2$では$3$は$5$を割り切らない。
+  target: |
+    ∀ (x y : ℤ) (n : ℕ), Odd n → x + y ∣ x ^ n + y ^ n
+  proof: |
+    by
+      intro x y n hn
+      exact hn.add_dvd_pow_add_pow x y
+- id: pow_dvd_pow_iff
+  kind: gap
+  level: high
+  topic: 整数の性質・累乗と約数
+  statement: 整数$a,b$と正の整数$n$について、$a^n$が$b^n$を割り切ることと$a$が$b$を割り切ることは同値である。
+  statement_en: For integers a, b and a positive integer n, a^n divides b^n if and only if a divides b.
+  assumptions:
+  - $a,b$は整数
+  - $n$は正の整数
+  quantifiers:
+  - 任意の整数$a,b$と正の整数$n$
+  conclusion: $a^n$が$b^n$を割り切ることと、$a$が$b$を割り切ることは同値である。
+  answer: |
+    $a,b$を整数、$n$を正の整数とする。$b=ac$（$c$は整数）ならば$b^n=a^nc^n$なので、$a^n$は$b^n$を割り切る。
+    逆に$a^n$が$b^n$を割り切るとする。$a=0$ならば$b^n=0$なので$b=0$であり、$a$は$b$を割り切る。$b=0$ならば$a$は$0$を割り切る。
+    $a,b$がともに$0$でないとき、素数$p$について$a,b$の素因数分解における$p$の指数を$e,f$とする。$a^n,b^n$における$p$の指数は$ne,nf$であり、仮定から$ne\leq nf$、すなわち$e\leq f$である。これがすべての素数$p$で成り立つので、$a$は$b$を割り切る。
+  strategy: Compare exponents of each prime in the factorizations.
+  sketch:
+  - 'derive: If b = ac then b^n = a^n c^n.'
+  - 'case_split: Treat a = 0 and b = 0 separately.'
+  - 'translate: For a prime p, the exponents of p in a^n and b^n are ne and nf.'
+  - 'derive: ne ≤ nf gives e ≤ f for every prime p.'
+  - 'conclude: Hence a divides b.'
+  openmath: (forall (a b n) (-> (and (in a Z) (in b Z) (in n N) (> n 0)) (<-> (exists (s) (and (in s Z) (= (^ b n) (* (^ a n) s)))) (exists (t) (and (in t Z) (= b (* a t)))))))
+  hard_negative:
+    statement: 整数$a,b$と正の整数$m,n$について、$a^m$が$b^n$を割り切るならば$a$は$b$を割り切る。
+    reason: 指数が異なると成り立たない。$a=4,\ b=2,\ m=1,\ n=2$では$4$は$2^2$を割り切るが、$4$は$2$を割り切らない。
+  target: |
+    ∀ (a b : ℤ) (n : ℕ), n ≠ 0 → (a ^ n ∣ b ^ n ↔ a ∣ b)
+  proof: |
+    by
+      intro a b n hn
+      exact Int.pow_dvd_pow_iff hn
+- id: prime_dvd_of_dvd_pow
+  kind: gap
+  level: high
+  topic: 整数の性質・素数と累乗
+  statement: 素数$p$、整数$a$、$0$以上の整数$n$について、$p$が$a^n$を割り切るならば$p$は$a$を割り切る。$p=2$とすれば、$a^n$が偶数なら$a$も偶数であることを含む。
+  statement_en: If a prime p divides a^n for an integer a and a natural number n, then p divides a.
+  assumptions:
+  - $p$は素数
+  - $a$は整数
+  - $n$は$0$以上の整数
+  - $p$は$a^n$を割り切る
+  quantifiers:
+  - 任意の素数$p$、整数$a$、$0$以上の整数$n$
+  conclusion: $p$は$a$を割り切る。
+  answer: |
+    $p$を素数、$a$を整数とし、$n$についての帰納法で示す。
+    $n=0$では$a^0=1$であり、$p$は$1$を割り切らないので、仮定が成り立たず主張は正しい。
+    $n$で成り立つとし、$p$が$a^{n+1}=a\cdot a^n$を割り切るとする。素数が積を割り切るときはいずれかの因数を割り切るので、$p$は$a$または$a^n$を割り切る。後者の場合も帰納法の仮定から$p$は$a$を割り切る。
+  strategy: Induct on n using the prime divisor property of products.
+  sketch:
+  - 'induction: For n = 0 the hypothesis says p divides 1, which is false.'
+  - 'apply_theorem: If p divides a·a^n then p divides a or a^n.'
+  - 'conclude: In the second case the induction hypothesis gives p divides a.'
+  openmath: (forall (p a n) (-> (and (in p P) (in a Z) (in n N) (exists (k) (and (in k Z) (= (^ a n) (* p k))))) (exists (m) (and (in m Z) (= a (* p m))))))
+  hard_negative:
+    statement: 正の整数$d$が$a^n$を割り切るならば、$d$は$a$を割り切る。
+    reason: $d$が合成数だと成り立たない。$d=4,\ a=2,\ n=2$では$4$は$2^2$を割り切るが、$2$を割り切らない。
+  target: |
+    ∀ (p : ℕ) (a : ℤ) (n : ℕ), p.Prime → (p : ℤ) ∣ a ^ n → (p : ℤ) ∣ a
+  proof: |
+    by
+      intro p a n hp h
+      exact (Nat.prime_iff_prime_int.mp hp).dvd_of_dvd_pow h
+- id: divisor_count_two_primes
+  kind: textbook
+  level: high
+  topic: 整数の性質・約数の個数
+  statement: 相異なる素数$p,q$と$0$以上の整数$a,b$について、$p^aq^b$の正の約数の個数は$(a+1)(b+1)$である。
+  statement_en: For distinct primes p, q and natural numbers a, b, the number of positive divisors of p^a q^b is (a + 1)(b + 1).
+  assumptions:
+  - $p,q$は相異なる素数
+  - $a,b$は$0$以上の整数
+  quantifiers:
+  - 任意の相異なる素数$p,q$と$0$以上の整数$a,b$
+  conclusion: $p^aq^b$の正の約数の個数は$(a+1)(b+1)$である。
+  answer: |
+    $p,q$を相異なる素数、$a,b$を$0$以上の整数とする。素因数分解の一意性により、$p^aq^b$の正の約数は$p^iq^j$（$0\leq i\leq a$、$0\leq j\leq b$）の形の数に限られる。この形の数はすべて$p^aq^b$を割り切り、組$(i,j)$が異なれば数も異なる。組$(i,j)$は$(a+1)(b+1)$個あるので、正の約数の個数も$(a+1)(b+1)$である。
+  strategy: Parametrize divisors by exponent pairs using unique factorization.
+  sketch:
+  - 'translate: Every positive divisor has the form p^i q^j with 0 ≤ i ≤ a and 0 ≤ j ≤ b.'
+  - 'derive: Distinct exponent pairs give distinct divisors by unique factorization.'
+  - 'conclude: Counting the pairs gives (a + 1)(b + 1).'
+  openmath: (forall (p q a b) (-> (and (in p P) (in q P) (!= p q) (in a N) (in b N)) (= (divisor_count (* (^ p a) (^ q b))) (* (+ a 1) (+ b 1)))))
+  hard_negative:
+    statement: 素数$p,q$と$0$以上の整数$a,b$について、$p^aq^b$の正の約数の個数は$(a+1)(b+1)$である。
+    reason: $p=q$では成り立たない。$p=q=2,\ a=b=1$では$4$の正の約数は$3$個であり、$(a+1)(b+1)=4$と異なる。
+  target: |
+    ∀ (p q a b : ℕ), p.Prime → q.Prime → p ≠ q → (Nat.divisors (p ^ a * q ^ b)).card = (a + 1) * (b + 1)
+  proof: |
+    by
+      intro p q a b hp hq hpq
+      have hc : Nat.Coprime (p ^ a) (q ^ b) := Nat.Coprime.pow a b ((Nat.coprime_primes hp hq).mpr hpq)
+      rw [Nat.Coprime.card_divisors_mul hc, Nat.divisors_prime_pow hp, Nat.divisors_prime_pow hq]
+      simp
+- id: even_add_iff_same_parity
+  kind: gap
+  level: middle
+  topic: 整数の性質・和の偶奇
+  statement: 整数$a,b$について、$a+b$が偶数であることは、$a,b$がともに偶数であるか、ともに奇数であることと同値である。
+  statement_en: For integers a and b, a + b is even if and only if a and b are both even or both odd.
+  assumptions:
+  - $a,b$は整数
+  quantifiers:
+  - 任意の整数$a,b$
+  conclusion: $a+b$が偶数であることと、$a,b$の偶奇が一致することは同値である。
+  answer: |
+    $a,b$を整数とする。整数は偶数か奇数のいずれか一方である。
+    $a=2s,\ b=2t$ならば$a+b=2(s+t)$は偶数である。$a=2s+1,\ b=2t+1$ならば$a+b=2(s+t+1)$は偶数である。
+    $a=2s,\ b=2t+1$ならば$a+b=2(s+t)+1$は奇数であり、$a,b$を入れ替えた場合も同様である。よって$a+b$が偶数になるのは、偶奇が一致するときに限る。
+  strategy: Check the four parity combinations.
+  sketch:
+  - 'case_split: Write a and b as 2s or 2s + 1.'
+  - 'derive: Equal parities give an even sum.'
+  - 'derive: Different parities give an odd sum.'
+  - 'conclude: The equivalence follows.'
+  openmath: (forall (a b) (-> (and (in a Z) (in b Z)) (<-> (exists (k) (and (in k Z) (= (+ a b) (* 2 k)))) (or (and (exists (s) (and (in s Z) (= a (* 2 s)))) (exists (t) (and (in t Z) (= b (* 2 t))))) (and (exists (u) (and (in u Z) (= a (+ (* 2 u) 1)))) (exists (v) (and (in v Z) (= b (+ (* 2 v) 1)))))))))
+  hard_negative:
+    statement: $a+b$が偶数ならば、$a,b$はともに偶数である。
+    reason: $a=b=1$では$a+b=2$は偶数だが、$a,b$は奇数である。
+  target: |
+    ∀ (a b : ℤ), Even (a + b) ↔ (Even a ∧ Even b) ∨ (Odd a ∧ Odd b)
+  proof: |
+    by
+      intro a b
+      rw [Int.even_add, ← Int.not_even_iff_odd, ← Int.not_even_iff_odd]
+      tauto
+- id: odd_mul_iff
+  kind: gap
+  level: middle
+  topic: 整数の性質・積の偶奇
+  statement: 整数$a,b$について、積$ab$が奇数であることは、$a,b$がともに奇数であることと同値である。
+  statement_en: For integers a and b, the product ab is odd if and only if a and b are both odd.
+  assumptions:
+  - $a,b$は整数
+  quantifiers:
+  - 任意の整数$a,b$
+  conclusion: $ab$が奇数であることと、$a,b$がともに奇数であることは同値である。
+  answer: |
+    $a,b$を整数とする。$a=2s+1,\ b=2t+1$ならば$ab=2(2st+s+t)+1$は奇数である。
+    逆に$a,b$の少なくとも一方が偶数であるとする。$a=2s$ならば$ab=2(sb)$は偶数であり、$b$が偶数の場合も同様である。整数は偶数と奇数の両方にはならないので、$ab$が奇数ならば$a,b$はともに奇数である。
+  strategy: Multiply out odd forms and use the contrapositive for the converse.
+  sketch:
+  - 'derive: (2s + 1)(2t + 1) = 2(2st + s + t) + 1.'
+  - 'derive: If a = 2s then ab = 2(sb).'
+  - 'conclude: ab is odd exactly when both factors are odd.'
+  openmath: (forall (a b) (-> (and (in a Z) (in b Z)) (<-> (exists (k) (and (in k Z) (= (* a b) (+ (* 2 k) 1)))) (and (exists (s) (and (in s Z) (= a (+ (* 2 s) 1)))) (exists (t) (and (in t Z) (= b (+ (* 2 t) 1))))))))
+  hard_negative:
+    statement: 積$ab$が偶数ならば、$a,b$はともに偶数である。
+    reason: $a=2,\ b=1$では$ab=2$は偶数だが、$b$は奇数である。偶数になるには少なくとも一方が偶数であれば足りる。
+  target: |
+    ∀ (a b : ℤ), Odd (a * b) ↔ Odd a ∧ Odd b
+  proof: |
+    by
+      intro a b
+      exact Int.odd_mul
+- id: difference_of_two_squares_iff
+  kind: textbook
+  level: high
+  topic: 整数の性質・平方数の差
+  statement: 整数$n$が$x^2-y^2$（$x,y$は整数）の形に表せることは、$n$を$4$で割った余りが$2$でないことと同値である。
+  statement_en: An integer n can be written as x² - y² with integers x, y if and only if n does not leave remainder 2 on division by 4.
+  assumptions:
+  - $n$は整数
+  quantifiers:
+  - 任意の整数$n$
+  conclusion: $n=x^2-y^2$となる整数$x,y$が存在することと、$n$を$4$で割った余りが$2$でないことは同値である。
+  answer: |
+    $n$を整数とする。整数$z$の平方は、$z=2k$なら$4k^2$、$z=2k+1$なら$4(k^2+k)+1$なので、$4$で割った余りが$0$か$1$である。
+    $n=x^2-y^2$ならば、$n$を$4$で割った余りは$0-0,\ 0-1,\ 1-0,\ 1-1$のいずれかと合同で、$0,3,1$のどれかである。よって余りは$2$でない。
+    逆に余りが$2$でないとする。$n=4k$ならば$n=(k+1)^2-(k-1)^2$である。余りが奇数なら$n=2k+1$と書けて$n=(k+1)^2-k^2$である。
+  strategy: Use squares modulo 4 for necessity and explicit pairs for sufficiency.
+  sketch:
+  - 'derive: Every square leaves remainder 0 or 1 modulo 4.'
+  - 'derive: A difference of squares leaves remainder 0, 1 or 3.'
+  - 'construct: If n = 4k then n = (k + 1)² - (k - 1)².'
+  - 'construct: If n = 2k + 1 then n = (k + 1)² - k².'
+  - 'conclude: The representable integers are exactly those with remainder other than 2.'
+  openmath: (forall (n) (-> (in n Z) (<-> (exists (x y) (and (in x Z) (in y Z) (= (- (^ x 2) (^ y 2)) n))) (not (exists (k) (and (in k Z) (= n (+ (* 4 k) 2))))))))
+  hard_negative:
+    statement: 整数$n$が$x^2-y^2$の形に表せるのは、$n$が$4$の倍数のときに限る。
+    reason: 奇数も表せる。$3=2^2-1^2$である。除かれるのは余りが$2$の整数だけである。
+  target: |
+    ∀ (n : ℤ), (∃ x y : ℤ, x ^ 2 - y ^ 2 = n) ↔ n % 4 ≠ 2
+  proof: |
+    by
+      intro n
+      constructor
+      · rintro ⟨x, y, rfl⟩
+        have h : ∀ z : ℤ, z ^ 2 % 4 = 0 ∨ z ^ 2 % 4 = 1 := by
+          intro z
+          rcases Int.even_or_odd' z with ⟨k, rfl | rfl⟩
+          · left
+            have : (2 * k) ^ 2 = 4 * k ^ 2 := by ring
+            omega
+          · right
+            have : (2 * k + 1) ^ 2 = 4 * (k ^ 2 + k) + 1 := by ring
+            omega
+        have hx := h x
+        have hy := h y
+        omega
+      · intro hn
+        have h : n % 4 = 0 ∨ n % 2 = 1 := by omega
+        rcases h with h | h
+        · obtain ⟨k, rfl⟩ : ∃ k, n = 4 * k := ⟨n / 4, by omega⟩
+          exact ⟨k + 1, k - 1, by ring⟩
+        · obtain ⟨k, rfl⟩ : ∃ k, n = 2 * k + 1 := ⟨n / 2, by omega⟩
+          exact ⟨k + 1, k, by ring⟩
+- id: common_divisor_dvd_gcd
+  kind: gap
+  level: high
+  topic: 整数の性質・最大公約数
+  statement: 整数$a,b$の公約数$d$は、最大公約数$\gcd(a,b)$を割り切る。ただし$\gcd(0,0)=0$とする。
+  statement_en: Every common divisor d of integers a and b divides gcd(a, b), with the convention gcd(0, 0) = 0.
+  assumptions:
+  - $a,b,d$は整数
+  - $d$は$a$と$b$を割り切る
+  - $\gcd(0,0)=0$とする
+  quantifiers:
+  - 任意の整数$a,b,d$
+  conclusion: $d$は$\gcd(a,b)$を割り切る。
+  answer: |
+    $a,b,d$を整数とし、$d$は$a,b$を割り切るとする。$a=b=0$なら$\gcd(a,b)=0$で、$d$は$0$を割り切る。
+    それ以外の場合、ベズーの等式により$\gcd(a,b)=ax+by$を満たす整数$x,y$がある。$d$は$a$と$b$を割り切るので、$ax+by$も割り切る。
+  strategy: Write the gcd as an integer combination of a and b.
+  sketch:
+  - 'case_split: Handle a = b = 0 directly.'
+  - 'apply_theorem: Take x, y with gcd(a, b) = ax + by.'
+  - 'conclude: d divides ax + by.'
+  openmath: (forall (a b d) (-> (and (in a Z) (in b Z) (in d Z) (exists (s) (and (in s Z) (= a (* d s)))) (exists (t) (and (in t Z) (= b (* d t))))) (exists (u) (and (in u Z) (= (gcd a b) (* d u))))))
+  hard_negative:
+    statement: 整数$a,b$の公約数$d$は$\gcd(a,b)$に等しい。
+    reason: $a=4,\ b=8,\ d=2$では$d$は公約数だが、$\gcd(a,b)=4$である。公約数は最大公約数の約数であれば足りる。
+  target: |
+    ∀ (a b d : ℤ), d ∣ a → d ∣ b → d ∣ (Int.gcd a b : ℤ)
+  proof: |
+    by
+      intro a b d ha hb
+      exact Int.dvd_coe_gcd ha hb
+- id: common_multiple_dvd_lcm
+  kind: gap
+  level: high
+  topic: 整数の性質・最小公倍数
+  statement: 整数$a,b$の公倍数$m$は、最小公倍数$\mathrm{lcm}(a,b)$で割り切れる。ただし$a$または$b$が$0$のとき$\mathrm{lcm}(a,b)=0$とする。
+  statement_en: Every common multiple m of integers a and b is divisible by lcm(a, b), with lcm(a, b) = 0 when a or b is 0.
+  assumptions:
+  - $a,b,m$は整数
+  - $a$と$b$は$m$を割り切る
+  - $a$または$b$が$0$のとき$\mathrm{lcm}(a,b)=0$とする
+  quantifiers:
+  - 任意の整数$a,b,m$
+  conclusion: $\mathrm{lcm}(a,b)$は$m$を割り切る。
+  answer: |
+    $a,b,m$を整数とし、$a,b$は$m$を割り切るとする。$a$または$b$が$0$ならば$m=0$であり、$\mathrm{lcm}(a,b)=0$は$0$を割り切る。
+    $a,b$がともに$0$でないとする。$l=\mathrm{lcm}(a,b)$は正の公倍数のうち最小のものである。$m=lq+r$、$0\leq r<l$となる整数$q,r$をとると、$r=m-lq$は$a,b$の公倍数である。$r>0$ならば$l$の最小性に反するので$r=0$となり、$l$は$m$を割り切る。
+  strategy: Divide m by the lcm and show the remainder vanishes by minimality.
+  sketch:
+  - 'case_split: If a or b is 0 then m = 0.'
+  - 'setup: Write m = lq + r with 0 ≤ r < l.'
+  - 'derive: r = m - lq is a common multiple of a and b.'
+  - 'contradiction: A positive r would contradict the minimality of l.'
+  - 'conclude: l divides m.'
+  openmath: (forall (a b m) (-> (and (in a Z) (in b Z) (in m Z) (exists (s) (and (in s Z) (= m (* a s)))) (exists (t) (and (in t Z) (= m (* b t))))) (exists (u) (and (in u Z) (= m (* (lcm a b) u))))))
+  hard_negative:
+    statement: 整数$a,b$の公倍数$m$は、積$ab$で割り切れる。
+    reason: $a=b=2,\ m=2$では$m$は公倍数だが、$ab=4$で割り切れない。割り切るのは最小公倍数である。
+  target: |
+    ∀ (a b m : ℤ), a ∣ m → b ∣ m → (Int.lcm a b : ℤ) ∣ m
+  proof: |
+    by
+      intro a b m ha hb
+      exact Int.coe_lcm_dvd ha hb
+- id: gcd_mul_left
+  kind: gap
+  level: high
+  topic: 整数の性質・最大公約数と共通因数
+  statement: $0$以上の整数$a,b,c$について、$\gcd(ca,cb)=c\gcd(a,b)$である。ただし$\gcd(0,0)=0$とする。
+  statement_en: For natural numbers a, b, c, gcd(ca, cb) = c·gcd(a, b), with the convention gcd(0, 0) = 0.
+  assumptions:
+  - $a,b,c$は$0$以上の整数
+  - $\gcd(0,0)=0$とする
+  quantifiers:
+  - 任意の$0$以上の整数$a,b,c$
+  conclusion: $\gcd(ca,cb)=c\gcd(a,b)$である。
+  answer: |
+    $a,b,c$を$0$以上の整数とし、$g=\gcd(a,b)$とおく。$c=0$または$a=b=0$ならば両辺とも$0$である。
+    $c>0$で$a,b$の少なくとも一方が正の場合を考える。$cg$は$ca,cb$を割り切るので、$h=\gcd(ca,cb)$の約数であり$cg\leq h$である。
+    一方、ベズーの等式から$g=ax+by$を満たす整数$x,y$がとれて、$cg=cax+cby$となる。$h$は$ca,cb$を割り切るので$cg$を割り切り、$h\leq cg$である。したがって$h=cg$である。
+  strategy: Show each side divides the other using a Bezout identity.
+  sketch:
+  - 'case_split: Dispose of c = 0 and a = b = 0.'
+  - 'derive: cg is a common divisor of ca and cb, so cg ≤ h.'
+  - 'apply_theorem: Take x, y with g = ax + by, so cg = cax + cby.'
+  - 'derive: h divides cg, so h ≤ cg.'
+  - 'conclude: h = cg.'
+  openmath: (forall (a b c) (-> (and (in a N) (in b N) (in c N)) (= (gcd (* c a) (* c b)) (* c (gcd a b)))))
+  hard_negative:
+    statement: $0$以上の整数$a,b,c$について、$\gcd(ca,b)=c\gcd(a,b)$である。
+    reason: 共通因数が両方に掛かっていないと成り立たない。$a=1,\ b=3,\ c=2$では左辺は$1$、右辺は$2$である。
+  target: |
+    ∀ (a b c : ℕ), Nat.gcd (c * a) (c * b) = c * Nat.gcd a b
+  proof: |
+    by
+      intro a b c
+      exact Nat.gcd_mul_left c a b
+- id: gcd_cofactors_coprime
+  kind: gap
+  level: high
+  topic: 整数の性質・最大公約数で割った形
+  statement: 少なくとも一方が$0$でない$0$以上の整数$a,b$について、$g=\gcd(a,b)$とすると、$a=gm,\ b=gn,\ \gcd(m,n)=1$を満たす$0$以上の整数$m,n$が存在する。
+  statement_en: If natural numbers a, b are not both zero and g = gcd(a, b), then there exist coprime natural numbers m, n with a = gm and b = gn.
+  assumptions:
+  - $a,b$は$0$以上の整数
+  - $a,b$の少なくとも一方は$0$でない
+  - $g=\gcd(a,b)$
+  quantifiers:
+  - 任意の$0$以上の整数$a,b$
+  conclusion: $a=gm,\ b=gn,\ \gcd(m,n)=1$を満たす$0$以上の整数$m,n$が存在する。
+  answer: |
+    $a,b$を少なくとも一方が$0$でない$0$以上の整数とし、$g=\gcd(a,b)$とおく。$g>0$であり、$g$は$a,b$を割り切るので$a=gm,\ b=gn$となる$0$以上の整数$m,n$がある。
+    ベズーの等式から$g=ax+by$を満たす整数$x,y$がとれる。代入すると$g=g(mx+ny)$であり、$g>0$で割って$mx+ny=1$を得る。$m,n$の公約数は$1$を割り切るので、$\gcd(m,n)=1$である。
+  strategy: Divide a Bezout identity for a and b by the gcd.
+  sketch:
+  - 'setup: Write a = gm and b = gn.'
+  - 'apply_theorem: Take x, y with g = ax + by.'
+  - 'derive: Cancelling g gives mx + ny = 1.'
+  - 'conclude: Any common divisor of m and n divides 1.'
+  openmath: (forall (a b) (-> (and (in a N) (in b N) (or (!= a 0) (!= b 0))) (exists (m n) (and (in m N) (in n N) (= (gcd m n) 1) (= a (* (gcd a b) m)) (= b (* (gcd a b) n))))))
+  hard_negative:
+    statement: $a,b$の任意の正の公約数$d$について、$a=dm,\ b=dn$とすれば$\gcd(m,n)=1$である。
+    reason: $d$が最大公約数でないと成り立たない。$a=4,\ b=8,\ d=2$では$m=2,\ n=4$で$\gcd(m,n)=2$である。
+  target: |
+    ∀ (a b : ℕ), (a ≠ 0 ∨ b ≠ 0) → ∃ m n : ℕ, Nat.Coprime m n ∧ a = Nat.gcd a b * m ∧ b = Nat.gcd a b * n
+  proof: |
+    by
+      intro a b h
+      have hg : 0 < Nat.gcd a b := by
+        apply Nat.pos_of_ne_zero
+        intro h0
+        rw [Nat.gcd_eq_zero_iff] at h0
+        omega
+      refine ⟨a / Nat.gcd a b, b / Nat.gcd a b, Nat.coprime_div_gcd_div_gcd hg, ?_, ?_⟩
+      · exact (Nat.mul_div_cancel' (Nat.gcd_dvd_left a b)).symm
+      · exact (Nat.mul_div_cancel' (Nat.gcd_dvd_right a b)).symm
+- id: gcd_lcm_cofactor_iff
+  kind: textbook
+  level: high
+  topic: 整数の性質・最大公約数と最小公倍数から元の数を定める
+  statement: $0$以上の整数$a,b,l$と正の整数$g$について、$\gcd(a,b)=g$かつ$\mathrm{lcm}(a,b)=l$であることは、$\gcd(m,n)=1,\ a=gm,\ b=gn,\ l=gmn$を満たす$0$以上の整数$m,n$が存在することと同値である。
+  statement_en: For natural numbers a, b, l and a positive integer g, gcd(a, b) = g and lcm(a, b) = l hold if and only if there are coprime natural numbers m, n with a = gm, b = gn and l = gmn.
+  assumptions:
+  - $a,b,l$は$0$以上の整数
+  - $g$は正の整数
+  quantifiers:
+  - 任意の$0$以上の整数$a,b,l$と正の整数$g$
+  conclusion: $\gcd(a,b)=g$かつ$\mathrm{lcm}(a,b)=l$であることと、$\gcd(m,n)=1,\ a=gm,\ b=gn,\ l=gmn$を満たす$m,n$が存在することは同値である。
+  answer: |
+    $a,b,l$を$0$以上の整数、$g$を正の整数とする。以下、$\gcd(a,b)\,\mathrm{lcm}(a,b)=ab$を用いる。
+    $\gcd(a,b)=g,\ \mathrm{lcm}(a,b)=l$とする。$g$は$a,b$を割り切るので$a=gm,\ b=gn$と書ける。ベズーの等式から$g=ax+by=g(mx+ny)$となる整数$x,y$があり、$mx+ny=1$なので$\gcd(m,n)=1$である。また$gl=ab=g^2mn$から$l=gmn$である。
+    逆に$\gcd(m,n)=1,\ a=gm,\ b=gn,\ l=gmn$とする。$\gcd(gm,gn)=g\gcd(m,n)=g$である。さらに$g\,\mathrm{lcm}(a,b)=ab=g^2mn$から$\mathrm{lcm}(a,b)=gmn=l$である。
+  strategy: Factor out the gcd and use gcd times lcm equals the product.
+  sketch:
+  - 'setup: Write a = gm and b = gn with g the gcd.'
+  - 'derive: A Bezout identity divided by g gives gcd(m, n) = 1.'
+  - 'derive: gl = ab = g²mn gives l = gmn.'
+  - 'derive: Conversely gcd(gm, gn) = g·gcd(m, n) = g.'
+  - 'conclude: g·lcm(a, b) = g²mn gives lcm(a, b) = gmn.'
+  openmath: (forall (a b g l) (-> (and (in a N) (in b N) (in l N) (in g N) (> g 0)) (<-> (and (= (gcd a b) g) (= (lcm a b) l)) (exists (m n) (and (in m N) (in n N) (= (gcd m n) 1) (= a (* g m)) (= b (* g n)) (= l (* (* g m) n)))))))
+  hard_negative:
+    statement: $a=gm,\ b=gn,\ l=gmn$ならば、$\gcd(a,b)=g$かつ$\mathrm{lcm}(a,b)=l$である。
+    reason: $m,n$が互いに素でないと成り立たない。$g=1,\ m=n=2$では$a=b=2$であり、$\gcd(a,b)=2\neq g$である。
+  target: |
+    ∀ (a b g l : ℕ), 0 < g → ((Nat.gcd a b = g ∧ Nat.lcm a b = l) ↔ ∃ m n : ℕ, Nat.Coprime m n ∧ a = g * m ∧ b = g * n ∧ l = g * m * n)
+  proof: |
+    by
+      intro a b g l hg
+      constructor
+      · rintro ⟨rfl, rfl⟩
+        have ha : Nat.gcd a b * (a / Nat.gcd a b) = a := Nat.mul_div_cancel' (Nat.gcd_dvd_left a b)
+        have hb : Nat.gcd a b * (b / Nat.gcd a b) = b := Nat.mul_div_cancel' (Nat.gcd_dvd_right a b)
+        refine ⟨a / Nat.gcd a b, b / Nat.gcd a b, Nat.coprime_div_gcd_div_gcd hg, ha.symm, hb.symm, ?_⟩
+        rw [ha]
+        apply Nat.eq_of_mul_eq_mul_left hg
+        rw [Nat.gcd_mul_lcm, ← Nat.mul_assoc, Nat.mul_comm (Nat.gcd a b) a, Nat.mul_assoc, hb]
+      · rintro ⟨m, n, hc, rfl, rfl, rfl⟩
+        constructor
+        · rw [Nat.gcd_mul_left, hc.gcd_eq_one, Nat.mul_one]
+        · rw [Nat.lcm_mul_left, hc.lcm_eq_mul, Nat.mul_assoc]
+- id: coprime_mul_iff
+  kind: gap
+  level: high
+  topic: 整数の性質・積と互いに素
+  statement: 整数$a,b,c$について、$\gcd(ab,c)=1$であることは、$\gcd(a,c)=1$かつ$\gcd(b,c)=1$であることと同値である。
+  statement_en: For integers a, b, c, gcd(ab, c) = 1 if and only if gcd(a, c) = 1 and gcd(b, c) = 1.
+  assumptions:
+  - $a,b,c$は整数
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $\gcd(ab,c)=1$であることと、$\gcd(a,c)=1$かつ$\gcd(b,c)=1$であることは同値である。
+  answer: |
+    $a,b,c$を整数とする。$\gcd(ab,c)=1$とする。$a,c$の公約数は$ab,c$の公約数なので$1$を割り切り、$\gcd(a,c)=1$である。同様に$\gcd(b,c)=1$である。
+    逆に$\gcd(a,c)=1,\ \gcd(b,c)=1$とする。ベズーの等式から$au+cv=1,\ bs+ct=1$を満たす整数$u,v,s,t$がある。二つの式を掛けると$ab(us)+c(aut+bsv+cvt)=1$となる。$ab,c$の公約数は$1$を割り切るので、$\gcd(ab,c)=1$である。
+  strategy: Use common divisors forward and multiply Bezout identities backward.
+  sketch:
+  - 'derive: A common divisor of a and c is a common divisor of ab and c.'
+  - 'apply_theorem: Take au + cv = 1 and bs + ct = 1.'
+  - 'derive: Multiplying gives ab(us) + c(aut + bsv + cvt) = 1.'
+  - 'conclude: Any common divisor of ab and c divides 1.'
+  openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z)) (<-> (= (gcd (* a b) c) 1) (and (= (gcd a c) 1) (= (gcd b c) 1)))))
+  hard_negative:
+    statement: 整数$a,b,c$について、$\gcd(ab,c)=\gcd(a,c)\gcd(b,c)$である。
+    reason: $a=b=c=2$では左辺は$\gcd(4,2)=2$、右辺は$4$である。互いに素であることの同値性は、最大公約数の値の積公式を意味しない。
+  target: |
+    ∀ (a b c : ℤ), Int.gcd (a * b) c = 1 ↔ Int.gcd a c = 1 ∧ Int.gcd b c = 1
+  proof: |
+    by
+      intro a b c
+      simp only [← Int.isCoprime_iff_gcd_eq_one]
+      exact IsCoprime.mul_left_iff
+- id: coprime_pow_pow
+  kind: gap
+  level: high
+  topic: 整数の性質・累乗と互いに素
+  statement: 整数$a,b$が$\gcd(a,b)=1$を満たすならば、$0$以上の整数$m,n$について$\gcd(a^m,b^n)=1$である。
+  statement_en: If integers a and b satisfy gcd(a, b) = 1, then gcd(a^m, b^n) = 1 for all natural numbers m and n.
+  assumptions:
+  - $a,b$は整数
+  - $\gcd(a,b)=1$
+  - $m,n$は$0$以上の整数
+  quantifiers:
+  - 任意の整数$a,b$と$0$以上の整数$m,n$
+  conclusion: $\gcd(a^m,b^n)=1$である。
+  answer: |
+    $a,b$を$\gcd(a,b)=1$を満たす整数とする。まず、整数$s,t,c$について$\gcd(s,c)=\gcd(t,c)=1$ならば$\gcd(st,c)=1$であることを示す。$su+cv=1,\ tw+cz=1$となる整数$u,v,w,z$をとって掛けると、$st(uw)+c(suz+twv+cvz)=1$となるので、$st,c$の公約数は$1$を割り切る。
+    これと$m$についての帰納法から$\gcd(a^m,b)=1$である（$m=0$では$a^0=1$である）。$a^m$と$b$の役割を入れ替えて同じ議論を$n$について行うと、$\gcd(a^m,b^n)=1$を得る。
+  strategy: Prove coprimality is preserved by products and induct on the exponents.
+  sketch:
+  - 'derive: Multiplying Bezout identities shows gcd(st, c) = 1 when gcd(s, c) = gcd(t, c) = 1.'
+  - 'induction: Induct on m to get gcd(a^m, b) = 1.'
+  - 'induction: Induct on n with the roles swapped.'
+  - 'conclude: gcd(a^m, b^n) = 1.'
+  openmath: (forall (a b m n) (-> (and (in a Z) (in b Z) (in m N) (in n N) (= (gcd a b) 1)) (= (gcd (^ a m) (^ b n)) 1)))
+  hard_negative:
+    statement: $\gcd(a^m,b^n)=1$ならば、$\gcd(a,b)=1$である。
+    reason: 指数が$0$の場合を含むと成り立たない。$a=b=2,\ m=n=0$では$\gcd(1,1)=1$だが$\gcd(2,2)=2$である。
+  target: |
+    ∀ (a b : ℤ) (m n : ℕ), Int.gcd a b = 1 → Int.gcd (a ^ m) (b ^ n) = 1
+  proof: |
+    by
+      intro a b m n h
+      exact Int.isCoprime_iff_gcd_eq_one.mp (IsCoprime.pow (Int.isCoprime_iff_gcd_eq_one.mpr h))
+- id: coprime_add_mul
+  kind: gap
+  level: high
+  topic: 整数の性質・和と積の互いに素
+  statement: 整数$a,b$が$\gcd(a,b)=1$を満たすならば、$\gcd(a+b,ab)=1$である。
+  statement_en: If integers a and b satisfy gcd(a, b) = 1, then gcd(a + b, ab) = 1.
+  assumptions:
+  - $a,b$は整数
+  - $\gcd(a,b)=1$
+  quantifiers:
+  - 任意の整数$a,b$
+  conclusion: $\gcd(a+b,ab)=1$である。
+  answer: |
+    $a,b$を$\gcd(a,b)=1$を満たす整数とする。ベズーの等式から$ax+by=1$を満たす整数$x,y$がある。両辺を$2$乗すると$a^2x^2+2abxy+b^2y^2=1$である。ここで$a^2=a(a+b)-ab,\ b^2=b(a+b)-ab$を代入すると$(ax^2+by^2)(a+b)+(2xy-x^2-y^2)ab=1$となる。$a+b,ab$の公約数は左辺を割り切るので$1$を割り切り、$\gcd(a+b,ab)=1$である。
+  strategy: Square a Bezout identity and regroup it as a combination of a + b and ab.
+  sketch:
+  - 'apply_theorem: Take x, y with ax + by = 1.'
+  - 'derive: Squaring gives a²x² + 2abxy + b²y² = 1.'
+  - 'derive: Regrouping gives (ax² + by²)(a + b) + (2xy - x² - y²)ab = 1.'
+  - 'conclude: Any common divisor of a + b and ab divides 1.'
+  openmath: (forall (a b) (-> (and (in a Z) (in b Z) (= (gcd a b) 1)) (= (gcd (+ a b) (* a b)) 1)))
+  hard_negative:
+    statement: 整数$a,b$が$\gcd(a,b)=1$を満たすならば、$\gcd(a+b,a-b)=1$である。
+    reason: $a=3,\ b=1$では$\gcd(4,2)=2$である。和と差は公約数$2$を持ちうる。
+  target: |
+    ∀ (a b : ℤ), Int.gcd a b = 1 → Int.gcd (a + b) (a * b) = 1
+  proof: |
+    by
+      intro a b h
+      obtain ⟨x, y, hxy⟩ := Int.isCoprime_iff_gcd_eq_one.mpr h
+      refine Int.isCoprime_iff_gcd_eq_one.mp ⟨x ^ 2 * a + y ^ 2 * b, 2 * x * y - x ^ 2 - y ^ 2, ?_⟩
+      linear_combination (x * a + y * b + 1) * hxy
+- id: euclidean_algorithm
+  kind: named
+  level: high
+  topic: 整数の性質・ユークリッドの互除法
+  statement: ユークリッドの互除法。$0$以上の整数$a,b$に対し、列$r_0=a,\ r_1=b$を、$r_{k+1}\neq 0$である間は$r_{k+2}$を$r_k$を$r_{k+1}$で割った余りとして定める。このとき$r_{N+1}=0$となる$N$が存在し、$r_N=\gcd(a,b)$である。ただし$\gcd(0,0)=0$とする。
+  statement_en: Euclidean algorithm. If r_0 = a, r_1 = b and r_(k+2) is the remainder of r_k on division by r_(k+1) whenever r_(k+1) ≠ 0, then some N satisfies r_(N+1) = 0 and r_N = gcd(a, b).
+  assumptions:
+  - $a,b$は$0$以上の整数
+  - $r_0=a,\ r_1=b$
+  - $r_{k+1}\neq 0$ならば$r_{k+2}$は$r_k$を$r_{k+1}$で割った余り
+  - $\gcd(0,0)=0$とする
+  quantifiers:
+  - 任意の$0$以上の整数$a,b$と、条件を満たす$0$以上の整数の列$r_0,r_1,\ldots$
+  conclusion: $r_{N+1}=0$かつ$r_N=\gcd(a,b)$を満たす$N$が存在する。
+  answer: |
+    $a,b$を$0$以上の整数とし、列$r_0,r_1,\ldots$は条件を満たすとする。
+    $r_{k+1}\neq 0$ならば余りの性質から$r_{k+2}<r_{k+1}$である。$0$以上の整数が狭義に減少し続けることはないので、$r_{N+1}=0$となる最小の$N$がある。
+    $k<N$のとき$r_{k+1}\neq 0$であり、商を$q$とすると$r_k=qr_{k+1}+r_{k+2}$である。この式から、$r_k,r_{k+1}$の公約数と$r_{k+1},r_{k+2}$の公約数は一致するので、$\gcd(r_k,r_{k+1})=\gcd(r_{k+1},r_{k+2})$である。
+    これを$k=0,\ldots,N-1$で繰り返すと、$\gcd(a,b)=\gcd(r_N,r_{N+1})=\gcd(r_N,0)=r_N$となる。
+  strategy: Use the strict decrease of remainders for termination and gcd invariance for correctness.
+  sketch:
+  - 'derive: While r_(k+1) ≠ 0, the remainder satisfies r_(k+2) < r_(k+1).'
+  - 'construct: Strict decrease yields a least N with r_(N+1) = 0.'
+  - 'derive: r_k = q·r_(k+1) + r_(k+2) gives gcd(r_k, r_(k+1)) = gcd(r_(k+1), r_(k+2)).'
+  - 'induction: Iterating gives gcd(a, b) = gcd(r_N, r_(N+1)).'
+  - 'conclude: gcd(r_N, 0) = r_N.'
+  openmath: (forall (a b r) (-> (and (in a N) (in b N) (= (seq_value r 0) a) (= (seq_value r 1) b) (forall (k) (-> (and (in k N) (!= (seq_value r (+ k 1)) 0)) (exists (q) (and (in q N) (= (seq_value r k) (+ (* q (seq_value r (+ k 1))) (seq_value r (+ k 2)))) (<= 0 (seq_value r (+ k 2))) (< (seq_value r (+ k 2)) (seq_value r (+ k 1)))))))) (exists (t) (and (in t N) (= (seq_value r (+ t 1)) 0) (= (seq_value r t) (gcd a b))))))
+  hard_negative:
+    statement: 互除法で余りが初めて$1$になったとき、その一つ前の余りが$\gcd(a,b)$である。
+    reason: 最大公約数は余りが$0$になる直前の値である。$a=5,\ b=3$では列は$5,3,2,1,0$で$\gcd(a,b)=1$だが、$1$の一つ前は$2$である。
+  target: |
+    ∀ (a b : ℕ) (r : ℕ → ℕ), r 0 = a → r 1 = b → (∀ k, r (k + 1) ≠ 0 → r (k + 2) = r k % r (k + 1)) → ∃ N, r (N + 1) = 0 ∧ r N = Nat.gcd a b
+  proof: |
+    by
+      have key : ∀ (m : ℕ) (r : ℕ → ℕ), r 1 = m → (∀ k, r (k + 1) ≠ 0 → r (k + 2) = r k % r (k + 1)) → ∃ N, r (N + 1) = 0 ∧ r N = Nat.gcd (r 0) (r 1) := by
+        intro m
+        induction m using Nat.strong_induction_on with
+        | _ m ih =>
+          intro r hm hr
+          by_cases h0 : r 1 = 0
+          · exact ⟨0, h0, by simp [h0]⟩
+          · have hlt : r 2 = r 0 % r 1 := hr 0 h0
+            have hm2 : r 2 < m := by
+              rw [hlt, ← hm]
+              exact Nat.mod_lt _ (Nat.pos_of_ne_zero h0)
+            obtain ⟨N, hN1, hN2⟩ := ih (r 2) hm2 (fun k => r (k + 1)) rfl (fun k hk => hr (k + 1) hk)
+            refine ⟨N + 1, hN1, ?_⟩
+            have hN3 : r (N + 1) = Nat.gcd (r 1) (r 2) := hN2
+            rw [hN3, hlt, Nat.gcd_comm (r 0) (r 1), Nat.gcd_rec (r 1) (r 0)]
+            exact Nat.gcd_comm _ _
+      intro a b r h0 h1 hr
+      subst h0 h1
+      exact key _ r rfl hr
+- id: coprime_mul_eq_mul_param
+  kind: gap
+  level: high
+  topic: 整数の性質・一次不定方程式の同次形
+  statement: 整数$a,b$が$\gcd(a,b)=1$を満たすとき、整数$x,y$について$ax=by$ならば、$x=bt,\ y=at$となる整数$t$が存在する。一般解を求めるときに用いる同次形である。
+  statement_en: If integers a, b are coprime and integers x, y satisfy ax = by, then x = bt and y = at for some integer t.
+  assumptions:
+  - $a,b,x,y$は整数
+  - $\gcd(a,b)=1$
+  - $ax=by$
+  quantifiers:
+  - 任意の整数$a,b,x,y$
+  conclusion: $x=bt,\ y=at$となる整数$t$が存在する。
+  answer: |
+    $a,b,x,y$を整数とし、$\gcd(a,b)=1,\ ax=by$とする。ベズーの等式から$au+bv=1$を満たす整数$u,v$がある。$t=uy+vx$とおく。
+    $x=x(au+bv)=u(ax)+bvx=u(by)+bvx=bt$である。
+    $y=y(au+bv)=auy+v(by)=auy+v(ax)=at$である。
+  strategy: Build t from a Bezout identity for a and b.
+  sketch:
+  - 'apply_theorem: Take u, v with au + bv = 1.'
+  - 'construct: Put t = uy + vx.'
+  - 'derive: x = x(au + bv) = bt after replacing ax by by.'
+  - 'derive: y = y(au + bv) = at after replacing by by ax.'
+  - 'conclude: Both forms hold with the same t.'
+  openmath: (forall (a b x y) (-> (and (in a Z) (in b Z) (in x Z) (in y Z) (= (gcd a b) 1) (= (* a x) (* b y))) (exists (t) (and (in t Z) (= x (* b t)) (= y (* a t))))))
+  hard_negative:
+    statement: 整数$a,b$が$0$でなく$ax=by$ならば、$x=bt,\ y=at$となる整数$t$が存在する。
+    reason: 互いに素の仮定を外すと成り立たない。$a=2,\ b=4,\ x=2,\ y=1$では$ax=by$だが、$x=4t$となる整数$t$はない。
+  target: |
+    ∀ (a b x y : ℤ), Int.gcd a b = 1 → a * x = b * y → ∃ t : ℤ, x = b * t ∧ y = a * t
+  proof: |
+    by
+      intro a b x y h hxy
+      obtain ⟨u, v, huv⟩ := Int.isCoprime_iff_gcd_eq_one.mpr h
+      refine ⟨u * y + v * x, ?_, ?_⟩
+      · linear_combination (-x) * huv + u * hxy
+      · linear_combination (-y) * huv - v * hxy
+- id: linear_diophantine_general_solution_coprime
+  kind: textbook
+  level: high
+  topic: 整数の性質・一次不定方程式の一般解
+  statement: 整数$a,b,c$が$\gcd(a,b)=1$を満たし、$(x_0,y_0)$が$ax+by=c$の整数解であるとする。このとき整数の組$(x,y)$が$ax+by=c$の解であることは、$x=x_0+bt,\ y=y_0-at$となる整数$t$が存在することと同値である。係数が互いに素な場合の形である。
+  statement_en: If gcd(a, b) = 1 and (x_0, y_0) is an integer solution of ax + by = c, then (x, y) is an integer solution if and only if x = x_0 + bt and y = y_0 - at for some integer t.
+  assumptions:
+  - $a,b,c,x_0,y_0,x,y$は整数
+  - $\gcd(a,b)=1$
+  - $ax_0+by_0=c$
+  quantifiers:
+  - 任意の整数$a,b,c,x_0,y_0,x,y$
+  conclusion: $ax+by=c$であることと、$x=x_0+bt,\ y=y_0-at$となる整数$t$が存在することは同値である。
+  answer: |
+    $a,b,c,x_0,y_0,x,y$を整数とし、$\gcd(a,b)=1,\ ax_0+by_0=c$とする。
+    $x=x_0+bt,\ y=y_0-at$ならば、$ax+by=ax_0+by_0+abt-abt=c$である。
+    逆に$ax+by=c$とする。$ax_0+by_0=c$を引くと$a(x-x_0)=b(y_0-y)$である。ベズーの等式から$au+bv=1$を満たす整数$u,v$をとり、$t=u(y_0-y)+v(x-x_0)$とおく。
+    $x-x_0=(x-x_0)(au+bv)=u\cdot b(y_0-y)+bv(x-x_0)=bt$である。同様に$y_0-y=(y_0-y)(au+bv)=au(y_0-y)+v\cdot a(x-x_0)=at$である。よって$x=x_0+bt,\ y=y_0-at$である。
+  strategy: Subtract the particular solution and solve the homogeneous equation with a Bezout identity.
+  sketch:
+  - 'derive: Substituting x_0 + bt and y_0 - at gives c.'
+  - 'derive: Subtracting the two equations gives a(x - x_0) = b(y_0 - y).'
+  - 'apply_theorem: Take u, v with au + bv = 1.'
+  - 'construct: Put t = u(y_0 - y) + v(x - x_0).'
+  - 'conclude: Then x - x_0 = bt and y_0 - y = at.'
+  openmath: (forall (a b c u v x y) (-> (and (in a Z) (in b Z) (in c Z) (in u Z) (in v Z) (in x Z) (in y Z) (= (gcd a b) 1) (= (+ (* a u) (* b v)) c)) (<-> (= (+ (* a x) (* b y)) c) (exists (t) (and (in t Z) (= x (+ u (* b t))) (= y (- v (* a t))))))))
+  hard_negative:
+    statement: 整数$a,b,c$と解$(x_0,y_0)$について、$ax+by=c$の解はすべて$x=x_0+bt,\ y=y_0-at$と書ける。
+    reason: 互いに素の仮定を外すと解が漏れる。$2x+4y=2$の解$(1,0)$を基準にすると、解$(3,-1)$は$x=1+4t$の形に書けない。
+  target: |
+    ∀ (a b c x₀ y₀ x y : ℤ), Int.gcd a b = 1 → a * x₀ + b * y₀ = c → (a * x + b * y = c ↔ ∃ t : ℤ, x = x₀ + b * t ∧ y = y₀ - a * t)
+  proof: |
+    by
+      intro a b c x₀ y₀ x y h h0
+      obtain ⟨u, v, huv⟩ := Int.isCoprime_iff_gcd_eq_one.mpr h
+      constructor
+      · intro h3
+        refine ⟨u * (y₀ - y) + v * (x - x₀), ?_, ?_⟩
+        · linear_combination (-(x - x₀)) * huv + u * (h3 - h0)
+        · linear_combination (y₀ - y) * huv + v * (h3 - h0)
+      · rintro ⟨t, rfl, rfl⟩
+        linear_combination h0
+- id: linear_diophantine_general_solution
+  kind: textbook
+  level: high
+  topic: 整数の性質・一次不定方程式の一般解
+  statement: 整数$a,b$の少なくとも一方が$0$でないとし、$g=\gcd(a,b),\ a=gm,\ b=gn$とする。$(x_0,y_0)$が$ax+by=c$の整数解であるとき、整数の組$(x,y)$が解であることは、$x=x_0+nt,\ y=y_0-mt$となる整数$t$が存在することと同値である。係数が互いに素とは限らない一般の形である。
+  statement_en: Let a, b be integers not both zero, g = gcd(a, b), a = gm and b = gn. If (x_0, y_0) is an integer solution of ax + by = c, then (x, y) is an integer solution if and only if x = x_0 + nt and y = y_0 - mt for some integer t.
+  assumptions:
+  - $a,b,c,m,n,x_0,y_0,x,y$は整数
+  - $a,b$の少なくとも一方は$0$でない
+  - $g=\gcd(a,b),\ a=gm,\ b=gn$
+  - $ax_0+by_0=c$
+  quantifiers:
+  - 任意の整数$a,b,c,m,n,x_0,y_0,x,y$
+  conclusion: $ax+by=c$であることと、$x=x_0+nt,\ y=y_0-mt$となる整数$t$が存在することは同値である。
+  answer: |
+    $a,b,c,m,n,x_0,y_0,x,y$を整数とし、$a,b$の少なくとも一方は$0$でなく、$g=\gcd(a,b)>0,\ a=gm,\ b=gn,\ ax_0+by_0=c$とする。
+    $x=x_0+nt,\ y=y_0-mt$ならば、$ax+by=ax_0+by_0+g(mn-nm)t=c$である。
+    逆に$ax+by=c$とする。$ax_0+by_0=c$を引いて$g$で割ると$m(x-x_0)=n(y_0-y)$である。ベズーの等式から$g=au+bv=g(mu+nv)$を満たす整数$u,v$があるので、$mu+nv=1$である。$t=u(y_0-y)+v(x-x_0)$とおく。
+    $x-x_0=(x-x_0)(mu+nv)=u\cdot n(y_0-y)+nv(x-x_0)=nt$である。同様に$y_0-y=(y_0-y)(mu+nv)=mu(y_0-y)+v\cdot m(x-x_0)=mt$である。よって$x=x_0+nt,\ y=y_0-mt$である。
+  strategy: Divide the homogeneous equation by g and apply a Bezout identity for the reduced coefficients.
+  sketch:
+  - 'derive: Substituting x_0 + nt and y_0 - mt gives c.'
+  - 'derive: Subtracting and dividing by g gives m(x - x_0) = n(y_0 - y).'
+  - 'apply_theorem: From g = au + bv obtain mu + nv = 1.'
+  - 'construct: Put t = u(y_0 - y) + v(x - x_0).'
+  - 'conclude: Then x - x_0 = nt and y_0 - y = mt.'
+  openmath: (forall (a b m n g c u v x y) (-> (and (in a Z) (in b Z) (in m Z) (in n Z) (in g Z) (in c Z) (in u Z) (in v Z) (in x Z) (in y Z) (= g (gcd a b)) (!= g 0) (= a (* g m)) (= b (* g n)) (= (+ (* a u) (* b v)) c)) (<-> (= (+ (* a x) (* b y)) c) (exists (t) (and (in t Z) (= x (+ u (* n t))) (= y (- v (* m t))))))))
+  hard_negative:
+    statement: 任意の整数$c$について、$ax+by=c$の解は$x=x_0+nt,\ y=y_0-mt$の形で得られる。
+    reason: 特解の存在が必要である。$2x+4y=1$は左辺が偶数なので解を持たず、基準となる$(x_0,y_0)$がない。解を持つのは$g$が$c$を割り切るときに限る。
+  target: |
+    ∀ (a b m n g c x₀ y₀ x y : ℤ), g = (Int.gcd a b : ℤ) → g ≠ 0 → a = g * m → b = g * n → a * x₀ + b * y₀ = c → (a * x + b * y = c ↔ ∃ t : ℤ, x = x₀ + n * t ∧ y = y₀ - m * t)
+  proof: |
+    by
+      intro a b m n g c x₀ y₀ x y hg hg0 ha hb h0
+      obtain ⟨u, v, huv⟩ : ∃ u v : ℤ, g = a * u + b * v :=
+        ⟨Int.gcdA a b, Int.gcdB a b, by rw [hg]; exact Int.gcd_eq_gcd_ab a b⟩
+      subst ha hb
+      have h1 : m * u + n * v = 1 := by
+        apply mul_left_cancel₀ hg0
+        linear_combination -huv
+      constructor
+      · intro h3
+        have h2 : m * (x - x₀) = n * (y₀ - y) := by
+          apply mul_left_cancel₀ hg0
+          linear_combination h3 - h0
+        refine ⟨u * (y₀ - y) + v * (x - x₀), ?_, ?_⟩
+        · linear_combination (-(x - x₀)) * h1 + u * h2
+        · linear_combination (y₀ - y) * h1 + v * h2
+      · rintro ⟨t, rfl, rfl⟩
+        linear_combination h0
+- id: base_expansion_exists_unique
+  kind: textbook
+  level: high
+  topic: 整数の性質・n進法の表示
+  statement: $2$以上の整数$b$と$0$以上の整数$n$について、$n=\sum_{i<k}d_ib^i$、$0\leq d_i<b$を満たし最上位の$d_{k-1}$が$0$でない有限列$d_0,\ldots,d_{k-1}$がただ一つ存在する。$n=0$に対する列は空列である。
+  statement_en: For a base b ≥ 2 and a natural number n there is exactly one finite digit list d_0, ..., d_(k-1) with all digits below b, nonzero top digit if nonempty, and n = Σ d_i b^i.
+  assumptions:
+  - $b$は$2$以上の整数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$2$以上の整数$b$と$0$以上の整数$n$
+  conclusion: $n$の$b$進法の桁の列はただ一つ存在する。
+  answer: |
+    $b$を$2$以上の整数とし、$n$についての強い帰納法で示す。$n=0$のとき、各桁が$0$以上で和が$0$ならばすべての桁が$0$であり、最上位の桁が$0$でない条件から空列に限られる。
+    $n\geq 1$とし、$n=bq+r$、$0\leq r<b$と割る。$q<n$なので、$q$には条件を満たす列$e_0,\ldots,e_{j-1}$がただ一つある。列$r,e_0,\ldots,e_{j-1}$の値は$n$である。$j=0$のとき$q=0$なので$r=n\neq 0$であり、最上位の桁は$0$でない。$j\geq 1$のとき最上位の桁は$e_{j-1}\neq 0$である。これで存在が示された。
+    一意性を示す。$n$の条件を満たす列$d_0,\ldots,d_{k-1}$は$n\neq 0$なので空でない。$n=b(d_1+d_2b+\cdots)+d_0$かつ$0\leq d_0<b$であり、割り算の一意性から$d_0=r$であって、残りの列の値は$q$である。残りの列も条件を満たすので、$q$についての一意性から$e_0,\ldots,e_{j-1}$に一致する。
+  strategy: Peel off the units digit by division and induct on n.
+  sketch:
+  - 'case_split: For n = 0 only the empty list works.'
+  - 'setup: For n ≥ 1 write n = bq + r with 0 ≤ r < b and q < n.'
+  - 'induction: Take the list of q and prepend r.'
+  - 'derive: The top digit stays nonzero, since q = 0 forces r = n ≠ 0.'
+  - 'derive: For another list, uniqueness of division forces d_0 = r and the rest represents q.'
+  - 'conclude: The induction hypothesis gives uniqueness.'
+  openmath: (forall (b n) (-> (and (in b N) (in n N) (>= b 2)) (exists (L) (and (digit_list_bounded b L) (digit_list_top_nonzero L) (= (of_digits b L) n) (forall (M) (-> (and (digit_list_bounded b M) (digit_list_top_nonzero M) (= (of_digits b M) n)) (= M L)))))))
+  hard_negative:
+    statement: 各桁が$b$未満である列で$n$を表す方法はただ一つである。
+    reason: 最上位の桁が$0$でない条件を外すと一意でない。$10$進法で$5$は列$(5)$でも$(5,0)$でも表せる。
+  target: |
+    ∀ (b n : ℕ), 2 ≤ b → ∃! L : List ℕ, (∀ d ∈ L, d < b) ∧ (∀ h : L ≠ [], L.getLast h ≠ 0) ∧ Nat.ofDigits b L = n
+  proof: |
+    by
+      intro b n hb
+      refine ⟨Nat.digits b n, ⟨fun d hd => Nat.digits_lt_base hb hd, ?_, Nat.ofDigits_digits b n⟩, ?_⟩
+      · intro h
+        apply Nat.getLast_digit_ne_zero
+        intro hn
+        subst hn
+        simp at h
+      · rintro L ⟨h1, h2, rfl⟩
+        exact (Nat.digits_ofDigits b hb L h1 h2).symm
+- id: digit_length_iff_pow_bounds
+  kind: gap
+  level: high
+  topic: 整数の性質・n進法の桁数
+  statement: $2$以上の整数$b$と$0$以上の整数$k,n$について、$n$が$b$進法で$k+1$桁であることは、$b^k\leq n<b^{k+1}$と同値である。ただし$0$の$b$進法の桁数は$0$とする。
+  statement_en: For a base b ≥ 2 and natural numbers k, n, the number n has exactly k + 1 digits in base b if and only if b^k ≤ n < b^(k+1).
+  assumptions:
+  - $b$は$2$以上の整数
+  - $k,n$は$0$以上の整数
+  - $0$の$b$進法の桁数は$0$とする
+  quantifiers:
+  - 任意の$2$以上の整数$b$と$0$以上の整数$k,n$
+  conclusion: $n$が$b$進法で$k+1$桁であることと、$b^k\leq n<b^{k+1}$は同値である。
+  answer: |
+    $b$を$2$以上の整数、$k,n$を$0$以上の整数とする。
+    $n$が$k+1$桁で桁を$d_0,\ldots,d_k$とする。$d_k\geq 1$なので$n\geq b^k$である。また各$d_i\leq b-1$なので$n\leq (b-1)(1+b+\cdots+b^k)=b^{k+1}-1<b^{k+1}$である。
+    逆に$b^k\leq n<b^{k+1}$とする。$n\geq 1$なので$n$の桁数は$j+1$（$j\geq 0$）と書ける。いま示したことから$b^j\leq n<b^{j+1}$である。したがって$b^j<b^{k+1}$と$b^k<b^{j+1}$が成り立つ。$b\geq 2$なので累乗は指数について増加し、$j<k+1$と$k<j+1$を得る。よって$j=k$である。
+  strategy: Bound a number between the extreme values of its digits and compare exponents for the converse.
+  sketch:
+  - 'derive: A nonzero top digit gives n ≥ b^k.'
+  - 'derive: Digits at most b - 1 give n ≤ b^(k+1) - 1.'
+  - 'setup: For the converse let n have j + 1 digits.'
+  - 'derive: Then b^j ≤ n < b^(j+1), which combines with the assumed bounds.'
+  - 'conclude: Monotonicity of powers forces j = k.'
+  openmath: (forall (b k n) (-> (and (in b N) (in k N) (in n N) (>= b 2)) (<-> (= (digit_length b n) (+ k 1)) (and (<= (^ b k) n) (< n (^ b (+ k 1)))))))
+  hard_negative:
+    statement: $n$が$b$進法で$k+1$桁であることは、$b^k\leq n\leq b^{k+1}$と同値である。
+    reason: $n=b^{k+1}$は$k+2$桁である。右側の不等号は等号を含まない。
+  target: |
+    ∀ (b k n : ℕ), 2 ≤ b → ((Nat.digits b n).length = k + 1 ↔ b ^ k ≤ n ∧ n < b ^ (k + 1))
+  proof: |
+    by
+      intro b k n hb
+      by_cases hn : n = 0
+      · subst hn
+        have : 0 < b ^ k := Nat.pow_pos (by omega)
+        simp
+        omega
+      · rw [Nat.length_digits b n hb hn, Nat.add_right_cancel_iff]
+        exact Nat.log_eq_iff (Or.inr ⟨hb, hn⟩)
+- id: digit_sum_congruent_mod_base_sub_one
+  kind: gap
+  level: high
+  topic: 整数の性質・n進法の桁の和
+  statement: 正の整数$m$と$b=m+1$について、$0$以上の整数$n$は、$b$進法の桁の和と$m$を法として合同である。$b=10,\ m=9$とすれば$9$の倍数判定である。
+  statement_en: For a positive integer m and base b = m + 1, every natural number n is congruent modulo m to the sum of its base-b digits.
+  assumptions:
+  - $m$は正の整数
+  - $b=m+1$
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の正の整数$m$と$0$以上の整数$n$
+  conclusion: $n$は$b$進法の桁の和と$m$を法として合同である。
+  answer: |
+    $m$を正の整数、$b=m+1$、$n$を$0$以上の整数とし、$n$の$b$進法の桁を$d_0,\ldots,d_{k-1}$とする。$b-1=m$なので$b\equiv 1\pmod{m}$であり、累乗をとって各$i$で$b^i\equiv 1\pmod{m}$である。よって$n=\sum_{i<k}d_ib^i\equiv\sum_{i<k}d_i\pmod{m}$である。
+  strategy: Reduce each power of the base to 1 modulo m.
+  sketch:
+  - 'translate: Write n = Σ d_i b^i in base b.'
+  - 'derive: b ≡ 1 modulo m, so b^i ≡ 1 modulo m.'
+  - 'conclude: n ≡ Σ d_i modulo m.'
+  openmath: (forall (m n) (-> (and (in m N) (in n N) (>= m 1)) (exists (s) (and (in s Z) (= (- n (digit_sum (+ m 1) n)) (* m s))))))
+  hard_negative:
+    statement: $n$は$b$進法の桁の和と$b$を法として合同である。
+    reason: 法は$b-1$である。$10$進法の$12$では桁の和は$3$であり、$12\equiv 2\pmod{10}$である。
+  target: |
+    ∀ (m n : ℕ), 1 ≤ m → n ≡ (Nat.digits (m + 1) n).sum [MOD m]
+  proof: |
+    by
+      intro m n hm
+      have h : (m + 1) ≡ 1 [MOD m] := by simp [Nat.ModEq]
+      have := Nat.ofDigits_modEq' (m + 1) 1 m h (Nat.digits (m + 1) n)
+      rwa [Nat.ofDigits_digits, Nat.ofDigits_one] at this
+- id: alternating_digit_sum_congruent_mod_base_add_one
+  kind: gap
+  level: high
+  topic: 整数の性質・n進法の桁の交代和
+  statement: $2$以上の整数$b$と$0$以上の整数$n$について、$n$は$b$進法の桁の交代和$d_0-d_1+d_2-\cdots$と$b+1$を法として合同である。$b=10$とすれば$11$の倍数判定である。
+  statement_en: For a base b ≥ 2 and a natural number n, n is congruent modulo b + 1 to the alternating sum d_0 - d_1 + d_2 - ... of its base-b digits.
+  assumptions:
+  - $b$は$2$以上の整数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$2$以上の整数$b$と$0$以上の整数$n$
+  conclusion: $n\equiv d_0-d_1+d_2-\cdots\pmod{b+1}$である。
+  answer: |
+    $b$を$2$以上の整数、$n$を$0$以上の整数とし、$n$の$b$進法の桁を$d_0,\ldots,d_{k-1}$とする。$b-(-1)=b+1$なので$b\equiv -1\pmod{b+1}$であり、累乗をとって$b^i\equiv(-1)^i\pmod{b+1}$である。よって$n=\sum_{i<k}d_ib^i\equiv\sum_{i<k}(-1)^id_i\pmod{b+1}$である。
+  strategy: Reduce the base to -1 modulo b + 1.
+  sketch:
+  - 'translate: Write n = Σ d_i b^i in base b.'
+  - 'derive: b ≡ -1 modulo b + 1, so b^i ≡ (-1)^i.'
+  - 'conclude: n ≡ Σ (-1)^i d_i modulo b + 1.'
+  openmath: (forall (b n) (-> (and (in b N) (in n N) (>= b 2)) (exists (s) (and (in s Z) (= (- n (digit_alternating_sum b n)) (* (+ b 1) s))))))
+  hard_negative:
+    statement: $n$は$b$進法の桁の交代和と$b-1$を法として合同である。
+    reason: 交代和に対応する法は$b+1$である。$10$進法の$12$では交代和は$2-1=1$だが、$12\equiv 3\pmod{9}$である。
+  target: |
+    ∀ (b n : ℕ), 2 ≤ b → (n : ℤ) ≡ ((Nat.digits b n).map (fun d : ℕ => (d : ℤ))).alternatingSum [ZMOD ((b : ℤ) + 1)]
+  proof: |
+    by
+      intro b n hb
+      have h : (b : ℤ) ≡ -1 [ZMOD ((b + 1 : ℕ) : ℤ)] := by
+        rw [Int.modEq_iff_dvd]
+        exact ⟨-1, by push_cast; ring⟩
+      have := Nat.ofDigits_zmodeq' (b : ℤ) (-1) (b + 1) h (Nat.digits b n)
+      rw [Nat.ofDigits_neg_one, ← Nat.coe_ofDigits, Nat.ofDigits_digits] at this
+      simpa using this
+- id: low_digits_remainder
+  kind: gap
+  level: high
+  topic: 整数の性質・n進法の下位の桁
+  statement: $2$以上の整数$b$と$b$未満の$0$以上の整数からなる長さ$k$の列$d_0,\ldots,d_{k-1}$、任意の$0$以上の整数の列$e_0,\ldots,e_{j-1}$について、$N=\sum_{i<k}d_ib^i+b^k\sum_{i<j}e_ib^i$を$b^k$で割った余りは$\sum_{i<k}d_ib^i$である。$k=1$は一の位の値が$b$で割った余りであることを表す。
+  statement_en: For a base b ≥ 2, digits d_0, ..., d_(k-1) below b and any list e_0, ..., e_(j-1), the remainder of Σ d_i b^i + b^k Σ e_i b^i on division by b^k is Σ d_i b^i.
+  assumptions:
+  - $b$は$2$以上の整数
+  - $d_0,\ldots,d_{k-1}$は$b$未満の$0$以上の整数
+  - $e_0,\ldots,e_{j-1}$は$0$以上の整数
+  quantifiers:
+  - 任意の$2$以上の整数$b$、列$d_0,\ldots,d_{k-1}$と列$e_0,\ldots,e_{j-1}$
+  conclusion: $\sum_{i<k}d_ib^i+b^k\sum_{i<j}e_ib^i$を$b^k$で割った余りは$\sum_{i<k}d_ib^i$である。
+  answer: |
+    $b$を$2$以上の整数、$d_0,\ldots,d_{k-1}$を$b$未満の$0$以上の整数、$e_0,\ldots,e_{j-1}$を$0$以上の整数とする。$v=\sum_{i<k}d_ib^i$、$w=\sum_{i<j}e_ib^i$とおく。$d_i\leq b-1$なので$0\leq v\leq(b-1)(1+b+\cdots+b^{k-1})=b^k-1$である。$v+b^kw$は$b^k$の倍数$b^kw$と$0\leq v<b^k$を満たす$v$の和なので、$b^k$で割った余りは$v$である。
+  strategy: Bound the low part below b^k and read off the division.
+  sketch:
+  - 'setup: Put v = Σ d_i b^i and w = Σ e_i b^i.'
+  - 'derive: Digits below b give 0 ≤ v ≤ b^k - 1.'
+  - 'conclude: In v + b^k w, the remainder on division by b^k is v.'
+  openmath: (forall (b L M) (-> (and (in b N) (>= b 2) (digit_list_bounded b L)) (exists (q) (and (in q N) (= (of_digits b (list_append L M)) (+ (* q (^ b (list_length L))) (of_digits b L))) (< (of_digits b L) (^ b (list_length L)))))))
+  hard_negative:
+    statement: 下位の列の各項が$b$未満でなくても、余りは$\sum_{i<k}d_ib^i$である。
+    reason: $b=10,\ k=1,\ d_0=12$とその上位を$0$とすると値は$12$で、$10$で割った余りは$2$である。
+  target: |
+    ∀ (b : ℕ) (L M : List ℕ), 2 ≤ b → (∀ d ∈ L, d < b) → Nat.ofDigits b (L ++ M) % b ^ L.length = Nat.ofDigits b L
+  proof: |
+    by
+      intro b L M hb hL
+      rw [Nat.ofDigits_append, Nat.add_mul_mod_self_left]
+      exact Nat.mod_eq_of_lt (Nat.ofDigits_lt_base_pow_length hb hL)
+- id: finite_base_expansion_iff
+  kind: textbook
+  level: high
+  topic: 整数の性質・有限小数の条件
+  statement: 整数$a$、正の整数$q$、$2$以上の整数$n$が$\gcd(a,q)=1$を満たすとする。既約分数$a/q$が$n$進法の有限小数であること、すなわち$a/q=m/n^k$となる整数$m$と$0$以上の整数$k$が存在することは、$q$の素因数がすべて$n$を割り切ることと同値である。
+  statement_en: Let a be an integer, q a positive integer and n ≥ 2 with gcd(a, q) = 1. Then a/q = m/n^k for some integer m and natural number k if and only if every prime factor of q divides n.
+  assumptions:
+  - $a$は整数
+  - $q$は正の整数
+  - $n$は$2$以上の整数
+  - $\gcd(a,q)=1$
+  quantifiers:
+  - 任意の整数$a$、正の整数$q$、$2$以上の整数$n$
+  conclusion: $a/q=m/n^k$となる整数$m$と$0$以上の整数$k$が存在することと、$q$の素因数がすべて$n$を割り切ることは同値である。
+  answer: |
+    $a$を整数、$q$を正の整数、$n$を$2$以上の整数とし、$\gcd(a,q)=1$とする。
+    $a/q=m/n^k$とすると$an^k=mq$であり、$q$は$an^k$を割り切る。$\gcd(a,q)=1$なので$q$は$n^k$を割り切る。素数$p$が$q$を割り切るならば$p$は$n^k$を割り切るので、$p$は$n$を割り切る。
+    逆に$q$の素因数がすべて$n$を割り切るとする。$q=p_1^{e_1}\cdots p_r^{e_r}$と素因数分解し、$k=\max(e_1,\ldots,e_r)$とおく（$q=1$なら$k=0$とする）。各$p_i$は$n$を割り切るので$p_i^{e_i}$は$n^k$を割り切り、$p_i^{e_i}$どうしは互いに素なので$q$は$n^k$を割り切る。$n^k=qs$とすると、$s$は正の整数で$a/q=as/n^k$である。$m=as$とすればよい。
+  strategy: Clear denominators and use coprimality one way, prime factorization of q the other way.
+  sketch:
+  - 'derive: a/q = m/n^k gives an^k = mq.'
+  - 'apply_theorem: Coprimality of a and q gives q divides n^k.'
+  - 'derive: A prime dividing q then divides n.'
+  - 'construct: Conversely, with k the largest exponent in q, q divides n^k.'
+  - 'conclude: Writing n^k = qs gives a/q = as/n^k.'
+  openmath: (forall (a q n) (-> (and (in a Z) (in q N) (in n N) (> q 0) (>= n 2) (= (gcd a q) 1)) (<-> (exists (k m) (and (in k N) (in m Z) (= (/ a q) (/ m (^ n k))))) (forall (p) (-> (and (in p P) (exists (s) (and (in s N) (= q (* p s))))) (exists (t) (and (in t N) (= n (* p t)))))))))
+  hard_negative:
+    statement: 既約とは限らない分数$a/q$が$n$進法の有限小数ならば、$q$の素因数はすべて$n$を割り切る。
+    reason: $\gcd(a,q)=1$の仮定が必要である。$3/6=5/10$は$10$進法の有限小数だが、$6$の素因数$3$は$10$を割り切らない。
+  target: |
+    ∀ (a : ℤ) (q n : ℕ), 0 < q → 2 ≤ n → Int.gcd a q = 1 → ((∃ (k : ℕ) (m : ℤ), (a : ℚ) / q = m / (n : ℚ) ^ k) ↔ ∀ p : ℕ, p.Prime → p ∣ q → p ∣ n)
+  proof: |
+    by
+      intro a q n hq hn h
+      have hn0 : (n : ℚ) ≠ 0 := by
+        have : n ≠ 0 := by omega
+        exact_mod_cast this
+      have hq0 : (q : ℚ) ≠ 0 := by
+        have : q ≠ 0 := by omega
+        exact_mod_cast this
+      constructor
+      · rintro ⟨k, m, hkm⟩ p hp hpq
+        have h1 : (a : ℚ) * (n : ℚ) ^ k = m * q := by
+          field_simp at hkm
+          linarith
+        have h2 : a * (n : ℤ) ^ k = m * q := by exact_mod_cast h1
+        have h3 : (q : ℤ) ∣ a * (n : ℤ) ^ k := ⟨m, by rw [h2]; ring⟩
+        have h4 : IsCoprime (q : ℤ) a := (Int.isCoprime_iff_gcd_eq_one.mpr h).symm
+        have h5 : (q : ℤ) ∣ (n : ℤ) ^ k := h4.dvd_of_dvd_mul_left h3
+        have h6 : q ∣ n ^ k := by exact_mod_cast h5
+        exact hp.dvd_of_dvd_pow (hpq.trans h6)
+      · intro hp
+        have key : ∀ q : ℕ, 0 < q → (∀ p : ℕ, p.Prime → p ∣ q → p ∣ n) → ∃ k, q ∣ n ^ k := by
+          intro q
+          induction q using induction_on_primes with
+          | zero => intro h0; omega
+          | one => intro _ _; exact ⟨0, by simp⟩
+          | prime_mul p a hp' ih =>
+            intro h0 hall
+            have ha : 0 < a := Nat.pos_of_mul_pos_left h0 |> fun x => x
+            obtain ⟨k, hk⟩ := ih ha (fun r hr hra => hall r hr (Dvd.dvd.mul_left hra p))
+            refine ⟨k + 1, ?_⟩
+            rw [pow_succ']
+            exact Nat.mul_dvd_mul (hall p hp' (Dvd.intro a rfl)) hk
+        obtain ⟨k, s, hs⟩ := key q hq hp
+        refine ⟨k, a * s, ?_⟩
+        have h1 : (n : ℚ) ^ k = q * s := by exact_mod_cast hs
+        have hs0 : (s : ℚ) ≠ 0 := by
+          intro h0
+          rw [h0, mul_zero] at h1
+          exact pow_ne_zero k hn0 h1
+        rw [h1]
+        push_cast
+        field_simp
+- id: congruence_iff_same_remainder
+  kind: gap
+  level: high
+  topic: 整数の性質・合同と余り
+  statement: 整数$a,b$と正の整数$n$について、$a,b$を$n$で割った余りが等しいことは、$n$が$a-b$を割り切ることと同値である。
+  statement_en: For integers a, b and a positive integer n, a and b leave the same remainder on division by n if and only if n divides a - b.
+  assumptions:
+  - $a,b$は整数
+  - $n$は正の整数
+  quantifiers:
+  - 任意の整数$a,b$と正の整数$n$
+  conclusion: $a,b$を$n$で割った余りが等しいことと、$n$が$a-b$を割り切ることは同値である。
+  answer: |
+    $a,b$を整数、$n$を正の整数とする。$a=nq+r$、$b=nq'+r'$、$0\leq r,r'<n$と割る。
+    $r=r'$ならば$a-b=n(q-q')$なので、$n$は$a-b$を割り切る。
+    逆に$n$が$a-b$を割り切るとする。$r-r'=(a-b)-n(q-q')$なので、$n$は$r-r'$を割り切る。$-n<r-r'<n$であり、この範囲にある$n$の倍数は$0$だけなので$r=r'$である。
+  strategy: Write both divisions and bound the difference of the remainders.
+  sketch:
+  - 'setup: Write a = nq + r and b = nq'' + r'' with 0 ≤ r, r'' < n.'
+  - 'derive: Equal remainders give a - b = n(q - q'').'
+  - 'derive: If n divides a - b then n divides r - r''.'
+  - 'conclude: -n < r - r'' < n forces r = r''.'
+  openmath: (forall (a b n) (-> (and (in a Z) (in b Z) (in n Z) (> n 0)) (<-> (exists (q s r) (and (in q Z) (in s Z) (in r Z) (<= 0 r) (< r n) (= a (+ (* n q) r)) (= b (+ (* n s) r)))) (exists (k) (and (in k Z) (= (- a b) (* n k)))))))
+  hard_negative:
+    statement: 整数$a,b$を正の整数$n$で割った余りが等しいならば、商も等しい。
+    reason: $a=7,\ b=1,\ n=3$では余りはともに$1$だが、商は$2$と$0$である。
+  target: |
+    ∀ (a b n : ℤ), 0 < n → (a % n = b % n ↔ n ∣ a - b)
+  proof: |
+    by
+      intro a b n hn
+      constructor
+      · intro h
+        have h1 : b ≡ a [ZMOD n] := h.symm
+        exact Int.modEq_iff_dvd.mp h1
+      · intro h
+        have h1 : b ≡ a [ZMOD n] := Int.modEq_iff_dvd.mpr h
+        exact h1.symm
+- id: congruence_pow
+  kind: gap
+  level: high
+  topic: 整数の性質・合同式の累乗
+  statement: 整数$a,b,n$と$0$以上の整数$k$について、$a\equiv b\pmod{n}$ならば$a^k\equiv b^k\pmod{n}$である。
+  statement_en: For integers a, b, n and a natural number k, if a ≡ b modulo n then a^k ≡ b^k modulo n.
+  assumptions:
+  - $a,b,n$は整数
+  - $k$は$0$以上の整数
+  - $a\equiv b\pmod{n}$
+  quantifiers:
+  - 任意の整数$a,b,n$と$0$以上の整数$k$
+  conclusion: $a^k\equiv b^k\pmod{n}$である。
+  answer: |
+    $a,b,n$を整数、$k$を$0$以上の整数とし、$n$が$a-b$を割り切るとする。合同はこの整除を意味する。$k$についての帰納法で$a-b$が$a^k-b^k$を割り切ることを示す。
+    $k=0$では$a^0-b^0=0$である。$k$で成り立つならば、$a^{k+1}-b^{k+1}=a(a^k-b^k)+(a-b)b^k$は$a-b$で割り切れる。
+    よって$n$は$a^k-b^k$を割り切り、$a^k\equiv b^k\pmod{n}$である。
+  strategy: Transfer divisibility through a - b dividing a^k - b^k.
+  sketch:
+  - 'translate: The hypothesis says n divides a - b.'
+  - 'induction: a - b divides a^k - b^k.'
+  - 'conclude: n divides a^k - b^k.'
+  openmath: (forall (a b n k) (-> (and (in a Z) (in b Z) (in n Z) (in k N) (exists (s) (and (in s Z) (= (- a b) (* n s))))) (exists (t) (and (in t Z) (= (- (^ a k) (^ b k)) (* n t))))))
+  hard_negative:
+    statement: $k\equiv l\pmod{n}$ならば、$a^k\equiv a^l\pmod{n}$である。
+    reason: 指数は法$n$で置き換えられない。$a=2,\ n=5,\ k=0,\ l=5$では$2^0=1$、$2^5=32\equiv 2\pmod{5}$である。
+  target: |
+    ∀ (a b n : ℤ) (k : ℕ), a ≡ b [ZMOD n] → a ^ k ≡ b ^ k [ZMOD n]
+  proof: |
+    by
+      intro a b n k h
+      exact h.pow k
+- id: congruence_polynomial_eval
+  kind: gap
+  level: high
+  topic: 整数の性質・合同式と整数係数多項式
+  statement: 整数係数の多項式$P(x)$と整数$a,b,n$について、$a\equiv b\pmod{n}$ならば$P(a)\equiv P(b)\pmod{n}$である。
+  statement_en: For a polynomial P with integer coefficients and integers a, b, n, if a ≡ b modulo n then P(a) ≡ P(b) modulo n.
+  assumptions:
+  - $P(x)$は整数係数の多項式
+  - $a,b,n$は整数
+  - $a\equiv b\pmod{n}$
+  quantifiers:
+  - 任意の整数係数の多項式$P(x)$と整数$a,b,n$
+  conclusion: $P(a)\equiv P(b)\pmod{n}$である。
+  answer: |
+    $P(x)=\sum_{i\leq d}c_ix^i$を整数係数の多項式、$a,b,n$を整数とし、$n$が$a-b$を割り切るとする。
+    $P(a)-P(b)=\sum_{i\leq d}c_i(a^i-b^i)$である。$a-b$は各$a^i-b^i$を割り切るので、$P(a)-P(b)$も割り切る。よって$n$は$P(a)-P(b)$を割り切り、$P(a)\equiv P(b)\pmod{n}$である。
+  strategy: Expand the difference term by term.
+  sketch:
+  - 'translate: The hypothesis says n divides a - b.'
+  - 'derive: P(a) - P(b) = Σ c_i (a^i - b^i).'
+  - 'derive: a - b divides each a^i - b^i.'
+  - 'conclude: n divides P(a) - P(b).'
+  openmath: (forall (f a b n) (-> (and (polynomial_over f Z) (in a Z) (in b Z) (in n Z) (exists (s) (and (in s Z) (= (- a b) (* n s))))) (exists (t) (and (in t Z) (= (- (polynomial_eval f a) (polynomial_eval f b)) (* n t))))))
+  hard_negative:
+    statement: 整数を代入すると常に整数値をとる多項式$P(x)$について、$a\equiv b\pmod{n}$ならば$P(a)\equiv P(b)\pmod{n}$である。
+    reason: 係数が整数である必要がある。$P(x)=x(x-1)/2$は整数値をとるが、$a=0,\ b=2,\ n=2$では$P(0)=0$、$P(2)=1$である。
+  target: |
+    ∀ (P : Polynomial ℤ) (a b n : ℤ), a ≡ b [ZMOD n] → P.eval a ≡ P.eval b [ZMOD n]
+  proof: |
+    by
+      intro P a b n h
+      rw [Int.modEq_iff_dvd] at h ⊢
+      exact h.trans (Polynomial.sub_dvd_eval_sub b a P)
+- id: congruence_cancel_gcd
+  kind: textbook
+  level: high
+  topic: 整数の性質・合同式の約分
+  statement: 整数$a,b,c$と正の整数$n$について、$g=\gcd(c,n)$、$n=gm$とする。$ca\equiv cb\pmod{n}$ならば$a\equiv b\pmod{m}$である。$c$と$n$が互いに素とは限らない一般の形である。
+  statement_en: For integers a, b, c and a positive integer n with g = gcd(c, n) and n = gm, if ca ≡ cb modulo n then a ≡ b modulo m.
+  assumptions:
+  - $a,b,c,m$は整数
+  - $n$は正の整数
+  - $g=\gcd(c,n),\ n=gm$
+  - $ca\equiv cb\pmod{n}$
+  quantifiers:
+  - 任意の整数$a,b,c,m$と正の整数$n$
+  conclusion: $a\equiv b\pmod{m}$である。
+  answer: |
+    $a,b,c,m$を整数、$n$を正の整数とし、$g=\gcd(c,n),\ n=gm,\ ca-cb=ns$（$s$は整数）とする。$n>0$なので$g>0$である。
+    ベズーの等式から$g=cu+nv$を満たす整数$u,v$がある。$g(a-b)=(cu+nv)(a-b)=u(ca-cb)+nv(a-b)=n(us+v(a-b))=gm(us+v(a-b))$である。$g$で割ると$a-b=m(us+v(a-b))$となり、$a\equiv b\pmod{m}$である。
+  strategy: Multiply a - b by a Bezout expression for g and cancel g.
+  sketch:
+  - 'setup: Write ca - cb = ns and n = gm.'
+  - 'apply_theorem: Take u, v with g = cu + nv.'
+  - 'derive: g(a - b) = n(us + v(a - b)) = gm(us + v(a - b)).'
+  - 'conclude: Cancelling g gives a ≡ b modulo m.'
+  openmath: (forall (a b c n m g) (-> (and (in a Z) (in b Z) (in c Z) (in n Z) (in m Z) (in g Z) (> n 0) (= g (gcd c n)) (= n (* g m)) (exists (s) (and (in s Z) (= (- (* c a) (* c b)) (* n s))))) (exists (t) (and (in t Z) (= (- a b) (* m t))))))
+  hard_negative:
+    statement: $ca\equiv cb\pmod{n}$かつ$c\neq 0$ならば、$a\equiv b\pmod{n}$である。
+    reason: 法を$\gcd(c,n)$で割る必要がある。$c=2,\ a=1,\ b=3,\ n=4$では$2\equiv 6\pmod{4}$だが、$1\not\equiv 3\pmod{4}$である。
+  target: |
+    ∀ (a b c n m g : ℤ), g = (Int.gcd c n : ℤ) → 0 < n → n = g * m → c * a ≡ c * b [ZMOD n] → a ≡ b [ZMOD m]
+  proof: |
+    by
+      intro a b c n m g hg hn hnm h
+      obtain ⟨u, v, huv⟩ : ∃ u v : ℤ, g = c * u + n * v :=
+        ⟨Int.gcdA c n, Int.gcdB c n, by rw [hg]; exact Int.gcd_eq_gcd_ab c n⟩
+      have hg0 : g ≠ 0 := by
+        rintro rfl
+        simp at hnm
+        omega
+      obtain ⟨s, hs⟩ := Int.modEq_iff_dvd.mp h
+      rw [Int.modEq_iff_dvd]
+      refine ⟨u * s + v * (b - a), ?_⟩
+      apply mul_left_cancel₀ hg0
+      subst hnm
+      linear_combination (b - a) * huv + u * hs
+- id: coprime_multiple_residues_permute
+  kind: textbook
+  level: high
+  topic: 整数の性質・剰余の並べ替え
+  statement: 整数$a$と正の整数$n$が$\gcd(a,n)=1$を満たすとき、$0\leq r<n$である任意の整数$r$に対して、$ai$を$n$で割った余りが$r$となる$0\leq i<n$の整数$i$がただ一つ存在する。すなわち$a\cdot 0,a\cdot 1,\ldots,a(n-1)$の余りは$0,\ldots,n-1$の並べ替えである。
+  statement_en: If an integer a and a positive integer n are coprime, then for each integer r with 0 ≤ r < n there is exactly one integer i with 0 ≤ i < n such that ai leaves remainder r on division by n.
+  assumptions:
+  - $a$は整数
+  - $n$は正の整数
+  - $\gcd(a,n)=1$
+  - $r$は$0\leq r<n$の整数
+  quantifiers:
+  - 任意の整数$a$、正の整数$n$、$0\leq r<n$の整数$r$
+  conclusion: $ai$を$n$で割った余りが$r$となる$0\leq i<n$の整数$i$がただ一つ存在する。
+  answer: |
+    $a$を整数、$n$を正の整数とし、$\gcd(a,n)=1$、$r$を$0\leq r<n$の整数とする。ベズーの等式から$au+nv=1$を満たす整数$u,v$がある。
+    存在を示す。$ur$を$n$で割った余りを$i$とすると$0\leq i<n$である。$ai\equiv aur=(1-nv)r\equiv r\pmod{n}$であり、$0\leq r<n$なので$ai$を$n$で割った余りは$r$である。
+    一意性を示す。$0\leq i,j<n$で$ai,aj$の余りが等しいとすると、$n$は$a(i-j)$を割り切る。$\gcd(a,n)=1$なので$n$は$i-j$を割り切る。$-n<i-j<n$なので$i=j$である。
+  strategy: Construct i from a Bezout coefficient and deduce uniqueness by cancelling a.
+  sketch:
+  - 'apply_theorem: Take u, v with au + nv = 1.'
+  - 'construct: Let i be the remainder of ur modulo n.'
+  - 'derive: ai ≡ r modulo n.'
+  - 'derive: If ai ≡ aj modulo n then n divides i - j by coprimality.'
+  - 'conclude: -n < i - j < n forces i = j.'
+  openmath: (forall (a n r) (-> (and (in a Z) (in n N) (> n 0) (= (gcd a n) 1) (in r Z) (<= 0 r) (< r n)) (exists (i) (and (in i N) (< i n) (exists (q) (and (in q Z) (= (* a i) (+ (* n q) r)))) (forall (j) (-> (and (in j N) (< j n) (exists (s) (and (in s Z) (= (* a j) (+ (* n s) r))))) (= j i)))))))
+  hard_negative:
+    statement: 任意の整数$a$と正の整数$n$について、$a\cdot 0,\ldots,a(n-1)$の余りは$0,\ldots,n-1$の並べ替えである。
+    reason: 互いに素の仮定が必要である。$a=2,\ n=4$では余りは$0,2,0,2$である。
+  target: |
+    ∀ (a : ℤ) (n : ℕ), 0 < n → Int.gcd a n = 1 → ∀ r : ℤ, 0 ≤ r → r < n → ∃! i : ℕ, i < n ∧ (a * i) % n = r
+  proof: |
+    by
+      intro a n hn h r hr0 hrn
+      have hn' : (0 : ℤ) < n := by exact_mod_cast hn
+      obtain ⟨u, v, huv⟩ := Int.isCoprime_iff_gcd_eq_one.mpr h
+      have hx0 := Int.emod_nonneg (u * r) hn'.ne'
+      have hx1 := Int.emod_lt_of_pos (u * r) hn'
+      have hcast : (((u * r) % n).toNat : ℤ) = (u * r) % n := Int.toNat_of_nonneg hx0
+      have hmain : a * ((u * r) % n) % n = r := by
+        have h1 : (u * r) % n ≡ u * r [ZMOD n] := Int.mod_modEq _ _
+        have h2 : a * ((u * r) % n) ≡ a * (u * r) [ZMOD n] := h1.mul_left a
+        have h3 : a * (u * r) ≡ r [ZMOD n] := by
+          rw [Int.modEq_iff_dvd]
+          exact ⟨v * r, by linear_combination (-r) * huv⟩
+        have h4 := h2.trans h3
+        have h5 : a * ((u * r) % n) % n = r % n := h4
+        rw [h5]
+        exact Int.emod_eq_of_lt hr0 hrn
+      refine ⟨((u * r) % n).toNat, ⟨by omega, ?_⟩, ?_⟩
+      · rw [hcast]
+        exact hmain
+      · rintro j ⟨hj, hjr⟩
+        have huniq : ∀ i j : ℕ, i < n → j < n → (a * i) % n = (a * j) % n → i = j := by
+          intro i j hi hj hij
+          have h1 : (n : ℤ) ∣ a * j - a * i := Int.modEq_iff_dvd.mp hij
+          have h2 : (n : ℤ) ∣ (j : ℤ) - i := by
+            have h3 : (n : ℤ) ∣ a * ((j : ℤ) - i) := by
+              rw [mul_sub]
+              exact h1
+            have h4 : IsCoprime (n : ℤ) a := (Int.isCoprime_iff_gcd_eq_one.mpr h).symm
+            exact h4.dvd_of_dvd_mul_left h3
+          have h5 : ((j : ℤ) - i) = 0 := by
+            apply Int.eq_zero_of_abs_lt_dvd h2
+            rw [abs_lt]
+            constructor <;> omega
+          omega
+        apply huniq _ _ hj (by omega)
+        rw [hjr, hcast, hmain]
+- id: consecutive_product_even
+  kind: gap
+  level: middle
+  topic: 整数の性質・連続する2整数の積
+  statement: 整数$n$について、連続する二つの整数の積$n(n+1)$は偶数である。
+  statement_en: For every integer n, the product n(n + 1) of two consecutive integers is even.
+  assumptions:
+  - $n$は整数
+  quantifiers:
+  - 任意の整数$n$
+  conclusion: $n(n+1)$は偶数である。
+  answer: |
+    $n$を整数とする。$n=2k$ならば$n(n+1)=2k(n+1)$であり、$n=2k+1$ならば$n(n+1)=(2k+1)(2k+2)=2(2k+1)(k+1)$である。いずれの場合も$n(n+1)$は偶数である。
+  strategy: Split on the parity of n.
+  sketch:
+  - 'case_split: Write n = 2k or n = 2k + 1.'
+  - 'conclude: In each case a factor of 2 appears.'
+  openmath: (forall (n) (-> (in n Z) (exists (k) (and (in k Z) (= (* n (+ n 1)) (* 2 k))))))
+  hard_negative:
+    statement: 整数$n$について、$n(n+2)$は偶数である。
+    reason: $n=1$では$n(n+2)=3$である。連続しない二数はともに奇数になりうる。
+  target: |
+    ∀ (n : ℤ), Even (n * (n + 1))
+  proof: |
+    by
+      intro n
+      exact Int.even_mul_succ_self n
+- id: three_consecutive_product_multiple_of_six
+  kind: gap
+  level: high
+  topic: 整数の性質・連続する3整数の積
+  statement: 整数$n$について、連続する三つの整数の積$n(n+1)(n+2)$は$6$の倍数である。$n$は負でもよく、連続する個数を$3$個に限った形である。
+  statement_en: For every integer n, including negative n, the product n(n + 1)(n + 2) of three consecutive integers is divisible by 6.
+  assumptions:
+  - $n$は整数
+  quantifiers:
+  - 任意の整数$n$
+  conclusion: $n(n+1)(n+2)$は$6$の倍数である。
+  answer: |
+    $n$を整数とし、$M=n(n+1)(n+2)$とおく。$n$と$n+1$の一方は偶数なので$M$は偶数である。
+    $n$を$3$で割った余りが$0$なら$n$が、$1$なら$n+2$が、$2$なら$n+1$が$3$の倍数なので、$M$は$3$の倍数である。
+    $M=2s=3t$と書くと、$t=3t-2t=2(s-t)$なので、$M=6(s-t)$である。よって$M$は$6$の倍数である。
+  strategy: Show divisibility by 2 and by 3 separately and combine.
+  sketch:
+  - 'derive: One of n and n + 1 is even.'
+  - 'case_split: One of n, n + 1, n + 2 is a multiple of 3.'
+  - 'derive: Writing the product as 2s = 3t gives t = 2(s - t).'
+  - 'conclude: The product equals 6(s - t).'
+  openmath: (forall (n) (-> (in n Z) (exists (k) (and (in k Z) (= (* (* n (+ n 1)) (+ n 2)) (* 6 k))))))
+  hard_negative:
+    statement: 整数$n$について、$n(n+2)(n+4)$は$6$の倍数である。
+    reason: 公差$2$の三数では成り立たない。$n=1$では$1\cdot 3\cdot 5=15$である。
+  target: |
+    ∀ (n : ℤ), (6 : ℤ) ∣ n * (n + 1) * (n + 2)
+  proof: |
+    by
+      intro n
+      have h : n % 6 = 0 ∨ n % 6 = 1 ∨ n % 6 = 2 ∨ n % 6 = 3 ∨ n % 6 = 4 ∨ n % 6 = 5 := by omega
+      rw [Int.dvd_iff_emod_eq_zero]
+      rcases h with h | h | h | h | h | h <;> simp [Int.mul_emod, Int.add_emod, h]
+- id: consecutive_integers_exactly_one_multiple
+  kind: gap
+  level: high
+  topic: 整数の性質・連続する整数と倍数
+  statement: 整数$a$と正の整数$k$について、連続する$k$個の整数$a,a+1,\ldots,a+k-1$の中に$k$の倍数はちょうど一つある。
+  statement_en: For an integer a and a positive integer k, exactly one of the k consecutive integers a, a + 1, ..., a + k - 1 is a multiple of k.
+  assumptions:
+  - $a$は整数
+  - $k$は正の整数
+  quantifiers:
+  - 任意の整数$a$と正の整数$k$
+  conclusion: $k$が$a+i$を割り切る$0\leq i<k$の整数$i$がただ一つ存在する。
+  answer: |
+    $a$を整数、$k$を正の整数とする。$-a$を$k$で割って$-a=kq+i$、$0\leq i<k$とすると、$a+i=-kq$は$k$の倍数である。
+    $0\leq j<k$で$a+j$も$k$の倍数ならば、$k$は$(a+j)-(a+i)=j-i$を割り切る。$-k<j-i<k$であり、この範囲にある$k$の倍数は$0$だけなので$j=i$である。
+  strategy: Use the remainder of -a for existence and a size bound for uniqueness.
+  sketch:
+  - 'construct: Write -a = kq + i with 0 ≤ i < k.'
+  - 'derive: a + i = -kq is a multiple of k.'
+  - 'derive: Another index j gives k dividing j - i.'
+  - 'conclude: -k < j - i < k forces j = i.'
+  openmath: (forall (a k) (-> (and (in a Z) (in k N) (> k 0)) (exists (i) (and (in i N) (< i k) (exists (s) (and (in s Z) (= (+ a i) (* k s)))) (forall (j) (-> (and (in j N) (< j k) (exists (t) (and (in t Z) (= (+ a j) (* k t))))) (= j i)))))))
+  hard_negative:
+    statement: 連続する$k+1$個の整数の中に$k$の倍数はちょうど一つある。
+    reason: $k=2$の$0,1,2$には$2$の倍数が二つある。個数が$k$のときに限りちょうど一つとなる。
+  target: |
+    ∀ (a : ℤ) (k : ℕ), 0 < k → ∃! i : ℕ, i < k ∧ (k : ℤ) ∣ a + i
+  proof: |
+    by
+      intro a k hk
+      have hk' : (0 : ℤ) < k := by exact_mod_cast hk
+      have hx0 := Int.emod_nonneg (-a) hk'.ne'
+      have hx1 := Int.emod_lt_of_pos (-a) hk'
+      have hcast : (((-a) % k).toNat : ℤ) = (-a) % k := Int.toNat_of_nonneg hx0
+      refine ⟨((-a) % k).toNat, ⟨by omega, ?_⟩, ?_⟩
+      · rw [hcast]
+        have h1 := Int.emod_add_mul_ediv (-a) k
+        exact ⟨-((-a) / k), by linear_combination h1⟩
+      · rintro j ⟨hj, hjd⟩
+        have h1 : (k : ℤ) ∣ a + ((-a) % k) := by
+          have h2 := Int.emod_add_mul_ediv (-a) k
+          exact ⟨-((-a) / k), by linear_combination h2⟩
+        have h2 : (k : ℤ) ∣ (j : ℤ) - ((-a) % k) := by
+          have := dvd_sub hjd h1
+          simpa using this
+        have h3 : (j : ℤ) - ((-a) % k) = 0 := by
+          apply Int.eq_zero_of_abs_lt_dvd h2
+          rw [abs_lt]
+          constructor <;> omega
+        omega
+- id: square_mod_three
+  kind: gap
+  level: high
+  topic: 整数の性質・平方数の剰余
+  statement: 整数$a$について、$a^2$を$3$で割った余りは$0$か$1$である。
+  statement_en: For every integer a, the square a² leaves remainder 0 or 1 on division by 3.
+  assumptions:
+  - $a$は整数
+  quantifiers:
+  - 任意の整数$a$
+  conclusion: $a^2$を$3$で割った余りは$0$か$1$である。
+  answer: |
+    $a$を整数とする。$a=3k$ならば$a^2=3\cdot 3k^2$で余りは$0$である。$a=3k\pm 1$ならば$a^2=3(3k^2\pm 2k)+1$で余りは$1$である。整数はこのいずれかの形に書ける。
+  strategy: Check the three residue classes.
+  sketch:
+  - 'case_split: Write a = 3k or a = 3k ± 1.'
+  - 'conclude: The square is 3·3k² or 3(3k² ± 2k) + 1.'
+  openmath: (forall (a) (-> (in a Z) (or (exists (s) (and (in s Z) (= (^ a 2) (* 3 s)))) (exists (t) (and (in t Z) (= (^ a 2) (+ (* 3 t) 1)))))))
+  hard_negative:
+    statement: $3$で割った余りが$1$である正の整数は平方数である。
+    reason: 逆は成り立たない。$7$は余りが$1$だが平方数でない。
+  target: |
+    ∀ (a : ℤ), a ^ 2 % 3 = 0 ∨ a ^ 2 % 3 = 1
+  proof: |
+    by
+      intro a
+      have h : a % 3 = 0 ∨ a % 3 = 1 ∨ a % 3 = 2 := by omega
+      rcases h with h | h | h <;> simp [pow_two, Int.mul_emod, h]
+- id: square_mod_four
+  kind: gap
+  level: high
+  topic: 整数の性質・平方数の剰余
+  statement: 整数$a$について、$a^2$を$4$で割った余りは$0$か$1$である。
+  statement_en: For every integer a, the square a² leaves remainder 0 or 1 on division by 4.
+  assumptions:
+  - $a$は整数
+  quantifiers:
+  - 任意の整数$a$
+  conclusion: $a^2$を$4$で割った余りは$0$か$1$である。
+  answer: |
+    $a$を整数とする。$a=2k$ならば$a^2=4k^2$で余りは$0$である。$a=2k+1$ならば$a^2=4(k^2+k)+1$で余りは$1$である。
+  strategy: Split on the parity of a.
+  sketch:
+  - 'case_split: Write a = 2k or a = 2k + 1.'
+  - 'conclude: The square is 4k² or 4(k² + k) + 1.'
+  openmath: (forall (a) (-> (in a Z) (or (exists (s) (and (in s Z) (= (^ a 2) (* 4 s)))) (exists (t) (and (in t Z) (= (^ a 2) (+ (* 4 t) 1)))))))
+  hard_negative:
+    statement: 整数$a,b$について、$a^2+b^2$を$4$で割った余りは$0$か$1$である。
+    reason: $a=b=1$では$a^2+b^2=2$であり、余りは$2$である。平方数の和は余り$0,1,2$をとる。
+  target: |
+    ∀ (a : ℤ), a ^ 2 % 4 = 0 ∨ a ^ 2 % 4 = 1
+  proof: |
+    by
+      intro a
+      rcases Int.even_or_odd' a with ⟨k, rfl | rfl⟩
+      · left
+        have : (2 * k) ^ 2 = 4 * k ^ 2 := by ring
+        omega
+      · right
+        have : (2 * k + 1) ^ 2 = 4 * (k ^ 2 + k) + 1 := by ring
+        omega
+- id: odd_square_mod_eight
+  kind: gap
+  level: high
+  topic: 整数の性質・奇数の平方の剰余
+  statement: 奇数$a$について、$a^2$を$8$で割った余りは$1$である。奇数に限った形である。
+  statement_en: For every odd integer a, the square a² leaves remainder 1 on division by 8.
+  assumptions:
+  - $a$は奇数
+  quantifiers:
+  - 任意の奇数$a$
+  conclusion: $a^2$を$8$で割った余りは$1$である。
+  answer: |
+    $a$を奇数とし、$a=2k+1$（$k$は整数）と書く。$a^2=4k(k+1)+1$である。$k(k+1)$は連続する二整数の積なので偶数であり、$k(k+1)=2s$（$s$は整数）と書ける。よって$a^2=8s+1$であり、$8$で割った余りは$1$である。
+  strategy: Use that k(k + 1) is even.
+  sketch:
+  - 'setup: Write a = 2k + 1.'
+  - 'derive: a² = 4k(k + 1) + 1.'
+  - 'derive: k(k + 1) = 2s because one factor is even.'
+  - 'conclude: a² = 8s + 1.'
+  openmath: (forall (a) (-> (and (in a Z) (exists (k) (and (in k Z) (= a (+ (* 2 k) 1))))) (exists (s) (and (in s Z) (= (^ a 2) (+ (* 8 s) 1))))))
+  hard_negative:
+    statement: 整数$a$について、$a^2$を$8$で割った余りは$0$か$1$である。
+    reason: 偶数を含めると成り立たない。$a=2$では$a^2=4$であり、余りは$4$である。
+  target: |
+    ∀ (a : ℤ), Odd a → a ^ 2 % 8 = 1
+  proof: |
+    by
+      rintro a ⟨k, rfl⟩
+      obtain ⟨s, hs⟩ := Int.even_mul_succ_self k
+      have : (2 * k + 1) ^ 2 = 8 * s + 1 := by linear_combination 4 * hs
+      omega
+- id: three_dvd_sum_of_squares
+  kind: gap
+  level: high
+  topic: 整数の性質・平方数の和と3の倍数
+  statement: 整数$a,b$について、$a^2+b^2$が$3$の倍数ならば、$a,b$はともに$3$の倍数である。
+  statement_en: If integers a and b are such that a² + b² is divisible by 3, then both a and b are divisible by 3.
+  assumptions:
+  - $a,b$は整数
+  - $a^2+b^2$は$3$の倍数
+  quantifiers:
+  - 任意の整数$a,b$
+  conclusion: $a,b$はともに$3$の倍数である。
+  answer: |
+    $a,b$を整数とし、$a^2+b^2$は$3$の倍数とする。整数$z$について、$z=3k$なら$z^2$の余りは$0$であり、$z=3k\pm 1$なら$z^2=3(3k^2\pm 2k)+1$の余りは$1$である。
+    $a$が$3$の倍数でないとすると$a^2$の余りは$1$であり、$b^2$の余りは$0$か$1$なので、$a^2+b^2$の余りは$1$か$2$となって仮定に反する。よって$a$は$3$の倍数である。$b$についても同様である。
+  strategy: Compare squares modulo 3 in each case.
+  sketch:
+  - 'derive: A square leaves remainder 0 exactly for multiples of 3 and remainder 1 otherwise.'
+  - 'contradiction: If a is not a multiple of 3 the sum leaves remainder 1 or 2.'
+  - 'conclude: The same argument applies to b.'
+  openmath: (forall (a b) (-> (and (in a Z) (in b Z) (exists (k) (and (in k Z) (= (+ (^ a 2) (^ b 2)) (* 3 k))))) (and (exists (s) (and (in s Z) (= a (* 3 s)))) (exists (t) (and (in t Z) (= b (* 3 t)))))))
+  hard_negative:
+    statement: 整数$a,b$について、$a^2+b^2$が$5$の倍数ならば、$a,b$はともに$5$の倍数である。
+    reason: $a=1,\ b=2$では$a^2+b^2=5$だが、$a,b$は$5$の倍数でない。$5$を法とすると$-1$が平方数の余りになるためである。
+  target: |
+    ∀ (a b : ℤ), (3 : ℤ) ∣ a ^ 2 + b ^ 2 → (3 : ℤ) ∣ a ∧ (3 : ℤ) ∣ b
+  proof: |
+    by
+      intro a b h
+      have key : ∀ z : ℤ, (z % 3 = 0 ∧ z ^ 2 % 3 = 0) ∨ (z % 3 ≠ 0 ∧ z ^ 2 % 3 = 1) := by
+        intro z
+        have hz : z % 3 = 0 ∨ z % 3 = 1 ∨ z % 3 = 2 := by omega
+        rcases hz with hz | hz | hz
+        · left
+          exact ⟨hz, by simp [pow_two, Int.mul_emod, hz]⟩
+        · right
+          exact ⟨by omega, by simp [pow_two, Int.mul_emod, hz]⟩
+        · right
+          exact ⟨by omega, by simp [pow_two, Int.mul_emod, hz]⟩
+      have ha := key a
+      have hb := key b
+      omega
+- id: no_square_between_consecutive_squares
+  kind: gap
+  level: high
+  topic: 整数の性質・隣り合う平方数
+  statement: $0$以上の整数$m,n$について、$m^2<n<(m+1)^2$ならば、$n$は平方数でない。
+  statement_en: For natural numbers m and n, if m² < n < (m + 1)², then n is not a perfect square.
+  assumptions:
+  - $m,n$は$0$以上の整数
+  - $m^2<n<(m+1)^2$
+  quantifiers:
+  - 任意の$0$以上の整数$m,n$
+  conclusion: $n$は平方数でない。
+  answer: |
+    $m,n$を$0$以上の整数とし、$m^2<n<(m+1)^2$とする。$n=k^2$となる$0$以上の整数$k$があると仮定する。$0$以上の数では平方の大小と元の数の大小が一致するので、$m^2<k^2$から$m<k$、$k^2<(m+1)^2$から$k<m+1$を得る。$m<k<m+1$を満たす整数$k$はないので矛盾である。
+  strategy: Compare square roots using monotonicity of squaring.
+  sketch:
+  - 'setup: Assume n = k².'
+  - 'derive: Monotonicity gives m < k < m + 1.'
+  - 'contradiction: No integer lies strictly between m and m + 1.'
+  openmath: (forall (m n) (-> (and (in m N) (in n N) (< (^ m 2) n) (< n (^ (+ m 1) 2))) (not (exists (k) (and (in k N) (= n (^ k 2)))))))
+  hard_negative:
+    statement: $m^2\leq n\leq(m+1)^2$ならば、$n$は平方数でない。
+    reason: 端点を含むと成り立たない。$n=m^2$は平方数である。
+  target: |
+    ∀ (m n : ℕ), m ^ 2 < n → n < (m + 1) ^ 2 → ¬ ∃ k : ℕ, n = k ^ 2
+  proof: |
+    by
+      rintro m n h1 h2 ⟨k, rfl⟩
+      have h3 : m < k := lt_of_pow_lt_pow_left₀ 2 (Nat.zero_le k) h1
+      have h4 : k < m + 1 := lt_of_pow_lt_pow_left₀ 2 (Nat.zero_le _) h2
+      omega
+- id: coprime_mul_eq_square
+  kind: gap
+  level: high
+  topic: 整数の性質・互いに素な積と平方数
+  statement: 互いに素な$0$以上の整数$a,b$の積が平方数$c^2$であるならば、$a,b$はともに平方数である。
+  statement_en: If coprime natural numbers a and b satisfy ab = c² for a natural number c, then a and b are both perfect squares.
+  assumptions:
+  - $a,b,c$は$0$以上の整数
+  - $\gcd(a,b)=1$
+  - $ab=c^2$
+  quantifiers:
+  - 任意の$0$以上の整数$a,b,c$
+  conclusion: $a=s^2,\ b=t^2$となる$0$以上の整数$s,t$が存在する。
+  answer: |
+    $a,b,c$を$0$以上の整数とし、$\gcd(a,b)=1,\ ab=c^2$とする。$a=0$ならば$\gcd(0,b)=b=1$なので$a=0^2,\ b=1^2$である。$b=0$の場合も同様である。
+    $a,b$がともに正のとき、素数$p$が$a$を割り切るとする。$\gcd(a,b)=1$なので$p$は$b$を割り切らない。よって$a$における$p$の指数は$ab=c^2$における指数に等しく、これは偶数である。$a$のすべての素因数の指数が偶数なので$a$は平方数である。$b$についても同様である。
+  strategy: Compare prime exponents, using that a prime divides only one of a and b.
+  sketch:
+  - 'case_split: If a = 0 then b = 1, and symmetrically.'
+  - 'derive: A prime dividing a does not divide b.'
+  - 'derive: Its exponent in a equals its exponent in c², which is even.'
+  - 'conclude: All exponents in a and b are even, so both are squares.'
+  openmath: (forall (a b c) (-> (and (in a N) (in b N) (in c N) (= (gcd a b) 1) (= (* a b) (^ c 2))) (and (exists (s) (and (in s N) (= a (^ s 2)))) (exists (t) (and (in t N) (= b (^ t 2)))))))
+  hard_negative:
+    statement: $0$以上の整数$a,b$の積が平方数ならば、$a,b$はともに平方数である。
+    reason: 互いに素の仮定を外すと成り立たない。$a=2,\ b=8$では$ab=16$だが、$2$は平方数でない。
+  target: |
+    ∀ (a b c : ℕ), Nat.Coprime a b → a * b = c ^ 2 → (∃ s : ℕ, a = s ^ 2) ∧ (∃ t : ℕ, b = t ^ 2)
+  proof: |
+    by
+      intro a b c h habc
+      have h2 : b * a = c ^ 2 := by rw [Nat.mul_comm]; exact habc
+      have hu : IsUnit (gcd a b) := by
+        rw [gcd_eq_nat_gcd, Nat.isUnit_iff]
+        exact h
+      have hu2 : IsUnit (gcd b a) := by
+        rw [gcd_eq_nat_gcd, Nat.isUnit_iff]
+        exact h.symm
+      obtain ⟨s, hs⟩ := exists_eq_pow_of_mul_eq_pow hu habc
+      obtain ⟨t, ht⟩ := exists_eq_pow_of_mul_eq_pow hu2 h2
+      exact ⟨⟨s, hs⟩, ⟨t, ht⟩⟩
+- id: prime_three_mod_four_dvd_sum_of_squares
+  kind: gap
+  level: high
+  topic: 整数の性質・平方数の和と素数
+  statement: $4$で割って$3$余る素数$p$と整数$a,b$について、$p$が$a^2+b^2$を割り切るならば、$p$は$a$と$b$の両方を割り切る。
+  statement_en: For a prime p with p ≡ 3 mod 4 and integers a, b, if p divides a^2 + b^2 then p divides both a and b.
+  assumptions:
+  - $p$は$4$で割って$3$余る素数
+  - $a,b$は整数
+  - $p$は$a^2+b^2$を割り切る
+  quantifiers:
+  - 任意の$4$で割って$3$余る素数$p$
+  - 任意の整数$a,b$
+  conclusion: $p$は$a$と$b$の両方を割り切る。
+  answer: |
+    $p$を$4$で割って$3$余る素数、$a,b$を整数とし、$a^2+b^2\equiv 0\pmod p$とする。
+    $p$が$b$を割り切らないと仮定する。$bc\equiv 1\pmod p$となる整数$c$をとり、$t=ac$とおくと、$a^2\equiv -b^2$の両辺に$c^2$を掛けて$t^2\equiv -1\pmod p$である。特に$p$は$t$を割り切らない。
+    $p=4k+3$とおくと$\dfrac{p-1}{2}=2k+1$は奇数である。よって$t^{p-1}=(t^2)^{2k+1}\equiv(-1)^{2k+1}=-1\pmod p$である。一方、フェルマーの小定理より$t^{p-1}\equiv 1\pmod p$である。したがって$p$は$2$を割り切るが、$p\geq 3$なので矛盾する。
+    ゆえに$p$は$b$を割り切る。すると$p$は$a^2$を割り切り、$p$は素数なので$a$を割り切る。
+  strategy: If p does not divide b, then -1 is a square mod p, which contradicts Fermat since (p-1)/2 is odd.
+  sketch:
+  - "setup: Assume p ≡ 3 mod 4 divides a^2 + b^2."
+  - "contradiction: If p does not divide b, some t satisfies t^2 ≡ -1 mod p."
+  - "derive: Since (p-1)/2 is odd, t^(p-1) ≡ -1, contradicting Fermat."
+  - "conclude: So p divides b, then a^2, then a."
+  openmath: (forall (p a b) (-> (and (in p P) (in a Z) (in b Z) (exists (q) (and (in q N) (= p (+ (* 4 q) 3)))) (exists (k) (and (in k Z) (= (+ (^ a 2) (^ b 2)) (* p k))))) (and (exists (s) (and (in s Z) (= a (* p s)))) (exists (t) (and (in t Z) (= b (* p t)))))))
+  hard_negative:
+    statement: 奇素数$p$と整数$a,b$について、$p$が$a^2+b^2$を割り切るならば、$p$は$a$と$b$の両方を割り切る。
+    reason: $p=5$、$a=1$、$b=2$のとき$p$は$a^2+b^2=5$を割り切るが$a$を割り切らない。$p$を$4$で割った余りの条件が要る。
+  target: |
+    ∀ (p : ℕ) (a b : ℤ), p.Prime → p % 4 = 3 → (p : ℤ) ∣ a ^ 2 + b ^ 2 → (p : ℤ) ∣ a ∧ (p : ℤ) ∣ b
+  proof: |
+    by
+      intro p a b hp h4 hd
+      haveI : Fact p.Prime := ⟨hp⟩
+      have hz : ((a : ZMod p)) ^ 2 + (b : ZMod p) ^ 2 = 0 := by
+        have := (ZMod.intCast_zmod_eq_zero_iff_dvd (a ^ 2 + b ^ 2) p).2 hd
+        simpa using this
+      have hb : (b : ZMod p) = 0 := by
+        by_contra hb
+        exact ZMod.mod_four_ne_three_of_sq_eq_neg_sq' hb (eq_neg_of_add_eq_zero_left hz) h4
+      have ha : (a : ZMod p) = 0 := by
+        rw [hb] at hz
+        simpa using hz
+      exact ⟨(ZMod.intCast_zmod_eq_zero_iff_dvd a p).1 ha, (ZMod.intCast_zmod_eq_zero_iff_dvd b p).1 hb⟩

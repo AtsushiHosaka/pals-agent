@@ -1,0 +1,3 @@
+# Proposed additive OpenMath vocabulary for data analysis, sets and logic in school mathematics.
+fn_value: {args: [term, term], returns: term, meaning: "function value f(x)"}
+holds_at: {args: [term, term], returns: prop, meaning: "the predicate P holds at n"}

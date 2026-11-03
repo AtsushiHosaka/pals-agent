@@ -49,7 +49,7 @@
   - 'apply_theorem: The weighted AM-GM inequality gives ∏ z_i^(1/n) ≤ Σ z_i/n.'
   - 'translate: Since z_i ≥ 0, ∏ z_i^(1/n) equals (∏ z_i)^(1/n).'
   - 'conclude: Factor 1/n out of the sum to obtain the claimed bound.'
-  openmath: (forall (n z) (-> (and (in n N) (> n 0) (forall (i) (-> (in i (oriented_interval 1 n)) (>= (seq_value z i) 0)))) (<= (^ (product (oriented_interval 1 n) (lambda (i) (seq_value z i))) (/ 1 n)) (/ (sum (oriented_interval 1 n) (lambda (i) (seq_value z i))) n))))
+  openmath: (forall (n z) (-> (and (in n N) (> n 0) (forall (i) (-> (and (in i N) (>= i 1) (<= i n)) (>= (seq_value z i) 0)))) (<= (^ (product (oriented_interval 1 n) (lambda (i) (seq_value z i))) (/ 1 n)) (/ (sum (oriented_interval 1 n) (lambda (i) (seq_value z i))) n))))
   hard_negative:
     statement: 負の数を含む実数z_1,…,z_nでも、偶数個の積が非負なら相乗平均は相加平均以下である。
     reason: z_1=z_2=-1では相乗平均は1で相加平均は-1なので不等式は成り立たない。

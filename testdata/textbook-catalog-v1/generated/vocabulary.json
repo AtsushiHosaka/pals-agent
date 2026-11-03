@@ -301,6 +301,15 @@
    "meaning": "alternating group on a finite set X",
    "returns": "term"
   },
+  "altitude_foot": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "foot of the perpendicular from a to line bc",
+   "returns": "term"
+  },
   "analytic_on": {
    "args": [
     "term",
@@ -612,6 +621,15 @@
    "meaning": "a is a Cauchy sequence in the metric space X",
    "returns": "prop"
   },
+  "centroid_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "centroid of triangle abc",
+   "returns": "term"
+  },
   "chain_homotopic": {
    "args": [
     "term",
@@ -699,6 +717,31 @@
    "meaning": "circle with centre c and radius R as a set",
    "returns": "term"
   },
+  "circular_arrangement_classes": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of bijections from cyclic seats onto A, modulo rotation of the seats",
+   "returns": "term"
+  },
+  "circumcenter_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "circumcenter of triangle abc",
+   "returns": "term"
+  },
+  "circumradius_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "circumradius of triangle abc",
+   "returns": "term"
+  },
   "class_group": {
    "args": [
     "term"
@@ -735,6 +778,13 @@
    ],
    "meaning": "the graph of f is closed in the product space",
    "returns": "prop"
+  },
+  "closed_half_line_right": {
+   "args": [
+    "term"
+   ],
+   "meaning": "closed half-line from a to plus infinity",
+   "returns": "term"
   },
   "closed_in": {
    "args": [
@@ -781,6 +831,15 @@
    ],
    "meaning": "topological closure of S",
    "returns": "term"
+  },
+  "collinear_points": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "a, b and c lie on a common line",
+   "returns": "prop"
   },
   "comm_ring": {
    "args": [
@@ -974,6 +1033,18 @@
    "meaning": "leg of a cone at an index",
    "returns": "term"
   },
+  "congruent_triangles": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "triangle abc is congruent to triangle def in this vertex order",
+   "returns": "prop"
+  },
   "conjugate": {
    "args": [
     "term"
@@ -1145,6 +1216,14 @@
    "meaning": "(convex_on_set g s): g is convex on the set s",
    "returns": "prop"
   },
+  "convex_polygon_points": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "p_0, ..., p_(n+2) are the vertices of a convex polygon in order, every triple with increasing indices having positive orientation (arguments p, n)",
+   "returns": "prop"
+  },
   "convex_set": {
    "args": [
     "term"
@@ -1159,6 +1238,16 @@
    ],
    "meaning": "i-th coordinate of the vector x",
    "returns": "term"
+  },
+  "coplanar_points": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the four points a, b, c and d lie in a common plane",
+   "returns": "prop"
   },
   "coprime_polys": {
    "args": [
@@ -1272,6 +1361,13 @@
    "meaning": "the n-th cyclotomic polynomial over F, in the order (n, F)",
    "returns": "term"
   },
+  "decimal_digit_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of digits of the positive integer N in base ten",
+   "returns": "term"
+  },
   "decreasing_sets": {
    "args": [
     "term"
@@ -1293,6 +1389,14 @@
    ],
    "meaning": "S is dense in the topological space X",
    "returns": "prop"
+  },
+  "dependent_pair_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of pairs (a, b) with a in A and b in the member B_a of the family B",
+   "returns": "term"
   },
   "derangement_set": {
    "args": [
@@ -1363,6 +1467,45 @@
    "meaning": "f is differentiable on the set S",
    "returns": "prop"
   },
+  "digit_alternating_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "alternating sum of the base-b digits of n starting from the units digit with a plus sign, in the order (b, n)",
+   "returns": "term"
+  },
+  "digit_length": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of base-b digits of n, in the order (b, n), with 0 having no digits",
+   "returns": "term"
+  },
+  "digit_list_bounded": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "every entry of the list L is less than b, in the order (b, L)",
+   "returns": "prop"
+  },
+  "digit_list_top_nonzero": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the list L is empty or its most significant entry is nonzero",
+   "returns": "prop"
+  },
+  "digit_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of the base-b digits of n, in the order (b, n)",
+   "returns": "term"
+  },
   "dim_of": {
    "args": [
     "term",
@@ -1426,6 +1569,22 @@
     "term"
    ],
    "meaning": "divergence of the vector field F at x",
+   "returns": "term"
+  },
+  "division_point": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the point a + r(b - a) on the line through a and b (arguments a, b, r)",
+   "returns": "term"
+  },
+  "divisor_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of positive divisors of a positive integer n",
    "returns": "term"
   },
   "doob_process": {
@@ -1593,6 +1752,11 @@
    "meaning": "R is a Euclidean domain",
    "returns": "prop"
   },
+  "euclidean_plane_ambient": {
+   "args": [],
+   "meaning": "the ambient Euclidean space has dimension two",
+   "returns": "prop"
+  },
   "euclidean_space": {
    "args": [
     "term"
@@ -1639,12 +1803,40 @@
    "meaning": "the composable morphisms f and g satisfy gf = 0 and are exact at the middle object",
    "returns": "prop"
   },
+  "excenter_opposite": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "excenter of triangle abc opposite vertex a",
+   "returns": "term"
+  },
+  "excircle_touchpoint": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "foot of the excenter of triangle abc opposite a on the side line opposite vertex d; arguments a b c d",
+   "returns": "term"
+  },
   "expectation": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "(expectation P X) is the expectation of X under P",
+   "returns": "term"
+  },
+  "exradius_opposite": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "exradius of triangle abc opposite vertex a",
    "returns": "term"
   },
   "ext_degree": {
@@ -1684,6 +1876,16 @@
    "meaning": "n-th exterior power of V over K (arguments K, n, V)",
    "returns": "term"
   },
+  "externally_tangent_circles": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the circles with centres c1, c2 and radii r1, r2 are externally tangent; arguments c1 r1 c2 r2",
+   "returns": "prop"
+  },
   "extreme_points": {
    "args": [
     "term"
@@ -1704,6 +1906,14 @@
    ],
    "meaning": "F is faithful",
    "returns": "prop"
+  },
+  "falling_factorial": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "falling factorial n(n-1)...(n-k+1), the number of k-permutations of n objects",
+   "returns": "term"
   },
   "family_cons": {
    "args": [
@@ -2026,6 +2236,14 @@
    ],
    "meaning": "pointwise absolute value of a function",
    "returns": "term"
+  },
+  "fn_antitone_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "f is nonincreasing on the set S",
+   "returns": "prop"
   },
   "fn_comp": {
    "args": [
@@ -2989,6 +3207,15 @@
    "meaning": "spaces X and Y are homotopy equivalent",
    "returns": "prop"
   },
+  "ico_product": {
+   "args": [
+    "term",
+    "term",
+    "term_function"
+   ],
+   "meaning": "finite product of g(k) over a <= k < b, in the order a b g",
+   "returns": "term"
+  },
   "ideal_comap": {
    "args": [
     "term",
@@ -3151,6 +3378,41 @@
    "meaning": "imaginary unit of K when K is C, and 0 when K is R",
    "returns": "term"
   },
+  "in_affine_subspace": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "p lies in the affine subspace s (arguments p, s)",
+   "returns": "prop"
+  },
+  "in_segment": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p lies on the closed segment between a and b, in the order p a b",
+   "returns": "prop"
+  },
+  "incenter_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "incenter of triangle abc",
+   "returns": "term"
+  },
+  "incircle_touchpoint": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "point where the incircle of triangle abc touches side bc",
+   "returns": "term"
+  },
   "increasing_sets": {
    "args": [
     "term"
@@ -3252,6 +3514,14 @@
    "meaning": "S is an infinite set",
    "returns": "prop"
   },
+  "injection_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of all injective functions from A to B",
+   "returns": "term"
+  },
   "injective": {
    "args": [
     "term"
@@ -3319,6 +3589,15 @@
    ],
    "meaning": "E is an inner product space over K, where K is R or C (arguments K, E)",
    "returns": "prop"
+  },
+  "inradius_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "inradius of triangle abc",
+   "returns": "term"
   },
   "int_adjoin_sqrt": {
    "args": [
@@ -3515,6 +3794,16 @@
    "meaning": "K is an intermediate field of E/F, in the order (K, F, E)",
    "returns": "prop"
   },
+  "internally_tangent_circles": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the circle with centre c1 and radius r1 is internally tangent to the circle with centre c2 and radius r2; arguments c1 r1 c2 r2",
+   "returns": "prop"
+  },
   "intertwining_map": {
    "args": [
     "term",
@@ -3640,6 +3929,16 @@
     "term"
    ],
    "meaning": "two subspaces are complementary: their sum is the whole space and their intersection is zero",
+   "returns": "prop"
+  },
+  "is_diameter": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the segment ab is a diameter of the circle with centre c and radius r; arguments a b c r",
    "returns": "prop"
   },
   "is_field": {
@@ -3934,6 +4233,26 @@
    "meaning": "limsup of a sequence of events: the event that infinitely many occur",
    "returns": "term"
   },
+  "line_point_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the point a + t(b - a) on the line through a and b; arguments a b t",
+   "returns": "term"
+  },
+  "line_tangent_to_circle_at": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through a and b is tangent at t to the circle with centre c and radius r; arguments a b t c r",
+   "returns": "prop"
+  },
   "linear_combination": {
    "args": [
     "term",
@@ -4025,6 +4344,23 @@
    "meaning": "the family v is linearly independent",
    "returns": "prop"
   },
+  "linearly_independent_pair": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the vectors a and b are linearly independent",
+   "returns": "prop"
+  },
+  "linearly_independent_triple": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the vectors a, b and c are linearly independent",
+   "returns": "prop"
+  },
   "lintegral": {
    "args": [
     "term_function",
@@ -4083,6 +4419,21 @@
    ],
    "meaning": "f is Lipschitz with constant K on the set s",
    "returns": "prop"
+  },
+  "list_append": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "concatenation of the lists L and M, L occupying the low-order positions",
+   "returns": "term"
+  },
+  "list_length": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of entries of the list L",
+   "returns": "term"
   },
   "little_o_at": {
    "args": [
@@ -4591,6 +4942,14 @@
    "meaning": "(mgf P X t) is the moment generating function E[exp(tX)]",
    "returns": "term"
   },
+  "midpoint_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "midpoint of a and b",
+   "returns": "term"
+  },
   "minimal_polynomial": {
    "args": [
     "term",
@@ -4687,6 +5046,14 @@
     "term"
    ],
    "meaning": "multiplicative order of a modulo n",
+   "returns": "term"
+  },
+  "multiset_choices": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of the k-element multisets with elements in A",
    "returns": "term"
   },
   "multiset_mem": {
@@ -4841,6 +5208,24 @@
    "meaning": "nilradical of the commutative ring R",
    "returns": "term"
   },
+  "nine_point_center": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "center of the nine-point circle of triangle abc",
+   "returns": "term"
+  },
+  "nine_point_radius": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "radius of the nine-point circle of triangle abc",
+   "returns": "term"
+  },
   "noetherian_module": {
    "args": [
     "term",
@@ -4960,10 +5345,27 @@
    "meaning": "X is an object of the category C",
    "returns": "prop"
   },
+  "of_digits": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "value of the digit list L in base b, least significant digit first, in the order (b, L)",
+   "returns": "term"
+  },
   "omega_ordinal": {
    "args": [],
    "meaning": "the least infinite ordinal",
    "returns": "term"
+  },
+  "on_circle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p lies on the circle with centre c and radius r",
+   "returns": "prop"
   },
   "on_line": {
    "args": [
@@ -4972,6 +5374,25 @@
     "term"
    ],
    "meaning": "p lies on the affine line through a and b",
+   "returns": "prop"
+  },
+  "on_perpendicular_bisector": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p is equidistant from a and b",
+   "returns": "prop"
+  },
+  "on_plane": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p lies in the affine span of a, b and c, in the order p a b c",
    "returns": "prop"
   },
   "op_comp": {
@@ -5083,6 +5504,16 @@
    "meaning": "the operators T_n converge to T in operator norm",
    "returns": "prop"
   },
+  "opposite_side_of_line": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p and q lie strictly on opposite sides of the line through a and b",
+   "returns": "prop"
+  },
   "order_antichain_in": {
    "args": [
     "term",
@@ -5113,6 +5544,24 @@
     "term"
    ],
    "meaning": "ordered pair (a, b)",
+   "returns": "term"
+  },
+  "oriented_angle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "oriented angle at b from a to c, modulo two pi, in an oriented plane",
+   "returns": "term"
+  },
+  "orthocenter_of": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "orthocenter of triangle abc",
    "returns": "term"
   },
   "orthogonal_complement": {
@@ -5184,12 +5633,46 @@
    "meaning": "exponent of the prime q in the factorization of n",
    "returns": "term"
   },
+  "pair_first": {
+   "args": [
+    "term"
+   ],
+   "meaning": "first component of an ordered pair",
+   "returns": "term"
+  },
+  "pair_second": {
+   "args": [
+    "term"
+   ],
+   "meaning": "second component of an ordered pair",
+   "returns": "term"
+  },
   "pairwise_indep_rv": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "(pairwise_indep_rv P X): the family of random variables X is pairwise independent under P",
+   "returns": "prop"
+  },
+  "parallel_lines": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through a and b is parallel to the line through c and d",
+   "returns": "prop"
+  },
+  "parallelogram": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "abcd is a parallelogram with vertices in this order, that is the vectors from a to b and from d to c agree",
    "returns": "prop"
   },
   "partial_order": {
@@ -5304,6 +5787,36 @@
    "meaning": "sign of a permutation",
    "returns": "term"
   },
+  "perpendicular_lines": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through a and b is perpendicular to the line through c and d",
+   "returns": "prop"
+  },
+  "perpendicular_to_plane": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through a and h is orthogonal to the plane through x, y, z (arguments a, h, x, y, z)",
+   "returns": "prop"
+  },
+  "perpendicular_to_subspace": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through a and h is orthogonal to every direction of the affine subspace s (arguments a, h, s)",
+   "returns": "prop"
+  },
   "pi": {
    "args": [],
    "meaning": "the circle constant pi",
@@ -5312,6 +5825,14 @@
   "pi_constant": {
    "args": [],
    "meaning": "the circle constant pi",
+   "returns": "term"
+  },
+  "plane_point": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "point of the Euclidean plane with coordinates x and y",
    "returns": "term"
   },
   "point_add": {
@@ -5422,6 +5943,13 @@
    "meaning": "value f(a) of the polynomial f at a",
    "returns": "term"
   },
+  "poly_even_coeff_sum": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sum of the coefficients of the even-degree terms of the polynomial f",
+   "returns": "term"
+  },
   "poly_leading_coeff": {
    "args": [
     "term"
@@ -5437,9 +5965,32 @@
    "meaning": "polynomial obtained by applying the ring homomorphism to the coefficients",
    "returns": "term"
   },
+  "poly_odd_coeff_sum": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sum of the coefficients of the odd-degree terms of the polynomial f",
+   "returns": "term"
+  },
   "poly_var": {
    "args": [],
    "meaning": "the indeterminate X of a polynomial ring",
+   "returns": "term"
+  },
+  "polygon_exterior_angle_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of pi minus the interior angle over the n+3 vertices of the polygon p_0, ..., p_(n+2) (arguments p, n)",
+   "returns": "term"
+  },
+  "polygon_interior_angle_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of the n+3 interior angles of the polygon p_0, ..., p_(n+2) (arguments p, n)",
    "returns": "term"
   },
   "polynomial_degree": {
@@ -5472,6 +6023,14 @@
    ],
    "meaning": "n is a polynomial expression in the operator f (arguments n, f)",
    "returns": "prop"
+  },
+  "polynomial_in_elementary_symmetric": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the polynomial obtained from g by replacing its i-th variable with the i-th elementary symmetric polynomial in n variables; arguments g n",
+   "returns": "term"
   },
   "polynomial_over": {
    "args": [
@@ -5813,6 +6372,16 @@
    "meaning": "q is a quadratic form on V over K (arguments K, V, q)",
    "returns": "prop"
   },
+  "quadrilateral_area": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "area of the convex hull of the four points a, b, c, d in the plane",
+   "returns": "term"
+  },
   "quotient_class": {
    "args": [
     "term",
@@ -5890,6 +6459,15 @@
     "term_function"
    ],
    "meaning": "finite sum of g(k) over k from 0 to n-1",
+   "returns": "term"
+  },
+  "range_sum_multiples_of": {
+   "args": [
+    "term",
+    "term",
+    "term_function"
+   ],
+   "meaning": "finite sum of g(k) over those k with 0 <= k < m divisible by n, in the order n m g",
    "returns": "term"
   },
   "re_component": {
@@ -5984,6 +6562,15 @@
    ],
    "meaning": "R has no nonzero nilpotent elements",
    "returns": "prop"
+  },
+  "reflection_across_line": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "reflection of p in the line through a and b",
+   "returns": "term"
   },
   "relates": {
    "args": [
@@ -6140,6 +6727,16 @@
     "term"
    ],
    "meaning": "L is a finite product of elementary matrices that add a multiple of one row to another",
+   "returns": "prop"
+  },
+  "same_side_of_line": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p and q lie strictly on the same side of the line through a and b",
    "returns": "prop"
   },
   "scalar_action": {
@@ -6499,6 +7096,18 @@
    "meaning": "s is a finite signed measure",
    "returns": "prop"
   },
+  "similar_triangles": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "triangle abc is similar to triangle def in this vertex order",
+   "returns": "prop"
+  },
   "simple_extension": {
    "args": [
     "term",
@@ -6690,6 +7299,22 @@
     "term"
    ],
    "meaning": "the index map from naturals to naturals is strictly increasing",
+   "returns": "prop"
+  },
+  "strictly_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "b lies strictly between a and c",
+   "returns": "prop"
+  },
+  "strictly_increasing_fn": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the finite sequence a is strictly increasing",
    "returns": "prop"
   },
   "strictly_increasing_index": {
@@ -6907,6 +7532,14 @@
    "meaning": "the real sequence u is summable",
    "returns": "prop"
   },
+  "surjection_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of all surjective functions from A to B",
+   "returns": "term"
+  },
   "surjective": {
    "args": [
     "term"
@@ -6974,6 +7607,14 @@
    "meaning": "T satisfies inner(Tx,y)=inner(x,Ty), that is T is self-adjoint",
    "returns": "prop"
   },
+  "symmetric_polynomial": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a symmetric polynomial in n variables; arguments f n",
+   "returns": "prop"
+  },
   "t1_space": {
    "args": [
     "term"
@@ -6996,6 +7637,16 @@
    ],
    "meaning": "tangent space of M at x",
    "returns": "term"
+  },
+  "tangent_to_circle_at": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the line through t and p is tangent at t to the circle with centre c and radius r; arguments t p c r",
+   "returns": "prop"
   },
   "tends_in_measure": {
    "args": [
@@ -7130,6 +7781,15 @@
     "term"
    ],
    "meaning": "composite trapezoidal rule of f with N subintervals on the interval from a to b",
+   "returns": "term"
+  },
+  "triangle_area": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "area of the convex hull of the three points a, b, c in the plane",
    "returns": "term"
   },
   "trivial_group": {
@@ -7331,6 +7991,14 @@
    "meaning": "unoriented angle between vectors x and y",
    "returns": "term"
   },
+  "vector_component": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "i-th coordinate of the vector a, in the order a i",
+   "returns": "term"
+  },
   "vector_finrank": {
    "args": [
     "term"
@@ -7361,12 +8029,29 @@
    "meaning": "number of edges of a walk",
    "returns": "term"
   },
+  "weak_compositions": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of natural-number functions k on the finite index set s with total n",
+   "returns": "term"
+  },
   "weak_star_compact": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "the subset S of the dual of E is compact in the weak-* topology",
+   "returns": "prop"
+  },
+  "weakly_between": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "b lies on the closed segment between a and c",
    "returns": "prop"
   },
   "weierstrass_curve": {

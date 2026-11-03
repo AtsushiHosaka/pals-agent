@@ -1,0 +1,7 @@
+# Proposed additive vocabulary for the geometry_circle domain.
+is_diameter: {args: [term, term, term, term], returns: prop, meaning: "the segment ab is a diameter of the circle with centre c and radius r; arguments a b c r"}
+weakly_between: {args: [term, term, term], returns: prop, meaning: "b lies on the closed segment between a and c"}
+externally_tangent_circles: {args: [term, term, term, term], returns: prop, meaning: "the circles with centres c1, c2 and radii r1, r2 are externally tangent; arguments c1 r1 c2 r2"}
+internally_tangent_circles: {args: [term, term, term, term], returns: prop, meaning: "the circle with centre c1 and radius r1 is internally tangent to the circle with centre c2 and radius r2; arguments c1 r1 c2 r2"}
+line_tangent_to_circle_at: {args: [term, term, term, term, term], returns: prop, meaning: "the line through a and b is tangent at t to the circle with centre c and radius r; arguments a b t c r"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}

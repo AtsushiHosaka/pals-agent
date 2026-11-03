@@ -1,0 +1,3021 @@
+- id: triangle_congruent_sss
+  kind: textbook
+  level: middle
+  topic: 三角形・合同条件
+  statement: 3点$A,B,C$と3点$A',B',C'$について、$AB=A'B'$、$BC=B'C'$、$CA=C'A'$ならば、この頂点の対応で2つの図形は合同である。ここで合同とは、対応する2頂点間の距離がすべて等しいことをいう。3点が同一直線上にあってもよい。
+  statement_en: For points A, B, C and A', B', C' with AB = A'B', BC = B'C' and CA = C'A', the triples are congruent in this vertex order, congruence meaning that all corresponding pairwise distances agree. Collinear triples are allowed.
+  assumptions:
+  - $A,B,C,A',B',C'$は実内積空間上のアフィン空間の点
+  - $AB=A'B'$
+  - $BC=B'C'$
+  - $CA=C'A'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とし、$AB=A'B'$、$BC=B'C'$、$CA=C'A'$とする。合同とは、対応する2頂点間の距離がすべて等しいことである。
+    確かめる組は、同じ頂点どうしの組と、異なる頂点の組である。同じ頂点どうしの距離はどちらも$0$である。異なる頂点の組は仮定の3つの等式で与えられ、$BA=AB$のように順序を入れ替えても距離は変わらない。したがって対応する距離はすべて等しく、2つの図形は合同である。
+  strategy: Congruence is defined by pairwise distances, so check every index pair using symmetry of distance.
+  sketch:
+  - 'setup: Unfold congruence as equality of all corresponding pairwise distances.'
+  - 'derive: Pairs of equal indices give distance 0 on both sides.'
+  - 'conclude: The remaining pairs are the hypotheses up to symmetry of distance.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (= (dist_of a b) (dist_of a1 b1)) (= (dist_of b c) (dist_of b1 c1)) (= (dist_of c a) (dist_of c1 a1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $AB=A'B'$と$BC=B'C'$だけで、$A,B,C$と$A',B',C'$は合同である。
+    reason: 2辺だけでは第3辺が決まらない。直角をはさむ長さ$1,1$の直角三角形と、頂角が$\pi/3$で等辺が$1$の正三角形は反例である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), dist A B = dist A' B' → dist B C = dist B' C' → dist C A = dist C' A' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' h1 h2 h3
+      exact EuclideanGeometry.side_side_side h1 h2 h3
+- id: triangle_congruent_sas
+  kind: textbook
+  level: middle
+  topic: 三角形・合同条件
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）について、2辺とその間の角が等しければ、すなわち$\angle ABC=\angle A'B'C'$、$AB=A'B'$、$BC=B'C'$ならば、この頂点の対応で合同である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, ∠ABC = ∠A'B'C', AB = A'B' and BC = B'C', then A, B, C and A', B', C' are congruent in this order.
+  assumptions:
+  - $A,B,C,A',B',C'$は実内積空間上のアフィン空間の点
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $\angle ABC=\angle A'B'C'$
+  - $AB=A'B'$
+  - $BC=B'C'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$\angle ABC=\angle A'B'C'$、$AB=A'B'$、$BC=B'C'$とする。合同とは対応する2頂点間の距離がすべて等しいことなので、$CA=C'A'$を示せば十分である。
+    余弦定理より$AC^2=AB^2+BC^2-2\,AB\cdot BC\cos\angle ABC$である。$A',B',C'$についても同じ等式が成り立ち、右辺に現れる量は仮定によりすべて等しい。よって$AC^2=A'C'^2$であり、長さは$0$以上なので$AC=A'C'$である。
+  strategy: Reduce to the third side, which the law of cosines determines from the two sides and the included angle.
+  sketch:
+  - 'setup: Only CA = C''A'' remains, since congruence means equal pairwise distances.'
+  - 'apply_theorem: Write AC² and A''C''² by the law of cosines at B and B''.'
+  - 'derive: The right sides agree by hypothesis, so AC² = A''C''².'
+  - 'conclude: Nonnegativity gives AC = A''C'', hence congruence.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (dist_of a b) (dist_of a1 b1)) (= (dist_of b c) (dist_of b1 c1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $\angle ACB=\angle A'C'B'$、$AB=A'B'$、$BC=B'C'$ならば、$A,B,C$と$A',B',C'$は合同である。
+    reason: 等しい角が2辺の間にない。$\angle C$が鋭角なら、$B$を中心とする半径$AB$の円が半直線$CA$と2点で交わることがあり、第3辺が2通りに定まる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → dist A B = dist A' B' → dist B C = dist B' C' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' _ _ h h1 h2
+      exact EuclideanGeometry.side_angle_side h h1 h2
+- id: triangle_congruent_asa
+  kind: textbook
+  level: middle
+  topic: 三角形・合同条件
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）について、1辺とその両端の角が等しければ、すなわち$\angle ABC=\angle A'B'C'$、$BC=B'C'$、$\angle BCA=\angle B'C'A'$ならば、この頂点の対応で合同である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, ∠ABC = ∠A'B'C', BC = B'C', ∠BCA = ∠B'C'A', then A, B, C and A', B', C' are congruent in this order.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $\angle ABC=\angle A'B'C'$
+  - $BC=B'C'$
+  - $\angle BCA=\angle B'C'A'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$\angle ABC=\angle A'B'C'$、$BC=B'C'$、$\angle BCA=\angle B'C'A'$とする。
+    内角の和より$\angle CAB=\pi-\angle ABC-\angle BCA=\angle C'A'B'$である。3点は同一直線上にないので角はすべて$0$より大きく$\pi$より小さく、正弦は正である。正弦定理より$AB=BC\sin\angle BCA/\sin\angle CAB$であり、$A'B'$も同じ式で表されるので、$AB=A'B'$である。したがって2辺$AB,BC$とその間の角が等しいので、余弦定理から$CA=C'A'$となり、対応する距離はすべて等しい。
+  strategy: Get the third angle from the angle sum, then a second side by the law of sines, and finish with two sides and the included angle.
+  sketch:
+  - 'setup: Both triples are non-collinear, so all angles lie in (0,π).'
+  - 'derive: The angle sum gives ∠CAB = ∠C''A''B''.'
+  - 'apply_theorem: The law of sines gives AB = A''B''.'
+  - 'apply_theorem: The law of cosines gives CA = C''A''.'
+  - 'conclude: All corresponding distances agree.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (dist_of b c) (dist_of b1 c1)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $A,B,C$と$A',B',C'$が同一直線上にあっても、$\angle ABC=\angle A'B'C'$、$BC=B'C'$、$\angle BCA=\angle B'C'A'$ならば合同である。
+    reason: 数直線上で$B=0$、$C=1$とし、$A=2$と$A'=3$（$B'=B$、$C'=C$）をとると、角はともに$\angle ABC=0$、$\angle BCA=\pi$で$BC$も等しいが、$CA=1$、$C'A'=2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → dist B C = dist B' C' → EuclideanGeometry.angle B C A = EuclideanGeometry.angle B' C' A' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' h _ h1 h2 h3
+      exact EuclideanGeometry.angle_side_angle h h1 h2 h3
+- id: triangle_congruent_aas
+  kind: textbook
+  level: middle
+  topic: 三角形・合同条件
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）について、2つの角とその間にない1辺が等しければ、すなわち$\angle ABC=\angle A'B'C'$、$\angle BCA=\angle B'C'A'$、$CA=C'A'$ならば、この頂点の対応で合同である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, ∠ABC = ∠A'B'C', ∠BCA = ∠B'C'A', CA = C'A', then A, B, C and A', B', C' are congruent in this order.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $\angle ABC=\angle A'B'C'$
+  - $\angle BCA=\angle B'C'A'$
+  - $CA=C'A'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$\angle ABC=\angle A'B'C'$、$\angle BCA=\angle B'C'A'$、$CA=C'A'$とする。
+    内角の和より$\angle CAB=\pi-\angle ABC-\angle BCA=\angle C'A'B'$である。3点は同一直線上にないので角はすべて$0$より大きく$\pi$より小さく、正弦は正である。正弦定理より$BC=CA\sin\angle CAB/\sin\angle ABC$であり、$B'C'$も同じ式で表されるので、$BC=B'C'$である。同様に$AB=CA\sin\angle BCA/\sin\angle ABC=A'B'$である。したがって3辺が等しく、対応する距離はすべて等しい。
+  strategy: The third angles agree by the angle sum, and the law of sines recovers the other two sides from CA.
+  sketch:
+  - 'setup: Both triples are non-collinear, so all angles lie in (0,π).'
+  - 'derive: The angle sum gives ∠CAB = ∠C''A''B''.'
+  - 'apply_theorem: The law of sines expresses BC and AB through CA and the three angles.'
+  - 'conclude: All three sides agree, so the triples are congruent.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1)) (= (dist_of c a) (dist_of c1 a1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $\angle ABC=\angle A'B'C'$、$\angle BCA=\angle B'C'A'$、$CA=A'B'$ならば合同である。
+    reason: 等しい辺が対応していない。$AB=3$、$BC=4$、$CA=5$の直角三角形を$5/3$倍した$A',B',C'$では、角が等しく$A'B'=5=CA$であるが、合同ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → EuclideanGeometry.angle B C A = EuclideanGeometry.angle B' C' A' → dist C A = dist C' A' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' h _ h1 h2 h3
+      exact EuclideanGeometry.angle_angle_side h h1 h2 h3
+- id: congruent_triangles_corresponding_parts
+  kind: gap
+  level: middle
+  topic: 三角形・合同の性質
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）がこの頂点の対応で合同（対応する2頂点間の距離がすべて等しい）ならば、対応する3辺と3つの角はそれぞれ等しい。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, and A, B, C and A', B', C' are congruent in this order, then AB = A'B', BC = B'C', CA = C'A', ∠ABC = ∠A'B'C', ∠BCA = ∠B'C'A' and ∠CAB = ∠C'A'B'.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $A,B,C$と$A',B',C'$はこの対応で合同
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $AB=A'B'$、$BC=B'C'$、$CA=C'A'$、$\angle ABC=\angle A'B'C'$、$\angle BCA=\angle B'C'A'$、$\angle CAB=\angle C'A'B'$である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、対応する2頂点間の距離がすべて等しいとする。辺の等式は仮定そのものである。
+    $\angle ABC=\angle A'B'C'$を示す。3点は同一直線上にないので各三角形の頂点は相異なり、余弦定理より$\cos\angle ABC=(AB^2+BC^2-CA^2)/(2AB\cdot BC)$である。$\cos\angle A'B'C'$も同じ式の値に等しい。角は$0$以上$\pi$以下で、この範囲で余弦は単射なので、2つの角は等しい。残りの2つの角も、頂点を入れ替えた同じ議論で等しい。
+  strategy: Sides are the definition; each angle is determined by the three sides through the cosine formula, and cosine is injective on [0, π].
+  sketch:
+  - 'setup: The side equalities are instances of the definition.'
+  - 'derive: Non-collinearity makes the vertices of each triple distinct.'
+  - 'apply_theorem: The law of cosines gives the same cosine for corresponding angles.'
+  - 'conclude: Injectivity of cosine on [0, π] gives equal angles.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (congruent_triangles a b c a1 b1 c1)) (and (= (dist_of a b) (dist_of a1 b1)) (= (dist_of b c) (dist_of b1 c1)) (= (dist_of c a) (dist_of c1 a1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1)) (= (euclid_angle c a b) (euclid_angle c1 a1 b1)))))
+  hard_negative:
+    statement: 対応する3つの角がすべて等しければ、$A,B,C$と$A',B',C'$は合同である。
+    reason: 角だけでは大きさが決まらない。正三角形でも1辺の長さが異なれば合同ではなく、相似にとどまる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → Congruent ![A, B, C] ![A', B', C'] → dist A B = dist A' B' ∧ dist B C = dist B' C' ∧ dist C A = dist C' A' ∧ EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' ∧ EuclideanGeometry.angle B C A = EuclideanGeometry.angle B' C' A' ∧ EuclideanGeometry.angle C A B = EuclideanGeometry.angle C' A' B'
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' _ _ h
+      exact ⟨h.dist_eq 0 1, h.dist_eq 1 2, h.dist_eq 2 0, EuclideanGeometry.angle_eq_of_congruent h 0 1 2,
+        EuclideanGeometry.angle_eq_of_congruent h 1 2 0, EuclideanGeometry.angle_eq_of_congruent h 2 0 1⟩
+- id: right_triangle_congruent_hypotenuse_leg
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の合同
+  statement: $\angle ABC=\angle A'B'C'=\pi/2$（内積$\langle A-B,C-B\rangle$と$\langle A'-B',C'-B'\rangle$が$0$であること）のとき、斜辺と他の1辺が等しければ、すなわち$CA=C'A'$、$AB=A'B'$ならば、$A,B,C$と$A',B',C'$はこの対応で合同である。
+  statement_en: If the inner products ⟨A-B,C-B⟩ and ⟨A'-B',C'-B'⟩ vanish, that is ∠ABC = ∠A'B'C' = π/2, and CA = C'A', AB = A'B', then A, B, C and A', B', C' are congruent in this order.
+  assumptions:
+  - $\langle A-B,C-B\rangle=0$
+  - $\langle A'-B',C'-B'\rangle=0$
+  - $CA=C'A'$
+  - $AB=A'B'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とし、$\langle A-B,C-B\rangle=\langle A'-B',C'-B'\rangle=0$、$CA=C'A'$、$AB=A'B'$とする。
+    $A-C=(A-B)-(C-B)$で内積が$0$なので、$CA^2=AB^2+BC^2$である。同様に$C'A'^2=A'B'^2+B'C'^2$である。仮定から$BC^2=CA^2-AB^2=C'A'^2-A'B'^2=B'C'^2$であり、長さは$0$以上なので$BC=B'C'$である。3辺が等しいので、対応する2頂点間の距離はすべて等しい。
+  strategy: The Pythagorean theorem recovers the third side, then all pairwise distances agree.
+  sketch:
+  - 'apply_theorem: The vanishing inner products give CA² = AB² + BC² and C''A''² = A''B''² + B''C''².'
+  - 'derive: Subtracting with the hypotheses gives BC² = B''C''².'
+  - 'derive: Nonnegativity gives BC = B''C''.'
+  - 'conclude: Three equal sides give congruence.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (= (euclid_angle a b c) (/ pi 2)) (= (euclid_angle a1 b1 c1) (/ pi 2)) (= (dist_of c a) (dist_of c1 a1)) (= (dist_of a b) (dist_of a1 b1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $\angle ABC=\angle A'B'C'$が直角でなく等しい鋭角のときも、$CA=C'A'$、$AB=A'B'$なら合同である。
+    reason: 角が2辺の間にない条件になる。鋭角$\angle ABC$のもとで$A$を中心とする半径$CA$の円が半直線$BC$と2点で交わると、第3辺が2通りに定まる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), EuclideanGeometry.angle A B C = Real.pi / 2 → EuclideanGeometry.angle A' B' C' = Real.pi / 2 → dist C A = dist C' A' → dist A B = dist A' B' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' h1 h2 hyp leg
+      have e1 := (EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two A B C).mpr h1
+      have e2 := (EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two A' B' C').mpr h2
+      rw [dist_comm A C, hyp, leg] at e1
+      rw [dist_comm A' C'] at e2
+      have hBC : dist B C = dist B' C' := by
+        rw [dist_comm B C, dist_comm B' C']
+        exact (mul_self_inj dist_nonneg dist_nonneg).mp (by linarith)
+      exact EuclideanGeometry.side_side_side leg hBC hyp
+- id: right_triangle_congruent_hypotenuse_acute
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の合同
+  statement: 直角三角形$ABC$と直角三角形$A'B'C'$（それぞれ3点は同一直線上にない）で$\angle ABC=\angle A'B'C'=\pi/2$のとき、斜辺と1つの鋭角が等しければ、すなわち$\angle BCA=\angle B'C'A'$、$CA=C'A'$ならば、この頂点の対応で合同である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, ∠ABC = ∠A'B'C' = π/2, ∠BCA = ∠B'C'A' and CA = C'A', then A, B, C and A', B', C' are congruent in this order.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $\angle ABC=\angle A'B'C'=\pi/2$
+  - $\angle BCA=\angle B'C'A'$
+  - $CA=C'A'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で合同である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$\angle ABC=\angle A'B'C'=\pi/2$、$\angle BCA=\angle B'C'A'$、$CA=C'A'$とする。
+    このとき$\angle ABC=\angle A'B'C'$、$\angle BCA=\angle B'C'A'$、$CA=C'A'$なので、2つの角とその間にない1辺が等しい。合同条件（2角とその間にない1辺）より、$A,B,C$と$A',B',C'$はこの対応で合同である。
+  strategy: This is the two-angles-and-a-non-included-side condition with one angle equal to π/2.
+  sketch:
+  - 'setup: Both right angles give ∠ABC = ∠A''B''C''.'
+  - 'apply_theorem: Apply the congruence condition for two angles and a non-included side.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (/ pi 2)) (= (euclid_angle a1 b1 c1) (/ pi 2)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1)) (= (dist_of c a) (dist_of c1 a1))) (congruent_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $\angle ABC=\angle A'B'C'=\pi/2$、$\angle BCA=\angle B'C'A'$だけで合同である。
+    reason: 斜辺の条件がないと相似までしか言えない。辺の長さが$3,4,5$の直角三角形と$6,8,10$の直角三角形が反例である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → EuclideanGeometry.angle A B C = Real.pi / 2 → EuclideanGeometry.angle A' B' C' = Real.pi / 2 → EuclideanGeometry.angle B C A = EuclideanGeometry.angle B' C' A' → dist C A = dist C' A' → Congruent ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' h _ h1 h2 h3 h4
+      exact EuclideanGeometry.angle_angle_side h (h1.trans h2.symm) h3 h4
+- id: triangle_similar_aa_ratio
+  kind: textbook
+  level: middle
+  topic: 三角形・相似条件
+  statement: 三角形$abc$と三角形$a'b'c'$（それぞれ3点は同一直線上にない）について、2つの角が等しければ、すなわち$\angle abc=\angle a'b'c'$、$\angle bca=\angle b'c'a'$ならば、正の数$r$があって$ab=r\,a'b'$、$bc=r\,b'c'$、$ca=r\,c'a'$となる。
+  statement_en: If a, b, c are not collinear, a', b', c' are not collinear, ∠abc = ∠a'b'c' and ∠bca = ∠b'c'a', then there is r > 0 with ab = r·a'b', bc = r·b'c' and ca = r·c'a'.
+  assumptions:
+  - $a,b,c$は同一直線上にない
+  - $a',b',c'$は同一直線上にない
+  - $\angle abc=\angle a'b'c'$
+  - $\angle bca=\angle b'c'a'$
+  quantifiers:
+  - 任意の6点$a,b,c,a',b',c'$
+  conclusion: ある$r>0$について$ab=r\,a'b'$、$bc=r\,b'c'$、$ca=r\,c'a'$である。
+  answer: |
+    $a,b,c,a',b',c'$を実内積空間上のアフィン空間の点とする。$a,b,c$は同一直線上になく、$a',b',c'$も同一直線上になく、$\angle abc=\angle a'b'c'$、$\angle bca=\angle b'c'a'$とする。
+    $\beta=\angle abc$、$\gamma=\angle bca$とおく。内角の和より$\alpha=\angle cab=\pi-\beta-\gamma=\angle c'a'b'$である。3点は同一直線上にないので角はすべて$0$より大きく$\pi$より小さく、正弦は正である。正弦定理より$ab:bc:ca=\sin\gamma:\sin\alpha:\sin\beta$であり、$a'b':b'c':c'a'$も同じ比である。$r=ab/a'b'>0$とおくと、$ab=r\,a'b'$、$bc=r\,b'c'$、$ca=r\,c'a'$が成り立つ。
+  strategy: The angle sum and the law of sines give the same side ratios in both triangles.
+  sketch:
+  - 'setup: Both triples are non-collinear, so all angles lie in (0,π).'
+  - 'derive: The angle sum gives equal third angles.'
+  - 'apply_theorem: The law of sines gives ab:bc:ca = sin γ : sin α : sin β in both triangles.'
+  - 'construct: Put r = ab/a''b'' > 0.'
+  - 'conclude: The proportional sides give the three equalities.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1))) (exists (r) (and (> r 0) (= (dist_of a b) (* r (dist_of a1 b1))) (= (dist_of b c) (* r (dist_of b1 c1))) (= (dist_of c a) (* r (dist_of c1 a1)))))))
+  hard_negative:
+    statement: 1つの角$\angle abc=\angle a'b'c'$が等しいだけで、辺の比は等しい。
+    reason: $\angle b$を共有していても他の2辺の長さは自由に選べる。頂角が等しい二等辺三角形と不等辺三角形は相似にならない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c a' b' c' : P), ¬Collinear ℝ ({a, b, c} : Set P) → ¬Collinear ℝ ({a', b', c'} : Set P) → EuclideanGeometry.angle a b c = EuclideanGeometry.angle a' b' c' → EuclideanGeometry.angle b c a = EuclideanGeometry.angle b' c' a' → ∃ r : ℝ, 0 < r ∧ dist a b = r * dist a' b' ∧ dist b c = r * dist b' c' ∧ dist c a = r * dist c' a'
+  proof: |
+    by
+      intro V P _ _ _ _ a b c a' b' c' hc _ h1 h2
+      have hs := EuclideanGeometry.similar_of_angle_angle hc h1 h2
+      obtain ⟨r, hr, h⟩ := similar_iff_exists_pos_dist_eq.mp hs
+      exact ⟨r, hr, h 0 1, h 1 2, h 2 0⟩
+- id: triangle_similar_sss_ratio
+  kind: textbook
+  level: middle
+  topic: 三角形・相似条件
+  statement: 三角形$abc$と三角形$a'b'c'$（それぞれ3点は同一直線上にない）と正の数$r$について、$ab=r\,a'b'$、$bc=r\,b'c'$、$ca=r\,c'a'$ならば、この頂点の対応で相似であり（相似とは、対応する2頂点間の距離の比がすべて同じ正の数であること）、対応する3つの角はそれぞれ等しい。
+  statement_en: If a, b, c are not collinear, a', b', c' are not collinear, r > 0 and ab = r·a'b', bc = r·b'c', ca = r·c'a', then a, b, c and a', b', c' are similar in this order, and ∠abc = ∠a'b'c', ∠bca = ∠b'c'a', ∠cab = ∠c'a'b'.
+  assumptions:
+  - $a,b,c$は同一直線上にない
+  - $a',b',c'$は同一直線上にない
+  - $r>0$
+  - $ab=r\,a'b'$
+  - $bc=r\,b'c'$
+  - $ca=r\,c'a'$
+  quantifiers:
+  - 任意の6点$a,b,c,a',b',c'$と任意の実数$r$
+  conclusion: $a,b,c$と$a',b',c'$は相似で、$\angle abc=\angle a'b'c'$、$\angle bca=\angle b'c'a'$、$\angle cab=\angle c'a'b'$である。
+  answer: |
+    $a,b,c,a',b',c'$を実内積空間上のアフィン空間の点とする。$a,b,c$は同一直線上になく、$a',b',c'$も同一直線上になく、$r>0$で、$ab=r\,a'b'$、$bc=r\,b'c'$、$ca=r\,c'a'$とする。
+    対応する2頂点間の距離の比はすべて$r$なので（同じ頂点どうしの距離はともに$0$）、相似である。
+    $\angle abc=\angle a'b'c'$を示す。3点は同一直線上にないので各三角形の頂点は相異なり、余弦定理より$\cos\angle abc=(ab^2+bc^2-ca^2)/(2ab\cdot bc)$である。$r$を代入して約分すると$\cos\angle a'b'c'$に等しい。角は$0$以上$\pi$以下で余弦はこの範囲で単射なので、2つの角は等しい。残りの2つの角も頂点を入れ替えて同様である。
+  strategy: The side ratio gives similarity directly, and the cosine formula is invariant under scaling all sides by r.
+  sketch:
+  - 'setup: The hypotheses are exactly a common ratio for all pairwise distances.'
+  - 'derive: Non-collinearity makes the vertices of each triple distinct.'
+  - 'apply_theorem: The law of cosines writes each cosine through the sides.'
+  - 'derive: The factor r² cancels, so cosines agree.'
+  - 'conclude: Injectivity of cosine on [0, π] gives equal angles.'
+  openmath: (forall (a b c a1 b1 c1 r) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (> r 0) (= (dist_of a b) (* r (dist_of a1 b1))) (= (dist_of b c) (* r (dist_of b1 c1))) (= (dist_of c a) (* r (dist_of c1 a1)))) (and (similar_triangles a b c a1 b1 c1) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (euclid_angle b c a) (euclid_angle b1 c1 a1)) (= (euclid_angle c a b) (euclid_angle c1 a1 b1)))))
+  hard_negative:
+    statement: 各辺の比が等しくなくても、$ab>a'b'$、$bc>b'c'$、$ca>c'a'$ならば対応する角は等しい。
+    reason: 辺の大小だけでは形が決まらない。辺$3,4,5$と辺$1,1,1$で3つの不等式は成り立つが、角は異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c a' b' c' : P) (r : ℝ), ¬Collinear ℝ ({a, b, c} : Set P) → ¬Collinear ℝ ({a', b', c'} : Set P) → 0 < r → dist a b = r * dist a' b' → dist b c = r * dist b' c' → dist c a = r * dist c' a' → Similar ![a, b, c] ![a', b', c'] ∧ EuclideanGeometry.angle a b c = EuclideanGeometry.angle a' b' c' ∧ EuclideanGeometry.angle b c a = EuclideanGeometry.angle b' c' a' ∧ EuclideanGeometry.angle c a b = EuclideanGeometry.angle c' a' b'
+  proof: |
+    by
+      intro V P _ _ _ _ a b c a' b' c' r _ _ hr h1 h2 h3
+      have hs : Similar ![a, b, c] ![a', b', c'] := by
+        refine similar_iff_exists_pos_dist_eq.mpr ⟨r, hr, fun i j => ?_⟩
+        fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+      exact ⟨hs, hs.angle_eq_all⟩
+- id: triangle_similar_sas_ratio
+  kind: textbook
+  level: middle
+  topic: 三角形・相似条件
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）と正の数$r$について、2組の辺の比とその間の角が等しければ、すなわち$AB=r\,A'B'$、$CB=r\,C'B'$、$\angle ABC=\angle A'B'C'$ならば、この頂点の対応で相似である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, r > 0, AB = r·A'B', CB = r·C'B' and ∠ABC = ∠A'B'C', then A, B, C and A', B', C' are similar in this order.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $r>0$
+  - $AB=r\,A'B'$
+  - $CB=r\,C'B'$
+  - $\angle ABC=\angle A'B'C'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$と任意の実数$r$
+  conclusion: $A,B,C$と$A',B',C'$はこの対応で相似である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$r>0$で、$AB=r\,A'B'$、$CB=r\,C'B'$、$\angle ABC=\angle A'B'C'$とする。
+    余弦定理より$AC^2=AB^2+CB^2-2\,AB\cdot CB\cos\angle ABC$である。同じ等式が$A',B',C'$でも成り立つ。仮定を代入すると
+    $AC^2=r^2(A'B'^2+C'B'^2-2\,A'B'\cdot C'B'\cos\angle A'B'C')=r^2A'C'^2$である。長さと$r$は$0$以上なので$AC=r\,A'C'$である。対応する2頂点間の距離の比がすべて$r$なので、相似である。
+  strategy: The law of cosines scales by r², so the third side also has ratio r.
+  sketch:
+  - 'apply_theorem: Write AC² and A''C''² by the law of cosines at B and B''.'
+  - 'derive: Substituting the hypotheses gives AC² = r²A''C''².'
+  - 'derive: Nonnegativity gives AC = r·A''C''.'
+  - 'conclude: All pairwise distances have ratio r.'
+  openmath: (forall (a b c a1 b1 c1 r) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (> r 0) (= (dist_of a b) (* r (dist_of a1 b1))) (= (dist_of c b) (* r (dist_of c1 b1))) (= (euclid_angle a b c) (euclid_angle a1 b1 c1))) (similar_triangles a b c a1 b1 c1)))
+  hard_negative:
+    statement: $AB=r\,A'B'$、$CB=r\,C'B'$、$\angle BCA=\angle B'C'A'$ならば相似である。
+    reason: 等しい角が比をとる2辺の間にない。$C$での角が鋭角のとき、$B$を中心とする円が半直線$CA$と2点で交わる配置があり、第3辺の比が定まらない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P) (r : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → 0 < r → dist A B = r * dist A' B' → dist C B = r * dist C' B' → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → Similar ![A, B, C] ![A', B', C']
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' r _ _ hr h1 h2 h
+      have e := EuclideanGeometry.law_cos A B C
+      have e' := EuclideanGeometry.law_cos A' B' C'
+      have hAC : dist A C = r * dist A' C' := by
+        refine (mul_self_inj dist_nonneg (by positivity)).mp ?_
+        rw [e, h1, h2, h]
+        linear_combination -(r * r) * e'
+      refine similar_iff_exists_pos_dist_eq.mpr ⟨r, hr, fun i j => ?_⟩
+      fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+- id: similar_triangles_side_ratio_cross
+  kind: gap
+  level: middle
+  topic: 三角形・相似の性質
+  statement: $A,B,C$と$A',B',C'$がこの対応で相似ならば、対応する辺の比を積の形で書いた等式$AB\cdot B'C'=A'B'\cdot BC$、$BC\cdot C'A'=B'C'\cdot CA$、$CA\cdot A'B'=C'A'\cdot AB$が成り立つ。
+  statement_en: If A, B, C and A', B', C' are similar in this order, then AB·B'C' = A'B'·BC, BC·C'A' = B'C'·CA and CA·A'B' = C'A'·AB.
+  assumptions:
+  - $A,B,C$と$A',B',C'$はこの対応で相似
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $AB\cdot B'C'=A'B'\cdot BC$、$BC\cdot C'A'=B'C'\cdot CA$、$CA\cdot A'B'=C'A'\cdot AB$である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とし、この対応で相似とする。相似の定義より、正の数$r$があって$AB=r\,A'B'$、$BC=r\,B'C'$、$CA=r\,C'A'$である。
+    代入すると$AB\cdot B'C'=r\,A'B'\cdot B'C'=A'B'\cdot BC$である。残りの2つの等式も同じ計算で得られる。
+  strategy: Substitute the common ratio into each product.
+  sketch:
+  - 'setup: Similarity gives r > 0 with the three side equalities.'
+  - 'conclude: Substituting makes both sides of each equation identical.'
+  openmath: (forall (a b c a1 b1 c1) (-> (similar_triangles a b c a1 b1 c1) (and (= (* (dist_of a b) (dist_of b1 c1)) (* (dist_of a1 b1) (dist_of b c))) (= (* (dist_of b c) (dist_of c1 a1)) (* (dist_of b1 c1) (dist_of c a))) (= (* (dist_of c a) (dist_of a1 b1)) (* (dist_of c1 a1) (dist_of a b))))))
+  hard_negative:
+    statement: 相似ならば$AB\cdot A'B'=BC\cdot B'C'$である。
+    reason: 対応する辺どうしを掛けても等しくならない。$A,B,C$と$A',B',C'$を同じ辺$3,4,5$の三角形にすると、左辺は$9$、右辺は$16$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), Similar ![A, B, C] ![A', B', C'] → dist A B * dist B' C' = dist A' B' * dist B C ∧ dist B C * dist C' A' = dist B' C' * dist C A ∧ dist C A * dist A' B' = dist C' A' * dist A B
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' hs
+      obtain ⟨r, hr, h⟩ := similar_iff_exists_pos_dist_eq.mp hs
+      have h1 : dist A B = r * dist A' B' := h 0 1
+      have h2 : dist B C = r * dist B' C' := h 1 2
+      have h3 : dist C A = r * dist C' A' := h 2 0
+      rw [h1, h2, h3]
+      refine ⟨?_, ?_, ?_⟩ <;> ring
+- id: similar_triangles_area_ratio_sine_form
+  kind: gap
+  level: middle
+  topic: 三角形・相似比と面積比
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）と正の数$r$について、$AB=r\,A'B'$、$BC=r\,B'C'$、$CA=r\,C'A'$ならば、2辺とその間の角の正弦で表した面積の式について$\frac12AB\cdot BC\sin\angle ABC=r^2\cdot\frac12A'B'\cdot B'C'\sin\angle A'B'C'$が成り立つ。面積比は相似比の2乗である。
+  statement_en: If A, B, C are not collinear, A', B', C' are not collinear, r > 0 and AB = r·A'B', BC = r·B'C', CA = r·C'A', then (1/2)AB·BC·sin∠ABC = r²·(1/2)A'B'·B'C'·sin∠A'B'C'.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A',B',C'$は同一直線上にない
+  - $r>0$
+  - $AB=r\,A'B'$
+  - $BC=r\,B'C'$
+  - $CA=r\,C'A'$
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$と任意の実数$r$
+  conclusion: $\frac12AB\cdot BC\sin\angle ABC=r^2\cdot\frac12A'B'\cdot B'C'\sin\angle A'B'C'$である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A',B',C'$も同一直線上になく、$r>0$で、$AB=r\,A'B'$、$BC=r\,B'C'$、$CA=r\,C'A'$とする。
+    3辺の比が等しいので対応する角は等しい。実際、3点は同一直線上にないので各三角形の頂点は相異なり、余弦定理より$\cos\angle ABC=(AB^2+BC^2-CA^2)/(2AB\cdot BC)$である。$r$を代入して約分すると$\cos\angle A'B'C'$に等しい。角は$0$以上$\pi$以下で余弦はこの範囲で単射なので、$\angle ABC=\angle A'B'C'$である。
+    これと$AB=r\,A'B'$、$BC=r\,B'C'$を左辺に代入すると、$\frac12(r\,A'B')(r\,B'C')\sin\angle A'B'C'=r^2\cdot\frac12A'B'\cdot B'C'\sin\angle A'B'C'$となる。
+  strategy: Equal ratios force equal angles, and two side factors contribute r².
+  sketch:
+  - 'apply_theorem: The side ratios give ∠ABC = ∠A''B''C'' by the cosine formula.'
+  - 'derive: Substitute AB = r·A''B'' and BC = r·B''C'' into the left side.'
+  - 'conclude: Collecting r·r gives the factor r².'
+  openmath: (forall (a b c a1 b1 c1 r) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (> r 0) (= (dist_of a b) (* r (dist_of a1 b1))) (= (dist_of b c) (* r (dist_of b1 c1))) (= (dist_of c a) (* r (dist_of c1 a1)))) (= (* (/ 1 2) (dist_of a b) (dist_of b c) (sin (euclid_angle a b c))) (* (^ r 2) (* (/ 1 2) (dist_of a1 b1) (dist_of b1 c1) (sin (euclid_angle a1 b1 c1)))))))
+  hard_negative:
+    statement: 相似比が$r$のとき、面積比も$r$である。
+    reason: 面積の式には長さが2つ掛かるので比は$r^2$である。$r=2$なら面積は$4$倍になる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P) (r : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → 0 < r → dist A B = r * dist A' B' → dist B C = r * dist B' C' → dist C A = r * dist C' A' → 1 / 2 * dist A B * dist B C * Real.sin (EuclideanGeometry.angle A B C) = r ^ 2 * (1 / 2 * dist A' B' * dist B' C' * Real.sin (EuclideanGeometry.angle A' B' C'))
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' r _ _ hr h1 h2 h3
+      have hs : Similar ![A, B, C] ![A', B', C'] := by
+        refine similar_iff_exists_pos_dist_eq.mpr ⟨r, hr, fun i j => ?_⟩
+        fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+      rw [hs.angle_eq, h1, h2]
+      ring
+- id: triangles_common_angle_product_similar
+  kind: gap
+  level: middle
+  topic: 三角形・相似条件
+  statement: 点$D$が線分$AB$の内部、点$E$が線分$AC$の内部にあり$AD\cdot AB=AE\cdot AC$ならば、$A,D,E$と$A,C,B$はこの対応で相似である。$D$は$C$に、$E$は$B$に対応する。
+  statement_en: If D lies strictly between A and B, E lies strictly between A and C, and AD·AB = AE·AC, then A, D, E and A, C, B are similar in this order.
+  assumptions:
+  - $D$は$A$と$B$の間にあり$A,B$と異なる
+  - $E$は$A$と$C$の間にあり$A,C$と異なる
+  - $AD\cdot AB=AE\cdot AC$
+  quantifiers:
+  - 任意の5点$A,B,C,D,E$
+  conclusion: $A,D,E$と$A,C,B$はこの対応で相似である。
+  answer: |
+    $A,B,C,D,E$を実内積空間上のアフィン空間の点とする。$D$は$A$と$B$の間にあって$A,B$と異なり、$E$は$A$と$C$の間にあって$A,C$と異なり、$AD\cdot AB=AE\cdot AC$とする。
+    $r=AD/AC>0$とおくと$AD=r\,AC$であり、等式を$AC$で割ると$AE=r\,AB$である。$D$は半直線$AB$上、$E$は半直線$AC$上にあるので$\angle DAE=\angle CAB$である。
+    余弦定理より$DE^2=AD^2+AE^2-2\,AD\cdot AE\cos\angle DAE$であり、代入すると$DE^2=r^2(AC^2+AB^2-2\,AC\cdot AB\cos\angle CAB)=r^2CB^2$である。よって$DE=r\,CB$である。対応する2頂点間の距離の比がすべて$r$なので、相似である。
+  strategy: The product condition gives common ratio r on the two sides at A; the shared angle and the law of cosines give the third side.
+  sketch:
+  - 'construct: Put r = AD/AC, so AD = r·AC and AE = r·AB.'
+  - 'derive: D and E lie on rays AB and AC, so ∠DAE = ∠CAB.'
+  - 'apply_theorem: The law of cosines at A gives DE² = r²CB².'
+  - 'conclude: All pairwise distances have ratio r.'
+  openmath: (forall (a b c d e) (-> (and (strictly_between a d b) (strictly_between a e c) (= (* (dist_of a d) (dist_of a b)) (* (dist_of a e) (dist_of a c)))) (similar_triangles a d e a c b)))
+  hard_negative:
+    statement: $AD\cdot AB=AE\cdot AC$ならば直線$DE$と直線$BC$は平行である。
+    reason: 平行に対応するのは$AD/AB=AE/AC$である。$AB=2$、$AC=1$、$AD=1/4$、$AE=1/2$は積の条件を満たすが、$AD/AB=1/8$、$AE/AC=1/2$なので平行でない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E : P), Sbtw ℝ A D B → Sbtw ℝ A E C → dist A D * dist A B = dist A E * dist A C → Similar ![A, D, E] ![A, C, B]
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E hD hE hprod
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr hE.left_ne_right
+      have hAB : dist A B ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      have hAD : 0 < dist A D := dist_pos.mpr hD.left_ne
+      have hang : EuclideanGeometry.angle D A E = EuclideanGeometry.angle C A B := by
+        rw [hD.angle_eq_left E, EuclideanGeometry.angle_comm B A E, hE.angle_eq_left B]
+      set r : ℝ := dist A D / dist A C with hr
+      have hrpos : 0 < r := div_pos hAD (lt_of_le_of_ne dist_nonneg hAC.symm)
+      have h1 : dist A D = r * dist A C := by rw [hr]; field_simp
+      have h2 : dist A E = r * dist A B := by
+        rw [hr]; field_simp; linarith
+      have e := EuclideanGeometry.law_cos D A E
+      have e' := EuclideanGeometry.law_cos C A B
+      have h3 : dist D E = r * dist C B := by
+        refine (mul_self_inj dist_nonneg (by positivity)).mp ?_
+        have hDA : dist D A = r * dist C A := by rw [dist_comm D A, dist_comm C A]; exact h1
+        have hEA : dist E A = r * dist B A := by rw [dist_comm E A, dist_comm B A]; exact h2
+        rw [e, hang, hDA, hEA]
+        linear_combination -(r * r) * e'
+      refine similar_iff_exists_pos_dist_eq.mpr ⟨r, hrpos, fun i j => ?_⟩
+      fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+- id: isosceles_iff_equal_base_angles
+  kind: textbook
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）について、$AB=AC$であることと底角が等しいこと$\angle ABC=\angle ACB$は同値である。
+  statement_en: For non-collinear A, B, C, AB = AC if and only if ∠ABC = ∠ACB.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=AC$と$\angle ABC=\angle ACB$は同値である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、同一直線上にないとする。
+    $AB=AC$なら、余弦定理より$\cos\angle ABC=(AB^2+BC^2-AC^2)/(2AB\cdot BC)=BC/(2AB)$であり、$\cos\angle ACB$も同じ値である。角は$0$以上$\pi$以下で余弦はこの範囲で単射なので、$\angle ABC=\angle ACB$である。
+    逆に$\angle ABC=\angle ACB$とする。正弦定理より$AB\sin\angle ABC=AC\sin\angle ACB$である。$A,B,C$は同一直線上にないので$\angle ABC$は$0$より大きく$\pi$より小さく、正弦は正である。両辺をこの正弦で割ると$AB=AC$である。
+  strategy: Forward uses the cosine formula, converse uses the law of sines with positive sine.
+  sketch:
+  - 'apply_theorem: If AB = AC, the cosine formula gives equal cosines of the base angles.'
+  - 'derive: Injectivity of cosine on [0, π] gives equal base angles.'
+  - 'apply_theorem: Conversely the law of sines gives AB·sin∠ABC = AC·sin∠ACB.'
+  - 'conclude: Non-collinearity makes the sine positive, so AB = AC.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (<-> (= (dist_of a b) (dist_of a c)) (= (euclid_angle a b c) (euclid_angle a c b)))))
+  hard_negative:
+    statement: $A,B,C$が同一直線上にあっても、$\angle ABC=\angle ACB$ならば$AB=AC$である。
+    reason: 数直線上で$A=0$、$B=-1$、$C=2$とすると$\angle ABC=\angle ACB=0$であるが、$AB=1$、$AC=2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → (dist A B = dist A C ↔ EuclideanGeometry.angle A B C = EuclideanGeometry.angle A C B)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C h
+      refine ⟨EuclideanGeometry.angle_eq_angle_of_dist_eq, fun ha => ?_⟩
+      refine EuclideanGeometry.dist_eq_of_angle_eq_angle_of_angle_ne_pi ha fun hpi => h ?_
+      have := EuclideanGeometry.collinear_of_angle_eq_pi hpi
+      rwa [Set.insert_comm] at this
+- id: isosceles_iff_median_perpendicular
+  kind: gap
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: 点$A,B,C$と線分$BC$の中点$M$について、$AB=AC$であることと、ベクトル$A-M$と$C-B$の内積が$0$であること（中線$AM$が$BC$に垂直であること）は同値である。
+  statement_en: For points A, B, C with M the midpoint of BC, AB = AC if and only if ⟨A-M, C-B⟩ = 0.
+  assumptions:
+  - $M$は$B$と$C$の中点
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=AC$と$\langle A-M,C-B\rangle=0$は同値である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$M$を$B$と$C$の中点とする。$h=A-M$、$d=C-B$とおく。
+    $M-B=\frac12d$、$M-C=-\frac12d$なので、$A-B=h+\frac12d$、$A-C=h-\frac12d$である。内積を展開すると$AB^2-AC^2=\|h+\frac12d\|^2-\|h-\frac12d\|^2=2\langle h,d\rangle$である。
+    長さは$0$以上なので、$AB=AC$は$AB^2=AC^2$と同値であり、これは$\langle h,d\rangle=0$と同値である。
+  strategy: Write A-B and A-C through A-M and half of C-B and subtract the squared norms.
+  sketch:
+  - 'setup: Put h = A-M and d = C-B, so A-B = h + d/2 and A-C = h - d/2.'
+  - 'derive: Expanding gives AB² - AC² = 2⟨h,d⟩.'
+  - 'conclude: AB = AC iff the squares agree iff ⟨h,d⟩ = 0.'
+  openmath: (forall (a b c) (<-> (= (dist_of a b) (dist_of a c)) (perpendicular_lines a (midpoint_of b c) b c)))
+  hard_negative:
+    statement: 直線$BC$上の点$H$で$AH$が$BC$に垂直なら、$H$が中点でなくても$AB=AC$である。
+    reason: 垂線の足が中点のときに限る。$B=(0,0)$、$C=(4,0)$、$A=(1,1)$、$H=(1,0)$では$AB=\sqrt2$、$AC=\sqrt{10}$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), dist A B = dist A C ↔ inner ℝ (A -ᵥ midpoint ℝ B C) (C -ᵥ B) = 0
+  proof: |
+    by
+      intro V P _ _ _ _ A B C
+      set d : V := C -ᵥ B with hd
+      set h : V := A -ᵥ midpoint ℝ B C with hh
+      have e1 : A -ᵥ B = h + (1 / 2 : ℝ) • d := by
+        rw [hh, hd, ← vsub_add_vsub_cancel A (midpoint ℝ B C) B, midpoint_vsub_left, invOf_eq_inv, one_div]
+      have e2 : A -ᵥ C = h - (1 / 2 : ℝ) • d := by
+        rw [hh, hd, ← vsub_add_vsub_cancel A (midpoint ℝ B C) C, sub_eq_add_neg, ← neg_vsub_eq_vsub_rev C,
+          right_vsub_midpoint, invOf_eq_inv, one_div]
+      rw [← sq_eq_sq₀ dist_nonneg dist_nonneg, dist_eq_norm_vsub V A B, dist_eq_norm_vsub V A C, e1, e2,
+        norm_add_sq_real, norm_sub_sq_real, real_inner_smul_right]
+      constructor <;> intro hx <;> linarith
+- id: median_bisects_apex_implies_isosceles
+  kind: gap
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、$BC$の中点$M$について中線$AM$が頂角を二等分する、すなわち$\angle BAM=\angle MAC$ならば、$AB=AC$である。
+  statement_en: If A, B, C are not collinear and the median AM to BC bisects the angle at A, meaning ∠BAM = ∠MAC, then AB = AC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $M$は$B$と$C$の中点
+  - $\angle BAM=\angle MAC$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=AC$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とし、$M$を$B$と$C$の中点として$\angle BAM=\angle MAC$とする。$\theta=\angle BAM$とおく。
+    $M$は直線$BC$上で$B,C$の間にあり、$A$はこの直線上にない。よって$\angle AMB+\angle AMC=\pi$であり、$\sin\angle AMB=\sin\angle AMC$である。また$0<\theta<\pi$なので$\sin\theta>0$である。
+    三角形$ABM$と$ACM$の正弦定理より$BM\sin\angle AMB=AB\sin\theta$、$CM\sin\angle AMC=AC\sin\theta$である。$BM=CM$なので左辺どうしは等しく、$\sin\theta$で割ると$AB=AC$である。
+  strategy: Apply the law of sines in the two triangles cut by the median, using supplementary angles at M.
+  sketch:
+  - 'setup: M lies strictly between B and C and A is off line BC.'
+  - 'derive: The angles at M are supplementary, so they have equal sines.'
+  - 'apply_theorem: The law of sines gives BM·sin∠AMB = AB·sinθ and CM·sin∠AMC = AC·sinθ.'
+  - 'conclude: BM = CM and sinθ > 0 give AB = AC.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (euclid_angle b a (midpoint_of b c)) (euclid_angle (midpoint_of b c) a c))) (= (dist_of a b) (dist_of a c))))
+  hard_negative:
+    statement: 線分$BC$の内部の任意の点$D$について、$\angle BAD=\angle DAC$ならば$AB=AC$である。
+    reason: 一般の点$D$では角の二等分線の定理で$AB:AC=BD:DC$となるだけである。$AB\neq AC$の三角形でも頂角の二等分線は$BC$と交わる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → EuclideanGeometry.angle B A (midpoint ℝ B C) = EuclideanGeometry.angle (midpoint ℝ B C) A C → dist A B = dist A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hABC hang
+      have bis : ∀ D : P, Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C →
+          dist A B / dist A C = dist B D / dist D C := by
+        intro D hD hang
+        have hDC : D ≠ C := hD.ne_right
+        have hAC : A ≠ C := ne₁₃_of_not_collinear hABC
+        have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+          intro h0
+          apply hABC
+          have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+            EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+          have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+          have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+            affineSpan_pair_le_of_mem_of_mem hD.wbtw.mem_affineSpan (right_mem_affineSpan_pair ℝ B C)
+          exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+        have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+        have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+        have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi A hD.angle₁₂₃_eq_pi
+        have hβ : Real.sin (EuclideanGeometry.angle B D A) = Real.sin (EuclideanGeometry.angle C D A) := by
+          rw [EuclideanGeometry.angle_comm B D A, EuclideanGeometry.angle_comm C D A,
+            show EuclideanGeometry.angle A D B = Real.pi - EuclideanGeometry.angle A D C by linarith, Real.sin_pi_sub]
+        rw [EuclideanGeometry.angle_comm D A B, hang, hβ] at l1
+        rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+        apply mul_left_cancel₀ hsin
+        rw [dist_comm C D] at l2
+        linear_combination (dist D C) * l1 - (dist B D) * l2
+      have hBC : B ≠ C := ne₂₃_of_not_collinear hABC
+      have hS : Sbtw ℝ B (midpoint ℝ B C) C := sbtw_midpoint_of_ne ℝ hBC
+      have h := bis _ hS hang
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      have hm : dist (midpoint ℝ B C) C ≠ 0 := dist_ne_zero.mpr hS.ne_right
+      rw [dist_left_midpoint, dist_midpoint_right, div_self (by simpa using dist_ne_zero.mpr hBC),
+        div_eq_one_iff_eq hAC] at h
+      exact h
+- id: isosceles_apex_bisector_foot_is_midpoint
+  kind: gap
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で$AB=AC$のとき、線分$BC$の内部の点$D$が$\angle BAD=\angle DAC$を満たすならば、$D$は$BC$の中点である。
+  statement_en: If A, B, C are not collinear, AB = AC, D lies strictly between B and C, and ∠BAD = ∠DAC, then D is the midpoint of BC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $AB=AC$
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  - $\angle BAD=\angle DAC$
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $D$は$B$と$C$の中点である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$AB=AC$で、$D$は$B$と$C$の間にあって$B,C$と異なり、$\angle BAD=\angle DAC$とする。
+    角の二等分線の定理より$AB/AC=BD/DC$であり、左辺は$1$なので$BD=DC$である。$D$は線分$BC$上にあるので$BD+DC=BC$であり、$BD=DC=BC/2$である。線分$BC$上で$B$からの距離が$BC/2$の点は中点だけなので、$D$は$BC$の中点である。
+  strategy: The angle bisector theorem gives BD = DC, and a point of the segment at half distance is the midpoint.
+  sketch:
+  - 'apply_theorem: The angle bisector theorem gives AB/AC = BD/DC.'
+  - 'derive: AB = AC forces BD = DC.'
+  - 'derive: BD + DC = BC gives BD = DC = BC/2.'
+  - 'conclude: D is the midpoint.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (= (dist_of a b) (dist_of a c)) (strictly_between b d c) (= (euclid_angle b a d) (euclid_angle d a c))) (= d (midpoint_of b c))))
+  hard_negative:
+    statement: $AB\neq AC$でも、頂角の二等分線と$BC$の交点は$BC$の中点である。
+    reason: 交点は$BD:DC=AB:AC$に分けるので、$AB\neq AC$なら中点ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → dist A B = dist A C → Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C → D = midpoint ℝ B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC hiso hD hang
+      have bis : ∀ D : P, Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C →
+          dist A B / dist A C = dist B D / dist D C := by
+        intro D hD hang
+        have hDC : D ≠ C := hD.ne_right
+        have hAC : A ≠ C := ne₁₃_of_not_collinear hABC
+        have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+          intro h0
+          apply hABC
+          have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+            EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+          have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+          have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+            affineSpan_pair_le_of_mem_of_mem hD.wbtw.mem_affineSpan (right_mem_affineSpan_pair ℝ B C)
+          exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+        have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+        have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+        have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi A hD.angle₁₂₃_eq_pi
+        have hβ : Real.sin (EuclideanGeometry.angle B D A) = Real.sin (EuclideanGeometry.angle C D A) := by
+          rw [EuclideanGeometry.angle_comm B D A, EuclideanGeometry.angle_comm C D A,
+            show EuclideanGeometry.angle A D B = Real.pi - EuclideanGeometry.angle A D C by linarith, Real.sin_pi_sub]
+        rw [EuclideanGeometry.angle_comm D A B, hang, hβ] at l1
+        rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+        apply mul_left_cancel₀ hsin
+        rw [dist_comm C D] at l2
+        linear_combination (dist D C) * l1 - (dist B D) * l2
+      have h := bis D hD hang
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      have hDC : dist D C ≠ 0 := dist_ne_zero.mpr hD.ne_right
+      rw [hiso, div_self hAC, eq_comm, div_eq_one_iff_eq hDC] at h
+      have hs := hD.wbtw.dist_add_dist
+      exact eq_midpoint_of_dist_eq_half (by linarith) (by rw [dist_comm B D] at *; linarith [dist_comm C D, dist_comm D B])
+- id: isosceles_altitude_foot_is_midpoint
+  kind: gap
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: $B\neq C$、$AB=AC$のとき、直線$BC$上の点$H$で$A-H$と$C-B$の内積が$0$であるもの（$A$から$BC$への垂線の足）は$BC$の中点である。
+  statement_en: If B ≠ C, AB = AC, H lies on line BC and ⟨A-H, C-B⟩ = 0, then H is the midpoint of BC.
+  assumptions:
+  - $B\neq C$
+  - $AB=AC$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $H$は$B$と$C$の中点である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$B\neq C$、$AB=AC$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    $d=C-B\neq0$、$h=A-H$とおき、実数$x$を用いて$H-B=xd$と書く。このとき$H-C=(x-1)d$であり、$A-B=h+xd$、$A-C=h+(x-1)d$である。
+    $\langle h,d\rangle=0$なので$AB^2=\|h\|^2+x^2\|d\|^2$、$AC^2=\|h\|^2+(x-1)^2\|d\|^2$である。$AB=AC$と$\|d\|\neq0$より$x^2=(x-1)^2$であり、$x=\frac12$である。よって$H$は$BC$の中点である。
+  strategy: Parametrize H on line BC and compare AB² and AC² using orthogonality.
+  sketch:
+  - 'setup: Write H - B = x·d with d = C - B and h = A - H orthogonal to d.'
+  - 'derive: AB² = ‖h‖² + x²‖d‖² and AC² = ‖h‖² + (x-1)²‖d‖².'
+  - 'derive: AB = AC and d ≠ 0 give x² = (x-1)².'
+  - 'conclude: x = 1/2, so H is the midpoint.'
+  openmath: (forall (a b c h) (-> (and (!= b c) (= (dist_of a b) (dist_of a c)) (on_line h b c) (perpendicular_lines a h b c)) (= h (midpoint_of b c))))
+  hard_negative:
+    statement: $AB\neq AC$でも、$A$から$BC$への垂線の足は$BC$の中点である。
+    reason: $B=(0,0)$、$C=(4,0)$、$A=(1,1)$では垂線の足は$(1,0)$であり、中点$(2,0)$ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), B ≠ C → dist A B = dist A C → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → H = midpoint ℝ B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hBC hiso hH hperp
+      obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+      have hd0 : ‖C -ᵥ B‖ ≠ 0 := by
+        rw [norm_ne_zero_iff]; exact vsub_ne_zero.mpr hBC.symm
+      set d : V := C -ᵥ B with hd
+      set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+      have hBH : AffineMap.lineMap B C x -ᵥ B = x • d := by
+        rw [AffineMap.lineMap_apply, vadd_vsub]
+      have hHC : AffineMap.lineMap B C x -ᵥ C = (x - 1) • d := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, sub_smul, one_smul, hd, ← neg_vsub_eq_vsub_rev C B]
+        abel
+      have e1 : A -ᵥ B = h + x • d := by rw [← hBH, hh, vsub_add_vsub_cancel]
+      have e2 : A -ᵥ C = h + (x - 1) • d := by rw [← hHC, hh, vsub_add_vsub_cancel]
+      have hsq := congrArg (· ^ 2) hiso
+      simp only [dist_eq_norm_vsub V A B, dist_eq_norm_vsub V A C, e1, e2, norm_add_sq_real, real_inner_smul_right, hperp,
+        norm_smul, Real.norm_eq_abs, mul_pow, sq_abs] at hsq
+      have hx : x = 1 / 2 := by
+        have hpos : ‖d‖ ^ 2 ≠ 0 := pow_ne_zero 2 hd0
+        apply mul_left_cancel₀ hpos
+        linear_combination (1 / 2) * hsq
+      rw [hx, show (1 / 2 : ℝ) = ⅟2 by norm_num]
+      rfl
+- id: isosceles_base_angle_acute
+  kind: gap
+  level: middle
+  topic: 三角形・二等辺三角形
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で$AB=AC$ならば、底角$\angle ABC$は$\pi/2$より小さく、頂角は$\angle BAC=\pi-2\angle ABC$である。
+  statement_en: If A, B, C are not collinear and AB = AC, then ∠ABC < π/2 and ∠BAC = π - 2∠ABC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $AB=AC$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle ABC<\pi/2$かつ$\angle BAC=\pi-2\angle ABC$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とし、$AB=AC$とする。
+    二等辺三角形の底角は等しいので$\angle ABC=\angle ACB$である。内角の和より$\angle BAC+2\angle ABC=\pi$であり、これが頂角の式である。$A,B,C$は同一直線上にないので$\angle BAC>0$であり、$2\angle ABC<\pi$、すなわち$\angle ABC<\pi/2$である。
+  strategy: Combine equal base angles with the angle sum and positivity of the apex angle.
+  sketch:
+  - 'apply_theorem: AB = AC gives equal base angles.'
+  - 'apply_theorem: The angle sum gives ∠BAC + 2∠ABC = π.'
+  - 'conclude: Non-collinearity gives ∠BAC > 0, hence ∠ABC < π/2.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (dist_of a b) (dist_of a c))) (and (< (euclid_angle a b c) (/ pi 2)) (= (euclid_angle b a c) (- pi (* 2 (euclid_angle a b c)))))))
+  hard_negative:
+    statement: $AB=AC$ならば頂角$\angle BAC$も$\pi/2$より小さい。
+    reason: 頂角は鈍角になりうる。底角が$\pi/6$なら頂角は$2\pi/3$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → dist A B = dist A C → EuclideanGeometry.angle A B C < Real.pi / 2 ∧ EuclideanGeometry.angle B A C = Real.pi - 2 * EuclideanGeometry.angle A B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hABC hiso
+      have hb := EuclideanGeometry.angle_eq_angle_of_dist_eq hiso
+      have hs := EuclideanGeometry.angle_add_angle_add_angle_eq_pi C (ne₁₂_of_not_collinear hABC).symm
+      have hp : 0 < EuclideanGeometry.angle B A C :=
+        EuclideanGeometry.angle_pos_of_not_collinear (by rwa [Set.insert_comm])
+      rw [EuclideanGeometry.angle_comm B C A, ← hb, EuclideanGeometry.angle_comm C A B] at hs
+      constructor <;> linarith
+- id: equilateral_triangle_angles_pi_div_three
+  kind: textbook
+  level: middle
+  topic: 三角形・正三角形
+  statement: $A\neq B$かつ$AB=BC=CA$ならば、3つの角はすべて$\pi/3$である。
+  statement_en: If A ≠ B and AB = BC = CA, then ∠ABC = ∠BCA = ∠CAB = π/3.
+  assumptions:
+  - $A\neq B$
+  - $AB=BC$
+  - $BC=CA$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle ABC=\angle BCA=\angle CAB=\pi/3$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$A\neq B$、$AB=BC=CA$とする。
+    $BA=BC$より二等辺三角形の底角として$\angle BAC=\angle BCA$である。$CA=CB$より同様に$\angle CAB=\angle CBA$である。したがって3つの角は等しい。$A\neq B$なので3辺の長さは正で3点は相異なり、内角の和は$\pi$である。よって各角は$\pi/3$である。
+  strategy: Two applications of the base-angle theorem make all angles equal, then use the angle sum.
+  sketch:
+  - 'apply_theorem: BA = BC gives ∠BAC = ∠BCA.'
+  - 'apply_theorem: CA = CB gives ∠CAB = ∠CBA.'
+  - 'derive: The three angles are equal.'
+  - 'conclude: The angle sum π gives each angle π/3.'
+  openmath: (forall (a b c) (-> (and (!= a b) (= (dist_of a b) (dist_of b c)) (= (dist_of b c) (dist_of c a))) (and (= (euclid_angle a b c) (/ pi 3)) (= (euclid_angle b c a) (/ pi 3)) (= (euclid_angle c a b) (/ pi 3)))))
+  hard_negative:
+    statement: $A\neq B$を外しても、$AB=BC=CA$なら各角は$\pi/3$である。
+    reason: $A=B=C$でも$AB=BC=CA=0$であるが、3点が一致すれば三角形にならず、角は定まらない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), A ≠ B → dist A B = dist B C → dist B C = dist C A → EuclideanGeometry.angle A B C = Real.pi / 3 ∧ EuclideanGeometry.angle B C A = Real.pi / 3 ∧ EuclideanGeometry.angle C A B = Real.pi / 3
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hAB h1 h2
+      have ha := EuclideanGeometry.angle_eq_angle_of_dist_eq (p₁ := B) (p₂ := A) (p₃ := C) (by rw [dist_comm B A]; exact h1)
+      have hb := EuclideanGeometry.angle_eq_angle_of_dist_eq (p₁ := C) (p₂ := A) (p₃ := B) (by rw [dist_comm C B]; exact h2.symm)
+      have hs := EuclideanGeometry.angle_add_angle_add_angle_eq_pi C hAB.symm
+      rw [EuclideanGeometry.angle_comm C B A] at hb
+      rw [EuclideanGeometry.angle_comm B A C] at ha
+      rw [EuclideanGeometry.angle_comm B C A] at *
+      refine ⟨?_, ?_, ?_⟩ <;> linarith
+- id: equiangular_triangle_is_equilateral
+  kind: gap
+  level: middle
+  topic: 三角形・正三角形
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で3つの角が等しい、すなわち$\angle ABC=\angle BCA=\angle CAB$ならば、$AB=BC=CA$である。
+  statement_en: If A, B, C are not collinear and ∠ABC = ∠BCA = ∠CAB, then AB = BC = CA.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $\angle ABC=\angle BCA$
+  - $\angle BCA=\angle CAB$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=BC=CA$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とし、3つの角が等しいとする。
+    $\angle ABC=\angle ACB$なので、底角が等しい三角形は二等辺であることから$AB=AC$である。$\angle BCA=\angle BAC$なので同様に$BC=BA$である。よって$AB=BC=CA$である。
+  strategy: Apply the converse of the base-angle theorem at two vertices.
+  sketch:
+  - 'apply_theorem: ∠ABC = ∠ACB gives AB = AC.'
+  - 'apply_theorem: ∠BCA = ∠BAC gives BC = BA.'
+  - 'conclude: All three sides are equal.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (euclid_angle a b c) (euclid_angle b c a)) (= (euclid_angle b c a) (euclid_angle c a b))) (and (= (dist_of a b) (dist_of b c)) (= (dist_of b c) (dist_of c a)))))
+  hard_negative:
+    statement: $\angle ABC=\angle BCA$だけで$AB=BC=CA$である。
+    reason: 2つの角が等しいと二等辺になるだけである。角が$\pi/4,\pi/4,\pi/2$の直角二等辺三角形は正三角形ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → EuclideanGeometry.angle A B C = EuclideanGeometry.angle B C A → EuclideanGeometry.angle B C A = EuclideanGeometry.angle C A B → dist A B = dist B C ∧ dist B C = dist C A
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hABC h1 h2
+      have hAC : dist A B = dist A C := by
+        refine EuclideanGeometry.dist_eq_of_angle_eq_angle_of_angle_ne_pi
+          (by rw [h1, EuclideanGeometry.angle_comm]) ?_
+        exact (EuclideanGeometry.angle_lt_pi_of_not_collinear (by rwa [Set.insert_comm])).ne
+      have hBA : dist B C = dist B A := by
+        refine EuclideanGeometry.dist_eq_of_angle_eq_angle_of_angle_ne_pi
+          (by rw [h2, EuclideanGeometry.angle_comm]) ?_
+        rw [EuclideanGeometry.angle_comm]
+        exact (EuclideanGeometry.angle_lt_pi_of_not_collinear hABC).ne
+      constructor
+      · rw [hBA, dist_comm]
+      · rw [hBA, dist_comm B A, hAC, dist_comm]
+- id: isosceles_apex_pi_div_three_is_equilateral
+  kind: gap
+  level: middle
+  topic: 三角形・正三角形
+  statement: $AB=AC$かつ頂角$\angle BAC=\pi/3$ならば、$AB=BC=CA$である。
+  statement_en: If AB = AC and ∠BAC = π/3, then AB = BC = CA.
+  assumptions:
+  - $AB=AC$
+  - $\angle BAC=\pi/3$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=BC=CA$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$AB=AC$、$\angle BAC=\pi/3$とする。
+    余弦定理より$BC^2=AB^2+AC^2-2\,AB\cdot AC\cos\frac{\pi}{3}$である。$AB=AC$と$\cos\frac{\pi}{3}=\frac12$を代入すると$BC^2=AB^2$であり、長さは$0$以上なので$BC=AB$である。これと$AB=AC$より$AB=BC=CA$である。
+  strategy: The law of cosines with cos(π/3) = 1/2 gives BC = AB.
+  sketch:
+  - 'apply_theorem: Write BC² by the law of cosines at A.'
+  - 'derive: Substituting AB = AC and cos(π/3) = 1/2 gives BC² = AB².'
+  - 'conclude: Nonnegativity gives BC = AB.'
+  openmath: (forall (a b c) (-> (and (= (dist_of a b) (dist_of a c)) (= (euclid_angle b a c) (/ pi 3))) (and (= (dist_of a b) (dist_of b c)) (= (dist_of b c) (dist_of c a)))))
+  hard_negative:
+    statement: $AB\neq AC$でも、$\angle BAC=\pi/3$ならば正三角形である。
+    reason: $AB=1$、$AC=2$、$\angle BAC=\pi/3$では$BC=\sqrt3$であり、3辺は等しくない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), dist A B = dist A C → EuclideanGeometry.angle B A C = Real.pi / 3 → dist A B = dist B C ∧ dist B C = dist C A
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hiso hang
+      have e := EuclideanGeometry.law_cos B A C
+      rw [hang, Real.cos_pi_div_three, dist_comm B A, dist_comm C A, ← hiso] at e
+      have h : dist A B = dist B C := (mul_self_inj dist_nonneg dist_nonneg).mp (by linarith)
+      exact ⟨h, by rw [← h, hiso, dist_comm]⟩
+- id: isosceles_cevian_square_difference
+  kind: gap
+  level: high
+  topic: 三角形・二等辺三角形と線分の関係
+  statement: $AB=AC$で、点$D$が線分$BC$の内部にあるならば、$AB^2-AD^2=BD\cdot DC$である。
+  statement_en: If AB = AC and D lies strictly between B and C, then AB² - AD² = BD·DC.
+  assumptions:
+  - $AB=AC$
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $AB^2-AD^2=BD\cdot DC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とし、$AB=AC$で、$D$は$B$と$C$の間にあって$B,C$と異なるとする。$BC=BD+DC>0$である。
+    スチュワートの定理より$AB^2\cdot DC+AC^2\cdot BD=BC(AD^2+BD\cdot DC)$である。$AC=AB$を代入すると左辺は$AB^2(DC+BD)=AB^2\cdot BC$である。両辺を$BC$で割ると$AB^2=AD^2+BD\cdot DC$である。
+  strategy: Specialize Stewart's theorem to equal sides and cancel BC.
+  sketch:
+  - 'apply_theorem: Stewart''s theorem for D on BC.'
+  - 'derive: AB = AC makes the left side AB²·BC.'
+  - 'conclude: Cancel BC > 0.'
+  openmath: (forall (a b c d) (-> (and (= (dist_of a b) (dist_of a c)) (strictly_between b d c)) (= (- (^ (dist_of a b) 2) (^ (dist_of a d) 2)) (* (dist_of b d) (dist_of d c)))))
+  hard_negative:
+    statement: $D$が線分$BC$の外にあるときも$AB^2-AD^2=BD\cdot DC$である。
+    reason: 外にある点では$AD>AB$となり左辺が負で右辺は正である。正しくは$AD^2-AB^2=BD\cdot DC$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), dist A B = dist A C → Sbtw ℝ B D C → dist A B ^ 2 - dist A D ^ 2 = dist B D * dist D C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hiso hD
+      have stew : ∀ D : P, Sbtw ℝ B D C → dist A B ^ 2 * dist D C + dist A C ^ 2 * dist B D =
+          dist B C * (dist A D ^ 2 + dist B D * dist D C) := by
+        intro D hD
+        have h := EuclideanGeometry.dist_sq_mul_dist_add_dist_sq_mul_dist A B C D hD.angle₁₂₃_eq_pi
+        rwa [dist_comm C D] at h
+      have h := stew D hD
+      have hs := hD.wbtw.dist_add_dist
+      have hBC : dist B C ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      apply mul_left_cancel₀ hBC
+      rw [← hiso] at h
+      rw [← hs] at h ⊢
+      linear_combination h
+- id: triangle_exterior_angle_eq_sum
+  kind: textbook
+  level: middle
+  topic: 三角形・内角と外角
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で点$C$が線分$BD$の内部にあるとき、$C$における外角$\angle ACD$は、隣り合わない2つの内角の和$\angle ABC+\angle BAC$に等しい。
+  statement_en: If A, B, C are not collinear and C lies strictly between B and D, then ∠ACD = ∠ABC + ∠BAC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $C$は$B$と$D$の間にあり$B,D$と異なる
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $\angle ACD=\angle ABC+\angle BAC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$C$は$B$と$D$の間にあって$B,D$と異なるとする。
+    $B,C,D$がこの順に一直線上にあるので$\angle ACB+\angle ACD=\pi$である。内角の和より$\angle ABC+\angle BCA+\angle CAB=\pi$である。2式から$\angle ACB$を消去すると$\angle ACD=\angle ABC+\angle BAC$である。
+  strategy: Use the straight angle at C and the angle sum of the triangle.
+  sketch:
+  - 'derive: C between B and D gives ∠ACB + ∠ACD = π.'
+  - 'apply_theorem: The angle sum gives ∠ABC + ∠BCA + ∠CAB = π.'
+  - 'conclude: Eliminate ∠ACB.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b c d)) (= (euclid_angle a c d) (+ (euclid_angle a b c) (euclid_angle b a c)))))
+  hard_negative:
+    statement: 点$B$が線分$CD$の内部にあるときも$\angle ACD=\angle ABC+\angle BAC$である。
+    reason: このとき$D$は半直線$CB$上にあり$\angle ACD=\angle ACB$は内角である。正三角形では左辺が$\pi/3$、右辺が$2\pi/3$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B C D → EuclideanGeometry.angle A C D = EuclideanGeometry.angle A B C + EuclideanGeometry.angle B A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D _ h
+      linarith [EuclideanGeometry.exterior_angle_eq_angle_add_angle (p₃ := A) D h.symm, EuclideanGeometry.angle_comm C A B]
+- id: triangle_exterior_angle_gt_remote
+  kind: gap
+  level: middle
+  topic: 三角形・内角と外角
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で点$C$が線分$BD$の内部にあるとき、外角$\angle ACD$は隣り合わない2つの内角$\angle ABC$と$\angle BAC$のどちらよりも大きい。
+  statement_en: If A, B, C are not collinear and C lies strictly between B and D, then ∠ABC < ∠ACD and ∠BAC < ∠ACD.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $C$は$B$と$D$の間にあり$B,D$と異なる
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $\angle ABC<\angle ACD$かつ$\angle BAC<\angle ACD$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$C$は$B$と$D$の間にあって$B,D$と異なるとする。
+    外角の定理より$\angle ACD=\angle ABC+\angle BAC$である。$A,B,C$は同一直線上にないので$\angle ABC>0$、$\angle BAC>0$である。したがって$\angle ACD$は$\angle ABC$より大きく、$\angle BAC$より大きい。
+  strategy: The exterior angle is the sum of two positive remote angles.
+  sketch:
+  - 'apply_theorem: The exterior angle theorem gives ∠ACD = ∠ABC + ∠BAC.'
+  - 'derive: Non-collinearity makes both summands positive.'
+  - 'conclude: The sum exceeds each summand.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b c d)) (and (< (euclid_angle a b c) (euclid_angle a c d)) (< (euclid_angle b a c) (euclid_angle a c d)))))
+  hard_negative:
+    statement: $A,B,C$が同一直線上にあっても、外角は隣り合わない内角より真に大きい。
+    reason: $B=0$、$C=1$、$D=2$、$A=3$の数直線上では$\angle ABC=0$、$\angle ACD=0$で等しい。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B C D → EuclideanGeometry.angle A B C < EuclideanGeometry.angle A C D ∧ EuclideanGeometry.angle B A C < EuclideanGeometry.angle A C D
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC h
+      have e : EuclideanGeometry.angle A C D = EuclideanGeometry.angle A B C + EuclideanGeometry.angle B A C := by
+        linarith [EuclideanGeometry.exterior_angle_eq_angle_add_angle (p₃ := A) D h.symm, EuclideanGeometry.angle_comm C A B]
+      have p1 : 0 < EuclideanGeometry.angle A B C := EuclideanGeometry.angle_pos_of_not_collinear hABC
+      have p2 : 0 < EuclideanGeometry.angle B A C :=
+        EuclideanGeometry.angle_pos_of_not_collinear (by rwa [Set.insert_comm])
+      constructor <;> linarith
+- id: triangle_nonacute_angle_others_acute
+  kind: gap
+  level: middle
+  topic: 三角形・内角の和
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で$\angle ABC\geq\pi/2$ならば、残りの2つの角$\angle BCA,\angle CAB$はともに$\pi/2$より小さい。
+  statement_en: If A, B, C are not collinear and ∠ABC ≥ π/2, then ∠BCA < π/2 and ∠CAB < π/2.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $\angle ABC\geq\pi/2$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle BCA<\pi/2$かつ$\angle CAB<\pi/2$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とし、$\angle ABC\geq\pi/2$とする。
+    内角の和より$\angle BCA+\angle CAB=\pi-\angle ABC\leq\pi/2$である。$A,B,C$は同一直線上にないので$\angle BCA>0$、$\angle CAB>0$である。よって一方の角は$\pi/2$から正の数を引いた値以下であり、どちらも$\pi/2$より小さい。
+  strategy: The other two positive angles sum to at most π/2.
+  sketch:
+  - 'apply_theorem: The angle sum gives ∠BCA + ∠CAB ≤ π/2.'
+  - 'derive: Non-collinearity makes both angles positive.'
+  - 'conclude: Each is below π/2.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (<= (/ pi 2) (euclid_angle a b c))) (and (< (euclid_angle b c a) (/ pi 2)) (< (euclid_angle c a b) (/ pi 2)))))
+  hard_negative:
+    statement: $\angle ABC<\pi/2$ならば残りの2つの角も$\pi/2$より小さい。
+    reason: 角が$\pi/6,\pi/6,2\pi/3$の三角形で、$\angle ABC=\pi/6$とすれば残りの一方は鈍角である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → Real.pi / 2 ≤ EuclideanGeometry.angle A B C → EuclideanGeometry.angle B C A < Real.pi / 2 ∧ EuclideanGeometry.angle C A B < Real.pi / 2
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hABC h
+      have hs := EuclideanGeometry.angle_add_angle_add_angle_eq_pi C (ne₁₂_of_not_collinear hABC).symm
+      have p1 : 0 < EuclideanGeometry.angle B C A :=
+        EuclideanGeometry.angle_pos_of_not_collinear (by rwa [show ({B, C, A} : Set P) = {A, B, C} by ext x; simp; tauto])
+      have p2 : 0 < EuclideanGeometry.angle C A B :=
+        EuclideanGeometry.angle_pos_of_not_collinear (by rwa [show ({C, A, B} : Set P) = {A, B, C} by ext x; simp; tauto])
+      constructor <;> linarith
+- id: triangle_side_lt_iff_opposite_angle_lt
+  kind: textbook
+  level: middle
+  topic: 三角形・辺と角の大小
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）について、$AB<AC$であることと、それぞれの対角について$\angle ACB<\angle ABC$であることは同値である。
+  statement_en: For non-collinear A, B, C, AB < AC if and only if ∠ACB < ∠ABC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB<AC$と$\angle ACB<\angle ABC$は同値である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とする。$\beta=\angle ABC$、$\gamma=\angle ACB$とおく。
+    余弦定理の式から、$AB<AC$と$\cos\gamma>\cos\beta$が同値であることを示す。$\cos\beta=(AB^2+BC^2-AC^2)/(2AB\cdot BC)$、$\cos\gamma=(AC^2+BC^2-AB^2)/(2AC\cdot BC)$なので、$2AB\cdot AC\cdot BC(\cos\gamma-\cos\beta)=AB(AC^2+BC^2-AB^2)-AC(AB^2+BC^2-AC^2)$である。右辺を整理すると$(AC-AB)\bigl((AB+AC)^2-BC^2\bigr)$である。三角不等式より$AB+AC>BC$なので第2の因子は正である。
+    よって$AB<AC$は$\cos\gamma>\cos\beta$と同値である。余弦は$0$以上$\pi$以下で狭義減少なので、これは$\gamma<\beta$と同値である。
+  strategy: Compare the cosines of the two angles through the law of cosines; the difference factors with a positive factor from the triangle inequality.
+  sketch:
+  - 'setup: Put β = ∠ABC and γ = ∠ACB.'
+  - 'apply_theorem: The law of cosines expresses both cosines through the sides.'
+  - 'derive: The difference of cosines has the sign of AC - AB, since (AB+AC)² - BC² > 0.'
+  - 'conclude: Cosine is strictly decreasing on [0, π], so the order of angles matches.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (<-> (< (dist_of a b) (dist_of a c)) (< (euclid_angle a c b) (euclid_angle a b c)))))
+  hard_negative:
+    statement: $A,B,C$が同一直線上にあっても、$AB<AC$ならば$\angle ACB<\angle ABC$である。
+    reason: 数直線上で$A=0$、$B=1$、$C=-3$とすると$AB<AC$であるが、$\angle ACB=\angle ABC=0$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → (dist A B < dist A C ↔ EuclideanGeometry.angle A C B < EuclideanGeometry.angle A B C)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C h
+      exact (EuclideanGeometry.angle_lt_iff_dist_lt h).symm
+- id: side_opposite_nonacute_angle_is_longest
+  kind: gap
+  level: middle
+  topic: 三角形・辺と角の大小
+  statement: $A\neq B$、$C\neq B$、$\angle ABC\geq\pi/2$ならば、$\angle B$の対辺$AC$は他の2辺$AB,CB$より長い。直角三角形の斜辺と鈍角の対辺がこの場合である。
+  statement_en: If A ≠ B, C ≠ B and ∠ABC ≥ π/2, then AB < AC and CB < AC.
+  assumptions:
+  - $A\neq B$
+  - $C\neq B$
+  - $\angle ABC\geq\pi/2$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB<AC$かつ$CB<AC$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$A\neq B$、$C\neq B$、$\angle ABC\geq\pi/2$とする。
+    $\pi/2\leq\angle ABC\leq\pi$なので$\cos\angle ABC\leq0$である。余弦定理より$AC^2=AB^2+CB^2-2\,AB\cdot CB\cos\angle ABC\geq AB^2+CB^2$である。$CB>0$、$AB>0$なので$AC^2>AB^2$、$AC^2>CB^2$である。長さは$0$以上なので$AC>AB$、$AC>CB$である。
+  strategy: Nonpositive cosine makes AC² at least AB² + CB² in the law of cosines.
+  sketch:
+  - 'derive: The angle range gives cos∠ABC ≤ 0.'
+  - 'apply_theorem: The law of cosines gives AC² ≥ AB² + CB².'
+  - 'derive: Positivity of AB and CB makes the inequalities strict.'
+  - 'conclude: Comparing squares of nonnegative lengths gives the result.'
+  openmath: (forall (a b c) (-> (and (!= a b) (!= c b) (<= (/ pi 2) (euclid_angle a b c))) (and (< (dist_of a b) (dist_of a c)) (< (dist_of c b) (dist_of a c)))))
+  hard_negative:
+    statement: $\angle ABC<\pi/2$でも、対辺$AC$は他の2辺より長い。
+    reason: 頂角が$\pi/6$の二等辺三角形で$B$を頂点とすると、対辺$AC$は他の2辺より短い。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), A ≠ B → C ≠ B → Real.pi / 2 ≤ EuclideanGeometry.angle A B C → dist A B < dist A C ∧ dist C B < dist A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hA hC h
+      have e := EuclideanGeometry.law_cos A B C
+      have hc : Real.cos (EuclideanGeometry.angle A B C) ≤ 0 :=
+        Real.cos_nonpos_of_pi_div_two_le_of_le h (by linarith [EuclideanGeometry.angle_le_pi A B C, Real.pi_pos])
+      have p1 : 0 < dist A B := dist_pos.mpr hA
+      have p2 : 0 < dist C B := dist_pos.mpr hC
+      have hge : dist A B * dist A B + dist C B * dist C B ≤ dist A C * dist A C := by
+        rw [e]; nlinarith [mul_pos p1 p2]
+      have p3 : 0 ≤ dist A C := dist_nonneg
+      constructor <;> nlinarith
+- id: perpendicular_is_shortest_to_line
+  kind: gap
+  level: middle
+  topic: 三角形・垂線の長さ
+  statement: 直線$BC$上の点$H$で$A-H$と$C-B$の内積が$0$であるとき（$H$は$A$からの垂線の足）、直線$BC$上の任意の点$X$について$AH\leq AX$である。
+  statement_en: If H lies on line BC with ⟨A-H, C-B⟩ = 0, then AH ≤ AX for every point X on line BC.
+  assumptions:
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  - $X$は直線$BC$上の点
+  quantifiers:
+  - 任意の5点$A,B,C,H,X$
+  conclusion: $AH\leq AX$である。
+  answer: |
+    $A,B,C,H,X$を実内積空間上のアフィン空間の点とする。$H,X$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    実数$s,t$により$H-B=s(C-B)$、$X-B=t(C-B)$と書くと、$H-X=(s-t)(C-B)$である。$h=A-H$、$v=H-X$とおくと$A-X=h+v$であり、$\langle h,v\rangle=(s-t)\langle h,C-B\rangle=0$である。よって$AX^2=\|h\|^2+\|v\|^2\geq\|h\|^2=AH^2$である。長さは$0$以上なので$AH\leq AX$である。
+  strategy: Split A-X into the perpendicular part and a part along the line, then apply the Pythagorean identity.
+  sketch:
+  - 'setup: Write H and X on the line, so H - X is a multiple of C - B.'
+  - 'derive: A - H is orthogonal to H - X.'
+  - 'derive: AX² = AH² + HX² ≥ AH².'
+  - 'conclude: Compare the nonnegative lengths.'
+  openmath: (forall (a b c h x) (-> (and (on_line h b c) (perpendicular_lines a h b c) (on_line x b c)) (<= (dist_of a h) (dist_of a x))))
+  hard_negative:
+    statement: 直線$BC$上のすべての点$X$について$AH<AX$である。
+    reason: $X=H$では等号が成り立つ。真に大きいのは$X\neq H$の点に限る。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H X : P), H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → X ∈ line[ℝ, B, C] → dist A H ≤ dist A X
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H X hH hperp hX
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hX
+      have e : A -ᵥ AffineMap.lineMap B C t = (A -ᵥ AffineMap.lineMap B C s) + (s - t) • (C -ᵥ B) := by
+        rw [← vsub_add_vsub_cancel A (AffineMap.lineMap B C s) (AffineMap.lineMap B C t)]
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right, sub_smul]
+      rw [dist_eq_norm_vsub V A, dist_eq_norm_vsub V A, e]
+      refine abs_le_of_sq_le_sq' ?_ (by positivity) |>.2
+      rw [norm_add_sq_real, real_inner_smul_right, hperp]
+      nlinarith [sq_nonneg ‖(s - t) • (C -ᵥ B)‖]
+- id: triangle_strict_inequality
+  kind: gap
+  level: middle
+  topic: 三角形・三角形の成立条件
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）では、$AC<AB+BC$かつ$|AB-BC|<AC$である。2辺の和は第3辺より長く、2辺の差は第3辺より短い。
+  statement_en: If A, B, C are not collinear, then AC < AB + BC and |AB - BC| < AC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AC<AB+BC$かつ$|AB-BC|<AC$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とする。
+    実内積空間では、$XZ=XY+YZ$が成り立つのは$Y$が線分$XZ$上にあるときに限る。$A,B,C$は同一直線上にないので、$B$は線分$AC$上になく、$A$は線分$BC$上になく、$C$は線分$AB$上にない。三角不等式と合わせると、$AC<AB+BC$、$BC<BA+AC$、$AB<AC+CB$である。
+    第2式から$-AC<AB-BC$、第3式から$AB-BC<AC$であり、合わせて$|AB-BC|<AC$である。
+  strategy: Equality in the triangle inequality forces betweenness, which non-collinearity excludes.
+  sketch:
+  - 'apply_theorem: Equality XZ = XY + YZ holds only when Y lies on segment XZ.'
+  - 'derive: Non-collinearity gives all three strict triangle inequalities.'
+  - 'conclude: Two of them combine into |AB - BC| < AC.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (< (dist_of a c) (+ (dist_of a b) (dist_of b c))) (< (abs (- (dist_of a b) (dist_of b c))) (dist_of a c)))))
+  hard_negative:
+    statement: $A,B,C$が同一直線上にあっても、$AC<AB+BC$である。
+    reason: $B$が線分$AC$上にあれば$AC=AB+BC$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → dist A C < dist A B + dist B C ∧ |dist A B - dist B C| < dist A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C h
+      have h1 : dist A C < dist A B + dist B C :=
+        dist_lt_dist_add_dist_iff.mpr fun hw => h hw.collinear
+      have h2 : dist B C < dist B A + dist A C :=
+        dist_lt_dist_add_dist_iff.mpr fun hw => h (by have := hw.collinear; rwa [Set.insert_comm] at this)
+      have h3 : dist A B < dist A C + dist C B :=
+        dist_lt_dist_add_dist_iff.mpr fun hw => h (by have := hw.collinear; rwa [Set.pair_comm] at this)
+      rw [dist_comm B A] at h2
+      rw [dist_comm C B] at h3
+      refine ⟨h1, abs_lt.mpr ⟨by linarith, by linarith⟩⟩
+- id: triangle_exists_iff_three_inequalities
+  kind: textbook
+  level: middle
+  topic: 三角形・三角形の成立条件
+  statement: 実数$a,b,c$について、平面上に同一直線上にない3点$A,B,C$で$BC=a$、$CA=b$、$AB=c$となるものがあることと、$a<b+c$、$b<c+a$、$c<a+b$がすべて成り立つことは同値である。
+  statement_en: For real a, b, c, there exist non-collinear points A, B, C of the Euclidean plane with BC = a, CA = b, AB = c if and only if a < b + c, b < c + a and c < a + b.
+  assumptions:
+  - $a,b,c$は実数
+  - 平面は$\mathbb{R}^2$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 3辺が$a,b,c$の三角形が平面上に存在することと、3つの不等式が成り立つことは同値である。
+  answer: |
+    $a,b,c$を実数とする。平面は$\mathbb{R}^2$である。
+    三角形が存在するとする。$A,B,C$は同一直線上にないので、三角不等式の等号は成り立たず、$BC<BA+AC$、$CA<CB+BA$、$AB<AC+CB$である。これらは$a<b+c$、$b<c+a$、$c<a+b$である。
+    逆に3つの不等式を仮定する。2式を足すと$a,b,c$はすべて正である。$x=(a^2+c^2-b^2)/(2a)$とおく。
+    $(2a)^2(c^2-x^2)=(b+a-c)(b-a+c)\bigl((a+c)^2-b^2\bigr)$であり、仮定より右辺の3つの因子は正である。よって$c^2-x^2>0$であり、$y=\sqrt{c^2-x^2}$とおける。$B=(0,0)$、$C=(a,0)$、$A=(x,y)$とすると、$BC=a$、$AB=\sqrt{x^2+y^2}=c$である。また$2ax=a^2+c^2-b^2$より$(a-x)^2+y^2=a^2-2ax+c^2=b^2$なので、$CA=b$である。
+    $A,B,C$が同一直線上にあれば、3点のうち1点が他の2点の間にあり、$a=b+c$、$b=c+a$、$c=a+b$のいずれかが成り立つ。これは仮定に反する。
+  strategy: Forward uses strict triangle inequalities; backward places B and C on an axis and solves for A, with non-collinearity from the strict inequalities.
+  sketch:
+  - 'apply_theorem: Non-collinear points satisfy the three strict triangle inequalities.'
+  - 'derive: Conversely, adding two inequalities shows a, b, c > 0.'
+  - 'construct: Put x = (a²+c²-b²)/(2a) and y = √(c²-x²), which is defined by a factorization.'
+  - 'construct: Take B = (0,0), C = (a,0), A = (x,y).'
+  - 'derive: Direct computation gives BC = a, CA = b, AB = c.'
+  - 'contradiction: Collinearity would force one side to equal the sum of the other two.'
+  openmath: (forall (a b c) (<-> (exists (x y z) (and (not (collinear_points x y z)) (= (dist_of y z) a) (= (dist_of z x) b) (= (dist_of x y) c))) (and (< a (+ b c)) (< b (+ c a)) (< c (+ a b)))))
+  hard_negative:
+    statement: 正の数$a,b,c$が$c<a+b$だけを満たせば、3辺が$a,b,c$の三角形がある。
+    reason: $a=5$、$b=c=1$では$c<a+b$であるが、$a>b+c$なので三角形はない。
+  target: |
+    ∀ (a b c : ℝ), (∃ A B C : EuclideanSpace ℝ (Fin 2), ¬Collinear ℝ ({A, B, C} : Set (EuclideanSpace ℝ (Fin 2))) ∧ dist B C = a ∧ dist C A = b ∧ dist A B = c) ↔ a < b + c ∧ b < c + a ∧ c < a + b
+  proof: |
+    by
+      intro a b c
+      constructor
+      · rintro ⟨A, B, C, hcol, rfl, rfl, rfl⟩
+        have h1 : dist B C < dist B A + dist A C := dist_lt_dist_add_dist_iff.mpr fun hw => hcol (by
+          have := hw.collinear
+          rwa [show ({B, A, C} : Set (EuclideanSpace ℝ (Fin 2))) = {A, B, C} by ext x; simp; tauto] at this)
+        have h2 : dist C A < dist C B + dist B A := dist_lt_dist_add_dist_iff.mpr fun hw => hcol (by
+          have := hw.collinear
+          rwa [show ({C, B, A} : Set (EuclideanSpace ℝ (Fin 2))) = {A, B, C} by ext x; simp; tauto] at this)
+        have h3 : dist A B < dist A C + dist C B := dist_lt_dist_add_dist_iff.mpr fun hw => hcol (by
+          have := hw.collinear
+          rwa [show ({A, C, B} : Set (EuclideanSpace ℝ (Fin 2))) = {A, B, C} by ext x; simp; tauto] at this)
+        rw [dist_comm B A, dist_comm A C] at h1
+        rw [dist_comm C B, dist_comm B A] at h2
+        rw [dist_comm A C, dist_comm C B] at h3
+        refine ⟨by linarith, by linarith, by linarith⟩
+      · rintro ⟨h1, h2, h3⟩
+        have ha : 0 < a := by linarith
+        have hb : 0 < b := by linarith
+        have hc : 0 < c := by linarith
+        set x : ℝ := (a ^ 2 + c ^ 2 - b ^ 2) / (2 * a) with hx
+        have hxa : 2 * a * x = a ^ 2 + c ^ 2 - b ^ 2 := by rw [hx]; field_simp
+        have hpos : 0 ≤ c ^ 2 - x ^ 2 := by
+          have h4 : 0 ≤ (2 * a) ^ 2 * (c ^ 2 - x ^ 2) := by
+            have : (2 * a) ^ 2 * (c ^ 2 - x ^ 2) = (b + a - c) * (b - a + c) * ((a + c) ^ 2 - b ^ 2) := by
+              have : (2 * a) ^ 2 * x ^ 2 = (a ^ 2 + c ^ 2 - b ^ 2) ^ 2 := by rw [← hxa]; ring
+              linear_combination -this
+            rw [this]
+            have u1 : 0 < b + a - c := by linarith
+            have u2 : 0 < b - a + c := by linarith
+            have u3 : 0 < (a + c) ^ 2 - b ^ 2 := by nlinarith
+            positivity
+          exact nonneg_of_mul_nonneg_right h4 (by positivity)
+        set y : ℝ := Real.sqrt (c ^ 2 - x ^ 2) with hy
+        have hy2 : y ^ 2 = c ^ 2 - x ^ 2 := Real.sq_sqrt hpos
+        have dBC : dist (!₂[0, 0] : EuclideanSpace ℝ (Fin 2)) !₂[a, 0] = a := by
+          rw [EuclideanSpace.dist_eq]
+          simp [Fin.sum_univ_two, Real.dist_eq, Real.sqrt_sq_eq_abs, abs_of_pos ha]
+        have dCA : dist (!₂[a, 0] : EuclideanSpace ℝ (Fin 2)) !₂[x, y] = b := by
+          rw [EuclideanSpace.dist_eq]
+          simp only [Fin.sum_univ_two, Real.dist_eq, sq_abs]
+          simp
+          rw [show (a - x) ^ 2 + y ^ 2 = b ^ 2 by rw [hy2]; linear_combination -hxa]
+          exact Real.sqrt_sq hb.le
+        have dAB : dist (!₂[x, y] : EuclideanSpace ℝ (Fin 2)) !₂[0, 0] = c := by
+          rw [EuclideanSpace.dist_eq]
+          simp only [Fin.sum_univ_two, Real.dist_eq, sq_abs]
+          simp
+          rw [show x ^ 2 + y ^ 2 = c ^ 2 by rw [hy2]; ring]
+          exact Real.sqrt_sq hc.le
+        refine ⟨!₂[x, y], !₂[0, 0], !₂[a, 0], ?_, dBC, dCA, dAB⟩
+        intro hcol
+        rcases hcol.wbtw_or_wbtw_or_wbtw with hw | hw | hw
+        · have := hw.dist_add_dist
+          rw [dAB, dBC, dist_comm, dCA] at this; linarith
+        · have := hw.dist_add_dist
+          rw [dBC, dCA, dist_comm, dAB] at this; linarith
+        · have := hw.dist_add_dist
+          rw [dCA, dAB, dist_comm, dBC] at this; linarith
+- id: perpendicular_iff_square_difference
+  kind: gap
+  level: high
+  topic: 三角形・三平方の定理の応用
+  statement: 点$A,B,C,H$について、$A-H$と$C-B$の内積が$0$であることと、$AB^2-AC^2=HB^2-HC^2$は同値である。
+  statement_en: For points A, B, C, H, ⟨A-H, C-B⟩ = 0 if and only if AB² - AC² = HB² - HC².
+  assumptions:
+  - $A,B,C,H$は実内積空間上のアフィン空間の点
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $\langle A-H,C-B\rangle=0$と$AB^2-AC^2=HB^2-HC^2$は同値である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$h=A-H$、$x=B-H$、$y=C-H$とおくと、$A-B=h-x$、$A-C=h-y$、$C-B=y-x$である。
+    内積を展開すると$AB^2=\|h\|^2-2\langle h,x\rangle+\|x\|^2$、$AC^2=\|h\|^2-2\langle h,y\rangle+\|y\|^2$である。差をとると、$AB^2-AC^2=\|x\|^2-\|y\|^2+2\langle h,y-x\rangle=HB^2-HC^2+2\langle h,C-B\rangle$である。
+    したがって$AB^2-AC^2=HB^2-HC^2$は$\langle A-H,C-B\rangle=0$と同値である。
+  strategy: Expand both squared distances from H; the difference is exactly twice the inner product.
+  sketch:
+  - 'setup: Put h = A-H, x = B-H, y = C-H.'
+  - 'derive: Expanding gives AB² - AC² = HB² - HC² + 2⟨h, y-x⟩.'
+  - 'conclude: The two conditions are equivalent since y - x = C - B.'
+  openmath: (forall (a b c h) (<-> (perpendicular_lines a h b c) (= (- (^ (dist_of a b) 2) (^ (dist_of a c) 2)) (- (^ (dist_of h b) 2) (^ (dist_of h c) 2)))))
+  hard_negative:
+    statement: $A-H$と$C-B$の内積が$0$であることと、$AB^2+AC^2=HB^2+HC^2$は同値である。
+    reason: 和では成り立たない。$H$が$BC$の中点で$AH\perp BC$、$A\neq H$なら、三平方の定理より左辺は右辺より$2AH^2$だけ大きい。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 ↔ dist A B ^ 2 - dist A C ^ 2 = dist H B ^ 2 - dist H C ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H
+      have e1 : A -ᵥ B = (A -ᵥ H) - (B -ᵥ H) := (vsub_sub_vsub_cancel_right A B H).symm
+      have e2 : A -ᵥ C = (A -ᵥ H) - (C -ᵥ H) := (vsub_sub_vsub_cancel_right A C H).symm
+      have e3 : C -ᵥ B = (C -ᵥ H) - (B -ᵥ H) := (vsub_sub_vsub_cancel_right C B H).symm
+      rw [dist_eq_norm_vsub V A B, dist_eq_norm_vsub V A C, dist_comm H B, dist_eq_norm_vsub V B H, dist_comm H C,
+        dist_eq_norm_vsub V C H, e1, e2, e3, norm_sub_sq_real, norm_sub_sq_real, inner_sub_right]
+      constructor <;> intro hh <;> linarith
+- id: isosceles_right_triangle_ratio
+  kind: textbook
+  level: middle
+  topic: 三角形・特別な直角三角形
+  statement: $A\neq B$、$\angle BAC=\pi/2$、$AB=AC$ならば（直角二等辺三角形）、$BC=\sqrt2\,AB$であり、$\angle ABC=\angle ACB=\pi/4$である。
+  statement_en: If A ≠ B, ∠BAC = π/2 and AB = AC, then BC = √2·AB and ∠ABC = ∠ACB = π/4.
+  assumptions:
+  - $A\neq B$
+  - $\angle BAC=\pi/2$
+  - $AB=AC$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $BC=\sqrt2\,AB$かつ$\angle ABC=\angle ACB=\pi/4$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$A\neq B$、$\angle BAC=\pi/2$、$AB=AC$とする。
+    三平方の定理より$BC^2=AB^2+AC^2=2AB^2$であり、長さは$0$以上なので$BC=\sqrt2\,AB$である。$AB=AC$より底角は等しく、$\angle ABC=\angle ACB$である。$A\neq B$なので内角の和が使え、$2\angle ABC+\pi/2=\pi$である。よって$\angle ABC=\angle ACB=\pi/4$である。
+  strategy: The Pythagorean theorem gives the side ratio; equal base angles and the angle sum give π/4.
+  sketch:
+  - 'apply_theorem: The Pythagorean theorem gives BC² = 2AB².'
+  - 'derive: Nonnegativity gives BC = √2·AB.'
+  - 'apply_theorem: AB = AC gives equal base angles.'
+  - 'conclude: The angle sum gives π/4.'
+  openmath: (forall (a b c) (-> (and (!= a b) (= (euclid_angle b a c) (/ pi 2)) (= (dist_of a b) (dist_of a c))) (and (= (dist_of b c) (* (root 2 2) (dist_of a b))) (= (euclid_angle a b c) (/ pi 4)) (= (euclid_angle a c b) (/ pi 4)))))
+  hard_negative:
+    statement: $AB=AC$だけで$BC=\sqrt2\,AB$である。
+    reason: 頂角が直角とは限らない。正三角形では$BC=AB$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), A ≠ B → EuclideanGeometry.angle B A C = Real.pi / 2 → dist A B = dist A C → dist B C = Real.sqrt 2 * dist A B ∧ EuclideanGeometry.angle A B C = Real.pi / 4 ∧ EuclideanGeometry.angle A C B = Real.pi / 4
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hAB h hiso
+      have e := (EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two B A C).mpr h
+      rw [dist_comm B A, dist_comm C A, ← hiso] at e
+      have hb := EuclideanGeometry.angle_eq_angle_of_dist_eq hiso
+      have hs := EuclideanGeometry.angle_add_angle_add_angle_eq_pi C hAB.symm
+      rw [EuclideanGeometry.angle_comm B C A, ← hb, EuclideanGeometry.angle_comm C A B, h] at hs
+      refine ⟨?_, ?_, ?_⟩
+      · refine (mul_self_inj dist_nonneg (by positivity)).mp ?_
+        have h2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num)
+        rw [e]
+        linear_combination (-(dist A B * dist A B)) * h2
+      · linarith
+      · linarith
+- id: right_triangle_thirty_sixty_ratio
+  kind: textbook
+  level: middle
+  topic: 三角形・特別な直角三角形
+  statement: 直角三角形$ABC$（$A,B,C$は同一直線上になく$\angle BCA=\pi/2$）で$\angle CAB=\pi/6$ならば、$AB=2BC$かつ$AC=\sqrt3\,BC$である。
+  statement_en: If A, B, C are not collinear, ∠BCA = π/2 and ∠CAB = π/6, then AB = 2·BC and AC = √3·BC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $\angle BCA=\pi/2$
+  - $\angle CAB=\pi/6$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB=2BC$かつ$AC=\sqrt3\,BC$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とし、$\angle BCA=\pi/2$、$\angle CAB=\pi/6$とする。$A,B,C$は$C$を直角とする直角三角形をなす。
+    正弦と余弦の定義より$BC=AB\sin\frac{\pi}{6}=\frac12AB$、$AC=AB\cos\frac{\pi}{6}=\frac{\sqrt3}{2}AB$である。第1式から$AB=2BC$であり、第2式に代入すると$AC=\sqrt3\,BC$である。
+  strategy: Use sine and cosine of π/6 in the right triangle.
+  sketch:
+  - 'apply_theorem: In the right triangle BC = AB·sin(π/6) and AC = AB·cos(π/6).'
+  - 'derive: Substitute sin(π/6) = 1/2 and cos(π/6) = √3/2.'
+  - 'conclude: Eliminate AB from the second equation.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (euclid_angle b c a) (/ pi 2)) (= (euclid_angle c a b) (/ pi 6))) (and (= (dist_of a b) (* 2 (dist_of b c))) (= (dist_of a c) (* (root 3 2) (dist_of b c))))))
+  hard_negative:
+    statement: $\angle BCA=\pi/2$、$\angle CAB=\pi/6$ならば$AB=2AC$である。
+    reason: $\pi/6$の対辺は$BC$であり、$AC$ではない。実際は$AB=\frac{2}{\sqrt3}AC$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → EuclideanGeometry.angle B C A = Real.pi / 2 → EuclideanGeometry.angle C A B = Real.pi / 6 → dist A B = 2 * dist B C ∧ dist A C = Real.sqrt 3 * dist B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C _ h ha
+      have s := EuclideanGeometry.sin_angle_mul_dist_of_angle_eq_pi_div_two (p₁ := B) (p₂ := C) (p₃ := A) h
+      have c := EuclideanGeometry.cos_angle_mul_dist_of_angle_eq_pi_div_two (p₁ := B) (p₂ := C) (p₃ := A) h
+      rw [ha, Real.sin_pi_div_six, dist_comm B A] at s
+      rw [ha, Real.cos_pi_div_six, dist_comm B A] at c
+      constructor
+      · linarith
+      · rw [← c, ← s]; ring
+- id: right_triangle_hypotenuse_twice_leg_angles
+  kind: gap
+  level: middle
+  topic: 三角形・特別な直角三角形
+  statement: $B\neq C$、$\angle BCA=\pi/2$、$AB=2BC$ならば、$\angle CAB=\pi/6$かつ$\angle ABC=\pi/3$である。斜辺が1辺の2倍である直角三角形についての主張である。
+  statement_en: If B ≠ C, ∠BCA = π/2 and AB = 2·BC, then ∠CAB = π/6 and ∠ABC = π/3.
+  assumptions:
+  - $B\neq C$
+  - $\angle BCA=\pi/2$
+  - $AB=2BC$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle CAB=\pi/6$かつ$\angle ABC=\pi/3$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$B\neq C$、$\angle BCA=\pi/2$、$AB=2BC$とする。$BC>0$である。$A=C$なら$AB=BC$となり$AB=2BC$に反するので$A\neq C$である。$A=B$なら$AB=0$となり同じく反するので$A\neq B$である。
+    直角三角形なので$BC=AB\sin\angle CAB$であり、$AB=2BC$より$\sin\angle CAB=\frac12$である。$\angle C$が直角なので$\angle CAB$は$0$以上$\pi/2$未満である。この範囲で正弦は単射で$\sin\frac{\pi}{6}=\frac12$なので、$\angle CAB=\pi/6$である。内角の和より$\angle ABC=\pi-\pi/2-\pi/6=\pi/3$である。
+  strategy: The sine of the angle at A equals 1/2, and it is an acute angle.
+  sketch:
+  - 'setup: The length equation excludes A = C and A = B.'
+  - 'derive: In the right triangle sin∠CAB = BC/AB = 1/2.'
+  - 'derive: ∠CAB lies in [0, π/2), so injectivity of sine gives π/6.'
+  - 'conclude: The angle sum gives ∠ABC = π/3.'
+  openmath: (forall (a b c) (-> (and (!= b c) (= (euclid_angle b c a) (/ pi 2)) (= (dist_of a b) (* 2 (dist_of b c)))) (and (= (euclid_angle c a b) (/ pi 6)) (= (euclid_angle a b c) (/ pi 3)))))
+  hard_negative:
+    statement: 直角の仮定を外しても、$AB=2BC$ならば$\angle CAB=\pi/6$である。
+    reason: $\angle CAB$は定まらない。$B=(0,0)$、$C=(1,0)$、$A=(2,0)$では$AB=2BC$であるが、$\angle CAB=0$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), B ≠ C → EuclideanGeometry.angle B C A = Real.pi / 2 → dist A B = 2 * dist B C → EuclideanGeometry.angle C A B = Real.pi / 6 ∧ EuclideanGeometry.angle A B C = Real.pi / 3
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hBC h hd
+      have hpos : 0 < dist B C := dist_pos.mpr hBC
+      have hAC : A ≠ C := by
+        rintro rfl
+        rw [dist_comm] at hd
+        linarith
+      have hAB : A ≠ B := by
+        rintro rfl
+        rw [dist_self] at hd
+        linarith
+      have s := EuclideanGeometry.sin_angle_mul_dist_of_angle_eq_pi_div_two (p₁ := B) (p₂ := C) (p₃ := A) h
+      rw [dist_comm B A, hd] at s
+      have hs : Real.sin (EuclideanGeometry.angle C A B) = Real.sin (Real.pi / 6) := by
+        rw [Real.sin_pi_div_six]
+        apply mul_right_cancel₀ hpos.ne'
+        linarith
+      have lt := EuclideanGeometry.angle_lt_pi_div_two_of_angle_eq_pi_div_two (p₁ := B) (p₂ := C) (p₃ := A) h hAC
+      have nn := EuclideanGeometry.angle_nonneg C A B
+      have hA : EuclideanGeometry.angle C A B = Real.pi / 6 :=
+        Real.injOn_sin ⟨by linarith [Real.pi_pos], lt.le⟩ ⟨by linarith [Real.pi_pos], by linarith [Real.pi_pos]⟩ hs
+      have sum := EuclideanGeometry.angle_add_angle_add_angle_eq_pi C hAB.symm
+      exact ⟨hA, by linarith⟩
+- id: right_angle_iff_median_half_hypotenuse
+  kind: gap
+  level: high
+  topic: 三角形・中線と直角
+  statement: 点$A,B,C$と線分$BC$の中点$M$について、$\angle BAC=\pi/2$（内積$\langle B-A,C-A\rangle$が$0$であること）と$AM=BC/2$は同値である。
+  statement_en: For points A, B, C with M the midpoint of BC, ∠BAC = π/2, meaning ⟨B-A,C-A⟩ = 0, if and only if AM = BC/2.
+  assumptions:
+  - $M$は$B$と$C$の中点
+  - $\angle BAC=\pi/2$は$\langle B-A,C-A\rangle=0$を意味する
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle BAC=\pi/2$と$AM=BC/2$は同値である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$M$を$B$と$C$の中点とする。$\angle BAC=\pi/2$は$\langle B-A,C-A\rangle=0$を意味し、$B-C=(B-A)-(C-A)$の展開により$BC^2=AB^2+AC^2$と同値である。
+    中線定理より$AB^2+AC^2=2AM^2+\frac12BC^2$である。したがって$BC^2=AB^2+AC^2$は$\frac12BC^2=2AM^2$、すなわち$AM^2=(BC/2)^2$と同値である。長さは$0$以上なので、これは$AM=BC/2$と同値である。
+  strategy: Combine the Pythagorean criterion with the median theorem.
+  sketch:
+  - 'apply_theorem: ∠BAC = π/2 is equivalent to BC² = AB² + AC².'
+  - 'apply_theorem: The median theorem gives AB² + AC² = 2AM² + BC²/2.'
+  - 'derive: The criterion becomes AM² = (BC/2)².'
+  - 'conclude: Nonnegativity gives AM = BC/2.'
+  openmath: (forall (a b c) (<-> (= (euclid_angle b a c) (/ pi 2)) (= (dist_of a (midpoint_of b c)) (/ (dist_of b c) 2))))
+  hard_negative:
+    statement: $\angle BAC<\pi/2$ならば$AM<BC/2$である。
+    reason: 不等号が逆である。中線定理より$\angle BAC<\pi/2$のとき$AM>BC/2$となる。正三角形では$AM=\frac{\sqrt3}{2}BC$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), EuclideanGeometry.angle B A C = Real.pi / 2 ↔ dist A (midpoint ℝ B C) = dist B C / 2
+  proof: |
+    by
+      intro V P _ _ _ _ A B C
+      have ap := EuclideanGeometry.dist_sq_add_dist_sq_eq_two_mul_dist_midpoint_sq_add_half_dist_sq A B C
+      rw [← EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two B A C, dist_comm B A, dist_comm C A]
+      constructor
+      · intro e
+        refine (mul_self_inj dist_nonneg (by positivity)).mp ?_
+        nlinarith
+      · intro e
+        rw [e] at ap
+        nlinarith
+- id: angle_acute_obtuse_iff_side_squares
+  kind: gap
+  level: high
+  topic: 三角形・鋭角と鈍角の判定
+  statement: $A\neq B$、$C\neq B$のとき、$\angle ABC<\pi/2$と$AC^2<AB^2+BC^2$は同値であり、$\angle ABC>\pi/2$と$AC^2>AB^2+BC^2$も同値である。
+  statement_en: If A ≠ B and C ≠ B, then ∠ABC < π/2 iff AC² < AB² + BC², and ∠ABC > π/2 iff AC² > AB² + BC².
+  assumptions:
+  - $A\neq B$
+  - $C\neq B$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\angle ABC<\pi/2$と$AC^2<AB^2+BC^2$は同値であり、$\angle ABC>\pi/2$と$AC^2>AB^2+BC^2$は同値である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$A\neq B$、$C\neq B$とする。$\theta=\angle ABC$とおくと$0\leq\theta\leq\pi$である。
+    余弦定理より$AB^2+BC^2-AC^2=2\,AB\cdot BC\cos\theta$であり、$2\,AB\cdot BC>0$である。よって右辺の符号は$\cos\theta$の符号に等しい。
+    $0\leq\theta\leq\pi$では、$\theta<\pi/2$と$\cos\theta>0$は同値であり、$\theta>\pi/2$と$\cos\theta<0$は同値である。これを上の式に当てはめると2つの同値が得られる。
+  strategy: The law of cosines relates the sign of AB² + BC² - AC² to the sign of cos θ.
+  sketch:
+  - 'apply_theorem: The law of cosines gives AB² + BC² - AC² = 2·AB·BC·cosθ.'
+  - 'derive: The factor 2·AB·BC is positive, so the signs agree.'
+  - 'case_split: On [0, π], cosθ > 0 iff θ < π/2 and cosθ < 0 iff θ > π/2.'
+  - 'conclude: Both equivalences follow.'
+  openmath: (forall (a b c) (-> (and (!= a b) (!= c b)) (and (<-> (< (euclid_angle a b c) (/ pi 2)) (< (^ (dist_of a c) 2) (+ (^ (dist_of a b) 2) (^ (dist_of b c) 2)))) (<-> (< (/ pi 2) (euclid_angle a b c)) (< (+ (^ (dist_of a b) 2) (^ (dist_of b c) 2)) (^ (dist_of a c) 2))))))
+  hard_negative:
+    statement: $AC^2<AB^2+BC^2$ならば三角形$ABC$は鋭角三角形である。
+    reason: この不等式が示すのは$\angle ABC$が鋭角であることだけである。$AB=3$、$BC=4$、$AC=2$では$AC^2<AB^2+BC^2$であるが、$BC^2>AB^2+AC^2$なので$\angle BAC$は鈍角である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), A ≠ B → C ≠ B → (EuclideanGeometry.angle A B C < Real.pi / 2 ↔ dist A C ^ 2 < dist A B ^ 2 + dist B C ^ 2) ∧ (Real.pi / 2 < EuclideanGeometry.angle A B C ↔ dist A B ^ 2 + dist B C ^ 2 < dist A C ^ 2)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hA hC
+      have e := EuclideanGeometry.law_cos A B C
+      rw [dist_comm C B] at e
+      have p1 : 0 < dist A B := dist_pos.mpr hA
+      have p2 : 0 < dist B C := by rw [dist_comm]; exact dist_pos.mpr hC
+      have pp : 0 < 2 * dist A B * dist B C := by positivity
+      have nn := EuclideanGeometry.angle_nonneg A B C
+      have le := EuclideanGeometry.angle_le_pi A B C
+      have hpi := Real.pi_pos
+      constructor
+      · constructor
+        · intro h
+          have hc : 0 < Real.cos (EuclideanGeometry.angle A B C) :=
+            Real.cos_pos_of_mem_Ioo ⟨by linarith, h⟩
+          nlinarith [mul_pos pp hc]
+        · intro h
+          by_contra hn
+          have hc : Real.cos (EuclideanGeometry.angle A B C) ≤ 0 :=
+            Real.cos_nonpos_of_pi_div_two_le_of_le (not_lt.mp hn) (by linarith)
+          nlinarith [mul_nonneg pp.le (neg_nonneg.mpr hc)]
+      · constructor
+        · intro h
+          have hc : Real.cos (EuclideanGeometry.angle A B C) < 0 :=
+            Real.cos_neg_of_pi_div_two_lt_of_lt h (by linarith)
+          nlinarith [mul_pos pp (neg_pos.mpr hc)]
+        · intro h
+          by_contra hn
+          have hc : 0 ≤ Real.cos (EuclideanGeometry.angle A B C) :=
+            Real.cos_nonneg_of_mem_Icc ⟨by linarith, not_lt.mp hn⟩
+          nlinarith [mul_nonneg pp.le hc]
+- id: cos_angle_from_three_sides
+  kind: gap
+  level: high
+  topic: 三角形・余弦定理
+  statement: $A\neq B$、$C\neq B$のとき、余弦定理を角について解いた形$\cos\angle ABC=\dfrac{AB^2+CB^2-AC^2}{2\,AB\cdot CB}$が成り立つ。
+  statement_en: If A ≠ B and C ≠ B, then cos∠ABC = (AB² + CB² - AC²)/(2·AB·CB).
+  assumptions:
+  - $A\neq B$
+  - $C\neq B$
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\cos\angle ABC=\dfrac{AB^2+CB^2-AC^2}{2\,AB\cdot CB}$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$A\neq B$、$C\neq B$とする。$AB>0$、$CB>0$なので分母は$0$でない。
+    余弦定理より$AC^2=AB^2+CB^2-2\,AB\cdot CB\cos\angle ABC$である。これを$\cos\angle ABC$について解くと主張の式になる。
+  strategy: Solve the law of cosines for the cosine.
+  sketch:
+  - 'setup: The hypotheses make the denominator nonzero.'
+  - 'apply_theorem: The law of cosines at B.'
+  - 'conclude: Rearranging gives the formula.'
+  openmath: (forall (a b c) (-> (and (!= a b) (!= c b)) (= (cos (euclid_angle a b c)) (/ (- (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2)) (^ (dist_of a c) 2)) (* 2 (dist_of a b) (dist_of c b))))))
+  hard_negative:
+    statement: $\cos\angle ABC=\dfrac{AC^2-AB^2-CB^2}{2\,AB\cdot CB}$である。
+    reason: 符号が逆である。正三角形では$\cos\angle ABC=\frac12$であるが、右辺は$-\frac12$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), A ≠ B → C ≠ B → Real.cos (EuclideanGeometry.angle A B C) = (dist A B ^ 2 + dist C B ^ 2 - dist A C ^ 2) / (2 * dist A B * dist C B)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C hA hC
+      have p1 : dist A B ≠ 0 := dist_ne_zero.mpr hA
+      have p2 : dist C B ≠ 0 := dist_ne_zero.mpr hC
+      have e := EuclideanGeometry.law_cos A B C
+      rw [eq_div_iff (by positivity)]
+      linear_combination e
+- id: law_of_sines_ratio
+  kind: named
+  level: high
+  topic: 三角形・正弦定理
+  statement: 正弦定理。三角形$ABC$（$A,B,C$は同一直線上にない）では$\dfrac{BC}{\sin\angle BAC}=\dfrac{CA}{\sin\angle ABC}=\dfrac{AB}{\sin\angle BCA}$である。
+  statement_en: Law of sines. If A, B, C are not collinear, then BC/sin∠BAC = CA/sin∠ABC = AB/sin∠BCA.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $\dfrac{BC}{\sin\angle BAC}=\dfrac{CA}{\sin\angle ABC}=\dfrac{AB}{\sin\angle BCA}$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とする。3つの角は$0$より大きく$\pi$より小さいので、正弦はすべて正である。
+    $u=B-A$、$w=C-A$とおく。$\sin\angle BAC=\sqrt{1-\cos^2\angle BAC}$より、$\Delta=\|u\|\|w\|\sin\angle BAC=\sqrt{\|u\|^2\|w\|^2-\langle u,w\rangle^2}$である。頂点$B$でのベクトル$A-B=-u$、$C-B=w-u$についても、同じ計算で$\|u\|\|w-u\|\sin\angle ABC=\sqrt{\|u\|^2\|w-u\|^2-\langle u,w-u\rangle^2}$である。根号の中を展開すると$\|u\|^2\|w\|^2-\langle u,w\rangle^2$に等しい。したがって$AB\cdot AC\sin\angle BAC=AB\cdot BC\sin\angle ABC$である。
+    同様に頂点$C$でも$CA\cdot CB\sin\angle BCA$が同じ値$\Delta$になる。$\Delta>0$なので、3つの比はいずれも$AB\cdot BC\cdot CA/\Delta$に等しい。
+  strategy: All three products of two sides and the sine of the included angle equal the same Gram determinant square root.
+  sketch:
+  - 'setup: Non-collinearity makes all sines positive.'
+  - 'derive: AB·AC·sin∠BAC equals √(‖u‖²‖w‖² - ⟨u,w⟩²).'
+  - 'derive: The same expression arises at B and at C by expanding.'
+  - 'conclude: Dividing by AB·BC·CA gives the equal ratios.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (/ (dist_of b c) (sin (euclid_angle b a c))) (/ (dist_of c a) (sin (euclid_angle a b c)))) (= (/ (dist_of c a) (sin (euclid_angle a b c))) (/ (dist_of a b) (sin (euclid_angle b c a)))))))
+  hard_negative:
+    statement: $\dfrac{BC}{\sin\angle ABC}=\dfrac{CA}{\sin\angle BAC}$である。
+    reason: 辺と対角の対応が崩れている。$BC=3$、$CA=4$、$AB=5$の直角三角形では左辺が$15/4$、右辺が$20/3$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → dist B C / Real.sin (EuclideanGeometry.angle B A C) = dist C A / Real.sin (EuclideanGeometry.angle A B C) ∧ dist C A / Real.sin (EuclideanGeometry.angle A B C) = dist A B / Real.sin (EuclideanGeometry.angle B C A)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C h
+      have sA : 0 < Real.sin (EuclideanGeometry.angle B A C) :=
+        EuclideanGeometry.sin_pos_of_not_collinear (by rwa [Set.insert_comm])
+      have sB : 0 < Real.sin (EuclideanGeometry.angle A B C) := EuclideanGeometry.sin_pos_of_not_collinear h
+      have sC : 0 < Real.sin (EuclideanGeometry.angle B C A) :=
+        EuclideanGeometry.sin_pos_of_not_collinear (by rwa [show ({B, C, A} : Set P) = {A, B, C} by ext x; simp; tauto])
+      have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist A B C
+      have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist B C A
+      rw [EuclideanGeometry.angle_comm C A B] at l1
+      constructor
+      · rw [div_eq_div_iff sA.ne' sB.ne']; linarith
+      · rw [div_eq_div_iff sB.ne' sC.ne']; linarith
+- id: triangle_projection_formula
+  kind: gap
+  level: high
+  topic: 三角形・余弦定理
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）では、第一余弦定理$BC=AB\cos\angle ABC+AC\cos\angle ACB$が成り立つ。
+  statement_en: If A, B, C are not collinear, then BC = AB·cos∠ABC + AC·cos∠ACB.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $BC=AB\cos\angle ABC+AC\cos\angle ACB$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の、同一直線上にない点とする。$B\neq C$なので$BC>0$である。
+    余弦定理より$AC^2=AB^2+BC^2-2\,AB\cdot BC\cos\angle ABC$、$AB^2=AC^2+BC^2-2\,AC\cdot BC\cos\angle ACB$である。2式を足して整理すると$2BC^2=2BC(AB\cos\angle ABC+AC\cos\angle ACB)$である。$2BC$で割ると主張の等式である。
+  strategy: Add the law of cosines at B and at C, then cancel 2·BC.
+  sketch:
+  - 'apply_theorem: Write the law of cosines at B and at C.'
+  - 'derive: Adding gives 2BC² = 2BC(AB·cos∠ABC + AC·cos∠ACB).'
+  - 'conclude: Cancel 2·BC > 0.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (dist_of b c) (+ (* (dist_of a b) (cos (euclid_angle a b c))) (* (dist_of a c) (cos (euclid_angle a c b)))))))
+  hard_negative:
+    statement: $BC=AB\cos\angle ACB+AC\cos\angle ABC$である。
+    reason: 辺と角の対応が逆である。$AB=3$、$AC=4$、$BC=5$では正しい式の値は$5$だが、この式の値は$24/5$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), ¬Collinear ℝ ({A, B, C} : Set P) → dist B C = dist A B * Real.cos (EuclideanGeometry.angle A B C) + dist A C * Real.cos (EuclideanGeometry.angle A C B)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C h
+      have hBC : B ≠ C := ne₂₃_of_not_collinear h
+      have e1 := EuclideanGeometry.law_cos A B C
+      have e2 := EuclideanGeometry.law_cos A C B
+      rw [dist_comm C B] at e1
+      have hp : dist B C ≠ 0 := dist_ne_zero.mpr hBC
+      apply mul_left_cancel₀ hp
+      linear_combination (-1 / 2) * e1 + (-1 / 2) * e2
+- id: median_theorem_apollonius
+  kind: named
+  level: high
+  topic: 三角形・中線定理
+  statement: 中線定理（アポロニウスの定理）。点$A,B,C$と線分$BC$の中点$M$について$AB^2+AC^2=2(AM^2+BM^2)$である。
+  statement_en: Median theorem. For points A, B, C with M the midpoint of BC, AB² + AC² = 2(AM² + BM²).
+  assumptions:
+  - $M$は$B$と$C$の中点
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $AB^2+AC^2=2(AM^2+BM^2)$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$M$を$B$と$C$の中点とする。$h=A-M$、$v=B-M$とおくと、$C-M=-v$である。
+    $A-B=h-v$、$A-C=h+v$なので、内積を展開すると$AB^2=\|h\|^2-2\langle h,v\rangle+\|v\|^2$、$AC^2=\|h\|^2+2\langle h,v\rangle+\|v\|^2$である。足すと$AB^2+AC^2=2\|h\|^2+2\|v\|^2=2(AM^2+BM^2)$である。
+  strategy: Expand with vectors from the midpoint; the cross terms cancel.
+  sketch:
+  - 'setup: Put h = A-M and v = B-M, so C-M = -v.'
+  - 'derive: Expanding the squared norms gives opposite cross terms.'
+  - 'conclude: Adding gives 2‖h‖² + 2‖v‖².'
+  openmath: (forall (a b c) (= (+ (^ (dist_of a b) 2) (^ (dist_of a c) 2)) (* 2 (+ (^ (dist_of a (midpoint_of b c)) 2) (^ (dist_of b (midpoint_of b c)) 2)))))
+  hard_negative:
+    statement: $AB^2+AC^2=2AM^2+BC^2$である。
+    reason: 正しくは$2BM^2=\frac12BC^2$である。1辺$1$の正三角形では左辺が$2$、右辺が$\frac32+1$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), dist A B ^ 2 + dist A C ^ 2 = 2 * (dist A (midpoint ℝ B C) ^ 2 + dist B (midpoint ℝ B C) ^ 2)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C
+      have h := EuclideanGeometry.dist_sq_add_dist_sq_eq_two_mul_dist_midpoint_sq_add_half_dist_sq A B C
+      rw [h, dist_left_midpoint, Real.norm_two]
+      ring
+- id: stewart_theorem
+  kind: named
+  level: high
+  topic: 三角形・スチュワートの定理
+  statement: スチュワートの定理。点$D$が線分$BC$の内部にあるとき$AB^2\cdot DC+AC^2\cdot BD=BC(AD^2+BD\cdot DC)$である。
+  statement_en: Stewart's theorem. If D lies strictly between B and C, then AB²·DC + AC²·BD = BC(AD² + BD·DC).
+  assumptions:
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $AB^2\cdot DC+AC^2\cdot BD=BC(AD^2+BD\cdot DC)$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とし、$D$は$B$と$C$の間にあって$B,C$と異なるとする。$BC=BD+DC$である。
+    $D$での余弦定理より$AB^2=AD^2+BD^2-2AD\cdot BD\cos\angle ADB$、$AC^2=AD^2+DC^2-2AD\cdot DC\cos\angle ADC$である。$B,D,C$がこの順に一直線上にあるので$\angle ADB+\angle ADC=\pi$であり（$A=D$のときは積が$0$なのでこの角は使わない）、$\cos\angle ADC=-\cos\angle ADB$である。
+    第1式に$DC$を、第2式に$BD$を掛けて足すと、余弦の項は消え、$AB^2\cdot DC+AC^2\cdot BD=AD^2(DC+BD)+BD\cdot DC(BD+DC)=BC(AD^2+BD\cdot DC)$である。
+  strategy: Apply the law of cosines at D in the two triangles; supplementary angles cancel the cosine terms.
+  sketch:
+  - 'apply_theorem: Write the law of cosines at D for AB² and AC².'
+  - 'derive: D between B and C makes the angles at D supplementary.'
+  - 'derive: Multiply by DC and BD and add, cancelling the cosine terms.'
+  - 'conclude: Use BC = BD + DC.'
+  openmath: (forall (a b c d) (-> (strictly_between b d c) (= (+ (* (^ (dist_of a b) 2) (dist_of d c)) (* (^ (dist_of a c) 2) (dist_of b d))) (* (dist_of b c) (+ (^ (dist_of a d) 2) (* (dist_of b d) (dist_of d c)))))))
+  hard_negative:
+    statement: $AB^2\cdot BD+AC^2\cdot DC=BC(AD^2+BD\cdot DC)$である。
+    reason: 掛ける線分の対応が逆である。$AB=0$すなわち$A=B$、$BD=1$、$DC=2$なら、左辺は$AC^2\cdot2=18$、右辺は$3(1+2)=9$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), Sbtw ℝ B D C → dist A B ^ 2 * dist D C + dist A C ^ 2 * dist B D = dist B C * (dist A D ^ 2 + dist B D * dist D C)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hD
+      have h := EuclideanGeometry.dist_sq_mul_dist_add_dist_sq_mul_dist A B C D hD.angle₁₂₃_eq_pi
+      rwa [dist_comm C D] at h
+- id: point_on_line_distance_square_formula
+  kind: gap
+  level: high
+  topic: 三角形・スチュワートの定理
+  statement: 直線$BC$上の点$D=B+t(C-B)$（$t$は任意の実数）について、$AD^2=(1-t)AB^2+tAC^2-t(1-t)BC^2$である。スチュワートの定理の内分・外分を問わない形である。
+  statement_en: For real t and D = B + t(C - B), AD² = (1-t)AB² + t·AC² - t(1-t)BC².
+  assumptions:
+  - $t$は実数
+  - $D=B+t(C-B)$
+  quantifiers:
+  - 任意の3点$A,B,C$と任意の実数$t$
+  conclusion: $AD^2=(1-t)AB^2+tAC^2-t(1-t)BC^2$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点、$t$を実数とし、$D=B+t(C-B)$とする。$u=B-A$、$w=C-A$とおくと、$D-A=(1-t)u+tw$である。
+    内積を展開すると$AD^2=(1-t)^2\|u\|^2+2t(1-t)\langle u,w\rangle+t^2\|w\|^2$である。一方$BC^2=\|w-u\|^2=\|u\|^2+\|w\|^2-2\langle u,w\rangle$である。右辺$(1-t)\|u\|^2+t\|w\|^2-t(1-t)\|w-u\|^2$を展開すると、$\|u\|^2$の係数は$(1-t)-t(1-t)=(1-t)^2$、$\|w\|^2$の係数は$t-t(1-t)=t^2$、$\langle u,w\rangle$の係数は$2t(1-t)$である。よって両辺は等しい。
+  strategy: Expand with vectors from A and compare coefficients.
+  sketch:
+  - 'setup: Put u = B-A and w = C-A, so D-A = (1-t)u + tw.'
+  - 'derive: Expand AD² and BC² in ‖u‖², ‖w‖², ⟨u,w⟩.'
+  - 'conclude: The coefficients on both sides agree.'
+  openmath: (forall (a b c t) (= (^ (dist_of a (line_point_at b c t)) 2) (- (+ (* (- 1 t) (^ (dist_of a b) 2)) (* t (^ (dist_of a c) 2))) (* t (- 1 t) (^ (dist_of b c) 2)))))
+  hard_negative:
+    statement: $AD^2=(1-t)AB^2+tAC^2+t(1-t)BC^2$である。
+    reason: 最後の項の符号が逆である。$A=B$、$BC=1$、$t=\frac12$では$AD^2=\frac14$であるが、右辺は$\frac12+\frac14$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P) (t : ℝ), dist A (AffineMap.lineMap B C t : P) ^ 2 = (1 - t) * dist A B ^ 2 + t * dist A C ^ 2 - t * (1 - t) * dist B C ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ A B C t
+      have hD : (AffineMap.lineMap B C t : P) -ᵥ A = (1 - t) • (B -ᵥ A) + t • (C -ᵥ A) := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, ← vsub_sub_vsub_cancel_right C B A]
+        module
+      rw [dist_comm A, dist_comm A B, dist_comm A C, dist_comm B C, dist_eq_norm_vsub V _ A, dist_eq_norm_vsub V B A,
+        dist_eq_norm_vsub V C A, dist_eq_norm_vsub V C B, hD, ← vsub_sub_vsub_cancel_right C B A,
+        norm_add_sq_real, norm_sub_sq_real, norm_smul, norm_smul, real_inner_smul_left, real_inner_smul_right,
+        Real.norm_eq_abs, Real.norm_eq_abs, mul_pow, mul_pow, sq_abs, sq_abs, real_inner_comm (B -ᵥ A) (C -ᵥ A)]
+      ring
+- id: angle_bisector_length_square
+  kind: gap
+  level: high
+  topic: 三角形・角の二等分線の長さ
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、線分$BC$の内部の点$D$が$\angle BAD=\angle DAC$を満たすならば、$AD^2=AB\cdot AC-BD\cdot DC$である。
+  statement_en: If A, B, C are not collinear, D lies strictly between B and C and ∠BAD = ∠DAC, then AD² = AB·AC - BD·DC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  - $\angle BAD=\angle DAC$
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $AD^2=AB\cdot AC-BD\cdot DC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は$B$と$C$の間にあって$B,C$と異なり、$\angle BAD=\angle DAC$とする。$c=AB$、$b=AC$、$m=BD$、$n=DC$とおくと$BC=m+n>0$である。
+    角の二等分線の定理より$c/b=m/n$、すなわち$cn=mb$である。スチュワートの定理より$c^2n+b^2m=(m+n)(AD^2+mn)$である。左辺は$c(cn)+b(bm)=c(mb)+b(cn)=bc(m+n)$に等しい。両辺を$m+n$で割ると$bc=AD^2+mn$である。
+  strategy: Substitute the angle bisector theorem into Stewart's theorem.
+  sketch:
+  - 'setup: Put c = AB, b = AC, m = BD, n = DC.'
+  - 'apply_theorem: The angle bisector theorem gives cn = mb.'
+  - 'apply_theorem: Stewart''s theorem gives c²n + b²m = (m+n)(AD² + mn).'
+  - 'derive: The left side equals bc(m+n).'
+  - 'conclude: Cancel m + n > 0.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b d c) (= (euclid_angle b a d) (euclid_angle d a c))) (= (^ (dist_of a d) 2) (- (* (dist_of a b) (dist_of a c)) (* (dist_of b d) (dist_of d c))))))
+  hard_negative:
+    statement: 線分$BC$の内部の任意の点$D$について$AD^2=AB\cdot AC-BD\cdot DC$である。
+    reason: 二等分線の足でなければ一般に成り立たない。$AB=3$、$AC=4$、$BC=5$で$D$を$BC$の中点にすると、左辺は$25/4$、右辺は$12-25/4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C → dist A D ^ 2 = dist A B * dist A C - dist B D * dist D C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC hD hang
+      have bis : ∀ D : P, Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C →
+          dist A B / dist A C = dist B D / dist D C := by
+        intro D hD hang
+        have hDC : D ≠ C := hD.ne_right
+        have hAC : A ≠ C := ne₁₃_of_not_collinear hABC
+        have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+          intro h0
+          apply hABC
+          have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+            EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+          have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+          have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+            affineSpan_pair_le_of_mem_of_mem hD.wbtw.mem_affineSpan (right_mem_affineSpan_pair ℝ B C)
+          exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+        have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+        have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+        have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi A hD.angle₁₂₃_eq_pi
+        have hβ : Real.sin (EuclideanGeometry.angle B D A) = Real.sin (EuclideanGeometry.angle C D A) := by
+          rw [EuclideanGeometry.angle_comm B D A, EuclideanGeometry.angle_comm C D A,
+            show EuclideanGeometry.angle A D B = Real.pi - EuclideanGeometry.angle A D C by linarith, Real.sin_pi_sub]
+        rw [EuclideanGeometry.angle_comm D A B, hang, hβ] at l1
+        rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+        apply mul_left_cancel₀ hsin
+        rw [dist_comm C D] at l2
+        linear_combination (dist D C) * l1 - (dist B D) * l2
+      have stew : ∀ D : P, Sbtw ℝ B D C → dist A B ^ 2 * dist D C + dist A C ^ 2 * dist B D =
+          dist B C * (dist A D ^ 2 + dist B D * dist D C) := by
+        intro D hD
+        have h := EuclideanGeometry.dist_sq_mul_dist_add_dist_sq_mul_dist A B C D hD.angle₁₂₃_eq_pi
+        rwa [dist_comm C D] at h
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      have hDC : dist D C ≠ 0 := dist_ne_zero.mpr hD.ne_right
+      have cross := (div_eq_div_iff hAC hDC).mp (bis D hD hang)
+      have st := stew D hD
+      have hs := hD.wbtw.dist_add_dist
+      have hBC : dist B C ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      apply mul_left_cancel₀ hBC
+      rw [← hs] at st ⊢
+      linear_combination -st + (dist A B - dist A C) * cross
+- id: angle_bisector_theorem_internal
+  kind: named
+  level: high
+  topic: 三角形・角の二等分線の定理
+  statement: 角の二等分線の定理（内角）。三角形$ABC$（$A,B,C$は同一直線上にない）で、線分$BC$の内部の点$D$が$\angle BAD=\angle DAC$を満たすならば、$AB/AC=BD/DC$である。
+  statement_en: Internal angle bisector theorem. If A, B, C are not collinear, D lies strictly between B and C and ∠BAD = ∠DAC, then AB/AC = BD/DC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  - $\angle BAD=\angle DAC$
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $AB/AC=BD/DC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は$B$と$C$の間にあって$B,C$と異なり、$\angle BAD=\angle DAC$とする。$AC>0$、$DC>0$である。
+    $\theta=\angle BAD=\angle DAC$とおく。$A$は直線$BC$上にないので$D,A,C$は同一直線上になく、$\sin\theta>0$である。$B,D,C$がこの順に一直線上にあるので$\angle ADB+\angle ADC=\pi$であり、$\sin\angle ADB=\sin\angle ADC$である。この値を$s$とおく。
+    三角形$ABD$と$ACD$の正弦定理より、$BD\,s=AB\sin\theta$、$DC\,s=AC\sin\theta$である。第1式に$DC$を、第2式に$BD$を掛けて比べると$AB\cdot DC\sin\theta=AC\cdot BD\sin\theta$である。$\sin\theta$で割ると$AB\cdot DC=AC\cdot BD$であり、$AB/AC=BD/DC$である。
+  strategy: Apply the law of sines in the two triangles cut by AD, using equal angles at A and supplementary angles at D.
+  sketch:
+  - 'setup: Put θ for the common angle at A; non-collinearity gives sinθ > 0.'
+  - 'derive: The angles at D are supplementary, so they have equal sines.'
+  - 'apply_theorem: The law of sines in ABD and ACD.'
+  - 'conclude: Eliminating the common sine gives AB·DC = AC·BD.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b d c) (= (euclid_angle b a d) (euclid_angle d a c))) (= (/ (dist_of a b) (dist_of a c)) (/ (dist_of b d) (dist_of d c)))))
+  hard_negative:
+    statement: 同じ仮定のもとで$AB/AC=DC/BD$である。
+    reason: 比の向きが逆である。$AB=3$、$AC=4$、$BC=5$では$BD=15/7$、$DC=20/7$であり、$BD/DC=3/4$で$DC/BD=4/3$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C → dist A B / dist A C = dist B D / dist D C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC hD hang
+      have hDC : D ≠ C := hD.ne_right
+      have hAC : A ≠ C := by
+        rintro rfl; apply hABC
+        rw [show ({A, B, A} : Set P) = {A, B} by ext x; simp; tauto]; exact collinear_pair ℝ A B
+      have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+        intro h0
+        apply hABC
+        have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+          EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+        have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+        have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+          affineSpan_pair_le_of_mem_of_mem hD.wbtw.mem_affineSpan (right_mem_affineSpan_pair ℝ B C)
+        exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+      have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+      have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+      have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi A hD.angle₁₂₃_eq_pi
+      have hβ : Real.sin (EuclideanGeometry.angle B D A) = Real.sin (EuclideanGeometry.angle C D A) := by
+        rw [EuclideanGeometry.angle_comm B D A, EuclideanGeometry.angle_comm C D A,
+          show EuclideanGeometry.angle A D B = Real.pi - EuclideanGeometry.angle A D C by linarith, Real.sin_pi_sub]
+      rw [EuclideanGeometry.angle_comm D A B, hang, hβ] at l1
+      rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+      apply mul_left_cancel₀ hsin
+      rw [dist_comm C D] at l2
+      linear_combination (dist D C) * l1 - (dist B D) * l2
+- id: angle_bisector_theorem_external
+  kind: textbook
+  level: high
+  topic: 三角形・角の二等分線の定理
+  statement: 角の二等分線の定理（外角）。三角形$ABC$（$A,B,C$は同一直線上にない）で、辺$BA$の$A$側の延長上に点$X$をとる。直線$BC$上で線分$BC$の外にある点$D$が$\angle XAD=\angle DAC$を満たすならば、$AB/AC=BD/DC$である。
+  statement_en: External angle bisector theorem. If A, B, C are not collinear, A lies strictly between B and X, D lies on line BC outside segment BC (C strictly between B and D, or B strictly between C and D), and ∠XAD = ∠DAC, then AB/AC = BD/DC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $A$は$B$と$X$の間にあり$B,X$と異なる
+  - $C$が$B$と$D$の間にあるか、$B$が$C$と$D$の間にある
+  - $\angle XAD=\angle DAC$
+  quantifiers:
+  - 任意の5点$A,B,C,D,X$
+  conclusion: $AB/AC=BD/DC$である。
+  answer: |
+    $A,B,C,D,X$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$A$は$B$と$X$の間にあって$B,X$と異なる。$D$は$C$が$B,D$の間にあるか$B$が$C,D$の間にある点で、$\angle XAD=\angle DAC$とする。$AC>0$、$DC>0$である。
+    $\theta=\angle XAD=\angle DAC$とおく。$A$は直線$BC$上にないので$\sin\theta>0$である。$B,A,X$がこの順に一直線上にあるので$\angle DAB=\pi-\angle DAX=\pi-\theta$であり、$\sin\angle DAB=\sin\theta$である。$B,C$は$D$から見て同じ側にあるので$\angle BDA=\angle CDA$である。この角の正弦を$s$とおく。
+    三角形$ABD$と$ACD$の正弦定理より、$BD\,s=AB\sin\theta$、$DC\,s=AC\sin\theta$である。第1式に$DC$を、第2式に$BD$を掛けて比べ、$\sin\theta$で割ると$AB\cdot DC=AC\cdot BD$である。よって$AB/AC=BD/DC$である。
+  strategy: Same law-of-sines argument, with supplementary angles now at A and a common angle at D.
+  sketch:
+  - 'setup: Put θ for ∠XAD = ∠DAC; non-collinearity gives sinθ > 0.'
+  - 'derive: B, A, X collinear gives sin∠DAB = sinθ.'
+  - 'derive: B and C lie on the same ray from D, so the angles at D agree.'
+  - 'apply_theorem: The law of sines in ABD and ACD.'
+  - 'conclude: Eliminating the common sine gives AB·DC = AC·BD.'
+  openmath: (forall (a b c d x) (-> (and (not (collinear_points a b c)) (strictly_between b a x) (or (strictly_between b c d) (strictly_between c b d)) (= (euclid_angle x a d) (euclid_angle d a c))) (= (/ (dist_of a b) (dist_of a c)) (/ (dist_of b d) (dist_of d c)))))
+  hard_negative:
+    statement: $AB=AC$の三角形でも、$A$の外角の二等分線は直線$BC$と交わる。
+    reason: $AB=AC$なら外角の二等分線は$BC$に平行で、交点$D$は存在しない。比$AB/AC=1$に対応する外分点もない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D X : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B A X → (Sbtw ℝ B C D ∨ Sbtw ℝ C B D) → EuclideanGeometry.angle X A D = EuclideanGeometry.angle D A C → dist A B / dist A C = dist B D / dist D C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D X hABC hX hD hang
+      have hAC : A ≠ C := by
+        rintro rfl; apply hABC
+        rw [show ({A, B, A} : Set P) = {A, B} by ext x; simp; tauto]; exact collinear_pair ℝ A B
+      have hDC : D ≠ C := by
+        rcases hD with h | h
+        · exact h.ne_right.symm
+        · exact h.left_ne_right.symm
+      have hDin : D ∈ line[ℝ, B, C] := by
+        rcases hD with h | h
+        · exact h.wbtw.right_mem_affineSpan_of_left_ne h.left_ne
+        · rw [Set.pair_comm]; exact h.wbtw.right_mem_affineSpan_of_left_ne h.left_ne
+      have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+        intro h0
+        apply hABC
+        have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+          EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+        have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+        have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+          affineSpan_pair_le_of_mem_of_mem hDin (right_mem_affineSpan_pair ℝ B C)
+        exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+      have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+      have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+      have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi D hX.angle₁₂₃_eq_pi
+      have hα : Real.sin (EuclideanGeometry.angle D A B) = Real.sin (EuclideanGeometry.angle D A C) := by
+        rw [← hang, EuclideanGeometry.angle_comm X A D,
+          show EuclideanGeometry.angle D A B = Real.pi - EuclideanGeometry.angle D A X by linarith, Real.sin_pi_sub]
+      have hβ : EuclideanGeometry.angle B D A = EuclideanGeometry.angle C D A := by
+        rcases hD with h | h
+        · exact (h.symm.angle_eq_left A).symm
+        · exact h.symm.angle_eq_left A
+      rw [hα, hβ] at l1
+      rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+      apply mul_left_cancel₀ hsin
+      rw [dist_comm C D] at l2
+      linear_combination (dist D C) * l1 - (dist B D) * l2
+- id: angle_bisector_foot_position
+  kind: gap
+  level: high
+  topic: 三角形・角の二等分線の定理
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、線分$BC$の内部の点$D$が$\angle BAD=\angle DAC$を満たすならば、$BD(AB+AC)=AB\cdot BC$である。すなわち$BD=\dfrac{AB\cdot BC}{AB+AC}$である。
+  statement_en: If A, B, C are not collinear, D lies strictly between B and C and ∠BAD = ∠DAC, then BD(AB + AC) = AB·BC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  - $\angle BAD=\angle DAC$
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $BD(AB+AC)=AB\cdot BC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は$B$と$C$の間にあって$B,C$と異なり、$\angle BAD=\angle DAC$とする。
+    角の二等分線の定理より$AB/AC=BD/DC$であり、$AB\cdot DC=BD\cdot AC$である。$D$は線分$BC$上にあるので$BC=BD+DC$である。よって$AB\cdot BC=AB\cdot BD+AB\cdot DC=AB\cdot BD+BD\cdot AC=BD(AB+AC)$である。
+  strategy: Cross-multiply the angle bisector theorem and add AB·BD.
+  sketch:
+  - 'apply_theorem: The angle bisector theorem gives AB·DC = BD·AC.'
+  - 'derive: D on the segment gives BC = BD + DC.'
+  - 'conclude: Expanding AB·BC gives BD(AB + AC).'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b d c) (= (euclid_angle b a d) (euclid_angle d a c))) (= (* (dist_of b d) (+ (dist_of a b) (dist_of a c))) (* (dist_of a b) (dist_of b c)))))
+  hard_negative:
+    statement: $BD(AB+AC)=AC\cdot BC$である。
+    reason: 比の対応が逆である。$AB=3$、$AC=4$、$BC=5$では$BD=15/7$であり、左辺は$15$、右辺は$20$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C → dist B D * (dist A B + dist A C) = dist A B * dist B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC hD hang
+      have bis : ∀ D : P, Sbtw ℝ B D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C →
+          dist A B / dist A C = dist B D / dist D C := by
+        intro D hD hang
+        have hDC : D ≠ C := hD.ne_right
+        have hAC : A ≠ C := ne₁₃_of_not_collinear hABC
+        have hsin : Real.sin (EuclideanGeometry.angle D A C) ≠ 0 := by
+          intro h0
+          apply hABC
+          have hcol : Collinear ℝ ({D, A, C} : Set P) :=
+            EuclideanGeometry.collinear_iff_eq_or_eq_or_sin_eq_zero.mpr (Or.inr (Or.inr h0))
+          have hA : A ∈ line[ℝ, D, C] := hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hDC
+          have hle : line[ℝ, D, C] ≤ line[ℝ, B, C] :=
+            affineSpan_pair_le_of_mem_of_mem hD.wbtw.mem_affineSpan (right_mem_affineSpan_pair ℝ B C)
+          exact collinear_insert_of_mem_affineSpan_pair (hle hA)
+        have l1 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A B
+        have l2 := EuclideanGeometry.sin_angle_mul_dist_eq_sin_angle_mul_dist D A C
+        have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi A hD.angle₁₂₃_eq_pi
+        have hβ : Real.sin (EuclideanGeometry.angle B D A) = Real.sin (EuclideanGeometry.angle C D A) := by
+          rw [EuclideanGeometry.angle_comm B D A, EuclideanGeometry.angle_comm C D A,
+            show EuclideanGeometry.angle A D B = Real.pi - EuclideanGeometry.angle A D C by linarith, Real.sin_pi_sub]
+        rw [EuclideanGeometry.angle_comm D A B, hang, hβ] at l1
+        rw [div_eq_div_iff (dist_ne_zero.mpr hAC) (dist_ne_zero.mpr hDC)]
+        apply mul_left_cancel₀ hsin
+        rw [dist_comm C D] at l2
+        linear_combination (dist D C) * l1 - (dist B D) * l2
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      have hDC : dist D C ≠ 0 := dist_ne_zero.mpr hD.ne_right
+      have cross := (div_eq_div_iff hAC hDC).mp (bis D hD hang)
+      have hs := hD.wbtw.dist_add_dist
+      rw [← hs]
+      linear_combination -cross
+- id: angle_bisector_theorem_converse
+  kind: textbook
+  level: high
+  topic: 三角形・角の二等分線の定理
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、線分$BC$の内部の点$D$が$AB/AC=BD/DC$を満たすならば、$\angle BAD=\angle DAC$である。
+  statement_en: If A, B, C are not collinear, D lies strictly between B and C and AB/AC = BD/DC, then ∠BAD = ∠DAC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は$B$と$C$の間にあり$B,C$と異なる
+  - $AB/AC=BD/DC$
+  quantifiers:
+  - 任意の4点$A,B,C,D$
+  conclusion: $\angle BAD=\angle DAC$である。
+  answer: |
+    $A,B,C,D$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は$B$と$C$の間にあって$B,C$と異なり、$AB/AC=BD/DC$とする。
+    $0\leq t\leq1$により$D=B+t(C-B)$と書くと、$BD=t\,BC$、$DC=(1-t)BC$である。$c=AB$、$b=AC$とおくと、仮定から$c(1-t)=tb$である。$u=B-A$、$w=C-A$、$v=D-A=(1-t)u+tw$、$I=\langle u,w\rangle$とおく。$A$は直線$BC$上にないので$v\neq0$である。
+    $\langle u,v\rangle=(1-t)c^2+tI$、$\langle v,w\rangle=(1-t)I+tb^2$である。このとき$b\langle u,v\rangle-c\langle v,w\rangle=(bc-I)\bigl(c(1-t)-tb\bigr)=0$である。よって$\dfrac{\langle u,v\rangle}{c\|v\|}=\dfrac{\langle v,w\rangle}{b\|v\|}$であり、$\cos\angle BAD=\cos\angle DAC$である。角は$0$以上$\pi$以下で余弦はこの範囲で単射なので、$\angle BAD=\angle DAC$である。
+  strategy: Parametrize D, translate the ratio to c(1-t) = tb, and compare the cosines of the two angles.
+  sketch:
+  - 'setup: Write D = B + t(C-B) with t in [0,1], so the ratio gives c(1-t) = tb.'
+  - 'translate: Put u = B-A, w = C-A, v = (1-t)u + tw.'
+  - 'derive: b⟨u,v⟩ - c⟨v,w⟩ factors with the factor c(1-t) - tb = 0.'
+  - 'derive: The two cosines are equal.'
+  - 'conclude: Injectivity of cosine on [0, π] gives equal angles.'
+  openmath: (forall (a b c d) (-> (and (not (collinear_points a b c)) (strictly_between b d c) (= (/ (dist_of a b) (dist_of a c)) (/ (dist_of b d) (dist_of d c)))) (= (euclid_angle b a d) (euclid_angle d a c))))
+  hard_negative:
+    statement: $D$が直線$BC$上の点で線分の外にあっても、$AB/AC=BD/DC$ならば$\angle BAD=\angle DAC$である。
+    reason: 外分点は外角の二等分線上にある。このとき$\angle BAD$と$\angle DAC$の差は$\angle BAC$であり（$C$が$B,D$の間なら$\angle BAD=\angle BAC+\angle CAD$）、等しくならない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ B D C → dist A B / dist A C = dist B D / dist D C → EuclideanGeometry.angle B A D = EuclideanGeometry.angle D A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D hABC hD hr
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      have hAB : dist A B ≠ 0 := dist_ne_zero.mpr (ne₁₂_of_not_collinear hABC)
+      have hBC : dist B C ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      have hDC : dist D C ≠ 0 := dist_ne_zero.mpr hD.ne_right
+      have cross := (div_eq_div_iff hAC hDC).mp hr
+      have hAD : A ≠ D := by
+        rintro rfl
+        exact hABC (collinear_insert_of_mem_affineSpan_pair hD.wbtw.mem_affineSpan)
+      obtain ⟨⟨t, ht, rfl⟩, -, -⟩ := hD
+      rw [dist_left_lineMap, dist_lineMap_right, Real.norm_of_nonneg ht.1, Real.norm_of_nonneg (by linarith [ht.2])] at cross
+      have key : dist A B * (1 - t) = t * dist A C := by
+        apply mul_right_cancel₀ hBC
+        linear_combination cross
+      have hv : (AffineMap.lineMap B C t : P) -ᵥ A = (1 - t) • (B -ᵥ A) + t • (C -ᵥ A) := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, ← vsub_sub_vsub_cancel_right C B A]
+        module
+      have hvn : ‖(AffineMap.lineMap B C t : P) -ᵥ A‖ ≠ 0 := by
+        rw [norm_ne_zero_iff]; exact vsub_ne_zero.mpr hAD.symm
+      have hc : ‖B -ᵥ A‖ = dist A B := by rw [dist_comm, dist_eq_norm_vsub V]
+      have hb : ‖C -ᵥ A‖ = dist A C := by rw [dist_comm, dist_eq_norm_vsub V]
+      unfold EuclideanGeometry.angle InnerProductGeometry.angle
+      congr 1
+      rw [hc, hb, div_eq_div_iff (mul_ne_zero hAB hvn) (mul_ne_zero hvn hAC), hv, inner_add_right, inner_add_left,
+        real_inner_smul_right, real_inner_smul_right, real_inner_smul_left, real_inner_smul_left,
+        real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq, hc, hb]
+      linear_combination ‖(1 - t) • (B -ᵥ A) + t • (C -ᵥ A)‖ * (dist A B * dist A C - inner ℝ (B -ᵥ A) (C -ᵥ A)) * key
+- id: right_triangles_common_hypotenuse_equal_angle_iff_equal_leg
+  kind: gap
+  level: high
+  topic: 三角形・角の二等分線と距離
+  statement: $A\neq X$、$A\neq H$、$A\neq K$で、$\angle XHA=\angle XKA=\pi/2$（内積が$0$であること）のとき、$\angle HAX=\angle KAX$と$XH=XK$は同値である。角の二辺への垂線の長さが等しいことと、$AX$が角を二等分することに対応する。
+  statement_en: If A ≠ X, A ≠ H, A ≠ K and ∠XHA = ∠XKA = π/2, then ∠HAX = ∠KAX if and only if XH = XK.
+  assumptions:
+  - $A\neq X$
+  - $A\neq H$
+  - $A\neq K$
+  - $\langle X-H,A-H\rangle=0$
+  - $\langle X-K,A-K\rangle=0$
+  quantifiers:
+  - 任意の4点$A,X,H,K$
+  conclusion: $\angle HAX=\angle KAX$と$XH=XK$は同値である。
+  answer: |
+    $A,X,H,K$を実内積空間上のアフィン空間の点とする。$A\neq X$、$A\neq H$、$A\neq K$で、$\langle X-H,A-H\rangle=\langle X-K,A-K\rangle=0$とする。
+    $X-A=(X-H)+(H-A)$で2つのベクトルは直交するので、$AX^2=XH^2+HA^2$であり、$\langle H-A,X-A\rangle=HA^2$である。よって$\cos\angle HAX=HA/AX>0$であり、$\angle HAX$は$0$以上$\pi/2$未満である。さらに$\sin^2\angle HAX=1-HA^2/AX^2=XH^2/AX^2$なので、$XH=AX\sin\angle HAX$である。$K$についても同様に$XK=AX\sin\angle KAX$で、$\angle KAX$は$0$以上$\pi/2$未満である。
+    $\angle HAX=\angle KAX$なら$XH=XK$である。逆に$XH=XK$なら、$AX>0$より$\sin\angle HAX=\sin\angle KAX$である。$0$以上$\pi/2$未満で正弦は単射なので、$\angle HAX=\angle KAX$である。
+  strategy: In each right triangle the leg equals AX times the sine of an acute angle, and sine is injective on acute angles.
+  sketch:
+  - 'derive: Orthogonality gives AX² = XH² + HA² and ⟨H-A,X-A⟩ = HA².'
+  - 'derive: Hence the angle at A is acute and XH = AX·sin∠HAX.'
+  - 'derive: The same holds for K.'
+  - 'conclude: Equal angles give equal legs; conversely injectivity of sine gives equal angles.'
+  openmath: (forall (a x h k) (-> (and (!= a x) (!= a h) (!= a k) (= (euclid_angle x h a) (/ pi 2)) (= (euclid_angle x k a) (/ pi 2))) (<-> (= (euclid_angle h a x) (euclid_angle k a x)) (= (dist_of x h) (dist_of x k)))))
+  hard_negative:
+    statement: $\angle XHA,\angle XKA$が直角でなくても、$\angle HAX=\angle KAX$ならば$XH=XK$である。
+    reason: $H,K$を半直線上で$A$からの距離が異なるようにとれば、$AX$が角を二等分していても$XH\neq XK$となる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A X H K : P), A ≠ X → A ≠ H → A ≠ K → EuclideanGeometry.angle X H A = Real.pi / 2 → EuclideanGeometry.angle X K A = Real.pi / 2 → (EuclideanGeometry.angle H A X = EuclideanGeometry.angle K A X ↔ dist X H = dist X K)
+  proof: |
+    by
+      intro V P _ _ _ _ A X H K hX hH hK h1 h2
+      have s1 := EuclideanGeometry.sin_angle_mul_dist_of_angle_eq_pi_div_two (p₁ := X) (p₂ := H) (p₃ := A) h1
+      have s2 := EuclideanGeometry.sin_angle_mul_dist_of_angle_eq_pi_div_two (p₁ := X) (p₂ := K) (p₃ := A) h2
+      have l1 := EuclideanGeometry.angle_lt_pi_div_two_of_angle_eq_pi_div_two (p₁ := X) (p₂ := H) (p₃ := A) h1 hH
+      have l2 := EuclideanGeometry.angle_lt_pi_div_two_of_angle_eq_pi_div_two (p₁ := X) (p₂ := K) (p₃ := A) h2 hK
+      have n1 := EuclideanGeometry.angle_nonneg H A X
+      have n2 := EuclideanGeometry.angle_nonneg K A X
+      have hd : dist X A ≠ 0 := dist_ne_zero.mpr hX.symm
+      have hpi := Real.pi_pos
+      constructor
+      · intro h
+        rw [← s1, ← s2, h]
+      · intro h
+        rw [← s1, ← s2] at h
+        exact Real.injOn_sin ⟨by linarith, l1.le⟩ ⟨by linarith, l2.le⟩ (mul_right_cancel₀ hd h)
+- id: midsegment_theorem
+  kind: named
+  level: middle
+  topic: 三角形・中点連結定理
+  statement: 中点連結定理。点$A,B,C$について、$AB$の中点と$AC$の中点を結ぶ直線は直線$BC$に平行で（平行は方向が等しいことを指し、直線の一致も含む）、中点間の距離は$BC/2$である。
+  statement_en: Midsegment theorem. For points A, B, C, the line through the midpoints of AB and AC is parallel to line BC, where parallel means equal direction and allows coincidence, and the distance between the midpoints is BC/2.
+  assumptions:
+  - $M$は$A,B$の中点
+  - $N$は$A,C$の中点
+  - 平行は方向が等しいことを指し、直線の一致も含む
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: 直線$MN$は直線$BC$に平行で、$MN=BC/2$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$M$を$A,B$の中点、$N$を$A,C$の中点とする。平行は方向が等しいことを指す。
+    $M-A=\frac12(B-A)$、$N-A=\frac12(C-A)$なので、$M-N=\frac12(B-C)$である。$\frac12\neq0$なので、$M-N$の生成する部分空間は$B-C$の生成する部分空間に等しい。よって直線$MN$と直線$BC$は方向が等しく、平行である。また$MN=\|M-N\|=\frac12\|B-C\|=BC/2$である。
+  strategy: The vector between the midpoints is half of B - C.
+  sketch:
+  - 'derive: M - N = (1/2)(B - C).'
+  - 'derive: A nonzero scalar keeps the same direction space, so the lines are parallel.'
+  - 'conclude: Taking norms gives MN = BC/2.'
+  openmath: (forall (a b c) (and (parallel_lines (midpoint_of a b) (midpoint_of a c) b c) (= (dist_of (midpoint_of a b) (midpoint_of a c)) (/ (dist_of b c) 2))))
+  hard_negative:
+    statement: $M$が$AB$の中点で$N$が線分$AC$上の任意の点なら、直線$MN$は直線$BC$に平行である。
+    reason: $N$が中点でないと方向がずれる。$A=(0,0)$、$B=(2,0)$、$C=(0,2)$、$N=(0,\frac12)$では$M-N=(1,-\frac12)$であり、$B-C=(2,-2)$に平行でない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), (line[ℝ, midpoint ℝ A B, midpoint ℝ A C]).Parallel line[ℝ, B, C] ∧ dist (midpoint ℝ A B) (midpoint ℝ A C) = dist B C / 2
+  proof: |
+    by
+      intro V P _ _ _ _ A B C
+      have h : midpoint ℝ A B -ᵥ midpoint ℝ A C = (⅟2 : ℝ) • (B -ᵥ C) :=
+        midpoint_vsub_midpoint_same_left ℝ A B C
+      constructor
+      · rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair, vectorSpan_pair, h]
+        exact Submodule.span_singleton_smul_eq (IsUnit.mk0 _ (by norm_num)) _
+      · rw [dist_eq_norm_vsub V, dist_eq_norm_vsub V B C, h, norm_smul]
+        norm_num
+        ring
+- id: midsegment_converse
+  kind: gap
+  level: middle
+  topic: 三角形・中点連結定理
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、直線$AC$上の点$E$について、$AB$の中点と$E$を結ぶ直線が直線$BC$に平行ならば、$E$は$AC$の中点である。
+  statement_en: If A, B, C are not collinear, E lies on line AC, and the line through the midpoint of AB and E is parallel to line BC, then E is the midpoint of AC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $E$は直線$AC$上の点
+  - $AB$の中点と$E$を結ぶ直線は直線$BC$に平行
+  quantifiers:
+  - 任意の4点$A,B,C,E$
+  conclusion: $E$は$A,C$の中点である。
+  answer: |
+    $A,B,C,E$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$E$は直線$AC$上にあり、$A,B$の中点$M$と$E$を結ぶ直線は直線$BC$に平行であるとする。
+    $u=B-A$、$w=C-A$は1次独立である。実数$t$により$E-A=tw$と書く。$M-A=\frac12u$である。平行の仮定より、実数$k$があって$E-M=k(C-B)=k(w-u)$である。左辺は$tw-\frac12u$なので、$(k-\frac12)u+(t-k)w=0$である。1次独立性より$k=\frac12$、$t=k=\frac12$である。よって$E$は$A,C$の中点である。
+  strategy: Express E and the midpoint in the independent vectors B-A and C-A and compare coefficients.
+  sketch:
+  - 'setup: Put u = B-A, w = C-A, which are independent.'
+  - 'translate: E - A = tw and M - A = u/2.'
+  - 'derive: Parallelism gives tw - u/2 = k(w - u).'
+  - 'conclude: Comparing coefficients gives t = 1/2.'
+  openmath: (forall (a b c e) (-> (and (not (collinear_points a b c)) (on_line e a c) (parallel_lines (midpoint_of a b) e b c)) (= e (midpoint_of a c))))
+  hard_negative:
+    statement: $A,B,C$が同一直線上にあっても、この条件から$E$は$AC$の中点である。
+    reason: $A,B,C$が相異なる同一直線上の点なら、$AB$の中点$M$と異なる直線$AC$上の点$E$はすべて、直線$ME$が直線$BC$と一致するので条件を満たす。$AC$の中点でない$E$もとれる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C E : P), ¬Collinear ℝ ({A, B, C} : Set P) → E ∈ line[ℝ, A, C] → (line[ℝ, midpoint ℝ A B, E]).Parallel line[ℝ, B, C] → E = midpoint ℝ A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C E hABC hE hpar
+      have core : ∀ s t : ℝ, (line[ℝ, (AffineMap.lineMap A B s : P), (AffineMap.lineMap A C t : P)]).Parallel line[ℝ, B, C] → s = t := by
+        intro s t hpar
+        have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+          intro a b h
+          by_contra hab
+          apply hABC
+          rcases not_and_or.mp hab with ha | hb
+          · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+              have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+            rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm] at h4
+          · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+              have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+            rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm, Set.pair_comm] at h4
+        rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev] at hpar
+        have hmem : (AffineMap.lineMap A C t : P) -ᵥ (AffineMap.lineMap A B s : P) ∈ Submodule.span ℝ {C -ᵥ B} := by
+          rw [← hpar]; exact Submodule.mem_span_singleton_self _
+        obtain ⟨k, hk⟩ := Submodule.mem_span_singleton.mp hmem
+        have hCB : C -ᵥ B = (C -ᵥ A) - (B -ᵥ A) := (vsub_sub_vsub_cancel_right C B A).symm
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right] at hk
+        rw [hCB] at hk
+        have h0 : (s - k) • (B -ᵥ A) + (k - t) • (C -ᵥ A) = (0 : V) := by
+          have : t • (C -ᵥ A) - s • (B -ᵥ A) - k • ((C -ᵥ A) - (B -ᵥ A)) = (0 : V) := by
+            rw [hk]; simp
+          rw [← neg_eq_zero, ← this]; module
+        obtain ⟨h1, h2⟩ := hli _ _ h0
+        linarith
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      have ht := core (⅟2) t hpar
+      subst ht
+      rfl
+- id: medial_triangle_similar
+  kind: gap
+  level: middle
+  topic: 三角形・中点連結定理
+  statement: 点$A,B,C$について、$BC,CA,AB$の中点をそれぞれ$D,E,F$とすると、$D,E,F$と$A,B,C$はこの対応で相似比$\frac12$の相似である。
+  statement_en: For points A, B, C with D, E, F the midpoints of BC, CA, AB, the triples D, E, F and A, B, C are similar in this order, with DE = AB/2, EF = BC/2 and FD = CA/2.
+  assumptions:
+  - $D,E,F$はそれぞれ$BC,CA,AB$の中点
+  quantifiers:
+  - 任意の3点$A,B,C$
+  conclusion: $D,E,F$と$A,B,C$はこの対応で相似であり、$DE=\frac12AB$、$EF=\frac12BC$、$FD=\frac12CA$である。
+  answer: |
+    $A,B,C$を実内積空間上のアフィン空間の点とし、$D,E,F$をそれぞれ$BC,CA,AB$の中点とする。
+    一般に点$X,Y,Z$について、$X,Y$の中点から$X,Z$の中点を引いた差は$\frac12(Y-Z)$であり、この2つの中点の距離は$\frac12YZ$である。$D,E$は$C$を共有し、$E,F$は$A$を共有し、$F,D$は$B$を共有するので、$DE=\frac12AB$、$EF=\frac12BC$、$FD=\frac12CA$である。対応する2頂点間の距離の比はすべて$\frac12$なので、相似である。
+  strategy: Apply the midsegment length three times with ratio 1/2.
+  sketch:
+  - 'apply_theorem: Two midpoints sharing an endpoint differ by half of the other endpoints'' difference.'
+  - 'derive: DE = AB/2, EF = BC/2, FD = CA/2.'
+  - 'conclude: All pairwise distances have ratio 1/2.'
+  openmath: (forall (a b c) (and (similar_triangles (midpoint_of b c) (midpoint_of c a) (midpoint_of a b) a b c) (= (dist_of (midpoint_of b c) (midpoint_of c a)) (/ (dist_of a b) 2)) (= (dist_of (midpoint_of c a) (midpoint_of a b)) (/ (dist_of b c) 2)) (= (dist_of (midpoint_of a b) (midpoint_of b c)) (/ (dist_of c a) 2))))
+  hard_negative:
+    statement: $D,E,F$と$A,C,B$がこの対応で相似である。
+    reason: 対応が異なる。$DE=\frac12AB$に対して$AC$が対応することになり、$AB\neq AC$の三角形では比が一定にならない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P), Similar ![midpoint ℝ B C, midpoint ℝ C A, midpoint ℝ A B] ![A, B, C] ∧ dist (midpoint ℝ B C) (midpoint ℝ C A) = 1 / 2 * dist A B ∧ dist (midpoint ℝ C A) (midpoint ℝ A B) = 1 / 2 * dist B C ∧ dist (midpoint ℝ A B) (midpoint ℝ B C) = 1 / 2 * dist C A
+  proof: |
+    by
+      intro V P _ _ _ _ A B C
+      have key : ∀ X Y Z : P, dist (midpoint ℝ X Y) (midpoint ℝ X Z) = (1 / 2) * dist Y Z := by
+        intro X Y Z
+        rw [dist_eq_norm_vsub V, dist_eq_norm_vsub V Y Z, midpoint_vsub_midpoint_same_left, norm_smul]
+        norm_num
+      have h1 : dist (midpoint ℝ B C) (midpoint ℝ C A) = (1 / 2) * dist A B := by
+        rw [midpoint_comm (R := ℝ) B C, key, dist_comm]
+      have h2 : dist (midpoint ℝ C A) (midpoint ℝ A B) = (1 / 2) * dist B C := by
+        rw [midpoint_comm (R := ℝ) C A, key, dist_comm]
+      have h3 : dist (midpoint ℝ A B) (midpoint ℝ B C) = (1 / 2) * dist C A := by
+        rw [midpoint_comm (R := ℝ) A B, key, dist_comm]
+      refine ⟨similar_iff_exists_pos_dist_eq.mpr ⟨1 / 2, by norm_num, fun i j => ?_⟩, h1, h2, h3⟩
+      fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+- id: parallel_line_proportional_segments
+  kind: textbook
+  level: middle
+  topic: 三角形・平行線と線分の比
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、点$D$が直線$AB$上、点$E$が直線$AC$上にあり、直線$DE$が直線$BC$に平行（直線の一致も含む）ならば、$AD/AB=AE/AC$である。
+  statement_en: If A, B, C are not collinear, D lies on line AB, E lies on line AC and line DE is parallel to line BC, then AD/AB = AE/AC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は直線$AB$上の点
+  - $E$は直線$AC$上の点
+  - 直線$DE$は直線$BC$に平行（直線の一致も含む）
+  quantifiers:
+  - 任意の5点$A,B,C,D,E$
+  conclusion: $AD/AB=AE/AC$である。
+  answer: |
+    $A,B,C,D,E$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は直線$AB$上、$E$は直線$AC$上にあり、直線$DE$は直線$BC$に平行であるとする。
+    $u=B-A$、$w=C-A$は1次独立である。実数$s,t$により$D-A=su$、$E-A=tw$と書く。平行の仮定より、実数$k$があって$E-D=k(C-B)$である。すなわち$tw-su=k(w-u)$であり、1次独立性より$s=k$、$t=k$である。よって$s=t$である。
+    $AB>0$、$AC>0$であり、$AD=|s|AB$、$AE=|s|AC$である。したがって$AD/AB=|s|=AE/AC$である。
+  strategy: Compare coefficients in the independent vectors B-A and C-A to get the same parameter on both lines.
+  sketch:
+  - 'setup: Put u = B-A, w = C-A, which are independent.'
+  - 'translate: D - A = su and E - A = tw.'
+  - 'derive: Parallelism gives tw - su = k(w - u), hence s = t = k.'
+  - 'conclude: AD/AB = |s| = AE/AC.'
+  openmath: (forall (a b c d e) (-> (and (not (collinear_points a b c)) (on_line d a b) (on_line e a c) (parallel_lines d e b c)) (= (/ (dist_of a d) (dist_of a b)) (/ (dist_of a e) (dist_of a c)))))
+  hard_negative:
+    statement: 点$D$が直線$AB$上、点$E$が直線$AC$上にあり、$AD/AB=AE/AC$ならば、直線$DE$は直線$BC$に平行である。
+    reason: $D,E$が$A$をはさんで互いに反対側にあると比は等しくても平行にならない。$D-A=\frac12(B-A)$、$E-A=-\frac12(C-A)$では$E-D=-\frac12\bigl((B-A)+(C-A)\bigr)$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E : P), ¬Collinear ℝ ({A, B, C} : Set P) → D ∈ line[ℝ, A, B] → E ∈ line[ℝ, A, C] → (line[ℝ, D, E]).Parallel line[ℝ, B, C] → dist A D / dist A B = dist A E / dist A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E hABC hD hE hpar
+      have core : ∀ s t : ℝ, (line[ℝ, (AffineMap.lineMap A B s : P), (AffineMap.lineMap A C t : P)]).Parallel line[ℝ, B, C] → s = t := by
+        intro s t hpar
+        have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+          intro a b h
+          by_contra hab
+          apply hABC
+          rcases not_and_or.mp hab with ha | hb
+          · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+              have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+            rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm] at h4
+          · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+              have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+            rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm, Set.pair_comm] at h4
+        rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev] at hpar
+        have hmem : (AffineMap.lineMap A C t : P) -ᵥ (AffineMap.lineMap A B s : P) ∈ Submodule.span ℝ {C -ᵥ B} := by
+          rw [← hpar]; exact Submodule.mem_span_singleton_self _
+        obtain ⟨k, hk⟩ := Submodule.mem_span_singleton.mp hmem
+        have hCB : C -ᵥ B = (C -ᵥ A) - (B -ᵥ A) := (vsub_sub_vsub_cancel_right C B A).symm
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right] at hk
+        rw [hCB] at hk
+        have h0 : (s - k) • (B -ᵥ A) + (k - t) • (C -ᵥ A) = (0 : V) := by
+          have : t • (C -ᵥ A) - s • (B -ᵥ A) - k • ((C -ᵥ A) - (B -ᵥ A)) = (0 : V) := by
+            rw [hk]; simp
+          rw [← neg_eq_zero, ← this]; module
+        obtain ⟨h1, h2⟩ := hli _ _ h0
+        linarith
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      have hst := core s t hpar
+      subst hst
+      have hAB : dist A B ≠ 0 := dist_ne_zero.mpr (ne₁₂_of_not_collinear hABC)
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr (ne₁₃_of_not_collinear hABC)
+      rw [dist_left_lineMap, dist_left_lineMap, mul_div_assoc, mul_div_assoc, div_self hAB, div_self hAC]
+- id: proportional_segments_imply_parallel
+  kind: textbook
+  level: middle
+  topic: 三角形・平行線と線分の比
+  statement: 点$D$が線分$AB$の内部、点$E$が線分$AC$の内部にあり$AD/AB=AE/AC$ならば、直線$DE$は直線$BC$に平行である（平行は方向が等しいことを指し、直線の一致も含む）。
+  statement_en: If D lies strictly between A and B, E lies strictly between A and C and AD/AB = AE/AC, then line DE is parallel to line BC, where parallel means equal direction and allows coincidence.
+  assumptions:
+  - $D$は$A$と$B$の間にあり$A,B$と異なる
+  - $E$は$A$と$C$の間にあり$A,C$と異なる
+  - $AD/AB=AE/AC$
+  - 平行は方向が等しいことを指し、直線の一致も含む
+  quantifiers:
+  - 任意の5点$A,B,C,D,E$
+  conclusion: 直線$DE$は直線$BC$に平行である。
+  answer: |
+    $A,B,C,D,E$を実内積空間上のアフィン空間の点とする。$D$は$A$と$B$の間にあって$A,B$と異なり、$E$は$A$と$C$の間にあって$A,C$と異なり、$AD/AB=AE/AC$とする。平行は方向が等しいことを指す。
+    $0<s<1$、$0<t<1$により$D-A=s(B-A)$、$E-A=t(C-A)$と書くと、$AD/AB=s$、$AE/AC=t$であり、仮定より$s=t$である。よって$E-D=s\bigl((C-A)-(B-A)\bigr)=s(C-B)$である。$s\neq0$なので$E-D$の生成する部分空間は$C-B$の生成する部分空間に等しく、2直線の方向は等しい。
+  strategy: The equal ratios give one scalar s with E - D = s(C - B).
+  sketch:
+  - 'setup: Write D - A = s(B-A) and E - A = t(C-A) with s, t in (0,1).'
+  - 'derive: The ratios are s and t, so s = t.'
+  - 'derive: E - D = s(C - B).'
+  - 'conclude: s ≠ 0 gives equal direction spaces.'
+  openmath: (forall (a b c d e) (-> (and (strictly_between a d b) (strictly_between a e c) (= (/ (dist_of a d) (dist_of a b)) (/ (dist_of a e) (dist_of a c)))) (parallel_lines d e b c)))
+  hard_negative:
+    statement: 点$D,E$が線分の内部にあり$AD/DB=AE/AC$ならば、直線$DE$は直線$BC$に平行である。
+    reason: 比の取り方がそろっていない。$AD/DB=\frac12$、$AE/AC=\frac12$は条件を満たすが、$AD/AB=\frac13$と$AE/AC$が異なるので平行でない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E : P), Sbtw ℝ A D B → Sbtw ℝ A E C → dist A D / dist A B = dist A E / dist A C → (line[ℝ, D, E]).Parallel line[ℝ, B, C]
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E hD hE hr
+      have hAB : dist A B ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr hE.left_ne_right
+      have hDA : D ≠ A := hD.ne_left
+      obtain ⟨⟨s, hs, rfl⟩, -, -⟩ := hD
+      obtain ⟨⟨t, ht, rfl⟩, -, -⟩ := hE
+      rw [dist_left_lineMap, dist_left_lineMap, mul_div_assoc, mul_div_assoc, div_self hAB, div_self hAC,
+        mul_one, mul_one, Real.norm_of_nonneg hs.1, Real.norm_of_nonneg ht.1] at hr
+      subst hr
+      have hs0 : s ≠ 0 := by
+        rintro rfl; simp at hDA
+      rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev]
+      have h : AffineMap.lineMap A C s -ᵥ AffineMap.lineMap A B s = s • (C -ᵥ B) := by
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right]
+        rw [← vsub_sub_vsub_cancel_right C B A, smul_sub]
+      rw [h]
+      exact Submodule.span_singleton_smul_eq (IsUnit.mk0 _ hs0) _
+- id: parallel_line_third_side_ratio
+  kind: gap
+  level: middle
+  topic: 三角形・平行線と線分の比
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で、点$D$が直線$AB$上、点$E$が直線$AC$上にあり、直線$DE$が直線$BC$に平行（直線の一致も含む）ならば、$AD\cdot BC=DE\cdot AB$である。すなわち$AD:AB=DE:BC$である。
+  statement_en: If A, B, C are not collinear, D lies on line AB, E lies on line AC and line DE is parallel to line BC, then AD·BC = DE·AB.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は直線$AB$上の点
+  - $E$は直線$AC$上の点
+  - 直線$DE$は直線$BC$に平行（直線の一致も含む）
+  quantifiers:
+  - 任意の5点$A,B,C,D,E$
+  conclusion: $AD\cdot BC=DE\cdot AB$である。
+  answer: |
+    $A,B,C,D,E$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は直線$AB$上、$E$は直線$AC$上にあり、直線$DE$は直線$BC$に平行であるとする。
+    $u=B-A$、$w=C-A$は1次独立である。$D-A=su$、$E-A=tw$と書くと、平行の仮定から$tw-su=k(w-u)$となる実数$k$があり、1次独立性より$s=t=k$である。
+    よって$D-E=s(u-w)=s(B-C)$であり、$DE=|s|BC$である。また$AD=|s|AB$である。したがって$AD\cdot BC=|s|AB\cdot BC=DE\cdot AB$である。
+  strategy: The same parameter s scales both AB to AD and BC to DE.
+  sketch:
+  - 'translate: Write D - A = su and E - A = tw with u, w independent.'
+  - 'derive: Parallelism gives s = t.'
+  - 'derive: D - E = s(B - C), so DE = |s|·BC, and AD = |s|·AB.'
+  - 'conclude: Multiply to get AD·BC = DE·AB.'
+  openmath: (forall (a b c d e) (-> (and (not (collinear_points a b c)) (on_line d a b) (on_line e a c) (parallel_lines d e b c)) (= (* (dist_of a d) (dist_of b c)) (* (dist_of d e) (dist_of a b)))))
+  hard_negative:
+    statement: 同じ仮定のもとで$AD\cdot BC=DE\cdot DB$である。
+    reason: 分母が$AB$でなく$DB$になっている。$D$が$AB$の中点なら$AD=DB$なので$BC=DE$となるが、実際は$DE=BC/2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E : P), ¬Collinear ℝ ({A, B, C} : Set P) → D ∈ line[ℝ, A, B] → E ∈ line[ℝ, A, C] → (line[ℝ, D, E]).Parallel line[ℝ, B, C] → dist A D * dist B C = dist D E * dist A B
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E hABC hD hE hpar
+      have core : ∀ s t : ℝ, (line[ℝ, (AffineMap.lineMap A B s : P), (AffineMap.lineMap A C t : P)]).Parallel line[ℝ, B, C] → s = t := by
+        intro s t hpar
+        have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+          intro a b h
+          by_contra hab
+          apply hABC
+          rcases not_and_or.mp hab with ha | hb
+          · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+              have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+            rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm] at h4
+          · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+              have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+            rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm, Set.pair_comm] at h4
+        rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev] at hpar
+        have hmem : (AffineMap.lineMap A C t : P) -ᵥ (AffineMap.lineMap A B s : P) ∈ Submodule.span ℝ {C -ᵥ B} := by
+          rw [← hpar]; exact Submodule.mem_span_singleton_self _
+        obtain ⟨k, hk⟩ := Submodule.mem_span_singleton.mp hmem
+        have hCB : C -ᵥ B = (C -ᵥ A) - (B -ᵥ A) := (vsub_sub_vsub_cancel_right C B A).symm
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right] at hk
+        rw [hCB] at hk
+        have h0 : (s - k) • (B -ᵥ A) + (k - t) • (C -ᵥ A) = (0 : V) := by
+          have : t • (C -ᵥ A) - s • (B -ᵥ A) - k • ((C -ᵥ A) - (B -ᵥ A)) = (0 : V) := by
+            rw [hk]; simp
+          rw [← neg_eq_zero, ← this]; module
+        obtain ⟨h1, h2⟩ := hli _ _ h0
+        linarith
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      have hst := core s t hpar
+      subst hst
+      have hde : (AffineMap.lineMap A B s : P) -ᵥ (AffineMap.lineMap A C s : P) = s • (B -ᵥ C) := by
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right]
+        rw [← vsub_sub_vsub_cancel_right B C A, smul_sub]
+      rw [dist_left_lineMap, dist_eq_norm_vsub V (AffineMap.lineMap A B s : P), hde, norm_smul, ← dist_eq_norm_vsub V B C]
+      ring
+- id: parallel_iff_internal_division_ratio
+  kind: gap
+  level: middle
+  topic: 三角形・平行線と線分の比
+  statement: 三角形$ABC$（$A,B,C$は同一直線上にない）で点$D$が線分$AB$の内部、点$E$が線分$AC$の内部にあるとき、直線$DE$が直線$BC$に平行であることと$AD/DB=AE/EC$は同値である。
+  statement_en: If A, B, C are not collinear, D lies strictly between A and B and E lies strictly between A and C, then line DE is parallel to line BC if and only if AD/DB = AE/EC.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $D$は$A$と$B$の間にあり$A,B$と異なる
+  - $E$は$A$と$C$の間にあり$A,C$と異なる
+  quantifiers:
+  - 任意の5点$A,B,C,D,E$
+  conclusion: 直線$DE$が直線$BC$に平行であることと$AD/DB=AE/EC$は同値である。
+  answer: |
+    $A,B,C,D,E$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$D$は$A$と$B$の間にあって$A,B$と異なり、$E$は$A$と$C$の間にあって$A,C$と異なるとする。
+    $u=B-A$、$w=C-A$は1次独立である。$0<s<1$、$0<t<1$により$D-A=su$、$E-A=tw$と書くと、$AD/DB=s/(1-s)$、$AE/EC=t/(1-t)$である。$s/(1-s)=t/(1-t)$は、分母を払うと$s(1-t)=t(1-s)$、すなわち$s=t$と同値である。
+    直線$DE$が直線$BC$に平行なら、実数$k$があって$tw-su=k(w-u)$であり、1次独立性より$s=t$である。逆に$s=t$なら$E-D=s(C-B)$で$s\neq0$なので、2直線の方向は等しい。
+  strategy: Both conditions are equivalent to equality of the two parameters along AB and AC.
+  sketch:
+  - 'setup: Write D - A = su and E - A = tw with s, t in (0,1).'
+  - 'derive: AD/DB = AE/EC is equivalent to s = t.'
+  - 'derive: Parallelism gives s = t by independence of u, w.'
+  - 'derive: Conversely s = t gives E - D = s(C - B).'
+  - 'conclude: The two conditions are equivalent.'
+  openmath: (forall (a b c d e) (-> (and (not (collinear_points a b c)) (strictly_between a d b) (strictly_between a e c)) (<-> (parallel_lines d e b c) (= (/ (dist_of a d) (dist_of d b)) (/ (dist_of a e) (dist_of e c))))))
+  hard_negative:
+    statement: $D$が線分$AB$の内部、$E$が辺$AC$の$C$側の延長上にあっても、$AD/DB=AE/EC$なら直線$DE$は直線$BC$に平行である。
+    reason: $D-A=\frac23(B-A)$、$E-A=2(C-A)$では$AD/DB=AE/EC=2$であるが、$E-D$は$C-B$の実数倍でない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E : P), ¬Collinear ℝ ({A, B, C} : Set P) → Sbtw ℝ A D B → Sbtw ℝ A E C → ((line[ℝ, D, E]).Parallel line[ℝ, B, C] ↔ dist A D / dist D B = dist A E / dist E C)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E hABC hD hE
+      have core : ∀ s t : ℝ, (line[ℝ, (AffineMap.lineMap A B s : P), (AffineMap.lineMap A C t : P)]).Parallel line[ℝ, B, C] → s = t := by
+        intro s t hpar
+        have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+          intro a b h
+          by_contra hab
+          apply hABC
+          rcases not_and_or.mp hab with ha | hb
+          · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+              have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+            rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm] at h4
+          · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+              have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+                rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+              rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+            have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+            rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+            have h4 := collinear_insert_of_mem_affineSpan_pair h3
+            rwa [Set.insert_comm, Set.pair_comm] at h4
+        rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev] at hpar
+        have hmem : (AffineMap.lineMap A C t : P) -ᵥ (AffineMap.lineMap A B s : P) ∈ Submodule.span ℝ {C -ᵥ B} := by
+          rw [← hpar]; exact Submodule.mem_span_singleton_self _
+        obtain ⟨k, hk⟩ := Submodule.mem_span_singleton.mp hmem
+        have hCB : C -ᵥ B = (C -ᵥ A) - (B -ᵥ A) := (vsub_sub_vsub_cancel_right C B A).symm
+        simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right] at hk
+        rw [hCB] at hk
+        have h0 : (s - k) • (B -ᵥ A) + (k - t) • (C -ᵥ A) = (0 : V) := by
+          have : t • (C -ᵥ A) - s • (B -ᵥ A) - k • ((C -ᵥ A) - (B -ᵥ A)) = (0 : V) := by
+            rw [hk]; simp
+          rw [← neg_eq_zero, ← this]; module
+        obtain ⟨h1, h2⟩ := hli _ _ h0
+        linarith
+      have hAB : dist A B ≠ 0 := dist_ne_zero.mpr hD.left_ne_right
+      have hAC : dist A C ≠ 0 := dist_ne_zero.mpr hE.left_ne_right
+      have hDA : D ≠ A := hD.ne_left
+      have hDB : D ≠ B := hD.ne_right
+      have hEC : E ≠ C := hE.ne_right
+      obtain ⟨⟨s, hs, rfl⟩, -, -⟩ := hD
+      obtain ⟨⟨t, ht, rfl⟩, -, -⟩ := hE
+      have hs1 : s ≠ 1 := by
+        rintro rfl; simp at hDB
+      have ht1 : t ≠ 1 := by
+        rintro rfl; simp at hEC
+      have hs0 : s ≠ 0 := by
+        rintro rfl; simp at hDA
+      have p1 : 1 - s ≠ 0 := sub_ne_zero.mpr hs1.symm
+      have p2 : 1 - t ≠ 0 := sub_ne_zero.mpr ht1.symm
+      rw [dist_left_lineMap, dist_left_lineMap, dist_lineMap_right, dist_lineMap_right, Real.norm_of_nonneg hs.1,
+        Real.norm_of_nonneg ht.1, Real.norm_of_nonneg (by linarith [hs.2]), Real.norm_of_nonneg (by linarith [ht.2]),
+        mul_div_mul_right _ _ hAB, mul_div_mul_right _ _ hAC, div_eq_div_iff p1 p2]
+      constructor
+      · intro hpar
+        have hst := core s t hpar
+        rw [hst]
+      · intro hprod
+        have hst : s = t := by linarith
+        subst hst
+        rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev]
+        have h : (AffineMap.lineMap A C s : P) -ᵥ (AffineMap.lineMap A B s : P) = s • (C -ᵥ B) := by
+          simp only [AffineMap.lineMap_apply, vadd_vsub_vadd_cancel_right]
+          rw [← vsub_sub_vsub_cancel_right C B A, smul_sub]
+        rw [h]
+        exact Submodule.span_singleton_smul_eq (IsUnit.mk0 _ hs0) _
+- id: three_parallel_lines_proportional
+  kind: textbook
+  level: middle
+  topic: 三角形・平行線と線分の比
+  statement: 点$B$が直線$AC$上、点$B'$が直線$A'C'$上にあり、$A,C,A'$は同一直線上にないとする。直線$AA'$、$BB'$、$CC'$が平行（直線の一致も含む）ならば、$AB\cdot B'C'=BC\cdot A'B'$である。すなわち平行線は2直線を等しい比に分ける。
+  statement_en: If B lies on line AC, B' lies on line A'C', A, C, A' are not collinear, and lines AA', BB', CC' are parallel, then AB·B'C' = BC·A'B'.
+  assumptions:
+  - $A,C,A'$は同一直線上にない
+  - $B$は直線$AC$上の点
+  - $B'$は直線$A'C'$上の点
+  - 直線$AA'$は直線$BB'$に平行（直線の一致も含む）
+  - 直線$AA'$は直線$CC'$に平行（直線の一致も含む）
+  quantifiers:
+  - 任意の6点$A,B,C,A',B',C'$
+  conclusion: $AB\cdot B'C'=BC\cdot A'B'$である。
+  answer: |
+    $A,B,C,A',B',C'$を実内積空間上のアフィン空間の点とする。$A,C,A'$は同一直線上になく、$B$は直線$AC$上、$B'$は直線$A'C'$上にあり、直線$AA'$は直線$BB'$と直線$CC'$に平行であるとする。
+    $g=A'-A$、$u=C-A$、$v=C'-A'$とおく。$g,u$は1次独立である。$B-A=tu$、$B'-A'=t'v$と書く。平行の仮定より実数$k,l$があって$B'-B=kg$、$C'-C=lg$である。$C'-C=v-u+g$、$B'-B=t'v-tu+g$である。
+    第1の式から$v=u+(l-1)g$である。これを第2の式に代入すると、$kg=(t'-t)u+\bigl(t'(l-1)+1\bigr)g$となる。$g,u$の1次独立性より$t'=t$である。
+    よって$AB=|t|AC$、$BC=|1-t|AC$、$A'B'=|t|A'C'$、$B'C'=|1-t|A'C'$であり、$AB\cdot B'C'=|t||1-t|AC\cdot A'C'=BC\cdot A'B'$である。
+  strategy: Parallelism forces the same parameter on the two transversals, by independence of the direction and C - A.
+  sketch:
+  - 'setup: Put g = A''-A, u = C-A, v = C''-A'', with g, u independent.'
+  - 'translate: B - A = tu and B'' - A'' = t''v.'
+  - 'derive: Parallelism gives C''-C = lg and B''-B = kg.'
+  - 'derive: Eliminating v gives (t''-t)u in the span of g, so t'' = t.'
+  - 'conclude: All four lengths are |t| or |1-t| times AC or A''C''.'
+  openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a c a1)) (on_line b a c) (on_line b1 a1 c1) (parallel_lines a a1 b b1) (parallel_lines a a1 c c1)) (= (* (dist_of a b) (dist_of b1 c1)) (* (dist_of b c) (dist_of a1 b1)))))
+  hard_negative:
+    statement: 直線$AA'$と$BB'$が平行であれば、$CC'$の条件なしで$AB\cdot B'C'=BC\cdot A'B'$である。
+    reason: $C'$は直線$A'B'$上で自由に動かせるので、$B'C'$の長さが変わっても$AB,BC,A'B'$は変わらない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, C, A'} : Set P) → B ∈ line[ℝ, A, C] → B' ∈ line[ℝ, A', C'] → (line[ℝ, A, A']).Parallel line[ℝ, B, B'] → (line[ℝ, A, A']).Parallel line[ℝ, C, C'] → dist A B * dist B' C' = dist B C * dist A' B'
+  proof: |
+    by
+      intro V P _ _ _ _ A B C A' B' C' hc hB hB' h1 h2
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hB
+      obtain ⟨t', rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hB'
+      rw [AffineSubspace.affineSpan_pair_parallel_iff_vectorSpan_eq, vectorSpan_pair_rev, vectorSpan_pair_rev] at h1 h2
+      have m1 : (AffineMap.lineMap A' C' t' : P) -ᵥ (AffineMap.lineMap A C t : P) ∈ Submodule.span ℝ {A' -ᵥ A} := by
+        rw [h1]; exact Submodule.mem_span_singleton_self _
+      have m2 : C' -ᵥ C ∈ Submodule.span ℝ {A' -ᵥ A} := by
+        rw [h2]; exact Submodule.mem_span_singleton_self _
+      obtain ⟨k, hk⟩ := Submodule.mem_span_singleton.mp m1
+      obtain ⟨l, hl⟩ := Submodule.mem_span_singleton.mp m2
+      have e1 : (AffineMap.lineMap A' C' t' : P) -ᵥ (AffineMap.lineMap A C t : P) =
+          t' • (C' -ᵥ A') - t • (C -ᵥ A) + (A' -ᵥ A) := by
+        rw [AffineMap.lineMap_apply, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_vadd_eq_vsub_sub]
+        abel
+      have e2 : C' -ᵥ C = (C' -ᵥ A') - (C -ᵥ A) + (A' -ᵥ A) := by
+        rw [← vsub_sub_vsub_cancel_right C' C A, ← vsub_add_vsub_cancel C' A' A]
+        abel
+      rw [e1] at hk
+      rw [e2] at hl
+      have hv : C' -ᵥ A' = l • (A' -ᵥ A) + (C -ᵥ A) - (A' -ᵥ A) := by
+        rw [hl]; abel
+      have hrel : (t' - t) • (C -ᵥ A) = (k - t' * l + t' - 1) • (A' -ᵥ A) := by
+        rw [hv] at hk
+        have : k • (A' -ᵥ A) - (t' * l - t' + 1) • (A' -ᵥ A) = (t' - t) • (C -ᵥ A) := by
+          rw [hk]; module
+        rw [← this]; module
+      have htt : t' = t := by
+        by_contra hne
+        apply hc
+        have hne' : t' - t ≠ 0 := sub_ne_zero.mpr hne
+        have hu : C -ᵥ A = ((k - t' * l + t' - 1) / (t' - t)) • (A' -ᵥ A) := by
+          rw [div_eq_inv_mul, mul_smul, ← hrel, smul_smul, inv_mul_cancel₀ hne', one_smul]
+        have h3 := AffineMap.lineMap_mem_affineSpan_pair ((k - t' * l + t' - 1) / (t' - t)) A A'
+        rw [AffineMap.lineMap_apply, ← hu, vsub_vadd] at h3
+        have h4 := collinear_insert_of_mem_affineSpan_pair h3
+        rwa [Set.insert_comm] at h4
+      subst htt
+      rw [dist_left_lineMap, dist_left_lineMap, dist_lineMap_right, dist_lineMap_right]
+      ring
+- id: right_triangle_altitude_geometric_mean
+  kind: textbook
+  level: middle
+  topic: 三角形・直角三角形の垂線
+  statement: $\angle BAC=\pi/2$（内積$\langle B-A,C-A\rangle$が$0$であること）で、$H$が直線$BC$上にあり$A-H$と$C-B$の内積が$0$であるならば（$H$は斜辺への垂線の足）、$AH^2=BH\cdot HC$である。
+  statement_en: If ⟨B-A,C-A⟩ = 0, that is ∠BAC = π/2, H lies on line BC and ⟨A-H,C-B⟩ = 0, then AH² = BH·HC.
+  assumptions:
+  - $\langle B-A,C-A\rangle=0$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $AH^2=BH\cdot HC$である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$\langle B-A,C-A\rangle=0$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    $d=C-B$、$h=A-H$とおき、実数$x$により$H-B=xd$と書く。このとき$B-A=-xd-h$、$C-A=(1-x)d-h$であり、$\langle h,d\rangle=0$である。$\langle B-A,C-A\rangle=0$を展開すると$-x(1-x)\|d\|^2+\|h\|^2=0$であり、$AH^2=x(1-x)\|d\|^2$である。
+    また$BH=|x|\|d\|$、$HC=|1-x|\|d\|$である。$d=0$なら両辺とも$0$である。$d\neq0$なら$x(1-x)=AH^2/\|d\|^2\geq0$なので$|x||1-x|=x(1-x)$であり、$BH\cdot HC=x(1-x)\|d\|^2=AH^2$である。
+  strategy: Parametrize H on the hypotenuse and expand the right-angle condition.
+  sketch:
+  - 'setup: Put d = C-B, h = A-H, H - B = xd, with h orthogonal to d.'
+  - 'derive: The right angle gives ‖h‖² = x(1-x)‖d‖².'
+  - 'derive: BH = |x|‖d‖ and HC = |1-x|‖d‖.'
+  - 'case_split: If d = 0 both sides vanish.'
+  - 'conclude: Otherwise x(1-x) ≥ 0 removes the absolute values.'
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (^ (dist_of a h) 2) (* (dist_of b h) (dist_of h c)))))
+  hard_negative:
+    statement: $\angle BAC$が直角でなくても、$H$が$A$から$BC$への垂線の足ならば$AH^2=BH\cdot HC$である。
+    reason: $A=(0,1)$、$B=(-1,0)$、$C=(2,0)$、$H=(0,0)$では$\angle BAC$は直角でなく、$AH^2=1$、$BH\cdot HC=2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), EuclideanGeometry.angle B A C = Real.pi / 2 → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → dist A H ^ 2 = dist B H * dist H C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hA hH hperp
+      obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+      set d : V := C -ᵥ B with hd
+      set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+      have hBH : B -ᵥ AffineMap.lineMap B C x = (-x) • d := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+      have hCH : C -ᵥ AffineMap.lineMap B C x = (1 - x) • d := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, ← hd, sub_smul, one_smul]
+      have hin : inner ℝ (B -ᵥ A) (C -ᵥ A) = 0 := by
+        rw [InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two]; exact hA
+      have e1 : B -ᵥ A = (-x) • d - h := by rw [← hBH, hh, vsub_sub_vsub_cancel_right]
+      have e2 : C -ᵥ A = (1 - x) • d - h := by rw [← hCH, hh, vsub_sub_vsub_cancel_right]
+      have hdh : inner ℝ d h = 0 := by rw [real_inner_comm]; exact hperp
+      rw [e1, e2] at hin
+      simp only [inner_sub_left, inner_sub_right, real_inner_smul_left, real_inner_smul_right, hperp, hdh,
+        real_inner_self_eq_norm_sq] at hin
+      have key : ‖h‖ ^ 2 = x * (1 - x) * ‖d‖ ^ 2 := by linear_combination hin
+      rw [dist_eq_norm_vsub V A, ← hh, dist_eq_norm_vsub V B, dist_comm, dist_eq_norm_vsub V C, hBH, hCH, norm_smul, norm_smul]
+      rw [key, Real.norm_eq_abs, Real.norm_eq_abs, abs_neg]
+      by_cases hd0 : ‖d‖ = 0
+      · simp [hd0]
+      · have hpos : 0 < ‖d‖ ^ 2 := by positivity
+        have hnn : 0 ≤ x * (1 - x) := by
+          by_contra hc
+          nlinarith [sq_nonneg ‖h‖, not_le.mp hc]
+        have : |x| * |1 - x| = x * (1 - x) := by rw [← abs_mul, abs_of_nonneg hnn]
+        linear_combination (-‖d‖ ^ 2) * this
+- id: right_triangle_leg_square_projection
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の垂線
+  statement: $\angle BAC=\pi/2$（内積$\langle B-A,C-A\rangle$が$0$であること）で、$H$が$A$から直線$BC$への垂線の足（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）ならば、$AB^2=BH\cdot BC$である。
+  statement_en: If ⟨B-A,C-A⟩ = 0, H lies on line BC and ⟨A-H,C-B⟩ = 0, then AB² = BH·BC.
+  assumptions:
+  - $\langle B-A,C-A\rangle=0$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $AB^2=BH\cdot BC$である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$\langle B-A,C-A\rangle=0$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    $d=C-B$、$h=A-H$とおき、$H-B=xd$と書く。$\langle h,d\rangle=0$であり、$\langle B-A,C-A\rangle=0$を展開すると$\|h\|^2=x(1-x)\|d\|^2$である。$A-B=h+xd$なので、$AB^2=\|h\|^2+x^2\|d\|^2=x\|d\|^2$である。
+    $BH=|x|\|d\|$、$BC=\|d\|$である。$d=0$なら両辺とも$0$である。$d\neq0$なら$x=AB^2/\|d\|^2\geq0$なので$BH\cdot BC=x\|d\|^2=AB^2$である。
+  strategy: Parametrize H; the right angle gives AB² = x‖d‖² with x ≥ 0.
+  sketch:
+  - 'setup: Put d = C-B, h = A-H, H - B = xd.'
+  - 'derive: The right angle gives ‖h‖² = x(1-x)‖d‖².'
+  - 'derive: AB² = ‖h‖² + x²‖d‖² = x‖d‖².'
+  - 'conclude: If d ≠ 0 then x ≥ 0, so BH·BC = x‖d‖².'
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (^ (dist_of a b) 2) (* (dist_of b h) (dist_of b c)))))
+  hard_negative:
+    statement: 同じ仮定のもとで$AB^2=BH\cdot HC$である。
+    reason: $HC$ではなく$BC$である。$AB^2=BH\cdot BC$であり、$AH^2$の方が$BH\cdot HC$に等しい。$AB=3$、$AC=4$では$BH=9/5$、$HC=16/5$で$BH\cdot HC\neq9$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), EuclideanGeometry.angle B A C = Real.pi / 2 → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → dist A B ^ 2 = dist B H * dist B C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hA hH hperp
+      have core : ∃ x : ℝ, H = AffineMap.lineMap B C x ∧ dist A H ^ 2 = x * (1 - x) * dist B C ^ 2 ∧
+          dist A B ^ 2 = x * dist B C ^ 2 ∧ dist A C ^ 2 = (1 - x) * dist B C ^ 2 ∧
+          dist B H = |x| * dist B C ∧ dist H C = |1 - x| * dist B C := by
+        obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+        refine ⟨x, rfl, ?_⟩
+        have hdBC : dist B C = ‖C -ᵥ B‖ := by rw [dist_comm, dist_eq_norm_vsub V C B]
+        rw [hdBC]
+        set d : V := C -ᵥ B with hd
+        set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+        have hBH : B -ᵥ AffineMap.lineMap B C x = (-x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have hCH : C -ᵥ AffineMap.lineMap B C x = (1 - x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, ← hd, sub_smul, one_smul]
+        have hin : inner ℝ (B -ᵥ A) (C -ᵥ A) = 0 := by
+          rw [InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two]; exact hA
+        have e1 : B -ᵥ A = (-x) • d - h := by rw [← hBH, hh, vsub_sub_vsub_cancel_right]
+        have e2 : C -ᵥ A = (1 - x) • d - h := by rw [← hCH, hh, vsub_sub_vsub_cancel_right]
+        have hdh : inner ℝ d h = 0 := by rw [real_inner_comm]; exact hperp
+        rw [e1, e2] at hin
+        simp only [inner_sub_left, inner_sub_right, real_inner_smul_left, real_inner_smul_right, hperp, hdh,
+          real_inner_self_eq_norm_sq] at hin
+        have key : ‖h‖ ^ 2 = x * (1 - x) * ‖d‖ ^ 2 := by linear_combination hin
+        have a1 : dist A B ^ 2 = x * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V B A, e1, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        have a2 : dist A C ^ 2 = (1 - x) * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V C A, e2, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        refine ⟨?_, a1, a2, ?_, ?_⟩
+        · rw [dist_eq_norm_vsub V A, ← hh, key]
+        · rw [dist_eq_norm_vsub V B, hBH, norm_smul, Real.norm_eq_abs, abs_neg]
+        · rw [dist_comm, dist_eq_norm_vsub V C, hCH, norm_smul, Real.norm_eq_abs]
+      obtain ⟨x, -, -, h1, -, h2, -⟩ := core
+      rw [h1, h2]
+      by_cases h0 : dist B C = 0
+      · simp [h0]
+      · have hp : 0 < dist B C ^ 2 := by positivity
+        have hx : 0 ≤ x := by
+          by_contra hn
+          nlinarith [sq_nonneg (dist A B), not_le.mp hn]
+        rw [abs_of_nonneg hx]
+        ring
+- id: right_triangle_altitude_hypotenuse_product
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の垂線
+  statement: $\angle BAC=\pi/2$（内積$\langle B-A,C-A\rangle$が$0$であること）で、$H$が$A$から直線$BC$への垂線の足（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）ならば、$AH\cdot BC=AB\cdot AC$である。
+  statement_en: If ⟨B-A,C-A⟩ = 0, H lies on line BC and ⟨A-H,C-B⟩ = 0, then AH·BC = AB·AC.
+  assumptions:
+  - $\langle B-A,C-A\rangle=0$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $AH\cdot BC=AB\cdot AC$である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$\langle B-A,C-A\rangle=0$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    $d=C-B$、$h=A-H$とおき、$H-B=xd$と書く。$\langle h,d\rangle=0$であり、$\langle B-A,C-A\rangle=0$の展開から$\|h\|^2=x(1-x)\|d\|^2$である。$A-B=h+xd$、$A-C=h-(1-x)d$なので、$AB^2=x\|d\|^2$、$AC^2=(1-x)\|d\|^2$である。
+    よって$(AH\cdot BC)^2=x(1-x)\|d\|^4=(AB\cdot AC)^2$である。両辺の長さの積は$0$以上なので、$AH\cdot BC=AB\cdot AC$である。
+  strategy: Compute both squared products through the parameter x.
+  sketch:
+  - 'setup: Put d = C-B, h = A-H, H - B = xd.'
+  - 'derive: AH² = x(1-x)‖d‖², AB² = x‖d‖², AC² = (1-x)‖d‖².'
+  - 'derive: Both squared products equal x(1-x)‖d‖⁴.'
+  - 'conclude: Nonnegativity gives equality.'
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (* (dist_of a h) (dist_of b c)) (* (dist_of a b) (dist_of a c)))))
+  hard_negative:
+    statement: $\angle BAC$が直角でなくても、$H$が$A$から$BC$への垂線の足ならば$AH\cdot BC=AB\cdot AC$である。
+    reason: 一般には$AH\cdot BC=AB\cdot AC\sin\angle BAC$であり、正弦が$1$でなければ等しくない。正三角形では$\sin\angle BAC=\frac{\sqrt3}{2}$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), EuclideanGeometry.angle B A C = Real.pi / 2 → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → dist A H * dist B C = dist A B * dist A C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hA hH hperp
+      have core : ∃ x : ℝ, H = AffineMap.lineMap B C x ∧ dist A H ^ 2 = x * (1 - x) * dist B C ^ 2 ∧
+          dist A B ^ 2 = x * dist B C ^ 2 ∧ dist A C ^ 2 = (1 - x) * dist B C ^ 2 ∧
+          dist B H = |x| * dist B C ∧ dist H C = |1 - x| * dist B C := by
+        obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+        refine ⟨x, rfl, ?_⟩
+        have hdBC : dist B C = ‖C -ᵥ B‖ := by rw [dist_comm, dist_eq_norm_vsub V C B]
+        rw [hdBC]
+        set d : V := C -ᵥ B with hd
+        set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+        have hBH : B -ᵥ AffineMap.lineMap B C x = (-x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have hCH : C -ᵥ AffineMap.lineMap B C x = (1 - x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, ← hd, sub_smul, one_smul]
+        have hin : inner ℝ (B -ᵥ A) (C -ᵥ A) = 0 := by
+          rw [InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two]; exact hA
+        have e1 : B -ᵥ A = (-x) • d - h := by rw [← hBH, hh, vsub_sub_vsub_cancel_right]
+        have e2 : C -ᵥ A = (1 - x) • d - h := by rw [← hCH, hh, vsub_sub_vsub_cancel_right]
+        have hdh : inner ℝ d h = 0 := by rw [real_inner_comm]; exact hperp
+        rw [e1, e2] at hin
+        simp only [inner_sub_left, inner_sub_right, real_inner_smul_left, real_inner_smul_right, hperp, hdh,
+          real_inner_self_eq_norm_sq] at hin
+        have key : ‖h‖ ^ 2 = x * (1 - x) * ‖d‖ ^ 2 := by linear_combination hin
+        have a1 : dist A B ^ 2 = x * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V B A, e1, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        have a2 : dist A C ^ 2 = (1 - x) * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V C A, e2, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        refine ⟨?_, a1, a2, ?_, ?_⟩
+        · rw [dist_eq_norm_vsub V A, ← hh, key]
+        · rw [dist_eq_norm_vsub V B, hBH, norm_smul, Real.norm_eq_abs, abs_neg]
+        · rw [dist_comm, dist_eq_norm_vsub V C, hCH, norm_smul, Real.norm_eq_abs]
+      obtain ⟨x, -, h0, h1, h2, -, -⟩ := core
+      refine (sq_eq_sq₀ (by positivity) (by positivity)).mp ?_
+      rw [mul_pow, mul_pow, h0, h1, h2]
+      ring
+- id: right_triangle_altitude_similar_triangles
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の垂線
+  statement: 直角三角形$ABC$（$A,B,C$は同一直線上になく$\angle BAC=\pi/2$）で、$H$が$A$から直線$BC$への垂線の足（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）ならば、$H,B,A$と$A,B,C$、$H,A,C$と$A,B,C$はそれぞれこの対応で相似である。
+  statement_en: If A, B, C are not collinear, ∠BAC = π/2, H lies on line BC and ⟨A-H,C-B⟩ = 0, then H, B, A is similar to A, B, C and H, A, C is similar to A, B, C, in these orders.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $\angle BAC=\pi/2$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $H,B,A$と$A,B,C$は相似であり、$H,A,C$と$A,B,C$も相似である。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$\angle BAC=\pi/2$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。$a=BC$、$b=AC$、$c=AB$とおくと、これらは正である。
+    $d=C-B$、$h=A-H$、$H-B=xd$とおく。$\angle BAC=\pi/2$と$\langle h,d\rangle=0$から、$AH^2=x(1-x)a^2$、$c^2=xa^2$、$b^2=(1-x)a^2$である。よって$0<x<1$であり、$BH=xa=c^2/a$、$HC=(1-x)a=b^2/a$である。また$(AH\cdot a)^2=x(1-x)a^4=(bc)^2$より$AH=bc/a$である。
+    $r=c/a$とおくと、$HB=c^2/a=r\,AB$、$BA=c=r\,BC$、$AH=bc/a=r\,CA$である。よって$H,B,A$と$A,B,C$は相似である。$r=b/a$とおくと、$HA=bc/a=r\,AB$、$AC=b=r\,BC$、$CH=b^2/a=r\,CA$である。よって$H,A,C$と$A,B,C$は相似である。
+  strategy: Compute all lengths through x, then read off the common ratios c/a and b/a.
+  sketch:
+  - 'setup: Put d = C-B, h = A-H, H - B = xd.'
+  - 'derive: AH² = x(1-x)a², c² = xa², b² = (1-x)a², so 0 < x < 1.'
+  - 'derive: BH = c²/a, HC = b²/a, AH = bc/a.'
+  - 'construct: The ratio c/a works for H, B, A against A, B, C.'
+  - 'construct: The ratio b/a works for H, A, C against A, B, C.'
+  openmath: (forall (a b c h) (-> (and (not (collinear_points a b c)) (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (and (similar_triangles h b a a b c) (similar_triangles h a c a b c))))
+  hard_negative:
+    statement: $H,B,A$と$A,C,B$がこの対応で相似である。
+    reason: $B$は$B$自身に対応する。$H,B,A$と$A,C,B$の対応では$HB:AC=BA:CB$が必要だが、$AB=3$、$AC=4$、$BC=5$では$HB/AC=9/20$、$BA/CB=3/5$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), ¬Collinear ℝ ({A, B, C} : Set P) → EuclideanGeometry.angle B A C = Real.pi / 2 → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → Similar ![H, B, A] ![A, B, C] ∧ Similar ![H, A, C] ![A, B, C]
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hABC hA hH hperp
+      have core : ∃ x : ℝ, H = AffineMap.lineMap B C x ∧ dist A H ^ 2 = x * (1 - x) * dist B C ^ 2 ∧
+          dist A B ^ 2 = x * dist B C ^ 2 ∧ dist A C ^ 2 = (1 - x) * dist B C ^ 2 ∧
+          dist B H = |x| * dist B C ∧ dist H C = |1 - x| * dist B C := by
+        obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+        refine ⟨x, rfl, ?_⟩
+        have hdBC : dist B C = ‖C -ᵥ B‖ := by rw [dist_comm, dist_eq_norm_vsub V C B]
+        rw [hdBC]
+        set d : V := C -ᵥ B with hd
+        set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+        have hBH : B -ᵥ AffineMap.lineMap B C x = (-x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have hCH : C -ᵥ AffineMap.lineMap B C x = (1 - x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, ← hd, sub_smul, one_smul]
+        have hin : inner ℝ (B -ᵥ A) (C -ᵥ A) = 0 := by
+          rw [InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two]; exact hA
+        have e1 : B -ᵥ A = (-x) • d - h := by rw [← hBH, hh, vsub_sub_vsub_cancel_right]
+        have e2 : C -ᵥ A = (1 - x) • d - h := by rw [← hCH, hh, vsub_sub_vsub_cancel_right]
+        have hdh : inner ℝ d h = 0 := by rw [real_inner_comm]; exact hperp
+        rw [e1, e2] at hin
+        simp only [inner_sub_left, inner_sub_right, real_inner_smul_left, real_inner_smul_right, hperp, hdh,
+          real_inner_self_eq_norm_sq] at hin
+        have key : ‖h‖ ^ 2 = x * (1 - x) * ‖d‖ ^ 2 := by linear_combination hin
+        have a1 : dist A B ^ 2 = x * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V B A, e1, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        have a2 : dist A C ^ 2 = (1 - x) * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V C A, e2, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        refine ⟨?_, a1, a2, ?_, ?_⟩
+        · rw [dist_eq_norm_vsub V A, ← hh, key]
+        · rw [dist_eq_norm_vsub V B, hBH, norm_smul, Real.norm_eq_abs, abs_neg]
+        · rw [dist_comm, dist_eq_norm_vsub V C, hCH, norm_smul, Real.norm_eq_abs]
+      obtain ⟨x, -, h0, h1, h2, h3, h4⟩ := core
+      have pa : 0 < dist B C := dist_pos.mpr (ne₂₃_of_not_collinear hABC)
+      have pc : 0 < dist A B := dist_pos.mpr (ne₁₂_of_not_collinear hABC)
+      have pb : 0 < dist A C := dist_pos.mpr (ne₁₃_of_not_collinear hABC)
+      have hp : 0 < dist B C ^ 2 := by positivity
+      have hx : 0 < x := by
+        by_contra hn
+        nlinarith [pow_pos pc 2, not_lt.mp hn]
+      have hx1 : 0 < 1 - x := by
+        by_contra hn
+        nlinarith [pow_pos pb 2, not_lt.mp hn]
+      rw [abs_of_pos hx] at h3
+      rw [abs_of_pos hx1] at h4
+      have hprod : dist A H * dist B C = dist A B * dist A C := by
+        refine (sq_eq_sq₀ (by positivity) (by positivity)).mp ?_
+        rw [mul_pow, mul_pow, h0, h1, h2]
+        ring
+      constructor
+      · refine similar_iff_exists_pos_dist_eq.mpr ⟨dist A B / dist B C, by positivity, fun i j => ?_⟩
+        have a1 : dist H B = dist A B / dist B C * dist A B := by
+          rw [dist_comm, h3]; field_simp; linarith
+        have a2 : dist B A = dist A B / dist B C * dist B C := by
+          rw [dist_comm]; field_simp
+        have a3 : dist A H = dist A B / dist B C * dist C A := by
+          rw [dist_comm C A]; field_simp; linarith
+        fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+      · refine similar_iff_exists_pos_dist_eq.mpr ⟨dist A C / dist B C, by positivity, fun i j => ?_⟩
+        have a1 : dist H A = dist A C / dist B C * dist A B := by
+          rw [dist_comm]; field_simp; linarith
+        have a2 : dist A C = dist A C / dist B C * dist B C := by
+          field_simp
+        have a3 : dist C H = dist A C / dist B C * dist C A := by
+          rw [dist_comm, dist_comm C A, h4]; field_simp; linarith
+        fin_cases i <;> fin_cases j <;> simp <;> grind [dist_comm]
+- id: right_triangle_altitude_foot_between
+  kind: gap
+  level: middle
+  topic: 三角形・直角三角形の垂線
+  statement: 直角三角形$ABC$（$A,B,C$は同一直線上になく$\angle BAC=\pi/2$）で、$A$から直線$BC$への垂線の足$H$（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）は、線分$BC$の内部にある。
+  statement_en: If A, B, C are not collinear, ∠BAC = π/2, H lies on line BC and ⟨A-H,C-B⟩ = 0, then H lies strictly between B and C.
+  assumptions:
+  - $A,B,C$は同一直線上にない
+  - $\angle BAC=\pi/2$
+  - $H$は直線$BC$上の点
+  - $\langle A-H,C-B\rangle=0$
+  quantifiers:
+  - 任意の4点$A,B,C,H$
+  conclusion: $H$は$B$と$C$の間にあり$B,C$と異なる。
+  answer: |
+    $A,B,C,H$を実内積空間上のアフィン空間の点とする。$A,B,C$は同一直線上になく、$\angle BAC=\pi/2$で、$H$は直線$BC$上にあり、$\langle A-H,C-B\rangle=0$とする。
+    $d=C-B\neq0$、$h=A-H$とおき、$H-B=xd$と書く。$\langle h,d\rangle=0$と$\langle B-A,C-A\rangle=0$の展開から$\|h\|^2=x(1-x)\|d\|^2$である。$A-B=h+xd$、$A-C=h-(1-x)d$より$AB^2=x\|d\|^2$、$AC^2=(1-x)\|d\|^2$である。$AB>0$、$AC>0$なので$x>0$かつ$1-x>0$である。したがって$0<x<1$であり、$H$は線分$BC$の内部にある。
+  strategy: The parameter of H equals AB²/BC² and 1 minus it equals AC²/BC², both positive.
+  sketch:
+  - 'setup: Put d = C-B, h = A-H, H - B = xd.'
+  - 'derive: AB² = x‖d‖² and AC² = (1-x)‖d‖².'
+  - 'derive: Positivity of AB and AC gives 0 < x < 1.'
+  - 'conclude: H lies strictly between B and C.'
+  openmath: (forall (a b c h) (-> (and (not (collinear_points a b c)) (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (strictly_between b h c)))
+  hard_negative:
+    statement: 任意の三角形$ABC$で、$A$から直線$BC$への垂線の足は線分$BC$の内部にある。
+    reason: $\angle ABC$が鈍角なら足は$B$の外側にある。$A=(-1,1)$、$B=(0,0)$、$C=(2,0)$では足は$(-1,0)$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C H : P), ¬Collinear ℝ ({A, B, C} : Set P) → EuclideanGeometry.angle B A C = Real.pi / 2 → H ∈ line[ℝ, B, C] → inner ℝ (A -ᵥ H) (C -ᵥ B) = 0 → Sbtw ℝ B H C
+  proof: |
+    by
+      intro V P _ _ _ _ A B C H hABC hA hH hperp
+      have core : ∃ x : ℝ, H = AffineMap.lineMap B C x ∧ dist A H ^ 2 = x * (1 - x) * dist B C ^ 2 ∧
+          dist A B ^ 2 = x * dist B C ^ 2 ∧ dist A C ^ 2 = (1 - x) * dist B C ^ 2 ∧
+          dist B H = |x| * dist B C ∧ dist H C = |1 - x| * dist B C := by
+        obtain ⟨x, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hH
+        refine ⟨x, rfl, ?_⟩
+        have hdBC : dist B C = ‖C -ᵥ B‖ := by rw [dist_comm, dist_eq_norm_vsub V C B]
+        rw [hdBC]
+        set d : V := C -ᵥ B with hd
+        set h : V := A -ᵥ AffineMap.lineMap B C x with hh
+        have hBH : B -ᵥ AffineMap.lineMap B C x = (-x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have hCH : C -ᵥ AffineMap.lineMap B C x = (1 - x) • d := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, ← hd, sub_smul, one_smul]
+        have hin : inner ℝ (B -ᵥ A) (C -ᵥ A) = 0 := by
+          rw [InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two]; exact hA
+        have e1 : B -ᵥ A = (-x) • d - h := by rw [← hBH, hh, vsub_sub_vsub_cancel_right]
+        have e2 : C -ᵥ A = (1 - x) • d - h := by rw [← hCH, hh, vsub_sub_vsub_cancel_right]
+        have hdh : inner ℝ d h = 0 := by rw [real_inner_comm]; exact hperp
+        rw [e1, e2] at hin
+        simp only [inner_sub_left, inner_sub_right, real_inner_smul_left, real_inner_smul_right, hperp, hdh,
+          real_inner_self_eq_norm_sq] at hin
+        have key : ‖h‖ ^ 2 = x * (1 - x) * ‖d‖ ^ 2 := by linear_combination hin
+        have a1 : dist A B ^ 2 = x * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V B A, e1, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        have a2 : dist A C ^ 2 = (1 - x) * ‖d‖ ^ 2 := by
+          rw [dist_comm, dist_eq_norm_vsub V C A, e2, norm_sub_sq_real, real_inner_smul_left, hdh, norm_smul, key,
+            Real.norm_eq_abs, mul_pow, sq_abs]
+          ring
+        refine ⟨?_, a1, a2, ?_, ?_⟩
+        · rw [dist_eq_norm_vsub V A, ← hh, key]
+        · rw [dist_eq_norm_vsub V B, hBH, norm_smul, Real.norm_eq_abs, abs_neg]
+        · rw [dist_comm, dist_eq_norm_vsub V C, hCH, norm_smul, Real.norm_eq_abs]
+      obtain ⟨x, rfl, -, h1, h2, -, -⟩ := core
+      have hBC : B ≠ C := ne₂₃_of_not_collinear hABC
+      have pa : 0 < dist B C := dist_pos.mpr hBC
+      have pc : 0 < dist A B := dist_pos.mpr (ne₁₂_of_not_collinear hABC)
+      have pb : 0 < dist A C := dist_pos.mpr (ne₁₃_of_not_collinear hABC)
+      have hp : 0 < dist B C ^ 2 := by positivity
+      have hx : 0 < x := by
+        by_contra hn
+        nlinarith [pow_pos pc 2, not_lt.mp hn]
+      have hx1 : x < 1 := by
+        by_contra hn
+        nlinarith [pow_pos pb 2, not_lt.mp hn]
+      exact sbtw_lineMap_iff.mpr ⟨hBC, hx, hx1⟩

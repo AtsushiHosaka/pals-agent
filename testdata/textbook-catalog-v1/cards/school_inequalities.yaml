@@ -1,0 +1,1533 @@
+- id: ineq_mul_sign_rule
+  kind: gap
+  level: middle
+  topic: 不等式・基本性質
+  statement: 実数$a,b,c$について、$c>0$なら$a<b$と$ca<cb$は同値であり、$c<0$なら$a<b$と$cb<ca$は同値である。
+  statement_en: For real a, b, c, if c > 0 then a < b is equivalent to ca < cb, and if c < 0 then a < b is equivalent to cb < ca.
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: $c>0$なら$a<b$と$ca<cb$は同値であり、$c<0$なら$a<b$と$cb<ca$は同値である。
+  answer: |
+    $a,b,c$を実数とする。$cb-ca=c(b-a)$である。
+    $c>0$のとき、$c(b-a)>0$と$b-a>0$は同値なので、$ca<cb$と$a<b$は同値である。
+    $c<0$のとき、$c(b-a)<0$と$b-a>0$は同値なので、$cb<ca$と$a<b$は同値である。
+  strategy: Factor the difference cb - ca as c(b - a) and read off its sign.
+  sketch:
+  - "setup: Write cb - ca = c(b - a)."
+  - "case_split: If c > 0 the sign of c(b - a) equals the sign of b - a."
+  - "case_split: If c < 0 the sign of c(b - a) is opposite to the sign of b - a."
+  - "conclude: Both equivalences follow."
+  openmath: (forall (a b c) (and (-> (> c 0) (<-> (< a b) (< (* c a) (* c b)))) (-> (< c 0) (<-> (< a b) (< (* c b) (* c a))))))
+  hard_negative:
+    statement: $a<b$なら、任意の実数$c$について$ca<cb$である。
+    reason: $c=-1$では$-a>-b$となり不等号が逆向きになり、$c=0$では両辺が等しい。
+  target: |
+    ∀ a b c : ℝ, (0 < c → (a < b ↔ c * a < c * b)) ∧ (c < 0 → (a < b ↔ c * b < c * a))
+  proof: |
+    by
+      intro a b c
+      refine ⟨fun hc => ⟨fun h => by nlinarith, fun h => by nlinarith⟩, fun hc => ⟨fun h => by nlinarith, fun h => by nlinarith⟩⟩
+- id: range_of_sum_and_difference
+  kind: gap
+  level: middle
+  topic: 不等式・式の値の範囲
+  statement: 実数$a,b,c,d,x,y$が$a<x<b$、$c<y<d$を満たすとき、$a+c<x+y<b+d$かつ$a-d<x-y<b-c$である。
+  statement_en: If real numbers satisfy a < x < b and c < y < d, then a + c < x + y < b + d and a - d < x - y < b - c.
+  assumptions:
+  - $a,b,c,d,x,y$は実数
+  - $a<x<b$
+  - $c<y<d$
+  quantifiers:
+  - 任意の実数$a,b,c,d,x,y$
+  conclusion: $a+c<x+y<b+d$かつ$a-d<x-y<b-c$である。
+  answer: |
+    $a,b,c,d,x,y$を実数とし、$a<x<b$、$c<y<d$とする。この$2$つの不等式を辺ごとに足すと$a+c<x+y<b+d$を得る。
+    差については、$c<y<d$に$-1$を掛けて$-d<-y<-c$とする。これを$a<x<b$と辺ごとに足すと、$a-d<x-y<b-c$を得る。
+  strategy: Add the two chains, negating the second chain first for the difference.
+  sketch:
+  - "derive: Adding a < x < b and c < y < d gives the range of x + y."
+  - "derive: Multiplying c < y < d by -1 gives -d < -y < -c."
+  - "derive: Adding this to a < x < b gives a - d < x - y < b - c."
+  - "conclude: Both ranges hold."
+  openmath: (forall (a b c d x y) (-> (and (< a x) (< x b) (< c y) (< y d)) (and (< (+ a c) (+ x y)) (< (+ x y) (+ b d)) (< (- a d) (- x y)) (< (- x y) (- b c)))))
+  hard_negative:
+    statement: $a<x<b$、$c<y<d$なら$a-c<x-y<b-d$である。
+    reason: $a=0,x=1,b=2,c=0,y=5,d=10$のとき$x-y=-4$だが$a-c=0$なので左の不等式が成り立たない。差の範囲では$y$の上端と下端が入れ替わる。
+  target: |
+    ∀ a b c d x y : ℝ, a < x → x < b → c < y → y < d → (a + c < x + y ∧ x + y < b + d) ∧ (a - d < x - y ∧ x - y < b - c)
+  proof: |
+    by
+      intro a b c d x y h1 h2 h3 h4
+      exact ⟨⟨by linarith, by linarith⟩, ⟨by linarith, by linarith⟩⟩
+- id: ineq_mul_nonneg_bounds
+  kind: gap
+  level: high
+  topic: 不等式・基本性質
+  statement: 実数$a,b,c,d$が$0\leq a\leq b$、$0\leq c\leq d$を満たすとき、$ac\leq bd$である。
+  statement_en: If real numbers satisfy 0 ≤ a ≤ b and 0 ≤ c ≤ d, then ac ≤ bd.
+  assumptions:
+  - $a,b,c,d$は実数
+  - $0\leq a\leq b$
+  - $0\leq c\leq d$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $ac\leq bd$である。
+  answer: |
+    $a,b,c,d$を実数とし、$0\leq a\leq b$、$0\leq c\leq d$とする。$c\geq 0$なので$a\leq b$の両辺に$c$を掛けて$ac\leq bc$を得る。また$b\geq a\geq 0$なので$c\leq d$の両辺に$b$を掛けて$bc\leq bd$を得る。よって$ac\leq bc\leq bd$である。
+  strategy: Multiply one inequality at a time by a nonnegative factor and chain the results.
+  sketch:
+  - "derive: Since c ≥ 0, a ≤ b gives ac ≤ bc."
+  - "derive: Since b ≥ 0, c ≤ d gives bc ≤ bd."
+  - "conclude: Chain the two inequalities."
+  openmath: (forall (a b c d) (-> (and (<= 0 a) (<= a b) (<= 0 c) (<= c d)) (<= (* a c) (* b d))))
+  hard_negative:
+    statement: 実数$a,b,c,d$が$a\leq b$、$c\leq d$を満たせば$ac\leq bd$である。
+    reason: $a=c=-3$、$b=d=-1$のとき$ac=9$、$bd=1$である。辺ごとに掛けるには各辺が$0$以上である必要がある。
+  target: |
+    ∀ a b c d : ℝ, 0 ≤ a → a ≤ b → 0 ≤ c → c ≤ d → a * c ≤ b * d
+  proof: |
+    by
+      intro a b c d ha hab hc hcd
+      exact mul_le_mul hab hcd hc (ha.trans hab)
+- id: ineq_reciprocal_same_sign
+  kind: gap
+  level: high
+  topic: 不等式・逆数の大小
+  statement: 実数$a,b$が$ab>0$を満たすとき、$a<b$と$\dfrac{1}{b}<\dfrac{1}{a}$は同値である。
+  statement_en: If real numbers a and b satisfy ab > 0, then a < b is equivalent to 1/b < 1/a.
+  assumptions:
+  - $a,b$は実数
+  - $ab>0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a<b$と$\dfrac{1}{b}<\dfrac{1}{a}$は同値である。
+  answer: |
+    $a,b$を$ab>0$を満たす実数とする。このとき$a\neq 0$、$b\neq 0$であり、$\dfrac{1}{a}-\dfrac{1}{b}=\dfrac{b-a}{ab}$が成り立つ。$ab>0$なので、右辺が正であることと$b-a>0$は同値である。したがって$\dfrac{1}{b}<\dfrac{1}{a}$と$a<b$は同値である。
+  strategy: Compute the difference of reciprocals over the positive denominator ab.
+  sketch:
+  - "setup: From ab > 0, both a and b are nonzero."
+  - "derive: 1/a - 1/b = (b - a)/(ab)."
+  - "derive: Since ab > 0 the quotient has the sign of b - a."
+  - "conclude: 1/b < 1/a holds exactly when a < b."
+  openmath: (forall (a b) (-> (> (* a b) 0) (<-> (< a b) (< (/ 1 b) (/ 1 a)))))
+  hard_negative:
+    statement: $0$でない実数$a,b$について、$a<b$なら$\dfrac{1}{b}<\dfrac{1}{a}$である。
+    reason: $a=-1$、$b=1$のとき$\dfrac{1}{b}=1$、$\dfrac{1}{a}=-1$である。$a,b$の符号が異なると逆数の大小は反転しない。
+  target: |
+    ∀ a b : ℝ, 0 < a * b → (a < b ↔ 1 / b < 1 / a)
+  proof: |
+    by
+      intro a b hab
+      have ha : a ≠ 0 := left_ne_zero_of_mul hab.ne'
+      have hb : b ≠ 0 := right_ne_zero_of_mul hab.ne'
+      have key : 1 / a - 1 / b = (b - a) / (a * b) := by
+        field_simp
+      constructor
+      · intro h
+        have h2 := div_pos (sub_pos.2 h) hab
+        linarith
+      · intro h
+        have h2 : 0 < (b - a) / (a * b) := by
+          rw [← key]
+          linarith
+        have h3 := (div_pos_iff_of_pos_right hab).1 h2
+        linarith
+- id: compare_abs_squares
+  kind: gap
+  level: high
+  topic: 大小比較・平方の比較
+  statement: 実数$a,b$について、$|a|\leq|b|$と$a^2\leq b^2$は同値である。
+  statement_en: For real numbers a and b, |a| ≤ |b| is equivalent to a^2 ≤ b^2.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $|a|\leq|b|$と$a^2\leq b^2$は同値である。
+  answer: |
+    $a,b$を実数とする。$a^2=|a|^2$、$b^2=|b|^2$であり、$|b|^2-|a|^2=(|b|-|a|)(|b|+|a|)$である。
+    $|a|\leq|b|$なら右辺の$2$つの因数はどちらも$0$以上なので、$a^2\leq b^2$である。
+    逆に$|a|>|b|$なら$|b|-|a|<0$かつ$|b|+|a|>0$なので$b^2<a^2$である。対偶をとると、$a^2\leq b^2$から$|a|\leq|b|$が従う。
+  strategy: Factor the difference of the squares of the absolute values.
+  sketch:
+  - "setup: Replace a^2 and b^2 by |a|^2 and |b|^2."
+  - "derive: |b|^2 - |a|^2 = (|b| - |a|)(|b| + |a|)."
+  - "case_split: If |a| ≤ |b| the product is nonnegative."
+  - "contradiction: If |a| > |b| the product is negative, so a^2 > b^2."
+  - "conclude: The two conditions are equivalent."
+  openmath: (forall (a b) (<-> (<= (abs a) (abs b)) (<= (^ a 2) (^ b 2))))
+  hard_negative:
+    statement: 実数$a,b$について、$a\leq b$と$a^2\leq b^2$は同値である。
+    reason: $a=-3$、$b=1$のとき$a\leq b$だが$a^2=9>1=b^2$である。絶対値を外すには$a,b\geq 0$が要る。
+  target: |
+    ∀ a b : ℝ, |a| ≤ |b| ↔ a ^ 2 ≤ b ^ 2
+  proof: |
+    by
+      intro a b
+      exact sq_le_sq.symm
+- id: compare_powers_nonneg
+  kind: gap
+  level: high
+  topic: 大小比較・累乗の比較
+  statement: 正の整数$n$と$0$以上の実数$a,b$について、$a\leq b$と$a^n\leq b^n$は同値である。
+  statement_en: For a positive integer n and nonnegative reals a and b, a ≤ b is equivalent to a^n ≤ b^n.
+  assumptions:
+  - $n$は正の整数
+  - $a,b$は$0$以上の実数
+  quantifiers:
+  - 任意の正の整数$n$
+  - 任意の$0$以上の実数$a,b$
+  conclusion: $a\leq b$と$a^n\leq b^n$は同値である。
+  answer: |
+    $n$を正の整数、$a,b$を$0$以上の実数とする。$b^n-a^n=(b-a)\left(b^{n-1}+b^{n-2}a+\cdots+a^{n-1}\right)$である。
+    $a\leq b$なら右辺の$2$つの因数はどちらも$0$以上なので、$a^n\leq b^n$である。
+    逆に$a>b$とする。このとき$a>0$であり、第$2$の因数は正の項$a^{n-1}$を含み他の項も$0$以上なので正である。よって$b^n-a^n<0$である。対偶をとると、$a^n\leq b^n$から$a\leq b$が従う。
+  strategy: Factor b^n - a^n and use nonnegativity of the second factor.
+  sketch:
+  - "setup: Factor b^n - a^n as (b - a) times a sum of nonnegative monomials."
+  - "derive: If a ≤ b the product is nonnegative."
+  - "contradiction: If a > b then a > 0, the sum is positive, and the product is negative."
+  - "conclude: The two conditions are equivalent."
+  openmath: (forall (n a b) (-> (and (in n N) (>= n 1) (>= a 0) (>= b 0)) (<-> (<= a b) (<= (^ a n) (^ b n)))))
+  hard_negative:
+    statement: 正の整数$n$と実数$a,b$について、$a\leq b$と$a^n\leq b^n$は同値である。
+    reason: $n=2$、$a=-3$、$b=1$のとき$a\leq b$だが$a^2>b^2$である。$a,b\geq 0$の仮定は外せない。
+  target: |
+    ∀ (n : ℕ) (a b : ℝ), 1 ≤ n → 0 ≤ a → 0 ≤ b → (a ≤ b ↔ a ^ n ≤ b ^ n)
+  proof: |
+    by
+      intro n a b hn ha hb
+      exact (pow_le_pow_iff_left₀ ha hb (by omega)).symm
+- id: compare_fractions_cross_multiply
+  kind: gap
+  level: high
+  topic: 大小比較・分数の比較
+  statement: 実数$a,c$と正の実数$b,d$について、$\dfrac{a}{b}\leq\dfrac{c}{d}$と$ad\leq cb$は同値である。
+  statement_en: For real a, c and positive real b, d, a/b ≤ c/d is equivalent to ad ≤ cb.
+  assumptions:
+  - $a,c$は実数
+  - $b,d$は正の実数
+  quantifiers:
+  - 任意の実数$a,c$
+  - 任意の正の実数$b,d$
+  conclusion: $\dfrac{a}{b}\leq\dfrac{c}{d}$と$ad\leq cb$は同値である。
+  answer: |
+    $a,c$を実数、$b,d$を正の実数とする。$bd>0$なので、$\dfrac{a}{b}\leq\dfrac{c}{d}$の両辺に$bd$を掛けても不等号の向きは変わらず、$ad\leq cb$と同値である。
+  strategy: Multiply both sides by the positive number bd.
+  sketch:
+  - "setup: bd is positive."
+  - "derive: Multiplying a/b ≤ c/d by bd gives ad ≤ cb, and dividing reverses the step."
+  - "conclude: The two conditions are equivalent."
+  openmath: (forall (a b c d) (-> (and (> b 0) (> d 0)) (<-> (<= (/ a b) (/ c d)) (<= (* a d) (* c b)))))
+  hard_negative:
+    statement: $0$でない実数$b,d$と実数$a,c$について、$\dfrac{a}{b}\leq\dfrac{c}{d}$と$ad\leq cb$は同値である。
+    reason: $a=1,b=-1,c=1,d=1$のとき$\dfrac{a}{b}=-1\leq 1=\dfrac{c}{d}$だが、$ad=1$、$cb=-1$である。分母の積が負だと向きが反転する。
+  target: |
+    ∀ a b c d : ℝ, 0 < b → 0 < d → (a / b ≤ c / d ↔ a * d ≤ c * b)
+  proof: |
+    by
+      intro a b c d hb hd
+      exact div_le_div_iff₀ hb hd
+- id: mediant_between
+  kind: gap
+  level: high
+  topic: 大小比較・分数の比較
+  statement: 実数$a,c$と正の実数$b,d$が$\dfrac{a}{b}<\dfrac{c}{d}$を満たすとき、$\dfrac{a}{b}<\dfrac{a+c}{b+d}<\dfrac{c}{d}$である。
+  statement_en: If a, c are real, b, d are positive and a/b < c/d, then a/b < (a+c)/(b+d) < c/d.
+  assumptions:
+  - $a,c$は実数
+  - $b,d$は正の実数
+  - $\dfrac{a}{b}<\dfrac{c}{d}$
+  quantifiers:
+  - 任意の実数$a,c$
+  - 任意の正の実数$b,d$
+  conclusion: $\dfrac{a}{b}<\dfrac{a+c}{b+d}<\dfrac{c}{d}$である。
+  answer: |
+    $a,c$を実数、$b,d$を正の実数とし、$\dfrac{a}{b}<\dfrac{c}{d}$とする。両辺に$bd>0$を掛けて$cb-ad>0$を得る。
+    このとき$\dfrac{a+c}{b+d}-\dfrac{a}{b}=\dfrac{cb-ad}{b(b+d)}>0$であり、$\dfrac{c}{d}-\dfrac{a+c}{b+d}=\dfrac{cb-ad}{d(b+d)}>0$である。よって結論が成り立つ。
+  strategy: Compute both differences over positive denominators, each with numerator cb - ad.
+  sketch:
+  - "translate: The hypothesis is equivalent to cb - ad > 0."
+  - "derive: (a+c)/(b+d) - a/b = (cb - ad)/(b(b+d)) > 0."
+  - "derive: c/d - (a+c)/(b+d) = (cb - ad)/(d(b+d)) > 0."
+  - "conclude: The mediant lies strictly between the two fractions."
+  openmath: (forall (a b c d) (-> (and (> b 0) (> d 0) (< (/ a b) (/ c d))) (and (< (/ a b) (/ (+ a c) (+ b d))) (< (/ (+ a c) (+ b d)) (/ c d)))))
+  hard_negative:
+    statement: $b,d$の符号を問わず、$\dfrac{a}{b}<\dfrac{c}{d}$かつ$b+d\neq 0$なら$\dfrac{a+c}{b+d}$は$\dfrac{a}{b}$と$\dfrac{c}{d}$の間にある。
+    reason: $a=-1,b=1,c=1,d=-2$のとき$\dfrac{a}{b}=-1<-\dfrac{1}{2}=\dfrac{c}{d}$だが、$\dfrac{a+c}{b+d}=0$は間にない。
+  target: |
+    ∀ a b c d : ℝ, 0 < b → 0 < d → a / b < c / d → a / b < (a + c) / (b + d) ∧ (a + c) / (b + d) < c / d
+  proof: |
+    by
+      intro a b c d hb hd h
+      rw [div_lt_div_iff₀ hb hd] at h
+      have hs : 0 < b + d := by linarith
+      constructor
+      · rw [div_lt_div_iff₀ hb hs]
+        nlinarith
+      · rw [div_lt_div_iff₀ hs hd]
+        nlinarith
+- id: means_chain_two
+  kind: textbook
+  level: high
+  topic: 大小比較・平均の大小
+  statement: 正の実数$a,b$について、調和平均、相乗平均、相加平均、$2$乗平均の順に$\dfrac{2ab}{a+b}\leq\sqrt{ab}\leq\dfrac{a+b}{2}\leq\sqrt{\dfrac{a^2+b^2}{2}}$が成り立つ。
+  statement_en: For positive reals a and b, 2ab/(a+b) ≤ sqrt(ab) ≤ (a+b)/2 ≤ sqrt((a^2+b^2)/2).
+  assumptions:
+  - $a,b$は正の実数
+  quantifiers:
+  - 任意の正の実数$a,b$
+  conclusion: $\dfrac{2ab}{a+b}\leq\sqrt{ab}\leq\dfrac{a+b}{2}\leq\sqrt{\dfrac{a^2+b^2}{2}}$が成り立つ。
+  answer: |
+    $a,b$を正の実数とし、$g=\sqrt{ab}$とおく。$g>0$、$g^2=ab$である。
+    中央の不等式を示す。$\left(\dfrac{a+b}{2}\right)^2-g^2=\dfrac{(a-b)^2}{4}\geq 0$であり、$\dfrac{a+b}{2}$と$g$はどちらも正なので、$g\leq\dfrac{a+b}{2}$である。
+    左の不等式を示す。$\dfrac{2ab}{a+b}=g\cdot\dfrac{2g}{a+b}$であり、中央の不等式から$\dfrac{2g}{a+b}\leq 1$なので、$\dfrac{2ab}{a+b}\leq g$である。
+    右の不等式を示す。$\dfrac{a^2+b^2}{2}-\left(\dfrac{a+b}{2}\right)^2=\dfrac{(a-b)^2}{4}\geq 0$である。$\dfrac{a+b}{2}$は正なので、平方根をとって$\dfrac{a+b}{2}\leq\sqrt{\dfrac{a^2+b^2}{2}}$を得る。
+  strategy: Reduce each comparison to the nonnegativity of (a-b)^2 by squaring.
+  sketch:
+  - "setup: Put g = sqrt(ab), so g > 0 and g^2 = ab."
+  - "derive: ((a+b)/2)^2 - g^2 = (a-b)^2/4 ≥ 0 gives g ≤ (a+b)/2."
+  - "derive: 2ab/(a+b) = g · 2g/(a+b) ≤ g by the previous step."
+  - "derive: (a^2+b^2)/2 - ((a+b)/2)^2 = (a-b)^2/4 ≥ 0."
+  - "conclude: Taking square roots gives the last inequality."
+  openmath: (forall (a b) (-> (and (> a 0) (> b 0)) (and (<= (/ (* (* 2 a) b) (+ a b)) (root (* a b) 2)) (<= (root (* a b) 2) (/ (+ a b) 2)) (<= (/ (+ a b) 2) (root (/ (+ (^ a 2) (^ b 2)) 2) 2)))))
+  hard_negative:
+    statement: 負の実数$a,b$についても$\dfrac{a+b}{2}\geq\sqrt{ab}$である。
+    reason: $a=b=-1$のとき左辺は$-1$、右辺は$1$である。相加平均と相乗平均の比較には$a,b\geq 0$が要る。
+  target: |
+    ∀ a b : ℝ, 0 < a → 0 < b → 2 * a * b / (a + b) ≤ Real.sqrt (a * b) ∧ Real.sqrt (a * b) ≤ (a + b) / 2 ∧ (a + b) / 2 ≤ Real.sqrt ((a ^ 2 + b ^ 2) / 2)
+  proof: |
+    by
+      intro a b ha hb
+      have hab : 0 < a * b := mul_pos ha hb
+      have hs : 0 < a + b := by linarith
+      have hg : 0 < Real.sqrt (a * b) := Real.sqrt_pos.2 hab
+      have hgg : Real.sqrt (a * b) ^ 2 = a * b := Real.sq_sqrt hab.le
+      have hmid : Real.sqrt (a * b) ≤ (a + b) / 2 :=
+        Real.sqrt_le_iff.2 ⟨by positivity, by nlinarith [sq_nonneg (a - b)]⟩
+      refine ⟨?_, hmid, ?_⟩
+      · rw [div_le_iff₀ hs]
+        nlinarith
+      · exact (Real.le_sqrt' (by positivity)).2 (by nlinarith [sq_nonneg (a - b)])
+- id: linear_ineq_by_coeff_sign
+  kind: textbook
+  level: middle
+  topic: 一次不等式・係数の符号
+  statement: 実数$a,b,c,x$について、$a>0$なら$ax+b<c$と$x<\dfrac{c-b}{a}$は同値であり、$a<0$なら$ax+b<c$と$\dfrac{c-b}{a}<x$は同値である。
+  statement_en: For real a, b, c, x, if a > 0 then ax + b < c is equivalent to x < (c-b)/a, and if a < 0 then ax + b < c is equivalent to (c-b)/a < x.
+  assumptions:
+  - $a,b,c,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,x$
+  conclusion: $a>0$なら$ax+b<c$と$x<\dfrac{c-b}{a}$は同値であり、$a<0$なら$ax+b<c$と$\dfrac{c-b}{a}<x$は同値である。
+  answer: |
+    $a,b,c,x$を実数とする。$ax+b<c$は、$b$を移項した$ax<c-b$と同値である。
+    $a>0$なら、両辺を$a$で割っても向きは変わらないので、$x<\dfrac{c-b}{a}$と同値である。
+    $a<0$なら、両辺を$a$で割ると向きが逆になるので、$\dfrac{c-b}{a}<x$と同値である。
+  strategy: Move b across and divide by a, tracking the sign of a.
+  sketch:
+  - "translate: ax + b < c is equivalent to ax < c - b."
+  - "case_split: For a > 0 dividing by a keeps the direction."
+  - "case_split: For a < 0 dividing by a reverses the direction."
+  - "conclude: Both equivalences follow."
+  openmath: (forall (a b c x) (and (-> (> a 0) (<-> (< (+ (* a x) b) c) (< x (/ (- c b) a)))) (-> (< a 0) (<-> (< (+ (* a x) b) c) (< (/ (- c b) a) x)))))
+  hard_negative:
+    statement: $a\neq 0$なら、$ax+b<c$と$x<\dfrac{c-b}{a}$は同値である。
+    reason: $a=-1,b=0,c=0,x=1$のとき$ax+b<c$は成り立つが、$x<\dfrac{c-b}{a}=0$は成り立たない。
+  target: |
+    ∀ a b c x : ℝ, (0 < a → (a * x + b < c ↔ x < (c - b) / a)) ∧ (a < 0 → (a * x + b < c ↔ (c - b) / a < x))
+  proof: |
+    by
+      intro a b c x
+      refine ⟨fun ha => ?_, fun ha => ?_⟩
+      · rw [lt_div_iff₀ ha]
+        constructor <;> intro h <;> linarith
+      · rw [div_lt_iff_of_neg ha]
+        constructor <;> intro h <;> linarith
+- id: linear_ineq_degenerate_coeff
+  kind: gap
+  level: high
+  topic: 一次不等式・文字係数
+  statement: 実数$a,b,c$について、不等式$ax+b<c$の解がすべての実数であることと$a=0$かつ$b<c$は同値であり、解がないことと$a=0$かつ$c\leq b$は同値である。
+  statement_en: For real a, b, c, the inequality ax + b < c holds for every real x if and only if a = 0 and b < c, and it has no real solution if and only if a = 0 and c ≤ b.
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 解がすべての実数であることと$a=0$かつ$b<c$は同値であり、解がないことと$a=0$かつ$c\leq b$は同値である。
+  answer: |
+    $a,b,c$を実数とする。
+    $a\neq 0$とする。$x=\dfrac{c-b}{a}$では$ax+b=c$なので不等式は成り立たず、$x=\dfrac{c-b-1}{a}$では$ax+b=c-1<c$なので成り立つ。つまり解はすべての実数ではなく、解がないこともない。したがって、どちらの条件でも$a=0$が必要である。
+    $a=0$のとき、不等式は$x$によらず$b<c$となる。よって$b<c$ならすべての実数が解であり、$c\leq b$なら解はない。以上で$2$つの同値が示された。
+  strategy: Exhibit a failing and a satisfying value of x when a is nonzero, then reduce to b < c when a is zero.
+  sketch:
+  - "case_split: Assume a ≠ 0."
+  - "construct: x = (c-b)/a violates the inequality and x = (c-b-1)/a satisfies it."
+  - "derive: So both conditions force a = 0."
+  - "case_split: If a = 0 the inequality reads b < c for every x."
+  - "conclude: Both equivalences follow."
+  openmath: (forall (a b c) (and (<-> (forall (x) (< (+ (* a x) b) c)) (and (= a 0) (< b c))) (<-> (not (exists (x) (< (+ (* a x) b) c))) (and (= a 0) (<= c b)))))
+  hard_negative:
+    statement: 不等式$ax+b<c$に解がないことと、$a=0$であることは同値である。
+    reason: $a=0,b=0,c=1$のとき不等式は$0<1$となり、すべての実数が解である。$a=0$だけでは解の有無は決まらない。
+  target: |
+    ∀ a b c : ℝ, ((∀ x : ℝ, a * x + b < c) ↔ (a = 0 ∧ b < c)) ∧ ((¬ ∃ x : ℝ, a * x + b < c) ↔ (a = 0 ∧ c ≤ b))
+  proof: |
+    by
+      intro a b c
+      constructor
+      · constructor
+        · intro h
+          have ha : a = 0 := by
+            by_contra ha
+            have h1 := h ((c - b) / a)
+            have e : a * ((c - b) / a) = c - b := by field_simp
+            rw [e] at h1
+            linarith
+          have h0 := h 0
+          exact ⟨ha, by linarith⟩
+        · rintro ⟨rfl, hb⟩ x
+          linarith
+      · constructor
+        · intro h
+          have ha : a = 0 := by
+            by_contra ha
+            have e : a * ((c - b - 1) / a) = c - b - 1 := by field_simp
+            exact h ⟨(c - b - 1) / a, by rw [e]; linarith⟩
+          refine ⟨ha, ?_⟩
+          by_contra hc
+          exact h ⟨0, by linarith [not_le.1 hc]⟩
+        · rintro ⟨rfl, hb⟩ ⟨x, hx⟩
+          linarith
+- id: linear_system_solvable_iff
+  kind: gap
+  level: high
+  topic: 連立不等式・解の存在
+  statement: 実数$a,b,c,d$について、連立不等式$a<x<b$、$c<x<d$を満たす実数$x$が存在することと、$a<b$、$c<d$、$a<d$、$c<b$がすべて成り立つことは同値である。
+  statement_en: For real a, b, c, d, there is a real x with a < x < b and c < x < d if and only if a < b, c < d, a < d and c < b.
+  assumptions:
+  - $a,b,c,d$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: 解が存在することと、$a<b$、$c<d$、$a<d$、$c<b$がすべて成り立つことは同値である。
+  answer: |
+    $a,b,c,d$を実数とする。
+    解$x$が存在するなら、$a<x<b$から$a<b$、$c<x<d$から$c<d$、$a<x<d$から$a<d$、$c<x<b$から$c<b$を得る。
+    逆に$4$つの不等式が成り立つとする。$a,c$の大きい方を$p$、$b,d$の小さい方を$q$とおく。$p$は$a$か$c$、$q$は$b$か$d$であり、$4$つの不等式のどの組合せでも$p<q$である。$x=\dfrac{p+q}{2}$とおくと$p<x<q$なので、$a\leq p<x<q\leq b$かつ$c\leq p<x<q\leq d$となり、$x$は解である。
+  strategy: Take the midpoint between the larger lower bound and the smaller upper bound.
+  sketch:
+  - "derive: A solution x gives all four inequalities by transitivity."
+  - "setup: Let p be the larger of a, c and q the smaller of b, d."
+  - "derive: The four inequalities give p < q."
+  - "construct: The midpoint of p and q satisfies both chains."
+  - "conclude: The equivalence holds."
+  openmath: (forall (a b c d) (<-> (exists (x) (and (< a x) (< x b) (< c x) (< x d))) (and (< a b) (< c d) (< a d) (< c b))))
+  hard_negative:
+    statement: $a<b$かつ$c<d$なら、連立不等式$a<x<b$、$c<x<d$は解をもつ。
+    reason: $a=0,b=1,c=2,d=3$のとき$2$つの区間は交わらない。$a<d$と$c<b$も必要である。
+  target: |
+    ∀ a b c d : ℝ, (∃ x : ℝ, a < x ∧ x < b ∧ c < x ∧ x < d) ↔ (a < b ∧ c < d ∧ a < d ∧ c < b)
+  proof: |
+    by
+      intro a b c d
+      constructor
+      · rintro ⟨x, h1, h2, h3, h4⟩
+        exact ⟨by linarith, by linarith, by linarith, by linarith⟩
+      · rintro ⟨h1, h2, h3, h4⟩
+        have hpq : max a c < min b d := max_lt (lt_min h1 h3) (lt_min h4 h2)
+        have hp1 := le_max_left a c
+        have hp2 := le_max_right a c
+        have hq1 := min_le_left b d
+        have hq2 := min_le_right b d
+        exact ⟨(max a c + min b d) / 2, by linarith, by linarith, by linarith, by linarith⟩
+- id: natural_solutions_count_range
+  kind: gap
+  level: high
+  topic: 一次不等式・整数解の個数
+  statement: 実数$a$と正の整数$n$について、不等式$k<a$を満たす正の整数$k$がちょうど$1,2,\ldots,n$であることと$n<a\leq n+1$は同値である。
+  statement_en: For a real a and a positive integer n, the positive integers k with k < a are exactly 1, ..., n if and only if n < a ≤ n + 1.
+  assumptions:
+  - $a$は実数
+  - $n$は正の整数
+  quantifiers:
+  - 任意の実数$a$
+  - 任意の正の整数$n$
+  conclusion: $k<a$を満たす正の整数$k$がちょうど$1,2,\ldots,n$であることと$n<a\leq n+1$は同値である。
+  answer: |
+    $a$を実数、$n$を正の整数とする。
+    $k<a$を満たす正の整数がちょうど$1,\ldots,n$であるとする。$k=n$は条件を満たすので$n<a$である。$k=n+1$は条件を満たさないので$a\leq n+1$である。
+    逆に$n<a\leq n+1$とする。$1\leq k\leq n$なら$k\leq n<a$である。$k\geq n+1$なら$a\leq n+1\leq k$なので$k<a$は成り立たない。よって$k<a$を満たす正の整数はちょうど$1,\ldots,n$である。
+  strategy: Test k = n and k = n + 1 for one direction and compare k with n for the other.
+  sketch:
+  - "derive: k = n satisfies k < a, so n < a."
+  - "derive: k = n + 1 fails, so a ≤ n + 1."
+  - "case_split: Conversely, k ≤ n gives k < a, and k ≥ n + 1 gives a ≤ k."
+  - "conclude: The solution set is exactly 1, ..., n."
+  openmath: (forall (a n) (-> (and (in a R) (in n N) (>= n 1)) (<-> (forall (k) (-> (and (in k N) (>= k 1)) (<-> (< k a) (<= k n)))) (and (< n a) (<= a (+ n 1))))))
+  hard_negative:
+    statement: $k<a$を満たす正の整数がちょうど$1,\ldots,n$であることと$n<a<n+1$は同値である。
+    reason: $a=n+1$のときも$k<a$を満たす正の整数は$1,\ldots,n$である。右端の等号を落とすと同値でなくなる。
+  target: |
+    ∀ (a : ℝ) (n : ℕ), 1 ≤ n → ((∀ k : ℕ, 1 ≤ k → ((k : ℝ) < a ↔ k ≤ n)) ↔ ((n : ℝ) < a ∧ a ≤ (n : ℝ) + 1))
+  proof: |
+    by
+      intro a n hn
+      constructor
+      · intro h
+        refine ⟨(h n hn).2 le_rfl, ?_⟩
+        by_contra hc
+        have hc' : ((n + 1 : ℕ) : ℝ) < a := by
+          push_cast
+          exact not_le.1 hc
+        have := (h (n + 1) (by omega)).1 hc'
+        omega
+      · rintro ⟨h1, h2⟩ k _
+        constructor
+        · intro hk
+          have h3 : (k : ℝ) < (n : ℝ) + 1 := by linarith
+          have h4 : k < n + 1 := by exact_mod_cast h3
+          omega
+        · intro hk
+          have h3 : (k : ℝ) ≤ n := by exact_mod_cast hk
+          linarith
+- id: abs_closer_to_left_point
+  kind: gap
+  level: high
+  topic: 絶対値を含む不等式・2点からの距離
+  statement: 実数$a<b$と実数$x$について、$|x-a|<|x-b|$と$x<\dfrac{a+b}{2}$は同値である。
+  statement_en: For reals a < b and real x, |x - a| < |x - b| is equivalent to x < (a+b)/2.
+  assumptions:
+  - $a,b,x$は実数
+  - $a<b$
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $|x-a|<|x-b|$と$x<\dfrac{a+b}{2}$は同値である。
+  answer: |
+    $a,b,x$を実数とし、$a<b$とする。両辺は$0$以上なので、$|x-a|<|x-b|$は$(x-a)^2<(x-b)^2$と同値である。$(x-b)^2-(x-a)^2=(a-b)(2x-a-b)$であり、$a-b<0$なので、この値が正であることと$2x-a-b<0$は同値である。これは$x<\dfrac{a+b}{2}$と同じである。
+  strategy: Square both sides and factor the difference of squares.
+  sketch:
+  - "translate: Both sides are nonnegative, so compare squares."
+  - "derive: (x-b)^2 - (x-a)^2 = (a-b)(2x-a-b)."
+  - "derive: Since a - b < 0 the product is positive exactly when 2x < a + b."
+  - "conclude: The equivalence holds."
+  openmath: (forall (a b x) (-> (< a b) (<-> (< (abs (- x a)) (abs (- x b))) (< x (/ (+ a b) 2)))))
+  hard_negative:
+    statement: 任意の実数$a,b,x$について、$|x-a|<|x-b|$と$x<\dfrac{a+b}{2}$は同値である。
+    reason: $a=1,b=0,x=1$のとき$|x-a|=0<1=|x-b|$だが、$x<\dfrac{1}{2}$は成り立たない。$a>b$では向きが反転する。
+  target: |
+    ∀ a b x : ℝ, a < b → (|x - a| < |x - b| ↔ x < (a + b) / 2)
+  proof: |
+    by
+      intro a b x hab
+      rw [← sq_lt_sq]
+      constructor
+      · intro h
+        by_contra hc
+        have hc' : (a + b) / 2 ≤ x := not_lt.1 hc
+        nlinarith [mul_nonneg (sub_pos.2 hab).le (sub_nonneg.2 hc')]
+      · intro h
+        nlinarith [mul_pos (sub_pos.2 hab) (sub_pos.2 h)]
+- id: abs_sum_three_points_median
+  kind: gap
+  level: high
+  topic: 絶対値を含む不等式・距離の和の最小
+  statement: 実数$a\leq b\leq c$と実数$x$について、$|x-a|+|x-b|+|x-c|\geq c-a$であり、等号が成り立つことと$x=b$は同値である。
+  statement_en: For reals a ≤ b ≤ c and real x, |x - a| + |x - b| + |x - c| ≥ c - a, with equality if and only if x = b.
+  assumptions:
+  - $a,b,c,x$は実数
+  - $a\leq b\leq c$
+  quantifiers:
+  - 任意の実数$a,b,c,x$
+  conclusion: $|x-a|+|x-b|+|x-c|\geq c-a$であり、等号が成り立つことと$x=b$は同値である。
+  answer: |
+    $a,b,c,x$を実数とし、$a\leq b\leq c$とする。$(x-a)+(c-x)=c-a$なので、$|x-a|+|x-c|\geq c-a$である。これに$|x-b|\geq 0$を足すと、求める不等式を得る。
+    等号が成り立つとする。$|x-a|+|x-c|\geq c-a$なので$|x-b|\leq 0$となり、$x=b$である。
+    逆に$x=b$とする。$a\leq b\leq c$より$|x-a|=b-a$、$|x-c|=c-b$、$|x-b|=0$なので、和は$c-a$に等しい。
+  strategy: Bound the two outer terms by c - a and force the middle term to vanish at equality.
+  sketch:
+  - "derive: |x-a| + |x-c| ≥ (x-a) + (c-x) = c - a."
+  - "derive: Adding |x-b| ≥ 0 gives the bound."
+  - "derive: Equality forces |x-b| ≤ 0, so x = b."
+  - "derive: At x = b the sum is (b-a) + (c-b) = c - a."
+  - "conclude: The equality condition follows."
+  openmath: (forall (a b c x) (-> (and (<= a b) (<= b c)) (and (>= (+ (+ (abs (- x a)) (abs (- x b))) (abs (- x c))) (- c a)) (<-> (= (+ (+ (abs (- x a)) (abs (- x b))) (abs (- x c))) (- c a)) (= x b)))))
+  hard_negative:
+    statement: $a\leq b\leq c$のとき、$|x-a|+|x-b|+|x-c|$を最小にする$x$は平均$\dfrac{a+b+c}{3}$である。
+    reason: $a=b=0,c=3,x=1$のとき和は$1+1+2=4$で、$x=0$のときの和$3$より大きい。最小を与えるのは平均ではなく中央値である。
+  target: |
+    ∀ a b c x : ℝ, a ≤ b → b ≤ c → c - a ≤ |x - a| + |x - b| + |x - c| ∧ (|x - a| + |x - b| + |x - c| = c - a ↔ x = b)
+  proof: |
+    by
+      intro a b c x hab hbc
+      rcases abs_cases (x - a) with ⟨h1, h1'⟩ | ⟨h1, h1'⟩ <;>
+        rcases abs_cases (x - b) with ⟨h2, h2'⟩ | ⟨h2, h2'⟩ <;>
+        rcases abs_cases (x - c) with ⟨h3, h3'⟩ | ⟨h3, h3'⟩ <;>
+        rw [h1, h2, h3] <;>
+        exact ⟨by linarith, ⟨fun h => by linarith, fun h => by linarith⟩⟩
+- id: abs_add_lt_one_add_mul
+  kind: gap
+  level: high
+  topic: 絶対値を含む不等式・大小比較
+  statement: 実数$a,b$が$|a|<1$、$|b|<1$を満たすとき、$|a+b|<1+ab$である。
+  statement_en: If real numbers a and b satisfy |a| < 1 and |b| < 1, then |a + b| < 1 + ab.
+  assumptions:
+  - $a,b$は実数
+  - $|a|<1$
+  - $|b|<1$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $|a+b|<1+ab$である。
+  answer: |
+    $a,b$を実数とし、$|a|<1$、$|b|<1$とする。このとき$1-a,1-b,1+a,1+b$はすべて正である。
+    $(1+ab)-(a+b)=(1-a)(1-b)>0$なので$a+b<1+ab$である。また$(1+ab)+(a+b)=(1+a)(1+b)>0$なので$-(1+ab)<a+b$である。よって$|a+b|<1+ab$である。
+  strategy: Write each of the two required bounds as a product of positive factors.
+  sketch:
+  - "setup: From the hypotheses, 1-a, 1-b, 1+a and 1+b are positive."
+  - "derive: (1+ab) - (a+b) = (1-a)(1-b) > 0."
+  - "derive: (1+ab) + (a+b) = (1+a)(1+b) > 0."
+  - "conclude: Hence -(1+ab) < a+b < 1+ab."
+  openmath: (forall (a b) (-> (and (< (abs a) 1) (< (abs b) 1)) (< (abs (+ a b)) (+ 1 (* a b)))))
+  hard_negative:
+    statement: 任意の実数$a,b$について、$|a+b|<1+ab$である。
+    reason: $a=2$、$b=0$のとき左辺は$2$、右辺は$1$である。$|a|<1$と$|b|<1$の両方が要る。
+  target: |
+    ∀ a b : ℝ, |a| < 1 → |b| < 1 → |a + b| < 1 + a * b
+  proof: |
+    by
+      intro a b ha hb
+      obtain ⟨ha1, ha2⟩ := abs_lt.1 ha
+      obtain ⟨hb1, hb2⟩ := abs_lt.1 hb
+      rw [abs_lt]
+      constructor
+      · nlinarith [mul_pos (by linarith : 0 < 1 + a) (by linarith : 0 < 1 + b)]
+      · nlinarith [mul_pos (by linarith : 0 < 1 - a) (by linarith : 0 < 1 - b)]
+- id: abs_ratio_subadditive
+  kind: gap
+  level: high
+  topic: 絶対値を含む不等式・大小比較
+  statement: 実数$a,b$について、$\dfrac{|a+b|}{1+|a+b|}\leq\dfrac{|a|}{1+|a|}+\dfrac{|b|}{1+|b|}$である。
+  statement_en: For real numbers a and b, |a+b|/(1+|a+b|) ≤ |a|/(1+|a|) + |b|/(1+|b|).
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\dfrac{|a+b|}{1+|a+b|}\leq\dfrac{|a|}{1+|a|}+\dfrac{|b|}{1+|b|}$である。
+  answer: |
+    $a,b$を実数とし、$p=|a|$、$q=|b|$、$r=|a+b|$とおく。三角不等式より$0\leq r\leq p+q$である。
+    $\dfrac{p+q}{1+p+q}-\dfrac{r}{1+r}=\dfrac{p+q-r}{(1+p+q)(1+r)}\geq 0$なので、$\dfrac{r}{1+r}\leq\dfrac{p+q}{1+p+q}$である。
+    また、分母を小さくすると値は小さくならないので、$\dfrac{p}{1+p+q}\leq\dfrac{p}{1+p}$、$\dfrac{q}{1+p+q}\leq\dfrac{q}{1+q}$である。これらを足すと$\dfrac{p+q}{1+p+q}\leq\dfrac{p}{1+p}+\dfrac{q}{1+q}$となり、結論を得る。
+  strategy: Use the triangle inequality, the monotonicity of t/(1+t) and a smaller denominator on each term.
+  sketch:
+  - "setup: Put p = |a|, q = |b|, r = |a+b|, so r ≤ p + q."
+  - "derive: t/(1+t) increases, so r/(1+r) ≤ (p+q)/(1+p+q)."
+  - "derive: p/(1+p+q) ≤ p/(1+p) and q/(1+p+q) ≤ q/(1+q)."
+  - "conclude: Adding the two bounds gives the claim."
+  openmath: (forall (a b) (<= (/ (abs (+ a b)) (+ 1 (abs (+ a b)))) (+ (/ (abs a) (+ 1 (abs a))) (/ (abs b) (+ 1 (abs b))))))
+  hard_negative:
+    statement: 実数$a,b$について、$\dfrac{|a+b|}{1+|a+b|}=\dfrac{|a|}{1+|a|}+\dfrac{|b|}{1+|b|}$である。
+    reason: $a=b=1$のとき左辺は$\dfrac{2}{3}$、右辺は$1$である。成り立つのは等号ではなく不等号である。
+  target: |
+    ∀ a b : ℝ, |a + b| / (1 + |a + b|) ≤ |a| / (1 + |a|) + |b| / (1 + |b|)
+  proof: |
+    by
+      intro a b
+      have hp := abs_nonneg a
+      have hq := abs_nonneg b
+      have hr := abs_nonneg (a + b)
+      have ht := abs_add_le a b
+      generalize |a + b| = r at *
+      generalize |a| = p at *
+      generalize |b| = q at *
+      have h1 : r / (1 + r) ≤ (p + q) / (1 + (p + q)) := by
+        rw [div_le_div_iff₀ (by linarith) (by linarith)]
+        nlinarith
+      have h2 : p / (1 + (p + q)) ≤ p / (1 + p) :=
+        div_le_div_of_nonneg_left hp (by linarith) (by linarith)
+      have h3 : q / (1 + (p + q)) ≤ q / (1 + q) :=
+        div_le_div_of_nonneg_left hq (by linarith) (by linarith)
+      have h4 : (p + q) / (1 + (p + q)) = p / (1 + (p + q)) + q / (1 + (p + q)) := by
+        rw [add_div]
+      linarith
+- id: sq_add_sq_ge_two_mul
+  kind: gap
+  level: middle
+  topic: 不等式・平方の和と積
+  statement: 実数$a,b$について、$a^2+b^2\geq 2ab$であり、等号が成り立つことと$a=b$は同値である。
+  statement_en: For real numbers a and b, a^2 + b^2 ≥ 2ab, with equality if and only if a = b.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a^2+b^2\geq 2ab$であり、等号が成り立つことと$a=b$は同値である。
+  answer: |
+    $a,b$を実数とする。$a^2+b^2-2ab=(a-b)^2\geq 0$なので、$a^2+b^2\geq 2ab$である。等号が成り立つことは$(a-b)^2=0$、すなわち$a=b$と同値である。
+  strategy: Write the difference as the square of a - b.
+  sketch:
+  - "derive: a^2 + b^2 - 2ab = (a-b)^2 ≥ 0."
+  - "derive: Equality means (a-b)^2 = 0."
+  - "conclude: This is equivalent to a = b."
+  openmath: (forall (a b) (and (>= (+ (^ a 2) (^ b 2)) (* (* 2 a) b)) (<-> (= (+ (^ a 2) (^ b 2)) (* (* 2 a) b)) (= a b))))
+  hard_negative:
+    statement: 実数$a,b$について、$a^2+b^2\geq 2|ab|$の等号が成り立つことと$a=b$は同値である。
+    reason: $a=1$、$b=-1$のとき等号が成り立つが$a\neq b$である。絶対値をつけると等号条件は$|a|=|b|$に広がる。
+  target: |
+    ∀ a b : ℝ, 2 * a * b ≤ a ^ 2 + b ^ 2 ∧ (a ^ 2 + b ^ 2 = 2 * a * b ↔ a = b)
+  proof: |
+    by
+      intro a b
+      refine ⟨by nlinarith [sq_nonneg (a - b)], ⟨fun h => ?_, fun h => ?_⟩⟩
+      · have h2 : (a - b) ^ 2 = 0 := by linarith [sq_nonneg (a - b)]
+        have h3 : a - b = 0 := (pow_eq_zero_iff (by norm_num)).1 h2
+        linarith
+      · rw [h]
+        ring
+- id: ratio_sum_ge_two
+  kind: gap
+  level: high
+  topic: 不等式・相加平均と相乗平均
+  statement: 実数$a,b$が$ab>0$を満たすとき、$\dfrac{a}{b}+\dfrac{b}{a}\geq 2$であり、等号が成り立つことと$a=b$は同値である。
+  statement_en: If real numbers a and b satisfy ab > 0, then a/b + b/a ≥ 2, with equality if and only if a = b.
+  assumptions:
+  - $a,b$は実数
+  - $ab>0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\dfrac{a}{b}+\dfrac{b}{a}\geq 2$であり、等号が成り立つことと$a=b$は同値である。
+  answer: |
+    $a,b$を$ab>0$を満たす実数とする。このとき$a\neq 0$、$b\neq 0$であり、$\dfrac{a}{b}+\dfrac{b}{a}-2=\dfrac{(a-b)^2}{ab}\geq 0$である。よって不等式が成り立つ。$ab>0$なので、右辺が$0$であることと$(a-b)^2=0$、すなわち$a=b$は同値である。
+  strategy: Write the difference from 2 as (a-b)^2 over the positive number ab.
+  sketch:
+  - "setup: From ab > 0, both a and b are nonzero."
+  - "derive: a/b + b/a - 2 = (a-b)^2/(ab) ≥ 0."
+  - "derive: The quotient vanishes exactly when (a-b)^2 = 0."
+  - "conclude: Equality holds if and only if a = b."
+  openmath: (forall (a b) (-> (> (* a b) 0) (and (>= (+ (/ a b) (/ b a)) 2) (<-> (= (+ (/ a b) (/ b a)) 2) (= a b)))))
+  hard_negative:
+    statement: $0$でない実数$a,b$について、$\dfrac{a}{b}+\dfrac{b}{a}\geq 2$である。
+    reason: $a=1$、$b=-1$のとき左辺は$-2$である。$a,b$が異符号なら左辺は$-2$以下になる。
+  target: |
+    ∀ a b : ℝ, 0 < a * b → 2 ≤ a / b + b / a ∧ (a / b + b / a = 2 ↔ a = b)
+  proof: |
+    by
+      intro a b hab
+      have ha : a ≠ 0 := left_ne_zero_of_mul hab.ne'
+      have hb : b ≠ 0 := right_ne_zero_of_mul hab.ne'
+      have key : a / b + b / a - 2 = (a - b) ^ 2 / (a * b) := by
+        field_simp
+        ring
+      refine ⟨?_, ⟨fun h => ?_, fun h => ?_⟩⟩
+      · have h1 := div_nonneg (sq_nonneg (a - b)) hab.le
+        linarith
+      · have h0 : (a - b) ^ 2 / (a * b) = 0 := by
+          rw [← key]
+          linarith
+        have h1 : (a - b) ^ 2 = 0 := by
+          rcases div_eq_zero_iff.1 h0 with h1 | h1
+          · exact h1
+          · exact absurd h1 hab.ne'
+        have h2 : a - b = 0 := (pow_eq_zero_iff (by norm_num)).1 h1
+        linarith
+      · subst h
+        field_simp
+        norm_num
+- id: amgm_three_cube_form
+  kind: gap
+  level: high
+  topic: 相加平均と相乗平均・3変数
+  statement: $0$以上の実数$a,b,c$について、$a^3+b^3+c^3\geq 3abc$である。これは$3$変数の相加相乗の$3$乗形である。
+  statement_en: For nonnegative reals a, b, c, a^3 + b^3 + c^3 ≥ 3abc. This is the cube form of three-variable AM-GM.
+  assumptions:
+  - $a,b,c$は$0$以上の実数
+  quantifiers:
+  - 任意の$0$以上の実数$a,b,c$
+  conclusion: $a^3+b^3+c^3\geq 3abc$である。
+  answer: |
+    $a,b,c$を$0$以上の実数とする。$a^3+b^3+c^3-3abc=\dfrac{1}{2}(a+b+c)\left((a-b)^2+(b-c)^2+(c-a)^2\right)$である。右辺の因数はどれも$0$以上なので、$a^3+b^3+c^3\geq 3abc$である。
+  strategy: Factor the difference into a + b + c times half a sum of squares.
+  sketch:
+  - "derive: a^3+b^3+c^3-3abc = (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2."
+  - "derive: Each factor is nonnegative because a, b, c are nonnegative."
+  - "conclude: The inequality follows."
+  openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (>= (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* (* (* 3 a) b) c))))
+  hard_negative:
+    statement: 任意の実数$a,b,c$について、$a^3+b^3+c^3\geq 3abc$である。
+    reason: $a=b=c=-1$では等号だが、$a=-2$、$b=c=-1$のとき左辺は$-10$、右辺は$-6$である。$a+b+c\geq 0$にあたる条件が要る。
+  target: |
+    ∀ a b c : ℝ, 0 ≤ a → 0 ≤ b → 0 ≤ c → 3 * a * b * c ≤ a ^ 3 + b ^ 3 + c ^ 3
+  proof: |
+    by
+      intro a b c ha hb hc
+      have key : a ^ 3 + b ^ 3 + c ^ 3 - 3 * a * b * c = (a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 2 := by
+        ring
+      have h : 0 ≤ (a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 2 := by positivity
+      linarith
+- id: amgm_three_product_form
+  kind: named
+  level: high
+  topic: 相加平均と相乗平均・3変数
+  statement: 相加平均と相乗平均の不等式の$3$変数の積の形。$0$以上の実数$a,b,c$について、$abc\leq\left(\dfrac{a+b+c}{3}\right)^3$である。
+  statement_en: Three-variable AM-GM in product form. For nonnegative reals a, b, c, abc ≤ ((a+b+c)/3)^3.
+  assumptions:
+  - $a,b,c$は$0$以上の実数
+  quantifiers:
+  - 任意の$0$以上の実数$a,b,c$
+  conclusion: $abc\leq\left(\dfrac{a+b+c}{3}\right)^3$である。
+  answer: |
+    $a,b,c$を$0$以上の実数とする。展開して整理すると
+    $(a+b+c)^3-27abc=\left(a^3+b^3+c^3-3abc\right)+3\left(a(b-c)^2+b(c-a)^2+c(a-b)^2\right)$
+    である。$a^3+b^3+c^3-3abc=\dfrac{1}{2}(a+b+c)\left((a-b)^2+(b-c)^2+(c-a)^2\right)\geq 0$であり、第$2$の括弧も$0$以上の項の和である。よって$27abc\leq(a+b+c)^3$であり、両辺を$27$で割ると結論を得る。
+  strategy: Decompose (a+b+c)^3 - 27abc into a sum of visibly nonnegative terms.
+  sketch:
+  - "derive: (a+b+c)^3 - 27abc equals the cube-form difference plus 3 times a sum of terms a(b-c)^2."
+  - "derive: The cube-form difference is half of (a+b+c) times a sum of squares."
+  - "derive: All terms are nonnegative because a, b, c are nonnegative."
+  - "conclude: Dividing by 27 gives the claim."
+  openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (<= (* (* a b) c) (^ (/ (+ (+ a b) c) 3) 3))))
+  hard_negative:
+    statement: 任意の実数$a,b,c$について、$abc\leq\left(\dfrac{a+b+c}{3}\right)^3$である。
+    reason: $a=b=-1$、$c=1$のとき左辺は$1$、右辺は$-\dfrac{1}{27}$である。$0$以上の仮定は外せない。
+  target: |
+    ∀ a b c : ℝ, 0 ≤ a → 0 ≤ b → 0 ≤ c → a * b * c ≤ ((a + b + c) / 3) ^ 3
+  proof: |
+    by
+      intro a b c ha hb hc
+      have key : ((a + b + c) / 3) ^ 3 - a * b * c = ((a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 2 + 3 * (a * (b - c) ^ 2 + b * (c - a) ^ 2 + c * (a - b) ^ 2)) / 27 := by
+        ring
+      have h : 0 ≤ ((a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 2 + 3 * (a * (b - c) ^ 2 + b * (c - a) ^ 2 + c * (a - b) ^ 2)) / 27 := by
+        positivity
+      linarith
+- id: amgm_three_equality_iff
+  kind: gap
+  level: high
+  topic: 相加平均と相乗平均・等号条件
+  statement: $0$以上の実数$a,b,c$について、$a^3+b^3+c^3=3abc$と$a=b=c$は同値である。
+  statement_en: For nonnegative reals a, b, c, a^3 + b^3 + c^3 = 3abc if and only if a = b = c.
+  assumptions:
+  - $a,b,c$は$0$以上の実数
+  quantifiers:
+  - 任意の$0$以上の実数$a,b,c$
+  conclusion: $a^3+b^3+c^3=3abc$と$a=b=c$は同値である。
+  answer: |
+    $a,b,c$を$0$以上の実数とする。$a=b=c$なら両辺は$3a^3$で等しい。
+    逆に$a^3+b^3+c^3=3abc$とする。$a^3+b^3+c^3-3abc=\dfrac{1}{2}(a+b+c)\left((a-b)^2+(b-c)^2+(c-a)^2\right)$なので、$a+b+c=0$または$(a-b)^2+(b-c)^2+(c-a)^2=0$である。
+    $a+b+c=0$なら、$a,b,c\geq 0$より$a=b=c=0$である。$(a-b)^2+(b-c)^2+(c-a)^2=0$なら、各平方が$0$なので$a=b=c$である。
+  strategy: Factor the difference and treat the two possible vanishing factors.
+  sketch:
+  - "derive: a = b = c makes both sides 3a^3."
+  - "derive: The difference factors as (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2."
+  - "case_split: If a + b + c = 0, nonnegativity gives a = b = c = 0."
+  - "case_split: If the sum of squares vanishes, each square vanishes."
+  - "conclude: The equivalence holds."
+  openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (<-> (= (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* (* (* 3 a) b) c)) (and (= a b) (= b c)))))
+  hard_negative:
+    statement: 任意の実数$a,b,c$について、$a^3+b^3+c^3=3abc$なら$a=b=c$である。
+    reason: $a=b=1$、$c=-2$のとき両辺は$-6$で等しいが$a,b,c$は等しくない。$a+b+c=0$のときも等式が成り立つ。
+  target: |
+    ∀ a b c : ℝ, 0 ≤ a → 0 ≤ b → 0 ≤ c → (a ^ 3 + b ^ 3 + c ^ 3 = 3 * a * b * c ↔ a = b ∧ b = c)
+  proof: |
+    by
+      intro a b c ha hb hc
+      have key : a ^ 3 + b ^ 3 + c ^ 3 - 3 * a * b * c = (a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) / 2 := by
+        ring
+      constructor
+      · intro h
+        have h0 : (a + b + c) * ((a - b) ^ 2 + (b - c) ^ 2 + (c - a) ^ 2) = 0 := by
+          linarith
+        rcases mul_eq_zero.1 h0 with h1 | h1
+        · exact ⟨by linarith, by linarith⟩
+        · have h2 : (a - b) ^ 2 = 0 := by
+            linarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (c - a)]
+          have h3 : (b - c) ^ 2 = 0 := by
+            linarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (c - a)]
+          have h4 : a - b = 0 := (pow_eq_zero_iff (by norm_num)).1 h2
+          have h5 : b - c = 0 := (pow_eq_zero_iff (by norm_num)).1 h3
+          exact ⟨by linarith, by linarith⟩
+      · rintro ⟨rfl, rfl⟩
+        ring
+- id: pairwise_products_le_squares
+  kind: gap
+  level: high
+  topic: 不等式・平方の和と積
+  statement: 実数$a,b,c$について、$a^2+b^2+c^2\geq ab+bc+ca$であり、等号が成り立つことと$a=b=c$は同値である。
+  statement_en: For real a, b, c, a^2 + b^2 + c^2 ≥ ab + bc + ca, with equality if and only if a = b = c.
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: $a^2+b^2+c^2\geq ab+bc+ca$であり、等号が成り立つことと$a=b=c$は同値である。
+  answer: |
+    $a,b,c$を実数とする。$a^2+b^2+c^2-ab-bc-ca=\dfrac{1}{2}\left((a-b)^2+(b-c)^2+(c-a)^2\right)\geq 0$なので、不等式が成り立つ。等号が成り立つことは$3$つの平方がすべて$0$であること、すなわち$a=b=c$と同値である。
+  strategy: Write the difference as half a sum of three squares.
+  sketch:
+  - "derive: The difference equals ((a-b)^2+(b-c)^2+(c-a)^2)/2 ≥ 0."
+  - "derive: It vanishes exactly when all three squares vanish."
+  - "conclude: Equality holds if and only if a = b = c."
+  openmath: (forall (a b c) (and (>= (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (* a b) (* b c)) (* c a))) (<-> (= (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (* a b) (* b c)) (* c a))) (and (= a b) (= b c)))))
+  hard_negative:
+    statement: 実数$a,b,c$について、$a^2+b^2+c^2\geq 2(ab+bc+ca)$である。
+    reason: $a=b=c=1$のとき左辺は$3$、右辺は$6$である。$2$変数の不等式$a^2+b^2\geq 2ab$の係数は$3$変数にそのまま移らない。
+  target: |
+    ∀ a b c : ℝ, a * b + b * c + c * a ≤ a ^ 2 + b ^ 2 + c ^ 2 ∧ (a ^ 2 + b ^ 2 + c ^ 2 = a * b + b * c + c * a ↔ a = b ∧ b = c)
+  proof: |
+    by
+      intro a b c
+      refine ⟨by nlinarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (c - a)], ⟨fun h => ?_, ?_⟩⟩
+      · have h2 : (a - b) ^ 2 = 0 := by
+          linarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (c - a)]
+        have h3 : (b - c) ^ 2 = 0 := by
+          linarith [sq_nonneg (a - b), sq_nonneg (b - c), sq_nonneg (c - a)]
+        have h4 : a - b = 0 := (pow_eq_zero_iff (by norm_num)).1 h2
+        have h5 : b - c = 0 := (pow_eq_zero_iff (by norm_num)).1 h3
+        exact ⟨by linarith, by linarith⟩
+      · rintro ⟨rfl, rfl⟩
+        ring
+- id: reciprocal_sum_three
+  kind: gap
+  level: high
+  topic: 不等式・和と逆数の和
+  statement: 正の実数$a,b,c$について、$(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)\geq 9$である。
+  statement_en: For positive reals a, b, c, (a+b+c)(1/a+1/b+1/c) ≥ 9.
+  assumptions:
+  - $a,b,c$は正の実数
+  quantifiers:
+  - 任意の正の実数$a,b,c$
+  conclusion: $(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)\geq 9$である。
+  answer: |
+    $a,b,c$を正の実数とする。積を展開して組ごとにまとめると、$(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)-9=\dfrac{(a-b)^2}{ab}+\dfrac{(b-c)^2}{bc}+\dfrac{(c-a)^2}{ca}$である。右辺の各項は$0$以上なので、結論を得る。
+  strategy: Group the expansion into three nonnegative fractions.
+  sketch:
+  - "derive: The product minus 9 equals (a-b)^2/(ab) + (b-c)^2/(bc) + (c-a)^2/(ca)."
+  - "derive: Each term is nonnegative because a, b, c are positive."
+  - "conclude: The product is at least 9."
+  openmath: (forall (a b c) (-> (and (> a 0) (> b 0) (> c 0)) (>= (* (+ (+ a b) c) (+ (+ (/ 1 a) (/ 1 b)) (/ 1 c))) 9)))
+  hard_negative:
+    statement: $0$でない実数$a,b,c$について、$(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)\geq 9$である。
+    reason: $a=b=1$、$c=-1$のとき積は$1\cdot 1=1$である。すべて正という仮定が要る。
+  target: |
+    ∀ a b c : ℝ, 0 < a → 0 < b → 0 < c → 9 ≤ (a + b + c) * (1 / a + 1 / b + 1 / c)
+  proof: |
+    by
+      intro a b c ha hb hc
+      have key : (a + b + c) * (1 / a + 1 / b + 1 / c) - 9 = (a - b) ^ 2 / (a * b) + (b - c) ^ 2 / (b * c) + (c - a) ^ 2 / (c * a) := by
+        field_simp
+        ring
+      have h : 0 ≤ (a - b) ^ 2 / (a * b) + (b - c) ^ 2 / (b * c) + (c - a) ^ 2 / (c * a) := by positivity
+      linarith
+- id: cauchy_schwarz_three_terms
+  kind: named
+  level: high
+  topic: コーシー・シュワルツの不等式・3項
+  statement: コーシー・シュワルツの不等式の$3$項の形。実数$a,b,c,x,y,z$について、$(ax+by+cz)^2\leq(a^2+b^2+c^2)(x^2+y^2+z^2)$である。
+  statement_en: Cauchy-Schwarz inequality for three terms. For real a, b, c, x, y, z, (ax+by+cz)^2 ≤ (a^2+b^2+c^2)(x^2+y^2+z^2).
+  assumptions:
+  - $a,b,c,x,y,z$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,x,y,z$
+  conclusion: $(ax+by+cz)^2\leq(a^2+b^2+c^2)(x^2+y^2+z^2)$である。
+  answer: |
+    $a,b,c,x,y,z$を実数とする。右辺から左辺を引いて整理すると、$(a^2+b^2+c^2)(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2$である。右辺は$0$以上なので、結論を得る。
+  strategy: Write the difference of the two sides as a sum of three squares.
+  sketch:
+  - "derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2."
+  - "derive: A sum of squares is nonnegative."
+  - "conclude: The inequality follows."
+  openmath: (forall (a b c x y z) (<= (^ (+ (+ (* a x) (* b y)) (* c z)) 2) (* (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (^ x 2) (^ y 2)) (^ z 2)))))
+  hard_negative:
+    statement: 実数$a,b,c,x,y,z$について、$ax+by+cz\leq(a^2+b^2+c^2)(x^2+y^2+z^2)$である。
+    reason: $a=x=\dfrac{1}{2}$、他を$0$とすると左辺は$\dfrac{1}{4}$、右辺は$\dfrac{1}{16}$である。左辺の$2$乗を外すと成り立たない。
+  target: |
+    ∀ a b c x y z : ℝ, (a * x + b * y + c * z) ^ 2 ≤ (a ^ 2 + b ^ 2 + c ^ 2) * (x ^ 2 + y ^ 2 + z ^ 2)
+  proof: |
+    by
+      intro a b c x y z
+      nlinarith [sq_nonneg (a * y - b * x), sq_nonneg (b * z - c * y), sq_nonneg (a * z - c * x)]
+- id: cauchy_schwarz_three_equality_iff
+  kind: gap
+  level: high
+  topic: コーシー・シュワルツの不等式・等号条件
+  statement: 実数$a,b,c,x,y,z$について、$(ax+by+cz)^2=(a^2+b^2+c^2)(x^2+y^2+z^2)$と、$ay=bx$、$bz=cy$、$az=cx$がすべて成り立つことは同値である。
+  statement_en: For real a, b, c, x, y, z, (ax+by+cz)^2 = (a^2+b^2+c^2)(x^2+y^2+z^2) if and only if ay = bx, bz = cy and az = cx.
+  assumptions:
+  - $a,b,c,x,y,z$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,x,y,z$
+  conclusion: 等式が成り立つことと、$ay=bx$、$bz=cy$、$az=cx$がすべて成り立つことは同値である。
+  answer: |
+    $a,b,c,x,y,z$を実数とする。$(a^2+b^2+c^2)(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2$である。平方の和が$0$であることと各平方が$0$であることは同値なので、等式が成り立つことと$ay=bx$、$bz=cy$、$az=cx$がすべて成り立つことは同値である。
+  strategy: Use the three-square identity for the difference of the two sides.
+  sketch:
+  - "derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2."
+  - "derive: A sum of squares vanishes exactly when every square vanishes."
+  - "conclude: The equality condition is ay = bx, bz = cy, az = cx."
+  openmath: (forall (a b c x y z) (<-> (= (^ (+ (+ (* a x) (* b y)) (* c z)) 2) (* (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (^ x 2) (^ y 2)) (^ z 2)))) (and (= (* a y) (* b x)) (= (* b z) (* c y)) (= (* a z) (* c x)))))
+  hard_negative:
+    statement: 等号が成り立つのは、$x,y,z$が$0$でなく$\dfrac{a}{x}=\dfrac{b}{y}=\dfrac{c}{z}$であるときに限る。
+    reason: $a=b=c=1$、$x=y=z=0$のとき両辺は$0$で等号が成り立つが、比は定義されない。$x,y,z$に$0$を含む場合があるので、比ではなく積で書く必要がある。
+  target: |
+    ∀ a b c x y z : ℝ, (a * x + b * y + c * z) ^ 2 = (a ^ 2 + b ^ 2 + c ^ 2) * (x ^ 2 + y ^ 2 + z ^ 2) ↔ (a * y = b * x ∧ b * z = c * y ∧ a * z = c * x)
+  proof: |
+    by
+      intro a b c x y z
+      have key : (a ^ 2 + b ^ 2 + c ^ 2) * (x ^ 2 + y ^ 2 + z ^ 2) - (a * x + b * y + c * z) ^ 2 = (a * y - b * x) ^ 2 + (b * z - c * y) ^ 2 + (a * z - c * x) ^ 2 := by
+        ring
+      have h1 := sq_nonneg (a * y - b * x)
+      have h2 := sq_nonneg (b * z - c * y)
+      have h3 := sq_nonneg (a * z - c * x)
+      constructor
+      · intro h
+        have e1 : (a * y - b * x) ^ 2 = 0 := by linarith
+        have e2 : (b * z - c * y) ^ 2 = 0 := by linarith
+        have e3 : (a * z - c * x) ^ 2 = 0 := by linarith
+        have f1 : a * y - b * x = 0 := (pow_eq_zero_iff (by norm_num)).1 e1
+        have f2 : b * z - c * y = 0 := (pow_eq_zero_iff (by norm_num)).1 e2
+        have f3 : a * z - c * x = 0 := (pow_eq_zero_iff (by norm_num)).1 e3
+        exact ⟨by linarith, by linarith, by linarith⟩
+      · rintro ⟨g1, g2, g3⟩
+        rw [sub_eq_zero.2 g1, sub_eq_zero.2 g2, sub_eq_zero.2 g3] at key
+        linarith
+- id: titu_three_terms
+  kind: gap
+  level: high
+  topic: コーシー・シュワルツの不等式・分数の和
+  statement: 実数$a,b,c$と正の実数$x,y,z$について、$\dfrac{a^2}{x}+\dfrac{b^2}{y}+\dfrac{c^2}{z}\geq\dfrac{(a+b+c)^2}{x+y+z}$である。
+  statement_en: For real a, b, c and positive x, y, z, a^2/x + b^2/y + c^2/z ≥ (a+b+c)^2/(x+y+z).
+  assumptions:
+  - $a,b,c$は実数
+  - $x,y,z$は正の実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  - 任意の正の実数$x,y,z$
+  conclusion: $\dfrac{a^2}{x}+\dfrac{b^2}{y}+\dfrac{c^2}{z}\geq\dfrac{(a+b+c)^2}{x+y+z}$である。
+  answer: |
+    $a,b,c$を実数、$x,y,z$を正の実数とする。分母を払った形を示せばよい。展開して組ごとにまとめると
+    $\left(\dfrac{a^2}{x}+\dfrac{b^2}{y}+\dfrac{c^2}{z}\right)(x+y+z)-(a+b+c)^2=\dfrac{(ay-bx)^2}{xy}+\dfrac{(bz-cy)^2}{yz}+\dfrac{(cx-az)^2}{zx}$
+    である。右辺は$0$以上なので、$x+y+z>0$で割ると結論を得る。
+  strategy: Clear the denominator x+y+z and write the difference as a sum of nonnegative fractions.
+  sketch:
+  - "translate: Multiply by the positive number x + y + z."
+  - "derive: The difference is (ay-bx)^2/(xy) + (bz-cy)^2/(yz) + (cx-az)^2/(zx)."
+  - "derive: Each term is nonnegative."
+  - "conclude: Dividing by x + y + z gives the claim."
+  openmath: (forall (a b c x y z) (-> (and (> x 0) (> y 0) (> z 0)) (>= (+ (+ (/ (^ a 2) x) (/ (^ b 2) y)) (/ (^ c 2) z)) (/ (^ (+ (+ a b) c) 2) (+ (+ x y) z)))))
+  hard_negative:
+    statement: $x,y,z$が$0$でなければ、符号によらず$\dfrac{a^2}{x}+\dfrac{b^2}{y}+\dfrac{c^2}{z}\geq\dfrac{(a+b+c)^2}{x+y+z}$である。
+    reason: $a=1,b=c=0,x=-1,y=z=2$のとき左辺は$-1$、右辺は$\dfrac{1}{3}$である。分母の正の仮定は外せない。
+  target: |
+    ∀ a b c x y z : ℝ, 0 < x → 0 < y → 0 < z → (a + b + c) ^ 2 / (x + y + z) ≤ a ^ 2 / x + b ^ 2 / y + c ^ 2 / z
+  proof: |
+    by
+      intro a b c x y z hx hy hz
+      rw [div_le_iff₀ (by positivity)]
+      have key : (a ^ 2 / x + b ^ 2 / y + c ^ 2 / z) * (x + y + z) - (a + b + c) ^ 2 = (a * y - b * x) ^ 2 / (x * y) + (b * z - c * y) ^ 2 / (y * z) + (c * x - a * z) ^ 2 / (z * x) := by
+        field_simp
+        ring
+      have h : 0 ≤ (a * y - b * x) ^ 2 / (x * y) + (b * z - c * y) ^ 2 / (y * z) + (c * x - a * z) ^ 2 / (z * x) := by
+        positivity
+      linarith
+- id: nesbitt_inequality
+  kind: named
+  level: high
+  topic: 不等式・分数の和
+  statement: ネスビットの不等式。正の実数$a,b,c$について、$\dfrac{a}{b+c}+\dfrac{b}{c+a}+\dfrac{c}{a+b}\geq\dfrac{3}{2}$である。
+  statement_en: Nesbitt's inequality. For positive reals a, b, c, a/(b+c) + b/(c+a) + c/(a+b) ≥ 3/2.
+  assumptions:
+  - $a,b,c$は正の実数
+  quantifiers:
+  - 任意の正の実数$a,b,c$
+  conclusion: $\dfrac{a}{b+c}+\dfrac{b}{c+a}+\dfrac{c}{a+b}\geq\dfrac{3}{2}$である。
+  answer: |
+    $a,b,c$を正の実数とする。通分して整理すると
+    $\dfrac{a}{b+c}+\dfrac{b}{c+a}+\dfrac{c}{a+b}-\dfrac{3}{2}=\dfrac{(a+b)(a-b)^2+(b+c)(b-c)^2+(c+a)(c-a)^2}{2(b+c)(c+a)(a+b)}$
+    である。分母は正で分子は$0$以上なので、結論を得る。
+  strategy: Put everything over a common positive denominator and express the numerator as a sum of nonnegative terms.
+  sketch:
+  - "setup: The denominators b+c, c+a, a+b are positive."
+  - "derive: The difference from 3/2 has numerator (a+b)(a-b)^2 + (b+c)(b-c)^2 + (c+a)(c-a)^2."
+  - "derive: This numerator is nonnegative and the denominator is positive."
+  - "conclude: The inequality follows."
+  openmath: (forall (a b c) (-> (and (> a 0) (> b 0) (> c 0)) (>= (+ (+ (/ a (+ b c)) (/ b (+ c a))) (/ c (+ a b))) (/ 3 2))))
+  hard_negative:
+    statement: 正の実数$a,b,c$について、$\dfrac{a}{b+c}+\dfrac{b}{c+a}+\dfrac{c}{a+b}\leq 2$である。
+    reason: $a=10,b=c=1$のとき左辺は$5+\dfrac{2}{11}$である。この式に上限はない。
+  target: |
+    ∀ a b c : ℝ, 0 < a → 0 < b → 0 < c → 3 / 2 ≤ a / (b + c) + b / (c + a) + c / (a + b)
+  proof: |
+    by
+      intro a b c ha hb hc
+      have key : a / (b + c) + b / (c + a) + c / (a + b) - 3 / 2 = ((a + b) * (a - b) ^ 2 + (b + c) * (b - c) ^ 2 + (c + a) * (c - a) ^ 2) / (2 * (b + c) * (c + a) * (a + b)) := by
+        field_simp
+        ring
+      have h : 0 ≤ ((a + b) * (a - b) ^ 2 + (b + c) * (b - c) ^ 2 + (c + a) * (c - a) ^ 2) / (2 * (b + c) * (c + a) * (a + b)) := by
+        positivity
+      linarith
+- id: rearrangement_two_pairs
+  kind: gap
+  level: high
+  topic: 並べ替えの不等式・2項
+  statement: 並べ替えの不等式の$2$項の場合の等号条件つきの形。実数$a\leq b$、$x\leq y$について、$ay+bx\leq ax+by$であり、等号が成り立つことと「$a=b$または$x=y$」は同値である。
+  statement_en: For reals a ≤ b and x ≤ y, ay + bx ≤ ax + by, with equality if and only if a = b or x = y.
+  assumptions:
+  - $a,b,x,y$は実数
+  - $a\leq b$
+  - $x\leq y$
+  quantifiers:
+  - 任意の実数$a,b,x,y$
+  conclusion: $ay+bx\leq ax+by$であり、等号が成り立つことと「$a=b$または$x=y$」は同値である。
+  answer: |
+    $a,b,x,y$を実数とし、$a\leq b$、$x\leq y$とする。$(ax+by)-(ay+bx)=(b-a)(y-x)$であり、$2$つの因数はどちらも$0$以上なので、不等式が成り立つ。等号が成り立つことは$(b-a)(y-x)=0$、すなわち$a=b$または$x=y$と同値である。
+  strategy: Factor the difference as (b-a)(y-x).
+  sketch:
+  - "derive: (ax+by) - (ay+bx) = (b-a)(y-x)."
+  - "derive: Both factors are nonnegative."
+  - "conclude: The bound and the equality condition follow from the factorization."
+  openmath: (forall (a b x y) (-> (and (<= a b) (<= x y)) (and (<= (+ (* a y) (* b x)) (+ (* a x) (* b y))) (<-> (= (+ (* a y) (* b x)) (+ (* a x) (* b y))) (or (= a b) (= x y))))))
+  hard_negative:
+    statement: 実数$a,b,x,y$について、順序によらず$ay+bx\leq ax+by$である。
+    reason: $a=0,b=1,x=1,y=0$のとき左辺は$1$、右辺は$0$である。$2$組が同じ順序に並んでいる必要がある。
+  target: |
+    ∀ a b x y : ℝ, a ≤ b → x ≤ y → a * y + b * x ≤ a * x + b * y ∧ (a * y + b * x = a * x + b * y ↔ (a = b ∨ x = y))
+  proof: |
+    by
+      intro a b x y hab hxy
+      have key : (a * x + b * y) - (a * y + b * x) = (b - a) * (y - x) := by ring
+      have h := mul_nonneg (sub_nonneg.2 hab) (sub_nonneg.2 hxy)
+      refine ⟨by linarith, ⟨fun e => ?_, ?_⟩⟩
+      · have h0 : (b - a) * (y - x) = 0 := by linarith
+        rcases mul_eq_zero.1 h0 with h1 | h1
+        · left
+          linarith
+        · right
+          linarith
+      · rintro (rfl | rfl) <;> ring
+- id: rearrangement_three_terms
+  kind: textbook
+  level: high
+  topic: 並べ替えの不等式・3項
+  statement: 並べ替えの不等式の$3$項の場合。実数$a\leq b\leq c$、$x_1\leq x_2\leq x_3$と$\{1,2,3\}$の置換$\sigma$について、$ax_3+bx_2+cx_1\leq ax_{\sigma(1)}+bx_{\sigma(2)}+cx_{\sigma(3)}\leq ax_1+bx_2+cx_3$である。
+  statement_en: For reals a ≤ b ≤ c and x_1 ≤ x_2 ≤ x_3 and a permutation σ of {1,2,3}, a x_3 + b x_2 + c x_1 ≤ a x_σ(1) + b x_σ(2) + c x_σ(3) ≤ a x_1 + b x_2 + c x_3.
+  assumptions:
+  - $a,b,c,x_1,x_2,x_3$は実数
+  - $a\leq b\leq c$
+  - $x_1\leq x_2\leq x_3$
+  - $\sigma$は$\{1,2,3\}$の置換
+  quantifiers:
+  - 任意の実数$a,b,c,x_1,x_2,x_3$
+  - 任意の置換$\sigma$
+  conclusion: $ax_3+bx_2+cx_1\leq ax_{\sigma(1)}+bx_{\sigma(2)}+cx_{\sigma(3)}\leq ax_1+bx_2+cx_3$である。
+  answer: |
+    $a\leq b\leq c$、$x_1\leq x_2\leq x_3$を満たす実数と$\{1,2,3\}$の置換$\sigma$をとる。$a_1=a$、$a_2=b$、$a_3=c$と書く。
+    隣り合う$i,i+1$で$\sigma(i)>\sigma(i+1)$なら、$\sigma(i)$と$\sigma(i+1)$を入れ替えると、和は$(a_{i+1}-a_i)(x_{\sigma(i)}-x_{\sigma(i+1)})\geq 0$だけ増える。この入れ替えは大小が逆の組の数を$1$つ減らすので、繰り返すと恒等置換に達する。よって和は$ax_1+bx_2+cx_3$以下である。
+    逆に$\sigma(i)<\sigma(i+1)$の組を入れ替えると和は増えない。これを繰り返すと$\sigma(1)=3$、$\sigma(2)=2$、$\sigma(3)=1$の配置に達するので、和は$ax_3+bx_2+cx_1$以上である。
+  strategy: Swap adjacent out-of-order positions; each swap changes the sum by a product of nonnegative differences.
+  sketch:
+  - "derive: Swapping adjacent values of σ changes the sum by (a_(i+1) - a_i)(x_σ(i) - x_σ(i+1))."
+  - "derive: Removing an inversion never decreases the sum."
+  - "induction: Repeated swaps reach the identity arrangement, which gives the upper bound."
+  - "derive: Adding an inversion never increases the sum."
+  - "conclude: Repeated swaps reach the reversed arrangement, which gives the lower bound."
+  openmath: (forall (a b c v s) (-> (and (<= a b) (<= b c) (<= (seq_value v 0) (seq_value v 1)) (<= (seq_value v 1) (seq_value v 2)) (in s (permutation_set (natural_range 3)))) (and (<= (+ (+ (* a (seq_value v 2)) (* b (seq_value v 1))) (* c (seq_value v 0))) (+ (+ (* a (seq_value v (fn_value s 0))) (* b (seq_value v (fn_value s 1)))) (* c (seq_value v (fn_value s 2))))) (<= (+ (+ (* a (seq_value v (fn_value s 0))) (* b (seq_value v (fn_value s 1)))) (* c (seq_value v (fn_value s 2)))) (+ (+ (* a (seq_value v 0)) (* b (seq_value v 1))) (* c (seq_value v 2)))))))
+  hard_negative:
+    statement: $a\leq b\leq c$、$x_1\leq x_2\leq x_3$なら、$ax_1+bx_2+cx_3\leq ax_2+bx_3+cx_1$である。
+    reason: $a=x_1=0,b=x_2=1,c=x_3=2$のとき左辺は$5$、右辺は$2$である。同じ順序の組合せが最大で、巡回させると和は増えない。
+  target: |
+    ∀ (a b c x y z : ℝ) (σ : Equiv.Perm (Fin 3)), a ≤ b → b ≤ c → x ≤ y → y ≤ z → a * z + b * y + c * x ≤ a * ![x, y, z] (σ 0) + b * ![x, y, z] (σ 1) + c * ![x, y, z] (σ 2) ∧ a * ![x, y, z] (σ 0) + b * ![x, y, z] (σ 1) + c * ![x, y, z] (σ 2) ≤ a * x + b * y + c * z
+  proof: |
+    by
+      intro a b c x y z σ hab hbc hxy hyz
+      have hf : Monotone ![a, b, c] := by
+        rw [Fin.monotone_iff_le_succ]
+        intro i
+        fin_cases i <;> simp [*]
+      have hg : Monotone ![x, y, z] := by
+        rw [Fin.monotone_iff_le_succ]
+        intro i
+        fin_cases i <;> simp [*]
+      have hup := (hf.monovary hg).sum_mul_comp_perm_le_sum_mul (σ := σ)
+      have hanti : Antivary ![a, b, c] (fun i => ![x, y, z] (Fin.rev i)) :=
+        hf.antivary (hg.comp_antitone Fin.rev_anti)
+      have hdown := hanti.sum_mul_le_sum_mul_comp_perm (σ := σ.trans Fin.revPerm)
+      have r0 : Fin.rev (0 : Fin 3) = 2 := rfl
+      have r1 : Fin.rev (1 : Fin 3) = 1 := rfl
+      have r2 : Fin.rev (2 : Fin 3) = 0 := rfl
+      simp only [Fin.sum_univ_three, Equiv.trans_apply, Fin.revPerm_apply, Fin.rev_rev, r0, r1, r2] at hup hdown
+      exact ⟨by simpa using hdown, by simpa using hup⟩
+- id: rearrangement_finite
+  kind: named
+  level: high
+  topic: 並べ替えの不等式・有限個
+  statement: 並べ替えの不等式。単調増加な実数列$a_1\leq\cdots\leq a_n$、$x_1\leq\cdots\leq x_n$と$\{1,\ldots,n\}$の置換$\sigma$について、$\sum_{i=1}^n a_ix_{n+1-i}\leq\sum_{i=1}^n a_ix_{\sigma(i)}\leq\sum_{i=1}^n a_ix_i$である。
+  statement_en: Rearrangement inequality. For nondecreasing reals a_1 ≤ ... ≤ a_n and x_1 ≤ ... ≤ x_n and a permutation σ of {1,...,n}, Σ a_i x_(n+1-i) ≤ Σ a_i x_σ(i) ≤ Σ a_i x_i.
+  assumptions:
+  - $n$は$0$以上の整数
+  - $a_1\leq\cdots\leq a_n$は実数
+  - $x_1\leq\cdots\leq x_n$は実数
+  - $\sigma$は$\{1,\ldots,n\}$の置換
+  quantifiers:
+  - 任意の$n$
+  - 任意の単調増加な実数列$a_i,x_i$
+  - 任意の置換$\sigma$
+  conclusion: $\sum_{i=1}^n a_ix_{n+1-i}\leq\sum_{i=1}^n a_ix_{\sigma(i)}\leq\sum_{i=1}^n a_ix_i$である。
+  answer: |
+    $a_1\leq\cdots\leq a_n$、$x_1\leq\cdots\leq x_n$を実数、$\sigma$を$\{1,\ldots,n\}$の置換とする。
+    右の不等式を示す。$\sigma$が恒等置換でなければ、$\sigma(i)>\sigma(i+1)$となる$i$がある。$\sigma(i)$と$\sigma(i+1)$を入れ替えると、和は$(a_{i+1}-a_i)(x_{\sigma(i)}-x_{\sigma(i+1)})\geq 0$だけ増え、大小が逆の組の数は$1$つ減る。これを繰り返すと恒等置換に達するので、右の不等式を得る。
+    左の不等式を示す。$y_i=-x_{n+1-i}$とおくと$y_1\leq\cdots\leq y_n$である。$\tau(i)=n+1-\sigma(i)$は置換であり、$y_{\tau(i)}=-x_{\sigma(i)}$である。右の不等式を$y$と$\tau$に適用すると$-\sum_i a_ix_{\sigma(i)}\leq-\sum_i a_ix_{n+1-i}$となり、左の不等式を得る。
+  strategy: Remove inversions by adjacent swaps for the upper bound, then negate and reverse the sequence for the lower bound.
+  sketch:
+  - "setup: Compare the sum for σ with the sum after swapping an adjacent inversion."
+  - "derive: The swap increases the sum by a product of nonnegative differences."
+  - "induction: The number of inversions drops by one, so the identity is reached."
+  - "construct: Apply the upper bound to y_i = -x_(n+1-i) and τ(i) = n+1-σ(i)."
+  - "conclude: Multiplying by -1 gives the lower bound."
+  openmath: (forall (n a x s) (-> (and (in n N) (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (and (<= (seq_value a i) (seq_value a j)) (<= (seq_value x i) (seq_value x j))))) (in s (permutation_set (natural_range n)))) (and (<= (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (- (- n 1) i))))) (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (fn_value s i)))))) (<= (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (fn_value s i))))) (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))))))
+  hard_negative:
+    statement: 実数列$a_i$と$x_i$の順序によらず、$\sum_i a_ix_{\sigma(i)}\leq\sum_i a_ix_i$である。
+    reason: $n=2$、$a=(0,1)$、$x=(1,0)$、$\sigma$を入れ替えとすると左辺は$0\cdot 0+1\cdot 1=1$、右辺は$0$である。$2$つの列が同じ順序に並ぶことが要る。
+  target: |
+    ∀ (n : ℕ) (a x : Fin n → ℝ) (σ : Equiv.Perm (Fin n)), Monotone a → Monotone x → ∑ i, a i * x (Fin.rev i) ≤ ∑ i, a i * x (σ i) ∧ ∑ i, a i * x (σ i) ≤ ∑ i, a i * x i
+  proof: |
+    by
+      intro n a x σ ha hx
+      have hanti : Antivary a (fun i => x (Fin.rev i)) :=
+        ha.antivary (hx.comp_antitone Fin.rev_anti)
+      have hdown := hanti.sum_mul_le_sum_mul_comp_perm (σ := σ.trans Fin.revPerm)
+      simp only [Equiv.trans_apply, Fin.revPerm_apply, Fin.rev_rev] at hdown
+      exact ⟨hdown, (ha.monovary hx).sum_mul_comp_perm_le_sum_mul⟩
+- id: chebyshev_three_terms
+  kind: textbook
+  level: high
+  topic: チェビシェフの不等式・3項
+  statement: チェビシェフの和の不等式の$3$項で同順の場合。実数$a\leq b\leq c$、$x\leq y\leq z$について、$(a+b+c)(x+y+z)\leq 3(ax+by+cz)$である。
+  statement_en: For reals a ≤ b ≤ c and x ≤ y ≤ z, (a+b+c)(x+y+z) ≤ 3(ax+by+cz).
+  assumptions:
+  - $a,b,c,x,y,z$は実数
+  - $a\leq b\leq c$
+  - $x\leq y\leq z$
+  quantifiers:
+  - 任意の実数$a,b,c,x,y,z$
+  conclusion: $(a+b+c)(x+y+z)\leq 3(ax+by+cz)$である。
+  answer: |
+    $a,b,c,x,y,z$を実数とし、$a\leq b\leq c$、$x\leq y\leq z$とする。展開して整理すると
+    $3(ax+by+cz)-(a+b+c)(x+y+z)=(b-a)(y-x)+(c-b)(z-y)+(c-a)(z-x)$
+    である。仮定から各因数は$0$以上なので、右辺は$0$以上である。よって結論を得る。
+  strategy: Write the difference as a sum of products of same-direction differences.
+  sketch:
+  - "derive: The difference equals (b-a)(y-x) + (c-b)(z-y) + (c-a)(z-x)."
+  - "derive: All differences are nonnegative by the ordering."
+  - "conclude: The inequality follows."
+  openmath: (forall (a b c x y z) (-> (and (<= a b) (<= b c) (<= x y) (<= y z)) (<= (* (+ (+ a b) c) (+ (+ x y) z)) (* 3 (+ (+ (* a x) (* b y)) (* c z))))))
+  hard_negative:
+    statement: 実数$a\leq b\leq c$、$x\geq y\geq z$についても、$(a+b+c)(x+y+z)\leq 3(ax+by+cz)$である。
+    reason: $(a,b,c)=(0,1,2)$、$(x,y,z)=(2,1,0)$のとき左辺は$9$、右辺は$3$である。逆順では不等号が反転する。
+  target: |
+    ∀ a b c x y z : ℝ, a ≤ b → b ≤ c → x ≤ y → y ≤ z → (a + b + c) * (x + y + z) ≤ 3 * (a * x + b * y + c * z)
+  proof: |
+    by
+      intro a b c x y z hab hbc hxy hyz
+      nlinarith [mul_nonneg (sub_nonneg.2 hab) (sub_nonneg.2 hxy), mul_nonneg (sub_nonneg.2 hbc) (sub_nonneg.2 hyz), mul_nonneg (sub_nonneg.2 (hab.trans hbc)) (sub_nonneg.2 (hxy.trans hyz))]
+- id: chebyshev_finite
+  kind: named
+  level: high
+  topic: チェビシェフの不等式・有限個
+  statement: チェビシェフの和の不等式。単調増加な実数列$a_1\leq\cdots\leq a_n$と実数列$x_1,\ldots,x_n$について、$x_i$が単調増加なら$\left(\sum_i a_i\right)\left(\sum_i x_i\right)\leq n\sum_i a_ix_i$であり、$x_i$が単調減少なら$n\sum_i a_ix_i\leq\left(\sum_i a_i\right)\left(\sum_i x_i\right)$である。
+  statement_en: Chebyshev's sum inequality. For nondecreasing reals a_1 ≤ ... ≤ a_n and reals x_1, ..., x_n, if x is nondecreasing then (Σ a_i)(Σ x_i) ≤ n Σ a_i x_i, and if x is nonincreasing then n Σ a_i x_i ≤ (Σ a_i)(Σ x_i).
+  assumptions:
+  - $n$は$0$以上の整数
+  - $a_1\leq\cdots\leq a_n$は実数
+  - $x_1,\ldots,x_n$は実数
+  quantifiers:
+  - 任意の$n$
+  - 任意の実数列$a_i,x_i$
+  conclusion: $x_i$が単調増加なら$\left(\sum_i a_i\right)\left(\sum_i x_i\right)\leq n\sum_i a_ix_i$であり、$x_i$が単調減少なら逆向きの不等式が成り立つ。
+  answer: |
+    $a_1\leq\cdots\leq a_n$、$x_1,\ldots,x_n$を実数とする。二重和を展開すると
+    $\sum_{i=1}^n\sum_{j=1}^n(a_i-a_j)(x_i-x_j)=2\left(n\sum_i a_ix_i-\left(\sum_i a_i\right)\left(\sum_i x_i\right)\right)$
+    である。$x_i$が単調増加なら、$a_i-a_j$と$x_i-x_j$の符号は同じか一方が$0$なので、各項は$0$以上である。よって第$1$の不等式を得る。$x_i$が単調減少なら各項は$0$以下なので、第$2$の不等式を得る。
+  strategy: Expand a double sum of products of differences.
+  sketch:
+  - "derive: The double sum of (a_i-a_j)(x_i-x_j) equals 2(n Σ a_i x_i - (Σ a_i)(Σ x_i))."
+  - "case_split: If x is nondecreasing each term is nonnegative."
+  - "case_split: If x is nonincreasing each term is nonpositive."
+  - "conclude: The two inequalities follow."
+  openmath: (forall (n a x) (-> (and (in n N) (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (<= (seq_value a i) (seq_value a j))))) (and (-> (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (<= (seq_value x i) (seq_value x j)))) (<= (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (seq_value x i)))) (* n (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))))) (-> (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (>= (seq_value x i) (seq_value x j)))) (<= (* n (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))) (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (seq_value x i)))))))))
+  hard_negative:
+    statement: 実数列$a_i,x_i$の順序によらず、$\left(\sum_i a_i\right)\left(\sum_i x_i\right)\leq n\sum_i a_ix_i$である。
+    reason: $n=2$、$a=(0,1)$、$x=(1,0)$のとき左辺は$1$、右辺は$0$である。同じ順序に並ぶという仮定は外せない。
+  target: |
+    ∀ (n : ℕ) (a x : Fin n → ℝ), Monotone a → (Monotone x → (∑ i, a i) * (∑ i, x i) ≤ (n : ℝ) * ∑ i, a i * x i) ∧ (Antitone x → (n : ℝ) * ∑ i, a i * x i ≤ (∑ i, a i) * (∑ i, x i))
+  proof: |
+    by
+      intro n a x ha
+      constructor
+      · intro hx
+        simpa using (ha.monovary hx).sum_mul_sum_le_card_mul_sum
+      · intro hx
+        simpa using (ha.antivary hx).card_mul_sum_le_sum_mul_sum
+- id: min_linear_plus_reciprocal
+  kind: gap
+  level: high
+  topic: 最小値・相加平均と相乗平均
+  statement: 正の実数$a,b$について、$x>0$の範囲で$ax+\dfrac{b}{x}$の最小値は$2\sqrt{ab}$である。
+  statement_en: For positive reals a and b, the minimum of ax + b/x over x > 0 is 2 sqrt(ab).
+  assumptions:
+  - $a,b$は正の実数
+  - $x>0$
+  quantifiers:
+  - 任意の正の実数$a,b$
+  conclusion: $x>0$の範囲で$ax+\dfrac{b}{x}$の最小値は$2\sqrt{ab}$である。
+  answer: |
+    $a,b$を正の実数とし、$x>0$とする。$u=ax$、$v=\dfrac{b}{x}$とおくと、$u,v>0$、$uv=ab$である。$(u+v)^2-4uv=(u-v)^2\geq 0$であり、$u+v>0$なので、$u+v\geq 2\sqrt{uv}=2\sqrt{ab}$である。
+    $x=\dfrac{\sqrt{ab}}{a}$とおくと$x>0$であり、$ax=\sqrt{ab}$、$\dfrac{b}{x}=\dfrac{ab}{\sqrt{ab}}=\sqrt{ab}$なので、和は$2\sqrt{ab}$に等しい。よって最小値は$2\sqrt{ab}$である。
+  strategy: Apply AM-GM to ax and b/x and exhibit the point where equality holds.
+  sketch:
+  - "setup: Put u = ax and v = b/x, so uv = ab."
+  - "derive: (u+v)^2 - 4uv = (u-v)^2 ≥ 0 gives u + v ≥ 2 sqrt(ab)."
+  - "construct: Take x = sqrt(ab)/a, which makes u = v = sqrt(ab)."
+  - "conclude: The lower bound is attained, so it is the minimum."
+  openmath: (forall (a b) (-> (and (> a 0) (> b 0)) (and (forall (x) (-> (> x 0) (<= (* 2 (root (* a b) 2)) (+ (* a x) (/ b x))))) (exists (x) (and (> x 0) (= (+ (* a x) (/ b x)) (* 2 (root (* a b) 2))))))))
+  hard_negative:
+    statement: 正の実数$a,b$について、$x\geq 1$の範囲でも$ax+\dfrac{b}{x}$の最小値は$2\sqrt{ab}$である。
+    reason: $a=b=1$なら$x=1$で達するが、$a=4,b=1$では等号を与える$x=\dfrac{1}{2}$が範囲の外にあり、最小値は$x=1$での$5$である。下界が最小値になるのは等号が範囲内で成り立つときだけである。
+  target: |
+    ∀ a b : ℝ, 0 < a → 0 < b → IsLeast {y : ℝ | ∃ x : ℝ, 0 < x ∧ y = a * x + b / x} (2 * Real.sqrt (a * b))
+  proof: |
+    by
+      intro a b ha hb
+      have hab : 0 < a * b := mul_pos ha hb
+      have hs : 0 < Real.sqrt (a * b) := Real.sqrt_pos.2 hab
+      have hss : Real.sqrt (a * b) ^ 2 = a * b := Real.sq_sqrt hab.le
+      constructor
+      · generalize Real.sqrt (a * b) = s at hs hss
+        refine ⟨s / a, div_pos hs ha, ?_⟩
+        have e1 : a * (s / a) = s := by field_simp
+        have e2 : b / (s / a) = s := by
+          field_simp
+          linarith
+        rw [e1, e2]
+        ring
+      · rintro y ⟨x, hx, rfl⟩
+        have huv : (a * x) * (b / x) = a * b := by field_simp
+        have hu : 0 < a * x := mul_pos ha hx
+        have hv : 0 < b / x := div_pos hb hx
+        have h : Real.sqrt (a * b) ≤ (a * x + b / x) / 2 :=
+          Real.sqrt_le_iff.2 ⟨by positivity, by nlinarith [sq_nonneg (a * x - b / x)]⟩
+        linarith
+- id: min_x_plus_inv_on_ray
+  kind: gap
+  level: high
+  topic: 最小値・等号が成り立たない場合
+  statement: 実数$c\geq 1$について、$x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$c+\dfrac{1}{c}$である。
+  statement_en: For a real c ≥ 1, the minimum of x + 1/x over x ≥ c is c + 1/c.
+  assumptions:
+  - $c$は実数
+  - $c\geq 1$
+  - $x\geq c$
+  quantifiers:
+  - 任意の実数$c\geq 1$
+  conclusion: $x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$c+\dfrac{1}{c}$である。
+  answer: |
+    $c\geq 1$を実数とし、$x\geq c$とする。$x>0$、$c>0$であり、
+    $x+\dfrac{1}{x}-\left(c+\dfrac{1}{c}\right)=\dfrac{(x-c)(xc-1)}{xc}$
+    である。$x-c\geq 0$であり、$x\geq 1$、$c\geq 1$より$xc-1\geq 0$なので、右辺は$0$以上である。また$x=c$で値$c+\dfrac{1}{c}$をとる。よって最小値は$c+\dfrac{1}{c}$である。
+  strategy: Factor the difference from the value at x = c, because the AM-GM equality point may lie outside the range.
+  sketch:
+  - "setup: For x ≥ c ≥ 1 both x and c are positive."
+  - "derive: x + 1/x - (c + 1/c) = (x-c)(xc-1)/(xc)."
+  - "derive: The numerator and denominator are nonnegative and positive."
+  - "conclude: The value at x = c is the minimum."
+  openmath: (forall (c) (-> (>= c 1) (and (forall (x) (-> (>= x c) (<= (+ c (/ 1 c)) (+ x (/ 1 x))))) (exists (x) (and (>= x c) (= (+ x (/ 1 x)) (+ c (/ 1 c))))))))
+  hard_negative:
+    statement: $c\geq 1$のとき、$x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$2$である。
+    reason: $c=2$のとき$x\geq 2$では$x+\dfrac{1}{x}\geq\dfrac{5}{2}$である。不等式$x+\dfrac{1}{x}\geq 2$の等号は$x=1$でしか成り立たないので、$c>1$では$2$は最小値ではない。
+  target: |
+    ∀ c : ℝ, 1 ≤ c → IsLeast {y : ℝ | ∃ x : ℝ, c ≤ x ∧ y = x + 1 / x} (c + 1 / c)
+  proof: |
+    by
+      intro c hc
+      constructor
+      · exact ⟨c, le_rfl, rfl⟩
+      · rintro y ⟨x, hx, rfl⟩
+        have hc0 : 0 < c := by linarith
+        have hx0 : 0 < x := by linarith
+        have key : x + 1 / x - (c + 1 / c) = (x - c) * (x * c - 1) / (x * c) := by
+          field_simp
+          ring
+        have h1 : 0 ≤ x * c - 1 := by nlinarith
+        have h2 : 0 ≤ (x - c) * (x * c - 1) / (x * c) :=
+          div_nonneg (mul_nonneg (sub_nonneg.2 hx) h1) (mul_pos hx0 hc0).le
+        linarith
+- id: min_square_plus_split_reciprocal
+  kind: gap
+  level: high
+  topic: 最小値・3変数の相加相乗
+  statement: 正の実数$k$について、$x>0$の範囲で$x^2+\dfrac{2k^3}{x}$の最小値は$3k^2$である。これは$\dfrac{2k^3}{x}$を$2$つの等しい項に分けて$3$変数の相加相乗を使う形である。
+  statement_en: For a positive real k, the minimum of x^2 + 2k^3/x over x > 0 is 3k^2. This is the form solved by splitting 2k^3/x into two equal terms for three-variable AM-GM.
+  assumptions:
+  - $k$は正の実数
+  - $x>0$
+  quantifiers:
+  - 任意の正の実数$k$
+  conclusion: $x>0$の範囲で$x^2+\dfrac{2k^3}{x}$の最小値は$3k^2$である。
+  answer: |
+    $k$を正の実数とし、$x>0$とする。$x^2+\dfrac{2k^3}{x}-3k^2=\dfrac{x^3-3k^2x+2k^3}{x}=\dfrac{(x-k)^2(x+2k)}{x}\geq 0$である。また$x=k$のとき値は$k^2+2k^2=3k^2$である。よって最小値は$3k^2$である。
+    この値は、$x^2$、$\dfrac{k^3}{x}$、$\dfrac{k^3}{x}$の$3$項に相加相乗を使うと積が$k^6$で一定となることから見つかり、等号条件が$x^2=\dfrac{k^3}{x}$、すなわち$x=k$である。
+  strategy: Factor the difference from 3k^2; the three-term AM-GM split explains the factorization.
+  sketch:
+  - "derive: The difference from 3k^2 equals (x-k)^2 (x+2k)/x."
+  - "derive: This is nonnegative for x > 0."
+  - "construct: At x = k the value is exactly 3k^2."
+  - "conclude: The minimum is 3k^2."
+  openmath: (forall (k) (-> (> k 0) (and (forall (x) (-> (> x 0) (<= (* 3 (^ k 2)) (+ (^ x 2) (/ (* 2 (^ k 3)) x))))) (exists (x) (and (> x 0) (= (+ (^ x 2) (/ (* 2 (^ k 3)) x)) (* 3 (^ k 2))))))))
+  hard_negative:
+    statement: $x^2+\dfrac{2k^3}{x}$に$2$項の相加相乗を使うと$2\sqrt{2k^3x}$となるので、これが最小値である。
+    reason: $2\sqrt{2k^3x}$は$x$を含むので定数の下界ではない。積が定数になるように$\dfrac{2k^3}{x}$を$2$つに分ける必要がある。
+  target: |
+    ∀ k : ℝ, 0 < k → IsLeast {y : ℝ | ∃ x : ℝ, 0 < x ∧ y = x ^ 2 + 2 * k ^ 3 / x} (3 * k ^ 2)
+  proof: |
+    by
+      intro k hk
+      constructor
+      · refine ⟨k, hk, ?_⟩
+        field_simp
+        ring
+      · rintro y ⟨x, hx, rfl⟩
+        have key : x ^ 2 + 2 * k ^ 3 / x - 3 * k ^ 2 = (x - k) ^ 2 * (x + 2 * k) / x := by
+          field_simp
+          ring
+        have h : 0 ≤ (x - k) ^ 2 * (x + 2 * k) / x := by positivity
+        linarith
+- id: min_sum_squares_on_plane
+  kind: gap
+  level: high
+  topic: 最小値・コーシー・シュワルツの不等式
+  statement: 実数$a,b,c,d$が$a^2+b^2+c^2>0$を満たすとき、$ax+by+cz=d$を満たす実数$x,y,z$についての$x^2+y^2+z^2$の最小値は$\dfrac{d^2}{a^2+b^2+c^2}$である。
+  statement_en: For real a, b, c, d with a^2+b^2+c^2 > 0, the minimum of x^2+y^2+z^2 subject to ax+by+cz = d is d^2/(a^2+b^2+c^2).
+  assumptions:
+  - $a,b,c,d$は実数
+  - $a^2+b^2+c^2>0$
+  - $x,y,z$は$ax+by+cz=d$を満たす実数
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $x^2+y^2+z^2$の最小値は$\dfrac{d^2}{a^2+b^2+c^2}$である。
+  answer: |
+    $a,b,c,d$を実数とし、$S=a^2+b^2+c^2>0$とする。$x,y,z$が$ax+by+cz=d$を満たすとする。$S(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2\geq 0$なので、$d^2\leq S(x^2+y^2+z^2)$であり、$x^2+y^2+z^2\geq\dfrac{d^2}{S}$である。
+    $x=\dfrac{ad}{S}$、$y=\dfrac{bd}{S}$、$z=\dfrac{cd}{S}$とおくと、$ax+by+cz=\dfrac{Sd}{S}=d$であり、$x^2+y^2+z^2=\dfrac{Sd^2}{S^2}=\dfrac{d^2}{S}$である。よって最小値は$\dfrac{d^2}{S}$である。
+  strategy: Apply three-term Cauchy-Schwarz for the bound and take (x,y,z) proportional to (a,b,c) for attainment.
+  sketch:
+  - "setup: Put S = a^2 + b^2 + c^2 > 0."
+  - "apply_theorem: Three-term Cauchy-Schwarz gives d^2 ≤ S(x^2+y^2+z^2)."
+  - "construct: Take x = ad/S, y = bd/S, z = cd/S."
+  - "derive: This point satisfies the constraint and gives the value d^2/S."
+  - "conclude: The minimum is d^2/S."
+  openmath: (forall (a b c d) (-> (> (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 0) (and (forall (x y z) (-> (= (+ (+ (* a x) (* b y)) (* c z)) d) (<= (/ (^ d 2) (+ (+ (^ a 2) (^ b 2)) (^ c 2))) (+ (+ (^ x 2) (^ y 2)) (^ z 2))))) (exists (x y z) (and (= (+ (+ (* a x) (* b y)) (* c z)) d) (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (/ (^ d 2) (+ (+ (^ a 2) (^ b 2)) (^ c 2)))))))))
+  hard_negative:
+    statement: $ax+by+cz=d$の条件のもとで、$x^2+y^2+z^2$の最大値は$\dfrac{d^2}{a^2+b^2+c^2}$である。
+    reason: $a=1,b=c=d=0$のとき条件は$x=0$であり、$y$を大きくすると$x^2+y^2+z^2$はいくらでも大きくなる。最大値はなく、この値は最小値である。
+  target: |
+    ∀ a b c d : ℝ, 0 < a ^ 2 + b ^ 2 + c ^ 2 → IsLeast {t : ℝ | ∃ x y z : ℝ, a * x + b * y + c * z = d ∧ t = x ^ 2 + y ^ 2 + z ^ 2} (d ^ 2 / (a ^ 2 + b ^ 2 + c ^ 2))
+  proof: |
+    by
+      intro a b c d hS
+      have hne : a ^ 2 + b ^ 2 + c ^ 2 ≠ 0 := hS.ne'
+      constructor
+      · refine ⟨a * d / (a ^ 2 + b ^ 2 + c ^ 2), b * d / (a ^ 2 + b ^ 2 + c ^ 2), c * d / (a ^ 2 + b ^ 2 + c ^ 2), ?_, ?_⟩
+        · field_simp
+        · field_simp
+      · rintro t ⟨x, y, z, h, rfl⟩
+        rw [div_le_iff₀ hS, ← h]
+        nlinarith [sq_nonneg (a * y - b * x), sq_nonneg (b * z - c * y), sq_nonneg (a * z - c * x)]
+- id: max_linear_on_sphere
+  kind: gap
+  level: high
+  topic: 最大値・コーシー・シュワルツの不等式
+  statement: 実数$a,b,c$が$a^2+b^2+c^2>0$を満たし、$r>0$のとき、$x^2+y^2+z^2=r^2$を満たす実数$x,y,z$についての$ax+by+cz$の最大値は$r\sqrt{a^2+b^2+c^2}$である。
+  statement_en: For real a, b, c with a^2+b^2+c^2 > 0 and r > 0, the maximum of ax+by+cz subject to x^2+y^2+z^2 = r^2 is r sqrt(a^2+b^2+c^2).
+  assumptions:
+  - $a,b,c$は実数
+  - $a^2+b^2+c^2>0$
+  - $r>0$
+  - $x,y,z$は$x^2+y^2+z^2=r^2$を満たす実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  - 任意の正の実数$r$
+  conclusion: $ax+by+cz$の最大値は$r\sqrt{a^2+b^2+c^2}$である。
+  answer: |
+    $a,b,c$を実数、$r>0$とし、$S=a^2+b^2+c^2>0$、$s=\sqrt{S}>0$とおく。$x,y,z$が$x^2+y^2+z^2=r^2$を満たすとする。$S(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2\geq 0$なので、$(ax+by+cz)^2\leq Sr^2=(rs)^2$である。$rs>0$なので、$ax+by+cz\leq rs$である。
+    $x=\dfrac{ra}{s}$、$y=\dfrac{rb}{s}$、$z=\dfrac{rc}{s}$とおくと、$x^2+y^2+z^2=\dfrac{r^2S}{s^2}=r^2$であり、$ax+by+cz=\dfrac{rS}{s}=rs$である。よって最大値は$rs=r\sqrt{a^2+b^2+c^2}$である。
+  strategy: Apply three-term Cauchy-Schwarz for the bound and take (x,y,z) proportional to (a,b,c) for attainment.
+  sketch:
+  - "setup: Put S = a^2+b^2+c^2 and s = sqrt(S) > 0."
+  - "apply_theorem: Three-term Cauchy-Schwarz gives (ax+by+cz)^2 ≤ (rs)^2."
+  - "derive: Since rs > 0, ax+by+cz ≤ rs."
+  - "construct: Take x = ra/s, y = rb/s, z = rc/s."
+  - "conclude: This point lies on the sphere and gives the value rs."
+  openmath: (forall (a b c r) (-> (and (> (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 0) (> r 0)) (and (forall (x y z) (-> (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (^ r 2)) (<= (+ (+ (* a x) (* b y)) (* c z)) (* r (root (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 2))))) (exists (x y z) (and (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (^ r 2)) (= (+ (+ (* a x) (* b y)) (* c z)) (* r (root (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 2))))))))
+  hard_negative:
+    statement: $x^2+y^2+z^2=r^2$の条件のもとで、$ax+by+cz$の最大値は$r(|a|+|b|+|c|)$である。
+    reason: $a=b=c=r=1$のとき$\sqrt{3}$が最大値で、$3$には届かない。$r(|a|+|b|+|c|)$は上界だが、$a,b,c$のうち$0$でないものが$2$つ以上あれば、この値には達しない。
+  target: |
+    ∀ a b c r : ℝ, 0 < a ^ 2 + b ^ 2 + c ^ 2 → 0 < r → IsGreatest {t : ℝ | ∃ x y z : ℝ, x ^ 2 + y ^ 2 + z ^ 2 = r ^ 2 ∧ t = a * x + b * y + c * z} (r * Real.sqrt (a ^ 2 + b ^ 2 + c ^ 2))
+  proof: |
+    by
+      intro a b c r hS hr
+      have hs : 0 < Real.sqrt (a ^ 2 + b ^ 2 + c ^ 2) := Real.sqrt_pos.2 hS
+      have hss : Real.sqrt (a ^ 2 + b ^ 2 + c ^ 2) ^ 2 = a ^ 2 + b ^ 2 + c ^ 2 := Real.sq_sqrt hS.le
+      generalize Real.sqrt (a ^ 2 + b ^ 2 + c ^ 2) = s at hs hss ⊢
+      constructor
+      · refine ⟨r * a / s, r * b / s, r * c / s, ?_, ?_⟩
+        · have e : (r * a / s) ^ 2 + (r * b / s) ^ 2 + (r * c / s) ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2 + c ^ 2) / s ^ 2 := by
+            ring
+          rw [e, ← hss]
+          field_simp
+        · have e : a * (r * a / s) + b * (r * b / s) + c * (r * c / s) = r * (a ^ 2 + b ^ 2 + c ^ 2) / s := by
+            ring
+          rw [e, ← hss]
+          field_simp
+      · rintro t ⟨x, y, z, h, rfl⟩
+        have cs : (a * x + b * y + c * z) ^ 2 ≤ (a ^ 2 + b ^ 2 + c ^ 2) * (x ^ 2 + y ^ 2 + z ^ 2) := by
+          nlinarith [sq_nonneg (a * y - b * x), sq_nonneg (b * z - c * y), sq_nonneg (a * z - c * x)]
+        rw [h, ← hss] at cs
+        by_contra hc
+        have hc' : r * s < a * x + b * y + c * z := not_le.1 hc
+        have hrs : 0 < r * s := mul_pos hr hs
+        nlinarith
+- id: sum_mul_sum_reciprocal_ge_count_sq
+  kind: gap
+  level: high
+  topic: 不等式・n個の和と逆数の和
+  statement: 正の実数$a_1,\dots,a_n$について、$\left(\displaystyle\sum_{i=1}^n a_i\right)\left(\displaystyle\sum_{i=1}^n\dfrac{1}{a_i}\right)\geq n^2$である。
+  statement_en: For positive reals a_1, ..., a_n, (sum a_i)(sum 1/a_i) ≥ n^2.
+  assumptions:
+  - $n$は$0$以上の整数
+  - $a_1,\dots,a_n$は正の実数
+  quantifiers:
+  - 任意の$0$以上の整数$n$
+  - 任意の正の実数$a_1,\dots,a_n$
+  conclusion: $\left(\displaystyle\sum_{i=1}^n a_i\right)\left(\displaystyle\sum_{i=1}^n\dfrac{1}{a_i}\right)\geq n^2$である。
+  answer: |
+    $n$を$0$以上の整数、$a_1,\dots,a_n$を正の実数とする。$n=0$のときは両辺とも$0$である。
+    積を展開すると$\displaystyle\sum_{i=1}^n\sum_{j=1}^n\dfrac{a_i}{a_j}$である。$i=j$の項は$n$個あり、どれも$1$である。
+    $i<j$の組ごとに2項をまとめると$\dfrac{a_i}{a_j}+\dfrac{a_j}{a_i}-2=\dfrac{(a_i-a_j)^2}{a_ia_j}\geq 0$である。組は$\dfrac{n(n-1)}{2}$個あるので、積は$n+2\cdot\dfrac{n(n-1)}{2}=n^2$以上である。
+  strategy: Expand the double sum and pair the terms a_i/a_j and a_j/a_i.
+  sketch:
+  - "setup: Fix positive reals a_1, ..., a_n."
+  - "derive: The product equals the double sum of a_i/a_j, whose n diagonal terms equal 1."
+  - "derive: Each pair i<j contributes at least 2."
+  - "conclude: The total is at least n + n(n-1) = n^2."
+  openmath: (forall (n a) (-> (and (in n N) (forall (i) (-> (in i (natural_range n)) (> (seq_value a i) 0)))) (>= (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (/ 1 (seq_value a i))))) (^ n 2))))
+  hard_negative:
+    statement: $0$でない実数$a_1,\dots,a_n$について、$\left(\displaystyle\sum_{i=1}^n a_i\right)\left(\displaystyle\sum_{i=1}^n\dfrac{1}{a_i}\right)\geq n^2$である。
+    reason: $n=2$、$a_1=1$、$a_2=-1$のとき積は$0$であり、$n^2=4$より小さい。すべて正という仮定が要る。
+  target: |
+    ∀ (n : ℕ) (a : Fin n → ℝ), (∀ i, 0 < a i) → (n : ℝ) ^ 2 ≤ (∑ i, a i) * ∑ i, 1 / a i
+  proof: |
+    by
+      intro n a ha
+      rcases Nat.eq_zero_or_pos n with rfl | hn
+      · simp
+      haveI : Nonempty (Fin n) := ⟨⟨0, hn⟩⟩
+      have hs : 0 < ∑ i, a i := Finset.sum_pos (fun i _ => ha i) Finset.univ_nonempty
+      have h := Finset.sq_sum_div_le_sum_sq_div (Finset.univ : Finset (Fin n)) (fun _ => (1 : ℝ)) (fun i _ => ha i)
+      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_one, one_pow] at h
+      rw [div_le_iff₀ hs] at h
+      linarith

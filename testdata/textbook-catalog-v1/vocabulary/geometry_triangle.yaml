@@ -1,0 +1,1 @@
+line_point_at: {args: [term, term, term], returns: term, meaning: "the point a + t(b - a) on the line through a and b; arguments a b t"}

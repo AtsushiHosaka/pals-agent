@@ -1,0 +1,2576 @@
+- id: prob_uniform_range
+  kind: gap
+  level: middle
+  topic: 確率・確率の範囲
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A$の確率$P(A)=|A|/|\Omega|$は$0\leq P(A)\leq 1$を満たす。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and an event A, the probability P(A) = |A|/|Ω| satisfies 0 ≤ P(A) ≤ 1.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  quantifiers:
+  - 任意の事象$A$
+  conclusion: $0\leq P(A)\leq 1$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$A\subseteq\Omega$より$0\leq|A|\leq|\Omega|$であり、$|\Omega|>0$である。各辺を$|\Omega|$で割ると$0\leq|A|/|\Omega|\leq1$となる。よって$0\leq P(A)\leq1$である。
+  strategy: Divide the inequality 0 ≤ |A| ≤ |Ω| by the positive number |Ω|.
+  sketch:
+  - 'setup: Note that |Ω| > 0 and that A is a subset of Ω.'
+  - 'derive: Hence 0 ≤ |A| ≤ |Ω|.'
+  - 'conclude: Dividing by |Ω| gives 0 ≤ P(A) ≤ 1.'
+  openmath: (forall (O A) (-> (and (in (size O) N) (> (size O) 0) (subset A O)) (and (<= 0 (/ (size A) (size O))) (<= (/ (size A) (size O)) 1))))
+  hard_negative:
+    statement: どの事象$A$についても$0<P(A)<1$である。
+    reason: $A=\emptyset$なら$P(A)=0$、$A=\Omega$なら$P(A)=1$となり、等号は実際に起こる。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [Nonempty Ω] (A : Finset Ω), 0 ≤ (A.card : ℝ) / Fintype.card Ω ∧ (A.card : ℝ) / Fintype.card Ω ≤ 1
+  proof: |
+    by
+      intro Ω _ _ A
+      have h : (0 : ℝ) < Fintype.card Ω := by exact_mod_cast Fintype.card_pos
+      have hA : (A.card : ℝ) ≤ Fintype.card Ω := by exact_mod_cast Finset.card_le_univ A
+      exact ⟨by positivity, (div_le_one h).mpr hA⟩
+- id: prob_uniform_compl
+  kind: gap
+  level: middle
+  topic: 確率・余事象
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A$の余事象$\overline{A}$について$P(\overline{A})=1-P(A)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and an event A, the complement satisfies P(Aᶜ) = 1 - P(A), where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  - $\overline{A}=\Omega\setminus A$
+  quantifiers:
+  - 任意の事象$A$
+  conclusion: $P(\overline{A})=1-P(A)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$\overline{A}=\Omega\setminus A$とする。$\Omega$は$A$と$\overline{A}$に重なりなく分かれるので$|\overline{A}|+|A|=|\Omega|$である。両辺を$|\Omega|$で割ると$P(\overline{A})+P(A)=1$となり、$P(\overline{A})=1-P(A)$を得る。
+  strategy: Split Ω into A and its complement and divide the count by |Ω|.
+  sketch:
+  - 'setup: Write Aᶜ = Ω \ A.'
+  - 'derive: A and Aᶜ partition Ω, so |Aᶜ| + |A| = |Ω|.'
+  - 'conclude: Dividing by |Ω| gives P(Aᶜ) = 1 - P(A).'
+  openmath: (forall (O A) (-> (and (in (size O) N) (> (size O) 0) (subset A O)) (= (/ (size (setdiff O A)) (size O)) (- 1 (/ (size A) (size O))))))
+  hard_negative:
+    statement: $P(A)+P(B)=1$なら$B$は$A$の余事象である。
+    reason: サイコロで$A=\{1,2,3\}$、$B=\{1,4,5\}$とすると和は$1$だが、$B$は$A$の余事象ではない。確率の和だけでは事象は定まらない。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A : Finset Ω), (Aᶜ.card : ℝ) / Fintype.card Ω = 1 - (A.card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ _ A
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hc : (Aᶜ.card : ℝ) + A.card = Fintype.card Ω := by exact_mod_cast Finset.card_compl_add_card A
+      field_simp
+      linarith
+- id: prob_uniform_union_add_inter
+  kind: textbook
+  level: high
+  topic: 確率・加法定理
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A,B$について$P(A\cup B)=P(A)+P(B)-P(A\cap B)$が成り立つ。排反でない場合も含む一般形である。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and events A, B, P(A ∪ B) = P(A) + P(B) - P(A ∩ B), where P(E) = |E|/|Ω|. This is the general form, without assuming disjointness.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P(A\cup B)=P(A)+P(B)-P(A\cap B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B$を事象とする。$|A|+|B|$を数えると$A\cap B$の要素だけが$2$回数えられるので、$|A\cup B|+|A\cap B|=|A|+|B|$である。これを$|\Omega|$で割ると$P(A\cup B)+P(A\cap B)=P(A)+P(B)$となり、移項して結論を得る。
+  strategy: Count |A ∪ B| by correcting the double count of A ∩ B, then divide by |Ω|.
+  sketch:
+  - 'setup: Compare |A| + |B| with |A ∪ B|: only the elements of A ∩ B are counted twice.'
+  - 'derive: So |A ∪ B| + |A ∩ B| = |A| + |B|.'
+  - 'translate: Divide both sides by |Ω|.'
+  - 'conclude: Rearranging gives P(A ∪ B) = P(A) + P(B) - P(A ∩ B).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O)) (= (/ (size (union A B)) (size O)) (- (+ (/ (size A) (size O)) (/ (size B) (size O))) (/ (size (inter A B)) (size O))))))
+  hard_negative:
+    statement: 任意の事象$A,B$について$P(A\cup B)=P(A)+P(B)$である。
+    reason: $A=B\neq\emptyset$なら左辺は$P(A)$、右辺は$2P(A)$で一致しない。この式が成り立つのは$P(A\cap B)=0$のとき、一様な確率では$A,B$が排反のときに限る。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), ((A ∪ B).card : ℝ) / Fintype.card Ω = (A.card : ℝ) / Fintype.card Ω + (B.card : ℝ) / Fintype.card Ω - ((A ∩ B).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ _ A B
+      have h : ((A ∪ B).card : ℝ) + (A ∩ B).card = A.card + B.card := by exact_mod_cast Finset.card_union_add_card_inter A B
+      rw [← add_div, ← sub_div]
+      congr 1
+      linarith
+- id: prob_uniform_union_three
+  kind: textbook
+  level: high
+  topic: 確率・3事象の加法定理
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A,B,C$について$P(A\cup B\cup C)=P(A)+P(B)+P(C)-P(A\cap B)-P(B\cap C)-P(C\cap A)+P(A\cap B\cap C)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and events A, B, C, P(A ∪ B ∪ C) = P(A) + P(B) + P(C) - P(A ∩ B) - P(B ∩ C) - P(C ∩ A) + P(A ∩ B ∩ C), where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B,C\subseteq\Omega$
+  quantifiers:
+  - 任意の事象$A,B,C$
+  conclusion: 3事象の和事象の確率は、上の包除の式で与えられる。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B,C$を事象とする。一般に$|X\cup Y|+|X\cap Y|=|X|+|Y|$である。$X=A\cup B$、$Y=C$とすると$|A\cup B\cup C|+|(A\cup B)\cap C|=|A\cup B|+|C|$である。ここで$(A\cup B)\cap C=(C\cap A)\cup(B\cap C)$であり、$(C\cap A)\cap(B\cap C)=A\cap B\cap C$だから、同じ等式より$|(A\cup B)\cap C|=|C\cap A|+|B\cap C|-|A\cap B\cap C|$である。また$|A\cup B|=|A|+|B|-|A\cap B|$である。これらを代入すると$|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|B\cap C|-|C\cap A|+|A\cap B\cap C|$となり、$|\Omega|$で割って結論を得る。
+  strategy: Apply the two-set counting identity to (A ∪ B, C), to (A, B), and to (C ∩ A, B ∩ C), then divide by |Ω|.
+  sketch:
+  - 'setup: Use |X ∪ Y| + |X ∩ Y| = |X| + |Y| with X = A ∪ B and Y = C.'
+  - 'derive: Rewrite (A ∪ B) ∩ C as (C ∩ A) ∪ (B ∩ C) and apply the identity to this union.'
+  - 'derive: The intersection of C ∩ A and B ∩ C is A ∩ B ∩ C.'
+  - 'derive: Apply the identity to A and B as well.'
+  - 'conclude: Combine the counts and divide by |Ω|.'
+  openmath: (forall (O A B D) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (subset D O)) (= (/ (size (union (union A B) D)) (size O)) (+ (- (+ (/ (size A) (size O)) (+ (/ (size B) (size O)) (/ (size D) (size O)))) (+ (/ (size (inter A B)) (size O)) (+ (/ (size (inter B D)) (size O)) (/ (size (inter D A)) (size O))))) (/ (size (inter (inter A B) D)) (size O))))))
+  hard_negative:
+    statement: $P(A\cup B\cup C)=P(A)+P(B)+P(C)-P(A\cap B)-P(B\cap C)-P(C\cap A)$である。
+    reason: $A=B=C\neq\emptyset$のとき左辺は$P(A)$、右辺は$0$となる。3つの共通部分を足し戻す項は省けない。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B C : Finset Ω), ((A ∪ B ∪ C).card : ℝ) / Fintype.card Ω = (A.card : ℝ) / Fintype.card Ω + (B.card : ℝ) / Fintype.card Ω + (C.card : ℝ) / Fintype.card Ω - ((A ∩ B).card : ℝ) / Fintype.card Ω - ((B ∩ C).card : ℝ) / Fintype.card Ω - ((C ∩ A).card : ℝ) / Fintype.card Ω + ((A ∩ B ∩ C).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ _ A B C
+      have h1 : ((A ∪ B ∪ C).card : ℝ) + ((A ∪ B) ∩ C).card = (A ∪ B).card + C.card := by exact_mod_cast Finset.card_union_add_card_inter (A ∪ B) C
+      have h2 : ((A ∪ B).card : ℝ) + (A ∩ B).card = A.card + B.card := by exact_mod_cast Finset.card_union_add_card_inter A B
+      have h3 : (((C ∩ A) ∪ (B ∩ C)).card : ℝ) + ((C ∩ A) ∩ (B ∩ C)).card = (C ∩ A).card + (B ∩ C).card := by exact_mod_cast Finset.card_union_add_card_inter (C ∩ A) (B ∩ C)
+      have e1 : (A ∪ B) ∩ C = (C ∩ A) ∪ (B ∩ C) := by
+        ext x; simp only [Finset.mem_inter, Finset.mem_union]; tauto
+      have e2 : (C ∩ A) ∩ (B ∩ C) = A ∩ B ∩ C := by
+        ext x; simp only [Finset.mem_inter]; tauto
+      rw [e1] at h1
+      rw [e2] at h3
+      rw [← add_div, ← add_div, ← sub_div, ← sub_div, ← sub_div, ← add_div]
+      congr 1
+      linarith
+- id: prob_uniform_at_least_one_family
+  kind: gap
+  level: high
+  topic: 確率・少なくとも1つ
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、有限個の事象$A_i\ (i\in I)$について、少なくとも1つが起こる確率は$1$からどれも起こらない確率を引いた値に等しい。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a finite family of events A_i (i in I), the probability that at least one A_i occurs equals 1 minus the probability that no A_i occurs.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $I$は有限集合
+  - 各$i\in I$で$A_i\subseteq\Omega$
+  quantifiers:
+  - 任意の有限な事象の族$(A_i)_{i\in I}$
+  conclusion: $P\left(\bigcup_{i\in I}A_i\right)=1-P\left(\bigcap_{i\in I}\overline{A_i}\right)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$I$を有限集合、$A_i\ (i\in I)$を事象とする。根元事象$\omega$について、「ある$i\in I$で$\omega\in A_i$」の否定は「すべての$i\in I$で$\omega\notin A_i$」である。したがって、前者を満たす$\omega$全体と後者を満たす$\omega$全体は$\Omega$を重なりなく分ける。要素数を数えて$|\Omega|$で割ると、両者の確率の和は$1$である。よって少なくとも1つが起こる確率は、どれも起こらない確率を$1$から引いた値に等しい。
+  strategy: The event that some A_i occurs and the event that none occurs are complementary, so their counts add up to |Ω|.
+  sketch:
+  - 'setup: Let E be the set of outcomes in some A_i and F the set of outcomes in no A_i.'
+  - 'translate: By negating the quantifier, F is the complement of E in Ω.'
+  - 'derive: Hence |E| + |F| = |Ω|.'
+  - 'conclude: Dividing by |Ω| gives P(E) = 1 - P(F).'
+  openmath: (forall (O I A) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (forall (i) (-> (in i I) (subset (family_value A i) O)))) (= (/ (size (indexed_union_over I A)) (size O)) (- 1 (/ (size (suchthat O (lambda (w) (forall (i) (-> (in i I) (notin w (family_value A i))))))) (size O))))))
+  hard_negative:
+    statement: 少なくとも1つが起こる確率は$1-\prod_{i\in I}(1-P(A_i))$である。
+    reason: この積の形は事象が独立なら成り立つが、一般には成り立たない。$A_1=A_2=A$で$0<P(A)<1$なら、左辺は$P(A)$、右辺は$1-(1-P(A))^2$で異なる。
+  target: |
+    ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω), ((Finset.univ.filter (fun ω => ∃ i ∈ I, ω ∈ A i)).card : ℝ) / Fintype.card Ω = 1 - ((Finset.univ.filter (fun ω => ∀ i ∈ I, ω ∉ A i)).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      classical
+      intro Ω ι _ _ _ I A
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have e : (Finset.univ.filter (fun ω => ∀ i ∈ I, ω ∉ A i)) = (Finset.univ.filter (fun ω => ¬ ∃ i ∈ I, ω ∈ A i)) := by
+        ext ω; simp
+      have hc : ((Finset.univ.filter (fun ω => ∃ i ∈ I, ω ∈ A i)).card : ℝ) + (Finset.univ.filter (fun ω => ¬ ∃ i ∈ I, ω ∈ A i)).card = Fintype.card Ω := by
+        exact_mod_cast Finset.card_filter_add_card_filter_not (s := Finset.univ) (fun ω => ∃ i ∈ I, ω ∈ A i)
+      rw [e]
+      field_simp
+      linarith
+- id: prob_uniform_exactly_one_of_two
+  kind: gap
+  level: high
+  topic: 確率・一方だけが起こる確率
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A,B$のうちちょうど一方が起こる確率は$P(A)+P(B)-2P(A\cap B)$である。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and events A, B, the probability that exactly one of A and B occurs is P(A) + P(B) - 2P(A ∩ B), where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P((A\setminus B)\cup(B\setminus A))=P(A)+P(B)-2P(A\cap B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B$を事象とする。ちょうど一方が起こる事象は$(A\setminus B)\cup(B\setminus A)$であり、$A\setminus B$と$B\setminus A$は共通部分をもたない。また$A$は$A\setminus B$と$A\cap B$に重なりなく分かれるので$|A\setminus B|=|A|-|A\cap B|$であり、同様に$|B\setminus A|=|B|-|A\cap B|$である。よって求める事象の要素数は$|A|+|B|-2|A\cap B|$である。これを$|\Omega|$で割って結論を得る。
+  strategy: Write the event as the disjoint union of A \ B and B \ A and count each part.
+  sketch:
+  - 'setup: The event is (A \ B) ∪ (B \ A), and the two parts are disjoint.'
+  - 'derive: |A \ B| = |A| - |A ∩ B|.'
+  - 'derive: |B \ A| = |B| - |A ∩ B|.'
+  - 'conclude: Add the counts and divide by |Ω|.'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O)) (= (/ (size (union (setdiff A B) (setdiff B A))) (size O)) (- (+ (/ (size A) (size O)) (/ (size B) (size O))) (* 2 (/ (size (inter A B)) (size O)))))))
+  hard_negative:
+    statement: $A,B$のうちちょうど一方が起こる確率は$P(A)+P(B)-P(A\cap B)$である。
+    reason: これは少なくとも一方が起こる確率である。$A=B\neq\emptyset$なら、ちょうど一方が起こる確率は$0$だが、この式は$P(A)$を与える。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), (((A \ B) ∪ (B \ A)).card : ℝ) / Fintype.card Ω = (A.card : ℝ) / Fintype.card Ω + (B.card : ℝ) / Fintype.card Ω - 2 * (((A ∩ B).card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ A B
+      have hd : Disjoint (A \ B) (B \ A) := by
+        rw [Finset.disjoint_left]; intro x hx hx'; simp only [Finset.mem_sdiff] at hx hx'; exact hx.2 hx'.1
+      have h0 : (((A \ B) ∪ (B \ A)).card : ℝ) = (A \ B).card + (B \ A).card := by exact_mod_cast Finset.card_union_of_disjoint hd
+      have h1 : ((A \ B).card : ℝ) + (A ∩ B).card = A.card := by exact_mod_cast Finset.card_sdiff_add_card_inter A B
+      have h2 : ((B \ A).card : ℝ) + (B ∩ A).card = B.card := by exact_mod_cast Finset.card_sdiff_add_card_inter B A
+      rw [Finset.inter_comm] at h2
+      rw [mul_div_assoc', ← add_div, ← sub_div]
+      congr 1
+      linarith
+- id: prob_uniform_inter_lower_bound
+  kind: gap
+  level: high
+  topic: 確率・積事象の下界
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、事象$A,B$について$P(A\cap B)\geq P(A)+P(B)-1$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and events A, B, P(A ∩ B) ≥ P(A) + P(B) - 1, where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P(A\cap B)\geq P(A)+P(B)-1$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B$を事象とする。$|A\cup B|+|A\cap B|=|A|+|B|$であり、$A\cup B\subseteq\Omega$より$|A\cup B|\leq|\Omega|$である。したがって$|A\cap B|\geq|A|+|B|-|\Omega|$である。$|\Omega|>0$で割ると$P(A\cap B)\geq P(A)+P(B)-1$を得る。
+  strategy: Combine the counting identity for A and B with |A ∪ B| ≤ |Ω|.
+  sketch:
+  - 'setup: Start from |A ∪ B| + |A ∩ B| = |A| + |B|.'
+  - 'derive: Since A ∪ B is a subset of Ω, |A ∪ B| ≤ |Ω|.'
+  - 'derive: So |A ∩ B| ≥ |A| + |B| - |Ω|.'
+  - 'conclude: Divide by |Ω|.'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O)) (<= (- (+ (/ (size A) (size O)) (/ (size B) (size O))) 1) (/ (size (inter A B)) (size O)))))
+  hard_negative:
+    statement: $P(A\cap B)\geq P(A)P(B)$が常に成り立つ。
+    reason: $A,B$が排反で$P(A),P(B)>0$なら左辺は$0$、右辺は正となり成り立たない。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), (A.card : ℝ) / Fintype.card Ω + (B.card : ℝ) / Fintype.card Ω - 1 ≤ ((A ∩ B).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ _ A B
+      have h : (0 : ℝ) < Fintype.card Ω := by exact_mod_cast Fintype.card_pos
+      have h1 : ((A ∪ B).card : ℝ) + (A ∩ B).card = A.card + B.card := by exact_mod_cast Finset.card_union_add_card_inter A B
+      have h2 : ((A ∪ B).card : ℝ) ≤ Fintype.card Ω := by exact_mod_cast Finset.card_le_univ (A ∪ B)
+      rw [le_div_iff₀ h, sub_mul, add_mul, div_mul_cancel₀ _ h.ne', div_mul_cancel₀ _ h.ne']
+      linarith
+- id: prob_uniform_disjoint_family_sum
+  kind: gap
+  level: high
+  topic: 確率・排反事象の和
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、どの2つも排反な有限個の事象$A_i\ (i\in I)$について$P\left(\bigcup_{i\in I}A_i\right)=\sum_{i\in I}P(A_i)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a finite family of pairwise disjoint events A_i (i in I), the probability of the union is the sum of the probabilities P(A_i).
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $I$は有限集合
+  - $i\neq j$なら$A_i\cap A_j=\emptyset$
+  quantifiers:
+  - 任意のどの2つも排反な事象の族$(A_i)_{i\in I}$
+  conclusion: $P\left(\bigcup_{i\in I}A_i\right)=\sum_{i\in I}P(A_i)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$I$を有限集合とし、事象$A_i\ (i\in I)$はどの2つも排反であるとする。和集合$\bigcup_{i\in I}A_i$の各要素は、ちょうど1つの$A_i$に属する。したがって$\left|\bigcup_{i\in I}A_i\right|=\sum_{i\in I}|A_i|$である。両辺を$|\Omega|$で割ると結論を得る。
+  strategy: Pairwise disjointness makes the counts add up; divide by |Ω|.
+  sketch:
+  - 'setup: Each element of the union lies in exactly one A_i by pairwise disjointness.'
+  - 'derive: Hence the size of the union is the sum of the sizes |A_i|.'
+  - 'conclude: Dividing by |Ω| gives the claim.'
+  openmath: (forall (O I A) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (forall (i j) (-> (and (in i I) (in j I) (!= i j)) (= (inter (family_value A i) (family_value A j)) emptyset)))) (= (/ (size (indexed_union_over I A)) (size O)) (sum I (lambda (i) (/ (size (family_value A i)) (size O)))))))
+  hard_negative:
+    statement: 事象の族全体の共通部分が空なら$P\left(\bigcup_{i\in I}A_i\right)=\sum_{i\in I}P(A_i)$である。
+    reason: 必要なのはどの2つも排反という条件である。3事象で$A_1=A_2$、$A_3$が$A_1$と排反のとき全体の共通部分は空だが、$A_1\neq\emptyset$なら和は和事象の確率より$P(A_1)$だけ大きい。
+  target: |
+    ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω), (∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j)) → ((I.biUnion A).card : ℝ) / Fintype.card Ω = ∑ i ∈ I, ((A i).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      classical
+      intro Ω ι _ _ _ I A hd
+      rw [Finset.card_biUnion hd, Nat.cast_sum, Finset.sum_div]
+- id: cond_prob_uniform_ratio
+  kind: gap
+  level: high
+  topic: 確率・条件付き確率の定義
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A$が空でないとき、要素数の比で定めた条件付き確率$P_A(B)=|A\cap B|/|A|$は$P(A\cap B)/P(A)$に等しい。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a nonempty event A, the conditional probability defined by counting, |A ∩ B|/|A|, equals P(A ∩ B)/P(A), where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $A\neq\emptyset$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $|A\cap B|/|A|=P(A\cap B)/P(A)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$A$は空でないとし、$B$を事象とする。$|\Omega|>0$かつ$|A|>0$なので$P(A)\neq0$であり、$\dfrac{P(A\cap B)}{P(A)}=\dfrac{|A\cap B|/|\Omega|}{|A|/|\Omega|}=\dfrac{|A\cap B|}{|A|}$となる。
+  strategy: Cancel the common denominator |Ω| in the ratio of probabilities.
+  sketch:
+  - 'setup: Note that |Ω| and |A| are positive.'
+  - 'derive: Write both probabilities as counts over |Ω|.'
+  - 'conclude: Cancelling |Ω| gives |A ∩ B|/|A|.'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (> (size A) 0)) (= (/ (size (inter A B)) (size A)) (/ (/ (size (inter A B)) (size O)) (/ (size A) (size O))))))
+  hard_negative:
+    statement: $P_A(B)=P(B)/P(A)$である。
+    reason: 分子は$B$ではなく$A\cap B$である。$A,B$が排反で空でないなら$P_A(B)=0$だが、$P(B)/P(A)>0$となる。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), A.Nonempty → ((A ∩ B).card : ℝ) / A.card = (((A ∩ B).card : ℝ) / Fintype.card Ω) / ((A.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ A B hA
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      field_simp
+- id: cond_prob_uniform_mul
+  kind: textbook
+  level: high
+  topic: 確率・乗法定理
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A$が空でないとき、乗法定理$P(A\cap B)=P(A)P_A(B)$が成り立つ。ここで$P_A(B)=|A\cap B|/|A|$である。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a nonempty event A, the multiplication rule P(A ∩ B) = P(A) P_A(B) holds, where P_A(B) = |A ∩ B|/|A|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $A\neq\emptyset$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P(A\cap B)=P(A)P_A(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$A$は空でないとし、$B$を事象とする。$P_A(B)=|A\cap B|/|A|$と定める。$|A|>0$なので$P(A)P_A(B)=\dfrac{|A|}{|\Omega|}\cdot\dfrac{|A\cap B|}{|A|}=\dfrac{|A\cap B|}{|\Omega|}=P(A\cap B)$である。
+  strategy: Multiply the two count ratios and cancel |A|.
+  sketch:
+  - 'setup: Write P(A) = |A|/|Ω| and P_A(B) = |A ∩ B|/|A|.'
+  - 'derive: Their product has |A| in the numerator and in the denominator.'
+  - 'conclude: Cancelling |A| leaves |A ∩ B|/|Ω| = P(A ∩ B).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (> (size A) 0)) (= (/ (size (inter A B)) (size O)) (* (/ (size A) (size O)) (/ (size (inter A B)) (size A))))))
+  hard_negative:
+    statement: $P(A\cap B)=P(A)P(B)$が常に成り立つ。
+    reason: これは独立な場合に限る。$A=B$で$0<P(A)<1$なら左辺は$P(A)$、右辺は$P(A)^2$で異なる。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), A.Nonempty → ((A ∩ B).card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * (((A ∩ B).card : ℝ) / A.card)
+  proof: |
+    by
+      intro Ω _ _ _ A B hA
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      field_simp
+- id: cond_prob_uniform_chain
+  kind: gap
+  level: high
+  topic: 確率・3事象の乗法定理
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A\cap B$が空でないとき、$P(A\cap B\cap C)=P(A)\,P_A(B)\,P_{A\cap B}(C)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and events with A ∩ B nonempty, P(A ∩ B ∩ C) = P(A) P_A(B) P_{A∩B}(C), where P_X(Y) = |X ∩ Y|/|X|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B,C\subseteq\Omega$
+  - $A\cap B\neq\emptyset$
+  quantifiers:
+  - 任意の事象$A,B,C$
+  conclusion: $P(A\cap B\cap C)=P(A)P_A(B)P_{A\cap B}(C)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B,C$を事象とし、$A\cap B\neq\emptyset$とする。$P_X(Y)=|X\cap Y|/|X|$と定める。$A\cap B\neq\emptyset$より$|A\cap B|>0$であり、$A\cap B\subseteq A$より$|A|>0$である。よって$P(A)P_A(B)P_{A\cap B}(C)=\dfrac{|A|}{|\Omega|}\cdot\dfrac{|A\cap B|}{|A|}\cdot\dfrac{|A\cap B\cap C|}{|A\cap B|}=\dfrac{|A\cap B\cap C|}{|\Omega|}$であり、これは$P(A\cap B\cap C)$に等しい。
+  strategy: Multiply the three count ratios; the product telescopes.
+  sketch:
+  - 'setup: From A ∩ B nonempty, both |A ∩ B| and |A| are positive.'
+  - 'derive: Write each factor as a ratio of counts.'
+  - 'conclude: The product telescopes to |A ∩ B ∩ C|/|Ω|.'
+  openmath: (forall (O A B D) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (subset D O) (> (size (inter A B)) 0)) (= (/ (size (inter (inter A B) D)) (size O)) (* (* (/ (size A) (size O)) (/ (size (inter A B)) (size A))) (/ (size (inter (inter A B) D)) (size (inter A B)))))))
+  hard_negative:
+    statement: $P(A\cap B\cap C)=P(A)\,P_A(B)\,P_B(C)$である。
+    reason: 最後の因子の条件は$B$ではなく$A\cap B$である。$A,C$が排反で、$A\cap B$と$B\cap C$がともに空でないとき、左辺は$0$だが右辺は正である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B C : Finset Ω), (A ∩ B).Nonempty → ((A ∩ B ∩ C).card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * (((A ∩ B).card : ℝ) / A.card) * (((A ∩ B ∩ C).card : ℝ) / (A ∩ B).card)
+  proof: |
+    by
+      intro Ω _ _ _ A B C hAB
+      have hab : ((A ∩ B).card : ℝ) ≠ 0 := by exact_mod_cast hAB.card_ne_zero
+      have ha : (A.card : ℝ) ≠ 0 := by
+        have : A.Nonempty := hAB.mono Finset.inter_subset_left
+        exact_mod_cast this.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      field_simp
+- id: total_prob_uniform_two
+  kind: textbook
+  level: high
+  topic: 確率・全確率の公式
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A$も$\overline{A}$も空でないとき、$P(B)=P(A)P_A(B)+P(\overline{A})P_{\overline{A}}(B)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and an event A with both A and Aᶜ nonempty, P(B) = P(A) P_A(B) + P(Aᶜ) P_{Aᶜ}(B), where P_X(Y) = |X ∩ Y|/|X|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $A\neq\emptyset$
+  - $\overline{A}\neq\emptyset$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P(B)=P(A)P_A(B)+P(\overline{A})P_{\overline{A}}(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B$を事象とし、$A$も$\overline{A}=\Omega\setminus A$も空でないとする。$P_X(Y)=|X\cap Y|/|X|$と定める。$B$は$A\cap B$と$\overline{A}\cap B$に重なりなく分かれるので$|B|=|A\cap B|+|\overline{A}\cap B|$である。$|A|,|\overline{A}|>0$より、$P(A)P_A(B)=|A\cap B|/|\Omega|$、$P(\overline{A})P_{\overline{A}}(B)=|\overline{A}\cap B|/|\Omega|$である。これらを足すと$|B|/|\Omega|=P(B)$となる。
+  strategy: Split B along A and its complement and rewrite each part with the multiplication rule.
+  sketch:
+  - 'setup: Assume A and Aᶜ are both nonempty so that the conditional probabilities are defined.'
+  - 'derive: B is the disjoint union of A ∩ B and Aᶜ ∩ B.'
+  - 'derive: P(A) P_A(B) = |A ∩ B|/|Ω|.'
+  - 'derive: P(Aᶜ) P_{Aᶜ}(B) = |Aᶜ ∩ B|/|Ω|.'
+  - 'conclude: Adding gives |B|/|Ω| = P(B).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (> (size A) 0) (> (size (setdiff O A)) 0)) (= (/ (size B) (size O)) (+ (* (/ (size A) (size O)) (/ (size (inter A B)) (size A))) (* (/ (size (setdiff O A)) (size O)) (/ (size (inter (setdiff O A) B)) (size (setdiff O A))))))))
+  hard_negative:
+    statement: $P(B)=P_A(B)+P_{\overline{A}}(B)$である。
+    reason: 重み$P(A),P(\overline{A})$は省けない。$B=\Omega$なら右辺は$2$、左辺は$1$となる。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), A.Nonempty → Aᶜ.Nonempty → (B.card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * (((A ∩ B).card : ℝ) / A.card) + ((Aᶜ.card : ℝ) / Fintype.card Ω) * ((Aᶜ ∩ B).card / Aᶜ.card)
+  proof: |
+    by
+      intro Ω _ _ _ A B hA hA'
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      have ha' : (Aᶜ.card : ℝ) ≠ 0 := by exact_mod_cast hA'.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hd : Disjoint (A ∩ B) (Aᶜ ∩ B) := by
+        rw [Finset.disjoint_left]; intro x hx hx'; simp only [Finset.mem_inter, Finset.mem_compl] at hx hx'; exact hx'.1 hx.1
+      have hu : (A ∩ B) ∪ (Aᶜ ∩ B) = B := by
+        ext x; simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_compl]; tauto
+      have hc : (B.card : ℝ) = (A ∩ B).card + (Aᶜ ∩ B).card := by
+        have := Finset.card_union_of_disjoint hd
+        rw [hu] at this
+        exact_mod_cast this
+      rw [hc]
+      field_simp
+- id: total_prob_uniform_partition
+  kind: textbook
+  level: high
+  topic: 確率・全確率の公式（分割）
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、空でない事象$A_i\ (i\in I)$が$\Omega$を分割するとき、$P(B)=\sum_{i\in I}P(A_i)P_{A_i}(B)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and nonempty events A_i (i in a finite set I) that partition Ω, P(B) = Σ_i P(A_i) P_{A_i}(B), where P_X(Y) = |X ∩ Y|/|X|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $I$は有限集合
+  - 各$A_i$は空でない
+  - $i\neq j$なら$A_i\cap A_j=\emptyset$
+  - $\bigcup_{i\in I}A_i=\Omega$
+  quantifiers:
+  - 任意の分割$(A_i)_{i\in I}$と任意の事象$B$
+  conclusion: $P(B)=\sum_{i\in I}P(A_i)P_{A_i}(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$I$を有限集合とし、空でない事象$A_i\ (i\in I)$はどの2つも排反で、和集合が$\Omega$であるとする。$B$を事象とし、$P_X(Y)=|X\cap Y|/|X|$と定める。$B$の各要素はちょうど1つの$A_i$に属するので$|B|=\sum_{i\in I}|A_i\cap B|$である。$|A_i|>0$より$P(A_i)P_{A_i}(B)=|A_i\cap B|/|\Omega|$である。これを$i$について足すと$\sum_{i\in I}P(A_i)P_{A_i}(B)=|B|/|\Omega|=P(B)$となる。
+  strategy: Decompose B along the partition and use the multiplication rule on each block.
+  sketch:
+  - 'setup: Each element of B lies in exactly one block A_i.'
+  - 'derive: So |B| = Σ_i |A_i ∩ B|.'
+  - 'derive: Since |A_i| > 0, P(A_i) P_{A_i}(B) = |A_i ∩ B|/|Ω|.'
+  - 'conclude: Summing over i gives |B|/|Ω| = P(B).'
+  openmath: (forall (O I A B) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (subset B O) (forall (i) (-> (in i I) (and (subset (family_value A i) O) (> (size (family_value A i)) 0)))) (forall (i j) (-> (and (in i I) (in j I) (!= i j)) (= (inter (family_value A i) (family_value A j)) emptyset))) (= (indexed_union_over I A) O)) (= (/ (size B) (size O)) (sum I (lambda (i) (* (/ (size (family_value A i)) (size O)) (/ (size (inter (family_value A i) B)) (size (family_value A i)))))))))
+  hard_negative:
+    statement: 事象$A_i$が$\Omega$を覆うだけで排反でなくても、$P(B)=\sum_{i\in I}P(A_i)P_{A_i}(B)$である。
+    reason: 重なりがあると$B$の要素が重複して数えられる。$A_1=A_2=\Omega$なら右辺は$2P(B)$になる。
+  target: |
+    ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω) (B : Finset Ω), (∀ i ∈ I, (A i).Nonempty) → (∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j)) → (∀ ω : Ω, ∃ i ∈ I, ω ∈ A i) → (B.card : ℝ) / Fintype.card Ω = ∑ i ∈ I, (((A i).card : ℝ) / Fintype.card Ω) * (((A i ∩ B).card : ℝ) / (A i).card)
+  proof: |
+    by
+      classical
+      intro Ω ι _ _ _ I A B hn hd hc
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hu : B = I.biUnion (fun i => A i ∩ B) := by
+        ext x
+        simp only [Finset.mem_biUnion, Finset.mem_inter]
+        constructor
+        · intro hx
+          obtain ⟨i, hi, hxi⟩ := hc x
+          exact ⟨i, hi, hxi, hx⟩
+        · rintro ⟨i, _, _, hx⟩
+          exact hx
+      have hd' : ∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i ∩ B) (A j ∩ B) := fun i hi j hj hij =>
+        Finset.disjoint_of_subset_left Finset.inter_subset_left (Finset.disjoint_of_subset_right Finset.inter_subset_left (hd i hi j hj hij))
+      have hcard : (B.card : ℝ) = ∑ i ∈ I, ((A i ∩ B).card : ℝ) := by
+        conv_lhs => rw [hu, Finset.card_biUnion hd']
+        push_cast
+        rfl
+      rw [hcard, Finset.sum_div]
+      refine Finset.sum_congr rfl fun i hi => ?_
+      have ha : ((A i).card : ℝ) ≠ 0 := by exact_mod_cast (hn i hi).card_ne_zero
+      rw [div_mul_div_comm, mul_comm ((A i).card : ℝ), mul_div_mul_right _ _ ha]
+- id: bayes_uniform_partition
+  kind: textbook
+  level: high
+  topic: 確率・ベイズの定理（分割）
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、空でない事象$A_i\ (i\in I)$が$\Omega$を分割し、$B$が空でないとき、各$k\in I$について$P_B(A_k)=\dfrac{P(A_k)P_{A_k}(B)}{\sum_{i\in I}P(A_i)P_{A_i}(B)}$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes, nonempty events A_i (i in a finite set I) partitioning Ω and a nonempty event B, P_B(A_k) = P(A_k) P_{A_k}(B) / Σ_i P(A_i) P_{A_i}(B) for each k in I, where P_X(Y) = |X ∩ Y|/|X|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $I$は有限集合で$k\in I$
+  - 各$A_i$は空でない
+  - $i\neq j$なら$A_i\cap A_j=\emptyset$
+  - $\bigcup_{i\in I}A_i=\Omega$
+  - $B\neq\emptyset$
+  quantifiers:
+  - 任意の分割$(A_i)_{i\in I}$、任意の事象$B$、任意の$k\in I$
+  conclusion: $P_B(A_k)$は上の分数で与えられる。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$I$を有限集合、$k\in I$とし、空でない事象$A_i\ (i\in I)$はどの2つも排反で和集合が$\Omega$であるとする。$B$を空でない事象とし、$P_X(Y)=|X\cap Y|/|X|$と定める。$|A_i|>0$より$P(A_i)P_{A_i}(B)=|A_i\cap B|/|\Omega|$である。$B$の各要素はちょうど1つの$A_i$に属するので$\sum_{i\in I}|A_i\cap B|=|B|$であり、分母は$|B|/|\Omega|$に等しい。これは正である。分子は$|A_k\cap B|/|\Omega|$なので、分数の値は$|A_k\cap B|/|B|=P_B(A_k)$となる。
+  strategy: Rewrite each product as a count over |Ω|; the denominator becomes |B|/|Ω| by the partition.
+  sketch:
+  - 'setup: Each product P(A_i) P_{A_i}(B) equals |A_i ∩ B|/|Ω| because |A_i| > 0.'
+  - 'derive: Since the A_i partition Ω, the sum of |A_i ∩ B| is |B|.'
+  - 'derive: So the denominator is |B|/|Ω|, which is positive.'
+  - 'conclude: The quotient is |A_k ∩ B|/|B| = P_B(A_k).'
+  openmath: (forall (O I A B k) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (in k I) (subset B O) (> (size B) 0) (forall (i) (-> (in i I) (and (subset (family_value A i) O) (> (size (family_value A i)) 0)))) (forall (i j) (-> (and (in i I) (in j I) (!= i j)) (= (inter (family_value A i) (family_value A j)) emptyset))) (= (indexed_union_over I A) O)) (= (/ (size (inter (family_value A k) B)) (size B)) (/ (* (/ (size (family_value A k)) (size O)) (/ (size (inter (family_value A k) B)) (size (family_value A k)))) (sum I (lambda (i) (* (/ (size (family_value A i)) (size O)) (/ (size (inter (family_value A i) B)) (size (family_value A i))))))))))
+  hard_negative:
+    statement: $P_B(A_k)=P_{A_k}(B)$である。
+    reason: 条件と事象を入れ替えた確率は一般に等しくない。$B\subseteq A_k$で$A_k\not\subseteq B$、$B\neq\emptyset$なら、$P_B(A_k)=1$だが$P_{A_k}(B)<1$である。
+  target: |
+    ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω) (B : Finset Ω) (k : ι), k ∈ I → B.Nonempty → (∀ i ∈ I, (A i).Nonempty) → (∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j)) → (∀ ω : Ω, ∃ i ∈ I, ω ∈ A i) → ((A k ∩ B).card : ℝ) / B.card = (((A k).card : ℝ) / Fintype.card Ω * (((A k ∩ B).card : ℝ) / (A k).card)) / ∑ i ∈ I, (((A i).card : ℝ) / Fintype.card Ω) * (((A i ∩ B).card : ℝ) / (A i).card)
+  proof: |
+    by
+      classical
+      intro Ω ι _ _ _ I A B k hk hB hn hd hc
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hb : (B.card : ℝ) ≠ 0 := by exact_mod_cast hB.card_ne_zero
+      have hak : ((A k).card : ℝ) ≠ 0 := by exact_mod_cast (hn k hk).card_ne_zero
+      have hu : B = I.biUnion (fun i => A i ∩ B) := by
+        ext x
+        simp only [Finset.mem_biUnion, Finset.mem_inter]
+        constructor
+        · intro hx
+          obtain ⟨i, hi, hxi⟩ := hc x
+          exact ⟨i, hi, hxi, hx⟩
+        · rintro ⟨i, _, _, hx⟩
+          exact hx
+      have hd' : ∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i ∩ B) (A j ∩ B) := fun i hi j hj hij =>
+        Finset.disjoint_of_subset_left Finset.inter_subset_left (Finset.disjoint_of_subset_right Finset.inter_subset_left (hd i hi j hj hij))
+      have hcard : (B.card : ℝ) = ∑ i ∈ I, ((A i ∩ B).card : ℝ) := by
+        conv_lhs => rw [hu, Finset.card_biUnion hd']
+        push_cast
+        rfl
+      have hs : ∑ i ∈ I, (((A i).card : ℝ) / Fintype.card Ω) * (((A i ∩ B).card : ℝ) / (A i).card) = (B.card : ℝ) / Fintype.card Ω := by
+        rw [hcard, Finset.sum_div]
+        refine Finset.sum_congr rfl fun i hi => ?_
+        have ha : ((A i).card : ℝ) ≠ 0 := by exact_mod_cast (hn i hi).card_ne_zero
+        rw [div_mul_div_comm, mul_comm ((A i).card : ℝ), mul_div_mul_right _ _ ha]
+      rw [hs]
+      clear hs hcard hd' hu
+      field_simp
+- id: bayes_uniform_simple
+  kind: named
+  level: high
+  topic: 確率・ベイズの定理
+  statement: ベイズの定理の基本形。有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A,B$が空でないとき、$P_B(A)=\dfrac{P(A)P_A(B)}{P(B)}$が成り立つ。
+  statement_en: 'Bayes'' theorem, basic form: for a finite nonempty sample space Ω with equally likely outcomes and nonempty events A, B, P_B(A) = P(A) P_A(B) / P(B), where P_X(Y) = |X ∩ Y|/|X|.'
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $A,B$は空でない
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P_B(A)=P(A)P_A(B)/P(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$A,B$は空でない事象とし、$P_X(Y)=|X\cap Y|/|X|$と定める。$|A|>0$より$P(A)P_A(B)=|A\cap B|/|\Omega|$である。$|B|>0$より$P(B)\neq0$なので、$\dfrac{P(A)P_A(B)}{P(B)}=\dfrac{|A\cap B|/|\Omega|}{|B|/|\Omega|}=\dfrac{|A\cap B|}{|B|}=P_B(A)$である。
+  strategy: Both sides reduce to |A ∩ B|/|B| after cancelling |A| and |Ω|.
+  sketch:
+  - 'setup: Since A is nonempty, P(A) P_A(B) = |A ∩ B|/|Ω|.'
+  - 'derive: Since B is nonempty, P(B) is positive and may be divided by.'
+  - 'conclude: The quotient is |A ∩ B|/|B| = P_B(A).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (> (size A) 0) (> (size B) 0)) (= (/ (size (inter B A)) (size B)) (/ (* (/ (size A) (size O)) (/ (size (inter A B)) (size A))) (/ (size B) (size O))))))
+  hard_negative:
+    statement: $P_B(A)=\dfrac{P(B)P_A(B)}{P(A)}$である。
+    reason: $P(A),P(B)$の位置が逆である。$A\subseteq B$、$A\neq B$、$A\neq\emptyset$なら、$P_B(A)=|A|/|B|<1$だが、この式の右辺は$|B|/|A|>1$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), A.Nonempty → B.Nonempty → ((B ∩ A).card : ℝ) / B.card = ((A.card : ℝ) / Fintype.card Ω) * (((A ∩ B).card : ℝ) / A.card) / ((B.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ A B hA hB
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      have hb : (B.card : ℝ) ≠ 0 := by exact_mod_cast hB.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      rw [Finset.inter_comm B A]
+      field_simp
+- id: indep_uniform_iff_cond
+  kind: gap
+  level: high
+  topic: 確率・独立と条件付き確率
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A$が空でないとき、$P_A(B)=P(B)$であることと$P(A\cap B)=P(A)P(B)$であることは同値である。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a nonempty event A, P_A(B) = P(B) if and only if P(A ∩ B) = P(A) P(B), where P_A(B) = |A ∩ B|/|A|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $A\neq\emptyset$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P_A(B)=P(B)\iff P(A\cap B)=P(A)P(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$A$は空でないとし、$B$を事象とする。$P_A(B)=|A\cap B|/|A|$と定める。乗法定理より$P(A\cap B)=P(A)P_A(B)$であり、$P(A)>0$である。$P_A(B)=P(B)$なら$P(A\cap B)=P(A)P(B)$となる。逆に$P(A\cap B)=P(A)P(B)$なら$P(A)P_A(B)=P(A)P(B)$であり、$P(A)>0$で割って$P_A(B)=P(B)$を得る。
+  strategy: Use the multiplication rule and cancel the positive factor P(A).
+  sketch:
+  - 'setup: Note that P(A) > 0 and that P(A ∩ B) = P(A) P_A(B).'
+  - 'derive: If P_A(B) = P(B), substitute to get the product formula.'
+  - 'derive: If the product formula holds, then P(A) P_A(B) = P(A) P(B).'
+  - 'conclude: Cancelling P(A) gives P_A(B) = P(B).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (> (size A) 0)) (<-> (= (/ (size (inter A B)) (size A)) (/ (size B) (size O))) (= (/ (size (inter A B)) (size O)) (* (/ (size A) (size O)) (/ (size B) (size O)))))))
+  hard_negative:
+    statement: $A,B$が排反なら$A,B$は独立である。
+    reason: $P(A),P(B)>0$で排反なら$P(A\cap B)=0$だが、$P(A)P(B)>0$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), A.Nonempty → (((A ∩ B).card : ℝ) / A.card = (B.card : ℝ) / Fintype.card Ω ↔ ((A ∩ B).card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * ((B.card : ℝ) / Fintype.card Ω))
+  proof: |
+    by
+      intro Ω _ _ _ A B hA
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      rw [div_eq_div_iff ha h, div_mul_div_comm, div_eq_div_iff h (mul_ne_zero h h)]
+      constructor
+      · intro e
+        calc ((A ∩ B).card : ℝ) * (Fintype.card Ω * Fintype.card Ω) = (((A ∩ B).card : ℝ) * Fintype.card Ω) * Fintype.card Ω := by ring
+          _ = (B.card * A.card) * Fintype.card Ω := by rw [e]
+          _ = (A.card * B.card) * Fintype.card Ω := by ring
+      · intro e
+        have : (((A ∩ B).card : ℝ) * Fintype.card Ω) * Fintype.card Ω = (B.card * A.card) * Fintype.card Ω := by linarith
+        exact mul_right_cancel₀ h this
+- id: indep_uniform_compl
+  kind: gap
+  level: high
+  topic: 確率・独立と余事象
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、$P(A\cap B)=P(A)P(B)$なら$P(A\cap\overline{B})=P(A)P(\overline{B})$である。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes, if events satisfy P(A ∩ B) = P(A) P(B), then P(A ∩ Bᶜ) = P(A) P(Bᶜ), where P(E) = |E|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A,B\subseteq\Omega$
+  - $P(A\cap B)=P(A)P(B)$
+  quantifiers:
+  - 任意の事象$A,B$
+  conclusion: $P(A\cap\overline{B})=P(A)P(\overline{B})$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$B$を事象とし、$P(A\cap B)=P(A)P(B)$と仮定する。$A$は$A\cap\overline{B}$と$A\cap B$に重なりなく分かれるので$P(A\cap\overline{B})=P(A)-P(A\cap B)=P(A)-P(A)P(B)=P(A)(1-P(B))$である。$P(\overline{B})=1-P(B)$より、これは$P(A)P(\overline{B})$に等しい。
+  strategy: Split A along B and factor P(A).
+  sketch:
+  - 'setup: A is the disjoint union of A ∩ Bᶜ and A ∩ B.'
+  - 'derive: So P(A ∩ Bᶜ) = P(A) - P(A ∩ B).'
+  - 'apply_theorem: Substitute the independence assumption P(A ∩ B) = P(A) P(B).'
+  - 'conclude: Factor to get P(A)(1 - P(B)) = P(A) P(Bᶜ).'
+  openmath: (forall (O A B) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (subset B O) (= (/ (size (inter A B)) (size O)) (* (/ (size A) (size O)) (/ (size B) (size O))))) (= (/ (size (inter A (setdiff O B))) (size O)) (* (/ (size A) (size O)) (/ (size (setdiff O B)) (size O))))))
+  hard_negative:
+    statement: $A,B$がともに$C$と独立なら、$A\cup B$も$C$と独立である。
+    reason: コインを2回投げ、$A$を1回目が表、$B$を2回目が表、$C$を表の回数が偶数の事象とする。$A,B$は$C$と独立だが、$P(C\mid A\cup B)=1/3$で$P(C)=1/2$と異なる。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (A B : Finset Ω), ((A ∩ B).card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * ((B.card : ℝ) / Fintype.card Ω) → ((A ∩ Bᶜ).card : ℝ) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * ((Bᶜ.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ A B hi
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hc : (Bᶜ.card : ℝ) + B.card = Fintype.card Ω := by exact_mod_cast Finset.card_compl_add_card B
+      have hs : ((A ∩ Bᶜ).card : ℝ) + (A ∩ B).card = A.card := by
+        have hd : Disjoint (A ∩ Bᶜ) (A ∩ B) := by
+          rw [Finset.disjoint_left]; intro x hx hx'; simp only [Finset.mem_inter, Finset.mem_compl] at hx hx'; exact hx.2 hx'.2
+        have hu : (A ∩ Bᶜ) ∪ (A ∩ B) = A := by
+          ext x; simp only [Finset.mem_union, Finset.mem_inter, Finset.mem_compl]; tauto
+        have := Finset.card_union_of_disjoint hd
+        rw [hu] at this
+        exact_mod_cast this.symm
+      have e : ((A ∩ Bᶜ).card : ℝ) = A.card - (A ∩ B).card := by linarith
+      have e' : (Bᶜ.card : ℝ) = Fintype.card Ω - B.card := by linarith
+      rw [e, e', sub_div, hi]
+      field_simp
+- id: trial_product_independent
+  kind: textbook
+  level: high
+  topic: 確率・独立な試行
+  statement: 有限で空でない標本空間$\Omega_1,\Omega_2$をもつ2つの試行を直積$\Omega_1\times\Omega_2$の一様な確率で表すとき、$A\subseteq\Omega_1$、$B\subseteq\Omega_2$について$A\times B$の確率は$\dfrac{|A|}{|\Omega_1|}\cdot\dfrac{|B|}{|\Omega_2|}$に等しい。
+  statement_en: For finite nonempty sample spaces Ω₁, Ω₂ with the uniform probability on Ω₁ × Ω₂, and subsets A of Ω₁ and B of Ω₂, the probability of A × B is (|A|/|Ω₁|)(|B|/|Ω₂|).
+  assumptions:
+  - $\Omega_1,\Omega_2$は有限で空でない
+  - $A\subseteq\Omega_1$
+  - $B\subseteq\Omega_2$
+  quantifiers:
+  - 任意の$A\subseteq\Omega_1$と$B\subseteq\Omega_2$
+  conclusion: $\dfrac{|A\times B|}{|\Omega_1\times\Omega_2|}=\dfrac{|A|}{|\Omega_1|}\cdot\dfrac{|B|}{|\Omega_2|}$である。
+  answer: $\Omega_1,\Omega_2$を有限で空でない集合とし、$A\subseteq\Omega_1$、$B\subseteq\Omega_2$とする。2つの試行の結果の組は$\Omega_1\times\Omega_2$の要素であり、これらは同様に確からしいとする。積の法則より$|A\times B|=|A||B|$、$|\Omega_1\times\Omega_2|=|\Omega_1||\Omega_2|$である。よって$\dfrac{|A\times B|}{|\Omega_1\times\Omega_2|}=\dfrac{|A|}{|\Omega_1|}\cdot\dfrac{|B|}{|\Omega_2|}$である。
+  strategy: Count both products with the product rule.
+  sketch:
+  - 'setup: Model the two trials by the uniform probability on Ω₁ × Ω₂.'
+  - 'derive: |A × B| = |A||B|.'
+  - 'derive: |Ω₁ × Ω₂| = |Ω₁||Ω₂|.'
+  - 'conclude: Taking the quotient gives the product of the two probabilities.'
+  openmath: (forall (O1 O2 A B) (-> (and (in (size O1) N) (> (size O1) 0) (in (size O2) N) (> (size O2) 0) (subset A O1) (subset B O2)) (= (/ (size (cartesian A B)) (size (cartesian O1 O2))) (* (/ (size A) (size O1)) (/ (size B) (size O2))))))
+  hard_negative:
+    statement: $\Omega_1\times\Omega_2$の任意の事象$E$の確率は、その2つの射影の確率の積に等しい。
+    reason: $\Omega_1=\Omega_2=\{0,1\}$、$E=\{(0,0),(1,1)\}$なら$E$の確率は$1/2$だが、射影はどちらも全体で積は$1$である。積の公式は直積の形の事象に限る。
+  target: |
+    ∀ (Ω₁ Ω₂ : Type*) [Fintype Ω₁] [Fintype Ω₂] [Nonempty Ω₁] [Nonempty Ω₂] (A : Finset Ω₁) (B : Finset Ω₂), ((A ×ˢ B).card : ℝ) / Fintype.card (Ω₁ × Ω₂) = ((A.card : ℝ) / Fintype.card Ω₁) * ((B.card : ℝ) / Fintype.card Ω₂)
+  proof: |
+    by
+      intro Ω₁ Ω₂ _ _ _ _ A B
+      rw [Finset.card_product, Fintype.card_prod, div_mul_div_comm]
+      push_cast
+      rfl
+- id: trials_product_family
+  kind: textbook
+  level: high
+  topic: 確率・独立試行の確率
+  statement: 有限で空でない標本空間$\Omega$の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、各$i$回目の結果が$A_i\subseteq\Omega$に入る確率は$\prod_{i}P(A_i)$である。
+  statement_en: Model n independent trials on a finite nonempty sample space Ω by the uniform probability on Ωⁿ. The probability that the i-th outcome lies in A_i for all i is the product of the |A_i|/|Ω|.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $n$は自然数
+  - 各$i$で$A_i\subseteq\Omega$
+  quantifiers:
+  - 任意の自然数$n$と事象の列$A_1,\dots,A_n$
+  conclusion: 確率は$\prod_{i=1}^{n}|A_i|/|\Omega|$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$n$を自然数、$A_1,\dots,A_n\subseteq\Omega$とする。$n$回の結果の列は$\Omega^n$の要素であり、これらは同様に確からしいとする。各$i$で$\omega_i\in A_i$を満たす列は、各成分を独立に$A_i$から選んで得られるので、積の法則より$\prod_{i}|A_i|$個ある。$|\Omega^n|=|\Omega|^n$なので、求める確率は$\prod_i|A_i|/|\Omega|^n=\prod_i(|A_i|/|\Omega|)$である。
+  strategy: Count the sequences coordinate by coordinate with the product rule.
+  sketch:
+  - 'setup: The sample space is Ωⁿ with |Ωⁿ| = |Ω|ⁿ.'
+  - 'derive: A sequence with ω_i in A_i for all i is a free choice in each coordinate, giving Π_i |A_i| sequences.'
+  - 'conclude: Dividing distributes |Ω| over the n factors.'
+  openmath: (forall (O n A) (-> (and (in (size O) N) (> (size O) 0) (in n N) (forall (i) (-> (in i (integer_range 1 n)) (subset (family_value A i) O)))) (= (/ (size (suchthat (function_set (integer_range 1 n) O) (lambda (w) (forall (i) (-> (in i (integer_range 1 n)) (in (fn_value w i) (family_value A i))))))) (size (function_set (integer_range 1 n) O))) (product (integer_range 1 n) (lambda (i) (/ (size (family_value A i)) (size O)))))))
+  hard_negative:
+    statement: $\Omega^n$の事象$E$の確率は、常に各回の確率の積で表される。
+    reason: 直積の形でない事象には当てはまらない。「$1$回目と$2$回目の結果が等しい」事象は、$|\Omega|\geq2$なら確率$1/|\Omega|$だが、各回の射影は全体で積は$1$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n : ℕ) (A : Fin n → Finset Ω), ((Fintype.piFinset A).card : ℝ) / Fintype.card (Fin n → Ω) = ∏ i, ((A i).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ _ n A
+      rw [Fintype.card_piFinset, Finset.prod_div_distrib]
+      simp
+- id: trials_two_coordinates_independent
+  kind: gap
+  level: high
+  topic: 確率・反復試行の独立性
+  statement: 有限で空でない標本空間$\Omega$の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、異なる$i,j$回目について、$i$回目が$A$に入り$j$回目が$B$に入る確率は$P(A)P(B)$である。
+  statement_en: Model n independent trials on a finite nonempty sample space Ω by the uniform probability on Ωⁿ. For distinct indices i, j and events A, B, the probability that ω_i lies in A and ω_j lies in B equals P(A) P(B).
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $n$は自然数
+  - $i,j$は異なる添字
+  - $A,B\subseteq\Omega$
+  quantifiers:
+  - 任意の異なる$i,j$と事象$A,B$
+  conclusion: $\omega_i\in A$かつ$\omega_j\in B$となる確率は$P(A)P(B)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$n$を自然数、$i\neq j$を$1$以上$n$以下の添字、$B$を事象とする。$\Omega^n$の要素は同様に確からしいとする。$\omega_i\in A$かつ$\omega_j\in B$を満たす列は、$i$成分を$A$から、$j$成分を$B$から、残りの$n-2$個の成分を$\Omega$から自由に選んで得られる。その個数は$|A||B||\Omega|^{n-2}$である。これを$|\Omega|^n$で割ると$\dfrac{|A|}{|\Omega|}\cdot\dfrac{|B|}{|\Omega|}=P(A)P(B)$となる。
+  strategy: Choose coordinates i and j from A and B and the others freely from Ω.
+  sketch:
+  - 'setup: Use i ≠ j so that coordinates i and j can be chosen independently.'
+  - 'construct: Choose coordinate i in A, coordinate j in B, and the other n-2 coordinates in Ω.'
+  - 'derive: This gives |A||B||Ω|^(n-2) sequences.'
+  - 'conclude: Divide by |Ω|^n.'
+  openmath: (forall (O n i j A B) (-> (and (in (size O) N) (> (size O) 0) (in n N) (in i (integer_range 1 n)) (in j (integer_range 1 n)) (!= i j) (subset A O) (subset B O)) (= (/ (size (suchthat (function_set (integer_range 1 n) O) (lambda (w) (and (in (fn_value w i) A) (in (fn_value w j) B))))) (size (function_set (integer_range 1 n) O))) (* (/ (size A) (size O)) (/ (size B) (size O))))))
+  hard_negative:
+    statement: $i=j$でも、$\omega_i\in A$かつ$\omega_i\in B$となる確率は$P(A)P(B)$である。
+    reason: 同じ回の結果については確率は$P(A\cap B)$である。$A=B$で$0<P(A)<1$なら$P(A)\neq P(A)^2$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n : ℕ) (i j : Fin n) (A B : Finset Ω), i ≠ j → ((Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A ∧ ω j ∈ B)).card : ℝ) / Fintype.card (Fin n → Ω) = ((A.card : ℝ) / Fintype.card Ω) * ((B.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ n i j A B hij
+      have e : Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A ∧ ω j ∈ B) = Fintype.piFinset (fun k => if k = i then A else if k = j then B else Finset.univ) := by
+        ext ω
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset]
+        constructor
+        · rintro ⟨h1, h2⟩ k
+          by_cases hi : k = i
+          · simpa [hi] using h1
+          · by_cases hj : k = j
+            · subst hj
+              rw [if_neg hi, if_pos rfl]
+              exact h2
+            · simp [hi, hj]
+        · intro h
+          have h1 := h i
+          have h2 := h j
+          simp only [if_true] at h1
+          rw [if_neg hij.symm, if_pos rfl] at h2
+          exact ⟨h1, h2⟩
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      rw [e, Fintype.card_piFinset, Nat.cast_prod, Fintype.card_fun, Fintype.card_fin]
+      push_cast
+      have hp : ∏ k : Fin n, (((if k = i then A else if k = j then B else Finset.univ : Finset Ω).card : ℝ) / Fintype.card Ω) = ((A.card : ℝ) / Fintype.card Ω) * ((B.card : ℝ) / Fintype.card Ω) := by
+        rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ i), ← Finset.mul_prod_erase (Finset.univ.erase i) _ (Finset.mem_erase.mpr ⟨hij.symm, Finset.mem_univ j⟩)]
+        rw [if_pos rfl, if_neg hij.symm, if_pos rfl]
+        rw [Finset.prod_eq_one, mul_one]
+        intro k hk
+        simp only [Finset.mem_erase, Finset.mem_univ, and_true] at hk
+        rw [if_neg hk.2, if_neg hk.1, Finset.card_univ, div_self h]
+      rw [← hp, Finset.prod_div_distrib]
+      simp
+- id: trials_at_least_once
+  kind: gap
+  level: high
+  topic: 確率・反復試行で少なくとも1回
+  statement: 有限で空でない標本空間$\Omega$の事象$A$の確率を$p=|A|/|\Omega|$とする。$\Omega$上の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、$A$が少なくとも1回起こる確率は$1-(1-p)^n$である。
+  statement_en: For an event A with probability p = |A|/|Ω| on a finite nonempty sample space, in n independent trials modelled by the uniform probability on Ωⁿ, the probability that A occurs at least once is 1 - (1 - p)ⁿ.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  - $p=|A|/|\Omega|$
+  - $n$は自然数
+  quantifiers:
+  - 任意の事象$A$と自然数$n$
+  conclusion: $A$が少なくとも1回起こる確率は$1-(1-p)^n$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$n$を自然数、$p=P(A)$とし、$\Omega^n$の要素は同様に確からしいとする。$A$が1回も起こらない列は、各成分を$\overline{A}$から選んだ列であり、$|\overline{A}|^n$個ある。その確率は$(|\overline{A}|/|\Omega|)^n=(1-p)^n$である。「少なくとも1回起こる」はこの事象の余事象なので、その確率は$1-(1-p)^n$である。
+  strategy: 'Pass to the complement: A never occurs exactly when every coordinate lies in Aᶜ.'
+  sketch:
+  - 'setup: Take the complement of the event that A occurs at least once.'
+  - 'derive: A never occurs if and only if every coordinate lies in Aᶜ.'
+  - 'derive: There are |Aᶜ|ⁿ such sequences, so this event has probability (1-p)ⁿ.'
+  - 'conclude: Take the complement again to get 1 - (1-p)ⁿ.'
+  openmath: (forall (O A n) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (in n N)) (= (/ (size (suchthat (function_set (integer_range 1 n) O) (lambda (w) (exists (i) (and (in i (integer_range 1 n)) (in (fn_value w i) A)))))) (size (function_set (integer_range 1 n) O))) (- 1 (^ (- 1 (/ (size A) (size O))) n)))))
+  hard_negative:
+    statement: $A$が少なくとも1回起こる確率は$np$である。
+    reason: $p=1/2$、$n=3$なら$np=3/2>1$となる。$np$は確率ではなく起こる回数の期待値であり、上界にすぎない。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n : ℕ) (A : Finset Ω), ((Finset.univ.filter (fun ω : Fin n → Ω => ∃ i, ω i ∈ A)).card : ℝ) / Fintype.card (Fin n → Ω) = 1 - (1 - (A.card : ℝ) / Fintype.card Ω) ^ n
+  proof: |
+    by
+      intro Ω _ _ _ n A
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have e : Finset.univ.filter (fun ω : Fin n → Ω => ¬ ∃ i, ω i ∈ A) = Fintype.piFinset (fun _ => Aᶜ) := by
+        ext ω; simp
+      have hc := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (Fin n → Ω))) (fun ω => ∃ i, ω i ∈ A)
+      rw [e, Fintype.card_piFinset] at hc
+      simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin, Fintype.card_fun] at hc
+      have hA : (Aᶜ.card : ℝ) + A.card = Fintype.card Ω := by exact_mod_cast Finset.card_compl_add_card A
+      have e2 : 1 - (A.card : ℝ) / Fintype.card Ω = (Aᶜ.card : ℝ) / Fintype.card Ω := by
+        field_simp; linarith
+      have hc' : ((Finset.univ.filter (fun ω : Fin n → Ω => ∃ i, ω i ∈ A)).card : ℝ) + (Aᶜ.card : ℝ) ^ n = (Fintype.card Ω : ℝ) ^ n := by exact_mod_cast hc
+      rw [e2, Fintype.card_fun, Fintype.card_fin, div_pow]
+      push_cast
+      have hp : (Fintype.card Ω : ℝ) ^ n ≠ 0 := pow_ne_zero n h
+      field_simp
+      linarith
+- id: trials_exactly_k_times
+  kind: textbook
+  level: high
+  topic: 確率・反復試行の確率
+  statement: 有限で空でない標本空間$\Omega$の事象$A$の確率を$p=|A|/|\Omega|$とする。$\Omega$上の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、$k\leq n$に対して$A$がちょうど$k$回起こる確率は$\binom{n}{k}p^k(1-p)^{n-k}$である。
+  statement_en: For an event A with probability p = |A|/|Ω| on a finite nonempty sample space, in n independent trials modelled by the uniform probability on Ωⁿ, for k ≤ n the probability that A occurs exactly k times is C(n,k) p^k (1-p)^(n-k).
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  - $p=|A|/|\Omega|$
+  - $k\leq n$
+  quantifiers:
+  - 任意の事象$A$と$k\leq n$を満たす自然数$n,k$
+  conclusion: $A$がちょうど$k$回起こる確率は$\binom{n}{k}p^k(1-p)^{n-k}$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$k\leq n$を自然数、$p=P(A)$とし、$\Omega^n$の要素は同様に確からしいとする。列$\omega\in\Omega^n$に対し、$\omega_i\in A$となる添字の集合を$S(\omega)$とする。$A$がちょうど$k$回起こるのは$|S(\omega)|=k$のときである。要素数$k$の添字集合$S$は$\binom{n}{k}$個ある。$S(\omega)=S$となる列は、$i\in S$の成分を$A$から、$i\notin S$の成分を$\overline{A}$から選んだ列なので、$|A|^k|\overline{A}|^{n-k}$個ある。よって求める列は$\binom{n}{k}|A|^k|\overline{A}|^{n-k}$個である。$|\Omega|^n=|\Omega|^k|\Omega|^{n-k}$で割り、$|\overline{A}|/|\Omega|=1-p$を使うと結論を得る。
+  strategy: Group sequences by the set of indices where A occurs; each group is a product set.
+  sketch:
+  - 'setup: For each sequence, let S be the set of indices i with ω_i in A.'
+  - 'case_split: Fix a k-element index set S; there are C(n,k) of them.'
+  - 'derive: The sequences with this S have coordinates in A on S and in Aᶜ off S, giving |A|^k |Aᶜ|^(n-k) sequences.'
+  - 'derive: The total count is C(n,k) |A|^k |Aᶜ|^(n-k).'
+  - 'conclude: Divide by |Ω|^n and use |Aᶜ|/|Ω| = 1 - p.'
+  openmath: (forall (O A n k) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (in n N) (in k N) (<= k n)) (= (/ (size (suchthat (function_set (integer_range 1 n) O) (lambda (w) (= (size (suchthat (integer_range 1 n) (lambda (i) (in (fn_value w i) A)))) k)))) (size (function_set (integer_range 1 n) O))) (* (binom n k) (* (^ (/ (size A) (size O)) k) (^ (- 1 (/ (size A) (size O))) (- n k)))))))
+  hard_negative:
+    statement: $A$がちょうど$k$回起こる確率は$p^k(1-p)^{n-k}$である。
+    reason: これは起こる回を指定した場合の確率である。回の選び方$\binom{n}{k}$が抜けており、$n=2$、$k=1$、$p=1/2$では$1/4$となるが、正しくは$1/2$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n k : ℕ) (A : Finset Ω), k ≤ n → ((Finset.univ.filter (fun ω : Fin n → Ω => (Finset.univ.filter (fun i => ω i ∈ A)).card = k)).card : ℝ) / Fintype.card (Fin n → Ω) = (n.choose k : ℝ) * ((A.card : ℝ) / Fintype.card Ω) ^ k * (1 - (A.card : ℝ) / Fintype.card Ω) ^ (n - k)
+  proof: |
+    by
+      intro Ω _ _ _ n k A hk
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hA : (Aᶜ.card : ℝ) + A.card = Fintype.card Ω := by exact_mod_cast Finset.card_compl_add_card A
+      have e2 : 1 - (A.card : ℝ) / Fintype.card Ω = (Aᶜ.card : ℝ) / Fintype.card Ω := by
+        field_simp; linarith
+      have count : (Finset.univ.filter (fun ω : Fin n → Ω => (Finset.univ.filter (fun i => ω i ∈ A)).card = k)).card = n.choose k * (A.card ^ k * Aᶜ.card ^ (n - k)) := by
+        have hmaps : ∀ ω ∈ Finset.univ.filter (fun ω : Fin n → Ω => (Finset.univ.filter (fun i => ω i ∈ A)).card = k), Finset.univ.filter (fun i => ω i ∈ A) ∈ Finset.powersetCard k (Finset.univ : Finset (Fin n)) := by
+          intro ω hω
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hω
+          exact Finset.mem_powersetCard.mpr ⟨Finset.subset_univ _, hω⟩
+        rw [Finset.card_eq_sum_card_fiberwise hmaps]
+        have hfib : ∀ S ∈ Finset.powersetCard k (Finset.univ : Finset (Fin n)), ((Finset.univ.filter (fun ω : Fin n → Ω => (Finset.univ.filter (fun i => ω i ∈ A)).card = k)).filter (fun ω => Finset.univ.filter (fun i => ω i ∈ A) = S)).card = A.card ^ k * Aᶜ.card ^ (n - k) := by
+          intro S hS
+          have hSc : S.card = k := (Finset.mem_powersetCard.mp hS).2
+          have e : (Finset.univ.filter (fun ω : Fin n → Ω => (Finset.univ.filter (fun i => ω i ∈ A)).card = k)).filter (fun ω => Finset.univ.filter (fun i => ω i ∈ A) = S) = Fintype.piFinset (fun i => if i ∈ S then A else Aᶜ) := by
+            ext ω
+            simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset]
+            constructor
+            · rintro ⟨_, hω⟩ i
+              by_cases hi : i ∈ S
+              · rw [if_pos hi]
+                rw [← hω] at hi
+                simpa using hi
+              · rw [if_neg hi, Finset.mem_compl]
+                intro hh
+                apply hi
+                rw [← hω]
+                simpa using hh
+            · intro hω
+              have hS' : Finset.univ.filter (fun i => ω i ∈ A) = S := by
+                ext i
+                simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+                constructor
+                · intro hi
+                  by_contra hn
+                  have := hω i
+                  rw [if_neg hn, Finset.mem_compl] at this
+                  exact this hi
+                · intro hi
+                  have := hω i
+                  rwa [if_pos hi] at this
+              exact ⟨by rw [hS', hSc], hS'⟩
+          have hi : ∀ i : Fin n, (if i ∈ S then A else Aᶜ).card = if i ∈ S then A.card else Aᶜ.card := by
+            intro i; split_ifs <;> rfl
+          rw [e, Fintype.card_piFinset, Finset.prod_congr rfl (fun i _ => hi i), Finset.prod_ite, Finset.prod_const, Finset.prod_const]
+          have c1 : (Finset.univ.filter (fun i => i ∈ S)).card = k := by
+            rw [Finset.filter_mem_eq_inter, Finset.univ_inter, hSc]
+          have c2 : (Finset.univ.filter (fun i => i ∉ S)).card = n - k := by
+            have := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (Fin n))) (fun i => i ∈ S)
+            rw [c1, Finset.card_univ, Fintype.card_fin] at this
+            omega
+          rw [c1, c2]
+        rw [Finset.sum_congr rfl hfib, Finset.sum_const, Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin, smul_eq_mul]
+      rw [count, e2, Fintype.card_fun, Fintype.card_fin, div_pow, div_pow]
+      have hk' : (Fintype.card Ω : ℝ) ^ n = (Fintype.card Ω : ℝ) ^ k * (Fintype.card Ω : ℝ) ^ (n - k) := by
+        rw [← pow_add, Nat.add_sub_cancel' hk]
+      push_cast
+      rw [hk']
+      have hp1 : (Fintype.card Ω : ℝ) ^ k ≠ 0 := pow_ne_zero k h
+      have hp2 : (Fintype.card Ω : ℝ) ^ (n - k) ≠ 0 := pow_ne_zero _ h
+      field_simp
+- id: binomial_prob_increase_iff
+  kind: gap
+  level: high
+  topic: 確率・反復試行の確率の最大
+  statement: $0<p<1$、$k<n$のとき、$P_k=\binom{n}{k}p^k(1-p)^{n-k}$について、$P_k\leq P_{k+1}$であることと$k+1\leq(n+1)p$であることは同値である。
+  statement_en: For 0 < p < 1, k < n and P_k = C(n,k) p^k (1-p)^(n-k), one has P_k ≤ P_{k+1} if and only if k + 1 ≤ (n+1)p.
+  assumptions:
+  - $0<p<1$
+  - $k<n$
+  - $P_k=\binom{n}{k}p^k(1-p)^{n-k}$
+  quantifiers:
+  - 任意の自然数$n,k$と実数$p$
+  conclusion: $P_k\leq P_{k+1}\iff k+1\leq(n+1)p$である。
+  answer: $n,k$を$k<n$を満たす自然数、$p$を$0<p<1$を満たす実数とし、$P_j=\binom{n}{j}p^j(1-p)^{n-j}$とおく。$\binom{n}{k+1}(k+1)=\binom{n}{k}(n-k)$である。共通の正の因子$p^k(1-p)^{n-k-1}$を除くと、$P_k\leq P_{k+1}$は$\binom{n}{k}(1-p)\leq\binom{n}{k+1}p$と同値である。両辺に$k+1>0$を掛けて上の等式を使い、正の数$\binom{n}{k}$で割ると、これは$(k+1)(1-p)\leq(n-k)p$と同値である。展開して整理すると$k+1\leq(n+1)p$となる。
+  strategy: Cancel the common positive factor and use the ratio of consecutive binomial coefficients.
+  sketch:
+  - 'setup: Factor out the positive number p^k (1-p)^(n-k-1).'
+  - 'translate: The inequality becomes C(n,k)(1-p) ≤ C(n,k+1) p.'
+  - 'apply_theorem: Use C(n,k+1)(k+1) = C(n,k)(n-k).'
+  - 'derive: Dividing by C(n,k) > 0 gives (k+1)(1-p) ≤ (n-k)p.'
+  - 'conclude: Expanding gives k + 1 ≤ (n+1)p.'
+  openmath: (forall (n k p) (-> (and (in n N) (in k N) (< k n) (< 0 p) (< p 1)) (<-> (<= (* (binom n k) (* (^ p k) (^ (- 1 p) (- n k)))) (* (binom n (+ k 1)) (* (^ p (+ k 1)) (^ (- 1 p) (- n (+ k 1)))))) (<= (+ k 1) (* (+ n 1) p)))))
+  hard_negative:
+    statement: $P_k\leq P_{k+1}$であることと$k+1\leq np$であることは同値である。
+    reason: 正しい境界は$(n+1)p$である。$n=3$、$p=1/2$、$k=1$では$P_1=P_2=3/8$なので$P_1\leq P_2$だが、$k+1=2\leq np=3/2$は成り立たない。
+  target: |
+    ∀ (n k : ℕ) (p : ℝ), k < n → 0 < p → p < 1 → ((n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k) ≤ (n.choose (k + 1) : ℝ) * p ^ (k + 1) * (1 - p) ^ (n - (k + 1)) ↔ (k : ℝ) + 1 ≤ ((n : ℝ) + 1) * p)
+  proof: |
+    by
+      intro n k p hk hp hp1
+      have hq : 0 < 1 - p := by linarith
+      have hc : ((n.choose (k + 1) : ℝ)) * ((k : ℝ) + 1) = (n.choose k : ℝ) * ((n : ℝ) - k) := by
+        have := Nat.choose_succ_right_eq n k
+        have h2 : ((n - k : ℕ) : ℝ) = (n : ℝ) - k := by rw [Nat.cast_sub hk.le]
+        rw [← h2]
+        exact_mod_cast this
+      have hC : (0 : ℝ) < n.choose k := by exact_mod_cast Nat.choose_pos hk.le
+      have hk1 : (0 : ℝ) < (k : ℝ) + 1 := by positivity
+      have hnk : n - k = (n - (k + 1)) + 1 := by omega
+      rw [hnk, pow_succ (1 - p), pow_succ p]
+      have hpos : 0 < p ^ k * (1 - p) ^ (n - (k + 1)) := by positivity
+      have e1 : (n.choose k : ℝ) * p ^ k * ((1 - p) ^ (n - (k + 1)) * (1 - p)) = (p ^ k * (1 - p) ^ (n - (k + 1))) * ((n.choose k : ℝ) * (1 - p)) := by ring
+      have e2 : (n.choose (k + 1) : ℝ) * (p ^ k * p) * (1 - p) ^ (n - (k + 1)) = (p ^ k * (1 - p) ^ (n - (k + 1))) * ((n.choose (k + 1) : ℝ) * p) := by ring
+      rw [e1, e2, mul_le_mul_iff_right₀ hpos]
+      have hc2 : (n.choose (k + 1) : ℝ) = (n.choose k : ℝ) * ((n : ℝ) - k) / ((k : ℝ) + 1) := by
+        field_simp; linarith
+      rw [hc2, div_mul_eq_mul_div, le_div_iff₀ hk1]
+      have : (n.choose k : ℝ) * (1 - p) * ((k : ℝ) + 1) ≤ (n.choose k : ℝ) * ((n : ℝ) - k) * p ↔ (n.choose k : ℝ) * ((1 - p) * ((k : ℝ) + 1)) ≤ (n.choose k : ℝ) * (((n : ℝ) - k) * p) := by
+        constructor <;> intro h <;> nlinarith
+      rw [this, mul_le_mul_iff_right₀ hC]
+      constructor <;> intro h <;> nlinarith
+- id: binomial_prob_sum_one
+  kind: gap
+  level: high
+  topic: 確率・反復試行の確率の和
+  statement: 実数$p$と自然数$n$について、$\sum_{k=0}^{n}\binom{n}{k}p^k(1-p)^{n-k}=1$が成り立つ。
+  statement_en: For a real number p and a natural number n, Σ_{k=0}^{n} C(n,k) p^k (1-p)^(n-k) = 1.
+  assumptions:
+  - $p$は実数
+  - $n$は自然数
+  quantifiers:
+  - 任意の実数$p$と自然数$n$
+  conclusion: $\sum_{k=0}^{n}\binom{n}{k}p^k(1-p)^{n-k}=1$である。
+  answer: $p$を実数、$n$を自然数とする。二項定理より$(p+(1-p))^n=\sum_{k=0}^{n}\binom{n}{k}p^k(1-p)^{n-k}$である。左辺は$1^n=1$である。よって和は$1$に等しい。
+  strategy: Apply the binomial theorem to (p + (1-p))ⁿ.
+  sketch:
+  - 'setup: Expand (p + (1-p))ⁿ by the binomial theorem.'
+  - 'derive: The base p + (1-p) equals 1.'
+  - 'conclude: So the sum equals 1.'
+  openmath: (forall (p n) (-> (and (in p R) (in n N)) (= (sum (integer_range 0 n) (lambda (k) (* (binom n k) (* (^ p k) (^ (- 1 p) (- n k)))))) 1)))
+  hard_negative:
+    statement: $\sum_{k=0}^{n}p^k(1-p)^{n-k}=1$である。
+    reason: 二項係数を落とすと成り立たない。$n=1$、$p=1/2$では成り立つが、$n=2$、$p=1/2$では和は$3/4$である。
+  target: |
+    ∀ (n : ℕ) (p : ℝ), ∑ k ∈ Finset.range (n + 1), (n.choose k : ℝ) * p ^ k * (1 - p) ^ (n - k) = 1
+  proof: |
+    by
+      intro n p
+      have := add_pow p (1 - p) n
+      rw [add_sub_cancel, one_pow] at this
+      refine Eq.trans ?_ this.symm
+      refine Finset.sum_congr rfl fun k _ => ?_
+      ring
+- id: trials_first_occurrence
+  kind: gap
+  level: high
+  topic: 確率・初めて起こる回
+  statement: 有限で空でない標本空間$\Omega$の事象$A$の確率を$p=|A|/|\Omega|$とする。$\Omega$上の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、$k+1$回目（$k<n$）に初めて$A$が起こる確率は$(1-p)^kp$である。
+  statement_en: For an event A with probability p = |A|/|Ω| on a finite nonempty sample space, in n independent trials modelled by the uniform probability on Ωⁿ, for k < n the probability that A first occurs at trial k+1 is (1-p)^k p.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  - $p=|A|/|\Omega|$
+  - $k<n$
+  quantifiers:
+  - 任意の事象$A$と$k<n$を満たす自然数$n,k$
+  conclusion: $k+1$回目に初めて$A$が起こる確率は$(1-p)^kp$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$k<n$を自然数、$p=P(A)$とし、$\Omega^n$の要素は同様に確からしいとする。$k+1$回目に初めて$A$が起こる列は、$1$回目から$k$回目までの成分を$\overline{A}$から、$k+1$回目の成分を$A$から、残りの$n-k-1$個の成分を$\Omega$から選んだ列である。その個数は$|\overline{A}|^k|A||\Omega|^{n-k-1}$である。これを$|\Omega|^n$で割ると$(|\overline{A}|/|\Omega|)^k(|A|/|\Omega|)=(1-p)^kp$となる。
+  strategy: Describe the event as a product set and count coordinates separately.
+  sketch:
+  - 'setup: The first k coordinates lie in Aᶜ and coordinate k+1 lies in A.'
+  - 'derive: The remaining n-k-1 coordinates are free.'
+  - 'derive: The number of sequences is |Aᶜ|^k |A| |Ω|^(n-k-1).'
+  - 'conclude: Divide by |Ω|ⁿ to get (1-p)^k p.'
+  openmath: (forall (O A n k) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (in n N) (in k N) (< k n)) (= (/ (size (suchthat (function_set (integer_range 0 (- n 1)) O) (lambda (w) (and (forall (j) (-> (and (in j N) (< j k)) (notin (fn_value w j) A))) (in (fn_value w k) A))))) (size (function_set (integer_range 0 (- n 1)) O))) (* (^ (- 1 (/ (size A) (size O))) k) (/ (size A) (size O))))))
+  hard_negative:
+    statement: $k+1$回目に$A$が起こる確率は$(1-p)^kp$である。
+    reason: 「初めて」の条件がなければ、$k+1$回目に$A$が起こる確率は$p$である。$k\geq1$、$0<p<1$なら$(1-p)^kp<p$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n : ℕ) (k : Fin n) (A : Finset Ω), ((Finset.univ.filter (fun ω : Fin n → Ω => (∀ j, j < k → ω j ∉ A) ∧ ω k ∈ A)).card : ℝ) / Fintype.card (Fin n → Ω) = (1 - (A.card : ℝ) / Fintype.card Ω) ^ (k : ℕ) * ((A.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ n k A
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hA : (Aᶜ.card : ℝ) + A.card = Fintype.card Ω := by exact_mod_cast Finset.card_compl_add_card A
+      have e2 : 1 - (A.card : ℝ) / Fintype.card Ω = (Aᶜ.card : ℝ) / Fintype.card Ω := by
+        field_simp; linarith
+      have e : Finset.univ.filter (fun ω : Fin n → Ω => (∀ j, j < k → ω j ∉ A) ∧ ω k ∈ A) = Fintype.piFinset (fun j => if j < k then Aᶜ else if j = k then A else Finset.univ) := by
+        ext ω
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset]
+        constructor
+        · rintro ⟨h1, h2⟩ j
+          by_cases hj : j < k
+          · rw [if_pos hj, Finset.mem_compl]; exact h1 j hj
+          · rw [if_neg hj]
+            by_cases hjk : j = k
+            · rw [if_pos hjk, hjk]; exact h2
+            · rw [if_neg hjk]; exact Finset.mem_univ _
+        · intro hω
+          refine ⟨fun j hj => ?_, ?_⟩
+          · have := hω j
+            rw [if_pos hj, Finset.mem_compl] at this
+            exact this
+          · have := hω k
+            rwa [if_neg (lt_irrefl k), if_pos rfl] at this
+      have hp : (∏ j : Fin n, ((if j < k then Aᶜ else if j = k then A else Finset.univ : Finset Ω).card : ℝ) / Fintype.card Ω) = ((Aᶜ.card : ℝ) / Fintype.card Ω) ^ (k : ℕ) * ((A.card : ℝ) / Fintype.card Ω) := by
+        have s1 : ∀ j : Fin n, ((if j < k then Aᶜ else if j = k then A else Finset.univ : Finset Ω).card : ℝ) / Fintype.card Ω = (if j < k then (Aᶜ.card : ℝ) / Fintype.card Ω else 1) * (if j = k then (A.card : ℝ) / Fintype.card Ω else 1) := by
+          intro j
+          by_cases hj : j < k
+          · rw [if_pos hj, if_pos hj, if_neg hj.ne, mul_one]
+          · by_cases hjk : j = k
+            · rw [if_neg hj, if_neg hj, if_pos hjk, if_pos hjk, one_mul]
+            · rw [if_neg hj, if_neg hj, if_neg hjk, if_neg hjk, one_mul, Finset.card_univ, div_self h]
+        rw [Finset.prod_congr rfl fun j _ => s1 j, Finset.prod_mul_distrib, Finset.prod_ite_eq' Finset.univ k]
+        rw [Finset.prod_ite, Finset.prod_const_one, mul_one, Finset.prod_const]
+        have : (Finset.univ.filter (fun j : Fin n => j < k)).card = (k : ℕ) := by
+          rw [← Fin.card_Iio k]
+          congr 1
+          ext j
+          simp
+        rw [this]
+        simp
+      rw [e, Fintype.card_piFinset, e2, Nat.cast_prod, ← hp, Finset.prod_div_distrib]
+      simp
+- id: trials_maximum_value
+  kind: gap
+  level: high
+  topic: 確率・最大値の確率
+  statement: $0,1,\dots,m-1$の値を等確率でとる試行を$n$回独立に行うとき、$k<m$について、結果の最大値が$k$である確率は$\dfrac{(k+1)^n-k^n}{m^n}$である。
+  statement_en: In n independent trials, each uniform on {0, 1, ..., m-1}, for k < m the probability that the maximum of the outcomes equals k is ((k+1)ⁿ - kⁿ)/mⁿ.
+  assumptions:
+  - $m,n,k$は自然数
+  - $k<m$
+  - $\omega\in\{0,\dots,m-1\}^n$の各要素は同様に確からしい
+  quantifiers:
+  - $k<m$を満たす任意の自然数$m,n,k$
+  conclusion: 最大値が$k$である確率は$\dfrac{(k+1)^n-k^n}{m^n}$である。
+  answer: $m,n,k$を$k<m$を満たす自然数とし、$\{0,\dots,m-1\}^n$の$m^n$個の列は同様に確からしいとする。$c\leq m$に対し、すべての成分が$c$未満である列は$c^n$個ある。すべての成分が$k+1$未満である列は、最大値がちょうど$k$である列と、すべての成分が$k$未満である列に重なりなく分かれる。ここで最大値が$k$とは、すべての成分が$k$以下で、$k$に等しい成分があることをいう。$k+1\leq m$なので、最大値が$k$である列は$(k+1)^n-k^n$個である。$m^n$で割って結論を得る。
+  strategy: 'Take the difference of two box counts: all outcomes at most k minus all outcomes below k.'
+  sketch:
+  - 'setup: For c ≤ m, the number of sequences with all coordinates below c is cⁿ.'
+  - 'case_split: A sequence with all coordinates below k+1 either contains the value k or has all coordinates below k.'
+  - 'derive: The two cases are disjoint, so the count with maximum k is (k+1)ⁿ - kⁿ.'
+  - 'conclude: Divide by mⁿ.'
+  openmath: (forall (m n k) (-> (and (in m N) (in n N) (in k N) (< k m)) (= (/ (size (suchthat (function_set (integer_range 1 n) (integer_range 0 (- m 1))) (lambda (w) (and (forall (i) (-> (in i (integer_range 1 n)) (<= (fn_value w i) k))) (exists (i) (and (in i (integer_range 1 n)) (= (fn_value w i) k))))))) (size (function_set (integer_range 1 n) (integer_range 0 (- m 1))))) (/ (- (^ (+ k 1) n) (^ k n)) (^ m n)))))
+  hard_negative:
+    statement: 結果の最大値が$k$である確率は$\left(\dfrac{k+1}{m}\right)^n$である。
+    reason: これは最大値が$k$以下である確率である。$n=1$、$k=1$、$m=2$なら最大値が$1$である確率は$1/2$だが、この式は$1$を与える。
+  target: |
+    ∀ (m n k : ℕ), k < m → ((Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k)).card : ℝ) / Fintype.card (Fin n → Fin m) = (((k : ℝ) + 1) ^ n - (k : ℝ) ^ n) / (m : ℝ) ^ n
+  proof: |
+    by
+      intro m n k hk
+      have cnt : ∀ c : ℕ, c ≤ m → (Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < c)).card = c ^ n := by
+        intro c hc
+        have e : Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < c) = Fintype.piFinset (fun _ => Finset.univ.filter (fun x : Fin m => (x : ℕ) < c)) := by
+          ext ω; simp
+        have ec : (Finset.univ.filter (fun x : Fin m => (x : ℕ) < c)).card = c := by
+          rw [Fin.card_filter_val_lt]
+          exact min_eq_right hc
+        rw [e, Fintype.card_piFinset, Finset.prod_const, ec, Finset.card_univ, Fintype.card_fin]
+      have h1 := cnt (k + 1) hk
+      have h2 := cnt k hk.le
+      have hs : Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < k + 1) = Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k) ∪ Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < k) := by
+        ext ω
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+        constructor
+        · intro hω
+          by_cases he : ∃ i, (ω i : ℕ) = k
+          · exact Or.inl ⟨fun i => Nat.le_of_lt_succ (hω i), he⟩
+          · refine Or.inr fun i => ?_
+            have := hω i
+            have hne : (ω i : ℕ) ≠ k := fun h => he ⟨i, h⟩
+            omega
+        · rintro (⟨h, _⟩ | h) i
+          · exact Nat.lt_succ_of_le (h i)
+          · exact Nat.lt_succ_of_lt (h i)
+      have hd : Disjoint (Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k)) (Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < k)) := by
+        rw [Finset.disjoint_left]
+        intro ω hω hω'
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hω hω'
+        obtain ⟨_, i, hi⟩ := hω
+        have := hω' i
+        omega
+      have hc := Finset.card_union_of_disjoint hd
+      rw [← hs, h1, h2] at hc
+      have hc' : ((k : ℝ) + 1) ^ n = ((Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k)).card : ℝ) + (k : ℝ) ^ n := by
+        exact_mod_cast hc
+      rw [Fintype.card_fun, Fintype.card_fin, Fintype.card_fin]
+      push_cast
+      congr 1
+      linarith
+- id: expectation_uniform_linear
+  kind: textbook
+  level: high
+  topic: 確率・期待値の線形性
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、確率変数$X,Y$と実数$a,b$について$E[aX+bY]=aE[X]+bE[Y]$が成り立つ。$X,Y$の独立性は仮定しない。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes, random variables X, Y and real numbers a, b, E[aX + bY] = aE[X] + bE[Y], where E[X] = (1/|Ω|) Σ_ω X(ω). Independence is not assumed.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $X,Y:\Omega\to\mathbb{R}$
+  - $a,b$は実数
+  quantifiers:
+  - 任意の確率変数$X,Y$と実数$a,b$
+  conclusion: $E[aX+bY]=aE[X]+bE[Y]$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、$\Omega$上の実数値関数$X$の期待値を$E[X]=\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$と定める。$Y$を$\Omega$上の実数値関数、$a,b$を実数とする。有限和の性質より$\sum_{\omega}(aX(\omega)+bY(\omega))=a\sum_{\omega}X(\omega)+b\sum_{\omega}Y(\omega)$である。両辺を$|\Omega|$で割ると$E[aX+bY]=aE[X]+bE[Y]$を得る。
+  strategy: Split the finite sum and divide by |Ω|.
+  sketch:
+  - 'setup: Write the expectation as a finite sum over Ω divided by |Ω|.'
+  - 'derive: Split the sum and pull out the constants a and b.'
+  - 'conclude: Divide by |Ω|.'
+  openmath: (forall (O X Y a b) (-> (and (in (size O) N) (> (size O) 0) (in a R) (in b R)) (= (/ (sum O (lambda (w) (+ (* a (fn_value X w)) (* b (fn_value Y w))))) (size O)) (+ (* a (/ (sum O (lambda (w) (fn_value X w))) (size O))) (* b (/ (sum O (lambda (w) (fn_value Y w))) (size O)))))))
+  hard_negative:
+    statement: 任意の確率変数$X,Y$について$E[XY]=E[X]E[Y]$である。
+    reason: 積については独立性のような条件が必要である。$X=Y$が$\pm1$を等確率でとるなら$E[XY]=1$だが、$E[X]E[Y]=0$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [Nonempty Ω] (X Y : Ω → ℝ) (a b : ℝ), (∑ ω, (a * X ω + b * Y ω)) / Fintype.card Ω = a * ((∑ ω, X ω) / Fintype.card Ω) + b * ((∑ ω, Y ω) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ X Y a b
+      rw [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum, add_div, mul_div_assoc, mul_div_assoc]
+- id: expectation_uniform_count_events
+  kind: gap
+  level: high
+  topic: 確率・起こる事象の個数の期待値
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、有限個の事象$A_i\ (i\in I)$のうち起こるものの個数の期待値は$\sum_{i\in I}P(A_i)$である。事象の独立性は仮定しない。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a finite family of events A_i (i in I), the expected number of events that occur is Σ_i P(A_i). Independence is not assumed.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $I$は有限集合
+  - 各$i\in I$で$A_i\subseteq\Omega$
+  quantifiers:
+  - 任意の有限な事象の族$(A_i)_{i\in I}$
+  conclusion: $\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}|\{i\in I\mid\omega\in A_i\}|=\sum_{i\in I}P(A_i)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$I$を有限集合、$A_i\ (i\in I)$を事象とする。組$(\omega,i)$で$\omega\in\Omega$、$i\in I$、$\omega\in A_i$を満たすものの個数を2通りに数える。$\omega$を先に固定すると$\sum_{\omega}|\{i\in I\mid\omega\in A_i\}|$であり、$i$を先に固定すると$\sum_{i\in I}|A_i|$である。この2つは等しい。両辺を$|\Omega|$で割ると、起こる事象の個数の期待値は$\sum_{i\in I}|A_i|/|\Omega|=\sum_{i\in I}P(A_i)$となる。
+  strategy: Double count the pairs (ω, i) with ω in A_i.
+  sketch:
+  - 'setup: Consider the set of pairs (ω, i) with ω in A_i.'
+  - 'derive: Counting by ω gives the sum over ω of the number of events containing ω.'
+  - 'derive: Counting by i gives the sum over i of |A_i|.'
+  - 'conclude: Equate the two counts and divide by |Ω|.'
+  openmath: (forall (O I A) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (forall (i) (-> (in i I) (subset (family_value A i) O)))) (= (/ (sum O (lambda (w) (size (suchthat I (lambda (i) (in w (family_value A i))))))) (size O)) (sum I (lambda (i) (/ (size (family_value A i)) (size O)))))))
+  hard_negative:
+    statement: この公式は事象$A_i$が独立なときに限って成り立つ。
+    reason: 独立性は不要である。$A_1=A_2=A$でも、起こる個数は$\omega\in A$で$2$、それ以外で$0$なので、期待値は$2P(A)=P(A_1)+P(A_2)$である。
+  target: |
+    ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω), (∑ ω : Ω, ((I.filter (fun i => ω ∈ A i)).card : ℝ)) / Fintype.card Ω = ∑ i ∈ I, ((A i).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      classical
+      intro Ω ι _ _ _ I A
+      rw [← Finset.sum_div]
+      congr 1
+      have : ∀ ω : Ω, ((I.filter (fun i => ω ∈ A i)).card : ℝ) = ∑ i ∈ I, if ω ∈ A i then (1 : ℝ) else 0 := by
+        intro ω
+        rw [Finset.sum_boole]
+      simp_rw [this]
+      rw [Finset.sum_comm]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.sum_boole]
+      simp
+- id: expectation_uniform_distribution_form
+  kind: gap
+  level: high
+  topic: 確率・期待値と確率分布
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、確率変数$X$の期待値は、$X$のとる値$x$について$x\,P(X=x)$を足した$\sum_{x}xP(X=x)$に等しい。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a real random variable X, (1/|Ω|) Σ_ω X(ω) = Σ_x x P(X = x), the sum running over the values x taken by X.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $X:\Omega\to\mathbb{R}$
+  quantifiers:
+  - 任意の確率変数$X$
+  conclusion: $E[X]=\sum_{x\in X(\Omega)}xP(X=x)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、$\Omega$上の実数値関数$X$の期待値を$E[X]=\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$と定める。$x\in X(\Omega)$に対し$\Omega_x=\{\omega\in\Omega\mid X(\omega)=x\}$とおくと、$P(X=x)=|\Omega_x|/|\Omega|$である。$\Omega$は$\Omega_x\ (x\in X(\Omega))$に重なりなく分かれるので、$\sum_{\omega\in\Omega}X(\omega)=\sum_{x\in X(\Omega)}\sum_{\omega\in\Omega_x}X(\omega)=\sum_{x\in X(\Omega)}x|\Omega_x|$である。両辺を$|\Omega|$で割ると$E[X]=\sum_{x\in X(\Omega)}xP(X=x)$となる。
+  strategy: Group the outcomes according to the value of X.
+  sketch:
+  - 'setup: Let Ω_x be the set of outcomes where X takes the value x.'
+  - 'derive: The sets Ω_x partition Ω.'
+  - 'derive: On Ω_x the sum of X is x|Ω_x|.'
+  - 'conclude: Divide by |Ω| to obtain Σ_x x P(X = x).'
+  openmath: (forall (O X) (-> (and (in (size O) N) (> (size O) 0)) (= (/ (sum O (lambda (w) (fn_value X w))) (size O)) (sum (image (lambda (w) (fn_value X w)) O) (lambda (x) (* x (/ (size (suchthat O (lambda (w) (= (fn_value X w) x)))) (size O))))))))
+  hard_negative:
+    statement: $X$のとる値が$r$個なら、$E[X]$はそれらの値の単純平均である。
+    reason: 各値の確率が等しいとは限らない。$X$が$0$を確率$3/4$、$1$を確率$1/4$でとるとき、$E[X]=1/4$だが単純平均は$1/2$である。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [Nonempty Ω] (X : Ω → ℝ), (∑ ω, X ω) / Fintype.card Ω = ∑ x ∈ Finset.univ.image X, x * (((Finset.univ.filter (fun ω => X ω = x)).card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      classical
+      intro Ω _ _ X
+      have h : ∑ ω, X ω = ∑ x ∈ Finset.univ.image X, ∑ ω ∈ Finset.univ.filter (fun ω => X ω = x), X ω :=
+        (Finset.sum_fiberwise_of_maps_to (fun ω _ => Finset.mem_image_of_mem X (Finset.mem_univ ω)) X).symm
+      rw [h, Finset.sum_div]
+      refine Finset.sum_congr rfl fun x _ => ?_
+      have : ∑ ω ∈ Finset.univ.filter (fun ω => X ω = x), X ω = ((Finset.univ.filter (fun ω => X ω = x)).card : ℝ) * x := by
+        rw [Finset.sum_congr rfl (fun ω hω => (Finset.mem_filter.mp hω).2), Finset.sum_const, nsmul_eq_mul]
+      rw [this]
+      ring
+- id: expectation_uniform_tail_sum
+  kind: gap
+  level: high
+  topic: 確率・期待値の裾の和
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$X$が自然数値で$X\leq N$のとき、$E[X]=\sum_{k=1}^{N}P(X\geq k)$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a natural-number-valued random variable X with X ≤ N, E[X] = Σ_{k=1}^{N} P(X ≥ k).
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $X:\Omega\to\mathbb{N}$
+  - すべての$\omega$で$X(\omega)\leq N$
+  quantifiers:
+  - 任意の確率変数$X$と自然数$N$
+  conclusion: $E[X]=\sum_{k=1}^{N}P(X\geq k)$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、$\Omega$上の実数値関数$X$の期待値を$E[X]=\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$と定める。$X$は自然数値で、$N$を$X\leq N$を満たす自然数とする。各$\omega$について、$1\leq k\leq N$のうち$X(\omega)\geq k$となる$k$はちょうど$X(\omega)$個ある。条件が成り立つとき$1$、成り立たないとき$0$をとる記号を$\mathbf{1}[\cdot]$と書くと、$X(\omega)=\sum_{k=1}^{N}\mathbf{1}[X(\omega)\geq k]$である。これを$\omega$について足して和の順序を交換すると$\sum_{\omega}X(\omega)=\sum_{k=1}^{N}|\{\omega\mid X(\omega)\geq k\}|$となる。両辺を$|\Omega|$で割ると$E[X]=\sum_{k=1}^{N}P(X\geq k)$を得る。
+  strategy: Write X(ω) as a sum of indicators of {X ≥ k} and swap the order of summation.
+  sketch:
+  - 'setup: For each outcome ω, exactly X(ω) values k in 1..N satisfy X(ω) ≥ k.'
+  - 'translate: So X(ω) is the sum over k of the indicator of X(ω) ≥ k.'
+  - 'derive: Swap the sums over ω and over k.'
+  - 'conclude: Divide by |Ω| to get Σ_k P(X ≥ k).'
+  openmath: (forall (O X M) (-> (and (in (size O) N) (> (size O) 0) (in M N) (forall (w) (-> (in w O) (and (in (fn_value X w) N) (<= (fn_value X w) M))))) (= (/ (sum O (lambda (w) (fn_value X w))) (size O)) (sum (integer_range 1 M) (lambda (k) (/ (size (suchthat O (lambda (w) (>= (fn_value X w) k)))) (size O)))))))
+  hard_negative:
+    statement: $E[X]=\sum_{k=1}^{N}kP(X\geq k)$である。
+    reason: 裾の和には重み$k$はつかない。$X$が常に$2$で$N=2$なら$E[X]=2$だが、この式は$1+2=3$を与える。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [Nonempty Ω] (X : Ω → ℕ) (N : ℕ), (∀ ω, X ω ≤ N) → ((∑ ω, X ω : ℕ) : ℝ) / Fintype.card Ω = ∑ k ∈ Finset.range N, ((Finset.univ.filter (fun ω => k + 1 ≤ X ω)).card : ℝ) / Fintype.card Ω
+  proof: |
+    by
+      intro Ω _ _ X N hX
+      rw [← Finset.sum_div]
+      congr 1
+      have h : ∀ ω, X ω = ∑ k ∈ Finset.range N, if k + 1 ≤ X ω then 1 else 0 := by
+        intro ω
+        rw [Finset.sum_boole]
+        have : (Finset.range N).filter (fun k => k + 1 ≤ X ω) = Finset.range (X ω) := by
+          ext k
+          simp only [Finset.mem_filter, Finset.mem_range]
+          have := hX ω
+          omega
+        rw [this, Finset.card_range]
+        simp
+      have h2 : ∑ ω, X ω = ∑ k ∈ Finset.range N, (Finset.univ.filter (fun ω => k + 1 ≤ X ω)).card := by
+        conv_lhs => rw [Finset.sum_congr rfl (fun ω _ => h ω)]
+        rw [Finset.sum_comm]
+        refine Finset.sum_congr rfl fun k _ => ?_
+        rw [Finset.sum_boole]
+        simp
+      rw [h2]
+      push_cast
+      rfl
+- id: expectation_product_trials_mul
+  kind: textbook
+  level: high
+  topic: 確率・独立な試行の積の期待値
+  statement: 有限で空でない標本空間$\Omega_1,\Omega_2$の2つの試行を直積の一様な確率で表すとき、$\Omega_1$上の$X$と$\Omega_2$上の$Y$について$E[X(\omega_1)Y(\omega_2)]=E[X]E[Y]$が成り立つ。
+  statement_en: For finite nonempty sample spaces Ω₁, Ω₂ with the uniform probability on Ω₁ × Ω₂, and real functions X on Ω₁ and Y on Ω₂, the expectation of X(ω₁)Y(ω₂) on the product equals E[X] E[Y].
+  assumptions:
+  - $\Omega_1,\Omega_2$は有限で空でない
+  - $X:\Omega_1\to\mathbb{R}$
+  - $Y:\Omega_2\to\mathbb{R}$
+  quantifiers:
+  - 任意の$X,Y$
+  conclusion: $\dfrac{1}{|\Omega_1||\Omega_2|}\sum_{(\omega_1,\omega_2)}X(\omega_1)Y(\omega_2)=E[X]E[Y]$である。
+  answer: $\Omega_1,\Omega_2$を有限で空でない集合とし、$\Omega_1\times\Omega_2$の要素は同様に確からしいとする。$X:\Omega_1\to\mathbb{R}$、$Y:\Omega_2\to\mathbb{R}$とする。直積上の和を2重和に直すと$\sum_{\omega_1}\sum_{\omega_2}X(\omega_1)Y(\omega_2)=\left(\sum_{\omega_1}X(\omega_1)\right)\left(\sum_{\omega_2}Y(\omega_2)\right)$である。両辺を$|\Omega_1\times\Omega_2|=|\Omega_1||\Omega_2|$で割ると結論を得る。
+  strategy: Factor the double sum over the product space.
+  sketch:
+  - 'setup: Write the sum over Ω₁ × Ω₂ as a double sum.'
+  - 'derive: The double sum factors into the product of the two single sums.'
+  - 'conclude: Divide by |Ω₁||Ω₂|.'
+  openmath: (forall (O1 O2 X Y) (-> (and (in (size O1) N) (> (size O1) 0) (in (size O2) N) (> (size O2) 0)) (= (/ (sum (cartesian O1 O2) (lambda (p) (* (fn_value X (pair_first p)) (fn_value Y (pair_second p))))) (size (cartesian O1 O2))) (* (/ (sum O1 (lambda (w) (fn_value X w))) (size O1)) (/ (sum O2 (lambda (w) (fn_value Y w))) (size O2))))))
+  hard_negative:
+    statement: 同じ標本空間上の任意の$X,Y$について$E[XY]=E[X]E[Y]$である。
+    reason: $X,Y$が別々の試行で決まるという条件を落とすと成り立たない。$X=Y$が$\pm1$を等確率でとるなら$E[XY]=1$、$E[X]E[Y]=0$である。
+  target: |
+    ∀ (Ω₁ Ω₂ : Type*) [Fintype Ω₁] [Fintype Ω₂] [Nonempty Ω₁] [Nonempty Ω₂] (X : Ω₁ → ℝ) (Y : Ω₂ → ℝ), (∑ ω : Ω₁ × Ω₂, X ω.1 * Y ω.2) / Fintype.card (Ω₁ × Ω₂) = ((∑ ω, X ω) / Fintype.card Ω₁) * ((∑ ω, Y ω) / Fintype.card Ω₂)
+  proof: |
+    by
+      intro Ω₁ Ω₂ _ _ _ _ X Y
+      rw [Fintype.sum_prod_type, Fintype.card_prod, div_mul_div_comm, Finset.sum_mul_sum]
+      push_cast
+      rfl
+- id: expectation_uniform_total
+  kind: gap
+  level: high
+  topic: 確率・全期待値
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしく、$A$も$\overline{A}$も空でないとき、$E[X]=P(A)E[X\mid A]+P(\overline{A})E[X\mid\overline{A}]$が成り立つ。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes, a random variable X and an event A with both A and Aᶜ nonempty, E[X] = P(A) E[X|A] + P(Aᶜ) E[X|Aᶜ], where E[X|B] is the average of X over B.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $X:\Omega\to\mathbb{R}$
+  - $A\neq\emptyset$
+  - $\overline{A}\neq\emptyset$
+  quantifiers:
+  - 任意の確率変数$X$と事象$A$
+  conclusion: $E[X]=P(A)E[X\mid A]+P(\overline{A})E[X\mid\overline{A}]$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、$\Omega$上の実数値関数$X$の期待値を$E[X]=\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$と定める。$A\subseteq\Omega$は$A$も$\overline{A}=\Omega\setminus A$も空でないとする。$P(A)=|A|/|\Omega|$とし、空でない$B$について$E[X\mid B]=\dfrac{1}{|B|}\sum_{\omega\in B}X(\omega)$と定める。$|A|>0$より$P(A)E[X\mid A]=\dfrac{1}{|\Omega|}\sum_{\omega\in A}X(\omega)$であり、同様に$P(\overline{A})E[X\mid\overline{A}]=\dfrac{1}{|\Omega|}\sum_{\omega\in\overline{A}}X(\omega)$である。$\Omega$は$A$と$\overline{A}$に重なりなく分かれるので、この2つの和は$\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)=E[X]$に等しい。
+  strategy: Split the sum over Ω into sums over A and Aᶜ.
+  sketch:
+  - 'setup: Define the conditional average E[X|B] for nonempty B.'
+  - 'derive: P(A) E[X|A] equals the sum of X over A divided by |Ω|.'
+  - 'derive: The same holds for Aᶜ.'
+  - 'conclude: Add the two parts, since A and Aᶜ partition Ω.'
+  openmath: (forall (O X A) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (> (size A) 0) (> (size (setdiff O A)) 0)) (= (/ (sum O (lambda (w) (fn_value X w))) (size O)) (+ (* (/ (size A) (size O)) (/ (sum A (lambda (w) (fn_value X w))) (size A))) (* (/ (size (setdiff O A)) (size O)) (/ (sum (setdiff O A) (lambda (w) (fn_value X w))) (size (setdiff O A))))))))
+  hard_negative:
+    statement: $E[X]=\dfrac{E[X\mid A]+E[X\mid\overline{A}]}{2}$である。
+    reason: 重みは$1/2$ではなく$P(A),P(\overline{A})$である。$|\Omega|=4$、$|A|=1$で、$X$が$A$上で$1$、$\overline{A}$上で$0$のとき、$E[X]=1/4$だが、この式は$1/2$を与える。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (X : Ω → ℝ) (A : Finset Ω), A.Nonempty → Aᶜ.Nonempty → (∑ ω, X ω) / Fintype.card Ω = ((A.card : ℝ) / Fintype.card Ω) * ((∑ ω ∈ A, X ω) / A.card) + ((Aᶜ.card : ℝ) / Fintype.card Ω) * ((∑ ω ∈ Aᶜ, X ω) / Aᶜ.card)
+  proof: |
+    by
+      intro Ω _ _ _ X A hA hA'
+      have ha : (A.card : ℝ) ≠ 0 := by exact_mod_cast hA.card_ne_zero
+      have ha' : (Aᶜ.card : ℝ) ≠ 0 := by exact_mod_cast hA'.card_ne_zero
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      rw [← Finset.sum_add_sum_compl A X]
+      field_simp
+- id: expectation_trials_success_count
+  kind: textbook
+  level: high
+  topic: 確率・反復試行の回数の期待値
+  statement: 有限で空でない標本空間$\Omega$の事象$A$の確率を$p=|A|/|\Omega|$とする。$\Omega$上の同じ試行を$n$回独立に行うことを$\Omega^n$の一様な確率で表すとき、$A$が起こる回数の期待値は$np$である。
+  statement_en: For an event A with probability p = |A|/|Ω| on a finite nonempty sample space, in n independent trials modelled by the uniform probability on Ωⁿ, the expected number of occurrences of A is np.
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $A\subseteq\Omega$
+  - $p=|A|/|\Omega|$
+  - $n$は自然数
+  quantifiers:
+  - 任意の事象$A$と自然数$n$
+  conclusion: $A$が起こる回数の期待値は$np$である。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、事象$A\subseteq\Omega$の確率を$P(A)=|A|/|\Omega|$と定める。$n$を自然数、$p=P(A)$とし、$\Omega^n$の要素は同様に確からしいとする。組$(\omega,i)$で$\omega\in\Omega^n$、$\omega_i\in A$を満たすものの個数を2通りに数える。$\omega$を先に固定すると、$A$が起こる回数の和$\sum_{\omega}|\{i\mid\omega_i\in A\}|$である。$i$を先に固定すると、$\omega_i\in A$となる列は$i$成分を$A$から、他の成分を$\Omega$から選ぶので$|A||\Omega|^{n-1}$個あり、合計は$n|A||\Omega|^{n-1}$である。これを$|\Omega|^n$で割ると、期待値は$n|A|/|\Omega|=np$となる。
+  strategy: Double count pairs (ω, i) with ω_i in A, fixing the trial index first.
+  sketch:
+  - 'setup: Consider pairs (ω, i) with ω_i in A.'
+  - 'derive: Summing over ω gives the total number of occurrences.'
+  - 'derive: For fixed i, there are |A||Ω|^(n-1) sequences with ω_i in A.'
+  - 'conclude: So the total is n|A||Ω|^(n-1); divide by |Ω|ⁿ to get np.'
+  openmath: (forall (O A n) (-> (and (in (size O) N) (> (size O) 0) (subset A O) (in n N)) (= (/ (sum (function_set (integer_range 1 n) O) (lambda (w) (size (suchthat (integer_range 1 n) (lambda (i) (in (fn_value w i) A)))))) (size (function_set (integer_range 1 n) O))) (* n (/ (size A) (size O))))))
+  hard_negative:
+    statement: $A$が起こる回数の期待値は$1-(1-p)^n$である。
+    reason: これは少なくとも1回起こる確率である。$n=2$、$p=1$なら回数の期待値は$2$だが、この式は$1$を与える。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (n : ℕ) (A : Finset Ω), (∑ ω : Fin n → Ω, ((Finset.univ.filter (fun i => ω i ∈ A)).card : ℝ)) / Fintype.card (Fin n → Ω) = (n : ℝ) * ((A.card : ℝ) / Fintype.card Ω)
+  proof: |
+    by
+      intro Ω _ _ _ n A
+      have h : (Fintype.card Ω : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hm : ∀ i : Fin n, (Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A)).card * Fintype.card Ω = A.card * Fintype.card (Fin n → Ω) := by
+        intro i
+        have e : Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A) = Fintype.piFinset (fun j => if j = i then A else Finset.univ) := by
+          ext ω
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and, Fintype.mem_piFinset]
+          constructor
+          · intro hω j
+            by_cases hj : j = i
+            · subst hj; rw [if_pos rfl]; exact hω
+            · rw [if_neg hj]; exact Finset.mem_univ _
+          · intro hω
+            have := hω i
+            rwa [if_pos rfl] at this
+        rw [e, Fintype.card_piFinset, Fintype.card_fun, Fintype.card_fin]
+        have hp : ∀ s : Finset (Fin n), (∏ j ∈ s, (if j = i then A else Finset.univ : Finset Ω).card) * Fintype.card Ω = (if i ∈ s then A.card * Fintype.card Ω ^ s.card else Fintype.card Ω ^ (s.card + 1)) := by
+          intro s
+          induction s using Finset.induction_on with
+          | empty => simp
+          | insert a s ha ih =>
+            rw [Finset.prod_insert ha, mul_assoc, ih, Finset.card_insert_of_notMem ha]
+            by_cases hai : a = i
+            · subst hai
+              simp only [if_true, ha, if_false, Finset.mem_insert, true_or]
+            · have hmem : i ∈ insert a s ↔ i ∈ s := by
+                simp only [Finset.mem_insert]
+                constructor
+                · rintro (h' | h')
+                  · exact absurd h'.symm hai
+                  · exact h'
+                · exact Or.inr
+              simp only [if_neg hai, hmem, Finset.card_univ]
+              split_ifs <;> ring
+        have := hp Finset.univ
+        rw [if_pos (Finset.mem_univ i), Finset.card_univ, Fintype.card_fin] at this
+        exact this
+      have hs : (∑ ω : Fin n → Ω, ((Finset.univ.filter (fun i => ω i ∈ A)).card : ℝ)) = ∑ i : Fin n, ((Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A)).card : ℝ) := by
+        have : ∀ ω : Fin n → Ω, ((Finset.univ.filter (fun i => ω i ∈ A)).card : ℝ) = ∑ i : Fin n, if ω i ∈ A then (1 : ℝ) else 0 := by
+          intro ω
+          rw [Finset.sum_boole]
+        simp_rw [this]
+        rw [Finset.sum_comm]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [Finset.sum_boole]
+      have hF : (Fintype.card (Fin n → Ω) : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      rw [hs, div_eq_iff hF, mul_assoc, div_mul_eq_mul_div, eq_comm]
+      have hcast : ∀ i : Fin n, ((Finset.univ.filter (fun ω : Fin n → Ω => ω i ∈ A)).card : ℝ) = (A.card : ℝ) * Fintype.card (Fin n → Ω) / Fintype.card Ω := by
+        intro i
+        rw [eq_div_iff h]
+        exact_mod_cast hm i
+      rw [Finset.sum_congr rfl (fun i _ => hcast i), Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+- id: expectation_uniform_attains_mean
+  kind: gap
+  level: high
+  topic: 確率・期待値以上の値
+  statement: 有限で空でない標本空間$\Omega$の各根元事象が同様に確からしいとき、確率変数$X$について、$X(\omega)\geq E[X]$となる根元事象$\omega$が存在する。
+  statement_en: For a finite nonempty sample space Ω with equally likely outcomes and a real random variable X, there is an outcome ω with X(ω) ≥ E[X].
+  assumptions:
+  - $\Omega$は有限で空でない標本空間
+  - $X:\Omega\to\mathbb{R}$
+  quantifiers:
+  - 任意の確率変数$X$
+  conclusion: $X(\omega)\geq E[X]$となる$\omega\in\Omega$が存在する。
+  answer: 有限で空でない集合$\Omega$を標本空間とし、各根元事象が同様に確からしいとして、$\Omega$上の実数値関数$X$の期待値を$E[X]=\dfrac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$と定める。すべての$\omega\in\Omega$で$X(\omega)<E[X]$と仮定する。$\Omega$は空でないので、足し合わせると$\sum_{\omega}X(\omega)<|\Omega|E[X]=\sum_{\omega}X(\omega)$となり矛盾する。よって$X(\omega)\geq E[X]$となる$\omega$が存在する。
+  strategy: 'Argue by contradiction: if every value were below the mean, the sum would be below itself.'
+  sketch:
+  - 'contradiction: Suppose X(ω) < E[X] for every ω.'
+  - 'derive: Since Ω is nonempty, summing gives Σ X(ω) < |Ω| E[X].'
+  - 'derive: But |Ω| E[X] = Σ X(ω).'
+  - 'conclude: This is a contradiction, so such an ω exists.'
+  openmath: (forall (O X) (-> (and (in (size O) N) (> (size O) 0)) (exists (w) (and (in w O) (<= (/ (sum O (lambda (u) (fn_value X u))) (size O)) (fn_value X w))))))
+  hard_negative:
+    statement: $X(\omega)=E[X]$となる根元事象$\omega$が存在する。
+    reason: 期待値そのものをとるとは限らない。$X$が$0,1$を等確率でとるなら$E[X]=1/2$だが、$X$は$1/2$をとらない。
+  target: |
+    ∀ (Ω : Type*) [Fintype Ω] [Nonempty Ω] (X : Ω → ℝ), ∃ ω, (∑ ω', X ω') / Fintype.card Ω ≤ X ω
+  proof: |
+    by
+      intro Ω _ _ X
+      by_contra hne
+      simp only [not_exists, not_le] at hne
+      have h : (0 : ℝ) < Fintype.card Ω := by exact_mod_cast Fintype.card_pos
+      have hlt : ∑ ω, X ω < ∑ _ω : Ω, (∑ ω', X ω') / Fintype.card Ω :=
+        Finset.sum_lt_sum_of_nonempty Finset.univ_nonempty (fun ω _ => hne ω)
+      rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_div_cancel₀ _ h.ne'] at hlt
+      exact lt_irrefl _ hlt
+- id: card_disjoint_family_sum
+  kind: gap
+  level: high
+  topic: 場合の数・和の法則
+  statement: 和の法則の一般形。どの2つも共通部分をもたない有限集合$A_i\ (i\in I)$について、和集合の要素数は$\sum_{i\in I}|A_i|$に等しい。
+  statement_en: 'Sum rule, general form: for finite sets A_i (i in a finite set I) that are pairwise disjoint, the size of the union is Σ_i |A_i|.'
+  assumptions:
+  - $I$は有限集合
+  - 各$A_i$は有限集合
+  - $i\neq j$なら$A_i\cap A_j=\emptyset$
+  quantifiers:
+  - 任意のどの2つも交わらない有限集合の族$(A_i)_{i\in I}$
+  conclusion: $\left|\bigcup_{i\in I}A_i\right|=\sum_{i\in I}|A_i|$である。
+  answer: $I$を有限集合とし、$A_i\ (i\in I)$をどの2つも共通部分をもたない有限集合とする。$|I|$についての帰納法で示す。$I=\emptyset$なら両辺は$0$である。$I=J\cup\{a\}$、$a\notin J$のとき、$A_a$は$\bigcup_{i\in J}A_i$と交わらないので、$\left|\bigcup_{i\in I}A_i\right|=|A_a|+\left|\bigcup_{i\in J}A_i\right|$である。帰納法の仮定より、これは$|A_a|+\sum_{i\in J}|A_i|=\sum_{i\in I}|A_i|$に等しい。
+  strategy: Induct on the index set, peeling off one set disjoint from the union of the others.
+  sketch:
+  - 'setup: Induct on the finite index set I.'
+  - 'derive: For empty I both sides are 0.'
+  - 'induction: Adding an index a outside J, the set A_a is disjoint from the union over J.'
+  - 'conclude: Add |A_a| to the induction hypothesis.'
+  openmath: (forall (I A) (-> (and (in (size I) N) (forall (i) (-> (in i I) (in (size (family_value A i)) N))) (forall (i j) (-> (and (in i I) (in j I) (!= i j)) (= (inter (family_value A i) (family_value A j)) emptyset)))) (= (size (indexed_union_over I A)) (sum I (lambda (i) (size (family_value A i)))))))
+  hard_negative:
+    statement: どの有限集合の族についても$\left|\bigcup_{i\in I}A_i\right|=\sum_{i\in I}|A_i|$である。
+    reason: 重なりがあると成り立たない。$A_1=A_2=\{a\}$なら左辺は$1$、右辺は$2$である。
+  target: |
+    ∀ (α ι : Type*) [DecidableEq α] (I : Finset ι) (A : ι → Finset α), (∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j)) → (I.biUnion A).card = ∑ i ∈ I, (A i).card
+  proof: |
+    by
+      classical
+      intro α ι _ I A hd
+      exact Finset.card_biUnion hd
+- id: card_dependent_choice_product
+  kind: gap
+  level: high
+  topic: 場合の数・積の法則
+  statement: 積の法則の一般形。$a\in A$を選んだ後の$b$の選び方の集合$B_a$が$a$に依存してもよく、どの$a\in A$でも$|B_a|=m$なら、組$(a,b)$の個数は$|A|m$である。
+  statement_en: 'Product rule, general form: if A is a finite set and for each a in A the finite set B_a of later choices may depend on a but always has size m, then the number of pairs (a, b) with a in A and b in B_a is |A|·m.'
+  assumptions:
+  - $A$は有限集合
+  - 各$a\in A$で$B_a$は有限集合
+  - すべての$a\in A$で$|B_a|=m$
+  quantifiers:
+  - 任意の有限集合$A$、集合の族$(B_a)$、自然数$m$
+  conclusion: 組$(a,b)$（$a\in A$、$b\in B_a$）の個数は$|A|m$である。
+  answer: $A$を有限集合、$m$を自然数とし、各$a\in A$に対して$|B_a|=m$である有限集合$B_a$が与えられているとする。組$(a,b)$（$a\in A$、$b\in B_a$）を第1成分$a$で分類する。第1成分が$a$である組は$b\in B_a$の選び方の分だけあり、$m$個である。第1成分の異なる組は異なるので、和の法則より組の総数は$\sum_{a\in A}|B_a|=\sum_{a\in A}m=|A|m$である。
+  strategy: Classify the pairs by their first component and apply the sum rule.
+  sketch:
+  - 'setup: Classify the pairs (a, b) by the first component a.'
+  - 'derive: For fixed a there are |B_a| = m pairs.'
+  - 'apply_theorem: Different first components give disjoint classes, so the sum rule applies.'
+  - 'conclude: The total is Σ_a m = |A|·m.'
+  openmath: (forall (A B m) (-> (and (in (size A) N) (in m N) (forall (a) (-> (in a A) (= (size (family_value B a)) m)))) (= (size (dependent_pair_set A B)) (* (size A) m))))
+  hard_negative:
+    statement: 各$B_a$の要素数が$a$によって異なっていても、組の個数は$|A|\cdot|B_{a_0}|$（$a_0\in A$は任意）である。
+    reason: $A=\{1,2\}$、$|B_1|=1$、$|B_2|=2$なら組は$3$個だが、$a_0=1$では$2$、$a_0=2$では$4$となる。一定の要素数という仮定が必要である。
+  target: |
+    ∀ (α β : Type*) (A : Finset α) (B : α → Finset β) (m : ℕ), (∀ a ∈ A, (B a).card = m) → (A.sigma B).card = A.card * m
+  proof: |
+    by
+      intro α β A B m h
+      rw [Finset.card_sigma, Finset.sum_congr rfl h, Finset.sum_const, smul_eq_mul]
+- id: card_injections_falling_factorial
+  kind: textbook
+  level: high
+  topic: 場合の数・順列
+  statement: 有限集合$A$から有限集合$B$への単射の個数は、$n=|B|$、$k=|A|$として${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$である。$k>n$のときは$0$である。
+  statement_en: The number of injections from a finite set A to a finite set B is the falling factorial nPk = n(n-1)...(n-k+1), with n = |B| and k = |A|. It is 0 when k > n.
+  assumptions:
+  - $A,B$は有限集合
+  - $n=|B|$
+  - $k=|A|$
+  quantifiers:
+  - 任意の有限集合$A,B$
+  conclusion: 単射の個数は$n(n-1)\cdots(n-k+1)$である。
+  answer: $A,B$を有限集合とし、$k=|A|$、$n=|B|$とする。$A$の要素を$a_1,\dots,a_k$と並べる。単射$f$は$f(a_1),f(a_2),\dots$を順に決めて得られる。$f(a_1)$は$n$通りである。$f(a_1),\dots,f(a_{i-1})$を決めた後、$f(a_i)$はそれらと異なる$B$の要素なので、$n-i+1$通りである。これはすでに選んだ値によらないので、積の法則より単射は$n(n-1)\cdots(n-k+1)$個ある。$k>n$なら$i=n+1$で選択肢が$0$通りとなり、積は$0$である。$k=0$なら単射は空写像の$1$個だけで、空の積$1$と一致する。
+  strategy: Choose the images of the elements one after another, with one fewer option each time.
+  sketch:
+  - 'setup: List the elements of A as a_1, ..., a_k.'
+  - 'construct: Choose f(a_1), then f(a_2), and so on, keeping the values distinct.'
+  - 'derive: At step i, there are n-i+1 options regardless of the earlier choices.'
+  - 'apply_theorem: The product rule gives n(n-1)...(n-k+1).'
+  - 'conclude: If k > n, the factor at step n+1 is 0.'
+  openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N)) (= (size (injection_set A B)) (falling_factorial (size B) (size A)))))
+  hard_negative:
+    statement: $A$から$B$への単射の個数は$\binom{n}{k}$である。
+    reason: $\binom{n}{k}$は像の選び方の数で、対応のさせ方の$k!$倍が抜けている。$k=n=2$では単射は$2$個だが$\binom{2}{2}=1$である。
+  target: |
+    ∀ (α β : Type*) [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β], Fintype.card (α ↪ β) = (Fintype.card β).descFactorial (Fintype.card α)
+  proof: |
+    by
+      intro α β _ _ _ _
+      exact Fintype.card_embedding_eq
+- id: falling_factorial_mul_factorial
+  kind: gap
+  level: high
+  topic: 場合の数・順列の階乗表示
+  statement: $k\leq n$のとき、順列の数${}_{n}\mathrm{P}_{k}$は$(n-k)!\cdot{}_{n}\mathrm{P}_{k}=n!$を満たす。
+  statement_en: If k ≤ n, the falling factorial nPk satisfies (n-k)! · nPk = n!.
+  assumptions:
+  - $n,k$は自然数
+  - $k\leq n$
+  quantifiers:
+  - $k\leq n$を満たす任意の自然数$n,k$
+  conclusion: $(n-k)!\cdot{}_{n}\mathrm{P}_{k}=n!$である。
+  answer: $n,k$を$k\leq n$を満たす自然数とする。${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$である。$k\leq n$より、$(n-k)!$は$n-k$から$1$までの整数の積（$k=n$のときは$0!=1$）であり、${}_{n}\mathrm{P}_{k}$は$n$から$n-k+1$までの整数の積（$k=0$のときは$1$）である。合わせると、$n$から$1$までの整数がちょうど1回ずつ現れる。よって$(n-k)!\cdot{}_{n}\mathrm{P}_{k}=n!$である。
+  strategy: The factors of nPk and of (n-k)! together run through n, n-1, ..., 1.
+  sketch:
+  - 'setup: Write nPk = n(n-1)...(n-k+1).'
+  - 'derive: (n-k)! contributes the remaining factors n-k, ..., 1.'
+  - 'conclude: The product of all factors is n!.'
+  openmath: (forall (n k) (-> (and (in n N) (in k N) (<= k n)) (= (* (factorial (- n k)) (falling_factorial n k)) (factorial n))))
+  hard_negative:
+    statement: すべての自然数$n,k$について$(n-k)!\cdot{}_{n}\mathrm{P}_{k}=n!$である。
+    reason: $k>n$では$n-k$が負で、$(n-k)!$は定義されない。$(n-k)!$を$1$と読んでも${}_{n}\mathrm{P}_{k}=0$なので左辺は$0$、右辺は正である。$k\leq n$の仮定は外せない。
+  target: |
+    ∀ n k : ℕ, k ≤ n → (n - k).factorial * n.descFactorial k = n.factorial
+  proof: |
+    by
+      intro n k hk
+      exact Nat.factorial_mul_descFactorial hk
+- id: falling_factorial_eq_factorial_mul_choose
+  kind: gap
+  level: high
+  topic: 場合の数・順列と組合せの関係
+  statement: 自然数$n,k$について${}_{n}\mathrm{P}_{k}=k!\binom{n}{k}$が成り立つ。
+  statement_en: For natural numbers n and k, the falling factorial satisfies nPk = k! · C(n, k).
+  assumptions:
+  - $n,k$は自然数
+  quantifiers:
+  - 任意の自然数$n,k$
+  conclusion: ${}_{n}\mathrm{P}_{k}=k!\binom{n}{k}$である。
+  answer: $n,k$を自然数とする。$k>n$なら${}_{n}\mathrm{P}_{k}=0$、$\binom{n}{k}=0$で両辺は$0$である。$k\leq n$のとき、$n$個の異なるものから$k$個を選んで並べる順列を、並べるものの集合で分類する。$k$個の集合の選び方は$\binom{n}{k}$通りであり、選んだ$k$個の並べ方はそれぞれ$k!$通りである。積の法則より${}_{n}\mathrm{P}_{k}=\binom{n}{k}k!$である。
+  strategy: Classify k-permutations by their underlying k-element set.
+  sketch:
+  - 'case_split: If k > n, both sides are 0.'
+  - 'setup: If k ≤ n, classify each k-permutation by the set of objects it uses.'
+  - 'derive: There are C(n, k) sets and k! orderings of each.'
+  - 'conclude: The product rule gives nPk = k! C(n, k).'
+  openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (falling_factorial n k) (* (factorial k) (binom n k)))))
+  hard_negative:
+    statement: ${}_{n}\mathrm{P}_{k}=\binom{n}{k}$である。
+    reason: 並べ方の$k!$倍が抜けている。$n=k=2$では${}_{2}\mathrm{P}_{2}=2$だが$\binom{2}{2}=1$である。
+  target: |
+    ∀ n k : ℕ, n.descFactorial k = k.factorial * n.choose k
+  proof: |
+    by
+      intro n k
+      exact Nat.descFactorial_eq_factorial_mul_choose n k
+- id: circular_permutation_count
+  kind: textbook
+  level: high
+  topic: 場合の数・円順列
+  statement: $n+1$個の異なるものを円形の$n+1$席に並べるとき、回転して一致する並べ方を同じものとみなすと、並べ方の総数は$n!$である。
+  statement_en: Arrange n+1 distinct objects in n+1 cyclic seats. Identifying arrangements that differ by a rotation of the seats, the number of arrangements is n!.
+  assumptions:
+  - $\alpha$は$n+1$個の要素をもつ集合
+  - 席は$n+1$を法とする整数で番号づける
+  - 並べ方は席から$\alpha$への全単射
+  - $f,g$は、ある$k$ですべての席$x$について$g(x)=f(x+k)$のとき同じとみなす
+  quantifiers:
+  - 任意の自然数$n$と$n+1$個の要素をもつ集合$\alpha$
+  conclusion: 回転で同一視した並べ方の個数は$n!$である。
+  answer: $n$を自然数、$\alpha$を$n+1$個の要素をもつ集合とする。席を$n+1$を法とする整数で表し、席から$\alpha$への全単射を並べ方とする。ある$k$ですべての$x$について$g(x)=f(x+k)$のとき$f$と$g$を同じとみなす。$\alpha$の要素$a_0$を1つ固定する。各並べ方$f$について$k=f^{-1}(a_0)$とし、$g(x)=f(x+k)$とおくと$g(0)=a_0$なので、どの類にも$0$番の席が$a_0$である並べ方が含まれる。$f,g$がともに$f(0)=g(0)=a_0$を満たし、$g(x)=f(x+k)$なら、$x=0$として$f(k)=a_0=f(0)$となる。$f$は単射なので$k=0$であり$f=g$である。よって類の個数は$f(0)=a_0$である並べ方の個数に等しい。これは残りの$n$席に残りの$n$個を並べる個数なので$n!$である。
+  strategy: Each rotation class contains exactly one arrangement that puts a fixed object in seat 0.
+  sketch:
+  - 'setup: Fix an object a_0 and consider arrangements with f(0) = a_0.'
+  - 'construct: For any f, rotating by k = f⁻¹(a_0) gives an arrangement with a_0 in seat 0.'
+  - 'derive: If two such arrangements are rotations of each other by k, then f(k) = f(0), so k = 0 by injectivity.'
+  - 'derive: So classes correspond bijectively to arrangements with f(0) = a_0.'
+  - 'conclude: These are arrangements of n objects in n seats, so there are n! of them.'
+  openmath: (forall (A n) (-> (and (in n N) (= (size A) (+ n 1))) (= (size (circular_arrangement_classes A)) (factorial n))))
+  hard_negative:
+    statement: $n+1$個の異なるものの円順列の総数は$(n+1)!/2$である。
+    reason: 回転は$n+1$通りあるので割る数は$n+1$である。さらに裏返しも同一視する場合には、$n+1\geq3$で$n!/2$となる。
+  target: |
+    ∀ (α : Type*) [Fintype α] [DecidableEq α] (n : ℕ), Fintype.card α = n + 1 → Nat.card (Quot (fun f g : Fin (n + 1) ≃ α => ∃ k : Fin (n + 1), ∀ x, g x = f (x + k))) = n.factorial
+  proof: |
+    by
+      classical
+      intro α _ _ n hα
+      have hpos : 0 < Fintype.card α := by omega
+      obtain ⟨a₀⟩ : Nonempty α := Fintype.card_pos_iff.mp hpos
+      have heq : ∀ a : α, (Finset.univ.filter (fun f : Fin (n + 1) ≃ α => f 0 = a)).card = (Finset.univ.filter (fun f : Fin (n + 1) ≃ α => f 0 = a₀)).card := by
+        intro a
+        refine Finset.card_equiv ((Equiv.refl (Fin (n + 1))).equivCongr (Equiv.swap a a₀)) ?_
+        intro f
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Equiv.equivCongr_apply_apply, Equiv.refl_symm, Equiv.refl_apply]
+        constructor
+        · intro h; rw [h, Equiv.swap_apply_left]
+        · intro h
+          have := congrArg (Equiv.swap a a₀) h
+          rwa [Equiv.swap_apply_self, Equiv.swap_apply_right] at this
+      have hsum : ∑ a : α, (Finset.univ.filter (fun f : Fin (n + 1) ≃ α => f 0 = a)).card = (n + 1).factorial := by
+        rw [← Finset.card_eq_sum_card_fiberwise (fun _ _ => Finset.mem_univ _), Finset.card_univ, Fintype.card_equiv (Fintype.equivOfCardEq (by simp [hα])), Fintype.card_fin]
+      have hcnt : (Finset.univ.filter (fun f : Fin (n + 1) ≃ α => f 0 = a₀)).card = n.factorial := by
+        rw [Finset.sum_congr rfl (fun a _ => heq a), Finset.sum_const, Finset.card_univ, hα, smul_eq_mul, Nat.factorial_succ] at hsum
+        exact Nat.eq_of_mul_eq_mul_left (Nat.succ_pos n) hsum
+      let s : Setoid (Fin (n + 1) ≃ α) :=
+        { r := fun f g => ∃ k : Fin (n + 1), ∀ x, g x = f (x + k)
+          iseqv :=
+            { refl := fun f => ⟨0, fun x => by simp⟩
+              symm := by
+                rintro f g ⟨k, hk⟩
+                exact ⟨-k, fun x => by rw [hk]; simp⟩
+              trans := by
+                rintro f g h ⟨k, hk⟩ ⟨l, hl⟩
+                exact ⟨l + k, fun x => by rw [hl, hk, add_assoc]⟩ } }
+      let φ : {f : Fin (n + 1) ≃ α // f 0 = a₀} → Quotient s := fun f => Quotient.mk s f.1
+      have hφ : Function.Bijective φ := by
+        constructor
+        · rintro ⟨f, hf⟩ ⟨g, hg⟩ h
+          obtain ⟨k, hk⟩ : s.r f g := Quotient.exact h
+          have h0 := hk 0
+          rw [hg, zero_add, ← hf] at h0
+          have hk0 : k = 0 := (f.injective h0).symm
+          apply Subtype.ext
+          ext x
+          simp only
+          rw [hk x, hk0, add_zero]
+        · intro q
+          induction q using Quotient.inductionOn with
+          | h f =>
+            let k := f.symm a₀
+            refine ⟨⟨(Equiv.addRight k).trans f, ?_⟩, ?_⟩
+            · simp [k]
+            · apply Quotient.sound
+              refine ⟨-k, fun x => ?_⟩
+              simp
+      have hcard : Nat.card (Quotient s) = Nat.card {f : Fin (n + 1) ≃ α // f 0 = a₀} := (Nat.card_congr (Equiv.ofBijective φ hφ)).symm
+      have : Nat.card (Quot (fun f g : Fin (n + 1) ≃ α => ∃ k : Fin (n + 1), ∀ x, g x = f (x + k))) = Nat.card (Quotient s) := rfl
+      rw [this, hcard, Nat.card_eq_fintype_card, Fintype.card_subtype, hcnt]
+- id: lot_drawing_position_fair
+  kind: gap
+  level: high
+  topic: 確率・くじ引きの公平性
+  statement: 有限で空でない集合$\alpha$の置換$\sigma$がすべて同様に確からしいとき、$i\in\alpha$と当たりの集合$W\subseteq\alpha$について、$\sigma(i)\in W$となる確率は$i$によらず$|W|/|\alpha|$である。くじを引く順番で当たる確率が変わらないことを表す。
+  statement_en: When all permutations of a finite nonempty set α are equally likely, the probability that position i receives an element of W, a subset of α, is |W|/|α| for every position i.
+  assumptions:
+  - $\alpha$は有限で空でない
+  - $i\in\alpha$
+  - $W\subseteq\alpha$
+  - $\alpha$の置換はすべて同様に確からしい
+  quantifiers:
+  - 任意の位置$i$と当たりの集合$W$
+  conclusion: $\sigma(i)\in W$となる確率は$|W|/|\alpha|$である。
+  answer: $\alpha$を有限で空でない集合、$n=|\alpha|$とし、$i\in\alpha$、$W\subseteq\alpha$とする。$\alpha$の置換$\sigma$は$n!$個あり、同様に確からしいとする。$a\in\alpha$に対し$S_a=\{\sigma\mid\sigma(i)=a\}$とする。$a,b\in\alpha$について、$a,b$を入れ替える互換$\tau$を左から合成する写像$\sigma\mapsto\tau\sigma$は$S_a$から$S_b$への全単射である。よって$|S_a|$は$a$によらない。$S_a$全体は置換全体を重なりなく分けるので$n|S_a|=n!$である。$\sigma(i)\in W$となる置換は$S_a\ (a\in W)$の和であり、その個数は$|W||S_a|$である。これを$n!$で割ると$|W||S_a|/(n|S_a|)=|W|/n$となる。
+  strategy: All values of σ(i) are equally frequent, by composing with a transposition.
+  sketch:
+  - 'setup: Let S_a be the set of permutations with σ(i) = a.'
+  - 'construct: Composing with the transposition of a and b is a bijection from S_a to S_b.'
+  - 'derive: So all |S_a| are equal, and n|S_a| = n!.'
+  - 'derive: The event σ(i) in W is the disjoint union of S_a over a in W.'
+  - 'conclude: Its probability is |W||S_a|/n! = |W|/n.'
+  openmath: (forall (A i W) (-> (and (in (size A) N) (> (size A) 0) (in i A) (subset W A)) (= (/ (size (suchthat (permutation_set A) (lambda (s) (in (fn_value s i) W)))) (factorial (size A))) (/ (size W) (size A)))))
+  hard_negative:
+    statement: 先に引く人ほど当たる確率が高い。
+    reason: 位置$i$によらず確率は$|W|/|\alpha|$である。$|\alpha|=2$、$|W|=1$なら、1番目も2番目も確率は$1/2$である。
+  target: |
+    ∀ (α : Type*) [Fintype α] [DecidableEq α] [Nonempty α] (i : α) (W : Finset α), ((Finset.univ.filter (fun σ : Equiv.Perm α => σ i ∈ W)).card : ℝ) / (Fintype.card α).factorial = (W.card : ℝ) / Fintype.card α
+  proof: |
+    by
+      classical
+      intro α _ _ _ i W
+      have heq : ∀ a b : α, (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = a)).card = (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = b)).card := by
+        intro a b
+        refine Finset.card_equiv ((Equiv.refl α).equivCongr (Equiv.swap a b)) ?_
+        intro f
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Equiv.equivCongr_apply_apply, Equiv.refl_symm, Equiv.refl_apply]
+        constructor
+        · intro h; rw [h, Equiv.swap_apply_left]
+        · intro h
+          have := congrArg (Equiv.swap a b) h
+          rwa [Equiv.swap_apply_self, Equiv.swap_apply_right] at this
+      have hsum : ∑ a : α, (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = a)).card = (Fintype.card α).factorial := by
+        rw [← Finset.card_eq_sum_card_fiberwise (fun _ _ => Finset.mem_univ _), Finset.card_univ, Fintype.card_perm]
+      have hX : Fintype.card α * (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = i)).card = (Fintype.card α).factorial := by
+        rw [Finset.sum_congr rfl (fun a _ => heq a i), Finset.sum_const, Finset.card_univ, smul_eq_mul] at hsum
+        exact hsum
+      have hW : (Finset.univ.filter (fun σ : Equiv.Perm α => σ i ∈ W)).card = W.card * (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = i)).card := by
+        have hm : ∀ σ ∈ Finset.univ.filter (fun σ : Equiv.Perm α => σ i ∈ W), σ i ∈ W := fun σ hσ => (Finset.mem_filter.mp hσ).2
+        rw [Finset.card_eq_sum_card_fiberwise hm]
+        have : ∀ w ∈ W, ((Finset.univ.filter (fun σ : Equiv.Perm α => σ i ∈ W)).filter (fun σ => σ i = w)).card = (Finset.univ.filter (fun σ : Equiv.Perm α => σ i = i)).card := by
+          intro w hw
+          rw [← heq w i]
+          congr 1
+          ext σ
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+          constructor
+          · exact fun h => h.2
+          · exact fun h => ⟨h ▸ hw, h⟩
+        rw [Finset.sum_congr rfl this, Finset.sum_const, smul_eq_mul]
+      have hcα : (Fintype.card α : ℝ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
+      have hf : ((Fintype.card α).factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero _
+      rw [hW, div_eq_div_iff hf hcα, ← hX]
+      push_cast
+      ring
+- id: word_contains_letter_count
+  kind: gap
+  level: high
+  topic: 場合の数・重複順列と余事象
+  statement: $n$個の文字の集合$B$から重複を許して作る長さ$r$の列のうち、特定の文字$b$を少なくとも1回含むものの個数を$N$とすると、$N+(n-1)^r=n^r$である。
+  statement_en: Among the words of length r over an alphabet B with n letters, repetition allowed, let N be the number containing a given letter b at least once. Then N + (n-1)^r = n^r.
+  assumptions:
+  - $B$は$n$個の要素をもつ有限集合
+  - $b\in B$
+  - $r$は自然数
+  quantifiers:
+  - 任意の有限集合$B$、$b\in B$、自然数$r$
+  conclusion: $N+(n-1)^r=n^r$である。
+  answer: $B$を$n$個の要素をもつ有限集合、$b\in B$、$r$を自然数とする。長さ$r$の列は全部で$n^r$個ある。$b$を1回も含まない列は、各項を$B\setminus\{b\}$から選んだ列なので$(n-1)^r$個ある。すべての列は、$b$を少なくとも1回含むものと1回も含まないものに重なりなく分かれる。よって$N+(n-1)^r=n^r$である。
+  strategy: Count the words avoiding b and subtract from the total.
+  sketch:
+  - 'setup: There are n^r words in total.'
+  - 'derive: Words avoiding b have all letters in B \ {b}, giving (n-1)^r.'
+  - 'conclude: Words containing b and words avoiding b partition all words.'
+  openmath: (forall (B b r) (-> (and (in (size B) N) (in b B) (in r N)) (= (+ (size (suchthat (function_set (integer_range 1 r) B) (lambda (f) (exists (i) (and (in i (integer_range 1 r)) (= (fn_value f i) b)))))) (^ (- (size B) 1) r)) (^ (size B) r))))
+  hard_negative:
+    statement: 文字$b$を少なくとも1回含む列の個数は$r\,n^{r-1}$である。
+    reason: $b$の位置を選んで残りを自由に選ぶと、$b$を複数回含む列が重複して数えられる。$n=1$、$r=2$では列は$1$個だが、この式は$2$を与える。
+  target: |
+    ∀ (B : Type*) [Fintype B] [DecidableEq B] (r : ℕ) (b : B), (Finset.univ.filter (fun f : Fin r → B => ∃ i, f i = b)).card + (Fintype.card B - 1) ^ r = Fintype.card B ^ r
+  proof: |
+    by
+      intro B _ _ r b
+      have e : Finset.univ.filter (fun f : Fin r → B => ¬ ∃ i, f i = b) = Fintype.piFinset (fun _ => ({b} : Finset B)ᶜ) := by
+        ext f; simp
+      have hc := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (Fin r → B))) (fun f => ∃ i, f i = b)
+      rw [e, Fintype.card_piFinset] at hc
+      simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin, Fintype.card_fun, Finset.card_compl, Finset.card_singleton] at hc
+      exact hc
+- id: surjection_onto_two_count
+  kind: gap
+  level: high
+  topic: 場合の数・2組への分け方
+  statement: 空でない有限集合$A$の要素を2つの区別できる組に分け、どちらの組にも少なくとも1つ入るようにする方法の数を$N$とすると、$N+2=2^{|A|}$である。
+  statement_en: For a nonempty finite set A, let N be the number of ways to distribute its elements into two labelled groups with neither group empty. Then N + 2 = 2^|A|.
+  assumptions:
+  - $A$は空でない有限集合
+  quantifiers:
+  - 任意の空でない有限集合$A$
+  conclusion: $A$から2要素集合への全射の個数を$N$とすると$N+2=2^{|A|}$である。
+  answer: $A$を空でない有限集合とする。分け方は$A$から2要素集合$\{0,1\}$への写像で表され、全部で$2^{|A|}$個ある。どちらの組にも要素が入る分け方は全射に対応する。全射でない写像は、値が$0$だけか$1$だけの定数写像である。$A$が空でないのでこの2つは異なる。よって全射でない写像はちょうど$2$個であり、$N+2=2^{|A|}$である。
+  strategy: The non-surjective maps to a two-element set are exactly the two constant maps.
+  sketch:
+  - 'setup: Distributions correspond to maps from A to a two-element set, 2^|A| in total.'
+  - 'translate: Neither group empty means the map is surjective.'
+  - 'derive: A non-surjective map misses one value, so it is constant.'
+  - 'derive: Since A is nonempty, the two constant maps are distinct.'
+  - 'conclude: So N + 2 = 2^|A|.'
+  openmath: (forall (A S) (-> (and (in (size A) N) (> (size A) 0) (= (size S) 2)) (= (+ (size (surjection_set A S)) 2) (^ 2 (size A)))))
+  hard_negative:
+    statement: $A$が空でも$N+2=2^{|A|}$である。
+    reason: $A=\emptyset$なら全射は存在せず$N=0$で、左辺は$2$、右辺は$1$である。定数写像が2つに分かれるには$A$が空でないことが要る。
+  target: |
+    ∀ (A : Type*) [Fintype A] [DecidableEq A] [Nonempty A], (Finset.univ.filter (fun f : A → Bool => Function.Surjective f)).card + 2 = 2 ^ Fintype.card A
+  proof: |
+    by
+      intro A _ _ _
+      have e : Finset.univ.filter (fun f : A → Bool => ¬ Function.Surjective f) = {fun _ => true, fun _ => false} := by
+        ext f
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_insert, Finset.mem_singleton]
+        constructor
+        · intro hf
+          by_contra hne
+          simp only [not_or] at hne
+          apply hf
+          intro b
+          cases b
+          · by_contra hb
+            apply hne.1
+            funext x
+            by_contra hx
+            exact hb ⟨x, by simpa using hx⟩
+          · by_contra hb
+            apply hne.2
+            funext x
+            by_contra hx
+            exact hb ⟨x, by simpa using hx⟩
+        · rintro (rfl | rfl) hs
+          · obtain ⟨x, hx⟩ := hs false
+            simp at hx
+          · obtain ⟨x, hx⟩ := hs true
+            simp at hx
+      have hc := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (A → Bool))) (fun f => Function.Surjective f)
+      have h2 : ({fun _ => true, fun _ => false} : Finset (A → Bool)).card = 2 := by
+        apply Finset.card_pair
+        intro h
+        obtain ⟨x⟩ := ‹Nonempty A›
+        have := congrFun h x
+        simp at this
+      rw [e, h2, Finset.card_univ, Fintype.card_fun, Fintype.card_bool] at hc
+      exact hc
+- id: prob_all_distinct_assignment
+  kind: gap
+  level: high
+  topic: 確率・すべて異なる確率
+  statement: 有限集合$A$の各要素に、空でない有限集合$B$の要素を独立に等確率で割り当てるとき、割り当てがすべて異なる確率は${}_{n}\mathrm{P}_{k}/n^k$である。ここで$n=|B|$、$k=|A|$である。
+  statement_en: Assign to each element of a finite set A an element of a finite nonempty set B, independently and uniformly. The probability that the assignment is injective is nPk / n^k, where n = |B| and k = |A|.
+  assumptions:
+  - $A$は有限集合
+  - $B$は有限で空でない
+  - $A$から$B$への写像はすべて同様に確からしい
+  quantifiers:
+  - 任意の有限集合$A$と有限で空でない集合$B$
+  conclusion: 写像が単射である確率は${}_{n}\mathrm{P}_{k}/n^k$である。
+  answer: $A$を有限集合、$B$を有限で空でない集合とし、$k=|A|$、$n=|B|$とする。$A$から$B$への写像は$n^k$個あり、同様に確からしいとする。割り当てがすべて異なるとは写像が単射であることをいう。単射の個数は、$A$の要素の値を順に決めると、それまでと異なる値を選ぶことになるので${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$である。よって求める確率は${}_{n}\mathrm{P}_{k}/n^k$である。
+  strategy: Injective maps are counted by the falling factorial and all maps by n^k.
+  sketch:
+  - 'setup: There are n^k maps from A to B, all equally likely.'
+  - 'translate: All values being distinct means that the map is injective.'
+  - 'derive: The number of injective maps is nPk.'
+  - 'conclude: The probability is nPk / n^k.'
+  openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N) (> (size B) 0)) (= (/ (size (injection_set A B)) (size (function_set A B))) (/ (falling_factorial (size B) (size A)) (^ (size B) (size A))))))
+  hard_negative:
+    statement: 割り当てがすべて異なる確率は$\binom{n}{k}/n^k$である。
+    reason: 値の集合を選ぶだけでは対応のさせ方が数えられていない。$k=n=2$では確率は$2/4=1/2$だが、この式は$1/4$を与える。
+  target: |
+    ∀ (A B : Type*) [Fintype A] [Fintype B] [DecidableEq A] [DecidableEq B] [Nonempty B], ((Finset.univ.filter (fun f : A → B => Function.Injective f)).card : ℝ) / Fintype.card (A → B) = ((Fintype.card B).descFactorial (Fintype.card A) : ℝ) / (Fintype.card B : ℝ) ^ Fintype.card A
+  proof: |
+    by
+      intro A B _ _ _ _ _
+      have h : (Finset.univ.filter (fun f : A → B => Function.Injective f)).card = (Fintype.card B).descFactorial (Fintype.card A) := by
+        rw [← Fintype.card_subtype, ← Fintype.card_embedding_eq]
+        exact Fintype.card_congr (Equiv.subtypeInjectiveEquivEmbedding A B)
+      rw [h, Fintype.card_fun]
+      push_cast
+      rfl
+- id: k_subsets_containing_fixed_set
+  kind: gap
+  level: high
+  topic: 場合の数・特定のものを含む組合せ
+  statement: 有限集合$S$とその部分集合$T$、$|T|\leq k$を満たす$k$について、$T$を含む$S$の$k$元部分集合の個数は$\binom{|S|-|T|}{k-|T|}$である。
+  statement_en: For a finite set S, a subset T of S and k ≥ |T|, the number of k-element subsets of S containing T is C(|S|-|T|, k-|T|).
+  assumptions:
+  - $S$は有限集合
+  - $T\subseteq S$
+  - $|T|\leq k$
+  quantifiers:
+  - 任意の有限集合$S,T$と自然数$k$
+  conclusion: $T$を含む$k$元部分集合の個数は$\binom{|S|-|T|}{k-|T|}$である。
+  answer: $S$を有限集合、$T\subseteq S$とし、$k$を$|T|\leq k$を満たす自然数とする。$T$を含む$S$の$k$元部分集合$U$に$U\setminus T$を対応させる。$U\setminus T$は$S\setminus T$の部分集合で、要素数は$k-|T|$である。逆に、$S\setminus T$の$(k-|T|)$元部分集合$V$に対し、$V\cup T$は$T$を含む$S$の$k$元部分集合である。この2つの対応は互いに逆である。$|S\setminus T|=|S|-|T|$なので、求める個数は$\binom{|S|-|T|}{k-|T|}$である。
+  strategy: Remove T from each subset to get a bijection with (k-|T|)-subsets of S \ T.
+  sketch:
+  - 'setup: Map a k-subset U containing T to U \ T.'
+  - 'derive: U \ T is a (k-|T|)-subset of S \ T.'
+  - 'construct: The inverse map sends V to V ∪ T.'
+  - 'conclude: Since |S \ T| = |S| - |T|, the count is C(|S|-|T|, k-|T|).'
+  openmath: (forall (S T k) (-> (and (in (size S) N) (subset T S) (in k N) (<= (size T) k)) (= (size (suchthat (k_subsets S k) (lambda (U) (subset T U)))) (binom (- (size S) (size T)) (- k (size T))))))
+  hard_negative:
+    statement: $T$を含む$k$元部分集合の個数は$\binom{|S|}{k}-\binom{|S|-|T|}{k}$である。
+    reason: 引いているのは$T$と交わらない部分集合の数であり、この差は$T$と交わる部分集合の数である。$|S|=3$、$|T|=2$、$k=2$では$T$を含むものは$1$個だが、差は$3-0=3$である。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (S T : Finset α) (k : ℕ), T ⊆ S → T.card ≤ k → ((S.powersetCard k).filter (fun U => T ⊆ U)).card = (S.card - T.card).choose (k - T.card)
+  proof: |
+    by
+      intro α _ S T k hTS hTk
+      rw [← Finset.card_sdiff_of_subset hTS, ← Finset.card_powersetCard]
+      refine Finset.card_nbij' (fun U => U \ T) (fun V => V ∪ T) ?_ ?_ ?_ ?_
+      · intro U hU
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_powersetCard] at hU
+        simp only [Finset.mem_coe, Finset.mem_powersetCard]
+        refine ⟨Finset.sdiff_subset_sdiff hU.1.1 subset_rfl, ?_⟩
+        rw [Finset.card_sdiff_of_subset hU.2, hU.1.2]
+      · intro V hV
+        simp only [Finset.mem_coe, Finset.mem_powersetCard] at hV
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_powersetCard]
+        have hd : Disjoint V T := by
+          rw [Finset.disjoint_left]
+          intro x hx hxT
+          exact (Finset.mem_sdiff.mp (hV.1 hx)).2 hxT
+        refine ⟨⟨Finset.union_subset (hV.1.trans Finset.sdiff_subset) hTS, ?_⟩, Finset.subset_union_right⟩
+        rw [Finset.card_union_of_disjoint hd, hV.2]
+        omega
+      · intro U hU
+        simp only [Finset.coe_filter, Set.mem_setOf_eq] at hU
+        exact Finset.sdiff_union_of_subset hU.2
+      · intro V hV
+        simp only [Finset.mem_coe, Finset.mem_powersetCard] at hV
+        have hd : Disjoint V T := by
+          rw [Finset.disjoint_left]
+          intro x hx hxT
+          exact (Finset.mem_sdiff.mp (hV.1 hx)).2 hxT
+        exact Finset.union_sdiff_cancel_right hd
+- id: hypergeometric_count
+  kind: textbook
+  level: high
+  topic: 場合の数・2種類からの取り出し
+  statement: 共通部分をもたない有限集合$A,B$と$j\leq k$について、$A\cup B$の$k$元部分集合のうち$A$の要素をちょうど$j$個含むものの個数は$\binom{|A|}{j}\binom{|B|}{k-j}$である。
+  statement_en: For disjoint finite sets A, B and j ≤ k, the number of k-element subsets of A ∪ B containing exactly j elements of A is C(|A|, j) · C(|B|, k-j).
+  assumptions:
+  - $A,B$は有限集合
+  - $A\cap B=\emptyset$
+  - $j\leq k$
+  quantifiers:
+  - 任意の有限集合$A,B$と自然数$k,j$
+  conclusion: 個数は$\binom{|A|}{j}\binom{|B|}{k-j}$である。
+  answer: $A,B$を共通部分をもたない有限集合、$j\leq k$を自然数とする。$A\cup B$の$k$元部分集合$U$で$|U\cap A|=j$であるものに、組$(U\cap A,U\cap B)$を対応させる。$U$は$U\cap A$と$U\cap B$に重なりなく分かれるので$|U\cap B|=k-j$である。逆に、$A$の$j$元部分集合$X$と$B$の$(k-j)$元部分集合$Y$に対し、$U=X\cup Y$は要素数$k$で、$U\cap A=X$、$U\cap B=Y$を満たす。この2つの対応は互いに逆である。積の法則より個数は$\binom{|A|}{j}\binom{|B|}{k-j}$である。
+  strategy: Split each subset into its parts in A and in B.
+  sketch:
+  - 'setup: Send U to the pair (U ∩ A, U ∩ B).'
+  - 'derive: Since A and B are disjoint, |U ∩ B| = k - j.'
+  - 'construct: The inverse sends (X, Y) to X ∪ Y.'
+  - 'derive: Disjointness gives (X ∪ Y) ∩ A = X and (X ∪ Y) ∩ B = Y.'
+  - 'conclude: The product rule gives C(|A|, j) C(|B|, k-j).'
+  openmath: (forall (A B k j) (-> (and (in (size A) N) (in (size B) N) (= (inter A B) emptyset) (in k N) (in j N) (<= j k)) (= (size (suchthat (k_subsets (union A B) k) (lambda (U) (= (size (inter U A)) j)))) (* (binom (size A) j) (binom (size B) (- k j))))))
+  hard_negative:
+    statement: $A,B$が共通部分をもっていても、個数は$\binom{|A|}{j}\binom{|B|}{k-j}$である。
+    reason: $A=B=\{a,b\}$、$k=2$、$j=1$では、$A\cup B$の$2$元部分集合は$\{a,b\}$だけで$A$の要素を$2$個含むので、個数は$0$である。一方、式は$\binom{2}{1}\binom{2}{1}=4$を与える。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (A B : Finset α) (k j : ℕ), Disjoint A B → j ≤ k → (((A ∪ B).powersetCard k).filter (fun U => (U ∩ A).card = j)).card = A.card.choose j * B.card.choose (k - j)
+  proof: |
+    by
+      intro α _ A B k j hd hjk
+      rw [← Finset.card_powersetCard, ← Finset.card_powersetCard, ← Finset.card_product]
+      refine Finset.card_nbij' (fun U => (U ∩ A, U ∩ B)) (fun p => p.1 ∪ p.2) ?_ ?_ ?_ ?_
+      · intro U hU
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_powersetCard] at hU
+        obtain ⟨⟨hsub, hk⟩, hj⟩ := hU
+        have hsplit : (U ∩ A).card + (U ∩ B).card = k := by
+          rw [← hk, ← Finset.card_union_of_disjoint (Finset.disjoint_of_subset_left Finset.inter_subset_right (Finset.disjoint_of_subset_right Finset.inter_subset_right hd)), ← Finset.inter_union_distrib_left, Finset.inter_eq_left.mpr hsub]
+        simp only [Finset.mem_coe, Finset.mem_product, Finset.mem_powersetCard]
+        refine ⟨⟨Finset.inter_subset_right, hj⟩, Finset.inter_subset_right, ?_⟩
+        omega
+      · rintro ⟨X, Y⟩ hp
+        simp only [Finset.mem_coe, Finset.mem_product, Finset.mem_powersetCard] at hp
+        obtain ⟨⟨hX, hXc⟩, hY, hYc⟩ := hp
+        have hXY : Disjoint X Y := Finset.disjoint_of_subset_left hX (Finset.disjoint_of_subset_right hY hd)
+        have hYA : Y ∩ A = ∅ := by
+          rw [← Finset.disjoint_iff_inter_eq_empty]
+          exact (Finset.disjoint_of_subset_left hY hd.symm)
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_powersetCard]
+        refine ⟨⟨Finset.union_subset_union hX hY, ?_⟩, ?_⟩
+        · rw [Finset.card_union_of_disjoint hXY, hXc, hYc]; omega
+        · rw [Finset.union_inter_distrib_right, hYA, Finset.union_empty, Finset.inter_eq_left.mpr hX, hXc]
+      · intro U hU
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_powersetCard] at hU
+        simp only
+        rw [← Finset.inter_union_distrib_left, Finset.inter_eq_left.mpr hU.1.1]
+      · rintro ⟨X, Y⟩ hp
+        simp only [Finset.mem_coe, Finset.mem_product, Finset.mem_powersetCard] at hp
+        obtain ⟨⟨hX, _⟩, hY, _⟩ := hp
+        have hYA : Y ∩ A = ∅ := by
+          rw [← Finset.disjoint_iff_inter_eq_empty]
+          exact (Finset.disjoint_of_subset_left hY hd.symm)
+        have hXB : X ∩ B = ∅ := by
+          rw [← Finset.disjoint_iff_inter_eq_empty]
+          exact (Finset.disjoint_of_subset_left hX hd)
+        simp only [Prod.mk.injEq]
+        constructor
+        · rw [Finset.union_inter_distrib_right, hYA, Finset.union_empty, Finset.inter_eq_left.mpr hX]
+        · rw [Finset.union_inter_distrib_right, hXB, Finset.empty_union, Finset.inter_eq_left.mpr hY]
+- id: binary_words_fixed_ones_count
+  kind: textbook
+  level: high
+  topic: 場合の数・同じものを含む順列（2種類）
+  statement: 2種類の文字からなる長さ$m+n$の列のうち、一方の文字がちょうど$m$個であるものの個数は$\binom{m+n}{m}$である。格子上の最短経路の数はこの形で数えられる。
+  statement_en: The number of words of length m+n over a two-letter alphabet in which one given letter occurs exactly m times is C(m+n, m). Shortest lattice paths are counted in this form.
+  assumptions:
+  - $m,n$は自然数
+  quantifiers:
+  - 任意の自然数$m,n$
+  conclusion: 個数は$\binom{m+n}{m}$である。
+  answer: $m,n$を自然数とし、文字を$0,1$とする。長さ$m+n$の列$\omega$に、$\omega_i=1$となる位置$i$の集合を対応させる。$1$がちょうど$m$個である列には$m$元部分集合が対応する。逆に、位置の$m$元部分集合$S$に対し、$i\in S$で$\omega_i=1$、$i\notin S$で$\omega_i=0$とする列が定まる。この2つの対応は互いに逆である。よって列の個数は$\{1,\dots,m+n\}$の$m$元部分集合の個数$\binom{m+n}{m}$に等しい。
+  strategy: A word is determined by the set of positions of the given letter.
+  sketch:
+  - 'setup: Send a word to the set of positions where the letter 1 occurs.'
+  - 'derive: Words with exactly m ones correspond to m-element position sets.'
+  - 'construct: A position set S defines the word that has 1 exactly on S.'
+  - 'conclude: This bijection gives C(m+n, m) words.'
+  openmath: (forall (m n) (-> (and (in m N) (in n N)) (= (size (suchthat (function_set (integer_range 1 (+ m n)) (integer_range 0 1)) (lambda (w) (= (size (suchthat (integer_range 1 (+ m n)) (lambda (i) (= (fn_value w i) 1)))) m)))) (binom (+ m n) m))))
+  hard_negative:
+    statement: 個数は$(m+n)!/m!$である。
+    reason: 残りの$n$個も同じ文字なので、$n!$でも割る必要がある。$m=n=1$では列は$2$個で式も$2$だが、$m=1$、$n=2$では列は$3$個、式は$6$である。
+  target: |
+    ∀ m n : ℕ, (Finset.univ.filter (fun ω : Fin (m + n) → Bool => (Finset.univ.filter (fun i => ω i = true)).card = m)).card = (m + n).choose m
+  proof: |
+    by
+      intro m n
+      have : (m + n).choose m = (Finset.powersetCard m (Finset.univ : Finset (Fin (m + n)))).card := by
+        rw [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+      rw [this]
+      refine Finset.card_nbij' (fun ω => Finset.univ.filter (fun i => ω i = true)) (fun S i => decide (i ∈ S)) ?_ ?_ ?_ ?_
+      · intro ω hω
+        simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hω
+        simp only [Finset.mem_coe, Finset.mem_powersetCard]
+        exact ⟨Finset.subset_univ _, hω⟩
+      · intro S hS
+        simp only [Finset.mem_coe, Finset.mem_powersetCard] at hS
+        simp [hS.2]
+      · intro ω _
+        funext i
+        cases h : ω i <;> simp [h]
+      · intro S _
+        ext i
+        simp
+- id: words_given_letter_counts_multinomial
+  kind: textbook
+  level: high
+  topic: 場合の数・同じものを含む順列
+  statement: 同じものを含む順列の一般形。有限集合$\alpha$の各位置に文字$i\in\iota$を割り当てる写像のうち、各文字$i$がちょうど$c_i$回現れるものの個数を$N$とする。$\sum_i c_i=|\alpha|$なら$N\prod_i c_i!=|\alpha|!$である。
+  statement_en: 'Permutations with repetition, general form: among the maps from a finite set α of positions to a finite set ι of letters, let N be the number in which each letter i occurs exactly c_i times. If Σ_i c_i = |α|, then N · Π_i c_i! = |α|!.'
+  assumptions:
+  - $\alpha,\iota$は有限集合
+  - $c:\iota\to\mathbb{N}$
+  - $\sum_{i\in\iota}c_i=|\alpha|$
+  quantifiers:
+  - 任意の有限集合$\alpha,\iota$と$\sum_i c_i=|\alpha|$を満たす$c$
+  conclusion: $N\prod_{i\in\iota}c_i!=|\alpha|!$である。
+  answer: $\alpha,\iota$を有限集合とし、$c:\iota\to\mathbb{N}$は$\sum_i c_i=|\alpha|$を満たすとする。$X$を、各$i$がちょうど$c_i$回現れる写像$\omega:\alpha\to\iota$全体とし、$N=|X|$とする。$\sum_i c_i=|\alpha|$より、$\alpha$を要素数$c_i$の組に分けることで$\omega_0\in X$が1つとれる。置換$\sigma$に$\omega_0\circ\sigma$を対応させる写像$\Phi$を考えると、$\Phi$の値は$X$に入る。$\omega\in X$なら、$\omega$と$\omega_0$の各文字の位置の個数が等しいので、文字ごとに位置を対応させて$\omega_0\circ\tau=\omega$となる置換$\tau$がとれる。$\omega_0\circ\sigma=\omega$であることは$\sigma\tau^{-1}$が$\omega_0$を保つことと同値である。$\omega_0$を保つ置換は同じ文字の位置の中で入れ替えるものだけなので、$\prod_i c_i!$個ある。よって$\Phi$の各$\omega\in X$の逆像は$\prod_i c_i!$個であり、置換全体の個数を数えて$N\prod_i c_i!=|\alpha|!$を得る。
+  strategy: Map permutations onto X by composing with a base word; every fibre has size Π c_i!.
+  sketch:
+  - 'setup: Let X be the set of maps with the prescribed letter counts.'
+  - 'construct: Since Σ c_i = |α|, choose a base map ω₀ in X.'
+  - 'derive: The map σ to ω₀ ∘ σ sends permutations into X.'
+  - 'construct: For ω in X, match positions letter by letter to get τ with ω₀ ∘ τ = ω.'
+  - 'derive: The fibre over ω is a translate of the stabilizer of ω₀.'
+  - 'derive: The stabilizer permutes positions within each letter class, so it has Π c_i! elements.'
+  - 'conclude: Counting all |α|! permutations by fibres gives N Π c_i! = |α|!.'
+  openmath: (forall (A I c) (-> (and (in (size A) N) (in (size I) N) (forall (i) (-> (in i I) (in (fn_value c i) N))) (= (sum I (lambda (i) (fn_value c i))) (size A))) (= (* (size (suchthat (function_set A I) (lambda (w) (forall (i) (-> (in i I) (= (size (suchthat A (lambda (x) (= (fn_value w x) i)))) (fn_value c i))))))) (product I (lambda (i) (factorial (fn_value c i))))) (factorial (size A)))))
+  hard_negative:
+    statement: 個数は$|\alpha|!/\sum_i c_i!$である。
+    reason: 割るのは階乗の和ではなく積である。$c=(1,1)$なら列は$2$個だが、この式は$2/2=1$を与える。
+  target: |
+    ∀ (α ι : Type*) [Fintype α] [DecidableEq α] [Fintype ι] [DecidableEq ι] (c : ι → ℕ), ∑ i, c i = Fintype.card α → (Finset.univ.filter (fun ω : α → ι => ∀ i, (Finset.univ.filter (fun x => ω x = i)).card = c i)).card * ∏ i, (c i).factorial = (Fintype.card α).factorial
+  proof: |
+    by
+      classical
+      intro α ι _ _ _ _ c hc
+      have hcard : Fintype.card α = Fintype.card (Σ i, Fin (c i)) := by
+        rw [Fintype.card_sigma]
+        simp [hc]
+      let e : α ≃ Σ i, Fin (c i) := Fintype.equivOfCardEq hcard
+      let ω₀ : α → ι := fun x => (e x).1
+      have hfib : ∀ (ω : α → ι) (i : ι), Fintype.card {x // ω x = i} = (Finset.univ.filter (fun x => ω x = i)).card := fun ω i => Fintype.card_subtype _
+      have hω₀ : ∀ i, Fintype.card {x // ω₀ x = i} = c i := by
+        intro i
+        have e1 : {x // ω₀ x = i} ≃ Fin (c i) :=
+          (e.subtypeEquiv (p := fun x => ω₀ x = i) (q := fun s : (Σ j, Fin (c j)) => s.1 = i) (fun x => Iff.rfl)).trans (Equiv.sigmaSubtype i)
+        rw [Fintype.card_congr e1, Fintype.card_fin]
+      have hX : ∀ ω : α → ι, ω ∈ Finset.univ.filter (fun ω : α → ι => ∀ i, (Finset.univ.filter (fun x => ω x = i)).card = c i) ↔ ∀ i, Fintype.card {x // ω x = i} = c i := by
+        intro ω
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, hfib]
+      have hstab : Fintype.card {g : Equiv.Perm α // ω₀ ∘ g = ω₀} = ∏ i, (c i).factorial := by
+        rw [DomMulAct.stabilizer_card]
+        exact Finset.prod_congr rfl fun i _ => by rw [hω₀ i]
+      have hmaps : ∀ σ ∈ (Finset.univ : Finset (Equiv.Perm α)), ω₀ ∘ σ ∈ Finset.univ.filter (fun ω : α → ι => ∀ i, (Finset.univ.filter (fun x => ω x = i)).card = c i) := by
+        intro σ _
+        rw [hX]
+        intro i
+        rw [← hω₀ i]
+        exact Fintype.card_congr (σ.subtypeEquiv (fun x => Iff.rfl))
+      have hfiber : ∀ ω ∈ Finset.univ.filter (fun ω : α → ι => ∀ i, (Finset.univ.filter (fun x => ω x = i)).card = c i), (Finset.univ.filter (fun σ : Equiv.Perm α => ω₀ ∘ σ = ω)).card = ∏ i, (c i).factorial := by
+        intro ω hω
+        rw [hX] at hω
+        have ec : ∀ i, {x // ω x = i} ≃ {x // ω₀ x = i} := fun i => Fintype.equivOfCardEq (by rw [hω i, hω₀ i])
+        let τ : Equiv.Perm α := Equiv.ofFiberEquiv ec
+        have hτ : ∀ x, ω₀ (τ x) = ω x := fun x => Equiv.ofFiberEquiv_map ec x
+        rw [← hstab, Fintype.card_subtype]
+        refine Finset.card_equiv (Equiv.mulRight τ⁻¹) ?_
+        intro σ
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+        constructor
+        · intro h
+          funext x
+          have := congrFun h (τ⁻¹ x)
+          simp only [Function.comp, Equiv.coe_mulRight, Equiv.Perm.coe_mul] at this ⊢
+          rw [this]
+          have h2 := hτ (τ⁻¹ x)
+          have h3 : τ (τ⁻¹ x) = x := by simp
+          rw [h3] at h2
+          exact h2.symm
+        · intro h
+          funext x
+          have := congrFun h (τ x)
+          simp only [Function.comp, Equiv.coe_mulRight, Equiv.Perm.coe_mul] at this ⊢
+          have h3 : τ⁻¹ (τ x) = x := by simp
+          rw [h3] at this
+          rw [this, hτ]
+      have htotal := Finset.card_eq_sum_card_fiberwise hmaps
+      rw [Finset.sum_congr rfl hfiber, Finset.sum_const, smul_eq_mul, Finset.card_univ, Fintype.card_perm] at htotal
+      exact htotal.symm
+- id: multiset_combination_count
+  kind: textbook
+  level: high
+  topic: 場合の数・重複組合せ
+  statement: 重複組合せの公式。空でない有限集合$\alpha$から重複を許して$k$個選ぶ組合せの総数は、$n=|\alpha|$として$\binom{n+k-1}{k}$である。
+  statement_en: 'Combinations with repetition: the number of k-element multisets with elements in a finite nonempty set α is C(n+k-1, k), where n = |α|.'
+  assumptions:
+  - $\alpha$は空でない有限集合
+  - $n=|\alpha|$
+  - $k$は自然数
+  quantifiers:
+  - 任意の空でない有限集合$\alpha$と自然数$k$
+  conclusion: 重複組合せの総数は$\binom{n+k-1}{k}$である。
+  answer: $\alpha$を要素数$n\geq1$の有限集合、$k$を自然数とする。$\alpha$の要素を$a_1,\dots,a_n$と並べる。重複を許して$k$個選ぶ組合せは、$a_i$を選ぶ個数$x_i$の列で定まり、$x_1+\dots+x_n=k$である。この列に、$x_1$個の$\circ$、仕切り$|$、$x_2$個の$\circ$、仕切り$|$、と続く並びを対応させる。この並びは$k$個の$\circ$と$n-1$個の仕切りからなる長さ$n+k-1$の列であり、逆に、そのような列から$x_i$が読み取れる。したがって総数は、長さ$n+k-1$の列で$\circ$の位置を$k$個選ぶ方法の数$\binom{n+k-1}{k}$に等しい。
+  strategy: Encode a multiset by its multiplicities as a row of k circles and n-1 separators.
+  sketch:
+  - 'setup: A multiset is determined by its multiplicities x_1, ..., x_n with sum k.'
+  - 'construct: Write x_1 circles, a separator, x_2 circles, and so on.'
+  - 'derive: This gives a bijection with words having k circles and n-1 separators.'
+  - 'conclude: Choosing the positions of the circles gives C(n+k-1, k).'
+  openmath: (forall (A k) (-> (and (in (size A) N) (> (size A) 0) (in k N)) (= (size (multiset_choices A k)) (binom (- (+ (size A) k) 1) k))))
+  hard_negative:
+    statement: 重複組合せの総数は$n^k$である。
+    reason: $n^k$は順序を区別する重複順列の数である。$n=2$、$k=2$では重複組合せは$3$個だが$n^k=4$である。
+  target: |
+    ∀ (α : Type*) [Fintype α] [DecidableEq α] [Nonempty α] (k : ℕ), Fintype.card (Sym α k) = (Fintype.card α + k - 1).choose k
+  proof: |
+    by
+      intro α _ _ _ k
+      exact Sym.card_sym_eq_choose k
+- id: nat_solutions_count
+  kind: textbook
+  level: high
+  topic: 場合の数・非負整数解の個数
+  statement: 自然数$n,r$について、$x_0+x_1+\dots+x_n=r$を満たす非負整数の組$(x_0,\dots,x_n)$の個数は$\binom{n+r}{n}$である。
+  statement_en: For natural numbers n and r, the number of tuples of nonnegative integers (x_0, ..., x_n) with x_0 + ... + x_n = r is C(n+r, n).
+  assumptions:
+  - $n,r$は自然数
+  - 各$x_i$は非負整数
+  quantifiers:
+  - 任意の自然数$n,r$
+  conclusion: 解の個数は$\binom{n+r}{n}$である。
+  answer: $n,r$を自然数とする。解$(x_0,\dots,x_n)$に、$x_0$個の$\circ$、仕切り$|$、$x_1$個の$\circ$、仕切り$|$、…、$x_n$個の$\circ$と続く並びを対応させる。これは$r$個の$\circ$と$n$個の仕切りからなる長さ$n+r$の列である。逆に、そのような列の仕切りで区切られた$\circ$の個数を読むと解が得られる。この2つの対応は互いに逆である。よって解の個数は、長さ$n+r$の列で仕切りの位置を$n$個選ぶ方法の数$\binom{n+r}{n}$に等しい。
+  strategy: 'Stars and bars: encode a solution by r circles and n separators.'
+  sketch:
+  - 'setup: Write x_0 circles, a separator, x_1 circles, and so on.'
+  - 'derive: This produces a word with r circles and n separators.'
+  - 'construct: Conversely, read the numbers of circles between the separators.'
+  - 'conclude: Choosing the n separator positions among n+r gives C(n+r, n).'
+  openmath: (forall (n r) (-> (and (in n N) (in r N)) (= (size (suchthat (function_set (integer_range 0 n) N) (lambda (x) (= (sum (integer_range 0 n) (lambda (i) (fn_value x i))) r)))) (binom (+ n r) n))))
+  hard_negative:
+    statement: 正の整数解の個数も$\binom{n+r}{n}$である。
+    reason: 正の整数解では各$x_i$が$1$以上である。$n=1$、$r=1$では非負整数解は$2$個だが、正の整数解は$0$個である。
+  target: |
+    ∀ n r : ℕ, Set.ncard {x : Fin (n + 1) → ℕ | ∑ i, x i = r} = (n + r).choose n
+  proof: |
+    by
+      intro n r
+      have h1 : Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = r} = Nat.card (Sym (Fin (n + 1)) r) := Nat.card_congr (Sym.equivNatSumOfFintype (Fin (n + 1)) r).symm
+      have h2 : Nat.card (Sym (Fin (n + 1)) r) = (n + r).choose r := by
+        rw [Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_fin]
+        congr 1
+        omega
+      rw [← Nat.card_coe_set_eq]
+      change Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = r} = _
+      rw [h1, h2]
+      exact (Nat.choose_symm_add).symm
+- id: positive_solutions_count
+  kind: gap
+  level: high
+  topic: 場合の数・正の整数解の個数
+  statement: 自然数$n,r$について、$x_0+x_1+\dots+x_n=r+1$を満たす正の整数の組$(x_0,\dots,x_n)$の個数は$\binom{r}{n}$である。
+  statement_en: For natural numbers n and r, the number of tuples of positive integers (x_0, ..., x_n) with x_0 + ... + x_n = r + 1 is C(r, n).
+  assumptions:
+  - $n,r$は自然数
+  - 各$x_i\geq1$
+  quantifiers:
+  - 任意の自然数$n,r$
+  conclusion: 解の個数は$\binom{r}{n}$である。
+  answer: $n,r$を自然数とする。$r<n$のとき、各$x_i\geq1$なら和は$n+1$以上で$r+1$を超えるので解はなく、$\binom{r}{n}=0$と一致する。$r\geq n$のとき$r=n+d$とおく。解$(x_i)$に$y_i=x_i-1$を対応させると、$y_i$は非負整数で$\sum_{i=0}^{n}y_i=d$である。逆に$y_i$から$x_i=y_i+1$で解が戻る。$\sum_{i=0}^{n}y_i=d$の非負整数解は、$d$個の$\circ$と$n$個の仕切りの並びと対応するので$\binom{n+d}{n}$個ある。$n+d=r$なので解の個数は$\binom{r}{n}$である。
+  strategy: Subtract 1 from each variable and count nonnegative solutions by stars and bars.
+  sketch:
+  - 'case_split: If r < n, the sum of positive integers exceeds r + 1, so there are no solutions and C(r, n) = 0.'
+  - 'setup: If r = n + d, set y_i = x_i - 1.'
+  - 'derive: This is a bijection with nonnegative solutions of Σ y_i = d.'
+  - 'apply_theorem: Stars and bars gives C(n+d, n) such solutions.'
+  - 'conclude: Since n + d = r, the count is C(r, n).'
+  openmath: (forall (n r) (-> (and (in n N) (in r N)) (= (size (suchthat (function_set (integer_range 0 n) N) (lambda (x) (and (forall (i) (-> (in i (integer_range 0 n)) (>= (fn_value x i) 1))) (= (sum (integer_range 0 n) (lambda (i) (fn_value x i))) (+ r 1)))))) (binom r n))))
+  hard_negative:
+    statement: 解の個数は$\binom{n+r}{n}$である。
+    reason: これは$x_0+\dots+x_n=r$の非負整数解の個数である。$n=1$、$r=0$では正の整数解はなく$0$個だが、この式は$1$を与える。
+  target: |
+    ∀ n r : ℕ, Set.ncard {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = r.choose n
+  proof: |
+    by
+      intro n r
+      by_cases hr : r < n
+      · rw [Nat.choose_eq_zero_of_lt hr]
+        have : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = ∅ := by
+          ext x
+          simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
+          intro hx hs
+          have : ∑ i : Fin (n + 1), 1 ≤ ∑ i, x i := Finset.sum_le_sum fun i _ => hx i
+          simp at this
+          omega
+        rw [this, Set.ncard_empty]
+      · obtain ⟨d, rfl⟩ : ∃ d, r = n + d := ⟨r - n, by omega⟩
+        have hcount : Set.ncard {y : Fin (n + 1) → ℕ | ∑ i, y i = d} = (n + d).choose n := by
+          have h1 : Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = Nat.card (Sym (Fin (n + 1)) d) := Nat.card_congr (Sym.equivNatSumOfFintype (Fin (n + 1)) d).symm
+          have h2 : Nat.card (Sym (Fin (n + 1)) d) = (n + d).choose d := by
+            rw [Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_fin]
+            congr 1
+            omega
+          rw [← Nat.card_coe_set_eq]
+          change Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = _
+          rw [h1, h2]
+          exact (Nat.choose_symm_add).symm
+        rw [← hcount]
+        have hsum : ∀ y : Fin (n + 1) → ℕ, ∑ i, (y i + 1) = ∑ i, y i + (n + 1) := by
+          intro y
+          rw [Finset.sum_add_distrib]
+          simp
+        have himg : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = n + d + 1} = (fun y i => y i + 1) '' {y : Fin (n + 1) → ℕ | ∑ i, y i = d} := by
+          ext x
+          simp only [Set.mem_setOf_eq, Set.mem_image]
+          constructor
+          · rintro ⟨hx, hs⟩
+            refine ⟨fun i => x i - 1, ?_, ?_⟩
+            · have e : ∑ i, ((x i - 1) + 1) = n + d + 1 := by
+                rw [← hs]
+                exact Finset.sum_congr rfl fun i _ => Nat.sub_add_cancel (hx i)
+              rw [hsum] at e
+              show ∑ i, (x i - 1) = d
+              omega
+            · funext i
+              exact Nat.sub_add_cancel (hx i)
+          · rintro ⟨y, hy, rfl⟩
+            refine ⟨fun i => Nat.le_add_left 1 (y i), ?_⟩
+            rw [hsum, hy]
+            omega
+        rw [himg]
+        refine Set.ncard_image_of_injective _ ?_
+        intro y y' h
+        funext i
+        have := congrFun h i
+        simpa using this
+- id: strictly_increasing_sequences_count
+  kind: gap
+  level: high
+  topic: 場合の数・大小関係のついた列
+  statement: $\{0,\dots,n-1\}$の値をとる長さ$k$の狭義単調増加列$a_1<a_2<\dots<a_k$の個数は$\binom{n}{k}$である。
+  statement_en: The number of strictly increasing sequences a_1 < a_2 < ... < a_k of length k with values in {0, ..., n-1} is C(n, k).
+  assumptions:
+  - $n,k$は自然数
+  - $a:\{1,\dots,k\}\to\{0,\dots,n-1\}$は狭義単調増加
+  quantifiers:
+  - 任意の自然数$n,k$
+  conclusion: 個数は$\binom{n}{k}$である。
+  answer: $n,k$を自然数とする。狭義単調増加列$a$に値の集合$\{a_1,\dots,a_k\}$を対応させる。狭義単調増加列の項はすべて異なるので、これは$\{0,\dots,n-1\}$の$k$元部分集合である。逆に$k$元部分集合が与えられると、その要素を小さい順に並べた列が狭義単調増加列になる。値の集合が等しい2つの狭義単調増加列は、どちらも小さい順の並びなので一致する。よってこの対応は全単射であり、個数は$\binom{n}{k}$である。
+  strategy: A strictly increasing sequence is the same as a k-element subset listed in increasing order.
+  sketch:
+  - 'setup: Send a sequence to its set of values.'
+  - 'derive: Strict increase makes the terms distinct, so the set has k elements.'
+  - 'construct: A k-subset listed in increasing order gives a preimage.'
+  - 'derive: Two strictly increasing sequences with the same value set coincide.'
+  - 'conclude: So the count is C(n, k).'
+  openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (size (suchthat (function_set (integer_range 1 k) (integer_range 0 (- n 1))) (lambda (a) (strictly_increasing_fn a)))) (binom n k))))
+  hard_negative:
+    statement: 広義単調増加列$a_1\leq\dots\leq a_k$の個数も$\binom{n}{k}$である。
+    reason: 広義単調増加列は重複組合せで数える。$n=2$、$k=2$では広義単調増加列は$3$個だが、$\binom{2}{2}=1$である。
+  target: |
+    ∀ n k : ℕ, Set.ncard {a : Fin k → Fin n | StrictMono a} = n.choose k
+  proof: |
+    by
+      intro n k
+      have hc : n.choose k = (Finset.powersetCard k (Finset.univ : Finset (Fin n))).card := by
+        rw [Finset.card_powersetCard, Finset.card_univ, Fintype.card_fin]
+      rw [hc, ← Set.ncard_coe_finset]
+      have himg : ((Finset.powersetCard k (Finset.univ : Finset (Fin n)) : Finset (Finset (Fin n))) : Set (Finset (Fin n))) = (fun a : Fin k → Fin n => Finset.univ.image a) '' {a : Fin k → Fin n | StrictMono a} := by
+        ext S
+        simp only [Finset.mem_coe, Finset.mem_powersetCard, Set.mem_image, Set.mem_setOf_eq]
+        constructor
+        · rintro ⟨_, hS⟩
+          exact ⟨S.orderEmbOfFin hS, (S.orderEmbOfFin hS).strictMono, Finset.image_orderEmbOfFin_univ S hS⟩
+        · rintro ⟨a, ha, rfl⟩
+          refine ⟨Finset.subset_univ _, ?_⟩
+          rw [Finset.card_image_of_injective _ ha.injective]
+          simp
+      rw [himg]
+      symm
+      refine Set.InjOn.ncard_image ?_
+      intro a ha b hb hab
+      refine (StrictMono.range_inj ha hb).mp ?_
+      have := congrArg (fun s : Finset (Fin n) => (s : Set (Fin n))) hab
+      simpa using this
+- id: binom_consecutive_ratio
+  kind: gap
+  level: high
+  topic: 二項係数・隣り合う項の比
+  statement: $k\leq n$を満たす自然数$n,k$について、$\binom{n}{k+1}(k+1)=\binom{n}{k}(n-k)$が成り立つ。
+  statement_en: For natural numbers k ≤ n, C(n, k+1)(k+1) = C(n, k)(n-k).
+  assumptions:
+  - $n,k$は自然数
+  - $k\leq n$
+  quantifiers:
+  - $k\leq n$を満たす任意の自然数$n,k$
+  conclusion: $\binom{n}{k+1}(k+1)=\binom{n}{k}(n-k)$である。
+  answer: $n,k$を$k\leq n$を満たす自然数とする。$k=n$なら$\binom{n}{k+1}=0$、$n-k=0$で両辺は$0$である。$k<n$のとき、$n$人から$k+1$人の委員を選び、そのうち$1$人を委員長に選ぶ方法を2通りに数える。委員を先に選ぶと$\binom{n}{k+1}(k+1)$通りである。委員長以外の$k$人を先に選び、残りの$n-k$人から委員長を選ぶと$\binom{n}{k}(n-k)$通りである。よって両者は等しい。
+  strategy: Double count a committee of k+1 people with a chair.
+  sketch:
+  - 'case_split: If k = n, both sides are 0.'
+  - 'setup: If k < n, count committees of k+1 people from n with a chosen chair.'
+  - 'derive: Choosing the committee first gives C(n, k+1)(k+1).'
+  - 'derive: Choosing the k ordinary members first gives C(n, k)(n-k).'
+  - 'conclude: The two counts are equal.'
+  openmath: (forall (n k) (-> (and (in n N) (in k N) (<= k n)) (= (* (binom n (+ k 1)) (+ k 1)) (* (binom n k) (- n k)))))
+  hard_negative:
+    statement: $\binom{n}{k+1}(k+1)=\binom{n}{k}(n-k+1)$である。
+    reason: 残りの人数は$n-k$である。$n=1$、$k=0$では左辺は$1$、右辺は$2$である。
+  target: |
+    ∀ n k : ℕ, k ≤ n → n.choose (k + 1) * (k + 1) = n.choose k * (n - k)
+  proof: |
+    by
+      intro n k _
+      exact Nat.choose_succ_right_eq n k
+- id: binom_choose_twice
+  kind: gap
+  level: high
+  topic: 二項係数・2段階の選択
+  statement: 自然数$n,k,s$で$s\leq k\leq n$のとき、$\binom{n}{k}\binom{k}{s}=\binom{n}{s}\binom{n-s}{k-s}$が成り立つ。
+  statement_en: For natural numbers n, k, s with s ≤ k ≤ n, C(n, k) C(k, s) = C(n, s) C(n-s, k-s).
+  assumptions:
+  - $n,k,s$は自然数
+  - $s\leq k\leq n$
+  quantifiers:
+  - $s\leq k\leq n$を満たす任意の自然数$n,k,s$
+  conclusion: $\binom{n}{k}\binom{k}{s}=\binom{n}{s}\binom{n-s}{k-s}$である。
+  answer: $n,k,s$を$s\leq k\leq n$を満たす自然数とする。$n$元集合の部分集合の組$S\subseteq K$で$|K|=k$、$|S|=s$であるものを2通りに数える。$K$を先に選ぶと$\binom{n}{k}\binom{k}{s}$通りである。$S$を先に選び、残りの$n-s$個から$K\setminus S$となる$k-s$個を選ぶと$\binom{n}{s}\binom{n-s}{k-s}$通りである。よって両者は等しい。
+  strategy: Double count pairs of nested subsets S ⊆ K.
+  sketch:
+  - 'setup: Count pairs S ⊆ K of subsets of an n-set with |S| = s and |K| = k.'
+  - 'derive: Choosing K first gives C(n, k) C(k, s).'
+  - 'derive: Choosing S first gives C(n, s) C(n-s, k-s).'
+  - 'conclude: The two counts are equal.'
+  openmath: (forall (n k s) (-> (and (in n N) (in k N) (in s N) (<= s k) (<= k n)) (= (* (binom n k) (binom k s)) (* (binom n s) (binom (- n s) (- k s))))))
+  hard_negative:
+    statement: $\binom{n}{k}\binom{k}{s}=\binom{n}{s}\binom{n}{k-s}$である。
+    reason: 2段階目で選べるのは残りの$n-s$個からである。$n=k=s=1$では成り立つが、$n=2$、$k=2$、$s=1$では左辺は$2$、右辺は$4$である。
+  target: |
+    ∀ n k s : ℕ, s ≤ k → k ≤ n → n.choose k * k.choose s = n.choose s * (n - s).choose (k - s)
+  proof: |
+    by
+      intro n k s hsk _
+      exact Nat.choose_mul hsk
+- id: binom_increase_iff
+  kind: gap
+  level: high
+  topic: 二項係数・増減
+  statement: $k<n$のとき、$\binom{n}{k}\leq\binom{n}{k+1}$であることと$2k+1\leq n$であることは同値である。
+  statement_en: If k < n, then C(n, k) ≤ C(n, k+1) if and only if 2k + 1 ≤ n.
+  assumptions:
+  - $n,k$は自然数
+  - $k<n$
+  quantifiers:
+  - $k<n$を満たす任意の自然数$n,k$
+  conclusion: $\binom{n}{k}\leq\binom{n}{k+1}\iff2k+1\leq n$である。
+  answer: $n,k$を$k<n$を満たす自然数とする。$\binom{n}{k+1}(k+1)=\binom{n}{k}(n-k)$であり、$\binom{n}{k}>0$である。$\binom{n}{k}\leq\binom{n}{k+1}$なら、両辺に$k+1$を掛けて$\binom{n}{k}(k+1)\leq\binom{n}{k}(n-k)$となり、$k+1\leq n-k$、すなわち$2k+1\leq n$を得る。逆に$2k+1\leq n$なら$k+1\leq n-k$なので、$\binom{n}{k}(k+1)\leq\binom{n}{k}(n-k)=\binom{n}{k+1}(k+1)$である。$k+1>0$で割ると$\binom{n}{k}\leq\binom{n}{k+1}$を得る。
+  strategy: Compare consecutive binomial coefficients through their ratio identity.
+  sketch:
+  - 'setup: Use C(n, k+1)(k+1) = C(n, k)(n-k) and C(n, k) > 0.'
+  - 'derive: If C(n, k) ≤ C(n, k+1), multiply by k+1 and cancel C(n, k).'
+  - 'derive: This gives k + 1 ≤ n - k, that is, 2k + 1 ≤ n.'
+  - 'derive: Conversely, 2k + 1 ≤ n gives C(n, k)(k+1) ≤ C(n, k+1)(k+1).'
+  - 'conclude: Cancel k + 1.'
+  openmath: (forall (n k) (-> (and (in n N) (in k N) (< k n)) (<-> (<= (binom n k) (binom n (+ k 1))) (<= (+ (* 2 k) 1) n))))
+  hard_negative:
+    statement: $k<n$のとき、$\binom{n}{k}<\binom{n}{k+1}$であることと$2k+1\leq n$であることは同値である。
+    reason: $n=2k+1$では$\binom{n}{k}=\binom{n}{k+1}$となり、狭義の不等号は成り立たない。例えば$n=3$、$k=1$である。
+  target: |
+    ∀ n k : ℕ, k < n → (n.choose k ≤ n.choose (k + 1) ↔ 2 * k + 1 ≤ n)
+  proof: |
+    by
+      intro n k hk
+      have h := Nat.choose_succ_right_eq n k
+      have hpos : 0 < n.choose k := Nat.choose_pos hk.le
+      constructor
+      · intro hle
+        have h2 : n.choose k * (k + 1) ≤ n.choose k * (n - k) := by
+          rw [← h]
+          exact Nat.mul_le_mul_right _ hle
+        have := Nat.le_of_mul_le_mul_left h2 hpos
+        omega
+      · intro h2k
+        have h2 : n.choose k * (k + 1) ≤ n.choose (k + 1) * (k + 1) := by
+          rw [h]
+          exact Nat.mul_le_mul_left _ (by omega)
+        exact Nat.le_of_mul_le_mul_right h2 (Nat.succ_pos k)
+- id: even_size_subsets_count
+  kind: gap
+  level: high
+  topic: 二項係数・偶数個の部分集合
+  statement: 空でない有限集合$S$の部分集合のうち、要素数が偶数のものはちょうど$2^{|S|-1}$個ある。
+  statement_en: A nonempty finite set S has exactly 2^(|S|-1) subsets of even size.
+  assumptions:
+  - $S$は空でない有限集合
+  quantifiers:
+  - 任意の空でない有限集合$S$
+  conclusion: 要素数が偶数の部分集合は$2^{|S|-1}$個ある。
+  answer: $S$を空でない有限集合とし、$a\in S$を1つ固定する。部分集合$U\subseteq S$に対し、$a\in U$なら$a$を除き、$a\notin U$なら$a$を加えて得られる部分集合を$\varphi(U)$とする。$\varphi(\varphi(U))=U$なので$\varphi$は全単射であり、$U$と$\varphi(U)$の要素数は$1$だけ違う。したがって$\varphi$は要素数が偶数の部分集合と奇数の部分集合の間の全単射である。部分集合は全部で$2^{|S|}$個あるので、要素数が偶数のものは$2^{|S|}/2=2^{|S|-1}$個である。
+  strategy: Toggling a fixed element swaps even-size and odd-size subsets.
+  sketch:
+  - 'setup: Fix an element a of S and toggle its membership.'
+  - 'derive: Toggling is an involution that changes the size by 1.'
+  - 'derive: So it is a bijection between even-size and odd-size subsets.'
+  - 'conclude: Each class has half of the 2^|S| subsets.'
+  openmath: (forall (S) (-> (and (in (size S) N) (> (size S) 0)) (= (size (suchthat (powerset S) (lambda (U) (exists (m) (and (in m N) (= (size U) (* 2 m))))))) (^ 2 (- (size S) 1)))))
+  hard_negative:
+    statement: すべての有限集合$S$について、要素数が偶数の部分集合は要素数が奇数の部分集合と同数である。
+    reason: $S=\emptyset$では空集合だけが部分集合で、偶数個のものが$1$個、奇数個のものが$0$個である。空でないという仮定が必要である。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (S : Finset α), S.Nonempty → (S.powerset.filter (fun U => Even U.card)).card = 2 ^ (S.card - 1)
+  proof: |
+    by
+      intro α _ S hS
+      have h0 : ∑ U ∈ S.powerset, ((-1 : ℤ)) ^ U.card = 0 := Finset.sum_powerset_neg_one_pow_card_of_nonempty hS
+      have h1 : ∑ U ∈ S.powerset, ((-1 : ℤ)) ^ U.card = ((S.powerset.filter (fun U => Even U.card)).card : ℤ) - (S.powerset.filter (fun U => ¬ Even U.card)).card := by
+        rw [← Finset.sum_filter_add_sum_filter_not S.powerset (fun U => Even U.card)]
+        rw [Finset.sum_congr rfl (fun U hU => (Finset.mem_filter.mp hU).2.neg_one_pow), Finset.sum_congr (s₁ := S.powerset.filter (fun U => ¬ Even U.card)) rfl (fun U hU => (Nat.not_even_iff_odd.mp (Finset.mem_filter.mp hU).2).neg_one_pow)]
+        simp
+        ring
+      have h2 := Finset.card_filter_add_card_filter_not (s := S.powerset) (fun U => Even U.card)
+      rw [Finset.card_powerset] at h2
+      have hE : (S.powerset.filter (fun U => Even U.card)).card = (S.powerset.filter (fun U => ¬ Even U.card)).card := by
+        have : ((S.powerset.filter (fun U => Even U.card)).card : ℤ) = (S.powerset.filter (fun U => ¬ Even U.card)).card := by linarith
+        exact_mod_cast this
+      have hpos : 0 < S.card := hS.card_pos
+      obtain ⟨m, hm⟩ : ∃ m, S.card = m + 1 := ⟨S.card - 1, by omega⟩
+      rw [hm, pow_succ] at h2
+      rw [hm, Nat.add_sub_cancel]
+      omega
+- id: trinomial_coeff_product_binom
+  kind: gap
+  level: high
+  topic: 多項定理・多項係数と二項係数
+  statement: 自然数$a,b,c$について、$a!\,b!\,c!\binom{a+b+c}{a}\binom{b+c}{b}=(a+b+c)!$が成り立つ。多項係数を二項係数の積で表す3項の形である。
+  statement_en: For natural numbers a, b, c, a! b! c! C(a+b+c, a) C(b+c, b) = (a+b+c)!. This writes the trinomial coefficient as a product of binomial coefficients.
+  assumptions:
+  - $a,b,c$は自然数
+  quantifiers:
+  - 任意の自然数$a,b,c$
+  conclusion: $a!\,b!\,c!\binom{a+b+c}{a}\binom{b+c}{b}=(a+b+c)!$である。
+  answer: $a,b,c$を自然数とする。一般に自然数$i,j$について$\binom{i+j}{i}i!\,j!=(i+j)!$である。$i=b$、$j=c$とすると$\binom{b+c}{b}b!\,c!=(b+c)!$である。$i=a$、$j=b+c$とすると$\binom{a+b+c}{a}a!\,(b+c)!=(a+b+c)!$である。後者の$(b+c)!$に前者を代入すると$a!\,b!\,c!\binom{a+b+c}{a}\binom{b+c}{b}=(a+b+c)!$を得る。
+  strategy: Apply the factorial formula for binomial coefficients twice.
+  sketch:
+  - 'setup: Use C(i+j, i) i! j! = (i+j)!.'
+  - 'derive: Take i = b and j = c.'
+  - 'derive: Take i = a and j = b + c.'
+  - 'conclude: Substitute the first into the second.'
+  openmath: (forall (a b c) (-> (and (in a N) (in b N) (in c N)) (= (* (* (factorial a) (* (factorial b) (factorial c))) (* (binom (+ a (+ b c)) a) (binom (+ b c) b))) (factorial (+ a (+ b c))))))
+  hard_negative:
+    statement: $a!\,b!\,c!\binom{a+b+c}{a}\binom{a+b+c}{b}=(a+b+c)!$である。
+    reason: 2段階目で選ぶのは残りの$b+c$個からである。$a=b=1$、$c=0$では左辺は$4$、右辺は$2$である。
+  target: |
+    ∀ a b c : ℕ, a.factorial * b.factorial * c.factorial * ((a + b + c).choose a * (b + c).choose b) = (a + b + c).factorial
+  proof: |
+    by
+      intro a b c
+      have h1 : (b + c).choose b * b.factorial * c.factorial = (b + c).factorial := by
+        have := Nat.add_choose_mul_factorial_mul_factorial c b
+        rwa [add_comm c b, mul_right_comm] at this
+      have h2 : (a + (b + c)).choose a * a.factorial * (b + c).factorial = (a + (b + c)).factorial := by
+        have := Nat.add_choose_mul_factorial_mul_factorial (b + c) a
+        rwa [add_comm (b + c) a, mul_right_comm] at this
+      rw [add_assoc a b c, ← h2, ← h1]
+      ring
+- id: multinomial_theorem
+  kind: named
+  level: high
+  topic: 多項定理
+  statement: 多項定理。可換半環の元$f_i\ (i\in s)$と自然数$n$について、$\left(\sum_{i\in s}f_i\right)^n=\sum_{k}\dfrac{n!}{\prod_{i\in s}k_i!}\prod_{i\in s}f_i^{k_i}$が成り立つ。和は$\sum_{i\in s}k_i=n$を満たす自然数の組$(k_i)_{i\in s}$全体にわたる。
+  statement_en: 'Multinomial theorem: for elements f_i (i in a finite set s) of a commutative semiring and a natural number n, (Σ_i f_i)ⁿ = Σ_k M(k) Π_i f_i^(k_i), the sum running over tuples k of natural numbers on s with total n, where M(k) = n!/Π_i k_i! is the multinomial coefficient.'
+  assumptions:
+  - $s$は有限集合
+  - $f_i$は可換半環の元
+  - $n$は自然数
+  quantifiers:
+  - 任意の有限集合$s$、可換半環の元の族$(f_i)$、自然数$n$
+  conclusion: $\left(\sum_{i\in s}f_i\right)^n$は多項係数を係数とする上の和に等しい。
+  answer: $s$を有限集合、$f_i\ (i\in s)$を可換半環の元、$n$を自然数とする。$\left(\sum_{i\in s}f_i\right)^n$を分配法則で展開すると、$n$個の因子それぞれから1つの添字を選ぶ写像$\omega:\{1,\dots,n\}\to s$全体にわたる$\prod_{j=1}^{n}f_{\omega(j)}$の和になる。可換性より、この積は各$i$の出現回数$k_i=|\omega^{-1}(i)|$だけで定まり$\prod_{i\in s}f_i^{k_i}$である。$\sum_i k_i=n$を満たす$(k_i)$を固定すると、各$i$がちょうど$k_i$回現れる写像$\omega$の個数は、同じものを含む順列の個数$n!/\prod_i k_i!$である。よって$(k_i)$ごとにまとめると結論を得る。
+  strategy: Expand the power by distributivity and group the terms by the numbers of occurrences of each index.
+  sketch:
+  - 'setup: Expand the n-fold product; terms are indexed by maps ω from {1, ..., n} to s.'
+  - 'derive: By commutativity, the term depends only on the occurrence counts k_i.'
+  - 'apply_theorem: The number of maps with counts (k_i) is n!/Π_i k_i!.'
+  - 'conclude: Group the terms by (k_i).'
+  openmath: (forall (s K f n) (-> (and (in (size s) N) (comm_semiring K) (forall (i) (-> (in i s) (in (fn_value f i) K))) (in n N)) (= (^ (sum s (lambda (i) (fn_value f i))) n) (sum (weak_compositions s n) (lambda (k) (* (multinomial_coeff s k) (product s (lambda (i) (^ (fn_value f i) (fn_value k i))))))))))
+  hard_negative:
+    statement: $\left(\sum_{i\in s}f_i\right)^n=\sum_{i\in s}f_i^n$である。
+    reason: 実数で$s$が2要素、$f_1=f_2=1$、$n=2$なら左辺は$4$、右辺は$2$である。多項係数のついた混合項は消えない。
+  target: |
+    ∀ (ι R : Type*) [DecidableEq ι] [CommSemiring R] (s : Finset ι) (f : ι → R) (n : ℕ), (∑ i ∈ s, f i) ^ n = ∑ k ∈ Finset.piAntidiag s n, (Nat.multinomial s k : R) * ∏ i ∈ s, f i ^ k i
+  proof: |
+    by
+      intro ι R _ _ s f n
+      exact Finset.sum_pow_eq_sum_piAntidiag s f n
+- id: trinomial_expansion
+  kind: gap
+  level: high
+  topic: 多項定理・3項の展開
+  statement: 多項定理の3項の形。可換半環の元$x,y,z$と自然数$n$について、$(x+y+z)^n=\sum_{i=0}^{n}\sum_{j=0}^{n-i}\binom{n}{i}\binom{n-i}{j}x^iy^jz^{n-i-j}$が成り立つ。
+  statement_en: 'Three-term form of the multinomial theorem: for x, y, z in a commutative semiring and a natural number n, (x+y+z)ⁿ = Σ_{i=0}^{n} Σ_{j=0}^{n-i} C(n,i) C(n-i,j) x^i y^j z^(n-i-j).'
+  assumptions:
+  - $x,y,z$は可換半環の元
+  - $n$は自然数
+  quantifiers:
+  - 任意の可換半環の元$x,y,z$と自然数$n$
+  conclusion: $(x+y+z)^n$は上の2重和に等しい。
+  answer: $x,y,z$を可換半環の元、$n$を自然数とする。二項定理を$x$と$y+z$に適用すると$(x+y+z)^n=\sum_{i=0}^{n}\binom{n}{i}x^i(y+z)^{n-i}$である。各$i$について$(y+z)^{n-i}=\sum_{j=0}^{n-i}\binom{n-i}{j}y^jz^{n-i-j}$である。代入して分配法則を使うと結論を得る。
+  strategy: Apply the binomial theorem twice.
+  sketch:
+  - 'setup: Apply the binomial theorem to x and y + z.'
+  - 'derive: Apply the binomial theorem to (y+z)^(n-i).'
+  - 'conclude: Substitute and distribute.'
+  openmath: (forall (K x y z n) (-> (and (comm_semiring K) (in x K) (in y K) (in z K) (in n N)) (= (^ (+ (+ x y) z) n) (sum (integer_range 0 n) (lambda (i) (sum (integer_range 0 (- n i)) (lambda (j) (* (* (binom n i) (binom (- n i) j)) (* (^ x i) (* (^ y j) (^ z (- (- n i) j))))))))))))
+  hard_negative:
+    statement: $(x+y+z)^n$の$x^iy^jz^{n-i-j}$の係数は$\binom{n}{i}\binom{n}{j}$である。
+    reason: 2段階目は残りの$n-i$個から選ぶ。$n=2$、$i=j=1$では$xy$の係数は$2$だが、この式は$4$を与える。
+  target: |
+    ∀ (R : Type*) [CommSemiring R] (x y z : R) (n : ℕ), (x + y + z) ^ n = ∑ i ∈ Finset.range (n + 1), ∑ j ∈ Finset.range (n - i + 1), (n.choose i : R) * ((n - i).choose j : R) * x ^ i * y ^ j * z ^ (n - i - j)
+  proof: |
+    by
+      intro R _ x y z n
+      rw [add_assoc, add_pow]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [add_pow, Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      ring

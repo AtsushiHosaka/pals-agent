@@ -1,0 +1,1625 @@
+- id: poly_degree_leading_coeff_mul_domain
+  kind: gap
+  level: 2
+  topic: 環論・多項式の次数と最高次係数
+  statement: 整域$A$上の零でない多項式$f,g$について、$\deg(fg)=\deg f+\deg g$であり、$fg$の最高次係数は$f$と$g$の最高次係数の積である。
+  statement_en: For nonzero polynomials f and g over an integral domain, deg(fg) = deg f + deg g and the leading coefficient of fg is the product of the leading coefficients of f and g.
+  assumptions:
+  - $A$は整域
+  - $f,g\in A[X]$は零でない
+  quantifiers:
+  - 任意の整域$A$と零でない多項式$f,g\in A[X]$
+  conclusion: $\deg(fg)=\deg f+\deg g$であり、$fg$の最高次係数は両者の最高次係数の積である。
+  answer: |
+    $A$を整域、$f,g\in A[X]$を零でない多項式とする。$m=\deg f$、$n=\deg g$とおき、$f,g$の最高次係数を$a,b$とする。$a\neq 0$、$b\neq 0$である。
+
+    $f$の$X^i$の係数と$g$の$X^j$の係数の積は、$i+j>m+n$なら$i>m$または$j>n$となるので$0$である。よって$fg$の$X^k$の係数は$k>m+n$で$0$である。$X^{m+n}$の係数に寄与するのは$(i,j)=(m,n)$だけなので、この係数は$ab$である。
+
+    $A$は整域なので$ab\neq 0$である。したがって$\deg(fg)=m+n$であり、$fg$の最高次係数は$ab$である。
+  strategy: Compute the coefficient of X^(m+n) of the product and use that the domain has no zero divisors.
+  sketch:
+  - 'setup: Let m, n be the degrees and a, b the leading coefficients of f, g.'
+  - 'derive: Coefficients of fg above degree m+n vanish.'
+  - 'derive: The coefficient of X^(m+n) equals ab.'
+  - 'conclude: Since ab is nonzero in a domain, the degree is m+n with leading coefficient ab.'
+  openmath: (forall (A f g) (-> (and (integral_domain A) (in f (polynomial_ring A)) (in g (polynomial_ring A)) (!= f 0) (!= g 0)) (and (= (poly_degree (* f g)) (+ (poly_degree f) (poly_degree g))) (= (poly_leading_coeff (* f g)) (* (poly_leading_coeff f) (poly_leading_coeff g))))))
+  hard_negative:
+    statement: 任意の可換環上の零でない多項式$f,g$について$\deg(fg)=\deg f+\deg g$である。
+    reason: $\mathbb{Z}/4\mathbb{Z}$上で$f=g=2X$とすると$fg=0$となり成り立たない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f g : Polynomial R), f ≠ 0 → g ≠ 0 → (f * g).natDegree = f.natDegree + g.natDegree ∧ (f * g).leadingCoeff = f.leadingCoeff * g.leadingCoeff
+  proof: |
+    by
+      intro R _ _ f g hf hg
+      exact ⟨Polynomial.natDegree_mul hf hg, Polynomial.leadingCoeff_mul f g⟩
+- id: poly_degree_add_of_degree_lt
+  kind: gap
+  level: 1
+  topic: 環論・多項式の次数と最高次係数
+  statement: 可換環上の多項式$f,g$が$\deg g<\deg f$を満たすならば、$\deg(f+g)=\deg f$であり、$f+g$の最高次係数は$f$の最高次係数に等しい。ただし零多項式の次数は$-\infty$とする。
+  statement_en: If polynomials f and g over a commutative ring satisfy deg g < deg f, with the zero polynomial having degree minus infinity, then deg(f+g) = deg f and f+g has the same leading coefficient as f.
+  assumptions:
+  - $A$は可換環
+  - $f,g\in A[X]$
+  - $\deg g<\deg f$（零多項式の次数は$-\infty$とする）
+  quantifiers:
+  - 任意の可換環$A$と多項式$f,g\in A[X]$
+  conclusion: $\deg(f+g)=\deg f$であり、$f+g$の最高次係数は$f$の最高次係数に等しい。
+  answer: |
+    $A$を可換環、$f,g\in A[X]$を$\deg g<\deg f$を満たす多項式とする。零多項式の次数は$-\infty$とする。仮定より$f\neq 0$である。$n=\deg f$とし、$f$の最高次係数を$a$とする。$a\neq 0$である。
+
+    $k>n$のとき、$f$と$g$の$X^k$の係数はどちらも$0$なので、$f+g$の$X^k$の係数も$0$である。$\deg g<n$より$g$の$X^n$の係数は$0$なので、$f+g$の$X^n$の係数は$a$である。
+
+    $a\neq 0$なので、$\deg(f+g)=n$であり、$f+g$の最高次係数は$a$である。
+  strategy: Compare the coefficients of f and g in degree n = deg f and above.
+  sketch:
+  - 'setup: Let n be the degree of f and a its leading coefficient.'
+  - 'derive: Both polynomials have zero coefficients above degree n.'
+  - 'derive: The coefficient of X^n in g vanishes, so f+g has coefficient a there.'
+  - 'conclude: Hence f+g has degree n and leading coefficient a.'
+  openmath: (forall (A f g) (-> (and (comm_ring A) (in f (polynomial_ring A)) (in g (polynomial_ring A)) (< (poly_degree g) (poly_degree f))) (and (= (poly_degree (+ f g)) (poly_degree f)) (= (poly_leading_coeff (+ f g)) (poly_leading_coeff f)))))
+  hard_negative:
+    statement: 任意の多項式$f,g$について$\deg(f+g)=\max(\deg f,\deg g)$である。
+    reason: $f=X$、$g=-X$とすると$f+g=0$であり、次数が等しいときは打ち消し合いが起こる。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f g : Polynomial R), g.degree < f.degree → (f + g).degree = f.degree ∧ (f + g).leadingCoeff = f.leadingCoeff
+  proof: |
+    by
+      intro R _ f g h
+      exact ⟨Polynomial.degree_add_eq_left_of_degree_lt h, Polynomial.leadingCoeff_add_of_degree_lt' h⟩
+- id: poly_natdegree_comp_domain
+  kind: gap
+  level: 2
+  topic: 環論・多項式の次数と合成
+  statement: 整域上の多項式$f,g$について、合成$f(g)$の次数は$\deg f\cdot\deg g$である。ただし零多項式の次数は$0$とする。
+  statement_en: For polynomials f and g over an integral domain, the degree of the composite f(g) equals deg f times deg g, with the zero polynomial given degree 0.
+  assumptions:
+  - $A$は整域
+  - $f,g\in A[X]$
+  - 零多項式の次数は$0$とする
+  quantifiers:
+  - 任意の整域$A$と多項式$f,g\in A[X]$
+  conclusion: $\deg f(g)=\deg f\cdot\deg g$である。
+  answer: |
+    $A$を整域、$f,g\in A[X]$とする。零多項式の次数は$0$とする。$m=\deg f$、$n=\deg g$とおく。
+
+    $f$が定数のときは$f(g)=f$も定数であり、両辺とも$0$である。$g$が定数のときは$f(g)$も定数であり、両辺とも$0$である。
+
+    以下$m\geq 1$、$n\geq 1$とする。$f=\sum_{i=0}^m a_iX^i$、$a_m\neq 0$と書くと、$f(g)=\sum_{i=0}^m a_ig^i$である。$A$は整域なので、整域上の多項式の積では次数が足し合わされ、最高次係数が掛け合わされる。したがって$a_i\neq 0$のとき$a_ig^i$の次数は$in$である。$i<m$の項の次数は$mn$より小さく、$a_mg^m$の次数は$mn$である。よって$f(g)$の$X^{mn}$の係数は$a_mg^m$の最高次係数に等しく、これは$0$でない。$X^{mn}$より高い次数の係数は$0$である。ゆえに$\deg f(g)=mn$である。
+  strategy: Expand f(g) as a sum of a_i g^i and isolate the unique term of top degree mn.
+  sketch:
+  - 'case_split: If f or g is constant, then f(g) is constant and both sides are 0.'
+  - 'setup: Otherwise write f as the sum of a_i X^i with a_m nonzero, so f(g) is the sum of a_i g^i.'
+  - 'derive: Over a domain, a_i g^i has degree i n for nonzero a_i.'
+  - 'conclude: The term a_m g^m alone has degree mn, so f(g) has degree mn.'
+  openmath: (forall (A f g) (-> (and (integral_domain A) (in f (polynomial_ring A)) (in g (polynomial_ring A))) (= (poly_degree (poly_comp f g)) (* (poly_degree f) (poly_degree g)))))
+  hard_negative:
+    statement: 整域上の多項式について$\deg f(g)=\deg f+\deg g$である。
+    reason: $f=X^3$、$g=X^2$とすると$f(g)=X^6$であり、次数は$5$ではなく$6$である。次数の和になるのは積であり、合成では積になる。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f g : Polynomial R), (f.comp g).natDegree = f.natDegree * g.natDegree
+  proof: |
+    by
+      intro R _ _ f g
+      exact Polynomial.natDegree_comp
+- id: poly_units_over_domain
+  kind: gap
+  level: 2
+  topic: 環論・多項式環の単元
+  statement: 整域$A$上の多項式環$A[X]$の単元は、$A$の単元である定数多項式に限る。
+  statement_en: A polynomial over an integral domain A is a unit of A[X] if and only if it is a constant polynomial whose value is a unit of A.
+  assumptions:
+  - $A$は整域
+  - $f\in A[X]$
+  quantifiers:
+  - 任意の整域$A$と多項式$f\in A[X]$
+  conclusion: $f$が$A[X]$の単元であることと、$A$の単元$r$により$f=r$と書けることは同値である。
+  answer: |
+    $A$を整域、$f\in A[X]$とする。
+
+    $f$が単元であるとし、$fg=1$となる$g\in A[X]$をとる。$f,g$は零でない。整域上では積の次数は次数の和なので、$\deg f+\deg g=\deg 1=0$である。よって$\deg f=\deg g=0$であり、$f=r$、$g=s$と定数で書ける。$rs=1$なので、$r$は$A$の単元である。
+
+    逆に$r$が$A$の単元で$f=r$なら、$rs=1$となる$s\in A$をとると、定数多項式$s$が$f$の逆元である。
+  strategy: Apply additivity of degree over a domain to an equation fg = 1.
+  sketch:
+  - 'setup: Suppose fg = 1 in A[X].'
+  - 'derive: Additivity of degree forces deg f = deg g = 0.'
+  - 'derive: So f = r and g = s are constants with rs = 1.'
+  - 'conclude: Conversely a unit constant has its inverse as a constant polynomial.'
+  openmath: (forall (A f) (-> (and (integral_domain A) (in f (polynomial_ring A))) (<-> (unit_element f (polynomial_ring A)) (exists (r) (and (unit_element r A) (= f (poly_const r)))))))
+  hard_negative:
+    statement: 任意の可換環$A$について、$A[X]$の単元は定数多項式に限る。
+    reason: $\mathbb{Z}/4\mathbb{Z}$上で$(1+2X)^2=1$なので、$1+2X$は定数でない単元である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f : Polynomial R), IsUnit f ↔ ∃ r : R, IsUnit r ∧ f = Polynomial.C r
+  proof: |
+    by
+      intro R _ _ f
+      rw [Polynomial.isUnit_iff]
+      constructor
+      · rintro ⟨r, hr, rfl⟩
+        exact ⟨r, hr, rfl⟩
+      · rintro ⟨r, hr, rfl⟩
+        exact ⟨r, hr, rfl⟩
+- id: poly_nilpotent_iff_coeffs_nilpotent
+  kind: gap
+  level: 3
+  topic: 環論・多項式環の冪零元
+  statement: 可換環$A$上の多項式が$A[X]$で冪零であることと、そのすべての係数が$A$で冪零であることは同値である。
+  statement_en: A polynomial over a commutative ring A is nilpotent in A[X] if and only if all of its coefficients are nilpotent in A.
+  assumptions:
+  - $A$は可換環
+  - $f\in A[X]$
+  quantifiers:
+  - 任意の可換環$A$と多項式$f\in A[X]$
+  conclusion: $f$が冪零であることと、$f$のすべての係数が冪零であることは同値である。
+  answer: |
+    $A$を可換環、$f=\sum_i a_iX^i\in A[X]$とする。
+
+    すべての$a_i$が冪零であるとする。各$a_iX^i$は冪零である。可換環では冪零元の有限和は冪零なので、$f$は冪零である。
+
+    逆に$f$が冪零であるとする。$p$を$A$の任意の素イデアルとし、係数を$A/p$へ移す環準同型$A[X]\to(A/p)[X]$を考える。$f$の像は冪零である。$A/p$は整域なので$(A/p)[X]$も整域であり、その冪零元は$0$だけである。よってすべての$a_i$は$p$に属する。冪零元全体はすべての素イデアルの共通部分に等しいので、各$a_i$は冪零である。
+  strategy: Reduce modulo every prime ideal and use that the nilradical is the intersection of the primes.
+  sketch:
+  - 'derive: If all a_i are nilpotent, then f is a finite sum of nilpotent terms.'
+  - 'setup: Conversely fix a prime ideal p and reduce the coefficients modulo p.'
+  - 'derive: The image of f is nilpotent in the domain (A/p)[X], hence zero.'
+  - 'derive: So every a_i lies in every prime ideal.'
+  - 'conclude: The intersection of all primes is the nilradical, so every a_i is nilpotent.'
+  openmath: (forall (A f) (-> (and (comm_ring A) (in f (polynomial_ring A))) (<-> (nilpotent_element f (polynomial_ring A)) (forall (i) (nilpotent_element (poly_coeff f i) A)))))
+  hard_negative:
+    statement: 多項式の最高次係数が冪零ならば、その多項式は冪零である。
+    reason: $\mathbb{Z}/4\mathbb{Z}$上の$1+2X$は最高次係数$2$が冪零だが、単元なので冪零ではない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R), IsNilpotent f ↔ ∀ i, IsNilpotent (f.coeff i)
+  proof: |
+    by
+      intro R _ f
+      exact Polynomial.isNilpotent_iff
+- id: poly_units_nilpotent_coeffs
+  kind: textbook
+  level: 3
+  topic: 環論・多項式環の単元
+  statement: 可換環$A$上の多項式$\sum_i a_iX^i$が$A[X]$の単元であることと、$a_0$が$A$の単元で$i\geq 1$の$a_i$がすべて冪零であることは同値である。
+  statement_en: A polynomial over a commutative ring A is a unit of A[X] if and only if its constant coefficient is a unit of A and all its other coefficients are nilpotent.
+  assumptions:
+  - $A$は可換環
+  - $f=\sum_i a_iX^i\in A[X]$
+  quantifiers:
+  - 任意の可換環$A$と多項式$f\in A[X]$
+  conclusion: $f$が単元であることと、$a_0$が単元で$i\geq 1$の$a_i$がすべて冪零であることは同値である。
+  answer: |
+    $A$を可換環、$f=\sum_i a_iX^i\in A[X]$とする。
+
+    $a_0$が単元で、$i\geq 1$の$a_i$がすべて冪零であるとする。$h=f-a_0$は冪零元$a_iX^i$の有限和なので冪零である。$u$を単元、$h$を冪零とする。$h^k=0$のとき$(u+h)\sum_{j=0}^{k-1}(-h)^ju^{-j-1}=1$なので、$u+h$は単元である。これを$u=a_0$に適用すると$f$は単元である。
+
+    逆に$fg=1$となる$g\in A[X]$があるとする。定数項を比べると$a_0g(0)=1$なので、$a_0$は単元である。$p$を$A$の任意の素イデアルとする。係数を$A/p$へ移すと、$f$の像は$(A/p)[X]$の単元である。$A/p$は整域であり、整域上の積では次数が足し合わされるので、この像は定数である。したがって$i\geq 1$の$a_i$は$p$に属する。冪零元全体はすべての素イデアルの共通部分に等しいので、$i\geq 1$の$a_i$は冪零である。
+  strategy: Combine "unit plus nilpotent is a unit" with reduction modulo every prime ideal.
+  sketch:
+  - 'derive: If a_0 is a unit and the other coefficients are nilpotent, then f is a unit plus a nilpotent.'
+  - 'construct: A finite geometric sum gives the inverse of a unit plus a nilpotent.'
+  - 'setup: Conversely let fg = 1; comparing constant terms shows a_0 is a unit.'
+  - 'derive: Modulo a prime p the image of f is a unit of a polynomial ring over a domain, so it is constant.'
+  - 'conclude: Thus a_i with i at least 1 lies in every prime ideal and is nilpotent.'
+  openmath: (forall (A f) (-> (and (comm_ring A) (in f (polynomial_ring A))) (<-> (unit_element f (polynomial_ring A)) (and (unit_element (poly_coeff f 0) A) (forall (i) (-> (!= i 0) (nilpotent_element (poly_coeff f i) A)))))))
+  hard_negative:
+    statement: 定数項が単元である多項式は$A[X]$の単元である。
+    reason: $\mathbb{Z}[X]$の$1+X$は定数項が単元だが、次数の比較により単元ではない。形式的冪級数環なら単元である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R), IsUnit f ↔ IsUnit (f.coeff 0) ∧ ∀ i, i ≠ 0 → IsNilpotent (f.coeff i)
+  proof: |
+    by
+      intro R _ f
+      rw [Polynomial.isUnit_iff_coeff_isUnit_isNilpotent]
+- id: poly_monic_division_uniqueness
+  kind: gap
+  level: 2
+  topic: 環論・多項式の割り算
+  statement: 可換環上で$g$がモニックのとき、$gq_1+r_1=gq_2+r_2$、$\deg r_1<\deg g$、$\deg r_2<\deg g$ならば、$q_1=q_2$かつ$r_1=r_2$である。
+  statement_en: Over a commutative ring, if g is monic, gq_1 + r_1 = gq_2 + r_2 and both r_1 and r_2 have degree less than deg g, then q_1 = q_2 and r_1 = r_2.
+  assumptions:
+  - $A$は可換環
+  - $g,q_1,q_2,r_1,r_2\in A[X]$
+  - $g$はモニック
+  - $\deg r_1<\deg g$、$\deg r_2<\deg g$（零多項式の次数は$-\infty$とする）
+  - $gq_1+r_1=gq_2+r_2$
+  quantifiers:
+  - 任意の可換環$A$と多項式$g,q_1,q_2,r_1,r_2\in A[X]$
+  conclusion: $q_1=q_2$かつ$r_1=r_2$である。
+  answer: |
+    $A$を可換環、$g,q_1,q_2,r_1,r_2\in A[X]$とする。$g$はモニックで、$\deg r_1<\deg g$、$\deg r_2<\deg g$、$gq_1+r_1=gq_2+r_2$を満たすとする。零多項式の次数は$-\infty$とする。
+
+    $q=q_1-q_2$とおくと、$gq=r_2-r_1$である。$q\neq 0$と仮定する。$g$の最高次係数は$1$なので、$gq$の最高次の項は$g$と$q$の最高次の項の積であり、その係数は$q$の最高次係数に等しく$0$でない。よって$\deg(gq)=\deg g+\deg q\geq\deg g$である。一方$\deg(r_2-r_1)<\deg g$であり、矛盾する。
+
+    したがって$q=0$、すなわち$q_1=q_2$である。このとき$r_2-r_1=gq=0$なので$r_1=r_2$である。
+  strategy: Subtract the two expressions and compare degrees, using that a monic factor preserves the leading coefficient.
+  sketch:
+  - 'setup: Let q = q_1 - q_2, so gq = r_2 - r_1.'
+  - 'contradiction: If q is nonzero, monicity of g gives deg(gq) = deg g + deg q at least deg g.'
+  - 'derive: But r_2 - r_1 has degree less than deg g.'
+  - 'conclude: Hence q = 0 and then r_1 = r_2.'
+  openmath: (forall (A g a b c d) (-> (and (comm_ring A) (in g (polynomial_ring A)) (in a (polynomial_ring A)) (in b (polynomial_ring A)) (in c (polynomial_ring A)) (in d (polynomial_ring A)) (monic_polynomial g) (< (poly_degree c) (poly_degree g)) (< (poly_degree d) (poly_degree g)) (= (+ (* g a) c) (+ (* g b) d))) (and (= a b) (= c d))))
+  hard_negative:
+    statement: 可換環上の零でない任意の多項式$g$について、同じ条件のもとで商と余りは一意である。
+    reason: $\mathbb{Z}/4\mathbb{Z}$上で$g=2X$とすると$g\cdot 2+0=g\cdot 0+0$であり、商は一意でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (g q₁ q₂ r₁ r₂ : Polynomial R), g.Monic → r₁.degree < g.degree → r₂.degree < g.degree → g * q₁ + r₁ = g * q₂ + r₂ → q₁ = q₂ ∧ r₁ = r₂
+  proof: |
+    by
+      intro R _ g q₁ q₂ r₁ r₂ hg h₁ h₂ h
+      obtain ⟨a₁, b₁⟩ := Polynomial.div_modByMonic_unique (f := g * q₁ + r₁) q₁ r₁ hg ⟨add_comm _ _, h₁⟩
+      obtain ⟨a₂, b₂⟩ := Polynomial.div_modByMonic_unique (f := g * q₁ + r₁) q₂ r₂ hg ⟨by rw [h, add_comm], h₂⟩
+      exact ⟨a₁.symm.trans a₂, b₁.symm.trans b₂⟩
+- id: field_poly_division_exists_unique
+  kind: gap
+  level: 2
+  topic: 環論・多項式の割り算
+  statement: 体$K$上の多項式$f$と零でない多項式$g$に対し、$f=gq+r$かつ$\deg r<\deg g$を満たす多項式の組$(q,r)$がただ一つ存在する。
+  statement_en: For polynomials f and g over a field with g nonzero, there is exactly one pair of polynomials (q, r) with f = gq + r and deg r < deg g.
+  assumptions:
+  - $K$は体
+  - $f,g\in K[X]$
+  - $g\neq 0$
+  - 零多項式の次数は$-\infty$とする
+  quantifiers:
+  - 任意の体$K$と多項式$f,g\in K[X]$
+  conclusion: $f=gq+r$、$\deg r<\deg g$を満たす組$(q,r)$がただ一つ存在する。
+  answer: |
+    $K$を体、$f,g\in K[X]$、$g\neq 0$とする。零多項式の次数は$-\infty$とする。
+
+    存在を$\deg f$についての帰納法で示す。$\deg f<\deg g$なら$q=0$、$r=f$とすればよい。$\deg f=m\geq n=\deg g$とする。$f,g$の最高次係数を$a,b$とすると、$K$は体なので$b$は可逆である。$f_1=f-ab^{-1}X^{m-n}g$は$\deg f_1<m$を満たす。帰納法の仮定より$f_1=gq_1+r$、$\deg r<\deg g$と書ける。すると$f=g(ab^{-1}X^{m-n}+q_1)+r$である。
+
+    一意性を示す。$gq+r=gq'+r'$で$r,r'$の次数がともに$\deg g$より小さいとする。$g(q-q')=r'-r$である。$q\neq q'$なら、体上では次数が足し合わされるので左辺の次数は$\deg g$以上となり、右辺の次数が$\deg g$より小さいことに矛盾する。よって$q=q'$であり、$r=r'$である。
+  strategy: Prove existence by induction on deg f by removing the top term, and uniqueness by comparing degrees.
+  sketch:
+  - 'induction: Induct on deg f; the case deg f < deg g is immediate with q = 0.'
+  - 'construct: Otherwise subtract a b^(-1) X^(m-n) g to lower the degree of f.'
+  - 'derive: The inductive hypothesis gives a division of the lowered polynomial and hence of f.'
+  - 'contradiction: Two divisions give g(q-q'') = r''-r, impossible by degree unless q = q''.'
+  - 'conclude: Therefore the pair (q, r) exists and is unique.'
+  openmath: (forall (K f g) (-> (and (is_field K) (in f (polynomial_ring K)) (in g (polynomial_ring K)) (!= g 0)) (and (exists (q r) (and (in q (polynomial_ring K)) (in r (polynomial_ring K)) (= f (+ (* g q) r)) (< (poly_degree r) (poly_degree g)))) (forall (a b c d) (-> (and (in a (polynomial_ring K)) (in b (polynomial_ring K)) (in c (polynomial_ring K)) (in d (polynomial_ring K)) (= f (+ (* g a) b)) (= f (+ (* g c) d)) (< (poly_degree b) (poly_degree g)) (< (poly_degree d) (poly_degree g))) (and (= a c) (= b d)))))))
+  hard_negative:
+    statement: 整域$A$上の多項式$f$と零でない$g$について、$f=gq+r$、$\deg r<\deg g$を満たす$q,r\in A[X]$が存在する。
+    reason: $A=\mathbb{Z}$、$f=X$、$g=2$とすると$r=0$となるので$X=2q$が必要だが、$X$の係数を比べると不可能である。割る多項式の最高次係数が可逆でないと成り立たないことがある。
+  target: |
+    ∀ (K : Type*) [Field K] (f g : Polynomial K), g ≠ 0 → ∃! p : Polynomial K × Polynomial K, f = g * p.1 + p.2 ∧ p.2.degree < g.degree
+  proof: |
+    by
+      intro K _ f g hg
+      refine ⟨(f / g, f % g), ⟨(EuclideanDomain.div_add_mod f g).symm, Polynomial.degree_mod_lt f hg⟩, ?_⟩
+      rintro ⟨q, r⟩ ⟨h, hr⟩
+      have hd : g * (q - f / g) = f % g - r := by
+        have h' := EuclideanDomain.div_add_mod f g
+        simp only at h
+        linear_combination -h - h'
+      have hq : q - f / g = 0 := by
+        by_contra hne
+        have h1 : g.degree ≤ (g * (q - f / g)).degree := by
+          rw [Polynomial.degree_mul]
+          exact le_add_of_nonneg_right (Polynomial.zero_le_degree_iff.mpr hne)
+        rw [hd] at h1
+        have h2 : (f % g - r).degree < g.degree := lt_of_le_of_lt (Polynomial.degree_sub_le _ _) (max_lt (Polynomial.degree_mod_lt f hg) hr)
+        exact absurd h1 (not_le.mpr h2)
+      have hq' : q = f / g := sub_eq_zero.mp hq
+      rw [hq, mul_zero] at hd
+      have hr' : r = f % g := (sub_eq_zero.mp hd.symm).symm
+      simp [hq', hr']
+- id: poly_ring_pid_iff_field
+  kind: textbook
+  level: 3
+  topic: 環論・多項式環と単項イデアル整域
+  statement: 整域$A$について、多項式環$A[X]$が単項イデアル環であることと、$A$が体であることは同値である。
+  statement_en: For an integral domain A, the polynomial ring A[X] is a principal ideal ring if and only if A is a field.
+  assumptions:
+  - $A$は整域
+  quantifiers:
+  - 任意の整域$A$
+  conclusion: $A[X]$のすべてのイデアルが単項であることと、$A$が体であることは同値である。
+  answer: |
+    $A$を整域とする。
+
+    $A$が体であるとする。零イデアルは単項である。$I$を$A[X]$の零でないイデアルとし、$I$の零でない元のうち次数が最小のものを$g$とする。$f\in I$を$g$で割って$f=gq+r$、$\deg r<\deg g$と書く。これは$g$の最高次係数が可逆なので可能である。$r=f-gq\in I$であり、$g$の次数の最小性から$r=0$である。よって$I=(g)$である。
+
+    逆に$A[X]$のすべてのイデアルが単項であるとする。$a\in A$を$0$でない元とする。イデアル$(a,X)$の生成元$d$をとる。$d\mid a$であり、$A$は整域なので次数の比較から$d$は定数$c$である。$d\mid X$より$X=ch$となる$h$があり、$X$の係数を比べると$c$は$A$の単元である。したがって$(a,X)=A[X]$である。$1=au+Xv$と書いて$X=0$を代入すると、$1=au(0)$である。よって$a$は単元である。$A$は整域なので$0\neq 1$であり、$A$は体である。
+  strategy: Use a polynomial of least degree for one direction, and for the other analyse a generator of the ideal (a, X).
+  sketch:
+  - 'setup: If A is a field, take a nonzero element g of least degree in an ideal I.'
+  - 'derive: Division by g gives a remainder in I of smaller degree, so it vanishes and I = (g).'
+  - 'setup: Conversely, for nonzero a in A let d generate (a, X).'
+  - 'derive: Since d divides a, it is a constant, and since d divides X, it is a unit.'
+  - 'conclude: Thus 1 = au + Xv; setting X = 0 shows a is a unit.'
+  openmath: (forall (A) (-> (integral_domain A) (<-> (principal_ideal_domain (polynomial_ring A)) (is_field A))))
+  hard_negative:
+    statement: $A$が単項イデアル整域ならば$A[X]$も単項イデアル整域である。
+    reason: $\mathbb{Z}$は単項イデアル整域だが、$\mathbb{Z}[X]$のイデアル$(2,X)$は単項でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R], IsPrincipalIdealRing (Polynomial R) ↔ IsField R
+  proof: |
+    by
+      intro R _ _
+      constructor
+      · intro h
+        exact Ideal.IsField.of_isPrincipalIdealRing_polynomial
+      · intro h
+        letI := h.toField
+        infer_instance
+- id: int_poly_ideal_two_x_not_principal
+  kind: gap
+  level: 2
+  topic: 環論・多項式環と単項イデアル整域
+  statement: $\mathbb{Z}[X]$のイデアル$(2,X)$は単項イデアルでない。
+  statement_en: The ideal (2, X) of Z[X] is not principal.
+  assumptions:
+  - $\mathbb{Z}[X]$のイデアル$(2,X)$を考える
+  quantifiers:
+  - なし
+  conclusion: $(2,X)$は一つの元で生成されない。
+  answer: |
+    $\mathbb{Z}[X]$のイデアル$(2,X)$が$f\in\mathbb{Z}[X]$で生成されると仮定する。
+
+    $f\mid 2$である。$\mathbb{Z}$は整域なので次数の比較から$\deg f=0$であり、$f$は整数$c$である。$f\mid X$より$X=ch$となる$h\in\mathbb{Z}[X]$がある。$X$の係数を比べると$c\mid 1$である。よって$c=\pm 1$であり、$(2,X)=\mathbb{Z}[X]$となる。
+
+    すると$1=2u+Xv$となる$u,v\in\mathbb{Z}[X]$がある。$X=0$を代入すると$1=2u(0)$であり、$u(0)$は整数なので矛盾する。したがって$(2,X)$は単項イデアルでない。
+  strategy: A generator would divide 2 and X, hence be a unit, but 1 is not in (2, X) by evaluating at 0.
+  sketch:
+  - 'setup: Suppose f generates the ideal (2, X).'
+  - 'derive: Since f divides 2, it is an integer c.'
+  - 'derive: Since c divides X, comparing coefficients gives c = 1 or c = -1.'
+  - 'contradiction: Then 1 = 2u + Xv, and X = 0 gives 1 = 2u(0), which is impossible.'
+  - 'conclude: Therefore (2, X) is not principal.'
+  openmath: (not (ideal_is_principal (ideal_sum (principal_ideal (poly_const 2)) (principal_ideal poly_var))))
+  hard_negative:
+    statement: $\mathbb{Q}[X]$のイデアル$(2,X)$は単項イデアルでない。
+    reason: $\mathbb{Q}$では$2$が可逆なので$(2,X)=\mathbb{Q}[X]=(1)$であり、単項である。
+  target: |
+    ¬ (Ideal.span {(Polynomial.C 2 : Polynomial ℤ), Polynomial.X}).IsPrincipal
+  proof: |
+    by
+      rintro ⟨f, hf⟩
+      have h2 : f ∣ Polynomial.C 2 := by
+        rw [← Ideal.mem_span_singleton]
+        change _ ∈ Submodule.span _ {f}
+        rw [← hf]
+        exact Ideal.subset_span (by simp)
+      have hX : f ∣ Polynomial.X := by
+        rw [← Ideal.mem_span_singleton]
+        change _ ∈ Submodule.span _ {f}
+        rw [← hf]
+        exact Ideal.subset_span (by simp)
+      have hdeg : f.natDegree = 0 := by
+        have := Polynomial.natDegree_le_of_dvd h2 (by simp)
+        simpa using this
+      obtain ⟨c, rfl⟩ : ∃ c, f = Polynomial.C c := ⟨_, Polynomial.eq_C_of_natDegree_eq_zero hdeg⟩
+      obtain ⟨g, hg⟩ := hX
+      have hc : c ∣ 1 := by
+        refine ⟨g.coeff 1, ?_⟩
+        have := congrArg (fun p => Polynomial.coeff p 1) hg
+        simpa using this
+      have h1 : (1 : Polynomial ℤ) ∈ Ideal.span {(Polynomial.C 2 : Polynomial ℤ), Polynomial.X} := by
+        have : (Polynomial.C c : Polynomial ℤ) ∈ Ideal.span {(Polynomial.C 2 : Polynomial ℤ), Polynomial.X} := by
+          rw [show Ideal.span {(Polynomial.C 2 : Polynomial ℤ), Polynomial.X} = Submodule.span _ {Polynomial.C c} from hf]
+          exact Submodule.mem_span_singleton_self _
+        obtain ⟨d, hd⟩ := hc
+        have h3 := Ideal.mul_mem_left _ (Polynomial.C d) this
+        rwa [← Polynomial.C_mul, mul_comm d c, ← hd, Polynomial.C_1] at h3
+      obtain ⟨a, b, hab⟩ := Ideal.mem_span_pair.mp h1
+      have := congrArg (Polynomial.eval 0) hab
+      simp at this
+      omega
+- id: poly_coprime_derivative_squarefree
+  kind: gap
+  level: 3
+  topic: 環論・多項式の導関数と無平方性
+  statement: 可換環上の多項式$f$と形式微分$f'$に対し$uf+vf'=1$となる多項式$u,v$があるならば、$f$は無平方である。すなわち$g^2\mid f$なら$g$は単元である。
+  statement_en: If a polynomial f over a commutative ring and its formal derivative f' satisfy uf + vf' = 1 for some polynomials u and v, then f is squarefree, that is, g^2 dividing f forces g to be a unit.
+  assumptions:
+  - $A$は可換環
+  - $f\in A[X]$
+  - $uf+vf'=1$を満たす$u,v\in A[X]$が存在する
+  quantifiers:
+  - 任意の可換環$A$と多項式$f\in A[X]$
+  conclusion: $g^2\mid f$を満たす$g\in A[X]$はすべて単元である。
+  answer: |
+    $A$を可換環、$f\in A[X]$とし、$u,v\in A[X]$が$uf+vf'=1$を満たすとする。ここで$f'$は$f$の形式微分である。
+
+    $g\in A[X]$が$g^2\mid f$を満たすとして、$f=g^2h$と書く。形式微分の積の公式より$f'=2gg'h+g^2h'$である。よって$g\mid f$かつ$g\mid f'$である。
+
+    したがって$g\mid uf+vf'=1$であり、$g$は単元である。
+  strategy: A repeated factor of f also divides the derivative, hence divides 1.
+  sketch:
+  - 'setup: Write f = g^2 h.'
+  - 'derive: The product rule gives that g divides the derivative of f.'
+  - 'derive: So g divides uf + vf'' = 1.'
+  - 'conclude: Hence g is a unit and f is squarefree.'
+  openmath: (forall (A f) (-> (and (comm_ring A) (in f (polynomial_ring A)) (coprime_elements f (poly_derivative f))) (squarefree_poly f)))
+  hard_negative:
+    statement: 体上の無平方な多項式$f$は、$f'$と互いに素である。
+    reason: $K=\mathbb{F}_p(t)$上の$X^p-t$は既約なので無平方だが、形式微分は$0$であり互いに素でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R), IsCoprime f (Polynomial.derivative f) → Squarefree f
+  proof: |
+    by
+      intro R _ f h
+      exact Polynomial.Separable.squarefree h
+- id: algclosed_poly_coprime_iff_no_common_root
+  kind: gap
+  level: 3
+  topic: 環論・多項式の互いに素と共通根
+  statement: 代数閉体$K$上の多項式$f,g$について、$uf+vg=1$となる多項式$u,v$が存在することと、$f,g$が共通根を持たないことは同値である。
+  statement_en: For polynomials f and g over an algebraically closed field K, there are polynomials u and v with uf + vg = 1 if and only if f and g have no common root in K.
+  assumptions:
+  - $K$は代数閉体
+  - $f,g\in K[X]$
+  quantifiers:
+  - 任意の代数閉体$K$と多項式$f,g\in K[X]$
+  conclusion: $uf+vg=1$となる$u,v\in K[X]$が存在することと、$f(a)=g(a)=0$となる$a\in K$が存在しないことは同値である。
+  answer: |
+    $K$を代数閉体、$f,g\in K[X]$とする。
+
+    $uf+vg=1$とする。$f(a)=g(a)=0$となる$a\in K$があれば、$X=a$を代入して$0=1$となり矛盾する。
+
+    逆に$f,g$が共通根を持たないとする。$K[X]$は単項イデアル整域なので、$(f,g)=(d)$となる$d$がある。$d=0$なら$f=g=0$であり、$K$の任意の元が共通根となるので矛盾する。$d$が定数でなければ、$K$は代数閉体なので$d$は根$a$を持つ。$d\mid f$、$d\mid g$より$a$は共通根となり、矛盾する。よって$d$は$0$でない定数で、単元である。したがって$1\in(f,g)$であり、$uf+vg=1$となる$u,v$がある。
+  strategy: Use a generator of the ideal (f, g); over an algebraically closed field a nonconstant generator would give a common root.
+  sketch:
+  - 'derive: Evaluating uf + vg = 1 at a common root gives 0 = 1.'
+  - 'setup: Conversely let d generate the ideal (f, g) of the principal ideal domain K[X].'
+  - 'case_split: d = 0 would make every element of K a common root.'
+  - 'case_split: A nonconstant d has a root by algebraic closedness, and that root is common to f and g.'
+  - 'conclude: So d is a nonzero constant and 1 lies in (f, g).'
+  openmath: (forall (K f g) (-> (and (is_field K) (algebraically_closed K) (in f (polynomial_ring K)) (in g (polynomial_ring K))) (<-> (coprime_polys f g) (not (exists (a) (and (in a K) (= (poly_eval f a) 0) (= (poly_eval g a) 0)))))))
+  hard_negative:
+    statement: 任意の体$K$上で、共通根を持たない$f,g\in K[X]$は$uf+vg=1$を満たす。
+    reason: $K=\mathbb{R}$、$f=g=X^2+1$は実数の共通根を持たないが、$uf+vg$はすべて$X^2+1$で割り切れるので$1$にならない。
+  target: |
+    ∀ (K : Type*) [Field K] [IsAlgClosed K] (f g : Polynomial K), IsCoprime f g ↔ ∀ a : K, ¬ (Polynomial.eval a f = 0 ∧ Polynomial.eval a g = 0)
+  proof: |
+    by
+      intro K _ _ f g
+      rw [Polynomial.isCoprime_iff_aeval_ne_zero_of_isAlgClosed K K f g]
+      refine forall_congr' fun a => ?_
+      simp only [Polynomial.aeval_def, Polynomial.eval₂_eq_eval_map, Polynomial.map_id, Algebra.algebraMap_self]
+      tauto
+- id: monic_polys_mutual_dvd_eq
+  kind: gap
+  level: 2
+  topic: 環論・モニック多項式の整除
+  statement: 可換環上のモニック多項式$f,g$が$f\mid g$かつ$g\mid f$を満たすならば、$f=g$である。
+  statement_en: If monic polynomials f and g over a commutative ring divide each other, then f = g.
+  assumptions:
+  - $A$は可換環
+  - $f,g\in A[X]$はモニック
+  - $f\mid g$かつ$g\mid f$
+  quantifiers:
+  - 任意の可換環$A$とモニック多項式$f,g\in A[X]$
+  conclusion: $f=g$である。
+  answer: |
+    $A$を可換環、$f,g\in A[X]$を$f\mid g$、$g\mid f$を満たすモニック多項式とする。$A$が零環なら$f=g=0$である。以下$A$は零環でないとする。
+
+    モニック多項式$p$と零でない多項式$q$の積では、$pq$の最高次係数は$q$の最高次係数に等しく、$\deg(pq)=\deg p+\deg q$である。
+
+    $g=fh$、$f=gk$と書く。$f,g$はモニックなので零でなく、$h,k\neq 0$である。上の事実より$\deg g=\deg f+\deg h$、$\deg f=\deg g+\deg k$である。よって$\deg h=0$であり、$h$は定数である。$fh$の最高次係数は$h$であり、これは$g$の最高次係数$1$に等しい。ゆえに$h=1$であり、$g=f$である。
+  strategy: A monic factor preserves leading coefficients and adds degrees, so the cofactor must be the constant 1.
+  sketch:
+  - 'case_split: The zero ring is trivial.'
+  - 'setup: Write g = fh and f = gk with h and k nonzero.'
+  - 'derive: Monicity makes degrees add, so deg h = 0.'
+  - 'derive: The leading coefficient of fh is h, and it equals 1.'
+  - 'conclude: Therefore g = f.'
+  openmath: (forall (A f g) (-> (and (comm_ring A) (in f (polynomial_ring A)) (in g (polynomial_ring A)) (monic_polynomial f) (monic_polynomial g) (dvd f g) (dvd g f)) (= f g)))
+  hard_negative:
+    statement: 体上の多項式$f,g$が互いに割り切るならば、$f=g$である。
+    reason: $\mathbb{Q}[X]$で$f=X$、$g=2X$は互いに割り切るが等しくない。モニックの仮定が必要である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f g : Polynomial R), f.Monic → g.Monic → f ∣ g → g ∣ f → f = g
+  proof: |
+    by
+      intro R _ f g hf hg h1 h2
+      rcases subsingleton_or_nontrivial R with h | h
+      · exact Subsingleton.elim _ _
+      · have hd : g.natDegree ≤ f.natDegree := by
+          obtain ⟨c, rfl⟩ := h2
+          have hc : c ≠ 0 := by
+            rintro rfl
+            exact hf.ne_zero (mul_zero g)
+          rw [hg.natDegree_mul' hc]
+          exact Nat.le_add_right _ _
+        exact (Polynomial.eq_of_monic_of_dvd_of_natDegree_le hf hg h1 hd).symm
+- id: poly_irreducible_translate_iff
+  kind: gap
+  level: 2
+  topic: 環論・多項式の既約性
+  statement: 可換環$A$上の多項式$f$と$a\in A$について、$f(X+a)$が既約であることと$f$が既約であることは同値である。
+  statement_en: For a polynomial f over a commutative ring A and a in A, the polynomial f(X + a) is irreducible if and only if f is irreducible.
+  assumptions:
+  - $A$は可換環
+  - $f\in A[X]$
+  - $a\in A$
+  quantifiers:
+  - 任意の可換環$A$、多項式$f\in A[X]$、元$a\in A$
+  conclusion: $f(X+a)$が既約であることと、$f$が既約であることは同値である。
+  answer: |
+    $A$を可換環、$f\in A[X]$、$a\in A$とする。
+
+    写像$\varphi:A[X]\to A[X]$を$\varphi(h)=h(X+a)$で定める。$\varphi$は環準同型である。$\psi(h)=h(X-a)$で定まる環準同型$\psi$は、$\psi(\varphi(h))=h$、$\varphi(\psi(h))=h$を満たす。よって$\varphi$は環同型である。
+
+    環同型は単元を単元へ移し、積への分解を積への分解へ移す。また$0$は$0$へ移る。したがって$f$が既約であることと$\varphi(f)=f(X+a)$が既約であることは同値である。
+  strategy: Translation of the variable is a ring automorphism of A[X], and automorphisms preserve irreducibility.
+  sketch:
+  - 'construct: Define the ring homomorphism sending h to h(X + a).'
+  - 'derive: Substitution of X - a is its inverse, so it is an automorphism.'
+  - 'translate: A ring automorphism preserves units and factorizations.'
+  - 'conclude: Hence f and f(X + a) are irreducible together.'
+  openmath: (forall (A f a) (-> (and (comm_ring A) (in f (polynomial_ring A)) (in a A)) (<-> (irreducible_element (poly_comp f (+ poly_var (poly_const a))) (polynomial_ring A)) (irreducible_element f (polynomial_ring A)))))
+  hard_negative:
+    statement: 既約多項式$f$と任意の多項式$g$について、$f(g)$は既約である。
+    reason: $f=X$は既約だが、$g=X^2$とすると$\mathbb{Q}[X]$で$f(g)=X^2$は可約である。$X+a$の代入が環同型であることが要点である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : Polynomial R) (a : R), Irreducible (f.comp (Polynomial.X + Polynomial.C a)) ↔ Irreducible f
+  proof: |
+    by
+      intro R _ f a
+      let e : Polynomial R ≃+* Polynomial R := (Polynomial.algEquivAevalXAddC a).toRingEquiv
+      have : e f = f.comp (Polynomial.X + Polynomial.C a) := by
+        simp [e, Polynomial.algEquivAevalXAddC, Polynomial.aeval_def, Polynomial.comp]
+      rw [← this]
+      exact MulEquiv.irreducible_iff e
+- id: real_poly_irreducible_degree_le_two
+  kind: textbook
+  level: 2
+  topic: 環論・実係数多項式の既約性
+  statement: $\mathbb{R}[X]$の既約多項式の次数は$2$以下である。
+  statement_en: Every irreducible polynomial in R[X] has degree at most 2.
+  assumptions:
+  - $f\in\mathbb{R}[X]$は既約
+  quantifiers:
+  - 任意の既約多項式$f\in\mathbb{R}[X]$
+  conclusion: $\deg f\leq 2$である。
+  answer: |
+    $f\in\mathbb{R}[X]$を既約多項式とする。既約多項式は$0$でも単元でもないので、$\deg f\geq 1$である。代数学の基本定理より、$f$は複素数の根$z$を持つ。
+
+    $z$が実数なら、因数定理より$\mathbb{R}[X]$で$X-z$は$f$を割る。$f$は既約で$X-z$は単元でないので、$f$は$X-z$の定数倍であり、$\deg f=1$である。
+
+    $z$が実数でないとする。$q=(X-z)(X-\bar z)=X^2-2(\operatorname{Re}z)X+|z|^2$は実係数である。$\mathbb{R}[X]$で$f=qh+r$、$\deg r\leq 1$と割る。$z$を代入すると$r(z)=0$である。$r\neq 0$とすると、$r$は実係数の$1$次以下の多項式なので非実数の根を持たず、$r(z)=0$に矛盾する。よって$r=0$であり、$q\mid f$である。$f$は既約で$q$は単元でないので、$f$は$q$の定数倍であり、$\deg f=2$である。
+  strategy: Take a complex root by the fundamental theorem of algebra and produce a real factor of degree at most 2.
+  sketch:
+  - 'setup: f has positive degree, so it has a complex root z.'
+  - 'case_split: If z is real, then X - z divides f, so f has degree 1.'
+  - 'construct: If z is not real, then q = (X - z)(X - conj z) has real coefficients.'
+  - 'derive: The remainder of f by q has degree at most 1 and the nonreal root z, so it vanishes.'
+  - 'conclude: Irreducibility makes f a constant multiple of q, of degree 2.'
+  openmath: (forall (f) (-> (irreducible_element f (polynomial_ring R)) (<= (poly_degree f) 2)))
+  hard_negative:
+    statement: $\mathbb{R}[X]$の既約多項式の次数は$1$である。
+    reason: $X^2+1$は実数の根を持たない$2$次式なので既約である。次数$1$に限るのは$\mathbb{C}[X]$の場合である。
+  target: |
+    ∀ (f : Polynomial ℝ), Irreducible f → f.degree ≤ 2
+  proof: |
+    by
+      intro f h
+      exact Irreducible.degree_le_two h
+- id: poly_ideal_extension_prime
+  kind: gap
+  level: 3
+  topic: 環論・多項式環のイデアルの拡大
+  statement: 可換環$A$の素イデアル$p$が$A[X]$で生成するイデアル$pA[X]$は、$A[X]$の素イデアルである。
+  statement_en: If p is a prime ideal of a commutative ring A, then the ideal pA[X] generated by p in A[X] is a prime ideal of A[X].
+  assumptions:
+  - $A$は可換環
+  - $p$は$A$の素イデアル
+  quantifiers:
+  - 任意の可換環$A$と素イデアル$p$
+  conclusion: $pA[X]$は$A[X]$の素イデアルである。
+  answer: |
+    $A$を可換環、$p$を$A$の素イデアルとする。係数を$A/p$へ移す写像を$\pi:A[X]\to(A/p)[X]$とする。$\pi$は全射環準同型である。
+
+    $\operatorname{Ker}\pi=pA[X]$を示す。$f=\sum_i a_iX^i$について、$\pi(f)=0$はすべての$a_i$が$p$に属することと同値である。このとき$f=\sum_i a_iX^i\in pA[X]$である。逆に$pA[X]$の元は$a\in p$と$h\in A[X]$の積$ah$の有限和であり、その係数はすべて$p$に属する。
+
+    準同型定理より$A[X]/pA[X]\cong(A/p)[X]$である。$A/p$は整域なので$(A/p)[X]$も整域である。したがって$pA[X]$は素イデアルである。
+  strategy: Identify pA[X] with the kernel of coefficient reduction onto the domain (A/p)[X].
+  sketch:
+  - 'construct: Let π be coefficient reduction from A[X] onto (A/p)[X].'
+  - 'derive: A polynomial lies in pA[X] exactly when all coefficients lie in p.'
+  - 'translate: Hence pA[X] is the kernel of π.'
+  - 'derive: The quotient is (A/p)[X], a polynomial ring over a domain.'
+  - 'conclude: A quotient that is a domain means pA[X] is prime.'
+  openmath: (forall (A p) (-> (and (comm_ring A) (prime_ideal p A)) (prime_ideal (ideal_extension_to_polynomials p) (polynomial_ring A))))
+  hard_negative:
+    statement: $m$が$A$の極大イデアルならば、$mA[X]$は$A[X]$の極大イデアルである。
+    reason: $A=\mathbb{Z}$、$m=(2)$とすると$A[X]/mA[X]\cong\mathbb{F}_2[X]$は体でないので、極大ではない。素であることは保たれるが極大であることは保たれない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (P : Ideal R), P.IsPrime → (Ideal.map Polynomial.C P : Ideal (Polynomial R)).IsPrime
+  proof: |
+    by
+      intro R _ P h
+      exact Ideal.isPrime_map_C_of_isPrime
+- id: gauss_content_multiplicative
+  kind: named
+  level: 3
+  topic: 環論・原始多項式とガウスの補題
+  statement: （内容に関するガウスの補題）正規化された最大公約元を選んだ$\mathrm{GCD}$整域上の多項式$f,g$について、$c(fg)=c(f)c(g)$である。ここで$c(h)$は$h$の係数の正規化された最大公約元であり、内容と呼ぶ。
+  statement_en: Gauss's lemma in content form. Over a GCD domain with a chosen normalized gcd, the content c(h), which is the normalized gcd of the coefficients of h, satisfies c(fg) = c(f)c(g).
+  assumptions:
+  - $A$は正規化された最大公約元を選んだ$\mathrm{GCD}$整域
+  - $f,g\in A[X]$
+  - $c(h)$は$h$の係数の正規化された最大公約元
+  quantifiers:
+  - 任意の$\mathrm{GCD}$整域$A$と多項式$f,g\in A[X]$
+  conclusion: $c(fg)=c(f)c(g)$である。
+  answer: |
+    $A$を正規化された最大公約元を選んだ$\mathrm{GCD}$整域とし、$\operatorname{normalize}$を正規化の写像とする。$\operatorname{normalize}$は乗法的である。$f,g\in A[X]$とし、$c(h)$を$h$の係数の正規化された最大公約元とする。
+
+    $f=0$または$g=0$なら、$c(0)=0$より両辺とも$0$である。以下$f,g\neq 0$とする。$c(f),c(g)\neq 0$であり、$f=c(f)f_1$、$g=c(g)g_1$と書ける。$f_1,g_1$の係数の最大公約元は単元であり、$f_1,g_1$は原始多項式である。
+
+    ここでガウスの補題「$\mathrm{GCD}$整域上の原始多項式の積は原始多項式である」を使う。これより$c(f_1g_1)=1$である。$a\in A$と$h\in A[X]$について、$\gcd$の性質から$c(ah)=\operatorname{normalize}(a)c(h)$である。よって
+    $c(fg)=c(c(f)c(g)f_1g_1)=\operatorname{normalize}(c(f)c(g))\,c(f_1g_1)=c(f)c(g)$
+    である。最後の等号では$c(f),c(g)$が正規化されていることと、$\operatorname{normalize}$の乗法性を使った。
+  strategy: Factor out the contents, apply Gauss's lemma on primitive polynomials and use c(ah) = normalize(a)c(h).
+  sketch:
+  - 'case_split: The case f = 0 or g = 0 is immediate.'
+  - 'setup: Write f = c(f)f_1 and g = c(g)g_1 with f_1, g_1 primitive.'
+  - 'apply_theorem: Gauss''s lemma says f_1 g_1 is primitive.'
+  - 'derive: Pulling out constants gives c(fg) = normalize(c(f)c(g)).'
+  - 'conclude: Contents are normalized and normalization is multiplicative, so c(fg) = c(f)c(g).'
+  openmath: (forall (A f g) (-> (and (gcd_domain A) (in f (polynomial_ring A)) (in g (polynomial_ring A))) (= (poly_content (* f g)) (* (poly_content f) (poly_content g)))))
+  hard_negative:
+    statement: $\mathrm{GCD}$整域上で$c(f+g)=c(f)+c(g)$である。
+    reason: $\mathbb{Z}$上で$f=X+1$、$g=-1$とすると$c(f+g)=1$だが$c(f)+c(g)=2$である。内容は積と両立するが和とは両立しない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [NormalizedGCDMonoid R] (f g : Polynomial R), (f * g).content = f.content * g.content
+  proof: |
+    by
+      intro R _ _ _ f g
+      exact Polynomial.content_mul
+- id: gauss_primitive_dvd_over_fraction_field
+  kind: named
+  level: 3
+  topic: 環論・原始多項式とガウスの補題
+  statement: 一意分解整域$A$の商体を$K$とする。原始多項式$p\in A[X]$と$q\in A[X]$について、$K[X]$で$p\mid q$ならば、$A[X]$で$p\mid q$である。
+  statement_en: Let K be the fraction field of a unique factorization domain A. If p in A[X] is primitive, q is in A[X], and p divides q in K[X], then p divides q in A[X].
+  assumptions:
+  - $A$は一意分解整域、$K$はその商体
+  - $p\in A[X]$は原始多項式
+  - $q\in A[X]$
+  - $K[X]$で$p\mid q$
+  quantifiers:
+  - 任意の一意分解整域$A$、商体$K$、多項式$p,q\in A[X]$
+  conclusion: $A[X]$で$p\mid q$である。
+  answer: |
+    $A$を一意分解整域、$K$をその商体とする。$p\in A[X]$を原始多項式（係数の公約元が単元に限る多項式）、$q\in A[X]$とし、$K[X]$で$p\mid q$とする。多項式の係数の最大公約元を内容と呼ぶ。内容は単元倍を除いて定まり、ガウスの補題より積の内容は内容の積に単元倍を除いて等しい。
+
+    $q=0$なら明らかである。$q\neq 0$とする。$q=ph$となる$h\in K[X]$をとる。$h$の係数の分母を払うと、$0$でない$a\in A$と$h_1\in A[X]$により$ah=h_1$と書ける。よって$aq=ph_1$である。
+
+    両辺の内容を比べる。$p$の内容は単元なので、$h_1$の内容$c$は$a$と$q$の内容の積に単元倍を除いて等しい。したがって$a\mid c$である。$c$は$h_1$のすべての係数を割るので、$a$も$h_1$のすべての係数を割り、$h_1=ah_2$となる$h_2\in A[X]$がある。$aq=aph_2$であり、$a\neq 0$と$A[X]$が整域であることから$q=ph_2$である。
+  strategy: Clear denominators in the cofactor and use multiplicativity of content to show the denominator divides it.
+  sketch:
+  - 'setup: Write q = ph in K[X] and clear denominators to get aq = ph_1 with h_1 in A[X].'
+  - 'apply_theorem: Gauss''s lemma says contents are multiplicative up to units.'
+  - 'derive: Since p is primitive, the content of h_1 is the content of aq up to a unit.'
+  - 'derive: So a divides every coefficient of h_1, and h_1 = a h_2.'
+  - 'conclude: Cancelling a gives q = p h_2 in A[X].'
+  openmath: (forall (A K p q) (-> (and (unique_factorization_domain A) (fraction_field_of K A) (in p (polynomial_ring A)) (in q (polynomial_ring A)) (primitive_polynomial p) (dvd (poly_map (fraction_embedding A K) p) (poly_map (fraction_embedding A K) q))) (dvd p q)))
+  hard_negative:
+    statement: $A$上の任意の多項式$p,q$について、$K[X]$で$p\mid q$ならば$A[X]$で$p\mid q$である。
+    reason: $A=\mathbb{Z}$、$p=2$、$q=X+1$とすると$\mathbb{Q}[X]$では$2$は単元なので割るが、$\mathbb{Z}[X]$では割らない。$p$が原始多項式であることが必要である。
+  target: |
+    ∀ (R K : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R] [Field K] [Algebra R K] [IsFractionRing R K] (p q : Polynomial R), p.IsPrimitive → p.map (algebraMap R K) ∣ q.map (algebraMap R K) → p ∣ q
+  proof: |
+    by
+      intro R K _ _ _ _ _ _ p q hp h
+      classical
+      by_cases hq : q = 0
+      · rw [hq]
+        exact dvd_zero p
+      · letI : NormalizationMonoid R := UniqueFactorizationMonoid.normalizationMonoid
+        letI : NormalizedGCDMonoid R := UniqueFactorizationMonoid.toNormalizedGCDMonoid R
+        have hc : q.content ≠ 0 := by
+          rwa [Ne, Polynomial.content_eq_zero_iff]
+        have hq' := Polynomial.eq_C_content_mul_primPart q
+        have hu : IsUnit (Polynomial.C (algebraMap R K q.content)) := by
+          refine Polynomial.isUnit_C.mpr (IsUnit.mk0 _ ?_)
+          exact (map_ne_zero_iff _ (IsFractionRing.injective R K)).mpr hc
+        have h2 : p.map (algebraMap R K) ∣ q.primPart.map (algebraMap R K) := by
+          have h3 : q.map (algebraMap R K) = Polynomial.C (algebraMap R K q.content) * q.primPart.map (algebraMap R K) := by
+            conv_lhs => rw [hq', Polynomial.map_mul, Polynomial.map_C]
+          rw [h3] at h
+          exact (IsUnit.dvd_mul_left hu).mp h
+        have h4 := Polynomial.IsPrimitive.dvd_of_fraction_map_dvd_fraction_map hp q.isPrimitive_primPart h2
+        rw [hq']
+        exact Dvd.dvd.mul_left h4 _
+- id: monic_factor_descends_to_integrally_closed
+  kind: textbook
+  level: 3
+  topic: 環論・整閉整域と多項式の因子
+  statement: 整閉整域$A$の商体を$K$とする。モニック多項式$f\in A[X]$を$K[X]$で割るモニック多項式$g$は、$A[X]$のモニック多項式である。
+  statement_en: Let K be the fraction field of an integrally closed domain A. Every monic polynomial g in K[X] dividing a monic polynomial f in A[X] has all its coefficients in A.
+  assumptions:
+  - $A$は整閉整域、$K$はその商体
+  - $f\in A[X]$はモニック
+  - $g\in K[X]$はモニックで$f$を割る
+  quantifiers:
+  - 任意の整閉整域$A$、商体$K$、モニック多項式$f\in A[X]$、$g\in K[X]$
+  conclusion: $g$の係数はすべて$A$に属し、$g$は$A[X]$のモニック多項式である。
+  answer: |
+    $A$を整閉整域、$K$をその商体とする。$f\in A[X]$をモニック多項式、$g\in K[X]$を$K[X]$で$f$を割るモニック多項式とする。
+
+    $L$を$f$の$K$上の最小分解体とする。$g\mid f$なので$g$も$L[X]$で一次式の積に分解し、$g=\prod_i(X-\alpha_i)$と書ける。各$\alpha_i$は$f$の根である。$f$は$A$係数のモニック多項式なので、$\alpha_i$は$A$上整である。
+
+    $g$の係数は$\alpha_i$の基本対称式に符号を付けたものである。$A$上整な元全体は環をなすので、$g$の係数は$A$上整である。一方、$g$の係数は$K$に属する。$A$は整閉なので、$g$の係数は$A$に属する。最高次係数は$1$なので、$g$は$A[X]$のモニック多項式である。
+  strategy: The roots of g are roots of f, hence integral; its coefficients are symmetric functions of them lying in K.
+  sketch:
+  - 'setup: Pass to a splitting field L of f over K, where g splits.'
+  - 'derive: Each root of g is a root of the monic f, so it is integral over A.'
+  - 'derive: Coefficients of g are symmetric functions of these roots, hence integral.'
+  - 'apply_theorem: They lie in K, so integral closedness puts them in A.'
+  - 'conclude: Therefore g is a monic polynomial over A.'
+  openmath: (forall (A K f g) (-> (and (integrally_closed_domain A) (fraction_field_of K A) (in f (polynomial_ring A)) (in g (polynomial_ring K)) (monic_polynomial f) (monic_polynomial g) (dvd g (poly_map (fraction_embedding A K) f))) (exists (h) (and (in h (polynomial_ring A)) (monic_polynomial h) (= (poly_map (fraction_embedding A K) h) g)))))
+  hard_negative:
+    statement: 任意の整域$A$について、モニック$f\in A[X]$を商体上で割るモニック多項式は$A$係数である。
+    reason: $A=\mathbb{Z}[\sqrt 5]$、$f=X^2-X-1$とすると、$X-(1+\sqrt 5)/2$は商体上で$f$を割るが、係数は$A$に属さない。$A$は整閉でない。
+  target: |
+    ∀ (R K : Type*) [CommRing R] [IsDomain R] [Field K] [Algebra R K] [IsFractionRing R K] [IsIntegrallyClosed R] (f : Polynomial R) (g : Polynomial K), f.Monic → g.Monic → g ∣ f.map (algebraMap R K) → ∃ g' : Polynomial R, g'.Monic ∧ g'.map (algebraMap R K) = g
+  proof: |
+    by
+      intro R K _ _ _ _ _ _ f g hf hg h
+      obtain ⟨g', hg'⟩ := IsIntegrallyClosed.eq_map_mul_C_of_dvd K hf h
+      rw [hg.leadingCoeff, Polynomial.C_1, mul_one] at hg'
+      refine ⟨g', ?_, hg'⟩
+      refine Polynomial.monic_of_injective (IsFractionRing.injective R K) ?_
+      rw [hg']
+      exact hg
+- id: span_eq_iff_associated
+  kind: gap
+  level: 2
+  topic: 環論・同伴と単項イデアル
+  statement: 整域の元$a,b$について、$(a)=(b)$であることと、$a,b$が同伴であることは同値である。
+  statement_en: For elements a and b of an integral domain, (a) = (b) if and only if a and b are associated.
+  assumptions:
+  - $A$は整域
+  - $a,b\in A$
+  quantifiers:
+  - 任意の整域$A$と元$a,b\in A$
+  conclusion: $(a)=(b)$であることと、単元$u$により$a=bu$と書けることは同値である。
+  answer: |
+    $A$を整域、$a,b\in A$とする。
+
+    $a=bu$、$u$は単元とする。$a\in(b)$である。$b=au^{-1}$より$b\in(a)$である。よって$(a)=(b)$である。
+
+    逆に$(a)=(b)$とする。$a=bx$、$b=ay$となる$x,y\in A$がある。$a=0$なら$b=0$であり、$a=b\cdot 1$である。$a\neq 0$なら、$a=axy$より$a(1-xy)=0$であり、$A$は整域なので$xy=1$である。よって$x$は単元で、$a=bx$である。
+  strategy: Mutual divisibility gives a = axy, and cancellation in a domain makes the cofactors units.
+  sketch:
+  - 'derive: If a = bu with u a unit, then a and b lie in each other''s principal ideals.'
+  - 'setup: Conversely write a = bx and b = ay.'
+  - 'case_split: If a = 0 then b = 0.'
+  - 'derive: Otherwise a(1 - xy) = 0 gives xy = 1 in a domain.'
+  - 'conclude: So x is a unit and a, b are associated.'
+  openmath: (forall (A a b) (-> (and (integral_domain A) (in a A) (in b A)) (<-> (= (principal_ideal a) (principal_ideal b)) (associated_elements a b))))
+  hard_negative:
+    statement: 整域の元$a,b$について$(a)=(b)$ならば$a=b$である。
+    reason: $\mathbb{Z}$で$(2)=(-2)$だが$2\neq-2$である。等しいのは単元倍を除いてである。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (a b : R), Ideal.span {a} = Ideal.span {b} ↔ Associated a b
+  proof: |
+    by
+      intro R _ _ a b
+      exact Ideal.span_singleton_eq_span_singleton
+- id: noetherian_domain_irreducible_factorization
+  kind: textbook
+  level: 3
+  topic: 環論・既約分解の存在
+  statement: ネーター整域の$0$でない元は、単元と有限個の既約元の積として書ける。
+  statement_en: Every nonzero element of a Noetherian integral domain is a unit times a finite product of irreducible elements.
+  assumptions:
+  - $A$はネーター整域
+  - $a\in A$、$a\neq 0$
+  quantifiers:
+  - 任意のネーター整域$A$と$0$でない元$a$
+  conclusion: 単元$u$と既約元$p_1,\dots,p_n$（$n\geq 0$）により$a=up_1\cdots p_n$と書ける。
+  answer: |
+    $A$をネーター整域とする。$0$でない元のうち、単元と有限個の既約元の積に書けないものの集合を$S$とし、$S\neq\emptyset$と仮定する。
+
+    $A$はネーター環なので、単項イデアルの族$\{(a)\mid a\in S\}$には極大元$(a)$がある。$a$は単元でない。単元なら$n=0$の積として書けるからである。$a$は既約元でもない。既約元なら$a=1\cdot a$と書けるからである。
+
+    $a\neq 0$は単元でも既約元でもないので、単元でない$b,c$により$a=bc$と書ける。$(a)\subseteq(b)$である。$(a)=(b)$なら$b=ad$となる$d$があり、$a=adc$と整域であることから$dc=1$となって$c$が単元となるので矛盾する。よって$(a)\subsetneq(b)$であり、同様に$(a)\subsetneq(c)$である。$(a)$の極大性より$b,c\notin S$である。$b,c\neq 0$なので、$b,c$は単元と既約元の積に書ける。すると$a=bc$も同じ形に書けて、$a\in S$に矛盾する。したがって$S=\emptyset$である。
+  strategy: Take a maximal principal ideal among counterexamples and split it into two strictly larger principal ideals.
+  sketch:
+  - 'setup: Suppose S, the set of nonzero elements without such a factorization, is nonempty.'
+  - 'apply_theorem: The Noetherian property gives a maximal element (a) among the ideals generated by S.'
+  - 'derive: The element a is neither a unit nor irreducible, so a = bc with b and c nonunits.'
+  - 'derive: Cancellation gives strict inclusions of (a) in (b) and (c), so b and c factor.'
+  - 'contradiction: Then a also factors, contradicting that a lies in S.'
+  openmath: (forall (A a) (-> (and (integral_domain A) (noetherian_ring A) (in a A) (!= a 0)) (exists (m) (and (forall (x) (-> (multiset_mem x m) (irreducible_element x A))) (associated_elements (multiset_prod m) a)))))
+  hard_negative:
+    statement: 任意の整域の$0$でない元は、単元と既約元の積として書ける。
+    reason: 代数的整数全体の環では、任意の単元でない元$a$が$a=\sqrt a\sqrt a$と分解するので既約元が存在せず、$2$はそのように書けない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsNoetherianRing R] (a : R), a ≠ 0 → ∃ m : Multiset R, (∀ x ∈ m, Irreducible x) ∧ Associated m.prod a
+  proof: |
+    by
+      intro R _ _ _ a ha
+      exact WfDvdMonoid.exists_factors a ha
+- id: irreducibles_prime_factorization_unique
+  kind: textbook
+  level: 3
+  topic: 環論・既約分解の一意性
+  statement: 既約元がすべて素元である整域では、既約元の積$p_1\cdots p_r$と$q_1\cdots q_s$が同伴ならば、$r=s$であり、並べ替えると各$p_i$と$q_i$は同伴である。
+  statement_en: In an integral domain where every irreducible element is prime, if products of irreducibles p_1...p_r and q_1...q_s are associated, then r = s and after reordering each p_i is associated to q_i.
+  assumptions:
+  - $A$は整域
+  - $A$の既約元はすべて素元
+  - $p_1,\dots,p_r$、$q_1,\dots,q_s$は既約元
+  - $p_1\cdots p_r$と$q_1\cdots q_s$は同伴
+  quantifiers:
+  - 任意の整域$A$と既約元の有限列$p_1,\dots,p_r$、$q_1,\dots,q_s$
+  conclusion: $r=s$であり、番号を並べ替えると各$i$で$p_i$と$q_i$は同伴である。
+  answer: |
+    $A$を既約元がすべて素元である整域とする。$p_1,\dots,p_r$、$q_1,\dots,q_s$を既約元とし、$p_1\cdots p_r=uq_1\cdots q_s$、$u$は単元とする。$r$についての帰納法で示す。
+
+    $r=0$のとき、$1=uq_1\cdots q_s$である。$s\geq 1$なら$q_1$が単元となり、既約元であることに矛盾する。よって$s=0$である。
+
+    $r\geq 1$とする。$p_1$は素元であり、$uq_1\cdots q_s$を割る。$p_1$は単元でないので、$p_1\mid u$ではない。よって$s\geq 1$であり、ある$j$で$p_1\mid q_j$である。番号を替えて$j=1$とする。$q_1=p_1v$と書くと、$q_1$は既約で$p_1$は単元でないので、$v$は単元である。よって$p_1$と$q_1$は同伴である。
+
+    $p_1\cdots p_r=uvp_1q_2\cdots q_s$の両辺から$p_1\neq 0$を約すと、$p_2\cdots p_r=uvq_2\cdots q_s$である。帰納法の仮定より$r-1=s-1$であり、並べ替えると$i\geq 2$で$p_i$と$q_i$は同伴である。
+  strategy: Induct on the number of factors; a prime factor on one side divides, hence is associated to, a factor on the other side.
+  sketch:
+  - 'setup: Write p_1...p_r = u q_1...q_s with u a unit and induct on r.'
+  - 'case_split: If r = 0 then s = 0, because irreducibles are not units.'
+  - 'derive: Primality of p_1 gives that p_1 divides some q_j, and irreducibility of q_j makes them associated.'
+  - 'derive: Cancel p_1 in the domain to obtain a shorter equation.'
+  - 'conclude: The inductive hypothesis gives r = s and the matching.'
+  openmath: (forall (A f g) (-> (and (integral_domain A) (forall (a) (-> (irreducible_element a A) (prime_element a A))) (forall (x) (-> (multiset_mem x f) (irreducible_element x A))) (forall (x) (-> (multiset_mem x g) (irreducible_element x A))) (associated_elements (multiset_prod f) (multiset_prod g))) (multisets_associated f g)))
+  hard_negative:
+    statement: 任意のネーター整域で、既約元の積への分解は単元倍と順序を除いて一意である。
+    reason: $\mathbb{Z}[\sqrt{-5}]$では$6=2\cdot 3=(1+\sqrt{-5})(1-\sqrt{-5})$であり、現れる既約元は同伴でない。この環では$2$は既約だが素元でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R], (∀ p : R, Irreducible p → Prime p) → ∀ (f g : Multiset R), (∀ x ∈ f, Irreducible x) → (∀ x ∈ g, Irreducible x) → Associated f.prod g.prod → Multiset.Rel Associated f g
+  proof: |
+    by
+      intro R _ _ hR f g hf hg h
+      exact prime_factors_unique (fun x hx => hR x (hf x hx)) (fun x hx => hR x (hg x hx)) h
+- id: ufd_gcd_exists
+  kind: gap
+  level: 2
+  topic: 環論・一意分解整域の最大公約元
+  statement: 一意分解整域の任意の元$a,b$には最大公約元が存在する。すなわち$d\mid a$、$d\mid b$であり、$a,b$の公約元はすべて$d$を割る元$d$が存在する。
+  statement_en: Any two elements a and b of a unique factorization domain have a greatest common divisor, that is, an element d dividing both such that every common divisor of a and b divides d.
+  assumptions:
+  - $A$は一意分解整域
+  - $a,b\in A$
+  quantifiers:
+  - 任意の一意分解整域$A$と元$a,b\in A$
+  conclusion: $d\mid a$、$d\mid b$で、$e\mid a$かつ$e\mid b$ならば$e\mid d$となる$d\in A$が存在する。
+  answer: |
+    $A$を一意分解整域、$a,b\in A$とする。
+
+    $a=0$なら$d=b$とすればよく、$b=0$なら$d=a$とすればよい。以下$a,b\neq 0$とする。$a,b$の分解に現れる既約元を同伴なものをまとめて整理し、互いに同伴でない既約元$p_1,\dots,p_k$と単元$u,v$により
+    $a=u\prod_ip_i^{e_i},\quad b=v\prod_ip_i^{f_i}$
+    と書く。$d=\prod_ip_i^{\min(e_i,f_i)}$とおくと、$d\mid a$、$d\mid b$である。
+
+    $e\mid a$、$e\mid b$とする。分解の一意性より、$e$は単元$w$と$g_i\leq e_i$により$e=w\prod_ip_i^{g_i}$と書ける。$e\mid b$と分解の一意性より$g_i\leq f_i$である。よって$g_i\leq\min(e_i,f_i)$であり、$e\mid d$である。
+  strategy: Compare exponents in the prime factorizations of a and b, taking minima.
+  sketch:
+  - 'case_split: If a or b is zero, the other element works.'
+  - 'setup: Write a and b with the same pairwise nonassociated irreducibles p_i and exponents e_i, f_i.'
+  - 'construct: Let d be the product of p_i to the power min(e_i, f_i).'
+  - 'derive: Unique factorization shows a common divisor has exponents at most min(e_i, f_i).'
+  - 'conclude: Hence every common divisor divides d.'
+  openmath: (forall (A a b) (-> (and (unique_factorization_domain A) (in a A) (in b A)) (exists (d) (and (in d A) (dvd d a) (dvd d b) (forall (e) (-> (and (in e A) (dvd e a) (dvd e b)) (dvd e d)))))))
+  hard_negative:
+    statement: 任意の整域の$2$元には最大公約元が存在する。
+    reason: $\mathbb{Z}[\sqrt{-5}]$の$6$と$2+2\sqrt{-5}$には公約元$2$と$1+\sqrt{-5}$があるが、ノルムを調べると両方で割り切れる公約元は存在しない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R] (a b : R), ∃ d : R, d ∣ a ∧ d ∣ b ∧ ∀ e : R, e ∣ a → e ∣ b → e ∣ d
+  proof: |
+    by
+      intro R _ _ _ a b
+      letI := UniqueFactorizationMonoid.toGCDMonoid R
+      exact ⟨gcd a b, gcd_dvd_left a b, gcd_dvd_right a b, fun e h1 h2 => dvd_gcd h1 h2⟩
+- id: ufd_prime_ideal_contains_prime_element
+  kind: gap
+  level: 3
+  topic: 環論・一意分解整域の素イデアル
+  statement: 一意分解整域の零でない素イデアルは素元を含む。
+  statement_en: Every nonzero prime ideal of a unique factorization domain contains a prime element.
+  assumptions:
+  - $A$は一意分解整域
+  - $p$は$A$の素イデアル
+  - $p\neq 0$
+  quantifiers:
+  - 任意の一意分解整域$A$と零でない素イデアル$p$
+  conclusion: $p$は$A$の素元を含む。
+  answer: |
+    $A$を一意分解整域、$p$を$A$の零でない素イデアルとする。$0$でない$a\in p$をとる。$p$は$A$全体ではないので、$a$は単元でない。
+
+    $a$を分解して$a=uq_1\cdots q_n$と書く。ここで$u$は単元、$q_i$は既約元で、$a$が単元でないので$n\geq 1$である。$p$は素イデアルで単元を含まないので、ある$q_i$が$p$に属する。一意分解整域では既約元は素元なので、$q_i$は$p$に含まれる素元である。
+  strategy: Factor a nonzero element of the ideal and apply primality of the ideal to the factors.
+  sketch:
+  - 'setup: Take a nonzero a in the prime ideal p; a is not a unit.'
+  - 'derive: Factor a as a unit times irreducibles q_1, ..., q_n with n at least 1.'
+  - 'derive: Since p is prime and contains no unit, some q_i lies in p.'
+  - 'conclude: Irreducibles are prime in a unique factorization domain, so q_i is the required element.'
+  openmath: (forall (A p) (-> (and (unique_factorization_domain A) (prime_ideal p A) (!= p (zero_ideal A))) (exists (x) (and (in x p) (prime_element x A)))))
+  hard_negative:
+    statement: 一意分解整域の零でない素イデアルは一つの素元で生成される。
+    reason: $\mathbb{Q}[X,Y]$は一意分解整域だが、素イデアル$(X,Y)$は単項でない。素元を含むだけで、生成されるとは限らない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R] (P : Ideal R), P.IsPrime → P ≠ ⊥ → ∃ x ∈ P, Prime x
+  proof: |
+    by
+      intro R _ _ _ P hP h
+      exact hP.exists_mem_prime_of_ne_bot h
+- id: ufd_integrally_closed
+  kind: textbook
+  level: 3
+  topic: 環論・一意分解整域の整閉性
+  statement: 一意分解整域はその商体の中で整閉である。
+  statement_en: A unique factorization domain is integrally closed in its field of fractions.
+  assumptions:
+  - $A$は一意分解整域
+  - $K$は$A$の商体
+  quantifiers:
+  - 任意の一意分解整域$A$
+  conclusion: $A$上整な$K$の元はすべて$A$に属する。
+  answer: |
+    $A$を一意分解整域、$K$をその商体とする。$x\in K$が$A$上整であるとし、$c_i\in A$により
+    $x^n+c_{n-1}x^{n-1}+\cdots+c_0=0$
+    を満たすとする。$x=0$なら明らかなので$x\neq 0$とする。$x=a/b$、$a,b\in A$、$b\neq 0$と書く。分解の一意性を使って共通の既約因子を約し、$a,b$は共通の既約因子を持たないとしてよい。
+
+    両辺に$b^n$を掛けると
+    $a^n=-b\left(c_{n-1}a^{n-1}+c_{n-2}ba^{n-2}+\cdots+c_0b^{n-1}\right)$
+    である。$b$が単元でないとする。$b$を割る既約元$p$をとると、$p\mid a^n$である。一意分解整域では既約元は素元なので$p\mid a$となり、$a,b$が共通の既約因子を持たないことに矛盾する。よって$b$は単元であり、$x=ab^{-1}\in A$である。
+  strategy: Write x in lowest terms and clear denominators in the integral equation, so an irreducible factor of the denominator would divide the numerator.
+  sketch:
+  - 'setup: Let x = a/b be integral over A, with a and b having no common irreducible factor.'
+  - 'derive: Multiplying the integral equation by b^n shows b divides a^n.'
+  - 'contradiction: An irreducible factor p of b is prime, so it would divide a.'
+  - 'conclude: Hence b is a unit and x lies in A.'
+  openmath: (forall (A) (-> (unique_factorization_domain A) (integrally_closed_domain A)))
+  hard_negative:
+    statement: 任意の整域はその商体の中で整閉である。
+    reason: $\mathbb{Z}[\sqrt 5]$では$(1+\sqrt 5)/2$が$X^2-X-1$の根で整だが、この環に属さない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [UniqueFactorizationMonoid R], IsIntegrallyClosed R
+  proof: |
+    by
+      intro R _ _ _
+      infer_instance
+- id: pid_gcd_bezout
+  kind: gap
+  level: 2
+  topic: 環論・単項イデアル整域の最大公約元
+  statement: 単項イデアル整域の元$a,b$に対し、$a,b$の最大公約元$d$で$d=ax+by$（$x,y$は環の元）と書けるものが存在する。
+  statement_en: For elements a and b of a principal ideal domain, there is a greatest common divisor d of a and b of the form d = ax + by with x and y in the ring.
+  assumptions:
+  - $A$は単項イデアル整域
+  - $a,b\in A$
+  quantifiers:
+  - 任意の単項イデアル整域$A$と元$a,b\in A$
+  conclusion: $d=ax+by$、$d\mid a$、$d\mid b$で、$a,b$の公約元がすべて$d$を割る$d,x,y\in A$が存在する。
+  answer: |
+    $A$を単項イデアル整域、$a,b\in A$とする。イデアル$(a,b)$は単項なので、$(a,b)=(d)$となる$d\in A$がある。
+
+    $d\in(a,b)$より$d=ax+by$となる$x,y\in A$がある。$a,b\in(d)$より$d\mid a$、$d\mid b$である。$e\mid a$、$e\mid b$なら、$e\mid ax+by=d$である。
+  strategy: Take a generator of the ideal (a, b).
+  sketch:
+  - 'setup: Choose d with (a, b) = (d).'
+  - 'derive: Membership of d in (a, b) gives d = ax + by.'
+  - 'derive: Membership of a and b in (d) gives d divides a and b.'
+  - 'conclude: Any common divisor divides ax + by = d.'
+  openmath: (forall (A a b) (-> (and (principal_ideal_domain A) (in a A) (in b A)) (exists (d x y) (and (in d A) (in x A) (in y A) (= d (+ (* a x) (* b y))) (dvd d a) (dvd d b) (forall (e) (-> (and (in e A) (dvd e a) (dvd e b)) (dvd e d)))))))
+  hard_negative:
+    statement: 一意分解整域の元$a,b$の最大公約元$d$は$d=ax+by$と書ける。
+    reason: $\mathbb{Z}[X]$で$a=2$、$b=X$の最大公約元は$1$だが、$2u+Xv=1$は$X=0$を代入すると不可能である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] (a b : R), ∃ d x y : R, d = a * x + b * y ∧ d ∣ a ∧ d ∣ b ∧ ∀ e : R, e ∣ a → e ∣ b → e ∣ d
+  proof: |
+    by
+      intro R _ _ _ a b
+      obtain ⟨d, hd⟩ := (IsPrincipalIdealRing.principal (Ideal.span {a, b}))
+      have hd' : Ideal.span {a, b} = Ideal.span {d} := hd
+      have hmem : d ∈ Ideal.span {a, b} := by
+        rw [hd']
+        exact Ideal.mem_span_singleton_self d
+      obtain ⟨x, y, hxy⟩ := Ideal.mem_span_pair.mp hmem
+      refine ⟨d, x, y, by rw [← hxy]; ring, ?_, ?_, ?_⟩
+      · rw [← Ideal.mem_span_singleton, ← hd']
+        exact Ideal.subset_span (by simp)
+      · rw [← Ideal.mem_span_singleton, ← hd']
+        exact Ideal.subset_span (by simp)
+      · intro e h1 h2
+        rw [← hxy]
+        exact dvd_add (h1.mul_left x) (h2.mul_left y)
+- id: pid_irreducible_iff_span_maximal
+  kind: gap
+  level: 2
+  topic: 環論・単項イデアル整域の既約元
+  statement: 単項イデアル整域の$0$でない元$p$について、$p$が既約であることと$(p)$が極大イデアルであることは同値である。
+  statement_en: For a nonzero element p of a principal ideal domain, p is irreducible if and only if (p) is a maximal ideal.
+  assumptions:
+  - $A$は単項イデアル整域
+  - $p\in A$、$p\neq 0$
+  quantifiers:
+  - 任意の単項イデアル整域$A$と$0$でない元$p$
+  conclusion: $p$が既約であることと、$(p)$が極大イデアルであることは同値である。
+  answer: |
+    $A$を単項イデアル整域、$p\in A$、$p\neq 0$とする。
+
+    $p$が既約であるとする。$p$は単元でないので$(p)\neq A$である。$(p)\subseteq I$となるイデアル$I$をとり、$I=(q)$と書く。$p=qr$となる$r$がある。$p$は既約なので$q$または$r$は単元である。$q$が単元なら$I=A$である。$r$が単元なら$q=pr^{-1}$より$I=(p)$である。よって$(p)$は極大イデアルである。
+
+    逆に$(p)$が極大イデアルであるとする。$(p)\neq A$より$p$は単元でない。$p=ab$とする。$(p)\subseteq(a)$なので、$(a)=A$または$(a)=(p)$である。$(a)=A$なら$a$は単元である。$(a)=(p)$なら$a=pc$となる$c$があり、$p=pcb$である。$p\neq 0$と$A$が整域であることから$cb=1$であり、$b$は単元である。よって$p$は既約である。
+  strategy: Translate factorizations of p into principal ideals containing (p).
+  sketch:
+  - 'setup: Assume p is irreducible and let (p) lie in an ideal I = (q).'
+  - 'derive: Writing p = qr, either q is a unit and I is the whole ring, or r is a unit and I = (p).'
+  - 'setup: Conversely assume (p) is maximal and p = ab.'
+  - 'case_split: Maximality gives (a) = A or (a) = (p).'
+  - 'conclude: In the second case cancellation makes b a unit, so p is irreducible.'
+  openmath: (forall (A p) (-> (and (principal_ideal_domain A) (in p A) (!= p 0)) (<-> (irreducible_element p A) (maximal_ideal (principal_ideal p) A))))
+  hard_negative:
+    statement: 一意分解整域の既約元$p$について、$(p)$は極大イデアルである。
+    reason: $\mathbb{Z}[X]$の$X$は既約だが、$\mathbb{Z}[X]/(X)\cong\mathbb{Z}$は体でないので、$(X)$は極大でない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsPrincipalIdealRing R] (p : R), p ≠ 0 → (Irreducible p ↔ (Ideal.span {p}).IsMaximal)
+  proof: |
+    by
+      intro R _ _ _ p hp
+      constructor
+      · exact PrincipalIdealRing.isMaximal_of_irreducible
+      · intro h
+        exact ((Ideal.span_singleton_prime hp).mp h.isPrime).irreducible
+- id: pairwise_coprime_product_dvd
+  kind: gap
+  level: 2
+  topic: 環論・互いに素な元
+  statement: 可換環の有限個の元$s_i$が対ごとに互いに素（$i\neq j$で$xs_i+ys_j=1$となる$x,y$がある）であり、各$s_i$が$z$を割るならば、$\prod_is_i$は$z$を割る。
+  statement_en: If finitely many elements s_i of a commutative ring are pairwise coprime, meaning x s_i + y s_j = 1 has a solution for all i different from j, and each s_i divides z, then the product of the s_i divides z.
+  assumptions:
+  - $A$は可換環
+  - $s_i\in A$（$i\in t$、$t$は有限集合）、$z\in A$
+  - $i\neq j$ならば$xs_i+ys_j=1$となる$x,y\in A$が存在する
+  - 各$i\in t$で$s_i\mid z$
+  quantifiers:
+  - 任意の可換環$A$、有限族$(s_i)_{i\in t}$、元$z\in A$
+  conclusion: $\prod_{i\in t}s_i\mid z$である。
+  answer: |
+    $A$を可換環、$t$を有限集合、$s_i\in A$（$i\in t$）、$z\in A$とする。$i\neq j$で$xs_i+ys_j=1$となる$x,y\in A$があり、各$i$で$s_i\mid z$とする。$t$の元の個数についての帰納法で示す。
+
+    $t$が空なら積は$1$であり、$1\mid z$である。
+
+    $t=t'\cup\{k\}$、$k\notin t'$とする。$r=\prod_{j\in t'}s_j$とおくと、帰納法の仮定より$r\mid z$である。各$j\in t'$について$x_js_k+y_js_j=1$となる$x_j,y_j$をとる。これらを$j\in t'$にわたって掛け合わせて展開すると、$s_k$を含む項をまとめて、$Xs_k+Yr=1$となる$X,Y\in A$が得られる。ここで$Y=\prod_{j\in t'}y_j$である。
+
+    $z=Xs_kz+Yrz$である。$r\mid z$より$s_kr\mid s_kz$であり、$s_k\mid z$より$s_kr\mid rz$である。よって$s_kr\mid z$である。
+  strategy: Induct on the finite index set, multiplying Bezout relations to show s_k is coprime to the product of the others.
+  sketch:
+  - 'induction: Induct on the size of t; the empty product is 1.'
+  - 'setup: Let t be t'' with k added and r the product of s_j over t''.'
+  - 'derive: Multiplying x_j s_k + y_j s_j = 1 over j gives X s_k + Y r = 1.'
+  - 'derive: Then z = X s_k z + Y r z, and s_k r divides both terms.'
+  - 'conclude: Hence the full product divides z.'
+  openmath: (forall (A t s z) (-> (and (comm_ring A) (finite_set t) (in z A) (forall (i j) (-> (and (in i t) (in j t) (!= i j)) (coprime_elements (fn_value s i) (fn_value s j)))) (forall (i) (-> (in i t) (dvd (fn_value s i) z)))) (dvd (finite_family_product t (lambda (i) (fn_value s i))) z)))
+  hard_negative:
+    statement: 各$s_i$が$z$を割るならば、対ごとに互いに素でなくても$\prod_is_i$は$z$を割る。
+    reason: $\mathbb{Z}$で$s_1=s_2=2$、$z=2$とすると、$s_1s_2=4$は$2$を割らない。
+  target: |
+    ∀ (R ι : Type*) [CommRing R] (t : Finset ι) (s : ι → R) (z : R), (∀ i ∈ t, ∀ j ∈ t, i ≠ j → IsCoprime (s i) (s j)) → (∀ i ∈ t, s i ∣ z) → (∏ i ∈ t, s i) ∣ z
+  proof: |
+    by
+      intro R ι _ t s z h h1
+      exact Finset.prod_dvd_of_coprime (fun i hi j hj hij => h i hi j hj hij) h1
+- id: power_series_unit_iff_constant_coeff
+  kind: gap
+  level: 2
+  topic: 環論・形式的冪級数の単元
+  statement: 可換環上の形式的冪級数が単元であることと、その定数項が単元であることは同値である。
+  statement_en: A formal power series over a commutative ring is a unit if and only if its constant coefficient is a unit.
+  assumptions:
+  - $A$は可換環
+  - $f=\sum_{n\geq 0}a_nX^n\in A[[X]]$
+  quantifiers:
+  - 任意の可換環$A$と形式的冪級数$f\in A[[X]]$
+  conclusion: $f$が$A[[X]]$の単元であることと、$a_0$が$A$の単元であることは同値である。
+  answer: |
+    $A$を可換環、$f=\sum_{n\geq 0}a_nX^n\in A[[X]]$とする。
+
+    $fg=1$、$g=\sum_nb_nX^n$なら、定数項を比べて$a_0b_0=1$なので、$a_0$は単元である。
+
+    逆に$a_0$が単元であるとする。$b_0=a_0^{-1}$とし、$n\geq 1$について帰納的に
+    $b_n=-a_0^{-1}\sum_{k=1}^na_kb_{n-k}$
+    と定める。$g=\sum_nb_nX^n$とおくと、$fg$の定数項は$a_0b_0=1$である。$n\geq 1$のとき、$fg$の$X^n$の係数は$a_0b_n+\sum_{k=1}^na_kb_{n-k}=0$である。よって$fg=1$であり、$f$は単元である。
+  strategy: Solve fg = 1 coefficient by coefficient using the inverse of the constant term.
+  sketch:
+  - 'derive: If fg = 1, the constant terms give a_0 b_0 = 1.'
+  - 'construct: Conversely define b_n recursively using the inverse of a_0.'
+  - 'derive: The recursion says exactly that all higher coefficients of fg vanish.'
+  - 'conclude: Hence fg = 1.'
+  openmath: (forall (A f) (-> (and (comm_ring A) (in f (power_series_ring A))) (<-> (unit_element f (power_series_ring A)) (unit_element (power_series_coeff f 0) A))))
+  hard_negative:
+    statement: 定数項が単元である多項式は多項式環の単元である。
+    reason: $\mathbb{Z}[X]$の$1-X$は定数項が単元だが単元でない。逆元$\sum_nX^n$は多項式でなく、形式的冪級数でのみ存在する。
+  target: |
+    ∀ (R : Type*) [CommRing R] (f : PowerSeries R), IsUnit f ↔ IsUnit (PowerSeries.coeff 0 f)
+  proof: |
+    by
+      intro R _ f
+      simpa using PowerSeries.isUnit_iff_constantCoeff (φ := f)
+- id: power_series_x_pow_dvd_iff_low_coeffs
+  kind: gap
+  level: 2
+  topic: 環論・形式的冪級数の整除
+  statement: 可換環上の形式的冪級数$f$について、$X^n\mid f$であることと、$m<n$の$X^m$の係数がすべて$0$であることは同値である。
+  statement_en: For a formal power series f over a commutative ring, X^n divides f if and only if the coefficient of X^m in f vanishes for all m < n.
+  assumptions:
+  - $A$は可換環
+  - $f=\sum_ma_mX^m\in A[[X]]$
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の可換環$A$、形式的冪級数$f$、$0$以上の整数$n$
+  conclusion: $X^n\mid f$であることと、$m<n$で$a_m=0$であることは同値である。
+  answer: |
+    $A$を可換環、$f=\sum_ma_mX^m\in A[[X]]$、$n$を$0$以上の整数とする。
+
+    $f=X^nh$、$h=\sum_mb_mX^m$とする。$X^nh=\sum_mb_mX^{m+n}$なので、$m<n$の$X^m$の係数は$0$である。
+
+    逆に$m<n$で$a_m=0$とする。$h=\sum_ma_{m+n}X^m$とおくと、$X^nh=\sum_{m\geq n}a_mX^m=f$である。
+  strategy: Multiplication by X^n shifts coefficients by n.
+  sketch:
+  - 'translate: Multiplying by X^n shifts every coefficient up by n.'
+  - 'derive: So a multiple of X^n has zero coefficients below degree n.'
+  - 'construct: Conversely shift the coefficients of f down by n to get h.'
+  - 'conclude: Then f = X^n h.'
+  openmath: (forall (A n f) (-> (and (comm_ring A) (in n N) (in f (power_series_ring A))) (<-> (dvd (^ power_series_x n) f) (forall (m) (-> (and (in m N) (< m n)) (= (power_series_coeff f m) 0))))))
+  hard_negative:
+    statement: $X^n\mid f$であることと、$X^n$の係数が$0$であることは同値である。
+    reason: $f=1$、$n=1$とすると$X$の係数は$0$だが、$X\mid 1$ではない。見るべきは$n$より下のすべての係数である。
+  target: |
+    ∀ (R : Type*) [CommRing R] (n : ℕ) (f : PowerSeries R), (PowerSeries.X : PowerSeries R) ^ n ∣ f ↔ ∀ m, m < n → PowerSeries.coeff m f = 0
+  proof: |
+    by
+      intro R _ n f
+      exact PowerSeries.X_pow_dvd_iff
+- id: power_series_geometric_inverse
+  kind: gap
+  level: 1
+  topic: 環論・形式的冪級数の単元
+  statement: 可換環$A$の元$a$について、形式的冪級数の等式$\left(\sum_{n\geq 0}a^nX^n\right)(1-aX)=1$が成り立つ。
+  statement_en: For an element a of a commutative ring, the formal power series identity (sum over n of a^n X^n)(1 - aX) = 1 holds.
+  assumptions:
+  - $A$は可換環
+  - $a\in A$
+  quantifiers:
+  - 任意の可換環$A$と元$a\in A$
+  conclusion: $A[[X]]$で$\left(\sum_{n\geq 0}a^nX^n\right)(1-aX)=1$である。
+  answer: |
+    $A$を可換環、$a\in A$とする。$g=\sum_{n\geq 0}a^nX^n$とおく。
+
+    $g(1-aX)=g-agX$の定数項は$a^0=1$である。$n\geq 0$について、$X^{n+1}$の係数は$g$の係数$a^{n+1}$から$agX$の係数$a\cdot a^n$を引いたものであり、$0$である。よって$g(1-aX)=1$である。
+  strategy: Compare coefficients; the series telescopes.
+  sketch:
+  - 'setup: Let g be the series with coefficients a^n.'
+  - 'derive: The constant term of g(1 - aX) is 1.'
+  - 'derive: The coefficient of X^(n+1) is a^(n+1) - a a^n = 0.'
+  - 'conclude: Therefore g(1 - aX) = 1.'
+  openmath: (forall (A a) (-> (and (comm_ring A) (in a A)) (= (* (formal_power_series_mk (lambda (n) (^ a n))) (- 1 (* (power_series_const a) power_series_x))) 1)))
+  hard_negative:
+    statement: 可換環$A$の任意の元$a$について、$1-aX$は多項式環$A[X]$の単元である。
+    reason: $A=\mathbb{Z}$、$a=1$とすると$1-X$は$\mathbb{Z}[X]$の単元でない。逆元は無限級数であり、多項式環の中にはない。
+  target: |
+    ∀ (R : Type*) [CommRing R] (a : R), (PowerSeries.mk fun n => a ^ n) * (1 - PowerSeries.C a * PowerSeries.X) = 1
+  proof: |
+    by
+      intro R _ a
+      rw [mul_sub, mul_one]
+      ext n
+      cases n with
+      | zero => simp
+      | succ n =>
+        rw [← mul_assoc, map_sub, PowerSeries.coeff_succ_mul_X, PowerSeries.coeff_mul_C]
+        simp [pow_succ, PowerSeries.coeff_one]
+- id: power_series_order_mul_domain
+  kind: gap
+  level: 3
+  topic: 環論・形式的冪級数の位数
+  statement: 整域上の形式的冪級数について、位数は積で加法的である。すなわち$\operatorname{ord}(fg)=\operatorname{ord}f+\operatorname{ord}g$である。ここで位数は$0$でない係数の最小の番号であり、$\operatorname{ord}0=\infty$とする。
+  statement_en: For formal power series over an integral domain, ord(fg) = ord f + ord g, where the order is the least index of a nonzero coefficient and the order of 0 is infinity.
+  assumptions:
+  - $A$は整域
+  - $f,g\in A[[X]]$
+  - 位数は$0$でない係数の最小の番号で、$\operatorname{ord}0=\infty$とする
+  quantifiers:
+  - 任意の整域$A$と形式的冪級数$f,g\in A[[X]]$
+  conclusion: $\operatorname{ord}(fg)=\operatorname{ord}f+\operatorname{ord}g$である。
+  answer: |
+    $A$を整域、$f=\sum_ia_iX^i$、$g=\sum_jb_jX^j\in A[[X]]$とする。位数は$0$でない係数の最小の番号であり、$\operatorname{ord}0=\infty$とする。
+
+    $f=0$または$g=0$なら$fg=0$であり、両辺とも$\infty$である。
+
+    $f,g\neq 0$とし、$m=\operatorname{ord}f$、$n=\operatorname{ord}g$とする。$fg$の$X^k$の係数は$\sum_{i+j=k}a_ib_j$である。$k<m+n$なら、$i+j=k$のとき$i<m$または$j<n$なので、各項は$0$である。$k=m+n$のとき、$0$でありうる項は$(i,j)=(m,n)$だけなので、係数は$a_mb_n$である。$A$は整域なので$a_mb_n\neq 0$である。よって$\operatorname{ord}(fg)=m+n$である。
+  strategy: The lowest coefficient of the product is the product of the lowest coefficients, which is nonzero in a domain.
+  sketch:
+  - 'case_split: If f or g is zero, both sides are infinite.'
+  - 'setup: Let m and n be the orders of f and g.'
+  - 'derive: Coefficients of fg below degree m+n vanish.'
+  - 'derive: The coefficient of X^(m+n) is a_m b_n, nonzero in a domain.'
+  - 'conclude: Hence ord(fg) = m + n.'
+  openmath: (forall (A f g) (-> (and (integral_domain A) (in f (power_series_ring A)) (in g (power_series_ring A))) (= (power_series_order (* f g)) (+ (power_series_order f) (power_series_order g)))))
+  hard_negative:
+    statement: 任意の可換環上の形式的冪級数について$\operatorname{ord}(fg)=\operatorname{ord}f+\operatorname{ord}g$である。
+    reason: $\mathbb{Z}/4\mathbb{Z}$上で$f=g=2$とすると、右辺は$0$だが$fg=0$の位数は$\infty$である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] (f g : PowerSeries R), (f * g).order = f.order + g.order
+  proof: |
+    by
+      intro R _ _ f g
+      exact PowerSeries.order_mul f g
+- id: field_power_series_unit_times_x_pow
+  kind: textbook
+  level: 3
+  topic: 環論・体上の形式的冪級数環
+  statement: 体$K$上の$0$でない形式的冪級数$f$は、$0$以上の整数$n$と$K[[X]]$の単元$u$により$f=X^nu$と書ける。
+  statement_en: Every nonzero formal power series f over a field K can be written as f = X^n u with n a nonnegative integer and u a unit of K[[X]].
+  assumptions:
+  - $K$は体
+  - $f\in K[[X]]$、$f\neq 0$
+  quantifiers:
+  - 任意の体$K$と$0$でない形式的冪級数$f\in K[[X]]$
+  conclusion: $f=X^nu$となる$0$以上の整数$n$と単元$u\in K[[X]]$が存在する。
+  answer: |
+    $K$を体、$f=\sum_ma_mX^m\in K[[X]]$、$f\neq 0$とする。$a_m\neq 0$となる最小の$m$を$n$とする。$m<n$で$a_m=0$なので、$u=\sum_ma_{m+n}X^m$とおくと$f=X^nu$である。
+
+    $u$の定数項$a_n$は$0$でなく、$K$は体なので可逆である。定数項が可逆な形式的冪級数は単元である。実際、$u=\sum_mc_mX^m$について、$v=\sum_md_mX^m$の係数を$d_0=c_0^{-1}$、$d_m=-c_0^{-1}\sum_{k=1}^mc_kd_{m-k}$で定めると$uv=1$となる。よって$u$は単元である。
+  strategy: Factor out the lowest power of X; the remaining series has invertible constant term.
+  sketch:
+  - 'setup: Let n be the least index of a nonzero coefficient of f.'
+  - 'construct: Shift coefficients down by n to get u with f = X^n u.'
+  - 'derive: The constant term of u is nonzero, hence invertible in K.'
+  - 'conclude: The recursive inverse shows u is a unit.'
+  openmath: (forall (K f) (-> (and (is_field K) (in f (power_series_ring K)) (!= f 0)) (exists (n u) (and (in n N) (unit_element u (power_series_ring K)) (= f (* (^ power_series_x n) u))))))
+  hard_negative:
+    statement: 整域$A$上の$0$でない形式的冪級数は$X^n$と単元の積である。
+    reason: $\mathbb{Z}[[X]]$の$2$は$X$で割れず単元でもない。定数項の可逆性には係数が体であることが必要である。
+  target: |
+    ∀ (K : Type*) [Field K] (f : PowerSeries K), f ≠ 0 → ∃ (n : ℕ) (u : PowerSeries K), IsUnit u ∧ f = PowerSeries.X ^ n * u
+  proof: |
+    by
+      intro K _ f hf
+      refine ⟨f.order.toNat, PowerSeries.Unit_of_divided_by_X_pow_order f, Units.isUnit _, ?_⟩
+      rw [PowerSeries.Unit_of_divided_by_X_pow_order_nonzero hf, PowerSeries.X_pow_order_mul_divXPowOrder]
+- id: valuation_add_eq_max_of_ne
+  kind: gap
+  level: 3
+  topic: 環論・付値の基本性質
+  statement: 可換環上の付値$v$について、$v(a)\neq v(b)$ならば$v(a+b)=\max(v(a),v(b))$である。
+  statement_en: For a valuation v on a commutative ring, if v(a) and v(b) differ, then v(a + b) = max(v(a), v(b)).
+  assumptions:
+  - $A$は可換環
+  - $v$は$A$上の付値で、値は零を添えた全順序可換群にとる
+  - $v(a)\neq v(b)$
+  quantifiers:
+  - 任意の可換環$A$、付値$v$、元$a,b\in A$
+  conclusion: $v(a+b)=\max(v(a),v(b))$である。
+  answer: |
+    $A$を可換環とする。$v$を$A$上の付値とし、値は零を添えた全順序可換群$\Gamma$にとる。すなわち$v(0)=0$、$v(1)=1$、$v(xy)=v(x)v(y)$、$v(x+y)\leq\max(v(x),v(y))$である。$a,b\in A$は$v(a)\neq v(b)$を満たすとする。
+
+    まず$v(-x)=v(x)$を示す。$v(-1)^2=v(1)=1$である。全順序可換群で平方が$1$となる元は$1$だけなので、$v(-1)=1$である。よって$v(-x)=v(-1)v(x)=v(x)$である。
+
+    対称性より$v(a)<v(b)$としてよい。$v(a+b)\leq\max(v(a),v(b))=v(b)$である。一方$b=(a+b)+(-a)$より$v(b)\leq\max(v(a+b),v(a))$である。$v(a)<v(b)$なので、この最大値は$v(a+b)$でなければならない。よって$v(b)\leq v(a+b)$である。以上より$v(a+b)=v(b)=\max(v(a),v(b))$である。
+  strategy: Apply the ultrametric inequality to a + b and to b = (a + b) + (-a).
+  sketch:
+  - 'derive: v(-1) squares to 1 in a totally ordered group, so v(-x) = v(x).'
+  - 'setup: Assume v(a) < v(b) by symmetry.'
+  - 'derive: The ultrametric inequality gives v(a + b) at most v(b).'
+  - 'derive: Applied to b = (a + b) + (-a), it gives v(b) at most v(a + b).'
+  - 'conclude: Thus v(a + b) = v(b), the maximum.'
+  openmath: (forall (A v a b) (-> (and (comm_ring A) (krull_valuation v A) (in a A) (in b A) (!= (fn_value v a) (fn_value v b))) (= (fn_value v (+ a b)) (max_of (fn_value v a) (fn_value v b)))))
+  hard_negative:
+    statement: 付値$v$について、つねに$v(a+b)=\max(v(a),v(b))$である。
+    reason: $v(1)=v(-1)=1$だが$v(1+(-1))=v(0)=0$である。値が等しいときは等号が成り立つとは限らない。
+  target: |
+    ∀ (R Γ : Type*) [CommRing R] [LinearOrderedCommGroupWithZero Γ] (v : Valuation R Γ) (a b : R), v a ≠ v b → v (a + b) = max (v a) (v b)
+  proof: |
+    by
+      intro R Γ _ _ v a b h
+      rcases lt_or_gt_of_ne h with h | h
+      · rw [v.map_add_eq_of_lt_right h, max_eq_right h.le]
+      · rw [v.map_add_eq_of_lt_left h, max_eq_left h.le]
+- id: valuation_unit_iff_value_one
+  kind: gap
+  level: 3
+  topic: 環論・付値環の単元
+  statement: 体$K$上の付値$v$と$0$でない$x\in K$について、$v(x)\leq 1$かつ$v(x^{-1})\leq 1$であることと、$v(x)=1$であることは同値である。すなわち$v$の付値環の単元は$v(x)=1$である元に限る。
+  statement_en: For a valuation v on a field K and nonzero x in K, both v(x) ≤ 1 and v(x^(-1)) ≤ 1 hold if and only if v(x) = 1; so the units of the valuation ring of v are exactly the elements of value 1.
+  assumptions:
+  - $K$は体
+  - $v$は$K$上の付値で、値は零を添えた全順序可換群にとる
+  - $x\in K$、$x\neq 0$
+  quantifiers:
+  - 任意の体$K$、付値$v$、$0$でない元$x\in K$
+  conclusion: $v(x)\leq 1$かつ$v(x^{-1})\leq 1$であることと、$v(x)=1$であることは同値である。
+  answer: |
+    $K$を体とする。$v$を$K$上の付値とし、値は零を添えた全順序可換群にとる。$x\in K$、$x\neq 0$とする。$v(x)v(x^{-1})=v(1)=1$なので、$v(x)\neq 0$であり、$v(x^{-1})=v(x)^{-1}$である。
+
+    $v(x)=1$なら$v(x^{-1})=1$であり、どちらも$1$以下である。
+
+    逆に$v(x)\leq 1$、$v(x^{-1})\leq 1$とする。$v(x)^{-1}\leq 1$の両辺に$v(x)>0$を掛けると$1\leq v(x)$である。よって$v(x)=1$である。
+
+    $x$が付値環$\{y\in K\mid v(y)\leq 1\}$の単元であることは、$x\neq 0$で$x$と$x^{-1}$がともにこの環に属することと同じである。よって単元は$v(x)=1$である元に限る。
+  strategy: Use v(x^(-1)) = v(x)^(-1) and order-compatibility in the value group.
+  sketch:
+  - 'derive: v(x) v(x^(-1)) = 1, so v(x^(-1)) is the inverse of v(x).'
+  - 'derive: If v(x) = 1, both values equal 1.'
+  - 'derive: If both are at most 1, then multiplying gives 1 at most v(x).'
+  - 'conclude: So v(x) = 1, which describes the units of the valuation ring.'
+  openmath: (forall (K v x) (-> (and (is_field K) (krull_valuation v K) (in x K) (!= x 0)) (<-> (and (<= (fn_value v x) 1) (<= (fn_value v (/ 1 x)) 1)) (= (fn_value v x) 1))))
+  hard_negative:
+    statement: $v(x)\leq 1$である$0$でない元$x$は付値環の単元である。
+    reason: $\mathbb{Q}$の$p$進付値で$x=p$とすると$v(p)<1$だが、$p^{-1}$は付値環に属さない。
+  target: |
+    ∀ (K Γ : Type*) [Field K] [LinearOrderedCommGroupWithZero Γ] (v : Valuation K Γ) (x : K), x ≠ 0 → ((v x ≤ 1 ∧ v x⁻¹ ≤ 1) ↔ v x = 1)
+  proof: |
+    by
+      intro K Γ _ _ v x hx
+      have h0 : v x ≠ 0 := (v.ne_zero_iff).mpr hx
+      rw [map_inv₀]
+      constructor
+      · rintro ⟨h1, h2⟩
+        refine le_antisymm h1 ?_
+        exact (inv_le_one₀ (zero_lt_iff.mpr h0)).mp h2
+      · intro h
+        simp [h]
+- id: valuation_ring_dvd_total_iff_ideal_total
+  kind: textbook
+  level: 3
+  topic: 環論・付値環のイデアル
+  statement: 整域$A$について、任意の$a,b\in A$で$a\mid b$または$b\mid a$が成り立つことと、任意のイデアル$I,J$で$I\subseteq J$または$J\subseteq I$が成り立つことは同値である。
+  statement_en: For an integral domain A, the elements of A are totally ordered by divisibility if and only if the ideals of A are totally ordered by inclusion.
+  assumptions:
+  - $A$は整域
+  quantifiers:
+  - 任意の整域$A$
+  conclusion: 任意の$a,b$で$a\mid b$または$b\mid a$となることと、任意のイデアル$I,J$で$I\subseteq J$または$J\subseteq I$となることは同値である。
+  answer: |
+    $A$を整域とする。
+
+    任意の$a,b\in A$で$a\mid b$または$b\mid a$が成り立つとする。イデアル$I,J$について$I\not\subseteq J$と仮定し、$J\subseteq I$を示す。$a\in I$で$a\notin J$となるものをとる。$b\in J$とする。$b\mid a$なら$a\in(b)\subseteq J$となり矛盾する。よって$a\mid b$であり、$b\in(a)\subseteq I$である。ゆえに$J\subseteq I$である。
+
+    逆にイデアルが包含で全順序であるとする。$a,b\in A$について、$(a)\subseteq(b)$なら$b\mid a$であり、$(b)\subseteq(a)$なら$a\mid b$である。
+  strategy: Translate between divisibility and inclusion of principal ideals, and choose an element witnessing non-inclusion.
+  sketch:
+  - 'setup: Assume divisibility is total and I is not contained in J; pick a in I outside J.'
+  - 'derive: For b in J, b cannot divide a, so a divides b.'
+  - 'derive: Thus b lies in I, so J is contained in I.'
+  - 'translate: Conversely compare the principal ideals (a) and (b).'
+  - 'conclude: Inclusion of these ideals gives one of the divisibilities.'
+  openmath: (forall (A) (-> (integral_domain A) (<-> (forall (a b) (-> (and (in a A) (in b A)) (or (dvd a b) (dvd b a)))) (forall (I J) (-> (and (ideal_of I A) (ideal_of J A)) (or (subset I J) (subset J I)))))))
+  hard_negative:
+    statement: 単項イデアル整域のイデアルは包含で全順序である。
+    reason: $\mathbb{Z}$の$(2)$と$(3)$はどちらも他方を含まない。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R], (∀ a b : R, a ∣ b ∨ b ∣ a) ↔ ∀ I J : Ideal R, I ≤ J ∨ J ≤ I
+  proof: |
+    by
+      intro R _ _
+      have h3 := (@ValuationRing.iff_dvd_total R _ _).symm.trans (@ValuationRing.iff_ideal_total R _ _)
+      constructor
+      · intro h
+        exact (h3.mp ⟨h⟩).total
+      · intro h
+        exact (h3.mpr ⟨h⟩).total
+- id: noetherian_valuation_ring_is_pid
+  kind: textbook
+  level: 4
+  topic: 環論・ネーター付値環
+  statement: ネーター整域$A$の任意の元$a,b$で$a\mid b$または$b\mid a$が成り立つならば、$A$は単項イデアル整域である。
+  statement_en: If a Noetherian integral domain A has the property that a divides b or b divides a for all a and b in A, then A is a principal ideal domain.
+  assumptions:
+  - $A$はネーター整域
+  - 任意の$a,b\in A$で$a\mid b$または$b\mid a$
+  quantifiers:
+  - 任意のネーター整域$A$
+  conclusion: $A$のすべてのイデアルは単項である。
+  answer: |
+    $A$をネーター整域とし、任意の$a,b\in A$で$a\mid b$または$b\mid a$が成り立つとする。$I$を$A$のイデアルとする。$A$はネーター環なので、$I=(a_1,\dots,a_n)$と有限生成である。
+
+    $n$についての帰納法で、ある$i$について$a_i$がすべての$a_j$を割ることを示す。$n\leq 1$なら明らかである（$n=0$なら$I=(0)$は単項である）。$a_1,\dots,a_{n-1}$のすべてを割る$a_i$があるとする。仮定より$a_i\mid a_n$または$a_n\mid a_i$である。前者なら$a_i$がすべてを割り、後者なら$a_n$がすべてを割る。
+
+    すべての$a_j$を割る$a_i$をとると、$I=(a_i)$である。よって$I$は単項である。
+  strategy: Finite generation plus total divisibility lets one generator divide all the others.
+  sketch:
+  - 'setup: Every ideal is finitely generated, I = (a_1, ..., a_n).'
+  - 'induction: By total divisibility, some a_i divides all generators.'
+  - 'derive: Then I is generated by that a_i.'
+  - 'conclude: So every ideal is principal.'
+  openmath: (forall (A) (-> (and (integral_domain A) (noetherian_ring A) (forall (a b) (-> (and (in a A) (in b A)) (or (dvd a b) (dvd b a))))) (principal_ideal_domain A)))
+  hard_negative:
+    statement: 付値環はすべて単項イデアル整域である。
+    reason: 体$k$上で$k[[X^{1/n}]]$（$n\geq 1$）の和集合は付値環だが、極大イデアルは$X^{1/n}$全体で生成され、単項でない。ネーター性が必要である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsNoetherianRing R], (∀ a b : R, a ∣ b ∨ b ∣ a) → IsPrincipalIdealRing R
+  proof: |
+    by
+      intro R _ _ _ h
+      haveI : ValuationRing R := ValuationRing.iff_dvd_total.mpr ⟨h⟩
+      infer_instance
+- id: dvr_element_unit_mul_uniformizer_pow
+  kind: gap
+  level: 3
+  topic: 環論・離散付値環
+  statement: 離散付値環$A$の既約元$\varpi$と$0$でない$x\in A$について、$0$以上の整数$n$と単元$u$により$x=u\varpi^n$と書ける。
+  statement_en: If ϖ is an irreducible element of a discrete valuation ring A and x is a nonzero element of A, then x = u ϖ^n for some nonnegative integer n and some unit u.
+  assumptions:
+  - $A$は離散付値環、すなわち体でない局所単項イデアル整域
+  - $\varpi\in A$は既約元
+  - $x\in A$、$x\neq 0$
+  quantifiers:
+  - 任意の離散付値環$A$、既約元$\varpi$、$0$でない元$x$
+  conclusion: $x=u\varpi^n$となる$0$以上の整数$n$と単元$u$が存在する。
+  answer: |
+    $A$を離散付値環、すなわち体でない局所単項イデアル整域とし、$m$をその極大イデアルとする。$\varpi\in A$を既約元、$x\in A$、$x\neq 0$とする。
+
+    単項イデアル整域は一意分解整域なので、単元$v$と既約元$q_1,\dots,q_n$（$n\geq 0$）により$x=vq_1\cdots q_n$と書ける。
+
+    $A$の任意の既約元$q$について$(q)$を調べる。単項イデアル整域で既約元が生成するイデアルは極大である。$A$の極大イデアルは$m$だけなので、$(q)=m$である。特に$(q)=(\varpi)$であり、$q$は$\varpi$と同伴である。
+
+    よって各$q_i$は$\varpi$の単元倍である。これらを$x=vq_1\cdots q_n$に代入して単元をまとめると、$x=u\varpi^n$となる単元$u$がある。
+  strategy: Factor x into irreducibles and observe that all irreducibles generate the unique maximal ideal.
+  sketch:
+  - 'setup: A principal ideal domain is a unique factorization domain, so x factors into irreducibles.'
+  - 'derive: Every irreducible generates a maximal ideal, which must be the unique maximal ideal m.'
+  - 'derive: So every irreducible factor is associated to ϖ.'
+  - 'conclude: Collecting units gives x = u ϖ^n.'
+  openmath: (forall (A w x) (-> (and (discrete_valuation_ring A) (irreducible_element w A) (in x A) (!= x 0)) (exists (n u) (and (in n N) (unit_element u A) (= x (* u (^ w n)))))))
+  hard_negative:
+    statement: 単項イデアル整域の既約元$p$と$0$でない$x$について、$x$は単元と$p$の冪の積である。
+    reason: $\mathbb{Z}$で$p=2$、$x=3$とすると成り立たない。既約元が同伴類一つに限られるのは局所の場合である。
+  target: |
+    ∀ (R : Type*) [CommRing R] [IsDomain R] [IsDiscreteValuationRing R] (ϖ x : R), Irreducible ϖ → x ≠ 0 → ∃ (n : ℕ) (u : R), IsUnit u ∧ x = u * ϖ ^ n
+  proof: |
+    by
+      intro R _ _ _ ϖ x hϖ hx
+      obtain ⟨n, u, h⟩ := IsDiscreteValuationRing.eq_unit_mul_pow_irreducible hx hϖ
+      exact ⟨n, u, u.isUnit, h⟩
+- id: dedekind_ideal_cancel
+  kind: gap
+  level: 4
+  topic: 環論・デデキント環のイデアル
+  statement: デデキント環$A$の零でないイデアル$I$とイデアル$J,L$について、$IJ=IL$ならば$J=L$である。
+  statement_en: In a Dedekind domain, if I is a nonzero ideal and J and L are ideals with IJ = IL, then J = L.
+  assumptions:
+  - $A$はデデキント環
+  - $I,J,L$は$A$のイデアル
+  - $I\neq 0$
+  - $IJ=IL$
+  quantifiers:
+  - 任意のデデキント環$A$とイデアル$I,J,L$
+  conclusion: $J=L$である。
+  answer: |
+    $A$をデデキント環、$I,J,L$をイデアルとし、$I\neq 0$、$IJ=IL$とする。デデキント環についての次の定理を使う。「イデアル$U,V$について$V\subseteq U$であることと、$V=UW$となるイデアル$W$が存在することは同値である」
+
+    $I$の$0$でない元$c$をとる。$(c)\subseteq I$なので、この定理より$II'=(c)$となるイデアル$I'$がある。$IJ=IL$の両辺に$I'$を掛けると$(c)J=(c)L$である。
+
+    $x\in J$とする。$cx\in(c)J=(c)L$なので、$l\in L$により$cx=cl$と書ける。$A$は整域で$c\neq 0$なので$x=l\in L$である。よって$J\subseteq L$であり、対称に$L\subseteq J$である。
+  strategy: Multiply by an ideal I' with II' principal, then cancel the nonzero generator in the domain.
+  sketch:
+  - 'setup: Choose a nonzero c in I.'
+  - 'apply_theorem: In a Dedekind domain containment means divisibility, so II'' = (c) for some ideal I''.'
+  - 'derive: Multiplying IJ = IL by I'' gives (c)J = (c)L.'
+  - 'conclude: Cancelling c in the domain gives J = L.'
+  openmath: (forall (A I J L) (-> (and (dedekind_domain A) (ideal_of I A) (ideal_of J A) (ideal_of L A) (!= I (zero_ideal A)) (= (ideal_product I J) (ideal_product I L))) (= J L)))
+  hard_negative:
+    statement: 任意の整域の零でないイデアル$I$について、$IJ=IL$ならば$J=L$である。
+    reason: $\mathbb{Z}[\sqrt{-3}]$の$I=(2,1+\sqrt{-3})$は$I^2=(2)I$を満たすが、$I\neq(2)$である。この環はデデキント環でない。
+  target: |
+    ∀ (A : Type*) [CommRing A] [IsDedekindDomain A] (I J L : Ideal A), I ≠ ⊥ → I * J = I * L → J = L
+  proof: |
+    by
+      intro A _ _ I J L hI h
+      exact mul_left_cancel₀ hI h
+- id: dedekind_sum_mul_inter
+  kind: gap
+  level: 4
+  topic: 環論・デデキント環のイデアル
+  statement: デデキント環のイデアル$I,J$について、$(I+J)(I\cap J)=IJ$である。
+  statement_en: For ideals I and J of a Dedekind domain, (I + J)(I ∩ J) = IJ.
+  assumptions:
+  - $A$はデデキント環
+  - $I,J$は$A$のイデアル
+  quantifiers:
+  - 任意のデデキント環$A$とイデアル$I,J$
+  conclusion: $(I+J)(I\cap J)=IJ$である。
+  answer: |
+    $A$をデデキント環、$I,J$をイデアルとする。デデキント環についての次の二つの定理を使う。第一に、零でないイデアルは素イデアルの積に順序を除いて一意に分解する。第二に、イデアル$U,V$について$V\subseteq U$は$U\mid V$と同値である。
+
+    $I=0$なら左辺は$J\cdot 0=0$、右辺も$0$である。$J=0$も同様である。以下$I,J\neq 0$とする。$I=\prod_pp^{a_p}$、$J=\prod_pp^{b_p}$と書く。積は零でない素イデアルにわたり、有限個の$p$を除いて指数は$0$である。
+
+    第二の定理より、$U\supseteq I$かつ$U\supseteq J$であることは、$U\mid I$かつ$U\mid J$と同値である。これを満たす最小のイデアル$I+J$は、$\prod_pp^{\min(a_p,b_p)}$である。同様に、$U\subseteq I$かつ$U\subseteq J$を満たす最大のイデアル$I\cap J$は$\prod_pp^{\max(a_p,b_p)}$である。$\min(a_p,b_p)+\max(a_p,b_p)=a_p+b_p$なので、$(I+J)(I\cap J)=\prod_pp^{a_p+b_p}=IJ$である。
+  strategy: In terms of prime exponents, the sum takes minima and the intersection takes maxima.
+  sketch:
+  - 'case_split: The case I = 0 or J = 0 is immediate.'
+  - 'setup: Factor I and J into primes with exponents a_p and b_p.'
+  - 'apply_theorem: Containment is divisibility, so I + J has exponents min(a_p, b_p).'
+  - 'derive: Likewise the intersection has exponents max(a_p, b_p).'
+  - 'conclude: Adding min and max gives a_p + b_p, so the product is IJ.'
+  openmath: (forall (A I J) (-> (and (dedekind_domain A) (ideal_of I A) (ideal_of J A)) (= (ideal_product (ideal_sum I J) (inter I J)) (ideal_product I J))))
+  hard_negative:
+    statement: 任意の一意分解整域のイデアル$I,J$について、$(I+J)(I\cap J)=IJ$である。
+    reason: $\mathbb{Z}[X]$で$I=(2)$、$J=(X)$とすると$I\cap J=(2X)=IJ$であり、$(2,X)(2X)$は$2X$を含まないので等しくない。
+  target: |
+    ∀ (A : Type*) [CommRing A] [IsDedekindDomain A] (I J : Ideal A), (I ⊔ J) * (I ⊓ J) = I * J
+  proof: |
+    by
+      intro A _ _ I J
+      exact Ideal.sup_mul_inf I J
+- id: dedekind_finitely_many_primes_is_pid
+  kind: textbook
+  level: 4
+  topic: 環論・デデキント環と単項イデアル整域
+  statement: 素イデアルが有限個しかないデデキント環は単項イデアル整域である。
+  statement_en: A Dedekind domain with only finitely many prime ideals is a principal ideal domain.
+  assumptions:
+  - $A$はデデキント環
+  - $A$の素イデアルは有限個
+  quantifiers:
+  - 任意のデデキント環$A$
+  conclusion: $A$のすべてのイデアルは単項である。
+  answer: |
+    $A$を素イデアルが有限個であるデデキント環とする。零でない素イデアルを$p_1,\dots,p_k$とする。デデキント環についての次の定理を使う。零でないイデアルは素イデアルの積に順序を除いて一意に分解し、$V\subseteq U$は$U\mid V$と同値である。また、デデキント環の零でない素イデアルは極大である。
+
+    $I$を零でないイデアルとし、$I=\prod_ip_i^{e_i}$と書く。分解の一意性より$p_i^{e_i+1}\neq p_i^{e_i}$なので、$a_i\in p_i^{e_i}$で$a_i\notin p_i^{e_i+1}$となるものがある。$p_i$は相異なる極大イデアルなので、$p_i^{e_i+1}$は対ごとに互いに素である。中国剰余定理より、すべての$i$で$a-a_i\in p_i^{e_i+1}$となる$a\in A$がある。
+
+    このとき$a\in p_i^{e_i}$、$a\notin p_i^{e_i+1}$である。$a\neq 0$であり、$(a)=\prod_ip_i^{f_i}$と分解する。零でない素イデアルは$p_1,\dots,p_k$だけなので、この積にほかの因子はない。$V\subseteq U$と$U\mid V$の同値性より、$a\in p_i^{e_i}$から$f_i\geq e_i$が従い、$a\notin p_i^{e_i+1}$から$f_i<e_i+1$が従う。よって$f_i=e_i$であり、$(a)=I$である。零イデアルも単項なので、すべてのイデアルは単項である。
+  strategy: Use the Chinese remainder theorem to build an element with exactly the prime exponents of a given ideal.
+  sketch:
+  - 'setup: Factor a nonzero ideal I as the product of p_i^(e_i) over the finitely many nonzero primes.'
+  - 'construct: Pick a_i in p_i^(e_i) outside p_i^(e_i+1).'
+  - 'apply_theorem: The Chinese remainder theorem gives a congruent to a_i modulo p_i^(e_i+1) for all i.'
+  - 'derive: The exponent of p_i in (a) is exactly e_i, and no other prime occurs.'
+  - 'conclude: Hence (a) = I.'
+  openmath: (forall (A) (-> (and (dedekind_domain A) (finite_set (prime_ideals_of A))) (principal_ideal_domain A)))
+  hard_negative:
+    statement: 単項イデアル整域の素イデアルは有限個である。
+    reason: $\mathbb{Z}$は単項イデアル整域だが、素イデアル$(p)$は無限個ある。この定理の逆は成り立たない。
+  target: |
+    ∀ (A : Type*) [CommRing A] [IsDedekindDomain A], {P : Ideal A | P.IsPrime}.Finite → IsPrincipalIdealRing A
+  proof: |
+    by
+      intro A _ _ h
+      exact IsPrincipalIdealRing.of_finite_primes h
+- id: dedekind_ufd_iff_pid
+  kind: textbook
+  level: 4
+  topic: 環論・デデキント環と単項イデアル整域
+  statement: デデキント環が一意分解整域であることと、単項イデアル整域であることは同値である。
+  statement_en: A Dedekind domain is a unique factorization domain if and only if it is a principal ideal domain.
+  assumptions:
+  - $A$はデデキント環
+  quantifiers:
+  - 任意のデデキント環$A$
+  conclusion: $A$が一意分解整域であることと、$A$が単項イデアル整域であることは同値である。
+  answer: |
+    $A$をデデキント環とする。単項イデアル整域は一意分解整域であるという定理より、単項イデアル整域なら一意分解整域である。
+
+    逆に$A$を一意分解整域とする。$p$を$A$の零でない素イデアルとする。一意分解整域の零でない素イデアルは素元を含む。実際、$0$でない$a\in p$を既約元と単元の積に分解すると、$p$は素イデアルで単元を含まないので、ある既約因子$q$が$p$に属する。一意分解整域では$q$は素元である。
+
+    $(q)$は零でない素イデアルである。デデキント環の零でない素イデアルは極大なので、$(q)$は極大である。$(q)\subseteq p$かつ$p\neq A$より$p=(q)$である。よって零でない素イデアルはすべて単項である。
+
+    デデキント環の零でないイデアルは素イデアルの積である。単項イデアルの積は単項なので、零でないイデアルはすべて単項である。零イデアルも単項である。したがって$A$は単項イデアル整域である。
+  strategy: In a unique factorization domain, a nonzero prime contains a prime element whose principal ideal must be maximal, hence equal to it.
+  sketch:
+  - 'apply_theorem: A principal ideal domain is a unique factorization domain.'
+  - 'setup: Conversely take a nonzero prime ideal p of A, which contains a prime element q.'
+  - 'derive: The nonzero prime (q) is maximal in a Dedekind domain, so p = (q).'
+  - 'apply_theorem: Every nonzero ideal is a product of primes.'
+  - 'conclude: Products of principal ideals are principal, so A is a principal ideal domain.'
+  openmath: (forall (A) (-> (dedekind_domain A) (<-> (unique_factorization_domain A) (principal_ideal_domain A))))
+  hard_negative:
+    statement: 一意分解整域は単項イデアル整域である。
+    reason: $\mathbb{Z}[X]$は一意分解整域だが、$(2,X)$は単項でない。デデキント環であるという仮定が必要である。
+  target: |
+    ∀ (A : Type*) [CommRing A] [IsDedekindDomain A], UniqueFactorizationMonoid A ↔ IsPrincipalIdealRing A
+  proof: |
+    by
+      intro A _ _
+      constructor
+      · intro h
+        exact IsPrincipalIdealRing.of_isDedekindDomain_of_uniqueFactorizationMonoid A
+      · intro h
+        infer_instance

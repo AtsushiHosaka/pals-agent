@@ -1,0 +1,2703 @@
+- id: inscribed_angle_same_side
+  kind: named
+  level: middle
+  topic: 円・円周角の定理
+  statement: 平面上で、円の上に点$A,B,X,Y$があり、$A\neq B$で、$X,Y$が直線$AB$に関して同じ側にある（どちらも直線上にない）とき、$\angle AXB=\angle AYB$である（円周角の定理）。
+  statement_en: In a Euclidean plane, if A, B, X, Y lie on a circle, A ≠ B, and X, Y lie strictly on the same side of line AB, then ∠AXB = ∠AYB.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,X,Y$は同じ円の上にある
+  - $A\neq B$
+  - $X,Y$は直線$AB$に関して同じ側にあり、直線上にない
+  quantifiers:
+  - 任意の円と点$A,B,X,Y$
+  conclusion: $\angle AXB=\angle AYB$である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,X,Y$をとり、$A\neq B$とする。$X,Y$は直線$AB$に関して同じ側にあり、直線上にないとする。$A\neq B$より$r>0$である。以下で$U$は$X$または$Y$を表す。$U$は直線$AB$上にないので$U\neq A,B$である。$U$を通る直径のもう一方の端を$U'$とする。直線$UO$と円の共有点は$U,U'$だけで、$O$は$U$と$U'$の間にある。
+    まず、円上の点$P\neq U$について$\angle POU'=2\angle PUO$であることを示す。$P=U'$なら両辺は$0$である。$P\neq U'$なら$P$は直線$UO$上にない。三角形$OUP$は$OU=OP$の二等辺三角形なので$\angle OPU=\angle OUP$である。$\angle POU'$はこの三角形の頂点$O$における外角なので、$\angle POU'=\angle OUP+\angle OPU=2\angle PUO$である。
+    $O$が直線$AB$上にある場合を考える。$AB$は直径で、$O$はその中点である。半直線$UO$は$\angle AUB$の内部を通るので$\angle AUB=\angle AUO+\angle OUB$である。二等辺三角形$OUA,OUB$より$\angle AUO=\angle UAB$、$\angle OUB=\angle UBA$である。三角形$UAB$の内角の和から$2\angle AUB=\pi$となる。よって$\angle AXB=\angle AYB=\pi/2$である。
+    $O$が直線$AB$上にない場合を考える。$O,U$が直線$AB$の同じ側にあれば$\angle AOB=2\angle AUB$であり、反対側にあれば$\angle AOB+2\angle AUB=2\pi$であることを、$A,B$と直線$UO$の位置で分けて示す。
+    $A,B$が直線$UO$の反対側にあるとする。線分$AB$と直線$UO$の交点を$D$とする。$D$は弦$AB$の内点なので円の内部にあり、$U$と$U'$の間に真にある。$O$は直線$AB$上にないので$D\neq O$である。半直線$UD$は半直線$UO$に等しく、$D$は線分$AB$上にあるので、$\angle AUB=\angle AUO+\angle OUB$、$\angle AOB=\angle AOD+\angle DOB$である。$D$が$O$と$U'$の間にあれば、$O,U$は直線$AB$の同じ側にある。半直線$OD$は半直線$OU'$に等しいので、$\angle AOB=\angle AOU'+\angle U'OB=2\angle AUO+2\angle OUB=2\angle AUB$である。$D$が$O$と$U$の間にあれば、$O,U$は直線$AB$の反対側にある。半直線$OD$は半直線$OU$に等しいので、$\angle AOB=(\pi-\angle AOU')+(\pi-\angle U'OB)=2\pi-2\angle AUB$である。
+    $A,B$が直線$UO$の同じ側にあるか、一方が$U'$に等しいとする。$A\neq B$なので両方が$U'$になることはない。半直線$UA,UB$は直線$UO$を境界とする同じ閉半平面に入るので、$\angle AUB=|\angle AUO-\angle BUO|$である。同様に$\angle AOB=|\angle AOU'-\angle BOU'|=2|\angle AUO-\angle BUO|=2\angle AUB$である。このとき$O,U$は直線$AB$の同じ側にある。反対側にあるなら、線分$OU$と直線$AB$の交点は円の内部にあるので弦$AB$の内点となり、$A,B$が直線$UO$の反対側にあることになるからである。
+    以上より$\angle AUB$は、$O,U$が直線$AB$の同じ側なら$\angle AOB/2$、反対側なら$\pi-\angle AOB/2$である。$X,Y$は直線$AB$の同じ側にあるので、$O$との位置関係は$X,Y$で共通である。よって$\angle AXB=\angle AYB$である。
+  strategy: Isosceles triangles on the radii give the central angle relation in every position of the center; the inscribed angle then depends only on the side of AB.
+  sketch:
+  - 'setup: Let U be X or Y and let U'' be the other end of the diameter through U.'
+  - 'derive: The isosceles triangle OUP gives angle POU'' = 2 angle PUO for P on the circle, P ≠ U.'
+  - 'case_split: If O lies on AB, the triangle angle sum gives angle AUB = π/2.'
+  - 'case_split: If A, B lie on opposite sides of UO, the point where AB meets UO decides between angle AOB = 2 angle AUB and angle AOB + 2 angle AUB = 2π.'
+  - 'case_split: If A, B lie on one closed side of UO, differences of angles give angle AOB = 2 angle AUB, and O, U lie on the same side of AB.'
+  - 'conclude: X and Y have the same position relative to O and AB, so their angles are equal.'
+  openmath: (forall (o r a b x y) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (on_circle y o r) (!= a b) (same_side_of_line x y a b)) (= (euclid_angle a x b) (euclid_angle a y b))))
+  hard_negative:
+    statement: 同じ円の上の点$A,B,X,Y$について、$X,Y$が直線$AB$の反対側にあっても$\angle AXB=\angle AYB$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$、$Y=(1/\sqrt2,1/\sqrt2)$とすると、$\angle AXB=\pi/4$、$\angle AYB=3\pi/4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B X Y : P), A ∈ s → B ∈ s → X ∈ s → Y ∈ s → A ≠ B → (line[ℝ, A, B]).SSameSide X Y → EuclideanGeometry.angle A X B = EuclideanGeometry.angle A Y B
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B X Y hA hB hX hY hAB hs
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hXA : X ≠ A := fun h => hs.2.1 (h ▸ hmA)
+      have hXB : X ≠ B := fun h => hs.2.1 (h ▸ hmB)
+      have hYA : Y ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hYB : Y ≠ B := fun h => hs.2.2 (h ▸ hmB)
+      have h2 := EuclideanGeometry.Sphere.two_zsmul_oangle_eq hA hX hY hB hXA hXB hYA hYB
+      have hsign := hs.oangle_sign_eq hmA hmB
+      have hne : (EuclideanGeometry.oangle A X B).sign ≠ 0 := by
+        intro h0
+        have hcol := EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp h0
+        exact hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      rw [EuclideanGeometry.angle_eq_iff_oangle_eq_of_sign_eq hXA.symm hXB.symm hYA.symm hYB.symm hsign.symm]
+      exact (Real.Angle.two_zsmul_eq_iff_eq hne hsign.symm).mp h2
+- id: inscribed_angle_same_side_converse
+  kind: textbook
+  level: middle
+  topic: 円・円周角の定理の逆
+  statement: 平面上で、$A\neq B$とし、点$X,Y$が直線$AB$に関して同じ側にある（どちらも直線上にない）とする。$\angle AXB=\angle AYB$ならば、$A,B,X,Y$は同一円周上にある（円周角の定理の逆）。
+  statement_en: In a Euclidean plane, if A ≠ B, X and Y lie strictly on the same side of line AB, and ∠AXB = ∠AYB, then A, B, X, Y lie on a common circle.
+  assumptions:
+  - 点は平面上にある
+  - $A\neq B$
+  - $X,Y$は直線$AB$に関して同じ側にあり、直線上にない
+  - $\angle AXB=\angle AYB$
+  quantifiers:
+  - 任意の点$A,B,X,Y$
+  conclusion: $A,B,X,Y$は同一円周上にある。
+  answer: |
+    平面上の点$A,B,X,Y$について$A\neq B$とし、$X,Y$は直線$AB$に関して同じ側にあり直線上になく、$\angle AXB=\angle AYB$とする。
+    $A,B,X$は一直線上にないので、この3点を通る円$\Gamma$がある。$Y$が$\Gamma$の上にあることを示す。$A,B$の中点を$M$とする。$M$は$\Gamma$の内部にあるので、半直線$MY$は$\Gamma$とただ1点$Z$で交わる。$Z$は直線$AB$に関して$Y$と同じ側、すなわち$X$と同じ側にある。円周角の定理（円の上の$A\neq B$と、直線$AB$の同じ側にある円の上の2点$X,Z$について$\angle AXB=\angle AZB$）より、$\angle AZB=\angle AXB=\angle AYB$である。
+    一般に、点$P$が三角形$ABQ$の内部にあれば$\angle APB>\angle AQB$である。半直線$AP$と辺$BQ$の交点を$R$とする。$\angle APB$は三角形$PRB$の頂点$P$における外角なので$\angle APB>\angle ARB$である。$\angle ARB$は三角形$AQR$の頂点$R$における外角なので$\angle ARB>\angle AQB$である。
+    $Y\neq Z$と仮定する。$Y,Z$は$M$から出る同じ半直線の上にあり、$M$は辺$AB$の内点である。$Y$が$M$と$Z$の間にあれば、$Y$は三角形$ABZ$の内部にあるので$\angle AYB>\angle AZB$である。$Z$が$M$と$Y$の間にあれば、$Z$は三角形$ABY$の内部にあるので$\angle AZB>\angle AYB$である。どちらも$\angle AZB=\angle AYB$に反する。よって$Y=Z$であり、$A,B,X,Y$は$\Gamma$の上にある。
+  strategy: Compare Y with the point where the ray from the midpoint of AB through Y meets the circle ABX; a point inside a triangle sees the opposite side under a larger angle.
+  sketch:
+  - 'setup: Take the circle through A, B, X and the midpoint M of AB.'
+  - 'construct: The ray from M through Y meets the circle at one point Z on the same side as X.'
+  - 'apply_theorem: The inscribed angle theorem gives angle AZB = angle AXB = angle AYB.'
+  - 'derive: A point inside a triangle ABQ sees AB under a larger angle than Q does, by two exterior angles.'
+  - 'contradiction: If Y ≠ Z, one of them lies inside the triangle formed with the other, so the two angles differ.'
+  - 'conclude: Y = Z, so the four points are concyclic.'
+  openmath: (forall (a b x y) (-> (and (!= a b) (same_side_of_line x y a b) (= (euclid_angle a x b) (euclid_angle a y b))) (cospherical_points (set a b x y))))
+  hard_negative:
+    statement: $\angle AXB=\angle AYB$であれば、$X,Y$が直線$AB$の反対側にあっても$A,B,X,Y$は同一円周上にある。
+    reason: $A=(-1,0)$、$B=(1,0)$、$X=(0,2)$、$Y=(0,-2)$では角は等しいが、$A,B,X$を通る円は中心$(0,3/4)$、半径$5/4$で、$Y$はその上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (A B X Y : P), A ≠ B → (line[ℝ, A, B]).SSameSide X Y → EuclideanGeometry.angle A X B = EuclideanGeometry.angle A Y B → EuclideanGeometry.Cospherical ({A, B, X, Y} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ _ A B X Y hAB hs hang
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hsign := hs.oangle_sign_eq hmA hmB
+      have heq := EuclideanGeometry.oangle_eq_of_angle_eq_of_sign_eq hang hsign.symm
+      have hc : EuclideanGeometry.Cospherical ({A, X, Y, B} : Set P) := by
+        refine EuclideanGeometry.cospherical_of_two_zsmul_oangle_eq_of_not_collinear (by rw [heq]) ?_
+        intro hcol
+        exact hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      exact hc.subset (by intro x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto)
+- id: central_angle_twice_inscribed_same_side
+  kind: textbook
+  level: middle
+  topic: 円・中心角と円周角
+  statement: 平面上で、中心$O$の円の上に点$A,B,X$があり、$A\neq B$で、$O$と$X$が直線$AB$に関して同じ側にある（どちらも直線上にない）とき、$\angle AOB=2\angle AXB$である。
+  statement_en: In a Euclidean plane, if A, B, X lie on a circle with center O, A ≠ B, and O, X lie strictly on the same side of line AB, then ∠AOB = 2∠AXB.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,X$は中心$O$の円の上にある
+  - $A\neq B$
+  - $O,X$は直線$AB$に関して同じ側にあり、直線上にない
+  quantifiers:
+  - 任意の円と点$A,B,X$
+  conclusion: $\angle AOB=2\angle AXB$である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,X$をとり、$A\neq B$とする。$O,X$は直線$AB$に関して同じ側にあり、直線上にないとする。$A\neq B$より$r>0$であり、$X$は直線$AB$上にないので$X\neq A,B$である。$X$を通る直径のもう一方の端を$X'$とする。直線$XO$と円の共有点は$X,X'$だけで、$O$は$X$と$X'$の間にある。
+    まず、円上の点$P\neq X$について$\angle POX'=2\angle PXO$であることを示す。$P=X'$なら両辺は$0$である。$P\neq X'$なら$P$は直線$XO$上にない。三角形$OXP$は$OX=OP$の二等辺三角形なので$\angle OPX=\angle OXP$である。$\angle POX'$はこの三角形の頂点$O$における外角なので、$\angle POX'=\angle OXP+\angle OPX=2\angle PXO$である。
+    これを$P=A,B$に用いて、$A,B$と直線$XO$の位置で場合を分ける。
+    $A,B$が直線$XO$の同じ側にあるか、一方が$X'$に等しいとする。$A\neq B$なので両方が$X'$になることはない。半直線$XA,XB$は直線$XO$を境界とする同じ閉半平面に入るので、$\angle AXB=|\angle AXO-\angle BXO|$である。同様に$\angle AOB=|\angle AOX'-\angle BOX'|$である。よって$\angle AOB=2|\angle AXO-\angle BXO|=2\angle AXB$である。
+    $A,B$が直線$XO$の反対側にあるとする。線分$AB$と直線$XO$の交点を$D$とする。$D$は弦$AB$の内点なので円の内部にあり、$X$と$X'$の間に真にある。$O$は直線$AB$上にないので$D\neq O$である。$O,X$は直線$AB$の同じ側にあるので、$D$は$O$と$X$の間にない。よって$D$は$O$と$X'$の間にある。半直線$OD$は半直線$OX'$に等しく、半直線$XD$は半直線$XO$に等しい。$D$は線分$AB$上にあるので、$\angle AOB=\angle AOX'+\angle X'OB$、$\angle AXB=\angle AXO+\angle OXB$である。したがって$\angle AOB=2\angle AXO+2\angle OXB=2\angle AXB$である。
+  strategy: Draw the diameter through X; isosceles triangles on the radii give a doubling relation on each side, and the position of A, B relative to the diameter decides whether to add or subtract.
+  sketch:
+  - 'setup: Let X'' be the other end of the diameter through X.'
+  - 'derive: The isosceles triangle OXP gives angle POX'' = 2 angle PXO for P on the circle, P ≠ X.'
+  - 'case_split: If A, B lie on one closed side of XO, both angles are differences, so angle AOB = 2 angle AXB.'
+  - 'derive: If A, B lie on opposite sides of XO, the crossing point D of AB and XO lies between O and X'' because O, X are on the same side of AB.'
+  - 'conclude: Then both angles are sums, so again angle AOB = 2 angle AXB.'
+  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (same_side_of_line o x a b)) (= (euclid_angle a o b) (* 2 (euclid_angle a x b)))))
+  hard_negative:
+    statement: $O$と$X$が直線$AB$の反対側にあっても$\angle AOB=2\angle AXB$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(1/\sqrt2,1/\sqrt2)$とすると、$\angle AOB=\pi/2$、$\angle AXB=3\pi/4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B X : P), A ∈ s → B ∈ s → X ∈ s → A ≠ B → (line[ℝ, A, B]).SSameSide s.center X → EuclideanGeometry.angle A s.center B = 2 * EuclideanGeometry.angle A X B
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B X hA hB hX hAB hs
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hXA : X ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hXB : X ≠ B := fun h => hs.2.2 (h ▸ hmB)
+      have hn1 : ¬Collinear ℝ ({A, s.center, B} : Set P) := fun hcol =>
+        hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      have hn2 : ¬Collinear ℝ ({A, X, B} : Set P) := fun hcol =>
+        hs.2.2 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      have hcen := EuclideanGeometry.Sphere.oangle_center_eq_two_zsmul_oangle hA hX hB hXA hXB
+      have hsign : (EuclideanGeometry.oangle A s.center B).sign = (EuclideanGeometry.oangle A X B).sign :=
+        (hs.oangle_sign_eq hmA hmB).symm
+      have hy0 := EuclideanGeometry.angle_pos_of_not_collinear hn1
+      have hy1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn1
+      have hx0 := EuclideanGeometry.angle_pos_of_not_collinear hn2
+      have hx1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn2
+      set y := EuclideanGeometry.angle A s.center B with hy
+      set x := EuclideanGeometry.angle A X B with hx
+      have key : (y : Real.Angle) = (2 : ℤ) • (x : Real.Angle) → y = 2 * x := by
+        intro h
+        have h' : (y : Real.Angle) = ((2 * x : ℝ) : Real.Angle) := by
+          rw [h, two_zsmul, ← Real.Angle.coe_add, two_mul]
+        obtain ⟨k, hk⟩ := Real.Angle.angle_eq_iff_two_pi_dvd_sub.mp h'
+        have hpi := Real.pi_pos
+        have k1 : (k : ℝ) < 1 := by nlinarith
+        have k2 : (-1 : ℝ) < k := by nlinarith
+        have k3 : k = 0 := by
+          have : k < 1 := by exact_mod_cast k1
+          have : -1 < k := by exact_mod_cast k2
+          omega
+        rw [k3] at hk
+        simp at hk
+        linarith
+      apply key
+      rcases hc : (EuclideanGeometry.oangle A X B).sign with _ | _ | _
+      · exfalso
+        exact hn2 (EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp hc)
+      · have ea := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one hc
+        have eb := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one (hsign.trans hc)
+        rw [ea, eb, smul_neg, neg_inj] at hcen
+        exact hcen
+      · have ea := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one hc
+        have eb := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one (hsign.trans hc)
+        rw [ea, eb] at hcen
+        exact hcen
+- id: central_angle_plus_twice_inscribed_opposite_side
+  kind: gap
+  level: middle
+  topic: 円・中心角と円周角
+  statement: 平面上で、中心$O$の円の上に点$A,B,X$があり、$A\neq B$で、$O$と$X$が直線$AB$の反対側にある（どちらも直線上にない）とき、$\angle AOB+2\angle AXB=2\pi$である。これは$X$が劣弧の上にある場合の形である。
+  statement_en: Minor-arc form. In a Euclidean plane, if A, B, X lie on a circle with center O, A ≠ B, and O, X lie strictly on opposite sides of line AB, then ∠AOB + 2∠AXB = 2π.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,X$は中心$O$の円の上にある
+  - $A\neq B$
+  - $O,X$は直線$AB$の反対側にあり、直線上にない
+  quantifiers:
+  - 任意の円と点$A,B,X$
+  conclusion: $\angle AOB+2\angle AXB=2\pi$である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,X$をとり、$A\neq B$とする。$O,X$は直線$AB$の反対側にあり、直線上にないとする。$A\neq B$より$r>0$である。$X$を通る直径のもう一方の端を$X'$とする。$O$は$X$と$X'$の間にある。
+    線分$OX$と直線$AB$の交点を$D$とする。$D$は$O$と$X$の間に真にあるので円の内部にある。直線$AB$上で円の内部にある点は弦$AB$の内点なので、$D$は$A$と$B$の間に真にある。$O$は直線$AB$上にないので、直線$XO$と直線$AB$は異なる。よって$A,B$は直線$XO$の反対側にあり、$X,X'$と異なる。
+    三角形$OXA$は$OX=OA$の二等辺三角形で、$\angle AOX'$はその頂点$O$における外角なので、$\angle AOX'=2\angle AXO$である。同様に$\angle BOX'=2\angle BXO$である。
+    半直線$OD$は半直線$OX$に等しく、半直線$XD$は半直線$XO$に等しい。$D$は線分$AB$上にあるので、$\angle AOB=\angle AOX+\angle XOB$、$\angle AXB=\angle AXO+\angle OXB$である。$X,O,X'$がこの順に並ぶので、$\angle AOX=\pi-\angle AOX'$、$\angle XOB=\pi-\angle X'OB$である。したがって$\angle AOB=2\pi-2\angle AXO-2\angle OXB=2\pi-2\angle AXB$である。
+  strategy: The segment OX crosses the chord AB, so the diameter through X splits both angles; isosceles triangles on the radii relate the parts.
+  sketch:
+  - 'setup: Let X'' be the other end of the diameter through X and D the point where segment OX meets line AB.'
+  - 'derive: D lies inside the circle, so it lies strictly between A and B.'
+  - 'derive: The isosceles triangles on OA and OB give angle AOX'' = 2 angle AXO and angle BOX'' = 2 angle BXO.'
+  - 'derive: Since D lies on AB, angle AOB and angle AXB split along XO.'
+  - 'conclude: Using angle AOX = π - angle AOX'' gives angle AOB + 2 angle AXB = 2π.'
+  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (opposite_side_of_line o x a b)) (= (+ (euclid_angle a o b) (* 2 (euclid_angle a x b))) (* 2 pi))))
+  hard_negative:
+    statement: $O$と$X$が直線$AB$に関して同じ側にあっても$\angle AOB+2\angle AXB=2\pi$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$とすると、$\angle AOB=\pi/2$、$\angle AXB=\pi/4$で、和は$\pi$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B X : P), A ∈ s → B ∈ s → X ∈ s → A ≠ B → (line[ℝ, A, B]).SOppSide s.center X → EuclideanGeometry.angle A s.center B + 2 * EuclideanGeometry.angle A X B = 2 * Real.pi
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B X hA hB hX hAB hs
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hXA : X ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hXB : X ≠ B := fun h => hs.2.2 (h ▸ hmB)
+      have hn1 : ¬Collinear ℝ ({A, s.center, B} : Set P) := fun hcol =>
+        hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      have hn2 : ¬Collinear ℝ ({A, X, B} : Set P) := fun hcol =>
+        hs.2.2 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      have hcen := EuclideanGeometry.Sphere.oangle_center_eq_two_zsmul_oangle hA hX hB hXA hXB
+      have hsign : (EuclideanGeometry.oangle A s.center B).sign = -(EuclideanGeometry.oangle A X B).sign := by
+        rw [hs.symm.oangle_sign_eq_neg hmA hmB]
+      have hy0 := EuclideanGeometry.angle_pos_of_not_collinear hn1
+      have hy1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn1
+      have hx0 := EuclideanGeometry.angle_pos_of_not_collinear hn2
+      have hx1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn2
+      set y := EuclideanGeometry.angle A s.center B with hy
+      set x := EuclideanGeometry.angle A X B with hx
+      have key : -(y : Real.Angle) = (2 : ℤ) • (x : Real.Angle) → y + 2 * x = 2 * Real.pi := by
+        intro h
+        have h' : ((y + 2 * x : ℝ) : Real.Angle) = ((0 : ℝ) : Real.Angle) := by
+          rw [Real.Angle.coe_add, two_mul, Real.Angle.coe_add, ← two_zsmul, ← h]; simp
+        obtain ⟨k, hk⟩ := Real.Angle.angle_eq_iff_two_pi_dvd_sub.mp h'
+        have hpi := Real.pi_pos
+        have k1 : (k : ℝ) < 2 := by nlinarith
+        have k2 : (0 : ℝ) < k := by nlinarith
+        have k3 : k = 1 := by
+          have : k < 2 := by exact_mod_cast k1
+          have : 0 < k := by exact_mod_cast k2
+          omega
+        rw [k3] at hk
+        simp at hk
+        linarith
+      apply key
+      rcases hc : (EuclideanGeometry.oangle A X B).sign with _ | _ | _
+      · exfalso
+        exact hn2 (EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp hc)
+      · have ea := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one hc
+        have eb := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one (by rw [hsign, hc]; rfl)
+        rw [ea, eb, smul_neg] at hcen
+        rw [hcen, neg_neg]
+      · have ea := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one hc
+        have eb := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one (by rw [hsign, hc]; rfl)
+        rw [ea, eb] at hcen
+        exact hcen
+- id: thales_right_angle_iff_on_diameter_circle
+  kind: named
+  level: middle
+  topic: 円・タレスの定理
+  statement: 実内積空間上のアフィン空間で、線分$AB$を直径とする球面（平面なら円）と点$X\neq A,B$について、$\angle AXB=\pi/2$であることと$X$がその球面上にあることは同値である（タレスの定理とその逆）。
+  statement_en: If AB is a diameter of a sphere (a circle in the plane) in a real inner product affine space and X ≠ A, B, then ∠AXB = π/2 if and only if X lies on the sphere.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $AB$は球面$s$の直径である
+  - $X\neq A$、$X\neq B$
+  quantifiers:
+  - 任意の球面$s$と点$A,B,X$
+  conclusion: $\angle AXB=\pi/2$と$X\in s$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、$AB$を直径とする中心$O$、半径$r$の球面$s$と、$A,B$と異なる点$X$をとる。$O$は$A,B$の中点である。
+    $a=A-O$、$x=X-O$とおくと、$B-O=-a$、$\|a\|=r$である。よって$\langle A-X,B-X\rangle=\langle a-x,-a-x\rangle=\|x\|^2-\|a\|^2=\|x\|^2-r^2$である。
+    $A-X,B-X$はともに$0$でないので、$\angle AXB=\pi/2$は内積が$0$であることと同値である。内積が$0$であることは$\|x\|=r$、すなわち$X\in s$と同値である。
+  strategy: Expand the inner product of XA and XB from the center; it equals |XO|^2 - r^2.
+  sketch:
+  - 'setup: Let O be the midpoint of AB and write a = A-O, x = X-O, so B-O = -a.'
+  - 'derive: The inner product of A-X and B-X equals |x|^2 - r^2.'
+  - 'translate: For nonzero vectors, a right angle means inner product zero.'
+  - 'conclude: This holds exactly when |x| = r.'
+  openmath: (forall (o r a b x) (-> (and (is_diameter a b o r) (!= x a) (!= x b)) (<-> (= (euclid_angle a x b) (/ pi 2)) (on_circle x o r))))
+  hard_negative:
+    statement: 円の任意の弦$AB$と円上の点$X\neq A,B$について$\angle AXB=\pi/2$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$とすると$\angle AXB=\pi/4$である。直径であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B X : P), s.IsDiameter A B → X ≠ A → X ≠ B → (EuclideanGeometry.angle A X B = Real.pi / 2 ↔ X ∈ s)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B X h _ _
+      exact EuclideanGeometry.Sphere.angle_eq_pi_div_two_iff_mem_sphere_of_isDiameter h
+- id: right_angle_on_circle_chord_is_diameter
+  kind: gap
+  level: middle
+  topic: 円・タレスの定理の逆
+  statement: 平面上で、円の上の点$A,B,X$について$X\neq A,B$かつ$\angle AXB=\pi/2$ならば、$AB$はこの円の直径である。
+  statement_en: In a Euclidean plane, if A, B, X lie on a circle, X ≠ A, B and ∠AXB = π/2, then AB is a diameter of the circle.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,X$は円$s$の上にある
+  - $X\neq A$、$X\neq B$
+  - $\angle AXB=\pi/2$
+  quantifiers:
+  - 任意の円$s$と点$A,B,X$
+  conclusion: $AB$は$s$の直径である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,X$をとり、$X\neq A,B$、$\angle AXB=\pi/2$とする。$A\neq B$である。$A=B$なら$\angle AXB=0$となるからである。
+    $M$を$A,B$の中点とする。ベクトル$a=A-M$、$x=X-M$について$B-M=-a$であり、$\langle A-X,B-X\rangle=\|x\|^2-\|a\|^2=0$である。よって$MA=MB=MX$である。
+    $O$と$M$はともに$A,B,X$から等距離にある。$\angle AXB=\pi/2$なので$A,B,X$は一直線上になく、平面上でこの3点から等距離にある点はただ1つである。線分$AX$の垂直二等分線と線分$BX$の垂直二等分線は平行でなく、1点でしか交わらないからである。したがって$O=M$であり、$A,B$は中心について対称な円上の点である。すなわち$AB$は直径である。
+  strategy: The midpoint of AB is equidistant from A, B, X, and in the plane the circumcenter is unique.
+  sketch:
+  - 'setup: Let M be the midpoint of AB.'
+  - 'derive: The right angle gives |MX| = |MA| = |MB|.'
+  - 'derive: A, B, X are not collinear, so the plane contains only one point equidistant from them.'
+  - 'conclude: The center equals M, so AB is a diameter.'
+  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= x a) (!= x b) (= (euclid_angle a x b) (/ pi 2))) (is_diameter a b o r)))
+  hard_negative:
+    statement: 3次元の球面の上の点$A,B,X$について$X\neq A,B$かつ$\angle AXB=\pi/2$ならば、$AB$は球面の直径である。
+    reason: 球面を大円でない平面で切った小円の直径を$AB$とし、$X$をその小円の上の点とすると、角は直角だが$AB$の長さは球面の直径より短い。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B X : P), A ∈ s → B ∈ s → X ∈ s → X ≠ A → X ≠ B → EuclideanGeometry.angle A X B = Real.pi / 2 → s.IsDiameter A B
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B X hA hB hX hXA hXB h
+      exact EuclideanGeometry.Sphere.isDiameter_of_angle_eq_pi_div_two hA hX hB hXA.symm hXB h
+- id: angle_on_diameter_inside_outside
+  kind: gap
+  level: high
+  topic: 円・直径を見込む角
+  statement: 実内積空間上のアフィン空間で、$AB$を直径とする中心$O$、半径$r$の球面（平面なら円）と点$X\neq A,B$について、$\angle AXB>\pi/2$と$XO<r$は同値であり、$\angle AXB<\pi/2$と$XO>r$は同値である。
+  statement_en: If AB is a diameter of a sphere with center O and radius r (a circle in the plane) and X ≠ A, B, then ∠AXB > π/2 iff |XO| < r, and ∠AXB < π/2 iff |XO| > r.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $AB$は中心$O$、半径$r$の球面の直径である
+  - $X\neq A$、$X\neq B$
+  quantifiers:
+  - 任意の球面と点$A,B,X$
+  conclusion: $\angle AXB>\pi/2\iff XO<r$かつ$\angle AXB<\pi/2\iff XO>r$である。
+  answer: |
+    実内積空間上のアフィン空間で、$AB$を直径とする中心$O$、半径$r$の球面と、$A,B$と異なる点$X$をとる。$r\geq0$である。
+    $a=A-O$、$x=X-O$とおくと$B-O=-a$、$\|a\|=r$なので、$\langle A-X,B-X\rangle=\|x\|^2-r^2=XO^2-r^2$である。この内積は$\cos\angle AXB\cdot\|A-X\|\|B-X\|$に等しく、$\|A-X\|\|B-X\|>0$である。よって$\cos\angle AXB$の符号は$XO^2-r^2$の符号に等しい。
+    $\angle AXB\in[0,\pi]$なので、$\cos\angle AXB<0$は$\angle AXB>\pi/2$と同値で、$\cos\angle AXB>0$は$\angle AXB<\pi/2$と同値である。$XO,r\geq0$なので、$XO^2-r^2$の符号は$XO-r$の符号に等しい。以上で2つの同値が得られる。
+  strategy: The cosine of the angle has the sign of |XO|^2 - r^2.
+  sketch:
+  - 'setup: Write a = A-O, x = X-O, so B-O = -a.'
+  - 'derive: The inner product of A-X and B-X equals |XO|^2 - r^2.'
+  - 'derive: This inner product is cos of angle AXB times a positive number.'
+  - 'translate: The sign of the cosine on [0,π] decides acute or obtuse.'
+  - 'conclude: Comparing signs gives both equivalences.'
+  openmath: (forall (o r a b x) (-> (and (is_diameter a b o r) (!= x a) (!= x b)) (and (<-> (> (euclid_angle a x b) (/ pi 2)) (< (dist_of x o) r)) (<-> (< (euclid_angle a x b) (/ pi 2)) (> (dist_of x o) r)))))
+  hard_negative:
+    statement: 円の任意の弦$AB$について、円の内部の点$X$から見た$\angle AXB$は$\pi/2$より大きい。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-9/10,0)$とすると、$X$は内部にあるが$X-A$と$X-B$の内積は正で、角は鋭角である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B X : P), s.IsDiameter A B → X ≠ A → X ≠ B → (Real.pi / 2 < EuclideanGeometry.angle A X B ↔ dist X s.center < s.radius) ∧ (EuclideanGeometry.angle A X B < Real.pi / 2 ↔ s.radius < dist X s.center)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B X h hXA hXB
+      have hA : dist A s.center = s.radius := h.left_mem
+      have hr : 0 ≤ s.radius := hA ▸ dist_nonneg
+      have hc : s.center = midpoint ℝ A B := h.midpoint_eq_center.symm
+      have hopp : B -ᵥ s.center = -(A -ᵥ s.center) := by
+        rw [hc, left_vsub_midpoint, right_vsub_midpoint, ← smul_neg, neg_vsub_eq_vsub_rev]
+      have hnA : ‖A -ᵥ s.center‖ = s.radius := by rw [← dist_eq_norm_vsub V, hA]
+      have hd : dist X s.center = ‖X -ᵥ s.center‖ := dist_eq_norm_vsub V _ _
+      have hin : inner ℝ (A -ᵥ X) (B -ᵥ X) = dist X s.center ^ 2 - s.radius ^ 2 := by
+        rw [← vsub_sub_vsub_cancel_right A X s.center, ← vsub_sub_vsub_cancel_right B X s.center, hopp, hd, ← hnA]
+        simp only [inner_sub_left, inner_sub_right, inner_neg_left, inner_neg_right, real_inner_self_eq_norm_sq]
+        rw [real_inner_comm (A -ᵥ s.center) (X -ᵥ s.center)]
+        ring
+      have hk : 0 < ‖A -ᵥ X‖ * ‖B -ᵥ X‖ := mul_pos (norm_pos_iff.mpr (vsub_ne_zero.mpr hXA.symm)) (norm_pos_iff.mpr (vsub_ne_zero.mpr hXB.symm))
+      have hcos : Real.cos (EuclideanGeometry.angle A X B) * (‖A -ᵥ X‖ * ‖B -ᵥ X‖) = dist X s.center ^ 2 - s.radius ^ 2 := by
+        rw [← hin]; exact InnerProductGeometry.cos_angle_mul_norm_mul_norm _ _
+      have h0 := EuclideanGeometry.angle_nonneg A X B
+      have h1 := EuclideanGeometry.angle_le_pi A X B
+      have hdn : 0 ≤ dist X s.center := dist_nonneg
+      have hpi := Real.pi_pos
+      rcases lt_trichotomy (EuclideanGeometry.angle A X B) (Real.pi / 2) with hlt | heq | hgt
+      · have hc' : 0 < Real.cos (EuclideanGeometry.angle A X B) := Real.cos_pos_of_mem_Ioo ⟨by linarith, hlt⟩
+        have : s.radius < dist X s.center := by
+          have := mul_pos hc' hk
+          nlinarith
+        exact ⟨⟨fun h' => by linarith, fun h' => by linarith⟩, ⟨fun _ => this, fun _ => hlt⟩⟩
+      · rw [heq, Real.cos_pi_div_two, zero_mul] at hcos
+        have : dist X s.center = s.radius := by nlinarith
+        rw [heq, this]
+        simp
+      · have hc' : Real.cos (EuclideanGeometry.angle A X B) < 0 := Real.cos_neg_of_pi_div_two_lt_of_lt hgt (by linarith)
+        have : dist X s.center < s.radius := by
+          have := mul_neg_of_neg_of_pos hc' hk
+          nlinarith
+        exact ⟨⟨fun _ => this, fun _ => hgt⟩, ⟨fun h' => by linarith, fun h' => by linarith⟩⟩
+- id: two_right_angles_on_segment_concyclic
+  kind: gap
+  level: high
+  topic: 円・直角と共円
+  statement: 実内積空間上のアフィン空間で、点$X,Y$がともに$A,B$と異なり、$\angle AXB=\angle AYB=\pi/2$ならば、$A,B,X,Y$は同一球面上（平面なら同一円周上）にある。$X,Y$の位置に関する条件はいらない。
+  statement_en: If X, Y are different from A, B and ∠AXB = ∠AYB = π/2, then A, B, X, Y lie on a common sphere (a common circle in the plane), with no condition on the sides of X and Y.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $X,Y$は$A,B$と異なる
+  - $\angle AXB=\pi/2$
+  - $\angle AYB=\pi/2$
+  quantifiers:
+  - 任意の点$A,B,X,Y$
+  conclusion: $A,B,X,Y$は同一球面上にある。
+  answer: |
+    実内積空間上のアフィン空間の点$A,B,X,Y$について、$X,Y$は$A,B$と異なり、$\angle AXB=\angle AYB=\pi/2$とする。$M$を$A,B$の中点とし、$r=|AB|/2$とする。
+    $U$を$X$または$Y$とする。$a=A-M$、$u=U-M$とおくと$B-M=-a$であり、$0=\langle A-U,B-U\rangle=\|u\|^2-\|a\|^2$である。よって$|UM|=\|a\|=r$である。$A,B$も$M$から距離$r$にあるので、4点は中心$M$、半径$r$の球面の上にある。
+  strategy: A right angle over AB places the vertex on the sphere with diameter AB.
+  sketch:
+  - 'setup: Let M be the midpoint of AB and r = |AB|/2.'
+  - 'derive: For U = X or Y the right angle gives |UM| = r.'
+  - 'conclude: A, B, X, Y all lie on the sphere with center M and radius r.'
+  openmath: (forall (a b x y) (-> (and (!= x a) (!= x b) (!= y a) (!= y b) (= (euclid_angle a x b) (/ pi 2)) (= (euclid_angle a y b) (/ pi 2))) (cospherical_points (set a b x y))))
+  hard_negative:
+    statement: $\angle AXB=\angle AYB$であれば、角が直角でなくても側の条件なしに$A,B,X,Y$は同一円周上にある。
+    reason: $A=(-1,0)$、$B=(1,0)$、$X=(0,2)$、$Y=(0,-2)$では角は等しいが、$A,B,X$を通る円の上に$Y$はない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B X Y : P), X ≠ A → X ≠ B → Y ≠ A → Y ≠ B → EuclideanGeometry.angle A X B = Real.pi / 2 → EuclideanGeometry.angle A Y B = Real.pi / 2 → EuclideanGeometry.Cospherical ({A, B, X, Y} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ A B X Y _ _ _ _ hX hY
+      have hd := EuclideanGeometry.Sphere.isDiameter_ofDiameter A B
+      refine EuclideanGeometry.cospherical_iff_exists_sphere.mpr ⟨EuclideanGeometry.Sphere.ofDiameter A B, ?_⟩
+      intro p hp
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+      rcases hp with rfl | rfl | rfl | rfl
+      · exact hd.left_mem
+      · exact hd.right_mem
+      · exact (EuclideanGeometry.Sphere.angle_eq_pi_div_two_iff_mem_sphere_of_isDiameter hd).mp hX
+      · exact (EuclideanGeometry.Sphere.angle_eq_pi_div_two_iff_mem_sphere_of_isDiameter hd).mp hY
+- id: altitude_to_diameter_geometric_mean
+  kind: gap
+  level: high
+  topic: 円・直径への垂線
+  statement: 実内積空間上のアフィン空間で、$AB$を直径とする球面（平面なら円）の上の点$X$から直線$AB$に下ろした垂線の足を$H$とすると、$XH^2=HA\cdot HB$である。
+  statement_en: If AB is a diameter of a sphere (a circle in the plane), X lies on it, and H is the foot of the perpendicular from X to line AB, then |XH|^2 = |HA||HB|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $AB$は球面$s$の直径である
+  - $X\in s$
+  - $H$は直線$AB$上にあり、$X-H$は$B-A$に直交する
+  quantifiers:
+  - 任意の球面$s$と点$A,B,X,H$
+  conclusion: $XH^2=HA\cdot HB$である。
+  answer: |
+    実内積空間上のアフィン空間で、$AB$を直径とする中心$O$、半径$r$の球面の上に点$X$をとり、$H$を直線$AB$上の点で$\langle X-H,B-A\rangle=0$を満たすものとする。
+    $u=A-O$とおくと$B-O=-u$、$\|u\|=r$である。$H$は直線$AB$上にあるので$H-O=tu$となる実数$t$がある。$H-O$は$B-A=-2u$の実数倍なので$\langle X-H,H-O\rangle=0$である。三平方の定理より$r^2=XO^2=XH^2+HO^2$である。
+    一方、$HA\cdot HB=\|tu-u\|\|tu+u\|=|t^2-1|r^2$であり、$HO^2=t^2r^2$である。$r^2-HO^2=XH^2\geq0$より$(1-t^2)r^2\geq0$なので、$HA\cdot HB=(1-t^2)r^2=r^2-HO^2=XH^2$である。
+  strategy: Combine the Pythagorean theorem at H with the power of H with respect to the sphere.
+  sketch:
+  - 'setup: Let O be the center and write H-O as t(A-O).'
+  - 'derive: Since XH is perpendicular to AB, r^2 = |XH|^2 + |HO|^2.'
+  - 'derive: The distances give |HA||HB| = |1-t^2| r^2.'
+  - 'derive: The first equation shows (1-t^2) r^2 is nonnegative.'
+  - 'conclude: So |HA||HB| = r^2 - |HO|^2 = |XH|^2.'
+  openmath: (forall (o r a b x h) (-> (and (is_diameter a b o r) (on_circle x o r) (on_line h a b) (= (inner_product (- x h) (- b a)) 0)) (= (^ (dist_of x h) 2) (* (dist_of h a) (dist_of h b)))))
+  hard_negative:
+    statement: 直径$AB$上の任意の点$H$と円上の点$X$について$XH^2=HA\cdot HB$である。
+    reason: $A=(-1,0)$、$B=(1,0)$、$X=(0,1)$、$H=(1/2,0)$とすると$XH^2=5/4$、$HA\cdot HB=3/4$である。$H$が垂線の足であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B X H : P), s.IsDiameter A B → X ∈ s → H ∈ line[ℝ, A, B] → inner ℝ (X -ᵥ H) (B -ᵥ A) = 0 → dist X H ^ 2 = dist H A * dist H B
+  proof: |
+    by
+      intro V P _ _ _ _ s A B X H h hX hH hperp
+      have hO : s.center ∈ line[ℝ, A, B] := h.wbtw.mem_affineSpan
+      have hsub : H -ᵥ s.center ∈ (line[ℝ, A, B]).direction := AffineSubspace.vsub_mem_direction hH hO
+      rw [direction_affineSpan, mem_vectorSpan_pair_rev] at hsub
+      obtain ⟨k, hk⟩ := hsub
+      have hin : inner ℝ (X -ᵥ H) (H -ᵥ s.center) = 0 := by
+        rw [← hk, inner_smul_right, hperp, mul_zero]
+      have hpy : dist X s.center ^ 2 = dist X H ^ 2 + dist H s.center ^ 2 := by
+        rw [dist_eq_norm_vsub V X s.center, dist_eq_norm_vsub V X H, dist_eq_norm_vsub V H s.center, ← vsub_add_vsub_cancel X H s.center, norm_add_sq_real, hin]
+        ring
+      have hp := EuclideanGeometry.Sphere.mul_dist_eq_abs_power hH h.left_mem h.right_mem
+      have hXr : dist X s.center = s.radius := hX
+      rw [hp, EuclideanGeometry.Sphere.power, abs_of_nonpos]
+      · rw [hXr] at hpy; linarith
+      · rw [hXr] at hpy; nlinarith [sq_nonneg (dist X H)]
+- id: cyclic_quadrilateral_opposite_angles_sum_pi
+  kind: textbook
+  level: high
+  topic: 円・内接四角形
+  statement: 平面上で、円の上の点$A,B,C,D$について$A\neq C$で、$B,D$が直線$AC$の反対側にある（どちらも直線上にない）とき、$\angle ABC+\angle CDA=\pi$である（内接四角形の対角の和）。
+  statement_en: In a Euclidean plane, if A, B, C, D lie on a circle, A ≠ C, and B, D lie strictly on opposite sides of line AC, then ∠ABC + ∠CDA = π.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,C,D$は同じ円の上にある
+  - $A\neq C$
+  - $B,D$は直線$AC$の反対側にあり、直線上にない
+  quantifiers:
+  - 任意の円と点$A,B,C,D$
+  conclusion: $\angle ABC+\angle CDA=\pi$である。
+  answer: |
+    平面上の円の上に点$A,B,C,D$をとり、$A\neq C$とする。$B,D$は直線$AC$の反対側にあり、直線上にないとする。4点は相異なる。
+    線分$BD$と直線$AC$の交点を$E$とする。$E$は弦$BD$の内点なので円の内部にある。直線$AC$上で円の内部にある点は弦$AC$の内点なので、$E$は$A$と$C$の間に真にあり、$B$と$D$の間に真にもある。
+    半直線$BD$は$E$を通るので、$\angle ABC=\angle ABD+\angle DBC$である。同様に$\angle CDA=\angle CDB+\angle BDA$である。
+    4点のうち2点を通る直線$AB,BC,CD,DA$のそれぞれについて、残りの2点は$E$と同じ側にある。たとえば直線$DA$について、直線$AC$は直線$DA$と$A$だけで交わり、$E$は$A$から見て$C$と同じ向きにあるので、$C$と$E$は同じ側にある。直線$BD$は直線$DA$と$D$だけで交わり、$E$は$D$から見て$B$と同じ向きにあるので、$B$と$E$は同じ側にある。他の3本も同様である。
+    したがって円周角の定理（円の上の$U\neq W$と、直線$UW$の同じ側にある円の上の2点$X,Y$について$\angle UXW=\angle UYW$）より、$\angle ABD=\angle ACD$、$\angle DBC=\angle DAC$、$\angle CDB=\angle CAB$、$\angle BDA=\angle BCA$である。
+    これらを足すと$\angle ABC+\angle CDA=(\angle ACD+\angle DAC)+(\angle CAB+\angle BCA)$である。三角形$ACD$と$ABC$の内角の和より、右辺は$(\pi-\angle CDA)+(\pi-\angle ABC)$に等しい。よって$2(\angle ABC+\angle CDA)=2\pi$であり、$\angle ABC+\angle CDA=\pi$である。
+  strategy: The diagonals cross inside the circle; split the two angles along the diagonal BD, transfer the parts with the inscribed angle theorem and use the angle sums of triangles ABC and ACD.
+  sketch:
+  - 'setup: Let E be the crossing point of BD and AC; it lies strictly inside both chords.'
+  - 'derive: The ray BD splits angle ABC, and the ray DB splits angle CDA.'
+  - 'derive: For each side line of the quadrilateral, the other two vertices lie on the side of E.'
+  - 'apply_theorem: The inscribed angle theorem transfers the four parts to angles of triangles ABC and ACD.'
+  - 'conclude: The two triangle angle sums give 2(angle ABC + angle CDA) = 2π.'
+  openmath: (forall (o r a b c d) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= a c) (opposite_side_of_line b d a c)) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)))
+  hard_negative:
+    statement: 円の上の点について、$B,D$が直線$AC$に関して同じ側にあっても$\angle ABC+\angle CDA=\pi$である。
+    reason: 単位円で$A=(1,0)$、$C=(0,1)$、$B=(-1,0)$、$D=(0,-1)$とすると、どちらの角も$\pi/4$で、和は$\pi/2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B C D : P), A ∈ s → B ∈ s → C ∈ s → D ∈ s → A ≠ C → (line[ℝ, A, C]).SOppSide B D → EuclideanGeometry.angle A B C + EuclideanGeometry.angle C D A = Real.pi
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B C D hA hB hC hD hAC hs
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A C
+      have hmC := right_mem_affineSpan_pair ℝ A C
+      have hBA : B ≠ A := fun h => hs.2.1 (h ▸ hmA)
+      have hBC : B ≠ C := fun h => hs.2.1 (h ▸ hmC)
+      have hDA : D ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hDC : D ≠ C := fun h => hs.2.2 (h ▸ hmC)
+      have hn1 : ¬Collinear ℝ ({A, B, C} : Set P) := fun hcol =>
+        hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAC)
+      have hn2 : ¬Collinear ℝ ({C, D, A} : Set P) := fun hcol =>
+        hs.2.2 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAC)
+      have h2 := EuclideanGeometry.Sphere.two_zsmul_oangle_eq hA hB hD hC hBA hBC hDA hDC
+      have hsign := hs.oangle_sign_eq_neg hmA hmC
+      have hsign' : (EuclideanGeometry.oangle C D A).sign = (EuclideanGeometry.oangle A B C).sign := by
+        rw [EuclideanGeometry.oangle_rev, Real.Angle.sign_neg, hsign, neg_neg]
+      have hsum : (2 : ℤ) • (EuclideanGeometry.oangle A B C + EuclideanGeometry.oangle C D A) = 0 := by
+        rw [smul_add, h2, EuclideanGeometry.oangle_rev A D C, smul_neg]; simp
+      have hx0 := EuclideanGeometry.angle_pos_of_not_collinear hn1
+      have hx1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn1
+      have hy0 := EuclideanGeometry.angle_pos_of_not_collinear hn2
+      have hy1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn2
+      set x := EuclideanGeometry.angle A B C with hx
+      set y := EuclideanGeometry.angle C D A with hy
+      have key : (2 : ℤ) • (((x + y : ℝ)) : Real.Angle) = 0 → x + y = Real.pi := by
+        intro h
+        rw [Real.Angle.two_zsmul_eq_zero_iff] at h
+        have hθ : ((x + y - Real.pi : ℝ) : Real.Angle).toReal = x + y - Real.pi :=
+          Real.Angle.toReal_coe_eq_self_iff.mpr ⟨by linarith, by linarith⟩
+        rcases h with h | h
+        · exfalso
+          have : ((x + y - Real.pi : ℝ) : Real.Angle) = (Real.pi : Real.Angle) := by
+            rw [Real.Angle.coe_sub, h]; simp
+          rw [this, Real.Angle.toReal_pi] at hθ
+          linarith
+        · have : ((x + y - Real.pi : ℝ) : Real.Angle) = 0 := by
+            rw [Real.Angle.coe_sub, h]; simp
+          rw [this, Real.Angle.toReal_zero] at hθ
+          linarith
+      apply key
+      rcases hc : (EuclideanGeometry.oangle A B C).sign with _ | _ | _
+      · exfalso
+        exact hn1 (EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp hc)
+      · have ea := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one hc
+        have eb := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one (hsign'.trans hc)
+        rw [ea, eb] at hsum
+        rw [Real.Angle.coe_add]
+        rw [← neg_add, smul_neg, neg_eq_zero] at hsum
+        exact hsum
+      · have ea := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one hc
+        have eb := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one (hsign'.trans hc)
+        rw [ea, eb] at hsum
+        rw [Real.Angle.coe_add]
+        exact hsum
+- id: cyclic_quadrilateral_opposite_angles_converse
+  kind: textbook
+  level: high
+  topic: 円・内接四角形の逆
+  statement: 平面上で、$A\neq C$とし、点$B,D$が直線$AC$の反対側にある（どちらも直線上にない）とする。$\angle ABC+\angle CDA=\pi$ならば、$A,B,C,D$は同一円周上にある。
+  statement_en: In a Euclidean plane, if A ≠ C, B and D lie strictly on opposite sides of line AC, and ∠ABC + ∠CDA = π, then A, B, C, D lie on a common circle.
+  assumptions:
+  - 点は平面上にある
+  - $A\neq C$
+  - $B,D$は直線$AC$の反対側にあり、直線上にない
+  - $\angle ABC+\angle CDA=\pi$
+  quantifiers:
+  - 任意の点$A,B,C,D$
+  conclusion: $A,B,C,D$は同一円周上にある。
+  answer: |
+    平面上の点$A,B,C,D$について$A\neq C$とし、$B,D$は直線$AC$の反対側にあり直線上になく、$\angle ABC+\angle CDA=\pi$とする。
+    $A,B,C$は一直線上にないので、この3点を通る円$\Gamma$がある。$A,C$の中点を$M$とする。$M$は$\Gamma$の内部にあるので、半直線$MD$は$\Gamma$と1点$D'$で交わる。$D'$は直線$AC$に関して$D$と同じ側にあり、$B$と反対側にある。
+    内接四角形の対角の和の定理（円の上の$A\neq C$と、直線$AC$の反対側にある円の上の2点$B,D'$について$\angle ABC+\angle CD'A=\pi$）より、$\angle CD'A=\pi-\angle ABC=\angle CDA$である。
+    $D,D'$は直線$AC$の同じ側にあるので、円周角の定理の逆（$A\neq C$で、直線$AC$の同じ側にある2点$D,D'$について$\angle ADC=\angle AD'C$ならば$A,C,D,D'$は同一円周上にある）より、$D$は$A,C,D'$を通る円の上にある。この3点は一直線上にないので、これらを通る円は$\Gamma$だけである。よって$A,B,C,D$は$\Gamma$の上にある。
+  strategy: Take a point D' of the circle ABC on the side of D; the direct theorem gives equal angles at D and D', and the converse of the inscribed angle theorem finishes.
+  sketch:
+  - 'setup: Take the circle through A, B, C and the point D'' where the ray from the midpoint of AC through D meets it.'
+  - 'apply_theorem: The opposite angle theorem gives angle ABC + angle CD''A = π.'
+  - 'derive: The hypothesis then gives angle CD''A = angle CDA.'
+  - 'apply_theorem: The converse of the inscribed angle theorem puts D on the circle through A, C, D''.'
+  - 'conclude: That circle is the circle through A, B, C.'
+  openmath: (forall (a b c d) (-> (and (!= a c) (opposite_side_of_line b d a c) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)) (cospherical_points (set a b c d))))
+  hard_negative:
+    statement: $B,D$が直線$AC$に関して同じ側にあっても、$\angle ABC+\angle CDA=\pi$ならば4点は同一円周上にある。
+    reason: $A=(-1,0)$、$C=(1,0)$、$B=(0,1/\sqrt3)$、$D=(0,\sqrt3)$とすると角は$2\pi/3$と$\pi/3$で和は$\pi$だが、$A,C,D$を通る円の中心は$B$なので$B$は円上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (A B C D : P), A ≠ C → (line[ℝ, A, C]).SOppSide B D → EuclideanGeometry.angle A B C + EuclideanGeometry.angle C D A = Real.pi → EuclideanGeometry.Cospherical ({A, B, C, D} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ _ A B C D hAC hs hsum
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A C
+      have hmC := right_mem_affineSpan_pair ℝ A C
+      have hn1 : ¬Collinear ℝ ({A, B, C} : Set P) := fun hcol =>
+        hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAC)
+      have hsign := hs.oangle_sign_eq_neg hmA hmC
+      have hsign' : (EuclideanGeometry.oangle C D A).sign = (EuclideanGeometry.oangle A B C).sign := by
+        rw [EuclideanGeometry.oangle_rev, Real.Angle.sign_neg, hsign, neg_neg]
+      have hpi : (2 : ℤ) • ((EuclideanGeometry.angle A B C : Real.Angle) + (EuclideanGeometry.angle C D A : Real.Angle)) = 0 := by
+        rw [← Real.Angle.coe_add, hsum, Real.Angle.two_zsmul_coe_pi]
+      have hc : EuclideanGeometry.Cospherical ({A, B, D, C} : Set P) := by
+        refine EuclideanGeometry.cospherical_of_two_zsmul_oangle_eq_of_not_collinear ?_ hn1
+        have h0 : (2 : ℤ) • (EuclideanGeometry.oangle A B C + EuclideanGeometry.oangle C D A) = 0 := by
+          rcases hc : (EuclideanGeometry.oangle A B C).sign with _ | _ | _
+          · exfalso
+            exact hn1 (EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp hc)
+          · have ea := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one hc
+            have eb := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one (hsign'.trans hc)
+            rw [ea, eb, ← neg_add, smul_neg, hpi, neg_zero]
+          · have ea := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one hc
+            have eb := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one (hsign'.trans hc)
+            rw [ea, eb, hpi]
+        rw [smul_add, EuclideanGeometry.oangle_rev A D C, smul_neg] at h0
+        exact eq_of_sub_eq_zero (by rw [sub_eq_add_neg]; exact h0)
+      exact hc.subset (by intro x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto)
+- id: cyclic_quadrilateral_exterior_angle
+  kind: gap
+  level: high
+  topic: 円・内接四角形の外角
+  statement: 平面上で、円の上の点$A,B,C,D$について$B\neq D$で、$A,C$が直線$BD$の反対側にあり（どちらも直線上にない）、点$E$が辺$BC$の$C$の先の延長上にある（$C$が$B$と$E$の間に真にある）とき、$\angle DCE=\angle BAD$である。
+  statement_en: In a Euclidean plane, if A, B, C, D lie on a circle, B ≠ D, A and C lie strictly on opposite sides of line BD, and C lies strictly between B and E, then ∠DCE = ∠BAD.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,C,D$は同じ円の上にある
+  - $B\neq D$
+  - $A,C$は直線$BD$の反対側にあり、直線上にない
+  - $C$は$B$と$E$の間に真にある
+  quantifiers:
+  - 任意の円と点$A,B,C,D,E$
+  conclusion: $\angle DCE=\angle BAD$である。
+  answer: |
+    平面上の円の上に点$A,B,C,D$をとり、$B\neq D$とする。$A,C$は直線$BD$の反対側にあり直線上にないとする。点$E$は、$C$が$B$と$E$の間に真にあるようにとる。
+    内接四角形の対角の和の定理（円の上の点で、頂点の組が対角線の反対側にあれば対角の和は$\pi$）を対角線$BD$に用いると、$\angle BAD+\angle DCB=\pi$である。
+    $C$は$B$と$E$の間にあるので$C-B$と$E-C$は同じ向きであり、$\angle DCB+\angle DCE=\pi$である。2式から$\angle DCE=\angle BAD$である。
+  strategy: Combine the opposite-angle theorem with the supplementary angles on the line BE.
+  sketch:
+  - 'apply_theorem: The opposite angles at A and C sum to π.'
+  - 'derive: The angles DCB and DCE sum to π because C lies between B and E.'
+  - 'conclude: Subtract to get angle DCE = angle BAD.'
+  openmath: (forall (o r a b c d e) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= b d) (opposite_side_of_line a c b d) (strictly_between b c e)) (= (euclid_angle d c e) (euclid_angle b a d))))
+  hard_negative:
+    statement: 円に内接しない四角形でも、外角は隣り合う内角の対角に等しい。
+    reason: 直角でない平行四辺形$ABCD$では$\angle DCE=\pi-\angle BCD=\pi-\angle BAD$であり、$\angle BAD\neq\pi/2$なので$\angle BAD$に等しくない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B C D E : P), A ∈ s → B ∈ s → C ∈ s → D ∈ s → B ≠ D → (line[ℝ, B, D]).SOppSide A C → Sbtw ℝ B C E → EuclideanGeometry.angle D C E = EuclideanGeometry.angle B A D
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B C D E hA hB hC hD hBD hs hE
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hsum : EuclideanGeometry.angle B A D + EuclideanGeometry.angle D C B = Real.pi := by
+        have hmB := left_mem_affineSpan_pair ℝ B D
+        have hmD := right_mem_affineSpan_pair ℝ B D
+        have hAB : A ≠ B := fun h => hs.2.1 (h ▸ hmB)
+        have hAD : A ≠ D := fun h => hs.2.1 (h ▸ hmD)
+        have hCB : C ≠ B := fun h => hs.2.2 (h ▸ hmB)
+        have hCD : C ≠ D := fun h => hs.2.2 (h ▸ hmD)
+        have hn1 : ¬Collinear ℝ ({B, A, D} : Set P) := fun hcol =>
+          hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hBD)
+        have hn2 : ¬Collinear ℝ ({D, C, B} : Set P) := fun hcol =>
+          hs.2.2 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hBD)
+        have h2 := EuclideanGeometry.Sphere.two_zsmul_oangle_eq hB hA hC hD hAB hAD hCB hCD
+        have hsign := hs.oangle_sign_eq_neg hmB hmD
+        have hsign' : (EuclideanGeometry.oangle D C B).sign = (EuclideanGeometry.oangle B A D).sign := by
+          rw [EuclideanGeometry.oangle_rev, Real.Angle.sign_neg, hsign, neg_neg]
+        have hsum : (2 : ℤ) • (EuclideanGeometry.oangle B A D + EuclideanGeometry.oangle D C B) = 0 := by
+          rw [smul_add, h2, EuclideanGeometry.oangle_rev B C D, smul_neg]; simp
+        have hx0 := EuclideanGeometry.angle_pos_of_not_collinear hn1
+        have hx1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn1
+        have hy0 := EuclideanGeometry.angle_pos_of_not_collinear hn2
+        have hy1 := EuclideanGeometry.angle_lt_pi_of_not_collinear hn2
+        set x := EuclideanGeometry.angle B A D with hx
+        set y := EuclideanGeometry.angle D C B with hy
+        have key : (2 : ℤ) • (((x + y : ℝ)) : Real.Angle) = 0 → x + y = Real.pi := by
+          intro h
+          rw [Real.Angle.two_zsmul_eq_zero_iff] at h
+          have hθ : ((x + y - Real.pi : ℝ) : Real.Angle).toReal = x + y - Real.pi :=
+            Real.Angle.toReal_coe_eq_self_iff.mpr ⟨by linarith, by linarith⟩
+          rcases h with h | h
+          · exfalso
+            have : ((x + y - Real.pi : ℝ) : Real.Angle) = (Real.pi : Real.Angle) := by
+              rw [Real.Angle.coe_sub, h]; simp
+            rw [this, Real.Angle.toReal_pi] at hθ
+            linarith
+          · have : ((x + y - Real.pi : ℝ) : Real.Angle) = 0 := by
+              rw [Real.Angle.coe_sub, h]; simp
+            rw [this, Real.Angle.toReal_zero] at hθ
+            linarith
+        apply key
+        rcases hc : (EuclideanGeometry.oangle B A D).sign with _ | _ | _
+        · exfalso
+          exact hn1 (EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp hc)
+        · have ea := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one hc
+          have eb := EuclideanGeometry.oangle_eq_neg_angle_of_sign_eq_neg_one (hsign'.trans hc)
+          rw [ea, eb] at hsum
+          rw [Real.Angle.coe_add]
+          rw [← neg_add, smul_neg, neg_eq_zero] at hsum
+          exact hsum
+        · have ea := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one hc
+          have eb := EuclideanGeometry.oangle_eq_angle_of_sign_eq_one (hsign'.trans hc)
+          rw [ea, eb] at hsum
+          rw [Real.Angle.coe_add]
+          exact hsum
+      have hpi := EuclideanGeometry.angle_add_angle_eq_pi_of_angle_eq_pi D hE.angle₁₂₃_eq_pi
+      linarith
+- id: parallel_chords_equal_cross_chords
+  kind: gap
+  level: high
+  topic: 円・平行な弦
+  statement: 実内積空間上のアフィン空間で、球面（平面なら円）の上の点$A,B,C,D$について、$A\neq B$、$C\neq D$で直線$AB$と直線$CD$が平行ならば、$AC=BD$である。
+  statement_en: If A, B, C, D lie on a sphere (a circle in the plane), A ≠ B, C ≠ D, and lines AB and CD are parallel, then |AC| = |BD|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B,C,D$は同じ球面の上にある
+  - $A\neq B$、$C\neq D$
+  - 直線$AB$と直線$CD$は平行である
+  quantifiers:
+  - 任意の球面と点$A,B,C,D$
+  conclusion: $AC=BD$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B,C,D$をとる。$A\neq B$、$C\neq D$で、直線$AB$と$CD$は平行とする。
+    $a=A-O$、$c=C-O$、$u=B-A$とおく。平行なので$D-C=ku$となる実数$k$があり、$C\neq D$より$k\neq0$である。
+    $\|a+u\|=\|a\|$より$2\langle a,u\rangle+\|u\|^2=0$である。$\|c+ku\|=\|c\|$より$2k\langle c,u\rangle+k^2\|u\|^2=0$であり、$k$で割ると$2\langle c,u\rangle+k\|u\|^2=0$である。
+    $A-C=a-c$であり、$B-D=(a-c)+(1-k)u$である。よって
+    $BD^2-AC^2=(1-k)\bigl(2\langle a,u\rangle-2\langle c,u\rangle+(1-k)\|u\|^2\bigr)=(1-k)\bigl(-\|u\|^2+k\|u\|^2+(1-k)\|u\|^2\bigr)=0$である。
+  strategy: Expand both distances from the center using that the chords have a common direction.
+  sketch:
+  - 'setup: Write a = A-O, c = C-O, u = B-A and D-C = ku with k ≠ 0.'
+  - 'derive: Equal norms give 2<a,u>+|u|^2 = 0 and 2<c,u>+k|u|^2 = 0.'
+  - 'derive: B-D equals (a-c)+(1-k)u.'
+  - 'conclude: Expanding gives |BD|^2 - |AC|^2 = 0.'
+  openmath: (forall (o r a b c d) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= a b) (!= c d) (parallel_lines a b c d)) (= (dist_of a c) (dist_of b d))))
+  hard_negative:
+    statement: 同じ円の上の相異なる2弦$AB,CD$について、平行でなくても$AC=BD$である。
+    reason: 単位円で$A=(1,0)$、$B=(-1,0)$、$C=(0,1)$、$D=(1,0)$とすると、$AC=\sqrt2$、$BD=2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B C D : P), A ∈ s → B ∈ s → C ∈ s → D ∈ s → A ≠ B → C ≠ D → (line[ℝ, A, B]).Parallel line[ℝ, C, D] → dist A C = dist B D
+  proof: |
+    by
+      intro V P _ _ _ _ s A B C D hA hB hC hD hAB hCD hpar
+      have hdir := hpar.direction_eq
+      have hmem : D -ᵥ C ∈ (line[ℝ, A, B]).direction := by
+        rw [hdir]
+        exact AffineSubspace.vsub_mem_direction (right_mem_affineSpan_pair ℝ C D) (left_mem_affineSpan_pair ℝ C D)
+      rw [direction_affineSpan, mem_vectorSpan_pair_rev] at hmem
+      obtain ⟨k, hk⟩ := hmem
+      have hk0 : k ≠ 0 := by
+        rintro rfl
+        rw [zero_smul] at hk
+        exact hCD (vsub_eq_zero_iff_eq.mp hk.symm).symm
+      have hN : ∀ {X : P}, X ∈ s → ‖X -ᵥ s.center‖ ^ 2 = s.radius ^ 2 := by
+        intro X hX
+        rw [← dist_eq_norm_vsub V, EuclideanGeometry.mem_sphere.mp hX]
+      set a := A -ᵥ s.center with ha
+      set c := C -ᵥ s.center with hc
+      set u := B -ᵥ A with hu
+      have hb : B -ᵥ s.center = a + u := by rw [ha, hu, add_comm, vsub_add_vsub_cancel]
+      have hd : D -ᵥ s.center = c + k • u := by rw [hc, hk, add_comm, vsub_add_vsub_cancel]
+      have e1 := hN hB
+      have e2 := hN hD
+      rw [hb, norm_add_sq_real, hN hA] at e1
+      rw [hd, norm_add_sq_real, inner_smul_right, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs, ← hN hC] at e2
+      have e3 : 2 * inner ℝ c u + k * ‖u‖ ^ 2 = 0 := by
+        have : k * (2 * inner ℝ c u + k * ‖u‖ ^ 2) = 0 := by linear_combination e2
+        exact (mul_eq_zero.mp this).resolve_left hk0
+      have hAC : A -ᵥ C = a - c := (vsub_sub_vsub_cancel_right _ _ _).symm
+      have hBD : B -ᵥ D = (a - c) + (1 - k) • u := by
+        rw [← vsub_sub_vsub_cancel_right B D s.center, hb, hd]
+        module
+      rw [dist_eq_norm_vsub V A C, dist_eq_norm_vsub V B D, hAC, hBD]
+      refine (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp ?_
+      rw [norm_add_sq_real, inner_smul_right, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs, inner_sub_left]
+      linear_combination (-(1 - k)) * e1 + (1 - k) * e3
+- id: chord_eq_two_radius_sin_inscribed_angle
+  kind: gap
+  level: high
+  topic: 円・弦の長さと円周角
+  statement: 平面上で、半径$r$の円の上の点$A,B,X$について$A\neq B$、$X\neq A,B$ならば、$AB=2r\sin\angle AXB$である。
+  statement_en: In a Euclidean plane, if A, B, X lie on a circle of radius r, A ≠ B and X ≠ A, B, then |AB| = 2r sin∠AXB.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,X$は半径$r$の円の上にある
+  - $A\neq B$
+  - $X\neq A$、$X\neq B$
+  quantifiers:
+  - 任意の円と点$A,B,X$
+  conclusion: $AB=2r\sin\angle AXB$である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,X$をとり、$A\neq B$、$X\neq A,B$とする。$A\neq B$より$r>0$である。円と直線の共有点は高々2個なので、$X$は直線$AB$上にない。$A$を通る直径のもう一方の端を$A'$とする。$AA'=2r$である。
+    $B=A'$のとき、$AB=2r$であり、タレスの定理（直径の両端と異なる円上の点から、その直径を見込む角は$\pi/2$である）より$\angle AXB=\pi/2$である。よって$2r\sin\angle AXB=2r=AB$である。
+    $B\neq A'$のとき、$A'$は直線$AB$上になく、タレスの定理より$\angle ABA'=\pi/2$である。直角三角形$ABA'$から$AB=AA'\sin\angle AA'B=2r\sin\angle AA'B$である。
+    $X,A'$が直線$AB$の同じ側にあれば、円周角の定理（円の上の$A\neq B$と、直線$AB$の同じ側にある円の上の2点について、$AB$を見込む角は等しい）より$\angle AXB=\angle AA'B$である。$X,A'$が直線$AB$の反対側にあれば、内接四角形の対角の和の定理（円の上の$A\neq B$と、直線$AB$の反対側にある円の上の2点について、$AB$を見込む角の和は$\pi$）より$\angle AXB=\pi-\angle AA'B$である。どちらの場合も$\sin\angle AXB=\sin\angle AA'B$なので、$AB=2r\sin\angle AXB$である。
+  strategy: Compare X with the point A' opposite A; the right triangle ABA' gives the formula at A', and the inscribed angle theorem transfers the sine to X.
+  sketch:
+  - 'setup: Let A'' be the other end of the diameter through A.'
+  - 'case_split: If B = A'', then AB = 2r and Thales gives a right angle at X.'
+  - 'derive: Otherwise Thales makes ABA'' a right triangle, so |AB| = 2r sin of angle AA''B.'
+  - 'case_split: X and A'' on the same side give equal angles; on opposite sides they give supplementary angles.'
+  - 'conclude: In both cases the sines agree, so |AB| = 2r sin of angle AXB.'
+  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (!= x a) (!= x b)) (= (dist_of a b) (* (* 2 r) (sin (euclid_angle a x b))))))
+  hard_negative:
+    statement: 3次元の半径$r$の球面の上の点$A,B,X$についても$AB=2r\sin\angle AXB$である。
+    reason: 大円でない小円の上に3点をとると、その小円の半径を$r'<r$として$AB=2r'\sin\angle AXB$となるので、$AB<2r\sin\angle AXB$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B X : P), A ∈ s → B ∈ s → X ∈ s → A ≠ B → X ≠ A → X ≠ B → dist A B = 2 * s.radius * Real.sin (EuclideanGeometry.angle A X B)
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B X hA hB hX hAB hXA hXB
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have h := EuclideanGeometry.Sphere.dist_div_sin_oangle_eq_two_mul_radius hA hX hB hXA.symm hAB hXB
+      rw [← Real.Angle.sin_toReal, Real.abs_sin_eq_sin_abs_of_abs_le_pi (Real.Angle.abs_toReal_le_pi _), ← EuclideanGeometry.angle_eq_abs_oangle_toReal hXA.symm hXB.symm] at h
+      by_cases h0 : Real.sin (EuclideanGeometry.angle A X B) = 0
+      · rw [h0, div_zero] at h
+        have hr : s.radius = 0 := by linarith
+        have h1 : dist A s.center = 0 := by rw [EuclideanGeometry.mem_sphere.mp hA, hr]
+        have h2 : dist B s.center = 0 := by rw [EuclideanGeometry.mem_sphere.mp hB, hr]
+        exact absurd ((dist_eq_zero.mp h1).trans (dist_eq_zero.mp h2).symm) hAB
+      · exact (div_eq_iff h0).mp h
+- id: equal_inscribed_angles_equal_chords
+  kind: gap
+  level: high
+  topic: 円・円周角と弦
+  statement: 平面上で、同じ円の上の点$A,B,C,D,X,Y$について$A\neq B$、$C\neq D$、$X\neq A,B$、$Y\neq C,D$で、$\angle AXB=\angle CYD$ならば、$AB=CD$である。
+  statement_en: In a Euclidean plane, if A, B, C, D, X, Y lie on one circle, A ≠ B, C ≠ D, X ≠ A, B, Y ≠ C, D and ∠AXB = ∠CYD, then |AB| = |CD|.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,C,D,X,Y$は同じ円の上にある
+  - $A\neq B$、$C\neq D$
+  - $X\neq A,B$、$Y\neq C,D$
+  - $\angle AXB=\angle CYD$
+  quantifiers:
+  - 任意の円と点$A,B,C,D,X,Y$
+  conclusion: $AB=CD$である。
+  answer: |
+    平面上の半径$r$の円の上に点$A,B,C,D,X,Y$をとり、$A\neq B$、$C\neq D$、$X\neq A,B$、$Y\neq C,D$、$\angle AXB=\angle CYD$とする。
+    弦の長さと円周角の関係（半径$r$の円の上の点$U,W,Z$が$U\neq W$、$Z\neq U,W$を満たすとき$UW=2r\sin\angle UZW$）を2回用いると、$AB=2r\sin\angle AXB=2r\sin\angle CYD=CD$である。
+  strategy: Apply the formula chord = 2r sin(inscribed angle) to both chords.
+  sketch:
+  - 'apply_theorem: |AB| = 2r sin of angle AXB.'
+  - 'apply_theorem: |CD| = 2r sin of angle CYD.'
+  - 'conclude: Equal angles give equal chords.'
+  openmath: (forall (o r a b c d x y) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (on_circle x o r) (on_circle y o r) (!= a b) (!= c d) (!= x a) (!= x b) (!= y c) (!= y d) (= (euclid_angle a x b) (euclid_angle c y d))) (= (dist_of a b) (dist_of c d))))
+  hard_negative:
+    statement: 同じ円の上で$AB=CD$ならば$\angle AXB=\angle CYD$である。
+    reason: 同じ弦でも反対の弧から見ると補角になる。単位円で$A=C=(1,0)$、$B=D=(0,1)$、$X=(-1,0)$、$Y=(1/\sqrt2,1/\sqrt2)$とすると、角は$\pi/4$と$3\pi/4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B C D X Y : P), A ∈ s → B ∈ s → C ∈ s → D ∈ s → X ∈ s → Y ∈ s → A ≠ B → C ≠ D → X ≠ A → X ≠ B → Y ≠ C → Y ≠ D → EuclideanGeometry.angle A X B = EuclideanGeometry.angle C Y D → dist A B = dist C D
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B C D X Y hA hB hC hD hX hY hAB hCD hXA hXB hYC hYD hang
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have key : ∀ U W Z : P, U ∈ s → W ∈ s → Z ∈ s → U ≠ W → Z ≠ U → Z ≠ W → dist U W = 2 * s.radius * Real.sin (EuclideanGeometry.angle U Z W) := by
+        intro U W Z hU hW hZ hUW hZU hZW
+        have h := EuclideanGeometry.Sphere.dist_div_sin_oangle_eq_two_mul_radius hU hZ hW hZU.symm hUW hZW
+        rw [← Real.Angle.sin_toReal, Real.abs_sin_eq_sin_abs_of_abs_le_pi (Real.Angle.abs_toReal_le_pi _), ← EuclideanGeometry.angle_eq_abs_oangle_toReal hZU.symm hZW.symm] at h
+        by_cases h0 : Real.sin (EuclideanGeometry.angle U Z W) = 0
+        · rw [h0, div_zero] at h
+          have hr : s.radius = 0 := by linarith
+          have h1 : dist U s.center = 0 := by rw [EuclideanGeometry.mem_sphere.mp hU, hr]
+          have h2 : dist W s.center = 0 := by rw [EuclideanGeometry.mem_sphere.mp hW, hr]
+          exact absurd ((dist_eq_zero.mp h1).trans (dist_eq_zero.mp h2).symm) hUW
+        · exact (div_eq_iff h0).mp h
+      rw [key A B X hA hB hX hAB hXA hXB, key C D Y hC hD hY hCD hYC hYD, hang]
+- id: chord_midpoint_perpendicular_to_center_line
+  kind: gap
+  level: middle
+  topic: 円・弦の性質
+  statement: 実内積空間上のアフィン空間で、中心$O$の球面（平面なら円）の上の点$A,B$について、弦$AB$の中点を$M$とすると$\langle O-M,B-A\rangle=0$である。$A\neq B$かつ$O\neq M$のとき、これは直線$OM$が弦$AB$に垂直であることを意味する。
+  statement_en: If A, B lie on a sphere with center O (a circle in the plane) and M is the midpoint of AB, then the inner product of O-M and B-A is zero.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$の球面の上にある
+  - $M$は$A,B$の中点である
+  quantifiers:
+  - 任意の球面と点$A,B$
+  conclusion: $\langle O-M,B-A\rangle=0$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$の球面の上に点$A,B$をとり、$M$を$A,B$の中点とする。$a=A-O$、$b=B-O$とおくと$\|a\|=\|b\|$である。
+    $O-M=-\tfrac12(a+b)$、$B-A=b-a$なので、$\langle O-M,B-A\rangle=-\tfrac12\langle a+b,b-a\rangle=-\tfrac12(\|b\|^2-\|a\|^2)=0$である。
+  strategy: Expand the inner product from the center using equal radii.
+  sketch:
+  - 'setup: Write a = A-O, b = B-O with equal norms.'
+  - 'derive: O-M = -(a+b)/2 and B-A = b-a.'
+  - 'conclude: The inner product equals (|a|^2-|b|^2)/2 = 0.'
+  openmath: (forall (o r a b) (-> (and (on_circle a o r) (on_circle b o r)) (= (inner_product (- o (midpoint_of a b)) (- b a)) 0)))
+  hard_negative:
+    statement: 円上の任意の点$X$と弦$AB$の中点$M$について、$X-M$は$B-A$に直交する。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$とすると$X-M=(-3/2,-1/2)$、$B-A=(-1,1)$で、内積は$1$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B : P), A ∈ s → B ∈ s → inner ℝ (s.center -ᵥ midpoint ℝ A B) (B -ᵥ A) = 0
+  proof: |
+    by
+      intro V P _ _ _ _ s A B hA hB
+      exact EuclideanGeometry.Sphere.inner_vsub_center_midpoint_vsub hA hB
+- id: perpendicular_from_center_bisects_chord
+  kind: gap
+  level: middle
+  topic: 円・弦の性質
+  statement: 実内積空間上のアフィン空間で、中心$O$の球面（平面なら円）の上の相異なる点$A,B$と直線$AB$上の点$H$について、$O-H$が$B-A$に直交するならば、$H$は$A,B$の中点である。
+  statement_en: If A ≠ B lie on a sphere with center O (a circle in the plane), H lies on line AB, and O-H is orthogonal to B-A, then H is the midpoint of AB.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$の球面の上にある
+  - $A\neq B$
+  - $H$は直線$AB$上にある
+  - $\langle O-H,B-A\rangle=0$
+  quantifiers:
+  - 任意の球面と点$A,B,H$
+  conclusion: $H$は$A,B$の中点である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$の球面の上に相異なる点$A,B$をとり、直線$AB$上の点$H$は$\langle O-H,B-A\rangle=0$を満たすとする。$M$を$A,B$の中点とする。
+    $a=A-O$、$b=B-O$とおくと$\|a\|=\|b\|$なので、$\langle M-O,B-A\rangle=\tfrac12\langle a+b,b-a\rangle=0$である。仮定と合わせて$\langle M-H,B-A\rangle=0$である。
+    $M,H$はともに直線$AB$上にあるので$M-H=k(B-A)$となる実数$k$がある。よって$k\|B-A\|^2=0$である。$A\neq B$より$k=0$であり、$H=M$である。
+  strategy: The midpoint already satisfies the orthogonality, and two such points on the line must coincide.
+  sketch:
+  - 'derive: The midpoint M satisfies that M-O is orthogonal to B-A.'
+  - 'derive: Subtracting gives that M-H is orthogonal to B-A.'
+  - 'derive: M-H is a multiple k(B-A), so k|B-A|^2 = 0.'
+  - 'conclude: A ≠ B forces k = 0, so H = M.'
+  openmath: (forall (o r a b h) (-> (and (on_circle a o r) (on_circle b o r) (!= a b) (on_line h a b) (= (inner_product (- o h) (- b a)) 0)) (= h (midpoint_of a b))))
+  hard_negative:
+    statement: 直線$AB$の外の任意の点$X$から直線$AB$に下ろした垂線の足は、弦$AB$の中点である。
+    reason: 単位円で$A=(-1,0)$、$B=(1,0)$、$X=(1/2,1)$とすると足は$(1/2,0)$で、中点$(0,0)$ではない。中心からの垂線であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B H : P), A ∈ s → B ∈ s → A ≠ B → H ∈ line[ℝ, A, B] → inner ℝ (s.center -ᵥ H) (B -ᵥ A) = 0 → H = midpoint ℝ A B
+  proof: |
+    by
+      intro V P _ _ _ _ s A B H hA hB hAB hH hperp
+      have hM := EuclideanGeometry.Sphere.inner_vsub_center_midpoint_vsub hA hB
+      have hsub : midpoint ℝ A B -ᵥ H ∈ (line[ℝ, A, B]).direction := AffineSubspace.vsub_mem_direction (wbtw_midpoint ℝ A B).mem_affineSpan hH
+      rw [direction_affineSpan, mem_vectorSpan_pair_rev] at hsub
+      obtain ⟨k, hk⟩ := hsub
+      have hz : inner ℝ (midpoint ℝ A B -ᵥ H) (B -ᵥ A) = 0 := by
+        rw [← vsub_sub_vsub_cancel_right (midpoint ℝ A B) H s.center, inner_sub_left, ← neg_vsub_eq_vsub_rev s.center (midpoint ℝ A B), ← neg_vsub_eq_vsub_rev s.center H, inner_neg_left, inner_neg_left, hM, hperp]
+        simp
+      rw [← hk, inner_smul_left, real_inner_self_eq_norm_sq] at hz
+      have hne : ‖B -ᵥ A‖ ≠ 0 := norm_ne_zero_iff.mpr (vsub_ne_zero.mpr hAB.symm)
+      have hk0 : k = 0 := by
+        simpa [hne] using hz
+      rw [hk0, zero_smul] at hk
+      exact (vsub_eq_zero_iff_eq.mp hk.symm).symm
+- id: half_chord_center_distance_pythagoras
+  kind: gap
+  level: middle
+  topic: 円・弦と中心の距離
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）の上の点$A,B$について、弦$AB$の中点を$M$とすると$OM^2+(AB/2)^2=r^2$である。
+  statement_en: If A, B lie on a sphere with center O and radius r (a circle in the plane) and M is the midpoint of AB, then |OM|^2 + (|AB|/2)^2 = r^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$、半径$r$の球面の上にある
+  - $M$は$A,B$の中点である
+  quantifiers:
+  - 任意の球面と点$A,B$
+  conclusion: $OM^2+(AB/2)^2=r^2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B$をとり、$M$を$A,B$の中点とする。$a=A-O$、$b=B-O$とおくと$\|a\|=\|b\|=r$である。
+    $M-O=\tfrac12(a+b)$、$A-B=a-b$である。中線定理（平行四辺形の法則）$\|a+b\|^2+\|a-b\|^2=2\|a\|^2+2\|b\|^2$より、$OM^2+(AB/2)^2=\tfrac14(\|a+b\|^2+\|a-b\|^2)=\tfrac14\cdot4r^2=r^2$である。
+  strategy: Apply the parallelogram law to the two radius vectors.
+  sketch:
+  - 'setup: Write a = A-O, b = B-O, both of norm r.'
+  - 'translate: M-O = (a+b)/2 and A-B = a-b.'
+  - 'apply_theorem: The parallelogram law gives |a+b|^2 + |a-b|^2 = 4r^2.'
+  - 'conclude: Dividing by 4 gives the claim.'
+  openmath: (forall (o r a b) (-> (and (on_circle a o r) (on_circle b o r)) (= (+ (^ (dist_of (midpoint_of a b) o) 2) (^ (/ (dist_of a b) 2) 2)) (^ r 2))))
+  hard_negative:
+    statement: 弦の中点$M$について$OM+AB/2=r$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$とすると$OM=AB/2=\sqrt2/2$で、和は$\sqrt2$である。成り立つのは2乗の和である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B : P), A ∈ s → B ∈ s → dist (midpoint ℝ A B) s.center ^ 2 + (dist A B / 2) ^ 2 = s.radius ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ s A B hA hB
+      have hA' : ‖A -ᵥ s.center‖ = s.radius := by rw [← dist_eq_norm_vsub V]; exact hA
+      have hB' : ‖B -ᵥ s.center‖ = s.radius := by rw [← dist_eq_norm_vsub V]; exact hB
+      have hm : midpoint ℝ A B -ᵥ s.center = (1 / 2 : ℝ) • ((A -ᵥ s.center) + (B -ᵥ s.center)) := by
+        rw [midpoint_vsub, smul_add]; simp
+      rw [dist_eq_norm_vsub V (midpoint ℝ A B), dist_eq_norm_vsub V A B, hm, ← vsub_sub_vsub_cancel_right A B s.center, norm_smul]
+      have hp := parallelogram_law_with_norm ℝ (A -ᵥ s.center) (B -ᵥ s.center)
+      rw [hA', hB', vsub_sub_vsub_cancel_right] at hp
+      norm_num
+      nlinarith
+- id: equal_chords_iff_equal_center_distance
+  kind: gap
+  level: high
+  topic: 円・等しい弦
+  statement: 実内積空間上のアフィン空間で、同じ球面（平面なら円）の上の点$A,B,C,D$について、$AB=CD$であることと、中心から弦$AB$の中点までの距離が中心から弦$CD$の中点までの距離に等しいことは同値である。
+  statement_en: For points A, B, C, D on one sphere with center O (a circle in the plane), |AB| = |CD| if and only if the midpoints of AB and CD are at the same distance from O.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B,C,D$は中心$O$の同じ球面の上にある
+  quantifiers:
+  - 任意の球面と点$A,B,C,D$
+  conclusion: $AB=CD$と$OM=ON$は同値である。ここで$M,N$は$AB,CD$の中点である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B,C,D$をとり、$M,N$を$AB,CD$の中点とする。
+    $a=A-O$、$b=B-O$とおくと、平行四辺形の法則より$OM^2+(AB/2)^2=\tfrac14(\|a+b\|^2+\|a-b\|^2)=r^2$である。同様に$ON^2+(CD/2)^2=r^2$である。
+    よって$AB=CD$なら$OM^2=ON^2$であり、距離は非負なので$OM=ON$である。逆に$OM=ON$なら$(AB/2)^2=(CD/2)^2$であり、$AB=CD$である。
+  strategy: Both quantities are tied by |OM|^2 + (|AB|/2)^2 = r^2.
+  sketch:
+  - 'apply_theorem: For each chord, the squared distance from the center plus the squared half chord equals r^2.'
+  - 'derive: Equal chords give equal squared distances, and conversely.'
+  - 'conclude: Nonnegativity removes the squares.'
+  openmath: (forall (o r a b c d) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r)) (<-> (= (dist_of a b) (dist_of c d)) (= (dist_of (midpoint_of a b) o) (dist_of (midpoint_of c d) o)))))
+  hard_negative:
+    statement: 半径の異なる2円でも、等しい弦は中心から等距離にある。
+    reason: 半径$1$の円の長さ$2$の弦は中心を通るが、半径$2$の円の長さ$2$の弦の中点は中心から距離$\sqrt3$にある。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B C D : P), A ∈ s → B ∈ s → C ∈ s → D ∈ s → (dist A B = dist C D ↔ dist (midpoint ℝ A B) s.center = dist (midpoint ℝ C D) s.center)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B C D hA hB hC hD
+      have key : ∀ X Y : P, X ∈ s → Y ∈ s → dist (midpoint ℝ X Y) s.center ^ 2 + (dist X Y / 2) ^ 2 = s.radius ^ 2 := by
+        intro X Y hX hY
+        have hA' : ‖X -ᵥ s.center‖ = s.radius := by rw [← dist_eq_norm_vsub V]; exact hX
+        have hB' : ‖Y -ᵥ s.center‖ = s.radius := by rw [← dist_eq_norm_vsub V]; exact hY
+        have hm : midpoint ℝ X Y -ᵥ s.center = (1 / 2 : ℝ) • ((X -ᵥ s.center) + (Y -ᵥ s.center)) := by
+          rw [midpoint_vsub, smul_add]; simp
+        rw [dist_eq_norm_vsub V (midpoint ℝ X Y), dist_eq_norm_vsub V X Y, hm, ← vsub_sub_vsub_cancel_right X Y s.center, norm_smul]
+        have hp := parallelogram_law_with_norm ℝ (X -ᵥ s.center) (Y -ᵥ s.center)
+        rw [hA', hB', vsub_sub_vsub_cancel_right] at hp
+        norm_num
+        nlinarith
+      have h1 := key A B hA hB
+      have h2 := key C D hC hD
+      constructor
+      · intro h
+        rw [h] at h1
+        have : dist (midpoint ℝ A B) s.center ^ 2 = dist (midpoint ℝ C D) s.center ^ 2 := by linarith
+        exact (sq_eq_sq₀ dist_nonneg dist_nonneg).mp this
+      · intro h
+        rw [h] at h1
+        have : (dist A B / 2) ^ 2 = (dist C D / 2) ^ 2 := by linarith
+        have := (sq_eq_sq₀ (by positivity) (by positivity)).mp this
+        linarith
+- id: equal_chords_iff_equal_central_angles
+  kind: gap
+  level: middle
+  topic: 円・中心角と弦
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面（平面なら円）の上の点$A,B,C,D$について、$AB=CD$であることと$\angle AOB=\angle COD$であることは同値である。
+  statement_en: For points A, B, C, D on a sphere with center O and radius r > 0 (a circle in the plane), |AB| = |CD| if and only if ∠AOB = ∠COD.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B,C,D$は中心$O$、半径$r$の球面の上にある
+  - $r>0$
+  quantifiers:
+  - 任意の球面と点$A,B,C,D$
+  conclusion: $AB=CD$と$\angle AOB=\angle COD$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面の上に点$A,B,C,D$をとる。
+    余弦定理より$AB^2=2r^2-2r^2\cos\angle AOB$、$CD^2=2r^2-2r^2\cos\angle COD$である。
+    $\angle AOB=\angle COD$なら右辺が等しく、長さは非負なので$AB=CD$である。逆に$AB=CD$なら、$r>0$より$\cos\angle AOB=\cos\angle COD$である。2つの角は$[0,\pi]$にあり、$\cos$はそこで単射なので、$\angle AOB=\angle COD$である。
+  strategy: Use the law of cosines at the center and injectivity of cosine on [0,π].
+  sketch:
+  - 'apply_theorem: The law of cosines gives each squared chord as 2r^2 - 2r^2 cos of the central angle.'
+  - 'derive: Equal angles give equal squared chords.'
+  - 'derive: Equal chords and r > 0 give equal cosines.'
+  - 'conclude: Cosine is injective on [0,π].'
+  openmath: (forall (o r a b c d) (-> (and (> r 0) (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r)) (<-> (= (dist_of a b) (dist_of c d)) (= (euclid_angle a o b) (euclid_angle c o d)))))
+  hard_negative:
+    statement: 半径の異なる2円でも、中心角が等しければ弦の長さは等しい。
+    reason: 中心角$\pi$の弦の長さは半径$1$の円で$2$、半径$2$の円で$4$である。同じ円であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B C D : P), 0 < s.radius → A ∈ s → B ∈ s → C ∈ s → D ∈ s → (dist A B = dist C D ↔ EuclideanGeometry.angle A s.center B = EuclideanGeometry.angle C s.center D)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B C D hr hA hB hC hD
+      have key : ∀ X Y : P, X ∈ s → Y ∈ s → dist X Y ^ 2 = 2 * s.radius ^ 2 - 2 * s.radius ^ 2 * Real.cos (EuclideanGeometry.angle X s.center Y) := by
+        intro X Y hX hY
+        have h := EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_sub_two_mul_dist_mul_dist_mul_cos_angle X s.center Y
+        have hX' : dist X s.center = s.radius := hX
+        have hY' : dist Y s.center = s.radius := hY
+        rw [sq, h, hX', hY']
+        ring
+      have h1 := key A B hA hB
+      have h2 := key C D hC hD
+      have hr2 : 0 < s.radius ^ 2 := by positivity
+      constructor
+      · intro h
+        rw [h, h2] at h1
+        have hcos : Real.cos (EuclideanGeometry.angle A s.center B) = Real.cos (EuclideanGeometry.angle C s.center D) := by
+          have : 2 * s.radius ^ 2 * (Real.cos (EuclideanGeometry.angle A s.center B) - Real.cos (EuclideanGeometry.angle C s.center D)) = 0 := by linarith
+          have := (mul_eq_zero.mp this).resolve_left (by positivity)
+          linarith
+        exact Real.injOn_cos ⟨EuclideanGeometry.angle_nonneg _ _ _, EuclideanGeometry.angle_le_pi _ _ _⟩ ⟨EuclideanGeometry.angle_nonneg _ _ _, EuclideanGeometry.angle_le_pi _ _ _⟩ hcos
+      · intro h
+        rw [h, ← h2] at h1
+        exact (sq_eq_sq₀ dist_nonneg dist_nonneg).mp h1
+- id: chord_le_diameter_eq_iff
+  kind: gap
+  level: middle
+  topic: 円・弦と直径
+  statement: 実内積空間上のアフィン空間で、半径$r$の球面（平面なら円）の上の点$A,B$について$AB\leq2r$であり、等号は$AB$が直径であるときに限る。
+  statement_en: For points A, B on a sphere of radius r (a circle in the plane), |AB| ≤ 2r, and |AB| = 2r if and only if AB is a diameter.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は半径$r$の球面の上にある
+  quantifiers:
+  - 任意の球面と点$A,B$
+  conclusion: $AB\leq2r$であり、$AB=2r$と$AB$が直径であることは同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B$をとる。三角不等式より$AB\leq AO+OB=2r$である。
+    $AB$が直径なら$O$は中点なので$AB=2r$である。逆に$AB=2r$とする。$a=A-O$、$b=B-O$とおくと平行四辺形の法則より$\|a+b\|^2=2\|a\|^2+2\|b\|^2-\|a-b\|^2=4r^2-4r^2=0$である。よって$a+b=0$であり、$O$は$A,B$の中点である。すなわち$AB$は直径である。
+  strategy: Use the triangle inequality for the bound and the parallelogram law for the equality case.
+  sketch:
+  - 'apply_theorem: The triangle inequality through O gives |AB| ≤ 2r.'
+  - 'derive: A diameter has length 2r.'
+  - 'derive: If |AB| = 2r, the parallelogram law gives |a+b| = 0 for a = A-O, b = B-O.'
+  - 'conclude: Then O is the midpoint of AB.'
+  openmath: (forall (o r a b) (-> (and (on_circle a o r) (on_circle b o r)) (and (<= (dist_of a b) (* 2 r)) (<-> (= (dist_of a b) (* 2 r)) (is_diameter a b o r)))))
+  hard_negative:
+    statement: 球面上の2点の距離は半径$r$以下である。
+    reason: 直径の両端の距離は$2r$である。上界は$r$ではなく$2r$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B : P), A ∈ s → B ∈ s → dist A B ≤ 2 * s.radius ∧ (dist A B = 2 * s.radius ↔ s.IsDiameter A B)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B hA hB
+      refine ⟨?_, fun h => EuclideanGeometry.Sphere.isDiameter_iff_mem_and_mem_and_dist.mpr ⟨hA, hB, h⟩, fun h => h.dist_left_right⟩
+      have h := dist_triangle A s.center B
+      rw [hA, EuclideanGeometry.mem_sphere'.mp hB] at h
+      linarith
+- id: point_on_chord_strictly_between_iff_inside
+  kind: gap
+  level: high
+  topic: 円・弦と内部の点
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）の上の相異なる点$A,B$と直線$AB$上の点$H$について、$H$が$A$と$B$の間に真にあることと$HO<r$は同値である。
+  statement_en: If A ≠ B lie on a sphere with center O and radius r (a circle in the plane) and H lies on line AB, then H is strictly between A and B if and only if |HO| < r.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$、半径$r$の球面の上にある
+  - $A\neq B$
+  - $H$は直線$AB$上にある
+  quantifiers:
+  - 任意の球面と点$A,B,H$
+  conclusion: $H$が$A$と$B$の間に真にあることと$HO<r$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に相異なる点$A,B$をとり、直線$AB$上の点を$H=A+t(B-A)$と書く。$x=A-O$、$u=B-A\neq0$とおく。
+    $\|x+u\|=\|x\|=r$より$2\langle x,u\rangle+\|u\|^2=0$である。よって$HO^2-r^2=\|x+tu\|^2-\|x\|^2=2t\langle x,u\rangle+t^2\|u\|^2=(t^2-t)\|u\|^2$である。
+    $HO,r\geq0$なので、$HO<r$は$t^2-t<0$、すなわち$0<t<1$と同値である。これは$H$が$A$と$B$の間に真にあることにほかならない。
+  strategy: Compute |HO|^2 - r^2 as (t^2-t)|B-A|^2 along the line.
+  sketch:
+  - 'setup: Write H = A + t(B-A).'
+  - 'derive: Equal radii give 2<x,u> + |u|^2 = 0 for x = A-O, u = B-A.'
+  - 'derive: Hence |HO|^2 - r^2 = (t^2-t)|u|^2.'
+  - 'conclude: This is negative exactly when 0 < t < 1.'
+  openmath: (forall (o r a b h) (-> (and (on_circle a o r) (on_circle b o r) (!= a b) (on_line h a b)) (<-> (strictly_between a h b) (< (dist_of h o) r))))
+  hard_negative:
+    statement: 円の内部の任意の点は、円の任意の弦$AB$の上にある。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$とすると、中心は内部にあるが直線$AB$上にない。$H$が直線$AB$上にあるという仮定が必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B H : P), A ∈ s → B ∈ s → A ≠ B → H ∈ line[ℝ, A, B] → (Sbtw ℝ A H B ↔ dist H s.center < s.radius)
+  proof: |
+    by
+      intro V P _ _ _ _ s A B H hA hB hAB hH
+      refine ⟨fun h => by rw [dist_comm]; exact EuclideanGeometry.Sphere.dist_center_lt_radius_of_sbtw hA hB h, fun h => ?_⟩
+      have hcol : Collinear ℝ ({A, H, B} : Set P) := by
+        have := collinear_insert_of_mem_affineSpan_pair hH
+        convert this using 1
+        ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+      exact EuclideanGeometry.sbtw_of_collinear_of_dist_center_lt_radius hcol hA h hB hAB
+- id: tangent_iff_perpendicular_radius
+  kind: textbook
+  level: middle
+  topic: 円・接線と半径
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面（平面なら円）の上の点$T$と点$X\neq T$について、直線$TX$が$T$で接することと$\angle XTO=\pi/2$は同値である。ここで接するとは、直線上の点$U$がすべて$\langle U-T,T-O\rangle=0$を満たすことである。
+  statement_en: If T lies on a sphere with center O and radius r > 0 (a circle in the plane) and X ≠ T, then line TX is tangent at T if and only if ∠XTO = π/2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T$は中心$O$、半径$r$の球面の上にある
+  - $r>0$
+  - $X\neq T$
+  quantifiers:
+  - 任意の球面と点$T,X$
+  conclusion: 直線$TX$が$T$で接することと$\angle XTO=\pi/2$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面の上に点$T$をとり、$X\neq T$とする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $T-O\neq0$、$X-T\neq0$なので、$\angle XTO=\pi/2$は$\langle X-T,O-T\rangle=0$、すなわち$\langle X-T,T-O\rangle=0$と同値である。
+    直線$TX$が$T$で接するなら$U=X$としてこの式を得る。逆にこの式が成り立つとする。直線上の点は$U=T+t(X-T)$と書けるので、$\langle U-T,T-O\rangle=t\langle X-T,T-O\rangle=0$である。よって直線$TX$は$T$で接する。
+  strategy: Translate the right angle into orthogonality of X-T and T-O and scale along the line.
+  sketch:
+  - 'translate: The angle is π/2 exactly when X-T is orthogonal to T-O.'
+  - 'derive: Tangency gives this by taking U = X.'
+  - 'derive: Conversely every point of the line has the form T + t(X-T).'
+  - 'conclude: So all points of the line satisfy the orthogonality.'
+  openmath: (forall (o r t x) (-> (and (> r 0) (on_circle t o r) (!= x t)) (<-> (tangent_to_circle_at t x o r) (= (euclid_angle x t o) (/ pi 2)))))
+  hard_negative:
+    statement: 点$T$が円上になくても、$OT$に垂直で$T$を通る直線は円に接する。
+    reason: 単位円と$T=(2,0)$では、直線$x=2$は$OT$に垂直だが円と交わらない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (T X : P), 0 < s.radius → T ∈ s → X ≠ T → (s.IsTangentAt T line[ℝ, T, X] ↔ EuclideanGeometry.angle X T s.center = Real.pi / 2)
+  proof: |
+    by
+      intro V P _ _ _ _ s T X _ hT _
+      exact EuclideanGeometry.Sphere.IsTangentAt_iff_angle_eq_pi_div_two hT
+- id: tangent_iff_unique_common_point
+  kind: textbook
+  level: middle
+  topic: 円・接線の特徴づけ
+  statement: 実内積空間上のアフィン空間で、中心$O$の球面（平面なら円）の上の点$T$と点$X\neq T$について、直線$TX$が半径に垂直である意味で$T$で接することと、直線$TX$と球面の共有点が$T$だけであることは同値である。
+  statement_en: If T lies on a sphere with center O (a circle in the plane) and X ≠ T, then line TX is orthogonal to the radius at T if and only if T is the only common point of the line and the sphere.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T$は中心$O$の球面の上にある
+  - $X\neq T$
+  quantifiers:
+  - 任意の球面と点$T,X$
+  conclusion: 直線$TX$が$T$で接することと、共有点が$T$だけであることは同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$の球面の上に点$T$をとり、$X\neq T$とする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $v=X-T\neq0$、$x=T-O$とおく。直線上の点$T+tv$が球面上にあることは$\|x+tv\|^2=\|x\|^2$、すなわち$t\bigl(2\langle x,v\rangle+t\|v\|^2\bigr)=0$と同値である。この解は$t=0$と$t=-2\langle x,v\rangle/\|v\|^2$である。
+    したがって共有点が$T$だけであることは$\langle x,v\rangle=0$と同値である。また、直線上の点$U=T+tv$について$\langle U-T,x\rangle=t\langle v,x\rangle$なので、$\langle x,v\rangle=0$は直線が$T$で接することと同値である。
+  strategy: Solve the quadratic for the parameter of the common points of the line and the sphere.
+  sketch:
+  - 'setup: Parametrize the line as T + tv with v = X-T.'
+  - 'derive: Common points correspond to t(2<x,v> + t|v|^2) = 0 with x = T-O.'
+  - 'derive: The only solution is t = 0 exactly when <x,v> = 0.'
+  - 'conclude: That condition is the same as orthogonality of the line to the radius.'
+  openmath: (forall (o r t x) (-> (and (on_circle t o r) (!= x t)) (<-> (tangent_to_circle_at t x o r) (forall (q) (-> (and (on_line q t x) (on_circle q o r)) (= q t))))))
+  hard_negative:
+    statement: 点$T$が円上にないとき、直線$TX$上で円に属する点がすべて$T$に等しければ、直線$TX$は$T$で接する。
+    reason: 単位円と$T=(2,0)$、$X=(2,1)$では直線は円と交わらないので条件は空虚に成り立つが、$T$は円上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (T X : P), T ∈ s → X ≠ T → (s.IsTangentAt T line[ℝ, T, X] ↔ ∀ Q ∈ line[ℝ, T, X], Q ∈ s → Q = T)
+  proof: |
+    by
+      intro V P _ _ _ _ s T X hT _
+      constructor
+      · intro h Q hQ hQs
+        exact h.eq_of_mem_of_mem hQs hQ
+      · intro h
+        have hsec := h (s.secondInter T (X -ᵥ T)) (s.secondInter_vsub_mem_affineSpan T X) ((EuclideanGeometry.Sphere.secondInter_mem (X -ᵥ T)).mpr hT)
+        have hin : inner ℝ (X -ᵥ T) (T -ᵥ s.center) = 0 := EuclideanGeometry.Sphere.secondInter_eq_self_iff.mp hsec
+        refine ⟨hT, left_mem_affineSpan_pair ℝ T X, ?_⟩
+        rw [affineSpan_le]
+        intro p hp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+        rcases hp with rfl | rfl
+        · exact EuclideanGeometry.Sphere.self_mem_orthRadius s _
+        · exact EuclideanGeometry.Sphere.mem_orthRadius_iff_inner_left.mpr hin
+- id: tangent_lengths_equal
+  kind: textbook
+  level: middle
+  topic: 円・接線の長さ
+  statement: 実内積空間上のアフィン空間で、点$Q$から球面（平面なら円）に引いた2本の接線の接点を$A,B$とする（$Q\neq A,B$）と、$QA=QB$である。
+  statement_en: If lines QA and QB are tangent to a sphere (a circle in the plane) at A and B with Q ≠ A, B, then |QA| = |QB|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $Q\neq A$、$Q\neq B$
+  - 直線$QA$は$A$で接する
+  - 直線$QB$は$B$で接する
+  quantifiers:
+  - 任意の球面と点$Q,A,B$
+  conclusion: $QA=QB$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面をとり、$Q\neq A,B$とする。直線$QA$が$A$で、直線$QB$が$B$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $Q-A$は$A-O$に直交するので、三平方の定理より$QO^2=QA^2+AO^2=QA^2+r^2$である。同様に$QO^2=QB^2+r^2$である。よって$QA^2=QB^2$であり、$QA=QB$である。
+  strategy: Apply the Pythagorean theorem to the two right triangles with hypotenuse QO.
+  sketch:
+  - 'derive: Tangency at A gives |QO|^2 = |QA|^2 + r^2.'
+  - 'derive: Tangency at B gives |QO|^2 = |QB|^2 + r^2.'
+  - 'conclude: So |QA| = |QB|.'
+  openmath: (forall (o r q a b) (-> (and (!= q a) (!= q b) (tangent_to_circle_at a q o r) (tangent_to_circle_at b q o r)) (= (dist_of q a) (dist_of q b))))
+  hard_negative:
+    statement: 同じ点$Q$から異なる2円に引いた接線の長さは等しい。
+    reason: $Q=(3,0)$から原点中心の半径$1$の円への接線の長さは$\sqrt8$、半径$2$の円への接線の長さは$\sqrt5$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (Q A B : P), Q ≠ A → Q ≠ B → s.IsTangentAt A line[ℝ, Q, A] → s.IsTangentAt B line[ℝ, Q, B] → dist Q A = dist Q B
+  proof: |
+    by
+      intro V P _ _ _ _ s Q A B _ _ hA hB
+      exact hA.dist_eq_of_mem_of_mem hB (left_mem_affineSpan_pair ℝ Q A) (left_mem_affineSpan_pair ℝ Q B)
+- id: tangent_iff_length_sq_eq_power
+  kind: gap
+  level: high
+  topic: 円・接線と方べきの値
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）の上の点$T$と点$Q\neq T$について、直線$QT$が$T$で接することと$QT^2=QO^2-r^2$は同値である。
+  statement_en: If T lies on a sphere with center O and radius r (a circle in the plane) and Q ≠ T, then line QT is tangent at T if and only if |QT|^2 = |QO|^2 - r^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T$は中心$O$、半径$r$の球面の上にある
+  - $Q\neq T$
+  quantifiers:
+  - 任意の球面と点$Q,T$
+  conclusion: 直線$QT$が$T$で接することと$QT^2=QO^2-r^2$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$T$をとり、$Q\neq T$とする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $Q-O=(Q-T)+(T-O)$と$\|T-O\|=r$より、$QO^2=QT^2+2\langle Q-T,T-O\rangle+r^2$である。よって$QT^2=QO^2-r^2$は$\langle Q-T,T-O\rangle=0$と同値である。
+    直線$QT$が$T$で接するならこの内積は$0$である。逆に内積が$0$なら、直線上の点は$U=T+t(Q-T)$と書けて$\langle U-T,T-O\rangle=t\langle Q-T,T-O\rangle=0$である。よって直線$QT$は$T$で接する。
+  strategy: Expand |QO|^2 through T; the cross term vanishes exactly at tangency.
+  sketch:
+  - 'derive: |QO|^2 = |QT|^2 + 2<Q-T,T-O> + r^2.'
+  - 'translate: The stated equation means <Q-T,T-O> = 0.'
+  - 'conclude: That orthogonality is equivalent to tangency of the line QT at T.'
+  openmath: (forall (o r q t) (-> (and (on_circle t o r) (!= q t)) (<-> (tangent_to_circle_at t q o r) (= (^ (dist_of q t) 2) (- (^ (dist_of q o) 2) (^ r 2))))))
+  hard_negative:
+    statement: 点$T$が円上になくても、$QT^2=QO^2-r^2$ならば直線$QT$は$T$で接する。
+    reason: 単位円で$Q=(1,1)$、$T=(1,2)$とすると$QT^2=1=QO^2-r^2$だが、$T$は円上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (Q T : P), T ∈ s → Q ≠ T → (s.IsTangentAt T line[ℝ, Q, T] ↔ dist Q T ^ 2 = dist Q s.center ^ 2 - s.radius ^ 2)
+  proof: |
+    by
+      intro V P _ _ _ _ s Q T hT _
+      exact EuclideanGeometry.Sphere.isTangentAt_iff_dist_sq_eq_power hT
+- id: tangents_center_line_bisects_angles
+  kind: gap
+  level: middle
+  topic: 円・接線と中心線
+  statement: 実内積空間上のアフィン空間で、点$Q$から中心$O$の球面（平面なら円）に引いた2本の接線の接点を$A,B$とする（$Q\neq A,B$）と、$\angle AQO=\angle BQO$かつ$\angle AOQ=\angle BOQ$である。
+  statement_en: If lines QA and QB are tangent at A and B to a sphere with center O (a circle in the plane) and Q ≠ A, B, then ∠AQO = ∠BQO and ∠AOQ = ∠BOQ.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $Q\neq A$、$Q\neq B$
+  - 直線$QA$は$A$で接する
+  - 直線$QB$は$B$で接する
+  quantifiers:
+  - 任意の球面と点$Q,A,B$
+  conclusion: $\angle AQO=\angle BQO$かつ$\angle AOQ=\angle BOQ$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面をとり、$Q\neq A,B$とする。直線$QA$が$A$で、直線$QB$が$B$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $r=0$なら$A=B=O$なので結論は明らかである。$r>0$とする。三平方の定理より$QA^2=QO^2-r^2=QB^2$なので$QA=QB$である。また$OA=OB=r$で、$QO$は共通である。3辺が等しいので三角形$AQO$と$BQO$は合同である。対応する角が等しいので、$\angle AQO=\angle BQO$、$\angle AOQ=\angle BOQ$である。
+  strategy: The triangles AQO and BQO are congruent by three sides.
+  sketch:
+  - 'derive: Equal tangent lengths give |QA| = |QB|.'
+  - 'derive: |OA| = |OB| = r and QO is common.'
+  - 'apply_theorem: The triangles AQO and BQO are congruent by SSS.'
+  - 'conclude: Corresponding angles are equal.'
+  openmath: (forall (o r q a b) (-> (and (!= q a) (!= q b) (tangent_to_circle_at a q o r) (tangent_to_circle_at b q o r)) (and (= (euclid_angle a q o) (euclid_angle b q o)) (= (euclid_angle a o q) (euclid_angle b o q)))))
+  hard_negative:
+    statement: 同じ設定で$\angle AQO=\angle AOQ$である。
+    reason: $QO=2r$のとき$\angle AQO=\pi/6$、$\angle AOQ=\pi/3$である。等しいのは$A$側と$B$側の対応する角である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (Q A B : P), Q ≠ A → Q ≠ B → s.IsTangentAt A line[ℝ, Q, A] → s.IsTangentAt B line[ℝ, Q, B] → EuclideanGeometry.angle A Q s.center = EuclideanGeometry.angle B Q s.center ∧ EuclideanGeometry.angle A s.center Q = EuclideanGeometry.angle B s.center Q
+  proof: |
+    by
+      intro V P _ _ _ _ s Q A B _ _ hA hB
+      have h1 : dist A Q = dist B Q := by
+        rw [dist_comm A, dist_comm B]
+        exact hA.dist_eq_of_mem_of_mem hB (left_mem_affineSpan_pair ℝ Q A) (left_mem_affineSpan_pair ℝ Q B)
+      have h2 : dist s.center A = dist s.center B := by
+        rw [EuclideanGeometry.mem_sphere'.mp hA.mem_sphere, EuclideanGeometry.mem_sphere'.mp hB.mem_sphere]
+      have hc := EuclideanGeometry.side_side_side h1 rfl h2
+      exact ⟨EuclideanGeometry.angle_eq_of_congruent hc 0 1 2, EuclideanGeometry.angle_eq_of_congruent hc 0 2 1⟩
+- id: contact_chord_perpendicular_bisected_by_center_line
+  kind: gap
+  level: high
+  topic: 円・接点を結ぶ弦
+  statement: 平面上で、中心$O$、半径$r>0$の円に点$Q$から引いた2本の接線の相異なる接点を$A,B$とする（$Q\neq A,B$）と、直線$QO$は弦$AB$に垂直で、弦$AB$の中点を通る。
+  statement_en: In a Euclidean plane, if lines QA and QB are tangent at distinct points A and B to a circle with center O and radius r > 0, and Q ≠ A, B, then QO is perpendicular to AB and the midpoint of AB lies on line QO.
+  assumptions:
+  - 点は平面上にある
+  - $r>0$
+  - $A\neq B$
+  - $Q\neq A$、$Q\neq B$
+  - 直線$QA$は$A$で接する
+  - 直線$QB$は$B$で接する
+  quantifiers:
+  - 任意の円と点$Q,A,B$
+  conclusion: $\langle Q-O,B-A\rangle=0$であり、$A,B$の中点は直線$QO$上にある。
+  answer: |
+    平面上の中心$O$、半径$r>0$の円をとる。$A\neq B$、$Q\neq A,B$で、直線$QA$が$A$で、直線$QB$が$B$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    三平方の定理より$QA^2=QO^2-r^2=QB^2$なので$QA=QB$である。$M$を$A,B$の中点とする。$Q,O,M$はいずれも$A,B$から等距離にある。一般に$Y$が$A,B$から等距離なら、$y=Y-M$、$a=A-M$として$\|y-a\|=\|y+a\|$より$\langle y,a\rangle=0$なので、$Y-M$は$B-A$に直交する。これを$Y=Q,O$に用いると$\langle Q-O,B-A\rangle=0$である。
+    また$Q-M$と$O-M$はどちらも$B-A$に直交する。平面で$0$でないベクトルに直交するベクトルは1次元の空間をなす。$Q$は接線上の接点以外の点なので$QO^2=QA^2+r^2>r^2$であり、$Q\neq O$である。したがって$M$は$Q,O$を通る直線上にある。
+  strategy: Q, O and the midpoint are all equidistant from A and B, and in the plane the set of such points is a line.
+  sketch:
+  - 'derive: Equal tangent lengths give |QA| = |QB|.'
+  - 'derive: Any point equidistant from A and B has Z-M orthogonal to B-A.'
+  - 'derive: So Q-O is orthogonal to B-A.'
+  - 'translate: In the plane, vectors orthogonal to B-A form a line.'
+  - 'conclude: Since Q ≠ O, the midpoint lies on line QO.'
+  openmath: (forall (o r q a b) (-> (and (> r 0) (!= a b) (!= q a) (!= q b) (tangent_to_circle_at a q o r) (tangent_to_circle_at b q o r)) (and (perpendicular_lines q o a b) (on_line (midpoint_of a b) q o))))
+  hard_negative:
+    statement: 3次元の球面に点$Q$から引いた2本の接線の接点$A,B$について、弦$AB$の中点は常に直線$QO$上にある。
+    reason: 接点全体は直線$QO$を軸とする円をなす。その円の直径でない弦$AB$の中点は軸の上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (Q A B : P), 0 < s.radius → A ≠ B → Q ≠ A → Q ≠ B → s.IsTangentAt A line[ℝ, Q, A] → s.IsTangentAt B line[ℝ, Q, B] → inner ℝ (Q -ᵥ s.center) (B -ᵥ A) = 0 ∧ midpoint ℝ A B ∈ line[ℝ, Q, s.center]
+  proof: |
+    by
+      intro V P _ _ _ _ _ s Q A B _ hAB _ _ hA hB
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hQ : dist Q A = dist Q B := hA.dist_eq_of_mem_of_mem hB (left_mem_affineSpan_pair ℝ Q A) (left_mem_affineSpan_pair ℝ Q B)
+      have hO : dist A s.center = dist B s.center := by
+        rw [EuclideanGeometry.mem_sphere.mp hA.mem_sphere, EuclideanGeometry.mem_sphere.mp hB.mem_sphere]
+      have hQ' : dist A Q = dist B Q := by rw [dist_comm A, dist_comm B]; exact hQ
+      have h1 : inner ℝ (Q -ᵥ s.center) (B -ᵥ A) = 0 := EuclideanGeometry.inner_vsub_vsub_of_dist_eq_of_dist_eq hO hQ'
+      refine ⟨h1, ?_⟩
+      have h2 : inner ℝ (midpoint ℝ A B -ᵥ s.center) (B -ᵥ A) = 0 := EuclideanGeometry.inner_vsub_vsub_of_dist_eq_of_dist_eq hO (dist_left_midpoint_eq_dist_right_midpoint A B)
+      have hne : B -ᵥ A ≠ 0 := vsub_ne_zero.mpr hAB.symm
+      have hOQ : Q ≠ s.center := by
+        intro h
+        have := hA.radius_lt_dist_center (left_mem_affineSpan_pair ℝ Q A) ‹Q ≠ A›
+        rw [h, dist_self] at this
+        linarith
+      let o : Orientation ℝ V (Fin 2) := Module.Oriented.positiveOrientation
+      have r1 := (o.inner_eq_zero_iff_eq_zero_or_eq_smul_rotation_pi_div_two (x := B -ᵥ A) (y := Q -ᵥ s.center)).mp (by rw [real_inner_comm]; exact h1)
+      have r2 := (o.inner_eq_zero_iff_eq_zero_or_eq_smul_rotation_pi_div_two (x := B -ᵥ A) (y := midpoint ℝ A B -ᵥ s.center)).mp (by rw [real_inner_comm]; exact h2)
+      obtain ⟨a, ha⟩ := r1.resolve_left hne
+      obtain ⟨b, hb⟩ := r2.resolve_left hne
+      have ha0 : a ≠ 0 := by
+        rintro rfl
+        rw [zero_smul] at ha
+        exact hOQ (vsub_eq_zero_iff_eq.mp ha.symm)
+      have : midpoint ℝ A B = AffineMap.lineMap Q s.center (1 - b / a) := by
+        have e1 : midpoint ℝ A B -ᵥ Q = (midpoint ℝ A B -ᵥ s.center) - (Q -ᵥ s.center) := (vsub_sub_vsub_cancel_right _ _ _).symm
+        have e2 : s.center -ᵥ Q = -(Q -ᵥ s.center) := (neg_vsub_eq_vsub_rev _ _).symm
+        have e3 : (1 - b / a) * a = a - b := by field_simp
+        rw [AffineMap.lineMap_apply, eq_vadd_iff_vsub_eq, e1, e2, ← hb, ← ha, smul_neg, smul_smul, e3]
+        module
+      rw [this]
+      exact AffineMap.lineMap_mem_affineSpan_pair _ _ _
+- id: tangent_chord_angle
+  kind: named
+  level: high
+  topic: 円・接弦定理
+  statement: 平面上で、円の上の点$A,B,C$について$A\neq B$とし、直線$AT$が$A$で円に接し、$T,C$が直線$AB$の反対側にある（どちらも直線上にない）とき、$\angle TAB=\angle ACB$である（接弦定理）。
+  statement_en: In a Euclidean plane, if A, B, C lie on a circle, A ≠ B, line AT is tangent at A, and T, C lie strictly on opposite sides of line AB, then ∠TAB = ∠ACB.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,C$は同じ円の上にある
+  - $A\neq B$
+  - 直線$AT$は$A$で接する
+  - $T,C$は直線$AB$の反対側にあり、直線上にない
+  quantifiers:
+  - 任意の円と点$A,B,C,T$
+  conclusion: $\angle TAB=\angle ACB$である。
+  answer: |
+    平面上の中心$O$、半径$r$の円の上に点$A,B,C$をとり、$A\neq B$とする。直線$AT$は$A$で接し、$T,C$は直線$AB$の反対側にあり直線上にないとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $A\neq B$より$r>0$である。$T,C$は直線$AB$上にないので、$T\neq A$、$C\neq A,B$である。$A$を通る直径のもう一方の端を$A'$とする。$T-A$は$A-O$に直交し、$A'-A$は$A-O$の実数倍なので、$\angle TAA'=\pi/2$である。
+    $B=A'$のとき、$\angle TAB=\pi/2$であり、タレスの定理（直径の両端と異なる円上の点から、その直径を見込む角は$\pi/2$である）より$\angle ACB=\pi/2$である。
+    以下$B\neq A'$とする。$A'$は直線$AB$上にない。タレスの定理より$\angle ABA'=\pi/2$なので、$\angle BAA'+\angle AA'B=\pi/2$であり、特に$\angle BAA'<\pi/2$である。
+    $A',C$が直線$AB$の同じ側にある場合を考える。円周角の定理（円の上の$A\neq B$と、直線$AB$の同じ側にある円の上の2点について、$AB$を見込む角は等しい）より$\angle ACB=\angle AA'B$である。$T,A'$は直線$AB$の反対側にあるので、$\angle TAB+\angle BAA'$は$\angle TAA'=\pi/2$または$2\pi-\angle TAA'=3\pi/2$に等しい。$\angle TAB<\pi$、$\angle BAA'<\pi/2$より和は$3\pi/2$より小さいので、$\pi/2$である。よって$\angle TAB=\pi/2-\angle BAA'=\angle AA'B=\angle ACB$である。
+    $A',C$が直線$AB$の反対側にある場合を考える。内接四角形の対角の和の定理（円の上の$A\neq B$と、直線$AB$の反対側にある円の上の2点について、$AB$を見込む角の和は$\pi$）より$\angle ACB=\pi-\angle AA'B$である。$T,A'$は直線$AB$の同じ側にあるので、$|\angle TAB-\angle BAA'|=\angle TAA'=\pi/2$である。$\angle BAA'<\pi/2$より$\angle TAB=\angle BAA'+\pi/2$である。よって$\angle TAB=(\pi/2-\angle AA'B)+\pi/2=\pi-\angle AA'B=\angle ACB$である。
+  strategy: Draw the diameter through A; the tangent makes a right angle with it, the triangle ABA' has a right angle at B, and the inscribed angle theorem moves the angle at A' to C.
+  sketch:
+  - 'setup: Let A'' be the other end of the diameter through A; tangency gives angle TAA'' = π/2.'
+  - 'case_split: If B = A'', both angles equal π/2.'
+  - 'derive: Otherwise Thales gives angle BAA'' + angle AA''B = π/2.'
+  - 'case_split: If A'', C lie on the same side of AB, then angle ACB = angle AA''B and the rays give angle TAB = π/2 - angle BAA''.'
+  - 'case_split: If A'', C lie on opposite sides, then angle ACB = π - angle AA''B and the rays give angle TAB = π/2 + angle BAA''.'
+  - 'conclude: In every case angle TAB = angle ACB.'
+  openmath: (forall (o r a b c t) (-> (and (tangent_to_circle_at a t o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b)) (= (euclid_angle t a b) (euclid_angle a c b))))
+  hard_negative:
+    statement: $T,C$が直線$AB$に関して同じ側にあっても$\angle TAB=\angle ACB$である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$C=(-1,0)$、$T=(1,-1)$とすると、$T,C$は同じ側にあり、$\angle TAB=3\pi/4$、$\angle ACB=\pi/4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B C T : P), s.IsTangentAt A line[ℝ, A, T] → B ∈ s → C ∈ s → A ≠ B → (line[ℝ, A, B]).SOppSide T C → EuclideanGeometry.angle T A B = EuclideanGeometry.angle A C B
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B C T ht hB hC hAB hs
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hT : T ∈ line[ℝ, A, T] := right_mem_affineSpan_pair ℝ A T
+      have hA : A ∈ s := ht.mem_sphere
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hTA : T ≠ A := fun h => hs.2.1 (h ▸ hmA)
+      have hCA : C ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hCB : C ≠ B := fun h => hs.2.2 (h ▸ hmB)
+      have hOA : s.center ≠ A := by
+        intro h
+        apply hAB
+        have h1 : dist B s.center = s.radius := hB
+        have h2 : dist A s.center = s.radius := hA
+        rw [h, dist_self] at h2
+        rw [h, ← h2, dist_eq_zero] at h1
+        exact h1.symm
+      have h90 : EuclideanGeometry.angle T A s.center = Real.pi / 2 :=
+        EuclideanGeometry.Sphere.IsTangentAt.angle_eq_pi_div_two ht hT
+      have h2T : (2 : ℤ) • EuclideanGeometry.oangle T A s.center = (Real.pi : Real.Angle) := by
+        rcases EuclideanGeometry.oangle_eq_angle_or_eq_neg_angle hTA hOA with h | h
+        · rw [h, h90, Real.Angle.two_zsmul_coe_div_two]
+        · rw [h, h90, smul_neg, Real.Angle.two_zsmul_coe_div_two, Real.Angle.neg_coe_pi]
+      have hadd := EuclideanGeometry.oangle_add hTA hOA hAB.symm
+      have hpi := EuclideanGeometry.Sphere.two_zsmul_oangle_center_add_two_zsmul_oangle_eq_pi hA hC hB hCA hCB hAB
+      have h2 : (2 : ℤ) • EuclideanGeometry.oangle T A B = (2 : ℤ) • EuclideanGeometry.oangle A C B := by
+        rw [← hadd, smul_add, h2T, ← hpi, EuclideanGeometry.oangle_rev B A s.center, smul_neg]
+        abel
+      have hsign : (EuclideanGeometry.oangle T A B).sign = (EuclideanGeometry.oangle A C B).sign := by
+        rw [hs.oangle_sign_eq_neg hmA hmB, EuclideanGeometry.oangle_swap₁₂_sign]
+      have hne : (EuclideanGeometry.oangle T A B).sign ≠ 0 := by
+        intro h0
+        have hcol := EuclideanGeometry.oangle_sign_eq_zero_iff_collinear.mp h0
+        exact hs.2.1 (hcol.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB)
+      rw [EuclideanGeometry.angle_eq_iff_oangle_eq_of_sign_eq hTA hAB.symm hCA.symm hCB.symm hsign]
+      exact (Real.Angle.two_zsmul_eq_iff_eq hne hsign).mp h2
+- id: tangent_chord_angle_converse
+  kind: textbook
+  level: high
+  topic: 円・接弦定理の逆
+  statement: 平面上で、円の上の点$A,B,C$について$A\neq B$とし、点$T$と$C$が直線$AB$の反対側にある（どちらも直線上にない）とする。$\angle TAB=\angle ACB$ならば、直線$AT$は$A$で円に接する。
+  statement_en: In a Euclidean plane, if A, B, C lie on a circle, A ≠ B, T and C lie strictly on opposite sides of line AB, and ∠TAB = ∠ACB, then line AT is tangent to the circle at A.
+  assumptions:
+  - 点は平面上にある
+  - $A,B,C$は同じ円の上にある
+  - $A\neq B$
+  - $T,C$は直線$AB$の反対側にあり、直線上にない
+  - $\angle TAB=\angle ACB$
+  quantifiers:
+  - 任意の円と点$A,B,C,T$
+  conclusion: 直線$AT$は$A$で円に接する。
+  answer: |
+    平面上の中心$O$の円の上に点$A,B,C$をとり、$A\neq B$とする。$T,C$は直線$AB$の反対側にあり直線上になく、$\angle TAB=\angle ACB$とする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $A\neq B$より$A-O\neq0$である。$A$を通り$A-O$に直交する直線を$\ell$とする。$\ell$は定義により$A$で円に接する。$\|(B-A)+(A-O)\|=\|A-O\|$より$\langle B-A,A-O\rangle=-\tfrac12\|B-A\|^2\neq0$なので、$B$は$\ell$上にない。よって$\ell$は直線$AB$と$A$で交わり、$\ell$上には$T$と同じ側の点$T'$がある。
+    $T',C$は直線$AB$の反対側にあるので、接弦定理（$A$での接線上の点$T'$と円の上の点$C$が直線$AB$の反対側にあるとき$\angle T'AB=\angle ACB$）より、$\angle T'AB=\angle ACB=\angle TAB$である。$T,T'$は直線$AB$の同じ側にあり、半直線$AB$となす角が等しいので、半直線$AT$と半直線$AT'$は一致する。したがって$T$は$\ell$上にあり、直線$AT$は$\ell$に等しい。よって直線$AT$は$A$で円に接する。
+  strategy: Compare AT with the true tangent at A; the tangent chord theorem gives the same angle with AB on the same side, so the rays coincide.
+  sketch:
+  - 'setup: Let l be the line through A orthogonal to A-O; it is tangent at A.'
+  - 'derive: B is not on l, so l has a point T'' on the side of T.'
+  - 'apply_theorem: The tangent chord theorem gives angle T''AB = angle ACB = angle TAB.'
+  - 'derive: T and T'' lie on the same side of AB with equal angles, so the rays AT and AT'' coincide.'
+  - 'conclude: Line AT equals l, so it is tangent at A.'
+  openmath: (forall (o r a b c t) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b) (= (euclid_angle t a b) (euclid_angle a c b))) (tangent_to_circle_at a t o r)))
+  hard_negative:
+    statement: $T,C$が直線$AB$に関して同じ側にあっても、$\angle TAB=\angle ACB$ならば直線$AT$は接線である。
+    reason: 単位円で$A=(1,0)$、$B=(0,1)$、$C=(-1,0)$、$T=(0,0)$とすると、どちらの角も$\pi/4$だが、直線$AT$は中心を通り接線ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s : EuclideanGeometry.Sphere P) (A B C T : P), A ∈ s → B ∈ s → C ∈ s → A ≠ B → (line[ℝ, A, B]).SOppSide T C → EuclideanGeometry.angle T A B = EuclideanGeometry.angle A C B → s.IsTangentAt A line[ℝ, A, T]
+  proof: |
+    by
+      intro V P _ _ _ _ _ s A B C T hA hB hC hAB hs hang
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have hmA := left_mem_affineSpan_pair ℝ A B
+      have hmB := right_mem_affineSpan_pair ℝ A B
+      have hTA : T ≠ A := fun h => hs.2.1 (h ▸ hmA)
+      have hCA : C ≠ A := fun h => hs.2.2 (h ▸ hmA)
+      have hCB : C ≠ B := fun h => hs.2.2 (h ▸ hmB)
+      have hOA : s.center ≠ A := by
+        intro h
+        apply hAB
+        have h1 : dist B s.center = s.radius := hB
+        have h2 : dist A s.center = s.radius := hA
+        rw [h, dist_self] at h2
+        rw [h, ← h2, dist_eq_zero] at h1
+        exact h1.symm
+      have hsign : (EuclideanGeometry.oangle T A B).sign = (EuclideanGeometry.oangle A C B).sign := by
+        rw [hs.oangle_sign_eq_neg hmA hmB, EuclideanGeometry.oangle_swap₁₂_sign]
+      have heq : EuclideanGeometry.oangle T A B = EuclideanGeometry.oangle A C B :=
+        EuclideanGeometry.oangle_eq_of_angle_eq_of_sign_eq hang hsign
+      have hadd := EuclideanGeometry.oangle_add hTA hOA hAB.symm
+      have hpi := EuclideanGeometry.Sphere.two_zsmul_oangle_center_add_two_zsmul_oangle_eq_pi hA hC hB hCA hCB hAB
+      have h2T : (2 : ℤ) • EuclideanGeometry.oangle T A s.center = (Real.pi : Real.Angle) := by
+        have h3 : (2 : ℤ) • EuclideanGeometry.oangle T A s.center = (2 : ℤ) • EuclideanGeometry.oangle T A B - (2 : ℤ) • EuclideanGeometry.oangle s.center A B := by
+          rw [← hadd, smul_add]; abel
+        rw [h3, heq, ← hpi, EuclideanGeometry.oangle_rev B A s.center, smul_neg]
+        abel
+      have h90 : EuclideanGeometry.angle T A s.center = Real.pi / 2 := by
+        rcases Real.Angle.two_zsmul_eq_pi_iff.mp h2T with h | h
+        · exact EuclideanGeometry.angle_eq_pi_div_two_of_oangle_eq_pi_div_two h
+        · exact EuclideanGeometry.angle_eq_pi_div_two_of_oangle_eq_neg_pi_div_two h
+      exact EuclideanGeometry.Sphere.IsTangentAt_of_angle_eq_pi_div_two h90 hA
+- id: foot_distance_eq_radius_iff_tangent
+  kind: gap
+  level: high
+  topic: 円・中心と直線の距離
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）と直線$XY$（$X\neq Y$）について、$O$から直線に下ろした垂線の足を$H$とすると、直線が$H$で接することと$OH=r$は同値である。
+  statement_en: If X ≠ Y and H is the foot of the perpendicular from the center O of a sphere of radius r (a circle in the plane) to line XY, then the line is tangent at H if and only if |OH| = r.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $X\neq Y$
+  - $H$は直線$XY$上にある
+  - $\langle O-H,Y-X\rangle=0$
+  quantifiers:
+  - 任意の球面と点$X,Y,H$
+  conclusion: 直線$XY$が$H$で接することと$OH=r$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面と相異なる点$X,Y$をとり、直線$XY$上の点$H$は$\langle O-H,Y-X\rangle=0$を満たすとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    直線が$H$で接するなら$H$は球面上にあるので$OH=r$である。
+    逆に$OH=r$とすると$H$は球面上にある。直線上の点$U$について$U-H$は$Y-X$の実数倍なので、$\langle U-H,H-O\rangle=0$である。よって直線は$H$で接する。
+  strategy: Being the foot already gives orthogonality, so only membership of H in the sphere remains.
+  sketch:
+  - 'derive: Tangency at H puts H on the sphere, so |OH| = r.'
+  - 'derive: Conversely |OH| = r puts H on the sphere.'
+  - 'derive: Any U on the line has U-H a multiple of Y-X.'
+  - 'conclude: Hence U-H is orthogonal to H-O and the line is tangent at H.'
+  openmath: (forall (o r x y h) (-> (and (!= x y) (on_line h x y) (= (inner_product (- o h) (- y x)) 0)) (<-> (line_tangent_to_circle_at x y h o r) (= (dist_of o h) r))))
+  hard_negative:
+    statement: 直線上の点$H$について$OH=r$ならば、$H$が垂線の足でなくても直線は$H$で接する。
+    reason: 単位円で直線$x+y=1$と$H=(1,0)$をとると$OH=1$だが、この直線は円と2点で交わる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (X Y H : P), X ≠ Y → H ∈ line[ℝ, X, Y] → inner ℝ (s.center -ᵥ H) (Y -ᵥ X) = 0 → (s.IsTangentAt H line[ℝ, X, Y] ↔ dist s.center H = s.radius)
+  proof: |
+    by
+      intro V P _ _ _ _ s X Y H _ hH hperp
+      constructor
+      · intro h
+        exact EuclideanGeometry.mem_sphere'.mp h.mem_sphere
+      · intro h
+        refine ⟨EuclideanGeometry.mem_sphere'.mpr h, hH, ?_⟩
+        intro Q hQ
+        have hsub : Q -ᵥ H ∈ (line[ℝ, X, Y]).direction := AffineSubspace.vsub_mem_direction hQ hH
+        rw [direction_affineSpan, mem_vectorSpan_pair_rev] at hsub
+        obtain ⟨k, hk⟩ := hsub
+        refine EuclideanGeometry.Sphere.mem_orthRadius_iff_inner_left.mpr ?_
+        rw [← hk, inner_smul_left, ← neg_vsub_eq_vsub_rev s.center H, inner_neg_right, real_inner_comm, hperp]
+        simp
+- id: power_value_inside_chord
+  kind: gap
+  level: high
+  topic: 円・方べきの値（内部の点）
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）の上の点$A,B$と、$A,B$の間に真にある点$H$について、$HA\cdot HB=r^2-HO^2$である。これは内部の点での形である。
+  statement_en: Inside form. If A, B lie on a sphere with center O and radius r (a circle in the plane) and H is strictly between A and B, then |HA||HB| = r^2 - |HO|^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$、半径$r$の球面の上にある
+  - $H$は$A$と$B$の間に真にある
+  quantifiers:
+  - 任意の球面と点$A,B,H$
+  conclusion: $HA\cdot HB=r^2-HO^2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B$をとり、$H$は$A$と$B$の間に真にあるとする。$H=A+tu$、$u=B-A$、$0<t<1$と書ける。
+    $x=A-O$とおくと、$\|x+u\|=\|x\|=r$より$2\langle x,u\rangle+\|u\|^2=0$である。よって$HO^2-r^2=\|x+tu\|^2-\|x\|^2=2t\langle x,u\rangle+t^2\|u\|^2=-t(1-t)\|u\|^2$である。
+    一方$HA=t\|u\|$、$HB=(1-t)\|u\|$なので、$HA\cdot HB=t(1-t)\|u\|^2=r^2-HO^2$である。
+  strategy: Parametrize H on the chord and compute |HO|^2 - r^2.
+  sketch:
+  - 'setup: Write H = A + tu with u = B-A and 0 < t < 1.'
+  - 'derive: Equal radii give 2<x,u> + |u|^2 = 0 for x = A-O.'
+  - 'derive: So |HO|^2 - r^2 = -t(1-t)|u|^2.'
+  - 'conclude: Also |HA||HB| = t(1-t)|u|^2.'
+  openmath: (forall (o r a b h) (-> (and (on_circle a o r) (on_circle b o r) (strictly_between a h b)) (= (* (dist_of h a) (dist_of h b)) (- (^ r 2) (^ (dist_of h o) 2)))))
+  hard_negative:
+    statement: 弦の内点$H$について$HA\cdot HB=HO^2-r^2$である。
+    reason: 符号が逆である。単位円の直径の中点$H=O$では左辺が$1$、右辺が$-1$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B H : P), A ∈ s → B ∈ s → Sbtw ℝ A H B → dist H A * dist H B = s.radius ^ 2 - dist H s.center ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ s A B H hA hB hs
+      have hlt := EuclideanGeometry.Sphere.dist_center_lt_radius_of_sbtw hA hB hs
+      rw [dist_comm] at hlt
+      rw [EuclideanGeometry.Sphere.mul_dist_eq_neg_power_of_dist_center_le_radius (s.radius_nonneg_of_mem hA) hs.wbtw.mem_affineSpan hA hB hlt.le, EuclideanGeometry.Sphere.power]
+      ring
+- id: power_value_outside_secant
+  kind: gap
+  level: high
+  topic: 円・方べきの値（外部の点）
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r$の球面（平面なら円）の上の点$A,B$と直線$AB$上の点$H$について、$HO\geq r$ならば$HA\cdot HB=HO^2-r^2$である。これは球面の外部または球面上の点での形である。
+  statement_en: Outside form. If A, B lie on a sphere with center O and radius r (a circle in the plane), H lies on line AB, and |HO| ≥ r, then |HA||HB| = |HO|^2 - r^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は中心$O$、半径$r$の球面の上にある
+  - $H$は$A,B$のアフィン包に属する
+  - $HO\geq r$
+  quantifiers:
+  - 任意の球面と点$A,B,H$
+  conclusion: $HA\cdot HB=HO^2-r^2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B$をとり、$H$は$A,B$のアフィン包に属し$HO\geq r$とする。$H=A+tu$、$u=B-A$と書ける（$A=B$なら$u=0$である）。
+    $x=A-O$とおくと、$\|x+u\|=\|x\|$より$2\langle x,u\rangle+\|u\|^2=0$である。よって$HO^2-r^2=2t\langle x,u\rangle+t^2\|u\|^2=(t^2-t)\|u\|^2$である。
+    一方$HA\cdot HB=|t||t-1|\|u\|^2=|t^2-t|\|u\|^2=\bigl|HO^2-r^2\bigr|$である。$HO\geq r\geq0$より$HO^2-r^2\geq0$なので、$HA\cdot HB=HO^2-r^2$である。
+  strategy: Compute |HO|^2 - r^2 as (t^2-t)|B-A|^2 and use its sign.
+  sketch:
+  - 'setup: Write H = A + tu with u = B-A.'
+  - 'derive: |HO|^2 - r^2 = (t^2-t)|u|^2.'
+  - 'derive: |HA||HB| is the absolute value of the same number.'
+  - 'conclude: The hypothesis |HO| ≥ r makes it nonnegative.'
+  openmath: (forall (o r a b h) (-> (and (on_circle a o r) (on_circle b o r) (on_line h a b) (>= (dist_of h o) r)) (= (* (dist_of h a) (dist_of h b)) (- (^ (dist_of h o) 2) (^ r 2)))))
+  hard_negative:
+    statement: $H$が直線$AB$上になくても、$HO\geq r$ならば$HA\cdot HB=HO^2-r^2$である。
+    reason: 単位円で$A=(1,0)$、$B=(-1,0)$、$H=(0,2)$とすると、左辺は$5$、右辺は$3$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B H : P), A ∈ s → B ∈ s → H ∈ line[ℝ, A, B] → s.radius ≤ dist H s.center → dist H A * dist H B = dist H s.center ^ 2 - s.radius ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ s A B H hA hB hH hle
+      exact EuclideanGeometry.Sphere.mul_dist_eq_power_of_radius_le_dist_center (s.radius_nonneg_of_mem hA) hH hA hB hle
+- id: tangent_secant_power
+  kind: named
+  level: high
+  topic: 円・方べきの定理（接線と割線）
+  statement: 実内積空間上のアフィン空間で、球面（平面なら円）の上の点$A,B$について、点$Q$が直線$AB$上にあり、$Q\neq T$で直線$QT$が$T$で接するとき、$QT^2=QA\cdot QB$である（方べきの定理の接線の形）。
+  statement_en: Tangent-secant form of the power of a point. If A, B lie on a sphere (a circle in the plane), Q lies on line AB, Q ≠ T, and line QT is tangent at T, then |QT|^2 = |QA||QB|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B$は球面の上にある
+  - $Q$は$A,B$のアフィン包に属する
+  - $Q\neq T$
+  - 直線$QT$は$T$で接する
+  quantifiers:
+  - 任意の球面と点$A,B,T,Q$
+  conclusion: $QT^2=QA\cdot QB$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B$をとり、$Q$は$A,B$のアフィン包に属するとする。$Q\neq T$で、直線$QT$は$T$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $Q-T$は$T-O$に直交するので、三平方の定理より$QO^2=QT^2+r^2$である。特に$QO\geq r$である。
+    $Q=A+tu$、$u=B-A$、$x=A-O$とおくと、$\|x+u\|=\|x\|$より$2\langle x,u\rangle+\|u\|^2=0$であり、$QO^2-r^2=(t^2-t)\|u\|^2$である。一方$QA\cdot QB=|t^2-t|\|u\|^2=|QO^2-r^2|=QO^2-r^2$である。よって$QT^2=QO^2-r^2=QA\cdot QB$である。
+  strategy: Both sides equal the power |QO|^2 - r^2 of Q.
+  sketch:
+  - 'derive: The right angle at T gives |QT|^2 = |QO|^2 - r^2.'
+  - 'derive: Parametrizing line AB gives |QA||QB| = abs(|QO|^2 - r^2).'
+  - 'derive: Q is not inside the sphere, so the absolute value can be dropped.'
+  - 'conclude: Hence |QT|^2 = |QA||QB|.'
+  openmath: (forall (o r a b t q) (-> (and (on_circle a o r) (on_circle b o r) (on_line q a b) (!= q t) (tangent_to_circle_at t q o r)) (= (^ (dist_of q t) 2) (* (dist_of q a) (dist_of q b)))))
+  hard_negative:
+    statement: $Q$が直線$AB$上になくても$QT^2=QA\cdot QB$である。
+    reason: 単位円で$A=(1,0)$、$B=(-1,0)$、$Q=(0,2)$とすると、接線の長さの2乗は$3$、$QA\cdot QB$は$5$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B T Q : P), A ∈ s → B ∈ s → Q ∈ line[ℝ, A, B] → Q ≠ T → s.IsTangentAt T line[ℝ, Q, T] → dist Q T ^ 2 = dist Q A * dist Q B
+  proof: |
+    by
+      intro V P _ _ _ _ s A B T Q hA hB hQ _ ht
+      exact EuclideanGeometry.Sphere.dist_sq_eq_mul_dist_of_tangent_and_secant hA hB hQ ht
+- id: tangent_secant_converse
+  kind: textbook
+  level: high
+  topic: 円・方べきの定理の逆（接線）
+  statement: 実内積空間上のアフィン空間で、球面（平面なら円）の上の点$A,B,T$について、$A$が$Q$と$B$の間に真にあり$QT^2=QA\cdot QB$ならば、直線$QT$は$T$で接する。
+  statement_en: If A, B, T lie on a sphere (a circle in the plane), A is strictly between Q and B, and |QT|^2 = |QA||QB|, then line QT is tangent at T.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B,T$は同じ球面の上にある
+  - $A$は$Q$と$B$の間に真にある
+  - $QT^2=QA\cdot QB$
+  quantifiers:
+  - 任意の球面と点$A,B,T,Q$
+  conclusion: 直線$QT$は$T$で接する。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面の上に点$A,B,T$をとり、$A$は$Q$と$B$の間に真にあり、$QT^2=QA\cdot QB$とする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $A,B$は相異なる。$v=A-Q\neq0$とおくと$B-Q=\lambda v$、$\lambda>1$と書ける。$x=Q-O$、$w=QO^2-r^2$とおく。$\|x+v\|^2=r^2$と$\|x+\lambda v\|^2=r^2$より、$w+2\langle x,v\rangle+\|v\|^2=0$と$w+2\lambda\langle x,v\rangle+\lambda^2\|v\|^2=0$である。第1式の$\lambda$倍から第2式を引くと$(\lambda-1)(w-\lambda\|v\|^2)=0$なので、$w=\lambda\|v\|^2=QA\cdot QB$である。
+    よって$QT^2=QO^2-r^2$である。一方$Q-O=(Q-T)+(T-O)$より$QO^2=QT^2+2\langle Q-T,T-O\rangle+r^2$なので、$\langle Q-T,T-O\rangle=0$である。直線$QT$上の点は$U=T+t(Q-T)$と書けるので$\langle U-T,T-O\rangle=0$であり、直線$QT$は$T$で接する。
+  strategy: Show the product equals the power of Q, then read the Pythagorean equation backwards.
+  sketch:
+  - 'setup: Write B-Q = λ(A-Q) with λ > 1.'
+  - 'derive: The two sphere equations give |QO|^2 - r^2 = λ|A-Q|^2 = |QA||QB|.'
+  - 'derive: So |QT|^2 = |QO|^2 - r^2.'
+  - 'derive: Expanding |QO|^2 through T gives <Q-T,T-O> = 0.'
+  - 'conclude: The line QT is orthogonal to the radius at T, so it is tangent.'
+  openmath: (forall (o r a b t q) (-> (and (on_circle a o r) (on_circle b o r) (on_circle t o r) (strictly_between q a b) (= (^ (dist_of q t) 2) (* (dist_of q a) (dist_of q b)))) (tangent_to_circle_at t q o r)))
+  hard_negative:
+    statement: $Q$が$A,B$の間にあっても、$QT^2=QA\cdot QB$ならば直線$QT$は$T$で接する。
+    reason: 単位円で$Q=O$、$A=(1,0)$、$B=(-1,0)$、$T=(0,1)$とすると等式は成り立つが、直線$QT$は中心を通る。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B T Q : P), A ∈ s → B ∈ s → T ∈ s → Sbtw ℝ Q A B → dist Q T ^ 2 = dist Q A * dist Q B → s.IsTangentAt T line[ℝ, Q, T]
+  proof: |
+    by
+      intro V P _ _ _ _ s A B T Q hA hB hT hs h
+      refine EuclideanGeometry.Sphere.isTangentAt_of_dist_sq_eq_power hT ?_
+      have hQ : Q ∈ line[ℝ, A, B] := by
+        have := hs.wbtw.collinear
+        have hne := hs.ne_right.symm
+        have hAB : A ≠ B := hs.ne_right
+        exact this.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB
+      have hout : s.radius ≤ dist Q s.center := by
+        by_contra hlt
+        push Not at hlt
+        have hcol : Collinear ℝ ({A, Q, B} : Set P) := by
+          rw [Set.insert_comm]; exact hs.wbtw.collinear
+        have hb := EuclideanGeometry.sbtw_of_collinear_of_dist_center_lt_radius hcol hA hlt hB hs.ne_right
+        have h1 := hb.wbtw.dist_add_dist
+        have h2 := hs.wbtw.dist_add_dist
+        have h3 : Q ≠ A := hs.ne_left.symm
+        have h4 : 0 < dist Q A := dist_pos.mpr h3
+        rw [dist_comm A Q] at h1
+        linarith [dist_nonneg (x := A) (y := B)]
+      rw [h, EuclideanGeometry.Sphere.mul_dist_eq_power_of_radius_le_dist_center (s.radius_nonneg_of_mem hA) hQ hA hB hout]
+- id: intersecting_chords_converse
+  kind: textbook
+  level: high
+  topic: 円・方べきの定理の逆（交わる弦）
+  statement: 実内積空間上のアフィン空間で、点$H$が$A,B$の間と$C,D$の間に真にあり、$A,H,C$が一直線上になく、$AH\cdot BH=CH\cdot DH$ならば、$A,B,C,D$は同一球面上（平面なら同一円周上）にある。
+  statement_en: If H is strictly between A and B and strictly between C and D, A, H, C are not collinear, and |AH||BH| = |CH||DH|, then A, B, C, D lie on a common sphere (a common circle in the plane).
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $H$は$A$と$B$の間に真にある
+  - $H$は$C$と$D$の間に真にある
+  - $A,H,C$は一直線上にない
+  - $AH\cdot BH=CH\cdot DH$
+  quantifiers:
+  - 任意の点$A,B,C,D,H$
+  conclusion: $A,B,C,D$は同一球面上にある。
+  answer: |
+    実内積空間上のアフィン空間で、点$H$は$A,B$の間と$C,D$の間に真にあり、$A,H,C$は一直線上になく、$AH\cdot BH=CH\cdot DH$とする。
+    $A,B,C$は一直線上にない。一直線上なら$H,C$がともに直線$AB$上にあり、$A,H,C$が一直線上になるからである。そこで$A,B,C$を通る円の中心を$O$、半径を$r$とする。$O$はこの3点を含む平面の上にある。
+    $x=H-O$、$v=C-H$、$w=HO^2-r^2$とおく。$H$は弦$AB$の内点なので$AH\cdot BH=r^2-HO^2=-w$である（弦の内点での方べきの値）。$H$は$C,D$の間にあるので$D-H=-\lambda v$、$\lambda>0$と書けて、$CH\cdot DH=\lambda\|v\|^2$である。したがって$w=-\lambda\|v\|^2$である。
+    $C$が球面上にあることから$w+2\langle x,v\rangle+\|v\|^2=0$である。よって$\|x-\lambda v\|^2-r^2=w-2\lambda\langle x,v\rangle+\lambda^2\|v\|^2=w+\lambda(w+\|v\|^2)+\lambda^2\|v\|^2=(1+\lambda)(w+\lambda\|v\|^2)=0$である。すなわち$DO=r$であり、4点は中心$O$、半径$r$の球面の上にある。
+  strategy: Take the circle through A, B, C and verify that D lies on it using the power of H.
+  sketch:
+  - 'setup: A, B, C are not collinear, so they lie on a circle with center O and radius r.'
+  - 'derive: The power of H gives |AH||BH| = r^2 - |HO|^2.'
+  - 'derive: With D-H = -λ(C-H), the hypothesis gives |HO|^2 - r^2 = -λ|C-H|^2.'
+  - 'derive: Substituting the equation for C factors |DO|^2 - r^2 as (1+λ)(w+λ|v|^2).'
+  - 'conclude: Therefore D lies on the same sphere.'
+  openmath: (forall (a b c d h) (-> (and (strictly_between a h b) (strictly_between c h d) (not (collinear_points a h c)) (= (* (dist_of a h) (dist_of b h)) (* (dist_of c h) (dist_of d h)))) (cospherical_points (set a b c d))))
+  hard_negative:
+    statement: $H$が$C,D$の間になくても、$H$が$A,B$の間にあって積が等しければ4点は同一円周上にある。
+    reason: $H=(0,0)$、$A=(-1,0)$、$B=(1,0)$、$C=(0,1/2)$、$D=(0,2)$とすると積はともに$1$だが、$A,B,C$を通る円は中心$(0,-3/4)$、半径$5/4$で、$D$はその上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D H : P), Sbtw ℝ A H B → Sbtw ℝ C H D → ¬Collinear ℝ ({A, H, C} : Set P) → dist A H * dist B H = dist C H * dist D H → EuclideanGeometry.Cospherical ({A, B, C, D} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D H h1 h2 hn h
+      exact EuclideanGeometry.cospherical_of_mul_dist_eq_mul_dist_of_angle_eq_pi h (EuclideanGeometry.angle_eq_pi_iff_sbtw.mpr h1) (EuclideanGeometry.angle_eq_pi_iff_sbtw.mpr h2) hn
+- id: secants_converse
+  kind: textbook
+  level: high
+  topic: 円・方べきの定理の逆（割線）
+  statement: 実内積空間上のアフィン空間で、$A$が$Q$と$B$の間に真にあり、$C$が$Q$と$D$の間に真にあり、$Q,A,C$が一直線上になく、$QA\cdot QB=QC\cdot QD$ならば、$A,B,C,D$は同一球面上（平面なら同一円周上）にある。
+  statement_en: If A is strictly between Q and B, C is strictly between Q and D, Q, A, C are not collinear, and |QA||QB| = |QC||QD|, then A, B, C, D lie on a common sphere (a common circle in the plane).
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A$は$Q$と$B$の間に真にある
+  - $C$は$Q$と$D$の間に真にある
+  - $Q,A,C$は一直線上にない
+  - $QA\cdot QB=QC\cdot QD$
+  quantifiers:
+  - 任意の点$A,B,C,D,Q$
+  conclusion: $A,B,C,D$は同一球面上にある。
+  answer: |
+    実内積空間上のアフィン空間で、$A$は$Q,B$の間に、$C$は$Q,D$の間に真にあり、$Q,A,C$は一直線上になく、$QA\cdot QB=QC\cdot QD$とする。
+    $A,B,C$は一直線上にない。一直線上なら$Q,C$がともに直線$AB$上にあり、$Q,A,C$が一直線上になるからである。そこで$A,B,C$を通る円の中心を$O$、半径を$r$とする。
+    $x=Q-O$、$w=QO^2-r^2$とおく。$B-Q=\mu(A-Q)$、$D-Q=\lambda(C-Q)$、$\mu,\lambda>1$と書き、$y=A-Q$、$v=C-Q$とおく。$A,B$が球面上にあることから$w+2\langle x,y\rangle+\|y\|^2=0$、$w+2\mu\langle x,y\rangle+\mu^2\|y\|^2=0$である。第1式の$\mu$倍から第2式を引くと$(\mu-1)(w-\mu\|y\|^2)=0$なので、$w=\mu\|y\|^2=QA\cdot QB$である。仮定より$w=QC\cdot QD=\lambda\|v\|^2$である。
+    $C$が球面上にあることから$w+2\langle x,v\rangle+\|v\|^2=0$である。よって$\|x+\lambda v\|^2-r^2=w+2\lambda\langle x,v\rangle+\lambda^2\|v\|^2=w-\lambda(w+\|v\|^2)+\lambda^2\|v\|^2=(1-\lambda)(w-\lambda\|v\|^2)=0$である。すなわち$DO=r$であり、4点は同一球面上にある。
+  strategy: Take the circle through A, B, C; the product hypothesis then forces D onto it.
+  sketch:
+  - 'setup: A, B, C are not collinear, so they lie on a circle with center O and radius r.'
+  - 'derive: The two equations for A and B give |QO|^2 - r^2 = |QA||QB|.'
+  - 'derive: The hypothesis gives |QO|^2 - r^2 = λ|C-Q|^2 where D-Q = λ(C-Q).'
+  - 'derive: With the equation for C, |DO|^2 - r^2 factors as (1-λ)(w-λ|v|^2) = 0.'
+  - 'conclude: D lies on the same sphere.'
+  openmath: (forall (a b c d q) (-> (and (strictly_between q a b) (strictly_between q c d) (not (collinear_points q a c)) (= (* (dist_of q a) (dist_of q b)) (* (dist_of q c) (dist_of q d)))) (cospherical_points (set a b c d))))
+  hard_negative:
+    statement: $Q$が$C,D$の間にあっても、$A$が$Q,B$の間にあって積が等しければ4点は同一円周上にある。
+    reason: $Q=(0,0)$、$A=(0,1/2)$、$B=(0,2)$、$C=(-1,0)$、$D=(1,0)$とすると積はともに$1$だが、$A,C,D$を通る円の上に$B$はない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D Q : P), Sbtw ℝ Q A B → Sbtw ℝ Q C D → ¬Collinear ℝ ({Q, A, C} : Set P) → dist Q A * dist Q B = dist Q C * dist Q D → EuclideanGeometry.Cospherical ({A, B, C, D} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D Q h1 h2 hn h
+      have hAB : A ≠ B := h1.ne_right
+      have hind : ¬Collinear ℝ ({A, B, C} : Set P) := by
+        intro hc
+        apply hn
+        have hC : C ∈ line[ℝ, A, B] := hc.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB
+        have hQ : Q ∈ line[ℝ, A, B] := h1.wbtw.collinear.mem_affineSpan_of_mem_of_ne (by simp) (by simp) (by simp) hAB
+        have := collinear_insert_insert_of_mem_affineSpan_pair hQ hC
+        exact this.subset (by intro x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto)
+      let t : Affine.Triangle ℝ P := ⟨![A, B, C], affineIndependent_iff_not_collinear_set.mpr hind⟩
+      let s := t.circumsphere
+      have hA : A ∈ s := t.mem_circumsphere 0
+      have hB : B ∈ s := t.mem_circumsphere 1
+      have hC : C ∈ s := t.mem_circumsphere 2
+      have hD : D ∈ s := by
+        obtain ⟨⟨t, ⟨ht0, ht1⟩, ht⟩, hAQ, hAB'⟩ := h1
+        obtain ⟨⟨u, ⟨hu0, hu1⟩, hu⟩, hCQ, hCD⟩ := h2
+        have hu0' : u ≠ 0 := by
+          rintro rfl
+          exact hCQ (by rw [← hu]; simp)
+        have ht1' : t ≠ 1 := by
+          rintro rfl
+          exact hAB' (by rw [← ht]; simp)
+        have hN : ∀ {X : P}, X ∈ s → ‖X -ᵥ s.center‖ ^ 2 = s.radius ^ 2 := by
+          intro X hX
+          rw [← dist_eq_norm_vsub V, EuclideanGeometry.mem_sphere.mp hX]
+        have hexp : ∀ (k : ℝ) (w : V), ‖(Q -ᵥ s.center) + k • w‖ ^ 2 = ‖Q -ᵥ s.center‖ ^ 2 + 2 * k * inner ℝ (Q -ᵥ s.center) w + k ^ 2 * ‖w‖ ^ 2 := by
+          intro k w
+          rw [norm_add_sq_real, inner_smul_right, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs]
+          ring
+        have hle : ∀ {X Y : P} {k : ℝ}, AffineMap.lineMap Q Y k = X → X -ᵥ s.center = (Q -ᵥ s.center) + k • (Y -ᵥ Q) := by
+          intro X Y k hk
+          rw [← hk, ← vsub_add_vsub_cancel (AffineMap.lineMap Q Y k) Q s.center, AffineMap.lineMap_vsub_left, add_comm]
+        have hd : ∀ {X Y : P} {k : ℝ}, 0 ≤ k → AffineMap.lineMap Q Y k = X → dist Q X = k * ‖Y -ᵥ Q‖ := by
+          intro X Y k hk hX
+          rw [dist_comm, dist_eq_norm_vsub V X Q, ← hX, AffineMap.lineMap_vsub_left, norm_smul, Real.norm_eq_abs, abs_of_nonneg hk]
+        have e1 := hN hA
+        have e2 := hN hB
+        have e3 := hN hC
+        rw [hle ht, hexp] at e1
+        have e2' : ‖(Q -ᵥ s.center) + (1 : ℝ) • (B -ᵥ Q)‖ ^ 2 = s.radius ^ 2 := by
+          rw [one_smul, add_comm, vsub_add_vsub_cancel]; exact e2
+        rw [hexp] at e2'
+        rw [hle hu, hexp] at e3
+        have hprod := h
+        rw [hd ht0 ht, hd hu0 hu, show dist Q B = 1 * ‖B -ᵥ Q‖ by rw [one_mul, dist_comm, dist_eq_norm_vsub V], show dist Q D = 1 * ‖D -ᵥ Q‖ by rw [one_mul, dist_comm, dist_eq_norm_vsub V]] at hprod
+        have ha : ‖Q -ᵥ s.center‖ ^ 2 - s.radius ^ 2 = t * ‖B -ᵥ Q‖ ^ 2 := by
+          have : (1 - t) * (‖Q -ᵥ s.center‖ ^ 2 - s.radius ^ 2 - t * ‖B -ᵥ Q‖ ^ 2) = 0 := by
+            linear_combination e1 - t * e2'
+          have := (mul_eq_zero.mp this).resolve_left (sub_ne_zero.mpr ht1'.symm)
+          linarith
+        have hprod' : t * ‖B -ᵥ Q‖ ^ 2 = u * ‖D -ᵥ Q‖ ^ 2 := by linear_combination hprod
+        have hz : ‖D -ᵥ Q‖ ^ 2 + 2 * inner ℝ (Q -ᵥ s.center) (D -ᵥ Q) + u * ‖D -ᵥ Q‖ ^ 2 = 0 := by
+          have : u * (‖D -ᵥ Q‖ ^ 2 + 2 * inner ℝ (Q -ᵥ s.center) (D -ᵥ Q) + u * ‖D -ᵥ Q‖ ^ 2) = 0 := by
+            linear_combination e3 - ha - hprod'
+          exact (mul_eq_zero.mp this).resolve_left hu0'
+        have hgoal : ‖(Q -ᵥ s.center) + (1 : ℝ) • (D -ᵥ Q)‖ ^ 2 = s.radius ^ 2 := by
+          rw [hexp]
+          linear_combination hz + ha + hprod'
+        rw [one_smul, add_comm, vsub_add_vsub_cancel] at hgoal
+        have hrn := s.radius_nonneg_of_mem hA
+        exact EuclideanGeometry.mem_sphere.mpr (by rw [dist_eq_norm_vsub V]; exact (sq_eq_sq₀ (norm_nonneg _) hrn).mp hgoal)
+      refine EuclideanGeometry.cospherical_iff_exists_sphere.mpr ⟨s, ?_⟩
+      intro p hp
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+      rcases hp with rfl | rfl | rfl | rfl <;> assumption
+- id: intersecting_chords_similar_ratio
+  kind: gap
+  level: high
+  topic: 円・交わる弦と相似
+  statement: 実内積空間上のアフィン空間で、$A,B,C,D$が同一球面上（平面なら同一円周上）にあり、点$H$が$A,B$の間と$C,D$の間に真にあるとき、$AC\cdot HD=DB\cdot HA$である。三角形$HAC$と$HDB$の相似から出る比の形である。
+  statement_en: If A, B, C, D lie on a common sphere (a common circle in the plane) and H is strictly between A and B and strictly between C and D, then |AC||HD| = |DB||HA|, the ratio from the similarity of triangles HAC and HDB.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $A,B,C,D$は同一球面上にある
+  - $H$は$A$と$B$の間に真にある
+  - $H$は$C$と$D$の間に真にある
+  quantifiers:
+  - 任意の点$A,B,C,D,H$
+  conclusion: $AC\cdot HD=DB\cdot HA$である。
+  answer: |
+    実内積空間上のアフィン空間で、$A,B,C,D$は同一球面上にあり、$H$は$A,B$の間と$C,D$の間に真にあるとする。
+    方べきの定理より$HA\cdot HB=HC\cdot HD$である。$HD>0$なので$k=HA/HD$とおくと、$HA=k\,HD$であり、$HC=k\,HB$である。
+    $H$が2つの線分の内点なので、$\angle AHC$と$\angle DHB$は対頂角で等しい。余弦定理より$AC^2=HA^2+HC^2-2HA\cdot HC\cos\angle AHC=k^2(HD^2+HB^2-2HD\cdot HB\cos\angle DHB)=k^2DB^2$である。よって$AC=k\,DB$であり、両辺に$HD$を掛けて$AC\cdot HD=DB\cdot HA$を得る。
+  strategy: The power of H gives proportional sides around equal vertical angles; the law of cosines finishes.
+  sketch:
+  - 'apply_theorem: The power of a point gives |HA||HB| = |HC||HD|.'
+  - 'derive: With k = |HA|/|HD|, also |HC| = k|HB|.'
+  - 'derive: Vertical angles give angle AHC = angle DHB.'
+  - 'apply_theorem: The law of cosines gives |AC| = k|DB|.'
+  - 'conclude: Multiply by |HD|.'
+  openmath: (forall (a b c d h) (-> (and (cospherical_points (set a b c d)) (strictly_between a h b) (strictly_between c h d)) (= (* (dist_of a c) (dist_of h d)) (* (dist_of d b) (dist_of h a)))))
+  hard_negative:
+    statement: 4点が同一円周上になくても、弦が内点$H$で交われば$AC\cdot HD=DB\cdot HA$である。
+    reason: $H=(0,0)$、$A=(1,0)$、$B=(-1,0)$、$C=(0,1)$、$D=(0,-2)$とすると、左辺は$2\sqrt2$、右辺は$\sqrt5$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D H : P), EuclideanGeometry.Cospherical ({A, B, C, D} : Set P) → Sbtw ℝ A H B → Sbtw ℝ C H D → dist A C * dist H D = dist D B * dist H A
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D H hc h1 h2
+      have hmul := EuclideanGeometry.mul_dist_eq_mul_dist_of_cospherical hc h1.wbtw.mem_affineSpan h2.wbtw.mem_affineSpan
+      have hHD : dist D H ≠ 0 := dist_ne_zero.mpr h2.ne_right.symm
+      have hang : EuclideanGeometry.angle A H C = EuclideanGeometry.angle D H B := by
+        rw [EuclideanGeometry.angle_eq_angle_of_angle_eq_pi_of_angle_eq_pi (EuclideanGeometry.angle_eq_pi_iff_sbtw.mpr h1) (EuclideanGeometry.angle_eq_pi_iff_sbtw.mpr h2), EuclideanGeometry.angle_comm]
+      have h3 := EuclideanGeometry.dist_mul_of_eq_angle_of_dist_mul D H B A H C (dist A H / dist D H) hang (by field_simp) (by field_simp; linarith)
+      rw [dist_comm H D, dist_comm H A, h3]
+      field_simp
+- id: common_chord_perpendicular_bisected_by_center_line
+  kind: gap
+  level: high
+  topic: 2円・共通弦と中心線
+  statement: 平面上で、中心$O_1,O_2$（$O_1\neq O_2$）の2円が相異なる2点$A,B$を共有するとき、直線$O_1O_2$は弦$AB$に垂直で、弦$AB$の中点を通る。
+  statement_en: In a Euclidean plane, if two circles with distinct centers O1, O2 share distinct points A, B, then O1O2 is perpendicular to AB and the midpoint of AB lies on line O1O2.
+  assumptions:
+  - 点は平面上にある
+  - $O_1\neq O_2$
+  - $A\neq B$
+  - $A,B$は2円の共有点である
+  quantifiers:
+  - 任意の2円と点$A,B$
+  conclusion: $\langle O_2-O_1,B-A\rangle=0$であり、$A,B$の中点は直線$O_1O_2$上にある。
+  answer: |
+    平面上に中心$O_1\neq O_2$の2円をとり、相異なる点$A,B$を共有するとする。$M$を$A,B$の中点とする。
+    $Z$が$A,B$から等距離にあれば、$z=Z-M$、$a=A-M$として$\|z-a\|=\|z+a\|$より$\langle z,a\rangle=0$である。すなわち$Z-M$は$B-A$に直交する。$O_1,O_2$は$A,B$から等距離なので、$O_1-M,O_2-M$は$B-A$に直交する。引き算して$\langle O_2-O_1,B-A\rangle=0$である。
+    平面で$0$でないベクトル$B-A$に直交するベクトルは1次元の空間をなす。$O_2-O_1\neq0$はこの空間に属するので、$M-O_1$はその実数倍である。よって$M$は直線$O_1O_2$上にある。
+  strategy: The centers and the midpoint are all equidistant from A and B, and in the plane these points form a line.
+  sketch:
+  - 'derive: A point equidistant from A and B has Z-M orthogonal to B-A.'
+  - 'derive: Applying this to both centers gives that O2-O1 is orthogonal to B-A.'
+  - 'translate: In the plane the orthogonal complement of B-A has dimension one.'
+  - 'conclude: M-O1 is a multiple of O2-O1, so M lies on line O1O2.'
+  openmath: (forall (o1 r1 o2 r2 a b) (-> (and (!= o1 o2) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle a o2 r2) (on_circle b o2 r2)) (and (perpendicular_lines o2 o1 a b) (on_line (midpoint_of a b) o1 o2))))
+  hard_negative:
+    statement: 3次元の2つの球面が相異なる2点$A,B$を共有すれば、$A,B$の中点は中心を結ぶ直線上にある。
+    reason: 2つの球面の交わりは中心線を軸とする円であり、その円の直径でない弦の中点は軸の上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s₁ s₂ : EuclideanGeometry.Sphere P) (A B : P), s₁.center ≠ s₂.center → A ≠ B → A ∈ s₁ → B ∈ s₁ → A ∈ s₂ → B ∈ s₂ → inner ℝ (s₂.center -ᵥ s₁.center) (B -ᵥ A) = 0 ∧ midpoint ℝ A B ∈ line[ℝ, s₁.center, s₂.center]
+  proof: |
+    by
+      intro V P _ _ _ _ _ s₁ s₂ A B hc hAB hA1 hB1 hA2 hB2
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      have h1 : inner ℝ (s₂.center -ᵥ s₁.center) (B -ᵥ A) = 0 := EuclideanGeometry.inner_vsub_vsub_of_mem_sphere_of_mem_sphere hA1 hB1 hA2 hB2
+      refine ⟨h1, ?_⟩
+      have h2 : inner ℝ (midpoint ℝ A B -ᵥ s₁.center) (B -ᵥ A) = 0 := by
+        have := EuclideanGeometry.Sphere.inner_vsub_center_midpoint_vsub hA1 hB1
+        rw [← neg_vsub_eq_vsub_rev, inner_neg_left, neg_eq_zero] at this
+        exact this
+      have hne : B -ᵥ A ≠ 0 := vsub_ne_zero.mpr hAB.symm
+      let o : Orientation ℝ V (Fin 2) := Module.Oriented.positiveOrientation
+      have r1 := (o.inner_eq_zero_iff_eq_zero_or_eq_smul_rotation_pi_div_two (x := B -ᵥ A) (y := s₂.center -ᵥ s₁.center)).mp (by rw [real_inner_comm]; exact h1)
+      have r2 := (o.inner_eq_zero_iff_eq_zero_or_eq_smul_rotation_pi_div_two (x := B -ᵥ A) (y := midpoint ℝ A B -ᵥ s₁.center)).mp (by rw [real_inner_comm]; exact h2)
+      obtain ⟨a, ha⟩ := r1.resolve_left hne
+      obtain ⟨b, hb⟩ := r2.resolve_left hne
+      have ha0 : a ≠ 0 := by
+        rintro rfl
+        rw [zero_smul] at ha
+        exact hc (vsub_eq_zero_iff_eq.mp ha.symm).symm
+      have : midpoint ℝ A B = AffineMap.lineMap s₁.center s₂.center (b / a) := by
+        have e3 : (b / a) * a = b := by field_simp
+        rw [AffineMap.lineMap_apply, eq_vadd_iff_vsub_eq, ← hb, ← ha, smul_smul, e3]
+      rw [this]
+      exact AffineMap.lineMap_mem_affineSpan_pair _ _ _
+- id: two_circles_at_most_two_common_points
+  kind: gap
+  level: high
+  topic: 2円・共有点の個数
+  statement: 平面上の相異なる2円が相異なる2点$A,B$を共有するとき、2円の共有点は$A,B$だけである。
+  statement_en: In a Euclidean plane, if two different circles share distinct points A and B, then every common point equals A or B.
+  assumptions:
+  - 点は平面上にある
+  - 2円は異なる
+  - $A\neq B$
+  - $A,B,Q$は2円の共有点である
+  quantifiers:
+  - 任意の2円と点$A,B,Q$
+  conclusion: $Q=A$または$Q=B$である。
+  answer: |
+    平面上の相異なる2円の中心を$O_1,O_2$、半径を$r_1,r_2$とし、相異なる点$A,B$と点$Q$がともに2円の共有点であるとする。
+    $O_1=O_2$なら、$A$までの距離から$r_1=r_2$となり2円は一致するので、$O_1\neq O_2$である。
+    共有点$Z$について$\|Z-O_1\|^2-r_1^2=\|Z-O_2\|^2-r_2^2$である。原点を固定して展開すると$2\langle Z,O_2-O_1\rangle$が定数に等しいという式になり、$O_2-O_1\neq0$なので、これは平面上の直線の方程式である。よって$A,B,Q$は1本の直線上にある。この直線は直線$AB$である。
+    直線上の点$A+t(B-A)$が第1の円の上にあることは$t(t-1)\|B-A\|^2=0$と同値なので、共有点は$t=0,1$に限る。よって$Q=A$または$Q=B$である。
+  strategy: Common points satisfy a linear equation, so they lie on a line, and a line meets a circle at most twice.
+  sketch:
+  - 'derive: Different circles through A have different centers.'
+  - 'derive: Subtracting the circle equations gives a linear equation for common points.'
+  - 'derive: So A, B, Q lie on one line.'
+  - 'conclude: The line AB meets a circle only at A and B.'
+  openmath: (forall (o1 r1 o2 r2 a b q) (-> (and (or (!= o1 o2) (!= r1 r2)) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle q o1 r1) (on_circle a o2 r2) (on_circle b o2 r2) (on_circle q o2 r2)) (or (= q a) (= q b))))
+  hard_negative:
+    statement: 3次元の相異なる2つの球面の共有点は高々2個である。
+    reason: 2つの球面は一般に円で交わるので、共有点は無限個ある。平面であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s₁ s₂ : EuclideanGeometry.Sphere P) (A B Q : P), s₁ ≠ s₂ → A ≠ B → A ∈ s₁ → B ∈ s₁ → Q ∈ s₁ → A ∈ s₂ → B ∈ s₂ → Q ∈ s₂ → Q = A ∨ Q = B
+  proof: |
+    by
+      intro V P _ _ _ _ _ s₁ s₂ A B Q hs hAB hA1 hB1 hQ1 hA2 hB2 hQ2
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      exact EuclideanGeometry.eq_of_mem_sphere_of_mem_sphere_of_finrank_eq_two Fact.out hs hAB hA1 hB1 hQ1 hA2 hB2 hQ2
+- id: externally_tangent_iff_center_distance
+  kind: textbook
+  level: high
+  topic: 2円・外接
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）が外接する（共有点$T$が線分$O_1O_2$上にある）ことと、$O_1O_2=r_1+r_2$かつ$r_1,r_2\geq0$は同値である。
+  statement_en: Two spheres (circles in the plane) with centers O1, O2 and radii r1, r2 are externally tangent, meaning that some common point lies on segment O1O2, if and only if |O1O2| = r1 + r2 and r1, r2 ≥ 0.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - 外接とは、共有点が線分$O_1O_2$上にあることである
+  quantifiers:
+  - 任意の2つの球面
+  conclusion: 外接することと、$O_1O_2=r_1+r_2$かつ$r_1,r_2\geq0$は同値である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとる。外接するとは、共有点$T$で線分$O_1O_2$上にあるものが存在することである。
+    外接するとき、$r_1=O_1T\geq0$、$r_2=O_2T\geq0$であり、$T$が線分上にあるので$O_1O_2=O_1T+TO_2=r_1+r_2$である。
+    逆に$O_1O_2=r_1+r_2$、$r_1,r_2\geq0$とする。$r_1+r_2=0$なら$r_1=r_2=0$、$O_1=O_2$であり、$T=O_1$が条件を満たす。$r_1+r_2>0$なら$T=O_1+\dfrac{r_1}{r_1+r_2}(O_2-O_1)$とおく。$T$は線分上にあり、$O_1T=r_1$、$O_2T=r_2$である。
+  strategy: Add distances along the segment, and conversely divide the segment in the ratio r1 to r2.
+  sketch:
+  - 'derive: A common point on the segment gives |O1O2| = r1 + r2.'
+  - 'construct: Conversely take the point dividing the segment in the ratio r1 to r2.'
+  - 'case_split: The case r1 + r2 = 0 is the point circle.'
+  - 'conclude: This point is a common point on the segment.'
+  openmath: (forall (o1 r1 o2 r2) (<-> (externally_tangent_circles o1 r1 o2 r2) (and (= (dist_of o1 o2) (+ r1 r2)) (>= r1 0) (>= r2 0))))
+  hard_negative:
+    statement: 共有点をもつ2円が$O_1O_2=|r_1-r_2|$を満たせば外接する。
+    reason: 半径$1,3$で中心間距離$2$の2円は共有点$T$をもつが、$T$は線分$O_1O_2$の外にあり、内接である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P), s₁.IsExtTangent s₂ ↔ dist s₁.center s₂.center = s₁.radius + s₂.radius ∧ 0 ≤ s₁.radius ∧ 0 ≤ s₂.radius
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂
+      exact EuclideanGeometry.Sphere.isExtTangent_iff_dist_center
+- id: internally_tangent_iff_center_distance
+  kind: textbook
+  level: high
+  topic: 2円・内接
+  statement: 実内積空間（$0$でない）上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）について、第1の球面が第2の球面に内接する（共有点$T$があり、$O_1$が線分$O_2T$上にある）ことと、$O_1O_2=r_2-r_1$かつ$r_1,r_2\geq0$は同値である。
+  statement_en: In a nonzero real inner product affine space, the sphere with center O1 and radius r1 is internally tangent to the sphere with center O2 and radius r2, meaning that some common point T has O1 on segment O2T, if and only if |O1O2| = r2 - r1 and r1, r2 ≥ 0.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にあり、空間は$0$でない
+  - 内接とは、共有点$T$について$O_1$が線分$O_2T$上にあることである
+  quantifiers:
+  - 任意の2つの球面
+  conclusion: 第1の球面が第2の球面に内接することと、$O_1O_2=r_2-r_1$かつ$r_1,r_2\geq0$は同値である。
+  answer: |
+    $0$でない実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとる。第1が第2に内接するとは、共有点$T$で$O_1$が線分$O_2T$上にあるものが存在することである。
+    内接するとき、$r_1,r_2\geq0$であり、$O_2T=O_2O_1+O_1T$より$O_1O_2=r_2-r_1$である。
+    逆に$O_1O_2=r_2-r_1$、$r_1,r_2\geq0$とする。$O_1=O_2$なら$r_1=r_2$で2つの球面は一致する。空間が$0$でないので単位ベクトル$e$があり、$T=O_1+r_1e$が条件を満たす。$O_1\neq O_2$なら$d=O_1O_2>0$として$T=O_2+\dfrac{r_2}{d}(O_1-O_2)$とおく。$O_2T=r_2$である。$r_2/d\geq1$なので$O_1$は線分$O_2T$上にあり、$O_1T=r_2-d=r_1$である。
+  strategy: Add distances along O2, O1, T, and conversely extend the ray from O2 through O1 to distance r2.
+  sketch:
+  - 'derive: A common point T with O1 on segment O2T gives |O1O2| = r2 - r1.'
+  - 'case_split: If O1 = O2 the spheres coincide and any point of them works.'
+  - 'construct: Otherwise extend the ray from O2 through O1 to distance r2.'
+  - 'conclude: That point lies on both spheres and has O1 on segment O2T.'
+  openmath: (forall (o1 r1 o2 r2) (<-> (internally_tangent_circles o1 r1 o2 r2) (and (= (dist_of o1 o2) (- r2 r1)) (>= r1 0) (>= r2 0))))
+  hard_negative:
+    statement: 半径の大小によらず、第1の球面が第2の球面に内接することと$O_1O_2=|r_1-r_2|$は同値である。
+    reason: $r_1=3$、$r_2=1$、$O_1O_2=2$では、内側にあるのは第2の球面であり、第1が第2に内接するのではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Nontrivial V] (s₁ s₂ : EuclideanGeometry.Sphere P), s₁.IsIntTangent s₂ ↔ dist s₁.center s₂.center = s₂.radius - s₁.radius ∧ 0 ≤ s₁.radius ∧ 0 ≤ s₂.radius
+  proof: |
+    by
+      intro V P _ _ _ _ _ s₁ s₂
+      exact EuclideanGeometry.Sphere.isIntTangent_iff_dist_center
+- id: externally_tangent_unique_common_point
+  kind: gap
+  level: high
+  topic: 2円・外接と共有点
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2>0$の2つの球面（平面なら2円）について、$O_1O_2=r_1+r_2$ならば共有点はただ1つである。
+  statement_en: If two spheres (circles in the plane) with radii r1, r2 > 0 have center distance r1 + r2, then they have exactly one common point.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $r_1>0$、$r_2>0$
+  - $O_1O_2=r_1+r_2$
+  quantifiers:
+  - 任意の2つの球面
+  conclusion: 共有点はただ1つである。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2>0$の2つの球面をとり、$d=O_1O_2=r_1+r_2$とする。$y=O_2-O_1$とおくと$\|y\|=d>0$である。
+    $T=O_1+\dfrac{r_1}{d}y$とおくと、$TO_1=r_1$、$TO_2=(1-r_1/d)d=r_2$なので、$T$は共有点である。
+    $Q$を共有点とし$x=Q-O_1$とおく。$\|x\|=r_1$、$\|y-x\|=r_2$より$\langle x,y\rangle=\tfrac12(r_1^2+d^2-r_2^2)=r_1(r_1+r_2)=\|x\|\|y\|$である。コーシー・シュワルツの不等式の等号条件より$\|y\|x=\|x\|y$、すなわち$x=\dfrac{r_1}{d}y$である。よって$Q=T$である。
+  strategy: A common point attains equality in Cauchy-Schwarz, which determines it.
+  sketch:
+  - 'construct: The point dividing the segment in the ratio r1 to r2 is a common point.'
+  - 'derive: For a common point Q, the inner product of Q-O1 and O2-O1 equals the product of norms.'
+  - 'apply_theorem: The equality case of Cauchy-Schwarz gives Q-O1 = (r1/d)(O2-O1).'
+  - 'conclude: Hence Q is that point.'
+  openmath: (forall (o1 r1 o2 r2) (-> (and (> r1 0) (> r2 0) (= (dist_of o1 o2) (+ r1 r2))) (exists (t) (and (on_circle t o1 r1) (on_circle t o2 r2) (forall (q) (-> (and (on_circle q o1 r1) (on_circle q o2 r2)) (= q t)))))))
+  hard_negative:
+    statement: $0<O_1O_2<r_1+r_2$ならば2円の共有点はただ1つである。
+    reason: 半径$1,1$で中心間距離$1$の2円は2点で交わる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P), 0 < s₁.radius → 0 < s₂.radius → dist s₁.center s₂.center = s₁.radius + s₂.radius → ∃! T : P, T ∈ s₁ ∧ T ∈ s₂
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ h1 h2 hd
+      obtain ⟨T, hT⟩ := EuclideanGeometry.Sphere.isExtTangent_iff_dist_center.mpr ⟨hd, h1.le, h2.le⟩
+      have key : ∀ Q : P, Q ∈ s₁ → Q ∈ s₂ → (s₁.radius + s₂.radius) • (Q -ᵥ s₁.center) = s₁.radius • (s₂.center -ᵥ s₁.center) := by
+        intro Q hQ1 hQ2
+        have nx : ‖Q -ᵥ s₁.center‖ = s₁.radius := by rw [← dist_eq_norm_vsub V]; exact hQ1
+        have ny : ‖s₂.center -ᵥ s₁.center‖ = s₁.radius + s₂.radius := by rw [← dist_eq_norm_vsub V, dist_comm]; exact hd
+        have nz : ‖(s₂.center -ᵥ s₁.center) - (Q -ᵥ s₁.center)‖ = s₂.radius := by
+          rw [vsub_sub_vsub_cancel_right, ← dist_eq_norm_vsub V, dist_comm]; exact hQ2
+        have hin : inner ℝ (Q -ᵥ s₁.center) (s₂.center -ᵥ s₁.center) = ‖Q -ᵥ s₁.center‖ * ‖s₂.center -ᵥ s₁.center‖ := by
+          have h3 := norm_sub_sq_real (s₂.center -ᵥ s₁.center) (Q -ᵥ s₁.center)
+          rw [nz, ny, nx, real_inner_comm] at h3
+          rw [ny, nx]
+          linear_combination (1 / 2) * h3
+        have h4 := inner_eq_norm_mul_iff_real.mp hin
+        rw [ny, nx] at h4
+        exact h4
+      refine ⟨T, ⟨hT.mem_left, hT.mem_right⟩, ?_⟩
+      rintro Q ⟨hQ1, hQ2⟩
+      have e := (key Q hQ1 hQ2).trans (key T hT.mem_left hT.mem_right).symm
+      have hne : s₁.radius + s₂.radius ≠ 0 := by positivity
+      have := smul_right_injective V hne e
+      exact vsub_left_injective _ this
+- id: internally_tangent_unique_common_point
+  kind: gap
+  level: high
+  topic: 2円・内接と共有点
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$0<r_1<r_2$の2つの球面（平面なら2円）について、$O_1O_2=r_2-r_1$ならば共有点はただ1つである。
+  statement_en: If two spheres (circles in the plane) with radii 0 < r1 < r2 have center distance r2 - r1, then they have exactly one common point.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $0<r_1<r_2$
+  - $O_1O_2=r_2-r_1$
+  quantifiers:
+  - 任意の2つの球面
+  conclusion: 共有点はただ1つである。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$0<r_1<r_2$の2つの球面をとり、$d=O_1O_2=r_2-r_1>0$とする。$y=O_1-O_2$とおくと$\|y\|=d$である。
+    $T=O_1+\dfrac{r_1}{d}y$とおくと、$TO_1=r_1$、$TO_2=(1+r_1/d)d=r_2$なので、$T$は共有点である。
+    $Q$を共有点とし$x=Q-O_1$とおく。$\|x\|=r_1$、$\|x+y\|=r_2$より$\langle x,y\rangle=\tfrac12(r_2^2-r_1^2-d^2)=r_1(r_2-r_1)=\|x\|\|y\|$である。コーシー・シュワルツの不等式の等号条件より$\|y\|x=\|x\|y$、すなわち$x=\dfrac{r_1}{d}y$である。よって$Q=T$である。
+  strategy: A common point attains equality in Cauchy-Schwarz, which determines it.
+  sketch:
+  - 'construct: The point on the ray from O2 through O1 at distance r2 is a common point.'
+  - 'derive: For a common point Q, the inner product of Q-O1 and O1-O2 equals the product of norms.'
+  - 'apply_theorem: The equality case of Cauchy-Schwarz gives Q-O1 = (r1/d)(O1-O2).'
+  - 'conclude: Hence Q is that point.'
+  openmath: (forall (o1 r1 o2 r2) (-> (and (> r1 0) (< r1 r2) (= (dist_of o1 o2) (- r2 r1))) (exists (t) (and (on_circle t o1 r1) (on_circle t o2 r2) (forall (q) (-> (and (on_circle q o1 r1) (on_circle q o2 r2)) (= q t)))))))
+  hard_negative:
+    statement: $r_1=r_2$で$O_1O_2=r_2-r_1$でも共有点はただ1つである。
+    reason: このとき$O_1=O_2$で2円は一致し、共有点は無限個ある。$r_1<r_2$が必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P), 0 < s₁.radius → s₁.radius < s₂.radius → dist s₁.center s₂.center = s₂.radius - s₁.radius → ∃! T : P, T ∈ s₁ ∧ T ∈ s₂
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ h1 h2 hd
+      have hd0 : s₂.radius - s₁.radius ≠ 0 := by linarith
+      haveI : Nontrivial V := by
+        refine ⟨⟨s₂.center -ᵥ s₁.center, 0, ?_⟩⟩
+        intro h
+        rw [vsub_eq_zero_iff_eq] at h
+        rw [h, dist_self] at hd
+        exact hd0 hd.symm
+      obtain ⟨T, hT⟩ := EuclideanGeometry.Sphere.isIntTangent_iff_dist_center.mpr ⟨hd, h1.le, by linarith⟩
+      have key : ∀ Q : P, Q ∈ s₁ → Q ∈ s₂ → (s₂.radius - s₁.radius) • (Q -ᵥ s₁.center) = s₁.radius • (s₁.center -ᵥ s₂.center) := by
+        intro Q hQ1 hQ2
+        have nx : ‖Q -ᵥ s₁.center‖ = s₁.radius := by rw [← dist_eq_norm_vsub V]; exact hQ1
+        have ny : ‖s₁.center -ᵥ s₂.center‖ = s₂.radius - s₁.radius := by rw [← dist_eq_norm_vsub V]; exact hd
+        have nz : ‖(Q -ᵥ s₁.center) + (s₁.center -ᵥ s₂.center)‖ = s₂.radius := by
+          rw [vsub_add_vsub_cancel, ← dist_eq_norm_vsub V]; exact hQ2
+        have hin : inner ℝ (Q -ᵥ s₁.center) (s₁.center -ᵥ s₂.center) = ‖Q -ᵥ s₁.center‖ * ‖s₁.center -ᵥ s₂.center‖ := by
+          have h3 := norm_add_sq_real (Q -ᵥ s₁.center) (s₁.center -ᵥ s₂.center)
+          rw [nz, ny, nx] at h3
+          rw [ny, nx]
+          linear_combination (-1 / 2) * h3
+        have h4 := inner_eq_norm_mul_iff_real.mp hin
+        rw [ny, nx] at h4
+        exact h4
+      refine ⟨T, ⟨hT.mem_left, hT.mem_right⟩, ?_⟩
+      rintro Q ⟨hQ1, hQ2⟩
+      have e := (key Q hQ1 hQ2).trans (key T hT.mem_left hT.mem_right).symm
+      have := smul_right_injective V hd0 e
+      exact vsub_left_injective _ this
+- id: common_tangent_at_contact_on_center_line
+  kind: gap
+  level: high
+  topic: 2円・接点での共通接線
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1>0,r_2$の2つの球面（平面なら2円）が直線$O_1O_2$上の点$T$を共有するとする。$X\neq T$で直線$TX$が第1の球面に$T$で接するならば、直線$TX$は第2の球面にも$T$で接する。
+  statement_en: If two spheres (circles in the plane) with centers O1, O2 and r1 > 0 share a point T on line O1O2, X ≠ T, and line TX is tangent to the first at T, then line TX is tangent to the second at T.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $r_1>0$
+  - $X\neq T$
+  - $T$は直線$O_1O_2$上にある
+  - $T$は第2の球面の上にある
+  - 直線$TX$は第1の球面に$T$で接する
+  quantifiers:
+  - 任意の2つの球面と点$T,X$
+  conclusion: 直線$TX$は第2の球面に$T$で接する。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1>0,r_2$の2つの球面をとる。$T$は直線$O_1O_2$上で第2の球面の上にあり、$X\neq T$、直線$TX$は第1の球面に$T$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    $w=O_2-O_1$とおくと、$T-O_1=kw$、$T-O_2=(k-1)w$となる実数$k$がある。$\|T-O_1\|=r_1>0$より$k\neq0$である。
+    直線$TX$上の点$U$について$\langle U-T,kw\rangle=\langle U-T,T-O_1\rangle=0$なので$\langle U-T,w\rangle=0$である。よって$\langle U-T,T-O_2\rangle=(k-1)\langle U-T,w\rangle=0$である。$T$は第2の球面の上にあるので、直線$TX$は第2の球面に$T$で接する。
+  strategy: Both radii at T are multiples of O2-O1, so orthogonality to one gives orthogonality to the other.
+  sketch:
+  - 'setup: Write T-O1 = kw and T-O2 = (k-1)w with w = O2-O1.'
+  - 'derive: r1 > 0 forces k ≠ 0.'
+  - 'derive: Tangency to the first sphere gives that U-T is orthogonal to w.'
+  - 'conclude: So U-T is orthogonal to T-O2.'
+  openmath: (forall (o1 r1 o2 r2 t x) (-> (and (> r1 0) (!= x t) (on_line t o1 o2) (on_circle t o2 r2) (tangent_to_circle_at t x o1 r1)) (tangent_to_circle_at t x o2 r2)))
+  hard_negative:
+    statement: 2円の任意の共有点$T$で、一方の接線は他方の接線でもある。
+    reason: 半径$1$で中心が$(0,0),(1,0)$の2円の共有点$(1/2,\sqrt3/2)$では、2本の接線は異なる。$T$が中心線上にあることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P) (T X : P), 0 < s₁.radius → X ≠ T → T ∈ line[ℝ, s₁.center, s₂.center] → T ∈ s₂ → s₁.IsTangentAt T line[ℝ, T, X] → s₂.IsTangentAt T line[ℝ, T, X]
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ T X hr _ hT hT2 ht
+      obtain ⟨k, hk⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hT
+      have hT1 : dist T s₁.center = s₁.radius := ht.mem_sphere
+      have h1 : T -ᵥ s₁.center = k • (s₂.center -ᵥ s₁.center) := by
+        rw [← hk, AffineMap.lineMap_vsub_left]
+      have h2 : T -ᵥ s₂.center = (k - 1) • (s₂.center -ᵥ s₁.center) := by
+        rw [← vsub_sub_vsub_cancel_right T s₂.center s₁.center, h1]
+        module
+      have hk0 : k ≠ 0 := by
+        rintro rfl
+        rw [zero_smul] at h1
+        rw [dist_eq_norm_vsub V, h1, norm_zero] at hT1
+        linarith
+      refine ⟨hT2, ht.mem_space, ?_⟩
+      intro Q hQ
+      have h3 := ht.inner_left_eq_zero_of_mem hQ
+      rw [h1, inner_smul_right] at h3
+      have h4 := (mul_eq_zero.mp h3).resolve_left hk0
+      refine EuclideanGeometry.Sphere.mem_orthRadius_iff_inner_left.mpr ?_
+      rw [h2, inner_smul_right, h4, mul_zero]
+- id: two_circles_common_point_triangle_inequality
+  kind: gap
+  level: high
+  topic: 2円・共有点と中心間距離
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）が共有点をもつならば、$|r_1-r_2|\leq O_1O_2\leq r_1+r_2$である。
+  statement_en: If two spheres (circles in the plane) with centers O1, O2 and radii r1, r2 have a common point, then |r1 - r2| ≤ |O1O2| ≤ r1 + r2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T$は2つの球面の共有点である
+  quantifiers:
+  - 任意の2つの球面と点$T$
+  conclusion: $|r_1-r_2|\leq O_1O_2\leq r_1+r_2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとり、$T$を共有点とする。$TO_1=r_1$、$TO_2=r_2$である。
+    三角不等式より$O_1O_2\leq O_1T+TO_2=r_1+r_2$である。また$r_1=TO_1\leq TO_2+O_2O_1=r_2+O_1O_2$であり、同様に$r_2\leq r_1+O_1O_2$である。後の2式は$|r_1-r_2|\leq O_1O_2$を意味する。
+  strategy: Apply the triangle inequality to the triangle with vertices O1, O2, T.
+  sketch:
+  - 'apply_theorem: The triangle inequality gives |O1O2| ≤ r1 + r2.'
+  - 'apply_theorem: It also gives r1 ≤ r2 + |O1O2| and r2 ≤ r1 + |O1O2|.'
+  - 'conclude: These are the stated bounds.'
+  openmath: (forall (o1 r1 o2 r2 t) (-> (and (on_circle t o1 r1) (on_circle t o2 r2)) (and (<= (abs (- r1 r2)) (dist_of o1 o2)) (<= (dist_of o1 o2) (+ r1 r2)))))
+  hard_negative:
+    statement: 2円が共有点をもてば$O_1O_2=r_1+r_2$である。
+    reason: 半径$1,1$で中心間距離$1$の2円は共有点をもつが、$O_1O_2\neq r_1+r_2$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P) (T : P), T ∈ s₁ → T ∈ s₂ → |s₁.radius - s₂.radius| ≤ dist s₁.center s₂.center ∧ dist s₁.center s₂.center ≤ s₁.radius + s₂.radius
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ T h1 h2
+      have e1 : dist T s₁.center = s₁.radius := h1
+      have e2 : dist T s₂.center = s₂.radius := h2
+      have t1 := dist_triangle_left s₁.center s₂.center T
+      have t2 := dist_triangle T s₁.center s₂.center
+      have t3 := dist_triangle T s₂.center s₁.center
+      rw [dist_comm s₂.center s₁.center] at t3
+      rw [e1, e2] at t1 t2 t3
+      refine ⟨abs_sub_le_iff.mpr ⟨by linarith, by linarith⟩, t1⟩
+- id: two_circles_common_point_exists_in_plane
+  kind: textbook
+  level: high
+  topic: 2円・共有点の存在
+  statement: 平面上で、中心$O_1\neq O_2$、半径$r_1,r_2>0$の2円について、$|r_1-r_2|\leq O_1O_2\leq r_1+r_2$ならば共有点が存在する。
+  statement_en: In a Euclidean plane, two circles with distinct centers O1, O2 and radii r1, r2 > 0 with |r1 - r2| ≤ |O1O2| ≤ r1 + r2 have a common point.
+  assumptions:
+  - 点は平面上にある
+  - $O_1\neq O_2$
+  - $r_1>0$、$r_2>0$
+  - $|r_1-r_2|\leq O_1O_2\leq r_1+r_2$
+  quantifiers:
+  - 任意の2円
+  conclusion: 2円の共有点が存在する。
+  answer: |
+    平面上で、中心$O_1\neq O_2$、半径$r_1,r_2>0$の2円をとり、$d=O_1O_2$は$|r_1-r_2|\leq d\leq r_1+r_2$を満たすとする。$y=O_2-O_1$とし、$y$を直角に回転したベクトルを$Jy$とする。$\|Jy\|=d$、$\langle y,Jy\rangle=0$である。
+    $a=\dfrac{d^2+r_1^2-r_2^2}{2d}$とおくと、$r_1^2-a^2=\dfrac{(r_1+r_2+d)(r_1+r_2-d)(d+r_1-r_2)(d-r_1+r_2)}{4d^2}\geq0$である。$b=\sqrt{r_1^2-a^2}$とおき、$T=O_1+\dfrac ad y+\dfrac bd Jy$とする。
+    直交性より$TO_1^2=a^2+b^2=r_1^2$であり、$TO_2^2=(a-d)^2+b^2=r_1^2-2ad+d^2=r_2^2$である。半径は正なので$T$は2円の共有点である。
+  strategy: Construct the common point explicitly from the projection a on the center line and the height b.
+  sketch:
+  - 'setup: Let y = O2-O1 and let Jy be its rotation by a right angle.'
+  - 'construct: Set a = (d^2+r1^2-r2^2)/(2d).'
+  - 'derive: The hypotheses make r1^2 - a^2 a nonnegative product over 4d^2.'
+  - 'construct: Let b be its square root and T = O1 + (a/d)y + (b/d)Jy.'
+  - 'conclude: The Pythagorean theorem gives |TO1| = r1 and |TO2| = r2.'
+  openmath: (forall (o1 r1 o2 r2) (-> (and (!= o1 o2) (> r1 0) (> r2 0) (<= (abs (- r1 r2)) (dist_of o1 o2)) (<= (dist_of o1 o2) (+ r1 r2))) (exists (t) (and (on_circle t o1 r1) (on_circle t o2 r2)))))
+  hard_negative:
+    statement: 直線上（1次元）でも、同じ不等式を満たす2つの「球面」は共有点をもつ。
+    reason: 直線上で中心$0,1$、半径$1,1$とすると、球面はそれぞれ$\{-1,1\}$と$\{0,2\}$で共有点がない。2次元以上であることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (s₁ s₂ : EuclideanGeometry.Sphere P), s₁.center ≠ s₂.center → 0 < s₁.radius → 0 < s₂.radius → |s₁.radius - s₂.radius| ≤ dist s₁.center s₂.center → dist s₁.center s₂.center ≤ s₁.radius + s₂.radius → ∃ T : P, T ∈ s₁ ∧ T ∈ s₂
+  proof: |
+    by
+      intro V P _ _ _ _ _ s₁ s₂ hc h1 h2 hle hge
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      let o : Orientation ℝ V (Fin 2) := Module.Oriented.positiveOrientation
+      obtain ⟨hl, hl'⟩ := abs_sub_le_iff.mp hle
+      set y := s₂.center -ᵥ s₁.center with hy
+      set d := dist s₁.center s₂.center with hdd
+      have hdn : ‖y‖ = d := by rw [hy, ← dist_eq_norm_vsub V, dist_comm]
+      have hd0 : 0 < d := dist_pos.mpr hc
+      set r₁ := s₁.radius
+      set r₂ := s₂.radius
+      set a := (d ^ 2 + r₁ ^ 2 - r₂ ^ 2) / (2 * d) with ha
+      have hprod : 0 ≤ (r₁ + r₂ + d) * (r₁ + r₂ - d) * (d + r₁ - r₂) * (d - r₁ + r₂) := by
+        have e1 : 0 ≤ r₁ + r₂ + d := by positivity
+        have e2 : 0 ≤ r₁ + r₂ - d := by linarith
+        have e3 : 0 ≤ d + r₁ - r₂ := by linarith
+        have e4 : 0 ≤ d - r₁ + r₂ := by linarith
+        positivity
+      have hh : r₁ ^ 2 - a ^ 2 = (r₁ + r₂ + d) * (r₁ + r₂ - d) * (d + r₁ - r₂) * (d - r₁ + r₂) / (4 * d ^ 2) := by
+        rw [ha]; field_simp; ring
+      have hh0 : 0 ≤ r₁ ^ 2 - a ^ 2 := by rw [hh]; positivity
+      set b := Real.sqrt (r₁ ^ 2 - a ^ 2) with hb
+      have hb2 : b ^ 2 = r₁ ^ 2 - a ^ 2 := Real.sq_sqrt hh0
+      have hnorm : ∀ α β : ℝ, ‖α • y + β • o.rightAngleRotation y‖ ^ 2 = (α ^ 2 + β ^ 2) * d ^ 2 := by
+        intro α β
+        rw [norm_add_sq_real, inner_smul_left, inner_smul_right, norm_smul, norm_smul, LinearIsometryEquiv.norm_map, hdn, real_inner_comm, o.inner_rightAngleRotation_self]
+        simp only [Real.norm_eq_abs, mul_pow, sq_abs]
+        simp
+        ring
+      refine ⟨((a / d) • y + (b / d) • o.rightAngleRotation y) +ᵥ s₁.center, ?_, ?_⟩
+      · refine EuclideanGeometry.mem_sphere.mpr ((sq_eq_sq₀ dist_nonneg h1.le).mp ?_)
+        rw [dist_eq_norm_vsub V, vadd_vsub, hnorm]
+        field_simp
+        linarith
+      · refine EuclideanGeometry.mem_sphere.mpr ((sq_eq_sq₀ dist_nonneg h2.le).mp ?_)
+        have e : (((a / d) • y + (b / d) • o.rightAngleRotation y) +ᵥ s₁.center) -ᵥ s₂.center = (a / d - 1) • y + (b / d) • o.rightAngleRotation y := by
+          rw [← vsub_sub_vsub_cancel_right _ s₂.center s₁.center, vadd_vsub, ← hy]
+          module
+        rw [dist_eq_norm_vsub V, e, hnorm]
+        have e2 : a * (2 * d) = d ^ 2 + r₁ ^ 2 - r₂ ^ 2 := by rw [ha]; field_simp
+        field_simp
+        nlinarith
+- id: common_tangent_bisected_by_common_chord
+  kind: gap
+  level: high
+  topic: 2円・共通接線と共通弦
+  statement: 実内積空間上のアフィン空間で、2つの球面（平面なら2円）が点$A,B$を共有し、直線$T_1T_2$（$T_1\neq T_2$）が第1の球面に$T_1$で、第2の球面に$T_2$で接するとする。直線$AB$と直線$T_1T_2$の共有点$H$は$T_1,T_2$の中点である。
+  statement_en: If two spheres (circles in the plane) share points A, B and line T1T2 with T1 ≠ T2 is tangent to the first at T1 and to the second at T2, then any common point H of lines AB and T1T2 is the midpoint of T1T2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T_1\neq T_2$
+  - 直線$T_1T_2$は第1の球面に$T_1$で、第2の球面に$T_2$で接する
+  - $A,B$は2つの球面の共有点である
+  - $H$は$A,B$のアフィン包と直線$T_1T_2$の両方に属する
+  quantifiers:
+  - 任意の2つの球面と点$A,B,T_1,T_2,H$
+  conclusion: $H$は$T_1,T_2$の中点である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとり、点$A,B$を共有するとする。$T_1\neq T_2$で、直線$T_1T_2$は第1の球面に$T_1$で、第2の球面に$T_2$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。$H$は$A,B$のアフィン包と直線$T_1T_2$の両方に属するとする。
+    $H$は接線上にあるので、三平方の定理より$HO_1^2=HT_1^2+r_1^2$である。$H=A+tu$、$u=B-A$と書き、$x=A-O_1$とおく。$\|x+u\|=\|x\|=r_1$より$2\langle x,u\rangle+\|u\|^2=0$なので、$HO_1^2-r_1^2=(t^2-t)\|u\|^2$である。一方$HA\cdot HB=|t^2-t|\|u\|^2$である。$HO_1^2-r_1^2=HT_1^2\geq0$なので、$HT_1^2=HA\cdot HB$である。同じ計算で$HT_2^2=HA\cdot HB$である。よって$HT_1=HT_2$である。
+    $H=T_1+s(T_2-T_1)$と書くと、$HT_1=|s|\,T_1T_2$、$HT_2=|1-s|\,T_1T_2$である。$T_1T_2>0$より$|s|=|1-s|$なので$s=1/2$である。すなわち$H$は中点である。
+  strategy: The tangent lengths from H to both spheres equal the square root of |HA||HB|.
+  sketch:
+  - 'apply_theorem: The tangent-secant theorem for each sphere gives |HT1|^2 = |HA||HB| = |HT2|^2.'
+  - 'setup: Write H = T1 + t(T2-T1).'
+  - 'derive: The equal distances give |t| = |1-t|.'
+  - 'conclude: So t = 1/2 and H is the midpoint.'
+  openmath: (forall (o1 r1 o2 r2 a b t1 t2 h) (-> (and (!= t1 t2) (tangent_to_circle_at t1 t2 o1 r1) (tangent_to_circle_at t2 t1 o2 r2) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle a o2 r2) (on_circle b o2 r2) (on_line h a b) (on_line h t1 t2)) (= h (midpoint_of t1 t2))))
+  hard_negative:
+    statement: 半径の異なる2円の共通接線は、中心線との交点で二等分される。
+    reason: 中心$(0,1),(4,2)$、半径$1,2$の2円の接線$y=0$では接点は$(0,0),(4,0)$だが、中心線は$(-4,0)$を通る。二等分するのは共通弦の直線である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P) (A B T₁ T₂ H : P), T₁ ≠ T₂ → s₁.IsTangentAt T₁ line[ℝ, T₁, T₂] → s₂.IsTangentAt T₂ line[ℝ, T₁, T₂] → A ∈ s₁ → B ∈ s₁ → A ∈ s₂ → B ∈ s₂ → H ∈ line[ℝ, A, B] → H ∈ line[ℝ, T₁, T₂] → H = midpoint ℝ T₁ T₂
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ A B T₁ T₂ H hT h1 h2 hA1 hB1 hA2 hB2 hH hHT
+      have t1 : s₁.IsTangentAt T₁ line[ℝ, H, T₁] :=
+        ⟨h1.mem_sphere, right_mem_affineSpan_pair ℝ H T₁, (affineSpan_pair_le_of_mem_of_mem hHT (left_mem_affineSpan_pair ℝ T₁ T₂)).trans h1.le_orthRadius⟩
+      have t2 : s₂.IsTangentAt T₂ line[ℝ, H, T₂] :=
+        ⟨h2.mem_sphere, right_mem_affineSpan_pair ℝ H T₂, (affineSpan_pair_le_of_mem_of_mem hHT (right_mem_affineSpan_pair ℝ T₁ T₂)).trans h2.le_orthRadius⟩
+      have e1 := EuclideanGeometry.Sphere.dist_sq_eq_mul_dist_of_tangent_and_secant hA1 hB1 hH t1
+      have e2 := EuclideanGeometry.Sphere.dist_sq_eq_mul_dist_of_tangent_and_secant hA2 hB2 hH t2
+      have heq : dist H T₁ = dist H T₂ := (sq_eq_sq₀ dist_nonneg dist_nonneg).mp (e1.trans e2.symm)
+      obtain ⟨t, ht⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hHT
+      rw [← ht, dist_lineMap_left, dist_lineMap_right] at heq
+      have hL : dist T₁ T₂ ≠ 0 := dist_ne_zero.mpr hT
+      have habs : ‖t‖ = ‖1 - t‖ := mul_right_cancel₀ hL heq
+      simp only [Real.norm_eq_abs] at habs
+      have ht12 : t = 1 / 2 := by
+        rcases abs_eq_abs.mp habs with h | h <;> linarith
+      rw [← ht, ht12]
+      simp [midpoint]
+- id: external_common_tangent_length
+  kind: gap
+  level: high
+  topic: 2円・共通外接線の長さ
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）に直線$T_1T_2$（$T_1\neq T_2$）が$T_1,T_2$で接し、$O_1,O_2$が直線の同じ側にある（どちらも直線上にない。3次元以上では、直線を境界とする同じ半平面にあることをいう）とき、$T_1T_2^2=O_1O_2^2-(r_1-r_2)^2$である。
+  statement_en: If line T1T2 with T1 ≠ T2 is tangent at T1 and T2 to spheres (circles in the plane) with centers O1, O2 and radii r1, r2, and O1, O2 lie strictly on the same side of the line, then |T1T2|^2 = |O1O2|^2 - (r1 - r2)^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T_1\neq T_2$
+  - 直線$T_1T_2$は第1の球面に$T_1$で、第2の球面に$T_2$で接する
+  - $O_1,O_2$は直線$T_1T_2$の同じ側にあり、直線上にない
+  quantifiers:
+  - 任意の2つの球面と点$T_1,T_2$
+  conclusion: $T_1T_2^2=O_1O_2^2-(r_1-r_2)^2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとり、$T_1\neq T_2$の直線$T_1T_2$が第1に$T_1$で、第2に$T_2$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。$O_1,O_2$は直線の同じ側にあるとする。これは、直線上の点$p_1,p_2$と$\alpha,\beta>0$があって$\alpha(O_1-p_1)=\beta(O_2-p_2)$となり、$O_1,O_2$が直線上にないことである。
+    $u=T_1-O_1$、$v=T_2-O_2$、$w=T_2-T_1\neq0$とおく。接することから$\langle w,u\rangle=\langle w,v\rangle=0$であり、$\|u\|=r_1$、$\|v\|=r_2$である。$T_1-p_1=aw$、$T_2-p_2=bw$と書くと、$O_1-p_1=aw-u$、$O_2-p_2=bw-v$である。
+    $\alpha(aw-u)=\beta(bw-v)$と$w$の内積をとると$(\alpha a-\beta b)\|w\|^2=0$なので$\alpha a=\beta b$であり、$\alpha u=\beta v$である。ノルムをとると$\alpha r_1=\beta r_2$である。$v$との内積をとると$\alpha\langle u,v\rangle=\beta r_2^2=\alpha r_1r_2$なので、$\langle u,v\rangle=r_1r_2$である。
+    $O_2-O_1=u+w-v$と直交性より、$O_1O_2^2=\|w\|^2+\|u-v\|^2=T_1T_2^2+r_1^2+r_2^2-2r_1r_2=T_1T_2^2+(r_1-r_2)^2$である。
+  strategy: Decompose O2-O1 into the tangent segment and the radii; on the same side the radii point the same way.
+  sketch:
+  - 'setup: Write u = T1-O1, v = T2-O2, w = T2-T1; then u and v are orthogonal to w.'
+  - 'translate: The same-side condition gives α(aw-u) = β(bw-v) with α, β > 0.'
+  - 'derive: The inner product with w gives αa = βb, hence αu = βv.'
+  - 'derive: So <u,v> = r1 r2.'
+  - 'conclude: Expanding O2-O1 = u+w-v gives the formula.'
+  openmath: (forall (o1 r1 o2 r2 t1 t2) (-> (and (!= t1 t2) (tangent_to_circle_at t1 t2 o1 r1) (tangent_to_circle_at t2 t1 o2 r2) (same_side_of_line o1 o2 t1 t2)) (= (^ (dist_of t1 t2) 2) (- (^ (dist_of o1 o2) 2) (^ (- r1 r2) 2)))))
+  hard_negative:
+    statement: $O_1,O_2$が接線の同じ側にあるとき$T_1T_2^2=O_1O_2^2-(r_1+r_2)^2$である。
+    reason: 中心$(0,1),(4,1)$、半径$1,1$、接線$y=0$では$T_1T_2^2=16$、右辺は$12$である。和の形は反対側にあるときの式である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P) (T₁ T₂ : P), T₁ ≠ T₂ → s₁.IsTangentAt T₁ line[ℝ, T₁, T₂] → s₂.IsTangentAt T₂ line[ℝ, T₁, T₂] → (line[ℝ, T₁, T₂]).SSameSide s₁.center s₂.center → dist T₁ T₂ ^ 2 = dist s₁.center s₂.center ^ 2 - (s₁.radius - s₂.radius) ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ T₁ T₂ hT h1 h2 hs
+      set u := T₁ -ᵥ s₁.center with hu
+      set v := T₂ -ᵥ s₂.center with hv
+      set w := T₂ -ᵥ T₁ with hw
+      have hw0 : w ≠ 0 := vsub_ne_zero.mpr hT.symm
+      have hw2 : ‖w‖ ^ 2 ≠ 0 := pow_ne_zero 2 (norm_ne_zero_iff.mpr hw0)
+      have iu : inner ℝ w u = 0 := h1.inner_left_eq_zero_of_mem (right_mem_affineSpan_pair ℝ T₁ T₂)
+      have iv : inner ℝ w v = 0 := by
+        have := h2.inner_left_eq_zero_of_mem (left_mem_affineSpan_pair ℝ T₁ T₂)
+        rw [← neg_vsub_eq_vsub_rev, inner_neg_left, neg_eq_zero] at this
+        exact this
+      have nu : ‖u‖ = s₁.radius := by rw [hu, ← dist_eq_norm_vsub V]; exact h1.mem_sphere
+      have nv : ‖v‖ = s₂.radius := by rw [hv, ← dist_eq_norm_vsub V]; exact h2.mem_sphere
+      obtain ⟨⟨p₁, hp₁, p₂, hp₂, hr⟩, hn1, hn2⟩ := hs
+      have hdir : ∀ {p q : P}, p ∈ line[ℝ, T₁, T₂] → q ∈ line[ℝ, T₁, T₂] → ∃ a : ℝ, a • w = p -ᵥ q := by
+        intro p q hp hq
+        have := AffineSubspace.vsub_mem_direction hp hq
+        rw [direction_affineSpan, mem_vectorSpan_pair_rev] at this
+        exact this
+      obtain ⟨a, ha⟩ := hdir (left_mem_affineSpan_pair ℝ T₁ T₂) hp₁
+      obtain ⟨b, hb⟩ := hdir (right_mem_affineSpan_pair ℝ T₁ T₂) hp₂
+      have hx : s₁.center -ᵥ p₁ ≠ 0 := vsub_ne_zero.mpr (fun h => hn1 (h ▸ hp₁))
+      have hy : s₂.center -ᵥ p₂ ≠ 0 := vsub_ne_zero.mpr (fun h => hn2 (h ▸ hp₂))
+      obtain ⟨α, β, hα, hβ, heq⟩ := hr.exists_pos hx hy
+      have xe : s₁.center -ᵥ p₁ = a • w - u := by rw [ha, hu, vsub_sub_vsub_cancel_left]
+      have ye : s₂.center -ᵥ p₂ = b • w - v := by rw [hb, hv, vsub_sub_vsub_cancel_left]
+      rw [xe, ye] at heq
+      have hab : α * a = β * b := by
+        have h3 := congrArg (inner ℝ w) heq
+        simp only [inner_smul_right, inner_sub_right, iu, iv, real_inner_self_eq_norm_sq] at h3
+        have : (α * a - β * b) * ‖w‖ ^ 2 = 0 := by linear_combination h3
+        have := (mul_eq_zero.mp this).resolve_right hw2
+        linarith
+      have huv : α • u = β • v := by
+        have : α • u - β • v = (α * a - β * b) • w := by
+          linear_combination (norm := module) -heq
+        rw [hab, sub_self, zero_smul] at this
+        exact sub_eq_zero.mp this
+      have hnorm : α * s₁.radius = β * s₂.radius := by
+        have := congrArg norm huv
+        rwa [norm_smul, norm_smul, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hα, abs_of_pos hβ, nu, nv] at this
+      have hin : α * inner ℝ u v = β * s₂.radius ^ 2 := by
+        have := congrArg (fun z => inner ℝ z v) huv
+        simp only [inner_smul_left, real_inner_self_eq_norm_sq, nv] at this
+        simpa using this
+      have huv' : inner ℝ u v = s₁.radius * s₂.radius := by
+        have : α * (inner ℝ u v - s₁.radius * s₂.radius) = 0 := by linear_combination hin - s₂.radius * hnorm
+        have := (mul_eq_zero.mp this).resolve_left hα.ne'
+        linarith
+      have hc : s₂.center -ᵥ s₁.center = u + w - v := by
+        rw [hu, hv, hw, add_comm, vsub_add_vsub_cancel, vsub_sub_vsub_cancel_left]
+      rw [dist_comm s₁.center, dist_eq_norm_vsub V s₂.center, dist_eq_norm_vsub V T₁ T₂, ← neg_vsub_eq_vsub_rev T₂ T₁, norm_neg, hc, norm_sub_sq_real, norm_add_sq_real, inner_add_left, real_inner_comm w u, iu, iv, huv', nu, nv]
+      ring
+- id: internal_common_tangent_length
+  kind: gap
+  level: high
+  topic: 2円・共通内接線の長さ
+  statement: 実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）に直線$T_1T_2$（$T_1\neq T_2$）が$T_1,T_2$で接し、$O_1,O_2$が直線の反対側にある（どちらも直線上にない。3次元以上では、直線を含む1つの平面で直線の両側にあることをいう）とき、$T_1T_2^2=O_1O_2^2-(r_1+r_2)^2$である。
+  statement_en: If line T1T2 with T1 ≠ T2 is tangent at T1 and T2 to spheres (circles in the plane) with centers O1, O2 and radii r1, r2, and O1, O2 lie strictly on opposite sides of the line, then |T1T2|^2 = |O1O2|^2 - (r1 + r2)^2.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - $T_1\neq T_2$
+  - 直線$T_1T_2$は第1の球面に$T_1$で、第2の球面に$T_2$で接する
+  - $O_1,O_2$は直線$T_1T_2$の反対側にあり、直線上にない
+  quantifiers:
+  - 任意の2つの球面と点$T_1,T_2$
+  conclusion: $T_1T_2^2=O_1O_2^2-(r_1+r_2)^2$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面をとり、$T_1\neq T_2$の直線$T_1T_2$が第1に$T_1$で、第2に$T_2$で接するとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。$O_1,O_2$は直線の反対側にあるとする。これは、直線上の点$p_1,p_2$と$\alpha,\beta>0$があって$\alpha(O_1-p_1)=\beta(p_2-O_2)$となり、$O_1,O_2$が直線上にないことである。
+    $u=T_1-O_1$、$v=T_2-O_2$、$w=T_2-T_1\neq0$とおく。接することから$\langle w,u\rangle=\langle w,v\rangle=0$であり、$\|u\|=r_1$、$\|v\|=r_2$である。$T_1-p_1=aw$、$T_2-p_2=bw$と書くと、$O_1-p_1=aw-u$、$p_2-O_2=v-bw$である。
+    $\alpha(aw-u)=\beta(v-bw)$と$w$の内積をとると$(\alpha a+\beta b)\|w\|^2=0$なので$\alpha a=-\beta b$であり、$-\alpha u=\beta v$である。ノルムをとると$\alpha r_1=\beta r_2$である。$v$との内積をとると$-\alpha\langle u,v\rangle=\beta r_2^2=\alpha r_1r_2$なので、$\langle u,v\rangle=-r_1r_2$である。
+    $O_2-O_1=u+w-v$と直交性より、$O_1O_2^2=\|w\|^2+\|u-v\|^2=T_1T_2^2+r_1^2+r_2^2+2r_1r_2=T_1T_2^2+(r_1+r_2)^2$である。
+  strategy: Decompose O2-O1 into the tangent segment and the radii; on opposite sides the radii point opposite ways.
+  sketch:
+  - 'setup: Write u = T1-O1, v = T2-O2, w = T2-T1; then u and v are orthogonal to w.'
+  - 'translate: The opposite-side condition gives α(aw-u) = β(v-bw) with α, β > 0.'
+  - 'derive: The inner product with w gives αa = -βb, hence -αu = βv.'
+  - 'derive: So <u,v> = -r1 r2.'
+  - 'conclude: Expanding O2-O1 = u+w-v gives the formula.'
+  openmath: (forall (o1 r1 o2 r2 t1 t2) (-> (and (!= t1 t2) (tangent_to_circle_at t1 t2 o1 r1) (tangent_to_circle_at t2 t1 o2 r2) (opposite_side_of_line o1 o2 t1 t2)) (= (^ (dist_of t1 t2) 2) (- (^ (dist_of o1 o2) 2) (^ (+ r1 r2) 2)))))
+  hard_negative:
+    statement: $O_1,O_2$が接線の反対側にあるとき$T_1T_2^2=O_1O_2^2-(r_1-r_2)^2$である。
+    reason: 中心$(0,1),(4,-1)$、半径$1,1$、接線$y=0$では$T_1T_2^2=16$、右辺は$20$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s₁ s₂ : EuclideanGeometry.Sphere P) (T₁ T₂ : P), T₁ ≠ T₂ → s₁.IsTangentAt T₁ line[ℝ, T₁, T₂] → s₂.IsTangentAt T₂ line[ℝ, T₁, T₂] → (line[ℝ, T₁, T₂]).SOppSide s₁.center s₂.center → dist T₁ T₂ ^ 2 = dist s₁.center s₂.center ^ 2 - (s₁.radius + s₂.radius) ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ s₁ s₂ T₁ T₂ hT h1 h2 hs
+      set u := T₁ -ᵥ s₁.center with hu
+      set v := T₂ -ᵥ s₂.center with hv
+      set w := T₂ -ᵥ T₁ with hw
+      have hw0 : w ≠ 0 := vsub_ne_zero.mpr hT.symm
+      have hw2 : ‖w‖ ^ 2 ≠ 0 := pow_ne_zero 2 (norm_ne_zero_iff.mpr hw0)
+      have iu : inner ℝ w u = 0 := h1.inner_left_eq_zero_of_mem (right_mem_affineSpan_pair ℝ T₁ T₂)
+      have iv : inner ℝ w v = 0 := by
+        have := h2.inner_left_eq_zero_of_mem (left_mem_affineSpan_pair ℝ T₁ T₂)
+        rw [← neg_vsub_eq_vsub_rev, inner_neg_left, neg_eq_zero] at this
+        exact this
+      have nu : ‖u‖ = s₁.radius := by rw [hu, ← dist_eq_norm_vsub V]; exact h1.mem_sphere
+      have nv : ‖v‖ = s₂.radius := by rw [hv, ← dist_eq_norm_vsub V]; exact h2.mem_sphere
+      obtain ⟨⟨p₁, hp₁, p₂, hp₂, hr⟩, hn1, hn2⟩ := hs
+      have hdir : ∀ {p q : P}, p ∈ line[ℝ, T₁, T₂] → q ∈ line[ℝ, T₁, T₂] → ∃ a : ℝ, a • w = p -ᵥ q := by
+        intro p q hp hq
+        have := AffineSubspace.vsub_mem_direction hp hq
+        rw [direction_affineSpan, mem_vectorSpan_pair_rev] at this
+        exact this
+      obtain ⟨a, ha⟩ := hdir (left_mem_affineSpan_pair ℝ T₁ T₂) hp₁
+      obtain ⟨b, hb⟩ := hdir (right_mem_affineSpan_pair ℝ T₁ T₂) hp₂
+      have hx : s₁.center -ᵥ p₁ ≠ 0 := vsub_ne_zero.mpr (fun h => hn1 (h ▸ hp₁))
+      have hy : p₂ -ᵥ s₂.center ≠ 0 := vsub_ne_zero.mpr (fun h => hn2 (h ▸ hp₂))
+      obtain ⟨α, β, hα, hβ, heq⟩ := hr.exists_pos hx hy
+      have xe : s₁.center -ᵥ p₁ = a • w - u := by rw [ha, hu, vsub_sub_vsub_cancel_left]
+      have ye : p₂ -ᵥ s₂.center = v - b • w := by rw [hb, hv, vsub_sub_vsub_cancel_left]
+      rw [xe, ye] at heq
+      have hab : α * a = -(β * b) := by
+        have h3 := congrArg (inner ℝ w) heq
+        simp only [inner_smul_right, inner_sub_right, iu, iv, real_inner_self_eq_norm_sq] at h3
+        have : (α * a + β * b) * ‖w‖ ^ 2 = 0 := by linear_combination h3
+        have := (mul_eq_zero.mp this).resolve_right hw2
+        linarith
+      have huv : -(α • u) = β • v := by
+        have : -(α • u) - β • v = -(α * a + β * b) • w := by
+          linear_combination (norm := module) heq
+        rw [hab, neg_add_cancel, neg_zero, zero_smul] at this
+        exact sub_eq_zero.mp this
+      have hnorm : α * s₁.radius = β * s₂.radius := by
+        have := congrArg norm huv
+        rwa [norm_neg, norm_smul, norm_smul, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hα, abs_of_pos hβ, nu, nv] at this
+      have hin : -(α * inner ℝ u v) = β * s₂.radius ^ 2 := by
+        have := congrArg (fun z => inner ℝ z v) huv
+        simp only [inner_neg_left, inner_smul_left, real_inner_self_eq_norm_sq, nv] at this
+        simpa using this
+      have huv' : inner ℝ u v = -(s₁.radius * s₂.radius) := by
+        have : α * (inner ℝ u v + s₁.radius * s₂.radius) = 0 := by linear_combination -hin + s₂.radius * hnorm
+        have := (mul_eq_zero.mp this).resolve_left hα.ne'
+        linarith
+      have hc : s₂.center -ᵥ s₁.center = u + w - v := by
+        rw [hu, hv, hw, add_comm, vsub_add_vsub_cancel, vsub_sub_vsub_cancel_left]
+      rw [dist_comm s₁.center, dist_eq_norm_vsub V s₂.center, dist_eq_norm_vsub V T₁ T₂, ← neg_vsub_eq_vsub_rev T₂ T₁, norm_neg, hc, norm_sub_sq_real, norm_add_sq_real, inner_add_left, real_inner_comm w u, iu, iv, huv', nu, nv]
+      ring
+- id: pitot_tangential_quadrilateral
+  kind: named
+  level: high
+  topic: 円・ピトーの定理
+  statement: 実内積空間上のアフィン空間で、球面（平面なら円）に四角形$ABCD$の4辺の直線が接し、接点$E,F,G,H$がそれぞれ線分$AB,BC,CD,DA$の上にあるとき、$AB+CD=BC+DA$である（ピトーの定理）。
+  statement_en: If the lines AB, BC, CD, DA are tangent to a sphere (a circle in the plane) at points E, F, G, H lying on the segments AB, BC, CD, DA respectively, then |AB| + |CD| = |BC| + |DA|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - 直線$AB,BC,CD,DA$はそれぞれ$E,F,G,H$で接する
+  - $E,F,G,H$はそれぞれ線分$AB,BC,CD,DA$の上にある
+  quantifiers:
+  - 任意の球面と点$A,B,C,D,E,F,G,H$
+  conclusion: $AB+CD=BC+DA$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面をとる。直線$AB,BC,CD,DA$はそれぞれ$E,F,G,H$で接し、$E,F,G,H$はそれぞれ線分$AB,BC,CD,DA$の上にあるとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    接線上の点$U$と接点$T$について、三平方の定理より$UO^2=UT^2+r^2$である。$A$は$E,H$での接線の上にあるので$AE^2=AO^2-r^2=AH^2$、すなわち$AE=AH$である。同様に$BE=BF$、$CF=CG$、$DG=DH$である。
+    接点は辺の上にあるので$AB=AE+EB$、$BC=BF+FC$、$CD=CG+GD$、$DA=DH+HA$である。よって$AB+CD=AE+EB+CG+GD=AH+BF+CF+DH=(BF+FC)+(DH+HA)=BC+DA$である。
+  strategy: Group the four sides into pairs of equal tangent segments from each vertex.
+  sketch:
+  - 'derive: The Pythagorean theorem gives equal tangent lengths from each vertex.'
+  - 'derive: Each side is the sum of two tangent segments because the contact points lie on the sides.'
+  - 'conclude: Regrouping gives |AB|+|CD| = |BC|+|DA|.'
+  openmath: (forall (o r a b c d e f g h) (-> (and (line_tangent_to_circle_at a b e o r) (line_tangent_to_circle_at b c f o r) (line_tangent_to_circle_at c d g o r) (line_tangent_to_circle_at d a h o r) (weakly_between a e b) (weakly_between b f c) (weakly_between c g d) (weakly_between d h a)) (= (+ (dist_of a b) (dist_of c d)) (+ (dist_of b c) (dist_of d a)))))
+  hard_negative:
+    statement: 任意の凸四角形で$AB+CD=BC+DA$である。
+    reason: 辺の長さが$1,2$の長方形では左辺が$2$、右辺が$4$である。内接円があることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B C D E F G H : P), s.IsTangentAt E line[ℝ, A, B] → s.IsTangentAt F line[ℝ, B, C] → s.IsTangentAt G line[ℝ, C, D] → s.IsTangentAt H line[ℝ, D, A] → Wbtw ℝ A E B → Wbtw ℝ B F C → Wbtw ℝ C G D → Wbtw ℝ D H A → dist A B + dist C D = dist B C + dist D A
+  proof: |
+    by
+      intro V P _ _ _ _ s A B C D E F G H h1 h2 h3 h4 w1 w2 w3 w4
+      have e1 := h1.dist_eq_of_mem_of_mem h4 (left_mem_affineSpan_pair ℝ A B) (right_mem_affineSpan_pair ℝ D A)
+      have e2 := h1.dist_eq_of_mem_of_mem h2 (right_mem_affineSpan_pair ℝ A B) (left_mem_affineSpan_pair ℝ B C)
+      have e3 := h2.dist_eq_of_mem_of_mem h3 (right_mem_affineSpan_pair ℝ B C) (left_mem_affineSpan_pair ℝ C D)
+      have e4 := h3.dist_eq_of_mem_of_mem h4 (right_mem_affineSpan_pair ℝ C D) (left_mem_affineSpan_pair ℝ D A)
+      have d1 := w1.dist_add_dist
+      have d2 := w2.dist_add_dist
+      have d3 := w3.dist_add_dist
+      have d4 := w4.dist_add_dist
+      rw [dist_comm E B] at d1
+      rw [dist_comm F C] at d2
+      rw [dist_comm G D] at d3
+      rw [dist_comm H A] at d4
+      linarith
+- id: triangle_incircle_tangent_length
+  kind: gap
+  level: high
+  topic: 円・内接円の接点までの長さ
+  statement: 実内積空間上のアフィン空間で、球面（平面なら円）に三角形$ABC$の3辺の直線$BC,CA,AB$が$D,E,F$で接し、接点がそれぞれ線分$BC,CA,AB$の上にあるとき、$2AF=AB+AC-BC$である。
+  statement_en: If lines BC, CA, AB are tangent to a sphere (a circle in the plane) at points D, E, F lying on the segments BC, CA, AB, then 2|AF| = |AB| + |AC| - |BC|.
+  assumptions:
+  - 点は実内積空間上のアフィン空間にある
+  - 直線$BC,CA,AB$はそれぞれ$D,E,F$で接する
+  - $D,E,F$はそれぞれ線分$BC,CA,AB$の上にある
+  quantifiers:
+  - 任意の球面と点$A,B,C,D,E,F$
+  conclusion: $2AF=AB+AC-BC$である。
+  answer: |
+    実内積空間上のアフィン空間で、中心$O$、半径$r$の球面をとる。直線$BC,CA,AB$はそれぞれ$D,E,F$で接し、$D,E,F$はそれぞれ線分$BC,CA,AB$の上にあるとする。ここで直線が中心$O'$の球面（平面なら円）に、その上の点$Z$で接するとは、直線上の任意の点$U$について$\langle U-Z,Z-O'\rangle=0$となることである。
+    接線上の点$U$と接点$T$について$UO^2=UT^2+r^2$なので、同じ点からの接線の長さは等しい。よって$AF=AE$、$BF=BD$、$CD=CE$である。
+    接点は辺の上にあるので、$AB+AC-BC=(AF+FB)+(AE+EC)-(BD+DC)=2AF+(BF-BD)+(CE-CD)=2AF$である。
+  strategy: Substitute equal tangent lengths into the sum of the sides.
+  sketch:
+  - 'derive: Equal tangent lengths give |AF| = |AE|, |BF| = |BD| and |CD| = |CE|.'
+  - 'derive: Each side splits at its contact point.'
+  - 'conclude: Substituting gives |AB|+|AC|-|BC| = 2|AF|.'
+  openmath: (forall (o r a b c d e f) (-> (and (line_tangent_to_circle_at b c d o r) (line_tangent_to_circle_at c a e o r) (line_tangent_to_circle_at a b f o r) (weakly_between b d c) (weakly_between c e a) (weakly_between a f b)) (= (* 2 (dist_of a f)) (- (+ (dist_of a b) (dist_of a c)) (dist_of b c)))))
+  hard_negative:
+    statement: 同じ設定で$2AF=AB+BC-AC$である。
+    reason: $AB=3$、$AC=4$、$BC=5$の直角三角形では$AF=1$で、右辺は$4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (s : EuclideanGeometry.Sphere P) (A B C D E F : P), s.IsTangentAt D line[ℝ, B, C] → s.IsTangentAt E line[ℝ, C, A] → s.IsTangentAt F line[ℝ, A, B] → Wbtw ℝ B D C → Wbtw ℝ C E A → Wbtw ℝ A F B → 2 * dist A F = dist A B + dist A C - dist B C
+  proof: |
+    by
+      intro V P _ _ _ _ s A B C D E F h1 h2 h3 w1 w2 w3
+      have e1 := h3.dist_eq_of_mem_of_mem h2 (left_mem_affineSpan_pair ℝ A B) (right_mem_affineSpan_pair ℝ C A)
+      have e2 := h3.dist_eq_of_mem_of_mem h1 (right_mem_affineSpan_pair ℝ A B) (left_mem_affineSpan_pair ℝ B C)
+      have e3 := h1.dist_eq_of_mem_of_mem h2 (right_mem_affineSpan_pair ℝ B C) (left_mem_affineSpan_pair ℝ C A)
+      have d1 := w1.dist_add_dist
+      have d2 := w2.dist_add_dist
+      have d3 := w3.dist_add_dist
+      rw [dist_comm D C] at d1
+      rw [dist_comm E A] at d2
+      rw [dist_comm F B] at d3
+      rw [dist_comm C A] at d2
+      linarith
