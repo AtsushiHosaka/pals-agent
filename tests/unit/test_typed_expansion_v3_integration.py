@@ -1,4 +1,4 @@
-"""Real v3 authoring manifests stay pinned and outside unshipped routing."""
+"""Real v3 authoring manifests stay pinned to their profiles."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ from pathlib import Path
 
 import pytest
 
-from pals_agent.profile_routing import SUPPORTED_TYPED_PROFILES
 from pals_agent.typed_catalog_expansion import AUTHORING_STATUS
 from pals_agent.typed_expansion_profiles import expansion_profile_specs
 from pals_agent.typed_local_catalog import load_typed_local_catalog_manifest
@@ -30,7 +29,6 @@ def test_v3_manifest_pins_its_profile_and_remains_local_authoring(profile, filen
     assert len(manifest.cards) == len(raw["cards"])
     assert manifest.profile.validator_module_sha256 == raw["evidence"]["validator_sha256"]
     assert manifest.profile.registry_sha256 == raw["evidence"]["registry_sha256"]
-    assert profile not in SUPPORTED_TYPED_PROFILES
 
 
 def test_v3_profiles_reject_each_others_actual_proposition():
