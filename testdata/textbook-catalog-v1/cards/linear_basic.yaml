@@ -912,7 +912,7 @@
   - 'apply_theorem: So A has a two-sided inverse.'
   - 'derive: Left multiplication by A^{-1} gives B = A^{-1}.'
   - 'conclude: Hence BA = I.'
-  openmath: (forall (A B) (-> (= (matrix_mul A B) identity_matrix) (= (matrix_mul B A) identity_matrix)))
+  openmath: (forall (K A B) (-> (and (matrix_over_field A K) (matrix_over_field B K) (= (matrix_row_count A) (matrix_column_count A)) (= (matrix_row_count B) (matrix_row_count A)) (= (matrix_column_count B) (matrix_row_count A)) (= (matrix_mul A B) identity_matrix)) (= (matrix_mul B A) identity_matrix)))
   hard_negative:
     statement: 長方形行列でもAB=IならBA=Iである。
     reason: A=(1 0), B=(1 0)^Tとすると、AB=(1)だがBAは2次の単位行列でない。
@@ -1132,7 +1132,7 @@
   - 'derive: Using a_nn, clear the rest of the last row and column.'
   - 'apply_theorem: Apply the induction hypothesis to the remaining block of order n - 1.'
   - 'conclude: Products of the operations give LAL'' = D.'
-  openmath: (forall (K A) (-> (matrix_over_field A K) (exists (L M D) (and (row_addition_product L) (row_addition_product M) (diagonal_matrix D) (= (matrix_mul (matrix_mul L A) M) D)))))
+  openmath: (forall (K A) (-> (matrix_over_field A K) (exists (L M D) (and (transvection_product L) (transvection_product M) (diagonal_matrix D) (= (matrix_mul (matrix_mul L A) M) D)))))
   hard_negative:
     statement: 行の基本変形だけで任意の正方行列を対角行列にできる。
     reason: 行変形は行空間を変えない。第1行が(1,1)で第2行が0の行列の行空間は(1,1)で張られるが、対角行列の行空間は座標ベクトルで張られるので一致しない。
@@ -1743,7 +1743,7 @@
   openmath: (forall (v) (= (matrix_det (vandermonde_matrix v)) (vandermonde_difference_product v)))
   hard_negative:
     statement: ファンデルモンドの行列式はΠ_{i<j}(v_i+v_j)である。
-    reason: v_1=v_2のとき2行が等しいので行列式は0だが、v_1=v_2=1でn=2なら和の積は2である。
+    reason: 有理数体では成り立たない。n=2, v=(1,2)とすると行列式は2-1=1だが、積は1+2=3である。標数2では$v_j-v_i=v_j+v_i$となり両者は一致するので、反例には体を指定する必要がある。
   target: |
     ∀ (K : Type*) [Field K] (n : ℕ) (v : Fin n → K), (Matrix.vandermonde v).det = ∏ i, ∏ j ∈ Finset.Ioi i, (v j - v i)
   proof: |

@@ -65,8 +65,8 @@
   - 'conclude: Two distinct lines share at most one point, so p = G.'
   openmath: (forall (a b c p) (-> (not (collinear_points a b c)) (and (on_line (centroid_of a b c) a (midpoint_of b c)) (-> (and (on_line p a (midpoint_of b c)) (on_line p b (midpoint_of c a)) (on_line p c (midpoint_of a b))) (= p (centroid_of a b c))))))
   hard_negative:
-    statement: 中線を含む直線のうち2本だけの上にある点は、三角形の頂点になることがある。
-    reason: 2本の中線の共有点は重心だけであり、頂点$A$は直線$BM$の上にない。$A$が直線$BM$上にあれば、$M$が辺$CA$の中点なので$C$も直線$AB$上にあることになる。
+    statement: 三角形の各頂点と対辺上の任意の点を結ぶ3本の直線は、いつでも1点で交わる。
+    reason: $A=(0,0)$、$B=(1,0)$、$C=(0,1)$、$D=BC$の中点、$E=CA$の中点、$F=(3/4,0)$とする。直線$AD$と$BE$は$(1/3,1/3)$で交わるが、直線$CF$は$x=1/3$で$y=5/9\neq 1/3$なので、この点を通らない。共点になるには中点（一般にはチェバの条件）が要る。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (p : P), (∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → t.centroid ∈ line[ℝ, t.points i, midpoint ℝ (t.points j) (t.points k)]) ∧ ((∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → p ∈ line[ℝ, t.points i, midpoint ℝ (t.points j) (t.points k)]) → p = t.centroid)
   proof: |
@@ -174,14 +174,14 @@
   kind: textbook
   level: high
   topic: 三角形の五心・外心
-  statement: 三角形の外心$O$と外接円の半径$R$について、$OA=OB=OC=R$であり、$O$は各辺の垂直二等分線の上にある。
+  statement: 三角形$ABC$の外心を$O$、外接円の半径を$R$とすると、$OA=OB=OC=R$であり、$O$は各2頂点を結ぶ線分の垂直二等分線（空間では垂直二等分面）の上にある。
   statement_en: The circumcenter O of a triangle with circumradius R satisfies OA = OB = OC = R and lies on the perpendicular bisector of each pair of vertices.
   assumptions:
   - $A,B,C$は同一直線上にない3点
   - $O$は三角形$ABC$の外心
   - $R$は外接円の半径
   quantifiers: *id001
-  conclusion: $OA=OB=OC=R$であり、$O$は3辺の垂直二等分線上にある。
+  conclusion: $OA=OB=OC=R$であり、$O$は3組の2頂点の垂直二等分線（面）上にある。
   answer: |
     $A,B,C$を同一直線上にない3点、$O$を三角形$ABC$の外接円の中心、$R$をその半径とする。$A,B,C$は外接円の上にあるので$OA=OB=OC=R$である。2点から等距離にある点の集合はその2点を結ぶ線分の垂直二等分線（空間では垂直二等分面）である。$OA=OB$より$O$は$A,B$の垂直二等分線の上にあり、$B,C$と$C,A$についても同じである。
   strategy: Read off the equal distances from the definition of the circumcircle and use the distance characterisation of the bisector.
@@ -1063,7 +1063,7 @@
   - 'construct: Define H by OH = a + b + c.'
   - 'derive: AH·BC = |c|² - |b|² = 0, and cyclically.'
   - 'conclude: H lies on all three altitudes, which therefore concur.'
-  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (inner_product (- (orthocenter_of a b c) a) (- b c)) 0)))
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (on_line (orthocenter_of a b c) a (altitude_foot a b c)) (= (inner_product (- (orthocenter_of a b c) a) (- b c)) 0))))
   hard_negative:
     statement: 垂心は常に三角形の内部にある。
     reason: 鈍角三角形では垂心は外部にあり、直角三角形では直角の頂点に一致する。
@@ -1600,13 +1600,16 @@
   kind: gap
   level: high
   topic: 三角形の五心・九点円の中心と半径
-  statement: 三角形の3辺の中点を通る円（九点円）の中心は外心$O$と垂心$H$を結ぶ線分の中点であり、半径は外接円の半径$R$の$\frac{1}{2}$である。
-  statement_en: The center of the nine-point circle of a triangle is the midpoint of the circumcenter and the orthocenter, and its radius is half the circumradius.
+  statement: 三角形$ABC$の平面上に中心をもち、3辺の中点を通る円は、中心が外心$O$と垂心$H$を結ぶ線分の中点で、半径が外接円の半径$R$の$\frac{1}{2}$である（九点円の中心と半径）。
+  statement_en: Let S be a sphere (circle in the plane) whose centre lies in the plane of triangle ABC and which passes through the midpoints of the three sides. Then its centre is the midpoint of the circumcenter O and the orthocenter H, and its radius is R/2 where R is the circumradius.
   assumptions:
   - $A,B,C$は同一直線上にない3点
+  - 円（球面）$S$の中心は平面$ABC$上にある
+  - $S$は3辺$BC,CA,AB$の中点を通る
   - $O,H,R$は外心、垂心、外接円の半径
-  quantifiers: *id001
-  conclusion: 九点円の中心は$OH$の中点、半径は$\frac{R}{2}$である。
+  quantifiers:
+  - 任意の三角形$ABC$と、3辺の中点を通り中心が平面$ABC$上にある円$S$
+  conclusion: $S$の中心は$OH$の中点で、半径は$\frac{R}{2}$である。
   answer: |
     $A,B,C$を同一直線上にない3点、$O$を外心、$R$を外接円の半径、$H$を垂心とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。$OH$の中点$N$は$\overrightarrow{ON}=\frac{1}{2}(\vec a+\vec b+\vec c)$を満たす。辺$BC$の中点$M$について$\overrightarrow{NM}=\frac{1}{2}(\vec b+\vec c)-\overrightarrow{ON}=-\frac{1}{2}\vec a$なので$NM=\frac{R}{2}$であり、他の2辺の中点でも同じである。$N$は平面$ABC$上にある。3辺の中点は同一直線上になく、同じ平面上でこの3点から等距離にある点はただ1つなので、3点を通る円の中心は$N$で、半径は$\frac{R}{2}$である。
   strategy: Check that the midpoint of OH is at distance R/2 from each side midpoint, then use uniqueness of the circle.
@@ -1615,24 +1618,45 @@
   - 'derive: The side midpoint opposite A satisfies NM = -OA/2, so NM = R/2.'
   - 'derive: The same holds for the other side midpoints.'
   - 'conclude: N is in the plane of the triangle and is the unique centre of the circle through the three midpoints.'
-  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (nine_point_center a b c) (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c))) (= (nine_point_radius a b c) (/ (circumradius_of a b c) 2)))))
+  openmath: (forall (a b c o r) (-> (and (not (collinear_points a b c)) (on_plane o a b c) (on_circle (midpoint_of b c) o r) (on_circle (midpoint_of c a) o r) (on_circle (midpoint_of a b) o r)) (and (= o (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c))) (= r (/ (circumradius_of a b c) 2)))))
   hard_negative:
     statement: 九点円の中心は重心である。
     reason: 中心は$OH$の中点で、$\overrightarrow{OG}=\frac{1}{3}\overrightarrow{OH}$なので、$O\neq H$なら重心とは異なる。
   target: |
-    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P), t.ninePointCircle.center = midpoint ℝ t.circumcenter t.orthocenter ∧ t.ninePointCircle.radius = t.circumradius / 2
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (S : EuclideanGeometry.Sphere P), S.center ∈ affineSpan ℝ (Set.range t.points) → (∀ j k : Fin 3, j ≠ k → midpoint ℝ (t.points j) (t.points k) ∈ S) → S.center = midpoint ℝ t.circumcenter t.orthocenter ∧ S.radius = t.circumradius / 2
   proof: |
     by
-      intro V P _ _ _ _ t
-      refine ⟨?_, ?_⟩
-      · apply vsub_left_injective t.circumcenter |>.eq_iff.mp
-        rw [t.ninePointCircle_center, vadd_vsub, midpoint_vsub]
-        have : t.orthocenter -ᵥ t.circumcenter = (3 : ℝ) • (t.centroid -ᵥ t.circumcenter) := by
-          conv_lhs => rw [t.orthocenter_eq_smul_vsub_vadd_circumcenter, vadd_vsub]
-        rw [this, vsub_self, smul_zero, zero_add, smul_smul]
+      intro V P _ _ _ _ t S hc hm
+      have hmid : ∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → t.faceOppositeCentroid i = midpoint ℝ (t.points j) (t.points k) := by
+        intro i j k hij hik hjk
+        rw [Affine.Simplex.faceOppositeCentroid_eq_affineCombination]
+        have hs : ({i}ᶜ : Finset (Fin 3)) = {j, k} := by
+          fin_cases i <;> fin_cases j <;> fin_cases k <;> simp_all <;> decide
+        rw [hs, Finset.affineCombination_eq_weightedVSubOfPoint_vadd_of_sum_eq_one _ _ _ (by rw [Finset.sum_pair hjk]; norm_num) (t.points j), Finset.weightedVSubOfPoint_apply, Finset.sum_pair hjk]
+        simp [midpoint, AffineMap.lineMap_apply]
+      have hS : S = t.medial.circumsphere := by
+        apply (t.medial.circumsphere_unique_dist_eq).2 S
+        constructor
+        · rw [Affine.Simplex.affineSpan_range_medial]; exact hc
+        · rw [Set.range_subset_iff]
+          intro i
+          rw [Affine.Simplex.medial_points]
+          have hi : i = 0 ∨ i = 1 ∨ i = 2 := by fin_cases i <;> simp
+          rcases hi with rfl | rfl | rfl
+          · rw [hmid 0 1 2 (by decide) (by decide) (by decide)]; exact hm 1 2 (by decide)
+          · rw [hmid 1 0 2 (by decide) (by decide) (by decide)]; exact hm 0 2 (by decide)
+          · rw [hmid 2 0 1 (by decide) (by decide) (by decide)]; exact hm 0 1 (by decide)
+      have hN : S = t.ninePointCircle := by
+        rw [hS, ← Affine.Simplex.ninePointCircle_eq_circumsphere_medial]
+      rw [hN]
+      constructor
+      · rw [Affine.Simplex.ninePointCircle_center, Affine.Triangle.orthocenter_eq_smul_vsub_vadd_circumcenter]
+        rw [midpoint, AffineMap.lineMap_apply]
+        simp [Affine.Simplex.centroid]
+        rw [smul_smul]
+        congr 1
         norm_num
-      · rw [t.ninePointCircle_radius]
-        norm_num
+      · rw [Affine.Simplex.ninePointCircle_radius]; norm_num
 - id: menelaus_theorem
   kind: named
   level: high
@@ -1656,7 +1680,7 @@
   - 'translate: Collinearity gives FD = p v and FE = q v, hence two scalar equations.'
   - 'derive: Not both p and q vanish, so (1-r-t)(1-s) + rt = 0.'
   - 'conclude: Expanding gives rst + (1-r)(1-s)(1-t) = 0.'
-  openmath: (forall (a b c r s t) (-> (and (not (collinear_points a b c)) (collinear_points (+ (* (- 1 r) b) (* r c)) (+ (* (- 1 s) c) (* s a)) (+ (* (- 1 t) a) (* t b)))) (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t))))))
+  openmath: (forall (a b c r s t) (-> (and (not (collinear_points a b c)) (collinear_points (division_point b c r) (division_point c a s) (division_point a b t))) (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t))))))
   hard_negative:
     statement: $D,E,F$が同一直線上にあるなら$rst=(1-r)(1-s)(1-t)$である。
     reason: 符号が逆で、その式はチェバの定理の形である。$r=2$、$s=\frac{1}{2}$、$t=\frac{1}{3}$では$rst=-(1-r)(1-s)(1-t)$が成り立つので$D,E,F$は同一直線上にあるが、$rst=\frac{1}{3}$、$(1-r)(1-s)(1-t)=-\frac{1}{3}$である。
@@ -1751,7 +1775,7 @@
   - 'case_split: Treat t ≠ 0, then t = 0 with s = 1, then t = 0 with s ≠ 1.'
   - 'derive: In each case FD and FE are multiples of one vector.'
   - 'conclude: D, E, F are collinear.'
-  openmath: (forall (a b c r s t) (-> (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t)))) (collinear_points (+ (* (- 1 r) b) (* r c)) (+ (* (- 1 s) c) (* s a)) (+ (* (- 1 t) a) (* t b)))))
+  openmath: (forall (a b c r s t) (-> (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t)))) (collinear_points (division_point b c r) (division_point c a s) (division_point a b t))))
   hard_negative:
     statement: 符号なしの比で$\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$なら$D,E,F$は同一直線上にある。
     reason: 長さの比では符号の情報が失われる。3辺の中点ではこの積が$1$だが、3点は同一直線上にない。
@@ -1968,10 +1992,10 @@
   - 'contradiction: If any of λ, α, γ vanishes, then one of r, s, t vanishes.'
   - 'derive: Hence none of r, s, t equals 1.'
   - 'conclude: Multiplying and cancelling λαγ gives the product 1.'
-  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (!= r 0) (!= s 0) (!= t 0) (on_line p a (+ (* (- 1 r) b) (* r c))) (on_line p b (+ (* (- 1 s) c) (* s a))) (on_line p c (+ (* (- 1 t) a) (* t b)))) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1)))
+  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (!= r 0) (!= s 0) (!= t 0) (on_line p a (division_point b c r)) (on_line p b (division_point c a s)) (on_line p c (division_point a b t))) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1)))
   hard_negative:
-    statement: $r,s,t$に$0$が含まれていても積は$1$である。
-    reason: $t=0$なら$F=A$であり、$s=1$なら$E=A$である。このとき$p=A$は任意の$r$で3直線の上にあるが、$s=1$では$\frac{s}{1-s}$の分母が$0$になり、積は定まらない。
+    statement: チェバの定理の積は$\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=-1$である（メネラウスの定理の符号）。
+    reason: $r=s=t=\frac{1}{2}$（$D,E,F$が各辺の中点）では3直線$AD,BE,CF$は重心で交わり、各因子は$1$なので積は$1$であって$-1$ではない。$-1$になるのは$D,E,F$が同一直線上にあるときである。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C p : P) (r s t : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → r ≠ 0 → s ≠ 0 → t ≠ 0 → p ∈ line[ℝ, A, AffineMap.lineMap B C r] → p ∈ line[ℝ, B, AffineMap.lineMap C A s] → p ∈ line[ℝ, C, AffineMap.lineMap A B t] → r / (1 - r) * (s / (1 - s)) * (t / (1 - t)) = 1
   proof: |
@@ -2011,7 +2035,7 @@
   - 'translate: The two incidences give αr = γ(1-r) and λ(1-s) = γs.'
   - 'derive: γ ≠ 0, and substitution gives λt = α(1-t).'
   - 'conclude: p = γC + (λ+α)F, so p lies on line CF.'
-  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1) (on_line p a (+ (* (- 1 r) b) (* r c))) (on_line p b (+ (* (- 1 s) c) (* s a)))) (on_line p c (+ (* (- 1 t) a) (* t b)))))
+  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1) (on_line p a (division_point b c r)) (on_line p b (division_point c a s))) (on_line p c (division_point a b t))))
   hard_negative:
     statement: 長さの比の積が$1$なら、3直線$AD,BE,CF$は1点で交わる。
     reason: 符号の条件が必要である。メネラウスの定理の配置では$D,E,F$が同一直線上にあって長さの比の積が$1$になるが、3直線$AD,BE,CF$は一般に1点で交わらない。

@@ -18,7 +18,7 @@
   - 'translate: The definition of the mean gives Σ x_i = |s| x̄.'
   - 'derive: Summing the constant x̄ over s gives |s| x̄.'
   - 'conclude: Hence Σ (x_i - x̄) = Σ x_i - |s| x̄ = 0.'
-  openmath: (forall (s x m) (-> (and (in (size s) N) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (= (sum s (lambda (i) (- (fn_value x i) m))) 0)))
+  openmath: (forall (s x m) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (= (sum s (lambda (i) (- (fn_value x i) m))) 0)))
   hard_negative:
     statement: 任意の実数$a$について$\sum_{i\in s}(x_i-a)=0$が成り立つ。
     reason: この和は$|s|(\bar{x}-a)$に等しいので、$a\neq\bar{x}$なら$0$にならない。
@@ -54,7 +54,7 @@
   - 'setup: Let n = |s| > 0.'
   - 'derive: Summing a ≤ x_i ≤ b gives n a ≤ Σ x_i ≤ n b.'
   - 'conclude: Dividing by n gives a ≤ x̄ ≤ b.'
-  openmath: (forall (s x a b m) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (and (<= a (fn_value x i)) (<= (fn_value x i) b)))) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (<= a m) (<= m b))))
+  openmath: (forall (s x a b m) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (and (<= a (fn_value x i)) (<= (fn_value x i) b)))) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (<= a m) (<= m b))))
   hard_negative:
     statement: 全ての$i\in s$で$a\leq x_i\leq b$なら、平均は$\frac{a+b}{2}$に等しい。
     reason: 平均は$a$と$b$の間にあるだけである。$x_i$が全て$a$で$a<b$なら平均は$a$であり、$\frac{a+b}{2}$ではない。
@@ -93,7 +93,7 @@
   - 'contradiction: If every x_i were below x̄, the first sum would be strictly smaller.'
   - 'contradiction: If every x_j were above x̄, the first sum would be strictly larger.'
   - 'conclude: Hence both kinds of index exist.'
-  openmath: (forall (s x m) (-> (and (in (size s) N) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (exists (i) (and (in i s) (<= m (fn_value x i)))) (exists (j) (and (in j s) (<= (fn_value x j) m))))))
+  openmath: (forall (s x m) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (exists (i) (and (in i s) (<= m (fn_value x i)))) (exists (j) (and (in j s) (<= (fn_value x j) m))))))
   hard_negative:
     statement: 平均より真に大きい値$x_i$が必ず存在する。
     reason: 全ての$x_i$が等しいとき、どの値も平均に等しく、平均より真に大きい値はない。
@@ -128,7 +128,7 @@
   - 'setup: Rewrite Σ y_i as Σ (a x_i + b).'
   - 'derive: Split the sum as a Σ x_i + |s| b = |s| (a x̄ + b).'
   - 'conclude: Divide by |s| to obtain ȳ = a x̄ + b.'
-  openmath: (forall (s x y a b mx my) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s)))) (= my (+ (* a mx) b))))
+  openmath: (forall (s x y a b mx my) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s)))) (= my (+ (* a mx) b))))
   hard_negative:
     statement: $y_i=x_i^2$と変換すると、$y_i$の平均は$\bar{x}^2$である。
     reason: 平均がそのまま移るのは$1$次式の変換だけである。$x_i$が$1$と$-1$の$2$個なら$y_i$の平均は$1$だが、$\bar{x}^2=0$である。
@@ -163,7 +163,7 @@
   - 'derive: The sum over s ∪ t is the sum over s plus the sum over t.'
   - 'derive: Each partial sum equals the group size times the group mean.'
   - 'conclude: Divide by |s| + |t|.'
-  openmath: (forall (s t x m1 m2) (-> (and (in (size s) N) (!= s emptyset) (in (size t) N) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t)))) (= (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t))) (/ (+ (* (size s) m1) (* (size t) m2)) (+ (size s) (size t))))))
+  openmath: (forall (s t x m1 m2) (-> (and (finite_set s) (!= s emptyset) (finite_set t) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t)))) (= (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t))) (/ (+ (* (size s) m1) (* (size t) m2)) (+ (size s) (size t))))))
   hard_negative:
     statement: $s\cup t$での平均は$\frac{\bar{x}_s+\bar{x}_t}{2}$である。
     reason: 群の大きさで重みをつける必要がある。この式が正しいのは$|s|=|t|$または$\bar{x}_s=\bar{x}_t$のときに限る。
@@ -206,7 +206,7 @@
   - 'derive: Summing gives Σ x_i² - 2 x̄ Σ x_i + |s| x̄².'
   - 'derive: Substituting Σ x_i = |s| x̄ gives Σ x_i² - |s| x̄².'
   - 'conclude: Divide by |s|.'
-  openmath: (forall (s x m V) (-> (and (in (size s) N) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (= V (- (/ (sum s (lambda (i) (^ (fn_value x i) 2))) (size s)) (^ m 2)))))
+  openmath: (forall (s x m V) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (= V (- (/ (sum s (lambda (i) (^ (fn_value x i) 2))) (size s)) (^ m 2)))))
   hard_negative:
     statement: 分散は$\frac{1}{|s|}\sum_{i\in s}x_i^2+\bar{x}^2$に等しい。
     reason: $\bar{x}^2$の符号が逆である。全ての$x_i$が同じ値$c\neq0$なら分散は$0$だが、この式の値は$2c^2$である。
@@ -245,7 +245,7 @@
   - 'translate: Since |s| ≠ 0, V = 0 iff the sum of squared deviations is 0.'
   - 'derive: A sum of nonnegative terms is 0 iff each term is 0.'
   - 'conclude: Each term is 0 iff x_i = x̄.'
-  openmath: (forall (s x m V) (-> (and (in (size s) N) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (and (>= V 0) (<-> (= V 0) (forall (i) (-> (in i s) (= (fn_value x i) m)))))))
+  openmath: (forall (s x m V) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (and (>= V 0) (<-> (= V 0) (forall (i) (-> (in i s) (= (fn_value x i) m)))))))
   hard_negative:
     statement: 分散が$0$なら平均は$0$である。
     reason: 分散が$0$なのは全ての値が等しいときであり、その値は$0$とは限らない。全ての$x_i$が$1$なら分散は$0$で平均は$1$である。
@@ -290,7 +290,7 @@
   - 'derive: Hence y_i - ȳ = a (x_i - x̄), so the constant b disappears.'
   - 'derive: Squaring gives (y_i - ȳ)² = a² (x_i - x̄)².'
   - 'conclude: Sum over s and divide by |s| to get V_y = a² V_x.'
-  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= Vy (* (^ a 2) Vx))))
+  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= Vy (* (^ a 2) Vx))))
   hard_negative:
     statement: $y_i=ax_i+b$の分散は$a^2V_x+b$である。
     reason: 定数$b$を足しても偏差は変わらないので、分散に$b$は現れない。$a=1,\ b=1$で$x_i$が全て等しければ、分散は$0$のままである。
@@ -336,7 +336,7 @@
   - 'derive: Hence V_y = a² V_x.'
   - 'translate: Take square roots, splitting the root of the product.'
   - 'conclude: Use √(a²) = |a| to get √V_y = |a| √V_x.'
-  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= (root Vy 2) (* (abs a) (root Vx 2)))))
+  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= (root Vy 2) (* (abs a) (root Vx 2)))))
   hard_negative:
     statement: $y_i=ax_i+b$の標準偏差は$x_i$の標準偏差の$a$倍である。
     reason: $a<0$かつ$V_x>0$のとき、この値は負になる。標準偏差は$0$以上なので、倍率は$a$ではなく$|a|$である。
@@ -383,7 +383,7 @@
   - 'translate: The variance of z is therefore (Σ z_i²)/|s|.'
   - 'derive: Since (√V)² = V, z_i² = (x_i - x̄)²/V.'
   - 'conclude: Using Σ (x_i - x̄)² = |s| V, the variance of z is 1.'
-  openmath: (forall (s x z m V mz Vz) (-> (and (in (size s) N) (!= s emptyset) (> V 0) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s))) (forall (i) (-> (in i s) (= (fn_value z i) (/ (- (fn_value x i) m) (root V 2))))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s)))) (and (= mz 0) (= Vz 1))))
+  openmath: (forall (s x z m V mz Vz) (-> (and (finite_set s) (!= s emptyset) (> V 0) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s))) (forall (i) (-> (in i s) (= (fn_value z i) (/ (- (fn_value x i) m) (root V 2))))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s)))) (and (= mz 0) (= Vz 1))))
   hard_negative:
     statement: 分散が$0$のデータでも、$z_i=\frac{x_i-\bar{x}}{\sqrt{V}}$と標準化すれば分散は$1$になる。
     reason: $V=0$のときは$\sqrt{V}=0$で割ることになり、標準化が定義できない。$V>0$は外せない。
@@ -436,7 +436,7 @@
   - 'derive: This gives W = (n₁(V₁ + m₁²) + n₂(V₂ + m₂²))/N - M² with M = (n₁ m₁ + n₂ m₂)/N.'
   - 'derive: Simplify the mean terms using N(n₁ m₁² + n₂ m₂²) - (n₁ m₁ + n₂ m₂)² = n₁ n₂ (m₁ - m₂)².'
   - 'conclude: The result is the within-group term plus the between-group term.'
-  openmath: (forall (s t x m1 m2 V1 V2 M W) (-> (and (in (size s) N) (!= s emptyset) (in (size t) N) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t))) (= V1 (/ (sum s (lambda (i) (^ (- (fn_value x i) m1) 2))) (size s))) (= V2 (/ (sum t (lambda (i) (^ (- (fn_value x i) m2) 2))) (size t))) (= M (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t)))) (= W (/ (sum (union s t) (lambda (i) (^ (- (fn_value x i) M) 2))) (size (union s t))))) (= W (+ (/ (+ (* (size s) V1) (* (size t) V2)) (+ (size s) (size t))) (/ (* (* (size s) (size t)) (^ (- m1 m2) 2)) (^ (+ (size s) (size t)) 2))))))
+  openmath: (forall (s t x m1 m2 V1 V2 M W) (-> (and (finite_set s) (!= s emptyset) (finite_set t) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t))) (= V1 (/ (sum s (lambda (i) (^ (- (fn_value x i) m1) 2))) (size s))) (= V2 (/ (sum t (lambda (i) (^ (- (fn_value x i) m2) 2))) (size t))) (= M (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t)))) (= W (/ (sum (union s t) (lambda (i) (^ (- (fn_value x i) M) 2))) (size (union s t))))) (= W (+ (/ (+ (* (size s) V1) (* (size t) V2)) (+ (size s) (size t))) (/ (* (* (size s) (size t)) (^ (- m1 m2) 2)) (^ (+ (size s) (size t)) 2))))))
   hard_negative:
     statement: $s\cup t$での分散は、各群の分散の重みつき平均$\frac{|s|V_s+|t|V_t}{|s|+|t|}$に等しい。
     reason: 群の平均の差から生じる項が抜けている。$s$の値が全て$0$、$t$の値が全て$1$なら$V_s=V_t=0$だが、合わせた分散は正である。
@@ -504,7 +504,7 @@
   - 'derive: Summing gives Σ x_i y_i - x̄ Σ y_i - ȳ Σ x_i + |s| x̄ ȳ.'
   - 'derive: Substituting Σ x_i = |s| x̄ and Σ y_i = |s| ȳ leaves Σ x_i y_i - |s| x̄ ȳ.'
   - 'conclude: Divide by |s|.'
-  openmath: (forall (s x y mx my c) (-> (and (in (size s) N) (!= s emptyset) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= c (- (/ (sum s (lambda (i) (* (fn_value x i) (fn_value y i)))) (size s)) (* mx my)))))
+  openmath: (forall (s x y mx my c) (-> (and (finite_set s) (!= s emptyset) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= c (- (/ (sum s (lambda (i) (* (fn_value x i) (fn_value y i)))) (size s)) (* mx my)))))
   hard_negative:
     statement: 共分散はつねに$0$以上である。
     reason: 分散と違い、共分散は積の和なので負にもなる。$(x_i,y_i)$が$(0,1),(1,0)$の$2$組なら共分散は$-\frac{1}{4}$である。
@@ -548,7 +548,7 @@
   - 'derive: Hence u_i - ū = a (x_i - x̄) and v_i - v̄ = c (y_i - ȳ).'
   - 'derive: Each product of deviations is multiplied by a c.'
   - 'conclude: Sum over s and divide by |s| to get C_uv = a c C_xy.'
-  openmath: (forall (s x y u v a b c d mx my mu mv Cxy Cuv) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s)))) (= Cuv (* (* a c) Cxy))))
+  openmath: (forall (s x y u v a b c d mx my mu mv Cxy Cuv) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s)))) (= Cuv (* (* a c) Cxy))))
   hard_negative:
     statement: $u_i=ax_i+b$、$v_i=cy_i+d$の共分散は$x_i,y_i$の共分散の$a^2c^2$倍である。
     reason: 倍率は分散の場合と異なり、各偏差の倍率の積$ac$である。$a=c=2$で$C_{xy}\neq0$なら、実際の倍率は$4$であって$16$ではない。
@@ -599,7 +599,7 @@
   - 'derive: Hence z_i - z̄ = (x_i - x̄) + (y_i - ȳ).'
   - 'derive: Expand the square termwise.'
   - 'conclude: Sum over s and divide by |s|.'
-  openmath: (forall (s x y z mx my mz Vx Vy Vz c) (-> (and (in (size s) N) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value z i) (+ (fn_value x i) (fn_value y i))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= Vz (+ (+ Vx (* 2 c)) Vy))))
+  openmath: (forall (s x y z mx my mz Vx Vy Vz c) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value z i) (+ (fn_value x i) (fn_value y i))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= Vz (+ (+ Vx (* 2 c)) Vy))))
   hard_negative:
     statement: $x_i+y_i$の分散は、つねに$V_x+V_y$に等しい。
     reason: この式は$C_{xy}=0$のときに限って正しい。$y_i=x_i$かつ$V_x>0$なら、和の分散は$4V_x$で$2V_x$より大きい。
@@ -640,7 +640,7 @@
   - 'derive: Dividing by |s|² gives C² ≤ V_x V_y.'
   - 'derive: Taking square roots gives |C| ≤ √V_x √V_y.'
   - 'conclude: Dividing by the positive denominator gives |r| ≤ 1.'
-  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (in (size s) N) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<= (abs r) 1)))
+  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<= (abs r) 1)))
   hard_negative:
     statement: 分散が$0$のデータを含む場合でも、$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$は相関係数として意味をもち$|r|\leq1$である。
     reason: $V_x=0$または$V_y=0$なら分母が$0$となり、相関係数は定義されない。$V_x>0,\ V_y>0$は外せない。
@@ -681,7 +681,7 @@
   - 'derive: The denominator becomes |a c| √V_x √V_y.'
   - 'case_split: If a c > 0, then |a c| = a c and r_uv = r_xy.'
   - 'case_split: If a c < 0, then |a c| = -a c and r_uv = -r_xy.'
-  openmath: (forall (s x y u v a b c d mx my mu mv Vx Vy Vu Vv Cxy Cuv r t) (-> (and (in (size s) N) (!= s emptyset) (> Vx 0) (> Vy 0) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vu (/ (sum s (lambda (i) (^ (- (fn_value u i) mu) 2))) (size s))) (= Vv (/ (sum s (lambda (i) (^ (- (fn_value v i) mv) 2))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s))) (= r (/ Cxy (* (root Vx 2) (root Vy 2)))) (= t (/ Cuv (* (root Vu 2) (root Vv 2))))) (and (-> (> (* a c) 0) (= t r)) (-> (< (* a c) 0) (= t (neg r))))))
+  openmath: (forall (s x y u v a b c d mx my mu mv Vx Vy Vu Vv Cxy Cuv r t) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vu (/ (sum s (lambda (i) (^ (- (fn_value u i) mu) 2))) (size s))) (= Vv (/ (sum s (lambda (i) (^ (- (fn_value v i) mv) 2))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s))) (= r (/ Cxy (* (root Vx 2) (root Vy 2)))) (= t (/ Cuv (* (root Vu 2) (root Vv 2))))) (and (-> (> (* a c) 0) (= t r)) (-> (< (* a c) 0) (= t (neg r))))))
   hard_negative:
     statement: $u_i=ax_i+b$、$v_i=cy_i+d$と変換すると、相関係数は$a,c$によらず変わらない。
     reason: 倍率の大きさは消えるが符号は残る。$a=-1,\ c=1$で$r_{xy}\neq0$なら、相関係数は$-r_{xy}$となり元の値と異なる。
@@ -764,7 +764,7 @@
   - 'derive: Each term vanishes, giving the linear relation.'
   - 'derive: Conversely the relation gives C = k V_x and V_y = k² V_x.'
   - 'conclude: Hence C² = V_x V_y and |r| = 1.'
-  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (in (size s) N) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<-> (= (abs r) 1) (exists (k) (forall (i) (-> (in i s) (= (- (fn_value y i) my) (* k (- (fn_value x i) mx)))))))))
+  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<-> (= (abs r) 1) (exists (k) (forall (i) (-> (in i s) (= (- (fn_value y i) my) (* k (- (fn_value x i) mx)))))))))
   hard_negative:
     statement: $|r|=1$なら、全ての$i\in s$で$y_i-\bar{y}=x_i-\bar{x}$である。
     reason: 直線の傾きは$1$とは限らない。$y_i=2x_i$かつ$V_x>0$なら$r=1$だが、$y_i-\bar{y}=2(x_i-\bar{x})$である。
@@ -851,7 +851,7 @@
   - 'setup: Write B as the disjoint union of B \ A and A ∩ B.'
   - 'derive: Counting gives |A ∪ B| = |A| + |B \ A| and |B| = |B \ A| + |A ∩ B|.'
   - 'conclude: Eliminate |B \ A|.'
-  openmath: (forall (A B) (-> (and (in (size A) N) (in (size B) N)) (= (size (union A B)) (- (+ (size A) (size B)) (size (inter A B))))))
+  openmath: (forall (A B) (-> (and (finite_set A) (finite_set B)) (= (size (union A B)) (- (+ (size A) (size B)) (size (inter A B))))))
   hard_negative:
     statement: 有限集合$A,B$についてつねに$|A\cup B|=|A|+|B|$である。
     reason: この式は$A\cap B=\emptyset$のときに限って正しい。$A=B=\{1\}$なら左辺は$1$、右辺は$2$である。
@@ -881,7 +881,7 @@
   - 'apply_theorem: Apply the two-set formula to A and B.'
   - 'derive: Distribute (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C) and apply the two-set formula again.'
   - 'conclude: Substitute all three equalities.'
-  openmath: (forall (A B D) (-> (and (in (size A) N) (in (size B) N) (in (size D) N)) (= (size (union (union A B) D)) (+ (- (- (- (+ (+ (size A) (size B)) (size D)) (size (inter A B))) (size (inter B D))) (size (inter D A))) (size (inter (inter A B) D))))))
+  openmath: (forall (A B D) (-> (and (finite_set A) (finite_set B) (finite_set D)) (= (size (union (union A B) D)) (+ (- (- (- (+ (+ (size A) (size B)) (size D)) (size (inter A B))) (size (inter B D))) (size (inter D A))) (size (inter (inter A B) D))))))
   hard_negative:
     statement: $|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|B\cap C|-|C\cap A|$である。
     reason: $3$つ全てに属する要素を引きすぎている。$A=B=C=\{1\}$なら左辺は$1$、右辺は$0$である。
@@ -922,7 +922,7 @@
   - 'translate: Since A ∪ B ⊆ U, |U \ (A ∪ B)| = |U| - |A ∪ B|.'
   - 'apply_theorem: Apply |A ∪ B| = |A| + |B| - |A ∩ B|.'
   - 'conclude: Substitute to get the formula.'
-  openmath: (forall (U A B) (-> (and (in (size U) N) (subset A U) (subset B U)) (= (size (setdiff U (union A B))) (+ (- (- (size U) (size A)) (size B)) (size (inter A B))))))
+  openmath: (forall (U A B) (-> (and (finite_set U) (subset A U) (subset B U)) (= (size (setdiff U (union A B))) (+ (- (- (size U) (size A)) (size B)) (size (inter A B))))))
   hard_negative:
     statement: 有限集合$U,A,B$について、包含関係を仮定しなくても$|U\setminus(A\cup B)|=|U|-|A|-|B|+|A\cap B|$である。
     reason: $A,B$が$U$からはみ出すと成り立たない。$U=\{1\},\ A=\{2\},\ B=\emptyset$なら左辺は$1$、右辺は$0$である。
@@ -953,7 +953,7 @@
   - 'contradiction: P x would give Q x, so ¬P x holds.'
   - 'setup: Conversely fix x and assume the contrapositive with P x.'
   - 'contradiction: ¬Q x would give ¬P x, so Q x holds.'
-  openmath: (forall (A B) (<-> (forall (x) (-> (in x A) (in x B))) (forall (x) (-> (notin x B) (notin x A)))))
+  openmath: (forall (A P Q) (<-> (forall (x) (-> (in x A) (-> (holds_at P x) (holds_at Q x)))) (forall (x) (-> (in x A) (-> (not (holds_at Q x)) (not (holds_at P x)))))))
   hard_negative:
     statement: 「全ての$x$で$P(x)$ならば$Q(x)$」は、その裏「全ての$x$で$P(x)$でないならば$Q(x)$でない」と同値である。
     reason: 同値なのは対偶であって裏ではない。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると元の命題は真だが、$x=\frac{1}{2}$が裏の反例になる。
@@ -988,7 +988,7 @@
   - 'contradiction: Assume the universal implication fails but no witness exists.'
   - 'derive: Then any x with P x must satisfy Q x.'
   - 'conclude: This proves the universal implication, a contradiction.'
-  openmath: (forall (A B) (<-> (not (forall (x) (-> (in x A) (in x B)))) (exists (x) (and (in x A) (notin x B)))))
+  openmath: (forall (A P Q) (<-> (not (forall (x) (-> (in x A) (-> (holds_at P x) (holds_at Q x))))) (exists (x) (and (in x A) (and (holds_at P x) (not (holds_at Q x)))))))
   hard_negative:
     statement: 「全ての$x$で$P(x)$ならば$Q(x)$」の否定は、「$P(x)$でなく$Q(x)$である$x$が存在する」と同値である。
     reason: 反例は仮定を満たす必要がある。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると全称命題は真なのに、$x=\frac{1}{2}$はこの条件を満たす。
@@ -1081,7 +1081,7 @@
   - 'derive: Q implies R implies P, so Q implies P.'
   - 'derive: R implies P implies Q, so R implies Q.'
   - 'conclude: Combine with the given implications.'
-  openmath: (forall (a A B D) (-> (and (-> (in a A) (in a B)) (-> (in a B) (in a D)) (-> (in a D) (in a A))) (and (<-> (in a A) (in a B)) (<-> (in a B) (in a D)))))
+  openmath: (forall (P Q R) (-> (and (-> (proposition_holds P) (proposition_holds Q)) (-> (proposition_holds Q) (proposition_holds R)) (-> (proposition_holds R) (proposition_holds P))) (and (<-> (proposition_holds P) (proposition_holds Q)) (<-> (proposition_holds Q) (proposition_holds R)))))
   hard_negative:
     statement: $P\Rightarrow Q$と$Q\Rightarrow R$が成り立てば、$P,Q,R$は互いに同値である。
     reason: 循環を閉じる$R\Rightarrow P$がないと同値は出ない。$P,Q$が偽で$R$が真なら$2$つの含意は成り立つが、$Q\Leftrightarrow R$は成り立たない。
@@ -1110,7 +1110,7 @@
   - 'contradiction: Assume P is false.'
   - 'derive: The two hypotheses then give both Q and ¬Q.'
   - 'conclude: This is impossible, so P is true.'
-  openmath: (forall (a A B) (-> (and (-> (notin a A) (in a B)) (-> (notin a A) (notin a B))) (in a A)))
+  openmath: (forall (P Q) (-> (and (-> (not (proposition_holds P)) (proposition_holds Q)) (-> (not (proposition_holds P)) (not (proposition_holds Q)))) (proposition_holds P)))
   hard_negative:
     statement: $P$の否定から何らかの命題$Q$が導ければ、$P$は真である。
     reason: 矛盾が出ていなければ結論できない。$P$が偽で$Q$が真なら$\neg P\Rightarrow Q$は成り立つが、$P$は偽である。
@@ -1141,7 +1141,7 @@
   - 'contradiction: Assume ¬Q, so P ∧ ¬Q holds.'
   - 'derive: The hypotheses give both R and ¬R.'
   - 'conclude: Hence Q holds, which proves P implies Q.'
-  openmath: (forall (a A B D) (-> (and (-> (and (in a A) (notin a B)) (in a D)) (-> (and (in a A) (notin a B)) (notin a D))) (-> (in a A) (in a B))))
+  openmath: (forall (P Q R) (-> (and (-> (and (proposition_holds P) (not (proposition_holds Q))) (proposition_holds R)) (-> (and (proposition_holds P) (not (proposition_holds Q))) (not (proposition_holds R)))) (-> (proposition_holds P) (proposition_holds Q))))
   hard_negative:
     statement: 「$P$でなく$Q$である」から$R$と$R$の否定の両方が導けるなら、$P\Rightarrow Q$である。
     reason: 否定する側が違う。$P$が真で$Q$が偽なら「$P$でなく$Q$である」は偽なので仮定は成り立つが、$P\Rightarrow Q$は偽である。
@@ -1172,7 +1172,7 @@
   - 'case_split: Conversely split on whether P is true.'
   - 'derive: If P is true then P ∨ Q holds at once.'
   - 'conclude: If P is false the hypothesis gives Q, so P ∨ Q holds.'
-  openmath: (forall (a A B) (<-> (or (in a A) (in a B)) (-> (notin a A) (in a B))))
+  openmath: (forall (P Q) (<-> (or (proposition_holds P) (proposition_holds Q)) (-> (not (proposition_holds P)) (proposition_holds Q))))
   hard_negative:
     statement: 「$P$または$Q$」は「$P$でないならば$Q$でない」と同値である。
     reason: 結論側を否定してはいけない。$P$が偽で$Q$が真なら「$P$または$Q$」は真だが、「$P$でないならば$Q$でない」は偽である。

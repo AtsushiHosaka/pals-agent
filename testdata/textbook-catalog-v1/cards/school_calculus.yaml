@@ -742,8 +742,8 @@
   kind: gap
   level: high
   topic: 定積分・6分の1公式
-  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^3}{6}$である。
-  statement_en: For real α and β, ∫_α^β (x-α)(x-β) dx = -(β-α)^3/6.
+  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^3}{6}$である。これは$\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx$の$m=n=1$の特殊形（6分の1公式）である。
+  statement_en: For real α and β, ∫_α^β (x-α)(x-β) dx = -(β-α)^3/6. This is the special case m = n = 1 of ∫_α^β (x-α)^m (x-β)^n dx (the 1/6 formula).
   assumptions:
   - $\alpha,\beta$は実数
   quantifiers:
@@ -776,8 +776,8 @@
   kind: gap
   level: high
   topic: 定積分・12分の1公式
-  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)^2(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^4}{12}$である。
-  statement_en: For real α and β, ∫_α^β (x-α)^2 (x-β) dx = -(β-α)^4/12.
+  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)^2(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^4}{12}$である。これは$\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx$の$m=2,\ n=1$の特殊形（12分の1公式）である。
+  statement_en: For real α and β, ∫_α^β (x-α)^2 (x-β) dx = -(β-α)^4/12. This is the special case m = 2, n = 1 of ∫_α^β (x-α)^m (x-β)^n dx (the 1/12 formula).
   assumptions:
   - $\alpha,\beta$は実数
   quantifiers:
@@ -1717,7 +1717,7 @@
   - 'derive: Subtracting gives a_{n+1} - L = r(a_n - L).'
   - 'induction: Hence a_n - L = r^n (a_0 - L).'
   - 'conclude: Since r^n tends to 0, a_n tends to L.'
-  openmath: (forall (a r s) (-> (and (< (abs r) 1) (forall (n) (= (seq_value a (+ n 1)) (+ (* r (seq_value a n)) s)))) (seq_tends_to a (/ s (- 1 r)))))
+  openmath: (forall (a r s) (-> (and (< (abs r) 1) (forall (n) (-> (in n N) (= (seq_value a (+ n 1)) (+ (* r (seq_value a n)) s))))) (seq_tends_to a (/ s (- 1 r)))))
   hard_negative:
     statement: $r\neq 1$で$a_{n+1}=ra_n+s$なら、$a_n$は$\dfrac{s}{1-r}$に収束する。
     reason: $|r|<1$が必要である。$r=2$、$s=0$、$a_0=1$では$a_n=2^n$は発散する。
@@ -1763,7 +1763,7 @@
   - 'induction: Prove |a_n - L| ≤ r^n |a_0 - L|, using r ≥ 0 in the step.'
   - 'derive: The bound tends to 0 because 0 ≤ r < 1.'
   - 'conclude: The squeeze principle gives a_n tends to L.'
-  openmath: (forall (a L r) (-> (and (<= 0 r) (< r 1) (forall (n) (<= (abs (- (seq_value a (+ n 1)) L)) (* r (abs (- (seq_value a n) L)))))) (seq_tends_to a L)))
+  openmath: (forall (a L r) (-> (and (<= 0 r) (< r 1) (forall (n) (-> (in n N) (<= (abs (- (seq_value a (+ n 1)) L)) (* r (abs (- (seq_value a n) L))))))) (seq_tends_to a L)))
   hard_negative:
     statement: 全ての$n$で$|a_{n+1}-L|<|a_n-L|$なら、$a_n\to L$である。
     reason: 比が$1$に近づく場合は、$L$に収束するとは限らない。$L=0$、$a_n=1+\dfrac{1}{n+1}$では不等式が成り立つが、極限は$1$である。
@@ -1944,13 +1944,13 @@
   kind: textbook
   level: high
   topic: 無限等比級数・収束条件
-  statement: $a\neq 0$のとき、無限等比級数$\sum_{n=0}^{\infty}ar^n$が収束することと$|r|<1$であることは同値である。
-  statement_en: For a ≠ 0, the series ∑ a r^n is summable if and only if |r| < 1.
+  statement: $a\neq 0$のとき、無限等比級数$\sum_{n=0}^{\infty}ar^n$が絶対収束する（実数項の級数として無条件に和をもつ）ことと$|r|<1$であることは同値である。
+  statement_en: For a ≠ 0, the series ∑ a r^n is summable (absolutely convergent) if and only if |r| < 1.
   assumptions:
   - $a\neq 0$
   quantifiers:
   - 任意の実数$a,r$
-  conclusion: $\sum_{n=0}^{\infty}ar^n$が収束することと$|r|<1$は同値である。
+  conclusion: $\sum_{n=0}^{\infty}ar^n$が絶対収束することと$|r|<1$は同値である。
   answer: |
     $a\neq 0$、$r$を実数とする。
     $|r|<1$とする。$\sum_{k=0}^{n-1}|ar^k|=|a|\dfrac{1-|r|^n}{1-|r|}\leq\dfrac{|a|}{1-|r|}$なので、級数は絶対収束する。
@@ -2061,10 +2061,10 @@
     帰納法の仮定を$m+1$に使うと、$I(m,n+1)=-\dfrac{n+1}{m+1}\cdot\dfrac{(-1)^n(m+1)!\,n!}{(m+n+2)!}(\beta-\alpha)^{m+n+2}=\dfrac{(-1)^{n+1}m!\,(n+1)!}{(m+n+2)!}(\beta-\alpha)^{m+n+2}$である。これは$n+1$の場合の主張である。
   strategy: Induct on n for all m, integrating by parts so that the boundary terms vanish.
   sketch:
-  - "setup: Fix reals α, β and write I(m,n) for the integral."
-  - "base: For n = 0, integrate (x-α)^m directly."
-  - "induct: Integration by parts gives I(m,n+1) = -(n+1)/(m+1) I(m+1,n), since the boundary terms vanish."
-  - "conclude: Substitute the induction hypothesis at m+1."
+  - 'setup: Fix reals α, β and write I(m,n) for the integral.'
+  - 'base: For n = 0, integrate (x-α)^m directly.'
+  - 'induct: Integration by parts gives I(m,n+1) = -(n+1)/(m+1) I(m+1,n), since the boundary terms vanish.'
+  - 'conclude: Substitute the induction hypothesis at m+1.'
   openmath: (forall (p q m n) (-> (and (in m N) (in n N)) (= (interval_integral p q (lambda (x) (* (^ (- x p) m) (^ (- x q) n)))) (* (/ (* (^ (neg 1) n) (* (factorial m) (factorial n))) (factorial (+ (+ m n) 1))) (^ (- q p) (+ (+ m n) 1))))))
   hard_negative:
     statement: 実数$\alpha,\beta$と$0$以上の整数$m,n$について、$\displaystyle\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx=\dfrac{m!\,n!}{(m+n+1)!}(\beta-\alpha)^{m+n+1}$である。

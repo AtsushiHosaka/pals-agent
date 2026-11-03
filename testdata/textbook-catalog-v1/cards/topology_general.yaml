@@ -391,7 +391,7 @@
   - 'contradiction: Assume f is discontinuous at a with witness ε.'
   - 'construct: Choose a_n within 1/(n+1) of a with d(f(a_n), f(a)) ≥ ε.'
   - 'conclude: The sequence converges to a but its image does not converge to f(a).'
-  openmath: (forall (X Y f) (-> (and (metric_space X) (metric_space Y)) (<-> (continuous_between X Y f) (forall (a L) (-> (seq_tends_to a L) (seq_tends_to (function_compose_map f a) (fn_value f L)))))))
+  openmath: (forall (X Y f) (-> (and (metric_space X) (metric_space Y)) (<-> (continuous_between X Y f) (forall (a L) (-> (and (forall (n) (in (seq_value a n) X)) (in L X) (seq_tends_to a L)) (seq_tends_to (function_compose_map f a) (fn_value f L)))))))
   hard_negative:
     statement: 一般の位相空間の間でも、点列の収束を保つ写像は連続である。
     reason: ℝの補可算位相から通常位相への恒等写像は収束列を保つが、連続ではない。
@@ -1048,7 +1048,7 @@
   - 'translate: The complements of the C_i form an open cover of K.'
   - 'apply_theorem: Extract a finite subcover.'
   - 'conclude: A finite intersection with K is empty, contradicting the hypothesis.'
-  openmath: (forall (X K I C) (-> (and (compact_in X K) (forall (i) (-> (in i I) (closed_in X (fn_value C i)))) (forall (u) (-> (and (subset u I) (finite_set u)) (!= (inter K (family_inter u C)) emptyset)))) (!= (inter K (family_inter I C)) emptyset)))
+  openmath: (forall (X K I C) (-> (and (compact_in X K) (!= K emptyset) (forall (i) (-> (in i I) (closed_in X (fn_value C i)))) (forall (u) (-> (and (subset u I) (finite_set u)) (!= (inter K (family_inter u C)) emptyset)))) (!= (inter K (family_inter I C)) emptyset)))
   hard_negative:
     statement: 閉集合の減少列は、各項が空でなければ共通部分も空でない。
     reason: ℝの閉集合[n,∞)の共通部分は空である。コンパクト性が必要である。
@@ -1598,7 +1598,7 @@
   - 'apply_theorem: Hausdorffness gives disjoint open neighborhoods.'
   - 'derive: For large n the term a_n lies in both.'
   - 'conclude: This contradicts disjointness.'
-  openmath: (forall (X a L M) (-> (and (hausdorff_space X) (seq_tends_to a L) (seq_tends_to a M)) (= L M)))
+  openmath: (forall (X a L M) (-> (and (hausdorff_space X) (forall (n) (in (seq_value a n) X)) (in L X) (in M X) (seq_tends_to a L) (seq_tends_to a M)) (= L M)))
   hard_negative:
     statement: 任意の位相空間で点列の極限は一意である。
     reason: 2点以上の密着位相空間では、任意の点列が任意の点に収束する。
@@ -1707,8 +1707,8 @@
   - 'conclude: f is 0 on A, 1 on B and takes values in [0,1].'
   openmath: (forall (X A B) (-> (and (normal_space X) (closed_in X A) (closed_in X B) (= (inter A B) emptyset)) (exists (f) (and (continuous_between X R f) (forall (x) (-> (in x A) (= (fn_value f x) 0))) (forall (x) (-> (in x B) (= (fn_value f x) 1))) (forall (x) (and (<= 0 (fn_value f x)) (<= (fn_value f x) 1)))))))
   hard_negative:
-    statement: ハウスドルフ空間の交わらない閉集合は連続関数で分離できる。
-    reason: 連続関数で分離できれば開集合で分離できるので正規性が従う。正規でないハウスドルフ空間では成り立たない。
+    statement: ハウスドルフ空間の交わらない閉集合は、常に連続関数で分離できる。
+    reason: 連続関数$f$で$A$上$0$、$B$上$1$なら、$f^{-1}([0,1/2))$と$f^{-1}((1/2,1])$は$A,B$を分離する交わらない開集合になる。したがって全ての交わらない閉集合の組が連続関数で分離できるなら空間は正規である。ゾルゲンフライ平面はハウスドルフだが正規でないので、分離できない閉集合の組が存在する。
   target: |
     ∀ (X : Type*) [TopologicalSpace X] [NormalSpace X] (A B : Set X), IsClosed A → IsClosed B → Disjoint A B → ∃ f : X → ℝ, Continuous f ∧ (∀ x ∈ A, f x = 0) ∧ (∀ x ∈ B, f x = 1) ∧ ∀ x, 0 ≤ f x ∧ f x ≤ 1
   proof: |

@@ -240,38 +240,36 @@
   kind: gap
   level: 3
   topic: 代数的元・体演算
-  statement: $x,y$が体$F$上代数的ならば、$x+y$、$xy$、$-x$、$x^{-1}$も$F$上代数的である。ただし$x=0$のときは$x^{-1}=0$と約束する。
-  statement_en: If x and y are algebraic over a field F, then x+y, xy, -x and x⁻¹ are algebraic over F, with the convention 0⁻¹ = 0.
+  statement: $x,y$が体$F$上代数的ならば、$x+y$、$xy$、$-x$も$F$上代数的である。また$x\neq 0$ならば$x^{-1}$も$F$上代数的である。
+  statement_en: If x and y are algebraic over a field F, then x+y, xy and -x are algebraic over F, and x⁻¹ is algebraic over F whenever x ≠ 0.
   assumptions:
   - $E$は体$F$の拡大体
   - $x,y\in E$は$F$上代数的
-  - $x=0$のときは$x^{-1}=0$と約束する
   quantifiers:
   - 任意の体$F,E$
   - 任意の$x,y\in E$
-  conclusion: $x+y$、$xy$、$-x$、$x^{-1}$は$F$上代数的である。
+  conclusion: $x+y$、$xy$、$-x$は$F$上代数的であり、$x\neq 0$ならば$x^{-1}$も$F$上代数的である。
   answer: |
-    $E$を体$F$の拡大体、$x,y\in E$を$F$上代数的な元とする。$x=0$のときは$x^{-1}=0$と約束する。
+    $E$を体$F$の拡大体、$x,y\in E$を$F$上代数的な元とする。
 
     $x$は$F$上代数的なので$[F(x):F]$は有限である。$y$は$F$上代数的なので$F(x)$上でも代数的であり、$[F(x,y):F(x)]$も有限である。次数公式より$[F(x,y):F]$は有限である。
 
-    $x+y$、$xy$、$-x$、$x^{-1}$はすべて$F(x,y)$の元である（$x=0$のときの$x^{-1}=0$も含む）。有限次拡大の元は代数的なので、これらは$F$上代数的である。
+    $F(x,y)$は体なので、$x+y$、$xy$、$-x$はすべて$F(x,y)$の元であり、$x\neq 0$なら$x^{-1}$も$F(x,y)$の元である。有限次拡大の元は代数的なので、これらは$F$上代数的である。
   strategy: All four elements lie in F(x,y), which is finite over F by the tower law.
   sketch:
   - 'derive: F(x)/F is finite because x is algebraic, and F(x,y)/F(x) is finite because y is algebraic.'
   - 'apply_theorem: The tower law shows that F(x,y)/F is finite.'
   - 'translate: The elements x+y, xy, -x and x⁻¹ all lie in F(x,y).'
   - 'conclude: Elements of a finite extension are algebraic.'
-  openmath: (forall (F E x y) (-> (and (field_extension E F) (in x E) (in y E) (algebraic_over x F) (algebraic_over y F)) (and (algebraic_over (+ x y) F) (algebraic_over (* x y) F) (algebraic_over (neg x) F) (algebraic_over (/ 1 x) F))))
+  openmath: (forall (F E x y) (-> (and (field_extension E F) (in x E) (in y E) (algebraic_over x F) (algebraic_over y F)) (and (algebraic_over (+ x y) F) (algebraic_over (* x y) F) (algebraic_over (neg x) F) (-> (!= x 0) (algebraic_over (/ 1 x) F)))))
   hard_negative:
     statement: x+yがF上代数的ならば、xもF上代数的である。
     reason: x=π, y=-πのときx+y=0はQ上代数的だが、πはQ上超越的である。
-  target: |
-    ∀ (F E : Type*) [Field F] [Field E] [Algebra F E] (x y : E), IsAlgebraic F x → IsAlgebraic F y → IsAlgebraic F (x + y) ∧ IsAlgebraic F (x * y) ∧ IsAlgebraic F (-x) ∧ IsAlgebraic F x⁻¹
-  proof: |
+  target: '∀ (F E : Type*) [Field F] [Field E] [Algebra F E] (x y : E), IsAlgebraic F x → IsAlgebraic F y → IsAlgebraic F (x + y) ∧ IsAlgebraic F (x * y) ∧ IsAlgebraic F (-x) ∧ (x ≠ 0 → IsAlgebraic F x⁻¹)'
+  proof: |-
     by
       intro F E _ _ _ x y hx hy
-      exact ⟨hx.add hy, hx.mul hy, hx.neg, hx.inv⟩
+      exact ⟨hx.add hy, hx.mul hy, hx.neg, fun _ => hx.inv⟩
 - id: algebraic_extension_transitive
   kind: gap
   level: 3
@@ -523,8 +521,8 @@
   - 'conclude: Hence gcd(f, f'') is constant and f is separable.'
   openmath: (forall (F f) (-> (and (polynomial_over f F) (irreducible_over f F)) (<-> (separable_polynomial f) (!= (poly_derivative f) 0))))
   hard_negative:
-    statement: 任意の多項式fについて、f'≠0ならばfは分離的である。
-    reason: 既約性が必要である。f=(X-1)^2はf'=2(X-1)≠0だが重根を持つ。
+    statement: $\mathbb{Q}$上の任意の多項式$f$について、$f'\neq 0$ならば$f$は分離的である。
+    reason: 既約性が必要である。$f=(X-1)^2\in\mathbb{Q}[X]$は$f'=2(X-1)\neq 0$だが、$\gcd(f,f')=X-1$が定数でないので分離的でない。
   target: |
     ∀ (F : Type*) [Field F] (f : Polynomial F), Irreducible f → (f.Separable ↔ Polynomial.derivative f ≠ 0)
   proof: |
@@ -1013,7 +1011,7 @@
   - 'derive: Normality places all conjugates of elements of E inside E, so σ(E) ⊂ E.'
   - 'derive: An algebraic F-endomorphism of E is surjective.'
   - 'conclude: So σ is an F-automorphism of E with σ(x) = y.'
-  openmath: (forall (F E x y) (-> (and (normal_extension E F) (in x E) (in y E) (= (minimal_polynomial x F) (minimal_polynomial y F))) (exists (s) (and (in s (galois_group E F)) (= (automorphism_apply s x) y)))))
+  openmath: (forall (F E x y) (-> (and (normal_extension E F) (in x E) (in y E) (= (minimal_polynomial x F) (minimal_polynomial y F))) (exists (s) (and (in s (aut_group_over E F)) (= (automorphism_apply s x) y)))))
   hard_negative:
     statement: 有限次拡大E/Fとx∈Eについて、xの最小多項式の任意の根yに対しσ(x)=yとなるEのF上の自己同型が存在する。
     reason: 正規性が必要である。E=Q(2^{1/3})、x=2^{1/3}、y=ωxではyはEに入らず、Eの自己同型は恒等写像だけである。
@@ -1260,7 +1258,7 @@
       have h := Polynomial.cyclotomic.irreducible_rat (NeZero.pos n)
       exact ⟨IsCyclotomicExtension.isGalois {n} ℚ L, IsCyclotomicExtension.finrank L h, ⟨IsCyclotomicExtension.autEquivPow L h⟩⟩
 - id: abel_ruffini_solvable_by_radicals_implies_solvable_group
-  kind: named
+  kind: textbook
   level: 4
   topic: ガロア理論・方程式の可解性
   statement: ガロアの可解性判定の一方向で、アーベル・ルフィニの定理の証明の主要部。体$F$上の既約多項式$q$がべき根で解ける根を持てば、$q$のガロア群は可解である。
@@ -1300,8 +1298,8 @@
   - 'conclude: Since q is a scalar multiple of that polynomial, its Galois group is solvable.'
   openmath: (forall (F E x q) (-> (and (field_extension E F) (in x E) (polynomial_over q F) (solvable_by_radicals x F) (irreducible_over q F) (= (poly_eval q x) 0)) (solvable_group (polynomial_galois_group q F))))
   hard_negative:
-    statement: ガロア群が可解でない既約多項式は根を持たない。
-    reason: 根はFの拡大には必ず存在する。定理が否定するのは、その根がべき根で表されることである。Q上のX^5-4X+2はS_5をガロア群に持つが、複素根は存在する。
+    statement: $q\in F[X]$が既約でなくても、$q(x)=0$を満たす$x\in E$がべき根で解けるならば$q$のガロア群は可解である。
+    reason: 既約性が必要である。$F=\mathbb{Q}$、$x=0$、$q=X(X^5-4X+2)$とすると、$x\in F$は自明にべき根で解け$q(0)=0$だが、$q$の分解体は$X^5-4X+2$の分解体であり、そのガロア群$S_5$は可解でない。
   target: |
     ∀ (F E : Type*) [Field F] [Field E] [Algebra F E] (x : E) (q : Polynomial F), x ∈ solvableByRad F E → Irreducible q → Polynomial.aeval x q = 0 → IsSolvable q.Gal
   proof: |

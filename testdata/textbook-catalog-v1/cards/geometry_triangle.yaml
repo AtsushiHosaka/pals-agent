@@ -58,7 +58,7 @@
   openmath: (forall (a b c a1 b1 c1) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (= (euclid_angle a b c) (euclid_angle a1 b1 c1)) (= (dist_of a b) (dist_of a1 b1)) (= (dist_of b c) (dist_of b1 c1))) (congruent_triangles a b c a1 b1 c1)))
   hard_negative:
     statement: $\angle ACB=\angle A'C'B'$、$AB=A'B'$、$BC=B'C'$ならば、$A,B,C$と$A',B',C'$は合同である。
-    reason: 等しい角が2辺の間にない。$\angle C$が鋭角なら、$B$を中心とする半径$AB$の円が半直線$CA$と2点で交わることがあり、第3辺が2通りに定まる。
+    reason: $\angle C=\pi/6$、$BC=4$、$AB=3$とすると、余弦定理から$AC^2-4\sqrt3\,AC+7=0$で、$AC=2\sqrt3\pm\sqrt5$はどちらも正である。角$C$と2辺$AB,BC$が等しく$CA$が異なる2つの三角形があるので合同でない。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → dist A B = dist A' B' → dist B C = dist B' C' → Congruent ![A, B, C] ![A', B', C']
   proof: |
@@ -193,7 +193,7 @@
   openmath: (forall (a b c a1 b1 c1) (-> (and (= (euclid_angle a b c) (/ pi 2)) (= (euclid_angle a1 b1 c1) (/ pi 2)) (= (dist_of c a) (dist_of c1 a1)) (= (dist_of a b) (dist_of a1 b1))) (congruent_triangles a b c a1 b1 c1)))
   hard_negative:
     statement: $\angle ABC=\angle A'B'C'$が直角でなく等しい鋭角のときも、$CA=C'A'$、$AB=A'B'$なら合同である。
-    reason: 角が2辺の間にない条件になる。鋭角$\angle ABC$のもとで$A$を中心とする半径$CA$の円が半直線$BC$と2点で交わると、第3辺が2通りに定まる。
+    reason: $\angle B=\pi/6$、$AB=4$、$CA=3$とすると、余弦定理から$BC^2-4\sqrt3\,BC+7=0$で、$BC=2\sqrt3\pm\sqrt5$はどちらも正である。角が鋭角で$AB,CA$が等しくても第3辺が異なる2つの三角形がある。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P), EuclideanGeometry.angle A B C = Real.pi / 2 → EuclideanGeometry.angle A' B' C' = Real.pi / 2 → dist C A = dist C' A' → dist A B = dist A' B' → Congruent ![A, B, C] ![A', B', C']
   proof: |
@@ -344,7 +344,7 @@
   openmath: (forall (a b c a1 b1 c1 r) (-> (and (not (collinear_points a b c)) (not (collinear_points a1 b1 c1)) (> r 0) (= (dist_of a b) (* r (dist_of a1 b1))) (= (dist_of c b) (* r (dist_of c1 b1))) (= (euclid_angle a b c) (euclid_angle a1 b1 c1))) (similar_triangles a b c a1 b1 c1)))
   hard_negative:
     statement: $AB=r\,A'B'$、$CB=r\,C'B'$、$\angle BCA=\angle B'C'A'$ならば相似である。
-    reason: 等しい角が比をとる2辺の間にない。$C$での角が鋭角のとき、$B$を中心とする円が半直線$CA$と2点で交わる配置があり、第3辺の比が定まらない。
+    reason: $r=1$とし、$\angle C=\pi/6$、$CB=4$、$AB=3$の三角形を考えると$CA=2\sqrt3\pm\sqrt5$の2通りがある。$AB=A'B'$、$CB=C'B'$、$\angle C=\angle C'$だが$CA\neq C'A'$で、相似比は$1$しかありえないので相似でない。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C A' B' C' : P) (r : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → ¬Collinear ℝ ({A', B', C'} : Set P) → 0 < r → dist A B = r * dist A' B' → dist C B = r * dist C' B' → EuclideanGeometry.angle A B C = EuclideanGeometry.angle A' B' C' → Similar ![A, B, C] ![A', B', C']
   proof: |
@@ -362,8 +362,8 @@
   kind: gap
   level: middle
   topic: 三角形・相似の性質
-  statement: $A,B,C$と$A',B',C'$がこの対応で相似ならば、対応する辺の比を積の形で書いた等式$AB\cdot B'C'=A'B'\cdot BC$、$BC\cdot C'A'=B'C'\cdot CA$、$CA\cdot A'B'=C'A'\cdot AB$が成り立つ。
-  statement_en: If A, B, C and A', B', C' are similar in this order, then AB·B'C' = A'B'·BC, BC·C'A' = B'C'·CA and CA·A'B' = C'A'·AB.
+  statement: $A,B,C$と$A',B',C'$がこの対応で相似ならば、対応する辺の比を積の形で書いた等式$AB\cdot B'C'=A'B'\cdot BC$、$BC\cdot C'A'=B'C'\cdot CA$、$CA\cdot A'B'=C'A'\cdot AB$が成り立つ。 ここで相似とは、対応する2頂点間の距離の比がすべて同じ正の数であることをいう。
+  statement_en: If A, B, C and A', B', C' are similar in this order, then AB·B'C' = A'B'·BC, BC·C'A' = B'C'·CA and CA·A'B' = C'A'·AB. Here similar means that all pairwise distances of corresponding vertices have the same positive ratio.
   assumptions:
   - $A,B,C$と$A',B',C'$はこの対応で相似
   quantifiers:
@@ -395,7 +395,7 @@
   kind: gap
   level: middle
   topic: 三角形・相似比と面積比
-  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）と正の数$r$について、$AB=r\,A'B'$、$BC=r\,B'C'$、$CA=r\,C'A'$ならば、2辺とその間の角の正弦で表した面積の式について$\frac12AB\cdot BC\sin\angle ABC=r^2\cdot\frac12A'B'\cdot B'C'\sin\angle A'B'C'$が成り立つ。面積比は相似比の2乗である。
+  statement: 三角形$ABC$と三角形$A'B'C'$（それぞれ3点は同一直線上にない）と正の数$r$について、$AB=r\,A'B'$、$BC=r\,B'C'$、$CA=r\,C'A'$ならば、2辺とその間の角の正弦で表した面積の式について$\frac12AB\cdot BC\sin\angle ABC=r^2\cdot\frac12A'B'\cdot B'C'\sin\angle A'B'C'$が成り立つ。
   statement_en: If A, B, C are not collinear, A', B', C' are not collinear, r > 0 and AB = r·A'B', BC = r·B'C', CA = r·C'A', then (1/2)AB·BC·sin∠ABC = r²·(1/2)A'B'·B'C'·sin∠A'B'C'.
   assumptions:
   - $A,B,C$は同一直線上にない
@@ -434,8 +434,8 @@
   kind: gap
   level: middle
   topic: 三角形・相似条件
-  statement: 点$D$が線分$AB$の内部、点$E$が線分$AC$の内部にあり$AD\cdot AB=AE\cdot AC$ならば、$A,D,E$と$A,C,B$はこの対応で相似である。$D$は$C$に、$E$は$B$に対応する。
-  statement_en: If D lies strictly between A and B, E lies strictly between A and C, and AD·AB = AE·AC, then A, D, E and A, C, B are similar in this order.
+  statement: 点$D$が線分$AB$の内部、点$E$が線分$AC$の内部にあり$AD\cdot AB=AE\cdot AC$ならば、$A,D,E$と$A,C,B$はこの対応で相似である。$D$は$C$に、$E$は$B$に対応する。 ここで相似とは、対応する2頂点間の距離の比がすべて同じ正の数であることをいう。
+  statement_en: If D lies strictly between A and B, E lies strictly between A and C, and AD·AB = AE·AC, then A, D, E and A, C, B are similar in this order. Here similar means that all pairwise distances of corresponding vertices have the same positive ratio.
   assumptions:
   - $D$は$A$と$B$の間にあり$A,B$と異なる
   - $E$は$A$と$C$の間にあり$A,C$と異なる
@@ -536,7 +536,7 @@
   - 'setup: Put h = A-M and d = C-B, so A-B = h + d/2 and A-C = h - d/2.'
   - 'derive: Expanding gives AB² - AC² = 2⟨h,d⟩.'
   - 'conclude: AB = AC iff the squares agree iff ⟨h,d⟩ = 0.'
-  openmath: (forall (a b c) (<-> (= (dist_of a b) (dist_of a c)) (perpendicular_lines a (midpoint_of b c) b c)))
+  openmath: (forall (a b c) (<-> (= (dist_of a b) (dist_of a c)) (= (inner_product (- a (midpoint_of b c)) (- c b)) 0)))
   hard_negative:
     statement: 直線$BC$上の点$H$で$AH$が$BC$に垂直なら、$H$が中点でなくても$AB=AC$である。
     reason: 垂線の足が中点のときに限る。$B=(0,0)$、$C=(4,0)$、$A=(1,1)$、$H=(1,0)$では$AB=\sqrt2$、$AC=\sqrt{10}$である。
@@ -707,7 +707,7 @@
   - 'derive: AB² = ‖h‖² + x²‖d‖² and AC² = ‖h‖² + (x-1)²‖d‖².'
   - 'derive: AB = AC and d ≠ 0 give x² = (x-1)².'
   - 'conclude: x = 1/2, so H is the midpoint.'
-  openmath: (forall (a b c h) (-> (and (!= b c) (= (dist_of a b) (dist_of a c)) (on_line h b c) (perpendicular_lines a h b c)) (= h (midpoint_of b c))))
+  openmath: (forall (a b c h) (-> (and (!= b c) (= (dist_of a b) (dist_of a c)) (on_line h b c) (= (inner_product (- a h) (- c b)) 0)) (= h (midpoint_of b c))))
   hard_negative:
     statement: $AB\neq AC$でも、$A$から$BC$への垂線の足は$BC$の中点である。
     reason: $B=(0,0)$、$C=(4,0)$、$A=(1,1)$では垂線の足は$(1,0)$であり、中点$(2,0)$ではない。
@@ -1119,7 +1119,7 @@
   - 'derive: A - H is orthogonal to H - X.'
   - 'derive: AX² = AH² + HX² ≥ AH².'
   - 'conclude: Compare the nonnegative lengths.'
-  openmath: (forall (a b c h x) (-> (and (on_line h b c) (perpendicular_lines a h b c) (on_line x b c)) (<= (dist_of a h) (dist_of a x))))
+  openmath: (forall (a b c h x) (-> (and (on_line h b c) (= (inner_product (- a h) (- c b)) 0) (on_line x b c)) (<= (dist_of a h) (dist_of a x))))
   hard_negative:
     statement: 直線$BC$上のすべての点$X$について$AH<AX$である。
     reason: $X=H$では等号が成り立つ。真に大きいのは$X\neq H$の点に限る。
@@ -1201,7 +1201,7 @@
   - 'construct: Take B = (0,0), C = (a,0), A = (x,y).'
   - 'derive: Direct computation gives BC = a, CA = b, AB = c.'
   - 'contradiction: Collinearity would force one side to equal the sum of the other two.'
-  openmath: (forall (a b c) (<-> (exists (x y z) (and (not (collinear_points x y z)) (= (dist_of y z) a) (= (dist_of z x) b) (= (dist_of x y) c))) (and (< a (+ b c)) (< b (+ c a)) (< c (+ a b)))))
+  openmath: (forall (a b c) (-> euclidean_plane_ambient (<-> (exists (x y z) (and (not (collinear_points x y z)) (= (dist_of y z) a) (= (dist_of z x) b) (= (dist_of x y) c))) (and (< a (+ b c)) (< b (+ c a)) (< c (+ a b))))))
   hard_negative:
     statement: 正の数$a,b,c$が$c<a+b$だけを満たせば、3辺が$a,b,c$の三角形がある。
     reason: $a=5$、$b=c=1$では$c<a+b$であるが、$a>b+c$なので三角形はない。
@@ -1288,7 +1288,7 @@
   - 'setup: Put h = A-H, x = B-H, y = C-H.'
   - 'derive: Expanding gives AB² - AC² = HB² - HC² + 2⟨h, y-x⟩.'
   - 'conclude: The two conditions are equivalent since y - x = C - B.'
-  openmath: (forall (a b c h) (<-> (perpendicular_lines a h b c) (= (- (^ (dist_of a b) 2) (^ (dist_of a c) 2)) (- (^ (dist_of h b) 2) (^ (dist_of h c) 2)))))
+  openmath: (forall (a b c h) (<-> (= (inner_product (- a h) (- c b)) 0) (= (- (^ (dist_of a b) 2) (^ (dist_of a c) 2)) (- (^ (dist_of h b) 2) (^ (dist_of h c) 2)))))
   hard_negative:
     statement: $A-H$と$C-B$の内積が$0$であることと、$AB^2+AC^2=HB^2+HC^2$は同値である。
     reason: 和では成り立たない。$H$が$BC$の中点で$AH\perp BC$、$A\neq H$なら、三平方の定理より左辺は右辺より$2AH^2$だけ大きい。
@@ -2088,7 +2088,7 @@
   openmath: (forall (a x h k) (-> (and (!= a x) (!= a h) (!= a k) (= (euclid_angle x h a) (/ pi 2)) (= (euclid_angle x k a) (/ pi 2))) (<-> (= (euclid_angle h a x) (euclid_angle k a x)) (= (dist_of x h) (dist_of x k)))))
   hard_negative:
     statement: $\angle XHA,\angle XKA$が直角でなくても、$\angle HAX=\angle KAX$ならば$XH=XK$である。
-    reason: $H,K$を半直線上で$A$からの距離が異なるようにとれば、$AX$が角を二等分していても$XH\neq XK$となる。
+    reason: $A=(0,0)$、$X=(1,0)$、$H=(1/2,\sqrt3/2)$、$K=(1,-\sqrt3)$とすると$\angle HAX=\angle KAX=\pi/3$だが$XH=1$、$XK=\sqrt3$である。このとき$\angle XHA,\angle XKA$は直角でない。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A X H K : P), A ≠ X → A ≠ H → A ≠ K → EuclideanGeometry.angle X H A = Real.pi / 2 → EuclideanGeometry.angle X K A = Real.pi / 2 → (EuclideanGeometry.angle H A X = EuclideanGeometry.angle K A X ↔ dist X H = dist X K)
   proof: |
@@ -2221,8 +2221,8 @@
   kind: gap
   level: middle
   topic: 三角形・中点連結定理
-  statement: 点$A,B,C$について、$BC,CA,AB$の中点をそれぞれ$D,E,F$とすると、$D,E,F$と$A,B,C$はこの対応で相似比$\frac12$の相似である。
-  statement_en: For points A, B, C with D, E, F the midpoints of BC, CA, AB, the triples D, E, F and A, B, C are similar in this order, with DE = AB/2, EF = BC/2 and FD = CA/2.
+  statement: 点$A,B,C$について、$BC,CA,AB$の中点をそれぞれ$D,E,F$とすると、$D,E,F$と$A,B,C$はこの対応で相似比$\frac12$の相似である。 ここで相似とは、対応する2頂点間の距離の比がすべて同じ正の数であることをいう。
+  statement_en: For points A, B, C with D, E, F the midpoints of BC, CA, AB, the triples D, E, F and A, B, C are similar in this order, with DE = AB/2, EF = BC/2 and FD = CA/2. Here similar means that all pairwise distances of corresponding vertices have the same positive ratio.
   assumptions:
   - $D,E,F$はそれぞれ$BC,CA,AB$の中点
   quantifiers:
@@ -2657,7 +2657,7 @@
   - 'derive: BH = |x|‖d‖ and HC = |1-x|‖d‖.'
   - 'case_split: If d = 0 both sides vanish.'
   - 'conclude: Otherwise x(1-x) ≥ 0 removes the absolute values.'
-  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (^ (dist_of a h) 2) (* (dist_of b h) (dist_of h c)))))
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (= (inner_product (- a h) (- c b)) 0)) (= (^ (dist_of a h) 2) (* (dist_of b h) (dist_of h c)))))
   hard_negative:
     statement: $\angle BAC$が直角でなくても、$H$が$A$から$BC$への垂線の足ならば$AH^2=BH\cdot HC$である。
     reason: $A=(0,1)$、$B=(-1,0)$、$C=(2,0)$、$H=(0,0)$では$\angle BAC$は直角でなく、$AH^2=1$、$BH\cdot HC=2$である。
@@ -2715,7 +2715,7 @@
   - 'derive: The right angle gives ‖h‖² = x(1-x)‖d‖².'
   - 'derive: AB² = ‖h‖² + x²‖d‖² = x‖d‖².'
   - 'conclude: If d ≠ 0 then x ≥ 0, so BH·BC = x‖d‖².'
-  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (^ (dist_of a b) 2) (* (dist_of b h) (dist_of b c)))))
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (= (inner_product (- a h) (- c b)) 0)) (= (^ (dist_of a b) 2) (* (dist_of b h) (dist_of b c)))))
   hard_negative:
     statement: 同じ仮定のもとで$AB^2=BH\cdot HC$である。
     reason: $HC$ではなく$BC$である。$AB^2=BH\cdot BC$であり、$AH^2$の方が$BH\cdot HC$に等しい。$AB=3$、$AC=4$では$BH=9/5$、$HC=16/5$で$BH\cdot HC\neq9$である。
@@ -2791,7 +2791,7 @@
   - 'derive: AH² = x(1-x)‖d‖², AB² = x‖d‖², AC² = (1-x)‖d‖².'
   - 'derive: Both squared products equal x(1-x)‖d‖⁴.'
   - 'conclude: Nonnegativity gives equality.'
-  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (perpendicular_lines a h b c)) (= (* (dist_of a h) (dist_of b c)) (* (dist_of a b) (dist_of a c)))))
+  openmath: (forall (a b c h) (-> (and (= (euclid_angle b a c) (/ pi 2)) (on_line h b c) (= (inner_product (- a h) (- c b)) 0)) (= (* (dist_of a h) (dist_of b c)) (* (dist_of a b) (dist_of a c)))))
   hard_negative:
     statement: $\angle BAC$が直角でなくても、$H$が$A$から$BC$への垂線の足ならば$AH\cdot BC=AB\cdot AC$である。
     reason: 一般には$AH\cdot BC=AB\cdot AC\sin\angle BAC$であり、正弦が$1$でなければ等しくない。正三角形では$\sin\angle BAC=\frac{\sqrt3}{2}$である。
@@ -2842,8 +2842,8 @@
   kind: gap
   level: middle
   topic: 三角形・直角三角形の垂線
-  statement: 直角三角形$ABC$（$A,B,C$は同一直線上になく$\angle BAC=\pi/2$）で、$H$が$A$から直線$BC$への垂線の足（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）ならば、$H,B,A$と$A,B,C$、$H,A,C$と$A,B,C$はそれぞれこの対応で相似である。
-  statement_en: If A, B, C are not collinear, ∠BAC = π/2, H lies on line BC and ⟨A-H,C-B⟩ = 0, then H, B, A is similar to A, B, C and H, A, C is similar to A, B, C, in these orders.
+  statement: 直角三角形$ABC$（$A,B,C$は同一直線上になく$\angle BAC=\pi/2$）で、$H$が$A$から直線$BC$への垂線の足（$H$は直線$BC$上、$\langle A-H,C-B\rangle=0$）ならば、$H,B,A$と$A,B,C$、$H,A,C$と$A,B,C$はそれぞれこの対応で相似である。 ここで相似とは、対応する2頂点間の距離の比がすべて同じ正の数であることをいう。
+  statement_en: If A, B, C are not collinear, ∠BAC = π/2, H lies on line BC and ⟨A-H,C-B⟩ = 0, then H, B, A is similar to A, B, C and H, A, C is similar to A, B, C, in these orders. Here similar means that all pairwise distances of corresponding vertices have the same positive ratio.
   assumptions:
   - $A,B,C$は同一直線上にない
   - $\angle BAC=\pi/2$

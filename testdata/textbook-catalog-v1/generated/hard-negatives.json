@@ -131,7 +131,7 @@
    "statement": "二階論理の理論についても、全ての有限部分集合がモデルをもてば全体がモデルをもつ。"
   },
   {
-   "reason": "非可算個の定数が互いに異なるという文を満たす構造は非可算なので、κ=ℵ₀では成り立たない。",
+   "reason": "言語が非可算個の定数記号$c_i$をもち、$M$で$c_i\\neq c_j$($i\\neq j$)がすべて成り立つとする。各$c_i\\neq c_j$は$M$で成り立つ文なので、$M$と初等同値な構造はこれらをすべて満たし、非可算でなければならない。よって$\\kappa=\\aleph_0$では成り立たない。",
    "recipe_id": "textbook.advanced_undergrad.lowenheim_skolem_up_and_down",
    "statement": "無限構造Mと任意の無限基数κに対し、Mと初等同値で濃度κの構造がある。言語の濃度は問わない。"
   },
@@ -161,9 +161,9 @@
    "statement": "極限の定義で量化子を入れ替え、あるδ>0が全てのε>0に対して同時に条件を満たすとしても同値である。"
   },
   {
-   "reason": "aの近くに定義域の点がなければ条件は空虚に満たされ、任意の値が極限の条件を満たしてしまう。",
+   "reason": "$x\\neq0$で$f(x)=0$、$f(0)=1$とすると、$x\\to0$（$x\\neq0$）の極限は$0$だが$f(0)=1$である。この極限は$a$での値と無関係である。",
    "recipe_id": "textbook.calculus_single.limit_unique",
-   "statement": "fの定義域がaの近くに点をもたない場合でも、極限の一意性は同じ定義のもとで成り立つ。"
+   "statement": "$x\\to a$（$x\\neq a$）で$f(x)\\to L$ならば、$L=f(a)$である。"
   },
   {
    "reason": "f(x)=0, g(x)=x^2, a=0とするとx≠aでf(x)<g(x)だが、極限はともに0である。",
@@ -211,9 +211,9 @@
    "statement": "半開区間(a,b]で連続な関数は有界である。"
   },
   {
-   "reason": "f(x)=x/2は(0,1)を(0,1)の中へ写す連続関数だが、(0,1)に不動点をもたない。",
+   "reason": "$a<b$のとき$f(x)=(x+a)/2$は$(a,b)$を$(a,b)$の中へ写す連続関数だが、不動点は$a$だけで$(a,b)$に属さない。閉区間であることが必要である。",
    "recipe_id": "textbook.calculus_single.fixed_point_unit_interval",
-   "statement": "fが開区間(0,1)で連続で(0,1)を(0,1)の中へ写すならば不動点をもつ。"
+   "statement": "$f$が開区間$(a,b)$で連続で$(a,b)$を$(a,b)$の中へ写すならば不動点をもつ。"
   },
   {
    "reason": "f(0)=1, f(1)=0で他の点ではf(x)=xとすると単射だが単調ではない。",
@@ -256,9 +256,9 @@
    "statement": "exp(f(x))のaでの微分係数はexp(u)である。"
   },
   {
-   "reason": "実対数は正の数にしか定義されないので、f(a)<0ではaの近くでlog f(x)が定義されない。log|f(x)|なら別の主張である。",
+   "reason": "$f(x)=x$、$a=0$では$f(a)=0$で、$\\log x$は$0$の近くで$-\\infty$へ発散するので$0$で微分可能でない。$f(a)>0$という仮定が必要である。",
    "recipe_id": "textbook.calculus_single.log_composite_derivative",
-   "statement": "f(a)<0でも通常の実対数のlog f(x)はaで微分可能である。"
+   "statement": "$f$が$a$で微分可能で$f(a)\\geq0$ならば、$x\\mapsto\\log f(x)$は$a$で微分可能である。"
   },
   {
    "reason": "度数法ではsin(πx/180)を微分することになり、導関数に係数π/180が現れる。",
@@ -391,9 +391,9 @@
    "statement": "b<aでもm(b-a)≤∫_a^b f≤M(b-a)である。"
   },
   {
-   "reason": "f(x)=x, g(x)=1, a=-1, b=1では1/xが0の近くで積分可能でないので、公式は意味をもたない。",
+   "reason": "$f(x)=x$、$g(x)=1$、区間$[0,2]$では、$1/x$は$0$の近くで積分可能でなく、$\\log f(0)$も定義されない。分母が$0$になる点では公式は意味をもたない。",
    "recipe_id": "textbook.calculus_single.integral_logarithmic_derivative",
-   "statement": "fが閉区間内で0になっても同じ公式が成り立つ。"
+   "statement": "$f$が閉区間内で$0$になっても同じ公式が成り立つ。"
   },
   {
    "reason": "∫_0^t e^x dx=e^t-1はt→+∞で発散する。",
@@ -421,9 +421,9 @@
    "statement": "不等式|f|≤gが成り立ちfが積分可能ならば、gも積分可能である。"
   },
   {
-   "reason": "ディリクレ関数は有界だが、有理数の分点をとる和は1で、無理数の分点をとる和は0となり、リーマン積分可能でない。",
+   "reason": "$[0,1]$上のディリクレ関数（有理数で$1$、無理数で$0$）は有界である。分点$k/(n+1)$は全て有理数なので左端点リーマン和は常に$1$だが、積分は$0$である。連続性（または積分可能性）が必要である。",
    "recipe_id": "textbook.calculus_single.riemann_sum_convergence",
-   "statement": "fが[a,b]で有界であれば、等分のリーマン和は常に積分に収束する。"
+   "statement": "$f$が$[a,b]$で有界であれば、等分の左端点リーマン和は常に積分に収束する。"
   },
   {
    "reason": "A=B={1}では左辺が1、右辺が2である。この等式にはAとBが互いに素であることが必要である。",
@@ -501,9 +501,9 @@
    "statement": "Σ_{m=k}^{n}C(m,k)=C(n+1,k)である。"
   },
   {
-   "reason": "n=1では左辺が1、右辺が2である。正しい右辺はn≥1でn・2^{n-1}である。",
+   "reason": "$n=1$では左辺が$1$、右辺が$2$である。$2$倍した左辺が$n2^n$に等しく、$2$倍を落とすと$n2^{n-1}$になる。",
    "recipe_id": "textbook.combinatorics_graphs.weighted_sum_binomials",
-   "statement": "Σ_{k=0}^{n}k・C(n,k)=n・2^nである。"
+   "statement": "$\\sum_{k=0}^{n}k\\binom{n}{k}=n\\,2^n$である。"
   },
   {
    "reason": "n=1では左辺が2、右辺が4である。2^{2n}は(ΣC(n,k))^2であり、平方の和ではない。",
@@ -721,9 +721,9 @@
    "statement": "ネーター環上の任意の加群の随伴素イデアルは有限個である。"
   },
   {
-   "reason": "R=k[x_1,x_2,…]/(x_1^2,x_2^2,…)の唯一の素イデアル(x_i)はどの元の零化イデアルでもないのでAss(R)は空だが、x_1は零因子である。",
+   "reason": "R=k[x_1,x_2,…]/(x_1^2,x_2^2,…)の唯一の素イデアル$(x_1,x_2,\\dots)$はどの元$a$の零化イデアル$\\operatorname{Ann}(a)$にもならない(0でない$a$に現れない変数$x_j$を掛けると0にならない)。よってAnn(x)の形の随伴素イデアルは存在しないが、x_1は零因子である。",
    "recipe_id": "textbook.commutative_algebra.zero_divisors_union_associated_primes",
-   "statement": "ネーターでない可換環上でも、零因子全体は随伴素イデアルの和集合に等しい。"
+   "statement": "ネーターでない可換環上でも、零因子全体は(Ann(x)=Pの形で定まる)随伴素イデアルの和集合に等しい。"
   },
   {
    "reason": "Z上でx=π, y=-πとするとx+y=0は整だが、πはZ上整でない。",
@@ -731,9 +731,9 @@
    "statement": "x+yがR上整ならxとyもR上整である。"
   },
   {
-   "reason": "R=Z[√-3]では(1+√-3)/2がx^2-x+1の根で分数体に属し、Rに属さない。Rが整閉とは限らない。",
+   "reason": "モニックの仮定が必要である。$R=\\mathbb{Z}$, $A=\\mathbb{Q}$では$C=\\mathbb{Z}$で、$x=1/2$は$2x-1=0$を満たす($\\mathbb{Z}$係数の非モニック式の根)が、$\\mathbb{Z}$上整でない。",
    "recipe_id": "textbook.commutative_algebra.integral_over_integral_closure_is_integral",
-   "statement": "整域Rの分数体におけるRの整閉包はR自身である。"
+   "statement": "$x$が$R$の$A$における整閉包$C$上で代数的(非モニックな多項式の根)であれば、$x$は$R$上整である。"
   },
   {
    "reason": "Z→Z/2は全射なので整だが、Z/2は体でZは体でない。単射の仮定が必要である。",
@@ -1356,9 +1356,9 @@
    "statement": "有限次拡大はつねに正規拡大である。"
   },
   {
-   "reason": "既約性が必要である。f=(X-1)^2はf'=2(X-1)≠0だが重根を持つ。",
+   "reason": "既約性が必要である。$f=(X-1)^2\\in\\mathbb{Q}[X]$は$f'=2(X-1)\\neq 0$だが、$\\gcd(f,f')=X-1$が定数でないので分離的でない。",
    "recipe_id": "textbook.field_galois.irreducible_separable_iff_derivative_ne_zero",
-   "statement": "任意の多項式fについて、f'≠0ならばfは分離的である。"
+   "statement": "$\\mathbb{Q}$上の任意の多項式$f$について、$f'\\neq 0$ならば$f$は分離的である。"
   },
   {
    "reason": "F_p(t)はtのp乗根を持たず、X^p-tは既約だが分離的でない。",
@@ -1456,9 +1456,9 @@
    "statement": "任意の体F上で円分拡大の次数はφ(n)である。"
   },
   {
-   "reason": "根はFの拡大には必ず存在する。定理が否定するのは、その根がべき根で表されることである。Q上のX^5-4X+2はS_5をガロア群に持つが、複素根は存在する。",
+   "reason": "既約性が必要である。$F=\\mathbb{Q}$、$x=0$、$q=X(X^5-4X+2)$とすると、$x\\in F$は自明にべき根で解け$q(0)=0$だが、$q$の分解体は$X^5-4X+2$の分解体であり、そのガロア群$S_5$は可解でない。",
    "recipe_id": "textbook.field_galois.abel_ruffini_solvable_by_radicals_implies_solvable_group",
-   "statement": "ガロア群が可解でない既約多項式は根を持たない。"
+   "statement": "$q\\in F[X]$が既約でなくても、$q(x)=0$を満たす$x\\in E$がべき根で解けるならば$q$のガロア群は可解である。"
   },
   {
    "reason": "Q上のX^3-2のガロア群はS_3と同型で、アーベル群でない。",
@@ -1481,9 +1481,9 @@
    "statement": "Qの任意の有限次拡大はα^3=2となるαを含まない。"
   },
   {
-   "reason": "平方根を外すと次数が合わず、a=b=4では16≤4が偽である。",
+   "reason": "指数は項数$n$に応じて$1/n$でなければならず、2変数版の形をそのまま3変数に流用できない。$a=b=c=4$では左辺$\\sqrt{64}=8$、右辺$4$で偽である。3個以上の場合は有限族版を使う。",
    "recipe_id": "textbook.fourier_convex_numeric.amgm_two_variables",
-   "statement": "任意の実数a,bについてab≤(a+b)/2が成り立つ。"
+   "statement": "3つの非負実数$a,b,c$についても$\\sqrt{abc}\\leq\\frac{a+b+c}{3}$が成り立つ。"
   },
   {
    "reason": "z_1=z_2=-1では相乗平均は1で相加平均は-1なので不等式は成り立たない。",
@@ -1491,9 +1491,9 @@
    "statement": "負の数を含む実数z_1,…,z_nでも、偶数個の積が非負なら相乗平均は相加平均以下である。"
   },
   {
-   "reason": "交差項2abcdが消えないので、a=b=c=d=1では4≤2となり偽である。",
+   "reason": "右辺の和の項数は成分数に合わせる必要がある。$a=b=c=d=0$、$e=f=1$では左辺$1$、右辺$0$で偽である。成分数が一般の場合は有限和版を使う。",
    "recipe_id": "textbook.fourier_convex_numeric.cauchy_schwarz_two_dimensional",
-   "statement": "実数a,b,c,dについて(ac+bd)^2≤a^2c^2+b^2d^2が成り立つ。"
+   "statement": "3成分の積和$ac+bd+ef$についても$(ac+bd+ef)^2\\leq(a^2+b^2)(c^2+d^2)$が成り立つ。"
   },
   {
    "reason": "積の和と和の積は異なり、f=g=1でsが2点なら左辺は2、右辺は4である。",
@@ -1591,7 +1591,7 @@
    "statement": "d次元ではsの凸包の点はsの高々d個の点の凸包に属する。"
   },
   {
-   "reason": "無限次元では端点の凸包が閉とは限らず、閉包を外すと一般には成り立たない。",
+   "reason": "閉包は外せない。$\\ell^2$で$s=\\overline{\\mathrm{conv}}(\\{0\\}\\cup\\{e_n/n\\mid n\\geq1\\})$はコンパクト凸で、端点は$\\{0\\}\\cup\\{e_n/n\\}$に含まれる。$x=\\sum_{n\\geq1}2^{-n}(e_n/n)$は$s$の点だが非零成分が無限個あり、端点の有限凸結合では書けないので$\\operatorname{conv}(\\operatorname{ext}s)$に属さない。",
    "recipe_id": "textbook.fourier_convex_numeric.krein_milman_theorem",
    "statement": "コンパクト凸集合はその端点全体の凸包に等しい（閉包は不要である）。"
   },
@@ -1641,9 +1641,9 @@
    "statement": "第n係数は正規化なしの∫_a^b e^(-2πinx/(b-a))f(x)dxに等しい。"
   },
   {
-   "reason": "可積分性だけでは減衰の速さは定まらず、1/|n|より遅く減衰する係数をもつ可積分関数がある。",
+   "reason": "$c_n$は正規化された測度で定義されるので、非正規化の積分は$T$倍される。$T<1$、$f\\equiv1$、$n=0$では$c_0(f)=1$だが$\\int_0^T1\\,dx=T<1$で偽である。",
    "recipe_id": "textbook.fourier_convex_numeric.fourier_coefficient_l1_bound",
-   "statement": "第n係数の絶対値はn→∞で常に1/|n|以下に減衰する。"
+   "statement": "測度を長さ$T$のルベーグ測度（総質量$T$）にしても$|c_n(f)|\\leq\\int_0^T|f(x)|\\,dx$が成り立つ。"
   },
   {
    "reason": "等号には完全性が必要で、C^2の1本のv=e_1とx=e_2では左辺0, 右辺1である。",
@@ -1666,9 +1666,9 @@
    "statement": "連続関数のフーリエ級数は係数の条件なしに全ての点でfに収束する。"
   },
   {
-   "reason": "f=1は可積分でなく、この積分は通常の意味で定まらない。可積分性は外せない。",
+   "reason": "リーマン＝ルベーグの補題は$0$への収束だけを保証する。$f=1_{[0,1]}$では$|\\widehat{f}(w)|=|\\sin(\\pi w)|/(\\pi|w|)$であり、これは$\\mathbb{R}$上で可積分でない。",
    "recipe_id": "textbook.fourier_convex_numeric.riemann_lebesgue_real_line",
-   "statement": "有界な連続関数fについても∫e^(-2πivw)f(v)dv→0である。"
+   "statement": "$f$が可積分ならばそのフーリエ変換$\\widehat{f}$も$\\mathbb{R}$上で可積分である。"
   },
   {
    "reason": "一般に等号ではなく、ガウス関数ではw≠0で左辺は右辺より真に小さい。",
@@ -1676,9 +1676,9 @@
    "statement": "全てのwで|∫e^(-2πivw)f(v)dv|=∫|f(v)|dvが成り立つ。"
   },
   {
-   "reason": "周期化やフーリエ級数の収束が保証されず、この等式が成り立たない連続可積分関数の例が知られている。",
+   "reason": "周期化$\\sum_nf(x+n)$が発散しうる。$\\varphi$を台が$[-1,1]$の連続な山型関数で$\\varphi(0)=1$とし、$f(x)=\\sum_{k\\geq1}k\\,\\varphi(k^3(x-k))$とおくと、$f$は連続で$\\int f=O(\\sum k^{-2})<\\infty$だが、$\\sum_nf(n)=\\sum_kk$は発散する。",
    "recipe_id": "textbook.fourier_convex_numeric.poisson_summation_power_decay",
-   "statement": "fが連続で可積分でさえあれば、減衰条件なしにポアソン和公式が成り立つ。"
+   "statement": "$f$が連続で可積分でさえあれば、減衰条件なしにポアソン和公式が成り立つ。"
   },
   {
    "reason": "多項式全体に[0,1]上の最大値ノルムを入れた空間で微分作用素を考えると、‖x^n‖=1だが‖(x^n)'‖=nとなり有界でない。",
@@ -1756,7 +1756,7 @@
    "statement": "閉部分空間であれば真部分空間でなくても同じ結論が成り立つ。"
   },
   {
-   "reason": "閉単位球はどのノルム空間でも有界閉集合である。必要なのはコンパクト性である。",
+   "reason": "閉単位球は任意のノルム空間で有界閉集合なので、この仮定は常に成り立つ。ℓ²は無限次元であり、正規直交系$(e_n)$は$\\|e_n-e_m\\|=\\sqrt2$を満たして収束部分列をもたないので、閉単位球はコンパクトでない。",
    "recipe_id": "textbook.functional_analysis.compact_unit_ball_implies_finite_dimensional",
    "statement": "閉単位球が有界閉集合であるノルム空間は有限次元である。"
   },
@@ -1871,9 +1871,9 @@
    "statement": "完備でない内積空間の間の有界線形作用素にも、この等式を満たす有界作用素が必ず存在する。"
   },
   {
-   "reason": "ℂ上のT(z)=izではT*(z)=-izなのでT*≠Tである。ノルムの等式はT*=Tを必要としない。",
+   "reason": "$\\mathbb{C}$上の$T(z)=iz$では$T^*(z)=-iz$で$T^*\\neq T$だが、$\\|T^*\\|=\\|T\\|=1$である。",
    "recipe_id": "textbook.functional_analysis.adjoint_norm_eq",
-   "statement": "T*=Tが全ての有界作用素で成り立つのでノルムも等しい。"
+   "statement": "$\\|T^*\\|=\\|T\\|$が成り立つのは$T^*=T$のときに限る。"
   },
   {
    "reason": "ℝ²でS(a,b)=(0,b)、T(a,b)=(a,0)とするとS T=0だが‖S‖‖T‖=1である。S=T*の特殊性が必要である。",
@@ -1936,9 +1936,9 @@
    "statement": "重心$G$は中線$AM$を$A$の側から$1:2$に内分する。"
   },
   {
-   "reason": "2本の中線の共有点は重心だけであり、頂点$A$は直線$BM$の上にない。$A$が直線$BM$上にあれば、$M$が辺$CA$の中点なので$C$も直線$AB$上にあることになる。",
+   "reason": "$A=(0,0)$、$B=(1,0)$、$C=(0,1)$、$D=BC$の中点、$E=CA$の中点、$F=(3/4,0)$とする。直線$AD$と$BE$は$(1/3,1/3)$で交わるが、直線$CF$は$x=1/3$で$y=5/9\\neq 1/3$なので、この点を通らない。共点になるには中点（一般にはチェバの条件）が要る。",
    "recipe_id": "textbook.geometry_centers.medians_concurrent_at_centroid",
-   "statement": "中線を含む直線のうち2本だけの上にある点は、三角形の頂点になることがある。"
+   "statement": "三角形の各頂点と対辺上の任意の点を結ぶ3本の直線は、いつでも1点で交わる。"
   },
   {
    "reason": "これは長さの和であり、ベクトルの和とは別の量である。$A=(0,0)$、$B=(1,0)$、$C=(0,1)$では重心での和は約$1.96$だが、$P=(\\frac{1}{5},\\frac{1}{5})$での和は約$1.93$である。",
@@ -2111,9 +2111,9 @@
    "statement": "$D,E,F$が同一直線上になくても、3点が各辺上にあれば長さの比の積は$1$である。"
   },
   {
-   "reason": "$t=0$なら$F=A$であり、$s=1$なら$E=A$である。このとき$p=A$は任意の$r$で3直線の上にあるが、$s=1$では$\\frac{s}{1-s}$の分母が$0$になり、積は定まらない。",
+   "reason": "$r=s=t=\\frac{1}{2}$（$D,E,F$が各辺の中点）では3直線$AD,BE,CF$は重心で交わり、各因子は$1$なので積は$1$であって$-1$ではない。$-1$になるのは$D,E,F$が同一直線上にあるときである。",
    "recipe_id": "textbook.geometry_centers.ceva_theorem",
-   "statement": "$r,s,t$に$0$が含まれていても積は$1$である。"
+   "statement": "チェバの定理の積は$\\frac{r}{1-r}\\cdot\\frac{s}{1-s}\\cdot\\frac{t}{1-t}=-1$である（メネラウスの定理の符号）。"
   },
   {
    "reason": "符号の条件が必要である。メネラウスの定理の配置では$D,E,F$が同一直線上にあって長さの比の積が$1$になるが、3直線$AD,BE,CF$は一般に1点で交わらない。",
@@ -2501,9 +2501,9 @@
    "statement": "同じ条件で、ハウスドルフ性を除いても滑らかな1の分割が存在する。"
   },
   {
-   "reason": "等式の展開には内積が必要である。ℓ^∞ノルムなど平行四辺形則を満たさないノルムでは、角と内積が定まらない。",
+   "reason": "正三角形で$|ab|=|cb|=|ac|=1$、$\\angle abc=\\pi/3$とすると、左辺は$1$、右辺は$1+1+2\\cdot\\frac12=3$であり一致しない。",
    "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
-   "statement": "任意のノルム空間で同じ等式が成り立つ。"
+   "statement": "余弦定理の符号を取り違えた等式$|ac|^2=|ab|^2+|cb|^2+2|ab||cb|\\cos\\angle abc$が常に成り立つ。"
   },
   {
    "reason": "ℝ²のℓ^∞ノルムでx=(1,0), y=(0,1)とすると左辺は2、右辺は4である。",
@@ -2781,7 +2781,7 @@
    "statement": "$AB=A'B'$と$BC=B'C'$だけで、$A,B,C$と$A',B',C'$は合同である。"
   },
   {
-   "reason": "等しい角が2辺の間にない。$\\angle C$が鋭角なら、$B$を中心とする半径$AB$の円が半直線$CA$と2点で交わることがあり、第3辺が2通りに定まる。",
+   "reason": "$\\angle C=\\pi/6$、$BC=4$、$AB=3$とすると、余弦定理から$AC^2-4\\sqrt3\\,AC+7=0$で、$AC=2\\sqrt3\\pm\\sqrt5$はどちらも正である。角$C$と2辺$AB,BC$が等しく$CA$が異なる2つの三角形があるので合同でない。",
    "recipe_id": "textbook.geometry_triangle.triangle_congruent_sas",
    "statement": "$\\angle ACB=\\angle A'C'B'$、$AB=A'B'$、$BC=B'C'$ならば、$A,B,C$と$A',B',C'$は合同である。"
   },
@@ -2801,7 +2801,7 @@
    "statement": "対応する3つの角がすべて等しければ、$A,B,C$と$A',B',C'$は合同である。"
   },
   {
-   "reason": "角が2辺の間にない条件になる。鋭角$\\angle ABC$のもとで$A$を中心とする半径$CA$の円が半直線$BC$と2点で交わると、第3辺が2通りに定まる。",
+   "reason": "$\\angle B=\\pi/6$、$AB=4$、$CA=3$とすると、余弦定理から$BC^2-4\\sqrt3\\,BC+7=0$で、$BC=2\\sqrt3\\pm\\sqrt5$はどちらも正である。角が鋭角で$AB,CA$が等しくても第3辺が異なる2つの三角形がある。",
    "recipe_id": "textbook.geometry_triangle.right_triangle_congruent_hypotenuse_leg",
    "statement": "$\\angle ABC=\\angle A'B'C'$が直角でなく等しい鋭角のときも、$CA=C'A'$、$AB=A'B'$なら合同である。"
   },
@@ -2821,7 +2821,7 @@
    "statement": "各辺の比が等しくなくても、$ab>a'b'$、$bc>b'c'$、$ca>c'a'$ならば対応する角は等しい。"
   },
   {
-   "reason": "等しい角が比をとる2辺の間にない。$C$での角が鋭角のとき、$B$を中心とする円が半直線$CA$と2点で交わる配置があり、第3辺の比が定まらない。",
+   "reason": "$r=1$とし、$\\angle C=\\pi/6$、$CB=4$、$AB=3$の三角形を考えると$CA=2\\sqrt3\\pm\\sqrt5$の2通りがある。$AB=A'B'$、$CB=C'B'$、$\\angle C=\\angle C'$だが$CA\\neq C'A'$で、相似比は$1$しかありえないので相似でない。",
    "recipe_id": "textbook.geometry_triangle.triangle_similar_sas_ratio",
    "statement": "$AB=r\\,A'B'$、$CB=r\\,C'B'$、$\\angle BCA=\\angle B'C'A'$ならば相似である。"
   },
@@ -3016,7 +3016,7 @@
    "statement": "$D$が直線$BC$上の点で線分の外にあっても、$AB/AC=BD/DC$ならば$\\angle BAD=\\angle DAC$である。"
   },
   {
-   "reason": "$H,K$を半直線上で$A$からの距離が異なるようにとれば、$AX$が角を二等分していても$XH\\neq XK$となる。",
+   "reason": "$A=(0,0)$、$X=(1,0)$、$H=(1/2,\\sqrt3/2)$、$K=(1,-\\sqrt3)$とすると$\\angle HAX=\\angle KAX=\\pi/3$だが$XH=1$、$XK=\\sqrt3$である。このとき$\\angle XHA,\\angle XKA$は直角でない。",
    "recipe_id": "textbook.geometry_triangle.right_triangles_common_hypotenuse_equal_angle_iff_equal_leg",
    "statement": "$\\angle XHA,\\angle XKA$が直角でなくても、$\\angle HAX=\\angle KAX$ならば$XH=XK$である。"
   },
@@ -3106,9 +3106,9 @@
    "statement": "群の2つの部分群の積集合HKは常に部分群である。"
   },
   {
-   "reason": "ab⁻¹∈Hが対応するのは右剰余類の等式Ha=Hbである。Hが正規でないとき、S₃などで左剰余類の条件とは一致しない。",
+   "reason": "$ab^{-1}\\in H$は右剰余類の等式$Ha=Hb$に対応する条件である。$G=S_3$、$H=\\{e,(1\\ 2)\\}$、$a=(1\\ 3)$、$b=(1\\ 3)(1\\ 2)$とすると、$b=a(1\\ 2)$より$aH=bH$であるが、$ab^{-1}=(1\\ 3)(1\\ 2)(1\\ 3)=(2\\ 3)\\notin H$である。",
    "recipe_id": "textbook.group_theory.left_coset_eq_iff_inv_mul_mem",
-   "statement": "aH=bHであることとab⁻¹∈Hであることは同値である。"
+   "statement": "群$G$の部分群$H$と$a,b\\in G$について、$aH=bH$であることと$ab^{-1}\\in H$であることは同値である。"
   },
   {
    "reason": "S₃で非正規な位数2の部分群Hをとると、左剰余類と右剰余類はちょうど1元だけ共有することがある。",
@@ -3216,9 +3216,9 @@
    "statement": "群準同型f:G→Hについて常にG/ker f≅Hである。"
   },
   {
-   "reason": "正規性がないと右辺が群にならない。S₃の異なる位数2の部分群では、HKが部分群でない。",
+   "reason": "右辺は$HN/N$でなければならない。$G=S_3$、$H=\\{e\\}$、$N=A_3$とすると、$H/(H\\cap N)$は自明群であるが、$G/N$は位数$2$の群なので同型でない。",
    "recipe_id": "textbook.group_theory.second_isomorphism_theorem",
-   "statement": "H,Kが正規とは限らない部分群のとき、H/(H∩K)≅HK/Kである。"
+   "statement": "群$G$の部分群$H$と正規部分群$N$について、$H/(H\\cap N)\\cong G/N$である。"
   },
   {
    "reason": "右辺はG/Mでなければならない。M=GかつN≠Gのとき、左辺は自明群だが右辺はG/Nで自明でない。",
@@ -3891,7 +3891,7 @@
    "statement": "det A=0でもAx=bの解はx_i=det(A_i(b))/det Aで与えられる。"
   },
   {
-   "reason": "v_1=v_2のとき2行が等しいので行列式は0だが、v_1=v_2=1でn=2なら和の積は2である。",
+   "reason": "有理数体では成り立たない。n=2, v=(1,2)とすると行列式は2-1=1だが、積は1+2=3である。標数2では$v_j-v_i=v_j+v_i$となり両者は一致するので、反例には体を指定する必要がある。",
    "recipe_id": "textbook.linear_basic.vandermonde_det",
    "statement": "ファンデルモンドの行列式はΠ_{i<j}(v_i+v_j)である。"
   },
@@ -4126,9 +4126,9 @@
    "statement": "全てのnでP(n)ならばP(n+1)が成り立てば、全てのnでP(n)が成り立つ。"
   },
   {
-   "reason": "k未満のnには何も言えない。P(n)をn≥kとすると仮定は成り立つが、n<kでは偽である。",
+   "reason": "$k$未満の$n$については何も言えない。$k\\geq1$のとき、$P(n)$を「$n\\geq k$」とすると仮定は成り立つが、$P(0)$は偽である。",
    "recipe_id": "textbook.logic_sets.shifted_base_induction",
-   "statement": "同じ仮定のもとで全ての自然数nについてP(n)が成り立つ。"
+   "statement": "同じ仮定のもとで、全ての自然数$n$（$k$未満も含む）で$P(n)$が成り立つ。"
   },
   {
    "reason": "整数全体は最小元を持たない。下に有界であることが必要である。",
@@ -4321,9 +4321,9 @@
    "statement": "符号付きの可積分関数列についても、積分と級数は常に交換できる。"
   },
   {
-   "reason": "ここで示した指示関数列は各点で0に収束するが、積分は全て1のままである。",
+   "reason": "$f_n=1_{(n,n+1]}$は各点で$0$に収束するが、$\\int f_n\\,d\\mu=1$は$\\int 0\\,d\\mu=0$に収束しない。優関数または単調性が必要である。",
    "recipe_id": "textbook.measure_integration.pointwise_limit_integral_counterexample",
-   "statement": "各点で0に収束する非負関数列の積分は必ず0に収束する。"
+   "statement": "各点で$f$に収束する非負可測関数列$f_n$について、積分も$\\int f\\,d\\mu$に収束する。"
   },
   {
    "reason": "f=1_{[0,1]},ε=2では左辺は0で右辺は1である。不等号の向きが逆である。",
@@ -4461,9 +4461,9 @@
    "statement": "両端の縦の射が全単射で図式が可換なら、行の完全性を仮定しなくても中央の縦の射は全単射である。"
   },
   {
-   "reason": "f2が全射でなければι3(k)の持ち上げyが存在しないことがあり、δ(k)を定められない。g1が単射でなければzが一意に決まらず、π1(z)がkだけで決まるとは限らない。",
+   "reason": "$f_2$の全射性が必要である。$M_1=M_2=0$, $M_3=\\mathbb{Z}$, $N_1=N_2=N_3=0$、縦の写像はすべて零とすると、行は$M_2,N_2$で完全で$g_1$は単射である。$K_3=\\mathbb{Z}$, $K_2=C_1=C_2=0$, $F=0$なので$\\ker\\delta=\\operatorname{im}F=0$が必要だが、$\\delta:\\mathbb{Z}\\to0$の核は$\\mathbb{Z}$である。",
    "recipe_id": "textbook.modules_categories.snake_lemma_modules",
-   "statement": "f2の全射性とg1の単射性がなくても、同じδがK3からC1へ定義できる。"
+   "statement": "$f_2$が全射でなくても、同じ結論($\\ker\\delta=\\operatorname{im}F$かつ$\\ker G=\\operatorname{im}\\delta$を満たす$\\delta:K_3\\to C_1$の存在)が成り立つ。"
   },
   {
    "reason": "分裂しない列がある。0→Z→Z→Z/2Z→0(2倍写像と射影)ではZ/2Z→Zの非零線形写像がなく、切断は存在しない。",
@@ -4581,9 +4581,9 @@
    "statement": "関手Gの左随伴と右随伴は自然同型である。"
   },
   {
-   "reason": "左右を取り違えている。この全単射はG⊣Fを述べており、F⊣Gからは従わない。",
+   "reason": "これは$G\\dashv F$を述べており$F\\dashv G$からは従わない。忘却関手$U:\\mathbf{Top}\\to\\mathbf{Set}$は離散位相を与える$D$の右随伴だが、$X=\\mathbb{R}$, $Y=\\{0,1\\}$では$\\mathrm{Hom}_{\\mathbf{Set}}(U(X),Y)$は$2^{|\\mathbb{R}|}$個、$\\mathrm{Hom}_{\\mathbf{Top}}(X,D(Y))$は定数写像の$2$個で、全単射がない。",
    "recipe_id": "textbook.modules_categories.adjunction_hom_bijection",
-   "statement": "随伴F⊣Gがあれば、Hom(X,F(Y))とHom(G(X),Y)が全単射である。"
+   "statement": "随伴$F\\dashv G$があれば、$G(X)$から$Y$への射と$X$から$F(Y)$への射の間にも自然な全単射がある。"
   },
   {
    "reason": "一般に保たない。忘却関手Grp→Setは右随伴だが、群の余積(自由積)を集合の直和へ移さない。",
@@ -4591,9 +4591,9 @@
    "statement": "右随伴関手は余極限も保つ。"
   },
   {
-   "reason": "一意なのは同型を除いてである。集合A≠Bの積の頂点としてA×BもB×Aも取れるが、この2つは集合として異なる。",
+   "reason": "一意なのは同型を除いてである。$A=\\{0\\}$, $B=\\{1\\}$の積の頂点として$\\{(0,1)\\}$も$\\{(1,0)\\}$(射影を入れ替えたもの)も取れるが、集合として異なる。",
    "recipe_id": "textbook.modules_categories.limit_cone_unique_up_to_iso",
-   "statement": "同じ図式の極限の頂点は等しい。"
+   "statement": "同じ図式の極限錐の頂点は(同型でなく)等しい。"
   },
   {
    "reason": "一般の圏では成り立たない。ハウスドルフ空間の圏で包含Q→Rはエピ射だが、1点{√2}→Rに沿う引き戻しは空集合から1点への射となり、エピ射でない。",
@@ -4796,9 +4796,9 @@
    "statement": "全ての実数bについて∫exp(-bx^2)dx=√(π/b)が可積分性とともに成り立つ。"
   },
   {
-   "reason": "√πは1次元の積分の値である。2次元では2つの因子の積になるのでπである。",
+   "reason": "$\\sqrt{\\pi/b}$は1次元の積分の値である。2次元では2つの1次元積分の積になるので$\\pi/b$である。$b=1$では$\\pi\\neq\\sqrt{\\pi}$である。",
    "recipe_id": "textbook.multivariable.gaussian_integral_plane",
-   "statement": "∫_{R^2}exp(-(x^2+y^2))dxdy=√πである。"
+   "statement": "$b>0$のとき$\\int_{\\mathbb{R}^2}\\exp(-b(x^2+y^2))\\,dx\\,dy=\\sqrt{\\pi/b}$である。"
   },
   {
    "reason": "このときQ_x-P_yは原点以外で0だが、境界の線積分は2πである。原点で滑らかでないので定理の仮定を満たさない。",
@@ -4806,9 +4806,9 @@
    "statement": "原点を含む長方形でも、原点を除いて滑らかな場P=-y/(x^2+y^2), Q=x/(x^2+y^2)について同じ等式が成り立つ。"
   },
   {
-   "reason": "発散定理から分かるのはdiv Fの積分が0であることだけである。n=0の[0,1]上でF(x)=x(1-x)は端点で0だが恒等的に0でない。",
+   "reason": "向かい合う面の寄与は引き算でなければならない。$n=0$、$[0,1]$上で$F\\equiv1$（$\\operatorname{div}F=0$）では左辺$0$、右辺$F(1)+F(0)=2$で偽である。",
    "recipe_id": "textbook.multivariable.divergence_theorem_box",
-   "statement": "Fが直方体の境界上で0ならばF自身が直方体上で恒等的に0である。"
+   "statement": "面$x_i=a_i$上の積分を引かずに足しても成り立つ。すなわち$\\int_{[a,b]}\\operatorname{div}F=\\sum_i\\bigl(\\int_{x_i=b_i}F_i+\\int_{x_i=a_i}F_i\\bigr)$である。"
   },
   {
    "reason": "勾配場でなければ成り立たない。(P,Q)=(-y,x)の線積分は単位円の上半分と下半分で値がπと-πになる。",
@@ -5116,9 +5116,9 @@
    "statement": "同じ仮定のもとで、解の距離は時間とともに増えない。すなわちdist(f(t),g(t))≤dist(f(a),g(a))である。"
   },
   {
-   "reason": "時間幅の条件がないと解は閉球を出てしまう。f≡L>0でa=1とすれば、解x₀+Ltは時間1/Lの後に閉球の外に出て、閉球上の仮定が使えない。",
+   "reason": "時間幅の条件は外せない。$E=\\mathbb{R}$、$x_0=0$、$a=1$、$L=1$、$K=0$、$I=[0,2]$、$t_0=0$、$f(t,x)=1$（$x\\leq1$）、$f(t,x)=0$（$x>1$）とする。閉球$[-1,1]$上では$f\\equiv1$で全ての仮定が成り立つが、$[0,2]$上の解はない。解は$t\\leq1$で$x=t$であり、$t=1$での微分係数は$f(1,1)=1$なので$t>1$で$x>1$となり、そこでは$x'=0$となって矛盾する。",
    "recipe_id": "textbook.ode.picard_lindelof_existence",
-   "statement": "fがリプシッツで有界なら、閉球と時間幅の関係によらず、与えた任意の時間区間で解が閉球内に存在する。"
+   "statement": "閉球上のリプシッツ性・連続性・有界性があれば、時間幅の条件$L\\max(t_{\\max}-t_0,t_0-t_{\\min})\\leq a$がなくても、全区間$I$上の解が存在する。"
   },
   {
    "reason": "y=t|t|とy=(max(t,0))²はどちらもy(1)=1を満たす解であり、t<0で値が異なる。",
@@ -5186,9 +5186,9 @@
    "statement": "γ<0でもエネルギーは単調非増加である。"
   },
   {
-   "reason": "A(t)とA'(t)が可換でなければ成り立たない。一般には級数の項ごとに積の順序が保てない。",
+   "reason": "$A(t)$と$A'(t)$が可換でなければ一般に成り立たない。$A(t)=N+tM$、$N=\\begin{pmatrix}0&1\\\\0&0\\end{pmatrix}$、$M=\\begin{pmatrix}0&0\\\\1&0\\end{pmatrix}$の$t=0$では微分係数は$\\int_0^1e^{sN}Me^{(1-s)N}ds=M+\\frac{NM+MN}{2}+\\frac{NMN}{6}$だが、$A'(0)\\exp(A(0))=M(I+N)=M+MN$で、差は$\\frac{NM-MN}{2}+\\frac{N}{6}\\neq0$である。",
    "recipe_id": "textbook.ode.matrix_exponential_derivative",
-   "statement": "行列値関数A(t)について、exp(A(t))の導関数は常にA'(t)exp(A(t))である。"
+   "statement": "行列値関数$A(t)$が微分可能なら、$\\exp(A(t))$の微分係数は常に$A'(t)\\exp(A(t))$である。"
   },
   {
    "reason": "A(t)同士が可換でなければ成り立たない。一般には指数関数の微分の公式が使えない。",
@@ -5246,9 +5246,9 @@
    "statement": "互いに素な事象は独立である。"
   },
   {
-   "reason": "対ごとの独立だけでは足りない。2枚のコインでA=「表裏が一致」、B=「1枚目が表」、C=「2枚目が表」とすると反例になる。",
+   "reason": "$P(A\\cap B^c)=P(A)$だが$P(A)P(B^c)=P(A)(1-P(B))<P(A)$なので独立でない。補集合に移せるのは、$A$と$B$がもともと独立な場合である。",
    "recipe_id": "textbook.probability_statistics.indep_event_compl",
-   "statement": "AとB、AとCがそれぞれ独立ならば、AとB∩Cも独立である。"
+   "statement": "互いに素な事象$A,B$（$P(A)>0$、$P(B)>0$）について、$A$と$B^c$は独立である。"
   },
   {
    "reason": "互いに素ならP(B|A)=0であり、P(B)>0のときP(B)と異なる。",
@@ -5361,9 +5361,9 @@
    "statement": "独立性なしでもΣP(A_n)=∞ならP(limsup A_n)=1である。"
   },
   {
-   "reason": "コーシー分布の独立同分布列では標本平均が再びコーシー分布に従い、定数に収束しない。",
+   "reason": "標準コーシー分布の独立同分布列では標本平均$\\frac1n\\sum_{i<n}X_i$の分布が再び標準コーシー分布で、$n$によらない。ほとんど確実に収束するなら極限は末尾事象に可測でコルモゴロフの0-1法則により定数だが、コーシー分布は定数でない。よって収束しない。",
    "recipe_id": "textbook.probability_statistics.strong_law_large_numbers",
-   "statement": "可積分性を仮定しなくても、独立同分布な列の標本平均はほとんど確実に収束する。"
+   "statement": "可積分性を仮定しなくても、独立同分布な実確率変数列の標本平均はほとんど確実に収束する。"
   },
   {
    "reason": "逆は偽である。[0,1]を順に細かく区切った区間の指示関数を動かす「タイプライター列」は確率収束するが、どの点でも収束しない。",
@@ -5371,9 +5371,9 @@
    "statement": "確率収束するならほとんど確実にも収束する。"
   },
   {
-   "reason": "2次モーメントが必要である。コーシー分布の和を√nで割ると発散し、正規分布に収束しない。",
+   "reason": "$P(X_0>x)=x^{-3/2}$ ($x\\geq1$)は平均$3$をもつが分散は無限である。この場合$(\\sum_{i<n}X_i-nE[X_0])$は$n^{2/3}$のオーダーで揺れるので、$\\sqrt{n}$で割った列は緊密でなく、どんな正規分布にも法則収束しない。",
    "recipe_id": "textbook.probability_statistics.central_limit_theorem",
-   "statement": "独立同分布なら分散が無限でも同じ正規化で正規分布に収束する。"
+   "statement": "独立同分布列$(X_i)$が可積分で分散が無限でも、同じ正規化$\\frac{1}{\\sqrt{n}}\\left(\\sum_{i<n}X_i-nE[X_0]\\right)$は正規分布に法則収束する。"
   },
   {
    "reason": "sの外にあるtの要素は数えない。s={1}、t={1,2}なら確率は1だが、|t|/|s|=2となる。",
@@ -5441,9 +5441,9 @@
    "statement": "任意のマルチンゲールはある可積分なYによりX_n=E[Y|F_n]と表せる。"
   },
   {
-   "reason": "対ごとに独立なら標本平均の分散はσ²/nであり、n≥2でσ²>0のとき母分散より小さい。",
+   "reason": "$n=2$、$E[X_0]=0$、$E[X_1]=2$なら標本平均の期待値は$1\\neq E[X_0]$である。共通の期待値$m$の仮定が必要である。",
    "recipe_id": "textbook.probability_statistics.sample_mean_unbiased",
-   "statement": "標本平均の分散は母分散に等しい。"
+   "statement": "各$X_i$が可積分であれば、期待値が共通でなくても標本平均の期待値は$E[X_0]$である。"
   },
   {
    "reason": "不等号が逆である。分解からΣ(x_i-a)²は平均x̄で最小となり、a≠x̄なら真に大きい。",
@@ -5686,9 +5686,9 @@
    "statement": "開区間(0,1)上の連続関数は一様連続である。"
   },
   {
-   "reason": "√xは[0,1]で一様連続だが、0の近くで差分商が非有界なのでリプシッツ連続ではない。",
+   "reason": "$f(x)=\\sqrt{|x|}$は一様連続（$|\\sqrt{|x|}-\\sqrt{|y|}|\\leq\\sqrt{|x-y|}$）だが、$0$の近くで$f(h)/h=1/\\sqrt{h}$が非有界なので、どの$K$でも$|f(x)-f(y)|\\leq K|x-y|$を満たさない。",
    "recipe_id": "textbook.real_analysis.lipschitz_uniform_continuous",
-   "statement": "一様連続な関数はリプシッツ連続である。"
+   "statement": "一様連続な関数$f:\\mathbb{R}\\to\\mathbb{R}$はリプシッツ連続である。"
   },
   {
    "reason": "コンパクト集合上の連続関数は一様連続であり、[0,1]上で|x^2-y^2|≤2|x-y|が成り立つ。",
@@ -5752,7 +5752,7 @@
   },
   {
    "reason": "f=id:ℤ→ℤ, I=2ℤでは、g(1+I)=1とすると0=g(2+I)=2となり矛盾する。",
-   "recipe_id": "textbook.ring_theory.quotient_lift_unique",
+   "recipe_id": "textbook.ring_theory.ring_quotient_lift_unique",
    "statement": "Iがfの核に含まれなくても、fはR/Iを経由する環準同型に分解する。"
   },
   {
@@ -6086,9 +6086,9 @@
    "statement": "$\\dfrac{a}{c}=\\dfrac{b}{d}=\\dfrac{e}{f}$のときも、実数解はない。"
   },
   {
-   "reason": "$b=d=0$なら$ad=bc$はつねに成り立つが、分数は定義されない。",
+   "reason": "$a=1,b=2,c=2,d=1$のとき$ab=cd=2$だが、$\\dfrac{a}{b}=\\dfrac{1}{2}$、$\\dfrac{c}{d}=2$で等しくない。外項の積と内項の積は$ad=bc$である。",
    "recipe_id": "textbook.school_algebra_basics.proportion_iff_cross_product",
-   "statement": "$ad=bc$なら、$b,d$の値によらず$\\dfrac{a}{b}=\\dfrac{c}{d}$である。"
+   "statement": "$\\dfrac{a}{b}=\\dfrac{c}{d}$であることと$ab=cd$であることは同値である。"
   },
   {
    "reason": "$k=1$、$l=2$、$b=d=1$なら$\\dfrac{a}{b}=1$、$\\dfrac{c}{d}=2$である。比の値は共通でなければならない。",
@@ -6196,7 +6196,7 @@
    "statement": "$\\sqrt{a+b+\\sqrt{ab}}=\\sqrt{a}+\\sqrt{b}$である。"
   },
   {
-   "reason": "$a=1$、$b=4$なら左辺は$1$、右辺は$-1$である。大小が不明なら、右辺は$|\\sqrt{a}-\\sqrt{b}|$となる。",
+   "reason": "$a=1$、$b=4$なら左辺は$\\sqrt{5-4}=1$、右辺は$-1$である。絶対値を付けなければ$a\\geq b$が必要である。",
    "recipe_id": "textbook.school_algebra_basics.nested_square_root_minus_form_ordered",
    "statement": "$a,b\\geq 0$の大小によらず$\\sqrt{a+b-2\\sqrt{ab}}=\\sqrt{a}-\\sqrt{b}$である。"
   },
@@ -6441,7 +6441,7 @@
    "statement": "等距離の点は$ax+by+c=a'x+b'y+c'$の1本の直線上にある。"
   },
   {
-   "reason": "中心の値$ap+bq$を加える必要がある。$(x-1)^2+y^2\\le1$での$x$の最大値は$2$であるが、この式は$1$を与える。",
+   "reason": "中心での値$ap+bq$が加わる。$(x-1)^2+y^2\\le1$での$x$の最大値は$2$であるが、この式は$1$を与える。",
    "recipe_id": "textbook.school_analytic_geometry.linear_form_max_on_disc",
    "statement": "中心が$(p,q)$の円板でも最大値は$r\\sqrt{a^2+b^2}$である。"
   },
@@ -6501,7 +6501,7 @@
    "statement": "$\\theta$は原点と点$(x,y)$を結ぶ線分の偏角である。"
   },
   {
-   "reason": "焦点と頂点の距離は$\\frac{1}{4|a|}$である。$y=x^2$の焦点は$\\left(0,\\frac14\\right)$で、点$(1,1)$までの距離と準線$y=-\\frac14$までの距離はともに$\\frac54$である。",
+   "reason": "焦点と頂点の距離は$\\frac{1}{4|a|}$である。$y=x^2$の頂点$(0,0)$はグラフ上にあり、点$\\left(0,\\frac14\\right)$と直線$y=-\\frac14$からの距離はともに$\\frac14$である。一方、$(0,1)$までの距離は$1$であり、直線$y=-\\frac14$までの距離$\\frac14$と異なる。",
    "recipe_id": "textbook.school_analytic_geometry.quadratic_graph_vertex_form_focus_directrix",
    "statement": "焦点は$\\left(h,k+\\frac{1}{a}\\right)$である。"
   },
@@ -6821,7 +6821,7 @@
    "statement": "$P(B)=P_A(B)+P_{\\overline{A}}(B)$である。"
   },
   {
-   "reason": "重なりがあると$B$の要素が重複して数えられる。$A_1=A_2=\\Omega$なら右辺は$2P(B)$になる。",
+   "reason": "重なりがあると$B$の要素が重複して数えられる。$A_1=A_2=\\Omega$で$B\\neq\\emptyset$なら右辺は$2P(B)\\neq P(B)$になる。",
    "recipe_id": "textbook.school_counting_probability.total_prob_uniform_partition",
    "statement": "事象$A_i$が$\\Omega$を覆うだけで排反でなくても、$P(B)=\\sum_{i\\in I}P(A_i)P_{A_i}(B)$である。"
   },
@@ -6896,7 +6896,7 @@
    "statement": "任意の確率変数$X,Y$について$E[XY]=E[X]E[Y]$である。"
   },
   {
-   "reason": "独立性は不要である。$A_1=A_2=A$でも、起こる個数は$\\omega\\in A$で$2$、それ以外で$0$なので、期待値は$2P(A)=P(A_1)+P(A_2)$である。",
+   "reason": "独立性は不要である。$0<P(A)<1$の事象$A$について$A_1=A_2=A$とすると、$P(A\\cap A)=P(A)\\neq P(A)^2$なので独立ではないが、起こる個数は$\\omega\\in A$で$2$、それ以外で$0$であり、期待値は$2P(A)=P(A_1)+P(A_2)$である。",
    "recipe_id": "textbook.school_counting_probability.expectation_uniform_count_events",
    "statement": "この公式は事象$A_i$が独立なときに限って成り立つ。"
   },
@@ -7286,9 +7286,9 @@
    "statement": "$a>0$、$a\\neq 1$なら、$M<0$でも$a^{\\log_aM}=M$である。"
   },
   {
-   "reason": "$M=N=-2$のとき左辺は$\\log_a4$だが、右辺の$\\log_a(-2)$は定義されない。",
+   "reason": "和の対数と積の対数を取り違えている。$a=2,\\ M=N=1$では左辺は$\\log_22=1$、右辺は$0+0=0$である。",
    "recipe_id": "textbook.school_exp_log.logb_mul_positive",
-   "statement": "$MN>0$であれば、$M,N$の符号によらず$\\log_a(MN)=\\log_aM+\\log_aN$である。"
+   "statement": "$a>0$、$a\\neq 1$、$M,N>0$のとき、$\\log_a(M+N)=\\log_aM+\\log_aN$である。"
   },
   {
    "reason": "$a=2$、$M=4$、$N=2$のとき左辺は$1$で右辺は$2$である。",
@@ -7296,19 +7296,19 @@
    "statement": "$a>0$、$a\\neq 1$、$M>0$、$N>0$、$N\\neq 1$のとき、$\\log_a\\dfrac{M}{N}=\\dfrac{\\log_aM}{\\log_aN}$である。"
   },
   {
-   "reason": "$M=-2$、$p=2$のとき左辺は$\\log_a4$だが、右辺の$\\log_a(-2)$は定義されない。正しい形は$p\\log_a|M|$である。",
+   "reason": "指数$p$は対数の前に係数として出るのであり、対数の冪にはならない。$a=2,\\ M=2,\\ p=3$では左辺は$\\log_28=3$、右辺は$1^3=1$である。",
    "recipe_id": "textbook.school_exp_log.logb_rpow_power_positive",
-   "statement": "$M<0$でも、正の偶数$p$については$\\log_a(M^p)=p\\log_aM$である。"
+   "statement": "$a>0$、$a\\neq 1$、$M>0$のとき、任意の実数$p$について$\\log_a(M^p)=(\\log_aM)^p$である。"
   },
   {
-   "reason": "$x<0$では右辺の$\\log_ax$が定義されない。解の範囲を誤る典型であり、絶対値を外せるのは$x>0$のときだけである。",
+   "reason": "指数の$2$を落としている。$a=2,\\ x=2,\\ n=1$では左辺は$\\log_24=2$、右辺は$\\log_22=1$である。",
    "recipe_id": "textbook.school_exp_log.logb_even_power_abs",
-   "statement": "$x\\neq 0$のとき$\\log_a(x^{2n})=2n\\log_ax$である。"
+   "statement": "$a>0$、$a\\neq 1$、$x\\neq 0$、$n$を正の整数とするとき、$\\log_a(x^{2n})=n\\log_a|x|$である。"
   },
   {
-   "reason": "$a=1$では$\\log_1b$が定義されず、右辺の分母$\\log_c1$は$0$である。",
+   "reason": "分母が逆である。$a=2,\\ b=4,\\ c=8$では左辺は$2$、右辺は$\\dfrac{\\log_84}{\\log_28}=\\dfrac{2/3}{3}=\\dfrac29$である。",
    "recipe_id": "textbook.school_exp_log.logb_change_of_base",
-   "statement": "$c>0$、$c\\neq 1$、$b>0$なら、$a=1$でも$\\log_ab=\\dfrac{\\log_cb}{\\log_ca}$である。"
+   "statement": "$a,c>0$、$a\\neq 1$、$c\\neq 1$、$b>0$のとき、$\\log_ab=\\dfrac{\\log_cb}{\\log_ac}$である。"
   },
   {
    "reason": "$b=1$では$\\log_1c$が定義されない。中間の底も$1$と異なる必要がある。",
@@ -7316,9 +7316,9 @@
    "statement": "$a>0$、$a\\neq 1$、$b,c>0$なら、$b=1$でも$\\log_ab\\cdot\\log_bc=\\log_ac$である。"
   },
   {
-   "reason": "$m=0$では底が$a^0=1$となって対数が定義されない。右辺の分母も$0$である。",
+   "reason": "$m$と$n$が逆である。$a=b=2,\\ m=1,\\ n=2$では左辺は$\\log_24=2$、右辺は$\\dfrac12$である。",
    "recipe_id": "textbook.school_exp_log.logb_power_base_power_argument",
-   "statement": "$a>0$、$a\\neq 1$、$b>0$なら、$m=0$でも$\\log_{a^m}b=\\dfrac{1}{m}\\log_ab$である。"
+   "statement": "$a>0$、$a\\neq 1$、$b>0$、$m\\neq 0$のとき、$0$でない任意の実数$n$について$\\log_{a^m}(b^n)=\\dfrac{m}{n}\\log_ab$である。"
   },
   {
    "reason": "$a=\\dfrac{1}{2}$、$x=1$、$y=2$のとき$x<y$だが$\\log_ax=0>-1=\\log_ay$である。",
@@ -7561,9 +7561,9 @@
    "statement": "正の実数$a,b$について、$x\\geq 1$の範囲でも$ax+\\dfrac{b}{x}$の最小値は$2\\sqrt{ab}$である。"
   },
   {
-   "reason": "$c=2$のとき$x\\geq 2$では$x+\\dfrac{1}{x}\\geq\\dfrac{5}{2}$である。不等式$x+\\dfrac{1}{x}\\geq 2$の等号は$x=1$でしか成り立たないので、$c>1$では$2$は最小値ではない。",
+   "reason": "$2\\sqrt{k}$を与える$x=\\sqrt{k}$は$c>\\sqrt{k}$なら範囲の外にある。$k=1$、$c=2$では$x\\geq 2$で$x+\\frac{1}{x}\\geq\\frac{5}{2}>2$である。",
    "recipe_id": "textbook.school_inequalities.min_x_plus_inv_on_ray",
-   "statement": "$c\\geq 1$のとき、$x\\geq c$の範囲で$x+\\dfrac{1}{x}$の最小値は$2$である。"
+   "statement": "$k>0$、$c\\geq\\sqrt{k}$のとき、$x\\geq c$の範囲で$x+\\dfrac{k}{x}$の最小値は$2\\sqrt{k}$である。"
   },
   {
    "reason": "$2\\sqrt{2k^3x}$は$x$を含むので定数の下界ではない。積が定数になるように$\\dfrac{2k^3}{x}$を$2$つに分ける必要がある。",
@@ -7786,9 +7786,9 @@
    "statement": "$m^2\\leq n\\leq(m+1)^2$ならば、$n$は平方数でない。"
   },
   {
-   "reason": "互いに素の仮定を外すと成り立たない。$a=2,\\ b=8$では$ab=16$だが、$2$は平方数でない。",
+   "reason": "互いに素の仮定を外すと成り立たない。$n=2,\\ a=2,\\ b=8$では$ab=16=4^2$だが、$2$は平方数でない。",
    "recipe_id": "textbook.school_integers.coprime_mul_eq_square",
-   "statement": "$0$以上の整数$a,b$の積が平方数ならば、$a,b$はともに平方数である。"
+   "statement": "$0$以上の整数$a,b$の積が$c^n$の形ならば、$a,b$はともに$n$乗数である。"
   },
   {
    "reason": "$p=5$、$a=1$、$b=2$のとき$p$は$a^2+b^2=5$を割り切るが$a$を割り切らない。$p$を$4$で割った余りの条件が要る。",
@@ -7876,9 +7876,9 @@
    "statement": "$a=b$でも同じ形の分解が成り立つ。"
   },
   {
-   "reason": "$x+\\frac{1}{x}=t$が実数解をもつのは$|t|\\geq 2$のときだけである。$a=0,\\ b=2$では$t^2=0$の実数解$t=0$があるが、もとの方程式$x^4+2x^2+1=0$は$(x^2+1)^2=0$となり、実数解をもたない。",
+   "reason": "$x+\\frac{1}{x}=t$が実数解をもつのは$|t|\\geq 2$のときだけである。$a=1,\\ b=0,\\ c=2$では$t^2=0$の実数解$t=0$があるが、もとの方程式$x^4+2x^2+1=0$は$(x^2+1)^2=0$となり実数解をもたない。",
    "recipe_id": "textbook.school_polynomials.reciprocal_quartic_substitution",
-   "statement": "$t^2+at+b-2=0$に実数解$t$があれば、もとの方程式にも実数解$x$がある。"
+   "statement": "$at^2+bt+c-2a=0$に実数解$t$があれば、もとの方程式にも実数解$x$がある。"
   },
   {
    "reason": "定理は解の候補を絞るだけで、逆は成り立たない。$x^2+1$で$m=n=1$は条件を満たすが$x=1$は解でない。",
@@ -7981,9 +7981,9 @@
    "statement": "$\\frac{a}{b}=\\frac{c}{d}$なら、常に$\\frac{a+c}{b+d}=\\frac{a}{b}$である。"
   },
   {
-   "reason": "$a=b$なら分母$a-b$が$0$になり、両辺とも定義されない。",
+   "reason": "$a=2,b=1,c=4,d=2$のとき$\\dfrac{a}{b}=\\dfrac{c}{d}=2$だが、左辺は$\\dfrac{3}{1}=3$、右辺は$\\dfrac{2}{6}=\\dfrac{1}{3}$である。分子は$c+d$、分母は$c-d$でなければならない。",
    "recipe_id": "textbook.school_polynomials.componendo_dividendo",
-   "statement": "$\\frac{a}{b}=\\frac{c}{d}$なら、$a=b$のときも$\\frac{a+b}{a-b}=\\frac{c+d}{c-d}$である。"
+   "statement": "$\\dfrac{a}{b}=\\dfrac{c}{d}$なら$\\dfrac{a+b}{a-b}=\\dfrac{c-d}{c+d}$である。"
   },
   {
    "reason": "$abc=1$が必要である。$a=b=c=1$は成り立つが、$a=b=c=2$では和は$3\\cdot\\frac{2}{7}=\\frac{6}{7}$である。",
@@ -8256,9 +8256,9 @@
    "statement": "$p,q$が解なら、$S_{n+2}=bS_{n+1}+cS_n$である。"
   },
   {
-   "reason": "逆は成り立たない。$a=d=1,\\ b=e=0,\\ c=f=1$では等式は$0=0$となるが、$x^2+1=0$に実数解はない。",
+   "reason": "逆は成り立たない。$a=d=0,\\ b=1,\\ c=0,\\ e=1,\\ f=1$では$(af-dc)^2=0$、$(ae-db)(bf-ec)=0\\cdot 1=0$で等式が成り立つが、$x=0$と$x+1=0$に共通の解はない。実数か複素数かに関係なく成り立つ反例である。",
    "recipe_id": "textbook.school_quadratic.common_root_resultant_condition",
-   "statement": "$(af-dc)^2=(ae-db)(bf-ec)$ならば、2つの方程式は実数の共通解をもつ。"
+   "statement": "$(af-dc)^2=(ae-db)(bf-ec)$ならば、2つの方程式は共通の解をもつ。"
   },
   {
    "reason": "符号が逆である。$y=x^2$を$x$軸方向に$1$移動すると頂点は$(1,0)$となり、式は$y=(x-1)^2$である。",
@@ -8661,9 +8661,9 @@
    "statement": "任意の実数$x$について$\\cos\\left(\\dfrac{\\pi}{2}+x\\right)=\\sin x$である。"
   },
   {
-   "reason": "$x=0$では$\\tan x=0$なので右辺が定義されず、左辺の$\\tan(\\pi/2)$も定義されない。$\\sin x\\neq0$の仮定を落とせない。",
+   "reason": "余角では正接は逆数になる。$x=\\pi/6$では$\\tan(\\pi/3)=\\sqrt{3}$だが$\\tan(\\pi/6)=1/\\sqrt{3}$であり一致しない。等しくなるのは$\\tan x=\\pm1$のときに限る。",
    "recipe_id": "textbook.school_trigonometry.tan_pi_div_two_sub",
-   "statement": "$\\cos x\\neq0$をみたす任意の実数$x$について$\\tan\\left(\\dfrac{\\pi}{2}-x\\right)=\\dfrac{1}{\\tan x}$である。"
+   "statement": "$\\sin x\\neq0$かつ$\\cos x\\neq0$をみたす実数$x$について$\\tan\\left(\\dfrac{\\pi}{2}-x\\right)=\\tan x$である。"
   },
   {
    "reason": "$x=\\pi/4$では左辺は$-1$、右辺は$1$である。周期の式$\\tan(\\pi+x)=\\tan x$と混同している。",
@@ -8716,9 +8716,9 @@
    "statement": "任意の実数$x,y$について$\\cos(x-y)=\\cos x\\cos y-\\sin x\\sin y$である。"
   },
   {
-   "reason": "$x=y=\\pi/4$では分母が$0$であり、$\\tan(x+y)=\\tan(\\pi/2)$も定義されない。$\\cos(x+y)\\neq0$の仮定を落とせない。",
+   "reason": "分母の符号が違う。$x=y=\\pi/6$では$\\tan(\\pi/3)=\\sqrt{3}$だが、右辺は$\\dfrac{2/\\sqrt3}{4/3}=\\dfrac{\\sqrt3}{2}$である。",
    "recipe_id": "textbook.school_trigonometry.tan_add_formula",
-   "statement": "実数$x,y$が$\\cos x\\neq0$、$\\cos y\\neq0$をみたすとき、$\\tan(x+y)=\\dfrac{\\tan x+\\tan y}{1-\\tan x\\tan y}$である。"
+   "statement": "$\\cos x\\neq0$、$\\cos y\\neq0$、$\\cos(x+y)\\neq0$のとき$\\tan(x+y)=\\dfrac{\\tan x+\\tan y}{1+\\tan x\\tan y}$である。"
   },
   {
    "reason": "$x=\\pi/3$、$y=\\pi/6$では$\\tan x\\tan y=1$なので右辺の分母が$0$になるが、左辺は$\\tan(\\pi/6)=1/\\sqrt{3}$である。分母の符号は$+$である。",
@@ -8751,9 +8751,9 @@
    "statement": "任意の実数$x$について$\\cos2x=1-2\\cos^2x$である。"
   },
   {
-   "reason": "$x=\\pi/4$では分母が$0$であり、$\\tan(\\pi/2)$も定義されない。$\\cos2x\\neq0$の仮定が必要である。",
+   "reason": "分母の符号が違う。$x=\\pi/6$では$\\tan(\\pi/3)=\\sqrt{3}$だが、右辺は$\\dfrac{2/\\sqrt3}{4/3}=\\dfrac{\\sqrt3}{2}$である。$1+\\tan^2x=1/\\cos^2x$は正接の倍角の分母ではない。",
    "recipe_id": "textbook.school_trigonometry.tan_double_angle",
-   "statement": "実数$x$が$\\cos x\\neq0$をみたすとき、$\\tan2x=\\dfrac{2\\tan x}{1-\\tan^2x}$である。"
+   "statement": "$\\cos x\\neq0$、$\\cos2x\\neq0$のとき$\\tan2x=\\dfrac{2\\tan x}{1+\\tan^2x}$である。"
   },
   {
    "reason": "$x=0$では左辺は$0$、右辺は$1$である。$\\sin$の半角では分子が$1-\\cos x$になる。",
@@ -9436,9 +9436,9 @@
    "statement": "ハウスドルフ空間は正規空間である。"
   },
   {
-   "reason": "連続関数で分離できれば開集合で分離できるので正規性が従う。正規でないハウスドルフ空間では成り立たない。",
+   "reason": "連続関数$f$で$A$上$0$、$B$上$1$なら、$f^{-1}([0,1/2))$と$f^{-1}((1/2,1])$は$A,B$を分離する交わらない開集合になる。したがって全ての交わらない閉集合の組が連続関数で分離できるなら空間は正規である。ゾルゲンフライ平面はハウスドルフだが正規でないので、分離できない閉集合の組が存在する。",
    "recipe_id": "textbook.topology_general.urysohn_lemma",
-   "statement": "ハウスドルフ空間の交わらない閉集合は連続関数で分離できる。"
+   "statement": "ハウスドルフ空間の交わらない閉集合は、常に連続関数で分離できる。"
   },
   {
    "reason": "開区間(0,1)⊂ℝ上の1/xは連続だが、ℝ上の連続関数に拡張できない。閉集合の仮定が必要である。",

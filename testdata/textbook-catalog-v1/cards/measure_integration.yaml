@@ -248,7 +248,7 @@
   - 'derive: sup_n f_n(x) > a holds exactly when f_n(x) > a for some n.'
   - 'construct: Hence {sup f_n > a} is the union of the sets {f_n > a}.'
   - 'conclude: Superlevel sets generate the Borel σ-algebra of [0,∞], so the supremum is measurable.'
-  openmath: (forall (f) (-> (forall (n) (measurable_fn (seq_value f n))) (measurable_fn (fn_seq_sup f))))
+  openmath: (forall (f) (-> (forall (n) (and (measurable_fn (seq_value f n)) (forall (x) (<= 0 (fn_value (seq_value f n) x))))) (measurable_fn (fn_seq_sup f))))
   hard_negative:
     statement: 可測関数からなる非可算族の各点上限は常に可測である。
     reason: 非可測集合Nの各点aの指示関数1_{a}は可測だが、これら全ての上限はNの指示関数で可測でない。
@@ -559,7 +559,7 @@
   - 'setup: Fix a real number x.'
   - 'derive: The Archimedean property gives n > x, so x is not in [n,∞).'
   - 'conclude: The intersection is empty while every measure is infinite.'
-  openmath: (and (forall (n) (-> (in n N) (= (measure_of lebesgue_measure (half_line_right n)) extended_infinity))) (decreasing_sets nat_half_lines) (= (set_seq_inter nat_half_lines) emptyset))
+  openmath: (and (forall (n) (-> (in n N) (= (measure_of lebesgue_measure (half_line_right n)) extended_infinity))) (forall (n m) (-> (and (in n N) (in m N) (<= n m)) (subset (half_line_right m) (half_line_right n)))) (forall (x) (-> (in x R) (exists (n) (and (in n N) (notin x (half_line_right n)))))))
   hard_negative:
     statement: '[n,n+1)のように有界な区間列でも共通部分が空なら測度の極限は0になる。'
     reason: '[n,n+1)は単調減少ではなく、全てのnで測度1である。上からの連続性の仮定である単調減少が成り立っていない。'
@@ -959,7 +959,7 @@
   - 'case_split: If f(x) is finite, the error is at most 2^{-n} for large n.'
   - 'case_split: If f(x) is infinite, φ_n(x) = n tends to infinity.'
   - 'conclude: Hence φ_n converges pointwise to f.'
-  openmath: (forall (f) (-> (measurable_fn f) (exists (p) (and (forall (n) (simple_fn (seq_value p n))) (fn_seq_increasing p) (pointwise_tends_to p f)))))
+  openmath: (forall (f) (-> (and (measurable_fn f) (forall (x) (<= 0 (fn_value f x)))) (exists (p) (and (forall (n) (and (simple_fn (seq_value p n)) (forall (x) (and (<= 0 (fn_value (seq_value p n) x)) (< (fn_value (seq_value p n) x) extended_infinity))))) (fn_seq_increasing p) (pointwise_tends_to p f)))))
   hard_negative:
     statement: 非負可測関数は、単調増加する単純関数列で常に一様に近似できる。
     reason: 非有界なf(x)=xに対し有限個の値しかとらない単純関数とは差が無限大になる。一様近似には有界性が必要である。
@@ -1072,7 +1072,7 @@
   - 'apply_theorem: Fatou''s lemma gives ∫ 2g ≤ ∫ 2g - limsup ∫ |F_n - f|.'
   - 'derive: Finiteness of ∫ 2g forces limsup ∫ |F_n - f| ≤ 0.'
   - 'conclude: The triangle inequality yields ∫ F_n → ∫ f.'
-  openmath: (forall (mu F f g) (-> (and (is_measure mu) (forall (n) (measurable_fn (seq_value F n))) (integrable_fn g mu) (forall (n) (ae_le mu (fn_abs (seq_value F n)) g)) (ae_fn_seq_tends_to mu F f)) (seq_tends_to (integral_seq F mu) (integral_wrt (lambda (x) (fn_value f x)) mu))))
+  openmath: (forall (mu F f g) (-> (and (is_measure mu) (forall (n) (ae_measurable_fn (seq_value F n) mu)) (integrable_fn g mu) (forall (n) (ae_le mu (fn_abs (seq_value F n)) g)) (ae_fn_seq_tends_to mu F f)) (seq_tends_to (integral_seq F mu) (integral_wrt (lambda (x) (fn_value f x)) mu))))
   hard_negative:
     statement: F_nがa.e.でfに収束すれば、優関数がなくても∫F_n→∫fである。
     reason: F_n=n1_{(0,1/n)}は0へ各点収束するが、積分は全て1である。
@@ -1140,8 +1140,8 @@
   - 'conclude: Pointwise limits may lose mass, showing the inequality in Fatou''s lemma can be strict.'
   openmath: (and (pointwise_tends_to unit_bump_seq zero_function) (forall (n) (= (lintegral (lambda (x) (fn_value (seq_value unit_bump_seq n) x)) lebesgue_measure) 1)))
   hard_negative:
-    statement: 各点で0に収束する非負関数列の積分は必ず0に収束する。
-    reason: ここで示した指示関数列は各点で0に収束するが、積分は全て1のままである。
+    statement: 各点で$f$に収束する非負可測関数列$f_n$について、積分も$\int f\,d\mu$に収束する。
+    reason: $f_n=1_{(n,n+1]}$は各点で$0$に収束するが、$\int f_n\,d\mu=1$は$\int 0\,d\mu=0$に収束しない。優関数または単調性が必要である。
   target: |
     (∀ x : ℝ, Filter.Tendsto (fun n : ℕ => (Set.Ioc (n : ℝ) ((n : ℝ) + 1)).indicator (fun _ => (1 : ENNReal)) x) Filter.atTop (nhds 0)) ∧ (∀ n : ℕ, ∫⁻ x, (Set.Ioc (n : ℝ) ((n : ℝ) + 1)).indicator (fun _ => (1 : ENNReal)) x ∂MeasureTheory.volume = 1)
   proof: |
@@ -1252,7 +1252,7 @@
   - 'translate: Integrability means measurability plus a finite integral of |f|.'
   - 'derive: Monotonicity of the integral gives ∫ |f| ≤ ∫ |g| which is finite.'
   - 'conclude: Therefore f is integrable.'
-  openmath: (forall (mu f g) (-> (and (measurable_fn f) (integrable_fn g mu) (ae_le mu (fn_abs f) g)) (integrable_fn f mu)))
+  openmath: (forall (mu f g) (-> (and (ae_measurable_fn f mu) (integrable_fn g mu) (ae_le mu (fn_abs f) g)) (integrable_fn f mu)))
   hard_negative:
     statement: 可測性を仮定しなくても|f|≤gなら可積分である。
     reason: 非可測集合Nに対しf=1_N-1_{Nᶜ}は|f|=1だが、有限測度空間でも可積分ではない。
@@ -1268,7 +1268,7 @@
   level: 3
   topic: 直積測度・長方形
   statement: $\alpha,\beta$を可測空間、$\mu$を$\alpha$上の測度、$\nu$を$\beta$上の$\sigma$有限測度、$A\subset\alpha$、$B\subset\beta$を部分集合とする。直積測度は可測な$S$で$(\mu\times\nu)(S)=\int\nu(S_x)\,d\mu(x)$と定め、部分集合の値はそれを含む可測集合の測度の下限で与える。$(\mu\times\nu)(A\times B)=\mu(A)\nu(B)$である。
-  statement_en: The product measure takes the value μ(A)ν(B) on a rectangle A×B.
+  statement_en: Let μ be a measure on α and ν a σ-finite measure on β. For arbitrary subsets A ⊂ α and B ⊂ β (the measure of an arbitrary set is the infimum over measurable supersets, and 0·∞ = 0), (μ×ν)(A×B) = μ(A)·ν(B).
   assumptions:
   - $\mu$は$\alpha$上の測度
   - $\nu$は$\beta$上の$\sigma$有限測度
@@ -1446,7 +1446,7 @@
   - 'derive: Bound |f+g|^p by |f||f+g|^{p-1} + |g||f+g|^{p-1}.'
   - 'apply_theorem: Apply Hölder to both terms with the conjugate exponent.'
   - 'conclude: Divide by ‖f+g‖_p^{p-1}.'
-  openmath: (forall (mu p f g) (-> (and (is_measure mu) (<= 1 p) (measurable_fn f) (measurable_fn g)) (<= (lp_norm (pointwise_sum f g) p mu) (+ (lp_norm f p mu) (lp_norm g p mu)))))
+  openmath: (forall (mu p f g) (-> (and (is_measure mu) (<= 1 p) (ae_measurable_fn f mu) (ae_measurable_fn g mu)) (<= (lp_norm (pointwise_sum f g) p mu) (+ (lp_norm f p mu) (lp_norm g p mu)))))
   hard_negative:
     statement: 0<p<1でも‖f+g‖_p≤‖f‖_p+‖g‖_pが成り立つ。
     reason: '[0,1]の互いに素な半区間の指示関数f,gでp=1/2とすると、左辺は1で右辺は2·(1/2)^2=1/2である。'
@@ -1558,7 +1558,7 @@
   - 'derive: The E_n decrease and their intersection is contained in the null set of nonconvergence.'
   - 'apply_theorem: Finiteness of μ allows continuity from above.'
   - 'conclude: Therefore μ({|f_n - g| ≥ ε}) tends to 0.'
-  openmath: (forall (mu f g) (-> (and (finite_measure mu) (forall (n) (measurable_fn (seq_value f n))) (ae_fn_seq_tends_to mu f g)) (tends_in_measure f g mu)))
+  openmath: (forall (mu f g) (-> (and (finite_measure mu) (forall (n) (ae_measurable_fn (seq_value f n) mu)) (ae_fn_seq_tends_to mu f g)) (tends_in_measure f g mu)))
   hard_negative:
     statement: 無限測度空間でも、a.e.収束は測度収束を導く。
     reason: f_n=1_{[n,∞)}は0に各点収束するが、ε<1でμ({f_n≥ε})=∞である。
@@ -1710,7 +1710,7 @@
   - 'derive: The set A = {h = 1} satisfies ν(A) = 0.'
   - 'construct: Let s be μ restricted to A and f = (h/(1-h)) on the complement of A.'
   - 'conclude: Then s is singular with respect to ν and μ = s + f dν.'
-  openmath: (forall (mu nu) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu)) (exists (s f) (and (mutually_singular s nu) (measurable_fn f) (= mu (+ s (with_density nu f)))))))
+  openmath: (forall (mu nu) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu)) (exists (s f) (and (is_measure s) (mutually_singular s nu) (measurable_fn f) (= mu (+ s (with_density nu f)))))))
   hard_negative:
     statement: ルベーグ測度に対する分解で、特異部分は必ず原子(点質量)の和である。
     reason: カントール関数のスティルチェス測度は原子をもたず、ルベーグ測度と互いに特異である。

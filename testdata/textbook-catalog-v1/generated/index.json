@@ -467,8 +467,8 @@
    "draft_id": "textbook_calculus_single_fixed_point_unit_interval",
    "kind": "gap",
    "level": 1,
-   "manifest_sha256": "68aac50ffdfdc2ecb90b9b96691a9ec91ee3d6608894d98afb3d679208cd9e82",
-   "materialized_source_sha256": "59a2821ab89057700a038f9bd600324d1ffc5ac0c4a26a27126fa1209c41965a",
+   "manifest_sha256": "39f586d411bb2b003b03fb0deff662c4cb7711ae7dca7a3e5386cc6b4417c2be",
+   "materialized_source_sha256": "1f3ef0e1b1860ff4be72e8859156cb46c3d3c779c08bf90f4605794b1bbfaa99",
    "recipe_id": "textbook.calculus_single.fixed_point_unit_interval",
    "tier": "needs_vocabulary",
    "topic": "連続性・不動点"
@@ -687,8 +687,8 @@
    "draft_id": "textbook_calculus_single_second_derivative_test_maximum",
    "kind": "textbook",
    "level": 1,
-   "manifest_sha256": "7ff69d07b6575a7ddf825cb6e5c89ef2fe3388dfaeb5eae4bb770444daec2545",
-   "materialized_source_sha256": "dfcc9358b6d22cb920eaa884fecb4435209ed5909795011b10a44edb1aadbc06",
+   "manifest_sha256": "91efc128d4b38e91bd0c4526e02d7c802783bada8d9c0d13898a8e1f05d9b3e6",
+   "materialized_source_sha256": "0087061f2786efc92c2fa2f40999524973b12d2874e4d46d61de26150f1fe16c",
    "recipe_id": "textbook.calculus_single.second_derivative_test_maximum",
    "tier": "needs_vocabulary",
    "topic": "微分法・第2次導関数判定"
@@ -1105,8 +1105,8 @@
    "draft_id": "textbook_combinatorics_graphs_weighted_sum_binomials",
    "kind": "gap",
    "level": 1,
-   "manifest_sha256": "e0c61f8adc42cfb5eff23bd1add6e991c959a561120cd973eb243b4338b0e895",
-   "materialized_source_sha256": "34abe664fda97653a83f5a0621e50bd7c92afec80e5cae22bc63a13ebee73978",
+   "manifest_sha256": "046de8fe72cef9cbe0138c972991a80f1b2e34c230f8f3c6ce0be0b1d7e75712",
+   "materialized_source_sha256": "1434f432b934d908161bc9f9f40f458bbf9c89ef424110e8107965b29d70565c",
    "recipe_id": "textbook.combinatorics_graphs.weighted_sum_binomials",
    "tier": "needs_vocabulary",
    "topic": "二項係数・重み付き総和"
@@ -1391,8 +1391,8 @@
    "draft_id": "textbook_combinatorics_graphs_turan_edge_bound",
    "kind": "named",
    "level": 4,
-   "manifest_sha256": "44c8144e54f7bab4ac4cc995f9195c70c0f2be5d4895078b1baa86e0c2faf3ea",
-   "materialized_source_sha256": "b9806cc79d401352370e25ae7702012242141d79d27e4b1339dee78c317b989b",
+   "manifest_sha256": "8380ed1fc66a519fd702c52583831ac60870ec41d5128e5c50df10c010c70027",
+   "materialized_source_sha256": "040533b373b69eac68167742c3a4adaefd347c796983ae13bd27d6520e44efc0",
    "recipe_id": "textbook.combinatorics_graphs.turan_edge_bound",
    "tier": "needs_vocabulary",
    "topic": "極値グラフ理論・トゥランの定理"
@@ -1908,8 +1908,8 @@
    "draft_id": "textbook_complex_analysis_euler_formula",
    "kind": "textbook",
    "level": 2,
-   "manifest_sha256": "6e67b0b3cd0651db5b2678cca3272c742dd942faa99df51e38aa342632fa959f",
-   "materialized_source_sha256": "17cc79bf3f04a38de0d4601fd31c370255420ab55b4fbcac7bc177936e34fe53",
+   "manifest_sha256": "1d3b4a9cbfa15bbf7258876c512189de29cc1561ce4fa44fbda0b11d1c1241fa",
+   "materialized_source_sha256": "e2484eb024724fcd245cb12ab37b8b39ad04ff3de3bbc6f0dad0b7c5dbb63a78",
    "recipe_id": "textbook.complex_analysis.euler_formula",
    "tier": "needs_vocabulary",
    "topic": "複素指数関数・オイラーの公式"
@@ -2022,7 +2022,7 @@
    "materialized_source_sha256": "1a90e4961fe1230aa04dd0d580691e64a4da14f4ef4e5025b883846a98268093",
    "recipe_id": "textbook.complex_analysis.cauchy_riemann_sufficient",
    "tier": "needs_vocabulary",
-   "topic": "複素微分・コーシー・リーマン方程式"
+   "topic": "複素微分・実微分可能性と複素線形性(コーシー・リーマン条件の作用素形)"
   },
   {
    "domain": "complex_analysis",
@@ -2304,8 +2304,8 @@
    "draft_id": "textbook_complex_analysis_riemann_removable_singularity",
    "kind": "textbook",
    "level": 3,
-   "manifest_sha256": "4a7d223a12a12c30d12ec00bb707a4c03fe61f01f36c4692d12af33eb9a80a34",
-   "materialized_source_sha256": "75e636f4ef94f871a25789f90a72afd1fd39cce7e5222a86ece871c8f2fac8c6",
+   "manifest_sha256": "f85289d74ede559033258bc65248362e1b25628dab3a876bc3fd7fe924502266",
+   "materialized_source_sha256": "9f840e5e8eadf45dd73d6d88d0ee87555ca30d1b89b94d882715b7f30881c3e1",
    "recipe_id": "textbook.complex_analysis.riemann_removable_singularity",
    "tier": "needs_vocabulary",
    "topic": "除去可能特異点・リーマンの定理"
@@ -2909,8 +2909,8 @@
    "draft_id": "textbook_field_galois_algebraic_elements_closed_under_field_operations",
    "kind": "gap",
    "level": 3,
-   "manifest_sha256": "4d65b61013abab51f0316236d9497d8176140a8e689b7f730ebb7142a7707a84",
-   "materialized_source_sha256": "7504b2fd235d1c11d2d15af9a1ca64ae874e9679b8713dafc6340019978a3927",
+   "manifest_sha256": "46ae24157bb3c74b5015f8b3a57ae4e0759d82fc9c56b66c309e77a8585ca9b0",
+   "materialized_source_sha256": "952a5a3bd536f649fbcd9a6b4296c492b099dfc5bf92dac0907b3cf62bd69d84",
    "recipe_id": "textbook.field_galois.algebraic_elements_closed_under_field_operations",
    "tier": "needs_vocabulary",
    "topic": "代数的元・体演算"
@@ -3204,7 +3204,7 @@
   {
    "domain": "field_galois",
    "draft_id": "textbook_field_galois_abel_ruffini_solvable_by_radicals_implies_solvable_group",
-   "kind": "named",
+   "kind": "textbook",
    "level": 4,
    "manifest_sha256": "c0a4afe78638d5db2ca8806d479bb1637128279ac88ed743a80002073f1b3a6a",
    "materialized_source_sha256": "afb772be850cda2d358b68cc4918849e3dbfc074d3027d36cb59571bd59d5e1b",
@@ -3602,8 +3602,8 @@
    "draft_id": "textbook_fourier_convex_numeric_fourier_coefficient_explicit_formula",
    "kind": "gap",
    "level": 3,
-   "manifest_sha256": "da51f400e5f4db43de99c77ea2be222aa08b524f044a7d0215aadaebd81b5c37",
-   "materialized_source_sha256": "0d2edf55e16908847f7fcb0475e3cb01d3124c8a4402e38b6206a5ff2503471e",
+   "manifest_sha256": "702df5daca77a97d2b73ef03e5a62bbd90ffdda7f118304bfdff540a2bdcb8be",
+   "materialized_source_sha256": "61fadc9de832da05854dee8a7f87e999101c3b9750f48f971d2375db233c5404",
    "recipe_id": "textbook.fourier_convex_numeric.fourier_coefficient_explicit_formula",
    "tier": "needs_vocabulary",
    "topic": "フーリエ級数・係数"
@@ -4075,8 +4075,8 @@
    "draft_id": "textbook_functional_analysis_parseval_identity_hilbert_basis",
    "kind": "textbook",
    "level": 4,
-   "manifest_sha256": "e2de1d252da32904769c484dc41a98c28626b910ccda43e582c674fcdaedbf50",
-   "materialized_source_sha256": "b50b58ffbc96925b22eb69007972732cd74b04ade7fa9a03ae7b7bc760d8b326",
+   "manifest_sha256": "e78922f9d892bdcbd48e4996424be689fec9b26d14a565767efe0f3741b37aa2",
+   "materialized_source_sha256": "e521996d5e7f2fea2066c113c98f88792844d9c88f45a8f3bf0f2d9ad5e7eb6e",
    "recipe_id": "textbook.functional_analysis.parseval_identity_hilbert_basis",
    "tier": "needs_vocabulary",
    "topic": "関数解析・正規直交基底"
@@ -4086,8 +4086,8 @@
    "draft_id": "textbook_functional_analysis_hilbert_basis_fourier_expansion",
    "kind": "gap",
    "level": 4,
-   "manifest_sha256": "84cff97a20b6ff689eb5256d9b12696623feafac7c4c6a68070f9e0dc9c2e1f4",
-   "materialized_source_sha256": "68ac815deb2d2863407efa0a309192438a713045be3df4717ca5b40481366060",
+   "manifest_sha256": "0a885c9bf6732f824157568e3dc3d1d00e77d1107ff8e20606cdfa6543ccd45a",
+   "materialized_source_sha256": "77f2c8bbb2eab485fcc6a163451ff40754b3a3dfdcd107cee11d6e7c9b601c6f",
    "recipe_id": "textbook.functional_analysis.hilbert_basis_fourier_expansion",
    "tier": "needs_vocabulary",
    "topic": "関数解析・正規直交基底"
@@ -4603,8 +4603,8 @@
    "draft_id": "textbook_geometry_centers_nine_point_center_and_radius",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "aa84af7434b68ffce88dd5899177cd5737052a8eadf875e288bb4fda7d88e485",
-   "materialized_source_sha256": "fd9faf82ddb84721d81d72257daa132147ee749b582e18f8e7cd06fec6515e54",
+   "manifest_sha256": "1c3d51cabc66e8b98f30e8f8bf8742895ca8158ffd75b91f4697196caeb024c4",
+   "materialized_source_sha256": "ab5be8c53a93d49c3fa17fe2cbf110399e3fc5dfcb8fcb6db28aded36b98e5c0",
    "recipe_id": "textbook.geometry_centers.nine_point_center_and_radius",
    "tier": "needs_vocabulary",
    "topic": "三角形の五心・九点円の中心と半径"
@@ -5472,8 +5472,8 @@
    "draft_id": "textbook_geometry_homotopy_mfderiv_eq_fderiv_normed",
    "kind": "gap",
    "level": 4,
-   "manifest_sha256": "1481e0dc8f94b1806152e002b8680705250bd1780f64ce2d83ce423da4aabadf",
-   "materialized_source_sha256": "ede50c4733ed17762f21b0a27b01e2cd6d91dea9bf357a38addc594c78bbf556",
+   "manifest_sha256": "edb0671be00110693f42fba963c86e56f903edc1d447d021e92db1bb29a9f4d3",
+   "materialized_source_sha256": "7aade2927c3dbc3b4e3757ff5432fbc8da51d1d11d48cf926ac895499bad07be",
    "recipe_id": "textbook.geometry_homotopy.mfderiv_eq_fderiv_normed",
    "tier": "needs_vocabulary",
    "topic": "多様体・ノルム空間上の微分"
@@ -5504,7 +5504,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_law_of_cosines_angle",
    "kind": "named",
-   "level": 2,
+   "level": "high",
    "manifest_sha256": "6df532117aa26b63df04080bd3a3301ee36a81fd4cafa45284e60472234f5011",
    "materialized_source_sha256": "167d8db4e3bbfba9e6c662408b4d3b8ca44edc415e7f44865fdedc10355e3cdf",
    "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
@@ -5526,7 +5526,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_pythagoras_angle_iff",
    "kind": "named",
-   "level": 2,
+   "level": "high",
    "manifest_sha256": "ad93ba3c45f150992b5a88bb8c3f30ebbfc79f92b67cc7cd101dcc7a81b4b8ed",
    "materialized_source_sha256": "f6e5a6a7c4c8cc2ce59e683d9c1a8cb1f5291677f3ab7898791418e25c23b094",
    "recipe_id": "textbook.geometry_homotopy.pythagoras_angle_iff",
@@ -5537,7 +5537,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_triangle_angle_sum",
    "kind": "textbook",
-   "level": 2,
+   "level": "middle",
    "manifest_sha256": "a0bfa5bb60bec37d060c1add1a119e23289444d346333c235acf5c929e07a0f4",
    "materialized_source_sha256": "484cbdf98474b743430c5ae887d1ef075037dacd499a192aa18d791b9c8b97fd",
    "recipe_id": "textbook.geometry_homotopy.triangle_angle_sum",
@@ -5548,7 +5548,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_ptolemy_cyclic_quadrilateral",
    "kind": "named",
-   "level": 3,
+   "level": "high",
    "manifest_sha256": "c98eb14ebec48968384f33c38281d1636a5ab834abdc27c848edb017051932b6",
    "materialized_source_sha256": "b8d525ac68c53e7525962377fbe64ae98b743d08ba65fe008a962acbc1695a20",
    "recipe_id": "textbook.geometry_homotopy.ptolemy_cyclic_quadrilateral",
@@ -5559,7 +5559,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_power_of_a_point_lines",
    "kind": "textbook",
-   "level": 2,
+   "level": "high",
    "manifest_sha256": "0a66cf4f9dc5401e1d14579517305d91fc568764f5f90673b8aaeec2822855c0",
    "materialized_source_sha256": "1e6b93eedd2085183a7687e825fbe2b8cbaeb38024be2c5eb1034b65e2384dd7",
    "recipe_id": "textbook.geometry_homotopy.power_of_a_point_lines",
@@ -5570,7 +5570,7 @@
    "domain": "geometry_homotopy",
    "draft_id": "textbook_geometry_homotopy_inner_zero_iff_right_angle",
    "kind": "gap",
-   "level": 2,
+   "level": "high",
    "manifest_sha256": "95645b32535a14d8835428c20bd15a2165dabe1be4fbb9405c2ac9de566fc648",
    "materialized_source_sha256": "234e0b0eda0ff366ff482bb15232396bff4b30ce059a23a0af2ef58b43d67a3b",
    "recipe_id": "textbook.geometry_homotopy.inner_zero_iff_right_angle",
@@ -8599,7 +8599,7 @@
    "manifest_sha256": "d343d6a27bb6ff05651356a937a4da9f6a248748ec0071e8781d79f1335ca2a3",
    "materialized_source_sha256": "e42e72a88a342c2a452ded8e02c889cb21b9434386f666b9a6c980e82672252c",
    "recipe_id": "textbook.logic_sets.contrapositive_iff",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題論理・対偶"
   },
   {
@@ -8610,7 +8610,7 @@
    "manifest_sha256": "499ca29f711b6a7481976af53a955c931dba19f0246d757102fbd198b5729145",
    "materialized_source_sha256": "14b171c0769e6cd002cea889925f555e570785606f7fa5fd64f0c4a4e82a9de6",
    "recipe_id": "textbook.logic_sets.prop_de_morgan",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題論理・ド・モルガンの法則"
   },
   {
@@ -8621,7 +8621,7 @@
    "manifest_sha256": "c37df241014ac1a5e634f9142d2802a430a2c64edb92918b05092b300934cd23",
    "materialized_source_sha256": "4612acd72dc4a4ce8079fc21e7d6b0bace516929dac5393d4284cfe6e7f4c50e",
    "recipe_id": "textbook.logic_sets.not_forall_iff_exists_not",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "述語論理・全称の否定"
   },
   {
@@ -8632,7 +8632,7 @@
    "manifest_sha256": "53ee250f7b01001d14e3f63100d520170a4851ee136709dea45295b464b76243",
    "materialized_source_sha256": "c57e9f76487e01bbe10e98524e1dc7611c9242a9e8090673e90c1a3d3db53cf7",
    "recipe_id": "textbook.logic_sets.not_exists_iff_forall_not",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "述語論理・存在の否定"
   },
   {
@@ -10290,8 +10290,8 @@
    "draft_id": "textbook_multivariable_partials_exist_not_continuous",
    "kind": "gap",
    "level": 1,
-   "manifest_sha256": "4b58decbed62c9476cc516d09d2b24bb580fef23d92353628c585533c903af90",
-   "materialized_source_sha256": "83610ffee997df2fefd5ed35c2a268971a8ee23c58ef26a3fa7e8eb0109646b2",
+   "manifest_sha256": "831f3777133f83f085f5b98310e581626a9cb95ff9a1297f1886370d7d7a1e88",
+   "materialized_source_sha256": "4a29c3027026517de41a67f09a7ce36f037684e8845dfff655715daaab966746",
    "recipe_id": "textbook.multivariable.partials_exist_not_continuous",
    "tier": "needs_vocabulary",
    "topic": "多変数関数・偏微分可能だが不連続な例"
@@ -10422,8 +10422,8 @@
    "draft_id": "textbook_multivariable_euler_homogeneous_function",
    "kind": "gap",
    "level": 2,
-   "manifest_sha256": "db1a91a69e7437107b7d406b191eab89eabc92442676c87fa6ba31471ad3fe79",
-   "materialized_source_sha256": "df6538742de022afd536f92fba5e63672c14ea5507f1c6b29a7eb1727bb406d7",
+   "manifest_sha256": "a6a94b8d9c4118e522e9ddd1db04274ba5207f76abdd3c2b6567c845cbdb9c18",
+   "materialized_source_sha256": "38b8bb7d44d1f727c05d7c4dff7e3582e26ac0cdef7c35d527f19710bb1b4552",
    "recipe_id": "textbook.multivariable.euler_homogeneous_function",
    "tier": "needs_vocabulary",
    "topic": "多変数関数・同次関数"
@@ -10554,8 +10554,8 @@
    "draft_id": "textbook_multivariable_gaussian_integral_plane",
    "kind": "gap",
    "level": 2,
-   "manifest_sha256": "186c672134621a1c39284a6636dd76101422d96aa5f247d6bc354e91d71b24b7",
-   "materialized_source_sha256": "4a90806279f1b053f35fca180be00280c54741bc0580c114d426c6cbde312bd6",
+   "manifest_sha256": "b94191c4f8e46be82e4aeaacd66ea63f3a5c367941766352027c21422923d98a",
+   "materialized_source_sha256": "0d50f62de5b3c93a81ae1c8f6a215349fd7afec2886ce00b9db3afc31b9f59b7",
    "recipe_id": "textbook.multivariable.gaussian_integral_plane",
    "tier": "needs_vocabulary",
    "topic": "重積分・平面上のガウス積分"
@@ -11445,8 +11445,8 @@
    "draft_id": "textbook_ode_matrix_exponential_neg_inverse",
    "kind": "gap",
    "level": 3,
-   "manifest_sha256": "999cfc4ad62493d778db65d0be80429ae107eccd65332cb742dc97256d2ac508",
-   "materialized_source_sha256": "9768868e73bbbf78cdce57de2c3d1c290c4409ccff9b4e22308ed82bc1361248",
+   "manifest_sha256": "c7995ddabdfa6bb8ffc1b00d6571e961b3b36336972b12a5b6d751a882d98a9b",
+   "materialized_source_sha256": "7fd8051ee1d6c40459cf2f6d50653d8a9cc4b8d81f634627aac491544ac82f21",
    "recipe_id": "textbook.ode.matrix_exponential_neg_inverse",
    "tier": "needs_vocabulary",
    "topic": "常微分方程式・行列の指数関数"
@@ -11863,8 +11863,8 @@
    "draft_id": "textbook_probability_statistics_gaussian_mean_variance",
    "kind": "textbook",
    "level": 3,
-   "manifest_sha256": "0e285445a085860746ee2ea405cdf7f71aa3b2881a775d66ff964cce1750613c",
-   "materialized_source_sha256": "90ad4d81f84a06b325c07ae68cd629bc48c92aa833674d1e4afa2e9fff6e2dc8",
+   "manifest_sha256": "f12e94da51ded2b986a79dbb9bc47bedf2e0fae374aa9d385030e15f3362d4e5",
+   "materialized_source_sha256": "989885b1cc66d37924c16fd98447dfc148c323f72d40791461fa842476d8b2ab",
    "recipe_id": "textbook.probability_statistics.gaussian_mean_variance",
    "tier": "needs_vocabulary",
    "topic": "正規分布・平均と分散"
@@ -12219,7 +12219,7 @@
    "materialized_source_sha256": "617b8af65a325fa76e6581af62c590a5ea9e5a56f07d55a150ca72ec391bf5ef",
    "recipe_id": "textbook.real_analysis.lub_add",
    "tier": "needs_vocabulary",
-   "topic": "上限・和集合の上限"
+   "topic": "上限・集合の和（和集合ではない）の上限"
   },
   {
    "domain": "real_analysis",
@@ -12248,8 +12248,8 @@
    "draft_id": "textbook_real_analysis_eventually_lt_of_limsup_lt",
    "kind": "gap",
    "level": 2,
-   "manifest_sha256": "807cea389df5bea65c58c2d28e36be49b26d59697ca33b9126932cadbb25bc9c",
-   "materialized_source_sha256": "43fc87bca04868a4b1047e875da7d752bae520704e1234d184368f5bb5e8396c",
+   "manifest_sha256": "74fe5841aaa8ec589a7a2dbf2419aa9d68bc3422af1d7b4e0aeae8a474fff924",
+   "materialized_source_sha256": "cff3a20d23eb4972c6ef3daf288ed210c17806286af91166c41badf0f7e4fb9b",
    "recipe_id": "textbook.real_analysis.eventually_lt_of_limsup_lt",
    "tier": "needs_vocabulary",
    "topic": "上極限・末尾の上界"
@@ -12652,12 +12652,12 @@
   },
   {
    "domain": "ring_theory",
-   "draft_id": "textbook_ring_theory_quotient_lift_unique",
+   "draft_id": "textbook_ring_theory_ring_quotient_lift_unique",
    "kind": "textbook",
    "level": 3,
-   "manifest_sha256": "da32fca4759791f1cda84805a25bc1a865cd5a0fb2c425548ecb0b83f4ae9ef6",
+   "manifest_sha256": "0959eccd2bb4540b64e368dda6cea4715986b2b6d555a23e917f12f92d11713d",
    "materialized_source_sha256": "8f66b4c71d92f9902a509156f93617cfc5ba152dece6405b8aaa7082817debf9",
-   "recipe_id": "textbook.ring_theory.quotient_lift_unique",
+   "recipe_id": "textbook.ring_theory.ring_quotient_lift_unique",
    "tier": "needs_vocabulary",
    "topic": "環論・剰余環の普遍性"
   },
@@ -12688,8 +12688,8 @@
    "draft_id": "textbook_ring_theory_quotient_ideal_correspondence",
    "kind": "gap",
    "level": 3,
-   "manifest_sha256": "d3a7e32524bc5215dffea49aa4a49736095e79face22fea3cebcb93fc3402fca",
-   "materialized_source_sha256": "96c49795ca321542cfdf5eb1d36e55c1fcc06c46d68677b60b395812353b5cc9",
+   "manifest_sha256": "e5661f0aea547154030e7e145c2a14526b97b48ea8c31f0d110ad007eaee04e0",
+   "materialized_source_sha256": "b010e76eb9e28f7bb5f799dd90eca427c75f0b2ba06f7304929d1740c2b9c2fb",
    "recipe_id": "textbook.ring_theory.quotient_ideal_correspondence",
    "tier": "needs_vocabulary",
    "topic": "環論・イデアルの対応"
@@ -13150,8 +13150,8 @@
    "draft_id": "textbook_ring_theory_noetherian_iff_ideals_fg",
    "kind": "textbook",
    "level": 3,
-   "manifest_sha256": "11493bf1e3369d29dbc96363aa97a134cc8d221db2d99dd476a28867a05f2c94",
-   "materialized_source_sha256": "0ec304c0dfcbc9daeb4f0d235b77d6658fc745f62c3269ca2c84eb26a7557fc3",
+   "manifest_sha256": "2c31ea3d892623e0e3271fc4b6b131b8043fb099c51c5508619567727e58df15",
+   "materialized_source_sha256": "140ddf37d206a7189f6a257e58d48538634a914a0ae84860ac03fceec3e62f58",
    "recipe_id": "textbook.ring_theory.noetherian_iff_ideals_fg",
    "tier": "needs_vocabulary",
    "topic": "環論・ネーター環"
@@ -13634,8 +13634,8 @@
    "draft_id": "textbook_school_algebra_basics_nested_square_root_minus_form_ordered",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "e2b8b07180ff85c67ada4942a2ef8e4af5031357cf35791f64852efada3e5978",
-   "materialized_source_sha256": "5c468f7a52d50072370803f90a20d833fb6d0d006c52c0f388c3b50bc952495b",
+   "manifest_sha256": "37d34b173a0639764385889f68ea3e5897920216e470eee2c5333def727a6e53",
+   "materialized_source_sha256": "0a5fc87e206acac198d92d72244c40964d26808a0358ddfcd0fc978afe264b16",
    "recipe_id": "textbook.school_algebra_basics.nested_square_root_minus_form_ordered",
    "tier": "generic_now",
    "topic": "二重根号・差の形"
@@ -13699,7 +13699,7 @@
    "domain": "school_algebra_basics",
    "draft_id": "textbook_school_algebra_basics_fundamental_theorem_symmetric_polynomials",
    "kind": "named",
-   "level": "high",
+   "level": 2,
    "manifest_sha256": "4cc341a8e42212a68523a541de460d07ff28500341b79b96b97fed7914ffacc4",
    "materialized_source_sha256": "d3a78be0fdea17537c963795f67d415f688f7408952c81451c9f17229d8c45c2",
    "recipe_id": "textbook.school_algebra_basics.fundamental_theorem_symmetric_polynomials",
@@ -14173,8 +14173,8 @@
    "draft_id": "textbook_school_analytic_geometry_linear_form_max_on_disc",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "bdd3f25b420b1b241f01482a6e4ed2c91c66a253f88c1d6a7b372db656e2d9ab",
-   "materialized_source_sha256": "5749f801f3f1e9222968e33418302489ba4f2d20b27ed44007784e72f07e57d1",
+   "manifest_sha256": "d99b494563bd0993d641194ff96b542b5f6211ddee42c729c6f7a8de7faf52b3",
+   "materialized_source_sha256": "403492815075f51055efe2049f17c4b716d0d4e45cb371d6cdb63772c8ab810d",
    "recipe_id": "textbook.school_analytic_geometry.linear_form_max_on_disc",
    "tier": "generic_now",
    "topic": "図形と方程式・領域と最大最小（円板）"
@@ -15152,8 +15152,8 @@
    "draft_id": "textbook_school_counting_probability_trials_maximum_value",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "360d8e673eaa961d53a6194dceda2c283c6b35050098b1b6bf4718ccee08d152",
-   "materialized_source_sha256": "e9bf0b3cb21ec59556df17b9c35bb762d5c202cec38aa5a81a47f974be587e74",
+   "manifest_sha256": "b58a39bd0773e047d6fefe9b65b270baeaef7c7c3966dc828eee7f2e009653e4",
+   "materialized_source_sha256": "4e66c047d4614f3b758873c3932986143ceb54bb68fa13ee317ce48b34162bb7",
    "recipe_id": "textbook.school_counting_probability.trials_maximum_value",
    "tier": "needs_vocabulary",
    "topic": "確率・最大値の確率"
@@ -15427,8 +15427,8 @@
    "draft_id": "textbook_school_counting_probability_positive_solutions_count",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "42ddd05b8a18454be5e49113715b1c24355a17cc618b191023adab9cbaca63aa",
-   "materialized_source_sha256": "86f1675d3a2429e293b7a6c19e000009d13c5abbbeaa1c7d7fa500ac560c6a8f",
+   "manifest_sha256": "eab75b935b738678e22fb47f40c9febbb07d6b4549efb414c4c6a0a0268e0d16",
+   "materialized_source_sha256": "ce74997889be3f8be3b68c15e7ca85bf7567406fc0607e5f5bfe5062dd2b7ca5",
    "recipe_id": "textbook.school_counting_probability.positive_solutions_count",
    "tier": "needs_vocabulary",
    "topic": "場合の数・正の整数解の個数"
@@ -15716,7 +15716,7 @@
    "manifest_sha256": "fa10fbf953f107a25fc0fde11ca5a282a5b438990523a947f5b0e5cc03725ca8",
    "materialized_source_sha256": "437e6ddaf992249dfa36067c81805fd2c83470d8161354c59060b46908885627",
    "recipe_id": "textbook.school_data_logic.finset_card_union_two",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "集合・包含排除原理（2集合）"
   },
   {
@@ -15727,7 +15727,7 @@
    "manifest_sha256": "cd9b03b1843eb6c3909d52206c45042a940d35dab4cf402799a0cca52ee38cd5",
    "materialized_source_sha256": "bd5b14afdba87fd0f27943a9cc99c8d8d829fa41c71e7b1e65a498773789c5ea",
    "recipe_id": "textbook.school_data_logic.finset_card_union_three",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "集合・包含排除原理（3集合）"
   },
   {
@@ -15738,7 +15738,7 @@
    "manifest_sha256": "c7dd5ef5a4ec04ffff484f3bf1a884cb2173d057ee293971186fd60a162f986f",
    "materialized_source_sha256": "0e244dfae231d183aca117548b27c3e6bf9b510151ef2fbdd7479f5b1fb8b7eb",
    "recipe_id": "textbook.school_data_logic.finset_card_neither_of_two",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "集合・どちらにも属さない要素の個数"
   },
   {
@@ -15749,7 +15749,7 @@
    "manifest_sha256": "4e38e94b52452d82e004c899f2bf083cc7d1120513af7eb7479543ba2dd87546",
    "materialized_source_sha256": "1f48e4cb490aed24f9ae52417808db4de047b4c5d47579bd2e41cf2353443693",
    "recipe_id": "textbook.school_data_logic.pred_forall_contrapositive",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と条件・全称命題の対偶"
   },
   {
@@ -15760,7 +15760,7 @@
    "manifest_sha256": "68a23d7aa724252d7251c48c4e896878da1f0e57e7231c9f47451da82228fda0",
    "materialized_source_sha256": "387efa370b200bea612f640d02c6307f0f42be07a2289dc36ab2287ad7b7b0ac",
    "recipe_id": "textbook.school_data_logic.pred_not_forall_imp_counterexample",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と条件・反例"
   },
   {
@@ -15793,7 +15793,7 @@
    "manifest_sha256": "9e6af5d2b734a055733f55872a4c0ad68725338ce2cd3e1dfd0c905c098a8d54",
    "materialized_source_sha256": "681843709dfb0c8e132ad30920c7b4a34f47a65e7500fbe26b5dada434d5d6d3",
    "recipe_id": "textbook.school_data_logic.implication_cycle_iff",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と条件・同値の循環証明"
   },
   {
@@ -15804,7 +15804,7 @@
    "manifest_sha256": "fedf014339f9e4f066a5b1740f5d9fcc0dabc24ebe5c8ba0ff062d9d27448b3d",
    "materialized_source_sha256": "edf13e63455c4f228589e57fe2c6a53ebc5f71a8999a70773c5a298f6e63444e",
    "recipe_id": "textbook.school_data_logic.proof_by_contradiction_template",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と証明・背理法"
   },
   {
@@ -15815,7 +15815,7 @@
    "manifest_sha256": "88cec2c8fcf3573ad1792f7ce8036f884e100a5d445b73cbcb147172a96a8bd3",
    "materialized_source_sha256": "0ab0b5312bb1f61e12c2247dc655b253efb5887407d09f9777032e615245b5de",
    "recipe_id": "textbook.school_data_logic.implication_by_contradiction_template",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と証明・含意の背理法"
   },
   {
@@ -15826,7 +15826,7 @@
    "manifest_sha256": "10ef2b23ab7c43e81c4300ade3a1588038ae4455029daf7e1a1b843a367a25e2",
    "materialized_source_sha256": "ed96deb101b2967679d0a0bb3873a4285314dc013b5825d6f06d8a329398f3b3",
    "recipe_id": "textbook.school_data_logic.or_iff_not_left_imp_right",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "命題と証明・「または」の示し方"
   },
   {
@@ -16079,7 +16079,7 @@
    "manifest_sha256": "aacf3723a20f1e7d598b681ae1edf4240b983d99de6b84c6cd7538be2f958583",
    "materialized_source_sha256": "538da6928aa4cc0220eb769475af32f0ccac0be751c15ea3874e9eb57b74a44f",
    "recipe_id": "textbook.school_exp_log.logb_change_of_base",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "対数・底の変換公式"
   },
   {
@@ -16637,8 +16637,8 @@
    "draft_id": "textbook_school_inequalities_min_x_plus_inv_on_ray",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "cf5c0057431468db9d1bddfc618eee98a079dad0862aaba803887e74af21014b",
-   "materialized_source_sha256": "b31355fb32f7d687165223ad0c0917656cdc8d5ec34fb9387e49444758bc671b",
+   "manifest_sha256": "6d38d32766a8ec625dbde5be10f23a6036802800dce2f8b0a5d7d629dd9fbb17",
+   "materialized_source_sha256": "bc7d426247b89433c13338cadde97792672c7c962b7d36ad66a1f840cdf5ead5",
    "recipe_id": "textbook.school_inequalities.min_x_plus_inv_on_ray",
    "tier": "generic_now",
    "topic": "最小値・等号が成り立たない場合"
@@ -17132,8 +17132,8 @@
    "draft_id": "textbook_school_integers_coprime_mul_eq_square",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "c433dfa30e7f646c01bcbf0f7c61d9164ca1c2baab6dfd88c8942e43069f0e62",
-   "materialized_source_sha256": "d8c53754ec6fee01b8b727121b68d9522e7ee0bfe23382130d88424d1bd18251",
+   "manifest_sha256": "a1da8f9e365601ed2372dcf7866db8ea103b3f6c45a5419fb329c61f0c24a7fb",
+   "materialized_source_sha256": "69604a30b4326601e355e92ae7e0f9a20d39d38f88755a83ccbd8522657e728c",
    "recipe_id": "textbook.school_integers.coprime_mul_eq_square",
    "tier": "generic_now",
    "topic": "整数の性質・互いに素な積と平方数"
@@ -17275,8 +17275,8 @@
    "draft_id": "textbook_school_polynomials_common_root_of_two_monic_quadratics",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "c32de909a3b58fdc4206e2e9d527f916f862d7cc36027ee833ee04fff6eb0e34",
-   "materialized_source_sha256": "4c5492fac302e84db4893ab2156d2b2582b66e76341bc41df0ec52e42b5f34c5",
+   "manifest_sha256": "cfd9c8d286bd64d1e8172efde5c0a6070c7901cc8df0a734cd1462a00e7e04fe",
+   "materialized_source_sha256": "658f1882afd0c19a11950371f86adade888e791decaa7acb416f0bcfd4345156",
    "recipe_id": "textbook.school_polynomials.common_root_of_two_monic_quadratics",
    "tier": "generic_now",
    "topic": "複素数と方程式・共通解"
@@ -17330,8 +17330,8 @@
    "draft_id": "textbook_school_polynomials_reciprocal_quartic_substitution",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "9d9835dfdba3681e8d38015d5a6b175d0ac5231f15eaecfdaa8f8659eb47ce83",
-   "materialized_source_sha256": "8f7f1a9dbf73653de72f8540124a46500a20c163c349c4b6de950a06a33c9551",
+   "manifest_sha256": "bab0d438510d45020d1a34dd6d26648ea003a7e3a4ef9aed1b5769affc686a89",
+   "materialized_source_sha256": "5d1634afdbb3eb64ee57a16e3b878f95beeb4d39f10be24fd8b1088006a65f7a",
    "recipe_id": "textbook.school_polynomials.reciprocal_quartic_substitution",
    "tier": "generic_now",
    "topic": "複素数と方程式・高次方程式"
@@ -17539,8 +17539,8 @@
    "draft_id": "textbook_school_polynomials_real_cubic_factorization_from_nonreal_root",
    "kind": "gap",
    "level": "high",
-   "manifest_sha256": "ff746dac2afdb0cc47f12274fd49b531438d5f607c133966a892163b4dfd9266",
-   "materialized_source_sha256": "434b9fd30d0fad805950ad6c42f6cc8cd96c453a1cc7a1c19c0f76c21ced2811",
+   "manifest_sha256": "6457fb129ca9ee2ce8f1bfe67bbf44eea4bf053e4d22a39e3c45c29b4ebe599b",
+   "materialized_source_sha256": "d9dd373a8bc350bcb15bb5acdaa0b2a7696eb87bf3eb15f7081d5a83abc5670e",
    "recipe_id": "textbook.school_polynomials.real_cubic_factorization_from_nonreal_root",
    "tier": "needs_vocabulary",
    "topic": "複素数と方程式・共役解"
@@ -17747,7 +17747,7 @@
    "domain": "school_quadratic",
    "draft_id": "textbook_school_quadratic_product_with_fixed_sum_maximum",
    "kind": "gap",
-   "level": "middle",
+   "level": "high",
    "manifest_sha256": "73f30467b5fe94060df894fec803535004ba9b79932712a3edd04eea047a2508",
    "materialized_source_sha256": "803f91b8c186d25378f9cc569c9e5b2ef7afd75d451043e6e0cee778ad543047",
    "recipe_id": "textbook.school_quadratic.product_with_fixed_sum_maximum",
@@ -18533,7 +18533,7 @@
    "materialized_source_sha256": "3266d6a4ad7a3309402b68b70e5fc495cf36e00f2cd8c93aec0b08ea204a4496",
    "recipe_id": "textbook.school_sequences.arith_common_terms_lcm",
    "tier": "generic_now",
-   "topic": "等差数列・共通項"
+   "topic": "整数全体を添字とする等差数列・共通項"
   },
   {
    "domain": "school_sequences",
@@ -18631,7 +18631,7 @@
    "manifest_sha256": "34de318d14acf794b7e85440079e90cf0927c5c036b8aea103e02efb9ed69509",
    "materialized_source_sha256": "1a4484cd9034a544892c75ab0cdf6e1e37c0e9ccf4809b5e7486e79ee1a52280",
    "recipe_id": "textbook.school_sequences.sum_consecutive_product",
-   "tier": "generic_now",
+   "tier": "needs_vocabulary",
    "topic": "数列の和・連続する整数の積"
   },
   {
@@ -19706,8 +19706,8 @@
    "draft_id": "textbook_school_vectors_complex_internal_division_formula",
    "kind": "textbook",
    "level": "high",
-   "manifest_sha256": "d0119fcca12b727b42e0b867a1b6fa6e15449b9dba386ecea4fb7dc9f026de7e",
-   "materialized_source_sha256": "8944a45c62484ecbfc1b4a4371618118e25cfe8f5711e2caac684231d2857976",
+   "manifest_sha256": "c69522cdc2844c1bc98aff4ae68edcb08158a1626d1224d82098a649b5c17249",
+   "materialized_source_sha256": "3cc59c45c5d7741f35217634124ae121d9fdbe6a016ffcac3d5aad7dab530b52",
    "recipe_id": "textbook.school_vectors_complex.internal_division_formula",
    "tier": "needs_vocabulary",
    "topic": "ベクトル・内分点"
@@ -19717,8 +19717,8 @@
    "draft_id": "textbook_school_vectors_complex_external_division_formula",
    "kind": "textbook",
    "level": "high",
-   "manifest_sha256": "8a9141ede5e877b6224beb5df9ee5c8224fbe55853663a32c54fe68eb629644c",
-   "materialized_source_sha256": "9a3da3d78fccec865ca36d4814eecba787437a8c5ffac25086208239ce6acbf1",
+   "manifest_sha256": "e49b4811ec66f4409a3df0f2a473d273251ab51e7b47b7448ae224cf628a2add",
+   "materialized_source_sha256": "21c5bed76b825690969a947cc710a098128cad5882f33ad972a119db36ee9d5c",
    "recipe_id": "textbook.school_vectors_complex.external_division_formula",
    "tier": "needs_vocabulary",
    "topic": "ベクトル・外分点"

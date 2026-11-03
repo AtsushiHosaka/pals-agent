@@ -76,7 +76,7 @@
   - 'derive: Equal unoriented angles with equal signs give equal oriented angles.'
   - 'translate: Negating both vectors rewrites the angle DCA as the angle from DC to AC.'
   - 'conclude: The oriented angle from AB to DC is 0, so DC is a positive multiple of AB and the lines are parallel.'
-  openmath: (forall (a b c d) (-> (and (!= a c) (opposite_side_of_line b d a c) (= (euclid_angle b a c) (euclid_angle d c a))) (parallel_lines a b d c)))
+  openmath: (forall (a b c d) (-> (and euclidean_plane_ambient (!= a c) (opposite_side_of_line b d a c) (= (euclid_angle b a c) (euclid_angle d c a))) (parallel_lines a b d c)))
   hard_negative:
     statement: $B,D$が直線$AC$の同じ側にあっても、$\angle BAC=\angle DCA$なら直線$AB$と直線$DC$は平行である。
     reason: $A=(0,0)$、$C=(2,0)$、$B=D=(1,1)$では2角はともに$\pi/4$だが、直線$AB$と直線$DC$は点$(1,1)$で交わり平行でない。
@@ -188,7 +188,7 @@
   - 'derive: The same-side hypothesis makes the two oriented angles against AC have equal sign.'
   - 'derive: Equal angle and equal sign give equal oriented angles.'
   - 'conclude: The oriented angle from AB to CD is 0, so the lines are parallel.'
-  openmath: (forall (a b c d e) (-> (and (strictly_between e a c) (same_side_of_line b d a c) (= (euclid_angle e a b) (euclid_angle a c d))) (parallel_lines a b c d)))
+  openmath: (forall (a b c d e) (-> (and euclidean_plane_ambient (strictly_between e a c) (same_side_of_line b d a c) (= (euclid_angle e a b) (euclid_angle a c d))) (parallel_lines a b c d)))
   hard_negative:
     statement: $B,D$が直線$AC$に関して反対側にあっても、$\angle EAB=\angle ACD$なら直線$AB$と直線$CD$は平行である。
     reason: $E=(-1,0)$、$A=(0,0)$、$C=(1,0)$、$B=(-1,1)$、$D=(0,-1)$では2角はともに$\pi/4$だが、直線$AB$の方向$(-1,1)$と直線$CD$の方向$(-1,-1)$は平行でない。
@@ -253,7 +253,7 @@
   - 'derive: The orthogonal complement of EF has dimension 1 and contains AB and CD.'
   - 'derive: Since AB ≠ 0, CD = c AB, and c ≠ 0 because CD ≠ 0.'
   - 'conclude: The lines have the same direction, so they are parallel.'
-  openmath: (forall (a b c d e f) (-> (and (!= a b) (!= c d) (!= e f) (perpendicular_lines a b e f) (perpendicular_lines c d e f)) (parallel_lines a b c d)))
+  openmath: (forall (a b c d e f) (-> (and euclidean_plane_ambient (!= a b) (!= c d) (!= e f) (perpendicular_lines a b e f) (perpendicular_lines c d e f)) (parallel_lines a b c d)))
   hard_negative:
     statement: 3次元空間でも、同じ直線に垂直な2直線は平行である。
     reason: $z$軸に対して$x$軸と$y$軸はともに垂直だが、$x$軸と$y$軸は平行でない。平面という仮定が要る。
@@ -730,7 +730,7 @@
   - 'setup: Put u = AB and v = AD, so AC = u + v and BD = v - u.'
   - 'derive: The inner product is |v|² - |u|².'
   - 'conclude: Equal side lengths make it zero.'
-  openmath: (forall (a b c d) (-> (and (parallelogram a b c d) (= (dist_of a b) (dist_of a d))) (perpendicular_lines a c b d)))
+  openmath: (forall (a b c d) (-> (and (parallelogram a b c d) (= (dist_of a b) (dist_of a d))) (= (inner_product (- c a) (- d b)) 0)))
   hard_negative:
     statement: 四角形$ABCD$が$AB=AD$をみたせば、平行四辺形でなくても対角線は直交する。
     reason: $A=(0,0)$、$B=(1,0)$、$D=(0,1)$、$C=(3,1)$では$AB=AD=1$だが、$\overrightarrow{AC}\cdot\overrightarrow{BD}=(3,1)\cdot(-1,1)=-2$である。
@@ -765,7 +765,7 @@
   - 'setup: Put u = AB and v = AD, so AC = u + v and BD = v - u.'
   - 'derive: Orthogonality gives |v|² = |u|².'
   - 'conclude: Taking nonnegative roots gives |AB| = |AD|.'
-  openmath: (forall (a b c d) (-> (and (parallelogram a b c d) (perpendicular_lines a c b d)) (= (dist_of a b) (dist_of a d))))
+  openmath: (forall (a b c d) (-> (and (parallelogram a b c d) (= (inner_product (- c a) (- d b)) 0)) (= (dist_of a b) (dist_of a d))))
   hard_negative:
     statement: 四角形$ABCD$の対角線が直交すれば、平行四辺形でなくても$AB=AD$である。
     reason: $A=(0,0)$、$C=(3,0)$、$B=(1,2)$、$D=(1,-1)$では対角線は直交するが、$AB=\sqrt{5}$、$AD=\sqrt{2}$である。
@@ -1098,7 +1098,7 @@
   - 'derive: As vectors PQ = AC/2 and QR = BD/2.'
   - 'derive: The inner product scales by 1/4, so the orthogonality conditions are equivalent.'
   - 'conclude: The lengths scale by 1/2, so the equal-length conditions are equivalent.'
-  openmath: (forall (a b c d) (and (<-> (perpendicular_lines (midpoint_of a b) (midpoint_of b c) (midpoint_of b c) (midpoint_of c d)) (perpendicular_lines a c b d)) (<-> (= (dist_of (midpoint_of a b) (midpoint_of b c)) (dist_of (midpoint_of b c) (midpoint_of c d))) (= (dist_of a c) (dist_of b d)))))
+  openmath: (forall (a b c d) (and (<-> (= (inner_product (- (midpoint_of b c) (midpoint_of a b)) (- (midpoint_of c d) (midpoint_of b c))) 0) (= (inner_product (- c a) (- d b)) 0)) (<-> (= (dist_of (midpoint_of a b) (midpoint_of b c)) (dist_of (midpoint_of b c) (midpoint_of c d))) (= (dist_of a c) (dist_of b d)))))
   hard_negative:
     statement: 対角線が直交する四角形では、中点四角形はひし形である。
     reason: $A=(0,0)$、$C=(4,0)$、$B=(1,1)$、$D=(1,-1)$では対角線は直交するが、$PQ=AC/2=2$、$QR=BD/2=1$である。対角線の直交に対応するのは長方形である。
@@ -1822,7 +1822,7 @@
   - 'setup: Write H = B + t BC and set c = BC, h = HA.'
   - 'derive: Bilinearity gives det(AB, AC) = -det(h, c).'
   - 'conclude: Orthogonality gives |det(h, c)| = |h||c|, so the area is (1/2)|BC||AH|.'
-  openmath: (forall (a b c h) (-> (and (!= b c) (on_line h b c) (perpendicular_lines h a b c)) (= (triangle_area a b c) (* (/ 1 2) (dist_of b c) (dist_of a h)))))
+  openmath: (forall (a b c h) (-> (and (!= b c) (on_line h b c) (= (inner_product (- a h) (- c b)) 0)) (= (triangle_area a b c) (* (/ 1 2) (dist_of b c) (dist_of a h)))))
   hard_negative:
     statement: $H$が直線$BC$上の点でさえあれば、垂線の足でなくても面積は$\frac{1}{2}BC\cdot AH$である。
     reason: $A=(0,1)$、$B=(0,0)$、$C=(1,0)$、$H=C$では面積は$\frac{1}{2}$だが、$\frac{1}{2}BC\cdot AH=\frac{\sqrt{2}}{2}$である。
@@ -2698,7 +2698,7 @@
   - 'translate: BA = BH + HA.'
   - 'derive: BH·BC = 0 by hypothesis, and HA·BC = 0 since BC lies in α.'
   - 'conclude: Hence BA·BC = 0.'
-  openmath: (forall (s a h b c) (-> (and (in_affine_subspace h s) (in_affine_subspace b s) (in_affine_subspace c s) (!= b c) (perpendicular_to_subspace a h s) (perpendicular_lines h b b c)) (perpendicular_lines a b b c)))
+  openmath: (forall (s a h b c) (-> (and (in_affine_subspace h s) (in_affine_subspace b s) (in_affine_subspace c s) (!= b c) (perpendicular_to_subspace a h s) (= (inner_product (- h b) (- c b)) 0)) (= (inner_product (- a b) (- c b)) 0)))
   hard_negative:
     statement: $\overrightarrow{HA}$が平面$\alpha$に垂直でなくても、$HB\perp BC$なら$AB\perp BC$である。
     reason: $\alpha$を$xy$平面とし、$H=(0,0,0)$、$B=(1,0,0)$、$C=(1,1,0)$、$A=(0,5,1)$とすると$HB\perp BC$だが、$\overrightarrow{BA}\cdot\overrightarrow{BC}=5$である。
@@ -2732,7 +2732,7 @@
   - 'translate: BA = BH + HA.'
   - 'derive: HA·BC = 0 since BC lies in α.'
   - 'conclude: BH·BC = BA·BC - HA·BC = 0.'
-  openmath: (forall (s a h b c) (-> (and (in_affine_subspace h s) (in_affine_subspace b s) (in_affine_subspace c s) (!= b c) (perpendicular_to_subspace a h s) (perpendicular_lines a b b c)) (perpendicular_lines h b b c)))
+  openmath: (forall (s a h b c) (-> (and (in_affine_subspace h s) (in_affine_subspace b s) (in_affine_subspace c s) (!= b c) (perpendicular_to_subspace a h s) (= (inner_product (- a b) (- c b)) 0)) (= (inner_product (- h b) (- c b)) 0)))
   hard_negative:
     statement: $H$が平面$\alpha$上の任意の点でも、$AB\perp BC$なら$HB\perp BC$である。
     reason: $\alpha$を$xy$平面とし、$A=(1,0,1)$、$B=(1,0,0)$、$C=(1,1,0)$、$H=(0,1,0)$とすると$AB\perp BC$だが、$\overrightarrow{BH}\cdot\overrightarrow{BC}=1$である。$H$は垂線の足でなければならない。
@@ -2767,7 +2767,7 @@
   - 'derive: HA·BH = 0 by hypothesis.'
   - 'derive: HA·BC = BA·BC - BH·BC = 0.'
   - 'conclude: Linearity gives orthogonality to the whole plane.'
-  openmath: (forall (a h b c) (-> (and (not (collinear_points h b c)) (perpendicular_lines a b b c) (perpendicular_lines h b b c) (perpendicular_lines a h h b)) (perpendicular_to_plane a h h b c)))
+  openmath: (forall (a h b c) (-> (and (not (collinear_points h b c)) (= (inner_product (- a b) (- c b)) 0) (= (inner_product (- h b) (- c b)) 0) (= (inner_product (- a h) (- h b)) 0)) (perpendicular_to_plane a h h b c)))
   hard_negative:
     statement: 条件$AH\perp HB$がなくても、$AB\perp BC$、$HB\perp BC$なら$AH$は平面$HBC$に垂直である。
     reason: $H=(0,0,0)$、$B=(1,0,0)$、$C=(1,1,0)$、$A=(1,0,1)$では2つの垂直はみたすが、$\overrightarrow{HA}\cdot\overrightarrow{HB}=1$である。
@@ -2813,7 +2813,7 @@
   - 'translate: XY lies in the direction of the plane, spanned by OB and OC.'
   - 'derive: XY = r OB + t OC.'
   - 'conclude: Linearity gives OA·XY = 0.'
-  openmath: (forall (a o b c x y) (-> (and (not (collinear_points o b c)) (perpendicular_lines a o o b) (perpendicular_lines a o o c) (on_plane x o b c) (on_plane y o b c)) (perpendicular_lines a o x y)))
+  openmath: (forall (a o b c x y) (-> (and (not (collinear_points o b c)) (= (inner_product (- a o) (- b o)) 0) (= (inner_product (- a o) (- c o)) 0) (on_plane x o b c) (on_plane y o b c)) (= (inner_product (- a o) (- y x)) 0)))
   hard_negative:
     statement: 直線$AO$が平面上の1本の直線$OB$に垂直なら、$AO$は平面に垂直である。
     reason: $O=(0,0,0)$、$B=(0,1,0)$、$C=(1,0,0)$、$A=(1,0,1)$では$AO\perp OB$だが、$\overrightarrow{OA}\cdot\overrightarrow{OC}=1$である。交わる2直線に垂直であることが要る。
@@ -2861,7 +2861,7 @@
   - 'derive: Its orthogonal complement has dimension 1 and contains AB and CD.'
   - 'derive: Hence CD = c AB, with c ≠ 0 because CD ≠ 0.'
   - 'conclude: The lines have the same direction, so they are parallel.'
-  openmath: (forall (a b c d x y z) (-> (and (!= a b) (!= c d) (not (collinear_points x y z)) (perpendicular_lines a b x y) (perpendicular_lines a b x z) (perpendicular_lines c d x y) (perpendicular_lines c d x z)) (parallel_lines a b c d)))
+  openmath: (forall (a b c d x y z) (-> (and (euclidean_ambient_dimension 3) (!= a b) (!= c d) (not (collinear_points x y z)) (perpendicular_lines a b x y) (perpendicular_lines a b x z) (perpendicular_lines c d x y) (perpendicular_lines c d x z)) (parallel_lines a b c d)))
   hard_negative:
     statement: 4次元空間でも、同じ平面に垂直な2直線は平行である。
     reason: $\mathbb{R}^4$の第1、第2座標軸が張る平面に対し、第3座標軸と第4座標軸はともに垂直だが平行でない。次元が$3$という仮定が要る。
@@ -3009,7 +3009,7 @@
   - 'derive: Expand the squared lengths of BC and BD.'
   - 'derive: The difference of the two sums equals -2 u·(v - w).'
   - 'conclude: This is -2 AB·CD, so the conditions are equivalent.'
-  openmath: (forall (a b c d) (<-> (perpendicular_lines a b c d) (= (+ (^ (dist_of a c) 2) (^ (dist_of b d) 2)) (+ (^ (dist_of a d) 2) (^ (dist_of b c) 2)))))
+  openmath: (forall (a b c d) (<-> (= (inner_product (- b a) (- d c)) 0) (= (+ (^ (dist_of a c) 2) (^ (dist_of b d) 2)) (+ (^ (dist_of a d) 2) (^ (dist_of b c) 2)))))
   hard_negative:
     statement: $AB\perp CD$は$AC^2+BD^2=AB^2+CD^2$と同値である。
     reason: $A=(0,0,0)$、$B=(1,0,0)$、$C=(0,1,0)$、$D=(0,2,0)$では$AB\perp CD$だが、$AC^2+BD^2=6$、$AB^2+CD^2=2$である。

@@ -423,6 +423,7 @@
     第二に、部分加群の有限列$0=M_0\subset M_1\subset\dots\subset M_n=M$で、各$M_i/M_{i-1}$がある素イデアル$P_i$について$R/P_i$と同型なものがある。そのような列をもつ部分加群全体は$0$を含むので、極大元$N$がある。$N\neq M$なら$M/N$に随伴素イデアル$P=\operatorname{Ann}(\bar x)$があり、$R\bar x\cong R/P$である。$R\bar x$の$M$での逆像は$N$より大きく、同じ列をもつので矛盾する。よって$N=M$である。
     第三に、部分加群$N\subseteq M$について$\operatorname{Ass}(M)\subseteq\operatorname{Ass}(N)\cup\operatorname{Ass}(M/N)$である。$P=\operatorname{Ann}(x)\in\operatorname{Ass}(M)$なら$Rx\cong R/P$であり、$R/P$は整域なので$Rx$の$0$でない元の零化イデアルはすべて$P$である。$Rx\cap N\neq0$なら$P\in\operatorname{Ass}(N)$である。$Rx\cap N=0$なら$Rx$は$M/N$へ単射で移るので$P\in\operatorname{Ass}(M/N)$である。同じ理由で$\operatorname{Ass}(R/P)=\{P\}$である。
     第二の列に第三の事実を繰り返し適用すると、$\operatorname{Ass}(M)\subseteq\{P_1,\dots,P_n\}$であり、有限集合である。
+    最後に、$P=\sqrt{\operatorname{Ann}(x)}$となる素イデアルを随伴素イデアルと呼ぶ定義でも、ネーター環では同じ集合になる。$c\notin P$である$\operatorname{Ann}(cx)$の中に極大元$\operatorname{Ann}(y)$($y=cx$)をとる。$b\in\operatorname{Ann}(y)$なら$bc\in\operatorname{Ann}(x)\subseteq P$で$c\notin P$なので、$\operatorname{Ann}(y)\subseteq P$であり、$y\neq0$である。$a\notin P$かつ$ab\in\operatorname{Ann}(y)$なら、$b\in\operatorname{Ann}(ay)=\operatorname{Ann}(y)$である。$P$は有限生成なので、ある$k$で$P^kx=0$であり、$P^ky=0$である。$P^jy\neq0$となる最大の$j\geq0$をとり、$a\in P^j$で$z=ay\neq0$となるものをとる。$Pz=0$より$P\subseteq\operatorname{Ann}(z)$である。$b\notin P$で$bz=0$なら、$(ba)y=0$から$ay=0$となり矛盾する。よって$\operatorname{Ann}(z)=P$である。
   strategy: Filter M with quotients R/P and use subadditivity of Ass along short exact sequences.
   sketch:
   - 'construct: Take a finite filtration of M with successive quotients isomorphic to R/P_i.'
@@ -463,10 +464,10 @@
   - 'construct: Choose y nonzero with Ann(y) maximal among annihilators containing Ann(x).'
   - 'derive: Maximality shows Ann(y) is prime.'
   - 'conclude: r lies in the associated prime Ann(y).'
-  openmath: (forall (R M r) (-> (and (comm_ring R) (noetherian_ring R) (module_over M R) (in r R)) (<-> (exists (x) (and (in x M) (!= x 0) (= (* r x) 0))) (exists (P) (and (in P (associated_primes R M)) (in r P))))))
+  openmath: (forall (R M r) (-> (and (comm_ring R) (noetherian_ring R) (module_over M R) (in r R)) (<-> (exists (x) (and (in x M) (!= x (module_zero M)) (= (module_smul r x) (module_zero M)))) (exists (P) (and (in P (associated_primes R M)) (in r P))))))
   hard_negative:
-    statement: ネーターでない可換環上でも、零因子全体は随伴素イデアルの和集合に等しい。
-    reason: R=k[x_1,x_2,…]/(x_1^2,x_2^2,…)の唯一の素イデアル(x_i)はどの元の零化イデアルでもないのでAss(R)は空だが、x_1は零因子である。
+    statement: ネーターでない可換環上でも、零因子全体は(Ann(x)=Pの形で定まる)随伴素イデアルの和集合に等しい。
+    reason: R=k[x_1,x_2,…]/(x_1^2,x_2^2,…)の唯一の素イデアル$(x_1,x_2,\dots)$はどの元$a$の零化イデアル$\operatorname{Ann}(a)$にもならない(0でない$a$に現れない変数$x_j$を掛けると0にならない)。よってAnn(x)の形の随伴素イデアルは存在しないが、x_1は零因子である。
   target: |
     ∀ (R M : Type*) [CommRing R] [IsNoetherianRing R] [AddCommGroup M] [Module R M] (r : R), (∃ x : M, x ≠ 0 ∧ r • x = 0) ↔ ∃ P ∈ associatedPrimes R M, r ∈ P
   proof: |
@@ -522,10 +523,10 @@
   quantifiers:
   - 任意の$R,A,x$
   conclusion: $x$は$R$上整である。
-  answer: |
+  answer: |-
     $R,A$を可換環、$A$を$R$代数、$C$を$R$上整な$A$の元全体とし、$x\in A$は$C$上整とする。
-    $x$は$C$係数のモニック多項式の根であり、その係数を$c_0,\dots,c_{n-1}$とする。各$c_i$は$R$上整なので、$A$の部分$R$代数$R'=R[c_0,\dots,c_{n-1}]$は有限生成$R$加群である。$x$は$R'$上整なので、$R'[x]$は$1,x,\dots,x^{n-1}$で生成される$R'$加群である。よって$R'[x]$は有限生成$R$加群である。
-    $R'[x]$は$1$を含む部分$R$代数なので、ケイリー・ハミルトンの議論を使う。生成元$b_1,\dots,b_k$について$xb_i=\sum_ja_{ij}b_j$($a_{ij}\in R$の像)と書くと、$\det(xE-(a_{ij}))$がすべての$b_i$を消すので$0$である。これは$x$についてのモニックな方程式なので、$x$は$R$上整である。
+    $x$は$C$係数のモニック多項式の根であり、その係数を$c_0,\dots,c_{n-1}$とする。各$c_i$は$R$上整である。$R_0=R$, $R_{k+1}=R_k[c_k]$($k=0,\dots,n-1$)とおく。$c_k$は$R$上整なので$R_k$上整であり、その整方程式の次数を$d_k$とすると、$R_{k+1}$は$1,c_k,\dots,c_k^{d_k-1}$で生成される$R_k$加群である。有限生成加群上の有限生成加群は、生成元どうしの積を生成元に取れば有限生成なので、$R'=R_n=R[c_0,\dots,c_{n-1}]$は有限生成$R$加群である。$x$は$R'$上整なので、$R'[x]$は$1,x,\dots,x^{n-1}$で生成される$R'$加群であり、したがって有限生成$R$加群である。
+    $R'[x]$は$1$を含む部分$R$代数なので、行列式の議論を使う。生成元$b_1,\dots,b_k$について$xb_i=\sum_ja_{ij}b_j$($a_{ij}\in R$の像)と書くと、$\det(xE-(a_{ij}))$がすべての$b_i$を消すので$0$である($1$は$b_i$の線形結合だから)。これは$x$についてのモニックな方程式なので、$x$は$R$上整である。
   strategy: Adjoin the finitely many coefficients of an integral equation to get a finite R-module containing x.
   sketch:
   - 'setup: Write an integral equation for x with coefficients c_i in C.'
@@ -534,8 +535,8 @@
   - 'conclude: Cayley-Hamilton shows x is integral over R.'
   openmath: (forall (R A x) (-> (and (comm_ring R) (comm_ring A) (algebra_over A R) (in x A) (integral_element x (integral_closure_in R A))) (integral_element x R)))
   hard_negative:
-    statement: 整域Rの分数体におけるRの整閉包はR自身である。
-    reason: R=Z[√-3]では(1+√-3)/2がx^2-x+1の根で分数体に属し、Rに属さない。Rが整閉とは限らない。
+    statement: $x$が$R$の$A$における整閉包$C$上で代数的(非モニックな多項式の根)であれば、$x$は$R$上整である。
+    reason: モニックの仮定が必要である。$R=\mathbb{Z}$, $A=\mathbb{Q}$では$C=\mathbb{Z}$で、$x=1/2$は$2x-1=0$を満たす($\mathbb{Z}$係数の非モニック式の根)が、$\mathbb{Z}$上整でない。
   target: |
     ∀ (R A : Type*) [CommRing R] [CommRing A] [Algebra R A] (x : A), IsIntegral (integralClosure R A) x → IsIntegral R x
   proof: |
@@ -1021,7 +1022,7 @@
   - 'setup: Conversely assume J is contained in I and I is nonzero.'
   - 'construct: Let K = I^(-1) J, which lies in A because J ⊂ I.'
   - 'conclude: Then I K = J, so I divides J.'
-  openmath: (forall (A I J) (-> (and (dedekind_domain A) (ideal_of I A) (ideal_of J A)) (<-> (dvd I J) (subset J I))))
+  openmath: (forall (A I J) (-> (and (dedekind_domain A) (ideal_of I A) (ideal_of J A)) (<-> (exists (L) (and (ideal_of L A) (= J (ideal_mul I L)))) (subset J I))))
   hard_negative:
     statement: 任意の可換環のイデアルについて、J⊂IならIはJを割る。
     reason: k[x,y]でI=(x,y), J=(x)とすると、J=IKとなるKはない。J=IKならJ⊂Kであり、(x)は素イデアルでI⊄(x)なのでK⊂(x)となる。するとK=(x)だが、I(x)⊊(x)なので矛盾する。

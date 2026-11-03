@@ -269,8 +269,8 @@
   kind: textbook
   level: high
   topic: 図形と方程式・三角形の面積
-  statement: 実数$a_1,a_2,b_1,b_2$について、ベクトル$(a_1,a_2)$、$(b_1,b_2)$の作る三角形の面積を与える2つの式は一致する。すなわち$\frac12\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=\frac12|a_1b_2-a_2b_1|$である。
-  statement_en: For real a1,a2,b1,b2, (1/2)√((a1^2+a2^2)(b1^2+b2^2)-(a1 b1+a2 b2)^2) = (1/2)|a1 b2-a2 b1|.
+  statement: 実数$a_1,a_2,b_1,b_2$について、ベクトル$(a_1,a_2)$、$(b_1,b_2)$の作る三角形の面積の2つの公式の値は一致する。すなわち（面積そのものは扱わず、2式の等式として）$\frac12\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=\frac12|a_1b_2-a_2b_1|$である。
+  statement_en: 'For real a1,a2,b1,b2, the two triangle-area expressions agree: (1/2)√((a1²+a2²)(b1²+b2²)-(a1b1+a2b2)²) = (1/2)|a1b2-a2b1| (identity only; no area is defined).'
   assumptions:
   - $a_1,a_2,b_1,b_2$は実数
   quantifiers:
@@ -1978,7 +1978,7 @@
   kind: gap
   level: high
   topic: 図形と方程式・軌跡（円の相似拡大）
-  statement: $k\ne0$とする。点$(x_0,y_0)$が円$(x-a)^2+(y-b)^2=r^2$の上を動くとき、定点$(p,q)$を中心に$k$倍した点$(x,y)=(p+k(x_0-p),q+k(y_0-q))$の全体は、方程式$(x-(p+k(a-p)))^2+(y-(q+k(b-q)))^2=(kr)^2$で表される。$k=\frac12$なら定点と円上の点の中点の軌跡である。
+  statement: $k\ne0$とする。点$(x_0,y_0)$が円$(x-a)^2+(y-b)^2=r^2$の上を動くとき、定点$(p,q)$を中心に$k$倍した点$(x,y)=(p+k(x_0-p),q+k(y_0-q))$の全体は、方程式$(x-(p+k(a-p)))^2+(y-(q+k(b-q)))^2=(kr)^2$で表される。
   statement_en: For k≠0, (x,y)=(p+k(x0-p),q+k(y0-q)) for some (x0,y0) on the circle (x-a)^2+(y-b)^2=r^2 if and only if (x-(p+k(a-p)))^2+(y-(q+k(b-q)))^2=(kr)^2.
   assumptions:
   - $k\ne0$
@@ -2050,20 +2050,20 @@
   kind: gap
   level: high
   topic: 図形と方程式・領域と最大最小（円板）
-  statement: 中心が原点の円板の特殊形。$r\ge0$のとき、$x^2+y^2\le r^2$における$ax+by$の最大値は$r\sqrt{a^2+b^2}$である。
-  statement_en: 'Disc centered at the origin only: for r≥0, the maximum of ax+by over x^2+y^2≤r^2 equals r√(a^2+b^2).'
+  statement: $r\ge0$、$a,b,p,q$を実数とする。円板$(x-p)^2+(y-q)^2\le r^2$における$ax+by$の最大値は$ap+bq+r\sqrt{a^2+b^2}$である（$p=q=0$なら$r\sqrt{a^2+b^2}$）。
+  statement_en: For r≥0 and real a,b,p,q, the maximum of ax+by over the disc (x-p)^2+(y-q)^2≤r^2 equals ap+bq+r√(a^2+b^2).
   assumptions:
   - $r\ge0$
-  - $a,b$は実数
+  - $a,b,p,q$は実数
   quantifiers:
-  - 任意の実数$a,b,r$
-  conclusion: 最大値は$r\sqrt{a^2+b^2}$である。
-  answer: |
-    $a,b,r$を実数とし、$r\ge0$とする。$S=\sqrt{a^2+b^2}$とおく。
+  - 任意の実数$a,b,p,q,r$
+  conclusion: 最大値は$ap+bq+r\sqrt{a^2+b^2}$である。
+  answer: |-
+    $a,b,p,q,r$を実数とし、$r\ge0$とする。$S=\sqrt{a^2+b^2}$とおく。
 
-    $x^2+y^2\le r^2$とする。$(a^2+b^2)(x^2+y^2)-(ax+by)^2=(ay-bx)^2\ge0$より$(ax+by)^2\le S^2r^2$であり、$rS\ge0$なので$ax+by\le rS$である。
+    上からの評価。円板内の点$(x,y)$について$u=x-p$、$v=y-q$とおくと$u^2+v^2\le r^2$である。$(a^2+b^2)(u^2+v^2)-(au+bv)^2=(av-bu)^2\ge0$より$(au+bv)^2\le S^2r^2$であり、$rS\ge0$なので$au+bv\le rS$である。よって$ax+by=ap+bq+(au+bv)\le ap+bq+rS$である。
 
-    この値をとる点を示す。$S=0$なら$a=b=0$であり、$(0,0)$で$ax+by=0=rS$である。$S>0$なら$x=\frac{ra}{S}$、$y=\frac{rb}{S}$とおくと、$x^2+y^2=r^2$であり、$ax+by=\frac{r(a^2+b^2)}{S}=rS$である。
+    等号をとる点。$S=0$なら$a=b=0$であり、中心$(p,q)$で$ax+by=0=ap+bq+rS$である。$S>0$なら点$\left(p+\frac{ra}{S},q+\frac{rb}{S}\right)$は$u^2+v^2=r^2$を満たし、そこでの値は$ap+bq+\frac{r(a^2+b^2)}{S}=ap+bq+rS$である。
   strategy: Bound by Cauchy-Schwarz and attain the bound at the boundary point in the direction (a,b).
   sketch:
   - 'setup: Put S=√(a^2+b^2).'
@@ -2071,34 +2071,37 @@
   - 'case_split: Split on S=0 and S>0 to attain the bound.'
   - 'construct: If S=0 use the origin; if S>0 use (ra/S,rb/S).'
   - 'conclude: The bound rS is the maximum.'
-  openmath: (forall (a b r) (-> (>= r 0) (and (exists (x y) (and (<= (+ (^ x 2) (^ y 2)) (^ r 2)) (= (* r (root (+ (^ a 2) (^ b 2)) 2)) (+ (* a x) (* b y))))) (forall (x y) (-> (<= (+ (^ x 2) (^ y 2)) (^ r 2)) (<= (+ (* a x) (* b y)) (* r (root (+ (^ a 2) (^ b 2)) 2))))))))
+  openmath: (forall (a b p q r) (-> (>= r 0) (and (exists (x y) (and (<= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (= (+ (+ (* a p) (* b q)) (* r (root (+ (^ a 2) (^ b 2)) 2))) (+ (* a x) (* b y))))) (forall (x y) (-> (<= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (<= (+ (* a x) (* b y)) (+ (+ (* a p) (* b q)) (* r (root (+ (^ a 2) (^ b 2)) 2)))))))))
   hard_negative:
     statement: 中心が$(p,q)$の円板でも最大値は$r\sqrt{a^2+b^2}$である。
-    reason: 中心の値$ap+bq$を加える必要がある。$(x-1)^2+y^2\le1$での$x$の最大値は$2$であるが、この式は$1$を与える。
-  target: |
-    ∀ (a b r : ℝ), 0 ≤ r → IsGreatest {s : ℝ | ∃ x y : ℝ, x ^ 2 + y ^ 2 ≤ r ^ 2 ∧ s = a * x + b * y} (r * Real.sqrt (a ^ 2 + b ^ 2))
+    reason: 中心での値$ap+bq$が加わる。$(x-1)^2+y^2\le1$での$x$の最大値は$2$であるが、この式は$1$を与える。
+  target: '∀ (a b p q r : ℝ), 0 ≤ r → IsGreatest {s : ℝ | ∃ x y : ℝ, (x - p) ^ 2 + (y - q) ^ 2 ≤ r ^ 2 ∧ s = a * x + b * y} (a * p + b * q + r * Real.sqrt (a ^ 2 + b ^ 2))'
   proof: |
     by
-      intro a b r hr
-      have hN : 0 ≤ a ^ 2 + b ^ 2 := by positivity
+      intro a b p q r hr
+      have hS : 0 ≤ Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_nonneg _
+      have hSS : Real.sqrt (a ^ 2 + b ^ 2) ^ 2 = a ^ 2 + b ^ 2 := Real.sq_sqrt (by positivity)
       constructor
-      · by_cases h0 : a ^ 2 + b ^ 2 = 0
-        · refine ⟨0, 0, by simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, add_zero]; positivity, ?_⟩
-          rw [h0]; simp
-        · have hpos : 0 < a ^ 2 + b ^ 2 := lt_of_le_of_ne hN (Ne.symm h0)
-          have hS : 0 < Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_pos.mpr hpos
-          have hSq := Real.sq_sqrt hN
-          refine ⟨r * a / Real.sqrt (a ^ 2 + b ^ 2), r * b / Real.sqrt (a ^ 2 + b ^ 2), ?_, ?_⟩
-          · apply le_of_eq
-            field_simp
-            rw [hSq]
+      · by_cases h0 : Real.sqrt (a ^ 2 + b ^ 2) = 0
+        · have ha : a = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          have hb : b = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          refine ⟨p, q, by simp; positivity, ?_⟩
+          rw [h0, ha, hb]; ring
+        · have hpos : 0 < Real.sqrt (a ^ 2 + b ^ 2) := lt_of_le_of_ne hS (Ne.symm h0)
+          refine ⟨p + r * a / Real.sqrt (a ^ 2 + b ^ 2), q + r * b / Real.sqrt (a ^ 2 + b ^ 2), ?_, ?_⟩
+          · have : (r * a / Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 + (r * b / Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 = r ^ 2 := by
+              field_simp
+              rw [hSS]
+            nlinarith [this]
           · field_simp
-            rw [hSq]
-      · rintro s ⟨x, y, h, rfl⟩
-        have hsq : (a * x + b * y) ^ 2 ≤ (r * Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 := by
-          rw [mul_pow, Real.sq_sqrt hN]
-          linarith [sq_nonneg (a * y - b * x), mul_le_mul_of_nonneg_right h hN]
-        exact (abs_le_of_sq_le_sq' hsq (by positivity)).2
+            nlinarith [hSS]
+      · rintro s ⟨x, y, hxy, rfl⟩
+        have h1 : (a * (x - p) + b * (y - q)) ^ 2 ≤ (a ^ 2 + b ^ 2) * r ^ 2 := by
+          nlinarith [sq_nonneg (a * (y - q) - b * (x - p)), mul_le_mul_of_nonneg_left hxy (by positivity : (0:ℝ) ≤ a ^ 2 + b ^ 2)]
+        have h2 : a * (x - p) + b * (y - q) ≤ Real.sqrt (a ^ 2 + b ^ 2) * r := by
+          apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
+          nlinarith [hSS]
+        nlinarith [h2]
 - id: linear_function_on_triangle_le_max_vertices
   kind: gap
   level: high
@@ -2830,7 +2833,7 @@
   openmath: (forall (a h k x y) (-> (!= a 0) (<-> (= (- y k) (* a (^ (- x h) 2))) (= (root (+ (^ (- x h) 2) (^ (- (- y k) (/ 1 (* 4 a))) 2)) 2) (abs (+ (- y k) (/ 1 (* 4 a))))))))
   hard_negative:
     statement: 焦点は$\left(h,k+\frac{1}{a}\right)$である。
-    reason: 焦点と頂点の距離は$\frac{1}{4|a|}$である。$y=x^2$の焦点は$\left(0,\frac14\right)$で、点$(1,1)$までの距離と準線$y=-\frac14$までの距離はともに$\frac54$である。
+    reason: 焦点と頂点の距離は$\frac{1}{4|a|}$である。$y=x^2$の頂点$(0,0)$はグラフ上にあり、点$\left(0,\frac14\right)$と直線$y=-\frac14$からの距離はともに$\frac14$である。一方、$(0,1)$までの距離は$1$であり、直線$y=-\frac14$までの距離$\frac14$と異なる。
   target: |
     ∀ (a h k x y : ℝ), a ≠ 0 → (y - k = a * (x - h) ^ 2 ↔ Real.sqrt ((x - h) ^ 2 + (y - k - 1 / (4 * a)) ^ 2) = |y - k + 1 / (4 * a)|)
   proof: |

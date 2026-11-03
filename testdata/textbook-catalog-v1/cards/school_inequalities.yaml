@@ -15,10 +15,10 @@
     $c<0$のとき、$c(b-a)<0$と$b-a>0$は同値なので、$cb<ca$と$a<b$は同値である。
   strategy: Factor the difference cb - ca as c(b - a) and read off its sign.
   sketch:
-  - "setup: Write cb - ca = c(b - a)."
-  - "case_split: If c > 0 the sign of c(b - a) equals the sign of b - a."
-  - "case_split: If c < 0 the sign of c(b - a) is opposite to the sign of b - a."
-  - "conclude: Both equivalences follow."
+  - 'setup: Write cb - ca = c(b - a).'
+  - 'case_split: If c > 0 the sign of c(b - a) equals the sign of b - a.'
+  - 'case_split: If c < 0 the sign of c(b - a) is opposite to the sign of b - a.'
+  - 'conclude: Both equivalences follow.'
   openmath: (forall (a b c) (and (-> (> c 0) (<-> (< a b) (< (* c a) (* c b)))) (-> (< c 0) (<-> (< a b) (< (* c b) (* c a))))))
   hard_negative:
     statement: $a<b$なら、任意の実数$c$について$ca<cb$である。
@@ -47,10 +47,10 @@
     差については、$c<y<d$に$-1$を掛けて$-d<-y<-c$とする。これを$a<x<b$と辺ごとに足すと、$a-d<x-y<b-c$を得る。
   strategy: Add the two chains, negating the second chain first for the difference.
   sketch:
-  - "derive: Adding a < x < b and c < y < d gives the range of x + y."
-  - "derive: Multiplying c < y < d by -1 gives -d < -y < -c."
-  - "derive: Adding this to a < x < b gives a - d < x - y < b - c."
-  - "conclude: Both ranges hold."
+  - 'derive: Adding a < x < b and c < y < d gives the range of x + y.'
+  - 'derive: Multiplying c < y < d by -1 gives -d < -y < -c.'
+  - 'derive: Adding this to a < x < b gives a - d < x - y < b - c.'
+  - 'conclude: Both ranges hold.'
   openmath: (forall (a b c d x y) (-> (and (< a x) (< x b) (< c y) (< y d)) (and (< (+ a c) (+ x y)) (< (+ x y) (+ b d)) (< (- a d) (- x y)) (< (- x y) (- b c)))))
   hard_negative:
     statement: $a<x<b$、$c<y<d$なら$a-c<x-y<b-d$である。
@@ -78,9 +78,9 @@
     $a,b,c,d$を実数とし、$0\leq a\leq b$、$0\leq c\leq d$とする。$c\geq 0$なので$a\leq b$の両辺に$c$を掛けて$ac\leq bc$を得る。また$b\geq a\geq 0$なので$c\leq d$の両辺に$b$を掛けて$bc\leq bd$を得る。よって$ac\leq bc\leq bd$である。
   strategy: Multiply one inequality at a time by a nonnegative factor and chain the results.
   sketch:
-  - "derive: Since c ≥ 0, a ≤ b gives ac ≤ bc."
-  - "derive: Since b ≥ 0, c ≤ d gives bc ≤ bd."
-  - "conclude: Chain the two inequalities."
+  - 'derive: Since c ≥ 0, a ≤ b gives ac ≤ bc.'
+  - 'derive: Since b ≥ 0, c ≤ d gives bc ≤ bd.'
+  - 'conclude: Chain the two inequalities.'
   openmath: (forall (a b c d) (-> (and (<= 0 a) (<= a b) (<= 0 c) (<= c d)) (<= (* a c) (* b d))))
   hard_negative:
     statement: 実数$a,b,c,d$が$a\leq b$、$c\leq d$を満たせば$ac\leq bd$である。
@@ -107,10 +107,10 @@
     $a,b$を$ab>0$を満たす実数とする。このとき$a\neq 0$、$b\neq 0$であり、$\dfrac{1}{a}-\dfrac{1}{b}=\dfrac{b-a}{ab}$が成り立つ。$ab>0$なので、右辺が正であることと$b-a>0$は同値である。したがって$\dfrac{1}{b}<\dfrac{1}{a}$と$a<b$は同値である。
   strategy: Compute the difference of reciprocals over the positive denominator ab.
   sketch:
-  - "setup: From ab > 0, both a and b are nonzero."
-  - "derive: 1/a - 1/b = (b - a)/(ab)."
-  - "derive: Since ab > 0 the quotient has the sign of b - a."
-  - "conclude: 1/b < 1/a holds exactly when a < b."
+  - 'setup: From ab > 0, both a and b are nonzero.'
+  - 'derive: 1/a - 1/b = (b - a)/(ab).'
+  - 'derive: Since ab > 0 the quotient has the sign of b - a.'
+  - 'conclude: 1/b < 1/a holds exactly when a < b.'
   openmath: (forall (a b) (-> (> (* a b) 0) (<-> (< a b) (< (/ 1 b) (/ 1 a)))))
   hard_negative:
     statement: $0$でない実数$a,b$について、$a<b$なら$\dfrac{1}{b}<\dfrac{1}{a}$である。
@@ -151,11 +151,11 @@
     逆に$|a|>|b|$なら$|b|-|a|<0$かつ$|b|+|a|>0$なので$b^2<a^2$である。対偶をとると、$a^2\leq b^2$から$|a|\leq|b|$が従う。
   strategy: Factor the difference of the squares of the absolute values.
   sketch:
-  - "setup: Replace a^2 and b^2 by |a|^2 and |b|^2."
-  - "derive: |b|^2 - |a|^2 = (|b| - |a|)(|b| + |a|)."
-  - "case_split: If |a| ≤ |b| the product is nonnegative."
-  - "contradiction: If |a| > |b| the product is negative, so a^2 > b^2."
-  - "conclude: The two conditions are equivalent."
+  - 'setup: Replace a^2 and b^2 by |a|^2 and |b|^2.'
+  - 'derive: |b|^2 - |a|^2 = (|b| - |a|)(|b| + |a|).'
+  - 'case_split: If |a| ≤ |b| the product is nonnegative.'
+  - 'contradiction: If |a| > |b| the product is negative, so a^2 > b^2.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (a b) (<-> (<= (abs a) (abs b)) (<= (^ a 2) (^ b 2))))
   hard_negative:
     statement: 実数$a,b$について、$a\leq b$と$a^2\leq b^2$は同値である。
@@ -185,10 +185,10 @@
     逆に$a>b$とする。このとき$a>0$であり、第$2$の因数は正の項$a^{n-1}$を含み他の項も$0$以上なので正である。よって$b^n-a^n<0$である。対偶をとると、$a^n\leq b^n$から$a\leq b$が従う。
   strategy: Factor b^n - a^n and use nonnegativity of the second factor.
   sketch:
-  - "setup: Factor b^n - a^n as (b - a) times a sum of nonnegative monomials."
-  - "derive: If a ≤ b the product is nonnegative."
-  - "contradiction: If a > b then a > 0, the sum is positive, and the product is negative."
-  - "conclude: The two conditions are equivalent."
+  - 'setup: Factor b^n - a^n as (b - a) times a sum of nonnegative monomials.'
+  - 'derive: If a ≤ b the product is nonnegative.'
+  - 'contradiction: If a > b then a > 0, the sum is positive, and the product is negative.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (n a b) (-> (and (in n N) (>= n 1) (>= a 0) (>= b 0)) (<-> (<= a b) (<= (^ a n) (^ b n)))))
   hard_negative:
     statement: 正の整数$n$と実数$a,b$について、$a\leq b$と$a^n\leq b^n$は同値である。
@@ -216,9 +216,9 @@
     $a,c$を実数、$b,d$を正の実数とする。$bd>0$なので、$\dfrac{a}{b}\leq\dfrac{c}{d}$の両辺に$bd$を掛けても不等号の向きは変わらず、$ad\leq cb$と同値である。
   strategy: Multiply both sides by the positive number bd.
   sketch:
-  - "setup: bd is positive."
-  - "derive: Multiplying a/b ≤ c/d by bd gives ad ≤ cb, and dividing reverses the step."
-  - "conclude: The two conditions are equivalent."
+  - 'setup: bd is positive.'
+  - 'derive: Multiplying a/b ≤ c/d by bd gives ad ≤ cb, and dividing reverses the step.'
+  - 'conclude: The two conditions are equivalent.'
   openmath: (forall (a b c d) (-> (and (> b 0) (> d 0)) (<-> (<= (/ a b) (/ c d)) (<= (* a d) (* c b)))))
   hard_negative:
     statement: $0$でない実数$b,d$と実数$a,c$について、$\dfrac{a}{b}\leq\dfrac{c}{d}$と$ad\leq cb$は同値である。
@@ -248,10 +248,10 @@
     このとき$\dfrac{a+c}{b+d}-\dfrac{a}{b}=\dfrac{cb-ad}{b(b+d)}>0$であり、$\dfrac{c}{d}-\dfrac{a+c}{b+d}=\dfrac{cb-ad}{d(b+d)}>0$である。よって結論が成り立つ。
   strategy: Compute both differences over positive denominators, each with numerator cb - ad.
   sketch:
-  - "translate: The hypothesis is equivalent to cb - ad > 0."
-  - "derive: (a+c)/(b+d) - a/b = (cb - ad)/(b(b+d)) > 0."
-  - "derive: c/d - (a+c)/(b+d) = (cb - ad)/(d(b+d)) > 0."
-  - "conclude: The mediant lies strictly between the two fractions."
+  - 'translate: The hypothesis is equivalent to cb - ad > 0.'
+  - 'derive: (a+c)/(b+d) - a/b = (cb - ad)/(b(b+d)) > 0.'
+  - 'derive: c/d - (a+c)/(b+d) = (cb - ad)/(d(b+d)) > 0.'
+  - 'conclude: The mediant lies strictly between the two fractions.'
   openmath: (forall (a b c d) (-> (and (> b 0) (> d 0) (< (/ a b) (/ c d))) (and (< (/ a b) (/ (+ a c) (+ b d))) (< (/ (+ a c) (+ b d)) (/ c d)))))
   hard_negative:
     statement: $b,d$の符号を問わず、$\dfrac{a}{b}<\dfrac{c}{d}$かつ$b+d\neq 0$なら$\dfrac{a+c}{b+d}$は$\dfrac{a}{b}$と$\dfrac{c}{d}$の間にある。
@@ -286,11 +286,11 @@
     右の不等式を示す。$\dfrac{a^2+b^2}{2}-\left(\dfrac{a+b}{2}\right)^2=\dfrac{(a-b)^2}{4}\geq 0$である。$\dfrac{a+b}{2}$は正なので、平方根をとって$\dfrac{a+b}{2}\leq\sqrt{\dfrac{a^2+b^2}{2}}$を得る。
   strategy: Reduce each comparison to the nonnegativity of (a-b)^2 by squaring.
   sketch:
-  - "setup: Put g = sqrt(ab), so g > 0 and g^2 = ab."
-  - "derive: ((a+b)/2)^2 - g^2 = (a-b)^2/4 ≥ 0 gives g ≤ (a+b)/2."
-  - "derive: 2ab/(a+b) = g · 2g/(a+b) ≤ g by the previous step."
-  - "derive: (a^2+b^2)/2 - ((a+b)/2)^2 = (a-b)^2/4 ≥ 0."
-  - "conclude: Taking square roots gives the last inequality."
+  - 'setup: Put g = sqrt(ab), so g > 0 and g^2 = ab.'
+  - 'derive: ((a+b)/2)^2 - g^2 = (a-b)^2/4 ≥ 0 gives g ≤ (a+b)/2.'
+  - 'derive: 2ab/(a+b) = g · 2g/(a+b) ≤ g by the previous step.'
+  - 'derive: (a^2+b^2)/2 - ((a+b)/2)^2 = (a-b)^2/4 ≥ 0.'
+  - 'conclude: Taking square roots gives the last inequality.'
   openmath: (forall (a b) (-> (and (> a 0) (> b 0)) (and (<= (/ (* (* 2 a) b) (+ a b)) (root (* a b) 2)) (<= (root (* a b) 2) (/ (+ a b) 2)) (<= (/ (+ a b) 2) (root (/ (+ (^ a 2) (^ b 2)) 2) 2)))))
   hard_negative:
     statement: 負の実数$a,b$についても$\dfrac{a+b}{2}\geq\sqrt{ab}$である。
@@ -327,10 +327,10 @@
     $a<0$なら、両辺を$a$で割ると向きが逆になるので、$\dfrac{c-b}{a}<x$と同値である。
   strategy: Move b across and divide by a, tracking the sign of a.
   sketch:
-  - "translate: ax + b < c is equivalent to ax < c - b."
-  - "case_split: For a > 0 dividing by a keeps the direction."
-  - "case_split: For a < 0 dividing by a reverses the direction."
-  - "conclude: Both equivalences follow."
+  - 'translate: ax + b < c is equivalent to ax < c - b.'
+  - 'case_split: For a > 0 dividing by a keeps the direction.'
+  - 'case_split: For a < 0 dividing by a reverses the direction.'
+  - 'conclude: Both equivalences follow.'
   openmath: (forall (a b c x) (and (-> (> a 0) (<-> (< (+ (* a x) b) c) (< x (/ (- c b) a)))) (-> (< a 0) (<-> (< (+ (* a x) b) c) (< (/ (- c b) a) x)))))
   hard_negative:
     statement: $a\neq 0$なら、$ax+b<c$と$x<\dfrac{c-b}{a}$は同値である。
@@ -362,11 +362,11 @@
     $a=0$のとき、不等式は$x$によらず$b<c$となる。よって$b<c$ならすべての実数が解であり、$c\leq b$なら解はない。以上で$2$つの同値が示された。
   strategy: Exhibit a failing and a satisfying value of x when a is nonzero, then reduce to b < c when a is zero.
   sketch:
-  - "case_split: Assume a ≠ 0."
-  - "construct: x = (c-b)/a violates the inequality and x = (c-b-1)/a satisfies it."
-  - "derive: So both conditions force a = 0."
-  - "case_split: If a = 0 the inequality reads b < c for every x."
-  - "conclude: Both equivalences follow."
+  - 'case_split: Assume a ≠ 0.'
+  - 'construct: x = (c-b)/a violates the inequality and x = (c-b-1)/a satisfies it.'
+  - 'derive: So both conditions force a = 0.'
+  - 'case_split: If a = 0 the inequality reads b < c for every x.'
+  - 'conclude: Both equivalences follow.'
   openmath: (forall (a b c) (and (<-> (forall (x) (< (+ (* a x) b) c)) (and (= a 0) (< b c))) (<-> (not (exists (x) (< (+ (* a x) b) c))) (and (= a 0) (<= c b)))))
   hard_negative:
     statement: 不等式$ax+b<c$に解がないことと、$a=0$であることは同値である。
@@ -417,11 +417,11 @@
     逆に$4$つの不等式が成り立つとする。$a,c$の大きい方を$p$、$b,d$の小さい方を$q$とおく。$p$は$a$か$c$、$q$は$b$か$d$であり、$4$つの不等式のどの組合せでも$p<q$である。$x=\dfrac{p+q}{2}$とおくと$p<x<q$なので、$a\leq p<x<q\leq b$かつ$c\leq p<x<q\leq d$となり、$x$は解である。
   strategy: Take the midpoint between the larger lower bound and the smaller upper bound.
   sketch:
-  - "derive: A solution x gives all four inequalities by transitivity."
-  - "setup: Let p be the larger of a, c and q the smaller of b, d."
-  - "derive: The four inequalities give p < q."
-  - "construct: The midpoint of p and q satisfies both chains."
-  - "conclude: The equivalence holds."
+  - 'derive: A solution x gives all four inequalities by transitivity.'
+  - 'setup: Let p be the larger of a, c and q the smaller of b, d.'
+  - 'derive: The four inequalities give p < q.'
+  - 'construct: The midpoint of p and q satisfies both chains.'
+  - 'conclude: The equivalence holds.'
   openmath: (forall (a b c d) (<-> (exists (x) (and (< a x) (< x b) (< c x) (< x d))) (and (< a b) (< c d) (< a d) (< c b))))
   hard_negative:
     statement: $a<b$かつ$c<d$なら、連立不等式$a<x<b$、$c<x<d$は解をもつ。
@@ -460,10 +460,10 @@
     逆に$n<a\leq n+1$とする。$1\leq k\leq n$なら$k\leq n<a$である。$k\geq n+1$なら$a\leq n+1\leq k$なので$k<a$は成り立たない。よって$k<a$を満たす正の整数はちょうど$1,\ldots,n$である。
   strategy: Test k = n and k = n + 1 for one direction and compare k with n for the other.
   sketch:
-  - "derive: k = n satisfies k < a, so n < a."
-  - "derive: k = n + 1 fails, so a ≤ n + 1."
-  - "case_split: Conversely, k ≤ n gives k < a, and k ≥ n + 1 gives a ≤ k."
-  - "conclude: The solution set is exactly 1, ..., n."
+  - 'derive: k = n satisfies k < a, so n < a.'
+  - 'derive: k = n + 1 fails, so a ≤ n + 1.'
+  - 'case_split: Conversely, k ≤ n gives k < a, and k ≥ n + 1 gives a ≤ k.'
+  - 'conclude: The solution set is exactly 1, ..., n.'
   openmath: (forall (a n) (-> (and (in a R) (in n N) (>= n 1)) (<-> (forall (k) (-> (and (in k N) (>= k 1)) (<-> (< k a) (<= k n)))) (and (< n a) (<= a (+ n 1))))))
   hard_negative:
     statement: $k<a$を満たす正の整数がちょうど$1,\ldots,n$であることと$n<a<n+1$は同値である。
@@ -507,10 +507,10 @@
     $a,b,x$を実数とし、$a<b$とする。両辺は$0$以上なので、$|x-a|<|x-b|$は$(x-a)^2<(x-b)^2$と同値である。$(x-b)^2-(x-a)^2=(a-b)(2x-a-b)$であり、$a-b<0$なので、この値が正であることと$2x-a-b<0$は同値である。これは$x<\dfrac{a+b}{2}$と同じである。
   strategy: Square both sides and factor the difference of squares.
   sketch:
-  - "translate: Both sides are nonnegative, so compare squares."
-  - "derive: (x-b)^2 - (x-a)^2 = (a-b)(2x-a-b)."
-  - "derive: Since a - b < 0 the product is positive exactly when 2x < a + b."
-  - "conclude: The equivalence holds."
+  - 'translate: Both sides are nonnegative, so compare squares.'
+  - 'derive: (x-b)^2 - (x-a)^2 = (a-b)(2x-a-b).'
+  - 'derive: Since a - b < 0 the product is positive exactly when 2x < a + b.'
+  - 'conclude: The equivalence holds.'
   openmath: (forall (a b x) (-> (< a b) (<-> (< (abs (- x a)) (abs (- x b))) (< x (/ (+ a b) 2)))))
   hard_negative:
     statement: 任意の実数$a,b,x$について、$|x-a|<|x-b|$と$x<\dfrac{a+b}{2}$は同値である。
@@ -546,11 +546,11 @@
     逆に$x=b$とする。$a\leq b\leq c$より$|x-a|=b-a$、$|x-c|=c-b$、$|x-b|=0$なので、和は$c-a$に等しい。
   strategy: Bound the two outer terms by c - a and force the middle term to vanish at equality.
   sketch:
-  - "derive: |x-a| + |x-c| ≥ (x-a) + (c-x) = c - a."
-  - "derive: Adding |x-b| ≥ 0 gives the bound."
-  - "derive: Equality forces |x-b| ≤ 0, so x = b."
-  - "derive: At x = b the sum is (b-a) + (c-b) = c - a."
-  - "conclude: The equality condition follows."
+  - 'derive: |x-a| + |x-c| ≥ (x-a) + (c-x) = c - a.'
+  - 'derive: Adding |x-b| ≥ 0 gives the bound.'
+  - 'derive: Equality forces |x-b| ≤ 0, so x = b.'
+  - 'derive: At x = b the sum is (b-a) + (c-b) = c - a.'
+  - 'conclude: The equality condition follows.'
   openmath: (forall (a b c x) (-> (and (<= a b) (<= b c)) (and (>= (+ (+ (abs (- x a)) (abs (- x b))) (abs (- x c))) (- c a)) (<-> (= (+ (+ (abs (- x a)) (abs (- x b))) (abs (- x c))) (- c a)) (= x b)))))
   hard_negative:
     statement: $a\leq b\leq c$のとき、$|x-a|+|x-b|+|x-c|$を最小にする$x$は平均$\dfrac{a+b+c}{3}$である。
@@ -583,10 +583,10 @@
     $(1+ab)-(a+b)=(1-a)(1-b)>0$なので$a+b<1+ab$である。また$(1+ab)+(a+b)=(1+a)(1+b)>0$なので$-(1+ab)<a+b$である。よって$|a+b|<1+ab$である。
   strategy: Write each of the two required bounds as a product of positive factors.
   sketch:
-  - "setup: From the hypotheses, 1-a, 1-b, 1+a and 1+b are positive."
-  - "derive: (1+ab) - (a+b) = (1-a)(1-b) > 0."
-  - "derive: (1+ab) + (a+b) = (1+a)(1+b) > 0."
-  - "conclude: Hence -(1+ab) < a+b < 1+ab."
+  - 'setup: From the hypotheses, 1-a, 1-b, 1+a and 1+b are positive.'
+  - 'derive: (1+ab) - (a+b) = (1-a)(1-b) > 0.'
+  - 'derive: (1+ab) + (a+b) = (1+a)(1+b) > 0.'
+  - 'conclude: Hence -(1+ab) < a+b < 1+ab.'
   openmath: (forall (a b) (-> (and (< (abs a) 1) (< (abs b) 1)) (< (abs (+ a b)) (+ 1 (* a b)))))
   hard_negative:
     statement: 任意の実数$a,b$について、$|a+b|<1+ab$である。
@@ -619,10 +619,10 @@
     また、分母を小さくすると値は小さくならないので、$\dfrac{p}{1+p+q}\leq\dfrac{p}{1+p}$、$\dfrac{q}{1+p+q}\leq\dfrac{q}{1+q}$である。これらを足すと$\dfrac{p+q}{1+p+q}\leq\dfrac{p}{1+p}+\dfrac{q}{1+q}$となり、結論を得る。
   strategy: Use the triangle inequality, the monotonicity of t/(1+t) and a smaller denominator on each term.
   sketch:
-  - "setup: Put p = |a|, q = |b|, r = |a+b|, so r ≤ p + q."
-  - "derive: t/(1+t) increases, so r/(1+r) ≤ (p+q)/(1+p+q)."
-  - "derive: p/(1+p+q) ≤ p/(1+p) and q/(1+p+q) ≤ q/(1+q)."
-  - "conclude: Adding the two bounds gives the claim."
+  - 'setup: Put p = |a|, q = |b|, r = |a+b|, so r ≤ p + q.'
+  - 'derive: t/(1+t) increases, so r/(1+r) ≤ (p+q)/(1+p+q).'
+  - 'derive: p/(1+p+q) ≤ p/(1+p) and q/(1+p+q) ≤ q/(1+q).'
+  - 'conclude: Adding the two bounds gives the claim.'
   openmath: (forall (a b) (<= (/ (abs (+ a b)) (+ 1 (abs (+ a b)))) (+ (/ (abs a) (+ 1 (abs a))) (/ (abs b) (+ 1 (abs b))))))
   hard_negative:
     statement: 実数$a,b$について、$\dfrac{|a+b|}{1+|a+b|}=\dfrac{|a|}{1+|a|}+\dfrac{|b|}{1+|b|}$である。
@@ -664,9 +664,9 @@
     $a,b$を実数とする。$a^2+b^2-2ab=(a-b)^2\geq 0$なので、$a^2+b^2\geq 2ab$である。等号が成り立つことは$(a-b)^2=0$、すなわち$a=b$と同値である。
   strategy: Write the difference as the square of a - b.
   sketch:
-  - "derive: a^2 + b^2 - 2ab = (a-b)^2 ≥ 0."
-  - "derive: Equality means (a-b)^2 = 0."
-  - "conclude: This is equivalent to a = b."
+  - 'derive: a^2 + b^2 - 2ab = (a-b)^2 ≥ 0.'
+  - 'derive: Equality means (a-b)^2 = 0.'
+  - 'conclude: This is equivalent to a = b.'
   openmath: (forall (a b) (and (>= (+ (^ a 2) (^ b 2)) (* (* 2 a) b)) (<-> (= (+ (^ a 2) (^ b 2)) (* (* 2 a) b)) (= a b))))
   hard_negative:
     statement: 実数$a,b$について、$a^2+b^2\geq 2|ab|$の等号が成り立つことと$a=b$は同値である。
@@ -698,10 +698,10 @@
     $a,b$を$ab>0$を満たす実数とする。このとき$a\neq 0$、$b\neq 0$であり、$\dfrac{a}{b}+\dfrac{b}{a}-2=\dfrac{(a-b)^2}{ab}\geq 0$である。よって不等式が成り立つ。$ab>0$なので、右辺が$0$であることと$(a-b)^2=0$、すなわち$a=b$は同値である。
   strategy: Write the difference from 2 as (a-b)^2 over the positive number ab.
   sketch:
-  - "setup: From ab > 0, both a and b are nonzero."
-  - "derive: a/b + b/a - 2 = (a-b)^2/(ab) ≥ 0."
-  - "derive: The quotient vanishes exactly when (a-b)^2 = 0."
-  - "conclude: Equality holds if and only if a = b."
+  - 'setup: From ab > 0, both a and b are nonzero.'
+  - 'derive: a/b + b/a - 2 = (a-b)^2/(ab) ≥ 0.'
+  - 'derive: The quotient vanishes exactly when (a-b)^2 = 0.'
+  - 'conclude: Equality holds if and only if a = b.'
   openmath: (forall (a b) (-> (> (* a b) 0) (and (>= (+ (/ a b) (/ b a)) 2) (<-> (= (+ (/ a b) (/ b a)) 2) (= a b)))))
   hard_negative:
     statement: $0$でない実数$a,b$について、$\dfrac{a}{b}+\dfrac{b}{a}\geq 2$である。
@@ -746,9 +746,9 @@
     $a,b,c$を$0$以上の実数とする。$a^3+b^3+c^3-3abc=\dfrac{1}{2}(a+b+c)\left((a-b)^2+(b-c)^2+(c-a)^2\right)$である。右辺の因数はどれも$0$以上なので、$a^3+b^3+c^3\geq 3abc$である。
   strategy: Factor the difference into a + b + c times half a sum of squares.
   sketch:
-  - "derive: a^3+b^3+c^3-3abc = (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2."
-  - "derive: Each factor is nonnegative because a, b, c are nonnegative."
-  - "conclude: The inequality follows."
+  - 'derive: a^3+b^3+c^3-3abc = (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2.'
+  - 'derive: Each factor is nonnegative because a, b, c are nonnegative.'
+  - 'conclude: The inequality follows.'
   openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (>= (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* (* (* 3 a) b) c))))
   hard_negative:
     statement: 任意の実数$a,b,c$について、$a^3+b^3+c^3\geq 3abc$である。
@@ -779,10 +779,10 @@
     である。$a^3+b^3+c^3-3abc=\dfrac{1}{2}(a+b+c)\left((a-b)^2+(b-c)^2+(c-a)^2\right)\geq 0$であり、第$2$の括弧も$0$以上の項の和である。よって$27abc\leq(a+b+c)^3$であり、両辺を$27$で割ると結論を得る。
   strategy: Decompose (a+b+c)^3 - 27abc into a sum of visibly nonnegative terms.
   sketch:
-  - "derive: (a+b+c)^3 - 27abc equals the cube-form difference plus 3 times a sum of terms a(b-c)^2."
-  - "derive: The cube-form difference is half of (a+b+c) times a sum of squares."
-  - "derive: All terms are nonnegative because a, b, c are nonnegative."
-  - "conclude: Dividing by 27 gives the claim."
+  - 'derive: (a+b+c)^3 - 27abc equals the cube-form difference plus 3 times a sum of terms a(b-c)^2.'
+  - 'derive: The cube-form difference is half of (a+b+c) times a sum of squares.'
+  - 'derive: All terms are nonnegative because a, b, c are nonnegative.'
+  - 'conclude: Dividing by 27 gives the claim.'
   openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (<= (* (* a b) c) (^ (/ (+ (+ a b) c) 3) 3))))
   hard_negative:
     statement: 任意の実数$a,b,c$について、$abc\leq\left(\dfrac{a+b+c}{3}\right)^3$である。
@@ -814,11 +814,11 @@
     $a+b+c=0$なら、$a,b,c\geq 0$より$a=b=c=0$である。$(a-b)^2+(b-c)^2+(c-a)^2=0$なら、各平方が$0$なので$a=b=c$である。
   strategy: Factor the difference and treat the two possible vanishing factors.
   sketch:
-  - "derive: a = b = c makes both sides 3a^3."
-  - "derive: The difference factors as (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2."
-  - "case_split: If a + b + c = 0, nonnegativity gives a = b = c = 0."
-  - "case_split: If the sum of squares vanishes, each square vanishes."
-  - "conclude: The equivalence holds."
+  - 'derive: a = b = c makes both sides 3a^3.'
+  - 'derive: The difference factors as (a+b+c)((a-b)^2+(b-c)^2+(c-a)^2)/2.'
+  - 'case_split: If a + b + c = 0, nonnegativity gives a = b = c = 0.'
+  - 'case_split: If the sum of squares vanishes, each square vanishes.'
+  - 'conclude: The equivalence holds.'
   openmath: (forall (a b c) (-> (and (>= a 0) (>= b 0) (>= c 0)) (<-> (= (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* (* (* 3 a) b) c)) (and (= a b) (= b c)))))
   hard_negative:
     statement: 任意の実数$a,b,c$について、$a^3+b^3+c^3=3abc$なら$a=b=c$である。
@@ -860,9 +860,9 @@
     $a,b,c$を実数とする。$a^2+b^2+c^2-ab-bc-ca=\dfrac{1}{2}\left((a-b)^2+(b-c)^2+(c-a)^2\right)\geq 0$なので、不等式が成り立つ。等号が成り立つことは$3$つの平方がすべて$0$であること、すなわち$a=b=c$と同値である。
   strategy: Write the difference as half a sum of three squares.
   sketch:
-  - "derive: The difference equals ((a-b)^2+(b-c)^2+(c-a)^2)/2 ≥ 0."
-  - "derive: It vanishes exactly when all three squares vanish."
-  - "conclude: Equality holds if and only if a = b = c."
+  - 'derive: The difference equals ((a-b)^2+(b-c)^2+(c-a)^2)/2 ≥ 0.'
+  - 'derive: It vanishes exactly when all three squares vanish.'
+  - 'conclude: Equality holds if and only if a = b = c.'
   openmath: (forall (a b c) (and (>= (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (* a b) (* b c)) (* c a))) (<-> (= (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (* a b) (* b c)) (* c a))) (and (= a b) (= b c)))))
   hard_negative:
     statement: 実数$a,b,c$について、$a^2+b^2+c^2\geq 2(ab+bc+ca)$である。
@@ -897,9 +897,9 @@
     $a,b,c$を正の実数とする。積を展開して組ごとにまとめると、$(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)-9=\dfrac{(a-b)^2}{ab}+\dfrac{(b-c)^2}{bc}+\dfrac{(c-a)^2}{ca}$である。右辺の各項は$0$以上なので、結論を得る。
   strategy: Group the expansion into three nonnegative fractions.
   sketch:
-  - "derive: The product minus 9 equals (a-b)^2/(ab) + (b-c)^2/(bc) + (c-a)^2/(ca)."
-  - "derive: Each term is nonnegative because a, b, c are positive."
-  - "conclude: The product is at least 9."
+  - 'derive: The product minus 9 equals (a-b)^2/(ab) + (b-c)^2/(bc) + (c-a)^2/(ca).'
+  - 'derive: Each term is nonnegative because a, b, c are positive.'
+  - 'conclude: The product is at least 9.'
   openmath: (forall (a b c) (-> (and (> a 0) (> b 0) (> c 0)) (>= (* (+ (+ a b) c) (+ (+ (/ 1 a) (/ 1 b)) (/ 1 c))) 9)))
   hard_negative:
     statement: $0$でない実数$a,b,c$について、$(a+b+c)\left(\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}\right)\geq 9$である。
@@ -929,9 +929,9 @@
     $a,b,c,x,y,z$を実数とする。右辺から左辺を引いて整理すると、$(a^2+b^2+c^2)(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2$である。右辺は$0$以上なので、結論を得る。
   strategy: Write the difference of the two sides as a sum of three squares.
   sketch:
-  - "derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2."
-  - "derive: A sum of squares is nonnegative."
-  - "conclude: The inequality follows."
+  - 'derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2.'
+  - 'derive: A sum of squares is nonnegative.'
+  - 'conclude: The inequality follows.'
   openmath: (forall (a b c x y z) (<= (^ (+ (+ (* a x) (* b y)) (* c z)) 2) (* (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (^ x 2) (^ y 2)) (^ z 2)))))
   hard_negative:
     statement: 実数$a,b,c,x,y,z$について、$ax+by+cz\leq(a^2+b^2+c^2)(x^2+y^2+z^2)$である。
@@ -957,9 +957,9 @@
     $a,b,c,x,y,z$を実数とする。$(a^2+b^2+c^2)(x^2+y^2+z^2)-(ax+by+cz)^2=(ay-bx)^2+(bz-cy)^2+(az-cx)^2$である。平方の和が$0$であることと各平方が$0$であることは同値なので、等式が成り立つことと$ay=bx$、$bz=cy$、$az=cx$がすべて成り立つことは同値である。
   strategy: Use the three-square identity for the difference of the two sides.
   sketch:
-  - "derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2."
-  - "derive: A sum of squares vanishes exactly when every square vanishes."
-  - "conclude: The equality condition is ay = bx, bz = cy, az = cx."
+  - 'derive: The difference equals (ay-bx)^2 + (bz-cy)^2 + (az-cx)^2.'
+  - 'derive: A sum of squares vanishes exactly when every square vanishes.'
+  - 'conclude: The equality condition is ay = bx, bz = cy, az = cx.'
   openmath: (forall (a b c x y z) (<-> (= (^ (+ (+ (* a x) (* b y)) (* c z)) 2) (* (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (+ (+ (^ x 2) (^ y 2)) (^ z 2)))) (and (= (* a y) (* b x)) (= (* b z) (* c y)) (= (* a z) (* c x)))))
   hard_negative:
     statement: 等号が成り立つのは、$x,y,z$が$0$でなく$\dfrac{a}{x}=\dfrac{b}{y}=\dfrac{c}{z}$であるときに限る。
@@ -1005,10 +1005,10 @@
     である。右辺は$0$以上なので、$x+y+z>0$で割ると結論を得る。
   strategy: Clear the denominator x+y+z and write the difference as a sum of nonnegative fractions.
   sketch:
-  - "translate: Multiply by the positive number x + y + z."
-  - "derive: The difference is (ay-bx)^2/(xy) + (bz-cy)^2/(yz) + (cx-az)^2/(zx)."
-  - "derive: Each term is nonnegative."
-  - "conclude: Dividing by x + y + z gives the claim."
+  - 'translate: Multiply by the positive number x + y + z.'
+  - 'derive: The difference is (ay-bx)^2/(xy) + (bz-cy)^2/(yz) + (cx-az)^2/(zx).'
+  - 'derive: Each term is nonnegative.'
+  - 'conclude: Dividing by x + y + z gives the claim.'
   openmath: (forall (a b c x y z) (-> (and (> x 0) (> y 0) (> z 0)) (>= (+ (+ (/ (^ a 2) x) (/ (^ b 2) y)) (/ (^ c 2) z)) (/ (^ (+ (+ a b) c) 2) (+ (+ x y) z)))))
   hard_negative:
     statement: $x,y,z$が$0$でなければ、符号によらず$\dfrac{a^2}{x}+\dfrac{b^2}{y}+\dfrac{c^2}{z}\geq\dfrac{(a+b+c)^2}{x+y+z}$である。
@@ -1042,10 +1042,10 @@
     である。分母は正で分子は$0$以上なので、結論を得る。
   strategy: Put everything over a common positive denominator and express the numerator as a sum of nonnegative terms.
   sketch:
-  - "setup: The denominators b+c, c+a, a+b are positive."
-  - "derive: The difference from 3/2 has numerator (a+b)(a-b)^2 + (b+c)(b-c)^2 + (c+a)(c-a)^2."
-  - "derive: This numerator is nonnegative and the denominator is positive."
-  - "conclude: The inequality follows."
+  - 'setup: The denominators b+c, c+a, a+b are positive.'
+  - 'derive: The difference from 3/2 has numerator (a+b)(a-b)^2 + (b+c)(b-c)^2 + (c+a)(c-a)^2.'
+  - 'derive: This numerator is nonnegative and the denominator is positive.'
+  - 'conclude: The inequality follows.'
   openmath: (forall (a b c) (-> (and (> a 0) (> b 0) (> c 0)) (>= (+ (+ (/ a (+ b c)) (/ b (+ c a))) (/ c (+ a b))) (/ 3 2))))
   hard_negative:
     statement: 正の実数$a,b,c$について、$\dfrac{a}{b+c}+\dfrac{b}{c+a}+\dfrac{c}{a+b}\leq 2$である。
@@ -1078,9 +1078,9 @@
     $a,b,x,y$を実数とし、$a\leq b$、$x\leq y$とする。$(ax+by)-(ay+bx)=(b-a)(y-x)$であり、$2$つの因数はどちらも$0$以上なので、不等式が成り立つ。等号が成り立つことは$(b-a)(y-x)=0$、すなわち$a=b$または$x=y$と同値である。
   strategy: Factor the difference as (b-a)(y-x).
   sketch:
-  - "derive: (ax+by) - (ay+bx) = (b-a)(y-x)."
-  - "derive: Both factors are nonnegative."
-  - "conclude: The bound and the equality condition follow from the factorization."
+  - 'derive: (ax+by) - (ay+bx) = (b-a)(y-x).'
+  - 'derive: Both factors are nonnegative.'
+  - 'conclude: The bound and the equality condition follow from the factorization.'
   openmath: (forall (a b x y) (-> (and (<= a b) (<= x y)) (and (<= (+ (* a y) (* b x)) (+ (* a x) (* b y))) (<-> (= (+ (* a y) (* b x)) (+ (* a x) (* b y))) (or (= a b) (= x y))))))
   hard_negative:
     statement: 実数$a,b,x,y$について、順序によらず$ay+bx\leq ax+by$である。
@@ -1121,11 +1121,11 @@
     逆に$\sigma(i)<\sigma(i+1)$の組を入れ替えると和は増えない。これを繰り返すと$\sigma(1)=3$、$\sigma(2)=2$、$\sigma(3)=1$の配置に達するので、和は$ax_3+bx_2+cx_1$以上である。
   strategy: Swap adjacent out-of-order positions; each swap changes the sum by a product of nonnegative differences.
   sketch:
-  - "derive: Swapping adjacent values of σ changes the sum by (a_(i+1) - a_i)(x_σ(i) - x_σ(i+1))."
-  - "derive: Removing an inversion never decreases the sum."
-  - "induction: Repeated swaps reach the identity arrangement, which gives the upper bound."
-  - "derive: Adding an inversion never increases the sum."
-  - "conclude: Repeated swaps reach the reversed arrangement, which gives the lower bound."
+  - 'derive: Swapping adjacent values of σ changes the sum by (a_(i+1) - a_i)(x_σ(i) - x_σ(i+1)).'
+  - 'derive: Removing an inversion never decreases the sum.'
+  - 'induction: Repeated swaps reach the identity arrangement, which gives the upper bound.'
+  - 'derive: Adding an inversion never increases the sum.'
+  - 'conclude: Repeated swaps reach the reversed arrangement, which gives the lower bound.'
   openmath: (forall (a b c v s) (-> (and (<= a b) (<= b c) (<= (seq_value v 0) (seq_value v 1)) (<= (seq_value v 1) (seq_value v 2)) (in s (permutation_set (natural_range 3)))) (and (<= (+ (+ (* a (seq_value v 2)) (* b (seq_value v 1))) (* c (seq_value v 0))) (+ (+ (* a (seq_value v (fn_value s 0))) (* b (seq_value v (fn_value s 1)))) (* c (seq_value v (fn_value s 2))))) (<= (+ (+ (* a (seq_value v (fn_value s 0))) (* b (seq_value v (fn_value s 1)))) (* c (seq_value v (fn_value s 2)))) (+ (+ (* a (seq_value v 0)) (* b (seq_value v 1))) (* c (seq_value v 2)))))))
   hard_negative:
     statement: $a\leq b\leq c$、$x_1\leq x_2\leq x_3$なら、$ax_1+bx_2+cx_3\leq ax_2+bx_3+cx_1$である。
@@ -1174,11 +1174,11 @@
     左の不等式を示す。$y_i=-x_{n+1-i}$とおくと$y_1\leq\cdots\leq y_n$である。$\tau(i)=n+1-\sigma(i)$は置換であり、$y_{\tau(i)}=-x_{\sigma(i)}$である。右の不等式を$y$と$\tau$に適用すると$-\sum_i a_ix_{\sigma(i)}\leq-\sum_i a_ix_{n+1-i}$となり、左の不等式を得る。
   strategy: Remove inversions by adjacent swaps for the upper bound, then negate and reverse the sequence for the lower bound.
   sketch:
-  - "setup: Compare the sum for σ with the sum after swapping an adjacent inversion."
-  - "derive: The swap increases the sum by a product of nonnegative differences."
-  - "induction: The number of inversions drops by one, so the identity is reached."
-  - "construct: Apply the upper bound to y_i = -x_(n+1-i) and τ(i) = n+1-σ(i)."
-  - "conclude: Multiplying by -1 gives the lower bound."
+  - 'setup: Compare the sum for σ with the sum after swapping an adjacent inversion.'
+  - 'derive: The swap increases the sum by a product of nonnegative differences.'
+  - 'induction: The number of inversions drops by one, so the identity is reached.'
+  - 'construct: Apply the upper bound to y_i = -x_(n+1-i) and τ(i) = n+1-σ(i).'
+  - 'conclude: Multiplying by -1 gives the lower bound.'
   openmath: (forall (n a x s) (-> (and (in n N) (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (and (<= (seq_value a i) (seq_value a j)) (<= (seq_value x i) (seq_value x j))))) (in s (permutation_set (natural_range n)))) (and (<= (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (- (- n 1) i))))) (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (fn_value s i)))))) (<= (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x (fn_value s i))))) (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))))))
   hard_negative:
     statement: 実数列$a_i$と$x_i$の順序によらず、$\sum_i a_ix_{\sigma(i)}\leq\sum_i a_ix_i$である。
@@ -1212,9 +1212,9 @@
     である。仮定から各因数は$0$以上なので、右辺は$0$以上である。よって結論を得る。
   strategy: Write the difference as a sum of products of same-direction differences.
   sketch:
-  - "derive: The difference equals (b-a)(y-x) + (c-b)(z-y) + (c-a)(z-x)."
-  - "derive: All differences are nonnegative by the ordering."
-  - "conclude: The inequality follows."
+  - 'derive: The difference equals (b-a)(y-x) + (c-b)(z-y) + (c-a)(z-x).'
+  - 'derive: All differences are nonnegative by the ordering.'
+  - 'conclude: The inequality follows.'
   openmath: (forall (a b c x y z) (-> (and (<= a b) (<= b c) (<= x y) (<= y z)) (<= (* (+ (+ a b) c) (+ (+ x y) z)) (* 3 (+ (+ (* a x) (* b y)) (* c z))))))
   hard_negative:
     statement: 実数$a\leq b\leq c$、$x\geq y\geq z$についても、$(a+b+c)(x+y+z)\leq 3(ax+by+cz)$である。
@@ -1245,10 +1245,10 @@
     である。$x_i$が単調増加なら、$a_i-a_j$と$x_i-x_j$の符号は同じか一方が$0$なので、各項は$0$以上である。よって第$1$の不等式を得る。$x_i$が単調減少なら各項は$0$以下なので、第$2$の不等式を得る。
   strategy: Expand a double sum of products of differences.
   sketch:
-  - "derive: The double sum of (a_i-a_j)(x_i-x_j) equals 2(n Σ a_i x_i - (Σ a_i)(Σ x_i))."
-  - "case_split: If x is nondecreasing each term is nonnegative."
-  - "case_split: If x is nonincreasing each term is nonpositive."
-  - "conclude: The two inequalities follow."
+  - 'derive: The double sum of (a_i-a_j)(x_i-x_j) equals 2(n Σ a_i x_i - (Σ a_i)(Σ x_i)).'
+  - 'case_split: If x is nondecreasing each term is nonnegative.'
+  - 'case_split: If x is nonincreasing each term is nonpositive.'
+  - 'conclude: The two inequalities follow.'
   openmath: (forall (n a x) (-> (and (in n N) (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (<= (seq_value a i) (seq_value a j))))) (and (-> (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (<= (seq_value x i) (seq_value x j)))) (<= (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (seq_value x i)))) (* n (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))))) (-> (forall (i j) (-> (and (in i (natural_range n)) (in j (natural_range n)) (<= i j)) (>= (seq_value x i) (seq_value x j)))) (<= (* n (sum (natural_range n) (lambda (i) (* (seq_value a i) (seq_value x i))))) (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (seq_value x i)))))))))
   hard_negative:
     statement: 実数列$a_i,x_i$の順序によらず、$\left(\sum_i a_i\right)\left(\sum_i x_i\right)\leq n\sum_i a_ix_i$である。
@@ -1280,10 +1280,10 @@
     $x=\dfrac{\sqrt{ab}}{a}$とおくと$x>0$であり、$ax=\sqrt{ab}$、$\dfrac{b}{x}=\dfrac{ab}{\sqrt{ab}}=\sqrt{ab}$なので、和は$2\sqrt{ab}$に等しい。よって最小値は$2\sqrt{ab}$である。
   strategy: Apply AM-GM to ax and b/x and exhibit the point where equality holds.
   sketch:
-  - "setup: Put u = ax and v = b/x, so uv = ab."
-  - "derive: (u+v)^2 - 4uv = (u-v)^2 ≥ 0 gives u + v ≥ 2 sqrt(ab)."
-  - "construct: Take x = sqrt(ab)/a, which makes u = v = sqrt(ab)."
-  - "conclude: The lower bound is attained, so it is the minimum."
+  - 'setup: Put u = ax and v = b/x, so uv = ab.'
+  - 'derive: (u+v)^2 - 4uv = (u-v)^2 ≥ 0 gives u + v ≥ 2 sqrt(ab).'
+  - 'construct: Take x = sqrt(ab)/a, which makes u = v = sqrt(ab).'
+  - 'conclude: The lower bound is attained, so it is the minimum.'
   openmath: (forall (a b) (-> (and (> a 0) (> b 0)) (and (forall (x) (-> (> x 0) (<= (* 2 (root (* a b) 2)) (+ (* a x) (/ b x))))) (exists (x) (and (> x 0) (= (+ (* a x) (/ b x)) (* 2 (root (* a b) 2))))))))
   hard_negative:
     statement: 正の実数$a,b$について、$x\geq 1$の範囲でも$ax+\dfrac{b}{x}$の最小値は$2\sqrt{ab}$である。
@@ -1316,44 +1316,44 @@
   kind: gap
   level: high
   topic: 最小値・等号が成り立たない場合
-  statement: 実数$c\geq 1$について、$x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$c+\dfrac{1}{c}$である。
-  statement_en: For a real c ≥ 1, the minimum of x + 1/x over x ≥ c is c + 1/c.
+  statement: 正の実数$k$と$c\geq\sqrt{k}$を満たす実数$c$について、$x\geq c$の範囲で$x+\dfrac{k}{x}$の最小値は$c+\dfrac{k}{c}$である。$k=1$のとき$c\geq 1$の場合に当たる。
+  statement_en: For positive real k and real c ≥ √k, the minimum of x + k/x over x ≥ c is c + k/c. The case k = 1 is c ≥ 1.
   assumptions:
-  - $c$は実数
-  - $c\geq 1$
+  - $k$は正の実数
+  - $c$は実数で$c\geq\sqrt{k}$
   - $x\geq c$
   quantifiers:
-  - 任意の実数$c\geq 1$
-  conclusion: $x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$c+\dfrac{1}{c}$である。
-  answer: |
-    $c\geq 1$を実数とし、$x\geq c$とする。$x>0$、$c>0$であり、
-    $x+\dfrac{1}{x}-\left(c+\dfrac{1}{c}\right)=\dfrac{(x-c)(xc-1)}{xc}$
-    である。$x-c\geq 0$であり、$x\geq 1$、$c\geq 1$より$xc-1\geq 0$なので、右辺は$0$以上である。また$x=c$で値$c+\dfrac{1}{c}$をとる。よって最小値は$c+\dfrac{1}{c}$である。
+  - 任意の正の実数$k$と$c\geq\sqrt{k}$
+  conclusion: $x\geq c$の範囲で$x+\dfrac{k}{x}$の最小値は$c+\dfrac{k}{c}$である。
+  answer: $k$を正の実数、$c$を$c\geq\sqrt{k}$を満たす実数とし、$x\geq c$とする。$c\geq\sqrt{k}>0$なので$c>0$、$x>0$であり、$c^2\geq k$である。$x+\dfrac{k}{x}-\left(c+\dfrac{k}{c}\right)=\dfrac{(x-c)(xc-k)}{xc}$が成り立つ。$x-c\geq 0$であり、$xc\geq c^2\geq k$より$xc-k\geq 0$なので、右辺は$0$以上である。また$x=c$のとき値は$c+\dfrac{k}{c}$に等しい。よって最小値は$c+\dfrac{k}{c}$である。
   strategy: Factor the difference from the value at x = c, because the AM-GM equality point may lie outside the range.
   sketch:
-  - "setup: For x ≥ c ≥ 1 both x and c are positive."
-  - "derive: x + 1/x - (c + 1/c) = (x-c)(xc-1)/(xc)."
-  - "derive: The numerator and denominator are nonnegative and positive."
-  - "conclude: The value at x = c is the minimum."
-  openmath: (forall (c) (-> (>= c 1) (and (forall (x) (-> (>= x c) (<= (+ c (/ 1 c)) (+ x (/ 1 x))))) (exists (x) (and (>= x c) (= (+ x (/ 1 x)) (+ c (/ 1 c))))))))
+  - 'setup: For x ≥ c ≥ 1 both x and c are positive.'
+  - 'derive: x + 1/x - (c + 1/c) = (x-c)(xc-1)/(xc).'
+  - 'derive: The numerator and denominator are nonnegative and positive.'
+  - 'conclude: The value at x = c is the minimum.'
+  openmath: (forall (k c) (-> (and (> k 0) (>= c (root k 2))) (and (forall (x) (-> (>= x c) (<= (+ c (/ k c)) (+ x (/ k x))))) (exists (x) (and (>= x c) (= (+ x (/ k x)) (+ c (/ k c))))))))
   hard_negative:
-    statement: $c\geq 1$のとき、$x\geq c$の範囲で$x+\dfrac{1}{x}$の最小値は$2$である。
-    reason: $c=2$のとき$x\geq 2$では$x+\dfrac{1}{x}\geq\dfrac{5}{2}$である。不等式$x+\dfrac{1}{x}\geq 2$の等号は$x=1$でしか成り立たないので、$c>1$では$2$は最小値ではない。
-  target: |
-    ∀ c : ℝ, 1 ≤ c → IsLeast {y : ℝ | ∃ x : ℝ, c ≤ x ∧ y = x + 1 / x} (c + 1 / c)
-  proof: |
+    statement: $k>0$、$c\geq\sqrt{k}$のとき、$x\geq c$の範囲で$x+\dfrac{k}{x}$の最小値は$2\sqrt{k}$である。
+    reason: $2\sqrt{k}$を与える$x=\sqrt{k}$は$c>\sqrt{k}$なら範囲の外にある。$k=1$、$c=2$では$x\geq 2$で$x+\frac{1}{x}\geq\frac{5}{2}>2$である。
+  target: '∀ k c : ℝ, 0 < k → Real.sqrt k ≤ c → IsLeast {y : ℝ | ∃ x : ℝ, c ≤ x ∧ y = x + k / x} (c + k / c)'
+  proof: |-
     by
-      intro c hc
+      intro k c hk hc
+      have hs : 0 < Real.sqrt k := Real.sqrt_pos.mpr hk
+      have hc0 : 0 < c := lt_of_lt_of_le hs hc
+      have hkc : k ≤ c * c := by
+        have := Real.sq_sqrt hk.le
+        nlinarith
       constructor
       · exact ⟨c, le_rfl, rfl⟩
       · rintro y ⟨x, hx, rfl⟩
-        have hc0 : 0 < c := by linarith
         have hx0 : 0 < x := by linarith
-        have key : x + 1 / x - (c + 1 / c) = (x - c) * (x * c - 1) / (x * c) := by
+        have key : x + k / x - (c + k / c) = (x - c) * (x * c - k) / (x * c) := by
           field_simp
           ring
-        have h1 : 0 ≤ x * c - 1 := by nlinarith
-        have h2 : 0 ≤ (x - c) * (x * c - 1) / (x * c) :=
+        have h1 : 0 ≤ x * c - k := by nlinarith
+        have h2 : 0 ≤ (x - c) * (x * c - k) / (x * c) :=
           div_nonneg (mul_nonneg (sub_nonneg.2 hx) h1) (mul_pos hx0 hc0).le
         linarith
 - id: min_square_plus_split_reciprocal
@@ -1373,10 +1373,10 @@
     この値は、$x^2$、$\dfrac{k^3}{x}$、$\dfrac{k^3}{x}$の$3$項に相加相乗を使うと積が$k^6$で一定となることから見つかり、等号条件が$x^2=\dfrac{k^3}{x}$、すなわち$x=k$である。
   strategy: Factor the difference from 3k^2; the three-term AM-GM split explains the factorization.
   sketch:
-  - "derive: The difference from 3k^2 equals (x-k)^2 (x+2k)/x."
-  - "derive: This is nonnegative for x > 0."
-  - "construct: At x = k the value is exactly 3k^2."
-  - "conclude: The minimum is 3k^2."
+  - 'derive: The difference from 3k^2 equals (x-k)^2 (x+2k)/x.'
+  - 'derive: This is nonnegative for x > 0.'
+  - 'construct: At x = k the value is exactly 3k^2.'
+  - 'conclude: The minimum is 3k^2.'
   openmath: (forall (k) (-> (> k 0) (and (forall (x) (-> (> x 0) (<= (* 3 (^ k 2)) (+ (^ x 2) (/ (* 2 (^ k 3)) x))))) (exists (x) (and (> x 0) (= (+ (^ x 2) (/ (* 2 (^ k 3)) x)) (* 3 (^ k 2))))))))
   hard_negative:
     statement: $x^2+\dfrac{2k^3}{x}$に$2$項の相加相乗を使うと$2\sqrt{2k^3x}$となるので、これが最小値である。
@@ -1414,11 +1414,11 @@
     $x=\dfrac{ad}{S}$、$y=\dfrac{bd}{S}$、$z=\dfrac{cd}{S}$とおくと、$ax+by+cz=\dfrac{Sd}{S}=d$であり、$x^2+y^2+z^2=\dfrac{Sd^2}{S^2}=\dfrac{d^2}{S}$である。よって最小値は$\dfrac{d^2}{S}$である。
   strategy: Apply three-term Cauchy-Schwarz for the bound and take (x,y,z) proportional to (a,b,c) for attainment.
   sketch:
-  - "setup: Put S = a^2 + b^2 + c^2 > 0."
-  - "apply_theorem: Three-term Cauchy-Schwarz gives d^2 ≤ S(x^2+y^2+z^2)."
-  - "construct: Take x = ad/S, y = bd/S, z = cd/S."
-  - "derive: This point satisfies the constraint and gives the value d^2/S."
-  - "conclude: The minimum is d^2/S."
+  - 'setup: Put S = a^2 + b^2 + c^2 > 0.'
+  - 'apply_theorem: Three-term Cauchy-Schwarz gives d^2 ≤ S(x^2+y^2+z^2).'
+  - 'construct: Take x = ad/S, y = bd/S, z = cd/S.'
+  - 'derive: This point satisfies the constraint and gives the value d^2/S.'
+  - 'conclude: The minimum is d^2/S.'
   openmath: (forall (a b c d) (-> (> (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 0) (and (forall (x y z) (-> (= (+ (+ (* a x) (* b y)) (* c z)) d) (<= (/ (^ d 2) (+ (+ (^ a 2) (^ b 2)) (^ c 2))) (+ (+ (^ x 2) (^ y 2)) (^ z 2))))) (exists (x y z) (and (= (+ (+ (* a x) (* b y)) (* c z)) d) (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (/ (^ d 2) (+ (+ (^ a 2) (^ b 2)) (^ c 2)))))))))
   hard_negative:
     statement: $ax+by+cz=d$の条件のもとで、$x^2+y^2+z^2$の最大値は$\dfrac{d^2}{a^2+b^2+c^2}$である。
@@ -1456,11 +1456,11 @@
     $x=\dfrac{ra}{s}$、$y=\dfrac{rb}{s}$、$z=\dfrac{rc}{s}$とおくと、$x^2+y^2+z^2=\dfrac{r^2S}{s^2}=r^2$であり、$ax+by+cz=\dfrac{rS}{s}=rs$である。よって最大値は$rs=r\sqrt{a^2+b^2+c^2}$である。
   strategy: Apply three-term Cauchy-Schwarz for the bound and take (x,y,z) proportional to (a,b,c) for attainment.
   sketch:
-  - "setup: Put S = a^2+b^2+c^2 and s = sqrt(S) > 0."
-  - "apply_theorem: Three-term Cauchy-Schwarz gives (ax+by+cz)^2 ≤ (rs)^2."
-  - "derive: Since rs > 0, ax+by+cz ≤ rs."
-  - "construct: Take x = ra/s, y = rb/s, z = rc/s."
-  - "conclude: This point lies on the sphere and gives the value rs."
+  - 'setup: Put S = a^2+b^2+c^2 and s = sqrt(S) > 0.'
+  - 'apply_theorem: Three-term Cauchy-Schwarz gives (ax+by+cz)^2 ≤ (rs)^2.'
+  - 'derive: Since rs > 0, ax+by+cz ≤ rs.'
+  - 'construct: Take x = ra/s, y = rb/s, z = rc/s.'
+  - 'conclude: This point lies on the sphere and gives the value rs.'
   openmath: (forall (a b c r) (-> (and (> (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 0) (> r 0)) (and (forall (x y z) (-> (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (^ r 2)) (<= (+ (+ (* a x) (* b y)) (* c z)) (* r (root (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 2))))) (exists (x y z) (and (= (+ (+ (^ x 2) (^ y 2)) (^ z 2)) (^ r 2)) (= (+ (+ (* a x) (* b y)) (* c z)) (* r (root (+ (+ (^ a 2) (^ b 2)) (^ c 2)) 2))))))))
   hard_negative:
     statement: $x^2+y^2+z^2=r^2$の条件のもとで、$ax+by+cz$の最大値は$r(|a|+|b|+|c|)$である。
@@ -1510,10 +1510,10 @@
     $i<j$の組ごとに2項をまとめると$\dfrac{a_i}{a_j}+\dfrac{a_j}{a_i}-2=\dfrac{(a_i-a_j)^2}{a_ia_j}\geq 0$である。組は$\dfrac{n(n-1)}{2}$個あるので、積は$n+2\cdot\dfrac{n(n-1)}{2}=n^2$以上である。
   strategy: Expand the double sum and pair the terms a_i/a_j and a_j/a_i.
   sketch:
-  - "setup: Fix positive reals a_1, ..., a_n."
-  - "derive: The product equals the double sum of a_i/a_j, whose n diagonal terms equal 1."
-  - "derive: Each pair i<j contributes at least 2."
-  - "conclude: The total is at least n + n(n-1) = n^2."
+  - 'setup: Fix positive reals a_1, ..., a_n.'
+  - 'derive: The product equals the double sum of a_i/a_j, whose n diagonal terms equal 1.'
+  - 'derive: Each pair i<j contributes at least 2.'
+  - 'conclude: The total is at least n + n(n-1) = n^2.'
   openmath: (forall (n a) (-> (and (in n N) (forall (i) (-> (in i (natural_range n)) (> (seq_value a i) 0)))) (>= (* (sum (natural_range n) (lambda (i) (seq_value a i))) (sum (natural_range n) (lambda (i) (/ 1 (seq_value a i))))) (^ n 2))))
   hard_negative:
     statement: $0$でない実数$a_1,\dots,a_n$について、$\left(\displaystyle\sum_{i=1}^n a_i\right)\left(\displaystyle\sum_{i=1}^n\dfrac{1}{a_i}\right)\geq n^2$である。

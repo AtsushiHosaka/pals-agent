@@ -111,10 +111,10 @@ class CardError(ValueError):
 
 
 def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
-    """Merge all vocabulary files, or only core plus one domain while authoring that domain."""
+    """Merge all vocabulary files, or only the shared files plus one domain while authoring that domain."""
     merged: dict[str, dict] = {}
     for path in sorted((ROOT / "vocabulary").glob("*.yaml")):
-        if domain is not None and path.stem not in {"core", domain}:
+        if domain is not None and path.stem not in {"core", "audit_additions", domain}:
             continue
         for name, spec in (yaml.safe_load(path.read_text()) or {}).items():
             if (

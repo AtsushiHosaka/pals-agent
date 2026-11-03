@@ -10,11 +10,11 @@ search candidate and one Draft candidate. See `AUTHORING.md` for the contract.
 
 | Cards | Domains | gap | textbook | named |
 | ---:| ---:| ---:| ---:| ---:|
-| 1,899 | 41 | 1,143 | 576 | 180 |
+| 1,899 | 41 | 1,143 | 577 | 179 |
 
 | Level | middle | high | 1 | 2 | 3 | 4 |
 | ---:| ---:| ---:| ---:| ---:| ---:| ---:|
-| Cards | 119 | 718 | 263 | 308 | 329 | 162 |
+| Cards | 119 | 723 | 263 | 304 | 328 | 162 |
 
 ## What was checked
 
@@ -25,17 +25,20 @@ binding used by `requested-math-seeds-v1`.
 - All 1,899 passed an axiom audit allowing only `propext`, `Classical.choice` and `Quot.sound`.
 - Every manifest passed the API's `RecipeAuthoringManifestV1.parse`, `RecipeMaterializerV1` and
   `validate_materialized_recipe`.
-- All 67,864 formulas in the Japanese text rendered with KaTeX 0.16.47 in strict mode.
+- All 68,523 formulas in the Japanese text rendered with KaTeX 0.16.47 in strict mode.
 - A reviewer other than the author compared each card's text and OpenMath against its Lean target.
   The answers were later rewritten into complete proofs, and that rewrite was checked by its author
   only. It is not the signed independent review that search publication requires.
-- The 837 middle school, high school and geometry cards had one reviewer other than the author, who
+- The 871 cards in the school and geometry domains had one reviewer other than the author, who
   read them after their answers were written. Answers that a reviewer rewrote have only that
   reviewer's reading. This is not the signed review either.
+- A separate audit of 1,881 cards produced patches for 332 of them, which are applied here. The audit
+  checked the meaning of only 60 of its 200 OpenMath patches, found 3 wrong and replaced them, so
+  about 140 are unchecked. It did not audit whether each proof respects the learning order.
 
 The compile report is a local generated artifact and is not committed. It binds
 `generated/index.json` at SHA-256
-`7030d9f286940b092b5cfeb795a337c84e86a7b96b74d835e8bb5511149e1c55`.
+`f7a54c3302c5eb7029bb2ee8615f24077d6600d0837549924b4f0adfb2df15c1`.
 
 ## What this does not establish
 
@@ -55,12 +58,12 @@ first. Measurements are in `AtsushiHosaka/pals#150`.
 
 ## Draft tiers
 
-Only 460 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
+Only 445 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
 One more (`tier: duplicate_of_existing`) has the same canonical OpenMath as the existing Draft
 `nt_gcd_lcm_product_identity`, so it is not a new Draft, although its Recipe is. The comparison used
 the 427 canonical records found in this repository's sources, not a read of the production table,
-so it must be repeated at load time. The other 1,438 (`tier: needs_vocabulary`) use a proposed additive OpenMath dictionary, `pals2`, listed in
-`generated/vocabulary.json` with 1,055 symbols. The deployed validator rejects unknown symbols when it
+so it must be repeated at load time. The other 1,453 (`tier: needs_vocabulary`) use a proposed additive OpenMath dictionary, `pals2`, listed in
+`generated/vocabulary.json` with 1,057 symbols. The deployed validator rejects unknown symbols when it
 reads a row, so these rows must not be loaded until the validator and query structuring accept that
 vocabulary. `catalog.py` layers the dictionary over the runtime tables for validation only and
 changes nothing at runtime.
@@ -114,5 +117,5 @@ python case_coverage.py quadratic
 ```
 
 `apply-text` can change only the Japanese learner-facing fields, so it cannot alter Lean or Draft
-data. `check` loads only `vocabulary/core.yaml` and that domain's file; `build` merges all of them
+data. `check` loads only `vocabulary/core.yaml`, `vocabulary/audit_additions.yaml` and that domain's file; `build` merges all of them
 and fails on a conflicting signature.

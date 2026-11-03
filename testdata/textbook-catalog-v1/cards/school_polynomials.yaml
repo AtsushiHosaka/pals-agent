@@ -2,33 +2,27 @@
   kind: gap
   level: high
   topic: 式と証明・整式の除法
-  statement: |-
-    $a\neq 0$のとき、実数係数の整式$P(x)$は、ある整式$Q(x)$を用いて$P(x)=(ax+b)Q(x)+P\left(-\frac{b}{a}\right)$と表せる。つまり、$P(x)$を$ax+b$で割った余りは$P\left(-\frac{b}{a}\right)$である。
-  statement_en: |-
-    For real a ≠ 0, b and a real polynomial P there is a real polynomial Q with P(x) = (ax+b)Q(x) + P(-b/a); the remainder on division by ax+b is P(-b/a).
+  statement: $a\neq 0$のとき、実数係数の整式$P(x)$は、ある整式$Q(x)$を用いて$P(x)=(ax+b)Q(x)+P\left(-\frac{b}{a}\right)$と表せる。$P(-b/a)$は定数で次数が$ax+b$より低いので、これが$P(x)$を$ax+b$で割った余りに当たる（余りの一意性は整式の除法の一意性による）。
+  statement_en: For real a ≠ 0, b and a real polynomial P there is a real polynomial Q with P(x) = (ax+b)Q(x) + P(-b/a); the remainder on division by ax+b is P(-b/a).
   assumptions:
-    - '$a,b$は実数で$a\neq 0$'
-    - '$P(x)$は実数係数の整式'
+  - $a,b$は実数で$a\neq 0$
+  - $P(x)$は実数係数の整式
   quantifiers:
-    - '任意の実数$a,b$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $P(x)=(ax+b)Q(x)+P\left(-\frac{b}{a}\right)$となる整式$Q(x)$が存在する。
+  - 任意の実数$a,b$と実数係数の整式$P(x)$
+  conclusion: $P(x)=(ax+b)Q(x)+P\left(-\frac{b}{a}\right)$となる整式$Q(x)$が存在する。
   answer: |
     $a,b$を実数で$a\neq 0$とし、$P(x)$を実数係数の整式とする。$c=-\frac{b}{a}$とおく。整式$P(x)-P(c)$は$x=c$で値が$0$になるので、因数定理により$P(x)-P(c)=(x-c)S(x)$となる整式$S(x)$がある。
     $ax+b=a(x-c)$だから、$Q(x)=\frac{1}{a}S(x)$とおくと$(ax+b)Q(x)=(x-c)S(x)$である。よって$P(x)=(ax+b)Q(x)+P(c)$が成り立つ。定数$P(c)$の次数は除式$ax+b$の次数$1$より小さいので、$P(c)$が余りである。
-  strategy: |-
-    Apply the factor theorem at c = -b/a and rescale the quotient by 1/a.
+  strategy: Apply the factor theorem at c = -b/a and rescale the quotient by 1/a.
   sketch:
-    - "setup: Put c = -b/a, so that ax+b = a(x-c)."
-    - "apply_theorem: P(x) - P(c) vanishes at c, so it equals (x-c)S(x) for a polynomial S."
-    - "construct: Take Q = S/a, which gives (ax+b)Q = (x-c)S."
-    - "conclude: Hence P(x) = (ax+b)Q(x) + P(c)."
+  - 'setup: Put c = -b/a, so that ax+b = a(x-c).'
+  - 'apply_theorem: P(x) - P(c) vanishes at c, so it equals (x-c)S(x) for a polynomial S.'
+  - 'construct: Take Q = S/a, which gives (ax+b)Q = (x-c)S.'
+  - 'conclude: Hence P(x) = (ax+b)Q(x) + P(c).'
   openmath: (forall (f a b) (-> (and (polynomial_over f R) (in a R) (in b R) (!= a 0)) (exists (g) (and (polynomial_over g R) (= f (+ (* (+ (* (poly_const a) poly_var) (poly_const b)) g) (poly_const (poly_eval f (/ (neg b) a)))))))))
   hard_negative:
-    statement: |-
-      $P(x)$を$ax+b$で割った商は、$x+\frac{b}{a}$で割った商と等しい。
-    reason: |-
-      余りは同じだが、商は$\frac{1}{a}$倍になる。$P(x)=2x$を$2x$で割った商は$1$で、$x$で割った商は$2$である。
+    statement: $P(x)$を$ax+b$で割った商は、$x+\frac{b}{a}$で割った商と等しい。
+    reason: 余りは同じだが、商は$\frac{1}{a}$倍になる。$P(x)=2x$を$2x$で割った商は$1$で、$x$で割った商は$2$である。
   target: |
     ∀ (P : Polynomial ℝ) (a b : ℝ), a ≠ 0 → ∃ Q : Polynomial ℝ, P = (Polynomial.C a * Polynomial.X + Polynomial.C b) * Q + Polynomial.C (P.eval (-b / a))
   proof: |
@@ -50,34 +44,28 @@
   kind: gap
   level: high
   topic: 式と証明・因数定理
-  statement: |-
-    $a\neq 0$のとき、実数係数の整式$P(x)$が$ax+b$で割り切れるための必要十分条件は$P\left(-\frac{b}{a}\right)=0$である。
-  statement_en: |-
-    For real a ≠ 0, b and a real polynomial P, ax+b divides P if and only if P(-b/a) = 0.
+  statement: $a\neq 0$のとき、実数係数の整式$P(x)$が$ax+b$で割り切れるための必要十分条件は$P\left(-\frac{b}{a}\right)=0$である。
+  statement_en: For real a ≠ 0, b and a real polynomial P, ax+b divides P if and only if P(-b/a) = 0.
   assumptions:
-    - '$a,b$は実数で$a\neq 0$'
-    - '$P(x)$は実数係数の整式'
+  - $a,b$は実数で$a\neq 0$
+  - $P(x)$は実数係数の整式
   quantifiers:
-    - '任意の実数$a,b$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $ax+b$が$P(x)$を割り切ることと$P\left(-\frac{b}{a}\right)=0$は同値である。
+  - 任意の実数$a,b$と実数係数の整式$P(x)$
+  conclusion: $ax+b$が$P(x)$を割り切ることと$P\left(-\frac{b}{a}\right)=0$は同値である。
   answer: |
     $a,b$を実数で$a\neq 0$とし、$P(x)$を実数係数の整式とする。$c=-\frac{b}{a}$とおくと$ac+b=0$かつ$ax+b=a(x-c)$である。
     $P(x)=(ax+b)Q(x)$と割り切れるなら、$x=c$を代入して$P(c)=(ac+b)Q(c)=0$を得る。
     逆に$P(c)=0$なら、因数定理により$P(x)=(x-c)S(x)$となる整式$S(x)$がある。このとき$P(x)=a(x-c)\cdot\frac{1}{a}S(x)=(ax+b)\cdot\frac{1}{a}S(x)$なので、$P(x)$は$ax+b$で割り切れる。
-  strategy: |-
-    Evaluate at c = -b/a for one direction; for the other, use the factor theorem for x-c and the scaling ax+b = a(x-c).
+  strategy: Evaluate at c = -b/a for one direction; for the other, use the factor theorem for x-c and the scaling ax+b = a(x-c).
   sketch:
-    - "setup: Put c = -b/a, so that ac+b = 0 and ax+b = a(x-c)."
-    - "derive: If P = (ax+b)Q, substituting c gives P(c) = 0."
-    - "apply_theorem: If P(c) = 0, the factor theorem gives P = (x-c)S."
-    - "conclude: Then P = (ax+b)(S/a), so ax+b divides P."
+  - 'setup: Put c = -b/a, so that ac+b = 0 and ax+b = a(x-c).'
+  - 'derive: If P = (ax+b)Q, substituting c gives P(c) = 0.'
+  - 'apply_theorem: If P(c) = 0, the factor theorem gives P = (x-c)S.'
+  - 'conclude: Then P = (ax+b)(S/a), so ax+b divides P.'
   openmath: (forall (f a b) (-> (and (polynomial_over f R) (in a R) (in b R) (!= a 0)) (<-> (dvd (+ (* (poly_const a) poly_var) (poly_const b)) f) (= (poly_eval f (/ (neg b) a)) 0))))
   hard_negative:
-    statement: |-
-      整数係数の整式$P(x)$が$P\left(-\frac{b}{a}\right)=0$を満たせば、商も整数係数の整式として$ax+b$で割り切れる。
-    reason: |-
-      商の係数が整数とは限らない。$P(x)=2x-1$は$x=\frac{1}{2}$で$0$になるが、$a=4,b=-2$とすると$4x-2$で割った商は$\frac{1}{2}$である。
+    statement: 整数係数の整式$P(x)$が$P\left(-\frac{b}{a}\right)=0$を満たせば、商も整数係数の整式として$ax+b$で割り切れる。
+    reason: 商の係数が整数とは限らない。$P(x)=2x-1$は$x=\frac{1}{2}$で$0$になるが、$a=4,b=-2$とすると$4x-2$で割った商は$\frac{1}{2}$である。
   target: |
     ∀ (P : Polynomial ℝ) (a b : ℝ), a ≠ 0 → ((Polynomial.C a * Polynomial.X + Polynomial.C b) ∣ P ↔ P.eval (-b / a) = 0)
   proof: |
@@ -104,35 +92,29 @@
   kind: textbook
   level: high
   topic: 式と証明・整式の除法
-  statement: |-
-    $a\neq b$のとき、実数係数の整式$P(x)$を$(x-a)(x-b)$で割った余りは$\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$である。すなわち、ある整式$Q(x)$により$P(x)=(x-a)(x-b)Q(x)+\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$と表せる。
-  statement_en: |-
-    For real a ≠ b and a real polynomial P there is a real polynomial Q with P(x) = (x-a)(x-b)Q(x) + ((P(a)-P(b))/(a-b))(x-a) + P(a).
+  statement: $a\neq b$のとき、実数係数の整式$P(x)$は、ある整式$Q(x)$により$P(x)=(x-a)(x-b)Q(x)+\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$と表せる。$\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$は次数が$1$以下で$(x-a)(x-b)$より低いので、これが$(x-a)(x-b)$で割った余りに当たる（余りの一意性は整式の除法の一意性による）。
+  statement_en: For real a ≠ b and a real polynomial P there is a real polynomial Q with P(x) = (x-a)(x-b)Q(x) + ((P(a)-P(b))/(a-b))(x-a) + P(a).
   assumptions:
-    - '$a,b$は実数で$a\neq b$'
-    - '$P(x)$は実数係数の整式'
+  - $a,b$は実数で$a\neq b$
+  - $P(x)$は実数係数の整式
   quantifiers:
-    - '任意の相異なる実数$a,b$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $P(x)=(x-a)(x-b)Q(x)+\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$となる整式$Q(x)$が存在する。
+  - 任意の相異なる実数$a,b$と実数係数の整式$P(x)$
+  conclusion: $P(x)=(x-a)(x-b)Q(x)+\frac{P(a)-P(b)}{a-b}(x-a)+P(a)$となる整式$Q(x)$が存在する。
   answer: |
     $a,b$を相異なる実数とし、$P(x)$を実数係数の整式とする。$m=\frac{P(a)-P(b)}{a-b}$とおく。
     $P(x)-P(a)$は$x=a$で$0$になるので、因数定理により$P(x)-P(a)=(x-a)G(x)$となる整式$G(x)$がある。$x=b$を代入すると$P(b)-P(a)=(b-a)G(b)$であり、$a\neq b$より$G(b)=m$である。
     $G(x)-m$は$x=b$で$0$になるので、$G(x)-m=(x-b)Q(x)$となる整式$Q(x)$がある。これらを合わせると$P(x)=(x-a)\{(x-b)Q(x)+m\}+P(a)$となり、主張の式を得る。$m(x-a)+P(a)$の次数は$1$以下で、除式$(x-a)(x-b)$の次数より小さいので、これが余りである。
-  strategy: |-
-    Divide by x-a, identify the value of the quotient at b as the slope, then divide that quotient by x-b.
+  strategy: Divide by x-a, identify the value of the quotient at b as the slope, then divide that quotient by x-b.
   sketch:
-    - "setup: Put m = (P(a)-P(b))/(a-b)."
-    - "apply_theorem: The factor theorem gives P(x) - P(a) = (x-a)G(x)."
-    - "derive: Substituting x = b and using a ≠ b gives G(b) = m."
-    - "apply_theorem: The factor theorem gives G(x) - m = (x-b)Q(x)."
-    - "conclude: Combining the two equalities gives the stated form."
+  - 'setup: Put m = (P(a)-P(b))/(a-b).'
+  - 'apply_theorem: The factor theorem gives P(x) - P(a) = (x-a)G(x).'
+  - 'derive: Substituting x = b and using a ≠ b gives G(b) = m.'
+  - 'apply_theorem: The factor theorem gives G(x) - m = (x-b)Q(x).'
+  - 'conclude: Combining the two equalities gives the stated form.'
   openmath: (forall (f a b) (-> (and (polynomial_over f R) (in a R) (in b R) (!= a b)) (exists (g) (and (polynomial_over g R) (= f (+ (+ (* (* (- poly_var (poly_const a)) (- poly_var (poly_const b))) g) (* (poly_const (/ (- (poly_eval f a) (poly_eval f b)) (- a b))) (- poly_var (poly_const a)))) (poly_const (poly_eval f a))))))))
   hard_negative:
-    statement: |-
-      $P(a)=P(b)$なら、$P(x)$は$(x-a)(x-b)$で割り切れる。
-    reason: |-
-      余りは定数$P(a)$であり、$0$とは限らない。$P(x)=1$は$P(a)=P(b)$を満たすが$(x-a)(x-b)$で割り切れない。
+    statement: $P(a)=P(b)$なら、$P(x)$は$(x-a)(x-b)$で割り切れる。
+    reason: 余りは定数$P(a)$であり、$0$とは限らない。$P(x)=1$は$P(a)=P(b)$を満たすが$(x-a)(x-b)$で割り切れない。
   target: |
     ∀ (P : Polynomial ℝ) (a b : ℝ), a ≠ b → ∃ Q : Polynomial ℝ, P = (Polynomial.X - Polynomial.C a) * (Polynomial.X - Polynomial.C b) * Q + Polynomial.C ((P.eval a - P.eval b) / (a - b)) * (Polynomial.X - Polynomial.C a) + Polynomial.C (P.eval a)
   proof: |
@@ -155,34 +137,28 @@
   kind: gap
   level: high
   topic: 式と証明・整式の除法
-  statement: |-
-    実数係数の整式$P(x)$を$(x-a)^2$で割った余りは$P'(a)(x-a)+P(a)$である。すなわち、ある整式$Q(x)$により$P(x)=(x-a)^2Q(x)+P'(a)(x-a)+P(a)$と表せる。
-  statement_en: |-
-    For a real polynomial P and real a there is a real polynomial Q with P(x) = (x-a)^2 Q(x) + P'(a)(x-a) + P(a), where P' is the derivative of P.
+  statement: 実数係数の整式$P(x)$と実数$a$について、ある整式$Q(x)$により$P(x)=(x-a)^2Q(x)+P'(a)(x-a)+P(a)$と表せる。$P'(a)(x-a)+P(a)$は次数が$1$以下で$(x-a)^2$より低いので、これが$(x-a)^2$で割った余りに当たる（余りの一意性は整式の除法の一意性による）。
+  statement_en: For a real polynomial P and real a there is a real polynomial Q with P(x) = (x-a)^2 Q(x) + P'(a)(x-a) + P(a), where P' is the derivative of P.
   assumptions:
-    - '$a$は実数'
-    - '$P(x)$は実数係数の整式で、$P^{\prime}(x)$はその導関数'
+  - $a$は実数
+  - $P(x)$は実数係数の整式で、$P^{\prime}(x)$はその導関数
   quantifiers:
-    - '任意の実数$a$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $P(x)=(x-a)^2Q(x)+P'(a)(x-a)+P(a)$となる整式$Q(x)$が存在する。
+  - 任意の実数$a$と実数係数の整式$P(x)$
+  conclusion: $P(x)=(x-a)^2Q(x)+P'(a)(x-a)+P(a)$となる整式$Q(x)$が存在する。
   answer: |
     $a$を実数、$P(x)$を実数係数の整式とする。$P(x)-P(a)$は$x=a$で$0$になるので、因数定理により$P(x)-P(a)=(x-a)G(x)$となる整式$G(x)$がある。
     両辺を微分すると$P'(x)=G(x)+(x-a)G'(x)$であり、$x=a$を代入して$P'(a)=G(a)$を得る。
     $G(x)-G(a)$は$x=a$で$0$になるので、$G(x)-G(a)=(x-a)Q(x)$となる整式$Q(x)$がある。代入すると$P(x)=(x-a)\{(x-a)Q(x)+P'(a)\}+P(a)$となり、主張の式を得る。$P'(a)(x-a)+P(a)$の次数は$1$以下で、除式$(x-a)^2$の次数より小さいので、これが余りである。
-  strategy: |-
-    Divide by x-a twice and read off the value of the first quotient at a by differentiating.
+  strategy: Divide by x-a twice and read off the value of the first quotient at a by differentiating.
   sketch:
-    - "apply_theorem: The factor theorem gives P(x) - P(a) = (x-a)G(x)."
-    - "derive: Differentiating and substituting x = a gives P'(a) = G(a)."
-    - "apply_theorem: The factor theorem gives G(x) - G(a) = (x-a)Q(x)."
-    - "conclude: Substituting gives P(x) = (x-a)^2 Q(x) + P'(a)(x-a) + P(a)."
+  - 'apply_theorem: The factor theorem gives P(x) - P(a) = (x-a)G(x).'
+  - 'derive: Differentiating and substituting x = a gives P''(a) = G(a).'
+  - 'apply_theorem: The factor theorem gives G(x) - G(a) = (x-a)Q(x).'
+  - 'conclude: Substituting gives P(x) = (x-a)^2 Q(x) + P''(a)(x-a) + P(a).'
   openmath: (forall (f a) (-> (and (polynomial_over f R) (in a R)) (exists (g) (and (polynomial_over g R) (= f (+ (+ (* (^ (- poly_var (poly_const a)) 2) g) (* (poly_const (poly_eval (poly_derivative f) a)) (- poly_var (poly_const a)))) (poly_const (poly_eval f a))))))))
   hard_negative:
-    statement: |-
-      $P(x)$を$(x-a)^2$で割った余りは定数$P(a)$である。
-    reason: |-
-      余りの次数は$1$以下であり、$x-a$の係数$P'(a)$が残る。$P(x)=x$と$a=0$では余りは$x$で、$P(0)=0$とは異なる。
+    statement: $P(x)$を$(x-a)^2$で割った余りは定数$P(a)$である。
+    reason: 余りの次数は$1$以下であり、$x-a$の係数$P'(a)$が残る。$P(x)=x$と$a=0$では余りは$x$で、$P(0)=0$とは異なる。
   target: |
     ∀ (P : Polynomial ℝ) (a : ℝ), ∃ Q : Polynomial ℝ, P = (Polynomial.X - Polynomial.C a) ^ 2 * Q + Polynomial.C (P.derivative.eval a) * (Polynomial.X - Polynomial.C a) + Polynomial.C (P.eval a)
   proof: |
@@ -204,35 +180,29 @@
   kind: textbook
   level: high
   topic: 式と証明・因数定理
-  statement: |-
-    実数係数の整式$P(x)$が$(x-a)^2$で割り切れるための必要十分条件は、$P(a)=0$かつ$P'(a)=0$である。
-  statement_en: |-
-    For a real polynomial P and real a, (x-a)^2 divides P if and only if P(a) = 0 and P'(a) = 0.
+  statement: 実数係数の整式$P(x)$が$(x-a)^2$で割り切れるための必要十分条件は、$P(a)=0$かつ$P'(a)=0$である。
+  statement_en: For a real polynomial P and real a, (x-a)^2 divides P if and only if P(a) = 0 and P'(a) = 0.
   assumptions:
-    - '$a$は実数'
-    - '$P(x)$は実数係数の整式で、$P^{\prime}(x)$はその導関数'
+  - $a$は実数
+  - $P(x)$は実数係数の整式で、$P^{\prime}(x)$はその導関数
   quantifiers:
-    - '任意の実数$a$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $(x-a)^2$が$P(x)$を割り切ることと、$P(a)=0$かつ$P'(a)=0$であることは同値である。
+  - 任意の実数$a$と実数係数の整式$P(x)$
+  conclusion: $(x-a)^2$が$P(x)$を割り切ることと、$P(a)=0$かつ$P'(a)=0$であることは同値である。
   answer: |
     $a$を実数、$P(x)$を実数係数の整式とする。
     $P(x)=(x-a)^2Q(x)$なら、$P'(x)=2(x-a)Q(x)+(x-a)^2Q'(x)$である。$x=a$を代入すると$P(a)=0$かつ$P'(a)=0$を得る。
     逆に$P(a)=0$かつ$P'(a)=0$とする。因数定理により$P(x)=(x-a)G(x)$となる整式$G(x)$がある。微分すると$P'(x)=G(x)+(x-a)G'(x)$だから、$G(a)=P'(a)=0$である。再び因数定理により$G(x)=(x-a)Q(x)$となる整式$Q(x)$があり、$P(x)=(x-a)^2Q(x)$を得る。
-  strategy: |-
-    Differentiate the factorisation for necessity; apply the factor theorem twice for sufficiency.
+  strategy: Differentiate the factorisation for necessity; apply the factor theorem twice for sufficiency.
   sketch:
-    - "derive: If P = (x-a)^2 Q, the product rule shows P(a) = P'(a) = 0."
-    - "apply_theorem: If P(a) = 0, the factor theorem gives P = (x-a)G."
-    - "derive: Differentiating gives G(a) = P'(a) = 0."
-    - "apply_theorem: The factor theorem gives G = (x-a)Q."
-    - "conclude: Hence P = (x-a)^2 Q."
+  - 'derive: If P = (x-a)^2 Q, the product rule shows P(a) = P''(a) = 0.'
+  - 'apply_theorem: If P(a) = 0, the factor theorem gives P = (x-a)G.'
+  - 'derive: Differentiating gives G(a) = P''(a) = 0.'
+  - 'apply_theorem: The factor theorem gives G = (x-a)Q.'
+  - 'conclude: Hence P = (x-a)^2 Q.'
   openmath: (forall (f a) (-> (and (polynomial_over f R) (in a R)) (<-> (dvd (^ (- poly_var (poly_const a)) 2) f) (and (= (poly_eval f a) 0) (= (poly_eval (poly_derivative f) a) 0)))))
   hard_negative:
-    statement: |-
-      $P(a)=0$だけで、$P(x)$は$(x-a)^2$で割り切れる。
-    reason: |-
-      $P'(a)=0$が必要である。$P(x)=x-a$は$P(a)=0$を満たすが$(x-a)^2$で割り切れない。
+    statement: $P(a)=0$だけで、$P(x)$は$(x-a)^2$で割り切れる。
+    reason: $P'(a)=0$が必要である。$P(x)=x-a$は$P(a)=0$を満たすが$(x-a)^2$で割り切れない。
   target: |
     ∀ (P : Polynomial ℝ) (a : ℝ), (Polynomial.X - Polynomial.C a) ^ 2 ∣ P ↔ P.eval a = 0 ∧ P.derivative.eval a = 0
   proof: |
@@ -254,34 +224,28 @@
   kind: textbook
   level: high
   topic: 式と証明・整式の除法
-  statement: |-
-    実数係数の整式$B(x)\neq 0$について、$B(x)Q_1(x)+R_1(x)=B(x)Q_2(x)+R_2(x)$で$R_1,R_2$の次数がともに$B$の次数より小さければ、$Q_1=Q_2$かつ$R_1=R_2$である。すなわち、除法の商と余りはただ1通りに定まる。
-  statement_en: |-
-    For real polynomials with B ≠ 0, deg R_1 < deg B and deg R_2 < deg B, the equality B Q_1 + R_1 = B Q_2 + R_2 implies Q_1 = Q_2 and R_1 = R_2. The zero polynomial counts as having degree smaller than every degree.
+  statement: 実数係数の整式$B(x)\neq 0$について、$B(x)Q_1(x)+R_1(x)=B(x)Q_2(x)+R_2(x)$で$R_1,R_2$の次数がともに$B$の次数より小さければ、$Q_1=Q_2$かつ$R_1=R_2$である。すなわち、除法の商と余りはただ1通りに定まる。
+  statement_en: For real polynomials with B ≠ 0, deg R_1 < deg B and deg R_2 < deg B, the equality B Q_1 + R_1 = B Q_2 + R_2 implies Q_1 = Q_2 and R_1 = R_2. The zero polynomial counts as having degree smaller than every degree.
   assumptions:
-    - '$B(x),Q_1(x),Q_2(x),R_1(x),R_2(x)$は実数係数の整式で$B(x)\neq 0$'
-    - '$R_1,R_2$の次数は$B$の次数より小さい（$0$は条件を満たすものとする）'
-    - '$BQ_1+R_1=BQ_2+R_2$'
+  - $B(x),Q_1(x),Q_2(x),R_1(x),R_2(x)$は実数係数の整式で$B(x)\neq 0$
+  - $R_1,R_2$の次数は$B$の次数より小さい（$0$は条件を満たすものとする）
+  - $BQ_1+R_1=BQ_2+R_2$
   quantifiers:
-    - '任意の実数係数の整式$B,Q_1,Q_2,R_1,R_2$'
-  conclusion: |-
-    $Q_1=Q_2$かつ$R_1=R_2$である。
+  - 任意の実数係数の整式$B,Q_1,Q_2,R_1,R_2$
+  conclusion: $Q_1=Q_2$かつ$R_1=R_2$である。
   answer: |
     $B\neq 0$を実数係数の整式とし、実数係数の整式$Q_1,Q_2,R_1,R_2$が$BQ_1+R_1=BQ_2+R_2$を満たすとする。$R_1,R_2$の次数は$B$の次数より小さいとする（整式$0$はこの条件を満たすものとして扱う）。
     移項すると$B(Q_1-Q_2)=R_2-R_1$である。もし$Q_1\neq Q_2$なら、左辺の次数は$B$の次数以上である。一方、右辺の次数は$R_1,R_2$の次数の大きい方以下なので、$B$の次数より小さい。これは矛盾だから$Q_1=Q_2$である。
     このとき元の式から$R_1=R_2$も従う。
-  strategy: |-
-    Move terms to obtain B(Q_1-Q_2) = R_2-R_1 and compare degrees.
+  strategy: Move terms to obtain B(Q_1-Q_2) = R_2-R_1 and compare degrees.
   sketch:
-    - "derive: Rearranging gives B(Q_1-Q_2) = R_2-R_1."
-    - "contradiction: If Q_1 ≠ Q_2 the left side has degree at least deg B, while the right side has smaller degree."
-    - "conclude: So Q_1 = Q_2, and then R_1 = R_2."
-  openmath: (forall (B Q1 Q2 R1 R2) (-> (and (polynomial_over B R) (polynomial_over Q1 R) (polynomial_over Q2 R) (polynomial_over R1 R) (polynomial_over R2 R) (!= B 0) (< (poly_degree R1) (poly_degree B)) (< (poly_degree R2) (poly_degree B)) (= (+ (* B Q1) R1) (+ (* B Q2) R2))) (and (= Q1 Q2) (= R1 R2))))
+  - 'derive: Rearranging gives B(Q_1-Q_2) = R_2-R_1.'
+  - 'contradiction: If Q_1 ≠ Q_2 the left side has degree at least deg B, while the right side has smaller degree.'
+  - 'conclude: So Q_1 = Q_2, and then R_1 = R_2.'
+  openmath: (forall (B Q1 Q2 R1 R2) (-> (and (polynomial_over B R) (polynomial_over Q1 R) (polynomial_over Q2 R) (polynomial_over R1 R) (polynomial_over R2 R) (!= B (poly_const 0)) (< (poly_degree R1) (poly_degree B)) (< (poly_degree R2) (poly_degree B)) (= (+ (* B Q1) R1) (+ (* B Q2) R2))) (and (= Q1 Q2) (= R1 R2))))
   hard_negative:
-    statement: |-
-      $BQ_1+R_1=BQ_2+R_2$なら、余りの次数に条件がなくても$Q_1=Q_2$である。
-    reason: |-
-      次数の条件がないと一意性は失われる。$B=x$では$x\cdot 1+0=x\cdot 0+x$だが$1\neq 0$である。
+    statement: $BQ_1+R_1=BQ_2+R_2$なら、余りの次数に条件がなくても$Q_1=Q_2$である。
+    reason: 次数の条件がないと一意性は失われる。$B=x$では$x\cdot 1+0=x\cdot 0+x$だが$1\neq 0$である。
   target: |
     ∀ (B Q₁ Q₂ R₁ R₂ : Polynomial ℝ), B ≠ 0 → R₁.degree < B.degree → R₂.degree < B.degree → B * Q₁ + R₁ = B * Q₂ + R₂ → Q₁ = Q₂ ∧ R₁ = R₂
   proof: |
@@ -301,30 +265,24 @@
   kind: gap
   level: high
   topic: 式と証明・整式の除法
-  statement: |-
-    実数係数の整式について$P(x)=B(x)Q(x)+R(x)$とする。複素数$\alpha$が$B(\alpha)=0$を満たせば$P(\alpha)=R(\alpha)$である。$\alpha$は実数でも虚数でもよい。
-  statement_en: |-
-    If real polynomials satisfy P = BQ + R and a complex number α satisfies B(α) = 0, then P(α) = R(α).
+  statement: 実数係数の整式について$P(x)=B(x)Q(x)+R(x)$とする。複素数$\alpha$が$B(\alpha)=0$を満たせば$P(\alpha)=R(\alpha)$である。$\alpha$は実数でも虚数でもよい。
+  statement_en: If real polynomials satisfy P = BQ + R and a complex number α satisfies B(α) = 0, then P(α) = R(α).
   assumptions:
-    - '$P,B,Q,R$は実数係数の整式で$P=BQ+R$'
-    - '$\alpha$は複素数で$B(\alpha)=0$'
+  - $P,B,Q,R$は実数係数の整式で$P=BQ+R$
+  - $\alpha$は複素数で$B(\alpha)=0$
   quantifiers:
-    - '任意の実数係数の整式$P,B,Q,R$と複素数$\alpha$'
-  conclusion: |-
-    $P(\alpha)=R(\alpha)$である。
+  - 任意の実数係数の整式$P,B,Q,R$と複素数$\alpha$
+  conclusion: $P(\alpha)=R(\alpha)$である。
   answer: |
     $P,B,Q,R$を実数係数の整式で$P(x)=B(x)Q(x)+R(x)$を満たすものとし、$\alpha$を$B(\alpha)=0$を満たす複素数とする。この等式は整式としての等式なので、$x=\alpha$を代入しても成り立つ。よって$P(\alpha)=B(\alpha)Q(\alpha)+R(\alpha)=R(\alpha)$である。
-  strategy: |-
-    Substitute α into the polynomial identity; the divisor term vanishes.
+  strategy: Substitute α into the polynomial identity; the divisor term vanishes.
   sketch:
-    - "translate: The polynomial identity remains valid after substituting α."
-    - "conclude: Since B(α) = 0, P(α) = R(α)."
+  - 'translate: The polynomial identity remains valid after substituting α.'
+  - 'conclude: Since B(α) = 0, P(α) = R(α).'
   openmath: (forall (f B g S a) (-> (and (polynomial_over f R) (polynomial_over B R) (polynomial_over g R) (polynomial_over S R) (in a C) (= f (+ (* B g) S)) (= (poly_eval B a) 0)) (= (poly_eval f a) (poly_eval S a))))
   hard_negative:
-    statement: |-
-      $P(\alpha)=R(\alpha)$が成り立つ$\alpha$は、必ず$B(\alpha)=0$を満たす。
-    reason: |-
-      逆は成り立たない。$Q(\alpha)=0$でも$P(\alpha)=R(\alpha)$となる。$B=x$, $Q=x-1$, $R=0$, $\alpha=1$では$P(1)=R(1)$だが$B(1)\neq 0$である。
+    statement: $P(\alpha)=R(\alpha)$が成り立つ$\alpha$は、必ず$B(\alpha)=0$を満たす。
+    reason: 逆は成り立たない。$Q(\alpha)=0$でも$P(\alpha)=R(\alpha)$となる。$B=x$, $Q=x-1$, $R=0$, $\alpha=1$では$P(1)=R(1)$だが$B(1)\neq 0$である。
   target: |
     ∀ (P B Q R : Polynomial ℝ) (a : ℂ), P = B * Q + R → Polynomial.aeval a B = 0 → Polynomial.aeval a P = Polynomial.aeval a R
   proof: |
@@ -335,33 +293,27 @@
   kind: textbook
   level: high
   topic: 式と証明・因数定理
-  statement: |-
-    相異なる実数$a_1,\dots,a_n$がすべて実数係数の整式$P(x)$の解であれば、$P(x)$は$(x-a_1)(x-a_2)\cdots(x-a_n)$で割り切れる。
-  statement_en: |-
-    If P is a real polynomial and s is a finite set of real numbers all of which are roots of P, then the product of x-a over a in s divides P.
+  statement: 相異なる実数$a_1,\dots,a_n$がすべて実数係数の整式$P(x)$の解であれば、$P(x)$は$(x-a_1)(x-a_2)\cdots(x-a_n)$で割り切れる。
+  statement_en: If P is a real polynomial and s is a finite set of real numbers all of which are roots of P, then the product of x-a over a in s divides P.
   assumptions:
-    - '$a_1,\dots,a_n$は相異なる実数'
-    - '$P(x)$は実数係数の整式で$P(a_i)=0$'
+  - $a_1,\dots,a_n$は相異なる実数
+  - $P(x)$は実数係数の整式で$P(a_i)=0$
   quantifiers:
-    - '任意の実数係数の整式$P(x)$と相異なる実数の有限個の組$a_1,\dots,a_n$'
-  conclusion: |-
-    $(x-a_1)\cdots(x-a_n)$は$P(x)$を割り切る。
+  - 任意の実数係数の整式$P(x)$と相異なる実数の有限個の組$a_1,\dots,a_n$
+  conclusion: $(x-a_1)\cdots(x-a_n)$は$P(x)$を割り切る。
   answer: |
     $a_1,\dots,a_n$を相異なる実数とし、$P(x)$を各$i$で$P(a_i)=0$を満たす実数係数の整式とする。$k$についての帰納法で、$P(x)$が$(x-a_1)\cdots(x-a_k)$で割り切れることを示す。
     $k=0$のときは積が$1$なので成り立つ。$P(x)=(x-a_1)\cdots(x-a_k)S(x)$と書けたとする。$k<n$なら$x=a_{k+1}$を代入すると、$P(a_{k+1})=0$であり、$a_{k+1}-a_i\neq 0$ $(i\leq k)$だから$S(a_{k+1})=0$である。因数定理により$S(x)=(x-a_{k+1})T(x)$となる整式$T(x)$があり、$P(x)$は$(x-a_1)\cdots(x-a_{k+1})$で割り切れる。
-  strategy: |-
-    Induct on the number of roots, cancelling the nonzero differences and applying the factor theorem.
+  strategy: Induct on the number of roots, cancelling the nonzero differences and applying the factor theorem.
   sketch:
-    - "induction: Induct on the number k of roots already factored out."
-    - "derive: Substituting a_{k+1} and using distinctness shows the cofactor vanishes at a_{k+1}."
-    - "apply_theorem: The factor theorem extracts x - a_{k+1} from the cofactor."
-    - "conclude: At k = n the whole product divides P."
+  - 'induction: Induct on the number k of roots already factored out.'
+  - 'derive: Substituting a_{k+1} and using distinctness shows the cofactor vanishes at a_{k+1}.'
+  - 'apply_theorem: The factor theorem extracts x - a_{k+1} from the cofactor.'
+  - 'conclude: At k = n the whole product divides P.'
   openmath: (forall (f s) (-> (and (polynomial_over f R) (finite_set s) (subset s R) (forall (a) (-> (in a s) (= (poly_eval f a) 0)))) (dvd (product s (lambda (a) (- poly_var (poly_const a)))) f)))
   hard_negative:
-    statement: |-
-      $a_1,\dots,a_n$に重複があっても、すべて解なら$P(x)$は$(x-a_1)\cdots(x-a_n)$で割り切れる。
-    reason: |-
-      重複を許すと重解が必要になる。$P(x)=x-1$は$a_1=a_2=1$を解にもつが$(x-1)^2$で割り切れない。
+    statement: $a_1,\dots,a_n$に重複があっても、すべて解なら$P(x)$は$(x-a_1)\cdots(x-a_n)$で割り切れる。
+    reason: 重複を許すと重解が必要になる。$P(x)=x-1$は$a_1=a_2=1$を解にもつが$(x-1)^2$で割り切れない。
   target: |
     ∀ (P : Polynomial ℝ) (s : Finset ℝ), (∀ a ∈ s, P.eval a = 0) → (∏ a ∈ s, (Polynomial.X - Polynomial.C a)) ∣ P
   proof: |
@@ -376,30 +328,24 @@
   kind: textbook
   level: high
   topic: 式と証明・因数定理
-  statement: |-
-    実数$a$と奇数$n$について、整式$x^n+a^n$は整式$x+a$で割り切れる。指数が奇数の場合の形である。
-  statement_en: |-
-    For real a and an odd natural number n, the polynomial x+a divides the polynomial x^n + a^n.
+  statement: 実数$a$と奇数$n$について、整式$x^n+a^n$は整式$x+a$で割り切れる。指数が奇数の場合の形である。
+  statement_en: For real a and an odd natural number n, the polynomial x+a divides the polynomial x^n + a^n.
   assumptions:
-    - '$a$は実数'
-    - '$n$は奇数の自然数'
+  - $a$は実数
+  - $n$は奇数の自然数
   quantifiers:
-    - '任意の実数$a$と奇数の自然数$n$'
-  conclusion: |-
-    $x+a$は$x^n+a^n$を整式として割り切る。
+  - 任意の実数$a$と奇数の自然数$n$
+  conclusion: $x+a$は$x^n+a^n$を整式として割り切る。
   answer: |
     $a$を実数、$n$を奇数の自然数とする。整式$x^n+a^n$に$x=-a$を代入すると、$n$が奇数なので$(-a)^n+a^n=-a^n+a^n=0$である。因数定理により、$x^n+a^n$は$x-(-a)=x+a$で割り切れる。
-  strategy: |-
-    Apply the factor theorem at x = -a, where the odd exponent makes the value vanish.
+  strategy: Apply the factor theorem at x = -a, where the odd exponent makes the value vanish.
   sketch:
-    - "derive: For odd n, (-a)^n + a^n = 0."
-    - "conclude: The factor theorem at -a gives that x+a divides x^n + a^n."
+  - 'derive: For odd n, (-a)^n + a^n = 0.'
+  - 'conclude: The factor theorem at -a gives that x+a divides x^n + a^n.'
   openmath: (forall (a n) (-> (and (in a R) (in n N) (exists (k) (and (in k N) (= n (+ (* 2 k) 1))))) (dvd (+ poly_var (poly_const a)) (+ (^ poly_var n) (^ (poly_const a) n)))))
   hard_negative:
-    statement: |-
-      任意の自然数$n$で$x^n+a^n$は$x+a$で割り切れる。
-    reason: |-
-      $n$が偶数だと成り立たない。$x^2+1$は$x=-1$で$2$となり、$x+1$で割り切れない。
+    statement: 任意の自然数$n$で$x^n+a^n$は$x+a$で割り切れる。
+    reason: $n$が偶数だと成り立たない。$x^2+1$は$x=-1$で$2$となり、$x+1$で割り切れない。
   target: |
     ∀ (a : ℝ) (n : ℕ), Odd n → (Polynomial.X + Polynomial.C a) ∣ (Polynomial.X ^ n + Polynomial.C a ^ n)
   proof: |
@@ -410,31 +356,25 @@
   kind: textbook
   level: high
   topic: 式と証明・整式の値
-  statement: |-
-    実数係数の整式$P(x)$について、偶数次の項の係数の和は$\frac{P(1)+P(-1)}{2}$であり、奇数次の項の係数の和は$\frac{P(1)-P(-1)}{2}$である。
-  statement_en: |-
-    For a real polynomial P, the sum of the coefficients of even-degree terms equals (P(1)+P(-1))/2 and the sum of the coefficients of odd-degree terms equals (P(1)-P(-1))/2.
+  statement: 実数係数の整式$P(x)$について、偶数次の項の係数の和は$\frac{P(1)+P(-1)}{2}$であり、奇数次の項の係数の和は$\frac{P(1)-P(-1)}{2}$である。
+  statement_en: For a real polynomial P, the sum of the coefficients of even-degree terms equals (P(1)+P(-1))/2 and the sum of the coefficients of odd-degree terms equals (P(1)-P(-1))/2.
   assumptions:
-    - '$P(x)$は実数係数の整式'
+  - $P(x)$は実数係数の整式
   quantifiers:
-    - '任意の実数係数の整式$P(x)$'
-  conclusion: |-
-    偶数次の係数の和は$\frac{P(1)+P(-1)}{2}$、奇数次の係数の和は$\frac{P(1)-P(-1)}{2}$である。
+  - 任意の実数係数の整式$P(x)$
+  conclusion: 偶数次の係数の和は$\frac{P(1)+P(-1)}{2}$、奇数次の係数の和は$\frac{P(1)-P(-1)}{2}$である。
   answer: |
     $P(x)=\sum_{i=0}^{n}c_ix^i$を実数係数の整式とする。$P(1)=\sum_{i=0}^{n}c_i$、$P(-1)=\sum_{i=0}^{n}(-1)^ic_i$である。
     $i$が偶数なら$\frac{1+(-1)^i}{2}=1$、$\frac{1-(-1)^i}{2}=0$であり、$i$が奇数ならそれぞれ$0$、$1$である。よって$\frac{P(1)+P(-1)}{2}=\sum_{i=0}^{n}\frac{1+(-1)^i}{2}c_i$は偶数次の係数の和であり、$\frac{P(1)-P(-1)}{2}=\sum_{i=0}^{n}\frac{1-(-1)^i}{2}c_i$は奇数次の係数の和である。
-  strategy: |-
-    Expand P(1) and P(-1) term by term and split according to the parity of the index.
+  strategy: Expand P(1) and P(-1) term by term and split according to the parity of the index.
   sketch:
-    - "translate: Write P(1) and P(-1) as sums over the coefficients."
-    - "case_split: The factor (1 ± (-1)^i)/2 is 1 or 0 depending on the parity of i."
-    - "conclude: Summing gives both formulas."
+  - 'translate: Write P(1) and P(-1) as sums over the coefficients.'
+  - 'case_split: The factor (1 ± (-1)^i)/2 is 1 or 0 depending on the parity of i.'
+  - 'conclude: Summing gives both formulas.'
   openmath: (forall (f) (-> (polynomial_over f R) (and (= (/ (+ (poly_eval f 1) (poly_eval f (neg 1))) 2) (poly_even_coeff_sum f)) (= (/ (- (poly_eval f 1) (poly_eval f (neg 1))) 2) (poly_odd_coeff_sum f)))))
   hard_negative:
-    statement: |-
-      偶数次の項の係数の和は$P(1)+P(-1)$である。
-    reason: |-
-      $2$で割る必要がある。$P(x)=1$では偶数次の係数の和は$1$で、$P(1)+P(-1)=2$である。
+    statement: 偶数次の項の係数の和は$P(1)+P(-1)$である。
+    reason: $2$で割る必要がある。$P(x)=1$では偶数次の係数の和は$1$で、$P(1)+P(-1)=2$である。
   target: |
     ∀ P : Polynomial ℝ, (P.eval 1 + P.eval (-1)) / 2 = ∑ i ∈ Finset.range (P.natDegree + 1), (if Even i then P.coeff i else 0) ∧ (P.eval 1 - P.eval (-1)) / 2 = ∑ i ∈ Finset.range (P.natDegree + 1), (if Odd i then P.coeff i else 0)
   proof: |
@@ -458,32 +398,26 @@
   kind: gap
   level: high
   topic: 複素数と方程式・虚数解と余り
-  statement: |-
-    $\alpha$を虚数、$r,s,r',s'$を実数とする。$r\alpha+s=r'\alpha+s'$なら$r=r'$かつ$s=s'$である。除式の虚数解を代入して実数係数の余りを決めるときに使う形である。
-  statement_en: |-
-    If α is a non-real complex number and r, s, r', s' are real with rα + s = r'α + s', then r = r' and s = s'.
+  statement: $\alpha$を虚数、$r,s,r',s'$を実数とする。$r\alpha+s=r'\alpha+s'$なら$r=r'$かつ$s=s'$である。除式の虚数解を代入して実数係数の余りを決めるときに使う形である。
+  statement_en: If α is a non-real complex number and r, s, r', s' are real with rα + s = r'α + s', then r = r' and s = s'.
   assumptions:
-    - '$\alpha$は虚数（虚部が$0$でない複素数）'
-    - '$r,s,r^{\prime},s^{\prime}$は実数'
-    - '$r\alpha+s=r^{\prime}\alpha+s^{\prime}$'
+  - $\alpha$は虚数（虚部が$0$でない複素数）
+  - $r,s,r^{\prime},s^{\prime}$は実数
+  - $r\alpha+s=r^{\prime}\alpha+s^{\prime}$
   quantifiers:
-    - '任意の虚数$\alpha$と実数$r,s,r^{\prime},s^{\prime}$'
-  conclusion: |-
-    $r=r'$かつ$s=s'$である。
+  - 任意の虚数$\alpha$と実数$r,s,r^{\prime},s^{\prime}$
+  conclusion: $r=r'$かつ$s=s'$である。
   answer: |
     $\alpha=p+qi$を虚数（$p,q$は実数、$q\neq 0$）とし、$r,s,r',s'$を$r\alpha+s=r'\alpha+s'$を満たす実数とする。両辺の虚部を比べると$rq=r'q$であり、$q\neq 0$より$r=r'$である。これを元の式に代入すると$s=s'$を得る。
-  strategy: |-
-    Compare imaginary parts to get r = r' and then cancel to get s = s'.
+  strategy: Compare imaginary parts to get r = r' and then cancel to get s = s'.
   sketch:
-    - "derive: Taking imaginary parts gives r Im α = r' Im α."
-    - "derive: Since Im α ≠ 0, r = r'."
-    - "conclude: Cancelling rα from the equality gives s = s'."
+  - 'derive: Taking imaginary parts gives r Im α = r'' Im α.'
+  - 'derive: Since Im α ≠ 0, r = r''.'
+  - 'conclude: Cancelling rα from the equality gives s = s''.'
   openmath: (forall (a r s t u) (-> (and (in a C) (!= (imag_part a) 0) (in r R) (in s R) (in t R) (in u R) (= (+ (* r a) s) (+ (* t a) u))) (and (= r t) (= s u))))
   hard_negative:
-    statement: |-
-      $r\alpha+s=r'\alpha+s'$なら、係数が複素数でも$r=r'$かつ$s=s'$である。
-    reason: |-
-      係数が実数であることが必要である。$\alpha=i$では$1\cdot i+0=0\cdot i+i$であり、$r=1$, $s=0$, $r'=0$, $s'=i$は等式を満たす。
+    statement: $r\alpha+s=r'\alpha+s'$なら、係数が複素数でも$r=r'$かつ$s=s'$である。
+    reason: 係数が実数であることが必要である。$\alpha=i$では$1\cdot i+0=0\cdot i+i$であり、$r=1$, $s=0$, $r'=0$, $s'=i$は等式を満たす。
   target: |
     ∀ (α : ℂ) (r s r' s' : ℝ), α.im ≠ 0 → (r : ℂ) * α + s = r' * α + s' → r = r' ∧ s = s'
   proof: |
@@ -499,68 +433,54 @@
   kind: gap
   level: high
   topic: 複素数と方程式・共通解
-  statement: |-
-    $p\neq r$のとき、2つの方程式$x^2+px+q=0$と$x^2+rx+s=0$の共通解$\alpha$は$\alpha=\frac{s-q}{p-r}$である。これは2次の係数がともに$1$の場合の形で、係数と解は複素数でよい。
-  statement_en: |-
-    For complex p ≠ r, q, s, a common root α of x^2 + px + q = 0 and x^2 + rx + s = 0 equals (s-q)/(p-r).
+  statement: 複素数$m,p,q,r,s$が$p\neq r$を満たし、複素数$\alpha$が$m\alpha^2+p\alpha+q=0$と$m\alpha^2+r\alpha+s=0$をともに満たすなら、$\alpha=\frac{s-q}{p-r}$である。2次の係数が共通の値$m$である形で、$m=1$が典型例である。
+  statement_en: For complex m, p, q, r, s with p ≠ r, a common root α of m x^2 + p x + q = 0 and m x^2 + r x + s = 0 equals (s-q)/(p-r). The two quadratics share the x^2 coefficient m.
   assumptions:
-    - '$p,q,r,s$は複素数で$p\neq r$'
-    - '$\alpha$は$\alpha^2+p\alpha+q=0$と$\alpha^2+r\alpha+s=0$を満たす複素数'
+  - $m,p,q,r,s$は複素数で$p\neq r$
+  - $\alpha$は$m\alpha^2+p\alpha+q=0$と$m\alpha^2+r\alpha+s=0$を満たす複素数
   quantifiers:
-    - '任意の複素数$p,q,r,s,\alpha$'
-  conclusion: |-
-    $\alpha=\frac{s-q}{p-r}$である。
-  answer: |
-    $p,q,r,s$を$p\neq r$を満たす複素数とし、$\alpha$を$\alpha^2+p\alpha+q=0$と$\alpha^2+r\alpha+s=0$を満たす複素数とする。2式を引くと$(p-r)\alpha+q-s=0$である。$p-r\neq 0$なので$\alpha=\frac{s-q}{p-r}$を得る。
-  strategy: |-
-    Subtract the two equations to eliminate the square term.
+  - 任意の複素数$m,p,q,r,s,\alpha$
+  conclusion: $\alpha=\frac{s-q}{p-r}$である。
+  answer: $m,p,q,r,s$を$p\neq r$を満たす複素数とし、$\alpha$を$m\alpha^2+p\alpha+q=0$と$m\alpha^2+r\alpha+s=0$を満たす複素数とする。2式を引くと$m\alpha^2$が消えて$(p-r)\alpha+q-s=0$である。$p-r\neq 0$なので$\alpha=\frac{s-q}{p-r}$を得る。
+  strategy: Subtract the two equations to eliminate the square term.
   sketch:
-    - "derive: Subtracting gives (p-r)α + q - s = 0."
-    - "conclude: Since p ≠ r, α = (s-q)/(p-r)."
-  openmath: (forall (p q r s a) (-> (and (in p C) (in q C) (in r C) (in s C) (in a C) (!= p r) (= (+ (+ (^ a 2) (* p a)) q) 0) (= (+ (+ (^ a 2) (* r a)) s) 0)) (= a (/ (- s q) (- p r)))))
+  - 'derive: Subtracting gives (p-r)α + q - s = 0.'
+  - 'conclude: Since p ≠ r, α = (s-q)/(p-r).'
+  openmath: (forall (m p q r s a) (-> (and (in m C) (in p C) (in q C) (in r C) (in s C) (in a C) (!= p r) (= (+ (+ (* m (^ a 2)) (* p a)) q) 0) (= (+ (+ (* m (^ a 2)) (* r a)) s) 0)) (= a (/ (- s q) (- p r)))))
   hard_negative:
-    statement: |-
-      $\alpha=\frac{s-q}{p-r}$なら、$\alpha$は必ず2つの方程式の共通解である。
-    reason: |-
-      これは必要条件にすぎない。$x^2+1=0$と$x^2+x+2=0$では$\alpha=-1$が得られるが、どちらの解でもない。
-  target: |
-    ∀ (p q r s α : ℂ), p ≠ r → α ^ 2 + p * α + q = 0 → α ^ 2 + r * α + s = 0 → α = (s - q) / (p - r)
-  proof: |
+    statement: $\alpha=\frac{s-q}{p-r}$なら、$\alpha$は必ず2つの方程式の共通解である。
+    reason: これは必要条件にすぎない。$x^2+1=0$と$x^2+x+2=0$では$\alpha=-1$が得られるが、どちらの解でもない。
+  target: '∀ (m p q r s α : ℂ), p ≠ r → m * α ^ 2 + p * α + q = 0 → m * α ^ 2 + r * α + s = 0 → α = (s - q) / (p - r)'
+  proof: |-
     by
-      intro p q r s α hpr h₁ h₂
+      intro m p q r s α hpr h₁ h₂
       rw [eq_div_iff (sub_ne_zero.mpr hpr)]
       linear_combination h₁ - h₂
 - id: coefficient_comparison_for_polynomial_identity
   kind: textbook
   level: high
   topic: 式と証明・恒等式
-  statement: |-
-    実数$a_0,\dots,a_{n-1},b_0,\dots,b_{n-1}$について、$\sum_{i=0}^{n-1}a_ix^i=\sum_{i=0}^{n-1}b_ix^i$がすべての実数$x$で成り立つなら、各$i$で$a_i=b_i$である（係数比較法の根拠）。
-  statement_en: |-
-    If real numbers a_i, b_i (i < n) satisfy Σ_{i<n} a_i x^i = Σ_{i<n} b_i x^i for every real x, then a_i = b_i for all i < n.
+  statement: 実数$a_0,\dots,a_{n-1},b_0,\dots,b_{n-1}$について、$\sum_{i=0}^{n-1}a_ix^i=\sum_{i=0}^{n-1}b_ix^i$がすべての実数$x$で成り立つなら、各$i$で$a_i=b_i$である（係数比較法の根拠）。
+  statement_en: If real numbers a_i, b_i (i < n) satisfy Σ_{i<n} a_i x^i = Σ_{i<n} b_i x^i for every real x, then a_i = b_i for all i < n.
   assumptions:
-    - '$a_i,b_i$ $(0\leq i<n)$は実数'
-    - 'すべての実数$x$で$\sum_{i=0}^{n-1}a_ix^i=\sum_{i=0}^{n-1}b_ix^i$'
+  - $a_i,b_i$ $(0\leq i<n)$は実数
+  - すべての実数$x$で$\sum_{i=0}^{n-1}a_ix^i=\sum_{i=0}^{n-1}b_ix^i$
   quantifiers:
-    - '任意の自然数$n$と実数$a_i,b_i$'
-  conclusion: |-
-    各$i<n$で$a_i=b_i$である。
+  - 任意の自然数$n$と実数$a_i,b_i$
+  conclusion: 各$i<n$で$a_i=b_i$である。
   answer: |
     $n$を自然数とし、実数$a_i,b_i$ $(0\leq i<n)$がすべての実数$x$で$\sum_{i=0}^{n-1}a_ix^i=\sum_{i=0}^{n-1}b_ix^i$を満たすとする。$c_i=a_i-b_i$とおき、$F(x)=\sum_{i=0}^{n-1}c_ix^i$とすると、$F(x)$はすべての実数$x$で$0$である。
     もし係数のどれかが$0$でなければ、$F(x)$は$0$でない整式である。$0$でない整式の解の個数は次数以下で有限だが、$F(x)$は無限個の実数で$0$になるので矛盾する。よってすべての$i$で$c_i=0$、すなわち$a_i=b_i$である。
-  strategy: |-
-    Take the difference polynomial; it has infinitely many roots, so all its coefficients vanish.
+  strategy: Take the difference polynomial; it has infinitely many roots, so all its coefficients vanish.
   sketch:
-    - "setup: Put c_i = a_i - b_i and F(x) = Σ c_i x^i."
-    - "translate: F vanishes at every real x."
-    - "contradiction: A nonzero polynomial has at most deg F roots."
-    - "conclude: Hence all c_i = 0, so a_i = b_i."
+  - 'setup: Put c_i = a_i - b_i and F(x) = Σ c_i x^i.'
+  - 'translate: F vanishes at every real x.'
+  - 'contradiction: A nonzero polynomial has at most deg F roots.'
+  - 'conclude: Hence all c_i = 0, so a_i = b_i.'
   openmath: (forall (n a b) (-> (and (in n N) (forall (x) (-> (in x R) (= (sum (natural_range n) (lambda (i) (* (seq_value a i) (^ x i)))) (sum (natural_range n) (lambda (i) (* (seq_value b i) (^ x i)))))))) (forall (i) (-> (and (in i N) (< i n)) (= (seq_value a i) (seq_value b i))))))
   hard_negative:
-    statement: |-
-      等式が$n-1$個の相異なる実数$x$で成り立てば、各$i$で$a_i=b_i$である。
-    reason: |-
-      次数が$n-1$以下の整式を決めるには$n$個の値が必要である。$n=2$で$a_0=0,a_1=1$, $b_0=1,b_1=0$とすると、$x=1$の$1$点では等式が成り立つが係数は異なる。
+    statement: 等式が$n-1$個の相異なる実数$x$で成り立てば、各$i$で$a_i=b_i$である。
+    reason: 次数が$n-1$以下の整式を決めるには$n$個の値が必要である。$n=2$で$a_0=0,a_1=1$, $b_0=1,b_1=0$とすると、$x=1$の$1$点では等式が成り立つが係数は異なる。
   target: |
     ∀ (n : ℕ) (a b : ℕ → ℝ), (∀ x : ℝ, ∑ i ∈ Finset.range n, a i * x ^ i = ∑ i ∈ Finset.range n, b i * x ^ i) → ∀ i, i < n → a i = b i
   proof: |
@@ -576,31 +496,25 @@
   kind: gap
   level: high
   topic: 式と証明・恒等式
-  statement: |-
-    実数係数の整式$P(x),Q(x)$の値が実数の無限集合$S$の上で一致すれば、$P$と$Q$は整式として等しい。$S$は自然数全体や区間などでよい。
-  statement_en: |-
-    If real polynomials P and Q agree on an infinite set S of real numbers, then P = Q as polynomials.
+  statement: 実数係数の整式$P(x),Q(x)$の値が実数の無限集合$S$の上で一致すれば、$P$と$Q$は整式として等しい。$S$は自然数全体や区間などでよい。
+  statement_en: If real polynomials P and Q agree on an infinite set S of real numbers, then P = Q as polynomials.
   assumptions:
-    - '$P(x),Q(x)$は実数係数の整式'
-    - '$S$は実数の無限集合で、$x\in S$なら$P(x)=Q(x)$'
+  - $P(x),Q(x)$は実数係数の整式
+  - $S$は実数の無限集合で、$x\in S$なら$P(x)=Q(x)$
   quantifiers:
-    - '任意の実数係数の整式$P,Q$と実数の無限集合$S$'
-  conclusion: |-
-    $P=Q$である。
+  - 任意の実数係数の整式$P,Q$と実数の無限集合$S$
+  conclusion: $P=Q$である。
   answer: |
     $P(x),Q(x)$を実数係数の整式、$S$を実数の無限集合とし、$S$の各元$x$で$P(x)=Q(x)$が成り立つとする。もし$P\neq Q$なら、$P-Q$は$0$でない整式なので、その解は次数以下の個数しかない。ところが$S$の元はすべて$P-Q$の解であり、無限個ある。これは矛盾なので$P=Q$である。
-  strategy: |-
-    The difference has infinitely many roots, which is impossible for a nonzero polynomial.
+  strategy: The difference has infinitely many roots, which is impossible for a nonzero polynomial.
   sketch:
-    - "contradiction: Assume P ≠ Q, so P-Q is a nonzero polynomial."
-    - "derive: Every element of the infinite set S is a root of P-Q."
-    - "conclude: A nonzero polynomial has finitely many roots, so P = Q."
+  - 'contradiction: Assume P ≠ Q, so P-Q is a nonzero polynomial.'
+  - 'derive: Every element of the infinite set S is a root of P-Q.'
+  - 'conclude: A nonzero polynomial has finitely many roots, so P = Q.'
   openmath: (forall (f g S) (-> (and (polynomial_over f R) (polynomial_over g R) (subset S R) (infinite_set S) (forall (x) (-> (in x S) (= (poly_eval f x) (poly_eval g x))))) (= f g)))
   hard_negative:
-    statement: |-
-      2つの実数係数の整式の値が有限個の実数で一致すれば、それらは等しい。
-    reason: |-
-      一致する点の個数が次数を超えなければ結論は出ない。$x^2$と$x$は$x=0,1$で一致するが等しくない。
+    statement: 2つの実数係数の整式の値が有限個の実数で一致すれば、それらは等しい。
+    reason: 一致する点の個数が次数を超えなければ結論は出ない。$x^2$と$x$は$x=0,1$で一致するが等しくない。
   target: |
     ∀ (P Q : Polynomial ℝ) (S : Set ℝ), S.Infinite → (∀ x ∈ S, P.eval x = Q.eval x) → P = Q
   proof: |
@@ -611,31 +525,25 @@
   kind: gap
   level: high
   topic: 式と証明・恒等式
-  statement: |-
-    実数$A,B$について、$kA+B=0$がすべての実数$k$で成り立つための必要十分条件は$A=0$かつ$B=0$である。
-  statement_en: |-
-    For real A and B, kA + B = 0 holds for every real k if and only if A = 0 and B = 0.
+  statement: 実数$A,B$について、$kA+B=0$がすべての実数$k$で成り立つための必要十分条件は$A=0$かつ$B=0$である。
+  statement_en: For real A and B, kA + B = 0 holds for every real k if and only if A = 0 and B = 0.
   assumptions:
-    - '$A,B$は実数'
+  - $A,B$は実数
   quantifiers:
-    - '任意の実数$A,B$'
-  conclusion: |-
-    すべての実数$k$で$kA+B=0$であることと、$A=0$かつ$B=0$であることは同値である。
+  - 任意の実数$A,B$
+  conclusion: すべての実数$k$で$kA+B=0$であることと、$A=0$かつ$B=0$であることは同値である。
   answer: |
     $A,B$を実数とする。すべての実数$k$で$kA+B=0$なら、$k=0$を代入して$B=0$であり、$k=1$を代入して$A+B=0$だから$A=0$である。
     逆に$A=0$かつ$B=0$なら、任意の実数$k$で$kA+B=0$である。
-  strategy: |-
-    Substitute k = 0 and k = 1.
+  strategy: Substitute k = 0 and k = 1.
   sketch:
-    - "derive: k = 0 gives B = 0."
-    - "derive: k = 1 gives A + B = 0, hence A = 0."
-    - "conclude: The converse is immediate."
+  - 'derive: k = 0 gives B = 0.'
+  - 'derive: k = 1 gives A + B = 0, hence A = 0.'
+  - 'conclude: The converse is immediate.'
   openmath: (forall (A B) (-> (and (in A R) (in B R)) (<-> (forall (k) (-> (in k R) (= (+ (* k A) B) 0))) (and (= A 0) (= B 0)))))
   hard_negative:
-    statement: |-
-      ある実数$k$で$kA+B=0$なら、$A=0$かつ$B=0$である。
-    reason: |-
-      「ある$k$」では足りない。$A=1,B=-2,k=2$で等式は成り立つ。
+    statement: ある実数$k$で$kA+B=0$なら、$A=0$かつ$B=0$である。
+    reason: 「ある$k$」では足りない。$A=1,B=-2,k=2$で等式は成り立つ。
   target: |
     ∀ A B : ℝ, (∀ k : ℝ, k * A + B = 0) ↔ A = 0 ∧ B = 0
   proof: |
@@ -652,31 +560,25 @@
   kind: gap
   level: high
   topic: 式と証明・分数式
-  statement: |-
-    $a\neq b$で$x\neq a,\ x\neq b$のとき、$\frac{px+q}{(x-a)(x-b)}=\frac{pa+q}{a-b}\cdot\frac{1}{x-a}+\frac{pb+q}{b-a}\cdot\frac{1}{x-b}$である。分子が1次以下の場合の部分分数分解である。
-  statement_en: |-
-    For real a ≠ b, p, q and x ≠ a, b, (px+q)/((x-a)(x-b)) = ((pa+q)/(a-b))/(x-a) + ((pb+q)/(b-a))/(x-b).
+  statement: $a\neq b$で$x\neq a,\ x\neq b$のとき、$\frac{px+q}{(x-a)(x-b)}=\frac{pa+q}{a-b}\cdot\frac{1}{x-a}+\frac{pb+q}{b-a}\cdot\frac{1}{x-b}$である。分子が1次以下の場合の部分分数分解である。
+  statement_en: For real a ≠ b, p, q and x ≠ a, b, (px+q)/((x-a)(x-b)) = ((pa+q)/(a-b))/(x-a) + ((pb+q)/(b-a))/(x-b).
   assumptions:
-    - '$a,b,p,q,x$は実数'
-    - '$a\neq b$, $x\neq a$, $x\neq b$'
+  - $a,b,p,q,x$は実数
+  - $a\neq b$, $x\neq a$, $x\neq b$
   quantifiers:
-    - '任意の実数$a,b,p,q,x$'
-  conclusion: |-
-    $\frac{px+q}{(x-a)(x-b)}=\frac{pa+q}{a-b}\cdot\frac{1}{x-a}+\frac{pb+q}{b-a}\cdot\frac{1}{x-b}$である。
+  - 任意の実数$a,b,p,q,x$
+  conclusion: $\frac{px+q}{(x-a)(x-b)}=\frac{pa+q}{a-b}\cdot\frac{1}{x-a}+\frac{pb+q}{b-a}\cdot\frac{1}{x-b}$である。
   answer: |
     $a,b,p,q,x$を実数とし、$a\neq b$, $x\neq a$, $x\neq b$とする。右辺を通分すると、分母は$(a-b)(x-a)(x-b)$で、分子は$(pa+q)(x-b)-(pb+q)(x-a)$である。この分子を展開すると$(pa+q)x-(pa+q)b-(pb+q)x+(pb+q)a=p(a-b)x+q(a-b)=(a-b)(px+q)$となる。$a-b\neq 0$で約分すると左辺に等しい。
-  strategy: |-
-    Put the right side over a common denominator and simplify the numerator.
+  strategy: Put the right side over a common denominator and simplify the numerator.
   sketch:
-    - "setup: Use the common denominator (a-b)(x-a)(x-b)."
-    - "derive: The numerator simplifies to (a-b)(px+q)."
-    - "conclude: Cancelling a-b gives the left side."
+  - 'setup: Use the common denominator (a-b)(x-a)(x-b).'
+  - 'derive: The numerator simplifies to (a-b)(px+q).'
+  - 'conclude: Cancelling a-b gives the left side.'
   openmath: (forall (a b p q x) (-> (and (in a R) (in b R) (in p R) (in q R) (in x R) (!= a b) (!= x a) (!= x b)) (= (/ (+ (* p x) q) (* (- x a) (- x b))) (+ (/ (/ (+ (* p a) q) (- a b)) (- x a)) (/ (/ (+ (* p b) q) (- b a)) (- x b))))))
   hard_negative:
-    statement: |-
-      $a=b$でも同じ形の分解が成り立つ。
-    reason: |-
-      係数の分母$a-b$が$0$になる。重なった因数の分解は$\frac{A}{x-a}+\frac{B}{(x-a)^2}$の形になる。
+    statement: $a=b$でも同じ形の分解が成り立つ。
+    reason: 係数の分母$a-b$が$0$になる。重なった因数の分解は$\frac{A}{x-a}+\frac{B}{(x-a)^2}$の形になる。
   target: |
     ∀ (a b p q x : ℝ), a ≠ b → x ≠ a → x ≠ b → (p * x + q) / ((x - a) * (x - b)) = ((p * a + q) / (a - b)) / (x - a) + ((p * b + q) / (b - a)) / (x - b)
   proof: |
@@ -694,37 +596,29 @@
   kind: gap
   level: high
   topic: 複素数と方程式・高次方程式
-  statement: |-
-    $x\neq 0$のとき、相反方程式$x^4+ax^3+bx^2+ax+1=0$は、$t=x+\frac{1}{x}$とおいた$t^2+at+b-2=0$と同値である。これは$x^4$の係数が$1$の場合の形である。
-  statement_en: |-
-    For real a, b and x ≠ 0, x^4 + a x^3 + b x^2 + a x + 1 = 0 if and only if t^2 + a t + b - 2 = 0 for t = x + 1/x.
+  statement: 実数$a,b,c$と$0$でない実数$x$について、$t=x+\frac{1}{x}$とおくと、相反方程式$ax^4+bx^3+cx^2+bx+a=0$は$at^2+bt+c-2a=0$と同値である。
+  statement_en: For real a, b, c and real x ≠ 0, with t = x + 1/x, a x^4 + b x^3 + c x^2 + b x + a = 0 if and only if a t^2 + b t + c - 2a = 0.
   assumptions:
-    - '$a,b,x$は実数で$x\neq 0$'
-    - '$t=x+\frac{1}{x}$'
+  - $a,b,c,x$は実数で$x\neq 0$
+  - $t=x+\frac{1}{x}$
   quantifiers:
-    - '任意の実数$a,b$と$0$でない実数$x$'
-  conclusion: |-
-    $x^4+ax^3+bx^2+ax+1=0$と$t^2+at+b-2=0$は同値である。
-  answer: |
-    $a,b$を実数、$x$を$0$でない実数とし、$t=x+\frac{1}{x}$とおく。$t^2=x^2+2+\frac{1}{x^2}$なので、$x^2(t^2+at+b-2)=x^2\left(x^2+\frac{1}{x^2}+ax+\frac{a}{x}+b\right)=x^4+ax^3+bx^2+ax+1$である。$x^2\neq 0$だから、左辺が$0$であることと$t^2+at+b-2=0$は同値である。
-  strategy: |-
-    Factor out x^2 and rewrite the remaining factor in terms of t.
+  - 任意の実数$a,b,c$と$0$でない実数$x$
+  conclusion: $ax^4+bx^3+cx^2+bx+a=0$と$at^2+bt+c-2a=0$は同値である。
+  answer: $a,b,c$を実数、$x$を$0$でない実数とし、$t=x+\frac{1}{x}$とおく。$t^2=x^2+2+\frac{1}{x^2}$なので、$x^2(at^2+bt+c-2a)=x^2\left(ax^2+\frac{a}{x^2}+bx+\frac{b}{x}+c\right)=ax^4+bx^3+cx^2+bx+a$である。$x^2\neq 0$だから、左辺が$0$であることと$at^2+bt+c-2a=0$は同値である。
+  strategy: Factor out x^2 and rewrite the remaining factor in terms of t.
   sketch:
-    - "setup: Put t = x + 1/x, so t^2 - 2 = x^2 + 1/x^2."
-    - "derive: The quartic equals x^2 (t^2 + a t + b - 2)."
-    - "conclude: Since x^2 ≠ 0, the two equations are equivalent."
-  openmath: (forall (a b x) (-> (and (in a R) (in b R) (in x R) (!= x 0)) (<-> (= (+ (+ (+ (+ (^ x 4) (* a (^ x 3))) (* b (^ x 2))) (* a x)) 1) 0) (= (- (+ (+ (^ (+ x (/ 1 x)) 2) (* a (+ x (/ 1 x)))) b) 2) 0))))
+  - 'setup: Put t = x + 1/x, so t^2 - 2 = x^2 + 1/x^2.'
+  - 'derive: The quartic equals x^2 (t^2 + a t + b - 2).'
+  - 'conclude: Since x^2 ≠ 0, the two equations are equivalent.'
+  openmath: (forall (a b c x) (-> (and (in a R) (in b R) (in c R) (in x R) (!= x 0)) (<-> (= (+ (+ (+ (+ (* a (^ x 4)) (* b (^ x 3))) (* c (^ x 2))) (* b x)) a) 0) (= (- (+ (+ (* a (^ (+ x (/ 1 x)) 2)) (* b (+ x (/ 1 x)))) c) (* 2 a)) 0))))
   hard_negative:
-    statement: |-
-      $t^2+at+b-2=0$に実数解$t$があれば、もとの方程式にも実数解$x$がある。
-    reason: |-
-      $x+\frac{1}{x}=t$が実数解をもつのは$|t|\geq 2$のときだけである。$a=0,\ b=2$では$t^2=0$の実数解$t=0$があるが、もとの方程式$x^4+2x^2+1=0$は$(x^2+1)^2=0$となり、実数解をもたない。
-  target: |
-    ∀ (a b x : ℝ), x ≠ 0 → (x ^ 4 + a * x ^ 3 + b * x ^ 2 + a * x + 1 = 0 ↔ (x + 1 / x) ^ 2 + a * (x + 1 / x) + b - 2 = 0)
-  proof: |
+    statement: $at^2+bt+c-2a=0$に実数解$t$があれば、もとの方程式にも実数解$x$がある。
+    reason: $x+\frac{1}{x}=t$が実数解をもつのは$|t|\geq 2$のときだけである。$a=1,\ b=0,\ c=2$では$t^2=0$の実数解$t=0$があるが、もとの方程式$x^4+2x^2+1=0$は$(x^2+1)^2=0$となり実数解をもたない。
+  target: '∀ (a b c x : ℝ), x ≠ 0 → (a * x ^ 4 + b * x ^ 3 + c * x ^ 2 + b * x + a = 0 ↔ a * (x + 1 / x) ^ 2 + b * (x + 1 / x) + c - 2 * a = 0)'
+  proof: |-
     by
-      intro a b x hx
-      have key : x ^ 4 + a * x ^ 3 + b * x ^ 2 + a * x + 1 = x ^ 2 * ((x + 1 / x) ^ 2 + a * (x + 1 / x) + b - 2) := by
+      intro a b c x hx
+      have key : a * x ^ 4 + b * x ^ 3 + c * x ^ 2 + b * x + a = x ^ 2 * (a * (x + 1 / x) ^ 2 + b * (x + 1 / x) + c - 2 * a) := by
         field_simp
         ring
       rw [key, mul_eq_zero]
@@ -737,34 +631,28 @@
   kind: named
   level: high
   topic: 複素数と方程式・高次方程式
-  statement: |-
-    有理数解の定理。整数係数の整式$P(x)$が互いに素な整数$m,n$ $(n\neq 0)$について$P\left(\frac{m}{n}\right)=0$を満たすなら、$m$は定数項を割り切り、$n$は最高次の係数を割り切る。
-  statement_en: |-
-    Rational root theorem. If P has integer coefficients, m and n are coprime integers with n ≠ 0 and P(m/n) = 0, then m divides the constant term of P and n divides its leading coefficient.
+  statement: 有理数解の定理。整数係数の整式$P(x)$が互いに素な整数$m,n$ $(n\neq 0)$について$P\left(\frac{m}{n}\right)=0$を満たすなら、$m$は定数項を割り切り、$n$は最高次の係数を割り切る。
+  statement_en: Rational root theorem. If P has integer coefficients, m and n are coprime integers with n ≠ 0 and P(m/n) = 0, then m divides the constant term of P and n divides its leading coefficient.
   assumptions:
-    - '$P(x)$は整数係数の整式'
-    - '$m,n$は互いに素な整数で$n\neq 0$'
-    - '$P\left(\frac{m}{n}\right)=0$'
+  - $P(x)$は整数係数の整式
+  - $m,n$は互いに素な整数で$n\neq 0$
+  - $P\left(\frac{m}{n}\right)=0$
   quantifiers:
-    - '任意の整数係数の整式$P(x)$と互いに素な整数$m,n$'
-  conclusion: |-
-    $m$は$P(x)$の定数項を割り切り、$n$は$P(x)$の最高次の係数を割り切る。
+  - 任意の整数係数の整式$P(x)$と互いに素な整数$m,n$
+  conclusion: $m$は$P(x)$の定数項を割り切り、$n$は$P(x)$の最高次の係数を割り切る。
   answer: |
     $P(x)$を整数係数の整式とし、$m,n$を互いに素な整数で$n\neq 0$, $P\left(\frac{m}{n}\right)=0$とする。$P=0$のときは定数項と最高次の係数がともに$0$であり、どの整数も$0$を割り切るので主張は成り立つ。以下$P\neq 0$とし、$P(x)=\sum_{i=0}^{d}c_ix^i$ $(c_d\neq 0)$と書く。
     等式に$n^d$を掛けると$\sum_{i=0}^{d}c_im^in^{d-i}=0$である。$i\geq 1$の項はすべて$m$で割り切れるので、$m$は$c_0n^d$を割り切る。$m,n$は互いに素だから$m$は$c_0$を割り切る。同様に$i\leq d-1$の項はすべて$n$で割り切れるので、$n$は$c_dm^d$を割り切り、$n$は$c_d$を割り切る。
-  strategy: |-
-    Clear denominators with n^d and use coprimality on the two extreme terms.
+  strategy: Clear denominators with n^d and use coprimality on the two extreme terms.
   sketch:
-    - "translate: Multiply P(m/n) = 0 by n^d to get Σ c_i m^i n^(d-i) = 0."
-    - "derive: All terms with i ≥ 1 are multiples of m, so m divides c_0 n^d."
-    - "derive: All terms with i ≤ d-1 are multiples of n, so n divides c_d m^d."
-    - "conclude: Coprimality of m and n gives m | c_0 and n | c_d."
+  - 'translate: Multiply P(m/n) = 0 by n^d to get Σ c_i m^i n^(d-i) = 0.'
+  - 'derive: All terms with i ≥ 1 are multiples of m, so m divides c_0 n^d.'
+  - 'derive: All terms with i ≤ d-1 are multiples of n, so n divides c_d m^d.'
+  - 'conclude: Coprimality of m and n gives m | c_0 and n | c_d.'
   openmath: (forall (f m n) (-> (and (polynomial_over f Z) (in m Z) (in n Z) (!= n 0) (= (gcd m n) 1) (= (poly_eval f (/ m n)) 0)) (and (dvd m (poly_coeff f 0)) (dvd n (poly_leading_coeff f)))))
   hard_negative:
-    statement: |-
-      $m$が定数項を割り切り、$n$が最高次の係数を割り切れば、$\frac{m}{n}$は解である。
-    reason: |-
-      定理は解の候補を絞るだけで、逆は成り立たない。$x^2+1$で$m=n=1$は条件を満たすが$x=1$は解でない。
+    statement: $m$が定数項を割り切り、$n$が最高次の係数を割り切れば、$\frac{m}{n}$は解である。
+    reason: 定理は解の候補を絞るだけで、逆は成り立たない。$x^2+1$で$m=n=1$は条件を満たすが$x=1$は解でない。
   target: |
     ∀ (P : Polynomial ℤ) (m n : ℤ), n ≠ 0 → IsCoprime m n → Polynomial.aeval ((m : ℚ) / n) P = 0 → m ∣ P.coeff 0 ∧ n ∣ P.leadingCoeff
   proof: |
@@ -791,33 +679,27 @@
   kind: gap
   level: high
   topic: 複素数と方程式・高次方程式
-  statement: |-
-    最高次の係数が$1$である整数係数の整式の有理数解は整数である。
-  statement_en: |-
-    A rational root of a monic polynomial with integer coefficients is an integer.
+  statement: 最高次の係数が$1$である整数係数の整式の有理数解は整数である。
+  statement_en: A rational root of a monic polynomial with integer coefficients is an integer.
   assumptions:
-    - '$P(x)$は最高次の係数が$1$の整数係数の整式'
-    - '$r$は有理数で$P(r)=0$'
+  - $P(x)$は最高次の係数が$1$の整数係数の整式
+  - $r$は有理数で$P(r)=0$
   quantifiers:
-    - '任意の最高次の係数が$1$の整数係数の整式$P(x)$と有理数$r$'
-  conclusion: |-
-    $r$は整数である。
+  - 任意の最高次の係数が$1$の整数係数の整式$P(x)$と有理数$r$
+  conclusion: $r$は整数である。
   answer: |
     $P(x)=x^d+c_{d-1}x^{d-1}+\dots+c_0$を整数係数の整式とし、$r$を$P(r)=0$を満たす有理数とする。$r=\frac{m}{n}$（$m,n$は互いに素な整数、$n\geq 1$）と書く。$d=0$なら$P=1$となり解をもたないので$d\geq 1$である。
     等式に$n^d$を掛けると$m^d+c_{d-1}m^{d-1}n+\dots+c_0n^d=0$である。$m^d$以外の項はすべて$n$で割り切れるので、$n$は$m^d$を割り切る。$m,n$は互いに素だから$n=1$であり、$r$は整数である。
-  strategy: |-
-    Write r in lowest terms and clear denominators; the denominator divides a power of the numerator.
+  strategy: Write r in lowest terms and clear denominators; the denominator divides a power of the numerator.
   sketch:
-    - "setup: Write r = m/n in lowest terms with n ≥ 1."
-    - "translate: Multiplying by n^d gives m^d + n(...) = 0."
-    - "derive: Thus n divides m^d."
-    - "conclude: Coprimality forces n = 1, so r is an integer."
+  - 'setup: Write r = m/n in lowest terms with n ≥ 1.'
+  - 'translate: Multiplying by n^d gives m^d + n(...) = 0.'
+  - 'derive: Thus n divides m^d.'
+  - 'conclude: Coprimality forces n = 1, so r is an integer.'
   openmath: (forall (f r) (-> (and (polynomial_over f Z) (monic_polynomial f) (in r Q) (= (poly_eval f r) 0)) (exists (k) (and (in k Z) (= r k)))))
   hard_negative:
-    statement: |-
-      最高次の係数が$1$の整数係数の整式の実数解はすべて整数である。
-    reason: |-
-      有理数解に限る主張である。$x^2-2=0$の解$\sqrt{2}$は整数でない。
+    statement: 最高次の係数が$1$の整数係数の整式の実数解はすべて整数である。
+    reason: 有理数解に限る主張である。$x^2-2=0$の解$\sqrt{2}$は整数でない。
   target: |
     ∀ (P : Polynomial ℤ) (r : ℚ), P.Monic → Polynomial.aeval r P = 0 → ∃ k : ℤ, r = k
   proof: |
@@ -829,34 +711,28 @@
   kind: named
   level: high
   topic: 複素数と方程式・解と係数の関係
-  statement: |-
-    3次方程式の解と係数の関係。$a\neq 0$で$ax^3+bx^2+cx+d=a(x-\alpha)(x-\beta)(x-\gamma)$がすべての複素数$x$で成り立つなら、$\alpha+\beta+\gamma=-\frac{b}{a}$、$\alpha\beta+\beta\gamma+\gamma\alpha=\frac{c}{a}$、$\alpha\beta\gamma=-\frac{d}{a}$である。
-  statement_en: |-
-    Vieta's formulas for a cubic. If a ≠ 0 and a x^3 + b x^2 + c x + d = a(x-α)(x-β)(x-γ) for every complex x, then α+β+γ = -b/a, αβ+βγ+γα = c/a and αβγ = -d/a.
+  statement: 3次方程式の解と係数の関係。$a\neq 0$で$ax^3+bx^2+cx+d=a(x-\alpha)(x-\beta)(x-\gamma)$がすべての複素数$x$で成り立つなら、$\alpha+\beta+\gamma=-\frac{b}{a}$、$\alpha\beta+\beta\gamma+\gamma\alpha=\frac{c}{a}$、$\alpha\beta\gamma=-\frac{d}{a}$である。
+  statement_en: Vieta's formulas for a cubic. If a ≠ 0 and a x^3 + b x^2 + c x + d = a(x-α)(x-β)(x-γ) for every complex x, then α+β+γ = -b/a, αβ+βγ+γα = c/a and αβγ = -d/a.
   assumptions:
-    - '$a,b,c,d,\alpha,\beta,\gamma$は複素数で$a\neq 0$'
-    - 'すべての複素数$x$で$ax^3+bx^2+cx+d=a(x-\alpha)(x-\beta)(x-\gamma)$'
+  - $a,b,c,d,\alpha,\beta,\gamma$は複素数で$a\neq 0$
+  - すべての複素数$x$で$ax^3+bx^2+cx+d=a(x-\alpha)(x-\beta)(x-\gamma)$
   quantifiers:
-    - '任意の複素数$a,b,c,d,\alpha,\beta,\gamma$'
-  conclusion: |-
-    $\alpha+\beta+\gamma=-\frac{b}{a}$、$\alpha\beta+\beta\gamma+\gamma\alpha=\frac{c}{a}$、$\alpha\beta\gamma=-\frac{d}{a}$である。
+  - 任意の複素数$a,b,c,d,\alpha,\beta,\gamma$
+  conclusion: $\alpha+\beta+\gamma=-\frac{b}{a}$、$\alpha\beta+\beta\gamma+\gamma\alpha=\frac{c}{a}$、$\alpha\beta\gamma=-\frac{d}{a}$である。
   answer: |
     $a\neq 0,b,c,d,\alpha,\beta,\gamma$を複素数とし、すべての複素数$x$で$ax^3+bx^2+cx+d=a(x-\alpha)(x-\beta)(x-\gamma)$が成り立つとする。$s_1=\alpha+\beta+\gamma$, $s_2=\alpha\beta+\beta\gamma+\gamma\alpha$, $s_3=\alpha\beta\gamma$とおく。右辺を展開して移項すると、すべての$x$で$(b+as_1)x^2+(c-as_2)x+(d+as_3)=0$である。
     $x=0$から$d+as_3=0$を得る。$x=1$と$x=-1$の式を足して$2(d+as_3)$を引くと$2(b+as_1)=0$であり、引くと$2(c-as_2)=0$である。$a\neq 0$で割ると主張の3式を得る。
-  strategy: |-
-    Expand the product and evaluate the resulting quadratic identity at 0, 1 and -1.
+  strategy: Expand the product and evaluate the resulting quadratic identity at 0, 1 and -1.
   sketch:
-    - "setup: Put s_1, s_2, s_3 for the elementary symmetric expressions."
-    - "translate: Expansion gives (b+a s_1)x^2 + (c-a s_2)x + (d+a s_3) = 0 for every x."
-    - "derive: x = 0 gives d + a s_3 = 0."
-    - "derive: Adding and subtracting x = 1 and x = -1 gives b + a s_1 = 0 and c - a s_2 = 0."
-    - "conclude: Dividing by a gives the three formulas."
+  - 'setup: Put s_1, s_2, s_3 for the elementary symmetric expressions.'
+  - 'translate: Expansion gives (b+a s_1)x^2 + (c-a s_2)x + (d+a s_3) = 0 for every x.'
+  - 'derive: x = 0 gives d + a s_3 = 0.'
+  - 'derive: Adding and subtracting x = 1 and x = -1 gives b + a s_1 = 0 and c - a s_2 = 0.'
+  - 'conclude: Dividing by a gives the three formulas.'
   openmath: (forall (a b c d r s t) (-> (and (in a C) (in b C) (in c C) (in d C) (in r C) (in s C) (in t C) (!= a 0) (forall (x) (-> (in x C) (= (+ (+ (+ (* a (^ x 3)) (* b (^ x 2))) (* c x)) d) (* (* (* a (- x r)) (- x s)) (- x t)))))) (and (= (+ (+ r s) t) (/ (neg b) a)) (= (+ (+ (* r s) (* s t)) (* t r)) (/ c a)) (= (* (* r s) t) (/ (neg d) a)))))
   hard_negative:
-    statement: |-
-      $\alpha+\beta+\gamma=\frac{b}{a}$である。
-    reason: |-
-      符号は負である。$(x-1)(x-2)(x-3)=x^3-6x^2+11x-6$では和$6$は$-\frac{b}{a}$に等しい。
+    statement: $\alpha+\beta+\gamma=\frac{b}{a}$である。
+    reason: 符号は負である。$(x-1)(x-2)(x-3)=x^3-6x^2+11x-6$では和$6$は$-\frac{b}{a}$に等しい。
   target: |
     ∀ (a b c d α β γ : ℂ), a ≠ 0 → (∀ x : ℂ, a * x ^ 3 + b * x ^ 2 + c * x + d = a * (x - α) * (x - β) * (x - γ)) → α + β + γ = -b / a ∧ α * β + β * γ + γ * α = c / a ∧ α * β * γ = -d / a
   proof: |
@@ -876,30 +752,24 @@
   kind: gap
   level: high
   topic: 複素数と方程式・解と係数の関係
-  statement: |-
-    複素数$\alpha,\beta,\gamma$が$\alpha+\beta+\gamma=p$、$\alpha\beta+\beta\gamma+\gamma\alpha=q$、$\alpha\beta\gamma=r$を満たせば、すべての複素数$x$で$x^3-px^2+qx-r=(x-\alpha)(x-\beta)(x-\gamma)$である。
-  statement_en: |-
-    If complex numbers α, β, γ satisfy α+β+γ = p, αβ+βγ+γα = q and αβγ = r, then x^3 - p x^2 + q x - r = (x-α)(x-β)(x-γ) for every complex x.
+  statement: 複素数$\alpha,\beta,\gamma$が$\alpha+\beta+\gamma=p$、$\alpha\beta+\beta\gamma+\gamma\alpha=q$、$\alpha\beta\gamma=r$を満たせば、すべての複素数$x$で$x^3-px^2+qx-r=(x-\alpha)(x-\beta)(x-\gamma)$である。
+  statement_en: If complex numbers α, β, γ satisfy α+β+γ = p, αβ+βγ+γα = q and αβγ = r, then x^3 - p x^2 + q x - r = (x-α)(x-β)(x-γ) for every complex x.
   assumptions:
-    - '$\alpha,\beta,\gamma,p,q,r$は複素数'
-    - '$\alpha+\beta+\gamma=p$, $\alpha\beta+\beta\gamma+\gamma\alpha=q$, $\alpha\beta\gamma=r$'
+  - $\alpha,\beta,\gamma,p,q,r$は複素数
+  - $\alpha+\beta+\gamma=p$, $\alpha\beta+\beta\gamma+\gamma\alpha=q$, $\alpha\beta\gamma=r$
   quantifiers:
-    - '任意の複素数$\alpha,\beta,\gamma,p,q,r,x$'
-  conclusion: |-
-    $x^3-px^2+qx-r=(x-\alpha)(x-\beta)(x-\gamma)$である。
+  - 任意の複素数$\alpha,\beta,\gamma,p,q,r,x$
+  conclusion: $x^3-px^2+qx-r=(x-\alpha)(x-\beta)(x-\gamma)$である。
   answer: |
     $\alpha,\beta,\gamma,x$を複素数とし、$p=\alpha+\beta+\gamma$, $q=\alpha\beta+\beta\gamma+\gamma\alpha$, $r=\alpha\beta\gamma$とする。$(x-\alpha)(x-\beta)(x-\gamma)$を展開すると、$x^3-(\alpha+\beta+\gamma)x^2+(\alpha\beta+\beta\gamma+\gamma\alpha)x-\alpha\beta\gamma=x^3-px^2+qx-r$である。
-  strategy: |-
-    Substitute the symmetric values and expand the product.
+  strategy: Substitute the symmetric values and expand the product.
   sketch:
-    - "derive: Expand (x-α)(x-β)(x-γ)."
-    - "conclude: The coefficients are the given p, q and r."
+  - 'derive: Expand (x-α)(x-β)(x-γ).'
+  - 'conclude: The coefficients are the given p, q and r.'
   openmath: (forall (a b c p q r x) (-> (and (in a C) (in b C) (in c C) (in p C) (in q C) (in r C) (in x C) (= (+ (+ a b) c) p) (= (+ (+ (* a b) (* b c)) (* c a)) q) (= (* (* a b) c) r)) (= (- (+ (- (^ x 3) (* p (^ x 2))) (* q x)) r) (* (* (- x a) (- x b)) (- x c)))))
   hard_negative:
-    statement: |-
-      実数$p,q,r$に対し、$\alpha+\beta+\gamma=p$などを満たす$\alpha,\beta,\gamma$は実数である。
-    reason: |-
-      解は虚数になりうる。$x^3-1=0$では$p=q=0$, $r=1$だが、解のうち2つは虚数である。
+    statement: 実数$p,q,r$に対し、$\alpha+\beta+\gamma=p$などを満たす$\alpha,\beta,\gamma$は実数である。
+    reason: 解は虚数になりうる。$x^3-1=0$では$p=q=0$, $r=1$だが、解のうち2つは虚数である。
   target: |
     ∀ (α β γ p q r x : ℂ), α + β + γ = p → α * β + β * γ + γ * α = q → α * β * γ = r → x ^ 3 - p * x ^ 2 + q * x - r = (x - α) * (x - β) * (x - γ)
   proof: |
@@ -911,31 +781,25 @@
   kind: gap
   level: high
   topic: 複素数と方程式・解と係数の関係
-  statement: |-
-    $\alpha,\beta,\gamma$が$x^3+px^2+qx+r=0$を満たす複素数なら、$S_n=\alpha^n+\beta^n+\gamma^n$は$0$以上のすべての整数$n$で$S_{n+3}+pS_{n+2}+qS_{n+1}+rS_n=0$を満たす。ただし$\alpha^0=\beta^0=\gamma^0=1$とする。
-  statement_en: |-
-    If complex numbers α, β, γ all satisfy x^3 + p x^2 + q x + r = 0, then S_n = α^n + β^n + γ^n (with zeroth powers equal to 1) satisfies S_{n+3} + p S_{n+2} + q S_{n+1} + r S_n = 0 for every integer n ≥ 0.
+  statement: $\alpha,\beta,\gamma$が$x^3+px^2+qx+r=0$を満たす複素数なら、$S_n=\alpha^n+\beta^n+\gamma^n$は$0$以上のすべての整数$n$で$S_{n+3}+pS_{n+2}+qS_{n+1}+rS_n=0$を満たす。ただし$\alpha^0=\beta^0=\gamma^0=1$とする。
+  statement_en: If complex numbers α, β, γ all satisfy x^3 + p x^2 + q x + r = 0, then S_n = α^n + β^n + γ^n (with zeroth powers equal to 1) satisfies S_{n+3} + p S_{n+2} + q S_{n+1} + r S_n = 0 for every integer n ≥ 0.
   assumptions:
-    - '$p,q,r,\alpha,\beta,\gamma$は複素数'
-    - '$\alpha,\beta,\gamma$はいずれも$x^3+px^2+qx+r=0$を満たす'
-    - '$S_n=\alpha^n+\beta^n+\gamma^n$'
+  - $p,q,r,\alpha,\beta,\gamma$は複素数
+  - $\alpha,\beta,\gamma$はいずれも$x^3+px^2+qx+r=0$を満たす
+  - $S_n=\alpha^n+\beta^n+\gamma^n$
   quantifiers:
-    - '任意の複素数$p,q,r,\alpha,\beta,\gamma$と$0$以上の整数$n$'
-  conclusion: |-
-    $S_{n+3}+pS_{n+2}+qS_{n+1}+rS_n=0$である。
+  - 任意の複素数$p,q,r,\alpha,\beta,\gamma$と$0$以上の整数$n$
+  conclusion: $S_{n+3}+pS_{n+2}+qS_{n+1}+rS_n=0$である。
   answer: |
     $p,q,r$を複素数とし、複素数$\alpha,\beta,\gamma$はいずれも$x^3+px^2+qx+r=0$を満たすとする。$n$を$0$以上の整数とする（$0$乗は$1$とする）。$\alpha^3+p\alpha^2+q\alpha+r=0$に$\alpha^n$を掛けると$\alpha^{n+3}+p\alpha^{n+2}+q\alpha^{n+1}+r\alpha^n=0$である。$\beta,\gamma$についても同様である。この3式を足すと$S_{n+3}+pS_{n+2}+qS_{n+1}+rS_n=0$を得る。
-  strategy: |-
-    Multiply each root equation by the n-th power of that root and add.
+  strategy: Multiply each root equation by the n-th power of that root and add.
   sketch:
-    - "derive: Multiply the equation for α by α^n, and likewise for β and γ."
-    - "conclude: Adding the three equalities gives the recurrence."
+  - 'derive: Multiply the equation for α by α^n, and likewise for β and γ.'
+  - 'conclude: Adding the three equalities gives the recurrence.'
   openmath: (forall (p q r a b c n) (-> (and (in p C) (in q C) (in r C) (in a C) (in b C) (in c C) (in n N) (= (+ (+ (+ (^ a 3) (* p (^ a 2))) (* q a)) r) 0) (= (+ (+ (+ (^ b 3) (* p (^ b 2))) (* q b)) r) 0) (= (+ (+ (+ (^ c 3) (* p (^ c 2))) (* q c)) r) 0)) (= (+ (+ (+ (+ (+ (^ a (+ n 3)) (^ b (+ n 3))) (^ c (+ n 3))) (* p (+ (+ (^ a (+ n 2)) (^ b (+ n 2))) (^ c (+ n 2))))) (* q (+ (+ (^ a (+ n 1)) (^ b (+ n 1))) (^ c (+ n 1))))) (* r (+ (+ (^ a n) (^ b n)) (^ c n)))) 0)))
   hard_negative:
-    statement: |-
-      $\alpha,\beta,\gamma$がこの方程式を満たせば、$S_1=-p$である。
-    reason: |-
-      $\alpha,\beta,\gamma$が重複度を込めた3つの解である場合に限る。$x^3-1=0$で$\alpha=\beta=\gamma=1$とすると$S_1=3$だが、$-p=0$である。
+    statement: $\alpha,\beta,\gamma$がこの方程式を満たせば、$S_1=-p$である。
+    reason: $\alpha,\beta,\gamma$が重複度を込めた3つの解である場合に限る。$x^3-1=0$で$\alpha=\beta=\gamma=1$とすると$S_1=3$だが、$-p=0$である。
   target: |
     ∀ (p q r α β γ : ℂ), α ^ 3 + p * α ^ 2 + q * α + r = 0 → β ^ 3 + p * β ^ 2 + q * β + r = 0 → γ ^ 3 + p * γ ^ 2 + q * γ + r = 0 → ∀ n : ℕ, (α ^ (n + 3) + β ^ (n + 3) + γ ^ (n + 3)) + p * (α ^ (n + 2) + β ^ (n + 2) + γ ^ (n + 2)) + q * (α ^ (n + 1) + β ^ (n + 1) + γ ^ (n + 1)) + r * (α ^ n + β ^ n + γ ^ n) = 0
   proof: |
@@ -946,30 +810,24 @@
   kind: textbook
   level: high
   topic: 複素数と方程式・1の虚数立方根
-  statement: |-
-    複素数$\omega$が$\omega^2+\omega+1=0$を満たせば、$\omega^3=1$かつ$\omega\neq 1$である。
-  statement_en: |-
-    If a complex number ω satisfies ω^2 + ω + 1 = 0, then ω^3 = 1 and ω ≠ 1.
+  statement: 複素数$\omega$が$\omega^2+\omega+1=0$を満たせば、$\omega^3=1$かつ$\omega\neq 1$である。
+  statement_en: If a complex number ω satisfies ω^2 + ω + 1 = 0, then ω^3 = 1 and ω ≠ 1.
   assumptions:
-    - '$\omega$は複素数で$\omega^2+\omega+1=0$'
+  - $\omega$は複素数で$\omega^2+\omega+1=0$
   quantifiers:
-    - '任意の複素数$\omega$'
-  conclusion: |-
-    $\omega^3=1$かつ$\omega\neq 1$である。
+  - 任意の複素数$\omega$
+  conclusion: $\omega^3=1$かつ$\omega\neq 1$である。
   answer: |
     $\omega$を$\omega^2+\omega+1=0$を満たす複素数とする。$\omega^3-1=(\omega-1)(\omega^2+\omega+1)=0$なので$\omega^3=1$である。また$\omega=1$なら$\omega^2+\omega+1=3\neq 0$となるので$\omega\neq 1$である。
-  strategy: |-
-    Factor ω^3 - 1 and test ω = 1 directly.
+  strategy: Factor ω^3 - 1 and test ω = 1 directly.
   sketch:
-    - "derive: ω^3 - 1 = (ω-1)(ω^2+ω+1) = 0."
-    - "contradiction: ω = 1 would give 3 = 0."
-    - "conclude: Hence ω^3 = 1 and ω ≠ 1."
+  - 'derive: ω^3 - 1 = (ω-1)(ω^2+ω+1) = 0.'
+  - 'contradiction: ω = 1 would give 3 = 0.'
+  - 'conclude: Hence ω^3 = 1 and ω ≠ 1.'
   openmath: (forall (w) (-> (and (in w C) (= (+ (+ (^ w 2) w) 1) 0)) (and (= (^ w 3) 1) (!= w 1))))
   hard_negative:
-    statement: |-
-      $\omega^3=1$なら$\omega^2+\omega+1=0$である。
-    reason: |-
-      $\omega\neq 1$が必要である。$\omega=1$は$\omega^3=1$を満たすが$\omega^2+\omega+1=3$である。
+    statement: $\omega^3=1$なら$\omega^2+\omega+1=0$である。
+    reason: $\omega\neq 1$が必要である。$\omega=1$は$\omega^3=1$を満たすが$\omega^2+\omega+1=3$である。
   target: |
     ∀ ω : ℂ, ω ^ 2 + ω + 1 = 0 → ω ^ 3 = 1 ∧ ω ≠ 1
   proof: |
@@ -982,34 +840,28 @@
   kind: gap
   level: high
   topic: 複素数と方程式・1の虚数立方根
-  statement: |-
-    複素数$\omega$が$\omega^2+\omega+1=0$を満たせば、$\overline{\omega}=\omega^2$かつ$\omega\overline{\omega}=1$である。
-  statement_en: |-
-    If a complex number ω satisfies ω^2 + ω + 1 = 0, then the conjugate of ω equals ω^2 and ω times its conjugate equals 1.
+  statement: 複素数$\omega$が$\omega^2+\omega+1=0$を満たせば、$\overline{\omega}=\omega^2$かつ$\omega\overline{\omega}=1$である。
+  statement_en: If a complex number ω satisfies ω^2 + ω + 1 = 0, then the conjugate of ω equals ω^2 and ω times its conjugate equals 1.
   assumptions:
-    - '$\omega$は複素数で$\omega^2+\omega+1=0$'
+  - $\omega$は複素数で$\omega^2+\omega+1=0$
   quantifiers:
-    - '任意の複素数$\omega$'
-  conclusion: |-
-    $\overline{\omega}=\omega^2$かつ$\omega\overline{\omega}=1$である。
+  - 任意の複素数$\omega$
+  conclusion: $\overline{\omega}=\omega^2$かつ$\omega\overline{\omega}=1$である。
   answer: |
     $\omega=x+yi$（$x,y$は実数）が$\omega^2+\omega+1=0$を満たすとする。実部と虚部を比べると$x^2-y^2+x+1=0$かつ$(2x+1)y=0$である。
     $y=0$なら$x^2+x+1=0$となるが、$x^2+x+1=\left(x+\frac{1}{2}\right)^2+\frac{3}{4}>0$なので矛盾する。よって$y\neq 0$であり、$x=-\frac{1}{2}$である。
     $\omega^2=-1-\omega=-1-x-yi=-\frac{1}{2}-yi=x-yi=\overline{\omega}$である。さらに$\omega\overline{\omega}=\omega^3=(\omega-1)(\omega^2+\omega+1)+1=1$である。
-  strategy: |-
-    Separate real and imaginary parts to get Re ω = -1/2, then compare -1-ω with the conjugate.
+  strategy: Separate real and imaginary parts to get Re ω = -1/2, then compare -1-ω with the conjugate.
   sketch:
-    - "setup: Write ω = x + yi and compare real and imaginary parts."
-    - "contradiction: y = 0 would give a real root of x^2 + x + 1, which is positive."
-    - "derive: Hence x = -1/2."
-    - "derive: ω^2 = -1 - ω has real part x and imaginary part -y, so it equals the conjugate."
-    - "conclude: ω times its conjugate is ω^3 = 1."
+  - 'setup: Write ω = x + yi and compare real and imaginary parts.'
+  - 'contradiction: y = 0 would give a real root of x^2 + x + 1, which is positive.'
+  - 'derive: Hence x = -1/2.'
+  - 'derive: ω^2 = -1 - ω has real part x and imaginary part -y, so it equals the conjugate.'
+  - 'conclude: ω times its conjugate is ω^3 = 1.'
   openmath: (forall (w) (-> (and (in w C) (= (+ (+ (^ w 2) w) 1) 0)) (and (= (complex_conj w) (^ w 2)) (= (* w (complex_conj w)) 1))))
   hard_negative:
-    statement: |-
-      $\omega^3=1$なら$\overline{\omega}=\omega^2$かつ$\omega$は虚数である。
-    reason: |-
-      $\omega=1$は$\omega^3=1$と$\overline{\omega}=\omega^2$を満たすが実数である。$\omega$が虚数であることを導くには$\omega^2+\omega+1=0$が必要である。
+    statement: $\omega^3=1$なら$\overline{\omega}=\omega^2$かつ$\omega$は虚数である。
+    reason: $\omega=1$は$\omega^3=1$と$\overline{\omega}=\omega^2$を満たすが実数である。$\omega$が虚数であることを導くには$\omega^2+\omega+1=0$が必要である。
   target: |
     ∀ ω : ℂ, ω ^ 2 + ω + 1 = 0 → (starRingEnd ℂ) ω = ω ^ 2 ∧ ω * (starRingEnd ℂ) ω = 1
   proof: |
@@ -1039,36 +891,30 @@
   kind: gap
   level: high
   topic: 複素数と方程式・1の虚数立方根
-  statement: |-
-    複素数$\omega$が$\omega^2+\omega+1=0$を満たすとき、$0$以上の整数$n$について、$n$が$3$の倍数なら$\omega^n+\omega^{2n}+1=3$であり、$3$の倍数でなければ$\omega^n+\omega^{2n}+1=0$である。
-  statement_en: |-
-    If a complex number ω satisfies ω^2 + ω + 1 = 0 and n is an integer with n ≥ 0, then ω^n + ω^(2n) + 1 equals 3 when 3 divides n and 0 otherwise.
+  statement: 複素数$\omega$が$\omega^2+\omega+1=0$を満たすとき、$0$以上の整数$n$について、$n$が$3$の倍数なら$\omega^n+\omega^{2n}+1=3$であり、$3$の倍数でなければ$\omega^n+\omega^{2n}+1=0$である。
+  statement_en: If a complex number ω satisfies ω^2 + ω + 1 = 0 and n is an integer with n ≥ 0, then ω^n + ω^(2n) + 1 equals 3 when 3 divides n and 0 otherwise.
   assumptions:
-    - '$\omega$は複素数で$\omega^2+\omega+1=0$'
-    - '$n$は$0$以上の整数'
+  - $\omega$は複素数で$\omega^2+\omega+1=0$
+  - $n$は$0$以上の整数
   quantifiers:
-    - '任意の複素数$\omega$と$0$以上の整数$n$'
-  conclusion: |-
-    $3\mid n$なら$\omega^n+\omega^{2n}+1=3$、$3\nmid n$なら$\omega^n+\omega^{2n}+1=0$である。
+  - 任意の複素数$\omega$と$0$以上の整数$n$
+  conclusion: $3\mid n$なら$\omega^n+\omega^{2n}+1=3$、$3\nmid n$なら$\omega^n+\omega^{2n}+1=0$である。
   answer: |
     $\omega$を$\omega^2+\omega+1=0$を満たす複素数、$n$を$0$以上の整数とする。$\omega^3-1=(\omega-1)(\omega^2+\omega+1)=0$より$\omega^3=1$である。
     $n=3k$なら$\omega^n=(\omega^3)^k=1$、$\omega^{2n}=1$なので、和は$3$である。
     $n=3k+1$なら$\omega^n=\omega$、$\omega^{2n}=\omega^2$なので、和は$\omega+\omega^2+1=0$である。
     $n=3k+2$なら$\omega^n=\omega^2$、$\omega^{2n}=\omega^4=\omega$なので、和は同じく$0$である。
-  strategy: |-
-    Use ω^3 = 1 and split on n modulo 3.
+  strategy: Use ω^3 = 1 and split on n modulo 3.
   sketch:
-    - "derive: ω^3 = 1 follows from factoring ω^3 - 1."
-    - "case_split: n = 3k gives the sum 3."
-    - "case_split: n = 3k+1 gives ω + ω^2 + 1 = 0."
-    - "case_split: n = 3k+2 gives ω^2 + ω + 1 = 0."
-    - "conclude: This covers every residue of n modulo 3."
+  - 'derive: ω^3 = 1 follows from factoring ω^3 - 1.'
+  - 'case_split: n = 3k gives the sum 3.'
+  - 'case_split: n = 3k+1 gives ω + ω^2 + 1 = 0.'
+  - 'case_split: n = 3k+2 gives ω^2 + ω + 1 = 0.'
+  - 'conclude: This covers every residue of n modulo 3.'
   openmath: (forall (w n) (-> (and (in w C) (in n N) (= (+ (+ (^ w 2) w) 1) 0)) (and (-> (dvd 3 n) (= (+ (+ (^ w n) (^ w (* 2 n))) 1) 3)) (-> (not (dvd 3 n)) (= (+ (+ (^ w n) (^ w (* 2 n))) 1) 0)))))
   hard_negative:
-    statement: |-
-      任意の自然数$n$で$\omega^n+\omega^{2n}+1=0$である。
-    reason: |-
-      $n$が$3$の倍数のときは和が$3$になる。$n=3$では$1+1+1=3$である。
+    statement: 任意の自然数$n$で$\omega^n+\omega^{2n}+1=0$である。
+    reason: $n$が$3$の倍数のときは和が$3$になる。$n=3$では$1+1+1=3$である。
   target: |
     ∀ ω : ℂ, ω ^ 2 + ω + 1 = 0 → ∀ n : ℕ, (3 ∣ n → ω ^ n + ω ^ (2 * n) + 1 = 3) ∧ (¬ 3 ∣ n → ω ^ n + ω ^ (2 * n) + 1 = 0)
   proof: |
@@ -1101,32 +947,26 @@
   kind: gap
   level: high
   topic: 複素数と方程式・1の虚数立方根
-  statement: |-
-    複素数$\omega$が$\omega^2+\omega+1=0$を満たすとき、すべての複素数$a,x$で$x^3-a^3=(x-a)(x-a\omega)(x-a\omega^2)$である。
-  statement_en: |-
-    If a complex number ω satisfies ω^2 + ω + 1 = 0, then x^3 - a^3 = (x-a)(x-aω)(x-aω^2) for all complex a and x.
+  statement: 複素数$\omega$が$\omega^2+\omega+1=0$を満たすとき、すべての複素数$a,x$で$x^3-a^3=(x-a)(x-a\omega)(x-a\omega^2)$である。
+  statement_en: If a complex number ω satisfies ω^2 + ω + 1 = 0, then x^3 - a^3 = (x-a)(x-aω)(x-aω^2) for all complex a and x.
   assumptions:
-    - '$\omega$は複素数で$\omega^2+\omega+1=0$'
-    - '$a,x$は複素数'
+  - $\omega$は複素数で$\omega^2+\omega+1=0$
+  - $a,x$は複素数
   quantifiers:
-    - '任意の複素数$\omega,a,x$'
-  conclusion: |-
-    $x^3-a^3=(x-a)(x-a\omega)(x-a\omega^2)$である。
+  - 任意の複素数$\omega,a,x$
+  conclusion: $x^3-a^3=(x-a)(x-a\omega)(x-a\omega^2)$である。
   answer: |
     $\omega$を$\omega^2+\omega+1=0$を満たす複素数とし、$a,x$を複素数とする。仮定から$\omega+\omega^2=-1$であり、$\omega^3-1=(\omega-1)(\omega^2+\omega+1)=0$より$\omega^3=1$である。
     よって$(x-a\omega)(x-a\omega^2)=x^2-a(\omega+\omega^2)x+a^2\omega^3=x^2+ax+a^2$である。これに$x-a$を掛けると$(x-a)(x^2+ax+a^2)=x^3-a^3$を得る。
-  strategy: |-
-    Multiply the two omega factors using ω + ω^2 = -1 and ω^3 = 1.
+  strategy: Multiply the two omega factors using ω + ω^2 = -1 and ω^3 = 1.
   sketch:
-    - "derive: ω + ω^2 = -1 and ω^3 = 1."
-    - "derive: (x-aω)(x-aω^2) = x^2 + a x + a^2."
-    - "conclude: Multiplying by x-a gives x^3 - a^3."
+  - 'derive: ω + ω^2 = -1 and ω^3 = 1.'
+  - 'derive: (x-aω)(x-aω^2) = x^2 + a x + a^2.'
+  - 'conclude: Multiplying by x-a gives x^3 - a^3.'
   openmath: (forall (w a x) (-> (and (in w C) (in a C) (in x C) (= (+ (+ (^ w 2) w) 1) 0)) (= (- (^ x 3) (^ a 3)) (* (* (- x a) (- x (* a w))) (- x (* a (^ w 2)))))))
   hard_negative:
-    statement: |-
-      $\omega^3=1$を満たす任意の$\omega$で同じ因数分解が成り立つ。
-    reason: |-
-      $\omega=1$では右辺が$(x-a)^3$となり、$x^3-a^3$と異なる。
+    statement: $\omega^3=1$を満たす任意の$\omega$で同じ因数分解が成り立つ。
+    reason: $\omega=1$では右辺が$(x-a)^3$となり、$x^3-a^3$と異なる。
   target: |
     ∀ (ω a x : ℂ), ω ^ 2 + ω + 1 = 0 → x ^ 3 - a ^ 3 = (x - a) * (x - a * ω) * (x - a * ω ^ 2)
   proof: |
@@ -1137,29 +977,23 @@
   kind: gap
   level: high
   topic: 複素数と方程式・複素数の相等
-  statement: |-
-    実数$a,b,c,d$について、$a+bi=c+di$であるための必要十分条件は$a=c$かつ$b=d$である。
-  statement_en: |-
-    For real a, b, c, d, a + bi = c + di if and only if a = c and b = d.
+  statement: 実数$a,b,c,d$について、$a+bi=c+di$であるための必要十分条件は$a=c$かつ$b=d$である。
+  statement_en: For real a, b, c, d, a + bi = c + di if and only if a = c and b = d.
   assumptions:
-    - '$a,b,c,d$は実数'
+  - $a,b,c,d$は実数
   quantifiers:
-    - '任意の実数$a,b,c,d$'
-  conclusion: |-
-    $a+bi=c+di$と、$a=c$かつ$b=d$であることは同値である。
+  - 任意の実数$a,b,c,d$
+  conclusion: $a+bi=c+di$と、$a=c$かつ$b=d$であることは同値である。
   answer: |
     $a,b,c,d$を実数とする。複素数$a+bi$の実部は$a$、虚部は$b$である。$a+bi=c+di$なら実部と虚部がそれぞれ等しいので、$a=c$かつ$b=d$である。逆に$a=c$かつ$b=d$なら、代入して$a+bi=c+di$を得る。
-  strategy: |-
-    Compare real and imaginary parts.
+  strategy: Compare real and imaginary parts.
   sketch:
-    - "derive: The real and imaginary parts of a + bi are a and b."
-    - "conclude: Equal complex numbers have equal parts, and the converse is immediate."
+  - 'derive: The real and imaginary parts of a + bi are a and b.'
+  - 'conclude: Equal complex numbers have equal parts, and the converse is immediate.'
   openmath: (forall (a b c d) (-> (and (in a R) (in b R) (in c R) (in d R)) (<-> (= (+ a (* b complex_imaginary_unit)) (+ c (* d complex_imaginary_unit))) (and (= a c) (= b d)))))
   hard_negative:
-    statement: |-
-      複素数$a,b,c,d$について、$a+bi=c+di$なら$a=c$かつ$b=d$である。
-    reason: |-
-      $a,b,c,d$が実数であることが必要である。$a=i,b=0,c=0,d=1$では両辺とも$i$だが$a\neq c$である。
+    statement: 複素数$a,b,c,d$について、$a+bi=c+di$なら$a=c$かつ$b=d$である。
+    reason: $a,b,c,d$が実数であることが必要である。$a=i,b=0,c=0,d=1$では両辺とも$i$だが$a\neq c$である。
   target: |
     ∀ (a b c d : ℝ), ((a : ℂ) + b * Complex.I = c + d * Complex.I) ↔ a = c ∧ b = d
   proof: |
@@ -1177,32 +1011,26 @@
   kind: gap
   level: high
   topic: 複素数と方程式・複素数の四則
-  statement: |-
-    実数$a,b,c,d$について$(a+bi)(c+di)=(ac-bd)+(ad+bc)i$である。さらに$c+di\neq 0$なら$\frac{a+bi}{c+di}=\frac{ac+bd}{c^2+d^2}+\frac{bc-ad}{c^2+d^2}i$である。
-  statement_en: |-
-    For real a, b, c, d, (a+bi)(c+di) = (ac-bd) + (ad+bc)i, and if c or d is nonzero then (a+bi)/(c+di) = (ac+bd)/(c^2+d^2) + ((bc-ad)/(c^2+d^2))i.
+  statement: 実数$a,b,c,d$について$(a+bi)(c+di)=(ac-bd)+(ad+bc)i$である。さらに$c+di\neq 0$なら$\frac{a+bi}{c+di}=\frac{ac+bd}{c^2+d^2}+\frac{bc-ad}{c^2+d^2}i$である。
+  statement_en: For real a, b, c, d, (a+bi)(c+di) = (ac-bd) + (ad+bc)i, and if c or d is nonzero then (a+bi)/(c+di) = (ac+bd)/(c^2+d^2) + ((bc-ad)/(c^2+d^2))i.
   assumptions:
-    - '$a,b,c,d$は実数'
-    - '商の式では$c\neq 0$または$d\neq 0$'
+  - $a,b,c,d$は実数
+  - 商の式では$c\neq 0$または$d\neq 0$
   quantifiers:
-    - '任意の実数$a,b,c,d$'
-  conclusion: |-
-    積は$(ac-bd)+(ad+bc)i$で、商は$\frac{ac+bd}{c^2+d^2}+\frac{bc-ad}{c^2+d^2}i$である。
+  - 任意の実数$a,b,c,d$
+  conclusion: 積は$(ac-bd)+(ad+bc)i$で、商は$\frac{ac+bd}{c^2+d^2}+\frac{bc-ad}{c^2+d^2}i$である。
   answer: |
     $a,b,c,d$を実数とする。$i^2=-1$を使って展開すると$(a+bi)(c+di)=ac+adi+bci+bdi^2=(ac-bd)+(ad+bc)i$である。
     $c\neq 0$または$d\neq 0$とする。このとき$c^2+d^2>0$である。また$(c+di)(c-di)=c^2+d^2\neq 0$なので$c+di\neq 0$である。分母と分子に$c-di$を掛けると$\frac{a+bi}{c+di}=\frac{(a+bi)(c-di)}{c^2+d^2}=\frac{(ac+bd)+(bc-ad)i}{c^2+d^2}$であり、主張の式を得る。
-  strategy: |-
-    Expand with i^2 = -1, and for the quotient multiply numerator and denominator by the conjugate of the denominator.
+  strategy: Expand with i^2 = -1, and for the quotient multiply numerator and denominator by the conjugate of the denominator.
   sketch:
-    - "derive: Expanding and using i^2 = -1 gives the product formula."
-    - "derive: If c or d is nonzero, (c+di)(c-di) = c^2 + d^2 ≠ 0."
-    - "conclude: Multiplying numerator and denominator by c-di gives the quotient formula."
+  - 'derive: Expanding and using i^2 = -1 gives the product formula.'
+  - 'derive: If c or d is nonzero, (c+di)(c-di) = c^2 + d^2 ≠ 0.'
+  - 'conclude: Multiplying numerator and denominator by c-di gives the quotient formula.'
   openmath: (forall (a b c d) (-> (and (in a R) (in b R) (in c R) (in d R)) (and (= (* (+ a (* b complex_imaginary_unit)) (+ c (* d complex_imaginary_unit))) (+ (- (* a c) (* b d)) (* (+ (* a d) (* b c)) complex_imaginary_unit))) (-> (or (!= c 0) (!= d 0)) (= (/ (+ a (* b complex_imaginary_unit)) (+ c (* d complex_imaginary_unit))) (+ (/ (+ (* a c) (* b d)) (+ (^ c 2) (^ d 2))) (* (/ (- (* b c) (* a d)) (+ (^ c 2) (^ d 2))) complex_imaginary_unit)))))))
   hard_negative:
-    statement: |-
-      $\frac{a+bi}{c+di}=\frac{a}{c}+\frac{b}{d}i$である。
-    reason: |-
-      実部と虚部は別々に割れない。$\frac{1+i}{1+i}=1$だが、右辺は$1+i$である。
+    statement: $\frac{a+bi}{c+di}=\frac{a}{c}+\frac{b}{d}i$である。
+    reason: 実部と虚部は別々に割れない。$\frac{1+i}{1+i}=1$だが、右辺は$1+i$である。
   target: |
     ∀ (a b c d : ℝ), ((a : ℂ) + b * Complex.I) * (c + d * Complex.I) = ((a * c - b * d : ℝ) : ℂ) + ((a * d + b * c : ℝ) : ℂ) * Complex.I ∧ ((c ≠ 0 ∨ d ≠ 0) → ((a : ℂ) + b * Complex.I) / (c + d * Complex.I) = (((a * c + b * d) / (c ^ 2 + d ^ 2) : ℝ) : ℂ) + (((b * c - a * d) / (c ^ 2 + d ^ 2) : ℝ) : ℂ) * Complex.I)
   proof: |
@@ -1231,36 +1059,30 @@
   kind: gap
   level: high
   topic: 複素数と方程式・共役複素数
-  statement: |-
-    複素数$z,w$と$0$以上の整数$n$について、$\overline{z+w}=\overline{z}+\overline{w}$、$\overline{zw}=\overline{z}\,\overline{w}$、$\overline{z^n}=\overline{z}^{\,n}$である。さらに$w\neq 0$なら$\overline{z/w}=\overline{z}/\overline{w}$である。
-  statement_en: |-
-    For complex z, w and an integer n ≥ 0, conjugation satisfies conj(z+w) = conj z + conj w, conj(zw) = conj z · conj w and conj(z^n) = (conj z)^n; if w ≠ 0 then conj(z/w) = conj z / conj w.
+  statement: 複素数$z,w$と$0$以上の整数$n$について、$\overline{z+w}=\overline{z}+\overline{w}$、$\overline{zw}=\overline{z}\,\overline{w}$、$\overline{z^n}=\overline{z}^{\,n}$である。さらに$w\neq 0$なら$\overline{z/w}=\overline{z}/\overline{w}$である。
+  statement_en: For complex z, w and an integer n ≥ 0, conjugation satisfies conj(z+w) = conj z + conj w, conj(zw) = conj z · conj w and conj(z^n) = (conj z)^n; if w ≠ 0 then conj(z/w) = conj z / conj w.
   assumptions:
-    - '$z,w$は複素数'
-    - '$n$は$0$以上の整数'
-    - '商の式では$w\neq 0$'
+  - $z,w$は複素数
+  - $n$は$0$以上の整数
+  - 商の式では$w\neq 0$
   quantifiers:
-    - '任意の複素数$z,w$と$0$以上の整数$n$'
-  conclusion: |-
-    共役は和、積、累乗を保ち、$w\neq 0$なら商も保つ。
+  - 任意の複素数$z,w$と$0$以上の整数$n$
+  conclusion: 共役は和、積、累乗を保ち、$w\neq 0$なら商も保つ。
   answer: |
     $z=a+bi$, $w=c+di$（$a,b,c,d$は実数）とし、$n$を$0$以上の整数とする。$\overline{z+w}=(a+c)-(b+d)i=\overline{z}+\overline{w}$である。
     $\overline{zw}=(ac-bd)-(ad+bc)i$であり、$\overline{z}\,\overline{w}=(a-bi)(c-di)=(ac-bd)-(ad+bc)i$なので、両者は等しい。
     累乗の式は、積の式を使った$n$についての帰納法で得る。$n=0$では両辺とも$1$であり、$\overline{z^{n+1}}=\overline{z^n}\,\overline{z}=\overline{z}^{\,n+1}$である。
     $w\neq 0$のとき、$\overline{z/w}\cdot\overline{w}=\overline{(z/w)\cdot w}=\overline{z}$である。$\overline{w}\neq 0$なので、$\overline{z/w}=\overline{z}/\overline{w}$を得る。
-  strategy: |-
-    Check sum and product in coordinates, induct for powers, and multiply back for quotients.
+  strategy: Check sum and product in coordinates, induct for powers, and multiply back for quotients.
   sketch:
-    - "derive: The sum and product formulas follow by writing z and w in real and imaginary parts."
-    - "induction: The power formula follows from the product formula."
-    - "derive: Applying the product formula to (z/w)·w gives conj(z/w)·conj w = conj z."
-    - "conclude: Dividing by conj w ≠ 0 gives the quotient formula."
+  - 'derive: The sum and product formulas follow by writing z and w in real and imaginary parts.'
+  - 'induction: The power formula follows from the product formula.'
+  - 'derive: Applying the product formula to (z/w)·w gives conj(z/w)·conj w = conj z.'
+  - 'conclude: Dividing by conj w ≠ 0 gives the quotient formula.'
   openmath: (forall (z w n) (-> (and (in z C) (in w C) (in n N)) (and (= (complex_conj (+ z w)) (+ (complex_conj z) (complex_conj w))) (= (complex_conj (* z w)) (* (complex_conj z) (complex_conj w))) (= (complex_conj (^ z n)) (^ (complex_conj z) n)) (-> (!= w 0) (= (complex_conj (/ z w)) (/ (complex_conj z) (complex_conj w)))))))
   hard_negative:
-    statement: |-
-      $\overline{z}=z$がすべての複素数$z$で成り立つ。
-    reason: |-
-      これは実数に限る。$z=i$では$\overline{z}=-i\neq z$である。
+    statement: $\overline{z}=z$がすべての複素数$z$で成り立つ。
+    reason: これは実数に限る。$z=i$では$\overline{z}=-i\neq z$である。
   target: |
     ∀ (z w : ℂ) (n : ℕ), (starRingEnd ℂ) (z + w) = (starRingEnd ℂ) z + (starRingEnd ℂ) w ∧ (starRingEnd ℂ) (z * w) = (starRingEnd ℂ) z * (starRingEnd ℂ) w ∧ (starRingEnd ℂ) (z ^ n) = ((starRingEnd ℂ) z) ^ n ∧ (w ≠ 0 → (starRingEnd ℂ) (z / w) = (starRingEnd ℂ) z / (starRingEnd ℂ) w)
   proof: |
@@ -1271,30 +1093,24 @@
   kind: gap
   level: high
   topic: 複素数と方程式・共役複素数
-  statement: |-
-    複素数$z$が実数であることと$\overline{z}=z$は同値である。また、$z$の実部が$0$であること（$z$は純虚数または$0$）と$\overline{z}=-z$は同値である。
-  statement_en: |-
-    For a complex number z, conj z = z if and only if Im z = 0, and conj z = -z if and only if Re z = 0.
+  statement: 複素数$z$が実数であることと$\overline{z}=z$は同値である。また、$z$の実部が$0$であること（$z$は純虚数または$0$）と$\overline{z}=-z$は同値である。
+  statement_en: For a complex number z, conj z = z if and only if Im z = 0, and conj z = -z if and only if Re z = 0.
   assumptions:
-    - '$z$は複素数'
+  - $z$は複素数
   quantifiers:
-    - '任意の複素数$z$'
-  conclusion: |-
-    $\overline{z}=z$と$z$の虚部が$0$であることは同値で、$\overline{z}=-z$と$z$の実部が$0$であることは同値である。
+  - 任意の複素数$z$
+  conclusion: $\overline{z}=z$と$z$の虚部が$0$であることは同値で、$\overline{z}=-z$と$z$の実部が$0$であることは同値である。
   answer: |
     $z=a+bi$（$a,b$は実数）とする。$\overline{z}=a-bi$である。実部と虚部を比べると、$\overline{z}=z$は$-b=b$、すなわち$b=0$と同値である。同様に$\overline{z}=-z$すなわち$a-bi=-a-bi$は$a=-a$、すなわち$a=0$と同値である。
-  strategy: |-
-    Write z = a + bi and compare parts.
+  strategy: Write z = a + bi and compare parts.
   sketch:
-    - "setup: Write z = a + bi, so conj z = a - bi."
-    - "derive: conj z = z is equivalent to b = 0."
-    - "conclude: conj z = -z is equivalent to a = 0."
+  - 'setup: Write z = a + bi, so conj z = a - bi.'
+  - 'derive: conj z = z is equivalent to b = 0.'
+  - 'conclude: conj z = -z is equivalent to a = 0.'
   openmath: (forall (z) (-> (in z C) (and (<-> (= (complex_conj z) z) (= (imag_part z) 0)) (<-> (= (complex_conj z) (neg z)) (= (real_part z) 0)))))
   hard_negative:
-    statement: |-
-      $\overline{z}=-z$なら$z$は純虚数である。
-    reason: |-
-      $z=0$も$\overline{z}=-z$を満たすが、$0$は純虚数ではない。
+    statement: $\overline{z}=-z$なら$z$は純虚数である。
+    reason: $z=0$も$\overline{z}=-z$を満たすが、$0$は純虚数ではない。
   target: |
     ∀ z : ℂ, ((starRingEnd ℂ) z = z ↔ z.im = 0) ∧ ((starRingEnd ℂ) z = -z ↔ z.re = 0)
   proof: |
@@ -1313,31 +1129,25 @@
   kind: textbook
   level: high
   topic: 複素数と方程式・負の数の平方根
-  statement: |-
-    正の実数$k$と複素数$z$について、$z^2=-k$であるための必要十分条件は$z=\sqrt{k}\,i$または$z=-\sqrt{k}\,i$である。
-  statement_en: |-
-    For a positive real k and complex z, z^2 = -k if and only if z = √k i or z = -√k i.
+  statement: 正の実数$k$と複素数$z$について、$z^2=-k$であるための必要十分条件は$z=\sqrt{k}\,i$または$z=-\sqrt{k}\,i$である。
+  statement_en: For a positive real k and complex z, z^2 = -k if and only if z = √k i or z = -√k i.
   assumptions:
-    - '$k$は正の実数'
-    - '$z$は複素数'
+  - $k$は正の実数
+  - $z$は複素数
   quantifiers:
-    - '任意の正の実数$k$と複素数$z$'
-  conclusion: |-
-    $z^2=-k$と、$z=\sqrt{k}\,i$または$z=-\sqrt{k}\,i$であることは同値である。
+  - 任意の正の実数$k$と複素数$z$
+  conclusion: $z^2=-k$と、$z=\sqrt{k}\,i$または$z=-\sqrt{k}\,i$であることは同値である。
   answer: |
     $k$を正の実数、$z$を複素数とする。$(\sqrt{k}\,i)^2=ki^2=-k$である。よって$z^2=-k$は$z^2-(\sqrt{k}\,i)^2=0$すなわち$(z-\sqrt{k}\,i)(z+\sqrt{k}\,i)=0$と同値である。複素数の積が$0$になるのはどちらかの因数が$0$のときに限るので、これは$z=\sqrt{k}\,i$または$z=-\sqrt{k}\,i$と同値である。
-  strategy: |-
-    Rewrite -k as the square of √k i and factor the difference of squares.
+  strategy: Rewrite -k as the square of √k i and factor the difference of squares.
   sketch:
-    - "derive: (√k i)^2 = -k."
-    - "derive: z^2 = -k is equivalent to (z-√k i)(z+√k i) = 0."
-    - "conclude: A product of complex numbers vanishes only if a factor vanishes."
+  - 'derive: (√k i)^2 = -k.'
+  - 'derive: z^2 = -k is equivalent to (z-√k i)(z+√k i) = 0.'
+  - 'conclude: A product of complex numbers vanishes only if a factor vanishes.'
   openmath: (forall (k z) (-> (and (in k R) (> k 0) (in z C)) (<-> (= (^ z 2) (neg k)) (or (= z (* (root k 2) complex_imaginary_unit)) (= z (neg (* (root k 2) complex_imaginary_unit)))))))
   hard_negative:
-    statement: |-
-      負の実数$a,b$についても$\sqrt{a}\sqrt{b}=\sqrt{ab}$である。
-    reason: |-
-      $\sqrt{-1}\sqrt{-1}=i^2=-1$だが、$\sqrt{(-1)(-1)}=1$である。
+    statement: 負の実数$a,b$についても$\sqrt{a}\sqrt{b}=\sqrt{ab}$である。
+    reason: $\sqrt{-1}\sqrt{-1}=i^2=-1$だが、$\sqrt{(-1)(-1)}=1$である。
   target: |
     ∀ k : ℝ, 0 < k → ∀ z : ℂ, z ^ 2 = -(k : ℂ) ↔ z = (Real.sqrt k : ℂ) * Complex.I ∨ z = -((Real.sqrt k : ℂ) * Complex.I)
   proof: |
@@ -1353,33 +1163,27 @@
   kind: textbook
   level: high
   topic: 複素数と方程式・2次方程式の虚数解
-  statement: |-
-    実数$a\neq 0,b,c$について$b^2-4ac<0$のとき、複素数$z$が$az^2+bz+c=0$を満たすための必要十分条件は$z=\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$である。
-  statement_en: |-
-    For real a ≠ 0, b, c with b^2 - 4ac < 0, a complex number z satisfies a z^2 + b z + c = 0 if and only if z = (-b ± √(4ac-b^2) i)/(2a).
+  statement: 実数$a\neq 0,b,c$について$b^2-4ac<0$のとき、複素数$z$が$az^2+bz+c=0$を満たすための必要十分条件は$z=\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$である。
+  statement_en: For real a ≠ 0, b, c with b^2 - 4ac < 0, a complex number z satisfies a z^2 + b z + c = 0 if and only if z = (-b ± √(4ac-b^2) i)/(2a).
   assumptions:
-    - '$a,b,c$は実数で$a\neq 0$'
-    - '$b^2-4ac<0$'
-    - '$z$は複素数'
+  - $a,b,c$は実数で$a\neq 0$
+  - $b^2-4ac<0$
+  - $z$は複素数
   quantifiers:
-    - '任意の実数$a,b,c$と複素数$z$'
-  conclusion: |-
-    $az^2+bz+c=0$と$z=\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$は同値である。
+  - 任意の実数$a,b,c$と複素数$z$
+  conclusion: $az^2+bz+c=0$と$z=\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$は同値である。
   answer: |
     $a\neq 0,b,c$を$b^2-4ac<0$を満たす実数とし、$z$を複素数とする。$s=\sqrt{4ac-b^2}$とおくと、$4ac-b^2>0$より$s^2=4ac-b^2$である。
     $(si)^2=-s^2=b^2-4ac$なので、$4a(az^2+bz+c)=(2az+b)^2-(b^2-4ac)=(2az+b-si)(2az+b+si)$である。$4a\neq 0$だから、$az^2+bz+c=0$は$2az+b-si=0$または$2az+b+si=0$と同値であり、これは$z=\frac{-b\pm si}{2a}$と同値である。
-  strategy: |-
-    Multiply by 4a and factor the difference of squares using (si)^2 = b^2 - 4ac.
+  strategy: Multiply by 4a and factor the difference of squares using (si)^2 = b^2 - 4ac.
   sketch:
-    - "setup: Put s = √(4ac-b^2), so s^2 = 4ac-b^2."
-    - "derive: 4a(a z^2 + b z + c) = (2az+b-si)(2az+b+si)."
-    - "conclude: Since 4a ≠ 0, the equation is equivalent to z = (-b ± si)/(2a)."
+  - 'setup: Put s = √(4ac-b^2), so s^2 = 4ac-b^2.'
+  - 'derive: 4a(a z^2 + b z + c) = (2az+b-si)(2az+b+si).'
+  - 'conclude: Since 4a ≠ 0, the equation is equivalent to z = (-b ± si)/(2a).'
   openmath: (forall (a b c z) (-> (and (in a R) (in b R) (in c R) (in z C) (!= a 0) (< (- (^ b 2) (* (* 4 a) c)) 0)) (<-> (= (+ (+ (* a (^ z 2)) (* b z)) c) 0) (or (= z (/ (+ (neg b) (* (root (- (* (* 4 a) c) (^ b 2)) 2) complex_imaginary_unit)) (* 2 a))) (= z (/ (- (neg b) (* (root (- (* (* 4 a) c) (^ b 2)) 2) complex_imaginary_unit)) (* 2 a)))))))
   hard_negative:
-    statement: |-
-      $b^2-4ac<0$のとき、方程式$az^2+bz+c=0$の複素数解は1つだけである。
-    reason: |-
-      解は$\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$の2つである。$\sqrt{4ac-b^2}>0$なので2つは異なり、互いに共役である。$z^2+1=0$の解は$i$と$-i$である。
+    statement: $b^2-4ac<0$のとき、方程式$az^2+bz+c=0$の複素数解は1つだけである。
+    reason: 解は$\frac{-b\pm\sqrt{4ac-b^2}\,i}{2a}$の2つである。$\sqrt{4ac-b^2}>0$なので2つは異なり、互いに共役である。$z^2+1=0$の解は$i$と$-i$である。
   target: |
     ∀ (a b c : ℝ), a ≠ 0 → b ^ 2 - 4 * a * c < 0 → ∀ z : ℂ, ((a : ℂ) * z ^ 2 + b * z + c = 0 ↔ z = (-(b : ℂ) + (Real.sqrt (4 * a * c - b ^ 2) : ℂ) * Complex.I) / (2 * a) ∨ z = (-(b : ℂ) - (Real.sqrt (4 * a * c - b ^ 2) : ℂ) * Complex.I) / (2 * a))
   proof: |
@@ -1422,34 +1226,28 @@
   kind: gap
   level: high
   topic: 複素数と方程式・2次方程式の虚数解
-  statement: |-
-    実数$a\neq 0,b,c$について、方程式$az^2+bz+c=0$が虚数解をもつための必要十分条件は$b^2-4ac<0$である。
-  statement_en: |-
-    For real a ≠ 0, b, c, the equation a z^2 + b z + c = 0 has a non-real complex root if and only if b^2 - 4ac < 0.
+  statement: 実数$a\neq 0,b,c$について、方程式$az^2+bz+c=0$が虚数解をもつための必要十分条件は$b^2-4ac<0$である。
+  statement_en: For real a ≠ 0, b, c, the equation a z^2 + b z + c = 0 has a non-real complex root if and only if b^2 - 4ac < 0.
   assumptions:
-    - '$a,b,c$は実数で$a\neq 0$'
+  - $a,b,c$は実数で$a\neq 0$
   quantifiers:
-    - '任意の実数$a,b,c$'
-  conclusion: |-
-    虚部が$0$でない解が存在することと$b^2-4ac<0$は同値である。
+  - 任意の実数$a,b,c$
+  conclusion: 虚部が$0$でない解が存在することと$b^2-4ac<0$は同値である。
   answer: |
     $a\neq 0,b,c$を実数とする。
     $z=x+yi$（$x,y$は実数、$y\neq 0$）が解であるとする。虚部を比べると$y(2ax+b)=0$であり、$y\neq 0$より$b=-2ax$である。実部を比べると$a(x^2-y^2)+bx+c=0$であり、これに$b=-2ax$を代入して$c=ax^2+ay^2$を得る。よって$b^2-4ac=4a^2x^2-4a^2x^2-4a^2y^2=-4a^2y^2<0$である。
     逆に$b^2-4ac<0$とし、$s=\sqrt{4ac-b^2}>0$、$z=\frac{-b}{2a}+\frac{s}{2a}i$とおく。$z$の虚部は$0$でない。$2az+b=si$の両辺を2乗すると$(2az+b)^2=-s^2=b^2-4ac$であり、これを整理すると$4a(az^2+bz+c)=0$となる。$4a\neq 0$より$z$は解である。
-  strategy: |-
-    Compare real and imaginary parts for necessity; exhibit the explicit root for sufficiency.
+  strategy: Compare real and imaginary parts for necessity; exhibit the explicit root for sufficiency.
   sketch:
-    - "setup: Let z = x + yi be a root with y ≠ 0."
-    - "derive: The imaginary part gives b = -2ax and the real part gives c = a x^2 + a y^2."
-    - "derive: Then b^2 - 4ac = -4a^2 y^2 < 0."
-    - "construct: If b^2 - 4ac < 0, take z = -b/(2a) + (s/(2a)) i with s = √(4ac-b^2)."
-    - "conclude: Then (2az+b)^2 = b^2 - 4ac, so z is a non-real root."
+  - 'setup: Let z = x + yi be a root with y ≠ 0.'
+  - 'derive: The imaginary part gives b = -2ax and the real part gives c = a x^2 + a y^2.'
+  - 'derive: Then b^2 - 4ac = -4a^2 y^2 < 0.'
+  - 'construct: If b^2 - 4ac < 0, take z = -b/(2a) + (s/(2a)) i with s = √(4ac-b^2).'
+  - 'conclude: Then (2az+b)^2 = b^2 - 4ac, so z is a non-real root.'
   openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (!= a 0)) (<-> (exists (z) (and (in z C) (!= (imag_part z) 0) (= (+ (+ (* a (^ z 2)) (* b z)) c) 0))) (< (- (^ b 2) (* (* 4 a) c)) 0))))
   hard_negative:
-    statement: |-
-      $a,b,c$が複素数でも、虚数解をもつことと$b^2-4ac<0$は同値である。
-    reason: |-
-      実数係数が前提である。$z^2-i=0$は虚数解をもつが、$b^2-4ac=4i$は実数でないので不等式が意味をもたない。
+    statement: $a,b,c$が複素数でも、虚数解をもつことと$b^2-4ac<0$は同値である。
+    reason: 実数係数が前提である。$z^2-i=0$は虚数解をもつが、$b^2-4ac=4i$は実数でないので不等式が意味をもたない。
   target: |
     ∀ (a b c : ℝ), a ≠ 0 → ((∃ z : ℂ, z.im ≠ 0 ∧ (a : ℂ) * z ^ 2 + b * z + c = 0) ↔ b ^ 2 - 4 * a * c < 0)
   proof: |
@@ -1490,31 +1288,25 @@
   kind: named
   level: high
   topic: 複素数と方程式・共役解
-  statement: |-
-    共役解の定理。実数係数の整式$P(x)$について、複素数$\alpha$が$P(\alpha)=0$を満たせば$P(\overline{\alpha})=0$である。
-  statement_en: |-
-    Conjugate root theorem. If P is a real polynomial and a complex number α satisfies P(α) = 0, then P(conj α) = 0.
+  statement: 共役解の定理。実数係数の整式$P(x)$について、複素数$\alpha$が$P(\alpha)=0$を満たせば$P(\overline{\alpha})=0$である。
+  statement_en: Conjugate root theorem. If P is a real polynomial and a complex number α satisfies P(α) = 0, then P(conj α) = 0.
   assumptions:
-    - '$P(x)$は実数係数の整式'
-    - '$\alpha$は複素数で$P(\alpha)=0$'
+  - $P(x)$は実数係数の整式
+  - $\alpha$は複素数で$P(\alpha)=0$
   quantifiers:
-    - '任意の実数係数の整式$P(x)$と複素数$\alpha$'
-  conclusion: |-
-    $P(\overline{\alpha})=0$である。
+  - 任意の実数係数の整式$P(x)$と複素数$\alpha$
+  conclusion: $P(\overline{\alpha})=0$である。
   answer: |
     $P(x)=\sum_{i=0}^{n}c_ix^i$を実数係数の整式とし、$\alpha$を$P(\alpha)=0$を満たす複素数とする。共役は和と積と累乗を保ち、$c_i$は実数なので$\overline{c_i}=c_i$である。よって$P(\overline{\alpha})=\sum_{i=0}^{n}c_i\overline{\alpha}^{\,i}=\sum_{i=0}^{n}\overline{c_i\alpha^i}=\overline{P(\alpha)}=\overline{0}=0$である。
-  strategy: |-
-    Conjugate the equation P(α) = 0 and use that real coefficients are fixed.
+  strategy: Conjugate the equation P(α) = 0 and use that real coefficients are fixed.
   sketch:
-    - "translate: Write P(α) as a sum of c_i α^i with real c_i."
-    - "derive: Conjugation preserves sums, products and powers, and fixes each c_i."
-    - "conclude: P(conj α) = conj(P(α)) = 0."
+  - 'translate: Write P(α) as a sum of c_i α^i with real c_i.'
+  - 'derive: Conjugation preserves sums, products and powers, and fixes each c_i.'
+  - 'conclude: P(conj α) = conj(P(α)) = 0.'
   openmath: (forall (f a) (-> (and (polynomial_over f R) (in a C) (= (poly_eval f a) 0)) (= (poly_eval f (complex_conj a)) 0)))
   hard_negative:
-    statement: |-
-      複素数係数の整式でも、$\alpha$が解なら$\overline{\alpha}$も解である。
-    reason: |-
-      係数が実数であることが必要である。$P(x)=x-i$は$i$を解にもつが、$-i$は解でない。
+    statement: 複素数係数の整式でも、$\alpha$が解なら$\overline{\alpha}$も解である。
+    reason: 係数が実数であることが必要である。$P(x)=x-i$は$i$を解にもつが、$-i$は解でない。
   target: |
     ∀ (P : Polynomial ℝ) (α : ℂ), Polynomial.aeval α P = 0 → Polynomial.aeval ((starRingEnd ℂ) α) P = 0
   proof: |
@@ -1525,34 +1317,28 @@
   kind: textbook
   level: high
   topic: 複素数と方程式・共役解
-  statement: |-
-    実数$a$, $b\neq 0$と実数係数の整式$P(x)$について、$P(a+bi)=0$なら、$P(x)$は実数係数の整式の範囲で$x^2-2ax+a^2+b^2$で割り切れる。
-  statement_en: |-
-    For real a, b ≠ 0 and a real polynomial P, if P(a+bi) = 0 then x^2 - 2ax + a^2 + b^2 divides P in the real polynomials.
+  statement: 実数$a$, $b\neq 0$と実数係数の整式$P(x)$について、$P(a+bi)=0$なら、$P(x)$は実数係数の整式の範囲で$x^2-2ax+a^2+b^2$で割り切れる。
+  statement_en: For real a, b ≠ 0 and a real polynomial P, if P(a+bi) = 0 then x^2 - 2ax + a^2 + b^2 divides P in the real polynomials.
   assumptions:
-    - '$a,b$は実数で$b\neq 0$'
-    - '$P(x)$は実数係数の整式で$P(a+bi)=0$'
+  - $a,b$は実数で$b\neq 0$
+  - $P(x)$は実数係数の整式で$P(a+bi)=0$
   quantifiers:
-    - '任意の実数$a,b$と実数係数の整式$P(x)$'
-  conclusion: |-
-    $x^2-2ax+a^2+b^2$は実数係数の整式の範囲で$P(x)$を割り切る。
+  - 任意の実数$a,b$と実数係数の整式$P(x)$
+  conclusion: $x^2-2ax+a^2+b^2$は実数係数の整式の範囲で$P(x)$を割り切る。
   answer: |
     $a,b$を$b\neq 0$を満たす実数、$P(x)$を実数係数の整式とし、$\alpha=a+bi$とおく。$P(\alpha)=0$とする。$B(x)=x^2-2ax+a^2+b^2$は実数係数で、$B(x)=(x-\alpha)(x-\overline{\alpha})$である。
     $P(x)$を$B(x)$で割り、実数係数の整式$Q(x)$と実数$r,s$により$P(x)=B(x)Q(x)+rx+s$と書く。$x=\alpha$を代入すると$B(\alpha)=0$より$r\alpha+s=0$である。虚部を比べると$rb=0$であり、$b\neq 0$より$r=0$である。すると$s=0$でもある。よって$P(x)=B(x)Q(x)$である。
-  strategy: |-
-    Divide by the real quadratic and show the real linear remainder vanishes at the non-real number α.
+  strategy: Divide by the real quadratic and show the real linear remainder vanishes at the non-real number α.
   sketch:
-    - "setup: Put α = a + bi and B(x) = x^2 - 2ax + a^2 + b^2 = (x-α)(x-conj α)."
-    - "construct: Divide to get P = BQ + rx + s with real r, s."
-    - "derive: Substituting α gives rα + s = 0."
-    - "derive: The imaginary part gives r = 0, and then s = 0."
-    - "conclude: Hence B divides P."
+  - 'setup: Put α = a + bi and B(x) = x^2 - 2ax + a^2 + b^2 = (x-α)(x-conj α).'
+  - 'construct: Divide to get P = BQ + rx + s with real r, s.'
+  - 'derive: Substituting α gives rα + s = 0.'
+  - 'derive: The imaginary part gives r = 0, and then s = 0.'
+  - 'conclude: Hence B divides P.'
   openmath: (forall (f a b) (-> (and (polynomial_over f R) (in a R) (in b R) (!= b 0) (= (poly_eval f (+ a (* b complex_imaginary_unit))) 0)) (dvd (+ (- (^ poly_var 2) (* (poly_const (* 2 a)) poly_var)) (poly_const (+ (^ a 2) (^ b 2)))) f)))
   hard_negative:
-    statement: |-
-      $P(a+bi)=0$なら、$P(x)$は実数係数の整式の範囲で$x-(a+bi)$で割り切れる。
-    reason: |-
-      $x-(a+bi)$は実数係数の整式ではない。実数係数で取り出せるのは2次の因数である。
+    statement: $P(a+bi)=0$なら、$P(x)$は実数係数の整式の範囲で$x-(a+bi)$で割り切れる。
+    reason: $x-(a+bi)$は実数係数の整式ではない。実数係数で取り出せるのは2次の因数である。
   target: |
     ∀ (P : Polynomial ℝ) (a b : ℝ), b ≠ 0 → Polynomial.aeval ((a : ℂ) + b * Complex.I) P = 0 → (Polynomial.X ^ 2 - Polynomial.C (2 * a) * Polynomial.X + Polynomial.C (a ^ 2 + b ^ 2)) ∣ P
   proof: |
@@ -1570,81 +1356,71 @@
   kind: gap
   level: high
   topic: 複素数と方程式・共役解
-  statement: |-
-    実数$a,b,c,p,q$ $(q\neq 0)$について、虚数$p+qi$が$x^3+ax^2+bx+c=0$の解なら、すべての実数$x$で$x^3+ax^2+bx+c=\{x-(-a-2p)\}(x^2-2px+p^2+q^2)$である。これは$x^3$の係数が$1$の場合の形である。
-  statement_en: |-
-    For real a, b, c, p, q with q ≠ 0, if p + qi is a root of x^3 + a x^2 + b x + c = 0, then x^3 + a x^2 + b x + c = (x - (-a-2p))(x^2 - 2px + p^2 + q^2) for every real x.
+  statement: 実数$a,b,c,d,p,q$が$a\neq 0$、$q\neq 0$を満たし、虚数$p+qi$が$ax^3+bx^2+cx+d=0$の解なら、すべての実数$x$で$ax^3+bx^2+cx+d=a\left\{x-\left(-\frac{b}{a}-2p\right)\right\}(x^2-2px+p^2+q^2)$である。
+  statement_en: For real a, b, c, d, p, q with a ≠ 0 and q ≠ 0, if p + qi is a root of a x^3 + b x^2 + c x + d = 0 then a x^3 + b x^2 + c x + d = a (x - (-b/a - 2p))(x^2 - 2px + p^2 + q^2) for every real x.
   assumptions:
-    - '$a,b,c,p,q$は実数で$q\neq 0$'
-    - '$p+qi$は$x^3+ax^2+bx+c=0$の解'
+  - $a,b,c,d,p,q$は実数で$a\neq 0$、$q\neq 0$
+  - $p+qi$は$ax^3+bx^2+cx+d=0$の解
   quantifiers:
-    - '任意の実数$a,b,c,p,q,x$'
-  conclusion: |-
-    $x^3+ax^2+bx+c=\{x-(-a-2p)\}(x^2-2px+p^2+q^2)$である。
-  answer: |
-    $a,b,c,p,q$を$q\neq 0$を満たす実数とし、$p+qi$が$x^3+ax^2+bx+c=0$の解であるとする。$x$を実数とする。代入して展開すると、実部と虚部から次の2式を得る。$p^3-3pq^2+a(p^2-q^2)+bp+c=0$、$q(3p^2-q^2+2ap+b)=0$。
-    $q\neq 0$より$b=q^2-3p^2-2ap$である。これを第1式に代入すると$c=(a+2p)(p^2+q^2)$である。
-    一方、$(x+a+2p)(x^2-2px+p^2+q^2)$を展開すると$x^3+ax^2+\{p^2+q^2-2p(a+2p)\}x+(a+2p)(p^2+q^2)$となる。$p^2+q^2-2p(a+2p)=q^2-3p^2-2ap=b$なので、これは$x^3+ax^2+bx+c$に等しい。
-  strategy: |-
-    Separate real and imaginary parts of the root equation to express b and c, then expand the factorisation.
+  - 任意の実数$a,b,c,d,p,q,x$
+  conclusion: $ax^3+bx^2+cx+d=a\left\{x-\left(-\frac{b}{a}-2p\right)\right\}(x^2-2px+p^2+q^2)$が成り立つ。
+  answer: |-
+    $a,b,c,d,p,q$を$a\neq 0$、$q\neq 0$を満たす実数とし、$p+qi$が$ax^3+bx^2+cx+d=0$の解であるとする。代入して実部と虚部を比べると、$a(p^3-3pq^2)+b(p^2-q^2)+cp+d=0$と$q\{a(3p^2-q^2)+2bp+c\}=0$を得る。$q\neq 0$より$c=-a(3p^2-q^2)-2bp$であり、これを第1式に代入すると$d=(2ap+b)(p^2+q^2)$となる。
+    一方、$a\left\{x+\frac{b}{a}+2p\right\}(x^2-2px+p^2+q^2)=(ax+b+2ap)(x^2-2px+p^2+q^2)$を展開すると、$ax^3+bx^2+\{a(p^2+q^2)-2p(b+2ap)\}x+(b+2ap)(p^2+q^2)$となる。$x$の係数は$a(q^2-3p^2)-2bp=c$、定数項は$d$に等しいので、これは$ax^3+bx^2+cx+d$である。
+  strategy: Separate real and imaginary parts of the root equation to express b and c, then expand the factorisation.
   sketch:
-    - "derive: Substituting p+qi and separating parts gives two real equations."
-    - "derive: Since q ≠ 0, b = q^2 - 3p^2 - 2ap."
-    - "derive: Substituting gives c = (a+2p)(p^2+q^2)."
-    - "conclude: Expanding (x+a+2p)(x^2-2px+p^2+q^2) gives x^3 + a x^2 + b x + c."
-  openmath: (forall (a b c p q x) (-> (and (in a R) (in b R) (in c R) (in p R) (in q R) (in x R) (!= q 0) (= (+ (+ (+ (^ (+ p (* q complex_imaginary_unit)) 3) (* a (^ (+ p (* q complex_imaginary_unit)) 2))) (* b (+ p (* q complex_imaginary_unit)))) c) 0)) (= (+ (+ (+ (^ x 3) (* a (^ x 2))) (* b x)) c) (* (- x (- (neg a) (* 2 p))) (+ (+ (- (^ x 2) (* (* 2 p) x)) (^ p 2)) (^ q 2))))))
+  - 'derive: Substituting p+qi and separating parts gives two real equations.'
+  - 'derive: Since q ≠ 0, b = q^2 - 3p^2 - 2ap.'
+  - 'derive: Substituting gives c = (a+2p)(p^2+q^2).'
+  - 'conclude: Expanding (x+a+2p)(x^2-2px+p^2+q^2) gives x^3 + a x^2 + b x + c.'
+  openmath: (forall (a b c d p q x) (-> (and (in a R) (in b R) (in c R) (in d R) (in p R) (in q R) (in x R) (!= a 0) (!= q 0) (= (+ (+ (+ (* a (^ (+ p (* q complex_imaginary_unit)) 3)) (* b (^ (+ p (* q complex_imaginary_unit)) 2))) (* c (+ p (* q complex_imaginary_unit)))) d) 0)) (= (+ (+ (+ (* a (^ x 3)) (* b (^ x 2))) (* c x)) d) (* (* a (- x (- (/ (neg b) a) (* 2 p)))) (+ (+ (- (^ x 2) (* (* 2 p) x)) (^ p 2)) (^ q 2))))))
   hard_negative:
-    statement: |-
-      実数係数の3次方程式は虚数解をもつことがあり、そのとき残りの2解はどちらも虚数である。
-    reason: |-
-      虚数解は共役な組で現れるので、虚数解の個数は$2$である。残りの1解は実数になる。$x^3-1=0$の解は$1,\omega,\omega^2$である。
-  target: |
-    ∀ (a b c p q : ℝ), q ≠ 0 → ((p : ℂ) + q * Complex.I) ^ 3 + a * ((p : ℂ) + q * Complex.I) ^ 2 + b * ((p : ℂ) + q * Complex.I) + c = 0 → ∀ x : ℝ, x ^ 3 + a * x ^ 2 + b * x + c = (x - (-a - 2 * p)) * (x ^ 2 - 2 * p * x + p ^ 2 + q ^ 2)
-  proof: |
+    statement: 実数係数の3次方程式は虚数解をもつことがあり、そのとき残りの2解はどちらも虚数である。
+    reason: 虚数解は共役な組で現れるので、虚数解の個数は$2$である。残りの1解は実数になる。$x^3-1=0$の解は$1,\omega,\omega^2$である。
+  target: '∀ (a b c d p q : ℝ), a ≠ 0 → q ≠ 0 → (a : ℂ) * ((p : ℂ) + q * Complex.I) ^ 3 + b * ((p : ℂ) + q * Complex.I) ^ 2 + c * ((p : ℂ) + q * Complex.I) + d = 0 → ∀ x : ℝ, a * x ^ 3 + b * x ^ 2 + c * x + d = a * (x - (-b / a - 2 * p)) * (x ^ 2 - 2 * p * x + p ^ 2 + q ^ 2)'
+  proof: |-
     by
-      intro a b c p q hq h x
-      have e : ((p : ℂ) + q * Complex.I) ^ 3 + a * ((p : ℂ) + q * Complex.I) ^ 2 + b * ((p : ℂ) + q * Complex.I) + c = ((p ^ 3 - 3 * p * q ^ 2 + a * (p ^ 2 - q ^ 2) + b * p + c : ℝ) : ℂ) + ((q * (3 * p ^ 2 - q ^ 2 + 2 * a * p + b) : ℝ) : ℂ) * Complex.I := by
+      intro a b c d p q ha hq h x
+      have e : (a : ℂ) * ((p : ℂ) + q * Complex.I) ^ 3 + b * ((p : ℂ) + q * Complex.I) ^ 2 + c * ((p : ℂ) + q * Complex.I) + d = ((a * (p ^ 3 - 3 * p * q ^ 2) + b * (p ^ 2 - q ^ 2) + c * p + d : ℝ) : ℂ) + ((q * (a * (3 * p ^ 2 - q ^ 2) + 2 * b * p + c) : ℝ) : ℂ) * Complex.I := by
         push_cast
-        linear_combination (3 * (p : ℂ) * q ^ 2 + (q : ℂ) ^ 3 * Complex.I + (a : ℂ) * q ^ 2) * Complex.I_sq
+        linear_combination ((a : ℂ) * (3 * (p : ℂ) * q ^ 2 + (q : ℂ) ^ 3 * Complex.I) + (b : ℂ) * q ^ 2) * Complex.I_sq
       rw [e] at h
       have hre := congrArg Complex.re h
       have him := congrArg Complex.im h
       simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.zero_re, Complex.add_im, Complex.mul_im, Complex.zero_im] at hre him
-      have hb : 3 * p ^ 2 - q ^ 2 + 2 * a * p + b = 0 := by
-        have h1 : q * (3 * p ^ 2 - q ^ 2 + 2 * a * p + b) = 0 := by linarith
+      have hI : a * (3 * p ^ 2 - q ^ 2) + 2 * b * p + c = 0 := by
+        have h1 : q * (a * (3 * p ^ 2 - q ^ 2) + 2 * b * p + c) = 0 := by linarith
         exact (mul_eq_zero.mp h1).resolve_left hq
-      have hc : p ^ 3 - 3 * p * q ^ 2 + a * (p ^ 2 - q ^ 2) + b * p + c = 0 := by linarith
-      linear_combination x * hb + hc - p * hb
+      have hR : a * (p ^ 3 - 3 * p * q ^ 2) + b * (p ^ 2 - q ^ 2) + c * p + d = 0 := by linarith
+      have h3 : a * (x - (-b / a - 2 * p)) = a * x + b + 2 * a * p := by
+        field_simp
+        ring
+      rw [h3]
+      linear_combination x * hI + hR - p * hI
 - id: linear_combination_of_equal_ratios
   kind: gap
   level: high
   topic: 式と証明・比例式
-  statement: |-
-    $\frac{a}{b}=\frac{c}{d}$で$b,d\neq 0$とする。実数$p,q$が$pb+qd\neq 0$を満たせば、$\frac{pa+qc}{pb+qd}=\frac{a}{b}$である。加比の理を、分子と分母に同じ係数を掛けて足す形に一般化したものである。
-  statement_en: |-
-    If a/b = c/d with b, d nonzero and p, q are real with pb + qd ≠ 0, then (pa+qc)/(pb+qd) = a/b. This generalises the addition of ratios, which is the case p = q = 1.
+  statement: $\frac{a}{b}=\frac{c}{d}$で$b,d\neq 0$とする。実数$p,q$が$pb+qd\neq 0$を満たせば、$\frac{pa+qc}{pb+qd}=\frac{a}{b}$である。加比の理を、分子と分母に同じ係数を掛けて足す形に一般化したものである。
+  statement_en: If a/b = c/d with b, d nonzero and p, q are real with pb + qd ≠ 0, then (pa+qc)/(pb+qd) = a/b. This generalises the addition of ratios, which is the case p = q = 1.
   assumptions:
-    - '$a,b,c,d,p,q$は実数'
-    - '$b\neq 0$, $d\neq 0$, $pb+qd\neq 0$'
-    - '$\frac{a}{b}=\frac{c}{d}$'
+  - $a,b,c,d,p,q$は実数
+  - $b\neq 0$, $d\neq 0$, $pb+qd\neq 0$
+  - $\frac{a}{b}=\frac{c}{d}$
   quantifiers:
-    - '任意の実数$a,b,c,d,p,q$'
-  conclusion: |-
-    $\frac{pa+qc}{pb+qd}=\frac{a}{b}$である。
+  - 任意の実数$a,b,c,d,p,q$
+  conclusion: $\frac{pa+qc}{pb+qd}=\frac{a}{b}$である。
   answer: |
     $a,b,c,d,p,q$を実数とし、$b,d\neq 0$, $pb+qd\neq 0$, $\frac{a}{b}=\frac{c}{d}$とする。この共通の値を$k$とおくと$a=kb$, $c=kd$である。よって$pa+qc=k(pb+qd)$であり、$pb+qd\neq 0$で割ると$\frac{pa+qc}{pb+qd}=k=\frac{a}{b}$である。
-  strategy: |-
-    Introduce the common ratio k and factor it out of the numerator.
+  strategy: Introduce the common ratio k and factor it out of the numerator.
   sketch:
-    - "setup: Put k = a/b = c/d, so a = kb and c = kd."
-    - "derive: pa + qc = k(pb + qd)."
-    - "conclude: Dividing by pb + qd gives the claim."
+  - 'setup: Put k = a/b = c/d, so a = kb and c = kd.'
+  - 'derive: pa + qc = k(pb + qd).'
+  - 'conclude: Dividing by pb + qd gives the claim.'
   openmath: (forall (a b c d p q) (-> (and (in a R) (in b R) (in c R) (in d R) (in p R) (in q R) (!= b 0) (!= d 0) (!= (+ (* p b) (* q d)) 0) (= (/ a b) (/ c d))) (= (/ (+ (* p a) (* q c)) (+ (* p b) (* q d))) (/ a b))))
   hard_negative:
-    statement: |-
-      $\frac{a}{b}=\frac{c}{d}$なら、常に$\frac{a+c}{b+d}=\frac{a}{b}$である。
-    reason: |-
-      $b+d=0$のときは左辺が定義されない。$a=1,b=1,c=-1,d=-1$がその例である。
+    statement: $\frac{a}{b}=\frac{c}{d}$なら、常に$\frac{a+c}{b+d}=\frac{a}{b}$である。
+    reason: $b+d=0$のときは左辺が定義されない。$a=1,b=1,c=-1,d=-1$がその例である。
   target: |
     ∀ (a b c d p q : ℝ), b ≠ 0 → d ≠ 0 → p * b + q * d ≠ 0 → a / b = c / d → (p * a + q * c) / (p * b + q * d) = a / b
   proof: |
@@ -1657,32 +1433,26 @@
   kind: named
   level: high
   topic: 式と証明・比例式
-  statement: |-
-    合除比の理。$\frac{a}{b}=\frac{c}{d}$で$b,d\neq 0$, $a\neq b$, $c\neq d$なら、$\frac{a+b}{a-b}=\frac{c+d}{c-d}$である。
-  statement_en: |-
-    Componendo and dividendo. If a/b = c/d with b, d nonzero, a ≠ b and c ≠ d, then (a+b)/(a-b) = (c+d)/(c-d).
+  statement: 合除比の理。$\frac{a}{b}=\frac{c}{d}$で$b,d\neq 0$, $a\neq b$, $c\neq d$なら、$\frac{a+b}{a-b}=\frac{c+d}{c-d}$である。
+  statement_en: Componendo and dividendo. If a/b = c/d with b, d nonzero, a ≠ b and c ≠ d, then (a+b)/(a-b) = (c+d)/(c-d).
   assumptions:
-    - '$a,b,c,d$は実数'
-    - '$b\neq 0$, $d\neq 0$, $a\neq b$, $c\neq d$'
-    - '$\frac{a}{b}=\frac{c}{d}$'
+  - $a,b,c,d$は実数
+  - $b\neq 0$, $d\neq 0$, $a\neq b$, $c\neq d$
+  - $\frac{a}{b}=\frac{c}{d}$
   quantifiers:
-    - '任意の実数$a,b,c,d$'
-  conclusion: |-
-    $\frac{a+b}{a-b}=\frac{c+d}{c-d}$である。
+  - 任意の実数$a,b,c,d$
+  conclusion: $\frac{a+b}{a-b}=\frac{c+d}{c-d}$である。
   answer: |
     $a,b,c,d$を実数とし、$b,d\neq 0$, $a\neq b$, $c\neq d$, $\frac{a}{b}=\frac{c}{d}$とする。共通の値を$k$とおくと$a=kb$, $c=kd$である。$a\neq b$より$b(k-1)\neq 0$なので$k\neq 1$である。よって$\frac{a+b}{a-b}=\frac{b(k+1)}{b(k-1)}=\frac{k+1}{k-1}$であり、同様に$\frac{c+d}{c-d}=\frac{k+1}{k-1}$である。両者は等しい。
-  strategy: |-
-    Introduce the common ratio k and reduce both sides to (k+1)/(k-1).
+  strategy: Introduce the common ratio k and reduce both sides to (k+1)/(k-1).
   sketch:
-    - "setup: Put k = a/b = c/d, so a = kb and c = kd."
-    - "derive: a ≠ b gives k ≠ 1."
-    - "conclude: Both sides reduce to (k+1)/(k-1)."
+  - 'setup: Put k = a/b = c/d, so a = kb and c = kd.'
+  - 'derive: a ≠ b gives k ≠ 1.'
+  - 'conclude: Both sides reduce to (k+1)/(k-1).'
   openmath: (forall (a b c d) (-> (and (in a R) (in b R) (in c R) (in d R) (!= b 0) (!= d 0) (!= a b) (!= c d) (= (/ a b) (/ c d))) (= (/ (+ a b) (- a b)) (/ (+ c d) (- c d)))))
   hard_negative:
-    statement: |-
-      $\frac{a}{b}=\frac{c}{d}$なら、$a=b$のときも$\frac{a+b}{a-b}=\frac{c+d}{c-d}$である。
-    reason: |-
-      $a=b$なら分母$a-b$が$0$になり、両辺とも定義されない。
+    statement: $\dfrac{a}{b}=\dfrac{c}{d}$なら$\dfrac{a+b}{a-b}=\dfrac{c-d}{c+d}$である。
+    reason: $a=2,b=1,c=4,d=2$のとき$\dfrac{a}{b}=\dfrac{c}{d}=2$だが、左辺は$\dfrac{3}{1}=3$、右辺は$\dfrac{2}{6}=\dfrac{1}{3}$である。分子は$c+d$、分母は$c-d$でなければならない。
   target: |
     ∀ (a b c d : ℝ), b ≠ 0 → d ≠ 0 → a ≠ b → c ≠ d → a / b = c / d → (a + b) / (a - b) = (c + d) / (c - d)
   proof: |
@@ -1695,35 +1465,29 @@
   kind: gap
   level: high
   topic: 式と証明・分数式
-  statement: |-
-    実数$a,b,c$が$abc=1$を満たし、分母がいずれも$0$でないとき、$\frac{a}{ab+a+1}+\frac{b}{bc+b+1}+\frac{c}{ca+c+1}=1$である。
-  statement_en: |-
-    If real a, b, c satisfy abc = 1 and the denominators are nonzero, then a/(ab+a+1) + b/(bc+b+1) + c/(ca+c+1) = 1.
+  statement: 実数$a,b,c$が$abc=1$を満たし、分母がいずれも$0$でないとき、$\frac{a}{ab+a+1}+\frac{b}{bc+b+1}+\frac{c}{ca+c+1}=1$である。
+  statement_en: If real a, b, c satisfy abc = 1 and the denominators are nonzero, then a/(ab+a+1) + b/(bc+b+1) + c/(ca+c+1) = 1.
   assumptions:
-    - '$a,b,c$は実数で$abc=1$'
-    - '$ab+a+1\neq 0$, $bc+b+1\neq 0$, $ca+c+1\neq 0$'
+  - $a,b,c$は実数で$abc=1$
+  - $ab+a+1\neq 0$, $bc+b+1\neq 0$, $ca+c+1\neq 0$
   quantifiers:
-    - '任意の実数$a,b,c$'
-  conclusion: |-
-    $\frac{a}{ab+a+1}+\frac{b}{bc+b+1}+\frac{c}{ca+c+1}=1$である。
+  - 任意の実数$a,b,c$
+  conclusion: $\frac{a}{ab+a+1}+\frac{b}{bc+b+1}+\frac{c}{ca+c+1}=1$である。
   answer: |
     $a,b,c$を$abc=1$を満たす実数とし、$D=ab+a+1$とおく。$D$, $bc+b+1$, $ca+c+1$はいずれも$0$でないとする。
     $abc=1$より$b\cdot D=ab^2+ab+b=ab(bc+b+1)+b(1-abc)=ab(bc+b+1)$なので、$\frac{b}{bc+b+1}=\frac{ab}{D}$である。
     また$c\cdot D=abc+ac+c=ca+c+1$なので、$\frac{c}{ca+c+1}=\frac{1}{D}$である。
     よって与式は$\frac{a}{D}+\frac{ab}{D}+\frac{1}{D}=\frac{ab+a+1}{D}=1$である。
-  strategy: |-
-    Use abc = 1 to rewrite all three fractions over the common denominator ab+a+1.
+  strategy: Use abc = 1 to rewrite all three fractions over the common denominator ab+a+1.
   sketch:
-    - "setup: Put D = ab + a + 1."
-    - "derive: abc = 1 gives b/(bc+b+1) = ab/D."
-    - "derive: abc = 1 gives c/(ca+c+1) = 1/D."
-    - "conclude: The sum is (a + ab + 1)/D = 1."
+  - 'setup: Put D = ab + a + 1.'
+  - 'derive: abc = 1 gives b/(bc+b+1) = ab/D.'
+  - 'derive: abc = 1 gives c/(ca+c+1) = 1/D.'
+  - 'conclude: The sum is (a + ab + 1)/D = 1.'
   openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (= (* (* a b) c) 1) (!= (+ (+ (* a b) a) 1) 0) (!= (+ (+ (* b c) b) 1) 0) (!= (+ (+ (* c a) c) 1) 0)) (= (+ (+ (/ a (+ (+ (* a b) a) 1)) (/ b (+ (+ (* b c) b) 1))) (/ c (+ (+ (* c a) c) 1))) 1)))
   hard_negative:
-    statement: |-
-      任意の実数$a,b,c$について、分母が$0$でなければ和は$1$である。
-    reason: |-
-      $abc=1$が必要である。$a=b=c=1$は成り立つが、$a=b=c=2$では和は$3\cdot\frac{2}{7}=\frac{6}{7}$である。
+    statement: 任意の実数$a,b,c$について、分母が$0$でなければ和は$1$である。
+    reason: $abc=1$が必要である。$a=b=c=1$は成り立つが、$a=b=c=2$では和は$3\cdot\frac{2}{7}=\frac{6}{7}$である。
   target: |
     ∀ (a b c : ℝ), a * b * c = 1 → a * b + a + 1 ≠ 0 → b * c + b + 1 ≠ 0 → c * a + c + 1 ≠ 0 → a / (a * b + a + 1) + b / (b * c + b + 1) + c / (c * a + c + 1) = 1
   proof: |
@@ -1742,33 +1506,27 @@
   kind: textbook
   level: high
   topic: 式と証明・等式の証明
-  statement: |-
-    実数$a,b,c$について、$a^3+b^3+c^3=3abc$であるための必要十分条件は、$a+b+c=0$または$a=b=c$である。実数全体で成り立つ形である。
-  statement_en: |-
-    For real a, b, c, a^3 + b^3 + c^3 = 3abc if and only if a + b + c = 0 or a = b = c.
+  statement: 実数$a,b,c$について、$a^3+b^3+c^3=3abc$であるための必要十分条件は、$a+b+c=0$または$a=b=c$である。実数全体で成り立つ形である。
+  statement_en: For real a, b, c, a^3 + b^3 + c^3 = 3abc if and only if a + b + c = 0 or a = b = c.
   assumptions:
-    - '$a,b,c$は実数'
+  - $a,b,c$は実数
   quantifiers:
-    - '任意の実数$a,b,c$'
-  conclusion: |-
-    $a^3+b^3+c^3=3abc$と、$a+b+c=0$または$a=b=c$であることは同値である。
+  - 任意の実数$a,b,c$
+  conclusion: $a^3+b^3+c^3=3abc$と、$a+b+c=0$または$a=b=c$であることは同値である。
   answer: |
     $a,b,c$を実数とする。展開して確かめられる通り、$a^3+b^3+c^3-3abc=(a+b+c)\cdot\frac{(a-b)^2+(b-c)^2+(c-a)^2}{2}$である。
     $a^3+b^3+c^3=3abc$なら、右辺の積が$0$なので、$a+b+c=0$または$(a-b)^2+(b-c)^2+(c-a)^2=0$である。後者の場合、実数の平方はいずれも$0$以上なので各項が$0$であり、$a=b=c$である。
     逆に$a+b+c=0$または$a=b=c$なら、右辺は$0$なので$a^3+b^3+c^3=3abc$である。
-  strategy: |-
-    Factor the difference and use that a sum of real squares vanishes only if each square vanishes.
+  strategy: Factor the difference and use that a sum of real squares vanishes only if each square vanishes.
   sketch:
-    - "derive: a^3 + b^3 + c^3 - 3abc = (a+b+c)((a-b)^2 + (b-c)^2 + (c-a)^2)/2."
-    - "case_split: The product vanishes when a+b+c = 0 or the sum of squares is 0."
-    - "derive: A zero sum of real squares forces a = b = c."
-    - "conclude: The converse follows from the same factorisation."
+  - 'derive: a^3 + b^3 + c^3 - 3abc = (a+b+c)((a-b)^2 + (b-c)^2 + (c-a)^2)/2.'
+  - 'case_split: The product vanishes when a+b+c = 0 or the sum of squares is 0.'
+  - 'derive: A zero sum of real squares forces a = b = c.'
+  - 'conclude: The converse follows from the same factorisation.'
   openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R)) (<-> (= (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* (* (* 3 a) b) c)) (or (= (+ (+ a b) c) 0) (and (= a b) (= b c))))))
   hard_negative:
-    statement: |-
-      実数$a,b,c$について$a^3+b^3+c^3=3abc$なら$a=b=c$である。
-    reason: |-
-      $a+b+c=0$の場合が抜けている。$a=1,b=1,c=-2$では$1+1-8=-6=3\cdot 1\cdot 1\cdot(-2)$だが$a\neq c$である。
+    statement: 実数$a,b,c$について$a^3+b^3+c^3=3abc$なら$a=b=c$である。
+    reason: $a+b+c=0$の場合が抜けている。$a=1,b=1,c=-2$では$1+1-8=-6=3\cdot 1\cdot 1\cdot(-2)$だが$a\neq c$である。
   target: |
     ∀ (a b c : ℝ), a ^ 3 + b ^ 3 + c ^ 3 = 3 * a * b * c ↔ a + b + c = 0 ∨ (a = b ∧ b = c)
   proof: |
@@ -1793,33 +1551,27 @@
   kind: gap
   level: high
   topic: 式と証明・等式の証明
-  statement: |-
-    実数$a,b,c$が$abc=1$と$a+b+c=\frac{1}{a}+\frac{1}{b}+\frac{1}{c}$を満たすなら、$a,b,c$のうち少なくとも1つは$1$である。
-  statement_en: |-
-    If real a, b, c satisfy abc = 1 and a + b + c = 1/a + 1/b + 1/c, then at least one of a, b, c equals 1.
+  statement: 実数$a,b,c$が$abc=1$と$a+b+c=\frac{1}{a}+\frac{1}{b}+\frac{1}{c}$を満たすなら、$a,b,c$のうち少なくとも1つは$1$である。
+  statement_en: If real a, b, c satisfy abc = 1 and a + b + c = 1/a + 1/b + 1/c, then at least one of a, b, c equals 1.
   assumptions:
-    - '$a,b,c$は実数で$abc=1$'
-    - '$a+b+c=\frac{1}{a}+\frac{1}{b}+\frac{1}{c}$'
+  - $a,b,c$は実数で$abc=1$
+  - $a+b+c=\frac{1}{a}+\frac{1}{b}+\frac{1}{c}$
   quantifiers:
-    - '任意の実数$a,b,c$'
-  conclusion: |-
-    $a=1$または$b=1$または$c=1$である。
+  - 任意の実数$a,b,c$
+  conclusion: $a=1$または$b=1$または$c=1$である。
   answer: |
     $a,b,c$を実数とし、$abc=1$と$a+b+c=\frac{1}{a}+\frac{1}{b}+\frac{1}{c}$を満たすとする。$abc=1$より$a,b,c$はいずれも$0$でなく、$\frac{1}{a}=bc$, $\frac{1}{b}=ca$, $\frac{1}{c}=ab$である。よって$a+b+c=ab+bc+ca$である。
     すると$(a-1)(b-1)(c-1)=abc-(ab+bc+ca)+(a+b+c)-1=1-1=0$である。したがって$a,b,c$のいずれかは$1$である。
-  strategy: |-
-    Rewrite the reciprocals as products and expand (a-1)(b-1)(c-1).
+  strategy: Rewrite the reciprocals as products and expand (a-1)(b-1)(c-1).
   sketch:
-    - "derive: abc = 1 gives 1/a = bc, 1/b = ca and 1/c = ab."
-    - "derive: Hence a + b + c = ab + bc + ca."
-    - "derive: Expanding gives (a-1)(b-1)(c-1) = 0."
-    - "conclude: One of the factors vanishes."
+  - 'derive: abc = 1 gives 1/a = bc, 1/b = ca and 1/c = ab.'
+  - 'derive: Hence a + b + c = ab + bc + ca.'
+  - 'derive: Expanding gives (a-1)(b-1)(c-1) = 0.'
+  - 'conclude: One of the factors vanishes.'
   openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (= (* (* a b) c) 1) (= (+ (+ a b) c) (+ (+ (/ 1 a) (/ 1 b)) (/ 1 c)))) (or (= a 1) (= b 1) (= c 1))))
   hard_negative:
-    statement: |-
-      この条件のもとで$a=b=c=1$である。
-    reason: |-
-      1つが$1$と分かるだけである。$a=1,b=2,c=\frac{1}{2}$は条件を満たすが$b\neq 1$である。
+    statement: この条件のもとで$a=b=c=1$である。
+    reason: 1つが$1$と分かるだけである。$a=1,b=2,c=\frac{1}{2}$は条件を満たすが$b\neq 1$である。
   target: |
     ∀ (a b c : ℝ), a * b * c = 1 → a + b + c = 1 / a + 1 / b + 1 / c → a = 1 ∨ b = 1 ∨ c = 1
   proof: |
@@ -1854,29 +1606,23 @@
   kind: named
   level: high
   topic: 式と証明・等式の証明
-  statement: |-
-    ラグランジュの恒等式（2変数の組の場合）。実数$a,b,c,d$について$(a^2+b^2)(c^2+d^2)=(ac+bd)^2+(ad-bc)^2$である。
-  statement_en: |-
-    Lagrange identity in the two-term case. For real a, b, c, d, (a^2+b^2)(c^2+d^2) = (ac+bd)^2 + (ad-bc)^2.
+  statement: ラグランジュの恒等式（2変数の組の場合）。実数$a,b,c,d$について$(a^2+b^2)(c^2+d^2)=(ac+bd)^2+(ad-bc)^2$である。
+  statement_en: Lagrange identity in the two-term case. For real a, b, c, d, (a^2+b^2)(c^2+d^2) = (ac+bd)^2 + (ad-bc)^2.
   assumptions:
-    - '$a,b,c,d$は実数'
+  - $a,b,c,d$は実数
   quantifiers:
-    - '任意の実数$a,b,c,d$'
-  conclusion: |-
-    $(a^2+b^2)(c^2+d^2)=(ac+bd)^2+(ad-bc)^2$である。
+  - 任意の実数$a,b,c,d$
+  conclusion: $(a^2+b^2)(c^2+d^2)=(ac+bd)^2+(ad-bc)^2$である。
   answer: |
     $a,b,c,d$を実数とする。右辺を展開すると$a^2c^2+2abcd+b^2d^2+a^2d^2-2abcd+b^2c^2=a^2c^2+b^2d^2+a^2d^2+b^2c^2$である。これは左辺を展開した$a^2c^2+a^2d^2+b^2c^2+b^2d^2$に等しい。
-  strategy: |-
-    Expand both sides; the cross terms cancel.
+  strategy: Expand both sides; the cross terms cancel.
   sketch:
-    - "derive: Expanding the right side cancels the ±2abcd terms."
-    - "conclude: Both sides equal a^2c^2 + a^2d^2 + b^2c^2 + b^2d^2."
+  - 'derive: Expanding the right side cancels the ±2abcd terms.'
+  - 'conclude: Both sides equal a^2c^2 + a^2d^2 + b^2c^2 + b^2d^2.'
   openmath: (forall (a b c d) (-> (and (in a R) (in b R) (in c R) (in d R)) (= (* (+ (^ a 2) (^ b 2)) (+ (^ c 2) (^ d 2))) (+ (^ (+ (* a c) (* b d)) 2) (^ (- (* a d) (* b c)) 2)))))
   hard_negative:
-    statement: |-
-      $(a^2+b^2)(c^2+d^2)=(ac+bd)^2$である。
-    reason: |-
-      一般には$(ad-bc)^2$の分だけ大きい。$a=d=1,b=c=0$では左辺は$1$、右辺は$0$である。
+    statement: $(a^2+b^2)(c^2+d^2)=(ac+bd)^2$である。
+    reason: 一般には$(ad-bc)^2$の分だけ大きい。$a=d=1,b=c=0$では左辺は$1$、右辺は$0$である。
   target: |
     ∀ (a b c d : ℝ), (a ^ 2 + b ^ 2) * (c ^ 2 + d ^ 2) = (a * c + b * d) ^ 2 + (a * d - b * c) ^ 2
   proof: |

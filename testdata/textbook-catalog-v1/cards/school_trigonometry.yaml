@@ -13,8 +13,8 @@
     $x$を実数とする。$\cos x,\sin x$は、角$x$の動径と単位円$u^2+v^2=1$の交点の座標$(u,v)=(\cos x,\sin x)$として定義される。この点は単位円上にあるので、円の方程式に代入すると$\cos^2x+\sin^2x=1$を得る。
   strategy: Substitute the unit-circle coordinates of the angle into the circle equation.
   sketch:
-  - "setup: Take the point of the unit circle at angle x, whose coordinates are (cos x, sin x)."
-  - "conclude: Substituting the coordinates into u² + v² = 1 gives the identity."
+  - 'setup: Take the point of the unit circle at angle x, whose coordinates are (cos x, sin x).'
+  - 'conclude: Substituting the coordinates into u² + v² = 1 gives the identity.'
   openmath: (forall (x) (= (+ (^ (sin x) 2) (^ (cos x) 2)) 1))
   hard_negative:
     statement: 任意の実数$x$について$\sin x+\cos x=1$である。
@@ -43,9 +43,9 @@
     である。最後の等号には$\sin^2x+\cos^2x=1$を用いた。
   strategy: Rewrite tan as sin over cos, put the sum over cos², and apply the Pythagorean identity.
   sketch:
-  - "setup: Assume cos x ≠ 0 so that tan x = sin x / cos x."
-  - "derive: 1 + tan²x = (cos²x + sin²x) / cos²x."
-  - "conclude: The numerator equals 1."
+  - 'setup: Assume cos x ≠ 0 so that tan x = sin x / cos x.'
+  - 'derive: 1 + tan²x = (cos²x + sin²x) / cos²x.'
+  - 'conclude: The numerator equals 1.'
   openmath: (forall (x) (-> (!= (cos x) 0) (= (+ 1 (^ (tan x) 2)) (/ 1 (^ (cos x) 2)))))
   hard_negative:
     statement: 実数$x$が$\cos x\neq0$をみたすとき、$1-\tan^2x=\dfrac{1}{\cos^2x}$である。
@@ -75,10 +75,10 @@
     $x,t$を$\sin x+\cos x=t$をみたす実数とする。両辺を2乗すると$\sin^2x+2\sin x\cos x+\cos^2x=t^2$である。$\sin^2x+\cos^2x=1$を代入すると$1+2\sin x\cos x=t^2$となり、$\sin x\cos x=(t^2-1)/2$を得る。
   strategy: Square the defining relation and eliminate sin²x + cos²x.
   sketch:
-  - "setup: Assume sin x + cos x = t."
-  - "derive: Squaring gives sin²x + 2 sin x cos x + cos²x = t²."
-  - "apply_theorem: Replace sin²x + cos²x by 1."
-  - "conclude: Solve for sin x cos x."
+  - 'setup: Assume sin x + cos x = t.'
+  - 'derive: Squaring gives sin²x + 2 sin x cos x + cos²x = t².'
+  - 'apply_theorem: Replace sin²x + cos²x by 1.'
+  - 'conclude: Solve for sin x cos x.'
   openmath: (forall (x t) (-> (= (+ (sin x) (cos x)) t) (= (* (sin x) (cos x)) (/ (- (^ t 2) 1) 2))))
   hard_negative:
     statement: 実数$x,t$が$\sin x-\cos x=t$をみたすとき、$\sin x\cos x=\dfrac{t^2-1}{2}$である。
@@ -105,9 +105,9 @@
     $x$を実数とする。$\sin^2x+\cos^2x=1$と$\cos^2x\geq0$から$\sin^2x\leq1$であり、したがって$-1\leq\sin x\leq1$である。$\sin$と$\cos$を入れ替えた同じ議論により$-1\leq\cos x\leq1$である。
   strategy: Bound each square by the Pythagorean identity and take square roots.
   sketch:
-  - "apply_theorem: Use sin²x + cos²x = 1."
-  - "derive: Since cos²x ≥ 0, sin²x ≤ 1, hence |sin x| ≤ 1."
-  - "conclude: The same argument with the roles exchanged bounds cos x."
+  - 'apply_theorem: Use sin²x + cos²x = 1.'
+  - 'derive: Since cos²x ≥ 0, sin²x ≤ 1, hence |sin x| ≤ 1.'
+  - 'conclude: The same argument with the roles exchanged bounds cos x.'
   openmath: (forall (x) (and (<= (neg 1) (sin x)) (<= (sin x) 1) (<= (neg 1) (cos x)) (<= (cos x) 1)))
   hard_negative:
     statement: $\cos x\neq0$をみたす任意の実数$x$について$-1\leq\tan x\leq1$である。
@@ -134,9 +134,9 @@
     $x$を$0\leq x\leq\pi$をみたす実数とする。$\sin^2x+\cos^2x=1$より$1-\cos^2x=\sin^2x$である。この区間では$\sin x\geq0$なので、$\sqrt{\sin^2x}=\sin x$となる。よって$\sin x=\sqrt{1-\cos^2x}$である。
   strategy: Use the Pythagorean identity and the nonnegativity of sine on [0, π] to remove the square root.
   sketch:
-  - "apply_theorem: The Pythagorean identity gives 1 - cos²x = sin²x."
-  - "derive: On [0, π] we have sin x ≥ 0."
-  - "conclude: So the square root of sin²x equals sin x."
+  - 'apply_theorem: The Pythagorean identity gives 1 - cos²x = sin²x.'
+  - 'derive: On [0, π] we have sin x ≥ 0.'
+  - 'conclude: So the square root of sin²x equals sin x.'
   openmath: (forall (x) (-> (and (<= 0 x) (<= x pi)) (= (sin x) (root (- 1 (^ (cos x) 2)) 2))))
   hard_negative:
     statement: 任意の実数$x$について$\sin x=\sqrt{1-\cos^2x}$である。
@@ -166,11 +166,11 @@
     $a,b$を$a^2+b^2=1$をみたす実数とする。$a^2\leq1$より$-1\leq a\leq1$である。$\cos$は$[0,\pi]$で連続であり$\cos0=1$、$\cos\pi=-1$なので、中間値の定理により$\cos t=a$となる$t\in[0,\pi]$がとれる。この$t$について$\sin t\geq0$であり、$\sin^2t=1-a^2=b^2$であるから$\sin t=|b|$である。$b\geq0$なら$\theta=t$とおき、$b<0$なら$\theta=-t$とおく。どちらの場合も$\cos\theta=\cos t=a$であり、$\sin\theta=b$である。
   strategy: Choose t in [0, π] with cos t = a and fix the sign of sine by replacing t with -t if needed.
   sketch:
-  - "derive: The relation forces -1 ≤ a ≤ 1."
-  - "apply_theorem: The intermediate value theorem gives t in [0, π] with cos t = a."
-  - "derive: sin t ≥ 0 and sin²t = b², so sin t = |b|."
-  - "case_split: Take θ = t if b ≥ 0 and θ = -t if b < 0."
-  - "conclude: Both coordinates match."
+  - 'derive: The relation forces -1 ≤ a ≤ 1.'
+  - 'apply_theorem: The intermediate value theorem gives t in [0, π] with cos t = a.'
+  - 'derive: sin t ≥ 0 and sin²t = b², so sin t = |b|.'
+  - 'case_split: Take θ = t if b ≥ 0 and θ = -t if b < 0.'
+  - 'conclude: Both coordinates match.'
   openmath: (forall (a b) (-> (= (+ (^ a 2) (^ b 2)) 1) (exists (t) (and (= a (cos t)) (= b (sin t))))))
   hard_negative:
     statement: 実数$a,b$が$a^2+b^2=1$をみたすとき、$a=\cos\theta$かつ$b=\sin\theta$となる$\theta$を$0\leq\theta\leq\pi$の範囲でとれる。
@@ -209,9 +209,9 @@
     である。
   strategy: Expand with the subtraction formulas and the values at π/2.
   sketch:
-  - "apply_theorem: Apply the subtraction formulas to π/2 - x."
-  - "derive: Substitute sin(π/2) = 1 and cos(π/2) = 0."
-  - "conclude: Both identities follow."
+  - 'apply_theorem: Apply the subtraction formulas to π/2 - x.'
+  - 'derive: Substitute sin(π/2) = 1 and cos(π/2) = 0.'
+  - 'conclude: Both identities follow.'
   openmath: (forall (x) (and (= (sin (- (/ pi 2) x)) (cos x)) (= (cos (- (/ pi 2) x)) (sin x))))
   hard_negative:
     statement: 任意の実数$x$について$\cos\left(\dfrac{\pi}{2}+x\right)=\sin x$である。
@@ -241,13 +241,13 @@
     である。
   strategy: Write the tangent as a quotient and apply the complementary-angle formulas.
   sketch:
-  - "setup: Assume sin x and cos x are nonzero, so all the quotients are defined."
-  - "apply_theorem: sin(π/2 - x) = cos x and cos(π/2 - x) = sin x."
-  - "conclude: The quotient is cos x / sin x = 1 / tan x."
+  - 'setup: Assume sin x and cos x are nonzero, so all the quotients are defined.'
+  - 'apply_theorem: sin(π/2 - x) = cos x and cos(π/2 - x) = sin x.'
+  - 'conclude: The quotient is cos x / sin x = 1 / tan x.'
   openmath: (forall (x) (-> (and (!= (sin x) 0) (!= (cos x) 0)) (= (tan (- (/ pi 2) x)) (/ 1 (tan x)))))
   hard_negative:
-    statement: $\cos x\neq0$をみたす任意の実数$x$について$\tan\left(\dfrac{\pi}{2}-x\right)=\dfrac{1}{\tan x}$である。
-    reason: $x=0$では$\tan x=0$なので右辺が定義されず、左辺の$\tan(\pi/2)$も定義されない。$\sin x\neq0$の仮定を落とせない。
+    statement: $\sin x\neq0$かつ$\cos x\neq0$をみたす実数$x$について$\tan\left(\dfrac{\pi}{2}-x\right)=\tan x$である。
+    reason: 余角では正接は逆数になる。$x=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが$\tan(\pi/6)=1/\sqrt{3}$であり一致しない。等しくなるのは$\tan x=\pm1$のときに限る。
   target: |
     ∀ x : ℝ, Real.sin x ≠ 0 → Real.cos x ≠ 0 → Real.tan (Real.pi / 2 - x) = 1 / Real.tan x
   proof: |
@@ -273,10 +273,10 @@
     である。$\cos x\neq0$のときは$\cos(\pi-x)\neq0$であり、$\tan(\pi-x)=\sin x/(-\cos x)=-\tan x$となる。
   strategy: Expand with the subtraction formulas at π and divide.
   sketch:
-  - "apply_theorem: Apply the subtraction formulas to π - x."
-  - "derive: Substitute sin π = 0 and cos π = -1."
-  - "derive: If cos x ≠ 0, divide the sine by the cosine."
-  - "conclude: This gives all three identities."
+  - 'apply_theorem: Apply the subtraction formulas to π - x.'
+  - 'derive: Substitute sin π = 0 and cos π = -1.'
+  - 'derive: If cos x ≠ 0, divide the sine by the cosine.'
+  - 'conclude: This gives all three identities.'
   openmath: (forall (x) (and (= (sin (- pi x)) (sin x)) (= (cos (- pi x)) (neg (cos x))) (-> (!= (cos x) 0) (= (tan (- pi x)) (neg (tan x))))))
   hard_negative:
     statement: $\cos x\neq0$をみたす任意の実数$x$について$\tan(\pi-x)=\tan x$である。
@@ -303,9 +303,9 @@
     $\sin(x+\pi/2)=\cos x$、$\cos(x+\pi/2)=-\sin x$である。同様に$\sin\pi=0$、$\cos\pi=-1$を代入すると$\sin(x+\pi)=-\sin x$、$\cos(x+\pi)=-\cos x$である。
   strategy: Expand with the addition formulas and the values at π/2 and π.
   sketch:
-  - "apply_theorem: Apply the addition formulas with second angle π/2."
-  - "apply_theorem: Apply the addition formulas with second angle π."
-  - "conclude: Substitute the values of sine and cosine at those angles."
+  - 'apply_theorem: Apply the addition formulas with second angle π/2.'
+  - 'apply_theorem: Apply the addition formulas with second angle π.'
+  - 'conclude: Substitute the values of sine and cosine at those angles.'
   openmath: (forall (x) (and (= (sin (+ x (/ pi 2))) (cos x)) (= (cos (+ x (/ pi 2))) (neg (sin x))) (= (sin (+ x pi)) (neg (sin x))) (= (cos (+ x pi)) (neg (cos x)))))
   hard_negative:
     statement: 任意の実数$x$について$\cos\left(x+\dfrac{\pi}{2}\right)=\sin x$である。
@@ -332,10 +332,10 @@
     $A,B,C$を$A+B+C=\pi$をみたす実数とする。$A+B=\pi-C$であるから、補角の公式により$\sin(A+B)=\sin C$、$\cos(A+B)=-\cos C$である。また$(A+B)/2=\pi/2-C/2$であるから、余角の公式により$\sin((A+B)/2)=\cos(C/2)$、$\cos((A+B)/2)=\sin(C/2)$である。
   strategy: Rewrite A + B as π - C and apply the supplementary and complementary angle formulas.
   sketch:
-  - "translate: A + B = π - C and (A + B)/2 = π/2 - C/2."
-  - "apply_theorem: Use the supplementary angle formulas for A + B."
-  - "apply_theorem: Use the complementary angle formulas for (A + B)/2."
-  - "conclude: The four identities follow."
+  - 'translate: A + B = π - C and (A + B)/2 = π/2 - C/2.'
+  - 'apply_theorem: Use the supplementary angle formulas for A + B.'
+  - 'apply_theorem: Use the complementary angle formulas for (A + B)/2.'
+  - 'conclude: The four identities follow.'
   openmath: (forall (a b c) (-> (= (+ (+ a b) c) pi) (and (= (sin (+ a b)) (sin c)) (= (cos (+ a b)) (neg (cos c))) (= (sin (/ (+ a b) 2)) (cos (/ c 2))) (= (cos (/ (+ a b) 2)) (sin (/ c 2))))))
   hard_negative:
     statement: 実数$A,B,C$が$A+B+C=2\pi$をみたすとき、$\sin(A+B)=\sin C$である。
@@ -365,10 +365,10 @@
     $x$を実数、$n$を整数とする。$\sin 2\pi=0$、$\cos 2\pi=1$と加法定理から、任意の実数$y$について$\sin(y+2\pi)=\sin y$、$\cos(y+2\pi)=\cos y$である。$y$を$y-2\pi$に置き換えれば$\sin(y-2\pi)=\sin y$、$\cos(y-2\pi)=\cos y$も得られる。$n\geq0$のときは前者を$n$回、$n<0$のときは後者を$-n$回繰り返すと、結論を得る。
   strategy: Prove invariance under ±2π by the addition formulas and iterate over the integer n.
   sketch:
-  - "apply_theorem: The addition formulas with sin 2π = 0 and cos 2π = 1 give period 2π."
-  - "derive: Replacing y by y - 2π handles the negative direction."
-  - "induction: Iterate |n| times."
-  - "conclude: The value at x + 2nπ equals the value at x."
+  - 'apply_theorem: The addition formulas with sin 2π = 0 and cos 2π = 1 give period 2π.'
+  - 'derive: Replacing y by y - 2π handles the negative direction.'
+  - 'induction: Iterate |n| times.'
+  - 'conclude: The value at x + 2nπ equals the value at x.'
   openmath: (forall (x n) (-> (in n Z) (and (= (sin (+ x (* (* 2 n) pi))) (sin x)) (= (cos (+ x (* (* 2 n) pi))) (cos x)))))
   hard_negative:
     statement: 任意の実数$x$と整数$n$について$\sin(x+n\pi)=\sin x$である。
@@ -398,10 +398,10 @@
     $x$を$\cos x\neq0$をみたす実数、$n$を整数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$、$\cos(y+\pi)=-\cos y$であり、$y$を$y-\pi$に置き換えると$\sin(y-\pi)=-\sin y$、$\cos(y-\pi)=-\cos y$でもある。$n\geq0$なら前者を、$n<0$なら後者を$|n|$回繰り返すと$\sin(x+n\pi)=(-1)^n\sin x$、$\cos(x+n\pi)=(-1)^n\cos x$である。$\cos(x+n\pi)\neq0$であり、割り算で$(-1)^n$が消えるので$\tan(x+n\pi)=\sin x/\cos x=\tan x$である。
   strategy: Shifting by nπ multiplies both sine and cosine by (-1)^n, which cancels in the quotient.
   sketch:
-  - "setup: Assume cos x ≠ 0."
-  - "derive: Iterating the shift by π gives the factor (-1)^n on both sine and cosine."
-  - "derive: In particular cos(x + nπ) ≠ 0."
-  - "conclude: The factor cancels in the quotient."
+  - 'setup: Assume cos x ≠ 0.'
+  - 'derive: Iterating the shift by π gives the factor (-1)^n on both sine and cosine.'
+  - 'derive: In particular cos(x + nπ) ≠ 0.'
+  - 'conclude: The factor cancels in the quotient.'
   openmath: (forall (x n) (-> (and (!= (cos x) 0) (in n Z)) (= (tan (+ x (* n pi))) (tan x))))
   hard_negative:
     statement: 実数$x$が$\cos x\neq0$かつ$\sin x\neq0$をみたし、$n$が整数のとき、$\tan\left(x+\dfrac{n\pi}{2}\right)=\tan x$である。
@@ -428,9 +428,9 @@
     $x$を実数とする。角$x$の単位円上の点$(\cos x,\sin x)$と角$-x$の点は第1座標の軸について対称なので、$\cos(-x)=\cos x$、$\sin(-x)=-\sin x$である。$\cos x\neq0$のときは$\cos(-x)\neq0$であり、$\tan(-x)=-\sin x/\cos x=-\tan x$である。
   strategy: Reflect the unit-circle point across the first axis and divide.
   sketch:
-  - "setup: Compare the unit-circle points at angles x and -x."
-  - "derive: They are mirror images across the first axis, so cosine agrees and sine changes sign."
-  - "conclude: If cos x ≠ 0, the quotient changes sign."
+  - 'setup: Compare the unit-circle points at angles x and -x.'
+  - 'derive: They are mirror images across the first axis, so cosine agrees and sine changes sign.'
+  - 'conclude: If cos x ≠ 0, the quotient changes sign.'
   openmath: (forall (x) (and (= (sin (neg x)) (neg (sin x))) (= (cos (neg x)) (cos x)) (-> (!= (cos x) 0) (= (tan (neg x)) (neg (tan x))))))
   hard_negative:
     statement: 任意の実数$x$について$\cos(-x)=-\cos x$である。
@@ -456,9 +456,9 @@
     $n$を整数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$、$\cos(y+\pi)=-\cos y$であり、$\sin0=0$、$\cos0=1$である。$y=0$から始めて角を$\pi$ずつ動かすと、正の向きでも負の向きでも1回ごとに符号が反転する。したがって$\sin n\pi=(-1)^n\sin0=0$、$\cos n\pi=(-1)^n\cos0=(-1)^n$である。
   strategy: Induct on the integer n using the shift formulas for π.
   sketch:
-  - "setup: Start from sin 0 = 0 and cos 0 = 1."
-  - "induction: Each shift by ±π changes both signs."
-  - "conclude: After n shifts the values are 0 and (-1)^n."
+  - 'setup: Start from sin 0 = 0 and cos 0 = 1.'
+  - 'induction: Each shift by ±π changes both signs.'
+  - 'conclude: After n shifts the values are 0 and (-1)^n.'
   openmath: (forall (n) (-> (in n Z) (and (= (sin (* n pi)) 0) (= (cos (* n pi)) (^ (neg 1) n)))))
   hard_negative:
     statement: 任意の整数$n$について$\cos n\pi=1$である。
@@ -473,8 +473,8 @@
   kind: gap
   level: high
   topic: 三角関数・周期
-  statement: 実数$a,\omega,b,x$について$\omega\neq0$のとき、$a\sin\left(\omega\left(x+\dfrac{2\pi}{\omega}\right)+b\right)=a\sin(\omega x+b)$である。
-  statement_en: For real a, ω, b, x with ω ≠ 0, a sin(ω(x + 2π/ω) + b) = a sin(ωx + b).
+  statement: 実数$a,\omega,b,x$について$\omega\neq0$のとき、$a\sin\left(\omega\left(x+\dfrac{2\pi}{\omega}\right)+b\right)=a\sin(\omega x+b)$である。すなわち$2\pi/\omega$は周期の一つであり、最小周期が$2\pi/|\omega|$であるという主張は含まない。
+  statement_en: For real a, ω, b, x with ω ≠ 0, a sin(ω(x + 2π/ω) + b) = a sin(ωx + b). This says 2π/ω is a period; it does not claim minimality (least period 2π/|ω|).
   assumptions:
   - $a,\omega,b,x$は実数
   - $\omega\neq0$
@@ -485,10 +485,10 @@
     $a,\omega,b,x$を実数とし、$\omega\neq0$とする。$\omega(x+2\pi/\omega)+b=(\omega x+b)+2\pi$であり、$\sin$は$2\pi$を周期にもつので、$\sin(\omega(x+2\pi/\omega)+b)=\sin(\omega x+b)$である。両辺に$a$を掛ければ結論を得る。
   strategy: Distribute ω inside the argument so the shift becomes exactly 2π.
   sketch:
-  - "setup: Assume ω ≠ 0 so that 2π/ω is defined."
-  - "derive: The argument equals (ωx + b) + 2π."
-  - "apply_theorem: Sine has period 2π."
-  - "conclude: Multiply both sides by a."
+  - 'setup: Assume ω ≠ 0 so that 2π/ω is defined.'
+  - 'derive: The argument equals (ωx + b) + 2π.'
+  - 'apply_theorem: Sine has period 2π.'
+  - 'conclude: Multiply both sides by a.'
   openmath: (forall (a w b x) (-> (!= w 0) (= (* a (sin (+ (* w (+ x (/ (* 2 pi) w))) b))) (* a (sin (+ (* w x) b))))))
   hard_negative:
     statement: 実数$a,\omega,b,x$について$a\sin(\omega(x+2\pi)+b)=a\sin(\omega x+b)$である。
@@ -518,11 +518,11 @@
     $T$を正の実数とし、任意の実数$x$について$\sin(x+T)=\sin x$が成り立つとする。$0<T<2\pi$と仮定して矛盾を導く。$x=\pi/2$を代入すると、$\sin(\pi/2+T)=\cos T$なので$\cos T=1$である。一方、倍角の公式より$\cos T=1-2\sin^2(T/2)$であり、$0<T/2<\pi$から$\sin(T/2)>0$なので$\cos T<1$である。これは矛盾である。よって$T\geq2\pi$である。
   strategy: Evaluate at x = π/2 to force cos T = 1, which is impossible on (0, 2π).
   sketch:
-  - "contradiction: Assume 0 < T < 2π."
-  - "derive: Taking x = π/2 gives cos T = 1."
-  - "apply_theorem: cos T = 1 - 2 sin²(T/2) by the double-angle formula."
-  - "derive: 0 < T/2 < π gives sin(T/2) > 0, so cos T < 1."
-  - "conclude: This contradicts cos T = 1."
+  - 'contradiction: Assume 0 < T < 2π.'
+  - 'derive: Taking x = π/2 gives cos T = 1.'
+  - 'apply_theorem: cos T = 1 - 2 sin²(T/2) by the double-angle formula.'
+  - 'derive: 0 < T/2 < π gives sin(T/2) > 0, so cos T < 1.'
+  - 'conclude: This contradicts cos T = 1.'
   openmath: (forall (T) (-> (and (> T 0) (forall (x) (= (sin (+ x T)) (sin x)))) (<= (* 2 pi) T)))
   hard_negative:
     statement: 正の実数$T$が任意の実数$x$について$|\sin(x+T)|=|\sin x|$をみたすならば、$T\geq2\pi$である。
@@ -556,9 +556,9 @@
     $x,y$を実数とする。和の加法定理$\sin(x+z)=\sin x\cos z+\cos x\sin z$、$\cos(x+z)=\cos x\cos z-\sin x\sin z$で$z=-y$とおく。$\cos(-y)=\cos y$、$\sin(-y)=-\sin y$を代入すると結論を得る。
   strategy: Apply the sum formulas to x + (-y) and use the parity of sine and cosine.
   sketch:
-  - "apply_theorem: Use the sum formulas with second angle -y."
-  - "derive: Substitute cos(-y) = cos y and sin(-y) = -sin y."
-  - "conclude: The difference formulas follow."
+  - 'apply_theorem: Use the sum formulas with second angle -y.'
+  - 'derive: Substitute cos(-y) = cos y and sin(-y) = -sin y.'
+  - 'conclude: The difference formulas follow.'
   openmath: (forall (x y) (and (= (sin (- x y)) (- (* (sin x) (cos y)) (* (cos x) (sin y)))) (= (cos (- x y)) (+ (* (cos x) (cos y)) (* (sin x) (sin y))))))
   hard_negative:
     statement: 任意の実数$x,y$について$\cos(x-y)=\cos x\cos y-\sin x\sin y$である。
@@ -588,15 +588,15 @@
     $\tan(x+y)=\dfrac{\sin x\cos y+\cos x\sin y}{\cos x\cos y-\sin x\sin y}$である。ここで分母は$\cos(x+y)\neq0$である。分子と分母を$\cos x\cos y\neq0$で割ると、分子は$\tan x+\tan y$、分母は$1-\tan x\tan y$となる。分母の$1-\tan x\tan y=\cos(x+y)/(\cos x\cos y)$は$0$でない。よって結論を得る。
   strategy: Write tan(x+y) as a quotient via the addition formulas and divide by cos x cos y.
   sketch:
-  - "setup: Assume cos x, cos y and cos(x+y) are nonzero."
-  - "apply_theorem: Expand the numerator and denominator by the addition formulas."
-  - "derive: Divide both by cos x cos y."
-  - "derive: The new denominator 1 - tan x tan y equals cos(x+y)/(cos x cos y), which is nonzero."
-  - "conclude: The quotient is the claimed formula."
+  - 'setup: Assume cos x, cos y and cos(x+y) are nonzero.'
+  - 'apply_theorem: Expand the numerator and denominator by the addition formulas.'
+  - 'derive: Divide both by cos x cos y.'
+  - 'derive: The new denominator 1 - tan x tan y equals cos(x+y)/(cos x cos y), which is nonzero.'
+  - 'conclude: The quotient is the claimed formula.'
   openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0) (!= (cos (+ x y)) 0)) (= (tan (+ x y)) (/ (+ (tan x) (tan y)) (- 1 (* (tan x) (tan y)))))))
   hard_negative:
-    statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan(x+y)=\dfrac{\tan x+\tan y}{1-\tan x\tan y}$である。
-    reason: $x=y=\pi/4$では分母が$0$であり、$\tan(x+y)=\tan(\pi/2)$も定義されない。$\cos(x+y)\neq0$の仮定を落とせない。
+    statement: $\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)\neq0$のとき$\tan(x+y)=\dfrac{\tan x+\tan y}{1+\tan x\tan y}$である。
+    reason: 分母の符号が違う。$x=y=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが、右辺は$\dfrac{2/\sqrt3}{4/3}=\dfrac{\sqrt3}{2}$である。
   target: |
     ∀ x y : ℝ, Real.cos x ≠ 0 → Real.cos y ≠ 0 → Real.cos (x + y) ≠ 0 → Real.tan (x + y) = (Real.tan x + Real.tan y) / (1 - Real.tan x * Real.tan y)
   proof: |
@@ -630,10 +630,10 @@
     $\tan(x-y)=\dfrac{\sin x\cos y-\cos x\sin y}{\cos x\cos y+\sin x\sin y}$である。ここで分母は$\cos(x-y)\neq0$である。分子と分母を$\cos x\cos y\neq0$で割ると、分子は$\tan x-\tan y$、分母は$1+\tan x\tan y$となり、この分母は$\cos(x-y)/(\cos x\cos y)$なので$0$でない。よって結論を得る。
   strategy: Write tan(x-y) as a quotient via the difference formulas and divide by cos x cos y.
   sketch:
-  - "setup: Assume cos x, cos y and cos(x-y) are nonzero."
-  - "apply_theorem: Expand the numerator and denominator by the difference formulas."
-  - "derive: Divide both by cos x cos y."
-  - "conclude: The new denominator equals cos(x-y)/(cos x cos y), nonzero, so the formula holds."
+  - 'setup: Assume cos x, cos y and cos(x-y) are nonzero.'
+  - 'apply_theorem: Expand the numerator and denominator by the difference formulas.'
+  - 'derive: Divide both by cos x cos y.'
+  - 'conclude: The new denominator equals cos(x-y)/(cos x cos y), nonzero, so the formula holds.'
   openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0) (!= (cos (- x y)) 0)) (= (tan (- x y)) (/ (- (tan x) (tan y)) (+ 1 (* (tan x) (tan y)))))))
   hard_negative:
     statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$、$\cos(x-y)\neq0$をみたすとき、$\tan(x-y)=\dfrac{\tan x-\tan y}{1-\tan x\tan y}$である。
@@ -669,10 +669,10 @@
     $x,y$を$\cos x\neq0$、$\cos y\neq0$をみたす実数とする。$\tan x\tan y=\dfrac{\sin x\sin y}{\cos x\cos y}$であるから、$\tan x\tan y=1$は$\sin x\sin y=\cos x\cos y$、すなわち$\cos x\cos y-\sin x\sin y=0$と同値である。左辺は加法定理により$\cos(x+y)$に等しい。
   strategy: Clear the denominator and recognize the addition formula for cosine.
   sketch:
-  - "setup: Assume cos x and cos y are nonzero."
-  - "translate: tan x tan y = 1 is equivalent to sin x sin y = cos x cos y."
-  - "apply_theorem: cos x cos y - sin x sin y = cos(x+y)."
-  - "conclude: Hence the two conditions are equivalent."
+  - 'setup: Assume cos x and cos y are nonzero.'
+  - 'translate: tan x tan y = 1 is equivalent to sin x sin y = cos x cos y.'
+  - 'apply_theorem: cos x cos y - sin x sin y = cos(x+y).'
+  - 'conclude: Hence the two conditions are equivalent.'
   openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0)) (<-> (= (* (tan x) (tan y)) 1) (= (cos (+ x y)) 0))))
   hard_negative:
     statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x\tan y=1$と$\cos(x-y)=0$は同値である。
@@ -708,10 +708,10 @@
     $\sin(x+y)\sin(x-y)=\sin^2x\cos^2y-\cos^2x\sin^2y$である。$\cos^2y=1-\sin^2y$、$\cos^2x=1-\sin^2x$を代入すると、$\sin^2x\sin^2y$の項が消えて$\sin^2x-\sin^2y$となる。同様に$\cos(x+y)\cos(x-y)=\cos^2x\cos^2y-\sin^2x\sin^2y$であり、$\cos^2y=1-\sin^2y$を代入すると$\cos^2x-(\cos^2x+\sin^2x)\sin^2y=\cos^2x-\sin^2y$となる。
   strategy: Expand both factors by the addition formulas and eliminate cosines with the Pythagorean identity.
   sketch:
-  - "apply_theorem: Expand both products by the addition and difference formulas."
-  - "derive: The product is a difference of squares in sin x cos y and cos x sin y."
-  - "apply_theorem: Replace cos²y by 1 - sin²y and cos²x by 1 - sin²x where needed."
-  - "conclude: The mixed terms cancel."
+  - 'apply_theorem: Expand both products by the addition and difference formulas.'
+  - 'derive: The product is a difference of squares in sin x cos y and cos x sin y.'
+  - 'apply_theorem: Replace cos²y by 1 - sin²y and cos²x by 1 - sin²x where needed.'
+  - 'conclude: The mixed terms cancel.'
   openmath: (forall (x y) (and (= (* (sin (+ x y)) (sin (- x y))) (- (^ (sin x) 2) (^ (sin y) 2))) (= (* (cos (+ x y)) (cos (- x y))) (- (^ (cos x) 2) (^ (sin y) 2)))))
   hard_negative:
     statement: 任意の実数$x,y$について$\cos(x+y)\cos(x-y)=\cos^2x-\cos^2y$である。
@@ -743,11 +743,11 @@
     $x,y$を実数とする。$\sin x=\sin y$かつ$\cos x=\cos y$とする。差の角の公式より$\cos(x-y)=\cos^2y+\sin^2y=1$である。$x-y=2n\pi+r$となる整数$n$と$0\leq r<2\pi$をとると$\cos r=1$である。$r>0$なら$0<r/2<\pi$より$\sin(r/2)>0$であり、$\cos r=1-2\sin^2(r/2)<1$となって矛盾する。したがって$r=0$であり、$x=y+2n\pi$である。逆に$x=y+2n\pi$なら、$\sin,\cos$が$2\pi$を周期にもつことから両方の等式が成り立つ。
   strategy: Reduce the equalities to cos(x-y) = 1 and locate its solutions by the half-angle identity.
   sketch:
-  - "derive: Equal sine and cosine give cos(x-y) = 1 by the difference formula."
-  - "construct: Write x - y = 2nπ + r with 0 ≤ r < 2π."
-  - "contradiction: If r > 0, then cos r = 1 - 2 sin²(r/2) < 1."
-  - "derive: So r = 0 and x = y + 2nπ."
-  - "conclude: The converse follows from the period 2π."
+  - 'derive: Equal sine and cosine give cos(x-y) = 1 by the difference formula.'
+  - 'construct: Write x - y = 2nπ + r with 0 ≤ r < 2π.'
+  - 'contradiction: If r > 0, then cos r = 1 - 2 sin²(r/2) < 1.'
+  - 'derive: So r = 0 and x = y + 2nπ.'
+  - 'conclude: The converse follows from the period 2π.'
   openmath: (forall (x y) (<-> (and (= (sin x) (sin y)) (= (cos x) (cos y))) (exists (n) (and (in n Z) (= x (+ y (* (* 2 n) pi)))))))
   hard_negative:
     statement: 実数$x,y$について、$\sin x=\sin y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
@@ -783,8 +783,8 @@
     $x$を実数とする。加法定理$\sin(x+y)=\sin x\cos y+\cos x\sin y$で$y=x$とおくと$\sin2x=\sin x\cos x+\cos x\sin x=2\sin x\cos x$である。
   strategy: Put y = x in the addition formula for sine.
   sketch:
-  - "apply_theorem: Use the addition formula for sine with y = x."
-  - "conclude: The two terms are equal."
+  - 'apply_theorem: Use the addition formula for sine with y = x.'
+  - 'conclude: The two terms are equal.'
   openmath: (forall (x) (= (sin (* 2 x)) (* (* 2 (sin x)) (cos x))))
   hard_negative:
     statement: 任意の実数$x$について$\sin2x=2\sin x$である。
@@ -810,10 +810,10 @@
     $x$を実数とする。加法定理$\cos(x+y)=\cos x\cos y-\sin x\sin y$で$y=x$とおくと$\cos2x=\cos^2x-\sin^2x$である。$\sin^2x=1-\cos^2x$を代入すると$2\cos^2x-1$となり、$\cos^2x=1-\sin^2x$を代入すると$1-2\sin^2x$となる。
   strategy: Put y = x in the addition formula for cosine and eliminate one square at a time.
   sketch:
-  - "apply_theorem: Use the addition formula for cosine with y = x."
-  - "derive: Substitute sin²x = 1 - cos²x for the second form."
-  - "derive: Substitute cos²x = 1 - sin²x for the third form."
-  - "conclude: All three expressions equal cos 2x."
+  - 'apply_theorem: Use the addition formula for cosine with y = x.'
+  - 'derive: Substitute sin²x = 1 - cos²x for the second form.'
+  - 'derive: Substitute cos²x = 1 - sin²x for the third form.'
+  - 'conclude: All three expressions equal cos 2x.'
   openmath: (forall (x) (and (= (cos (* 2 x)) (- (^ (cos x) 2) (^ (sin x) 2))) (= (cos (* 2 x)) (- (* 2 (^ (cos x) 2)) 1)) (= (cos (* 2 x)) (- 1 (* 2 (^ (sin x) 2))))))
   hard_negative:
     statement: 任意の実数$x$について$\cos2x=1-2\cos^2x$である。
@@ -843,13 +843,13 @@
     $x$を$\cos x\neq0$、$\cos2x\neq0$をみたす実数とする。正接の加法定理で$y=x$とおく。条件$\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)=\cos2x\neq0$がみたされるので、$\tan2x=\dfrac{\tan x+\tan x}{1-\tan x\tan x}=\dfrac{2\tan x}{1-\tan^2x}$である。
   strategy: Put y = x in the addition formula for tangent after checking its hypotheses.
   sketch:
-  - "setup: Assume cos x ≠ 0 and cos 2x ≠ 0."
-  - "apply_theorem: Use the tangent addition formula with y = x."
-  - "conclude: Combine the numerator and the denominator."
+  - 'setup: Assume cos x ≠ 0 and cos 2x ≠ 0.'
+  - 'apply_theorem: Use the tangent addition formula with y = x.'
+  - 'conclude: Combine the numerator and the denominator.'
   openmath: (forall (x) (-> (and (!= (cos x) 0) (!= (cos (* 2 x)) 0)) (= (tan (* 2 x)) (/ (* 2 (tan x)) (- 1 (^ (tan x) 2))))))
   hard_negative:
-    statement: 実数$x$が$\cos x\neq0$をみたすとき、$\tan2x=\dfrac{2\tan x}{1-\tan^2x}$である。
-    reason: $x=\pi/4$では分母が$0$であり、$\tan(\pi/2)$も定義されない。$\cos2x\neq0$の仮定が必要である。
+    statement: $\cos x\neq0$、$\cos2x\neq0$のとき$\tan2x=\dfrac{2\tan x}{1+\tan^2x}$である。
+    reason: 分母の符号が違う。$x=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが、右辺は$\dfrac{2/\sqrt3}{4/3}=\dfrac{\sqrt3}{2}$である。$1+\tan^2x=1/\cos^2x$は正接の倍角の分母ではない。
   target: |
     ∀ x : ℝ, Real.cos x ≠ 0 → Real.cos (2 * x) ≠ 0 → Real.tan (2 * x) = 2 * Real.tan x / (1 - Real.tan x ^ 2)
   proof: |
@@ -871,8 +871,8 @@
     $x$を実数とする。倍角の公式を角$x/2$に適用すると$\cos x=1-2\sin^2(x/2)$、$\cos x=2\cos^2(x/2)-1$である。それぞれを$\sin^2(x/2)$、$\cos^2(x/2)$について解くと結論を得る。
   strategy: Apply the double-angle forms of cosine at angle x/2 and solve for the squares.
   sketch:
-  - "apply_theorem: Use cos 2u = 1 - 2 sin²u and cos 2u = 2 cos²u - 1 with u = x/2."
-  - "conclude: Solve each equation for the square."
+  - 'apply_theorem: Use cos 2u = 1 - 2 sin²u and cos 2u = 2 cos²u - 1 with u = x/2.'
+  - 'conclude: Solve each equation for the square.'
   openmath: (forall (x) (and (= (^ (sin (/ x 2)) 2) (/ (- 1 (cos x)) 2)) (= (^ (cos (/ x 2)) 2) (/ (+ 1 (cos x)) 2))))
   hard_negative:
     statement: 任意の実数$x$について$\sin^2\dfrac{x}{2}=\dfrac{1+\cos x}{2}$である。
@@ -904,10 +904,10 @@
     $x$を実数とする。半角の公式より$\sin^2(x/2)=(1-\cos x)/2$、$\cos^2(x/2)=(1+\cos x)/2$である。$0\leq x\leq2\pi$なら$0\leq x/2\leq\pi$なので$\sin(x/2)\geq0$であり、平方根をとると第1の式を得る。$-\pi\leq x\leq\pi$なら$-\pi/2\leq x/2\leq\pi/2$なので$\cos(x/2)\geq0$であり、平方根をとると第2の式を得る。
   strategy: Take nonnegative square roots of the half-angle formulas on the intervals where the sign is known.
   sketch:
-  - "apply_theorem: Start from the half-angle formulas for the squares."
-  - "derive: On [0, 2π], x/2 lies in [0, π], so sin(x/2) ≥ 0."
-  - "derive: On [-π, π], x/2 lies in [-π/2, π/2], so cos(x/2) ≥ 0."
-  - "conclude: Take the nonnegative square roots."
+  - 'apply_theorem: Start from the half-angle formulas for the squares.'
+  - 'derive: On [0, 2π], x/2 lies in [0, π], so sin(x/2) ≥ 0.'
+  - 'derive: On [-π, π], x/2 lies in [-π/2, π/2], so cos(x/2) ≥ 0.'
+  - 'conclude: Take the nonnegative square roots.'
   openmath: (forall (x) (and (-> (and (<= 0 x) (<= x (* 2 pi))) (= (sin (/ x 2)) (root (/ (- 1 (cos x)) 2) 2))) (-> (and (<= (neg pi) x) (<= x pi)) (= (cos (/ x 2)) (root (/ (+ 1 (cos x)) 2) 2)))))
   hard_negative:
     statement: 任意の実数$x$について$\sin\dfrac{x}{2}=\sqrt{\dfrac{1-\cos x}{2}}$である。
@@ -935,11 +935,11 @@
     $x,t$を$\cos(x/2)\neq0$、$t=\tan(x/2)$をみたす実数とする。$c=\cos(x/2)$、$s=\sin(x/2)$とおくと$t=s/c$であり、$1+t^2=1/c^2$である。倍角の公式より$\sin x=2sc=2(s/c)c^2=2t/(1+t^2)$である。また$\cos x=c^2-s^2=c^2(1-t^2)=(1-t^2)/(1+t^2)$である。
   strategy: Apply the double-angle formulas at x/2 and factor c² = 1/(1+t²).
   sketch:
-  - "setup: Put c = cos(x/2) and s = sin(x/2), so t = s/c."
-  - "apply_theorem: 1 + t² = 1/c²."
-  - "derive: sin x = 2sc = 2t c² by the double-angle formula."
-  - "derive: cos x = c² - s² = c²(1 - t²)."
-  - "conclude: Substitute c² = 1/(1 + t²)."
+  - 'setup: Put c = cos(x/2) and s = sin(x/2), so t = s/c.'
+  - 'apply_theorem: 1 + t² = 1/c².'
+  - 'derive: sin x = 2sc = 2t c² by the double-angle formula.'
+  - 'derive: cos x = c² - s² = c²(1 - t²).'
+  - 'conclude: Substitute c² = 1/(1 + t²).'
   openmath: (forall (x t) (-> (and (!= (cos (/ x 2)) 0) (= t (tan (/ x 2)))) (and (= (sin x) (/ (* 2 t) (+ 1 (^ t 2)))) (= (cos x) (/ (- 1 (^ t 2)) (+ 1 (^ t 2)))))))
   hard_negative:
     statement: 任意の実数$x$について、$\cos x=\dfrac{1-t^2}{1+t^2}$となる$t=\tan\dfrac{x}{2}$をとれる。
@@ -981,10 +981,10 @@
     $\sin3x=\sin2x\cos x+\cos2x\sin x=2\sin x\cos^2x+(1-2\sin^2x)\sin x$である。$\cos^2x=1-\sin^2x$を代入して整理すると$3\sin x-4\sin^3x$となる。
   strategy: Split 3x as 2x + x and rewrite everything in terms of sin x.
   sketch:
-  - "apply_theorem: Use the addition formula with 2x and x."
-  - "apply_theorem: Replace sin 2x and cos 2x by the double-angle formulas."
-  - "derive: Replace cos²x by 1 - sin²x."
-  - "conclude: Collect the terms."
+  - 'apply_theorem: Use the addition formula with 2x and x.'
+  - 'apply_theorem: Replace sin 2x and cos 2x by the double-angle formulas.'
+  - 'derive: Replace cos²x by 1 - sin²x.'
+  - 'conclude: Collect the terms.'
   openmath: (forall (x) (= (sin (* 3 x)) (- (* 3 (sin x)) (* 4 (^ (sin x) 3)))))
   hard_negative:
     statement: 任意の実数$x$について$\sin3x=4\sin^3x-3\sin x$である。
@@ -1011,10 +1011,10 @@
     $\cos3x=\cos2x\cos x-\sin2x\sin x=(2\cos^2x-1)\cos x-2\sin^2x\cos x$である。$\sin^2x=1-\cos^2x$を代入して整理すると$4\cos^3x-3\cos x$となる。
   strategy: Split 3x as 2x + x and rewrite everything in terms of cos x.
   sketch:
-  - "apply_theorem: Use the addition formula with 2x and x."
-  - "apply_theorem: Replace cos 2x and sin 2x by the double-angle formulas."
-  - "derive: Replace sin²x by 1 - cos²x."
-  - "conclude: Collect the terms."
+  - 'apply_theorem: Use the addition formula with 2x and x.'
+  - 'apply_theorem: Replace cos 2x and sin 2x by the double-angle formulas.'
+  - 'derive: Replace sin²x by 1 - cos²x.'
+  - 'conclude: Collect the terms.'
   openmath: (forall (x) (= (cos (* 3 x)) (- (* 4 (^ (cos x) 3)) (* 3 (cos x)))))
   hard_negative:
     statement: 任意の実数$x$について$\cos3x=3\cos x-4\cos^3x$である。
@@ -1042,11 +1042,11 @@
     任意の$0$以上の整数$n$に対して、任意の実数$x$で$\cos nx=P_n(\cos x)$となる実数係数多項式$P_n$が存在することを、$n$に関する帰納法で示す。$n=0$では定数多項式$P_0=1$、$n=1$では$P_1(u)=u$とすればよい。$P_n,P_{n+1}$が得られているとする。積和の公式より$\cos(n+2)x+\cos nx=2\cos(n+1)x\cos x$であるから、$\cos(n+2)x=2\cos x\,P_{n+1}(\cos x)-P_n(\cos x)$である。よって$P_{n+2}(u)=2uP_{n+1}(u)-P_n(u)$は実数係数多項式であり、$\cos(n+2)x=P_{n+2}(\cos x)$をみたす。
   strategy: Use the three-term recurrence from the product-to-sum formula and induct in steps of two.
   sketch:
-  - "setup: Take P_0 = 1 and P_1(u) = u."
-  - "apply_theorem: cos(n+2)x + cos nx = 2 cos(n+1)x cos x."
-  - "construct: Define P_{n+2}(u) = 2u P_{n+1}(u) - P_n(u)."
-  - "induction: Two-step induction gives the identity for every n."
-  - "conclude: Each P_n is a real polynomial."
+  - 'setup: Take P_0 = 1 and P_1(u) = u.'
+  - 'apply_theorem: cos(n+2)x + cos nx = 2 cos(n+1)x cos x.'
+  - 'construct: Define P_{n+2}(u) = 2u P_{n+1}(u) - P_n(u).'
+  - 'induction: Two-step induction gives the identity for every n.'
+  - 'conclude: Each P_n is a real polynomial.'
   openmath: (forall (n) (-> (in n N) (exists (p) (and (polynomial_over p R) (forall (x) (= (cos (* n x)) (polynomial_eval p (cos x))))))))
   hard_negative:
     statement: 任意の$0$以上の整数$n$に対して、任意の実数$x$で$\sin nx=P(\sin x)$となる実数係数多項式$P$が存在する。
@@ -1072,9 +1072,9 @@
     $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\sin x=\sin u\cos v+\cos u\sin v$、$\sin y=\sin u\cos v-\cos u\sin v$である。辺々を加えると$\sin x+\sin y=2\sin u\cos v$を得る。
   strategy: Write x and y as u + v and u - v and add the two addition formulas.
   sketch:
-  - "construct: Put u = (x+y)/2 and v = (x-y)/2."
-  - "apply_theorem: Expand sin(u+v) and sin(u-v)."
-  - "conclude: Adding the two equations cancels the cos u sin v terms."
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand sin(u+v) and sin(u-v).'
+  - 'conclude: Adding the two equations cancels the cos u sin v terms.'
   openmath: (forall (x y) (= (+ (sin x) (sin y)) (* (* 2 (sin (/ (+ x y) 2))) (cos (/ (- x y) 2)))))
   hard_negative:
     statement: 任意の実数$x,y$について$\sin x+\sin y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
@@ -1105,9 +1105,9 @@
     $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\sin x=\sin u\cos v+\cos u\sin v$、$\sin y=\sin u\cos v-\cos u\sin v$である。辺々を引くと$\sin x-\sin y=2\cos u\sin v$を得る。
   strategy: Write x and y as u + v and u - v and subtract the two addition formulas.
   sketch:
-  - "construct: Put u = (x+y)/2 and v = (x-y)/2."
-  - "apply_theorem: Expand sin(u+v) and sin(u-v)."
-  - "conclude: Subtracting cancels the sin u cos v terms."
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand sin(u+v) and sin(u-v).'
+  - 'conclude: Subtracting cancels the sin u cos v terms.'
   openmath: (forall (x y) (= (- (sin x) (sin y)) (* (* 2 (cos (/ (+ x y) 2))) (sin (/ (- x y) 2)))))
   hard_negative:
     statement: 任意の実数$x,y$について$\sin x-\sin y=2\sin\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$である。
@@ -1138,9 +1138,9 @@
     $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\cos x=\cos u\cos v-\sin u\sin v$、$\cos y=\cos u\cos v+\sin u\sin v$である。辺々を加えると$\cos x+\cos y=2\cos u\cos v$を得る。
   strategy: Write x and y as u + v and u - v and add the two addition formulas for cosine.
   sketch:
-  - "construct: Put u = (x+y)/2 and v = (x-y)/2."
-  - "apply_theorem: Expand cos(u+v) and cos(u-v)."
-  - "conclude: Adding cancels the sin u sin v terms."
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand cos(u+v) and cos(u-v).'
+  - 'conclude: Adding cancels the sin u sin v terms.'
   openmath: (forall (x y) (= (+ (cos x) (cos y)) (* (* 2 (cos (/ (+ x y) 2))) (cos (/ (- x y) 2)))))
   hard_negative:
     statement: 任意の実数$x,y$について$\cos x+\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
@@ -1171,9 +1171,9 @@
     $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\cos x=\cos u\cos v-\sin u\sin v$、$\cos y=\cos u\cos v+\sin u\sin v$である。辺々を引くと$\cos x-\cos y=-2\sin u\sin v$を得る。
   strategy: Write x and y as u + v and u - v and subtract the two addition formulas for cosine.
   sketch:
-  - "construct: Put u = (x+y)/2 and v = (x-y)/2."
-  - "apply_theorem: Expand cos(u+v) and cos(u-v)."
-  - "conclude: Subtracting cancels the cos u cos v terms."
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand cos(u+v) and cos(u-v).'
+  - 'conclude: Subtracting cancels the cos u cos v terms.'
   openmath: (forall (x y) (= (- (cos x) (cos y)) (* (* (neg 2) (sin (/ (+ x y) 2))) (sin (/ (- x y) 2)))))
   hard_negative:
     statement: 任意の実数$x,y$について$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
@@ -1204,8 +1204,8 @@
     $x,y$を実数とする。加法定理より$\sin(x+y)=\sin x\cos y+\cos x\sin y$、$\sin(x-y)=\sin x\cos y-\cos x\sin y$である。辺々を加えて$2$で割ると結論を得る。
   strategy: Add the addition and subtraction formulas for sine.
   sketch:
-  - "apply_theorem: Expand sin(x+y) and sin(x-y)."
-  - "conclude: Add and divide by 2."
+  - 'apply_theorem: Expand sin(x+y) and sin(x-y).'
+  - 'conclude: Add and divide by 2.'
   openmath: (forall (x y) (= (* (sin x) (cos y)) (/ (+ (sin (+ x y)) (sin (- x y))) 2)))
   hard_negative:
     statement: 任意の実数$x,y$について$\sin x\cos y=\dfrac{\sin(x+y)-\sin(x-y)}{2}$である。
@@ -1232,8 +1232,8 @@
     $x,y$を実数とする。加法定理より$\cos(x+y)=\cos x\cos y-\sin x\sin y$、$\cos(x-y)=\cos x\cos y+\sin x\sin y$である。辺々を加えて$2$で割ると結論を得る。
   strategy: Add the addition and subtraction formulas for cosine.
   sketch:
-  - "apply_theorem: Expand cos(x+y) and cos(x-y)."
-  - "conclude: Add and divide by 2."
+  - 'apply_theorem: Expand cos(x+y) and cos(x-y).'
+  - 'conclude: Add and divide by 2.'
   openmath: (forall (x y) (= (* (cos x) (cos y)) (/ (+ (cos (+ x y)) (cos (- x y))) 2)))
   hard_negative:
     statement: 任意の実数$x,y$について$\cos x\cos y=\dfrac{\cos(x+y)-\cos(x-y)}{2}$である。
@@ -1260,8 +1260,8 @@
     $x,y$を実数とする。加法定理より$\cos(x-y)=\cos x\cos y+\sin x\sin y$、$\cos(x+y)=\cos x\cos y-\sin x\sin y$である。辺々を引いて$2$で割ると結論を得る。
   strategy: Subtract the addition formula for cosine from the subtraction formula.
   sketch:
-  - "apply_theorem: Expand cos(x-y) and cos(x+y)."
-  - "conclude: Subtract and divide by 2."
+  - 'apply_theorem: Expand cos(x-y) and cos(x+y).'
+  - 'conclude: Subtract and divide by 2.'
   openmath: (forall (x y) (= (* (sin x) (sin y)) (/ (- (cos (- x y)) (cos (+ x y))) 2)))
   hard_negative:
     statement: 任意の実数$x,y$について$\sin x\sin y=\dfrac{\cos(x+y)-\cos(x-y)}{2}$である。
@@ -1291,11 +1291,11 @@
     $2\sin(x/2)\cos kx=\sin(k+1/2)x-\sin(k-1/2)x$である。$k=1,\dots,n$で辺々を加えると右辺は隣どうしが消えて$\sin(n+1/2)x-\sin(x/2)$となる。同様に$2\sin(x/2)\sin kx=\cos(k-1/2)x-\cos(k+1/2)x$を加えると$\cos(x/2)-\cos(n+1/2)x$となる。どちらも両辺を$2\sin(x/2)\neq0$で割れば結論を得る。$n=0$では両辺とも$0$である。
   strategy: Multiply by 2 sin(x/2), turn each term into a difference by the product-to-sum formulas, and telescope.
   sketch:
-  - "setup: Assume sin(x/2) ≠ 0."
-  - "apply_theorem: 2 sin(x/2) cos kx = sin((k+1/2)x) - sin((k-1/2)x)."
-  - "apply_theorem: 2 sin(x/2) sin kx = cos((k-1/2)x) - cos((k+1/2)x)."
-  - "derive: The sums telescope."
-  - "conclude: Divide by 2 sin(x/2)."
+  - 'setup: Assume sin(x/2) ≠ 0.'
+  - 'apply_theorem: 2 sin(x/2) cos kx = sin((k+1/2)x) - sin((k-1/2)x).'
+  - 'apply_theorem: 2 sin(x/2) sin kx = cos((k-1/2)x) - cos((k+1/2)x).'
+  - 'derive: The sums telescope.'
+  - 'conclude: Divide by 2 sin(x/2).'
   openmath: (forall (x n) (-> (and (!= (sin (/ x 2)) 0) (in n N)) (and (= (sum (natural_range n) (lambda (k) (cos (* (+ k 1) x)))) (/ (- (sin (* (+ n (/ 1 2)) x)) (sin (/ x 2))) (* 2 (sin (/ x 2))))) (= (sum (natural_range n) (lambda (k) (sin (* (+ k 1) x)))) (/ (- (cos (/ x 2)) (cos (* (+ n (/ 1 2)) x))) (* 2 (sin (/ x 2))))))))
   hard_negative:
     statement: 任意の実数$x$と$0$以上の整数$n$について$\displaystyle\sum_{k=1}^{n}\cos kx=\dfrac{\sin\left(n+\frac{1}{2}\right)x-\sin\frac{x}{2}}{2\sin\frac{x}{2}}$である。
@@ -1357,10 +1357,10 @@
     $a\sin x+b\cos x=r(\cos\alpha\sin x+\sin\alpha\cos x)=r\sin(x+\alpha)$である。
   strategy: Normalize (a, b) to a point of the unit circle, name its angle, and recognize the addition formula.
   sketch:
-  - "setup: Put r = √(a²+b²) > 0."
-  - "apply_theorem: (a/r, b/r) lies on the unit circle, so it equals (cos α, sin α) for some α."
-  - "derive: a sin x + b cos x = r(cos α sin x + sin α cos x)."
-  - "conclude: The addition formula gives r sin(x+α)."
+  - 'setup: Put r = √(a²+b²) > 0.'
+  - 'apply_theorem: (a/r, b/r) lies on the unit circle, so it equals (cos α, sin α) for some α.'
+  - 'derive: a sin x + b cos x = r(cos α sin x + sin α cos x).'
+  - 'conclude: The addition formula gives r sin(x+α).'
   openmath: (forall (a b) (-> (or (!= a 0) (!= b 0)) (exists (t) (and (= (cos t) (/ a (root (+ (^ a 2) (^ b 2)) 2))) (= (sin t) (/ b (root (+ (^ a 2) (^ b 2)) 2))) (forall (x) (= (+ (* a (sin x)) (* b (cos x))) (* (root (+ (^ a 2) (^ b 2)) 2) (sin (+ x t)))))))))
   hard_negative:
     statement: 実数$a,b$について、任意の実数$x$で$a\sin x+b\cos x=(a+b)\sin(x+\alpha)$となる実数$\alpha$が存在する。
@@ -1410,9 +1410,9 @@
     $(a\sin x+b\cos x)^2+(a\cos x-b\sin x)^2=a^2+b^2$である。第2項は$0$以上なので$(a\sin x+b\cos x)^2\leq a^2+b^2$である。両辺の非負の平方根をとると結論を得る。
   strategy: Complete the sum of squares with the companion expression a cos x - b sin x.
   sketch:
-  - "derive: (a sin x + b cos x)² + (a cos x - b sin x)² = a² + b²."
-  - "derive: Discarding the nonnegative second square gives the bound on the square."
-  - "conclude: Take square roots."
+  - 'derive: (a sin x + b cos x)² + (a cos x - b sin x)² = a² + b².'
+  - 'derive: Discarding the nonnegative second square gives the bound on the square.'
+  - 'conclude: Take square roots.'
   openmath: (forall (a b x) (<= (abs (+ (* a (sin x)) (* b (cos x)))) (root (+ (^ a 2) (^ b 2)) 2)))
   hard_negative:
     statement: 任意の実数$a,b,x$について$|a\sin x+b\cos x|\leq\max\{|a|,|b|\}$である。
@@ -1443,11 +1443,11 @@
     $a,b,c$を実数とする。$a\sin x+b\cos x=c$となる$x$があれば、$(a\sin x+b\cos x)^2+(a\cos x-b\sin x)^2=a^2+b^2$より$c^2\leq a^2+b^2$である。逆に$c^2\leq a^2+b^2$とする。$a=b=0$なら$c=0$であり、どの$x$も解である。そうでないとき$r=\sqrt{a^2+b^2}>0$とおくと、合成により実数$\alpha$がとれて、任意の$x$で$a\sin x+b\cos x=r\sin(x+\alpha)$である。$|c/r|\leq1$なので、$\sin$の連続性と$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$および中間値の定理から$\sin y=c/r$となる$y$がとれる。$x=y-\alpha$とおくと$a\sin x+b\cos x=r\sin y=c$である。
   strategy: The forward direction is the Cauchy-type bound; the converse combines the harmonic form with the intermediate value theorem.
   sketch:
-  - "derive: A solution forces c² ≤ a² + b² by the sum-of-squares identity."
-  - "case_split: If a = b = 0 then c = 0 and every x solves the equation."
-  - "apply_theorem: Otherwise write a sin x + b cos x = r sin(x+α) with r > 0."
-  - "apply_theorem: Since |c/r| ≤ 1, the intermediate value theorem gives y with sin y = c/r."
-  - "conclude: x = y - α is a solution."
+  - 'derive: A solution forces c² ≤ a² + b² by the sum-of-squares identity.'
+  - 'case_split: If a = b = 0 then c = 0 and every x solves the equation.'
+  - 'apply_theorem: Otherwise write a sin x + b cos x = r sin(x+α) with r > 0.'
+  - 'apply_theorem: Since |c/r| ≤ 1, the intermediate value theorem gives y with sin y = c/r.'
+  - 'conclude: x = y - α is a solution.'
   openmath: (forall (a b c) (<-> (exists (x) (= (+ (* a (sin x)) (* b (cos x))) c)) (<= (^ c 2) (+ (^ a 2) (^ b 2)))))
   hard_negative:
     statement: 実数$a,b,c$について、$a\sin x+b\cos x=c$をみたす実数$x$が存在することと、$|c|\leq|a|+|b|$であることは同値である。
@@ -1511,9 +1511,9 @@
     $a,b,c,x$を実数とする。倍角の公式より$\cos^2x=(1+\cos2x)/2$、$\sin^2x=(1-\cos2x)/2$、$\sin x\cos x=(\sin2x)/2$である。これらを左辺に代入して$\cos2x,\sin2x$について整理すると右辺を得る。
   strategy: Lower the degree of each square and of the product by the double-angle formulas.
   sketch:
-  - "apply_theorem: cos²x = (1+cos 2x)/2 and sin²x = (1-cos 2x)/2."
-  - "apply_theorem: sin x cos x = (sin 2x)/2."
-  - "conclude: Substitute and collect the terms."
+  - 'apply_theorem: cos²x = (1+cos 2x)/2 and sin²x = (1-cos 2x)/2.'
+  - 'apply_theorem: sin x cos x = (sin 2x)/2.'
+  - 'conclude: Substitute and collect the terms.'
   openmath: (forall (a b c x) (= (+ (+ (* a (^ (cos x) 2)) (* b (* (sin x) (cos x)))) (* c (^ (sin x) 2))) (+ (+ (/ (+ a c) 2) (* (/ (- a c) 2) (cos (* 2 x)))) (* (/ b 2) (sin (* 2 x))))))
   hard_negative:
     statement: 任意の実数$a,b,c,x$について$a\cos^2x+b\sin x\cos x+c\sin^2x=\dfrac{a+c}{2}+\dfrac{a-c}{2}\cos2x+b\sin2x$である。
@@ -1541,10 +1541,10 @@
     $x$を実数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$であり、$y$を$y-\pi$に置き換えると$\sin(y-\pi)=-\sin y$でもある。これらを繰り返すと、整数$n$と実数$r$について$\sin(n\pi+r)=(-1)^n\sin r$である。$x=n\pi$となる整数$n$があれば、$r=0$として$\sin x=0$である。逆に$\sin x=0$とし、$x=n\pi+r$となる整数$n$と$0\leq r<\pi$をとる。$\sin x=(-1)^n\sin r$なので$\sin r=0$である。$\sin$は開区間$(0,\pi)$で正であるから$r=0$であり、$x=n\pi$である。
   strategy: Reduce x modulo π and use the positivity of sine on (0, π).
   sketch:
-  - "derive: sin nπ = 0 gives one direction."
-  - "construct: Write x = nπ + r with 0 ≤ r < π."
-  - "derive: sin x = (-1)^n sin r, so sin r = 0."
-  - "conclude: Since sine is positive on (0, π), r = 0."
+  - 'derive: sin nπ = 0 gives one direction.'
+  - 'construct: Write x = nπ + r with 0 ≤ r < π.'
+  - 'derive: sin x = (-1)^n sin r, so sin r = 0.'
+  - 'conclude: Since sine is positive on (0, π), r = 0.'
   openmath: (forall (x) (<-> (= (sin x) 0) (exists (n) (and (in n Z) (= x (* n pi))))))
   hard_negative:
     statement: 実数$x$について、$\sin x=0$であることと、$x=2n\pi$となる整数$n$が存在することは同値である。
@@ -1572,9 +1572,9 @@
     $x$を実数とする。$\cos x=\sin(x+\pi/2)$であるから、$\cos x=0$は$\sin(x+\pi/2)=0$と同値である。$\sin y=0$となるのは$y$が$\pi$の整数倍のときに限るので、これは$x+\pi/2=m\pi$となる整数$m$の存在と同値である。$n=m-1$とおくと$x=\pi/2+n\pi$である。
   strategy: Shift by π/2 to reduce to the zeros of sine.
   sketch:
-  - "translate: cos x = sin(x + π/2)."
-  - "apply_theorem: sin y = 0 exactly when y is an integer multiple of π."
-  - "conclude: Reindex with n = m - 1."
+  - 'translate: cos x = sin(x + π/2).'
+  - 'apply_theorem: sin y = 0 exactly when y is an integer multiple of π.'
+  - 'conclude: Reindex with n = m - 1.'
   openmath: (forall (x) (<-> (= (cos x) 0) (exists (n) (and (in n Z) (= x (+ (/ pi 2) (* n pi)))))))
   hard_negative:
     statement: 実数$x$について、$\cos x=0$であることと、$x=\dfrac{\pi}{2}+2n\pi$となる整数$n$が存在することは同値である。
@@ -1606,9 +1606,9 @@
     $x$を実数とする。$\tan x=\sin x/\cos x$は$\cos x\neq0$のときに定義される。$\cos x=0$となるのは$x=\pi/2+n\pi$となる整数$n$があるときに限る。この同値の両辺を否定すると、$\cos x\neq0$は、どの整数$n$についても$x\neq\pi/2+n\pi$であることと同値である。
   strategy: Negate the description of the zeros of cosine.
   sketch:
-  - "setup: tan x is defined exactly when cos x ≠ 0."
-  - "apply_theorem: cos x = 0 exactly when x = π/2 + nπ for some integer n."
-  - "conclude: Negate both sides."
+  - 'setup: tan x is defined exactly when cos x ≠ 0.'
+  - 'apply_theorem: cos x = 0 exactly when x = π/2 + nπ for some integer n.'
+  - 'conclude: Negate both sides.'
   openmath: (forall (x) (<-> (!= (cos x) 0) (forall (n) (-> (in n Z) (!= x (+ (/ pi 2) (* n pi)))))))
   hard_negative:
     statement: 実数$x$について、$\cos x\neq0$であることと、任意の整数$n$で$x\neq\dfrac{\pi}{2}+2n\pi$であることは同値である。
@@ -1642,11 +1642,11 @@
     $x,y$を実数とする。和積の公式より$\sin x-\sin y=2\cos\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。したがって$\sin x=\sin y$は、$\sin\dfrac{x-y}{2}=0$または$\cos\dfrac{x+y}{2}=0$と同値である。前者は$(x-y)/2=n\pi$となる整数$n$の存在、すなわち$x=y+2n\pi$と同値である。後者は$(x+y)/2=\pi/2+n\pi$となる整数$n$の存在、すなわち$x=\pi-y+2n\pi$と同値である。
   strategy: Factor sin x - sin y by the sum-to-product formula and solve each factor.
   sketch:
-  - "apply_theorem: sin x - sin y = 2 cos((x+y)/2) sin((x-y)/2)."
-  - "case_split: One of the factors vanishes."
-  - "derive: sin((x-y)/2) = 0 gives x = y + 2nπ."
-  - "derive: cos((x+y)/2) = 0 gives x = π - y + 2nπ."
-  - "conclude: Each step is reversible."
+  - 'apply_theorem: sin x - sin y = 2 cos((x+y)/2) sin((x-y)/2).'
+  - 'case_split: One of the factors vanishes.'
+  - 'derive: sin((x-y)/2) = 0 gives x = y + 2nπ.'
+  - 'derive: cos((x+y)/2) = 0 gives x = π - y + 2nπ.'
+  - 'conclude: Each step is reversible.'
   openmath: (forall (x y) (<-> (= (sin x) (sin y)) (exists (n) (and (in n Z) (or (= x (+ y (* (* 2 n) pi))) (= x (+ (- pi y) (* (* 2 n) pi))))))))
   hard_negative:
     statement: 実数$x,y$について、$\sin x=\sin y$であることと、$x=\pm y+2n\pi$となる整数$n$が存在することは同値である。
@@ -1690,11 +1690,11 @@
     $x,y$を実数とする。和積の公式より$\cos x-\cos y=-2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。したがって$\cos x=\cos y$は、$\sin\dfrac{x-y}{2}=0$または$\sin\dfrac{x+y}{2}=0$と同値である。前者は$(x-y)/2=n\pi$となる整数$n$の存在、すなわち$x=y+2n\pi$と同値である。後者は$(x+y)/2=n\pi$となる整数$n$の存在、すなわち$x=-y+2n\pi$と同値である。
   strategy: Factor cos x - cos y by the sum-to-product formula and solve each factor.
   sketch:
-  - "apply_theorem: cos x - cos y = -2 sin((x+y)/2) sin((x-y)/2)."
-  - "case_split: One of the factors vanishes."
-  - "derive: sin((x-y)/2) = 0 gives x = y + 2nπ."
-  - "derive: sin((x+y)/2) = 0 gives x = -y + 2nπ."
-  - "conclude: Each step is reversible."
+  - 'apply_theorem: cos x - cos y = -2 sin((x+y)/2) sin((x-y)/2).'
+  - 'case_split: One of the factors vanishes.'
+  - 'derive: sin((x-y)/2) = 0 gives x = y + 2nπ.'
+  - 'derive: sin((x+y)/2) = 0 gives x = -y + 2nπ.'
+  - 'conclude: Each step is reversible.'
   openmath: (forall (x y) (<-> (= (cos x) (cos y)) (exists (n) (and (in n Z) (or (= x (+ y (* (* 2 n) pi))) (= x (+ (neg y) (* (* 2 n) pi))))))))
   hard_negative:
     statement: 実数$x,y$について、$\cos x=\cos y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
@@ -1740,10 +1740,10 @@
     $x,y$を$\cos x\neq0$、$\cos y\neq0$をみたす実数とする。$\tan x=\tan y$は、分母を払うと$\sin x\cos y=\cos x\sin y$、すなわち$\sin x\cos y-\cos x\sin y=0$と同値である。差の角の公式より左辺は$\sin(x-y)$である。$\sin(x-y)=0$は$x-y=n\pi$となる整数$n$の存在と同値であり、これは$x=y+n\pi$である。
   strategy: Clear denominators to reach sin(x - y) = 0 and solve it.
   sketch:
-  - "setup: Assume cos x and cos y are nonzero."
-  - "translate: tan x = tan y is equivalent to sin x cos y - cos x sin y = 0."
-  - "apply_theorem: The left side equals sin(x - y)."
-  - "conclude: sin(x - y) = 0 exactly when x - y is an integer multiple of π."
+  - 'setup: Assume cos x and cos y are nonzero.'
+  - 'translate: tan x = tan y is equivalent to sin x cos y - cos x sin y = 0.'
+  - 'apply_theorem: The left side equals sin(x - y).'
+  - 'conclude: sin(x - y) = 0 exactly when x - y is an integer multiple of π.'
   openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0)) (<-> (= (tan x) (tan y)) (exists (n) (and (in n Z) (= x (+ y (* n pi))))))))
   hard_negative:
     statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x=\tan y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
@@ -1784,10 +1784,10 @@
     $a$を$-1\leq a\leq1$をみたす実数とする。$\sin$は連続で$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$であるから、中間値の定理により区間$[-\pi/2,\pi/2]$に$\sin x=a$の解がある。$-\pi/2\leq x<y\leq\pi/2$なら和積の公式より$\sin y-\sin x=2\cos\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$であり、$-\pi/2<(x+y)/2<\pi/2$、$0<(y-x)/2\leq\pi/2$からこれは正である。よって$\sin$はこの区間で狭義に増加し、解はただ一つである。
   strategy: Existence by the intermediate value theorem and uniqueness by strict monotonicity.
   sketch:
-  - "apply_theorem: The intermediate value theorem gives a solution on [-π/2, π/2]."
-  - "apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2) for x < y."
-  - "derive: Both factors are positive on the interval, so sine is strictly increasing."
-  - "conclude: The solution is unique."
+  - 'apply_theorem: The intermediate value theorem gives a solution on [-π/2, π/2].'
+  - 'apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2) for x < y.'
+  - 'derive: Both factors are positive on the interval, so sine is strictly increasing.'
+  - 'conclude: The solution is unique.'
   openmath: (forall (a) (-> (and (<= (neg 1) a) (<= a 1)) (exists (x) (and (<= (neg (/ pi 2)) x) (<= x (/ pi 2)) (= (sin x) a) (forall (y) (-> (and (<= (neg (/ pi 2)) y) (<= y (/ pi 2)) (= (sin y) a)) (= y x)))))))
   hard_negative:
     statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$0\leq x\leq\pi$かつ$\sin x=a$をみたす実数$x$がただ一つ存在する。
@@ -1818,10 +1818,10 @@
     $a$を$-1\leq a\leq1$をみたす実数とする。$\cos$は連続で$\cos0=1$、$\cos\pi=-1$であるから、中間値の定理により区間$[0,\pi]$に$\cos x=a$の解がある。$0\leq x<y\leq\pi$なら和積の公式より$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$であり、$0<(x+y)/2<\pi$、$0<(y-x)/2\leq\pi/2$からこれは正である。よって$\cos$はこの区間で狭義に減少し、解はただ一つである。
   strategy: Existence by the intermediate value theorem and uniqueness by strict monotonicity.
   sketch:
-  - "apply_theorem: The intermediate value theorem gives a solution on [0, π]."
-  - "apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2) for x < y."
-  - "derive: Both factors are positive on the interval, so cosine is strictly decreasing."
-  - "conclude: The solution is unique."
+  - 'apply_theorem: The intermediate value theorem gives a solution on [0, π].'
+  - 'apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2) for x < y.'
+  - 'derive: Both factors are positive on the interval, so cosine is strictly decreasing.'
+  - 'conclude: The solution is unique.'
   openmath: (forall (a) (-> (and (<= (neg 1) a) (<= a 1)) (exists (x) (and (<= 0 x) (<= x pi) (= (cos x) a) (forall (y) (-> (and (<= 0 y) (<= y pi) (= (cos y) a)) (= y x)))))))
   hard_negative:
     statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$-\pi\leq x\leq\pi$かつ$\cos x=a$をみたす実数$x$がただ一つ存在する。
@@ -1851,11 +1851,11 @@
     $a$を実数とする。$r=\sqrt{1+a^2}$とおくと$(1/r)^2+(a/r)^2=1$であり、$0<1/r\leq1$である。$\cos$は連続で$\cos0=1$、$\cos\pi=-1$であるから、中間値の定理により$\cos x=1/r$となる$x\in[0,\pi]$がとれる。$\cos x>0$より$0\leq x<\pi/2$である。$\sin x\geq0$と$\sin^2x=a^2/r^2$から$\sin x=|a|/r$である。$a\geq0$ならこの$x$を、$a<0$なら$-x$をとると、開区間$(-\pi/2,\pi/2)$の点で$\tan$の値が$a$となる。一意性を示す。$-\pi/2<x<y<\pi/2$なら$\tan y-\tan x=\dfrac{\sin(y-x)}{\cos x\cos y}$であり、$0<y-x<\pi$から分子は正、$\cos x,\cos y>0$から分母も正である。よって$\tan$はこの区間で狭義に増加し、解はただ一つである。
   strategy: Build the solution from a point of the unit circle and use strict monotonicity for uniqueness.
   sketch:
-  - "construct: Take x in [0, π] with cos x = 1/√(1+a²)."
-  - "derive: Then x < π/2 and sin x = |a|/√(1+a²)."
-  - "case_split: Use x if a ≥ 0 and -x if a < 0 to get tan = a."
-  - "apply_theorem: tan y - tan x = sin(y-x)/(cos x cos y) > 0 for x < y in the interval."
-  - "conclude: The solution is unique."
+  - 'construct: Take x in [0, π] with cos x = 1/√(1+a²).'
+  - 'derive: Then x < π/2 and sin x = |a|/√(1+a²).'
+  - 'case_split: Use x if a ≥ 0 and -x if a < 0 to get tan = a.'
+  - 'apply_theorem: tan y - tan x = sin(y-x)/(cos x cos y) > 0 for x < y in the interval.'
+  - 'conclude: The solution is unique.'
   openmath: (forall (a) (exists (x) (and (< (neg (/ pi 2)) x) (< x (/ pi 2)) (= (tan x) a) (forall (y) (-> (and (< (neg (/ pi 2)) y) (< y (/ pi 2)) (= (tan y) a)) (= y x))))))
   hard_negative:
     statement: 任意の実数$a$について、$-\pi<x<\pi$かつ$\cos x\neq0$かつ$\tan x=a$をみたす実数$x$がただ一つ存在する。
@@ -1885,10 +1885,10 @@
     $x,y$を$-\pi/2\leq x<y\leq\pi/2$をみたす実数とする。和積の公式より$\sin y-\sin x=2\cos\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$である。$-\pi/2<(x+y)/2<\pi/2$より$\cos((x+y)/2)>0$である。$0<(y-x)/2\leq\pi/2$より$\sin((y-x)/2)>0$である。よって$\sin y-\sin x>0$である。
   strategy: Factor the difference by the sum-to-product formula and determine the sign of each factor.
   sketch:
-  - "apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2)."
-  - "derive: (x+y)/2 lies in (-π/2, π/2), so the cosine is positive."
-  - "derive: (y-x)/2 lies in (0, π/2], so the sine is positive."
-  - "conclude: The difference is positive."
+  - 'apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2).'
+  - 'derive: (x+y)/2 lies in (-π/2, π/2), so the cosine is positive.'
+  - 'derive: (y-x)/2 lies in (0, π/2], so the sine is positive.'
+  - 'conclude: The difference is positive.'
   openmath: (forall (x y) (-> (and (<= (neg (/ pi 2)) x) (< x y) (<= y (/ pi 2))) (< (sin x) (sin y))))
   hard_negative:
     statement: 実数$x,y$が$0\leq x<y\leq\pi$をみたすとき、$\sin x<\sin y$である。
@@ -1915,10 +1915,10 @@
     $x,y$を$0\leq x<y\leq\pi$をみたす実数とする。和積の公式より$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$である。$0<(x+y)/2<\pi$より$\sin((x+y)/2)>0$である。$0<(y-x)/2\leq\pi/2$より$\sin((y-x)/2)>0$である。よって$\cos x-\cos y>0$である。
   strategy: Factor the difference by the sum-to-product formula and determine the sign of each factor.
   sketch:
-  - "apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2)."
-  - "derive: (x+y)/2 lies in (0, π), so its sine is positive."
-  - "derive: (y-x)/2 lies in (0, π/2], so its sine is positive."
-  - "conclude: The difference is positive."
+  - 'apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2).'
+  - 'derive: (x+y)/2 lies in (0, π), so its sine is positive.'
+  - 'derive: (y-x)/2 lies in (0, π/2], so its sine is positive.'
+  - 'conclude: The difference is positive.'
   openmath: (forall (x y) (-> (and (<= 0 x) (< x y) (<= y pi)) (< (cos y) (cos x))))
   hard_negative:
     statement: 実数$x,y$が$-\pi\leq x<y\leq0$をみたすとき、$\cos y<\cos x$である。
@@ -1946,10 +1946,10 @@
     $x,y$を開区間$(-\pi/2,\pi/2)$の実数とする。この区間で$\cos$は正なので、差の角の公式より$\tan y-\tan x=\dfrac{\sin y\cos x-\cos y\sin x}{\cos x\cos y}=\dfrac{\sin(y-x)}{\cos x\cos y}$である。$x<y$なら$0<y-x<\pi$であり$\sin(y-x)>0$なので$\tan x<\tan y$である。$x\geq y$なら、$x=y$では$\tan x=\tan y$であり、$x>y$では同じ議論により$\tan y<\tan x$である。したがって$\tan x<\tan y$なら$x<y$である。
   strategy: Express tan y - tan x as sin(y-x)/(cos x cos y) and read off its sign.
   sketch:
-  - "derive: tan y - tan x = sin(y-x)/(cos x cos y) with a positive denominator."
-  - "derive: If x < y then 0 < y-x < π, so the difference is positive."
-  - "case_split: If x ≥ y then tan x ≥ tan y by the same computation."
-  - "conclude: The two inequalities are equivalent."
+  - 'derive: tan y - tan x = sin(y-x)/(cos x cos y) with a positive denominator.'
+  - 'derive: If x < y then 0 < y-x < π, so the difference is positive.'
+  - 'case_split: If x ≥ y then tan x ≥ tan y by the same computation.'
+  - 'conclude: The two inequalities are equivalent.'
   openmath: (forall (x y) (-> (and (< (neg (/ pi 2)) x) (< x (/ pi 2)) (< (neg (/ pi 2)) y) (< y (/ pi 2))) (<-> (< (tan x) (tan y)) (< x y))))
   hard_negative:
     statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたし$0<x<y<\pi$であるとき、$\tan x<\tan y$である。
@@ -1977,11 +1977,11 @@
     $a,x$を$-\pi/2\leq a\leq\pi/2$、$-\pi/2\leq x\leq3\pi/2$をみたす実数とする。$\sin$は$[-\pi/2,\pi/2]$で狭義に増加する。$x\leq\pi/2$のとき、$\sin a\leq\sin x$は$a\leq x$と同値である。さらに$x\leq\pi/2\leq\pi-a$は常に成り立つので、$a\leq x\leq\pi-a$とも同値である。$x>\pi/2$のときは$\pi-x\in[-\pi/2,\pi/2)$であり$\sin x=\sin(\pi-x)$なので、$\sin a\leq\sin x$は$a\leq\pi-x$すなわち$x\leq\pi-a$と同値である。さらに$a\leq\pi/2<x$は常に成り立つので、$a\leq x\leq\pi-a$とも同値である。
   strategy: Split at x = π/2 and use strict monotonicity of sine, reflecting x by π - x on the upper part.
   sketch:
-  - "apply_theorem: Sine is strictly increasing on [-π/2, π/2]."
-  - "case_split: Split according to x ≤ π/2 or x > π/2."
-  - "derive: For x ≤ π/2 the inequality means a ≤ x, and x ≤ π - a is automatic."
-  - "derive: For x > π/2 use sin x = sin(π - x), so the inequality means x ≤ π - a, and a ≤ x is automatic."
-  - "conclude: Both cases give a ≤ x ≤ π - a."
+  - 'apply_theorem: Sine is strictly increasing on [-π/2, π/2].'
+  - 'case_split: Split according to x ≤ π/2 or x > π/2.'
+  - 'derive: For x ≤ π/2 the inequality means a ≤ x, and x ≤ π - a is automatic.'
+  - 'derive: For x > π/2 use sin x = sin(π - x), so the inequality means x ≤ π - a, and a ≤ x is automatic.'
+  - 'conclude: Both cases give a ≤ x ≤ π - a.'
   openmath: (forall (a x) (-> (and (<= (neg (/ pi 2)) a) (<= a (/ pi 2)) (<= (neg (/ pi 2)) x) (<= x (/ (* 3 pi) 2))) (<-> (<= (sin a) (sin x)) (and (<= a x) (<= x (- pi a))))))
   hard_negative:
     statement: 任意の実数$x$と$-\dfrac{\pi}{2}\leq a\leq\dfrac{\pi}{2}$をみたす実数$a$について、$\sin a\leq\sin x$と$a\leq x\leq\pi-a$は同値である。
@@ -2025,9 +2025,9 @@
     $a,x$を$0\leq a\leq\pi$、$-\pi\leq x\leq\pi$をみたす実数とする。$\cos$は偶関数なので$\cos x=\cos|x|$であり、$|x|\in[0,\pi]$である。$\cos$は$[0,\pi]$で狭義に減少するから、$\cos a\leq\cos|x|$は$|x|\leq a$と同値である。
   strategy: Replace x by |x| using evenness, then use strict monotonicity on [0, π].
   sketch:
-  - "translate: cos x = cos |x| and |x| lies in [0, π]."
-  - "apply_theorem: Cosine is strictly decreasing on [0, π]."
-  - "conclude: cos a ≤ cos |x| is equivalent to |x| ≤ a."
+  - 'translate: cos x = cos |x| and |x| lies in [0, π].'
+  - 'apply_theorem: Cosine is strictly decreasing on [0, π].'
+  - 'conclude: cos a ≤ cos |x| is equivalent to |x| ≤ a.'
   openmath: (forall (a x) (-> (and (<= 0 a) (<= a pi) (<= (neg pi) x) (<= x pi)) (<-> (<= (cos a) (cos x)) (<= (abs x) a))))
   hard_negative:
     statement: 実数$a,x$が$0\leq a\leq\pi$、$-\pi\leq x\leq\pi$をみたすとき、$\cos a\leq\cos x$と$x\leq a$は同値である。
@@ -2055,10 +2055,10 @@
     $f$を実数値関数、$y$を実数とする。$f(\sin x)=y$となる$x$があれば、$t=\sin x$は$-1\leq t\leq1$と$f(t)=y$をみたす。逆に$-1\leq t\leq1$かつ$f(t)=y$となる$t$があるとする。$\sin$は連続で$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$であるから、中間値の定理により$\sin x=t$となる$x$がとれる。この$x$について$f(\sin x)=y$である。$\cos$については$\cos0=1$、$\cos\pi=-1$を用いて同様に示せる。
   strategy: The substitution t = sin x is onto [-1, 1], so existence on either side transfers.
   sketch:
-  - "derive: Given x, take t = sin x, which lies in [-1, 1]."
-  - "apply_theorem: Given t in [-1, 1], the intermediate value theorem gives x with sin x = t."
-  - "derive: Then f(sin x) = f(t) = y."
-  - "conclude: The same argument works for cosine with the values at 0 and π."
+  - 'derive: Given x, take t = sin x, which lies in [-1, 1].'
+  - 'apply_theorem: Given t in [-1, 1], the intermediate value theorem gives x with sin x = t.'
+  - 'derive: Then f(sin x) = f(t) = y.'
+  - 'conclude: The same argument works for cosine with the values at 0 and π.'
   openmath: (forall (f y) (and (<-> (exists (x) (= (fn_value f (sin x)) y)) (exists (t) (and (<= (neg 1) t) (<= t 1) (= (fn_value f t) y)))) (<-> (exists (x) (= (fn_value f (cos x)) y)) (exists (t) (and (<= (neg 1) t) (<= t 1) (= (fn_value f t) y))))))
   hard_negative:
     statement: 実数値関数$f$と実数$y$について、$f(\sin x)=y$をみたす実数$x$が存在することは、$f(t)=y$をみたす実数$t$が存在することと同値である。
@@ -2097,11 +2097,11 @@
     $(\sin A\cos B+\cos A\sin B)\cos C+\cos A\cos B\sin C=\sin A\sin B\sin C$となる。左辺の括弧は$\sin C$であるから、左辺は$\sin C(\cos C+\cos A\cos B)$である。$\cos C+\cos A\cos B=\sin A\sin B$なので、左辺は右辺に等しい。
   strategy: Clear denominators and substitute sin C and cos C in terms of A and B.
   sketch:
-  - "setup: Assume the cosines are nonzero so all tangents are defined."
-  - "derive: sin C = sin(A+B) and cos C = sin A sin B - cos A cos B."
-  - "translate: Multiply the claim by cos A cos B cos C."
-  - "derive: The left side becomes sin C (cos C + cos A cos B)."
-  - "conclude: That equals sin A sin B sin C."
+  - 'setup: Assume the cosines are nonzero so all tangents are defined.'
+  - 'derive: sin C = sin(A+B) and cos C = sin A sin B - cos A cos B.'
+  - 'translate: Multiply the claim by cos A cos B cos C.'
+  - 'derive: The left side becomes sin C (cos C + cos A cos B).'
+  - 'conclude: That equals sin A sin B sin C.'
   openmath: (forall (a b c) (-> (and (= (+ (+ a b) c) pi) (!= (cos a) 0) (!= (cos b) 0) (!= (cos c) 0)) (= (+ (+ (tan a) (tan b)) (tan c)) (* (* (tan a) (tan b)) (tan c)))))
   hard_negative:
     statement: 実数$A,B,C$が$A+B+C=\dfrac{\pi}{2}$をみたし、余弦がいずれも$0$でないとき、$\tan A+\tan B+\tan C=\tan A\tan B\tan C$である。

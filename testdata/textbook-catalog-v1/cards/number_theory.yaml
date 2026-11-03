@@ -244,7 +244,7 @@
   level: 1
   topic: 最大公約数と最小公倍数
   statement: 自然数$a,b$について、$\gcd(a,b)\cdot\operatorname{lcm}(a,b)=ab$である。ここで$\operatorname{lcm}(a,b)$は$a$または$b$が$0$のとき$0$とする。
-  statement_en: For natural numbers a and b, gcd(a, b) · lcm(a, b) = ab.
+  statement_en: For natural numbers a and b, gcd(a, b) · lcm(a, b) = ab, where lcm(a, b) = 0 by convention if a = 0 or b = 0.
   assumptions:
   - $a,b$は自然数
   quantifiers:

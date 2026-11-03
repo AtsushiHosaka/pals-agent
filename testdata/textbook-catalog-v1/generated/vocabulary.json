@@ -202,6 +202,14 @@
    "meaning": "(ae_le mu f g): f is at most g almost everywhere with respect to mu",
    "returns": "prop"
   },
+  "ae_measurable_fn": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is almost-everywhere measurable with respect to the measure mu",
+   "returns": "prop"
+  },
   "ae_tends_to": {
    "args": [
     "term",
@@ -365,6 +373,14 @@
    "meaning": "matrix (A | b) with the column b appended to A",
    "returns": "term"
   },
+  "aut_group_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "group of automorphisms of the field extension E over F",
+   "returns": "term"
+  },
   "automorphism_apply": {
    "args": [
     "term",
@@ -502,19 +518,12 @@
    "meaning": "(binomial_coefficient n k) is n choose k",
    "returns": "term"
   },
-  "binomial_prob_seq": {
+  "binomial_measure": {
    "args": [
     "term",
     "term"
    ],
-   "meaning": "the sequence n -> Bin(n, p_n)({k})",
-   "returns": "term"
-  },
-  "binomial_rate_seq": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the real sequence n -> n * p_n",
+   "meaning": "binomial distribution with n trials and success probability p",
    "returns": "term"
   },
   "block_matrix": {
@@ -589,6 +598,38 @@
     "term"
    ],
    "meaning": "canonical map from E into its double dual",
+   "returns": "term"
+  },
+  "canonical_ring_hom": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the canonical ring homomorphism from R to S",
+   "returns": "term"
+  },
+  "cardinal_add": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "cardinal sum a + b",
+   "returns": "term"
+  },
+  "cardinal_mul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "cardinal product a * b",
+   "returns": "term"
+  },
+  "cardinal_pow": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "cardinal exponentiation a to the power b",
    "returns": "term"
   },
   "cat_compose": {
@@ -698,15 +739,6 @@
     "term"
    ],
    "meaning": "contour integral of a function over the positively oriented circle with centre c and radius R",
-   "returns": "term"
-  },
-  "circle_mean": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "mean value of f over the circle with centre c and radius R, (1/2pi) times the integral over [0, 2pi] of f(c + R e^(it))",
    "returns": "term"
   },
   "circle_set": {
@@ -985,13 +1017,6 @@
    "meaning": "the imaginary unit i",
    "returns": "term"
   },
-  "complex_polynomial": {
-   "args": [
-    "term"
-   ],
-   "meaning": "p is a polynomial with complex coefficients",
-   "returns": "prop"
-  },
   "component_fn": {
    "args": [
     "term",
@@ -1194,13 +1219,6 @@
    "meaning": "f is a convex function on the set S",
    "returns": "prop"
   },
-  "convex_function_on_line": {
-   "args": [
-    "term"
-   ],
-   "meaning": "f is a convex function on the whole real line",
-   "returns": "prop"
-  },
   "convex_hull": {
    "args": [
     "term"
@@ -1361,13 +1379,6 @@
    "meaning": "the n-th cyclotomic polynomial over F, in the order (n, F)",
    "returns": "term"
   },
-  "decimal_digit_count": {
-   "args": [
-    "term"
-   ],
-   "meaning": "number of digits of the positive integer N in base ten",
-   "returns": "term"
-  },
   "decreasing_sets": {
    "args": [
     "term"
@@ -1411,14 +1422,6 @@
     "term"
    ],
    "meaning": "derivative of the one-variable function f at a; arguments f, a",
-   "returns": "term"
-  },
-  "deriv_value": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "value f'(x) of the derivative of f; arguments f, x",
    "returns": "term"
   },
   "derivative_at": {
@@ -1745,6 +1748,13 @@
    "meaning": "unoriented angle at b between a and c",
    "returns": "term"
   },
+  "euclidean_ambient_dimension": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the ambient Euclidean space has dimension n",
+   "returns": "prop"
+  },
   "euclidean_domain": {
    "args": [
     "term"
@@ -1922,15 +1932,6 @@
    ],
    "meaning": "family obtained by putting the vector x in front of the family v",
    "returns": "term"
-  },
-  "family_extends_to_onb": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "the set u is an orthonormal basis of E containing the orthonormal set v (arguments u, v, E)",
-   "returns": "prop"
   },
   "family_image": {
    "args": [
@@ -2440,11 +2441,12 @@
    "meaning": "value B(x,y) of a bilinear form (arguments B, x, y)",
    "returns": "term"
   },
-  "formal_power_series_mk": {
+  "formal_power_series_over": {
    "args": [
+    "term",
     "term_function"
    ],
-   "meaning": "formal power series with the given coefficient function",
+   "meaning": "formal power series over the ring S with the given coefficient function",
    "returns": "term"
   },
   "forms_equivalent": {
@@ -3025,6 +3027,14 @@
    "meaning": "f has Frechet derivative L at the point a",
    "returns": "prop"
   },
+  "has_homology": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the complex K has homology in degree i",
+   "returns": "prop"
+  },
   "has_law": {
    "args": [
     "term",
@@ -3133,6 +3143,14 @@
    "meaning": "representable functor Hom(-,X)",
    "returns": "term"
   },
+  "hom_post_compose": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the map k to f after k between Hom(X, A) and Hom(X, B)",
+   "returns": "term"
+  },
   "hom_set": {
    "args": [
     "term",
@@ -3239,6 +3257,14 @@
    "meaning": "ideal generated by the image of I under the ring homomorphism f",
    "returns": "term"
   },
+  "ideal_mul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "product ideal IJ",
+   "returns": "term"
+  },
   "ideal_of": {
    "args": [
     "term",
@@ -3268,14 +3294,6 @@
     "term"
    ],
    "meaning": "radical of the ideal I",
-   "returns": "term"
-  },
-  "ideal_sequence_term": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "n-th ideal I_n of a sequence of ideals",
    "returns": "term"
   },
   "ideal_smul_submodule": {
@@ -3497,14 +3515,6 @@
     "term"
    ],
    "meaning": "homomorphism of fundamental groups induced by f at the base point x",
-   "returns": "term"
-  },
-  "infimum_on_right": {
-   "args": [
-    "term_function",
-    "term"
-   ],
-   "meaning": "infimum of f(x) over x greater than a; arguments f, a",
    "returns": "term"
   },
   "infinite_set": {
@@ -4568,6 +4578,14 @@
    "meaning": "the function sequence F converges locally uniformly to f on U",
    "returns": "prop"
   },
+  "logb": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "logarithm of x to base a, argument order (a, x)",
+   "returns": "term"
+  },
   "lp_norm": {
    "args": [
     "term",
@@ -4994,6 +5012,21 @@
    "meaning": "M is a module over R",
    "returns": "prop"
   },
+  "module_smul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "scalar multiple r x in a module",
+   "returns": "term"
+  },
+  "module_zero": {
+   "args": [
+    "term"
+   ],
+   "meaning": "zero element of the module M",
+   "returns": "term"
+  },
   "moebius": {
    "args": [
     "term"
@@ -5013,6 +5046,13 @@
     "term"
    ],
    "meaning": "f is a monomorphism",
+   "returns": "prop"
+  },
+  "monoid": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G is a monoid",
    "returns": "prop"
   },
   "morphism_between": {
@@ -5119,11 +5159,6 @@
    "meaning": "floor of a divided by positive natural number b",
    "returns": "term"
   },
-  "nat_half_lines": {
-   "args": [],
-   "meaning": "the sequence of half lines [n, infinity) indexed by natural n",
-   "returns": "term"
-  },
   "nat_mod": {
    "args": [
     "term",
@@ -5206,24 +5241,6 @@
     "term"
    ],
    "meaning": "nilradical of the commutative ring R",
-   "returns": "term"
-  },
-  "nine_point_center": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "center of the nine-point circle of triangle abc",
-   "returns": "term"
-  },
-  "nine_point_radius": {
-   "args": [
-    "term",
-    "term",
-    "term"
-   ],
-   "meaning": "radius of the nine-point circle of triangle abc",
    "returns": "term"
   },
   "noetherian_module": {
@@ -5546,6 +5563,14 @@
    "meaning": "ordered pair (a, b)",
    "returns": "term"
   },
+  "ordinal_add": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "ordinal sum a + b, which is not commutative",
+   "returns": "term"
+  },
   "oriented_angle": {
    "args": [
     "term",
@@ -5822,11 +5847,6 @@
    "meaning": "the circle constant pi",
    "returns": "term"
   },
-  "pi_constant": {
-   "args": [],
-   "meaning": "the circle constant pi",
-   "returns": "term"
-  },
   "plane_point": {
    "args": [
     "term",
@@ -6074,16 +6094,11 @@
    "meaning": "the extended real value +infinity",
    "returns": "term"
   },
-  "post_compose": {
+  "power_series_var": {
    "args": [
     "term"
    ],
-   "meaning": "the map k to f after k between Hom sets",
-   "returns": "term"
-  },
-  "power_series_x": {
-   "args": [],
-   "meaning": "the formal power series indeterminate X",
+   "meaning": "the indeterminate X of the formal power series ring over S",
    "returns": "term"
   },
   "powerset": {
@@ -6178,12 +6193,13 @@
    "meaning": "s is a finite multiset all of whose elements are prime",
    "returns": "prop"
   },
-  "prime_power_cyclic_sum": {
+  "prime_power_cyclic_sum_family": {
    "args": [
+    "term",
     "term",
     "term"
    ],
-   "meaning": "direct sum of the cyclic groups Z/p_i^(e_i) for a finite family of primes p and exponents e",
+   "meaning": "direct sum of the cyclic groups Z/p_i^(e_i) for i below k",
    "returns": "term"
   },
   "prime_power_quotient_sum": {
@@ -6345,6 +6361,13 @@
     "term"
    ],
    "meaning": "K is a proper linear subspace of E",
+   "returns": "prop"
+  },
+  "proposition_holds": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the propositional variable P is true",
    "returns": "prop"
   },
   "pullback_projection_right": {
@@ -6549,6 +6572,14 @@
    "meaning": "A is a real symmetric matrix",
    "returns": "prop"
   },
+  "real_tends_to": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the real sequence n to a_n given by a function tends to r",
+   "returns": "prop"
+  },
   "real_vector_space": {
    "args": [
     "term"
@@ -6715,19 +6746,20 @@
    "meaning": "ring of integers of the number field K",
    "returns": "term"
   },
+  "ring_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "product ring R times S",
+   "returns": "term"
+  },
   "ring_quotient_map": {
    "args": [
     "term"
    ],
    "meaning": "canonical projection onto the quotient by the ideal I",
    "returns": "term"
-  },
-  "row_addition_product": {
-   "args": [
-    "term"
-   ],
-   "meaning": "L is a finite product of elementary matrices that add a multiple of one row to another",
-   "returns": "prop"
   },
   "same_side_of_line": {
    "args": [
@@ -7166,11 +7198,12 @@
    "meaning": "f is infinitely differentiable",
    "returns": "prop"
   },
-  "smooth_manifold": {
+  "smooth_manifold_modeled_on": {
    "args": [
+    "term",
     "term"
    ],
-   "meaning": "M is a smooth manifold",
+   "meaning": "M is a smooth manifold modeled on the vector space E",
    "returns": "prop"
   },
   "smooth_partition_of_unity": {
@@ -7308,13 +7341,6 @@
     "term"
    ],
    "meaning": "b lies strictly between a and c",
-   "returns": "prop"
-  },
-  "strictly_increasing_fn": {
-   "args": [
-    "term"
-   ],
-   "meaning": "the finite sequence a is strictly increasing",
    "returns": "prop"
   },
   "strictly_increasing_index": {
@@ -7773,6 +7799,13 @@
    "meaning": "the permutation is a transposition",
    "returns": "prop"
   },
+  "transvection_product": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the matrix is a product of transvections",
+   "returns": "prop"
+  },
   "trapezoid_sum": {
    "args": [
     "term",
@@ -7819,14 +7852,6 @@
     "term"
    ],
    "meaning": "f is uniformly continuous",
-   "returns": "prop"
-  },
-  "uniform_continuous_on": {
-   "args": [
-    "term",
-    "term"
-   ],
-   "meaning": "f is uniformly continuous on the set S",
    "returns": "prop"
   },
   "uniform_converges_on": {

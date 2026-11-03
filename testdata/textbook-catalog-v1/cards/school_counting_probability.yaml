@@ -343,6 +343,7 @@
   - $\Omega$は有限で空でない標本空間
   - $A,B,C\subseteq\Omega$
   - $A\cap B\neq\emptyset$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、空でない事象$X$について$P_X(Y)=|X\cap Y|/|X|$と定める
   quantifiers:
   - 任意の事象$A,B,C$
   conclusion: $P(A\cap B\cap C)=P(A)P_A(B)P_{A\cap B}(C)$である。
@@ -378,6 +379,7 @@
   - $A,B\subseteq\Omega$
   - $A\neq\emptyset$
   - $\overline{A}\neq\emptyset$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、空でない事象$X$について$P_X(Y)=|X\cap Y|/|X|$と定める
   quantifiers:
   - 任意の事象$A,B$
   conclusion: $P(B)=P(A)P_A(B)+P(\overline{A})P_{\overline{A}}(B)$である。
@@ -423,6 +425,7 @@
   - 各$A_i$は空でない
   - $i\neq j$なら$A_i\cap A_j=\emptyset$
   - $\bigcup_{i\in I}A_i=\Omega$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、空でない事象$X$について$P_X(Y)=|X\cap Y|/|X|$と定める
   quantifiers:
   - 任意の分割$(A_i)_{i\in I}$と任意の事象$B$
   conclusion: $P(B)=\sum_{i\in I}P(A_i)P_{A_i}(B)$である。
@@ -436,7 +439,7 @@
   openmath: (forall (O I A B) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (subset B O) (forall (i) (-> (in i I) (and (subset (family_value A i) O) (> (size (family_value A i)) 0)))) (forall (i j) (-> (and (in i I) (in j I) (!= i j)) (= (inter (family_value A i) (family_value A j)) emptyset))) (= (indexed_union_over I A) O)) (= (/ (size B) (size O)) (sum I (lambda (i) (* (/ (size (family_value A i)) (size O)) (/ (size (inter (family_value A i) B)) (size (family_value A i)))))))))
   hard_negative:
     statement: 事象$A_i$が$\Omega$を覆うだけで排反でなくても、$P(B)=\sum_{i\in I}P(A_i)P_{A_i}(B)$である。
-    reason: 重なりがあると$B$の要素が重複して数えられる。$A_1=A_2=\Omega$なら右辺は$2P(B)$になる。
+    reason: 重なりがあると$B$の要素が重複して数えられる。$A_1=A_2=\Omega$で$B\neq\emptyset$なら右辺は$2P(B)\neq P(B)$になる。
   target: |
     ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω) (B : Finset Ω), (∀ i ∈ I, (A i).Nonempty) → (∀ i ∈ I, ∀ j ∈ I, i ≠ j → Disjoint (A i) (A j)) → (∀ ω : Ω, ∃ i ∈ I, ω ∈ A i) → (B.card : ℝ) / Fintype.card Ω = ∑ i ∈ I, (((A i).card : ℝ) / Fintype.card Ω) * (((A i ∩ B).card : ℝ) / (A i).card)
   proof: |
@@ -476,6 +479,7 @@
   - $i\neq j$なら$A_i\cap A_j=\emptyset$
   - $\bigcup_{i\in I}A_i=\Omega$
   - $B\neq\emptyset$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、空でない事象$X$について$P_X(Y)=|X\cap Y|/|X|$と定める
   quantifiers:
   - 任意の分割$(A_i)_{i\in I}$、任意の事象$B$、任意の$k\in I$
   conclusion: $P_B(A_k)$は上の分数で与えられる。
@@ -532,6 +536,7 @@
   - $\Omega$は有限で空でない標本空間
   - $A,B\subseteq\Omega$
   - $A,B$は空でない
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、空でない事象$X$について$P_X(Y)=|X\cap Y|/|X|$と定める
   quantifiers:
   - 任意の事象$A,B$
   conclusion: $P_B(A)=P(A)P_A(B)/P(B)$である。
@@ -565,6 +570,7 @@
   - $\Omega$は有限で空でない標本空間
   - $A,B\subseteq\Omega$
   - $A\neq\emptyset$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、$P_A(B)=|A\cap B|/|A|$と定める
   quantifiers:
   - 任意の事象$A,B$
   conclusion: $P_A(B)=P(B)\iff P(A\cap B)=P(A)P(B)$である。
@@ -1055,13 +1061,13 @@
   level: high
   topic: 確率・最大値の確率
   statement: $0,1,\dots,m-1$の値を等確率でとる試行を$n$回独立に行うとき、$k<m$について、結果の最大値が$k$である確率は$\dfrac{(k+1)^n-k^n}{m^n}$である。
-  statement_en: In n independent trials, each uniform on {0, 1, ..., m-1}, for k < m the probability that the maximum of the outcomes equals k is ((k+1)ⁿ - kⁿ)/mⁿ.
+  statement_en: In n >= 1 independent trials, each uniform on {0, 1, ..., m-1}, for k < m the probability that the maximum of the outcomes equals k is ((k+1)^n - k^n)/m^n.
   assumptions:
-  - $m,n,k$は自然数
+  - $m,n,k$は自然数で$n\geq1$
   - $k<m$
   - $\omega\in\{0,\dots,m-1\}^n$の各要素は同様に確からしい
   quantifiers:
-  - $k<m$を満たす任意の自然数$m,n,k$
+  - $n\geq1$、$k<m$を満たす任意の自然数$m,n,k$
   conclusion: 最大値が$k$である確率は$\dfrac{(k+1)^n-k^n}{m^n}$である。
   answer: $m,n,k$を$k<m$を満たす自然数とし、$\{0,\dots,m-1\}^n$の$m^n$個の列は同様に確からしいとする。$c\leq m$に対し、すべての成分が$c$未満である列は$c^n$個ある。すべての成分が$k+1$未満である列は、最大値がちょうど$k$である列と、すべての成分が$k$未満である列に重なりなく分かれる。ここで最大値が$k$とは、すべての成分が$k$以下で、$k$に等しい成分があることをいう。$k+1\leq m$なので、最大値が$k$である列は$(k+1)^n-k^n$個である。$m^n$で割って結論を得る。
   strategy: 'Take the difference of two box counts: all outcomes at most k minus all outcomes below k.'
@@ -1070,15 +1076,14 @@
   - 'case_split: A sequence with all coordinates below k+1 either contains the value k or has all coordinates below k.'
   - 'derive: The two cases are disjoint, so the count with maximum k is (k+1)ⁿ - kⁿ.'
   - 'conclude: Divide by mⁿ.'
-  openmath: (forall (m n k) (-> (and (in m N) (in n N) (in k N) (< k m)) (= (/ (size (suchthat (function_set (integer_range 1 n) (integer_range 0 (- m 1))) (lambda (w) (and (forall (i) (-> (in i (integer_range 1 n)) (<= (fn_value w i) k))) (exists (i) (and (in i (integer_range 1 n)) (= (fn_value w i) k))))))) (size (function_set (integer_range 1 n) (integer_range 0 (- m 1))))) (/ (- (^ (+ k 1) n) (^ k n)) (^ m n)))))
+  openmath: (forall (m n k) (-> (and (in m N) (in n N) (> n 0) (in k N) (< k m)) (= (/ (size (suchthat (function_set (integer_range 1 n) (integer_range 0 (- m 1))) (lambda (w) (and (forall (i) (-> (in i (integer_range 1 n)) (<= (fn_value w i) k))) (exists (i) (and (in i (integer_range 1 n)) (= (fn_value w i) k))))))) (size (function_set (integer_range 1 n) (integer_range 0 (- m 1))))) (/ (- (^ (+ k 1) n) (^ k n)) (^ m n)))))
   hard_negative:
     statement: 結果の最大値が$k$である確率は$\left(\dfrac{k+1}{m}\right)^n$である。
     reason: これは最大値が$k$以下である確率である。$n=1$、$k=1$、$m=2$なら最大値が$1$である確率は$1/2$だが、この式は$1$を与える。
-  target: |
-    ∀ (m n k : ℕ), k < m → ((Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k)).card : ℝ) / Fintype.card (Fin n → Fin m) = (((k : ℝ) + 1) ^ n - (k : ℝ) ^ n) / (m : ℝ) ^ n
+  target: '∀ (m n k : ℕ), 0 < n → k < m → ((Finset.univ.filter (fun ω : Fin n → Fin m => (∀ i, (ω i : ℕ) ≤ k) ∧ ∃ i, (ω i : ℕ) = k)).card : ℝ) / Fintype.card (Fin n → Fin m) = (((k : ℝ) + 1) ^ n - (k : ℝ) ^ n) / (m : ℝ) ^ n'
   proof: |
     by
-      intro m n k hk
+      intro m n k _ hk
       have cnt : ∀ c : ℕ, c ≤ m → (Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < c)).card = c ^ n := by
         intro c hc
         have e : Finset.univ.filter (fun ω : Fin n → Fin m => ∀ i, (ω i : ℕ) < c) = Fintype.piFinset (fun _ => Finset.univ.filter (fun x : Fin m => (x : ℕ) < c)) := by
@@ -1170,7 +1175,7 @@
   openmath: (forall (O I A) (-> (and (in (size O) N) (> (size O) 0) (in (size I) N) (forall (i) (-> (in i I) (subset (family_value A i) O)))) (= (/ (sum O (lambda (w) (size (suchthat I (lambda (i) (in w (family_value A i))))))) (size O)) (sum I (lambda (i) (/ (size (family_value A i)) (size O)))))))
   hard_negative:
     statement: この公式は事象$A_i$が独立なときに限って成り立つ。
-    reason: 独立性は不要である。$A_1=A_2=A$でも、起こる個数は$\omega\in A$で$2$、それ以外で$0$なので、期待値は$2P(A)=P(A_1)+P(A_2)$である。
+    reason: 独立性は不要である。$0<P(A)<1$の事象$A$について$A_1=A_2=A$とすると、$P(A\cap A)=P(A)\neq P(A)^2$なので独立ではないが、起こる個数は$\omega\in A$で$2$、それ以外で$0$であり、期待値は$2P(A)=P(A_1)+P(A_2)$である。
   target: |
     ∀ (Ω ι : Type*) [Fintype Ω] [DecidableEq Ω] [Nonempty Ω] (I : Finset ι) (A : ι → Finset Ω), (∑ ω : Ω, ((I.filter (fun i => ω ∈ A i)).card : ℝ)) / Fintype.card Ω = ∑ i ∈ I, ((A i).card : ℝ) / Fintype.card Ω
   proof: |
@@ -1316,6 +1321,7 @@
   - $X:\Omega\to\mathbb{R}$
   - $A\neq\emptyset$
   - $\overline{A}\neq\emptyset$
+  - 事象$E$の確率は$P(E)=|E|/|\Omega|$、期待値は$E[X]=\frac{1}{|\Omega|}\sum_{\omega\in\Omega}X(\omega)$、空でない$B$について$E[X\mid B]=\frac{1}{|B|}\sum_{\omega\in B}X(\omega)$と定める
   quantifiers:
   - 任意の確率変数$X$と事象$A$
   conclusion: $E[X]=P(A)E[X\mid A]+P(\overline{A})E[X\mid\overline{A}]$である。
@@ -1557,6 +1563,7 @@
   assumptions:
   - $n,k$は自然数
   - $k\leq n$
+  - ${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$（$k$個の積。$k=0$なら$1$、$k>n$なら積に$0$が現れて$0$）と定める
   quantifiers:
   - $k\leq n$を満たす任意の自然数$n,k$
   conclusion: $(n-k)!\cdot{}_{n}\mathrm{P}_{k}=n!$である。
@@ -1584,10 +1591,11 @@
   statement_en: For natural numbers n and k, the falling factorial satisfies nPk = k! · C(n, k).
   assumptions:
   - $n,k$は自然数
+  - ${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$（$k$個の積。$k=0$なら$1$、$k>n$なら積に$0$が現れて$0$）と定める
   quantifiers:
   - 任意の自然数$n,k$
   conclusion: ${}_{n}\mathrm{P}_{k}=k!\binom{n}{k}$である。
-  answer: $n,k$を自然数とする。$k>n$なら${}_{n}\mathrm{P}_{k}=0$、$\binom{n}{k}=0$で両辺は$0$である。$k\leq n$のとき、$n$個の異なるものから$k$個を選んで並べる順列を、並べるものの集合で分類する。$k$個の集合の選び方は$\binom{n}{k}$通りであり、選んだ$k$個の並べ方はそれぞれ$k!$通りである。積の法則より${}_{n}\mathrm{P}_{k}=\binom{n}{k}k!$である。
+  answer: $n,k$を自然数とする。${}_{n}\mathrm{P}_{k}=n(n-1)\cdots(n-k+1)$とおく。これは$n$個から$k$個を選んで並べる順列の数に等しい（$1$番目から$k$番目までの選び方が$n,n-1,\dots,n-k+1$通りで、積の法則による）。$k>n$なら${}_{n}\mathrm{P}_{k}=0$、$\binom{n}{k}=0$で両辺は$0$である。$k\leq n$のとき、$n$個の異なるものから$k$個を選んで並べる順列を、並べるものの集合で分類する。$k$個の集合の選び方は$\binom{n}{k}$通りであり、選んだ$k$個の並べ方はそれぞれ$k!$通りである。積の法則より${}_{n}\mathrm{P}_{k}=\binom{n}{k}k!$である。
   strategy: Classify k-permutations by their underlying k-element set.
   sketch:
   - 'case_split: If k > n, both sides are 0.'
@@ -2209,13 +2217,13 @@
   level: high
   topic: 場合の数・正の整数解の個数
   statement: 自然数$n,r$について、$x_0+x_1+\dots+x_n=r+1$を満たす正の整数の組$(x_0,\dots,x_n)$の個数は$\binom{r}{n}$である。
-  statement_en: For natural numbers n and r, the number of tuples of positive integers (x_0, ..., x_n) with x_0 + ... + x_n = r + 1 is C(r, n).
+  statement_en: For natural numbers n and r, the set of tuples of positive integers (x_0,...,x_n) with x_0+...+x_n=r+1 is finite and has C(r,n) elements (in particular it is empty when r<n).
   assumptions:
   - $n,r$は自然数
   - 各$x_i\geq1$
   quantifiers:
   - 任意の自然数$n,r$
-  conclusion: 解の個数は$\binom{r}{n}$である。
+  conclusion: 解の集合は有限で、その個数は$\binom{r}{n}$である（$r<n$のときは解が存在しない）。
   answer: $n,r$を自然数とする。$r<n$のとき、各$x_i\geq1$なら和は$n+1$以上で$r+1$を超えるので解はなく、$\binom{r}{n}=0$と一致する。$r\geq n$のとき$r=n+d$とおく。解$(x_i)$に$y_i=x_i-1$を対応させると、$y_i$は非負整数で$\sum_{i=0}^{n}y_i=d$である。逆に$y_i$から$x_i=y_i+1$で解が戻る。$\sum_{i=0}^{n}y_i=d$の非負整数解は、$d$個の$\circ$と$n$個の仕切りの並びと対応するので$\binom{n+d}{n}$個ある。$n+d=r$なので解の個数は$\binom{r}{n}$である。
   strategy: Subtract 1 from each variable and count nonnegative solutions by stars and bars.
   sketch:
@@ -2228,61 +2236,8 @@
   hard_negative:
     statement: 解の個数は$\binom{n+r}{n}$である。
     reason: これは$x_0+\dots+x_n=r$の非負整数解の個数である。$n=1$、$r=0$では正の整数解はなく$0$個だが、この式は$1$を与える。
-  target: |
-    ∀ n r : ℕ, Set.ncard {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = r.choose n
-  proof: |
-    by
-      intro n r
-      by_cases hr : r < n
-      · rw [Nat.choose_eq_zero_of_lt hr]
-        have : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = ∅ := by
-          ext x
-          simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]
-          intro hx hs
-          have : ∑ i : Fin (n + 1), 1 ≤ ∑ i, x i := Finset.sum_le_sum fun i _ => hx i
-          simp at this
-          omega
-        rw [this, Set.ncard_empty]
-      · obtain ⟨d, rfl⟩ : ∃ d, r = n + d := ⟨r - n, by omega⟩
-        have hcount : Set.ncard {y : Fin (n + 1) → ℕ | ∑ i, y i = d} = (n + d).choose n := by
-          have h1 : Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = Nat.card (Sym (Fin (n + 1)) d) := Nat.card_congr (Sym.equivNatSumOfFintype (Fin (n + 1)) d).symm
-          have h2 : Nat.card (Sym (Fin (n + 1)) d) = (n + d).choose d := by
-            rw [Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_fin]
-            congr 1
-            omega
-          rw [← Nat.card_coe_set_eq]
-          change Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = _
-          rw [h1, h2]
-          exact (Nat.choose_symm_add).symm
-        rw [← hcount]
-        have hsum : ∀ y : Fin (n + 1) → ℕ, ∑ i, (y i + 1) = ∑ i, y i + (n + 1) := by
-          intro y
-          rw [Finset.sum_add_distrib]
-          simp
-        have himg : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = n + d + 1} = (fun y i => y i + 1) '' {y : Fin (n + 1) → ℕ | ∑ i, y i = d} := by
-          ext x
-          simp only [Set.mem_setOf_eq, Set.mem_image]
-          constructor
-          · rintro ⟨hx, hs⟩
-            refine ⟨fun i => x i - 1, ?_, ?_⟩
-            · have e : ∑ i, ((x i - 1) + 1) = n + d + 1 := by
-                rw [← hs]
-                exact Finset.sum_congr rfl fun i _ => Nat.sub_add_cancel (hx i)
-              rw [hsum] at e
-              show ∑ i, (x i - 1) = d
-              omega
-            · funext i
-              exact Nat.sub_add_cancel (hx i)
-          · rintro ⟨y, hy, rfl⟩
-            refine ⟨fun i => Nat.le_add_left 1 (y i), ?_⟩
-            rw [hsum, hy]
-            omega
-        rw [himg]
-        refine Set.ncard_image_of_injective _ ?_
-        intro y y' h
-        funext i
-        have := congrFun h i
-        simpa using this
+  target: '∀ n r : ℕ, {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1}.Finite ∧ {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1}.ncard = r.choose n'
+  proof: "by\n  intro n r\n  refine ⟨?_, ?_⟩\n  · refine (Set.finite_Iic (fun _ : Fin (n + 1) => r + 1)).subset ?_\n    intro x hx i\n    have h1 : x i ≤ ∑ j, x j := Finset.single_le_sum (f := x) (fun j _ => Nat.zero_le _) (Finset.mem_univ i)\n    have h2 : ∑ j, x j = r + 1 := hx.2\n    show x i ≤ r + 1\n    omega\n  · show Set.ncard {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = r.choose n\n    by_cases hr : r < n\n    · rw [Nat.choose_eq_zero_of_lt hr]\n      have : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = r + 1} = ∅ := by\n        ext x\n        simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and]\n        intro hx hs\n        have : ∑ i : Fin (n + 1), 1 ≤ ∑ i, x i := Finset.sum_le_sum fun i _ => hx i\n        simp at this\n        omega\n      rw [this, Set.ncard_empty]\n    · obtain ⟨d, rfl⟩ : ∃ d, r = n + d := ⟨r - n, by omega⟩\n      have hcount : Set.ncard {y : Fin (n + 1) → ℕ | ∑ i, y i = d} = (n + d).choose n := by\n        have h1 : Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = Nat.card (Sym (Fin (n + 1)) d) := Nat.card_congr (Sym.equivNatSumOfFintype (Fin (n + 1)) d).symm\n        have h2 : Nat.card (Sym (Fin (n + 1)) d) = (n + d).choose d := by\n          rw [Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_fin]\n          congr 1\n          omega\n        rw [← Nat.card_coe_set_eq]\n        change Nat.card {P : Fin (n + 1) → ℕ // ∑ i, P i = d} = _\n        rw [h1, h2]\n        exact (Nat.choose_symm_add).symm\n      rw [← hcount]\n      have hsum : ∀ y : Fin (n + 1) → ℕ, ∑ i, (y i + 1) = ∑ i, y i + (n + 1) := by\n        intro y\n        rw [Finset.sum_add_distrib]\n        simp\n      have himg : {x : Fin (n + 1) → ℕ | (∀ i, 1 ≤ x i) ∧ ∑ i, x i = n + d + 1} = (fun y i => y i + 1) '' {y : Fin (n + 1) → ℕ | ∑ i, y i = d} := by\n        ext x\n        simp only [Set.mem_setOf_eq, Set.mem_image]\n        constructor\n        · rintro ⟨hx, hs⟩\n          refine ⟨fun i => x i - 1, ?_, ?_⟩\n          · have e : ∑ i, ((x i - 1) + 1) = n + d + 1 := by\n              rw [← hs]\n              exact Finset.sum_congr rfl fun i _ => Nat.sub_add_cancel (hx i)\n            rw [hsum] at e\n            show ∑ i, (x i - 1) = d\n            omega\n          · funext i\n            exact Nat.sub_add_cancel (hx i)\n        · rintro ⟨y, hy, rfl⟩\n          refine ⟨fun i => Nat.le_add_left 1 (y i), ?_⟩\n          rw [hsum, hy]\n          omega\n      rw [himg]\n      refine Set.ncard_image_of_injective _ ?_\n      intro y y' h\n      funext i\n      have := congrFun h i\n      simpa using this\n  \n"
 - id: strictly_increasing_sequences_count
   kind: gap
   level: high
@@ -2303,7 +2258,7 @@
   - 'construct: A k-subset listed in increasing order gives a preimage.'
   - 'derive: Two strictly increasing sequences with the same value set coincide.'
   - 'conclude: So the count is C(n, k).'
-  openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (size (suchthat (function_set (integer_range 1 k) (integer_range 0 (- n 1))) (lambda (a) (strictly_increasing_fn a)))) (binom n k))))
+  openmath: (forall (n k) (-> (and (in n N) (in k N)) (= (size (suchthat (function_set (integer_range 1 k) (integer_range 0 (- n 1))) (lambda (a) (forall (i j) (-> (and (in i (integer_range 1 k)) (in j (integer_range 1 k)) (< i j)) (< (fn_value a i) (fn_value a j))))))) (binom n k))))
   hard_negative:
     statement: 広義単調増加列$a_1\leq\dots\leq a_k$の個数も$\binom{n}{k}$である。
     reason: 広義単調増加列は重複組合せで数える。$n=2$、$k=2$では広義単調増加列は$3$個だが、$\binom{2}{2}=1$である。

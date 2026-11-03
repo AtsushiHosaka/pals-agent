@@ -104,10 +104,10 @@
   quantifiers:
   - 任意の整数$a,b$と正の整数$n$
   conclusion: $a^n$が$b^n$を割り切ることと、$a$が$b$を割り切ることは同値である。
-  answer: |
+  answer: |-
     $a,b$を整数、$n$を正の整数とする。$b=ac$（$c$は整数）ならば$b^n=a^nc^n$なので、$a^n$は$b^n$を割り切る。
     逆に$a^n$が$b^n$を割り切るとする。$a=0$ならば$b^n=0$なので$b=0$であり、$a$は$b$を割り切る。$b=0$ならば$a$は$0$を割り切る。
-    $a,b$がともに$0$でないとき、素数$p$について$a,b$の素因数分解における$p$の指数を$e,f$とする。$a^n,b^n$における$p$の指数は$ne,nf$であり、仮定から$ne\leq nf$、すなわち$e\leq f$である。これがすべての素数$p$で成り立つので、$a$は$b$を割り切る。
+    $a,b$がともに$0$でないとき、整除は符号によらないので$|a|,|b|$で考える（$|a|^n=|a^n|$、$|b|^n=|b^n|$であり、$|a|\mid|b|$と$a\mid b$は同値である）。素数$p$について$|a|,|b|$の素因数分解における$p$の指数を$e,f$とする。$|a|^n,|b|^n$における$p$の指数は$ne,nf$であり、仮定から$ne\leq nf$、すなわち$e\leq f$である。これがすべての素数$p$で成り立つので、$|a|$は$|b|$を割り切り、したがって$a$は$b$を割り切る。
   strategy: Compare exponents of each prime in the factorizations.
   sketch:
   - 'derive: If b = ac then b^n = a^n c^n.'
@@ -254,7 +254,7 @@
   kind: textbook
   level: high
   topic: 整数の性質・平方数の差
-  statement: 整数$n$が$x^2-y^2$（$x,y$は整数）の形に表せることは、$n$を$4$で割った余りが$2$でないことと同値である。
+  statement: 整数$n$（負でもよい）が$x^2-y^2$（$x,y$は整数）の形に表せることは、$n$を$4$で割った余り（$0$以上$4$未満の値）が$2$でないことと同値である。
   statement_en: An integer n can be written as x² - y² with integers x, y if and only if n does not leave remainder 2 on division by 4.
   assumptions:
   - $n$は整数
@@ -447,6 +447,7 @@
   assumptions:
   - $a,b,l$は$0$以上の整数
   - $g$は正の整数
+  - $a=0$または$b=0$のとき$\mathrm{lcm}(a,b)=0$とする
   quantifiers:
   - 任意の$0$以上の整数$a,b,l$と正の整数$g$
   conclusion: $\gcd(a,b)=g$かつ$\mathrm{lcm}(a,b)=l$であることと、$\gcd(m,n)=1,\ a=gm,\ b=gn,\ l=gmn$を満たす$m,n$が存在することは同値である。
@@ -1016,7 +1017,7 @@
   kind: gap
   level: high
   topic: 整数の性質・合同と余り
-  statement: 整数$a,b$と正の整数$n$について、$a,b$を$n$で割った余りが等しいことは、$n$が$a-b$を割り切ることと同値である。
+  statement: 整数$a,b$と正の整数$n$について、$a,b$を$n$で割った余り（$0$以上$n$未満の値。$a,b$が負でもよい）が等しいことは、$n$が$a-b$を割り切ることと同値である。
   statement_en: For integers a, b and a positive integer n, a and b leave the same remainder on division by n if and only if n divides a - b.
   assumptions:
   - $a,b$は整数
@@ -1232,8 +1233,8 @@
   kind: gap
   level: middle
   topic: 整数の性質・連続する2整数の積
-  statement: 整数$n$について、連続する二つの整数の積$n(n+1)$は偶数である。
-  statement_en: For every integer n, the product n(n + 1) of two consecutive integers is even.
+  statement: 連続する個数を$2$個に限った形として、整数$n$について、連続する二つの整数の積$n(n+1)$は偶数である。
+  statement_en: Two-term special form. For every integer n, the product n(n + 1) of two consecutive integers is even.
   assumptions:
   - $n$は整数
   quantifiers:
@@ -1434,8 +1435,8 @@
   kind: gap
   level: high
   topic: 整数の性質・平方数の和と3の倍数
-  statement: 整数$a,b$について、$a^2+b^2$が$3$の倍数ならば、$a,b$はともに$3$の倍数である。
-  statement_en: If integers a and b are such that a² + b² is divisible by 3, then both a and b are divisible by 3.
+  statement: $3$に限った形（$4$で割って$3$余る素数$p$の一般形は別カード）として、整数$a,b$について、$a^2+b^2$が$3$の倍数ならば、$a,b$はともに$3$の倍数である。
+  statement_en: Special case p = 3 of the p ≡ 3 (mod 4) statement. If integers a and b are such that a² + b² is divisible by 3, then both a and b are divisible by 3.
   assumptions:
   - $a,b$は整数
   - $a^2+b^2$は$3$の倍数
@@ -1507,43 +1508,35 @@
   kind: gap
   level: high
   topic: 整数の性質・互いに素な積と平方数
-  statement: 互いに素な$0$以上の整数$a,b$の積が平方数$c^2$であるならば、$a,b$はともに平方数である。
-  statement_en: If coprime natural numbers a and b satisfy ab = c² for a natural number c, then a and b are both perfect squares.
+  statement: 互いに素な$0$以上の整数$a,b$の積が$c^n$（$c,n$は$0$以上の整数）の形ならば、$a,b$はともに$n$乗数である。$n=2$とすれば、互いに素な数の積が平方数のとき、両方とも平方数である。
+  statement_en: If coprime natural numbers a and b satisfy ab = c^n for natural numbers c and n, then a and b are both perfect n-th powers; n = 2 gives the square case.
   assumptions:
-  - $a,b,c$は$0$以上の整数
+  - $a,b,c,n$は$0$以上の整数
   - $\gcd(a,b)=1$
-  - $ab=c^2$
+  - $ab=c^n$
   quantifiers:
-  - 任意の$0$以上の整数$a,b,c$
-  conclusion: $a=s^2,\ b=t^2$となる$0$以上の整数$s,t$が存在する。
-  answer: |
-    $a,b,c$を$0$以上の整数とし、$\gcd(a,b)=1,\ ab=c^2$とする。$a=0$ならば$\gcd(0,b)=b=1$なので$a=0^2,\ b=1^2$である。$b=0$の場合も同様である。
-    $a,b$がともに正のとき、素数$p$が$a$を割り切るとする。$\gcd(a,b)=1$なので$p$は$b$を割り切らない。よって$a$における$p$の指数は$ab=c^2$における指数に等しく、これは偶数である。$a$のすべての素因数の指数が偶数なので$a$は平方数である。$b$についても同様である。
+  - 任意の$0$以上の整数$a,b,c,n$
+  conclusion: $a=s^n,\ b=t^n$となる$0$以上の整数$s,t$が存在する。
+  answer: |-
+    $a,b,c,n$を$0$以上の整数とし、$\gcd(a,b)=1$、$ab=c^n$とする。$a$が$n$乗数であることを示す（$b$は$a,b$を入れ替えて同様に示せる）。
+    $n=0$のとき$ab=1$なので$a=b=1=1^0$である。以下$n\geq 1$とする。$a=0$ならば$\gcd(0,b)=b=1$なので$a=0^n$、$b=1^n$である。$b=0$の場合も同様である。
+    $a,b$がともに正のとき、素数$p$が$a$を割り切るとする。$\gcd(a,b)=1$より$p$は$b$を割り切らないので、$a$における$p$の指数は$ab=c^n$における$p$の指数に等しく、これは$c$における$p$の指数の$n$倍である。よって$a$のすべての素因数の指数は$n$の倍数であり、$a$は$n$乗数である。
   strategy: Compare prime exponents, using that a prime divides only one of a and b.
   sketch:
   - 'case_split: If a = 0 then b = 1, and symmetrically.'
   - 'derive: A prime dividing a does not divide b.'
   - 'derive: Its exponent in a equals its exponent in c², which is even.'
   - 'conclude: All exponents in a and b are even, so both are squares.'
-  openmath: (forall (a b c) (-> (and (in a N) (in b N) (in c N) (= (gcd a b) 1) (= (* a b) (^ c 2))) (and (exists (s) (and (in s N) (= a (^ s 2)))) (exists (t) (and (in t N) (= b (^ t 2)))))))
+  openmath: (forall (a b c n) (-> (and (in a N) (in b N) (in c N) (in n N) (= (gcd a b) 1) (= (* a b) (^ c n))) (and (exists (s) (and (in s N) (= a (^ s n)))) (exists (t) (and (in t N) (= b (^ t n)))))))
   hard_negative:
-    statement: $0$以上の整数$a,b$の積が平方数ならば、$a,b$はともに平方数である。
-    reason: 互いに素の仮定を外すと成り立たない。$a=2,\ b=8$では$ab=16$だが、$2$は平方数でない。
-  target: |
-    ∀ (a b c : ℕ), Nat.Coprime a b → a * b = c ^ 2 → (∃ s : ℕ, a = s ^ 2) ∧ (∃ t : ℕ, b = t ^ 2)
-  proof: |
+    statement: $0$以上の整数$a,b$の積が$c^n$の形ならば、$a,b$はともに$n$乗数である。
+    reason: 互いに素の仮定を外すと成り立たない。$n=2,\ a=2,\ b=8$では$ab=16=4^2$だが、$2$は平方数でない。
+  target: '∀ (a b c n : ℕ), Nat.Coprime a b → a * b = c ^ n → (∃ s : ℕ, a = s ^ n) ∧ (∃ t : ℕ, b = t ^ n)'
+  proof: |-
     by
-      intro a b c h habc
-      have h2 : b * a = c ^ 2 := by rw [Nat.mul_comm]; exact habc
-      have hu : IsUnit (gcd a b) := by
-        rw [gcd_eq_nat_gcd, Nat.isUnit_iff]
-        exact h
-      have hu2 : IsUnit (gcd b a) := by
-        rw [gcd_eq_nat_gcd, Nat.isUnit_iff]
-        exact h.symm
-      obtain ⟨s, hs⟩ := exists_eq_pow_of_mul_eq_pow hu habc
-      obtain ⟨t, ht⟩ := exists_eq_pow_of_mul_eq_pow hu2 h2
-      exact ⟨⟨s, hs⟩, ⟨t, ht⟩⟩
+      intro a b c n hab h
+      refine ⟨exists_eq_pow_of_mul_eq_pow (isUnit_iff_eq_one.mpr hab) h, ?_⟩
+      exact exists_eq_pow_of_mul_eq_pow (isUnit_iff_eq_one.mpr (Nat.Coprime.symm hab)) (by rw [mul_comm]; exact h)
 - id: prime_three_mod_four_dvd_sum_of_squares
   kind: gap
   level: high
@@ -1565,10 +1558,10 @@
     ゆえに$p$は$b$を割り切る。すると$p$は$a^2$を割り切り、$p$は素数なので$a$を割り切る。
   strategy: If p does not divide b, then -1 is a square mod p, which contradicts Fermat since (p-1)/2 is odd.
   sketch:
-  - "setup: Assume p ≡ 3 mod 4 divides a^2 + b^2."
-  - "contradiction: If p does not divide b, some t satisfies t^2 ≡ -1 mod p."
-  - "derive: Since (p-1)/2 is odd, t^(p-1) ≡ -1, contradicting Fermat."
-  - "conclude: So p divides b, then a^2, then a."
+  - 'setup: Assume p ≡ 3 mod 4 divides a^2 + b^2.'
+  - 'contradiction: If p does not divide b, some t satisfies t^2 ≡ -1 mod p.'
+  - 'derive: Since (p-1)/2 is odd, t^(p-1) ≡ -1, contradicting Fermat.'
+  - 'conclude: So p divides b, then a^2, then a.'
   openmath: (forall (p a b) (-> (and (in p P) (in a Z) (in b Z) (exists (q) (and (in q N) (= p (+ (* 4 q) 3)))) (exists (k) (and (in k Z) (= (+ (^ a 2) (^ b 2)) (* p k))))) (and (exists (s) (and (in s Z) (= a (* p s)))) (exists (t) (and (in t Z) (= b (* p t)))))))
   hard_negative:
     statement: 奇素数$p$と整数$a,b$について、$p$が$a^2+b^2$を割り切るならば、$p$は$a$と$b$の両方を割り切る。

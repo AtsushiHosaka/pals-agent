@@ -163,7 +163,7 @@
   - 'apply_theorem: An independent family of size equal to the dimension spans the space.'
   - 'construct: Build the basis from the family v.'
   - 'conclude: Each basis vector satisfies f b_i = μ_i b_i.'
-  openmath: (forall (K V f n mu v) (-> (and (fd_vector_space K V) (endomorphism K V f) (= (dim_of K V) n) (family_injective mu) (forall (i) (eigenvector_of f (fn_value mu i) (fn_value v i)))) (exists (b) (and (is_basis_family K V b) (forall (i) (= (fn_value f (fn_value b i)) (smul (fn_value mu i) (fn_value b i))))))))
+  openmath: (forall (K V f n mu v) (-> (and (fd_vector_space K V) (endomorphism K V f) (= (dim_of K V) n) (= (size mu) n) (family_injective mu) (forall (i) (eigenvector_of f (fn_value mu i) (fn_value v i)))) (exists (b) (and (is_basis_family K V b) (forall (i) (= (fn_value f (fn_value b i)) (smul (fn_value mu i) (fn_value b i))))))))
   hard_negative:
     statement: 対角化可能なn次正方行列はn個の相異なる固有値をもつ。
     reason: 2次の単位行列は対角行列だが固有値は1のみである。相異なるn個の固有値は十分条件であって必要条件ではない。
@@ -988,7 +988,7 @@
   - 'derive: A direct computation shows ⟨u_j,w_k⟩ = 0 for j < k.'
   - 'induction: The spans of the first k vectors coincide by induction on k.'
   - 'conclude: u is orthonormal with the required span property.'
-  openmath: (forall (K E n v) (-> (and (inner_product_space_over K E) (linearly_independent_family v)) (exists (u) (and (orthonormal_family u E) (forall (k) (= (family_span_upto u k) (family_span_upto v k)))))))
+  openmath: (forall (K E n v) (-> (and (inner_product_space_over K E) (= (size v) n) (linearly_independent_family v)) (exists (u) (and (orthonormal_family u E) (forall (k) (= (family_span_upto u k) (family_span_upto v k)))))))
   hard_negative:
     statement: グラム・シュミットの直交化で得られるu_kはv_kのスカラー倍である。
     reason: v_1=(1,0), v_2=(1,1)ではu_2=(0,1)であり、v_2のスカラー倍でない。一致するのは張る部分空間である。
@@ -1023,7 +1023,7 @@
   - 'derive: v ∪ w is orthonormal because w is orthogonal to S.'
   - 'derive: E = S ⊕ S^⊥ shows that v ∪ w spans E.'
   - 'conclude: v ∪ w is an orthonormal basis containing v.'
-  openmath: (forall (K E v) (-> (and (fd_inner_product_space K E) (orthonormal_set v E)) (exists (u) (family_extends_to_onb u v E))))
+  openmath: (forall (K E v) (-> (and (fd_inner_product_space K E) (orthonormal_set v E)) (exists (u) (and (subset v u) (orthonormal_set u E) (= (linear_span u) (whole_space E))))))
   hard_negative:
     statement: 有限次元内積空間の一次独立な部分集合は、それを含む正規直交基底に延長できる。
     reason: (1,0)と(1,1)は一次独立だが直交しないので、どの正規直交基底にも同時には含まれない。

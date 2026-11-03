@@ -310,8 +310,8 @@
   kind: gap
   level: high
   topic: 二次関数・恒等式
-  statement: すべての実数$x$で$ax^2+bx+c=dx^2+ex+f$が成り立つならば、$a=d,\ b=e,\ c=f$である。
-  statement_en: If a x² + b x + c = d x² + e x + f for every real x, then a = d, b = e and c = f.
+  statement: 2次式に限った形（一般の次数の係数比較は別カード）として、すべての実数$x$で$ax^2+bx+c=dx^2+ex+f$が成り立つならば、$a=d,\ b=e,\ c=f$である。
+  statement_en: 'Degree-2 special form of coefficient comparison: if a x² + b x + c = d x² + e x + f for every real x, then a = d, b = e and c = f.'
   assumptions:
   - $a,b,c,d,e,f$は実数
   - すべての実数$x$で$ax^2+bx+c=dx^2+ex+f$
@@ -521,7 +521,7 @@
         linarith
 - id: product_with_fixed_sum_maximum
   kind: gap
-  level: middle
+  level: high
   topic: 二次関数・定義域つきの最大最小
   statement: 実数$x,y$の和が$s$のとき、積$xy$は$\frac{s^2}{4}$以下であり、等号は$x=y$のときに限り成り立つ。
   statement_en: If real x, y satisfy x + y = s, then x y ≤ s²/4, with equality if and only if x = y.
@@ -864,7 +864,7 @@
   - 'case_split: If D = 0, the only solution is −b/(2a).'
   - 'case_split: If D < 0, a solution would give (2ax + b)² = D < 0, which is impossible.'
   - 'conclude: The numbers of points are 2, 1 and 0 respectively.'
-  openmath: (forall (a b c) (-> (!= a 0) (and (-> (> (- (^ b 2) (* 4 a c)) 0) (= (size (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0)))) 2)) (-> (= (- (^ b 2) (* 4 a c)) 0) (= (size (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0)))) 1)) (-> (< (- (^ b 2) (* 4 a c)) 0) (= (size (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0)))) 0)))))
+  openmath: (forall (a b c) (-> (!= a 0) (and (-> (> (- (^ b 2) (* 4 a c)) 0) (= (size (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0)))) 2)) (-> (= (- (^ b 2) (* 4 a c)) 0) (= (size (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0)))) 1)) (-> (< (- (^ b 2) (* 4 a c)) 0) (= (suchthat R (lambda (x) (= (+ (* a (^ x 2)) (* b x) c) 0))) emptyset)))))
   hard_negative:
     statement: $b^2-4ac>0$なら、$y=ax^2+bx+c$と$x$軸の共有点はつねに$2$個である。
     reason: $a\neq 0$が必要である。$a=0,\ b=1,\ c=0$では$b^2-4ac=1>0$だが、$y=x$と$x$軸の共有点は$1$個である。
@@ -2418,8 +2418,8 @@
   - 'conclude: Then Q² = P · P r² = P R.'
   openmath: (forall (a b c d e f r) (-> (and (= (+ (* a (^ r 2)) (* b r) c) 0) (= (+ (* d (^ r 2)) (* e r) f) 0)) (= (^ (- (* a f) (* d c)) 2) (* (- (* a e) (* d b)) (- (* b f) (* e c))))))
   hard_negative:
-    statement: $(af-dc)^2=(ae-db)(bf-ec)$ならば、2つの方程式は実数の共通解をもつ。
-    reason: 逆は成り立たない。$a=d=1,\ b=e=0,\ c=f=1$では等式は$0=0$となるが、$x^2+1=0$に実数解はない。
+    statement: $(af-dc)^2=(ae-db)(bf-ec)$ならば、2つの方程式は共通の解をもつ。
+    reason: 逆は成り立たない。$a=d=0,\ b=1,\ c=0,\ e=1,\ f=1$では$(af-dc)^2=0$、$(ae-db)(bf-ec)=0\cdot 1=0$で等式が成り立つが、$x=0$と$x+1=0$に共通の解はない。実数か複素数かに関係なく成り立つ反例である。
   target: |
     ∀ (a b c d e f r : ℝ), a * r ^ 2 + b * r + c = 0 → d * r ^ 2 + e * r + f = 0 → (a * f - d * c) ^ 2 = (a * e - d * b) * (b * f - e * c)
   proof: |

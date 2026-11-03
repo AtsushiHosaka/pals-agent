@@ -459,37 +459,34 @@
   kind: gap
   level: 1
   topic: 二項係数・重み付き総和
-  statement: 自然数$n$について$\sum_{k=0}^{n+1}k\binom{n+1}{k}=(n+1)2^n$である。
-  statement_en: For a natural number n, Σ_{k=0}^{n+1} k·C(n+1, k) = (n+1)·2^n.
+  statement: 自然数$n$について$2\sum_{k=0}^{n}k\binom{n}{k}=n\,2^n$である。
+  statement_en: For a natural number n, 2·Σ_{k=0}^{n} k·C(n, k) = n·2^n.
   assumptions:
   - $n$は自然数
   quantifiers:
   - 任意の自然数$n$
-  conclusion: $\sum_{k=0}^{n+1}k\binom{n+1}{k}=(n+1)2^n$が成り立つ。
-  answer: |
-    $n$を自然数とする。$k=0$の項は$0$なので、和は$k\geq 1$の項だけである。$k\geq 1$では吸収公式より$k\binom{n+1}{k}=(n+1)\binom{n}{k-1}$である。$j=k-1$とおくと、和は$(n+1)\sum_{j=0}^{n}\binom{n}{j}$に等しい。二項係数の総和$\sum_{j=0}^{n}\binom{n}{j}$は$2^n$なので、和は$(n+1)2^n$である。
+  conclusion: $2\sum_{k=0}^{n}k\binom{n}{k}=n\,2^n$が成り立つ。
+  answer: $n$を自然数とし、$\binom{n}{k}$を$n$元集合の$k$元部分集合の個数とする。$n$元集合$X$の部分集合$S$と$S$の元$x$の組$(S,x)$の個数を二通りに数える。$S$を先に選ぶと、$|S|=k$のとき$x$は$k$通りなので、総数は$\sum_{k=0}^{n}k\binom{n}{k}$である。$x$を先に選ぶと$n$通りで、$S\setminus\{x\}$は$X\setminus\{x\}$の任意の部分集合なので$2^{n-1}$通りである（$n\geq1$）。よって$n\geq1$のとき総数は$n2^{n-1}$であり、両辺を$2$倍して$2\sum_{k=0}^{n}k\binom{n}{k}=n2^n$を得る。$n=0$では両辺とも$0$である。
   strategy: Remove the zero term, absorb the factor k, and use the sum of binomials.
   sketch:
   - 'derive: The term k = 0 vanishes.'
   - 'apply_theorem: The absorption identity gives k·C(n+1, k) = (n+1)·C(n, k-1) for k ≥ 1.'
   - 'translate: Factor out n + 1 and reindex by j = k - 1.'
   - 'conclude: Σ_j C(n, j) = 2^n yields the claim.'
-  openmath: (forall (n) (-> (in n N) (= (sum (integer_range 0 (+ n 1)) (lambda (k) (* k (binom (+ n 1) k)))) (* (+ n 1) (^ 2 n)))))
+  openmath: (forall (n) (-> (in n N) (= (* 2 (sum (integer_range 0 n) (lambda (k) (* k (binom n k))))) (* n (^ 2 n)))))
   hard_negative:
-    statement: Σ_{k=0}^{n}k・C(n,k)=n・2^nである。
-    reason: n=1では左辺が1、右辺が2である。正しい右辺はn≥1でn・2^{n-1}である。
-  target: |
-    ∀ n : ℕ, ∑ k ∈ Finset.range (n + 2), k * (n + 1).choose k = (n + 1) * 2 ^ n
-  proof: |
+    statement: $\sum_{k=0}^{n}k\binom{n}{k}=n\,2^n$である。
+    reason: $n=1$では左辺が$1$、右辺が$2$である。$2$倍した左辺が$n2^n$に等しく、$2$倍を落とすと$n2^{n-1}$になる。
+  target: '∀ n : ℕ, 2 * ∑ k ∈ Finset.range (n + 1), k * n.choose k = n * 2 ^ n'
+  proof: |-
     by
       intro n
-      rw [Finset.sum_range_succ']
-      have h : ∀ k : ℕ, (k + 1) * (n + 1).choose (k + 1) = (n + 1) * n.choose k := by
-        intro k
-        rw [Nat.add_one_mul_choose_eq, Nat.mul_comm]
-      simp only [h]
-      rw [← Finset.mul_sum, Nat.sum_range_choose]
-      simp
+      cases n with
+      | zero => simp
+      | succ n =>
+        rw [Nat.sum_range_mul_choose]
+        simp only [Nat.add_sub_cancel, pow_succ]
+        ring
 - id: sum_squares_binomials
   kind: gap
   level: 2
@@ -981,7 +978,7 @@
   - 'derive: Multiply the series for d + 1 by 1 - X and compare coefficients.'
   - 'apply_theorem: Pascal''s identity gives the series for d.'
   - 'conclude: The induction hypothesis finishes the proof.'
-  openmath: (forall (S d) (-> (and (comm_ring S) (in d N)) (= (* (formal_power_series_mk (lambda (n) (binom (+ d n) d))) (^ (- 1 power_series_x) (+ d 1))) 1)))
+  openmath: (forall (S d) (-> (and (comm_ring S) (in d N)) (= (* (formal_power_series_over S (lambda (n) (binom (+ d n) d))) (^ (- 1 (power_series_var S)) (+ d 1))) 1)))
   hard_negative:
     statement: (Σ_{n≥0}C(d+n,d)X^n)(1-X)^d=1である。
     reason: d=0ではΣX^n=1となり誤りである。指数はd+1でなければならない。
@@ -1439,12 +1436,14 @@
   hard_negative:
     statement: K_{r+1}を含まない有限単純グラフの辺数は(n^2-s^2)(r-1)/(2r)+C(s,2)に常に等しい。
     reason: 辺のないグラフもK_{r+1}を含まないが、r≥2, n≥2では右辺が正になりうる。等号はトゥラングラフのときに成り立つ。
-  target: |
-    ∀ (V : Type*) [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] (r : ℕ), 0 < r → G.CliqueFree (r + 1) → G.edgeFinset.card ≤ ((Fintype.card V) ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1) / (2 * r) + (Fintype.card V % r).choose 2
-  proof: |
+  target: '∀ (V : Type*) [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj] (r : ℕ), 0 < r → G.CliqueFree (r + 1) → (G.edgeFinset.card : ℚ) ≤ (((Fintype.card V ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1) : ℕ) : ℚ) / ((2 * r : ℕ) : ℚ) + (((Fintype.card V % r).choose 2 : ℕ) : ℚ)'
+  proof: |-
     by
-      intro V _ G _ r _ h
-      exact h.card_edgeFinset_le
+      intro V _ G _ r hr h
+      have h1 : G.edgeFinset.card ≤ ((Fintype.card V ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1)) / (2 * r) + (Fintype.card V % r).choose 2 := h.card_edgeFinset_le
+      have h2 : ((((Fintype.card V ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1)) / (2 * r) : ℕ) : ℚ) ≤ (((Fintype.card V ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1) : ℕ) : ℚ) / ((2 * r : ℕ) : ℚ) := Nat.cast_div_le
+      have h3 : (G.edgeFinset.card : ℚ) ≤ ((((Fintype.card V ^ 2 - (Fintype.card V % r) ^ 2) * (r - 1)) / (2 * r) : ℕ) : ℚ) + (((Fintype.card V % r).choose 2 : ℕ) : ℚ) := by exact_mod_cast h1
+      linarith
 - id: hall_marriage_theorem
   kind: named
   level: 3

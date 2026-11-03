@@ -9,34 +9,34 @@
   },
   "import_count_median": 2,
   "broad_seconds": {
-   "median": 10.551,
-   "p95": 28.604,
-   "max": 35.258
+   "median": 8.467,
+   "p95": 23.648,
+   "max": 27.505
   },
   "broad_max_rss_bytes": {
-   "median": 5441748992,
-   "p95": 5463687168,
-   "max": 5485592576
+   "median": 5441306624,
+   "p95": 5462507520,
+   "max": 5485740032
   },
   "broad_peak_footprint_bytes": {
-   "median": 870409384,
-   "p95": 881550504,
-   "max": 903668904
+   "median": 869803032,
+   "p95": 880731256,
+   "max": 903210056
   },
   "narrow_seconds": {
-   "median": 2.85,
-   "p95": 7.224,
-   "max": 9.119
+   "median": 2.642,
+   "p95": 5.072,
+   "max": 6.553
   },
   "narrow_max_rss_bytes": {
-   "median": 1859665920,
-   "p95": 2632040448,
-   "max": 2690334720
+   "median": 1860616192,
+   "p95": 2632122368,
+   "max": 2692366336
   },
   "narrow_peak_footprint_bytes": {
-   "median": 316745992,
-   "p95": 457405688,
-   "max": 462317408
+   "median": 314697896,
+   "p95": 459355384,
+   "max": 462546952
   },
   "measured": 60
  },
@@ -517,14 +517,14 @@
   },
   {
    "recipe_id": "textbook.calculus_single.fixed_point_unit_interval",
-   "materialized_source_sha256": "59a2821ab89057700a038f9bd600324d1ffc5ac0c4a26a27126fa1209c41965a",
+   "materialized_source_sha256": "1f3ef0e1b1860ff4be72e8859156cb46c3d3c779c08bf90f4605794b1bbfaa99",
    "imports": [
     "Mathlib.Analysis.Normed.Order.Lattice",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "ecf45876d0f3a3d572ce2a36373240ec083b44cea4f584d000bbc0ab9674e52a"
+   "statement_pp_all_sha256": "e1c9f51298bcdc6e027a46e8a6ca0f19f22b8ad588f49480a27833c7e64df78d"
   },
   {
    "recipe_id": "textbook.calculus_single.continuous_injective_strictly_monotone",
@@ -768,7 +768,7 @@
   },
   {
    "recipe_id": "textbook.calculus_single.second_derivative_test_maximum",
-   "materialized_source_sha256": "dfcc9358b6d22cb920eaa884fecb4435209ed5909795011b10a44edb1aadbc06",
+   "materialized_source_sha256": "0087061f2786efc92c2fa2f40999524973b12d2874e4d46d61de26150f1fe16c",
    "imports": [
     "Mathlib.Analysis.Calculus.DerivativeTest",
     "Mathlib.Analysis.InnerProductSpace.Basic",
@@ -777,7 +777,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "67078cdee5bcdd06af120097bd1eab6538f705be4add202beddc18d4cf980a33"
+   "statement_pp_all_sha256": "00ccf7083ebb5dce970691fe2547f596ba198f2a623ec146ec89b1719214935c"
   },
   {
    "recipe_id": "textbook.calculus_single.taylor_lagrange_remainder",
@@ -1183,13 +1183,13 @@
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.weighted_sum_binomials",
-   "materialized_source_sha256": "34abe664fda97653a83f5a0621e50bd7c92afec80e5cae22bc63a13ebee73978",
+   "materialized_source_sha256": "1434f432b934d908161bc9f9f40f458bbf9c89ef424110e8107965b29d70565c",
    "imports": [
     "Mathlib.Data.Nat.Choose.Sum"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "4f8a3a32ea7238626bc23cc7dec4a61cd0895674c9861464b1b9ff383b088c70"
+   "statement_pp_all_sha256": "fcea05e96c499ba8466eba82a65214a78f5cd855517b63fa97f4b2ac5076439c"
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.sum_squares_binomials",
@@ -1459,14 +1459,19 @@
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.turan_edge_bound",
-   "materialized_source_sha256": "b9806cc79d401352370e25ae7702012242141d79d27e4b1339dee78c317b989b",
+   "materialized_source_sha256": "040533b373b69eac68167742c3a4adaefd347c796983ae13bd27d6520e44efc0",
    "imports": [
+    "Mathlib.Algebra.Order.Ring.Star",
+    "Mathlib.Analysis.Normed.Field.Lemmas",
     "Mathlib.Combinatorics.SimpleGraph.Extremal.Turan",
+    "Mathlib.Data.Nat.Cast.Order.Field",
+    "Mathlib.Data.Rat.Star",
+    "Mathlib.GroupTheory.Finiteness",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "beb66e6421370becd689fbddca58405378ec523f23064ed48577889e6bfb8b14"
+   "statement_pp_all_sha256": "1fc4968af81a66833a709cf1338bbc6da45697cbd10bb6143251828ffa8d6eab"
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.hall_marriage_theorem",
@@ -1961,14 +1966,14 @@
   },
   {
    "recipe_id": "textbook.complex_analysis.euler_formula",
-   "materialized_source_sha256": "17cc79bf3f04a38de0d4601fd31c370255420ab55b4fbcac7bc177936e34fe53",
+   "materialized_source_sha256": "e2484eb024724fcd245cb12ab37b8b39ad04ff3de3bbc6f0dad0b7c5dbb63a78",
    "imports": [
     "Mathlib.Analysis.Complex.Trigonometric",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "09d7cd612d9c7a45ccb665cdaaed3d4407de8ec4a76ea8ffceff17de0eefa8b2"
+   "statement_pp_all_sha256": "2ab3aec550f699530ec1794e2854b7a6d76fa519fed0241e9d3cdca9e479e4b9"
   },
   {
    "recipe_id": "textbook.complex_analysis.de_moivre_formula",
@@ -2394,7 +2399,7 @@
   },
   {
    "recipe_id": "textbook.complex_analysis.riemann_removable_singularity",
-   "materialized_source_sha256": "75e636f4ef94f871a25789f90a72afd1fd39cce7e5222a86ece871c8f2fac8c6",
+   "materialized_source_sha256": "9f840e5e8eadf45dd73d6d88d0ee87555ca30d1b89b94d882715b7f30881c3e1",
    "imports": [
     "Mathlib.Analysis.CStarAlgebra.Classes",
     "Mathlib.Analysis.Complex.RemovableSingularity",
@@ -2402,7 +2407,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "d3790a02a755b3462315c15d930f57276d1404258c13dfde175b32c52f796b89"
+   "statement_pp_all_sha256": "389165bec7ad5fde2a2bec0df2321990980dc019d6ae5571ac574484cd2a7a43"
   },
   {
    "recipe_id": "textbook.complex_analysis.holomorphic_zero_factor",
@@ -3073,7 +3078,7 @@
   },
   {
    "recipe_id": "textbook.field_galois.algebraic_elements_closed_under_field_operations",
-   "materialized_source_sha256": "7504b2fd235d1c11d2d15af9a1ca64ae874e9679b8713dafc6340019978a3927",
+   "materialized_source_sha256": "952a5a3bd536f649fbcd9a6b4296c492b099dfc5bf92dac0907b3cf62bd69d84",
    "imports": [
     "Mathlib.RingTheory.Algebraic.Integral",
     "Mathlib.RingTheory.SimpleRing.Principal",
@@ -3081,7 +3086,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "ddac994cde586c4b4b9bf5c9fcdc32be6ee5d37d02eb3eba78d88f55a5dafe9f"
+   "statement_pp_all_sha256": "499f1727bdc9c7b2f28b226e3cf27ae6c3df37bdb2eb9c870448fc183bcf92eb"
   },
   {
    "recipe_id": "textbook.field_galois.algebraic_extension_transitive",
@@ -3832,14 +3837,14 @@
   },
   {
    "recipe_id": "textbook.fourier_convex_numeric.fourier_coefficient_explicit_formula",
-   "materialized_source_sha256": "0d2edf55e16908847f7fcb0475e3cb01d3124c8a4402e38b6206a5ff2503471e",
+   "materialized_source_sha256": "61fadc9de832da05854dee8a7f87e999101c3b9750f48f971d2375db233c5404",
    "imports": [
     "Mathlib.Analysis.Fourier.AddCircle",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "33953bbcf91dbe1d2483b39b19aad21a0d142b0029917bfb7116e3bce6e6ecf4"
+   "statement_pp_all_sha256": "317549d615a31dcad5cb0afd445aa426f5effd6d5bfb91ca58c557a12f6efccd"
   },
   {
    "recipe_id": "textbook.fourier_convex_numeric.fourier_coefficient_l1_bound",
@@ -4338,25 +4343,25 @@
   },
   {
    "recipe_id": "textbook.functional_analysis.parseval_identity_hilbert_basis",
-   "materialized_source_sha256": "b50b58ffbc96925b22eb69007972732cd74b04ade7fa9a03ae7b7bc760d8b326",
+   "materialized_source_sha256": "e521996d5e7f2fea2066c113c98f88792844d9c88f45a8f3bf0f2d9ad5e7eb6e",
    "imports": [
     "Mathlib.Analysis.InnerProductSpace.l2Space",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "98e3130d6210e5a9790870d64f54ebd1fcf15f33075f39bf1e0b4b6b68d4dad8"
+   "statement_pp_all_sha256": "218255e2264019ea563d9ddb62202b73ffc78251359d629b993d7184a4a53d8b"
   },
   {
    "recipe_id": "textbook.functional_analysis.hilbert_basis_fourier_expansion",
-   "materialized_source_sha256": "68ac815deb2d2863407efa0a309192438a713045be3df4717ca5b40481366060",
+   "materialized_source_sha256": "77f2c8bbb2eab485fcc6a163451ff40754b3a3dfdcd107cee11d6e7c9b601c6f",
    "imports": [
     "Mathlib.Analysis.InnerProductSpace.l2Space",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "f7779eb28602d63697aaeb306bbb9ee41812a58e1e31a7a00d04d18247507bb6"
+   "statement_pp_all_sha256": "c41faeca8b1dc457c5716eb9868d9ace66431b5f069a538906634e4e9ac321cd"
   },
   {
    "recipe_id": "textbook.functional_analysis.exists_complete_orthonormal_system",
@@ -4911,14 +4916,15 @@
   },
   {
    "recipe_id": "textbook.geometry_centers.nine_point_center_and_radius",
-   "materialized_source_sha256": "fd9faf82ddb84721d81d72257daa132147ee749b582e18f8e7cd06fec6515e54",
+   "materialized_source_sha256": "ab5be8c53a93d49c3fa17fe2cbf110399e3fc5dfcb8fcb6db28aded36b98e5c0",
    "imports": [
+    "Mathlib.AlgebraicTopology.SimplexCategory.Basic",
     "Mathlib.Geometry.Euclidean.NinePointCircle",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "af815abd32ef52f3870ec3826a147df6a3bb635f40bb2a044f154b3dda85732d"
+   "statement_pp_all_sha256": "6b841148524e3c3707268369e43178ac1ad860cfaad3f9a1858c67a0fa0a8d8a"
   },
   {
    "recipe_id": "textbook.geometry_centers.menelaus_theorem",
@@ -5876,14 +5882,14 @@
   },
   {
    "recipe_id": "textbook.geometry_homotopy.mfderiv_eq_fderiv_normed",
-   "materialized_source_sha256": "ede50c4733ed17762f21b0a27b01e2cd6d91dea9bf357a38addc594c78bbf556",
+   "materialized_source_sha256": "7aade2927c3dbc3b4e3757ff5432fbc8da51d1d11d48cf926ac895499bad07be",
    "imports": [
     "Mathlib.Geometry.Manifold.MFDeriv.FDeriv",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "60245e978382f0a7e69d56782eec584691097ddea11f7af44ce40706f99394ac"
+   "statement_pp_all_sha256": "a0e5337b1d3be9403c82bcd70bad35260bb01870adc9b0a032cffd8f7170417b"
   },
   {
    "recipe_id": "textbook.geometry_homotopy.smooth_bump_exists",
@@ -10855,16 +10861,16 @@
   },
   {
    "recipe_id": "textbook.multivariable.partials_exist_not_continuous",
-   "materialized_source_sha256": "83610ffee997df2fefd5ed35c2a268971a8ee23c58ef26a3fa7e8eb0109646b2",
+   "materialized_source_sha256": "4a29c3027026517de41a67f09a7ce36f037684e8845dfff655715daaab966746",
    "imports": [
-    "Mathlib.Analysis.Calculus.Deriv.Mul",
+    "Mathlib.Analysis.Calculus.Deriv.Basic",
     "Mathlib.Analysis.InnerProductSpace.Basic",
     "Mathlib.Topology.Algebra.Module.ModuleTopology",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "00b2a048883abf06768bcf7747dc87aaa60edd871171b9564d06ca27e64a5759"
+   "statement_pp_all_sha256": "26b1da7596fc16dc5837455a852d2ade2353a01b3356ac5b71ff853277eb586c"
   },
   {
    "recipe_id": "textbook.multivariable.gradient_inner_fderiv",
@@ -11004,18 +11010,16 @@
   },
   {
    "recipe_id": "textbook.multivariable.euler_homogeneous_function",
-   "materialized_source_sha256": "df6538742de022afd536f92fba5e63672c14ea5507f1c6b29a7eb1727bb406d7",
+   "materialized_source_sha256": "38b8bb7d44d1f727c05d7c4dff7e3582e26ac0cdef7c35d527f19710bb1b4552",
    "imports": [
-    "Mathlib.Analysis.Calculus.Deriv.Comp",
-    "Mathlib.Analysis.Calculus.Deriv.Mul",
-    "Mathlib.Analysis.Calculus.Deriv.Pow",
     "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Analysis.SpecialFunctions.Pow.Deriv",
     "Mathlib.Topology.Algebra.Module.ModuleTopology",
-    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+    "Std.Tactic.BVDecide.LRAT.Internal.Formula.RupAddResult"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "ed0e3860b3990fe3e8aa7a8fb5c9b1b563e2bb91d7d48871ba4840a68ed659dd"
+   "statement_pp_all_sha256": "0aa035141f73c130ab0f0b89c917369361f4854378a5e65ebe11801dd7984bc9"
   },
   {
    "recipe_id": "textbook.multivariable.inverse_function_theorem",
@@ -11144,14 +11148,14 @@
   },
   {
    "recipe_id": "textbook.multivariable.gaussian_integral_plane",
-   "materialized_source_sha256": "4a90806279f1b053f35fca180be00280c54741bc0580c114d426c6cbde312bd6",
+   "materialized_source_sha256": "0d50f62de5b3c93a81ae1c8f6a215349fd7afec2886ce00b9db3afc31b9f59b7",
    "imports": [
     "Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral",
     "Std.Tactic.BVDecide.LRAT.Internal.Formula.RupAddResult"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "ce4c04f5f27b8a180b2891c41dc1950b4d1243dc681e20045088eb70d28e1db7"
+   "statement_pp_all_sha256": "c343c7721045d7b80014d3fbce2960c74e37cc95503ec1885c423ab5adc8b725"
   },
   {
    "recipe_id": "textbook.multivariable.green_theorem_rectangle",
@@ -12097,14 +12101,14 @@
   },
   {
    "recipe_id": "textbook.ode.matrix_exponential_neg_inverse",
-   "materialized_source_sha256": "9768868e73bbbf78cdce57de2c3d1c290c4409ccff9b4e22308ed82bc1361248",
+   "materialized_source_sha256": "7fd8051ee1d6c40459cf2f6d50653d8a9cc4b8d81f634627aac491544ac82f21",
    "imports": [
     "Mathlib.Analysis.Normed.Algebra.MatrixExponential",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "d084013336bcf308eb8216eb93abc9c777240db6a486e08f783a54a75fa45bbf"
+   "statement_pp_all_sha256": "cd92b771dcf463affc2a53ed75972efcf74317bb056c8d2e66d107670a85fb50"
   },
   {
    "recipe_id": "textbook.probability_statistics.prob_compl",
@@ -12518,14 +12522,14 @@
   },
   {
    "recipe_id": "textbook.probability_statistics.gaussian_mean_variance",
-   "materialized_source_sha256": "90ad4d81f84a06b325c07ae68cd629bc48c92aa833674d1e4afa2e9fff6e2dc8",
+   "materialized_source_sha256": "989885b1cc66d37924c16fd98447dfc148c323f72d40791461fa842476d8b2ab",
    "imports": [
     "Mathlib.Probability.Distributions.Gaussian.Real",
     "Std.Tactic.BVDecide.LRAT.Internal.Formula.RupAddResult"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "6477a21f4b9e296af788c0d6a2f6fe2600933df46929031110598467262d287c"
+   "statement_pp_all_sha256": "88090323c215c7b42184c688e66bf9e87a0eed590656b70e46e93d0dfcf29bc5"
   },
   {
    "recipe_id": "textbook.probability_statistics.gaussian_indep_add",
@@ -12910,7 +12914,7 @@
   },
   {
    "recipe_id": "textbook.real_analysis.eventually_lt_of_limsup_lt",
-   "materialized_source_sha256": "43fc87bca04868a4b1047e875da7d752bae520704e1234d184368f5bb5e8396c",
+   "materialized_source_sha256": "cff3a20d23eb4972c6ef3daf288ed210c17806286af91166c41badf0f7e4fb9b",
    "imports": [
     "Mathlib.Algebra.Order.Archimedean.Real.Basic",
     "Mathlib.Algebra.Order.Ring.Star",
@@ -12918,7 +12922,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "c1c328369d336ecbf35394114c2bbf328702e1ecacfb357801a13fee96badfd0"
+   "statement_pp_all_sha256": "fde3fa0acc5065e3e21460345123c9ac02c620f8c108351a5831e1e68009ee14"
   },
   {
    "recipe_id": "textbook.real_analysis.series_terms_tend_zero",
@@ -13334,7 +13338,7 @@
    "statement_pp_all_sha256": "780d1f9dc86e196066e9be61dc9b2cd38b5311c92858eeadcdcfde076504b49e"
   },
   {
-   "recipe_id": "textbook.ring_theory.quotient_lift_unique",
+   "recipe_id": "textbook.ring_theory.ring_quotient_lift_unique",
    "materialized_source_sha256": "8f66b4c71d92f9902a509156f93617cfc5ba152dece6405b8aaa7082817debf9",
    "imports": [
     "Mathlib.RingTheory.Ideal.Quotient.Defs"
@@ -13365,13 +13369,13 @@
   },
   {
    "recipe_id": "textbook.ring_theory.quotient_ideal_correspondence",
-   "materialized_source_sha256": "96c49795ca321542cfdf5eb1d36e55c1fcc06c46d68677b60b395812353b5cc9",
+   "materialized_source_sha256": "b010e76eb9e28f7bb5f799dd90eca427c75f0b2ba06f7304929d1740c2b9c2fb",
    "imports": [
     "Mathlib.RingTheory.Ideal.Quotient.Operations"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "84ebd4fece82dfbf54099dec20816dd2ce8ce2d6dee6fd2dcfcd84622f99290a"
+   "statement_pp_all_sha256": "e352daf85d54b95fa0512cc2c277548454fc0225d20a02b33e5fda665dc5ab2f"
   },
   {
    "recipe_id": "textbook.ring_theory.chinese_remainder_two_ideals",
@@ -13807,13 +13811,13 @@
   },
   {
    "recipe_id": "textbook.ring_theory.noetherian_iff_ideals_fg",
-   "materialized_source_sha256": "0ec304c0dfcbc9daeb4f0d235b77d6658fc745f62c3269ca2c84eb26a7557fc3",
+   "materialized_source_sha256": "140ddf37d206a7189f6a257e58d48538634a914a0ae84860ac03fceec3e62f58",
    "imports": [
     "Mathlib.RingTheory.Noetherian.Defs"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "e64db167020f0b255dd92b52d724bc081991c4012bc2b7d58700dd872af37acf"
+   "statement_pp_all_sha256": "71e1a2d45fd5c11fb51cbac7f054bc5398bb24f0c8405deaa18dcb35ede83314"
   },
   {
    "recipe_id": "textbook.ring_theory.noetherian_ascending_chain_stabilizes",
@@ -14294,7 +14298,7 @@
   },
   {
    "recipe_id": "textbook.school_algebra_basics.nested_square_root_minus_form_ordered",
-   "materialized_source_sha256": "5c468f7a52d50072370803f90a20d833fb6d0d006c52c0f388c3b50bc952495b",
+   "materialized_source_sha256": "0a5fc87e206acac198d92d72244c40964d26808a0358ddfcd0fc978afe264b16",
    "imports": [
     "Mathlib.Analysis.Real.Sqrt",
     "Mathlib.Tactic.LinearCombination",
@@ -14302,7 +14306,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "f049bb940abea1172b53884b673ec33d335f889f87d2e998e92423f40eeb4ddd"
+   "statement_pp_all_sha256": "e1d9841c104e131c03d12e54347b957ef8d3f81600223dd1d997f0e7baeb8965"
   },
   {
    "recipe_id": "textbook.school_algebra_basics.nested_square_root_general_formula",
@@ -14883,7 +14887,7 @@
   },
   {
    "recipe_id": "textbook.school_analytic_geometry.linear_form_max_on_disc",
-   "materialized_source_sha256": "5749f801f3f1e9222968e33418302489ba4f2d20b27ed44007784e72f07e57d1",
+   "materialized_source_sha256": "403492815075f51055efe2049f17c4b716d0d4e45cb371d6cdb63772c8ab810d",
    "imports": [
     "Mathlib.Algebra.Order.Star.Real",
     "Mathlib.Analysis.Normed.Ring.Basic",
@@ -14891,7 +14895,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "121790bd933e727116161a89acde5b7acd30b415252568aaed49405e6f1e3e89"
+   "statement_pp_all_sha256": "5a07d22b4e243e1e808dd0414ee6e5e25cb450d478ab7036af041b0883f01787"
   },
   {
    "recipe_id": "textbook.school_analytic_geometry.linear_function_on_triangle_le_max_vertices",
@@ -15956,7 +15960,7 @@
   },
   {
    "recipe_id": "textbook.school_counting_probability.trials_maximum_value",
-   "materialized_source_sha256": "e9bf0b3cb21ec59556df17b9c35bb762d5c202cec38aa5a81a47f974be587e74",
+   "materialized_source_sha256": "4e66c047d4614f3b758873c3932986143ceb54bb68fa13ee317ce48b34162bb7",
    "imports": [
     "Mathlib.Algebra.Order.Archimedean.Real.Basic",
     "Mathlib.Data.Fintype.BigOperators",
@@ -15964,7 +15968,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "eb216d274694db4f0493787bed133d82252e26fbef3b4a8817fb85a9952a193c"
+   "statement_pp_all_sha256": "41305e94e05124e50e5e990ec9d517065dd086a9671b13bce6556aa15f0c0adf"
   },
   {
    "recipe_id": "textbook.school_counting_probability.expectation_uniform_linear",
@@ -16240,18 +16244,20 @@
   },
   {
    "recipe_id": "textbook.school_counting_probability.positive_solutions_count",
-   "materialized_source_sha256": "86f1675d3a2429e293b7a6c19e000009d13c5abbbeaa1c7d7fa500ac560c6a8f",
+   "materialized_source_sha256": "ce74997889be3f8be3b68c15e7ca85bf7567406fc0607e5f5bfe5062dd2b7ca5",
    "imports": [
     "Mathlib.Algebra.Order.BigOperators.Group.Finset",
     "Mathlib.AlgebraicTopology.SimplexCategory.Basic",
     "Mathlib.Data.Finsupp.Multiset",
+    "Mathlib.Data.Pi.Interval",
     "Mathlib.Data.Set.Card",
     "Mathlib.Data.Sym.Card",
+    "Mathlib.Order.Interval.Finset.Nat",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "0cd39f1d1cce2b4b2339702aeb10dcf6e63de396dd5d5276d433cf68bb9baec7"
+   "statement_pp_all_sha256": "39ae648a6fd8de87c5cdb873bd11b927e7be27f921389ee0508382239e8194dc"
   },
   {
    "recipe_id": "textbook.school_counting_probability.strictly_increasing_sequences_count",
@@ -17472,7 +17478,7 @@
   },
   {
    "recipe_id": "textbook.school_inequalities.min_x_plus_inv_on_ray",
-   "materialized_source_sha256": "b31355fb32f7d687165223ad0c0917656cdc8d5ec34fb9387e49444758bc671b",
+   "materialized_source_sha256": "bc7d426247b89433c13338cadde97792672c7c962b7d36ad66a1f840cdf5ead5",
    "imports": [
     "Mathlib.Algebra.Order.Star.Real",
     "Mathlib.Analysis.Normed.Ring.Basic",
@@ -17480,7 +17486,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "4d0238070a6926122cd281380e021ed1cf435228a44d4d3e514f79cbcb1311e6"
+   "statement_pp_all_sha256": "58a474b2225addf03c515752d62260503616a90c2a5dd7cab8aecc384dc4e062"
   },
   {
    "recipe_id": "textbook.school_inequalities.min_square_plus_split_reciprocal",
@@ -17971,13 +17977,14 @@
   },
   {
    "recipe_id": "textbook.school_integers.coprime_mul_eq_square",
-   "materialized_source_sha256": "d8c53754ec6fee01b8b727121b68d9522e7ee0bfe23382130d88424d1bd18251",
+   "materialized_source_sha256": "69604a30b4326601e355e92ae7e0f9a20d39d38f88755a83ccbd8522657e728c",
    "imports": [
-    "Mathlib.Algebra.GCDMonoid.Nat"
+    "Mathlib.Algebra.GCDMonoid.Nat",
+    "Mathlib.Algebra.Ring.Nat"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "5271b180c246674f61d3e9e58ea1e2c9c2d2112199039055063ebfd4c2e4d0b6"
+   "statement_pp_all_sha256": "88b6e504a2242a167e7f4a6cbfe516b75efcca4079a458bb44383ac9e5bf3584"
   },
   {
    "recipe_id": "textbook.school_integers.prime_three_mod_four_dvd_sum_of_squares",
@@ -18129,14 +18136,14 @@
   },
   {
    "recipe_id": "textbook.school_polynomials.common_root_of_two_monic_quadratics",
-   "materialized_source_sha256": "4c5492fac302e84db4893ab2156d2b2582b66e76341bc41df0ec52e42b5f34c5",
+   "materialized_source_sha256": "658f1882afd0c19a11950371f86adade888e791decaa7acb416f0bcfd4345156",
    "imports": [
     "Mathlib.Data.Complex.Basic",
     "Mathlib.Tactic.LinearCombination"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "f6a46a4602b01d1b0b572488d4ce7ddf13b9777e1fdee8389c76b5a13e1c9f5a"
+   "statement_pp_all_sha256": "01e0b0499f51422324efc7e9e2916935e03f0ec19016381efdd11731e49f267d"
   },
   {
    "recipe_id": "textbook.school_polynomials.coefficient_comparison_for_polynomial_identity",
@@ -18189,7 +18196,7 @@
   },
   {
    "recipe_id": "textbook.school_polynomials.reciprocal_quartic_substitution",
-   "materialized_source_sha256": "8f7f1a9dbf73653de72f8540124a46500a20c163c349c4b6de950a06a33c9551",
+   "materialized_source_sha256": "5d1634afdbb3eb64ee57a16e3b878f95beeb4d39f10be24fd8b1088006a65f7a",
    "imports": [
     "Mathlib.Algebra.Ring.IsFormallyReal",
     "Mathlib.Analysis.Normed.Field.Basic",
@@ -18197,7 +18204,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "e0c1da98bb7e4364a0bb9a3ce5b87d6755e5b172c33ef52920c0703373ec1a42"
+   "statement_pp_all_sha256": "412ebb8bbc5c05faa1e5b348b22871680f8d9d5cd04a49a9cc4a29d3c11b33ac"
   },
   {
    "recipe_id": "textbook.school_polynomials.rational_root_theorem",
@@ -18410,7 +18417,7 @@
   },
   {
    "recipe_id": "textbook.school_polynomials.real_cubic_factorization_from_nonreal_root",
-   "materialized_source_sha256": "434b9fd30d0fad805950ad6c42f6cc8cd96c453a1cc7a1c19c0f76c21ced2811",
+   "materialized_source_sha256": "d9dd373a8bc350bcb15bb5acdaa0b2a7696eb87bf3eb15f7081d5a83abc5670e",
    "imports": [
     "Mathlib.Analysis.Normed.Field.Basic",
     "Mathlib.Data.Complex.Basic",
@@ -18419,7 +18426,7 @@
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "6e520214150b42bba8e0c92777b14d67d80fa2b848d31e55fb37034097dc6a17"
+   "statement_pp_all_sha256": "b0829b663f9dc2555c5be148697c737e73008519dc3fae303f6f74d1d25add5e"
   },
   {
    "recipe_id": "textbook.school_polynomials.linear_combination_of_equal_ratios",
@@ -20704,25 +20711,25 @@
   },
   {
    "recipe_id": "textbook.school_vectors_complex.internal_division_formula",
-   "materialized_source_sha256": "8944a45c62484ecbfc1b4a4371618118e25cfe8f5711e2caac684231d2857976",
+   "materialized_source_sha256": "3cc59c45c5d7741f35217634124ae121d9fdbe6a016ffcac3d5aad7dab530b52",
    "imports": [
     "Mathlib.Analysis.InnerProductSpace.Defs",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "15301617d28a7df51e854c3ac688cbb3206ca57b6067f7c785a0aed808424d1a"
+   "statement_pp_all_sha256": "494e340fd3d3def6ca4cae52461ea0de014b3d6d1468a8bc08257f2f3648e91e"
   },
   {
    "recipe_id": "textbook.school_vectors_complex.external_division_formula",
-   "materialized_source_sha256": "9a3da3d78fccec865ca36d4814eecba787437a8c5ffac25086208239ce6acbf1",
+   "materialized_source_sha256": "21c5bed76b825690969a947cc710a098128cad5882f33ad972a119db36ee9d5c",
    "imports": [
     "Mathlib.Analysis.InnerProductSpace.Defs",
     "Std.Tactic.BVDecide.LRAT.Internal.Clause"
    ],
    "status": "adopted",
    "reason": null,
-   "statement_pp_all_sha256": "7e6fca8d944bfe0a3accc40fa6b021762762ef65c3845386ff9bbfbca978aed5"
+   "statement_pp_all_sha256": "b9189d70269328f911c536eb1c25d6d8ff8b86e0425173126bd4e9104addbaec"
   },
   {
    "recipe_id": "textbook.school_vectors_complex.weighted_zero_sum_point_position",
@@ -21939,900 +21946,900 @@
   {
    "recipe_id": "textbook.advanced_undergrad.maschke_invariant_complement",
    "broad": {
-    "seconds": 11.681,
-    "max_rss_bytes": 5440028672,
-    "peak_footprint_bytes": 870655144,
+    "seconds": 6.282,
+    "max_rss_bytes": 5438275584,
+    "peak_footprint_bytes": 866788400,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.271,
-    "max_rss_bytes": 1908932608,
-    "peak_footprint_bytes": 322193304,
+    "seconds": 2.426,
+    "max_rss_bytes": 1907687424,
+    "peak_footprint_bytes": 322668272,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.calculus_single.limit_epsilon_delta",
    "broad": {
-    "seconds": 11.123,
-    "max_rss_bytes": 5439488000,
-    "peak_footprint_bytes": 868803656,
+    "seconds": 7.273,
+    "max_rss_bytes": 5438963712,
+    "peak_footprint_bytes": 866984984,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.752,
-    "max_rss_bytes": 1519386624,
-    "peak_footprint_bytes": 258542144,
+    "seconds": 2.274,
+    "max_rss_bytes": 1517862912,
+    "peak_footprint_bytes": 256313752,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.calculus_single.second_derivative_test_maximum",
    "broad": {
-    "seconds": 18.328,
-    "max_rss_bytes": 5441748992,
-    "peak_footprint_bytes": 872539280,
+    "seconds": 7.043,
+    "max_rss_bytes": 5443502080,
+    "peak_footprint_bytes": 870556720,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 7.224,
-    "max_rss_bytes": 2197143552,
-    "peak_footprint_bytes": 358670936,
+    "seconds": 2.871,
+    "max_rss_bytes": 2202730496,
+    "peak_footprint_bytes": 358720040,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.binom_symmetry",
    "broad": {
-    "seconds": 24.792,
-    "max_rss_bytes": 5438406656,
-    "peak_footprint_bytes": 870196248,
+    "seconds": 6.765,
+    "max_rss_bytes": 5435703296,
+    "peak_footprint_bytes": 864822320,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.727,
-    "max_rss_bytes": 1155284992,
-    "peak_footprint_bytes": 200557832,
+    "seconds": 1.691,
+    "max_rss_bytes": 1156497408,
+    "peak_footprint_bytes": 200639680,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.combinatorics_graphs.eulerian_trail_odd_degree_count",
    "broad": {
-    "seconds": 17.215,
-    "max_rss_bytes": 5440045056,
-    "peak_footprint_bytes": 869622904,
+    "seconds": 8.797,
+    "max_rss_bytes": 5439143936,
+    "peak_footprint_bytes": 869671888,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.559,
-    "max_rss_bytes": 1372143616,
-    "peak_footprint_bytes": 231575104,
+    "seconds": 1.845,
+    "max_rss_bytes": 1372274688,
+    "peak_footprint_bytes": 231509496,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.commutative_algebra.krull_dimension_of_field_is_zero",
    "broad": {
-    "seconds": 11.682,
-    "max_rss_bytes": 5438488576,
-    "peak_footprint_bytes": 868410392,
+    "seconds": 8.51,
+    "max_rss_bytes": 5438210048,
+    "peak_footprint_bytes": 869049248,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.219,
-    "max_rss_bytes": 1804337152,
-    "peak_footprint_bytes": 306357240,
+    "seconds": 2.511,
+    "max_rss_bytes": 1803960320,
+    "peak_footprint_bytes": 306930728,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.complex_analysis.circle_integral_zpow_vanishes",
    "broad": {
-    "seconds": 12.217,
-    "max_rss_bytes": 5440258048,
-    "peak_footprint_bytes": 870769760,
+    "seconds": 12.904,
+    "max_rss_bytes": 5438472192,
+    "peak_footprint_bytes": 868312064,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 8.497,
-    "max_rss_bytes": 2561998848,
-    "peak_footprint_bytes": 438734016,
+    "seconds": 3.355,
+    "max_rss_bytes": 2561163264,
+    "peak_footprint_bytes": 438504544,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.entrance_exam.cube_root_two_irrational",
    "broad": {
-    "seconds": 20.451,
-    "max_rss_bytes": 5456625664,
-    "peak_footprint_bytes": 873686160,
+    "seconds": 9.215,
+    "max_rss_bytes": 5455151104,
+    "peak_footprint_bytes": 872653944,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.167,
-    "max_rss_bytes": 2161295360,
-    "peak_footprint_bytes": 358552864,
+    "seconds": 3.16,
+    "max_rss_bytes": 2161049600,
+    "peak_footprint_bytes": 357946536,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.entrance_exam.integral_identity_twenty_two_sevenths_minus_pi",
    "broad": {
-    "seconds": 8.596,
-    "max_rss_bytes": 5462720512,
-    "peak_footprint_bytes": 878552112,
+    "seconds": 10.151,
+    "max_rss_bytes": 5461868544,
+    "peak_footprint_bytes": 876291072,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.335,
-    "max_rss_bytes": 2581446656,
-    "peak_footprint_bytes": 451217880,
+    "seconds": 5.177,
+    "max_rss_bytes": 2580824064,
+    "peak_footprint_bytes": 450447712,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.field_galois.galois_fixed_elements_lie_in_base_field",
    "broad": {
-    "seconds": 7.829,
-    "max_rss_bytes": 5439668224,
-    "peak_footprint_bytes": 868574304,
+    "seconds": 9.782,
+    "max_rss_bytes": 5439111168,
+    "peak_footprint_bytes": 868197424,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.275,
-    "max_rss_bytes": 2055340032,
-    "peak_footprint_bytes": 341228136,
+    "seconds": 2.73,
+    "max_rss_bytes": 2054635520,
+    "peak_footprint_bytes": 338606576,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.fourier_convex_numeric.convex_first_order_lower_bound",
    "broad": {
-    "seconds": 28.604,
-    "max_rss_bytes": 5461295104,
-    "peak_footprint_bytes": 876864728,
+    "seconds": 11.617,
+    "max_rss_bytes": 5459034112,
+    "peak_footprint_bytes": 876127328,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 5.188,
-    "max_rss_bytes": 2216132608,
-    "peak_footprint_bytes": 366239864,
+    "seconds": 3.566,
+    "max_rss_bytes": 2216214528,
+    "peak_footprint_bytes": 366387248,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.functional_analysis.complete_iff_absolutely_summable_converges",
    "broad": {
-    "seconds": 8.416,
-    "max_rss_bytes": 5440585728,
-    "peak_footprint_bytes": 870360160,
+    "seconds": 10.725,
+    "max_rss_bytes": 5439602688,
+    "peak_footprint_bytes": 868066280,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.853,
-    "max_rss_bytes": 1870659584,
-    "peak_footprint_bytes": 316686408,
+    "seconds": 2.527,
+    "max_rss_bytes": 1870495744,
+    "peak_footprint_bytes": 314343280,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.functional_analysis.adjoint_cstar_identity",
    "broad": {
-    "seconds": 9.169,
-    "max_rss_bytes": 5442256896,
-    "peak_footprint_bytes": 871097512,
+    "seconds": 7.07,
+    "max_rss_bytes": 5441306624,
+    "peak_footprint_bytes": 869229616,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.139,
-    "max_rss_bytes": 2379890688,
-    "peak_footprint_bytes": 410341544,
+    "seconds": 3.074,
+    "max_rss_bytes": 2379923456,
+    "peak_footprint_bytes": 411996304,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_centers.orthocenter_on_altitudes",
    "broad": {
-    "seconds": 35.258,
-    "max_rss_bytes": 5480153088,
-    "peak_footprint_bytes": 900736168,
+    "seconds": 11.09,
+    "max_rss_bytes": 5478072320,
+    "peak_footprint_bytes": 899163256,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 7.216,
-    "max_rss_bytes": 2490269696,
-    "peak_footprint_bytes": 454254984,
+    "seconds": 6.553,
+    "max_rss_bytes": 2489368576,
+    "peak_footprint_bytes": 454123768,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_circle.parallel_chords_equal_cross_chords",
    "broad": {
-    "seconds": 22.664,
-    "max_rss_bytes": 5463687168,
-    "peak_footprint_bytes": 881550504,
+    "seconds": 13.344,
+    "max_rss_bytes": 5462507520,
+    "peak_footprint_bytes": 880731256,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 5.367,
-    "max_rss_bytes": 2333540352,
-    "peak_footprint_bytes": 391137384,
+    "seconds": 3.412,
+    "max_rss_bytes": 2333474816,
+    "peak_footprint_bytes": 389335096,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_circle.internally_tangent_unique_common_point",
    "broad": {
-    "seconds": 17.604,
-    "max_rss_bytes": 5454413824,
-    "peak_footprint_bytes": 874980496,
+    "seconds": 7.281,
+    "max_rss_bytes": 5452120064,
+    "peak_footprint_bytes": 870294720,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 9.119,
-    "max_rss_bytes": 2632040448,
-    "peak_footprint_bytes": 459052168,
+    "seconds": 3.52,
+    "max_rss_bytes": 2632122368,
+    "peak_footprint_bytes": 461018152,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
    "broad": {
-    "seconds": 34.419,
-    "max_rss_bytes": 5440634880,
-    "peak_footprint_bytes": 869786696,
+    "seconds": 8.749,
+    "max_rss_bytes": 5438537728,
+    "peak_footprint_bytes": 866542544,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.755,
-    "max_rss_bytes": 2399600640,
-    "peak_footprint_bytes": 412604384,
+    "seconds": 3.008,
+    "max_rss_bytes": 2399731712,
+    "peak_footprint_bytes": 412686256,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_plane.varignon_rectangle_rhombus_criteria",
    "broad": {
-    "seconds": 11.173,
-    "max_rss_bytes": 5459001344,
-    "peak_footprint_bytes": 878929112,
+    "seconds": 10.543,
+    "max_rss_bytes": 5457379328,
+    "peak_footprint_bytes": 874390480,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.951,
-    "max_rss_bytes": 2065317888,
-    "peak_footprint_bytes": 352612664,
+    "seconds": 3.571,
+    "max_rss_bytes": 2064302080,
+    "peak_footprint_bytes": 349614200,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_triangle.triangle_similar_aa_ratio",
    "broad": {
-    "seconds": 10.321,
-    "max_rss_bytes": 5443239936,
-    "peak_footprint_bytes": 870982728,
+    "seconds": 9.114,
+    "max_rss_bytes": 5442813952,
+    "peak_footprint_bytes": 870147072,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 5.155,
-    "max_rss_bytes": 2503524352,
-    "peak_footprint_bytes": 425914360,
+    "seconds": 3.165,
+    "max_rss_bytes": 2503917568,
+    "peak_footprint_bytes": 426356776,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.geometry_triangle.law_of_sines_ratio",
    "broad": {
-    "seconds": 10.551,
-    "max_rss_bytes": 5451218944,
-    "peak_footprint_bytes": 868787320,
+    "seconds": 7.445,
+    "max_rss_bytes": 5450432512,
+    "peak_footprint_bytes": 869753904,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.598,
-    "max_rss_bytes": 2413494272,
-    "peak_footprint_bytes": 419813368,
+    "seconds": 3.183,
+    "max_rss_bytes": 2412544000,
+    "peak_footprint_bytes": 419288960,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.group_theory.element_order_dvd_group_order",
    "broad": {
-    "seconds": 11.018,
-    "max_rss_bytes": 5440520192,
-    "peak_footprint_bytes": 870933624,
+    "seconds": 10.378,
+    "max_rss_bytes": 5437833216,
+    "peak_footprint_bytes": 867083192,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.761,
-    "max_rss_bytes": 1519812608,
-    "peak_footprint_bytes": 252824200,
+    "seconds": 1.861,
+    "max_rss_bytes": 1520500736,
+    "peak_footprint_bytes": 252955344,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.group_theory.sylow_first_theorem",
    "broad": {
-    "seconds": 7.37,
-    "max_rss_bytes": 5439193088,
-    "peak_footprint_bytes": 867984288,
+    "seconds": 8.348,
+    "max_rss_bytes": 5440176128,
+    "peak_footprint_bytes": 870130760,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.174,
-    "max_rss_bytes": 1662173184,
-    "peak_footprint_bytes": 279412104,
+    "seconds": 2.456,
+    "max_rss_bytes": 1661648896,
+    "peak_footprint_bytes": 279575824,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.linear_advanced.generalized_eigenvector_implies_eigenvalue",
    "broad": {
-    "seconds": 7.75,
-    "max_rss_bytes": 5446205440,
-    "peak_footprint_bytes": 870999040,
+    "seconds": 8.467,
+    "max_rss_bytes": 5449187328,
+    "peak_footprint_bytes": 873997336,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.662,
-    "max_rss_bytes": 1831239680,
-    "peak_footprint_bytes": 316745992,
+    "seconds": 2.657,
+    "max_rss_bytes": 1831157760,
+    "peak_footprint_bytes": 314697896,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.linear_advanced.symmetric_bilinear_orthogonal_basis",
    "broad": {
-    "seconds": 18.529,
-    "max_rss_bytes": 5441257472,
-    "peak_footprint_bytes": 868475976,
+    "seconds": 14.877,
+    "max_rss_bytes": 5440651264,
+    "peak_footprint_bytes": 868475832,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.579,
-    "max_rss_bytes": 1949057024,
-    "peak_footprint_bytes": 325685280,
+    "seconds": 2.523,
+    "max_rss_bytes": 1949171712,
+    "peak_footprint_bytes": 325488672,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.linear_basic.matrix_mul_assoc",
    "broad": {
-    "seconds": 7.522,
-    "max_rss_bytes": 5439520768,
-    "peak_footprint_bytes": 868426824,
+    "seconds": 7.181,
+    "max_rss_bytes": 5439275008,
+    "peak_footprint_bytes": 869803032,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.7,
-    "max_rss_bytes": 1438416896,
-    "peak_footprint_bytes": 244264936,
+    "seconds": 2.054,
+    "max_rss_bytes": 1437696000,
+    "peak_footprint_bytes": 242773992,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.linear_basic.vandermonde_ne_zero_iff",
    "broad": {
-    "seconds": 6.367,
-    "max_rss_bytes": 5438160896,
-    "peak_footprint_bytes": 866083816,
+    "seconds": 7.714,
+    "max_rss_bytes": 5439012864,
+    "peak_footprint_bytes": 869393384,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.393,
-    "max_rss_bytes": 1910194176,
-    "peak_footprint_bytes": 320996480,
+    "seconds": 4.699,
+    "max_rss_bytes": 1910079488,
+    "peak_footprint_bytes": 319538256,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.logic_sets.finite_nonempty_has_maximal",
    "broad": {
-    "seconds": 6.674,
-    "max_rss_bytes": 5438210048,
-    "peak_footprint_bytes": 868951088,
+    "seconds": 23.648,
+    "max_rss_bytes": 5437882368,
+    "peak_footprint_bytes": 867345384,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.739,
-    "max_rss_bytes": 1257914368,
-    "peak_footprint_bytes": 214215064,
+    "seconds": 1.473,
+    "max_rss_bytes": 1257488384,
+    "peak_footprint_bytes": 215951792,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.measure_integration.measure_countable_subadditive",
    "broad": {
-    "seconds": 7.446,
-    "max_rss_bytes": 5437669376,
-    "peak_footprint_bytes": 867345336,
+    "seconds": 7.508,
+    "max_rss_bytes": 5439275008,
+    "peak_footprint_bytes": 867148776,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.619,
-    "max_rss_bytes": 1859665920,
-    "peak_footprint_bytes": 313949920,
+    "seconds": 2.404,
+    "max_rss_bytes": 1860616192,
+    "peak_footprint_bytes": 313999000,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.measure_integration.lp_inclusion_on_finite_measure",
    "broad": {
-    "seconds": 6.404,
-    "max_rss_bytes": 5437521920,
-    "peak_footprint_bytes": 868033560,
+    "seconds": 8.523,
+    "max_rss_bytes": 5438881792,
+    "peak_footprint_bytes": 867902368,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.97,
-    "max_rss_bytes": 2165096448,
-    "peak_footprint_bytes": 353246536,
+    "seconds": 2.956,
+    "max_rss_bytes": 2165030912,
+    "peak_footprint_bytes": 352935240,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.modules_categories.quotient_by_torsion_is_torsion_free",
    "broad": {
-    "seconds": 7.059,
-    "max_rss_bytes": 5439291392,
-    "peak_footprint_bytes": 868099024,
+    "seconds": 20.654,
+    "max_rss_bytes": 5437210624,
+    "peak_footprint_bytes": 865952720,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.348,
-    "max_rss_bytes": 1798045696,
-    "peak_footprint_bytes": 301687728,
+    "seconds": 2.541,
+    "max_rss_bytes": 1798766592,
+    "peak_footprint_bytes": 300573640,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.multivariable.gradient_inner_fderiv",
    "broad": {
-    "seconds": 6.936,
-    "max_rss_bytes": 5440569344,
-    "peak_footprint_bytes": 869770240,
+    "seconds": 7.656,
+    "max_rss_bytes": 5440847872,
+    "peak_footprint_bytes": 870048744,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.775,
-    "max_rss_bytes": 2377826304,
-    "peak_footprint_bytes": 408391920,
+    "seconds": 2.754,
+    "max_rss_bytes": 2379677696,
+    "peak_footprint_bytes": 410554776,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.number_theory.coprime_iff_bezout",
    "broad": {
-    "seconds": 7.583,
-    "max_rss_bytes": 5447090176,
-    "peak_footprint_bytes": 869213232,
+    "seconds": 7.008,
+    "max_rss_bytes": 5447909376,
+    "peak_footprint_bytes": 870016000,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.049,
-    "max_rss_bytes": 1447673856,
-    "peak_footprint_bytes": 247377056,
+    "seconds": 1.941,
+    "max_rss_bytes": 1446412288,
+    "peak_footprint_bytes": 247966880,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.number_theory.quadratic_reciprocity",
    "broad": {
-    "seconds": 6.811,
-    "max_rss_bytes": 5444796416,
-    "peak_footprint_bytes": 874423488,
+    "seconds": 6.82,
+    "max_rss_bytes": 5443944448,
+    "peak_footprint_bytes": 873276488,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 5.055,
-    "max_rss_bytes": 2671312896,
-    "peak_footprint_bytes": 462317408,
+    "seconds": 3.301,
+    "max_rss_bytes": 2671493120,
+    "peak_footprint_bytes": 462546952,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.ode.second_order_solution_space_subspace",
    "broad": {
-    "seconds": 8.186,
-    "max_rss_bytes": 5447991296,
-    "peak_footprint_bytes": 870409384,
+    "seconds": 8.682,
+    "max_rss_bytes": 5448810496,
+    "peak_footprint_bytes": 871523424,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.646,
-    "max_rss_bytes": 2201780224,
-    "peak_footprint_bytes": 359128632,
+    "seconds": 2.774,
+    "max_rss_bytes": 2202812416,
+    "peak_footprint_bytes": 360406656,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.probability_statistics.mse_decomposition",
    "broad": {
-    "seconds": 8.917,
-    "max_rss_bytes": 5448597504,
-    "peak_footprint_bytes": 872424520,
+    "seconds": 6.878,
+    "max_rss_bytes": 5450121216,
+    "peak_footprint_bytes": 873620552,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 6.463,
-    "max_rss_bytes": 2690334720,
-    "peak_footprint_bytes": 457405688,
+    "seconds": 3.168,
+    "max_rss_bytes": 2692366336,
+    "peak_footprint_bytes": 459355384,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.real_analysis.real_inf_exists",
    "broad": {
-    "seconds": 17.033,
-    "max_rss_bytes": 5436604416,
-    "peak_footprint_bytes": 867607480,
+    "seconds": 11.81,
+    "max_rss_bytes": 5436932096,
+    "peak_footprint_bytes": 868820040,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.964,
-    "max_rss_bytes": 1398702080,
-    "peak_footprint_bytes": 242736040,
+    "seconds": 1.829,
+    "max_rss_bytes": 1397800960,
+    "peak_footprint_bytes": 241671104,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.real_analysis.cauchy_product",
    "broad": {
-    "seconds": 6.781,
-    "max_rss_bytes": 5440110592,
-    "peak_footprint_bytes": 868180968,
+    "seconds": 6.546,
+    "max_rss_bytes": 5440798720,
+    "peak_footprint_bytes": 868836352,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.85,
-    "max_rss_bytes": 1846951936,
-    "peak_footprint_bytes": 310294704,
+    "seconds": 2.248,
+    "max_rss_bytes": 1846624256,
+    "peak_footprint_bytes": 308492392,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.ring_theory.chinese_remainder_two_ideals",
    "broad": {
-    "seconds": 22.239,
-    "max_rss_bytes": 5439275008,
-    "peak_footprint_bytes": 869033080,
+    "seconds": 8.391,
+    "max_rss_bytes": 5440274432,
+    "peak_footprint_bytes": 867624032,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.142,
-    "max_rss_bytes": 1696219136,
-    "peak_footprint_bytes": 290849216,
+    "seconds": 2.249,
+    "max_rss_bytes": 1697087488,
+    "peak_footprint_bytes": 293650832,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.ring_theory.frobenius_injective_reduced",
    "broad": {
-    "seconds": 7.107,
-    "max_rss_bytes": 5438619648,
-    "peak_footprint_bytes": 869065920,
+    "seconds": 15.679,
+    "max_rss_bytes": 5439963136,
+    "peak_footprint_bytes": 868852664,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.137,
-    "max_rss_bytes": 1518108672,
-    "peak_footprint_bytes": 259395336,
+    "seconds": 2.079,
+    "max_rss_bytes": 1518174208,
+    "peak_footprint_bytes": 257478216,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_algebra_basics.two_variable_system_no_solution_ratio_form",
    "broad": {
-    "seconds": 16.318,
-    "max_rss_bytes": 5443125248,
-    "peak_footprint_bytes": 870933648,
+    "seconds": 7.113,
+    "max_rss_bytes": 5443174400,
+    "peak_footprint_bytes": 868607048,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.913,
-    "max_rss_bytes": 1331953664,
-    "peak_footprint_bytes": 229590120,
+    "seconds": 1.83,
+    "max_rss_bytes": 1332396032,
+    "peak_footprint_bytes": 229917920,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_analytic_geometry.dist_euclidean_plane_coordinates",
    "broad": {
-    "seconds": 9.832,
-    "max_rss_bytes": 5438652416,
-    "peak_footprint_bytes": 866264088,
+    "seconds": 27.505,
+    "max_rss_bytes": 5439520768,
+    "peak_footprint_bytes": 868164464,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.83,
-    "max_rss_bytes": 2471002112,
-    "peak_footprint_bytes": 421406120,
+    "seconds": 3.203,
+    "max_rss_bytes": 2470494208,
+    "peak_footprint_bytes": 422225416,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_analytic_geometry.tangent_contact_exists_iff_outside",
    "broad": {
-    "seconds": 7.693,
-    "max_rss_bytes": 5485592576,
-    "peak_footprint_bytes": 903668904,
+    "seconds": 7.62,
+    "max_rss_bytes": 5485740032,
+    "peak_footprint_bytes": 903210056,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.362,
-    "max_rss_bytes": 1843609600,
-    "peak_footprint_bytes": 343747160,
+    "seconds": 3.328,
+    "max_rss_bytes": 1844019200,
+    "peak_footprint_bytes": 342305344,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_calculus.cubic_monotone_iff_discriminant",
    "broad": {
-    "seconds": 12.792,
-    "max_rss_bytes": 5462441984,
-    "peak_footprint_bytes": 877946024,
+    "seconds": 7.077,
+    "max_rss_bytes": 5461983232,
+    "peak_footprint_bytes": 878797944,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.488,
-    "max_rss_bytes": 2224209920,
-    "peak_footprint_bytes": 371090080,
+    "seconds": 3.216,
+    "max_rss_bytes": 2224570368,
+    "peak_footprint_bytes": 372679400,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_calculus.pow_div_factorial_limit",
    "broad": {
-    "seconds": 10.826,
-    "max_rss_bytes": 5436604416,
-    "peak_footprint_bytes": 866149424,
+    "seconds": 6.08,
+    "max_rss_bytes": 5435064320,
+    "peak_footprint_bytes": 866411520,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.235,
-    "max_rss_bytes": 1556070400,
-    "peak_footprint_bytes": 263444584,
+    "seconds": 2.178,
+    "max_rss_bytes": 1556430848,
+    "peak_footprint_bytes": 264935696,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_counting_probability.trials_at_least_once",
    "broad": {
-    "seconds": 12.685,
-    "max_rss_bytes": 5457002496,
-    "peak_footprint_bytes": 871637968,
+    "seconds": 7.273,
+    "max_rss_bytes": 5457133568,
+    "peak_footprint_bytes": 871064624,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.241,
-    "max_rss_bytes": 1555628032,
-    "peak_footprint_bytes": 267621688,
+    "seconds": 2.642,
+    "max_rss_bytes": 1554743296,
+    "peak_footprint_bytes": 266818872,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_counting_probability.strictly_increasing_sequences_count",
    "broad": {
-    "seconds": 10.763,
-    "max_rss_bytes": 5443895296,
-    "peak_footprint_bytes": 870392952,
+    "seconds": 15.032,
+    "max_rss_bytes": 5443878912,
+    "peak_footprint_bytes": 870392856,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.07,
-    "max_rss_bytes": 1430568960,
-    "peak_footprint_bytes": 242837728,
+    "seconds": 1.928,
+    "max_rss_bytes": 1431633920,
+    "peak_footprint_bytes": 243869848,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_data_logic.necessary_sufficient_iff_truth_set_eq",
    "broad": {
-    "seconds": 6.237,
-    "max_rss_bytes": 5435817984,
-    "peak_footprint_bytes": 866296760,
+    "seconds": 9.086,
+    "max_rss_bytes": 5437538304,
+    "peak_footprint_bytes": 868312040,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 0.895,
-    "max_rss_bytes": 743849984,
-    "peak_footprint_bytes": 130656256,
+    "seconds": 0.891,
+    "max_rss_bytes": 744177664,
+    "peak_footprint_bytes": 133064872,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_exp_log.logb_eq_iff_arguments_eq",
    "broad": {
-    "seconds": 7.943,
-    "max_rss_bytes": 5438128128,
-    "peak_footprint_bytes": 868656080,
+    "seconds": 8.011,
+    "max_rss_bytes": 5437341696,
+    "peak_footprint_bytes": 867083240,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.505,
-    "max_rss_bytes": 2068512768,
-    "peak_footprint_bytes": 340819640,
+    "seconds": 2.806,
+    "max_rss_bytes": 2068594688,
+    "peak_footprint_bytes": 340868768,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_inequalities.amgm_three_cube_form",
    "broad": {
-    "seconds": 20.578,
-    "max_rss_bytes": 5455233024,
-    "peak_footprint_bytes": 873538656,
+    "seconds": 7.176,
+    "max_rss_bytes": 5454888960,
+    "peak_footprint_bytes": 873604264,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.706,
-    "max_rss_bytes": 1419132928,
-    "peak_footprint_bytes": 250895320,
+    "seconds": 2.294,
+    "max_rss_bytes": 1418723328,
+    "peak_footprint_bytes": 252157032,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_integers.gcd_mul_left",
    "broad": {
-    "seconds": 7.813,
-    "max_rss_bytes": 5437587456,
-    "peak_footprint_bytes": 868230144,
+    "seconds": 8.587,
+    "max_rss_bytes": 5437997056,
+    "peak_footprint_bytes": 870179888,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 0.977,
-    "max_rss_bytes": 723451904,
-    "peak_footprint_bytes": 129982976,
+    "seconds": 0.716,
+    "max_rss_bytes": 723632128,
+    "peak_footprint_bytes": 129114648,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_polynomials.remainder_by_linear_ax_plus_b",
    "broad": {
-    "seconds": 22.814,
-    "max_rss_bytes": 5452136448,
-    "peak_footprint_bytes": 870900736,
+    "seconds": 6.727,
+    "max_rss_bytes": 5453463552,
+    "peak_footprint_bytes": 873325568,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.682,
-    "max_rss_bytes": 1651490816,
-    "peak_footprint_bytes": 284619264,
+    "seconds": 1.908,
+    "max_rss_bytes": 1651195904,
+    "peak_footprint_bytes": 283865408,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_polynomials.real_quadratic_negative_discriminant_roots",
    "broad": {
-    "seconds": 8.239,
-    "max_rss_bytes": 5460344832,
-    "peak_footprint_bytes": 876176576,
+    "seconds": 7.082,
+    "max_rss_bytes": 5459001344,
+    "peak_footprint_bytes": 875865208,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.136,
-    "max_rss_bytes": 2015510528,
-    "peak_footprint_bytes": 344875696,
+    "seconds": 2.87,
+    "max_rss_bytes": 2014691328,
+    "peak_footprint_bytes": 342549192,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_quadratic.root_count_by_discriminant",
    "broad": {
-    "seconds": 24.327,
-    "max_rss_bytes": 5455364096,
-    "peak_footprint_bytes": 875029624,
+    "seconds": 9.331,
+    "max_rss_bytes": 5458575360,
+    "peak_footprint_bytes": 876749872,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.232,
-    "max_rss_bytes": 1816952832,
-    "peak_footprint_bytes": 312077248,
+    "seconds": 2.612,
+    "max_rss_bytes": 1817870336,
+    "peak_footprint_bytes": 312945528,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_quadratic.translation_moves_vertex",
    "broad": {
-    "seconds": 7.579,
-    "max_rss_bytes": 5450383360,
-    "peak_footprint_bytes": 873702544,
+    "seconds": 6.747,
+    "max_rss_bytes": 5451874304,
+    "peak_footprint_bytes": 873391200,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.423,
-    "max_rss_bytes": 1416265728,
-    "peak_footprint_bytes": 250583976,
+    "seconds": 1.785,
+    "max_rss_bytes": 1415888896,
+    "peak_footprint_bytes": 250387416,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_sequences.arith_every_other_step",
    "broad": {
-    "seconds": 7.874,
-    "max_rss_bytes": 5448843264,
-    "peak_footprint_bytes": 872916088,
+    "seconds": 10.567,
+    "max_rss_bytes": 5449007104,
+    "peak_footprint_bytes": 869901312,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.434,
-    "max_rss_bytes": 1415430144,
-    "peak_footprint_bytes": 249584744,
+    "seconds": 2.486,
+    "max_rss_bytes": 1416101888,
+    "peak_footprint_bytes": 252157128,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_sequences.three_term_factorization",
    "broad": {
-    "seconds": 12.452,
-    "max_rss_bytes": 5443420160,
-    "peak_footprint_bytes": 870458392,
+    "seconds": 17.169,
+    "max_rss_bytes": 5444452352,
+    "peak_footprint_bytes": 869934104,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.959,
-    "max_rss_bytes": 1340325888,
-    "peak_footprint_bytes": 231852120,
+    "seconds": 1.922,
+    "max_rss_bytes": 1339801600,
+    "peak_footprint_bytes": 231835616,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_trigonometry.tan_mul_tan_eq_one_iff",
    "broad": {
-    "seconds": 10.767,
-    "max_rss_bytes": 5452005376,
-    "peak_footprint_bytes": 870704152,
+    "seconds": 7.19,
+    "max_rss_bytes": 5451415552,
+    "peak_footprint_bytes": 868279368,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.98,
-    "max_rss_bytes": 1816346624,
-    "peak_footprint_bytes": 306949224,
+    "seconds": 5.072,
+    "max_rss_bytes": 1814036480,
+    "peak_footprint_bytes": 304802848,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_trigonometry.exists_unique_cos_principal",
    "broad": {
-    "seconds": 7.251,
-    "max_rss_bytes": 5437472768,
-    "peak_footprint_bytes": 867214480,
+    "seconds": 24.971,
+    "max_rss_bytes": 5438029824,
+    "peak_footprint_bytes": 867935208,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.813,
-    "max_rss_bytes": 2036629504,
-    "peak_footprint_bytes": 338833960,
+    "seconds": 2.743,
+    "max_rss_bytes": 2036350976,
+    "peak_footprint_bytes": 336540224,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.school_vectors_complex.circle_diameter_inner_zero",
    "broad": {
-    "seconds": 11.367,
-    "max_rss_bytes": 5461721088,
-    "peak_footprint_bytes": 877110368,
+    "seconds": 7.366,
+    "max_rss_bytes": 5460180992,
+    "peak_footprint_bytes": 875914264,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.883,
-    "max_rss_bytes": 2066857984,
-    "peak_footprint_bytes": 350842880,
+    "seconds": 3.277,
+    "max_rss_bytes": 2068873216,
+    "peak_footprint_bytes": 353366256,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.topology_general.open_finite_inter",
    "broad": {
-    "seconds": 8.916,
-    "max_rss_bytes": 5436260352,
-    "peak_footprint_bytes": 864838632,
+    "seconds": 6.144,
+    "max_rss_bytes": 5439881216,
+    "peak_footprint_bytes": 868918272,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.973,
-    "max_rss_bytes": 1280540672,
-    "peak_footprint_bytes": 221786248,
+    "seconds": 1.758,
+    "max_rss_bytes": 1281327104,
+    "peak_footprint_bytes": 220999744,
     "exit_code": 0
    }
   }

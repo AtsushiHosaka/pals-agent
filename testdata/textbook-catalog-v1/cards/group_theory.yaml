@@ -262,8 +262,8 @@
   - 'conclude: The two cosets coincide.'
   openmath: (forall (G H a b) (-> (and (group G) (subgroup_of H G) (in a G) (in b G)) (<-> (= (left_coset a H) (left_coset b H)) (in (group_mul (group_inv a) b) H))))
   hard_negative:
-    statement: aH=bHであることとab⁻¹∈Hであることは同値である。
-    reason: ab⁻¹∈Hが対応するのは右剰余類の等式Ha=Hbである。Hが正規でないとき、S₃などで左剰余類の条件とは一致しない。
+    statement: 群$G$の部分群$H$と$a,b\in G$について、$aH=bH$であることと$ab^{-1}\in H$であることは同値である。
+    reason: $ab^{-1}\in H$は右剰余類の等式$Ha=Hb$に対応する条件である。$G=S_3$、$H=\{e,(1\ 2)\}$、$a=(1\ 3)$、$b=(1\ 3)(1\ 2)$とすると、$b=a(1\ 2)$より$aH=bH$であるが、$ab^{-1}=(1\ 3)(1\ 2)(1\ 3)=(2\ 3)\notin H$である。
   target: |
     ∀ (G : Type*) [Group G] (H : Subgroup G) (a b : G), {x : G | ∃ h ∈ H, x = a * h} = {x : G | ∃ h ∈ H, x = b * h} ↔ a⁻¹ * b ∈ H
   proof: |
@@ -520,7 +520,7 @@
   - 'derive: This is equivalent to m/d dividing k(n/d).'
   - 'derive: Since m/d and n/d are coprime, it is equivalent to m/d dividing k.'
   - 'conclude: Therefore the order of g^n is m/d.'
-  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N) (exists (m) (and (in m N) (> m 0) (= (element_order g) m)))) (= (element_order (group_pow g n)) (/ (element_order g) (gcd (element_order g) n)))))
+  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N) (exists (m) (and (in m N) (> m 0) (= (group_pow g m) (group_identity G))))) (= (element_order (group_pow g n)) (/ (element_order g) (gcd (element_order g) n)))))
   hard_negative:
     statement: g^nの位数は常にord(g)/nである。
     reason: nがord(g)を割り切らないと成り立たない。ord(g)=4、n=3ではg³の位数は4である。
@@ -561,7 +561,7 @@
   - 'derive: Minimality of m forces r = 0 when g^n = 1.'
   - 'derive: Conversely m | n gives g^n = (g^m)^q = 1.'
   - 'case_split: In infinite order no positive power of g equals 1, so g^n = 1 exactly when n = 0.'
-  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N)) (and (-> (> (element_order g) 0) (<-> (= (group_pow g n) (group_identity G)) (dvd (element_order g) n))) (-> (not (> (element_order g) 0)) (<-> (= (group_pow g n) (group_identity G)) (= n 0))))))
+  openmath: (forall (G g n) (-> (and (group G) (in g G) (in n N)) (and (-> (exists (m) (and (in m N) (> m 0) (= (group_pow g m) (group_identity G)))) (<-> (= (group_pow g n) (group_identity G)) (dvd (element_order g) n))) (-> (not (exists (m) (and (in m N) (> m 0) (= (group_pow g m) (group_identity G))))) (<-> (= (group_pow g n) (group_identity G)) (= n 0))))))
   hard_negative:
     statement: g^n=1ならnはgの位数に等しい。
     reason: nは位数の倍数であればよい。位数2の元gではg⁴=1だが4≠2である。
@@ -599,7 +599,7 @@
   - 'derive: Raising a^k = b^(-k) to the n-th power gives a^(kn) = 1.'
   - 'derive: Coprimality gives m | k, and symmetrically n | k.'
   - 'conclude: Then mn | k, so the order of ab is mn.'
-  openmath: (forall (G a b) (-> (and (group G) (in a G) (in b G) (= (group_mul a b) (group_mul b a)) (> (element_order a) 0) (> (element_order b) 0) (= (gcd (element_order a) (element_order b)) 1)) (= (element_order (group_mul a b)) (* (element_order a) (element_order b)))))
+  openmath: (forall (G a b) (-> (and (group G) (in a G) (in b G) (= (group_mul a b) (group_mul b a)) (exists (m) (and (in m N) (> m 0) (= (group_pow a m) (group_identity G)))) (exists (m) (and (in m N) (> m 0) (= (group_pow b m) (group_identity G)))) (= (gcd (element_order a) (element_order b)) 1)) (= (element_order (group_mul a b)) (* (element_order a) (element_order b)))))
   hard_negative:
     statement: 非可換な群でも位数が互いに素な元a,bの積の位数はord(a)ord(b)である。
     reason: 可換性が必要である。S₃の位数2の元と位数3の元の積は互換になり、位数は6でなく2である。
@@ -1048,7 +1048,7 @@
   - 'derive: Hence the commutator subgroup is contained in the kernel of f.'
   - 'construct: Define φ on cosets of [G,G] by φ(x[G,G]) = f(x).'
   - 'derive: Surjectivity of the projection gives uniqueness.'
-  openmath: (forall (G A f) (-> (and (group G) (abelian_group A) (group_hom f G A)) (exists (g) (and (group_hom g (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value g (left_coset x (commutator_subgroup G))) (fn_value f x)))) (forall (h) (-> (and (group_hom h (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value h (left_coset x (commutator_subgroup G))) (fn_value f x))))) (= h g)))))))
+  openmath: (forall (G A f) (-> (and (group G) (abelian_group A) (group_hom f G A)) (exists (g) (and (group_hom g (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value g (fn_value (quotient_map G (commutator_subgroup G)) x)) (fn_value f x)))) (forall (h) (-> (and (group_hom h (abelianization G) A) (forall (x) (-> (in x G) (= (fn_value h (fn_value (quotient_map G (commutator_subgroup G)) x)) (fn_value f x))))) (= h g)))))))
   hard_negative:
     statement: 群Gから非可換群Bへの準同型もすべてアーベル化を経由する。
     reason: S₃の恒等写像はS₃の交換子A₃を潰さないので、アーベル化を経由しない。
@@ -1084,7 +1084,7 @@
   - 'derive: The translation gives well-definedness and injectivity.'
   - 'derive: φ is a homomorphism because f is.'
   - 'conclude: φ maps onto the image of f, so it is an isomorphism.'
-  openmath: (forall (f G H) (-> (group_hom f G H) (exists (e) (and (group_iso e (quotient_group G (group_kernel f)) (group_image f)) (forall (x) (-> (in x G) (= (fn_value e (left_coset x (group_kernel f))) (fn_value f x))))))))
+  openmath: (forall (f G H) (-> (group_hom f G H) (exists (e) (and (group_iso e (quotient_group G (group_kernel f)) (group_image f)) (forall (x) (-> (in x G) (= (fn_value e (fn_value (quotient_map G (group_kernel f)) x)) (fn_value f x))))))))
   hard_negative:
     statement: 群準同型f:G→Hについて常にG/ker f≅Hである。
     reason: fが全射のときに限る。自明群からS₃への準同型ではG/ker fは自明群だがHはS₃である。
@@ -1120,8 +1120,8 @@
   - 'apply_theorem: The first isomorphism theorem gives the result.'
   openmath: (forall (G H N) (-> (and (subgroup_of H G) (normal_subgroup N G)) (isomorphic_groups (quotient_group H (inter H N)) (quotient_group (subgroup_product H N) N))))
   hard_negative:
-    statement: H,Kが正規とは限らない部分群のとき、H/(H∩K)≅HK/Kである。
-    reason: 正規性がないと右辺が群にならない。S₃の異なる位数2の部分群では、HKが部分群でない。
+    statement: 群$G$の部分群$H$と正規部分群$N$について、$H/(H\cap N)\cong G/N$である。
+    reason: 右辺は$HN/N$でなければならない。$G=S_3$、$H=\{e\}$、$N=A_3$とすると、$H/(H\cap N)$は自明群であるが、$G/N$は位数$2$の群なので同型でない。
   target: |
     ∀ (G : Type*) [Group G] (H N : Subgroup G) [N.Normal], Nonempty ((H ⧸ N.subgroupOf H) ≃* ((H ⊔ N : Subgroup G) ⧸ N.subgroupOf (H ⊔ N)))
   proof: |
@@ -1532,7 +1532,7 @@
   kind: named
   level: 3
   topic: 群論・シローの定理
-  statement: シローの第一定理。$p$を素数とする。有限群$G$の位数を$p^n$が割り切るなら、位数$p^n$の部分群が存在する。特にシロー$p$部分群が存在する。
+  statement: シローの第一定理。$p$を素数とする。有限群$G$の位数を$p^n$が割り切るなら、位数$p^n$の部分群が存在する。
   statement_en: 'Sylow''s first theorem: if p is prime and p^n divides the order of a finite group G, then G has a subgroup of order p^n.'
   assumptions:
   - $G$は有限群
@@ -1780,7 +1780,7 @@
   answer: |
     $X$を$|X|\geq5$の有限集合、$A=A(X)$を交代群とする。$A$は3サイクルを含むので自明でない。$N\neq\{1\}$を$A$の正規部分群として、$N=A$を示す。3サイクルとは長さ$3$の巡回置換のことである。
 
-    $N$が3サイクルを1つ含めば$N=A$であることを示す。$A$は3サイクル全体で生成される。また3サイクル$(a\ b\ c)$と$(a'\ b'\ c')$について、$a,b,c$をそれぞれ$a',b',c'$に移す置換$\sigma$をとると、$\sigma(a\ b\ c)\sigma^{-1}=(a'\ b'\ c')$である。$\sigma$が奇置換なら、$a,b,c$以外の2点$d,e$をとって$\sigma(d\ e)$に取り替える。$(d\ e)$は$(a\ b\ c)$と可換なので同じ等式が成り立ち、$\sigma(d\ e)$は偶置換である。よって3サイクルはすべて$A$の中で共役であり、$N$はそのすべてを含む。
+    $N$が3サイクルを1つ含めば$N=A$であることを示す。$A$は3サイクル全体で生成される。実際、偶置換は偶数個の互換の積であり、置換を右から合成すると、共通の点を持つ2つの互換は$(a\ b)(a\ c)=(a\ c\ b)$、互いに素な2つの互換は$(a\ b)(c\ d)=(a\ c\ b)(a\ c\ d)$と3サイクルの積に書ける。また3サイクル$(a\ b\ c)$と$(a'\ b'\ c')$について、$a,b,c$をそれぞれ$a',b',c'$に移す置換$\sigma$をとると、$\sigma(a\ b\ c)\sigma^{-1}=(a'\ b'\ c')$である。$\sigma$が奇置換なら、$a,b,c$以外の2点$d,e$をとって$\sigma(d\ e)$に取り替える。$(d\ e)$は$(a\ b\ c)$と可換なので同じ等式が成り立ち、$\sigma(d\ e)$は偶置換である。よって3サイクルはすべて$A$の中で共役であり、$N$はそのすべてを含む。
 
     $N$が3サイクルを含むことを示す。$\sigma\in N\setminus\{1\}$を固定点の個数が最大の元とし、$\sigma$が3サイクルでないと仮定して矛盾を導く。$\sigma$を互いに素な巡回置換の積に分解すると、次のどちらかである。
 
@@ -1801,7 +1801,7 @@
   - 'case_split: According to its cycle type, form commutators with suitable elements.'
   - 'derive: These commutators lie in N and lead to a 3-cycle in N.'
   - 'conclude: Then N contains all 3-cycles, so it is the whole group.'
-  openmath: (forall (X) (-> (>= (size X) 5) (simple_group (alternating_group X))))
+  openmath: (forall (X) (-> (and (finite_set X) (>= (size X) 5)) (simple_group (alternating_group X))))
   hard_negative:
     statement: A₄は単純群である。
     reason: A₄はクラインの4元群を自明でない真の正規部分群に持つ。
@@ -1868,7 +1868,7 @@
   - 'derive: A transposition changes the parity of the number of inversions, so its sign is -1.'
   - 'translate: A k-cycle is a product of k-1 transpositions.'
   - 'conclude: Multiplicativity of the sign gives (-1)^(k-1).'
-  openmath: (forall (t c) (and (-> (transposition t) (= (permutation_sign t) -1)) (-> (cycle_permutation c) (= (permutation_sign c) (^ -1 (- (cycle_length c) 1))))))
+  openmath: (forall (X t c) (-> (and (finite_set X) (in t (symmetric_group X)) (in c (symmetric_group X))) (and (-> (transposition t) (= (permutation_sign t) -1)) (-> (cycle_permutation c) (= (permutation_sign c) (^ -1 (- (cycle_length c) 1)))))))
   hard_negative:
     statement: 長さkの巡回置換の符号は(-1)^kである。
     reason: 互換はk=2の巡回置換で符号は-1だが、(-1)²=1である。
@@ -1898,7 +1898,7 @@
   - 'derive: A transposition exists, so the sign is surjective.'
   - 'apply_theorem: The first isomorphism theorem gives index 2.'
   - 'conclude: Lagrange and |Sym(X)| = n! give 2|A(X)| = n!.'
-  openmath: (forall (X) (-> (>= (size X) 2) (and (normal_subgroup (alternating_group X) (symmetric_group X)) (= (subgroup_index (alternating_group X) (symmetric_group X)) 2) (= (* 2 (size (alternating_group X))) (size (symmetric_group X))))))
+  openmath: (forall (X) (-> (and (finite_set X) (>= (size X) 2)) (and (normal_subgroup (alternating_group X) (symmetric_group X)) (= (subgroup_index (alternating_group X) (symmetric_group X)) 2) (= (* 2 (size (alternating_group X))) (size (symmetric_group X))))))
   hard_negative:
     statement: 元の個数が1の集合上でも交代群の指数は2である。
     reason: このときSym(X)は自明群で互換が存在せず、指数は1である。
@@ -2076,7 +2076,7 @@
   - 'derive: The cyclic subgroup generated by x is a direct summand of A.'
   - 'induction: Apply induction to the complement.'
   - 'conclude: G is a direct sum of cyclic groups of prime power order.'
-  openmath: (forall (G) (-> (and (finite_group G) (abelian_group G)) (exists (p e) (and (forall (i) (in (seq_value p i) P)) (isomorphic_groups G (prime_power_cyclic_sum p e))))))
+  openmath: (forall (G) (-> (and (finite_group G) (abelian_group G)) (exists (k p e) (and (in k N) (forall (i) (-> (and (in i N) (< i k)) (and (in (seq_value p i) P) (in (seq_value e i) N)))) (isomorphic_groups G (prime_power_cyclic_sum_family k p e))))))
   hard_negative:
     statement: 有限アーベル群は巡回群である。
     reason: Z/2×Z/2は有限アーベル群だが巡回群でない。巡回群の直和にしかならない。
@@ -2149,7 +2149,7 @@
   - 'derive: With five points every 3-cycle is a commutator of two 3-cycles.'
   - 'induction: Each term of the derived series contains all 3-cycles.'
   - 'conclude: The derived series never becomes trivial, so S_n is not solvable.'
-  openmath: (forall (X) (-> (>= (size X) 5) (not (solvable_group (symmetric_group X)))))
+  openmath: (forall (X) (-> (and (finite_set X) (>= (size X) 5)) (not (solvable_group (symmetric_group X)))))
   hard_negative:
     statement: S₄は可解でない。
     reason: S₄⊃A₄⊃V₄⊃{1}の各商は可換なので、S₄は可解である。

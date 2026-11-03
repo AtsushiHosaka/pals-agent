@@ -753,8 +753,8 @@
   - 'conclude: It turns a/b = c/d into ad = bc.'
   openmath: (forall (a b c d) (-> (and (!= b 0) (!= d 0)) (<-> (= (/ a b) (/ c d)) (= (* a d) (* b c)))))
   hard_negative:
-    statement: $ad=bc$なら、$b,d$の値によらず$\dfrac{a}{b}=\dfrac{c}{d}$である。
-    reason: $b=d=0$なら$ad=bc$はつねに成り立つが、分数は定義されない。
+    statement: $\dfrac{a}{b}=\dfrac{c}{d}$であることと$ab=cd$であることは同値である。
+    reason: $a=1,b=2,c=2,d=1$のとき$ab=cd=2$だが、$\dfrac{a}{b}=\dfrac{1}{2}$、$\dfrac{c}{d}=2$で等しくない。外項の積と内項の積は$ad=bc$である。
   target: |
     ∀ (a b c d : ℝ), b ≠ 0 → d ≠ 0 → (a / b = c / d ↔ a * d = b * c)
   proof: |
@@ -1499,38 +1499,34 @@
   kind: gap
   level: high
   topic: 二重根号・差の形
-  statement: $a\geq b$の場合に限った差の形。実数$a,b$が$a\geq b\geq 0$を満たすなら、$\sqrt{a+b-2\sqrt{ab}}=\sqrt{a}-\sqrt{b}$である。
-  statement_en: Minus form, restricted to a ≥ b. If real a, b satisfy a ≥ b ≥ 0, then √(a + b - 2√(ab)) = √a - √b.
+  statement: 実数$a,b\geq 0$について$\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$である。大小が分かっていれば絶対値は外れ、$a\geq b$なら$\sqrt{a}-\sqrt{b}$、$a\leq b$なら$\sqrt{b}-\sqrt{a}$に等しい。
+  statement_en: For real a, b ≥ 0, √(a + b - 2√(ab)) = |√a - √b|. If a ≥ b this is √a - √b, and if a ≤ b it is √b - √a.
   assumptions:
   - $a,b$は実数
-  - $a\geq b\geq 0$
+  - $a\geq 0$かつ$b\geq 0$
   quantifiers:
   - 任意の実数$a,b$
-  conclusion: $\sqrt{a+b-2\sqrt{ab}}=\sqrt{a}-\sqrt{b}$が成り立つ。
-  answer: |
-    $a,b$を$a\geq b\geq 0$を満たす実数とする。$\sqrt{ab}=\sqrt{a}\sqrt{b}$なので、$a+b-2\sqrt{ab}=(\sqrt{a}-\sqrt{b})^2$である。$a\geq b$より$\sqrt{a}-\sqrt{b}\geq 0$である。$0$以上の数の平方の平方根はもとの数に等しいので、$\sqrt{a+b-2\sqrt{ab}}=\sqrt{a}-\sqrt{b}$である。
+  conclusion: $\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$が成り立つ。
+  answer: $a,b$を$0$以上の実数とする。$\sqrt{ab}=\sqrt{a}\sqrt{b}$なので、$a+b-2\sqrt{ab}=(\sqrt{a})^2+(\sqrt{b})^2-2\sqrt{a}\sqrt{b}=(\sqrt{a}-\sqrt{b})^2$である。任意の実数$u$について$\sqrt{u^2}=|u|$なので、$\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$を得る。
   strategy: Recognize the radicand as a square and use the order to choose the sign.
   sketch:
   - 'derive: The radicand equals (√a - √b)².'
   - 'derive: The hypothesis a ≥ b makes √a - √b nonnegative.'
   - 'conclude: Taking the square root returns √a - √b.'
-  openmath: (forall (a b) (-> (and (>= b 0) (>= a b)) (= (root (- (+ a b) (* 2 (root (* a b) 2))) 2) (- (root a 2) (root b 2)))))
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (= (root (- (+ a b) (* 2 (root (* a b) 2))) 2) (abs (- (root a 2) (root b 2))))))
   hard_negative:
     statement: $a,b\geq 0$の大小によらず$\sqrt{a+b-2\sqrt{ab}}=\sqrt{a}-\sqrt{b}$である。
-    reason: $a=1$、$b=4$なら左辺は$1$、右辺は$-1$である。大小が不明なら、右辺は$|\sqrt{a}-\sqrt{b}|$となる。
-  target: |
-    ∀ a b : ℝ, 0 ≤ b → b ≤ a → Real.sqrt (a + b - 2 * Real.sqrt (a * b)) = Real.sqrt a - Real.sqrt b
-  proof: |
+    reason: $a=1$、$b=4$なら左辺は$\sqrt{5-4}=1$、右辺は$-1$である。絶対値を付けなければ$a\geq b$が必要である。
+  target: '∀ a b : ℝ, 0 ≤ a → 0 ≤ b → Real.sqrt (a + b - 2 * Real.sqrt (a * b)) = |Real.sqrt a - Real.sqrt b|'
+  proof: |-
     by
-      intro a b hb hba
-      have ha : 0 ≤ a := le_trans hb hba
+      intro a b ha hb
       have hs := Real.sq_sqrt ha
       have ht := Real.sq_sqrt hb
       rw [Real.sqrt_mul ha]
       have h : a + b - 2 * (Real.sqrt a * Real.sqrt b) = (Real.sqrt a - Real.sqrt b) ^ 2 := by
         linear_combination -hs - ht
-      rw [h]
-      exact Real.sqrt_sq (sub_nonneg.mpr (Real.sqrt_le_sqrt hba))
+      rw [h, Real.sqrt_sq_eq_abs]
 - id: nested_square_root_general_formula
   kind: textbook
   level: high
@@ -1677,7 +1673,7 @@
   - 'construct: Conversely, put d = √(s² - 4p), x = (s + d)/2 and y = (s - d)/2.'
   - 'derive: Then x + y = s.'
   - 'conclude: Also xy = (s² - d²)/4 = p.'
-  openmath: (forall (s p) (<-> (exists (x y) (and (= (+ x y) s) (= (* x y) p))) (<= (* 4 p) (^ s 2))))
+  openmath: (forall (s p) (-> (and (in s R) (in p R)) (<-> (exists (x y) (and (in x R) (in y R) (= (+ x y) s) (= (* x y) p))) (<= (* 4 p) (^ s 2)))))
   hard_negative:
     statement: $x+y=s$、$xy=p$となる実数の存在は$4p<s^2$と同値である。
     reason: $s=2$、$p=1$では$x=y=1$が存在するが、$4p=s^2$である。等号の場合を除けない。
@@ -1731,7 +1727,7 @@
       exact or_iff_left hne
 - id: fundamental_theorem_symmetric_polynomials
   kind: named
-  level: high
+  level: 2
   topic: 対称式・基本対称式の基本定理
   statement: 対称式の基本定理。自然数$n$と実数係数の$n$変数対称多項式$f$に対して、$f$は基本対称式$e_1,\dots,e_n$の実数係数多項式として表せる。
   statement_en: Fundamental theorem of symmetric polynomials. For a natural number n, every symmetric polynomial in n variables with real coefficients is a polynomial with real coefficients in the elementary symmetric polynomials e_1, ..., e_n.
@@ -1785,9 +1781,9 @@
     $y\leq r$は$x\leq a+r$と同値であり、$-y\leq r$は$a-r\leq x$と同値である。$r<0$のときは両辺とも成り立たず、同値は保たれる。
   strategy: Write |y| as the larger of y and -y and shift by a.
   sketch:
-  - "setup: Put y = x - a."
-  - "derive: |y| ≤ r holds exactly when y ≤ r and -y ≤ r."
-  - "conclude: Rewriting both gives a-r ≤ x ≤ a+r."
+  - 'setup: Put y = x - a.'
+  - 'derive: |y| ≤ r holds exactly when y ≤ r and -y ≤ r.'
+  - 'conclude: Rewriting both gives a-r ≤ x ≤ a+r.'
   openmath: (forall (a r x) (<-> (<= (abs (- x a)) r) (and (<= (- a r) x) (<= x (+ a r)))))
   hard_negative:
     statement: 実数$a,r,x$について、$|x-a|<r$であることと$a-r\leq x\leq a+r$であることは同値である。

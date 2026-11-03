@@ -28,7 +28,7 @@
   - 'case_split: If A, B lie on opposite sides of UO, the point where AB meets UO decides between angle AOB = 2 angle AUB and angle AOB + 2 angle AUB = 2π.'
   - 'case_split: If A, B lie on one closed side of UO, differences of angles give angle AOB = 2 angle AUB, and O, U lie on the same side of AB.'
   - 'conclude: X and Y have the same position relative to O and AB, so their angles are equal.'
-  openmath: (forall (o r a b x y) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (on_circle y o r) (!= a b) (same_side_of_line x y a b)) (= (euclid_angle a x b) (euclid_angle a y b))))
+  openmath: (forall (o r a b x y) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle x o r) (on_circle y o r) (!= a b) (same_side_of_line x y a b)) (= (euclid_angle a x b) (euclid_angle a y b))))
   hard_negative:
     statement: 同じ円の上の点$A,B,X,Y$について、$X,Y$が直線$AB$の反対側にあっても$\angle AXB=\angle AYB$である。
     reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$、$Y=(1/\sqrt2,1/\sqrt2)$とすると、$\angle AXB=\pi/4$、$\angle AYB=3\pi/4$である。
@@ -80,7 +80,7 @@
   - 'derive: A point inside a triangle ABQ sees AB under a larger angle than Q does, by two exterior angles.'
   - 'contradiction: If Y ≠ Z, one of them lies inside the triangle formed with the other, so the two angles differ.'
   - 'conclude: Y = Z, so the four points are concyclic.'
-  openmath: (forall (a b x y) (-> (and (!= a b) (same_side_of_line x y a b) (= (euclid_angle a x b) (euclid_angle a y b))) (cospherical_points (set a b x y))))
+  openmath: (forall (a b x y) (-> (and euclidean_plane_ambient (!= a b) (same_side_of_line x y a b) (= (euclid_angle a x b) (euclid_angle a y b))) (cospherical_points (set a b x y))))
   hard_negative:
     statement: $\angle AXB=\angle AYB$であれば、$X,Y$が直線$AB$の反対側にあっても$A,B,X,Y$は同一円周上にある。
     reason: $A=(-1,0)$、$B=(1,0)$、$X=(0,2)$、$Y=(0,-2)$では角は等しいが、$A,B,X$を通る円は中心$(0,3/4)$、半径$5/4$で、$Y$はその上にない。
@@ -127,7 +127,7 @@
   - 'case_split: If A, B lie on one closed side of XO, both angles are differences, so angle AOB = 2 angle AXB.'
   - 'derive: If A, B lie on opposite sides of XO, the crossing point D of AB and XO lies between O and X'' because O, X are on the same side of AB.'
   - 'conclude: Then both angles are sums, so again angle AOB = 2 angle AXB.'
-  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (same_side_of_line o x a b)) (= (euclid_angle a o b) (* 2 (euclid_angle a x b)))))
+  openmath: (forall (o r a b x) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (same_side_of_line o x a b)) (= (euclid_angle a o b) (* 2 (euclid_angle a x b)))))
   hard_negative:
     statement: $O$と$X$が直線$AB$の反対側にあっても$\angle AOB=2\angle AXB$である。
     reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(1/\sqrt2,1/\sqrt2)$とすると、$\angle AOB=\pi/2$、$\angle AXB=3\pi/4$である。
@@ -208,7 +208,7 @@
   - 'derive: The isosceles triangles on OA and OB give angle AOX'' = 2 angle AXO and angle BOX'' = 2 angle BXO.'
   - 'derive: Since D lies on AB, angle AOB and angle AXB split along XO.'
   - 'conclude: Using angle AOX = π - angle AOX'' gives angle AOB + 2 angle AXB = 2π.'
-  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (opposite_side_of_line o x a b)) (= (+ (euclid_angle a o b) (* 2 (euclid_angle a x b))) (* 2 pi))))
+  openmath: (forall (o r a b x) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (opposite_side_of_line o x a b)) (= (+ (euclid_angle a o b) (* 2 (euclid_angle a x b))) (* 2 pi))))
   hard_negative:
     statement: $O$と$X$が直線$AB$に関して同じ側にあっても$\angle AOB+2\angle AXB=2\pi$である。
     reason: 単位円で$A=(1,0)$、$B=(0,1)$、$X=(-1,0)$とすると、$\angle AOB=\pi/2$、$\angle AXB=\pi/4$で、和は$\pi$である。
@@ -320,7 +320,7 @@
   - 'derive: The right angle gives |MX| = |MA| = |MB|.'
   - 'derive: A, B, X are not collinear, so the plane contains only one point equidistant from them.'
   - 'conclude: The center equals M, so AB is a diameter.'
-  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= x a) (!= x b) (= (euclid_angle a x b) (/ pi 2))) (is_diameter a b o r)))
+  openmath: (forall (o r a b x) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= x a) (!= x b) (= (euclid_angle a x b) (/ pi 2))) (is_diameter a b o r)))
   hard_negative:
     statement: 3次元の球面の上の点$A,B,X$について$X\neq A,B$かつ$\angle AXB=\pi/2$ならば、$AB$は球面の直径である。
     reason: 球面を大円でない平面で切った小円の直径を$AB$とし、$X$をその小円の上の点とすると、角は直角だが$AB$の長さは球面の直径より短い。
@@ -513,7 +513,7 @@
   - 'derive: For each side line of the quadrilateral, the other two vertices lie on the side of E.'
   - 'apply_theorem: The inscribed angle theorem transfers the four parts to angles of triangles ABC and ACD.'
   - 'conclude: The two triangle angle sums give 2(angle ABC + angle CDA) = 2π.'
-  openmath: (forall (o r a b c d) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= a c) (opposite_side_of_line b d a c)) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)))
+  openmath: (forall (o r a b c d) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= a c) (opposite_side_of_line b d a c)) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)))
   hard_negative:
     statement: 円の上の点について、$B,D$が直線$AC$に関して同じ側にあっても$\angle ABC+\angle CDA=\pi$である。
     reason: 単位円で$A=(1,0)$、$C=(0,1)$、$B=(-1,0)$、$D=(0,-1)$とすると、どちらの角も$\pi/4$で、和は$\pi/2$である。
@@ -602,7 +602,7 @@
   - 'derive: The hypothesis then gives angle CD''A = angle CDA.'
   - 'apply_theorem: The converse of the inscribed angle theorem puts D on the circle through A, C, D''.'
   - 'conclude: That circle is the circle through A, B, C.'
-  openmath: (forall (a b c d) (-> (and (!= a c) (opposite_side_of_line b d a c) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)) (cospherical_points (set a b c d))))
+  openmath: (forall (a b c d) (-> (and euclidean_plane_ambient (!= a c) (opposite_side_of_line b d a c) (= (+ (euclid_angle a b c) (euclid_angle c d a)) pi)) (cospherical_points (set a b c d))))
   hard_negative:
     statement: $B,D$が直線$AC$に関して同じ側にあっても、$\angle ABC+\angle CDA=\pi$ならば4点は同一円周上にある。
     reason: $A=(-1,0)$、$C=(1,0)$、$B=(0,1/\sqrt3)$、$D=(0,\sqrt3)$とすると角は$2\pi/3$と$\pi/3$で和は$\pi$だが、$A,C,D$を通る円の中心は$B$なので$B$は円上にない。
@@ -661,7 +661,7 @@
   - 'apply_theorem: The opposite angles at A and C sum to π.'
   - 'derive: The angles DCB and DCE sum to π because C lies between B and E.'
   - 'conclude: Subtract to get angle DCE = angle BAD.'
-  openmath: (forall (o r a b c d e) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= b d) (opposite_side_of_line a c b d) (strictly_between b c e)) (= (euclid_angle d c e) (euclid_angle b a d))))
+  openmath: (forall (o r a b c d e) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (!= b d) (opposite_side_of_line a c b d) (strictly_between b c e)) (= (euclid_angle d c e) (euclid_angle b a d))))
   hard_negative:
     statement: 円に内接しない四角形でも、外角は隣り合う内角の対角に等しい。
     reason: 直角でない平行四辺形$ABCD$では$\angle DCE=\pi-\angle BCD=\pi-\angle BAD$であり、$\angle BAD\neq\pi/2$なので$\angle BAD$に等しくない。
@@ -821,7 +821,7 @@
   - 'derive: Otherwise Thales makes ABA'' a right triangle, so |AB| = 2r sin of angle AA''B.'
   - 'case_split: X and A'' on the same side give equal angles; on opposite sides they give supplementary angles.'
   - 'conclude: In both cases the sines agree, so |AB| = 2r sin of angle AXB.'
-  openmath: (forall (o r a b x) (-> (and (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (!= x a) (!= x b)) (= (dist_of a b) (* (* 2 r) (sin (euclid_angle a x b))))))
+  openmath: (forall (o r a b x) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle x o r) (!= a b) (!= x a) (!= x b)) (= (dist_of a b) (* (* 2 r) (sin (euclid_angle a x b))))))
   hard_negative:
     statement: 3次元の半径$r$の球面の上の点$A,B,X$についても$AB=2r\sin\angle AXB$である。
     reason: 大円でない小円の上に3点をとると、その小円の半径を$r'<r$として$AB=2r'\sin\angle AXB$となるので、$AB<2r\sin\angle AXB$である。
@@ -864,7 +864,7 @@
   - 'apply_theorem: |AB| = 2r sin of angle AXB.'
   - 'apply_theorem: |CD| = 2r sin of angle CYD.'
   - 'conclude: Equal angles give equal chords.'
-  openmath: (forall (o r a b c d x y) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (on_circle x o r) (on_circle y o r) (!= a b) (!= c d) (!= x a) (!= x b) (!= y c) (!= y d) (= (euclid_angle a x b) (euclid_angle c y d))) (= (dist_of a b) (dist_of c d))))
+  openmath: (forall (o r a b c d x y) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle c o r) (on_circle d o r) (on_circle x o r) (on_circle y o r) (!= a b) (!= c d) (!= x a) (!= x b) (!= y c) (!= y d) (= (euclid_angle a x b) (euclid_angle c y d))) (= (dist_of a b) (dist_of c d))))
   hard_negative:
     statement: 同じ円の上で$AB=CD$ならば$\angle AXB=\angle CYD$である。
     reason: 同じ弦でも反対の弧から見ると補角になる。単位円で$A=C=(1,0)$、$B=D=(0,1)$、$X=(-1,0)$、$Y=(1/\sqrt2,1/\sqrt2)$とすると、角は$\pi/4$と$3\pi/4$である。
@@ -1188,7 +1188,7 @@
   kind: textbook
   level: middle
   topic: 円・接線と半径
-  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面（平面なら円）の上の点$T$と点$X\neq T$について、直線$TX$が$T$で接することと$\angle XTO=\pi/2$は同値である。ここで接するとは、直線上の点$U$がすべて$\langle U-T,T-O\rangle=0$を満たすことである。
+  statement: 実内積空間上のアフィン空間で、中心$O$、半径$r>0$の球面（平面なら円）の上の点$T$と点$X\neq T$について、直線$TX$が$T$で接することと$\angle XTO=\pi/2$は同値である。ここで接するとは、直線上の点$U$がすべて$\langle U-T,T-O\rangle=0$を満たすことである。ここでの「接する」は半径に直交する直線という定義であり、共有点が1点という定義との同値は別の命題である。
   statement_en: If T lies on a sphere with center O and radius r > 0 (a circle in the plane) and X ≠ T, then line TX is tangent at T if and only if ∠XTO = π/2.
   assumptions:
   - 点は実内積空間上のアフィン空間にある
@@ -1393,7 +1393,7 @@
   - 'derive: So Q-O is orthogonal to B-A.'
   - 'translate: In the plane, vectors orthogonal to B-A form a line.'
   - 'conclude: Since Q ≠ O, the midpoint lies on line QO.'
-  openmath: (forall (o r q a b) (-> (and (> r 0) (!= a b) (!= q a) (!= q b) (tangent_to_circle_at a q o r) (tangent_to_circle_at b q o r)) (and (perpendicular_lines q o a b) (on_line (midpoint_of a b) q o))))
+  openmath: (forall (o r q a b) (-> (and euclidean_plane_ambient (> r 0) (!= a b) (!= q a) (!= q b) (tangent_to_circle_at a q o r) (tangent_to_circle_at b q o r)) (and (perpendicular_lines q o a b) (on_line (midpoint_of a b) q o))))
   hard_negative:
     statement: 3次元の球面に点$Q$から引いた2本の接線の接点$A,B$について、弦$AB$の中点は常に直線$QO$上にある。
     reason: 接点全体は直線$QO$を軸とする円をなす。その円の直径でない弦$AB$の中点は軸の上にない。
@@ -1464,7 +1464,7 @@
   - 'case_split: If A'', C lie on the same side of AB, then angle ACB = angle AA''B and the rays give angle TAB = π/2 - angle BAA''.'
   - 'case_split: If A'', C lie on opposite sides, then angle ACB = π - angle AA''B and the rays give angle TAB = π/2 + angle BAA''.'
   - 'conclude: In every case angle TAB = angle ACB.'
-  openmath: (forall (o r a b c t) (-> (and (tangent_to_circle_at a t o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b)) (= (euclid_angle t a b) (euclid_angle a c b))))
+  openmath: (forall (o r a b c t) (-> (and euclidean_plane_ambient (tangent_to_circle_at a t o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b)) (= (euclid_angle t a b) (euclid_angle a c b))))
   hard_negative:
     statement: $T,C$が直線$AB$に関して同じ側にあっても$\angle TAB=\angle ACB$である。
     reason: 単位円で$A=(1,0)$、$B=(0,1)$、$C=(-1,0)$、$T=(1,-1)$とすると、$T,C$は同じ側にあり、$\angle TAB=3\pi/4$、$\angle ACB=\pi/4$である。
@@ -1535,7 +1535,7 @@
   - 'apply_theorem: The tangent chord theorem gives angle T''AB = angle ACB = angle TAB.'
   - 'derive: T and T'' lie on the same side of AB with equal angles, so the rays AT and AT'' coincide.'
   - 'conclude: Line AT equals l, so it is tangent at A.'
-  openmath: (forall (o r a b c t) (-> (and (on_circle a o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b) (= (euclid_angle t a b) (euclid_angle a c b))) (tangent_to_circle_at a t o r)))
+  openmath: (forall (o r a b c t) (-> (and euclidean_plane_ambient (on_circle a o r) (on_circle b o r) (on_circle c o r) (!= a b) (opposite_side_of_line t c a b) (= (euclid_angle t a b) (euclid_angle a c b))) (tangent_to_circle_at a t o r)))
   hard_negative:
     statement: $T,C$が直線$AB$に関して同じ側にあっても、$\angle TAB=\angle ACB$ならば直線$AT$は接線である。
     reason: 単位円で$A=(1,0)$、$B=(0,1)$、$C=(-1,0)$、$T=(0,0)$とすると、どちらの角も$\pi/4$だが、直線$AT$は中心を通り接線ではない。
@@ -1981,7 +1981,7 @@
   - 'derive: Applying this to both centers gives that O2-O1 is orthogonal to B-A.'
   - 'translate: In the plane the orthogonal complement of B-A has dimension one.'
   - 'conclude: M-O1 is a multiple of O2-O1, so M lies on line O1O2.'
-  openmath: (forall (o1 r1 o2 r2 a b) (-> (and (!= o1 o2) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle a o2 r2) (on_circle b o2 r2)) (and (perpendicular_lines o2 o1 a b) (on_line (midpoint_of a b) o1 o2))))
+  openmath: (forall (o1 r1 o2 r2 a b) (-> (and euclidean_plane_ambient (!= o1 o2) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle a o2 r2) (on_circle b o2 r2)) (and (perpendicular_lines o2 o1 a b) (on_line (midpoint_of a b) o1 o2))))
   hard_negative:
     statement: 3次元の2つの球面が相異なる2点$A,B$を共有すれば、$A,B$の中点は中心を結ぶ直線上にある。
     reason: 2つの球面の交わりは中心線を軸とする円であり、その円の直径でない弦の中点は軸の上にない。
@@ -2038,7 +2038,7 @@
   - 'derive: Subtracting the circle equations gives a linear equation for common points.'
   - 'derive: So A, B, Q lie on one line.'
   - 'conclude: The line AB meets a circle only at A and B.'
-  openmath: (forall (o1 r1 o2 r2 a b q) (-> (and (or (!= o1 o2) (!= r1 r2)) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle q o1 r1) (on_circle a o2 r2) (on_circle b o2 r2) (on_circle q o2 r2)) (or (= q a) (= q b))))
+  openmath: (forall (o1 r1 o2 r2 a b q) (-> (and euclidean_plane_ambient (or (!= o1 o2) (!= r1 r2)) (!= a b) (on_circle a o1 r1) (on_circle b o1 r1) (on_circle q o1 r1) (on_circle a o2 r2) (on_circle b o2 r2) (on_circle q o2 r2)) (or (= q a) (= q b))))
   hard_negative:
     statement: 3次元の相異なる2つの球面の共有点は高々2個である。
     reason: 2つの球面は一般に円で交わるので、共有点は無限個ある。平面であることが必要である。
@@ -2085,8 +2085,8 @@
   kind: textbook
   level: high
   topic: 2円・内接
-  statement: 実内積空間（$0$でない）上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）について、第1の球面が第2の球面に内接する（共有点$T$があり、$O_1$が線分$O_2T$上にある）ことと、$O_1O_2=r_2-r_1$かつ$r_1,r_2\geq0$は同値である。
-  statement_en: In a nonzero real inner product affine space, the sphere with center O1 and radius r1 is internally tangent to the sphere with center O2 and radius r2, meaning that some common point T has O1 on segment O2T, if and only if |O1O2| = r2 - r1 and r1, r2 ≥ 0.
+  statement: 実内積空間（$0$でない）上のアフィン空間で、中心$O_1,O_2$、半径$r_1,r_2$の2つの球面（平面なら2円）について、第1の球面が第2の球面に内接する（共有点$T$があり、$O_1$が線分$O_2T$上にある）ことと、$O_1O_2=r_2-r_1$かつ$r_1,r_2\geq0$は同値である。なお同一の球面（$O_1=O_2$かつ$r_1=r_2$）や半径$0$の球面も、この定義では内接に含める。
+  statement_en: In a nonzero real inner product affine space, the sphere with center O1 and radius r1 is internally tangent to the sphere with center O2 and radius r2, meaning that some common point T has O1 on segment O2T, if and only if |O1O2| = r2 - r1 and r1, r2 ≥ 0. Coincident spheres and spheres of radius 0 count as internally tangent under this definition.
   assumptions:
   - 点は実内積空間上のアフィン空間にあり、空間は$0$でない
   - 内接とは、共有点$T$について$O_1$が線分$O_2T$上にあることである
@@ -2341,7 +2341,7 @@
   - 'derive: The hypotheses make r1^2 - a^2 a nonnegative product over 4d^2.'
   - 'construct: Let b be its square root and T = O1 + (a/d)y + (b/d)Jy.'
   - 'conclude: The Pythagorean theorem gives |TO1| = r1 and |TO2| = r2.'
-  openmath: (forall (o1 r1 o2 r2) (-> (and (!= o1 o2) (> r1 0) (> r2 0) (<= (abs (- r1 r2)) (dist_of o1 o2)) (<= (dist_of o1 o2) (+ r1 r2))) (exists (t) (and (on_circle t o1 r1) (on_circle t o2 r2)))))
+  openmath: (forall (o1 r1 o2 r2) (-> (and euclidean_plane_ambient (!= o1 o2) (> r1 0) (> r2 0) (<= (abs (- r1 r2)) (dist_of o1 o2)) (<= (dist_of o1 o2) (+ r1 r2))) (exists (t) (and (on_circle t o1 r1) (on_circle t o2 r2)))))
   hard_negative:
     statement: 直線上（1次元）でも、同じ不等式を満たす2つの「球面」は共有点をもつ。
     reason: 直線上で中心$0,1$、半径$1,1$とすると、球面はそれぞれ$\{-1,1\}$と$\{0,2\}$で共有点がない。2次元以上であることが必要である。

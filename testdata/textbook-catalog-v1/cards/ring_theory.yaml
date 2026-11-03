@@ -22,7 +22,7 @@
   - 'derive: Then f(x) = 0 = f(0), so x = 0.'
   - 'translate: Conversely, f(x) = f(y) gives f(x - y) = 0.'
   - 'conclude: A zero kernel forces x - y = 0, so f is injective.'
-  openmath: (forall (R S f) (-> (and (comm_ring R) (comm_ring S) (ring_hom f R S)) (<-> (ring_hom_injective f) (= (ring_kernel f) (zero_ideal R)))))
+  openmath: (forall (R S f) (-> (and (comm_ring R) (comm_ring S) (ring_hom f R S)) (<-> (injective_function f) (= (ring_kernel f) (zero_ideal R)))))
   hard_negative:
     statement: 環準同型の核が零イデアルならば、その準同型は環の同型である。
     reason: 包含写像ℤ→ℚの核は零だが全射でなく、同型ではない。
@@ -208,7 +208,7 @@
     by
       intro R _ I x y
       exact Ideal.Quotient.eq
-- id: quotient_lift_unique
+- id: ring_quotient_lift_unique
   kind: textbook
   level: 3
   topic: 環論・剰余環の普遍性
@@ -330,39 +330,44 @@
   kind: gap
   level: 3
   topic: 環論・イデアルの対応
-  statement: 可換環$R$のイデアル$I\subseteq J$と自然な射影$\pi:R\to R/I$について、$\pi(J)$の$\pi$による逆像は$J$に等しい。
-  statement_en: If J is an ideal containing I, then the preimage under the projection from R to R/I of the image of J equals J.
+  statement: 可換環$R$のイデアル$I$と自然な射影$\pi:R\to R/I$について、$I\subseteq J$を満たす$R$の任意のイデアル$J$で$\pi^{-1}(\pi(J))=J$であり、$R/I$の任意のイデアル$K$で$\pi(\pi^{-1}(K))=K$である。
+  statement_en: 'Let I be an ideal of a commutative ring R with projection π: R → R/I. For every ideal J ⊇ I of R, π⁻¹(π(J)) = J, and for every ideal K of R/I, π(π⁻¹(K)) = K.'
   assumptions:
   - $R$は可換環
-  - $I,J$は$R$のイデアル
-  - $I\subseteq J$
+  - $I$は$R$のイデアル
   - $\pi:R\to R/I$は自然な射影
   quantifiers:
-  - 任意の可換環$R$とそのイデアル$I,J$
-  conclusion: $\pi^{-1}(\pi(J))=J$が成り立つ。
+  - 任意の可換環$R$とそのイデアル$I$
+  - $I\subseteq J$を満たす任意のイデアル$J\subseteq R$
+  - $R/I$の任意のイデアル$K$
+  conclusion: $I\subseteq J$なら$\pi^{-1}(\pi(J))=J$であり、$R/I$の任意のイデアル$K$で$\pi(\pi^{-1}(K))=K$である。
   answer: |
     $R$を可換環、$I\subseteq J$を$R$のイデアル、$\pi:R\to R/I$を自然な射影とする。$\pi$は全射なので、$\pi(J)$は$R/I$のイデアルであり、$J$の元の剰余類の全体である。
 
     $j\in J$なら$\pi(j)\in\pi(J)$なので、$J\subseteq\pi^{-1}(\pi(J))$である。
 
     逆に$x\in\pi^{-1}(\pi(J))$とする。$\pi(x)=\pi(j)$となる$j\in J$があるので、$x-j\in I\subseteq J$である。したがって$x=(x-j)+j\in J$である。
+
+    次に$K$を$R/I$のイデアルとする。$y\in K$なら、$\pi$は全射なので$y=\pi(x)$となる$x\in R$がある。$\pi(x)=y\in K$より$x\in\pi^{-1}(K)$なので$y\in\pi(\pi^{-1}(K))$である。逆に$\pi(\pi^{-1}(K))$の元は$\pi(x)$（$\pi(x)\in K$）の形なので$K$に属する。よって$\pi(\pi^{-1}(K))=K$である。
   strategy: Compare residue classes and use I ⊆ J to absorb the difference.
   sketch:
   - 'setup: The inclusion J ⊆ π⁻¹(π(J)) is immediate.'
   - 'translate: For x in π⁻¹(π(J)), choose j in J with π(x) = π(j).'
   - 'derive: Then x - j lies in I, hence in J.'
   - 'conclude: So x = (x - j) + j lies in J.'
-  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (subset I J)) (= (ideal_comap (ring_quotient_map I) (ideal_map (ring_quotient_map I) J)) J)))
+  openmath: (forall (R I) (-> (and (comm_ring R) (ideal_of I R)) (and (forall (J) (-> (and (ideal_of J R) (subset I J)) (= (ideal_comap (ring_quotient_map I) (ideal_map (ring_quotient_map I) J)) J))) (forall (K) (-> (ideal_of K (quotient_ring R I)) (= (ideal_map (ring_quotient_map I) (ideal_comap (ring_quotient_map I) K)) K))))))
   hard_negative:
     statement: I⊆Jを仮定しなくても、π^{-1}(π(J))=Jである。
     reason: 一般にはπ^{-1}(π(J))=I+Jであり、ℤでI=2ℤ, J=3ℤならℤとなって3ℤと異なる。
   target: |
-    ∀ (R : Type*) [CommRing R] (I J : Ideal R), I ≤ J → (J.map (Ideal.Quotient.mk I)).comap (Ideal.Quotient.mk I) = J
+    ∀ (R : Type*) [CommRing R] (I : Ideal R), (∀ J : Ideal R, I ≤ J → (J.map (Ideal.Quotient.mk I)).comap (Ideal.Quotient.mk I) = J) ∧ (∀ K : Ideal (R ⧸ I), (K.comap (Ideal.Quotient.mk I)).map (Ideal.Quotient.mk I) = K)
   proof: |
     by
-      intro R _ I J h
-      rw [Ideal.comap_map_of_surjective _ Ideal.Quotient.mk_surjective, ← RingHom.ker_eq_comap_bot, Ideal.mk_ker]
-      exact sup_eq_left.mpr h
+      intro R _ I
+      refine ⟨fun J h => ?_, fun K => ?_⟩
+      · rw [Ideal.comap_map_of_surjective _ Ideal.Quotient.mk_surjective, ← RingHom.ker_eq_comap_bot, Ideal.mk_ker]
+        exact sup_eq_left.mpr h
+      · exact Ideal.map_comap_of_surjective _ Ideal.Quotient.mk_surjective K
 - id: chinese_remainder_two_ideals
   kind: named
   level: 3
@@ -391,7 +396,7 @@
   - 'construct: Choose i in I and j in J with i + j = 1.'
   - 'derive: The element aj + bi reduces to a mod I and b mod J, so the map is surjective.'
   - 'apply_theorem: The first isomorphism theorem gives the isomorphism.'
-  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (= (ideal_sum I J) (unit_ideal R))) (exists (e) (and (ring_iso e (quotient_ring R (inter I J)) (cartesian (quotient_ring R I) (quotient_ring R J))) (forall (x) (and (= (fn_value (fn_value e (residue_class (inter I J) x)) 1) (residue_class I x)) (= (fn_value (fn_value e (residue_class (inter I J) x)) 2) (residue_class J x))))))))
+  openmath: (forall (R I J) (-> (and (comm_ring R) (ideal_of I R) (ideal_of J R) (= (ideal_sum I J) (unit_ideal R))) (exists (e) (and (ring_iso e (quotient_ring R (inter I J)) (ring_product (quotient_ring R I) (quotient_ring R J))) (forall (x) (= (fn_value e (residue_class (inter I J) x)) (ordered_pair (residue_class I x) (residue_class J x))))))))
   hard_negative:
     statement: 任意のイデアルI, Jに対してR/(I∩J)はR/I×R/Jと同型である。
     reason: ℤでI=J=2ℤとすると左辺は位数2、右辺は位数4であり同型でない。
@@ -933,11 +938,11 @@
   - 任意のユークリッド整域$R$
   conclusion: $R$の任意のイデアルは単項イデアルである。
   answer: |
-    $R$をユークリッド整域とし、$\delta$をそのユークリッド関数とする。すなわち$\delta$は$R$の$0$でない元に自然数を対応させ、任意の$x\in R$と$d\neq 0$について、$x=dq+r$かつ「$r=0$または$\delta(r)<\delta(d)$」を満たす$q,r\in R$が存在する。
+    $R$をユークリッド整域とする。すなわち$R$は整域で、$R$上に整礎な関係$\prec$（無限に下る列を持たない関係）があり、任意の$x\in R$と$d\neq 0$について、$x=dq+r$かつ「$r=0$または$r\prec d$」を満たす$q,r\in R$が存在する。ふつうは自然数値の関数$\delta$を使い、$r\prec d$を$\delta(r)<\delta(d)$とする。
 
-    $I$を$R$のイデアルとする。$I=\{0\}$なら$I=(0)$である。$I\neq\{0\}$なら、$I$の$0$でない元のうち$\delta$の値が最小のものを$d$とする。$(d)\subseteq I$は明らかである。
+    $I$を$R$のイデアルとする。$I=\{0\}$なら$I=(0)$である。$I\neq\{0\}$なら、$I$の$0$でない元の集合は空でなく$\prec$が整礎なので、$\prec$について極小な元$d$がある。$(d)\subseteq I$は明らかである。
 
-    $x\in I$をとり、$x=dq+r$と割る。$r=x-dq\in I$である。$r\neq 0$なら$\delta(r)<\delta(d)$となり、$d$の最小性に反する。よって$r=0$であり、$x\in(d)$である。したがって$I=(d)$である。
+    $x\in I$をとり、$x=dq+r$と割る。$r=x-dq\in I$である。$r\neq 0$なら$r\prec d$となり、$d$の極小性に反する。よって$r=0$であり、$x\in(d)$である。したがって$I=(d)$である。
   strategy: Generate the ideal by a nonzero element of minimal Euclidean size.
   sketch:
   - 'setup: Let I be a nonzero ideal.'
@@ -1097,7 +1102,7 @@
   - 'case_split: If deg f < deg g, take q = 0 and r = f.'
   - 'derive: Otherwise subtract aX^(n-m)g, which lowers the degree because g is monic.'
   - 'conclude: Add aX^(n-m) to the quotient from the induction hypothesis.'
-  openmath: (forall (R f g) (-> (and (comm_ring R) (nontrivial_ring R) (in f (polynomial_ring R)) (in g (polynomial_ring R)) (monic_polynomial g)) (exists (q r) (and (= f (+ (* g q) r)) (< (poly_degree r) (poly_degree g))))))
+  openmath: (forall (R f g) (-> (and (comm_ring R) (nontrivial_ring R) (in f (polynomial_ring R)) (in g (polynomial_ring R)) (monic_polynomial g)) (exists (q r) (and (= f (+ (* g q) r)) (or (= r 0) (< (poly_degree r) (poly_degree g)))))))
   hard_negative:
     statement: 任意の可換環上で、0でない任意のgについてf=gq+r, deg r<deg gと割り算できる。
     reason: ℤ[X]でf=X, g=2Xとすると、Xの係数の比較から1=2q_0となり不可能である。
@@ -1200,7 +1205,7 @@
   - 'apply_theorem: If a is a root, the factor theorem gives f = (X - a)g.'
   - 'derive: For another root b, 0 = (b - a)g(b), so g(b) = 0.'
   - 'conclude: The remaining roots are roots of g, so the bound follows.'
-  openmath: (forall (R f S) (-> (and (integral_domain R) (in f (polynomial_ring R)) (!= f 0) (subset S R) (forall (a) (-> (in a S) (= (poly_eval f a) 0)))) (<= (size S) (poly_degree f))))
+  openmath: (forall (R f S) (-> (and (integral_domain R) (in f (polynomial_ring R)) (!= f 0) (subset S R) (finite_set S) (forall (a) (-> (in a S) (= (poly_eval f a) 0)))) (<= (size S) (poly_degree f))))
   hard_negative:
     statement: 任意の可換環上で、0でない多項式の根の個数は次数以下である。
     reason: ℤ/8ℤではX²-1は1, 3, 5, 7の4個の根をもつ。整域の仮定が必要である。
@@ -1286,7 +1291,7 @@
   - 'derive: Since f is primitive, c = ±1, which factors f in Z[X].'
   - 'derive: Conversely, non-unit factors of primitive f in Z[X] are nonconstant.'
   - 'conclude: So such a factorization remains proper in Q[X].'
-  openmath: (forall (f) (-> (and (in f (polynomial_ring Z)) (primitive_polynomial f)) (<-> (irreducible_element f (polynomial_ring Z)) (irreducible_element f (polynomial_ring Q)))))
+  openmath: (forall (f) (-> (and (in f (polynomial_ring Z)) (primitive_polynomial f)) (<-> (irreducible_element f (polynomial_ring Z)) (irreducible_element (poly_map (canonical_ring_hom Z Q) f) (polynomial_ring Q)))))
   hard_negative:
     statement: 任意のf∈ℤ[X]について、ℤ[X]で既約であることとℚ[X]で既約であることは同値である。
     reason: 2Xはℚ[X]で既約だが、ℤ[X]では非単元2とXの積であり既約でない。
@@ -1328,7 +1333,7 @@
   - 'derive: Over the fraction field of R/P, the images of g and h are monomials of positive degree.'
   - 'derive: Hence the constant terms of g and h both lie in P.'
   - 'contradiction: The constant term of f then lies in P².'
-  openmath: (forall (R P f) (-> (and (integral_domain R) (prime_ideal P R) (in f (polynomial_ring R)) (primitive_polynomial f) (> (poly_degree f) 0) (notin (poly_leading_coeff f) P) (forall (n) (-> (< n (poly_degree f)) (in (poly_coeff f n) P))) (notin (poly_coeff f 0) (^ P 2))) (irreducible_element f (polynomial_ring R))))
+  openmath: (forall (R P f) (-> (and (integral_domain R) (prime_ideal P R) (in f (polynomial_ring R)) (primitive_polynomial f) (> (poly_degree f) 0) (notin (poly_leading_coeff f) P) (forall (n) (-> (and (in n N) (< n (poly_degree f))) (in (poly_coeff f n) P))) (notin (poly_coeff f 0) (ideal_product P P))) (irreducible_element f (polynomial_ring R))))
   hard_negative:
     statement: 原始性を仮定しなくても、他の条件を満たす多項式はR[X]で既約である。
     reason: ℤ[X]でf=2X+6, P=(3)は他の条件を満たすが、f=2(X+3)で2は非単元なので既約でない。
@@ -1365,7 +1370,7 @@
   - 'translate: The divisibility conditions say the coefficients lie in (p) and the constant term is not in (p²).'
   - 'apply_theorem: Eisenstein''s criterion gives irreducibility in Z[X].'
   - 'apply_theorem: Gauss''s lemma transfers irreducibility to Q[X].'
-  openmath: (forall (f p) (-> (and (in f (polynomial_ring Z)) (monic_polynomial f) (> (poly_degree f) 0) (in p P) (forall (n) (-> (< n (poly_degree f)) (dvd p (poly_coeff f n)))) (not (dvd (^ p 2) (poly_coeff f 0)))) (irreducible_element f (polynomial_ring Q))))
+  openmath: (forall (f p) (-> (and (in f (polynomial_ring Z)) (monic_polynomial f) (> (poly_degree f) 0) (prime_element p Z) (forall (n) (-> (and (in n N) (< n (poly_degree f))) (dvd p (poly_coeff f n)))) (not (dvd (^ p 2) (poly_coeff f 0)))) (irreducible_element (poly_map (canonical_ring_hom Z Q) f) (polynomial_ring Q))))
   hard_negative:
     statement: 定数項がp²で割り切れる場合も、他の条件を満たせばfはℚ[X]で既約である。
     reason: f=X²-4, p=2は他の条件を満たすが、f=(X-2)(X+2)と分解する。
@@ -1673,7 +1678,7 @@
   - 'derive: The cross-multiplication relation shows h is well defined.'
   - 'derive: Fraction arithmetic shows h is a ring homomorphism.'
   - 'conclude: Any extension must satisfy the same formula, so it is unique.'
-  openmath: (forall (A K L g) (-> (and (integral_domain A) (fraction_field_of K A) (is_field L) (ring_hom g A L) (ring_hom_injective g)) (exists (h) (and (ring_hom h K L) (forall (a) (-> (in a A) (= (fn_value h (fn_value (fraction_embedding A K) a)) (fn_value g a)))) (forall (k) (-> (and (ring_hom k K L) (forall (a) (-> (in a A) (= (fn_value k (fn_value (fraction_embedding A K) a)) (fn_value g a))))) (= k h)))))))
+  openmath: (forall (A K L g) (-> (and (integral_domain A) (fraction_field_of K A) (is_field L) (ring_hom g A L) (injective_function g)) (exists (h) (and (ring_hom h K L) (forall (a) (-> (in a A) (= (fn_value h (fn_value (fraction_embedding A K) a)) (fn_value g a)))) (forall (k) (-> (and (ring_hom k K L) (forall (a) (-> (in a A) (= (fn_value k (fn_value (fraction_embedding A K) a)) (fn_value g a))))) (= k h)))))))
   hard_negative:
     statement: 単射でない環準同型g:A→Lも商体Kに拡張される。
     reason: ℤ→𝔽_pはpを0に写すが、拡張があれば1=h(p)h(1/p)=0となり矛盾する。
@@ -1903,7 +1908,7 @@
   - 'derive: AB = E gives det A · det B = 1.'
   - 'apply_theorem: The adjugate satisfies A adj A = adj A A = (det A) E.'
   - 'conclude: If det A is a unit, then (det A)⁻¹ adj A inverts A.'
-  openmath: (forall (n R A) (-> (and (comm_ring R) (in A (matrix_ring n R))) (<-> (unit_element A (matrix_ring n R)) (unit_element (matrix_det A) R))))
+  openmath: (forall (n R A) (-> (and (comm_ring R) (finite_set n) (in A (matrix_ring n R))) (<-> (unit_element A (matrix_ring n R)) (unit_element (matrix_det A) R))))
   hard_negative:
     statement: 可換環上の正方行列が可逆であることとdet A≠0は同値である。
     reason: ℤ上の1次行列(2)はdet=2≠0だが、ℤ上で逆行列をもたない。
@@ -1934,7 +1939,7 @@
   - 'construct: Take the matrix unit E_ij with i ≠ j.'
   - 'derive: It is nonzero because 1 ≠ 0 in R.'
   - 'conclude: The product rule for matrix units gives E_ij² = 0.'
-  openmath: (forall (n R i j) (-> (and (comm_ring R) (nontrivial_ring R) (in i n) (in j n) (!= i j)) (exists (A) (and (in A (matrix_ring n R)) (!= A 0) (= (* A A) 0)))))
+  openmath: (forall (n R i j) (-> (and (comm_ring R) (nontrivial_ring R) (finite_set n) (in i n) (in j n) (!= i j)) (exists (A) (and (in A (matrix_ring n R)) (!= A 0) (= (* A A) 0)))))
   hard_negative:
     statement: 添字が1個の行列環でも、零環でなければA≠0かつA²=0となる行列が存在する。
     reason: ℝ上の1次行列環はℝと同じであり、0でない元の2乗は0でない。
@@ -1953,13 +1958,13 @@
   kind: textbook
   level: 3
   topic: 環論・ネーター環
-  statement: 可換環がネーター環であること（イデアルの昇鎖条件を満たすこと）と、すべてのイデアルが有限生成であることは同値である。
-  statement_en: A commutative ring is Noetherian if and only if every ideal is finitely generated.
+  statement: 可換環$R$について、イデアルの任意の昇鎖$I_0\subseteq I_1\subseteq\cdots$がある番号から先で一定になること（昇鎖条件）と、$R$のすべてのイデアルが有限生成であることは同値である。
+  statement_en: For a commutative ring R, every ascending chain of ideals I_0 ⊆ I_1 ⊆ ... is eventually constant if and only if every ideal of R is finitely generated.
   assumptions:
   - $R$は可換環
   quantifiers:
   - 任意の可換環$R$
-  conclusion: $R$がイデアルの昇鎖条件を満たすことと、$R$のすべてのイデアルが有限生成であることは同値である。
+  conclusion: イデアルの昇鎖条件が成り立つことと、$R$のすべてのイデアルが有限生成であることは同値である。
   answer: |
     $R$を可換環とする。ネーター環とは、イデアルの任意の昇鎖$I_1\subseteq I_2\subseteq\cdots$がある番号から先で一定になる環のことである。
 
@@ -1973,16 +1978,21 @@
   - 'derive: The union is an ideal with finitely many generators.'
   - 'derive: All generators appear at some stage of the chain.'
   - 'conclude: The chain stabilizes there.'
-  openmath: (forall (R) (-> (comm_ring R) (<-> (noetherian_ring R) (forall (I) (-> (ideal_of I R) (finitely_generated_ideal I))))))
+  openmath: (forall (R) (-> (comm_ring R) (<-> (forall (I) (-> (and (forall (n) (-> (in n N) (ideal_of (seq_value I n) R))) (forall (n) (-> (in n N) (subset (seq_value I n) (seq_value I (+ n 1)))))) (exists (k) (and (in k N) (forall (m) (-> (and (in m N) (<= k m)) (= (seq_value I k) (seq_value I m)))))))) (forall (J) (-> (ideal_of J R) (finitely_generated_ideal J))))))
   hard_negative:
     statement: ネーター環のイデアルはすべて単項である。
     reason: ℤ[X]はネーター環だが、イデアル(2, X)は単項でない。
   target: |
-    ∀ (R : Type*) [CommRing R], IsNoetherianRing R ↔ ∀ I : Ideal R, I.FG
+    ∀ (R : Type*) [CommRing R], (∀ I : ℕ → Ideal R, Monotone I → ∃ N, ∀ m, N ≤ m → I N = I m) ↔ ∀ I : Ideal R, I.FG
   proof: |
     by
       intro R _
-      exact isNoetherianRing_iff_ideal_fg R
+      rw [← isNoetherianRing_iff_ideal_fg, isNoetherianRing_iff, ← monotone_stabilizes_iff_noetherian]
+      constructor
+      · intro h f
+        exact h f f.monotone
+      · intro h I hI
+        exact h ⟨I, hI⟩
 - id: noetherian_ascending_chain_stabilizes
   kind: gap
   level: 3
@@ -2007,7 +2017,7 @@
   - 'apply_theorem: Since R is Noetherian, I is finitely generated.'
   - 'derive: The generators all lie in some I_N, so I = I_N.'
   - 'conclude: For m ≥ N, I_N ⊆ I_m ⊆ I = I_N.'
-  openmath: (forall (R I) (-> (and (noetherian_ring R) (forall (n) (and (ideal_of (ideal_sequence_term I n) R) (subset (ideal_sequence_term I n) (ideal_sequence_term I (+ n 1)))))) (exists (N) (forall (m) (-> (<= N m) (= (ideal_sequence_term I N) (ideal_sequence_term I m)))))))
+  openmath: (forall (R I) (-> (and (comm_ring R) (noetherian_ring R) (forall (n) (-> (in n N) (and (ideal_of (seq_value I n) R) (subset (seq_value I n) (seq_value I (+ n 1))))))) (exists (k) (and (in k N) (forall (m) (-> (and (in m N) (<= k m)) (= (seq_value I k) (seq_value I m))))))))
   hard_negative:
     statement: ネーター環のイデアルの降鎖は、ある番号から先で一定になる。
     reason: ℤはネーター環だが、(2)⊋(4)⊋(8)⊋…は一定にならない。
