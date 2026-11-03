@@ -117,10 +117,6 @@ def build_proof_request_processor(
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog
 
     client = replace(_release_openai_client(settings), max_output_tokens=6000)
-    client = replace(
-        client,
-        transport=TimedTransport(client.transport, "provider", client.base_url),
-    )
 
     return ProofRequestProcessor(
         api=api_client,
@@ -245,8 +241,11 @@ def _release_openai_client(settings: AgentSettings) -> OpenAIResponsesClient:
         api_key=settings.openai_api_key,
         base_url=settings.openai_base_url,
         max_output_tokens=settings.openai_max_output_tokens,
-        transport=fresh_process_http_transport(
-            max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+        transport=TimedTransport(
+            fresh_process_http_transport(
+                max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+            ),
+            "provider", settings.openai_base_url,
         ),
     )
 

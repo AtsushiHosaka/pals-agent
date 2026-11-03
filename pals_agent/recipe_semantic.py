@@ -27,6 +27,7 @@ from pals_agent.recipe_semantic_contract import (
     read_batch,
     uuid,
 )
+from pals_agent.runtime_latency import latency_stage
 from pals_agent.usage import capture_usage
 
 RecipeBatch = Callable[[], dict[str, Any]]
@@ -60,7 +61,8 @@ def attempt(
         raise SemanticReuseError("proof_reuse_deadline")
     batch = batch_loader()
     try:
-        rows = read_batch(request, claim_id, batch)
+        with latency_stage("recipe_batch_validate"):
+            rows = read_batch(request, claim_id, batch)
     except (ValueError, TypeError, KeyError, RecursionError) as error:
         raise SemanticReuseError("proof_reuse_recipe_invalid") from error
     if rows is None:
@@ -71,15 +73,17 @@ def attempt(
     known = known_readings(conventions)
     sessions = {key: str(uuid4()) for key in _ROLES}
     try:
-        retrieved_entry_sha256s = rank(rows, request["statement"])
-        inputs = prompts(
-            request,
-            batch,
-            known,
-            assessment_session=sessions["assessment"],
-            review_session=sessions["review"],
-            retrieved_entry_sha256s=retrieved_entry_sha256s,
-        )
+        with latency_stage("recipe_rank"):
+            retrieved_entry_sha256s = rank(rows, request["statement"])
+        with latency_stage("recipe_prompt_build"):
+            inputs = prompts(
+                request,
+                batch,
+                known,
+                assessment_session=sessions["assessment"],
+                review_session=sessions["review"],
+                retrieved_entry_sha256s=retrieved_entry_sha256s,
+            )
     except (ValueError, TypeError, KeyError, RecursionError) as error:
         raise SemanticReuseError("proof_reuse_recipe_invalid") from error
     fixed_client = replace(
@@ -116,7 +120,8 @@ def attempt(
         ):
             raise SemanticReuseError("proof_reuse_token_accounting_failed")
         try:
-            result = parse(raw, batch, retrieved_entry_sha256s=retrieved_entry_sha256s)
+            with latency_stage("recipe_response_parse"):
+                result = parse(raw, batch, retrieved_entry_sha256s=retrieved_entry_sha256s)
         except (ValueError, TypeError, KeyError, RecursionError) as error:
             raise SemanticReuseError("proof_reuse_invalid_response") from error
         return {

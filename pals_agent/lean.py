@@ -4,6 +4,7 @@ import ctypes
 import math
 import os
 import re
+import secrets
 import selectors
 import shutil
 import signal
@@ -15,12 +16,26 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from pals_agent.lean_audit import (
+    TRUSTED_AUDIT_SOURCE,
+    audit_diagnostics,
+    audit_failure,
+    parse_audit_report,
+    statement_mismatch,
+)
 from pals_agent.lean_environment import (
     LakeEnvironmentCache,
     VerificationTiming,
     environment_identity,
     materialize_lake_environment,
     parse_lake_environment,
+)
+from pals_agent.lean_source_policy import (
+    declared_theorem_names,
+    find_source_violation,
+    statement_reference,
+    strip_lean_comments_and_strings,
+    with_auditable_examples,
 )
 from pals_agent.models import Diagnostic, VerificationResult
 
@@ -34,13 +49,6 @@ _SORRY_REPORT_RE = re.compile(
 _TRUSTED_DECLARATION_RE = re.compile(
     r"(^|[^A-Za-z0-9_])(axiom|constant|opaque|unsafe)([^A-Za-z0-9_]|$)"
 )
-_INTERACTIVE_COMMAND_RE = re.compile(r"^\s*#\w+", re.MULTILINE)
-_METAPROGRAMMING_RE = re.compile(
-    r"(^|[^A-Za-z0-9_])"
-    r"(run_cmd|elab|macro|macro_rules|syntax|declare_syntax_cat)"
-    r"([^A-Za-z0-9_]|$)"
-)
-_SYNTAX_QUOTATION_RE = re.compile(r"`\(")
 _DIAGNOSTIC_RE = re.compile(
     r"^(?P<file>.*?):(?P<line>\d+):(?P<column>\d+): "
     r"(?P<severity>error|warning)(?:\((?P<diagnostic_code>[^)]+)\))?: "
@@ -50,7 +58,10 @@ _MIB = 1024 * 1024
 _GIB = 1024 * _MIB
 _ADDRESS_SPACE_LIMIT_BYTES = 16 * _GIB
 _FILE_SIZE_LIMIT_BYTES = 16 * _MIB
-_PROCESS_LIMIT = 64
+# RLIMIT_NPROC counts every process of the UID on the host, and all containers there share one UID,
+# so a low value makes Lean fail on the other containers' threads. The per-container bound is the
+# 64-process cgroup limit that the verifier boundary attests; this only stops a runaway elsewhere.
+_PROCESS_LIMIT = 4096
 _OPEN_FILE_LIMIT = 1024
 _OUTPUT_LIMIT_BYTES = _MIB
 _DEFAULT_CHILD_PATH = "/opt/elan/bin:/usr/local/bin:/usr/bin:/bin"
@@ -69,6 +80,9 @@ class LeanVerifier:
     scratch_dir: Path = Path("/tmp")
     lake_environment_cache: LakeEnvironmentCache | None = None
     timing_observer: Callable[[VerificationTiming], None] | None = None
+    # Recipe admission receipts attest the literal `lake env lean --threads=1 Main.lean`, so that
+    # exact command runs first and the audit artifact comes from a separate compile.
+    literal_admission_command: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "scratch_dir", Path(self.scratch_dir))
@@ -144,53 +158,12 @@ class LeanVerifier:
                 elapsed_ms=0,
             )
 
-        interactive_command = _INTERACTIVE_COMMAND_RE.search(checked_code)
-        if interactive_command:
+        violation = find_source_violation(lean_code)
+        if violation is not None:
             return VerificationResult(
                 success=False,
                 diagnostics=[
-                    Diagnostic(
-                        severity="error",
-                        code="lean.disallowed_interactive_command",
-                        message=(
-                            "Generated Lean code contains an interactive command "
-                            f"`{interactive_command.group(0).strip()}`."
-                        ),
-                    )
-                ],
-                stdout="",
-                stderr="",
-                elapsed_ms=0,
-            )
-
-        metaprogramming = _METAPROGRAMMING_RE.search(checked_code)
-        if metaprogramming:
-            return VerificationResult(
-                success=False,
-                diagnostics=[
-                    Diagnostic(
-                        severity="error",
-                        code="lean.disallowed_metaprogramming",
-                        message=(
-                            "Generated Lean code contains metaprogramming command "
-                            f"`{metaprogramming.group(2)}`."
-                        ),
-                    )
-                ],
-                stdout="",
-                stderr="",
-                elapsed_ms=0,
-            )
-
-        if _SYNTAX_QUOTATION_RE.search(checked_code):
-            return VerificationResult(
-                success=False,
-                diagnostics=[
-                    Diagnostic(
-                        severity="error",
-                        code="lean.disallowed_syntax_quotation",
-                        message="Generated Lean code contains syntax quotation.",
-                    )
+                    Diagnostic(severity="error", code=violation.code, message=violation.message)
                 ],
                 stdout="",
                 stderr="",
@@ -264,10 +237,19 @@ class LeanVerifier:
             lean_file = temporary_dir / "Main.lean"
             lean_file.write_text(lean_code, encoding="utf-8")
             lean_file.chmod(0o400)
+            # A sketch contains holes by construction and never becomes a verified result.
+            audited = not allow_sorry
+            # Receipts attest the literal command, and an `example` leaves no constant to audit.
+            audit_source = with_auditable_examples(lean_code)
+            separate_audit_compile = (
+                self.literal_admission_command or audit_source != lean_code
+            )
+            olean_file = temporary_dir / "Main.olean"
             command, cwd = self._command_for(
                 lean_file,
                 lean_binary=lean_binary,
                 lake_binary=lake_binary,
+                olean_file=olean_file if audited and not separate_audit_compile else None,
             )
             child_environment = {
                 "PATH": self.child_path,
@@ -303,6 +285,22 @@ class LeanVerifier:
                     output_limit_bytes=self.output_limit_bytes,
                 )
             self._observe("compile", compile_started)
+            audit_result: list[Diagnostic] = []
+            if audited and _compiler_accepted(completed):
+                audit_started = time.monotonic()
+                audit_result = self._run_trusted_audit(
+                    lean_code,
+                    separate_compile_source=audit_source if separate_audit_compile else None,
+                    olean_file=olean_file,
+                    command=command,
+                    cwd=cwd,
+                    environment=child_environment,
+                    lean_binary=lean_binary,
+                    lake_binary=lake_binary,
+                    temporary_dir=temporary_dir,
+                    deadline=deadline,
+                )
+                self._observe("audit", audit_started)
 
         elapsed_ms = int((time.monotonic() - started_at) * 1000)
         stderr = completed.stderr
@@ -370,6 +368,9 @@ class LeanVerifier:
         success = completed.returncode == 0 and not any(
             diagnostic.severity == "error" for diagnostic in diagnostics
         )
+        if success and audit_result:
+            success = False
+            diagnostics.extend(audit_result)
         if success:
             diagnostics.append(
                 Diagnostic(
@@ -437,7 +438,7 @@ class LeanVerifier:
                 key, prepare, timeout_seconds=max(0.0, deadline - time.monotonic()),
             )
             return (
-                [lean_binary, "--threads=1", command[-1]],
+                command[command.index(lean_binary) :],
                 materialize_lake_environment(base, delta),
             )
         except (OSError, ValueError, KeyError, TypeError, TimeoutError):
@@ -453,7 +454,12 @@ class LeanVerifier:
         *,
         lean_binary: str,
         lake_binary: str | None,
+        olean_file: Path | None = None,
     ) -> tuple[list[str], Path | None]:
+        # Lean derives the module name for `-o` from its root; the scratch file lies outside cwd.
+        output = (
+            [f"--root={lean_file.parent}", "-o", str(olean_file)] if olean_file is not None else []
+        )
         if self.project_dir is not None:
             if lake_binary is None:
                 raise AssertionError("validated Lake binary is required")
@@ -461,10 +467,110 @@ class LeanVerifier:
                 lake_binary,
                 "env",
                 lean_binary,
+                *output,
                 "--threads=1",
                 str(lean_file),
             ], self.project_dir
-        return [lean_binary, "--threads=1", str(lean_file)], None
+        return [lean_binary, *output, "--threads=1", str(lean_file)], None
+
+    def _run_trusted_audit(
+        self,
+        lean_code: str,
+        *,
+        separate_compile_source: str | None,
+        olean_file: Path,
+        command: list[str],
+        cwd: Path | None,
+        environment: dict[str, str],
+        lean_binary: str,
+        lake_binary: str | None,
+        temporary_dir: Path,
+        deadline: float,
+    ) -> list[Diagnostic]:
+        """Check the compiled artifact in a process that runs no candidate code."""
+
+        def run(arguments: list[str]) -> _ProcessResult | list[Diagnostic]:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return [self._audit_timeout()]
+            result = _run_limited_process(
+                _limited_command(arguments, timeout_seconds=remaining, scratch_dir=temporary_dir),
+                cwd=cwd,
+                environment=environment,
+                timeout_seconds=remaining,
+                output_limit_bytes=self.output_limit_bytes,
+            )
+            if result.timed_out:
+                return [self._audit_timeout()]
+            if result.output_limited:
+                return [
+                    Diagnostic(
+                        severity="error",
+                        code="lean.output_limit",
+                        message="Lean exceeded the combined output limit.",
+                    )
+                ]
+            return result
+
+        audit_dir = temporary_dir / f"audit-{secrets.token_hex(16)}"
+        audit_dir.mkdir(mode=0o700)
+        if separate_compile_source is not None:
+            candidate = audit_dir / "Candidate.lean"
+            candidate.write_text(separate_compile_source, encoding="utf-8")
+            candidate.chmod(0o400)
+            olean_file = audit_dir / "Candidate.olean"
+            artifact_command, _ = self._command_for(
+                candidate,
+                lean_binary=lean_binary,
+                lake_binary=lake_binary,
+                olean_file=olean_file,
+            )
+            compiled = run(artifact_command)
+            if isinstance(compiled, list):
+                return compiled
+            if not _compiler_accepted(compiled):
+                return [audit_failure("Lean did not compile the audit artifact.")]
+        if olean_file.is_symlink() or not olean_file.is_file():
+            return [audit_failure("Lean exited without writing a compiled module.")]
+
+        reference = statement_reference(separate_compile_source or lean_code)
+        if reference is None or find_source_violation(reference) is not None:
+            return [statement_mismatch("A statement could not be read from the written source.")]
+        reference_file = audit_dir / "Statements.lean"
+        reference_file.write_text(reference, encoding="utf-8")
+        reference_file.chmod(0o400)
+
+        nonce = secrets.token_hex(32)
+        audit_file = audit_dir / "Audit.lean"
+        audit_file.write_text(TRUSTED_AUDIT_SOURCE, encoding="utf-8")
+        audit_file.chmod(0o400)
+        lean_arguments = [
+            lean_binary,
+            "--threads=1",
+            "--run",
+            str(audit_file),
+            nonce,
+            str(olean_file),
+            str(reference_file),
+        ]
+        audited = run(
+            [lake_binary, "env", *lean_arguments]
+            if lake_binary is not None and command[0] == lake_binary
+            else lean_arguments
+        )
+        if isinstance(audited, list):
+            return audited
+        report = parse_audit_report(audited.stdout, nonce) if audited.returncode == 0 else None
+        if report is None:
+            return [audit_failure("Trusted Lean audit did not complete for this request.")]
+        return audit_diagnostics(report, declared_theorem_names(lean_code))
+
+    def _audit_timeout(self) -> Diagnostic:
+        return Diagnostic(
+            severity="error",
+            code="lean.timeout",
+            message=f"Lean timed out after {self.timeout_seconds:.1f}s.",
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -474,6 +580,18 @@ class _ProcessResult:
     stderr: str
     timed_out: bool
     output_limited: bool
+
+
+def _compiler_accepted(completed: _ProcessResult) -> bool:
+    return (
+        completed.returncode == 0
+        and not completed.timed_out
+        and not completed.output_limited
+        and not any(
+            diagnostic.severity == "error"
+            for diagnostic in parse_lean_diagnostics(f"{completed.stdout}\n{completed.stderr}")
+        )
+    )
 
 
 def _limited_command(
@@ -687,74 +805,7 @@ def parse_lean_diagnostics(stderr: str) -> list[Diagnostic]:
     return diagnostics
 
 
-def _strip_lean_comments_and_strings(text: str) -> str:
-    lines = []
-    current: list[str] = []
-    index = 0
-    block_depth = 0
-    in_string = False
-    while index < len(text):
-        current_pair = text[index : index + 2]
-        char = text[index]
-
-        if block_depth > 0:
-            if current_pair == "/-":
-                block_depth += 1
-                index += 2
-                continue
-            if current_pair == "-/":
-                block_depth -= 1
-                index += 2
-                continue
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if in_string:
-            if char == "\\":
-                index += 2
-                continue
-            if char == '"':
-                in_string = False
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if current_pair == "/-":
-            block_depth = 1
-            index += 2
-            continue
-
-        if current_pair == "--":
-            newline_index = text.find("\n", index)
-            if newline_index == -1:
-                break
-            lines.append("".join(current))
-            current = []
-            index = newline_index + 1
-            continue
-
-        if char == '"':
-            in_string = True
-            current.append(" ")
-            index += 1
-            continue
-
-        if char == "\n":
-            lines.append("".join(current))
-            current = []
-            index += 1
-            continue
-
-        current.append(char)
-        index += 1
-
-    lines.append("".join(current))
-    return "\n".join(lines)
+_strip_lean_comments_and_strings = strip_lean_comments_and_strings
 
 
 def _text_from_timeout_output(output: bytes | str | None) -> str:

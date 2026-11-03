@@ -157,7 +157,8 @@ def _headers() -> bytes:
 
 def _request(context: ssl.SSLContext, raw_request: bytes) -> tuple[int, dict[str, object]]:
     with (
-        socket.create_connection(("127.0.0.1", 18117), timeout=5) as raw,
+        # Admission runs the attested compile, an audit compile and the trusted audit.
+        socket.create_connection(("127.0.0.1", 18117), timeout=120) as raw,
         context.wrap_socket(raw, server_hostname="verifier.internal") as connection,
     ):
         connection.sendall(raw_request)
