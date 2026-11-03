@@ -44,6 +44,13 @@ def worker_processes_from_env() -> int:
     return parsed
 
 
+def write_ready_marker(marker: Path) -> None:
+    """Publish this process's PID atomically; a supervisor treats a partial marker as hostile."""
+    pending = marker.with_name(f".{marker.name}.{os.getpid()}.pending")
+    pending.write_text(str(os.getpid()), encoding="ascii")
+    os.replace(pending, marker)
+
+
 def _marker_ready(marker: Path, pid: int) -> bool | None:
     try:
         fd = os.open(marker, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)

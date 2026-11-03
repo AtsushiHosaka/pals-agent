@@ -350,3 +350,19 @@ def test_child_reporting_an_sqs_outage_stops_the_lane_without_a_restart(tmp_path
 
 def test_restart_budget_window_reaches_a_crash_every_twelve_minutes():
     assert worker_processes._RESTART_WINDOW_SECONDS / worker_processes._RESTART_BUDGET == 720
+
+
+def test_ready_marker_appears_complete_and_leaves_no_pending_file(tmp_path, monkeypatch) -> None:
+    marker = tmp_path / "ready"
+    replace = worker_processes.os.replace
+
+    def observed_replace(source, destination):
+        assert not marker.exists()
+        assert worker_processes._marker_ready(marker, os.getpid()) is None
+        replace(source, destination)
+
+    monkeypatch.setattr(worker_processes.os, "replace", observed_replace)
+    worker_processes.write_ready_marker(marker)
+
+    assert worker_processes._marker_ready(marker, os.getpid()) is True
+    assert [path.name for path in tmp_path.iterdir()] == ["ready"]

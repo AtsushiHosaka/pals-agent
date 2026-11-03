@@ -53,6 +53,7 @@ from pals_agent.worker_processes import (
     MAX_PROOF_WORKERS,
     run_lane_workers,
     worker_processes_from_env,
+    write_ready_marker,
 )
 
 _SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
@@ -431,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if args.command == "worker":
             if ready_file is not None:
-                ready_file.write_text(str(os.getpid()), encoding="ascii")
+                write_ready_marker(ready_file)
             previous_handlers = {}
             try:
                 for signum in (signal.SIGTERM, signal.SIGINT):
