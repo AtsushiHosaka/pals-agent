@@ -15,6 +15,7 @@ from pals_agent.explanations import (
     ProofOutputReviewError,
     ProofSemanticReviewUnavailable,
     _parse_json_object,
+    _validation_failure_reason,
 )
 from pals_agent.lean_target import LeanTargetDeclaration
 
@@ -860,6 +861,21 @@ def test_validation_failures_are_reported_as_closed_labels(raw_output: str, reas
         )
 
     assert error_info.value.attempt_failures == (reason, reason)
+
+
+@pytest.mark.parametrize(
+    ("message", "reason"),
+    [
+        ("x-squared continuity explanation must start with the proof", "x_squared_opening"),
+        ("x-squared continuity explanation must include reasoning", "x_squared_epsilon_delta"),
+        ("sections must contain between 1 and 20 items", "section_count"),
+        ("duplicate explanation section id: private-text", "duplicate_section"),
+        ("overview must be a non-empty string", "empty_field"),
+        ("private unexpected text", "other"),
+    ],
+)
+def test_other_validation_failures_stay_closed_labels(message: str, reason: str) -> None:
+    assert _validation_failure_reason(ValueError(message)) == reason
 
 
 def test_repeated_final_equation_has_its_own_failure_label() -> None:

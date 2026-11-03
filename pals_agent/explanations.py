@@ -649,6 +649,16 @@ def _validation_failure_reason(exc: Exception) -> str:
         return "repeated_final_equation"
     if "code points" in message:
         return "text_length"
+    if "x-squared continuity explanation must start" in message:
+        return "x_squared_opening"
+    if "x-squared continuity explanation must include" in message:
+        return "x_squared_epsilon_delta"
+    if "sections must contain" in message:
+        return "section_count"
+    if "duplicate explanation section id" in message:
+        return "duplicate_section"
+    if "non-empty string" in message:
+        return "empty_field"
     if isinstance(exc, TypeError):
         return "wrong_type"
     return "other"

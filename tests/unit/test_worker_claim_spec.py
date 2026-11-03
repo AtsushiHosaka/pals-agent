@@ -1051,6 +1051,26 @@ def test_pae_038_clarification_worker_retains_wrong_api_marker_before_claim(
     assert sqs.delete_calls == []
 
 
+def test_deadline_failure_logs_its_reason_without_exception_text(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    clock = FakeClock()
+    sqs = FakeSqs("proof-1")
+    api = ClaimApi(claim_response=_envelope("acquired", 600_000))
+    explainer = RecordingExplainer(
+        error=explanations.ExplanationDeadlineExceeded("PRIVATE LATE OUTPUT")
+    )
+    _install_sqs(monkeypatch, sqs)
+
+    with caplog.at_level("ERROR"):
+        _worker(api, explainer, clock).run_once()
+
+    assert "explanation_generation_failed resource=explanation" in caplog.text
+    assert "reason=deadline " in caplog.text
+    assert "PRIVATE" not in caplog.text
+
+
 def test_pae_015_deadline_failure_uses_fixed_claimed_terminal_code(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
