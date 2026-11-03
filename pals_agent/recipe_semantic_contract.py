@@ -14,6 +14,7 @@ from uuid import UUID
 
 import rfc8785
 
+from pals_agent.learning_policy import LEARNING_POLICY_REVIEW
 from pals_agent.math_conventions import MEANINGS, unknown_readings_named
 
 CONVENTION_IDS = tuple(MEANINGS)
@@ -279,8 +280,10 @@ BASE = (
     "xact unit conversion preserves a\n"
     "quantity: an angle theta degrees is exactly theta*pi/180 radians. A de"
     "gree label and the same converted\n"
-    "radian expression are the SAME angle, not a domain mismatch or a requi"
-    "red change to the stored answer.\n"
+    "radian expression are the SAME mathematical angle, not a domain mismatch. "
+    "This target equivalence does not waive a requested angle presentation: "
+    "check the VERBATIM stored answer separately against unit and school-tool "
+    "constraints; use miss if it needs rewriting.\n"
     "This rule applies to arbitrary angles/variables consistently and in bo"
     "th directions.\n"
     "Likewise, mathematically EXACT representations of the same number do n"
@@ -617,6 +620,7 @@ def prompts(
     policy = BASE.replace(SUBSET_POLICY, FULL_SHOWN_POLICY) if all_shown else BASE
     prefix = (
         policy
+        + "\n" + LEARNING_POLICY_REVIEW
         + "\nCATALOG_DATA:\n"
         + json.dumps(catalog, ensure_ascii=False, separators=(",", ":"))
     )

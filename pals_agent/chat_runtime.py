@@ -14,6 +14,7 @@ from pals_agent.chat_images import (
     chat_input_sha256,
 )
 from pals_agent.figure_calls import FIGURE_INSTRUCTION, labels_occur_in, split_figure
+from pals_agent.learning_policy import LEARNING_POLICY, LEARNING_POLICY_REVIEW
 from pals_agent.linked_chat import linked_chat_scope, validate_generation_settings
 from pals_agent.material_context import MATERIAL_INSTRUCTION, MaterialContext
 from pals_agent.model_roles import RELEASE_MODEL
@@ -157,6 +158,9 @@ class ChatRuntime:
                 + (MATERIAL_INSTRUCTION if materials else "")
                 + _BOUNDARY
                 + _VISUAL
+                + "Preserve explicit angle units, school/curriculum level and permitted proof "
+                "tools from the original context in extracted_statement. Output language alone "
+                "does not identify a country or curriculum. "
                 + "Give a concise rationale. For lean, extracted_statement must be a full "
                 "self-contained faithful task incorporating every relevant premise and goal "
                 "from text, context and images. Preserve requested correctness checks, never "
@@ -263,6 +267,7 @@ class ChatRuntime:
             )
             + _BOUNDARY
             + _VISUAL
+            + LEARNING_POLICY
             + "This is an ordinary explanation, without Lean verification. Do not assert "
             "a final solution, a proof, correctness verdict, or that Lean verified anything. "
             "Explain faithfully, identify uncertainty and do not invent missing image content. "
@@ -312,6 +317,7 @@ class ChatRuntime:
                 else ""
             )
             + _BOUNDARY
+            + LEARNING_POLICY_REVIEW
             + "Reject if this request belongs to lean (including hidden solve/prove/correctness "
             "requests), if the answer decides correctness or provides an unverified proof or "
             "solution, fabricates image content, ignores an image, contains material errors "

@@ -1,6 +1,8 @@
 """Prompt guidance for interpreting mathematical tasks without changing contracts."""
 
-TASK_INTERPRETATION = (
+from pals_agent.learning_policy import LEARNING_POLICY, LEARNING_POLICY_REVIEW
+
+TASK_INTERPRETATION = LEARNING_POLICY + (
     "First identify the requested mathematical task from the current input and resolved "
     "conversation context: prove a supplied claim; compute/evaluate a value; solve for all "
     "objects satisfying conditions; determine a property/classification; decide whether a "
@@ -54,7 +56,7 @@ DERIVE_ANSWER_INSTRUCTION = TASK_INTERPRETATION + (
     "unable to derive one. "
 )
 
-ANSWER_SCOPE_REVIEW = (
+ANSWER_SCOPE_REVIEW = LEARNING_POLICY_REVIEW + (
     "Interpret the original task independently. A compute/solve/determine/decide question may "
     "legitimately produce a new explicit result as its conclusion even though the learner "
     "did not supply that result. This is not a changed goal if it fully answers the original "
@@ -67,7 +69,7 @@ ANSWER_SCOPE_REVIEW = (
     "check that the explanation's yes/no conclusion matches the verified target. "
 )
 
-ANSWER_PRESENTATION = (
+ANSWER_PRESENTATION = LEARNING_POLICY + (
     "When the request asks to compute, solve or determine, give the explicit value, solution "
     "set or classification established by the verified target, followed by its mathematical "
     "derivation and completeness justification when required. Do not present only 'there "
