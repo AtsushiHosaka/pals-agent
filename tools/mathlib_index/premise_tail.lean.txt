@@ -1,0 +1,46 @@
+
+/- Appended by extract_premises.py: dump premises of each `pals_eval_*` theorem. -/
+open Lean Meta in
+partial def palsCollectPremises (env : Environment) (name : Name)
+    (seen : NameSet := {}) : NameSet × Array Name := Id.run do
+  let mut seen := seen.insert name
+  let mut premises : Array Name := #[]
+  let some info := env.find? name | return (seen, premises)
+  let body := (match info with
+    | .thmInfo thm => thm.value
+    | .defnInfo defn => defn.value
+    | .opaqueInfo op => op.value
+    | _ => mkSort levelZero)
+  for used in body.getUsedConstants do
+    if seen.contains used then
+      continue
+    if (env.getModuleIdxFor? used).isNone then
+      let (nextSeen, nested) := palsCollectPremises env used seen
+      seen := nextSeen
+      premises := premises ++ nested
+    else
+      seen := seen.insert used
+      if env.find? used matches some (.thmInfo _) then
+        premises := premises.push used
+  return (seen, premises)
+
+open Lean Meta in
+#eval show MetaM Unit from do
+  let env ← getEnv
+  let notInstance (n : Name) : Bool := !Meta.isInstanceCore env n
+  for (name, info) in env.constants.map₂.toList do
+    unless name.toString.startsWith "pals_eval_" do continue
+    if name.isInternal then continue
+    let (_, premises) := palsCollectPremises env name
+    let shape ← forallTelescope info.type fun xs conclusion => do
+      let mut hypotheses : Array Name := #[]
+      for x in xs do
+        let decl ← x.fvarId!.getDecl
+        if !decl.binderInfo.isInstImplicit then
+          hypotheses := hypotheses ++ decl.type.getUsedConstants.filter notInstance
+      return (conclusion.getUsedConstants.filter notInstance, hypotheses)
+    IO.println <| "PALS_PREMISES " ++ (Json.mkObj [
+      ("name", toJson name.toString),
+      ("conclusion_constants", toJson (shape.1.map (·.toString))),
+      ("hypothesis_constants", toJson (shape.2.toList.eraseDups.map (·.toString))),
+      ("premises", toJson (premises.map (·.toString)))]).compress
