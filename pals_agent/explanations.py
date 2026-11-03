@@ -19,10 +19,11 @@ from pals_agent.lean_target import LeanTargetDeclaration
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
-    r"(?<![A-Za-z0-9_])(?:"
+    r"(?<![A-Za-z0-9_\\])(?:"
     # Keep only terms that are recognisably Lean-specific in ordinary learner prose.
     # English mathematical explanations legitimately use words such as "let", "left",
-    # "right", "continuity", and "theorem".
+    # "right", "continuity", and "theorem". A preceding backslash is a TeX command: `\\omega`
+    # is a Greek letter, not the Lean tactic.
     r"aesop|all_goals|field_simp|gcongr|infer_instance|linarith|native_decide|"
     r"nlinarith|norm_cast|norm_num|omega|rcases|rfl|ring_nf|rw|simpa|simp|subst|tauto"
     r")(?![A-Za-z0-9_])",
@@ -34,6 +35,7 @@ _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
 _BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
     r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
+_EXCERPT_MEMBER_PATTERN = re.compile(r'"excerpt"\s*:\s*"(?:[^"\\]|\\.)*"', re.S)
 _STATED_CONVENTION_INSTRUCTION = """A convention stated in the user theorem statement (for
 example a line beginning with "Conventions:", or that the natural numbers start at 1, or that
 0^0 = 1) is a premise of the claim. The proof may use it directly, and justifying a step by that
@@ -78,9 +80,17 @@ class TextGenerationClient(Protocol):
 class ExplanationGenerationError(RuntimeError):
     """Raised when an LLM response cannot become a Lean-grounded explanation."""
 
-    def __init__(self, message: str, *, attempt_outputs: tuple[str, ...] = ()) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        attempt_outputs: tuple[str, ...] = (),
+        attempt_failures: tuple[str, ...] = (),
+    ) -> None:
         super().__init__(message)
         self.attempt_outputs = attempt_outputs
+        # Closed labels from _validation_failure_reason; safe to log, unlike the message.
+        self.attempt_failures = attempt_failures
 
 
 class ExplanationDeadlineExceeded(ExplanationGenerationError):
@@ -590,6 +600,7 @@ class LeanProofExplainer:
         timeout_seconds: float | None,
     ) -> tuple[Any, str]:
         outputs: list[str] = []
+        failures: list[str] = []
         validation_error = ""
         current_prompt = prompt
         for attempt in range(1, self.max_attempts + 1):
@@ -618,6 +629,7 @@ class LeanProofExplainer:
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 _raise_if_deadline_reached(deadline, self.monotonic)
                 validation_error = str(exc)
+                failures.append(_validation_failure_reason(exc))
                 if attempt < self.max_attempts:
                     current_prompt = (
                         f"{prompt}\n\nYour previous response was invalid: {validation_error}\n"
@@ -631,7 +643,30 @@ class LeanProofExplainer:
             f"The explanation model returned invalid grounded JSON after "
             f"{self.max_attempts} attempts: {validation_error}",
             attempt_outputs=tuple(outputs),
+            attempt_failures=tuple(failures),
         )
+
+
+def _validation_failure_reason(exc: Exception) -> str:
+    """Name the failed check without any model text; validator messages can quote output."""
+    message = str(exc)
+    if isinstance(exc, json.JSONDecodeError):
+        return "json"
+    if isinstance(exc, KeyError):
+        return "missing_field"
+    if "excerpt does not exactly match" in message:
+        return "reference_excerpt"
+    if "Lean reference" in message or "Lean line ranges" in message:
+        return "reference_range"
+    if "must not mention Lean" in message or "must not quote Lean" in message:
+        return "lean_term"
+    if "final equation is repeated" in message:
+        return "repeated_final_equation"
+    if "code points" in message:
+        return "text_length"
+    if isinstance(exc, TypeError):
+        return "wrong_type"
+    return "other"
 
 
 def proof_explanation_from_api(
@@ -880,10 +915,7 @@ def _parse_json_object(raw_output: str) -> dict[str, Any]:
             stripped = stripped[first_newline + 1 : last_fence].strip()
     if not stripped.startswith("{"):
         raise json.JSONDecodeError("response does not contain a JSON object", stripped, 0)
-    # JSON permits `\n` and `\t`, while TeX commands such as `\neq` and `\text`
-    # begin with the same letters. Repair a single TeX command slash before decoding;
-    # correctly escaped JSON backslashes and one-letter JSON escapes remain untouched.
-    stripped = _BARE_LATEX_JSON_BACKSLASH_PATTERN.sub(r"\\\\", stripped)
+    stripped = _repair_bare_latex_backslashes(stripped)
     decoder = json.JSONDecoder()
     try:
         value, end = decoder.raw_decode(stripped)
@@ -901,6 +933,26 @@ def _parse_json_object(raw_output: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise TypeError("response JSON must be an object")
     return value
+
+
+def _repair_bare_latex_backslashes(raw_json: str) -> str:
+    """Repair a single TeX command slash before decoding.
+
+    JSON permits `\\n` and `\\t`, while TeX commands such as `\\neq` and `\\text` begin with
+    the same letters. Correctly escaped JSON backslashes and one-letter JSON escapes remain
+    untouched. An excerpt holds Lean source, not TeX: there `\\n` before an unindented line
+    such as `\\ntheorem` is the line break the prompt asks for.
+    """
+    parts: list[str] = []
+    position = 0
+    for excerpt in _EXCERPT_MEMBER_PATTERN.finditer(raw_json):
+        parts.append(
+            _BARE_LATEX_JSON_BACKSLASH_PATTERN.sub(r"\\\\", raw_json[position : excerpt.start()])
+        )
+        parts.append(excerpt.group(0))
+        position = excerpt.end()
+    parts.append(_BARE_LATEX_JSON_BACKSLASH_PATTERN.sub(r"\\\\", raw_json[position:]))
+    return "".join(parts)
 
 
 def _required_text(payload: dict[str, Any], key: str) -> str:
