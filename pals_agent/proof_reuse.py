@@ -76,7 +76,15 @@ PREMISE_CHECK_INSTRUCTION = (
     "requested goal; do not ask permission to refute a claim they already asked to test. Fill "
     "premise_check. counterexample: if a concrete admissible instance makes the claim false "
     "(try small and boundary values such as 0, 1 and -1, zero or empty objects, and standard "
-    "counterexamples), describe that instance briefly; otherwise an empty string. Never call a "
+    "counterexamples), describe that instance briefly in at most 800 characters; otherwise an "
+    "empty string. counterexample_proof: when counterexample is nonempty, a complete proof in "
+    "request.output_language, in at most 1000 characters, that the instance is a counterexample: "
+    "show that it satisfies every hypothesis of the claim and that the conclusion fails for it, "
+    "by concrete calculation or a named standard fact. Otherwise an empty string. Write this "
+    "proof before deciding: if you cannot complete it, or it shows that the instance is not a "
+    "counterexample, leave both fields empty and never mention that instance in question. The "
+    "system shows counterexample_proof to the learner right after the question, so do not repeat "
+    "it there and keep the question text under 800 characters. Never call a "
     "true claim false. truth_depends_on: each unstated choice, not settled by the statement or "
     "the clarification answers, that changes whether the claim is true (for example the scalar "
     "field of a vector space, real versus complex numbers, natural numbers versus integers, or a "
@@ -135,6 +143,12 @@ _COUNTEREXAMPLE_QUESTION = {
         "您想表達的是哪個命題？也可以照原樣嘗試證明。",
         "照原樣嘗試證明",
     ),
+}
+_COUNTEREXAMPLE_PROOF_LABEL = {
+    "en": "Why this is a counterexample: ",
+    "ja": "反例であることの証明：",
+    "zh-Hans": "这是反例的证明：",
+    "zh-Hant": "這是反例的證明：",
 }
 _CHOICE_QUESTION = {
     "en": "Whether the claim holds depends on: {}. Which do you intend?",
@@ -197,6 +211,7 @@ PREFLIGHT_SCHEMA = _object(
         "premise_check": _object(
             {
                 "counterexample": _STRING,
+                "counterexample_proof": _STRING,
                 "truth_depends_on": _STRINGS,
                 "assumed_defaults": _STRINGS,
                 # MCV-003/005: catalog IDs whose reading changes the claim's truth.
@@ -511,6 +526,10 @@ class ProofReuseRuntime:
                     evidence["premise_check_fallback"] = True
                     return _non_answer({"action": "needs_input", "question": question},
                                        turns, evidence)
+            if preflight["action"] == "needs_input":
+                preflight = dict(preflight, question=_with_counterexample_proof(
+                    preflight["question"], preflight["premise_check"], language
+                ))
             if preflight["action"] != "ready":
                 return _non_answer(preflight, turns, evidence)
             refutation = _refutation_plan(
@@ -1400,8 +1419,14 @@ def _premise_check(value: Any) -> bool:
     return (
         isinstance(value, dict)
         and set(value)
-        == {"counterexample", "truth_depends_on", "assumed_defaults", "conventions"}
-        and _text(value["counterexample"], 1000)
+        == {
+            "counterexample", "counterexample_proof", "truth_depends_on", "assumed_defaults",
+            "conventions",
+        }
+        and _text(value["counterexample"], 800)
+        and _text(value["counterexample_proof"], 1000)
+        # An instance is only a counterexample together with the proof that it is one.
+        and bool(value["counterexample"].strip()) == bool(value["counterexample_proof"].strip())
         and items(value["truth_depends_on"], 4, 300)
         and items(value["assumed_defaults"], 8, 500)
         and isinstance(value["conventions"], list)
@@ -1412,11 +1437,14 @@ def _premise_check(value: Any) -> bool:
 
 _REFUTATION_STATEMENT = {
     "en": "Show that the following claim is false by proving its negation.\n"
-    "Claim: {claim}\nSuggested counterexample: {counterexample}",
+    "Claim: {claim}\nSuggested counterexample: {counterexample}\n"
+    "Proposed proof that it is a counterexample: {proof}",
     "ja": "次の主張が偽であることを、その否定を証明して示せ。\n"
-    "主張：{claim}\n反例の候補：{counterexample}",
-    "zh-Hans": "证明以下命题是错误的（证明其否定）。\n命题：{claim}\n反例候选：{counterexample}",
-    "zh-Hant": "證明以下命題是錯誤的（證明其否定）。\n命題：{claim}\n反例候選：{counterexample}",
+    "主張：{claim}\n反例の候補：{counterexample}\n反例であることの証明案：{proof}",
+    "zh-Hans": "证明以下命题是错误的（证明其否定）。\n命题：{claim}\n反例候选：{counterexample}\n"
+    "这是反例的证明草案：{proof}",
+    "zh-Hant": "證明以下命題是錯誤的（證明其否定）。\n命題：{claim}\n反例候選：{counterexample}\n"
+    "這是反例的證明草案：{proof}",
 }
 
 
@@ -1434,7 +1462,11 @@ def _refutation_plan(
     if not lean_flow or not turns or not counterexample:
         return None
     claim = with_readings(preflight["statement"], evidence.get("applied_conventions") or [])
-    statement = _REFUTATION_STATEMENT[language].format(claim=claim, counterexample=counterexample)
+    statement = _REFUTATION_STATEMENT[language].format(
+        claim=claim,
+        counterexample=counterexample,
+        proof=preflight["premise_check"]["counterexample_proof"].strip(),
+    )
     if len(statement) > 20_000:
         return None
     return {
@@ -1453,13 +1485,29 @@ def _convention_data(conventions: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _with_counterexample_proof(
+    question: dict[str, Any], check: dict[str, Any], language: str
+) -> dict[str, Any]:
+    """Whoever wrote the question, the learner sees why the instance is a counterexample."""
+
+    proof = check["counterexample_proof"].strip()
+    if not proof:
+        return question
+    text = f"{question['text']}\n\n{_COUNTEREXAMPLE_PROOF_LABEL[language]}{proof}"
+    if len(text) > 2000:
+        raise ProofReuseError("proof_reuse_invalid_response")
+    return dict(question, text=text)
+
+
 def _premise_question(check: dict[str, Any], language: str) -> dict[str, Any] | None:
     """The learner is asked first even when the model reported a problem without asking."""
 
     counterexample = check["counterexample"].strip()
     if counterexample:
         text, option = _COUNTEREXAMPLE_QUESTION[language]
-        return {"text": text.format(counterexample), "options": [option]}
+        return _with_counterexample_proof(
+            {"text": text.format(counterexample), "options": [option]}, check, language
+        )
     if check["truth_depends_on"]:
         separator = "、" if language in {"ja", "zh-Hans", "zh-Hant"} else "; "
         choices = separator.join(item.strip() for item in check["truth_depends_on"])

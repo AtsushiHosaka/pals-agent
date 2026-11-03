@@ -93,7 +93,8 @@ def test_history_does_not_suppress_genuinely_missing_current_premise():
 
 def test_history_does_not_count_as_confirmation_of_a_false_new_claim():
     engine, _ = runtime([dict(
-        READY, premise_check=dict(READY["premise_check"], counterexample="f(0)=2, f(1)=1"),
+        READY, premise_check=dict(READY["premise_check"], counterexample="f(0)=2, f(1)=1",
+                                  counterexample_proof="f decreases while f' >= 0"),
     )])
     result = engine.answer(dict(FOLLOWUP, statement="Prove the weakened theorem is true."))
     assert result.outcome == "needs_input"

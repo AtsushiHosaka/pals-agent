@@ -31,7 +31,7 @@ def preflight(case: dict[str, Any], action: str) -> dict[str, Any]:
         "reason": "The domain affects the solution set." if action == "needs_input"
         else "The mathematical request is sufficiently specified.",
         "premise_check": {
-            "counterexample": "", "truth_depends_on": [],
+            "counterexample": "", "counterexample_proof": "", "truth_depends_on": [],
             "assumed_defaults": [], "conventions": [],
         },
     }
