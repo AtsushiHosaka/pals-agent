@@ -74,6 +74,7 @@ _SUPERVISOR_STATUS_RE = re.compile(rb"(-?\d{1,4}) ([01])\n")
 _CGROUP_MEMORY_EVENTS = Path("/sys/fs/cgroup/memory.events")
 _CGROUP_PIDS_EVENTS = Path("/sys/fs/cgroup/pids.events")
 COMPILE_INTERRUPTED = "lean.compile_interrupted"
+COMPILE_DEADLINE_INTERRUPTED = "lean.compile_deadline_interrupted"
 _ACTIVE_SUPERVISORS: set[int] = set()
 _ACTIVE_SUPERVISORS_LOCK = threading.Lock()
 _REAP_ORPHANS = False
@@ -81,6 +82,10 @@ _REAP_ORPHANS = False
 
 class LeanCompileInterrupted(Exception):
     """The compile was killed from outside its proof, so its outcome says nothing about it."""
+
+
+class LeanCompileDeadlineInterrupted(LeanCompileInterrupted):
+    """The deadline passed under cgroup pressure, so a retry may cost another full compile."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,7 +134,15 @@ class LeanVerifier:
             return VerificationResult(
                 success=False,
                 diagnostics=[
-                    Diagnostic(severity="error", code=COMPILE_INTERRUPTED, message=str(error))
+                    Diagnostic(
+                        severity="error",
+                        code=(
+                            COMPILE_DEADLINE_INTERRUPTED
+                            if isinstance(error, LeanCompileDeadlineInterrupted)
+                            else COMPILE_INTERRUPTED
+                        ),
+                        message=str(error),
+                    )
                 ],
                 stdout="",
                 stderr="",
@@ -765,10 +778,10 @@ def _run_limited_process(
     pressured = _cgroup_pressure() > pressure_before
     # Above 128 is how Lake and Elan report a child that a signal killed. A deadline missed while
     # the cgroup refused forks or killed tasks says nothing about the proof either.
-    if not output_limited and (
-        (timed_out and pressured)
-        or (not timed_out and (returncode < 0 or returncode > 128))
-        or (not timed_out and returncode != 0 and pressured)
+    if not output_limited and timed_out and pressured:
+        raise LeanCompileDeadlineInterrupted("Lean missed its deadline under cgroup pressure")
+    if not output_limited and not timed_out and (
+        returncode < 0 or returncode > 128 or (returncode != 0 and pressured)
     ):
         raise LeanCompileInterrupted(f"Lean was terminated with status {returncode}")
     return _ProcessResult(

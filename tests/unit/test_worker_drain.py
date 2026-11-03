@@ -239,6 +239,57 @@ def test_an_error_after_a_long_delivery_is_not_a_continuous_sqs_outage(monkeypat
     assert stops == [True]
 
 
+def test_deliveries_that_keep_failing_after_their_receive_stop_the_lane(monkeypatch):
+    from botocore.exceptions import ClientError
+    from pals_agent.worker import WorkerSqsUnavailableError
+
+    slept = []
+    worker, _queue = _failing_worker(monkeypatch, 0, slept=slept)
+    calls = []
+
+    def run_once(*, on_received=None):
+        calls.append(True)
+        on_received()
+        raise ClientError({"Error": {"Code": "AccessDenied"}}, "DeleteMessage")
+
+    runner = SimpleNamespace(
+        run_once=run_once, monotonic=worker.monotonic, sleep=worker.sleep,
+        settings=worker.settings, lane=worker.lane, stop_requested=lambda: False,
+        _sleep_until_stop=lambda seconds: worker.sleep(seconds),
+    )
+    with pytest.raises(WorkerSqsUnavailableError, match="delivery failure"):
+        SqsProofWorker.run_forever(runner)
+    assert len(calls) == 5
+
+
+def test_a_finished_delivery_clears_the_failed_delivery_count(monkeypatch):
+    from botocore.exceptions import ClientError
+
+    slept = []
+    worker, _queue = _failing_worker(monkeypatch, 0, slept=slept)
+    outcomes = iter(([False] * 4 + [True]) * 3)
+    finished = []
+
+    def run_once(*, on_received=None):
+        on_received()
+        try:
+            good = next(outcomes)
+        except StopIteration:
+            finished.append(True)
+            return True
+        if not good:
+            raise ClientError({"Error": {"Code": "AccessDenied"}}, "DeleteMessage")
+        return True
+
+    runner = SimpleNamespace(
+        run_once=run_once, monotonic=worker.monotonic, sleep=worker.sleep,
+        settings=worker.settings, lane=worker.lane, stop_requested=lambda: bool(finished),
+        _sleep_until_stop=lambda seconds: worker.sleep(seconds),
+    )
+    SqsProofWorker.run_forever(runner)
+    assert finished == [True]
+
+
 def test_cli_removes_readiness_and_exits_nonzero_on_an_sqs_outage(monkeypatch, tmp_path):
     from pals_agent.worker import WorkerSqsUnavailableError
 

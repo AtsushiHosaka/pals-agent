@@ -462,6 +462,36 @@ def test_interrupted_compile_is_a_retryable_infrastructure_failure_not_a_verdict
     assert admission[1]["retryable"] is True
 
 
+def test_deadline_interruption_has_its_own_retryable_code(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(
+        VerificationResult(
+            success=False,
+            diagnostics=[
+                Diagnostic(
+                    severity="error", code="lean.compile_deadline_interrupted", message="late",
+                )
+            ],
+            stdout="",
+            stderr="",
+            elapsed_ms=1,
+        )
+    )
+    with _running_server(server_context, client_spki_sha256, verifier):
+        proof = _request(client_context, _verify_request("example : True := by trivial"))
+        admission = _request(
+            client_context,
+            _recipe_admission_request("example : True := by trivial\n", _admission_context()),
+        )
+    assert proof[0] == 503
+    assert proof[1]["error_code"] == "verifier_compile_deadline_interrupted"
+    assert proof[1]["retryable"] is True
+    assert admission[0] == 503
+    assert admission[1]["failure_code"] == "verifier_not_ready"
+
+
 def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(
     tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
 ) -> None:

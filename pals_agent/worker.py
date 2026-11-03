@@ -89,6 +89,9 @@ _SQS_BACKOFF_MAX_SECONDS: Final = 60.0
 # Long enough to ride out a brownout or credential rotation, short enough that a lane which cannot
 # consume does not keep reporting healthy past what an operator would accept as an outage.
 _SQS_OUTAGE_LIMIT_SECONDS: Final = 900.0
+# Deliveries that came in but could not be finished with SQS, such as a denied delete. A job can
+# outlast the outage limit, so these are counted rather than timed.
+_SQS_FAILED_DELIVERY_LIMIT: Final = 5
 
 
 def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
@@ -119,9 +122,12 @@ _MODEL_ARTIFACT_URI_RE = re.compile(
 )
 _OPENMATH_ROLE_MODEL = fixed_model_default(ModelRole.OPENMATH)
 _TERMINAL_MARGIN_SECONDS: Final = 30.0
-_CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 330.0
+# An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
+# interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
+_CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
+_CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
 _MAX_EXPLANATION_MODEL_CALLS: Final = 5
 _STATUS_CONTEXT_SCHEMA: Final = "pals.proof-status-context.v1"
 _CLARIFICATION_DISPATCH_SCHEMA_VERSION: Final = "pals.proof-clarification-dispatch.v1"
@@ -460,31 +466,44 @@ class SqsProofWorker:
         # acknowledge a delivery merely because shutdown was requested.
         failures = 0
         outage_started = 0.0
+        failed_deliveries = 0
+        received = False
 
         def receive_succeeded() -> None:
             # A later error on this delivery may come after a long job, not a continuous outage.
-            nonlocal failures
+            nonlocal failures, received
             failures = 0
+            received = True
 
         while not self.stop_requested():
+            received = False
             try:
                 processed = self.run_once(on_received=receive_succeeded)
             except (BotoCoreError, ClientError) as error:
                 # SQS was unreachable. An undeleted receipt returns after its visibility timeout
                 # and the API claim fences a repeat, so waiting here loses nothing.
-                if failures == 0:
-                    outage_started = self.monotonic()
-                failures += 1
-                if self.monotonic() - outage_started >= _SQS_OUTAGE_LIMIT_SECONDS:
-                    raise WorkerSqsUnavailableError("SQS outage limit exceeded") from error
-                delay = min(_SQS_BACKOFF_MAX_SECONDS, 2.0 ** min(failures, 8))
+                if received:
+                    failed_deliveries += 1
+                    consecutive = failed_deliveries
+                    if failed_deliveries >= _SQS_FAILED_DELIVERY_LIMIT:
+                        raise WorkerSqsUnavailableError("SQS delivery failure limit") from error
+                else:
+                    if failures == 0:
+                        outage_started = self.monotonic()
+                    failures += 1
+                    consecutive = failures
+                    if self.monotonic() - outage_started >= _SQS_OUTAGE_LIMIT_SECONDS:
+                        raise WorkerSqsUnavailableError("SQS outage limit exceeded") from error
+                delay = min(_SQS_BACKOFF_MAX_SECONDS, 2.0 ** min(consecutive, 8))
                 _logger.error(
                     "worker_sqs_unavailable lane=%s error=%s consecutive=%d delay_seconds=%.0f",
-                    self.lane, type(error).__name__, failures, delay,
+                    self.lane, type(error).__name__, consecutive, delay,
                 )
                 self._sleep_until_stop(delay)
                 continue
             failures = 0
+            if processed:
+                failed_deliveries = 0
             if not processed and not self.stop_requested():
                 self.sleep(self.settings.worker_idle_sleep_seconds)
 
@@ -1145,10 +1164,11 @@ class SqsProofWorker:
     ) -> dict[str, Any] | None:
         """Wait for API-owned Lean reconciliation without consuming SQS receives.
 
-        A generation delivery already has a one-hour visibility lease.  A later delivery that
-        discovers a persisted candidate does not, so it receives a bounded visibility extension
-        before polling.  The timeout is longer than the reconciler's 310-second lease and leaves
-        the standard 30-second terminal margin.
+        A generation delivery keeps the rest of its one-hour lease for the first refresh interval;
+        a later delivery that discovers a persisted candidate has no such lease, so it extends
+        visibility before polling.  Either way a longer wait keeps renewing a bounded extension,
+        because generation may already have spent that hour.  A shutdown stops waiting: the
+        reconciler owns the compile, and the undeleted receipt finds the result later.
         """
 
         if refresh_visibility:
@@ -1156,7 +1176,9 @@ class SqsProofWorker:
                 extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
             except Exception:
                 return None
-        deadline = self.monotonic() + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
+        started = self.monotonic()
+        deadline = started + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
+        next_refresh = started + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
         with latency_stage("lean_reconciliation_wait"):
             while True:
                 note_latency("reconciliation_polls", 1)
@@ -1170,9 +1192,16 @@ class SqsProofWorker:
                 ):
                     _note_verification_elapsed(proof_job)
                     return proof_job
-                remaining = deadline - self.monotonic()
-                if remaining <= 0:
+                now = self.monotonic()
+                remaining = deadline - now
+                if remaining <= 0 or self.stop_requested():
                     return None
+                if now >= next_refresh:
+                    try:
+                        extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
+                    except Exception:
+                        return None
+                    next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
                 self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:

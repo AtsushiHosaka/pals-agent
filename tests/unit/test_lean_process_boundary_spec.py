@@ -233,7 +233,7 @@ def test_timeout_is_an_interruption_only_under_cgroup_pressure(
     assert _run(["/bin/sh", "-c", "exit 0"]).timed_out is True
     counts = iter([0, 1])
     monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: next(counts))
-    with pytest.raises(lean_module.LeanCompileInterrupted):
+    with pytest.raises(lean_module.LeanCompileDeadlineInterrupted):
         _run(["/bin/sh", "-c", "exit 0"])
 
 

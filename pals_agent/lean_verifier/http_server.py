@@ -23,13 +23,16 @@ import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
-from pals_agent.lean import COMPILE_INTERRUPTED
+from pals_agent.lean import COMPILE_DEADLINE_INTERRUPTED, COMPILE_INTERRUPTED
 from pals_agent.models import VerificationResult
 
 _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
 _READINESS_SCHEMA_VERSION: Final = "pals.isolated-verifier-readiness.v1"
 _ATTESTATION_SCHEMA_VERSION: Final = "pals.verifier-attestation.v1"
 _ERROR_SCHEMA_VERSION: Final = "pals.isolated-verifier-error.v1"
+_INTERRUPTED_FAILURES: Final = frozenset(
+    {"verifier_compile_interrupted", "verifier_compile_deadline_interrupted"}
+)
 _ADMISSION_REQUEST_SCHEMA_VERSION: Final = "pals.recipe-admission-verifier-request.v1"
 _ADMISSION_RESULT_SCHEMA_VERSION: Final = "pals.recipe-admission-verifier-result.v1"
 _ADMISSION_COMMAND_SCHEMA_VERSION: Final = "pals.recipe-admission-compiler-command.v1"
@@ -304,7 +307,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         failure_code = _failure_code(result)
         if failure_code == "verifier_timeout":
             self._error(504, failure_code, request["proof_job_id"], retryable=True)
-        elif failure_code == "verifier_compile_interrupted":
+        elif failure_code in _INTERRUPTED_FAILURES:
             self._error(503, failure_code, request["proof_job_id"], retryable=True)
         else:
             self._error(
@@ -372,7 +375,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
 
         if not result.success:
             failure_code = _failure_code(result)
-            if failure_code == "verifier_compile_interrupted":
+            if failure_code in _INTERRUPTED_FAILURES:
                 # The admission transport's retryable registry is closed; see the busy path above.
                 self._admission_error(
                     503,
@@ -805,6 +808,8 @@ def _canonical_uuid4(value: UUID) -> str | None:
 
 
 def _failure_code(result: VerificationResult) -> str:
+    if any(item.code == COMPILE_DEADLINE_INTERRUPTED for item in result.diagnostics):
+        return "verifier_compile_deadline_interrupted"
     if any(item.code == COMPILE_INTERRUPTED for item in result.diagnostics):
         return "verifier_compile_interrupted"
     if any(item.code in {"lean.timeout", "lean.verifier_timeout"} for item in result.diagnostics):
