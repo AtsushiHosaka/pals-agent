@@ -1248,14 +1248,13 @@
     $\gcd(d,a)=1$を示す。$n=\deg f$、$f'=f-aX^n$とおく。$f'=0$なら$f=aX^n$が原始的なので$a$は単元であり、主張は明らかである。$f'\neq 0$なら$f'=c(f')f_0$（$f_0$は原始的）と書ける。$\deg f_0<\deg f$なので、帰納法の仮定より$f_0g$は原始的であり、性質1より$c(f'g)=c(f')$である。$fg=f'g+aX^ng$なので、$fg$と$f'g$の対応する係数の差は$a$の倍数である。よって、$fg$の係数全体と$a$の公約元は、$f'g$の係数全体と$a$の公約元に一致する。したがって$\gcd(d,a)=\gcd(c(f'g),a)=\gcd(c(f'),a)=c(f)=1$である。
 
     $f$と$g$を入れ替えて同じ議論をすると$\gcd(d,b)=1$である。$\gcd(d,a)=1$と$d\mid ab$に性質2を使うと$d\mid b$である。すると$d=\gcd(d,b)=1$である。よって$fg$は原始的である。
-  strategy: Reduce modulo a prime divisor of the content and use that the reduced polynomial ring is a domain.
+  strategy: Induct on the total degree, showing the content of fg is coprime to both leading coefficients.
   sketch:
-  - 'setup: Suppose fg is not primitive, and take a prime p dividing all its coefficients.'
-  - 'translate: Reduce coefficients modulo p.'
-  - 'derive: The polynomial ring over the domain R/(p) is a domain.'
-  - 'derive: The image of fg vanishes, so the image of f or g vanishes.'
-  - 'contradiction: Then p divides every coefficient of f or g.'
-  - 'conclude: The general GCD case follows by multiplicativity of content.'
+  - 'setup: Let d be the content of fg, which divides the product of the leading coefficients a and b.'
+  - 'derive: Remove the leading term of f, write the rest as a content times a primitive polynomial, and apply the induction hypothesis.'
+  - 'derive: Coefficients of fg and of the shorter product differ by multiples of a, so gcd(d, a) = 1.'
+  - 'derive: Swapping f and g gives gcd(d, b) = 1.'
+  - 'conclude: Since d divides ab and is coprime to a, it divides b, so d is a unit.'
   openmath: (forall (R f g) (-> (and (gcd_domain R) (in f (polynomial_ring R)) (in g (polynomial_ring R)) (primitive_polynomial f) (primitive_polynomial g)) (primitive_polynomial (* f g))))
   hard_negative:
     statement: 原始多項式の和は原始多項式である。

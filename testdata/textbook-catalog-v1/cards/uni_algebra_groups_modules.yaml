@@ -1,0 +1,1301 @@
+- id: stabilizer_of_translated_point
+  kind: gap
+  level: 2
+  topic: 群作用・固定部分群の共役
+  statement: 群$G$が集合$X$に作用するとき、$g,h\in G$と$x\in X$について、$h$が$gx$を固定することと$g^{-1}hg$が$x$を固定することは同値である。つまり$\mathrm{Stab}(gx)=g\,\mathrm{Stab}(x)\,g^{-1}$である。
+  statement_en: For a group G acting on a set X, elements g, h of G and a point x, h fixes gx if and only if g⁻¹hg fixes x; hence Stab(gx) = g Stab(x) g⁻¹.
+  assumptions:
+  - $G$は群
+  - $G$は集合$X$に作用する
+  quantifiers:
+  - 任意の$g,h\in G$
+  - 任意の$x\in X$
+  conclusion: $h\in\mathrm{Stab}(gx)$と$g^{-1}hg\in\mathrm{Stab}(x)$は同値である。
+  answer: |
+    $G$を群、$X$を$G$が作用する集合とし、$g,h\in G$、$x\in X$とする。等式$h(gx)=gx$の両辺に左から$g^{-1}$を作用させると$g^{-1}(h(gx))=x$を得る。作用の結合律より左辺は$(g^{-1}hg)x$に等しい。逆に$(g^{-1}hg)x=x$の両辺に$g$を作用させると$h(gx)=gx$に戻る。したがって$h\in\mathrm{Stab}(gx)$と$g^{-1}hg\in\mathrm{Stab}(x)$は同値であり、$\mathrm{Stab}(gx)=g\,\mathrm{Stab}(x)\,g^{-1}$である。
+  strategy: Act on the fixing equation by g⁻¹ and use compatibility of the action.
+  sketch:
+  - 'setup: Write the condition h(gx) = gx.'
+  - 'derive: Apply g⁻¹ to both sides and use compatibility to get (g⁻¹hg)x = x.'
+  - 'conclude: Applying g reverses the step, so the two conditions are equivalent.'
+  openmath: (forall (G X g h x) (-> (group_action G X) (<-> (in h (action_stabilizer G (group_act g x))) (in (group_mul (group_mul (group_inv g) h) g) (action_stabilizer G x)))))
+  hard_negative:
+    statement: 同じ軌道の2点$x,gx$の固定部分群はつねに等しい。
+    reason: $S_3$の$\{1,2,3\}$への作用で、$1$の固定部分群は$\{1,(2\ 3)\}$、$2$の固定部分群は$\{1,(1\ 3)\}$であり異なる。一般には共役になるだけである。
+  target: |
+    ∀ (G X : Type*) [Group G] [MulAction G X] (g h : G) (x : X), h ∈ MulAction.stabilizer G (g • x) ↔ g⁻¹ * h * g ∈ MulAction.stabilizer G x
+  proof: |
+    by
+      intro G X _ _ g h x
+      rw [MulAction.mem_stabilizer_iff, MulAction.mem_stabilizer_iff, mul_smul, mul_smul, inv_smul_eq_iff]
+- id: action_kernel_is_intersection_of_stabilizers
+  kind: gap
+  level: 2
+  topic: 群作用・作用の核
+  statement: 群$G$の集合$X$への作用が定める準同型$G\to\mathrm{Sym}(X)$の核は、全ての点の固定部分群の共通部分に等しい。
+  statement_en: The kernel of the homomorphism from G to Sym(X) given by an action of G on X is the intersection of the stabilizers of all points of X.
+  assumptions:
+  - $G$は群
+  - $G$は集合$X$に作用する
+  quantifiers:
+  - 任意の$g\in G$
+  conclusion: $g$が核に入ることと、全ての$x\in X$で$g\in\mathrm{Stab}(x)$であることは同値である。
+  answer: |
+    $G$を群、$X$を$G$が作用する集合とし、$\rho\colon G\to\mathrm{Sym}(X)$を$\rho(g)(x)=gx$で定まる準同型とする。$g\in G$が核に入るのは、$\rho(g)$が恒等置換であるとき、すなわち全ての$x\in X$で$gx=x$であるときである。$gx=x$は$g\in\mathrm{Stab}(x)$と同じ条件である。よって$\ker\rho=\bigcap_{x\in X}\mathrm{Stab}(x)$である。
+  strategy: Unfold membership in the kernel as pointwise equality of permutations.
+  sketch:
+  - 'translate: g is in the kernel exactly when the permutation of g is the identity.'
+  - 'derive: Equality of permutations means gx = x for every x.'
+  - 'conclude: This is membership in every stabilizer.'
+  openmath: (forall (G X g) (-> (group_action G X) (<-> (in g (action_kernel G X)) (forall (x) (-> (in x X) (in g (action_stabilizer G x)))))))
+  hard_negative:
+    statement: 作用の核は1つの点の固定部分群に等しい。
+    reason: $S_3$の$\{1,2,3\}$への作用では核は自明だが、$1$の固定部分群は位数$2$である。
+  target: |
+    ∀ (G X : Type*) [Group G] [MulAction G X] (g : G), g ∈ (MulAction.toPermHom G X).ker ↔ ∀ x : X, g ∈ MulAction.stabilizer G x
+  proof: |
+    by
+      intro G X _ _ g
+      rw [MonoidHom.mem_ker, Equiv.ext_iff]
+      simp [MulAction.mem_stabilizer_iff]
+- id: p_group_action_fixed_points_congruent
+  kind: textbook
+  level: 3
+  topic: 群作用・p群の不動点
+  statement: 素数$p$と自然数$n$について、位数$p^n$の群$G$が有限集合$X$に作用するとき、$|X|\equiv|X^G|\pmod p$である。ここで$X^G$は$G$の全ての元で固定される点の集合である。
+  statement_en: If a group G of order p^n, with p prime, acts on a finite set X, then |X| ≡ |X^G| modulo p, where X^G is the set of points fixed by all of G.
+  assumptions:
+  - $p$は素数
+  - $G$は位数$p^n$の群
+  - $G$は有限集合$X$に作用する
+  quantifiers:
+  - 任意の素数$p$と自然数$n$
+  conclusion: $|X|\equiv|X^G|\pmod p$である。
+  answer: |
+    $p$を素数、$n$を自然数、$G$を位数$p^n$の群とし、$G$が有限集合$X$に作用するとする。$X$は軌道の非交和であるから、$|X|$は軌道の大きさの和である。軌道固定部分群定理より各軌道の大きさは$|G|=p^n$の約数なので、$p$の冪である。大きさが$1$の軌道は$X^G$の点と1対1に対応し、それ以外の軌道の大きさは$p$で割り切れる。よって$|X|$から$|X^G|$を引いた値は$p$の倍数であり、$|X|\equiv|X^G|\pmod p$が成り立つ。
+  strategy: Split X into orbits and observe that non-singleton orbits have size divisible by p.
+  sketch:
+  - 'setup: Write |X| as the sum of the orbit sizes.'
+  - 'apply_theorem: By orbit-stabilizer every orbit size divides p^n.'
+  - 'derive: Orbits of size 1 are exactly the points of X^G.'
+  - 'derive: Every other orbit has size divisible by p.'
+  - 'conclude: Reducing modulo p gives |X| ≡ |X^G|.'
+  openmath: (forall (G X p n) (-> (and (group_action G X) (finite_set X) (in p P) (= (size G) (^ p n))) (= (nat_mod (size X) p) (nat_mod (size (action_common_fixed_points G X)) p))))
+  hard_negative:
+    statement: 位数が$p$の冪でない群の作用でも、$|X|\equiv|X^G|\pmod p$が成り立つ。
+    reason: 位数$3$の巡回群が$3$点の集合に回転で作用すると不動点はなく、$p=2$で$3\not\equiv0$となる。
+  target: |
+    ∀ (G X : Type*) [Group G] [MulAction G X] (p n : ℕ) [Fact p.Prime] [Finite X], Nat.card G = p ^ n → Nat.card X ≡ Nat.card (MulAction.fixedPoints G X) [MOD p]
+  proof: |
+    by
+      intro G X _ _ p n _ _ hcard
+      have hG : IsPGroup p G := IsPGroup.of_card hcard
+      exact hG.card_modEq_card_fixedPoints X
+- id: card_eq_sum_of_orbit_sizes
+  kind: gap
+  level: 2
+  topic: 群作用・軌道分解
+  statement: 群$G$が有限集合$X$に作用するとき、$|X|$は全ての軌道の大きさの和に等しい。
+  statement_en: If a group G acts on a finite set X, then |X| is the sum of the sizes of the orbits.
+  assumptions:
+  - $G$は群
+  - $G$は有限集合$X$に作用する
+  quantifiers:
+  - 任意の群$G$と有限集合$X$
+  conclusion: $|X|=\sum_{\omega\in X/G}|\omega|$である。
+  answer: |
+    $G$を群、$X$を$G$が作用する有限集合とし、$X/G$を軌道全体の集合とする。$x,y\in X$について「$y=gx$となる$g\in G$がある」という関係は、単位元、逆元、積の存在から同値関係である。その同値類が軌道なので、軌道全体は$X$の分割をなす。有限集合を互いに交わらない部分集合に分けると元の個数は各部分の個数の和になるから、$|X|=\sum_{\omega\in X/G}|\omega|$である。
+  strategy: Orbits are the classes of an equivalence relation, so they partition X.
+  sketch:
+  - 'setup: Define x ~ y when y lies in the orbit of x.'
+  - 'derive: The group axioms make this an equivalence relation whose classes are the orbits.'
+  - 'conclude: Counting a partition gives the sum of the orbit sizes.'
+  openmath: (forall (G X) (-> (and (group_action G X) (finite_set X)) (= (size X) (finset_sum (action_orbit_set G X) (lambda (w) (size w))))))
+  hard_negative:
+    statement: 群$G$が有限集合$X$に作用するとき、$|X|$は軌道の個数と$|G|$の積に等しい。
+    reason: 各軌道の大きさは$|G|$とは限らない。$S_3$の$\{1,2,3\}$への作用は軌道が$1$個で$|G|=6$だが$|X|=3$である。
+  target: |
+    ∀ (G X : Type*) [Group G] [MulAction G X] [Fintype X] [Fintype (MulAction.orbitRel.Quotient G X)], Nat.card X = ∑ ω : MulAction.orbitRel.Quotient G X, Nat.card ω.orbit
+  proof: |
+    by
+      intro G X _ _ _ _
+      rw [Nat.card_congr (MulAction.selfEquivSigmaOrbits' G X), Nat.card_sigma]
+- id: normal_core_index_dvd_factorial
+  kind: textbook
+  level: 3
+  topic: 群作用・剰余類への作用と正規核
+  statement: 群$G$の部分群$H$の指数$n$が有限なら、$H$に含まれる$G$の正規部分群$N$で、指数$[G:N]$が$n!$を割り切るものが存在する。
+  statement_en: If a subgroup H of a group G has finite index n, then H contains a normal subgroup N of G whose index [G:N] divides n!.
+  assumptions:
+  - $G$は群
+  - $H$は$G$の部分群
+  - $[G:H]=n$は有限
+  quantifiers:
+  - 任意の群$G$とその有限指数部分群$H$
+  conclusion: $N\subseteq H$かつ$[G:N]\mid n!$を満たす正規部分群$N$が存在する。
+  answer: |
+    $G$を群、$H$を指数$n$が有限の部分群とする。$G$は左剰余類の集合$G/H$に左からの積で作用し、準同型$\rho\colon G\to\mathrm{Sym}(G/H)$を定める。$|G/H|=n$なので$|\mathrm{Sym}(G/H)|=n!$である。$N=\ker\rho$とおくと$N$は$G$の正規部分群である。$g\in N$は剰余類$H$を固定するから$gH=H$となり、$g\in H$である。よって$N\subseteq H$である。第一同型定理より$[G:N]=|\mathrm{im}\,\rho|$であり、ラグランジュの定理より$|\mathrm{im}\,\rho|$は$n!$を割り切る。
+  strategy: Take the kernel of the left multiplication action on the cosets of H.
+  sketch:
+  - 'construct: Let G act on the n left cosets of H, giving a homomorphism to a symmetric group of order n!.'
+  - 'setup: Let N be the kernel, which is normal.'
+  - 'derive: An element of N fixes the coset H, so it lies in H.'
+  - 'apply_theorem: The first isomorphism theorem gives [G:N] = |im|.'
+  - 'conclude: Lagrange shows that |im| divides n!.'
+  openmath: (forall (G H n) (-> (and (group G) (subgroup_of H G) (= (subgroup_index H G) n) (!= n 0)) (exists (U) (and (normal_subgroup U G) (subset U H) (dvd (subgroup_index U G) (factorial n))))))
+  hard_negative:
+    statement: 指数$n$が有限の部分群$H$はそれ自身が正規であり、$[G:H]\mid n!$を満たす。
+    reason: $S_3$の部分群$\{1,(1\ 2)\}$は指数$3$だが正規でない。正規になるのは$H$に含まれる核のほうである。
+  target: |
+    ∀ (G : Type*) [Group G] (H : Subgroup G) (n : ℕ), H.index = n → n ≠ 0 → ∃ N : Subgroup G, N.Normal ∧ N ≤ H ∧ N.index ∣ n.factorial
+  proof: |
+    by
+      intro G _ H n hn hn0
+      refine ⟨H.normalCore, inferInstance, H.normalCore_le, ?_⟩
+      have : Finite (G ⧸ H) := by
+        apply Nat.finite_of_card_ne_zero
+        rw [← Subgroup.index_eq_card, hn]; exact hn0
+      rw [Subgroup.normalCore_eq_ker, Subgroup.index_ker]
+      have h1 := Subgroup.card_subgroup_dvd_card (MulAction.toPermHom G (G ⧸ H)).range
+      rwa [Nat.card_perm, ← Subgroup.index_eq_card, hn] at h1
+- id: subgroup_of_smallest_prime_index_normal
+  kind: textbook
+  level: 3
+  topic: 群作用・最小素数指数の部分群
+  statement: 有限群$G$の位数を割る最小の素数を$p$とする。指数が$p$である$G$の部分群は正規である。
+  statement_en: Let p be the smallest prime dividing the order of a finite group G. Every subgroup of G of index p is normal.
+  assumptions:
+  - $G$は有限群
+  - $p$は$|G|$を割る最小の素数
+  - $H$は指数$p$の部分群
+  quantifiers:
+  - 任意の有限群$G$とその部分群$H$
+  conclusion: $H$は$G$の正規部分群である。
+  answer: |
+    $G$を有限群、$p$を$|G|$を割る最小の素数、$H$を指数$p$の部分群とする。$G$の$G/H$への左からの作用の核を$N$とすると、$N$は正規部分群で$N\subseteq H$であり、$[G:N]$は$|\mathrm{Sym}(G/H)|=p!$を割り切る。$k=[H:N]$とおくと$[G:N]=pk$なので、$pk\mid p!$より$k\mid(p-1)!$である。$k>1$とし、$k$の素因数を$q$とする。$q\mid(p-1)!$より$q<p$である。一方で$k$は$|G|$を割るから$q\mid|G|$であり、$p$の最小性に反する。よって$k=1$であり、$H=N$は正規である。
+  strategy: Compare the prime factors of [H:N] with p for the kernel N of the action on cosets.
+  sketch:
+  - 'construct: Let N be the kernel of the action of G on the p cosets of H.'
+  - 'derive: Then [G:N] divides p!, and writing [G:N] = pk gives k | (p-1)!.'
+  - 'contradiction: A prime factor q of k would satisfy q < p and q | |G|, against minimality of p.'
+  - 'conclude: So k = 1, H = N, and H is normal.'
+  openmath: (forall (G H p) (-> (and (finite_group G) (subgroup_of H G) (in p P) (dvd p (size G)) (forall (q) (-> (and (in q P) (dvd q (size G))) (<= p q))) (= (subgroup_index H G) p)) (normal_subgroup H G)))
+  hard_negative:
+    statement: 有限群で指数が素数である部分群は全て正規である。
+    reason: $S_3$の部分群$\{1,(1\ 2)\}$の指数は素数$3$だが正規でない。$3$は$|S_3|$の最小の素因数ではない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (H : Subgroup G) (p : ℕ), p.Prime → p ∣ Nat.card G → (∀ q : ℕ, q.Prime → q ∣ Nat.card G → p ≤ q) → H.index = p → H.Normal
+  proof: |
+    by
+      intro G _ _ H p hp hdvd hmin hH
+      have hne : Nat.card G ≠ 1 := by
+        intro h; rw [h] at hdvd; exact hp.one_lt.ne' (Nat.dvd_one.mp hdvd)
+      have hfac : p = (Nat.card G).minFac :=
+        le_antisymm (hmin _ (Nat.minFac_prime hne) (Nat.minFac_dvd _)) (Nat.minFac_le_of_dvd hp.two_le hdvd)
+      exact Subgroup.normal_of_index_eq_minFac_card (hH.trans hfac)
+- id: order_of_conjugate_and_swapped_product
+  kind: gap
+  level: 2
+  topic: 群論・元の位数と共役
+  statement: 群$G$の元$a,b$について、$bab^{-1}$と$a$の位数は等しく、$ab$と$ba$の位数も等しい。どちらの等式も無限位数の場合を含む。
+  statement_en: For elements a, b of a group, bab⁻¹ and a have the same order, and ab and ba have the same order, including the case of infinite order.
+  assumptions:
+  - $G$は群
+  - $a,b\in G$
+  quantifiers:
+  - 任意の$a,b\in G$
+  conclusion: $\mathrm{ord}(bab^{-1})=\mathrm{ord}(a)$かつ$\mathrm{ord}(ab)=\mathrm{ord}(ba)$である。
+  answer: |
+    $G$を群、$a,b\in G$とする。正の整数$n$について$(bab^{-1})^n=ba^nb^{-1}$であり、これが単位元になるのは$a^n=1$のときに限る。したがって$(bab^{-1})^n=1$となる$n$の集合と$a^n=1$となる$n$の集合は一致し、両者の位数は等しい。その集合が空なら両者とも無限位数である。次に$ab=a(ba)a^{-1}$であるから、$ab$は$ba$の共役である。前半を適用すると$ab$と$ba$の位数は等しい。
+  strategy: Conjugation preserves the set of exponents killing an element, and ab is a conjugate of ba.
+  sketch:
+  - 'derive: Compute (bab⁻¹)^n = b a^n b⁻¹.'
+  - 'translate: So the exponents n killing bab⁻¹ and a coincide.'
+  - 'derive: Write ab = a(ba)a⁻¹.'
+  - 'conclude: Apply the conjugation claim to ba.'
+  openmath: (forall (G a b) (-> (and (group G) (in a G) (in b G)) (and (= (element_order (group_mul (group_mul b a) (group_inv b))) (element_order a)) (= (element_order (group_mul a b)) (element_order (group_mul b a))))))
+  hard_negative:
+    statement: 群の元$a,b$について、$ab$の位数は$a$の位数と$b$の位数の積である。
+    reason: 位数$2$の巡回群の生成元$a$で$b=a$とすると、$ab$は単位元で位数$1$だが、位数の積は$4$である。
+  target: |
+    ∀ (G : Type*) [Group G] (a b : G), orderOf (b * a * b⁻¹) = orderOf a ∧ orderOf (a * b) = orderOf (b * a)
+  proof: |
+    by
+      intro G _ a b
+      have key : ∀ x y : G, orderOf (y * x * y⁻¹) = orderOf x := by
+        intro x y
+        have := orderOf_injective (MulAut.conj y).toMonoidHom (MulAut.conj y).injective x
+        simpa [MulAut.conj_apply] using this
+      refine ⟨key a b, ?_⟩
+      have := key (b * a) a
+      rw [show a * (b * a) * a⁻¹ = a * b by group] at this
+      exact this
+- id: order_of_hom_image_dvd
+  kind: gap
+  level: 2
+  topic: 群論・準同型と元の位数
+  statement: 群準同型$f\colon G\to H$と有限位数の元$g\in G$について、$f(g)$の位数は$g$の位数を割り切る。
+  statement_en: For a group homomorphism f from G to H and an element g of finite order, the order of f(g) divides the order of g.
+  assumptions:
+  - $f\colon G\to H$は群準同型
+  - $g\in G$の位数は有限
+  quantifiers:
+  - 任意の群準同型$f$と有限位数の元$g$
+  conclusion: $\mathrm{ord}(f(g))\mid\mathrm{ord}(g)$である。
+  answer: |
+    $f\colon G\to H$を群準同型、$g\in G$を位数$m$が有限の元とする。$f$は積を保つから$f(g)^m=f(g^m)=f(1)=1$である。位数$k$の元$x$で$x^m=1$なら、$m$を$k$で割った余りを$r$として$x^r=1$、$0\leq r<k$となり、位数の最小性から$r=0$である。これを$x=f(g)$に適用すると、$f(g)$の位数は$m$を割り切る。
+  strategy: A homomorphism sends the relation g^m = 1 to f(g)^m = 1.
+  sketch:
+  - 'derive: f(g)^m = f(g^m) = 1 for m the order of g.'
+  - 'derive: Division with remainder shows the order of any element killing by m divides m.'
+  - 'conclude: Hence the order of f(g) divides m.'
+  openmath: (forall (G H f g) (-> (and (group_hom f G H) (in g G) (finite_order_element g)) (dvd (element_order (fn_value f g)) (element_order g))))
+  hard_negative:
+    statement: 群準同型$f$について、$f(g)$の位数は$g$の位数に等しい。
+    reason: $f$が全ての元を単位元に送るとき、位数$2$の元の像の位数は$1$である。等号には単射性が必要である。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (f : G →* H) (g : G), IsOfFinOrder g → orderOf (f g) ∣ orderOf g
+  proof: |
+    by
+      intro G H _ _ f g _
+      exact orderOf_map_dvd f g
+- id: order_eq_prime_power_criterion
+  kind: gap
+  level: 2
+  topic: 群論・素数冪の位数判定
+  statement: 素数$p$と自然数$n$と群の元$g$について、$g^{p^{n+1}}=1$かつ$g^{p^n}\neq1$なら、$g$の位数は$p^{n+1}$である。
+  statement_en: For a prime p, a natural number n and a group element g, if g^(p^(n+1)) = 1 and g^(p^n) ≠ 1, then g has order p^(n+1).
+  assumptions:
+  - $p$は素数
+  - $g^{p^{n+1}}=1$
+  - $g^{p^n}\neq1$
+  quantifiers:
+  - 任意の素数$p$、自然数$n$、群の元$g$
+  conclusion: $\mathrm{ord}(g)=p^{n+1}$である。
+  answer: |
+    $p$を素数、$n$を自然数、$g$を群の元とし、$g^{p^{n+1}}=1$かつ$g^{p^n}\neq1$とする。第1の式より$g$の位数は有限で$p^{n+1}$を割り切るから、ある$0\leq k\leq n+1$で$p^k$と書ける。$k\leq n$なら$p^k\mid p^n$なので$g^{p^n}=1$となり、第2の式に反する。よって$k=n+1$であり、$g$の位数は$p^{n+1}$である。
+  strategy: The order divides a prime power, so it is a smaller prime power unless the top exponent occurs.
+  sketch:
+  - 'derive: The order divides p^(n+1), so it equals p^k with k ≤ n+1.'
+  - 'contradiction: If k ≤ n, then g^(p^n) = 1, against the hypothesis.'
+  - 'conclude: So k = n+1.'
+  openmath: (forall (G g p n) (-> (and (group G) (in g G) (in p P) (= (group_pow g (^ p (+ n 1))) (group_identity G)) (!= (group_pow g (^ p n)) (group_identity G))) (= (element_order g) (^ p (+ n 1)))))
+  hard_negative:
+    statement: $g^{p^{n+1}}=1$かつ$g\neq1$なら、$g$の位数は$p^{n+1}$である。
+    reason: 位数$p$の元$g$と$n=1$では$g^{p^2}=1$かつ$g\neq1$だが、位数は$p^2$でない。$g^{p^n}\neq1$が必要である。
+  target: |
+    ∀ (G : Type*) [Group G] (g : G) (p n : ℕ), p.Prime → g ^ p ^ (n + 1) = 1 → g ^ p ^ n ≠ 1 → orderOf g = p ^ (n + 1)
+  proof: |
+    by
+      intro G _ g p n hp h1 h2
+      have : Fact p.Prime := ⟨hp⟩
+      exact orderOf_eq_prime_pow h2 h1
+- id: order_in_direct_product_is_lcm
+  kind: gap
+  level: 2
+  topic: 群論・直積の元の位数
+  statement: 群$G,H$の有限位数の元$a,b$について、直積$G\times H$の元$(a,b)$の位数は$a$の位数と$b$の位数の最小公倍数である。
+  statement_en: For elements a and b of finite order in groups G and H, the order of (a, b) in G × H is the least common multiple of the orders of a and b.
+  assumptions:
+  - $G,H$は群
+  - $a\in G$と$b\in H$の位数は有限
+  quantifiers:
+  - 任意の有限位数の元$a,b$
+  conclusion: $\mathrm{ord}((a,b))=\mathrm{lcm}(\mathrm{ord}(a),\mathrm{ord}(b))$である。
+  answer: |
+    $G,H$を群、$a\in G$、$b\in H$を位数有限の元とする。正の整数$n$について$(a,b)^n=(a^n,b^n)$であるから、$(a,b)^n$が単位元になるのは$a^n=1$かつ$b^n=1$のとき、すなわち$\mathrm{ord}(a)\mid n$かつ$\mathrm{ord}(b)\mid n$のときである。これは$\mathrm{lcm}(\mathrm{ord}(a),\mathrm{ord}(b))\mid n$と同値である。そのような正の$n$の最小値は最小公倍数そのものなので、主張が従う。
+  strategy: Powers are computed componentwise, and common multiples are the multiples of the lcm.
+  sketch:
+  - 'derive: (a,b)^n = (a^n, b^n).'
+  - 'translate: This is the identity exactly when both orders divide n.'
+  - 'conclude: The least such positive n is the lcm of the orders.'
+  openmath: (forall (G H a b) (-> (and (group G) (group H) (in a G) (in b H) (finite_order_element a) (finite_order_element b)) (= (element_order (ordered_pair a b)) (lcm (element_order a) (element_order b)))))
+  hard_negative:
+    statement: 直積の元$(a,b)$の位数は$a$の位数と$b$の位数の積である。
+    reason: 位数$2$の巡回群の生成元$a$について、$(a,a)$の位数は$2$であり積の$4$ではない。積と一致するのは位数が互いに素なときである。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (a : G) (b : H), IsOfFinOrder a → IsOfFinOrder b → orderOf (a, b) = Nat.lcm (orderOf a) (orderOf b)
+  proof: |
+    by
+      intro G H _ _ a b _ _
+      exact Prod.orderOf (a, b)
+- id: finite_abelian_element_order_divisible_by_all
+  kind: textbook
+  level: 3
+  topic: 群論・有限アーベル群の位数最大の元
+  statement: 有限アーベル群$G$には、全ての元$h$の位数を割り切る位数をもつ元$g$が存在する。
+  statement_en: A finite abelian group G has an element g whose order is divisible by the order of every element h of G.
+  assumptions:
+  - $G$は有限アーベル群
+  quantifiers:
+  - 任意の有限アーベル群$G$
+  conclusion: 全ての$h\in G$で$\mathrm{ord}(h)\mid\mathrm{ord}(g)$となる$g\in G$が存在する。
+  answer: |
+    $G$を有限アーベル群とし、$g$を位数$m$が最大の元とする。ある$h\in G$の位数$k$が$m$を割り切らないと仮定する。ある素数$q$が存在して、$k$における$q$の指数$b$は$m$における$q$の指数$a$より大きい。$m=q^am'$、$k=q^bk'$（$q\nmid m'$、$q\nmid k'$）と書く。$g^{q^a}$の位数は$m'$であり、$h^{k'}$の位数は$q^b$である。この2つの位数は互いに素で、$G$はアーベル群だから2元は可換であり、積の位数は$m'q^b$になる。$b>a$より$m'q^b>m$となり、$m$の最大性に反する。よって全ての元の位数は$m$を割り切る。
+  strategy: If a maximal order fails to absorb some order, build a larger order from coprime parts.
+  sketch:
+  - 'setup: Take g of maximal order m and suppose ord(h) = k does not divide m.'
+  - 'derive: Choose a prime q with larger exponent b in k than exponent a in m.'
+  - 'construct: Form g^(q^a) of order m'' and h^(k'') of order q^b, which are coprime.'
+  - 'apply_theorem: Commuting elements of coprime orders have product of order m''q^b.'
+  - 'contradiction: m''q^b exceeds m.'
+  openmath: (forall (G) (-> (and (finite_group G) (abelian_group G)) (exists (g) (and (in g G) (forall (h) (-> (in h G) (dvd (element_order h) (element_order g))))))))
+  hard_negative:
+    statement: 有限群には全ての元の位数で割り切れる位数の元が存在する。
+    reason: $S_3$の元の位数は$1,2,3$であり、位数$6$の元がない。アーベル性が必要である。
+  target: |
+    ∀ (G : Type*) [CommGroup G] [Finite G], ∃ g : G, ∀ h : G, orderOf h ∣ orderOf g
+  proof: |
+    by
+      intro G _ _
+      obtain ⟨g, hg⟩ := Monoid.exists_orderOf_eq_exponent (G := G) (Monoid.ExponentExists.of_finite)
+      exact ⟨g, fun h => hg ▸ Monoid.order_dvd_exponent h⟩
+- id: finite_group_cyclic_of_few_roots
+  kind: textbook
+  level: 3
+  topic: 群論・巡回群の判定
+  statement: 有限群$G$で、全ての正の整数$n$について$x^n=1$の解が$G$に高々$n$個しかないなら、$G$は巡回群である。
+  statement_en: If a finite group G has at most n solutions of x^n = 1 for every positive integer n, then G is cyclic.
+  assumptions:
+  - $G$は有限群
+  - 全ての正の整数$n$で$|\{x\in G\mid x^n=1\}|\leq n$
+  quantifiers:
+  - 任意の有限群$G$
+  conclusion: $G$は巡回群である。
+  answer: |
+    $G$を有限群とし、全ての正の整数$n$で$x^n=1$の解が高々$n$個であるとする。$N=|G|$とおき、$d\mid N$について位数$d$の元の個数を$\psi(d)$とする。位数$d$の元$a$が存在すれば、$\langle a\rangle$の$d$個の元は全て$x^d=1$を満たすから、仮定より$x^d=1$の解は$\langle a\rangle$の元に限る。位数$d$の元は$\langle a\rangle$の生成元であるから$\psi(d)=\varphi(d)$である。よって各$d$で$\psi(d)\leq\varphi(d)$である。ラグランジュの定理より全ての元の位数は$N$の約数なので$\sum_{d\mid N}\psi(d)=N$であり、$\sum_{d\mid N}\varphi(d)=N$と比べると全ての$d$で$\psi(d)=\varphi(d)$である。特に$\psi(N)=\varphi(N)\geq1$であり、位数$N$の元が$G$を生成する。
+  strategy: Count elements by order and compare with the totient sum over divisors.
+  sketch:
+  - 'setup: Let ψ(d) be the number of elements of order d for d dividing N = |G|.'
+  - 'derive: If an element a of order d exists, the solutions of x^d = 1 are exactly ⟨a⟩, so ψ(d) = φ(d).'
+  - 'derive: Thus ψ(d) ≤ φ(d) for every d.'
+  - 'apply_theorem: The sums of ψ and of φ over divisors of N both equal N.'
+  - 'conclude: ψ(N) = φ(N) ≥ 1 gives a generator.'
+  openmath: (forall (G) (-> (and (finite_group G) (forall (n) (-> (> n 0) (<= (size (power_root_set G n)) n)))) (cyclic_group G)))
+  hard_negative:
+    statement: 有限群で$x^2=1$の解が高々$2$個なら巡回群である。
+    reason: 位数$3$の巡回群2個の直積では$x^2=1$の解は単位元だけだが、巡回群でない。全ての$n$で条件が必要である。
+  target: |
+    ∀ (G : Type*) [Group G] [Fintype G] [DecidableEq G], (∀ n : ℕ, 0 < n → (Finset.univ.filter fun x : G => x ^ n = 1).card ≤ n) → IsCyclic G
+  proof: |
+    by
+      intro G _ _ _ h
+      exact isCyclic_of_card_pow_eq_one_le h
+- id: conjugate_of_transposition
+  kind: gap
+  level: 2
+  topic: 置換・互換の共役
+  statement: 集合$X$の置換$\sigma$と$a,b\in X$について、$\sigma\,(a\ b)\,\sigma^{-1}=(\sigma(a)\ \sigma(b))$である。ここで$(a\ a)$は恒等置換とする。
+  statement_en: For a permutation σ of a set X and points a, b of X, σ (a b) σ⁻¹ = (σ(a) σ(b)), where (a a) denotes the identity.
+  assumptions:
+  - $\sigma$は集合$X$の置換
+  - $a,b\in X$
+  quantifiers:
+  - 任意の置換$\sigma$と$a,b\in X$
+  conclusion: $\sigma\,(a\ b)\,\sigma^{-1}=(\sigma(a)\ \sigma(b))$である。
+  answer: |
+    $X$を集合、$\sigma$を$X$の置換、$a,b\in X$とする。$\tau=\sigma\,(a\ b)\,\sigma^{-1}$の$x\in X$での値を調べる。$x=\sigma(a)$なら$\tau(x)=\sigma((a\ b)(a))=\sigma(b)$であり、同様に$x=\sigma(b)$なら$\tau(x)=\sigma(a)$である。$x$がそのどちらでもないとき、$\sigma^{-1}(x)$は$a$とも$b$とも異なるので$(a\ b)$で固定され、$\tau(x)=\sigma(\sigma^{-1}(x))=x$である。これは$(\sigma(a)\ \sigma(b))$の作用と一致する。
+  strategy: Compare both permutations pointwise, separating σ(a), σ(b) and the other points.
+  sketch:
+  - 'case_split: Treat x = σ(a), x = σ(b) and the remaining points.'
+  - 'derive: On the first two, the conjugate exchanges σ(a) and σ(b).'
+  - 'derive: Otherwise σ⁻¹(x) is fixed by (a b), so x is fixed.'
+  - 'conclude: The two permutations agree everywhere.'
+  openmath: (forall (X s a b) (-> (and (in s (permutation_set X)) (in a X) (in b X)) (= (group_mul (group_mul s (transposition_of a b)) (group_inv s)) (transposition_of (fn_value s a) (fn_value s b)))))
+  hard_negative:
+    statement: 置換$\sigma$による共役で互換は変わらない。つまり$\sigma\,(a\ b)\,\sigma^{-1}=(a\ b)$である。
+    reason: $\sigma=(1\ 3)$、$(a\ b)=(1\ 2)$なら共役は$(3\ 2)$である。
+  target: |
+    ∀ (X : Type*) [DecidableEq X] (σ : Equiv.Perm X) (a b : X), σ * Equiv.swap a b * σ⁻¹ = Equiv.swap (σ a) (σ b)
+  proof: |
+    by
+      intro X _ σ a b
+      ext x
+      simp only [Equiv.Perm.mul_apply]
+      by_cases h1 : x = σ a
+      · subst h1; simp
+      by_cases h2 : x = σ b
+      · subst h2; simp
+      have h3 : σ⁻¹ x ≠ a := fun h => h1 (by rw [← h]; simp)
+      have h4 : σ⁻¹ x ≠ b := fun h => h2 (by rw [← h]; simp)
+      rw [Equiv.swap_apply_of_ne_of_ne h3 h4, Equiv.swap_apply_of_ne_of_ne h1 h2]
+      simp
+- id: transposition_count_parity_invariant
+  kind: gap
+  level: 2
+  topic: 置換・互換の個数の偶奇
+  statement: 有限集合の置換を互換の積に2通りに表すと、互換の個数の偶奇は一致する。
+  statement_en: If a permutation of a finite set is written in two ways as a product of transpositions, the numbers of transpositions have the same parity.
+  assumptions:
+  - $X$は有限集合
+  - $l,m$は$X$の互換の列
+  - $l$の積と$m$の積は等しい
+  quantifiers:
+  - 任意の互換の列$l,m$
+  conclusion: 列の長さについて$|l|\equiv|m|\pmod 2$である。
+  answer: |
+    $X$を有限集合とし、$l,m$を$X$の互換の列で積が等しいものとする。互換とは$X$の相異なる2点を入れ替える置換である。$|X|\leq1$なら互換はなく、$l,m$はともに空なので$|l|=|m|=0$である。以下$|X|\geq2$とし、$X=\{1,\dots,n\}$と番号を付ける。置換$\sigma$に対して有理数$\varepsilon(\sigma)=\prod_{\{i,j\}}\frac{\sigma(i)-\sigma(j)}{i-j}$を定める。積は相異なる2点の組$\{i,j\}$全体にわたり、各因子は$i,j$を入れ替えても変わらない。置換$\sigma,\rho$について$\varepsilon(\sigma\rho)=\prod_{\{i,j\}}\frac{\sigma(\rho(i))-\sigma(\rho(j))}{\rho(i)-\rho(j)}\cdot\prod_{\{i,j\}}\frac{\rho(i)-\rho(j)}{i-j}$である。$\rho$は組$\{i,j\}$全体を並べ替えるから第1の積は$\varepsilon(\sigma)$に等しく、$\varepsilon(\sigma\rho)=\varepsilon(\sigma)\varepsilon(\rho)$が成り立つ。
+
+    次に$\varepsilon((1\ 2))=-1$を示す。組$\{1,2\}$の因子は$\frac{2-1}{1-2}=-1$である。$k\geq3$について組$\{1,k\},\{2,k\}$の因子の積は$\frac{2-k}{1-k}\cdot\frac{1-k}{2-k}=1$である。残りの組の因子は$1$である。互換$(a\ b)$については$\rho(1)=a$、$\rho(2)=b$を満たす置換$\rho$をとると$(a\ b)=\rho\,(1\ 2)\,\rho^{-1}$であるから、$\varepsilon((a\ b))=\varepsilon(\rho)\cdot(-1)\cdot\varepsilon(\rho^{-1})=-\varepsilon(\rho\rho^{-1})=-1$である。
+
+    よって$l$の積の$\varepsilon$の値は$(-1)^{|l|}$、$m$の積の値は$(-1)^{|m|}$である。積が等しいので$(-1)^{|l|}=(-1)^{|m|}$であり、$|l|$と$|m|$の偶奇は一致する。
+  strategy: Define the sign as a product over unordered pairs, show it is multiplicative with value -1 on transpositions, and apply it to both products.
+  sketch:
+  - 'construct: Number X and let ε(σ) be the product of (σ(i)-σ(j))/(i-j) over unordered pairs {i,j}.'
+  - 'derive: Each permutation permutes the pairs, so ε(σρ) = ε(σ)ε(ρ).'
+  - 'derive: A direct computation gives ε((1 2)) = -1.'
+  - 'derive: Every transposition is a conjugate of (1 2), so ε takes the value -1 on it.'
+  - 'conclude: The two products have values (-1)^|l| and (-1)^|m|, so equal products force equal parity.'
+  openmath: (forall (X l m) (-> (and (finite_set X) (list_of_transpositions l X) (list_of_transpositions m X) (= (list_product l) (list_product m))) (= (nat_mod (list_length l) 2) (nat_mod (list_length m) 2))))
+  hard_negative:
+    statement: 同じ置換を互換の積に表すとき、互換の個数そのものは表し方によらない。
+    reason: 恒等置換は空の積でも$(1\ 2)(1\ 2)$でも表せて、個数は$0$と$2$である。保たれるのは偶奇だけである。
+  target: |
+    ∀ (X : Type*) [DecidableEq X] [Fintype X] (l m : List (Equiv.Perm X)), (∀ g ∈ l, g.IsSwap) → (∀ g ∈ m, g.IsSwap) → l.prod = m.prod → (l.length ≡ m.length [MOD 2])
+  proof: |
+    by
+      intro X _ _ l m hl hm h
+      have h1 := Equiv.Perm.sign_prod_list_swap hl
+      have h2 := Equiv.Perm.sign_prod_list_swap hm
+      rw [h, h2] at h1
+      rcases Nat.even_or_odd l.length with hE | hO <;> rcases Nat.even_or_odd m.length with hE' | hO'
+      · exact (Nat.even_iff.mp hE).trans (Nat.even_iff.mp hE').symm
+      · rw [hE.neg_one_pow, hO'.neg_one_pow] at h1; exact absurd h1 (by decide)
+      · rw [hO.neg_one_pow, hE'.neg_one_pow] at h1; exact absurd h1 (by decide)
+      · exact (Nat.odd_iff.mp hO).trans (Nat.odd_iff.mp hO').symm
+- id: perm_conjugate_iff_same_cycle_type
+  kind: textbook
+  level: 2
+  topic: 置換・共役と巡回型
+  statement: 有限集合の置換$\sigma,\tau$について、$\tau=\rho\sigma\rho^{-1}$となる置換$\rho$が存在することと、$\sigma,\tau$の巡回型が等しいことは同値である。巡回型とは互いに素な巡回置換への分解に現れる長さ$2$以上の巡回置換の長さの多重集合である。
+  statement_en: Permutations σ and τ of a finite set are conjugate if and only if they have the same cycle type, the multiset of lengths at least 2 of the cycles in the disjoint cycle decomposition.
+  assumptions:
+  - $X$は有限集合
+  - $\sigma,\tau$は$X$の置換
+  quantifiers:
+  - 任意の置換$\sigma,\tau$
+  conclusion: $\sigma$と$\tau$が共役であることと巡回型が等しいことは同値である。
+  answer: |
+    $X$を有限集合、$\sigma,\tau$を$X$の置換とする。まず$\tau=\rho\sigma\rho^{-1}$とする。巡回置換$(a_1\ \dots\ a_k)$について$\rho(a_1\ \dots\ a_k)\rho^{-1}=(\rho(a_1)\ \dots\ \rho(a_k))$である。実際、点$\rho(a_i)$での左辺の値は$\rho(a_{i+1})$（添字は$k$を法とする）であり、どの$\rho(a_i)$でもない点$x$では$\rho^{-1}(x)$が巡回置換で固定されるので値は$x$である。これを$\sigma$の分解の各因子に適用すると、互いに素な巡回置換の分解で長さが同じものが得られるから、巡回型は等しい。逆に巡回型が等しいとする。$\sigma,\tau$の不動点は長さ$1$の巡回置換とみなす。$|X|$が共通なので不動点の個数も等しく、$\sigma$の巡回置換と$\tau$の巡回置換を長さが同じものどうし1対1に対応させられる。対応する巡回置換$(a_1\ \dots\ a_k)$と$(b_1\ \dots\ b_k)$について$\rho(a_i)=b_i$と定めると、$\rho$は$X$の置換であり、上の公式から$\rho\sigma\rho^{-1}=\tau$となる。
+  strategy: Conjugation relabels the entries of cycles, and a matching of equal-length cycles defines the conjugator.
+  sketch:
+  - 'derive: ρ(a_1 ... a_k)ρ⁻¹ = (ρ(a_1) ... ρ(a_k)).'
+  - 'conclude: Conjugate permutations therefore have the same cycle type.'
+  - 'setup: Conversely, include fixed points as cycles of length 1 and match cycles of equal length.'
+  - 'construct: Define ρ by sending the entries of each cycle of σ to those of the matched cycle of τ.'
+  - 'conclude: Then ρσρ⁻¹ = τ.'
+  openmath: (forall (X s t) (-> (and (finite_set X) (in s (symmetric_group X)) (in t (symmetric_group X))) (<-> (exists (r) (and (in r (symmetric_group X)) (= t (group_mul (group_mul r s) (group_inv r))))) (= (cycle_type s) (cycle_type t)))))
+  hard_negative:
+    statement: 有限集合の置換で位数が等しいものは共役である。
+    reason: $S_4$の$(1\ 2)$と$(1\ 2)(3\ 4)$は位数$2$だが、巡回型が異なるので共役でない。
+  target: |
+    ∀ (X : Type*) [DecidableEq X] [Fintype X] (σ τ : Equiv.Perm X), (∃ ρ : Equiv.Perm X, τ = ρ * σ * ρ⁻¹) ↔ σ.cycleType = τ.cycleType
+  proof: |
+    by
+      intro X _ _ σ τ
+      rw [← Equiv.Perm.isConj_iff_cycleType_eq, isConj_iff]
+      constructor
+      · rintro ⟨ρ, rfl⟩; exact ⟨ρ, rfl⟩
+      · rintro ⟨ρ, rfl⟩; exact ⟨ρ, rfl⟩
+- id: perm_order_is_lcm_of_cycle_lengths
+  kind: textbook
+  level: 2
+  topic: 置換・位数と巡回型
+  statement: 有限集合の置換$\sigma$の位数は、$\sigma$の互いに素な巡回置換への分解に現れる巡回置換の長さの最小公倍数である。恒等置換の場合、この値は$1$とする。
+  statement_en: The order of a permutation of a finite set is the least common multiple of the lengths of the cycles in its disjoint cycle decomposition, with value 1 for the identity.
+  assumptions:
+  - $X$は有限集合
+  - $\sigma$は$X$の置換
+  quantifiers:
+  - 任意の置換$\sigma$
+  conclusion: $\mathrm{ord}(\sigma)$は巡回置換の長さの最小公倍数である。
+  answer: |
+    $X$を有限集合、$\sigma$を$X$の置換とし、$\sigma=c_1\cdots c_r$を互いに素な巡回置換への分解、$c_i$の長さを$\ell_i$とする。互いに素な置換は可換だから、$\sigma^n=c_1^n\cdots c_r^n$である。$c_i^n$は$c_i$の台の外の点を固定し、台の中の点を台の中に写す。台は互いに交わらない。よって$\sigma^n=1$は全ての$i$で$c_i^n=1$であることと同値である。長さ$\ell_i$の巡回置換の位数は$\ell_i$だから、これは全ての$i$で$\ell_i\mid n$と同値であり、$\mathrm{lcm}(\ell_1,\dots,\ell_r)\mid n$と同値である。したがって$\sigma$の位数は$\mathrm{lcm}(\ell_1,\dots,\ell_r)$である。$r=0$なら$\sigma$は恒等置換で位数は$1$である。
+  strategy: Disjoint cycles commute and act on separate supports, so a power vanishes exactly when each factor does.
+  sketch:
+  - 'setup: Decompose σ = c_1...c_r into disjoint cycles of lengths ℓ_i.'
+  - 'derive: Commutativity gives σ^n = c_1^n...c_r^n.'
+  - 'derive: Disjoint supports give σ^n = 1 exactly when each c_i^n = 1.'
+  - 'translate: This means ℓ_i divides n for every i.'
+  - 'conclude: The order is the lcm of the ℓ_i.'
+  openmath: (forall (X s) (-> (and (finite_set X) (in s (symmetric_group X))) (= (element_order s) (multiset_lcm (cycle_type s)))))
+  hard_negative:
+    statement: 置換の位数は巡回置換の長さの積である。
+    reason: $(1\ 2)(3\ 4)$の位数は$2$であり、長さの積は$4$である。
+  target: |
+    ∀ (X : Type*) [DecidableEq X] [Fintype X] (σ : Equiv.Perm X), orderOf σ = σ.cycleType.lcm
+  proof: |
+    by
+      intro X _ _ σ
+      exact (Equiv.Perm.lcm_cycleType σ).symm
+- id: perm_disjoint_cycle_decomposition
+  kind: textbook
+  level: 2
+  topic: 置換・巡回置換への分解
+  statement: 有限集合の全ての置換は、互いに素な巡回置換の有限個の積である。恒等置換は空の積とする。
+  statement_en: Every permutation of a finite set is a finite product of pairwise disjoint cycles, the identity being the empty product.
+  assumptions:
+  - $X$は有限集合
+  - $\sigma$は$X$の置換
+  quantifiers:
+  - 任意の置換$\sigma$
+  conclusion: 積が$\sigma$であり、各因子が巡回置換で、因子どうしが互いに素な列が存在する。
+  answer: |
+    $X$を有限集合、$\sigma$を$X$の置換とする。$\langle\sigma\rangle$の$X$への作用の軌道で大きさが$2$以上のものを$O_1,\dots,O_r$とする。$a\in O_i$をとると、$\sigma$は有限位数なので$O_i=\{a,\sigma(a),\dots,\sigma^{k-1}(a)\}$（$k=|O_i|$）であり、$\sigma^k(a)=a$である。$O_i$上で$\sigma$と等しく$O_i$の外で恒等である写像を$c_i$とすると、$c_i$は長さ$k$の巡回置換である。軌道は互いに交わらないから$c_1,\dots,c_r$は互いに素である。任意の$x\in X$は高々1つの$O_i$に属し、$O_i$に属さない点は$\sigma$の不動点である。よって$c_1\cdots c_r$は全ての点で$\sigma$と同じ値をとり、$\sigma=c_1\cdots c_r$である。
+  strategy: Restrict σ to each nontrivial orbit of the cyclic group it generates.
+  sketch:
+  - 'setup: Take the orbits of ⟨σ⟩ of size at least 2.'
+  - 'derive: Each orbit has the form a, σ(a), ..., σ^(k-1)(a).'
+  - 'construct: Let c_i equal σ on the i-th orbit and the identity elsewhere.'
+  - 'derive: The c_i are cycles with disjoint supports.'
+  - 'conclude: Their product agrees with σ at every point.'
+  openmath: (forall (X s) (-> (and (finite_set X) (in s (symmetric_group X))) (exists (l) (and (= (list_product l) s) (list_of_cycles l X) (pairwise_disjoint_permutations l)))))
+  hard_negative:
+    statement: 互いに素な巡回置換への分解は、因子の順序まで含めて一意である。
+    reason: $(1\ 2)(3\ 4)=(3\ 4)(1\ 2)$である。一意なのは因子の集合だけである。
+  target: |
+    ∀ (X : Type*) [DecidableEq X] [Fintype X] (σ : Equiv.Perm X), ∃ l : List (Equiv.Perm X), l.prod = σ ∧ (∀ g ∈ l, g.IsCycle) ∧ l.Pairwise Equiv.Perm.Disjoint
+  proof: |
+    by
+      intro X _ _ σ
+      exact ⟨_, (Equiv.Perm.truncCycleFactors σ).out.2⟩
+- id: join_with_normal_subgroup_is_product
+  kind: gap
+  level: 2
+  topic: 群論・正規部分群との積
+  statement: 群$G$の部分群$H$と正規部分群$N$について、$H\cup N$が生成する部分群の元は$hn$（$h\in H$、$n\in N$）の形の元に限る。つまり積集合$HN$は部分群である。
+  statement_en: For a subgroup H and a normal subgroup N of a group G, an element lies in the subgroup generated by H and N if and only if it has the form hn with h in H and n in N; in other words the product set HN is a subgroup.
+  assumptions:
+  - $G$は群
+  - $H$は$G$の部分群
+  - $N$は$G$の正規部分群
+  quantifiers:
+  - 任意の$x\in G$
+  conclusion: $x\in\langle H\cup N\rangle$と、$x=hn$となる$h\in H$、$n\in N$の存在は同値である。
+  answer: |
+    $G$を群、$H$を部分群、$N$を正規部分群とし、$S=\{hn\mid h\in H,\ n\in N\}$とおく。$1=1\cdot1\in S$である。$h,h'\in H$、$n,n'\in N$について、$(hn)(h'n')=(hh')\bigl((h')^{-1}nh'\bigr)n'$であり、$N$の正規性より$(h')^{-1}nh'\in N$だから積は$S$に入る。また$(hn)^{-1}=n^{-1}h^{-1}=h^{-1}(hn^{-1}h^{-1})$であり、$hn^{-1}h^{-1}\in N$だから逆元も$S$に入る。よって$S$は部分群である。$S$は$H$と$N$を含むので$\langle H\cup N\rangle\subseteq S$である。逆に$hn$は$H$と$N$を含む任意の部分群に入るので、$S\subseteq\langle H\cup N\rangle$である。
+  strategy: Check that HN is closed under products and inverses by moving elements of N past elements of H.
+  sketch:
+  - 'setup: Let S be the set of products hn.'
+  - 'derive: (hn)(h''n'') = (hh'')((h'')⁻¹nh'')n'' lies in S because N is normal.'
+  - 'derive: (hn)⁻¹ = h⁻¹(hn⁻¹h⁻¹) lies in S for the same reason.'
+  - 'derive: So S is a subgroup containing H and N.'
+  - 'conclude: Any subgroup containing H and N contains S, so S is the generated subgroup.'
+  openmath: (forall (G H U x) (-> (and (subgroup_of H G) (normal_subgroup U G)) (<-> (in x (subgroup_join H U)) (exists (h n) (and (in h H) (in n U) (= (group_mul h n) x))))))
+  hard_negative:
+    statement: 群の2つの部分群$H,K$の積集合$HK$はつねに部分群である。
+    reason: $S_3$で$H=\{1,(1\ 2)\}$、$K=\{1,(1\ 3)\}$とすると$|HK|=4$であり、$4$は$6$を割らないので部分群でない。
+  target: |
+    ∀ (G : Type*) [Group G] (H N : Subgroup G) [N.Normal] (x : G), x ∈ H ⊔ N ↔ ∃ h ∈ H, ∃ n ∈ N, h * n = x
+  proof: |
+    by
+      intro G _ H N _ x
+      rw [← SetLike.mem_coe, Subgroup.mul_normal]
+      exact Set.mem_mul
+- id: unique_subgroup_of_its_order_is_normal
+  kind: gap
+  level: 2
+  topic: 群論・位数が唯一の部分群
+  statement: 有限群$G$の部分群$H$が、その位数をもつ唯一の部分群なら、$H$は正規である。
+  statement_en: If a subgroup H of a finite group G is the only subgroup of its order, then H is normal.
+  assumptions:
+  - $G$は有限群
+  - $H$は$G$の部分群
+  - 位数が$|H|$の部分群は$H$だけ
+  quantifiers:
+  - 任意の有限群$G$とその部分群$H$
+  conclusion: $H$は$G$の正規部分群である。
+  answer: |
+    $G$を有限群、$H$をその位数をもつ唯一の部分群とする。$g\in G$をとる。写像$x\mapsto gxg^{-1}$は$G$の自己同型なので、$gHg^{-1}$は$G$の部分群であり、$H$と同じ元の個数をもつ。仮定より$gHg^{-1}=H$である。これが全ての$g\in G$で成り立つので、$H$は正規である。
+  strategy: A conjugate of H is a subgroup of the same order.
+  sketch:
+  - 'derive: Conjugation by g is an automorphism, so gHg⁻¹ is a subgroup with |gHg⁻¹| = |H|.'
+  - 'derive: Uniqueness gives gHg⁻¹ = H.'
+  - 'conclude: H is normal.'
+  openmath: (forall (G H) (-> (and (finite_group G) (subgroup_of H G) (forall (K) (-> (and (subgroup_of K G) (= (size K) (size H))) (= K H)))) (normal_subgroup H G)))
+  hard_negative:
+    statement: 有限群の部分群は、同じ位数の部分群が複数あっても正規である。
+    reason: $S_3$には位数$2$の部分群が$3$個あり、いずれも正規でない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G] (H : Subgroup G), (∀ K : Subgroup G, Nat.card K = Nat.card H → K = H) → H.Normal
+  proof: |
+    by
+      intro G _ _ H hu
+      constructor
+      intro n hn g
+      have hmap : H.map (MulAut.conj g).toMonoidHom = H :=
+        hu _ (Nat.card_congr (Subgroup.equivMapOfInjective H _ (MulAut.conj g).injective).symm.toEquiv)
+      rw [← hmap]
+      exact ⟨n, hn, by simp [MulAut.conj_apply]⟩
+- id: power_of_index_lies_in_normal_subgroup
+  kind: gap
+  level: 2
+  topic: 群論・商群と指数乗
+  statement: 群$G$の有限指数の正規部分群$N$と$g\in G$について、$g^{[G:N]}\in N$である。
+  statement_en: For a normal subgroup N of finite index in a group G and an element g of G, the power g^[G:N] lies in N.
+  assumptions:
+  - $G$は群
+  - $N$は$G$の有限指数の正規部分群
+  quantifiers:
+  - 任意の$g\in G$
+  conclusion: $g^{[G:N]}\in N$である。
+  answer: |
+    $G$を群、$N$を有限指数の正規部分群、$g\in G$とする。商群$G/N$は位数$[G:N]$の有限群である。有限群の元の位数は群の位数を割り切るので、$(gN)^{[G:N]}$は$G/N$の単位元である。一方で$(gN)^{[G:N]}=g^{[G:N]}N$であるから、$g^{[G:N]}N=N$であり、$g^{[G:N]}\in N$である。
+  strategy: Apply the fact that the group order kills every element to the quotient G/N.
+  sketch:
+  - 'setup: G/N is a finite group of order [G:N].'
+  - 'apply_theorem: Hence (gN)^[G:N] is the identity coset.'
+  - 'conclude: This says g^[G:N] lies in N.'
+  openmath: (forall (G U g) (-> (and (normal_subgroup U G) (finite_index_subgroup U G) (in g G)) (in (group_pow g (subgroup_index U G)) U)))
+  hard_negative:
+    statement: 正規とは限らない有限指数の部分群$H$でも$g^{[G:H]}\in H$である。
+    reason: $S_3$で$H=\{1,(1\ 2)\}$、$g=(1\ 3)$とすると、$[G:H]=3$で$g^3=(1\ 3)\notin H$である。
+  target: |
+    ∀ (G : Type*) [Group G] (N : Subgroup G) [N.Normal] [N.FiniteIndex] (g : G), g ^ N.index ∈ N
+  proof: |
+    by
+      intro G _ N _ _ g
+      exact Subgroup.pow_index_mem N g
+- id: card_eq_card_kernel_mul_card_image
+  kind: gap
+  level: 2
+  topic: 群論・核と像の位数
+  statement: 有限群$G$からの群準同型$f\colon G\to H$について、$|G|=|\ker f|\cdot|\mathrm{im}\,f|$である。
+  statement_en: For a group homomorphism f from a finite group G to a group H, |G| = |ker f|·|im f|.
+  assumptions:
+  - $G$は有限群
+  - $f\colon G\to H$は群準同型
+  quantifiers:
+  - 任意の有限群$G$、群$H$、準同型$f$
+  conclusion: $|G|=|\ker f|\cdot|\mathrm{im}\,f|$である。
+  answer: |
+    $G$を有限群、$H$を群、$f\colon G\to H$を準同型とする。第一同型定理より$G/\ker f$は$\mathrm{im}\,f$と同型なので、$[G:\ker f]=|\mathrm{im}\,f|$である。ラグランジュの定理より$|G|=|\ker f|\cdot[G:\ker f]$であり、代入すると$|G|=|\ker f|\cdot|\mathrm{im}\,f|$を得る。
+  strategy: Combine the first isomorphism theorem with Lagrange's theorem.
+  sketch:
+  - 'apply_theorem: The first isomorphism theorem gives [G:ker f] = |im f|.'
+  - 'apply_theorem: Lagrange gives |G| = |ker f|·[G:ker f].'
+  - 'conclude: Substitute.'
+  openmath: (forall (G H f) (-> (and (finite_group G) (group_hom f G H)) (= (size G) (* (size (group_kernel f)) (size (group_image f))))))
+  hard_negative:
+    statement: 有限群の間の準同型$f\colon G\to H$について、$|G|=|\ker f|\cdot|H|$である。
+    reason: 位数$2$の群から位数$4$の巡回群への単射では$|G|=2$、$|\ker f|\cdot|H|=4$である。像の位数を用いる必要がある。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] [Finite G] (f : G →* H), Nat.card G = Nat.card f.ker * Nat.card f.range
+  proof: |
+    by
+      intro G H _ _ _ f
+      rw [← Subgroup.index_ker, Subgroup.card_mul_index]
+- id: quotient_group_universal_property
+  kind: gap
+  level: 2
+  topic: 群論・商群への持ち上げ
+  statement: 群$G$の正規部分群$N$と群準同型$f\colon G\to H$が$N\subseteq\ker f$を満たすなら、全ての$g\in G$で$\varphi(gN)=f(g)$となる準同型$\varphi\colon G/N\to H$がただ1つ存在する。
+  statement_en: If N is a normal subgroup of G and f from G to H is a group homomorphism with N ⊆ ker f, there is a unique homomorphism φ from G/N to H with φ(gN) = f(g) for all g.
+  assumptions:
+  - $N$は群$G$の正規部分群
+  - $f\colon G\to H$は群準同型
+  - $N\subseteq\ker f$
+  quantifiers:
+  - 任意の$G,H,N,f$
+  conclusion: $\varphi(gN)=f(g)$を満たす準同型$\varphi\colon G/N\to H$がただ1つ存在する。
+  answer: |
+    $G,H$を群、$N$を$G$の正規部分群、$f\colon G\to H$を$N\subseteq\ker f$を満たす準同型とする。$gN=g'N$なら$g^{-1}g'\in N\subseteq\ker f$なので、$f(g)=f(g')$である。よって$\varphi(gN)=f(g)$は$G/N$上の写像を矛盾なく定める。$\varphi(gN\cdot g'N)=\varphi(gg'N)=f(gg')=f(g)f(g')$なので$\varphi$は準同型である。条件を満たす準同型$\psi$があれば、全ての元$gN$で$\psi(gN)=f(g)=\varphi(gN)$となるから$\psi=\varphi$である。
+  strategy: Define φ on cosets, check well-definedness with N ⊆ ker f, and note that cosets exhaust G/N.
+  sketch:
+  - 'construct: Set φ(gN) = f(g).'
+  - 'derive: gN = g''N gives g⁻¹g'' in ker f, so φ is well defined.'
+  - 'derive: φ is a homomorphism because f is.'
+  - 'conclude: Any other such map agrees with φ on every coset.'
+  openmath: (forall (G H U f) (-> (and (normal_subgroup U G) (group_hom f G H) (subset U (group_kernel f))) (exists (j) (and (group_hom j (quotient_group G U) H) (forall (g) (-> (in g G) (= (fn_value j (fn_value (quotient_map G U) g)) (fn_value f g)))) (forall (k) (-> (and (group_hom k (quotient_group G U) H) (forall (g) (-> (in g G) (= (fn_value k (fn_value (quotient_map G U) g)) (fn_value f g))))) (= k j)))))))
+  hard_negative:
+    statement: $N\subseteq\ker f$を仮定しなくても$f$は$G/N$上の準同型を誘導する。
+    reason: 位数$2$の群$G$と$N=G$、$f=\mathrm{id}$では、自明群$G/N$の元の行き先が$f(1)$と$f(g)$の両方になり、定まらない。
+  target: |
+    ∀ (G H : Type*) [Group G] [Group H] (N : Subgroup G) [N.Normal] (f : G →* H), N ≤ f.ker → ∃! φ : G ⧸ N →* H, ∀ g : G, φ (g : G ⧸ N) = f g
+  proof: |
+    by
+      intro G H _ _ N _ f h
+      refine ⟨QuotientGroup.lift N f (fun x hx => h hx), fun g => rfl, ?_⟩
+      intro ψ hψ
+      ext g
+      exact hψ g
+- id: index_of_intersection_le_product
+  kind: gap
+  level: 2
+  topic: 群論・共通部分の指数
+  statement: 群$G$の有限指数の部分群$H,K$について、$H\cap K$も有限指数であり、$[G:H\cap K]\leq[G:H][G:K]$である。
+  statement_en: For subgroups H and K of finite index in a group G, the intersection H ∩ K has finite index and [G:H∩K] ≤ [G:H][G:K].
+  assumptions:
+  - $G$は群
+  - $H,K$は$G$の有限指数の部分群
+  quantifiers:
+  - 任意の有限指数の部分群$H,K$
+  conclusion: $H\cap K$は有限指数で$[G:H\cap K]\leq[G:H][G:K]$である。
+  answer: |
+    $G$を群、$H,K$を有限指数の部分群とする。写像$G/(H\cap K)\to G/H\times G/K$を$g(H\cap K)\mapsto(gH,gK)$で定める。$g(H\cap K)=g'(H\cap K)$なら$g^{-1}g'\in H\cap K$なので、$gH=g'H$かつ$gK=g'K$であり、この写像は矛盾なく定まる。逆に$gH=g'H$かつ$gK=g'K$なら$g^{-1}g'\in H\cap K$となるので、写像は単射である。右辺の集合の元の個数は$[G:H][G:K]$なので、左辺の$H\cap K$の左剰余類の個数は有限で、$[G:H][G:K]$以下である。
+  strategy: Inject the cosets of H ∩ K into pairs of cosets of H and of K.
+  sketch:
+  - 'construct: Send g(H∩K) to the pair (gH, gK).'
+  - 'derive: The map is well defined and injective because g⁻¹g'' lies in H∩K exactly when it lies in both.'
+  - 'conclude: The target has [G:H][G:K] elements.'
+  openmath: (forall (G H K) (-> (and (group G) (finite_index_subgroup H G) (finite_index_subgroup K G)) (and (finite_index_subgroup (inter H K) G) (<= (subgroup_index (inter H K) G) (* (subgroup_index H G) (subgroup_index K G))))))
+  hard_negative:
+    statement: 有限指数の部分群$H,K$について、$[G:H\cap K]=[G:H][G:K]$がつねに成り立つ。
+    reason: 指数$2$の部分群$H$で$K=H$とすると、左辺は$2$で右辺は$4$である。等号には指数が互いに素であることなどの条件が必要である。
+  target: |
+    ∀ (G : Type*) [Group G] (H K : Subgroup G), H.index ≠ 0 → K.index ≠ 0 → (H ⊓ K).index ≠ 0 ∧ (H ⊓ K).index ≤ H.index * K.index
+  proof: |
+    by
+      intro G _ H K hH hK
+      exact ⟨Subgroup.index_inf_ne_zero hH hK, Subgroup.index_inf_le⟩
+- id: solvable_subgroup_and_surjective_image
+  kind: gap
+  level: 3
+  topic: 可解群・部分群と全射像
+  statement: 可解群$G$の部分群$H$は可解であり、$G$からの全射準同型の像$K$も可解である。
+  statement_en: If G is a solvable group, then every subgroup H of G is solvable and the target K of every surjective homomorphism from G is solvable.
+  assumptions:
+  - $G$は可解群
+  - $H$は$G$の部分群
+  - $f\colon G\to K$は全射準同型
+  quantifiers:
+  - 任意の$H$と$f$
+  conclusion: $H$と$K$は可解である。
+  answer: |
+    $G$を可解群、$H$を部分群、$f\colon G\to K$を全射準同型とする。群$A$の導来列を$A^{(0)}=A$、$A^{(i+1)}=[A^{(i)},A^{(i)}]$で定める。可解性より$G^{(m)}=1$となる$m$がある。$H\subseteq G$から帰納法で$H^{(i)}\subseteq G^{(i)}$が従うので、$H^{(m)}=1$である。また$f$は交換子を交換子に送るので、帰納法により$f(G^{(i)})=K^{(i)}$である。$i=0$は全射性そのものであり、$f([A,A])=[f(A),f(A)]$から次の段に進む。よって$K^{(m)}=f(G^{(m)})=1$である。
+  strategy: Compare derived series by induction, using inclusion for H and surjectivity for K.
+  sketch:
+  - 'setup: Choose m with G^(m) trivial.'
+  - 'induction: H^(i) is contained in G^(i) for all i.'
+  - 'induction: f(G^(i)) = K^(i), using surjectivity at i = 0 and f([A,A]) = [f(A),f(A)].'
+  - 'conclude: H^(m) and K^(m) are trivial.'
+  openmath: (forall (G K H f) (-> (and (solvable_group G) (subgroup_of H G) (group_hom f G K) (surjective_function f)) (and (solvable_group H) (solvable_group K))))
+  hard_negative:
+    statement: 正規部分群$N$が可解なら$G$も可解である。
+    reason: $G=A_5$、$N=1$では$N$は可解だが$G$は可解でない。$G/N$の可解性も必要である。
+  target: |
+    ∀ (G K : Type*) [Group G] [Group K] [IsSolvable G] (H : Subgroup G) (f : G →* K), Function.Surjective f → IsSolvable H ∧ IsSolvable K
+  proof: |
+    by
+      intro G K _ _ _ H f hf
+      exact ⟨solvable_of_solvable_injective H.subtype_injective, solvable_of_surjective hf⟩
+- id: perfect_nontrivial_group_not_solvable
+  kind: gap
+  level: 3
+  topic: 可解群・完全群
+  statement: 自明でない群$G$が$[G,G]=G$を満たすなら、$G$は可解でない。
+  statement_en: A nontrivial group G with [G,G] = G is not solvable.
+  assumptions:
+  - $G$は自明でない群
+  - $[G,G]=G$
+  quantifiers:
+  - 任意の群$G$
+  conclusion: $G$は可解でない。
+  answer: |
+    $G$を$[G,G]=G$を満たす自明でない群とする。導来列を$G^{(0)}=G$、$G^{(i+1)}=[G^{(i)},G^{(i)}]$で定める。帰納法で全ての$i$について$G^{(i)}=G$を示す。$i=0$では明らかである。$G^{(i)}=G$なら$G^{(i+1)}=[G,G]=G$である。$G$が可解なら$G^{(m)}=1$となる$m$があるが、$G^{(m)}=G$は自明でないので矛盾する。よって$G$は可解でない。
+  strategy: The derived series is constant equal to G, so it never reaches the trivial group.
+  sketch:
+  - 'induction: G^(i) = G for every i.'
+  - 'contradiction: Solvability would give G^(m) = 1, while G is nontrivial.'
+  openmath: (forall (G) (-> (and (group G) (!= G (trivial_subgroup G)) (= (commutator_subgroup G) G)) (not (solvable_group G))))
+  hard_negative:
+    statement: $[G,G]\neq G$なら$G$は可解である。
+    reason: $[S_5,S_5]=A_5\neq S_5$だが、$S_5$は可解でない。導来列が途中で止まる場合がある。
+  target: |
+    ∀ (G : Type*) [Group G] [Nontrivial G], commutator G = ⊤ → ¬ IsSolvable G
+  proof: |
+    by
+      intro G _ _ hc hs
+      have key : ∀ n : ℕ, derivedSeries G n = ⊤ := by
+        intro n
+        induction n with
+        | zero => rfl
+        | succ n ih =>
+          rw [derivedSeries_succ, ih]
+          rw [commutator_def] at hc
+          exact hc
+      obtain ⟨n, hn⟩ := hs.solvable
+      rw [key n] at hn
+      exact top_ne_bot hn
+- id: nilpotent_of_nilpotent_central_quotient
+  kind: gap
+  level: 3
+  topic: 冪零群・中心による商
+  statement: 群$G$について、$G/Z(G)$が冪零なら$G$も冪零である。
+  statement_en: If the quotient G/Z(G) of a group G by its center is nilpotent, then G is nilpotent.
+  assumptions:
+  - $G$は群
+  - $G/Z(G)$は冪零
+  quantifiers:
+  - 任意の群$G$
+  conclusion: $G$は冪零である。
+  answer: |
+    $G$を群、$Z=Z(G)$、$\pi\colon G\to G/Z$を標準全射とし、$G/Z$は冪零とする。群$A$の上部中心列を次のように定める。$Z_0(A)=1$とし、全ての$y\in A$で$[x,y]\in Z_i(A)$となる$x\in A$の全体を$Z_{i+1}(A)$とする。$A$が冪零であることは、ある$c$で$Z_c(A)=A$となることである。全ての$i$について、$\pi(x)\in Z_i(G/Z)$なら$x\in Z_{i+1}(G)$であることを帰納法で示す。$i=0$なら$\pi(x)=1$より$x\in Z=Z_1(G)$である。$\pi(x)\in Z_{i+1}(G/Z)$とする。全ての$y\in G$で$\pi([x,y])=[\pi(x),\pi(y)]\in Z_i(G/Z)$であり、帰納法の仮定より$[x,y]\in Z_{i+1}(G)$である。よって$x\in Z_{i+2}(G)$である。$Z_c(G/Z)=G/Z$なら全ての$x\in G$が$Z_{c+1}(G)$に入るので、$G$は冪零である。
+  strategy: Pull the upper central series of G/Z(G) back to G, shifted by one step.
+  sketch:
+  - 'setup: Define the upper central series Z_i and fix c with Z_c(G/Z) = G/Z.'
+  - 'induction: π(x) in Z_i(G/Z) implies x in Z_(i+1)(G).'
+  - 'derive: The step uses π([x,y]) = [π(x),π(y)].'
+  - 'conclude: Z_(c+1)(G) = G.'
+  openmath: (forall (G) (-> (and (group G) (nilpotent_group (quotient_group G (group_center G)))) (nilpotent_group G)))
+  hard_negative:
+    statement: 正規部分群$N$について$G/N$が冪零なら$G$も冪零である。
+    reason: $S_3$と$N=A_3$では$G/N$は位数$2$で冪零だが、$S_3$は中心が自明なので冪零でない。$N$は中心に含まれる必要がある。
+  target: |
+    ∀ (G : Type*) [Group G], Group.IsNilpotent (G ⧸ Subgroup.center G) → Group.IsNilpotent G
+  proof: |
+    by
+      intro G _ h
+      exact Group.of_quotient_center_nilpotent h
+- id: nilpotent_proper_subgroup_normalizer_grows
+  kind: textbook
+  level: 3
+  topic: 冪零群・正規化群条件
+  statement: 冪零群$G$の真部分群$H$について、$H$は正規化群$N_G(H)$に真に含まれる。
+  statement_en: A proper subgroup H of a nilpotent group G is properly contained in its normalizer N_G(H).
+  assumptions:
+  - $G$は冪零群
+  - $H$は$G$の真部分群
+  quantifiers:
+  - 任意の冪零群$G$と真部分群$H$
+  conclusion: $H\subsetneq N_G(H)$である。
+  answer: |
+    $G$を冪零群、$H$を真部分群とする。上部中心列を次のように定める。$Z_0=1$とし、全ての$y\in G$で$[x,y]\in Z_i$となる$x\in G$の全体を$Z_{i+1}$とする。ここで$[x,y]=xyx^{-1}y^{-1}$である。帰納法により各$Z_i$は$G$の正規部分群であり、$Z_{i+1}/Z_i$は$G/Z_i$の中心である。冪零性より$Z_c=G$となる$c$がある。$Z_0\subseteq H$かつ$Z_c\not\subseteq H$なので、$Z_i\subseteq H$かつ$Z_{i+1}\not\subseteq H$となる$i$がある。$x\in Z_{i+1}\setminus H$をとる。$h\in H$について$xhx^{-1}h^{-1}=[x,h]\in Z_i\subseteq H$なので、$xhx^{-1}\in H$である。$x^{-1}\in Z_{i+1}$にも同じ議論を適用すると$x^{-1}hx\in H$である。よって$xHx^{-1}=H$であり、$x\in N_G(H)\setminus H$である。したがって$H\subsetneq N_G(H)$である。
+  strategy: Choose an element in the first term of the upper central series outside H; it normalizes H.
+  sketch:
+  - 'setup: Use the upper central series with Z_c = G.'
+  - 'derive: There is i with Z_i inside H and Z_(i+1) not inside H.'
+  - 'construct: Take x in Z_(i+1) outside H.'
+  - 'derive: [x,h] in Z_i gives xhx⁻¹ in H, and likewise for x⁻¹.'
+  - 'conclude: x normalizes H and is not in H.'
+  openmath: (forall (G H) (-> (and (nilpotent_group G) (subgroup_of H G) (!= H G)) (prsubset H (subgroup_normalizer H G))))
+  hard_negative:
+    statement: 可解群の真部分群は正規化群に真に含まれる。
+    reason: 可解群$S_3$の部分群$\{1,(1\ 2)\}$の正規化群はそれ自身である。
+  target: |
+    ∀ (G : Type*) [Group G] [Group.IsNilpotent G] (H : Subgroup G), H ≠ ⊤ → H < Subgroup.normalizer (H : Set G)
+  proof: |
+    by
+      intro G _ _ H hH
+      exact Group.normalizerCondition_of_isNilpotent H (lt_top_iff_ne_top.mpr hH)
+- id: finite_nilpotent_iff_sylow_subgroups_normal
+  kind: textbook
+  level: 3
+  topic: 冪零群・シロー部分群の正規性
+  statement: 有限群$G$が冪零であることと、全ての素数$p$について$G$の全てのシロー$p$部分群が正規であることは同値である。
+  statement_en: A finite group G is nilpotent if and only if, for every prime p, every Sylow p-subgroup of G is normal.
+  assumptions:
+  - $G$は有限群
+  quantifiers:
+  - 任意の有限群$G$
+  conclusion: $G$が冪零であることと全てのシロー部分群が正規であることは同値である。
+  answer: |
+    $G$を有限群とする。$G$が冪零であるとし、$T$をシロー$p$部分群、$L=N_G(T)$とする。$g\in N_G(L)$なら$gTg^{-1}\subseteq L$は$L$のシロー$p$部分群である。$T$は$L$で正規だから$L$の唯一のシロー$p$部分群であり、$gTg^{-1}=T$、すなわち$g\in L$である。よって$N_G(L)=L$である。冪零群の真部分群は正規化群に真に含まれるから、$L=G$であり、$T$は正規である。逆に全てのシロー部分群が正規とする。$|G|$の相異なる素因数を$p_1,\dots,p_r$とし、シロー$p_i$部分群を$T_i$とする。$i\neq j$なら$|T_i|$と$|T_j|$は互いに素なので$T_i\cap T_j=1$である。$x\in T_i$、$y\in T_j$について、正規性より$xyx^{-1}y^{-1}\in T_i\cap T_j$となるので$xy=yx$である。よって$\mu(x_1,\dots,x_r)=x_1\cdots x_r$は準同型$\mu\colon T_1\times\dots\times T_r\to G$を定める。$x_1\cdots x_r=1$とする。$x_i$は$\prod_{j\neq i}x_j$の逆元であり、その位数は$|T_i|$と$\prod_{j\neq i}|T_j|$をともに割り切るので、$x_i=1$である。よって$\mu$は単射であり、$\prod_i|T_i|=|G|$より全単射である。$G$は$T_1\times\dots\times T_r$と同型である。有限$p$群は冪零であり、冪零群の有限直積は冪零であるから、$G$は冪零である。
+  strategy: Use the normalizer condition for one direction and the internal direct product of Sylow subgroups for the other.
+  sketch:
+  - 'setup: For nilpotent G and a Sylow subgroup T, put L = N_G(T).'
+  - 'derive: T is the unique Sylow p-subgroup of L, so any g normalizing L normalizes T, giving N_G(L) = L.'
+  - 'apply_theorem: The normalizer condition forces L = G.'
+  - 'setup: Conversely, list the normal Sylow subgroups T_1, ..., T_r.'
+  - 'derive: Coprime orders make distinct T_i commute, and the product map from their direct product to G is an injective homomorphism between groups of equal order.'
+  - 'conclude: Finite p-groups and finite products of nilpotent groups are nilpotent.'
+  openmath: (forall (G) (-> (finite_group G) (<-> (nilpotent_group G) (forall (p T) (-> (and (in p P) (sylow_subgroup p T G)) (normal_subgroup T G))))))
+  hard_negative:
+    statement: 有限群であるシロー部分群が1つでも正規なら、その群は冪零である。
+    reason: $S_3$のシロー$3$部分群$A_3$は正規だが、$S_3$は冪零でない。シロー$2$部分群は正規でない。
+  target: |
+    ∀ (G : Type*) [Group G] [Finite G], Group.IsNilpotent G ↔ ∀ (p : ℕ) (_ : Fact p.Prime) (P : Sylow p G), (P : Subgroup G).Normal
+  proof: |
+    by
+      intro G _ _
+      exact (Group.isNilpotent_of_finite_tfae (G := G)).out 0 3
+- id: triangular_double_sum_swap
+  kind: gap
+  level: 2
+  topic: 有限和・三角領域の二重和の交換
+  statement: 可換モノイドに値をとる$f$と自然数$n$について、$\sum_{i=0}^{n-1}\sum_{j=0}^{i-1}f(i,j)=\sum_{j=0}^{n-1}\sum_{j<i<n}f(i,j)$である。
+  statement_en: For f with values in a commutative additive monoid and a natural number n, the sum over i < n of the sum over j < i of f(i,j) equals the sum over j < n of the sum over j < i < n of f(i,j).
+  assumptions:
+  - $f(i,j)$は可換モノイドの元
+  quantifiers:
+  - 任意の$f$と自然数$n$
+  conclusion: 2つの順序の二重和は等しい。
+  answer: |
+    $A$を加法についての可換モノイド、$f\colon\mathbb{N}\times\mathbb{N}\to A$、$n$を自然数とする。左辺は$0\leq i<n$かつ$0\leq j<i$を満たす組$(i,j)$全体にわたる$f(i,j)$の和である。この条件は$0\leq j<i<n$と同じであり、$0\leq j<n$かつ$j<i<n$とも同じである。右辺はこの後者の条件を満たす組にわたる和である。添字の集合が等しく、有限和は順序によらないので、両辺は等しい。
+  strategy: Describe both iterated ranges as the single set of pairs with j < i < n.
+  sketch:
+  - 'translate: The left side sums over pairs with 0 ≤ i < n and 0 ≤ j < i.'
+  - 'derive: This set equals the set of pairs with 0 ≤ j < n and j < i < n.'
+  - 'conclude: Finite sums do not depend on the order of the terms.'
+  openmath: (forall (f n) (= (range_sum n (lambda (i) (range_sum i (lambda (j) (fn_value (fn_value f i) j))))) (range_sum n (lambda (j) (finset_sum (nat_open_interval j n) (lambda (i) (fn_value (fn_value f i) j)))))))
+  hard_negative:
+    statement: $\sum_{i=0}^{n-1}\sum_{j=0}^{i-1}f(i,j)=\sum_{j=0}^{n-1}\sum_{i=0}^{j-1}f(i,j)$である。
+    reason: $n=2$で$f(1,0)=1$、$f(0,1)=0$とすると左辺は$1$、右辺は$0$である。交換すると内側の範囲は$j<i<n$に変わる。
+  target: |
+    ∀ (A : Type*) [AddCommMonoid A] (f : ℕ → ℕ → A) (n : ℕ), ∑ i ∈ Finset.range n, ∑ j ∈ Finset.range i, f i j = ∑ j ∈ Finset.range n, ∑ i ∈ Finset.Ioo j n, f i j
+  proof: |
+    by
+      intro A _ f n
+      apply Finset.sum_comm'
+      intro x y
+      simp only [Finset.mem_range, Finset.mem_Ioo]
+      omega
+- id: finite_sum_by_fibers
+  kind: gap
+  level: 2
+  topic: 有限和・ファイバーごとの和
+  statement: 有限集合$s,t$と写像$\varphi$が全ての$x\in s$で$\varphi(x)\in t$を満たすなら、$\sum_{y\in t}\sum_{x\in s,\,\varphi(x)=y}f(x)=\sum_{x\in s}f(x)$である。
+  statement_en: If finite sets s and t and a map φ satisfy φ(x) ∈ t for all x in s, then the sum over y in t of the sum over x in s with φ(x) = y of f(x) equals the sum over x in s of f(x).
+  assumptions:
+  - $s,t$は有限集合
+  - 全ての$x\in s$で$\varphi(x)\in t$
+  - $f$は可換モノイドに値をとる
+  quantifiers:
+  - 任意の$s,t,\varphi,f$
+  conclusion: ファイバーごとに足してから$y$について足した値は、$s$全体の和に等しい。
+  answer: |
+    $s,t$を有限集合、$\varphi$を全ての$x\in s$で$\varphi(x)\in t$を満たす写像、$f$を可換モノイドに値をとる写像とする。$y\in t$について$s_y=\{x\in s\mid\varphi(x)=y\}$とおく。$y\neq y'$なら$s_y$と$s_{y'}$は交わらない。各$x\in s$は$y=\varphi(x)\in t$に対する$s_y$に属する。よって$s$は$(s_y)_{y\in t}$の非交和であり、互いに交わらない有限集合の和集合上の和は各集合上の和の和であるから、主張が従う。
+  strategy: The fibers of φ over t partition s.
+  sketch:
+  - 'setup: Let s_y be the fiber of φ over y in t.'
+  - 'derive: The fibers are disjoint, and they cover s because φ maps s into t.'
+  - 'conclude: Summing over a disjoint union gives the identity.'
+  openmath: (forall (s t g f) (-> (forall (x) (-> (in x s) (in (fn_value g x) t))) (= (finset_sum t (lambda (y) (finset_sum (finset_fiber s g y) (lambda (x) (fn_value f x))))) (finset_sum s (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: $\varphi(x)\in t$を仮定しなくても同じ等式が成り立つ。
+    reason: $s=\{a\}$、$t=\emptyset$、$f(a)=1$とすると左辺は$0$、右辺は$1$である。$t$の外に行く元の項が落ちる。
+  target: |
+    ∀ (ι κ A : Type*) [DecidableEq κ] [AddCommMonoid A] (s : Finset ι) (t : Finset κ) (φ : ι → κ) (f : ι → A), (∀ x ∈ s, φ x ∈ t) → ∑ y ∈ t, ∑ x ∈ s.filter (fun x => φ x = y), f x = ∑ x ∈ s, f x
+  proof: |
+    by
+      intro ι κ A _ _ s t φ f h
+      exact Finset.sum_fiberwise_of_maps_to h f
+- id: product_of_binomials_expansion
+  kind: textbook
+  level: 2
+  topic: 有限積・和の積の展開
+  statement: 可換半環の元$a_i,b_i$と有限集合$s$について、$\prod_{i\in s}(a_i+b_i)=\sum_{t\subseteq s}\bigl(\prod_{i\in t}a_i\bigr)\bigl(\prod_{i\in s\setminus t}b_i\bigr)$である。
+  statement_en: For elements a_i, b_i of a commutative semiring and a finite set s, the product over s of (a_i + b_i) equals the sum over subsets t of s of (product over t of a_i)(product over s minus t of b_i).
+  assumptions:
+  - $a_i,b_i$は可換半環の元
+  - $s$は有限集合
+  quantifiers:
+  - 任意の$a,b,s$
+  conclusion: 積は$s$の全ての部分集合にわたる和に展開される。
+  answer: |
+    $S$を可換半環、$s$を有限集合、$a_i,b_i\in S$（$i\in s$）とし、$|s|$についての帰納法で示す。$s=\emptyset$では両辺とも$1$である。$c\notin s$をとり、$s$で等式が成り立つとする。$\prod_{i\in s\cup\{c\}}(a_i+b_i)=(a_c+b_c)\prod_{i\in s}(a_i+b_i)$に帰納法の仮定を代入し、分配法則で展開する。$a_c$を掛けた項は$c$を含む部分集合$t\cup\{c\}$に対応し、$b_c$を掛けた項は$c$を含まない部分集合$t$に対応する。$s\cup\{c\}$の部分集合はこの2種類に重複なく分かれるので、等式は$s\cup\{c\}$でも成り立つ。
+  strategy: Induct on s, splitting subsets of s ∪ {c} by whether they contain c.
+  sketch:
+  - 'induction: Empty s gives 1 on both sides.'
+  - 'setup: For a new index c, multiply the identity for s by a_c + b_c.'
+  - 'derive: Terms with a_c correspond to subsets containing c.'
+  - 'derive: Terms with b_c correspond to subsets not containing c.'
+  - 'conclude: These two kinds exhaust the subsets of s ∪ {c}.'
+  openmath: (forall (s a b) (= (finite_family_product s (lambda (i) (+ (fn_value a i) (fn_value b i)))) (finset_sum (powerset s) (lambda (t) (* (finite_family_product t (lambda (i) (fn_value a i))) (finite_family_product (setdiff s t) (lambda (i) (fn_value b i))))))))
+  hard_negative:
+    statement: $\prod_{i\in s}(a_i+b_i)=\prod_{i\in s}a_i+\prod_{i\in s}b_i$である。
+    reason: $s$が$2$元で全ての$a_i,b_i$が$1$なら、左辺は$4$、右辺は$2$である。
+  target: |
+    ∀ (ι S : Type*) [DecidableEq ι] [CommSemiring S] (s : Finset ι) (a b : ι → S), ∏ i ∈ s, (a i + b i) = ∑ t ∈ s.powerset, (∏ i ∈ t, a i) * ∏ i ∈ s \ t, b i
+  proof: |
+    by
+      intro ι S _ _ s a b
+      exact Finset.prod_add a b s
+- id: abel_summation_formula
+  kind: named
+  level: 2
+  topic: 有限和・アーベルの総和法
+  statement: アーベルの総和法。可換環の列$a,b$と自然数$n$について、$B_k=\sum_{j=0}^{k}b_j$とおくと、$\sum_{i=0}^{n}a_ib_i=a_nB_n-\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i$である。
+  statement_en: Abel summation. For sequences a and b in a commutative ring and a natural number n, with B_k the sum of b_j for j ≤ k, the sum of a_i b_i for i ≤ n equals a_n B_n minus the sum over i < n of (a_(i+1) - a_i) B_i.
+  assumptions:
+  - $a,b$は可換環の列
+  - $B_k=\sum_{j=0}^{k}b_j$
+  quantifiers:
+  - 任意の列$a,b$と自然数$n$
+  conclusion: $\sum_{i=0}^{n}a_ib_i=a_nB_n-\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i$である。
+  answer: |
+    $S$を可換環、$a,b$を$S$の列、$B_k=\sum_{j=0}^{k}b_j$とし、$n$についての帰納法で示す。$n=0$では両辺とも$a_0b_0$である。$n$で等式が成り立つとすると、$\sum_{i=0}^{n+1}a_ib_i=a_nB_n-\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i+a_{n+1}b_{n+1}$である。ここで$B_{n+1}=B_n+b_{n+1}$より$a_{n+1}b_{n+1}=a_{n+1}B_{n+1}-a_{n+1}B_n$である。代入すると$a_{n+1}B_{n+1}-\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i-(a_{n+1}-a_n)B_n$となり、最後の2項は$\sum_{i=0}^{n}(a_{i+1}-a_i)B_i$にまとまる。よって$n+1$でも成り立つ。
+  strategy: Induct on n, rewriting b_(n+1) as B_(n+1) - B_n.
+  sketch:
+  - 'induction: For n = 0 both sides equal a_0 b_0.'
+  - 'setup: Add a_(n+1) b_(n+1) to the identity for n.'
+  - 'derive: Replace b_(n+1) by B_(n+1) - B_n.'
+  - 'conclude: Collect (a_(n+1) - a_n) B_n into the difference sum.'
+  openmath: (forall (a b n) (= (range_sum (+ n 1) (lambda (i) (* (fn_value a i) (fn_value b i)))) (- (* (fn_value a n) (range_sum (+ n 1) (lambda (j) (fn_value b j)))) (range_sum n (lambda (i) (* (- (fn_value a (+ i 1)) (fn_value a i)) (range_sum (+ i 1) (lambda (j) (fn_value b j)))))))))
+  hard_negative:
+    statement: 境界項を除いた$\sum_{i=0}^{n}a_ib_i=-\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i$が成り立つ。
+    reason: $n=0$、$a_0=b_0=1$とすると左辺は$1$で右辺は$0$である。境界項$a_nB_n$は省けない。
+  target: |
+    ∀ (S : Type*) [CommRing S] (a b : ℕ → S) (n : ℕ), ∑ i ∈ Finset.range (n + 1), a i * b i = a n * ∑ j ∈ Finset.range (n + 1), b j - ∑ i ∈ Finset.range n, (a (i + 1) - a i) * ∑ j ∈ Finset.range (i + 1), b j
+  proof: |
+    by
+      intro S _ a b n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_range_succ, ih, Finset.sum_range_succ (fun i => (a (i + 1) - a i) * ∑ j ∈ Finset.range (i + 1), b j) n, Finset.sum_range_succ b (n + 1)]
+        ring
+- id: sum_vanishes_under_cancelling_involution
+  kind: gap
+  level: 2
+  topic: 有限和・対合による打ち消し
+  statement: 有限集合$s$上の写像$\varphi\colon s\to s$が$\varphi\circ\varphi=\mathrm{id}$を満たし、可換モノイドに値をとる$f$が全ての$x\in s$で$f(x)+f(\varphi(x))=0$を満たし、$f(x)\neq0$なら$\varphi(x)\neq x$であるとする。このとき$\sum_{x\in s}f(x)=0$である。
+  statement_en: If φ maps a finite set s to itself with φ∘φ = id, and f with values in a commutative additive monoid satisfies f(x) + f(φ(x)) = 0 for all x in s and φ(x) ≠ x whenever f(x) ≠ 0, then the sum of f over s is 0.
+  assumptions:
+  - $\varphi$は$s$上の対合
+  - 全ての$x\in s$で$f(x)+f(\varphi(x))=0$
+  - $f(x)\neq0$なら$\varphi(x)\neq x$
+  quantifiers:
+  - 任意の$s,f,\varphi$
+  conclusion: $\sum_{x\in s}f(x)=0$である。
+  answer: |
+    $A$を加法についての可換モノイド、$s$を有限集合、$f\colon s\to A$とし、$\varphi\colon s\to s$が仮定を満たすとする。$|s|$についての帰納法で示す。全ての$x\in s$で$f(x)=0$なら和は$0$である。$f(c)\neq0$となる$c\in s$があるとする。仮定より$d=\varphi(c)\neq c$である。$s'=s\setminus\{c,d\}$とおく。$x\in s'$で$\varphi(x)=c$なら$x=\varphi(c)=d$となり矛盾し、同様に$\varphi(x)=d$なら$x=c$となり矛盾する。よって$\varphi$は$s'$を$s'$に写し、$s'$上でも仮定が成り立つ。帰納法の仮定より$\sum_{x\in s'}f(x)=0$である。したがって$\sum_{x\in s}f(x)=f(c)+f(d)+\sum_{x\in s'}f(x)=0$である。
+  strategy: Remove a pair {c, φ(c)} with f(c) ≠ 0 and induct on the size of s.
+  sketch:
+  - 'case_split: If f vanishes on s the sum is 0.'
+  - 'setup: Otherwise pick c with f(c) ≠ 0 and set d = φ(c), so d ≠ c.'
+  - 'derive: φ preserves s minus {c, d} because φ is an involution.'
+  - 'induction: The sum over the smaller set is 0.'
+  - 'conclude: f(c) + f(d) = 0 finishes the sum.'
+  openmath: (forall (s f t) (-> (forall (x) (-> (in x s) (and (in (fn_value t x) s) (= (fn_value t (fn_value t x)) x) (= (+ (fn_value f x) (fn_value f (fn_value t x))) 0) (-> (!= (fn_value f x) 0) (!= (fn_value t x) x))))) (= (finset_sum s (lambda (x) (fn_value f x))) 0)))
+  hard_negative:
+    statement: $f(x)\neq0$なら$\varphi(x)\neq x$という条件を省いても$\sum_{x\in s}f(x)=0$である。
+    reason: 位数$2$の加法群の生成元$u$について、$s=\{c\}$、$\varphi=\mathrm{id}$、$f(c)=u$とすると$f(c)+f(c)=0$だが和は$u\neq0$である。
+  target: |
+    ∀ (ι A : Type*) [AddCommMonoid A] (s : Finset ι) (f : ι → A) (φ : ι → ι), (∀ x ∈ s, φ x ∈ s) → (∀ x ∈ s, φ (φ x) = x) → (∀ x ∈ s, f x + f (φ x) = 0) → (∀ x ∈ s, f x ≠ 0 → φ x ≠ x) → ∑ x ∈ s, f x = 0
+  proof: |
+    by
+      intro ι A _ s f φ hm hi hf hn
+      exact Finset.sum_involution (fun x _ => φ x) hf hn hm hi
+- id: span_le_submodule_iff_subset
+  kind: gap
+  level: 3
+  topic: 加群・生成される部分加群
+  statement: 環$S$上の加群$M$の部分集合$s$と部分加群$p$について、$s$が生成する部分加群が$p$に含まれることと、$s\subseteq p$は同値である。
+  statement_en: For a subset s and a submodule p of a module M over a ring S, the submodule generated by s is contained in p if and only if s ⊆ p.
+  assumptions:
+  - $M$は環$S$上の加群
+  - $s\subseteq M$
+  - $p$は$M$の部分加群
+  quantifiers:
+  - 任意の$s$と$p$
+  conclusion: $\langle s\rangle\subseteq p$と$s\subseteq p$は同値である。
+  answer: |
+    $S$を環、$M$を$S$加群、$s\subseteq M$、$p$を$M$の部分加群とする。$s\subseteq\langle s\rangle$なので、$\langle s\rangle\subseteq p$なら$s\subseteq p$である。逆に$s\subseteq p$とする。$\langle s\rangle$の元は$s$の元の有限個の$S$係数の線形結合である。$p$は和とスカラー倍で閉じているから、その線形結合は$p$に入る。よって$\langle s\rangle\subseteq p$である。
+  strategy: One direction uses s ⊆ ⟨s⟩ and the other uses closure of p under linear combinations.
+  sketch:
+  - 'derive: s lies in the generated submodule, which gives the forward implication.'
+  - 'derive: Elements of the generated submodule are finite linear combinations of s.'
+  - 'conclude: p is closed under these combinations.'
+  openmath: (forall (S M s p) (-> (and (is_ring S) (is_module S M) (subset s M) (is_submodule p M)) (<-> (subset (linear_span s) p) (subset s p))))
+  hard_negative:
+    statement: $s\subseteq p$なら$s$が生成する部分加群は$p$に等しい。
+    reason: $s=\emptyset$、$p=M\neq0$のとき、生成される部分加群は$0$である。含まれるだけで等しいとは限らない。
+  target: |
+    ∀ (S M : Type*) [Ring S] [AddCommGroup M] [Module S M] (s : Set M) (p : Submodule S M), Submodule.span S s ≤ p ↔ s ⊆ p
+  proof: |
+    by
+      intro S M _ _ _ s p
+      exact Submodule.span_le
+- id: modular_law_for_submodules
+  kind: gap
+  level: 3
+  topic: 加群・モジュラー律
+  statement: 環上の加群$M$の部分加群$p,q,r$が$p\subseteq r$を満たすなら、$(p+q)\cap r=p+(q\cap r)$である。
+  statement_en: For submodules p, q, r of a module over a ring with p ⊆ r, one has (p + q) ∩ r = p + (q ∩ r).
+  assumptions:
+  - $M$は環上の加群
+  - $p,q,r$は$M$の部分加群
+  - $p\subseteq r$
+  quantifiers:
+  - 任意の部分加群$p,q,r$
+  conclusion: $(p+q)\cap r=p+(q\cap r)$である。
+  answer: |
+    $M$を環上の加群、$p,q,r$を部分加群とし、$p\subseteq r$とする。$x\in(p+q)\cap r$をとり、$x=y+z$（$y\in p$、$z\in q$）と書く。$y\in p\subseteq r$かつ$x\in r$なので、$z=x-y\in r$である。よって$z\in q\cap r$であり、$x\in p+(q\cap r)$である。逆に$x=y+z$（$y\in p$、$z\in q\cap r$）なら$x\in p+q$である。また$y\in p\subseteq r$と$z\in r$から$x\in r$である。したがって両辺は等しい。
+  strategy: Write x = y + z and use p ⊆ r to move z into r.
+  sketch:
+  - 'setup: Take x = y + z in (p+q) ∩ r with y in p and z in q.'
+  - 'derive: z = x - y lies in r because y lies in p ⊆ r.'
+  - 'derive: So x lies in p + (q∩r).'
+  - 'conclude: The reverse inclusion follows from p ⊆ r directly.'
+  openmath: (forall (S M p q r) (-> (and (is_ring S) (is_module S M) (is_submodule p M) (is_submodule q M) (is_submodule r M) (subset p r)) (= (submodule_inter (submodule_sum p q) r) (submodule_sum p (submodule_inter q r)))))
+  hard_negative:
+    statement: $p\subseteq r$を仮定しなくても$(p+q)\cap r=p+(q\cap r)$である。
+    reason: 平面の相異なる3直線$p,q,r$では、$(p+q)\cap r=r$だが$p+(q\cap r)=p$である。
+  target: |
+    ∀ (S M : Type*) [Ring S] [AddCommGroup M] [Module S M] (p q r : Submodule S M), p ≤ r → (p ⊔ q) ⊓ r = p ⊔ (q ⊓ r)
+  proof: |
+    by
+      intro S M _ _ _ p q r h
+      exact sup_inf_assoc_of_le q h
+- id: preimage_of_image_is_sum_with_kernel
+  kind: gap
+  level: 3
+  topic: 加群・像の逆像
+  statement: 環上の線形写像$f\colon M\to L$と$M$の部分加群$p$について、$f^{-1}(f(p))=p+\ker f$である。
+  statement_en: For a linear map f from M to L over a ring and a submodule p of M, f⁻¹(f(p)) = p + ker f.
+  assumptions:
+  - $f\colon M\to L$は環上の線形写像
+  - $p$は$M$の部分加群
+  quantifiers:
+  - 任意の$f$と$p$
+  conclusion: $f^{-1}(f(p))=p+\ker f$である。
+  answer: |
+    $f\colon M\to L$を環上の線形写像、$p$を$M$の部分加群とする。$x\in f^{-1}(f(p))$なら$f(x)=f(y)$となる$y\in p$がある。$x-y\in\ker f$なので、$x=y+(x-y)\in p+\ker f$である。逆に$x=y+z$（$y\in p$、$z\in\ker f$）なら$f(x)=f(y)\in f(p)$であり、$x\in f^{-1}(f(p))$である。
+  strategy: Compare x with a point of p having the same image; the difference lies in the kernel.
+  sketch:
+  - 'setup: For x with f(x) = f(y), y in p, write x = y + (x - y).'
+  - 'derive: x - y lies in ker f.'
+  - 'conclude: The reverse inclusion uses that ker f maps to 0.'
+  openmath: (forall (S M L f p) (-> (and (is_ring S) (module_hom f S M L) (is_submodule p M)) (= (preimage_submodule f (image_submodule f p)) (submodule_sum p (map_kernel f)))))
+  hard_negative:
+    statement: 線形写像$f$と部分加群$p$について、$f^{-1}(f(p))=p$である。
+    reason: $f=0$、$p=0$、$M\neq0$では左辺は$M$、右辺は$0$である。$\ker f\subseteq p$のときに限り等しい。
+  target: |
+    ∀ (S M L : Type*) [Ring S] [AddCommGroup M] [AddCommGroup L] [Module S M] [Module S L] (f : M →ₗ[S] L) (p : Submodule S M), Submodule.comap f (Submodule.map f p) = p ⊔ LinearMap.ker f
+  proof: |
+    by
+      intro S M L _ _ _ _ _ f p
+      exact Submodule.comap_map_eq f p
+- id: direct_sum_universal_property
+  kind: textbook
+  level: 3
+  topic: 加群・直和の普遍性
+  statement: 環$S$上の加群の族$(M_i)_{i\in I}$と線形写像の族$\varphi_i\colon M_i\to L$について、全ての$i$と$x\in M_i$で$\psi(\iota_i(x))=\varphi_i(x)$を満たす線形写像$\psi\colon\bigoplus_{i\in I}M_i\to L$がただ1つ存在する。ここで$\iota_i$は第$i$成分への包含である。
+  statement_en: For a family of modules M_i over a ring S and linear maps φ_i from M_i to L, there is a unique linear map ψ from the direct sum of the M_i to L with ψ(ι_i(x)) = φ_i(x) for all i and x, where ι_i is the inclusion of the i-th summand.
+  assumptions:
+  - $S$は環
+  - $(M_i)_{i\in I}$は$S$加群の族
+  - $L$は$S$加群
+  - $\varphi_i\colon M_i\to L$は$S$線形
+  quantifiers:
+  - 任意の族$(M_i)$と$(\varphi_i)$
+  conclusion: 条件を満たす$\psi$がただ1つ存在する。
+  answer: |
+    $S$を環、$(M_i)_{i\in I}$を$S$加群の族、$L$を$S$加群、$\varphi_i\colon M_i\to L$を線形写像とする。$\bigoplus_{i\in I}M_i$の元$x$は、有限個を除く$i$で成分$x_i$が$0$である族$(x_i)$である。$\psi(x)=\sum_{i\in I}\varphi_i(x_i)$と定める。右辺は$0$でない項が有限個なので定まる。成分ごとの和とスカラー倍に対して$\varphi_i$が線形なので、$\psi$は線形である。$\iota_i(x)$は第$i$成分だけが$x$である族なので、$\psi(\iota_i(x))=\varphi_i(x)$である。線形写像$\psi'$が同じ条件を満たすとする。全ての元は$x=\sum_i\iota_i(x_i)$と書けるので、$\psi'(x)=\sum_i\psi'(\iota_i(x_i))=\sum_i\varphi_i(x_i)=\psi(x)$となり、$\psi'=\psi$である。
+  strategy: Define ψ as the finite sum of φ_i on components, and use that the images of the inclusions generate the direct sum.
+  sketch:
+  - 'construct: Define ψ(x) as the sum of φ_i(x_i), which has finitely many nonzero terms.'
+  - 'derive: ψ is linear because each φ_i is.'
+  - 'derive: ψ restricted to the i-th summand is φ_i.'
+  - 'conclude: Every x is a finite sum of ι_i(x_i), which forces uniqueness.'
+  openmath: (forall (S I W L u) (-> (and (is_ring S) (module_family W S I) (is_module S L) (forall (i) (-> (in i I) (module_hom (fn_value u i) S (fn_value W i) L)))) (exists (j) (and (module_hom j S (direct_sum_family W) L) (forall (i x) (-> (and (in i I) (in x (fn_value W i))) (= (fn_value j (fn_value (direct_sum_inclusion W i) x)) (fn_value (fn_value u i) x)))) (forall (k) (-> (and (module_hom k S (direct_sum_family W) L) (forall (i x) (-> (and (in i I) (in x (fn_value W i))) (= (fn_value k (fn_value (direct_sum_inclusion W i) x)) (fn_value (fn_value u i) x))))) (= k j)))))))
+  hard_negative:
+    statement: 無限個の加群の直積$\prod_{i\in I}M_i$でも、$\varphi_i$を延長する線形写像がただ1つ存在する。
+    reason: 体$k$上で$I$を無限集合、全ての$M_i$を$1$次元、$L=k$、$\varphi_i=0$とする。$\prod M_i/\bigoplus M_i$は$0$でないので、$\bigoplus M_i$上で$0$になる$0$でない線形形式があり、零写像とともに条件を満たす。一意性が成り立たない。
+  target: |
+    ∀ (S ι L : Type*) (M : ι → Type*) [Ring S] [DecidableEq ι] [∀ i, AddCommGroup (M i)] [∀ i, Module S (M i)] [AddCommGroup L] [Module S L] (φ : ∀ i, M i →ₗ[S] L), ∃! ψ : DirectSum ι M →ₗ[S] L, ∀ (i : ι) (x : M i), ψ (DirectSum.lof S ι M i x) = φ i x
+  proof: |
+    by
+      intro S ι L M _ _ _ _ _ _ φ
+      refine ⟨DirectSum.toModule S ι L φ, fun i x => DirectSum.toModule_lof S i x, ?_⟩
+      intro ψ hψ
+      apply DirectSum.linearMap_ext
+      intro i
+      ext x
+      rw [LinearMap.comp_apply, LinearMap.comp_apply, hψ, DirectSum.toModule_lof]
+- id: internal_direct_sum_iff_independent_and_spanning
+  kind: textbook
+  level: 3
+  topic: 加群・内部直和の判定
+  statement: 環上の加群$M$の部分加群の族$(A_i)_{i\in I}$について、成分を足す写像$\bigoplus_iA_i\to M$が全単射であることは、次の2条件が成り立つことと同値である。各$i$で$A_i\cap\sum_{j\neq i}A_j=0$であり、$\sum_iA_i=M$である。
+  statement_en: For a family of submodules A_i of a module M over a ring, the addition map from the direct sum of the A_i to M is bijective if and only if A_i ∩ (sum of A_j for j ≠ i) = 0 for each i and the sum of all A_i is M.
+  assumptions:
+  - $M$は環上の加群
+  - $(A_i)_{i\in I}$は$M$の部分加群の族
+  quantifiers:
+  - 任意の部分加群の族$(A_i)$
+  conclusion: 成分を足す写像が全単射であることと、独立性かつ$\sum_iA_i=M$は同値である。
+  answer: |
+    $M$を環上の加群、$(A_i)_{i\in I}$を部分加群の族とし、$\alpha\colon\bigoplus_iA_i\to M$を$\alpha((x_i))=\sum_ix_i$で定める。$\alpha$の像は$\sum_iA_i$なので、全射性は$\sum_iA_i=M$と同値である。単射性と独立性の同値を示す。$\alpha$は線形なので、単射性は核が$0$であることと同値である。$\alpha$が単射で、$x\in A_i\cap\sum_{j\neq i}A_j$とする。$x=\sum_{j\neq i}x_j$と書くと、第$i$成分が$x$で第$j$成分が$-x_j$の族は$\alpha$で$0$に写るから、$x=0$である。逆に独立性を仮定し、$\alpha((x_i))=0$で$x_i\neq0$となる$i$があるとする。このとき$x_i=-\sum_{j\neq i}x_j\in A_i\cap\sum_{j\neq i}A_j$となり矛盾する。よって核は$0$である。
+  strategy: Surjectivity is the spanning condition, and a kernel element is the same as a relation among the components.
+  sketch:
+  - 'translate: The image of the addition map is the sum of the A_i, which handles surjectivity.'
+  - 'translate: Injectivity means the kernel is 0.'
+  - 'derive: An element of A_i ∩ sum of the others gives a kernel element with i-th component x.'
+  - 'derive: A nonzero kernel element gives a nonzero element of some A_i ∩ sum of the others.'
+  - 'conclude: Injectivity and independence are equivalent.'
+  openmath: (forall (S M A) (-> (and (is_ring S) (is_module S M) (submodule_family A M)) (<-> (bijective_map (direct_sum_addition_map A)) (and (independent_submodule_family A) (= (submodule_family_sum A) (whole_submodule M))))))
+  hard_negative:
+    statement: 全ての$i\neq j$で$A_i\cap A_j=0$かつ$\sum_iA_i=M$なら、$M$は$(A_i)$の内部直和である。
+    reason: 平面の相異なる3直線は2つずつ$0$で交わり和は平面全体だが、$1$つの直線は他の2直線の和に含まれるので直和でない。
+  target: |
+    ∀ (S ι M : Type*) [Ring S] [DecidableEq ι] [AddCommGroup M] [Module S M] (A : ι → Submodule S M), Function.Bijective (DirectSum.coeAddMonoidHom A) ↔ iSupIndep A ∧ ⨆ i, A i = ⊤
+  proof: |
+    by
+      intro S ι M _ _ _ _ A
+      exact DirectSum.isInternal_submodule_iff_iSupIndep_and_iSup_eq_top A
+- id: complementary_submodules_iff_unique_decomposition
+  kind: gap
+  level: 3
+  topic: 加群・補部分加群と一意分解
+  statement: 環上の加群$M$の部分加群$p,q$について、$p\cap q=0$かつ$p+q=M$であることと、全ての$x\in M$が$x=y+z$（$y\in p$、$z\in q$）とただ1通りに書けることは同値である。
+  statement_en: For submodules p and q of a module M over a ring, p ∩ q = 0 and p + q = M if and only if every x in M is uniquely of the form y + z with y in p and z in q.
+  assumptions:
+  - $M$は環上の加群
+  - $p,q$は$M$の部分加群
+  quantifiers:
+  - 任意の部分加群$p,q$
+  conclusion: $p,q$が補部分加群であることと、一意分解が成り立つことは同値である。
+  answer: |
+    $M$を環上の加群、$p,q$を部分加群とする。$p\cap q=0$かつ$p+q=M$とする。$x\in M$は$p+q=M$より$x=y+z$（$y\in p$、$z\in q$）と書ける。$x=y'+z'$も同様の分解なら$y-y'=z'-z\in p\cap q=0$となり、$y=y'$、$z=z'$である。逆に一意分解を仮定する。全ての$x$が分解をもつので$p+q=M$である。$x\in p\cap q$なら$x=x+0=0+x$は2つの分解であり、一意性より$x=0$である。
+  strategy: The difference of two decompositions lies in p ∩ q, and an element of p ∩ q has two decompositions.
+  sketch:
+  - 'setup: Assume p ∩ q = 0 and p + q = M.'
+  - 'derive: Two decompositions satisfy y - y'' = z'' - z in p ∩ q, so they agree.'
+  - 'setup: Conversely assume unique decompositions.'
+  - 'derive: Existence gives p + q = M.'
+  - 'conclude: For x in p ∩ q the decompositions x + 0 and 0 + x coincide, so x = 0.'
+  openmath: (forall (S M p q) (-> (and (is_ring S) (is_module S M) (is_submodule p M) (is_submodule q M)) (<-> (complementary_submodules p q M) (forall (x) (-> (in x M) (exists (y z) (and (in y p) (in z q) (= (+ y z) x) (forall (u v) (-> (and (in u p) (in v q) (= (+ u v) x)) (and (= u y) (= v z)))))))))))
+  hard_negative:
+    statement: $p+q=M$だけで全ての$x$の分解は一意である。
+    reason: $p=q=M\neq0$なら$x\neq0$について$x=x+0=0+x$である。$p\cap q=0$が必要である。
+  target: |
+    ∀ (S M : Type*) [Ring S] [AddCommGroup M] [Module S M] (p q : Submodule S M), IsCompl p q ↔ ∀ x : M, ∃! u : p × q, (u.1 : M) + u.2 = x
+  proof: |
+    by
+      intro S M _ _ _ p q
+      constructor
+      · intro h x
+        exact Submodule.existsUnique_add_of_isCompl_prod h x
+      · intro h
+        refine ⟨?_, ?_⟩
+        · rw [Submodule.disjoint_def]
+          intro x hp hq
+          have e := (h x).unique (y₁ := (⟨x, hp⟩, 0)) (y₂ := (0, ⟨x, hq⟩)) (by simp) (by simp)
+          simpa using congrArg (fun u : p × q => (u.1 : M)) e
+        · rw [codisjoint_iff, eq_top_iff]
+          intro x _
+          obtain ⟨u, hu, _⟩ := h x
+          exact Submodule.mem_sup.mpr ⟨u.1, u.1.2, u.2, u.2.2, hu⟩
+- id: finitely_generated_of_submodule_and_quotient
+  kind: textbook
+  level: 3
+  topic: 加群・有限生成性の拡大
+  statement: 環上の加群$M$の部分加群$p$について、$p$と$M/p$がともに有限生成なら、$M$も有限生成である。
+  statement_en: If a submodule p of a module M over a ring and the quotient M/p are both finitely generated, then M is finitely generated.
+  assumptions:
+  - $M$は環上の加群
+  - $p$は$M$の部分加群
+  - $p$と$M/p$は有限生成
+  quantifiers:
+  - 任意の$M$と$p$
+  conclusion: $M$は有限生成である。
+  answer: |
+    $S$を環、$M$を$S$加群、$p$を部分加群とする。$y_1,\dots,y_k$を$p$の生成系とし、$M/p$の生成系を$\bar{x}_1,\dots,\bar{x}_l$、その代表元を$x_1,\dots,x_l\in M$とする。$x\in M$をとると、$\bar{x}=\sum_ja_j\bar{x}_j$となる$a_j\in S$がある。$x-\sum_ja_jx_j$は$p$に入るから$\sum_ib_iy_i$と書ける。よって$x=\sum_ja_jx_j+\sum_ib_iy_i$であり、$x_1,\dots,x_l,y_1,\dots,y_k$は$M$を生成する。
+  strategy: Lift generators of the quotient and add generators of the submodule.
+  sketch:
+  - 'setup: Choose generators y_i of p and lifts x_j of generators of M/p.'
+  - 'derive: For x in M, subtract a combination of the x_j to land in p.'
+  - 'derive: Express the remainder through the y_i.'
+  - 'conclude: The x_j and y_i together generate M.'
+  openmath: (forall (S M p) (-> (and (is_ring S) (is_module S M) (is_submodule p M) (finitely_generated_module S p) (finitely_generated_module S (quotient_module M p))) (finitely_generated_module S M)))
+  hard_negative:
+    statement: $M/p$が有限生成なら$M$も有限生成である。
+    reason: 体上の無限次元空間$M$と$p=M$では$M/p=0$は有限生成だが、$M$は有限生成でない。
+  target: |
+    ∀ (S M : Type*) [Ring S] [AddCommGroup M] [Module S M] (p : Submodule S M), Module.Finite S p → Module.Finite S (M ⧸ p) → Module.Finite S M
+  proof: |
+    by
+      intro S M _ _ _ p h1 h2
+      exact Module.Finite.of_submodule_quotient p

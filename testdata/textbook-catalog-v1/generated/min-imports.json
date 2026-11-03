@@ -1,42 +1,42 @@
 {
  "summary": {
-  "cases": 1899,
-  "adopted": 1888,
-  "kept_mathlib": 11,
+  "cases": 2061,
+  "adopted": 2048,
+  "kept_mathlib": 13,
   "kept_reasons": {
-   "statement_type_differs": 6,
-   "narrow_compile_error": 5
+   "statement_type_differs": 7,
+   "narrow_compile_error": 6
   },
   "import_count_median": 2,
   "broad_seconds": {
-   "median": 8.467,
-   "p95": 23.648,
-   "max": 27.505
+   "median": 8.735,
+   "p95": 21.851,
+   "max": 24.925
   },
   "broad_max_rss_bytes": {
-   "median": 5441306624,
-   "p95": 5462507520,
-   "max": 5485740032
+   "median": 5440618496,
+   "p95": 5466980352,
+   "max": 5745393664
   },
   "broad_peak_footprint_bytes": {
-   "median": 869803032,
-   "p95": 880731256,
-   "max": 903210056
+   "median": 868852832,
+   "p95": 882500776,
+   "max": 1160537376
   },
   "narrow_seconds": {
-   "median": 2.642,
-   "p95": 5.072,
-   "max": 6.553
+   "median": 2.632,
+   "p95": 4.432,
+   "max": 5.792
   },
   "narrow_max_rss_bytes": {
-   "median": 1860616192,
-   "p95": 2632122368,
-   "max": 2692366336
+   "median": 1789902848,
+   "p95": 2622472192,
+   "max": 2690629632
   },
   "narrow_peak_footprint_bytes": {
-   "median": 314697896,
-   "p95": 459355384,
-   "max": 462546952
+   "median": 307963184,
+   "p95": 458388704,
+   "max": 533844336
   },
   "measured": 60
  },
@@ -21940,906 +21940,2659 @@
    "status": "adopted",
    "reason": null,
    "statement_pp_all_sha256": "80691c9d1b19f86e2258118b0db771a3d20cd37610ba302b36647201b4e00d0a"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.stabilizer_of_translated_point",
+   "materialized_source_sha256": "f23ced0427c5c467f401c531dd3cce293e63df29e8832a335bcdc6a55ea7a73f",
+   "imports": [
+    "Mathlib.GroupTheory.GroupAction.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "47bc7c6f429d6997fde1b73d49dfe06e35ac98d301958c9246c44fe03cb226a6"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.action_kernel_is_intersection_of_stabilizers",
+   "materialized_source_sha256": "5b51414961781a162249a7b55663cc8cb6e11e94f1c433eddbd4880b3050e13a",
+   "imports": [
+    "Mathlib.Algebra.Group.Action.End",
+    "Mathlib.Algebra.Group.Subgroup.Ker",
+    "Mathlib.GroupTheory.GroupAction.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "5d34209221709c8456ef776860780ef77242b2f08efa9fabaac6cc9bbe894494"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.p_group_action_fixed_points_congruent",
+   "materialized_source_sha256": "aee6057eb7274e027b3ab2d84a04e4dd45e1045886278bdd69b87739e73a55fc",
+   "imports": [
+    "Mathlib.GroupTheory.PGroup",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "a3a1219873f0e2ed29231372746b6b51c4e9906e6bf4d037231f896c9a285d0b"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.card_eq_sum_of_orbit_sizes",
+   "materialized_source_sha256": "ec7a8a8f0190184cf32a3d25d4336bfb4acabef953573425d599915df6d8f0d4",
+   "imports": [
+    "Mathlib.GroupTheory.GroupAction.Defs",
+    "Mathlib.SetTheory.Cardinal.Finite",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "83bc633b61e7d01336e9dd0d3dda96636364f6a5eb1da2ecfff9615ad3506fba"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.normal_core_index_dvd_factorial",
+   "materialized_source_sha256": "a59eaad5515da39510043e108aac713880c22699ffc26175f2f165322c15edda",
+   "imports": [
+    "Mathlib.Data.Finite.Perm",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "4c6220d77377d0abfe6116e365545c620cf4f0ba24f428f8322b18e5785c7a80"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.subgroup_of_smallest_prime_index_normal",
+   "materialized_source_sha256": "ba5f26068e1dcd7d89e2e80e54928bc8ce14107f3f1e587d711af216e6082f28",
+   "imports": [
+    "Mathlib.GroupTheory.IndexNormal",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "78e661d8636e3a43cddcc7a6abe155bd2389aa17285b70cb876953162ac4a266"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_of_conjugate_and_swapped_product",
+   "materialized_source_sha256": "06436c87559e9a0c35a69c00a7ce425623a54ca62e189009ac3acc58d19d237b",
+   "imports": [
+    "Mathlib.GroupTheory.OrderOfElement",
+    "Mathlib.Tactic.Group"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f4977ea0275bb8066be8fb4b0802236f3c6af63274d93d97e4e647b72bd00345"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_of_hom_image_dvd",
+   "materialized_source_sha256": "92c0b51d68c485973394cb4b936f891d47eed8b84f0a2dc8b5a7ad1d77262631",
+   "imports": [
+    "Mathlib.GroupTheory.OrderOfElement"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6dd4291a6687054f19325ecaf6a3600da283d649210758de359d5ecfb95e3748"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_eq_prime_power_criterion",
+   "materialized_source_sha256": "c9cd5c59ad5b654aaf163dabcf25ac3856f3606b6bd6b3473cf80890b466b41f",
+   "imports": [
+    "Mathlib.GroupTheory.OrderOfElement"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "64318521ecf898cca9da3f8972db92e8df176f65a8a8e484f96a4d98ed9ab957"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_in_direct_product_is_lcm",
+   "materialized_source_sha256": "8162c8941b72fa00163a9064029729fc34c0045856efee93744121dc17a3d96b",
+   "imports": [
+    "Mathlib.GroupTheory.OrderOfElement"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c0d14169b4e4401d3eb201a6efff49b51030830cc0bab1578f80f40f474a7991"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_abelian_element_order_divisible_by_all",
+   "materialized_source_sha256": "ada21ab1d5aeabf30b1001c4b95e94b19397ba5b7c2dc6fec87ca31010654270",
+   "imports": [
+    "Mathlib.GroupTheory.Exponent",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "a66ecf34aec1069a4011ef3c8f7a86bb9eb42f4b11817c4b25c40420c15e4d95"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_group_cyclic_of_few_roots",
+   "materialized_source_sha256": "1e9e2ddb883d78b7abfaf41786413c92659760ff3364dd92dc24e6909cdc523b",
+   "imports": [
+    "Mathlib.GroupTheory.SpecificGroups.Cyclic",
+    "Mathlib.LinearAlgebra.LinearPMap",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "dc29c32313a83197d8f90406cf8e2b264a306c5ac134034402d46aab331894f7"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.conjugate_of_transposition",
+   "materialized_source_sha256": "f9cb06878f658903154f4b4095c2491bec7d5b36fc227890987538fd353a1486",
+   "imports": [
+    "Mathlib.Algebra.Group.End"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2e1c9b2a72de6431bb3634b96d3fc82f20c5197dcd3f148a44758fbeb95b8ba6"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.transposition_count_parity_invariant",
+   "materialized_source_sha256": "24bfc39fe8554456c3bd30fc8b8cca447c078f1fca0c085cbb7ba7024c39ea17",
+   "imports": [
+    "Mathlib.Analysis.Normed.Ring.Lemmas",
+    "Mathlib.GroupTheory.Perm.Sign",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "995a51e06f31698756d7312679ddf004711f4ff5487a61e5ca00d316d7ada115"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_conjugate_iff_same_cycle_type",
+   "materialized_source_sha256": "81f0a3a392bb8c24df230b5b8f3ee95fdc3a349e27f8f03bee21d6b8fa554133",
+   "imports": [
+    "Mathlib.GroupTheory.Perm.Cycle.Type",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "37bd6867fb2919239f455db0a0dfb818080f240bd4ad832ce6622e3da285ae80"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_order_is_lcm_of_cycle_lengths",
+   "materialized_source_sha256": "ddc34011d6dc2641ba3a37a3ca029b0792507fd1e1794cdedf83b6b3b77b046d",
+   "imports": [
+    "Mathlib.GroupTheory.Perm.Cycle.Type",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "eba758e38e2999c815bc81ec6291423c9e9aad533e06c34cf039bfe95614f5db"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_disjoint_cycle_decomposition",
+   "materialized_source_sha256": "d58ef8d9c2647e6b0715b5480cbb53c77b875d161d1a0beeced41b61508da84d",
+   "imports": [
+    "Mathlib.GroupTheory.Perm.Cycle.Factors",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "0c835ace22fd1de9f489cf072452237c7162ba737894f8cf9736a59b98b7b56d"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.join_with_normal_subgroup_is_product",
+   "materialized_source_sha256": "d47df9d63c55f4abd07ee4d0040ea7b6ba2f201cf2392b2582f8db6475808c56",
+   "imports": [
+    "Mathlib.Algebra.Group.Subgroup.Pointwise"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "020627e2c7396e72cb833c66252b224a0aac3c2b490d9cb82ed4d1a599de302d"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.unique_subgroup_of_its_order_is_normal",
+   "materialized_source_sha256": "6fb35b9d25f2cdcb3aa27b2a9a5c16175959d9a49879bfebefa8178538befe42",
+   "imports": [
+    "Mathlib.Algebra.Group.Subgroup.Map",
+    "Mathlib.SetTheory.Cardinal.Finite",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "cdc22f541c446f4f6de1abdeea770c41c11021655097dc780c369a00ddb58206"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.power_of_index_lies_in_normal_subgroup",
+   "materialized_source_sha256": "ec30cfed032f7769fac8882516f8cf2cd0d41db2af73aa1d8a812a0ad08fb487",
+   "imports": [
+    "Mathlib.GroupTheory.OrderOfElement",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "4d79fa348230031e93f45fd7c5fd5002ff467dfe839af7be51d823ece4a5d3e4"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.card_eq_card_kernel_mul_card_image",
+   "materialized_source_sha256": "6013c44f598aa63e3910f74c1e74bbfd36e021c98557df40e2b9d578b7521e9a",
+   "imports": [
+    "Mathlib.GroupTheory.Index",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "ceadd56a2555eb9039dc6f7d08fd7799539eddb9636408f4c1eeaaf8224c03c3"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.quotient_group_universal_property",
+   "materialized_source_sha256": "b61bc53dad25168f020246e1b067a90fcdba696c4279f0958fe791030e997506",
+   "imports": [
+    "Mathlib.GroupTheory.QuotientGroup.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8a9cb76e3bf8b6e46c60475935268e7628e025393833fdb253093ba96d31a926"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.index_of_intersection_le_product",
+   "materialized_source_sha256": "4047642338873b2653f8a1a4e767c35155cca9296d67215949b56a1f316cc426",
+   "imports": [
+    "Mathlib.GroupTheory.Index",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "4d3cfc5011ec0b42284a969b21c07a5a17296753a9ce557e18b2f603238c7e73"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.solvable_subgroup_and_surjective_image",
+   "materialized_source_sha256": "7983a57896bd8756ab43e777624de64ac4945362d8c9727f17f9bc832caf5d6d",
+   "imports": [
+    "Mathlib.GroupTheory.Solvable"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "46c01f9d637e9ddcc35b6fb775693f3136203aaee221fd60f70a41eda7b23cca"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.perfect_nontrivial_group_not_solvable",
+   "materialized_source_sha256": "4373fa58f321a8a513f244846ba9c6f35d63f71b3c13dc2b3c28fa97cf1116ed",
+   "imports": [
+    "Mathlib.GroupTheory.Solvable"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6d6deb8505f9174d51ac1edc43351025df05f06f979ab7f60e2932b6e5b80e14"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.nilpotent_of_nilpotent_central_quotient",
+   "materialized_source_sha256": "4d2e1c802e7bc8a22434db3948e542bd6a0b421539ddc17edf4f1318b57d2ed9",
+   "imports": [
+    "Mathlib.GroupTheory.Nilpotent"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9d3e9a74a354a0a0dba733c6049223880a18ea6e28a057af25d6ae276d19f286"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.nilpotent_proper_subgroup_normalizer_grows",
+   "materialized_source_sha256": "d64bb22d628c8701134af6befbe336425be766149a0d4a2ef8d2906a8ea710cd",
+   "imports": [
+    "Mathlib.GroupTheory.Nilpotent"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6e59b34a4508fe7555baa03ac3092ffb94ea1982e4272fad28514df863a245e7"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_nilpotent_iff_sylow_subgroups_normal",
+   "materialized_source_sha256": "d618168551d3c8e5285771c60ab0b2770e93f6306924847bab3607df128d2505",
+   "imports": [
+    "Mathlib.FieldTheory.Normal.Defs",
+    "Mathlib.GroupTheory.Nilpotent",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "67bc0ab5ceb2b1d2395345b7cabd172d869048475d077ad212d364de6428c5a4"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.triangular_double_sum_swap",
+   "materialized_source_sha256": "8025b7cd22dcf2b91964a63284fbd11684f5a6d04ffb5e10d51aff5153d900ab",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Group.Finset.Sigma",
+    "Mathlib.Order.Interval.Finset.Nat"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2df5fa473f6779bbfaba29818e76a01062ded3e7e6ee6855f9c546cbebe90f0b"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_sum_by_fibers",
+   "materialized_source_sha256": "91507f2d36bd4fc1d5ef869bc5a28cce0ac8e261bfbec908a31863415aba21d9",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Group.Finset.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e96263d9b7f456043cf4760a3b927fab978363e846ce4bbd7ea6881734b709ec"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.product_of_binomials_expansion",
+   "materialized_source_sha256": "2388898f9830654fba641e6b3da6fb204ee7b40917c95053756804670a9c4da5",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Ring.Finset"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "63c4723e9b723c972998f0d467473bdf4ec1d589b92778b9c3dd1a10d2e47e98"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.abel_summation_formula",
+   "materialized_source_sha256": "38e4a8c5b1130ebefbfd1a6322f84e79cdbe80b1b405e0faccff2b656c669667",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Group.Finset.Basic",
+    "Mathlib.Tactic.Ring.RingNF"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "46963a6c1c5e477de67b8d01b6218ad69c4ff3aa7099e74f5c285ef2aae8c8c8"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.sum_vanishes_under_cancelling_involution",
+   "materialized_source_sha256": "4710bd2339d4ae5240b6dc92b550a4281bcc416e41bf2a74b20ee7d7c23796b4",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Group.Finset.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "370c79e97a6ed36b10324e43b93a3db022e11a78c4a59a98a3454727182590ba"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.span_le_submodule_iff_subset",
+   "materialized_source_sha256": "6d042370b44c1ed061863ab3a9aab6d05311d49a9dc04fddd31707285a556d3d",
+   "imports": [
+    "Mathlib.LinearAlgebra.Span.Defs",
+    "Mathlib.Tactic.SetNotationForOrder"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "550bf9372aa1fc341bab8e9092a87affd377a0e8d7fd28ed0fdd831224ecb4ec"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.modular_law_for_submodules",
+   "materialized_source_sha256": "47958c468ba3ca793504825e08a41825d7378989e043327b1ad0231da80d6e30",
+   "imports": [
+    "Mathlib.LinearAlgebra.Span.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "660b63855e481a945b51eb73f6aff990d0bd616c6d2c3d7ec01f54fe3b4d03ee"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.preimage_of_image_is_sum_with_kernel",
+   "materialized_source_sha256": "aa5d9d8bba938d2201bb8c94822242c75f5d9a27931fa78be179f0b3c0f97c18",
+   "imports": [
+    "Mathlib.LinearAlgebra.Span.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9c666e5677606eb795668a7be850adfb5f00e2c537c50c739a523c5a836e0b57"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.direct_sum_universal_property",
+   "materialized_source_sha256": "89864483864313ec1c61ff5d6af175d6320825d5be2755d99e6aeaba13c2e962",
+   "imports": [
+    "Mathlib.Algebra.DirectSum.Module"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "90e5ddcea8f96e53f29ff6b7448b05195d07ff3d2630fd4bc101a1aeb9ab711c"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.internal_direct_sum_iff_independent_and_spanning",
+   "materialized_source_sha256": "88f31a99739849f36e76e0a09041553289b08380bf1b25f214d9ffa16e3ac993",
+   "imports": [
+    "Mathlib.Algebra.DirectSum.Module",
+    "Mathlib.Order.CompletePartialOrder"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2046bfb5abef10dcb8fe8e3008db022f281ce13b11decad0400afd539201d407"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.complementary_submodules_iff_unique_decomposition",
+   "materialized_source_sha256": "d2e486687a372fdcf0dccd5bf2aa2a30c37e605547c17af07529cdff9f940c70",
+   "imports": [
+    "Mathlib.LinearAlgebra.Projection"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6c159ba134ac7293ed7cbd4f5c675d28ff26352dd5bff2077a012a5376c100e8"
+  },
+  {
+   "recipe_id": "textbook.uni_algebra_groups_modules.finitely_generated_of_submodule_and_quotient",
+   "materialized_source_sha256": "7285e160ffe695e71ba75257fbcda6ea730d18fc5993ed313c201d61886bcc39",
+   "imports": [
+    "Mathlib.RingTheory.Finiteness.Finsupp",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "260451d03a5116cfc6a22d1e38031c943b996ba0eada309c31ea9d697940e172"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_limit_eps_scaled",
+   "materialized_source_sha256": "74b0f49d2e21c03d2af2ac48737a5bbaf27800916bd0a58c4c1bb2d1c1be600d",
+   "imports": [
+    "Mathlib.Algebra.Order.Archimedean.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "18babbf2c8236f77962316f22385ace21b9ac24de0388a7696c28d87f2c476db"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_eventually_abs_gt_half",
+   "materialized_source_sha256": "f99ca0a424deaf9fc45325de0e3c608ee279f5733f99bd5070db964c29f0e928",
+   "imports": [
+    "Mathlib.Algebra.Order.Archimedean.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8fe485604d5104c7c775c922608f9fcd6904d9b14a62af675711b0412578a8e6"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_limit_div",
+   "materialized_source_sha256": "5758ecfd8aa818d16205b15301452f06c219eafe85923e565fb4c504f3359700",
+   "imports": [
+    "Mathlib.Analysis.Normed.Ring.Basic",
+    "Mathlib.Topology.Algebra.Ring.Real",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c596356041ca5bbd54a1fc596f69ecaa9d01a066f92ac8d4ade39efc0aadd9c3"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_subsequence_limit",
+   "materialized_source_sha256": "20cb657fab1a014bc286d4774fb73d319fc24de0a71ddbc9bdf06e0a3090e801",
+   "imports": [
+    "Mathlib.Topology.MetricSpace.Pseudo.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "74a387df799b415eb8747793b8181006261de9ad41461830d4e882331d6f21ed"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_even_odd_limit",
+   "materialized_source_sha256": "ac22484e2ec990f3124287cd687fff2bb14d0f5ce4faaeaf79e4cce319a86cc7",
+   "imports": [
+    "Mathlib.Order.Lattice.Nat",
+    "Mathlib.Topology.MetricSpace.Pseudo.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e32b68e117ff31ee9bfbb09cc28244705d6ef7c1365b1bc9e9ceec71307e50f6"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_every_subsequence_criterion",
+   "materialized_source_sha256": "16856eda9fb9419b38bb74a64383430e06fc2fc229fd7d70d68db819ae80145a",
+   "imports": [
+    "Mathlib.Algebra.Order.Ring.Star",
+    "Mathlib.Order.Lattice.Nat",
+    "Mathlib.Topology.MetricSpace.Pseudo.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d7c8e1919927475e5c70ef5fa0b2d3c9bb524c4cde62a9ed7f241ab978b15c87"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.cesaro_mean",
+   "materialized_source_sha256": "f34f70cad202d2759b1c1c4219a4ef264ca030a9ca0d40b334be21c65b619b81",
+   "imports": [
+    "Mathlib.Analysis.Asymptotics.SpecificAsymptotics",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "b3d31926cf8e5324440b27cd708b2c27c3259b021248520e653bb0a2943d1af9"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.seq_fixed_point_of_recursion",
+   "materialized_source_sha256": "cb206c6183af4028bf18e73c6a273787b317a7f5b88440008fd12d692027bf87",
+   "imports": [
+    "Mathlib.Algebra.Order.Ring.Star",
+    "Mathlib.Topology.Metrizable.Uniformity",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8943025bc09af8a77c4aeada1787f888982dfaf11282a722d87793e67d986d53"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.nth_root_n_limit",
+   "materialized_source_sha256": "624a0257a8d1c138c3ef304bd6c5e16670bcf4f8709a7e3574183f957d196d7c",
+   "imports": [
+    "Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "31f6cd426bffa534c0c06189e91a11259751e0af7aacf8e24dcf81a07390c073"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.pow_mul_geometric_null",
+   "materialized_source_sha256": "88673f450557c16570ff5b24b4a02e3c46de0e90877eceb9415c605808f4fc6d",
+   "imports": [
+    "Mathlib.Analysis.SpecificLimits.Normed",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c09b30534e199a6321daee0b71ebe6fc636639571a4d51f07286b052ac673b71"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.cauchy_of_geometric_increments",
+   "materialized_source_sha256": "dcdb79940924f203bf6e8b5763b6ab885077365e0db960cf6f4c7a870e9b8f89",
+   "imports": [
+    "Mathlib.Analysis.SpecificLimits.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "fde994c3693f319ecbc3256939a37dc38414e9afe64898e2c59bfd9e3937af26"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.pow_continuous_eps_delta",
+   "materialized_source_sha256": "332b926ca94de9c07d15c55aaed1739d48936a71174b30a958c5b4f82bca1ead",
+   "imports": [
+    "Mathlib.Analysis.Normed.Ring.Basic",
+    "Mathlib.Topology.Algebra.Ring.Real",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "60b19ae250d044f966817deedc1898c59614d56554fb64170f794ff801404e89"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.abs_sqrt_sub_sqrt_le",
+   "materialized_source_sha256": "b636c9f83769be1fc77aa5412020a194dd6586cd895810fb0ca50f0b4b66c7d1",
+   "imports": [
+    "Mathlib.Algebra.Order.Star.Real",
+    "Mathlib.Analysis.Normed.Ring.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3eb5fc49f51d7894e32911388eec291932fe0fbe5fc0eee09f039d2187264a2f"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_add",
+   "materialized_source_sha256": "99e63ee88e37bd30ad05d016954a91b561164a3d1c054d01ff9cdedd193b6179",
+   "imports": [
+    "Mathlib.Algebra.Order.Archimedean.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "02a97d30e4739567233c3caae8baacc66be41c4438253f652c09ad3460cb56a5"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_mul",
+   "materialized_source_sha256": "b790c65f3900b4fa30ebe8924a158b1b121e5db3129d354bd852aaca323a7384",
+   "imports": [
+    "Mathlib.Algebra.Order.Archimedean.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "952312491e5666ebb21bca8cbb8830ee54be5eb50f1c3bcfd2e388b0b87d0264"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_inv",
+   "materialized_source_sha256": "01f622b739c25935f98dc04c43a45f6669158d384064e8cf0a2a1c8418d9a3cc",
+   "imports": [
+    "Mathlib.Algebra.Order.Archimedean.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3aaa0c60bb1404c65f9166b43cf48040598522f5a64ed1338192f8a7c46b4a67"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.fn_bounded_mul_null",
+   "materialized_source_sha256": "a8b9820a2e5b5c7b684c367b411c9edbe4c7181ec46d75e2d93664e17056614d",
+   "imports": null,
+   "status": "kept_mathlib",
+   "reason": "narrow_compile_error: failed to prove positivity/nonnegativity/nonzeroness",
+   "statement_pp_all_sha256": "52d0d82d94638da538ecba3133e938308489761d1959021fab1c9c4590d00e5b"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.fn_limit_cauchy_criterion",
+   "materialized_source_sha256": "e5eff23b2b1eee2917bab63b24657d3e1b01d38a99fc342db124a4498881d6f2",
+   "imports": [
+    "Mathlib.Analysis.RCLike.Basic",
+    "Mathlib.Analysis.SpecificLimits.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c722fd90d2cd0cef799ec627500fb1318ec931d636feda4b0ed7551a6bb16b22"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.dirichlet_nowhere_continuous",
+   "materialized_source_sha256": "99f466a79722746bfc8c3637a0ed5570002a971590bda8cf145320d3154b4b89",
+   "imports": [
+    "Mathlib.NumberTheory.Real.Irrational",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c30d796c300823fae7d33b5c164f28f54bf6dd38fa4a742b00ee471a20a5b2f3"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_maps_cauchy",
+   "materialized_source_sha256": "e1008df8b8a060fdcc690c1cf00220eb74cfe734741f1b34dfb9128aca103679",
+   "imports": [
+    "Mathlib.Data.Real.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f1c60cba02c0c155b339d3412ba4cd701a7893086ee631c4730552cdae7e96b2"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_on_bounded_set_bounded",
+   "materialized_source_sha256": "b0d457eed190be857fc3c7078bb30946814534b3e37c7618a68c1e3c99b2125a",
+   "imports": [
+    "Mathlib.Tactic.SetNotationForOrder",
+    "Mathlib.Topology.MetricSpace.Pseudo.Basic",
+    "Mathlib.Topology.MetricSpace.Pseudo.Lemmas",
+    "Mathlib.Topology.Order.Compact",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "51509d669a621a6af9bcd53c89391d8cce526f79c43acea01f28fef5bc6105b8"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.not_uniform_continuous_of_sequences",
+   "materialized_source_sha256": "10448d3ffad15983db887bd5dcfcb8ff0d33b6d1c64cc45961340aaf8e9761fa",
+   "imports": [
+    "Mathlib.Order.Lattice.Nat",
+    "Mathlib.Topology.MetricSpace.Pseudo.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e9c04ad1003fe7322adf2ce3b45353d5d7e081f69cce5ee134c37323579685d5"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_of_limits_at_infinity",
+   "materialized_source_sha256": "166d1f855c0b6499c23493f4a50d7ad4fcaf6104127fedf20972b9ceab17387a",
+   "imports": [
+    "Mathlib.Analysis.Normed.Order.Lattice",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c78ffff4a04e7109dd6f14c553f1982d0a726a31f3a4ff356595c92fa23cd3dd"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_open_interval_endpoint_limit",
+   "materialized_source_sha256": "ee6f141b46f8256931bd502157d4b3750b3e093d875b9a94499c6c9a91268d0a",
+   "imports": [
+    "Mathlib.Analysis.Normed.Order.Lattice",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "fe6db759b932a8cdef4c206ada47d80f34266148dbf39be606dfb42d2e2288a3"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.deriv_linear_approx_eps",
+   "materialized_source_sha256": "bad9a29fb5808c964878d126e5aa511c9a69a55f99856eb409d4456fa6e0367c",
+   "imports": [
+    "Mathlib.Analysis.Calculus.Deriv.Basic",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Topology.Algebra.Module.ModuleTopology",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "ce42645c0a09927b5888c9e00c092d29aa49204d4e6ef0becdcd4c85b47a93cd"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.positive_derivative_local_increase",
+   "materialized_source_sha256": "36bf3dba8a657a52dbb1f7bb9d055c77bdc8f90449f0b1f4d8e36f5f60f79325",
+   "imports": [
+    "Mathlib.Algebra.Order.Star.Real",
+    "Mathlib.Analysis.Calculus.Deriv.Basic",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Topology.Algebra.Module.ModuleTopology",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2eddaa8f6a2468d36be69e81229589ee15b23e2e497a9c0c325d3d98e15a63df"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.deriv_of_limit_of_deriv",
+   "materialized_source_sha256": "1d954e79c280b3b1189400137c19d966b97bb68d6b600e9365427e977d3bcf4a",
+   "imports": [
+    "Mathlib.Analysis.Calculus.FDeriv.Extend",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Topology.Algebra.Module.ModuleTopology",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8926cea5cebafec541866d0d454e1ae4a0895d29a089cf1a4b984f5fe3d2e159"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.vanishing_higher_derivative_polynomial",
+   "materialized_source_sha256": "e773ff984a9aa50a9ce4aa1120fcda745fbc05d80fd1e4a345125767468c8dd1",
+   "imports": [
+    "Mathlib.Analysis.Calculus.Deriv.Pow",
+    "Mathlib.Analysis.Calculus.MeanValue",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Topology.Algebra.Module.ModuleTopology",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9d4ce023a426f25c06e6db69c42348e24d0333e8efed2ef5f438d889e1c8ba1c"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.leibniz_iterated_derivative",
+   "materialized_source_sha256": "6830dece58e6ae2c15234a09c581a1797be8280863834edf5a85c8250747584b",
+   "imports": [
+    "Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Formula.RupAddResult"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3f327315b1cd6ec4cdfde7ebbec2a907bffb878e10000ebe4912194e7e546b1c"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.series_cauchy_criterion",
+   "materialized_source_sha256": "6e6c8362e03bc37f0d0887c2affe2f00ea9595e4b3cf2fb99d37be7d10af5d36",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Intervals",
+    "Mathlib.Topology.UniformSpace.Real",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e0bec7939b15efd1f0757bf87499860481fd09092719c64a2d52a605c78e1143"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.limit_comparison",
+   "materialized_source_sha256": "8977f53f4f7c10fb720e4ecbd795ed10cd7c9676a083109ba8b98b233cef1424",
+   "imports": [
+    "Mathlib.Analysis.Normed.Group.InfiniteSum",
+    "Mathlib.Analysis.Normed.Ring.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "5ca9e258db59a3d2e7741d23998788a5b378d26be8c635e522fe5604e9c1a6d5"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.p_series_convergence",
+   "materialized_source_sha256": "4b3f9097c9565947aebbc3c6c5dd455a930291a1b5edf4c5be1fe75f1f0aad39",
+   "imports": [
+    "Mathlib.Analysis.PSeries",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "96946d73c285a840e8a6d848da280e9f376f8c93e981d77113be1d460d87b20c"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.cauchy_condensation",
+   "materialized_source_sha256": "2b83a560ab266b64460051221a78eef500572ee0c18e975d7381bedf0406d884",
+   "imports": [
+    "Mathlib.Analysis.PSeries",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f3d1a3ad7429ff5d24b44c90a2e486a8b16a2868eb68b8d64a4423751c8ef692"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.summation_by_parts",
+   "materialized_source_sha256": "726f7aade3572874251b69cd1df8fb68a74b2ec322d940d433df0cca37f64589",
+   "imports": [
+    "Mathlib.Algebra.BigOperators.Group.Finset.Basic",
+    "Mathlib.Data.Real.Basic",
+    "Mathlib.Tactic.Ring.RingNF"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6fd27dd082217fd1b045d5c904107b99d83dd43f91d101aa8685438f4cfc2c51"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.dirichlet_test",
+   "materialized_source_sha256": "fef39c12c126b39f314de1ed266f911297878decb0f152954a119a57e64147f5",
+   "imports": [
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Analysis.SpecificLimits.Normed",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "249f3ea23f8876831463838a3337a5d9ed43d7952014d28f595bc882a4df27c4"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.power_series_ratio_radius",
+   "materialized_source_sha256": "df484b8541654529fb3fbf680e0a4f0ae69798bace29eb18e01115b8d814e0fd",
+   "imports": [
+    "Mathlib.Algebra.Order.Ring.Star",
+    "Mathlib.Algebra.Ring.IsFormallyReal",
+    "Mathlib.Analysis.SpecificLimits.Normed",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "69227dee8db7b2363ef7bff50728688d7f48ad545c71dbace4a2060d00cde6dc"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.power_series_derivative",
+   "materialized_source_sha256": "46358be3b20a6a259ea02edb699b1ab5dbc247a24c0a7b26237674b323ab5f0b",
+   "imports": [
+    "Mathlib.Algebra.Order.Star.Real",
+    "Mathlib.Analysis.Calculus.Deriv.Pow",
+    "Mathlib.Analysis.Calculus.SmoothSeries",
+    "Mathlib.Analysis.InnerProductSpace.Basic",
+    "Mathlib.Topology.Algebra.Module.ModuleTopology",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d2a3ab56cd1ebe7ff97f5f025261958bc6918434b4899a5dd65abe9247dd4df1"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.abel_limit_theorem",
+   "materialized_source_sha256": "de6e3967c47dfdeac353949751a5aa806d0523679c031fb1f347dd55a71d7a82",
+   "imports": [
+    "Mathlib.Analysis.Complex.AbelLimit",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "46657beba5286a95ec04e55c4ee66076169b27c4343542be694a6c1e99a92c2f"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.inf_dist_lipschitz",
+   "materialized_source_sha256": "b6abc935e505185bcfe22e0196009db9e90c214ca6a16b5de136b546dd76be07",
+   "imports": [
+    "Mathlib.Topology.MetricSpace.HausdorffDistance",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "de5d1184152f075e6812be241ab4012f48b692d28a1e4a483e00681d9d56d523"
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.cantor_intersection",
+   "materialized_source_sha256": "973dc1b93ee85a438afeb49dc958e574ca5a4be0290a0586954030527d3880b1",
+   "imports": [
+    "Mathlib.Algebra.Order.Ring.Star",
+    "Mathlib.Order.CompletePartialOrder",
+    "Mathlib.Tactic.SetNotationForOrder",
+    "Mathlib.Topology.MetricSpace.Cauchy",
+    "Mathlib.Topology.MetricSpace.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "765caf35ddc3ae32815a564fc2db153386cb1f6ff4827c6ab0b6441099b4556a"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.radical_of_product_and_intersection",
+   "materialized_source_sha256": "b4ba7c86234751ee2d3491393b7e5ba1cdba106c11f3a13a30a46c8dbf0a0af2",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Operations"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e9c5fa787e4868cc77f3f25a94399b40446dd8a9c80ca677eac97ed6e2f84258"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.coprime_radicals_imply_coprime",
+   "materialized_source_sha256": "0e10cb915091e4d1fff9ada6b88839f3a2eca72dd37739ae469064fc147f265e",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Operations"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "aaf470dc81b5c9cfef934c910fc41e5ebdf9e43473413387ac9c35535ebf55f5"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.prime_contains_finite_intersection",
+   "materialized_source_sha256": "2da5bf317b7140b9c0c00d04891ed28ac1162afc322d33e7a98b3809f73d3cdd",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Operations"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "7f70de5b314e5229fe1e777a0127086a8001d1cea628490543e3b4e30e17466d"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.prime_avoidance",
+   "materialized_source_sha256": "a42fb306018d1d413995320c7813aaa371f9abf7cca2acc0fb46c3dbee613fc4",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Operations",
+    "Mathlib.Tactic.SetNotationForOrder"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e8311f802a62d0ef2863697f305e9a125bb4315942ad58b226bd0ea8566d2f07"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.quotient_reduced_iff_radical_ideal",
+   "materialized_source_sha256": "5a329488eb08583699248e6e95705bffe5847b6f351c6d3b8624e2a26160c24e",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Quotient.Nilpotent"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "6f42bcea3d5f0b511baa103c68bf5d8252407df2c1fce941ae0c08847e96c953"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.colon_of_colon_ideal",
+   "materialized_source_sha256": "2df228c6d5b4b32f00fe1ac2b0acc7956e42218e57833a0591dbc9891aa777a5",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Colon"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "b5df3a0aedec8c8083880f248c21ff0896165853ba1e887d771fac655a044958"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.primary_ideal_colon_element",
+   "materialized_source_sha256": "76ebf928b489acb65fe4bdc15253fddd1458acfc5f6dbc7292dab456ccc9c116",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.IsPrimary"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "84d02a14d02842f089afce3bcb69f5bc3c240d9d279c0739033f858a2c74fb89"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.prime_disjoint_from_multiplicative_set",
+   "materialized_source_sha256": "c4852dc74be47ee3b11edd112833882f8554a9b7837990e690f22af9f20430b5",
+   "imports": null,
+   "status": "kept_mathlib",
+   "reason": "statement_type_differs",
+   "statement_pp_all_sha256": "f750c80823e5beb681d36317d82ff71d93696a3cc4a45b6795fa6035c2ac5a00"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.minimal_prime_consists_of_zero_divisors",
+   "materialized_source_sha256": "d95b9489022ff37af9ccf78509f7fdf0c598cd73f502af57f625aa969337534a",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.MinimalPrime.Localization"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d2edd1f33e9fabf3cec6c663b6fcc43c442aa39798be1d3da5327a41790fd9b7"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.chinese_remainder_finite_family",
+   "materialized_source_sha256": "69f03d33a14a3abc14a7cf3d97c5ce4e7adf0192585e94c56ada8977c05516dd",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Quotient.Operations",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3f76d7ddc6887313ffcdc854c7c2ab5b6284157fa2eb975d8cb3378c89c4f564"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.pairwise_coprime_intersection_eq_product",
+   "materialized_source_sha256": "b998f151a019d4c5e94b003244586f6b661df14ec02a1042f9562be2bce93f1f",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Operations"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d6e3aa0466f70b307852c1ca377f2cdd153d28ff801eb7c0983fdb55c50119d4"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.local_iff_unit_or_one_minus_unit",
+   "materialized_source_sha256": "e44536cef74d4a855943c5c6b59545ef7bce7aa72f67eaea3189c100fffc2e23",
+   "imports": [
+    "Mathlib.RingTheory.LocalRing.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "52d136abf0bc4312de0f466f88a1bb472f44ccd72c92e4843654af7cb68377f0"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.local_of_one_plus_maximal_units",
+   "materialized_source_sha256": "dd8efa9ec08e8f941a0f010a0201ff1c53490732376b440b0d7ce1a9b9b0b5de",
+   "imports": [
+    "Mathlib.RingTheory.LocalRing.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "90d00547c6a270463e437c27d83835c26a08fd4acb530feca1020db5cc5547b4"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.local_ring_idempotents_trivial",
+   "materialized_source_sha256": "087dd03110de73852391d6f7b8582dc46fd72100f2f195becc7a56ee764c2b18",
+   "imports": [
+    "Mathlib.RingTheory.LocalRing.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "bfe3a185ddba1c79c09907909fd3cca3a566bd24c9d51c2f04e758e0886a3477"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.localization_universal_property",
+   "materialized_source_sha256": "ac498271d051e1f6914d6e3ecd97d406fce7d861aef54a04b2a3952e9e8a2ea3",
+   "imports": [
+    "Mathlib.RingTheory.Localization.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "93d81587383034640a615d7e31d60431b893592ed32e65a066b39022d27db76c"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.localization_map_injective_iff",
+   "materialized_source_sha256": "65aa58cfc1defcfede703cf993f60ab5c1e5a4d48cdc64bac5aef04302a1e84c",
+   "imports": [
+    "Mathlib.RingTheory.Localization.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3433d45b776be78996afc28f82d1bc91098c1dab46d9b1e7266a56a092d156d5"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.localization_ideals_are_extended",
+   "materialized_source_sha256": "e0ef9b68624ccb04b3d235e39344593890698cf59fb59294955b542941614104",
+   "imports": [
+    "Mathlib.RingTheory.Localization.Ideal"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9b2c4a55d63258082850415de56c7b2ce995f883f133f35b3a7690692af3b54f"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.localization_extends_disjoint_prime",
+   "materialized_source_sha256": "07a81978938ca11c5760bd99a3a4999efba0ea52e7d86f769b3d9898f33219e1",
+   "imports": [
+    "Mathlib.Order.CompletePartialOrder",
+    "Mathlib.RingTheory.Localization.Ideal"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "ccefd15c510cc53caeb42d51857905d77c8d0178619d0565715cec4f749dcd69"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.primes_of_localization_at_prime",
+   "materialized_source_sha256": "32573bf42c7c3ec68201596402128bb8c3fa79d7416498c407843dbe5d089af6",
+   "imports": [
+    "Mathlib.Order.CompletePartialOrder",
+    "Mathlib.RingTheory.Localization.AtPrime.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "bb77081b99498ca77d068058c2bd02444a08f5aa403c8727c113860882dad702"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.ideal_inclusion_checked_at_maximal_ideals",
+   "materialized_source_sha256": "8088baa3edaff3580bb39ae5f4bd7d7d3abb504ed14d633def5b94c0b6e80a29",
+   "imports": [
+    "Mathlib.RingTheory.LocalProperties.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3f5f609cd7daccc542cd3eef02e271567547870cd4b8b4927b680b464b783670"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.domain_is_intersection_of_maximal_localizations",
+   "materialized_source_sha256": "53564633ad5c2e36761ffa91107dc665730076574dd9a2192213d14ad260fe0b",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Colon",
+    "Mathlib.RingTheory.Localization.FractionRing"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "74bf4993dde63760be5deb91e259daba3498f979d978b57f11b5bfe5af662f02"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.spectrum_zero_locus_eq_iff_radical_eq",
+   "materialized_source_sha256": "5734335b03639d2081193bec4aed1973a94c46a0d8cac4c81434cae66bbe066e",
+   "imports": [
+    "Mathlib.RingTheory.Spectrum.Prime.Topology"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "62756be2ca0ccb62f9dafc3a9fa8934aa09af6ece1874c6059a72cb2b43722f1"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.basic_open_empty_iff_nilpotent",
+   "materialized_source_sha256": "a2e37cfd07ab68453363e03a06c1b3ae5356158ec7abb6eb4826cd9a3760c3ed",
+   "imports": [
+    "Mathlib.Order.CompletePartialOrder",
+    "Mathlib.RingTheory.Spectrum.Prime.Topology"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "361b41ec5ccf0dd562551a7e12fbaed114b764293874f3a8c8ad176cc0361b61"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.basic_open_subset_iff_mem_radical",
+   "materialized_source_sha256": "159e8772ca9208cac48ffeb9a0c029e39cf66c03eb87e0360484b0662cea0485",
+   "imports": [
+    "Mathlib.RingTheory.Spectrum.Prime.Topology"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "977790414654827cf61044470887bdf0f7941faad0ad26d0ecb67f692202e032"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.zero_locus_irreducible_iff_radical_prime",
+   "materialized_source_sha256": "c85d2cf02229480e19e8baa78705b8a1f9c4b4fccd9bbc0bea8fe9d33ca459e2",
+   "imports": [
+    "Mathlib.RingTheory.Spectrum.Prime.Topology"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d509635235cdb4e75f7f17a8f976667ca3e6d873621dfd53ed214633b0b0b665"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.spectrum_point_closure_iff_le",
+   "materialized_source_sha256": "3cc7ba895f9a5263144fb887354674c9b6ecd333407ba0a0482d6193876c593e",
+   "imports": [
+    "Mathlib.RingTheory.Spectrum.Prime.Topology"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8aac633479cc9f09a6470b38befbde565ba763efe6af40bfd3eeaff711f15197"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.integral_iff_adjoin_finite",
+   "materialized_source_sha256": "b38613e3433c82afc2f95eee9ae9efaba72ee75879b228c5d6b151498ff3d8a2",
+   "imports": [
+    "Mathlib.RingTheory.IntegralClosure.Algebra.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "426294d9d8bcae0b58d4ec1a0a725ccd7581a373e6c06cc1a0f9fd20f4b94e0b"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.finite_type_algebra_finite_iff_integral",
+   "materialized_source_sha256": "31a4557847c4e6f2c0651587f48b220aab1aaac96d3923c24fe3cfc7378a062d",
+   "imports": [
+    "Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "dd8a54162c86a88f35d9371d820f22208b63ef4ec9b233c733b21f6435b9638d"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.unit_descends_along_integral_extension",
+   "materialized_source_sha256": "cd31b04fabb43c8a0f716a9f355d678624ca0dbcfe6c5b5d6eee65ef6a552919",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.GoingUp",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e69c2df4d973439300120c58a0569c28efe7e615d111f44b0d5037aafd118ad4"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.integral_prime_maximal_iff_contraction_maximal",
+   "materialized_source_sha256": "1cbf1b4706bdd034eaf27c995792c4f4834c1365b0e65df7e2e8ed7f57191667",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.GoingUp",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "b94438d39ab9d213544e1ef6005d8d5e95e48e072a198fd96a27ad7be3200444"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_iff_maximal_condition",
+   "materialized_source_sha256": "09e92cdf5f14d1a77c9a3325be6524ede1066318c47758055a5ffe49473d4764",
+   "imports": [
+    "Mathlib.RingTheory.Noetherian.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "69fe7c17ab3db41b4e04332db093c0b7d8c73d2deb04ae2fba7472d8327a892e"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_surjective_endomorphism_injective",
+   "materialized_source_sha256": "9de4379186348b900d148a79628975cac7c21b13c77a49ff440b893dc55bc08a",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Maps",
+    "Mathlib.RingTheory.Noetherian.Defs"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3d40b270fa25f2c285d02849d1d9a983bcf99b2b149a124c1dc016f58535b378"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_ideal_contains_power_of_radical",
+   "materialized_source_sha256": "e6e608b3730ea79eedb85686ff1e2e2d1aad3705ff6c569e0140bd00e5dd5f1e",
+   "imports": [
+    "Mathlib.RingTheory.Finiteness.Ideal",
+    "Mathlib.RingTheory.Noetherian.Defs",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "1d5dbcfdc860d70217e86da16cdbfa39b414e530652204f67f6c55a5f00f6a94"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.cohen_prime_ideals_finitely_generated",
+   "materialized_source_sha256": "1691b27ffd2106f1f66d9f68eff578528d8943f905e35e0eca69aa3b739b6933",
+   "imports": [
+    "Mathlib.RingTheory.Noetherian.OfPrime",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "b7a12800d7ad03532bf496ad6fe89d7561650e26fa952175cefc22a314fc3f27"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.krull_principal_ideal_theorem",
+   "materialized_source_sha256": "1b165146e51a874ec708da3733c1c46a582e613e2cbe9e29d68fdc35d3c049f9",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.KrullsHeightTheorem",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "cf9cd4316cd0358117efec96b66c67be1f659d7d379899655857a547ca6091db"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_non_zero_divisor_is_unit",
+   "materialized_source_sha256": "21335bd9d344872c5a7342aee6a35187f7c12e57d501e8646bf67302db78b3eb",
+   "imports": [
+    "Mathlib.RingTheory.Artinian.Module"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9c9163533d3e8efdce20cc87c150590881e6d00049e12242650338090eb6fe6d"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_local_unit_or_nilpotent",
+   "materialized_source_sha256": "5be384cd003ae893e032fadaef55f61b99632143b1e0d96d5f0fc623b5127c33",
+   "imports": [
+    "Mathlib.RingTheory.Artinian.Ring",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "bc93fd1c54b27f8ce7497e071cd396184193887277bf324bc528cf3f5b70bd62"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_reduced_is_product_of_fields",
+   "materialized_source_sha256": "332347940cdd1ba763c8320f4405d43456ff3aafa04d91c880f2833ea1e48fe1",
+   "imports": [
+    "Mathlib.RingTheory.Artinian.Module",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2438f9fd885877a598795993ecfe36397dc7c46e0de4907d4a362a0fc1a5b3c2"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.nakayama_multiplier_congruent_to_one",
+   "materialized_source_sha256": "4c06ca571cf2f4b50271a49a0ef0b64ddd9d5be25295d33a7ef59769cfa4a210",
+   "imports": [
+    "Mathlib.RingTheory.Finiteness.Nakayama",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "59682850ab7cf33ee7fba7092ebfb013d28c691e20662a9603a1c1fdd2c42d2a"
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.fg_idempotent_ideal_generated_by_idempotent",
+   "materialized_source_sha256": "e92b7b7826aa92e26c31321b02451ba3c0ad9a88322482b751b7d222dd40b16e",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.IdempotentFG",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f4384354e2b21a44c86725ab39ef6c4264164091a4de519ae0570e4264f1277e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_degree_leading_coeff_mul_domain",
+   "materialized_source_sha256": "fc8eff98c4a7290fdb260b8964e263538d4e314bcba6dc85c4793e24882c1c8d",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Degree.Domain"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "cc06df7cda5e14f43865b7b686108c89bb823047b842d9a77cda5ea2dd46d2fd"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_degree_add_of_degree_lt",
+   "materialized_source_sha256": "8b961f507b0301aaf9215453bd8231be8a66b21883cd6515ee20d033b61a566a",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Degree.Operations"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "82dd9de635cc7e73ac3bd6caaf445c893340ada10e7bc43511795da24a821a8b"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_natdegree_comp_domain",
+   "materialized_source_sha256": "631648229ecf342d5a4d2c65d9370ca122c451588b2fc82f05a75b01d71d2db9",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Degree.Lemmas"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9d17795e6294e92c788e706b0830fe7bb2600d3f584248c09b56bad3b673b25f"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_units_over_domain",
+   "materialized_source_sha256": "ad1b26aa224a00e1ee2e25644bd9ddd8ca61db9bdd7d08441ebe344effde3d11",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Degree.Units"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "bcc53bb84ca88540eb19edb89cd53e2ced489c846018a129d1299a01302fa395"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_nilpotent_iff_coeffs_nilpotent",
+   "materialized_source_sha256": "7ca16ffba6f3de63c48984f381f86fde1d945dfa82e300cab937f340a52267af",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.Nilpotent",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f5463112350d4c61ed291fea8ef379f5a9961e678a123c4ae84f44d243f65742"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_units_nilpotent_coeffs",
+   "materialized_source_sha256": "cc34fa979a2195fc5f7b0ad292966c5e0fd09d5163f16c28464f1afadb8d19a4",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.Nilpotent"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "03ea496be473bccf8f4eefb647b1ac043b972e33139e5317621d54a97160ad5c"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_monic_division_uniqueness",
+   "materialized_source_sha256": "780b913302460bb90385b91c6518b974ea46a4950915938bcc373ef69c0358da",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Div"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "3a497ab2946a748abd450cd74e7a0d1b50e5b94a837a514fcfa8939c097839bf"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.field_poly_division_exists_unique",
+   "materialized_source_sha256": "80c2cb3c2f4c238a40b450aa28af14ef7a2fe00f827a7528748dd9ac76a4316a",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.FieldDivision",
+    "Mathlib.RingTheory.SimpleRing.Principal",
+    "Mathlib.Tactic.LinearCombination"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "2926bebdb1d8320d28078520d8912a4659a393cabcaa17f6208dc8aa3f515422"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_ring_pid_iff_field",
+   "materialized_source_sha256": "6528a267634c9af8840b2aa83e8c41f615efe13c7f4562b1195497fdf69659c3",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.FieldDivision",
+    "Mathlib.RingTheory.Polynomial.Quotient"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "f6093a8e06aa31e76b806e58965b9f64ad7270bcc971714e390454c03f2d561c"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.int_poly_ideal_two_x_not_principal",
+   "materialized_source_sha256": "35a61067a1b116bd08abe2e2b70d7e481d7f0083b4b182e2810e8549b0fe05fe",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Degree.Domain",
+    "Mathlib.Algebra.Polynomial.Eval.Defs",
+    "Mathlib.Analysis.Normed.Ring.Lemmas",
+    "Mathlib.RingTheory.Ideal.Span",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "7a8c247ce9a826c5e6330aa04a5395064e7c53c7021dcf84289606af21fdb978"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_coprime_derivative_squarefree",
+   "materialized_source_sha256": "dd0ae14d400c84b8698064809ff07aa63f4bd96bb576600e1eeaee7a914fc4df",
+   "imports": [
+    "Mathlib.FieldTheory.Separable"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8e8eb5574ed79c6e5784ededa33a7806afc27dc5ee41e6772dd096920c217d81"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.algclosed_poly_coprime_iff_no_common_root",
+   "materialized_source_sha256": "415d8219320d8b6e0ea150661db928acb5659c6753a015913a556d5cd410bafa",
+   "imports": [
+    "Mathlib.FieldTheory.IsAlgClosed.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8271d27df1eb31bc51a040c311274461061cc702ecbd839d1609878d3f0e71aa"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.monic_polys_mutual_dvd_eq",
+   "materialized_source_sha256": "2976711a156c6ea4f0e43094d6aef84d8729e7545252e2f15065f7faea4c6342",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.Div"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "1eb3d84d3e3897b8657b90aa3ab0eab5bd855580531bcad6d7ea0467e118570e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_irreducible_translate_iff",
+   "materialized_source_sha256": "5d649486c1e30d7ee925a96c63069fdabf2d8cbe4414a5ad33663b7683e9bf59",
+   "imports": [
+    "Mathlib.Algebra.Polynomial.AlgebraMap"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "92d151a1469c2c2a88b1bd2f5a195bbd5bdedd92d1d074624ea65e4e416167da"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.real_poly_irreducible_degree_le_two",
+   "materialized_source_sha256": "01d0fff663232c72603ccfaa27d2c3bc962000ae0e866cc68b1ddfb52435a556",
+   "imports": [
+    "Mathlib.Analysis.Complex.Polynomial.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Formula.RupAddResult"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "69b399941b332e09d78d0ab7c8fd278419469cce33b19eaf8329cf6f8c9053bd"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_ideal_extension_prime",
+   "materialized_source_sha256": "99d0dd0153ce45759199bf8a09d0788be31588483dc671aa119680a56d688c56",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "5fbdbb854d97442c26c05926a642a0c2e42ab042af33e4b16bd96e4cd1383e7d"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.gauss_content_multiplicative",
+   "materialized_source_sha256": "e1030e33879b9a53d48ce98270e6f46688023ef818761553b84d004a3af3c1f6",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.Content"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "df4435d82c87ce3053f0b35edfcf3f94bf30851d5cbf254bab768a651e08858c"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.gauss_primitive_dvd_over_fraction_field",
+   "materialized_source_sha256": "48118f0bac9a2b16ef4c93787c45aa02dbf5e4b0e72bfaed43e9a546cc06e847",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.GaussLemma"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "068cda7bd5b621544d3af8855267cd16e4b02bc6ceecc535c207562bd37a8fc5"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.monic_factor_descends_to_integrally_closed",
+   "materialized_source_sha256": "bcc3980c86a63597b8759ca7b43a935934f229135cab897beb7058f740251559",
+   "imports": [
+    "Mathlib.RingTheory.Polynomial.GaussLemma",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d3835f31eb02b86d66dac3bb03510dfe901a9703c6ac3736a89dbcf4770e0767"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.span_eq_iff_associated",
+   "materialized_source_sha256": "4dffaeeb2630a18784306871bff84bd0db3e018cbb1e7cf6beb524c43ef7d5b2",
+   "imports": [
+    "Mathlib.RingTheory.Ideal.Span"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "b7f24e76f3b55133ec3954c392e06ff7757d811b31c41d225678923416178d5e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.noetherian_domain_irreducible_factorization",
+   "materialized_source_sha256": "8080c883ba75f4a1e11c5aa596ccdd300bca8db75248858528030f0f655f538e",
+   "imports": [
+    "Mathlib.RingTheory.Noetherian.UniqueFactorizationDomain"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "541a4ca60d45f533c0057aebf01cfde1799e684331fe3c5fa161d292e1454527"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.irreducibles_prime_factorization_unique",
+   "materialized_source_sha256": "af8108aa37c32377c08943a5f9b801ca37eaeef049221ed0ee127d9b9fedbf5b",
+   "imports": [
+    "Mathlib.RingTheory.UniqueFactorizationDomain.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "467eaeef6f1ff055246b7c91f7b686b28abc3f48d4875b46b81496046329cdc1"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.ufd_gcd_exists",
+   "materialized_source_sha256": "9baa897096994f8d4c0bd9731f8807f75d34bb016ed7a4259e468dd900293fb0",
+   "imports": [
+    "Mathlib.RingTheory.UniqueFactorizationDomain.GCDMonoid"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "be7140e4f06a3df8c841b713591899f8772c54f2bed13ffcf97407cfac586e2f"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.ufd_prime_ideal_contains_prime_element",
+   "materialized_source_sha256": "5f38aef6cf591cdf06f70d2466f9e644cb1df8db531d8f7510c37d13caf67d97",
+   "imports": [
+    "Mathlib.RingTheory.UniqueFactorizationDomain.Ideal"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "8a986ef45152a23f791299b9ca4d28b02b972aa39fdb29eafe7752de30668a50"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.ufd_integrally_closed",
+   "materialized_source_sha256": "4c09111160712b9d3dc8ec88ab235c89e51f9734e1f0ed70aa221e8477712e82",
+   "imports": [
+    "Mathlib.FieldTheory.PurelyInseparable.Basic",
+    "Mathlib.RingTheory.Polynomial.RationalRoot",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "129e54f323b916697d9970cfaa68dffcb08358c56fa9fe7dd8224c65c1893854"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.pid_gcd_bezout",
+   "materialized_source_sha256": "e50a992b471809cd859c9119f88a299137b021ff69dcf5c2be765f28617b9694",
+   "imports": [
+    "Mathlib.Algebra.Ring.Divisibility.Basic",
+    "Mathlib.RingTheory.Ideal.Span"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "13662f5f4284d30c7ab0dd186b8fd311566bcdb396205a65bf82a54efb77329e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.pid_irreducible_iff_span_maximal",
+   "materialized_source_sha256": "62c50a863a8796b1ea38e2e1943bca2d698df8a651e61070075367bfec60d59c",
+   "imports": [
+    "Mathlib.RingTheory.PrincipalIdealDomain"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "30783362900cd22fe55a440b0a9c71c94ff4c104c5a69cc66a5d68fb22fa30cf"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.pairwise_coprime_product_dvd",
+   "materialized_source_sha256": "b1be20fcf3d62d9aea186cbf97ada6c343494fab6fd9e9987326da570020c458",
+   "imports": [
+    "Mathlib.RingTheory.Coprime.Lemmas"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "1de118ab39d54a11248de05e8f93ec06fcb4b4431024a39ef0ab4fbf7808b8b7"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.power_series_unit_iff_constant_coeff",
+   "materialized_source_sha256": "affcef8509d6ae375c0162967d98e859cd5d3a2d163628dea1c9de7966135e5c",
+   "imports": [
+    "Mathlib.RingTheory.PowerSeries.Inverse",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "913d27acb204f58bf4eb2f8d0b17bed263c6be31551e9c0aa788534e39f1a288"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.power_series_x_pow_dvd_iff_low_coeffs",
+   "materialized_source_sha256": "98bdd47d0c995318e63b07b051c0bfc7b25a62dd2844b0d5a46109daffe6ca8d",
+   "imports": [
+    "Mathlib.RingTheory.PowerSeries.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "30af5cb7b24043122ddf31708e099bd2b272b730af5ce0a243c4dfe72c1f549a"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.power_series_geometric_inverse",
+   "materialized_source_sha256": "2f083219d4aa636ba1791da15aa1e7016691d8395ca1f41f028e0c48326faa69",
+   "imports": [
+    "Mathlib.RingTheory.PowerSeries.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d2f262919a8fbad587acdcbd8293344118e523c9a41c7c91e30872af759f0af5"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.power_series_order_mul_domain",
+   "materialized_source_sha256": "d22ade0d064a560eb3a099d67e17a34de105840362cd7a8cad9292e98bdef090",
+   "imports": [
+    "Mathlib.RingTheory.PowerSeries.Order"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "77a58718cff6c467696838cac51839ef26c30da66e4c9069c37df1c50b729095"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.field_power_series_unit_times_x_pow",
+   "materialized_source_sha256": "589abc42df130f084d1b463fcd7da1ba7d8aa41f2b5b64fec9909a94364594af",
+   "imports": [
+    "Mathlib.RingTheory.PowerSeries.Inverse"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "85cfa0952670d7d3366bb382767543ce81b96aac288039cdd249ae4273f17e83"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.valuation_add_eq_max_of_ne",
+   "materialized_source_sha256": "f224f40d7f9ca55779856ea24112997b6f955e71d1e1969ea68834d542a26161",
+   "imports": [
+    "Mathlib.RingTheory.Valuation.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "980d1866adf0646b321b1e446566b0613a5008917e21a53926cfec15be8d10da"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.valuation_unit_iff_value_one",
+   "materialized_source_sha256": "b15b3e2aed8fb3c3baa32cfcbf41e59a6ae2d560e7c06334421f84a8ee46a22a",
+   "imports": [
+    "Mathlib.RingTheory.Valuation.Basic"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "66dd34627635f0a040402350183e7b3d63474496456f4b9b121ffab3ccfb7fd8"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.valuation_ring_dvd_total_iff_ideal_total",
+   "materialized_source_sha256": "28395a8deba031f0d81d5b76993bf7d2fa510c5f2d4a52d6673b2d3d58fd0da6",
+   "imports": [
+    "Mathlib.RingTheory.Valuation.ValuationRing"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "e3a53f6979b4f896e53da0d12d5492f05cd0d580144989a0d4d0b04dd4a14a61"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.noetherian_valuation_ring_is_pid",
+   "materialized_source_sha256": "56f737fb2c7af7496ce4b572ca601922ee7f63a3bae31c7c62acc97056f1fd76",
+   "imports": [
+    "Mathlib.RingTheory.Valuation.ValuationRing",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "d80de7ff614ef90371bf3b38593531ddeac3ebe16be19f87c640d462e4e17e26"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.dvr_element_unit_mul_uniformizer_pow",
+   "materialized_source_sha256": "9b73600b8903d8a6b57a4c409b3c240f8d9a2ea2652e0a62b66920610246fa28",
+   "imports": [
+    "Mathlib.RingTheory.DiscreteValuationRing.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "c03264fca5c49ac63ea1c1571cb6f5c17f34e5e3f34b3c9212f3a41c4c47767e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.dedekind_ideal_cancel",
+   "materialized_source_sha256": "8a2e7795f074d039885f4e2822f42c940093d9671a34c341e89ec1f856d17adb",
+   "imports": [
+    "Mathlib.RingTheory.DedekindDomain.Ideal.Basic",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "9ac5719807bed942f244ccabf3f9a789ef86c24ba3e18d6d69a88e9a66ba9adf"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.dedekind_sum_mul_inter",
+   "materialized_source_sha256": "3b433c15a78080480c45b974b3cdcaf1a58fe5fbbac22e94857b6ba226508d59",
+   "imports": [
+    "Mathlib.RingTheory.DedekindDomain.Ideal.Lemmas",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "38e5d7020f226e100c0ed6fdf4ff53f74ea60d952c3144e16089e0c48a849b54"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.dedekind_finitely_many_primes_is_pid",
+   "materialized_source_sha256": "e40384180f5fe7d79f153bf8430872a5017c0512bf793eb0a01616cccd347e29",
+   "imports": [
+    "Mathlib.RingTheory.DedekindDomain.PID",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "293f5dbb7f270f685fc2f9b58c4ada9f967c7e7e6cb356b64cc0ae0a7015a55e"
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.dedekind_ufd_iff_pid",
+   "materialized_source_sha256": "8399fa088cbae36512e9111f2e2db44c874d6cdbc5e355202a1960023a65fbb5",
+   "imports": [
+    "Mathlib.RingTheory.DedekindDomain.PID",
+    "Std.Tactic.BVDecide.LRAT.Internal.Clause"
+   ],
+   "status": "adopted",
+   "reason": null,
+   "statement_pp_all_sha256": "aa7c08d1ba521c1bbe27c3cb7ac9865a653391b1ec5b8a61d9516944fd0dc2df"
   }
  ],
  "measurements": [
   {
    "recipe_id": "textbook.advanced_undergrad.maschke_invariant_complement",
    "broad": {
-    "seconds": 6.282,
-    "max_rss_bytes": 5438275584,
-    "peak_footprint_bytes": 866788400,
+    "seconds": 6.026,
+    "max_rss_bytes": 5439471616,
+    "peak_footprint_bytes": 869753808,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.426,
-    "max_rss_bytes": 1907687424,
-    "peak_footprint_bytes": 322668272,
+    "seconds": 2.345,
+    "max_rss_bytes": 1908228096,
+    "peak_footprint_bytes": 321439472,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.calculus_single.limit_epsilon_delta",
+   "recipe_id": "textbook.calculus_single.limit_sequential_criterion",
    "broad": {
-    "seconds": 7.273,
-    "max_rss_bytes": 5438963712,
-    "peak_footprint_bytes": 866984984,
+    "seconds": 6.74,
+    "max_rss_bytes": 5439684608,
+    "peak_footprint_bytes": 869377048,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.274,
-    "max_rss_bytes": 1517862912,
-    "peak_footprint_bytes": 256313752,
+    "seconds": 2.264,
+    "max_rss_bytes": 1630994432,
+    "peak_footprint_bytes": 277214872,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.calculus_single.second_derivative_test_maximum",
+   "recipe_id": "textbook.calculus_single.cos_quadratic_lower_bound",
    "broad": {
-    "seconds": 7.043,
-    "max_rss_bytes": 5443502080,
-    "peak_footprint_bytes": 870556720,
+    "seconds": 6.674,
+    "max_rss_bytes": 5436112896,
+    "peak_footprint_bytes": 867411016,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.871,
-    "max_rss_bytes": 2202730496,
-    "peak_footprint_bytes": 358720040,
+    "seconds": 3.17,
+    "max_rss_bytes": 2231173120,
+    "peak_footprint_bytes": 363262032,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.combinatorics_graphs.binom_symmetry",
+   "recipe_id": "textbook.combinatorics_graphs.vandermonde_identity",
    "broad": {
-    "seconds": 6.765,
-    "max_rss_bytes": 5435703296,
-    "peak_footprint_bytes": 864822320,
+    "seconds": 9.802,
+    "max_rss_bytes": 5438373888,
+    "peak_footprint_bytes": 868344832,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.691,
-    "max_rss_bytes": 1156497408,
-    "peak_footprint_bytes": 200639680,
+    "seconds": 2.232,
+    "max_rss_bytes": 1597685760,
+    "peak_footprint_bytes": 273884456,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.combinatorics_graphs.eulerian_trail_odd_degree_count",
+   "recipe_id": "textbook.commutative_algebra.artinian_domain_is_field",
    "broad": {
-    "seconds": 8.797,
-    "max_rss_bytes": 5439143936,
-    "peak_footprint_bytes": 869671888,
+    "seconds": 13.504,
+    "max_rss_bytes": 5435539456,
+    "peak_footprint_bytes": 866329480,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.845,
-    "max_rss_bytes": 1372274688,
-    "peak_footprint_bytes": 231509496,
+    "seconds": 2.36,
+    "max_rss_bytes": 1803370496,
+    "peak_footprint_bytes": 307963184,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.commutative_algebra.krull_dimension_of_field_is_zero",
+   "recipe_id": "textbook.complex_analysis.exp_eq_one_iff",
    "broad": {
-    "seconds": 8.51,
-    "max_rss_bytes": 5438210048,
-    "peak_footprint_bytes": 869049248,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.511,
-    "max_rss_bytes": 1803960320,
-    "peak_footprint_bytes": 306930728,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.complex_analysis.circle_integral_zpow_vanishes",
-   "broad": {
-    "seconds": 12.904,
-    "max_rss_bytes": 5438472192,
-    "peak_footprint_bytes": 868312064,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.355,
-    "max_rss_bytes": 2561163264,
-    "peak_footprint_bytes": 438504544,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.entrance_exam.cube_root_two_irrational",
-   "broad": {
-    "seconds": 9.215,
-    "max_rss_bytes": 5455151104,
-    "peak_footprint_bytes": 872653944,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.16,
-    "max_rss_bytes": 2161049600,
-    "peak_footprint_bytes": 357946536,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.entrance_exam.integral_identity_twenty_two_sevenths_minus_pi",
-   "broad": {
-    "seconds": 10.151,
-    "max_rss_bytes": 5461868544,
-    "peak_footprint_bytes": 876291072,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 5.177,
-    "max_rss_bytes": 2580824064,
-    "peak_footprint_bytes": 450447712,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.field_galois.galois_fixed_elements_lie_in_base_field",
-   "broad": {
-    "seconds": 9.782,
-    "max_rss_bytes": 5439111168,
-    "peak_footprint_bytes": 868197424,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.73,
-    "max_rss_bytes": 2054635520,
-    "peak_footprint_bytes": 338606576,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.fourier_convex_numeric.convex_first_order_lower_bound",
-   "broad": {
-    "seconds": 11.617,
-    "max_rss_bytes": 5459034112,
-    "peak_footprint_bytes": 876127328,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.566,
-    "max_rss_bytes": 2216214528,
-    "peak_footprint_bytes": 366387248,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.functional_analysis.complete_iff_absolutely_summable_converges",
-   "broad": {
-    "seconds": 10.725,
-    "max_rss_bytes": 5439602688,
-    "peak_footprint_bytes": 868066280,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.527,
-    "max_rss_bytes": 1870495744,
-    "peak_footprint_bytes": 314343280,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.functional_analysis.adjoint_cstar_identity",
-   "broad": {
-    "seconds": 7.07,
-    "max_rss_bytes": 5441306624,
-    "peak_footprint_bytes": 869229616,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.074,
-    "max_rss_bytes": 2379923456,
-    "peak_footprint_bytes": 411996304,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_centers.orthocenter_on_altitudes",
-   "broad": {
-    "seconds": 11.09,
-    "max_rss_bytes": 5478072320,
-    "peak_footprint_bytes": 899163256,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 6.553,
-    "max_rss_bytes": 2489368576,
-    "peak_footprint_bytes": 454123768,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_circle.parallel_chords_equal_cross_chords",
-   "broad": {
-    "seconds": 13.344,
-    "max_rss_bytes": 5462507520,
-    "peak_footprint_bytes": 880731256,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.412,
-    "max_rss_bytes": 2333474816,
-    "peak_footprint_bytes": 389335096,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_circle.internally_tangent_unique_common_point",
-   "broad": {
-    "seconds": 7.281,
-    "max_rss_bytes": 5452120064,
-    "peak_footprint_bytes": 870294720,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.52,
-    "max_rss_bytes": 2632122368,
-    "peak_footprint_bytes": 461018152,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_homotopy.law_of_cosines_angle",
-   "broad": {
-    "seconds": 8.749,
-    "max_rss_bytes": 5438537728,
-    "peak_footprint_bytes": 866542544,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.008,
-    "max_rss_bytes": 2399731712,
-    "peak_footprint_bytes": 412686256,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_plane.varignon_rectangle_rhombus_criteria",
-   "broad": {
-    "seconds": 10.543,
-    "max_rss_bytes": 5457379328,
-    "peak_footprint_bytes": 874390480,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.571,
-    "max_rss_bytes": 2064302080,
-    "peak_footprint_bytes": 349614200,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_triangle.triangle_similar_aa_ratio",
-   "broad": {
-    "seconds": 9.114,
-    "max_rss_bytes": 5442813952,
-    "peak_footprint_bytes": 870147072,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.165,
-    "max_rss_bytes": 2503917568,
-    "peak_footprint_bytes": 426356776,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.geometry_triangle.law_of_sines_ratio",
-   "broad": {
-    "seconds": 7.445,
-    "max_rss_bytes": 5450432512,
-    "peak_footprint_bytes": 869753904,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 3.183,
-    "max_rss_bytes": 2412544000,
-    "peak_footprint_bytes": 419288960,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.group_theory.element_order_dvd_group_order",
-   "broad": {
-    "seconds": 10.378,
-    "max_rss_bytes": 5437833216,
-    "peak_footprint_bytes": 867083192,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 1.861,
-    "max_rss_bytes": 1520500736,
-    "peak_footprint_bytes": 252955344,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.group_theory.sylow_first_theorem",
-   "broad": {
-    "seconds": 8.348,
-    "max_rss_bytes": 5440176128,
-    "peak_footprint_bytes": 870130760,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.456,
-    "max_rss_bytes": 1661648896,
-    "peak_footprint_bytes": 279575824,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.linear_advanced.generalized_eigenvector_implies_eigenvalue",
-   "broad": {
-    "seconds": 8.467,
-    "max_rss_bytes": 5449187328,
-    "peak_footprint_bytes": 873997336,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.657,
-    "max_rss_bytes": 1831157760,
-    "peak_footprint_bytes": 314697896,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.linear_advanced.symmetric_bilinear_orthogonal_basis",
-   "broad": {
-    "seconds": 14.877,
-    "max_rss_bytes": 5440651264,
-    "peak_footprint_bytes": 868475832,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.523,
-    "max_rss_bytes": 1949171712,
-    "peak_footprint_bytes": 325488672,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.linear_basic.matrix_mul_assoc",
-   "broad": {
-    "seconds": 7.181,
-    "max_rss_bytes": 5439275008,
-    "peak_footprint_bytes": 869803032,
-    "exit_code": 0
-   },
-   "narrow": {
-    "seconds": 2.054,
-    "max_rss_bytes": 1437696000,
-    "peak_footprint_bytes": 242773992,
-    "exit_code": 0
-   }
-  },
-  {
-   "recipe_id": "textbook.linear_basic.vandermonde_ne_zero_iff",
-   "broad": {
-    "seconds": 7.714,
+    "seconds": 7.603,
     "max_rss_bytes": 5439012864,
-    "peak_footprint_bytes": 869393384,
+    "peak_footprint_bytes": 868934680,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 4.699,
-    "max_rss_bytes": 1910079488,
-    "peak_footprint_bytes": 319538256,
+    "seconds": 2.626,
+    "max_rss_bytes": 2063499264,
+    "peak_footprint_bytes": 339164448,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.logic_sets.finite_nonempty_has_maximal",
+   "recipe_id": "textbook.complex_analysis.open_mapping_theorem",
    "broad": {
-    "seconds": 23.648,
-    "max_rss_bytes": 5437882368,
-    "peak_footprint_bytes": 867345384,
+    "seconds": 7.478,
+    "max_rss_bytes": 5439782912,
+    "peak_footprint_bytes": 868148224,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.473,
-    "max_rss_bytes": 1257488384,
-    "peak_footprint_bytes": 215951792,
+    "seconds": 3.348,
+    "max_rss_bytes": 2666364928,
+    "peak_footprint_bytes": 451638208,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.measure_integration.measure_countable_subadditive",
+   "recipe_id": "textbook.entrance_exam.harmonic_sum_not_integer",
    "broad": {
-    "seconds": 7.508,
-    "max_rss_bytes": 5439275008,
-    "peak_footprint_bytes": 867148776,
+    "seconds": 10.633,
+    "max_rss_bytes": 5443223552,
+    "peak_footprint_bytes": 869016600,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.404,
-    "max_rss_bytes": 1860616192,
-    "peak_footprint_bytes": 313999000,
+    "seconds": 3.565,
+    "max_rss_bytes": 2580037632,
+    "peak_footprint_bytes": 440800080,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.measure_integration.lp_inclusion_on_finite_measure",
+   "recipe_id": "textbook.field_galois.primitive_element_theorem",
    "broad": {
-    "seconds": 8.523,
-    "max_rss_bytes": 5438881792,
-    "peak_footprint_bytes": 867902368,
+    "seconds": 8.747,
+    "max_rss_bytes": 5438406656,
+    "peak_footprint_bytes": 867968072,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.956,
-    "max_rss_bytes": 2165030912,
-    "peak_footprint_bytes": 352935240,
+    "seconds": 2.834,
+    "max_rss_bytes": 2032697344,
+    "peak_footprint_bytes": 337408504,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.modules_categories.quotient_by_torsion_is_torsion_free",
+   "recipe_id": "textbook.fourier_convex_numeric.convex_family_intersection",
    "broad": {
-    "seconds": 20.654,
-    "max_rss_bytes": 5437210624,
-    "peak_footprint_bytes": 865952720,
+    "seconds": 9.576,
+    "max_rss_bytes": 5440782336,
+    "peak_footprint_bytes": 869557320,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.541,
-    "max_rss_bytes": 1798766592,
-    "peak_footprint_bytes": 300573640,
+    "seconds": 5.288,
+    "max_rss_bytes": 1626914816,
+    "peak_footprint_bytes": 279800256,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.multivariable.gradient_inner_fderiv",
+   "recipe_id": "textbook.functional_analysis.absolutely_summable_implies_summable",
    "broad": {
-    "seconds": 7.656,
-    "max_rss_bytes": 5440847872,
-    "peak_footprint_bytes": 870048744,
+    "seconds": 11.084,
+    "max_rss_bytes": 5438242816,
+    "peak_footprint_bytes": 867640296,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.754,
-    "max_rss_bytes": 2379677696,
-    "peak_footprint_bytes": 410554776,
+    "seconds": 2.606,
+    "max_rss_bytes": 1829011456,
+    "peak_footprint_bytes": 305607512,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.number_theory.coprime_iff_bezout",
+   "recipe_id": "textbook.functional_analysis.compact_operators_closed_under_norm_limit",
    "broad": {
-    "seconds": 7.008,
-    "max_rss_bytes": 5447909376,
-    "peak_footprint_bytes": 870016000,
+    "seconds": 8.889,
+    "max_rss_bytes": 5441994752,
+    "peak_footprint_bytes": 870392808,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.941,
-    "max_rss_bytes": 1446412288,
-    "peak_footprint_bytes": 247966880,
+    "seconds": 2.653,
+    "max_rss_bytes": 1999880192,
+    "peak_footprint_bytes": 335946200,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.number_theory.quadratic_reciprocity",
+   "recipe_id": "textbook.geometry_centers.vertex_orthocenter_side_circumradius_identity",
    "broad": {
-    "seconds": 6.82,
-    "max_rss_bytes": 5443944448,
-    "peak_footprint_bytes": 873276488,
+    "seconds": 7.149,
+    "max_rss_bytes": 5450612736,
+    "peak_footprint_bytes": 872014896,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.301,
-    "max_rss_bytes": 2671493120,
-    "peak_footprint_bytes": 462546952,
+    "seconds": 3.39,
+    "max_rss_bytes": 2462597120,
+    "peak_footprint_bytes": 427680040,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.ode.second_order_solution_space_subspace",
+   "recipe_id": "textbook.geometry_circle.chord_le_diameter_eq_iff",
    "broad": {
-    "seconds": 8.682,
-    "max_rss_bytes": 5448810496,
-    "peak_footprint_bytes": 871523424,
+    "seconds": 6.584,
+    "max_rss_bytes": 5445844992,
+    "peak_footprint_bytes": 866657424,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.774,
-    "max_rss_bytes": 2202812416,
-    "peak_footprint_bytes": 360406656,
+    "seconds": 3.347,
+    "max_rss_bytes": 2315075584,
+    "peak_footprint_bytes": 372754368,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.maps_into_contractible_homotopic",
+   "broad": {
+    "seconds": 14.508,
+    "max_rss_bytes": 5439094784,
+    "peak_footprint_bytes": 866886584,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.488,
+    "max_rss_bytes": 1775239168,
+    "peak_footprint_bytes": 298623440,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.geometry_plane.corresponding_angles_of_parallel",
+   "broad": {
+    "seconds": 12.507,
+    "max_rss_bytes": 5444141056,
+    "peak_footprint_bytes": 870605920,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.213,
+    "max_rss_bytes": 2225078272,
+    "peak_footprint_bytes": 367470968,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.geometry_plane.line_perpendicular_plane_criterion",
+   "broad": {
+    "seconds": 6.945,
+    "max_rss_bytes": 5443993600,
+    "peak_footprint_bytes": 868492432,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.852,
+    "max_rss_bytes": 2122973184,
+    "peak_footprint_bytes": 354716584,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.geometry_triangle.side_opposite_nonacute_angle_is_longest",
+   "broad": {
+    "seconds": 17.493,
+    "max_rss_bytes": 5457805312,
+    "peak_footprint_bytes": 874669224,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.666,
+    "max_rss_bytes": 2417901568,
+    "peak_footprint_bytes": 422418376,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.geometry_triangle.right_triangle_altitude_foot_between",
+   "broad": {
+    "seconds": 10.443,
+    "max_rss_bytes": 5467930624,
+    "peak_footprint_bytes": 884352168,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 4.432,
+    "max_rss_bytes": 2622472192,
+    "peak_footprint_bytes": 465701288,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.group_theory.cayley_theorem",
+   "broad": {
+    "seconds": 7.621,
+    "max_rss_bytes": 5439897600,
+    "peak_footprint_bytes": 866755776,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 1.809,
+    "max_rss_bytes": 1214857216,
+    "peak_footprint_bytes": 209082072,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.coprime_polynomials_kernel_decomposition",
+   "broad": {
+    "seconds": 13.573,
+    "max_rss_bytes": 5442322432,
+    "peak_footprint_bytes": 870442080,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 4.236,
+    "max_rss_bytes": 1789902848,
+    "peak_footprint_bytes": 303128200,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.sylvester_law_of_inertia",
+   "broad": {
+    "seconds": 8.935,
+    "max_rss_bytes": 5443223552,
+    "peak_footprint_bytes": 871916664,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.93,
+    "max_rss_bytes": 2135851008,
+    "peak_footprint_bytes": 347525256,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.linear_basic.invertible_iff_det_ne_zero",
+   "broad": {
+    "seconds": 6.88,
+    "max_rss_bytes": 5440618496,
+    "peak_footprint_bytes": 868852832,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.085,
+    "max_rss_bytes": 2384494592,
+    "peak_footprint_bytes": 411455584,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.logic_sets.set_de_morgan",
+   "broad": {
+    "seconds": 11.275,
+    "max_rss_bytes": 5443600384,
+    "peak_footprint_bytes": 866411616,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 1.412,
+    "max_rss_bytes": 948011008,
+    "peak_footprint_bytes": 171521680,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.logic_sets.cantor_schroeder_bernstein",
+   "broad": {
+    "seconds": 8.868,
+    "max_rss_bytes": 5438095360,
+    "peak_footprint_bytes": 870605848,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.413,
+    "max_rss_bytes": 1255849984,
+    "peak_footprint_bytes": 215573616,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.measure_integration.ae_countable_conjunction",
+   "broad": {
+    "seconds": 21.851,
+    "max_rss_bytes": 5439324160,
+    "peak_footprint_bytes": 868426752,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.612,
+    "max_rss_bytes": 1859272704,
+    "peak_footprint_bytes": 313867928,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.modules_categories.cokernel_iso_of_right_exact",
+   "broad": {
+    "seconds": 7.156,
+    "max_rss_bytes": 5438750720,
+    "peak_footprint_bytes": 867230816,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.224,
+    "max_rss_bytes": 1567522816,
+    "peak_footprint_bytes": 265115128,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.modules_categories.abelian_mono_iff_kernel_zero",
+   "broad": {
+    "seconds": 7.061,
+    "max_rss_bytes": 5437898752,
+    "peak_footprint_bytes": 866231248,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.346,
+    "max_rss_bytes": 1544372224,
+    "peak_footprint_bytes": 253409704,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.multivariable.gaussian_integral",
+   "broad": {
+    "seconds": 6.612,
+    "max_rss_bytes": 5437046784,
+    "peak_footprint_bytes": 867001296,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.217,
+    "max_rss_bytes": 2586247168,
+    "peak_footprint_bytes": 442046416,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.number_theory.primitive_root_prime",
+   "broad": {
+    "seconds": 6.706,
+    "max_rss_bytes": 5439422464,
+    "peak_footprint_bytes": 868656272,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.707,
+    "max_rss_bytes": 2017034240,
+    "peak_footprint_bytes": 334326368,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.ode.double_root_solution",
+   "broad": {
+    "seconds": 7.323,
+    "max_rss_bytes": 5445238784,
+    "peak_footprint_bytes": 871146520,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.957,
+    "max_rss_bytes": 2225750016,
+    "peak_footprint_bytes": 363702144,
     "exit_code": 0
    }
   },
   {
    "recipe_id": "textbook.probability_statistics.mse_decomposition",
    "broad": {
-    "seconds": 6.878,
-    "max_rss_bytes": 5450121216,
-    "peak_footprint_bytes": 873620552,
+    "seconds": 23.179,
+    "max_rss_bytes": 5445779456,
+    "peak_footprint_bytes": 868099096,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.168,
-    "max_rss_bytes": 2692366336,
-    "peak_footprint_bytes": 459355384,
+    "seconds": 3.724,
+    "max_rss_bytes": 2690629632,
+    "peak_footprint_bytes": 458388704,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.real_analysis.real_inf_exists",
+   "recipe_id": "textbook.real_analysis.nested_intervals",
    "broad": {
-    "seconds": 11.81,
-    "max_rss_bytes": 5436932096,
-    "peak_footprint_bytes": 868820040,
+    "seconds": 8.196,
+    "max_rss_bytes": 5436047360,
+    "peak_footprint_bytes": 867263440,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.829,
-    "max_rss_bytes": 1397800960,
-    "peak_footprint_bytes": 241671104,
+    "seconds": 2.107,
+    "max_rss_bytes": 1452933120,
+    "peak_footprint_bytes": 249458880,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.real_analysis.cauchy_product",
+   "recipe_id": "textbook.real_analysis.term_by_term_integral",
    "broad": {
-    "seconds": 6.546,
-    "max_rss_bytes": 5440798720,
-    "peak_footprint_bytes": 868836352,
+    "seconds": 7.141,
+    "max_rss_bytes": 5441355776,
+    "peak_footprint_bytes": 869246000,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.248,
-    "max_rss_bytes": 1846624256,
-    "peak_footprint_bytes": 308492392,
+    "seconds": 3.225,
+    "max_rss_bytes": 2481717248,
+    "peak_footprint_bytes": 421048984,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.ring_theory.chinese_remainder_two_ideals",
+   "recipe_id": "textbook.ring_theory.unit_add_nilpotent_is_unit",
    "broad": {
-    "seconds": 8.391,
-    "max_rss_bytes": 5440274432,
-    "peak_footprint_bytes": 867624032,
+    "seconds": 11.526,
+    "max_rss_bytes": 5440618496,
+    "peak_footprint_bytes": 868836328,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.249,
-    "max_rss_bytes": 1697087488,
-    "peak_footprint_bytes": 293650832,
+    "seconds": 2.119,
+    "max_rss_bytes": 1497841664,
+    "peak_footprint_bytes": 256493208,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.ring_theory.frobenius_injective_reduced",
+   "recipe_id": "textbook.ring_theory.hilbert_basis_theorem",
    "broad": {
-    "seconds": 15.679,
-    "max_rss_bytes": 5439963136,
-    "peak_footprint_bytes": 868852664,
+    "seconds": 6.676,
+    "max_rss_bytes": 5438226432,
+    "peak_footprint_bytes": 866690072,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.079,
-    "max_rss_bytes": 1518174208,
-    "peak_footprint_bytes": 257478216,
+    "seconds": 2.4,
+    "max_rss_bytes": 1787199488,
+    "peak_footprint_bytes": 301653880,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_algebra_basics.two_variable_system_no_solution_ratio_form",
+   "recipe_id": "textbook.school_algebra_basics.sqrt_eq_iff_nonneg_and_square",
    "broad": {
-    "seconds": 7.113,
-    "max_rss_bytes": 5443174400,
-    "peak_footprint_bytes": 868607048,
+    "seconds": 8.101,
+    "max_rss_bytes": 5438963712,
+    "peak_footprint_bytes": 869131192,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.83,
-    "max_rss_bytes": 1332396032,
-    "peak_footprint_bytes": 229917920,
+    "seconds": 2.293,
+    "max_rss_bytes": 1735376896,
+    "peak_footprint_bytes": 291232144,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_analytic_geometry.dist_euclidean_plane_coordinates",
+   "recipe_id": "textbook.school_analytic_geometry.segment_meets_line_iff_sign_product",
    "broad": {
-    "seconds": 27.505,
-    "max_rss_bytes": 5439520768,
-    "peak_footprint_bytes": 868164464,
+    "seconds": 10.76,
+    "max_rss_bytes": 5465047040,
+    "peak_footprint_bytes": 878650392,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.203,
-    "max_rss_bytes": 2470494208,
-    "peak_footprint_bytes": 422225416,
+    "seconds": 3.069,
+    "max_rss_bytes": 1824096256,
+    "peak_footprint_bytes": 316599352,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_analytic_geometry.tangent_contact_exists_iff_outside",
+   "recipe_id": "textbook.school_analytic_geometry.quadratic_graph_vertex_form_focus_directrix",
    "broad": {
-    "seconds": 7.62,
-    "max_rss_bytes": 5485740032,
-    "peak_footprint_bytes": 903210056,
+    "seconds": 10.604,
+    "max_rss_bytes": 5466374144,
+    "peak_footprint_bytes": 882172952,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.328,
-    "max_rss_bytes": 1844019200,
-    "peak_footprint_bytes": 342305344,
+    "seconds": 3.118,
+    "max_rss_bytes": 1769259008,
+    "peak_footprint_bytes": 313252312,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_calculus.cubic_monotone_iff_discriminant",
+   "recipe_id": "textbook.school_calculus.area_parabola_and_line",
    "broad": {
-    "seconds": 7.077,
-    "max_rss_bytes": 5461983232,
-    "peak_footprint_bytes": 878797944,
+    "seconds": 8.735,
+    "max_rss_bytes": 5461901312,
+    "peak_footprint_bytes": 876242040,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.216,
-    "max_rss_bytes": 2224570368,
-    "peak_footprint_bytes": 372679400,
+    "seconds": 4.282,
+    "max_rss_bytes": 2551808000,
+    "peak_footprint_bytes": 440779064,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_calculus.pow_div_factorial_limit",
+   "recipe_id": "textbook.school_counting_probability.indep_uniform_compl",
    "broad": {
-    "seconds": 6.08,
-    "max_rss_bytes": 5435064320,
-    "peak_footprint_bytes": 866411520,
+    "seconds": 18.981,
+    "max_rss_bytes": 5466980352,
+    "peak_footprint_bytes": 872309784,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.178,
-    "max_rss_bytes": 1556430848,
-    "peak_footprint_bytes": 264935696,
+    "seconds": 2.533,
+    "max_rss_bytes": 1448312832,
+    "peak_footprint_bytes": 251143960,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_counting_probability.trials_at_least_once",
+   "recipe_id": "textbook.school_counting_probability.positive_solutions_count",
    "broad": {
-    "seconds": 7.273,
-    "max_rss_bytes": 5457133568,
-    "peak_footprint_bytes": 871064624,
+    "seconds": 7.253,
+    "max_rss_bytes": 5450629120,
+    "peak_footprint_bytes": 876258376,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.642,
-    "max_rss_bytes": 1554743296,
-    "peak_footprint_bytes": 266818872,
+    "seconds": 2.451,
+    "max_rss_bytes": 1614905344,
+    "peak_footprint_bytes": 280976640,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_counting_probability.strictly_increasing_sequences_count",
+   "recipe_id": "textbook.school_data_logic.proof_by_contradiction_template",
    "broad": {
-    "seconds": 15.032,
-    "max_rss_bytes": 5443878912,
-    "peak_footprint_bytes": 870392856,
+    "seconds": 24.925,
+    "max_rss_bytes": 5437865984,
+    "peak_footprint_bytes": 867591072,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.928,
-    "max_rss_bytes": 1431633920,
-    "peak_footprint_bytes": 243869848,
+    "seconds": 0.556,
+    "max_rss_bytes": 574767104,
+    "peak_footprint_bytes": 107075832,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_data_logic.necessary_sufficient_iff_truth_set_eq",
+   "recipe_id": "textbook.school_exp_log.power_compare_via_logb",
    "broad": {
-    "seconds": 9.086,
-    "max_rss_bytes": 5437538304,
-    "peak_footprint_bytes": 868312040,
+    "seconds": 7.086,
+    "max_rss_bytes": 5437292544,
+    "peak_footprint_bytes": 868639696,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 0.891,
-    "max_rss_bytes": 744177664,
-    "peak_footprint_bytes": 133064872,
+    "seconds": 2.654,
+    "max_rss_bytes": 2067939328,
+    "peak_footprint_bytes": 340934256,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_exp_log.logb_eq_iff_arguments_eq",
+   "recipe_id": "textbook.school_inequalities.nesbitt_inequality",
    "broad": {
-    "seconds": 8.011,
-    "max_rss_bytes": 5437341696,
-    "peak_footprint_bytes": 867083240,
+    "seconds": 7.23,
+    "max_rss_bytes": 5463654400,
+    "peak_footprint_bytes": 881796192,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.806,
-    "max_rss_bytes": 2068594688,
-    "peak_footprint_bytes": 340868768,
+    "seconds": 2.381,
+    "max_rss_bytes": 1429340160,
+    "peak_footprint_bytes": 258956176,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_inequalities.amgm_three_cube_form",
+   "recipe_id": "textbook.school_integers.digit_length_iff_pow_bounds",
    "broad": {
-    "seconds": 7.176,
-    "max_rss_bytes": 5454888960,
-    "peak_footprint_bytes": 873604264,
+    "seconds": 6.89,
+    "max_rss_bytes": 5438832640,
+    "peak_footprint_bytes": 867591312,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.294,
-    "max_rss_bytes": 1418723328,
-    "peak_footprint_bytes": 252157032,
+    "seconds": 2.133,
+    "max_rss_bytes": 1467678720,
+    "peak_footprint_bytes": 250869464,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_integers.gcd_mul_left",
+   "recipe_id": "textbook.school_polynomials.identity_linear_in_parameter",
    "broad": {
-    "seconds": 8.587,
-    "max_rss_bytes": 5437997056,
-    "peak_footprint_bytes": 870179888,
+    "seconds": 7.201,
+    "max_rss_bytes": 5444894720,
+    "peak_footprint_bytes": 867558472,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 0.716,
-    "max_rss_bytes": 723632128,
-    "peak_footprint_bytes": 129114648,
+    "seconds": 1.995,
+    "max_rss_bytes": 1346027520,
+    "peak_footprint_bytes": 233228400,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_polynomials.remainder_by_linear_ax_plus_b",
+   "recipe_id": "textbook.school_quadratic.quadratic_monotone_each_side_of_axis",
    "broad": {
-    "seconds": 6.727,
-    "max_rss_bytes": 5453463552,
-    "peak_footprint_bytes": 873325568,
+    "seconds": 10.237,
+    "max_rss_bytes": 5456740352,
+    "peak_footprint_bytes": 873718832,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.908,
-    "max_rss_bytes": 1651195904,
-    "peak_footprint_bytes": 283865408,
+    "seconds": 2.423,
+    "max_rss_bytes": 1422114816,
+    "peak_footprint_bytes": 251911128,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_polynomials.real_quadratic_negative_discriminant_roots",
+   "recipe_id": "textbook.school_quadratic.inequality_solution_set_determines_coefficients",
    "broad": {
-    "seconds": 7.082,
-    "max_rss_bytes": 5459001344,
-    "peak_footprint_bytes": 875865208,
+    "seconds": 17.874,
+    "max_rss_bytes": 5466161152,
+    "peak_footprint_bytes": 882500776,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.87,
-    "max_rss_bytes": 2014691328,
-    "peak_footprint_bytes": 342549192,
+    "seconds": 3.325,
+    "max_rss_bytes": 1877770240,
+    "peak_footprint_bytes": 325188480,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_quadratic.root_count_by_discriminant",
+   "recipe_id": "textbook.school_quadratic_cases.axis_sign_iff_coefficient_product",
    "broad": {
-    "seconds": 9.331,
-    "max_rss_bytes": 5458575360,
-    "peak_footprint_bytes": 876749872,
+    "seconds": 10.841,
+    "max_rss_bytes": 5454249984,
+    "peak_footprint_bytes": 869180440,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.612,
-    "max_rss_bytes": 1817870336,
-    "peak_footprint_bytes": 312945528,
+    "seconds": 2.632,
+    "max_rss_bytes": 1737375744,
+    "peak_footprint_bytes": 295325984,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_quadratic.translation_moves_vertex",
+   "recipe_id": "textbook.school_sequences.recur_power_forcing_distinct",
    "broad": {
-    "seconds": 6.747,
-    "max_rss_bytes": 5451874304,
-    "peak_footprint_bytes": 873391200,
+    "seconds": 7.212,
+    "max_rss_bytes": 5458690048,
+    "peak_footprint_bytes": 876356608,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.785,
-    "max_rss_bytes": 1415888896,
-    "peak_footprint_bytes": 250387416,
+    "seconds": 2.148,
+    "max_rss_bytes": 1374699520,
+    "peak_footprint_bytes": 241257736,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_sequences.arith_every_other_step",
+   "recipe_id": "textbook.school_trigonometry.tan_add_formula",
    "broad": {
-    "seconds": 10.567,
-    "max_rss_bytes": 5449007104,
-    "peak_footprint_bytes": 869901312,
+    "seconds": 7.098,
+    "max_rss_bytes": 5446942720,
+    "peak_footprint_bytes": 869360664,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.486,
-    "max_rss_bytes": 1416101888,
-    "peak_footprint_bytes": 252157128,
+    "seconds": 2.555,
+    "max_rss_bytes": 1766490112,
+    "peak_footprint_bytes": 299474952,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_sequences.three_term_factorization",
+   "recipe_id": "textbook.school_trigonometry.exists_unique_tan_principal",
    "broad": {
-    "seconds": 17.169,
-    "max_rss_bytes": 5444452352,
-    "peak_footprint_bytes": 869934104,
+    "seconds": 9.856,
+    "max_rss_bytes": 5439389696,
+    "peak_footprint_bytes": 867443736,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.922,
-    "max_rss_bytes": 1339801600,
-    "peak_footprint_bytes": 231835616,
+    "seconds": 2.771,
+    "max_rss_bytes": 2067693568,
+    "peak_footprint_bytes": 340835808,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_trigonometry.tan_mul_tan_eq_one_iff",
+   "recipe_id": "textbook.school_vectors_complex.plane_parametric_iff_cross_normal",
    "broad": {
-    "seconds": 7.19,
-    "max_rss_bytes": 5451415552,
-    "peak_footprint_bytes": 868279368,
+    "seconds": 10.833,
+    "max_rss_bytes": 5745393664,
+    "peak_footprint_bytes": 1160537376,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 5.072,
-    "max_rss_bytes": 1814036480,
-    "peak_footprint_bytes": 304802848,
+    "seconds": 5.792,
+    "max_rss_bytes": 1678082048,
+    "peak_footprint_bytes": 533844336,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_trigonometry.exists_unique_cos_principal",
+   "recipe_id": "textbook.topology_general.closed_iff_closure_eq",
    "broad": {
-    "seconds": 24.971,
-    "max_rss_bytes": 5438029824,
-    "peak_footprint_bytes": 867935208,
+    "seconds": 10.886,
+    "max_rss_bytes": 5437833216,
+    "peak_footprint_bytes": 867623936,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 2.743,
-    "max_rss_bytes": 2036350976,
-    "peak_footprint_bytes": 336540224,
+    "seconds": 1.757,
+    "max_rss_bytes": 1292713984,
+    "peak_footprint_bytes": 222507792,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.school_vectors_complex.circle_diameter_inner_zero",
+   "recipe_id": "textbook.topology_general.real_connected_iff_interval",
    "broad": {
-    "seconds": 7.366,
-    "max_rss_bytes": 5460180992,
-    "peak_footprint_bytes": 875914264,
+    "seconds": 6.775,
+    "max_rss_bytes": 5438980096,
+    "peak_footprint_bytes": 868770912,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 3.277,
-    "max_rss_bytes": 2068873216,
-    "peak_footprint_bytes": 353366256,
+    "seconds": 2.197,
+    "max_rss_bytes": 1570209792,
+    "peak_footprint_bytes": 267738200,
     "exit_code": 0
    }
   },
   {
-   "recipe_id": "textbook.topology_general.open_finite_inter",
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_disjoint_cycle_decomposition",
    "broad": {
-    "seconds": 6.144,
-    "max_rss_bytes": 5439881216,
-    "peak_footprint_bytes": 868918272,
+    "seconds": 11.97,
+    "max_rss_bytes": 5438128128,
+    "peak_footprint_bytes": 867410896,
     "exit_code": 0
    },
    "narrow": {
-    "seconds": 1.758,
-    "max_rss_bytes": 1281327104,
-    "peak_footprint_bytes": 220999744,
+    "seconds": 2.125,
+    "max_rss_bytes": 1572569088,
+    "peak_footprint_bytes": 263986864,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.uni_analysis_foundations.cauchy_of_geometric_increments",
+   "broad": {
+    "seconds": 8.411,
+    "max_rss_bytes": 5439307776,
+    "peak_footprint_bytes": 868279416,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 3.081,
+    "max_rss_bytes": 1847951360,
+    "peak_footprint_bytes": 309230224,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.uni_commutative_algebra.colon_of_colon_ideal",
+   "broad": {
+    "seconds": 8.444,
+    "max_rss_bytes": 5447892992,
+    "peak_footprint_bytes": 867722216,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.358,
+    "max_rss_bytes": 1664155648,
+    "peak_footprint_bytes": 287733016,
+    "exit_code": 0
+   }
+  },
+  {
+   "recipe_id": "textbook.uni_ring_theory.poly_degree_leading_coeff_mul_domain",
+   "broad": {
+    "seconds": 8.455,
+    "max_rss_bytes": 5439553536,
+    "peak_footprint_bytes": 868983976,
+    "exit_code": 0
+   },
+   "narrow": {
+    "seconds": 2.164,
+    "max_rss_bytes": 1607237632,
+    "peak_footprint_bytes": 273606576,
     "exit_code": 0
    }
   }

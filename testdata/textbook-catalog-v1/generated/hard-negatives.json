@@ -9494,6 +9494,816 @@
    "reason": "無限集合上の離散距離空間は有界かつ完備だがコンパクトではない。全有界性が必要である。",
    "recipe_id": "textbook.topology_general.compact_iff_totally_bounded_complete",
    "statement": "距離空間の有界かつ完備な部分集合はコンパクトである。"
+  },
+  {
+   "reason": "$S_3$の$\\{1,2,3\\}$への作用で、$1$の固定部分群は$\\{1,(2\\ 3)\\}$、$2$の固定部分群は$\\{1,(1\\ 3)\\}$であり異なる。一般には共役になるだけである。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.stabilizer_of_translated_point",
+   "statement": "同じ軌道の2点$x,gx$の固定部分群はつねに等しい。"
+  },
+  {
+   "reason": "$S_3$の$\\{1,2,3\\}$への作用では核は自明だが、$1$の固定部分群は位数$2$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.action_kernel_is_intersection_of_stabilizers",
+   "statement": "作用の核は1つの点の固定部分群に等しい。"
+  },
+  {
+   "reason": "位数$3$の巡回群が$3$点の集合に回転で作用すると不動点はなく、$p=2$で$3\\not\\equiv0$となる。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.p_group_action_fixed_points_congruent",
+   "statement": "位数が$p$の冪でない群の作用でも、$|X|\\equiv|X^G|\\pmod p$が成り立つ。"
+  },
+  {
+   "reason": "各軌道の大きさは$|G|$とは限らない。$S_3$の$\\{1,2,3\\}$への作用は軌道が$1$個で$|G|=6$だが$|X|=3$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.card_eq_sum_of_orbit_sizes",
+   "statement": "群$G$が有限集合$X$に作用するとき、$|X|$は軌道の個数と$|G|$の積に等しい。"
+  },
+  {
+   "reason": "$S_3$の部分群$\\{1,(1\\ 2)\\}$は指数$3$だが正規でない。正規になるのは$H$に含まれる核のほうである。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.normal_core_index_dvd_factorial",
+   "statement": "指数$n$が有限の部分群$H$はそれ自身が正規であり、$[G:H]\\mid n!$を満たす。"
+  },
+  {
+   "reason": "$S_3$の部分群$\\{1,(1\\ 2)\\}$の指数は素数$3$だが正規でない。$3$は$|S_3|$の最小の素因数ではない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.subgroup_of_smallest_prime_index_normal",
+   "statement": "有限群で指数が素数である部分群は全て正規である。"
+  },
+  {
+   "reason": "位数$2$の巡回群の生成元$a$で$b=a$とすると、$ab$は単位元で位数$1$だが、位数の積は$4$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_of_conjugate_and_swapped_product",
+   "statement": "群の元$a,b$について、$ab$の位数は$a$の位数と$b$の位数の積である。"
+  },
+  {
+   "reason": "$f$が全ての元を単位元に送るとき、位数$2$の元の像の位数は$1$である。等号には単射性が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_of_hom_image_dvd",
+   "statement": "群準同型$f$について、$f(g)$の位数は$g$の位数に等しい。"
+  },
+  {
+   "reason": "位数$p$の元$g$と$n=1$では$g^{p^2}=1$かつ$g\\neq1$だが、位数は$p^2$でない。$g^{p^n}\\neq1$が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_eq_prime_power_criterion",
+   "statement": "$g^{p^{n+1}}=1$かつ$g\\neq1$なら、$g$の位数は$p^{n+1}$である。"
+  },
+  {
+   "reason": "位数$2$の巡回群の生成元$a$について、$(a,a)$の位数は$2$であり積の$4$ではない。積と一致するのは位数が互いに素なときである。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.order_in_direct_product_is_lcm",
+   "statement": "直積の元$(a,b)$の位数は$a$の位数と$b$の位数の積である。"
+  },
+  {
+   "reason": "$S_3$の元の位数は$1,2,3$であり、位数$6$の元がない。アーベル性が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_abelian_element_order_divisible_by_all",
+   "statement": "有限群には全ての元の位数で割り切れる位数の元が存在する。"
+  },
+  {
+   "reason": "位数$3$の巡回群2個の直積では$x^2=1$の解は単位元だけだが、巡回群でない。全ての$n$で条件が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_group_cyclic_of_few_roots",
+   "statement": "有限群で$x^2=1$の解が高々$2$個なら巡回群である。"
+  },
+  {
+   "reason": "$\\sigma=(1\\ 3)$、$(a\\ b)=(1\\ 2)$なら共役は$(3\\ 2)$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.conjugate_of_transposition",
+   "statement": "置換$\\sigma$による共役で互換は変わらない。つまり$\\sigma\\,(a\\ b)\\,\\sigma^{-1}=(a\\ b)$である。"
+  },
+  {
+   "reason": "恒等置換は空の積でも$(1\\ 2)(1\\ 2)$でも表せて、個数は$0$と$2$である。保たれるのは偶奇だけである。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.transposition_count_parity_invariant",
+   "statement": "同じ置換を互換の積に表すとき、互換の個数そのものは表し方によらない。"
+  },
+  {
+   "reason": "$S_4$の$(1\\ 2)$と$(1\\ 2)(3\\ 4)$は位数$2$だが、巡回型が異なるので共役でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_conjugate_iff_same_cycle_type",
+   "statement": "有限集合の置換で位数が等しいものは共役である。"
+  },
+  {
+   "reason": "$(1\\ 2)(3\\ 4)$の位数は$2$であり、長さの積は$4$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_order_is_lcm_of_cycle_lengths",
+   "statement": "置換の位数は巡回置換の長さの積である。"
+  },
+  {
+   "reason": "$(1\\ 2)(3\\ 4)=(3\\ 4)(1\\ 2)$である。一意なのは因子の集合だけである。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.perm_disjoint_cycle_decomposition",
+   "statement": "互いに素な巡回置換への分解は、因子の順序まで含めて一意である。"
+  },
+  {
+   "reason": "$S_3$で$H=\\{1,(1\\ 2)\\}$、$K=\\{1,(1\\ 3)\\}$とすると$|HK|=4$であり、$4$は$6$を割らないので部分群でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.join_with_normal_subgroup_is_product",
+   "statement": "群の2つの部分群$H,K$の積集合$HK$はつねに部分群である。"
+  },
+  {
+   "reason": "$S_3$には位数$2$の部分群が$3$個あり、いずれも正規でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.unique_subgroup_of_its_order_is_normal",
+   "statement": "有限群の部分群は、同じ位数の部分群が複数あっても正規である。"
+  },
+  {
+   "reason": "$S_3$で$H=\\{1,(1\\ 2)\\}$、$g=(1\\ 3)$とすると、$[G:H]=3$で$g^3=(1\\ 3)\\notin H$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.power_of_index_lies_in_normal_subgroup",
+   "statement": "正規とは限らない有限指数の部分群$H$でも$g^{[G:H]}\\in H$である。"
+  },
+  {
+   "reason": "位数$2$の群から位数$4$の巡回群への単射では$|G|=2$、$|\\ker f|\\cdot|H|=4$である。像の位数を用いる必要がある。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.card_eq_card_kernel_mul_card_image",
+   "statement": "有限群の間の準同型$f\\colon G\\to H$について、$|G|=|\\ker f|\\cdot|H|$である。"
+  },
+  {
+   "reason": "位数$2$の群$G$と$N=G$、$f=\\mathrm{id}$では、自明群$G/N$の元の行き先が$f(1)$と$f(g)$の両方になり、定まらない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.quotient_group_universal_property",
+   "statement": "$N\\subseteq\\ker f$を仮定しなくても$f$は$G/N$上の準同型を誘導する。"
+  },
+  {
+   "reason": "指数$2$の部分群$H$で$K=H$とすると、左辺は$2$で右辺は$4$である。等号には指数が互いに素であることなどの条件が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.index_of_intersection_le_product",
+   "statement": "有限指数の部分群$H,K$について、$[G:H\\cap K]=[G:H][G:K]$がつねに成り立つ。"
+  },
+  {
+   "reason": "$G=A_5$、$N=1$では$N$は可解だが$G$は可解でない。$G/N$の可解性も必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.solvable_subgroup_and_surjective_image",
+   "statement": "正規部分群$N$が可解なら$G$も可解である。"
+  },
+  {
+   "reason": "$[S_5,S_5]=A_5\\neq S_5$だが、$S_5$は可解でない。導来列が途中で止まる場合がある。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.perfect_nontrivial_group_not_solvable",
+   "statement": "$[G,G]\\neq G$なら$G$は可解である。"
+  },
+  {
+   "reason": "$S_3$と$N=A_3$では$G/N$は位数$2$で冪零だが、$S_3$は中心が自明なので冪零でない。$N$は中心に含まれる必要がある。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.nilpotent_of_nilpotent_central_quotient",
+   "statement": "正規部分群$N$について$G/N$が冪零なら$G$も冪零である。"
+  },
+  {
+   "reason": "可解群$S_3$の部分群$\\{1,(1\\ 2)\\}$の正規化群はそれ自身である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.nilpotent_proper_subgroup_normalizer_grows",
+   "statement": "可解群の真部分群は正規化群に真に含まれる。"
+  },
+  {
+   "reason": "$S_3$のシロー$3$部分群$A_3$は正規だが、$S_3$は冪零でない。シロー$2$部分群は正規でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_nilpotent_iff_sylow_subgroups_normal",
+   "statement": "有限群であるシロー部分群が1つでも正規なら、その群は冪零である。"
+  },
+  {
+   "reason": "$n=2$で$f(1,0)=1$、$f(0,1)=0$とすると左辺は$1$、右辺は$0$である。交換すると内側の範囲は$j<i<n$に変わる。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.triangular_double_sum_swap",
+   "statement": "$\\sum_{i=0}^{n-1}\\sum_{j=0}^{i-1}f(i,j)=\\sum_{j=0}^{n-1}\\sum_{i=0}^{j-1}f(i,j)$である。"
+  },
+  {
+   "reason": "$s=\\{a\\}$、$t=\\emptyset$、$f(a)=1$とすると左辺は$0$、右辺は$1$である。$t$の外に行く元の項が落ちる。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.finite_sum_by_fibers",
+   "statement": "$\\varphi(x)\\in t$を仮定しなくても同じ等式が成り立つ。"
+  },
+  {
+   "reason": "$s$が$2$元で全ての$a_i,b_i$が$1$なら、左辺は$4$、右辺は$2$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.product_of_binomials_expansion",
+   "statement": "$\\prod_{i\\in s}(a_i+b_i)=\\prod_{i\\in s}a_i+\\prod_{i\\in s}b_i$である。"
+  },
+  {
+   "reason": "$n=0$、$a_0=b_0=1$とすると左辺は$1$で右辺は$0$である。境界項$a_nB_n$は省けない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.abel_summation_formula",
+   "statement": "境界項を除いた$\\sum_{i=0}^{n}a_ib_i=-\\sum_{i=0}^{n-1}(a_{i+1}-a_i)B_i$が成り立つ。"
+  },
+  {
+   "reason": "位数$2$の加法群の生成元$u$について、$s=\\{c\\}$、$\\varphi=\\mathrm{id}$、$f(c)=u$とすると$f(c)+f(c)=0$だが和は$u\\neq0$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.sum_vanishes_under_cancelling_involution",
+   "statement": "$f(x)\\neq0$なら$\\varphi(x)\\neq x$という条件を省いても$\\sum_{x\\in s}f(x)=0$である。"
+  },
+  {
+   "reason": "$s=\\emptyset$、$p=M\\neq0$のとき、生成される部分加群は$0$である。含まれるだけで等しいとは限らない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.span_le_submodule_iff_subset",
+   "statement": "$s\\subseteq p$なら$s$が生成する部分加群は$p$に等しい。"
+  },
+  {
+   "reason": "平面の相異なる3直線$p,q,r$では、$(p+q)\\cap r=r$だが$p+(q\\cap r)=p$である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.modular_law_for_submodules",
+   "statement": "$p\\subseteq r$を仮定しなくても$(p+q)\\cap r=p+(q\\cap r)$である。"
+  },
+  {
+   "reason": "$f=0$、$p=0$、$M\\neq0$では左辺は$M$、右辺は$0$である。$\\ker f\\subseteq p$のときに限り等しい。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.preimage_of_image_is_sum_with_kernel",
+   "statement": "線形写像$f$と部分加群$p$について、$f^{-1}(f(p))=p$である。"
+  },
+  {
+   "reason": "体$k$上で$I$を無限集合、全ての$M_i$を$1$次元、$L=k$、$\\varphi_i=0$とする。$\\prod M_i/\\bigoplus M_i$は$0$でないので、$\\bigoplus M_i$上で$0$になる$0$でない線形形式があり、零写像とともに条件を満たす。一意性が成り立たない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.direct_sum_universal_property",
+   "statement": "無限個の加群の直積$\\prod_{i\\in I}M_i$でも、$\\varphi_i$を延長する線形写像がただ1つ存在する。"
+  },
+  {
+   "reason": "平面の相異なる3直線は2つずつ$0$で交わり和は平面全体だが、$1$つの直線は他の2直線の和に含まれるので直和でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.internal_direct_sum_iff_independent_and_spanning",
+   "statement": "全ての$i\\neq j$で$A_i\\cap A_j=0$かつ$\\sum_iA_i=M$なら、$M$は$(A_i)$の内部直和である。"
+  },
+  {
+   "reason": "$p=q=M\\neq0$なら$x\\neq0$について$x=x+0=0+x$である。$p\\cap q=0$が必要である。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.complementary_submodules_iff_unique_decomposition",
+   "statement": "$p+q=M$だけで全ての$x$の分解は一意である。"
+  },
+  {
+   "reason": "体上の無限次元空間$M$と$p=M$では$M/p=0$は有限生成だが、$M$は有限生成でない。",
+   "recipe_id": "textbook.uni_algebra_groups_modules.finitely_generated_of_submodule_and_quotient",
+   "statement": "$M/p$が有限生成なら$M$も有限生成である。"
+  },
+  {
+   "reason": "$a_n=1$、$L=0$、$K_n=n+1$とすると、各$\\varepsilon>0$に対して大きな$n$で$|a_n-L|\\leq K_n\\varepsilon$となるが、$a_n$は$0$に収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_limit_eps_scaled",
+   "statement": "定数$K$を$n$に依存する正の数$K_n$に置き換えても、同じ結論が成り立つ。"
+  },
+  {
+   "reason": "$a_0=0$、$n\\geq1$で$a_n=1$とすると$L=1$に収束するが、$n=0$で不等式が成り立たない。有限個の項は極限に影響しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_eventually_abs_gt_half",
+   "statement": "$(a_n)$が$L\\neq0$に収束するならば、全ての$n$で$|a_n|>|L|/2$となる。"
+  },
+  {
+   "reason": "$a_n=1$、$b_n=1/(n+1)$とすると$b_n\\to0$で、$a_n/b_n=n+1$は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_limit_div",
+   "statement": "$M=0$でも、全ての$n$で$b_n\\neq0$なら$a_n/b_n$は収束する。"
+  },
+  {
+   "reason": "$a_n=(-1)^n$の偶数番目の部分列は$1$に収束するが、$(a_n)$は収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_subsequence_limit",
+   "statement": "実数列のある部分列が$L$に収束すれば、元の数列も$L$に収束する。"
+  },
+  {
+   "reason": "$a_n=(-1)^n$では偶数番目は$1$に、奇数番目は$-1$に収束するが、$(a_n)$は収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_even_odd_limit",
+   "statement": "$(a_{2n})$と$(a_{2n+1})$がそれぞれ収束すれば、極限が異なっていても$(a_n)$は収束する。"
+  },
+  {
+   "reason": "$a_n=(-1)^n$の任意の部分列は収束する部分列をもつが、$(a_n)$は収束しない。極限$L$が共通であることが必要である。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_every_subsequence_criterion",
+   "statement": "実数列の任意の部分列が収束する部分列をもつならば、その数列は収束する。"
+  },
+  {
+   "reason": "$a_n=(-1)^n$の算術平均は$0$に収束するが、$(a_n)$は収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.cesaro_mean",
+   "statement": "算術平均$(a_0+\\cdots+a_n)/(n+1)$が$L$に収束すれば、$a_n$も$L$に収束する。"
+  },
+  {
+   "reason": "$x\\neq0$で$f(x)=x/2$、$f(0)=1$とし、$a_0=1$とすると$a_n=2^{-n}\\to0$だが、$f(0)=1\\neq0$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.seq_fixed_point_of_recursion",
+   "statement": "$f$が$L$で連続でなくても、$a_{n+1}=f(a_n)$かつ$a_n\\to L$なら$f(L)=L$である。"
+  },
+  {
+   "reason": "$n=0$で$1$、$n=1$で$\\sqrt{2}>1$なので、最初の2項で増加している。",
+   "recipe_id": "textbook.uni_analysis_foundations.nth_root_n_limit",
+   "statement": "$(n+1)^{1/(n+1)}$は$n$について単調減少である。"
+  },
+  {
+   "reason": "$k=0$、$r=1$とすると、$n\\geq1$で$n^kr^n=1$となり$0$に収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.pow_mul_geometric_null",
+   "statement": "$|r|\\leq1$なら$n^kr^n\\to0$である。"
+  },
+  {
+   "reason": "$a_n=n$、$C=1$、$r=1$は不等式を満たすが、$(a_n)$は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.cauchy_of_geometric_increments",
+   "statement": "$r=1$でも、全ての$n$で$|a_{n+1}-a_n|\\leq Cr^n$なら$(a_n)$は収束する。"
+  },
+  {
+   "reason": "$n=2$、$a>0$、$x=a+\\delta/2$とすると$|x^2-a^2|=\\delta a+\\delta^2/4$であり、$\\delta$を固定して$a$を大きくすれば$\\varepsilon$を超える。",
+   "recipe_id": "textbook.uni_analysis_foundations.pow_continuous_eps_delta",
+   "statement": "$n\\geq2$のとき、$\\delta$を$a$によらず$\\varepsilon$だけから選べる。"
+  },
+  {
+   "reason": "$x=1/4$、$y=0$では左辺が$1/2$、右辺が$1/4$である。平方根は原点の近くでリプシッツ連続でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.abs_sqrt_sub_sqrt_le",
+   "statement": "$x,y\\geq0$なら$|\\sqrt{x}-\\sqrt{y}|\\leq|x-y|$である。"
+  },
+  {
+   "reason": "$x\\neq a$で$f(x)=1/(x-a)$、$g(x)=-1/(x-a)$とすると和は$0$だが、$f$も$g$も収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_add",
+   "statement": "$f(x)+g(x)$が$x\\to a$で収束すれば、$f(x)$と$g(x)$もそれぞれ収束する。"
+  },
+  {
+   "reason": "$x\\neq a$で$f(x)=1/(x-a)$、$g(x)=x-a$とすると積は$1$だが、$f$は収束しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_mul",
+   "statement": "$f(x)g(x)$が$x\\to a$で収束すれば、$f(x)$と$g(x)$もそれぞれ収束する。"
+  },
+  {
+   "reason": "$g$が恒等的に$0$なら$M=0$に収束するが、どの$x$でも$g(x)=0$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.eps_delta_limit_inv",
+   "statement": "$g(x)\\to M$なら、$M=0$でも$x$が$a$に近いとき$g(x)\\neq0$である。"
+  },
+  {
+   "reason": "$x\\neq a$で$f(x)=1/(x-a)$、$g(x)=x-a$とすると$g(x)\\to0$だが、$f(x)g(x)=1$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.fn_bounded_mul_null",
+   "statement": "$g(x)\\to0$なら、$f$の有界性がなくても$f(x)g(x)\\to0$である。"
+  },
+  {
+   "reason": "$x>a$で$f(x)=1$、$x<a$で$f(x)=-1$とすると、同じ側の2点では差が$0$だが、極限は存在しない。",
+   "recipe_id": "textbook.uni_analysis_foundations.fn_limit_cauchy_criterion",
+   "statement": "$a$の左側の2点どうしと右側の2点どうしについてだけ$|f(x)-f(y)|<\\varepsilon$を要求しても、$x\\to a$の極限は存在する。"
+  },
+  {
+   "reason": "この$f$は全ての$x$で$|f(x)|\\leq|x|$を満たすので、$0$で連続である。",
+   "recipe_id": "textbook.uni_analysis_foundations.dirichlet_nowhere_continuous",
+   "statement": "有理数$x$で$f(x)=x$、無理数$x$で$f(x)=0$となる関数も、どの点でも連続でない。"
+  },
+  {
+   "reason": "$f(x)=1/x$と$a_n=1/(n+2)$では、$(a_n)$はコーシー列だが、$f(a_n)=n+2$は有界でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_maps_cauchy",
+   "statement": "区間$(0,1)$上の連続関数は、$(0,1)$内のコーシー列をコーシー列に写す。"
+  },
+  {
+   "reason": "$f(x)=1/x$（$x\\neq0$）は$(0,1)$上で連続だが、$(0,1)$上で有界でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_on_bounded_set_bounded",
+   "statement": "有界な集合上で連続な関数は、その集合上で有界である。"
+  },
+  {
+   "reason": "$f(x)=x^2$と$x_n=y_n=n$はこの条件を満たすが、$f$は$\\mathbb{R}$上で一様連続でない。一様連続性の判定には全ての組を調べる必要がある。",
+   "recipe_id": "textbook.uni_analysis_foundations.not_uniform_continuous_of_sequences",
+   "statement": "$x_n-y_n\\to0$かつ$f(x_n)-f(y_n)\\to0$となる数列の組が1組あれば、$f$は一様連続である。"
+  },
+  {
+   "reason": "$f(x)=\\sin(x^2)$は有界で連続だが一様連続でない。$x_n=\\sqrt{2\\pi n}$と$y_n=\\sqrt{2\\pi n+\\pi/2}$で$x_n-y_n\\to0$かつ$|f(x_n)-f(y_n)|=1$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_of_limits_at_infinity",
+   "statement": "有界な連続関数$f:\\mathbb{R}\\to\\mathbb{R}$は一様連続である。"
+  },
+  {
+   "reason": "$x\\neq a$で$f(x)=\\sin(1/(x-a))$とすると$f$は$(a,b)$上で連続だが、$a$に右から近づくとき$-1$と$1$の間を振動して右極限をもたない。",
+   "recipe_id": "textbook.uni_analysis_foundations.uniform_continuous_open_interval_endpoint_limit",
+   "statement": "開区間$(a,b)$上で連続な関数は、$a$での右極限をもつ。"
+  },
+  {
+   "reason": "置き換えた条件は$a$での連続性にすぎない。$f(x)=|x|$、$a=0$、$u=0$はこの条件を満たすが、$0$で微分可能でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.deriv_linear_approx_eps",
+   "statement": "右辺の$\\varepsilon|x-a|$を$\\varepsilon$に置き換えても、$f'(a)=u$と同値である。"
+  },
+  {
+   "reason": "$x\\neq0$で$f(x)=x+2x^2\\sin(1/x)$、$f(0)=0$とすると$f'(0)=1$だが、$f'$は$0$のどの近くでも負の値をとるので、$f$は$0$の近くで単調でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.positive_derivative_local_increase",
+   "statement": "$f'(a)>0$なら、$f$は$a$を含むある開区間で単調増加である。"
+  },
+  {
+   "reason": "$x\\neq a$で$f(x)=x$、$f(a)=a+1$とすると$g(x)=1\\to1$だが、$f$は$a$で連続でないので微分可能でない。",
+   "recipe_id": "textbook.uni_analysis_foundations.deriv_of_limit_of_deriv",
+   "statement": "$a$での連続性を仮定しなくても、$x\\neq a$で$f'(x)=g(x)$かつ$g(x)\\to u$なら$f'(a)=u$である。"
+  },
+  {
+   "reason": "$x>0$で$1$、$x<0$で$-1$をとる関数は導関数が$0$だが定数でない。定義域が連結であることが必要である。",
+   "recipe_id": "textbook.uni_analysis_foundations.vanishing_higher_derivative_polynomial",
+   "statement": "定義域が$\\mathbb{R}\\setminus\\{0\\}$でも、導関数が恒等的に$0$なら関数は定数である。"
+  },
+  {
+   "reason": "$n=2$では$(fg)''=f''g+2f'g'+fg''$であり、中央の項の係数は$2$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.leibniz_iterated_derivative",
+   "statement": "$(fg)^{(n)}=\\sum_{k=0}^{n}f^{(k)}g^{(n-k)}$であり、二項係数は現れない。"
+  },
+  {
+   "reason": "$a_n=1/(n+1)$は$0$に収束するが、部分和は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.series_cauchy_criterion",
+   "statement": "$n=m+1$の場合だけ、つまり$a_m\\to0$だけを確かめれば、級数は収束する。"
+  },
+  {
+   "reason": "$a_n=1/(n+1)^2$、$b_n=1/(n+1)$では$a_n/b_n\\to0$であり、$\\sum a_n$は収束するが$\\sum b_n$は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.limit_comparison",
+   "statement": "$c=0$でも、$\\sum a_n$と$\\sum b_n$の収束は同値である。"
+  },
+  {
+   "reason": "$p=1$は調和級数であり、部分和は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.p_series_convergence",
+   "statement": "級数$\\sum_{n\\geq0}1/(n+1)^p$は$p\\geq1$で収束する。"
+  },
+  {
+   "reason": "$n$が$2$のべきでないとき$f(n)=1$、$2$のべきのとき$f(n)=0$とすると、$\\sum_k2^kf(2^k)=0$は収束するが、$\\sum_nf(n)$は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.cauchy_condensation",
+   "statement": "単調性を仮定しなくても、非負の数列なら同じ同値が成り立つ。"
+  },
+  {
+   "reason": "全ての$k$で$a_k=b_k=1$とすると、左辺は$n+1$で、第1項を除いた右辺は$0$である。",
+   "recipe_id": "textbook.uni_analysis_foundations.summation_by_parts",
+   "statement": "右辺の第1項$a_nB_{n+1}$を除いても等式が成り立つ。"
+  },
+  {
+   "reason": "$a_n=(-1)^n/\\sqrt{n+1}$、$b_n=(-1)^n$とすると、$b_n$の部分和は有界で$a_n\\to0$だが、$a_nb_n=1/\\sqrt{n+1}$の和は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.dirichlet_test",
+   "statement": "$(a_n)$の単調性を仮定しなくても、$a_n\\to0$なら同じ結論が成り立つ。"
+  },
+  {
+   "reason": "$a_n=1/(n+1)^2$、$x=1$では$l|x|=1$だが、級数は収束する。比の極限が$1$の場合、この判定法からは何も分からない。",
+   "recipe_id": "textbook.uni_analysis_foundations.power_series_ratio_radius",
+   "statement": "$l|x|=1$なら、$\\sum a_nx^n$の部分和は収束しない。"
+  },
+  {
+   "reason": "$n\\geq1$で$a_n=1/n^2$、$a_0=0$、$r=1$、$x=1$とすると$\\sum|a_n|r^n$は収束するが、$(n+1)a_{n+1}x^n=1/(n+1)$の和は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.power_series_derivative",
+   "statement": "$|x|=r$でも、項別微分した級数$\\sum(n+1)a_{n+1}x^n$は収束する。"
+  },
+  {
+   "reason": "$a_n=(-1)^n$なら$\\sum_{n\\geq0}a_nx^n=1/(1+x)\\to1/2$だが、$\\sum a_n$は発散する。",
+   "recipe_id": "textbook.uni_analysis_foundations.abel_limit_theorem",
+   "statement": "$x\\to1-0$で$\\sum_{n\\geq0}a_nx^n$が収束すれば、$\\sum a_n$も収束する。"
+  },
+  {
+   "reason": "$X=\\mathbb{R}$、$S=(0,1)$、$x=0$とすると$d(x,S)=0$だが$x\\notin S$である。$d(x,S)=0$は$x$が$S$の閉包に属することを意味する。",
+   "recipe_id": "textbook.uni_analysis_foundations.inf_dist_lipschitz",
+   "statement": "$d(x,S)=0$なら$x\\in S$である。"
+  },
+  {
+   "reason": "$\\mathbb{R}$で$F_n=[n,\\infty)$とすると、空でない閉集合の減少列だが、共通部分は空である。",
+   "recipe_id": "textbook.uni_analysis_foundations.cantor_intersection",
+   "statement": "完備距離空間の空でない閉集合の減少列は、直径の条件がなくても共通点をもつ。"
+  },
+  {
+   "reason": "体$k$上の$k[x,y]$で$I=(y)$、$J=(y-x^2)$とする。$I,J$は素イデアルなので右辺は$(y,x^2)$であり、左辺の$(x,y)$と異なる。",
+   "recipe_id": "textbook.uni_commutative_algebra.radical_of_product_and_intersection",
+   "statement": "可換環のイデアル$I,J$について$\\sqrt{I+J}=\\sqrt{I}+\\sqrt{J}$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I=(2)$、$J=(3)$とすると仮定をみたすが、$I\\cap J=(6)\\neq 0$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.coprime_radicals_imply_coprime",
+   "statement": "$\\sqrt{I}+\\sqrt{J}=R$ならば$I\\cap J=0$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I_n=(3^n)$、$P=(2)$とすると、共通部分は$0$で$P$に含まれるが、どの$I_n$も$P$に含まれない。",
+   "recipe_id": "textbook.uni_commutative_algebra.prime_contains_finite_intersection",
+   "statement": "無限個のイデアルの族でも、共通部分が素イデアル$P$に含まれるなら、ある$I_i$が$P$に含まれる。"
+  },
+  {
+   "reason": "$\\mathbb{F}_2[x,y]/(x,y)^2$で$I=(x,y)$は$\\{0,x,y,x+y\\}$であり、3つのイデアル$(x),(y),(x+y)$の和集合に等しいが、どの1つにも含まれない。",
+   "recipe_id": "textbook.uni_commutative_algebra.prime_avoidance",
+   "statement": "素イデアルでないものが3つあっても、イデアルが和集合に含まれるなら、どれか1つに含まれる。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I=(6)$とすると$\\mathbb{Z}/6\\mathbb{Z}$は被約だが、$I$は素イデアルでない。",
+   "recipe_id": "textbook.uni_commutative_algebra.quotient_reduced_iff_radical_ideal",
+   "statement": "可換環$R$のイデアル$I$について、$R/I$が被約なら$I$は素イデアルである。"
+  },
+  {
+   "reason": "正しくは共通部分である。$\\mathbb{Z}$で$I=(6)$、$J=(2)$、$K=(3)$とすると、左辺は$(6)$、右辺は$(3)+(2)=\\mathbb{Z}$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.colon_of_colon_ideal",
+   "statement": "イデアル商について$(I:J+K)=(I:J)+(I:K)$である。"
+  },
+  {
+   "reason": "$x\\in Q$なら$(Q:x)=R$であり、真のイデアルでないので準素イデアルではない。",
+   "recipe_id": "textbook.uni_commutative_algebra.primary_ideal_colon_element",
+   "statement": "準素イデアル$Q$と任意の元$x$について、$(Q:x)$は準素イデアルである。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I=0$、$M=\\mathbb{Z}\\setminus\\{0\\}$とすると、$M$と交わらない素イデアルは$0$だけであり、極大イデアルではない。",
+   "recipe_id": "textbook.uni_commutative_algebra.prime_disjoint_from_multiplicative_set",
+   "statement": "可換環$R$の乗法的部分モノイド$M$と交わらないイデアル$I$に対し、$I$を含み$M$と交わらない極大イデアルが存在する。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$の素イデアル$(2)$の元$2$は零因子でない。極小性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.minimal_prime_consists_of_zero_divisors",
+   "statement": "可換環の任意の素イデアルの元は零因子である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I_1=(2)$、$I_2=(4)$とすると、左辺の位数は$4$で右辺の位数は$8$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.chinese_remainder_finite_family",
+   "statement": "互いに素とは限らない有限個のイデアルでも、$R/\\bigcap_iI_i\\cong\\prod_iR/I_i$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$(2)$と$(4)$の共通部分は$(4)$だが、積は$(8)$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.pairwise_coprime_intersection_eq_product",
+   "statement": "互いに素でなくても有限個のイデアルの共通部分は積に等しい。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$では$3$と$-2$が非単元だが、和は単元$1$である。これがイデアルになるのは局所環のときに限る。",
+   "recipe_id": "textbook.uni_commutative_algebra.local_iff_unit_or_one_minus_unit",
+   "statement": "可換環の非単元全体はつねにイデアルをなす。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$M=0$とすると条件をみたすが、$\\mathbb{Z}$は局所環でない。$M$の極大性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.local_of_one_plus_maximal_units",
+   "statement": "可換環の真のイデアル$M$の各元$a$で$1+a$が単元なら、$R$は局所環である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/6\\mathbb{Z}$では$3^2=3$である。この環は局所環でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.local_ring_idempotents_trivial",
+   "statement": "任意の可換環の冪等元は$0$または$1$である。"
+  },
+  {
+   "reason": "$g(M)$が単元からなる必要がある。$\\mathbb{Z}$の恒等写像は$\\mathbb{Q}=(\\mathbb{Z}\\setminus\\{0\\})^{-1}\\mathbb{Z}$を経由しない。",
+   "recipe_id": "textbook.uni_commutative_algebra.localization_universal_property",
+   "statement": "任意の環準同型$g:R\\to T$は局所化$S$を経由する。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/6\\mathbb{Z}$を$M=\\{1,2,4\\}$で局所化すると、$2\\cdot 3=0$より$3$の像は$0$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.localization_map_injective_iff",
+   "statement": "局所化の標準写像はつねに単射である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$を$M=\\{2^n\\}$で局所化し$I=(2)$とすると、$IS=S$で逆像は$\\mathbb{Z}$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.localization_ideals_are_extended",
+   "statement": "$R$のイデアル$I$について、$IS$の$\\varphi$による逆像はつねに$I$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$を$M=\\{2^n\\}$で局所化し$P=(2)$とすると、$PS=S$となり素イデアルでない。",
+   "recipe_id": "textbook.uni_commutative_algebra.localization_extends_disjoint_prime",
+   "statement": "$R$の任意の素イデアル$P$について$PS$は素イデアルである。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$P=(2)$、$Q=(3)$とすると、$3$は局所化で単元になるので、逆像が$(3)$となる素イデアルはない。",
+   "recipe_id": "textbook.uni_commutative_algebra.primes_of_localization_at_prime",
+   "statement": "$R$の任意の素イデアル$Q$は、$R$の$P$での局所化の素イデアルの逆像である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$I=(2)$、$J=(3)$、$P=(5)$とすると、$2,3$は$R_P$で単元なので両辺は$R_P$だが、$I\\not\\subseteq J$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.ideal_inclusion_checked_at_maximal_ideals",
+   "statement": "ある1つの極大イデアル$P$で$IR_P\\subseteq JR_P$なら$I\\subseteq J$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$x=1/3$、$P=(2)$とすると、$s=3$で条件をみたすが、$x$は整数でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.domain_is_intersection_of_maximal_localizations",
+   "statement": "1つの極大イデアル$P$で$\\varphi(s)x=\\varphi(a)$($s\\notin P$)と書けるなら$x\\in\\varphi(R)$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$(2)$と$(4)$はどちらも$V=\\{(2)\\}$だが、イデアルとして異なる。",
+   "recipe_id": "textbook.uni_commutative_algebra.spectrum_zero_locus_eq_iff_radical_eq",
+   "statement": "$V(I)=V(J)$なら$I=J$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$で$f=2$とすると、唯一の素イデアル$(2)$が$f$を含むので$D(f)=\\emptyset$だが、$f\\neq 0$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.basic_open_empty_iff_nilpotent",
+   "statement": "$D(f)=\\emptyset$なら$f=0$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$f=2$、$g=4$とすると$D(2)=D(4)$だが、$4$は$2$を割らない。",
+   "recipe_id": "textbook.uni_commutative_algebra.basic_open_subset_iff_mem_radical",
+   "statement": "$D(f)\\subseteq D(g)$なら$g$は$f$を割る。"
+  },
+  {
+   "reason": "体$k$上の$k[x,y]$で$I=(xy)$とすると、$V(I)$は連結だが、$\\sqrt{I}=(xy)$は素イデアルでない。",
+   "recipe_id": "textbook.uni_commutative_algebra.zero_locus_irreducible_iff_radical_prime",
+   "statement": "$V(I)$が連結なら$\\sqrt{I}$は素イデアルである。"
+  },
+  {
+   "reason": "$\\operatorname{Spec}\\mathbb{Z}$で$(0)$の閉包は全体であり、$\\{(0)\\}$は閉集合でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.spectrum_point_closure_iff_le",
+   "statement": "$\\operatorname{Spec}R$の1点集合はつねに閉集合である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$上の$x=1/2$は$2X-1$の根だが、$\\mathbb{Z}[1/2]$は有限生成$\\mathbb{Z}$加群でない。モニック性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.integral_iff_adjoin_finite",
+   "statement": "$x$がある$R$係数の$0$でない多項式の根なら、$R[x]$は有限生成$R$加群である。"
+  },
+  {
+   "reason": "$\\mathbb{Q}$の代数閉包内の代数的整数全体は$\\mathbb{Z}$上整だが、有限生成$\\mathbb{Z}$加群でない。代数としての有限生成性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.finite_type_algebra_finite_iff_integral",
+   "statement": "$R$上整な可換$R$代数はつねに有限生成$R$加群である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}\\subset\\mathbb{Q}$で$r=2$とすると$2$は$\\mathbb{Q}$の単元だが、$\\mathbb{Z}$の単元でない。整性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.unit_descends_along_integral_extension",
+   "statement": "単射な環準同型$\\varphi:R\\to S$で$\\varphi(r)$が単元なら$r$は単元である。"
+  },
+  {
+   "reason": "$R=\\mathbb{Z}_{(2)}$、$S=R[X]$、$Q=(2)$とすると、逆像は極大イデアル$(2)$だが、$Q$は極大でない。整性が必要である。",
+   "recipe_id": "textbook.uni_commutative_algebra.integral_prime_maximal_iff_contraction_maximal",
+   "statement": "環準同型$\\varphi:R\\to S$と素イデアル$Q$について、$\\varphi^{-1}(Q)$が極大なら$Q$は極大である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$はネーター環だが、$\\{(2^n)\\mid n\\geq 0\\}$は極小元をもたない。これはアルティン環の条件である。",
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_iff_maximal_condition",
+   "statement": "ネーター環ではイデアルの空でない任意の集合が極小元をもつ。"
+  },
+  {
+   "reason": "体$k$上の無限個の変数$x_1,x_2,\\ldots$をもつ多項式環で$x_1\\mapsto 0$、$x_{i+1}\\mapsto x_i$と定めると、全射だが単射でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_surjective_endomorphism_injective",
+   "statement": "任意の可換環の全射な環準同型$f:R\\to R$は単射である。"
+  },
+  {
+   "reason": "体$k$上の変数$x_1,x_2,\\ldots$の多項式環を$(x_m^m\\mid m\\geq 1)$で割った環で$I=0$とすると、$\\sqrt{I}$は$x_m$で生成され、どの$n$でも$x_{n+1}^n\\neq 0$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.noetherian_ideal_contains_power_of_radical",
+   "statement": "任意の可換環のイデアル$I$について、$(\\sqrt{I})^n\\subseteq I$となる$n$が存在する。"
+  },
+  {
+   "reason": "$\\mathbb{Q}[[x]]$のうち定数項が$\\mathbb{Z}_{(2)}$に属するものからなる環は、極大イデアルが$(2)$で単項だが、素イデアル$x\\mathbb{Q}[[x]]$が有限生成でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.cohen_prime_ideals_finitely_generated",
+   "statement": "可換環のすべての極大イデアルが有限生成なら、その環はネーター環である。"
+  },
+  {
+   "reason": "体$k$上の$k[x,y]$で$(x,y)$は素イデアルで、列$0\\subsetneq(x)\\subsetneq(x,y)$より高さは$2$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.krull_principal_ideal_theorem",
+   "statement": "可換ネーター環の$2$元で生成されるイデアル上の極小素イデアルの高さは$1$以下である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$はネーター環で$2$は零因子でないが、単元でない。",
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_non_zero_divisor_is_unit",
+   "statement": "ネーター環で零因子でない元は単元である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}_{(2)}$は局所環だが、$2$は単元でも冪零元でもない。",
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_local_unit_or_nilpotent",
+   "statement": "可換局所環の各元は単元または冪零元である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$はアルティン環だが被約でないので、体の直積ではない。",
+   "recipe_id": "textbook.uni_commutative_algebra.artinian_reduced_is_product_of_fields",
+   "statement": "任意の可換アルティン環は有限個の体の直積である。"
+  },
+  {
+   "reason": "$R=\\mathbb{Z}_{(2)}$、$I=(2)$、$U=\\mathbb{Q}$とすると$U=IU$だが、$r-1\\in I$なら$r\\neq 0$なので$r\\mathbb{Q}\\neq 0$である。",
+   "recipe_id": "textbook.uni_commutative_algebra.nakayama_multiplier_congruent_to_one",
+   "statement": "有限生成でない部分加群$U$でも、$U\\subseteq IU$なら$r-1\\in I$、$rU=0$となる$r$がある。"
+  },
+  {
+   "reason": "体$k$上の整域$k[x^{1/2^n}\\mid n\\geq 0]$で$I=(x^{1/2^n}\\mid n\\geq 0)$は$I^2=I$をみたすが、整域の冪等元は$0,1$だけで、$I$は$0$でも全体でもない。",
+   "recipe_id": "textbook.uni_commutative_algebra.fg_idempotent_ideal_generated_by_idempotent",
+   "statement": "有限生成でないイデアル$I$でも、$I^2=I$なら冪等元で生成される。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$上で$f=g=2X$とすると$fg=0$となり成り立たない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_degree_leading_coeff_mul_domain",
+   "statement": "任意の可換環上の零でない多項式$f,g$について$\\deg(fg)=\\deg f+\\deg g$である。"
+  },
+  {
+   "reason": "$f=X$、$g=-X$とすると$f+g=0$であり、次数が等しいときは打ち消し合いが起こる。",
+   "recipe_id": "textbook.uni_ring_theory.poly_degree_add_of_degree_lt",
+   "statement": "任意の多項式$f,g$について$\\deg(f+g)=\\max(\\deg f,\\deg g)$である。"
+  },
+  {
+   "reason": "$f=X^3$、$g=X^2$とすると$f(g)=X^6$であり、次数は$5$ではなく$6$である。次数の和になるのは積であり、合成では積になる。",
+   "recipe_id": "textbook.uni_ring_theory.poly_natdegree_comp_domain",
+   "statement": "整域上の多項式について$\\deg f(g)=\\deg f+\\deg g$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$上で$(1+2X)^2=1$なので、$1+2X$は定数でない単元である。",
+   "recipe_id": "textbook.uni_ring_theory.poly_units_over_domain",
+   "statement": "任意の可換環$A$について、$A[X]$の単元は定数多項式に限る。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$上の$1+2X$は最高次係数$2$が冪零だが、単元なので冪零ではない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_nilpotent_iff_coeffs_nilpotent",
+   "statement": "多項式の最高次係数が冪零ならば、その多項式は冪零である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$の$1+X$は定数項が単元だが、次数の比較により単元ではない。形式的冪級数環なら単元である。",
+   "recipe_id": "textbook.uni_ring_theory.poly_units_nilpotent_coeffs",
+   "statement": "定数項が単元である多項式は$A[X]$の単元である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$上で$g=2X$とすると$g\\cdot 2+0=g\\cdot 0+0$であり、商は一意でない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_monic_division_uniqueness",
+   "statement": "可換環上の零でない任意の多項式$g$について、同じ条件のもとで商と余りは一意である。"
+  },
+  {
+   "reason": "$A=\\mathbb{Z}$、$f=X$、$g=2$とすると$r=0$となるので$X=2q$が必要だが、$X$の係数を比べると不可能である。割る多項式の最高次係数が可逆でないと成り立たないことがある。",
+   "recipe_id": "textbook.uni_ring_theory.field_poly_division_exists_unique",
+   "statement": "整域$A$上の多項式$f$と零でない$g$について、$f=gq+r$、$\\deg r<\\deg g$を満たす$q,r\\in A[X]$が存在する。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$は単項イデアル整域だが、$\\mathbb{Z}[X]$のイデアル$(2,X)$は単項でない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_ring_pid_iff_field",
+   "statement": "$A$が単項イデアル整域ならば$A[X]$も単項イデアル整域である。"
+  },
+  {
+   "reason": "$\\mathbb{Q}$では$2$が可逆なので$(2,X)=\\mathbb{Q}[X]=(1)$であり、単項である。",
+   "recipe_id": "textbook.uni_ring_theory.int_poly_ideal_two_x_not_principal",
+   "statement": "$\\mathbb{Q}[X]$のイデアル$(2,X)$は単項イデアルでない。"
+  },
+  {
+   "reason": "$K=\\mathbb{F}_p(t)$上の$X^p-t$は既約なので無平方だが、形式微分は$0$であり互いに素でない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_coprime_derivative_squarefree",
+   "statement": "体上の無平方な多項式$f$は、$f'$と互いに素である。"
+  },
+  {
+   "reason": "$K=\\mathbb{R}$、$f=g=X^2+1$は実数の共通根を持たないが、$uf+vg$はすべて$X^2+1$で割り切れるので$1$にならない。",
+   "recipe_id": "textbook.uni_ring_theory.algclosed_poly_coprime_iff_no_common_root",
+   "statement": "任意の体$K$上で、共通根を持たない$f,g\\in K[X]$は$uf+vg=1$を満たす。"
+  },
+  {
+   "reason": "$\\mathbb{Q}[X]$で$f=X$、$g=2X$は互いに割り切るが等しくない。モニックの仮定が必要である。",
+   "recipe_id": "textbook.uni_ring_theory.monic_polys_mutual_dvd_eq",
+   "statement": "体上の多項式$f,g$が互いに割り切るならば、$f=g$である。"
+  },
+  {
+   "reason": "$f=X$は既約だが、$g=X^2$とすると$\\mathbb{Q}[X]$で$f(g)=X^2$は可約である。$X+a$の代入が環同型であることが要点である。",
+   "recipe_id": "textbook.uni_ring_theory.poly_irreducible_translate_iff",
+   "statement": "既約多項式$f$と任意の多項式$g$について、$f(g)$は既約である。"
+  },
+  {
+   "reason": "$X^2+1$は実数の根を持たない$2$次式なので既約である。次数$1$に限るのは$\\mathbb{C}[X]$の場合である。",
+   "recipe_id": "textbook.uni_ring_theory.real_poly_irreducible_degree_le_two",
+   "statement": "$\\mathbb{R}[X]$の既約多項式の次数は$1$である。"
+  },
+  {
+   "reason": "$A=\\mathbb{Z}$、$m=(2)$とすると$A[X]/mA[X]\\cong\\mathbb{F}_2[X]$は体でないので、極大ではない。素であることは保たれるが極大であることは保たれない。",
+   "recipe_id": "textbook.uni_ring_theory.poly_ideal_extension_prime",
+   "statement": "$m$が$A$の極大イデアルならば、$mA[X]$は$A[X]$の極大イデアルである。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$上で$f=X+1$、$g=-1$とすると$c(f+g)=1$だが$c(f)+c(g)=2$である。内容は積と両立するが和とは両立しない。",
+   "recipe_id": "textbook.uni_ring_theory.gauss_content_multiplicative",
+   "statement": "$\\mathrm{GCD}$整域上で$c(f+g)=c(f)+c(g)$である。"
+  },
+  {
+   "reason": "$A=\\mathbb{Z}$、$p=2$、$q=X+1$とすると$\\mathbb{Q}[X]$では$2$は単元なので割るが、$\\mathbb{Z}[X]$では割らない。$p$が原始多項式であることが必要である。",
+   "recipe_id": "textbook.uni_ring_theory.gauss_primitive_dvd_over_fraction_field",
+   "statement": "$A$上の任意の多項式$p,q$について、$K[X]$で$p\\mid q$ならば$A[X]$で$p\\mid q$である。"
+  },
+  {
+   "reason": "$A=\\mathbb{Z}[\\sqrt 5]$、$f=X^2-X-1$とすると、$X-(1+\\sqrt 5)/2$は商体上で$f$を割るが、係数は$A$に属さない。$A$は整閉でない。",
+   "recipe_id": "textbook.uni_ring_theory.monic_factor_descends_to_integrally_closed",
+   "statement": "任意の整域$A$について、モニック$f\\in A[X]$を商体上で割るモニック多項式は$A$係数である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$(2)=(-2)$だが$2\\neq-2$である。等しいのは単元倍を除いてである。",
+   "recipe_id": "textbook.uni_ring_theory.span_eq_iff_associated",
+   "statement": "整域の元$a,b$について$(a)=(b)$ならば$a=b$である。"
+  },
+  {
+   "reason": "代数的整数全体の環では、任意の単元でない元$a$が$a=\\sqrt a\\sqrt a$と分解するので既約元が存在せず、$2$はそのように書けない。",
+   "recipe_id": "textbook.uni_ring_theory.noetherian_domain_irreducible_factorization",
+   "statement": "任意の整域の$0$でない元は、単元と既約元の積として書ける。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[\\sqrt{-5}]$では$6=2\\cdot 3=(1+\\sqrt{-5})(1-\\sqrt{-5})$であり、現れる既約元は同伴でない。この環では$2$は既約だが素元でない。",
+   "recipe_id": "textbook.uni_ring_theory.irreducibles_prime_factorization_unique",
+   "statement": "任意のネーター整域で、既約元の積への分解は単元倍と順序を除いて一意である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[\\sqrt{-5}]$の$6$と$2+2\\sqrt{-5}$には公約元$2$と$1+\\sqrt{-5}$があるが、ノルムを調べると両方で割り切れる公約元は存在しない。",
+   "recipe_id": "textbook.uni_ring_theory.ufd_gcd_exists",
+   "statement": "任意の整域の$2$元には最大公約元が存在する。"
+  },
+  {
+   "reason": "$\\mathbb{Q}[X,Y]$は一意分解整域だが、素イデアル$(X,Y)$は単項でない。素元を含むだけで、生成されるとは限らない。",
+   "recipe_id": "textbook.uni_ring_theory.ufd_prime_ideal_contains_prime_element",
+   "statement": "一意分解整域の零でない素イデアルは一つの素元で生成される。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[\\sqrt 5]$では$(1+\\sqrt 5)/2$が$X^2-X-1$の根で整だが、この環に属さない。",
+   "recipe_id": "textbook.uni_ring_theory.ufd_integrally_closed",
+   "statement": "任意の整域はその商体の中で整閉である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$で$a=2$、$b=X$の最大公約元は$1$だが、$2u+Xv=1$は$X=0$を代入すると不可能である。",
+   "recipe_id": "textbook.uni_ring_theory.pid_gcd_bezout",
+   "statement": "一意分解整域の元$a,b$の最大公約元$d$は$d=ax+by$と書ける。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$の$X$は既約だが、$\\mathbb{Z}[X]/(X)\\cong\\mathbb{Z}$は体でないので、$(X)$は極大でない。",
+   "recipe_id": "textbook.uni_ring_theory.pid_irreducible_iff_span_maximal",
+   "statement": "一意分解整域の既約元$p$について、$(p)$は極大イデアルである。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$s_1=s_2=2$、$z=2$とすると、$s_1s_2=4$は$2$を割らない。",
+   "recipe_id": "textbook.uni_ring_theory.pairwise_coprime_product_dvd",
+   "statement": "各$s_i$が$z$を割るならば、対ごとに互いに素でなくても$\\prod_is_i$は$z$を割る。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$の$1-X$は定数項が単元だが単元でない。逆元$\\sum_nX^n$は多項式でなく、形式的冪級数でのみ存在する。",
+   "recipe_id": "textbook.uni_ring_theory.power_series_unit_iff_constant_coeff",
+   "statement": "定数項が単元である多項式は多項式環の単元である。"
+  },
+  {
+   "reason": "$f=1$、$n=1$とすると$X$の係数は$0$だが、$X\\mid 1$ではない。見るべきは$n$より下のすべての係数である。",
+   "recipe_id": "textbook.uni_ring_theory.power_series_x_pow_dvd_iff_low_coeffs",
+   "statement": "$X^n\\mid f$であることと、$X^n$の係数が$0$であることは同値である。"
+  },
+  {
+   "reason": "$A=\\mathbb{Z}$、$a=1$とすると$1-X$は$\\mathbb{Z}[X]$の単元でない。逆元は無限級数であり、多項式環の中にはない。",
+   "recipe_id": "textbook.uni_ring_theory.power_series_geometric_inverse",
+   "statement": "可換環$A$の任意の元$a$について、$1-aX$は多項式環$A[X]$の単元である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}/4\\mathbb{Z}$上で$f=g=2$とすると、右辺は$0$だが$fg=0$の位数は$\\infty$である。",
+   "recipe_id": "textbook.uni_ring_theory.power_series_order_mul_domain",
+   "statement": "任意の可換環上の形式的冪級数について$\\operatorname{ord}(fg)=\\operatorname{ord}f+\\operatorname{ord}g$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[[X]]$の$2$は$X$で割れず単元でもない。定数項の可逆性には係数が体であることが必要である。",
+   "recipe_id": "textbook.uni_ring_theory.field_power_series_unit_times_x_pow",
+   "statement": "整域$A$上の$0$でない形式的冪級数は$X^n$と単元の積である。"
+  },
+  {
+   "reason": "$v(1)=v(-1)=1$だが$v(1+(-1))=v(0)=0$である。値が等しいときは等号が成り立つとは限らない。",
+   "recipe_id": "textbook.uni_ring_theory.valuation_add_eq_max_of_ne",
+   "statement": "付値$v$について、つねに$v(a+b)=\\max(v(a),v(b))$である。"
+  },
+  {
+   "reason": "$\\mathbb{Q}$の$p$進付値で$x=p$とすると$v(p)<1$だが、$p^{-1}$は付値環に属さない。",
+   "recipe_id": "textbook.uni_ring_theory.valuation_unit_iff_value_one",
+   "statement": "$v(x)\\leq 1$である$0$でない元$x$は付値環の単元である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$の$(2)$と$(3)$はどちらも他方を含まない。",
+   "recipe_id": "textbook.uni_ring_theory.valuation_ring_dvd_total_iff_ideal_total",
+   "statement": "単項イデアル整域のイデアルは包含で全順序である。"
+  },
+  {
+   "reason": "体$k$上で$k[[X^{1/n}]]$（$n\\geq 1$）の和集合は付値環だが、極大イデアルは$X^{1/n}$全体で生成され、単項でない。ネーター性が必要である。",
+   "recipe_id": "textbook.uni_ring_theory.noetherian_valuation_ring_is_pid",
+   "statement": "付値環はすべて単項イデアル整域である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$で$p=2$、$x=3$とすると成り立たない。既約元が同伴類一つに限られるのは局所の場合である。",
+   "recipe_id": "textbook.uni_ring_theory.dvr_element_unit_mul_uniformizer_pow",
+   "statement": "単項イデアル整域の既約元$p$と$0$でない$x$について、$x$は単元と$p$の冪の積である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[\\sqrt{-3}]$の$I=(2,1+\\sqrt{-3})$は$I^2=(2)I$を満たすが、$I\\neq(2)$である。この環はデデキント環でない。",
+   "recipe_id": "textbook.uni_ring_theory.dedekind_ideal_cancel",
+   "statement": "任意の整域の零でないイデアル$I$について、$IJ=IL$ならば$J=L$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$で$I=(2)$、$J=(X)$とすると$I\\cap J=(2X)=IJ$であり、$(2,X)(2X)$は$2X$を含まないので等しくない。",
+   "recipe_id": "textbook.uni_ring_theory.dedekind_sum_mul_inter",
+   "statement": "任意の一意分解整域のイデアル$I,J$について、$(I+J)(I\\cap J)=IJ$である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}$は単項イデアル整域だが、素イデアル$(p)$は無限個ある。この定理の逆は成り立たない。",
+   "recipe_id": "textbook.uni_ring_theory.dedekind_finitely_many_primes_is_pid",
+   "statement": "単項イデアル整域の素イデアルは有限個である。"
+  },
+  {
+   "reason": "$\\mathbb{Z}[X]$は一意分解整域だが、$(2,X)$は単項でない。デデキント環であるという仮定が必要である。",
+   "recipe_id": "textbook.uni_ring_theory.dedekind_ufd_iff_pid",
+   "statement": "一意分解整域は単項イデアル整域である。"
   }
  ],
  "schema_version": "pals.textbook-hard-negatives.v1"

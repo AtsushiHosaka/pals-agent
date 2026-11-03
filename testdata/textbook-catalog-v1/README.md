@@ -10,35 +10,38 @@ search candidate and one Draft candidate. See `AUTHORING.md` for the contract.
 
 | Cards | Domains | gap | textbook | named |
 | ---:| ---:| ---:| ---:| ---:|
-| 1,899 | 41 | 1,143 | 577 | 179 |
+| 2,061 | 45 | 1,252 | 618 | 191 |
 
 | Level | middle | high | 1 | 2 | 3 | 4 |
 | ---:| ---:| ---:| ---:| ---:| ---:| ---:|
-| Cards | 119 | 723 | 263 | 304 | 328 | 162 |
+| Cards | 119 | 723 | 289 | 354 | 393 | 183 |
 
 ## What was checked
 
 Lean 4.32.0-rc1 with Mathlib `8b62164d808cd0f23b7d8cc28190a6c1a1bb483a`, the frozen AWS v2 toolchain
 binding used by `requested-math-seeds-v1`.
 
-- All 1,899 materialized sources compiled individually without errors.
-- All 1,899 passed an axiom audit allowing only `propext`, `Classical.choice` and `Quot.sound`.
+- All 2,061 materialized sources compiled individually without errors.
+- All 2,061 passed an axiom audit allowing only `propext`, `Classical.choice` and `Quot.sound`.
 - Every manifest passed the API's `RecipeAuthoringManifestV1.parse`, `RecipeMaterializerV1` and
   `validate_materialized_recipe`.
-- All 68,523 formulas in the Japanese text rendered with KaTeX 0.16.47 in strict mode.
+- All 75,509 formulas in the Japanese text rendered with KaTeX 0.16.47 in strict mode.
 - A reviewer other than the author compared each card's text and OpenMath against its Lean target.
   The answers were later rewritten into complete proofs, and that rewrite was checked by its author
   only. It is not the signed independent review that search publication requires.
 - The 871 cards in the school and geometry domains had one reviewer other than the author, who
   read them after their answers were written. Answers that a reviewer rewrote have only that
   reviewer's reading. This is not the signed review either.
+- The 162 cards in the four `uni_*` domains had the same kind of review, which also checked each
+  answer against the learning order of its level and changed 2 answers for that reason. No other
+  domain has had that check.
 - A separate audit of 1,881 cards produced patches for 332 of them, which are applied here. The audit
   checked the meaning of only 60 of its 200 OpenMath patches, found 3 wrong and replaced them, so
   about 140 are unchecked. It did not audit whether each proof respects the learning order.
 
 The compile report is a local generated artifact and is not committed. It binds
 `generated/index.json` at SHA-256
-`f7a54c3302c5eb7029bb2ee8615f24077d6600d0837549924b4f0adfb2df15c1`.
+`212ec0f4580d31f32ffe8b6c12037689341a854511bb46563f1602b67eb3aa97`.
 
 ## What this does not establish
 
@@ -58,12 +61,12 @@ first. Measurements are in `AtsushiHosaka/pals#150`.
 
 ## Draft tiers
 
-Only 445 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
+Only 447 Draft candidates (`tier: generic_now`) pass the deployed retrieval validator and are new.
 One more (`tier: duplicate_of_existing`) has the same canonical OpenMath as the existing Draft
 `nt_gcd_lcm_product_identity`, so it is not a new Draft, although its Recipe is. The comparison used
 the 427 canonical records found in this repository's sources, not a read of the production table,
-so it must be repeated at load time. The other 1,453 (`tier: needs_vocabulary`) use a proposed additive OpenMath dictionary, `pals2`, listed in
-`generated/vocabulary.json` with 1,057 symbols. The deployed validator rejects unknown symbols when it
+so it must be repeated at load time. The other 1,613 (`tier: needs_vocabulary`) use a proposed additive OpenMath dictionary, `pals2`, listed in
+`generated/vocabulary.json` with 1,112 symbols. The deployed validator rejects unknown symbols when it
 reads a row, so these rows must not be loaded until the validator and query structuring accept that
 vocabulary. `catalog.py` layers the dictionary over the runtime tables for validation only and
 changes nothing at runtime.
@@ -73,8 +76,8 @@ changes nothing at runtime.
 `generated/min-imports.json` records a narrow import list per card, as extra data. The materializer
 and the admitted source stay on `import Mathlib`. The list comes from Mathlib's `#min_imports` and
 is adopted only when the card compiles with that list alone and its statement prints identically
-under `pp.all`. 1,888 of 1,899 were adopted; 6 kept `import Mathlib` because the statement differed
-and 5 because the narrow file did not compile. Lists can include modules the proof does not really
+under `pp.all`. 2,048 of 2,061 were adopted; 7 kept `import Mathlib` because the statement differed
+and 6 because the narrow file did not compile. Lists can include modules the proof does not really
 need, so they are sufficient rather than strictly minimal.
 
 ## Case coverage
@@ -94,12 +97,9 @@ general card serves many cases. The two are joined by `coverage_matrix_family`.
 
 ## Other files
 
-- `old-draft-generalization-proposal.json` lists older high school Draft candidates with a general
-  form for each one that could be replaced, and compiled Lean for those forms. It is a proposal, and
-  nothing has been deleted.
-- `pilot/` holds 162 university cards used to measure authoring cost. They pass `check` and
-  `lint-text` but have not been reviewed, and they are outside `build`, the counts above and the
-  index.
+`old-draft-generalization-proposal.json` lists older high school Draft candidates with a general
+form for each one that could be replaced, and compiled Lean for those forms. It is a proposal, and
+nothing has been deleted.
 
 ## Commands
 

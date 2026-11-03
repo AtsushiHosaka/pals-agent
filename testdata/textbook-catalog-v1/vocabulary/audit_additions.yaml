@@ -95,3 +95,134 @@ binomial_measure:
   args: [term, term]
   returns: term
   meaning: binomial distribution with n trials and success probability p
+# Symbols defined in other domain files that patched or moved cards use, so single-domain checks see them.
+compact_in:
+  args:
+  - term
+  - term
+  returns: prop
+  meaning: K is a compact subset of X
+continuous_between:
+  args:
+  - term
+  - term
+  - term
+  returns: prop
+  meaning: f from X to Y is continuous
+division_point:
+  args:
+  - term
+  - term
+  - term
+  returns: term
+  meaning: the point a + r(b - a) on the line through a and b (arguments a, b, r)
+euclidean_plane_ambient:
+  args: []
+  returns: prop
+  meaning: the ambient Euclidean space has dimension two
+finite_set:
+  args:
+  - term
+  returns: prop
+  meaning: S is a finite set
+has_deriv_at:
+  args:
+  - term_function
+  - term
+  - term
+  returns: prop
+  meaning: f is differentiable at a with derivative u; arguments f, u, a
+holds_at:
+  args:
+  - term
+  - term
+  returns: prop
+  meaning: the predicate P holds at n
+indexed_union_over:
+  args:
+  - term
+  - term
+  returns: term
+  meaning: union of the members S_i for i in I
+injective_function:
+  args:
+  - term
+  returns: prop
+  meaning: f is injective
+inner_product:
+  args:
+  - term
+  - term
+  returns: term
+  meaning: inner product of x and y
+inner_product_space:
+  args:
+  - term
+  returns: prop
+  meaning: E is an inner product space
+interval_integral:
+  args:
+  - term
+  - term
+  - term_function
+  returns: term
+  meaning: oriented definite integral of f from a to b; arguments a, b, f
+is_glb:
+  args:
+  - term
+  - term
+  returns: prop
+  meaning: a is the greatest lower bound of the set S
+linear_span:
+  args:
+  - term
+  returns: term
+  meaning: linear span of a set or family of vectors
+metric_space:
+  args:
+  - term
+  returns: prop
+  meaning: X is a metric space
+natural_range:
+  args:
+  - term
+  returns: term
+  meaning: the finite index set of natural numbers 0, ..., n-1
+on_plane:
+  args:
+  - term
+  - term
+  - term
+  - term
+  returns: prop
+  meaning: p lies in the affine span of a, b and c, in the order p a b c
+ordered_pair:
+  args:
+  - term
+  - term
+  returns: term
+  meaning: ordered pair (a, b)
+poly_degree:
+  args:
+  - term
+  returns: term
+  meaning: the degree of the polynomial f
+polynomial_over:
+  args:
+  - term
+  - term
+  returns: prop
+  meaning: f is a polynomial with coefficients in F
+subspace_topology_on:
+  args:
+  - term
+  - term
+  returns: term
+  meaning: subset A of X with the subspace topology
+uniformly_continuous_map:
+  args:
+  - term
+  - term
+  - term
+  returns: prop
+  meaning: f from X to Y is uniformly continuous
