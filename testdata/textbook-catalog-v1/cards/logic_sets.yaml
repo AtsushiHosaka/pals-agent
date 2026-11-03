@@ -19,7 +19,7 @@
   - 'contradiction: If P held, Q would follow, contradicting ¬Q, so ¬P.'
   - 'case_split: For the converse assume ¬Q → ¬P and P, and split on whether Q holds.'
   - 'conclude: The case ¬Q gives ¬P, a contradiction, so Q holds.'
-  openmath: (forall (a P Q) (<-> (-> (in a P) (in a Q)) (-> (notin a Q) (notin a P))))
+  openmath: (forall (P Q) (<-> (-> (proposition_holds P) (proposition_holds Q)) (-> (not (proposition_holds Q)) (not (proposition_holds P)))))
   hard_negative:
     statement: 「PならばQ」とその逆「QならばP」は同値である。
     reason: Pが偽でQが真のとき、P→Qは真だがQ→Pは偽である。
@@ -50,7 +50,7 @@
   - 'case_split: If P holds then Q fails, giving ¬Q; otherwise ¬P.'
   - 'derive: Conversely ¬P ∨ ¬Q rules out P and Q holding together.'
   - 'conclude: ¬(P ∨ Q) unfolds to ¬P ∧ ¬Q directly.'
-  openmath: (forall (a P Q) (and (<-> (not (and (in a P) (in a Q))) (or (notin a P) (notin a Q))) (<-> (not (or (in a P) (in a Q))) (and (notin a P) (notin a Q)))))
+  openmath: (forall (P Q) (and (<-> (not (and (proposition_holds P) (proposition_holds Q))) (or (not (proposition_holds P)) (not (proposition_holds Q)))) (<-> (not (or (proposition_holds P) (proposition_holds Q))) (and (not (proposition_holds P)) (not (proposition_holds Q))))))
   hard_negative:
     statement: 「PかつQ」の否定は「PでないかつQでない」と同値である。
     reason: Pが真でQが偽のとき、P∧Qの否定は真だが¬P∧¬Qは偽である。
@@ -81,7 +81,7 @@
   - 'contradiction: Assume no such witness exists.'
   - 'derive: Then for each x, ¬¬P x and hence P x.'
   - 'conclude: This contradicts ¬∀ x, P x, so a witness exists.'
-  openmath: (forall (P) (<-> (not (forall (x) (in x P))) (exists (x) (notin x P))))
+  openmath: (forall (A P) (<-> (not (forall (x) (-> (in x A) (holds_at P x)))) (exists (x) (and (in x A) (not (holds_at P x))))))
   hard_negative:
     statement: 「全てのxでP(x)」の否定は「全てのxでP(x)でない」と同値である。
     reason: 実数全体でP(x)をx>0とすると、全称命題の否定は真だが、全てのxでx≤0は偽である。
@@ -112,7 +112,7 @@
   - 'contradiction: If P x held, x would witness the existential.'
   - 'derive: Conversely, a witness of ∃ x, P x contradicts ∀ x, ¬P x.'
   - 'conclude: The two statements are equivalent.'
-  openmath: (forall (P) (<-> (not (exists (x) (in x P))) (forall (x) (notin x P))))
+  openmath: (forall (A P) (<-> (not (exists (x) (and (in x A) (holds_at P x)))) (forall (x) (-> (in x A) (not (holds_at P x))))))
   hard_negative:
     statement: 「P(x)を満たすxが存在する」の否定は「P(x)でないxが存在する」と同値である。
     reason: 実数全体でP(x)をx>0とすると、存在命題は真だからその否定は偽だが、x≤0を満たすxは存在する。
@@ -142,7 +142,7 @@
   - 'setup: Take y with R x y for all x.'
   - 'construct: For a given x use this same y as the witness.'
   - 'conclude: Hence ∀ x, ∃ y, R x y.'
-  openmath: (forall (R) (-> (exists (y) (forall (x) (relates R x y))) (forall (x) (exists (y) (relates R x y)))))
+  openmath: (forall (A B R) (-> (exists (y) (and (in y B) (forall (x) (-> (in x A) (relates R x y))))) (forall (x) (-> (in x A) (exists (y) (and (in y B) (relates R x y)))))))
   hard_negative:
     statement: 全てのxに対してR(x,y)を満たすyが存在するならば、あるyが全てのxに対してR(x,y)を満たす。
     reason: 実数上でR(x,y)をx<yとすると、前者は真だが、全ての実数より大きい実数はないので後者は偽である。
@@ -693,7 +693,7 @@
   - 'derive: g(y) = g(f(h(y))) by the right inverse identity.'
   - 'derive: g(f(h(y))) = h(y) by the left inverse identity.'
   - 'conclude: Hence g = h pointwise.'
-  openmath: (forall (f g h) (-> (and (forall (x) (= (fn_value g (fn_value f x)) x)) (forall (y) (= (fn_value f (fn_value h y)) y))) (= g h)))
+  openmath: (forall (A B f g h) (-> (and (map_between f A B) (map_between g B A) (map_between h B A) (forall (x) (-> (in x A) (= (fn_value g (fn_value f x)) x))) (forall (y) (-> (in y B) (= (fn_value f (fn_value h y)) y)))) (= g h)))
   hard_negative:
     statement: 写像fの左逆写像は常に一意である。
     reason: f:{0,1}→{0,1,2}を包含とすると、g(2)を0としても1としても左逆写像になる。
@@ -1208,7 +1208,7 @@
   - 'construct: Take a surjection e from ℕ to ι and choose surjections g_i from ℕ to A_i.'
   - 'derive: The map (m,n) ↦ g_{e(m)}(n) is onto the union.'
   - 'conclude: ℕ × ℕ is countable, so the union is at most countable.'
-  openmath: (forall (I A) (-> (and (countable I) (forall (i) (-> (in i I) (countable (fn_value A i))))) (countable (indexed_union (lambda (i) (fn_value A i))))))
+  openmath: (forall (I A) (-> (and (countable I) (forall (i) (-> (in i I) (countable (fn_value A i))))) (countable (indexed_union_over I A))))
   hard_negative:
     statement: 任意の添字集合で添字付けられた高々可算集合の族の和集合は高々可算である。
     reason: 添字の可算性が必要である。実数全体は一元集合{x}の和集合だが非可算である。
@@ -1261,7 +1261,7 @@
   conclusion: $|\mathbb{N}|<|\mathbb{R}|$である。
   answer: |
     自然数全体$\mathbb{N}$と実数全体$\mathbb{R}$の濃度を比べる。
-    $\mathbb{N}\subseteq\mathbb{R}$より$|\mathbb{N}|\leq|\mathbb{R}|$なので、全射$\mathbb{N}\to\mathbb{R}$がないことを示せばよい。実数列$(x_n)_{n\in\mathbb{N}}$を任意にとる。
+    $\mathbb{N}\subseteq\mathbb{R}$より$|\mathbb{N}|\leq|\mathbb{R}|$なので、全射$\mathbb{N}\to\mathbb{R}$がないことを示せばよい（$|\mathbb{R}|\leq|\mathbb{N}|$なら単射$\mathbb{R}\to\mathbb{N}$があり、$\mathbb{R}$は空でないのでその左逆写像から全射$\mathbb{N}\to\mathbb{R}$が得られるため）。実数列$(x_n)_{n\in\mathbb{N}}$を任意にとる。
     閉区間の列$I_0\supseteq I_1\supseteq\cdots$を、長さが正で$x_n\notin I_n$となるように順に選ぶ。$I_{-1}=[0,1]$とする。$I_{n-1}=[a,b]$（$a<b$）まで定まったとき、$[a,a+(b-a)/3]$と$[b-(b-a)/3,b]$は交わらないので、少なくとも一方は$x_n$を含まない。その一方を$I_n$とする。
     実数の完備性（区間縮小法）により、$\bigcap_n I_n$は空でない。その元は$x_n\notin I_n$よりどの$x_n$とも異なる。よって$n\mapsto x_n$は全射でなく、$|\mathbb{N}|<|\mathbb{R}|$である。
   strategy: Given a sequence of reals, nested intervals produce a real missing from it.
@@ -1371,7 +1371,7 @@
   - 'derive: c ≤ a + b ≤ c + c ≤ c·c = c.'
   - 'derive: c ≤ a·b ≤ c·c = c.'
   - 'conclude: Both values equal max(a, b).'
-  openmath: (forall (a b) (-> (and (is_cardinal a) (is_cardinal b) (<= aleph_zero a) (<= aleph_zero b)) (and (-> (<= a b) (and (= (+ a b) b) (= (* a b) b))) (-> (<= b a) (and (= (+ a b) a) (= (* a b) a))))))
+  openmath: (forall (a b) (-> (and (is_cardinal a) (is_cardinal b) (<= aleph_zero a) (<= aleph_zero b)) (and (-> (<= a b) (and (= (cardinal_add a b) b) (= (cardinal_mul a b) b))) (-> (<= b a) (and (= (cardinal_add a b) a) (= (cardinal_mul a b) a))))))
   hard_negative:
     statement: 無限濃度aと任意の濃度bについてab=max(a,b)が成り立つ。
     reason: b=0のときab=0で、max(a,b)=aと異なる。
@@ -1404,7 +1404,7 @@
   - 'construct: Currying gives the bijection for the second law.'
   - 'construct: Taking components gives the bijection for the third law.'
   - 'conclude: Bijective sets have equal cardinalities.'
-  openmath: (forall (a b c) (-> (and (is_cardinal a) (is_cardinal b) (is_cardinal c)) (and (= (^ a (+ b c)) (* (^ a b) (^ a c))) (= (^ a (* b c)) (^ (^ a b) c)) (= (^ (* a b) c) (* (^ a c) (^ b c))))))
+  openmath: (forall (a b c) (-> (and (is_cardinal a) (is_cardinal b) (is_cardinal c)) (and (= (cardinal_pow a (cardinal_add b c)) (cardinal_mul (cardinal_pow a b) (cardinal_pow a c))) (= (cardinal_pow a (cardinal_mul b c)) (cardinal_pow (cardinal_pow a b) c)) (= (cardinal_pow (cardinal_mul a b) c) (cardinal_mul (cardinal_pow a c) (cardinal_pow b c))))))
   hard_negative:
     statement: 濃度についてa^(b^c)=(a^b)^cが成り立つ。
     reason: a=2, b=2, c=3では左辺が256で、右辺が64である。
@@ -1449,7 +1449,7 @@
   kind: gap
   level: 1
   topic: 帰納法・基底をずらした帰納法
-  statement: 自然数$k$と自然数上の述語$P$について、$P(k)$が成り立ち、$k\leq n$の全ての$n$で$P(n)$ならば$P(n+1)$が成り立つならば、$k\leq n$の全ての$n$で$P(n)$が成り立つ。
+  statement: 自然数$k$と自然数上の述語$P$について、$P(k)$が成り立ち、かつ$k\leq n$を満たす全ての$n$について「$P(n)$ならば$P(n+1)$」が成り立つならば、$k\leq n$を満たす全ての$n$で$P(n)$が成り立つ。
   statement_en: For a natural number k and a predicate P, if P(k) holds and P(n) implies P(n+1) for all n ≥ k, then P(n) holds for all n ≥ k.
   assumptions:
   - $P(k)$が成り立つ
@@ -1468,8 +1468,8 @@
   - 'conclude: P(k + j) holds for all j, which covers all n ≥ k.'
   openmath: (forall (P k) (-> (and (in k N) (in k P) (forall (n) (-> (and (in n N) (<= k n) (in n P)) (in (+ n 1) P)))) (forall (n) (-> (and (in n N) (<= k n)) (in n P)))))
   hard_negative:
-    statement: 同じ仮定のもとで全ての自然数nについてP(n)が成り立つ。
-    reason: k未満のnには何も言えない。P(n)をn≥kとすると仮定は成り立つが、n<kでは偽である。
+    statement: 同じ仮定のもとで、全ての自然数$n$（$k$未満も含む）で$P(n)$が成り立つ。
+    reason: $k$未満の$n$については何も言えない。$k\geq1$のとき、$P(n)$を「$n\geq k$」とすると仮定は成り立つが、$P(0)$は偽である。
   target: |
     ∀ (P : ℕ → Prop) (k : ℕ), P k → (∀ n, k ≤ n → P n → P (n + 1)) → ∀ n, k ≤ n → P n
   proof: |
@@ -1562,7 +1562,7 @@
   - 'derive: For b < o we have b + 1 ≤ o.'
   - 'derive: Since o is not a successor, b + 1 < o.'
   - 'conclude: So o is a limit ordinal.'
-  openmath: (forall (a) (-> (is_ordinal a) (or (= a 0) (exists (b) (and (is_ordinal b) (= a (+ b 1)))) (limit_ordinal a))))
+  openmath: (forall (a) (-> (is_ordinal a) (or (= a 0) (exists (b) (and (is_ordinal b) (= a (ordinal_add b 1)))) (limit_ordinal a))))
   hard_negative:
     statement: 0でない順序数は全て後続順序数である。
     reason: 最小の無限順序数ωはどの順序数の後続でもない。
@@ -1596,7 +1596,7 @@
   - 'construct: Shifting gives an order isomorphism with ω.'
   - 'derive: ω + 1 has a greatest element, or equivalently ω < ω + 1.'
   - 'conclude: So the two sums differ.'
-  openmath: (and (= (+ 1 omega_ordinal) omega_ordinal) (!= (+ omega_ordinal 1) omega_ordinal))
+  openmath: (and (= (ordinal_add 1 omega_ordinal) omega_ordinal) (!= (ordinal_add omega_ordinal 1) omega_ordinal))
   hard_negative:
     statement: 順序数の加法は可換である。
     reason: 1+ω=ωだがω+1はωより大きい。

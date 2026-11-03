@@ -189,7 +189,7 @@
   - 'construct: Define H(t,x) = (1-t)x + tc on [0,1] times S.'
   - 'derive: Convexity keeps H(t,x) in S, and the vector space operations make H continuous.'
   - 'conclude: H is a homotopy from the identity of S to the constant map at c.'
-  openmath: (forall (E S) (-> (and (topological_vector_space E) (subset S E) (convex_set S) (!= S emptyset)) (contractible_space S)))
+  openmath: (forall (E S) (-> (and (topological_vector_space E) (subset S E) (convex_set S) (!= S emptyset)) (contractible_space (subspace_topology_on E S))))
   hard_negative:
     statement: 実位相線形空間の空でない部分集合は常に可縮である。
     reason: 凸性を落とすと成り立たない。ℝの2点からなる部分集合は連結でないので可縮でない。
@@ -365,7 +365,7 @@
   - 'derive: f_*(p) is the class of f∘α, so g_*(f_*(p)) is the class of g∘(f∘α).'
   - 'derive: Associativity of composition identifies this with (g∘f)∘α.'
   - 'conclude: The identity map fixes α, hence fixes its class.'
-  openmath: (forall (X f g x p) (-> (in p (fundamental_group X x)) (and (= (fn_value (induced_hom (map_compose g f) x) p) (fn_value (induced_hom g (fn_value f x)) (fn_value (induced_hom f x) p))) (= (fn_value (induced_hom (identity_map X) x) p) p))))
+  openmath: (forall (X Y Z f g x p) (-> (and (in f (continuous_maps X Y)) (in g (continuous_maps Y Z)) (in x X) (in p (fundamental_group X x))) (and (= (fn_value (induced_hom (map_compose g f) x) p) (fn_value (induced_hom g (fn_value f x)) (fn_value (induced_hom f x) p))) (= (fn_value (induced_hom (identity_map X) x) p) p))))
   hard_negative:
     statement: f_*が単射ならfも単射である。
     reason: 誘導準同型の性質は写像自身の性質を導かない。ℝからℝへの定値写像は単射でないが、基本群が自明なのでf_*は単射である。
@@ -502,7 +502,7 @@
   - 'derive: The resulting Γ is continuous with p∘Γ = γ and Γ(0) = e.'
   - 'derive: The agreement set of two lifts is open and closed in [0,1] and contains 0.'
   - 'conclude: Connectedness of [0,1] gives uniqueness.'
-  openmath: (forall (p c e) (-> (and (covering_map p) (= (fn_value c 0) (fn_value p e))) (exists (h) (and (= (map_compose p h) c) (= (fn_value h 0) e) (forall (k) (-> (and (= (map_compose p k) c) (= (fn_value k 0) e)) (= k h)))))))
+  openmath: (forall (E X p c e) (-> (and (in p (continuous_maps E X)) (covering_map p) (in c (continuous_maps unit_interval X)) (in e E) (= (fn_value c 0) (fn_value p e))) (exists (h) (and (in h (continuous_maps unit_interval E)) (= (map_compose p h) c) (= (fn_value h 0) e) (forall (k) (-> (and (in k (continuous_maps unit_interval E)) (= (map_compose p k) c) (= (fn_value k 0) e)) (= k h)))))))
   hard_negative:
     statement: 局所同相写像p:E→Xなら、任意の道γとγ(0)=p(e)となるeについて持ち上げが存在する。
     reason: 局所同相だけでは存在しない。開区間(0,1)からℝへの包含写像は局所同相だが、γ(0)=1/2からγ(1)=2へ進む道は持ち上がらない。
@@ -542,7 +542,7 @@
   - 'derive: If g₁(b) = g₂(b), both maps stay in one sheet near b, where p is injective, so b is interior to S.'
   - 'derive: If g₁(b) ≠ g₂(b), the values lie in different sheets, so b is interior to the complement.'
   - 'conclude: S is nonempty, open and closed in a connected space, so S = A.'
-  openmath: (forall (A p g h a) (-> (and (covering_map p) (preconnected_space A) (in a A) (= (map_compose p g) (map_compose p h)) (= (fn_value g a) (fn_value h a))) (= g h)))
+  openmath: (forall (A E p g h a) (-> (and (covering_map p) (preconnected_space A) (in g (continuous_maps A E)) (in h (continuous_maps A E)) (= (map_compose p g) (map_compose p h)) (in a A) (= (fn_value g a) (fn_value h a))) (= g h)))
   hard_negative:
     statement: Aが連結でなくても、1点で一致する2つの持ち上げは等しい。
     reason: Aが2点離散空間で、pが2重被覆なら、1点で一致し他の点で異なる持ち上げが存在する。
@@ -662,8 +662,8 @@
   kind: gap
   level: 4
   topic: 多様体・ノルム空間上の微分
-  statement: ノルム空間を自分自身をモデルとする多様体と見ると、多様体としての微分可能性はフレシェ微分可能性と同値で、接写像はフレシェ微分に一致する。
-  statement_en: For a map f between real normed spaces viewed as manifolds over themselves, manifold differentiability at x is equivalent to Fréchet differentiability at x, and the tangent map equals the Fréchet derivative.
+  statement: ノルム空間を自分自身をモデルとする多様体と見ると、多様体としての微分可能性はフレシェ微分可能性と同値であり、$x$でフレシェ微分可能なとき、接写像はフレシェ微分に一致する。
+  statement_en: For a map f between real normed spaces viewed as manifolds over themselves, manifold differentiability at x is equivalent to Fréchet differentiability at x, and when f is Fréchet differentiable at x the tangent map equals the Fréchet derivative.
   assumptions:
   - $E,F$は実ノルム空間
   - $f:E\to F$は写像
@@ -671,11 +671,11 @@
   quantifiers:
   - 任意の写像$f$
   - 任意の点$x$
-  conclusion: $f$の$x$での多様体としての微分可能性はフレシェ微分可能性と同値であり、$x$での接写像はフレシェ微分に等しい。
+  conclusion: $f$の$x$での多様体としての微分可能性はフレシェ微分可能性と同値であり、$f$が$x$でフレシェ微分可能なら$x$での接写像はフレシェ微分に等しい。
   answer: |
     $E,F$を実ノルム空間、$f:E\to F$を写像、$x\in E$とする。$E,F$を自分自身をモデルとする多様体と見るとき、モデルとチャートはともに恒等写像であり、$\operatorname{range}I=E$である。したがって$f$の座標表示は$f$自身である。
     多様体としての微分可能性の定義は、$f$が$x$で連続で、座標表示が$\operatorname{range}I$内で微分可能であることである。ここでは「$f$が$x$で連続で、かつ$f$が$x$でフレシェ微分可能」となる。フレシェ微分可能なら連続なので、これはフレシェ微分可能性と同値である。
-    接写像は座標表示の$\operatorname{range}I=E$内での微分なので、$f$の$x$でのフレシェ微分に等しい。$f$が$x$で微分可能でないときは、接写像とフレシェ微分はともに$0$と定める規約なので、等式は同じく成り立つ。
+    $f$が$x$でフレシェ微分可能なとき、接写像は座標表示の$\operatorname{range}I=E$内での微分なので、$f$の$x$でのフレシェ微分に等しい。
   strategy: The charts are identities, so the chart representation is f itself.
   sketch:
   - 'setup: On a normed space viewed as a manifold over itself every preferred chart is the identity.'
@@ -683,16 +683,15 @@
   - 'derive: Manifold differentiability reduces to continuity at x plus Fréchet differentiability.'
   - 'derive: Fréchet differentiability already implies continuity.'
   - 'conclude: The two notions and the two derivatives coincide.'
-  openmath: (forall (f x) (and (<-> (mdifferentiable_at f x) (frechet_differentiable_at f x)) (= (mfderiv f x) (frechet_derivative f x))))
+  openmath: (forall (E F f x) (-> (and (normed_space E) (normed_space F)) (and (<-> (mdifferentiable_at f x) (frechet_differentiable_at f x)) (-> (frechet_differentiable_at f x) (= (mfderiv f x) (frechet_derivative f x))))))
   hard_negative:
     statement: ノルム空間の間の写像について、多様体としての微分可能性はガトー微分可能性と同値である。
     reason: ガトー微分可能性はフレシェ微分可能性より弱い。f(x,y)=x³y/(x⁶+y²), f(0,0)=0は原点でガトー微分可能だが、曲線y=x³に沿ってfの値が1/2なので原点で連続でない。
-  target: |
-    ∀ (E E' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup E'] [NormedSpace ℝ E'] (f : E → E') (x : E), (MDifferentiableAt (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E') f x ↔ DifferentiableAt ℝ f x) ∧ mfderiv (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E') f x = fderiv ℝ f x
-  proof: |
+  target: '∀ (E E'' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup E''] [NormedSpace ℝ E''] (f : E → E'') (x : E), (MDifferentiableAt (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E'') f x ↔ DifferentiableAt ℝ f x) ∧ (DifferentiableAt ℝ f x → mfderiv (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E'') f x = fderiv ℝ f x)'
+  proof: |-
     by
       intro E E' _ _ _ _ f x
-      exact ⟨mdifferentiableAt_iff_differentiableAt, mfderiv_eq_fderiv⟩
+      exact ⟨mdifferentiableAt_iff_differentiableAt, fun _ => mfderiv_eq_fderiv⟩
 - id: smooth_bump_exists
   kind: textbook
   level: 4
@@ -762,7 +761,7 @@
   - 'construct: Define f_j = g_j ∏_{k<j}(1 - g_k), which telescopes to a sum 1 on s.'
   - 'derive: Local finiteness makes the sums and products smooth.'
   - 'conclude: Group the functions by index i to get a partition subordinate to U.'
-  openmath: (forall (M S U) (-> (and (smooth_manifold M) (hausdorff_space M) (sigma_compact_space M) (closed_set S) (open_cover_of U S)) (exists (f) (and (smooth_partition_of_unity f S) (subordinate_to f U)))))
+  openmath: (forall (E M S U) (-> (and (finite_dim_space E) (smooth_manifold_modeled_on M E) (hausdorff_space M) (sigma_compact_space M) (closed_set S) (open_cover_of U S)) (exists (f) (and (smooth_partition_of_unity f S) (subordinate_to f U)))))
   hard_negative:
     statement: 同じ条件で、ハウスドルフ性を除いても滑らかな1の分割が存在する。
     reason: 原点が2つある直線では2つの原点を連続関数で分離できず、開被覆に従属する1の分割は存在しない。
@@ -775,7 +774,7 @@
       exact ⟨f, hf, fun x hx => f.sum_eq_one hx⟩
 - id: law_of_cosines_angle
   kind: named
-  level: 2
+  level: high
   topic: ユークリッド幾何・余弦定理
   statement: 実内積空間上のアフィン空間の3点$a,b,c$について、$|ac|^2=|ab|^2+|cb|^2-2|ab||cb|\cos\angle abc$が成り立つ。
   statement_en: For points a, b, c of a real inner product (Euclidean affine) space, |ac|² = |ab|² + |cb|² - 2|ab||cb|cos∠abc.
@@ -798,8 +797,8 @@
   - 'conclude: Substituting yields the law of cosines.'
   openmath: (forall (a b c) (= (^ (dist_of a c) 2) (- (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2)) (* 2 (dist_of a b) (dist_of c b) (cos (euclid_angle a b c))))))
   hard_negative:
-    statement: 任意のノルム空間で同じ等式が成り立つ。
-    reason: 等式の展開には内積が必要である。ℓ^∞ノルムなど平行四辺形則を満たさないノルムでは、角と内積が定まらない。
+    statement: 余弦定理の符号を取り違えた等式$|ac|^2=|ab|^2+|cb|^2+2|ab||cb|\cos\angle abc$が常に成り立つ。
+    reason: 正三角形で$|ab|=|cb|=|ac|=1$、$\angle abc=\pi/3$とすると、左辺は$1$、右辺は$1+1+2\cdot\frac12=3$であり一致しない。
   target: |
     ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c : P), dist a c ^ 2 = dist a b ^ 2 + dist c b ^ 2 - 2 * dist a b * dist c b * Real.cos (EuclideanGeometry.angle a b c)
   proof: |
@@ -826,7 +825,7 @@
   - 'derive: ‖x+y‖² = ‖x‖² + 2⟨x,y⟩ + ‖y‖².'
   - 'derive: ‖x-y‖² = ‖x‖² - 2⟨x,y⟩ + ‖y‖².'
   - 'conclude: Adding cancels the inner product terms.'
-  openmath: (forall (x y) (= (+ (^ (norm (+ x y)) 2) (^ (norm (- x y)) 2)) (* 2 (+ (^ (norm x) 2) (^ (norm y) 2)))))
+  openmath: (forall (V x y) (-> (and (inner_product_space V) (in x V) (in y V)) (= (+ (^ (norm (+ x y)) 2) (^ (norm (- x y)) 2)) (* 2 (+ (^ (norm x) 2) (^ (norm y) 2))))))
   hard_negative:
     statement: 任意の実ノルム空間で同じ等式が成り立つ。
     reason: ℝ²のℓ^∞ノルムでx=(1,0), y=(0,1)とすると左辺は2、右辺は4である。
@@ -838,7 +837,7 @@
       exact parallelogram_law_with_norm ℝ x y
 - id: pythagoras_angle_iff
   kind: named
-  level: 2
+  level: high
   topic: ユークリッド幾何・三平方の定理
   statement: 実内積空間上のアフィン空間の点$a,b,c$が$a\neq b$、$c\neq b$を満たすとき、$|ac|^2=|ab|^2+|cb|^2$であることと$\angle abc=\pi/2$であることは同値である。
   statement_en: For points with a ≠ b and c ≠ b, |ac|² = |ab|² + |cb|² holds if and only if ∠abc = π/2.
@@ -859,7 +858,7 @@
   - 'derive: Since a ≠ b and c ≠ b, the product |ab||cb| is nonzero.'
   - 'translate: The equation is therefore equivalent to cos∠abc = 0.'
   - 'conclude: On [0,π] this is equivalent to ∠abc = π/2.'
-  openmath: (forall (a b c) (-> (and (!= a b) (!= c b)) (<-> (= (^ (dist_of a c) 2) (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2))) (= (euclid_angle a b c) (/ pi_constant 2)))))
+  openmath: (forall (a b c) (-> (and (!= a b) (!= c b)) (<-> (= (^ (dist_of a c) 2) (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2))) (= (euclid_angle a b c) (/ pi 2)))))
   hard_negative:
     statement: '|ac|²<|ab|²+|cb|²なら∠abcは鈍角である。'
     reason: 不等号の向きが逆である。余弦定理より、この不等式はcos∠abc>0を意味するので、∠abcは鋭角である。
@@ -872,7 +871,7 @@
       exact EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two a b c
 - id: triangle_angle_sum
   kind: textbook
-  level: 2
+  level: middle
   topic: ユークリッド幾何・三角形の内角の和
   statement: 実内積空間上のアフィン空間の相異なる3点$a,b,c$について、$\angle abc+\angle bca+\angle cab=\pi$である。
   statement_en: For three distinct points a, b, c of a Euclidean affine space, ∠abc + ∠bca + ∠cab = π.
@@ -899,7 +898,7 @@
   - 'derive: Comparing inner products gives ∠dab = ∠abc and ∠eac = ∠bca.'
   - 'derive: Rays ab and ac lie on the same side of the line, so ∠dab + ∠bac + ∠cae = π.'
   - 'conclude: Substituting the alternate angles gives the sum π.'
-  openmath: (forall (a b c) (-> (and (!= a b) (!= b c) (!= c a)) (= (+ (euclid_angle a b c) (euclid_angle b c a) (euclid_angle c a b)) pi_constant)))
+  openmath: (forall (a b c) (-> (and (!= a b) (!= b c) (!= c a)) (= (+ (euclid_angle a b c) (euclid_angle b c a) (euclid_angle c a b)) pi)))
   hard_negative:
     statement: 球面上の三角形でも内角の和はπである。
     reason: 球面三角形では内角の和はπより大きく、超過分は三角形の面積に比例する。
@@ -911,7 +910,7 @@
       exact EuclideanGeometry.angle_add_angle_add_angle_eq_pi c hab.symm
 - id: ptolemy_cyclic_quadrilateral
   kind: named
-  level: 3
+  level: high
   topic: ユークリッド幾何・トレミーの定理
   statement: 実内積空間上のアフィン空間の点$a,b,c,d$が同一球面上にあり、線分$ac$と線分$bd$が内点$p$で交わる（$\angle apc=\angle bpd=\pi$）とき、$|ab||cd|+|bc||da|=|ac||bd|$である。
   statement_en: If points a, b, c, d lie on a common sphere and the segments ac and bd cross at an interior point p, meaning ∠apc = ∠bpd = π, then |ab||cd| + |bc||da| = |ac||bd|.
@@ -939,7 +938,7 @@
   - 'translate: Substituting these and |dp| = |ap||cp|/|bp| reduces the claim to an identity in triangle abc.'
   - 'apply_theorem: That identity is Stewart''s theorem for the point p on side ac.'
   - 'conclude: Ptolemy''s equality follows.'
-  openmath: (forall (a b c d p) (-> (and (cospherical_points (set a b c d)) (= (euclid_angle a p c) pi_constant) (= (euclid_angle b p d) pi_constant)) (= (+ (* (dist_of a b) (dist_of c d)) (* (dist_of b c) (dist_of d a))) (* (dist_of a c) (dist_of b d)))))
+  openmath: (forall (a b c d p) (-> (and (cospherical_points (set a b c d)) (= (euclid_angle a p c) pi) (= (euclid_angle b p d) pi)) (= (+ (* (dist_of a b) (dist_of c d)) (* (dist_of b c) (dist_of d a))) (* (dist_of a c) (dist_of b d)))))
   hard_negative:
     statement: 任意の平面四角形abcdで|ab||cd|+|bc||da|=|ac||bd|が成り立つ。
     reason: 一般の四角形では、左辺が右辺以上であるという不等式(トレミーの不等式)しか成り立たない。等号には同一円周上にあることが必要である。
@@ -951,10 +950,10 @@
       exact EuclideanGeometry.mul_dist_add_mul_dist_eq_mul_dist_of_cospherical h hapc hbpd
 - id: power_of_a_point_lines
   kind: textbook
-  level: 2
+  level: high
   topic: ユークリッド幾何・方べきの定理
   statement: 実内積空間上のアフィン空間の点$a,b,c,d$が同一球面上にあり、点$p$が$a,b$のアフィン包と$c,d$のアフィン包の両方に属するとき、$|ap||bp|=|cp||dp|$である。
-  statement_en: If points a, b, c, d lie on a common sphere and p lies on both the line through a, b and the line through c, d, then |ap||bp| = |cp||dp|.
+  statement_en: If points a, b, c, d lie on a common sphere and p lies in the affine span of {a,b} and in the affine span of {c,d} (a line when the two points differ, a single point otherwise), then |ap||bp| = |cp||dp|.
   assumptions:
   - $V$は実内積空間
   - $P$は$V$上のアフィン空間
@@ -990,7 +989,7 @@
       exact EuclideanGeometry.mul_dist_eq_mul_dist_of_cospherical h hab hcd
 - id: inner_zero_iff_right_angle
   kind: gap
-  level: 2
+  level: high
   topic: ユークリッド幾何・直交と角
   statement: 実内積空間の$0$でないベクトル$x,y$について、$\langle x,y\rangle=0$であることと$x$と$y$のなす角が$\pi/2$であることは同値である。
   statement_en: For nonzero vectors x, y in a real inner product space, ⟨x,y⟩ = 0 if and only if the angle between x and y equals π/2.
@@ -1008,7 +1007,7 @@
   - 'setup: The angle θ in [0,π] satisfies ⟨x,y⟩ = ‖x‖‖y‖cos θ.'
   - 'translate: Since x and y are nonzero, ⟨x,y⟩ = 0 is equivalent to cos θ = 0.'
   - 'conclude: On [0,π], cos θ = 0 holds exactly at θ = π/2.'
-  openmath: (forall (x y) (-> (and (!= x 0) (!= y 0)) (<-> (= (inner_product x y) 0) (= (vector_angle x y) (/ pi_constant 2)))))
+  openmath: (forall (x y) (-> (and (!= x 0) (!= y 0)) (<-> (= (inner_product x y) 0) (= (vector_angle x y) (/ pi 2)))))
   hard_negative:
     statement: ⟨x,y⟩>0ならxとyのなす角は鈍角である。
     reason: ⟨x,y⟩>0はcosθ>0を意味するので、なす角は鋭角である。
@@ -1131,7 +1130,7 @@
   level: 3
   topic: 曲線・弧長
   statement: 曲線$f$の全変動としての弧長は区間の分割について加法的であり、端点間の距離は弧長以下である。弧長の値は無限大もとりうる。
-  statement_en: For a curve f from ℝ to a metric space and a ≤ b ≤ c, the arc length defined as total variation satisfies L(a,b) + L(b,c) = L(a,c) in [0,∞], and the distance from f(a) to f(c) is at most L(a,c).
+  statement_en: For a map f from ℝ to a pseudo-extended-metric space (distances may be ∞ or 0 between distinct points; ordinary metric spaces included) and a ≤ b ≤ c, the total variation (arc length) satisfies L(a,b) + L(b,c) = L(a,c) in [0,∞], and d(f(a), f(c)) ≤ L(a,c).
   assumptions:
   - $E$は擬拡張距離空間（値$\infty$や異なる2点間の$0$を許す距離をもつ空間で、通常の距離空間を含む）
   - $f:\mathbb{R}\to E$は写像

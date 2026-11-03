@@ -1,0 +1,26 @@
+{
+ "questions": 13,
+ "cases": 132,
+ "covered_by_existing_cards": 81,
+ "needing_added_cards": 51,
+ "added_cards": 19,
+ "added_cards_used": 19,
+ "existing_cards_used": 33,
+ "by_question": {
+  "vertex": 9,
+  "root_count": 9,
+  "root_signs": 13,
+  "root_placement": 16,
+  "interval_extrema": 16,
+  "range_monotone": 6,
+  "inequality": 24,
+  "tangent": 9,
+  "coefficients": 6,
+  "transformations": 9,
+  "parameter": 6,
+  "x_axis_chord": 3,
+  "graph_reading": 6
+ },
+ "compile_returncode": 0,
+ "failed_cases": []
+}

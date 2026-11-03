@@ -1,0 +1,2331 @@
+- id: centroid_divides_median_two_to_one
+  kind: textbook
+  level: high
+  topic: 三角形の五心・重心と中線の比
+  statement: 三角形$ABC$の重心を$G$、辺$BC$の中点を$M$とすると、$G$は線分$AM$を$A$の側から$2:1$に内分する。すなわち$\overrightarrow{AG}=\frac{2}{3}\overrightarrow{AM}$かつ$AG=2GM$である。
+  statement_en: For a triangle ABC with centroid G and M the midpoint of BC, G = A + (2/3)(M - A) and AG = 2 GM.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $G$は三角形$ABC$の重心
+  - $M$は辺$BC$の中点
+  quantifiers: &id001
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  conclusion: $\overrightarrow{AG}=\frac{2}{3}\overrightarrow{AM}$かつ$AG=2GM$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$G$を三角形$ABC$の重心、$M$を辺$BC$の中点とする。重心は$\overrightarrow{AG}=\frac{1}{3}(\overrightarrow{AB}+\overrightarrow{AC})$を満たす点である。中点の性質から$\overrightarrow{AM}=\frac{1}{2}(\overrightarrow{AB}+\overrightarrow{AC})$なので、$\overrightarrow{AG}=\frac{2}{3}\overrightarrow{AM}$である。このとき$\overrightarrow{GM}=\overrightarrow{AM}-\overrightarrow{AG}=\frac{1}{3}\overrightarrow{AM}$となる。したがって$AG=\frac{2}{3}AM$、$GM=\frac{1}{3}AM$であり、$AG=2GM$が成り立つ。
+  strategy: Write both the centroid and the midpoint from vertex A and compare the coefficients.
+  sketch:
+  - 'setup: Express AG as (AB + AC)/3 and AM as (AB + AC)/2.'
+  - 'derive: Conclude AG = (2/3) AM and GM = (1/3) AM.'
+  - 'conclude: Taking lengths gives AG = 2 GM.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (- (centroid_of a b c) a) (smul (/ 2 3) (- (midpoint_of b c) a))) (= (dist_of a (centroid_of a b c)) (* 2 (dist_of (centroid_of a b c) (midpoint_of b c)))))))
+  hard_negative:
+    statement: 重心$G$は中線$AM$を$A$の側から$1:2$に内分する。
+    reason: $AG=2GM$であり、$M\neq A$より$GM>0$なので$AG=\frac{1}{2}GM$とは両立しない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → t.centroid = AffineMap.lineMap (t.points i) (midpoint ℝ (t.points j) (t.points k)) (2 / 3 : ℝ) ∧ dist (t.points i) t.centroid = 2 * dist t.centroid (midpoint ℝ (t.points j) (t.points k))
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hsum : ∀ f : Fin 3 → V, ∑ l, f l = f i + f j + f k := by
+        intro f
+        rw [Fin.sum_univ_three]
+        fin_cases i <;> fin_cases j <;> fin_cases k <;> simp_all <;> abel
+      have hG : t.centroid = AffineMap.lineMap (t.points i) (midpoint ℝ (t.points j) (t.points k)) (2 / 3 : ℝ) := by
+        rw [t.centroid_eq_smul_sum_vsub_vadd i, hsum, AffineMap.lineMap_apply, midpoint_vsub]
+        congr 1
+        simp only [vsub_self, invOf_eq_inv]
+        norm_num
+        module
+      refine ⟨hG, ?_⟩
+      rw [hG, dist_left_lineMap, dist_lineMap_right]
+      norm_num
+      ring
+- id: medians_concurrent_at_centroid
+  kind: textbook
+  level: high
+  topic: 三角形の五心・中線の共点
+  statement: 三角形の3本の中線を含む直線はすべて重心を通り、3本すべての上にある点は重心に限る。
+  statement_en: The three median lines of a triangle pass through the centroid, and a point lying on all three median lines equals the centroid.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $G$は三角形$ABC$の重心
+  - $p$は任意の点
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の点$p$
+  conclusion: $G$は3本の中線上にあり、3本の中線上にある点$p$は$G$に等しい。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$G$を三角形$ABC$の重心とし、$L,M,N$をそれぞれ辺$BC,CA,AB$の中点とする。$\overrightarrow{AG}=\frac{1}{3}(\overrightarrow{AB}+\overrightarrow{AC})=\frac{2}{3}\overrightarrow{AL}$より$G$は直線$AL$上にあり、頂点の役割を入れ替えれば$G$は直線$BM$、$CN$の上にもある。次に点$p$が3本の直線すべての上にあるとする。直線$AL$と直線$BM$が一致するとすれば、その直線は$A,B$を通るので直線$AB$であり、$L$を含むから$C$も含むことになって仮定に反する。よって2直線は異なり、共有点は高々1つである。$p$と$G$はともに共有点だから$p=G$である。
+  strategy: Show the centroid lies on each median line, then use that two distinct lines meet at most once.
+  sketch:
+  - 'derive: AG = (2/3) AL, so G lies on line AL; symmetrically on the other two.'
+  - 'setup: Let p lie on all three median lines.'
+  - 'contradiction: Lines AL and BM cannot coincide, because then C would lie on line AB.'
+  - 'conclude: Two distinct lines share at most one point, so p = G.'
+  openmath: (forall (a b c p) (-> (not (collinear_points a b c)) (and (on_line (centroid_of a b c) a (midpoint_of b c)) (-> (and (on_line p a (midpoint_of b c)) (on_line p b (midpoint_of c a)) (on_line p c (midpoint_of a b))) (= p (centroid_of a b c))))))
+  hard_negative:
+    statement: 三角形の各頂点と対辺上の任意の点を結ぶ3本の直線は、いつでも1点で交わる。
+    reason: $A=(0,0)$、$B=(1,0)$、$C=(0,1)$、$D=BC$の中点、$E=CA$の中点、$F=(3/4,0)$とする。直線$AD$と$BE$は$(1/3,1/3)$で交わるが、直線$CF$は$x=1/3$で$y=5/9\neq 1/3$なので、この点を通らない。共点になるには中点（一般にはチェバの条件）が要る。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (p : P), (∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → t.centroid ∈ line[ℝ, t.points i, midpoint ℝ (t.points j) (t.points k)]) ∧ ((∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → p ∈ line[ℝ, t.points i, midpoint ℝ (t.points j) (t.points k)]) → p = t.centroid)
+  proof: |
+    by
+      intro V P _ _ _ _ t p
+      have hG : ∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k →
+          t.centroid = AffineMap.lineMap (t.points i) (midpoint ℝ (t.points j) (t.points k)) (2 / 3 : ℝ) := by
+        intro i j k hij hik hjk
+        have hsum : ∀ f : Fin 3 → V, ∑ l, f l = f i + f j + f k := by
+          intro f
+          rw [Fin.sum_univ_three]
+          fin_cases i <;> fin_cases j <;> fin_cases k <;> simp_all <;> abel
+        rw [t.centroid_eq_smul_sum_vsub_vadd i, hsum, AffineMap.lineMap_apply, midpoint_vsub]
+        congr 1
+        simp only [vsub_self, invOf_eq_inv]
+        norm_num
+        module
+      refine ⟨fun i j k hij hik hjk => ?_, fun h => ?_⟩
+      · rw [hG i j k hij hik hjk]
+        exact AffineMap.lineMap_mem_affineSpan_pair _ _ _
+      · refine t.eq_centroid_of_forall_mem_median (hn := by norm_num) fun i => ?_
+        obtain ⟨j, k, hij, hik, hjk⟩ : ∃ j k : Fin 3, i ≠ j ∧ i ≠ k ∧ j ≠ k := by decide +revert
+        rw [t.median_eq_line_point_centroid]
+        refine affineSpan_pair_le_of_mem_of_mem (left_mem_affineSpan_pair ℝ _ _) ?_ (h i j k hij hik hjk)
+        have hM : midpoint ℝ (t.points j) (t.points k) = AffineMap.lineMap (t.points i) t.centroid (3 / 2 : ℝ) := by
+          rw [hG i j k hij hik hjk, AffineMap.lineMap_apply, AffineMap.lineMap_apply, vadd_vsub, smul_smul]
+          norm_num
+        rw [hM]
+        exact AffineMap.lineMap_mem_affineSpan_pair _ _ _
+- id: centroid_iff_vector_sum_zero
+  kind: gap
+  level: high
+  topic: 三角形の五心・重心のベクトル表示
+  statement: 三角形$ABC$と点$P$について、$P$が重心であることと$\overrightarrow{PA}+\overrightarrow{PB}+\overrightarrow{PC}=\vec 0$は同値である。
+  statement_en: For a triangle ABC and a point P, P is the centroid if and only if PA + PB + PC = 0 as vectors.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $P$は任意の点
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の点$P$
+  conclusion: $P$が重心であることと$\overrightarrow{PA}+\overrightarrow{PB}+\overrightarrow{PC}=\vec 0$は同値である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$G$を三角形$ABC$の重心、$P$を任意の点とする。重心は、どの点$O$を始点にしても$\overrightarrow{OG}=\frac{1}{3}(\overrightarrow{OA}+\overrightarrow{OB}+\overrightarrow{OC})$を満たす点である。$O=P$とすると$\overrightarrow{PA}+\overrightarrow{PB}+\overrightarrow{PC}=3\overrightarrow{PG}$である。よって左辺が$\vec 0$であることは$\overrightarrow{PG}=\vec 0$、すなわち$P=G$と同値である。
+  strategy: Take P as the base point in the averaging formula for the centroid.
+  sketch:
+  - 'translate: With base point P, 3 PG = PA + PB + PC.'
+  - 'conclude: The sum vanishes exactly when PG = 0, that is P = G.'
+  openmath: (forall (a b c p) (-> (not (collinear_points a b c)) (<-> (= p (centroid_of a b c)) (= (+ (+ (- a p) (- b p)) (- c p)) 0))))
+  hard_negative:
+    statement: 長さの和$PA+PB+PC$が最小になる点は常に重心である。
+    reason: これは長さの和であり、ベクトルの和とは別の量である。$A=(0,0)$、$B=(1,0)$、$C=(0,1)$では重心での和は約$1.96$だが、$P=(\frac{1}{5},\frac{1}{5})$での和は約$1.93$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (p : P), i ≠ j → i ≠ k → j ≠ k → (p = t.centroid ↔ (t.points i -ᵥ p) + (t.points j -ᵥ p) + (t.points k -ᵥ p) = (0 : V))
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k p hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      rw [Affine.Simplex.eq_centroid_iff_sum_vsub_eq_zero, hu,
+        Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, add_assoc]
+- id: centroid_leibniz_sum_of_squares
+  kind: gap
+  level: high
+  topic: 三角形の五心・重心と距離の平方和
+  statement: 三角形$ABC$の重心を$G$とすると、任意の点$P$について$PA^2+PB^2+PC^2=GA^2+GB^2+GC^2+3PG^2$が成り立つ。
+  statement_en: For a triangle ABC with centroid G and any point P, PA² + PB² + PC² = GA² + GB² + GC² + 3 PG².
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $G$は三角形$ABC$の重心
+  - $P$は任意の点
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の点$P$
+  conclusion: $PA^2+PB^2+PC^2=GA^2+GB^2+GC^2+3PG^2$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$G$を三角形$ABC$の重心、$P$を任意の点とする。$\vec x=\overrightarrow{GP}$、$\vec a=\overrightarrow{GA}$、$\vec b=\overrightarrow{GB}$、$\vec c=\overrightarrow{GC}$とおくと、重心の性質から$\vec a+\vec b+\vec c=\vec 0$である。$PA^2=|\vec x-\vec a|^2=|\vec x|^2-2\vec x\cdot\vec a+|\vec a|^2$であり、$PB^2$、$PC^2$も同様に展開できる。3式を加えると内積の項は$-2\vec x\cdot(\vec a+\vec b+\vec c)=0$となって消え、$PA^2+PB^2+PC^2=3|\vec x|^2+|\vec a|^2+|\vec b|^2+|\vec c|^2=3PG^2+GA^2+GB^2+GC^2$を得る。
+  strategy: Expand each squared distance from the centroid and cancel the linear term with GA + GB + GC = 0.
+  sketch:
+  - 'setup: Put x = GP and a, b, c = GA, GB, GC, so a + b + c = 0.'
+  - 'derive: PA² = |x|² - 2 x·a + |a|², and likewise for B and C.'
+  - 'derive: Summing, the inner product terms cancel.'
+  - 'conclude: The sum equals 3 PG² + GA² + GB² + GC².'
+  openmath: (forall (a b c p) (-> (not (collinear_points a b c)) (= (+ (+ (^ (dist_of p a) 2) (^ (dist_of p b) 2)) (^ (dist_of p c) 2)) (+ (+ (+ (^ (dist_of (centroid_of a b c) a) 2) (^ (dist_of (centroid_of a b c) b) 2)) (^ (dist_of (centroid_of a b c) c) 2)) (* 3 (^ (dist_of p (centroid_of a b c)) 2))))))
+  hard_negative:
+    statement: 任意の点$P$について$PA^2+PB^2+PC^2=GA^2+GB^2+GC^2+PG^2$である。
+    reason: $PG^2$の係数は$3$である。$P\neq G$では両辺が$2PG^2>0$だけ異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (p : P), i ≠ j → i ≠ k → j ≠ k → dist p (t.points i) ^ 2 + dist p (t.points j) ^ 2 + dist p (t.points k) ^ 2 = dist t.centroid (t.points i) ^ 2 + dist t.centroid (t.points j) ^ 2 + dist t.centroid (t.points k) ^ 2 + 3 * dist p t.centroid ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k p hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have h0 : (t.points i -ᵥ t.centroid) + (t.points j -ᵥ t.centroid) + (t.points k -ᵥ t.centroid) = (0 : V) := by
+        have h := Affine.Simplex.eq_centroid_iff_sum_vsub_eq_zero.mp (rfl : t.centroid = t.centroid)
+        rwa [hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, ← add_assoc] at h
+      have key : ∀ Q : P, dist p Q ^ 2 = dist p t.centroid ^ 2 - 2 * inner ℝ (p -ᵥ t.centroid) (Q -ᵥ t.centroid) + dist t.centroid Q ^ 2 := by
+        intro Q
+        rw [dist_eq_norm_vsub V p Q, dist_eq_norm_vsub V p t.centroid, dist_comm t.centroid Q, dist_eq_norm_vsub V Q t.centroid,
+          ← vsub_sub_vsub_cancel_right p Q t.centroid, norm_sub_sq_real]
+      have hi : inner ℝ (p -ᵥ t.centroid) (t.points i -ᵥ t.centroid) + inner ℝ (p -ᵥ t.centroid) (t.points j -ᵥ t.centroid) + inner ℝ (p -ᵥ t.centroid) (t.points k -ᵥ t.centroid) = 0 := by
+        rw [← inner_add_right, ← inner_add_right, h0, inner_zero_right]
+      rw [key (t.points i), key (t.points j), key (t.points k)]
+      linear_combination -2 * hi
+- id: circumcenter_equidistant_on_perp_bisectors
+  kind: textbook
+  level: high
+  topic: 三角形の五心・外心
+  statement: 三角形$ABC$の外心を$O$、外接円の半径を$R$とすると、$OA=OB=OC=R$であり、$O$は各2頂点を結ぶ線分の垂直二等分線（空間では垂直二等分面）の上にある。
+  statement_en: The circumcenter O of a triangle with circumradius R satisfies OA = OB = OC = R and lies on the perpendicular bisector of each pair of vertices.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $O$は三角形$ABC$の外心
+  - $R$は外接円の半径
+  quantifiers: *id001
+  conclusion: $OA=OB=OC=R$であり、$O$は3組の2頂点の垂直二等分線（面）上にある。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を三角形$ABC$の外接円の中心、$R$をその半径とする。$A,B,C$は外接円の上にあるので$OA=OB=OC=R$である。2点から等距離にある点の集合はその2点を結ぶ線分の垂直二等分線（空間では垂直二等分面）である。$OA=OB$より$O$は$A,B$の垂直二等分線の上にあり、$B,C$と$C,A$についても同じである。
+  strategy: Read off the equal distances from the definition of the circumcircle and use the distance characterisation of the bisector.
+  sketch:
+  - 'translate: The vertices lie on the circumcircle, so each is at distance R from O.'
+  - 'apply_theorem: Points equidistant from two points are exactly the perpendicular bisector.'
+  - 'conclude: O lies on each perpendicular bisector.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (dist_of a (circumcenter_of a b c)) (circumradius_of a b c)) (= (dist_of b (circumcenter_of a b c)) (circumradius_of a b c)) (= (dist_of c (circumcenter_of a b c)) (circumradius_of a b c)) (on_perpendicular_bisector (circumcenter_of a b c) a b) (on_perpendicular_bisector (circumcenter_of a b c) b c) (on_perpendicular_bisector (circumcenter_of a b c) c a))))
+  hard_negative:
+    statement: 外心は常に三角形の内部にある。
+    reason: 鈍角三角形では外心は外部にあり、直角三角形では斜辺の中点にある。外接円の性質から言えるのは等距離だけである。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P), (∀ i, dist (t.points i) t.circumcenter = t.circumradius) ∧ ∀ i j, t.circumcenter ∈ AffineSubspace.perpBisector (t.points i) (t.points j)
+  proof: |
+    by
+      intro V P _ _ _ _ t
+      refine ⟨t.dist_circumcenter_eq_circumradius, fun i j => ?_⟩
+      rw [AffineSubspace.mem_perpBisector_iff_dist_eq']
+      rw [t.dist_circumcenter_eq_circumradius, t.dist_circumcenter_eq_circumradius]
+- id: perp_bisectors_concurrent_at_circumcenter
+  kind: textbook
+  level: high
+  topic: 三角形の五心・垂直二等分線の共点
+  statement: 平面上の三角形$ABC$で、点$P$が辺$AB$と辺$BC$の垂直二等分線の上にあれば、$P$は辺$CA$の垂直二等分線の上にもあり、外心に等しい。
+  statement_en: In a plane, a point on the perpendicular bisectors of AB and BC of a triangle ABC also lies on that of CA and equals the circumcenter.
+  assumptions:
+  - 平面は2次元
+  - $A,B,C$は同一直線上にない3点
+  - $P$は$A,B$の垂直二等分線の上にある
+  - $P$は$B,C$の垂直二等分線の上にある
+  quantifiers:
+  - 任意の2次元ユークリッド平面内の任意の三角形$ABC$
+  - 任意の点$P$
+  conclusion: $P$は$C,A$の垂直二等分線の上にあり、$P$は外心である。
+  answer: |
+    $A,B,C$を平面上の同一直線上にない3点、$P$を$A,B$と$B,C$それぞれの垂直二等分線の上の点とする。垂直二等分線の性質から$PA=PB$かつ$PB=PC$なので$PA=PC$であり、$P$は$C,A$の垂直二等分線の上にある。外心$O$も$A,B$と$B,C$の垂直二等分線の上にある。この2本の直線はそれぞれ$AB$、$BC$に垂直であり、$AB$と$BC$が平行でないので、平行でも一致でもなく、ちょうど1点で交わる。$P$も$O$もその交点だから$P=O$である。
+  strategy: Transitivity of equal distances gives the third bisector; two non-parallel lines in a plane meet in one point.
+  sketch:
+  - 'translate: Membership in the two bisectors means PA = PB and PB = PC.'
+  - 'derive: Hence PA = PC, so P lies on the third bisector.'
+  - 'derive: The two bisectors are not parallel because AB and BC are not parallel.'
+  - 'conclude: They meet in one point, which is the circumcenter, so P = O.'
+  openmath: (forall (a b c p) (-> (and euclidean_plane_ambient (not (collinear_points a b c)) (on_perpendicular_bisector p a b) (on_perpendicular_bisector p b c)) (and (on_perpendicular_bisector p c a) (= p (circumcenter_of a b c)))))
+  hard_negative:
+    statement: 3次元空間でも、2本の垂直二等分条件を満たす点は外心に限る。
+    reason: 空間では垂直二等分面の交わりは直線になる。外接円の中心を通り平面$ABC$に垂直な直線上の点はすべて条件を満たす。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (p : P), i ≠ j → i ≠ k → j ≠ k → p ∈ AffineSubspace.perpBisector (t.points i) (t.points j) → p ∈ AffineSubspace.perpBisector (t.points j) (t.points k) → p ∈ AffineSubspace.perpBisector (t.points k) (t.points i) ∧ p = t.circumcenter
+  proof: |
+    by
+      intro V P _ _ _ _ _ t i j k p hij hik hjk
+      have hall : ∀ l : Fin 3, l = i ∨ l = j ∨ l = k := by decide +revert
+      intro h1 h2
+      rw [AffineSubspace.mem_perpBisector_iff_dist_eq'] at h1 h2
+      rw [AffineSubspace.mem_perpBisector_iff_dist_eq']
+      refine ⟨h2.symm.trans h1.symm, ?_⟩
+      have hs : p ∈ affineSpan ℝ (Set.range t.points) := by
+        haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+        have htop : affineSpan ℝ (Set.range t.points) = ⊤ :=
+          t.independent.affineSpan_eq_top_iff_card_eq_finrank_add_one.mpr (by simp [Fact.out (p := Module.finrank ℝ V = 2)])
+        rw [htop]; exact AffineSubspace.mem_top ℝ V p
+      refine t.eq_circumcenter_of_dist_eq hs (r := dist (t.points i) p) fun l => ?_
+      rcases hall l with rfl | rfl | rfl
+      · rfl
+      · exact h1.symm
+      · exact (h1.trans h2).symm
+- id: law_of_sines_circumradius
+  kind: textbook
+  level: high
+  topic: 三角形の五心・外接円の半径と正弦定理
+  statement: 三角形$ABC$の外接円の半径を$R$とすると、$\sin\angle BAC\neq 0$であり$\frac{BC}{\sin\angle BAC}=2R$が成り立つ（正弦定理）。
+  statement_en: For a triangle ABC with circumradius R, sin∠BAC ≠ 0 and BC / sin∠BAC = 2R.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $R$は三角形$ABC$の外接円の半径
+  quantifiers: *id001
+  conclusion: $\sin\angle BAC\neq 0$かつ$\frac{BC}{\sin\angle BAC}=2R$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$R$を外接円の半径とし、3点を含む平面で考える。$0<\angle BAC<\pi$なので$\sin\angle BAC\neq 0$である。外接円の中心に関して$B$と対称な点を$D$とすると$BD=2R$である。$D=C$のとき、$BC$は直径なので円周角の定理の特別な場合（タレスの定理）により$\angle BAC=\frac{\pi}{2}$となり、$BC=2R=2R\sin\angle BAC$である。$D\neq C$のとき、$D$は直線$BC$上にない。$BD$は直径なので$\angle BCD=\frac{\pi}{2}$であり、直角三角形$BCD$から$BC=2R\sin\angle BDC$である。円周角の定理により、$D$が直線$BC$に関して$A$と同じ側なら$\angle BDC=\angle BAC$、反対側なら$\angle BDC=\pi-\angle BAC$である。どちらでも$\sin\angle BDC=\sin\angle BAC$なので$BC=2R\sin\angle BAC$であり、両辺を$\sin\angle BAC$で割れば結論を得る。
+  strategy: Compare with the right triangle formed by the diameter through B, using the inscribed angle theorem.
+  sketch:
+  - 'setup: Let D be the point antipodal to B, so BD = 2R.'
+  - 'case_split: Treat D = C, D on the same side of BC as A, and D on the opposite side.'
+  - 'apply_theorem: The inscribed angle theorem gives sin∠BDC = sin∠BAC.'
+  - 'derive: In right triangle BCD, BC = 2R sin∠BDC.'
+  - 'conclude: Divide by the nonzero value sin∠BAC.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (!= (sin (euclid_angle b a c)) 0) (= (/ (dist_of b c) (sin (euclid_angle b a c))) (* 2 (circumradius_of a b c))))))
+  hard_negative:
+    statement: $\frac{BC}{\sin\angle BAC}=R$である。
+    reason: 右辺は直径$2R$である。$\angle BAC=\frac{\pi}{2}$なら$BC$は直径なので左辺は$2R$になる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) ≠ 0 ∧ dist (t.points j) (t.points k) / Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) = 2 * t.circumradius
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have h := t.dist_div_sin_angle_eq_two_mul_circumradius hij.symm hjk hik
+      refine ⟨?_, h⟩
+      intro h0
+      rw [h0, div_zero] at h
+      have := t.circumradius_pos
+      linarith
+- id: circumcenter_right_triangle_hypotenuse_midpoint
+  kind: gap
+  level: middle
+  topic: 三角形の五心・直角三角形の外心
+  statement: $\angle BAC=\frac{\pi}{2}$の直角三角形$ABC$の外心は斜辺$BC$の中点であり、外接円の半径は$\frac{BC}{2}$である。
+  statement_en: If ∠BAC = π/2 in a triangle ABC, then the circumcenter is the midpoint of BC and the circumradius is BC/2.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $\angle BAC=\frac{\pi}{2}$
+  quantifiers: *id001
+  conclusion: 外心は$BC$の中点で、外接円の半径は$\frac{BC}{2}$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点で$\angle BAC=\frac{\pi}{2}$とし、$M$を$BC$の中点とする。$\vec u=\overrightarrow{AB}$、$\vec w=\overrightarrow{AC}$とおくと$\vec u\cdot\vec w=0$である。$\overrightarrow{AM}=\frac{1}{2}(\vec u+\vec w)$、$\overrightarrow{BC}=\vec w-\vec u$であり、$\vec u\cdot\vec w=0$から$|\vec u+\vec w|=|\vec w-\vec u|$なので$MA=\frac{BC}{2}$である。また$MB=MC=\frac{BC}{2}$である。$M$は平面$ABC$上にあり、同じ平面上で3頂点から等距離にある点は外心だけなので、$M$は外心で、半径は$\frac{BC}{2}$である。
+  strategy: Show the midpoint of the hypotenuse is equidistant from the vertices and use uniqueness of the circumcenter.
+  sketch:
+  - 'setup: Put u = AB and w = AC with u·w = 0.'
+  - 'derive: |u + w| = |w - u|, so MA = BC/2.'
+  - 'derive: MB = MC = BC/2 since M is the midpoint.'
+  - 'conclude: M lies in the plane of the triangle and is equidistant from the vertices, so it is the circumcenter.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (euclid_angle b a c) (/ pi 2))) (and (= (circumcenter_of a b c) (midpoint_of b c)) (= (circumradius_of a b c) (/ (dist_of b c) 2)))))
+  hard_negative:
+    statement: 直角三角形の外心は直角の頂点である。
+    reason: 直角の頂点は垂心である。外心は3頂点から等距離だが、直角の頂点から自身への距離は$0$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → EuclideanGeometry.angle (t.points j) (t.points i) (t.points k) = Real.pi / 2 → t.circumcenter = midpoint ℝ (t.points j) (t.points k) ∧ t.circumradius = dist (t.points j) (t.points k) / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hall : ∀ l : Fin 3, l = i ∨ l = j ∨ l = k := by decide +revert
+      intro hr
+      have hth : (EuclideanGeometry.Sphere.mk (midpoint ℝ (t.points j) (t.points k)) (dist (t.points j) (t.points k) / 2)).IsDiameter (t.points j) (t.points k) := by
+        refine ⟨?_, rfl⟩
+        simp [EuclideanGeometry.mem_sphere, dist_left_midpoint]
+        ring
+      have hi : t.points i ∈ (EuclideanGeometry.Sphere.mk (midpoint ℝ (t.points j) (t.points k)) (dist (t.points j) (t.points k) / 2)) :=
+        (EuclideanGeometry.Sphere.angle_eq_pi_div_two_iff_mem_sphere_of_isDiameter hth).mp hr
+      have hd : ∀ l, dist (t.points l) (midpoint ℝ (t.points j) (t.points k)) = dist (t.points j) (t.points k) / 2 := by
+        intro l
+        rcases hall l with rfl | rfl | rfl
+        · exact hi
+        · exact hth.left_mem
+        · exact hth.right_mem
+      have hm : midpoint ℝ (t.points j) (t.points k) ∈ affineSpan ℝ (Set.range t.points) :=
+        affineSpan_pair_le_of_mem_of_mem (mem_affineSpan ℝ (Set.mem_range_self j)) (mem_affineSpan ℝ (Set.mem_range_self k))
+          (AffineMap.lineMap_mem_affineSpan_pair _ _ _)
+      exact ⟨(t.eq_circumcenter_of_dist_eq hm hd).symm, (t.eq_circumradius_of_dist_eq hm hd).symm⟩
+- id: side_product_eq_four_circumradius_area
+  kind: gap
+  level: high
+  topic: 三角形の五心・外接円の半径と面積
+  statement: 三角形$ABC$の面積を$S=\frac{1}{2}AB\cdot AC\sin\angle BAC$、外接円の半径を$R$とすると、$BC\cdot CA\cdot AB=4RS$である。
+  statement_en: For a triangle ABC with area S = (1/2) AB·AC·sin∠BAC and circumradius R, BC·CA·AB = 4RS.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $S=\frac{1}{2}AB\cdot AC\sin\angle BAC$
+  - $R$は外接円の半径
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の実数$S$
+  conclusion: $BC\cdot CA\cdot AB=4RS$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$R$を外接円の半径、$S=\frac{1}{2}AB\cdot AC\sin\angle BAC$とする。正弦定理より$BC=2R\sin\angle BAC$である。よって$BC\cdot CA\cdot AB=2R\sin\angle BAC\cdot CA\cdot AB=4R\cdot\frac{1}{2}AB\cdot AC\sin\angle BAC=4RS$である。
+  strategy: Substitute the law of sines for BC.
+  sketch:
+  - 'apply_theorem: The law of sines gives BC = 2R sin∠BAC.'
+  - 'conclude: Multiply by CA·AB and recognise 4RS.'
+  openmath: (forall (a b c s) (-> (and (not (collinear_points a b c)) (= s (* (* (* (/ 1 2) (dist_of a b)) (dist_of a c)) (sin (euclid_angle b a c))))) (= (* (* (dist_of b c) (dist_of c a)) (dist_of a b)) (* (* 4 (circumradius_of a b c)) s))))
+  hard_negative:
+    statement: $BC\cdot CA\cdot AB=2RS$である。
+    reason: 係数は$4$である。1辺$1$の正三角形では$R=\frac{1}{\sqrt{3}}$、$S=\frac{\sqrt{3}}{4}$で$4RS=1$となるが$2RS=\frac{1}{2}$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (S : ℝ), i ≠ j → i ≠ k → j ≠ k → S = 1 / 2 * dist (t.points i) (t.points j) * dist (t.points i) (t.points k) * Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) → dist (t.points j) (t.points k) * dist (t.points k) (t.points i) * dist (t.points i) (t.points j) = 4 * t.circumradius * S
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k S hij hik hjk hS
+      have h := t.dist_div_sin_angle_eq_two_mul_circumradius hij.symm hjk hik
+      have hs : Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) ≠ 0 := by
+        intro h0
+        rw [h0, div_zero] at h
+        have := t.circumradius_pos
+        linarith
+      rw [div_eq_iff hs] at h
+      rw [hS, h, dist_comm (t.points k) (t.points i)]
+      ring
+- id: centroid_eq_circumcenter_iff_equilateral
+  kind: gap
+  level: high
+  topic: 三角形の五心・重心と外心の一致
+  statement: 三角形$ABC$の重心と外心が一致することと、$ABC$が正三角形であることは同値である。
+  statement_en: The centroid and the circumcenter of a triangle ABC coincide if and only if AB = BC = CA.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  quantifiers: *id001
+  conclusion: 重心と外心の一致は$AB=BC=CA$と同値である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$G$を重心とする。$\vec x=\overrightarrow{GA}$、$\vec y=\overrightarrow{GB}$、$\vec z=\overrightarrow{GC}$とおくと$\vec x+\vec y+\vec z=\vec 0$なので、$AC^2=|2\vec x+\vec y|^2$、$BC^2=|\vec x+2\vec y|^2$、$AB^2=|\vec x-\vec y|^2$である。展開すると$2AB^2+2AC^2-BC^2=9|\vec x|^2$、すなわち$9GA^2=2AB^2+2AC^2-BC^2$を得る。同様に$9GB^2=2BC^2+2AB^2-CA^2$、$9GC^2=2CA^2+2BC^2-AB^2$である。重心と外心が一致するなら$GA=GB=GC$なので、最初の2式の差から$AC^2=BC^2$、後の2式の差から$AB^2=CA^2$となり、正三角形である。逆に$AB=BC=CA=s$なら3式から$9GA^2=9GB^2=9GC^2=3s^2$なので$GA=GB=GC$である。$G$は平面$ABC$上にあり、同じ平面上で3頂点から等距離にある点は外心だけなので、$G$は外心である。
+  strategy: Express the distance from the centroid to each vertex through the side lengths and compare.
+  sketch:
+  - 'setup: Use GA + GB + GC = 0.'
+  - 'derive: 9 GA² = 2 AB² + 2 AC² - BC², and cyclically.'
+  - 'derive: If G = O then GA = GB = GC, and differences of the formulas give equal sides.'
+  - 'derive: If the sides are equal then GA = GB = GC.'
+  - 'conclude: G lies in the plane of the triangle, so G is the circumcenter.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (<-> (= (centroid_of a b c) (circumcenter_of a b c)) (and (= (dist_of a b) (dist_of b c)) (= (dist_of b c) (dist_of c a))))))
+  hard_negative:
+    statement: 二等辺三角形では重心と外心が一致する。
+    reason: $AB=AC=5$、$BC=6$では高さが$4$で、重心は底辺から$\frac{4}{3}$、外心は底辺から$\frac{7}{8}$の位置にあるので異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → (t.centroid = t.circumcenter ↔ dist (t.points i) (t.points j) = dist (t.points j) (t.points k) ∧ dist (t.points j) (t.points k) = dist (t.points k) (t.points i))
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : ∀ (l m n : Fin 3), l ≠ m → l ≠ n → m ≠ n → (Finset.univ : Finset (Fin 3)) = {l, m, n} := by decide
+      have hall : ∀ l : Fin 3, l = i ∨ l = j ∨ l = k := by decide +revert
+      have med : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → 9 * dist (t.points l) t.centroid ^ 2 =
+          2 * dist (t.points l) (t.points m) ^ 2 + 2 * dist (t.points l) (t.points n) ^ 2 - dist (t.points m) (t.points n) ^ 2 := by
+        intro l m n hlm hln hmn
+        have h0 : (t.points l -ᵥ t.centroid) + (t.points m -ᵥ t.centroid) + (t.points n -ᵥ t.centroid) = (0 : V) := by
+          have h := Affine.Simplex.eq_centroid_iff_sum_vsub_eq_zero.mp (rfl : t.centroid = t.centroid)
+          rwa [hu l m n hlm hln hmn, Finset.sum_insert (by simp [hlm, hln]), Finset.sum_insert (by simp [hmn]), Finset.sum_singleton, ← add_assoc] at h
+        have d : ∀ x y : P, dist x y ^ 2 = ‖x -ᵥ t.centroid‖ ^ 2 - 2 * inner ℝ (x -ᵥ t.centroid) (y -ᵥ t.centroid) + ‖y -ᵥ t.centroid‖ ^ 2 := by
+          intro x y
+          rw [dist_eq_norm_vsub V x y, ← vsub_sub_vsub_cancel_right x y t.centroid, norm_sub_sq_real]
+        rw [d (t.points l) (t.points m), d (t.points l) (t.points n), d (t.points m) (t.points n), dist_eq_norm_vsub V (t.points l) t.centroid]
+        generalize t.points l -ᵥ t.centroid = a at *
+        generalize t.points m -ᵥ t.centroid = b at *
+        generalize t.points n -ᵥ t.centroid = c at *
+        have hc : c = -(a + b) := eq_neg_of_add_eq_zero_right h0
+        subst hc
+        simp only [inner_neg_right, inner_add_right, norm_neg]
+        have e : ‖a + b‖ ^ 2 = ‖a‖ ^ 2 + 2 * inner ℝ a b + ‖b‖ ^ 2 := norm_add_sq_real a b
+        rw [e, real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq, real_inner_comm a b]
+        ring
+      have mi := med i j k hij hik hjk
+      have mj := med j k i hjk hij.symm hik.symm
+      have mk := med k i j hik.symm hjk.symm hij
+      rw [dist_comm (t.points j) (t.points i)] at mj
+      rw [dist_comm (t.points k) (t.points i)] at mj mk
+      rw [dist_comm (t.points k) (t.points j)] at mk
+      rw [dist_comm (t.points k) (t.points i)]
+      constructor
+      · intro hGO
+        rw [hGO, t.dist_circumcenter_eq_circumradius] at mi mj mk
+        constructor
+        · rw [← sq_eq_sq₀ dist_nonneg dist_nonneg]; linarith
+        · rw [← sq_eq_sq₀ dist_nonneg dist_nonneg]; linarith
+      · rintro ⟨h1, h2⟩
+        rw [← h2, ← h1] at mi mj mk
+        have ej : dist (t.points j) t.centroid = dist (t.points i) t.centroid := by
+          rw [← sq_eq_sq₀ dist_nonneg dist_nonneg]; linarith
+        have ek : dist (t.points k) t.centroid = dist (t.points i) t.centroid := by
+          rw [← sq_eq_sq₀ dist_nonneg dist_nonneg]; linarith
+        refine t.eq_circumcenter_of_dist_eq t.centroid_mem_affineSpan (r := dist (t.points i) t.centroid) fun l => ?_
+        rcases hall l with rfl | rfl | rfl
+        · rfl
+        · exact ej
+        · exact ek
+- id: incenter_touchpoint_and_angle_bisector
+  kind: textbook
+  level: high
+  topic: 三角形の五心・内心
+  statement: 三角形$ABC$の内心を$I$、内接円の半径を$r$、内接円と辺$BC$の接点を$D$とすると、$ID=r$であり、$D$は$B,C$の間の点で、$ID\perp BC$かつ$\angle BAI=\angle IAC$である。
+  statement_en: For a triangle ABC with incenter I, inradius r and D the touchpoint on BC, ID = r, D lies strictly between B and C, ID is perpendicular to BC, and ∠BAI = ∠IAC.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $I$は内心、$r$は内接円の半径
+  - $D$は内接円と辺$BC$の接点
+  quantifiers: *id001
+  conclusion: $ID=r$、$D$は$B,C$の間にあり、$ID\perp BC$、$\angle BAI=\angle IAC$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$I$を内接円の中心、$r$をその半径とし、内接円と辺$BC,CA,AB$の接点を$D,E,F$とする。内接円は各辺とその内部の点で接する円なので、$D$は$B,C$の間にあり、$ID=r$である。接線は接点を通る半径に垂直なので$ID\perp BC$である。同様に$IE\perp AC$、$IF\perp AB$で、$IE=IF=r$である。直角三角形$AIE$と$AIF$は斜辺$AI$を共有し、$IE=IF$なので合同である。よって$\angle IAE=\angle IAF$である。$E,F$はそれぞれ半直線$AC,AB$の上にあるので$\angle BAI=\angle IAC$が成り立つ。
+  strategy: Use tangency for the radius and congruent right triangles for the bisector property.
+  sketch:
+  - 'translate: The incircle touches side BC at an interior point at distance r from I.'
+  - 'apply_theorem: A tangent is perpendicular to the radius at the touchpoint.'
+  - 'derive: Right triangles AIE and AIF are congruent.'
+  - 'conclude: Hence AI bisects angle BAC.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (dist_of (incenter_of a b c) (incircle_touchpoint a b c)) (inradius_of a b c)) (strictly_between b (incircle_touchpoint a b c) c) (= (inner_product (- (incenter_of a b c) (incircle_touchpoint a b c)) (- b c)) 0) (= (euclid_angle b a (incenter_of a b c)) (euclid_angle (incenter_of a b c) a c)))))
+  hard_negative:
+    statement: 内接円と辺$BC$の接点は辺$BC$の中点である。
+    reason: $BD=\frac{AB+BC-CA}{2}$であり、$AB\neq CA$なら中点ではない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist t.incenter (t.touchpoint ∅ i) = t.inradius ∧ Sbtw ℝ (t.points j) (t.touchpoint ∅ i) (t.points k) ∧ inner ℝ (t.incenter -ᵥ t.touchpoint ∅ i) (t.points j -ᵥ t.points k) = 0 ∧ EuclideanGeometry.angle (t.points j) (t.points i) t.incenter = EuclideanGeometry.angle t.incenter (t.points i) (t.points k)
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hb : Sbtw ℝ (t.points j) (t.touchpoint ∅ i) (t.points k) :=
+        t.sbtw_touchpoint_empty hij.symm hjk hik
+      have ht := t.isTangentAt_insphere_touchpoint i
+      have mj : t.points j ∈ affineSpan ℝ (Set.range (t.faceOpposite i).points) :=
+        t.points_mem_affineSpan_faceOpposite.2 hij.symm
+      have mk : t.points k ∈ affineSpan ℝ (Set.range (t.faceOpposite i).points) :=
+        t.points_mem_affineSpan_faceOpposite.2 hik.symm
+      have h1' : inner ℝ (t.incenter -ᵥ t.touchpoint ∅ i) (t.points j -ᵥ t.touchpoint ∅ i) = 0 := by
+        have h1 : inner ℝ (t.points j -ᵥ t.touchpoint ∅ i) (t.touchpoint ∅ i -ᵥ t.incenter) = 0 :=
+          ht.inner_left_eq_zero_of_mem mj
+        rw [← neg_vsub_eq_vsub_rev t.incenter, inner_neg_right, neg_eq_zero, real_inner_comm] at h1
+        exact h1
+      have h2' : inner ℝ (t.incenter -ᵥ t.touchpoint ∅ i) (t.points k -ᵥ t.touchpoint ∅ i) = 0 := by
+        have h1 : inner ℝ (t.points k -ᵥ t.touchpoint ∅ i) (t.touchpoint ∅ i -ᵥ t.incenter) = 0 :=
+          ht.inner_left_eq_zero_of_mem mk
+        rw [← neg_vsub_eq_vsub_rev t.incenter, inner_neg_right, neg_eq_zero, real_inner_comm] at h1
+        exact h1
+      have hang : EuclideanGeometry.angle t.incenter (t.points i) (t.touchpoint ∅ k) =
+          EuclideanGeometry.angle t.incenter (t.points i) (t.touchpoint ∅ j) :=
+        Affine.Simplex.angle_incenter_touchpoint_eq
+          (t.points_mem_affineSpan_faceOpposite.2 hik) (t.points_mem_affineSpan_faceOpposite.2 hij)
+      have s1 : Sbtw ℝ (t.points i) (t.touchpoint ∅ k) (t.points j) :=
+        t.sbtw_touchpoint_empty hik hij hjk.symm
+      have s2 : Sbtw ℝ (t.points i) (t.touchpoint ∅ j) (t.points k) :=
+        t.sbtw_touchpoint_empty hij hik hjk
+      refine ⟨t.dist_incenter i, hb, ?_, ?_⟩
+      · rw [← vsub_sub_vsub_cancel_right (t.points j) (t.points k) (t.touchpoint ∅ i), inner_sub_right,
+          h1', h2', sub_zero]
+      · rw [s1.angle_eq_right, s2.angle_eq_right] at hang
+        rw [EuclideanGeometry.angle_comm, hang]
+- id: incircle_tangent_length
+  kind: gap
+  level: middle
+  topic: 三角形の五心・内接円の接線の長さ
+  statement: 三角形$ABC$の内接円と辺$CA,AB$の接点を$E,F$とすると、$AF=AE=\frac{AB+AC-BC}{2}$である。
+  statement_en: If the incircle of a triangle ABC touches CA and AB at E and F, then AF = AE = (AB + AC - BC)/2.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $E,F$は内接円と辺$CA,AB$の接点
+  quantifiers: *id001
+  conclusion: $AF=AE=\frac{AB+AC-BC}{2}$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$I$を内心、$r$を内接円の半径とし、内接円と辺$BC,CA,AB$の接点を$D,E,F$とする。半径は接線に垂直なので三平方の定理より$AF^2=AI^2-r^2=AE^2$であり、$AF=AE$である。同様に$BD=BF$、$CD=CE$である。接点は各辺の内部にあるので$AB=AF+FB$、$AC=AE+EC$、$BC=BD+DC$である。したがって$AB+AC-BC=AF+AE+(FB-BD)+(EC-DC)=2AF$となる。
+  strategy: Equal tangent lengths from Pythagoras, then add and subtract the three side decompositions.
+  sketch:
+  - 'apply_theorem: Pythagoras gives AF² = AI² - r² = AE².'
+  - 'derive: Likewise BD = BF and CD = CE.'
+  - 'derive: Each touchpoint splits its side, so AB = AF + FB, AC = AE + EC, BC = BD + DC.'
+  - 'conclude: AB + AC - BC = 2 AF.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (dist_of a (incircle_touchpoint c a b)) (dist_of a (incircle_touchpoint b c a))) (= (dist_of a (incircle_touchpoint c a b)) (/ (- (+ (dist_of a b) (dist_of a c)) (dist_of b c)) 2)))))
+  hard_negative:
+    statement: $AF=\frac{AB+BC+CA}{2}$である。
+    reason: その値は頂点$A$から$A$に対する傍接円への接線の長さである。$AF<AB$なのに対し、三角不等式からこの値は$AB$より大きい。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (t.points i) (t.touchpoint ∅ k) = dist (t.points i) (t.touchpoint ∅ j) ∧ dist (t.points i) (t.touchpoint ∅ k) = (dist (t.points i) (t.points j) + dist (t.points i) (t.points k) - dist (t.points j) (t.points k)) / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have pyth : ∀ x l : Fin 3, x ≠ l → dist (t.points x) (t.touchpoint ∅ l) ^ 2 = dist (t.points x) t.incenter ^ 2 - t.inradius ^ 2 := by
+        intro x l hxl
+        have h1 : inner ℝ (t.points x -ᵥ t.touchpoint ∅ l) (t.touchpoint ∅ l -ᵥ t.incenter) = 0 :=
+          (t.isTangentAt_insphere_touchpoint l).inner_left_eq_zero_of_mem (t.points_mem_affineSpan_faceOpposite.2 hxl)
+        have h2 : t.points x -ᵥ t.incenter = (t.points x -ᵥ t.touchpoint ∅ l) + (t.touchpoint ∅ l -ᵥ t.incenter) := (vsub_add_vsub_cancel _ _ _).symm
+        have h3 : ‖t.touchpoint ∅ l -ᵥ t.incenter‖ = t.inradius := by
+          rw [← dist_eq_norm_vsub, dist_comm]; exact t.dist_incenter l
+        rw [dist_eq_norm_vsub V (t.points x) t.incenter, h2, norm_add_sq_real, h1, h3, dist_eq_norm_vsub V (t.points x) (t.touchpoint ∅ l)]
+        ring
+      have eqt : ∀ x l m : Fin 3, x ≠ l → x ≠ m → dist (t.points x) (t.touchpoint ∅ l) = dist (t.points x) (t.touchpoint ∅ m) := by
+        intro x l m hl hm
+        rw [← sq_eq_sq₀ dist_nonneg dist_nonneg, pyth x l hl, pyth x m hm]
+      have sij := (t.sbtw_touchpoint_empty hik hij hjk.symm).wbtw.dist_add_dist
+      have sik := (t.sbtw_touchpoint_empty hij hik hjk).wbtw.dist_add_dist
+      have sjk := (t.sbtw_touchpoint_empty hij.symm hjk hik).wbtw.dist_add_dist
+      have e1 := eqt i k j hik hij
+      have e2 := eqt j k i hjk hij.symm
+      have e3 := eqt k j i hjk.symm hik.symm
+      rw [dist_comm (t.touchpoint ∅ k) (t.points j)] at sij
+      rw [dist_comm (t.touchpoint ∅ j) (t.points k)] at sik
+      rw [dist_comm (t.touchpoint ∅ i) (t.points k)] at sjk
+      refine ⟨e1, ?_⟩
+      linarith
+- id: interior_bisectors_concurrent_at_incenter
+  kind: textbook
+  level: high
+  topic: 三角形の五心・内角の二等分線の共点
+  statement: 向きを定めた平面上の三角形$ABC$で、点$P$が有向角について$\measuredangle BAP=\measuredangle PAC$と$\measuredangle CBP=\measuredangle PBA$を満たすなら、$P$は内心であり、$\measuredangle ACP=\measuredangle PCB$も成り立つ。
+  statement_en: In an oriented plane, if a point P satisfies the oriented angle equalities ∡BAP = ∡PAC and ∡CBP = ∡PBA for a triangle ABC, then P is the incenter and ∡ACP = ∡PCB.
+  assumptions:
+  - 平面は2次元で向きが定められている
+  - $A,B,C$は同一直線上にない3点
+  - $\measuredangle BAP=\measuredangle PAC$
+  - $\measuredangle CBP=\measuredangle PBA$
+  quantifiers:
+  - 向きを定めた任意の平面内の任意の三角形$ABC$
+  - 任意の点$P$
+  conclusion: $P$は内心であり、$\measuredangle ACP=\measuredangle PCB$である。
+  answer: |
+    $A,B,C$を向きを定めた平面上の同一直線上にない3点とし、点$P$は$\measuredangle BAP=\measuredangle PAC$と$\measuredangle CBP=\measuredangle PBA$を満たすとする。有向角は$2\pi$を法として考える。内心$I$は内接円の中心であり、$A$から内接円に引いた2本の接線の対称性から$\measuredangle BAI=\measuredangle IAC$である。$P\neq A$なら、第1の条件は$2\measuredangle BAP=\measuredangle BAC$を意味する。この式の解は$\measuredangle BAI$とそれに$\pi$を加えた値だけなので、$P$は直線$AI$の上にある。$P=A$のときも$P$は直線$AI$の上にある。同様に$P$は直線$BI$の上にある。$I$は三角形の内部にあるので直線$AB$の上になく、直線$AI$と直線$BI$は異なる。したがって共有点は$I$だけで、$P=I$である。残りの等式は頂点$C$での内心の性質そのものである。
+  strategy: Each oriented condition places P on an internal bisector line; two distinct lines meet only at the incenter.
+  sketch:
+  - 'translate: The first equality means 2∡BAP = ∡BAC, so P lies on line AI.'
+  - 'derive: The second equality likewise places P on line BI.'
+  - 'derive: Lines AI and BI differ because I is not on AB.'
+  - 'conclude: P = I, and the incenter bisects angle C.'
+  openmath: (forall (a b c p) (-> (and euclidean_plane_ambient (not (collinear_points a b c)) (= (oriented_angle b a p) (oriented_angle p a c)) (= (oriented_angle c b p) (oriented_angle p b a))) (and (= p (incenter_of a b c)) (= (oriented_angle a c p) (oriented_angle p c b)))))
+  hard_negative:
+    statement: 有向角で$\measuredangle BAP=\measuredangle PAC$と$\measuredangle CBP=\measuredangle PBA+\pi$を満たす点も内心である。
+    reason: 第2の条件は角$B$の外角の二等分線を表す。この2条件を満たす点は$A$に対する傍心であり、内心とは異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] [Module.Oriented ℝ V (Fin 2)] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (p : P), i ≠ j → i ≠ k → j ≠ k → EuclideanGeometry.oangle (t.points j) (t.points i) p = EuclideanGeometry.oangle p (t.points i) (t.points k) → EuclideanGeometry.oangle (t.points k) (t.points j) p = EuclideanGeometry.oangle p (t.points j) (t.points i) → p = t.incenter ∧ EuclideanGeometry.oangle (t.points i) (t.points k) p = EuclideanGeometry.oangle p (t.points k) (t.points j)
+  proof: |
+    by
+      intro V P _ _ _ _ _ _ t i j k p hij hik hjk h1 h2
+      have hp : p = t.incenter := Affine.Triangle.eq_incenter_of_oangle_eq hij hik hjk h1 h2
+      refine ⟨hp, ?_⟩
+      rw [hp]
+      exact t.oangle_incenter_eq hik.symm hjk.symm hij
+- id: angle_at_incenter
+  kind: gap
+  level: middle
+  topic: 三角形の五心・内心と角度
+  statement: 三角形$ABC$の内心を$I$とすると、$\angle BIC=\frac{\pi}{2}+\frac{1}{2}\angle BAC$である。
+  statement_en: For a triangle ABC with incenter I, ∠BIC = π/2 + (1/2)∠BAC.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $I$は三角形$ABC$の内心
+  quantifiers: *id001
+  conclusion: $\angle BIC=\frac{\pi}{2}+\frac{1}{2}\angle BAC$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$I$を内心とする。$I$は三角形の内部にあり、$BI$、$CI$は内角の二等分線なので$\angle IBC=\frac{1}{2}\angle ABC$、$\angle ICB=\frac{1}{2}\angle ACB$である。三角形$IBC$の内角の和より$\angle BIC=\pi-\frac{1}{2}(\angle ABC+\angle ACB)$である。三角形$ABC$の内角の和より$\angle ABC+\angle ACB=\pi-\angle BAC$である。代入すると$\angle BIC=\frac{\pi}{2}+\frac{1}{2}\angle BAC$を得る。
+  strategy: Halve the angles at B and C and apply the angle sum in triangles IBC and ABC.
+  sketch:
+  - 'derive: BI and CI bisect the angles at B and C, so ∠IBC and ∠ICB are half of them.'
+  - 'apply_theorem: The angle sum in triangle IBC gives ∠BIC.'
+  - 'apply_theorem: The angle sum in triangle ABC eliminates the angles at B and C.'
+  - 'conclude: ∠BIC = π/2 + ∠BAC/2.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (euclid_angle b (incenter_of a b c) c) (+ (/ pi 2) (/ (euclid_angle b a c) 2)))))
+  hard_negative:
+    statement: $\angle BIC=2\angle BAC$である。
+    reason: $2\angle BAC$は外心$O$について鋭角三角形で成り立つ$\angle BOC$の値である。正三角形では$\angle BIC=\frac{2\pi}{3}$で一致するが、$\angle BAC=\frac{\pi}{2}$なら$\angle BIC=\frac{3\pi}{4}\neq\pi$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → EuclideanGeometry.angle (t.points j) t.incenter (t.points k) = Real.pi / 2 + EuclideanGeometry.angle (t.points j) (t.points i) (t.points k) / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : ∀ (l m n : Fin 3), l ≠ m → l ≠ n → m ≠ n → (Finset.univ : Finset (Fin 3)) = {l, m, n} := by decide
+      have half : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n →
+          2 * EuclideanGeometry.angle (t.points m) (t.points l) t.incenter = EuclideanGeometry.angle (t.points m) (t.points l) (t.points n) := by
+        intro l m n hlm hln hmn
+        have hang : EuclideanGeometry.angle t.incenter (t.points l) (t.touchpoint ∅ n) =
+            EuclideanGeometry.angle t.incenter (t.points l) (t.touchpoint ∅ m) :=
+          Affine.Simplex.angle_incenter_touchpoint_eq
+            (t.points_mem_affineSpan_faceOpposite.2 hln) (t.points_mem_affineSpan_faceOpposite.2 hlm)
+        have s1 : Sbtw ℝ (t.points l) (t.touchpoint ∅ n) (t.points m) := t.sbtw_touchpoint_empty hln hlm hmn.symm
+        have s2 : Sbtw ℝ (t.points l) (t.touchpoint ∅ m) (t.points n) := t.sbtw_touchpoint_empty hlm hln hmn
+        rw [s1.angle_eq_right, s2.angle_eq_right] at hang
+        have hb : EuclideanGeometry.angle (t.points m) (t.points l) t.incenter = EuclideanGeometry.angle t.incenter (t.points l) (t.points n) := by
+          rw [EuclideanGeometry.angle_comm, hang]
+        have hw1 : 0 < t.excenterWeights ∅ m := t.excenterWeights_empty_pos m
+        have hw2 : 0 < t.excenterWeights ∅ n := t.excenterWeights_empty_pos n
+        have hsum := t.sum_excenterWeights_eq_one_iff.2 t.excenterExists_empty
+        rw [hu l m n hlm hln hmn, Finset.sum_insert (by simp [hlm, hln]), Finset.sum_insert (by simp [hmn]), Finset.sum_singleton] at hsum
+        have hI : t.incenter -ᵥ t.points l = t.excenterWeights ∅ m • (t.points m -ᵥ t.points l) + t.excenterWeights ∅ n • (t.points n -ᵥ t.points l) := by
+          rw [t.incenter_eq_affineCombination, ← Finset.sum_smul_vsub_const_eq_affineCombination_vsub _ _ _ _ (by rw [hu l m n hlm hln hmn, Finset.sum_insert (by simp [hlm, hln]), Finset.sum_insert (by simp [hmn]), Finset.sum_singleton]; exact hsum),
+            hu l m n hlm hln hmn, Finset.sum_insert (by simp [hlm, hln]), Finset.sum_insert (by simp [hmn]), Finset.sum_singleton, vsub_self, smul_zero, zero_add]
+        set a := t.excenterWeights ∅ m with ha
+        set b := t.excenterWeights ∅ n with hb'
+        have hκ : 0 < a + b := by positivity
+        set D := AffineMap.lineMap (t.points m) (t.points n) (b / (a + b)) with hD
+        have hDw : Wbtw ℝ (t.points m) D (t.points n) :=
+          ⟨b / (a + b), ⟨by positivity, by rw [div_le_one hκ]; linarith⟩, rfl⟩
+        have hDI : t.incenter -ᵥ t.points l = (a + b) • (D -ᵥ t.points l) := by
+          have e : D -ᵥ t.points l = (t.points m -ᵥ t.points l) + (b / (a + b)) • ((t.points n -ᵥ t.points l) - (t.points m -ᵥ t.points l)) := by
+            rw [hD, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_sub_vsub_cancel_right, add_comm]
+          rw [hI, e, smul_add, smul_smul, mul_div_cancel₀ _ hκ.ne']
+          module
+        have a1 : EuclideanGeometry.angle (t.points m) (t.points l) t.incenter = EuclideanGeometry.angle (t.points m) (t.points l) D := by
+          unfold EuclideanGeometry.angle
+          rw [hDI, InnerProductGeometry.angle_smul_right_of_pos _ _ hκ]
+        have a2 : EuclideanGeometry.angle t.incenter (t.points l) (t.points n) = EuclideanGeometry.angle D (t.points l) (t.points n) := by
+          unfold EuclideanGeometry.angle
+          rw [hDI, InnerProductGeometry.angle_smul_left_of_pos _ _ hκ]
+        have hadd := EuclideanGeometry.angle_add_of_ne_of_ne (a := t.points l) (fun h => hlm (t.independent.injective h)) (fun h => hln (t.independent.injective h)) hDw
+        rw [← a1, ← a2, ← hb] at hadd
+        linarith
+      have hj := half j k i hjk hij.symm hik.symm
+      have hk := half k j i hjk.symm hik.symm hij.symm
+      have tri := EuclideanGeometry.angle_add_angle_add_angle_eq_pi (t.points i) (p₁ := t.points k) (p₂ := t.points j) (fun h => hjk (t.independent.injective h))
+      have triI := EuclideanGeometry.angle_add_angle_add_angle_eq_pi (t.points k) (p₁ := t.points j) (p₂ := t.incenter) (t.incenter_ne_point j)
+      have c1 : EuclideanGeometry.angle t.incenter (t.points k) (t.points j) = EuclideanGeometry.angle (t.points j) (t.points k) t.incenter := EuclideanGeometry.angle_comm _ _ _
+      have c2 : EuclideanGeometry.angle (t.points i) (t.points k) (t.points j) = EuclideanGeometry.angle (t.points j) (t.points k) (t.points i) := EuclideanGeometry.angle_comm _ _ _
+      rw [c1] at triI
+      rw [c2] at tri
+      linarith
+- id: area_eq_inradius_times_semiperimeter
+  kind: gap
+  level: high
+  topic: 三角形の五心・内接円の半径と面積
+  statement: 三角形$ABC$の面積$\frac{1}{2}AB\cdot AC\sin\angle BAC$は、内接円の半径を$r$とすると$\frac{r(AB+BC+CA)}{2}$に等しい。
+  statement_en: For a triangle ABC with inradius r, (1/2) AB·AC·sin∠BAC = r (AB + BC + CA)/2.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $r$は内接円の半径
+  quantifiers: *id001
+  conclusion: $\frac{1}{2}AB\cdot AC\sin\angle BAC=\frac{r(AB+BC+CA)}{2}$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$I$を内心、$r$を内接円の半径とする。$\frac{1}{2}AB\cdot AC\sin\angle BAC$は三角形$ABC$の面積$S$である。$I$は三角形の内部にあるので、三角形$ABC$は重なりなく三角形$IBC$、$ICA$、$IAB$に分割される。内接円の半径は接点で各辺に垂直なので、これらの三角形の底辺をそれぞれ$BC,CA,AB$とすると高さはどれも$r$である。よって$S=\frac{1}{2}BC\cdot r+\frac{1}{2}CA\cdot r+\frac{1}{2}AB\cdot r=\frac{r(AB+BC+CA)}{2}$である。
+  strategy: Split the triangle at the incenter into three triangles of height r.
+  sketch:
+  - 'translate: The left side is the area S of the triangle.'
+  - 'setup: Split ABC at the interior point I into IBC, ICA and IAB.'
+  - 'derive: Each piece has height r over its side.'
+  - 'conclude: Adding the three areas gives r times the semiperimeter.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (* (* (* (/ 1 2) (dist_of a b)) (dist_of a c)) (sin (euclid_angle b a c))) (/ (* (inradius_of a b c) (+ (+ (dist_of a b) (dist_of b c)) (dist_of c a))) 2))))
+  hard_negative:
+    statement: 面積は$r(AB+BC+CA)$に等しい。
+    reason: $\frac{1}{2}$が抜けている。3辺$3,4,5$の直角三角形では$r=1$、面積$6$で、$r(AB+BC+CA)=12$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → 1 / 2 * dist (t.points i) (t.points j) * dist (t.points i) (t.points k) * Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) = t.inradius * (dist (t.points i) (t.points j) + dist (t.points j) (t.points k) + dist (t.points k) (t.points i)) / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hci : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → ({l}ᶜ : Set (Fin 3)) = {m, n} := by
+        intro l m n hlm hln hmn
+        ext x
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Set.mem_insert_iff]
+        revert x l m n
+        decide
+      have gram : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → (dist (t.points m) (t.points n) * t.height l) ^ 2 =
+          dist (t.points l) (t.points m) ^ 2 * dist (t.points m) (t.points n) ^ 2 -
+            ((dist (t.points l) (t.points m) ^ 2 + dist (t.points m) (t.points n) ^ 2 - dist (t.points l) (t.points n) ^ 2) / 2) ^ 2 := by
+        intro l m n hlm hln hmn
+        have hD := t.altitudeFoot_mem_affineSpan_image_compl l
+        rw [hci l m n hlm hln hmn, Set.image_pair] at hD
+        have h1 := t.inner_vsub_altitudeFoot_vsub_altitudeFoot_eq_zero hlm
+        have h2 := t.inner_vsub_altitudeFoot_vsub_altitudeFoot_eq_zero hln
+        have hh : t.height l = ‖t.points l -ᵥ t.altitudeFoot l‖ := by rw [Affine.Simplex.height, dist_eq_norm_vsub V]
+        obtain ⟨r, hr⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+        simp only at h1 h2
+        rw [hh]
+        rw [← hr] at h1 h2 ⊢
+        have e1 : t.points m -ᵥ AffineMap.lineMap (t.points m) (t.points n) r = (-r) • (t.points n -ᵥ t.points m) := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have e2 : t.points n -ᵥ AffineMap.lineMap (t.points m) (t.points n) r = (1 - r) • (t.points n -ᵥ t.points m) := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, sub_smul, one_smul]
+        set q := t.points l -ᵥ AffineMap.lineMap (t.points m) (t.points n) r with hq
+        have d1 : dist (t.points l) (t.points m) ^ 2 = ‖q‖ ^ 2 + r ^ 2 * ‖t.points n -ᵥ t.points m‖ ^ 2 := by
+          have e : t.points l -ᵥ t.points m = q - (t.points m -ᵥ AffineMap.lineMap (t.points m) (t.points n) r) := (vsub_sub_vsub_cancel_right _ _ _).symm
+          rw [dist_eq_norm_vsub V, e, norm_sub_sq_real, real_inner_comm, h1, e1, norm_smul, mul_pow]
+          simp
+        have d2 : dist (t.points l) (t.points n) ^ 2 = ‖q‖ ^ 2 + (1 - r) ^ 2 * ‖t.points n -ᵥ t.points m‖ ^ 2 := by
+          have e : t.points l -ᵥ t.points n = q - (t.points n -ᵥ AffineMap.lineMap (t.points m) (t.points n) r) := (vsub_sub_vsub_cancel_right _ _ _).symm
+          rw [dist_eq_norm_vsub V, e, norm_sub_sq_real, real_inner_comm, h2, e2, norm_smul, mul_pow]
+          simp
+        have d3 : dist (t.points m) (t.points n) = ‖t.points n -ᵥ t.points m‖ := by rw [dist_comm, dist_eq_norm_vsub V]
+        rw [d1, d2, d3]
+        ring
+      have comm : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → dist (t.points m) (t.points n) * t.height l = dist (t.points n) (t.points l) * t.height m := by
+        intro l m n hlm hln hmn
+        have hl := t.height_pos l
+        have hm := t.height_pos m
+        rw [← sq_eq_sq₀ (by positivity) (by positivity), gram l m n hlm hln hmn, gram m n l hmn hlm.symm hln.symm,
+          dist_comm (t.points m) (t.points l), dist_comm (t.points n) (t.points l)]
+        ring
+      have hi := t.height_pos i
+      have hj := t.height_pos j
+      have hk := t.height_pos k
+      set a := dist (t.points j) (t.points k) with ha
+      have c1 := comm i j k hij hik hjk
+      have c2 := comm j k i hjk hij.symm hik.symm
+      have hSum : ∑ m, t.excenterWeightsUnnorm ∅ m = (t.height i)⁻¹ + (t.height j)⁻¹ + (t.height k)⁻¹ := by
+        rw [hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton]
+        simp [Affine.Simplex.excenterWeightsUnnorm, add_assoc]
+      have hr : t.inradius = ((t.height i)⁻¹ + (t.height j)⁻¹ + (t.height k)⁻¹)⁻¹ := by
+        rw [t.inradius_eq_abs_inv_sum, hSum, abs_of_pos (by positivity)]
+      have hKpos : 0 < a := by
+        rw [ha, dist_pos]; exact fun h => hjk (t.independent.injective h)
+      have hper : t.inradius * (dist (t.points i) (t.points j) + a + dist (t.points k) (t.points i)) = a * t.height i := by
+        have e1 : dist (t.points k) (t.points i) = a * t.height i / t.height j := by rw [c1]; field_simp
+        have e2 : dist (t.points i) (t.points j) = a * t.height i / t.height k := by rw [c1, c2]; field_simp
+        rw [hr, e1, e2]
+        field_simp
+        ring
+      have hsin : dist (t.points i) (t.points j) * dist (t.points i) (t.points k) * Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) = a * t.height i := by
+        have hcos := EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_sub_two_mul_dist_mul_dist_mul_cos_angle (t.points j) (t.points i) (t.points k)
+        have hg := gram i j k hij hik hjk
+        have hs := Real.sin_sq_add_cos_sq (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k))
+        have hnn : 0 ≤ Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) := InnerProductGeometry.sin_angle_nonneg _ _
+        rw [dist_comm (t.points j) (t.points i), dist_comm (t.points k) (t.points i)] at hcos
+        rw [← sq_eq_sq₀ (by positivity) (by positivity), hg]
+        generalize Real.sin (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) = x at *
+        generalize Real.cos (EuclideanGeometry.angle (t.points j) (t.points i) (t.points k)) = y at *
+        generalize dist (t.points i) (t.points j) = c at *
+        generalize dist (t.points i) (t.points k) = b at *
+        have hc : c * b * y = (c ^ 2 + b ^ 2 - a ^ 2) / 2 := by linarith
+        have : (c * b * x) ^ 2 = (c * b) ^ 2 - (c * b * y) ^ 2 := by
+          have : x ^ 2 = 1 - y ^ 2 := by linarith
+          rw [mul_pow, this]; ring
+        rw [this, hc]
+        ring
+      linear_combination (1 / 2) * hsin - (1 / 2) * hper
+- id: incenter_weighted_vector_sum
+  kind: gap
+  level: high
+  topic: 三角形の五心・内心のベクトル表示
+  statement: 三角形$ABC$の内心を$I$、$a=BC$、$b=CA$、$c=AB$とすると、$a\overrightarrow{IA}+b\overrightarrow{IB}+c\overrightarrow{IC}=\vec 0$である。
+  statement_en: For a triangle ABC with incenter I and side lengths a = BC, b = CA, c = AB, a IA + b IB + c IC = 0 as vectors.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $I$は内心
+  - $a=BC$、$b=CA$、$c=AB$
+  quantifiers: *id001
+  conclusion: $a\overrightarrow{IA}+b\overrightarrow{IB}+c\overrightarrow{IC}=\vec 0$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$I$を内心、$a=BC$、$b=CA$、$c=AB$とする。直線$AI$と辺$BC$の交点を$D$とする。角の二等分線定理より$BD:DC=c:b$なので、任意の点$O$を始点として$\overrightarrow{OD}=\frac{b\overrightarrow{OB}+c\overrightarrow{OC}}{b+c}$であり、$BD=\frac{ac}{b+c}$である。三角形$ABD$で$BI$は角$B$の二等分線なので、再び角の二等分線定理より$AI:ID=AB:BD=(b+c):a$である。よって$\overrightarrow{OI}=\frac{a\overrightarrow{OA}+(b+c)\overrightarrow{OD}}{a+b+c}=\frac{a\overrightarrow{OA}+b\overrightarrow{OB}+c\overrightarrow{OC}}{a+b+c}$である。$O=I$とすれば$a\overrightarrow{IA}+b\overrightarrow{IB}+c\overrightarrow{IC}=\vec 0$を得る。
+  strategy: Apply the angle bisector theorem twice to locate I on the cevian AD.
+  sketch:
+  - 'setup: Let D be the intersection of line AI and side BC.'
+  - 'apply_theorem: The angle bisector theorem gives BD:DC = c:b and BD = ac/(b+c).'
+  - 'apply_theorem: In triangle ABD it gives AI:ID = (b+c):a.'
+  - 'derive: Hence OI = (a OA + b OB + c OC)/(a+b+c) for any O.'
+  - 'conclude: Taking O = I gives the identity.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (+ (+ (smul (dist_of b c) (- a (incenter_of a b c))) (smul (dist_of c a) (- b (incenter_of a b c)))) (smul (dist_of a b) (- c (incenter_of a b c)))) 0)))
+  hard_negative:
+    statement: $\overrightarrow{IA}+\overrightarrow{IB}+\overrightarrow{IC}=\vec 0$である。
+    reason: この等式は重心を特徴づける。辺の長さが等しくないとき内心と重心は一般に異なり、例えば3辺$3,4,5$の直角三角形で等式は成り立たない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (t.points j) (t.points k) • (t.points i -ᵥ t.incenter) + dist (t.points k) (t.points i) • (t.points j -ᵥ t.incenter) + dist (t.points i) (t.points j) • (t.points k -ᵥ t.incenter) = (0 : V)
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hci : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → ({l}ᶜ : Set (Fin 3)) = {m, n} := by
+        intro l m n hlm hln hmn
+        ext x
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Set.mem_insert_iff]
+        revert x l m n
+        decide
+      have gram : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → (dist (t.points m) (t.points n) * t.height l) ^ 2 =
+          dist (t.points l) (t.points m) ^ 2 * dist (t.points m) (t.points n) ^ 2 -
+            ((dist (t.points l) (t.points m) ^ 2 + dist (t.points m) (t.points n) ^ 2 - dist (t.points l) (t.points n) ^ 2) / 2) ^ 2 := by
+        intro l m n hlm hln hmn
+        have hD := t.altitudeFoot_mem_affineSpan_image_compl l
+        rw [hci l m n hlm hln hmn, Set.image_pair] at hD
+        have h1 := t.inner_vsub_altitudeFoot_vsub_altitudeFoot_eq_zero hlm
+        have h2 := t.inner_vsub_altitudeFoot_vsub_altitudeFoot_eq_zero hln
+        have hh : t.height l = ‖t.points l -ᵥ t.altitudeFoot l‖ := by rw [Affine.Simplex.height, dist_eq_norm_vsub V]
+        obtain ⟨r, hr⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+        simp only at h1 h2
+        rw [hh]
+        rw [← hr] at h1 h2 ⊢
+        have e1 : t.points m -ᵥ AffineMap.lineMap (t.points m) (t.points n) r = (-r) • (t.points n -ᵥ t.points m) := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+        have e2 : t.points n -ᵥ AffineMap.lineMap (t.points m) (t.points n) r = (1 - r) • (t.points n -ᵥ t.points m) := by
+          rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, sub_smul, one_smul]
+        set q := t.points l -ᵥ AffineMap.lineMap (t.points m) (t.points n) r with hq
+        have d1 : dist (t.points l) (t.points m) ^ 2 = ‖q‖ ^ 2 + r ^ 2 * ‖t.points n -ᵥ t.points m‖ ^ 2 := by
+          have e : t.points l -ᵥ t.points m = q - (t.points m -ᵥ AffineMap.lineMap (t.points m) (t.points n) r) := (vsub_sub_vsub_cancel_right _ _ _).symm
+          rw [dist_eq_norm_vsub V, e, norm_sub_sq_real, real_inner_comm, h1, e1, norm_smul, mul_pow]
+          simp
+        have d2 : dist (t.points l) (t.points n) ^ 2 = ‖q‖ ^ 2 + (1 - r) ^ 2 * ‖t.points n -ᵥ t.points m‖ ^ 2 := by
+          have e : t.points l -ᵥ t.points n = q - (t.points n -ᵥ AffineMap.lineMap (t.points m) (t.points n) r) := (vsub_sub_vsub_cancel_right _ _ _).symm
+          rw [dist_eq_norm_vsub V, e, norm_sub_sq_real, real_inner_comm, h2, e2, norm_smul, mul_pow]
+          simp
+        have d3 : dist (t.points m) (t.points n) = ‖t.points n -ᵥ t.points m‖ := by rw [dist_comm, dist_eq_norm_vsub V]
+        rw [d1, d2, d3]
+        ring
+      have comm : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → dist (t.points m) (t.points n) * t.height l = dist (t.points n) (t.points l) * t.height m := by
+        intro l m n hlm hln hmn
+        have hl := t.height_pos l
+        have hm := t.height_pos m
+        rw [← sq_eq_sq₀ (by positivity) (by positivity), gram l m n hlm hln hmn, gram m n l hmn hlm.symm hln.symm,
+          dist_comm (t.points m) (t.points l), dist_comm (t.points n) (t.points l)]
+        ring
+      have hi := t.height_pos i
+      have hj := t.height_pos j
+      have hk := t.height_pos k
+      set a := dist (t.points j) (t.points k) with ha
+      have c1 := comm i j k hij hik hjk
+      have c2 := comm j k i hjk hij.symm hik.symm
+      have hSum : ∑ m, t.excenterWeightsUnnorm ∅ m = (t.height i)⁻¹ + (t.height j)⁻¹ + (t.height k)⁻¹ := by
+        rw [hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton]
+        simp [Affine.Simplex.excenterWeightsUnnorm, add_assoc]
+      have hsum := t.sum_excenterWeights_eq_one_iff.2 t.excenterExists_empty
+      have hz := Finset.sum_smul_vsub_const_eq_affineCombination_vsub (Finset.univ : Finset (Fin 3)) (t.excenterWeights ∅) t.points t.incenter hsum
+      rw [← t.incenter_eq_affineCombination, vsub_self, hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton] at hz
+      have hw : ∀ l, t.excenterWeights ∅ l = (∑ m, t.excenterWeightsUnnorm ∅ m)⁻¹ * (t.height l)⁻¹ := by
+        intro l
+        simp [Affine.Simplex.excenterWeights, Affine.Simplex.excenterWeightsUnnorm]
+      rw [hw, hw, hw, hSum] at hz
+      have hS : 0 < (t.height i)⁻¹ + (t.height j)⁻¹ + (t.height k)⁻¹ := by positivity
+      set S := (t.height i)⁻¹ + (t.height j)⁻¹ + (t.height k)⁻¹ with hSdef
+      have e1 : a = (S * (a * t.height i)) * (S⁻¹ * (t.height i)⁻¹) := by field_simp
+      have e2 : dist (t.points k) (t.points i) = (S * (a * t.height i)) * (S⁻¹ * (t.height j)⁻¹) := by rw [c1]; field_simp
+      have e3 : dist (t.points i) (t.points j) = (S * (a * t.height i)) * (S⁻¹ * (t.height k)⁻¹) := by rw [c1, c2]; field_simp
+      have : a • (t.points i -ᵥ t.incenter) + dist (t.points k) (t.points i) • (t.points j -ᵥ t.incenter) + dist (t.points i) (t.points j) • (t.points k -ᵥ t.incenter) =
+          (S * (a * t.height i)) • ((S⁻¹ * (t.height i)⁻¹) • (t.points i -ᵥ t.incenter) + ((S⁻¹ * (t.height j)⁻¹) • (t.points j -ᵥ t.incenter) + (S⁻¹ * (t.height k)⁻¹) • (t.points k -ᵥ t.incenter))) := by
+        rw [smul_add, smul_add, smul_smul, smul_smul, smul_smul, ← e1, ← e2, ← e3, add_assoc]
+      rw [this, hz, smul_zero]
+- id: excenter_equidistant_and_touchpoint_positions
+  kind: textbook
+  level: high
+  topic: 三角形の五心・傍心
+  statement: 三角形$ABC$の$A$に対する傍心を$I_a$、傍接円の半径を$r_a$とし、$I_a$から直線$BC,CA,AB$に下ろした垂線の足を$D,E,F$とする。このとき$I_aD=I_aE=I_aF=r_a$である。また$I_a$は直線$BC$に関して$A$と反対側、直線$AC$に関して$B$と同じ側、直線$AB$に関して$C$と同じ側にある。さらに$D$は$B,C$の間にあり、$C$は$E,A$の間に、$B$は$F,A$の間にある。
+  statement_en: 'For the excenter I_a of triangle ABC opposite A with exradius r_a and feet D, E, F on lines BC, CA, AB: I_aD = I_aE = I_aF = r_a; I_a and A are on opposite sides of BC; I_a and B are on the same side of AC; I_a and C are on the same side of AB; D is strictly between B and C; C is strictly between E and A; B is strictly between F and A.'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $I_a$は$A$に対する傍心、$r_a$は傍接円の半径
+  - $D,E,F$は$I_a$から直線$BC,CA,AB$への垂線の足
+  quantifiers: *id001
+  conclusion: 3つの距離は$r_a$に等しく、$I_a$と接点は述べた位置にある。
+  answer: |
+    $A,B,C$を同一直線上にない3点とし、$I_a,r_a,D,E,F$を上のとおりとする。傍心$I_a$は、角$A$の内角の二等分線と角$B$、角$C$の外角の二等分線の交点である。角の二等分線上の点はその角をなす2直線から等距離にあるので、$I_aF=I_aE$、$I_aF=I_aD$である。この共通の値が傍接円の半径$r_a$である。次に$I_a$の位置を調べる。直線$AB$に関して$C$と同じ側で、角$A$の内角の二等分線の半直線は半直線$AB$と角$\frac{\angle BAC}{2}$をなす。$B$での外角の二等分線のうち、半直線$BC$と鋭角$\frac{\pi-\angle ABC}{2}$をなす半直線は、半直線$BA$と角$\angle ABC+\frac{\pi-\angle ABC}{2}$をなす。この2つの角の和は$\frac{\pi}{2}+\frac{\angle BAC+\angle ABC}{2}<\pi$なので、2本の半直線は直線$AB$の$C$側で交わり、その交点が$I_a$である。よって半直線$BI_a$は半直線$BC$と鋭角をなし、$D$は半直線$BC$の$B$以外の点である。同様に$C$での外角の二等分線から$D$は半直線$CB$の$C$以外の点である。よって$D$は$B,C$の間にある。半直線$BI_a$は$AB$の$B$を越えた延長とも同じ鋭角をなすので、$F$はその延長上にあり、$B$は$F,A$の間にある。同様に$C$は$E,A$の間にある。$I_a$は角$A$の内部にあるので、直線$AC$に関して$B$と同じ側、直線$AB$に関して$C$と同じ側にある。もし$I_a$が直線$BC$に関して$A$と同じ側にあれば三角形$ABC$の内部の点となり、角$B$の内部に入る。これは$I_a$が角$B$の外角の二等分線上にあることに反する。$B$は角$A$の二等分線の上にないので$I_a\neq B$であり、半直線$BI_a$は半直線$BC$と正の鋭角をなすから、$I_a$は直線$BC$上にもない。よって$I_a$は$A$と反対側にある。
+  strategy: Use the bisector characterisation for equal distances and acute angles on the external bisectors for positions.
+  sketch:
+  - 'translate: I_a lies on the internal bisector at A and external bisectors at B and C.'
+  - 'derive: A point on a bisector is equidistant from the two lines, so the three distances agree.'
+  - 'derive: On the side of AB containing C, the internal bisector ray at A and the external bisector ray at B make angles with AB summing to less than π, so they meet there at I_a.'
+  - 'derive: The external bisector makes acute angles with ray BC and the extension of AB, which fixes D and F; symmetrically at C.'
+  - 'derive: I_a is inside angle A, which gives the two same-side statements.'
+  - 'contradiction: If I_a were on A''s side of BC it would be inside angle B.'
+  - 'conclude: All claimed positions hold.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (dist_of (excenter_opposite a b c) (excircle_touchpoint a b c a)) (exradius_opposite a b c)) (= (dist_of (excenter_opposite a b c) (excircle_touchpoint a b c b)) (exradius_opposite a b c)) (= (dist_of (excenter_opposite a b c) (excircle_touchpoint a b c c)) (exradius_opposite a b c)) (opposite_side_of_line (excenter_opposite a b c) a b c) (same_side_of_line (excenter_opposite a b c) b a c) (same_side_of_line (excenter_opposite a b c) c a b) (strictly_between b (excircle_touchpoint a b c a) c) (strictly_between (excircle_touchpoint a b c b) c a) (strictly_between (excircle_touchpoint a b c c) b a))))
+  hard_negative:
+    statement: 傍心$I_a$は直線$BC$に関して$A$と同じ側にある。
+    reason: $A$と同じ側にあるのは内心である。傍接円は辺$BC$の$A$と反対側にあり、$I_a$と$A$は直線$BC$で隔てられる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (t.excenter {i}) (t.touchpoint {i} i) = t.exradius {i} ∧ dist (t.excenter {i}) (t.touchpoint {i} j) = t.exradius {i} ∧ dist (t.excenter {i}) (t.touchpoint {i} k) = t.exradius {i} ∧ (line[ℝ, t.points j, t.points k]).SOppSide (t.excenter {i}) (t.points i) ∧ (line[ℝ, t.points i, t.points k]).SSameSide (t.excenter {i}) (t.points j) ∧ (line[ℝ, t.points i, t.points j]).SSameSide (t.excenter {i}) (t.points k) ∧ Sbtw ℝ (t.points j) (t.touchpoint {i} i) (t.points k) ∧ Sbtw ℝ (t.touchpoint {i} j) (t.points k) (t.points i) ∧ Sbtw ℝ (t.touchpoint {i} k) (t.points j) (t.points i)
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hE := t.excenterExists_singleton i
+      exact ⟨hE.dist_excenter i, hE.dist_excenter j, hE.dist_excenter k,
+        t.sOppSide_affineSpan_pair_excenter_singleton_point hij hik hjk,
+        t.sSameSide_affineSpan_pair_excenter_singleton_point hij.symm hjk hik,
+        t.sSameSide_affineSpan_pair_excenter_singleton_point hik.symm hjk.symm hij,
+        t.sbtw_touchpoint_singleton hij.symm hjk hik,
+        t.touchpoint_singleton_sbtw hij hik hjk,
+        t.touchpoint_singleton_sbtw hik hij hjk.symm⟩
+- id: excenter_internal_and_external_bisectors
+  kind: textbook
+  level: high
+  topic: 三角形の五心・傍心と角の二等分
+  statement: 向きを定めた平面上の三角形$ABC$の$A$に対する傍心を$I_a$とすると、有向角について$\measuredangle BAI_a=\measuredangle I_aAC$、$\measuredangle ABI_a=\measuredangle I_aBC+\pi$、$\measuredangle ACI_a=\measuredangle I_aCB+\pi$である。すなわち$I_a$は$A$の内角と$B,C$の外角の二等分線の上にある。
+  statement_en: In an oriented plane, the excenter I_a of triangle ABC opposite A satisfies ∡BAI_a = ∡I_aAC, ∡ABI_a = ∡I_aBC + π and ∡ACI_a = ∡I_aCB + π.
+  assumptions:
+  - 平面は2次元で向きが定められている
+  - $A,B,C$は同一直線上にない3点
+  - $I_a$は$A$に対する傍心
+  quantifiers:
+  - 向きを定めた任意の平面内の任意の三角形$ABC$
+  conclusion: $\measuredangle BAI_a=\measuredangle I_aAC$、$\measuredangle ABI_a=\measuredangle I_aBC+\pi$、$\measuredangle ACI_a=\measuredangle I_aCB+\pi$である。
+  answer: |
+    $A,B,C$を向きを定めた平面上の同一直線上にない3点とする。傍心$I_a$を、辺$BC$と辺$AB,AC$の延長に接する円の中心とし、接点を$D,F,E$とする。$F$は$AB$の$B$を越えた延長上、$E$は$AC$の$C$を越えた延長上、$D$は$B,C$の間にある。有向角は$2\pi$を法とする。点$A$から円に引いた2本の接線$AF,AE$は直線$AI_a$に関して対称なので、$\measuredangle FAI_a=\measuredangle I_aAE$である。$F$は半直線$AB$上、$E$は半直線$AC$上にあるので$\measuredangle BAI_a=\measuredangle I_aAC$である。点$B$からの2本の接線$BF,BD$も直線$BI_a$に関して対称なので$\measuredangle FBI_a=\measuredangle I_aBD$である。$D$は半直線$BC$上にあるので$\measuredangle I_aBD=\measuredangle I_aBC$である。また$B$は$A,F$の間にあるので半直線$BA$と半直線$BF$は逆向きで、$\measuredangle ABI_a=\measuredangle FBI_a+\pi$である。合わせて$\measuredangle ABI_a=\measuredangle I_aBC+\pi$を得る。$C$についても$B$と$C$を入れ替えれば同じである。
+  strategy: Use symmetry of the two tangents from each vertex, and the reversal of ray BA and ray BF.
+  sketch:
+  - 'setup: Take the circle touching side BC and the extensions of AB and AC at D, F, E.'
+  - 'derive: Tangents from A are symmetric about AI_a, which gives the internal bisector.'
+  - 'derive: Tangents from B are symmetric about BI_a, so ∡FBI_a = ∡I_aBC.'
+  - 'derive: Rays BA and BF are opposite, adding π.'
+  - 'conclude: The same argument applies at C.'
+  openmath: (forall (a b c) (-> (and euclidean_plane_ambient (not (collinear_points a b c))) (and (= (oriented_angle b a (excenter_opposite a b c)) (oriented_angle (excenter_opposite a b c) a c)) (= (oriented_angle a b (excenter_opposite a b c)) (+ (oriented_angle (excenter_opposite a b c) b c) pi)) (= (oriented_angle a c (excenter_opposite a b c)) (+ (oriented_angle (excenter_opposite a b c) c b) pi)))))
+  hard_negative:
+    statement: $\measuredangle ABI_a=\measuredangle I_aBC$である。
+    reason: $BI_a$は角$B$の外角の二等分線なので$\pi$の差が必要である。この等式が成り立てば$I_a$は角$B$の内角の二等分線の上にあることになり、$A$の内角の二等分線との交点は内心になってしまう。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] [Module.Oriented ℝ V (Fin 2)] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → EuclideanGeometry.oangle (t.points j) (t.points i) (t.excenter {i}) = EuclideanGeometry.oangle (t.excenter {i}) (t.points i) (t.points k) ∧ EuclideanGeometry.oangle (t.points i) (t.points j) (t.excenter {i}) = EuclideanGeometry.oangle (t.excenter {i}) (t.points j) (t.points k) + (Real.pi : Real.Angle) ∧ EuclideanGeometry.oangle (t.points i) (t.points k) (t.excenter {i}) = EuclideanGeometry.oangle (t.excenter {i}) (t.points k) (t.points j) + (Real.pi : Real.Angle)
+  proof: |
+    by
+      intro V P _ _ _ _ _ _ t i j k hij hik hjk
+      exact ⟨t.oangle_excenter_singleton_eq hij hik hjk, t.oangle_excenter_singleton_eq_add_pi hij hik hjk, t.oangle_excenter_singleton_eq_add_pi hik hij hjk.symm⟩
+- id: vertex_incenter_excenter_collinear
+  kind: gap
+  level: high
+  topic: 三角形の五心・内心と傍心の共線
+  statement: 平面上の三角形$ABC$について、頂点$A$、内心$I$、$A$に対する傍心$I_a$は同一直線上にある。
+  statement_en: In a plane, the vertex A, the incenter I and the excenter I_a opposite A of a triangle ABC are collinear.
+  assumptions:
+  - 平面は2次元
+  - $A,B,C$は同一直線上にない3点
+  - $I$は内心、$I_a$は$A$に対する傍心
+  quantifiers:
+  - 任意の2次元ユークリッド平面内の任意の三角形$ABC$
+  conclusion: $A,I,I_a$は同一直線上にある。
+  answer: |
+    $A,B,C$を平面上の同一直線上にない3点、$I$を内心、$I_a$を$A$に対する傍心とする。$I$は内接円の中心であり、$A$から内接円に引いた2本の接線は直線$AB,AC$なので、直線$AI$は角$A$の内角の二等分線である。$I_a$は$AB,AC$の延長に接する円の中心なので、同様に直線$AI_a$も角$A$の内角の二等分線である。平面上で点$A$を通る角$A$の内角の二等分線は1本だけなので、$A,I,I_a$は同一直線上にある。
+  strategy: Both centres lie on the unique internal bisector line at A.
+  sketch:
+  - 'derive: Line AI is the internal bisector at A because the tangents from A are AB and AC.'
+  - 'derive: Line AI_a is the same bisector for the excircle.'
+  - 'conclude: The internal bisector line through A is unique, so the three points are collinear.'
+  openmath: (forall (a b c) (-> (and euclidean_plane_ambient (not (collinear_points a b c))) (collinear_points a (incenter_of a b c) (excenter_opposite a b c))))
+  hard_negative:
+    statement: $B$、内心$I$、$A$に対する傍心$I_a$は同一直線上にある。
+    reason: $BI$は角$B$の内角の二等分線、$BI_a$は外角の二等分線で、両者は$B$で垂直に交わる。$I$と$I_a$はどちらも$B$と異なるので、3点は同一直線上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (t : Affine.Triangle ℝ P) (i : Fin 3), Collinear ℝ ({t.points i, t.incenter, t.excenter {i}} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ _ t i
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      haveI : Module.Oriented ℝ V (Fin 2) := ⟨Module.Basis.orientation (Module.finBasisOfFinrankEq ℝ V Fact.out)⟩
+      obtain ⟨j, k, hij, hik, hjk⟩ : ∃ j k : Fin 3, i ≠ j ∧ i ≠ k ∧ j ≠ k := by decide +revert
+      have h1 := t.oangle_incenter_eq hij hik hjk
+      have h2 := t.oangle_excenter_singleton_eq hij hik hjk
+      have hI : t.incenter ≠ t.points i := t.incenter_ne_point i
+      have hE : t.excenter {i} ≠ t.points i := (t.excenterExists_singleton i).excenter_ne_point i
+      have hj : t.points j ≠ t.points i := fun h => hij (t.independent.injective h).symm
+      have hk : t.points k ≠ t.points i := fun h => hik (t.independent.injective h).symm
+      have add1 := EuclideanGeometry.oangle_add hj hI hk
+      have add2 := EuclideanGeometry.oangle_add hj hE hk
+      rw [← h1] at add1
+      rw [← h2] at add2
+      have h2z : (2 : ℤ) • EuclideanGeometry.oangle t.incenter (t.points i) (t.excenter {i}) = 0 := by
+        have add3 := EuclideanGeometry.oangle_add hj hI hE
+        have e : (2 : ℤ) • EuclideanGeometry.oangle (t.points j) (t.points i) t.incenter = (2 : ℤ) • EuclideanGeometry.oangle (t.points j) (t.points i) (t.excenter {i}) := by
+          rw [two_zsmul, two_zsmul, add1, add2]
+        rw [← add3, smul_add] at e
+        exact left_eq_add.mp e
+      have hc := (EuclideanGeometry.oangle_eq_zero_or_eq_pi_iff_collinear (p₁ := t.incenter) (p₂ := t.points i) (p₃ := t.excenter {i})).mp (Real.Angle.two_zsmul_eq_zero_iff.mp h2z)
+      rwa [Set.insert_comm] at hc
+- id: excircle_tangent_length_is_semiperimeter
+  kind: gap
+  level: high
+  topic: 三角形の五心・傍接円の接線の長さ
+  statement: 三角形$ABC$の$A$に対する傍接円と直線$CA,AB$の接点を$E,F$とすると、$AE=AF=\frac{AB+BC+CA}{2}$である。
+  statement_en: If the excircle of triangle ABC opposite A touches lines CA and AB at E and F, then AE = AF = (AB + BC + CA)/2.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $E,F$は$A$に対する傍接円と直線$CA,AB$の接点
+  quantifiers: *id001
+  conclusion: $AE=AF=\frac{AB+BC+CA}{2}$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点とし、$A$に対する傍接円が辺$BC$と$D$で、$AC,AB$の延長と$E,F$で接するとする。傍心を$I_a$、半径を$r_a$とする。半径は接線に垂直なので三平方の定理より$AE^2=AI_a^2-r_a^2=AF^2$であり、$AE=AF$である。同様に$BD=BF$、$CD=CE$である。$F$は$AB$の$B$を越えた延長上にあるので$AF=AB+BF$、同様に$AE=AC+CE$である。$D$は$B,C$の間にあるので$BC=BD+DC$である。したがって$2AF=AF+AE=AB+AC+BF+CE=AB+AC+BD+DC=AB+BC+CA$となる。
+  strategy: Equal tangent lengths from Pythagoras, then add the two long tangents.
+  sketch:
+  - 'apply_theorem: Pythagoras gives AE² = AI_a² - r_a² = AF².'
+  - 'derive: Likewise BD = BF and CD = CE.'
+  - 'derive: AF = AB + BF, AE = AC + CE and BC = BD + DC by the positions of the touchpoints.'
+  - 'conclude: 2 AF = AB + BC + CA.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (dist_of a (excircle_touchpoint a b c b)) (dist_of a (excircle_touchpoint a b c c))) (= (dist_of a (excircle_touchpoint a b c b)) (/ (+ (+ (dist_of a b) (dist_of b c)) (dist_of c a)) 2)))))
+  hard_negative:
+    statement: $AF=\frac{AB+AC-BC}{2}$である。
+    reason: それは内接円の接線の長さである。$F$は$AB$の延長上にあるので$AF>AB$だが、三角不等式から$\frac{AB+AC-BC}{2}<AB$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (t.points i) (t.touchpoint {i} j) = dist (t.points i) (t.touchpoint {i} k) ∧ dist (t.points i) (t.touchpoint {i} j) = (dist (t.points i) (t.points j) + dist (t.points j) (t.points k) + dist (t.points k) (t.points i)) / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hE := t.excenterExists_singleton i
+      have pyth : ∀ x l : Fin 3, x ≠ l → dist (t.points x) (t.touchpoint {i} l) ^ 2 = dist (t.points x) (t.excenter {i}) ^ 2 - t.exradius {i} ^ 2 := by
+        intro x l hxl
+        have h1 : inner ℝ (t.points x -ᵥ t.touchpoint {i} l) (t.touchpoint {i} l -ᵥ t.excenter {i}) = 0 :=
+          (hE.isTangentAt_touchpoint l).inner_left_eq_zero_of_mem (t.points_mem_affineSpan_faceOpposite.2 hxl)
+        have h2 : t.points x -ᵥ t.excenter {i} = (t.points x -ᵥ t.touchpoint {i} l) + (t.touchpoint {i} l -ᵥ t.excenter {i}) := (vsub_add_vsub_cancel _ _ _).symm
+        have h3 : ‖t.touchpoint {i} l -ᵥ t.excenter {i}‖ = t.exradius {i} := by
+          rw [← dist_eq_norm_vsub, dist_comm]; exact hE.dist_excenter l
+        rw [dist_eq_norm_vsub V (t.points x) (t.excenter {i}), h2, norm_add_sq_real, h1, h3, dist_eq_norm_vsub V (t.points x) (t.touchpoint {i} l)]
+        ring
+      have eqt : ∀ x l m : Fin 3, x ≠ l → x ≠ m → dist (t.points x) (t.touchpoint {i} l) = dist (t.points x) (t.touchpoint {i} m) := by
+        intro x l m hl hm
+        rw [← sq_eq_sq₀ dist_nonneg dist_nonneg, pyth x l hl, pyth x m hm]
+      have s1 := (t.sbtw_touchpoint_singleton hij.symm hjk hik).wbtw.dist_add_dist
+      have s2 := (t.touchpoint_singleton_sbtw hij hik hjk).wbtw.dist_add_dist
+      have s3 := (t.touchpoint_singleton_sbtw hik hij hjk.symm).wbtw.dist_add_dist
+      have e1 := eqt i j k hij hik
+      have e2 := eqt j k i hjk hij.symm
+      have e3 := eqt k j i hjk.symm hik.symm
+      rw [dist_comm (t.touchpoint {i} i) (t.points k)] at s1
+      rw [dist_comm (t.touchpoint {i} j) (t.points k), dist_comm (t.touchpoint {i} j) (t.points i), dist_comm (t.points k) (t.points i)] at s2
+      rw [dist_comm (t.touchpoint {i} k) (t.points j), dist_comm (t.touchpoint {i} k) (t.points i), dist_comm (t.points j) (t.points i)] at s3
+      refine ⟨e1, ?_⟩
+      rw [dist_comm (t.points k) (t.points i)]
+      linarith
+- id: orthocenter_on_altitudes
+  kind: textbook
+  level: high
+  topic: 三角形の五心・垂心
+  statement: 三角形$ABC$の垂心$H$は頂点$A$から辺$BC$への垂線の上にあり、$\overrightarrow{AH}\perp\overrightarrow{BC}$である。3頂点について同じことが成り立ち、3本の垂線は$H$で交わる。
+  statement_en: The orthocenter H of a triangle ABC lies on the altitude from each vertex, and (H - A) is perpendicular to (B - C).
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H$は三角形$ABC$の垂心
+  quantifiers: *id001
+  conclusion: $H$は$A$からの垂線上にあり、$\overrightarrow{AH}\cdot\overrightarrow{BC}=0$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を外心、$R$を外接円の半径とする。$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH}=\vec a+\vec b+\vec c$で点$H$を定める。$H$は平面$ABC$上にある。$\overrightarrow{AH}=\vec b+\vec c$、$\overrightarrow{BC}=\vec c-\vec b$なので、内積は$|\vec c|^2-|\vec b|^2=0$である。式は$\vec a,\vec b,\vec c$について対称なので、$\overrightarrow{BH}\perp\overrightarrow{CA}$、$\overrightarrow{CH}\perp\overrightarrow{AB}$も成り立つ。よって$H$は3本の垂線すべての上にある。2本の垂線は平行でないので交点はただ1つであり、$H$が垂心である。
+  strategy: Construct H from the circumcenter as the sum of the three vertex vectors and check perpendicularity.
+  sketch:
+  - 'setup: Put O at the circumcenter so the three vertex vectors have equal length.'
+  - 'construct: Define H by OH = a + b + c.'
+  - 'derive: AH·BC = |c|² - |b|² = 0, and cyclically.'
+  - 'conclude: H lies on all three altitudes, which therefore concur.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (on_line (orthocenter_of a b c) a (altitude_foot a b c)) (= (inner_product (- (orthocenter_of a b c) a) (- b c)) 0))))
+  hard_negative:
+    statement: 垂心は常に三角形の内部にある。
+    reason: 鈍角三角形では垂心は外部にあり、直角三角形では直角の頂点に一致する。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → t.orthocenter ∈ t.altitude i ∧ inner ℝ (t.orthocenter -ᵥ t.points i) (t.points j -ᵥ t.points k) = 0
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      refine ⟨t.orthocenter_mem_altitude, ?_⟩
+      have hsum : ∀ f : Fin 3 → V, ∑ l, f l = f i + f j + f k := by
+        intro f
+        rw [Fin.sum_univ_three]
+        fin_cases i <;> fin_cases j <;> fin_cases k <;> simp_all <;> abel
+      have h := t.orthocenter_vsub_circumcenter_eq_sum_vsub
+      rw [hsum] at h
+      have hj := t.dist_circumcenter_eq_circumradius j
+      have hk := t.dist_circumcenter_eq_circumradius k
+      rw [dist_eq_norm_vsub V] at hj hk
+      have e1 : t.orthocenter -ᵥ t.points i = (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [← vsub_sub_vsub_cancel_right t.orthocenter (t.points i) t.circumcenter, h]; abel
+      have e2 : t.points j -ᵥ t.points k = (t.points j -ᵥ t.circumcenter) - (t.points k -ᵥ t.circumcenter) :=
+        (vsub_sub_vsub_cancel_right _ _ _).symm
+      rw [e1, e2, inner_add_left, inner_sub_right, inner_sub_right, real_inner_self_eq_norm_sq,
+        real_inner_self_eq_norm_sq, real_inner_comm, hj, hk]
+      ring
+- id: three_perpendiculars_identity
+  kind: gap
+  level: high
+  topic: 三角形の五心・3垂線の関係
+  statement: 4点$A,B,C,P$について、$\overrightarrow{PA}\perp\overrightarrow{BC}$かつ$\overrightarrow{PB}\perp\overrightarrow{CA}$なら$\overrightarrow{PC}\perp\overrightarrow{AB}$である。ここで垂直は内積が$0$であることとし、三角形である必要はない。
+  statement_en: For any four points A, B, C, P, if (P - A)·(B - C) = 0 and (P - B)·(C - A) = 0, then (P - C)·(A - B) = 0.
+  assumptions:
+  - $A,B,C,P$は任意の4点
+  - $\overrightarrow{PA}\cdot\overrightarrow{BC}=0$
+  - $\overrightarrow{PB}\cdot\overrightarrow{CA}=0$
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の4点$A,B,C,P$
+  conclusion: $\overrightarrow{PC}\cdot\overrightarrow{AB}=0$である。
+  answer: |
+    $A,B,C,P$を任意の4点とし、$\overrightarrow{PA}\cdot\overrightarrow{BC}=0$、$\overrightarrow{PB}\cdot\overrightarrow{CA}=0$とする。$\vec x=\overrightarrow{PA}$、$\vec y=\overrightarrow{PB}$、$\vec z=\overrightarrow{PC}$とおくと、$\overrightarrow{BC}=\vec z-\vec y$、$\overrightarrow{CA}=\vec x-\vec z$、$\overrightarrow{AB}=\vec y-\vec x$である。展開すると$\vec x\cdot(\vec z-\vec y)+\vec y\cdot(\vec x-\vec z)+\vec z\cdot(\vec y-\vec x)=0$が恒等的に成り立つ。最初の2項は仮定より$0$なので、$\vec z\cdot(\vec y-\vec x)=0$、すなわち$\overrightarrow{PC}\cdot\overrightarrow{AB}=0$である。
+  strategy: The three inner products sum to zero identically.
+  sketch:
+  - 'setup: Write all vectors from P as x, y, z.'
+  - 'derive: x·(z-y) + y·(x-z) + z·(y-x) = 0 identically.'
+  - 'conclude: Two vanishing terms force the third to vanish.'
+  openmath: (forall (a b c p) (-> (and (= (inner_product (- p a) (- b c)) 0) (= (inner_product (- p b) (- c a)) 0)) (= (inner_product (- p c) (- a b)) 0)))
+  hard_negative:
+    statement: $\overrightarrow{PA}\perp\overrightarrow{BC}$だけで$\overrightarrow{PC}\perp\overrightarrow{AB}$が従う。
+    reason: 条件が1つでは足りない。$A=(0,1)$、$B=(-1,0)$、$C=(1,0)$、$P=(0,2)$では$\overrightarrow{PA}\perp\overrightarrow{BC}$だが、$\overrightarrow{PC}\cdot\overrightarrow{AB}=(1,-2)\cdot(-1,-1)=1\neq 0$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B D p : P), inner ℝ (p -ᵥ A) (B -ᵥ D) = 0 → inner ℝ (p -ᵥ B) (D -ᵥ A) = 0 → inner ℝ (p -ᵥ D) (A -ᵥ B) = 0
+  proof: |
+    by
+      intro V P _ _ _ _ A B D p h1 h2
+      rw [← vsub_sub_vsub_cancel_right B D p, ← neg_vsub_eq_vsub_rev A p] at h1
+      rw [← vsub_sub_vsub_cancel_right D A p, ← neg_vsub_eq_vsub_rev B p] at h2
+      rw [← vsub_sub_vsub_cancel_right A B p, ← neg_vsub_eq_vsub_rev D p]
+      simp only [inner_neg_left, inner_sub_right] at h1 h2 ⊢
+      have e1 := real_inner_comm (A -ᵥ p) (B -ᵥ p)
+      have e2 := real_inner_comm (B -ᵥ p) (D -ᵥ p)
+      have e3 := real_inner_comm (D -ᵥ p) (A -ᵥ p)
+      linarith
+- id: orthocenter_unique_from_two_altitudes
+  kind: gap
+  level: high
+  topic: 三角形の五心・垂心の一意性
+  statement: 平面上の三角形$ABC$で、点$P$が$\overrightarrow{PA}\perp\overrightarrow{BC}$かつ$\overrightarrow{PB}\perp\overrightarrow{CA}$を満たすなら、$P$は垂心である。
+  statement_en: In a plane, a point P with (P - A)·(B - C) = 0 and (P - B)·(C - A) = 0 for a triangle ABC is the orthocenter.
+  assumptions:
+  - 平面は2次元
+  - $A,B,C$は同一直線上にない3点
+  - $\overrightarrow{PA}\cdot\overrightarrow{BC}=0$
+  - $\overrightarrow{PB}\cdot\overrightarrow{CA}=0$
+  quantifiers:
+  - 任意の2次元ユークリッド平面内の任意の三角形$ABC$
+  - 任意の点$P$
+  conclusion: $P$は三角形$ABC$の垂心である。
+  answer: |
+    $A,B,C$を平面上の同一直線上にない3点、$H$を垂心とし、$P$は$\overrightarrow{PA}\cdot\overrightarrow{BC}=0$、$\overrightarrow{PB}\cdot\overrightarrow{CA}=0$を満たすとする。平面上で$A$を通り$BC$に垂直な直線はただ1本なので、$P$と$H$はともにその上にある。同様に$P$と$H$はともに$B$を通り$CA$に垂直な直線の上にある。$BC$と$CA$は平行でないので、この2直線も平行でなく、ちょうど1点で交わる。したがって$P=H$である。
+  strategy: Two altitudes are non-parallel lines in the plane, so they meet in one point.
+  sketch:
+  - 'translate: The two conditions place P on the altitudes from A and B.'
+  - 'derive: H lies on the same two altitudes.'
+  - 'derive: The altitudes are not parallel because BC and CA are not parallel.'
+  - 'conclude: P = H.'
+  openmath: (forall (a b c p) (-> (and euclidean_plane_ambient (not (collinear_points a b c)) (= (inner_product (- p a) (- b c)) 0) (= (inner_product (- p b) (- c a)) 0)) (= p (orthocenter_of a b c))))
+  hard_negative:
+    statement: 3次元空間でも、この2条件を満たす点は垂心に限る。
+    reason: 2条件を満たす点の集合は平面ではなく直線になる。垂心を通り平面$ABC$に垂直な直線上の点はすべて2条件を満たす。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [Fact (Module.finrank ℝ V = 2)] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (p : P), i ≠ j → i ≠ k → j ≠ k → inner ℝ (p -ᵥ t.points i) (t.points j -ᵥ t.points k) = 0 → inner ℝ (p -ᵥ t.points j) (t.points k -ᵥ t.points i) = 0 → p = t.orthocenter
+  proof: |
+    by
+      intro V P _ _ _ _ _ t i j k p hij hik hjk
+      have hci : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → ({l}ᶜ : Set (Fin 3)) = {m, n} := by
+        intro l m n hlm hln hmn
+        ext x
+        simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Set.mem_insert_iff]
+        revert x l m n
+        decide
+      intro h1 h2
+      haveI : FiniteDimensional ℝ V := FiniteDimensional.of_fact_finrank_eq_two
+      have htop : affineSpan ℝ (Set.range t.points) = ⊤ :=
+        t.independent.affineSpan_eq_top_iff_card_eq_finrank_add_one.mpr (by simp [Fact.out (p := Module.finrank ℝ V = 2)])
+      have halt : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → inner ℝ (p -ᵥ t.points l) (t.points m -ᵥ t.points n) = 0 → p ∈ t.altitude l := by
+        intro l m n hlm hln hmn h
+        rw [Affine.Simplex.altitude_def, AffineSubspace.mem_inf_iff]
+        refine ⟨?_, by rw [htop]; exact AffineSubspace.mem_top ℝ V p⟩
+        rw [AffineSubspace.mem_mk', hci l m n hlm hln hmn, Set.image_pair, direction_affineSpan, vectorSpan_pair, Submodule.mem_orthogonal]
+        intro u hu
+        obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hu
+        rw [inner_smul_left, real_inner_comm, h]
+        simp
+      exact Affine.Triangle.eq_orthocenter_of_forall_mem_altitude hij (halt i j k hij hik hjk h1) (halt j k i hjk hij.symm hik.symm h2)
+- id: orthocenter_right_triangle_vertex
+  kind: gap
+  level: high
+  topic: 三角形の五心・直角三角形の垂心
+  statement: $\angle BAC=\frac{\pi}{2}$の直角三角形$ABC$の垂心は頂点$A$である。
+  statement_en: If ∠BAC = π/2 in a triangle ABC, then the orthocenter equals A.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $\angle BAC=\frac{\pi}{2}$
+  quantifiers: *id001
+  conclusion: 垂心は$A$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点で$\angle BAC=\frac{\pi}{2}$とする。$AB\perp AC$なので、$B$から$CA$に下ろした垂線は平面$ABC$の中で直線$BA$であり、$C$から$AB$に下ろした垂線は直線$CA$である。この2本の垂線は$A$で交わる。垂心は垂線の交点なので$A$である。
+  strategy: The two legs are themselves altitudes.
+  sketch:
+  - 'derive: Since AB ⟂ AC, the altitude from B is line BA.'
+  - 'derive: The altitude from C is line CA.'
+  - 'conclude: These altitudes meet at A, so H = A.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (= (euclid_angle b a c) (/ pi 2))) (= (orthocenter_of a b c) a)))
+  hard_negative:
+    statement: 直角三角形の垂心は斜辺の中点である。
+    reason: 斜辺の中点は外心である。$AB$と$AC$自身が垂線なので交点は$A$であり、$A$は斜辺の上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → EuclideanGeometry.angle (t.points j) (t.points i) (t.points k) = Real.pi / 2 → t.orthocenter = t.points i
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hall : ∀ l : Fin 3, l = i ∨ l = j ∨ l = k := by decide +revert
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      intro hr
+      have hth : (EuclideanGeometry.Sphere.mk (midpoint ℝ (t.points j) (t.points k)) (dist (t.points j) (t.points k) / 2)).IsDiameter (t.points j) (t.points k) := by
+        refine ⟨?_, rfl⟩
+        simp [EuclideanGeometry.mem_sphere, dist_left_midpoint]
+        ring
+      have hi : t.points i ∈ (EuclideanGeometry.Sphere.mk (midpoint ℝ (t.points j) (t.points k)) (dist (t.points j) (t.points k) / 2)) :=
+        (EuclideanGeometry.Sphere.angle_eq_pi_div_two_iff_mem_sphere_of_isDiameter hth).mp hr
+      have hd : ∀ l, dist (t.points l) (midpoint ℝ (t.points j) (t.points k)) = dist (t.points j) (t.points k) / 2 := by
+        intro l
+        rcases hall l with rfl | rfl | rfl
+        · exact hi
+        · exact hth.left_mem
+        · exact hth.right_mem
+      have hm : midpoint ℝ (t.points j) (t.points k) ∈ affineSpan ℝ (Set.range t.points) :=
+        affineSpan_pair_le_of_mem_of_mem (mem_affineSpan ℝ (Set.mem_range_self j)) (mem_affineSpan ℝ (Set.mem_range_self k))
+          (AffineMap.lineMap_mem_affineSpan_pair _ _ _)
+      have hO := t.eq_circumcenter_of_dist_eq hm hd
+      have hH : t.orthocenter -ᵥ t.circumcenter = (t.points i -ᵥ t.circumcenter) + (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [t.orthocenter_vsub_circumcenter_eq_sum_vsub, hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, add_assoc]
+      have h0 : (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) = (0 : V) := by
+        rw [← hO, left_vsub_midpoint, right_vsub_midpoint, ← smul_add, vsub_add_vsub_cancel, vsub_self, smul_zero]
+      apply vsub_left_injective t.circumcenter |>.eq_iff.mp
+      rw [hH, add_assoc, h0, add_zero]
+- id: vertex_orthocenter_twice_circumcenter_midpoint
+  kind: gap
+  level: high
+  topic: 三角形の五心・垂心と外心
+  statement: 三角形$ABC$の垂心を$H$、外心を$O$、辺$BC$の中点を$M$とすると、$\overrightarrow{AH}=2\overrightarrow{OM}$であり、$AH=2OM$である。
+  statement_en: For a triangle ABC with orthocenter H, circumcenter O and M the midpoint of BC, AH = 2 OM as vectors, and hence as lengths.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H$は垂心、$O$は外心
+  - $M$は辺$BC$の中点
+  quantifiers: *id001
+  conclusion: $\overrightarrow{AH}=2\overrightarrow{OM}$かつ$AH=2OM$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$H$を垂心、$O$を外心、$R$を外接円の半径、$M$を辺$BC$の中点とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。よって$\overrightarrow{AH}=\vec b+\vec c$である。中点の性質より$\overrightarrow{OM}=\frac{1}{2}(\vec b+\vec c)$なので$\overrightarrow{AH}=2\overrightarrow{OM}$であり、長さをとれば$AH=2OM$である。
+  strategy: Use OH = OA + OB + OC and compare with the midpoint formula.
+  sketch:
+  - 'derive: OH = OA + OB + OC, since this point lies on two altitudes.'
+  - 'derive: AH = OB + OC.'
+  - 'derive: OM = (OB + OC)/2.'
+  - 'conclude: AH = 2 OM, and lengths follow.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (- (orthocenter_of a b c) a) (smul 2 (- (midpoint_of b c) (circumcenter_of a b c)))) (= (dist_of a (orthocenter_of a b c)) (* 2 (dist_of (circumcenter_of a b c) (midpoint_of b c)))))))
+  hard_negative:
+    statement: $AH=OM$である。
+    reason: 係数は$2$である。$\vec b+\vec c\neq\vec 0$なら$OM>0$で、$AH=2OM\neq OM$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → t.orthocenter -ᵥ t.points i = (2 : ℝ) • (midpoint ℝ (t.points j) (t.points k) -ᵥ t.circumcenter) ∧ dist (t.points i) t.orthocenter = 2 * dist t.circumcenter (midpoint ℝ (t.points j) (t.points k))
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hH : t.orthocenter -ᵥ t.circumcenter = (t.points i -ᵥ t.circumcenter) + (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [t.orthocenter_vsub_circumcenter_eq_sum_vsub, hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, add_assoc]
+      have h : t.orthocenter -ᵥ t.points i = (2 : ℝ) • (midpoint ℝ (t.points j) (t.points k) -ᵥ t.circumcenter) := by
+        rw [← vsub_sub_vsub_cancel_right t.orthocenter (t.points i) t.circumcenter, hH, midpoint_vsub]
+        simp only [invOf_eq_inv]
+        module
+      refine ⟨h, ?_⟩
+      rw [dist_comm, dist_eq_norm_vsub V t.orthocenter, h, norm_smul, dist_comm, dist_eq_norm_vsub V (midpoint ℝ _ _)]
+      norm_num
+- id: vertex_orthocenter_side_circumradius_identity
+  kind: gap
+  level: high
+  topic: 三角形の五心・垂心と外接円の半径
+  statement: 三角形$ABC$の垂心を$H$、外接円の半径を$R$とすると、$AH^2+BC^2=4R^2$である。
+  statement_en: For a triangle ABC with orthocenter H and circumradius R, AH² + BC² = 4R².
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H$は垂心、$R$は外接円の半径
+  quantifiers: *id001
+  conclusion: $AH^2+BC^2=4R^2$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$H$を垂心、$O$を外心、$R$を外接円の半径とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。よって$\overrightarrow{AH}=\vec b+\vec c$、$\overrightarrow{BC}=\vec c-\vec b$である。中線定理と同じ展開により$|\vec b+\vec c|^2+|\vec c-\vec b|^2=2|\vec b|^2+2|\vec c|^2=4R^2$となる。
+  strategy: Apply the parallelogram law to the vectors from the circumcenter.
+  sketch:
+  - 'derive: AH = OB + OC and BC = OC - OB.'
+  - 'apply_theorem: The parallelogram law gives |OB + OC|² + |OC - OB|² = 2|OB|² + 2|OC|².'
+  - 'conclude: The sum equals 4R².'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (+ (^ (dist_of a (orthocenter_of a b c)) 2) (^ (dist_of b c) 2)) (* 4 (^ (circumradius_of a b c) 2)))))
+  hard_negative:
+    statement: $AH^2+BC^2=R^2$である。
+    reason: 右辺は$4R^2$である。$\angle BAC=\frac{\pi}{2}$では$H=A$で$AH=0$、$BC=2R$なので左辺は$4R^2$になる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (t.points i) t.orthocenter ^ 2 + dist (t.points j) (t.points k) ^ 2 = 4 * t.circumradius ^ 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hH : t.orthocenter -ᵥ t.circumcenter = (t.points i -ᵥ t.circumcenter) + (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [t.orthocenter_vsub_circumcenter_eq_sum_vsub, hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, add_assoc]
+      have hj' : ‖t.points j -ᵥ t.circumcenter‖ = t.circumradius := by
+        rw [← dist_eq_norm_vsub]; exact t.dist_circumcenter_eq_circumradius j
+      have hk' : ‖t.points k -ᵥ t.circumcenter‖ = t.circumradius := by
+        rw [← dist_eq_norm_vsub]; exact t.dist_circumcenter_eq_circumradius k
+      have e1 : t.orthocenter -ᵥ t.points i = (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [← vsub_sub_vsub_cancel_right t.orthocenter (t.points i) t.circumcenter, hH]; abel
+      rw [dist_comm, dist_eq_norm_vsub V t.orthocenter, e1, dist_eq_norm_vsub V (t.points j) (t.points k),
+        ← vsub_sub_vsub_cancel_right (t.points j) (t.points k) t.circumcenter, norm_add_sq_real, norm_sub_sq_real, hj', hk']
+      ring
+- id: orthocenter_reflection_on_circumcircle
+  kind: gap
+  level: high
+  topic: 三角形の五心・垂心の対称点
+  statement: 三角形$ABC$の垂心を辺$BC$を含む直線に関して対称移動した点は、外接円の上にある。
+  statement_en: The reflection of the orthocenter of a triangle ABC in line BC lies on the circumcircle.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H'$は垂心$H$の直線$BC$に関する対称点
+  quantifiers: *id001
+  conclusion: $H'$と外心の距離は外接円の半径に等しい。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$H$を垂心、$O$を外心、$R$を外接円の半径、$H'$を$H$の直線$BC$に関する対称点とする。$O'$を$O$の直線$BC$に関する対称点とする。対称移動は距離を保つので$H'O=HO'$である。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OK}=\vec a+\vec b+\vec c$で平面$ABC$上の点$K$を定めると、$\overrightarrow{AK}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BK}\perp\overrightarrow{CA}$である。$K$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。辺$BC$の中点を$M$とすると$OB=OC$より$OM\perp BC$なので、$O'$は$M$に関する$O$の対称点であり、$\overrightarrow{OO'}=2\overrightarrow{OM}=\vec b+\vec c$である。よって$\overrightarrow{O'H}=\vec a$で、$HO'=|\vec a|=R$となる。したがって$H'O=R$である。
+  strategy: Move the reflection to the circumcenter and compute with vectors from O.
+  sketch:
+  - 'setup: Let O'' be the reflection of O in BC, so H''O = HO''.'
+  - 'derive: OM ⟂ BC, so OO'' = 2 OM = OB + OC.'
+  - 'derive: OH = OA + OB + OC, so O''H = OA.'
+  - 'conclude: H''O = |OA| = R.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (dist_of (reflection_across_line (orthocenter_of a b c) b c) (circumcenter_of a b c)) (circumradius_of a b c))))
+  hard_negative:
+    statement: 垂心を辺$BC$の中点に関して対称移動した点は$A$に一致する。
+    reason: その点は外接円上にあるが、外心に関して$A$と対称な点であり、$A$ではない。外接円の中心と$A$の距離は$R>0$なので両者は異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (j k : Fin 3), j ≠ k → dist (EuclideanGeometry.reflection line[ℝ, t.points j, t.points k] t.orthocenter) t.circumcenter = t.circumradius
+  proof: |
+    by
+      intro V P _ _ _ _ t j k hjk
+      have h := t.dist_circumcenter_reflection_orthocenter hjk
+      rw [dist_comm]
+      convert h using 3
+      simp [Set.image_pair]
+- id: orthocentric_system_swap_vertex
+  kind: textbook
+  level: high
+  topic: 三角形の五心・垂心系
+  statement: 三角形$ABC$の垂心を$H$とし、$H,B,C$が同一直線上にないとする。このとき三角形$HBC$の垂心は$A$である。
+  statement_en: If H is the orthocenter of triangle ABC and H, B, C form a triangle, then the orthocenter of triangle HBC is A.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H$は三角形$ABC$の垂心
+  - $H,B,C$は同一直線上にない
+  quantifiers: *id001
+  conclusion: 三角形$HBC$の垂心は$A$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$H$を垂心とし、$H,B,C$も同一直線上にないとする。$H=A$なら三角形$HBC$は三角形$ABC$そのものなので、垂心は$H=A$である。$H\neq A$のとき、$H$は$C$からの垂線上にあるので$\overrightarrow{CH}\perp\overrightarrow{AB}$である。よって$A$は、三角形$HBC$で$B$から辺$HC$に下ろした垂線の上にある。同様に$\overrightarrow{BH}\perp\overrightarrow{AC}$より、$A$は$C$から辺$HB$に下ろした垂線の上にある。$A$は平面$HBC$（平面$ABC$と同じ）の上にあり、この2本の垂線の交点は1点だけなので、三角形$HBC$の垂心は$A$である。
+  strategy: The altitudes of ABC from B and C show that A lies on two altitudes of HBC.
+  sketch:
+  - 'case_split: If H = A the triangles coincide.'
+  - 'derive: CH ⟂ AB places A on the altitude from B in HBC.'
+  - 'derive: BH ⟂ AC places A on the altitude from C in HBC.'
+  - 'conclude: Two altitudes meet in one point, so A is the orthocenter of HBC.'
+  openmath: (forall (a b c) (-> (and (not (collinear_points a b c)) (not (collinear_points (orthocenter_of a b c) b c))) (= (orthocenter_of (orthocenter_of a b c) b c) a)))
+  hard_negative:
+    statement: 三角形$HBC$の外心は$A$である。
+    reason: $A$は垂心である。$A$が三角形$HBC$の外心なら$AB=AC$が必要であり、$AB\neq AC$の三角形では成り立たない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t s : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → s.points i = t.orthocenter → s.points j = t.points j → s.points k = t.points k → s.orthocenter = t.points i
+  proof: |
+    by
+      intro V P _ _ _ _ t s i j k hij hik hjk h1 h2 h3
+      exact Affine.Triangle.orthocenter_replace_orthocenter_eq_point hij hik hjk hij hik hjk h1 h2 h3
+- id: altitude_feet_concyclic
+  kind: gap
+  level: high
+  topic: 三角形の五心・垂線の足と共円
+  statement: 三角形$ABC$の垂心を$H$とし、$B$から直線$CA$、$C$から直線$AB$に下ろした垂線の足を$E,F$とする。このとき$B,C,E,F$は同一円周上にあり、$A,H,E,F$も同一円周上にある。
+  statement_en: For a triangle ABC with orthocenter H and feet E on CA from B and F on AB from C, the points B, C, E, F are concyclic, and A, H, E, F are concyclic.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $H$は垂心
+  - $E$は$B$から直線$CA$への垂線の足
+  - $F$は$C$から直線$AB$への垂線の足
+  quantifiers: *id001
+  conclusion: $B,C,E,F$と$A,H,E,F$はそれぞれ同一円周（球面）上にある。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$H$を垂心、$E,F$を上のとおりとする。まず、$\overrightarrow{ZX}\cdot\overrightarrow{ZY}=0$なら$Z$は線分$XY$の中点$N$から距離$\frac{XY}{2}$にあることを示す。$\overrightarrow{NZ}=-\frac{1}{2}(\overrightarrow{ZX}+\overrightarrow{ZY})$であり、内積が$0$なので$|\overrightarrow{ZX}+\overrightarrow{ZY}|=|\overrightarrow{ZX}-\overrightarrow{ZY}|=XY$となるからである。$E$は直線$CA$上にあるので$\overrightarrow{EC}$は$\overrightarrow{CA}$の実数倍であり、$\overrightarrow{EB}\cdot\overrightarrow{CA}=0$から$\overrightarrow{EB}\cdot\overrightarrow{EC}=0$である。同様に$\overrightarrow{FC}\cdot\overrightarrow{FB}=0$である。よって$E,F$は$BC$の中点から距離$\frac{BC}{2}$にあり、$B,C$も同じ距離にある。次に$\overrightarrow{BH}\perp\overrightarrow{CA}$と$\overrightarrow{BE}\perp\overrightarrow{CA}$から$\overrightarrow{EH}=\overrightarrow{EB}+\overrightarrow{BH}$は$\overrightarrow{CA}$に垂直である。$\overrightarrow{EA}$は$\overrightarrow{CA}$の実数倍なので$\overrightarrow{EA}\cdot\overrightarrow{EH}=0$である。同様に$\overrightarrow{FA}\cdot\overrightarrow{FH}=0$である。よって$E,F$は$AH$の中点から距離$\frac{AH}{2}$にあり、$A,H$も同じ距離にある。
+  strategy: Each foot sees a segment at a right angle, so it lies on the circle with that segment as diameter.
+  sketch:
+  - 'derive: If ZX·ZY = 0, then Z is at distance XY/2 from the midpoint of XY.'
+  - 'derive: EB·EC = 0 and FC·FB = 0 because E and F lie on lines CA and AB.'
+  - 'conclude: B, C, E, F lie on the circle with diameter BC.'
+  - 'derive: EH ⟂ CA since BH ⟂ CA and BE ⟂ CA, so EA·EH = 0; likewise FA·FH = 0.'
+  - 'conclude: A, H, E, F lie on the circle with diameter AH.'
+  openmath: (forall (a b c x y) (-> (and (not (collinear_points a b c)) (on_line x c a) (= (inner_product (- b x) (- a c)) 0) (on_line y a b) (= (inner_product (- c y) (- b a)) 0)) (and (cospherical_points (set b c x y)) (cospherical_points (set a (orthocenter_of a b c) x y)))))
+  hard_negative:
+    statement: $A,B,E,F$は常に同一円周上にある。
+    reason: $E,F$は$BC$を直径とする円と$AH$を直径とする円の上にある。$A$と$B$と$F$は同一直線$AB$上にあり、$F$が$A,B$と異なれば3点を通る円は存在しない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3) (E F : P), i ≠ j → i ≠ k → j ≠ k → E ∈ line[ℝ, t.points k, t.points i] → inner ℝ (t.points j -ᵥ E) (t.points i -ᵥ t.points k) = 0 → F ∈ line[ℝ, t.points i, t.points j] → inner ℝ (t.points k -ᵥ F) (t.points j -ᵥ t.points i) = 0 → EuclideanGeometry.Cospherical ({t.points j, t.points k, E, F} : Set P) ∧ EuclideanGeometry.Cospherical ({t.points i, t.orthocenter, E, F} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k E F hij hik hjk
+      have hu : ∀ (l m n : Fin 3), l ≠ m → l ≠ n → m ≠ n → (Finset.univ : Finset (Fin 3)) = {l, m, n} := by decide
+      intro hE hpE hF hpF
+      have orth : ∀ l m n : Fin 3, l ≠ m → l ≠ n → m ≠ n → inner ℝ (t.orthocenter -ᵥ t.points l) (t.points m -ᵥ t.points n) = 0 := by
+        intro l m n hlm hln hmn
+        have h := t.orthocenter_vsub_circumcenter_eq_sum_vsub
+        rw [hu l m n hlm hln hmn, Finset.sum_insert (by simp [hlm, hln]), Finset.sum_insert (by simp [hmn]), Finset.sum_singleton] at h
+        have hj := t.dist_circumcenter_eq_circumradius m
+        have hk := t.dist_circumcenter_eq_circumradius n
+        rw [dist_eq_norm_vsub V] at hj hk
+        have e1 : t.orthocenter -ᵥ t.points l = (t.points m -ᵥ t.circumcenter) + (t.points n -ᵥ t.circumcenter) := by
+          rw [← vsub_sub_vsub_cancel_right t.orthocenter (t.points l) t.circumcenter, h]; abel
+        have e2 : t.points m -ᵥ t.points n = (t.points m -ᵥ t.circumcenter) - (t.points n -ᵥ t.circumcenter) :=
+          (vsub_sub_vsub_cancel_right _ _ _).symm
+        rw [e1, e2, inner_add_left, inner_sub_right, inner_sub_right, real_inner_self_eq_norm_sq,
+          real_inner_self_eq_norm_sq, real_inner_comm, hj, hk]
+        ring
+      have thales : ∀ X Y Z : P, inner ℝ (X -ᵥ Z) (Y -ᵥ Z) = 0 → dist Z (midpoint ℝ X Y) = dist X Y / 2 := by
+        intro X Y Z h
+        have e : Z -ᵥ midpoint ℝ X Y = (-(1 / 2) : ℝ) • ((X -ᵥ Z) + (Y -ᵥ Z)) := by
+          rw [← neg_vsub_eq_vsub_rev, midpoint_vsub, invOf_eq_inv]
+          module
+        have e2 : X -ᵥ Y = (X -ᵥ Z) - (Y -ᵥ Z) := (vsub_sub_vsub_cancel_right _ _ _).symm
+        have n1 : ‖(X -ᵥ Z) + (Y -ᵥ Z)‖ = ‖(X -ᵥ Z) - (Y -ᵥ Z)‖ := by
+          rw [← sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _), norm_add_sq_real, norm_sub_sq_real, h]
+          ring
+        rw [dist_eq_norm_vsub V Z, e, norm_smul, n1, ← e2, ← dist_eq_norm_vsub]
+        norm_num
+        ring
+      obtain ⟨r, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hF
+      have eE1 : t.points k -ᵥ AffineMap.lineMap (t.points k) (t.points i) r = (-r) • (t.points i -ᵥ t.points k) := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+      have eE2 : t.points i -ᵥ AffineMap.lineMap (t.points k) (t.points i) r = (1 - r) • (t.points i -ᵥ t.points k) := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, sub_smul, one_smul]
+      have eF1 : t.points i -ᵥ AffineMap.lineMap (t.points i) (t.points j) s = (-s) • (t.points j -ᵥ t.points i) := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, vsub_self, zero_sub, neg_smul]
+      have eF2 : t.points j -ᵥ AffineMap.lineMap (t.points i) (t.points j) s = (1 - s) • (t.points j -ᵥ t.points i) := by
+        rw [AffineMap.lineMap_apply, vsub_vadd_eq_vsub_sub, sub_smul, one_smul]
+      constructor
+      · refine ⟨midpoint ℝ (t.points j) (t.points k), dist (t.points j) (t.points k) / 2, ?_⟩
+        intro x hx
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+        rcases hx with rfl | rfl | rfl | rfl
+        · rw [dist_left_midpoint]; norm_num; ring
+        · rw [dist_right_midpoint]; norm_num; ring
+        · apply thales
+          rw [eE1, inner_smul_right, hpE, mul_zero]
+        · apply thales
+          rw [real_inner_comm, eF2, inner_smul_right, hpF, mul_zero]
+      · refine ⟨midpoint ℝ (t.points i) t.orthocenter, dist (t.points i) t.orthocenter / 2, ?_⟩
+        intro x hx
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+        rcases hx with rfl | rfl | rfl | rfl
+        · rw [dist_left_midpoint]; norm_num; ring
+        · rw [dist_right_midpoint]; norm_num; ring
+        · apply thales
+          have e : t.orthocenter -ᵥ AffineMap.lineMap (t.points k) (t.points i) r = (t.orthocenter -ᵥ t.points j) + (t.points j -ᵥ AffineMap.lineMap (t.points k) (t.points i) r) := (vsub_add_vsub_cancel _ _ _).symm
+          rw [eE2, e, inner_smul_left, inner_add_right, real_inner_comm (t.orthocenter -ᵥ t.points j), real_inner_comm (t.points j -ᵥ _), orth j i k hij.symm hjk hik, hpE]
+          simp
+        · apply thales
+          have e : t.orthocenter -ᵥ AffineMap.lineMap (t.points i) (t.points j) s = (t.orthocenter -ᵥ t.points k) + (t.points k -ᵥ AffineMap.lineMap (t.points i) (t.points j) s) := (vsub_add_vsub_cancel _ _ _).symm
+          rw [eF1, e, inner_smul_left, inner_add_right, real_inner_comm (t.orthocenter -ᵥ t.points k), real_inner_comm (t.points k -ᵥ _), orth k j i hjk.symm hik.symm hij.symm, hpF]
+          simp
+- id: euler_line
+  kind: named
+  level: high
+  topic: 三角形の五心・オイラー線
+  statement: 'オイラー線: 三角形の外心を$O$、重心を$G$、垂心を$H$とすると、$\overrightarrow{OH}=3\overrightarrow{OG}$である。したがって$G$は線分$OH$を$O$の側から$1:2$に内分し、$GH=2OG$である。'
+  statement_en: 'Euler line: for a triangle with circumcenter O, centroid G and orthocenter H, OH = 3 OG as vectors, G = O + (1/3)(H - O), and GH = 2 OG.'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $O,G,H$は外心、重心、垂心
+  quantifiers: *id001
+  conclusion: $\overrightarrow{OH}=3\overrightarrow{OG}$であり、$G$は$OH$を$1:2$に内分し、$GH=2OG$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を外心、$R$を外接円の半径、$G$を重心、$H$を垂心とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。重心は$\overrightarrow{OG}=\frac{1}{3}(\vec a+\vec b+\vec c)$を満たすので$\overrightarrow{OH}=3\overrightarrow{OG}$である。よって$\overrightarrow{OG}=\frac{1}{3}\overrightarrow{OH}$であり、$\overrightarrow{GH}=\overrightarrow{OH}-\overrightarrow{OG}=2\overrightarrow{OG}$である。長さをとると$GH=2OG$を得る。
+  strategy: Both G and H are multiples of the sum of the vertex vectors from O.
+  sketch:
+  - 'derive: OH = OA + OB + OC.'
+  - 'derive: OG = (OA + OB + OC)/3.'
+  - 'conclude: OH = 3 OG, so GH = 2 OG.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (= (- (orthocenter_of a b c) (circumcenter_of a b c)) (smul 3 (- (centroid_of a b c) (circumcenter_of a b c)))) (= (dist_of (centroid_of a b c) (orthocenter_of a b c)) (* 2 (dist_of (circumcenter_of a b c) (centroid_of a b c)))))))
+  hard_negative:
+    statement: 内心もオイラー線の上にある。
+    reason: 内心は一般にオイラー線上にない。二等辺でない三角形では内心はオイラー線から外れ、例えば3辺$3,4,5$の直角三角形では$O=(2,\frac{3}{2})$、$H=(0,0)$、内心は$(1,1)$で共線でない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P), t.orthocenter -ᵥ t.circumcenter = (3 : ℝ) • (t.centroid -ᵥ t.circumcenter) ∧ t.centroid = AffineMap.lineMap t.circumcenter t.orthocenter (1 / 3 : ℝ) ∧ dist t.centroid t.orthocenter = 2 * dist t.circumcenter t.centroid
+  proof: |
+    by
+      intro V P _ _ _ _ t
+      have h : t.orthocenter -ᵥ t.circumcenter = (3 : ℝ) • (t.centroid -ᵥ t.circumcenter) := by
+        conv_lhs => rw [t.orthocenter_eq_smul_vsub_vadd_circumcenter, vadd_vsub]
+      have hG : t.centroid = AffineMap.lineMap t.circumcenter t.orthocenter (1 / 3 : ℝ) := by
+        rw [AffineMap.lineMap_apply, h, smul_smul]
+        norm_num
+      refine ⟨h, hG, ?_⟩
+      rw [hG, dist_lineMap_right, dist_left_lineMap]
+      norm_num
+      ring
+- id: euler_distance_circumcenter_orthocenter
+  kind: gap
+  level: high
+  topic: 三角形の五心・外心と垂心の距離
+  statement: 三角形$ABC$の外心を$O$、垂心を$H$、外接円の半径を$R$とすると、$OH^2=9R^2-(AB^2+BC^2+CA^2)$である。
+  statement_en: For a triangle ABC with circumcenter O, orthocenter H and circumradius R, OH² = 9R² - (AB² + BC² + CA²).
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $O$は外心、$H$は垂心、$R$は外接円の半径
+  quantifiers: *id001
+  conclusion: $OH^2=9R^2-(AB^2+BC^2+CA^2)$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を外心、$H$を垂心、$R$を外接円の半径とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。$AB^2=|\vec a-\vec b|^2=2R^2-2\vec a\cdot\vec b$であり、$BC^2$、$CA^2$も同様である。また$OH^2=|\vec a+\vec b+\vec c|^2=3R^2+2(\vec a\cdot\vec b+\vec b\cdot\vec c+\vec c\cdot\vec a)$である。辺の式を加えると$2(\vec a\cdot\vec b+\vec b\cdot\vec c+\vec c\cdot\vec a)=6R^2-(AB^2+BC^2+CA^2)$となる。代入すれば$OH^2=9R^2-(AB^2+BC^2+CA^2)$を得る。
+  strategy: Expand |a + b + c|² and eliminate the inner products with the side lengths.
+  sketch:
+  - 'derive: OH = a + b + c with |a| = |b| = |c| = R.'
+  - 'derive: AB² = 2R² - 2 a·b, and cyclically.'
+  - 'derive: OH² = 3R² + 2(a·b + b·c + c·a).'
+  - 'conclude: Eliminating the inner products gives the identity.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (= (^ (dist_of (circumcenter_of a b c) (orthocenter_of a b c)) 2) (- (* 9 (^ (circumradius_of a b c) 2)) (+ (+ (^ (dist_of a b) 2) (^ (dist_of b c) 2)) (^ (dist_of c a) 2))))))
+  hard_negative:
+    statement: $OH^2=R^2-(AB^2+BC^2+CA^2)$である。
+    reason: 係数は$9$である。正三角形では$O=H$、辺の長さ$s$で$R^2=\frac{s^2}{3}$なので、$9R^2-3s^2=0$は成り立つが、$R^2-3s^2<0$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist t.circumcenter t.orthocenter ^ 2 = 9 * t.circumradius ^ 2 - (dist (t.points i) (t.points j) ^ 2 + dist (t.points j) (t.points k) ^ 2 + dist (t.points k) (t.points i) ^ 2)
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hH : t.orthocenter -ᵥ t.circumcenter = (t.points i -ᵥ t.circumcenter) + (t.points j -ᵥ t.circumcenter) + (t.points k -ᵥ t.circumcenter) := by
+        rw [t.orthocenter_vsub_circumcenter_eq_sum_vsub, hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, add_assoc]
+      have hn : ∀ l, ‖t.points l -ᵥ t.circumcenter‖ = t.circumradius := by
+        intro l; rw [← dist_eq_norm_vsub]; exact t.dist_circumcenter_eq_circumradius l
+      have d : ∀ l m, dist (t.points l) (t.points m) ^ 2 = 2 * t.circumradius ^ 2 - 2 * inner ℝ (t.points l -ᵥ t.circumcenter) (t.points m -ᵥ t.circumcenter) := by
+        intro l m
+        rw [dist_eq_norm_vsub V (t.points l) (t.points m), ← vsub_sub_vsub_cancel_right (t.points l) (t.points m) t.circumcenter, norm_sub_sq_real, hn, hn]
+        ring
+      rw [d, d, d, dist_comm, dist_eq_norm_vsub V t.orthocenter, hH, norm_add_sq_real, norm_add_sq_real, hn, hn, hn, inner_add_left, real_inner_comm (t.points k -ᵥ t.circumcenter) (t.points i -ᵥ t.circumcenter)]
+      ring
+- id: nine_point_circle
+  kind: named
+  level: high
+  topic: 三角形の五心・九点円
+  statement: '九点円: 三角形$ABC$の外心を$O$、垂心を$H$、外接円の半径を$R$とする。$OH$の中点を中心とする半径$\frac{R}{2}$の円は、各辺の中点、各頂点から対辺への垂線の足、$H$と各頂点を結ぶ線分の中点を通る。'
+  statement_en: 'Nine-point circle: for a triangle with circumcenter O, orthocenter H and circumradius R, the circle centred at the midpoint of OH with radius R/2 passes through the midpoint of each side, the foot of each altitude, and the midpoint of the segment from H to each vertex.'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $O,H,R$は外心、垂心、外接円の半径
+  quantifiers: *id001
+  conclusion: 9点はすべて、$OH$の中点を中心とする半径$\frac{R}{2}$の円の上にある。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を外心、$R$を外接円の半径、$H$を垂心とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。$OH$の中点$N$は$\overrightarrow{ON}=\frac{1}{2}(\vec a+\vec b+\vec c)$を満たす。辺$BC$の中点$M$について$\overrightarrow{NM}=-\frac{1}{2}\vec a$なので$NM=\frac{R}{2}$である。線分$AH$の中点$K$について$\overrightarrow{OK}=\vec a+\frac{1}{2}(\vec b+\vec c)$なので$\overrightarrow{NK}=\frac{1}{2}\vec a$であり、$NK=\frac{R}{2}$である。したがって$M$と$K$は$N$に関して対称で、$MK$はこの円の直径である。$A$から$BC$に下ろした垂線の足を$D$とする。$K$は直線$AD$上にあるので$\overrightarrow{DK}\perp\overrightarrow{BC}$であり、$M,D$は直線$BC$上にあるので$\overrightarrow{DM}$は$\overrightarrow{BC}$の実数倍である。よって$\overrightarrow{DK}\cdot\overrightarrow{DM}=0$となり、$D$は$MK$を直径とする円の上にある。頂点の役割を入れ替えれば残りの点についても同じである。
+  strategy: Compute the side midpoint and the vertex-orthocenter midpoint from O; the feet follow from the right angle on the diameter.
+  sketch:
+  - 'derive: ON = (OA + OB + OC)/2.'
+  - 'derive: NM = -OA/2 and NK = OA/2, so M and K lie on the circle and are antipodal.'
+  - 'derive: DK ⟂ BC and DM is parallel to BC, so DK·DM = 0.'
+  - 'apply_theorem: Thales'' theorem puts D on the circle with diameter MK.'
+  - 'conclude: Permute the vertices for all nine points.'
+  openmath: (forall (a b c) (-> (not (collinear_points a b c)) (and (on_circle (midpoint_of b c) (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c)) (/ (circumradius_of a b c) 2)) (on_circle (altitude_foot a b c) (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c)) (/ (circumradius_of a b c) 2)) (on_circle (midpoint_of (orthocenter_of a b c) a) (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c)) (/ (circumradius_of a b c) 2)))))
+  hard_negative:
+    statement: 九点円の半径は外接円の半径に等しい。
+    reason: 九点円の半径は$\frac{R}{2}$である。辺の中点$M$と$AH$の中点$K$の距離が直径で、その値は$|\vec a|=R$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (i j k : Fin 3), i ≠ j → i ≠ k → j ≠ k → dist (midpoint ℝ (t.points j) (t.points k)) (midpoint ℝ t.circumcenter t.orthocenter) = t.circumradius / 2 ∧ dist (t.altitudeFoot i) (midpoint ℝ t.circumcenter t.orthocenter) = t.circumradius / 2 ∧ dist (midpoint ℝ t.orthocenter (t.points i)) (midpoint ℝ t.circumcenter t.orthocenter) = t.circumradius / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t i j k hij hik hjk
+      have hu : (Finset.univ : Finset (Fin 3)) = {i, j, k} := by decide +revert
+      have hc : t.ninePointCircle.center = midpoint ℝ t.circumcenter t.orthocenter := by
+        apply vsub_left_injective t.circumcenter |>.eq_iff.mp
+        rw [t.ninePointCircle_center, vadd_vsub, midpoint_vsub]
+        have : t.orthocenter -ᵥ t.circumcenter = (3 : ℝ) • (t.centroid -ᵥ t.circumcenter) := by
+          conv_lhs => rw [t.orthocenter_eq_smul_vsub_vadd_circumcenter, vadd_vsub]
+        rw [this, vsub_self, smul_zero, zero_add, smul_smul]
+        norm_num
+      have hr : t.ninePointCircle.radius = t.circumradius / 2 := by
+        rw [t.ninePointCircle_radius]
+        norm_num
+      have key : ∀ x : P, x ∈ t.ninePointCircle → dist x (midpoint ℝ t.circumcenter t.orthocenter) = t.circumradius / 2 := by
+        intro x hx
+        rw [← hc, ← hr]
+        exact EuclideanGeometry.mem_sphere.mp hx
+      refine ⟨key _ ?_, key _ (t.altitudeFoot_mem_ninePointCircle i), key _ ?_⟩
+      · have hF := t.faceOppositeCentroid_mem_ninePointCircle i
+        have hF2 : t.faceOppositeCentroid i = midpoint ℝ (t.points j) (t.points k) := by
+          have h := t.faceOppositeCentroid_eq_sum_vsub_vadd i
+          rw [hu, Finset.sum_insert (by simp [hij, hik]), Finset.sum_insert (by simp [hjk]), Finset.sum_singleton, vsub_self, zero_add] at h
+          rw [h]
+          apply vsub_left_injective (t.points i) |>.eq_iff.mp
+          rw [vadd_vsub, midpoint_vsub]
+          simp only [invOf_eq_inv]
+          norm_num
+        rwa [hF2] at hF
+      · rw [← Affine.Triangle.eulerPoint_eq_midpoint]
+        exact t.eulerPoint_mem_ninePointCircle i
+- id: nine_point_center_and_radius
+  kind: gap
+  level: high
+  topic: 三角形の五心・九点円の中心と半径
+  statement: 三角形$ABC$の平面上に中心をもち、3辺の中点を通る円は、中心が外心$O$と垂心$H$を結ぶ線分の中点で、半径が外接円の半径$R$の$\frac{1}{2}$である（九点円の中心と半径）。
+  statement_en: Let S be a sphere (circle in the plane) whose centre lies in the plane of triangle ABC and which passes through the midpoints of the three sides. Then its centre is the midpoint of the circumcenter O and the orthocenter H, and its radius is R/2 where R is the circumradius.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - 円（球面）$S$の中心は平面$ABC$上にある
+  - $S$は3辺$BC,CA,AB$の中点を通る
+  - $O,H,R$は外心、垂心、外接円の半径
+  quantifiers:
+  - 任意の三角形$ABC$と、3辺の中点を通り中心が平面$ABC$上にある円$S$
+  conclusion: $S$の中心は$OH$の中点で、半径は$\frac{R}{2}$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$O$を外心、$R$を外接円の半径、$H$を垂心とする。外心$O$を始点とするベクトルを$\vec a=\overrightarrow{OA}$、$\vec b=\overrightarrow{OB}$、$\vec c=\overrightarrow{OC}$とおくと$|\vec a|=|\vec b|=|\vec c|=R$である。$\overrightarrow{OH'}=\vec a+\vec b+\vec c$で平面$ABC$上の点$H'$を定めると、$\overrightarrow{AH'}\cdot\overrightarrow{BC}=(\vec b+\vec c)\cdot(\vec c-\vec b)=|\vec c|^2-|\vec b|^2=0$となり、同様に$\overrightarrow{BH'}\perp\overrightarrow{CA}$である。$H'$は2本の垂線の交点だから垂心$H$と一致し、$\overrightarrow{OH}=\vec a+\vec b+\vec c$である。$OH$の中点$N$は$\overrightarrow{ON}=\frac{1}{2}(\vec a+\vec b+\vec c)$を満たす。辺$BC$の中点$M$について$\overrightarrow{NM}=\frac{1}{2}(\vec b+\vec c)-\overrightarrow{ON}=-\frac{1}{2}\vec a$なので$NM=\frac{R}{2}$であり、他の2辺の中点でも同じである。$N$は平面$ABC$上にある。3辺の中点は同一直線上になく、同じ平面上でこの3点から等距離にある点はただ1つなので、3点を通る円の中心は$N$で、半径は$\frac{R}{2}$である。
+  strategy: Check that the midpoint of OH is at distance R/2 from each side midpoint, then use uniqueness of the circle.
+  sketch:
+  - 'derive: ON = (OA + OB + OC)/2.'
+  - 'derive: The side midpoint opposite A satisfies NM = -OA/2, so NM = R/2.'
+  - 'derive: The same holds for the other side midpoints.'
+  - 'conclude: N is in the plane of the triangle and is the unique centre of the circle through the three midpoints.'
+  openmath: (forall (a b c o r) (-> (and (not (collinear_points a b c)) (on_plane o a b c) (on_circle (midpoint_of b c) o r) (on_circle (midpoint_of c a) o r) (on_circle (midpoint_of a b) o r)) (and (= o (midpoint_of (circumcenter_of a b c) (orthocenter_of a b c))) (= r (/ (circumradius_of a b c) 2)))))
+  hard_negative:
+    statement: 九点円の中心は重心である。
+    reason: 中心は$OH$の中点で、$\overrightarrow{OG}=\frac{1}{3}\overrightarrow{OH}$なので、$O\neq H$なら重心とは異なる。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (t : Affine.Triangle ℝ P) (S : EuclideanGeometry.Sphere P), S.center ∈ affineSpan ℝ (Set.range t.points) → (∀ j k : Fin 3, j ≠ k → midpoint ℝ (t.points j) (t.points k) ∈ S) → S.center = midpoint ℝ t.circumcenter t.orthocenter ∧ S.radius = t.circumradius / 2
+  proof: |
+    by
+      intro V P _ _ _ _ t S hc hm
+      have hmid : ∀ i j k : Fin 3, i ≠ j → i ≠ k → j ≠ k → t.faceOppositeCentroid i = midpoint ℝ (t.points j) (t.points k) := by
+        intro i j k hij hik hjk
+        rw [Affine.Simplex.faceOppositeCentroid_eq_affineCombination]
+        have hs : ({i}ᶜ : Finset (Fin 3)) = {j, k} := by
+          fin_cases i <;> fin_cases j <;> fin_cases k <;> simp_all <;> decide
+        rw [hs, Finset.affineCombination_eq_weightedVSubOfPoint_vadd_of_sum_eq_one _ _ _ (by rw [Finset.sum_pair hjk]; norm_num) (t.points j), Finset.weightedVSubOfPoint_apply, Finset.sum_pair hjk]
+        simp [midpoint, AffineMap.lineMap_apply]
+      have hS : S = t.medial.circumsphere := by
+        apply (t.medial.circumsphere_unique_dist_eq).2 S
+        constructor
+        · rw [Affine.Simplex.affineSpan_range_medial]; exact hc
+        · rw [Set.range_subset_iff]
+          intro i
+          rw [Affine.Simplex.medial_points]
+          have hi : i = 0 ∨ i = 1 ∨ i = 2 := by fin_cases i <;> simp
+          rcases hi with rfl | rfl | rfl
+          · rw [hmid 0 1 2 (by decide) (by decide) (by decide)]; exact hm 1 2 (by decide)
+          · rw [hmid 1 0 2 (by decide) (by decide) (by decide)]; exact hm 0 2 (by decide)
+          · rw [hmid 2 0 1 (by decide) (by decide) (by decide)]; exact hm 0 1 (by decide)
+      have hN : S = t.ninePointCircle := by
+        rw [hS, ← Affine.Simplex.ninePointCircle_eq_circumsphere_medial]
+      rw [hN]
+      constructor
+      · rw [Affine.Simplex.ninePointCircle_center, Affine.Triangle.orthocenter_eq_smul_vsub_vadd_circumcenter]
+        rw [midpoint, AffineMap.lineMap_apply]
+        simp [Affine.Simplex.centroid]
+        rw [smul_smul]
+        congr 1
+        norm_num
+      · rw [Affine.Simplex.ninePointCircle_radius]; norm_num
+- id: menelaus_theorem
+  kind: named
+  level: high
+  topic: 共点と共線・メネラウスの定理
+  statement: 'メネラウスの定理（符号付き）: 三角形$ABC$に対し、実数$r,s,t$で$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$と定める。$D,E,F$が同一直線上にあるなら$rst=-(1-r)(1-s)(1-t)$である。'
+  statement_en: 'Menelaus'' theorem in signed form: for a triangle ABC and real r, s, t, if D = (1-r)B + rC, E = (1-s)C + sA and F = (1-t)A + tB are collinear, then rst = -(1-r)(1-s)(1-t).'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $D,E,F$は上の式で定まる直線$BC,CA,AB$上の点
+  - $D,E,F$は同一直線上にある
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の実数$r,s,t$
+  conclusion: $rst=-(1-r)(1-s)(1-t)$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$r,s,t$を実数とし、$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$が同一直線上にあるとする。$\vec u=\overrightarrow{AB}$、$\vec w=\overrightarrow{AC}$とおくと、$A,B,C$が同一直線上にないので$\vec u,\vec w$は1次独立である。$\overrightarrow{AD}=(1-r)\vec u+r\vec w$、$\overrightarrow{AE}=(1-s)\vec w$、$\overrightarrow{AF}=t\vec u$である。よって$\overrightarrow{FD}=(1-r-t)\vec u+r\vec w$、$\overrightarrow{FE}=-t\vec u+(1-s)\vec w$である。3点が同一直線上にあるので、あるベクトル$\vec v$と実数$p,q$で$\overrightarrow{FD}=p\vec v$、$\overrightarrow{FE}=q\vec v$と書ける。すると$q\overrightarrow{FD}-p\overrightarrow{FE}=\vec 0$であり、1次独立性から$q(1-r-t)+pt=0$、$qr-p(1-s)=0$である。$p=q=0$なら$\overrightarrow{FD}=\overrightarrow{FE}=\vec 0$なので$t=0$かつ$1-r-t=0$かつ$r=0$となり矛盾する。$q\neq 0$または$p\neq 0$なので、この2式から$(1-r-t)(1-s)+rt=0$を得る。展開して整理すると$rst+(1-r)(1-s)(1-t)=0$である。
+  strategy: Express the points in the basis AB, AC and turn collinearity into a vanishing determinant.
+  sketch:
+  - 'setup: Let u = AB and w = AC, which are linearly independent.'
+  - 'derive: FD = (1-r-t)u + r w and FE = -t u + (1-s) w.'
+  - 'translate: Collinearity gives FD = p v and FE = q v, hence two scalar equations.'
+  - 'derive: Not both p and q vanish, so (1-r-t)(1-s) + rt = 0.'
+  - 'conclude: Expanding gives rst + (1-r)(1-s)(1-t) = 0.'
+  openmath: (forall (a b c r s t) (-> (and (not (collinear_points a b c)) (collinear_points (division_point b c r) (division_point c a s) (division_point a b t))) (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t))))))
+  hard_negative:
+    statement: $D,E,F$が同一直線上にあるなら$rst=(1-r)(1-s)(1-t)$である。
+    reason: 符号が逆で、その式はチェバの定理の形である。$r=2$、$s=\frac{1}{2}$、$t=\frac{1}{3}$では$rst=-(1-r)(1-s)(1-t)$が成り立つので$D,E,F$は同一直線上にあるが、$rst=\frac{1}{3}$、$(1-r)(1-s)(1-t)=-\frac{1}{3}$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P) (r s t : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → Collinear ℝ ({AffineMap.lineMap B C r, AffineMap.lineMap C A s, AffineMap.lineMap A B t} : Set P) → r * s * t = -((1 - r) * (1 - s) * (1 - t))
+  proof: |
+    by
+      intro V P _ _ _ _ A B C r s t hABC hcol
+      have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+        intro a b h
+        by_contra hab
+        apply hABC
+        rcases not_and_or.mp hab with ha | hb
+        · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+            have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+          rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm] at h4
+        · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+            have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+          rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm, Set.pair_comm] at h4
+      set D := AffineMap.lineMap B C r with hD
+      set E := AffineMap.lineMap C A s with hE
+      set F := AffineMap.lineMap A B t with hF
+      set u : V := B -ᵥ A with hu
+      set w : V := C -ᵥ A with hw
+      have hCB : C -ᵥ B = w - u := (vsub_sub_vsub_cancel_right C B A).symm
+      have hAC : A -ᵥ C = -w := (neg_vsub_eq_vsub_rev C A).symm
+      have eD : D -ᵥ A = (1 - r) • u + r • w := by
+        rw [hD, AffineMap.lineMap_apply, vadd_vsub_assoc, hCB, ← hu]; module
+      have eE : E -ᵥ A = (1 - s) • w := by
+        rw [hE, AffineMap.lineMap_apply, vadd_vsub_assoc, hAC, ← hw]; module
+      have eF : F -ᵥ A = t • u := by
+        rw [hF, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_self, add_zero]
+      have eX : D -ᵥ F = (1 - r - t) • u + r • w := by
+        rw [← vsub_sub_vsub_cancel_right D F A, eD, eF]; module
+      have eY : E -ᵥ F = (-t) • u + (1 - s) • w := by
+        rw [← vsub_sub_vsub_cancel_right E F A, eE, eF]; module
+      obtain ⟨v, hv⟩ := (collinear_iff_of_mem (p₀ := F) (by simp)).mp hcol
+      obtain ⟨a, ha⟩ := hv D (by simp)
+      obtain ⟨b, hb⟩ := hv E (by simp)
+      have ha' : D -ᵥ F = a • v := by rw [ha, vadd_vsub]
+      have hb' : E -ᵥ F = b • v := by rw [hb, vadd_vsub]
+      have h0 : (b * (1 - r - t) + a * t) • u + (b * r - a * (1 - s)) • w = (0 : V) := by
+        have : b • (D -ᵥ F) - a • (E -ᵥ F) = (0 : V) := by rw [ha', hb', smul_smul, smul_smul, mul_comm, sub_self]
+        rw [eX, eY] at this
+        rw [← this]; module
+      obtain ⟨H1, H2⟩ := hli _ _ h0
+      have goal' : r * s * t + (1 - r) * (1 - s) * (1 - t) = 0 := by
+        by_cases ha0 : a = 0
+        · by_cases hb0 : b = 0
+          · exfalso
+            rw [ha0, zero_smul] at ha'
+            rw [hb0, zero_smul] at hb'
+            rw [eX] at ha'
+            rw [eY] at hb'
+            obtain ⟨h1, h2⟩ := hli _ _ ha'
+            obtain ⟨h3, -⟩ := hli _ _ hb'
+            linarith
+          · apply mul_left_cancel₀ hb0
+            linear_combination (1 - s) * H1 + t * H2
+        · apply mul_left_cancel₀ ha0
+          linear_combination r * H1 - (1 - r - t) * H2
+      linear_combination goal'
+- id: menelaus_converse
+  kind: textbook
+  level: high
+  topic: 共点と共線・メネラウスの定理の逆
+  statement: 'メネラウスの定理の逆（符号付き）: 3点$A,B,C$と実数$r,s,t$について$rst=-(1-r)(1-s)(1-t)$なら、$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$は同一直線上にある。'
+  statement_en: 'Converse of Menelaus in signed form: for points A, B, C and real r, s, t with rst = -(1-r)(1-s)(1-t), the points D = (1-r)B + rC, E = (1-s)C + sA and F = (1-t)A + tB are collinear.'
+  assumptions:
+  - $A,B,C$は任意の3点
+  - $rst=-(1-r)(1-s)(1-t)$
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の3点$A,B,C$
+  - 任意の実数$r,s,t$
+  conclusion: $D,E,F$は同一直線上にある。
+  answer: |
+    $A,B,C$を3点、$r,s,t$を$rst=-(1-r)(1-s)(1-t)$を満たす実数とし、$D,E,F$を上の式で定める。$\vec u=\overrightarrow{AB}$、$\vec w=\overrightarrow{AC}$とおくと$\overrightarrow{FD}=(1-r-t)\vec u+r\vec w$、$\overrightarrow{FE}=-t\vec u+(1-s)\vec w$である。仮定を展開して整理すると$(1-r-t)(1-s)+rt=0$である。$t\neq 0$なら$c=-\frac{1-r-t}{t}$とおくと$c(1-s)=r$なので$\overrightarrow{FD}=c\overrightarrow{FE}$である。$t=0$かつ$s=1$なら$\overrightarrow{FE}=\vec 0$なので$E=F$である。$t=0$かつ$s\neq 1$なら$1-r=0$となり、$\overrightarrow{FD}=\vec w$、$\overrightarrow{FE}=(1-s)\vec w$である。いずれの場合も$\overrightarrow{FD}$と$\overrightarrow{FE}$は1つのベクトルの実数倍なので、$D,E,F$は同一直線上にある。
+  strategy: Rewrite the hypothesis as a vanishing determinant and exhibit the proportionality case by case.
+  sketch:
+  - 'setup: Compute FD and FE in terms of u = AB and w = AC.'
+  - 'translate: The hypothesis is (1-r-t)(1-s) + rt = 0.'
+  - 'case_split: Treat t ≠ 0, then t = 0 with s = 1, then t = 0 with s ≠ 1.'
+  - 'derive: In each case FD and FE are multiples of one vector.'
+  - 'conclude: D, E, F are collinear.'
+  openmath: (forall (a b c r s t) (-> (= (* (* r s) t) (neg (* (* (- 1 r) (- 1 s)) (- 1 t)))) (collinear_points (division_point b c r) (division_point c a s) (division_point a b t))))
+  hard_negative:
+    statement: 符号なしの比で$\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$なら$D,E,F$は同一直線上にある。
+    reason: 長さの比では符号の情報が失われる。3辺の中点ではこの積が$1$だが、3点は同一直線上にない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C : P) (r s t : ℝ), r * s * t = -((1 - r) * (1 - s) * (1 - t)) → Collinear ℝ ({AffineMap.lineMap B C r, AffineMap.lineMap C A s, AffineMap.lineMap A B t} : Set P)
+  proof: |
+    by
+      intro V P _ _ _ _ A B C r s t hδ
+      set D := AffineMap.lineMap B C r with hD
+      set E := AffineMap.lineMap C A s with hE
+      set F := AffineMap.lineMap A B t with hF
+      set u : V := B -ᵥ A with hu
+      set w : V := C -ᵥ A with hw
+      have hCB : C -ᵥ B = w - u := (vsub_sub_vsub_cancel_right C B A).symm
+      have hAC : A -ᵥ C = -w := (neg_vsub_eq_vsub_rev C A).symm
+      have eD : D -ᵥ A = (1 - r) • u + r • w := by
+        rw [hD, AffineMap.lineMap_apply, vadd_vsub_assoc, hCB, ← hu]; module
+      have eE : E -ᵥ A = (1 - s) • w := by
+        rw [hE, AffineMap.lineMap_apply, vadd_vsub_assoc, hAC, ← hw]; module
+      have eF : F -ᵥ A = t • u := by
+        rw [hF, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_self, add_zero]
+      have eX : D -ᵥ F = (1 - r - t) • u + r • w := by
+        rw [← vsub_sub_vsub_cancel_right D F A, eD, eF]; module
+      have eY : E -ᵥ F = (-t) • u + (1 - s) • w := by
+        rw [← vsub_sub_vsub_cancel_right E F A, eE, eF]; module
+      have hδ' : (1 - r - t) * (1 - s) + t * r = 0 := by linear_combination hδ
+      have hcase : ∃ c : ℝ, (D -ᵥ F = c • (E -ᵥ F)) ∨ (E = F) := by
+        by_cases ht : t = 0
+        · by_cases hs : 1 - s = 0
+          · refine ⟨0, Or.inr ?_⟩
+            exact eq_of_vsub_eq_zero (by rw [eY, ht, hs]; simp)
+          · have hr : 1 - r - t = 0 := by
+              have : (1 - r - t) * (1 - s) = 0 := by rw [ht] at hδ' ⊢; linarith
+              exact (mul_eq_zero.mp this).resolve_right hs
+            refine ⟨r / (1 - s), Or.inl ?_⟩
+            rw [eX, eY, hr, ht, smul_add, smul_smul, smul_smul, div_mul_cancel₀ _ hs]
+            simp
+        · refine ⟨-(1 - r - t) / t, Or.inl ?_⟩
+          have hc : -(1 - r - t) / t * (1 - s) = r := by
+            field_simp
+            linear_combination -hδ'
+          rw [eX, eY, smul_add, smul_smul, smul_smul, hc]
+          congr 1
+          congr 1
+          field_simp
+      rw [collinear_iff_of_mem (p₀ := F) (by simp)]
+      obtain ⟨c, hc | hc⟩ := hcase
+      · refine ⟨E -ᵥ F, ?_⟩
+        intro p hp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+        rcases hp with rfl | rfl | rfl
+        · exact ⟨c, by rw [← hc, vsub_vadd]⟩
+        · exact ⟨1, by rw [one_smul, vsub_vadd]⟩
+        · exact ⟨0, by simp⟩
+      · refine ⟨D -ᵥ F, ?_⟩
+        intro p hp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+        rcases hp with rfl | rfl | rfl
+        · exact ⟨1, by rw [one_smul, vsub_vadd]⟩
+        · exact ⟨0, by simpa using hc⟩
+        · exact ⟨0, by simp⟩
+- id: menelaus_unsigned_ratio_form
+  kind: gap
+  level: high
+  topic: 共点と共線・メネラウスの定理の比の形
+  statement: 三角形$ABC$の直線$BC,CA,AB$上の点$D,E,F$が同一直線上にあり、$D\neq C$、$E\neq A$、$F\neq B$なら、長さの比について$\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$である。
+  statement_en: If points D, E, F on lines BC, CA, AB of a triangle ABC are collinear with D ≠ C, E ≠ A, F ≠ B, then (BD/DC)(CE/EA)(AF/FB) = 1 for lengths.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $D,E,F$は直線$BC,CA,AB$上の点
+  - $D\neq C$、$E\neq A$、$F\neq B$
+  - $D,E,F$は同一直線上にある
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の点$D,E,F$
+  conclusion: $\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$D,E,F$を直線$BC,CA,AB$上の同一直線上にある点とし、$D\neq C$、$E\neq A$、$F\neq B$とする。$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$となる実数$r,s,t$をとると、$r\neq 1$、$s\neq 1$、$t\neq 1$である。$BD=|r|BC$、$DC=|1-r|BC$であり、$BC>0$なので$\frac{BD}{DC}=\frac{|r|}{|1-r|}$である。他の2つも同様である。符号付きのメネラウスの定理「$D,E,F$が同一直線上にあれば$rst=-(1-r)(1-s)(1-t)$」の両辺の絶対値をとると$|r||s||t|=|1-r||1-s||1-t|$となる。両辺を$|1-r||1-s||1-t|\neq 0$で割れば結論を得る。
+  strategy: Convert the signed Menelaus identity to lengths by taking absolute values.
+  sketch:
+  - 'setup: Parametrise D, E, F by r, s, t, none equal to 1.'
+  - 'derive: BD/DC = |r|/|1-r|, and likewise for the other two ratios.'
+  - 'apply_theorem: Signed Menelaus gives rst = -(1-r)(1-s)(1-t).'
+  - 'conclude: Taking absolute values and dividing gives the product 1.'
+  openmath: (forall (a b c x y z) (-> (and (not (collinear_points a b c)) (on_line x b c) (on_line y c a) (on_line z a b) (!= x c) (!= y a) (!= z b) (collinear_points x y z)) (= (* (* (/ (dist_of b x) (dist_of x c)) (/ (dist_of c y) (dist_of y a))) (/ (dist_of a z) (dist_of z b))) 1)))
+  hard_negative:
+    statement: $D,E,F$が同一直線上になくても、3点が各辺上にあれば長さの比の積は$1$である。
+    reason: 辺$BC$の中点、辺$CA$の中点と、$AB$を$1:2$に内分する点では積は$\frac{1}{2}$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E F : P), ¬Collinear ℝ ({A, B, C} : Set P) → D ∈ line[ℝ, B, C] → E ∈ line[ℝ, C, A] → F ∈ line[ℝ, A, B] → D ≠ C → E ≠ A → F ≠ B → Collinear ℝ ({D, E, F} : Set P) → dist B D / dist D C * (dist C E / dist E A) * (dist A F / dist F B) = 1
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E F hABC hD hE hF hDC hEA hFB hcol
+      obtain ⟨r, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hF
+      have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+        intro a b h
+        by_contra hab
+        apply hABC
+        rcases not_and_or.mp hab with ha | hb
+        · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+            have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+          rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm] at h4
+        · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+            have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+          rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm, Set.pair_comm] at h4
+      have men : r * s * t = -((1 - r) * (1 - s) * (1 - t)) := by
+        set D := AffineMap.lineMap B C r with hD
+        set E := AffineMap.lineMap C A s with hE
+        set F := AffineMap.lineMap A B t with hF
+        set u : V := B -ᵥ A with hu
+        set w : V := C -ᵥ A with hw
+        have hCB : C -ᵥ B = w - u := (vsub_sub_vsub_cancel_right C B A).symm
+        have hAC : A -ᵥ C = -w := (neg_vsub_eq_vsub_rev C A).symm
+        have eD : D -ᵥ A = (1 - r) • u + r • w := by
+          rw [hD, AffineMap.lineMap_apply, vadd_vsub_assoc, hCB, ← hu]; module
+        have eE : E -ᵥ A = (1 - s) • w := by
+          rw [hE, AffineMap.lineMap_apply, vadd_vsub_assoc, hAC, ← hw]; module
+        have eF : F -ᵥ A = t • u := by
+          rw [hF, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_self, add_zero]
+        have eX : D -ᵥ F = (1 - r - t) • u + r • w := by
+          rw [← vsub_sub_vsub_cancel_right D F A, eD, eF]; module
+        have eY : E -ᵥ F = (-t) • u + (1 - s) • w := by
+          rw [← vsub_sub_vsub_cancel_right E F A, eE, eF]; module
+        obtain ⟨v, hv⟩ := (collinear_iff_of_mem (p₀ := F) (by simp)).mp hcol
+        obtain ⟨a, ha⟩ := hv D (by simp)
+        obtain ⟨b, hb⟩ := hv E (by simp)
+        have ha' : D -ᵥ F = a • v := by rw [ha, vadd_vsub]
+        have hb' : E -ᵥ F = b • v := by rw [hb, vadd_vsub]
+        have h0 : (b * (1 - r - t) + a * t) • u + (b * r - a * (1 - s)) • w = (0 : V) := by
+          have : b • (D -ᵥ F) - a • (E -ᵥ F) = (0 : V) := by rw [ha', hb', smul_smul, smul_smul, mul_comm, sub_self]
+          rw [eX, eY] at this
+          rw [← this]; module
+        obtain ⟨H1, H2⟩ := hli _ _ h0
+        have goal' : r * s * t + (1 - r) * (1 - s) * (1 - t) = 0 := by
+          by_cases ha0 : a = 0
+          · by_cases hb0 : b = 0
+            · exfalso
+              rw [ha0, zero_smul] at ha'
+              rw [hb0, zero_smul] at hb'
+              rw [eX] at ha'
+              rw [eY] at hb'
+              obtain ⟨h1, h2⟩ := hli _ _ ha'
+              obtain ⟨h3, -⟩ := hli _ _ hb'
+              linarith
+            · apply mul_left_cancel₀ hb0
+              linear_combination (1 - s) * H1 + t * H2
+          · apply mul_left_cancel₀ ha0
+            linear_combination r * H1 - (1 - r - t) * H2
+        linear_combination goal'
+      have hBC : dist B C ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC; simpa using collinear_pair ℝ A B
+      have hCA : dist C A ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC
+        rw [Set.insert_comm]; simpa using collinear_pair ℝ B C
+      have hAB : dist A B ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC; simpa using collinear_pair ℝ A C
+      have hr1 : 1 - r ≠ 0 := by
+        intro h
+        apply hDC
+        have : r = 1 := by linarith
+        simp [this]
+      have hs1 : 1 - s ≠ 0 := by
+        intro h
+        apply hEA
+        have : s = 1 := by linarith
+        simp [this]
+      have ht1 : 1 - t ≠ 0 := by
+        intro h
+        apply hFB
+        have : t = 1 := by linarith
+        simp [this]
+      rw [dist_left_lineMap, dist_lineMap_right, dist_left_lineMap, dist_lineMap_right, dist_left_lineMap, dist_lineMap_right]
+      simp only [Real.norm_eq_abs]
+      have hab : |r| * |s| * |t| = |1 - r| * |1 - s| * |1 - t| := by
+        rw [← abs_mul, ← abs_mul, ← abs_mul, ← abs_mul, men, abs_neg]
+      have h1 : |1 - r| ≠ 0 := abs_ne_zero.mpr hr1
+      have h2 : |1 - s| ≠ 0 := abs_ne_zero.mpr hs1
+      have h3 : |1 - t| ≠ 0 := abs_ne_zero.mpr ht1
+      field_simp
+      linarith
+- id: ceva_theorem
+  kind: named
+  level: high
+  topic: 共点と共線・チェバの定理
+  statement: 'チェバの定理（符号付き）: 三角形$ABC$に対し、$0$でない実数$r,s,t$で$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$と定める。点$p$が直線$AD,BE,CF$のすべての上にあるなら$\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=1$であり、このとき分母は$0$でない。'
+  statement_en: 'Ceva''s theorem in signed form: for a triangle ABC, nonzero r, s, t and D = (1-r)B + rC, E = (1-s)C + sA, F = (1-t)A + tB, if p lies on lines AD, BE and CF, then (r/(1-r))(s/(1-s))(t/(1-t)) = 1.'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $r,s,t$は$0$でない実数
+  - $D,E,F$は上の式で定まる点
+  - $p$は直線$AD,BE,CF$の上にある
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の実数$r,s,t$と点$p$
+  conclusion: $\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=1$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$r,s,t$を$0$でない実数、$D,E,F$を上の式で定まる点、$p$を3直線の共有点とする。$p=\lambda A+\alpha B+\gamma C$（$\lambda+\alpha+\gamma=1$）と表すと、この係数は$p$から一意に定まる。$p$が直線$AD$上にあることから$\alpha r=\gamma(1-r)$、直線$BE$上にあることから$\lambda(1-s)=\gamma s$、直線$CF$上にあることから$\lambda t=\alpha(1-t)$を得る。$\alpha=0$とすると第3式から$\lambda=0$なので$\gamma=1$であり、第2式から$s=0$となって矛盾する。$\gamma=0$とすると第1式から$\alpha=0$なので$\lambda=1$であり、第3式から$t=0$となって矛盾する。$\lambda=0$とすると第2式から$\gamma=0$なので$\alpha=1$であり、第1式から$r=0$となって矛盾する。よって$\lambda,\alpha,\gamma$はどれも$0$でない。第1式で$r=1$なら$\gamma\cdot 0=\alpha$となり矛盾するので$r\neq 1$であり、同様に$s\neq 1$、$t\neq 1$である。3式を掛けて$\lambda\alpha\gamma$で割ると$rst=(1-r)(1-s)(1-t)$となり、結論を得る。
+  strategy: Use barycentric coordinates of p, turn each incidence into an equation, and multiply.
+  sketch:
+  - 'setup: Write p = λA + αB + γC with λ + α + γ = 1.'
+  - 'translate: The three incidences give αr = γ(1-r), λ(1-s) = γs, λt = α(1-t).'
+  - 'contradiction: If any of λ, α, γ vanishes, then one of r, s, t vanishes.'
+  - 'derive: Hence none of r, s, t equals 1.'
+  - 'conclude: Multiplying and cancelling λαγ gives the product 1.'
+  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (!= r 0) (!= s 0) (!= t 0) (on_line p a (division_point b c r)) (on_line p b (division_point c a s)) (on_line p c (division_point a b t))) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1)))
+  hard_negative:
+    statement: チェバの定理の積は$\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=-1$である（メネラウスの定理の符号）。
+    reason: $r=s=t=\frac{1}{2}$（$D,E,F$が各辺の中点）では3直線$AD,BE,CF$は重心で交わり、各因子は$1$なので積は$1$であって$-1$ではない。$-1$になるのは$D,E,F$が同一直線上にあるときである。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C p : P) (r s t : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → r ≠ 0 → s ≠ 0 → t ≠ 0 → p ∈ line[ℝ, A, AffineMap.lineMap B C r] → p ∈ line[ℝ, B, AffineMap.lineMap C A s] → p ∈ line[ℝ, C, AffineMap.lineMap A B t] → r / (1 - r) * (s / (1 - s)) * (t / (1 - t)) = 1
+  proof: |
+    by
+      intro V P _ _ _ _ A B C p r s t hABC hr hs ht h1 h2 h3
+      let T : Affine.Triangle ℝ P := ⟨![A, B, C], affineIndependent_iff_not_collinear_set.mpr hABC⟩
+      let R : Fin 3 → ℝ := ![r, s, t]
+      have hR : ∀ i, R i ≠ 0 := by
+        intro i; fin_cases i
+        exacts [hr, hs, ht]
+      have hp : ∀ i : Fin 3, p ∈ line[ℝ, T.points i, AffineMap.lineMap (T.points (i + 1)) (T.points (i + 2)) (R i)] := by
+        intro i; fin_cases i
+        exacts [h1, h2, h3]
+      have := Affine.Triangle.prod_div_one_sub_eq_one_of_mem_line_point_lineMap hR hp
+      rw [Fin.prod_univ_three] at this
+      exact this
+- id: ceva_converse
+  kind: textbook
+  level: high
+  topic: 共点と共線・チェバの定理の逆
+  statement: 'チェバの定理の逆（符号付き）: 三角形$ABC$と実数$r,s,t$で$\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=1$（分母は$0$でないものとする）とし、$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$と定める。点$p$が直線$AD$と直線$BE$の上にあれば、$p$は直線$CF$の上にもある。'
+  statement_en: 'Converse of Ceva in signed form: for a triangle ABC and real r, s, t with (r/(1-r))(s/(1-s))(t/(1-t)) = 1, if p lies on lines AD and BE, then p lies on line CF, where D = (1-r)B + rC, E = (1-s)C + sA, F = (1-t)A + tB.'
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=1$
+  - $p$は直線$AD$と直線$BE$の上にある
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の実数$r,s,t$と点$p$
+  conclusion: $p$は直線$CF$の上にある。
+  answer: |
+    $A,B,C$を同一直線上にない3点とし、実数$r,s,t$は積の条件を満たすとする。積が$1$なので$r,s,t$は$0$でなく、分母の$1-r,1-s,1-t$も$0$でなく、$rst=(1-r)(1-s)(1-t)$である。$D,E,F$を上の式で定め、$p$は直線$AD,BE$の上にあるとする。$p=\lambda A+\alpha B+\gamma C$（$\lambda+\alpha+\gamma=1$）と表すと、$\alpha r=\gamma(1-r)$、$\lambda(1-s)=\gamma s$である。$\gamma=0$なら第1式から$\alpha=0$、第2式から$\lambda=0$となり、和が$1$であることに反する。よって$\gamma\neq 0$である。$\alpha=\frac{\gamma(1-r)}{r}$、$\lambda=\frac{\gamma s}{1-s}$を代入すると、$rst=(1-r)(1-s)(1-t)$から$\lambda t=\alpha(1-t)$が従う。$\kappa=\lambda+\alpha$とおくと$\lambda=\kappa(1-t)$、$\alpha=\kappa t$なので、$p=\gamma C+\kappa F$かつ$\gamma+\kappa=1$である。よって$p$は直線$CF$の上にある。
+  strategy: Use barycentric coordinates of p and show the third incidence equation from the product condition.
+  sketch:
+  - 'derive: The product condition forces r, s, t and the denominators to be nonzero and rst = (1-r)(1-s)(1-t).'
+  - 'setup: Write p = λA + αB + γC with sum 1.'
+  - 'translate: The two incidences give αr = γ(1-r) and λ(1-s) = γs.'
+  - 'derive: γ ≠ 0, and substitution gives λt = α(1-t).'
+  - 'conclude: p = γC + (λ+α)F, so p lies on line CF.'
+  openmath: (forall (a b c p r s t) (-> (and (not (collinear_points a b c)) (= (* (* (/ r (- 1 r)) (/ s (- 1 s))) (/ t (- 1 t))) 1) (on_line p a (division_point b c r)) (on_line p b (division_point c a s))) (on_line p c (division_point a b t))))
+  hard_negative:
+    statement: 長さの比の積が$1$なら、3直線$AD,BE,CF$は1点で交わる。
+    reason: 符号の条件が必要である。メネラウスの定理の配置では$D,E,F$が同一直線上にあって長さの比の積が$1$になるが、3直線$AD,BE,CF$は一般に1点で交わらない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C p : P) (r s t : ℝ), ¬Collinear ℝ ({A, B, C} : Set P) → r / (1 - r) * (s / (1 - s)) * (t / (1 - t)) = 1 → p ∈ line[ℝ, A, AffineMap.lineMap B C r] → p ∈ line[ℝ, B, AffineMap.lineMap C A s] → p ∈ line[ℝ, C, AffineMap.lineMap A B t]
+  proof: |
+    by
+      intro V P _ _ _ _ A B C p r s t hABC hprod h1 h2
+      have hli : ∀ a b : ℝ, a • (B -ᵥ A) + b • (C -ᵥ A) = (0 : V) → a = 0 ∧ b = 0 := by
+        intro a b h
+        by_contra hab
+        apply hABC
+        rcases not_and_or.mp hab with ha | hb
+        · have hB : B -ᵥ A = (-b / a) • (C -ᵥ A) := by
+            have h2 : a • (B -ᵥ A) = (-b) • (C -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_left h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ ha, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-b / a) A C
+          rw [AffineMap.lineMap_apply, ← hB, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm] at h4
+        · have hC : C -ᵥ A = (-a / b) • (B -ᵥ A) := by
+            have h2 : b • (C -ᵥ A) = (-a) • (B -ᵥ A) := by
+              rw [neg_smul]; exact eq_neg_of_add_eq_zero_right h
+            rw [div_eq_inv_mul, mul_smul, ← h2, smul_smul, inv_mul_cancel₀ hb, one_smul]
+          have h3 := AffineMap.lineMap_mem_affineSpan_pair (-a / b) A B
+          rw [AffineMap.lineMap_apply, ← hC, vsub_vadd] at h3
+          have h4 := collinear_insert_of_mem_affineSpan_pair h3
+          rwa [Set.insert_comm, Set.pair_comm] at h4
+      have hr1 : 1 - r ≠ 0 := by
+        intro h; rw [h] at hprod; simp at hprod
+      have hs1 : 1 - s ≠ 0 := by
+        intro h; rw [h] at hprod; simp at hprod
+      have ht1 : 1 - t ≠ 0 := by
+        intro h; rw [h] at hprod; simp at hprod
+      have H : r * s * t = (1 - r) * (1 - s) * (1 - t) := by
+        field_simp at hprod
+        linear_combination hprod
+      set u : V := B -ᵥ A with hu
+      set w : V := C -ᵥ A with hw
+      have hCB : C -ᵥ B = w - u := (vsub_sub_vsub_cancel_right C B A).symm
+      have hAC : A -ᵥ C = -w := (neg_vsub_eq_vsub_rev C A).symm
+      have eD : AffineMap.lineMap B C r -ᵥ A = (1 - r) • u + r • w := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, hCB, ← hu]; module
+      have eE : AffineMap.lineMap C A s -ᵥ A = (1 - s) • w := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, hAC, ← hw]; module
+      have eF : AffineMap.lineMap A B t -ᵥ A = t • u := by
+        rw [AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_self, add_zero]
+      obtain ⟨x, hx⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp h1
+      obtain ⟨y, hy⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp h2
+      have p1 : p -ᵥ A = (x * (1 - r)) • u + (x * r) • w := by
+        rw [← hx, AffineMap.lineMap_apply, vadd_vsub, eD]; module
+      have p2 : p -ᵥ A = (1 - y) • u + (y * (1 - s)) • w := by
+        have eEB : AffineMap.lineMap C A s -ᵥ B = (1 - s) • w - u := by
+          rw [← vsub_sub_vsub_cancel_right _ B A, eE]
+        rw [← hy, AffineMap.lineMap_apply, vadd_vsub_assoc, eEB, ← hu]; module
+      have h0 : (x * (1 - r) - (1 - y)) • u + (x * r - y * (1 - s)) • w = (0 : V) := by
+        have : ((x * (1 - r)) • u + (x * r) • w) - ((1 - y) • u + (y * (1 - s)) • w) = (0 : V) := by
+          rw [← p1, ← p2, sub_self]
+        rw [← this]; module
+      obtain ⟨e1, e2⟩ := hli _ _ h0
+      set κ := r + (1 - r) * (1 - s) with hκ
+      have hxκ : x * κ = 1 - s := by rw [hκ]; linear_combination e2 + (1 - s) * e1
+      have hκ0 : κ ≠ 0 := by
+        intro h0; rw [h0, mul_zero] at hxκ; exact hs1 hxκ.symm
+      have key : t = x * (t * r + 1 - r) := by
+        apply mul_left_cancel₀ hκ0
+        rw [hκ] at hxκ ⊢
+        linear_combination H - (t * r + 1 - r) * hxκ
+      refine mem_affineSpan_pair_iff_exists_lineMap_eq.mpr ⟨1 - x * r, ?_⟩
+      apply vsub_left_cancel (p := A)
+      rw [p1, AffineMap.lineMap_apply, vadd_vsub_assoc, ← hw]
+      have eFC : AffineMap.lineMap A B t -ᵥ C = t • u - w := by
+        rw [← vsub_sub_vsub_cancel_right _ C A, eF]
+      rw [eFC]
+      have c1 : (1 - x * r) * t = x * (1 - r) := by linear_combination key
+      have : (1 - x * r) • (t • u - w) + w = ((1 - x * r) * t) • u + (x * r) • w := by module
+      rw [this, c1]
+- id: ceva_unsigned_ratio_form
+  kind: gap
+  level: high
+  topic: 共点と共線・チェバの定理の比の形
+  statement: 三角形$ABC$の直線$BC,CA,AB$上に頂点と異なる点$D,E,F$をとる。直線$AD,BE,CF$が点$p$を共有するなら、長さの比について$\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$である。
+  statement_en: If D, E, F on lines BC, CA, AB of a triangle ABC differ from the vertices and lines AD, BE, CF share a point p, then (BD/DC)(CE/EA)(AF/FB) = 1 for lengths.
+  assumptions:
+  - $A,B,C$は同一直線上にない3点
+  - $D,E,F$は直線$BC,CA,AB$上の頂点と異なる点
+  - $p$は直線$AD,BE,CF$の上にある
+  quantifiers:
+  - 実内積空間に付随する任意のアフィン空間内の任意の三角形$ABC$
+  - 任意の点$D,E,F,p$
+  conclusion: $\frac{BD}{DC}\cdot\frac{CE}{EA}\cdot\frac{AF}{FB}=1$である。
+  answer: |
+    $A,B,C$を同一直線上にない3点、$D,E,F$を直線$BC,CA,AB$上の頂点と異なる点、$p$を直線$AD,BE,CF$の共有点とする。$D=(1-r)B+rC$、$E=(1-s)C+sA$、$F=(1-t)A+tB$となる実数をとると、頂点と異なるので$r,s,t$は$0$でも$1$でもない。$BD=|r|BC$、$DC=|1-r|BC$であり、$BC>0$なので$\frac{BD}{DC}=\left|\frac{r}{1-r}\right|$である。他の2つも同様である。符号付きのチェバの定理「$\frac{r}{1-r}\cdot\frac{s}{1-s}\cdot\frac{t}{1-t}=1$」の両辺の絶対値をとれば結論を得る。
+  strategy: Convert the signed Ceva identity to lengths by taking absolute values.
+  sketch:
+  - 'setup: Parametrise D, E, F by r, s, t, none equal to 0 or 1.'
+  - 'derive: BD/DC = |r/(1-r)|, and likewise for the other two ratios.'
+  - 'apply_theorem: Signed Ceva gives the product of signed ratios equal to 1.'
+  - 'conclude: Taking absolute values gives the product of lengths equal to 1.'
+  openmath: (forall (a b c x y z p) (-> (and (not (collinear_points a b c)) (on_line x b c) (on_line y c a) (on_line z a b) (!= x b) (!= x c) (!= y c) (!= y a) (!= z a) (!= z b) (on_line p a x) (on_line p b y) (on_line p c z)) (= (* (* (/ (dist_of b x) (dist_of x c)) (/ (dist_of c y) (dist_of y a))) (/ (dist_of a z) (dist_of z b))) 1)))
+  hard_negative:
+    statement: 比を$\frac{BD}{DC}\cdot\frac{EA}{CE}\cdot\frac{AF}{FB}=1$と並べても成り立つ。
+    reason: $E$の比の向きが逆である。$BD=DC$、$CE:EA=1:2$、$AF:FB=2:1$のとき3直線は1点で交わり、正しい積は$1$だが、並べ替えた積は$4$である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (A B C D E F p : P), ¬Collinear ℝ ({A, B, C} : Set P) → D ∈ line[ℝ, B, C] → E ∈ line[ℝ, C, A] → F ∈ line[ℝ, A, B] → D ≠ B → D ≠ C → E ≠ C → E ≠ A → F ≠ A → F ≠ B → p ∈ line[ℝ, A, D] → p ∈ line[ℝ, B, E] → p ∈ line[ℝ, C, F] → dist B D / dist D C * (dist C E / dist E A) * (dist A F / dist F B) = 1
+  proof: |
+    by
+      intro V P _ _ _ _ A B C D E F p hABC hD hE hF hDB hDC hEC hEA hFA hFB h1 h2 h3
+      obtain ⟨r, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hF
+      have hr : r ≠ 0 := by rintro rfl; simp at hDB
+      have hs : s ≠ 0 := by rintro rfl; simp at hEC
+      have ht : t ≠ 0 := by rintro rfl; simp at hFA
+      have ceva : r / (1 - r) * (s / (1 - s)) * (t / (1 - t)) = 1 := by
+        let T : Affine.Triangle ℝ P := ⟨![A, B, C], affineIndependent_iff_not_collinear_set.mpr hABC⟩
+        let R : Fin 3 → ℝ := ![r, s, t]
+        have hR : ∀ i, R i ≠ 0 := by
+          intro i; fin_cases i
+          exacts [hr, hs, ht]
+        have hp : ∀ i : Fin 3, p ∈ line[ℝ, T.points i, AffineMap.lineMap (T.points (i + 1)) (T.points (i + 2)) (R i)] := by
+          intro i; fin_cases i
+          exacts [h1, h2, h3]
+        have := Affine.Triangle.prod_div_one_sub_eq_one_of_mem_line_point_lineMap hR hp
+        rw [Fin.prod_univ_three] at this
+        exact this
+      have hBC : dist B C ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC; simpa using collinear_pair ℝ A B
+      have hCA : dist C A ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC
+        rw [Set.insert_comm]; simpa using collinear_pair ℝ B C
+      have hAB : dist A B ≠ 0 := by
+        intro h; rw [dist_eq_zero] at h; subst h; apply hABC; simpa using collinear_pair ℝ A C
+      rw [dist_left_lineMap, dist_lineMap_right, dist_left_lineMap, dist_lineMap_right, dist_left_lineMap, dist_lineMap_right]
+      simp only [Real.norm_eq_abs]
+      have e1 : |r| * dist B C / (|1 - r| * dist B C) = |r / (1 - r)| := by
+        rw [abs_div]; field_simp
+      have e2 : |s| * dist C A / (|1 - s| * dist C A) = |s / (1 - s)| := by
+        rw [abs_div]; field_simp
+      have e3 : |t| * dist A B / (|1 - t| * dist A B) = |t / (1 - t)| := by
+        rw [abs_div]; field_simp
+      rw [e1, e2, e3, ← abs_mul, ← abs_mul, ceva, abs_one]
+- id: simson_line
+  kind: named
+  level: high
+  topic: 共点と共線・シムソン線
+  statement: 'シムソン線: 平面上の異なる3点$A,B,C$と点$X$が同一円周上にあるとき、$X$から直線$BC,CA,AB$に下ろした垂線の足$D,E,F$は同一直線上にある。'
+  statement_en: 'Simson line: if distinct points A, B, C and a point X of the Euclidean plane lie on a common circle, then the feet D, E, F of the perpendiculars from X to lines BC, CA, AB are collinear.'
+  assumptions:
+  - 座標平面（ユークリッド平面）の点を考える
+  - $A,B,C$は互いに異なる
+  - $A,B,C,X$は同一円周上にある
+  - $D,E,F$は$X$から直線$BC,CA,AB$への垂線の足
+  quantifiers:
+  - ユークリッド平面の任意の点$A,B,C,X,D,E,F$
+  conclusion: $D,E,F$は同一直線上にある。
+  answer: |
+    $A,B,C,X$を平面上の同一円周上の点で$A,B,C$は互いに異なるとし、$D,E,F$を$X$から直線$BC,CA,AB$への垂線の足とする。2直線$\ell,m$について、$\ell$から$m$へ測った角を$\pi$を法として$(\ell,m)$と書く（有向角）。共円については次を使う。$R\neq S$で、$P,Q$がどちらも$R,S$と異なるとき、$R,S,P,Q$が同一円周上にあれば$(PR,PS)=(QR,QS)$である（有向角で書いた円周角の定理）。
+
+    $X$が頂点に等しい場合を先に扱う。$X=A$なら$E=F=A$なので、$D,E,F$は高々2点からなり、同一直線上にある。$X=B$、$X=C$でも同じである。
+
+    以下、$X$は$A,B,C$のどれとも異なるとする。直線と円の共有点は高々2個なので、$X$は直線$BC,CA,AB$の上になく、$D,E,F$は$X$と異なる。$D=F$または$D=E$なら、$D,E,F$は高々2点からなり、同一直線上にある。そこで$D\neq F$、$D\neq E$とする。
+
+    $(DF,DX)=(BA,BX)$を示す。$D\neq B$かつ$F\neq B$のとき、$\angle XDB=\angle XFB=\frac{\pi}{2}$なので、$D,F$は$XB$を直径とする円の上にある。$D,B$はどちらも$F,X$と異なるから$(DF,DX)=(BF,BX)$である。$F$は直線$AB$上の$B$と異なる点なので、直線$BF$は直線$BA$であり、$(BF,BX)=(BA,BX)$である。$D=B$のとき、$F\neq B$なので$(DF,DX)=(BF,BX)=(BA,BX)$である。$F=B$のとき、$D\neq B$なので直線$DF$は直線$BC$である。$DX\perp BC$より$(DF,DX)=\frac{\pi}{2}$であり、$F=B$は$BX\perp AB$を意味するので$(BA,BX)=\frac{\pi}{2}$である。
+
+    同じ議論で$B,F$を$C,E$に置き換えると、$(DE,DX)=(CA,CX)$を得る。また$A,X,B,C$は同一円周上にあり、$B,C$はどちらも$A,X$と異なるので、$(BA,BX)=(CA,CX)$である。したがって$(DF,DX)=(DE,DX)$である。直線$DF$と直線$DE$はともに$D$を通り、直線$DX$となす有向角が等しいので一致する。よって$D,E,F$は同一直線上にある。
+  strategy: Chase directed angles modulo π through the circles with diameters XB and XC.
+  sketch:
+  - 'case_split: If X is a vertex, or D = F, or D = E, at most two distinct points remain.'
+  - 'setup: Otherwise X lies on no side line, and we measure directed angles between lines modulo π.'
+  - 'derive: D and F lie on the circle with diameter XB, so (DF, DX) = (BA, BX); the cases D = B and F = B are checked directly.'
+  - 'derive: The same argument at C gives (DE, DX) = (CA, CX).'
+  - 'apply_theorem: Since A, X, B, C are concyclic, (BA, BX) = (CA, CX).'
+  - 'conclude: Lines DF and DE pass through D and make the same directed angle with DX, so they coincide.'
+  openmath: (forall (a b c x p q s) (-> (and euclidean_plane_ambient (cospherical_points (set a b c x)) (!= a b) (!= b c) (!= c a) (on_line p b c) (= (inner_product (- x p) (- c b)) 0) (on_line q c a) (= (inner_product (- x q) (- a c)) 0) (on_line s a b) (= (inner_product (- x s) (- b a)) 0)) (collinear_points p q s)))
+  hard_negative:
+    statement: 外接円の上にない点$X$についても、垂線の足は同一直線上にある。
+    reason: $X$が外心なら足は3辺の中点であり、これは同一直線上にない。
+  target: |
+    ∀ (A B C X D E F : EuclideanSpace ℝ (Fin 2)), EuclideanGeometry.Cospherical ({A, B, C, X} : Set (EuclideanSpace ℝ (Fin 2))) → A ≠ B → B ≠ C → C ≠ A → D ∈ line[ℝ, B, C] → inner ℝ (X - D) (C - B) = 0 → E ∈ line[ℝ, C, A] → inner ℝ (X - E) (A - C) = 0 → F ∈ line[ℝ, A, B] → inner ℝ (X - F) (B - A) = 0 → Collinear ℝ ({D, E, F} : Set (EuclideanSpace ℝ (Fin 2)))
+  proof: |
+    by
+      intro A B C X D E F hcos hAB hBC hCA hD hpD hE hpE hF hpF
+      have men : ∀ (r s t : ℝ), r * s * t = -((1 - r) * (1 - s) * (1 - t)) →
+          Collinear ℝ ({AffineMap.lineMap B C r, AffineMap.lineMap C A s, AffineMap.lineMap A B t} : Set (EuclideanSpace ℝ (Fin 2))) := by
+        intro r s t hδ
+        set D := AffineMap.lineMap B C r with hD
+        set E := AffineMap.lineMap C A s with hE
+        set F := AffineMap.lineMap A B t with hF
+        set u : EuclideanSpace ℝ (Fin 2) := B -ᵥ A with hu
+        set w : EuclideanSpace ℝ (Fin 2) := C -ᵥ A with hw
+        have hCB : C -ᵥ B = w - u := (vsub_sub_vsub_cancel_right C B A).symm
+        have hAC : A -ᵥ C = -w := (neg_vsub_eq_vsub_rev C A).symm
+        have eD : D -ᵥ A = (1 - r) • u + r • w := by
+          rw [hD, AffineMap.lineMap_apply, vadd_vsub_assoc, hCB, ← hu]; module
+        have eE : E -ᵥ A = (1 - s) • w := by
+          rw [hE, AffineMap.lineMap_apply, vadd_vsub_assoc, hAC, ← hw]; module
+        have eF : F -ᵥ A = t • u := by
+          rw [hF, AffineMap.lineMap_apply, vadd_vsub_assoc, vsub_self, add_zero]
+        have eX : D -ᵥ F = (1 - r - t) • u + r • w := by
+          rw [← vsub_sub_vsub_cancel_right D F A, eD, eF]; module
+        have eY : E -ᵥ F = (-t) • u + (1 - s) • w := by
+          rw [← vsub_sub_vsub_cancel_right E F A, eE, eF]; module
+        have hδ' : (1 - r - t) * (1 - s) + t * r = 0 := by linear_combination hδ
+        have hcase : ∃ c : ℝ, (D -ᵥ F = c • (E -ᵥ F)) ∨ (E = F) := by
+          by_cases ht : t = 0
+          · by_cases hs : 1 - s = 0
+            · refine ⟨0, Or.inr ?_⟩
+              exact eq_of_vsub_eq_zero (by rw [eY, ht, hs]; simp)
+            · have hr : 1 - r - t = 0 := by
+                have : (1 - r - t) * (1 - s) = 0 := by rw [ht] at hδ' ⊢; linarith
+                exact (mul_eq_zero.mp this).resolve_right hs
+              refine ⟨r / (1 - s), Or.inl ?_⟩
+              rw [eX, eY, hr, ht, smul_add, smul_smul, smul_smul, div_mul_cancel₀ _ hs]
+              simp
+          · refine ⟨-(1 - r - t) / t, Or.inl ?_⟩
+            have hc : -(1 - r - t) / t * (1 - s) = r := by
+              field_simp
+              linear_combination -hδ'
+            rw [eX, eY, smul_add, smul_smul, smul_smul, hc]
+            congr 1
+            congr 1
+            field_simp
+        rw [collinear_iff_of_mem (p₀ := F) (by simp)]
+        obtain ⟨c, hc | hc⟩ := hcase
+        · refine ⟨E -ᵥ F, ?_⟩
+          intro p hp
+          simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+          rcases hp with rfl | rfl | rfl
+          · exact ⟨c, by rw [← hc, vsub_vadd]⟩
+          · exact ⟨1, by rw [one_smul, vsub_vadd]⟩
+          · exact ⟨0, by simp⟩
+        · refine ⟨D -ᵥ F, ?_⟩
+          intro p hp
+          simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+          rcases hp with rfl | rfl | rfl
+          · exact ⟨1, by rw [one_smul, vsub_vadd]⟩
+          · exact ⟨0, by simpa using hc⟩
+          · exact ⟨0, by simp⟩
+      have poly : ∀ a1 a2 b1 b2 c1 c2 o1 o2 r s t d1 d2 d3 : ℝ,
+          a1 ^ 2 + a2 ^ 2 = 2 * (a1 * o1 + a2 * o2) → b1 ^ 2 + b2 ^ 2 = 2 * (b1 * o1 + b2 * o2) →
+          c1 ^ 2 + c2 ^ 2 = 2 * (c1 * o1 + c2 * o2) →
+          r * d1 = b1 * (b1 - c1) + b2 * (b2 - c2) → s * d2 = c1 * (c1 - a1) + c2 * (c2 - a2) →
+          t * d3 = a1 * (a1 - b1) + a2 * (a2 - b2) →
+          (1 - r) * d1 = c1 * (c1 - b1) + c2 * (c2 - b2) → (1 - s) * d2 = a1 * (a1 - c1) + a2 * (a2 - c2) →
+          (1 - t) * d3 = b1 * (b1 - a1) + b2 * (b2 - a2) →
+          d1 * d2 * d3 * (r * s * t + (1 - r) * (1 - s) * (1 - t)) = 0 := by
+        intro a1 a2 b1 b2 c1 c2 o1 o2 r s t d1 d2 d3 ha hb hc e1 e2 e3 f1 f2 f3
+        have hD : (a1 ^ 2 + a2 ^ 2) * (b1 * c2 - b2 * c1) + (b1 ^ 2 + b2 ^ 2) * (c1 * a2 - c2 * a1) + (c1 ^ 2 + c2 ^ 2) * (a1 * b2 - a2 * b1) = 0 := by
+          linear_combination (b1 * c2 - b2 * c1) * ha + (c1 * a2 - c2 * a1) * hb + (a1 * b2 - a2 * b1) * hc
+        have hE : (b1 * (b1 - c1) + b2 * (b2 - c2)) * (c1 * (c1 - a1) + c2 * (c2 - a2)) * (a1 * (a1 - b1) + a2 * (a2 - b2)) +
+            (c1 * (c1 - b1) + c2 * (c2 - b2)) * (a1 * (a1 - c1) + a2 * (a2 - c2)) * (b1 * (b1 - a1) + b2 * (b2 - a2)) = 0 := by
+          linear_combination ((b1 * c2 - b2 * c1) + (c1 * a2 - c2 * a1) + (a1 * b2 - a2 * b1)) * hD
+        rw [← e1, ← e2, ← e3, ← f1, ← f2, ← f3] at hE
+        linear_combination hE
+      have inn : ∀ U W : EuclideanSpace ℝ (Fin 2), inner ℝ U W = U 0 * W 0 + U 1 * W 1 := by
+        intro U W
+        simp [PiLp.inner_apply, Fin.sum_univ_two]
+        ring
+      have ne0 : ∀ U W : EuclideanSpace ℝ (Fin 2), U ≠ W → (U 0 - W 0) ^ 2 + (U 1 - W 1) ^ 2 ≠ 0 := by
+        intro U W h
+        have h1 : 0 < ‖U - W‖ ^ 2 := by
+          have := norm_pos_iff.mpr (sub_ne_zero.mpr h)
+          positivity
+        rw [← real_inner_self_eq_norm_sq, inn] at h1
+        simp only [PiLp.sub_apply] at h1
+        nlinarith
+      obtain ⟨O, ρ, hO⟩ := hcos
+      have circ : ∀ U : EuclideanSpace ℝ (Fin 2), dist U O = ρ → (U 0 - O 0) ^ 2 + (U 1 - O 1) ^ 2 = ρ ^ 2 := by
+        intro U h
+        rw [← h, EuclideanSpace.dist_eq, Real.sq_sqrt (by positivity)]
+        simp [Fin.sum_univ_two, Real.dist_eq, sq_abs]
+      have ha := circ A (hO A (by simp))
+      have hb := circ B (hO B (by simp))
+      have hc := circ C (hO C (by simp))
+      have hp := circ X (hO X (by simp))
+      obtain ⟨r, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hD
+      obtain ⟨s, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hE
+      obtain ⟨t, rfl⟩ := mem_affineSpan_pair_iff_exists_lineMap_eq.mp hF
+      rw [inn] at hpD hpE hpF
+      simp only [AffineMap.lineMap_apply, vsub_eq_sub, vadd_eq_add, PiLp.sub_apply, PiLp.add_apply, PiLp.smul_apply, smul_eq_mul] at hpD hpE hpF
+      have d1 := ne0 C B hBC.symm
+      have d2 := ne0 A C hCA.symm
+      have d3 := ne0 B A hAB.symm
+      apply men
+      have key := poly (A 0 - X 0) (A 1 - X 1) (B 0 - X 0) (B 1 - X 1) (C 0 - X 0) (C 1 - X 1) (O 0 - X 0) (O 1 - X 1) r s t
+        ((C 0 - B 0) ^ 2 + (C 1 - B 1) ^ 2) ((A 0 - C 0) ^ 2 + (A 1 - C 1) ^ 2) ((B 0 - A 0) ^ 2 + (B 1 - A 1) ^ 2)
+        (by linear_combination ha - hp) (by linear_combination hb - hp) (by linear_combination hc - hp)
+        (by linear_combination -hpD) (by linear_combination -hpE) (by linear_combination -hpF)
+        (by linear_combination hpD) (by linear_combination hpE) (by linear_combination hpF)
+      have goal' := (mul_eq_zero.mp key).resolve_left (mul_ne_zero (mul_ne_zero d1 d2) d3)
+      linear_combination goal'

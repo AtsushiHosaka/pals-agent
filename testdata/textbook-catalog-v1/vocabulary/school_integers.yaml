@@ -1,0 +1,13 @@
+# Proposed additive OpenMath vocabulary (cd=pals2) for high-school integer properties.
+polynomial_over: {args: [term, term], returns: prop, meaning: "f is a polynomial with coefficients in F"}
+polynomial_eval: {args: [term, term], returns: term, meaning: "polynomial p evaluated at the element a"}
+seq_value: {args: [term, term], returns: term, meaning: "n-th term a_n of a sequence"}
+divisor_count: {args: [term], returns: term, meaning: "number of positive divisors of a positive integer n"}
+of_digits: {args: [term, term], returns: term, meaning: "value of the digit list L in base b, least significant digit first, in the order (b, L)"}
+digit_list_bounded: {args: [term, term], returns: prop, meaning: "every entry of the list L is less than b, in the order (b, L)"}
+digit_list_top_nonzero: {args: [term], returns: prop, meaning: "the list L is empty or its most significant entry is nonzero"}
+digit_length: {args: [term, term], returns: term, meaning: "number of base-b digits of n, in the order (b, n), with 0 having no digits"}
+digit_sum: {args: [term, term], returns: term, meaning: "sum of the base-b digits of n, in the order (b, n)"}
+digit_alternating_sum: {args: [term, term], returns: term, meaning: "alternating sum of the base-b digits of n starting from the units digit with a plus sign, in the order (b, n)"}
+list_append: {args: [term, term], returns: term, meaning: "concatenation of the lists L and M, L occupying the low-order positions"}
+list_length: {args: [term], returns: term, meaning: "number of entries of the list L"}

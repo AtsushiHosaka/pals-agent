@@ -1,0 +1,2123 @@
+- id: polynomial_sum_derivative
+  kind: gap
+  level: high
+  topic: 微分・多項式の導関数
+  statement: 実数$a_0,\dots,a_n$を係数とする多項式$\sum_{k=0}^{n}a_ky^k$の$x$における微分係数は$\sum_{k=0}^{n-1}(k+1)a_{k+1}x^k$である。
+  statement_en: For a natural number n and real coefficients a_0, ..., a_n, the polynomial ∑_{k=0}^{n} a_k y^k has derivative ∑_{k=0}^{n-1} (k+1) a_{k+1} x^k at x.
+  assumptions:
+  - $n$は自然数
+  - $a_0,\dots,a_n$は実数
+  quantifiers:
+  - 任意の自然数$n$、実数列$a$、実数$x$
+  conclusion: $\sum_{k=0}^{n}a_ky^k$は$y=x$で微分可能で、微分係数は$\sum_{k=0}^{n-1}(k+1)a_{k+1}x^k$である。
+  answer: |
+    $n$を自然数、$a_0,\dots,a_n,x$を実数とし、$g_n(y)=\sum_{k=0}^{n}a_ky^k$とおく。$g_n$の$x$における微分係数が$\sum_{k=0}^{n-1}(k+1)a_{k+1}x^k$であることを$n$に関する帰納法で示す。
+    $n=0$のとき$g_0$は定数なので微分係数は$0$であり、右辺の空の和と一致する。
+    $n=m$で成り立つとする。$g_{m+1}(y)=g_m(y)+a_{m+1}y^{m+1}$であり、$y^{m+1}$の$x$における微分係数は$(m+1)x^m$である。和の微分により、$g_{m+1}$の微分係数は$\sum_{k=0}^{m-1}(k+1)a_{k+1}x^k+(m+1)a_{m+1}x^m=\sum_{k=0}^{m}(k+1)a_{k+1}x^k$となる。
+  strategy: Induct on the degree, adding one monomial at a time.
+  sketch:
+  - 'setup: Let g_n be the polynomial with coefficients a_0, ..., a_n.'
+  - 'induction: For n = 0 the polynomial is constant and the empty sum is 0.'
+  - 'derive: Write g_{m+1} as g_m plus a_{m+1} y^{m+1} and differentiate the sum.'
+  - 'conclude: The new term extends the sum on the derivative side by one index.'
+  openmath: (forall (n a x) (-> (in n N) (has_deriv_at (lambda (y) (sum (natural_range (+ n 1)) (lambda (k) (* (seq_value a k) (^ y k))))) (sum (natural_range n) (lambda (k) (* (* (+ k 1) (seq_value a (+ k 1))) (^ x k)))) x)))
+  hard_negative:
+    statement: $\sum_{k=0}^{n}a_ky^k$の微分係数は$\sum_{k=0}^{n}ka_kx^k$である。
+    reason: 次数を下げ忘れている。$y^2$の$x$における微分係数は$2x$であり、$2x^2$ではない。
+  target: |
+    ∀ (n : ℕ) (a : ℕ → ℝ) (x : ℝ), HasDerivAt (fun y : ℝ => ∑ k ∈ Finset.range (n + 1), a k * y ^ k) (∑ k ∈ Finset.range n, ((k : ℝ) + 1) * a (k + 1) * x ^ k) x
+  proof: |
+    by
+      intro n a x
+      induction n with
+      | zero => simpa using hasDerivAt_const x (a 0)
+      | succ m ih =>
+        have h := ih.fun_add ((hasDerivAt_pow (m + 1) x).const_mul (a (m + 1)))
+        simp only [Finset.sum_range_succ _ (m + 1), Finset.sum_range_succ _ m] at h ⊢
+        refine h.congr_deriv ?_
+        simp only [Nat.add_sub_cancel]
+        push_cast
+        ring
+- id: function_power_derivative
+  kind: gap
+  level: high
+  topic: 微分・合成関数の実用形
+  statement: $f$の$a$における微分係数が$u$なら、自然数$n$について$f(x)^{n+1}$の$a$における微分係数は$(n+1)f(a)^nu$である。
+  statement_en: If f has derivative u at a and n is a natural number, then f(x)^(n+1) has derivative (n+1) f(a)^n u at a.
+  assumptions:
+  - $f$の$a$における微分係数は$u$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$、実数$u,a$、自然数$n$
+  conclusion: $f(x)^{n+1}$の$a$における微分係数は$(n+1)f(a)^nu$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$は$a$で微分可能で微分係数が$u$であるとし、$n$を自然数とする。$g(y)=y^{n+1}$とおくと$f(x)^{n+1}=g(f(x))$であり、$g$の$f(a)$における微分係数は$(n+1)f(a)^n$である。合成関数の微分法により、$g\circ f$の$a$における微分係数は$(n+1)f(a)^nu$である。
+  strategy: Compose the power function with f and apply the chain rule.
+  sketch:
+  - 'setup: Write f(x)^(n+1) as g(f(x)) with g(y) = y^(n+1).'
+  - 'apply_theorem: The chain rule gives g''(f(a)) u.'
+  - 'conclude: Substitute g''(y) = (n+1) y^n.'
+  openmath: (forall (f u a n) (-> (and (in n N) (has_deriv_at (lambda (x) (fn_value f x)) u a)) (has_deriv_at (lambda (x) (^ (fn_value f x) (+ n 1))) (* (* (+ n 1) (^ (fn_value f a) n)) u) a)))
+  hard_negative:
+    statement: $f(x)^{n+1}$の$a$における微分係数は$(n+1)f(a)^n$である。
+    reason: 内側の微分係数$u$が抜けている。$f(x)=2x$、$n=1$では$4x^2$の微分係数は$8x$だが、この式は$4x$を与える。
+  target: |
+    ∀ (f : ℝ → ℝ) (u a : ℝ) (n : ℕ), HasDerivAt f u a → HasDerivAt (fun x => f x ^ (n + 1)) (((n : ℝ) + 1) * f a ^ n * u) a
+  proof: |
+    by
+      intro f u a n hf
+      refine (hf.fun_pow (n + 1)).congr_deriv ?_
+      simp only [Nat.add_sub_cancel]
+      push_cast
+      ring
+- id: sqrt_composite_derivative
+  kind: gap
+  level: high
+  topic: 微分・合成関数の実用形
+  statement: $f$の$a$における微分係数が$u$で$f(a)>0$なら、$\sqrt{f(x)}$の$a$における微分係数は$\dfrac{u}{2\sqrt{f(a)}}$である。
+  statement_en: If f has derivative u at a and f(a) > 0, then √(f(x)) has derivative u/(2√(f(a))) at a.
+  assumptions:
+  - $f$の$a$における微分係数は$u$
+  - $f(a)>0$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$u,a$
+  conclusion: $\sqrt{f(x)}$の$a$における微分係数は$\dfrac{u}{2\sqrt{f(a)}}$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$は$a$で微分可能で微分係数が$u$であり、$f(a)>0$とする。$y>0$で$\sqrt{y}$は微分可能で、その導関数は$\dfrac{1}{2\sqrt{y}}$である。$f(a)>0$なので合成関数の微分法を使えて、$\sqrt{f(x)}$の$a$における微分係数は$\dfrac{1}{2\sqrt{f(a)}}\cdot u=\dfrac{u}{2\sqrt{f(a)}}$である。
+  strategy: Apply the chain rule to the square root at the positive point f(a).
+  sketch:
+  - 'setup: The square root is differentiable at f(a) because f(a) > 0.'
+  - 'apply_theorem: Compose with f by the chain rule.'
+  - 'conclude: The derivative is u/(2√(f(a))).'
+  openmath: (forall (f u a) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (> (fn_value f a) 0)) (has_deriv_at (lambda (x) (root (fn_value f x) 2)) (/ u (* 2 (root (fn_value f a) 2))) a)))
+  hard_negative:
+    statement: $f$が$a$で微分可能なら、$f(a)=0$でも$\sqrt{f(x)}$は$a$で微分可能である。
+    reason: $f(x)=x^2$、$a=0$では$\sqrt{f(x)}=|x|$となり、$0$で微分可能でない。
+  target: |
+    ∀ (f : ℝ → ℝ) (u a : ℝ), HasDerivAt f u a → 0 < f a → HasDerivAt (fun x => Real.sqrt (f x)) (u / (2 * Real.sqrt (f a))) a
+  proof: |
+    by
+      intro f u a hf ha
+      exact hf.sqrt ha.ne'
+- id: sin_cos_affine_derivative
+  kind: gap
+  level: high
+  topic: 微分・三角関数の合成
+  statement: 実数$a,b$について、$\sin(ax+b)$の導関数は$a\cos(ax+b)$、$\cos(ax+b)$の導関数は$-a\sin(ax+b)$である。
+  statement_en: For real a and b, at every x the function sin(ay+b) has derivative a cos(ax+b) and cos(ay+b) has derivative -a sin(ax+b).
+  assumptions:
+  - $a,b,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $\sin(ay+b)$の$x$における微分係数は$a\cos(ax+b)$、$\cos(ay+b)$の$x$における微分係数は$-a\sin(ax+b)$である。
+  answer: |
+    $a,b,x$を実数とする。$h(y)=ay+b$の$x$における微分係数は$a$である。正弦の導関数は余弦、余弦の導関数は正弦の符号を変えたものなので、合成関数の微分法により、$\sin(h(y))$の$x$における微分係数は$\cos(ax+b)\cdot a$、$\cos(h(y))$の$x$における微分係数は$-\sin(ax+b)\cdot a$である。
+  strategy: Apply the chain rule with the affine inner function.
+  sketch:
+  - 'setup: The inner function ay+b has derivative a.'
+  - 'apply_theorem: Use the chain rule with the derivatives of sine and cosine.'
+  - 'conclude: Move the factor a to the front.'
+  openmath: (forall (a b x) (and (has_deriv_at (lambda (y) (sin (+ (* a y) b))) (* a (cos (+ (* a x) b))) x) (has_deriv_at (lambda (y) (cos (+ (* a y) b))) (neg (* a (sin (+ (* a x) b)))) x)))
+  hard_negative:
+    statement: $\sin(ax+b)$の導関数は$\cos(ax+b)$である。
+    reason: 内側の係数$a$が抜けている。$\sin 2x$の$x=0$における微分係数は$2$であり、$\cos 0=1$ではない。
+  target: |
+    ∀ (a b x : ℝ), HasDerivAt (fun y => Real.sin (a * y + b)) (a * Real.cos (a * x + b)) x ∧ HasDerivAt (fun y => Real.cos (a * y + b)) (-(a * Real.sin (a * x + b))) x
+  proof: |
+    by
+      intro a b x
+      have h : HasDerivAt (fun y => a * y + b) a x := by
+        simpa using ((hasDerivAt_id x).const_mul a).add_const b
+      constructor
+      · exact h.sin.congr_deriv (by ring)
+      · exact h.cos.congr_deriv (by ring)
+- id: exponential_base_derivative
+  kind: textbook
+  level: high
+  topic: 微分・指数関数
+  statement: $a>0$のとき、$a^y$の$x$における微分係数は$a^x\log a$である。
+  statement_en: For a > 0, the function a^y has derivative a^x log a at x.
+  assumptions:
+  - $a>0$
+  quantifiers:
+  - 任意の実数$a,x$
+  conclusion: $a^y$の$x$における微分係数は$a^x\log a$である。
+  answer: |
+    $a>0$、$x$を実数とする。$a^y=e^{y\log a}$と書ける。内側の$y\log a$の微分係数は$\log a$なので、合成関数の微分法により、$a^y$の$x$における微分係数は$e^{x\log a}\log a=a^x\log a$である。
+  strategy: Rewrite the base through the natural logarithm and use the chain rule.
+  sketch:
+  - 'translate: Write a^y as exp(y log a), which is valid since a > 0.'
+  - 'apply_theorem: The chain rule gives exp(x log a) log a.'
+  - 'conclude: Rewrite exp(x log a) as a^x.'
+  openmath: (forall (a x) (-> (> a 0) (has_deriv_at (lambda (y) (^ a y)) (* (^ a x) (ln a)) x)))
+  hard_negative:
+    statement: $a>0$のとき、$a^y$の$x$における微分係数は$xa^{x-1}$である。
+    reason: 冪関数の公式を指数関数に当てはめている。$a=2$、$x=0$では正しい値は$\log 2$で、この式の値は$0$である。
+  target: |
+    ∀ (a x : ℝ), 0 < a → HasDerivAt (fun y => a ^ y) (a ^ x * Real.log a) x
+  proof: |
+    by
+      intro a x ha
+      exact (Real.hasStrictDerivAt_const_rpow ha x).hasDerivAt
+- id: log_abs_composite_derivative
+  kind: gap
+  level: high
+  topic: 微分・対数微分
+  statement: $f$の$a$における微分係数が$u$で$f(a)\neq 0$なら、$\log|f(x)|$の$a$における微分係数は$\dfrac{u}{f(a)}$である。
+  statement_en: If f has derivative u at a and f(a) ≠ 0, then log|f(x)| has derivative u/f(a) at a.
+  assumptions:
+  - $f$の$a$における微分係数は$u$
+  - $f(a)\neq 0$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$u,a$
+  conclusion: $\log|f(x)|$の$a$における微分係数は$\dfrac{u}{f(a)}$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$は$a$で微分可能で微分係数が$u$であり、$f(a)\neq 0$とする。$f$は$a$で連続なので、$a$の近くで$f(x)$は$f(a)$と同じ符号をもつ。
+    $f(a)>0$のとき、$a$の近くで$\log|f(x)|=\log f(x)$なので、合成関数の微分法により微分係数は$\dfrac{u}{f(a)}$である。
+    $f(a)<0$のとき、$a$の近くで$\log|f(x)|=\log(-f(x))$である。$-f$の$a$における微分係数は$-u$なので、微分係数は$\dfrac{-u}{-f(a)}=\dfrac{u}{f(a)}$である。
+  strategy: Split on the sign of f(a) and differentiate the logarithm locally.
+  sketch:
+  - 'setup: By continuity f keeps the sign of f(a) near a.'
+  - 'case_split: If f(a) > 0 then log|f| = log f near a.'
+  - 'case_split: If f(a) < 0 then log|f| = log(-f) near a.'
+  - 'conclude: Both cases give u/f(a) by the chain rule.'
+  openmath: (forall (f u a) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (!= (fn_value f a) 0)) (has_deriv_at (lambda (x) (ln (abs (fn_value f x)))) (/ u (fn_value f a)) a)))
+  hard_negative:
+    statement: $\log|f(x)|$の$a$における微分係数は$\dfrac{1}{f(a)}$である。
+    reason: 内側の微分係数が抜けている。$f(x)=2x$、$a=1$では$\log|2x|$の微分係数は$1$で、$\dfrac{1}{f(1)}=\dfrac12$ではない。
+  target: |
+    ∀ (f : ℝ → ℝ) (u a : ℝ), HasDerivAt f u a → f a ≠ 0 → HasDerivAt (fun x => Real.log |f x|) (u / f a) a
+  proof: |
+    by
+      intro f u a hf ha
+      simpa only [Real.log_abs] using hf.log ha
+- id: tangent_line_equation_form
+  kind: gap
+  level: high
+  topic: 微分・接線の方程式
+  statement: $f$の$a$における微分係数が$u$のとき、直線$y=mx+n$が点$(a,f(a))$を通り傾きが$u$であることと、この直線が$y=f(a)+u(x-a)$と一致することは同値である。
+  statement_en: If f has derivative u at a, then the line y = mx + n passes through (a, f(a)) with slope u if and only if mx + n = f(a) + u(x-a) for all x.
+  assumptions:
+  - $f$の$a$における微分係数は$u$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$u,a,m,n$
+  conclusion: $ma+n=f(a)$かつ$m=u$であることと、全ての実数$x$で$mx+n=f(a)+u(x-a)$であることは同値である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$の$a$における微分係数を$u$とし、$m,n$を実数とする。
+    $ma+n=f(a)$かつ$m=u$とする。任意の$x$で$mx+n=m(x-a)+(ma+n)=u(x-a)+f(a)$である。
+    逆に全ての$x$で$mx+n=f(a)+u(x-a)$とする。$x=a$を代入すると$ma+n=f(a)$である。$x=a+1$を代入して$x=a$の式を引くと$m=u$である。
+  strategy: Compare the two affine expressions by evaluating at two points.
+  sketch:
+  - 'derive: Rewrite mx + n as m(x-a) + (ma+n) and substitute the two conditions.'
+  - 'derive: Conversely evaluate the identity at x = a to get ma + n = f(a).'
+  - 'conclude: Evaluate at x = a + 1 and subtract to get m = u.'
+  openmath: (forall (f u a m n) (-> (has_deriv_at (lambda (x) (fn_value f x)) u a) (<-> (and (= (+ (* m a) n) (fn_value f a)) (= m u)) (forall (x) (= (+ (* m x) n) (+ (fn_value f a) (* u (- x a))))))))
+  hard_negative:
+    statement: 点$(a,f(a))$を通る直線は、その点における$y=f(x)$の接線である。
+    reason: 傾きの条件が抜けている。$f(x)=x^2$、$a=0$で直線$y=x$は原点を通るが、接線は$y=0$である。
+  target: |
+    ∀ (f : ℝ → ℝ) (u a m n : ℝ), HasDerivAt f u a → ((m * a + n = f a ∧ m = u) ↔ ∀ x, m * x + n = f a + u * (x - a))
+  proof: |
+    by
+      intro f u a m n _
+      constructor
+      · rintro ⟨h1, rfl⟩ x
+        rw [← h1]; ring
+      · intro h
+        have h0 := h a
+        have h1 := h (a + 1)
+        constructor
+        · linarith
+        · nlinarith
+- id: cubic_minus_tangent_factorization
+  kind: gap
+  level: high
+  topic: 微分・3次関数の接線
+  statement: $a\neq 0$の3次関数$f(x)=ax^3+bx^2+cx+d$の$x=t$における接線の傾きは$f'(t)=3at^2+2bt+c$であり、$f(x)-(f(t)+f'(t)(x-t))=a(x-t)^2\left(x+2t+\dfrac{b}{a}\right)$が成り立つ。
+  statement_en: For a ≠ 0 and f(x) = ax^3 + bx^2 + cx + d, f has derivative 3at^2 + 2bt + c at t, and f(x) minus the tangent line at t equals a(x-t)^2(x + 2t + b/a) for all x.
+  assumptions:
+  - $a\neq 0$
+  - $f(x)=ax^3+bx^2+cx+d$
+  quantifiers:
+  - 任意の実数$a,b,c,d,t$
+  - 任意の実数$x$
+  conclusion: $f$の$t$における微分係数は$3at^2+2bt+c$で、$f$と接線の差は$a(x-t)^2\left(x+2t+\dfrac{b}{a}\right)$である。
+  answer: |
+    $a\neq 0$、$b,c,d,t$を実数とし、$f(x)=ax^3+bx^2+cx+d$とする。各項を微分して$f'(t)=3at^2+2bt+c$を得る。
+    $x$を実数とする。$f(x)-f(t)=(x-t)\left(a(x^2+xt+t^2)+b(x+t)+c\right)$なので、$f'(t)$を引いて整理すると
+    $f(x)-f(t)-f'(t)(x-t)=(x-t)\left(a(x^2+xt-2t^2)+b(x-t)\right)$
+    となる。$x^2+xt-2t^2=(x-t)(x+2t)$を用いると、右辺は$(x-t)^2\left(a(x+2t)+b\right)=a(x-t)^2\left(x+2t+\dfrac{b}{a}\right)$に等しい。
+  strategy: Differentiate termwise and factor the difference of f and its tangent.
+  sketch:
+  - 'derive: Differentiate each term of f at t.'
+  - 'derive: Factor x - t out of f(x) - f(t) and subtract f''(t)(x-t).'
+  - 'derive: Factor x^2 + xt - 2t^2 as (x-t)(x+2t).'
+  - 'conclude: Pull out the factor a, which is nonzero.'
+  openmath: (forall (a b c d t) (-> (!= a 0) (and (has_deriv_at (lambda (y) (+ (+ (+ (* a (^ y 3)) (* b (^ y 2))) (* c y)) d)) (+ (+ (* (* 3 a) (^ t 2)) (* (* 2 b) t)) c) t) (forall (x) (= (- (+ (+ (+ (* a (^ x 3)) (* b (^ x 2))) (* c x)) d) (+ (+ (+ (+ (* a (^ t 3)) (* b (^ t 2))) (* c t)) d) (* (+ (+ (* (* 3 a) (^ t 2)) (* (* 2 b) t)) c) (- x t)))) (* (* a (^ (- x t) 2)) (+ (+ x (* 2 t)) (/ b a))))))))
+  hard_negative:
+    statement: 3次関数のグラフとその接線は、接点以外で交わらない。
+    reason: $f(x)=x^3$、$t=1$の接線$y=3x-2$は$x=-2$でも交わる。接点だけになるのは$x+2t+\dfrac{b}{a}$の根が$t$と一致するときに限る。
+  target: |
+    ∀ (a b c d t : ℝ), a ≠ 0 → HasDerivAt (fun y => a * y ^ 3 + b * y ^ 2 + c * y + d) (3 * a * t ^ 2 + 2 * b * t + c) t ∧ ∀ x, (a * x ^ 3 + b * x ^ 2 + c * x + d) - ((a * t ^ 3 + b * t ^ 2 + c * t + d) + (3 * a * t ^ 2 + 2 * b * t + c) * (x - t)) = a * (x - t) ^ 2 * (x + 2 * t + b / a)
+  proof: |
+    by
+      intro a b c d t ha
+      constructor
+      · have h3 := (hasDerivAt_pow 3 t).const_mul a
+        have h2 := (hasDerivAt_pow 2 t).const_mul b
+        have h1 := (hasDerivAt_id' t).const_mul c
+        exact (((h3.fun_add h2).fun_add h1).add_const d).congr_deriv (by norm_num; ring)
+      · intro x
+        field_simp
+        ring
+- id: convex_function_above_tangent
+  kind: gap
+  level: high
+  topic: 微分・接線と不等式
+  statement: 実数全体で$f''\geq 0$なら、任意の$a,x$で$f(x)\geq f(a)+f'(a)(x-a)$である。つまり$y=f(x)$は各点の接線より下に出ない。
+  statement_en: If f has derivative f1 and f1 has derivative f2 everywhere with f2 ≥ 0 everywhere, then f(x) ≥ f(a) + f1(a)(x-a) for all a and x.
+  assumptions:
+  - 実数全体で$f$の導関数は$f_1$
+  - 実数全体で$f_1$の導関数は$f_2$
+  - 全ての$y$で$f_2(y)\geq 0$
+  quantifiers:
+  - 任意の$f,f_1,f_2:\mathbb{R}\to\mathbb{R}$と実数$a,x$
+  conclusion: $f(a)+f_1(a)(x-a)\leq f(x)$である。
+  answer: |
+    $f,f_1,f_2:\mathbb{R}\to\mathbb{R}$について、実数全体で$f'=f_1$、$f_1'=f_2$、$f_2\geq 0$とし、$a,x$を実数とする。導関数が非負なので$f_1$は単調非減少である。
+    $x=a$なら等号が成り立つ。
+    $x>a$とする。平均値の定理により、ある$c\in(a,x)$で$f(x)-f(a)=f_1(c)(x-a)$となる。$f_1(c)\geq f_1(a)$かつ$x-a>0$なので、$f(x)-f(a)\geq f_1(a)(x-a)$である。
+    $x<a$とする。平均値の定理により、ある$c\in(x,a)$で$f(a)-f(x)=f_1(c)(a-x)$となる。$f_1(c)\leq f_1(a)$かつ$a-x>0$なので、$f(a)-f(x)\leq f_1(a)(a-x)$であり、整理すると$f(x)-f(a)\geq f_1(a)(x-a)$である。
+  strategy: Combine the mean value theorem with monotonicity of the first derivative.
+  sketch:
+  - 'derive: A nonnegative second derivative makes f1 nondecreasing.'
+  - 'case_split: The case x = a is an equality.'
+  - 'apply_theorem: For x > a apply the mean value theorem on [a, x] and use f1(c) ≥ f1(a).'
+  - 'apply_theorem: For x < a apply it on [x, a] and use f1(c) ≤ f1(a).'
+  - 'conclude: Both cases give the tangent line bound.'
+  openmath: (forall (f f1 f2 a x) (-> (and (forall (y) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value f1 y) y)) (forall (y) (has_deriv_at (lambda (t) (fn_value f1 t)) (fn_value f2 y) y)) (forall (y) (<= 0 (fn_value f2 y)))) (<= (+ (fn_value f a) (* (fn_value f1 a) (- x a))) (fn_value f x))))
+  hard_negative:
+    statement: $f'(a)$が存在すれば、$y=f(x)$は$x=a$における接線より下に出ない。
+    reason: $f''\geq 0$が必要である。$f(x)=x^3$、$a=0$の接線は$y=0$で、$x<0$ではグラフが接線より下にある。
+  target: |
+    ∀ (f f1 f2 : ℝ → ℝ) (a x : ℝ), (∀ y, HasDerivAt f (f1 y) y) → (∀ y, HasDerivAt f1 (f2 y) y) → (∀ y, 0 ≤ f2 y) → f a + f1 a * (x - a) ≤ f x
+  proof: |
+    by
+      intro f f1 f2 a x hf hf1 h2
+      have hm : Monotone f1 := by
+        apply monotone_of_deriv_nonneg (fun y => (hf1 y).differentiableAt)
+        intro y
+        rw [(hf1 y).deriv]
+        exact h2 y
+      have hc : Continuous f := continuous_iff_continuousAt.mpr fun y => (hf y).continuousAt
+      rcases lt_trichotomy x a with h | rfl | h
+      · obtain ⟨c, hc1, hc2⟩ := exists_hasDerivAt_eq_slope f f1 h hc.continuousOn (fun y _ => hf y)
+        have hle : f1 c ≤ f1 a := hm hc1.2.le
+        have hpos : 0 < a - x := by linarith
+        rw [eq_div_iff hpos.ne'] at hc2
+        nlinarith
+      · simp
+      · obtain ⟨c, hc1, hc2⟩ := exists_hasDerivAt_eq_slope f f1 h hc.continuousOn (fun y _ => hf y)
+        have hle : f1 a ≤ f1 c := hm hc1.1.le
+        have hpos : 0 < x - a := by linarith
+        rw [eq_div_iff hpos.ne'] at hc2
+        nlinarith
+- id: cubic_monotone_iff_discriminant
+  kind: gap
+  level: high
+  topic: 微分・増減と導関数の符号
+  statement: $a>0$のとき、$f(x)=ax^3+bx^2+cx+d$が実数全体で単調非減少であることと、$b^2\leq 3ac$であることは同値である。
+  statement_en: For a > 0, the cubic ax^3 + bx^2 + cx + d is nondecreasing on the reals if and only if b^2 ≤ 3ac.
+  assumptions:
+  - $a>0$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $ax^3+bx^2+cx+d$が単調非減少であることと$b^2\leq 3ac$は同値である。
+  answer: |
+    $a>0$、$b,c,d$を実数とし、$f(x)=ax^3+bx^2+cx+d$とする。$f'(x)=3ax^2+2bx+c$であり、
+    $3af'(x)=(3ax+b)^2+3ac-b^2$
+    が成り立つ。
+    $b^2\leq 3ac$とする。右辺は常に$0$以上で$3a>0$なので、全ての$x$で$f'(x)\geq 0$である。平均値の定理により$f$は単調非減少である。
+    逆に$f$が単調非減少とする。差分商はつねに$0$以上なので、その極限である$f'(x)$も全ての$x$で$0$以上である。$x=-\dfrac{b}{3a}$を代入すると$3af'(x)=3ac-b^2$となるので、$b^2\leq 3ac$である。
+  strategy: Complete the square in the derivative and test at its vertex.
+  sketch:
+  - 'derive: Multiply f'' by 3a and complete the square.'
+  - 'derive: If b^2 ≤ 3ac the derivative is nonnegative, so f is nondecreasing.'
+  - 'derive: If f is nondecreasing its derivative is nonnegative everywhere.'
+  - 'conclude: Evaluate at x = -b/(3a) to obtain b^2 ≤ 3ac.'
+  openmath: (forall (a b c d) (-> (> a 0) (<-> (fn_monotone (lambda (x) (+ (+ (+ (* a (^ x 3)) (* b (^ x 2))) (* c x)) d))) (<= (^ b 2) (* (* 3 a) c)))))
+  hard_negative:
+    statement: $a\neq 0$なら、$b^2\leq 3ac$のとき$ax^3+bx^2+cx+d$は単調非減少である。
+    reason: $a<0$が反例である。$-x^3$は$b^2=3ac=0$を満たすが、単調減少である。
+  target: |
+    ∀ (a b c d : ℝ), 0 < a → (Monotone (fun x : ℝ => a * x ^ 3 + b * x ^ 2 + c * x + d) ↔ b ^ 2 ≤ 3 * a * c)
+  proof: |
+    by
+      intro a b c d ha
+      have hd : ∀ x : ℝ, HasDerivAt (fun y : ℝ => a * y ^ 3 + b * y ^ 2 + c * y + d) (3 * a * x ^ 2 + 2 * b * x + c) x := by
+        intro x
+        have h3 := (hasDerivAt_pow 3 x).const_mul a
+        have h2 := (hasDerivAt_pow 2 x).const_mul b
+        have h1 := (hasDerivAt_id' x).const_mul c
+        exact (((h3.fun_add h2).fun_add h1).add_const d).congr_deriv (by norm_num; ring)
+      constructor
+      · intro hm
+        have h0 : 0 ≤ deriv (fun y : ℝ => a * y ^ 3 + b * y ^ 2 + c * y + d) (-b / (3 * a)) := hm.deriv_nonneg
+        rw [(hd _).deriv] at h0
+        have h3a : 3 * a ≠ 0 := by positivity
+        have : 3 * a * (-b / (3 * a)) ^ 2 + 2 * b * (-b / (3 * a)) + c = (3 * a * c - b ^ 2) / (3 * a) := by
+          field_simp
+          ring
+        rw [this] at h0
+        have := (div_nonneg_iff.mp h0)
+        rcases this with h | h
+        · linarith [h.1]
+        · linarith [h.2]
+      · intro h
+        apply monotone_of_deriv_nonneg (fun x => (hd x).differentiableAt)
+        intro x
+        rw [(hd x).deriv]
+        have : 0 ≤ a * (3 * a * x ^ 2 + 2 * b * x + c) := by nlinarith [sq_nonneg (3 * a * x + b)]
+        exact nonneg_of_mul_nonneg_right this ha
+- id: cubic_local_extremum_iff_discriminant
+  kind: textbook
+  level: high
+  topic: 微分・極値の判定
+  statement: $a\neq 0$のとき、$f(x)=ax^3+bx^2+cx+d$が極値をもつことと、$b^2-3ac>0$であることは同値である。
+  statement_en: For a ≠ 0, the cubic ax^3 + bx^2 + cx + d has a local extremum at some point if and only if b^2 - 3ac > 0.
+  assumptions:
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $f$が極小または極大となる点をもつことと$b^2-3ac>0$は同値である。
+  answer: |
+    $a\neq 0$、$b,c,d$を実数とし、$f(x)=ax^3+bx^2+cx+d$とする。$f'(x)=3ax^2+2bx+c$、$f''(x)=6ax+2b$であり、$3af'(x)=(3ax+b)^2-(b^2-3ac)$が成り立つ。
+    $f$が$x$で極値をとるとする。$f'(x)=0$なので$(3ax+b)^2=b^2-3ac$であり、$b^2-3ac\geq 0$である。$b^2-3ac=0$と仮定すると$3ax+b=0$となるので、$b=-3ax$、$c=3ax^2$である。これを代入すると全ての$y$で$f(y)-f(x)=a(y-x)^3$が成り立つ。$y-x$の符号によって右辺の符号が変わるので、$x$のどの近くでも$f(y)-f(x)$は正の値と負の値の両方をとる。これは極値であることに反する。よって$b^2-3ac>0$である。
+    逆に$D=b^2-3ac>0$とし、$s=\sqrt{D}>0$、$x_0=\dfrac{-b+s}{3a}$とおく。$3ax_0+b=s$なので$3af'(x_0)=s^2-D=0$となり、$f'(x_0)=0$である。また$f''(x_0)=2(3ax_0+b)=2s>0$である。第2次導関数による判定法により、$f$は$x_0$で極小となる。
+  strategy: Use the completed square of f' for necessity and the second derivative test for sufficiency.
+  sketch:
+  - 'derive: Multiply f'' by 3a and complete the square.'
+  - 'derive: An extremum at x gives f''(x) = 0, hence b^2 - 3ac ≥ 0.'
+  - 'contradiction: If b^2 - 3ac = 0 then f(y) - f(x) = a(y-x)^3 changes sign at x.'
+  - 'construct: If D > 0 take x_0 = (-b + √D)/(3a), a zero of f''.'
+  - 'apply_theorem: Since f''''(x_0) = 2√D > 0, x_0 is a local minimum.'
+  openmath: (forall (a b c d) (-> (!= a 0) (<-> (exists (x) (or (local_min_at (lambda (y) (+ (+ (+ (* a (^ y 3)) (* b (^ y 2))) (* c y)) d)) x) (local_max_at (lambda (y) (+ (+ (+ (* a (^ y 3)) (* b (^ y 2))) (* c y)) d)) x))) (> (- (^ b 2) (* (* 3 a) c)) 0))))
+  hard_negative:
+    statement: $a\neq 0$のとき、$b^2-3ac\geq 0$なら$ax^3+bx^2+cx+d$は極値をもつ。
+    reason: 等号の場合が成り立たない。$x^3$は$b^2-3ac=0$で$f'(0)=0$となるが、単調増加なので極値をもたない。
+  target: |
+    ∀ (a b c d : ℝ), a ≠ 0 → ((∃ x, IsLocalExtr (fun y : ℝ => a * y ^ 3 + b * y ^ 2 + c * y + d) x) ↔ 0 < b ^ 2 - 3 * a * c)
+  proof: |
+    by
+      intro a b c d ha
+      have hd : ∀ x : ℝ, HasDerivAt (fun y : ℝ => a * y ^ 3 + b * y ^ 2 + c * y + d) (3 * a * x ^ 2 + 2 * b * x + c) x := by
+        intro x
+        have h3 := (hasDerivAt_pow 3 x).const_mul a
+        have h2 := (hasDerivAt_pow 2 x).const_mul b
+        have h1 := (hasDerivAt_id' x).const_mul c
+        exact (((h3.fun_add h2).fun_add h1).add_const d).congr_deriv (by norm_num; ring)
+      constructor
+      · rintro ⟨x, hx⟩
+        have h0 := hx.hasDerivAt_eq_zero (hd x)
+        by_contra hneg
+        have hsq : (3 * a * x + b) ^ 2 = b ^ 2 - 3 * a * c := by
+          have : 3 * a * (3 * a * x ^ 2 + 2 * b * x + c) = 0 := by rw [h0]; ring
+          nlinarith
+        have hzero : 3 * a * x + b = 0 := by
+          have : (3 * a * x + b) ^ 2 ≤ 0 := by rw [hsq]; linarith
+          nlinarith [sq_nonneg (3 * a * x + b)]
+        have hb : b = -(3 * a * x) := by linarith
+        have hcc : c = 3 * a * x ^ 2 := by
+          rw [hb] at h0
+          linarith
+        have hdiff : ∀ y : ℝ, (a * y ^ 3 + b * y ^ 2 + c * y + d) - (a * x ^ 3 + b * x ^ 2 + c * x + d) = a * (y - x) ^ 3 := by
+          intro y
+          rw [hb, hcc]
+          ring
+        rcases hx with hmin | hmax
+        · obtain ⟨e, he, hball⟩ := Metric.eventually_nhds_iff.mp hmin
+          have h1 := hball (y := x + e / 2) (by rw [Real.dist_eq]; rw [show x + e / 2 - x = e / 2 by ring, abs_of_pos (by linarith)]; linarith)
+          have h2 := hball (y := x - e / 2) (by rw [Real.dist_eq]; rw [show x - e / 2 - x = -(e / 2) by ring, abs_neg, abs_of_pos (by linarith)]; linarith)
+          have d1 := hdiff (x + e / 2)
+          have d2 := hdiff (x - e / 2)
+          simp only at h1 h2
+          have n1 : 0 ≤ a * (e / 2) ^ 3 := by
+            have : x + e / 2 - x = e / 2 := by ring
+            rw [this] at d1; linarith
+          have n2 : 0 ≤ -(a * (e / 2) ^ 3) := by
+            have : a * (x - e / 2 - x) ^ 3 = -(a * (e / 2) ^ 3) := by ring
+            rw [this] at d2; linarith
+          have : a * (e / 2) ^ 3 = 0 := by linarith
+          have hne : (e / 2) ^ 3 ≠ 0 := by positivity
+          exact (mul_ne_zero ha hne) this
+        · obtain ⟨e, he, hball⟩ := Metric.eventually_nhds_iff.mp hmax
+          have h1 := hball (y := x + e / 2) (by rw [Real.dist_eq]; rw [show x + e / 2 - x = e / 2 by ring, abs_of_pos (by linarith)]; linarith)
+          have h2 := hball (y := x - e / 2) (by rw [Real.dist_eq]; rw [show x - e / 2 - x = -(e / 2) by ring, abs_neg, abs_of_pos (by linarith)]; linarith)
+          have d1 := hdiff (x + e / 2)
+          have d2 := hdiff (x - e / 2)
+          simp only at h1 h2
+          have n1 : a * (e / 2) ^ 3 ≤ 0 := by
+            have : x + e / 2 - x = e / 2 := by ring
+            rw [this] at d1; linarith
+          have n2 : -(a * (e / 2) ^ 3) ≤ 0 := by
+            have : a * (x - e / 2 - x) ^ 3 = -(a * (e / 2) ^ 3) := by ring
+            rw [this] at d2; linarith
+          have : a * (e / 2) ^ 3 = 0 := by linarith
+          have hne : (e / 2) ^ 3 ≠ 0 := by positivity
+          exact (mul_ne_zero ha hne) this
+      · intro hD
+        set s := Real.sqrt (b ^ 2 - 3 * a * c) with hs
+        have hspos : 0 < s := Real.sqrt_pos.mpr hD
+        have hss : s ^ 2 = b ^ 2 - 3 * a * c := Real.sq_sqrt hD.le
+        set x0 := (-b + s) / (3 * a) with hx0
+        have h3a : 3 * a ≠ 0 := mul_ne_zero (by norm_num) ha
+        have h3x : 3 * a * x0 = -b + s := by rw [hx0]; field_simp
+        have hdf : deriv (fun y : ℝ => a * y ^ 3 + b * y ^ 2 + c * y + d) = fun x => 3 * a * x ^ 2 + 2 * b * x + c := by
+          ext x
+          exact (hd x).deriv
+        have hdd : deriv (fun x : ℝ => 3 * a * x ^ 2 + 2 * b * x + c) x0 = 6 * a * x0 + 2 * b := by
+          have h2 := (hasDerivAt_pow 2 x0).const_mul (3 * a)
+          have h1 := (hasDerivAt_id' x0).const_mul (2 * b)
+          have h' : HasDerivAt (fun x : ℝ => 3 * a * x ^ 2 + 2 * b * x + c) (6 * a * x0 + 2 * b) x0 :=
+            ((h2.fun_add h1).add_const c).congr_deriv (by norm_num; ring)
+          exact h'.deriv
+        refine ⟨x0, Or.inl ?_⟩
+        apply isLocalMin_of_deriv_deriv_pos
+        · rw [hdf, hdd]
+          nlinarith
+        · rw [hdf]
+          have : 3 * a * (3 * a * x0 ^ 2 + 2 * b * x0 + c) = 0 := by
+            have : 3 * a * (3 * a * x0 ^ 2 + 2 * b * x0 + c) = (3 * a * x0) ^ 2 + 2 * b * (3 * a * x0) + 3 * a * c := by ring
+            rw [this, h3x]
+            nlinarith
+          exact (mul_eq_zero.mp this).resolve_left h3a
+        · exact (hd x0).continuousAt
+- id: derivative_comparison_inequality
+  kind: gap
+  level: high
+  topic: 微分・不等式の証明
+  statement: $f,g$が$x\geq a$で連続、$x>a$で微分可能で$g'\leq f'$、さらに$g(a)\leq f(a)$なら、$x\geq a$で$g(x)\leq f(x)$である。
+  statement_en: If f and g are continuous on [a, ∞), have derivatives f' and g' on (a, ∞) with g' ≤ f' there, and g(a) ≤ f(a), then g(x) ≤ f(x) for all x ≥ a.
+  assumptions:
+  - $f,g$は$[a,\infty)$で連続
+  - $x>a$で$f,g$の導関数は$f',g'$
+  - $x>a$で$g'(x)\leq f'(x)$
+  - $g(a)\leq f(a)$
+  quantifiers:
+  - 任意の$f,g,f',g':\mathbb{R}\to\mathbb{R}$と実数$a$
+  - 任意の$x\geq a$
+  conclusion: $g(x)\leq f(x)$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$は$[a,\infty)$で連続とする。$x>a$で$f,g$の導関数がそれぞれ$f',g'$であり、$x>a$で$g'(x)\leq f'(x)$、また$g(a)\leq f(a)$とする。$x\geq a$をとる。
+    $x=a$なら仮定そのものである。
+    $x>a$とする。$h=f-g$は$[a,x]$で連続、$(a,x)$で微分可能である。平均値の定理により、ある$c\in(a,x)$で$h(x)-h(a)=(f'(c)-g'(c))(x-a)$となる。右辺は$0$以上なので$h(x)\geq h(a)\geq 0$であり、$g(x)\leq f(x)$である。
+  strategy: Apply the mean value theorem to the difference f - g.
+  sketch:
+  - 'case_split: The case x = a is the hypothesis at the left endpoint.'
+  - 'setup: For x > a put h = f - g on [a, x].'
+  - 'apply_theorem: The mean value theorem gives c with h(x) - h(a) = (f''(c) - g''(c))(x-a).'
+  - 'conclude: The right side is nonnegative, so h(x) ≥ h(a) ≥ 0.'
+  openmath: (forall (f g df dg a) (-> (and (fn_continuous_on (lambda (x) (fn_value f x)) (closed_half_line_right a)) (fn_continuous_on (lambda (x) (fn_value g x)) (closed_half_line_right a)) (forall (x) (-> (< a x) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value df x) x))) (forall (x) (-> (< a x) (has_deriv_at (lambda (y) (fn_value g y)) (fn_value dg x) x))) (forall (x) (-> (< a x) (<= (fn_value dg x) (fn_value df x)))) (<= (fn_value g a) (fn_value f a))) (forall (x) (-> (<= a x) (<= (fn_value g x) (fn_value f x))))))
+  hard_negative:
+    statement: $x>a$で$g'\leq f'$なら、$x\geq a$で$g(x)\leq f(x)$である。
+    reason: 始点での条件が必要である。$f(x)=x$、$g(x)=x+1$、$a=0$では$g'=f'$だが、つねに$g(x)>f(x)$である。
+  target: |
+    ∀ (f g f' g' : ℝ → ℝ) (a : ℝ), ContinuousOn f (Set.Ici a) → ContinuousOn g (Set.Ici a) → (∀ x, a < x → HasDerivAt f (f' x) x) → (∀ x, a < x → HasDerivAt g (g' x) x) → (∀ x, a < x → g' x ≤ f' x) → g a ≤ f a → ∀ x, a ≤ x → g x ≤ f x
+  proof: |
+    by
+      intro f g f' g' a hf hg hdf hdg hle ha x hx
+      rcases hx.eq_or_lt with rfl | hx
+      · exact ha
+      · have hcont : ContinuousOn (fun y => f y - g y) (Set.Icc a x) :=
+          (hf.mono Set.Icc_subset_Ici_self).sub (hg.mono Set.Icc_subset_Ici_self)
+        obtain ⟨c, hc1, hc2⟩ := exists_hasDerivAt_eq_slope (fun y => f y - g y) (fun y => f' y - g' y) hx hcont (fun y hy => (hdf y hy.1).sub (hdg y hy.1))
+        have hpos : 0 < x - a := by linarith
+        rw [eq_div_iff hpos.ne'] at hc2
+        have := hle c hc1.1
+        nlinarith
+- id: unique_root_of_positive_derivative
+  kind: gap
+  level: high
+  topic: 微分・方程式の解の個数
+  statement: $a<b$とする。$f$が$[a,b]$で連続、$(a,b)$で$f'>0$、$f(a)<0<f(b)$なら、$f(x)=0$の解は$(a,b)$にちょうど1個ある。
+  statement_en: If a < b, f is continuous on [a,b], has a positive derivative on (a,b), and f(a) < 0 < f(b), then f has exactly one zero in (a,b).
+  assumptions:
+  - $a<b$
+  - $f$は$[a,b]$で連続
+  - $(a,b)$で$f$の導関数は$f'$で、$f'>0$
+  - $f(a)<0<f(b)$
+  quantifiers:
+  - 任意の$f,f':\mathbb{R}\to\mathbb{R}$と実数$a,b$
+  conclusion: $x\in(a,b)$かつ$f(x)=0$を満たす$x$がただ1つ存在する。
+  answer: |
+    $a<b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続、$(a,b)$で導関数$f'$をもち$f'>0$、$f(a)<0<f(b)$とする。
+    中間値の定理により、ある$x\in(a,b)$で$f(x)=0$となる。
+    次に、$u<v$を$(a,b)$の点とする。平均値の定理により、ある$c\in(u,v)$で$f(v)-f(u)=f'(c)(v-u)>0$である。よって$f$は$(a,b)$で狭義単調増加である。$f(x)=f(y)=0$を満たす$x,y\in(a,b)$が異なると、この単調性に反する。したがって解はただ1つである。
+  strategy: Get existence from the intermediate value theorem and uniqueness from strict monotonicity.
+  sketch:
+  - 'apply_theorem: The intermediate value theorem gives a zero x in (a,b).'
+  - 'apply_theorem: The mean value theorem makes f strictly increasing on (a,b).'
+  - 'conclude: Two distinct zeros would contradict strict monotonicity.'
+  openmath: (forall (f df a b) (-> (and (< a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (open_interval a b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value df x) x))) (forall (x) (-> (in x (open_interval a b)) (< 0 (fn_value df x)))) (< (fn_value f a) 0) (< 0 (fn_value f b))) (exists (x) (and (in x (open_interval a b)) (= (fn_value f x) 0) (forall (y) (-> (and (in y (open_interval a b)) (= (fn_value f y) 0)) (= y x)))))))
+  hard_negative:
+    statement: $f$が連続で$f(a)<0<f(b)$なら、$f(x)=0$の解は$(a,b)$にちょうど1個ある。
+    reason: 一意性には単調性が必要である。$f(x)=x^3-x$、$[a,b]=[-2,2]$では$x=-1,0,1$の3個の解がある。
+  target: |
+    ∀ (f f' : ℝ → ℝ) (a b : ℝ), a < b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a b, HasDerivAt f (f' x) x) → (∀ x ∈ Set.Ioo a b, 0 < f' x) → f a < 0 → 0 < f b → ∃! x, x ∈ Set.Ioo a b ∧ f x = 0
+  proof: |
+    by
+      intro f f' a b hab hc hd hp ha hb
+      obtain ⟨x, hx, hfx⟩ := intermediate_value_Ioo hab.le hc (show (0 : ℝ) ∈ Set.Ioo (f a) (f b) from ⟨ha, hb⟩)
+      refine ⟨x, ⟨hx, hfx⟩, ?_⟩
+      rintro y ⟨hy, hfy⟩
+      have key : ∀ u ∈ Set.Ioo a b, ∀ v ∈ Set.Ioo a b, u < v → f u < f v := by
+        intro u hu v hv huv
+        have hsub : Set.Icc u v ⊆ Set.Icc a b := Set.Icc_subset_Icc hu.1.le hv.2.le
+        obtain ⟨c, hc1, hc2⟩ := exists_hasDerivAt_eq_slope f f' huv (hc.mono hsub) (fun z hz => hd z ⟨hu.1.trans hz.1, hz.2.trans hv.2⟩)
+        have hcpos := hp c ⟨hu.1.trans hc1.1, hc1.2.trans hv.2⟩
+        rw [hc2] at hcpos
+        have hpos : 0 < v - u := by linarith
+        have := (div_pos_iff_of_pos_right hpos).mp hcpos
+        linarith
+      rcases lt_trichotomy y x with h | h | h
+      · have := key y hy x hx h; linarith
+      · exact h
+      · have := key x hx y hy h; linarith
+- id: max_at_endpoint_or_critical_point
+  kind: gap
+  level: high
+  topic: 微分・最大最小
+  statement: $a<b$で$f$が$[a,b]$で連続、$(a,b)$で微分可能なら、$f$の$[a,b]$における最大値は、端点または$f'=0$となる点でとられる。
+  statement_en: If a < b, f is continuous on [a,b] and has derivative g on (a,b), then f attains its maximum over [a,b] at some c that is an endpoint or satisfies g(c) = 0.
+  assumptions:
+  - $a<b$
+  - $f$は$[a,b]$で連続
+  - $(a,b)$で$f$の導関数は$g$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と実数$a,b$
+  conclusion: ある$c\in[a,b]$が存在し、$c=a$または$c=b$または$g(c)=0$であり、全ての$x\in[a,b]$で$f(x)\leq f(c)$である。
+  answer: |
+    $a<b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続、$(a,b)$で導関数$g$をもつとする。最大値の定理により、ある$c\in[a,b]$で全ての$x\in[a,b]$について$f(x)\leq f(c)$となる。
+    $c=a$または$c=b$なら条件を満たす。
+    $a<c<b$とする。$x\in(a,b)$で$f(x)\leq f(c)$なので、$x>c$では$\dfrac{f(x)-f(c)}{x-c}\leq 0$、$x<c$では$\dfrac{f(x)-f(c)}{x-c}\geq 0$である。$f$は$c$で微分可能なので、$x\to c+0$と$x\to c-0$の極限をとると$g(c)\leq 0$かつ$g(c)\geq 0$となる。よって$g(c)=0$である。
+  strategy: Take a maximizer by compactness and use the interior extremum criterion.
+  sketch:
+  - 'apply_theorem: The extreme value theorem gives a maximizer c in [a,b].'
+  - 'case_split: If c is an endpoint there is nothing more to prove.'
+  - 'derive: If c is interior then c is a local maximum.'
+  - 'conclude: The derivative at an interior local maximum is 0.'
+  openmath: (forall (f g a b) (-> (and (< a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (open_interval a b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value g x) x)))) (exists (c) (and (in c (closed_interval a b)) (or (= c a) (= c b) (= (fn_value g c) 0)) (forall (x) (-> (in x (closed_interval a b)) (<= (fn_value f x) (fn_value f c))))))))
+  hard_negative:
+    statement: $f$の$[a,b]$における最大値は、必ず$f'=0$となる点でとられる。
+    reason: 端点を除けない。$f(x)=x$の$[0,1]$における最大値は$x=1$でとられ、$f'$はつねに$1$である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), a < b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a b, HasDerivAt f (g x) x) → ∃ c ∈ Set.Icc a b, (c = a ∨ c = b ∨ g c = 0) ∧ ∀ x ∈ Set.Icc a b, f x ≤ f c
+  proof: |
+    by
+      intro f g a b hab hc hd
+      obtain ⟨c, hc1, hc2⟩ := isCompact_Icc.exists_isMaxOn (Set.nonempty_Icc.mpr hab.le) hc
+      refine ⟨c, hc1, ?_, fun x hx => hc2 hx⟩
+      rcases hc1.1.eq_or_lt with h | h
+      · exact Or.inl h.symm
+      rcases hc1.2.eq_or_lt with h' | h'
+      · exact Or.inr (Or.inl h')
+      refine Or.inr (Or.inr ?_)
+      have hloc : IsLocalMax f c := (hc2.on_subset Set.Ioo_subset_Icc_self).isLocalMax (Ioo_mem_nhds h h')
+      exact hloc.hasDerivAt_eq_zero (hd c ⟨h, h'⟩)
+- id: max_at_derivative_sign_change
+  kind: gap
+  level: high
+  topic: 微分・最大最小
+  statement: $a\leq c\leq b$とする。$f$が$[a,b]$で連続で、$(a,c)$で$f'\geq 0$、$(c,b)$で$f'\leq 0$なら、$f(c)$は$f$の$[a,b]$における最大値である。
+  statement_en: If a ≤ c ≤ b, f is continuous on [a,b], has derivative g on (a,c) and (c,b), with g ≥ 0 on (a,c) and g ≤ 0 on (c,b), then f(x) ≤ f(c) for all x in [a,b].
+  assumptions:
+  - $a\leq c\leq b$
+  - $f$は$[a,b]$で連続
+  - $(a,c)$と$(c,b)$で$f$の導関数は$g$
+  - $(a,c)$で$g\geq 0$、$(c,b)$で$g\leq 0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と実数$a,b,c$
+  - 任意の$x\in[a,b]$
+  conclusion: $f(x)\leq f(c)$である。
+  answer: |
+    $a\leq c\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続、$(a,c)$と$(c,b)$で導関数$g$をもち、$(a,c)$で$g\geq 0$、$(c,b)$で$g\leq 0$とする。$x\in[a,b]$をとる。
+    $x<c$なら、平均値の定理により、ある$e\in(x,c)$で$f(c)-f(x)=g(e)(c-x)$となる。$e\in(a,c)$なので右辺は$0$以上であり、$f(x)\leq f(c)$である。
+    $x=c$なら等号が成り立つ。
+    $x>c$なら、平均値の定理により、ある$e\in(c,x)$で$f(x)-f(c)=g(e)(x-c)$となる。$e\in(c,b)$なので右辺は$0$以下であり、$f(x)\leq f(c)$である。
+  strategy: Apply the mean value theorem between x and c on each side.
+  sketch:
+  - 'case_split: Treat x < c, x = c and x > c separately.'
+  - 'apply_theorem: For x < c the mean value theorem on [x, c] gives f(c) - f(x) ≥ 0.'
+  - 'apply_theorem: For x > c the mean value theorem on [c, x] gives f(x) - f(c) ≤ 0.'
+  - 'conclude: In all cases f(x) ≤ f(c).'
+  openmath: (forall (f g a b c) (-> (and (<= a c) (<= c b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (open_interval a c)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value g x) x))) (forall (x) (-> (in x (open_interval c b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value g x) x))) (forall (x) (-> (in x (open_interval a c)) (<= 0 (fn_value g x)))) (forall (x) (-> (in x (open_interval c b)) (<= (fn_value g x) 0)))) (forall (x) (-> (in x (closed_interval a b)) (<= (fn_value f x) (fn_value f c))))))
+  hard_negative:
+    statement: $f'(c)=0$なら、$f(c)$は$[a,b]$における最大値である。
+    reason: 符号の変化を調べる必要がある。$f(x)=x^2$、$[a,b]=[-1,1]$、$c=0$では$f'(0)=0$だが、$f(0)$は最小値である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b c : ℝ), a ≤ c → c ≤ b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a c, HasDerivAt f (g x) x) → (∀ x ∈ Set.Ioo c b, HasDerivAt f (g x) x) → (∀ x ∈ Set.Ioo a c, 0 ≤ g x) → (∀ x ∈ Set.Ioo c b, g x ≤ 0) → ∀ x ∈ Set.Icc a b, f x ≤ f c
+  proof: |
+    by
+      intro f g a b c hac hcb hf hd1 hd2 hg1 hg2 x hx
+      rcases lt_trichotomy x c with h | rfl | h
+      · have hsub : Set.Icc x c ⊆ Set.Icc a b := Set.Icc_subset_Icc hx.1 hcb
+        obtain ⟨e, he1, he2⟩ := exists_hasDerivAt_eq_slope f g h (hf.mono hsub) (fun z hz => hd1 z ⟨hx.1.trans_lt hz.1, hz.2⟩)
+        have := hg1 e ⟨hx.1.trans_lt he1.1, he1.2⟩
+        have hpos : 0 < c - x := by linarith
+        rw [eq_div_iff hpos.ne'] at he2
+        nlinarith
+      · exact le_rfl
+      · have hsub : Set.Icc c x ⊆ Set.Icc a b := Set.Icc_subset_Icc hac hx.2
+        obtain ⟨e, he1, he2⟩ := exists_hasDerivAt_eq_slope f g h (hf.mono hsub) (fun z hz => hd2 z ⟨hz.1, hz.2.trans_le hx.2⟩)
+        have := hg2 e ⟨he1.1, he1.2.trans_le hx.2⟩
+        have hpos : 0 < x - c := by linarith
+        rw [eq_div_iff hpos.ne'] at he2
+        nlinarith
+- id: integral_adjacent_intervals
+  kind: textbook
+  level: high
+  topic: 定積分・区間の分割
+  statement: $f$が$a,b$の間と$b,c$の間で積分可能なら、$\int_a^bf(x)\,dx+\int_b^cf(x)\,dx=\int_a^cf(x)\,dx$である。$a,b,c$の大小は問わない。
+  statement_en: If f is interval integrable between a and b and between b and c, then ∫_a^b f + ∫_b^c f = ∫_a^c f, whatever the order of a, b, c.
+  assumptions:
+  - $f$は$a,b$の間で積分可能
+  - $f$は$b,c$の間で積分可能
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$a,b,c$
+  conclusion: $\int_a^bf(x)\,dx+\int_b^cf(x)\,dx=\int_a^cf(x)\,dx$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$は$a,b$の間と$b,c$の間で積分可能とする。定積分は$p\leq q$のとき$[p,q]$上の積分とし、$p>q$のとき$\int_p^qf=-\int_q^pf$と定める。
+    $a,b,c$を小さい順に並べたものを$p\leq q\leq r$とする。仮定から$f$は$[p,r]$で積分可能であり、$[p,r]$を$[p,q]$と$[q,r]$に分けると$\int_p^qf+\int_q^rf=\int_p^rf$である。向きの定義により、これは$\int_p^qf+\int_q^rf+\int_r^pf=0$と同じである。
+    証明すべき式も、向きの定義により$S(a,b,c)=\int_a^bf+\int_b^cf+\int_c^af=0$と同じである。$S$は3つの引数を巡回的にずらしても変わらず、2つを入れ替えると符号だけが変わる。$(a,b,c)$は$(p,q,r)$の並べ替えなので$S(a,b,c)=\pm S(p,q,r)=0$である。
+  strategy: Reduce every ordering of the three points to additivity over an ordered split.
+  sketch:
+  - 'setup: Recall the oriented definition of the integral.'
+  - 'derive: For a ≤ b ≤ c, split [a,c] into [a,b] and [b,c].'
+  - 'case_split: For other orderings, sort the points and move reversed terms across.'
+  - 'conclude: Each ordering yields the same identity.'
+  openmath: (forall (f a b c) (-> (and (interval_integrable (lambda (x) (fn_value f x)) a b) (interval_integrable (lambda (x) (fn_value f x)) b c)) (= (+ (interval_integral a b (lambda (x) (fn_value f x))) (interval_integral b c (lambda (x) (fn_value f x)))) (interval_integral a c (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: $\int_a^bf(x)\,dx+\int_c^bf(x)\,dx=\int_a^cf(x)\,dx$である。
+    reason: 第2項の向きが逆である。$f=1$、$a=0$、$b=1$、$c=2$では左辺は$0$、右辺は$2$である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b c : ℝ), IntervalIntegrable f MeasureTheory.volume a b → IntervalIntegrable f MeasureTheory.volume b c → (∫ x in a..b, f x) + (∫ x in b..c, f x) = ∫ x in a..c, f x
+  proof: |
+    by
+      intro f a b c h1 h2
+      exact intervalIntegral.integral_add_adjacent_intervals h1 h2
+- id: polynomial_definite_integral
+  kind: textbook
+  level: high
+  topic: 定積分・多項式
+  statement: 実数$a_0,\dots,a_{n-1}$と$s,t$について、$\int_s^t\sum_{k=0}^{n-1}a_kx^k\,dx=\sum_{k=0}^{n-1}a_k\dfrac{t^{k+1}-s^{k+1}}{k+1}$である。
+  statement_en: For real coefficients a_k and reals s and t, ∫_s^t ∑_{k<n} a_k x^k dx = ∑_{k<n} a_k (t^(k+1) - s^(k+1))/(k+1).
+  assumptions:
+  - $n$は自然数
+  - $a_k,s,t$は実数
+  quantifiers:
+  - 任意の自然数$n$、実数列$a$、実数$s,t$
+  conclusion: $\int_s^t\sum_{k=0}^{n-1}a_kx^k\,dx=\sum_{k=0}^{n-1}a_k\dfrac{t^{k+1}-s^{k+1}}{k+1}$である。
+  answer: |
+    $n$を自然数、$a_k,s,t$を実数とする。各項$a_kx^k$は連続なので積分可能であり、有限和の定積分は項別の定積分の和になる。定数倍は積分の外に出せる。$\dfrac{x^{k+1}}{k+1}$の導関数は$x^k$なので、微積分の基本定理により$\int_s^tx^k\,dx=\dfrac{t^{k+1}-s^{k+1}}{k+1}$である。これらを足し合わせると等式を得る。
+  strategy: Integrate the finite sum termwise using the power antiderivative.
+  sketch:
+  - 'derive: Each monomial is continuous, so the integral of the sum is the sum of the integrals.'
+  - 'derive: Pull each coefficient out of its integral.'
+  - 'apply_theorem: The fundamental theorem evaluates the integral of x^k.'
+  - 'conclude: Sum the resulting terms.'
+  openmath: (forall (n a s t) (-> (in n N) (= (interval_integral s t (lambda (x) (sum (natural_range n) (lambda (k) (* (seq_value a k) (^ x k)))))) (sum (natural_range n) (lambda (k) (* (seq_value a k) (/ (- (^ t (+ k 1)) (^ s (+ k 1))) (+ k 1))))))))
+  hard_negative:
+    statement: $\int_s^t\sum_ka_kx^k\,dx=\sum_ka_k(t^{k+1}-s^{k+1})$である。
+    reason: $k+1$で割り忘れている。$\int_0^1x\,dx=\dfrac12$だが、この式は$1$を与える。
+  target: |
+    ∀ (n : ℕ) (a : ℕ → ℝ) (s t : ℝ), (∫ x in s..t, ∑ k ∈ Finset.range n, a k * x ^ k) = ∑ k ∈ Finset.range n, a k * ((t ^ (k + 1) - s ^ (k + 1)) / ((k : ℝ) + 1))
+  proof: |
+    by
+      intro n a s t
+      rw [intervalIntegral.integral_finsetSum]
+      · refine Finset.sum_congr rfl fun k _ => ?_
+        rw [intervalIntegral.integral_const_mul, integral_pow]
+      · intro k _
+        exact (by fun_prop : Continuous fun x : ℝ => a k * x ^ k).intervalIntegrable s t
+- id: integral_sixth_formula
+  kind: gap
+  level: high
+  topic: 定積分・6分の1公式
+  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^3}{6}$である。これは$\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx$の$m=n=1$の特殊形（6分の1公式）である。
+  statement_en: For real α and β, ∫_α^β (x-α)(x-β) dx = -(β-α)^3/6. This is the special case m = n = 1 of ∫_α^β (x-α)^m (x-β)^n dx (the 1/6 formula).
+  assumptions:
+  - $\alpha,\beta$は実数
+  quantifiers:
+  - 任意の実数$\alpha,\beta$
+  conclusion: $\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^3}{6}$である。
+  answer: |
+    $\alpha,\beta$を実数とする。$x-\beta=(x-\alpha)-(\beta-\alpha)$なので、被積分関数は$(x-\alpha)^2-(\beta-\alpha)(x-\alpha)$である。その原始関数として$F(x)=\dfrac{(x-\alpha)^3}{3}-(\beta-\alpha)\dfrac{(x-\alpha)^2}{2}$がとれる。微積分の基本定理により、積分の値は$F(\beta)-F(\alpha)=\dfrac{(\beta-\alpha)^3}{3}-\dfrac{(\beta-\alpha)^3}{2}=-\dfrac{(\beta-\alpha)^3}{6}$である。
+  strategy: Expand around α and evaluate an explicit antiderivative.
+  sketch:
+  - 'derive: Rewrite x - β as (x-α) - (β-α).'
+  - 'construct: Take F(x) = (x-α)^3/3 - (β-α)(x-α)^2/2.'
+  - 'apply_theorem: The fundamental theorem gives F(β) - F(α).'
+  - 'conclude: Simplify to -(β-α)^3/6.'
+  openmath: (forall (p q) (= (interval_integral p q (lambda (x) (* (- x p) (- x q)))) (/ (neg (^ (- q p) 3)) 6)))
+  hard_negative:
+    statement: $\alpha<\beta$のとき、$\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=\dfrac{(\beta-\alpha)^3}{6}$である。
+    reason: 符号が逆である。$\alpha<x<\beta$で被積分関数は負なので、積分は負になる。$\alpha=0$、$\beta=1$では値は$-\dfrac16$である。
+  target: |
+    ∀ (α β : ℝ), (∫ x in α..β, (x - α) * (x - β)) = -(β - α) ^ 3 / 6
+  proof: |
+    by
+      intro α β
+      have hd : ∀ x ∈ Set.uIcc α β, HasDerivAt (fun x : ℝ => (x - α) ^ 3 / 3 - (β - α) * (x - α) ^ 2 / 2) ((x - α) * (x - β)) x := by
+        intro x _
+        have h1 : HasDerivAt (fun x : ℝ => x - α) 1 x := (hasDerivAt_id' x).sub_const α
+        exact (((h1.fun_pow 3).div_const 3).fun_sub (((h1.fun_pow 2).const_mul (β - α)).div_const 2)).congr_deriv (by norm_num; ring)
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hd ((by fun_prop : Continuous fun x : ℝ => (x - α) * (x - β)).intervalIntegrable α β)]
+      ring
+- id: integral_twelfth_formula
+  kind: gap
+  level: high
+  topic: 定積分・12分の1公式
+  statement: 実数$\alpha,\beta$について、$\int_\alpha^\beta(x-\alpha)^2(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^4}{12}$である。これは$\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx$の$m=2,\ n=1$の特殊形（12分の1公式）である。
+  statement_en: For real α and β, ∫_α^β (x-α)^2 (x-β) dx = -(β-α)^4/12. This is the special case m = 2, n = 1 of ∫_α^β (x-α)^m (x-β)^n dx (the 1/12 formula).
+  assumptions:
+  - $\alpha,\beta$は実数
+  quantifiers:
+  - 任意の実数$\alpha,\beta$
+  conclusion: $\int_\alpha^\beta(x-\alpha)^2(x-\beta)\,dx=-\dfrac{(\beta-\alpha)^4}{12}$である。
+  answer: |
+    $\alpha,\beta$を実数とする。$x-\beta=(x-\alpha)-(\beta-\alpha)$なので、被積分関数は$(x-\alpha)^3-(\beta-\alpha)(x-\alpha)^2$である。その原始関数として$F(x)=\dfrac{(x-\alpha)^4}{4}-(\beta-\alpha)\dfrac{(x-\alpha)^3}{3}$がとれる。微積分の基本定理により、積分の値は$F(\beta)-F(\alpha)=\dfrac{(\beta-\alpha)^4}{4}-\dfrac{(\beta-\alpha)^4}{3}=-\dfrac{(\beta-\alpha)^4}{12}$である。
+  strategy: Expand around α and evaluate an explicit antiderivative.
+  sketch:
+  - 'derive: Rewrite x - β as (x-α) - (β-α).'
+  - 'construct: Take F(x) = (x-α)^4/4 - (β-α)(x-α)^3/3.'
+  - 'apply_theorem: The fundamental theorem gives F(β) - F(α).'
+  - 'conclude: Simplify to -(β-α)^4/12.'
+  openmath: (forall (p q) (= (interval_integral p q (lambda (x) (* (^ (- x p) 2) (- x q)))) (/ (neg (^ (- q p) 4)) 12)))
+  hard_negative:
+    statement: $\int_\alpha^\beta(x-\alpha)(x-\beta)^2\,dx=-\dfrac{(\beta-\alpha)^4}{12}$である。
+    reason: 平方になる因子を取り替えると符号が変わる。$\alpha=0$、$\beta=1$では$\int_0^1x(x-1)^2\,dx=\dfrac{1}{12}$である。
+  target: |
+    ∀ (α β : ℝ), (∫ x in α..β, (x - α) ^ 2 * (x - β)) = -(β - α) ^ 4 / 12
+  proof: |
+    by
+      intro α β
+      have hd : ∀ x ∈ Set.uIcc α β, HasDerivAt (fun x : ℝ => (x - α) ^ 4 / 4 - (β - α) * (x - α) ^ 3 / 3) ((x - α) ^ 2 * (x - β)) x := by
+        intro x _
+        have h1 : HasDerivAt (fun x : ℝ => x - α) 1 x := (hasDerivAt_id' x).sub_const α
+        exact (((h1.fun_pow 4).div_const 4).fun_sub (((h1.fun_pow 3).const_mul (β - α)).div_const 3)).congr_deriv (by norm_num; ring)
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hd ((by fun_prop : Continuous fun x : ℝ => (x - α) ^ 2 * (x - β)).intervalIntegrable α β)]
+      ring
+- id: integral_sin_power_reduction
+  kind: named
+  level: high
+  topic: 定積分・ウォリスの漸化式
+  statement: 自然数$n$について、$\int_0^{\pi/2}\sin^{n+2}x\,dx=\dfrac{n+1}{n+2}\int_0^{\pi/2}\sin^nx\,dx$である（ウォリスの漸化式）。
+  statement_en: Wallis recursion. For a natural number n, ∫_0^{π/2} sin^(n+2) x dx = ((n+1)/(n+2)) ∫_0^{π/2} sin^n x dx.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $\int_0^{\pi/2}\sin^{n+2}x\,dx=\dfrac{n+1}{n+2}\int_0^{\pi/2}\sin^nx\,dx$である。
+  answer: |
+    $n$を自然数とし、$I_n=\int_0^{\pi/2}\sin^nx\,dx$とおく。$\sin^{n+2}x=\sin^{n+1}x\cdot\sin x$と見て部分積分すると、$-\cos x$が$\sin x$の原始関数なので
+    $I_{n+2}=\left[-\sin^{n+1}x\cos x\right]_0^{\pi/2}+(n+1)\int_0^{\pi/2}\sin^nx\cos^2x\,dx$
+    となる。$\cos(\pi/2)=0$かつ$\sin 0=0$なので境界項は$0$である。$\cos^2x=1-\sin^2x$を代入すると$I_{n+2}=(n+1)(I_n-I_{n+2})$となる。これを$I_{n+2}$について解くと$I_{n+2}=\dfrac{n+1}{n+2}I_n$である。
+  strategy: Integrate by parts once and replace cos^2 with 1 - sin^2.
+  sketch:
+  - 'setup: Let I_n be the integral of sin^n over [0, π/2].'
+  - 'derive: Integrate by parts with sin x as the factor to integrate.'
+  - 'derive: The boundary term vanishes at both endpoints.'
+  - 'derive: Use cos^2 x = 1 - sin^2 x to get I_{n+2} = (n+1)(I_n - I_{n+2}).'
+  - 'conclude: Solve for I_{n+2}.'
+  openmath: (forall (n) (-> (in n N) (= (interval_integral 0 (/ pi 2) (lambda (x) (^ (sin x) (+ n 2)))) (* (/ (+ n 1) (+ n 2)) (interval_integral 0 (/ pi 2) (lambda (x) (^ (sin x) n)))))))
+  hard_negative:
+    statement: 実数$b$について、$\int_0^b\sin^{n+2}x\,dx=\dfrac{n+1}{n+2}\int_0^b\sin^nx\,dx$である。
+    reason: $b=\dfrac{\pi}{2}$でないと境界項が残る。$n=0$、$b=\dfrac{\pi}{4}$では左辺は$\dfrac{\pi}{8}-\dfrac14$、右辺は$\dfrac{\pi}{8}$である。
+  target: |
+    ∀ (n : ℕ), (∫ x in (0 : ℝ)..(Real.pi / 2), Real.sin x ^ (n + 2)) = ((n : ℝ) + 1) / ((n : ℝ) + 2) * ∫ x in (0 : ℝ)..(Real.pi / 2), Real.sin x ^ n
+  proof: |
+    by
+      intro n
+      rw [integral_sin_pow]
+      simp
+- id: integral_reflection
+  kind: gap
+  level: high
+  topic: 定積分・端点を入れ替える置換
+  statement: $f$が$a,b$の間で積分可能なら、$\int_a^bf(a+b-x)\,dx=\int_a^bf(x)\,dx$である。
+  statement_en: If f is interval integrable between a and b, then ∫_a^b f(a+b-x) dx = ∫_a^b f(x) dx.
+  assumptions:
+  - $f$は$a,b$の間で積分可能
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$a,b$
+  conclusion: $\int_a^bf(a+b-x)\,dx=\int_a^bf(x)\,dx$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$は$a,b$の間で積分可能とする。$u=a+b-x$と置換する。$du=-dx$であり、$x=a$のとき$u=b$、$x=b$のとき$u=a$である。よって
+    $\int_a^bf(a+b-x)\,dx=\int_b^af(u)(-du)=\int_a^bf(u)\,du$
+    である。
+  strategy: Substitute u = a + b - x, which swaps the endpoints.
+  sketch:
+  - 'construct: Put u = a + b - x, so du = -dx.'
+  - 'derive: The endpoints a and b are exchanged.'
+  - 'conclude: The sign from du cancels the reversal of the limits.'
+  openmath: (forall (f a b) (-> (interval_integrable (lambda (x) (fn_value f x)) a b) (= (interval_integral a b (lambda (x) (fn_value f (- (+ a b) x)))) (interval_integral a b (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: $\int_a^bf(b-x)\,dx=\int_a^bf(x)\,dx$である。
+    reason: 端点が入れ替わるのは$a+b-x$の場合に限る。$f(x)=x$、$a=1$、$b=2$では左辺は$\dfrac12$、右辺は$\dfrac32$である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), IntervalIntegrable f MeasureTheory.volume a b → (∫ x in a..b, f (a + b - x)) = ∫ x in a..b, f x
+  proof: |
+    by
+      intro f a b _
+      rw [intervalIntegral.integral_comp_sub_left (fun x => f x) (a + b)]
+      simp
+- id: antitone_sum_integral_bounds
+  kind: gap
+  level: high
+  topic: 定積分・和と積分の比較
+  statement: $f$が$[m,m+n]$で単調非増加なら、$\sum_{i=0}^{n-1}f(m+i+1)\leq\int_m^{m+n}f(x)\,dx\leq\sum_{i=0}^{n-1}f(m+i)$である。ここで$m$は実数、$n$は自然数である。
+  statement_en: If f is nonincreasing on [m, m+n] with m real and n natural, then ∑_{i<n} f(m+i+1) ≤ ∫_m^{m+n} f ≤ ∑_{i<n} f(m+i).
+  assumptions:
+  - $m$は実数、$n$は自然数
+  - $f$は$[m,m+n]$で単調非増加
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$、実数$m$、自然数$n$
+  conclusion: $\sum_{i=0}^{n-1}f(m+i+1)\leq\int_m^{m+n}f(x)\,dx\leq\sum_{i=0}^{n-1}f(m+i)$である。
+  answer: |
+    $m$を実数、$n$を自然数とし、$f:\mathbb{R}\to\mathbb{R}$は$[m,m+n]$で単調非増加とする。単調関数なので$f$はこの区間で積分可能である。
+    $0\leq i<n$とする。$x\in[m+i,m+i+1]$で$f(m+i+1)\leq f(x)\leq f(m+i)$である。この区間の長さは$1$なので、積分すると
+    $f(m+i+1)\leq\int_{m+i}^{m+i+1}f(x)\,dx\leq f(m+i)$
+    である。これを$i=0,\dots,n-1$について足す。積分の区間は順につながるので、中央の和は$\int_m^{m+n}f(x)\,dx$となる。
+  strategy: Bound the integral on each unit interval by the endpoint values and sum.
+  sketch:
+  - 'setup: A monotone function is integrable on the interval.'
+  - 'derive: On each unit interval the values lie between the endpoint values.'
+  - 'derive: Integrating over length 1 gives the two bounds for that interval.'
+  - 'conclude: Add over i and combine the adjacent integrals.'
+  openmath: (forall (f m n) (-> (and (in n N) (fn_antitone_on (lambda (x) (fn_value f x)) (closed_interval m (+ m n)))) (and (<= (sum (natural_range n) (lambda (i) (fn_value f (+ m (+ i 1))))) (interval_integral m (+ m n) (lambda (x) (fn_value f x)))) (<= (interval_integral m (+ m n) (lambda (x) (fn_value f x))) (sum (natural_range n) (lambda (i) (fn_value f (+ m i))))))))
+  hard_negative:
+    statement: 単調性がなくても$\int_m^{m+n}f(x)\,dx\leq\sum_{i=0}^{n-1}f(m+i)$である。
+    reason: $f(x)=x$、$m=0$、$n=1$では積分は$\dfrac12$だが、右辺は$f(0)=0$である。
+  target: |
+    ∀ (f : ℝ → ℝ) (m : ℝ) (n : ℕ), AntitoneOn f (Set.Icc m (m + n)) → (∑ i ∈ Finset.range n, f (m + ((i : ℝ) + 1))) ≤ (∫ x in m..(m + n), f x) ∧ (∫ x in m..(m + n), f x) ≤ ∑ i ∈ Finset.range n, f (m + i)
+  proof: |
+    by
+      intro f m n hf
+      refine ⟨?_, hf.integral_le_sum⟩
+      have := hf.sum_le_integral
+      simpa using this
+- id: derivative_of_integral_x_minus_t
+  kind: gap
+  level: high
+  topic: 微積分の基本定理・積分内に変数がある形
+  statement: $f$が連続なら、$\int_a^y(y-t)f(t)\,dt$を$y$の関数と見たときの$x$における微分係数は$\int_a^xf(t)\,dt$である。
+  statement_en: If f is continuous, then the function y ↦ ∫_a^y (y-t) f(t) dt has derivative ∫_a^x f(t) dt at x.
+  assumptions:
+  - $f$は実数全体で連続
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と実数$a,x$
+  conclusion: $y\mapsto\int_a^y(y-t)f(t)\,dt$の$x$における微分係数は$\int_a^xf(t)\,dt$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を連続とし、$a,x$を実数とする。被積分関数の中の$y$は積分変数$t$から見て定数なので、外に出すと
+    $\int_a^y(y-t)f(t)\,dt=y\int_a^yf(t)\,dt-\int_a^ytf(t)\,dt$
+    である。$f(t)$と$tf(t)$は連続なので、微積分の基本定理により、$\int_a^yf(t)\,dt$と$\int_a^ytf(t)\,dt$の$x$における微分係数はそれぞれ$f(x)$、$xf(x)$である。積の微分法により、右辺全体の微分係数は$\int_a^xf(t)\,dt+xf(x)-xf(x)=\int_a^xf(t)\,dt$である。
+  strategy: Pull y out of the integral, then use the product rule and the fundamental theorem.
+  sketch:
+  - 'derive: Split the integrand and pull y out of the first integral.'
+  - 'apply_theorem: The fundamental theorem differentiates each integral.'
+  - 'derive: The product rule gives ∫_a^x f + x f(x) - x f(x).'
+  - 'conclude: The terms x f(x) cancel.'
+  openmath: (forall (f a x) (-> (fn_continuous (lambda (t) (fn_value f t))) (has_deriv_at (lambda (y) (interval_integral a y (lambda (t) (* (- y t) (fn_value f t))))) (interval_integral a x (lambda (t) (fn_value f t))) x)))
+  hard_negative:
+    statement: $\int_a^y(y-t)f(t)\,dt$の$y=x$における微分係数は、上端を代入した$(x-x)f(x)=0$である。
+    reason: 被積分関数も$y$を含むので、基本定理をそのまま使えない。$f=1$、$a=0$では積分は$\dfrac{y^2}{2}$で、微分係数は$x$である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a x : ℝ), Continuous f → HasDerivAt (fun y => ∫ t in a..y, (y - t) * f t) (∫ t in a..x, f t) x
+  proof: |
+    by
+      intro f a x hf
+      have heq : (fun y => ∫ t in a..y, (y - t) * f t) = fun y => y * (∫ t in a..y, f t) - ∫ t in a..y, t * f t := by
+        ext y
+        have h1 : IntervalIntegrable (fun t => y * f t) MeasureTheory.volume a y := (by fun_prop : Continuous fun t => y * f t).intervalIntegrable a y
+        have h2 : IntervalIntegrable (fun t => t * f t) MeasureTheory.volume a y := (by fun_prop : Continuous fun t => t * f t).intervalIntegrable a y
+        rw [← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_sub h1 h2]
+        refine intervalIntegral.integral_congr fun t _ => ?_
+        ring
+      rw [heq]
+      have hF : HasDerivAt (fun y => ∫ t in a..y, f t) (f x) x := (hf.integral_hasStrictDerivAt a x).hasDerivAt
+      have hG : HasDerivAt (fun y => ∫ t in a..y, t * f t) (x * f x) x :=
+        ((by fun_prop : Continuous fun t => t * f t).integral_hasStrictDerivAt a x).hasDerivAt
+      exact (((hasDerivAt_id' x).fun_mul hF).fun_sub hG).congr_deriv (by ring)
+- id: integral_equation_constant_term
+  kind: gap
+  level: high
+  topic: 定積分・定積分を含む関数方程式
+  statement: 全ての$x$で$f(x)=g(x)+C$であり、$C=\int_a^bf(t)\,dt$のとき、$g$が$a,b$の間で積分可能なら$C(1-(b-a))=\int_a^bg(t)\,dt$である。
+  statement_en: If f(x) = g(x) + C for all x, C = ∫_a^b f, and g is interval integrable between a and b, then C(1 - (b-a)) = ∫_a^b g.
+  assumptions:
+  - 全ての$x$で$f(x)=g(x)+C$
+  - $C=\int_a^bf(t)\,dt$
+  - $g$は$a,b$の間で積分可能
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と実数$C,a,b$
+  conclusion: $C(1-(b-a))=\int_a^bg(t)\,dt$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$と実数$C,a,b$について、全ての$x$で$f(x)=g(x)+C$、$C=\int_a^bf(t)\,dt$とし、$g$は$a,b$の間で積分可能とする。$f(t)=g(t)+C$を代入して積分すると、
+    $C=\int_a^b(g(t)+C)\,dt=\int_a^bg(t)\,dt+C(b-a)$
+    である。$C(b-a)$を左辺に移すと$C(1-(b-a))=\int_a^bg(t)\,dt$を得る。
+  strategy: Substitute the form of f into its own defining integral.
+  sketch:
+  - 'setup: The integral of f over a fixed interval is the constant C.'
+  - 'derive: Substitute f = g + C into the integral.'
+  - 'derive: Split the integral into ∫g and C(b-a).'
+  - 'conclude: Move C(b-a) to the left side.'
+  openmath: (forall (f g k a b) (-> (and (interval_integrable (lambda (t) (fn_value g t)) a b) (forall (x) (= (fn_value f x) (+ (fn_value g x) k))) (= k (interval_integral a b (lambda (t) (fn_value f t))))) (= (* k (- 1 (- b a))) (interval_integral a b (lambda (t) (fn_value g t))))))
+  hard_negative:
+    statement: 全ての$x$で$f(x)=g(x)+C$、$C=\int_a^bf(t)\,dt$で、$g$が$a,b$の間で積分可能なら、$C=\int_a^bg(t)\,dt$である。
+    reason: 定数項の積分$C(b-a)$を落としている。$g=1$、$a=0$、$b=2$では$C=2+2C$より$C=-2$だが、$\int_0^2g\,dt=2$である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (C a b : ℝ), IntervalIntegrable g MeasureTheory.volume a b → (∀ x, f x = g x + C) → C = (∫ t in a..b, f t) → C * (1 - (b - a)) = ∫ t in a..b, g t
+  proof: |
+    by
+      intro f g C a b hg hf hC
+      have h : (∫ t in a..b, f t) = (∫ t in a..b, g t) + C * (b - a) := by
+        simp_rw [hf]
+        rw [intervalIntegral.integral_add hg intervalIntegrable_const, intervalIntegral.integral_const]
+        simp
+        ring
+      linarith
+- id: integral_equation_from_upper_limit
+  kind: gap
+  level: high
+  topic: 微積分の基本定理・定積分を含む関数方程式
+  statement: $f$が連続で、全ての$x$で$\int_a^xf(t)\,dt=G(x)$なら、$G(a)=0$であり、全ての$x$で$G'(x)=f(x)$である。
+  statement_en: If f is continuous and ∫_a^x f(t) dt = G(x) for all x, then G(a) = 0 and G has derivative f(x) at every x.
+  assumptions:
+  - $f$は実数全体で連続
+  - 全ての$x$で$\int_a^xf(t)\,dt=G(x)$
+  quantifiers:
+  - 任意の$f,G:\mathbb{R}\to\mathbb{R}$と実数$a$
+  conclusion: $G(a)=0$であり、全ての$x$で$G$の$x$における微分係数は$f(x)$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を連続とし、全ての$x$で$\int_a^xf(t)\,dt=G(x)$とする。$x=a$を代入すると、左辺は同じ端点の間の積分なので$0$であり、$G(a)=0$である。また$f$は連続なので、微積分の基本定理により$\int_a^xf(t)\,dt$の$x$における微分係数は$f(x)$である。$G$はこの関数に等しいので、$G$の$x$における微分係数も$f(x)$である。
+  strategy: Evaluate at the lower limit and differentiate with the fundamental theorem.
+  sketch:
+  - 'derive: At x = a the integral over a degenerate interval is 0.'
+  - 'apply_theorem: The fundamental theorem differentiates the integral at every x.'
+  - 'conclude: G equals that integral as a function, so it has the same derivative.'
+  openmath: (forall (f G a) (-> (and (fn_continuous (lambda (t) (fn_value f t))) (forall (x) (= (interval_integral a x (lambda (t) (fn_value f t))) (fn_value G x)))) (and (= (fn_value G a) 0) (forall (x) (has_deriv_at (lambda (y) (fn_value G y)) (fn_value f x) x)))))
+  hard_negative:
+    statement: $G'=f$なら、全ての$x$で$\int_a^xf(t)\,dt=G(x)$である。
+    reason: 定数の差が残るので$G(a)=0$が要る。$f=1$、$G(x)=x+1$、$a=0$では左辺は$x$である。
+  target: |
+    ∀ (f G : ℝ → ℝ) (a : ℝ), Continuous f → (∀ x, (∫ t in a..x, f t) = G x) → G a = 0 ∧ ∀ x, HasDerivAt G (f x) x
+  proof: |
+    by
+      intro f G a hf h
+      constructor
+      · rw [← h a]; simp
+      · intro x
+        have heq : G = fun x => ∫ t in a..x, f t := by ext x; exact (h x).symm
+        rw [heq]
+        exact (hf.integral_hasStrictDerivAt a x).hasDerivAt
+- id: integral_function_power_times_derivative
+  kind: gap
+  level: high
+  topic: 置換積分・実用形
+  statement: $f$が$a,b$の間の閉区間で微分可能で導関数$f'$が連続なら、自然数$n$について$\int_a^bf(x)^nf'(x)\,dx=\dfrac{f(b)^{n+1}-f(a)^{n+1}}{n+1}$である。
+  statement_en: If f has a continuous derivative f' on the closed interval between a and b, then for natural n, ∫_a^b f(x)^n f'(x) dx = (f(b)^(n+1) - f(a)^(n+1))/(n+1).
+  assumptions:
+  - $a,b$の間の閉区間の各点で$f$の導関数は$f'$
+  - $f'$はその閉区間で連続
+  quantifiers:
+  - 任意の$f,f':\mathbb{R}\to\mathbb{R}$、実数$a,b$、自然数$n$
+  conclusion: $\int_a^bf(x)^nf'(x)\,dx=\dfrac{f(b)^{n+1}-f(a)^{n+1}}{n+1}$である。
+  answer: |
+    $a,b$を実数、$n$を自然数とし、$f:\mathbb{R}\to\mathbb{R}$は$a,b$の間の閉区間の各点で導関数$f'(x)$をもち、$f'$はその閉区間で連続とする。$f$は微分可能なので連続であり、$f(x)^nf'(x)$はこの閉区間で連続である。したがって積分可能である。
+    $F(x)=\dfrac{f(x)^{n+1}}{n+1}$とおくと、合成関数の微分法により$F'(x)=f(x)^nf'(x)$である。微積分の基本定理により、積分の値は$F(b)-F(a)=\dfrac{f(b)^{n+1}-f(a)^{n+1}}{n+1}$である。
+  strategy: Recognize the integrand as the derivative of f^(n+1)/(n+1).
+  sketch:
+  - 'setup: f is continuous, so the integrand is continuous on the interval.'
+  - 'construct: Put F = f^(n+1)/(n+1).'
+  - 'derive: The chain rule gives F'' = f^n f''.'
+  - 'conclude: The fundamental theorem gives F(b) - F(a).'
+  openmath: (forall (f df a b n) (-> (and (in n N) (forall (x) (-> (in x (closed_interval_between a b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value df x) x))) (fn_continuous_on (lambda (x) (fn_value df x)) (closed_interval_between a b))) (= (interval_integral a b (lambda (x) (* (^ (fn_value f x) n) (fn_value df x)))) (/ (- (^ (fn_value f b) (+ n 1)) (^ (fn_value f a) (+ n 1))) (+ n 1)))))
+  hard_negative:
+    statement: $\int_a^bf(x)^nf'(x)\,dx=f(b)^{n+1}-f(a)^{n+1}$である。
+    reason: $n+1$で割り忘れている。$f(x)=x$、$n=1$、$[0,1]$では積分は$\dfrac12$である。
+  target: |
+    ∀ (f f' : ℝ → ℝ) (a b : ℝ) (n : ℕ), (∀ x ∈ Set.uIcc a b, HasDerivAt f (f' x) x) → ContinuousOn f' (Set.uIcc a b) → (∫ x in a..b, f x ^ n * f' x) = (f b ^ (n + 1) - f a ^ (n + 1)) / ((n : ℝ) + 1)
+  proof: |
+    by
+      intro f f' a b n hd hc
+      have hne : ((n : ℝ) + 1) ≠ 0 := by positivity
+      have hF : ∀ x ∈ Set.uIcc a b, HasDerivAt (fun x => f x ^ (n + 1) / ((n : ℝ) + 1)) (f x ^ n * f' x) x := by
+        intro x hx
+        refine (((hd x hx).fun_pow (n + 1)).div_const _).congr_deriv ?_
+        simp only [Nat.add_sub_cancel]
+        push_cast
+        field_simp
+      have hfc : ContinuousOn f (Set.uIcc a b) := fun x hx => (hd x hx).continuousAt.continuousWithinAt
+      have hi : IntervalIntegrable (fun x => f x ^ n * f' x) MeasureTheory.volume a b :=
+        ContinuousOn.intervalIntegrable ((hfc.pow n).mul hc)
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hF hi]
+      ring
+- id: integral_affine_power
+  kind: gap
+  level: high
+  topic: 置換積分・一次式の冪
+  statement: $a\neq 0$のとき、自然数$n$について$\int_s^t(ax+b)^n\,dx=\dfrac{(at+b)^{n+1}-(as+b)^{n+1}}{a(n+1)}$である。
+  statement_en: For a ≠ 0 and natural n, ∫_s^t (ax+b)^n dx = ((at+b)^(n+1) - (as+b)^(n+1))/(a(n+1)).
+  assumptions:
+  - $a\neq 0$
+  - $n$は自然数
+  quantifiers:
+  - 任意の実数$a,b,s,t$と自然数$n$
+  conclusion: $\int_s^t(ax+b)^n\,dx=\dfrac{(at+b)^{n+1}-(as+b)^{n+1}}{a(n+1)}$である。
+  answer: |
+    $a\neq 0$、$b,s,t$を実数、$n$を自然数とする。$F(x)=\dfrac{(ax+b)^{n+1}}{a(n+1)}$とおくと、合成関数の微分法により$F'(x)=\dfrac{(n+1)(ax+b)^n\cdot a}{a(n+1)}=(ax+b)^n$である。被積分関数は連続なので、微積分の基本定理により積分の値は$F(t)-F(s)$であり、これは右辺に等しい。
+  strategy: Give the antiderivative with the factor 1/a from the inner function.
+  sketch:
+  - 'construct: Put F(x) = (ax+b)^(n+1)/(a(n+1)), using a ≠ 0.'
+  - 'derive: The chain rule gives F''(x) = (ax+b)^n.'
+  - 'conclude: The fundamental theorem gives F(t) - F(s).'
+  openmath: (forall (a b s t n) (-> (and (in n N) (!= a 0)) (= (interval_integral s t (lambda (x) (^ (+ (* a x) b) n))) (/ (- (^ (+ (* a t) b) (+ n 1)) (^ (+ (* a s) b) (+ n 1))) (* a (+ n 1))))))
+  hard_negative:
+    statement: $\int_s^t(ax+b)^n\,dx=\dfrac{(at+b)^{n+1}-(as+b)^{n+1}}{n+1}$である。
+    reason: 内側の係数で割る必要がある。$a=2$、$b=0$、$n=0$、$[0,1]$では積分は$1$だが、この式は$2$を与える。
+  target: |
+    ∀ (a b s t : ℝ) (n : ℕ), a ≠ 0 → (∫ x in s..t, (a * x + b) ^ n) = ((a * t + b) ^ (n + 1) - (a * s + b) ^ (n + 1)) / (a * ((n : ℝ) + 1))
+  proof: |
+    by
+      intro a b s t n ha
+      have hne : ((n : ℝ) + 1) ≠ 0 := by positivity
+      have hF : ∀ x ∈ Set.uIcc s t, HasDerivAt (fun x => (a * x + b) ^ (n + 1) / (a * ((n : ℝ) + 1))) ((a * x + b) ^ n) x := by
+        intro x _
+        have h : HasDerivAt (fun y => a * y + b) a x := ((hasDerivAt_id' x).const_mul a).add_const b |>.congr_deriv (by ring)
+        refine ((h.fun_pow (n + 1)).div_const _).congr_deriv ?_
+        simp only [Nat.add_sub_cancel]
+        push_cast
+        field_simp
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hF ((by fun_prop : Continuous fun x : ℝ => (a * x + b) ^ n).intervalIntegrable s t)]
+      ring
+- id: integral_semicircle
+  kind: textbook
+  level: high
+  topic: 置換積分・半円の面積
+  statement: $a>0$のとき、$\int_{-a}^{a}\sqrt{a^2-x^2}\,dx=\dfrac{\pi a^2}{2}$である。
+  statement_en: For a > 0, ∫_{-a}^{a} √(a^2 - x^2) dx = π a^2 / 2.
+  assumptions:
+  - $a>0$
+  quantifiers:
+  - 任意の実数$a$
+  conclusion: $\int_{-a}^{a}\sqrt{a^2-x^2}\,dx=\dfrac{\pi a^2}{2}$である。
+  answer: |
+    $a>0$とする。$x=a\sin\theta$（$-\dfrac{\pi}{2}\leq\theta\leq\dfrac{\pi}{2}$）と置換する。$dx=a\cos\theta\,d\theta$であり、この範囲で$\cos\theta\geq 0$なので$\sqrt{a^2-x^2}=a\cos\theta$である。$x=-a$のとき$\theta=-\dfrac{\pi}{2}$、$x=a$のとき$\theta=\dfrac{\pi}{2}$なので、
+    $\int_{-a}^{a}\sqrt{a^2-x^2}\,dx=a^2\int_{-\pi/2}^{\pi/2}\cos^2\theta\,d\theta=a^2\int_{-\pi/2}^{\pi/2}\dfrac{1+\cos 2\theta}{2}\,d\theta=a^2\left[\dfrac{\theta}{2}+\dfrac{\sin 2\theta}{4}\right]_{-\pi/2}^{\pi/2}=\dfrac{\pi a^2}{2}$
+    である。
+  strategy: Substitute x = a sin θ and integrate cos^2 θ with the double angle formula.
+  sketch:
+  - 'construct: Put x = a sin θ on [-π/2, π/2].'
+  - 'derive: Since cos θ ≥ 0 there, the root becomes a cos θ.'
+  - 'derive: The integral becomes a^2 ∫ cos^2 θ dθ.'
+  - 'conclude: The double angle formula gives π a^2 / 2.'
+  openmath: (forall (a) (-> (> a 0) (= (interval_integral (neg a) a (lambda (x) (root (- (^ a 2) (^ x 2)) 2))) (/ (* pi (^ a 2)) 2))))
+  hard_negative:
+    statement: $a>0$のとき、$\int_0^a\sqrt{a^2-x^2}\,dx=\dfrac{\pi a^2}{2}$である。
+    reason: $[0,a]$の積分は四分円の面積で、値は$\dfrac{\pi a^2}{4}$である。
+  target: |
+    ∀ (a : ℝ), 0 < a → (∫ x in (-a)..a, Real.sqrt (a ^ 2 - x ^ 2)) = Real.pi * a ^ 2 / 2
+  proof: |
+    by
+      intro a ha
+      have h := intervalIntegral.integral_comp_mul_left (a := -1) (b := 1) (fun x => Real.sqrt (a ^ 2 - x ^ 2)) ha.ne'
+      have hscale : ∀ u : ℝ, Real.sqrt (a ^ 2 - (a * u) ^ 2) = a * Real.sqrt (1 - u ^ 2) := by
+        intro u
+        rw [show a ^ 2 - (a * u) ^ 2 = a ^ 2 * (1 - u ^ 2) by ring, Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq ha.le]
+      simp only [hscale] at h
+      rw [intervalIntegral.integral_const_mul, integral_sqrt_one_sub_sq] at h
+      simp only [mul_neg, mul_one, smul_eq_mul] at h
+      have hne := ha.ne'
+      have : (∫ x in (-a)..a, Real.sqrt (a ^ 2 - x ^ 2)) = a * (a * (Real.pi / 2)) := by
+        rw [h]
+        field_simp
+      rw [this]
+      ring
+- id: integral_one_over_sum_of_squares
+  kind: textbook
+  level: high
+  topic: 置換積分・逆正接
+  statement: $c>0$のとき、$\int_s^t\dfrac{dx}{x^2+c^2}=\dfrac{1}{c}\left(\arctan\dfrac{t}{c}-\arctan\dfrac{s}{c}\right)$である。
+  statement_en: For c > 0, ∫_s^t dx/(x^2 + c^2) = (arctan(t/c) - arctan(s/c))/c.
+  assumptions:
+  - $c>0$
+  quantifiers:
+  - 任意の実数$c,s,t$
+  conclusion: $\int_s^t\dfrac{dx}{x^2+c^2}=\dfrac{1}{c}\left(\arctan\dfrac{t}{c}-\arctan\dfrac{s}{c}\right)$である。
+  answer: |
+    $c>0$、$s,t$を実数とする。$\arctan$は$\tan$の逆関数で、その導関数は$\dfrac{1}{1+y^2}$である。$F(x)=\dfrac{1}{c}\arctan\dfrac{x}{c}$とおくと、合成関数の微分法により
+    $F'(x)=\dfrac{1}{c}\cdot\dfrac{1}{1+(x/c)^2}\cdot\dfrac{1}{c}=\dfrac{1}{x^2+c^2}$
+    である。被積分関数は$x^2+c^2>0$により連続なので、微積分の基本定理により積分の値は$F(t)-F(s)$である。
+  strategy: Differentiate the scaled inverse tangent and apply the fundamental theorem.
+  sketch:
+  - 'construct: Put F(x) = arctan(x/c)/c.'
+  - 'derive: The chain rule gives F''(x) = 1/(x^2 + c^2).'
+  - 'derive: The integrand is continuous because the denominator is positive.'
+  - 'conclude: The fundamental theorem gives F(t) - F(s).'
+  openmath: (forall (c s t) (-> (> c 0) (= (interval_integral s t (lambda (x) (/ 1 (+ (^ x 2) (^ c 2))))) (/ (- (arctan_value (/ t c)) (arctan_value (/ s c))) c))))
+  hard_negative:
+    statement: $c>0$のとき、$\int_s^t\dfrac{dx}{x^2+c^2}=\arctan\dfrac{t}{c}-\arctan\dfrac{s}{c}$である。
+    reason: 因子$\dfrac1c$が抜けている。$c=2$、$s=0$、$t=2$では積分は$\dfrac{\pi}{8}$だが、この式は$\dfrac{\pi}{4}$を与える。
+  target: |
+    ∀ (c s t : ℝ), 0 < c → (∫ x in s..t, 1 / (x ^ 2 + c ^ 2)) = (Real.arctan (t / c) - Real.arctan (s / c)) / c
+  proof: |
+    by
+      intro c s t hc
+      have hF : ∀ x ∈ Set.uIcc s t, HasDerivAt (fun x => Real.arctan (x / c) / c) (1 / (x ^ 2 + c ^ 2)) x := by
+        intro x _
+        have h : HasDerivAt (fun y : ℝ => y / c) (1 / c) x := (hasDerivAt_id' x).div_const c
+        refine (h.arctan.div_const c).congr_deriv ?_
+        have : x ^ 2 + c ^ 2 ≠ 0 := by positivity
+        field_simp
+        ring
+      have hi : Continuous fun x : ℝ => 1 / (x ^ 2 + c ^ 2) := by
+        refine continuous_const.div (by fun_prop) fun x => ?_
+        positivity
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hF (hi.intervalIntegrable s t)]
+      ring
+- id: integral_log_formula
+  kind: textbook
+  level: high
+  topic: 部分積分・対数関数
+  statement: $s,t>0$のとき、$\int_s^t\log x\,dx=t\log t-s\log s-t+s$である。
+  statement_en: For s, t > 0, ∫_s^t log x dx = t log t - s log s - t + s.
+  assumptions:
+  - $s>0$
+  - $t>0$
+  quantifiers:
+  - 任意の実数$s,t$
+  conclusion: $\int_s^t\log x\,dx=t\log t-s\log s-t+s$である。
+  answer: |
+    $s,t>0$とする。$s,t$の間の閉区間は正の数からなるので、$\log x$はそこで連続である。$F(x)=x\log x-x$とおくと、積の微分法により$F'(x)=\log x+x\cdot\dfrac1x-1=\log x$である。微積分の基本定理により、積分の値は$F(t)-F(s)=t\log t-s\log s-t+s$である。
+  strategy: Use the antiderivative x log x - x obtained by parts.
+  sketch:
+  - 'setup: log is continuous on the positive interval between s and t.'
+  - 'construct: Put F(x) = x log x - x.'
+  - 'derive: The product rule gives F''(x) = log x.'
+  - 'conclude: The fundamental theorem gives F(t) - F(s).'
+  openmath: (forall (s t) (-> (and (> s 0) (> t 0)) (= (interval_integral s t (lambda (x) (ln x))) (+ (- (- (* t (ln t)) (* s (ln s))) t) s))))
+  hard_negative:
+    statement: $s,t>0$のとき、$\int_s^t\log x\,dx=t\log t-s\log s$である。
+    reason: 部分積分で残る$-t+s$が抜けている。$s=1$、$t=e$では積分は$1$だが、この式は$e$を与える。
+  target: |
+    ∀ (s t : ℝ), 0 < s → 0 < t → (∫ x in s..t, Real.log x) = t * Real.log t - s * Real.log s - t + s
+  proof: |
+    by
+      intro s t _ _
+      exact integral_log
+- id: integral_x_mul_derivative
+  kind: gap
+  level: high
+  topic: 部分積分・実用形
+  statement: $f$が$a,b$の間の閉区間で微分可能で導関数$f'$が連続なら、$\int_a^bxf'(x)\,dx=bf(b)-af(a)-\int_a^bf(x)\,dx$である。
+  statement_en: If f has a continuous derivative f' on the closed interval between a and b, then ∫_a^b x f'(x) dx = b f(b) - a f(a) - ∫_a^b f(x) dx.
+  assumptions:
+  - $a,b$の間の閉区間の各点で$f$の導関数は$f'$
+  - $f'$はその閉区間で連続
+  quantifiers:
+  - 任意の$f,f':\mathbb{R}\to\mathbb{R}$と実数$a,b$
+  conclusion: $\int_a^bxf'(x)\,dx=bf(b)-af(a)-\int_a^bf(x)\,dx$である。
+  answer: |
+    $a,b$を実数とし、$f:\mathbb{R}\to\mathbb{R}$は$a,b$の間の閉区間の各点で導関数$f'(x)$をもち、$f'$はその閉区間で連続とする。$f$は微分可能なので連続である。$(xf(x))'=f(x)+xf'(x)$の右辺は連続なので、微積分の基本定理により
+    $bf(b)-af(a)=\int_a^bf(x)\,dx+\int_a^bxf'(x)\,dx$
+    である。$\int_a^bf(x)\,dx$を移項すると等式を得る。
+  strategy: Integrate the product rule for x f(x) over the interval.
+  sketch:
+  - 'setup: f is continuous because it is differentiable.'
+  - 'derive: The product rule gives (x f(x))'' = f(x) + x f''(x).'
+  - 'apply_theorem: Integrate both sides using the fundamental theorem.'
+  - 'conclude: Move ∫_a^b f to the other side.'
+  openmath: (forall (f df a b) (-> (and (forall (x) (-> (in x (closed_interval_between a b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value df x) x))) (fn_continuous_on (lambda (x) (fn_value df x)) (closed_interval_between a b))) (= (interval_integral a b (lambda (x) (* x (fn_value df x)))) (- (- (* b (fn_value f b)) (* a (fn_value f a))) (interval_integral a b (lambda (x) (fn_value f x)))))))
+  hard_negative:
+    statement: $\int_a^bxf'(x)\,dx=bf(b)-af(a)+\int_a^bf(x)\,dx$である。
+    reason: 符号が逆である。$f=1$、$[0,1]$では左辺は$0$だが、この式は$2$を与える。
+  target: |
+    ∀ (f f' : ℝ → ℝ) (a b : ℝ), (∀ x ∈ Set.uIcc a b, HasDerivAt f (f' x) x) → ContinuousOn f' (Set.uIcc a b) → (∫ x in a..b, x * f' x) = b * f b - a * f a - ∫ x in a..b, f x
+  proof: |
+    by
+      intro f f' a b hd hc
+      have h := intervalIntegral.integral_mul_deriv_eq_deriv_mul (u := fun x => x) (v := f) (u' := fun _ => 1) (v' := f') (a := a) (b := b) (fun x _ => hasDerivAt_id' x) hd intervalIntegrable_const (ContinuousOn.intervalIntegrable hc)
+      simpa using h
+- id: integral_exp_mul_sin
+  kind: textbook
+  level: high
+  topic: 部分積分・指数関数と三角関数
+  statement: $a^2+b^2\neq 0$のとき、$\int_s^te^{ax}\sin bx\,dx=\left[\dfrac{e^{ax}(a\sin bx-b\cos bx)}{a^2+b^2}\right]_s^t$である。
+  statement_en: If a^2 + b^2 ≠ 0, then ∫_s^t e^(ax) sin(bx) dx equals F(t) - F(s) with F(x) = e^(ax)(a sin bx - b cos bx)/(a^2 + b^2).
+  assumptions:
+  - $a^2+b^2\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,s,t$
+  conclusion: $\int_s^te^{ax}\sin bx\,dx=\dfrac{e^{at}(a\sin bt-b\cos bt)-e^{as}(a\sin bs-b\cos bs)}{a^2+b^2}$である。
+  answer: |
+    $a,b,s,t$を実数とし、$a^2+b^2\neq 0$とする。$F(x)=\dfrac{e^{ax}(a\sin bx-b\cos bx)}{a^2+b^2}$とおくと、積の微分法と合成関数の微分法により
+    $F'(x)=\dfrac{e^{ax}\left(a(a\sin bx-b\cos bx)+(ab\cos bx+b^2\sin bx)\right)}{a^2+b^2}=\dfrac{e^{ax}(a^2+b^2)\sin bx}{a^2+b^2}=e^{ax}\sin bx$
+    である。被積分関数は連続なので、微積分の基本定理により積分の値は$F(t)-F(s)$である。
+  strategy: Verify an explicit antiderivative, the one that two integrations by parts produce.
+  sketch:
+  - 'construct: Put F(x) = e^(ax)(a sin bx - b cos bx)/(a^2 + b^2).'
+  - 'derive: Differentiate with the product rule and chain rule.'
+  - 'derive: The cosine terms cancel and a^2 + b^2 cancels.'
+  - 'conclude: The fundamental theorem gives F(t) - F(s).'
+  openmath: (forall (a b s t) (-> (!= (+ (^ a 2) (^ b 2)) 0) (= (interval_integral s t (lambda (x) (* (exp (* a x)) (sin (* b x))))) (/ (- (* (exp (* a t)) (- (* a (sin (* b t))) (* b (cos (* b t))))) (* (exp (* a s)) (- (* a (sin (* b s))) (* b (cos (* b s)))))) (+ (^ a 2) (^ b 2))))))
+  hard_negative:
+    statement: $a^2+b^2\neq 0$のとき、$\int_s^te^{ax}\sin bx\,dx=\left[\dfrac{e^{ax}(a\sin bx+b\cos bx)}{a^2+b^2}\right]_s^t$である。
+    reason: 余弦の項の符号が逆である。$a=0$、$b=1$、$[0,\pi]$では積分は$2$だが、この式は$-2$を与える。
+  target: |
+    ∀ (a b s t : ℝ), a ^ 2 + b ^ 2 ≠ 0 → (∫ x in s..t, Real.exp (a * x) * Real.sin (b * x)) = (Real.exp (a * t) * (a * Real.sin (b * t) - b * Real.cos (b * t)) - Real.exp (a * s) * (a * Real.sin (b * s) - b * Real.cos (b * s))) / (a ^ 2 + b ^ 2)
+  proof: |
+    by
+      intro a b s t hne
+      have hF : ∀ x ∈ Set.uIcc s t, HasDerivAt (fun x => Real.exp (a * x) * (a * Real.sin (b * x) - b * Real.cos (b * x)) / (a ^ 2 + b ^ 2)) (Real.exp (a * x) * Real.sin (b * x)) x := by
+        intro x _
+        have ha : HasDerivAt (fun y => a * y) a x := ((hasDerivAt_id' x).const_mul a).congr_deriv (by ring)
+        have hb : HasDerivAt (fun y => b * y) b x := ((hasDerivAt_id' x).const_mul b).congr_deriv (by ring)
+        refine ((ha.exp.fun_mul ((hb.sin.const_mul a).fun_sub (hb.cos.const_mul b))).div_const _).congr_deriv ?_
+        field_simp
+        ring
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hF ((by fun_prop : Continuous fun x : ℝ => Real.exp (a * x) * Real.sin (b * x)).intervalIntegrable s t)]
+      ring
+- id: area_split_at_crossing
+  kind: gap
+  level: high
+  topic: 定積分・2曲線の間の面積
+  statement: $a\leq c\leq b$とし、$f,g$は$[a,b]$で連続とする。$[a,c]$で$g\leq f$、$[c,b]$で$f\leq g$なら、$\int_a^b|f(x)-g(x)|\,dx=\int_a^c(f(x)-g(x))\,dx+\int_c^b(g(x)-f(x))\,dx$である。
+  statement_en: If a ≤ c ≤ b, f and g are continuous on [a,b], g ≤ f on [a,c] and f ≤ g on [c,b], then ∫_a^b |f-g| = ∫_a^c (f-g) + ∫_c^b (g-f).
+  assumptions:
+  - $a\leq c\leq b$
+  - $f,g$は$[a,b]$で連続
+  - $[a,c]$で$g\leq f$
+  - $[c,b]$で$f\leq g$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と実数$a,b,c$
+  conclusion: $\int_a^b|f(x)-g(x)|\,dx=\int_a^c(f(x)-g(x))\,dx+\int_c^b(g(x)-f(x))\,dx$である。
+  answer: |
+    $a\leq c\leq b$とし、$f,g:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続、$[a,c]$で$g\leq f$、$[c,b]$で$f\leq g$とする。$|f-g|$は$[a,b]$で連続なので、
+    $\int_a^b|f(x)-g(x)|\,dx=\int_a^c|f(x)-g(x)|\,dx+\int_c^b|f(x)-g(x)|\,dx$
+    である。$[a,c]$では$f-g\geq 0$なので$|f-g|=f-g$であり、$[c,b]$では$f-g\leq 0$なので$|f-g|=g-f$である。各区間でこれを代入すると等式を得る。
+  strategy: Split the integral at the crossing point and remove the absolute value on each part.
+  sketch:
+  - 'setup: The function |f - g| is continuous on [a,b].'
+  - 'derive: Split the integral at c.'
+  - 'derive: On [a,c] the absolute value equals f - g.'
+  - 'conclude: On [c,b] the absolute value equals g - f.'
+  openmath: (forall (f g a b c) (-> (and (<= a c) (<= c b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (fn_continuous_on (lambda (x) (fn_value g x)) (closed_interval a b)) (forall (x) (-> (in x (closed_interval a c)) (<= (fn_value g x) (fn_value f x)))) (forall (x) (-> (in x (closed_interval c b)) (<= (fn_value f x) (fn_value g x))))) (= (interval_integral a b (lambda (x) (abs (- (fn_value f x) (fn_value g x))))) (+ (interval_integral a c (lambda (x) (- (fn_value f x) (fn_value g x)))) (interval_integral c b (lambda (x) (- (fn_value g x) (fn_value f x))))))))
+  hard_negative:
+    statement: $\int_a^b|f(x)-g(x)|\,dx=\left|\int_a^b(f(x)-g(x))\,dx\right|$である。
+    reason: 上下が入れ替わると打ち消し合う。$f(x)=x$、$g=0$、$[-1,1]$では左辺は$1$、右辺は$0$である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b c : ℝ), a ≤ c → c ≤ b → ContinuousOn f (Set.Icc a b) → ContinuousOn g (Set.Icc a b) → (∀ x ∈ Set.Icc a c, g x ≤ f x) → (∀ x ∈ Set.Icc c b, f x ≤ g x) → (∫ x in a..b, |f x - g x|) = (∫ x in a..c, (f x - g x)) + ∫ x in c..b, (g x - f x)
+  proof: |
+    by
+      intro f g a b c hac hcb hf hg h1 h2
+      have habs : ContinuousOn (fun x => |f x - g x|) (Set.Icc a b) := (hf.sub hg).abs
+      have i1 : IntervalIntegrable (fun x => |f x - g x|) MeasureTheory.volume a c :=
+        ContinuousOn.intervalIntegrable_of_Icc hac (habs.mono (Set.Icc_subset_Icc_right hcb))
+      have i2 : IntervalIntegrable (fun x => |f x - g x|) MeasureTheory.volume c b :=
+        ContinuousOn.intervalIntegrable_of_Icc hcb (habs.mono (Set.Icc_subset_Icc_left hac))
+      rw [← intervalIntegral.integral_add_adjacent_intervals i1 i2]
+      congr 1
+      · refine intervalIntegral.integral_congr fun x hx => ?_
+        rw [Set.uIcc_of_le hac] at hx
+        exact abs_of_nonneg (sub_nonneg.mpr (h1 x hx))
+      · refine intervalIntegral.integral_congr fun x hx => ?_
+        rw [Set.uIcc_of_le hcb] at hx
+        rw [abs_of_nonpos (sub_nonpos.mpr (h2 x hx))]
+        ring
+- id: area_parabola_and_line
+  kind: gap
+  level: high
+  topic: 定積分・放物線と直線の間の面積
+  statement: $\alpha\leq\beta$のとき、$\int_\alpha^\beta|a(x-\alpha)(x-\beta)|\,dx=\dfrac{|a|(\beta-\alpha)^3}{6}$である。これは差が$a(x-\alpha)(x-\beta)$となる2曲線の間の面積を表す特殊形である。
+  statement_en: For real a and α ≤ β, ∫_α^β |a(x-α)(x-β)| dx = |a|(β-α)^3/6. This is the special form for two curves whose difference factors as a(x-α)(x-β).
+  assumptions:
+  - $\alpha\leq\beta$
+  quantifiers:
+  - 任意の実数$a,\alpha,\beta$
+  conclusion: $\int_\alpha^\beta|a(x-\alpha)(x-\beta)|\,dx=\dfrac{|a|(\beta-\alpha)^3}{6}$である。
+  answer: |
+    $a$を実数、$\alpha\leq\beta$とする。$x\in[\alpha,\beta]$では$x-\alpha\geq 0$かつ$x-\beta\leq 0$なので、$(x-\alpha)(x-\beta)\leq 0$である。よって$|a(x-\alpha)(x-\beta)|=-|a|(x-\alpha)(x-\beta)$である。
+    $F(x)=\dfrac{(x-\alpha)^3}{3}-(\beta-\alpha)\dfrac{(x-\alpha)^2}{2}$の導関数は$(x-\alpha)(x-\beta)$である。したがって$\int_\alpha^\beta(x-\alpha)(x-\beta)\,dx=F(\beta)-F(\alpha)=-\dfrac{(\beta-\alpha)^3}{6}$である。これに$-|a|$を掛けると結論を得る。
+  strategy: Fix the sign of the integrand on the interval and evaluate the polynomial integral.
+  sketch:
+  - 'derive: On [α, β] the product (x-α)(x-β) is nonpositive.'
+  - 'derive: Hence the absolute value is -|a|(x-α)(x-β).'
+  - 'construct: Take the antiderivative in powers of x - α.'
+  - 'conclude: The integral of the product is -(β-α)^3/6, so the area is |a|(β-α)^3/6.'
+  openmath: (forall (a p q) (-> (<= p q) (= (interval_integral p q (lambda (x) (abs (* (* a (- x p)) (- x q))))) (/ (* (abs a) (^ (- q p) 3)) 6))))
+  hard_negative:
+    statement: $\alpha\leq\beta$のとき、$\int_\alpha^\beta|a(x-\alpha)(x-\beta)|\,dx=\dfrac{a(\beta-\alpha)^3}{6}$である。
+    reason: $a$の絶対値が必要である。$a=-1$、$\alpha=0$、$\beta=1$では積分は$\dfrac16$だが、この式は$-\dfrac16$を与える。
+  target: |
+    ∀ (a α β : ℝ), α ≤ β → (∫ x in α..β, |a * (x - α) * (x - β)|) = |a| * (β - α) ^ 3 / 6
+  proof: |
+    by
+      intro a α β hab
+      have hcongr : (∫ x in α..β, |a * (x - α) * (x - β)|) = ∫ x in α..β, -|a| * ((x - α) * (x - β)) := by
+        refine intervalIntegral.integral_congr fun x hx => ?_
+        rw [Set.uIcc_of_le hab] at hx
+        have : (x - α) * (x - β) ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (by linarith [hx.1]) (by linarith [hx.2])
+        rw [mul_assoc, abs_mul, abs_of_nonpos this]
+        ring
+      have hd : ∀ x ∈ Set.uIcc α β, HasDerivAt (fun x : ℝ => (x - α) ^ 3 / 3 - (β - α) * (x - α) ^ 2 / 2) ((x - α) * (x - β)) x := by
+        intro x _
+        have h1 : HasDerivAt (fun x : ℝ => x - α) 1 x := (hasDerivAt_id' x).sub_const α
+        exact (((h1.fun_pow 3).div_const 3).fun_sub (((h1.fun_pow 2).const_mul (β - α)).div_const 2)).congr_deriv (by norm_num; ring)
+      rw [hcongr, intervalIntegral.integral_const_mul, intervalIntegral.integral_eq_sub_of_hasDerivAt hd ((by fun_prop : Continuous fun x : ℝ => (x - α) * (x - β)).intervalIntegrable α β)]
+      ring
+- id: area_parabola_and_tangent
+  kind: gap
+  level: high
+  topic: 定積分・放物線と接線の間の面積
+  statement: $f(x)=ax^2+bx+c$、$t\leq s$とする。$y=f(x)$と$x=t$における接線、直線$x=s$で囲まれた部分の面積は$\int_t^s|f(x)-(f(t)+(2at+b)(x-t))|\,dx=\dfrac{|a|(s-t)^3}{3}$である。
+  statement_en: For f(x) = ax^2 + bx + c and t ≤ s, ∫_t^s |f(x) - (f(t) + (2at+b)(x-t))| dx = |a|(s-t)^3/3.
+  assumptions:
+  - $f(x)=ax^2+bx+c$
+  - $t\leq s$
+  quantifiers:
+  - 任意の実数$a,b,c,t,s$
+  conclusion: $\int_t^s|f(x)-(f(t)+(2at+b)(x-t))|\,dx=\dfrac{|a|(s-t)^3}{3}$である。
+  answer: |
+    $a,b,c$を実数、$t\leq s$とし、$f(x)=ax^2+bx+c$とする。$f'(t)=2at+b$であり、展開すると$f(x)-(f(t)+(2at+b)(x-t))=a(x-t)^2$となる。$(x-t)^2\geq 0$なので、この絶対値は$|a|(x-t)^2$である。$\dfrac{(x-t)^3}{3}$の導関数は$(x-t)^2$なので、
+    $\int_t^s|a|(x-t)^2\,dx=|a|\cdot\dfrac{(s-t)^3}{3}$
+    である。
+  strategy: Reduce the gap between the parabola and its tangent to a(x-t)^2.
+  sketch:
+  - 'derive: Expand the difference to get a(x-t)^2.'
+  - 'derive: The square is nonnegative, so the absolute value is |a|(x-t)^2.'
+  - 'conclude: Integrate with the antiderivative (x-t)^3/3.'
+  openmath: (forall (a b c t s) (-> (<= t s) (= (interval_integral t s (lambda (x) (abs (- (+ (+ (* a (^ x 2)) (* b x)) c) (+ (+ (+ (* a (^ t 2)) (* b t)) c) (* (+ (* (* 2 a) t) b) (- x t))))))) (/ (* (abs a) (^ (- s t) 3)) 3))))
+  hard_negative:
+    statement: $f(x)=ax^2+bx+c$、$t\leq s$のとき、$\int_t^s|f(x)-(f(t)+(2at+b)(x-t))|\,dx=\dfrac{|a|(s-t)^3}{6}$である。
+    reason: 2点で交わる場合の公式と混同している。$a=1$、$t=0$、$s=1$では面積は$\int_0^1x^2\,dx=\dfrac13$である。
+  target: |
+    ∀ (a b c t s : ℝ), t ≤ s → (∫ x in t..s, |(a * x ^ 2 + b * x + c) - ((a * t ^ 2 + b * t + c) + (2 * a * t + b) * (x - t))|) = |a| * (s - t) ^ 3 / 3
+  proof: |
+    by
+      intro a b c t s hts
+      have hcongr : (∫ x in t..s, |(a * x ^ 2 + b * x + c) - ((a * t ^ 2 + b * t + c) + (2 * a * t + b) * (x - t))|) = ∫ x in t..s, |a| * (x - t) ^ 2 := by
+        refine intervalIntegral.integral_congr fun x _ => ?_
+        rw [show (a * x ^ 2 + b * x + c) - ((a * t ^ 2 + b * t + c) + (2 * a * t + b) * (x - t)) = a * (x - t) ^ 2 by ring, abs_mul, abs_of_nonneg (sq_nonneg (x - t))]
+      have hd : ∀ x ∈ Set.uIcc t s, HasDerivAt (fun x : ℝ => (x - t) ^ 3 / 3) ((x - t) ^ 2) x := by
+        intro x _
+        have h1 : HasDerivAt (fun x : ℝ => x - t) 1 x := (hasDerivAt_id' x).sub_const t
+        exact ((h1.fun_pow 3).div_const 3).congr_deriv (by norm_num)
+      rw [hcongr, intervalIntegral.integral_const_mul, intervalIntegral.integral_eq_sub_of_hasDerivAt hd ((by fun_prop : Continuous fun x : ℝ => (x - t) ^ 2).intervalIntegrable t s)]
+      ring
+- id: area_parabola_two_tangents
+  kind: gap
+  level: high
+  topic: 定積分・放物線と2接線
+  statement: $f(x)=ax^2+bx+c$の$x=p$と$x=q$における接線を$L_p,L_q$とする。2接線は$x=\dfrac{p+q}{2}$で交わり、$m=\dfrac{p+q}{2}$として$\int_p^m(f-L_p)\,dx+\int_m^q(f-L_q)\,dx=\dfrac{a(q-p)^3}{12}$である。
+  statement_en: For f(x) = ax^2 + bx + c with tangent lines L_p and L_q at p and q, and m = (p+q)/2, L_p(m) = L_q(m) and ∫_p^m (f - L_p) + ∫_m^q (f - L_q) = a(q-p)^3/12.
+  assumptions:
+  - $f(x)=ax^2+bx+c$
+  - $L_t(x)=f(t)+(2at+b)(x-t)$
+  quantifiers:
+  - 任意の実数$a,b,c,p,q$
+  conclusion: $L_p\left(\dfrac{p+q}{2}\right)=L_q\left(\dfrac{p+q}{2}\right)$であり、積分の和は$\dfrac{a(q-p)^3}{12}$である。
+  answer: |
+    $a,b,c,p,q$を実数とし、$f(x)=ax^2+bx+c$、$L_t(x)=f(t)+(2at+b)(x-t)$、$m=\dfrac{p+q}{2}$とする。$L_t$は$x=t$における接線である。展開すると$f(x)-L_t(x)=a(x-t)^2$となる。
+    $x=m$を代入すると、$m-p=\dfrac{q-p}{2}$かつ$m-q=-\dfrac{q-p}{2}$なので、$f(m)-L_p(m)=f(m)-L_q(m)=\dfrac{a(q-p)^2}{4}$である。よって$L_p(m)=L_q(m)$である。
+    $\dfrac{(x-t)^3}{3}$の導関数は$(x-t)^2$なので、
+    $\int_p^ma(x-p)^2\,dx=\dfrac{a(m-p)^3}{3}=\dfrac{a(q-p)^3}{24}$、$\int_m^qa(x-q)^2\,dx=-\dfrac{a(m-q)^3}{3}=\dfrac{a(q-p)^3}{24}$
+    である。和をとると$\dfrac{a(q-p)^3}{12}$となる。
+  strategy: Write each gap as a(x-t)^2 and integrate on the two halves.
+  sketch:
+  - 'derive: The gap between f and the tangent at t equals a(x-t)^2.'
+  - 'derive: At the midpoint both gaps equal a(q-p)^2/4, so the tangents meet there.'
+  - 'derive: Each of the two integrals equals a(q-p)^3/24.'
+  - 'conclude: Their sum is a(q-p)^3/12.'
+  openmath: (forall (a b c p q) (and (= (+ (+ (+ (* a (^ p 2)) (* b p)) c) (* (+ (* (* 2 a) p) b) (- (/ (+ p q) 2) p))) (+ (+ (+ (* a (^ q 2)) (* b q)) c) (* (+ (* (* 2 a) q) b) (- (/ (+ p q) 2) q)))) (= (+ (interval_integral p (/ (+ p q) 2) (lambda (x) (- (+ (+ (* a (^ x 2)) (* b x)) c) (+ (+ (+ (* a (^ p 2)) (* b p)) c) (* (+ (* (* 2 a) p) b) (- x p)))))) (interval_integral (/ (+ p q) 2) q (lambda (x) (- (+ (+ (* a (^ x 2)) (* b x)) c) (+ (+ (+ (* a (^ q 2)) (* b q)) c) (* (+ (* (* 2 a) q) b) (- x q))))))) (/ (* a (^ (- q p) 3)) 12))))
+  hard_negative:
+    statement: $f(x)=ax^2+bx+c$の$x=t$における接線を$L_t$、$m=\dfrac{p+q}{2}$とすると、$\int_p^m(f-L_p)\,dx+\int_m^q(f-L_q)\,dx=\dfrac{a(q-p)^3}{6}$である。
+    reason: $a=1$、$p=0$、$q=2$では$\int_0^1x^2\,dx+\int_1^2(x-2)^2\,dx=\dfrac23$である。正しい値は$\dfrac{8}{12}$で、この式は$\dfrac{8}{6}$を与える。
+  target: |
+    ∀ (a b c p q : ℝ), let f : ℝ → ℝ := fun x => a * x ^ 2 + b * x + c; let L : ℝ → ℝ → ℝ := fun t x => f t + (2 * a * t + b) * (x - t); L p ((p + q) / 2) = L q ((p + q) / 2) ∧ (∫ x in p..((p + q) / 2), (f x - L p x)) + (∫ x in ((p + q) / 2)..q, (f x - L q x)) = a * (q - p) ^ 3 / 12
+  proof: |
+    by
+      intro a b c p q f L
+      constructor
+      · simp only [L, f]
+        ring
+      · have key : ∀ t u v : ℝ, (∫ x in u..v, (f x - L t x)) = a * ((v - t) ^ 3 - (u - t) ^ 3) / 3 := by
+          intro t u v
+          have hcongr : (∫ x in u..v, (f x - L t x)) = ∫ x in u..v, a * (x - t) ^ 2 := by
+            refine intervalIntegral.integral_congr fun x _ => ?_
+            simp only [L, f]
+            ring
+          have hd : ∀ x ∈ Set.uIcc u v, HasDerivAt (fun x : ℝ => (x - t) ^ 3 / 3) ((x - t) ^ 2) x := by
+            intro x _
+            have h1 : HasDerivAt (fun x : ℝ => x - t) 1 x := (hasDerivAt_id' x).sub_const t
+            exact ((h1.fun_pow 3).div_const 3).congr_deriv (by norm_num)
+          rw [hcongr, intervalIntegral.integral_const_mul, intervalIntegral.integral_eq_sub_of_hasDerivAt hd ((by fun_prop : Continuous fun x : ℝ => (x - t) ^ 2).intervalIntegrable u v)]
+          ring
+        rw [key, key]
+        ring
+- id: integral_inverse_function_identity
+  kind: textbook
+  level: high
+  topic: 定積分・逆関数の積分
+  statement: $f$が$a,b$の間の閉区間$I$で微分可能で導関数$f'$が連続、$g$が$f(I)$で連続、$I$上で$g(f(x))=x$なら、$\int_a^bf(x)\,dx+\int_{f(a)}^{f(b)}g(y)\,dy=bf(b)-af(a)$である。
+  statement_en: If f has a continuous derivative f' on the closed interval I between a and b, g is continuous on f(I), and g(f(x)) = x on I, then ∫_a^b f + ∫_{f(a)}^{f(b)} g = b f(b) - a f(a).
+  assumptions:
+  - $I$は$a,b$の間の閉区間
+  - $I$の各点で$f$の導関数は$f'$で、$f'$は$I$で連続
+  - $g$は$f(I)$で連続
+  - $x\in I$で$g(f(x))=x$
+  quantifiers:
+  - 任意の$f,f',g:\mathbb{R}\to\mathbb{R}$と実数$a,b$
+  conclusion: $\int_a^bf(x)\,dx+\int_{f(a)}^{f(b)}g(y)\,dy=bf(b)-af(a)$である。
+  answer: |
+    $a,b$を実数、$I$をその間の閉区間とする。$f:\mathbb{R}\to\mathbb{R}$は$I$の各点で導関数$f'(x)$をもち、$f'$は$I$で連続とする。$g:\mathbb{R}\to\mathbb{R}$は$f(I)$で連続で、$x\in I$で$g(f(x))=x$とする。
+    $y=f(x)$と置換すると、
+    $\int_{f(a)}^{f(b)}g(y)\,dy=\int_a^bg(f(x))f'(x)\,dx=\int_a^bxf'(x)\,dx$
+    である。$f$は$I$で連続で、$(xf(x))'=f(x)+xf'(x)$の右辺も$I$で連続なので、微積分の基本定理により
+    $bf(b)-af(a)=\int_a^bf(x)\,dx+\int_a^bxf'(x)\,dx$
+    である。2つの式から結論を得る。
+  strategy: Substitute y = f(x) in the inverse integral, then integrate the product rule.
+  sketch:
+  - 'derive: The substitution y = f(x) turns the integral of g into ∫ g(f(x)) f''(x) dx.'
+  - 'derive: The hypothesis g(f(x)) = x gives ∫ x f''(x) dx.'
+  - 'apply_theorem: Integrating the product rule for x f(x) gives b f(b) - a f(a) = ∫ f + ∫ x f''.'
+  - 'conclude: Combine the two identities.'
+  openmath: (forall (f df g a b) (-> (and (forall (x) (-> (in x (closed_interval_between a b)) (has_deriv_at (lambda (y) (fn_value f y)) (fn_value df x) x))) (fn_continuous_on (lambda (x) (fn_value df x)) (closed_interval_between a b)) (fn_continuous_on (lambda (y) (fn_value g y)) (image (lambda (x) (fn_value f x)) (closed_interval_between a b))) (forall (x) (-> (in x (closed_interval_between a b)) (= (fn_value g (fn_value f x)) x)))) (= (+ (interval_integral a b (lambda (x) (fn_value f x))) (interval_integral (fn_value f a) (fn_value f b) (lambda (y) (fn_value g y)))) (- (* b (fn_value f b)) (* a (fn_value f a))))))
+  hard_negative:
+    statement: $I$を$a,b$の間の閉区間とする。$f$が$I$で微分可能で導関数が連続、$g$が$f(I)$で連続、$I$上で$g(f(x))=x$なら、$\int_a^bf(x)\,dx+\int_{f(a)}^{f(b)}g(y)\,dy=(b-a)(f(b)-f(a))$である。
+    reason: 長方形の面積を間違えている。$f(x)=x$、$[a,b]=[1,2]$では和は$3$だが、この式は$1$を与える。
+  target: |
+    ∀ (f f' g : ℝ → ℝ) (a b : ℝ), (∀ x ∈ Set.uIcc a b, HasDerivAt f (f' x) x) → ContinuousOn f' (Set.uIcc a b) → ContinuousOn g (f '' Set.uIcc a b) → (∀ x ∈ Set.uIcc a b, g (f x) = x) → (∫ x in a..b, f x) + (∫ y in (f a)..(f b), g y) = b * f b - a * f a
+  proof: |
+    by
+      intro f f' g a b hd hc hg hgf
+      have hsub := intervalIntegral.integral_comp_mul_deriv' hd hc hg
+      have hcongr : (∫ x in a..b, (g ∘ f) x * f' x) = ∫ x in a..b, x * f' x := by
+        refine intervalIntegral.integral_congr fun x hx => ?_
+        simp only [Function.comp_apply, hgf x hx]
+      have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul (u := fun x => x) (v := f) (u' := fun _ => 1) (v' := f') (a := a) (b := b) (fun x _ => hasDerivAt_id' x) hd intervalIntegrable_const (ContinuousOn.intervalIntegrable hc)
+      simp only [one_mul] at hparts
+      linarith
+- id: geometric_sequence_convergence_criterion
+  kind: textbook
+  level: high
+  topic: 数列の極限・等比数列
+  statement: 実数$r$について、数列$r^n$が収束することと$-1<r\leq 1$であることは同値である。さらに$|r|<1$なら$r^n\to 0$である。
+  statement_en: For real r, the sequence r^n converges if and only if -1 < r ≤ 1, and if |r| < 1 then r^n tends to 0.
+  assumptions:
+  - $r$は実数
+  quantifiers:
+  - 任意の実数$r$
+  conclusion: $r^n$が収束することと$-1<r\leq 1$は同値であり、$|r|<1$なら極限は$0$である。
+  answer: |
+    $r$を実数とする。
+    $|r|<1$のとき$r^n\to 0$を示す。$r=0$なら明らかである。$r\neq 0$なら$\dfrac{1}{|r|}=1+h$（$h>0$）と書ける。二項定理より$(1+h)^n\geq 1+nh>nh$なので、$|r^n|<\dfrac{1}{nh}\to 0$である。
+    $-1<r\leq 1$とする。$r=1$なら$r^n=1$は$1$に収束し、$-1<r<1$なら$0$に収束する。
+    逆に$r^n\to L$とし、$-1<r\leq 1$でないと仮定する。このとき$|r|\geq 1$かつ$r\neq 1$である。$r^{n+1}=r\cdot r^n$の両辺の極限をとると$L=rL$となり、$r\neq 1$より$L=0$である。しかし全ての$n$で$|r^n|=|r|^n\geq 1$なので、$|r^n|\to 0$に反する。
+  strategy: Use the fixed point equation of the limit to exclude all other r.
+  sketch:
+  - 'derive: For |r| < 1 bound |r^n| by a multiple of 1/n with the binomial theorem.'
+  - 'case_split: For r = 1 the sequence is constant; for -1 < r < 1 it tends to 0.'
+  - 'contradiction: Suppose r^n converges to L with |r| ≥ 1 and r ≠ 1.'
+  - 'derive: Passing to the limit in r^(n+1) = r r^n gives L = rL, hence L = 0.'
+  - 'conclude: This contradicts |r^n| ≥ 1.'
+  openmath: (forall (r) (and (<-> (exists (L) (seq_limit_of (lambda (n) (^ r n)) L)) (and (< (neg 1) r) (<= r 1))) (-> (< (abs r) 1) (seq_limit_of (lambda (n) (^ r n)) 0))))
+  hard_negative:
+    statement: $|r|\leq 1$なら数列$r^n$は収束する。
+    reason: $r=-1$では$r^n$は$1$と$-1$を交互にとるので収束しない。
+  target: |
+    ∀ (r : ℝ), ((∃ L : ℝ, Filter.Tendsto (fun n : ℕ => r ^ n) Filter.atTop (nhds L)) ↔ (-1 < r ∧ r ≤ 1)) ∧ (|r| < 1 → Filter.Tendsto (fun n : ℕ => r ^ n) Filter.atTop (nhds 0))
+  proof: |
+    by
+      intro r
+      refine ⟨⟨?_, ?_⟩, tendsto_pow_atTop_nhds_zero_of_abs_lt_one⟩
+      · rintro ⟨L, hL⟩
+        by_contra hcon
+        have habs : 1 ≤ |r| := by
+          by_contra hlt
+          have := abs_lt.mp (not_le.mp hlt)
+          exact hcon ⟨this.1, this.2.le⟩
+        have hr1 : r ≠ 1 := by
+          rintro rfl
+          exact hcon ⟨by norm_num, le_rfl⟩
+        have h1 : Filter.Tendsto (fun n : ℕ => r ^ (n + 1)) Filter.atTop (nhds L) := (Filter.tendsto_add_atTop_iff_nat 1).mpr hL
+        have h2 : Filter.Tendsto (fun n : ℕ => r ^ (n + 1)) Filter.atTop (nhds (L * r)) := by
+          simpa [pow_succ] using hL.mul_const r
+        have hLr := tendsto_nhds_unique h1 h2
+        have hL0 : L = 0 := by
+          have : L * (r - 1) = 0 := by linarith
+          exact (mul_eq_zero.mp this).resolve_right (sub_ne_zero.mpr hr1)
+        subst hL0
+        have h3 : Filter.Tendsto (fun n : ℕ => |r ^ n|) Filter.atTop (nhds 0) := by
+          simpa using hL.abs
+        have h4 : ∀ n : ℕ, (1 : ℝ) ≤ |r ^ n| := by
+          intro n
+          rw [abs_pow]
+          exact one_le_pow₀ habs
+        have := ge_of_tendsto' h3 h4
+        linarith
+      · rintro ⟨h1, h2⟩
+        rcases h2.eq_or_lt with rfl | h2
+        · exact ⟨1, by simp⟩
+        · exact ⟨0, tendsto_pow_atTop_nhds_zero_of_abs_lt_one (abs_lt.mpr ⟨h1, h2⟩)⟩
+- id: rational_sequence_limit
+  kind: gap
+  level: high
+  topic: 数列の極限・分数式
+  statement: 実数係数の多項式$P,Q$（$Q\neq 0$）について、次数が等しければ$\dfrac{P(n)}{Q(n)}$は最高次の係数の比に収束し、$P$の次数が$Q$の次数より小さければ$0$に収束する。
+  statement_en: For real polynomials P and Q with Q ≠ 0, P(n)/Q(n) tends to the ratio of the leading coefficients if the degrees are equal, and to 0 if deg P < deg Q.
+  assumptions:
+  - $P,Q$は実数係数の多項式で$Q\neq 0$
+  quantifiers:
+  - 任意の実数係数多項式$P,Q$
+  conclusion: 次数が等しいとき極限は最高次の係数の比であり、$P$の次数が小さいとき極限は$0$である。
+  answer: |
+    $P,Q$を実数係数の多項式とし、$Q\neq 0$とする。$Q$の根は有限個なので、十分大きい$n$で$Q(n)\neq 0$であり、極限はそのような$n$だけで決まる。$Q$の次数を$d$、最高次の係数を$q$とする。
+    分子と分母を$n^d$で割る。$k<d$なら$\dfrac{n^k}{n^d}\to 0$なので、$\dfrac{Q(n)}{n^d}\to q\neq 0$である。
+    $P$の次数が$d$で最高次の係数が$p$なら、同様に$\dfrac{P(n)}{n^d}\to p$なので、$\dfrac{P(n)}{Q(n)}\to\dfrac{p}{q}$である。
+    $P$の次数が$d$より小さいなら、$P$の各項について$\dfrac{n^k}{n^d}\to 0$なので$\dfrac{P(n)}{n^d}\to 0$であり、$\dfrac{P(n)}{Q(n)}\to 0$である。$P=0$でも同じである。
+  strategy: Divide numerator and denominator by the top power of n.
+  sketch:
+  - 'setup: Q has finitely many roots, so Q(n) ≠ 0 for large n.'
+  - 'derive: Dividing by n^d sends Q(n)/n^d to the leading coefficient of Q.'
+  - 'case_split: With equal degrees P(n)/n^d tends to the leading coefficient of P.'
+  - 'case_split: With smaller degree P(n)/n^d tends to 0.'
+  - 'conclude: Take the quotient of the limits.'
+  openmath: (forall (u v) (-> (and (real_polynomial u) (real_polynomial v) (!= v 0)) (and (-> (= (polynomial_degree u) (polynomial_degree v)) (seq_limit_of (lambda (n) (/ (polynomial_eval u n) (polynomial_eval v n))) (/ (poly_leading_coeff u) (poly_leading_coeff v)))) (-> (< (polynomial_degree u) (polynomial_degree v)) (seq_limit_of (lambda (n) (/ (polynomial_eval u n) (polynomial_eval v n))) 0)))))
+  hard_negative:
+    statement: 実数係数の多項式$P,Q$の次数が等しいとき、$\dfrac{P(n)}{Q(n)}$は定数項の比に収束する。
+    reason: 最高次の係数の比に収束する。$\dfrac{2n+1}{n+1}\to 2$であり、定数項の比は$1$である。
+  target: |
+    ∀ (P Q : Polynomial ℝ), Q ≠ 0 → (P.degree = Q.degree → Filter.Tendsto (fun n : ℕ => P.eval (n : ℝ) / Q.eval (n : ℝ)) Filter.atTop (nhds (P.leadingCoeff / Q.leadingCoeff))) ∧ (P.degree < Q.degree → Filter.Tendsto (fun n : ℕ => P.eval (n : ℝ) / Q.eval (n : ℝ)) Filter.atTop (nhds 0))
+  proof: |
+    by
+      intro P Q hQ
+      constructor
+      · intro h
+        exact (Polynomial.div_tendsto_atTop_leadingCoeff_div_of_degree_eq P Q h).comp tendsto_natCast_atTop_atTop
+      · intro h
+        exact (Polynomial.div_tendsto_atTop_zero_of_degree_lt P Q h).comp tendsto_natCast_atTop_atTop
+- id: sqrt_quadratic_sub_x_limit
+  kind: gap
+  level: high
+  topic: 関数の極限・根号の有理化
+  statement: 実数$a,b$について、$x\to+\infty$で$\sqrt{x^2+ax+b}-x\to\dfrac{a}{2}$である。十分大きい$x$では根号の中は正である。
+  statement_en: For real a and b, √(x^2 + ax + b) - x tends to a/2 as x tends to +∞; the radicand is positive for all large x.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $x\to+\infty$で$\sqrt{x^2+ax+b}-x\to\dfrac{a}{2}$である。
+  answer: |
+    $a,b$を実数とする。$x>0$に対し$u=\dfrac1x$、$w=1+au+bu^2$とおく。$x\to+\infty$で$u\to 0$、$w\to 1$なので、十分大きい$x$で$w>0$である。このとき$x^2+ax+b=x^2w>0$であり、$\sqrt{x^2+ax+b}=x\sqrt{w}$である。
+    $(\sqrt{w}-1)(\sqrt{w}+1)=w-1=au+bu^2$と$xu=1$より、
+    $\sqrt{x^2+ax+b}-x=x(\sqrt{w}-1)=\dfrac{x(au+bu^2)}{\sqrt{w}+1}=\dfrac{a+bu}{\sqrt{w}+1}$
+    である。$u\to 0$、$\sqrt{w}\to 1$なので、右辺は$\dfrac{a}{2}$に収束する。
+  strategy: Rationalize after factoring x out of the root, in the variable u = 1/x.
+  sketch:
+  - 'setup: Put u = 1/x and w = 1 + au + bu^2, which is positive for large x.'
+  - 'derive: The root equals x√w for large x.'
+  - 'derive: Rationalizing gives (a + bu)/(√w + 1).'
+  - 'conclude: As u tends to 0 the expression tends to a/2.'
+  openmath: (forall (a b) (fn_limit_at_top (lambda (x) (- (root (+ (+ (^ x 2) (* a x)) b) 2) x)) (/ a 2)))
+  hard_negative:
+    statement: $\sqrt{x^2+ax+b}\sim x$なので、$\sqrt{x^2+ax+b}-x\to 0$である。
+    reason: 差の極限は比の極限から決まらない。$a=2$、$b=0$では有理化により極限は$1$である。
+  target: |
+    ∀ (a b : ℝ), Filter.Tendsto (fun x : ℝ => Real.sqrt (x ^ 2 + a * x + b) - x) Filter.atTop (nhds (a / 2))
+  proof: |
+    by
+      intro a b
+      have hu : Filter.Tendsto (fun x : ℝ => x⁻¹) Filter.atTop (nhds 0) := tendsto_inv_atTop_zero
+      have hG : ContinuousAt (fun u : ℝ => (a + b * u) / (Real.sqrt (1 + a * u + b * u ^ 2) + 1)) 0 := by
+        apply ContinuousAt.div (by fun_prop) (by fun_prop)
+        simp
+      have hlim := hG.tendsto.comp hu
+      have hval : (a + b * 0) / (Real.sqrt (1 + a * 0 + b * 0 ^ 2) + 1) = a / 2 := by
+        norm_num
+      rw [hval] at hlim
+      have hw : Filter.Tendsto (fun x : ℝ => 1 + a * x⁻¹ + b * (x⁻¹) ^ 2) Filter.atTop (nhds (1 + a * 0 + b * 0 ^ 2)) :=
+        ((hu.const_mul a).const_add 1).add ((hu.pow 2).const_mul b)
+      have hw' : ∀ᶠ x : ℝ in Filter.atTop, 0 < 1 + a * x⁻¹ + b * (x⁻¹) ^ 2 := by
+        apply hw.eventually
+        exact lt_mem_nhds (by norm_num)
+      refine hlim.congr' ?_
+      filter_upwards [hw', Filter.eventually_gt_atTop 0] with x hx hx0
+      simp only [Function.comp_apply]
+      set w := 1 + a * x⁻¹ + b * (x⁻¹) ^ 2 with hwdef
+      have hxne : x ≠ 0 := hx0.ne'
+      have hs : Real.sqrt w ^ 2 = w := Real.sq_sqrt hx.le
+      have hspos : 0 < Real.sqrt w := Real.sqrt_pos.mpr hx
+      have heq : x ^ 2 + a * x + b = (x * Real.sqrt w) ^ 2 := by
+        rw [mul_pow, hs, hwdef]
+        field_simp
+      rw [heq, Real.sqrt_sq (by positivity)]
+      have hne : Real.sqrt w + 1 ≠ 0 := by positivity
+      rw [div_eq_iff hne]
+      have : (x * Real.sqrt w - x) * (Real.sqrt w + 1) = x * (Real.sqrt w ^ 2 - 1) := by ring
+      rw [this, hs, hwdef]
+      field_simp
+      ring
+- id: pow_div_factorial_limit
+  kind: gap
+  level: high
+  topic: 数列の極限・階乗
+  statement: 実数$c$について、$\dfrac{c^n}{n!}\to 0$である。
+  statement_en: For every real c, c^n/n! tends to 0.
+  assumptions:
+  - $c$は実数
+  quantifiers:
+  - 任意の実数$c$
+  conclusion: $n\to\infty$で$\dfrac{c^n}{n!}\to 0$である。
+  answer: |
+    $c$を実数とする。自然数$N\geq 2|c|$をとり、$N\geq 1$とする。$n>N$なら
+    $\left|\dfrac{c^n}{n!}\right|=\dfrac{|c|^N}{N!}\prod_{k=N+1}^{n}\dfrac{|c|}{k}\leq\dfrac{|c|^N}{N!}\left(\dfrac12\right)^{n-N}$
+    である。各因子で$k>N\geq 2|c|$より$\dfrac{|c|}{k}\leq\dfrac12$を使った。$\dfrac{|c|^N}{N!}$は$n$によらないので右辺は$0$に収束し、はさみうちにより$\dfrac{c^n}{n!}\to 0$である。
+  strategy: After the index passes 2|c|, each new factor is at most 1/2.
+  sketch:
+  - 'setup: Choose a natural N ≥ 1 with N ≥ 2|c|.'
+  - 'derive: For k > N the factor |c|/k is at most 1/2.'
+  - 'derive: So |c^n/n!| is bounded by a constant times (1/2)^(n-N).'
+  - 'conclude: The squeeze principle gives the limit 0.'
+  openmath: (forall (c) (seq_limit_of (lambda (n) (/ (^ c n) (factorial n))) 0))
+  hard_negative:
+    statement: $\dfrac{n^n}{n!}\to 0$である。
+    reason: 底が固定されていない。$\dfrac{n^n}{n!}=\prod_{k=1}^{n}\dfrac{n}{k}\geq n$なので発散する。
+  target: |
+    ∀ (c : ℝ), Filter.Tendsto (fun n : ℕ => c ^ n / (n.factorial : ℝ)) Filter.atTop (nhds 0)
+  proof: |
+    by
+      intro c
+      exact FloorSemiring.tendsto_pow_div_factorial_atTop c
+- id: linear_recurrence_limit
+  kind: gap
+  level: high
+  topic: 数列の極限・漸化式
+  statement: $|r|<1$で$a_{n+1}=ra_n+s$なら、数列$a_n$は$\dfrac{s}{1-r}$に収束する。
+  statement_en: If |r| < 1 and a_{n+1} = r a_n + s for all n, then a_n converges to s/(1-r).
+  assumptions:
+  - $|r|<1$
+  - 全ての$n$で$a_{n+1}=ra_n+s$
+  quantifiers:
+  - 任意の実数列$a$と実数$r,s$
+  conclusion: $a_n\to\dfrac{s}{1-r}$である。
+  answer: |
+    $a$を実数列、$r,s$を実数とし、$|r|<1$、全ての$n$で$a_{n+1}=ra_n+s$とする。$r<1$なので$L=\dfrac{s}{1-r}$が定まり、$L=rL+s$を満たす。漸化式からこの式を引くと$a_{n+1}-L=r(a_n-L)$である。帰納法により$a_n-L=r^n(a_0-L)$となる。$|r|<1$より$r^n\to 0$なので、$a_n\to L$である。
+  strategy: Subtract the fixed point to reduce to a geometric sequence.
+  sketch:
+  - 'setup: L = s/(1-r) satisfies L = rL + s.'
+  - 'derive: Subtracting gives a_{n+1} - L = r(a_n - L).'
+  - 'induction: Hence a_n - L = r^n (a_0 - L).'
+  - 'conclude: Since r^n tends to 0, a_n tends to L.'
+  openmath: (forall (a r s) (-> (and (< (abs r) 1) (forall (n) (-> (in n N) (= (seq_value a (+ n 1)) (+ (* r (seq_value a n)) s))))) (seq_tends_to a (/ s (- 1 r)))))
+  hard_negative:
+    statement: $r\neq 1$で$a_{n+1}=ra_n+s$なら、$a_n$は$\dfrac{s}{1-r}$に収束する。
+    reason: $|r|<1$が必要である。$r=2$、$s=0$、$a_0=1$では$a_n=2^n$は発散する。
+  target: |
+    ∀ (a : ℕ → ℝ) (r s : ℝ), |r| < 1 → (∀ n, a (n + 1) = r * a n + s) → Filter.Tendsto a Filter.atTop (nhds (s / (1 - r)))
+  proof: |
+    by
+      intro a r s hr hrec
+      have hne : 1 - r ≠ 0 := by
+        have := (abs_lt.mp hr).2
+        linarith
+      set L := s / (1 - r) with hL
+      have hfix : L = r * L + s := by
+        rw [hL]
+        field_simp
+        ring
+      have hclosed : ∀ n, a n = r ^ n * (a 0 - L) + L := by
+        intro n
+        induction n with
+        | zero => simp
+        | succ m ih =>
+          rw [hrec, ih, pow_succ]
+          linarith [hfix, mul_comm (r ^ m) r]
+      have hlim := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one hr).mul_const (a 0 - L)).add_const L
+      simp only [zero_mul, zero_add] at hlim
+      exact hlim.congr fun n => (hclosed n).symm
+- id: contraction_recurrence_limit
+  kind: gap
+  level: high
+  topic: 数列の極限・漸化不等式
+  statement: $0\leq r<1$で全ての$n$について$|a_{n+1}-L|\leq r|a_n-L|$なら、$a_n\to L$である。
+  statement_en: If 0 ≤ r < 1 and |a_{n+1} - L| ≤ r|a_n - L| for all n, then a_n converges to L.
+  assumptions:
+  - $0\leq r<1$
+  - 全ての$n$で$|a_{n+1}-L|\leq r|a_n-L|$
+  quantifiers:
+  - 任意の実数列$a$と実数$L,r$
+  conclusion: $a_n\to L$である。
+  answer: |
+    $a$を実数列、$L,r$を実数とし、$0\leq r<1$、全ての$n$で$|a_{n+1}-L|\leq r|a_n-L|$とする。帰納法で$|a_n-L|\leq r^n|a_0-L|$を示す。$n=0$では等号である。$n=m$で成り立つとすると、$r\geq 0$より$|a_{m+1}-L|\leq r|a_m-L|\leq r^{m+1}|a_0-L|$である。$0\leq r<1$より$r^n\to 0$なので、はさみうちにより$|a_n-L|\to 0$であり、$a_n\to L$である。
+  strategy: Iterate the inequality and squeeze by a geometric sequence.
+  sketch:
+  - 'induction: Prove |a_n - L| ≤ r^n |a_0 - L|, using r ≥ 0 in the step.'
+  - 'derive: The bound tends to 0 because 0 ≤ r < 1.'
+  - 'conclude: The squeeze principle gives a_n tends to L.'
+  openmath: (forall (a L r) (-> (and (<= 0 r) (< r 1) (forall (n) (-> (in n N) (<= (abs (- (seq_value a (+ n 1)) L)) (* r (abs (- (seq_value a n) L))))))) (seq_tends_to a L)))
+  hard_negative:
+    statement: 全ての$n$で$|a_{n+1}-L|<|a_n-L|$なら、$a_n\to L$である。
+    reason: 比が$1$に近づく場合は、$L$に収束するとは限らない。$L=0$、$a_n=1+\dfrac{1}{n+1}$では不等式が成り立つが、極限は$1$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (L r : ℝ), 0 ≤ r → r < 1 → (∀ n, |a (n + 1) - L| ≤ r * |a n - L|) → Filter.Tendsto a Filter.atTop (nhds L)
+  proof: |
+    by
+      intro a L r h0 h1 hc
+      have hb : ∀ n, |a n - L| ≤ r ^ n * |a 0 - L| := by
+        intro n
+        induction n with
+        | zero => simp
+        | succ m ih =>
+          calc |a (m + 1) - L| ≤ r * |a m - L| := hc m
+            _ ≤ r * (r ^ m * |a 0 - L|) := mul_le_mul_of_nonneg_left ih h0
+            _ = r ^ (m + 1) * |a 0 - L| := by ring
+      have hlim : Filter.Tendsto (fun n : ℕ => r ^ n * |a 0 - L|) Filter.atTop (nhds 0) := by
+        simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one h0 h1).mul_const |a 0 - L|
+      rw [tendsto_iff_norm_sub_tendsto_zero]
+      exact squeeze_zero (fun n => norm_nonneg _) (fun n => by simpa [Real.norm_eq_abs] using hb n) hlim
+- id: numerator_vanishes_when_denominator_does
+  kind: gap
+  level: high
+  topic: 関数の極限・分母が0に近づく形
+  statement: $f$が$a$で連続、$x\neq a$で$g(x)\neq 0$とする。$x\to a$で$g(x)\to 0$かつ$\dfrac{f(x)}{g(x)}$が収束するなら、$f(a)=0$である。
+  statement_en: If f is continuous at a, g(x) ≠ 0 for x ≠ a, g(x) → 0 as x → a, and f(x)/g(x) converges as x → a with x ≠ a, then f(a) = 0.
+  assumptions:
+  - $f$は$a$で連続
+  - $x\neq a$で$g(x)\neq 0$
+  - $x\to a$で$g(x)\to 0$
+  - $x\to a$で$\dfrac{f(x)}{g(x)}\to L$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と実数$a,L$
+  conclusion: $f(a)=0$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$と実数$a,L$について、$f$は$a$で連続、$x\neq a$で$g(x)\neq 0$とする。$x\to a$（$x\neq a$）で$g(x)\to 0$、$\dfrac{f(x)}{g(x)}\to L$とする。$x\neq a$では$f(x)=\dfrac{f(x)}{g(x)}\cdot g(x)$なので、積の極限により$x\to a$で$f(x)\to L\cdot 0=0$である。一方、$f$は$a$で連続なので$f(x)\to f(a)$である。極限の一意性により$f(a)=0$である。
+  strategy: Multiply the quotient by g and compare with the limit from continuity.
+  sketch:
+  - 'derive: For x ≠ a write f(x) as (f(x)/g(x)) g(x).'
+  - 'derive: The product of limits gives f(x) tending to 0.'
+  - 'derive: Continuity gives f(x) tending to f(a).'
+  - 'conclude: Uniqueness of limits gives f(a) = 0.'
+  openmath: (forall (f g a L) (-> (and (fn_continuous_at (lambda (x) (fn_value f x)) a) (forall (x) (-> (!= x a) (!= (fn_value g x) 0))) (fn_limit_at (lambda (x) (fn_value g x)) a 0) (fn_limit_at (lambda (x) (/ (fn_value f x) (fn_value g x))) a L)) (= (fn_value f a) 0)))
+  hard_negative:
+    statement: $\dfrac{f(x)}{g(x)}$が$x\to a$で収束するなら、$f(a)=0$である。
+    reason: 分母が$0$に近づく条件が必要である。$f=g=1$では比は$1$に収束するが、$f(a)=1$である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a L : ℝ), ContinuousAt f a → (∀ x, x ≠ a → g x ≠ 0) → Filter.Tendsto g (nhdsWithin a {a}ᶜ) (nhds 0) → Filter.Tendsto (fun x => f x / g x) (nhdsWithin a {a}ᶜ) (nhds L) → f a = 0
+  proof: |
+    by
+      intro f g a L hf hg hg0 hq
+      have h1 : Filter.Tendsto (fun x => f x / g x * g x) (nhdsWithin a {a}ᶜ) (nhds (L * 0)) := hq.mul hg0
+      have h2 : Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds 0) := by
+        rw [mul_zero] at h1
+        refine h1.congr' ?_
+        filter_upwards [self_mem_nhdsWithin] with x hx
+        exact div_mul_cancel₀ _ (hg x hx)
+      have h3 : Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds (f a)) := hf.tendsto.mono_left nhdsWithin_le_nhds
+      exact tendsto_nhds_unique h3 h2
+- id: one_sub_cos_limit
+  kind: gap
+  level: high
+  topic: 関数の極限・三角関数
+  statement: 実数$a$について、$x\to 0$で$\dfrac{1-\cos ax}{x^2}\to\dfrac{a^2}{2}$である。
+  statement_en: For real a, (1 - cos(ax))/x^2 tends to a^2/2 as x tends to 0 with x ≠ 0.
+  assumptions:
+  - $a$は実数
+  quantifiers:
+  - 任意の実数$a$
+  conclusion: $x\to 0$（$x\neq 0$）で$\dfrac{1-\cos ax}{x^2}\to\dfrac{a^2}{2}$である。
+  answer: |
+    $a$を実数とする。$h(x)=\sin\dfrac{ax}{2}$は$h(0)=0$を満たし、$0$における微分係数は$\dfrac{a}{2}\cos 0=\dfrac{a}{2}$である。微分係数の定義により、$x\to 0$で$\dfrac{h(x)}{x}\to\dfrac{a}{2}$である。
+    倍角の公式より$1-\cos ax=2\sin^2\dfrac{ax}{2}$なので、$x\neq 0$で
+    $\dfrac{1-\cos ax}{x^2}=2\left(\dfrac{h(x)}{x}\right)^2$
+    である。右辺は$2\left(\dfrac{a}{2}\right)^2=\dfrac{a^2}{2}$に収束する。
+  strategy: Use the half angle identity and the derivative of sin(ax/2) at 0.
+  sketch:
+  - 'derive: The derivative of sin(ax/2) at 0 is a/2, so sin(ax/2)/x tends to a/2.'
+  - 'derive: The double angle formula gives 1 - cos(ax) = 2 sin^2(ax/2).'
+  - 'derive: Hence the quotient equals 2 (sin(ax/2)/x)^2 for x ≠ 0.'
+  - 'conclude: Pass to the limit to get a^2/2.'
+  openmath: (forall (a) (fn_limit_at (lambda (x) (/ (- 1 (cos (* a x))) (^ x 2))) 0 (/ (^ a 2) 2)))
+  hard_negative:
+    statement: $x\to 0$で$\dfrac{1-\cos ax}{x^2}\to a^2$である。
+    reason: 係数$\dfrac12$が抜けている。$a=1$で極限は$\dfrac12$である。
+  target: |
+    ∀ (a : ℝ), Filter.Tendsto (fun x : ℝ => (1 - Real.cos (a * x)) / x ^ 2) (nhdsWithin 0 {0}ᶜ) (nhds (a ^ 2 / 2))
+  proof: |
+    by
+      intro a
+      have hd : HasDerivAt (fun x : ℝ => Real.sin (a / 2 * x)) (a / 2) 0 := by
+        have h : HasDerivAt (fun y : ℝ => a / 2 * y) (a / 2) 0 := ((hasDerivAt_id' (0 : ℝ)).const_mul (a / 2)).congr_deriv (by ring)
+        exact h.sin.congr_deriv (by simp)
+      have hs := hasDerivAt_iff_tendsto_slope.mp hd
+      have hlim : Filter.Tendsto (fun x : ℝ => 2 * (slope (fun x : ℝ => Real.sin (a / 2 * x)) 0 x) ^ 2) (nhdsWithin 0 {0}ᶜ) (nhds (2 * (a / 2) ^ 2)) := (hs.pow 2).const_mul 2
+      rw [show 2 * (a / 2) ^ 2 = a ^ 2 / 2 by ring] at hlim
+      refine hlim.congr' ?_
+      filter_upwards [self_mem_nhdsWithin] with x hx
+      have hx0 : x ≠ 0 := hx
+      have hcos : Real.cos (a * x) = 1 - 2 * Real.sin (a / 2 * x) ^ 2 := by
+        have := Real.cos_two_mul (a / 2 * x)
+        rw [show 2 * (a / 2 * x) = a * x by ring] at this
+        rw [this]
+        linarith [Real.sin_sq_add_cos_sq (a / 2 * x)]
+      rw [hcos, slope_def_field]
+      simp only [mul_zero, Real.sin_zero, sub_zero]
+      field_simp
+      ring
+- id: exp_log_difference_quotient_limit
+  kind: gap
+  level: high
+  topic: 関数の極限・指数と対数
+  statement: 実数$c$について、$x\to 0$で$\dfrac{e^{cx}-1}{x}\to c$かつ$\dfrac{\log(1+cx)}{x}\to c$である。
+  statement_en: For real c, as x tends to 0 with x ≠ 0, (e^(cx) - 1)/x tends to c and log(1 + cx)/x tends to c.
+  assumptions:
+  - $c$は実数
+  quantifiers:
+  - 任意の実数$c$
+  conclusion: $x\to 0$（$x\neq 0$）で$\dfrac{e^{cx}-1}{x}\to c$かつ$\dfrac{\log(1+cx)}{x}\to c$である。
+  answer: |
+    $c$を実数とする。$p(x)=e^{cx}$は$p(0)=1$を満たし、$0$における微分係数は$c$である。$q(x)=\log(1+cx)$は$0$の近くで$1+cx>0$なので定義され、$q(0)=0$であり、$0$における微分係数は$\dfrac{c}{1+0}=c$である。
+    微分係数の定義により、$x\to 0$で$\dfrac{p(x)-p(0)}{x}=\dfrac{e^{cx}-1}{x}\to c$、$\dfrac{q(x)-q(0)}{x}=\dfrac{\log(1+cx)}{x}\to c$である。
+  strategy: Recognize both quotients as difference quotients at 0.
+  sketch:
+  - 'derive: e^(cx) has value 1 and derivative c at 0.'
+  - 'derive: log(1 + cx) has value 0 and derivative c at 0.'
+  - 'conclude: The definition of the derivative gives both limits.'
+  openmath: (forall (c) (and (fn_limit_at (lambda (x) (/ (- (exp (* c x)) 1) x)) 0 c) (fn_limit_at (lambda (x) (/ (ln (+ 1 (* c x))) x)) 0 c)))
+  hard_negative:
+    statement: $x\to 0$で$\dfrac{e^{cx}-1}{x}\to 1$である。
+    reason: $c=1$の場合に限る。$c=2$では極限は$2$である。
+  target: |
+    ∀ (c : ℝ), Filter.Tendsto (fun x : ℝ => (Real.exp (c * x) - 1) / x) (nhdsWithin 0 {0}ᶜ) (nhds c) ∧ Filter.Tendsto (fun x : ℝ => Real.log (1 + c * x) / x) (nhdsWithin 0 {0}ᶜ) (nhds c)
+  proof: |
+    by
+      intro c
+      have h : HasDerivAt (fun y : ℝ => c * y) c 0 := ((hasDerivAt_id' (0 : ℝ)).const_mul c).congr_deriv (by ring)
+      constructor
+      · have hd : HasDerivAt (fun x : ℝ => Real.exp (c * x)) c 0 := h.exp.congr_deriv (by simp)
+        refine (hasDerivAt_iff_tendsto_slope.mp hd).congr' ?_
+        filter_upwards with x
+        simp [slope_def_field]
+      · have h1 : HasDerivAt (fun y : ℝ => 1 + c * y) c 0 := h.const_add 1
+        have hd : HasDerivAt (fun x : ℝ => Real.log (1 + c * x)) c 0 := (h1.log (by simp)).congr_deriv (by simp)
+        refine (hasDerivAt_iff_tendsto_slope.mp hd).congr' ?_
+        filter_upwards with x
+        simp [slope_def_field]
+- id: telescoping_sum_limit
+  kind: gap
+  level: high
+  topic: 無限級数・差の形の和
+  statement: 実数列$b_k$が$L$に収束するなら、$\sum_{k=0}^{n-1}(b_k-b_{k+1})\to b_0-L$である。
+  statement_en: If a real sequence b converges to L, then the partial sums ∑_{k<n} (b_k - b_{k+1}) tend to b_0 - L.
+  assumptions:
+  - $b_k\to L$
+  quantifiers:
+  - 任意の実数列$b$と実数$L$
+  conclusion: $n\to\infty$で$\sum_{k=0}^{n-1}(b_k-b_{k+1})\to b_0-L$である。
+  answer: |
+    $b$を実数列、$L$を実数とし、$b_k\to L$とする。和の途中の項は打ち消し合うので、$\sum_{k=0}^{n-1}(b_k-b_{k+1})=b_0-b_n$である。$b_n\to L$なので、これは$b_0-L$に収束する。
+  strategy: Collapse the telescoping sum and pass to the limit.
+  sketch:
+  - 'derive: The sum collapses to b_0 - b_n.'
+  - 'conclude: Since b_n tends to L, the limit is b_0 - L.'
+  openmath: (forall (b L) (-> (seq_tends_to b L) (seq_limit_of (lambda (n) (sum (natural_range n) (lambda (k) (- (seq_value b k) (seq_value b (+ k 1)))))) (- (seq_value b 0) L))))
+  hard_negative:
+    statement: 実数列$b_k$が何であっても、$\sum_{k=0}^{n-1}(b_k-b_{k+1})$は収束する。
+    reason: $b_k$の収束が必要である。$b_k=k$では和は$-n$となり発散する。
+  target: |
+    ∀ (b : ℕ → ℝ) (L : ℝ), Filter.Tendsto b Filter.atTop (nhds L) → Filter.Tendsto (fun n : ℕ => ∑ k ∈ Finset.range n, (b k - b (k + 1))) Filter.atTop (nhds (b 0 - L))
+  proof: |
+    by
+      intro b L h
+      have := h.const_sub (b 0)
+      refine this.congr fun n => ?_
+      rw [Finset.sum_range_sub']
+- id: geometric_series_convergence_criterion
+  kind: textbook
+  level: high
+  topic: 無限等比級数・収束条件
+  statement: $a\neq 0$のとき、無限等比級数$\sum_{n=0}^{\infty}ar^n$が絶対収束する（実数項の級数として無条件に和をもつ）ことと$|r|<1$であることは同値である。
+  statement_en: For a ≠ 0, the series ∑ a r^n is summable (absolutely convergent) if and only if |r| < 1.
+  assumptions:
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,r$
+  conclusion: $\sum_{n=0}^{\infty}ar^n$が絶対収束することと$|r|<1$は同値である。
+  answer: |
+    $a\neq 0$、$r$を実数とする。
+    $|r|<1$とする。$\sum_{k=0}^{n-1}|ar^k|=|a|\dfrac{1-|r|^n}{1-|r|}\leq\dfrac{|a|}{1-|r|}$なので、級数は絶対収束する。
+    逆に級数が収束するとする。収束する級数の項は$0$に収束するので、$ar^n\to 0$である。$a\neq 0$より$|r|^n\to 0$である。$|r|\geq 1$なら全ての$n$で$|r|^n\geq 1$となり、これに反する。よって$|r|<1$である。
+  strategy: Bound the partial sums for one direction and use that terms tend to 0 for the other.
+  sketch:
+  - 'derive: For |r| < 1 the partial sums of |a r^n| are bounded by |a|/(1-|r|).'
+  - 'derive: Conversely, the terms a r^n of a convergent series tend to 0.'
+  - 'derive: Dividing by a ≠ 0 gives |r|^n tending to 0.'
+  - 'conclude: This is impossible when |r| ≥ 1.'
+  openmath: (forall (a r) (-> (!= a 0) (<-> (real_series_summable (lambda (n) (* a (^ r n)))) (< (abs r) 1))))
+  hard_negative:
+    statement: 無限等比級数$\sum_{n=0}^{\infty}ar^n$が収束するなら、$|r|<1$である。
+    reason: $a=0$を除く必要がある。$a=0$なら全ての項が$0$なので、$r=2$でも級数は収束する。
+  target: |
+    ∀ (a r : ℝ), a ≠ 0 → (Summable (fun n : ℕ => a * r ^ n) ↔ |r| < 1)
+  proof: |
+    by
+      intro a r ha
+      rw [summable_mul_left_iff ha, summable_geometric_iff_norm_lt_one, Real.norm_eq_abs]
+- id: geometric_series_tail
+  kind: gap
+  level: high
+  topic: 無限等比級数・途中から始まる和
+  statement: $|r|<1$のとき、自然数$m$について$\sum_{n=0}^{\infty}ar^{m+n}=\dfrac{ar^m}{1-r}$である。
+  statement_en: If |r| < 1 and m is a natural number, then the series ∑_{n≥0} a r^(m+n) sums to a r^m/(1-r).
+  assumptions:
+  - $|r|<1$
+  - $m$は自然数
+  quantifiers:
+  - 任意の実数$a,r$と自然数$m$
+  conclusion: $\sum_{n=0}^{\infty}ar^{m+n}=\dfrac{ar^m}{1-r}$である。
+  answer: |
+    $a,r$を実数、$m$を自然数とし、$|r|<1$とする。$ar^{m+n}=ar^m\cdot r^n$である。$\sum_{n=0}^{k-1}r^n=\dfrac{1-r^k}{1-r}$と$r^k\to 0$から、無限等比級数$\sum_{n=0}^{\infty}r^n$は$\dfrac{1}{1-r}$に収束する。$|r|$についても同じ計算ができるので、この収束は絶対収束である。定数$ar^m$を掛けると、与えられた級数は$\dfrac{ar^m}{1-r}$に収束する。
+  strategy: Factor out the first term and use the geometric series with ratio r.
+  sketch:
+  - 'derive: Factor a r^(m+n) as a r^m times r^n.'
+  - 'apply_theorem: The geometric series of r^n sums to 1/(1-r).'
+  - 'conclude: Multiply by the constant a r^m.'
+  openmath: (forall (a r m) (-> (and (in m N) (< (abs r) 1)) (has_sum_fn (lambda (n) (* a (^ r (+ m n)))) (/ (* a (^ r m)) (- 1 r)))))
+  hard_negative:
+    statement: $|r|<1$のとき、$\sum_{n=0}^{\infty}ar^{m+n}=\dfrac{a}{1-r}$である。
+    reason: 初項は$ar^m$である。$a=1$、$r=\dfrac12$、$m=1$では和は$1$だが、この式は$2$を与える。
+  target: |
+    ∀ (a r : ℝ) (m : ℕ), |r| < 1 → HasSum (fun n : ℕ => a * r ^ (m + n)) (a * r ^ m / (1 - r))
+  proof: |
+    by
+      intro a r m hr
+      have h := (hasSum_geometric_of_abs_lt_one hr).mul_left (a * r ^ m)
+      have heq : (fun n : ℕ => a * r ^ (m + n)) = fun n : ℕ => a * r ^ m * r ^ n := by
+        ext n
+        rw [pow_add]
+        ring
+      rw [heq, div_eq_mul_inv]
+      exact h
+- id: arithmetic_geometric_series
+  kind: textbook
+  level: high
+  topic: 無限級数・等差と等比の積
+  statement: $|r|<1$のとき、$\sum_{n=0}^{\infty}nr^n=\dfrac{r}{(1-r)^2}$である。
+  statement_en: If |r| < 1, then the series ∑_{n≥0} n r^n sums to r/(1-r)^2.
+  assumptions:
+  - $|r|<1$
+  quantifiers:
+  - 任意の実数$r$
+  conclusion: $\sum_{n=0}^{\infty}nr^n=\dfrac{r}{(1-r)^2}$である。
+  answer: |
+    $r$を実数とし、$|r|<1$とする。$S_N=\sum_{n=0}^{N}nr^n$とおく。$S_N-rS_N$を項ごとに計算すると
+    $(1-r)S_N=\sum_{n=1}^{N}r^n-Nr^{N+1}=\dfrac{r(1-r^N)}{1-r}-Nr^{N+1}$
+    である。$|r|<1$より$r^N\to 0$である。また$|r|=\dfrac{1}{1+h}$（$h>0$）と書くと、$r\neq 0$のとき$(1+h)^{N+1}\geq\dfrac{N(N+1)}{2}h^2$なので$N|r|^{N+1}\to 0$である（$r=0$なら明らかである）。したがって$(1-r)S_N\to\dfrac{r}{1-r}$であり、$S_N\to\dfrac{r}{(1-r)^2}$である。
+    さらに$|r|$についても同じ計算ができるので、級数は絶対収束する。
+  strategy: Compute S_N - r S_N and control N r^(N+1).
+  sketch:
+  - 'setup: Let S_N be the partial sum of n r^n.'
+  - 'derive: S_N - r S_N is a geometric sum minus N r^(N+1).'
+  - 'derive: N |r|^(N+1) tends to 0 by the binomial bound.'
+  - 'derive: Hence (1-r) S_N tends to r/(1-r).'
+  - 'conclude: Divide by 1-r; the same computation with |r| gives absolute convergence.'
+  openmath: (forall (r) (-> (< (abs r) 1) (has_sum_fn (lambda (n) (* n (^ r n))) (/ r (^ (- 1 r) 2)))))
+  hard_negative:
+    statement: $|r|<1$のとき、$\sum_{n=0}^{\infty}nr^n=\dfrac{1}{(1-r)^2}$である。
+    reason: 分子の$r$が抜けている。$r=\dfrac12$では和は$2$だが、この式は$4$を与える。
+  target: |
+    ∀ (r : ℝ), |r| < 1 → HasSum (fun n : ℕ => (n : ℝ) * r ^ n) (r / (1 - r) ^ 2)
+  proof: |
+    by
+      intro r hr
+      exact hasSum_coe_mul_geometric_of_norm_lt_one (by simpa using hr)
+- id: integral_power_product_general
+  kind: gap
+  level: high
+  topic: 定積分・端点の冪の積
+  statement: 実数$\alpha,\beta$と$0$以上の整数$m,n$について、$\displaystyle\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx=\dfrac{(-1)^n\,m!\,n!}{(m+n+1)!}(\beta-\alpha)^{m+n+1}$である。
+  statement_en: For reals α, β and nonnegative integers m, n, the integral of (x-α)^m (x-β)^n from α to β equals (-1)^n m! n! / (m+n+1)! times (β-α)^(m+n+1).
+  assumptions:
+  - $\alpha,\beta$は実数
+  - $m,n$は$0$以上の整数
+  quantifiers:
+  - 任意の実数$\alpha,\beta$
+  - 任意の$0$以上の整数$m,n$
+  conclusion: $\displaystyle\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx=\dfrac{(-1)^n\,m!\,n!}{(m+n+1)!}(\beta-\alpha)^{m+n+1}$である。
+  answer: |
+    $\alpha,\beta$を実数、$m,n$を$0$以上の整数とし、$I(m,n)=\displaystyle\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx$とおく。$I(m,n)=\dfrac{(-1)^n\,m!\,n!}{(m+n+1)!}(\beta-\alpha)^{m+n+1}$を、$n$についての帰納法で、すべての$m$に対して示す。
+    $n=0$のとき、$I(m,0)=\left[\dfrac{(x-\alpha)^{m+1}}{m+1}\right]_\alpha^\beta=\dfrac{(\beta-\alpha)^{m+1}}{m+1}$であり、右辺の$\dfrac{m!\,0!}{(m+1)!}=\dfrac{1}{m+1}$と一致する。
+    $n$で成り立つとする。部分積分により
+    $I(m,n+1)=\left[(x-\beta)^{n+1}\dfrac{(x-\alpha)^{m+1}}{m+1}\right]_\alpha^\beta-\dfrac{n+1}{m+1}\displaystyle\int_\alpha^\beta(x-\alpha)^{m+1}(x-\beta)^n\,dx$である。
+    境界項は、$x=\beta$では$(x-\beta)^{n+1}=0$、$x=\alpha$では$(x-\alpha)^{m+1}=0$なので$0$である。よって$I(m,n+1)=-\dfrac{n+1}{m+1}I(m+1,n)$となる。
+    帰納法の仮定を$m+1$に使うと、$I(m,n+1)=-\dfrac{n+1}{m+1}\cdot\dfrac{(-1)^n(m+1)!\,n!}{(m+n+2)!}(\beta-\alpha)^{m+n+2}=\dfrac{(-1)^{n+1}m!\,(n+1)!}{(m+n+2)!}(\beta-\alpha)^{m+n+2}$である。これは$n+1$の場合の主張である。
+  strategy: Induct on n for all m, integrating by parts so that the boundary terms vanish.
+  sketch:
+  - 'setup: Fix reals α, β and write I(m,n) for the integral.'
+  - 'base: For n = 0, integrate (x-α)^m directly.'
+  - 'induct: Integration by parts gives I(m,n+1) = -(n+1)/(m+1) I(m+1,n), since the boundary terms vanish.'
+  - 'conclude: Substitute the induction hypothesis at m+1.'
+  openmath: (forall (p q m n) (-> (and (in m N) (in n N)) (= (interval_integral p q (lambda (x) (* (^ (- x p) m) (^ (- x q) n)))) (* (/ (* (^ (neg 1) n) (* (factorial m) (factorial n))) (factorial (+ (+ m n) 1))) (^ (- q p) (+ (+ m n) 1))))))
+  hard_negative:
+    statement: 実数$\alpha,\beta$と$0$以上の整数$m,n$について、$\displaystyle\int_\alpha^\beta(x-\alpha)^m(x-\beta)^n\,dx=\dfrac{m!\,n!}{(m+n+1)!}(\beta-\alpha)^{m+n+1}$である。
+    reason: $m=n=1$、$\alpha=0$、$\beta=1$のとき左辺は$\displaystyle\int_0^1x(x-1)\,dx=-\dfrac{1}{6}$であり、右辺は$\dfrac{1}{6}$である。符号$(-1)^n$が要る。
+  target: |
+    ∀ (α β : ℝ) (m n : ℕ), (∫ x in α..β, (x - α) ^ m * (x - β) ^ n) = (-1 : ℝ) ^ n * ((m.factorial * n.factorial : ℕ) : ℝ) / ((m + n + 1).factorial : ℝ) * (β - α) ^ (m + n + 1)
+  proof: |
+    by
+      intro α β m n
+      induction n generalizing m with
+      | zero =>
+        have h := intervalIntegral.integral_comp_sub_right (a := α) (b := β) (fun y : ℝ => y ^ m) α
+        simp only [pow_zero, mul_one]
+        rw [h, integral_pow]
+        have hf : ((m + 0 + 1).factorial : ℝ) = (m + 1 : ℝ) * (m.factorial : ℝ) := by
+          simp [Nat.factorial_succ]
+        have hm : (m.factorial : ℝ) ≠ 0 := by positivity
+        have hm1 : (m + 1 : ℝ) ≠ 0 := by positivity
+        simp only [sub_self, Nat.factorial_zero, mul_one, one_mul, add_zero]
+        rw [show ((m + 1).factorial : ℝ) = (m + 1 : ℝ) * (m.factorial : ℝ) by simp [Nat.factorial_succ]]
+        rw [zero_pow (by omega)]
+        field_simp
+        ring
+      | succ n ih =>
+        have hm1 : (m + 1 : ℝ) ≠ 0 := by positivity
+        have key := intervalIntegral.integral_mul_deriv_eq_deriv_mul
+          (a := α) (b := β)
+          (u := fun x : ℝ => (x - β) ^ (n + 1))
+          (v := fun x : ℝ => (x - α) ^ (m + 1) / (m + 1 : ℝ))
+          (u' := fun x : ℝ => ((n + 1 : ℕ) : ℝ) * (x - β) ^ n)
+          (v' := fun x : ℝ => (x - α) ^ m)
+          (fun x _ => by
+            have := ((hasDerivAt_id' x).sub_const β).fun_pow (n + 1)
+            simpa using this)
+          (fun x _ => by
+            have := (((hasDerivAt_id' x).sub_const α).fun_pow (m + 1)).div_const (m + 1 : ℝ)
+            convert this using 1
+            simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, mul_one]
+            field_simp)
+          (by apply Continuous.intervalIntegrable; fun_prop)
+          (by apply Continuous.intervalIntegrable; fun_prop)
+        have e1 : (∫ x in α..β, (x - α) ^ m * (x - β) ^ (n + 1)) = ∫ x in α..β, (x - β) ^ (n + 1) * (x - α) ^ m := by
+          congr 1; ext x; ring
+        have e2 : (∫ x in α..β, ((n + 1 : ℕ) : ℝ) * (x - β) ^ n * ((x - α) ^ (m + 1) / (m + 1 : ℝ))) = ((n + 1 : ℕ) : ℝ) / (m + 1 : ℝ) * ∫ x in α..β, (x - α) ^ (m + 1) * (x - β) ^ n := by
+          rw [← intervalIntegral.integral_const_mul]
+          congr 1; ext x; field_simp
+        rw [e1, key, e2, ih (m + 1)]
+        have hf : ((m + 1 + n + 1).factorial : ℝ) = ((m + (n + 1) + 1).factorial : ℝ) := by
+          congr 2; omega
+        have hp : (β - α) ^ (m + 1 + n + 1) = (β - α) ^ (m + (n + 1) + 1) := by
+          congr 1; omega
+        rw [hf, hp]
+        have hF : ((m + (n + 1) + 1).factorial : ℝ) ≠ 0 := by positivity
+        simp only [sub_self, zero_div, mul_zero, ne_eq, zero_pow, zero_mul, sub_zero, Nat.factorial_succ, Nat.cast_mul, Nat.cast_add, Nat.cast_one, pow_succ]
+        field_simp
+        ring

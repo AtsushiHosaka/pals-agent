@@ -1,0 +1,3 @@
+# Vocabulary for school inequalities (reuses names from other domains).
+permutation_set: {args: [term], returns: term, meaning: "set of all bijections from A to A"}
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}

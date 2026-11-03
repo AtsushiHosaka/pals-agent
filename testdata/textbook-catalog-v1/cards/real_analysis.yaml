@@ -669,7 +669,7 @@
 - id: lub_add
   kind: gap
   level: 1
-  topic: 上限・和集合の上限
+  topic: 上限・集合の和（和集合ではない）の上限
   statement: 実数の集合$S,T$の上限がそれぞれ$a,b$なら、集合$\{x+y\mid x\in S,\ y\in T\}$の上限は$a+b$である。
   statement_en: If a and b are the suprema of sets S and T of reals, then a + b is the supremum of the set of all sums x + y with x in S and y in T.
   assumptions:
@@ -789,34 +789,32 @@
   kind: gap
   level: 2
   topic: 上極限・末尾の上界
-  statement: 上に有界な実数列の上極限が$c$より小さいなら、十分先の全ての項は$c$より小さい。
-  statement_en: If the limit superior of a real sequence bounded above is less than c, then all sufficiently late terms are less than c.
+  statement: 有界な実数列の上極限が$c$より小さいなら、十分先の全ての項は$c$より小さい。
+  statement_en: If the limit superior of a bounded real sequence is less than c, then all sufficiently late terms are less than c.
   assumptions:
-  - 全ての$n$で$a_n\leq M$
+  - 全ての$n$で$|a_n|\leq M$
   - $\limsup_n a_n<c$
   quantifiers:
   - 任意の実数列$(a_n)$と$M,c\in\mathbb{R}$
   conclusion: ある$N$が存在し、$n\geq N$なら$a_n<c$である。
   answer: |
-    $(a_n)$を実数列、$M,c\in\mathbb{R}$とし、全ての$n$で$a_n\leq M$とする。$B$を、ある$N$について「$n\geq N$なら$a_n\leq b$」が成り立つ実数$b$全体の集合とする。上極限は$B$の下限である。$M\in B$なので$B$は空でない。
-
-    $\limsup_n a_n<c$とすると、$c$は$B$の下界ではない。したがって$b<c$となる$b\in B$がある。$B$が下に有界でない場合も、$c$より小さい$b\in B$がとれることに変わりはない。$b\in B$より、ある$N$があり、$n\geq N$なら$a_n\leq b<c$である。
+    $(a_n)$を実数列、$M,c\in\mathbb{R}$とし、全ての$n$で$|a_n|\leq M$とする。$B$を、ある$N$について「$n\geq N$なら$a_n\leq b$」が成り立つ実数$b$全体の集合とする。上極限は$B$の下限である。$M\in B$なので$B$は空でない。また$b\in B$なら十分大きい$n$で$-M\leq a_n\leq b$なので$-M\leq b$であり、$B$は下に有界である。
+    $\limsup_n a_n<c$とすると、$c$は$B$の下界ではない。したがって$b<c$となる$b\in B$がある。$b\in B$より、ある$N$があり、$n\geq N$なら$a_n\leq b<c$である。
   strategy: The limsup is the infimum of tail suprema, so some tail supremum is below c.
   sketch:
   - 'translate: limsup a is the infimum of the tail suprema s_m.'
   - 'derive: Since it is below c, some s_N < c.'
   - 'conclude: For n ≥ N, a_n ≤ s_N < c.'
-  openmath: (forall (a M c) (-> (and (forall (n) (<= (seq_value a n) M)) (< (seq_limsup a) c)) (exists (K) (forall (n) (-> (>= n K) (< (seq_value a n) c))))))
+  openmath: (forall (a M c) (-> (and (forall (n) (<= (abs (seq_value a n)) M)) (< (seq_limsup a) c)) (exists (K) (forall (n) (-> (>= n K) (< (seq_value a n) c))))))
   hard_negative:
     statement: 実数列の上極限がcなら、十分先の全ての項はc以下である。
     reason: a_n=1/(n+1)の上極限は0だが、全ての項は0より大きい。上極限より真に大きい値でなければならない。
-  target: |
-    ∀ (a : ℕ → ℝ) (M c : ℝ), (∀ n, a n ≤ M) → Filter.limsup a Filter.atTop < c → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → a n < c
+  target: '∀ (a : ℕ → ℝ) (M c : ℝ), (∀ n, |a n| ≤ M) → Filter.limsup a Filter.atTop < c → ∃ N : ℕ, ∀ n : ℕ, N ≤ n → a n < c'
   proof: |
     by
       intro a M c h h₁
       have hu : Filter.IsBoundedUnder (· ≤ ·) Filter.atTop a :=
-        Filter.isBoundedUnder_of ⟨M, h⟩
+        Filter.isBoundedUnder_of ⟨M, fun n => (abs_le.mp (h n)).2⟩
       have h₂ := Filter.eventually_lt_of_limsup_lt h₁ hu
       obtain ⟨N, hN⟩ := Filter.eventually_atTop.1 h₂
       exact ⟨N, fun n hn => hN n hn⟩
@@ -1166,11 +1164,9 @@
   - 任意の実数列$(a_n),(b_n)$
   conclusion: $c_n=\sum_{k\leq n}a_kb_{n-k}$とおくと$\sum_n c_n$は収束し、$\sum_n c_n=(\sum_n a_n)(\sum_n b_n)$である。
   answer: |
-    $(a_n),(b_n)$を実数列とし、$\sum_n|a_n|$と$\sum_n|b_n|$が収束するとする。それぞれの和を$A,B$とする。$c_n=\sum_{k\leq n}a_kb_{n-k}$とおく。
-
-    まず$\sum_n c_n$の絶対収束を示す。$\sum_{n\leq N}|c_n|\leq\sum_{n\leq N}\sum_{k+l=n}|a_k||b_l|\leq(\sum_{k\leq N}|a_k|)(\sum_{l\leq N}|b_l|)\leq AB$である。部分和は上に有界な単調増加列なので、$\sum_n|c_n|$は収束する。絶対収束する級数は収束するので、$\sum_n c_n$は収束する。
-
-    次に和を求める。$A_N=\sum_{k\leq N}a_k$、$B_N=\sum_{l\leq N}b_l$、$C_N=\sum_{n\leq N}c_n$とおくと、$A_NB_N-C_N$は$k,l\leq N$かつ$k+l>N$を満たす組$(k,l)$についての$a_kb_l$の和である。$m=\lfloor N/2\rfloor$とする。そのような組では$k>m$または$l>m$なので、$|A_NB_N-C_N|\leq(\sum_{k>m}|a_k|)B+A(\sum_{l>m}|b_l|)$である。右辺は$N\to\infty$で$0$に収束する。$A_NB_N\to(\sum_n a_n)(\sum_n b_n)$なので、$C_N$も同じ値に収束する。
+    $(a_n),(b_n)$を実数列とし、$\sum_n|a_n|$と$\sum_n|b_n|$が収束するとする。$A'=\sum_n|a_n|$、$B'=\sum_n|b_n|$、$A=\sum_n a_n$、$B=\sum_n b_n$とおき、$c_n=\sum_{k\leq n}a_kb_{n-k}$とする。
+    まず$\sum_n c_n$の絶対収束を示す。$\sum_{n\leq N}|c_n|\leq\sum_{n\leq N}\sum_{k+l=n}|a_k||b_l|\leq(\sum_{k\leq N}|a_k|)(\sum_{l\leq N}|b_l|)\leq A'B'$である。部分和は上に有界な単調増加列なので、$\sum_n|c_n|$は収束する。絶対収束する級数は収束するので、$\sum_n c_n$は収束する。
+    次に和を求める。$A_N=\sum_{k\leq N}a_k$、$B_N=\sum_{l\leq N}b_l$、$C_N=\sum_{n\leq N}c_n$とおくと、$A_NB_N-C_N$は$k,l\leq N$かつ$k+l>N$を満たす組$(k,l)$についての$a_kb_l$の和である。$m=\lfloor N/2\rfloor$とする。そのような組では$k>m$または$l>m$なので、$|A_NB_N-C_N|\leq(\sum_{k>m}|a_k|)B'+A'(\sum_{l>m}|b_l|)$である。右辺は$N\to\infty$で$0$に収束する。$A_NB_N\to AB$なので、$C_N$も$AB$に収束する。すなわち$\sum_n c_n=AB$である。
   strategy: Treat the product as an absolutely summable double family and regroup along anti-diagonals.
   sketch:
   - 'derive: The family a_k b_l over pairs is absolutely summable, bounded by the product of the absolute sums.'
@@ -1592,7 +1588,7 @@
   - 'apply_theorem: Abel''s lemma gives absolute convergence at x.'
   - 'contradiction: If |x| > R and the series converged at x, then |x| ≤ R.'
   - 'conclude: R has the required properties.'
-  openmath: (forall (a) (exists (r) (and (forall (x) (-> (< (abs x) r) (real_series_summable (lambda (n) (abs (* (seq_value a n) (^ x n))))))) (forall (x) (-> (< r (abs x)) (not (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (* (seq_value a n) (^ x n))) K)) S))))))))
+  openmath: (forall (a) (or (exists (r) (and (>= r 0) (forall (x) (-> (< (abs x) r) (real_series_summable (lambda (n) (abs (* (seq_value a n) (^ x n))))))) (forall (x) (-> (< r (abs x)) (not (exists (S) (seq_fn_tends_to (lambda (K) (real_partial_sum (lambda (n) (* (seq_value a n) (^ x n))) K)) S))))))) (forall (x) (real_series_summable (lambda (n) (abs (* (seq_value a n) (^ x n))))))))
   hard_negative:
     statement: '|x|=Rでもべき級数は必ず収束する。'
     reason: Σx^nはR=1でx=1でもx=-1でも発散し、Σx^n/(n+1)はx=-1で収束しx=1で発散する。境界では個別に調べる必要がある。
@@ -1714,7 +1710,7 @@
   - 'construct: Let δ be the smallest of the finitely many half radii.'
   - 'derive: Points y, z with d(y,z) < δ both lie in one ball of radius δ_x around a centre.'
   - 'conclude: The triangle inequality gives d(f(y), f(z)) < ε.'
-  openmath: (forall (f S) (-> (and (compact_set S) (fn_continuous_on (lambda (x) (fn_value f x)) S)) (uniform_continuous_on f S)))
+  openmath: (forall (X Y f S) (-> (and (metric_space X) (metric_space Y) (compact_in X S) (continuous_between (subspace_topology_on X S) Y f)) (uniformly_continuous_map (subspace_topology_on X S) Y f)))
   hard_negative:
     statement: 開区間(0,1)上の連続関数は一様連続である。
     reason: f(x)=1/xは(0,1)で連続だが一様連続ではない。コンパクト性が必要である。
@@ -1746,8 +1742,8 @@
   - 'conclude: Since δ does not depend on x or y, f is uniformly continuous.'
   openmath: (forall (f K) (-> (forall (x y) (<= (abs (- (fn_value f x) (fn_value f y))) (* K (abs (- x y))))) (uniform_continuous f)))
   hard_negative:
-    statement: 一様連続な関数はリプシッツ連続である。
-    reason: √xは[0,1]で一様連続だが、0の近くで差分商が非有界なのでリプシッツ連続ではない。
+    statement: 一様連続な関数$f:\mathbb{R}\to\mathbb{R}$はリプシッツ連続である。
+    reason: $f(x)=\sqrt{|x|}$は一様連続（$|\sqrt{|x|}-\sqrt{|y|}|\leq\sqrt{|x-y|}$）だが、$0$の近くで$f(h)/h=1/\sqrt{h}$が非有界なので、どの$K$でも$|f(x)-f(y)|\leq K|x-y|$を満たさない。
   target: |
     ∀ (f : ℝ → ℝ) (K : ℝ), (∀ x y : ℝ, |f x - f y| ≤ K * |x - y|) → UniformContinuous f
   proof: |

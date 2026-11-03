@@ -1,0 +1,24 @@
+# Proposed additive OpenMath vocabulary for high-school vectors and the complex plane (cd=pals2).
+complex_imaginary_unit: {args: [], returns: term, meaning: "the imaginary unit i"}
+complex_conj: {args: [term], returns: term, meaning: "complex conjugate of z"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+imag_part: {args: [term], returns: term, meaning: "imaginary part of z"}
+principal_arg: {args: [term], returns: term, meaning: "principal argument of z in (-pi, pi]"}
+primitive_root_of_unity: {args: [term, term], returns: prop, meaning: "z is a primitive n-th root of unity, in the order z n"}
+range_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(k) over k from 0 to n-1"}
+ico_product: {args: [term, term, term_function], returns: term, meaning: "finite product of g(k) over a <= k < b, in the order a b g"}
+range_sum_multiples_of: {args: [term, term, term_function], returns: term, meaning: "finite sum of g(k) over those k with 0 <= k < m divisible by n, in the order n m g"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+inner_product_space_over: {args: [term, term], returns: prop, meaning: "E is an inner product space over K, where K is R or C (arguments K, E)"}
+real_vector_space: {args: [term], returns: prop, meaning: "E is a real vector space"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}
+smul: {args: [term, term], returns: term, meaning: "scalar multiple a x of a vector x"}
+vector_angle: {args: [term, term], returns: term, meaning: "unoriented angle between vectors x and y"}
+euclidean_space: {args: [term], returns: term, meaning: "n-dimensional Euclidean space"}
+vector_component: {args: [term, term], returns: term, meaning: "i-th coordinate of the vector a, in the order a i"}
+linearly_independent_pair: {args: [term, term], returns: prop, meaning: "the vectors a and b are linearly independent"}
+linearly_independent_triple: {args: [term, term, term], returns: prop, meaning: "the vectors a, b and c are linearly independent"}
+in_segment: {args: [term, term, term], returns: prop, meaning: "p lies on the closed segment between a and b, in the order p a b"}
+on_plane: {args: [term, term, term, term], returns: prop, meaning: "p lies in the affine span of a, b and c, in the order p a b c"}
+coplanar_points: {args: [term, term, term, term], returns: prop, meaning: "the four points a, b, c and d lie in a common plane"}
+convex_hull: {args: [term], returns: term, meaning: "convex hull of the set S"}

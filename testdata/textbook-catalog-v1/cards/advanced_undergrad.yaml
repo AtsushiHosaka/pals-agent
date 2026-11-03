@@ -54,7 +54,7 @@
   - 'case_split: By irreducibility of ρ, ker f is either the whole space or zero.'
   - 'derive: If ker f is everything then f = 0.'
   - 'conclude: Otherwise f is injective with nonzero image, so irreducibility of σ makes f surjective.'
-  openmath: (forall (k G V W r s f) (-> (and (field k) (group G) (linear_representation r k G V) (linear_representation s k G W) (irreducible_representation r) (irreducible_representation s) (intertwining_map f r s)) (or (bijective f) (= f 0))))
+  openmath: (forall (k G V W r s f) (-> (and (field k) (monoid G) (linear_representation r k G V) (linear_representation s k G W) (irreducible_representation r) (irreducible_representation s) (intertwining_map f r s)) (or (bijective f) (= f 0))))
   hard_negative:
     statement: 既約表現σへの絡作用素は、ρが既約でなくても全単射または零写像である。
     reason: ρ=σ⊕σから第1成分への射影は絡作用素だが、0でも単射でもない。
@@ -86,7 +86,7 @@
   - 'apply_theorem: Choose an eigenvalue c of f.'
   - 'derive: The map f - c is an intertwiner with nonzero kernel.'
   - 'conclude: Irreducibility forces that kernel to be all of V, so f = c.'
-  openmath: (forall (k G V r f) (-> (and (field k) (algebraically_closed k) (group G) (finite_dim_space V) (linear_representation r k G V) (irreducible_representation r) (intertwining_map f r r)) (exists (c) (and (in c k) (forall (v) (-> (in v V) (= (fn_value f v) (scalar_action c v))))))))
+  openmath: (forall (k G V r f) (-> (and (field k) (algebraically_closed k) (monoid G) (finite_dim_space V) (linear_representation r k G V) (irreducible_representation r) (intertwining_map f r r)) (exists (c) (and (in c k) (forall (v) (-> (in v V) (= (fn_value f v) (scalar_action c v))))))))
   hard_negative:
     statement: 実数体上の有限次元既約表現の自己絡作用素はスカラー倍写像である。
     reason: Z/4を平面の90度回転で表すと実既約だが、回転自身は実スカラー倍でない絡作用素である。
@@ -201,9 +201,9 @@
   level: 3
   topic: リー代数・ヤコビ恒等式
   statement: $L$をリー環とする。任意の元$x,y,z\in L$について$[x,[y,z]]+[y,[z,x]]+[z,[x,y]]=0$が成り立つ。
-  statement_en: In a Lie ring, the Jacobi identity [x,[y,z]] + [y,[z,x]] + [z,[x,y]] = 0 holds, derived here from the Leibniz form of the axiom.
+  statement_en: In a Lie ring L, [x,[y,z]] + [y,[z,x]] + [z,[x,y]] = 0 for all x, y, z (the Jacobi identity).
   assumptions:
-  - $L$はリー環で、ライプニッツ則$[x,[y,z]]=[[x,y],z]+[y,[x,z]]$を満たす
+  - $L$はリー環
   quantifiers:
   - 任意の$x,y,z\in L$
   conclusion: 巡回和$[x,[y,z]]+[y,[z,x]]+[z,[x,y]]$は$0$である。
@@ -237,9 +237,7 @@
   quantifiers:
   - 任意のイデアル$I,J$
   conclusion: $[I,J]\subseteq I\cap J$が成り立つ。
-  answer: |
-    $L$を可換環$R$上のリー代数、$I,J$を$L$のイデアルとする。$[I,J]$は$[x,y]$($x\in I$, $y\in J$)で生成される部分加群である。
-    $x\in I$, $y\in J$とする。$J$はイデアルなので$[x,y]\in J$である。反可換性より$[x,y]=-[y,x]$であり、$I$はイデアルなので$[y,x]\in I$である。よって$[x,y]\in I$である。$I\cap J$は部分加群なので、$[I,J]\subseteq I\cap J$が成り立つ。
+  answer: $L$を可換環$R$上のリー代数、$I,J$を$L$のイデアルとする。$[I,J]$は$[x,y]$($x\in I$, $y\in J$)をすべて含む最小のイデアルである。$x\in I$, $y\in J$とする。$J$はイデアルなので$[x,y]\in J$である。反可換性より$[x,y]=-[y,x]$であり、$I$はイデアルなので$[y,x]\in I$である。よって$[x,y]\in I\cap J$である。$I$と$J$がともにイデアルなので$I\cap J$もイデアルである。したがって$[x,y]$をすべて含む最小のイデアル$[I,J]$は$I\cap J$に含まれる。
   strategy: Check the generators [x,y] lie in both ideals using the ideal property and anticommutativity.
   sketch:
   - 'setup: Take generators [x,y] with x in I and y in J.'
@@ -514,11 +512,11 @@
   kind: gap
   level: 4
   topic: 代数的整数論・円分体
-  statement: $p$を奇素数、$K$を$\mathbb{Q}$の$p$次円分拡大、$\zeta$を$K$の原始$p$乗根とする。整数環における$\zeta-1$の$\mathbb{Z}$へのノルムは$p$である。
+  statement: $p$を奇素数、$K$を$\mathbb{Q}$に$1$の原始$p$乗根を添加した円分体(第$p$円分体)、$\zeta$を$K$の原始$p$乗根とする。整数環における$\zeta-1$の$\mathbb{Z}$へのノルムは$p$である。
   statement_en: Let p be an odd prime and ζ a primitive p-th root of unity in the p-th cyclotomic field K. The norm of ζ - 1 from the ring of integers of K to Z equals p.
   assumptions:
   - $p$は奇素数
-  - $K$は$\mathbb{Q}$の$p$次円分拡大
+  - $K$は$\mathbb{Q}$の第$p$円分体
   - $\zeta$は$K$の原始$p$乗根
   quantifiers:
   - 任意の$p,K,\zeta$
@@ -547,11 +545,11 @@
   kind: textbook
   level: 4
   topic: 代数的整数論・円分体の整数環
-  statement: $n$を正の整数、$K$を$\mathbb{Q}$の$n$次円分拡大、$\zeta$を$K$の原始$n$乗根とする。$K$の元が代数的整数であることは、$\mathbb{Z}[\zeta]$に属することと同値である。
+  statement: $n$を正の整数、$K$を$\mathbb{Q}$に$1$の原始$n$乗根を添加した円分体(第$n$円分体)、$\zeta$を$K$の原始$n$乗根とする。$K$の元が代数的整数であることは、$\mathbb{Z}[\zeta]$に属することと同値である。
   statement_en: Let K be the n-th cyclotomic field and ζ a primitive n-th root of unity in K. An element of K is an algebraic integer if and only if it lies in Z[ζ].
   assumptions:
   - $n$は正の整数
-  - $K$は$\mathbb{Q}$の$n$次円分拡大
+  - $K$は$\mathbb{Q}$の第$n$円分体
   - $\zeta$は$K$の原始$n$乗根
   quantifiers:
   - 任意の$x\in K$
@@ -878,7 +876,7 @@
   openmath: (forall (L M k) (-> (and (first_order_language L) (first_order_structure M L) (>= k aleph_zero) (<= (language_cardinality L) k)) (and (-> (and (!= M emptyset) (<= k (size M))) (exists (N) (and (first_order_structure N L) (= (size N) k) (elementary_embedding L N M)))) (-> (and (infinite_set M) (<= (size M) k)) (exists (N) (and (first_order_structure N L) (= (size N) k) (elementary_embedding L M N)))))))
   hard_negative:
     statement: 無限構造Mと任意の無限基数κに対し、Mと初等同値で濃度κの構造がある。言語の濃度は問わない。
-    reason: 非可算個の定数が互いに異なるという文を満たす構造は非可算なので、κ=ℵ₀では成り立たない。
+    reason: 言語が非可算個の定数記号$c_i$をもち、$M$で$c_i\neq c_j$($i\neq j$)がすべて成り立つとする。各$c_i\neq c_j$は$M$で成り立つ文なので、$M$と初等同値な構造はこれらをすべて満たし、非可算でなければならない。よって$\kappa=\aleph_0$では成り立たない。
   target: |
     ∀ (L : FirstOrder.Language.{0, 0}) (M : Type) [L.Structure M] (κ : Cardinal.{0}), Cardinal.aleph0 ≤ κ → L.card ≤ κ → (Nonempty M → κ ≤ Cardinal.mk M → ∃ (N : Type) (_ : L.Structure N), Nonempty (L.ElementaryEmbedding N M) ∧ Cardinal.mk N = κ) ∧ (Infinite M → Cardinal.mk M ≤ κ → ∃ (N : Type) (_ : L.Structure N), Nonempty (L.ElementaryEmbedding M N) ∧ Cardinal.mk N = κ)
   proof: |
@@ -947,7 +945,7 @@
   - 'derive: On a representative cycle, both sides of the composition formula give the class of ψ(φ(z)).'
   - 'derive: The identity chain map sends each class to itself.'
   - 'conclude: Uniqueness in the universal properties gives the same identities in the general setting.'
-  openmath: (forall (C K L M f g i) (-> (and (homological_complex K C) (homological_complex L C) (homological_complex M C) (chain_map f K L) (chain_map g L M)) (and (= (homology_map (morphism_comp f g) i) (morphism_comp (homology_map f i) (homology_map g i))) (= (homology_map (identity_morphism K) i) (identity_morphism (homology_object K i))))))
+  openmath: (forall (C K L M f g i) (-> (and (homological_complex K C) (homological_complex L C) (homological_complex M C) (has_homology K i) (has_homology L i) (has_homology M i) (chain_map f K L) (chain_map g L M)) (and (= (homology_map (morphism_comp f g) i) (morphism_comp (homology_map f i) (homology_map g i))) (= (homology_map (identity_morphism K) i) (identity_morphism (homology_object K i))))))
   hard_negative:
     statement: 全ての次数で誘導写像H_i(f)が0なら、鎖写像fは0である。
     reason: 完全な複体の恒等写像はホモロジーが全て0なので誘導写像も0だが、複体が0でなければ恒等写像は0でない。
@@ -978,7 +976,7 @@
   - 'setup: The homotopy h satisfies f - g = dh + hd.'
   - 'derive: On a cycle z the term hd z vanishes, so f(z) - g(z) = d h(z).'
   - 'conclude: The two images differ by a boundary, so they define the same homology class.'
-  openmath: (forall (C K L f g i) (-> (and (preadditive_category C) (homological_complex K C) (homological_complex L C) (chain_map f K L) (chain_map g K L) (chain_homotopic f g)) (= (homology_map f i) (homology_map g i))))
+  openmath: (forall (C K L f g i) (-> (and (preadditive_category C) (homological_complex K C) (homological_complex L C) (has_homology K i) (has_homology L i) (chain_map f K L) (chain_map g K L) (chain_homotopic f g)) (= (homology_map f i) (homology_map g i))))
   hard_negative:
     statement: ホモロジーに同じ写像を誘導する鎖写像は鎖ホモトピックである。
     reason: 完全列0→Z→(2倍)Z→Z/2→0を複体とみるとホモロジーは全て0なので、恒等写像と零写像の誘導写像は等しい。両者がホモトピックならこの列は分裂するが、実際には分裂しない。

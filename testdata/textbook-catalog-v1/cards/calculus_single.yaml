@@ -51,8 +51,8 @@
   - 'conclude: This contradicts the choice of ε.'
   openmath: (forall (f a L M) (-> (and (fn_limit_at (lambda (x) (fn_value f x)) a L) (fn_limit_at (lambda (x) (fn_value f x)) a M)) (= L M)))
   hard_negative:
-    statement: fの定義域がaの近くに点をもたない場合でも、極限の一意性は同じ定義のもとで成り立つ。
-    reason: aの近くに定義域の点がなければ条件は空虚に満たされ、任意の値が極限の条件を満たしてしまう。
+    statement: $x\to a$（$x\neq a$）で$f(x)\to L$ならば、$L=f(a)$である。
+    reason: $x\neq0$で$f(x)=0$、$f(0)=1$とすると、$x\to0$（$x\neq0$）の極限は$0$だが$f(0)=1$である。この極限は$a$での値と無関係である。
   target: |
     ∀ (f : ℝ → ℝ) (a L M : ℝ), Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds L) → Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds M) → L = M
   proof: |
@@ -213,7 +213,7 @@
   - 'construct: For ε > 0 pick y > a with f(y) < m + ε.'
   - 'derive: For a < x < y monotonicity gives m ≤ f(x) < m + ε.'
   - 'conclude: Therefore the right limit is m.'
-  openmath: (forall (f a) (-> (fn_monotone (lambda (x) (fn_value f x))) (fn_right_limit_at (lambda (x) (fn_value f x)) a (infimum_on_right (lambda (x) (fn_value f x)) a))))
+  openmath: (forall (f a) (-> (fn_monotone (lambda (x) (fn_value f x))) (exists (m S) (and (forall (y) (<-> (in y S) (exists (x) (and (> x a) (= y (fn_value f x)))))) (is_glb S m) (fn_right_limit_at (lambda (x) (fn_value f x)) a m)))))
   hard_negative:
     statement: 単調増加関数の右極限は常にf(a)に等しい。
     reason: x≤0でf(x)=0, x>0でf(x)=1とすると単調増加だが、0での右極限は1でf(0)=0と異なる。
@@ -365,36 +365,36 @@
   kind: gap
   level: 1
   topic: 連続性・不動点
-  statement: $f:\mathbb{R}\to\mathbb{R}$が$[0,1]$で連続で$f([0,1])\subset[0,1]$ならば、$f(c)=c$となる$c\in[0,1]$が存在する。
-  statement_en: If f is continuous on [0,1] and maps [0,1] into itself, then f has a fixed point c in [0,1].
+  statement: $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続で$f([a,b])\subset[a,b]$ならば、$f(c)=c$となる$c\in[a,b]$が存在する。
+  statement_en: If a ≤ b, f is continuous on [a,b] and maps [a,b] into itself, then f has a fixed point c in [a,b].
   assumptions:
-  - $f$は$[0,1]$で連続
-  - $x\in[0,1]$ならば$f(x)\in[0,1]$
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  - $x\in[a,b]$ならば$f(x)\in[a,b]$
   quantifiers:
-  - 任意の$f:\mathbb{R}\to\mathbb{R}$
-  - ある$c\in[0,1]$
-  conclusion: $f(c)=c$となる$c\in[0,1]$が存在する。
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$c\in[a,b]$
+  conclusion: $f(c)=c$となる$c\in[a,b]$が存在する。
   answer: |
-    $f:\mathbb{R}\to\mathbb{R}$は$[0,1]$で連続で、$x\in[0,1]$ならば$f(x)\in[0,1]$を満たすとする。$g(x)=f(x)-x$とおくと、$g$は$[0,1]$で連続である。$f(0)\geq0$より$g(0)\geq0$であり、$f(1)\leq1$より$g(1)\leq0$である。中間値の定理（$[0,1]$で連続な関数は$g(0)$と$g(1)$の間の値を$[0,1]$上でとる）より、$g(c)=0$となる$c\in[0,1]$が存在する。この$c$が$f(c)=c$を満たす。
+    $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続で、$x\in[a,b]$ならば$f(x)\in[a,b]$を満たすとする。$g(x)=f(x)-x$とおくと、$g$は$[a,b]$で連続である。$f(a)\geq a$より$g(a)\geq0$であり、$f(b)\leq b$より$g(b)\leq0$である。中間値の定理（$[a,b]$で連続な関数は$g(a)$と$g(b)$の間の値を$[a,b]$上でとる）より、$g(c)=0$となる$c\in[a,b]$が存在する。この$c$が$f(c)=c$を満たす。
   strategy: Apply the intermediate value theorem to f(x) - x.
   sketch:
   - 'construct: Define g(x) = f(x) - x, continuous on [0,1].'
   - 'derive: g(0) ≥ 0 and g(1) ≤ 0 since f maps into [0,1].'
   - 'apply_theorem: The intermediate value theorem yields c with g(c) = 0.'
   - 'conclude: Then f(c) = c.'
-  openmath: (forall (f) (-> (and (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval 0 1)) (forall (x) (-> (in x (closed_interval 0 1)) (in (fn_value f x) (closed_interval 0 1))))) (exists (c) (and (in c (closed_interval 0 1)) (= (fn_value f c) c)))))
+  openmath: (forall (f a b) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (closed_interval a b)) (in (fn_value f x) (closed_interval a b))))) (exists (c) (and (in c (closed_interval a b)) (= (fn_value f c) c)))))
   hard_negative:
-    statement: fが開区間(0,1)で連続で(0,1)を(0,1)の中へ写すならば不動点をもつ。
-    reason: f(x)=x/2は(0,1)を(0,1)の中へ写す連続関数だが、(0,1)に不動点をもたない。
-  target: |
-    ∀ (f : ℝ → ℝ), ContinuousOn f (Set.Icc 0 1) → (∀ x ∈ Set.Icc (0 : ℝ) 1, f x ∈ Set.Icc (0 : ℝ) 1) → ∃ c ∈ Set.Icc (0 : ℝ) 1, f c = c
+    statement: $f$が開区間$(a,b)$で連続で$(a,b)$を$(a,b)$の中へ写すならば不動点をもつ。
+    reason: $a<b$のとき$f(x)=(x+a)/2$は$(a,b)$を$(a,b)$の中へ写す連続関数だが、不動点は$a$だけで$(a,b)$に属さない。閉区間であることが必要である。
+  target: '∀ (f : ℝ → ℝ) (a b : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Icc a b, f x ∈ Set.Icc a b) → ∃ c ∈ Set.Icc a b, f c = c'
   proof: |
     by
-      intro f hf hm
-      have hg : ContinuousOn (fun x => f x - x) (Set.Icc (0 : ℝ) 1) := hf.sub continuousOn_id
-      have h0 := (hm 0 (Set.left_mem_Icc.mpr zero_le_one)).1
-      have h1 := (hm 1 (Set.right_mem_Icc.mpr zero_le_one)).2
-      obtain ⟨c, hc, e⟩ := intermediate_value_Icc' (zero_le_one' ℝ) hg (show (0 : ℝ) ∈ Set.Icc (f 1 - 1) (f 0 - 0) from ⟨by linarith, by linarith⟩)
+      intro f a b hab hf hm
+      have hg : ContinuousOn (fun x => f x - x) (Set.Icc a b) := hf.sub continuousOn_id
+      have h0 := (hm a (Set.left_mem_Icc.mpr hab)).1
+      have h1 := (hm b (Set.right_mem_Icc.mpr hab)).2
+      obtain ⟨c, hc, e⟩ := intermediate_value_Icc' hab hg (show (0 : ℝ) ∈ Set.Icc (f b - b) (f a - a) from ⟨by linarith, by linarith⟩)
       exact ⟨c, hc, by simpa [sub_eq_zero] using e⟩
 - id: continuous_injective_strictly_monotone
   kind: textbook
@@ -661,8 +661,8 @@
   - 'conclude: The chain rule gives u/f(a).'
   openmath: (forall (f a u) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (> (fn_value f a) 0)) (has_deriv_at (lambda (x) (ln (fn_value f x))) (/ u (fn_value f a)) a)))
   hard_negative:
-    statement: f(a)<0でも通常の実対数のlog f(x)はaで微分可能である。
-    reason: 実対数は正の数にしか定義されないので、f(a)<0ではaの近くでlog f(x)が定義されない。log|f(x)|なら別の主張である。
+    statement: $f$が$a$で微分可能で$f(a)\geq0$ならば、$x\mapsto\log f(x)$は$a$で微分可能である。
+    reason: $f(x)=x$、$a=0$では$f(a)=0$で、$\log x$は$0$の近くで$-\infty$へ発散するので$0$で微分可能でない。$f(a)>0$という仮定が必要である。
   target: |
     ∀ (f : ℝ → ℝ) (a u : ℝ), HasDerivAt f u a → 0 < f a → HasDerivAt (fun x => Real.log (f x)) (u / f a) a
   proof: |
@@ -1035,36 +1035,46 @@
   kind: textbook
   level: 1
   topic: 微分法・第2次導関数判定
-  statement: $f:\mathbb{R}\to\mathbb{R}$が$a$の近傍で微分可能で$f'(a)=0$であり、導関数$f'$の$a$での微分係数$u$が負ならば、$f$は$a$で極大をとる。
-  statement_en: If f has derivative 0 at a and the derivative of f has a negative derivative at a, then f has a local maximum at a.
+  statement: $\delta>0$とし、$f,g:\mathbb{R}\to\mathbb{R}$について、$|x-a|<\delta$の各点$x$で$f$の微分係数が$g(x)$であり、$g(a)=0$で、$g$の$a$での微分係数$u$が負ならば、$f$は$a$で極大をとる。
+  statement_en: If δ > 0, f has derivative g(x) at every x with |x-a| < δ, g(a) = 0, and g has derivative u < 0 at a, then f has a local maximum at a.
   assumptions:
-  - $f$は$a$の近傍で微分可能
-  - $f'(a)=0$
-  - $f'$の$a$での微分係数は$u$
+  - $\delta>0$
+  - $|x-a|<\delta$の各点$x$で$f$の微分係数は$g(x)$
+  - $g(a)=0$
+  - $g$の$a$での微分係数は$u$
   - $u<0$
   quantifiers:
-  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,u\in\mathbb{R}$
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,u,\delta\in\mathbb{R}$
   conclusion: $f$は$a$で極大をとる。
   answer: |
-    $f:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とする。$f$は$a$の近傍で微分可能で$f'(a)=0$、$f'$の$a$での微分係数は$u<0$であるとする。
-    $f'(a)=0$より、$x\to a$で$f'(x)/(x-a)=(f'(x)-f'(a))/(x-a)\to u<0$である。よってある$\delta>0$があって、$f$は$(a-\delta,a+\delta)$で微分可能であり、$0<|x-a|<\delta$で$f'(x)/(x-a)<0$となる。すなわち$(a-\delta,a)$で$f'>0$、$(a,a+\delta)$で$f'<0$である。
-    $x\in(a-\delta,a)$なら、平均値の定理より$f(a)-f(x)=f'(c)(a-x)$となる$c\in(x,a)$があり、$f'(c)>0$より$f(x)<f(a)$である。$x\in(a,a+\delta)$なら、$f(x)-f(a)=f'(c)(x-a)$となる$c\in(a,x)$があり、$f'(c)<0$より$f(x)<f(a)$である。よって$f$は$a$で極大をとる。
+    $\delta>0$とし、$f,g:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とする。$|x-a|<\delta$の各点$x$で$f$の微分係数は$g(x)$であり、$g(a)=0$、$g$の$a$での微分係数は$u<0$であるとする。
+    $g(a)=0$より、$x\to a$で$g(x)/(x-a)=(g(x)-g(a))/(x-a)\to u<0$である。よってある$\delta'\in(0,\delta]$があって、$0<|x-a|<\delta'$で$g(x)/(x-a)<0$となる。すなわち$(a-\delta',a)$で$g>0$、$(a,a+\delta')$で$g<0$である。
+    $x\in(a-\delta',a)$なら、$f$は$[x,a]$で微分可能なので連続であり、平均値の定理より$f(a)-f(x)=g(c)(a-x)$となる$c\in(x,a)$がある。$g(c)>0$より$f(x)<f(a)$である。$x\in(a,a+\delta')$なら、同様に$f(x)-f(a)=g(c)(x-a)$となる$c\in(a,x)$があり、$g(c)<0$より$f(x)<f(a)$である。よって$f$は$a$で極大をとる。
   strategy: The sign of the second derivative determines the sign of f' on each side.
   sketch:
   - 'derive: Since f''(a) = 0 and u < 0, f''(x)/(x-a) is negative near a.'
   - 'derive: So f'' is positive on the left of a and negative on the right.'
   - 'apply_theorem: The first derivative test applies.'
   - 'conclude: Thus a is a local maximum.'
-  openmath: (forall (f a u) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) 0 a) (has_deriv_at (lambda (x) (deriv_value f x)) u a) (< u 0)) (local_max_at (lambda (x) (fn_value f x)) a)))
+  openmath: (forall (f g a u d) (-> (and (> d 0) (forall (x) (-> (< (abs (- x a)) d) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x))) (= (fn_value g a) 0) (has_deriv_at (lambda (x) (fn_value g x)) u a) (< u 0)) (local_max_at (lambda (x) (fn_value f x)) a)))
   hard_negative:
     statement: f'(a)=0かつf''(a)≤0ならば、fはaで極大をとる。
     reason: f(x)=x^3は a=0でf'(0)=f''(0)=0だが、極大をとらない。
-  target: |
-    ∀ (f : ℝ → ℝ) (a u : ℝ), HasDerivAt f 0 a → HasDerivAt (deriv f) u a → u < 0 → IsLocalMax f a
+  target: '∀ (f g : ℝ → ℝ) (a u δ : ℝ), 0 < δ → (∀ x : ℝ, |x - a| < δ → HasDerivAt f (g x) x) → g a = 0 → HasDerivAt g u a → u < 0 → IsLocalMax f a'
   proof: |
     by
-      intro f a u hf h2 hu
-      exact isLocalMax_of_deriv_deriv_neg (by rw [h2.deriv]; exact hu) hf.deriv hf.continuousAt
+      intro f g a u δ hδ hf hg0 hg hu
+      have hnear : ∀ x : ℝ, |x - a| < δ → deriv f x = g x := fun x hx => (hf x hx).deriv
+      have hev : deriv f =ᶠ[nhds a] g := by
+        have : ∀ᶠ x in nhds a, |x - a| < δ := by
+          have : Metric.ball a δ ∈ nhds a := Metric.ball_mem_nhds a hδ
+          filter_upwards [this] with x hx
+          simpa [Real.dist_eq] using hx
+        filter_upwards [this] with x hx using hnear x hx
+      have h2 : HasDerivAt (deriv f) u a := hg.congr_of_eventuallyEq hev
+      have h0 : deriv f a = 0 := by rw [hnear a (by simpa using hδ), hg0]
+      have hca : ContinuousAt f a := (hf a (by simpa using hδ)).continuousAt
+      exact isLocalMax_of_deriv_deriv_neg (by rw [h2.deriv]; exact hu) h0 hca
 - id: taylor_lagrange_remainder
   kind: named
   level: 2
@@ -1592,8 +1602,8 @@
   - 'conclude: The integral equals log f(b) - log f(a).'
   openmath: (forall (f g a b) (-> (and (forall (x) (-> (in x (closed_interval_between a b)) (and (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x) (> (fn_value f x) 0)))) (fn_continuous_on (lambda (x) (fn_value g x)) (closed_interval_between a b))) (= (interval_integral a b (lambda (x) (/ (fn_value g x) (fn_value f x)))) (- (ln (fn_value f b)) (ln (fn_value f a))))))
   hard_negative:
-    statement: fが閉区間内で0になっても同じ公式が成り立つ。
-    reason: f(x)=x, g(x)=1, a=-1, b=1では1/xが0の近くで積分可能でないので、公式は意味をもたない。
+    statement: $f$が閉区間内で$0$になっても同じ公式が成り立つ。
+    reason: $f(x)=x$、$g(x)=1$、区間$[0,2]$では、$1/x$は$0$の近くで積分可能でなく、$\log f(0)$も定義されない。分母が$0$になる点では公式は意味をもたない。
   target: |
     ∀ (f g : ℝ → ℝ) (a b : ℝ), (∀ x ∈ Set.uIcc a b, HasDerivAt f (g x) x) → ContinuousOn g (Set.uIcc a b) → (∀ x ∈ Set.uIcc a b, 0 < f x) → ∫ x in a..b, g x / f x = Real.log (f b) - Real.log (f a)
   proof: |
@@ -1795,8 +1805,8 @@
   - 'conclude: Summing gives a total error below ε.'
   openmath: (forall (f a b) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b))) (seq_limit_of (lambda (n) (* (/ (- b a) (+ n 1)) (sum (natural_range (+ n 1)) (lambda (k) (fn_value f (+ a (* k (/ (- b a) (+ n 1))))))))) (interval_integral a b (lambda (x) (fn_value f x))))))
   hard_negative:
-    statement: fが[a,b]で有界であれば、等分のリーマン和は常に積分に収束する。
-    reason: ディリクレ関数は有界だが、有理数の分点をとる和は1で、無理数の分点をとる和は0となり、リーマン積分可能でない。
+    statement: $f$が$[a,b]$で有界であれば、等分の左端点リーマン和は常に積分に収束する。
+    reason: $[0,1]$上のディリクレ関数（有理数で$1$、無理数で$0$）は有界である。分点$k/(n+1)$は全て有理数なので左端点リーマン和は常に$1$だが、積分は$0$である。連続性（または積分可能性）が必要である。
   target: |
     ∀ (f : ℝ → ℝ) (a b : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → Filter.Tendsto (fun n : ℕ => (b - a) / ((n : ℝ) + 1) * ∑ k ∈ Finset.range (n + 1), f (a + (k : ℝ) * ((b - a) / ((n : ℝ) + 1)))) Filter.atTop (nhds (∫ x in a..b, f x))
   proof: |

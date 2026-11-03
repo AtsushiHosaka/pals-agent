@@ -2,7 +2,7 @@
   kind: textbook
   level: 1
   topic: 無理数・平方根の和
-  statement: $\sqrt{2}+\sqrt{3}$は有理数か。
+  statement: $\sqrt{2}+\sqrt{3}$は無理数である。
   statement_en: The real number √2 + √3 is irrational.
   assumptions:
   - $\sqrt{2},\sqrt{3}$は正の平方根
@@ -43,7 +43,7 @@
   kind: textbook
   level: 1
   topic: 無理数・対数
-  statement: $\log_{10}2$は有理数か。
+  statement: $\log_{10}2=\dfrac{\log 2}{\log 10}$（$\log$は自然対数）は無理数である。
   statement_en: The real number log_10 2 = log 2 / log 10 is irrational.
   assumptions:
   - $\log$を自然対数とし、$\log_{10}2$は$\dfrac{\log 2}{\log 10}$で定める
@@ -167,7 +167,7 @@
   kind: textbook
   level: 1
   topic: 無理数・三倍角の公式
-  statement: $\cos 20^\circ$は有理数か。
+  statement: $\cos 20^\circ$は無理数である。
   statement_en: The real number cos 20° = cos(π/9) is irrational.
   assumptions:
   - $20^\circ$は$\dfrac{\pi}{9}$ラジアン
@@ -226,7 +226,7 @@
   kind: textbook
   level: 1
   topic: 無理数・累乗根
-  statement: $2$の$3$乗根は有理数か。
+  statement: $2$の$3$乗根は無理数である。
   statement_en: The real cube root 2^(1/3) is irrational.
   assumptions:
   - $2$の$3$乗根は正の実数$2^{1/3}$
@@ -343,7 +343,7 @@
   kind: textbook
   level: 1
   topic: 数の評価・自然対数の底
-  statement: $e>2.7$を示せ。
+  statement: 自然対数の底$e$は$e>2.7$をみたす。
   statement_en: Euler's number satisfies e > 2.7.
   assumptions:
   - $e=\exp 1$
@@ -374,7 +374,7 @@
   kind: textbook
   level: 1
   topic: 数の評価・円周率
-  statement: $3.1<\pi<3.2$を示せ。
+  statement: 円周率$\pi$は$3.1<\pi<3.2$をみたす。
   statement_en: The circle constant satisfies 3.1 < π < 3.2.
   assumptions:
   - $\pi$は円周率
@@ -406,7 +406,7 @@
   kind: textbook
   level: 1
   topic: 数の評価・常用対数
-  statement: $0.3<\log_{10}2<\dfrac{1}{3}$を示せ。
+  statement: $\dfrac{3}{10}<\log_{10}2<\dfrac{1}{3}$である。
   statement_en: The common logarithm of 2 satisfies 3/10 < log_10 2 < 1/3.
   assumptions:
   - $\log$を自然対数とし、$\log_{10}2$は$\dfrac{\log 2}{\log 10}$で定める
@@ -441,7 +441,7 @@
   kind: textbook
   level: 1
   topic: 数の大小比較・指数と対数
-  statement: $e^\pi$と$\pi^e$はどちらが大きいか。
+  statement: $\pi^e<e^\pi$である。
   statement_en: The inequality π^e < e^π holds.
   assumptions:
   - $e$は自然対数の底、$\pi$は円周率
@@ -450,7 +450,7 @@
   conclusion: $\pi^e<e^\pi$である。
   answer: |
     $e$を自然対数の底、$\pi$を円周率とする。$x>0$、$x\neq 1$では$\log x<x-1$である。実際、$f(x)=x-1-\log x$は$f^{\prime}(x)=1-\dfrac{1}{x}$より$x=1$でのみ最小値$0$をとる。
-    $\pi>3>e$より$\dfrac{\pi}{e}\neq 1$なので、$x=\dfrac{\pi}{e}$を代入すると$\log\pi-1<\dfrac{\pi}{e}-1$、すなわち$e\log\pi<\pi$を得る。指数関数は増加関数なので、$\pi^e=\exp(e\log\pi)<\exp(\pi)=e^\pi$である。
+    $e=\sum_{k\geq 0}\dfrac{1}{k!}$で、$k\geq 2$では$k!\geq 2^{k-1}$（$k\geq 3$では真に大きい）なので$e<1+1+\dfrac{1}{2}+\dfrac{1}{4}+\cdots=3$である。また円に内接する正六角形の周の長さ$6$は円周$2\pi$より短いので$\pi>3$である。よって$e<3<\pi$であり、$\dfrac{\pi}{e}\neq 1$なので、$x=\dfrac{\pi}{e}$を代入すると$\log\pi-1<\dfrac{\pi}{e}-1$、すなわち$e\log\pi<\pi$を得る。指数関数は増加関数なので、$\pi^e=\exp(e\log\pi)<\exp(\pi)=e^\pi$である。
   strategy: Apply log x < x - 1 at x = π/e and exponentiate.
   sketch:
   - 'apply_theorem: log x < x - 1 for x > 0 with x ≠ 1.'
@@ -565,7 +565,7 @@
   kind: textbook
   level: 1
   topic: 整数・合同式と素数
-  statement: $p$と$p^2+2$がともに素数となる素数$p$をすべて求めよ。
+  statement: 素数$p$について、$p^2+2$が素数であることと$p=3$であることは同値である。
   statement_en: For a prime p, the number p² + 2 is prime if and only if p = 3.
   assumptions:
   - $p$は素数
@@ -774,7 +774,7 @@
   kind: textbook
   level: 1
   topic: 整数・不定方程式の評価
-  statement: $a\leq b\leq c$をみたす正の整数で$\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=1$となる組をすべて求めよ。
+  statement: $a\leq b\leq c$をみたす正の整数について、$\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=1$となるのは$(a,b,c)=(2,3,6),(2,4,4),(3,3,3)$のときに限る。
   statement_en: For positive integers a ≤ b ≤ c, 1/a + 1/b + 1/c = 1 holds if and only if (a,b,c) is (2,3,6), (2,4,4) or (3,3,3).
   assumptions:
   - $a,b,c$は正の整数
@@ -848,7 +848,7 @@
   conclusion: $60$は$abc$を割り切る。
   answer: |
     $a,b,c$を$a^2+b^2=c^2$をみたす整数とする。$3,4,5$が$abc$を割り切ることを順に示す。
-    $3$で割り切れない整数の平方は$3$を法として$1$である。$a,b,c$がどれも$3$で割り切れないと$1+1\equiv 1\pmod 3$となり不合理なので、$3$は$abc$を割り切る。
+    $3$で割り切れない整数の平方は$3$を法として$1$である。$a,b,c$がどれも$3$で割り切れないと左辺は$1+1\equiv 2\pmod 3$、右辺は$c^2\equiv 1\pmod 3$となって合わないので、$3$は$abc$を割り切る。
     $5$で割り切れない整数の平方は$5$を法として$\pm 1$である。$a,b,c$がどれも$5$で割り切れないと、左辺は$5$を法として$0$か$\pm 2$であり、$c^2\equiv\pm 1$に合わない。よって$5$は$abc$を割り切る。
     $a,b$がともに奇数なら$c^2\equiv 2\pmod 4$となり不合理である。$a,b$がともに偶数なら$4$は$ab$を割り切る。一方だけが偶数の場合、対称性より$a$を偶数として$b,c$は奇数である。奇数の平方は$8$を法として$1$なので$a^2=c^2-b^2\equiv 0\pmod 8$であり、$4$は$a$を割り切る。いずれの場合も$4$は$abc$を割り切る。
     $3,4,5$は互いに素なので、$60$は$abc$を割り切る。
@@ -882,7 +882,7 @@
   kind: textbook
   level: 1
   topic: 整数・無限降下法
-  statement: $x^2+y^2=3$をみたす有理数$x,y$は存在するか。
+  statement: $x^2+y^2=3$をみたす有理数$x,y$は存在しない。
   statement_en: There are no rational numbers x and y with x² + y² = 3.
   assumptions:
   - $x,y$は有理数
@@ -987,7 +987,7 @@
   kind: textbook
   level: 1
   topic: 整数・合同式と平方数
-  statement: $1!+2!+\dots+n!$が平方数となる正の整数$n$をすべて求めよ。
+  statement: 正の整数$n$について、$1!+2!+\dots+n!$が平方数となるのは$n=1$または$n=3$のときに限る。
   statement_en: For n ≥ 1, the sum 1! + 2! + ... + n! is a perfect square if and only if n = 1 or n = 3.
   assumptions:
   - $n$は$1$以上の自然数
@@ -1084,7 +1084,7 @@
   kind: textbook
   level: 1
   topic: 整数・不定方程式
-  statement: $a<b$をみたす正の整数で$a^b=b^a$となるものをすべて求めよ。
+  statement: $a<b$をみたす正の整数$a,b$について、$a^b=b^a$となるのは$(a,b)=(2,4)$のときに限る。
   statement_en: For positive integers a and b with a < b, a^b = b^a holds if and only if a = 2 and b = 4.
   assumptions:
   - $a,b$は正の整数
@@ -1226,7 +1226,7 @@
   kind: textbook
   level: 1
   topic: 整数・2進付値
-  statement: $n\geq 2$のとき$1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$は整数になるか。
+  statement: $n\geq 2$のとき、$1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$は整数でない。
   statement_en: For n ≥ 2, the harmonic sum 1 + 1/2 + ... + 1/n is not an integer.
   assumptions:
   - $n$は$2$以上の自然数

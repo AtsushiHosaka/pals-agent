@@ -280,7 +280,7 @@
   - 'derive: For n in the target, lift g3(n) through the bijective i4 to an element of the top row, which injectivity of i5 places in the image of f3.'
   - 'derive: The difference between n and the resulting value lies in the image of g2 restricted through i2, by exactness of the lower row and surjectivity of i2.'
   - 'conclude: Hence i3 is injective and surjective.'
-  openmath: (forall (R M1 M2 M3 M4 M5 N1 N2 N3 N4 N5 f1 f2 f3 f4 g1 g2 g3 g4 i1 i2 i3 i4 i5) (-> (and (is_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R M4) (is_module R M5) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R N4) (is_module R N5) (module_hom i3 R M3 N3) (exact_pair f1 f2) (exact_pair f2 f3) (exact_pair f3 f4) (exact_pair g1 g2) (exact_pair g2 g3) (exact_pair g3 g4) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (= (map_compose g3 i3) (map_compose i4 f3)) (= (map_compose g4 i4) (map_compose i5 f4)) (surjective_map i1) (bijective_map i2) (bijective_map i4) (injective_map i5)) (bijective_map i3)))
+  openmath: (forall (R M1 M2 M3 M4 M5 N1 N2 N3 N4 N5 f1 f2 f3 f4 g1 g2 g3 g4 i1 i2 i3 i4 i5) (-> (and (is_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R M4) (is_module R M5) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R N4) (is_module R N5) (module_hom f1 R M1 M2) (module_hom f2 R M2 M3) (module_hom f3 R M3 M4) (module_hom f4 R M4 M5) (module_hom g1 R N1 N2) (module_hom g2 R N2 N3) (module_hom g3 R N3 N4) (module_hom g4 R N4 N5) (module_hom i1 R M1 N1) (module_hom i2 R M2 N2) (module_hom i3 R M3 N3) (module_hom i4 R M4 N4) (module_hom i5 R M5 N5) (exact_pair f1 f2) (exact_pair f2 f3) (exact_pair f3 f4) (exact_pair g1 g2) (exact_pair g2 g3) (exact_pair g3 g4) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (= (map_compose g3 i3) (map_compose i4 f3)) (= (map_compose g4 i4) (map_compose i5 f4)) (surjective_map i1) (bijective_map i2) (bijective_map i4) (injective_map i5)) (bijective_map i3)))
   hard_negative:
     statement: 完全な行の5項可換図式で、i2とi4だけが全単射ならi3は全単射である。
     reason: i1の全射性を外すと成り立たない。上の行を0→Z→Z→0→0、下の行をZ→Z→0→0→0(Z間はいずれも恒等写像)とし、i1=0, i2=idとすると、i2とi4は全単射で図式は可換だが、i3:Z→0は単射でない。
@@ -317,7 +317,7 @@
   - 'construct: For y in B'', pick x with c(g(x))=g''(y) using surjectivity of c and g.'
   - 'derive: Then y-b(x) is in ker g'', so it equals f''(a(v)) for some v.'
   - 'conclude: b(x+f(v))=y, so b is surjective.'
-  openmath: (forall (R A B C Ap Bp Cp f g fp gp a b c) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R Ap) (is_module R Bp) (is_module R Cp) (module_hom b R B Bp) (injective_map f) (exact_pair f g) (surjective_map g) (injective_map fp) (exact_pair fp gp) (surjective_map gp) (= (map_compose fp a) (map_compose b f)) (= (map_compose gp b) (map_compose c g)) (bijective_map a) (bijective_map c)) (bijective_map b)))
+  openmath: (forall (R A B C Ap Bp Cp f g fp gp a b c) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R Ap) (is_module R Bp) (is_module R Cp) (module_hom f R A B) (module_hom g R B C) (module_hom fp R Ap Bp) (module_hom gp R Bp Cp) (module_hom a R A Ap) (module_hom b R B Bp) (module_hom c R C Cp) (injective_map f) (exact_pair f g) (surjective_map g) (injective_map fp) (exact_pair fp gp) (surjective_map gp) (= (map_compose fp a) (map_compose b f)) (= (map_compose gp b) (map_compose c g)) (bijective_map a) (bijective_map c)) (bijective_map b)))
   hard_negative:
     statement: 両端の縦の射が全単射で図式が可換なら、行の完全性を仮定しなくても中央の縦の射は全単射である。
     reason: 行が完全でなければ成り立たない。A=C=A'=C'=0でB=B'=Z, b=0とすると両端は全単射だがbは全単射でない。
@@ -381,10 +381,10 @@
   - 'derive: A diagram chase gives exactness at K3.'
   - 'derive: A diagram chase gives exactness at C1.'
   - 'conclude: K2→K3→C1→C2 is exact.'
-  openmath: (forall (R M1 M2 M3 N1 N2 N3 K2 K3 C1 C2 f1 f2 g1 g2 i1 i2 i3 u2 u3 p1 p2 F G) (-> (and (is_comm_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R K2) (is_module R K3) (is_module R C1) (is_module R C2) (exact_pair f1 f2) (surjective_map f2) (injective_map g1) (exact_pair g1 g2) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (exact_pair u2 i2) (exact_pair u3 i3) (injective_map u3) (exact_pair i1 p1) (exact_pair i2 p2) (surjective_map p1) (= (map_compose f2 u2) (map_compose u3 F)) (= (map_compose G p1) (map_compose p2 g1))) (exists (d) (and (module_hom d R K3 C1) (exact_pair F d) (exact_pair d G)))))
+  openmath: (forall (R M1 M2 M3 N1 N2 N3 K2 K3 C1 C2 f1 f2 g1 g2 i1 i2 i3 u2 u3 p1 p2 F G) (-> (and (is_comm_ring R) (is_module R M1) (is_module R M2) (is_module R M3) (is_module R N1) (is_module R N2) (is_module R N3) (is_module R K2) (is_module R K3) (is_module R C1) (is_module R C2) (module_hom f1 R M1 M2) (module_hom f2 R M2 M3) (module_hom g1 R N1 N2) (module_hom g2 R N2 N3) (module_hom i1 R M1 N1) (module_hom i2 R M2 N2) (module_hom i3 R M3 N3) (module_hom u2 R K2 M2) (module_hom u3 R K3 M3) (module_hom p1 R N1 C1) (module_hom p2 R N2 C2) (module_hom F R K2 K3) (module_hom G R C1 C2) (exact_pair f1 f2) (surjective_map f2) (injective_map g1) (exact_pair g1 g2) (= (map_compose g1 i1) (map_compose i2 f1)) (= (map_compose g2 i2) (map_compose i3 f2)) (exact_pair u2 i2) (exact_pair u3 i3) (injective_map u3) (exact_pair i1 p1) (exact_pair i2 p2) (surjective_map p1) (= (map_compose f2 u2) (map_compose u3 F)) (= (map_compose G p1) (map_compose p2 g1))) (exists (d) (and (module_hom d R K3 C1) (exact_pair F d) (exact_pair d G)))))
   hard_negative:
-    statement: f2の全射性とg1の単射性がなくても、同じδがK3からC1へ定義できる。
-    reason: f2が全射でなければι3(k)の持ち上げyが存在しないことがあり、δ(k)を定められない。g1が単射でなければzが一意に決まらず、π1(z)がkだけで決まるとは限らない。
+    statement: $f_2$が全射でなくても、同じ結論($\ker\delta=\operatorname{im}F$かつ$\ker G=\operatorname{im}\delta$を満たす$\delta:K_3\to C_1$の存在)が成り立つ。
+    reason: $f_2$の全射性が必要である。$M_1=M_2=0$, $M_3=\mathbb{Z}$, $N_1=N_2=N_3=0$、縦の写像はすべて零とすると、行は$M_2,N_2$で完全で$g_1$は単射である。$K_3=\mathbb{Z}$, $K_2=C_1=C_2=0$, $F=0$なので$\ker\delta=\operatorname{im}F=0$が必要だが、$\delta:\mathbb{Z}\to0$の核は$\mathbb{Z}$である。
   target: |
     ∀ (R M₁ M₂ M₃ N₁ N₂ N₃ K₂ K₃ C₁ C₂ : Type*) [CommRing R] [AddCommGroup M₁] [AddCommGroup M₂] [AddCommGroup M₃] [AddCommGroup N₁] [AddCommGroup N₂] [AddCommGroup N₃] [AddCommGroup K₂] [AddCommGroup K₃] [AddCommGroup C₁] [AddCommGroup C₂] [Module R M₁] [Module R M₂] [Module R M₃] [Module R N₁] [Module R N₂] [Module R N₃] [Module R K₂] [Module R K₃] [Module R C₁] [Module R C₂] (i₁ : M₁ →ₗ[R] N₁) (i₂ : M₂ →ₗ[R] N₂) (i₃ : M₃ →ₗ[R] N₃) (f₁ : M₁ →ₗ[R] M₂) (f₂ : M₂ →ₗ[R] M₃) (g₁ : N₁ →ₗ[R] N₂) (g₂ : N₂ →ₗ[R] N₃) (ι₂ : K₂ →ₗ[R] M₂) (ι₃ : K₃ →ₗ[R] M₃) (π₁ : N₁ →ₗ[R] C₁) (π₂ : N₂ →ₗ[R] C₂) (F : K₂ →ₗ[R] K₃) (G : C₁ →ₗ[R] C₂), Function.Exact f₁ f₂ → Function.Surjective f₂ → Function.Exact g₁ g₂ → Function.Injective g₁ → g₁.comp i₁ = i₂.comp f₁ → g₂.comp i₂ = i₃.comp f₂ → Function.Exact ι₂ i₂ → Function.Exact ι₃ i₃ → Function.Injective ι₃ → Function.Exact i₁ π₁ → Function.Exact i₂ π₂ → Function.Surjective π₁ → f₂.comp ι₂ = ι₃.comp F → G.comp π₁ = π₂.comp g₁ → ∃ δ : K₃ →ₗ[R] C₁, Function.Exact F δ ∧ Function.Exact δ G
   proof: |
@@ -459,7 +459,7 @@
   - 'setup: Take h with g∘h=0, so h takes values in im f.'
   - 'construct: Define k by h(x)=f(k(x)) using injectivity of f.'
   - 'conclude: k is linear and f∘k=h.'
-  openmath: (forall (R A B C X f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R X) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g)) (and (injective_map (post_compose f)) (exact_pair (post_compose f) (post_compose g)))))
+  openmath: (forall (R A B C X f g) (-> (and (is_ring R) (is_module R A) (is_module R B) (is_module R C) (is_module R X) (module_hom f R A B) (module_hom g R B C) (injective_map f) (exact_pair f g)) (and (injective_map (hom_post_compose X f)) (exact_pair (hom_post_compose X f) (hom_post_compose X g)))))
   hard_negative:
     statement: A→B→C→0が完全ならHom(X,B)→Hom(X,C)は全射である。
     reason: Hom(X,-)は一般に右完全でない。X=Z/2Z, Z→Z/2Zの射影ではHom(Z/2Z,Z)=0なので恒等写像が持ち上がらない。
@@ -768,7 +768,7 @@
   kind: named
   level: 4
   topic: 加群論・単項イデアル整域上の加群
-  statement: 単項イデアル整域$R$上の有限生成加群$M$は、ある自然数$n,m$と既約元$p_1,\dots,p_m$、自然数$e_1,\dots,e_m$により$R^n\oplus\bigoplus_{j=1}^mR/(p_j^{e_j})$と同型である(構造定理)。
+  statement: $R$を単項イデアル整域、$M$を有限生成$R$加群とする。ある自然数$n,m$と既約元$p_1,\dots,p_m$、自然数$e_1,\dots,e_m$により$M\cong R^n\oplus\bigoplus_{j=1}^mR/(p_j^{e_j})$となる(構造定理の存在部分。一意性は主張しない)。
   statement_en: Every finitely generated module M over a principal ideal domain R is isomorphic to R^n ⊕ ⊕_i R/(p_i^{e_i}) for some natural numbers n and e_i and finitely many irreducible elements p_i.
   assumptions:
   - $R$は単項イデアル整域
@@ -792,7 +792,7 @@
   - 'derive: T(M) is the direct sum of its primary components.'
   - 'derive: Each primary component is a direct sum of cyclic modules R/(p^e).'
   - 'conclude: Combining gives M ≅ R^n ⊕ ⊕ R/(p_i^{e_i}).'
-  openmath: (forall (R M) (-> (and (is_pid R) (is_module R M) (finitely_generated_module R M)) (exists (n m p e) (and (in n N) (in m N) (forall (i) (-> (< i m) (irreducible_element (seq_value p i) R))) (module_iso R M (direct_sum_modules (free_rank_module R n) (prime_power_quotient_sum R p e m)))))))
+  openmath: (forall (R M) (-> (and (is_pid R) (is_module R M) (finitely_generated_module R M)) (exists (n m p e) (and (in n N) (in m N) (forall (i) (-> (and (in i N) (< i m)) (irreducible_element (seq_value p i) R))) (module_iso R M (direct_sum_modules (free_rank_module R n) (prime_power_quotient_sum R p e m)))))))
   hard_negative:
     statement: 単項イデアル整域上の任意の加群は巡回加群の直和である。
     reason: 有限生成性が必要である。QはZ上有限生成でなく、巡回加群の直和にならない。
@@ -810,8 +810,8 @@
   kind: gap
   level: 3
   topic: 加群論・ねじれ部分加群
-  statement: $R$を可換環、$M$を$R$加群、$T(M)$をそのねじれ部分加群とする。$M/T(M)$のねじれ部分加群は$0$である。
-  statement_en: For a module M over a commutative ring, the torsion submodule of M/T(M) is zero.
+  statement: $R$を可換環、$M$を$R$加群とし、$T(M)$を、ある非零因子$a\in R$で$ax=0$となる$x\in M$全体のなす部分加群とする。$M/T(M)$に対する同じ意味のねじれ部分加群$T(M/T(M))$は$0$である。
+  statement_en: For a module M over a commutative ring, let T(N) denote the submodule of elements killed by some non-zero-divisor of R. Then T(M/T(M)) = 0.
   assumptions:
   - $R$は可換環
   - $M$は$R$加群
@@ -1234,10 +1234,10 @@
   - 'derive: Naturality of ε and the first triangle identity give one composite as the identity.'
   - 'derive: Naturality of η and the second triangle identity give the other composite as the identity.'
   - 'conclude: The map is a bijection.'
-  openmath: (forall (C D F G X Y) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (object_of X C) (object_of Y D)) (exists (e) (and (bijection_between e (hom_set (functor_on_object F X) Y) (hom_set X (functor_on_object G Y))) (forall (f) (= (fn_value e f) (cat_compose (functor_on_morphism G f) (adjunction_unit F G X))))))))
+  openmath: (forall (C D F G X Y) (-> (and (is_category C) (is_category D) (functor_between F C D) (functor_between G D C) (adjoint_pair F G) (object_of X C) (object_of Y D)) (exists (e) (and (bijection_between e (hom_set (functor_on_object F X) Y) (hom_set X (functor_on_object G Y))) (forall (f) (-> (in f (hom_set (functor_on_object F X) Y)) (= (fn_value e f) (cat_compose (functor_on_morphism G f) (adjunction_unit F G X)))))))))
   hard_negative:
-    statement: 随伴F⊣Gがあれば、Hom(X,F(Y))とHom(G(X),Y)が全単射である。
-    reason: 左右を取り違えている。この全単射はG⊣Fを述べており、F⊣Gからは従わない。
+    statement: 随伴$F\dashv G$があれば、$G(X)$から$Y$への射と$X$から$F(Y)$への射の間にも自然な全単射がある。
+    reason: これは$G\dashv F$を述べており$F\dashv G$からは従わない。忘却関手$U:\mathbf{Top}\to\mathbf{Set}$は離散位相を与える$D$の右随伴だが、$X=\mathbb{R}$, $Y=\{0,1\}$では$\mathrm{Hom}_{\mathbf{Set}}(U(X),Y)$は$2^{|\mathbb{R}|}$個、$\mathrm{Hom}_{\mathbf{Top}}(X,D(Y))$は定数写像の$2$個で、全単射がない。
   target: |
     ∀ (C D : Type*) [CategoryTheory.Category C] [CategoryTheory.Category D] (F : CategoryTheory.Functor C D) (G : CategoryTheory.Functor D C) (adj : CategoryTheory.Adjunction F G) (X : C) (Y : D), ∃ e : (F.obj X ⟶ Y) ≃ (X ⟶ G.obj Y), ∀ f : F.obj X ⟶ Y, e f = CategoryTheory.CategoryStruct.comp (adj.unit.app X) (G.map f)
   proof: |
@@ -1305,8 +1305,8 @@
   - 'conclude: i is an isomorphism compatible with the legs.'
   openmath: (forall (C J K s t) (-> (and (is_category C) (is_category J) (functor_between K J C) (limit_cone s K) (limit_cone t K)) (exists (i) (and (morphism_between i (cone_apex s) (cone_apex t)) (iso_morphism i) (forall (j) (-> (object_of j J) (= (cat_compose (cone_leg t j) i) (cone_leg s j))))))))
   hard_negative:
-    statement: 同じ図式の極限の頂点は等しい。
-    reason: 一意なのは同型を除いてである。集合A≠Bの積の頂点としてA×BもB×Aも取れるが、この2つは集合として異なる。
+    statement: 同じ図式の極限錐の頂点は(同型でなく)等しい。
+    reason: 一意なのは同型を除いてである。$A=\{0\}$, $B=\{1\}$の積の頂点として$\{(0,1)\}$も$\{(1,0)\}$(射影を入れ替えたもの)も取れるが、集合として異なる。
   target: |
     ∀ (C J : Type*) [CategoryTheory.Category C] [CategoryTheory.Category J] (K : CategoryTheory.Functor J C) (s t : CategoryTheory.Limits.Cone K), CategoryTheory.Limits.IsLimit s → CategoryTheory.Limits.IsLimit t → ∃ i : s.pt ≅ t.pt, ∀ j : J, CategoryTheory.CategoryStruct.comp i.hom (t.π.app j) = s.π.app j
   proof: |
@@ -1335,7 +1335,7 @@
   - 'derive: The pullback square gives f∘p∘a = f∘p∘b.'
   - 'derive: Since f is mono, p∘a = p∘b.'
   - 'conclude: The universal property gives a = b.'
-  openmath: (forall (C X Y Z f g) (-> (and (is_category C) (morphism_between f X Z) (morphism_between g Y Z) (mono_morphism f)) (mono_morphism (pullback_projection_right f g))))
+  openmath: (forall (C X Y Z f g) (-> (and (is_category C) (object_of X C) (object_of Y C) (object_of Z C) (morphism_between f X Z) (morphism_between g Y Z) (mono_morphism f)) (mono_morphism (pullback_projection_right f g))))
   hard_negative:
     statement: エピ射の引き戻しはエピ射である。
     reason: 一般の圏では成り立たない。ハウスドルフ空間の圏で包含Q→Rはエピ射だが、1点{√2}→Rに沿う引き戻しは空集合から1点への射となり、エピ射でない。
@@ -1473,7 +1473,7 @@
   - 'derive: g∘f = 0 and f is epi, so g = 0.'
   - 'derive: The kernel of a zero morphism is an isomorphism.'
   - 'conclude: f is an isomorphism.'
-  openmath: (forall (C f) (-> (and (abelian_category C) (mono_morphism f) (epi_morphism f)) (iso_morphism f)))
+  openmath: (forall (C X Y f) (-> (and (abelian_category C) (object_of X C) (object_of Y C) (morphism_between f X Y) (mono_morphism f) (epi_morphism f)) (iso_morphism f)))
   hard_negative:
     statement: 任意の圏でモノ射かつエピ射は同型である。
     reason: アーベル性が必要である。環の圏の包含Z→Qはモノ射かつエピ射だが同型でない。
@@ -1506,7 +1506,7 @@
   - 'setup: Assume ι = 0 and f∘g = 0.'
   - 'derive: g factors through ι, hence g = 0.'
   - 'conclude: Subtracting two morphisms shows f is mono.'
-  openmath: (forall (C f) (-> (abelian_category C) (<-> (mono_morphism f) (= (kernel_inclusion f) zero_morphism_cat))))
+  openmath: (forall (C X Y f) (-> (and (abelian_category C) (object_of X C) (object_of Y C) (morphism_between f X Y)) (<-> (mono_morphism f) (= (kernel_inclusion f) zero_morphism_cat))))
   hard_negative:
     statement: 射fについて、核が零射ならfは同型である。
     reason: 核が零射であることはモノ射性に当たる。包含Z→Qは核が零射だが同型でない。

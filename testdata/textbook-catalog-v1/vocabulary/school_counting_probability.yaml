@@ -1,0 +1,22 @@
+# Proposed additive OpenMath vocabulary for school counting and finite uniform probability.
+binom: {args: [term, term], returns: term, meaning: "binomial coefficient n choose k"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+powerset: {args: [term], returns: term, meaning: "set of all subsets of A"}
+k_subsets: {args: [term, term], returns: term, meaning: "set of the k-element subsets of A"}
+function_set: {args: [term, term], returns: term, meaning: "set of all functions from A to B"}
+permutation_set: {args: [term], returns: term, meaning: "set of all bijections from A to A"}
+multinomial_coeff: {args: [term, term], returns: term, meaning: "multinomial coefficient of the values of a natural-number function f on a finite index set I"}
+integer_range: {args: [term, term], returns: term, meaning: "set of integers k with a <= k <= b"}
+family_value: {args: [term, term], returns: term, meaning: "member S_i of an indexed family of sets"}
+indexed_union_over: {args: [term, term], returns: term, meaning: "union of the members S_i for i in I"}
+comm_semiring: {args: [term], returns: prop, meaning: "R is a commutative semiring"}
+falling_factorial: {args: [term, term], returns: term, meaning: "falling factorial n(n-1)...(n-k+1), the number of k-permutations of n objects"}
+injection_set: {args: [term, term], returns: term, meaning: "set of all injective functions from A to B"}
+surjection_set: {args: [term, term], returns: term, meaning: "set of all surjective functions from A to B"}
+dependent_pair_set: {args: [term, term], returns: term, meaning: "set of pairs (a, b) with a in A and b in the member B_a of the family B"}
+circular_arrangement_classes: {args: [term], returns: term, meaning: "set of bijections from cyclic seats onto A, modulo rotation of the seats"}
+multiset_choices: {args: [term, term], returns: term, meaning: "set of the k-element multisets with elements in A"}
+weak_compositions: {args: [term, term], returns: term, meaning: "set of natural-number functions k on the finite index set s with total n"}
+strictly_increasing_fn: {args: [term], returns: prop, meaning: "the finite sequence a is strictly increasing"}
+pair_first: {args: [term], returns: term, meaning: "first component of an ordered pair"}
+pair_second: {args: [term], returns: term, meaning: "second component of an ordered pair"}

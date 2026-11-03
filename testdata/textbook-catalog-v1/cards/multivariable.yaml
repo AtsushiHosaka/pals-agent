@@ -347,15 +347,16 @@
   kind: gap
   level: 1
   topic: 多変数関数・偏微分可能だが不連続な例
-  statement: $(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$、$f(0,0)=0$と定める関数$f:\mathbb{R}^2\to\mathbb{R}$は、原点で両方の偏微分係数が$0$であるが、原点で連続でない。
-  statement_en: The function f(x,y) = xy/(x^2+y^2) with f(0,0) = 0 has both partial derivatives equal to 0 at the origin but is not continuous at the origin.
+  statement: $f:\mathbb{R}^2\to\mathbb{R}$が$f(0,0)=0$かつ$(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$を満たすとき、$f$は原点で両方の偏微分係数が$0$であるが、原点で連続でない。
+  statement_en: 'If f : R^2 -> R satisfies f(0,0) = 0 and f(x,y) = xy/(x^2+y^2) for (x,y) ≠ (0,0), then both partial derivatives of f at the origin equal 0, but f is not continuous at the origin.'
   assumptions:
-  - $(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$、$f(0,0)=0$
+  - $f(0,0)=0$
+  - $(x,y)\neq(0,0)$で$f(x,y)=xy/(x^2+y^2)$
   quantifiers:
-  - 関数$f$は具体的に与えられている
+  - 任意の$f:\mathbb{R}^2\to\mathbb{R}$
   conclusion: 原点で$f_x=f_y=0$であり、$f$は原点で連続でない。
   answer: |
-    $f:\mathbb{R}^2\to\mathbb{R}$を、$(x,y)\neq(0,0)$では$f(x,y)=xy/(x^2+y^2)$、原点では$f(0,0)=0$と定める。
+    $f:\mathbb{R}^2\to\mathbb{R}$が$f(0,0)=0$を満たし、$(x,y)\neq(0,0)$では$f(x,y)=xy/(x^2+y^2)$を満たすとする。
 
     全ての$x$で$f(x,0)=0$、全ての$y$で$f(0,y)=0$である。これらの$1$変数関数は定数なので、原点での偏微分係数はどちらも$0$である。
 
@@ -370,25 +371,39 @@
   hard_negative:
     statement: この関数は原点の近くで偏導関数が連続である。
     reason: x≠0でf_y(x,0)=1/xなのでf_yは原点の近くで有界でない。連続な偏導関数を持てば微分可能で連続になるので、結論にも矛盾する。
-  target: |
-    HasDerivAt (fun x : ℝ => (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (x, 0)) 0 0 ∧ HasDerivAt (fun y : ℝ => (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (0, y)) 0 0 ∧ ¬ ContinuousAt (fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) (0, 0)
+  target: '∀ (f : ℝ × ℝ → ℝ), f (0, 0) = 0 → (∀ x y : ℝ, (x ≠ 0 ∨ y ≠ 0) → f (x, y) = x * y / (x ^ 2 + y ^ 2)) → HasDerivAt (fun x : ℝ => f (x, 0)) 0 0 ∧ HasDerivAt (fun y : ℝ => f (0, y)) 0 0 ∧ ¬ ContinuousAt f (0, 0)'
   proof: |
     by
+      intro f h0 h
+      have hx : ∀ x : ℝ, f (x, 0) = 0 := by
+        intro x
+        by_cases hx : x = 0
+        · subst hx; exact h0
+        · rw [h x 0 (Or.inl hx)]; simp
+      have hy : ∀ y : ℝ, f (0, y) = 0 := by
+        intro y
+        by_cases hy : y = 0
+        · subst hy; exact h0
+        · rw [h 0 y (Or.inr hy)]; simp
       refine ⟨?_, ?_, ?_⟩
-      · simpa using hasDerivAt_const (0 : ℝ) (0 : ℝ)
-      · simpa using hasDerivAt_const (0 : ℝ) (0 : ℝ)
-      · intro h
-        have hc : Filter.Tendsto (fun t : ℝ => (t, t)) (nhdsWithin 0 {0}ᶜ) (nhds ((0 : ℝ), (0 : ℝ))) := by
+      · have : (fun x : ℝ => f (x, 0)) = fun _ => (0 : ℝ) := funext hx
+        rw [this]; exact hasDerivAt_const _ _
+      · have : (fun y : ℝ => f (0, y)) = fun _ => (0 : ℝ) := funext hy
+        rw [this]; exact hasDerivAt_const _ _
+      · intro hc
+        have hc' : Filter.Tendsto (fun t : ℝ => (t, t)) (nhdsWithin 0 {0}ᶜ) (nhds ((0 : ℝ), (0 : ℝ))) := by
           have : ContinuousAt (fun t : ℝ => (t, t)) 0 := by fun_prop
           exact this.tendsto.mono_left nhdsWithin_le_nhds
-        have h3 := h.tendsto.comp hc
-        have hev : (fun t : ℝ => (1 / 2 : ℝ)) =ᶠ[nhdsWithin 0 {0}ᶜ] ((fun p : ℝ × ℝ => p.1 * p.2 / (p.1 ^ 2 + p.2 ^ 2)) ∘ fun t : ℝ => (t, t)) := by
+        have h3 := hc.tendsto.comp hc'
+        have hev : (fun t : ℝ => (1 / 2 : ℝ)) =ᶠ[nhdsWithin 0 {0}ᶜ] (f ∘ fun t : ℝ => (t, t)) := by
           filter_upwards [self_mem_nhdsWithin] with t ht
           have ht' : t ≠ 0 := ht
           simp only [Function.comp]
+          rw [h t t (Or.inl ht')]
           field_simp
           ring
         have h4 := tendsto_nhds_unique (h3.congr' hev.symm) tendsto_const_nhds
+        rw [h0] at h4
         norm_num at h4
 - id: gradient_inner_fderiv
   kind: gap
@@ -841,31 +856,31 @@
   kind: gap
   level: 2
   topic: 多変数関数・同次関数
-  statement: 実ノルム空間$E$上の実数値関数$f$が、全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$を満たし、点$x$での微分が$L$ならば、$L(x)=kf(x)$である。
-  statement_en: If a real-valued function f on a real normed space is homogeneous of degree k, that is f(ty) = t^k f(y) for all t > 0 and all y, and f has derivative L at x, then L(x) = k f(x).
+  statement: 実ノルム空間$E$上の実数値関数$f$と実数$k$について、全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$が成り立ち、$f$の点$x$での微分が$L$ならば、$L(x)=kf(x)$である（オイラーの同次関数定理）。
+  statement_en: 'If f : E -> R on a real normed space satisfies f(ty) = t^k f(y) for all t > 0 and y in E, with real k, and f has derivative L at x, then L(x) = k f(x) (Euler''s homogeneous function theorem).'
   assumptions:
   - $E$は実ノルム空間
+  - $k\in\mathbb{R}$
   - 全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$
   - $f$の$x$での微分は$L$
   quantifiers:
-  - 任意の$f:E\to\mathbb{R}$、$k\in\mathbb{N}$、$x\in E$、有界線形写像$L$
+  - 任意の$f:E\to\mathbb{R}$、$k\in\mathbb{R}$、$x\in E$、有界線形写像$L$
   conclusion: $L(x)=kf(x)$である。
   answer: |
-    $E$を実ノルム空間、$k\in\mathbb{N}$とし、$f:E\to\mathbb{R}$は全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$を満たすとする。$x\in E$での$f$の微分を$L$とする。
+    $E$を実ノルム空間、$k\in\mathbb{R}$とし、$f:E\to\mathbb{R}$は全ての$t>0$と$y\in E$で$f(ty)=t^kf(y)$を満たすとする（$t>0$に対し$t^k=e^{k\ln t}$）。$x\in E$での$f$の微分を$L$とする。
 
-    $h(t)=f(tx)$とおく。$t\mapsto tx$の$t=1$での微分係数は$x$であり、$t=1$で点$x$を通る。連鎖律より$h'(1)=L(x)$である。一方、$t>0$では$h(t)=t^kf(x)$なので、$t=1$で微分して$h'(1)=kf(x)$である。したがって$L(x)=kf(x)$である。
+    $h(t)=f(tx)$とおく。$t\mapsto tx$の$t=1$での微分係数は$x$であり、$t=1$で点$x$を通る。連鎖律より$h'(1)=L(x)$である。一方、$t>0$では$h(t)=t^kf(x)$であり、$t\mapsto t^k$の$t=1$での微分係数は$k$なので、$h'(1)=kf(x)$である。したがって$L(x)=kf(x)$である。
   strategy: Differentiate the identity f(tx) = t^k f(x) at t = 1 in two ways.
   sketch:
   - 'construct: Define g(t) = f(tx) for real t.'
   - 'apply_theorem: The chain rule along the ray gives g''(1) = L(x).'
   - 'derive: Near t = 1 we have g(t) = t^k f(x), so g''(1) = k f(x).'
   - 'conclude: Uniqueness of the derivative gives L(x) = k f(x).'
-  openmath: (forall (E f k x L) (-> (and (normed_space E) (in k N) (homogeneous_of_degree f k) (has_fderiv_at f L x)) (= (fn_value L x) (* k (fn_value f x)))))
+  openmath: (forall (E f k x L) (-> (and (normed_space E) (in k R) (homogeneous_of_degree f k) (has_fderiv_at f L x)) (= (fn_value L x) (* k (fn_value f x)))))
   hard_negative:
     statement: L(x)=k f(x)が1点xで成り立てばfはk次同次である。
     reason: 同次性は全ての点と全てのtについての条件である。f(y)=y^2+1はx=0, k=0でL(x)=0=k f(x)を満たすが、0次同次でない。
-  target: |
-    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (k : ℕ) (x : E) (L : E →L[ℝ] ℝ), (∀ t : ℝ, 0 < t → ∀ y : E, f (t • y) = t ^ k * f y) → HasFDerivAt f L x → L x = k * f x
+  target: '∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (f : E → ℝ) (k : ℝ) (x : E) (L : E →L[ℝ] ℝ), (∀ t : ℝ, 0 < t → ∀ y : E, f (t • y) = t ^ k * f y) → HasFDerivAt f L x → L x = k * f x'
   proof: |
     by
       intro E _ _ f k x L hom hL
@@ -873,7 +888,7 @@
         simpa using (hasDerivAt_id (1 : ℝ)).smul_const x
       have hL' : HasFDerivAt f L ((1 : ℝ) • x) := by simpa using hL
       have h2 : HasDerivAt (fun t : ℝ => f (t • x)) (L x) 1 := hL'.comp_hasDerivAt 1 h1
-      have h3 := (hasDerivAt_pow k (1 : ℝ)).mul_const (f x)
+      have h3 := (Real.hasDerivAt_rpow_const (x := (1 : ℝ)) (p := k) (Or.inl one_ne_zero)).mul_const (f x)
       have h4 : (fun t : ℝ => f (t • x)) =ᶠ[nhds 1] fun t : ℝ => t ^ k * f x := by
         filter_upwards [lt_mem_nhds (one_pos : (0 : ℝ) < 1)] with t ht
         exact hom t ht x
@@ -1321,42 +1336,41 @@
   kind: gap
   level: 2
   topic: 重積分・平面上のガウス積分
-  statement: $\int_{\mathbb{R}^2}\exp(-(x^2+y^2))\,dx\,dy=\pi$である。
-  statement_en: The integral of exp(-(x^2+y^2)) over the plane equals π.
+  statement: $b>0$のとき、$\int_{\mathbb{R}^2}\exp(-b(x^2+y^2))\,dx\,dy=\pi/b$である。
+  statement_en: For b > 0, the integral of exp(-b(x^2+y^2)) over the plane equals π/b.
   assumptions:
-  - 被積分関数は$\exp(-(x^2+y^2))$
+  - $b>0$
   quantifiers:
-  - 定数の等式であり、量化する変数はない
-  conclusion: $\int_{\mathbb{R}^2}\exp(-(x^2+y^2))\,dx\,dy=\pi$である。
+  - 任意の$b\in\mathbb{R}$
+  conclusion: $\int_{\mathbb{R}^2}\exp(-b(x^2+y^2))\,dx\,dy=\pi/b$である。
   answer: |
-    $\mathbb{R}^2$上の関数$\exp(-(x^2+y^2))$を考える。$\exp(-(x^2+y^2))=\exp(-x^2)\exp(-y^2)$である。$\exp(-x^2)$は$\mathbb{R}$上で可積分なので、トネリの定理よりこの関数は$\mathbb{R}^2$上で可積分である。
+    $b>0$とする。$\exp(-b(x^2+y^2))=\exp(-bx^2)\exp(-by^2)$である。$\exp(-bx^2)$は$\mathbb{R}$上で可積分なので、トネリの定理よりこの関数は$\mathbb{R}^2$上で可積分である。
 
-    フビニの定理より、重積分は$(\int_{\mathbb{R}}\exp(-x^2)\,dx)(\int_{\mathbb{R}}\exp(-y^2)\,dy)$に等しい。ガウス積分の公式（$b>0$なら$\int_{\mathbb{R}}\exp(-bx^2)\,dx=\sqrt{\pi/b}$）を$b=1$で用いると、各因子は$\sqrt{\pi}$である。したがって重積分は$\pi$である。
+    フビニの定理より、重積分は$(\int_{\mathbb{R}}\exp(-bx^2)\,dx)(\int_{\mathbb{R}}\exp(-by^2)\,dy)$に等しい。ガウス積分の公式（$b>0$なら$\int_{\mathbb{R}}\exp(-bx^2)\,dx=\sqrt{\pi/b}$）より、各因子は$\sqrt{\pi/b}$である。したがって重積分は$\sqrt{\pi/b}\cdot\sqrt{\pi/b}=\pi/b$である。
   strategy: Separate the variables and use the one-dimensional Gaussian integral.
   sketch:
   - 'derive: Factor the integrand as exp(-x^2) exp(-y^2).'
   - 'apply_theorem: The integral of a product of functions of separate variables is the product of the integrals.'
   - 'apply_theorem: Each factor equals the square root of π.'
   - 'conclude: The double integral equals π.'
-  openmath: (= (integral_whole_space (lambda (z) (exp (neg (+ (^ (first_coord z) 2) (^ (second_coord z) 2)))))) pi)
+  openmath: (forall (b) (-> (> b 0) (= (integral_whole_space (lambda (z) (exp (neg (* b (+ (^ (first_coord z) 2) (^ (second_coord z) 2))))))) (/ pi b))))
   hard_negative:
-    statement: ∫_{R^2}exp(-(x^2+y^2))dxdy=√πである。
-    reason: √πは1次元の積分の値である。2次元では2つの因子の積になるのでπである。
-  target: |
-    (∫ z : ℝ × ℝ, Real.exp (-(z.1 ^ 2 + z.2 ^ 2))) = Real.pi
+    statement: $b>0$のとき$\int_{\mathbb{R}^2}\exp(-b(x^2+y^2))\,dx\,dy=\sqrt{\pi/b}$である。
+    reason: $\sqrt{\pi/b}$は1次元の積分の値である。2次元では2つの1次元積分の積になるので$\pi/b$である。$b=1$では$\pi\neq\sqrt{\pi}$である。
+  target: '∀ b : ℝ, 0 < b → (∫ z : ℝ × ℝ, Real.exp (-(b * (z.1 ^ 2 + z.2 ^ 2)))) = Real.pi / b'
   proof: |
     by
-      have h : (fun z : ℝ × ℝ => Real.exp (-(z.1 ^ 2 + z.2 ^ 2))) =
-          fun z : ℝ × ℝ => Real.exp (-1 * z.1 ^ 2) * Real.exp (-1 * z.2 ^ 2) := by
+      intro b hb
+      have h : (fun z : ℝ × ℝ => Real.exp (-(b * (z.1 ^ 2 + z.2 ^ 2)))) =
+          fun z : ℝ × ℝ => Real.exp (-b * z.1 ^ 2) * Real.exp (-b * z.2 ^ 2) := by
         funext z
         rw [← Real.exp_add]
         congr 1
         ring
       rw [h, MeasureTheory.Measure.volume_eq_prod]
-      rw [MeasureTheory.integral_prod_mul (fun x : ℝ => Real.exp (-1 * x ^ 2)) (fun y : ℝ => Real.exp (-1 * y ^ 2))]
-      rw [integral_gaussian 1]
-      rw [div_one]
-      exact Real.mul_self_sqrt Real.pi_pos.le
+      rw [MeasureTheory.integral_prod_mul (fun x : ℝ => Real.exp (-b * x ^ 2)) (fun y : ℝ => Real.exp (-b * y ^ 2))]
+      rw [integral_gaussian b]
+      exact Real.mul_self_sqrt (div_nonneg Real.pi_pos.le hb.le)
 - id: green_theorem_rectangle
   kind: textbook
   level: 3
@@ -1436,8 +1450,8 @@
   - 'conclude: Summing over i gives the boundary expression.'
   openmath: (forall (n F a b) (-> (and (cont_diff 1 F) (forall (i) (<= (coordinate_of a i) (coordinate_of b i)))) (= (set_integral (box_region a b) (lambda (x) (divergence_at F x))) (box_boundary_flux F a b))))
   hard_negative:
-    statement: Fが直方体の境界上で0ならばF自身が直方体上で恒等的に0である。
-    reason: 発散定理から分かるのはdiv Fの積分が0であることだけである。n=0の[0,1]上でF(x)=x(1-x)は端点で0だが恒等的に0でない。
+    statement: 面$x_i=a_i$上の積分を引かずに足しても成り立つ。すなわち$\int_{[a,b]}\operatorname{div}F=\sum_i\bigl(\int_{x_i=b_i}F_i+\int_{x_i=a_i}F_i\bigr)$である。
+    reason: 向かい合う面の寄与は引き算でなければならない。$n=0$、$[0,1]$上で$F\equiv1$（$\operatorname{div}F=0$）では左辺$0$、右辺$F(1)+F(0)=2$で偽である。
   target: |
     ∀ (n : ℕ) (F : (Fin (n + 1) → ℝ) → Fin (n + 1) → ℝ) (a b : Fin (n + 1) → ℝ), a ≤ b → ContDiff ℝ 1 F → (∫ x in Set.Icc a b, ∑ i, fderiv ℝ F x (Pi.single i 1) i) = ∑ i : Fin (n + 1), ((∫ x in Set.Icc (a ∘ Fin.succAbove i) (b ∘ Fin.succAbove i), F (Fin.insertNth i (b i) x) i) - ∫ x in Set.Icc (a ∘ Fin.succAbove i) (b ∘ Fin.succAbove i), F (Fin.insertNth i (a i) x) i)
   proof: |

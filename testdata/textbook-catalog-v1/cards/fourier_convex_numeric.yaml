@@ -2,8 +2,8 @@
   kind: gap
   level: 1
   topic: 不等式・相加相乗平均
-  statement: 非負実数$a,b$について$\sqrt{ab}\leq\frac{a+b}{2}$が成り立つ。
-  statement_en: For nonnegative reals a and b, sqrt(ab) ≤ (a+b)/2.
+  statement: （2変数の場合）非負実数$a,b$について$\sqrt{ab}\leq\frac{a+b}{2}$が成り立つ。$n$個の場合は別のカード（相加相乗平均の有限族）で扱う。
+  statement_en: (Two-variable form; the n-variable form is a separate card.) For nonnegative reals a and b, sqrt(ab) ≤ (a+b)/2.
   assumptions:
   - $a\geq 0$
   - $b\geq 0$
@@ -19,8 +19,8 @@
   - 'conclude: Taking square roots gives sqrt(ab) ≤ (a+b)/2.'
   openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (<= (root (* a b) 2) (/ (+ a b) 2))))
   hard_negative:
-    statement: 任意の実数a,bについてab≤(a+b)/2が成り立つ。
-    reason: 平方根を外すと次数が合わず、a=b=4では16≤4が偽である。
+    statement: 3つの非負実数$a,b,c$についても$\sqrt{abc}\leq\frac{a+b+c}{3}$が成り立つ。
+    reason: 指数は項数$n$に応じて$1/n$でなければならず、2変数版の形をそのまま3変数に流用できない。$a=b=c=4$では左辺$\sqrt{64}=8$、右辺$4$で偽である。3個以上の場合は有限族版を使う。
   target: |
     ∀ (a b : ℝ), 0 ≤ a → 0 ≤ b → Real.sqrt (a * b) ≤ (a + b) / 2
   proof: |
@@ -49,7 +49,7 @@
   - 'apply_theorem: The weighted AM-GM inequality gives ∏ z_i^(1/n) ≤ Σ z_i/n.'
   - 'translate: Since z_i ≥ 0, ∏ z_i^(1/n) equals (∏ z_i)^(1/n).'
   - 'conclude: Factor 1/n out of the sum to obtain the claimed bound.'
-  openmath: (forall (n z) (-> (and (in n N) (> n 0) (forall (i) (-> (in i (oriented_interval 1 n)) (>= (seq_value z i) 0)))) (<= (^ (product (oriented_interval 1 n) (lambda (i) (seq_value z i))) (/ 1 n)) (/ (sum (oriented_interval 1 n) (lambda (i) (seq_value z i))) n))))
+  openmath: (forall (n z) (-> (and (in n N) (> n 0) (forall (i) (-> (and (in i N) (>= i 1) (<= i n)) (>= (seq_value z i) 0)))) (<= (^ (product (oriented_interval 1 n) (lambda (i) (seq_value z i))) (/ 1 n)) (/ (sum (oriented_interval 1 n) (lambda (i) (seq_value z i))) n))))
   hard_negative:
     statement: 負の数を含む実数z_1,…,z_nでも、偶数個の積が非負なら相乗平均は相加平均以下である。
     reason: z_1=z_2=-1では相乗平均は1で相加平均は-1なので不等式は成り立たない。
@@ -72,8 +72,8 @@
   kind: gap
   level: 1
   topic: 不等式・コーシー＝シュワルツ
-  statement: 実数$a,b,c,d$について$(ac+bd)^2\leq(a^2+b^2)(c^2+d^2)$が成り立つ。
-  statement_en: For real numbers a,b,c,d, (ac+bd)^2 ≤ (a^2+b^2)(c^2+d^2).
+  statement: （2成分の場合）実数$a,b,c,d$について$(ac+bd)^2\leq(a^2+b^2)(c^2+d^2)$が成り立つ。成分数が一般の有限和は別のカード（コーシー＝シュワルツの有限和版）で扱う。
+  statement_en: (Two-component form; the general finite-sum form is a separate card.) For real numbers a,b,c,d, (ac+bd)^2 ≤ (a^2+b^2)(c^2+d^2).
   assumptions:
   - $a,b,c,d\in\mathbb{R}$
   quantifiers:
@@ -87,8 +87,8 @@
   - 'conclude: The square is nonnegative, so the inequality holds.'
   openmath: (forall (a b c d) (<= (^ (+ (* a c) (* b d)) 2) (* (+ (^ a 2) (^ b 2)) (+ (^ c 2) (^ d 2)))))
   hard_negative:
-    statement: 実数a,b,c,dについて(ac+bd)^2≤a^2c^2+b^2d^2が成り立つ。
-    reason: 交差項2abcdが消えないので、a=b=c=d=1では4≤2となり偽である。
+    statement: 3成分の積和$ac+bd+ef$についても$(ac+bd+ef)^2\leq(a^2+b^2)(c^2+d^2)$が成り立つ。
+    reason: 右辺の和の項数は成分数に合わせる必要がある。$a=b=c=d=0$、$e=f=1$では左辺$1$、右辺$0$で偽である。成分数が一般の場合は有限和版を使う。
   target: |
     ∀ (a b c d : ℝ), (a * c + b * d) ^ 2 ≤ (a ^ 2 + b ^ 2) * (c ^ 2 + d ^ 2)
   proof: |
@@ -404,7 +404,7 @@
   - 'case_split: Compare r and x using the slope inequalities of a convex function.'
   - 'derive: In each case f(x) + d(r-x) ≤ f(r) = 0.'
   - 'conclude: Dividing by d gives r ≤ x - f(x)/d.'
-  openmath: (forall (f x r d) (-> (and (convex_function_on_line f) (= (fn_value f r) 0) (has_derivative_at f d x) (> d 0) (>= (fn_value f x) 0)) (and (<= r (- x (/ (fn_value f x) d))) (<= (- x (/ (fn_value f x) d)) x))))
+  openmath: (forall (f x r d) (-> (and (convex_function_on f R) (= (fn_value f r) 0) (has_deriv_at (lambda (s) (fn_value f s)) d x) (> d 0) (>= (fn_value f x) 0)) (and (<= r (- x (/ (fn_value f x) d))) (<= (- x (/ (fn_value f x) d)) x))))
   hard_negative:
     statement: 凸性を仮定しなくてもニュートン反復は根rを超えない。
     reason: f(x)=x^(1/3), r=0, x=1ではd=1/3でx'=-2となり、反復は根を飛び越える。
@@ -881,7 +881,7 @@
   openmath: (forall (E s) (-> (and (locally_convex_tvs E) (hausdorff_space E) (compact_set s) (convex_set s)) (= (set_closure (convex_hull (extreme_points s))) s)))
   hard_negative:
     statement: コンパクト凸集合はその端点全体の凸包に等しい（閉包は不要である）。
-    reason: 無限次元では端点の凸包が閉とは限らず、閉包を外すと一般には成り立たない。
+    reason: 閉包は外せない。$\ell^2$で$s=\overline{\mathrm{conv}}(\{0\}\cup\{e_n/n\mid n\geq1\})$はコンパクト凸で、端点は$\{0\}\cup\{e_n/n\}$に含まれる。$x=\sum_{n\geq1}2^{-n}(e_n/n)$は$s$の点だが非零成分が無限個あり、端点の有限凸結合では書けないので$\operatorname{conv}(\operatorname{ext}s)$に属さない。
   target: |
     ∀ (E : Type*) [AddCommGroup E] [Module ℝ E] [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [LocallyConvexSpace ℝ E] (s : Set E), IsCompact s → Convex ℝ s → closure (convexHull ℝ (s.extremePoints ℝ)) = s
   proof: |
@@ -913,7 +913,7 @@
   - 'apply_theorem: Completeness gives a limit x.'
   - 'derive: Continuity of f gives f(x) = x.'
   - 'conclude: Two fixed points satisfy d(x,y) ≤ K d(x,y), forcing x = y.'
-  openmath: (forall (X f K) (-> (and (metric_space X) (complete_space X) (>= K 0) (< K 1) (forall (x y) (<= (dist_of (fn_value f x) (fn_value f y)) (* K (dist_of x y))))) (exists (x) (and (= (fn_value f x) x) (forall (y) (-> (= (fn_value f y) y) (= y x)))))))
+  openmath: (forall (X f K) (-> (and (metric_space X) (complete_space X) (exists (z) (in z X)) (forall (x) (-> (in x X) (in (fn_value f x) X))) (>= K 0) (< K 1) (forall (x y) (-> (and (in x X) (in y X)) (<= (dist_of (fn_value f x) (fn_value f y)) (* K (dist_of x y)))))) (exists (x) (and (in x X) (= (fn_value f x) x) (forall (y) (-> (and (in y X) (= (fn_value f y) y)) (= y x)))))))
   hard_negative:
     statement: d(f(x),f(y))<d(x,y)（x≠y）だけで不動点が存在する。
     reason: 実数[1,∞)上のf(x)=x+1/xはこの条件を満たすが不動点をもたない。
@@ -1078,7 +1078,7 @@
   - 'derive: Integration by parts expresses each local error through f'''' with weight t(h-t)/2.'
   - 'derive: Each local error is at most h^3 ζ/12.'
   - 'conclude: Summing N local errors gives |b-a|^3 ζ/(12 N^2).'
-  openmath: (forall (f a b z m) (-> (and (twice_continuously_differentiable_on f (closed_interval a b)) (forall (x) (-> (in x (closed_interval a b)) (<= (abs (second_derivative_within f (closed_interval a b) x)) z))) (in m N) (> m 0)) (<= (abs (- (trapezoid_sum f m a b) (interval_integral a b (lambda (x) (fn_value f x))))) (/ (* (^ (abs (- b a)) 3) z) (* 12 (^ m 2))))))
+  openmath: (forall (f a b z m lo hi) (-> (and (<= lo hi) (or (and (= lo a) (= hi b)) (and (= lo b) (= hi a))) (twice_continuously_differentiable_on f (closed_interval lo hi)) (forall (x) (-> (in x (closed_interval lo hi)) (<= (abs (second_derivative_within f (closed_interval lo hi) x)) z))) (in m N) (> m 0)) (<= (abs (- (trapezoid_sum f m a b) (interval_integral a b (lambda (x) (fn_value f x))))) (/ (* (^ (abs (- b a)) 3) z) (* 12 (^ m 2))))))
   hard_negative:
     statement: 一階導関数の評価|f'|≤ζだけから|T_N-∫_a^b f|≤|b-a|^3ζ/(12N^2)が成り立つ。
     reason: f(x)=sin(πx)を[0,1], N=1, ζ=πで考えると、誤差は2/πで右辺はπ/12である。
@@ -1246,15 +1246,14 @@
   - 'translate: The coefficient is the normalized circle integral of the (-n)-th mode times the lift of f.'
   - 'derive: The normalized circle integral is 1/(b-a) times the integral over [a,b].'
   - 'conclude: The (-n)-th mode at x equals e^(-2πinx/(b-a)).'
-  openmath: (forall (a b f n) (-> (and (< a b) (in n Z)) (= (fourier_coeff_on f a b n) (* (/ 1 (- b a)) (interval_integral a b (lambda (x) (* (exp (/ (* 2 pi complex_i (neg n) x) (- b a))) (fn_value f x))))))))
+  openmath: (forall (a b f n) (-> (and (< a b) (in n Z) (interval_integrable_fn f a b)) (= (fourier_coeff_on f a b n) (* (/ 1 (- b a)) (interval_integral a b (lambda (x) (* (exp (/ (* 2 pi complex_i (neg n) x) (- b a))) (fn_value f x))))))))
   hard_negative:
     statement: 第n係数は正規化なしの∫_a^b e^(-2πinx/(b-a))f(x)dxに等しい。
     reason: f=1, n=0では正しい値は1だが、正規化なしの積分はb-aになる。
-  target: |
-    ∀ (a b : ℝ) (hab : a < b) (f : ℝ → ℂ) (n : ℤ), fourierCoeffOn hab f n = ((1 / (b - a) : ℝ) : ℂ) * ∫ x in a..b, Complex.exp (2 * Real.pi * Complex.I * ((-n : ℤ) : ℂ) * x / ((b - a : ℝ) : ℂ)) * f x
+  target: '∀ (a b : ℝ) (hab : a < b) (f : ℝ → ℂ) (n : ℤ), MeasureTheory.IntegrableOn f (Set.Ioc a b) → fourierCoeffOn hab f n = ((1 / (b - a) : ℝ) : ℂ) * ∫ x in a..b, Complex.exp (2 * Real.pi * Complex.I * ((-n : ℤ) : ℂ) * x / ((b - a : ℝ) : ℂ)) * f x'
   proof: |
     by
-      intro a b hab f n
+      intro a b hab f n _
       rw [fourierCoeffOn_eq_integral f n hab, Complex.real_smul]
       congr 1
       refine intervalIntegral.integral_congr (fun x _ => ?_)
@@ -1282,8 +1281,8 @@
   - 'conclude: The mode has absolute value 1, leaving the integral of |f|.'
   openmath: (forall (T f n) (-> (and (> T 0) (integrable_circle T f) (in n Z)) (<= (norm (fourier_coeff_circle T f n)) (integral_circle T (lambda (t) (norm (fn_value f t)))))))
   hard_negative:
-    statement: 第n係数の絶対値はn→∞で常に1/|n|以下に減衰する。
-    reason: 可積分性だけでは減衰の速さは定まらず、1/|n|より遅く減衰する係数をもつ可積分関数がある。
+    statement: 測度を長さ$T$のルベーグ測度（総質量$T$）にしても$|c_n(f)|\leq\int_0^T|f(x)|\,dx$が成り立つ。
+    reason: $c_n$は正規化された測度で定義されるので、非正規化の積分は$T$倍される。$T<1$、$f\equiv1$、$n=0$では$c_0(f)=1$だが$\int_0^T1\,dx=T<1$で偽である。
   target: |
     ∀ (T : ℝ) [hT : Fact (0 < T)] (f : AddCircle T → ℂ) (n : ℤ), MeasureTheory.Integrable f AddCircle.haarAddCircle → ‖fourierCoeff f n‖ ≤ ∫ t, ‖f t‖ ∂AddCircle.haarAddCircle
   proof: |
@@ -1458,8 +1457,8 @@
   - 'conclude: Hence the integral tends to 0.'
   openmath: (forall (f) (-> (integrable_real_line (lambda (v) (fn_value f v))) (tends_to_zero_at_infinity (lambda (w) (integral_real_line (lambda (v) (* (exp (neg (* 2 pi complex_i v w))) (fn_value f v))))))))
   hard_negative:
-    statement: 有界な連続関数fについても∫e^(-2πivw)f(v)dv→0である。
-    reason: f=1は可積分でなく、この積分は通常の意味で定まらない。可積分性は外せない。
+    statement: $f$が可積分ならばそのフーリエ変換$\widehat{f}$も$\mathbb{R}$上で可積分である。
+    reason: リーマン＝ルベーグの補題は$0$への収束だけを保証する。$f=1_{[0,1]}$では$|\widehat{f}(w)|=|\sin(\pi w)|/(\pi|w|)$であり、これは$\mathbb{R}$上で可積分でない。
   target: |
     ∀ (f : ℝ → ℂ), MeasureTheory.Integrable f MeasureTheory.volume → Filter.Tendsto (fun w : ℝ => ∫ v : ℝ, Complex.exp (((-2 * Real.pi * v * w : ℝ) : ℂ) * Complex.I) * f v) (Filter.cocompact ℝ) (nhds 0)
   proof: |
@@ -1530,8 +1529,8 @@
   - 'conclude: This is the stated identity.'
   openmath: (forall (f b x) (-> (and (fn_continuous_real f) (> b 1) (big_o_power_decay f b) (big_o_power_decay (fourier_transform f) b)) (= (series_sum_fn (lambda (n) (fn_value f (+ x n)))) (series_sum_fn (lambda (n) (* (fn_value (fourier_transform f) n) (exp (* 2 pi complex_i n x))))))))
   hard_negative:
-    statement: fが連続で可積分でさえあれば、減衰条件なしにポアソン和公式が成り立つ。
-    reason: 周期化やフーリエ級数の収束が保証されず、この等式が成り立たない連続可積分関数の例が知られている。
+    statement: $f$が連続で可積分でさえあれば、減衰条件なしにポアソン和公式が成り立つ。
+    reason: 周期化$\sum_nf(x+n)$が発散しうる。$\varphi$を台が$[-1,1]$の連続な山型関数で$\varphi(0)=1$とし、$f(x)=\sum_{k\geq1}k\,\varphi(k^3(x-k))$とおくと、$f$は連続で$\int f=O(\sum k^{-2})<\infty$だが、$\sum_nf(n)=\sum_kk$は発散する。
   target: |
     ∀ (f : ℝ → ℂ) (b x : ℝ), Continuous f → 1 < b → Asymptotics.IsBigO (Filter.cocompact ℝ) f (fun y : ℝ => |y| ^ (-b)) → Asymptotics.IsBigO (Filter.cocompact ℝ) (FourierTransform.fourier f) (fun y : ℝ => |y| ^ (-b)) → ∑' n : ℤ, f (x + n) = ∑' n : ℤ, FourierTransform.fourier f (n : ℝ) * Complex.exp (2 * Real.pi * Complex.I * n * x)
   proof: |

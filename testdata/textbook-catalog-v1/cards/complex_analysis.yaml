@@ -135,7 +135,7 @@
   - 'derive: Taking moduli gives exp x = 1, so x = 0.'
   - 'derive: Then cos y = 1 and sin y = 0, so y = 2πn for an integer n.'
   - 'conclude: Hence z = 2πin.'
-  openmath: (forall (z) (-> (in z C) (<-> (= (exp z) 1) (exists (n) (and (in n Z) (= z (* n (* 2 (* pi_constant complex_imaginary_unit)))))))))
+  openmath: (forall (z) (-> (in z C) (<-> (= (exp z) 1) (exists (n) (and (in n Z) (= z (* n (* 2 (* pi complex_imaginary_unit)))))))))
   hard_negative:
     statement: exp z=1となる複素数zはz=0だけである。
     reason: z=2πiでもexp z=1となる。この一意性が成り立つのは実数の範囲に限った指数関数である。
@@ -178,31 +178,29 @@
   kind: textbook
   level: 2
   topic: 複素指数関数・オイラーの公式
-  statement: 実数$\theta$について、$e^{i\theta}=\cos\theta+i\sin\theta$が成り立つ。
-  statement_en: For every real number θ, exp(iθ) = cos θ + i sin θ.
+  statement: 複素数$z$について、$e^{iz}=\cos z+i\sin z$が成り立つ。
+  statement_en: For every complex number z, exp(iz) = cos z + i sin z.
   assumptions:
-  - $\theta\in\mathbb{R}$
+  - $z\in\mathbb{C}$
   quantifiers:
-  - 任意の$\theta\in\mathbb{R}$
-  conclusion: $e^{i\theta}=\cos\theta+i\sin\theta$が成り立つ。
-  answer: |
-    $\theta\in\mathbb{R}$とする。絶対収束するべき級数$e^w=\sum_{n\geq 0}w^n/n!$に$w=i\theta$を代入する。$i^{2m}=(-1)^m$、$i^{2m+1}=(-1)^m i$であり、絶対収束するので偶数次と奇数次の項に分けてよい。すると$e^{i\theta}=\sum_{m\geq 0}(-1)^m\theta^{2m}/(2m)!+i\sum_{m\geq 0}(-1)^m\theta^{2m+1}/(2m+1)!$となる。右辺の二つの和はそれぞれ$\cos\theta$と$\sin\theta$のべき級数なので、等式が成り立つ。
+  - 任意の$z\in\mathbb{C}$
+  conclusion: $e^{iz}=\cos z+i\sin z$が成り立つ。
+  answer: $z\in\mathbb{C}$とする。絶対収束するべき級数$e^w=\sum_{n\geq 0}w^n/n!$に$w=iz$を代入する。$i^{2m}=(-1)^m$、$i^{2m+1}=(-1)^m i$であり、絶対収束するので偶数次と奇数次の項に分けてよい。すると$e^{iz}=\sum_{m\geq 0}(-1)^m z^{2m}/(2m)!+i\sum_{m\geq 0}(-1)^m z^{2m+1}/(2m+1)!$となる。右辺の二つの和は、複素数の余弦と正弦をべき級数$\cos z=\sum_{m\geq 0}(-1)^m z^{2m}/(2m)!$、$\sin z=\sum_{m\geq 0}(-1)^m z^{2m+1}/(2m+1)!$で定めたものに等しいので、等式が成り立つ。
   strategy: Split the exponential series at iθ into even and odd degree terms.
   sketch:
   - 'setup: Substitute iθ in the power series of exp.'
   - 'case_split: Separate even and odd degree terms using powers of i.'
   - 'derive: The even part is the series of cos θ and the odd part is i times the series of sin θ.'
   - 'conclude: Adding them gives Euler''s formula.'
-  openmath: (forall (t) (-> (in t R) (= (exp (* complex_imaginary_unit t)) (+ (cos t) (* complex_imaginary_unit (sin t))))))
+  openmath: (forall (z) (-> (in z C) (= (exp (* z complex_imaginary_unit)) (+ (cos z) (* complex_imaginary_unit (sin z))))))
   hard_negative:
     statement: 複素数wについて|exp(iw)|=1が成り立つ。
     reason: w=iではexp(iw)=exp(-1)で絶対値は1ではない。絶対値が1になるのはwが実数のときである。
-  target: |
-    ∀ (t : ℝ), Complex.exp (t * Complex.I) = (Real.cos t : ℂ) + (Real.sin t : ℂ) * Complex.I
-  proof: |
+  target: '∀ (z : ℂ), Complex.exp (z * Complex.I) = Complex.cos z + Complex.sin z * Complex.I'
+  proof: |-
     by
-      intro t
-      exact Complex.exp_ofReal_mul_I t
+      intro z
+      exact Complex.exp_mul_I z
 - id: de_moivre_formula
   kind: textbook
   level: 2
@@ -322,7 +320,7 @@
   - 'derive: exp(inθ) = 1 gives nθ = 2πm for an integer m.'
   - 'construct: Let k be the remainder of m modulo n.'
   - 'conclude: Periodicity of exp gives z = exp(2πik/n) with 0 ≤ k < n.'
-  openmath: (forall (n z) (-> (and (in n N) (> n 0) (in z C)) (<-> (= (^ z n) 1) (exists (k) (and (in k N) (< k n) (= z (exp (* 2 (* pi_constant (* complex_imaginary_unit (/ k n)))))))))))
+  openmath: (forall (n z) (-> (and (in n N) (> n 0) (in z C)) (<-> (= (^ z n) 1) (exists (k) (and (in k N) (< k n) (= z (exp (/ (* 2 (* pi (* complex_imaginary_unit k))) n))))))))
   hard_negative:
     statement: z^n=1の複素数解はz=1とz=-1だけである。
     reason: n=4ではz=iも解である。実数解だけを考えた場合の主張であり、複素数解は全部でn個ある。
@@ -429,7 +427,7 @@
   - 'setup: Write z = x + iy, so |exp z| = exp x.'
   - 'derive: Since y lies in (-π, π], Arg(exp z) = y.'
   - 'conclude: Log(exp z) = x + iy = z.'
-  openmath: (forall (z) (-> (and (in z C) (< (neg pi_constant) (imag_part z)) (<= (imag_part z) pi_constant)) (= (principal_log (exp z)) z)))
+  openmath: (forall (z) (-> (and (in z C) (< (neg pi) (imag_part z)) (<= (imag_part z) pi)) (= (principal_log (exp z)) z)))
   hard_negative:
     statement: 任意の複素数z, wについてLog(zw)=Log z+Log wが成り立つ。
     reason: z=w=-1ではLog(zw)=0だが、Log z+Log w=2πiである。偏角の和が(-π, π]に入らないと成り立たない。
@@ -525,7 +523,7 @@
 - id: cauchy_riemann_sufficient
   kind: textbook
   level: 3
-  topic: 複素微分・コーシー・リーマン方程式
+  topic: 複素微分・実微分可能性と複素線形性(コーシー・リーマン条件の作用素形)
   statement: $f:\mathbb{C}\to\mathbb{C}$が$z$で複素微分可能であることは、$f$が$z$で実全微分可能で、全微分$L=Df(z)$が$L(i)=iL(1)$を満たすことと同値である。
   statement_en: A function f on the complex plane is complex differentiable at z if and only if it is real differentiable at z and its real differential satisfies Df(z)(i) = i·Df(z)(1).
   assumptions:
@@ -649,7 +647,7 @@
   - 'derive: Parametrizing z = c + Re^(iθ) gives 2πi for the term n = 0.'
   - 'derive: The terms with n ≥ 1 have primitives on the circle and integrate to 0.'
   - 'conclude: The integral equals 2πi.'
-  openmath: (forall (c w R) (-> (in w (open_disc c R)) (= (circle_integral (lambda (z) (/ 1 (- z w))) c R) (* 2 (* pi_constant complex_imaginary_unit)))))
+  openmath: (forall (c w R) (-> (in w (open_disc c R)) (= (circle_integral (lambda (z) (/ 1 (- z w))) c R) (* 2 (* pi complex_imaginary_unit)))))
   hard_negative:
     statement: wが円板の外部にあっても∮dz/(z-w)=2πiである。
     reason: wが閉円板の外部にあると1/(z-w)は閉円板の近傍で正則なので、積分は0になる。
@@ -715,7 +713,7 @@
   - 'derive: The integrand has modulus at most CR.'
   - 'apply_theorem: The modulus of an integral is at most the integral of the modulus.'
   - 'conclude: Integrating over an interval of length 2π gives 2πRC.'
-  openmath: (forall (f c R B) (-> (and (>= R 0) (continuous_on_set f (circle_set c R)) (forall (z) (-> (in z (circle_set c R)) (<= (abs (fn_value f z)) B)))) (<= (abs (circle_integral (lambda (z) (fn_value f z)) c R)) (* 2 (* pi_constant (* R B))))))
+  openmath: (forall (f c R B) (-> (and (>= R 0) (continuous_on_set f (circle_set c R)) (forall (z) (-> (in z (circle_set c R)) (<= (abs (fn_value f z)) B)))) (<= (abs (circle_integral (lambda (z) (fn_value f z)) c R)) (* 2 (* pi (* R B))))))
   hard_negative:
     statement: 円周上で|f|≤Cならば|∮f(z)dz|≤Cである。
     reason: f(z)=1/(z-c)、R=1、C=1では積分の絶対値が2πとなる。円周の長さ2πRの因子は省けない。
@@ -792,7 +790,7 @@
   - 'apply_theorem: Cauchy''s integral theorem, which tolerates one exceptional point, gives that the integral of g is 0.'
   - 'derive: Hence the integral of f(z)/(z-w) equals f(w) times the integral of 1/(z-w).'
   - 'conclude: The latter integral equals 2πi, which gives the formula.'
-  openmath: (forall (f c w R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R)) (in w (open_disc c R))) (= (circle_integral (lambda (z) (/ (fn_value f z) (- z w))) c R) (* 2 (* pi_constant (* complex_imaginary_unit (fn_value f w)))))))
+  openmath: (forall (f c w R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R)) (in w (open_disc c R))) (= (circle_integral (lambda (z) (/ (fn_value f z) (- z w))) c R) (* 2 (* pi (* complex_imaginary_unit (fn_value f w)))))))
   hard_negative:
     statement: 閉円板の外の点wについても∮f(z)/(z-w)dz=2πi f(w)が成り立つ。
     reason: wが閉円板の外にあると被積分関数は閉円板の近くで正則になり、積分は0である。f(w)≠0ならば公式と一致しない。
@@ -831,7 +829,7 @@
   - 'derive: The denominators are bounded below on the circle and f is bounded there.'
   - 'derive: So the integrand converges uniformly to f(z)/(z-w)^2 as h tends to 0.'
   - 'conclude: Interchanging limit and integral gives the formula.'
-  openmath: (forall (f U c w R) (-> (and (open_set U) (subset (closed_disc c R) U) (holomorphic_on f U) (in w (open_disc c R))) (= (complex_deriv f w) (/ (circle_integral (lambda (z) (/ (fn_value f z) (^ (- z w) 2))) c R) (* 2 (* pi_constant complex_imaginary_unit))))))
+  openmath: (forall (f U c w R) (-> (and (open_set U) (subset (closed_disc c R) U) (holomorphic_on f U) (in w (open_disc c R))) (= (complex_deriv f w) (/ (circle_integral (lambda (z) (/ (fn_value f z) (^ (- z w) 2))) c R) (* 2 (* pi complex_imaginary_unit))))))
   hard_negative:
     statement: f'(w)=(1/2πi)∮f(z)/(z-w)dzが成り立つ。
     reason: この右辺はコーシーの積分公式によりf(w)である。導関数の公式ではz-wの指数が2になる。
@@ -903,7 +901,7 @@
   - 'translate: Substitute z = c + Re^(iθ) in the integral.'
   - 'derive: The factors iRe^(iθ) cancel against z - c and i.'
   - 'conclude: This leaves the mean of f over the circle.'
-  openmath: (forall (f c R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R))) (= (fn_value f c) (circle_mean f c R))))
+  openmath: (forall (f c R) (-> (and (> R 0) (holomorphic_on f (open_disc c R)) (continuous_on_set f (closed_disc c R))) (= (fn_value f c) (* (/ 1 (* 2 pi)) (interval_integral 0 (* 2 pi) (lambda (t) (fn_value f (+ c (* R (exp (* complex_imaginary_unit t)))))))))))
   hard_negative:
     statement: 開円板で正則なfの円周上の平均は、円板内の任意の点wでの値f(w)に等しい。
     reason: f(z)=zと中心0の円では平均は0だが、f(w)=wである。平均値と一致するのは中心の値である。
@@ -1047,7 +1045,7 @@
   - 'derive: Positive degree gives |p(z)| → ∞, so 1/p(z) → 0 as |z| → ∞.'
   - 'apply_theorem: Liouville''s theorem forces 1/p to be identically 0.'
   - 'conclude: This is impossible, so p has a root.'
-  openmath: (forall (p) (-> (and (complex_polynomial p) (>= (polynomial_degree p) 1)) (exists (z) (and (in z C) (= (poly_eval p z) 0)))))
+  openmath: (forall (f) (-> (and (polynomial_over f C) (> (poly_degree f) 0)) (exists (z) (and (in z C) (= (poly_eval f z) 0)))))
   hard_negative:
     statement: 次数が1以上の実係数多項式は実数の根を持つ。
     reason: x^2+1は実数の根を持たない。根の存在は複素数の範囲で保証される。
@@ -1471,23 +1469,23 @@
   kind: textbook
   level: 3
   topic: 除去可能特異点・リーマンの定理
-  statement: 開集合$s\subset\mathbb{C}$の点$c$を除いた集合で正則かつ有界な関数$f$に対して、$s$全体で正則で$s\setminus\{c\}$で$f$に一致する関数$g$が存在する(リーマンの除去可能特異点定理)。
-  statement_en: If s is an open set containing c and f is holomorphic and bounded on s minus {c}, then there is a function g holomorphic on s that agrees with f on s minus {c}.
+  statement: 開集合$s\subset\mathbb{C}$の点$c$について、$f$が$s\setminus\{c\}$で正則であり、$c$の近くで($c$自身を除いて)有界ならば、$s$全体で正則で$s\setminus\{c\}$で$f$に一致する関数$g$が存在する(リーマンの除去可能特異点定理)。
+  statement_en: If s is an open set containing c, f is holomorphic on s minus {c}, and f is bounded on some punctured neighbourhood of c, then there is a function g holomorphic on s that agrees with f on s minus {c}.
   assumptions:
   - $s\subset\mathbb{C}$は開集合
   - $c\in s$
   - $f$は$s\setminus\{c\}$で正則
-  - $s\setminus\{c\}$上で$|f|\leq M$
+  - ある$M\in\mathbb{R}$と$\rho>0$があり、$0<|z-c|<\rho$を満たす全ての$z$で$|f(z)|\leq M$
   quantifiers:
   - 任意の関数$f:\mathbb{C}\to\mathbb{C}$
   - 任意の集合$s\subset\mathbb{C}$
   - 任意の$c\in\mathbb{C}$
-  - 任意の$M\in\mathbb{R}$
   - ある関数$g:\mathbb{C}\to\mathbb{C}$
   conclusion: $s$全体で正則で$s\setminus\{c\}$で$f$に一致する関数$g$が存在する。
-  answer: |
-    $s\subset\mathbb{C}$を開集合、$c\in s$、$M\in\mathbb{R}$とし、$f$は$s\setminus\{c\}$で正則で$|f|\leq M$を満たすとする。$z\neq c$で$h(z)=(z-c)^2 f(z)$、$h(c)=0$と定める。$h$は$s\setminus\{c\}$で正則である。また$z\neq c$で$\left|\frac{h(z)-h(c)}{z-c}\right|=|z-c||f(z)|\leq M|z-c|$なので、$h$は$c$でも複素微分可能で$h'(c)=0$である。よって$h$は$s$全体で正則である。
-    開円板$D=\{z\mid|z-c|<\rho\}\subset s$をとると、テイラー展開により$D$上で$h(z)=\sum_{n\geq 0}a_n(z-c)^n$と書ける。$a_0=h(c)=0$、$a_1=h'(c)=0$である。$k(z)=\sum_{n\geq 2}a_n(z-c)^{n-2}$は$D$で収束するべき級数なので正則であり、$h(z)=(z-c)^2 k(z)$である。$z\in D\setminus\{c\}$では$k(z)=f(z)$である。
+  answer: |-
+    $s\subset\mathbb{C}$を開集合、$c\in s$とし、$f$は$s\setminus\{c\}$で正則で、ある$M\in\mathbb{R}$と$\rho_0>0$について$0<|z-c|<\rho_0$なら$|f(z)|\leq M$であるとする。$s$は開集合なので、開円板$D=\{z\mid|z-c|<\rho\}$が$s$に含まれ$0<\rho\leq\rho_0$となる$\rho$がとれる。このとき$D\setminus\{c\}$上で$|f|\leq M$である。
+    $z\neq c$で$h(z)=(z-c)^2 f(z)$、$h(c)=0$と定める。$h$は$s\setminus\{c\}$で正則である。また$z\in D\setminus\{c\}$で$\left|\frac{h(z)-h(c)}{z-c}\right|=|z-c||f(z)|\leq M|z-c|$なので、$h$は$c$でも複素微分可能で$h'(c)=0$である。よって$h$は$s$全体で正則である。
+    $D$上でテイラー展開により$h(z)=\sum_{n\geq 0}a_n(z-c)^n$と書ける。$a_0=h(c)=0$、$a_1=h'(c)=0$である。$k(z)=\sum_{n\geq 2}a_n(z-c)^{n-2}$は$D$で収束するべき級数なので正則であり、$h(z)=(z-c)^2 k(z)$である。$z\in D\setminus\{c\}$では$k(z)=f(z)$である。
     $z\in s\setminus\{c\}$で$g(z)=f(z)$、$g(c)=k(c)$と定める。$s\setminus\{c\}$は開集合なので$g$はそこで正則であり、$D$上で$g=k$なので$c$でも正則である。よって$g$が求める関数である。
   strategy: Multiply by (z-c)^2 to obtain a holomorphic function with a double zero and divide it out.
   sketch:
@@ -1496,21 +1494,22 @@
   - 'apply_theorem: The power series of h at c starts at degree 2.'
   - 'construct: So h(z) = (z-c)^2 g(z) with g holomorphic near c.'
   - 'conclude: g agrees with f off c and gives the extension.'
-  openmath: (forall (f s c M) (-> (and (open_set s) (in c s) (holomorphic_on f (setdiff s (set c))) (forall (z) (-> (in z (setdiff s (set c))) (<= (abs (fn_value f z)) M)))) (exists (g) (and (holomorphic_on g s) (forall (z) (-> (in z (setdiff s (set c))) (= (fn_value g z) (fn_value f z))))))))
+  openmath: (forall (f s c) (-> (and (open_set s) (in c s) (holomorphic_on f (setdiff s (set c))) (exists (M r) (and (> r 0) (forall (z) (-> (and (in z (open_disc c r)) (!= z c)) (<= (abs (fn_value f z)) M)))))) (exists (g) (and (holomorphic_on g s) (forall (z) (-> (in z (setdiff s (set c))) (= (fn_value g z) (fn_value f z))))))))
   hard_negative:
     statement: cを除いた近傍で正則な関数は、常にcへ正則に延長できる。
     reason: f(z)=1/zは0を除いた複素平面で正則だが、0の近くで有界でなく延長できない。
-  target: |
-    ∀ (f : ℂ → ℂ) (s : Set ℂ) (c : ℂ) (M : ℝ), IsOpen s → c ∈ s → DifferentiableOn ℂ f (s \ {c}) → (∀ z ∈ s \ {c}, ‖f z‖ ≤ M) → ∃ g : ℂ → ℂ, DifferentiableOn ℂ g s ∧ ∀ z ∈ s \ {c}, g z = f z
-  proof: |
+  target: '∀ (f : ℂ → ℂ) (s : Set ℂ) (c : ℂ), IsOpen s → c ∈ s → DifferentiableOn ℂ f (s \ {c}) → (∃ M : ℝ, ∀ᶠ z in nhdsWithin c {c}ᶜ, ‖f z‖ ≤ M) → ∃ g : ℂ → ℂ, DifferentiableOn ℂ g s ∧ ∀ z ∈ s \ {c}, g z = f z'
+  proof: |-
     by
-      intro f s c M hs hc hd hM
+      intro f s c hs hc hd hb
+      obtain ⟨M, hM⟩ := hb
       refine ⟨Function.update f c (Filter.limUnder (nhdsWithin c {c}ᶜ) f), ?_, ?_⟩
-      · refine Complex.differentiableOn_update_limUnder_of_bddAbove (hs.mem_nhds hc) hd ⟨M, ?_⟩
-        rintro _ ⟨z, hz, rfl⟩
-        exact hM z hz
+      · apply Complex.differentiableOn_update_limUnder_of_isLittleO (hs.mem_nhds hc) hd
+        apply Filter.IsBoundedUnder.isLittleO_sub_self_inv
+        refine ⟨M + ‖f c‖, Filter.eventually_map.2 (hM.mono fun z hz => ?_)⟩
+        exact norm_sub_le_of_le hz le_rfl
       · intro z hz
-        exact Function.update_of_ne hz.2 _ _
+        exact Function.update_of_ne (fun h => hz.2 (by simp [h])) _ _
 - id: holomorphic_zero_factor
   kind: gap
   level: 3

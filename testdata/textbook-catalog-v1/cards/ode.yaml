@@ -566,8 +566,8 @@
   - 'conclude: Differentiating the integral equation gives the solution.'
   openmath: (forall (E f tmin tmax t0 x0 a L K) (-> (and (banach_space_real E) (in t0 (closed_interval tmin tmax)) (forall (t) (-> (in t (closed_interval tmin tmax)) (lipschitz_on_with (fn_value f t) K (closed_ball x0 a)))) (forall (x) (-> (in x (closed_ball x0 a)) (continuous_on_set_fn (lambda (t) (fn_value (fn_value f t) x)) (closed_interval tmin tmax)))) (forall (t x) (-> (and (in t (closed_interval tmin tmax)) (in x (closed_ball x0 a))) (<= (norm (fn_value (fn_value f t) x)) L))) (<= (* L (max_of (- tmax t0) (- t0 tmin))) a)) (exists (y) (and (= (fn_value y t0) x0) (forall (t) (-> (in t (closed_interval tmin tmax)) (has_deriv_within_at y (fn_value (fn_value f t) (fn_value y t)) (closed_interval tmin tmax) t)))))))
   hard_negative:
-    statement: fがリプシッツで有界なら、閉球と時間幅の関係によらず、与えた任意の時間区間で解が閉球内に存在する。
-    reason: 時間幅の条件がないと解は閉球を出てしまう。f≡L>0でa=1とすれば、解x₀+Ltは時間1/Lの後に閉球の外に出て、閉球上の仮定が使えない。
+    statement: 閉球上のリプシッツ性・連続性・有界性があれば、時間幅の条件$L\max(t_{\max}-t_0,t_0-t_{\min})\leq a$がなくても、全区間$I$上の解が存在する。
+    reason: 時間幅の条件は外せない。$E=\mathbb{R}$、$x_0=0$、$a=1$、$L=1$、$K=0$、$I=[0,2]$、$t_0=0$、$f(t,x)=1$（$x\leq1$）、$f(t,x)=0$（$x>1$）とする。閉球$[-1,1]$上では$f\equiv1$で全ての仮定が成り立つが、$[0,2]$上の解はない。解は$t\leq1$で$x=t$であり、$t=1$での微分係数は$f(1,1)=1$なので$t>1$で$x>1$となり、そこでは$x'=0$となって矛盾する。
   target: |
     ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E] (f : ℝ → E → E) (tmin tmax t₀ : ℝ) (x₀ : E) (a L K : NNReal), t₀ ∈ Set.Icc tmin tmax → (∀ t ∈ Set.Icc tmin tmax, LipschitzOnWith K (f t) (Metric.closedBall x₀ a)) → (∀ x ∈ Metric.closedBall x₀ a, ContinuousOn (fun t => f t x) (Set.Icc tmin tmax)) → (∀ t ∈ Set.Icc tmin tmax, ∀ x ∈ Metric.closedBall x₀ a, ‖f t x‖ ≤ L) → (L : ℝ) * max (tmax - t₀) (t₀ - tmin) ≤ a → ∃ α : ℝ → E, α t₀ = x₀ ∧ ∀ t ∈ Set.Icc tmin tmax, HasDerivWithinAt α (f t (α t)) (Set.Icc tmin tmax) t
   proof: |
@@ -1263,8 +1263,8 @@
   - 'conclude: Factoring out A gives A exp(tA).'
   openmath: (forall (A t) (-> (matrix_square R A) (has_deriv_at (lambda (s) (matrix_exp (matrix_scale s A))) (matrix_mul A (matrix_exp (matrix_scale t A))) t)))
   hard_negative:
-    statement: 行列値関数A(t)について、exp(A(t))の導関数は常にA'(t)exp(A(t))である。
-    reason: A(t)とA'(t)が可換でなければ成り立たない。一般には級数の項ごとに積の順序が保てない。
+    statement: 行列値関数$A(t)$が微分可能なら、$\exp(A(t))$の微分係数は常に$A'(t)\exp(A(t))$である。
+    reason: $A(t)$と$A'(t)$が可換でなければ一般に成り立たない。$A(t)=N+tM$、$N=\begin{pmatrix}0&1\\0&0\end{pmatrix}$、$M=\begin{pmatrix}0&0\\1&0\end{pmatrix}$の$t=0$では微分係数は$\int_0^1e^{sN}Me^{(1-s)N}ds=M+\frac{NM+MN}{2}+\frac{NMN}{6}$だが、$A'(0)\exp(A(0))=M(I+N)=M+MN$で、差は$\frac{NM-MN}{2}+\frac{N}{6}\neq0$である。
   target: |
     ∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ) (t : ℝ), HasDerivAt (fun s : ℝ => NormedSpace.exp (s • A)) (A * NormedSpace.exp (t • A)) t
   proof: |
@@ -1370,9 +1370,13 @@
   hard_negative:
     statement: 実正方行列Aについてexp(-A)=(exp A)ᵀである。
     reason: A=Iならexp(I)=eIでその転置もeIだが、exp(-I)=e^{-1}Iなので一致しない。
-  target: |
-    ∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ), NormedSpace.exp (-A) = (NormedSpace.exp A)⁻¹
+  target: '∀ (m : Type*) [Fintype m] [DecidableEq m] (A : Matrix m m ℝ), NormedSpace.exp A * NormedSpace.exp (-A) = 1 ∧ NormedSpace.exp (-A) * NormedSpace.exp A = 1'
   proof: |
     by
       intro m _ _ A
-      exact Matrix.exp_neg A
+      have h1 : Commute A (-A) := (Commute.refl A).neg_right
+      have h2 := Matrix.exp_add_of_commute A (-A) h1
+      have h3 := Matrix.exp_add_of_commute (-A) A h1.symm
+      rw [add_neg_cancel, NormedSpace.exp_zero] at h2
+      rw [neg_add_cancel, NormedSpace.exp_zero] at h3
+      exact ⟨h2.symm, h3.symm⟩

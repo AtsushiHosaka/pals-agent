@@ -1,0 +1,97 @@
+# New pals2 symbols needed by the validated patches (audit 2026-11-03). Copy to vocabulary/audit_additions.yaml.
+logb:
+  args: [term, term]
+  returns: term
+  meaning: logarithm of x to base a, argument order (a, x)
+module_zero:
+  args: [term]
+  returns: term
+  meaning: zero element of the module M
+module_smul:
+  args: [term, term]
+  returns: term
+  meaning: scalar multiple r x in a module
+ideal_mul:
+  args: [term, term]
+  returns: term
+  meaning: product ideal IJ
+proposition_holds:
+  args: [term]
+  returns: prop
+  meaning: the propositional variable P is true
+ae_measurable_fn:
+  args: [term, term]
+  returns: prop
+  meaning: f is almost-everywhere measurable with respect to the measure mu
+monoid:
+  args: [term]
+  returns: prop
+  meaning: G is a monoid
+has_homology:
+  args: [term, term]
+  returns: prop
+  meaning: the complex K has homology in degree i
+ordinal_add:
+  args: [term, term]
+  returns: term
+  meaning: ordinal sum a + b, which is not commutative
+cardinal_add:
+  args: [term, term]
+  returns: term
+  meaning: cardinal sum a + b
+cardinal_mul:
+  args: [term, term]
+  returns: term
+  meaning: cardinal product a * b
+cardinal_pow:
+  args: [term, term]
+  returns: term
+  meaning: cardinal exponentiation a to the power b
+canonical_ring_hom:
+  args: [term, term]
+  returns: term
+  meaning: the canonical ring homomorphism from R to S
+aut_group_over:
+  args: [term, term]
+  returns: term
+  meaning: group of automorphisms of the field extension E over F
+euclidean_ambient_dimension:
+  args: [term]
+  returns: prop
+  meaning: the ambient Euclidean space has dimension n
+transvection_product:
+  args: [term]
+  returns: prop
+  meaning: the matrix is a product of transvections
+real_tends_to:
+  args: [term_function, term]
+  returns: prop
+  meaning: the real sequence n to a_n given by a function tends to r
+ring_product:
+  args: [term, term]
+  returns: term
+  meaning: product ring R times S
+power_series_var:
+  args: [term]
+  returns: term
+  meaning: the indeterminate X of the formal power series ring over S
+smooth_manifold_modeled_on:
+  args: [term, term]
+  returns: prop
+  meaning: M is a smooth manifold modeled on the vector space E
+prime_power_cyclic_sum_family:
+  args: [term, term, term]
+  returns: term
+  meaning: direct sum of the cyclic groups Z/p_i^(e_i) for i below k
+hom_post_compose:
+  args: [term, term]
+  returns: term
+  meaning: the map k to f after k between Hom(X, A) and Hom(X, B)
+formal_power_series_over:
+  args: [term, term_function]
+  returns: term
+  meaning: formal power series over the ring S with the given coefficient function
+binomial_measure:
+  args: [term, term]
+  returns: term
+  meaning: binomial distribution with n trials and success probability p

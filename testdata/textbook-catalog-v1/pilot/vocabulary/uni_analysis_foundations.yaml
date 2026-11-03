@@ -1,0 +1,25 @@
+# Proposed additive OpenMath vocabulary for the foundations of analysis.
+strict_mono_index: {args: [term], returns: prop, meaning: "the index map from naturals to naturals is strictly increasing"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by a lambda converges to L"}
+seq_antitone: {args: [term], returns: prop, meaning: "the real sequence a is nonincreasing"}
+real_series_summable: {args: [term_function], returns: prop, meaning: "the series of the terms given by a lambda converges unconditionally"}
+real_series_sum: {args: [term_function], returns: term, meaning: "the sum of the series of the terms given by a lambda"}
+real_partial_sum: {args: [term_function, term], returns: term, meaning: "sum of the first N terms given by a lambda"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+fn_continuous_at: {args: [term_function, term], returns: prop, meaning: "f is continuous at the point a"}
+fn_limit_at_top: {args: [term_function, term], returns: prop, meaning: "f(x) tends to L as x tends to plus infinity; arguments f, L"}
+fn_limit_at_bot: {args: [term_function, term], returns: prop, meaning: "f(x) tends to L as x tends to minus infinity; arguments f, L"}
+fn_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a with x different from a; arguments f, a, L"}
+fn_right_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the right; arguments f, a, L"}
+fn_left_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the left; arguments f, a, L"}
+uniform_continuous: {args: [term], returns: prop, meaning: "f is uniformly continuous"}
+uniform_continuous_on: {args: [term, term], returns: prop, meaning: "f is uniformly continuous on the set S"}
+open_interval: {args: [term, term], returns: term, meaning: "open interval (a, b) of reals"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u; arguments f, u, a"}
+cont_diff_at: {args: [term, term, term], returns: prop, meaning: "f is of class C^k near a; arguments k, f, a"}
+iterated_deriv: {args: [term_function, term, term], returns: term, meaning: "n-th derivative of f evaluated at x; arguments f, n, x"}
+binom: {args: [term, term], returns: term, meaning: "binomial coefficient n choose k"}
+metric_space: {args: [term], returns: prop, meaning: "X is a metric space"}
+complete_space: {args: [term], returns: prop, meaning: "X is a complete metric space"}
+closed_in: {args: [term, term], returns: prop, meaning: "C is a closed subset of the topological space X"}
+dist_to_set: {args: [term, term], returns: term, meaning: "infimum of the distances from the point x to the set S"}

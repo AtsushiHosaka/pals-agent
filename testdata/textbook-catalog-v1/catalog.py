@@ -52,6 +52,7 @@ CARD_KEYS = {
     "conclusion", "answer", "strategy", "sketch", "openmath", "hard_negative", "target", "proof",
 }  # fmt: skip
 KINDS = {"gap", "textbook", "named"}
+LEVELS = {"middle", "high", 1, 2, 3, 4}
 SLUG = re.compile(r"^[a-z0-9][a-z0-9_]{0,70}$")
 STEP = re.compile(r"^[a-z_]+: \S")
 # Same canonical OpenMath as an existing Draft, which the loader rejects; the Recipe stays new.
@@ -110,10 +111,10 @@ class CardError(ValueError):
 
 
 def load_vocabulary(domain: str | None = None) -> dict[str, dict]:
-    """Merge all vocabulary files, or only core plus one domain while authoring that domain."""
+    """Merge all vocabulary files, or only the shared files plus one domain while authoring that domain."""
     merged: dict[str, dict] = {}
     for path in sorted((ROOT / "vocabulary").glob("*.yaml")):
-        if domain is not None and path.stem not in {"core", domain}:
+        if domain is not None and path.stem not in {"core", "audit_additions", domain}:
             continue
         for name, spec in (yaml.safe_load(path.read_text()) or {}).items():
             if (
@@ -284,8 +285,8 @@ def validate_card(card: object, domain: str, vocabulary: dict[str, dict]) -> dic
         )
     if not SLUG.match(str(card["id"])):
         raise CardError("id must match [a-z0-9_]+")
-    if card["kind"] not in KINDS or card["level"] not in {1, 2, 3, 4}:
-        raise CardError("kind must be gap/textbook/named and level 1..4")
+    if card["kind"] not in KINDS or card["level"] not in LEVELS:
+        raise CardError("kind must be gap/textbook/named and level middle/high/1..4")
     for key in ("assumptions", "quantifiers", "sketch"):
         if not isinstance(card[key], list) or any(
             not isinstance(item, str) or not item.strip() for item in card[key]
@@ -408,7 +409,7 @@ def command_check(args: argparse.Namespace) -> int:
         "valid_contract": len(entries),
         "failed": len(errors),
         "kinds": Counter(entry["card"]["kind"] for entry in entries),
-        "levels": Counter(entry["card"]["level"] for entry in entries),
+        "levels": Counter(str(entry["card"]["level"]) for entry in entries),
         "tiers": Counter(entry["tier"] for entry in entries),
     }
     print(json.dumps(summary, ensure_ascii=False))
@@ -549,7 +550,7 @@ def command_build(_: argparse.Namespace) -> int:
         "cards": len(entries),
         "domains": Counter(entry["domain"] for entry in entries),
         "kinds": Counter(entry["card"]["kind"] for entry in entries),
-        "levels": Counter(entry["card"]["level"] for entry in entries),
+        "levels": Counter(str(entry["card"]["level"]) for entry in entries),
         "tiers": Counter(entry["tier"] for entry in entries),
         "vocabulary": len(used),
     }

@@ -1,0 +1,1001 @@
+- id: both_roots_greater_than_iff_any_leading
+  kind: textbook
+  level: high
+  topic: 二次方程式・解の配置（係数の符号によらない形）
+  statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに$k$より大きいものが存在することは、$b^2-4ac\geq 0$、$k<-\dfrac{b}{2a}$、$a(ak^2+bk+c)>0$がすべて成り立つことと同値である。
+  statement_en: "For a ≠ 0: real p, q > k with ax²+bx+c = a(x−p)(x−q) for all x exist if and only if b²−4ac ≥ 0, k < −b/(2a) and a(ak²+bk+c) > 0."
+  assumptions:
+  - $a,b,c,k$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,k$
+  conclusion: 2つの解がともに$k$より大きいことと、判別式・軸・$af(k)$の3条件は同値である。
+  answer: |
+    $a,b,c,k$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    $k$より大きい実数$p,q$があって、すべての実数$x$で$f(x)=a(x-p)(x-q)$となるとする。係数を比べて$b=-a(p+q)$、$c=apq$である。よって$b^2-4ac=a^2(p-q)^2\geq 0$であり、$-\dfrac{b}{2a}=\dfrac{p+q}{2}$である。$k<p$、$k<q$なら$-\dfrac{b}{2a}>k$である。また$af(k)=a^2(p-k)(q-k)>0$である。
+    逆に$b^2-4ac\geq 0$、$k<-\dfrac{b}{2a}$、$af(k)>0$を仮定する。$v=-\dfrac{b}{2a}$、$t=\left|\dfrac{\sqrt{b^2-4ac}}{2a}\right|\geq 0$とおくと、$b=-2av$、$c=a(v^2-t^2)$なので$f(x)=a\{x-(v-t)\}\{x-(v+t)\}$である。また$af(x)=a^2\{(x-v)^2-t^2\}$である。$af(k)>0$と$a^2>0$より$(k-v)^2>t^2$である。$v>k$なので$v+t>k$である。$v-t\leq k$と仮定すると$0\leq v-k\leq t$となり、$(k-v)^2\leq t^2$に矛盾する。よって$p=v-t$、$q=v+t$はともに$k$より大きい。
+  strategy: Compare coefficients forward; for the converse write the roots as v ± t and use the sign of a f(k).
+  sketch:
+  - "derive: A factorization gives b = −a(p+q) and c = apq."
+  - "derive: The conditions follow from a²(p−q)² ≥ 0, (p+q)/2 > k and a²(p−k)(q−k) > 0."
+  - "construct: For the converse write f(x) = a(x−(v−t))(x−(v+t))."
+  - "contradiction: If v−t ≤ k then (k−v)² ≤ t², contrary to a f(k) > 0."
+  openmath: (forall (a b c k) (-> (!= a 0) (<-> (exists (p q) (and (forall (x) (= (+ (* a (^ x 2)) (* b x) c) (* a (- x p) (- x q)))) (< k p) (< k q))) (and (>= (- (^ b 2) (* 4 a c)) 0) (< k (/ (neg b) (* 2 a))) (> (* a (+ (* a (^ k 2)) (* b k) c)) 0)))))
+  hard_negative:
+    statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに$k$より大きいものが存在することは、$b^2-4ac\geq 0$、$k<-\dfrac{b}{2a}$、$ak^2+bk+c>0$がすべて成り立つことと同値である。
+    reason: $a=-1$、$b=5$、$c=-6$、$k=1$のとき解は$2,3$で$1$より大きいが、$f(1)=-2<0$である。$a<0$では$f(k)$の符号が逆になるので、$af(k)$で書く必要がある。
+  target: |
+    ∀ (a b c k : ℝ), a ≠ 0 → ((∃ p q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - p) * (x - q)) ∧ k < p ∧ k < q) ↔ 0 ≤ b ^ 2 - 4 * a * c ∧ k < -b / (2 * a) ∧ 0 < a * (a * k ^ 2 + b * k + c))
+  proof: |
+    by
+      intro a b c k ha
+      have ha2 : 0 < a ^ 2 := by positivity
+      constructor
+      · rintro ⟨p, q, h, hp, hq⟩
+        have h0 := h 0
+        have h1 := h 1
+        have h2 := h (-1)
+        have hb : b = -a * (p + q) := by linear_combination (1 / 2) * h1 - (1 / 2) * h2
+        have hc : c = a * p * q := by linear_combination h0
+        subst hb hc
+        refine ⟨?_, ?_, ?_⟩
+        · have e : (-a * (p + q)) ^ 2 - 4 * a * (a * p * q) = (a * (p - q)) ^ 2 := by ring
+          rw [e]
+          exact sq_nonneg _
+        · have e : -(-a * (p + q)) / (2 * a) = (p + q) / 2 := by
+            field_simp
+          rw [e]
+          linarith
+        · have e : a * (a * k ^ 2 + -a * (p + q) * k + a * p * q) = a ^ 2 * ((p - k) * (q - k)) := by ring
+          rw [e]
+          exact mul_pos ha2 (mul_pos (sub_pos.2 hp) (sub_pos.2 hq))
+      · rintro ⟨hD, hk, hf⟩
+        obtain ⟨v, t, ht, hb, hc, hv⟩ : ∃ v t : ℝ, 0 ≤ t ∧ b = -2 * a * v ∧ c = a * (v ^ 2 - t ^ 2) ∧ v = -b / (2 * a) := by
+          have hs2 := Real.sq_sqrt hD
+          refine ⟨-b / (2 * a), |Real.sqrt (b ^ 2 - 4 * a * c) / (2 * a)|, abs_nonneg _, by field_simp, ?_, rfl⟩
+          rw [sq_abs, div_pow, div_pow, hs2]
+          field_simp
+          ring
+        rw [← hv] at hk
+        clear hv hD
+        subst hb hc
+        have e : a * (a * k ^ 2 + -2 * a * v * k + a * (v ^ 2 - t ^ 2)) = a ^ 2 * ((k - v) ^ 2 - t ^ 2) := by ring
+        rw [e] at hf
+        have hg : 0 < (k - v) ^ 2 - t ^ 2 := (mul_pos_iff_of_pos_left ha2).1 hf
+        refine ⟨v - t, v + t, fun x => by ring, ?_, by linarith⟩
+        by_contra hcon
+        push_neg at hcon
+        nlinarith [mul_nonneg (by linarith : 0 ≤ t - (v - k)) (by linarith : 0 ≤ t + (v - k))]
+- id: both_roots_less_than_iff_any_leading
+  kind: textbook
+  level: high
+  topic: 二次方程式・解の配置（ともに小さい）
+  statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに$k$より小さいものが存在することは、$b^2-4ac\geq 0$、$-\dfrac{b}{2a}<k$、$a(ak^2+bk+c)>0$がすべて成り立つことと同値である。
+  statement_en: "For a ≠ 0: real p, q < k with ax²+bx+c = a(x−p)(x−q) for all x exist if and only if b²−4ac ≥ 0, −b/(2a) < k and a(ak²+bk+c) > 0."
+  assumptions:
+  - $a,b,c,k$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,k$
+  conclusion: 2つの解がともに$k$より小さいことと、判別式・軸・$af(k)$の3条件は同値である。
+  answer: |
+    $a,b,c,k$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    $k$より小さい実数$p,q$があって、すべての実数$x$で$f(x)=a(x-p)(x-q)$となるとする。係数を比べて$b=-a(p+q)$、$c=apq$である。よって$b^2-4ac=a^2(p-q)^2\geq 0$であり、$-\dfrac{b}{2a}=\dfrac{p+q}{2}$である。$p<k$、$q<k$なら$-\dfrac{b}{2a}<k$である。また$af(k)=a^2(k-p)(k-q)>0$である。
+    逆に$b^2-4ac\geq 0$、$-\dfrac{b}{2a}<k$、$af(k)>0$を仮定する。$v=-\dfrac{b}{2a}$、$t=\left|\dfrac{\sqrt{b^2-4ac}}{2a}\right|\geq 0$とおくと、$b=-2av$、$c=a(v^2-t^2)$なので$f(x)=a\{x-(v-t)\}\{x-(v+t)\}$である。また$af(x)=a^2\{(x-v)^2-t^2\}$である。$af(k)>0$と$a^2>0$より$(k-v)^2>t^2$である。$v<k$なので$v-t<k$である。$k\leq v+t$と仮定すると$0\leq k-v\leq t$となり、$(k-v)^2\leq t^2$に矛盾する。よって$p=v-t$、$q=v+t$はともに$k$より小さい。
+  strategy: Compare coefficients forward; for the converse write the roots as v ± t and use the sign of a f(k).
+  sketch:
+  - "derive: A factorization gives b = −a(p+q) and c = apq."
+  - "derive: The conditions follow from a²(p−q)² ≥ 0, (p+q)/2 < k and a²(k−p)(k−q) > 0."
+  - "construct: For the converse write f(x) = a(x−(v−t))(x−(v+t))."
+  - "contradiction: If k ≤ v+t then (k−v)² ≤ t², contrary to a f(k) > 0."
+  openmath: (forall (a b c k) (-> (!= a 0) (<-> (exists (p q) (and (forall (x) (= (+ (* a (^ x 2)) (* b x) c) (* a (- x p) (- x q)))) (< p k) (< q k))) (and (>= (- (^ b 2) (* 4 a c)) 0) (< (/ (neg b) (* 2 a)) k) (> (* a (+ (* a (^ k 2)) (* b k) c)) 0)))))
+  hard_negative:
+    statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに$k$より小さいものが存在することは、$-\dfrac{b}{2a}<k$かつ$a(ak^2+bk+c)>0$と同値である。
+    reason: $a=1$、$b=0$、$c=1$、$k=1$のとき2条件は成り立つが、$x^2+1$は実数の範囲で因数分解できない。判別式の条件が要る。
+  target: |
+    ∀ (a b c k : ℝ), a ≠ 0 → ((∃ p q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - p) * (x - q)) ∧ p < k ∧ q < k) ↔ 0 ≤ b ^ 2 - 4 * a * c ∧ -b / (2 * a) < k ∧ 0 < a * (a * k ^ 2 + b * k + c))
+  proof: |
+    by
+      intro a b c k ha
+      have ha2 : 0 < a ^ 2 := by positivity
+      constructor
+      · rintro ⟨p, q, h, hp, hq⟩
+        have h0 := h 0
+        have h1 := h 1
+        have h2 := h (-1)
+        have hb : b = -a * (p + q) := by linear_combination (1 / 2) * h1 - (1 / 2) * h2
+        have hc : c = a * p * q := by linear_combination h0
+        subst hb hc
+        refine ⟨?_, ?_, ?_⟩
+        · have e : (-a * (p + q)) ^ 2 - 4 * a * (a * p * q) = (a * (p - q)) ^ 2 := by ring
+          rw [e]
+          exact sq_nonneg _
+        · have e : -(-a * (p + q)) / (2 * a) = (p + q) / 2 := by
+            field_simp
+          rw [e]
+          linarith
+        · have e : a * (a * k ^ 2 + -a * (p + q) * k + a * p * q) = a ^ 2 * ((k - p) * (k - q)) := by ring
+          rw [e]
+          exact mul_pos ha2 (mul_pos (sub_pos.2 hp) (sub_pos.2 hq))
+      · rintro ⟨hD, hk, hf⟩
+        obtain ⟨v, t, ht, hb, hc, hv⟩ : ∃ v t : ℝ, 0 ≤ t ∧ b = -2 * a * v ∧ c = a * (v ^ 2 - t ^ 2) ∧ v = -b / (2 * a) := by
+          have hs2 := Real.sq_sqrt hD
+          refine ⟨-b / (2 * a), |Real.sqrt (b ^ 2 - 4 * a * c) / (2 * a)|, abs_nonneg _, by field_simp, ?_, rfl⟩
+          rw [sq_abs, div_pow, div_pow, hs2]
+          field_simp
+          ring
+        rw [← hv] at hk
+        clear hv hD
+        subst hb hc
+        have e : a * (a * k ^ 2 + -2 * a * v * k + a * (v ^ 2 - t ^ 2)) = a ^ 2 * ((k - v) ^ 2 - t ^ 2) := by ring
+        rw [e] at hf
+        have hg : 0 < (k - v) ^ 2 - t ^ 2 := (mul_pos_iff_of_pos_left ha2).1 hf
+        refine ⟨v - t, v + t, fun x => by ring, by linarith, ?_⟩
+        by_contra hcon
+        push_neg at hcon
+        nlinarith [mul_nonneg (by linarith : 0 ≤ t - (k - v)) (by linarith : 0 ≤ t + (k - v))]
+- id: roots_straddle_iff_any_leading
+  kind: gap
+  level: high
+  topic: 二次方程式・解の配置（両側）
+  statement: $a\neq 0$のとき、$a(ak^2+bk+c)<0$であることと、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で$p<k<q$となるものが存在することは同値である。
+  statement_en: "For a ≠ 0: a(ak²+bk+c) < 0 if and only if real p < k < q with ax²+bx+c = a(x−p)(x−q) for all x exist."
+  assumptions:
+  - $a,b,c,k$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,k$
+  conclusion: $k$が2解の間にあることと$af(k)<0$は同値である。
+  answer: |
+    $a,b,c,k$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    $af(k)<0$とする。$4af(k)=(2ak+b)^2-(b^2-4ac)$より$b^2-4ac>0$である。$v=-\dfrac{b}{2a}$、$t=\left|\dfrac{\sqrt{b^2-4ac}}{2a}\right|\geq 0$とおくと、$b=-2av$、$c=a(v^2-t^2)$なので$f(x)=a\{x-(v-t)\}\{x-(v+t)\}$である。また$af(x)=a^2\{(x-v)^2-t^2\}$である。$af(k)<0$と$a^2>0$より$(k-v)^2<t^2$なので$|k-v|<t$である。よって$v-t<k<v+t$であり、$p=v-t$、$q=v+t$が求めるものである。
+    逆に、実数$p,q$が$p<k<q$を満たし、すべての実数$x$で$f(x)=a(x-p)(x-q)$なら、$af(k)=a^2(k-p)(k-q)<0$である。
+  strategy: Use a f(x) = a²((x−v)²−t²) for the forward direction and factor at k for the converse.
+  sketch:
+  - "derive: a f(k) < 0 forces b²−4ac > 0."
+  - "construct: Write f(x) = a(x−(v−t))(x−(v+t))."
+  - "derive: a f(k) = a²((k−v)²−t²) < 0 gives v−t < k < v+t."
+  - "conclude: Conversely a f(k) = a²(k−p)(k−q) < 0."
+  openmath: (forall (a b c k) (-> (!= a 0) (<-> (< (* a (+ (* a (^ k 2)) (* b k) c)) 0) (exists (p q) (and (forall (x) (= (+ (* a (^ x 2)) (* b x) c) (* a (- x p) (- x q)))) (< p k) (< k q))))))
+  hard_negative:
+    statement: $a\neq 0$のとき、$ak^2+bk+c<0$であることと、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で$p<k<q$となるものが存在することは同値である。
+    reason: $a=-1$、$b=5$、$c=-6$、$k=\dfrac{5}{2}$のとき$k$は解$2,3$の間にあるが、$f(k)=\dfrac{1}{4}>0$である。
+  target: |
+    ∀ (a b c k : ℝ), a ≠ 0 → (a * (a * k ^ 2 + b * k + c) < 0 ↔ ∃ p q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - p) * (x - q)) ∧ p < k ∧ k < q)
+  proof: |
+    by
+      intro a b c k ha
+      have ha2 : 0 < a ^ 2 := by positivity
+      constructor
+      · intro hf
+        have hD : 0 ≤ b ^ 2 - 4 * a * c := by
+          nlinarith [sq_nonneg (2 * a * k + b)]
+        obtain ⟨v, t, ht, hb, hc, hv⟩ : ∃ v t : ℝ, 0 ≤ t ∧ b = -2 * a * v ∧ c = a * (v ^ 2 - t ^ 2) ∧ v = -b / (2 * a) := by
+          have hs2 := Real.sq_sqrt hD
+          refine ⟨-b / (2 * a), |Real.sqrt (b ^ 2 - 4 * a * c) / (2 * a)|, abs_nonneg _, by field_simp, ?_, rfl⟩
+          rw [sq_abs, div_pow, div_pow, hs2]
+          field_simp
+          ring
+        clear hv hD
+        subst hb hc
+        have e : a * (a * k ^ 2 + -2 * a * v * k + a * (v ^ 2 - t ^ 2)) = a ^ 2 * ((k - v) ^ 2 - t ^ 2) := by ring
+        rw [e] at hf
+        have h5 : (k - v) ^ 2 < t ^ 2 := by
+          by_contra hn
+          push_neg at hn
+          nlinarith [mul_nonneg ha2.le (sub_nonneg.2 hn)]
+        have h7 := abs_lt_of_sq_lt_sq' h5 ht
+        exact ⟨v - t, v + t, fun x => by ring, by linarith [h7.1], by linarith [h7.2]⟩
+      · rintro ⟨p, q, h, hp, hq⟩
+        rw [h k]
+        have e : a * (a * (k - p) * (k - q)) = a ^ 2 * ((k - p) * (k - q)) := by ring
+        rw [e]
+        exact mul_neg_of_pos_of_neg ha2 (mul_neg_of_pos_of_neg (by linarith) (by linarith))
+- id: both_roots_in_open_interval_any_leading
+  kind: textbook
+  level: high
+  topic: 二次方程式・解の配置（区間内）
+  statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに$k$と$l$の間にある（$k<p<l$かつ$k<q<l$）ものが存在することは、$b^2-4ac\geq 0$、$k<-\dfrac{b}{2a}<l$、$a(ak^2+bk+c)>0$、$a(al^2+bl+c)>0$がすべて成り立つことと同値である。
+  statement_en: "For a ≠ 0: real p, q in (k, l) with ax²+bx+c = a(x−p)(x−q) for all x exist if and only if b²−4ac ≥ 0, k < −b/(2a) < l, a f(k) > 0 and a f(l) > 0."
+  assumptions:
+  - $a,b,c,k,l$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,k,l$
+  conclusion: 2つの解がともに開区間$(k,l)$にあることと、判別式・軸・両端の$af$の条件は同値である。
+  answer: |
+    $a,b,c,k,l$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    $k<p<l$、$k<q<l$を満たす実数$p,q$があって、すべての実数$x$で$f(x)=a(x-p)(x-q)$となるとする。係数を比べて$b=-a(p+q)$、$c=apq$である。よって$b^2-4ac=a^2(p-q)^2\geq 0$であり、$-\dfrac{b}{2a}=\dfrac{p+q}{2}$である。$p,q$の範囲より$k<-\dfrac{b}{2a}<l$である。また$af(k)=a^2(p-k)(q-k)>0$、$af(l)=a^2(l-p)(l-q)>0$である。
+    逆に$b^2-4ac\geq 0$、$k<-\dfrac{b}{2a}<l$、$af(k)>0$、$af(l)>0$を仮定する。$v=-\dfrac{b}{2a}$、$t=\left|\dfrac{\sqrt{b^2-4ac}}{2a}\right|\geq 0$とおくと、$b=-2av$、$c=a(v^2-t^2)$なので$f(x)=a\{x-(v-t)\}\{x-(v+t)\}$である。また$af(x)=a^2\{(x-v)^2-t^2\}$である。$af(k)>0$より$(k-v)^2>t^2$、$af(l)>0$より$(l-v)^2>t^2$である。$k\geq v-t$なら、$k<v$と合わせて$0<v-k\leq t$となり、$(k-v)^2>t^2$に矛盾する。よって$k<v-t$である。同様に、$v<l$と$(l-v)^2>t^2$から$v+t<l$である。$v-t\leq v+t$なので、$p=v-t$、$q=v+t$はともに$(k,l)$にある。
+  strategy: Compare coefficients forward; for the converse compare k and l with v ± t.
+  sketch:
+  - "derive: A factorization gives the discriminant, axis and endpoint conditions."
+  - "construct: Write f(x) = a(x−(v−t))(x−(v+t))."
+  - "derive: a f(k) > 0 with k < v gives k < v−t."
+  - "derive: a f(l) > 0 with v < l gives v+t < l."
+  openmath: (forall (a b c k l) (-> (!= a 0) (<-> (exists (p q) (and (forall (x) (= (+ (* a (^ x 2)) (* b x) c) (* a (- x p) (- x q)))) (< k p) (< p l) (< k q) (< q l))) (and (>= (- (^ b 2) (* 4 a c)) 0) (< k (/ (neg b) (* 2 a))) (< (/ (neg b) (* 2 a)) l) (> (* a (+ (* a (^ k 2)) (* b k) c)) 0) (> (* a (+ (* a (^ l 2)) (* b l) c)) 0)))))
+  hard_negative:
+    statement: $a\neq 0$のとき、2解がともに$(k,l)$にあることは、$b^2-4ac\geq 0$、$a(ak^2+bk+c)>0$、$a(al^2+bl+c)>0$と同値である。
+    reason: $f(x)=x^2-5x+6$、$k=4$、$l=5$のとき3条件は成り立つが、解$2,3$は$(4,5)$にない。軸の条件が要る。
+  target: |
+    ∀ (a b c k l : ℝ), a ≠ 0 → ((∃ p q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - p) * (x - q)) ∧ k < p ∧ p < l ∧ k < q ∧ q < l) ↔ 0 ≤ b ^ 2 - 4 * a * c ∧ k < -b / (2 * a) ∧ -b / (2 * a) < l ∧ 0 < a * (a * k ^ 2 + b * k + c) ∧ 0 < a * (a * l ^ 2 + b * l + c))
+  proof: |
+    by
+      intro a b c k l ha
+      have ha2 : 0 < a ^ 2 := by positivity
+      constructor
+      · rintro ⟨p, q, h, hkp, hpl, hkq, hql⟩
+        have h0 := h 0
+        have h1 := h 1
+        have h2 := h (-1)
+        have hb : b = -a * (p + q) := by linear_combination (1 / 2) * h1 - (1 / 2) * h2
+        have hc : c = a * p * q := by linear_combination h0
+        subst hb hc
+        have e : -(-a * (p + q)) / (2 * a) = (p + q) / 2 := by
+          field_simp
+        rw [e]
+        refine ⟨?_, by linarith, by linarith, ?_, ?_⟩
+        · have e : (-a * (p + q)) ^ 2 - 4 * a * (a * p * q) = (a * (p - q)) ^ 2 := by ring
+          rw [e]
+          exact sq_nonneg _
+        · have e : a * (a * k ^ 2 + -a * (p + q) * k + a * p * q) = a ^ 2 * ((p - k) * (q - k)) := by ring
+          rw [e]
+          exact mul_pos ha2 (mul_pos (sub_pos.2 hkp) (sub_pos.2 hkq))
+        · have e : a * (a * l ^ 2 + -a * (p + q) * l + a * p * q) = a ^ 2 * ((l - p) * (l - q)) := by ring
+          rw [e]
+          exact mul_pos ha2 (mul_pos (sub_pos.2 hpl) (sub_pos.2 hql))
+      · rintro ⟨hD, hk, hl, hfk, hfl⟩
+        obtain ⟨v, t, ht, hb, hc, hv⟩ : ∃ v t : ℝ, 0 ≤ t ∧ b = -2 * a * v ∧ c = a * (v ^ 2 - t ^ 2) ∧ v = -b / (2 * a) := by
+          have hs2 := Real.sq_sqrt hD
+          refine ⟨-b / (2 * a), |Real.sqrt (b ^ 2 - 4 * a * c) / (2 * a)|, abs_nonneg _, by field_simp, ?_, rfl⟩
+          rw [sq_abs, div_pow, div_pow, hs2]
+          field_simp
+          ring
+        rw [← hv] at hk hl
+        clear hv hD
+        subst hb hc
+        have ek : a * (a * k ^ 2 + -2 * a * v * k + a * (v ^ 2 - t ^ 2)) = a ^ 2 * ((k - v) ^ 2 - t ^ 2) := by ring
+        have el : a * (a * l ^ 2 + -2 * a * v * l + a * (v ^ 2 - t ^ 2)) = a ^ 2 * ((l - v) ^ 2 - t ^ 2) := by ring
+        rw [ek] at hfk
+        rw [el] at hfl
+        have hgk : 0 < (k - v) ^ 2 - t ^ 2 := (mul_pos_iff_of_pos_left ha2).1 hfk
+        have hgl : 0 < (l - v) ^ 2 - t ^ 2 := (mul_pos_iff_of_pos_left ha2).1 hfl
+        have h1 : k < v - t := by
+          by_contra hcon
+          push_neg at hcon
+          nlinarith [mul_nonneg (by linarith : 0 ≤ t - (v - k)) (by linarith : 0 ≤ t + (v - k))]
+        have h2 : v + t < l := by
+          by_contra hcon
+          push_neg at hcon
+          nlinarith [mul_nonneg (by linarith : 0 ≤ t - (l - v)) (by linarith : 0 ≤ t + (l - v))]
+        exact ⟨v - t, v + t, fun x => by ring, h1, by linarith, by linarith, h2⟩
+- id: both_roots_negative_iff_coefficients
+  kind: gap
+  level: high
+  topic: 二次方程式・解の符号（ともに負）
+  statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c=a(x-p)(x-q)$となる実数$p,q$で、ともに負のものが存在することは、$b^2-4ac\geq 0$、$-\dfrac{b}{a}<0$、$\dfrac{c}{a}>0$がすべて成り立つことと同値である。
+  statement_en: "For a ≠ 0: negative real p, q with ax²+bx+c = a(x−p)(x−q) for all x exist if and only if b²−4ac ≥ 0, −b/a < 0 and c/a > 0."
+  assumptions:
+  - $a,b,c$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 2つの解がともに負であることと、判別式・解の和・解の積の3条件は同値である。
+  answer: |
+    $a,b,c$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    負の実数$p,q$があって、すべての実数$x$で$f(x)=a(x-p)(x-q)$となるとする。係数を比べて$b=-a(p+q)$、$c=apq$である。よって$b^2-4ac=a^2(p-q)^2\geq 0$、$-\dfrac{b}{a}=p+q<0$、$\dfrac{c}{a}=pq>0$である。
+    逆に$b^2-4ac\geq 0$、$-\dfrac{b}{a}<0$、$\dfrac{c}{a}>0$を仮定する。$v=-\dfrac{b}{2a}$、$t=\left|\dfrac{\sqrt{b^2-4ac}}{2a}\right|\geq 0$とおくと、$b=-2av$、$c=a(v^2-t^2)$なので$f(x)=a\{x-(v-t)\}\{x-(v+t)\}$である。このとき$-\dfrac{b}{a}=2v<0$、$\dfrac{c}{a}=(v-t)(v+t)>0$である。積が正なので$v-t,v+t$は同符号であり、和$2v$が負なのでともに負である。よって$p=v-t$、$q=v+t$が求めるものである。
+  strategy: Read the sum and product of the roots; the two factors have equal sign and a negative sum.
+  sketch:
+  - "derive: A factorization gives −b/a = p+q and c/a = pq."
+  - "construct: For the converse write the roots as v ± t."
+  - "derive: Their product is positive, so they have the same sign."
+  - "conclude: Their sum 2v is negative, so both are negative."
+  openmath: (forall (a b c) (-> (!= a 0) (<-> (exists (p q) (and (forall (x) (= (+ (* a (^ x 2)) (* b x) c) (* a (- x p) (- x q)))) (< p 0) (< q 0))) (and (>= (- (^ b 2) (* 4 a c)) 0) (< (/ (neg b) a) 0) (> (/ c a) 0)))))
+  hard_negative:
+    statement: $a\neq 0$のとき、2解がともに負であることは、$-\dfrac{b}{a}<0$かつ$\dfrac{c}{a}>0$と同値である。
+    reason: $a=1$、$b=1$、$c=1$のとき2条件は成り立つが、$x^2+x+1=0$は実数解をもたない。判別式の条件が要る。
+  target: |
+    ∀ (a b c : ℝ), a ≠ 0 → ((∃ p q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - p) * (x - q)) ∧ p < 0 ∧ q < 0) ↔ 0 ≤ b ^ 2 - 4 * a * c ∧ -b / a < 0 ∧ 0 < c / a)
+  proof: |
+    by
+      intro a b c ha
+      constructor
+      · rintro ⟨p, q, h, hp, hq⟩
+        have h0 := h 0
+        have h1 := h 1
+        have h2 := h (-1)
+        have hb : b = -a * (p + q) := by linear_combination (1 / 2) * h1 - (1 / 2) * h2
+        have hc : c = a * p * q := by linear_combination h0
+        have e1 : -b / a = p + q := by
+          rw [div_eq_iff ha, hb]
+          ring
+        have e2 : c / a = p * q := by
+          rw [div_eq_iff ha, hc]
+          ring
+        rw [e1, e2]
+        refine ⟨?_, by linarith, mul_pos_of_neg_of_neg hp hq⟩
+        have e : b ^ 2 - 4 * a * c = (a * (p - q)) ^ 2 := by
+          rw [hb, hc]
+          ring
+        rw [e]
+        exact sq_nonneg _
+      · rintro ⟨hD, h1, h2⟩
+        obtain ⟨v, t, ht, hb, hc, hv⟩ : ∃ v t : ℝ, 0 ≤ t ∧ b = -2 * a * v ∧ c = a * (v ^ 2 - t ^ 2) ∧ v = -b / (2 * a) := by
+          have hs2 := Real.sq_sqrt hD
+          refine ⟨-b / (2 * a), |Real.sqrt (b ^ 2 - 4 * a * c) / (2 * a)|, abs_nonneg _, by field_simp, ?_, rfl⟩
+          rw [sq_abs, div_pow, div_pow, hs2]
+          field_simp
+          ring
+        clear hv hD
+        have e1 : -b / a = 2 * v := by
+          rw [div_eq_iff ha, hb]
+          ring
+        have e2 : c / a = (v - t) * (v + t) := by
+          rw [div_eq_iff ha, hc]
+          ring
+        rw [e1] at h1
+        rw [e2] at h2
+        rcases pos_and_pos_or_neg_and_neg_of_mul_pos h2 with ⟨h3, h4⟩ | ⟨h3, h4⟩
+        · exfalso
+          linarith
+        · exact ⟨v - t, v + t, fun x => by rw [hb, hc]; ring, h3, h4⟩
+- id: zero_root_iff_constant_term_zero
+  kind: gap
+  level: high
+  topic: 二次方程式・解が0になる条件
+  statement: $a\neq 0$のとき、$c=0$であることと、すべての実数$x$について「$ax^2+bx+c=0$は$x=0$または$x=-\dfrac{b}{a}$と同値」であることは同値である。
+  statement_en: "For a ≠ 0: c = 0 if and only if, for every real x, ax²+bx+c = 0 is equivalent to x = 0 or x = −b/a."
+  assumptions:
+  - $a,b,c$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 定数項が$0$であることと、解が$0$と$-\dfrac{b}{a}$であることは同値である。
+  answer: |
+    $a,b,c$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。
+    $c=0$とする。$f(x)=x(ax+b)$なので、$f(x)=0$は$x=0$または$ax+b=0$と同値である。$a\neq 0$より$ax+b=0$は$x=-\dfrac{b}{a}$と同値である。
+    逆に、すべての実数$x$で「$f(x)=0$は$x=0$または$x=-\dfrac{b}{a}$と同値」とする。$x=0$は「$x=0$または$x=-\dfrac{b}{a}$」を満たすので$f(0)=c=0$である。
+  strategy: Factor out x when c = 0; evaluate at 0 for the converse.
+  sketch:
+  - "derive: If c = 0 then f(x) = x(ax+b)."
+  - "derive: The second factor vanishes exactly at x = −b/a."
+  - "conclude: Conversely x = 0 satisfies the right side, so c = f(0) = 0."
+  openmath: (forall (a b c) (-> (!= a 0) (<-> (= c 0) (forall (x) (<-> (= (+ (* a (^ x 2)) (* b x) c) 0) (or (= x 0) (= x (/ (neg b) a))))))))
+  hard_negative:
+    statement: $a\neq 0$のとき、$c=0$ならば$ax^2+bx+c=0$の解は$0$だけである。
+    reason: $a=1$、$b=-3$、$c=0$のとき$x=3$も解である。
+  target: |
+    ∀ (a b c : ℝ), a ≠ 0 → (c = 0 ↔ ∀ x : ℝ, a * x ^ 2 + b * x + c = 0 ↔ x = 0 ∨ x = -b / a)
+  proof: |
+    by
+      intro a b c ha
+      constructor
+      · rintro rfl x
+        have e : a * x ^ 2 + b * x + 0 = x * (a * x + b) := by ring
+        rw [e, mul_eq_zero, eq_div_iff ha]
+        constructor
+        · rintro (h | h)
+          · exact Or.inl h
+          · exact Or.inr (by linarith)
+        · rintro (h | h)
+          · exact Or.inl h
+          · exact Or.inr (by linarith)
+      · intro h
+        have h0 := (h 0).2 (Or.inl rfl)
+        simpa using h0
+- id: quadratic_range_concave
+  kind: textbook
+  level: high
+  topic: 二次関数・値域（上に凸）
+  statement: $a<0$のとき、$y=ax^2+bx+c$の値域は$y\leq\dfrac{4ac-b^2}{4a}$である。
+  statement_en: "For a < 0, the range of y = ax²+bx+c is y ≤ (4ac−b²)/(4a)."
+  assumptions:
+  - $a,b,c$は実数
+  - $a<0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 値域は$\dfrac{4ac-b^2}{4a}$以下の実数全体である。
+  answer: |
+    $a,b,c$を実数とし、$a<0$とする。平方完成により、$ax^2+bx+c=a\left(x+\dfrac{b}{2a}\right)^2+\dfrac{4ac-b^2}{4a}$である。
+    $a<0$なので第1項は$0$以下であり、値はすべて$\dfrac{4ac-b^2}{4a}$以下である。
+    逆に$y\leq\dfrac{4ac-b^2}{4a}$とする。$s=\dfrac{1}{a}\left(y-\dfrac{4ac-b^2}{4a}\right)\geq 0$とおき、$x=-\dfrac{b}{2a}+\sqrt{s}$とすると、値は$as+\dfrac{4ac-b^2}{4a}=y$である。
+  strategy: Complete the square and take a square root to reach each value.
+  sketch:
+  - "derive: Complete the square."
+  - "derive: The squared term is nonpositive since a < 0, giving the upper bound."
+  - "construct: For y below the bound, solve the squared term with a square root."
+  openmath: (forall (a b c y) (-> (< a 0) (<-> (exists (x) (= (+ (* a (^ x 2)) (* b x) c) y)) (<= y (/ (- (* 4 a c) (^ b 2)) (* 4 a))))))
+  hard_negative:
+    statement: $a<0$のとき、$y=ax^2+bx+c$の値域は$y\geq\dfrac{4ac-b^2}{4a}$である。
+    reason: $a=-1$、$b=c=0$のとき$y=-x^2$の値域は$y\leq 0$であり、$y=1$は値にならない。
+  target: |
+    ∀ (a b c : ℝ), a < 0 → Set.range (fun x : ℝ => a * x ^ 2 + b * x + c) = Set.Iic ((4 * a * c - b ^ 2) / (4 * a))
+  proof: |
+    by
+      intro a b c ha
+      have ha' : a ≠ 0 := ha.ne
+      have key : ∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x + b / (2 * a)) ^ 2 + (4 * a * c - b ^ 2) / (4 * a) := by
+        intro x
+        field_simp
+        ring
+      ext y
+      simp only [Set.mem_range, Set.mem_Iic]
+      constructor
+      · rintro ⟨x, rfl⟩
+        have := mul_nonneg (neg_nonneg.2 ha.le) (sq_nonneg (x + b / (2 * a)))
+        rw [key x]
+        linarith
+      · intro hy
+        have hnn : 0 ≤ (y - (4 * a * c - b ^ 2) / (4 * a)) / a := div_nonneg_of_nonpos (by linarith) ha.le
+        have hs := Real.sq_sqrt hnn
+        refine ⟨-(b / (2 * a)) + Real.sqrt ((y - (4 * a * c - b ^ 2) / (4 * a)) / a), ?_⟩
+        rw [key]
+        have e : -(b / (2 * a)) + Real.sqrt ((y - (4 * a * c - b ^ 2) / (4 * a)) / a) + b / (2 * a) = Real.sqrt ((y - (4 * a * c - b ^ 2) / (4 * a)) / a) := by ring
+        rw [e, hs]
+        field_simp
+        ring
+- id: quadratic_monotone_each_side_of_axis_concave
+  kind: gap
+  level: high
+  topic: 二次関数・増減（上に凸）
+  statement: $a<0$のとき、$y=ax^2+bx+c$は$x\geq-\dfrac{b}{2a}$で狭義減少し、$x\leq-\dfrac{b}{2a}$で狭義増加する。
+  statement_en: "For a < 0, y = ax²+bx+c is strictly decreasing on x ≥ −b/(2a) and strictly increasing on x ≤ −b/(2a)."
+  assumptions:
+  - $a,b,c$は実数
+  - $a<0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 軸の右側で狭義減少し、左側で狭義増加する。
+  answer: |
+    $a,b,c$を実数とし、$a<0$、$v=-\dfrac{b}{2a}$、$f(x)=ax^2+bx+c$とする。$b=-2av$である。実数$p<q$に対して$f(q)-f(p)=a(q-p)(p+q-2v)$である。
+    $v\leq p<q$なら$p+q-2v>0$なので、$a<0$より$f(q)<f(p)$である。$p<q\leq v$なら$p+q-2v<0$なので$f(p)<f(q)$である。
+  strategy: Factor f(q)−f(p) and read the sign of each factor.
+  sketch:
+  - "derive: f(q)−f(p) = a(q−p)(p+q−2v)."
+  - "derive: Right of the axis p+q−2v > 0, so f decreases."
+  - "derive: Left of the axis p+q−2v < 0, so f increases."
+  openmath: (forall (a b c p q) (-> (and (< a 0) (< p q)) (and (-> (<= (/ (neg b) (* 2 a)) p) (> (+ (* a (^ p 2)) (* b p) c) (+ (* a (^ q 2)) (* b q) c))) (-> (<= q (/ (neg b) (* 2 a))) (< (+ (* a (^ p 2)) (* b p) c) (+ (* a (^ q 2)) (* b q) c))))))
+  hard_negative:
+    statement: $a<0$のとき、$y=ax^2+bx+c$は$x\geq-\dfrac{b}{2a}$で狭義増加する。
+    reason: $a=-1$、$b=c=0$のとき$y=-x^2$は$x\geq 0$で減少する。
+  target: |
+    ∀ (a b c : ℝ), a < 0 → StrictAntiOn (fun x : ℝ => a * x ^ 2 + b * x + c) (Set.Ici (-b / (2 * a))) ∧ StrictMonoOn (fun x : ℝ => a * x ^ 2 + b * x + c) (Set.Iic (-b / (2 * a)))
+  proof: |
+    by
+      intro a b c ha
+      have ha' : a ≠ 0 := ha.ne
+      have hb : b = -2 * a * (-b / (2 * a)) := by
+        field_simp
+      generalize -b / (2 * a) = v at hb ⊢
+      subst hb
+      constructor
+      · intro p hp q _ hpq
+        simp only [Set.mem_Ici] at hp
+        have h := mul_pos (neg_pos.2 ha) (mul_pos (sub_pos.2 hpq) (by linarith : 0 < p + q - 2 * v))
+        show a * q ^ 2 + -2 * a * v * q + c < a * p ^ 2 + -2 * a * v * p + c
+        nlinarith
+      · intro p _ q hq hpq
+        simp only [Set.mem_Iic] at hq
+        have h := mul_pos (neg_pos.2 ha) (mul_pos (sub_pos.2 hpq) (by linarith : 0 < 2 * v - p - q))
+        show a * p ^ 2 + -2 * a * v * p + c < a * q ^ 2 + -2 * a * v * q + c
+        nlinarith
+- id: concave_quadratic_max_on_interval_cases
+  kind: textbook
+  level: high
+  topic: 二次関数・区間での最大（上に凸）
+  statement: $a<0$、$s\leq t$のとき、$s\leq x\leq t$における$f(x)=ax^2+bx+c$の値は次を超えない。軸$v=-\dfrac{b}{2a}$が$v<s$なら$f(s)$、$s\leq v\leq t$なら$f(v)$、$t<v$なら$f(t)$である。
+  statement_en: "For a < 0 and s ≤ t, on s ≤ x ≤ t the value of f(x) = ax²+bx+c is at most f(s) if the axis v < s, f(v) if s ≤ v ≤ t, and f(t) if t < v."
+  assumptions:
+  - $a,b,c,s,t$は実数
+  - $a<0$
+  - $s\leq t$
+  quantifiers:
+  - 任意の実数$a,b,c,s,t$
+  conclusion: 区間での最大値は、軸と区間の位置関係で決まる点でとる。
+  answer: |
+    $a,b,c,s,t,x$を実数とし、$a<0$、$s\leq t$、$s\leq x\leq t$、$f(x)=ax^2+bx+c$、$v=-\dfrac{b}{2a}$とする。$b=-2av$である。
+    $v<s$のとき、$f(s)-f(x)=-a(x-s)(x+s-2v)\geq 0$である。$x-s\geq 0$かつ$x+s-2v>0$だからである。
+    $s\leq v\leq t$のとき、$f(v)-f(x)=-a(x-v)^2\geq 0$である。
+    $t<v$のとき、$f(t)-f(x)=-a(t-x)(2v-x-t)\geq 0$である。$t-x\geq 0$かつ$2v-x-t>0$だからである。
+    $v<s$のときの$s$、$s\leq v\leq t$のときの$v$、$t<v$のときの$t$はいずれも区間に属するので、これらの点での値が区間での最大値である。
+  strategy: Write the difference from the candidate value as a product with known signs in each case.
+  sketch:
+  - "case: If the axis is left of the interval, compare with f(s)."
+  - "case: If the axis is inside, compare with f(v)."
+  - "case: If the axis is right of the interval, compare with f(t)."
+  openmath: (forall (a b c s t x) (-> (and (< a 0) (<= s t) (<= s x) (<= x t)) (and (-> (< (/ (neg b) (* 2 a)) s) (<= (+ (* a (^ x 2)) (* b x) c) (+ (* a (^ s 2)) (* b s) c))) (-> (and (<= s (/ (neg b) (* 2 a))) (<= (/ (neg b) (* 2 a)) t)) (<= (+ (* a (^ x 2)) (* b x) c) (+ (* a (^ (/ (neg b) (* 2 a)) 2)) (* b (/ (neg b) (* 2 a))) c))) (-> (< t (/ (neg b) (* 2 a))) (<= (+ (* a (^ x 2)) (* b x) c) (+ (* a (^ t 2)) (* b t) c))))))
+  hard_negative:
+    statement: $a<0$、$s\leq t$のとき、$s\leq x\leq t$における$f(x)$の最大値は常に$f(v)$である。ただし$v=-\dfrac{b}{2a}$とする。
+    reason: $a=-1$、$b=c=0$、$s=1$、$t=2$のとき$v=0$は区間の外にあり、最大値は$f(1)=-1$であって$f(0)=0$ではない。
+  target: |
+    ∀ (a b c s t : ℝ), a < 0 → s ≤ t → (-b / (2 * a) < s → ∀ x : ℝ, s ≤ x → x ≤ t → a * x ^ 2 + b * x + c ≤ a * s ^ 2 + b * s + c) ∧ (s ≤ -b / (2 * a) → -b / (2 * a) ≤ t → ∀ x : ℝ, s ≤ x → x ≤ t → a * x ^ 2 + b * x + c ≤ a * (-b / (2 * a)) ^ 2 + b * (-b / (2 * a)) + c) ∧ (t < -b / (2 * a) → ∀ x : ℝ, s ≤ x → x ≤ t → a * x ^ 2 + b * x + c ≤ a * t ^ 2 + b * t + c)
+  proof: |
+    by
+      intro a b c s t ha _
+      have ha' : a ≠ 0 := ha.ne
+      have hb : b = -2 * a * (-b / (2 * a)) := by
+        field_simp
+      generalize -b / (2 * a) = v at hb ⊢
+      subst hb
+      have hA := neg_nonneg.2 ha.le
+      refine ⟨?_, ?_, ?_⟩
+      · intro hv x hsx _
+        have h := mul_nonneg hA (mul_nonneg (sub_nonneg.2 hsx) (by linarith : 0 ≤ x + s - 2 * v))
+        nlinarith
+      · intro _ _ x _ _
+        have h := mul_nonneg hA (sq_nonneg (x - v))
+        nlinarith
+      · intro hv x _ hxt
+        have h := mul_nonneg hA (mul_nonneg (sub_nonneg.2 hxt) (by linarith : 0 ≤ 2 * v - x - t))
+        nlinarith
+- id: concave_quadratic_min_at_farther_endpoint
+  kind: gap
+  level: high
+  topic: 二次関数・区間での最小（上に凸）
+  statement: $a<0$、$s\leq x\leq t$、$v=-\dfrac{b}{2a}$、$f(x)=ax^2+bx+c$とする。$\dfrac{s+t}{2}\leq v$なら$f(s)\leq f(x)$であり、$v\leq\dfrac{s+t}{2}$なら$f(t)\leq f(x)$である。
+  statement_en: "For a < 0, s ≤ x ≤ t and the axis v of f(x) = ax²+bx+c: if (s+t)/2 ≤ v then f(s) ≤ f(x), and if v ≤ (s+t)/2 then f(t) ≤ f(x)."
+  assumptions:
+  - $a,b,c,s,t,x$は実数
+  - $a<0$
+  - $s\leq x\leq t$
+  quantifiers:
+  - 任意の実数$a,b,c,s,t,x$
+  conclusion: 区間での最小値は、軸から遠い方の端点でとる。
+  answer: |
+    $a,b,c,s,t,x$を実数とし、$a<0$、$s\leq x\leq t$、$f(x)=ax^2+bx+c$、$v=-\dfrac{b}{2a}$とする。$b=-2av$である。
+    $\dfrac{s+t}{2}\leq v$のとき、$2v-s-x\geq 2v-s-t\geq 0$なので、$f(x)-f(s)=-a(x-s)(2v-s-x)\geq 0$である。
+    $v\leq\dfrac{s+t}{2}$のとき、$t+x-2v\geq s+t-2v\geq 0$なので、$f(x)-f(t)=-a(t-x)(t+x-2v)\geq 0$である。
+  strategy: Factor the difference from the far endpoint and compare with the midpoint.
+  sketch:
+  - "case: If the midpoint is left of the axis, compare with f(s)."
+  - "case: If the midpoint is right of the axis, compare with f(t)."
+  - "derive: Each difference is a product of nonnegative factors."
+  openmath: (forall (a b c s t x) (-> (and (< a 0) (<= s x) (<= x t)) (and (-> (<= (/ (+ s t) 2) (/ (neg b) (* 2 a))) (<= (+ (* a (^ s 2)) (* b s) c) (+ (* a (^ x 2)) (* b x) c))) (-> (<= (/ (neg b) (* 2 a)) (/ (+ s t) 2)) (<= (+ (* a (^ t 2)) (* b t) c) (+ (* a (^ x 2)) (* b x) c))))))
+  hard_negative:
+    statement: $a<0$、$s\leq x\leq t$のとき、$f$の最小値は常に$f(s)$である。
+    reason: $f(x)=-x^2$、$s=0$、$t=1$のとき、$f(1)=-1<f(0)=0$である。軸から遠い端点をとる必要がある。
+  target: |
+    ∀ (a b c s t x : ℝ), a < 0 → s ≤ x → x ≤ t → ((s + t) / 2 ≤ -b / (2 * a) → a * s ^ 2 + b * s + c ≤ a * x ^ 2 + b * x + c) ∧ (-b / (2 * a) ≤ (s + t) / 2 → a * t ^ 2 + b * t + c ≤ a * x ^ 2 + b * x + c)
+  proof: |
+    by
+      intro a b c s t x ha hsx hxt
+      have ha' : a ≠ 0 := ha.ne
+      have hb : b = -2 * a * (-b / (2 * a)) := by
+        field_simp
+      generalize -b / (2 * a) = v at hb ⊢
+      subst hb
+      have hA := neg_nonneg.2 ha.le
+      constructor
+      · intro hv
+        have h := mul_nonneg hA (mul_nonneg (sub_nonneg.2 hsx) (by linarith : 0 ≤ 2 * v - s - x))
+        nlinarith
+      · intro hv
+        have h := mul_nonneg hA (mul_nonneg (sub_nonneg.2 hxt) (by linarith : 0 ≤ t + x - 2 * v))
+        nlinarith
+- id: factored_inequality_closed_outside
+  kind: gap
+  level: high
+  topic: 二次不等式・解の外側（等号つき）
+  statement: $a>0$、$p\leq q$のとき、$a(x-p)(x-q)\geq 0$であることと、$x\leq p$または$q\leq x$であることは同値である。
+  statement_en: "For a > 0 and p ≤ q, a(x−p)(x−q) ≥ 0 if and only if x ≤ p or q ≤ x."
+  assumptions:
+  - $a,p,q,x$は実数
+  - $a>0$
+  - $p\leq q$
+  quantifiers:
+  - 任意の実数$a,p,q,x$
+  conclusion: 解は2解の外側（端点を含む）である。
+  answer: |
+    $a,p,q,x$を実数とし、$a>0$、$p\leq q$とする。$a>0$なので、$a(x-p)(x-q)\geq 0$は$(x-p)(x-q)\geq 0$と同値である。積が$0$以上であるのは、2数がともに$0$以上か、ともに$0$以下のときに限る。
+    ともに$0$以上なら$x\geq q$である。ともに$0$以下なら$x\leq p$である。逆に$x\leq p$なら$x\leq q$でもあるので、2数はともに$0$以下である。$q\leq x$なら$p\leq x$でもあるので、2数はともに$0$以上である。
+  strategy: Remove the positive factor and split on the signs of the two remaining factors.
+  sketch:
+  - "derive: Since a > 0 the inequality is (x−p)(x−q) ≥ 0."
+  - "case: Both factors nonnegative gives x ≥ q."
+  - "case: Both factors nonpositive gives x ≤ p."
+  openmath: (forall (a p q x) (-> (and (> a 0) (<= p q)) (<-> (>= (* a (- x p) (- x q)) 0) (or (<= x p) (<= q x)))))
+  hard_negative:
+    statement: $a>0$、$p\leq q$のとき、$a(x-p)(x-q)\geq 0$であることと、$p\leq x\leq q$であることは同値である。
+    reason: $a=1$、$p=0$、$q=2$、$x=1$のとき$1\cdot 1\cdot(-1)<0$である。区間の内側と外側を取り違えている。
+  target: |
+    ∀ (a p q x : ℝ), 0 < a → p ≤ q → (0 ≤ a * (x - p) * (x - q) ↔ x ≤ p ∨ q ≤ x)
+  proof: |
+    by
+      intro a p q x ha hpq
+      rw [mul_assoc, mul_nonneg_iff_of_pos_left ha, mul_nonneg_iff]
+      constructor
+      · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
+        · exact Or.inr (by linarith)
+        · exact Or.inl (by linarith)
+      · rintro (h | h)
+        · exact Or.inr ⟨by linarith, by linarith⟩
+        · exact Or.inl ⟨by linarith, by linarith⟩
+- id: negative_leading_inequality_table
+  kind: textbook
+  level: high
+  topic: 二次不等式・負の最高次係数
+  statement: $a<0$、$p<q$のとき、$g(x)=a(x-p)(x-q)$について次が成り立つ。$g(x)>0$は$p<x<q$と同値、$g(x)\geq 0$は$p\leq x\leq q$と同値、$g(x)<0$は$x<p$または$q<x$と同値、$g(x)\leq 0$は$x\leq p$または$q\leq x$と同値である。
+  statement_en: "For a < 0 and p < q, with g(x) = a(x−p)(x−q): g > 0 iff p < x < q; g ≥ 0 iff p ≤ x ≤ q; g < 0 iff x < p or q < x; g ≤ 0 iff x ≤ p or q ≤ x."
+  assumptions:
+  - $a,p,q,x$は実数
+  - $a<0$
+  - $p<q$
+  quantifiers:
+  - 任意の実数$a,p,q,x$
+  conclusion: 4種類の不等式の解が、2解の内側と外側で定まる。
+  answer: |
+    $a,p,q,x$を実数とし、$a<0$、$p<q$とする。$g(x)=(-a)(x-p)(q-x)$であり、$-a>0$である。よって$g(x)>0$は$(x-p)(q-x)>0$と同値である。
+    2数がともに正なら$p<x<q$である。ともに負なら$x<p$かつ$q<x$となり、$p<q$に反する。逆に$p<x<q$なら2数はともに正である。よって$g(x)>0$は$p<x<q$と同値である。
+    同様に$g(x)\geq 0$は$(x-p)(q-x)\geq 0$と同値である。2数がともに$0$以上なら$p\leq x\leq q$である。ともに$0$以下なら$x\leq p$かつ$q\leq x$となり、$p<q$に反する。逆に$p\leq x\leq q$なら2数はともに$0$以上である。よって$g(x)\geq 0$は$p\leq x\leq q$と同値である。
+    $g(x)<0$は$g(x)\geq 0$の否定なので、$x<p$または$q<x$と同値である。$g(x)\leq 0$は$g(x)>0$の否定なので、$x\leq p$または$q\leq x$と同値である。
+  strategy: Rewrite with the positive factor −a, solve the two sign cases and negate.
+  sketch:
+  - "derive: g(x) = (−a)(x−p)(q−x) with −a > 0."
+  - "derive: g > 0 iff p < x < q, and g ≥ 0 iff p ≤ x ≤ q."
+  - "conclude: The other two follow by negation."
+  openmath: (forall (a p q x) (-> (and (< a 0) (< p q)) (and (<-> (> (* a (- x p) (- x q)) 0) (and (< p x) (< x q))) (<-> (>= (* a (- x p) (- x q)) 0) (and (<= p x) (<= x q))) (<-> (< (* a (- x p) (- x q)) 0) (or (< x p) (< q x))) (<-> (<= (* a (- x p) (- x q)) 0) (or (<= x p) (<= q x))))))
+  hard_negative:
+    statement: $a<0$、$p<q$のとき、$a(x-p)(x-q)>0$であることと、$x<p$または$q<x$であることは同値である。
+    reason: $a=-1$、$p=0$、$q=1$、$x=2$のとき$-1\cdot 2\cdot 1<0$である。$a<0$では符号が逆になる。
+  target: |
+    ∀ (a p q x : ℝ), a < 0 → p < q → (0 < a * (x - p) * (x - q) ↔ p < x ∧ x < q) ∧ (0 ≤ a * (x - p) * (x - q) ↔ p ≤ x ∧ x ≤ q) ∧ (a * (x - p) * (x - q) < 0 ↔ x < p ∨ q < x) ∧ (a * (x - p) * (x - q) ≤ 0 ↔ x ≤ p ∨ q ≤ x)
+  proof: |
+    by
+      intro a p q x ha hpq
+      have e : a * (x - p) * (x - q) = (-a) * ((x - p) * (q - x)) := by ring
+      have hA : 0 < -a := neg_pos.2 ha
+      have h1 : 0 < a * (x - p) * (x - q) ↔ p < x ∧ x < q := by
+        rw [e, mul_pos_iff_of_pos_left hA, mul_pos_iff]
+        constructor
+        · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
+          · exact ⟨by linarith, by linarith⟩
+          · exfalso
+            linarith
+        · rintro ⟨h1, h2⟩
+          exact Or.inl ⟨by linarith, by linarith⟩
+      have h2 : 0 ≤ a * (x - p) * (x - q) ↔ p ≤ x ∧ x ≤ q := by
+        rw [e, mul_nonneg_iff_of_pos_left hA, mul_nonneg_iff]
+        constructor
+        · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
+          · exact ⟨by linarith, by linarith⟩
+          · exfalso
+            linarith
+        · rintro ⟨h1, h2⟩
+          exact Or.inl ⟨by linarith, by linarith⟩
+      refine ⟨h1, h2, ?_, ?_⟩
+      · rw [← not_le, h2, not_and_or, not_le, not_le]
+      · rw [← not_lt, h1, not_and_or, not_lt, not_lt]
+- id: double_root_inequality_any_leading
+  kind: gap
+  level: high
+  topic: 二次不等式・重解の場合
+  statement: $a(x-p)^2$について次が成り立つ。$a>0$のとき、値は$0$以上で負にならず、正であることは$x\neq p$と同値、$0$以下であることは$x=p$と同値である。$a<0$のとき、値は$0$以下で正にならず、負であることは$x\neq p$と同値、$0$以上であることは$x=p$と同値である。
+  statement_en: "For a(x−p)²: if a > 0 it is nonnegative, never negative, positive iff x ≠ p and nonpositive iff x = p; if a < 0 it is nonpositive, never positive, negative iff x ≠ p and nonnegative iff x = p."
+  assumptions:
+  - $a,p,x$は実数
+  quantifiers:
+  - 任意の実数$a,p,x$
+  conclusion: 重解をもつ場合の4種類の不等式の解が、$a$の符号ごとに定まる。
+  answer: |
+    $a,p,x$を実数とする。$x=p$なら$a(x-p)^2=0$であり、$x\neq p$なら$(x-p)^2>0$である。
+    $a>0$とする。$(x-p)^2\geq 0$より値は$0$以上であり、負にならない。値は$x=p$で$0$、$x\neq p$で正である。よって値が正であることは$x\neq p$と同値であり、$0$以下であることは$x=p$と同値である。
+    $a<0$とする。$(x-p)^2\geq 0$より値は$0$以下であり、正にならない。値は$x=p$で$0$、$x\neq p$で負である。よって値が負であることは$x\neq p$と同値であり、$0$以上であることは$x=p$と同値である。
+  strategy: Split on x = p; otherwise the square is positive and the sign of a decides.
+  sketch:
+  - "case: If x = p the value is 0."
+  - "case: If x ≠ p the square is positive, so the value has the sign of a."
+  openmath: (forall (a p x) (and (-> (> a 0) (and (>= (* a (^ (- x p) 2)) 0) (not (< (* a (^ (- x p) 2)) 0)) (<-> (> (* a (^ (- x p) 2)) 0) (!= x p)) (<-> (<= (* a (^ (- x p) 2)) 0) (= x p)))) (-> (< a 0) (and (<= (* a (^ (- x p) 2)) 0) (not (> (* a (^ (- x p) 2)) 0)) (<-> (< (* a (^ (- x p) 2)) 0) (!= x p)) (<-> (>= (* a (^ (- x p) 2)) 0) (= x p))))))
+  hard_negative:
+    statement: $a>0$のとき、$a(x-p)^2>0$がすべての実数$x$で成り立つ。
+    reason: $x=p$のとき値は$0$である。
+  target: |
+    ∀ (a p x : ℝ), (0 < a → 0 ≤ a * (x - p) ^ 2 ∧ ¬ a * (x - p) ^ 2 < 0 ∧ (0 < a * (x - p) ^ 2 ↔ x ≠ p) ∧ (a * (x - p) ^ 2 ≤ 0 ↔ x = p)) ∧ (a < 0 → a * (x - p) ^ 2 ≤ 0 ∧ ¬ 0 < a * (x - p) ^ 2 ∧ (a * (x - p) ^ 2 < 0 ↔ x ≠ p) ∧ (0 ≤ a * (x - p) ^ 2 ↔ x = p))
+  proof: |
+    by
+      intro a p x
+      by_cases hx : x = p
+      · subst hx
+        constructor <;> intro _ <;> simp
+      · have hs : 0 < (x - p) ^ 2 := by
+          have : x - p ≠ 0 := sub_ne_zero.2 hx
+          positivity
+        constructor
+        · intro ha
+          have h := mul_pos ha hs
+          exact ⟨h.le, not_lt.2 h.le, ⟨fun _ => hx, fun _ => h⟩, ⟨fun h' => absurd h' (not_le.2 h), fun h' => absurd h' hx⟩⟩
+        · intro ha
+          have h := mul_neg_of_neg_of_pos ha hs
+          exact ⟨h.le, not_lt.2 h.le, ⟨fun _ => hx, fun _ => h⟩, ⟨fun h' => absurd h' (not_le.2 h), fun h' => absurd h' hx⟩⟩
+- id: quadratic_negative_everywhere_iff
+  kind: textbook
+  level: high
+  topic: 二次不等式・常に負
+  statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c<0$であることは$a<0$かつ$b^2-4ac<0$と同値であり、すべての実数$x$で$ax^2+bx+c\leq 0$であることは$a<0$かつ$b^2-4ac\leq 0$と同値である。
+  statement_en: "For a ≠ 0: ax²+bx+c < 0 for all x iff a < 0 and b²−4ac < 0; and ax²+bx+c ≤ 0 for all x iff a < 0 and b²−4ac ≤ 0."
+  assumptions:
+  - $a,b,c$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 常に負（常に$0$以下）である条件は、$a$の符号と判別式で定まる。
+  answer: |
+    $a,b,c$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。$D=b^2-4ac$とおくと、$4af(x)=(2ax+b)^2-D$である。
+    すべての$x$で$f(x)\leq 0$とする。$a>0$と仮定し、$x=\dfrac{|D|+1-b}{2a}$をとると、$4af(x)=(|D|+1)^2-D$となる。$(|D|+1)^2\geq|D|+1>D$なのでこれは正であり、$4a>0$より$f(x)>0$である。これは矛盾なので$a<0$である。$x=-\dfrac{b}{2a}$をとると$4af(x)=-D$である。$a<0$、$f(x)\leq 0$より$-D\geq 0$である。すべての$x$で$f(x)<0$なら$f(x)\leq 0$でもあるので$a<0$である。このとき$x=-\dfrac{b}{2a}$で$4af(x)=-D$であり、$a<0$、$f(x)<0$より$-D>0$である。
+    逆に$a<0$とする。$D<0$なら$4af(x)=(2ax+b)^2-D>0$なので$f(x)<0$である。$D\leq 0$なら$4af(x)\geq 0$なので$f(x)\leq 0$である。
+  strategy: Use 4a f(x) = (2ax+b)² − D, a far point to rule out a > 0, and the vertex for D.
+  sketch:
+  - "derive: 4a f(x) = (2ax+b)² − D."
+  - "contradiction: If a > 0 a far point makes f positive."
+  - "derive: At the vertex 4a f = −D gives the discriminant condition."
+  - "conclude: Conversely a < 0 and the sign of D give the sign of f."
+  openmath: (forall (a b c) (-> (!= a 0) (and (<-> (forall (x) (< (+ (* a (^ x 2)) (* b x) c) 0)) (and (< a 0) (< (- (^ b 2) (* 4 a c)) 0))) (<-> (forall (x) (<= (+ (* a (^ x 2)) (* b x) c) 0)) (and (< a 0) (<= (- (^ b 2) (* 4 a c)) 0))))))
+  hard_negative:
+    statement: $a\neq 0$のとき、すべての実数$x$で$ax^2+bx+c<0$であることは$b^2-4ac<0$と同値である。
+    reason: $a=1$、$b=0$、$c=1$のとき判別式は負だが、$x^2+1>0$である。$a<0$の条件が要る。
+  target: |
+    ∀ (a b c : ℝ), a ≠ 0 → ((∀ x : ℝ, a * x ^ 2 + b * x + c < 0) ↔ a < 0 ∧ b ^ 2 - 4 * a * c < 0) ∧ ((∀ x : ℝ, a * x ^ 2 + b * x + c ≤ 0) ↔ a < 0 ∧ b ^ 2 - 4 * a * c ≤ 0)
+  proof: |
+    by
+      intro a b c ha
+      have key : ∀ x : ℝ, 4 * a * (a * x ^ 2 + b * x + c) = (2 * a * x + b) ^ 2 - (b ^ 2 - 4 * a * c) := by
+        intro x
+        ring
+      have hneg : (∃ x : ℝ, 0 < a → 0 < a * x ^ 2 + b * x + c) := by
+        refine ⟨(|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a), fun hp => ?_⟩
+        have h := key ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a))
+        have e : 2 * a * ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a)) + b = |b ^ 2 - 4 * a * c| + 1 := by
+          field_simp
+          ring
+        rw [e] at h
+        have h3 : b ^ 2 - 4 * a * c ≤ |b ^ 2 - 4 * a * c| := le_abs_self _
+        have h4 := abs_nonneg (b ^ 2 - 4 * a * c)
+        have h5 : 0 < 4 * a * (a * ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a)) ^ 2 + b * ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a)) + c) := by
+          rw [h]
+          nlinarith
+        exact (mul_pos_iff_of_pos_left (by positivity : 0 < 4 * a)).1 h5
+      obtain ⟨x0, hx0⟩ := hneg
+      have hv := key (-b / (2 * a))
+      have e0 : 2 * a * (-b / (2 * a)) + b = 0 := by
+        field_simp
+        ring
+      rw [e0] at hv
+      constructor
+      · constructor
+        · intro h
+          have ha0 : a < 0 := by
+            rcases lt_or_gt_of_ne ha with h1 | h1
+            · exact h1
+            · exact absurd (h x0) (not_lt.2 (hx0 h1).le)
+          refine ⟨ha0, ?_⟩
+          nlinarith [h (-b / (2 * a)), mul_pos_of_neg_of_neg ha0 (h (-b / (2 * a)))]
+        · rintro ⟨ha0, hD⟩ x
+          by_contra hn
+          push_neg at hn
+          nlinarith [key x, sq_nonneg (2 * a * x + b), mul_nonneg (neg_nonneg.2 ha0.le) hn]
+      · constructor
+        · intro h
+          have ha0 : a < 0 := by
+            rcases lt_or_gt_of_ne ha with h1 | h1
+            · exact h1
+            · exact absurd (h x0) (not_le.2 (hx0 h1))
+          refine ⟨ha0, ?_⟩
+          nlinarith [h (-b / (2 * a)), mul_nonneg (neg_nonneg.2 ha0.le) (neg_nonneg.2 (h (-b / (2 * a))))]
+        · rintro ⟨ha0, hD⟩ x
+          by_contra hn
+          push_neg at hn
+          nlinarith [key x, sq_nonneg (2 * a * x + b), mul_pos (neg_pos.2 ha0) hn]
+- id: quadratic_positive_everywhere_iff_general
+  kind: gap
+  level: high
+  topic: 二次不等式・常に正（文字係数）
+  statement: 実数$a,b,c$について、すべての実数$x$で$ax^2+bx+c>0$であることは、「$a=b=0$かつ$c>0$」または「$a>0$かつ$b^2-4ac<0$」と同値である。ここで$a=0$の場合も含む。
+  statement_en: "For real a, b, c (a may be 0): ax²+bx+c > 0 for all x iff (a = b = 0 and c > 0) or (a > 0 and b²−4ac < 0)."
+  assumptions:
+  - $a,b,c$は実数（$a=0$でもよい）
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: 常に正である条件は、$a=0$の場合を分けて書ける。
+  answer: |
+    $a,b,c$を実数とし、$f(x)=ax^2+bx+c$がすべての$x$で正とする。
+    $a=0$のとき、$b\neq 0$なら$x=-\dfrac{c}{b}$で$f(x)=0$となり矛盾する。よって$b=0$であり、$f(0)=c>0$である。
+    $a\neq 0$のとき、$D=b^2-4ac$とおくと$4af(x)=(2ax+b)^2-D$である。$a<0$と仮定し、$x=\dfrac{|D|+1-b}{2a}$をとると、$4af(x)=(|D|+1)^2-D$となる。$(|D|+1)^2\geq|D|+1>D$なのでこれは正である。$4a<0$なので$f(x)<0$となり矛盾する。よって$a>0$である。$x=-\dfrac{b}{2a}$をとると$4af(x)=-D>0$なので$D<0$である。
+    逆は、$a=b=0$なら$f(x)=c>0$であり、$a>0$、$D<0$なら$4af(x)=(2ax+b)^2-D>0$より$f(x)>0$である。
+  strategy: Split on a = 0; otherwise use 4a f(x) = (2ax+b)² − D.
+  sketch:
+  - "case: If a = 0 the linear term must vanish and c > 0."
+  - "contradiction: If a < 0 a far point makes f negative."
+  - "derive: At the vertex 4a f = −D > 0."
+  - "conclude: The converse follows from the same identity."
+  openmath: (forall (a b c) (<-> (forall (x) (> (+ (* a (^ x 2)) (* b x) c) 0)) (or (and (= a 0) (= b 0) (> c 0)) (and (> a 0) (< (- (^ b 2) (* 4 a c)) 0)))))
+  hard_negative:
+    statement: 実数$a,b,c$について、すべての実数$x$で$ax^2+bx+c>0$であることは「$a>0$かつ$b^2-4ac<0$」と同値である。
+    reason: $a=b=0$、$c=1$のとき$f(x)=1>0$だが$a>0$ではない。$a=0$の場合が抜けている。
+  target: |
+    ∀ (a b c : ℝ), (∀ x : ℝ, 0 < a * x ^ 2 + b * x + c) ↔ (a = 0 ∧ b = 0 ∧ 0 < c) ∨ (0 < a ∧ b ^ 2 - 4 * a * c < 0)
+  proof: |
+    by
+      intro a b c
+      constructor
+      · intro h
+        by_cases ha : a = 0
+        · subst ha
+          left
+          have hb : b = 0 := by
+            by_contra hb
+            have := h (-c / b)
+            have e : 0 * (-c / b) ^ 2 + b * (-c / b) + c = 0 := by
+              field_simp
+              ring
+            rw [e] at this
+            exact lt_irrefl _ this
+          subst hb
+          have := h 0
+          exact ⟨rfl, rfl, by simpa using this⟩
+        · right
+          have key : ∀ x : ℝ, 4 * a * (a * x ^ 2 + b * x + c) = (2 * a * x + b) ^ 2 - (b ^ 2 - 4 * a * c) := by
+            intro x
+            ring
+          have ha0 : 0 < a := by
+            rcases lt_or_gt_of_ne ha with h1 | h1
+            · exfalso
+              have hx := key ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a))
+              have e : 2 * a * ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a)) + b = |b ^ 2 - 4 * a * c| + 1 := by
+                field_simp
+                ring
+              rw [e] at hx
+              have h3 : b ^ 2 - 4 * a * c ≤ |b ^ 2 - 4 * a * c| := le_abs_self _
+              have h4 := abs_nonneg (b ^ 2 - 4 * a * c)
+              have h5 := mul_neg_of_neg_of_pos (by linarith : 4 * a < 0) (h ((|b ^ 2 - 4 * a * c| + 1 - b) / (2 * a)))
+              nlinarith
+            · exact h1
+          refine ⟨ha0, ?_⟩
+          have hv := key (-b / (2 * a))
+          have e0 : 2 * a * (-b / (2 * a)) + b = 0 := by
+            field_simp
+            ring
+          rw [e0] at hv
+          have h5 := mul_pos (by linarith : 0 < 4 * a) (h (-b / (2 * a)))
+          nlinarith
+      · rintro (⟨rfl, rfl, hc⟩ | ⟨ha, hD⟩) x
+        · simpa using hc
+        · have h := sq_nonneg (2 * a * x + b)
+          by_contra hn
+          push_neg at hn
+          nlinarith [mul_nonneg ha.le (neg_nonneg.2 hn)]
+- id: tangent_line_difference_and_unique_contact
+  kind: gap
+  level: high
+  topic: 放物線と接線・差の式
+  statement: $f(x)=ax^2+bx+c$の$x=p$における接線を$L(x)=f(p)+(2ap+b)(x-p)$とすると、$f(x)-L(x)=a(x-p)^2$である。特に$a\neq 0$のとき、$f(x)=L(x)$は$x=p$と同値である。
+  statement_en: "With L(x) = f(p) + (2ap+b)(x−p) the tangent line of f(x) = ax²+bx+c at p, f(x) − L(x) = a(x−p)²; for a ≠ 0, f(x) = L(x) iff x = p."
+  assumptions:
+  - $a,b,c,p,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,p,x$
+  conclusion: $f(x)$と接線の差は$a(x-p)^2$であり、$a\neq 0$のとき共有点は接点だけである。
+  answer: |
+    $a,b,c,p,x$を実数とし、$f(x)=ax^2+bx+c$、$L(x)=f(p)+(2ap+b)(x-p)$とする。$f(x)-f(p)=a(x^2-p^2)+b(x-p)$なので、$f(x)-L(x)=a(x^2-p^2)-2ap(x-p)=a(x^2-2px+p^2)=a(x-p)^2$である。
+    $a\neq 0$とする。$f(x)=L(x)$は$a(x-p)^2=0$と同値であり、これは$x=p$と同値である。
+  strategy: Expand the difference; a ≠ 0 gives the unique contact.
+  sketch:
+  - "derive: f(x) − L(x) = a(x−p)²."
+  - "conclude: For a ≠ 0 the difference vanishes exactly at x = p."
+  openmath: (forall (a b c p x) (and (= (- (+ (* a (^ x 2)) (* b x) c) (+ (+ (* a (^ p 2)) (* b p) c) (* (+ (* 2 a p) b) (- x p)))) (* a (^ (- x p) 2))) (-> (!= a 0) (<-> (= (+ (* a (^ x 2)) (* b x) c) (+ (+ (* a (^ p 2)) (* b p) c) (* (+ (* 2 a p) b) (- x p)))) (= x p)))))
+  hard_negative:
+    statement: 放物線$y=ax^2+bx+c$は$x=p$における接線より常に上側にある。
+    reason: $a=-1$、$b=c=0$、$p=1$のとき、接線は$y=-2x+1$であり、$x=0$で放物線の値$0$は接線の値$1$より小さい。$a<0$では下側にある。
+  target: |
+    ∀ (a b c p x : ℝ), (a * x ^ 2 + b * x + c) - ((a * p ^ 2 + b * p + c) + (2 * a * p + b) * (x - p)) = a * (x - p) ^ 2 ∧ (a ≠ 0 → (a * x ^ 2 + b * x + c = (a * p ^ 2 + b * p + c) + (2 * a * p + b) * (x - p) ↔ x = p))
+  proof: |
+    by
+      intro a b c p x
+      have e : (a * x ^ 2 + b * x + c) - ((a * p ^ 2 + b * p + c) + (2 * a * p + b) * (x - p)) = a * (x - p) ^ 2 := by ring
+      refine ⟨e, fun ha => ?_⟩
+      constructor
+      · intro h
+        have h0 : a * (x - p) ^ 2 = 0 := by rw [← e, h]; ring
+        have := (mul_eq_zero.1 h0).resolve_left ha
+        exact sub_eq_zero.1 (pow_eq_zero_iff (two_ne_zero)|>.1 this)
+      · rintro rfl
+        ring
+- id: tangent_through_point_iff
+  kind: gap
+  level: high
+  topic: 放物線と接線・点を通る接線
+  statement: $f(x)=ax^2+bx+c$の$x=p$における接線が点$(u,v)$を通ることは、$a(p-u)^2=f(u)-v$と同値である。
+  statement_en: "The tangent line of f(x) = ax²+bx+c at p passes through (u, v) if and only if a(p−u)² = f(u) − v."
+  assumptions:
+  - $a,b,c,p,u,v$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,p,u,v$
+  conclusion: 接点の$x$座標$p$は、方程式$a(p-u)^2=f(u)-v$を満たすものに限る。
+  answer: |
+    $a,b,c,p,u,v$を実数とし、$f(x)=ax^2+bx+c$とする。$f'(p)=2ap+b$なので、$x=p$における接線は$y=f(p)+(2ap+b)(x-p)$である。これが点$(u,v)$を通ることは$v=f(p)+(2ap+b)(u-p)$と書ける。
+    展開すると$f(u)-\{f(p)+(2ap+b)(u-p)\}=a(u-p)^2=a(p-u)^2$である。よって上の式は$a(p-u)^2=f(u)-v$と同値である。
+  strategy: Use the identity f(u) − L_p(u) = a(u−p)².
+  sketch:
+  - "derive: f(u) − L_p(u) = a(u−p)²."
+  - "conclude: L_p(u) = v is the same as a(p−u)² = f(u) − v."
+  openmath: (forall (a b c p u v) (<-> (= v (+ (+ (* a (^ p 2)) (* b p) c) (* (+ (* 2 a p) b) (- u p)))) (= (* a (^ (- p u) 2)) (- (+ (* a (^ u 2)) (* b u) c) v))))
+  hard_negative:
+    statement: $f(x)=ax^2+bx+c$の$x=p$における接線が点$(u,v)$を通ることは、$a(p-u)^2=v-f(u)$と同値である。
+    reason: $a=1$、$b=c=0$、$p=1$、$(u,v)=(0,-1)$のとき接線$y=2x-1$は点を通るが、$a(p-u)^2=1$、$v-f(u)=-1$である。
+  target: |
+    ∀ (a b c p u v : ℝ), v = (a * p ^ 2 + b * p + c) + (2 * a * p + b) * (u - p) ↔ a * (p - u) ^ 2 = (a * u ^ 2 + b * u + c) - v
+  proof: |
+    by
+      intro a b c p u v
+      constructor <;> intro h <;> linear_combination h
+- id: reflection_across_point
+  kind: gap
+  level: high
+  topic: 二次関数・点に関する対称移動
+  statement: $a\neq 0$のとき、$y=ax^2+bx+c$を点$(u,v)$に関して対称移動した放物線は$y=-ax^2+(4au+b)x+(2v-4au^2-2bu-c)$であり、軸は$x=2u-\left(-\dfrac{b}{2a}\right)$である。
+  statement_en: "For a ≠ 0, reflecting y = ax²+bx+c in the point (u, v) gives y = −ax²+(4au+b)x+(2v−4au²−2bu−c), whose axis is x = 2u − (−b/(2a))."
+  assumptions:
+  - $a,b,c,u,v$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,u,v$
+  conclusion: 点対称移動後の式と軸が定まる。
+  answer: |
+    $a,b,c$を実数とし、$a\neq 0$、$f(x)=ax^2+bx+c$とする。$u,v$を実数とする。点$(x,y)$の点$(u,v)$に関する対称点は$(2u-x,2v-y)$である。点$(x,y)$が移動後の放物線上にあることは、この対称点がもとの放物線上にあること、すなわち$2v-y=f(2u-x)$と同値である。よって移動後の放物線は$y=2v-f(2u-x)$である。
+    展開すると$2v-f(2u-x)=-ax^2+(4au+b)x+(2v-4au^2-2bu-c)$である。軸は$-\dfrac{4au+b}{2(-a)}=2u+\dfrac{b}{2a}=2u-\left(-\dfrac{b}{2a}\right)$である。
+  strategy: Substitute (2u−x, 2v−y) and expand.
+  sketch:
+  - "derive: The reflected parabola is y = 2v − f(2u−x)."
+  - "derive: Expand to read the coefficients."
+  - "derive: The axis is 2u + b/(2a)."
+  openmath: (forall (a b c u v) (-> (!= a 0) (and (forall (x) (= (- (* 2 v) (+ (* a (^ (- (* 2 u) x) 2)) (* b (- (* 2 u) x)) c)) (+ (* (neg a) (^ x 2)) (* (+ (* 4 a u) b) x) (- (- (- (* 2 v) (* 4 a (^ u 2))) (* 2 b u)) c)))) (= (/ (neg (+ (* 4 a u) b)) (* 2 (neg a))) (- (* 2 u) (/ (neg b) (* 2 a)))))))
+  hard_negative:
+    statement: $y=ax^2+bx+c$を点$(u,v)$に関して対称移動しても、$x^2$の係数は$a$のままである。
+    reason: $y=x^2$を原点に関して対称移動すると$y=-x^2$であり、係数の符号が変わる。
+  target: |
+    ∀ (a b c u v : ℝ), a ≠ 0 → (∀ x : ℝ, 2 * v - (a * (2 * u - x) ^ 2 + b * (2 * u - x) + c) = (-a) * x ^ 2 + (4 * a * u + b) * x + (2 * v - 4 * a * u ^ 2 - 2 * b * u - c)) ∧ -(4 * a * u + b) / (2 * (-a)) = 2 * u - (-b / (2 * a))
+  proof: |
+    by
+      intro a b c u v ha
+      constructor
+      · intro x
+        ring
+      · field_simp
+        ring
+- id: axis_sign_iff_coefficient_product
+  kind: gap
+  level: high
+  topic: 二次関数・軸の位置と係数の符号
+  statement: $a\neq 0$のとき、軸$x=-\dfrac{b}{2a}$について、軸が正であることは$ab<0$と同値、軸が負であることは$ab>0$と同値、軸が$0$であることは$b=0$と同値である。
+  statement_en: "For a ≠ 0, the axis −b/(2a) is positive iff ab < 0, negative iff ab > 0, and zero iff b = 0."
+  assumptions:
+  - $a,b$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: 軸と$y$軸の位置関係は、$ab$の符号で定まる。
+  answer: |
+    $a,b$を実数とし、$a\neq 0$とする。$-\dfrac{b}{2a}\cdot 2a^2=-ab$であり、$2a^2>0$である。よって$-\dfrac{b}{2a}$と$-ab$は同符号である。したがって$-\dfrac{b}{2a}>0$は$ab<0$と同値であり、$-\dfrac{b}{2a}<0$は$ab>0$と同値である。
+    $-\dfrac{b}{2a}=0$は、$2a\neq 0$より$b=0$と同値である。
+  strategy: Multiply the axis by the positive number 2a².
+  sketch:
+  - "derive: −b/(2a) · 2a² = −ab with 2a² > 0."
+  - "conclude: The axis and −ab have the same sign."
+  openmath: (forall (a b) (-> (!= a 0) (and (<-> (> (/ (neg b) (* 2 a)) 0) (< (* a b) 0)) (<-> (< (/ (neg b) (* 2 a)) 0) (> (* a b) 0)) (<-> (= (/ (neg b) (* 2 a)) 0) (= b 0)))))
+  hard_negative:
+    statement: $a\neq 0$のとき、軸$x=-\dfrac{b}{2a}$が正であることは$b<0$と同値である。
+    reason: $a=-1$、$b=2$のとき軸は$x=1>0$だが$b>0$である。$a$の符号も関わる。
+  target: |
+    ∀ (a b : ℝ), a ≠ 0 → (0 < -b / (2 * a) ↔ a * b < 0) ∧ (-b / (2 * a) < 0 ↔ 0 < a * b) ∧ (-b / (2 * a) = 0 ↔ b = 0)
+  proof: |
+    by
+      intro a b ha
+      have hA : 0 < 2 * a ^ 2 := by positivity
+      have key : -b / (2 * a) * (2 * a ^ 2) = -(a * b) := by
+        field_simp
+      refine ⟨?_, ?_, ?_⟩
+      · rw [← mul_pos_iff_of_pos_right hA, key]
+        constructor <;> intro h <;> linarith
+      · rw [← neg_pos, ← mul_pos_iff_of_pos_right hA, neg_mul, key]
+        constructor <;> intro h <;> linarith
+      · rw [div_eq_zero_iff]
+        simp [ha]

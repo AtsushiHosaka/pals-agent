@@ -593,7 +593,7 @@
   openmath: (forall (E) (-> (and (normed_space E) (compact_set (unit_closed_ball E))) (finite_dim_space E)))
   hard_negative:
     statement: 閉単位球が有界閉集合であるノルム空間は有限次元である。
-    reason: 閉単位球はどのノルム空間でも有界閉集合である。必要なのはコンパクト性である。
+    reason: 閉単位球は任意のノルム空間で有界閉集合なので、この仮定は常に成り立つ。ℓ²は無限次元であり、正規直交系$(e_n)$は$\|e_n-e_m\|=\sqrt2$を満たして収束部分列をもたないので、閉単位球はコンパクトでない。
   target: |
     ∀ (𝕜 : Type*) [RCLike 𝕜] (E : Type*) [NormedAddCommGroup E] [NormedSpace 𝕜 E], IsCompact (Metric.closedBall (0 : E) 1) → FiniteDimensional 𝕜 E
   proof: |
@@ -978,7 +978,7 @@
   - 'derive: Each sequence (g_n x) converges, so it is bounded.'
   - 'apply_theorem: The Banach-Steinhaus theorem gives ‖g_n‖ ≤ C for all n.'
   - 'conclude: Taking limits in ‖g_n x‖ ≤ C‖x‖ gives ‖f x‖ ≤ C‖x‖.'
-  openmath: (forall (E F g f) (-> (and (banach_space E) (normed_space F) (forall (n) (bounded_operator (fn_value g n) E F)) (pointwise_tends_to g f)) (bounded_operator f E F)))
+  openmath: (forall (E F g f) (-> (and (banach_space E) (normed_space F) (forall (n) (bounded_operator (seq_value g n) E F)) (pointwise_tends_to g f)) (bounded_operator f E F)))
   hard_negative:
     statement: 各点収束の極限については、作用素ノルムでも収束する。
     reason: ℓ²上の座標射影P_nは各点で恒等作用素に収束するが、‖P_n-I‖=1である。
@@ -1330,11 +1330,14 @@
     statement: 完全でない正規直交系でもパーセバルの等式が成り立つ。
     reason: ℓ²の{e_2,e_3,…}は完全でなく、x=e_1では左辺が0で右辺が1である。
   target: |
-    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (b : HilbertBasis ι 𝕜 E) (x : E), HasSum (fun i => ‖inner 𝕜 (b i) x‖ ^ 2) (‖x‖ ^ 2)
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] (b : ι → E), Orthonormal 𝕜 b → (Submodule.span 𝕜 (Set.range b)).topologicalClosure = ⊤ → ∀ x : E, HasSum (fun i => ‖inner 𝕜 (b i) x‖ ^ 2) (‖x‖ ^ 2)
   proof: |
     by
-      intro 𝕜 _ E ι _ _ b x
-      have h := RCLike.hasSum_re 𝕜 (b.hasSum_inner_mul_inner x x)
+      intro 𝕜 _ E ι _ _ _ b hb hd x
+      have hs : ⊤ ≤ (Submodule.span 𝕜 (Set.range b)).topologicalClosure := le_of_eq hd.symm
+      have hB : ⇑(HilbertBasis.mk hb hs) = b := HilbertBasis.coe_mk hb hs
+      have h := RCLike.hasSum_re 𝕜 ((HilbertBasis.mk hb hs).hasSum_inner_mul_inner x x)
+      rw [hB] at h
       have h1 : (fun i => RCLike.re (inner 𝕜 x (b i) * inner 𝕜 (b i) x)) =
           fun i => ‖inner 𝕜 (b i) x‖ ^ 2 := by
         funext i
@@ -1373,11 +1376,15 @@
     statement: 正規直交系であれば完全でなくても全てのxがこの形に展開できる。
     reason: 展開で得られるのは閉線形包への射影である。{e_2,e_3,…}でx=e_1とすると和は0となる。
   target: |
-    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] (b : HilbertBasis ι 𝕜 E) (x : E), HasSum (fun i => (inner 𝕜 (b i) x) • b i) x
+    ∀ (𝕜 : Type*) [RCLike 𝕜] (E ι : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] (b : ι → E), Orthonormal 𝕜 b → (Submodule.span 𝕜 (Set.range b)).topologicalClosure = ⊤ → ∀ x : E, HasSum (fun i => (inner 𝕜 (b i) x) • b i) x
   proof: |
     by
-      intro 𝕜 _ E ι _ _ b x
-      simpa only [b.repr_apply_apply] using b.hasSum_repr x
+      intro 𝕜 _ E ι _ _ _ b hb hd x
+      have hs : ⊤ ≤ (Submodule.span 𝕜 (Set.range b)).topologicalClosure := le_of_eq hd.symm
+      have hB : ⇑(HilbertBasis.mk hb hs) = b := HilbertBasis.coe_mk hb hs
+      have h := (HilbertBasis.mk hb hs).hasSum_repr x
+      simp only [HilbertBasis.repr_apply_apply, hB] at h
+      exact h
 - id: exists_complete_orthonormal_system
   kind: gap
   level: 4
@@ -1484,8 +1491,8 @@
   - 'conclude: The norms agree.'
   openmath: (forall (E F T) (-> (and (hilbert_space E) (hilbert_space F) (bounded_operator T E F)) (= (norm (adjoint T)) (norm T))))
   hard_negative:
-    statement: T*=Tが全ての有界作用素で成り立つのでノルムも等しい。
-    reason: ℂ上のT(z)=izではT*(z)=-izなのでT*≠Tである。ノルムの等式はT*=Tを必要としない。
+    statement: $\|T^*\|=\|T\|$が成り立つのは$T^*=T$のときに限る。
+    reason: $\mathbb{C}$上の$T(z)=iz$では$T^*(z)=-iz$で$T^*\neq T$だが、$\|T^*\|=\|T\|=1$である。
   target: |
     ∀ (𝕜 : Type*) [RCLike 𝕜] (E F : Type*) [NormedAddCommGroup E] [InnerProductSpace 𝕜 E] [CompleteSpace E] [NormedAddCommGroup F] [InnerProductSpace 𝕜 F] [CompleteSpace F] (T : E →L[𝕜] F), ‖ContinuousLinearMap.adjoint T‖ = ‖T‖
   proof: |
@@ -1582,7 +1589,7 @@
   - 'apply_theorem: Compactness of T_n covers its image of the unit ball by finitely many ε-balls.'
   - 'derive: The same centres with radius 2ε cover the image under T.'
   - 'conclude: Total boundedness and completeness of F give relative compactness.'
-  openmath: (forall (E F S T) (-> (and (normed_space E) (banach_space F) (forall (n) (compact_operator (fn_value S n))) (operator_tends_to S T)) (compact_operator T)))
+  openmath: (forall (E F S T) (-> (and (normed_space E) (banach_space F) (forall (n) (compact_operator (seq_value S n))) (operator_tends_to S T)) (compact_operator T)))
   hard_negative:
     statement: コンパクト作用素の列の各点収束極限もコンパクト作用素である。
     reason: ℓ²の座標射影P_nは有限階数でコンパクトだが、各点極限の恒等作用素はコンパクトでない。

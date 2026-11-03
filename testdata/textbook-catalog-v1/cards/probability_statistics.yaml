@@ -66,7 +66,7 @@
   level: 2
   topic: 確率測度・和集合の上界
   statement: 確率測度$P$と集合の有限族$(A_i)_{i\in s}$について、$P\left(\bigcup_{i\in s}A_i\right)\leq\sum_{i\in s}P(A_i)$が成り立つ。$A_i$は可測でなくてもよく、その場合の$P$は外測度の値を表す。
-  statement_en: For a finite family of sets A_i, P(⋃_i A_i) ≤ Σ_i P(A_i).
+  statement_en: For a probability measure P and a finite family of arbitrary (not necessarily measurable) subsets A_i of the sample space, P(⋃_{i∈s} A_i) ≤ Σ_{i∈s} P(A_i), where P of a non-measurable set means its outer measure.
   assumptions:
   - $P$は標本空間$\Omega$上の確率測度
   - $s$は有限な添字集合
@@ -103,7 +103,7 @@
   level: 2
   topic: 条件付き確率・乗法公式
   statement: 確率測度$P$、$P(A)>0$である可測な事象$A$、集合$B$について、$P(B\mid A)P(A)=P(A\cap B)$が成り立つ。$B$は可測でなくてもよく、その場合の$P$は外測度の値を表す。
-  statement_en: If the event A has positive probability, then P(B|A) P(A) = P(A ∩ B).
+  statement_en: For a probability measure P, a measurable event A with P(A) > 0 and an arbitrary set B, the conditional probability P(B|A) := P(A∩B)/P(A) satisfies P(B|A)·P(A) = P(A∩B) (P of a non-measurable set is its outer measure).
   assumptions:
   - $P$は標本空間$\Omega$上の確率測度
   - $A$は可測な事象
@@ -326,8 +326,8 @@
   - 'conclude: Since 1 - P(B) = P(Bᶜ), the events A and Bᶜ are independent.'
   openmath: (forall (P A B) (-> (and (probability_measure P) (measurable_event A) (measurable_event B) (indep_events P A B)) (indep_events P A (set_compl B))))
   hard_negative:
-    statement: AとB、AとCがそれぞれ独立ならば、AとB∩Cも独立である。
-    reason: 対ごとの独立だけでは足りない。2枚のコインでA=「表裏が一致」、B=「1枚目が表」、C=「2枚目が表」とすると反例になる。
+    statement: 互いに素な事象$A,B$（$P(A)>0$、$P(B)>0$）について、$A$と$B^c$は独立である。
+    reason: $P(A\cap B^c)=P(A)$だが$P(A)P(B^c)=P(A)(1-P(B))<P(A)$なので独立でない。補集合に移せるのは、$A$と$B$がもともと独立な場合である。
   target: |
     ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (A B : Set Ω), MeasurableSet A → MeasurableSet B → ProbabilityTheory.IndepSet A B μ → ProbabilityTheory.IndepSet A Bᶜ μ
   proof: |
@@ -666,7 +666,7 @@
   - 'derive: Expand the square of the sum into diagonal and off-diagonal terms.'
   - 'apply_theorem: Pairwise independence gives E[U_i U_j] = 0 for i ≠ j.'
   - 'conclude: Only the diagonal terms remain, which are the variances.'
-  openmath: (forall (P s X) (-> (and (probability_measure P) (finite_set s) (forall (i) (-> (in i s) (square_integrable_rv (seq_value X i) P))) (pairwise_indep_rv P X)) (= (variance P (sum s (lambda (i) (seq_value X i)))) (sum s (lambda (i) (variance P (seq_value X i)))))))
+  openmath: (forall (P s X) (-> (and (probability_measure P) (finite_set s) (forall (i) (-> (in i s) (square_integrable_rv (seq_value X i) P))) (forall (i j) (-> (and (in i s) (in j s) (!= i j)) (indep_rv P (seq_value X i) (seq_value X j))))) (= (variance P (sum s (lambda (i) (seq_value X i)))) (sum s (lambda (i) (variance P (seq_value X i)))))))
   hard_negative:
     statement: 独立性なしで分散は和について加法的である。
     reason: 交差項が残る。X_2=-X_1なら和は0で分散0だが、右辺は2V[X_1]である。
@@ -1154,8 +1154,8 @@
   - 'conclude: Hence the sample mean converges to E[X_0] almost surely.'
   openmath: (forall (P X) (-> (and (probability_measure P) (integrable_rv (seq_value X 0) P) (pairwise_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0)))) (ae_tends_to P (lambda (n) (/ (partial_sum_rv X n) n)) (expectation P (seq_value X 0)))))
   hard_negative:
-    statement: 可積分性を仮定しなくても、独立同分布な列の標本平均はほとんど確実に収束する。
-    reason: コーシー分布の独立同分布列では標本平均が再びコーシー分布に従い、定数に収束しない。
+    statement: 可積分性を仮定しなくても、独立同分布な実確率変数列の標本平均はほとんど確実に収束する。
+    reason: 標準コーシー分布の独立同分布列では標本平均$\frac1n\sum_{i<n}X_i$の分布が再び標準コーシー分布で、$n$によらない。ほとんど確実に収束するなら極限は末尾事象に可測でコルモゴロフの0-1法則により定数だが、コーシー分布は定数でない。よって収束しない。
   target: |
     ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ), MeasureTheory.Integrable (X 0) μ → Pairwise (fun i j => ProbabilityTheory.IndepFun (X i) (X j) μ) → (∀ i, ProbabilityTheory.IdentDistrib (X i) (X 0) μ μ) → ∀ᵐ ω ∂μ, Filter.Tendsto (fun n : ℕ => (∑ i ∈ Finset.range n, X i ω) / n) Filter.atTop (nhds (∫ ω', X 0 ω' ∂μ))
   proof: |
@@ -1244,8 +1244,8 @@
   - 'conclude: Undo the standardization.'
   openmath: (forall (P X Q Y) (-> (and (probability_measure P) (probability_measure Q) (square_integrable_rv (seq_value X 0) P) (mutually_indep_rv P X) (forall (i) (identically_distributed P (seq_value X i) (seq_value X 0))) (has_law Q Y (gaussian_measure 0 (variance P (seq_value X 0))))) (dist_tends_to P (lambda (n) (/ (- (partial_sum_rv X n) (* n (expectation P (seq_value X 0)))) (root n 2))) (gaussian_measure 0 (variance P (seq_value X 0))))))
   hard_negative:
-    statement: 独立同分布なら分散が無限でも同じ正規化で正規分布に収束する。
-    reason: 2次モーメントが必要である。コーシー分布の和を√nで割ると発散し、正規分布に収束しない。
+    statement: 独立同分布列$(X_i)$が可積分で分散が無限でも、同じ正規化$\frac{1}{\sqrt{n}}\left(\sum_{i<n}X_i-nE[X_0]\right)$は正規分布に法則収束する。
+    reason: $P(X_0>x)=x^{-3/2}$ ($x\geq1$)は平均$3$をもつが分散は無限である。この場合$(\sum_{i<n}X_i-nE[X_0])$は$n^{2/3}$のオーダーで揺れるので、$\sqrt{n}$で割った列は緊密でなく、どんな正規分布にも法則収束しない。
   target: |
     ∀ (Ω Ω' : Type*) [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure P] (P' : MeasureTheory.Measure Ω') [MeasureTheory.IsProbabilityMeasure P'] (X : ℕ → Ω → ℝ) (Y : Ω' → ℝ), ProbabilityTheory.HasLaw Y (ProbabilityTheory.gaussianReal 0 (ProbabilityTheory.variance (X 0) P).toNNReal) P' → MeasureTheory.MemLp (X 0) 2 P → ProbabilityTheory.iIndepFun X P → (∀ i, ProbabilityTheory.IdentDistrib (X i) (X 0) P P) → MeasureTheory.TendstoInDistribution (fun (n : ℕ) ω => (Real.sqrt n)⁻¹ * (∑ k ∈ Finset.range n, X k ω - n * ∫ ω', X 0 ω' ∂P)) Filter.atTop Y (fun _ => P) P'
   proof: |
@@ -1374,7 +1374,7 @@
   level: 3
   topic: 正規分布・平均と分散
   statement: 実数$m$と非負実数$v$について、正規分布$N(m,v)$の期待値は$m$で、分散は$v$である。$v=0$のとき$N(m,0)$は$m$の一点分布とする。
-  statement_en: The normal distribution with parameters m and v ≥ 0 has mean m and variance v.
+  statement_en: The normal distribution with parameters m and v ≥ 0 is square-integrable, has mean m and variance v.
   assumptions:
   - $m$は実数
   - $v$は非負実数
@@ -1382,7 +1382,7 @@
   quantifiers:
   - 任意の実数$m$
   - 任意の非負実数$v$
-  conclusion: $N(m,v)$の期待値は$m$、分散は$v$である。
+  conclusion: $N(m,v)$は2乗可積分で、期待値は$m$、分散は$v$である。
   answer: |
     $m\in\mathbb{R}$、$v\geq0$とする。$v=0$のとき$N(m,0)$は$m$の一点分布なので、期待値は$m$、分散は$0$である。
 
@@ -1396,16 +1396,15 @@
   - 'derive: Differentiate at 0 to get the first moment m.'
   - 'derive: Differentiate twice to get the second moment v + m².'
   - 'conclude: The variance is therefore v.'
-  openmath: (forall (m v) (-> (>= v 0) (and (= (expectation (gaussian_measure m v) identity_rv) m) (= (variance (gaussian_measure m v) identity_rv) v))))
+  openmath: (forall (m v) (-> (>= v 0) (and (square_integrable_rv identity_rv (gaussian_measure m v)) (= (expectation (gaussian_measure m v) identity_rv) m) (= (variance (gaussian_measure m v) identity_rv) v))))
   hard_negative:
     statement: 平均m、標準偏差vの正規分布の分散はvである。
     reason: 標準偏差がvなら分散はv²である。パラメータが分散か標準偏差かで値が変わる。
-  target: |
-    ∀ (m : ℝ) (v : NNReal), ∫ x, x ∂(ProbabilityTheory.gaussianReal m v) = m ∧ ProbabilityTheory.variance (fun x => x) (ProbabilityTheory.gaussianReal m v) = v
-  proof: |
+  target: '∀ (m : ℝ) (v : NNReal), MeasureTheory.MemLp id 2 (ProbabilityTheory.gaussianReal m v) ∧ ∫ x, x ∂(ProbabilityTheory.gaussianReal m v) = m ∧ ProbabilityTheory.variance (fun x => x) (ProbabilityTheory.gaussianReal m v) = v'
+  proof: |-
     by
       intro m v
-      exact ⟨ProbabilityTheory.integral_id_gaussianReal, ProbabilityTheory.variance_fun_id_gaussianReal⟩
+      exact ⟨ProbabilityTheory.memLp_id_gaussianReal 2, ProbabilityTheory.integral_id_gaussianReal, ProbabilityTheory.variance_fun_id_gaussianReal⟩
 - id: gaussian_indep_add
   kind: gap
   level: 3
@@ -1433,7 +1432,7 @@
   - 'derive: The product is exp((m₁+m₂)t + (v₁+v₂)t²/2).'
   - 'apply_theorem: A moment generating function that is finite everywhere determines the law.'
   - 'conclude: Hence X + Y is normal with the summed parameters.'
-  openmath: (forall (P X Y m1 m2 v1 v2) (-> (and (probability_measure P) (indep_rv P X Y) (has_law P X (gaussian_measure m1 v1)) (has_law P Y (gaussian_measure m2 v2))) (has_law P (+ X Y) (gaussian_measure (+ m1 m2) (+ v1 v2)))))
+  openmath: (forall (P X Y m1 m2 v1 v2) (-> (and (probability_measure P) (>= v1 0) (>= v2 0) (indep_rv P X Y) (has_law P X (gaussian_measure m1 v1)) (has_law P Y (gaussian_measure m2 v2))) (has_law P (+ X Y) (gaussian_measure (+ m1 m2) (+ v1 v2)))))
   hard_negative:
     statement: X,Yがそれぞれ正規分布に従えば、独立でなくてもX+Yは正規分布に従う。
     reason: Xが標準正規でSが独立な±1の符号ならY=SXも標準正規だが、X+Yは確率1/2で0となり正規分布でない。
@@ -1470,7 +1469,7 @@
   - 'derive: (n p_n)^k tends to r^k.'
   - 'derive: (1 - p_n)^{n-k} tends to exp(-r).'
   - 'conclude: Multiply the limits to get the Poisson probability.'
-  openmath: (forall (p r k) (-> (and (forall (n) (and (<= 0 (seq_value p n)) (<= (seq_value p n) 1))) (>= r 0) (seq_tends_to (binomial_rate_seq p) r)) (seq_tends_to (binomial_prob_seq p k) (prob (poisson_measure r) (set k)))))
+  openmath: (forall (p r k) (-> (and (forall (n) (-> (in n N) (and (<= 0 (seq_value p n)) (<= (seq_value p n) 1)))) (>= r 0) (in k N) (real_tends_to (lambda (n) (* n (seq_value p n))) r)) (real_tends_to (lambda (n) (prob (binomial_measure n (seq_value p n)) (set k))) (prob (poisson_measure r) (set k)))))
   hard_negative:
     statement: pを固定してnを大きくしても、Bin(n,p)の確率はポアソン分布の確率に収束する。
     reason: 0<p<1を固定するとnpは発散し、kでの確率は0に収束する。極限はポアソン分布の確率でない。
@@ -1747,8 +1746,8 @@
   - 'conclude: Divide by n ≥ 1 to get m.'
   openmath: (forall (P X n m) (-> (and (probability_measure P) (>= n 1) (forall (i) (-> (in i (finset_range n)) (and (integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m))))) (= (expectation P (/ (partial_sum_rv X n) n)) m)))
   hard_negative:
-    statement: 標本平均の分散は母分散に等しい。
-    reason: 対ごとに独立なら標本平均の分散はσ²/nであり、n≥2でσ²>0のとき母分散より小さい。
+    statement: 各$X_i$が可積分であれば、期待値が共通でなくても標本平均の期待値は$E[X_0]$である。
+    reason: $n=2$、$E[X_0]=0$、$E[X_1]=2$なら標本平均の期待値は$1\neq E[X_0]$である。共通の期待値$m$の仮定が必要である。
   target: |
     ∀ (Ω : Type*) [MeasurableSpace Ω] (μ : MeasureTheory.Measure Ω) [MeasureTheory.IsProbabilityMeasure μ] (X : ℕ → Ω → ℝ) (n : ℕ) (m : ℝ), 0 < n → (∀ i ∈ Finset.range n, MeasureTheory.Integrable (X i) μ) → (∀ i ∈ Finset.range n, ∫ ω, X i ω ∂μ = m) → ∫ ω, (∑ i ∈ Finset.range n, X i ω) / n ∂μ = m
   proof: |
@@ -1832,7 +1831,7 @@
   - 'derive: The first term has expectation n σ².'
   - 'derive: The second term has expectation Var(S) / n = σ².'
   - 'conclude: Dividing (n - 1) σ² by n - 1 gives σ².'
-  openmath: (forall (P X n m v) (-> (and (probability_measure P) (>= n 2) (pairwise_indep_rv P X) (forall (i) (-> (in i (finset_range n)) (and (square_integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m) (= (variance P (seq_value X i)) v))))) (= (expectation P (/ (sum (finset_range n) (lambda (i) (^ (- (seq_value X i) (/ (partial_sum_rv X n) n)) 2))) (- n 1))) v)))
+  openmath: (forall (P X n m v) (-> (and (probability_measure P) (>= n 2) (forall (i j) (-> (and (in i (finset_range n)) (in j (finset_range n)) (!= i j)) (indep_rv P (seq_value X i) (seq_value X j)))) (forall (i) (-> (in i (finset_range n)) (and (square_integrable_rv (seq_value X i) P) (= (expectation P (seq_value X i)) m) (= (variance P (seq_value X i)) v))))) (= (expectation P (/ (sum (finset_range n) (lambda (i) (^ (- (seq_value X i) (/ (partial_sum_rv X n) n)) 2))) (- n 1))) v)))
   hard_negative:
     statement: n-1でなくnで割った標本分散も母分散の不偏推定量である。
     reason: nで割るとその期待値は(n-1)σ²/nとなり、σ²>0のとき母分散より小さい。
