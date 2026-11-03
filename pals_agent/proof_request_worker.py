@@ -38,7 +38,7 @@ _logger = logging.getLogger(__name__)
 _SAFE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_]{0,79}$", re.ASCII)
 _SETTLED_STATUSES = frozenset({"answered", "needs_input", "verifying", "failed"})
 _ASSESSMENT_PHASES = frozenset({
-    "premise_resolution", "catalog_retrieval", "primary_assessment",
+    "premise_resolution", "counterexample_review", "catalog_retrieval", "primary_assessment",
     "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
     "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
     "recipe_exact_input", "recipe_parallel_independent_reviews", "recipe_semantic_review",

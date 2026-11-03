@@ -51,8 +51,9 @@ def test_model_question_about_a_suspected_counterexample_is_asked_first():
     assert result.question["text"] == f"{question['text']}\n\nWhy this is a counterexample: {PROOF}"
     check = result.private_evidence["preflight"]["premise_check"]
     assert check["counterexample"].startswith("n = 0")
-    # No retrieval, decision or Lean happens before the learner answers.
-    assert len(transport.calls) == 1
+    assert result.private_evidence["counterexample_review"]["outcome"] == "approved"
+    # Only the separate review runs; no retrieval, decision or Lean before the learner answers.
+    assert len(transport.calls) == 2
 
 
 @pytest.mark.parametrize(
@@ -71,7 +72,7 @@ def test_reported_counterexample_without_a_question_still_asks(language, phrase,
     assert phrase in result.question["text"] and result.question["options"] == [option]
     assert result.question["text"].endswith(PROOF)
     assert result.private_evidence["premise_check_fallback"] is True
-    assert len(transport.calls) == 1
+    assert len(transport.calls) == 2
 
 
 def test_longest_fallback_questions_fit_the_api_question_text():
@@ -89,6 +90,66 @@ def test_a_question_that_cannot_fit_its_counterexample_proof_is_not_shown_withou
     engine, _ = runtime([asked])
     result = engine.answer(ODD)
     assert (result.outcome, result.error_code) == ("failed", "proof_reuse_invalid_response")
+
+
+REJECTED = {"approved": False, "rationale": "A4 has an abelianization of order 3."}
+ASKED = dict(
+    checked(counterexample="n = 3", counterexample_proof="A wrong proof."),
+    action="needs_input", statement=ODD["statement"],
+    question={"text": "This seems to fail at n = 3. Which claim?", "options": ["Keep it"]},
+)
+
+
+def test_counterexample_review_reads_the_claim_and_not_the_models_question():
+    engine, transport = runtime([ASKED])
+    engine.answer(ODD)
+    prompt = transport.calls[1]["input"]
+    assert "every mathematical statement in both fields is true" in prompt
+    assert "n = 3" in prompt and "A wrong proof." in prompt
+    assert ASKED["statement"] in prompt and "Which claim?" not in prompt
+    assert transport.calls[1]["text"]["format"]["strict"]
+
+
+def test_rejected_counterexample_is_rewritten_and_shown_only_after_approval():
+    rewrite = {"counterexample": "n = 0", "counterexample_proof": PROOF}
+    engine, transport = runtime([ASKED, REJECTED, rewrite])
+    result = engine.answer(ODD)
+    assert result.outcome == "needs_input"
+    text = result.question["text"]
+    assert "n = 0" in text and text.endswith(PROOF) and "n = 3" not in text
+    assert "wrong proof" not in text and result.question["options"] == ["Keep it"]
+    record = result.private_evidence["counterexample_review"]
+    assert record["outcome"] == "rewritten" and record["second_review"]["approved"] is True
+    assert REJECTED["rationale"] in transport.calls[2]["input"]
+    assert len(transport.calls) == 4
+
+
+def test_counterexample_rejected_twice_is_withheld_and_the_claim_continues():
+    rewrite = {"counterexample": "n = 5", "counterexample_proof": "Another wrong proof."}
+    engine, transport = runtime([ASKED, REJECTED, rewrite, REJECTED, decision()])
+    result = engine.answer(ODD)
+    assert result.question is None and result.outcome == "answered"
+    assert result.private_evidence["counterexample_review"]["outcome"] == "withheld"
+    assert "n = 3" not in transport.calls[4]["input"].split("DATA:")[-1].split('"candidates"')[0]
+
+
+def test_rewrite_without_a_proof_skips_the_second_review():
+    empty = {"counterexample": "", "counterexample_proof": ""}
+    engine, transport = runtime([ASKED, REJECTED, empty, decision()])
+    result = engine.answer(ODD)
+    assert result.private_evidence["counterexample_review"]["outcome"] == "withheld"
+    assert "second_review" not in result.private_evidence["counterexample_review"]
+    assert result.outcome == "answered" and len(transport.calls) == 5
+
+
+def test_withheld_counterexample_still_asks_a_truth_dependent_choice():
+    asked = dict(ASKED, premise_check=dict(ASKED["premise_check"], truth_depends_on=["the field"]))
+    empty = {"counterexample": "", "counterexample_proof": ""}
+    engine, _ = runtime([asked, REJECTED, empty])
+    result = engine.answer(ODD)
+    assert result.outcome == "needs_input"
+    assert "the field" in result.question["text"] and "n = 3" not in result.question["text"]
+    assert "A wrong proof." not in result.question["text"]
 
 
 def test_unresolved_truth_dependent_choice_still_asks():
