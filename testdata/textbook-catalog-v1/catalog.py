@@ -420,6 +420,12 @@ def normalized(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def stored_answer(card: dict) -> str:
+    # Markdown joins lines split by one newline, so a line that ends a sentence needs a blank line
+    # to end its paragraph. A line that stops mid-sentence around a long formula stays joined.
+    return re.sub(r"。\n(?!\n)", "。\n\n", card["answer"].strip())
+
+
 def all_entries() -> list[dict]:
     vocabulary = load_vocabulary()
     entries: list[dict] = []
@@ -506,7 +512,7 @@ def command_build(_: argparse.Namespace) -> int:
                 "proof_method_tag": None,
                 "search_text": search_text(card, entry["domain"]),
                 "output_language": "ja",
-                "answer": card["answer"].strip(),
+                "answer": stored_answer(card),
             }
         )
         negatives.append({"recipe_id": entry["recipe_id"], **card["hard_negative"]})

@@ -60,6 +60,13 @@ def test_apply_text_refuses_lean_fields(tmp_path, monkeypatch) -> None:
     assert (updated["statement"], updated["target"]) == ("新", "True")
 
 
+def test_stored_answer_splits_paragraphs_at_sentence_ends() -> None:
+    answer = "第一段落である。\n第二段落で\n$x=1$\nである。\n\n第三段落である。\n"
+    assert catalog.stored_answer({"answer": answer}) == (
+        "第一段落である。\n\n第二段落で\n$x=1$\nである。\n\n第三段落である。"
+    )
+
+
 def test_committed_drafts_match_their_tier() -> None:
     drafts = json.loads((catalog.GENERATED / "drafts.json").read_text())["drafts"]
     for draft in drafts:
