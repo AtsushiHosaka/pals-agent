@@ -209,7 +209,7 @@ def test_cap_is_telemetry_only_and_never_drops_or_retries_a_real_transport_call(
 
     class Process:
         def process(self, *args):
-            for _ in range(70):
+            for _ in range(h.MAX_SPANS + 38):
                 timed.request(
                     method="POST",
                     url="https://api.fixture.invalid/unrecognized",
@@ -224,8 +224,8 @@ def test_cap_is_telemetry_only_and_never_drops_or_retries_a_real_transport_call(
         is True
     )
     assert (
-        len(calls) == 70
-        and reports[0]["recorded_spans"] == 32
+        len(calls) == h.MAX_SPANS + 38
+        and reports[0]["recorded_spans"] == h.MAX_SPANS
         and reports[0]["dropped_spans"] == 38
     )
     assert reports[0]["phases"][0]["phase"] == "api_other"
@@ -563,3 +563,307 @@ def test_semantic_result_phase_requires_same_api_origin_and_post():
     assert h._phase("api", origin, "POST", url, "request") == "semantic_result"
     assert h._phase("api", origin, "GET", url, "request") == "api_other"
     assert h._phase("provider", origin, "POST", url, "request") == "provider_other"
+
+
+REQUEST = "00000000-0000-4000-8000-000000000001"
+JOB_PREFIX = "https://api.fixture.invalid/v1/internal/proof-jobs/" + REQUEST
+CANDIDATE = "00000000-0000-4000-8000-000000000002"
+
+
+@pytest.mark.parametrize(("method", "suffix", "phase"), [
+    ("GET", "/worker-input", "job_read"),
+    ("POST", "/generation-claims", "claim"),
+    ("POST", "/worker-updates", "job_update"),
+    ("POST", "/verification-candidates", "candidate_submit"),
+    ("GET", f"/verification-candidates/{CANDIDATE}/binding", "candidate_binding"),
+    ("POST", f"/verification-candidates/{CANDIDATE}/reconciliation", "candidate_reconciliation"),
+    ("POST", "/semantic-reviews", "semantic_settle"),
+    ("PUT", "/explanation", "explanation_upsert"),
+    ("POST", "/unlisted", "api_other"),
+])
+def test_proof_job_routes_are_named_without_identifiers(method, suffix, phase):
+    origin = h._origin("https://api.fixture.invalid")
+    assert h._phase("api", origin, method, JOB_PREFIX + suffix, REQUEST) == phase
+
+
+def test_another_jobs_route_stays_unclassified():
+    origin = h._origin("https://api.fixture.invalid")
+    url = "https://api.fixture.invalid/v1/internal/proof-jobs/" + CANDIDATE + "/worker-input"
+    assert h._phase("api", origin, "POST", url, REQUEST) == "api_other"
+
+
+def test_union_counts_parallel_spans_once():
+    assert h._union_ms([(1.0, 3.0), (2.0, 4.0), (6.0, 7.0)]) == pytest.approx(4000.0)
+    assert h._union_ms([]) == 0.0
+
+
+def test_attribution_separates_model_transport_local_and_unattributed_time(monkeypatch):
+    clock = {"now": 100.0}
+    monkeypatch.setattr(h.time, "monotonic", lambda: clock["now"])
+    reports = []
+
+    class Delegate:
+        def __init__(self, elapsed, headers=()):
+            self.elapsed, self.headers = elapsed, headers
+
+        def request(self, **kwargs):
+            clock["now"] += self.elapsed
+            return HttpResponse(200, b"", self.headers)
+
+    provider = h.TimedTransport(
+        Delegate(2.0, (("OpenAI-Processing-Ms", "1500"),)), "provider", "https://api.openai.com",
+    )
+    api = h.TimedTransport(
+        Delegate(0.5, (("Server-Timing", "app;dur=100.5"),)), "api", "https://api.fixture.invalid",
+    )
+
+    with h.traced_delivery("proof_job", REQUEST, emit=reports.append, queue={"queue_wait_ms": 9,
+                                                                             "receive_count": 1}):
+        clock["now"] += 1.0  # Unattributed gap.
+        with h.latency_stage("proof_pipeline"), h.latency_label("explain"):
+            provider.request(method="POST", url="https://api.openai.com/v1/responses",
+                             headers={}, body=None, timeout_seconds=1)
+        with h.latency_stage("recipe_rank"):
+            clock["now"] += 0.25
+        api.request(method="POST", url=JOB_PREFIX + "/worker-updates", headers={}, body=None,
+                    timeout_seconds=1)
+        h.note_latency("lean_verification_ms", 6800)
+        h.note_latency("reconciliation_polls", 1)
+        h.note_latency("reconciliation_polls", 1)
+        h.link_latency_request("00000000-0000-4000-8000-000000000003")
+    report = reports[0]
+    assert report["trace_kind"] == "proof_job" and report["queue"]["queue_wait_ms"] == 9
+    assert report["processor_elapsed_ms"] == pytest.approx(3750.0)
+    assert report["model_generation_union_ms"] == pytest.approx(2000.0)
+    assert report["non_model_ms"] == pytest.approx(1750.0)
+    assert report["provider_union_ms"] == pytest.approx(2000.0)
+    assert report["api_union_ms"] == pytest.approx(500.0)
+    assert report["local_stage_union_ms"] == pytest.approx(250.0)
+    assert report["unattributed_ms"] == pytest.approx(1000.0)
+    assert report["notes"] == {"lean_verification_ms": 6800, "reconciliation_polls": 2}
+    assert report["linked_request_correlation_sha256"] is not None
+    rows = {(r["service"], r["phase"]): r for r in report["phases"]}
+    generation = rows["provider", "generation"]
+    assert generation["role"] == "explain" and generation["server_elapsed_total_ms"] == 1500.0
+    assert generation["transport_overhead_total_ms"] == pytest.approx(500.0)
+    update = rows["api", "job_update"]
+    assert update["server_elapsed_total_ms"] == 100.5
+    assert update["transport_overhead_total_ms"] == pytest.approx(399.5)
+    # A container stage is described, never counted as attributed time.
+    assert rows["local", "proof_pipeline"]["elapsed_total_ms"] == pytest.approx(2000.0)
+
+
+@pytest.mark.parametrize("headers", [
+    (("Server-Timing", "app;dur=nan"),),
+    (("Server-Timing", "cdn;dur=12"),),
+    (("Server-Timing", "app;dur=99999999999"),),
+    (("not-timing", "1"),),
+    (("OpenAI-Processing-Ms", "-1"),),
+    (("Server-Timing", 7),),
+])
+def test_unusable_server_timing_is_ignored_or_a_counted_fault(headers):
+    reports = []
+
+    class Delegate:
+        def request(self, **kwargs):
+            return HttpResponse(200, b"", headers)
+
+    sentinel = {}
+    timed = h.TimedTransport(Delegate(), "api", "https://api.fixture.invalid")
+
+    with h.traced_delivery("proof_job", REQUEST, emit=reports.append):
+        sentinel["response"] = timed.request(
+            method="POST", url=JOB_PREFIX + "/usage", headers={}, body=None, timeout_seconds=1,
+        )
+    assert sentinel["response"].status_code == 200
+    row = reports[0]["phases"][0]
+    assert row["server_timed_calls"] == 0 and row["calls"] == 1
+
+
+def test_unknown_stage_and_note_names_cannot_reach_a_log():
+    reports = []
+    secret = "learner statement text"
+    with h.traced_delivery("proof_job", REQUEST, emit=reports.append):
+        with h.latency_stage(secret):
+            value = 1
+        assert value == 1
+        h.note_latency(secret, 3)
+        h.note_latency("lean_verification_ms", secret)
+        h.note_latency("lean_verification_ms", True)
+    text = json.dumps(reports)
+    assert secret not in text
+    assert reports[0]["notes"] == {}
+    assert reports[0]["phases"][0]["phase"] == "local_other"
+
+
+def test_stage_preserves_the_exception_and_is_inert_without_a_trace():
+    class Failure(RuntimeError):
+        pass
+
+    with pytest.raises(Failure), h.latency_stage("recipe_rank"):
+        raise Failure
+    h.note_latency("reconciliation_polls", 1)
+    h.link_latency_request(REQUEST)
+
+    reports = []
+    with (
+        pytest.raises(Failure),
+        h.traced_delivery("proof_job", REQUEST, emit=reports.append),
+        h.latency_stage("recipe_rank"),
+    ):
+        raise Failure
+    assert reports[0]["phases"][0]["transport_failures"] == 1
+
+
+def test_stage_telemetry_failure_never_reaches_the_traced_work(monkeypatch):
+    reports = []
+
+    def fail(*args):
+        raise ValueError("instrumentation only")
+
+    with h.traced_delivery("proof_job", REQUEST, emit=reports.append):
+        monkeypatch.setattr(h._Trace, "begin", fail)
+        with h.latency_stage("recipe_rank"):
+            value = 1
+    assert value == 1 and reports[0]["instrumentation_errors"] == 1
+
+
+def test_label_does_not_touch_the_metered_model_role():
+    from pals_agent.proof_reuse_usage import current_role, explicit_role, model_role
+
+    assert explicit_role() is None and current_role() == "proof_reuse_judge"
+    with h.latency_label("explain"):
+        assert current_role() == "proof_reuse_judge" and h._role() == "explain"
+    with model_role("repair"):
+        assert h._role() == "repair"
+    assert h._role() == "other"
+
+
+def test_nested_delivery_joins_the_outer_trace():
+    reports = []
+    with (
+        h.traced_delivery("proof_job", REQUEST, emit=reports.append),
+        h.traced_delivery("explanation", REQUEST, emit=reports.append),
+    ):
+        pass
+    assert [r["trace_kind"] for r in reports] == ["proof_job"]
+
+
+@pytest.mark.parametrize("message", [
+    {}, {"Attributes": {}}, {"Attributes": {"SentTimestamp": "x", "ApproximateReceiveCount": "1"}},
+    None,
+])
+def test_queue_observation_tolerates_missing_attributes(message):
+    assert h.queue_observation(message) is None
+
+
+def test_queue_observation_reads_sqs_attributes_and_clamps_clock_skew():
+    message = {"Attributes": {"SentTimestamp": "1000", "ApproximateReceiveCount": "2"}}
+    assert h.queue_observation(message, now_ms=1250) == {"queue_wait_ms": 250, "receive_count": 2}
+    assert h.queue_observation(message, now_ms=900)["queue_wait_ms"] == 0
+
+
+def test_factory_times_every_release_model_client(monkeypatch):
+    from pals_agent.factory import (
+        build_generator,
+        build_proof_explainer,
+        build_proof_output_reviewer,
+        build_proof_semantic_reviewer,
+    )
+    from pals_agent.settings import AgentSettings
+
+    monkeypatch.setenv("PALS_OPENAI_API_KEY", "offline-fixture-only")
+    settings = AgentSettings.from_env()
+    clients = [
+        build_generator(settings).openai,
+        build_proof_explainer(settings).client,
+        build_proof_output_reviewer(settings).client,
+        build_proof_semantic_reviewer(settings).client,
+    ]
+    for client in clients:
+        assert isinstance(client.transport, h.TimedTransport)
+        assert client.transport.service == "provider"
+
+
+@pytest.mark.parametrize("malformed", [False, True])
+def test_tracing_never_changes_the_settlement_or_the_calls_made(malformed, monkeypatch):
+    monkeypatch.setattr("pals_agent.recipe_semantic.query_embedding", lambda *a, **k: None)
+
+    def run(*, traced):
+        request, batch, verdict = inputs()
+        calls = []
+        payloads = []
+        lock = threading.Lock()
+
+        class Api:
+            def request(self, **kwargs):
+                url = kwargs["url"]
+                payload = json.loads(kwargs["body"])
+                with lock:
+                    calls.append(url.rsplit("/", 1)[-1])
+                if url.endswith("/claims"):
+                    value = {
+                        "status": "acquired",
+                        "request": dict(request, status="assessing"),
+                        "claim_id": batch["claim_id"],
+                        "lean_flow": True,
+                        "math_conventions": request["math_conventions"],
+                        "billing_operation_id": OP,
+                        "lease_expires_at": (
+                            datetime.now(UTC) + timedelta(seconds=240)
+                        ).isoformat(),
+                    }
+                elif url.endswith("/recipe-window"):
+                    value = batch
+                elif url.endswith("/token-permits"):
+                    value = {"permitted": True}
+                elif url.endswith(("/token-receipts", "/usage", "/semantic-call-results")):
+                    value = {"recorded": True}
+                elif url.endswith("/settlements"):
+                    payloads.append(payload)
+                    value = {"id": request["id"], "status": payload["outcome"]}
+                else:
+                    raise AssertionError("unexpected fixture path")
+                return HttpResponse(200, json.dumps(value).encode())
+
+        provider = Provider(verdict, malformed=malformed)
+        api_transport, provider_transport = Api(), provider
+        if traced:
+            api_transport = h.TimedTransport(api_transport, "api", "https://api.fixture.invalid")
+            provider_transport = h.TimedTransport(
+                provider_transport, "provider", "https://api.openai.com/v1",
+            )
+        api = PalsApiClient(
+            "https://api.fixture.invalid", "private-api-fixture", transport=api_transport,
+        )
+        client = OpenAIResponsesClient(
+            api_key="private-provider-fixture", transport=provider_transport,
+        )
+        processor = ProofRequestProcessor(
+            api,
+            ChatRuntime(client, ProofReuseRuntime(client, CatalogBoundary())),
+            token_accounting_enabled=True,
+        )
+        reports = []
+        acknowledged = (
+            h.TracedProcessor(processor, reports.append).process
+            if traced else processor.process
+        )(request["id"], batch["claim_id"], lambda _: None)
+        settled = payloads[0]
+        return {
+            "acknowledged": acknowledged,
+            "decision": {key: settled.get(key) for key in (
+                "outcome", "question", "answer", "error_code", "formal_plan", "conventions",
+            )},
+            "phase": settled["private_evidence"].get("phase"),
+            "evidence_keys": sorted(set(settled["private_evidence"]) - {"worker_elapsed_ms"}),
+            "usage_roles": sorted(row["model_role"] for row in settled["usage"]),
+            "api_calls": sorted(calls),
+            "provider_calls": len(provider.calls),
+        }, reports
+
+    plain, none = run(traced=False)
+    instrumented, reports = run(traced=True)
+    assert instrumented == plain
+    assert none == [] and len(reports) == 1
+    assert reports[0]["instrumentation_errors"] == 0

@@ -373,7 +373,9 @@ def test_real_api_client_processor_uses_seven_worker_http_requests_not_nine():
     assert paths.count("token-permits") == paths.count("semantic-call-results") == 2
     assert "usage" not in paths and "token-receipts" not in paths
     report = reports[0]
-    assert report["recorded_spans"] == 11 and report["complete_timing_capture"] is True
+    transport = [row for row in report["phases"] if row["service"] != "local"]
+    assert sum(row["calls"] for row in transport) == 11
+    assert report["complete_timing_capture"] is True
     for role in ("recipe_semantic_assessment", "token_answer_qa"):
         phases = [p for p in report["phases"] if p["role"] == role]
         assert {p["phase"] for p in phases} == {

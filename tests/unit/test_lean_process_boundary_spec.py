@@ -38,6 +38,12 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         timeout_seconds: float,
         output_limit_bytes: int,
     ) -> lean_module._ProcessResult:
+        if "--run" in command:
+            # The trusted audit that follows every accepted compile reuses the same boundary.
+            nonce = command[command.index("--run") + 2]
+            report = f"theorem target\nbound target\ncomplete {nonce}\n"
+            return lean_module._ProcessResult(0, report, "", False, False)
+        Path(command[command.index("-o") + 1]).write_bytes(b"olean")
         captured.update(
             command=command,
             cwd=cwd,
@@ -60,7 +66,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
     result = LeanVerifier(
         lean_binary=str(probe),
         timeout_seconds=timeout_seconds,
-    ).verify("example : True := by trivial")
+    ).verify("theorem target : True := by trivial")
 
     assert result.success is True
     environment = captured["environment"]
@@ -80,7 +86,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         "--cpu=3:3",
         f"--as={16 * _GIB}:{16 * _GIB}",
         f"--fsize={16 * _MIB}:{16 * _MIB}",
-        "--nproc=64:64",
+        "--nproc=4096:4096",
         "--nofile=1024:1024",
         "--core=0:0",
         "--",
@@ -89,7 +95,10 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
     assert child_script.name == "lean_child.py"
     assert child_script.parent.name == "pals_agent"
     assert child_script.is_file()
-    assert command[-3] == str(probe)
+    assert command[-6] == str(probe)
+    assert command[-5].startswith("--root=")
+    assert command[-4] == "-o"
+    assert Path(command[-3]).name == "Main.olean"
     assert command[-2] == "--threads=1"
     assert Path(command[-1]).name == "Main.lean"
 

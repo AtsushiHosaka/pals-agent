@@ -27,6 +27,7 @@ from pals_agent.recipe_semantic_contract import (
     read_batch,
     uuid,
 )
+from pals_agent.runtime_latency import latency_stage
 from pals_agent.usage import capture_usage
 
 RecipeBatch = Callable[[list[float] | None], dict[str, Any]]
@@ -60,7 +61,8 @@ def attempt(
         raise SemanticReuseError("proof_reuse_deadline")
     batch = batch_loader(query_embedding(client, request["statement"], deadline=deadline))
     try:
-        rows = read_batch(request, claim_id, batch)
+        with latency_stage("recipe_batch_validate"):
+            rows = read_batch(request, claim_id, batch)
     except (ValueError, TypeError, KeyError, RecursionError) as error:
         raise SemanticReuseError("proof_reuse_recipe_invalid") from error
     if rows is None:
@@ -71,13 +73,14 @@ def attempt(
     known = known_readings(conventions)
     sessions = {key: str(uuid4()) for key in _ROLES}
     try:
-        inputs = prompts(
-            request,
-            batch,
-            known,
-            assessment_session=sessions["assessment"],
-            review_session=sessions["review"],
-        )
+        with latency_stage("recipe_prompt_build"):
+            inputs = prompts(
+                request,
+                batch,
+                known,
+                assessment_session=sessions["assessment"],
+                review_session=sessions["review"],
+            )
     except (ValueError, TypeError, KeyError, RecursionError) as error:
         raise SemanticReuseError("proof_reuse_recipe_invalid") from error
     fixed_client = replace(
@@ -114,7 +117,8 @@ def attempt(
         ):
             raise SemanticReuseError("proof_reuse_token_accounting_failed")
         try:
-            result = parse(raw, batch, known)
+            with latency_stage("recipe_response_parse"):
+                result = parse(raw, batch, known)
         except (ValueError, TypeError, KeyError, RecursionError) as error:
             raise SemanticReuseError("proof_reuse_invalid_response") from error
         return {

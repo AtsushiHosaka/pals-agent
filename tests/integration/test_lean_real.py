@@ -102,17 +102,22 @@ def test_real_mathlib_preserves_normal_and_cached_compilation() -> None:
         check=True, timeout=20,
     )
     toolchain_bin = Path(prefix.stdout.strip()) / "bin"
-    timings: list[VerificationTiming] = []
-    cached = LeanVerifier(
-        # Direct binaries avoid Elan's extra LEAN_RECURSION_COUNT key, which the
-        # existing closed cache vocabulary deliberately does not accept.
-        lean_binary=str(toolchain_bin / "lean"), lake_binary=str(toolchain_bin / "lake"),
-        project_dir=project_dir, lake_environment_cache=LakeEnvironmentCache(),
-        timing_observer=timings.append,
-    )
-    assert cached.verify(source).success
-    assert cached.verify(source).success
-    assert [t.cache_status for t in timings if t.stage == "environment_prepare"] == ["miss", "hit"]
+    # Production resolves the Elan proxies from PATH; direct binaries omit the
+    # proxy's LEAN_RECURSION_COUNT key, so they cannot stand in for that path.
+    for lean_binary, lake_binary in (
+        (str(toolchain_bin / "lean"), str(toolchain_bin / "lake")),
+        ("lean", "lake"),
+    ):
+        timings: list[VerificationTiming] = []
+        cached = LeanVerifier(
+            lean_binary=lean_binary, lake_binary=lake_binary, project_dir=project_dir,
+            lake_environment_cache=LakeEnvironmentCache(), timing_observer=timings.append,
+        )
+        assert cached.verify(source).success
+        assert cached.verify(source).success
+        assert [
+            t.cache_status for t in timings if t.stage == "environment_prepare"
+        ] == ["miss", "hit"]
 
 
 def test_real_mathlib_preserves_reviewed_geometry_axiom_audit() -> None:

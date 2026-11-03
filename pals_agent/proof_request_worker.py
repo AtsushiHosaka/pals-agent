@@ -25,6 +25,7 @@ from pals_agent.proof_reuse import (
 )
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.recipe_semantic import RecipeBatch
+from pals_agent.runtime_latency import latency_stage
 from pals_agent.token_meter import (
     TokenBudgetExceededError,
     TokenMeter,
@@ -260,7 +261,7 @@ class ProofRequestProcessor:
                         raise TokenMeterError("token_accounting_unavailable")
                     meter = TokenMeter(self.api, operation_id, request_id, claim_id,
                                        started + MAX_SECONDS)
-                    with token_meter_scope(meter):
+                    with token_meter_scope(meter), latency_stage("assessment"):
                         result = self.runtime.answer(request, **recipe_options)
                     if meter.failed:
                         raise TokenMeterError("token_meter_failed")
@@ -278,7 +279,8 @@ class ProofRequestProcessor:
                     ):
                         raise TokenMeterError("token_qa_missing")
                 else:
-                    result = self.runtime.answer(request, **recipe_options)
+                    with latency_stage("assessment"):
+                        result = self.runtime.answer(request, **recipe_options)
         except MaterialContextError as error:
             result = ProofReuseResult(
                 "failed", None, None, error.code,

@@ -11,6 +11,11 @@ def current_role() -> str:
     return _role.get()
 
 
+def explicit_role() -> str | None:
+    """The role set by an enclosing model_role, without the metering default."""
+    return _role.get(None)  # type: ignore[arg-type]
+
+
 @contextmanager
 def model_role(role: str) -> Iterator[None]:
     token = _role.set(role)

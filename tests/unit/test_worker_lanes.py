@@ -260,3 +260,68 @@ def test_settings_load_dedicated_assessment_queue_aliases(monkeypatch, name):
     monkeypatch.delenv("PALS_PROOF_REQUESTS_QUEUE_URL", raising=False)
     monkeypatch.setenv(name, "assessment-queue")
     assert AgentSettings.from_env().proof_requests_queue_url == "assessment-queue"
+
+
+def _traced_worker(monkeypatch, reports):
+    monkeypatch.setattr("pals_agent.worker.report_latency", reports.append)
+    return SqsProofWorker(
+        settings=settings(), api_client=None, pipeline=None, explainer=None, lane="proof",
+    )
+
+
+def test_proof_delivery_is_traced_with_queue_delay_without_changing_the_ack(monkeypatch):
+    reports = []
+    queue = Queue("proof-id", attributes={"task": {"StringValue": "proof-id"}})
+    queue.message["Attributes"] = {"SentTimestamp": "1000", "ApproximateReceiveCount": "2"}
+    monkeypatch.setattr("pals_agent.worker.boto3.client", lambda *a, **kw: queue)
+    monkeypatch.setattr(
+        SqsProofWorker, "process_proof_job", lambda self, *args, **kwargs: True,
+    )
+    assert _traced_worker(monkeypatch, reports).run_once()
+    assert len(queue.deleted) == 1 and len(reports) == 1
+    assert reports[0]["trace_kind"] == "proof_job"
+    assert reports[0]["queue"]["receive_count"] == 2 and reports[0]["queue"]["queue_wait_ms"] > 0
+
+
+def test_failed_trace_emission_cannot_change_a_proof_acknowledgement(monkeypatch):
+    def fail(report):
+        raise OSError("log sink unavailable")
+
+    queue = Queue("proof-id", attributes={"task": {"StringValue": "proof-id"}})
+    monkeypatch.setattr("pals_agent.worker.boto3.client", lambda *a, **kw: queue)
+    monkeypatch.setattr(
+        SqsProofWorker, "process_proof_job", lambda self, *args, **kwargs: False,
+    )
+    monkeypatch.setattr("pals_agent.worker.report_latency", fail)
+    worker_instance = SqsProofWorker(
+        settings=settings(), api_client=None, pipeline=None, explainer=None, lane="proof",
+    )
+    assert worker_instance.run_once()
+    assert queue.deleted == []
+
+
+def test_reconciliation_wait_reports_polls_and_compiler_time(monkeypatch):
+    reports = []
+    answers = iter([
+        {"state": "compiling", "verification_candidate_id": "c", "lean_code": "x"},
+        {"state": "semantic_review", "status_context": {"verification_elapsed_ms": 6800}},
+    ])
+
+    class Api:
+        def get_proof_job(self, proof_job_id):
+            return next(answers)
+
+    monkeypatch.setattr("pals_agent.worker._has_pending_api_candidate", lambda job: True)
+    instance = SqsProofWorker(
+        settings=settings(), api_client=Api(), pipeline=None, explainer=None, lane="proof",
+        sleep=lambda seconds: None,
+    )
+    from pals_agent.runtime_latency import traced_delivery
+
+    with traced_delivery("proof_job", "request", emit=reports.append):
+        result = instance._wait_for_candidate_reconciliation(
+            proof_job_id="job", extend_visibility=lambda seconds: None, refresh_visibility=False,
+        )
+    assert result["state"] == "semantic_review"
+    assert reports[0]["notes"] == {"lean_verification_ms": 6800, "reconciliation_polls": 2}
+    assert reports[0]["phases"][0]["phase"] == "lean_reconciliation_wait"

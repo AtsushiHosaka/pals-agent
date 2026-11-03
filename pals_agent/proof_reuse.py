@@ -57,6 +57,7 @@ from pals_agent.recipe_semantic import (
 from pals_agent.recipe_semantic import (
     attempt as semantic_attempt,
 )
+from pals_agent.runtime_latency import latency_stage
 from pals_agent.token_meter import active_token_meter
 
 _OUTPUT_LANGUAGE_INSTRUCTION = (
@@ -531,9 +532,10 @@ class ProofReuseRuntime:
             evidence["phase"] = "catalog_retrieval"
             query_invalid = False
             try:
-                retrieval = self.catalog.retrieve(
-                    preflight["statement"], preflight["profile_id"], deadline=deadline
-                )
+                with latency_stage("context_retrieval"):
+                    retrieval = self.catalog.retrieve(
+                        preflight["statement"], preflight["profile_id"], deadline=deadline
+                    )
             except ProofReuseError as error:
                 if error.code != "proof_reuse_query_invalid":
                     raise
