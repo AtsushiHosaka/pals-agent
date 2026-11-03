@@ -99,7 +99,7 @@ def test_supplemental_image_only_answer_is_seen_by_classifier_generator_and_qa()
         "answer": "", "attachments": [metadata],
     }]}
     runtime, provider = engine([
-        route(), {"text": "The arrow denotes a mapping."},
+        route(), {"text": "The arrow denotes a mapping.", "figure_json": None},
         {"approved": True, "rationale": "The supplementary image was interpreted accurately."},
     ])
     result = runtime.answer(request)
@@ -116,7 +116,7 @@ def test_explanation_three_real_client_calls_are_visual_independent_and_metered(
     runtime, provider = engine(
         [
             route(),
-            {"text": "The arrow denotes a mapping $f$."},
+            {"text": "The arrow denotes a mapping $f$.", "figure_json": None},
             {"approved": True, "rationale": "The visual meaning is accurately described."},
         ]
     )
@@ -158,7 +158,7 @@ def test_selected_lean_generation_model_never_changes_cheap_explanation_or_fixed
     runtime, provider = engine(
         [
             route(),
-            {"text": "An arrow connects objects."},
+            {"text": "An arrow connects objects.", "figure_json": None},
             {"approved": True, "rationale": "Faithful explanation."},
         ]
     )
@@ -174,7 +174,7 @@ def test_qa_rejection_never_publishes_or_falls_back_to_a_proof_route():
     runtime, provider = engine(
         [
             route(),
-            {"text": "The answer is correct."},
+            {"text": "The answer is correct.", "figure_json": None},
             {"approved": False, "rationale": "This is a correctness verdict."},
         ]
     )
@@ -188,7 +188,7 @@ def test_same_generation_and_review_session_cannot_be_accepted():
     runtime, _ = engine(
         [
             route(),
-            {"text": "An arrow connects objects."},
+            {"text": "An arrow connects objects.", "figure_json": None},
             {"approved": True, "rationale": "Faithful explanation."},
         ],
         sessions=["resp_intent", "resp_reused", "resp_reused"],
@@ -378,7 +378,7 @@ def test_related_history_and_prior_images_remain_in_every_model_input_and_input_
     runtime, provider = engine(
         [
             route(),
-            {"text": "The top arrow maps the first object."},
+            {"text": "The top arrow maps the first object.", "figure_json": None},
             {"approved": True, "rationale": "Matches the prior image and context."},
         ]
     )
@@ -403,7 +403,7 @@ def test_classifier_session_cannot_be_reused_for_generation_or_review(sessions):
     runtime, _ = engine(
         [
             route(),
-            {"text": "An arrow connects objects."},
+            {"text": "An arrow connects objects.", "figure_json": None},
             {"approved": True, "rationale": "Faithful explanation."},
         ],
         sessions=sessions,
@@ -446,3 +446,88 @@ def test_natural_chat_lean_route_carries_the_explicit_effort_to_generation_scope
     assert result.error_code == "lean_verification_required"
     assert len(provider.calls) == 1
     assert selected_generation_reasoning_effort(None) is None
+
+
+FIGURE = {
+    "version": 1,
+    "template": "inscribed-angle",
+    "parameters": {
+        "labels": {"chord_start": "A", "chord_end": "B", "on_arc_1": "P", "on_arc_2": "Q"},
+        "marks": [
+            {
+                "icon": "equal_angle",
+                "at": [["A", "P", "B"], ["A", "Q", "B"]],
+                "claim": "conclusion",
+                "step": "angles",
+            }
+        ],
+    },
+}
+FIGURE_TEXT = "Angles $\\angle APB$ and $\\angle AQB$ stand on the same arc."
+
+
+def _figure_answer(figure_json, review):
+    runtime, provider = engine(
+        [route(), {"text": FIGURE_TEXT, "figure_json": figure_json}, review]
+    )
+    return runtime.answer(REQUEST), provider
+
+
+def test_explanation_carries_a_reviewed_figure_call():
+    figure = json.dumps({**FIGURE, "bindings": [{"step_id": "angles", "paragraph": 0}]})
+    answer, provider = _figure_answer(
+        figure, {"approved": True, "rationale": "Accurate.", "figure_consistent": True}
+    )
+    assert answer.outcome == "answered"
+    assert answer.answer["visualization"] == FIGURE
+    assert answer.answer["visualization_bindings"] == [{"step_id": "angles", "paragraph": 0}]
+    assert '"figure"' in provider.calls[2]["input"][0]["content"][0]["text"]
+    # The text digest stays text-only so the API's existing binding keeps holding.
+    assert (
+        answer.private_evidence["chat_explanation_qa"]["answer_sha256"]
+        == hashlib.sha256(FIGURE_TEXT.encode()).hexdigest()
+    )
+
+
+def test_a_doubted_figure_is_dropped_and_the_answer_stands():
+    answer, _ = _figure_answer(
+        json.dumps(FIGURE), {"approved": True, "rationale": "Text ok.", "figure_consistent": False}
+    )
+    assert answer.outcome == "answered"
+    assert answer.answer["text"] == FIGURE_TEXT
+    assert "visualization" not in answer.answer
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "not json",
+        json.dumps({"version": 1, "template": "svg", "parameters": {}}),
+        json.dumps(
+            {
+                **FIGURE,
+                "parameters": {
+                    **FIGURE["parameters"],
+                    "labels": {
+                        "chord_start": "|[draw]|A",
+                        "chord_end": "B",
+                        "on_arc_1": "P",
+                    },
+                },
+            }
+        ),
+        # Well formed, but it names a point the answer never mentions.
+        json.dumps(
+            {
+                "version": 1,
+                "template": "triangle",
+                "parameters": {"shape": "scalene", "labels": {"a": "X", "b": "Y", "c": "Z"}},
+            }
+        ),
+    ],
+)
+def test_an_unusable_figure_never_costs_the_answer(bad):
+    answer, provider = _figure_answer(bad, {"approved": True, "rationale": "Accurate."})
+    assert answer.outcome == "answered"
+    assert "visualization" not in answer.answer
+    assert '"figure"' not in provider.calls[2]["input"][0]["content"][0]["text"]

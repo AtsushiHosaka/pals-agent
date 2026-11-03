@@ -39,6 +39,7 @@ from pals_agent.explanations import (
     proof_explanation_from_api,
     single_sample_catch_all_ids,
 )
+from pals_agent.figure_calls import validate_figure_bindings, validate_figure_call
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
@@ -2555,15 +2556,31 @@ def _validate_proof_job_claim_resource(
 
 
 def _validate_explanation_content(content: Any) -> None:
-    if not isinstance(content, dict) or set(content) != {
+    if not isinstance(content, dict) or not {
         "overview",
         "sections",
         "conclusion",
         "model",
         "provider",
         "elapsed_ms",
+    } <= set(content) <= {
+        "overview",
+        "sections",
+        "conclusion",
+        "model",
+        "provider",
+        "elapsed_ms",
+        "visualization",
+        "visualization_bindings",
     }:
         raise ValueError("explanation content fields are invalid")
+    if "visualization" in content:
+        validate_figure_call(content["visualization"])
+        validate_figure_bindings(
+            content.get("visualization_bindings", []), content["visualization"]
+        )
+    elif "visualization_bindings" in content:
+        raise ValueError("explanation figure bindings require a figure")
     _bounded_text(content.get("overview"), maximum=100_000)
     _bounded_text(content.get("conclusion"), maximum=100_000)
     _bounded_text(content.get("model"), maximum=200)
@@ -2941,6 +2958,12 @@ def _generation_failure_reason(exc: Exception) -> str:
 
 
 def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]:
+    # Absent figures stay out of the payload so the output digest keeps its historical form.
+    figure: dict[str, Any] = {}
+    if explanation.visualization is not None:
+        figure["visualization"] = explanation.visualization
+    if explanation.visualization_bindings is not None:
+        figure["visualization_bindings"] = explanation.visualization_bindings
     return {
         "overview": explanation.overview,
         "sections": [
@@ -2963,6 +2986,7 @@ def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]
         "model": explanation.model,
         "provider": explanation.provider,
         "elapsed_ms": explanation.elapsed_ms,
+        **figure,
     }
 
 

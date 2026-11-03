@@ -12,6 +12,12 @@ from contextvars import copy_context
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
+from pals_agent.figure_calls import (
+    FIGURE_INSTRUCTION,
+    FigureCallError,
+    labels_occur_in,
+    split_figure,
+)
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
@@ -380,6 +386,8 @@ class ProofExplanation:
     prompt: str
     raw_model_output: str
     elapsed_ms: int
+    visualization: dict[str, Any] | None = None
+    visualization_bindings: list[dict[str, Any]] | None = None
 
 
 class ProofOutputReviewer(Protocol):
@@ -838,17 +846,22 @@ class LeanProofExplainer:
         started_at = self.monotonic()
         payload, raw_output = self._generate_validated(
             prompt=prompt,
-            validator=lambda value: _parse_explanation(
-                value,
-                lean_code,
-                language=language,
-                require_linear_ending=True,
-                strict_prose=True,
+            validator=lambda value: (
+                _parse_explanation(
+                    value,
+                    lean_code,
+                    language=language,
+                    require_linear_ending=True,
+                    strict_prose=True,
+                ),
+                # A rejected candidate may have failed on its figure, so a correction omits it.
+                None if review_feedback else _optional_figure(value.get("figure"), lean_code),
             ),
             deadline=deadline,
             timeout_seconds=timeout_seconds,
         )
-        overview, sections, conclusion = payload
+        (overview, sections, conclusion), figure = payload
+        visualization, bindings = figure or (None, None)
         return ProofExplanation(
             overview=overview,
             sections=sections,
@@ -858,6 +871,8 @@ class LeanProofExplainer:
             prompt=prompt,
             raw_model_output=raw_output,
             elapsed_ms=_elapsed_ms(started_at, self.monotonic),
+            visualization=visualization,
+            visualization_bindings=bindings or None,
         )
 
     def clarify(
@@ -1037,6 +1052,20 @@ def proof_explanation_from_api(
         raw_model_output="",
         elapsed_ms=elapsed_ms,
     )
+
+
+def _optional_figure(
+    value: Any, lean_code: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
+    """An unusable figure never costs the learner the verified proof, so it is dropped."""
+    if value is None:
+        return None
+    try:
+        call, bindings = split_figure(value)
+    except FigureCallError:
+        return None
+    # A point the verified statement does not name cannot illustrate that statement.
+    return (call, bindings) if labels_occur_in(call, lean_code) else None
 
 
 def _parse_explanation(
@@ -1551,6 +1580,10 @@ mathematical constructions (“Fix …”, “Let …”, “Set …”, “Assu
 or pedagogical framing (“We will show …”, “Let us …”, “In this step …”, or “The idea is …”).
 {x_squared_instruction}
 
+{FIGURE_INSTRUCTION}
+In this answer, paragraph 0 is `overview` and paragraph N is the Nth section. Geometry labels must
+be point names bound in the Lean source. Add the top-level JSON key "figure" (object or null).
+
 Output language: {language}
 User theorem statement: {theorem_statement}
 
@@ -1718,6 +1751,8 @@ def _output_review_prompt(
             "conclusion": explanation.conclusion,
         }
     }
+    if explanation.visualization is not None:
+        reviewed_output["explanation"]["figure"] = explanation.visualization
     if clarification is not None:
         reviewed_output["clarification_context"] = {
             "selected_text": selected_text,
@@ -1749,6 +1784,13 @@ def _output_review_prompt(
         "headings or prose.\n\n"
         f"BEGIN LEARNER-VISIBLE PROOF\n{visible_proof}\nEND LEARNER-VISIBLE PROOF\n"
         if clarification is None
+        else ""
+    )
+    figure_review = (
+        "`explanation.figure` is a closed illustration template, drawn beside the proof and "
+        "proving nothing. Reject the output if its labels, marks or `claim` values state "
+        "something the verified theorem does not establish or assume.\n"
+        if explanation.visualization is not None and clarification is None
         else ""
     )
     output_quality_review = (
@@ -1853,7 +1895,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
 {output_quality_review}{semantic_requirement}
-Do not reveal hidden chain-of-thought.
+{figure_review}Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
 published; it must not alter the proof's verified state.

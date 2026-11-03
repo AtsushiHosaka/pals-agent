@@ -14,6 +14,7 @@ from pals_agent.explanations import (
     ProofOutputReview,
     ProofOutputReviewError,
     ProofSemanticReviewUnavailable,
+    _output_review_prompt,
     _parse_json_object,
     _validation_failure_reason,
 )
@@ -1466,3 +1467,94 @@ def test_the_explanation_stage_still_receives_the_presentation_instruction() -> 
         verified=True,
     )
     assert "命題と証明をすべて英語で書いてください" in client.prompts[0]
+
+
+_FIGURE_LEAN = """theorem isosceles (A B C M : Point) : True := by
+  trivial
+"""
+_FIGURE = {
+    "version": 1,
+    "template": "triangle",
+    "parameters": {
+        "shape": "isosceles",
+        "labels": {"a": "A", "b": "B", "c": "C"},
+        "extra_points": [{"label": "M", "on": ["B", "C"], "t": 0.5}],
+        "marks": [{"icon": "right_angle", "at": [["A", "M", "B"]], "claim": "conclusion"}],
+    },
+}
+
+
+def _figure_payload(figure):
+    payload = json.loads(explanation_payload())
+    payload["sections"][0]["references"] = [
+        {"start_line": 2, "end_line": 2, "excerpt": "  trivial"}
+    ]
+    payload["figure"] = figure
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def test_explanation_keeps_a_figure_bound_to_lean_points() -> None:
+    explainer, client = build_explainer(_figure_payload(_FIGURE))
+    result = explainer.explain(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        verified=True,
+    )
+    assert result.visualization == _FIGURE
+    assert result.visualization_bindings is None
+    assert "inscribed-angle" in client.prompts[0]
+
+
+def test_explanation_drops_a_figure_naming_a_point_lean_does_not_bind() -> None:
+    figure = {
+        "version": 1,
+        "template": "triangle",
+        "parameters": {"shape": "scalene", "labels": {"a": "X", "b": "Y", "c": "Z"}},
+    }
+    explainer, _ = build_explainer(_figure_payload(figure))
+    result = explainer.explain(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        verified=True,
+    )
+    assert result.visualization is None
+    assert result.sections
+
+
+def test_explanation_drops_a_malformed_figure_and_keeps_the_proof() -> None:
+    explainer, _ = build_explainer(_figure_payload({"version": 1, "template": "svg"}))
+    result = explainer.explain(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        verified=True,
+    )
+    assert result.visualization is None
+    assert result.sections
+
+
+def test_a_review_correction_omits_the_figure() -> None:
+    explainer, _ = build_explainer(_figure_payload(_FIGURE))
+    result = explainer.explain(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        verified=True,
+        review_feedback={"category": "rejected", "rationale": "The figure states too much."},
+    )
+    assert result.visualization is None
+
+
+def test_review_prompt_covers_the_figure() -> None:
+    explainer, _ = build_explainer(_figure_payload(_FIGURE))
+    result = explainer.explain(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        verified=True,
+    )
+    prompt = _output_review_prompt(
+        theorem_statement="AM is perpendicular to BC.",
+        lean_code=_FIGURE_LEAN,
+        explanation=result,
+        language="ja",
+    )
+    assert '"figure"' in prompt
+    assert "proving nothing" in prompt

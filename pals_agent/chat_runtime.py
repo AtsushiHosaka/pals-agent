@@ -14,6 +14,7 @@ from pals_agent.chat_images import (
     chat_input_data,
     chat_input_sha256,
 )
+from pals_agent.figure_calls import FIGURE_INSTRUCTION, labels_occur_in, split_figure
 from pals_agent.linked_chat import linked_chat_scope, validate_generation_settings
 from pals_agent.material_context import MATERIAL_INSTRUCTION, MaterialContext
 from pals_agent.model_roles import RELEASE_MODEL
@@ -59,7 +60,27 @@ _ROUTE_SCHEMA = _object(
         },
     }
 )
-_EXPLANATION_SCHEMA = _object({"text": _STRING})
+def _optional_figure(
+    figure_json: Any, text: str
+) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
+    """An unusable figure never costs the learner the answer, so it is dropped."""
+    if not isinstance(figure_json, str):
+        return None
+    try:
+        call, bindings = split_figure(json.loads(figure_json))
+    except (ValueError, RecursionError):
+        return None
+    return (call, bindings) if labels_occur_in(call, text) else None
+
+
+def _figure_fields(figure: tuple[dict[str, Any], list[dict[str, Any]]] | None) -> dict[str, Any]:
+    if figure is None:
+        return {}
+    call, bindings = figure
+    return {"visualization": call, **({"visualization_bindings": bindings} if bindings else {})}
+
+
+_EXPLANATION_SCHEMA = _object({"text": _STRING, "figure_json": _NULL_STRING})
 _QA_SCHEMA = _object({"approved": {"type": "boolean"}, "rationale": _STRING})
 _BOUNDARY = (
     "Choose lean for any request to solve a problem, calculate a requested solution, prove "
@@ -261,7 +282,10 @@ class ChatRuntime:
             "a final solution, a proof, correctness verdict, or that Lean verified anything. "
             "Explain faithfully, identify uncertainty and do not invent missing image content. "
             "Use output_language. Use KaTeX-compatible math in $...$, $$...$$, \\(...\\), "
-            "or \\[...\\]. Return {text}.\nDATA:\n" + json.dumps(data, ensure_ascii=False),
+            "or \\[...\\]. " + FIGURE_INSTRUCTION + "\nReturn {text, figure_json}, where "
+            "figure_json is that figure serialized as a JSON string, or null when no template "
+            "applies.\nDATA:\n"
+            + json.dumps(data, ensure_ascii=False),
             _object(
                 {
                     **_EXPLANATION_SCHEMA["properties"],
@@ -282,6 +306,7 @@ class ChatRuntime:
         material_sources = (
             materials.validate_citations(response["material_citations"]) if materials else []
         )
+        figure = _optional_figure(response.get("figure_json"), text)
         answer_hash = hashlib.sha256(text.encode()).hexdigest()
         evidence["chat_explanation_generation"] = {
             "input_sha256": input_sha,
@@ -306,12 +331,25 @@ class ChatRuntime:
             "requests), if the answer decides correctness or provides an unverified proof or "
             "solution, fabricates image content, ignores an image, contains material errors "
             "or claims Lean verification. Approve only an accurate relevant ordinary explanation "
-            "with renderer-compatible delimited TeX math.\nDATA:\n"
+            "with renderer-compatible delimited TeX math. "
+            + (
+                "Judge `approved` on the answer text alone. Set figure_consistent to whether "
+                "the illustration `figure` matches the answer's labels and statements.\nDATA:\n"
+                if figure
+                else "\nDATA:\n"
+            )
             + json.dumps(
-                {"request": data, "answer": text, "material_sources": material_sources},
+                {
+                    "request": data,
+                    "answer": text,
+                    "material_sources": material_sources,
+                    **({"figure": figure[0]} if figure else {}),
+                },
                 ensure_ascii=False,
             ),
-            _QA_SCHEMA,
+            _object({**_QA_SCHEMA["properties"], "figure_consistent": {"type": "boolean"}})
+            if figure
+            else _QA_SCHEMA,
             model=RELEASE_MODEL,
             role="chat_explanation_qa",
             images=images,
@@ -350,6 +388,9 @@ class ChatRuntime:
             return ProofReuseResult(
                 "failed", None, None, "chat_explanation_review_failed", evidence
             )
+        # A figure the reviewer doubts is dropped; the approved text stands without it.
+        if figure and verdict.get("figure_consistent") is not True:
+            figure = None
         return ProofReuseResult(
             "answered",
             None,
@@ -358,6 +399,7 @@ class ChatRuntime:
                 "evidence_kind": "reviewed_explanation",
                 "sources": [],
                 **({"material_sources": material_sources} if materials else {}),
+                **_figure_fields(figure),
             },
             None,
             evidence,
