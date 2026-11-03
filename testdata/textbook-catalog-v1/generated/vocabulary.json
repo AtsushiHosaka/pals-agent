@@ -16,6 +16,13 @@
    "meaning": "G is an abelian group",
    "returns": "prop"
   },
+  "abelian_lie_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "L is an abelian Lie algebra",
+   "returns": "prop"
+  },
   "abelianization": {
    "args": [
     "term"
@@ -29,6 +36,21 @@
     "term"
    ],
    "meaning": "mu is absolutely continuous with respect to nu",
+   "returns": "prop"
+  },
+  "absolute_discriminant": {
+   "args": [
+    "term"
+   ],
+   "meaning": "discriminant of the number field K",
+   "returns": "term"
+  },
+  "absolute_value_equivalent": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "two absolute values define the same topology, equivalently one is a positive power of the other",
    "returns": "prop"
   },
   "accumulation_point_of_agreement": {
@@ -86,6 +108,55 @@
     "term"
    ],
    "meaning": "stabilizer of x in G, in the order (G, x)",
+   "returns": "term"
+  },
+  "ad_leibniz_sum": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "sum over i+j=n of C(n,i)[(ad x)^i y, (ad x)^j z], in the order x y z n",
+   "returns": "term"
+  },
+  "adapted_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(adapted_process F X): X_n is F_n-measurable for each n",
+   "returns": "prop"
+  },
+  "add_comm_monoid": {
+   "args": [
+    "term"
+   ],
+   "meaning": "M is a commutative monoid written additively",
+   "returns": "prop"
+  },
+  "additive_energy": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of quadruples (a,a',b,b') in s x s x t x t with a + b = a' + b', in the order s t",
+   "returns": "term"
+  },
+  "additive_haar_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "m is an additive Haar measure on the finite-dimensional real normed space E, in the order m E",
+   "returns": "prop"
+  },
+  "adele_component": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the component of the adele a at the place v, in the order a v",
    "returns": "term"
   },
   "adic_complete": {
@@ -208,6 +279,15 @@
    "meaning": "(ae_holds_all_indices mu p): almost every x satisfies p_n(x) for all n simultaneously",
    "returns": "prop"
   },
+  "ae_iff_mem_limsup": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(ae_iff_mem_limsup mu A F): almost surely, the point lies in limsup A_n exactly when the sum over k of E[1_{A_{k+1}} | F_k] diverges to infinity",
+   "returns": "prop"
+  },
   "ae_in": {
    "args": [
     "term",
@@ -241,6 +321,23 @@
     "term"
    ],
    "meaning": "(ae_tends_to P (lambda (n) Y_n) L): Y_n converges to L almost surely under P",
+   "returns": "prop"
+  },
+  "ae_zero_euclidean": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f vanishes almost everywhere on R^n; arguments n, f",
+   "returns": "prop"
+  },
+  "ae_zero_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "for mu-almost every x in U, f(x) = 0, arguments f, U, mu",
    "returns": "prop"
   },
   "affine_isometry_equiv": {
@@ -341,6 +438,14 @@
    "meaning": "set of all ideals of R",
    "returns": "term"
   },
+  "almost_all_components_norm_one": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the adele a has |a_v|_v = 1 for all but finitely many finite places v of K, in the order K a",
+   "returns": "prop"
+  },
   "alternating_group": {
    "args": [
     "term"
@@ -357,6 +462,14 @@
    "meaning": "foot of the perpendicular from a to line bc",
    "returns": "term"
   },
+  "analytic_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is complex analytic at c",
+   "returns": "prop"
+  },
   "analytic_on": {
    "args": [
     "term",
@@ -365,12 +478,54 @@
    "meaning": "f has a convergent power series expansion near each point of U",
    "returns": "prop"
   },
+  "analytic_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "order of vanishing of the analytic function f at c, a natural number or the infinite order",
+   "returns": "term"
+  },
+  "analytic_order_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "order of vanishing at c of the analytic function given by the lambda",
+   "returns": "term"
+  },
+  "annulus_about": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the set of z with r < |z-c| < R, in the order c r R",
+   "returns": "term"
+  },
   "arctan_value": {
    "args": [
     "term"
    ],
    "meaning": "real inverse tangent arctan x",
    "returns": "term"
+  },
+  "arithmetic_frobenius_at": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "s(x) is congruent to x^q modulo the prime ideal I for all integers x, where q is the residue field size below, in the order s I K",
+   "returns": "prop"
+  },
+  "arithmetic_function": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is an arithmetic function with values in A vanishing at 0, in the order f A",
+   "returns": "prop"
   },
   "artinian_module": {
    "args": [
@@ -493,6 +648,64 @@
    "meaning": "i-th standard basis vector",
    "returns": "term"
   },
+  "bayes_risk": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(bayes_risk l k m) is the infimum over Markov estimators of the average risk under the loss l, model k and prior m",
+   "returns": "term"
+  },
+  "bell_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "n-th Bell number, defined by B_0 = 1 and B_(n+1) = sum_i C(n,i) B_(n-i)",
+   "returns": "term"
+  },
+  "bernoulli_measure": {
+   "args": [
+    "term"
+   ],
+   "meaning": "law on the real line with mass p at 1 and mass 1-p at 0",
+   "returns": "term"
+  },
+  "bernoulli_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the n-th Bernoulli number, with B_1 = -1/2",
+   "returns": "term"
+  },
+  "bernoulli_polynomial": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the n-th Bernoulli polynomial",
+   "returns": "term"
+  },
+  "bernoulli_power_series_identity": {
+   "args": [],
+   "meaning": "the exponential generating series of the Bernoulli numbers times (exp X - 1) equals X as formal power series",
+   "returns": "prop"
+  },
+  "beta_integral": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Euler beta integral B(u,v), the integral of x^(u-1) (1-x)^(v-1) over (0,1)",
+   "returns": "term"
+  },
+  "beta_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "beta distribution with parameters a and b",
+   "returns": "term"
+  },
   "big_o_power_decay": {
    "args": [
     "term",
@@ -562,6 +775,13 @@
    "meaning": "a is related to b by the relation r",
    "returns": "prop"
   },
+  "binary_trees_with_nodes": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of rooted binary trees with exactly n internal nodes",
+   "returns": "term"
+  },
   "binom": {
    "args": [
     "term",
@@ -602,6 +822,22 @@
     "term"
    ],
    "meaning": "block matrix with blocks A, B in the first row and C, D in the second",
+   "returns": "term"
+  },
+  "bounded_bilinear_form": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "B is a bounded bilinear form on H, viewed as B(u)(w), arguments B, H",
+   "returns": "prop"
+  },
+  "bounded_conjugate_integers": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the set of algebraic integers of K all of whose conjugates have modulus at most B, in the order K B",
    "returns": "term"
   },
   "bounded_continuous_on": {
@@ -661,6 +897,21 @@
    "meaning": "the closed box of points between the corners a and b of R^n",
    "returns": "term"
   },
+  "brownian_motion": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(brownian_motion B mu): B is a pre-Brownian motion with almost surely continuous paths",
+   "returns": "prop"
+  },
+  "bump_outer_radius": {
+   "args": [
+    "term"
+   ],
+   "meaning": "radius of a ball containing the support of the bump function",
+   "returns": "term"
+  },
   "canonical_embedding": {
    "args": [
     "term"
@@ -700,6 +951,37 @@
    "meaning": "cardinal exponentiation a to the power b",
    "returns": "term"
   },
+  "carmichael_lambda": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Carmichael function of n, the exponent of the unit group of Z/nZ",
+   "returns": "term"
+  },
+  "cartan_matrix_entry": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "entry of the Cartan matrix of the base b, in the order b i j",
+   "returns": "term"
+  },
+  "cartan_matrix_nondegenerate": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Cartan matrix of the base b is nondegenerate",
+   "returns": "prop"
+  },
+  "cartan_subalgebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "H is a nilpotent self-normalizing subalgebra of L, in the order H L",
+   "returns": "prop"
+  },
   "cat_compose": {
    "args": [
     "term",
@@ -730,6 +1012,22 @@
    "meaning": "a is a Cauchy sequence in the metric space X",
    "returns": "prop"
   },
+  "cayley_graph": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Cayley graph of the group M with respect to s, with x adjacent to y when x differs from y and x^-1 y or y^-1 x lies in s",
+   "returns": "term"
+  },
+  "cdf_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(cdf_of mu x) is the distribution function mu((-infinity, x]) at x",
+   "returns": "term"
+  },
   "centroid_of": {
    "args": [
     "term",
@@ -737,6 +1035,45 @@
     "term"
    ],
    "meaning": "centroid of triangle abc",
+   "returns": "term"
+  },
+  "cf_continues_after": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the regular continued fraction of v does not stop at the n-th convergent, in the order v n",
+   "returns": "prop"
+  },
+  "cf_denominator": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "denominator q_n of the n-th convergent of the regular continued fraction of v, in the order v n",
+   "returns": "term"
+  },
+  "cf_numerator": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "numerator p_n of the n-th convergent of the regular continued fraction of v, in the order v n",
+   "returns": "term"
+  },
+  "cf_terminates": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the regular continued fraction of v is finite",
+   "returns": "prop"
+  },
+  "cfc_apply": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "continuous functional calculus f(a) of a normal element, arguments f, a",
    "returns": "term"
   },
   "chain_homotopic": {
@@ -764,12 +1101,56 @@
    "meaning": "C is a chain with respect to R",
    "returns": "prop"
   },
+  "char_fun": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(char_fun mu t) is the characteristic function of mu at t, the integral of exp(i<x,t>)",
+   "returns": "term"
+  },
+  "char_fun_function": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the characteristic function of mu as a function of t",
+   "returns": "term"
+  },
   "char_not_two": {
    "args": [
     "term"
    ],
    "meaning": "2 is invertible in the field K",
    "returns": "prop"
+  },
+  "character_family_is_basis": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the complex additive characters of G form a basis of the space of complex functions on G",
+   "returns": "prop"
+  },
+  "character_group_size": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the number of complex additive characters of the finite group G",
+   "returns": "term"
+  },
+  "character_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a nonzero continuous multiplicative linear functional on A, arguments f, A",
+   "returns": "prop"
+  },
+  "character_space": {
+   "args": [
+    "term"
+   ],
+   "meaning": "space of characters of A",
+   "returns": "term"
   },
   "characteristic_subgroup": {
    "args": [
@@ -808,6 +1189,50 @@
    "meaning": "target (image) of the chart c",
    "returns": "term"
   },
+  "chebyshev_node_set": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of cos((2k+1) pi / (2n)) for k = 0, ..., n-1",
+   "returns": "term"
+  },
+  "chebyshev_psi": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Chebyshev function psi(x), the sum of the von Mangoldt function over m <= x",
+   "returns": "term"
+  },
+  "chebyshev_t": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Chebyshev polynomial of the first kind over the commutative ring R; arguments R, n",
+   "returns": "term"
+  },
+  "chebyshev_theta": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Chebyshev function theta(x), the sum of log p over primes p <= x",
+   "returns": "term"
+  },
+  "chebyshev_u": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Chebyshev polynomial of the second kind over the commutative ring R; arguments R, n",
+   "returns": "term"
+  },
+  "chromatic_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "least number of colors of a proper vertex coloring of G",
+   "returns": "term"
+  },
   "circle_integral": {
    "args": [
     "term_function",
@@ -815,6 +1240,15 @@
     "term"
    ],
    "meaning": "contour integral of a function over the positively oriented circle with centre c and radius R",
+   "returns": "term"
+  },
+  "circle_mean_fn": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "meaning": "mean value of the function over the circle with centre c and radius R",
    "returns": "term"
   },
   "circle_set": {
@@ -862,6 +1296,15 @@
     "term"
    ],
    "meaning": "class number of the number field K",
+   "returns": "term"
+  },
+  "closed_annulus_about": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the set of z with r <= |z-c| <= R, in the order c r R",
    "returns": "term"
   },
   "closed_ball": {
@@ -954,6 +1397,22 @@
    "meaning": "topological closure of S",
    "returns": "term"
   },
+  "colex_initial_segment": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the family is an initial segment of the colexicographic order on the r-element sets, in the order F r",
+   "returns": "prop"
+  },
+  "colex_lt": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "s precedes t in colexicographic order, that is the maximum of the symmetric difference lies in t",
+   "returns": "prop"
+  },
   "collinear_points": {
    "args": [
     "term",
@@ -970,6 +1429,20 @@
    ],
    "meaning": "ideal quotient (I : J) of all r with rJ contained in I, in the order I J",
    "returns": "term"
+  },
+  "comm_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the multiplication of A is commutative",
+   "returns": "prop"
+  },
+  "comm_cstar_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "A is a commutative unital complex C*-algebra",
+   "returns": "prop"
   },
   "comm_ring": {
    "args": [
@@ -1043,12 +1516,29 @@
    "meaning": "f has compact support",
    "returns": "prop"
   },
+  "compatible_mod_power_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the homomorphisms f_n to Z/p^n commute with the reductions, in the order f p",
+   "returns": "prop"
+  },
   "complement": {
    "args": [
     "term"
    ],
    "meaning": "complement of a set in the ambient type",
    "returns": "term"
+  },
+  "complementary_lie_ideals": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "I and J are complementary as Lie ideals or Lie submodules of L, in the order I J L",
+   "returns": "prop"
   },
   "complementary_submodules": {
    "args": [
@@ -1068,6 +1558,20 @@
    "meaning": "S and T are complementary subspaces of V, in the order (S, T, V)",
    "returns": "prop"
   },
+  "complete_graph_on": {
+   "args": [
+    "term"
+   ],
+   "meaning": "complete graph on the vertex set V",
+   "returns": "term"
+  },
+  "complete_normed_field": {
+   "args": [
+    "term"
+   ],
+   "meaning": "F is a complete normed field",
+   "returns": "prop"
+  },
   "complete_space": {
    "args": [
     "term"
@@ -1081,6 +1585,22 @@
     "term"
    ],
    "meaning": "S is a complete subset of the metric space X",
+   "returns": "prop"
+  },
+  "completely_multiplicative": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a completely multiplicative function from N to F with f(0) = 0 and f(1) = 1, in the order f F",
+   "returns": "prop"
+  },
+  "complex_add_character_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "chi is a homomorphism from the additive group G to the nonzero complex numbers; arguments chi, G",
    "returns": "prop"
   },
   "complex_banach_algebra": {
@@ -1097,12 +1617,49 @@
    "meaning": "complex conjugate of z",
    "returns": "term"
   },
+  "complex_cot": {
+   "args": [
+    "term"
+   ],
+   "meaning": "cotangent of a complex number",
+   "returns": "term"
+  },
   "complex_deriv": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "complex derivative f'(z)",
+   "returns": "term"
+  },
+  "complex_deriv_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "complex derivative at z of the function given by the lambda",
+   "returns": "term"
+  },
+  "complex_embedding": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "s is a field embedding of K into the complex numbers, in the order s K",
+   "returns": "prop"
+  },
+  "complex_embeddings": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the finite set of field embeddings of the number field K into the complex numbers",
+   "returns": "term"
+  },
+  "complex_gamma_fn": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Gamma function of a complex argument, holomorphic off the nonpositive integers",
    "returns": "term"
   },
   "complex_i": {
@@ -1113,6 +1670,48 @@
   "complex_imaginary_unit": {
    "args": [],
    "meaning": "the imaginary unit i",
+   "returns": "term"
+  },
+  "complex_places_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number r_2 of complex places of the number field K",
+   "returns": "term"
+  },
+  "complex_polynomial": {
+   "args": [
+    "term"
+   ],
+   "meaning": "p is a polynomial with complex coefficients",
+   "returns": "prop"
+  },
+  "complex_sin": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sine of a complex number",
+   "returns": "term"
+  },
+  "complex_unital_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "A is a unital associative algebra over C",
+   "returns": "prop"
+  },
+  "complex_vector_space": {
+   "args": [
+    "term"
+   ],
+   "meaning": "E is a vector space over C",
+   "returns": "prop"
+  },
+  "component_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of connected components of a finite graph",
    "returns": "term"
   },
   "component_fn": {
@@ -1131,6 +1730,13 @@
    "meaning": "s is a composition series from 0 to M, in the order (s, M)",
    "returns": "prop"
   },
+  "compositions_of": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of ordered sequences of positive integers with sum n",
+   "returns": "term"
+  },
   "cond_expectation": {
    "args": [
     "term",
@@ -1147,6 +1753,22 @@
     "term"
    ],
    "meaning": "(cond_prob P B A) is the conditional probability P(B|A)",
+   "returns": "term"
+  },
+  "cond_variance": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(cond_variance mu X G) is E[(X - E[X|G])^2 | G]",
+   "returns": "term"
+  },
+  "conductor_exponent": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the least positive integer d with d times the ring of integers contained in Z[t], or 0 if no such d exists",
    "returns": "term"
   },
   "cone_apex": {
@@ -1280,6 +1902,13 @@
    "meaning": "f is a continuous complex function on the circle of period T",
    "returns": "prop"
   },
+  "continuous_functions_on": {
+   "args": [
+    "term"
+   ],
+   "meaning": "space of continuous complex functions on X",
+   "returns": "term"
+  },
   "continuous_linear_functional": {
    "args": [
     "term"
@@ -1333,6 +1962,13 @@
    "meaning": "the function given by a lambda is continuous on the set s",
    "returns": "prop"
   },
+  "continuous_path": {
+   "args": [
+    "term"
+   ],
+   "meaning": "g is a continuous map from the unit interval to the complex plane",
+   "returns": "prop"
+  },
   "contractible_space": {
    "args": [
     "term"
@@ -1378,12 +2014,37 @@
    "meaning": "S is a convex subset of a real vector space",
    "returns": "prop"
   },
+  "convolution_at": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "value at x of the convolution of phi and g for mu, arguments phi, g, mu, x",
+   "returns": "term"
+  },
+  "convolution_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "convolution of f and g, whose value at x is the integral of f(t) g(x-t) over t",
+   "returns": "term"
+  },
   "coordinate_of": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "i-th coordinate of the vector x",
+   "returns": "term"
+  },
+  "coordinate_rv": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the coordinate function x -> x_i viewed as a random variable",
    "returns": "term"
   },
   "coplanar_points": {
@@ -1462,6 +2123,57 @@
    ],
    "meaning": "p is a covering map",
    "returns": "prop"
+  },
+  "covering_map_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a covering map over the set S of the target",
+   "returns": "prop"
+  },
+  "cross_hat": {
+   "args": [
+    "term"
+   ],
+   "meaning": "skew-symmetric 3 by 3 matrix of left cross product with v",
+   "returns": "term"
+  },
+  "cross_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "cross product v x w of three-dimensional vectors",
+   "returns": "term"
+  },
+  "crystallographic_pairing": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the pairings of the root pairing P are integers",
+   "returns": "prop"
+  },
+  "cstar_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "A is a unital complex C*-algebra",
+   "returns": "prop"
+  },
+  "cstar_ring": {
+   "args": [
+    "term"
+   ],
+   "meaning": "A is a normed ring with an involution satisfying the C*-identity",
+   "returns": "prop"
+  },
+  "cycle_graph": {
+   "args": [
+    "term"
+   ],
+   "meaning": "graph on Z/nZ with i adjacent to i+1 and i-1 when these differ from i",
+   "returns": "term"
   },
   "cycle_length": {
    "args": [
@@ -1544,6 +2256,30 @@
    "meaning": "R is a Dedekind domain",
    "returns": "prop"
   },
+  "dedekind_zeta": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Dedekind zeta function of K evaluated at s, in the order K s",
+   "returns": "term"
+  },
+  "degree_mod": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "degree of g mod p, in the order g p",
+   "returns": "term"
+  },
+  "dense_image_of_field": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the diagonal image of K is dense in the topological ring A, in the order K A",
+   "returns": "prop"
+  },
   "dense_in": {
    "args": [
     "term",
@@ -1552,12 +2288,28 @@
    "meaning": "S is dense in the topological space X",
    "returns": "prop"
   },
+  "densely_defined_operator": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "T is a linear operator from a dense subspace of E to F",
+   "returns": "prop"
+  },
   "dependent_pair_set": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "set of pairs (a, b) with a in A and b in the member B_a of the family B",
+   "returns": "term"
+  },
+  "derangement_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of fixed-point-free permutations of an n-element set",
    "returns": "term"
   },
   "derangement_set": {
@@ -1573,6 +2325,22 @@
     "term"
    ],
    "meaning": "derivative of the one-variable function f at a; arguments f, a",
+   "returns": "term"
+  },
+  "deriv_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "value f'(x) of the derivative of f; arguments f, x",
+   "returns": "term"
+  },
+  "derivation_apply": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "derivation X applied to the smooth function f",
    "returns": "term"
   },
   "derivative_at": {
@@ -1604,6 +2372,14 @@
    ],
    "meaning": "A is a diagonal matrix",
    "returns": "prop"
+  },
+  "difference_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "difference set A - B of two finite subsets of an additive group",
+   "returns": "term"
   },
   "differentiable_at": {
    "args": [
@@ -1691,6 +2467,13 @@
    "meaning": "dimension of V over K (arguments K, V)",
    "returns": "term"
   },
+  "dirac_delta": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Dirac tempered distribution at x",
+   "returns": "term"
+  },
   "direct_complement": {
    "args": [
     "term",
@@ -1738,6 +2521,69 @@
    "meaning": "direct sum of two modules",
    "returns": "term"
   },
+  "dirichlet_character": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "c is a complex Dirichlet character modulo M, in the order c M",
+   "returns": "prop"
+  },
+  "dirichlet_character_sum": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "sum of chi(a^(-1)) chi(b) over all complex Dirichlet characters chi modulo M, in the order M a b",
+   "returns": "term"
+  },
+  "dirichlet_convolution": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Dirichlet convolution f*g of arithmetic functions",
+   "returns": "term"
+  },
+  "dirichlet_invertible": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the arithmetic function f is invertible under Dirichlet convolution",
+   "returns": "prop"
+  },
+  "dirichlet_l_function": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "analytically continued Dirichlet L-function of the character c at s, in the order c s",
+   "returns": "term"
+  },
+  "dirichlet_l_series": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of the series of c(n) n^(-s) over n >= 1, in the order c s",
+   "returns": "term"
+  },
+  "dirichlet_series_abs_summable": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the series of c(n) n^(-s) over n >= 1 converges absolutely, in the order c s",
+   "returns": "prop"
+  },
+  "dirichlet_trivial_character": {
+   "args": [
+    "term"
+   ],
+   "meaning": "trivial Dirichlet character modulo M",
+   "returns": "term"
+  },
   "discontinuity_set": {
    "args": [
     "term"
@@ -1775,6 +2621,13 @@
     "term"
    ],
    "meaning": "infimum of the distances from the point x to the set S",
+   "returns": "term"
+  },
+  "distinct_prime_factor_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number omega(n) of distinct prime factors of n",
    "returns": "term"
   },
   "divergence_at": {
@@ -1823,6 +2676,38 @@
    "meaning": "number of positive divisors of a positive integer n",
    "returns": "term"
   },
+  "divisor_factor_product": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the finite product of (z-u)^D(u) over the support of D, in the order D z",
+   "returns": "term"
+  },
+  "divisor_log_sum": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "sum over u of D(u) log(R/|c-u|), in the order D c R",
+   "returns": "term"
+  },
+  "divisor_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "divisor of the meromorphic function on U, sending each point of U to the order there",
+   "returns": "term"
+  },
+  "divisor_total": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sum of the values of a finitely supported divisor",
+   "returns": "term"
+  },
   "doob_process": {
    "args": [
     "term",
@@ -1848,12 +2733,29 @@
    "meaning": "canonical map from V to its double dual (arguments K, V)",
    "returns": "term"
   },
+  "down_compression": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "down-compression of a family F along an element a, in the order a F",
+   "returns": "term"
+  },
   "dual_annihilator": {
    "args": [
     "term"
    ],
    "meaning": "subspace of linear functionals vanishing on W",
    "returns": "term"
+  },
+  "dual_functional": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "c is a K-linear functional on L, in the order c K L",
+   "returns": "prop"
   },
   "dual_space": {
    "args": [
@@ -1869,6 +2771,69 @@
    ],
    "meaning": "a divides b",
    "returns": "prop"
+  },
+  "dyck_concat": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "concatenation of two Dyck words",
+   "returns": "term"
+  },
+  "dyck_down_step": {
+   "args": [],
+   "meaning": "the down-step letter of a Dyck word",
+   "returns": "term"
+  },
+  "dyck_nest": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Dyck word U p D obtained by enclosing the word p",
+   "returns": "term"
+  },
+  "dyck_semilength": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of up-steps of a Dyck word",
+   "returns": "term"
+  },
+  "dyck_up_step": {
+   "args": [],
+   "meaning": "the up-step letter of a Dyck word",
+   "returns": "term"
+  },
+  "dyck_word": {
+   "args": [
+    "term"
+   ],
+   "meaning": "p is a Dyck word",
+   "returns": "prop"
+  },
+  "dyck_words": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of Dyck words with n up-steps and n down-steps",
+   "returns": "term"
+  },
+  "edge_density": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "edge density of the pair of vertex sets, the number of edges between s and t divided by |s||t|, and 0 when s or t is empty, in the order G s t",
+   "returns": "term"
+  },
+  "edge_difference_square_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum over the edges uv of G of (x_u - x_v)^2, in the order G x",
+   "returns": "term"
   },
   "eigenspace": {
    "args": [
@@ -1919,6 +2884,19 @@
    "meaning": "there is an elementary embedding of M into N for the language L, in the order L M N",
    "returns": "prop"
   },
+  "embedding_matrix": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the matrix (s_j(b_i)) for a family b and an enumeration s of the embeddings of the field, in the order b s",
+   "returns": "term"
+  },
+  "empty_dyck_word": {
+   "args": [],
+   "meaning": "the empty Dyck word",
+   "returns": "term"
+  },
   "endomorphism": {
    "args": [
     "term",
@@ -1928,6 +2906,21 @@
    "meaning": "f is a K-linear endomorphism of V (arguments K, V, f)",
    "returns": "prop"
   },
+  "endomorphism_lie_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "endomorphisms of V over K with the commutator bracket, in the order K V",
+   "returns": "term"
+  },
+  "engel_subalgebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "subalgebra of elements killed by a power of ad x",
+   "returns": "term"
+  },
   "entire_function": {
    "args": [
     "term"
@@ -1935,11 +2928,46 @@
    "meaning": "f is complex differentiable on the whole plane",
    "returns": "prop"
   },
+  "enumerates_embeddings": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "s is a bijection from an index set onto the complex embeddings of K, in the order s K",
+   "returns": "prop"
+  },
   "epi_morphism": {
    "args": [
     "term"
    ],
    "meaning": "f is an epimorphism",
+   "returns": "prop"
+  },
+  "eq_near": {
+   "args": [
+    "term_function",
+    "term_function",
+    "term"
+   ],
+   "meaning": "the two functions agree on a neighbourhood of c",
+   "returns": "prop"
+  },
+  "eq_off_discrete": {
+   "args": [
+    "term_function",
+    "term_function",
+    "term"
+   ],
+   "meaning": "the two functions agree on U outside a subset of U with no accumulation point in U",
+   "returns": "prop"
+  },
+  "eq_punctured_near": {
+   "args": [
+    "term_function",
+    "term_function",
+    "term"
+   ],
+   "meaning": "the two functions agree on a punctured neighbourhood of c",
    "returns": "prop"
   },
   "equicontinuous_family": {
@@ -2012,6 +3040,14 @@
    "meaning": "the ambient Euclidean space has dimension n",
    "returns": "prop"
   },
+  "euclidean_ball_volume": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Lebesgue volume of the open ball of radius r in Euclidean n-space; arguments n, r",
+   "returns": "term"
+  },
   "euclidean_domain": {
    "args": [
     "term"
@@ -2031,12 +3067,25 @@
    "meaning": "n-dimensional Euclidean space",
    "returns": "term"
   },
+  "euler_gamma_constant": {
+   "args": [],
+   "meaning": "Euler-Mascheroni constant",
+   "returns": "term"
+  },
   "euler_phi": {
    "args": [
     "term"
    ],
    "meaning": "Euler totient function of n",
    "returns": "term"
+  },
+  "event_in_sigma": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(event_in_sigma A G): the set A is measurable with respect to the sigma-algebra G",
+   "returns": "prop"
   },
   "event_partition": {
    "args": [
@@ -2089,12 +3138,24 @@
    "meaning": "foot of the excenter of triangle abc opposite a on the side line opposite vertex d; arguments a b c d",
    "returns": "term"
   },
+  "exp_function": {
+   "args": [],
+   "meaning": "the complex exponential function",
+   "returns": "term"
+  },
   "expectation": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "(expectation P X) is the expectation of X under P",
+   "returns": "term"
+  },
+  "exponential_measure": {
+   "args": [
+    "term"
+   ],
+   "meaning": "exponential distribution with rate r",
    "returns": "term"
   },
   "exradius_opposite": {
@@ -2178,9 +3239,25 @@
    "meaning": "zero element of Ext^n(X,Y), in the order (X, Y, n)",
    "returns": "term"
   },
+  "extended_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the ideal generated by I in the larger ring S, in the order I S",
+   "returns": "term"
+  },
   "extended_infinity": {
    "args": [],
    "meaning": "positive infinity in the extended nonnegative reals",
+   "returns": "term"
+  },
+  "extended_min": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "minimum of two values in the integers extended by the infinite order",
    "returns": "term"
   },
   "extension_class": {
@@ -2270,6 +3347,22 @@
    "meaning": "family obtained by putting the vector x in front of the family v",
    "returns": "term"
   },
+  "family_differences": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "family of all differences a minus b for a in F and b in G",
+   "returns": "term"
+  },
+  "family_discriminant": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "discriminant det(Tr(b_i b_j)) over the base field F of the finite family b, in the order F b",
+   "returns": "term"
+  },
   "family_image": {
    "args": [
     "term",
@@ -2291,6 +3384,30 @@
     "term"
    ],
    "meaning": "intersection of the family U indexed by I",
+   "returns": "term"
+  },
+  "family_joins": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "family of all unions of a in F with b in G",
+   "returns": "term"
+  },
+  "family_meets": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "family of all intersections of a in F with b in G",
+   "returns": "term"
+  },
+  "family_slice": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "subfamily of the members of F with exactly r elements, in the order F r",
    "returns": "term"
   },
   "family_span_upto": {
@@ -2341,6 +3458,13 @@
    "meaning": "Frechet derivative of f at a",
    "returns": "term"
   },
+  "fermat_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Fermat number 2^(2^n)+1",
+   "returns": "term"
+  },
   "fibonacci": {
    "args": [
     "term"
@@ -2378,6 +3502,28 @@
    "meaning": "the finite group G acts faithfully on the field E by field automorphisms",
    "returns": "prop"
   },
+  "field_of_char": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "k is a field of characteristic p, in the order k p",
+   "returns": "prop"
+  },
+  "field_value_at_one": {
+   "args": [
+    "term"
+   ],
+   "meaning": "value of the vector field V at the identity",
+   "returns": "term"
+  },
+  "filtration_limit": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the sigma-algebra generated by all F_n",
+   "returns": "term"
+  },
   "filtration_of": {
    "args": [
     "term"
@@ -2385,11 +3531,41 @@
    "meaning": "F is a filtration indexed by the natural numbers",
    "returns": "prop"
   },
+  "finite_add_comm_group": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G is a finite additive abelian group",
+   "returns": "prop"
+  },
+  "finite_adele_ring": {
+   "args": [
+    "term"
+   ],
+   "meaning": "ring of finite adeles of the number field K",
+   "returns": "term"
+  },
+  "finite_coloring": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "c is a coloring of the set X by the finite set k, in the order c X k",
+   "returns": "prop"
+  },
   "finite_dim_space": {
    "args": [
     "term"
    ],
    "meaning": "E is finite dimensional",
+   "returns": "prop"
+  },
+  "finite_exponent": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the exponent p is finite",
    "returns": "prop"
   },
   "finite_extension": {
@@ -2437,6 +3613,13 @@
    "meaning": "H is a subgroup of finite index in G, in the order (H, G)",
    "returns": "prop"
   },
+  "finite_kernel": {
+   "args": [
+    "term"
+   ],
+   "meaning": "k is a finite kernel",
+   "returns": "prop"
+  },
   "finite_length_module": {
    "args": [
     "term",
@@ -2459,6 +3642,13 @@
    "meaning": "the group element g has finite order",
    "returns": "prop"
   },
+  "finite_places": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of finite places of the number field K, normalized by the norm of the prime ideal",
+   "returns": "term"
+  },
   "finite_ring": {
    "args": [
     "term"
@@ -2471,6 +3661,13 @@
     "term"
    ],
    "meaning": "the ring homomorphism g makes its target a finitely generated module over its source",
+   "returns": "prop"
+  },
+  "finite_root_pairing": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the root pairing P has finitely many roots",
    "returns": "prop"
   },
   "finite_set": {
@@ -2486,6 +3683,29 @@
    ],
    "meaning": "G is a simple graph on a finite vertex set",
    "returns": "prop"
+  },
+  "finite_support_divisor": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the divisor D has finite support",
+   "returns": "prop"
+  },
+  "finite_support_one": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "the indexed expression over the set differs from 1 only finitely often",
+   "returns": "prop"
+  },
+  "finite_support_product": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "product of the indexed expression over a set, on which it differs from 1 only finitely often",
+   "returns": "term"
   },
   "finite_type_algebra": {
    "args": [
@@ -2592,6 +3812,13 @@
    "meaning": "T is a first-order theory in the language L, in the order T L",
    "returns": "prop"
   },
+  "fitting_one_component": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sum over x of the intersection of the images of the powers of x on the module M",
+   "returns": "term"
+  },
   "fixed_field": {
    "args": [
     "term",
@@ -2675,6 +3902,13 @@
    ],
    "meaning": "the real function f is continuous on the whole line",
    "returns": "prop"
+  },
+  "fn_deriv": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the derivative function f' of f",
+   "returns": "term"
   },
   "fn_indicator": {
    "args": [
@@ -2794,6 +4028,14 @@
    "meaning": "pointwise supremum of a function sequence",
    "returns": "term"
   },
+  "fn_smul": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "pointwise product x mapsto phi(x) f(x), arguments phi, f",
+   "returns": "term"
+  },
   "fn_strict_anti": {
    "args": [
     "term_function"
@@ -2855,6 +4097,13 @@
    "meaning": "value B(x,y) of a bilinear form (arguments B, x, y)",
    "returns": "term"
   },
+  "formal_power_series_mk": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "formal power series with the given coefficient function",
+   "returns": "term"
+  },
   "formal_power_series_over": {
    "args": [
     "term",
@@ -2878,6 +4127,15 @@
     "term"
    ],
    "meaning": "n-th Fourier coefficient of f on the circle of period T",
+   "returns": "term"
+  },
+  "fourier_coeff_circle_fn": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "meaning": "n-th Fourier coefficient on the circle of period T of the function given by a lambda; arguments T, f, n",
    "returns": "term"
   },
   "fourier_coeff_family": {
@@ -2981,6 +4239,21 @@
    "meaning": "free group on the set A",
    "returns": "term"
   },
+  "free_lie_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "free Lie algebra on the set X over R, in the order R X",
+   "returns": "term"
+  },
+  "free_lie_generator": {
+   "args": [
+    "term"
+   ],
+   "meaning": "generator of the free Lie algebra attached to x",
+   "returns": "term"
+  },
   "free_module": {
    "args": [
     "term",
@@ -3014,6 +4287,14 @@
    "meaning": "the free module R^n, in the order R n",
    "returns": "term"
   },
+  "frequently_nonzero_punctured": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "every punctured neighbourhood of c contains a point where f is nonzero",
+   "returns": "prop"
+  },
   "frobenius_automorphism": {
    "args": [
     "term",
@@ -3043,6 +4324,13 @@
     "term"
    ],
    "meaning": "composite g after f",
+   "returns": "term"
+  },
+  "function_conj": {
+   "args": [
+    "term"
+   ],
+   "meaning": "pointwise complex conjugate of a function",
    "returns": "term"
   },
   "function_set": {
@@ -3110,6 +4398,14 @@
    "meaning": "fundamental group of X at the base point x",
    "returns": "term"
   },
+  "fundamental_unit_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "u is a family of r units of K, where r+1 is the number of infinite places, in the order u K",
+   "returns": "prop"
+  },
   "galois_extension": {
    "args": [
     "term",
@@ -3132,6 +4428,37 @@
     "term"
    ],
    "meaning": "the Galois group Gal(E/F)",
+   "returns": "term"
+  },
+  "galois_image_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the image of an ideal of the ring of integers under a Galois automorphism, in the order s I",
+   "returns": "term"
+  },
+  "gamma_fn": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Euler gamma function Gamma(s)",
+   "returns": "term"
+  },
+  "gamma_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "gamma distribution with shape a and rate r, in the order (a, r)",
+   "returns": "term"
+  },
+  "gauss_lemma_count": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of x with 1 <= x <= (p-1)/2 whose product ax has remainder greater than (p-1)/2 modulo p, in the order a p",
    "returns": "term"
   },
   "gaussian_int": {
@@ -3161,6 +4488,14 @@
    "meaning": "x is a prime element of Z[i]",
    "returns": "prop"
   },
+  "gaussian_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(gaussian_process X mu): all finite-dimensional laws of X under mu are Gaussian",
+   "returns": "prop"
+  },
   "gcd_domain": {
    "args": [
     "term"
@@ -3168,11 +4503,54 @@
    "meaning": "R is an integral domain with greatest common divisors",
    "returns": "prop"
   },
+  "gelfand_transform": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Gelfand transform of the commutative algebra A",
+   "returns": "term"
+  },
+  "gen_weight_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "generalized weight space of M for a function chi on a nilpotent Lie algebra, in the order M chi",
+   "returns": "term"
+  },
+  "generated_sigma": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sigma-algebra generated by the family of sets p",
+   "returns": "term"
+  },
   "generated_subgroup": {
    "args": [
     "term"
    ],
    "meaning": "subgroup generated by a set of elements",
+   "returns": "term"
+  },
+  "geometric_measure": {
+   "args": [
+    "term"
+   ],
+   "meaning": "geometric distribution on the natural numbers with success probability p, counting failures before the first success",
+   "returns": "term"
+  },
+  "gns_cyclic_vector": {
+   "args": [
+    "term"
+   ],
+   "meaning": "image of the unit in the GNS Hilbert space of f",
+   "returns": "term"
+  },
+  "gns_representation": {
+   "args": [
+    "term"
+   ],
+   "meaning": "GNS representation of f by left multiplication",
    "returns": "term"
   },
   "gradient_at": {
@@ -3183,6 +4561,20 @@
    "meaning": "gradient of a real-valued f at a",
    "returns": "term"
   },
+  "graph_acyclic": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G has no cycle",
+   "returns": "prop"
+  },
+  "graph_adjacency_matrix": {
+   "args": [
+    "term"
+   ],
+   "meaning": "adjacency matrix of a finite simple graph",
+   "returns": "term"
+  },
   "graph_adjacent": {
    "args": [
     "term",
@@ -3190,6 +4582,32 @@
     "term"
    ],
    "meaning": "u and v are adjacent in G",
+   "returns": "prop"
+  },
+  "graph_bipartite_with": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "s and t are disjoint and every edge of G joins s to t, in the order G s t",
+   "returns": "prop"
+  },
+  "graph_bridge": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "uv is an edge of G whose removal disconnects u from v, in the order G u v",
+   "returns": "prop"
+  },
+  "graph_clique": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the vertices in s are pairwise adjacent in G, in the order G s",
    "returns": "prop"
   },
   "graph_clique_free": {
@@ -3217,11 +4635,27 @@
    "meaning": "G has a proper vertex coloring with k colors",
    "returns": "prop"
   },
+  "graph_complement": {
+   "args": [
+    "term"
+   ],
+   "meaning": "complement of a simple graph",
+   "returns": "term"
+  },
   "graph_connected": {
    "args": [
     "term"
    ],
    "meaning": "G is connected and has a vertex",
+   "returns": "prop"
+  },
+  "graph_cycle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p is a cycle at a in G, in the order p G a",
    "returns": "prop"
   },
   "graph_degree": {
@@ -3231,6 +4665,15 @@
    ],
    "meaning": "degree of vertex v in G",
    "returns": "term"
+  },
+  "graph_edge_on_cycle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the edge uv lies on some cycle of G, in the order G u v",
+   "returns": "prop"
   },
   "graph_edges": {
    "args": [
@@ -3249,6 +4692,35 @@
    "meaning": "p is a walk from u to v in G using every edge exactly once",
    "returns": "prop"
   },
+  "graph_isomorphic": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the two simple graphs are isomorphic",
+   "returns": "prop"
+  },
+  "graph_laplacian_matrix": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Laplacian matrix D - A of a finite simple graph",
+   "returns": "term"
+  },
+  "graph_max_degree": {
+   "args": [
+    "term"
+   ],
+   "meaning": "maximum degree of a finite graph, 0 for the empty vertex set",
+   "returns": "term"
+  },
+  "graph_min_degree": {
+   "args": [
+    "term"
+   ],
+   "meaning": "minimum degree of a finite graph, 0 for the empty vertex set",
+   "returns": "term"
+  },
   "graph_path": {
    "args": [
     "term",
@@ -3259,6 +4731,33 @@
    "meaning": "p is a path from u to v in G",
    "returns": "prop"
   },
+  "graph_reachable": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "there is a walk from u to v in G, in the order G u v",
+   "returns": "prop"
+  },
+  "graph_regular": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "every vertex of G has degree k, in the order G k",
+   "returns": "prop"
+  },
+  "graph_trail": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p is a walk from u to v in G with no repeated edge, in the order p G u v",
+   "returns": "prop"
+  },
   "graph_tree": {
    "args": [
     "term"
@@ -3266,12 +4765,29 @@
    "meaning": "G is a tree",
    "returns": "prop"
   },
+  "graph_triangles": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of triangles, the 3-cliques, of a simple graph",
+   "returns": "term"
+  },
   "graph_vertices": {
    "args": [
     "term"
    ],
    "meaning": "vertex set of a graph",
    "returns": "term"
+  },
+  "graph_walk": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p is a walk from u to v in G, in the order p G u v",
+   "returns": "prop"
   },
   "greatest_element": {
    "args": [
@@ -3408,6 +4924,13 @@
    "meaning": "product ab of two elements of a group",
    "returns": "term"
   },
+  "group_order": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the number of elements of the finite group G",
+   "returns": "term"
+  },
   "group_order_or_zero": {
    "args": [
     "term"
@@ -3429,6 +4952,22 @@
    ],
    "meaning": "minimal number of generators of a finitely generated group",
    "returns": "term"
+  },
+  "group_zero": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the zero element of the additive group G",
+   "returns": "term"
+  },
+  "hales_jewett_dimension": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the finite index set i is such that every coloring of the words over the finite alphabet a by the finite set k has a monochromatic combinatorial line, in the order a k i",
+   "returns": "prop"
   },
   "half_line_left": {
    "args": [
@@ -3452,6 +4991,39 @@
    "meaning": "half-open real interval [a,b)",
    "returns": "term"
   },
+  "hamiltonian_cycle": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p is a cycle at a in G visiting every vertex, in the order p G a",
+   "returns": "prop"
+  },
+  "harmonic_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "u is C^2 near z with vanishing Laplacian near z",
+   "returns": "prop"
+  },
+  "harmonic_fn_at": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the real function given by the lambda is C^2 near z with vanishing Laplacian near z",
+   "returns": "prop"
+  },
+  "harmonic_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "u is harmonic on a neighbourhood of each point of U",
+   "returns": "prop"
+  },
   "has_complex_deriv_at": {
    "args": [
     "term",
@@ -3459,6 +5031,15 @@
     "term"
    ],
    "meaning": "f has complex derivative d at z",
+   "returns": "prop"
+  },
+  "has_complex_deriv_fn_at": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "meaning": "the function given by the lambda has complex derivative d at z, in the order function d z",
    "returns": "prop"
   },
   "has_deriv_at": {
@@ -3554,6 +5135,21 @@
    "meaning": "the two-variable real function g has partial derivative d in y at (x, y)",
    "returns": "prop"
   },
+  "has_perfect_matching": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G has a set of edges covering each vertex exactly once",
+   "returns": "prop"
+  },
+  "has_prod_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the infinite product over natural numbers n converges unconditionally to P",
+   "returns": "prop"
+  },
   "has_right_deriv_at": {
    "args": [
     "term",
@@ -3602,6 +5198,24 @@
    "meaning": "E is a Hilbert space",
    "returns": "prop"
   },
+  "hitting_time_after": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(hitting_time_after X B n) is the first k >= n with X_k in B, and infinity if there is none",
+   "returns": "term"
+  },
+  "holder_exponents": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "p, q, r lie in (0, infinity] and 1/p + 1/q = 1/r, arguments p, q, r",
+   "returns": "prop"
+  },
   "holds_at": {
    "args": [
     "term",
@@ -3616,6 +5230,14 @@
     "term"
    ],
    "meaning": "f is complex differentiable at z",
+   "returns": "prop"
+  },
+  "holomorphic_fn_on": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the function given by the lambda is complex differentiable at each point of U",
    "returns": "prop"
   },
   "holomorphic_on": {
@@ -3724,12 +5346,27 @@
    "meaning": "finite product of g(k) over a <= k < b, in the order a b g",
    "returns": "term"
   },
+  "ideal_class": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the ideal class of a nonzero ideal",
+   "returns": "term"
+  },
   "ideal_comap": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "preimage of the ideal J under the ring homomorphism f",
+   "returns": "term"
+  },
+  "ideal_count_norm_le": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the number of ideals of the ring of integers of K with norm at most s, in the order K s",
    "returns": "term"
   },
   "ideal_direct_product": {
@@ -3815,6 +5452,13 @@
    "meaning": "product ideal IJ",
    "returns": "term"
   },
+  "ideal_norm": {
+   "args": [
+    "term"
+   ],
+   "meaning": "absolute norm of an ideal of the ring of integers, the index of the ideal",
+   "returns": "term"
+  },
   "ideal_of": {
    "args": [
     "term",
@@ -3868,6 +5512,14 @@
     "term"
    ],
    "meaning": "sum I + J of two ideals",
+   "returns": "term"
+  },
+  "ideals_norm_le": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the set of nonzero ideals of the ring of integers of K with norm at most n, in the order K n",
    "returns": "term"
   },
   "idempotent_element": {
@@ -3997,6 +5649,14 @@
    "meaning": "point where the incircle of triangle abc touches side bc",
    "returns": "term"
   },
+  "increasing_ae": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(increasing_ae mu A): almost surely n -> A_n is nondecreasing",
+   "returns": "prop"
+  },
   "increasing_sets": {
    "args": [
     "term"
@@ -4030,6 +5690,15 @@
    "meaning": "(indep_rv P X Y): random variables X and Y are independent under P",
    "returns": "prop"
   },
+  "indep_shift_past": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(indep_shift_past B s mu): the process t -> B(s+t) - B(s) is independent of (B_u, u <= s) under mu",
+   "returns": "prop"
+  },
   "indep_sigma": {
    "args": [
     "term",
@@ -4039,11 +5708,34 @@
    "meaning": "(indep_sigma P G H): sigma-algebras G and H are independent under P",
    "returns": "prop"
   },
+  "independence_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "largest size of a set of pairwise nonadjacent vertices of G",
+   "returns": "term"
+  },
+  "independent_increments_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(independent_increments_on B mu t): the increments of B along the monotone finite sequence t are mutually independent under mu",
+   "returns": "prop"
+  },
   "independent_submodule_family": {
    "args": [
     "term"
    ],
    "meaning": "each member of the family of submodules meets the sum of the other members only in zero",
+   "returns": "prop"
+  },
+  "independent_weight_spaces": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the generalized weight spaces of M are independent",
    "returns": "prop"
   },
   "index_set": {
@@ -4068,6 +5760,14 @@
    "meaning": "intersection of the members S_i for i in T",
    "returns": "term"
   },
+  "indexed_tends_to": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the sequence given by the indexed expression tends to L",
+   "returns": "prop"
+  },
   "indexed_union": {
    "args": [
     "term_function"
@@ -4083,6 +5783,14 @@
    "meaning": "union of the members S_i for i in I",
    "returns": "term"
   },
+  "indicator_le": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "1 if a <= b and 0 otherwise, in the order a b",
+   "returns": "term"
+  },
   "indicator_of": {
    "args": [
     "term"
@@ -4096,6 +5804,33 @@
     "term"
    ],
    "meaning": "homomorphism of fundamental groups induced by f at the base point x",
+   "returns": "term"
+  },
+  "inertia_degree": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "inertia degree f(q|p), in the order p q",
+   "returns": "term"
+  },
+  "infinite_adele_ring": {
+   "args": [
+    "term"
+   ],
+   "meaning": "product of the completions of K at its infinite places",
+   "returns": "term"
+  },
+  "infinite_order": {
+   "args": [],
+   "meaning": "the infinite order of a function vanishing identically near a point",
+   "returns": "term"
+  },
+  "infinite_places": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the finite set of infinite places of the number field K",
    "returns": "term"
   },
   "infinite_ring": {
@@ -4170,6 +5905,13 @@
     "term"
    ],
    "meaning": "group of inner automorphisms of G",
+   "returns": "term"
+  },
+  "inner_derivation": {
+   "args": [
+    "term"
+   ],
+   "meaning": "inner derivation ad x as an element of the derivation algebra",
    "returns": "term"
   },
   "inner_product": {
@@ -4265,6 +6007,14 @@
    "meaning": "f is integrable on the set S; arguments f, S",
    "returns": "prop"
   },
+  "integrable_on_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is integrable on the finite-dimensional real inner product space V; arguments V, f",
+   "returns": "prop"
+  },
   "integrable_on_whole_space": {
    "args": [
     "term"
@@ -4285,6 +6035,14 @@
     "term"
    ],
    "meaning": "(integrable_rv X P): X is integrable under P",
+   "returns": "prop"
+  },
+  "integral_basis": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "b is a Z-basis of the ring of integers of K, in the order b K",
    "returns": "prop"
   },
   "integral_circle": {
@@ -4318,6 +6076,14 @@
    "meaning": "x is integral over R, in the order x R",
    "returns": "prop"
   },
+  "integral_euclidean": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "integral over R^n; arguments n, f",
+   "returns": "term"
+  },
   "integral_extension": {
    "args": [
     "term",
@@ -4350,6 +6116,14 @@
     "term"
    ],
    "meaning": "iterated integral of f, inner over x with mu, outer over y with nu",
+   "returns": "term"
+  },
+  "integral_over_space": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "integral over the finite-dimensional real inner product space V; arguments V, f",
    "returns": "term"
   },
   "integral_real_line": {
@@ -4396,6 +6170,15 @@
    "meaning": "R is an integral domain integrally closed in its field of fractions",
    "returns": "prop"
   },
+  "integrated_min_posterior_loss": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(integrated_min_posterior_loss l k m) is the integral over the marginal of the data of the infimum over actions y of the posterior expected loss of y",
+   "returns": "term"
+  },
   "interior_in": {
    "args": [
     "term",
@@ -4420,6 +6203,15 @@
    "meaning": "K is an intermediate field of E/F, in the order (K, F, E)",
    "returns": "prop"
   },
+  "intermediate_tower": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "K is contained in F and F in L as a tower of fields, in the order K F L",
+   "returns": "prop"
+  },
   "internally_tangent_circles": {
    "args": [
     "term",
@@ -4428,6 +6220,13 @@
     "term"
    ],
    "meaning": "the circle with centre c1 and radius r1 is internally tangent to the circle with centre c2 and radius r2; arguments c1 r1 c2 r2",
+   "returns": "prop"
+  },
+  "intersecting_family": {
+   "args": [
+    "term"
+   ],
+   "meaning": "any two members of the family, possibly equal, have a common element",
    "returns": "prop"
   },
   "intertwining_map": {
@@ -4473,6 +6272,13 @@
    "meaning": "the real subset S contains every point between two of its points",
    "returns": "prop"
   },
+  "inv_of": {
+   "args": [
+    "term"
+   ],
+   "meaning": "multiplicative inverse of x",
+   "returns": "term"
+  },
   "invariant_subspace": {
    "args": [
     "term",
@@ -4480,6 +6286,20 @@
    ],
    "meaning": "f maps the subspace W into itself (arguments f, W)",
    "returns": "prop"
+  },
+  "inverse_extended": {
+   "args": [
+    "term"
+   ],
+   "meaning": "inverse of an extended nonnegative real, with 1/0 = infinity and 1/infinity = 0",
+   "returns": "term"
+  },
+  "inverse_fourier_transform": {
+   "args": [
+    "term"
+   ],
+   "meaning": "inverse Fourier transform of g with the kernel exp(2 pi i x w)",
+   "returns": "term"
   },
   "inverse_operator": {
    "args": [
@@ -4495,6 +6315,13 @@
    ],
    "meaning": "set of bounded linear operators from E to F having a bounded linear inverse",
    "returns": "term"
+  },
+  "irrational": {
+   "args": [
+    "term"
+   ],
+   "meaning": "x is an irrational real number",
+   "returns": "prop"
   },
   "irreducible_component": {
    "args": [
@@ -4663,6 +6490,22 @@
    "meaning": "f is an isomorphism",
    "returns": "prop"
   },
+  "isometric_linear_map": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "U is a linear isometry from E to F",
+   "returns": "prop"
+  },
+  "isometric_map": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the map preserves norms",
+   "returns": "prop"
+  },
   "isometry": {
    "args": [
     "term"
@@ -4730,6 +6573,22 @@
    "meaning": "n-th derivative of f evaluated at x; arguments f, n, x",
    "returns": "term"
   },
+  "iterated_deriv_function": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the k-th derivative of f as a function, in the order k f",
+   "returns": "term"
+  },
+  "iterated_deriv_sequence": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the sequence of k-th derivatives of a function sequence, in the order k F",
+   "returns": "term"
+  },
   "iterated_deriv_within": {
    "args": [
     "term_function",
@@ -4740,12 +6599,53 @@
    "meaning": "n-th derivative of f within the set S evaluated at x; arguments f, n, S, x",
    "returns": "term"
   },
+  "iterated_difference_at_zero": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the n-th forward difference of f with step 1 evaluated at 0, in the order f n",
+   "returns": "term"
+  },
+  "iterated_shadow": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the i-th iterated lower shadow of a family, in the order i F",
+   "returns": "term"
+  },
+  "iterated_sumset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "n-fold sumset nB of a finite subset B, with 0B = {0}, in the order n B",
+   "returns": "term"
+  },
+  "jacobi_symbol": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Jacobi symbol (a/b) for an integer a and a positive odd integer b",
+   "returns": "term"
+  },
   "jacobson_radical": {
    "args": [
     "term"
    ],
    "meaning": "Jacobson radical of the commutative ring R",
    "returns": "term"
+  },
+  "jointly_gaussian": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(jointly_gaussian mu X Y): the pair (X, Y) has a Gaussian law under mu",
+   "returns": "prop"
   },
   "k_subsets": {
    "args": [
@@ -4762,11 +6662,93 @@
    "meaning": "kernel of a linear map",
    "returns": "term"
   },
+  "kernel_apply": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(kernel_apply k a s) is the mass k(a, s)",
+   "returns": "term"
+  },
+  "kernel_comp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(kernel_comp h k) is the composition taking a to the integral of h(b, -) against k(a, db)",
+   "returns": "term"
+  },
+  "kernel_detailed_balance": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(kernel_detailed_balance k m): the integral of k(x,B) over A against m equals the integral of k(x,A) over B against m, for all measurable A and B",
+   "returns": "prop"
+  },
   "kernel_inclusion": {
    "args": [
     "term"
    ],
    "meaning": "kernel morphism of f in an abelian category",
+   "returns": "term"
+  },
+  "kernel_lintegral_apply": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(kernel_lintegral_apply h k a s) is the integral of h(b, s) against k(a, db)",
+   "returns": "term"
+  },
+  "killing_dual_vector": {
+   "args": [
+    "term"
+   ],
+   "meaning": "element t of H with Killing form (t,h) = alpha(h) for all h in H",
+   "returns": "term"
+  },
+  "killing_nondegenerate": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Killing form of L is nondegenerate",
+   "returns": "prop"
+  },
+  "killing_nondegenerate_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the Killing form of L restricted to H is nondegenerate, in the order H L",
+   "returns": "prop"
+  },
+  "killing_orthogonal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "orthogonal complement of the ideal I for the Killing form of L, in the order L I",
+   "returns": "term"
+  },
+  "killing_value": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "Killing form of L at x and y, in the order L x y",
+   "returns": "term"
+  },
+  "kronecker_delta": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the value 1 if the two arguments are equal and 0 otherwise",
    "returns": "term"
   },
   "krull_valuation": {
@@ -4777,6 +6759,15 @@
    "meaning": "v is a valuation on the ring R with values in a totally ordered group with zero, in the order v R",
    "returns": "prop"
   },
+  "l1_tends_to": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "meaning": "(l1_tends_to mu (lambda (n) Y_n) L): E|Y_n - L| tends to 0",
+   "returns": "prop"
+  },
   "l2_circle_space": {
    "args": [
     "term"
@@ -4784,11 +6775,42 @@
    "meaning": "L2 space of the circle of period T with normalized measure",
    "returns": "term"
   },
+  "l2_space_on": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the complex L2 space of the finite-dimensional real inner product space V",
+   "returns": "term"
+  },
   "language_cardinality": {
    "args": [
     "term"
    ],
    "meaning": "cardinality of the symbols of the language L",
+   "returns": "term"
+  },
+  "lattice_fundamental_domain": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "F is a fundamental domain of the countable subgroup L for the measure m, in the order F L m",
+   "returns": "prop"
+  },
+  "law_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(law_of mu X) is the image measure of mu under X",
+   "returns": "term"
+  },
+  "lcm_upto": {
+   "args": [
+    "term"
+   ],
+   "meaning": "least common multiple of 1, ..., n",
    "returns": "term"
   },
   "lebesgue_measure": {
@@ -4819,6 +6841,21 @@
    "meaning": "I is a left ideal of the ring R, in the order I R",
    "returns": "prop"
   },
+  "left_invariant_derivation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "X is a left-invariant derivation of smooth functions on G, in the order X G",
+   "returns": "prop"
+  },
+  "left_invariant_field": {
+   "args": [
+    "term"
+   ],
+   "meaning": "left-invariant vector field with value v at the identity",
+   "returns": "term"
+  },
   "left_noetherian_ring": {
    "args": [
     "term"
@@ -4832,6 +6869,13 @@
    ],
    "meaning": "the left ideal Ra generated by the element a",
    "returns": "term"
+  },
+  "left_pullback_invariant": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the vector field V equals its pullback under every left translation",
+   "returns": "prop"
   },
   "legendre_symbol": {
    "args": [
@@ -4847,6 +6891,22 @@
     "term"
    ],
    "meaning": "the level set of g through the point a",
+   "returns": "term"
+  },
+  "lie_action": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "action [x, m] of a Lie algebra element on a module element",
+   "returns": "term"
+  },
+  "lie_action_op": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "endomorphism of the module M by which x acts, in the order x M",
    "returns": "term"
   },
   "lie_algebra": {
@@ -4866,6 +6926,15 @@
    "meaning": "f is a Lie algebra homomorphism from L to M, in the order f L M",
    "returns": "prop"
   },
+  "lie_algebras_isomorphic_by": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the map induced by f is a Lie algebra isomorphism from L modulo ker f onto the range of f, in the order f L M",
+   "returns": "prop"
+  },
   "lie_bracket": {
    "args": [
     "term",
@@ -4874,6 +6943,36 @@
    "meaning": "Lie bracket [x, y]",
    "returns": "term"
   },
+  "lie_brackets_span": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "linear span of the elements [x, n] with x in I and n in N, in the order I N",
+   "returns": "term"
+  },
+  "lie_center": {
+   "args": [
+    "term"
+   ],
+   "meaning": "center of the Lie algebra L",
+   "returns": "term"
+  },
+  "lie_coroot": {
+   "args": [
+    "term"
+   ],
+   "meaning": "coroot of the root alpha, equal to 2 t / alpha(t) where t is the Killing dual of alpha, and 0 for the zero weight",
+   "returns": "term"
+  },
+  "lie_derivation": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "D is a derivation of the Lie algebra L, in the order D L",
+   "returns": "prop"
+  },
   "lie_derived_series": {
    "args": [
     "term",
@@ -4881,6 +6980,58 @@
    ],
    "meaning": "k-th term of the derived series of L, in the order L k",
    "returns": "term"
+  },
+  "lie_derived_series_of_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "k-th derived ideal of the ideal I, in the order I k",
+   "returns": "term"
+  },
+  "lie_faithful_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "L acts faithfully on M, in the order L M",
+   "returns": "prop"
+  },
+  "lie_group": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G is a Lie group of class at least three over its field",
+   "returns": "prop"
+  },
+  "lie_group_tangent": {
+   "args": [
+    "term"
+   ],
+   "meaning": "tangent space at the identity of the Lie group G with the bracket of invariant fields",
+   "returns": "term"
+  },
+  "lie_hom_action": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "action of x on a linear map f between Lie modules, the map m to [x, f m] - f [x, m], in the order x f",
+   "returns": "term"
+  },
+  "lie_hom_kernel": {
+   "args": [
+    "term"
+   ],
+   "meaning": "kernel ideal of a Lie algebra homomorphism",
+   "returns": "term"
+  },
+  "lie_hom_surjective": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Lie algebra homomorphism f is surjective",
+   "returns": "prop"
   },
   "lie_ideal": {
    "args": [
@@ -4898,11 +7049,186 @@
    "meaning": "ideal [I, J] generated by the brackets of two Lie ideals",
    "returns": "term"
   },
+  "lie_ideal_image": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "ideal generated by the image of I under f, in the order f I",
+   "returns": "term"
+  },
+  "lie_ideal_module_bracket": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "submodule [I, N] generated by the actions of an ideal I on a submodule N",
+   "returns": "term"
+  },
+  "lie_ideal_preimage": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "preimage of the ideal J under f, in the order f J",
+   "returns": "term"
+  },
+  "lie_irreducible_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "M is an irreducible L-module, in the order M L",
+   "returns": "prop"
+  },
+  "lie_lcs_from": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "term N_k of the series N_0 = N, N_(k+1) = [L, N_k] for a submodule N, in the order N k",
+   "returns": "term"
+  },
+  "lie_lower_central_series": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "k-th term of the lower central series of the module M, with term 0 equal to M, in the order M k",
+   "returns": "term"
+  },
+  "lie_module": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "M is a Lie module over the Lie algebra L over R, in the order M L R",
+   "returns": "prop"
+  },
+  "lie_module_hom_property": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the linear map f commutes with the actions of the Lie algebra",
+   "returns": "prop"
+  },
+  "lie_normalizer": {
+   "args": [
+    "term"
+   ],
+   "meaning": "normalizer of a Lie subalgebra",
+   "returns": "term"
+  },
+  "lie_quotient": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "quotient Lie algebra or module, in the order L I",
+   "returns": "term"
+  },
+  "lie_radical": {
+   "args": [
+    "term"
+   ],
+   "meaning": "solvable radical of the Lie algebra L",
+   "returns": "term"
+  },
   "lie_ring": {
    "args": [
     "term"
    ],
    "meaning": "L is a Lie ring",
+   "returns": "prop"
+  },
+  "lie_root": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "alpha is a nonzero root of L relative to H, in the order alpha H",
+   "returns": "prop"
+  },
+  "lie_sl": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "traceless matrices sl(n,R), in the order n R",
+   "returns": "term"
+  },
+  "lie_so": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "skew-symmetric matrices so(n,R), in the order n R",
+   "returns": "term"
+  },
+  "lie_sp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "symplectic Lie algebra of matrices skew for the standard form J on the index set l plus l, in the order l R",
+   "returns": "term"
+  },
+  "lie_subalgebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "H is a Lie subalgebra of L, in the order H L",
+   "returns": "prop"
+  },
+  "lie_submodule": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "N is a Lie submodule of the L-module M, in the order N M L",
+   "returns": "prop"
+  },
+  "lie_sup": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of two Lie ideals or Lie submodules",
+   "returns": "term"
+  },
+  "lie_ucs_from": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "term of the series N^0 = N, N^(k+1) = normalizer of N^k for a submodule N, in the order N k",
+   "returns": "term"
+  },
+  "lie_weight": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "alpha is a weight of L relative to H, possibly zero, in the order alpha H",
+   "returns": "prop"
+  },
+  "lies_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the prime ideal q lies over the prime ideal p, in the order q p",
+   "returns": "prop"
+  },
+  "limit_at_infinity_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the function given by the lambda tends to L as |z| tends to infinity",
    "returns": "prop"
   },
   "limit_cone": {
@@ -4911,6 +7237,13 @@
     "term"
    ],
    "meaning": "c is a limit cone of the diagram K, in the order c K",
+   "returns": "prop"
+  },
+  "limit_norm_infinity_fn": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "the modulus of the function given by the lambda tends to infinity as |z| tends to infinity",
    "returns": "prop"
   },
   "limit_ordinal": {
@@ -4925,6 +7258,13 @@
     "term"
    ],
    "meaning": "limsup of a sequence of events: the event that infinitely many occur",
+   "returns": "term"
+  },
+  "limsup_nth_root_norm": {
+   "args": [
+    "term"
+   ],
+   "meaning": "limsup of |a_n|^(1/n)",
    "returns": "term"
   },
   "line_point_at": {
@@ -4976,6 +7316,14 @@
     "term"
    ],
    "meaning": "L is an invertible bounded linear map",
+   "returns": "prop"
+  },
+  "linear_isometry_equiv_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a surjective linear isometry of the real inner product space E onto itself, in the order (f, E)",
    "returns": "prop"
   },
   "linear_map_between": {
@@ -5186,6 +7534,13 @@
    "meaning": "f restricted to S has a local extremum at a; arguments f, S, a",
    "returns": "prop"
   },
+  "local_field": {
+   "args": [
+    "term"
+   ],
+   "meaning": "K is a nonarchimedean local field",
+   "returns": "prop"
+  },
   "local_inverse_of": {
    "args": [
     "term",
@@ -5316,6 +7671,30 @@
    "meaning": "f is locally integrable with respect to mu",
    "returns": "prop"
   },
+  "locally_integrable_euclidean": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is locally integrable on R^n; arguments n, f",
+   "returns": "prop"
+  },
+  "locally_integrable_on": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "f is locally integrable on U with respect to mu, arguments f, U, mu",
+   "returns": "prop"
+  },
+  "locally_linear_graph": {
+   "args": [
+    "term"
+   ],
+   "meaning": "every edge of the graph lies in exactly one triangle",
+   "returns": "prop"
+  },
   "locally_uniform_limit": {
    "args": [
     "term",
@@ -5341,6 +7720,13 @@
    "meaning": "n-th term of the lower central series of G with term 0 equal to G, in the order (G, n)",
    "returns": "term"
   },
+  "lower_family": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the family of sets is closed under taking subsets",
+   "returns": "prop"
+  },
   "lp_norm": {
    "args": [
     "term",
@@ -5350,6 +7736,13 @@
    "meaning": "L^p(mu) norm of f",
    "returns": "term"
   },
+  "lp_sequence_space": {
+   "args": [
+    "term"
+   ],
+   "meaning": "space of p-summable families",
+   "returns": "term"
+  },
   "lp_space": {
    "args": [
     "term",
@@ -5357,6 +7750,21 @@
    ],
    "meaning": "Banach space L^p(mu) of a.e. classes",
    "returns": "term"
+  },
+  "lucas_lehmer_seq": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Lucas-Lehmer sequence s_0 = 4, s_(i+1) = s_i^2-2",
+   "returns": "term"
+  },
+  "mahler_series_uniformly": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is the uniformly convergent sum of binomial(x, n) times the n-th difference of f at 0, in the order f p",
+   "returns": "prop"
   },
   "map_between": {
    "args": [
@@ -5396,6 +7804,13 @@
    ],
    "meaning": "n-fold composite of an endomorphism, in the order (f, n)",
    "returns": "term"
+  },
+  "markov_kernel": {
+   "args": [
+    "term"
+   ],
+   "meaning": "k is a Markov kernel",
+   "returns": "prop"
   },
   "martingale": {
    "args": [
@@ -5504,6 +7919,14 @@
    "meaning": "number of rows of a square matrix",
    "returns": "term"
   },
+  "matrix_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "A is a square matrix with entries in F, of the size of the family it acts on",
+   "returns": "prop"
+  },
   "matrix_over_field": {
    "args": [
     "term",
@@ -5511,6 +7934,14 @@
    ],
    "meaning": "A is a matrix of any size with entries in the field K, in the order (A, K)",
    "returns": "prop"
+  },
+  "matrix_quadratic_form": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(matrix_quadratic_form S t) is the value t^T S t",
+   "returns": "term"
   },
   "matrix_rank": {
    "args": [
@@ -5583,6 +8014,14 @@
    ],
    "meaning": "A is a square matrix with entries in K (arguments K, A)",
    "returns": "prop"
+  },
+  "matrix_times_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the family (sum_j P_ij b_j)_i, in the order P b",
+   "returns": "term"
   },
   "matrix_trace": {
    "args": [
@@ -5715,6 +8154,13 @@
    "meaning": "A is a measurable set",
    "returns": "prop"
   },
+  "measurable_uncurried_loss": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the loss l is jointly measurable",
+   "returns": "prop"
+  },
   "measurable_wrt": {
    "args": [
     "term",
@@ -5722,6 +8168,22 @@
    ],
    "meaning": "(measurable_wrt X G): X is strongly measurable with respect to G",
    "returns": "prop"
+  },
+  "measure_bind": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(measure_bind m k) is the measure taking s to the integral of k(x, s) against m(dx)",
+   "returns": "term"
+  },
+  "measure_comp_prod": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(measure_comp_prod m k) is the joint law on pairs (x,y) with x from m and y from k(x, -)",
+   "returns": "term"
   },
   "measure_of": {
    "args": [
@@ -5739,6 +8201,14 @@
    "meaning": "sequence n mapsto mu(A_n)",
    "returns": "term"
   },
+  "measures_tend_weakly": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the sequence of probability measures m converges weakly to mu",
+   "returns": "prop"
+  },
   "mem_lp": {
    "args": [
     "term",
@@ -5747,6 +8217,38 @@
    ],
    "meaning": "f belongs to L^p(mu)",
    "returns": "prop"
+  },
+  "meromorphic_at": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is meromorphic at c",
+   "returns": "prop"
+  },
+  "meromorphic_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is meromorphic at every point of U",
+   "returns": "prop"
+  },
+  "meromorphic_order": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "order of the meromorphic function f at c, an integer or the infinite order",
+   "returns": "term"
+  },
+  "meromorphic_order_fn": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "order at c of the meromorphic function given by the lambda",
+   "returns": "term"
   },
   "metric_space": {
    "args": [
@@ -5778,6 +8280,14 @@
     "term"
    ],
    "meaning": "midpoint of a and b",
+   "returns": "term"
+  },
+  "min_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "minimum of a and b",
    "returns": "term"
   },
   "minimal_normal_subgroup": {
@@ -5819,6 +8329,13 @@
    ],
    "meaning": "a minimizes f over the set S",
    "returns": "prop"
+  },
+  "minkowski_constant": {
+   "args": [
+    "term"
+   ],
+   "meaning": "(4/pi)^r_2 n!/n^n times the square root of |d_K| for the number field K",
+   "returns": "term"
   },
   "module_annihilator": {
    "args": [
@@ -5915,6 +8432,15 @@
    "meaning": "Moebius function of n",
    "returns": "term"
   },
+  "monic_irreducible_factor_mod": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "g mod p is a monic irreducible factor of the minimal polynomial of t mod p, in the order g t p",
+   "returns": "prop"
+  },
   "monic_polynomial": {
    "args": [
     "term"
@@ -5934,6 +8460,20 @@
     "term"
    ],
    "meaning": "G is a monoid",
+   "returns": "prop"
+  },
+  "monoid_one": {
+   "args": [
+    "term"
+   ],
+   "meaning": "identity element of the monoid G",
+   "returns": "term"
+  },
+  "monotone_finite_times": {
+   "args": [
+    "term"
+   ],
+   "meaning": "t is a nondecreasing finite sequence of nonnegative times",
    "returns": "prop"
   },
   "morphism_between": {
@@ -5961,12 +8501,36 @@
    "meaning": "multinomial coefficient of the values of a natural-number function f on a finite index set I",
    "returns": "term"
   },
+  "multipliable_fn": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "the infinite product over natural numbers n converges unconditionally",
+   "returns": "prop"
+  },
+  "multiplicative_arithmetic_function": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a multiplicative arithmetic function with values in A, in the order f A",
+   "returns": "prop"
+  },
   "multiplicative_order": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "multiplicative order of a modulo n",
+   "returns": "term"
+  },
+  "multiplicity_mod": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "multiplicity of g mod p in the minimal polynomial of t mod p, in the order g t p",
    "returns": "term"
   },
   "multiset_card": {
@@ -6007,6 +8571,21 @@
    "meaning": "x is an element of the finite multiset s",
    "returns": "prop"
   },
+  "multiset_member": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "a occurs in the multiset m, in the order a m",
+   "returns": "prop"
+  },
+  "multiset_multiplicity_factorial_prod": {
+   "args": [
+    "term"
+   ],
+   "meaning": "product over the distinct values i of the multiset m of the factorial of the multiplicity of i",
+   "returns": "term"
+  },
   "multiset_prod": {
    "args": [
     "term"
@@ -6028,6 +8607,14 @@
    ],
    "meaning": "the finite multisets correspond bijectively with corresponding elements associated",
    "returns": "prop"
+  },
+  "multivariate_gaussian": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Gaussian measure on R^n with mean m and covariance matrix S, in the order (m, S)",
+   "returns": "term"
   },
   "mutually_indep_events": {
    "args": [
@@ -6133,6 +8720,21 @@
    "meaning": "functors F and G are naturally isomorphic",
    "returns": "prop"
   },
+  "neighbor_union_size_at_least": {
+   "args": [
+    "term"
+   ],
+   "meaning": "every vertex set S of G satisfies |S| <= |N(S)|, N(S) being the union of the neighborhoods",
+   "returns": "prop"
+  },
+  "neighbourhood_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "s is a neighbourhood of the point c",
+   "returns": "prop"
+  },
   "nilpotent_element": {
    "args": [
     "term",
@@ -6155,12 +8757,27 @@
    "meaning": "L is a nilpotent Lie algebra",
    "returns": "prop"
   },
+  "nilpotent_lie_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "M is a nilpotent L-module, in the order M L",
+   "returns": "prop"
+  },
   "nilpotent_op": {
    "args": [
     "term"
    ],
    "meaning": "the operator is nilpotent",
    "returns": "prop"
+  },
+  "nilpotent_op_exp": {
+   "args": [
+    "term"
+   ],
+   "meaning": "finite exponential series of a nilpotent endomorphism",
+   "returns": "term"
   },
   "nilradical_of": {
    "args": [
@@ -6205,6 +8822,13 @@
    "meaning": "S is nonempty",
    "returns": "prop"
   },
+  "nonneg_element": {
+   "args": [
+    "term"
+   ],
+   "meaning": "0 <= a in the order of the C*-algebra",
+   "returns": "prop"
+  },
   "nonneg_on_subsets": {
    "args": [
     "term",
@@ -6236,12 +8860,41 @@
    "meaning": "the integer n has nonzero image in the field F",
    "returns": "prop"
   },
+  "nonzero_order_set_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the set of points of K where the meromorphic order of f is nonzero",
+   "returns": "term"
+  },
+  "nonzero_primes": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of nonzero prime ideals of the ring of integers of K",
+   "returns": "term"
+  },
+  "nonzero_root_spaces_sum": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sum of the root spaces of the nonzero roots of H",
+   "returns": "term"
+  },
   "norm": {
    "args": [
     "term"
    ],
    "meaning": "norm of a vector",
    "returns": "term"
+  },
+  "normal_element": {
+   "args": [
+    "term"
+   ],
+   "meaning": "a* a = a a*",
+   "returns": "prop"
   },
   "normal_extension": {
    "args": [
@@ -6266,6 +8919,14 @@
    "meaning": "N is a normal subgroup of G",
    "returns": "prop"
   },
+  "normalized_bump": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "phi is a smooth nonnegative bump function with integral 1 for mu, arguments phi, mu",
+   "returns": "prop"
+  },
   "normed_space": {
    "args": [
     "term"
@@ -6287,6 +8948,14 @@
    "meaning": "K is a number field",
    "returns": "prop"
   },
+  "numberings_with_prefix": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "bijections f from X to {0,...,|X|-1} under which s is exactly the set of elements with f(a) < |s|, in the order X s",
+   "returns": "term"
+  },
   "object_of": {
    "args": [
     "term",
@@ -6294,6 +8963,14 @@
    ],
    "meaning": "X is an object of the category C",
    "returns": "prop"
+  },
+  "odd_component_count_after_removal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of connected components with an odd number of vertices of G minus the vertex set U, in the order G U",
+   "returns": "term"
   },
   "of_digits": {
    "args": [
@@ -6392,6 +9069,11 @@
    "meaning": "the continuous map f is an open embedding",
    "returns": "prop"
   },
+  "open_first_quadrant": {
+   "args": [],
+   "meaning": "the set of z with Re z > 0 and Im z > 0",
+   "returns": "term"
+  },
   "open_half_line_right": {
    "args": [
     "term"
@@ -6436,6 +9118,14 @@
    ],
    "meaning": "U is open",
    "returns": "prop"
+  },
+  "open_vertical_strip": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the set of z with a < Re z < b",
+   "returns": "term"
   },
   "operator_add": {
    "args": [
@@ -6493,6 +9183,13 @@
     "term"
    ],
    "meaning": "the order of the finite group G is invertible in the field k, in the order G k",
+   "returns": "prop"
+  },
+  "ordered_abelian_group": {
+   "args": [
+    "term"
+   ],
+   "meaning": "G is a linearly ordered abelian group",
    "returns": "prop"
   },
   "ordered_pair": {
@@ -6568,6 +9265,13 @@
    "meaning": "G is a p-group for the prime p, in the order (p, G)",
    "returns": "prop"
   },
+  "padic_absolute_value": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the p-adic absolute value on the rationals",
+   "returns": "term"
+  },
   "padic_field": {
    "args": [
     "term"
@@ -6588,6 +9292,21 @@
     "term"
    ],
    "meaning": "p-adic norm of x, in the order p x",
+   "returns": "term"
+  },
+  "padic_sequence": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "a is a sequence in Q_p, in the order a p",
+   "returns": "prop"
+  },
+  "padic_unit_ball": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of x in Q_p with p-adic norm at most 1",
    "returns": "term"
   },
   "padic_valuation": {
@@ -6670,6 +9389,21 @@
    "meaning": "the sequence of partial sums of the series of a converges",
    "returns": "prop"
   },
+  "partition_count_series_restricted": {
+   "args": [
+    "term"
+   ],
+   "meaning": "power series over Z whose coefficient of X^n is the number of partitions of n with all parts satisfying the predicate p",
+   "returns": "term"
+  },
+  "partition_euler_factor_product_tends_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the coefficientwise convergent infinite product over i >= 1 of the factors sum_j X^(ij), for p(i), and 1 otherwise, has the power series f as limit, in the order p f",
+   "returns": "prop"
+  },
   "partition_of": {
    "args": [
     "term",
@@ -6677,6 +9411,43 @@
    ],
    "meaning": "c is a partition of X",
    "returns": "prop"
+  },
+  "partition_part_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of parts of a finite partition",
+   "returns": "term"
+  },
+  "partitions_distinct_parts": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of partitions of n whose parts are pairwise distinct",
+   "returns": "term"
+  },
+  "partitions_multiplicity_below": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of partitions of n in which every part occurs fewer than m times, in the order n m",
+   "returns": "term"
+  },
+  "partitions_no_part_divisible": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of partitions of n with no part divisible by m, in the order n m",
+   "returns": "term"
+  },
+  "partitions_odd_parts": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of partitions of n all of whose parts are odd",
+   "returns": "term"
   },
   "path_concat": {
    "args": [
@@ -6731,12 +9502,27 @@
    "meaning": "set of continuous paths from x to y",
    "returns": "term"
   },
+  "pentagonal_number": {
+   "args": [
+    "term"
+   ],
+   "meaning": "generalized pentagonal number k(3k-1)/2 for an integer k",
+   "returns": "term"
+  },
   "perfect_field": {
    "args": [
     "term"
    ],
    "meaning": "the field K is perfect",
    "returns": "prop"
+  },
+  "perm_of_cycle_type": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "set of permutations of the finite set A whose cycle lengths at least 2 form the multiset m, in the order A m",
+   "returns": "term"
   },
   "permutation_of_naturals": {
    "args": [
@@ -6794,6 +9580,28 @@
    "meaning": "the circle constant pi",
    "returns": "term"
   },
+  "pi_system": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the family of sets p is closed under finite nonempty intersections",
+   "returns": "prop"
+  },
+  "place_multiplicity": {
+   "args": [
+    "term"
+   ],
+   "meaning": "1 for a real place and 2 for a complex place",
+   "returns": "term"
+  },
+  "place_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the absolute value of x at the place w, in the order w x",
+   "returns": "term"
+  },
   "plane_point": {
    "args": [
     "term",
@@ -6830,6 +9638,22 @@
     "term"
    ],
    "meaning": "point at infinity of the Weierstrass curve W",
+   "returns": "term"
+  },
+  "pointwise_max": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "pointwise maximum of two random times",
+   "returns": "term"
+  },
+  "pointwise_min": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "pointwise minimum of two random times",
    "returns": "term"
   },
   "pointwise_product": {
@@ -6873,6 +9697,14 @@
    "meaning": "the map (r, t) to (r cos t, r sin t)",
    "returns": "term"
   },
+  "pole_limit_punctured": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "|f(z)| tends to infinity as z tends to c with z different from c",
+   "returns": "prop"
+  },
   "poly_coeff": {
    "args": [
     "term",
@@ -6886,7 +9718,7 @@
     "term",
     "term"
    ],
-   "meaning": "the composite polynomial f(g), in the order f g",
+   "meaning": "the composition f(g) of polynomials",
    "returns": "term"
   },
   "poly_const": {
@@ -6962,6 +9794,19 @@
    "meaning": "sum of the coefficients of the odd-degree terms of the polynomial f",
    "returns": "term"
   },
+  "poly_one_add_x": {
+   "args": [],
+   "meaning": "the polynomial 1 + X",
+   "returns": "term"
+  },
+  "poly_reduction_mod": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the reduction of the integer polynomial g modulo the prime p, in the order g p",
+   "returns": "term"
+  },
   "poly_root_multiplicity": {
    "args": [
     "term",
@@ -6969,6 +9814,14 @@
    ],
    "meaning": "multiplicity of a as a root of f, in the order f a",
    "returns": "term"
+  },
+  "poly_roots_are": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the multiset of roots of the real polynomial p consists of the elements of the finite set S, each with multiplicity one",
+   "returns": "prop"
   },
   "poly_roots_multiset": {
    "args": [
@@ -6980,6 +9833,13 @@
   "poly_var": {
    "args": [],
    "meaning": "the indeterminate X of a polynomial ring",
+   "returns": "term"
+  },
+  "poly_x_pow": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the monomial X^n",
    "returns": "term"
   },
   "polygon_exterior_angle_sum": {
@@ -7052,6 +9912,13 @@
    "meaning": "polynomial ring R[X] in one variable",
    "returns": "term"
   },
+  "polynomial_root_set": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of complex roots of the polynomial p",
+   "returns": "term"
+  },
   "polynomial_x_pow_sub": {
    "args": [
     "term",
@@ -7074,9 +9941,55 @@
    "meaning": "the square matrix is positive definite",
    "returns": "prop"
   },
+  "positive_functional": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a positive linear functional on A, arguments f, A",
+   "returns": "prop"
+  },
   "positive_infinity": {
    "args": [],
    "meaning": "the extended real value +infinity",
+   "returns": "term"
+  },
+  "positive_part_rv": {
+   "args": [
+    "term"
+   ],
+   "meaning": "pointwise positive part max(X, 0) of a random variable",
+   "returns": "term"
+  },
+  "positive_semidefinite_matrix": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the real symmetric matrix is positive semidefinite",
+   "returns": "prop"
+  },
+  "posterior_kernel": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(posterior_kernel k m) is the Bayesian posterior of the model k under the prior m",
+   "returns": "term"
+  },
+  "power_basis_generator": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the powers of a below the degree form a Q-basis of K, in the order a K",
+   "returns": "prop"
+  },
+  "power_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the family 1, a, ..., a^(n-1), in the order a n",
    "returns": "term"
   },
   "power_root_set": {
@@ -7130,6 +10043,21 @@
    "meaning": "least index of a nonzero coefficient of f, infinite for f = 0",
    "returns": "term"
   },
+  "power_series_radius": {
+   "args": [
+    "term"
+   ],
+   "meaning": "radius of convergence in [0, infinity] of the power series with coefficients a",
+   "returns": "term"
+  },
+  "power_series_rescale": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the power series f(aX) obtained by replacing X with aX, in the order a f",
+   "returns": "term"
+  },
   "power_series_ring": {
    "args": [
     "term"
@@ -7156,6 +10084,14 @@
    "meaning": "set of all subsets of A",
    "returns": "term"
   },
+  "pre_brownian_motion": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(pre_brownian_motion B mu): B on [0,infinity) has the centered Gaussian finite-dimensional laws with covariance min(s,t), with no path regularity required",
+   "returns": "prop"
+  },
   "preadditive_category": {
    "args": [
     "term"
@@ -7176,6 +10112,14 @@
     "term"
    ],
    "meaning": "X is a preconnected space",
+   "returns": "prop"
+  },
+  "predictable_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(predictable_process F A): A_{n+1} is F_n-measurable for each n",
    "returns": "prop"
   },
   "preimage": {
@@ -7241,6 +10185,13 @@
    "meaning": "complement of the prime ideal p, as a multiplicative submonoid",
    "returns": "term"
   },
+  "prime_counting": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of primes not exceeding x",
+   "returns": "term"
+  },
   "prime_element": {
    "args": [
     "term",
@@ -7248,6 +10199,13 @@
    ],
    "meaning": "a is a prime element of R",
    "returns": "prop"
+  },
+  "prime_factor_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number Omega(n) of prime factors of n counted with multiplicity",
+   "returns": "term"
   },
   "prime_ideal": {
    "args": [
@@ -7264,11 +10222,34 @@
    "meaning": "the set of prime ideals of R",
    "returns": "term"
   },
+  "prime_indicator_power": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "n^r if n is prime and 0 otherwise, in the order n r",
+   "returns": "term"
+  },
+  "prime_indicator_reciprocal": {
+   "args": [
+    "term"
+   ],
+   "meaning": "1/n if n is prime and 0 otherwise",
+   "returns": "term"
+  },
   "prime_multiset": {
    "args": [
     "term"
    ],
    "meaning": "s is a finite multiset all of whose elements are prime",
+   "returns": "prop"
+  },
+  "prime_number_in_ideal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the prime number p belongs to the prime ideal, in the order p q",
    "returns": "prop"
   },
   "prime_power_cyclic_sum": {
@@ -7298,11 +10279,35 @@
    "meaning": "direct sum over i below m of R modulo p_i to the e_i, in the order R p e m",
    "returns": "term"
   },
+  "prime_product_has_value": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the product of g(p) over all primes p converges unconditionally to the value s",
+   "returns": "prop"
+  },
   "prime_spectrum": {
    "args": [
     "term"
    ],
    "meaning": "prime spectrum Spec R with the Zariski topology",
+   "returns": "term"
+  },
+  "prime_valuation_le_one": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the normalized absolute value of x at the nonzero prime ideal q is at most 1, in the order q x",
+   "returns": "prop"
+  },
+  "primes_over": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the finite set of prime ideals of the ring of integers of L over p, in the order p L",
    "returns": "term"
   },
   "primitive_action": {
@@ -7327,6 +10332,13 @@
    ],
    "meaning": "z is a primitive n-th root of unity, in the order z n",
    "returns": "prop"
+  },
+  "primorial": {
+   "args": [
+    "term"
+   ],
+   "meaning": "product of all primes not exceeding n",
+   "returns": "term"
   },
   "principal_arg": {
    "args": [
@@ -7385,6 +10397,14 @@
    "meaning": "P is a probability measure",
    "returns": "prop"
   },
+  "prod_over": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "finite product of the indexed expression over the finite set S",
+   "returns": "term"
+  },
   "product_family": {
    "args": [
     "term",
@@ -7399,6 +10419,14 @@
     "term"
    ],
    "meaning": "product measure of mu and nu",
+   "returns": "term"
+  },
+  "product_measure_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(product_measure_family I m) is the product over the finite index set I of copies of the measure m",
    "returns": "term"
   },
   "product_of_quotients": {
@@ -7423,6 +10451,14 @@
     "term_function"
    ],
    "meaning": "the product of g(d) over the positive divisors d of n",
+   "returns": "term"
+  },
+  "product_over_prime_divisors": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "product of f(p) over the prime divisors p of n",
    "returns": "term"
   },
   "product_set": {
@@ -7630,6 +10666,29 @@
    "meaning": "quotient vector space V/S, in the order (V, S)",
    "returns": "term"
   },
+  "r1_space": {
+   "args": [
+    "term"
+   ],
+   "meaning": "X is an R1 topological space",
+   "returns": "prop"
+  },
+  "ramification_index": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "ramification index e(q|p), in the order p q",
+   "returns": "term"
+  },
+  "ramified_prime": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the nonzero prime ideal is ramified over the rational primes, in the order p K",
+   "returns": "prop"
+  },
   "range_of": {
    "args": [
     "term"
@@ -7654,11 +10713,40 @@
    "meaning": "finite sum of g(k) over those k with 0 <= k < m divisible by n, in the order n m g",
    "returns": "term"
   },
+  "rational_absolute_value": {
+   "args": [
+    "term"
+   ],
+   "meaning": "f is a nontrivial absolute value on the rationals with real values",
+   "returns": "prop"
+  },
+  "rational_denominator": {
+   "args": [
+    "term"
+   ],
+   "meaning": "denominator of a rational number in lowest terms",
+   "returns": "term"
+  },
   "re_component": {
    "args": [
     "term"
    ],
    "meaning": "the real function (x, y) -> Re f(x + iy) of a complex function f",
+   "returns": "term"
+  },
+  "real_convergent": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "n-th continued fraction convergent of the real number x, in the order x n",
+   "returns": "term"
+  },
+  "real_cosh": {
+   "args": [
+    "term"
+   ],
+   "meaning": "hyperbolic cosine of a real number",
    "returns": "term"
   },
   "real_differentiable_at": {
@@ -7683,6 +10771,13 @@
    "meaning": "real vector space of all functions from R to R",
    "returns": "term"
   },
+  "real_kernel_dimension": {
+   "args": [
+    "term"
+   ],
+   "meaning": "dimension over the reals of the kernel of a real square matrix",
+   "returns": "term"
+  },
   "real_part": {
    "args": [
     "term"
@@ -7696,6 +10791,13 @@
     "term"
    ],
    "meaning": "sum of the first N terms given by a lambda",
+   "returns": "term"
+  },
+  "real_places_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number r_1 of real places of the number field K",
    "returns": "term"
   },
   "real_polynomial": {
@@ -7753,12 +10855,44 @@
    "meaning": "E is a real vector space",
    "returns": "prop"
   },
+  "rectangle_boundary_integral": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "integral of f over the boundary of the axis-parallel rectangle with opposite corners z and w",
+   "returns": "term"
+  },
+  "rectangle_set": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "closed axis-parallel rectangle with opposite corners z and w",
+   "returns": "term"
+  },
+  "reduced_pairing": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the root pairing P is reduced",
+   "returns": "prop"
+  },
   "reduced_ring": {
    "args": [
     "term"
    ],
    "meaning": "R has no nonzero nilpotent elements",
    "returns": "prop"
+  },
+  "reduction_mod_power": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the reduction homomorphism from Z_p to Z/p^n, in the order p n",
+   "returns": "term"
   },
   "reflection_across_line": {
    "args": [
@@ -7769,6 +10903,30 @@
    "meaning": "reflection of p in the line through a and b",
    "returns": "term"
   },
+  "reflexive_space": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the canonical map from E to its double dual is surjective",
+   "returns": "prop"
+  },
+  "regular_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "mu is a regular Borel measure on X, arguments mu, X",
+   "returns": "prop"
+  },
+  "regular_partition": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "P is an equipartition of the vertices of G such that all but an e fraction of pairs of parts are e-uniform, in the order P G e",
+   "returns": "prop"
+  },
   "regular_sequence_on": {
    "args": [
     "term",
@@ -7776,6 +10934,13 @@
    ],
    "meaning": "the list rs is a regular sequence on the module M, including that (rs)M differs from M, in the order rs M",
    "returns": "prop"
+  },
+  "regulator": {
+   "args": [
+    "term"
+   ],
+   "meaning": "regulator of the number field K",
+   "returns": "term"
   },
   "relates": {
    "args": [
@@ -7786,6 +10951,14 @@
    "meaning": "the binary relation R holds of x and y",
    "returns": "prop"
   },
+  "relative_ideal_norm": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "relative norm of an ideal of the ring of integers of L down to K, in the order K I",
+   "returns": "term"
+  },
   "relative_norm": {
    "args": [
     "term",
@@ -7793,6 +10966,15 @@
     "term"
    ],
    "meaning": "norm N_{L/K}(x) of x from L down to K, in the order K L x",
+   "returns": "term"
+  },
+  "relative_trace": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "trace Tr_{L/K}(x) of x from L down to K, in the order K L x",
    "returns": "term"
   },
   "relatively_prime_elements": {
@@ -7819,6 +11001,45 @@
    "meaning": "residue class of x modulo the ideal I",
    "returns": "term"
   },
+  "residue_field_of": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the residue field of a local ring",
+   "returns": "term"
+  },
+  "residue_size_below": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the size of the residue ring of the ring of integers of K at the contraction of I, in the order K I",
+   "returns": "term"
+  },
+  "resolvent_set": {
+   "args": [
+    "term"
+   ],
+   "meaning": "resolvent set of a, the complex z with z - a invertible",
+   "returns": "term"
+  },
+  "resolvent_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "value (z - a)^(-1) of the resolvent of a at z, arguments a, z",
+   "returns": "term"
+  },
+  "restricted_expectation": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(restricted_expectation mu X A) is the integral of X over the event A",
+   "returns": "term"
+  },
   "restricted_to_first": {
    "args": [
     "term"
@@ -7842,6 +11063,25 @@
    "meaning": "g restricted to the subspace K equals f",
    "returns": "prop"
   },
+  "riemann_zeta": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Riemann zeta function at s",
+   "returns": "term"
+  },
+  "riemann_zeta_fn": {
+   "args": [],
+   "meaning": "the Riemann zeta function as a function on the complex plane",
+   "returns": "term"
+  },
+  "right_continuous_real_fn": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "the real function is right-continuous at every point",
+   "returns": "prop"
+  },
   "right_coset": {
    "args": [
     "term",
@@ -7859,6 +11099,15 @@
    "meaning": "f(g(y)) = y for all y near b; arguments f, g, b",
    "returns": "prop"
   },
+  "right_limit_equals": {
+   "args": [
+    "term_function",
+    "term",
+    "term"
+   ],
+   "meaning": "the function tends to the value L as s tends to a from the right, in the order f a L",
+   "returns": "prop"
+  },
   "ring_center": {
    "args": [
     "term"
@@ -7873,6 +11122,15 @@
    ],
    "meaning": "p is the characteristic of the ring R",
    "returns": "prop"
+  },
+  "ring_commutator_iterate": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "result of applying b to ab-ba n times, in the order a b n",
+   "returns": "term"
   },
   "ring_frobenius": {
    "args": [
@@ -7890,6 +11148,14 @@
    ],
    "meaning": "f is a ring homomorphism from R to S",
    "returns": "prop"
+  },
+  "ring_hom_comp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the composite g after f of ring homomorphisms, in the order g f",
+   "returns": "term"
   },
   "ring_hom_injective": {
    "args": [
@@ -7973,6 +11239,110 @@
    "meaning": "canonical projection onto the quotient by the ideal I",
    "returns": "term"
   },
+  "rkhs": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "H is a Hilbert space of functions from X to V with bounded point evaluations, arguments H, X, V",
+   "returns": "prop"
+  },
+  "rkhs_kernel_section": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "adjoint of evaluation at x applied to v, arguments H, x, v",
+   "returns": "term"
+  },
+  "root_base": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "b is a base of the root pairing P, in the order b P",
+   "returns": "prop"
+  },
+  "root_index_reflection": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "index of the reflection of root j in root i, in the order P i j",
+   "returns": "term"
+  },
+  "root_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "i-th root of the root pairing P, in the order P i",
+   "returns": "term"
+  },
+  "root_pairing": {
+   "args": [
+    "term"
+   ],
+   "meaning": "P is a root pairing",
+   "returns": "prop"
+  },
+  "root_pairing_value": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "pairing of root i with coroot j, in the order P i j",
+   "returns": "term"
+  },
+  "root_reflection": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "reflection attached to root i, in the order P i",
+   "returns": "term"
+  },
+  "root_set": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of roots of the root pairing P",
+   "returns": "term"
+  },
+  "root_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "generalized weight space of L for the adjoint action of the nilpotent subalgebra H, in the order H alpha",
+   "returns": "term"
+  },
+  "root_system": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the root pairing P is a root system, roots and coroots spanning",
+   "returns": "prop"
+  },
+  "root_system_of_cartan": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the nonzero roots and coroots of H form a reduced crystallographic root system",
+   "returns": "prop"
+  },
+  "running_max": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(running_max X n) is the maximum of X_0, ..., X_n",
+   "returns": "term"
+  },
   "same_side_of_line": {
    "args": [
     "term",
@@ -8005,6 +11375,38 @@
    ],
    "meaning": "scalar multiple c v of a vector or linear functional",
    "returns": "term"
+  },
+  "scalar_op": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "scalar c times the identity of M, in the order c M",
+   "returns": "term"
+  },
+  "scaled_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(scaled_process B c) is the process t -> B(ct) / sqrt(c)",
+   "returns": "term"
+  },
+  "schwartz_line_deriv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "directional derivative of a Schwartz function, arguments m, g",
+   "returns": "term"
+  },
+  "schwartz_on": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "f is a complex Schwartz function on the space V; arguments V, f",
+   "returns": "prop"
   },
   "second_coord": {
    "args": [
@@ -8054,6 +11456,13 @@
    "meaning": "p is a norm on the vector space E",
    "returns": "prop"
   },
+  "semisimple_lie_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "L is a direct sum of its non-abelian minimal ideals",
+   "returns": "prop"
+  },
   "semisimple_module": {
    "args": [
     "term",
@@ -8074,6 +11483,14 @@
     "term"
    ],
    "meaning": "R is a semisimple module over itself on the left",
+   "returns": "prop"
+  },
+  "semistandard_tableau": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "T is a semistandard filling of the Young diagram m by natural numbers, in the order T m",
    "returns": "prop"
   },
   "separable_extension": {
@@ -8103,6 +11520,14 @@
     "term"
    ],
    "meaning": "the real sequence a is nonincreasing",
+   "returns": "prop"
+  },
+  "seq_asymp_equiv": {
+   "args": [
+    "term_function",
+    "term_function"
+   ],
+   "meaning": "two positive sequences are asymptotically equivalent, their ratio tending to 1",
    "returns": "prop"
   },
   "seq_cauchy": {
@@ -8200,6 +11625,14 @@
     "term"
    ],
    "meaning": "the series of norms of a converges",
+   "returns": "prop"
+  },
+  "series_converges_l2_circle": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the Fourier series of f in L2 of the circle of period T converges to f in the L2 norm; arguments T, f",
    "returns": "prop"
   },
   "series_has_sum": {
@@ -8318,12 +11751,42 @@
    "meaning": "union of a sequence of sets",
    "returns": "term"
   },
+  "set_shadow": {
+   "args": [
+    "term"
+   ],
+   "meaning": "lower shadow of a family of sets, all sets obtained from a member by removing one element",
+   "returns": "term"
+  },
   "set_translate": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "translate of the set S by a",
+   "returns": "term"
+  },
+  "shatterer": {
+   "args": [
+    "term"
+   ],
+   "meaning": "family of all sets shattered by F",
+   "returns": "term"
+  },
+  "shatters": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "every subset of s has the form s intersected with a member of F, in the order F s",
+   "returns": "prop"
+  },
+  "shifted_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(shifted_process B s) is the process t -> B(s+t) - B(s)",
    "returns": "term"
   },
   "short_exact_complexes": {
@@ -8356,6 +11819,21 @@
    "meaning": "(sigma_le G H): sigma-algebra G is contained in sigma-algebra H",
    "returns": "prop"
   },
+  "sigma_of_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(sigma_of_family X S) is the sigma-algebra generated by X_i for i in S",
+   "returns": "term"
+  },
+  "sigma_of_rv": {
+   "args": [
+    "term"
+   ],
+   "meaning": "sigma-algebra generated by the random variable X",
+   "returns": "term"
+  },
   "sign_group": {
    "args": [],
    "meaning": "the group {1, -1} under multiplication",
@@ -8366,6 +11844,13 @@
     "term"
    ],
    "meaning": "sign homomorphism from the symmetric group on X to {1, -1}",
+   "returns": "term"
+  },
+  "sign_of": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the sign of an integer, in {-1, 0, 1}",
    "returns": "term"
   },
   "signed_measure": {
@@ -8416,6 +11901,13 @@
    "meaning": "G is a simple group",
    "returns": "prop"
   },
+  "simple_lie_algebra": {
+   "args": [
+    "term"
+   ],
+   "meaning": "L is a simple Lie algebra, non-abelian with no proper nonzero ideal",
+   "returns": "prop"
+  },
   "simple_module": {
    "args": [
     "term",
@@ -8431,6 +11923,14 @@
    "meaning": "R is a nonzero ring whose only two-sided ideals are 0 and R",
    "returns": "prop"
   },
+  "simple_root_index": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "i is the index of a simple root of the base b, in the order b i",
+   "returns": "prop"
+  },
   "simply_connected_space": {
    "args": [
     "term"
@@ -8444,6 +11944,34 @@
    ],
    "meaning": "the singleton set containing x",
    "returns": "term"
+  },
+  "sl2_primitive_vector": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "m is nonzero with hm = mu m and em = 0, in the order h e f m mu",
+   "returns": "prop"
+  },
+  "sl2_triple": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "h, e, f satisfy h nonzero, [e,f]=h, [h,e]=2e, [h,f]=-2f, in the order h e f",
+   "returns": "prop"
+  },
+  "smooth_compact_support_euclidean": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "g is a smooth compactly supported function on R^n; arguments n, g",
+   "returns": "prop"
   },
   "smooth_function": {
    "args": [
@@ -8526,6 +12054,14 @@
    "meaning": "spectral radius of an element",
    "returns": "term"
   },
+  "spectrum_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "spectrum of a computed in the subalgebra S, arguments S, a",
+   "returns": "term"
+  },
   "spectrum_of": {
    "args": [
     "term"
@@ -8594,6 +12130,13 @@
    "meaning": "the natural number has no square factor other than 1",
    "returns": "prop"
   },
+  "squarefree_integer": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the integer d is not divisible by the square of a nonunit",
+   "returns": "prop"
+  },
   "squarefree_poly": {
    "args": [
     "term"
@@ -8610,6 +12153,90 @@
     "term"
    ],
    "meaning": "e is a basis of O, f is a basis of N and f_i = g_i e_i, in the order (e, f, g, O, N)",
+   "returns": "prop"
+  },
+  "standard_borel_nonempty": {
+   "args": [
+    "term"
+   ],
+   "meaning": "T is a nonempty standard Borel space",
+   "returns": "prop"
+  },
+  "star_element": {
+   "args": [
+    "term"
+   ],
+   "meaning": "involution a* of the element a",
+   "returns": "term"
+  },
+  "star_ordered": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the order on A is given by 0 <= a iff a is a finite sum of elements b* b",
+   "returns": "prop"
+  },
+  "star_subalgebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "S is a *-subalgebra of A containing the unit, arguments S, A",
+   "returns": "prop"
+  },
+  "std_gaussian": {
+   "args": [
+    "term"
+   ],
+   "meaning": "standard Gaussian measure on the finite-dimensional real inner product space E",
+   "returns": "term"
+  },
+  "stirling_first": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "unsigned Stirling number of the first kind c(n,k), defined by c(n+1,k+1) = n c(n,k+1) + c(n,k)",
+   "returns": "term"
+  },
+  "stirling_second": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Stirling number of the second kind S(n,k), defined by S(n+1,k+1) = (k+1) S(n,k+1) + S(n,k)",
+   "returns": "term"
+  },
+  "stopped_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(stopped_process X t) is the process n -> X at the minimum of n and t",
+   "returns": "term"
+  },
+  "stopped_sigma": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(stopped_sigma F t) is the sigma-algebra of events before the stopping time t",
+   "returns": "term"
+  },
+  "stopped_value": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(stopped_value X t) is the random variable X_t",
+   "returns": "term"
+  },
+  "stopping_time": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(stopping_time F t): t takes values in the natural numbers and infinity and {t <= n} is F_n-measurable for each n",
    "returns": "prop"
   },
   "strict_convex_function_on": {
@@ -8648,6 +12275,23 @@
     "term"
    ],
    "meaning": "G is a sub-sigma-algebra of the ambient sigma-algebra",
+   "returns": "prop"
+  },
+  "subgaussian_mgf": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(subgaussian_mgf X c mu): E[exp(tX)] is finite and at most exp(c t^2 / 2) for every real t",
+   "returns": "prop"
+  },
+  "subgraph_of": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "H is a subgraph of G on the same vertex set, in the order H G",
    "returns": "prop"
   },
   "subgroup_centralizer": {
@@ -8730,6 +12374,14 @@
    "meaning": "set product HK of two subgroups",
    "returns": "term"
   },
+  "sublevel_event": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(sublevel_event X x) is the event {X <= x}",
+   "returns": "term"
+  },
   "sublevel_set_on": {
    "args": [
     "term",
@@ -8738,6 +12390,14 @@
    ],
    "meaning": "set of x in S with f(x) at most r",
    "returns": "term"
+  },
+  "sublinear_functional": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "N on E satisfies N(cx) = cN(x) for c > 0 and N(x+y) <= N(x) + N(y), arguments N, E",
+   "returns": "prop"
   },
   "submartingale": {
    "args": [
@@ -8891,12 +12551,36 @@
    "meaning": "sum of all simple submodules of M, in the order R M",
    "returns": "term"
   },
+  "sum_over_characters": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "sum over all complex additive characters of the finite group G; arguments G, f",
+   "returns": "term"
+  },
   "sum_over_divisors": {
    "args": [
     "term",
     "term_function"
    ],
    "meaning": "sum of f(d) over the positive divisors d of n",
+   "returns": "term"
+  },
+  "sum_over_group": {
+   "args": [
+    "term",
+    "term_function"
+   ],
+   "meaning": "sum over all elements of the finite group G; arguments G, f",
+   "returns": "term"
+  },
+  "sum_prob_series": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(sum_prob_series mu A) is the sum in [0, infinity] of mu(A_n) over n",
    "returns": "term"
   },
   "sum_projection_right": {
@@ -8912,6 +12596,39 @@
     "term"
    ],
    "meaning": "the real sequence u is summable",
+   "returns": "prop"
+  },
+  "summable_sequence_qp": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the series of a is unconditionally summable in Q_p, in the order p a",
+   "returns": "prop"
+  },
+  "sumset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sumset A + B of two finite subsets of an additive group or semigroup",
+   "returns": "term"
+  },
+  "supermartingale": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(supermartingale mu X F): X is a supermartingale for the filtration F under mu",
+   "returns": "prop"
+  },
+  "support_subset": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the closed support of g is contained in U, arguments g, U",
    "returns": "prop"
   },
   "surjection_set": {
@@ -8950,6 +12667,13 @@
    ],
    "meaning": "f maps onto the space F",
    "returns": "prop"
+  },
+  "swap_image": {
+   "args": [
+    "term"
+   ],
+   "meaning": "image of a measure on pairs under (x,y) -> (y,x)",
+   "returns": "term"
   },
   "sylow_set": {
    "args": [
@@ -8997,6 +12721,14 @@
    "meaning": "f is a symmetric polynomial in n variables; arguments f n",
    "returns": "prop"
   },
+  "szemeredi_bound": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the tower-type upper bound on the number of parts in the regularity lemma, in the order e l",
+   "returns": "term"
+  },
   "t1_space": {
    "args": [
     "term"
@@ -9004,12 +12736,28 @@
    "meaning": "X is a T1 space",
    "returns": "prop"
   },
+  "tableau_entry": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "entry of the tableau T in row i and column j, in the order T i j",
+   "returns": "term"
+  },
   "tail_event": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "(tail_event X c) is the event {X >= c}",
+   "returns": "term"
+  },
+  "tail_sigma": {
+   "args": [
+    "term"
+   ],
+   "meaning": "tail sigma-algebra of the sequence X, the intersection over n of sigma(X_k, k >= n)",
    "returns": "term"
   },
   "tangent_space": {
@@ -9030,6 +12778,14 @@
    "meaning": "the line through t and p is tangent at t to the circle with centre c and radius r; arguments t p c r",
    "returns": "prop"
   },
+  "tempered_line_deriv": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "directional derivative of a tempered distribution, arguments m, T",
+   "returns": "term"
+  },
   "tends_in_measure": {
    "args": [
     "term",
@@ -9047,11 +12803,34 @@
    "meaning": "f(z) tends to c as |z| tends to infinity",
    "returns": "prop"
   },
+  "tends_to_at_top": {
+   "args": [
+    "term_function",
+    "term"
+   ],
+   "meaning": "the real sequence given by the function tends to L as n tends to infinity",
+   "returns": "prop"
+  },
   "tends_to_zero_at_infinity": {
    "args": [
     "term_function"
    ],
    "meaning": "the function tends to 0 as the absolute value of its real argument tends to infinity",
+   "returns": "prop"
+  },
+  "tends_to_zero_at_infinity_space": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the function f on V tends to 0 at infinity; arguments V, f",
+   "returns": "prop"
+  },
+  "tends_to_zero_cofinite": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "the family indexed by the integers tends to 0 as the absolute value of the index tends to infinity",
    "returns": "prop"
   },
   "tends_uniformly": {
@@ -9078,6 +12857,13 @@
    ],
    "meaning": "tensor product of M and N over R (arguments R, M, N)",
    "returns": "term"
+  },
+  "three_ap_free": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the set of natural numbers contains no three-term arithmetic progression with nonzero difference",
+   "returns": "prop"
   },
   "three_cycle": {
    "args": [
@@ -9127,12 +12913,26 @@
    "meaning": "Tor^R_n(X,Y), in the order (R, n, X, Y)",
    "returns": "term"
   },
+  "torsion_order": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the number of roots of unity in the number field K",
+   "returns": "term"
+  },
   "torsion_submodule": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "torsion submodule of M over R, in the order R M",
+   "returns": "term"
+  },
+  "torsion_units": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the finite subgroup of roots of unity in the unit group of the ring of integers of K",
    "returns": "term"
   },
   "total_variation": {
@@ -9151,11 +12951,52 @@
    "meaning": "S is a totally bounded subset of the metric space X",
    "returns": "prop"
   },
+  "tprod_fn": {
+   "args": [
+    "term_function"
+   ],
+   "meaning": "value of the infinite product over natural numbers n",
+   "returns": "term"
+  },
+  "trace_form_value": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "trace form tr_M(xy), in the order M x y",
+   "returns": "term"
+  },
+  "trace_form_weight_sum": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "sum over the weights chi of (dim M_chi) chi(x) chi(y), in the order M x y",
+   "returns": "term"
+  },
   "trace_of": {
    "args": [
     "term"
    ],
    "meaning": "trace of an operator or matrix",
+   "returns": "term"
+  },
+  "trail_incident_edge_count": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of edges of the walk p containing the vertex x, in the order p x",
+   "returns": "term"
+  },
+  "transform_process": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(transform_process A X) is the process n -> sum over k < n of A_{k+1} (X_{k+1} - X_k)",
    "returns": "term"
   },
   "transitive_action": {
@@ -9207,6 +13048,21 @@
    "meaning": "area of the convex hull of the three points a, b, c in the plane",
    "returns": "term"
   },
+  "triangle_removal_constant": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the positive constant in the triangle removal lemma depending on e",
+   "returns": "term"
+  },
+  "triangularizable_action": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "each element of H has all generalized eigenspaces spanning L, in the order H L",
+   "returns": "prop"
+  },
   "trivial_group": {
    "args": [
     "term"
@@ -9221,12 +13077,50 @@
    "meaning": "trivial subgroup of G",
    "returns": "term"
   },
+  "turan_graph": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Turan graph on {0,...,n-1} with i, j adjacent exactly when their residues mod r differ, in the order n r",
+   "returns": "term"
+  },
+  "turan_maximal": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "G has no clique on r+1 vertices and the largest edge count among such graphs on its vertex set, in the order G r",
+   "returns": "prop"
+  },
   "twice_continuously_differentiable_on": {
    "args": [
     "term",
     "term"
    ],
    "meaning": "f is C2 on the set S",
+   "returns": "prop"
+  },
+  "two_ne_zero_in": {
+   "args": [
+    "term"
+   ],
+   "meaning": "2 is nonzero in the ring R",
+   "returns": "prop"
+  },
+  "uea_map": {
+   "args": [
+    "term"
+   ],
+   "meaning": "canonical map from L to its universal enveloping algebra at x",
+   "returns": "term"
+  },
+  "ultrametric_complete_module": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "E is a complete ultrametric normed module with bounded scalar action of Z_p, in the order E p",
    "returns": "prop"
   },
   "uniform_continuous": {
@@ -9253,12 +13147,38 @@
    "meaning": "the function sequence given by a two-variable lambda converges uniformly on S to the function given by a lambda",
    "returns": "prop"
   },
+  "uniform_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "every member of the family F has exactly r elements, in the order F r",
+   "returns": "prop"
+  },
+  "uniform_interval_measure": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "uniform distribution on the closed interval [a,b]",
+   "returns": "term"
+  },
   "uniform_measure_on": {
    "args": [
     "term"
    ],
    "meaning": "uniform probability measure on a finite set",
    "returns": "term"
+  },
+  "uniform_pair": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "the pair of vertex sets s, t is e-uniform in the graph G, in the order G e s t",
+   "returns": "prop"
   },
   "uniform_tends_on": {
    "args": [
@@ -9276,6 +13196,14 @@
     "term"
    ],
    "meaning": "f from X to Y is uniformly continuous",
+   "returns": "prop"
+  },
+  "uniformly_integrable_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "(uniformly_integrable_family X mu): the sequence X is uniformly integrable in L1 under mu",
    "returns": "prop"
   },
   "union_over": {
@@ -9300,6 +13228,15 @@
    "meaning": "the unique maximal ideal of the local ring R",
    "returns": "term"
   },
+  "unique_torsion_exponents": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "x is uniquely a root of unity times a product of integer powers of the family u, in the order x u K",
+   "returns": "prop"
+  },
   "unit_bump_seq": {
    "args": [],
    "meaning": "the sequence of indicators of the intervals (n, n+1]",
@@ -9320,6 +13257,20 @@
    "meaning": "a is a unit of R",
    "returns": "prop"
   },
+  "unit_group": {
+   "args": [
+    "term"
+   ],
+   "meaning": "unit group of the ring of integers of the number field K",
+   "returns": "term"
+  },
+  "unit_group_rank": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Z-rank of the unit group of the ring of integers of K",
+   "returns": "term"
+  },
   "unit_ideal": {
    "args": [
     "term"
@@ -9339,11 +13290,70 @@
    "meaning": "multiplicative identity of the algebra A",
    "returns": "term"
   },
+  "unital_star_hom": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "f is a unital *-homomorphism from A to B",
+   "returns": "prop"
+  },
+  "unitary_element": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "u* u = u u* = 1 in A, arguments u, A",
+   "returns": "prop"
+  },
   "units_group": {
    "args": [
     "term"
    ],
    "meaning": "the multiplicative group of the field K",
+   "returns": "term"
+  },
+  "units_of_order_count": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of reduced residues modulo n of order exactly d, in the order n d",
+   "returns": "term"
+  },
+  "units_power_root_count": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of reduced residues u modulo n with u^d = 1, in the order n d",
+   "returns": "term"
+  },
+  "units_power_sum": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "sum of x^i in Z/nZ over all reduced residues x modulo n, in the order n i",
+   "returns": "term"
+  },
+  "universal_enveloping_algebra": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "universal enveloping algebra of L over R, in the order L R",
+   "returns": "term"
+  },
+  "upcrossings_before": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "(upcrossings_before a b X k) is the number of upcrossings of [a,b] completed by the path X before time k",
    "returns": "term"
   },
   "upper_bound": {
@@ -9363,12 +13373,32 @@
    "meaning": "n-th term of the upper central series of G with term 0 trivial, in the order (G, n)",
    "returns": "term"
   },
+  "upper_family": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the family of subsets of X is closed under taking supersets within X, in the order F X",
+   "returns": "prop"
+  },
   "upper_triangular_matrix": {
    "args": [
     "term"
    ],
    "meaning": "A is an upper triangular square matrix",
    "returns": "prop"
+  },
+  "usual_absolute_value": {
+   "args": [],
+   "meaning": "the usual absolute value on the rationals",
+   "returns": "term"
+  },
+  "valuation_integers": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the valuation ring of the nonarchimedean field K",
+   "returns": "term"
   },
   "valuation_ring": {
    "args": [
@@ -9406,6 +13436,13 @@
    "meaning": "(variance P X) is the variance of X under P",
    "returns": "term"
   },
+  "vc_dimension": {
+   "args": [
+    "term"
+   ],
+   "meaning": "largest size of a set shattered by F, and 0 for the empty family",
+   "returns": "term"
+  },
   "vector_angle": {
    "args": [
     "term",
@@ -9420,6 +13457,14 @@
     "term"
    ],
    "meaning": "i-th coordinate of the vector a, in the order a i",
+   "returns": "term"
+  },
+  "vector_field_bracket": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "Lie bracket of two vector fields",
    "returns": "term"
   },
   "vector_finrank": {
@@ -9445,11 +13490,42 @@
    "meaning": "V is a vector space over the field K",
    "returns": "prop"
   },
+  "von_mangoldt": {
+   "args": [
+    "term"
+   ],
+   "meaning": "von Mangoldt function of n",
+   "returns": "term"
+  },
+  "von_mangoldt_dirichlet_terms": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the sequence n -> Lambda(n) n^(-s) for the complex number s",
+   "returns": "term"
+  },
   "walk_length": {
    "args": [
     "term"
    ],
    "meaning": "number of edges of a walk",
+   "returns": "term"
+  },
+  "walk_support": {
+   "args": [
+    "term"
+   ],
+   "meaning": "set of vertices visited by a walk",
+   "returns": "term"
+  },
+  "walks_of_length": {
+   "args": [
+    "term",
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "set of walks of length n from u to v in G, in the order G u v n",
    "returns": "term"
   },
   "weak_compositions": {
@@ -9468,6 +13544,14 @@
    "meaning": "the subset S of the dual of E is compact in the weak-* topology",
    "returns": "prop"
   },
+  "weak_tends_to": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the sequence x converges weakly to a, tested on bounded functionals",
+   "returns": "prop"
+  },
   "weakly_between": {
    "args": [
     "term",
@@ -9475,6 +13559,13 @@
     "term"
    ],
    "meaning": "b lies on the closed segment between a and c",
+   "returns": "prop"
+  },
+  "weakly_locally_compact": {
+   "args": [
+    "term"
+   ],
+   "meaning": "X is weakly locally compact",
    "returns": "prop"
   },
   "weierstrass_curve": {
@@ -9536,11 +13627,93 @@
    "meaning": "measure with density f with respect to mu",
    "returns": "term"
   },
+  "witt_coeff": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the n-th component of the Witt vector x, in the order x n",
+   "returns": "term"
+  },
+  "witt_frobenius": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Frobenius F applied to a Witt vector",
+   "returns": "term"
+  },
+  "witt_iterated_verschiebung_frobenius": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "V^n(F^n(x)), in the order x n",
+   "returns": "term"
+  },
+  "witt_vectors": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the ring of p-typical Witt vectors over R, in the order p R",
+   "returns": "term"
+  },
+  "witt_verschiebung": {
+   "args": [
+    "term"
+   ],
+   "meaning": "Verschiebung V applied to a Witt vector",
+   "returns": "term"
+  },
+  "word_first_letter": {
+   "args": [
+    "term"
+   ],
+   "meaning": "first letter of a nonempty word",
+   "returns": "term"
+  },
+  "word_last_letter": {
+   "args": [
+    "term"
+   ],
+   "meaning": "last letter of a nonempty word",
+   "returns": "term"
+  },
   "yoneda_map": {
    "args": [
     "term"
    ],
    "meaning": "natural transformation Hom(-,X) to Hom(-,Y) induced by f",
+   "returns": "term"
+  },
+  "young_col_length": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of cells in column j of the Young diagram m, in the order m j",
+   "returns": "term"
+  },
+  "young_diagram": {
+   "args": [
+    "term"
+   ],
+   "meaning": "m is a Young diagram, a finite lower set of cells in N x N",
+   "returns": "prop"
+  },
+  "young_row_length": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of cells in row i of the Young diagram m, in the order m i",
+   "returns": "term"
+  },
+  "young_transpose": {
+   "args": [
+    "term"
+   ],
+   "meaning": "conjugate Young diagram obtained by swapping rows and columns",
    "returns": "term"
   },
   "zero_function": {
@@ -9554,6 +13727,13 @@
    ],
    "meaning": "the zero ideal of R",
    "returns": "term"
+  },
+  "zero_lie_ideal": {
+   "args": [
+    "term"
+   ],
+   "meaning": "the Lie ideal or submodule is zero",
+   "returns": "prop"
   },
   "zero_linear_map": {
    "args": [],
@@ -9590,6 +13770,14 @@
    "meaning": "zero morphism",
    "returns": "term"
   },
+  "zero_set_in": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "the set of zeros of f in K",
+   "returns": "term"
+  },
   "zero_submodule": {
    "args": [
     "term"
@@ -9609,6 +13797,24 @@
    "meaning": "zero vector of the space fixed by context",
    "returns": "term"
   },
+  "zmod_dft": {
+   "args": [
+    "term",
+    "term",
+    "term"
+   ],
+   "meaning": "value at k of the discrete Fourier transform of Phi on Z/NZ, with kernel exp(-2 pi i j k / N); arguments N, Phi, k",
+   "returns": "term"
+  },
+  "zmod_dft_fn": {
+   "args": [
+    "term",
+    "term_function",
+    "term"
+   ],
+   "meaning": "value at k of the discrete Fourier transform on Z/NZ of the function given by a lambda; arguments N, Phi, k",
+   "returns": "term"
+  },
   "zmod_group": {
    "args": [
     "term"
@@ -9616,11 +13822,34 @@
    "meaning": "additive group Z/n, with Z/0 meaning Z",
    "returns": "term"
   },
+  "zmod_nonzero_square_count": {
+   "args": [
+    "term"
+   ],
+   "meaning": "number of squares among the reduced residues modulo p",
+   "returns": "term"
+  },
   "zmod_ring": {
    "args": [
     "term"
    ],
    "meaning": "the ring Z/nZ of integers modulo n, with Z/0Z equal to Z",
+   "returns": "term"
+  },
+  "zmod_sqrt_count": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "number of solutions of x^2 = a in Z/pZ, in the order p a",
+   "returns": "term"
+  },
+  "zmod_std_character": {
+   "args": [
+    "term",
+    "term"
+   ],
+   "meaning": "exp(2 pi i j / N) for j in Z/NZ; arguments N, j",
    "returns": "term"
   },
   "zmod_units": {
