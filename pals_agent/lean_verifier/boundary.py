@@ -8,7 +8,10 @@ from pathlib import Path
 
 _GIB = 1024 * 1024 * 1024
 _MAX_CPU_COUNT = 2.0
-_MAX_MEMORY_BYTES = 4 * _GIB
+# A fixed total for any compile count. Library page cache counts against this limit and is shared
+# between compiles. A broad Mathlib import needs about 7 GiB of it; at 4 GiB compiles evict each
+# other's pages and took up to 129 s instead of 8 s. Heap peaks near 1.5 GiB.
+_MAX_MEMORY_BYTES = 8 * _GIB
 _MAX_PIDS = 64
 _MAX_NOFILE = 1024
 _CREDENTIAL_ENV_RE = re.compile(
@@ -42,6 +45,7 @@ class RuntimeBoundaryEvidence:
     cpu_cgroup_limited: bool
     memory_cgroup_limited: bool
     pids_cgroup_limited: bool
+    pressure_events_readable: bool
     nofile_limited: bool
     credential_environment_names: tuple[str, ...]
 
@@ -86,6 +90,7 @@ def validate_runtime_boundary(evidence: RuntimeBoundaryEvidence) -> None:
             "verifier memory cgroup limit is missing",
         ),
         (evidence.pids_cgroup_limited, "verifier PID cgroup limit is missing"),
+        (evidence.pressure_events_readable, "verifier cgroup event counters are unreadable"),
         (evidence.nofile_limited, "verifier open-file limit is missing"),
         (
             not evidence.credential_environment_names,
@@ -138,6 +143,7 @@ def attest_runtime_boundary(
             maximum=_MAX_PIDS,
             controllers=("pids",),
         ),
+        pressure_events_readable=_pressure_events_readable(),
         nofile_limited=_nofile_limited(),
         credential_environment_names=tuple(
             sorted(
@@ -196,6 +202,7 @@ def attest_http_runtime_boundary(
             maximum=_MAX_PIDS,
             controllers=("pids",),
         ),
+        pressure_events_readable=_pressure_events_readable(),
         nofile_limited=_nofile_limited(),
         credential_environment_names=_credential_environment_names(
             allowed_reference_environment_names
@@ -241,6 +248,7 @@ def validate_http_runtime_boundary(evidence: RuntimeBoundaryEvidence) -> None:
             "verifier memory cgroup limit is missing",
         ),
         (evidence.pids_cgroup_limited, "verifier PID cgroup limit is missing"),
+        (evidence.pressure_events_readable, "verifier cgroup event counters are unreadable"),
         (evidence.nofile_limited, "verifier open-file limit is missing"),
         (
             not evidence.credential_environment_names,
@@ -405,6 +413,24 @@ def _integer_cgroup_limited(
         return value != "max" and 0 < int(value, 10) <= maximum
     except (OSError, ValueError):
         return False
+
+
+def _pressure_events_readable() -> bool:
+    """`lean.py` reads these to deny a verdict; without them a refused fork fails a true proof."""
+    root = _cgroup_v2_root()
+    if root is None:
+        return False
+    for name, counter in (("memory.events", "oom_kill"), ("pids.events", "max")):
+        try:
+            lines = (root / name).read_text(encoding="ascii").splitlines()
+        except (OSError, ValueError):
+            return False
+        if not any(
+            key == counter and value.isdecimal()
+            for key, _, value in (line.partition(" ") for line in lines)
+        ):
+            return False
+    return True
 
 
 def _cgroup_v1_controller_root(controllers: tuple[str, ...]) -> Path | None:

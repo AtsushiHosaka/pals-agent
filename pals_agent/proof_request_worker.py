@@ -9,7 +9,7 @@ from collections.abc import Callable
 from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
@@ -24,6 +24,8 @@ from pals_agent.proof_reuse import (
     RecipeSearch,
 )
 from pals_agent.proof_reuse_usage import current_role
+from pals_agent.recipe_semantic import RecipeBatch
+from pals_agent.runtime_latency import latency_stage
 from pals_agent.token_meter import (
     TokenBudgetExceededError,
     TokenMeter,
@@ -31,7 +33,7 @@ from pals_agent.token_meter import (
     TokenMeterError,
     token_meter_scope,
 )
-from pals_agent.usage import usage_scope
+from pals_agent.usage import usage_is_acknowledged, usage_scope
 
 _logger = logging.getLogger(__name__)
 _SAFE_ERROR_CODE = re.compile(r"^[a-z][a-z0-9_]{0,79}$", re.ASCII)
@@ -40,6 +42,7 @@ _ASSESSMENT_PHASES = frozenset({
     "premise_resolution", "catalog_retrieval", "primary_assessment",
     "uncertainty_escalation", "independent_answer_qa", "recipe_request_structure",
     "recipe_search", "recipe_scope_assessment", "recipe_independent_correspondence",
+    "recipe_exact_input", "recipe_parallel_independent_reviews", "recipe_semantic_review",
 })
 _RESULT_ERROR_CODES = frozenset({
     "proof_reuse_answer_review_failed", "proof_reuse_catalog_invalid", "proof_reuse_deadline",
@@ -75,6 +78,7 @@ class ChatAnswerRuntime(Protocol):
         self, request: dict[str, Any],
         recipe_lookup: Callable[[list[dict[str, Any]]], list[dict[str, Any]]] | None = None, *,
         recipe_search: RecipeSearch | None = None, claim_id: str | None = None,
+        recipe_batch: RecipeBatch | None = None,
     ) -> ProofReuseResult: ...
 
 
@@ -178,6 +182,11 @@ class ProofRequestProcessor:
                 "provider_request_id": item.get("provider_request_id"),
             }
             usage.append(record)
+            if usage_is_acknowledged(item["call_id"]):
+                # The same worker-authenticated transaction already stored this
+                # exact call's usage and successful paid receipt. Keep local usage
+                # for settlement revalidation without a second HTTP transaction.
+                return
             # The settlement repeats these IDs so temporary metering failures can be
             # recovered without double charging. Already-incurred usage survives failures.
             with suppress(PalsApiError):
@@ -203,6 +212,17 @@ class ProofRequestProcessor:
             {"recipe_search": search_recipes, "claim_id": claim_id}
             if claim.get("lean_flow") else {}
         )
+        batch_method = getattr(self.api, "get_proof_request_recipe_batch", None)
+        if claim.get("lean_flow") and callable(batch_method):
+            def load_batch() -> dict[str, Any]:
+                try:
+                    return cast(dict[str, Any], batch_method(
+                        request_id=request_id, claim_id=claim_id,
+                        output_language=request["output_language"],
+                    ))
+                except PalsApiError as error:
+                    raise ProofReuseError("proof_reuse_recipe_unavailable") from error
+            recipe_options["recipe_batch"] = load_batch
         try:
             attachment_ids = chat_attachment_ids(request)
             if attachment_ids:
@@ -240,17 +260,26 @@ class ProofRequestProcessor:
                         raise TokenMeterError("token_accounting_unavailable")
                     meter = TokenMeter(self.api, operation_id, request_id, claim_id,
                                        started + MAX_SECONDS)
-                    with token_meter_scope(meter):
+                    with token_meter_scope(meter), latency_stage("assessment"):
                         result = self.runtime.answer(request, **recipe_options)
                     if meter.failed:
                         raise TokenMeterError("token_meter_failed")
-                    if result.outcome == "answered" and (
+                    from pals_agent.recipe_exact_input import result_is_bound
+
+                    exact_zero_call = (
+                        not meter.completed_calls
+                        and result_is_bound(
+                            request, claim_id, result.answer, result.private_evidence,
+                        )
+                    )
+                    if result.outcome == "answered" and not exact_zero_call and (
                         not isinstance(result.private_evidence.get("token_qa"), dict)
                         or result.private_evidence["token_qa"].get("approved") is not True
                     ):
                         raise TokenMeterError("token_qa_missing")
                 else:
-                    result = self.runtime.answer(request, **recipe_options)
+                    with latency_stage("assessment"):
+                        result = self.runtime.answer(request, **recipe_options)
         except MaterialContextError as error:
             result = ProofReuseResult(
                 "failed", None, None, error.code,

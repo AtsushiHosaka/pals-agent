@@ -35,6 +35,7 @@ def _valid_evidence() -> RuntimeBoundaryEvidence:
         cpu_cgroup_limited=True,
         memory_cgroup_limited=True,
         pids_cgroup_limited=True,
+        pressure_events_readable=True,
         nofile_limited=True,
         credential_environment_names=(),
     )
@@ -44,6 +45,7 @@ def _valid_evidence() -> RuntimeBoundaryEvidence:
     ("changes", "message"),
     [
         ({"effective_uid": 0}, "non-root"),
+        ({"pressure_events_readable": False}, "event counters"),
         ({"inherited_capabilities": 1}, "capabilities"),
         ({"permitted_capabilities": 1}, "capabilities"),
         ({"effective_capabilities": 1}, "capabilities"),
@@ -142,14 +144,44 @@ def test_pae_017_outer_cpu_attestation_is_bounded_at_two_vcpus(
 
 
 @pytest.mark.parametrize(
+    ("memory_events", "pids_events", "expected"),
+    [
+        ("oom 1\noom_kill 0\n", "max 0\n", True),
+        ("oom 1\noom_kill 0\n", None, False),
+        (None, "max 0\n", False),
+        ("oom 1\n", "max 0\n", False),
+        ("oom_kill 0\n", "max many\n", False),
+    ],
+)
+def test_pressure_event_counters_are_required(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    memory_events: str | None,
+    pids_events: str | None,
+    expected: bool,
+) -> None:
+    if memory_events is not None:
+        (tmp_path / "memory.events").write_text(memory_events, encoding="ascii")
+    if pids_events is not None:
+        (tmp_path / "pids.events").write_text(pids_events, encoding="ascii")
+    monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: tmp_path)
+    assert boundary_module._pressure_events_readable() is expected
+
+
+def test_pressure_event_counters_need_cgroup_v2(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: None)
+    assert boundary_module._pressure_events_readable() is False
+
+
+@pytest.mark.parametrize(
     ("memory_max", "expected"),
     [
-        (str(4 * _GIB), True),
-        (str(4 * _GIB + 1), False),
+        (str(8 * _GIB), True),
+        (str(8 * _GIB + 1), False),
         ("max", False),
     ],
 )
-def test_pae_017_outer_memory_attestation_is_bounded_at_four_gib(
+def test_pae_017_outer_memory_attestation_is_bounded_at_eight_gib(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     memory_max: str,
@@ -159,7 +191,7 @@ def test_pae_017_outer_memory_attestation_is_bounded_at_four_gib(
     (cgroup / "memory.max").write_text(memory_max, encoding="ascii")
     monkeypatch.setattr(boundary_module, "_cgroup_v2_root", lambda: cgroup)
 
-    assert boundary_module._MAX_MEMORY_BYTES == 4 * _GIB
+    assert boundary_module._MAX_MEMORY_BYTES == 8 * _GIB
     assert (
         boundary_module._integer_cgroup_limited(
             "memory.max",

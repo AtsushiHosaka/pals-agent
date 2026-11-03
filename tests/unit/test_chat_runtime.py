@@ -151,8 +151,10 @@ def test_explanation_three_real_client_calls_are_visual_independent_and_metered(
     assert "hidden solve/prove/correctness" in provider.calls[2]["input"][0]["content"][0]["text"]
 
 
-@pytest.mark.parametrize("model", ["gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra"])
-def test_selected_generation_model_never_changes_fixed_intent_or_qa(model):
+@pytest.mark.parametrize("model", [
+    "gpt-6-luna", "gpt-6.1-sol", "gpt-5.6-terra", "gpt-6.1-terra",
+])
+def test_selected_lean_generation_model_never_changes_cheap_explanation_or_fixed_reviews(model):
     runtime, provider = engine(
         [
             route(),
@@ -160,8 +162,12 @@ def test_selected_generation_model_never_changes_fixed_intent_or_qa(model):
             {"approved": True, "rationale": "Faithful explanation."},
         ]
     )
-    assert runtime.answer(dict(REQUEST, generation_model=model)).outcome == "answered"
-    assert [call["model"] for call in provider.calls] == ["gpt-6.1-sol", model, "gpt-6-luna"]
+    assert runtime.answer(dict(REQUEST, generation_model=model,
+                               generation_reasoning_effort="high")).outcome == "answered"
+    assert [call["model"] for call in provider.calls] == [
+        "gpt-6.1-sol", "gpt-6-luna", "gpt-6-luna",
+    ]
+    assert [call["reasoning"]["effort"] for call in provider.calls[1:]] == ["low", "low"]
 
 
 def test_qa_rejection_never_publishes_or_falls_back_to_a_proof_route():
@@ -238,18 +244,17 @@ def test_lean_preflight_preserves_original_goal_and_bound_images(image_only):
 def test_lean_catalog_receipt_and_independent_review_bind_original_statement():
     import rfc8785
 
-    from tests.unit.test_proof_reuse import READY
     from tests.unit.test_proof_reuse_lean_flow import (
         BOUND_REQUEST,
         CLAIM_ID,
-        INTENT,
         MATCH,
+        READY_INTENT,
         RECIPE,
         REVIEW,
     )
 
     runtime, provider = engine([
-        route("lean", extracted_statement="Prove True."), READY, INTENT, MATCH, REVIEW,
+        route("lean", extracted_statement="Prove True."), READY_INTENT, MATCH, REVIEW,
     ])
     result = runtime.answer(BOUND_REQUEST, recipe_search=lambda *args: [RECIPE],
                             claim_id=CLAIM_ID)
@@ -412,3 +417,32 @@ def test_worker_attachment_client_has_a_bounded_dedicated_large_response_transpo
     client = PalsApiClient("https://api.example.test", "fixture")
     assert client.transport.max_response_bytes == 2_097_152
     assert client.attachment_transport.max_response_bytes == 56_000_000
+
+
+@pytest.mark.parametrize("effort", [None, "none", "xhigh", "unsupported", {}, []])
+def test_invalid_generation_effort_never_reaches_the_intent_provider(effort):
+    runtime, provider = engine([route()])
+    result = runtime.answer(dict(REQUEST, generation_reasoning_effort=effort))
+    assert result.outcome == "failed"
+    assert result.error_code == "chat_invalid_response"
+    assert provider.calls == []
+
+
+def test_natural_chat_lean_route_carries_the_explicit_effort_to_generation_scope():
+    from dataclasses import replace
+
+    from pals_agent.linked_chat import selected_generation_reasoning_effort
+    from pals_agent.proof_reuse import ProofReuseResult
+
+    class ObservingProofRuntime:
+        def answer(self, request, *args, **kwargs):
+            assert request["generation_reasoning_effort"] == "high"
+            assert selected_generation_reasoning_effort(None) == "high"
+            return ProofReuseResult("failed", None, None, "lean_verification_required", {})
+
+    runtime, provider = engine([route("lean")])
+    runtime = replace(runtime, proof_runtime=ObservingProofRuntime())
+    result = runtime.answer(dict(REQUEST, generation_reasoning_effort="high"), lambda _: None)
+    assert result.error_code == "lean_verification_required"
+    assert len(provider.calls) == 1
+    assert selected_generation_reasoning_effort(None) is None

@@ -10,7 +10,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from pals_agent.api_client import PalsApiClient
+from pals_agent.api_client import RECIPE_SEARCH_RESPONSE_BYTES, PalsApiClient
 from pals_agent.benchmarks import BENCHMARK_PROBLEMS
 from pals_agent.draft_catalog import SeedDraftCatalog
 from pals_agent.evaluation import (
@@ -31,6 +31,7 @@ from pals_agent.factory import (
     build_semantic_stage_judge,
     build_statement_openmath_structurer,
 )
+from pals_agent.lightweight_http_transport import fresh_process_http_transport
 from pals_agent.models import ProofRunResult
 from pals_agent.proof_flow_image import (
     SubprocessDocker,
@@ -43,9 +44,17 @@ from pals_agent.proof_flow_seed import (
     SeedBuildArtifact,
     SeedEmbeddingFingerprint,
 )
+from pals_agent.runtime_latency import TimedTransport
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, worker_queue_url
+from pals_agent.worker import SqsProofWorker, WorkerSqsUnavailableError, worker_queue_url
 from pals_agent.worker_api_trust import configure_worker_api_trust
+from pals_agent.worker_processes import (
+    LANE_UNAVAILABLE_EXIT,
+    MAX_PROOF_WORKERS,
+    run_lane_workers,
+    worker_processes_from_env,
+    write_ready_marker,
+)
 
 _SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
 _DEFAULT_AGENT_SOURCE_ROOT = Path(__file__).resolve().parents[1]
@@ -63,6 +72,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     worker_parser = subparsers.add_parser("worker", help="Continuously process SQS proof jobs.")
     worker_parser.add_argument("--ready-file", type=Path)
+    worker_parser.add_argument("--processes", type=int, choices=range(1, MAX_PROOF_WORKERS + 1),
+                               help="Independent single-lane processes (default: "
+                                    "PALS_WORKER_PROCESSES, else one).")
     worker_once_parser = subparsers.add_parser("worker-once", help="Process at most one SQS task.")
     for lane_parser in (worker_parser, worker_once_parser):
         lane_parser.add_argument("--lane", choices=("all", "proof", "assessment"), default="all")
@@ -164,6 +176,14 @@ def main(argv: list[str] | None = None) -> int:
     comparison_parser.add_argument("--candidate-run", required=True)
 
     args = parser.parse_args(argv)
+    if args.command == "worker":
+        if args.processes is None:
+            try:
+                args.processes = worker_processes_from_env()
+            except ValueError as error:
+                parser.error(str(error))
+        if args.processes > 1 and args.lane not in {"proof", "assessment"}:
+            parser.error("multiple worker processes require an explicit single lane")
     ready_file = args.ready_file if args.command == "worker" else None
     if ready_file is not None:
         ready_file.unlink(missing_ok=True)
@@ -359,6 +379,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command in {"worker", "worker-once"}:
+        if args.command == "worker" and args.processes > 1:
+            return run_lane_workers(
+                lane=args.lane, processes=args.processes, ready_file=ready_file,
+            )
         configure_worker_api_trust(getattr(settings, "api_ca_certificate_path", None))
         worker_queue_url(settings, args.lane)
         if not settings.worker_shared_secret:
@@ -366,6 +390,15 @@ def main(argv: list[str] | None = None) -> int:
         api_client = PalsApiClient(
             base_url=settings.api_base_url,
             worker_secret=settings.worker_shared_secret,
+            transport=TimedTransport(
+                fresh_process_http_transport(
+                    max_response_bytes=RECIPE_SEARCH_RESPONSE_BYTES, use_lightweight=True,
+                ),
+                "api", settings.api_base_url,
+            ),
+            attachment_transport=fresh_process_http_transport(
+                max_response_bytes=56_000_000, use_lightweight=True,
+            ),
         )
         draining = False
 
@@ -399,12 +432,14 @@ def main(argv: list[str] | None = None) -> int:
         )
         if args.command == "worker":
             if ready_file is not None:
-                ready_file.write_text(str(os.getpid()), encoding="ascii")
+                write_ready_marker(ready_file)
             previous_handlers = {}
             try:
                 for signum in (signal.SIGTERM, signal.SIGINT):
                     previous_handlers[signum] = signal.signal(signum, request_drain)
                 worker.run_forever()
+            except WorkerSqsUnavailableError:
+                return LANE_UNAVAILABLE_EXIT
             finally:
                 for signum, previous in previous_handlers.items():
                     signal.signal(signum, previous)

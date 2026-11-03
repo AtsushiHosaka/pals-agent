@@ -4,6 +4,7 @@ A metering failure is visible but never changes proof generation or quota.
 """
 
 import logging
+import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -13,6 +14,32 @@ logger = logging.getLogger(__name__)
 _reporter: ContextVar[Callable[[dict[str, Any]], None] | None] = ContextVar(
     "pals_usage_reporter", default=None
 )
+_acknowledged_call: ContextVar[str | None] = ContextVar("pals_acknowledged_usage", default=None)
+
+
+@contextmanager
+def acknowledged_usage_scope(call_id: str) -> Iterator[None]:
+    """Emit local telemetry after this exact call's atomic persistence acknowledgement.
+
+    This is process-local routing metadata, never a worker-supplied API receipt or
+    settlement authority. Only the matching call ID can suppress its redundant write;
+    the context is reset immediately after that local report.
+    """
+    if not isinstance(call_id, str) or re.fullmatch(
+        r"[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", call_id
+    ) is None:
+        raise ValueError("acknowledged_usage_call_invalid")
+    token = _acknowledged_call.set(call_id)
+    try:
+        yield
+    finally:
+        _acknowledged_call.reset(token)
+
+
+def usage_is_acknowledged(call_id: str) -> bool:
+    return isinstance(call_id, str) and _acknowledged_call.get() == call_id
+
+
 # Exact model identities only; never infer prices for unknown dated releases.
 # Official pricing provenance: docs/billing-model-price-snapshots-2026-09-29.md.
 PRICE_SNAPSHOTS = {
@@ -21,6 +48,7 @@ PRICE_SNAPSHOTS = {
     # estimate all input at the cache-write upper bound, not a claimed invoice.
     "gpt-6-luna": "openai-gpt-6-luna-standard-upper-bound-2026-09-30",
     "gpt-6.1-sol": "openai-gpt-6.1-sol-standard-upper-bound-2026-10-07",
+    "gpt-6.1-terra": "openai-gpt-6.1-terra-standard-upper-bound-2026-11-01",
     "gpt-5.6-terra": "openai-gpt-5.6-terra-standard-upper-bound-2026-09-30",
     "gpt-5.4-mini": "openai-gpt-5.4-mini-2026-09-29",
     "gpt-5.4-mini-2026-03-17": "openai-gpt-5.4-mini-2026-09-29",
@@ -38,7 +66,28 @@ def usage_scope(reporter: Callable[[dict[str, Any]], None]) -> Iterator[None]:
         _reporter.reset(token)
 
 
-def report_usage(call_id: str, model: str, usage: Any) -> None:
+@contextmanager
+def capture_usage() -> Iterator[list[dict[str, Any]]]:
+    """Capture this one call while retaining the claim's ordinary durable reporter."""
+    parent = _reporter.get()
+    records: list[dict[str, Any]] = []
+
+    def collect(record: dict[str, Any]) -> None:
+        records.append(dict(record))
+        if parent is not None:
+            parent(record)
+
+    with usage_scope(collect):
+        yield records
+
+
+def report_usage(
+    call_id: str,
+    model: str,
+    usage: Any,
+    *,
+    provider_request_id: Any = None,
+) -> None:
     reporter = _reporter.get()
     if reporter is None:
         return
@@ -72,6 +121,15 @@ def report_usage(call_id: str, model: str, usage: Any) -> None:
                 output_tokens=output_tokens,
                 reasoning_output_tokens=reasoning,
                 price_snapshot_id=snapshot,
+                **(
+                    {"provider_request_id": provider_request_id}
+                    if (
+                        isinstance(provider_request_id, str)
+                        and 6 <= len(provider_request_id) <= 256
+                        and re.fullmatch(r"resp_[A-Za-z0-9_-]+", provider_request_id)
+                    )
+                    else {}
+                ),
             )
         )
     except Exception as exc:

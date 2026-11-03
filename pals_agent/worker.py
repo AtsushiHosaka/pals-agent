@@ -15,6 +15,7 @@ from typing import Any, Final, Literal, Protocol, cast
 
 import boto3  # type: ignore[import-untyped]
 import rfc8785
+from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
 from pals_agent.api_client import (
     PalsApiError,
@@ -60,6 +61,16 @@ from pals_agent.recipe_attempt import (
     exact_retrieved_draft_reference,
 )
 from pals_agent.recipe_review_dispatch import RecipeReviewDispatcher
+from pals_agent.runtime_latency import (
+    latency_label,
+    latency_stage,
+    link_latency_request,
+    note_latency,
+    process_with_latency,
+    queue_observation,
+    report_latency,
+    traced_delivery,
+)
 from pals_agent.settings import AgentSettings
 from pals_agent.usage import usage_scope
 
@@ -74,6 +85,13 @@ ResourceKind = Literal["proof_job", "explanation", "clarification"]
 VisibilityExtender = Callable[[int], None]
 WorkerLane = Literal["all", "proof", "assessment"]
 _logger = logging.getLogger(__name__)
+_SQS_BACKOFF_MAX_SECONDS: Final = 60.0
+# Long enough to ride out a brownout or credential rotation, short enough that a lane which cannot
+# consume does not keep reporting healthy past what an operator would accept as an outage.
+_SQS_OUTAGE_LIMIT_SECONDS: Final = 900.0
+# Deliveries that came in but could not be finished with SQS, such as a denied delete. A job can
+# outlast the outage limit, so these are counted rather than timed.
+_SQS_FAILED_DELIVERY_LIMIT: Final = 5
 
 
 def worker_queue_url(settings: AgentSettings, lane: WorkerLane) -> str:
@@ -104,9 +122,12 @@ _MODEL_ARTIFACT_URI_RE = re.compile(
 )
 _OPENMATH_ROLE_MODEL = fixed_model_default(ModelRole.OPENMATH)
 _TERMINAL_MARGIN_SECONDS: Final = 30.0
-_CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 330.0
+# An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
+# interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
+_CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
+_CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
 _MAX_EXPLANATION_MODEL_CALLS: Final = 5
 _STATUS_CONTEXT_SCHEMA: Final = "pals.proof-status-context.v1"
 _CLARIFICATION_DISPATCH_SCHEMA_VERSION: Final = "pals.proof-clarification-dispatch.v1"
@@ -413,6 +434,10 @@ class _AcquisitionResult:
     acquired_state: str | None = None
 
 
+class WorkerSqsUnavailableError(RuntimeError):
+    """SQS failed continuously past the outage limit, so this lane cannot do its work."""
+
+
 @dataclass(frozen=True, slots=True)
 class SqsProofWorker:
     settings: AgentSettings
@@ -439,12 +464,58 @@ class SqsProofWorker:
     def run_forever(self) -> None:
         # Drain only at delivery boundaries; never interrupt a model call or
         # acknowledge a delivery merely because shutdown was requested.
+        failures = 0
+        outage_started = 0.0
+        failed_deliveries = 0
+        received = False
+
+        def receive_succeeded() -> None:
+            # A later error on this delivery may come after a long job, not a continuous outage.
+            nonlocal failures, received
+            failures = 0
+            received = True
+
         while not self.stop_requested():
-            processed = self.run_once()
+            received = False
+            try:
+                processed = self.run_once(on_received=receive_succeeded)
+            except (BotoCoreError, ClientError) as error:
+                # SQS was unreachable. An undeleted receipt returns after its visibility timeout
+                # and the API claim fences a repeat, so waiting here loses nothing.
+                if received:
+                    failed_deliveries += 1
+                    consecutive = failed_deliveries
+                    if failed_deliveries >= _SQS_FAILED_DELIVERY_LIMIT:
+                        raise WorkerSqsUnavailableError("SQS delivery failure limit") from error
+                else:
+                    if failures == 0:
+                        outage_started = self.monotonic()
+                    failures += 1
+                    consecutive = failures
+                    if self.monotonic() - outage_started >= _SQS_OUTAGE_LIMIT_SECONDS:
+                        raise WorkerSqsUnavailableError("SQS outage limit exceeded") from error
+                delay = min(_SQS_BACKOFF_MAX_SECONDS, 2.0 ** min(consecutive, 8))
+                _logger.error(
+                    "worker_sqs_unavailable lane=%s error=%s consecutive=%d delay_seconds=%.0f",
+                    self.lane, type(error).__name__, consecutive, delay,
+                )
+                self._sleep_until_stop(delay)
+                continue
+            failures = 0
+            if processed:
+                failed_deliveries = 0
             if not processed and not self.stop_requested():
                 self.sleep(self.settings.worker_idle_sleep_seconds)
 
-    def run_once(self) -> bool:
+    def _sleep_until_stop(self, seconds: float) -> None:
+        deadline = self.monotonic() + seconds
+        while not self.stop_requested():
+            remaining = deadline - self.monotonic()
+            if remaining <= 0:
+                return
+            self.sleep(min(1.0, remaining))
+
+    def run_once(self, *, on_received: Callable[[], None] | None = None) -> bool:
         queue_url = worker_queue_url(self.settings, self.lane)
 
         sqs = boto3.client(
@@ -459,6 +530,8 @@ class SqsProofWorker:
             MessageAttributeNames=["All"],
             MessageSystemAttributeNames=["All"],
         )
+        if on_received is not None:
+            on_received()
         messages = response.get("Messages", []) if isinstance(response, dict) else []
         if not isinstance(messages, list):
             return False
@@ -466,6 +539,7 @@ class SqsProofWorker:
             return False
 
         message = messages[0]
+        queue_timing = queue_observation(message)
         try:
             task, receipt_handle = parse_sqs_agent_message(message)
         except (TypeError, ValueError):
@@ -499,28 +573,38 @@ class SqsProofWorker:
             if task.kind == "proof_request":
                 if self.proof_request_processor is None:
                     return True  # Leave the receipt for a worker with this capability.
-                acknowledged = self.proof_request_processor.process(
-                    task.id, claim_id, extend_visibility,
+                acknowledged = process_with_latency(
+                    self.proof_request_processor, task.id, claim_id, extend_visibility,
+                    emit=report_latency, queue=queue_timing,
                 )
             elif task.kind == "proof":
-                acknowledged = self.process_proof_job(
-                    task.id,
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "proof_job", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_proof_job(
+                        task.id,
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             elif task.kind == "explanation":
-                acknowledged = self.process_explanation_retry(
-                    task.id,
-                    retry_id=cast(str, task.retry_id),
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "explanation", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_explanation_retry(
+                        task.id,
+                        retry_id=cast(str, task.retry_id),
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             elif task.kind == "clarification":
-                acknowledged = self.process_clarification(
-                    task.id,
-                    claim_id=claim_id,
-                    extend_visibility=extend_visibility,
-                )
+                with traced_delivery(
+                    "clarification", task.id, emit=report_latency, queue=queue_timing,
+                ):
+                    acknowledged = self.process_clarification(
+                        task.id,
+                        claim_id=claim_id,
+                        extend_visibility=extend_visibility,
+                    )
             else:
                 raise ValueError(f"Unsupported agent task kind: {task.kind}")
         except (ProofJobNotFoundError, PalsApiError):
@@ -550,6 +634,7 @@ class SqsProofWorker:
         context = proof_job.get("request_context", {})
         if not isinstance(context, dict):
             return False
+        link_latency_request(context.get("proof_request_id"))
         with ExitStack() as stack:
             try:
                 payload = (
@@ -633,13 +718,14 @@ class SqsProofWorker:
                 except Exception:
                     return False
             try:
-                review = self._required_proof_reviewer().review_proof(
-                    theorem_statement=statement,
-                    formal_statement=formal_statement,
-                    target_declaration=target_declaration,
-                    lean_code=lean_code,
-                    timeout_seconds=timeout_seconds,
-                )
+                with latency_stage("semantic_review"), latency_label("semantic_review"):
+                    review = self._required_proof_reviewer().review_proof(
+                        theorem_statement=statement,
+                        formal_statement=formal_statement,
+                        target_declaration=target_declaration,
+                        lean_code=lean_code,
+                        timeout_seconds=timeout_seconds,
+                    )
             except Exception as exc:
                 failure = _semantic_review_unavailable_payload(
                     candidate_id=candidate_id, mutation_claim_id=generation_session_id,
@@ -769,10 +855,11 @@ class SqsProofWorker:
         # fresh Recipe selection over that durable attempt, or change its retry semantics.
         if not request_linked and api_repair_seed is None and formal_statement is not None:
             try:
-                recipe_attempt = self._selected_recipe_attempt(
-                    formal_statement=formal_statement,
-                    proof_job_id=proof_job_id, mutation_claim_id=claim_id,
-                )
+                with latency_stage("recipe_attempt_selection"):
+                    recipe_attempt = self._selected_recipe_attempt(
+                        formal_statement=formal_statement,
+                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                    )
             except RuntimeError:
                 return False
             if recipe_attempt is not None:
@@ -868,12 +955,13 @@ class SqsProofWorker:
                     prepared = pipeline.prepare_statement(statement=statement)
                 try:
                     resolved = exact_retrieved_draft_reference(prepared)
-                    decision = self.recipe_attempt_planner.decide(
-                        formal_declaration=None,
-                        draft_revision=resolved[0] if resolved else None,
-                        proof_method_tag=resolved[1] if resolved else None,
-                        proof_job_id=proof_job_id, mutation_claim_id=claim_id,
-                    )
+                    with latency_stage("recipe_attempt_selection"):
+                        decision = self.recipe_attempt_planner.decide(
+                            formal_declaration=None,
+                            draft_revision=resolved[0] if resolved else None,
+                            proof_method_tag=resolved[1] if resolved else None,
+                            proof_job_id=proof_job_id, mutation_claim_id=claim_id,
+                        )
                 except (ValueError, RecipeSelectionUnavailableError):
                     return False
                 if isinstance(decision, RecipeAttemptV1):
@@ -893,7 +981,7 @@ class SqsProofWorker:
                 run_kwargs["prepared_request"] = prepared
             with usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-            )):
+            )), latency_stage("proof_pipeline"):
                 run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
@@ -1076,10 +1164,11 @@ class SqsProofWorker:
     ) -> dict[str, Any] | None:
         """Wait for API-owned Lean reconciliation without consuming SQS receives.
 
-        A generation delivery already has a one-hour visibility lease.  A later delivery that
-        discovers a persisted candidate does not, so it receives a bounded visibility extension
-        before polling.  The timeout is longer than the reconciler's 310-second lease and leaves
-        the standard 30-second terminal margin.
+        A generation delivery keeps the rest of its one-hour lease for the first refresh interval;
+        a later delivery that discovers a persisted candidate has no such lease, so it extends
+        visibility before polling.  Either way a longer wait keeps renewing a bounded extension,
+        because generation may already have spent that hour.  A shutdown stops waiting: the
+        reconciler owns the compile, and the undeleted receipt finds the result later.
         """
 
         if refresh_visibility:
@@ -1087,20 +1176,33 @@ class SqsProofWorker:
                 extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
             except Exception:
                 return None
-        deadline = self.monotonic() + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
-        while True:
-            try:
-                proof_job = self.api_client.get_proof_job(proof_job_id)
-            except PalsApiError:
-                proof_job = None
-            if isinstance(proof_job, dict) and (
-                proof_job.get("state") != "compiling" or not _has_pending_api_candidate(proof_job)
-            ):
-                return proof_job
-            remaining = deadline - self.monotonic()
-            if remaining <= 0:
-                return None
-            self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
+        started = self.monotonic()
+        deadline = started + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
+        next_refresh = started + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
+        with latency_stage("lean_reconciliation_wait"):
+            while True:
+                note_latency("reconciliation_polls", 1)
+                try:
+                    proof_job = self.api_client.get_proof_job(proof_job_id)
+                except PalsApiError:
+                    proof_job = None
+                if isinstance(proof_job, dict) and (
+                    proof_job.get("state") != "compiling"
+                    or not _has_pending_api_candidate(proof_job)
+                ):
+                    _note_verification_elapsed(proof_job)
+                    return proof_job
+                now = self.monotonic()
+                remaining = deadline - now
+                if remaining <= 0 or self.stop_requested():
+                    return None
+                if now >= next_refresh:
+                    try:
+                        extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
+                    except Exception:
+                        return None
+                    next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
+                self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -1500,27 +1602,37 @@ class SqsProofWorker:
         private_review_failures: list[dict[str, Any]] = []
         try:
             reviewer = self._required_output_reviewer()
-            explanation, review = _generate_reviewed_candidate(
-                generate=lambda feedback: self._required_explainer().explain(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    verified=True,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                    **_optional_keyword("review_feedback", feedback),
-                ),
-                review=lambda candidate: reviewer.review_explanation(
-                    theorem_statement=theorem_statement,
-                    lean_code=lean_code,
-                    explanation=candidate,
-                    language=language,
-                    deadline=permit.deadline,
-                    timeout_seconds=permit.timeout_seconds,
-                ),
-                content_of=_public_explanation_content,
-                failures=private_review_failures,
-            )
+
+            def generate_explanation(feedback: Any) -> ProofExplanation:
+                with latency_label("explain"):
+                    return self._required_explainer().explain(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        verified=True,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                        **_optional_keyword("review_feedback", feedback),
+                    )
+
+            def review_explanation(candidate: ProofExplanation) -> ProofOutputReview:
+                with latency_label("explanation_review"):
+                    return reviewer.review_explanation(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        explanation=candidate,
+                        language=language,
+                        deadline=permit.deadline,
+                        timeout_seconds=permit.timeout_seconds,
+                    )
+
+            with latency_stage("explanation"):
+                explanation, review = _generate_reviewed_candidate(
+                    generate=generate_explanation,
+                    review=review_explanation,
+                    content_of=_public_explanation_content,
+                    failures=private_review_failures,
+                )
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -1804,6 +1916,12 @@ class SqsProofWorker:
         if not isinstance(value, uuid.UUID) or value.version != 4:
             raise RuntimeError("Worker claim factory must return a UUIDv4 value")
         return str(value)
+
+
+def _note_verification_elapsed(proof_job: dict[str, Any]) -> None:
+    status_context = proof_job.get("status_context")
+    if isinstance(status_context, dict):
+        note_latency("lean_verification_ms", status_context.get("verification_elapsed_ms"))
 
 
 def _parse_claim_envelope(
@@ -3432,6 +3550,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
     model = value.get("model")
     provider = value.get("provider")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(lean_code, str)
         or not lean_code.strip()
@@ -3441,6 +3560,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
         or not provider.strip()
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     draft = _generated_draft_from_status(value.get("draft"))
@@ -3460,6 +3580,7 @@ def _generated_proof_from_status(value: object) -> GeneratedProof | None:
         sketch=sketch,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
         stage_diagnostics=tuple(stage_diagnostics),
     )
 
@@ -3471,6 +3592,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
     model = value.get("model")
     provider = value.get("provider")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(text, str)
         or not text.strip()
@@ -3480,6 +3602,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
         or not provider.strip()
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     return GeneratedDraft(
@@ -3488,6 +3611,7 @@ def _generated_draft_from_status(value: object) -> GeneratedDraft | None:
         raw_model_output=text,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
     )
 
 
@@ -3499,6 +3623,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
     provider = value.get("provider")
     has_gaps = value.get("has_gaps")
     elapsed_ms = value.get("elapsed_ms")
+    reasoning_effort = value.get("reasoning_effort")
     if (
         not isinstance(lean_code, str)
         or not lean_code.strip()
@@ -3509,6 +3634,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
         or not isinstance(has_gaps, bool)
         or type(elapsed_ms) is not int
         or elapsed_ms < 0
+        or reasoning_effort not in (None, "none", "low", "medium", "high", "xhigh", "max")
     ):
         return None
     return GeneratedSketch(
@@ -3518,6 +3644,7 @@ def _generated_sketch_from_status(value: object) -> GeneratedSketch | None:
         has_gaps=has_gaps,
         provider=provider,
         elapsed_ms=elapsed_ms,
+        reasoning_effort=reasoning_effort,
     )
 
 

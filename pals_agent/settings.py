@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 
-from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
+from pals_agent.model_roles import LEAN_GENERATION_MODEL, ModelRole, fixed_model_default
 from pals_agent.models import DEFAULT_MAX_REPAIR_ATTEMPTS
 
 _SEMANTIC_EVALUATOR_TOKEN_RE = re.compile(
@@ -57,6 +57,7 @@ class AgentSettings:
     proof_capability: Literal["full", "natural-only"] = "full"
     proof_requests_queue_url: str | None = None
     typed_catalog_enabled: bool = False
+    request_linked_typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     worker_idle_sleep_seconds: float = 2.0
@@ -74,6 +75,14 @@ class AgentSettings:
     api_ca_certificate_path: Path | None = None
 
     def __post_init__(self) -> None:
+        if type(self.request_linked_typed_catalog_enabled) is not bool:
+            raise ValueError("PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED must be boolean")
+        if self.request_linked_typed_catalog_enabled and (
+            not self.typed_catalog_enabled or self.proof_capability != "full"
+        ):
+            raise ValueError(
+                "Request-linked typed retrieval requires typed catalog and full proof capability"
+            )
         if self.api_ca_certificate_path is not None and (
             not isinstance(self.api_ca_certificate_path, Path)
             or not self.api_ca_certificate_path.is_absolute()
@@ -154,12 +163,14 @@ class AgentSettings:
             or os.getenv("OLLAMA_DRAFT_MODEL")
             or "qwen2.5:3b",
             openai_api_key=_first_env("PALS_OPENAI_API_KEY", "OPENAI_API_KEY") or "",
-            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or RELEASE_MODEL,
+            openai_model=_first_env("PALS_OPENAI_MODEL", "OPENAI_MODEL") or LEAN_GENERATION_MODEL,
             openai_base_url=os.getenv(
                 "PALS_OPENAI_BASE_URL",
                 "https://api.openai.com/v1",
             ),
-            openai_max_output_tokens=_positive_int_env("PALS_OPENAI_MAX_OUTPUT_TOKENS", 12000),
+            openai_max_output_tokens=_bounded_ascii_int_env(
+                "PALS_OPENAI_MAX_OUTPUT_TOKENS", 16384, minimum=1, maximum=32768,
+            ),
             prove_mlx_model_path=_optional_env("PALS_PROVE_MLX_MODEL_PATH"),
             mlx_generate_binary=os.getenv("PALS_MLX_GENERATE_BINARY", "mlx_lm.generate"),
             mlx_max_tokens=_positive_int_env("PALS_MLX_MAX_TOKENS", 4096),
@@ -183,6 +194,9 @@ class AgentSettings:
             lake_binary=os.getenv("PALS_LAKE_BINARY", "lake"),
             lean_project_dir=Path(lean_project_dir) if lean_project_dir else None,
             typed_catalog_enabled=_strict_bool_env("PALS_TYPED_CATALOG_ENABLED"),
+            request_linked_typed_catalog_enabled=_strict_bool_env(
+                "PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED"
+            ),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",

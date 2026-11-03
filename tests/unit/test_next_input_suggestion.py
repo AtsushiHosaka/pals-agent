@@ -124,7 +124,7 @@ def test_uncertainty_escalation_publishes_only_its_final_approved_hint_without_a
     assert result.private_evidence["primary_assessment"]["next_input_suggestion"] is None
     assert len(transport.calls) == 4
     assert [call["model"] for call in transport.calls] == [
-        "gpt-6-luna", "gpt-6-luna", "gpt-5.6-terra", "gpt-6-luna",
+        "gpt-6-luna", "gpt-6-luna", "gpt-6.1-terra", "gpt-6-luna",
     ]
 
 

@@ -45,6 +45,21 @@ def test_lake_environment_reuse_is_strictly_opt_in(monkeypatch: pytest.MonkeyPat
         HttpVerifierRuntimeSettings.from_env()
 
 
+def test_concurrent_compiles_default_to_one_and_accept_only_the_bounded_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_required_environment(monkeypatch)
+    monkeypatch.delenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", raising=False)
+    assert HttpVerifierRuntimeSettings.from_env().max_concurrent_compiles == 1
+    for value, expected in (("1", 1), ("2", 2)):
+        monkeypatch.setenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", value)
+        assert HttpVerifierRuntimeSettings.from_env().max_concurrent_compiles == expected
+    for value in ("0", "3", "4", "02", "-1", "two", "", " 2", "2.0", "\u0662"):
+        monkeypatch.setenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", value)
+        with pytest.raises(ValueError, match="PALS_LEAN_MAX_CONCURRENT_COMPILES"):
+            HttpVerifierRuntimeSettings.from_env()
+
+
 def test_runtime_accepts_only_the_production_mounted_tls_path(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -240,6 +255,8 @@ def test_runtime_marks_ready_only_after_boundary_tls_and_server_setup(
         assert isinstance(admission_verifier, http_runtime.LeanVerifier)
         assert verifier.lake_environment_cache is not None
         assert admission_verifier.lake_environment_cache is None
+        assert verifier.literal_admission_command is False
+        assert admission_verifier.literal_admission_command is True
         return Server()
 
     monkeypatch.setattr(http_runtime, "create_server", capture_server)

@@ -12,6 +12,9 @@ from pals_agent.artifacts import (
     ArtifactStore,
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
+from pals_agent.lean_source_policy import (
+    strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
+)
 from pals_agent.lean_target import extract_single_target_declaration
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
@@ -36,6 +39,7 @@ from pals_agent.models import (
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.runtime_latency import latency_stage
 
 _THEOREM_DECLARATION_RE = re.compile(
     r"\btheorem\s+(?P<name>[A-Za-z_][A-Za-z0-9_'.]*)(?P<signature>.*?)\s*:=",
@@ -178,8 +182,11 @@ class ProofPipeline:
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
+    request_linked_typed_retriever: ProofFlowRetriever | None = None
 
     def __post_init__(self) -> None:
+        if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
+            raise ValueError("Request-linked typed retrieval must retain the natural Draft route")
         if (
             type(self.max_repair_attempts) is not int
             or not 1 <= self.max_repair_attempts <= 64
@@ -230,8 +237,10 @@ class ProofPipeline:
             # re-query a mutable catalog over that compiler failure and its repair seed.
             request = _request_for_statement(
                 statement, formal_statement=formal_statement,
-                proof_flow_retriever=(self.natural_draft_retriever
-                                      if api_repair_seed is None else None),
+                proof_flow_retriever=(
+                    (self.request_linked_typed_retriever or self.natural_draft_retriever)
+                    if api_repair_seed is None else None
+                ),
             )
         else:
             request = self.prepare_statement(statement=statement, formal_statement=formal_statement)
@@ -543,7 +552,8 @@ class ProofPipeline:
 
             verifier = self.verifier
             assert verifier is not None
-            verification = verifier.verify(generated.lean_code)
+            with latency_stage("lean_compile_local"):
+                verification = verifier.verify(generated.lean_code)
             diagnostics = [*diagnostics, *verification.diagnostics]
             attempts.append(
                 _attempt_metadata(
@@ -1306,6 +1316,7 @@ def _failed_staged_proof(
         provider=failed_stage.provider,
         elapsed_ms=failed_stage.elapsed_ms,
         stage_diagnostics=stage_diagnostics,
+        reasoning_effort=failed_stage.reasoning_effort,
     )
 
 
@@ -1580,76 +1591,6 @@ def _strip_lean_comments(text: str) -> str:
     return _strip_lean_comments_and_strings(text)
 
 
-def _strip_lean_comments_and_strings(text: str) -> str:
-    lines = []
-    current: list[str] = []
-    index = 0
-    block_depth = 0
-    in_string = False
-    while index < len(text):
-        current_pair = text[index : index + 2]
-        char = text[index]
-
-        if block_depth > 0:
-            if current_pair == "/-":
-                block_depth += 1
-                index += 2
-                continue
-            if current_pair == "-/":
-                block_depth -= 1
-                index += 2
-                continue
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if in_string:
-            if char == "\\":
-                index += 2
-                continue
-            if char == '"':
-                in_string = False
-            if char == "\n":
-                lines.append("".join(current))
-                current = []
-            index += 1
-            continue
-
-        if current_pair == "/-":
-            block_depth = 1
-            index += 2
-            continue
-
-        if current_pair == "--":
-            newline_index = text.find("\n", index)
-            if newline_index == -1:
-                break
-            lines.append("".join(current))
-            current = []
-            index = newline_index + 1
-            continue
-
-        if char == '"':
-            in_string = True
-            current.append(" ")
-            index += 1
-            continue
-
-        if char == "\n":
-            lines.append("".join(current))
-            current = []
-            index += 1
-            continue
-
-        current.append(char)
-        index += 1
-
-    lines.append("".join(current))
-    return "\n".join(lines)
-
-
 def _validate_formal_harness(
     *,
     formal_statement: str,
@@ -1781,7 +1722,8 @@ def _request_for_statement(
     normalized = statement.strip()
     formal = formal_statement.strip() if formal_statement else None
     if proof_flow_retriever is not None:
-        retrieval = proof_flow_retriever.retrieve(normalized)
+        with latency_stage("context_retrieval"):
+            retrieval = proof_flow_retriever.retrieve(normalized)
         return ProofRequest(
             id=problem_id or "custom_statement",
             prompt=normalized,

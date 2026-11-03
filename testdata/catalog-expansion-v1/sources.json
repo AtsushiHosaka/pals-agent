@@ -1,0 +1,471 @@
+{
+  "inventory_path": "specs/draft-catalog-expansion/inventory-sources.v1.json",
+  "inventory_sha256": "68d55f57d889a8cecce234b2567d571b786b8cd85049d3a1858a22d3172bb35b",
+  "lean_toolchain": "leanprover/lean4:v4.32.0-rc1",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "schema_version": "pals.catalog-expansion.sources.v1",
+  "sources": [
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 1,
+      "id": "typed.vector-calculus-v6-supplement",
+      "manifest_path": "docs/vector-calculus-v6-supplement.json",
+      "manifest_sha256": "4cc449ae9760c675c84960e4a71a270e07b218afdaf8f0b975f5c855141a00a0",
+      "witness_path": "docs/vector-calculus-v6-supplement.lean",
+      "witness_sha256": "cee783ee90154feb690ab36887738f69e3e198b55d41be132fd9335e743d3d77"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 5,
+      "id": "typed.vector-calculus-v6",
+      "manifest_path": "docs/vector-calculus-v6-batch.json",
+      "manifest_sha256": "15983be11a49578fd69fc4f9d0f7e2924870de06c5be68f8a2f116e64c426513",
+      "witness_path": "docs/vector-calculus-v6-batch.lean",
+      "witness_sha256": "d63e68aa68c8d8285afca556f1c73a25dfd6e1305dd7a1cb786a450a4ea0d16f"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 4,
+      "id": "typed.multivariable-v5-line-supplement",
+      "manifest_path": "docs/multivariable-v5-line-supplement-batch.json",
+      "manifest_sha256": "e0566f1ab065b592cce08d8e30418138b2740282dcf89a5befeb6eb34d8338cf",
+      "witness_path": "docs/multivariable-v5-line-supplement-batch.lean",
+      "witness_sha256": "a6d994adac02cef700bd9f0aa06aafc66ffe87331aeb66f8164686dafadafa7b"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 2,
+      "id": "typed.multivariable-v5-change-variables-supplement",
+      "manifest_path": "docs/multivariable-v5-change-variables-supplement.json",
+      "manifest_sha256": "4f9fead332ac23daaac83c698d40036bf2336acf2cae949f24b94f58b603b320",
+      "witness_path": "docs/multivariable-v5-change-variables-supplement.lean",
+      "witness_sha256": "057491dc9a90476367351846091ce6cca6a53be320bbf467a4de4fb3c0bfab54"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 15,
+      "id": "typed.calculus-v5-supplement",
+      "manifest_path": "docs/calculus-v5-supplement-batch.json",
+      "manifest_sha256": "6295b44563b88c2ab6ec9e3b400fc9fb00aeffb1565ebe569224d72aa5d52081",
+      "witness_path": "docs/calculus-v5-supplement-batch.lean",
+      "witness_sha256": "e4df3a4730b85758b6d2bc6083cfbf7288ce85fc756a3b79a09c8dccd76cec1a"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 9,
+      "id": "typed.calculus-v3-supplement",
+      "manifest_path": "docs/calculus-v3-supplement-batch.json",
+      "manifest_sha256": "4f801c81e10b3ba9f576336c748c9e62758c3584d979b6d60a6c2f44579caa90",
+      "witness_path": "docs/calculus-v3-supplement-batch.lean",
+      "witness_sha256": "3640e94e1b55142219f7cf6b5bb0d88cdf53438cea0fcda45409e95dfd5b105f"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 8,
+      "id": "typed.multivariable-v5-foundation-supplement",
+      "manifest_path": "docs/multivariable-v5-foundation-supplement.json",
+      "manifest_sha256": "0f1746cef30ed59a2bff9567547b67fe905fcabb2566424c94b221404cf63e93",
+      "witness_path": "docs/multivariable-v5-foundation-supplement.lean",
+      "witness_sha256": "05de75fabbd71b620902aac9bd32dbab056f1f7a197591287594a3efbbd12602"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 5,
+      "id": "typed.calculus-v4-foundation-supplement",
+      "manifest_path": "docs/calculus-v4-foundation-supplement.json",
+      "manifest_sha256": "14f27806dd415becf0b9bfcec9b9b3597c82a29db9b8d79b5aaeb289f2c5fbbf",
+      "witness_path": "docs/calculus-v4-foundation-supplement.lean",
+      "witness_sha256": "e84182df042a074768ddaf38b9c5b1df4903937ace9d4d511d6cd0423e6deb31"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 18,
+      "id": "typed.linear-algebra-v6",
+      "manifest_path": "docs/linear-algebra-v6-batch.json",
+      "manifest_sha256": "5353fa2e66cfe0109b17087f28c35c6d3a8d9a120f000a47791d28bb0f8c3b5d",
+      "witness_path": "docs/linear-algebra-v6-batch.lean",
+      "witness_sha256": "93b5f553a21ae37b726170967035746beda64b1dc8de4f7e9adeeede893a4bb3"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 1,
+      "id": "typed.linear-algebra-v3-foundation-supplement",
+      "manifest_path": "docs/linear-algebra-v3-foundation-supplement.json",
+      "manifest_sha256": "0f7467d4401fbef64b27f143155f1c6ac1cae6db0d31b2f3cbbee646bd51d3d3",
+      "witness_path": "docs/linear-algebra-v3-foundation-supplement.lean",
+      "witness_sha256": "134ee1301d41242217e09915e2d4cd96b89833bf5eee75001259bcc07b3239e9"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 43,
+      "id": "typed.calculus-v5",
+      "manifest_path": "docs/calculus-v5-batch.json",
+      "manifest_sha256": "6fd50f5883cd95ab4f7a3ab0b7b1f5621302dcc491ab59413397e874a78f4fcd",
+      "witness_path": "docs/calculus-v5-batch.lean",
+      "witness_sha256": "ebf74200355c97c5a392130a41b63d8f3821c1a5855bbb318544968454ee191a"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 39,
+      "id": "typed.linear-algebra-v5",
+      "manifest_path": "docs/linear-algebra-v5-batch.json",
+      "manifest_sha256": "974121cbf6e70b98342e3e9025596c0accb61ae5f12f8008041e5ce5cc6ea7a2",
+      "witness_path": "docs/linear-algebra-v5-batch.lean",
+      "witness_sha256": "3cc2ebb7bc0ac1ea1d60740fb3a83006f7b752bc122fe6d8117ba7fca4b44060"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 32,
+      "id": "typed.multivariable-v5",
+      "manifest_path": "docs/multivariable-v5-batch.json",
+      "manifest_sha256": "5ab9f1c1202e38eb39739544253bfabdef3c8f9771dead9d34dfeda794c04731",
+      "witness_path": "docs/multivariable-v5-batch.lean",
+      "witness_sha256": "485812498ab192cb735591ece6c61adc31ddb07ff1db4c75735fd934d970c679"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 34,
+      "id": "typed.calculus-v4",
+      "manifest_path": "docs/calculus-v4-batch.json",
+      "manifest_sha256": "8291b5aa375cbc2f3f917b4f5ab1f1e1078e06d211e42a5ccff3c27f29346c1b",
+      "witness_path": "docs/calculus-v4-batch.lean",
+      "witness_sha256": "7f6b7117f7f63900ed142c44b66ffee39b54fae35224f176263f19146629bb87"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 34,
+      "id": "typed.linear-algebra-v4",
+      "manifest_path": "docs/linear-algebra-v4-batch.json",
+      "manifest_sha256": "122a7ebbfed75d431604499313daab233577f3a88b8cdb14c7c111fb405ec4a0",
+      "witness_path": "docs/linear-algebra-v4-batch.lean",
+      "witness_sha256": "ebb6c717530a947536f9b5bb641fa0f94a8ce930fb05a439f979d1d8c7159583"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 33,
+      "id": "typed.commalg-v4",
+      "manifest_path": "docs/commalg-v4-batch.json",
+      "manifest_sha256": "15086c95ab579d01fd7253caebb6637a79b277bd206723410be4aa79425410d9",
+      "witness_path": "docs/commalg-v4-batch.lean",
+      "witness_sha256": "190fbda78a9f963b1ee9baf601eeed56d068e81e92b760e227d0dc68e4b8c785"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 31,
+      "id": "typed.calculus-v3",
+      "manifest_path": "docs/calculus-v3-batch.json",
+      "manifest_sha256": "3de8cea81fc1aa749ca6b0b7c28a3ae919a723bf080910cb280730c5fe32860b",
+      "witness_path": "docs/calculus-v3-batch.lean",
+      "witness_sha256": "e4f12786bfc1be9e563701c2d61e676f46d612cf4f847b963cb34fdae5b2e1a3"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 36,
+      "id": "typed.linear-algebra-v3",
+      "manifest_path": "docs/linear-algebra-v3-batch.json",
+      "manifest_sha256": "c7290cf6553ee42bd185382af742c22160b200af262e3672496c790f530893a0",
+      "witness_path": "docs/linear-algebra-v3-batch.lean",
+      "witness_sha256": "2832afcb25277391e88d01961b9c6301e53670855dfc7c09562f81d99638c4c2"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 31,
+      "id": "typed.commalg-v3",
+      "manifest_path": "docs/commalg-v3-batch.json",
+      "manifest_sha256": "61bbd62dc84b91ab05e47597e8cf1e655cf576748227df29d58c5c48436dec09",
+      "witness_path": "docs/commalg-v3-batch.lean",
+      "witness_sha256": "385180ef0db5fd8bd337036e02db2d7d25416a33e895d3f3884ca8e7611c62ba"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 28,
+      "id": "typed.calculus-v2",
+      "manifest_path": "docs/calculus-v2-batch.json",
+      "manifest_sha256": "50dfabeb302555da40594cf72bcf8063e8510fbc86b9e8a699f16483be22be3a",
+      "witness_path": "docs/calculus-v2-batch.lean",
+      "witness_sha256": "ee202a06ac18dc5caf4a289c7334eb9a31f8210bf3ac244c496ecf1fb8021479"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 27,
+      "id": "typed.linear-algebra-v2",
+      "manifest_path": "docs/linear-algebra-v2-batch.json",
+      "manifest_sha256": "497b49049a55a64921ed78882546131cba4ce173aab51dc1892aea9b88acd1eb",
+      "witness_path": "docs/linear-algebra-v2-batch.lean",
+      "witness_sha256": "9ac1301f57623353a6de6b96900efb3b72e6394c9ea475dd9c2f5fa9e3246815"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 22,
+      "id": "typed.commalg-modules-v2",
+      "manifest_path": "docs/commalg-modules-v2-batch.json",
+      "manifest_sha256": "415e198ae954213e44dbbc21905aee19a9f4560e0166c76954f521109b072f8b",
+      "witness_path": "docs/commalg-modules-v2-batch.lean",
+      "witness_sha256": "8e0cf612df31da2c60ee2b0d562d7118b09cf3c8225ffd3ac36f3760b2f6e7bf"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 29,
+      "id": "typed.calculus-reuse-20260930",
+      "manifest_path": "docs/calculus-reuse-batch-20260930.json",
+      "manifest_sha256": "4d5d75292c0c839d7cb03a89c7d04675cd3c7b16c4bc6a9057584853d9fad67f",
+      "witness_path": "docs/calculus-reuse-batch-20260930.lean",
+      "witness_sha256": "0350d61509aea95571b208427b5635887b48f12a8ee8d0388c3d6a1666bc4e2a"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 24,
+      "id": "typed.linear-algebra-reuse-20260930",
+      "manifest_path": "docs/linear-algebra-reuse-batch-20260930.json",
+      "manifest_sha256": "15413c92bf234b49cd10c8362832ca8f905524c73dab7309580c24d7b596cc8c",
+      "witness_path": "docs/linear-algebra-reuse-batch-20260930.lean",
+      "witness_sha256": "bb014b191285bc420b8dce182e9cfb3a1977da529c9ff6b88b68f20931173895"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 16,
+      "id": "typed.commalg-reuse-20260930",
+      "manifest_path": "docs/commalg-reuse-batch-20260930.json",
+      "manifest_sha256": "057ee0a913fb4d7321fee50a1065c53629145bf6784b4c7821e47b87a96df084",
+      "witness_path": "docs/commalg-reuse-batch-20260930.lean",
+      "witness_sha256": "81aed1d0eaff880b6e341ab1178e6de83a0f34aed5c45301472aedbe1ff0bb96"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 17,
+      "id": "typed.commalg-chain-dimension",
+      "manifest_path": "docs/typed-commutative-algebra-chain-dimension-v1-sealed-manifest.proposal.json",
+      "manifest_sha256": "1ba10ca749dde281a83affac46a6119d0496cc0fd9c07fb234adb8fcca5526f6",
+      "witness_path": "docs/typed-commutative-algebra-chain-dimension-v1-authoring-witnesses.lean",
+      "witness_sha256": "fdb39549f4e05a5c9604aa6ceb9340a85e27a70e4623b4f750771d2e19f4bad4"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 22,
+      "id": "typed.commalg-decomposition",
+      "manifest_path": "docs/typed-commutative-algebra-decomposition-v1-sealed-manifest.proposal.json",
+      "manifest_sha256": "b293935980ec516e1d7bcaa44d32806a2692383f812e05cdcaba9ddad867b327",
+      "witness_path": "docs/typed-commutative-algebra-decomposition-v1-authoring-witnesses.lean",
+      "witness_sha256": "38c25c36e79933b1e4d8d92dc2f4c5c45ac6ff28228a86e900b8a6e77d8c7e2c"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 20,
+      "id": "typed.commalg-integral",
+      "manifest_path": "docs/typed-commutative-algebra-integral-v1-sealed-manifest.proposal.json",
+      "manifest_sha256": "57391bf4c85de5b85e07b8a419a40457a2f3ad018348f4c04ce81efeb6b4891a",
+      "witness_path": "docs/typed-commutative-algebra-integral-v1-authoring-witnesses.lean",
+      "witness_sha256": "5aeb220c8b816dd776461b6c6a3eb3e4f1b35dc78d58c7c3ab6a8846c9d8b3e9"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 23,
+      "id": "typed.commalg-localization",
+      "manifest_path": "docs/typed-commutative-algebra-localization-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "90de854374921f2e6164bef9ed9c18e43986fa00c2a03803d580e6fb89e90b23",
+      "witness_path": "docs/typed-commutative-algebra-localization-v1-authoring-witnesses.lean",
+      "witness_sha256": "ea28d4014bf1437aeade9cc32727c3d7359cb5fff162b59a23b3809075d1c892"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 24,
+      "id": "typed.commalg-modules",
+      "manifest_path": "docs/typed-commutative-algebra-modules-v1-sealed-manifest.proposal.json",
+      "manifest_sha256": "84d0c1848c6a3a5bc48b16be8fc58c68d17c55158b04a0fb2efe0361419ea8b3",
+      "witness_path": "docs/typed-commutative-algebra-modules-v1-authoring-witnesses.lean",
+      "witness_sha256": "06d035adc2dd53e9a91022cb63f6fbdfd24645c810f4d37c74239c3ed6172f76"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 13,
+      "id": "typed.commalg",
+      "manifest_path": "docs/typed-commutative-algebra-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "c1c09105b352d1d4825caff59e4907588d9848e2538fa864b8aa2fd40ab181fc",
+      "witness_path": "docs/typed-commutative-algebra-v1-authoring-witnesses.lean",
+      "witness_sha256": "500682ebd326f212f12e5122603873eae2b493f6fde65393619eee33865a01d5"
+    },
+    {
+      "card_keys": [
+        "admitted_candidate_cards"
+      ],
+      "expected_cards": 5,
+      "id": "typed.finite-graph",
+      "manifest_path": "docs/typed-finite-graph-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "1a5176e4d1862b128a32498e3997e2da5b29ec9f520db53ef7c4d7dd9be5e288",
+      "witness_path": "docs/typed-finite-graph-v1-authoring-witnesses.proposal.lean",
+      "witness_sha256": "d69b128221038a5e5f8438378788d52c6750fa953b7a440150a2f544eebecb4e"
+    },
+    {
+      "card_keys": [
+        "admitted_candidate_cards"
+      ],
+      "expected_cards": 8,
+      "id": "typed.geometry-complex",
+      "manifest_path": "docs/typed-geometry-complex-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "1b077b149c4326f8efc169e93e20caeba697536fc366224603fbaf3abde42be8",
+      "witness_path": "pals-agent/testdata/typed-geometry-complex-v1/vector-complex-phase-a-witnesses.lean",
+      "witness_sha256": "3ffbf955354aa1d62dd015fba0444f7e0ca57aab875ea276ed06766266640271"
+    },
+    {
+      "card_keys": [
+        "admitted_candidate_cards"
+      ],
+      "expected_cards": 6,
+      "id": "typed.matrix",
+      "manifest_path": "docs/typed-math-matrix-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "a78b92729de3f157379f128d66e767d77a186ce4fb3f2b4ccdbe622be5f6e299",
+      "witness_path": "docs/matrix-typed-profile-v1-authoring-witnesses.proposal.lean",
+      "witness_sha256": "c6252c49efb2eddc1bfaf36bf6df98fece99e9bb4f3f009604ffec7e8fd72c11"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 6,
+      "id": "typed.multivariable",
+      "manifest_path": "docs/typed-multivariable-calculus-v1-sealed-manifest.proposal.json",
+      "manifest_sha256": "f3c1b625fcaf78e7674bd245fc73ecc4acfee0425c716ccbb6f785858509efeb",
+      "witness_path": "docs/typed-multivariable-calculus-v1-authoring-witnesses.lean",
+      "witness_sha256": "ead6f754bff01cbb20539ad8f45d0a5f60bbf41b8a6e21f5027efa599260df47"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 12,
+      "id": "typed.number-theory",
+      "manifest_path": "docs/typed-number-theory-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "e8a9db52fd6939b50e429458aa5251af7b6e3e4b1d5cf12bfbbe3494b6aa587b",
+      "witness_path": "docs/typed-number-theory-v1-authoring-witnesses.lean",
+      "witness_sha256": "3f35ca656ec021617263f6639f01fb120d3664fa90a87afd349855fc26e5622c"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 10,
+      "id": "typed.ode",
+      "manifest_path": "docs/typed-ode-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "3cc30f7f5bc25502b54dc5761d14db48055c1c0b93b560973466b0dd5c6075bd",
+      "witness_path": "docs/typed-ode-v1-authoring-witnesses.lean",
+      "witness_sha256": "e26246ad16d719b6cf11113e2c5bf78b98a4ff44beca1bd524deb9f824149476"
+    },
+    {
+      "card_keys": [
+        "admitted_candidate_cards"
+      ],
+      "expected_cards": 5,
+      "id": "typed.plane-geometry",
+      "manifest_path": "docs/typed-plane-geometry-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "e45a07c2cb985c1f8e1a1d43f5628e8929b191faa5ff97518a058622b2a4bd75",
+      "witness_path": "pals-agent/testdata/typed-plane-geometry-v1/plane-geometry-witnesses.lean",
+      "witness_sha256": "a90426410563ebfc879e95798229d689fcb28956f5edccf42ce1b3f28ba8e361"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 10,
+      "id": "typed.probability",
+      "manifest_path": "docs/typed-probability-v1-authoring-manifest.proposal.json",
+      "manifest_sha256": "f67d154cf4bd9891e5511fedb627b98913a268289cc161a8d2e82509f6e84974",
+      "witness_path": "docs/typed-probability-v1-authoring-witnesses.lean",
+      "witness_sha256": "d22cf6acae7a10a7acb086ed7cc32c922e2b34658f6345aa97db7f75826544ad"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 4,
+      "id": "typed.real-analysis",
+      "manifest_path": "docs/typed-real-analysis-v1-authoring-manifest-proposal.json",
+      "manifest_sha256": "28b473da9c30b3a0f66a279b13e1ea7b7fcf697bdf5e8d0c0f956e5900ecb187",
+      "witness_path": "docs/typed-real-analysis-v1-authoring-witnesses.lean",
+      "witness_sha256": "74b5568c8c9b07a8a32970013aa2ab9cc1ef528dc8f3857d9861e83fddb48129"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 15,
+      "id": "typed.real-analysis-r2",
+      "manifest_path": "docs/typed-real-analysis-v1-expansion-r2-sealed-manifest.proposal.json",
+      "manifest_sha256": "4c4cb8fee64deadcb6b9b2ea223a0dd9e84c9885bca9607a0f1704e916de077c",
+      "witness_path": "docs/typed-real-analysis-v1-expansion-r2-authoring-witnesses.lean",
+      "witness_sha256": "5cb51a0e99e65aa0c76460bdd08cf5bed7e12983b06050fb83dd26f304c5b9ed"
+    },
+    {
+      "card_keys": [
+        "cards"
+      ],
+      "expected_cards": 22,
+      "id": "typed.math-typical",
+      "manifest_path": "pals-agent/testdata/typed-math-v1/group-ring-typical-theorems-authoring-manifest.proposal.json",
+      "manifest_sha256": "6333b1a8ca22531db3342c3f8e5b4ebc930101daa87cc69598210fec3b19fa91",
+      "witness_path": "pals-agent/testdata/typed-math-v1/group-ring-typical-theorems-authoring-witnesses.lean",
+      "witness_sha256": "3cda03fcd1d6b8da21c3fd799ce3c8e5d05fa8f180c769e1e55e95443882ce5f"
+    }
+  ]
+}

@@ -7,9 +7,10 @@ import time
 from dataclasses import dataclass, replace
 from typing import Protocol
 
-from pals_agent.linked_chat import selected_generation_model
+from pals_agent.linked_chat import selected_generation_model, selected_generation_reasoning_effort
 from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
 from pals_agent.mlx import MlxError
+from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
 from pals_agent.models import (
     GeneratedDraft,
     GeneratedProof,
@@ -24,6 +25,7 @@ from pals_agent.models import (
 )
 from pals_agent.ollama import OllamaClient, OllamaError
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
+from pals_agent.proof_reuse_usage import model_role
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
@@ -53,6 +55,7 @@ class HybridLeanGenerator:
     prove_model: str | None = None
     prove_provider: str | None = None
     prove_client: TextGenerationClient | None = None
+    use_release_role_bindings: bool = False
 
     def generate(self, request: ProofRequest) -> GeneratedProof:
         return self._generate_staged(request=request, feedback=None, start_stage="draft")
@@ -100,13 +103,14 @@ class HybridLeanGenerator:
         request: ProofRequest,
         feedback: GenerationFeedback,
     ) -> RepairInstruction:
-        client, model, _provider = self._default_endpoint()
+        client, model, _provider, _effort = self._stage_endpoint(ModelRole.REPAIR)
         if client is None:
             raise RepairInstructionError("repair client is not configured")
-        raw_model_output = client.generate(
-            model=model,
-            prompt=_repair_instruction_prompt_for(request, feedback),
-        )
+        with model_role(ModelRole.REPAIR):
+            raw_model_output = client.generate(
+                model=model,
+                prompt=_repair_instruction_prompt_for(request, feedback),
+            )
         return parse_repair_instruction(raw_model_output)
 
     def select_repair_route(
@@ -114,7 +118,7 @@ class HybridLeanGenerator:
         request: ProofRequest,
         feedback: GenerationFeedback,
     ) -> RepairRouteDecision:
-        client, model, provider = self._default_endpoint(selected=False)
+        client, model, provider, effort = self._stage_endpoint(ModelRole.ROUTE)
         prompt = _repair_route_prompt_for(request, feedback)
         if client is None:
             raise RepairRouteSelectionError(
@@ -131,7 +135,8 @@ class HybridLeanGenerator:
         current_prompt = prompt
         for attempt in range(1, 4):
             try:
-                raw_model_output = client.generate(model=model, prompt=current_prompt)
+                with model_role(ModelRole.ROUTE):
+                    raw_model_output = client.generate(model=model, prompt=current_prompt)
                 attempt_outputs.append(raw_model_output)
                 parsed = parse_repair_route_decision(raw_model_output)
                 selector_attempts.append(
@@ -152,6 +157,7 @@ class HybridLeanGenerator:
                     elapsed_ms=_elapsed_ms(started_at),
                     attempt_outputs=tuple(attempt_outputs),
                     selector_attempts=tuple(selector_attempts),
+                    reasoning_effort=effort,
                 )
             except (OllamaError, OpenAIError, MlxError) as exc:
                 last_error = exc
@@ -242,7 +248,7 @@ class HybridLeanGenerator:
         request: ProofRequest,
         feedback: GenerationFeedback | None = None,
     ) -> GeneratedDraft:
-        client, model, provider = self._default_endpoint()
+        client, model, provider, effort = self._stage_endpoint(ModelRole.DRAFT)
         if client is None:
             error = f"[generation-error] {provider} client is not configured for draft stage."
             return GeneratedDraft(
@@ -250,15 +256,14 @@ class HybridLeanGenerator:
                 model=model,
                 raw_model_output=error,
                 provider=provider,
+                reasoning_effort=effort,
             )
 
         prompt = _draft_prompt_for(request, feedback=feedback)
         started_at = time.monotonic()
         try:
-            raw_model_output = client.generate(
-                model=model,
-                prompt=prompt,
-            )
+            with model_role(ModelRole.DRAFT):
+                raw_model_output = client.generate(model=model, prompt=prompt)
         except (OllamaError, OpenAIError, MlxError) as exc:
             return GeneratedDraft(
                 text="",
@@ -266,6 +271,7 @@ class HybridLeanGenerator:
                 raw_model_output=f"[{provider}-error] draft generation failed: {exc}",
                 prompt=prompt,
                 provider=provider,
+                reasoning_effort=effort,
                 elapsed_ms=_elapsed_ms(started_at),
             )
 
@@ -280,6 +286,7 @@ class HybridLeanGenerator:
             raw_model_output=raw_model_output,
             prompt=prompt,
             provider=provider,
+            reasoning_effort=effort,
             elapsed_ms=_elapsed_ms(started_at),
         )
 
@@ -289,7 +296,7 @@ class HybridLeanGenerator:
         draft: GeneratedDraft,
         feedback: GenerationFeedback | None = None,
     ) -> GeneratedSketch:
-        client, model, provider = self._default_endpoint()
+        client, model, provider, effort = self._stage_endpoint(ModelRole.SKETCH)
         if client is None:
             error = f"[generation-error] {provider} client is not configured for sketch stage."
             return GeneratedSketch(
@@ -297,15 +304,14 @@ class HybridLeanGenerator:
                 model=model,
                 raw_model_output=error,
                 provider=provider,
+                reasoning_effort=effort,
             )
 
         prompt = _sketch_prompt_for(request, draft, feedback=feedback)
         started_at = time.monotonic()
         try:
-            raw_model_output = client.generate(
-                model=model,
-                prompt=prompt,
-            )
+            with model_role(ModelRole.SKETCH):
+                raw_model_output = client.generate(model=model, prompt=prompt)
         except (OllamaError, OpenAIError, MlxError) as exc:
             return GeneratedSketch(
                 lean_code="",
@@ -313,6 +319,7 @@ class HybridLeanGenerator:
                 raw_model_output=f"[{provider}-error] sketch generation failed: {exc}",
                 prompt=prompt,
                 provider=provider,
+                reasoning_effort=effort,
                 elapsed_ms=_elapsed_ms(started_at),
             )
 
@@ -328,6 +335,7 @@ class HybridLeanGenerator:
                 ),
                 prompt=prompt,
                 provider=provider,
+                reasoning_effort=effort,
                 elapsed_ms=_elapsed_ms(started_at),
             )
         return GeneratedSketch(
@@ -337,6 +345,7 @@ class HybridLeanGenerator:
             has_gaps=_has_sorry_gap(lean_code),
             prompt=prompt,
             provider=provider,
+            reasoning_effort=effort,
             elapsed_ms=_elapsed_ms(started_at),
         )
 
@@ -347,7 +356,7 @@ class HybridLeanGenerator:
         sketch: GeneratedSketch,
         feedback: GenerationFeedback | None = None,
     ) -> GeneratedProof:
-        client, model, provider = self._prove_endpoint()
+        client, model, provider, effort = self._stage_endpoint(ModelRole.PROVE)
         if client is None:
             return self._failed_proof(
                 f"[generation-error] {provider} client is not configured for prove stage.",
@@ -355,15 +364,14 @@ class HybridLeanGenerator:
                 sketch=sketch,
                 model=model,
                 provider=provider,
+                reasoning_effort=effort,
             )
 
         prompt = _prove_prompt_for(request, draft, sketch, feedback=feedback)
         started_at = time.monotonic()
         try:
-            raw_model_output = client.generate(
-                model=model,
-                prompt=prompt,
-            )
+            with model_role(ModelRole.PROVE):
+                raw_model_output = client.generate(model=model, prompt=prompt)
         except (OllamaError, OpenAIError, MlxError) as exc:
             return self._failed_proof(
                 f"[{provider}-error] prove generation failed: {exc}",
@@ -372,6 +380,7 @@ class HybridLeanGenerator:
                 model=model,
                 prompt=prompt,
                 provider=provider,
+                reasoning_effort=effort,
                 elapsed_ms=_elapsed_ms(started_at),
             )
 
@@ -396,6 +405,7 @@ class HybridLeanGenerator:
             sketch=sketch,
             prompt=prompt,
             provider=provider,
+            reasoning_effort=effort,
             elapsed_ms=_elapsed_ms(started_at),
         )
 
@@ -409,16 +419,24 @@ class HybridLeanGenerator:
         prompt: str = "",
         provider: str = "",
         elapsed_ms: int = 0,
+        reasoning_effort: str | None = None,
     ) -> GeneratedProof:
+        failed_stage = sketch or draft
         return GeneratedProof(
             lean_code="",
-            model=model or selected_generation_model(self.prove_model or self.model),
+            model=model or (
+                failed_stage.model if failed_stage is not None
+                else selected_generation_model(self.prove_model or self.model)
+            ),
             raw_model_output=error,
             draft=draft,
             sketch=sketch,
             prompt=prompt,
-            provider=provider,
+            provider=provider or (failed_stage.provider if failed_stage is not None else ""),
             elapsed_ms=elapsed_ms,
+            reasoning_effort=reasoning_effort or (
+                failed_stage.reasoning_effort if failed_stage is not None else None
+            ),
         )
 
     def _default_endpoint(
@@ -432,6 +450,41 @@ class HybridLeanGenerator:
         model = selected_generation_model(self.prove_model or self.model)
         provider = self.prove_provider or self.provider
         return client, model, provider
+
+    def _stage_endpoint(
+        self, role: ModelRole
+    ) -> tuple[TextGenerationClient | None, str, str, str | None]:
+        if role == ModelRole.PROVE:
+            client, model, provider = self._prove_endpoint()
+        else:
+            client, model, provider = self._default_endpoint(selected=role != ModelRole.ROUTE)
+        selected_effort = (
+            selected_generation_reasoning_effort(None) if role != ModelRole.ROUTE else None
+        )
+        if not self.use_release_role_bindings:
+            if selected_effort is None:
+                return client, model, provider, None
+            if not isinstance(client, OpenAIResponsesClient):
+                raise ValueError("Selected reasoning requires an OpenAI generation client")
+            return (
+                replace(client, reasoning_effort=selected_effort), model, provider, selected_effort
+            )
+        # An explicit request choice is fixed for its entire lifetime. Retry count
+        # and compiler errors never select another model or raise the effort.
+        binding = fixed_model_default(role)
+        if role == ModelRole.ROUTE:
+            model = binding.model
+        effort = "low" if model == RELEASE_MODEL else binding.reasoning_effort
+        if isinstance(client, OpenAIResponsesClient):
+            # A constructed benchmark/client can pin another effort once for the
+            # whole run. It never changes in response to failures or retry count.
+            if role != ModelRole.ROUTE and model != RELEASE_MODEL:
+                effort = client.reasoning_effort or effort
+            effort = selected_effort or effort
+            client = replace(client, reasoning_effort=effort)
+        elif selected_effort is not None:
+            raise ValueError("Selected reasoning requires an OpenAI generation client")
+        return client, model, binding.provider, effort
 
 
 def extract_lean_code(text: str) -> str | None:
@@ -593,11 +646,14 @@ def _lean_import_guidance() -> str:
     return (
         "Start with Mathlib imports. Prefer the specific modules needed for the theorem "
         "and proof, including individual tactic modules, instead of loading the entire "
-        "library with `import Mathlib`. For example, natural gcd/divisibility uses "
-        "`import Mathlib.Data.Nat.GCD.Basic`; add other required modules explicitly. "
-        "Keep every theorem assumption and substantive Draft proof step. The complete "
-        "`import Mathlib` remains available when the proof needs it, but avoid it when "
-        "focused imports suffice. A compiler deadline failure requires simplifying the "
+        "library with `import Mathlib`. Verify the owning modules in the active pinned "
+        "Mathlib when source information is available; do not infer a module path from "
+        "a declaration name or assume a nearby module exports it. Unknown identifiers "
+        "can mean missing imports, not nonexistent declarations. If the required module "
+        "cannot be established, try `import Mathlib` once and recompile before changing "
+        "an otherwise valid proof body. Keep every theorem assumption and substantive "
+        "Draft proof step. Prefer focused imports once their declarations are verified. "
+        "A compiler deadline failure requires simplifying the "
         "imports and expensive tactic search, not repeating the same code."
     )
 
@@ -645,6 +701,8 @@ Return exactly one fenced Lean code block. Do not include prose outside the code
 {_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
+State every hypothesis in the theorem header. Do not use `variable`, `include` or a
+local `instance` to supply one; a statement that depends on them is rejected.
 You must prove the exact Lean theorem harness shown below when one is provided.
 Preserve the Draft's proof structure with intermediate `have` statements or local lemmas.
 Leave one or more localized `sorry` gaps for the substantive proof obligations.
@@ -680,6 +738,8 @@ Return exactly one fenced Lean code block. Do not include prose outside the code
 {_lean_scalar_guidance()}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
+State every hypothesis in the theorem header. Do not use `variable`, `include` or a
+local `instance` to supply one; a statement that depends on them is rejected.
 Preserve the Sketch's theorem statement and mathematical target. Fill every gap with
 valid Lean code. Treat every theorem name and proof term in the Sketch as untrusted:
 correct or replace invalid intermediate code before returning. Prefer a small,
@@ -1050,9 +1110,19 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
     unknown_identifier_guidance = ""
     if unknown_identifiers:
         unknown_identifier_guidance = (
-            "\nIdentifiers rejected by Lean and forbidden in the next candidate unless "
-            "replaced by a verified fully-qualified declaration:\n"
+            "\nIdentifiers unresolved in the failed import environment:\n"
             + "\n".join(f"- `{identifier}`" for identifier in unknown_identifiers)
+            + "\nA fully-qualified declaration may exist in a Mathlib module that was not "
+            "imported. Check its owning module in the active pinned source when available. "
+            "First repair only the imports while preserving the theorem and proof body "
+            "when this resolves the diagnostic. If module ownership is uncertain and the "
+            "failed code lacks `import Mathlib`, try `import Mathlib` once and recompile. "
+            "If the identifier is still unknown with the full import, treat it as "
+            "unavailable and use an actual verified declaration; do not repeat the same "
+            "import-only attempt or invent a replacement name. An import change alone "
+            "does not establish success: the ordinary Lean verifier must accept the "
+            "complete candidate. Never add axioms, weaken assumptions or change the "
+            "requested claim to silence an import error.\n"
         )
     return f"""
 Previous attempt failed Lean validation or compilation.

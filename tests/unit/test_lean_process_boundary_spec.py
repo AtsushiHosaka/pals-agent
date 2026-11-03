@@ -4,6 +4,7 @@ import errno
 import os
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -38,6 +39,12 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         timeout_seconds: float,
         output_limit_bytes: int,
     ) -> lean_module._ProcessResult:
+        if "--run" in command:
+            # The trusted audit that follows every accepted compile reuses the same boundary.
+            nonce = command[command.index("--run") + 2]
+            report = f"theorem target\nbound target\ncomplete {nonce}\n"
+            return lean_module._ProcessResult(0, report, "", False, False)
+        Path(command[command.index("-o") + 1]).write_bytes(b"olean")
         captured.update(
             command=command,
             cwd=cwd,
@@ -60,7 +67,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
     result = LeanVerifier(
         lean_binary=str(probe),
         timeout_seconds=timeout_seconds,
-    ).verify("example : True := by trivial")
+    ).verify("theorem target : True := by trivial")
 
     assert result.success is True
     environment = captured["environment"]
@@ -80,7 +87,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
         "--cpu=3:3",
         f"--as={16 * _GIB}:{16 * _GIB}",
         f"--fsize={16 * _MIB}:{16 * _MIB}",
-        "--nproc=64:64",
+        "--nproc=4096:4096",
         "--nofile=1024:1024",
         "--core=0:0",
         "--",
@@ -89,7 +96,10 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
     assert child_script.name == "lean_child.py"
     assert child_script.parent.name == "pals_agent"
     assert child_script.is_file()
-    assert command[-3] == str(probe)
+    assert command[-6] == str(probe)
+    assert command[-5].startswith("--root=")
+    assert command[-4] == "-o"
+    assert Path(command[-3]).name == "Main.olean"
     assert command[-2] == "--threads=1"
     assert Path(command[-1]).name == "Main.lean"
 
@@ -97,7 +107,7 @@ def test_pae_017_lean_child_has_closed_environment_and_exact_rlimits(
 def test_pae_017_combined_lean_output_is_hard_capped(tmp_path: Path) -> None:
     noisy = _write_shell_executable(
         tmp_path / "lean-noisy",
-        "/usr/bin/yes x | /usr/bin/head -c 1048577\n",
+        "while :; do printf '%1024s\\n' x; done\n",
     )
 
     result = LeanVerifier(lean_binary=str(noisy)).verify(
@@ -115,10 +125,10 @@ def test_pae_017_timeout_kills_complete_process_group(tmp_path: Path) -> None:
     sleeper = _write_shell_executable(
         tmp_path / "lean-sleeper",
         """\
-/bin/sleep 30 &
+while :; do :; done &
 child=$!
 printf '%s\\n' "$child"
-/bin/sleep 30
+wait "$child"
 """,
     )
     descendant_pid: int | None = None
@@ -167,3 +177,106 @@ def _write_shell_executable(path: Path, body: str) -> Path:
     path.write_text(f"#!/bin/sh\n{body}", encoding="utf-8")
     path.chmod(0o755)
     return path
+
+
+def _run(command: list[str], *, timeout: float = 5) -> lean_module._ProcessResult:
+    return lean_module._run_limited_process(
+        command,
+        cwd=None,
+        environment={"PATH": "/usr/bin:/bin"},
+        timeout_seconds=timeout,
+        output_limit_bytes=65_536,
+    )
+
+
+def test_descendant_holding_stdout_cannot_outlive_a_finished_command() -> None:
+    started = time.monotonic()
+    result = _run(["/bin/sh", "-c", "echo done; sleep 30 & exit 0"], timeout=30)
+    assert time.monotonic() - started < 5
+    assert result.returncode == 0 and result.stdout == "done\n"
+    assert result.timed_out is False
+
+
+def test_deadline_applies_while_a_descendant_holds_the_pipes() -> None:
+    started = time.monotonic()
+    result = _run(["/bin/sh", "-c", "sleep 30 & sleep 30"], timeout=1)
+    assert time.monotonic() - started < 5
+    assert result.timed_out is True
+
+
+def test_signal_death_is_an_interruption_and_never_a_verdict() -> None:
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "kill -9 $$"])
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "exit 137"])
+    result = _run(["/bin/sh", "-c", "exit 1"])
+    assert result.returncode == 1
+
+
+def test_failure_during_an_oom_kill_is_an_interruption_and_success_stays_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    counts = iter([0, 1, 0, 1])
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: next(counts))
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "exit 1"])
+    assert _run(["/bin/sh", "-c", "exit 0"]).returncode == 0
+
+
+def test_timeout_is_an_interruption_only_under_cgroup_pressure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        lean_module, "_read_supervisor_status", lambda descriptor: (os.close(descriptor), (124, True))[1],
+    )
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: 0)
+    assert _run(["/bin/sh", "-c", "exit 0"]).timed_out is True
+    counts = iter([0, 1])
+    monkeypatch.setattr(lean_module, "_cgroup_pressure", lambda: next(counts))
+    with pytest.raises(lean_module.LeanCompileDeadlineInterrupted):
+        _run(["/bin/sh", "-c", "exit 0"])
+
+
+def test_cgroup_pressure_counts_oom_kills_and_refused_forks(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    memory = tmp_path / "memory.events"
+    pids = tmp_path / "pids.events"
+    monkeypatch.setattr(lean_module, "_CGROUP_MEMORY_EVENTS", memory)
+    monkeypatch.setattr(lean_module, "_CGROUP_PIDS_EVENTS", pids)
+    assert lean_module._cgroup_pressure() == 0
+    memory.write_text("oom 9\noom_kill 2\n", encoding="ascii")
+    pids.write_text("max 3\n", encoding="ascii")
+    assert lean_module._cgroup_pressure() == 5
+
+
+def test_exhausted_pids_at_start_are_an_interruption(monkeypatch: pytest.MonkeyPatch) -> None:
+    def no_pid(*_args: object, **_kwargs: object) -> None:
+        raise BlockingIOError(errno.EAGAIN, "fork failed")
+
+    monkeypatch.setattr(lean_module.subprocess, "Popen", no_pid)
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "exit 0"])
+
+
+def test_dead_supervisor_is_an_interruption_and_its_pipes_are_not_waited_for(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    script = tmp_path / "dies.py"
+    script.write_text("import os,signal\nos.kill(os.getpid(), signal.SIGKILL)\n")
+    monkeypatch.setattr(lean_module, "_SUPERVISOR_SCRIPT", script)
+    with pytest.raises(lean_module.LeanCompileInterrupted):
+        _run(["/bin/sh", "-c", "exit 0"])
+
+
+def test_interrupted_compile_returns_a_failed_result_without_touching_success(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    if sys.platform.startswith("linux"):
+        pytest.skip("the Linux sandbox denies this shell; the real integration test covers it")
+    probe = _write_shell_executable(tmp_path / "lean-probe", "kill -9 $$\n")
+    result = LeanVerifier(lean_binary=str(probe), scratch_dir=tmp_path).verify(
+        "example : True := by trivial"
+    )
+    assert result.success is False
+    assert [item.code for item in result.diagnostics] == ["lean.compile_interrupted"]

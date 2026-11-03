@@ -137,7 +137,7 @@ def test_factory_wires_worker_capability_without_release_or_database_credentials
     assert router.typed.candidates.worker_secret == "worker-only"
     assert router.typed.candidates.evaluation_generation_id is None
     assert "forbidden" not in repr(router)
-    assert len(SUPPORTED_TYPED_PROFILES) == 16
+    assert len(SUPPORTED_TYPED_PROFILES) == 30
     assert (
         build_pipeline(replace(settings, typed_catalog_enabled=False)).proof_flow_retriever is None
     )

@@ -23,7 +23,7 @@ def test_unknown_answer_survives_routing_and_search_miss_as_a_dsp_task(statement
     }
     runtime, provider = engine([
         route("lean", extracted_statement=statement),
-        dict(READY, statement=statement), intent,
+        dict(READY, statement=statement, recipe_intent=intent),
     ])
     searches = []
 
@@ -41,9 +41,9 @@ def test_unknown_answer_survives_routing_and_search_miss_as_a_dsp_task(statement
     assert result.answer is None
     assert result.formal_plan == {"kind": "dsp", "statement": statement}
     assert searches == [(statement, "en")]
-    assert len(provider.calls) == 3  # Router, preflight, search intent; no unverified answer.
+    assert len(provider.calls) == 2  # Router, combined preflight/search intent; no answer.
     data, _ = json.JSONDecoder().raw_decode(
         provider.calls[-1]["input"].split("DATA:\n", 1)[1]
     )
     assert data["request"]["original_statement"] == statement
-    assert data["resolved_statement"] == statement
+    assert result.private_evidence["request_structure"] == intent

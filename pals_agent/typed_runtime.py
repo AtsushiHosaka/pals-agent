@@ -31,6 +31,8 @@ from pals_agent.proof_flow_reranker import (
     OpenAIDraftReranker,
 )
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
+from pals_agent.typed_expansion_runtime import EXPANSION_PROFILES
+from pals_agent.typed_expansion_runtime import SCHEMA_VERSION as EXPANSION_SCHEMA
 from pals_agent.typed_literal_preservation import (
     LiteralPreservationError,
     validate_literal_preservation,
@@ -100,18 +102,24 @@ class TypedProofFlowRuntime:
         prompt = (
             "Translate the exact theorem below into a single OpenMath OMOBJ tree using only "
             "the explicit typed profile registry. Return the strict JSON AST only, never XML. "
-            "Use the profile-specific expression schema: relations have lhs/rhs, unary "
-            "operations have argument, binary operations have left/right, and binders "
-            "have declarations/body. Fixed applications use argument1, argument2, etc. "
-            "in signature order; variadic arguments are allowed only for their listed "
-            "operators. variable represents OMV, integer represents OMI, and symbol "
-            "represents a bare OMS. All operators explicitly include cdbase/cd/name; "
-            "never omit carriers or casts. Sort constructors are allowed only in "
-            "declaration.sort; use the dedicated sort schema there. They cannot stand "
-            "for values in expression positions. Preserve all supplied literal values "
-            "using the listed term constructors, rather than replacing values with their "
-            "types. "
-            "The XML grammar below describes node structure, not output syntax. "
+            + (
+                "Use the closed expansion expression schema described in GRAMMAR. "
+                if profile_id in EXPANSION_PROFILES
+                else (
+                    "Use the profile-specific expression schema: relations have lhs/rhs, unary "
+                    "operations have argument, binary operations have left/right, and binders "
+                    "have declarations/body. Fixed applications use argument1, argument2, etc. "
+                    "in signature order; variadic arguments are allowed only for their listed "
+                    "operators. variable represents OMV, integer represents OMI, and symbol "
+                    "represents a bare OMS. All operators explicitly include cdbase/cd/name; "
+                    "never omit carriers or casts. Sort constructors are allowed only in "
+                    "declaration.sort; use the dedicated sort schema there. They cannot stand "
+                    "for values in expression positions. Preserve all supplied literal values "
+                    "using the listed term constructors, rather than replacing values with their "
+                    "types. "
+                )
+            )
+            + "The XML grammar below describes node structure, not output syntax. "
             "The serializer supplies only the fixed OpenMath namespace. Supply the "
             "document version explicitly. Preserve types, carrier, "
             "dimensions, binders, assumptions and conclusion; do not add assumptions or "
@@ -123,7 +131,9 @@ class TypedProofFlowRuntime:
             f"REGISTRY:\n{registry}\nTHEOREM:\n{statement}"
         )
         history: dict[str, Any] = {
-            "structuring_transport": SCHEMA_VERSION,
+            "structuring_transport": EXPANSION_SCHEMA
+            if profile_id in EXPANSION_PROFILES
+            else SCHEMA_VERSION,
             "first_attempt_invalid": False,
             "structuring_attempts": 1,
             "structuring_repair_used": False,
@@ -173,7 +183,9 @@ class TypedProofFlowRuntime:
                 if attempt == 2:
                     raise _with_structuring_history(failure, history) from error
                 history = {
-                    "structuring_transport": SCHEMA_VERSION,
+                    "structuring_transport": EXPANSION_SCHEMA
+                    if profile_id in EXPANSION_PROFILES
+                    else SCHEMA_VERSION,
                     "first_attempt_invalid": True,
                     "structuring_attempts": 1,
                     "structuring_repair_used": False,

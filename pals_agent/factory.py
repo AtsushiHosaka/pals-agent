@@ -17,6 +17,8 @@ from pals_agent.explanations import (
     LeanProofSemanticReviewer,
 )
 from pals_agent.generator import HybridLeanGenerator
+from pals_agent.http_transport import MAX_HTTP_RESPONSE_BYTES
+from pals_agent.lightweight_http_transport import fresh_process_http_transport
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.ollama import OllamaClient
 from pals_agent.openai import OpenAIResponsesClient
@@ -39,6 +41,7 @@ from pals_agent.proof_flow_reranker import OpenAIDraftReranker
 from pals_agent.proof_flow_runtime import ProofFlowRuntime, build_private_proof_flow_runtime
 from pals_agent.proof_request_worker import ProofRequestApi, ProofRequestProcessor
 from pals_agent.recipe_attempt import RecipeAttemptPlannerV1
+from pals_agent.runtime_latency import TimedTransport
 from pals_agent.semantic_evaluation import SemanticStageJudge
 from pals_agent.settings import AgentSettings, validate_release_generation_environment
 from pals_agent.typed_runtime import TypedProofFlowRuntime
@@ -48,6 +51,8 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
 
     generator = build_generator(settings)
+    natural = NaturalDspDraftRetriever(ApiProofReuseCatalog(settings))
+    typed = build_profile_routed_runtime(settings) if settings.typed_catalog_enabled else None
     return ProofPipeline(
         generator=generator,
         verifier=None,
@@ -55,15 +60,20 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         # Explicit pinned PFI capability enables exact Draft evidence. Its errors
         # fail closed; an unconfigured deployment retains direct generation.
         proof_flow_retriever=(
-            build_profile_routed_runtime(settings)
-            if settings.typed_catalog_enabled
+            typed
+            if typed is not None
             else build_proof_flow_runtime(settings)
             if settings.pfi_runtime_provenance_sha256 is not None
             else None
         ),
         max_repair_attempts=settings.max_repair_attempts,
         verification_mode="api_reconcile",
-        natural_draft_retriever=NaturalDspDraftRetriever(ApiProofReuseCatalog(settings)),
+        natural_draft_retriever=natural,
+        request_linked_typed_retriever=(
+            replace(typed, generic=natural)
+            if settings.request_linked_typed_catalog_enabled and typed is not None
+            else None
+        ),
     )
 
 
@@ -127,6 +137,7 @@ def build_generator(settings: AgentSettings) -> HybridLeanGenerator:
         model=binding.model,
         provider=binding.provider,
         openai=_release_openai_client(settings),
+        use_release_role_bindings=True,
     )
 
 
@@ -182,6 +193,9 @@ def build_semantic_stage_judge(settings: AgentSettings) -> SemanticStageJudge:
                 api_key=settings.openai_api_key,
                 base_url=base_url,
                 max_output_tokens=settings.openai_max_output_tokens,
+                transport=fresh_process_http_transport(
+                    max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+                ),
             ),
             model=model,
             provider="openai",
@@ -227,6 +241,12 @@ def _release_openai_client(settings: AgentSettings) -> OpenAIResponsesClient:
         api_key=settings.openai_api_key,
         base_url=settings.openai_base_url,
         max_output_tokens=settings.openai_max_output_tokens,
+        transport=TimedTransport(
+            fresh_process_http_transport(
+                max_response_bytes=MAX_HTTP_RESPONSE_BYTES, use_lightweight=True,
+            ),
+            "provider", settings.openai_base_url,
+        ),
     )
 
 

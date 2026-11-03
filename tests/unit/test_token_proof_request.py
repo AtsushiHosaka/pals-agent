@@ -156,7 +156,7 @@ def test_mathematical_escalation_also_metered_then_independent_qa():
     assert [p["model"] for p in api.permits] == [
         "gpt-6-luna",
         "gpt-6-luna",
-        "gpt-5.6-terra",
+        "gpt-6.1-terra",
         "gpt-6-luna",
     ]
     assert len(api.receipts) == len(provider.calls) == 4
@@ -357,11 +357,11 @@ class RecipeTokenApi(TokenApi):
 
 
 def test_recipe_hit_binds_stored_answer_qa_to_fresh_metered_correspondence_call(monkeypatch):
-    from tests.unit.test_proof_reuse_lean_flow import INTENT, MATCH, RECIPE, REVIEW
+    from tests.unit.test_proof_reuse_lean_flow import MATCH, READY_INTENT, RECIPE, REVIEW
 
     events = []
     api = RecipeTokenApi(events)
-    provider = CountedProvider([READY, INTENT, MATCH, REVIEW], events)
+    provider = CountedProvider([READY_INTENT, MATCH, REVIEW], events)
     catalog = CatalogBoundary()
     monkeypatch.setattr(catalog, "retrieve", lambda *a, **kw: pytest.fail("Draft retrieval"))
     engine = ProofReuseRuntime(OpenAIResponsesClient(api_key="test", transport=provider), catalog)
@@ -372,11 +372,11 @@ def test_recipe_hit_binds_stored_answer_qa_to_fresh_metered_correspondence_call(
     )
     payload = api.settlements[0]
     assert payload["outcome"] == "answered" and payload["answer"]["text"] == RECIPE["answer"]
-    assert events == ["count", "permit", "generate", "receipt"] * 4
+    assert events == ["count", "permit", "generate", "receipt"] * 3
     qa = payload["private_evidence"]["token_qa"]
     assert qa["call_id"] == api.receipts[-1]["call_id"]
     assert qa["answer_sha256"] == RECIPE["answer_sha256"]
     assert api.permits[-1]["model_role"] == "token_answer_qa"
-    assert len(payload["usage"]) == 4
+    assert len(payload["usage"]) == 3
     receipt = payload["private_evidence"]["recipe_correspondence"]
     assert receipt["claim_id"] == CLAIM_ID and receipt["lean_sha256"] == RECIPE["lean_sha256"]

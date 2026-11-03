@@ -12,10 +12,11 @@ from uuid import UUID
 
 import boto3  # type: ignore[import-untyped]
 
-from pals_agent.lean import LeanVerifier
+from pals_agent.lean import LeanVerifier, enable_orphan_reaping
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
 from pals_agent.lean_verifier.boundary import attest_http_runtime_boundary
 from pals_agent.lean_verifier.http_server import (
+    MAX_CONCURRENT_COMPILES,
     IsolatedVerifierHttpSettings,
     VerifierDeploymentBinding,
     create_server,
@@ -71,6 +72,7 @@ class HttpVerifierRuntimeSettings:
     binding: VerifierDeploymentBinding
     tls: VerifierServerTlsConfiguration
     reuse_lake_environment: bool = False
+    max_concurrent_compiles: int = 1
 
     @classmethod
     def from_env(cls) -> HttpVerifierRuntimeSettings:
@@ -88,6 +90,7 @@ class HttpVerifierRuntimeSettings:
             aws_endpoint_url=_optional("PALS_AWS_ENDPOINT_URL"),
             tls_directory=tls_directory,
             reuse_lake_environment=_reuse_lake_environment(),
+            max_concurrent_compiles=_max_concurrent_compiles(),
             binding=VerifierDeploymentBinding(
                 release_id=release_id,
                 deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
@@ -109,6 +112,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     try:
         settings = HttpVerifierRuntimeSettings.from_env()
+        enable_orphan_reaping()
         if not _SCRATCH_DIRECTORY.is_dir():
             raise ValueError("verifier request scratch tmpfs is unavailable")
         _clear_ready_marker(_READY_MARKER)
@@ -134,6 +138,7 @@ def main() -> None:
                     project_dir=settings.project_dir,
                     verifier_sha256=settings.binding.verifier_toolchain_sha256,
                 ),
+                max_concurrent_compiles=settings.max_concurrent_compiles,
             ),
             verifier=LeanVerifier(
                 project_dir=settings.project_dir,
@@ -151,6 +156,7 @@ def main() -> None:
                 timeout_seconds=settings.timeout_seconds,
                 scratch_dir=_SCRATCH_DIRECTORY,
                 timing_observer=_log_verification_timing,
+                literal_admission_command=True,
             ),
         )
         # The marker is strictly local to the bounded tmpfs.  ECS observes it
@@ -162,9 +168,10 @@ def main() -> None:
         raise SystemExit(2) from None
 
     _LOGGER.info(
-        "isolated verifier ready: transport=mtls-http port=%d release_id=%s",
+        "isolated verifier ready: transport=mtls-http port=%d release_id=%s compile_slots=%d",
         _PORT,
         settings.binding.release_id,
+        settings.max_concurrent_compiles,
     )
     try:
         server.serve_forever()
@@ -178,6 +185,17 @@ def _reuse_lake_environment() -> bool:
     if value not in {"true", "false"}:
         raise ValueError("PALS_LEAN_REUSE_LAKE_ENVIRONMENT must be true or false")
     return value == "true"
+
+
+def _max_concurrent_compiles() -> int:
+    """Omission preserves the single slot; anything unexpected refuses startup."""
+    value = os.getenv("PALS_LEAN_MAX_CONCURRENT_COMPILES", "1")
+    if not value.isascii() or not value.isdecimal() or str(int(value)) != value:
+        raise ValueError("PALS_LEAN_MAX_CONCURRENT_COMPILES must be a canonical integer")
+    parsed = int(value)
+    if not 1 <= parsed <= MAX_CONCURRENT_COMPILES:
+        raise ValueError("PALS_LEAN_MAX_CONCURRENT_COMPILES is outside its bound")
+    return parsed
 
 
 def _log_verification_timing(event: VerificationTiming) -> None:

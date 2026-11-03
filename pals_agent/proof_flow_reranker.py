@@ -18,9 +18,11 @@ from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.reranker_diagnostics import response_diagnostics, sanitize_reranker_diagnostics
 
 _ENDPOINT = "https://api.openai.com/v1/responses"
-_DRAFT_ROLE_MODEL = fixed_model_default(ModelRole.DRAFT)
-_MODEL = _DRAFT_ROLE_MODEL.model
-_PROVIDER = _DRAFT_ROLE_MODEL.provider
+# Retrieval ranking uses the cheap correspondence judge. The separate Draft
+# generation role may use more reasoning to produce a new Lean proof.
+_RERANK_ROLE_MODEL = fixed_model_default(ModelRole.PROOF_REUSE_JUDGE)
+_MODEL = _RERANK_ROLE_MODEL.model
+_PROVIDER = _RERANK_ROLE_MODEL.provider
 _PROVIDER_API = "openai.responses.v1"
 _CONTRACT_VERSION = "pals.draft-relevance-reranker.v1"
 _PROMPT = (
@@ -143,7 +145,7 @@ def build_draft_reranker_request(
         "input": provider_input,
         "max_output_tokens": 512,
         "model": _MODEL,
-        "reasoning": {"effort": "low"},
+        "reasoning": {"effort": _RERANK_ROLE_MODEL.reasoning_effort},
         "service_tier": "default",
         "store": False,
         "stream": False,
