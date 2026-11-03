@@ -1,0 +1,20 @@
+
+/- Appended by hint_ab.py: dump the constants of each statement Lean managed to elaborate. -/
+open Lean Meta in
+#eval show MetaM Unit from do
+  let env ← getEnv
+  let notInstance (n : Name) : Bool := !Meta.isInstanceCore env n
+  for (name, info) in env.constants.map₂.toList do
+    if name.isInternal || name.hasMacroScopes then continue
+    unless info matches .thmInfo _ | .defnInfo _ | .opaqueInfo _ do continue
+    let shape ← forallTelescope info.type fun xs conclusion => do
+      let mut hypotheses : Array Name := #[]
+      for x in xs do
+        let decl ← x.fvarId!.getDecl
+        if !decl.binderInfo.isInstImplicit then
+          hypotheses := hypotheses ++ decl.type.getUsedConstants.filter notInstance
+      return (conclusion.getUsedConstants.filter notInstance, hypotheses)
+    IO.println <| "PALS_TARGET " ++ (Json.mkObj [
+      ("name", toJson name.toString),
+      ("conclusion_constants", toJson (shape.1.map (·.toString))),
+      ("hypothesis_constants", toJson (shape.2.toList.eraseDups.map (·.toString)))]).compress
