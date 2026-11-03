@@ -180,7 +180,8 @@ def _without_lean_comments_and_literals(source: str) -> str:
             continue
         if source.startswith("/-", index):
             block_depth = 1
-            index += 2
+            # `/--` and `/-!` open doc comments, so their `-` or `!` cannot start the closing `-/`.
+            index += 3 if source[index + 2 : index + 3] in ("-", "!") else 2
             continue
         character = source[index]
         output.append(" " if character in {'"', "«"} else character)
