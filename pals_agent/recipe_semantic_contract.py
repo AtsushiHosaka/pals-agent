@@ -14,7 +14,7 @@ from uuid import UUID
 
 import rfc8785
 
-from pals_agent.math_conventions import MEANINGS
+from pals_agent.math_conventions import MEANINGS, unknown_readings_named
 
 CONVENTION_IDS = tuple(MEANINGS)
 
@@ -398,6 +398,17 @@ BASE = BASE.replace(_COMPLETE_CATALOG_POLICY, SUBSET_POLICY).replace(
     _ANSWER_GATE_ANCHOR, _LIBRARY_LEMMA_POLICY + _ANSWER_GATE_ANCHOR
 )
 
+# Sent only for a statement that spells out a convention with no known reading, so every
+# other request keeps the exact policy bytes above.
+STATED_READING_POLICY = (
+    "\nEach ID in conventions_named_in_request appears in the request text and has no effective "
+    "reading.\nIf the ORIGINAL request explicitly states a reading of that convention, that "
+    "reading is a premise:\nrecord it in request_scope.assumptions, leave that ID out of "
+    "relevant_conventions, and reuse only if\nthe Lean target and stored answer respect it. A "
+    "mention, question or denial does not state a reading;\nthen the reading stays unknown. "
+    "Every other convention follows the rules above unchanged."
+)
+
 ROLE = {
     "assessment": "Assess mathematical scope and independently check the whole stored explanation.",
     "review": (
@@ -589,15 +600,18 @@ def prompts(
         "candidates": candidates,
     }
     need(set(known_conventions) <= MEANINGS.keys(), "unknown_convention_id")
-    request_data = {
+    named = unknown_readings_named(request["statement"], known_conventions)
+    request_data: dict[str, Any] = {
         "request": {
             "statement": request["statement"],
             "output_language": "ja",
             "context_turns": [],
         },
         "effective_conventions": known_conventions,
-        "convention_meanings": {k: MEANINGS[k] for k in known_conventions},
+        "convention_meanings": {k: MEANINGS[k] for k in (*known_conventions, *named)},
     }
+    if named:
+        request_data["conventions_named_in_request"] = named
     # Only automatic provider input-prefix caching is eligible here. No model
     # verdict, request, usage or correspondence result is reused across calls.
     policy = BASE.replace(SUBSET_POLICY, FULL_SHOWN_POLICY) if all_shown else BASE
@@ -612,6 +626,7 @@ def prompts(
         + ROLE[role]
         + "\nSession: "
         + session
+        + (STATED_READING_POLICY if named else "")
         + "\nREQUEST_DATA:\n"
         + json.dumps(request_data, ensure_ascii=False, separators=(",", ":"))
         for role, session in (("assessment", assessment_session), ("review", review_session))
@@ -678,7 +693,6 @@ def validate_schema(value: Any, schema: dict[str, Any]) -> None:
 def parse(
     raw: str,
     batch: dict[str, Any],
-    known_conventions: dict[str, str],
     *,
     retrieved_entry_sha256s: object,
 ) -> dict[str, Any]:
@@ -694,8 +708,7 @@ def parse(
             1 <= len(value["tasks"]) <= 3
             and value["answer_qa"] is True
             and all(value["checks"].values())
-            and value["unresolved"] == []
-            and all(k in known_conventions for k in value["relevant_conventions"]),
+            and value["unresolved"] == [],
             "response_reuse_not_supported",
         )
         selected = [
@@ -713,10 +726,10 @@ def parse(
         kinds = [task["kind"] for task in value["tasks"]]
         need(len(set(kinds)) == len(kinds), "response_duplicate_task_kind")
     else:
+        # answer_qa authorizes nothing here: consensus publishes only two reuse actions.
         need(
             value["recipe_id"] is None
             and value["recipe_revision"] is None
-            and value["answer_qa"] is False
             and value["source_target_sha256"] is None,
             "response_nonreuse_selection_invalid",
         )
@@ -736,7 +749,10 @@ def parse(
 
 
 def consensus(
-    left: dict[str, Any], right: dict[str, Any], batch: dict[str, Any]
+    left: dict[str, Any],
+    right: dict[str, Any],
+    batch: dict[str, Any],
+    known_conventions: dict[str, str],
 ) -> dict[str, Any] | None:
     if left["action"] != "reuse" or right["action"] != "reuse":
         return None
@@ -750,6 +766,11 @@ def consensus(
     if tasks(left) != tasks(right):
         return None
     if set(left["relevant_conventions"]) != set(right["relevant_conventions"]):
+        return None
+    # A well-formed review can cite a reading this request has no setting for, for example
+    # one the learner wrote in the statement. That withholds reuse as needs_input does; it
+    # is not malformed output, and no receipt can record a reading the claim did not supply.
+    if not set(left["relevant_conventions"]) <= known_conventions.keys():
         return None
     # Different valid paraphrase scope wording is diagnostic; it is not a fabricated
     # canonical AST. Both independent full-scope/answer approvals remain required.

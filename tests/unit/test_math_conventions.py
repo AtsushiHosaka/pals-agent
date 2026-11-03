@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from pals_agent.math_conventions import DEFAULTS, IDS, parse_claim
+from pals_agent.math_conventions import DEFAULTS, IDS, parse_claim, unknown_readings_named
 from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.proof_reuse import PREFLIGHT_SCHEMA
 from tests.unit.test_proof_request_worker import CLAIM_ID, REQUEST_ID, LeanApiBoundary
@@ -109,6 +109,34 @@ def test_known_reading_is_given_to_the_model_and_reported_as_applied():
     assert {i["id"]: i["known_reading"] for i in data["math_conventions"]}[
         "zero_ring_domain"
     ] == "exclude"
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "Assume 0^0=1.",
+        "0 ^ 0 = 1",
+        "0^{0}=1",
+        "0**0",
+        "0⁰=1",
+        "０＾０＝１",
+        "0の0乗は1とする。",
+        "设 0 的 0 次方为 1。",
+        "Let zero to the power of zero be one.",
+    ],
+)
+def test_literal_spellings_of_zero_to_the_zero_are_named(statement):
+    assert unknown_readings_named(statement, {}) == ["zero_pow_zero"]
+
+
+@pytest.mark.parametrize("statement", ["10^0=1", "1.0^0", "0^1", "0^01", "0^0.5", "x^0", "x^n"])
+def test_other_powers_are_not_named(statement):
+    assert unknown_readings_named(statement, {}) == []
+
+
+@pytest.mark.parametrize("choice", ["include", "exclude"])
+def test_a_known_reading_is_not_reported_as_named(choice):
+    assert unknown_readings_named("0^0=1", {"zero_pow_zero": choice}) == []
 
 
 def test_every_convention_has_both_readings_in_plain_words():

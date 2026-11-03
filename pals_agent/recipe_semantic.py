@@ -121,7 +121,7 @@ def attempt(
             raise SemanticReuseError("proof_reuse_token_accounting_failed")
         try:
             with latency_stage("recipe_response_parse"):
-                result = parse(raw, batch, known, retrieved_entry_sha256s=retrieved_entry_sha256s)
+                result = parse(raw, batch, retrieved_entry_sha256s=retrieved_entry_sha256s)
         except (ValueError, TypeError, KeyError, RecursionError) as error:
             raise SemanticReuseError("proof_reuse_invalid_response") from error
         return {
@@ -146,7 +146,7 @@ def attempt(
         )
     ):
         raise SemanticReuseError("proof_reuse_invalid_response")
-    selected = consensus(assessment["result"], review["result"], batch)
+    selected = consensus(assessment["result"], review["result"], batch, known)
     diagnostic = {
         "batch_sha256": batch["batch_sha256"],
         "assessment": assessment,
