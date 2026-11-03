@@ -201,7 +201,18 @@ def judge(
         "recipe_semantic_correspondence"
     )
     individual = [
-        {k: calls[role]["result"].get(k) for k in ("action", "recipe_id", "rationale")}
+        {
+            k: calls[role]["result"].get(k)
+            for k in (
+                "action",
+                "recipe_id",
+                "rationale",
+                "tasks",
+                "relevant_conventions",
+                "request_scope",
+                "unresolved",
+            )
+        }
         for role in ("assessment", "review")
     ]
     return {"selected": selected, "judges": individual, "seconds": seconds, "usage": usage}

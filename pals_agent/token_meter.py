@@ -21,8 +21,15 @@ from uuid import UUID
 
 from pals_agent.api_client import PalsApiError
 from pals_agent.http_transport import HttpResponse, HttpTransport
+from pals_agent.model_roles import RECIPE_SEMANTIC_MODEL, RECIPE_SEMANTIC_REVIEW_MODEL
 from pals_agent.proof_reuse_usage import current_role
 from pals_agent.usage import PRICE_SNAPSHOTS, acknowledged_usage_scope, report_usage
+
+_ATOMIC_SEMANTIC_CALLS = {
+    ("recipe_semantic_assessment", RECIPE_SEMANTIC_MODEL),
+    ("token_answer_qa", RECIPE_SEMANTIC_MODEL),
+    ("token_answer_qa", RECIPE_SEMANTIC_REVIEW_MODEL),
+}
 
 
 class TokenMeterError(RuntimeError):
@@ -287,8 +294,7 @@ class TokenMeter:
             atomic_method = getattr(self.api, "record_semantic_token_result", None)
             atomic = (
                 not embedding
-                and model == "gpt-6-luna"
-                and current_role() in {"recipe_semantic_assessment", "token_answer_qa"}
+                and (current_role(), model) in _ATOMIC_SEMANTIC_CALLS
                 and callable(atomic_method)
             )
             if not atomic:
