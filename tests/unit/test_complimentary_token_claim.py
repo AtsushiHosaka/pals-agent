@@ -51,6 +51,10 @@ class ClaimTransport:
             self.events.append("receipt")
             self.receipts.append(body)
             response = {"recorded": True}
+        elif url.endswith("/billing/semantic-call-results"):
+            self.events.append("receipt")
+            self.receipts.append(body["receipt"])
+            response = {"usage_recorded": True, "receipt_recorded": True}
         elif url.endswith("/usage"):
             response = {"recorded": True}
         elif url.endswith("/settlements"):

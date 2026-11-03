@@ -44,11 +44,11 @@ class CountedProvider(ProviderTransport):
             return HttpResponse(200, b'{"object":"response.input_tokens","input_tokens":100}')
         self.events.append("generate")
         result = super().request(**kwargs)
+        body = json.loads(result.body)
+        body["id"] = f"resp_{len(self.calls)}"
         if len(self.calls) == self.missing_usage_on:
-            body = json.loads(result.body)
             body.pop("usage", None)
-            return HttpResponse(result.status_code, json.dumps(body).encode())
-        return result
+        return HttpResponse(result.status_code, json.dumps(body).encode())
 
 
 def run(responses, *, enabled=True, missing_usage_on=None, operation_id=OP, **api_options):
@@ -374,9 +374,11 @@ def test_recipe_hit_binds_stored_answer_qa_to_fresh_metered_correspondence_call(
     assert payload["outcome"] == "answered" and payload["answer"]["text"] == RECIPE["answer"]
     assert events == ["count", "permit", "generate", "receipt"] * 3
     qa = payload["private_evidence"]["token_qa"]
-    assert qa["call_id"] == api.receipts[-1]["call_id"]
+    # The scope and QA calls run in parallel, so their permit and receipt order is not fixed.
+    qa_permit = next(row for row in api.permits if row["model_role"] == "token_answer_qa")
+    assert qa["call_id"] == qa_permit["call_id"]
+    assert qa["call_id"] in {row["call_id"] for row in api.receipts}
     assert qa["answer_sha256"] == RECIPE["answer_sha256"]
-    assert api.permits[-1]["model_role"] == "token_answer_qa"
     assert len(payload["usage"]) == 3
     receipt = payload["private_evidence"]["recipe_correspondence"]
     assert receipt["claim_id"] == CLAIM_ID and receipt["lean_sha256"] == RECIPE["lean_sha256"]

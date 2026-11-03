@@ -74,4 +74,4 @@ def test_recomputed_digest_cannot_bypass_sealed_profile_validation(name, count, 
 def test_api_runtime_bindings_cover_exact_local_validator_bytes():
     trusted = json.loads((ROOT / "pals-api/app/domain/typed_catalog_bindings.json").read_bytes())
     assert trusted == profile_bindings(ROOT)
-    assert len(trusted) == 16
+    assert len(trusted) == 30

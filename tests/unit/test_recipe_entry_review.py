@@ -20,7 +20,7 @@ from pals_agent.http_transport import HttpResponse
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.recipe_entry_review import main, review_and_seal
 from tests.unit.test_proof_reuse import ProviderTransport
-from tests.unit.test_proof_reuse_lean_flow import RECIPE, REVIEW, SOURCE
+from tests.unit.test_proof_reuse_lean_flow import RECIPE, SOURCE
 
 ENTRY = {
     **{
@@ -45,6 +45,10 @@ ENTRY = {
     "schema_version": "pals.recipe-search-entry.v1",
     "search_text": "Continuity of the square function on the real numbers",
     "target_sha256": hashlib.sha256(RECIPE["target_source"].encode()).hexdigest(),
+}
+REVIEW = {
+    "approved": True,
+    "rationale": "The actual Lean and stored answer match the original request.",
 }
 
 

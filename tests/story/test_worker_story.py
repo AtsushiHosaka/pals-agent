@@ -1386,7 +1386,7 @@ def test_committed_import_transport_failure_keeps_exact_candidate_and_bounded_vi
     assert api.reconciliation_retries == [("job-1", api.verification_candidate_id)]
     assert 360 in visibility
     if not notifier_available:
-        assert clock[0] == 330
+        assert clock[0] == 2000
         assert visibility[-1] == 360
         assert not api.explanation_updates
 

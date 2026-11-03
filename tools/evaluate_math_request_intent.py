@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -94,15 +95,19 @@ class PromptCaptured(Exception):
     pass
 
 
+@dataclass
 class CaptureClient:
-    """Stop before any assessment provider call or retrieval operation."""
+    """Stop before any assessment provider call or retrieval operation.
 
-    prompt: str
-    schema: dict[str, Any]
+    The runtime calls a dataclasses.replace copy, which shares `captured` with this client.
+    """
+
+    reasoning_effort: str | None = None
+    max_output_tokens: int | None = None
+    captured: dict[str, Any] = field(default_factory=dict)
 
     def generate(self, **kwargs: Any) -> str:
-        self.prompt = kwargs["prompt"]
-        self.schema = kwargs["response_schema"]
+        self.captured.update(prompt=kwargs["prompt"], schema=kwargs["response_schema"])
         raise PromptCaptured
 
 
@@ -141,7 +146,7 @@ def evaluate(case: dict[str, Any], client: OpenAIResponsesClient) -> dict[str, A
         raise RuntimeError("Preflight prompt capture did not run")
     preflight = json.loads(client.generate(
         model=fixed_model_default(ModelRole.PROOF_REUSE_JUDGE).model,
-        prompt=capture.prompt, response_schema=capture.schema,
+        prompt=capture.captured["prompt"], response_schema=capture.captured["schema"],
         timeout_seconds=25, store=False,
     ))
     _validate_preflight(preflight, NoRetrievalCatalog.profiles)
