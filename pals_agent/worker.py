@@ -33,6 +33,7 @@ from pals_agent.explanations import (
     ProofSemanticReview,
     ProofSemanticReviewer,
     ProofSemanticReviewUnavailable,
+    _is_x_squared_continuity,
     proof_explanation_from_api,
 )
 from pals_agent.figure_calls import validate_figure_bindings, validate_figure_call
@@ -1607,6 +1608,19 @@ class SqsProofWorker:
 
         permit = acquisition.permit
         private_review_failures: list[dict[str, Any]] = []
+        started_at = time.monotonic()
+
+        def log_failure(reason: str) -> None:
+            _log_generation_failure(
+                "explanation",
+                proof_job_id,
+                reason,
+                started_at=started_at,
+                language=language,
+                x_squared_gate=_is_x_squared_continuity(theorem_statement),
+                lean_lines=len(lean_code.splitlines()),
+            )
+
         try:
             reviewer = self._required_output_reviewer()
 
@@ -1653,6 +1667,7 @@ class SqsProofWorker:
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
+            log_failure("deadline")
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
@@ -1661,6 +1676,7 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except ProofOutputReviewError:
+            log_failure(_review_failure_reason(private_review_failures))
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
@@ -1669,10 +1685,7 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except Exception as exc:
-            _logger.error(
-                "explanation_generation_failed resource=explanation reason=%s",
-                _generation_failure_reason(exc),
-            )
+            log_failure(_generation_failure_reason(exc))
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
@@ -1692,6 +1705,7 @@ class SqsProofWorker:
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_explanation_reference_mismatch":
+                log_failure("reference_mismatch")
                 return self._write_explanation_failure(
                     proof_job_id=proof_job_id,
                     claim_id=claim_id,
@@ -2686,6 +2700,35 @@ def _same_verified_proof(
         and bool(payload.get("lean_code"))
         and payload.get("lean_code") == lean_code
     )
+
+
+def _log_generation_failure(
+    resource: ResourceKind,
+    resource_id: str,
+    reason: str,
+    *,
+    started_at: float,
+    language: str,
+    x_squared_gate: bool,
+    lean_lines: int,
+) -> None:
+    """Every terminal explanation failure, since the API reports them all as one error code."""
+    _logger.error(
+        "explanation_generation_failed resource=%s id=%s reason=%s elapsed_ms=%d "
+        "language=%s x_squared_gate=%s lean_lines=%d",
+        resource,
+        resource_id,
+        reason,
+        (time.monotonic() - started_at) * 1000,
+        language,
+        x_squared_gate,
+        lean_lines,
+    )
+
+
+def _review_failure_reason(failures: list[dict[str, Any]]) -> str:
+    categories = ",".join(str(failure["category"]) for failure in failures)
+    return f"review:{categories or 'none'}"
 
 
 def _generation_failure_reason(exc: Exception) -> str:

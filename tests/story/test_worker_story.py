@@ -37,7 +37,12 @@ from pals_agent.openai import OpenAIError
 from pals_agent.openmath import LLMStatementOpenMathStructurer
 from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, _generation_failure_reason, parse_agent_task
+from pals_agent.worker import (
+    SqsProofWorker,
+    _generation_failure_reason,
+    _review_failure_reason,
+    parse_agent_task,
+)
 
 VERIFIED_LEAN_CODE = (Path(__file__).parents[1] / "fixtures" / "PalsX2Verified.lean").read_text(
     encoding="utf-8"
@@ -1309,10 +1314,21 @@ def test_worker_logs_a_closed_failure_reason_without_exception_text(
 
     assert api.explanation_updates[-1]["diagnostics"][0].code == "pals.explanation_failed"
     assert (
-        "explanation_generation_failed resource=explanation "
-        "reason=validation:reference_excerpt,reference_excerpt,text_length"
+        "explanation_generation_failed resource=explanation id=job-1 "
+        "reason=validation:reference_excerpt,reference_excerpt,text_length elapsed_ms="
     ) in caplog.text
+    assert "language=ja x_squared_gate=True lean_lines=2" in caplog.text
     assert "secret model text" not in caplog.text
+
+
+def test_review_failure_reason_names_only_categories() -> None:
+    failures = [
+        {"category": "rejected", "rationale": "secret rationale"},
+        {"category": "transport", "rationale": ""},
+    ]
+
+    assert _review_failure_reason(failures) == "review:rejected,transport"
+    assert _review_failure_reason([]) == "review:none"
 
 
 def test_generation_failure_reason_names_only_closed_labels() -> None:
