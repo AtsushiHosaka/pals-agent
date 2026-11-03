@@ -24,6 +24,7 @@ from pals_agent.api_client import (
 from pals_agent.artifacts import ArtifactPersistenceError
 from pals_agent.explanations import (
     ExplanationDeadlineExceeded,
+    ExplanationGenerationError,
     ProofClarification,
     ProofExplanation,
     ProofOutputReview,
@@ -49,6 +50,7 @@ from pals_agent.models import (
     ProofRequest,
     VerificationResult,
 )
+from pals_agent.openai import OpenAIError
 from pals_agent.openmath import OpenMathStructuringError
 from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set
 from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
@@ -1498,7 +1500,11 @@ class SqsProofWorker:
                 language=language,
                 private_review_failures=private_review_failures,
             )
-        except Exception:
+        except Exception as exc:
+            _logger.error(
+                "explanation_generation_failed resource=clarification reason=%s",
+                _generation_failure_reason(exc),
+            )
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1661,7 +1667,11 @@ class SqsProofWorker:
                 language=language,
                 private_review_failures=private_review_failures,
             )
-        except Exception:
+        except Exception as exc:
+            _logger.error(
+                "explanation_generation_failed resource=explanation reason=%s",
+                _generation_failure_reason(exc),
+            )
             return self._write_explanation_failure(
                 proof_job_id=proof_job_id,
                 claim_id=claim_id,
@@ -2659,6 +2669,16 @@ def _same_verified_proof(
         and bool(payload.get("lean_code"))
         and payload.get("lean_code") == lean_code
     )
+
+
+def _generation_failure_reason(exc: Exception) -> str:
+    """One log token of closed labels; never exception text, which can quote model output."""
+    if isinstance(exc, ExplanationGenerationError):
+        return "validation:" + ",".join(exc.attempt_failures)
+    if isinstance(exc, OpenAIError):
+        details = sorted(exc.private_diagnostics.items())
+        return "provider:" + ",".join(f"{key}={value}" for key, value in details)
+    return "exception:" + type(exc).__name__
 
 
 def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]:

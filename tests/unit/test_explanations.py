@@ -76,6 +76,11 @@ def test_explanation_json_parser_repairs_only_bare_latex_backslashes() -> None:
         "formula": r"\text{x}\neq y\to z"
     }
     assert _parse_json_object(r'{"excerpt":"first\n  second"}') == {"excerpt": "first\n  second"}
+    assert _parse_json_object(r'{"excerpt":"import Mathlib\n\ntheorem x","summary":"\neq"}') == {
+        "excerpt": "import Mathlib\n\ntheorem x",
+        "summary": r"\neq",
+    }
+    assert _parse_json_object(r'{"excerpt":"s \ t\nend"}') == {"excerpt": "s \\ t\nend"}
 
     with pytest.raises(json.JSONDecodeError):
         _parse_json_object('{"formula": }')
@@ -783,6 +788,98 @@ def test_retries_invalid_reference_then_uses_corrected_actual_output() -> None:
     assert "previous response was invalid" in client.prompts[1]
     assert "Re-read the canonical line table" in client.prompts[1]
     assert result.raw_model_output == explanation_payload()
+
+
+def test_reference_spanning_unindented_lean_lines_is_accepted() -> None:
+    lean_code = "lemma a : True := by\n  trivial\n\ntheorem b : True := a"
+    excerpt = lean_code
+    payload = json.loads(explanation_payload(excerpt=excerpt))
+    payload["sections"][0]["references"][0].update(start_line=1, end_line=4)
+    explainer, _client = build_explainer(json.dumps(payload, ensure_ascii=False))
+
+    explanation = explainer.explain(
+        theorem_statement="True を示せ",
+        lean_code=lean_code,
+        verified=True,
+    )
+
+    assert explanation.sections[0].references[0].excerpt == excerpt
+
+
+@pytest.mark.parametrize("text", [r"$\omega$ を取る。", r"$\Omega$ 上で考える。"])
+def test_tex_omega_is_not_the_lean_tactic(text: str) -> None:
+    payload = json.loads(explanation_payload())
+    payload["sections"][0]["summary"] = text
+    explainer, _client = build_explainer(json.dumps(payload, ensure_ascii=False))
+
+    explanation = explainer.explain(
+        theorem_statement="n + 0 = n を示せ",
+        lean_code=LEAN_CODE,
+        verified=True,
+    )
+
+    assert explanation.sections[0].summary == text
+
+
+def test_bare_lean_tactic_name_stays_rejected_in_prose() -> None:
+    payload = json.loads(explanation_payload())
+    payload["sections"][0]["summary"] = "omega で閉じる。"
+    invalid = json.dumps(payload, ensure_ascii=False)
+    explainer, _client = build_explainer(invalid, invalid)
+
+    with pytest.raises(ExplanationGenerationError):
+        explainer.explain(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            verified=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("raw_output", "reason"),
+    [
+        ("not json", "json"),
+        ("{}", "missing_field"),
+        (explanation_payload(excerpt="invented"), "reference_excerpt"),
+        (explanation_payload().replace('"start_line": 4', '"start_line": 9'), "reference_range"),
+        (explanation_payload().replace("0 を足しても", "`simp` で"), "lean_term"),
+        (
+            explanation_payload().replace("加法の単位元に関する既存定理を使います。", "x" * 601),
+            "text_length",
+        ),
+    ],
+)
+def test_validation_failures_are_reported_as_closed_labels(raw_output: str, reason: str) -> None:
+    explainer, _client = build_explainer(raw_output, raw_output)
+
+    with pytest.raises(ExplanationGenerationError) as error_info:
+        explainer.explain(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            verified=True,
+        )
+
+    assert error_info.value.attempt_failures == (reason, reason)
+
+
+def test_repeated_final_equation_has_its_own_failure_label() -> None:
+    payload = json.loads(explanation_payload())
+    payload["sections"][0]["summary"] = "したがって $n+0=n$ である。"
+    payload["conclusion"] = "よって $n+0=n$ である。"
+    invalid = json.dumps(payload, ensure_ascii=False)
+    explainer, _client = build_explainer(invalid, invalid)
+
+    with pytest.raises(ExplanationGenerationError) as error_info:
+        explainer.explain(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            verified=True,
+        )
+
+    assert error_info.value.attempt_failures == (
+        "repeated_final_equation",
+        "repeated_final_equation",
+    )
 
 
 def test_invalid_grounding_fails_instead_of_returning_placeholder() -> None:

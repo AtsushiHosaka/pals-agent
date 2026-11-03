@@ -33,10 +33,11 @@ from pals_agent.models import (
     ProofRequest,
     VerificationResult,
 )
+from pals_agent.openai import OpenAIError
 from pals_agent.openmath import LLMStatementOpenMathStructurer
 from pals_agent.pipeline import ApiRepairSeed, ProofPipeline
 from pals_agent.settings import AgentSettings
-from pals_agent.worker import SqsProofWorker, parse_agent_task
+from pals_agent.worker import SqsProofWorker, _generation_failure_reason, parse_agent_task
 
 VERIFIED_LEAN_CODE = (Path(__file__).parents[1] / "fixtures" / "PalsX2Verified.lean").read_text(
     encoding="utf-8"
@@ -1285,6 +1286,43 @@ def test_worker_skips_terminal_explanation_redelivery_conflict() -> None:
 
     assert pipeline.formal_statement is None
     assert explainer.explain_calls == []
+
+
+def test_worker_logs_a_closed_failure_reason_without_exception_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class InvalidExplainer:
+        def explain(self, **_: object) -> ProofExplanation:
+            raise ExplanationGenerationError(
+                "secret model text",
+                attempt_outputs=("secret model text",),
+                attempt_failures=("reference_excerpt", "reference_excerpt", "text_length"),
+            )
+
+    api = FakeApi()
+    api.state = "verified"
+    api.lean_code = "example : True := by\n  trivial"
+    worker = _worker(api=api, explainer=InvalidExplainer())
+
+    with caplog.at_level("ERROR"):
+        _process_proof(worker, "job-1")
+
+    assert api.explanation_updates[-1]["diagnostics"][0].code == "pals.explanation_failed"
+    assert (
+        "explanation_generation_failed resource=explanation "
+        "reason=validation:reference_excerpt,reference_excerpt,text_length"
+    ) in caplog.text
+    assert "secret model text" not in caplog.text
+
+
+def test_generation_failure_reason_names_only_closed_labels() -> None:
+    provider = OpenAIError(
+        "secret provider prose",
+        private_diagnostics={"stage": "http", "http_status": 429, "message": "secret"},
+    )
+
+    assert _generation_failure_reason(provider) == "provider:http_status=429,stage=http"
+    assert _generation_failure_reason(RuntimeError("secret")) == "exception:RuntimeError"
 
 
 def test_worker_does_not_regenerate_completed_summary() -> None:
