@@ -277,7 +277,10 @@ def test_every_existing_generation_validation_label_is_retained():
               if isinstance(node, ast.Return) and isinstance(node.value, ast.Constant)
               and isinstance(node.value.value, str)}
     assert actual <= qe.EXPLANATION_VALIDATION_LABELS
-    assert qe.EXPLANATION_VALIDATION_LABELS - actual == {"reference_header", "reference_mismatch"}
+    # reference_header may already be present when the independently reviewed
+    # explanation branch is integrated; retain both old and new source profiles.
+    assert qe.EXPLANATION_VALIDATION_LABELS - actual <= {"reference_header", "reference_mismatch"}
+    assert {"reference_header", "reference_mismatch"} <= qe.EXPLANATION_VALIDATION_LABELS
 
 
 def test_review_and_provider_labels_are_closed_and_keep_existing_provider_diagnostics():
