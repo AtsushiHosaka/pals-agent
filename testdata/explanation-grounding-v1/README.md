@@ -112,3 +112,13 @@ python -m pytest -o addopts='' -q \
 再実行するときは、既存のLeanプロジェクトと固定したLean binaryを明示して`benchmark.py prepare`を実行します。事前登録のSHA256を確認してから、別操作の`run`へ渡します。出力ディレクトリの再利用を拒否し、既存の安全なlocal credential fileだけを読みます。残り呼出し数は`--prior-calls`で宣言します。今回の24呼出しは終了しており、この記録を理由に追加実行はしません。
 
 本番キュー・DB・サービスは使っていません。SSMで保護された環境へのアクセスもしていません。配備後の確認、より広い題材、反復による安定性、非標準対象と標準対象との実際の形式的同値は未検証です。
+
+## 品質計測と説明改善の統合確認
+
+2026年11月5日、[Agent #49](https://github.com/AtsushiHosaka/pals-agent/pull/49)の8541372と[Agent #50](https://github.com/AtsushiHosaka/pals-agent/pull/50)の36ea6a2を、本番系統への移植版7f17c526から通常mergeした。統合コードは6ed28a77である。競合はなく、各PRで独立レビューした変更を保持した。
+
+説明生成・QA・失敗理由・worker claim・consumerの停止・並列process・CLI・verifier HTTP・EMF Schemaを組み合わせ、18ファイル657件が通った。Ruffと4 sourceのmypyも通過した。ローカルのUDP、0600ファイル、HTTP試験を含む。新しいモデル呼出し、AWS操作、本番のDB操作は行っていない。テスト件数はモデル精度の分母へ加えない。
+
+生成中の修復で回復した出力を最終失敗として数えず、最終的な失敗だけを閉じた分類へ投影する。複数行haveの引用不足はreference_headerに対応する。API #49の終端イベント274組は、Agent #49のDraft202012 Schemaに適合することを別途確認した。
+
+この統合はimageの公開や署名済み配備候補の生成ではない。collectorの受信、隔離verifierからの安全な出力経路、CloudWatchでの実抽出・通知は未確認である。既存seq19候補のsourceやimageも変更していない。説明の実モデル測定と、その比較上の制限は[README](README.md)を参照する。
