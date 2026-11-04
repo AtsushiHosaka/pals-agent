@@ -1352,3 +1352,43 @@ def test_compute_request_requires_the_explicit_answer_in_the_conclusion(language
     assert "reject a conclusion that does not state the explicit final answer" in review.replace(
         "\n", " "
     )
+
+
+@pytest.mark.parametrize("language", ["ja", "en"])
+def test_nonstandard_definitions_are_justified_but_standard_ones_are_not_explained(
+    language: str,
+) -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    prompt = _explanation_prompt(
+        theorem_statement="Compute the sum with k^e defined as exp(e ln k).",
+        lean_code=LEAN_CODE,
+        language=language,
+        require_epsilon_delta=False,
+    )
+    assert f"Output language: {language}" in prompt
+    assert "must be\njustified in the first section" in prompt
+    assert "power series of the exponential" in prompt
+    assert "Do not explain a standard definition or fact" in prompt
+    assert "do not add a definition step when the proof uses only standard notation" in prompt
+    review = _output_review_prompt(
+        theorem_statement="Compute the sum with k^e defined as exp(e ln k).",
+        lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(),
+        language=language,
+    )
+    assert "reject it if no section justifies the\ndefinition" in review
+    assert "reject a justification of a standard definition that the proof does not need" in review
+
+
+def test_last_section_stops_before_the_answer_that_the_conclusion_states() -> None:
+    from pals_agent.explanations import _explanation_prompt
+
+    prompt = _explanation_prompt(
+        theorem_statement="Find the value of the sum.",
+        lean_code=LEAN_CODE,
+        language="en",
+        require_epsilon_delta=False,
+    )
+    assert "stop the last section at the calculation that precedes the answer" in prompt
+    assert "the conclusion alone states it" in prompt
