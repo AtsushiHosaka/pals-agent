@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "jsonschema>=4.23,<5.0",
   "mypy>=1.13,<2.0",
   "pytest>=8.3,<9.0",
   "ruff>=0.8,<1.0",
@@ -29,6 +30,7 @@ pals-geometry = "pals_agent.synthetic_geometry:main"
 packages = ["pals_agent"]
 
 [tool.hatch.build.targets.wheel.force-include]
+"pals_agent/contracts/quality-event-v1.schema.json" = "pals_agent/contracts/quality-event-v1.schema.json"
 "pals_agent/geometry_proofs/isosceles_midpoint.lean" = "pals_agent/geometry_proofs/isosceles_midpoint.lean"
 "pals_agent/content_dictionaries/typed-calculus-v5-registry.json" = "pals_agent/content_dictionaries/typed-calculus-v5-registry.json"
 "pals_agent/content_dictionaries/typed-linear-algebra-v5-registry.json" = "pals_agent/content_dictionaries/typed-linear-algebra-v5-registry.json"
