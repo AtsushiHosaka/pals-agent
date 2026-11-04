@@ -1116,8 +1116,16 @@ The conclusion is one short final sentence stating the result just established; 
 repeat the derivation. Do not add a second "therefore the theorem holds" sentence at the end of
 the last section if the conclusion will say the same thing. A calculation may reach the final
 equality in a section and the conclusion may state its implication without restarting any step.
-Do not repeat that complete final equality in the conclusion. Prefer ending the last section
-with the preceding intermediate calculation, then stating the goal equality once in conclusion.
+State the complete final equality once, not in both the last section and the conclusion. Prefer
+ending the last section with the preceding intermediate calculation, then stating the goal
+equality once in conclusion.
+When the request asks to compute, solve or determine, the conclusion must state the explicit
+final answer itself (the value, expression, solution set or classification), in terms of the
+learner's own symbols, exactly as the verified target establishes it. A conclusion that only says
+the argument is complete, or that the claim "holds", does not answer the question. If the answer
+is an expression, write it in full, for example
+"Therefore $\\sum_{{k=1}}^{{n}}k=\\frac{{n(n+1)}}{{2}}$." This is a style example only; take the
+actual answer from the verified target.
 Name the reason for each transformation accurately: writing a square as a product uses the
 definition of squaring; distributivity expands a product over a sum; commutativity swaps factors.
 For a short proof, use a short opening, one section with the actual derivation, and a brief ending;
@@ -1145,7 +1153,7 @@ Return exactly one JSON object with this schema:
       ]
     }}
   ],
-  "conclusion": "one short final sentence; no repeated calculation or proof summary"
+  "conclusion": "one short final sentence; the explicit final answer when asked to compute or solve"
 }}
 
 Write all learner-facing prose in the requested output language. Overview and conclusion must be
@@ -1373,6 +1381,10 @@ def _output_review_prompt(
             "or existence claim is allowed even if the last inference names that result. Do not "
             "reject such a conclusion solely for restating the proved proposition. Distinguish "
             "this from repeating a substantive derivation or the complete final calculation. "
+            "When the learner asked to compute, solve or determine something, reject a "
+            "conclusion that does not state the explicit final answer established by the "
+            "verified target, such as one that only says the claim holds or the derivation is "
+            "complete. "
             "But reject two consecutive final assertions of the same complete equality, one at "
             "the end of the last section and one in conclusion. Also check each named law: "
             "rewriting a square as a product is the definition of squaring, not distributivity. "
