@@ -377,19 +377,23 @@ heartbeatのdimensionは`Environment`だけです。workerやhostの識別子は
 | `PALS_QUALITY_EVENTS_ENABLED` | `true`または`1`で有効化 |
 | `PALS_QUALITY_EVENTS_ENVIRONMENT` | `prod`、`staging`、`dev`、`local`、`probe`。未指定時は`PALS_ENV` |
 | `PALS_QUALITY_EVENTS_TRANSPORT` | `agent`または`file` |
-| `PALS_QUALITY_EVENTS_AGENT_ENDPOINT` | agent用の`udp://host:port` |
-| `PALS_QUALITY_EVENTS_FILE` | file用の絶対パス |
+| `PALS_QUALITY_EVENTS_AGENT_ENDPOINT` | agent用の`udp://数値IP:port`。privateまたはloopbackの宛先だけを許可 |
+| `PALS_QUALITY_EVENTS_FILE` | file用の正規絶対パス。事前に作成した所有者本人の0600通常ファイルだけを許可 |
 | `PALS_QUALITY_EVENTS_REVISION` | 任意のsoftware revision。dimensionには使わない |
 
 発行時の例外は主処理へ返さず、`QualityEventsDropped`を次に送れるイベントに付けます。
 UDPは送信先からの受領確認を取りません。ファイルへの書き込み時間にも保証はありません。
+UDP送信ではDNSを使わず、送信ごとにsocketを閉じます。URLの認証情報・path・query・fragmentは拒否します。
+ファイルは新規作成せず、symlink、複数hardlink、FIFO、別所有者、0600以外の権限を拒否します。
+特殊ファイルへのopenはnonblockingです。collectorによるrotation後も、正規パスと同じ条件を満たすファイルが必要です。
 本番で有効にする前に、collectorの構成とEMF抽出を別途確認する必要があります。
 説明のvalidationラベルは既存の固定コードと`reference_header`に限定し、未知の短い値は`unrecognized`に置き換えます。
 本文や秘密らしい値は、置き換える前にイベントごと拒否します。説明の生成・審査条件は変えません。
 
 回帰試験はEMFの実ファイル書き込みとループバックUDP/mTLS通信を含みます。
 API、SQS、モデル、Leanコンパイラはテストで明示したfixtureの境界です。
-2026年11月5日のPython 3.12による検査では、品質イベント・CLI・worker・HTTPの最終回帰171件が通りました。
+2026年11月5日のPython 3.12による検査では、品質イベント・CLI・worker・HTTPの最終回帰187件が通りました。
+独立レビュー後のtransport修正には、実FIFO・リンク・所有者・権限の拒否と、実UDPのsocket解放を含みます。
 先行するworker、drain、Lean境界、API trust、runtime latencyを含む回帰484件も通過しています。
 Ruff、品質イベントとHTTP serverのmypy、`git diff --check`は通過しています。
 この試験結果は、本番DBのcommit、実モデルの精度、実Leanのcompile、CloudWatchの抽出成功を示しません。

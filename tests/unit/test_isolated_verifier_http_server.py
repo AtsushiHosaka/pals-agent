@@ -604,7 +604,8 @@ def test_recipe_admission_records_only_actual_compile_attempts(
                 raise RuntimeError("private_compiler_exception")
             return super().verify(lean_code)
 
-    path = tmp_path / "quality.jsonl"
+    path = tmp_path.resolve() / "quality.jsonl"
+    path.touch(mode=0o600)
     for name, value in ((quality_events.ENABLED_ENV, "true"),
                         (quality_events.ENVIRONMENT_ENV, "probe"),
                         (quality_events.TRANSPORT_ENV, "file"),
@@ -623,7 +624,7 @@ def test_recipe_admission_records_only_actual_compile_attempts(
                             canonical=True)
         finally:
             server.compile_slot.release()
-        assert busy[0] == 503 and not path.exists()
+        assert busy[0] == 503 and path.read_text() == ""
         response = _request(client_context, _recipe_admission_request(
             "private_source_text", _admission_context()),
                             canonical=True)

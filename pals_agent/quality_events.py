@@ -35,16 +35,19 @@ The failure taxonomy is ``docs/quality-ledger/taxonomy.md`` in the parent reposi
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import math
 import os
 import re
 import socket
+import stat
 import threading
 import time
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Final, Protocol
 from urllib.parse import urlsplit
 
@@ -741,27 +744,47 @@ class Transport(Protocol):
 
 
 class AgentUdpTransport:
-    """Fire-and-forget datagram to the CloudWatch agent's EMF endpoint (design T1)."""
+    """One non-blocking datagram to a numeric private/loopback collector (design T1)."""
 
-    def __init__(self, host: str, port: int) -> None:
-        self._address = (host, port)
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setblocking(False)
+    def __init__(self, endpoint: str) -> None:
+        parsed = urlsplit(endpoint)
+        host = ipaddress.ip_address(parsed.hostname or "")
+        if (parsed.scheme != "udp" or parsed.username or parsed.password
+                or parsed.path or parsed.query or parsed.fragment or not parsed.port
+                or host.is_unspecified or host.is_multicast or host.is_link_local
+                or not (host.is_private or host.is_loopback)):
+            raise ValueError("quality_endpoint_invalid")
+        self._address = (str(host), parsed.port)
+        self._family = socket.AF_INET6 if host.version == 6 else socket.AF_INET
 
     def send(self, line: str) -> None:
-        self._socket.sendto((line + "\n").encode("utf-8"), self._address)
+        raw = (line + "\n").encode("utf-8")
+        with socket.socket(self._family, socket.SOCK_DGRAM) as stream:
+            stream.setblocking(False)
+            if stream.sendto(raw, self._address) != len(raw):
+                raise OSError("quality_send_incomplete")
 
 
 class FileTransport:
-    """Append one line per event; rotation belongs to the file's consumer (design T2)."""
+    """Append to a pre-provisioned private regular file; never create it (design T2)."""
 
     def __init__(self, path: str) -> None:
-        self._path = path
+        self._path = Path(path)
+        if not self._path.is_absolute() or ".." in self._path.parts:
+            raise ValueError("quality_file_invalid")
 
     def send(self, line: str) -> None:
-        descriptor = os.open(self._path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o640)
+        if self._path.resolve(strict=True) != self._path:
+            raise ValueError("quality_file_symlink")
+        descriptor = os.open(self._path, os.O_WRONLY | os.O_APPEND | os.O_NONBLOCK | os.O_NOFOLLOW)
         try:
-            os.write(descriptor, (line + "\n").encode("utf-8"))
+            info = os.fstat(descriptor)
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                    or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1):
+                raise ValueError("quality_file_not_private")
+            raw = (line + "\n").encode("utf-8")
+            if os.write(descriptor, raw) != len(raw):
+                raise OSError("quality_write_incomplete")
         finally:
             os.close(descriptor)
 
@@ -805,16 +828,10 @@ def _config(*, needs_environment: bool) -> _Config | None:
 
 def _make_transport(key: tuple[str, str]) -> Transport | None:
     kind, target = key
-    if kind == "file":
-        return FileTransport(target)
     try:
-        parsed = urlsplit(target)
-        if parsed.scheme != "udp" or not parsed.hostname or parsed.port is None:
-            return None
-        host = socket.gethostbyname(parsed.hostname)
+        return FileTransport(target) if kind == "file" else AgentUdpTransport(target)
     except (ValueError, OSError):
         return None
-    return AgentUdpTransport(host, parsed.port)
 
 
 def _transport(config: _Config) -> Transport | None:

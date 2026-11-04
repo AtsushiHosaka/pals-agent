@@ -4,6 +4,7 @@ These tests do not execute a model, Lean compiler, AWS service or database trans
 """
 
 import json
+import os
 import threading
 import time
 from types import SimpleNamespace
@@ -53,7 +54,8 @@ def wait_for(predicate):
 def test_actual_heartbeat_keeps_running_during_busy_consumer_and_stops_on_failure(
     tmp_path, monkeypatch,
 ):
-    path = tmp_path / "quality.jsonl"
+    path = tmp_path.resolve() / "quality.jsonl"
+    path.touch(mode=0o600)
     enable_file(monkeypatch, path)
     with (pytest.raises(RuntimeError, match="consumer_failed"),
           qe.worker_heartbeat(interval_seconds=0.01)):
@@ -98,6 +100,15 @@ def test_heartbeat_send_and_thread_start_failures_preserve_consumer_result(tmp_p
     with qe.worker_heartbeat():
         result = "consumer-completed"
     assert result == "consumer-completed" and qe.dropped_count() >= 3
+
+
+def test_fifo_without_reader_cannot_stall_heartbeat_or_leave_its_thread(tmp_path, monkeypatch):
+    path = tmp_path.resolve() / "fifo"
+    os.mkfifo(path, mode=0o600)
+    enable_file(monkeypatch, path)
+    with qe.worker_heartbeat(interval_seconds=0.01):
+        wait_for(lambda: qe.dropped_count() >= 2)
+    assert qe.dropped_count() >= 2
 
 
 @pytest.mark.parametrize("code", [
@@ -166,7 +177,8 @@ def configured_cli(monkeypatch):
 
 
 def test_cli_real_consumer_owns_heartbeat_and_cleans_readiness(tmp_path, monkeypatch):
-    path = tmp_path / "quality.jsonl"
+    path = tmp_path.resolve() / "quality.jsonl"
+    path.touch(mode=0o600)
     marker = tmp_path / "ready"
     enable_file(monkeypatch, path)
     configured_cli(monkeypatch)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import socket
 import time
@@ -545,7 +546,8 @@ def test_builder_errors_are_swallowed_and_counted(enabled):
 
 
 def test_file_transport_appends_one_json_line_per_event(monkeypatch, tmp_path):
-    path = tmp_path / "events.log"
+    path = tmp_path.resolve() / "events.log"
+    path.touch(mode=0o600)
     monkeypatch.setenv(qe.ENABLED_ENV, "1")
     monkeypatch.setenv("PALS_ENV", "prod")
     monkeypatch.setenv(qe.TRANSPORT_ENV, "file")
@@ -583,6 +585,88 @@ def test_unusable_agent_endpoint_counts_a_drop_and_never_raises(monkeypatch):
     monkeypatch.setenv(qe.AGENT_ENDPOINT_ENV, "http://example.invalid:1")  # not udp://
     qe.record_explanation_failure(resource="explanation", reason="deadline")
     assert qe.dropped_count() == 1
+
+
+@pytest.mark.parametrize("endpoint", [
+    "udp://example.invalid:1234", "udp://8.8.8.8:1234", "udp://0.0.0.0:1234",
+    "udp://169.254.169.254:1234", "udp://224.0.0.1:1234", "https://127.0.0.1:1234",
+    "udp://127.0.0.1:1234/path", "udp://127.0.0.1:1234?query=1",
+    "udp://127.0.0.1:1234#fragment", "udp://user@127.0.0.1:1234",
+    "udp://127.0.0.1:0", "udp://127.0.0.1:65536",
+])
+def test_agent_transport_rejects_dns_public_addresses_and_extra_url_fields(endpoint, monkeypatch):
+    def forbidden(*args):
+        pytest.fail("quality transport attempted DNS")
+
+    monkeypatch.setattr(qe.socket, "gethostbyname", forbidden)
+    assert qe._make_transport(("agent", endpoint)) is None
+
+
+def test_real_udp_sockets_are_closed_after_every_send(monkeypatch):
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as receiver:
+        receiver.bind(("127.0.0.1", 0))
+        receiver.settimeout(1)
+        original = socket.socket
+        opened = []
+
+        def create(*args, **kwargs):
+            stream = original(*args, **kwargs)
+            opened.append(stream)
+            return stream
+
+        monkeypatch.setattr(qe.socket, "socket", create)
+        sender = qe.AgentUdpTransport(f"udp://127.0.0.1:{receiver.getsockname()[1]}")
+        for _ in range(2):
+            sender.send('{"probe":1}')
+            payload, _ = receiver.recvfrom(128)
+            assert json.loads(payload) == {"probe": 1}
+        assert len(opened) == 2 and all(stream.fileno() == -1 for stream in opened)
+
+
+def test_file_destination_requires_private_owned_regular_single_link_and_no_symlinks(
+    tmp_path, monkeypatch,
+):
+    root = tmp_path.resolve()
+    private = root / "private"
+    private.touch(mode=0o600)
+    public = root / "public"
+    public.touch(mode=0o644)
+    link = root / "link"
+    link.symlink_to(private)
+    hardlink = root / "hardlink"
+    os.link(private, hardlink)
+    folder = root / "folder"
+    folder.mkdir()
+    folder_link = root / "folder-link"
+    folder_link.symlink_to(folder, target_is_directory=True)
+    nested = folder / "private"
+    nested.touch(mode=0o600)
+    fifo = root / "fifo"
+    os.mkfifo(fifo, mode=0o600)
+    reader = os.open(fifo, os.O_RDONLY | os.O_NONBLOCK)
+    try:
+        monkeypatch.setenv(qe.ENABLED_ENV, "true")
+        monkeypatch.setenv(qe.ENVIRONMENT_ENV, "probe")
+        monkeypatch.setenv(qe.TRANSPORT_ENV, "file")
+        for path in (public, link, hardlink, private, fifo,
+                     folder_link / "private", root / "missing"):
+            monkeypatch.setenv(qe.FILE_ENV, str(path))
+            qe.record_worker_heartbeat()
+        assert qe.dropped_count() == 7
+        assert not (root / "missing").exists()
+        assert private.read_text() == public.read_text() == nested.read_text() == ""
+        assert os.read(reader, 1024) == b""
+    finally:
+        os.close(reader)
+
+
+def test_file_destination_with_a_different_owner_is_rejected_before_write(tmp_path, monkeypatch):
+    path = tmp_path.resolve() / "private"
+    path.touch(mode=0o600)
+    monkeypatch.setattr(qe.os, "geteuid", lambda: path.stat().st_uid + 1)
+    with pytest.raises(ValueError, match="quality_file_not_private"):
+        qe.FileTransport(str(path)).send('{"probe":1}')
+    assert path.read_text() == ""
 
 
 # --------------------------------------------------------------------- eval runs (PQO-017)
