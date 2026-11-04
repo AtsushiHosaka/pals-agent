@@ -1,0 +1,38 @@
+{
+  "schema_version": "pals.explanation-grounding-corpus.v1",
+  "provenance": "Original public synthetic questions and proofs, authored for this regression. No user questions or historical six-case inputs.",
+  "license": "Apache-2.0",
+  "lean_version": "leanprover/lean4:v4.32.0-rc1",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "cases": [
+    {
+      "id": "grounding.energy-unique-minimum.v1",
+      "source": "Energy.lean",
+      "target": "sample_energy_unique_minimum",
+      "language": "ja",
+      "question": "実数a,b,cを任意に固定する。実数tに対してE(t)=(t-a)^2+(t-b)^2+(t-c)^2と定義する。E(t)の実数全体での最小値と、それを達成するtをすべて求め、最小性と一意性を証明してください。ここでEはこの式で定義した量であり、確率分布や指数関数を仮定しません。",
+      "expected": {
+        "minimum": "((a-b)^2+(b-c)^2+(c-a)^2)/3",
+        "unique_minimizer": "(a+b+c)/3",
+        "mathematical_derivation": "Subtract the stated centre, expand the exact defined sum, and obtain 3 times the squared displacement plus the stated minimum. Nonnegativity gives the global bound, and a real square vanishes exactly when its argument is zero; substitution proves attainment.",
+        "hypotheses": "a,b,c,t are arbitrary real numbers; no positivity, distinctness, probability or exponential interpretation is assumed.",
+        "explicit_conclusion": "Both the full minimum expression and the unique minimizer must occur in the conclusion, using a,b,c. A generic statement that minimization is proved is insufficient.",
+        "header_ranges": [[18, 20], [30, 31]]
+      }
+    },
+    {
+      "id": "grounding.coprime-common-multiples.v1",
+      "source": "Coprime.lean",
+      "target": "coprime_common_multiples",
+      "language": "en",
+      "question": "Let a and b be coprime natural numbers, where natural numbers include zero. Characterize all natural numbers n that are divisible by both a and b by giving an equivalent condition involving their product. Prove both directions without adding positivity assumptions or changing the number domain.",
+      "expected": {
+        "characterization": "a divides n and b divides n if and only if a*b divides n",
+        "mathematical_derivation": "From a dividing n, write n=a*k in naturals. Coprimality and b dividing a*k imply b divides k by Euclid's lemma, giving n=a*b*q in naturals. Conversely each factor divides the product, so product divisibility implies each required divisibility. The argument and target include the coprime zero cases.",
+        "hypotheses": "a,b,n are natural numbers including zero; only Nat.Coprime a b is assumed. No division by a or b and no nonzero assumption is justified.",
+        "explicit_conclusion": "State the full divisibility characterization, not only that the implication was proved.",
+        "header_ranges": [[10, 11]]
+      }
+    }
+  ]
+}
