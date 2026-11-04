@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import signal
 import subprocess
@@ -10,6 +9,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from pals_agent import quality_events
 from pals_agent.api_client import RECIPE_SEARCH_RESPONSE_BYTES, PalsApiClient
 from pals_agent.benchmarks import BENCHMARK_PROBLEMS
 from pals_agent.draft_catalog import SeedDraftCatalog
@@ -437,7 +437,10 @@ def main(argv: list[str] | None = None) -> int:
             try:
                 for signum in (signal.SIGTERM, signal.SIGINT):
                     previous_handlers[signum] = signal.signal(signum, request_drain)
-                worker.run_forever()
+                # Each actual consumer owns its heartbeat. The multiprocess
+                # supervisor returns above and must not mask dead consumers.
+                with quality_events.worker_heartbeat():
+                    worker.run_forever()
             except WorkerSqsUnavailableError:
                 return LANE_UNAVAILABLE_EXIT
             finally:

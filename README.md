@@ -349,6 +349,52 @@ source/version checks do not attest compiled artifact provenance. Exit 0 means
 this structured family was checked; exit 2 means clarification or verification
 failure; malformed input, environment mismatch and audit errors exit 1.
 
+## 品質イベントのworker配線
+
+[PALS #217](https://github.com/AtsushiHosaka/pals/issues/217)のPQO-T003/T004に対応する作業仕様です。
+本変更は`7f17c526`を基点に、mainの`e779314`から品質イベントの分類・EMF生成・運び方だけを移植します。
+本番系統の診断ログと既存のworker処理は維持します。
+
+要求の終端イベントは、DBのcommitを確定できるAPIだけが発行します。
+workerは、settlementの成功応答、同じ応答の再送、`terminal`の再配信、`verifying`への引き渡しから終端イベントを出しません。
+`quality_events.build_proof_request_terminal`はAPIとの互換性検査用に保持します。
+APIのcommit後から発行前に停止すると欠測し得ます。永続outboxによる配信保証はありません。
+
+隔離verifierは、proof-jobとRecipe admissionの各HTTP入口で、実際に呼んだcompileごとにLean試行を記録します。
+成功、固定診断コードによる失敗、例外による`unclassified`を区別します。
+compile前のbusy応答は試行に数えません。ソース、コンパイラ本文、パス、job ID、admission IDはEMFに含めません。
+
+継続実行するCLIの各consumerは、起動時と300秒ごとに`WorkerHeartbeat=1`を発行します。
+in-flight処理中も発行し、終了・drain・例外時にheartbeatのthreadを止めます。
+複数processのsupervisorと`worker-once`は発行しません。
+heartbeatのdimensionは`Environment`だけです。workerやhostの識別子は送りません。
+
+既定では無効です。無効時にはtransportもheartbeat threadも作りません。
+有効にする場合は、以下を運用側で設定します。本変更は本番の設定や権限を変更しません。
+
+| 環境変数 | 値・用途 |
+| --- | --- |
+| `PALS_QUALITY_EVENTS_ENABLED` | `true`または`1`で有効化 |
+| `PALS_QUALITY_EVENTS_ENVIRONMENT` | `prod`、`staging`、`dev`、`local`、`probe`。未指定時は`PALS_ENV` |
+| `PALS_QUALITY_EVENTS_TRANSPORT` | `agent`または`file` |
+| `PALS_QUALITY_EVENTS_AGENT_ENDPOINT` | agent用の`udp://host:port` |
+| `PALS_QUALITY_EVENTS_FILE` | file用の絶対パス |
+| `PALS_QUALITY_EVENTS_REVISION` | 任意のsoftware revision。dimensionには使わない |
+
+発行時の例外は主処理へ返さず、`QualityEventsDropped`を次に送れるイベントに付けます。
+UDPは送信先からの受領確認を取りません。ファイルへの書き込み時間にも保証はありません。
+本番で有効にする前に、collectorの構成とEMF抽出を別途確認する必要があります。
+説明のvalidationラベルは既存の固定コードと`reference_header`に限定し、未知の短い値は`unrecognized`に置き換えます。
+本文や秘密らしい値は、置き換える前にイベントごと拒否します。説明の生成・審査条件は変えません。
+
+回帰試験はEMFの実ファイル書き込みとループバックUDP/mTLS通信を含みます。
+API、SQS、モデル、Leanコンパイラはテストで明示したfixtureの境界です。
+2026年11月5日のPython 3.12による検査では、品質イベント・CLI・worker・HTTPの最終回帰171件が通りました。
+先行するworker、drain、Lean境界、API trust、runtime latencyを含む回帰484件も通過しています。
+Ruff、品質イベントとHTTP serverのmypy、`git diff --check`は通過しています。
+この試験結果は、本番DBのcommit、実モデルの精度、実Leanのcompile、CloudWatchの抽出成功を示しません。
+独立したJSON Schemaは未実装です。module内の許可リスト検証との互換性は検査しますが、PQO-T003全体や本番配備の完了は主張しません。
+
 ## License
 
 Apache License 2.0.

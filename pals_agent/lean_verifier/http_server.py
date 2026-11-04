@@ -13,6 +13,7 @@ import json
 import re
 import ssl
 import threading
+import time
 from dataclasses import dataclass
 from email.message import Message
 from pathlib import Path
@@ -23,6 +24,7 @@ import rfc8785
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
+from pals_agent import quality_events
 from pals_agent.lean import COMPILE_DEADLINE_INTERRUPTED, COMPILE_INTERRUPTED
 from pals_agent.models import VerificationResult
 
@@ -283,15 +285,29 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if not self.server.compile_slot.acquire(blocking=False):
             self._error(503, "verifier_unavailable", proof_job_id, retryable=True)
             return
+        started = time.monotonic()
         try:
             result = self.server.verifier.verify(request["lean_code"])
         except BaseException:
             # An unexpected compiler/cleanup failure is deliberately not translated into success.
+            if quality_events.enabled():
+                quality_events.record_lean_attempt(
+                    diagnostic_codes=(), success=False,
+                    elapsed_ms=(time.monotonic() - started) * 1000,
+                    raw_code="verifier_internal_error",
+                )
             self.close_connection = True
             return
         finally:
             self.server.compile_slot.release()
 
+        if quality_events.enabled():
+            # Closed diagnostic codes only: never source, compiler text, paths or job IDs.
+            quality_events.record_lean_attempt(
+                diagnostic_codes=[item.code for item in result.diagnostics],
+                success=result.success,
+                elapsed_ms=result.elapsed_ms,
+            )
         if result.success:
             self._write_json(
                 200,
@@ -358,11 +374,18 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
                 retryable=True,
             )
             return
+        started = time.monotonic()
         try:
             result = self.server.admission_verifier.verify(
                 cast(str, request["materialized_source"]),
             )
         except BaseException:
+            if quality_events.enabled():
+                quality_events.record_lean_attempt(
+                    diagnostic_codes=(), success=False,
+                    elapsed_ms=(time.monotonic() - started) * 1000,
+                    raw_code="verifier_internal_error",
+                )
             self._admission_error(
                 503,
                 "verifier_not_ready",
@@ -373,6 +396,12 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         finally:
             self.server.compile_slot.release()
 
+        if quality_events.enabled():
+            quality_events.record_lean_attempt(
+                diagnostic_codes=[item.code for item in result.diagnostics],
+                success=result.success,
+                elapsed_ms=result.elapsed_ms,
+            )
         if not result.success:
             failure_code = _failure_code(result)
             if failure_code in _INTERRUPTED_FAILURES:

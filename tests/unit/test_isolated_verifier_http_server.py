@@ -492,6 +492,177 @@ def test_deadline_interruption_has_its_own_retryable_code(
     assert admission[1]["failure_code"] == "verifier_not_ready"
 
 
+class _EventSink:
+    def __init__(self) -> None:
+        self.lines: list[str] = []
+
+    def send(self, line: str) -> None:
+        self.lines.append(line)
+
+
+def _diagnosed(code: str, message: str, elapsed_ms: int = 7) -> VerificationResult:
+    return VerificationResult(
+        success=False,
+        diagnostics=[Diagnostic(severity="error", code=code, message=message)],
+        stdout="",
+        stderr="",
+        elapsed_ms=elapsed_ms,
+    )
+
+
+def test_quality_events_are_off_by_default_and_never_carry_source_or_messages(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent import quality_events
+
+    for name in (quality_events.ENABLED_ENV, quality_events.ENVIRONMENT_ENV, "PALS_ENV"):
+        monkeypatch.delenv(name, raising=False)
+    quality_events.reset_for_tests()
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    source = "theorem leaked_question_text : Why = Because := by sorry"
+    message = "unknown identifier 'leaked_question_text' in /private/path/Main.lean"
+    verifier = StubVerifier(_diagnosed("lean.unknown_identifier", message))
+    sink = _EventSink()
+    with quality_events.use_transport(sink), _running_server(
+        server_context, client_spki_sha256, verifier,
+    ):
+        _request(client_context, _verify_request(source))
+        assert sink.lines == []  # disabled by default
+        monkeypatch.setenv(quality_events.ENABLED_ENV, "true")
+        monkeypatch.setenv(quality_events.ENVIRONMENT_ENV, "probe")
+        failed = _request(client_context, _verify_request(source))
+        verifier.result = _success()
+        passed = _request(client_context, _verify_request(source))
+        verifier.result = _diagnosed("lean.timeout", "Lean timed out after 300.0s.", 300_000)
+        timed_out = _request(client_context, _verify_request(source))
+        verifier.result = _interrupted()
+        interrupted = _request(client_context, _verify_request(source))
+    assert [failed[0], passed[0], timed_out[0], interrupted[0]] == [422, 200, 504, 503]
+    events = [json.loads(line) for line in sink.lines]
+    assert [
+        (event["outcome"], event.get("failure_code")) for event in events
+    ] == [
+        ("failure", "verifier.lean_compile_error"),
+        ("success", None),
+        ("failure", "infra.timeout"),
+        ("failure", "infra.verifier_interrupted"),
+    ]
+    assert events[0]["diagnostic_code"] == "lean.unknown_identifier"
+    assert events[0]["LeanAttempts"] == events[0]["LeanAttemptsFailed"] == 1
+    assert events[2]["LeanVerifyDurationMs"] == 300_000
+    blob = "\n".join(sink.lines)
+    for private in ("leaked_question_text", "private/path", "theorem", "proof-1", "s3://"):
+        assert private not in blob
+
+
+def test_an_unexpected_compiler_exception_is_reported_as_unclassified_without_its_text(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent import quality_events
+
+    class Exploding(StubVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            raise RuntimeError("secret compiler detail")
+
+    monkeypatch.setenv(quality_events.ENABLED_ENV, "true")
+    monkeypatch.setenv(quality_events.ENVIRONMENT_ENV, "probe")
+    quality_events.reset_for_tests()
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    sink = _EventSink()
+    with quality_events.use_transport(sink), _running_server(
+        server_context, client_spki_sha256, Exploding(_success()),
+    ), pytest.raises((http.client.RemoteDisconnected, ssl.SSLError, ConnectionError)):
+        _request(client_context, _verify_request("example : True := by trivial"))
+    (event,) = [json.loads(line) for line in sink.lines]
+    assert (event["failure_code"], event["raw_code"]) == (
+        "unclassified", "verifier_internal_error",
+    )
+    assert "secret compiler detail" not in sink.lines[0]
+
+
+@pytest.mark.parametrize("mode,expected_status,expected_failure", [
+    ("success", 200, None),
+    ("failure", 422, "verifier.lean_compile_error"),
+    ("exception", 503, "unclassified"),
+])
+def test_recipe_admission_records_only_actual_compile_attempts(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    mode: str,
+    expected_status: int,
+    expected_failure: str | None,
+) -> None:
+    """Real local mTLS and file transport; the compiler is the named fixture boundary."""
+    from pals_agent import quality_events
+
+    class CompilerBoundary(StubVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            if mode == "exception":
+                raise RuntimeError("private_compiler_exception")
+            return super().verify(lean_code)
+
+    path = tmp_path / "quality.jsonl"
+    for name, value in ((quality_events.ENABLED_ENV, "true"),
+                        (quality_events.ENVIRONMENT_ENV, "probe"),
+                        (quality_events.TRANSPORT_ENV, "file"),
+                        (quality_events.FILE_ENV, str(path))):
+        monkeypatch.setenv(name, value)
+    quality_events.reset_for_tests()
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = CompilerBoundary(_success() if mode == "success" else
+                                _diagnosed("lean.compile_error", "private_compiler_message"))
+    with _running_server(server_context, client_spki_sha256, verifier) as server:
+        # No compile is attempted while all slots are occupied; it is not a failed attempt.
+        assert server.compile_slot.acquire(blocking=False)
+        try:
+            busy = _request(client_context, _recipe_admission_request(
+                "private_source_text", _admission_context()),
+                            canonical=True)
+        finally:
+            server.compile_slot.release()
+        assert busy[0] == 503 and not path.exists()
+        response = _request(client_context, _recipe_admission_request(
+            "private_source_text", _admission_context()),
+                            canonical=True)
+    assert response[0] == expected_status
+    (event,) = [json.loads(line) for line in path.read_text().splitlines()]
+    assert event["event"] == "lean_attempt" and event["LeanAttempts"] == 1
+    assert event.get("failure_code") == expected_failure
+    for forbidden in ("private_source_text", "private_compiler_exception",
+                      "private_compiler_message", "proof-1", str(_ADMISSION_ID)):
+        assert forbidden not in path.read_text()
+    quality_events.reset_for_tests()
+
+
+def test_failed_quality_transport_does_not_change_verifier_response(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from pals_agent import quality_events
+
+    ordinary_file = tmp_path / "not-a-directory"
+    ordinary_file.write_text("fixture")
+    for name, value in ((quality_events.ENABLED_ENV, "true"),
+                        (quality_events.ENVIRONMENT_ENV, "probe"),
+                        (quality_events.TRANSPORT_ENV, "file"),
+                        (quality_events.FILE_ENV, str(ordinary_file / "quality.jsonl"))):
+        monkeypatch.setenv(name, value)
+    quality_events.reset_for_tests()
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    with _running_server(server_context, client_spki_sha256, StubVerifier(_success())):
+        proof = _request(client_context, _verify_request("private_source_text"))
+        admission = _request(client_context, _recipe_admission_request(
+            "private_source_text", _admission_context()),
+                             canonical=True)
+    assert proof[0] == admission[0] == 200
+    assert quality_events.dropped_count() == 2
+    quality_events.reset_for_tests()
+
+
 def test_recipe_admission_endpoint_uses_its_closed_canonical_contract(
     tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
 ) -> None:
