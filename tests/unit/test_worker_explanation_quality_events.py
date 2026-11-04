@@ -65,8 +65,9 @@ def local_worker(resource, monkeypatch, *, mode=None, terminal=False):
         completed_error=(PalsApiError(
             "PRIVATE_API_ERROR", error_code="proof_" + resource + "_reference_mismatch",
         ) if mode == "reference_mismatch" else None),
-        terminal_response=claims._failed_terminal_envelope(resource_kind=resource,
-                                                          resource_id=resource_id),
+        terminal_response=(claims._failed_terminal_envelope(resource_kind=resource,
+                                                           resource_id=resource_id)
+                           if mode is not None else None),
     )
     return claims._worker(api, explainer, clock, output_reviewer=reviewer), api, explainer, sqs
 
@@ -121,7 +122,8 @@ def test_real_generation_retry_loop_emits_only_when_all_attempts_are_exhausted(
     exhausted, tmp_path, monkeypatch,
 ):
     path = destination(tmp_path, monkeypatch)
-    worker, api, _, _ = local_worker("explanation", monkeypatch)
+    worker, api, _, _ = local_worker("explanation", monkeypatch,
+                                    mode="generation" if exhausted else None)
     responses = ["invalid", "invalid", "invalid"] if exhausted else [
         "invalid", generation._valid_payload(),
     ]
