@@ -1325,3 +1325,30 @@ def test_review_prompt_covers_the_figure() -> None:
     )
     assert '"figure"' in prompt
     assert "proving nothing" in prompt
+
+
+@pytest.mark.parametrize("language", ["ja", "en"])
+def test_compute_request_requires_the_explicit_answer_in_the_conclusion(language: str) -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    prompt = _explanation_prompt(
+        theorem_statement="Find the value of the sum.",
+        lean_code=LEAN_CODE,
+        language=language,
+        require_epsilon_delta=False,
+    )
+    assert f"Output language: {language}" in prompt
+    assert "the conclusion must state the explicit" in prompt
+    assert "does not answer the question" in prompt
+    assert "the explicit final answer when asked to compute or solve" in prompt
+    # The single-statement rule stays: the final equality is not written in both places.
+    assert "not in both the last section and the conclusion" in prompt
+    review = _output_review_prompt(
+        theorem_statement="Find the value of the sum.",
+        lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(),
+        language=language,
+    )
+    assert "reject a conclusion that does not state the explicit final answer" in review.replace(
+        "\n", " "
+    )
