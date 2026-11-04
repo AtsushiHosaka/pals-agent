@@ -47,7 +47,9 @@
 | 未証明の同一視 / 旧 | 14,724 / 418 | 0.00389000 | 9.148864 / 9.143007 |
 | 未証明の同一視 / 最終 | 15,988 / 477 | 0.00423550 | 9.158850 / 9.149321 |
 
-24/24件でusageを保存し、provider原本とinput/output/cached/reasoningの全項目を照合しました。inputは82,104、outputは4,985 tokenです。reasoningの3,127 tokenはoutputに含まれるため、費用へ二重に加えません。cached inputは61,524、cache writeは20,508 tokenでした。キャッシュ書込の保持時間はusageから確定できず、実際の請求額は未確認です。
+24/24件でusageを保存し、provider原本とinput/output/cached/reasoningの全項目を照合しました。inputは82,104、outputは4,985 tokenです。reasoningの3,127 tokenはoutputに含まれるため、費用へ二重に加えません。cached inputは61,524、cache writeは20,508 tokenでした。
+
+usage単体からキャッシュ書込の保持時間は確定できません。一方、24件すべてのresponseが`prompt_cache_retention: "24h"`と`service_tier: "default"`を返しています。この`24h`表記と、公式価格表の12h・30mキャッシュ書込列との料金上の対応は未照合です。事前登録のreserveは固定したままとし、実際の請求額は未確認です。
 
 全入力を0.25、出力を0.50 USD/百万tokenで計算したreserveの合計は0.02301850 USDでした。QAのwall累計は84.361164秒、HTTP累計は84.310608秒です。差には解析と記録が含まれます。生成、待ち行列、本番の利用者が待つ時間は含みません。4点ずつの分位点は掲載しません。
 
