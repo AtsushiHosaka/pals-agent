@@ -277,7 +277,26 @@ def test_every_existing_generation_validation_label_is_retained():
               if isinstance(node, ast.Return) and isinstance(node.value, ast.Constant)
               and isinstance(node.value.value, str)}
     assert actual <= qe.EXPLANATION_VALIDATION_LABELS
-    assert qe.EXPLANATION_VALIDATION_LABELS - actual == {"reference_header"}
+    assert qe.EXPLANATION_VALIDATION_LABELS - actual == {"reference_header", "reference_mismatch"}
+
+
+def test_review_and_provider_labels_are_closed_and_keep_existing_provider_diagnostics():
+    for key, values in qe._PROVIDER_DIAGNOSTIC_ENUMS.items():
+        for value in values:
+            label = key + "=" + value
+            event = qe.build_explanation_failure(
+                environment="probe", resource="explanation", reason="provider:" + label,
+            )
+            assert event.emf["reason_labels"] == label
+    for kind in ("review", "provider"):
+        event = qe.build_explanation_failure(
+            environment="probe", resource="explanation", reason=kind + ":private_student",
+        )
+        assert event.emf["reason_labels"] == "unrecognized" and "private_student" not in event.line
+    with pytest.raises(qe.QualityEventRejected):
+        qe.build_explanation_failure(
+            environment="probe", resource="explanation", reason="provider:stage=eyJ" + "a" * 20,
+        )
 
 
 # --------------------------------------------------------------------- allow-list

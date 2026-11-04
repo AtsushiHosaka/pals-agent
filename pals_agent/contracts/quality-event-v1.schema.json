@@ -1,0 +1,1429 @@
+{
+  "$comment": "Wall-clock freshness and 8192 UTF-8 bytes are checked by the emitter. This static schema does not prove collection, delivery or metric extraction.",
+  "$defs": {
+    "contentFreeString": {
+      "allOf": [
+        {
+          "not": {
+            "pattern": "[^\\x21-\\x7e]"
+          }
+        },
+        {
+          "not": {
+            "anyOf": [
+              {
+                "pattern": "sk-[A-Za-z0-9_-]{8,}"
+              },
+              {
+                "pattern": "AKIA[0-9A-Z]{12,}"
+              },
+              {
+                "pattern": "ASIA[0-9A-Z]{12,}"
+              },
+              {
+                "pattern": "eyJ[A-Za-z0-9_-]{10,}"
+              },
+              {
+                "pattern": "[bB][eE][aA][rR][eE][rR]"
+              },
+              {
+                "pattern": "gh[pousr]_[A-Za-z0-9]{10,}"
+              },
+              {
+                "pattern": "github_pat_"
+              },
+              {
+                "pattern": "-----BEGIN"
+              },
+              {
+                "pattern": "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+              },
+              {
+                "pattern": "\\b\\d{1,3}(?:\\.\\d{1,3}){3}\\b"
+              },
+              {
+                "pattern": "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "string"
+    }
+  },
+  "$id": "urn:pals:quality-event:1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "Environment"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "Environment"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "FailureClass"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "FailureClass"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "FailureCode"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "FailureCode"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "ModelConfig"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ModelConfig"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "Route"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "Route"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Dimensions": {
+                      "contains": {
+                        "contains": {
+                          "const": "Suite"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "Suite"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "EvalCases"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "EvalCases"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "EvalFailed"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "EvalFailed"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "EvalSuccessRate"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "EvalSuccessRate"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "ExplanationsFailed"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ExplanationsFailed"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "LeanAttempts"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "LeanAttempts"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "LeanAttemptsFailed"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "LeanAttemptsFailed"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "LeanVerifyDurationMs"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "LeanVerifyDurationMs"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "ProofRequestsFailed"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ProofRequestsFailed"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "ProofRequestsRefused"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ProofRequestsRefused"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "ProofRequestsSettled"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ProofRequestsSettled"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "ProofRequestsSucceeded"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ProofRequestsSucceeded"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "QualityEventsDropped"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "QualityEventsDropped"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "_aws": {
+            "properties": {
+              "CloudWatchMetrics": {
+                "contains": {
+                  "properties": {
+                    "Metrics": {
+                      "contains": {
+                        "properties": {
+                          "Name": {
+                            "const": "WorkerHeartbeat"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "WorkerHeartbeat"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reason_kind": {
+            "const": "validation"
+          }
+        },
+        "required": [
+          "reason_kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_labels": {
+            "pattern": "^(?:duplicate_section|empty_field|json|lean_term|missing_field|other|reference_excerpt|reference_header|reference_mismatch|reference_range|repeated_final_equation|section_count|text_length|unrecognized|wrong_type|x_squared_epsilon_delta|x_squared_opening)(?:,(?:duplicate_section|empty_field|json|lean_term|missing_field|other|reference_excerpt|reference_header|reference_mismatch|reference_range|repeated_final_equation|section_count|text_length|unrecognized|wrong_type|x_squared_epsilon_delta|x_squared_opening)){0,11}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reason_kind": {
+            "const": "review"
+          }
+        },
+        "required": [
+          "reason_kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_labels": {
+            "pattern": "^(?:none|rejected|schema|transport|unrecognized)(?:,(?:none|rejected|schema|transport|unrecognized)){0,11}$"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reason_kind": {
+            "const": "provider"
+          }
+        },
+        "required": [
+          "reason_kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "reason_labels": {
+            "pattern": "^(?:unrecognized|(?:http_status=[1-5][0-9]{2}|incomplete_reason=(?:content_filter|max_output_tokens|other)|provider_code=(?:context_length_exceeded|insufficient_quota|invalid_api_key|invalid_json_schema|invalid_request_error|invalid_value|missing_required_parameter|model_not_found|other|rate_limit_exceeded|server_error|timeout|unsupported_parameter|unsupported_value)|provider_param=(?:input|max_output_tokens|model|other|text\\.format|text\\.format\\.name|text\\.format\\.schema|text\\.format\\.strict|text\\.format\\.type)|provider_type=(?:authentication_error|insufficient_quota|invalid_request_error|other|permission_error|rate_limit_error|server_error)|response_status=(?:cancelled|completed|failed|in_progress|incomplete|other|queued)|schema_hint=(?:additional_properties|anyof_branch_keys|enum_limit|invalid_reference|nesting_depth|other|property_limit|required_fields|unsupported_keyword)|stage=(?:configuration|content|empty_text|http|json|model|output|structured_status|transport)|transport_kind=(?:deadline|response_too_large|transport_error|unknown)))(?:,(?:unrecognized|(?:http_status=[1-5][0-9]{2}|incomplete_reason=(?:content_filter|max_output_tokens|other)|provider_code=(?:context_length_exceeded|insufficient_quota|invalid_api_key|invalid_json_schema|invalid_request_error|invalid_value|missing_required_parameter|model_not_found|other|rate_limit_exceeded|server_error|timeout|unsupported_parameter|unsupported_value)|provider_param=(?:input|max_output_tokens|model|other|text\\.format|text\\.format\\.name|text\\.format\\.schema|text\\.format\\.strict|text\\.format\\.type)|provider_type=(?:authentication_error|insufficient_quota|invalid_request_error|other|permission_error|rate_limit_error|server_error)|response_status=(?:cancelled|completed|failed|in_progress|incomplete|other|queued)|schema_hint=(?:additional_properties|anyof_branch_keys|enum_limit|invalid_reference|nesting_depth|other|property_limit|required_fields|unsupported_keyword)|stage=(?:configuration|content|empty_text|http|json|model|output|structured_status|transport)|transport_kind=(?:deadline|response_too_large|transport_error|unknown)))){0,11}$"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "Environment": {
+      "enum": [
+        "dev",
+        "local",
+        "probe",
+        "prod",
+        "staging",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "EvalCases": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "EvalFailed": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "EvalSuccessRate": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "ExplanationsFailed": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "FailureClass": {
+      "enum": [
+        "infra",
+        "model",
+        "policy-refusal",
+        "review",
+        "unclassified",
+        "unrecognized",
+        "verifier"
+      ],
+      "type": "string"
+    },
+    "FailureCode": {
+      "enum": [
+        "infra.app_defect",
+        "infra.cache_fallback",
+        "infra.capacity_or_quota",
+        "infra.deploy_subprocess_failed",
+        "infra.http_5xx",
+        "infra.monitoring_gap",
+        "infra.network_or_dependency",
+        "infra.queue_auth_unavailable",
+        "infra.result_parse_failure",
+        "infra.timeout",
+        "infra.verifier_interrupted",
+        "model.could_not_prove",
+        "model.invalid_response",
+        "model.preflight_misjudgment",
+        "model.selection_invalid",
+        "model.structuring_fidelity_error",
+        "policy.guest_formal_unavailable",
+        "policy.unsupported_request",
+        "retrieval.index_miss",
+        "retrieval.unmatched_recipe",
+        "review.false_accept",
+        "review.rejected",
+        "review.unavailable",
+        "unclassified",
+        "unrecognized",
+        "verifier.exact_not_closed",
+        "verifier.formal_harness_mismatch",
+        "verifier.heartbeat_limit",
+        "verifier.lean_compile_error",
+        "verifier.runtime_unavailable",
+        "verifier.statement_format_error",
+        "verifier.statement_mismatch",
+        "verifier.theorem_alignment_failed",
+        "verifier.trusted_audit_failed"
+      ],
+      "type": "string"
+    },
+    "LeanAttempts": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "LeanAttemptsFailed": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "LeanVerifyDurationMs": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "ModelConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"
+        }
+      ]
+    },
+    "ProofRequestsFailed": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "ProofRequestsRefused": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "ProofRequestsSettled": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "ProofRequestsSucceeded": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "QualityEventsDropped": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "Route": {
+      "enum": [
+        "catalog_recipe",
+        "chat_answer",
+        "lean_generation",
+        "semantic_reuse",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "Suite": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"
+        }
+      ]
+    },
+    "WorkerHeartbeat": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "_aws": {
+      "additionalProperties": false,
+      "properties": {
+        "CloudWatchMetrics": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "Dimensions": {
+                "items": {
+                  "items": {
+                    "enum": [
+                      "Environment",
+                      "FailureClass",
+                      "FailureCode",
+                      "ModelConfig",
+                      "Route",
+                      "Suite"
+                    ]
+                  },
+                  "maxItems": 6,
+                  "minItems": 1,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              "Metrics": {
+                "items": {
+                  "oneOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "ProofRequestsSettled"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "ProofRequestsSucceeded"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "ProofRequestsFailed"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "ProofRequestsRefused"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "LeanAttempts"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "LeanAttemptsFailed"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "LeanVerifyDurationMs"
+                        },
+                        "Unit": {
+                          "const": "Milliseconds"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "WorkerHeartbeat"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "QualityEventsDropped"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "ExplanationsFailed"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "EvalSuccessRate"
+                        },
+                        "Unit": {
+                          "const": "Percent"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "EvalCases"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    },
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "Name": {
+                          "const": "EvalFailed"
+                        },
+                        "Unit": {
+                          "const": "Count"
+                        }
+                      },
+                      "required": [
+                        "Name",
+                        "Unit"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                },
+                "maxItems": 13,
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "Namespace": {
+                "const": "PALS/ProofQuality"
+              }
+            },
+            "required": [
+              "Namespace",
+              "Dimensions",
+              "Metrics"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "Timestamp": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "Timestamp",
+        "CloudWatchMetrics"
+      ],
+      "type": "object"
+    },
+    "attempts": {
+      "maximum": 1000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "cases": {
+      "maximum": 1000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "cost_usd": {
+      "maximum": 1000000,
+      "minimum": 0,
+      "type": "number"
+    },
+    "diagnostic_code": {
+      "enum": [
+        "lean.already_declared",
+        "lean.compile_deadline_interrupted",
+        "lean.compile_error",
+        "lean.compile_interrupted",
+        "lean.declaration_uses_sorry",
+        "lean.disallowed_ambiguous_lexing",
+        "lean.disallowed_attribute",
+        "lean.disallowed_axiom",
+        "lean.disallowed_interactive_command",
+        "lean.disallowed_metaprogramming",
+        "lean.disallowed_native_evaluation",
+        "lean.disallowed_option",
+        "lean.disallowed_placeholder",
+        "lean.disallowed_syntax_quotation",
+        "lean.disallowed_trusted_declaration",
+        "lean.failed",
+        "lean.formal_harness_mismatch",
+        "lean.no_goals",
+        "lean.not_found",
+        "lean.output_limit",
+        "lean.prlimit_not_found",
+        "lean.project_not_found",
+        "lean.sandbox_setup_failed",
+        "lean.statement_mismatch",
+        "lean.syntax_error",
+        "lean.tactic_failed",
+        "lean.timeout",
+        "lean.trusted_audit_failed",
+        "lean.type_mismatch",
+        "lean.undeclared_theorem",
+        "lean.unknown_identifier",
+        "lean.unsolved_goals",
+        "lean.verified",
+        "lean.verifier_timeout",
+        "pals.target_declaration_invalid",
+        "pals.theorem_alignment_failed",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "duration_ms": {
+      "maximum": 86400000,
+      "minimum": 0,
+      "type": "number"
+    },
+    "event": {
+      "enum": [
+        "eval_failure",
+        "eval_run",
+        "explanation_failure",
+        "lean_attempt",
+        "proof_request_terminal",
+        "unrecognized",
+        "worker_heartbeat"
+      ],
+      "type": "string"
+    },
+    "exception_type": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$"
+        }
+      ]
+    },
+    "failure_class": {
+      "enum": [
+        "infra",
+        "model",
+        "policy-refusal",
+        "review",
+        "unclassified",
+        "unrecognized",
+        "verifier"
+      ],
+      "type": "string"
+    },
+    "failure_code": {
+      "enum": [
+        "infra.app_defect",
+        "infra.cache_fallback",
+        "infra.capacity_or_quota",
+        "infra.deploy_subprocess_failed",
+        "infra.http_5xx",
+        "infra.monitoring_gap",
+        "infra.network_or_dependency",
+        "infra.queue_auth_unavailable",
+        "infra.result_parse_failure",
+        "infra.timeout",
+        "infra.verifier_interrupted",
+        "model.could_not_prove",
+        "model.invalid_response",
+        "model.preflight_misjudgment",
+        "model.selection_invalid",
+        "model.structuring_fidelity_error",
+        "policy.guest_formal_unavailable",
+        "policy.unsupported_request",
+        "retrieval.index_miss",
+        "retrieval.unmatched_recipe",
+        "review.false_accept",
+        "review.rejected",
+        "review.unavailable",
+        "unclassified",
+        "unrecognized",
+        "verifier.exact_not_closed",
+        "verifier.formal_harness_mismatch",
+        "verifier.heartbeat_limit",
+        "verifier.lean_compile_error",
+        "verifier.runtime_unavailable",
+        "verifier.statement_format_error",
+        "verifier.statement_mismatch",
+        "verifier.theorem_alignment_failed",
+        "verifier.trusted_audit_failed"
+      ],
+      "type": "string"
+    },
+    "ledger_id": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        }
+      ]
+    },
+    "model_config": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"
+        }
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "failure",
+        "success",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "raw_code": {
+      "enum": [
+        "guest_global_daily_limit",
+        "guest_quota_exhausted",
+        "guest_session_rate_limited",
+        "lean.already_declared",
+        "lean.compile_deadline_interrupted",
+        "lean.compile_error",
+        "lean.compile_interrupted",
+        "lean.declaration_uses_sorry",
+        "lean.disallowed_ambiguous_lexing",
+        "lean.disallowed_attribute",
+        "lean.disallowed_axiom",
+        "lean.disallowed_interactive_command",
+        "lean.disallowed_metaprogramming",
+        "lean.disallowed_native_evaluation",
+        "lean.disallowed_option",
+        "lean.disallowed_placeholder",
+        "lean.disallowed_syntax_quotation",
+        "lean.disallowed_trusted_declaration",
+        "lean.failed",
+        "lean.formal_harness_mismatch",
+        "lean.no_goals",
+        "lean.not_found",
+        "lean.output_limit",
+        "lean.prlimit_not_found",
+        "lean.project_not_found",
+        "lean.sandbox_setup_failed",
+        "lean.statement_mismatch",
+        "lean.syntax_error",
+        "lean.tactic_failed",
+        "lean.timeout",
+        "lean.trusted_audit_failed",
+        "lean.type_mismatch",
+        "lean.undeclared_theorem",
+        "lean.unknown_identifier",
+        "lean.unsolved_goals",
+        "lean.verified",
+        "lean.verifier_timeout",
+        "lean_explanation_failed",
+        "lean_flow_unavailable",
+        "lean_verification_failed",
+        "lean_verification_required",
+        "material_citation_invalid",
+        "material_citation_missing",
+        "material_context_invalid",
+        "material_context_too_large",
+        "material_context_unavailable",
+        "material_proposition_invalid",
+        "material_proposition_unconfirmed",
+        "pals.target_declaration_invalid",
+        "pals.theorem_alignment_failed",
+        "proof_request_delivery_exhausted",
+        "proof_reuse_answer_review_failed",
+        "proof_reuse_catalog_invalid",
+        "proof_reuse_deadline",
+        "proof_reuse_input_invalid",
+        "proof_reuse_invalid_instantiation",
+        "proof_reuse_invalid_response",
+        "proof_reuse_invalid_source",
+        "proof_reuse_provider_unavailable",
+        "proof_reuse_query_invalid",
+        "proof_reuse_recipe_invalid",
+        "proof_reuse_recipe_unavailable",
+        "proof_reuse_token_accounting_failed",
+        "proof_reuse_unsupported",
+        "token_budget_exceeded",
+        "token_usage_unknown",
+        "unrecognized",
+        "verifier_internal_error"
+      ],
+      "type": "string"
+    },
+    "reason_kind": {
+      "enum": [
+        "deadline",
+        "exception",
+        "provider",
+        "review",
+        "unrecognized",
+        "validation"
+      ],
+      "type": "string"
+    },
+    "reason_labels": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 400,
+          "pattern": "^[a-z][a-z0-9_]{0,40}(?:=[A-Za-z0-9_.]{1,40})?(?:,[a-z][a-z0-9_]{0,40}(?:=[A-Za-z0-9_.]{1,40})?)*$"
+        }
+      ]
+    },
+    "repairs_used": {
+      "maximum": 1000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "request_hash": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      ]
+    },
+    "resource": {
+      "enum": [
+        "clarification",
+        "explanation",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "revision": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"
+        }
+      ]
+    },
+    "route": {
+      "enum": [
+        "catalog_recipe",
+        "chat_answer",
+        "lean_generation",
+        "semantic_reuse",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "answered",
+        "failed",
+        "needs_input",
+        "unrecognized"
+      ],
+      "type": "string"
+    },
+    "succeeded": {
+      "maximum": 1000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "suite": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentFreeString"
+        },
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,63}$"
+        }
+      ]
+    }
+  },
+  "required": [
+    "_aws",
+    "event"
+  ],
+  "title": "PALS content-free quality EMF wire contract v1",
+  "type": "object"
+}

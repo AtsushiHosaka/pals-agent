@@ -389,15 +389,34 @@ UDP送信ではDNSを使わず、送信ごとにsocketを閉じます。URLの�
 本番で有効にする前に、collectorの構成とEMF抽出を別途確認する必要があります。
 説明のvalidationラベルは既存の固定コードと`reference_header`に限定し、未知の短い値は`unrecognized`に置き換えます。
 本文や秘密らしい値は、置き換える前にイベントごと拒否します。説明の生成・審査条件は変えません。
+reviewのラベルは既存の3分類と`none`、providerのラベルは既存の`openai_diagnostics`の固定語彙とHTTP status 100〜599に限定します。
+
+説明とclarificationの生成では、生成・審査の再試行を使い切った場合、期限切れ、既存APIの参照一致検査で拒否された場合に、最終catchから`ExplanationsFailed=1`を発行します。
+生成の途中失敗から回復した場合、審査の指摘を直して成功した場合、既terminalの再配信では発行しません。
+この値は生成試行の最終失敗数です。失敗状態をAPIに書き込む前に発行するため、DBの終端数とは分けて扱います。
+書き込み結果が不確実なまま再配信され、もう一度生成して失敗した場合は別の試行として数えます。永続的な重複排除はありません。
+既存のログ本文、利用者向けの失敗理由、APIへの書き込みとackの条件は維持します。
+
+版付きのwire契約は[`quality-event-v1.schema.json`](pals_agent/contracts/quality-event-v1.schema.json)です。
+JSON Schema Draft 2020-12を使い、`$id`は`urn:pals:quality-event:1`です。イベントのpayloadに新しい版フィールドは加えていません。
+rootとEMF metadataの許可項目、dimension、固定ラベル、metricとunitの対応、各参照先がrootにあることを検査します。
+`quality_event_json_schema()`から生成した内容と、保存したSchemaの一致も検査します。
+時刻の鮮度、8192 UTF-8 bytesの上限、分類の選択、directiveをまたぐmetric名の重複は、emitter側の検査です。
+Schema単体から配信やCloudWatch抽出の成功は判断できません。
+標準の`jsonschema` validatorは開発依存だけに加え、本番のemitterは読み込みません。
+
+```bash
+python -m pytest tests/unit/test_quality_event_schema.py tests/unit/test_worker_explanation_quality_events.py
+```
 
 回帰試験はEMFの実ファイル書き込みとループバックUDP/mTLS通信を含みます。
 API、SQS、モデル、Leanコンパイラはテストで明示したfixtureの境界です。
-2026年11月5日のPython 3.12による検査では、品質イベント・CLI・worker・HTTPの最終回帰187件が通りました。
+2026年11月5日のPython 3.12による検査では、Schema、品質イベント、説明hook、claim、deadline、grounding、CLI、worker、HTTPを含む最終回帰440件が通りました。
 独立レビュー後のtransport修正には、実FIFO・リンク・所有者・権限の拒否と、実UDPのsocket解放を含みます。
 先行するworker、drain、Lean境界、API trust、runtime latencyを含む回帰484件も通過しています。
 Ruff、品質イベントとHTTP serverのmypy、`git diff --check`は通過しています。
 この試験結果は、本番DBのcommit、実モデルの精度、実Leanのcompile、CloudWatchの抽出成功を示しません。
-独立したJSON Schemaは未実装です。module内の許可リスト検証との互換性は検査しますが、PQO-T003全体や本番配備の完了は主張しません。
+この差分はPQO-T003のSchema欠落と説明失敗hookを補います。本番での有効化、collector設定、EMF抽出、アラーム、台帳からの評価イベント発行は別作業です。
 
 ## License
 

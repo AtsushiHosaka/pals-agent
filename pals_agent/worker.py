@@ -17,6 +17,7 @@ import boto3  # type: ignore[import-untyped]
 import rfc8785
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
+from pals_agent import quality_events
 from pals_agent.api_client import (
     PalsApiError,
     ProofJobNotFoundError,
@@ -1486,6 +1487,10 @@ class SqsProofWorker:
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(
+                    resource="clarification", reason="deadline",
+                )
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1494,6 +1499,11 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except ProofOutputReviewError:
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(
+                    resource="clarification",
+                    reason=_review_failure_reason(private_review_failures),
+                )
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1502,10 +1512,13 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except Exception as exc:
+            reason = _generation_failure_reason(exc)
             _logger.error(
                 "explanation_generation_failed resource=clarification reason=%s",
-                _generation_failure_reason(exc),
+                reason,
             )
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(resource="clarification", reason=reason)
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1526,6 +1539,10 @@ class SqsProofWorker:
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_clarification_reference_mismatch":
+                if quality_events.enabled():
+                    quality_events.record_explanation_failure(
+                        resource="clarification", reason="reference_mismatch",
+                    )
                 return self._write_clarification_failure(
                     clarification_id=clarification_id,
                     claim_id=claim_id,
@@ -2707,6 +2724,8 @@ def _log_generation_failure(
         x_squared_gate,
         lean_lines,
     )
+    if quality_events.enabled():
+        quality_events.record_explanation_failure(resource=resource, reason=reason)
 
 
 def _review_failure_reason(failures: list[dict[str, Any]]) -> str:

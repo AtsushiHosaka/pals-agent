@@ -51,6 +51,7 @@ from pathlib import Path
 from typing import Any, Final, Protocol
 from urllib.parse import urlsplit
 
+from pals_agent.openai_diagnostics import _ENUMS as _PROVIDER_DIAGNOSTIC_ENUMS
 from pals_agent.runtime_latency import _request_correlation
 
 ENABLED_ENV: Final = "PALS_QUALITY_EVENTS_ENABLED"
@@ -242,13 +243,20 @@ _REASON_TOKEN = re.compile(r"^[a-z][a-z0-9_]{0,40}(?:=[A-Za-z0-9_.]{1,40})?$")
 _EXCEPTION_TYPE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
 _REASON_KINDS: Final = frozenset({"deadline", "review", "validation", "provider", "exception"})
 # Fixed labels from explanations._validation_failure_reason; clarification generation
-# uses that same parser. reference_header is the parallel explanation-validation delta.
+# uses that same parser. reference_header is the parallel validation delta;
+# reference_mismatch names the existing API rejection logged by the worker.
 EXPLANATION_VALIDATION_LABELS: Final = frozenset({
     "json", "missing_field", "reference_excerpt", "reference_range", "reference_header",
     "lean_term", "repeated_final_equation", "text_length", "x_squared_opening",
     "x_squared_epsilon_delta", "section_count", "duplicate_section", "empty_field",
-    "wrong_type", "other",
+    "wrong_type", "other", "reference_mismatch",
 })
+EXPLANATION_REVIEW_LABELS: Final = frozenset({"rejected", "transport", "schema", "none"})
+_PROVIDER_LABEL_PATTERN: Final = "(?:http_status=[1-5][0-9]{2}|" + "|".join(
+    re.escape(key) + "=(?:" + "|".join(re.escape(value) for value in sorted(values)) + ")"
+    for key, values in sorted(_PROVIDER_DIAGNOSTIC_ENUMS.items())
+) + ")"
+_PROVIDER_LABEL_RE: Final = re.compile(_PROVIDER_LABEL_PATTERN)
 _MODEL_OUTPUT_STAGES: Final = frozenset({
     "json", "model", "structured_status", "output", "content", "empty_text",
 })
@@ -274,6 +282,10 @@ def classify_explanation_reason(reason: object) -> ExplanationReason:
         return unknown
     if reason == "deadline":
         return ExplanationReason("deadline", "infra.timeout", (), None)
+    if reason == "reference_mismatch":
+        return ExplanationReason(
+            "validation", "model.invalid_response", ("reference_mismatch",), None,
+        )
     kind, separator, rest = reason.partition(":")
     if kind not in _REASON_KINDS or kind == "deadline" or not separator:
         return unknown
@@ -286,21 +298,32 @@ def classify_explanation_reason(reason: object) -> ExplanationReason:
     if len(labels) > 12 or not all(_REASON_TOKEN.fullmatch(item) for item in labels):
         return ExplanationReason(kind, UNCLASSIFIED, (), None)
     if kind == "review":
+        labels = _closed_reason_labels(kind, labels)
         code = "review.rejected" if "rejected" in labels else "review.unavailable"
         return ExplanationReason(kind, code, labels, None)
     if kind == "validation":
         return ExplanationReason(kind, "model.invalid_response", _closed_validation_labels(labels),
                                  None)
+    labels = _closed_reason_labels(kind, labels)
     return ExplanationReason(kind, _classify_provider(labels), labels, None)
 
 
 def _closed_validation_labels(labels: Sequence[str]) -> tuple[str, ...]:
+    return _closed_reason_labels("validation", labels)
+
+
+def _closed_reason_labels(kind: str, labels: Sequence[str]) -> tuple[str, ...]:
     # Reject secret-shaped inputs before replacing unknown tokens, so normalization
     # cannot hide a rejected value from the event's privacy guard.
+    if len(labels) > 12:
+        raise _reject("reason_labels_invalid")
     for label in labels:
         _scan_secret_shapes("reason_labels", label)
-    return tuple(label if label in EXPLANATION_VALIDATION_LABELS else UNRECOGNIZED
-                 for label in labels)
+    if kind == "provider":
+        return tuple(label if _PROVIDER_LABEL_RE.fullmatch(label) else UNRECOGNIZED
+                     for label in labels)
+    allowed = EXPLANATION_VALIDATION_LABELS if kind == "validation" else EXPLANATION_REVIEW_LABELS
+    return tuple(label if label in allowed else UNRECOGNIZED for label in labels)
 
 
 def _classify_provider(labels: tuple[str, ...]) -> str:
@@ -451,6 +474,130 @@ _UNITS: Final[Mapping[str, str]] = {
     "EvalSuccessRate": "Percent", "EvalCases": "Count", "EvalFailed": "Count",
 }
 ALLOWED_METRICS: Final = frozenset(_UNITS)
+QUALITY_EVENT_SCHEMA_ID: Final = "urn:pals:quality-event:1"
+
+
+def quality_event_json_schema() -> dict[str, Any]:
+    """Versioned structural wire contract, with no jsonschema runtime dependency.
+
+    The checked-in artifact is generated from this function and checked for parity.
+    Wall-clock freshness, UTF-8 byte size, taxonomy selection and duplicate metric
+    names across directives remain emitter checks rather than JSON Schema claims.
+    """
+    secrets = [shape.pattern.replace("(?i)bearer", "[bB][eE][aA][rR][eE][rR]")
+               for shape in _SECRET_SHAPES]
+
+    def text(pattern: str, maximum: int) -> dict[str, Any]:
+        return {"allOf": [{"$ref": "#/$defs/contentFreeString"},
+                          {"maxLength": maximum, "pattern": pattern}]}
+
+    def vocabulary(values: Sequence[str] | frozenset[str]) -> dict[str, Any]:
+        return {"type": "string", "enum": sorted(set(values) | {UNRECOGNIZED})}
+
+    properties: dict[str, Any] = {
+        "event": vocabulary(EVENT_NAMES),
+        "request_hash": text(_SHA256.pattern, 64),
+        "revision": text(_IDENTIFIER.pattern, 64),
+        "route": vocabulary(ROUTES),
+        "model_config": text(_IDENTIFIER.pattern, 64),
+        "failure_class": vocabulary(FAILURE_CLASSES),
+        "failure_code": vocabulary(frozenset(TAXONOMY)),
+        "raw_code": vocabulary(_RAW_CODES),
+        "diagnostic_code": vocabulary(_KNOWN_LEAN_CODES),
+        "status": vocabulary(("answered", "needs_input", "failed")),
+        "outcome": vocabulary(("success", "failure")),
+        "resource": vocabulary(("explanation", "clarification")),
+        "reason_kind": vocabulary(_REASON_KINDS),
+        "reason_labels": text(r"^[a-z][a-z0-9_]{0,40}(?:=[A-Za-z0-9_.]{1,40})?"
+                              r"(?:,[a-z][a-z0-9_]{0,40}(?:=[A-Za-z0-9_.]{1,40})?)*$", 400),
+        "exception_type": text(_EXCEPTION_TYPE.pattern, 64),
+        "suite": text(_IDENTIFIER.pattern, 64),
+        "ledger_id": text(_LEDGER_ID.pattern, 128),
+        "Environment": vocabulary(ENVIRONMENTS), "Route": vocabulary(ROUTES),
+        "FailureClass": vocabulary(FAILURE_CLASSES),
+        "FailureCode": vocabulary(frozenset(TAXONOMY)),
+        "Suite": text(_IDENTIFIER.pattern, 64),
+        "ModelConfig": text(_IDENTIFIER.pattern, 64),
+    }
+    for field, maximum in {"attempts": 1000, "repairs_used": 1000,
+                           "cases": 1_000_000, "succeeded": 1_000_000}.items():
+        properties[field] = {"type": "integer", "minimum": 0, "maximum": maximum}
+    for field, maximum in {"duration_ms": 86_400_000, "cost_usd": 1_000_000}.items():
+        properties[field] = {"type": "number", "minimum": 0, "maximum": maximum}
+    for metric in _UNITS:
+        properties[metric] = {"type": "number", "minimum": 0}
+    properties["_aws"] = {
+        "type": "object", "additionalProperties": False,
+        "required": ["Timestamp", "CloudWatchMetrics"],
+        "properties": {
+            "Timestamp": {"type": "integer", "minimum": 0},
+            "CloudWatchMetrics": {
+                "type": "array", "minItems": 1,
+                "items": {
+                    "type": "object", "additionalProperties": False,
+                    "required": ["Namespace", "Dimensions", "Metrics"],
+                    "properties": {
+                        "Namespace": {"const": NAMESPACE},
+                        "Dimensions": {
+                            "type": "array", "minItems": 1,
+                            "items": {"type": "array", "minItems": 1,
+                                      "maxItems": len(ALLOWED_DIMENSIONS), "uniqueItems": True,
+                                      "items": {"enum": sorted(ALLOWED_DIMENSIONS)}},
+                        },
+                        "Metrics": {
+                            "type": "array", "minItems": 1, "maxItems": len(_UNITS),
+                            "uniqueItems": True,
+                            "items": {"oneOf": [
+                                {"type": "object", "additionalProperties": False,
+                                 "required": ["Name", "Unit"],
+                                 "properties": {"Name": {"const": name},
+                                                "Unit": {"const": unit}}}
+                                for name, unit in _UNITS.items()
+                            ]},
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+    def uses(reference: str, *, dimension: bool) -> dict[str, Any]:
+        target = {"Dimensions": {"contains": {"contains": {"const": reference}}}} if dimension \
+            else {"Metrics": {"contains": {"properties": {"Name": {"const": reference}}}}}
+        return {"properties": {"_aws": {"properties": {
+            "CloudWatchMetrics": {"contains": {"properties": target}},
+        }}}}
+
+    constraints = [{"if": uses(name, dimension=dimension), "then": {"required": [name]}}
+                   for dimension, names in ((True, ALLOWED_DIMENSIONS), (False, ALLOWED_METRICS))
+                   for name in sorted(names)]
+    for kind, labels in (("validation", EXPLANATION_VALIDATION_LABELS),
+                         ("review", EXPLANATION_REVIEW_LABELS), ("provider", frozenset())):
+        alternatives = sorted(labels | {UNRECOGNIZED})
+        if kind == "provider":
+            alternatives.append(_PROVIDER_LABEL_PATTERN)
+        token = "(?:" + "|".join(alternatives) + ")"
+        constraints.append({
+            "if": {"properties": {"reason_kind": {"const": kind}}, "required": ["reason_kind"]},
+            "then": {"properties": {"reason_labels": {
+                "pattern": "^" + token + "(?:," + token + "){0,11}$",
+            }}},
+        })
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": QUALITY_EVENT_SCHEMA_ID,
+        "title": "PALS content-free quality EMF wire contract v1",
+        "$comment": "Wall-clock freshness and 8192 UTF-8 bytes are checked by the emitter. "
+                    "This static schema does not prove collection, delivery or metric extraction.",
+        "type": "object", "additionalProperties": False,
+        "$defs": {"contentFreeString": {
+            "type": "string", "allOf": [
+                {"not": {"pattern": "[^\\x21-\\x7e]"}},
+                {"not": {"anyOf": [{"pattern": shape} for shape in secrets]}},
+            ],
+        }},
+        "required": ["_aws", "event"], "properties": properties, "allOf": constraints,
+    }
 
 # --------------------------------------------------------------------------- building
 
@@ -486,9 +633,12 @@ def validate_and_build(
         if validator is None:
             raise _reject("field_not_allowed")
         record[name] = validator(value)
-    if record.get("reason_kind") == "validation" and "reason_labels" in record:
+    if "event" not in record:
+        raise _reject("field_missing")
+    if (record.get("reason_kind") in {"validation", "review", "provider"}
+            and "reason_labels" in record):
         record["reason_labels"] = ",".join(
-            _closed_validation_labels(record["reason_labels"].split(",")),
+            _closed_reason_labels(record["reason_kind"], record["reason_labels"].split(",")),
         )
     for name, value in dimensions.items():
         dimension_validator = _DIMENSIONS.get(name)
@@ -501,8 +651,11 @@ def validate_and_build(
     for dimension_sets, metrics in groups:
         if not metrics:
             continue
+        if not dimension_sets:
+            raise _reject("dimension_missing")
         for dimension_set in dimension_sets:
-            if not set(dimension_set) <= record.keys() & ALLOWED_DIMENSIONS or not dimension_set:
+            if (not set(dimension_set) <= record.keys() & ALLOWED_DIMENSIONS or not dimension_set
+                    or len(set(dimension_set)) != len(dimension_set)):
                 raise _reject("dimension_missing")
         directive_metrics = []
         for metric, value in metrics.items():
