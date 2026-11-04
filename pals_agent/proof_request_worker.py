@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from typing import Any, Protocol, cast
 from uuid import UUID
 
+from pals_agent import quality_events
 from pals_agent.api_client import PalsApiError
 from pals_agent.chat_images import chat_attachment_ids, parse_chat_images
 from pals_agent.material_context import MaterialContext, MaterialContextError
@@ -349,4 +350,14 @@ class ProofRequestProcessor:
                 ),
                 _review_verdict(result.private_evidence),
             )
+            # Disabled by default (PALS_QUALITY_EVENTS_ENABLED); never raises. A redelivery
+            # that finds a terminal claim returns before reaching this point.
+            if quality_events.enabled():
+                quality_events.record_proof_request_settled(
+                    request_id=request_id,
+                    status=status,
+                    error_code=settled.get("error_code", result.error_code),
+                    phase=result.private_evidence.get("phase"),
+                    elapsed_ms=(time.monotonic() - started) * 1000,
+                )
         return accepted

@@ -311,6 +311,32 @@ a separate process replays the compiled module through the kernel and allows onl
 the `propext`, `Classical.choice` and `Quot.sound` axioms. There is no deterministic
 verified template fallback.
 
+## Quality events (CloudWatch EMF, disabled by default)
+
+`pals_agent/quality_events.py` can write one single-line CloudWatch Embedded Metric
+Format event per terminal proof request, Lean attempt on the verifier, terminal
+explanation failure and evaluation run. Metrics go to the `PALS/ProofQuality`
+namespace; `FailureClass` and `FailureCode` are the tag and code of the parent
+repository's failure taxonomy. Nothing is built, sent or logged unless
+`PALS_QUALITY_EVENTS_ENABLED=true`, so the default behavior and log output are
+unchanged.
+
+| Variable | Meaning |
+|---|---|
+| `PALS_QUALITY_EVENTS_ENABLED` | `true` or `1` enables emission |
+| `PALS_QUALITY_EVENTS_ENVIRONMENT` | `Environment` dimension (`prod`, `staging`, `dev`, `local`, `probe`); falls back to `PALS_ENV` |
+| `PALS_QUALITY_EVENTS_TRANSPORT` | `agent` (default): UDP datagram to the CloudWatch agent; `file`: append to a file |
+| `PALS_QUALITY_EVENTS_AGENT_ENDPOINT` | `udp://host:port` for `agent` |
+| `PALS_QUALITY_EVENTS_FILE` | absolute path for `file` |
+| `PALS_QUALITY_EVENTS_REVISION` | optional software revision for the log field |
+
+Only an allow-list of fields, dimensions and metrics is emitted. Question text,
+model output, Lean source, diagnostic messages, user identity and secrets are
+rejected: a prose-like or secret-shaped value discards the whole event and counts a
+drop (reported as `QualityEventsDropped` on the next event that is sent). Emission
+never raises and never blocks a request. `emit_eval_run` is the entry point for the
+evaluation ledger's append helper.
+
 ## Opt-in synthetic geometry domain
 
 `pals-geometry` checks the explicitly structured
