@@ -44,6 +44,16 @@ only the notion it names; every other definition keeps its standard meaning. App
 exactly to the case it governs: for example, 0^0 = 1 settles only the base 0. When standard texts
 differ on whether a fact is a definition or a theorem (for example a^0 = 1 for a nonzero base),
 citing either is valid and is not a wrong justification."""
+_NONSTANDARD_DEFINITION_INSTRUCTION = """A definition or notation that is not standard in the
+learner's setting, and that the user theorem statement does not itself define, must be
+justified in the first section: say why it is the right definition, starting from the standard
+object it comes from. For example, when an exponent is defined by exp(x ln k), derive that from
+the power series of the exponential and show where a stated relation such as a square being zero
+truncates the series; when a product on a new kind of number is used, state its rule before
+using it. Give the justification once, in a sentence or two, and use the definition afterwards.
+Do not explain a standard definition or fact that the learner's course already uses (for example
+the epsilon-delta definition of continuity, the definition of a limit, or the group axioms), and
+do not add a definition step when the proof uses only standard notation."""
 _SOURCE_CORRESPONDENCE_INSTRUCTION = """Source correspondence has two different granularities.
 When the source explicitly contains intermediate equalities or facts in calc, have, or rewrite
 steps, organize the mathematical paragraphs around those actual steps and cite the narrowest
@@ -1114,6 +1124,7 @@ syntax."""
 The theorem statement and verified Lean code below are the only sources of truth for the claim
 and its assumptions.
 {_STATED_CONVENTION_INSTRUCTION}
+{_NONSTANDARD_DEFINITION_INSTRUCTION}
 You may unpack automation or a library application using valid ordinary mathematics, even when
 those intermediate calculations are not written literally in the Lean source. Show each essential
 bridge: state the relevant definition, property, or standard theorem and why its hypotheses hold,
@@ -1145,9 +1156,10 @@ The conclusion is one short final sentence stating the result just established; 
 repeat the derivation. Do not add a second "therefore the theorem holds" sentence at the end of
 the last section if the conclusion will say the same thing. A calculation may reach the final
 equality in a section and the conclusion may state its implication without restarting any step.
-State the complete final equality once, not in both the last section and the conclusion. Prefer
-ending the last section with the preceding intermediate calculation, then stating the goal
-equality once in conclusion.
+State the complete final equality once, not in both the last section and the conclusion.
+Therefore stop the last section at the calculation that precedes the answer: its last sentence
+must not state the answer, and the conclusion alone states it. If a section already ends with the
+answer, drop that last sentence rather than repeating the answer in the conclusion.
 When the request asks to compute, solve or determine, the conclusion must state the explicit
 final answer itself (the value, expression, solution set or classification), in terms of the
 learner's own symbols, exactly as the verified target establishes it. A conclusion that only says
@@ -1455,6 +1467,9 @@ equalities already establish it. A rejection must identify an actual invalid inf
 violated output requirement, not a preferred wording or alternative proof order.
 {_SOURCE_CORRESPONDENCE_INSTRUCTION}
 {_STATED_CONVENTION_INSTRUCTION}
+{_NONSTANDARD_DEFINITION_INSTRUCTION}
+When the candidate uses such a nonstandard definition, reject it if no section justifies the
+definition, and reject a justification of a standard definition that the proof does not need.
 Reject an output that attributes unseen intermediate states, internal rewrite order, or
 separate Lean verification to its additional mathematical derivation. A valid mathematical
 derivation with a coarse automation reference remains acceptable when it makes no such claim.
