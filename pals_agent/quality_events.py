@@ -35,6 +35,7 @@ The failure taxonomy is ``docs/quality-ledger/taxonomy.md`` in the parent reposi
 
 from __future__ import annotations
 
+import fcntl
 import ipaddress
 import json
 import math
@@ -921,7 +922,12 @@ class AgentUdpTransport:
 
 
 class FileTransport:
-    """Append to a pre-provisioned private regular file; never create it (design T2)."""
+    """Best-effort, nonblocking locked append to a pre-provisioned file (design T2).
+
+    Writers and rotators must honor the inode's advisory lock. A returned partial
+    write is rolled back under that lock so a later event retains its own line.
+    Process/host termination and a failed rollback still have no delivery guarantee.
+    """
 
     def __init__(self, path: str) -> None:
         self._path = Path(path)
@@ -938,8 +944,33 @@ class FileTransport:
                     or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1):
                 raise ValueError("quality_file_not_private")
             raw = (line + "\n").encode("utf-8")
-            if os.write(descriptor, raw) != len(raw):
-                raise OSError("quality_write_incomplete")
+            # Each send has a new descriptor, so this also serializes threads in
+            # one process. Contention drops the event rather than waiting on it.
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            info = os.fstat(descriptor)
+            if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                    or stat.S_IMODE(info.st_mode) != 0o600 or info.st_nlink != 1):
+                raise ValueError("quality_file_not_private")
+            current = self._path.lstat()
+            if ((info.st_dev, info.st_ino) != (current.st_dev, current.st_ino)
+                    or info.st_nlink != 1):
+                raise ValueError("quality_file_rotated")
+            start_size = info.st_size
+            try:
+                if os.write(descriptor, raw) != len(raw):
+                    raise OSError("quality_write_incomplete")
+            except BaseException:
+                # Do not erase a prefix truncated by a non-cooperating rotator,
+                # or data appended beyond this record by an unlocked writer.
+                size = os.fstat(descriptor).st_size
+                if size < start_size or size > start_size + len(raw):
+                    raise OSError("quality_file_changed") from None
+                if size > start_size:
+                    try:
+                        os.ftruncate(descriptor, start_size)
+                    except OSError:
+                        raise OSError("quality_rollback_failed") from None
+                raise
         finally:
             os.close(descriptor)
 

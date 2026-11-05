@@ -387,6 +387,19 @@ UDP送信ではDNSを使わず、送信ごとにsocketを閉じます。URLの�
 ファイルは新規作成せず、symlink、複数hardlink、FIFO、別所有者、0600以外の権限を拒否します。
 特殊ファイルへのopenはnonblockingです。collectorによるrotation後も、正規パスと同じ条件を満たすファイルが必要です。
 本番で有効にする前に、collectorの構成とEMF抽出を別途確認する必要があります。
+
+File emission takes a nonblocking exclusive advisory lock on the opened inode.
+Contention is counted as a dropped event. A write that returns short or raises
+rolls back its appended bytes under the lock, preserving the preceding records
+and the next event's JSON line. The destination inode and private metadata are
+rechecked after locking, so a replacement already visible there is refused.
+All writers and rotators must use the same advisory lock; an unlocked actor can
+still race these checks. A failed rollback, process termination, host failure or
+collector loss has no recovery or delivery guarantee. No fsync, retry, persistent
+outbox, rotation policy, collector activation or production setting is added.
+`tests/unit/test_quality_file_records.py` covers real files and locks, injected
+write/rollback failures, rotation and four concurrent subprocess writers.
+
 説明のvalidationラベルは既存の固定コードと`reference_header`に限定し、未知の短い値は`unrecognized`に置き換えます。
 本文や秘密らしい値は、置き換える前にイベントごと拒否します。説明の生成・審査条件は変えません。
 reviewのラベルは既存の3分類と`none`、providerのラベルは既存の`openai_diagnostics`の固定語彙とHTTP status 100〜599に限定します。
