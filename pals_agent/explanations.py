@@ -85,7 +85,7 @@ _GROUNDED_REVIEW_RATIONALE_INSTRUCTION = """Ground every reported defect in the 
 For each criticism in rationale, identify its candidate JSON field path, quote a short exact
 span from that field, and explain the specific invalid inference or violated requirement
 against the question, hypotheses and supplied evidence. For a missing requested result, quote
-the actual conclusion and say which required answer is absent; do not invent a quotation of
+existing text in the relevant output field and name the absent requirement; do not invent
 missing text. Field paths locate evidence, not learner-visible headings. A field path or an
 exact quotation alone does not establish a mathematical defect.
 Before alleging duplication, identify BOTH actual passages by field path and short quotation,
@@ -103,6 +103,38 @@ unrelated unsubstantiated accusation about another correct step. Do not treat a 
 proof obligation, a supported standard inference, or a permitted brief final restatement as a
 stylistic defect. Do not invent a missing premise or claim an omitted passage contains words
 that are not there. Give a concise checkable evidence summary, not hidden chain-of-thought.
+"""
+_EXPLANATION_SEMANTIC_APPROVAL_CHECK = """Final semantic approval check (explanation):
+These semantic requirements take priority over reporting conventions and the permission for
+a brief closing restatement. Determine what the learner asks under the actual hypotheses.
+For compute, solve, determine, characterize or classify requests, inspect explanation.conclusion
+ITSELF for the explicit answer established by the verified target: the value, full solution
+set or actual equivalent condition as appropriate. A correct proof body, including both
+directions, cannot substitute for that answer in the conclusion field. A statement about
+finishing the proof is not a mathematical answer. The permitted short closing restatement
+must restate the actual result or claim, not merely report completion of its proof.
+For a proof-only request, do not invent a separate computation or demand an unrelated value.
+For EITHER verdict, include in rationale the path explanation.conclusion and a short exact
+quote from its actual text, with a brief explanation of whether it supplies the requested
+result. If it omits the answer, reject and name the missing requirement; quote the existing
+conclusion, never words you wish it contained. Then preserve the other necessary checks:
+the hypotheses, number domain, essential inferences, source correspondence and absence of an
+unproved identification must all hold. Passing the conclusion check cannot excuse an invalid
+bridge elsewhere. Conversely, evidence-reporting constraints cannot excuse a missing result.
+Return approved=true only if ALL applicable semantic and presentation requirements hold.
+Give only concise checkable evidence for the verdict, not hidden step-by-step reasoning.
+"""
+_CLARIFICATION_SEMANTIC_APPROVAL_CHECK = """Final semantic approval check (clarification):
+Review the actual clarification.question and clarification.answer against the selected text
+and saved parent context. The answer itself must address that question, justify the requested
+inference non-circularly, and preserve the context's hypotheses, notation and number domain.
+Do not substitute the main theorem or a different saved passage for the learner's question.
+For EITHER verdict, include in rationale the path clarification.answer and a short exact quote
+from its actual text, with a brief explanation of whether it answers the requested question.
+For an omission, quote existing answer text and name the missing justification, never invented
+missing words. Also keep the applicable grounding, reference, language and formatting checks.
+Return approved=true only if ALL these requirements hold; reporting conventions cannot excuse
+an unanswered question. Give concise checkable verdict evidence, not hidden step-by-step reasoning.
 """
 
 
@@ -1411,6 +1443,10 @@ def _output_review_prompt(
             "references": [asdict(reference) for reference in clarification.references],
         }
     output_kind = "clarification" if clarification is not None else "explanation"
+    semantic_approval_check = (
+        _CLARIFICATION_SEMANTIC_APPROVAL_CHECK if clarification is not None
+        else _EXPLANATION_SEMANTIC_APPROVAL_CHECK
+    )
     visible_proof = "\n\n".join(
         [
             explanation.overview,
@@ -1486,6 +1522,9 @@ def _output_review_prompt(
             "But reject two consecutive final assertions of the same complete equality, one at "
             "the end of the last section and one in conclusion. Also check each named law: "
             "rewriting a square as a product is the definition of squaring, not distributivity. "
+            "Check which operation the candidate actually attributes to the named law: "
+            "expanding products and collecting terms in an equality uses distributivity, "
+            "unlike merely rewriting a square as a product. "
             "A true equality with a wrong stated justification must be corrected before approval. "
             "Reusing an expression to continue a deduction is also allowed; do not reject merely "
             "because a symbol, premise, or final equality occurs more than once. A short proof "
@@ -1539,6 +1578,8 @@ Return exactly one JSON object and no surrounding text:
 {{"approved": true, "rationale": "a concise review reason"}}
 or
 {{"approved": false, "rationale": "a concise review reason"}}
+
+{semantic_approval_check}
 
 User theorem statement:
 {theorem_statement}

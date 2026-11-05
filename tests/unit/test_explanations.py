@@ -1589,3 +1589,46 @@ def test_legacy_reader_does_not_relax_new_generation_or_qa_excerpts(separator) -
     payload["sections"][0]["references"][0]["excerpt"] += "\nnot in the source"
     with pytest.raises(ValueError, match="excerpt does not exactly match"):
         proof_explanation_from_api(payload, lean_code=source)
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+@pytest.mark.parametrize("kind", ["explanation", "clarification"])
+def test_final_semantic_check_uses_the_actual_output_fields(language, kind) -> None:
+    from pals_agent.explanations import _output_review_prompt, proof_explanation_from_api
+
+    case, source, payload, _ = _saved_coprime_excerpt("\n", legacy=False)
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    clarification = ProofClarification(
+        section_id="divisibility", question="Why is the quotient a natural number?",
+        answer="Natural-number divisibility already asserts a natural-number witness, "
+               "so the quotient belongs to the same domain without a positivity assumption.",
+        key_points=("The witness is natural.", "No division by a possibly zero input is used."),
+        references=explanation.sections[0].references, model="saved-output", provider="synthetic",
+        prompt="", raw_model_output="", elapsed_ms=0,
+    ) if kind == "clarification" else None
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source, explanation=explanation,
+        language=language, clarification=clarification,
+        selected_text="The quotient is natural." if clarification else "",
+    )
+    marker = f"Final semantic approval check ({kind}):"
+    assert prompt.index(marker) > prompt.index("Ground every reported defect")
+    assert prompt.index(marker) > prompt.index('"approved": false')
+    assert "For EITHER verdict, include in rationale" in prompt
+    assert "Return approved=true only if ALL" in prompt
+    if kind == "explanation":
+        assert "inspect explanation.conclusion\nITSELF" in prompt
+        assert "cannot substitute for that answer in the conclusion field" in prompt
+        assert "must restate the actual result or claim" in prompt
+        assert "For a proof-only request, do not invent a separate computation" in prompt
+        assert "Passing the conclusion check cannot excuse an invalid\nbridge elsewhere" in prompt
+        assert "quote from its actual text" in prompt
+    else:
+        assert "clarification.question and clarification.answer" in prompt
+        assert "path clarification.answer and a short exact quote" in prompt
+        assert "explanation.conclusion" not in prompt
+        assert "Final semantic approval check (explanation)" not in prompt
+        assert "must answer the explicit learner question" in prompt
+        assert "reject a circular restatement of that lemma" in prompt
+        assert "clarification_context.selected_text" in prompt
+    assert "do not invent\nmissing text" in prompt
