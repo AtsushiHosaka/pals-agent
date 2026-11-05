@@ -1,0 +1,11 @@
+# 検証環境の欠落コードを保持する
+
+#217向けに、検証器のHTTP応答でlean.not_found/lake.not_foundを保持します。両コードだけを既存diagnosticsに載せ、元のメッセージ・パス・symbol・位置は送りません。通常のsource errorの変換、既存error envelope、mTLS・release binding、recipe-admission endpointは保持します。
+
+Agentのcode commitは27491430f516cde2a05f2319a1d3efe00e5961fa、基点はbd7838f3569449c33bab04fd618eed8534a1e21fです。既存HTTP回帰33件と、実missing-tool preflight・秘匿化・上限の新規5件を合わせて38件が通過しました。変更moduleのRuff・strict型検査・diff checkも通過しています。モデル呼出しはありません。
+
+受信側APIのcode commitは8dd44efad94e85a1ecd2c201a916999aada7a614です。閉じた2コードを固定メッセージとnull位置で受理し、model修復前の終端、recipe既存terminationの保持、runtime refutation時の余分なjob作成抑止を実装します。APIの関連128件と実mTLS/HTTP/Postgresの16件が通過しました。実Worker/clientの再配信、hold解放、既保存の使用記録、commit後イベント、通常compile/negationの対照、同時reconcileとCOMMIT応答喪失も検査した範囲です。
+
+受理・生成・catalog admission済みのprovenanceはDB fixtureです。missing-toolは実preflightであり、compiler成功を示すものではありません。通常compile失敗の対照だけはcompiler結果の固定fixtureです。全production schema、createから生成までのE2E、本番配備、CloudWatch受信は未検証です。APIの詳細はdocs/verification/runtime-verifier-diagnostics-20261105.mdに記録しています。
+
+新旧API/verifierの混在を安全な配備として保証しません。署名source/imageと固定module packaging hashをそろえた受入が別途必要です。SQL・DB enum・署名schema・network・credentials・mount・activation flagは追加していません。unit/nativeの件数をモデル精度の台帳へ加えません。実装の独立レビューは進行中です。
