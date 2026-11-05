@@ -32,6 +32,7 @@ _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
 _READINESS_SCHEMA_VERSION: Final = "pals.isolated-verifier-readiness.v1"
 _ATTESTATION_SCHEMA_VERSION: Final = "pals.verifier-attestation.v1"
 _ERROR_SCHEMA_VERSION: Final = "pals.isolated-verifier-error.v1"
+_RUNTIME_FAILURE_CODES: Final = frozenset({"lean.not_found", "lake.not_found"})
 _INTERRUPTED_FAILURES: Final = frozenset(
     {"verifier_compile_interrupted", "verifier_compile_deadline_interrupted"}
 )
@@ -863,34 +864,42 @@ def _repair_diagnostics(result: VerificationResult, source: str) -> list[dict[st
         if item.severity != "error":
             continue
         code, symbol = "lean.compile_error", None
-        first_line = item.message.splitlines()[0] if item.message else ""
-        if first_line == "No goals to be solved":
-            code = "lean.no_goals"
-        for candidate_code, pattern in patterns:
-            match = re.fullmatch(pattern, first_line)
-            if match and match.group(1) in source:
-                code, symbol = candidate_code, match.group(1)
-                break
-        if code == "lean.compile_error":
-            for prefix, category in (
-                ("unsolved goals", "lean.unsolved_goals"),
-                ("type mismatch", "lean.type_mismatch"),
-                ("application type mismatch", "lean.type_mismatch"),
-                ("unexpected token", "lean.syntax_error"),
-                ("tactic", "lean.tactic_failed"),
-            ):
-                if first_line.lower().startswith(prefix):
-                    code = category
+        runtime_failure = item.code in _RUNTIME_FAILURE_CODES
+        if runtime_failure:
+            # Preserve only the closed code. Runtime messages/paths/positions are
+            # not source feedback and must never enter the response or model repair.
+            assert isinstance(item.code, str)
+            code = item.code
+        else:
+            first_line = item.message.splitlines()[0] if item.message else ""
+            if first_line == "No goals to be solved":
+                code = "lean.no_goals"
+            for candidate_code, pattern in patterns:
+                match = re.fullmatch(pattern, first_line)
+                if match and match.group(1) in source:
+                    code, symbol = candidate_code, match.group(1)
                     break
+            if code == "lean.compile_error":
+                for prefix, category in (
+                    ("unsolved goals", "lean.unsolved_goals"),
+                    ("type mismatch", "lean.type_mismatch"),
+                    ("application type mismatch", "lean.type_mismatch"),
+                    ("unexpected token", "lean.syntax_error"),
+                    ("tactic", "lean.tactic_failed"),
+                ):
+                    if first_line.lower().startswith(prefix):
+                        code = category
+                        break
         diagnostics.append(
             {
                 "code": code,
                 "symbol": symbol,
                 "line": item.line
-                if type(item.line) is int and 1 <= item.line <= 1_000_000
+                if not runtime_failure and type(item.line) is int and 1 <= item.line <= 1_000_000
                 else None,
                 "column": item.column
-                if type(item.column) is int and 0 <= item.column <= 1_000_000
+                if (not runtime_failure and type(item.column) is int
+                    and 0 <= item.column <= 1_000_000)
                 else None,
             }
         )
