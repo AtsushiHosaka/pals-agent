@@ -1,6 +1,7 @@
 import json
 import uuid
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -1465,3 +1466,122 @@ def test_generation_and_qa_reject_invented_nonstandard_bridges_and_keep_real_sou
         assert "complete claim header" in prompt
     assert "reject an unproved identification" in review
     assert "derive that from\nthe power series" not in generation
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+def test_output_qa_requires_local_evidence_without_relaxing_soundness(language: str) -> None:
+    from pals_agent.explanations import (
+        _output_review_decision,
+        _output_review_prompt,
+        proof_explanation_from_api,
+    )
+
+    # Actual nontrivial, previously compiled corpus; no fake mathematical verdict.
+    corpus = Path(__file__).resolve().parents[2] / "testdata/explanation-grounding-v1"
+    case = json.loads((corpus / "corpus.json").read_text())["cases"][1]
+    source = (corpus / case["source"]).read_text()
+    lines = source.splitlines()
+    payload = {
+        "overview": "Fix coprime natural numbers, including zero.",
+        "sections": [{
+            "id": "quotient",
+            "title": "Internal correspondence label",
+            "summary": "Coprimality gives the quotient divisibility needed for the forward "
+                       "implication. Transitivity gives the converse.",
+            "references": [{"start_line": 8, "end_line": 19,
+                            "excerpt": "\n".join(lines[7:19])}],
+        }],
+        "conclusion": "The conditions $a\\mid n$ and $b\\mid n$ hold exactly when $ab\\mid n$.",
+        "model": "saved-output", "provider": "synthetic", "elapsed_ms": 0,
+    }
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source,
+        explanation=explanation, language=language,
+    )
+    assert "identify its candidate JSON field path, quote a short exact" in prompt
+    assert "For a missing requested result, quote" in prompt
+    assert "identify BOTH actual passages by field path and short quotation" in prompt
+    assert "different proof obligations" in prompt
+    assert "EACH must satisfy\nthe evidence requirement independently" in prompt
+    # These actual defects still require rejection; no blanket permission to reuse text.
+    assert "Keep rejecting genuinely repeated substantive derivations" in prompt
+    assert "reject an unproved identification" in prompt
+    assert "check the JSON conclusion member itself" in prompt
+    assert "generic proof-complete conclusion must be rejected" in prompt
+    structured = json.loads(prompt.split(
+        "Candidate explanation JSON (structured evidence; field names and internal titles "
+        "are not shown):\n", 1,
+    )[1])
+    assert structured["explanation"]["sections"] == payload["sections"]
+    assert structured["explanation"]["conclusion"] == payload["conclusion"]
+    # Old wire responses remain byte-preserving decisions; evidence is a prompt
+    # requirement, not a new schema gate or a post-hoc approval rewrite.
+    for approved in (False, True):
+        legacy = {"approved": approved, "rationale": "An unchanged saved review reason."}
+        assert _output_review_decision(legacy) == (approved, legacy["rationale"])
+
+
+def _saved_coprime_excerpt(separator: str, *, legacy: bool):
+    corpus = Path(__file__).resolve().parents[2] / "testdata/explanation-grounding-v1"
+    case = json.loads((corpus / "corpus.json").read_text())["cases"][1]
+    lines = (corpus / case["source"]).read_text().splitlines()
+    source = separator.join(lines)
+    excerpt = ("\n" if legacy else separator).join(lines[7:19])
+    payload = {
+        "overview": "Fix coprime natural numbers, including zero.",
+        "sections": [{"id": "divisibility", "title": "Both implications",
+                      "summary": "Euclid's lemma gives the quotient divisibility in the forward "
+                                 "direction. Each factor divides the product in the converse.",
+                      "references": [{"start_line": 8, "end_line": 19, "excerpt": excerpt}]}],
+        "conclusion": "Both divisibilities hold if and only if $ab\\mid n$.",
+        "model": "saved-output", "provider": "synthetic", "elapsed_ms": 1,
+    }
+    return case, source, payload, separator.join(lines[7:19])
+
+
+
+
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+@pytest.mark.parametrize("kind", ["explanation", "clarification"])
+def test_final_semantic_check_uses_the_actual_output_fields(language, kind) -> None:
+    from pals_agent.explanations import _output_review_prompt, proof_explanation_from_api
+
+    case, source, payload, _ = _saved_coprime_excerpt("\n", legacy=False)
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    clarification = ProofClarification(
+        section_id="divisibility", question="Why is the quotient a natural number?",
+        answer="Natural-number divisibility already asserts a natural-number witness, "
+               "so the quotient belongs to the same domain without a positivity assumption.",
+        key_points=("The witness is natural.", "No division by a possibly zero input is used."),
+        references=explanation.sections[0].references, model="saved-output", provider="synthetic",
+        prompt="", raw_model_output="", elapsed_ms=0,
+    ) if kind == "clarification" else None
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source, explanation=explanation,
+        language=language, clarification=clarification,
+        selected_text="The quotient is natural." if clarification else "",
+    )
+    marker = f"Final semantic approval check ({kind}):"
+    assert prompt.index(marker) > prompt.index("Ground every reported defect")
+    assert prompt.index(marker) > prompt.index('"approved": false')
+    assert "For EITHER verdict, include in rationale" in prompt
+    assert "Return approved=true only if ALL" in prompt
+    if kind == "explanation":
+        assert "inspect explanation.conclusion\nITSELF" in prompt
+        assert "cannot substitute for that answer in the conclusion field" in prompt
+        assert "must restate the actual result or claim" in prompt
+        assert "For a proof-only request, do not invent a separate computation" in prompt
+        assert "Passing the conclusion check cannot excuse an invalid\nbridge elsewhere" in prompt
+        assert "quote from its actual text" in prompt
+    else:
+        assert "clarification.question and clarification.answer" in prompt
+        assert "path clarification.answer and a short exact quote" in prompt
+        assert "explanation.conclusion" not in prompt
+        assert "Final semantic approval check (explanation)" not in prompt
+        assert "must answer the explicit learner question" in prompt
+        assert "reject a circular restatement of that lemma" in prompt
+        assert "clarification_context.selected_text" in prompt
+    assert "do not invent\nmissing text" in prompt
