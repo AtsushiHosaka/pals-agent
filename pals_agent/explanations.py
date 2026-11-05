@@ -283,8 +283,11 @@ class LeanGroundedOutputReviewer:
         _validate_deadline_options(deadline, timeout_seconds)
         session_id = str(self.session_id_factory())
         try:
+            for section in explanation.sections:
+                for reference in section.references:
+                    _validated_reference(asdict(reference), lean_code)
             _require_local_claim_headers(list(explanation.sections), lean_code)
-        except ValueError as exc:
+        except (ValueError, TypeError) as exc:
             raise ProofOutputReviewError(
                 "source correspondence review rejected the output",
                 category="rejected",
@@ -728,7 +731,12 @@ def proof_explanation_from_api(
     *,
     lean_code: str,
 ) -> ProofExplanation:
-    overview, sections, conclusion = _parse_explanation(payload, lean_code)
+    # Saved responses from the earlier reader may contain LF-normalized multi-line
+    # excerpts. Accept only that exact legacy form here, then return canonical
+    # original-source excerpts. Never mutate the persisted payload or relax new QA.
+    overview, sections, conclusion = _parse_explanation(
+        payload, lean_code, allow_legacy_lf_excerpts=True,
+    )
     elapsed_ms = payload.get("elapsed_ms", 0)
     if type(elapsed_ms) is not int or elapsed_ms < 0:
         raise ValueError("elapsed_ms must be a non-negative integer")
@@ -752,6 +760,7 @@ def _parse_explanation(
     require_epsilon_delta: bool = False,
     require_linear_ending: bool = False,
     require_claim_headers: bool = False,
+    allow_legacy_lf_excerpts: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -781,7 +790,9 @@ def _parse_explanation(
         if section_id in seen_ids:
             raise ValueError(f"duplicate explanation section id: {section_id}")
         seen_ids.add(section_id)
-        references = _parse_references(raw_section, lean_code)
+        references = _parse_references(
+            raw_section, lean_code, allow_legacy_lf_excerpts=allow_legacy_lf_excerpts,
+        )
         title = _required_bounded_language_text(
             raw_section,
             "title",
@@ -906,15 +917,23 @@ def _parse_clarification(
 def _parse_references(
     payload: dict[str, Any],
     lean_code: str,
+    *,
+    allow_legacy_lf_excerpts: bool = False,
 ) -> tuple[LeanLineReference, ...]:
     raw_references = _required_list(payload, "references")
     if not 1 <= len(raw_references) <= 20:
         raise ValueError("references must contain between 1 and 20 Lean line ranges")
-    references = tuple(_validated_reference(reference, lean_code) for reference in raw_references)
+    references = tuple(
+        _validated_reference(reference, lean_code,
+                             allow_legacy_lf_excerpt=allow_legacy_lf_excerpts)
+        for reference in raw_references
+    )
     return references
 
 
-def _validated_reference(payload: Any, lean_code: str) -> LeanLineReference:
+def _validated_reference(
+    payload: Any, lean_code: str, *, allow_legacy_lf_excerpt: bool = False,
+) -> LeanLineReference:
     if not isinstance(payload, dict):
         raise TypeError("each Lean reference must be an object")
     reference = _reference_from_mapping(payload)
@@ -925,7 +944,12 @@ def _validated_reference(payload: Any, lean_code: str) -> LeanLineReference:
         raise ValueError("Lean reference points outside the verified Lean code")
     actual_excerpt = lean_code[spans[reference.start_line - 1][0]:spans[reference.end_line - 1][1]]
     if reference.excerpt != actual_excerpt:
-        raise ValueError("Lean reference excerpt does not exactly match the verified code")
+        legacy_excerpt = "\n".join(
+            lean_code[start:end]
+            for start, end in spans[reference.start_line - 1:reference.end_line]
+        )
+        if not allow_legacy_lf_excerpt or reference.excerpt != legacy_excerpt:
+            raise ValueError("Lean reference excerpt does not exactly match the verified code")
     return LeanLineReference(
         start_line=reference.start_line,
         end_line=reference.end_line,
