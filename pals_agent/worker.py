@@ -2143,6 +2143,10 @@ def _validate_claim_resource(
             "updated_at",
             "diagnostics",
         }
+        if "output_language" in resource:
+            expected_keys.add("output_language")
+            if resource["output_language"] is not None:
+                _required_output_language(resource)
         if set(resource) != expected_keys or resource.get("id") != resource_id:
             raise ValueError("clarification claim resource identity/fields are invalid")
         _bounded_text(resource.get("proof_job_id"), maximum=200)
