@@ -1,6 +1,6 @@
 # QA指摘の根拠を確認する比較
 
-[pals#252](https://github.com/AtsushiHosaka/pals/issues/252)の実装と検証記録です。前の[固定出力QA反復](https://github.com/AtsushiHosaka/pals-agent/pull/52)で、正しい下界から等号条件を導く段階まで「重複」とする理由が見つかりました。過去の原本・採点・品質台帳は変更しません。
+[pals#252](https://github.com/AtsushiHosaka/pals/issues/252)の実装と検証記録です。前の[固定出力QA反復](https://github.com/AtsushiHosaka/pals-agent/pull/52)で、正しい下界から等号条件を導く段階まで「重複」とする理由が見つかりました。過去の原本・採点・品質台帳は変更しません。今回の指示案は、下記の実測で具体的結論欠落の拒否を満たさなかったため、受入未達です。
 
 ## 実装した条件
 
@@ -29,11 +29,11 @@ QAのclosedな`approved`/`rationale`応答形式は維持しています。否�
 
 モデルは同じ`gpt-6-luna`、reasoningは`low`、最大出力6,000 token、55秒、1attemptです。追加予算は1 USD、生成・再試行・修復・fallbackは行いません。全入力0.25、出力0.50 USD/百万tokenを使う固定reserveの事前上限は0.552 USDです。入力0.25は[公式Standard short context価格](https://developers.openai.com/api/docs/pricing)の12h cache write列を使った保守値であり、uncached入力0.10や実請求額とは異なります。前のresponseは`24h`/`default`を返しましたが、保持時間表記と12h・30m価格列の課金上の対応は未照合です。
 
-事前登録のSHA256は`24dfb0c62f501c10c2083a78c10f0ab006f6725161397d4117bcbf04265f2ff8`、harnessは`464e53da3fb60305fff2feb29ee4a0ceb31a5e3f89d3a649e67c3e1179f33066`です。実装差分と事前登録を独立に確認してから実行します。有料呼出しはまだ0で、モデルの改善を確認した記録ではありません。
+事前登録のSHA256は`24dfb0c62f501c10c2083a78c10f0ab006f6725161397d4117bcbf04265f2ff8`、harnessは`464e53da3fb60305fff2feb29ee4a0ceb31a5e3f89d3a649e67c3e1179f33066`です。実装差分と事前登録を独立に確認してから実行します。事前登録時点の有料呼出しは0でした。以下の実測まで、source・入力・採点基準・順番は変更していません。
 
 ## 局所検証と原本保存
 
-説明・claim・semantic review・worker・proof request workerの対象346件、strict mypy、Ruff、diff検査がPASSしました。CRLF/CR/NEL/LS/PSごとに、元excerptまたは旧LF保存値からloaderを通してclarification promptを組み立てる10件と、新規生成・QAでのLF正規化引用と改変引用を拒否する5件を含みます。このunit件数をモデル精度の分母へ足しません。
+説明・claim・semantic review・worker・proof request workerの対象346件と関連linked-chat25件、strict mypy、Ruff、diff検査がPASSしました。CRLF/CR/NEL/LS/PSごとに、元excerptまたは旧LF保存値からloaderを通してclarification promptを組み立てる10件と、新規生成・QAでのLF正規化引用と改変引用を拒否する5件を含みます。このunit件数をモデル精度の分母へ足しません。
 
 harnessはHTTP受信後、解析前に状態・所要時間・base64本文だけのflat envelopeを排他的作成し、flush/fsync後に解析と派生保存へ進みます。原本自体の保存失敗を成功とは扱いません。非JSON、不正UTF8、過深JSON、ValueError/RecursionError、parsed保存失敗と既存artifact競合、通常JSONを含むoffline8件で、後続処理が失敗しても原本を保持する境界を確認しました。前の測定原本は上書きしません。
 
@@ -42,3 +42,55 @@ python -m pytest -o addopts='' -q testdata/qa-grounded-rationale-v1/test_recordi
 ```
 
 生応答・保存説明・provider ID・認証情報はGitへ保存しません。原本はGit外の0700ディレクトリ・0600ファイルへ保存します。SSM・保護設定・AWS・本番DB・worker queueは使用しません。親リポジトリの品質台帳とグラフは親担当が更新します。本番の症状が解消したことや、他の入力で根拠の誤判定が起きないことは、この局所検証だけでは判断できません。
+
+## 実測結果：指示案は受入未達
+
+独立GO後の2026年11月5日10:45:09〜10:46:37 JST（01:45:09〜01:46:37 UTC）、予定した24QAを実行して停止しました。生成・再試行・修復・fallbackは0です。結論欠落の負例に対してbaselineは3回とも拒否しましたが、変更案は3回とも誤承認しました。未証明の同一視を拒否できても、求める具体的結論を省略した説明の公開を許すため、この指示案を採用できる結果ではありません。
+
+| 固定入力 | baselineの承認 / 拒否 | 変更案の承認 / 拒否 | 正しい判定と理由を満たす回数、baseline / 変更案 |
+|---|---|---|---|
+| `coprime-positive` | 3 / 0 | 3 / 0 | 3/3 / 3/3 |
+| `energy-positive` | 2 / 1 | 2 / 1 | 2/3 / 2/3 |
+| `coprime-missing-result` | 0 / 3 | 3 / 0 | 3/3 / 0/3 |
+| `energy-unsupported-bridge` | 0 / 3 | 0 / 3 | 1/3 / 3/3 |
+
+Energy正例のbaselineの拒否理由は、存在しない行番号を根拠とする引用不足でした。変更案の拒否理由は、和全体を展開する説明を、二乗を積へ書き換える定義への誤った理由と取り違えたものです。両方を正例への誤拒否として残します。bridge負例ではbaselineの2件が正しい根拠不足に余計な重複の指摘を加えたため、その2件を厳格な成功から外しました。
+
+次は、実際に拒否した応答のうち、全指摘について具体箇所・短い実在引用・理由の形式を満たす数です。引用の形式が整っていることと、その理由が数学的に正しいことを分けています。
+
+| 入力 / 版 | 形式対応を満たす拒否応答数 / 拒否応答数 |
+|---|---|
+| Coprime正例 / 両版 | 対象なし、拒否0 |
+| Energy正例 / baseline | 0/1 |
+| Energy正例 / 変更案 | 1/1。ただし数学的には誤拒否 |
+| 結論欠落 / baseline | 0/3。意味上の拒否は正しい |
+| 結論欠落 / 変更案 | 対象なし、誤承認3 |
+| bridge負例 / baseline | 0/3 |
+| bridge負例 / 変更案 | 2/3。残る1件はfield pathと理由があるが実在引用がない |
+
+正例を承認した応答と、負例を誤承認した応答は、いずれも否定指摘がないため形式の分母を置きません。誤承認を「根拠形式100%」として扱いません。変更案のEnergy誤拒否はfield pathと実在引用を示していても、数学的理由が誤っていました。具体的な語句への対応だけでは、指摘の正しさは保証されません。
+
+| 入力 / 版 | input / output token | 固定reserve USD | QA wall累計秒 / HTTP累計秒 |
+|---|---|---|---|
+| Coprime正例 / baseline | 10,542 / 571 | 0.00292100 | 11.858618 / 11.850606 |
+| Coprime正例 / 変更案 | 11,616 / 244 | 0.00302600 | 9.146107 / 9.139433 |
+| Energy正例 / baseline | 11,676 / 1,970 | 0.00390400 | 25.049918 / 25.040558 |
+| Energy正例 / 変更案 | 12,750 / 302 | 0.00333850 | 7.302655 / 7.295837 |
+| 結論欠落 / baseline | 9,678 / 987 | 0.00291300 | 14.081145 / 14.071730 |
+| 結論欠落 / 変更案 | 10,752 / 242 | 0.00280900 | 6.293026 / 6.285898 |
+| bridge負例 / baseline | 11,991 / 352 | 0.00317375 | 6.443791 / 6.436788 |
+| bridge負例 / 変更案 | 13,065 / 376 | 0.00345425 | 6.965297 / 6.956796 |
+
+全24件でusageがあり、原本envelope・派生JSON・usageのinput/output/cached/reasoning・応答IDを照合しました。24のusage IDとprovider IDはそれぞれ一意でした。inputは92,070、outputは5,044 tokenです。reasoningの2,851 tokenはoutputに含まれ、二重に課金計算しません。cached inputは61,332、cache writeは30,666 tokenでした。全responseの保持時間表記は`24h`、service tierは`default`です。価格列との対応と請求額は未照合のままです。
+
+固定reserveの合計は0.02553950 USD、QAのwall累計は87.140557秒、HTTP累計は87.077646秒でした。これは新規生成や本番の応答待ち時間ではありません。時間が短くても、結論欠落の検出を失った結果を成功とは扱いません。同じ4説明を各3回渡した結果であり、数学全般の精度や本番E2Eの変化を示しません。
+
+結果原本`outcomes.json`のSHA256は`a8e20673e95e79e9dbc1f67e37f663607eff22acd1dbfa50778872d25de35a43`、採点記録は`269373805f3ae042e17a94c525095e3e51e108deb668d875534fa8d371778da0`、最終集計は`e33c6d3dc4821fe5d382715e4bd2637edd159961b8ff9db9a468785749d7508b`です。保存済みの旧24回と今回の24回を混ぜず、親台帳へ入力×版の8行として渡します。QA指示案、旧excerpt互換修正、原本保存修正は別commitとして保持します。
+
+## 次の修正に向けた提案
+
+追加した根拠説明の指示に注意が向き、具体的結論の確認が後回しになった可能性があります。ただし、この比較だけで内部の原因を確定できません。次は、元の意味上の条件を最終判断より優先する配置を検討します。承認前に、要求された結果が結論欄自体にあること、仮定と定義を保つこと、未証明の同一視がないことを先に確認し、失敗した要件は根拠の書き方に関係なく拒否する案です。
+
+許される短い結語は、実際の命題や答えの簡潔な再掲であり、証明が終わったという報告で代用できないことも明示します。その後に、拒否理由を実在する箇所へ対応させます。fixtureの答えの供給や文字列whitelistは使いません。この案は提案のみで、今回のsourceや測定後の採点へ適用していません。追加の有料呼出しも行っていません。
+
+原本139ファイルを既存のGitignored/private保存先へ上書きせず保存し、全byteのhashを照合しました。archive manifestのSHA256は`ebcc9de97aebf73feca7ed58228c973e6bff3dfe376df89f756af9f518f7450b`です。8セルそれぞれで3回のrequest payload hashが同一であり、全responseのmodelは`gpt-6-luna`、reasoning effortは`low`でした。前のcohortのoutcomes・採点hashも不変です。
