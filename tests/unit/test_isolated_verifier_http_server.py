@@ -8,9 +8,10 @@ import ssl
 import subprocess
 import tempfile
 from collections.abc import Iterator
-from contextlib import contextmanager, suppress
+from contextlib import ExitStack, contextmanager, suppress
 from pathlib import Path
 from threading import Event, Lock, Thread
+from time import monotonic, sleep
 from typing import Any, cast
 from uuid import UUID
 
@@ -110,6 +111,8 @@ def _running_server(
     admission_verifier: StubVerifier | None = None,
     *,
     max_concurrent_compiles: int = 1,
+    handshake_timeout_seconds: float = 5,
+    http_timeout_seconds: float = 10,
 ) -> Iterator[object]:
     settings = IsolatedVerifierHttpSettings(
         bind_host="127.0.0.1",
@@ -124,6 +127,8 @@ def _running_server(
         reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
         recipe_admission_context=_admission_context(),
         max_concurrent_compiles=max_concurrent_compiles,
+        handshake_timeout_seconds=handshake_timeout_seconds,
+        http_timeout_seconds=http_timeout_seconds,
     )
     server = create_server(settings, verifier=verifier, admission_verifier=admission_verifier)
     thread = Thread(target=server.serve_forever, daemon=True)
@@ -168,6 +173,146 @@ def test_mtls_ready_and_successful_compile_produce_exact_bound_objects(
         },
     )
     assert verifier.calls == ["example : True := by trivial"]
+
+
+def test_pending_handshake_does_not_block_authenticated_requests(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_success())
+    with _running_server(
+        server_context, client_spki_sha256, verifier, handshake_timeout_seconds=0.5,
+    ), socket.create_connection(("127.0.0.1", 18117), timeout=2) as silent:
+        assert _request(client_context, b"GET /ready HTTP/1.1\r\n" + _headers() + b"\r\n")[0] == 200
+        assert _request(client_context, _verify_request("transport fixture"))[0] == 200
+        assert silent.recv(1) == b""
+    assert verifier.calls == ["transport fixture"]
+
+
+@pytest.mark.parametrize("part", ["headers", "body"])
+def test_incomplete_authenticated_http_expires_without_compiling(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str], part: str,
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_success())
+    partial = (
+        b"GET /ready HTTP/1.1\r\n" if part == "headers" else
+        b"POST /v1/verify HTTP/1.1\r\n" + _headers()
+        + b"Content-Type: application/json\r\nContent-Length: 100\r\n\r\n{}"
+    )
+    with _running_server(
+        server_context, client_spki_sha256, verifier, http_timeout_seconds=0.1,
+    ), socket.create_connection(("127.0.0.1", 18117), timeout=2) as raw:
+        with client_context.wrap_socket(raw, server_hostname="verifier.internal") as connection:
+            connection.sendall(partial)
+            assert connection.recv(1) == b""
+        assert _request(client_context, b"GET /ready HTTP/1.1\r\n" + _headers() + b"\r\n")[0] == 200
+    assert verifier.calls == []
+
+
+def test_thread_start_failure_returns_admission_and_does_not_break_close(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    server_context, _, _, client_spki_sha256 = tls_contexts
+    with _running_server(server_context, client_spki_sha256, StubVerifier(_success())) as server:
+        def fail(_thread: Thread) -> None:
+            raise RuntimeError("test thread capacity")
+
+        with monkeypatch.context() as scoped, socket.socket() as connection:
+            scoped.setattr(Thread, "start", fail)
+            with pytest.raises(RuntimeError, match="test thread capacity"):
+                server.process_request(connection, ("127.0.0.1", 1))
+        assert not server._connection_threads
+        slots = server._connection_slots
+        assert all(slots.acquire(blocking=False) for _ in range(16))
+        assert not slots.acquire(blocking=False)
+        for _ in range(16):
+            slots.release()
+
+
+def test_connection_capacity_is_bounded_and_recovered(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    with _running_server(
+        server_context, client_spki_sha256, StubVerifier(_success()),
+        handshake_timeout_seconds=2,
+    ) as server:
+        with ExitStack() as peers:
+            for _ in range(16):
+                peers.enter_context(socket.create_connection(("127.0.0.1", 18117), timeout=2))
+            deadline = monotonic() + 1
+            while len(server._connection_threads) != 16 and monotonic() < deadline:
+                sleep(0.01)
+            assert len(server._connection_threads) == 16
+            with socket.create_connection(("127.0.0.1", 18117), timeout=1) as excess:
+                assert excess.recv(1) == b""
+            assert len(server._connection_threads) == 16
+        deadline = monotonic() + 1
+        while server._connection_threads and monotonic() < deadline:
+            sleep(0.01)
+        assert not server._connection_threads
+        assert _request(client_context, b"GET /ready HTTP/1.1\r\n" + _headers() + b"\r\n")[0] == 200
+
+
+def test_authenticated_idle_keepalive_expires(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    with (
+        _running_server(
+            server_context, client_spki_sha256, StubVerifier(_success()), http_timeout_seconds=0.1,
+        ),
+        socket.create_connection(("127.0.0.1", 18117), timeout=2) as raw,
+        client_context.wrap_socket(raw, server_hostname="verifier.internal") as connection,
+    ):
+        connection.sendall(b"GET /ready HTTP/1.1\r\n" + _headers() + b"\r\n")
+        response = http.client.HTTPResponse(connection)
+        response.begin()
+        assert response.status == 200
+        response.read()
+        assert connection.recv(1) == b""
+
+
+def test_http_receive_deadline_cannot_be_extended_by_trickling_bytes(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    with (
+        _running_server(
+            server_context, client_spki_sha256, StubVerifier(_success()), http_timeout_seconds=0.1,
+        ),
+        socket.create_connection(("127.0.0.1", 18117), timeout=2) as raw,
+        client_context.wrap_socket(raw, server_hostname="verifier.internal") as connection,
+    ):
+        connection.sendall(
+            b"POST /v1/verify HTTP/1.1\r\n" + _headers()
+            + b"Content-Type: application/json\r\nContent-Length: 100\r\n\r\n"
+        )
+        started = monotonic()
+        for _ in range(20):
+            try:
+                connection.sendall(b"x")
+            except OSError:
+                break
+            sleep(0.03)
+        assert monotonic() - started < 0.5
+
+
+def test_receive_deadline_does_not_cancel_longer_compilation(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+) -> None:
+    class SlowVerifier(StubVerifier):
+        def verify(self, lean_code: str) -> VerificationResult:
+            sleep(0.2)
+            return super().verify(lean_code)
+
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    with _running_server(
+        server_context, client_spki_sha256, SlowVerifier(_success()), http_timeout_seconds=0.05,
+    ):
+        assert _request(client_context, _verify_request("transport fixture"))[0] == 200
 
 
 def test_invalid_binding_or_request_never_reaches_compiler(
