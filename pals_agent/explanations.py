@@ -9,7 +9,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
-from pals_agent.lean_target import LeanTargetDeclaration
+from pals_agent.lean_target import LeanTargetDeclaration, _without_lean_comments_and_literals
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
@@ -39,12 +39,19 @@ exactly to the case it governs: for example, 0^0 = 1 settles only the base 0. Wh
 differ on whether a fact is a definition or a theorem (for example a^0 = 1 for a nonzero base),
 citing either is valid and is not a wrong justification."""
 _NONSTANDARD_DEFINITION_INSTRUCTION = """A definition or notation that is not standard in the
-learner's setting, and that the user theorem statement does not itself define, must be
-justified in the first section: say why it is the right definition, starting from the standard
-object it comes from. For example, when an exponent is defined by exp(x ln k), derive that from
-the power series of the exponential and show where a stated relation such as a square being zero
-truncates the series; when a product on a new kind of number is used, state its rule before
-using it. Give the justification once, in a sentence or two, and use the definition afterwards.
+learner's setting must be justified in the first section from the evidence actually supplied.
+Distinguish a definition stipulated by the question from a representation introduced in the
+source, and distinguish both from a proved identification with a standard mathematical object.
+Preserve the learner's objects and hypotheses; do not silently substitute a convenient model.
+Source comments, suggestive names and an assigned formula do not prove such an identification.
+In particular, do not invent an exponential, multiplication, convergence claim or analytic
+extension for a nonstandard representation. The power series of the exponential justifies a
+truncation only after the relevant algebra, exponential and identification are established;
+a nilpotency comment alone is insufficient. Explain the supplied definition and its proved
+properties without calling an unproved bridge Lean-verified. If the requested conclusion needs
+a bridge that is neither given as a premise nor established, do not fill it by guessing or
+claim that a weaker model answers the original question. The independent review must reject
+that unsupported correspondence. Give each supported justification once and use it afterwards.
 Do not explain a standard definition or fact that the learner's course already uses (for example
 the epsilon-delta definition of continuity, the definition of a limit, or the group axioms), and
 do not add a definition step when the proof uses only standard notation."""
@@ -68,7 +75,68 @@ Keep each argument in its stated number domain. If integer coefficients (for exa
 coefficients) are introduced for a claim about natural-number divisibility, first derive an
 integer quotient, then justify that it is nonnegative before calling it a natural quotient.
 Do not apply closure of natural-number divisibility under multiplication by a negative integer.
+For every multi-line local have declaration, include its complete claim header in one section's
+references, together with the lines supporting that section. Do not cite only the final tactic
+while omitting the claim it establishes. The required header ranges are listed below the source
+line table. Use the smallest faithful ranges that include those headers; do not fabricate prose
+for an unrelated line or claim that one automated line records unseen intermediate states.
 """
+_GROUNDED_REVIEW_RATIONALE_INSTRUCTION = """Ground every reported defect in the actual candidate.
+For each criticism in rationale, identify its candidate JSON field path, quote a short exact
+span from that field, and explain the specific invalid inference or violated requirement
+against the question, hypotheses and supplied evidence. For a missing requested result, quote
+existing text in the relevant output field and name the absent requirement; do not invent
+missing text. Field paths locate evidence, not learner-visible headings. A field path or an
+exact quotation alone does not establish a mathematical defect.
+Before alleging duplication, identify BOTH actual passages by field path and short quotation,
+and identify the same substantive derivation or complete final calculation being performed
+again. Recalling an established fact as a premise for a new inference is not re-proving it.
+In particular, deriving a global bound and then using it to characterize equality or attainment
+are different proof obligations. Likewise, invoking a proved lemma in a converse or a later
+case is legitimate dependency, not duplication merely because the fact or symbols reappear.
+Keep rejecting genuinely repeated substantive derivations and the prohibited repeated complete
+final calculation; do not relax those rules to approve mathematical or presentation defects.
+Assess every claim before approving. When rejecting, prefer one decisive, fully supported
+defect over extra speculative complaints. If you report multiple defects, EACH must satisfy
+the evidence requirement independently. Finding one real error does not justify appending an
+unrelated unsubstantiated accusation about another correct step. Do not treat a different
+proof obligation, a supported standard inference, or a permitted brief final restatement as a
+stylistic defect. Do not invent a missing premise or claim an omitted passage contains words
+that are not there. Give a concise checkable evidence summary, not hidden chain-of-thought.
+"""
+_EXPLANATION_SEMANTIC_APPROVAL_CHECK = """Final semantic approval check (explanation):
+These semantic requirements take priority over reporting conventions and the permission for
+a brief closing restatement. Determine what the learner asks under the actual hypotheses.
+For compute, solve, determine, characterize or classify requests, inspect explanation.conclusion
+ITSELF for the explicit answer established by the verified target: the value, full solution
+set or actual equivalent condition as appropriate. A correct proof body, including both
+directions, cannot substitute for that answer in the conclusion field. A statement about
+finishing the proof is not a mathematical answer. The permitted short closing restatement
+must restate the actual result or claim, not merely report completion of its proof.
+For a proof-only request, do not invent a separate computation or demand an unrelated value.
+For EITHER verdict, include in rationale the path explanation.conclusion and a short exact
+quote from its actual text, with a brief explanation of whether it supplies the requested
+result. If it omits the answer, reject and name the missing requirement; quote the existing
+conclusion, never words you wish it contained. Then preserve the other necessary checks:
+the hypotheses, number domain, essential inferences, source correspondence and absence of an
+unproved identification must all hold. Passing the conclusion check cannot excuse an invalid
+bridge elsewhere. Conversely, evidence-reporting constraints cannot excuse a missing result.
+Return approved=true only if ALL applicable semantic and presentation requirements hold.
+Give only concise checkable evidence for the verdict, not hidden step-by-step reasoning.
+"""
+_CLARIFICATION_SEMANTIC_APPROVAL_CHECK = """Final semantic approval check (clarification):
+Review the actual clarification.question and clarification.answer against the selected text
+and saved parent context. The answer itself must address that question, justify the requested
+inference non-circularly, and preserve the context's hypotheses, notation and number domain.
+Do not substitute the main theorem or a different saved passage for the learner's question.
+For EITHER verdict, include in rationale the path clarification.answer and a short exact quote
+from its actual text, with a brief explanation of whether it answers the requested question.
+For an omission, quote existing answer text and name the missing justification, never invented
+missing words. Also keep the applicable grounding, reference, language and formatting checks.
+Return approved=true only if ALL these requirements hold; reporting conventions cannot excuse
+an unanswered question. Give concise checkable verdict evidence, not hidden step-by-step reasoning.
+"""
+
 
 
 class TextGenerationClient(Protocol):
@@ -245,9 +313,23 @@ class LeanGroundedOutputReviewer:
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofOutputReview:
+        _validate_deadline_options(deadline, timeout_seconds)
+        session_id = str(self.session_id_factory())
+        try:
+            for section in explanation.sections:
+                for reference in section.references:
+                    _validated_reference(asdict(reference), lean_code)
+            _require_local_claim_headers(list(explanation.sections), lean_code)
+        except (ValueError, TypeError) as exc:
+            raise ProofOutputReviewError(
+                "source correspondence review rejected the output",
+                category="rejected",
+                rationale=str(exc),
+                session_id=session_id,
+            ) from None
         return self._review(
             kind="explanation",
-            session_id=str(self.session_id_factory()),
+            session_id=session_id,
             prompt=_output_review_prompt(
                 theorem_statement=theorem_statement,
                 lean_code=lean_code,
@@ -498,6 +580,7 @@ class LeanProofExplainer:
                 language=language,
                 require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
                 require_linear_ending=True,
+                require_claim_headers=True,
             ),
             deadline=deadline,
             timeout_seconds=timeout_seconds,
@@ -630,8 +713,8 @@ class LeanProofExplainer:
                         f"{prompt}\n\nYour previous response was invalid: {validation_error}\n"
                         "Re-read the canonical line table and return a corrected JSON object "
                         "only. Copy each excerpt byte-for-byte from the `text` fields, preserving "
-                        "leading spaces and joining multi-line ranges with `\\n`. Do not omit "
-                        "Lean references."
+                        "leading spaces and the original `separator_after` between lines. "
+                        "Do not omit Lean references."
                     )
 
         raise ExplanationGenerationError(
@@ -649,6 +732,8 @@ def _validation_failure_reason(exc: Exception) -> str:
         return "json"
     if isinstance(exc, KeyError):
         return "missing_field"
+    if "local claim header" in message:
+        return "reference_header"
     if "excerpt does not exactly match" in message:
         return "reference_excerpt"
     if "Lean reference" in message or "Lean line ranges" in message:
@@ -679,7 +764,12 @@ def proof_explanation_from_api(
     *,
     lean_code: str,
 ) -> ProofExplanation:
-    overview, sections, conclusion = _parse_explanation(payload, lean_code)
+    # Saved responses from the earlier reader may contain LF-normalized multi-line
+    # excerpts. Accept only that exact legacy form here, then return canonical
+    # original-source excerpts. Never mutate the persisted payload or relax new QA.
+    overview, sections, conclusion = _parse_explanation(
+        payload, lean_code, allow_legacy_lf_excerpts=True,
+    )
     elapsed_ms = payload.get("elapsed_ms", 0)
     if type(elapsed_ms) is not int or elapsed_ms < 0:
         raise ValueError("elapsed_ms must be a non-negative integer")
@@ -702,6 +792,8 @@ def _parse_explanation(
     language: str = "ja",
     require_epsilon_delta: bool = False,
     require_linear_ending: bool = False,
+    require_claim_headers: bool = False,
+    allow_legacy_lf_excerpts: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -731,7 +823,9 @@ def _parse_explanation(
         if section_id in seen_ids:
             raise ValueError(f"duplicate explanation section id: {section_id}")
         seen_ids.add(section_id)
-        references = _parse_references(raw_section, lean_code)
+        references = _parse_references(
+            raw_section, lean_code, allow_legacy_lf_excerpts=allow_legacy_lf_excerpts,
+        )
         title = _required_bounded_language_text(
             raw_section,
             "title",
@@ -767,6 +861,8 @@ def _parse_explanation(
             )
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
+    if require_claim_headers:
+        _require_local_claim_headers(sections, lean_code)
     return overview, tuple(sections), conclusion
 
 
@@ -854,26 +950,39 @@ def _parse_clarification(
 def _parse_references(
     payload: dict[str, Any],
     lean_code: str,
+    *,
+    allow_legacy_lf_excerpts: bool = False,
 ) -> tuple[LeanLineReference, ...]:
     raw_references = _required_list(payload, "references")
     if not 1 <= len(raw_references) <= 20:
         raise ValueError("references must contain between 1 and 20 Lean line ranges")
-    references = tuple(_validated_reference(reference, lean_code) for reference in raw_references)
+    references = tuple(
+        _validated_reference(reference, lean_code,
+                             allow_legacy_lf_excerpt=allow_legacy_lf_excerpts)
+        for reference in raw_references
+    )
     return references
 
 
-def _validated_reference(payload: Any, lean_code: str) -> LeanLineReference:
+def _validated_reference(
+    payload: Any, lean_code: str, *, allow_legacy_lf_excerpt: bool = False,
+) -> LeanLineReference:
     if not isinstance(payload, dict):
         raise TypeError("each Lean reference must be an object")
     reference = _reference_from_mapping(payload)
-    lines = lean_code.splitlines()
+    spans = _lean_line_spans(lean_code)
     if reference.start_line < 1 or reference.end_line < reference.start_line:
         raise ValueError("Lean reference line range is invalid")
-    if reference.end_line > len(lines):
+    if reference.end_line > len(spans):
         raise ValueError("Lean reference points outside the verified Lean code")
-    actual_excerpt = "\n".join(lines[reference.start_line - 1 : reference.end_line])
+    actual_excerpt = lean_code[spans[reference.start_line - 1][0]:spans[reference.end_line - 1][1]]
     if reference.excerpt != actual_excerpt:
-        raise ValueError("Lean reference excerpt does not exactly match the verified code")
+        legacy_excerpt = "\n".join(
+            lean_code[start:end]
+            for start, end in spans[reference.start_line - 1:reference.end_line]
+        )
+        if not allow_legacy_lf_excerpt or reference.excerpt != legacy_excerpt:
+            raise ValueError("Lean reference excerpt does not exactly match the verified code")
     return LeanLineReference(
         start_line=reference.start_line,
         end_line=reference.end_line,
@@ -1131,13 +1240,16 @@ State the complete final equality once, not in both the last section and the con
 Therefore stop the last section at the calculation that precedes the answer: its last sentence
 must not state the answer, and the conclusion alone states it. If a section already ends with the
 answer, drop that last sentence rather than repeating the answer in the conclusion.
-When the request asks to compute, solve or determine, the conclusion must state the explicit
-final answer itself (the value, expression, solution set or classification), in terms of the
+When the request asks to compute, solve, determine, characterize or classify,
+the conclusion must state the explicit final answer itself (the value, expression, solution set
+or classification), in terms of the
 learner's own symbols, exactly as the verified target establishes it. A conclusion that only says
 the argument is complete, or that the claim "holds", does not answer the question. If the answer
 is an expression, write it in full, for example
 "Therefore $\\sum_{{k=1}}^{{n}}k=\\frac{{n(n+1)}}{{2}}$." This is a style example only; take the
 actual answer from the verified target.
+For a characterization, include the actual equivalent condition or the full solution set in the
+conclusion; proving both implications in the sections does not replace stating that answer.
 Name the reason for each transformation accurately: writing a square as a product uses the
 definition of squaring; distributivity expands a product over a sum; commutativity swaps factors.
 For a short proof, use a short opening, one section with the actual derivation, and a brief ending;
@@ -1195,8 +1307,11 @@ Verified Lean code:
 Canonical Lean line table (JSON; each `text` value preserves leading spaces):
 {_line_reference_table(lean_code)}
 
-For a reference from `start_line` through `end_line`, set `excerpt` to the exact `text`
-values for those lines joined with a single newline. Do not trim or normalize spaces."""
+Required multi-line local claim header ranges (each range must be covered in one section):
+{json.dumps(_local_claim_headers(lean_code))}
+
+For a reference, concatenate each line's exact `text` and its `separator_after`, omitting
+`separator_after` on the last cited line. Do not trim spaces or normalize line separators."""
 
 
 def _clarification_prompt(
@@ -1284,8 +1399,8 @@ Verified Lean code:
 Canonical Lean line table (JSON; each `text` value preserves leading spaces):
 {_line_reference_table(lean_code)}
 
-Copy every `excerpt` exactly from the referenced `text` values, preserving leading
-spaces and joining multi-line ranges with a single newline."""
+Copy every `excerpt` from each cited line's exact `text` plus `separator_after`, omitting
+the separator on the last cited line. Preserve spaces and original line separators."""
 
 
 def _output_review_prompt(
@@ -1329,6 +1444,10 @@ def _output_review_prompt(
             "references": [asdict(reference) for reference in clarification.references],
         }
     output_kind = "clarification" if clarification is not None else "explanation"
+    semantic_approval_check = (
+        _CLARIFICATION_SEMANTIC_APPROVAL_CHECK if clarification is not None
+        else _EXPLANATION_SEMANTIC_APPROVAL_CHECK
+    )
     visible_proof = "\n\n".join(
         [
             explanation.overview,
@@ -1393,13 +1512,20 @@ def _output_review_prompt(
             "or existence claim is allowed even if the last inference names that result. Do not "
             "reject such a conclusion solely for restating the proved proposition. Distinguish "
             "this from repeating a substantive derivation or the complete final calculation. "
-            "When the learner asked to compute, solve or determine something, reject a "
-            "conclusion that does not state the explicit final answer established by the "
+            "When the learner asked to compute, solve, determine, characterize or classify "
+            "something, check the JSON conclusion member itself: reject it unless it states "
+            "the explicit final answer established by the "
             "verified target, such as one that only says the claim holds or the derivation is "
-            "complete. "
+            "complete. For a characterization it must give the actual equivalent condition "
+            "or full solution set. This requirement still applies when the sections already "
+            "prove both directions or contain the answer; a generic proof-complete conclusion "
+            "must be rejected. "
             "But reject two consecutive final assertions of the same complete equality, one at "
             "the end of the last section and one in conclusion. Also check each named law: "
             "rewriting a square as a product is the definition of squaring, not distributivity. "
+            "Check which operation the candidate actually attributes to the named law: "
+            "expanding products and collecting terms in an equality uses distributivity, "
+            "unlike merely rewriting a square as a product. "
             "A true equality with a wrong stated justification must be corrected before approval. "
             "Reusing an expression to continue a deduction is also allowed; do not reject merely "
             "because a symbol, premise, or final equality occurs more than once. A short proof "
@@ -1426,8 +1552,14 @@ violated output requirement, not a preferred wording or alternative proof order.
 {_SOURCE_CORRESPONDENCE_INSTRUCTION}
 {_STATED_CONVENTION_INSTRUCTION}
 {_NONSTANDARD_DEFINITION_INSTRUCTION}
-When the candidate uses such a nonstandard definition, reject it if no section justifies the
-definition, and reject a justification of a standard definition that the proof does not need.
+When the candidate uses such a nonstandard definition, reject an unproved identification with a
+standard object, invented operations or hypotheses, or a claimed analytic bridge supported only
+by a comment or definition. A true result about a convenient representation does not establish
+that it answers a question about a different object. Do not require a fabricated justification
+to satisfy a stylistic instruction. Reject a justification of a standard definition that the
+proof does not need. For explanations, reject missing complete multi-line local claim headers
+in the references; for clarifications, check the referenced selected step rather than requiring
+coverage of the whole proof.
 Reject an output that attributes unseen intermediate states, internal rewrite order, or
 separate Lean verification to its additional mathematical derivation. A valid mathematical
 derivation with a coarse automation reference remains acceptable when it makes no such claim.
@@ -1437,6 +1569,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
 {output_quality_review}
+{_GROUNDED_REVIEW_RATIONALE_INSTRUCTION}
 Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
@@ -1446,6 +1579,8 @@ Return exactly one JSON object and no surrounding text:
 {{"approved": true, "rationale": "a concise review reason"}}
 or
 {{"approved": false, "rationale": "a concise review reason"}}
+
+{semantic_approval_check}
 
 User theorem statement:
 {theorem_statement}
@@ -1652,11 +1787,78 @@ def _is_sufficient_x_squared_delta_choice(choice: str) -> bool:
     return int(a_coefficient) >= 2 and int(constant) >= 1
 
 
+def _lean_line_spans(source: str) -> list[tuple[int, int]]:
+    """Match the API/Web logical-line contract, retaining original excerpt separators."""
+    spans = []
+    start = 0
+    for separator in re.finditer(r"\r\n|[\n\r\x85\u2028\u2029]", source):
+        spans.append((start, separator.start()))
+        start = separator.end()
+    if start < len(source) or not spans:
+        spans.append((start, len(source)))
+    return spans
+
+
+def _local_claim_headers(source: str) -> list[tuple[int, int]]:
+    """Find multi-line assignment-backed have headers, ignoring comments/literals.
+
+    This is bounded source coverage, not a complete Lean parser or a mathematical
+    dependency analysis. It never extends or fabricates a model-supplied reference.
+    """
+    lines = [source[start:end] for start, end in _lean_line_spans(source)]
+    masked = _without_lean_comments_and_literals("\n".join(lines))
+    headers = []
+    for declaration in re.finditer(r"(?m)^(?P<indent>[ \t]*)(?:[·+]\s*)?have\b", masked):
+        start = masked.count("\n", 0, declaration.start()) + 1
+        depth = 0
+        end = None
+        for index in range(declaration.end(), len(masked) - 1):
+            character = masked[index]
+            if depth == 0 and masked.startswith(":=", index):
+                end = masked.count("\n", 0, index) + 1
+                break
+            if character in "([{":
+                depth += 1
+            elif character in ")]}":
+                depth = max(0, depth - 1)
+            elif character == "\n" and depth == 0:
+                following = masked[index + 1:].split("\n", 1)[0]
+                # A later have must not supply the delimiter for an earlier
+                # tactic-style have without an explicit assignment.
+                indentation = len(following) - len(following.lstrip(" \t"))
+                if following.strip() and (
+                    re.match(r"[ \t]*(?:[·+]\s*)?have\b", following)
+                    or re.match(r"[ \t]*[·+]", following)
+                    or (indentation <= len(declaration.group("indent"))
+                        and not following.lstrip().startswith(":="))
+                ):
+                    break
+        if end is not None and end > start:
+            headers.append((start, end))
+    return headers
+
+
+def _require_local_claim_headers(sections: list[ExplanationSection], source: str) -> None:
+    for start, end in _local_claim_headers(source):
+        if not any(
+            all(any(ref.start_line <= line <= ref.end_line for ref in section.references)
+                for line in range(start, end + 1))
+            for section in sections
+        ):
+            raise ValueError(
+                f"Complete local claim header {start}-{end} is missing from references"
+            )
+
+
 def _line_reference_table(lean_code: str) -> str:
+    spans = _lean_line_spans(lean_code)
     return json.dumps(
         [
-            {"line": line_number, "text": line}
-            for line_number, line in enumerate(lean_code.splitlines(), start=1)
+            {"line": number + 1, "text": lean_code[start:end],
+             "separator_after": (
+                 lean_code[end:spans[number + 1][0]] if number + 1 < len(spans) else ""
+             )}
+            for number, (start, end) in enumerate(spans)
         ],
         ensure_ascii=False,
         indent=2,

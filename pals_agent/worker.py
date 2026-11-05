@@ -17,6 +17,7 @@ import boto3  # type: ignore[import-untyped]
 import rfc8785
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
+from pals_agent import quality_events
 from pals_agent.api_client import (
     PalsApiError,
     ProofJobNotFoundError,
@@ -1480,12 +1481,18 @@ class SqsProofWorker:
                 clarification_context=clarification_context,
                 content=content,
                 lean_code=lean_code,
-                parent_explanation_content=_public_explanation_content(explanation),
+                parent_explanation_content=_stored_parent_explanation_content(
+                    summary_payload, explanation,
+                ),
                 generator_session_id=claim_id,
                 review=review,
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(
+                    resource="clarification", reason="deadline",
+                )
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1494,6 +1501,11 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except ProofOutputReviewError:
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(
+                    resource="clarification",
+                    reason=_review_failure_reason(private_review_failures),
+                )
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1502,10 +1514,13 @@ class SqsProofWorker:
                 private_review_failures=private_review_failures,
             )
         except Exception as exc:
+            reason = _generation_failure_reason(exc)
             _logger.error(
                 "explanation_generation_failed resource=clarification reason=%s",
-                _generation_failure_reason(exc),
+                reason,
             )
+            if quality_events.enabled():
+                quality_events.record_explanation_failure(resource="clarification", reason=reason)
             return self._write_clarification_failure(
                 clarification_id=clarification_id,
                 claim_id=claim_id,
@@ -1526,6 +1541,10 @@ class SqsProofWorker:
             )
         except PalsApiError as exc:
             if exc.error_code == "proof_clarification_reference_mismatch":
+                if quality_events.enabled():
+                    quality_events.record_explanation_failure(
+                        resource="clarification", reason="reference_mismatch",
+                    )
                 return self._write_clarification_failure(
                     clarification_id=clarification_id,
                     claim_id=claim_id,
@@ -2143,6 +2162,10 @@ def _validate_claim_resource(
             "updated_at",
             "diagnostics",
         }
+        if "output_language" in resource:
+            expected_keys.add("output_language")
+            if resource["output_language"] is not None:
+                _required_output_language(resource)
         if set(resource) != expected_keys or resource.get("id") != resource_id:
             raise ValueError("clarification claim resource identity/fields are invalid")
         _bounded_text(resource.get("proof_job_id"), maximum=200)
@@ -2707,6 +2730,8 @@ def _log_generation_failure(
         x_squared_gate,
         lean_lines,
     )
+    if quality_events.enabled():
+        quality_events.record_explanation_failure(resource=resource, reason=reason)
 
 
 def _review_failure_reason(failures: list[dict[str, Any]]) -> str:
@@ -2748,6 +2773,24 @@ def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]
         "provider": explanation.provider,
         "elapsed_ms": explanation.elapsed_ms,
     }
+
+
+def _stored_parent_explanation_content(
+    payload: dict[str, Any], model_context: ProofExplanation,
+) -> dict[str, Any]:
+    """Keep the immutable API parent's bytes separate from canonical model context.
+
+    The saved loader already validated every original-or-legacy excerpt against the
+    source. Only excerpts differ in its canonical view; parent identity must retain
+    their saved form. Project known content fields, never API transport metadata.
+    """
+    content = _public_explanation_content(model_context)
+    for section, saved_section in zip(content["sections"], payload["sections"], strict=True):
+        for reference, saved_reference in zip(
+            section["references"], saved_section["references"], strict=True,
+        ):
+            reference["excerpt"] = saved_reference["excerpt"]
+    return content
 
 
 def _public_clarification_content(clarification: ProofClarification) -> dict[str, Any]:

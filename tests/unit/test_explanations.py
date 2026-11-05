@@ -1,6 +1,7 @@
 import json
 import uuid
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -1112,7 +1113,7 @@ def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridg
     with pytest.raises(ProofOutputReviewError) as error:
         reviewer.review_explanation(
             theorem_statement="Every natural n satisfies n + 0 = n.",
-            lean_code="theorem target (n : Nat) : n + 0 = n := by simp",
+            lean_code=LEAN_CODE,
             explanation=_reviewable_explanation(), language="en",
         )
     assert error.value.category == "rejected"
@@ -1257,9 +1258,8 @@ def test_compute_request_requires_the_explicit_answer_in_the_conclusion(language
         explanation=_reviewable_explanation(),
         language=language,
     )
-    assert "reject a conclusion that does not state the explicit final answer" in review.replace(
-        "\n", " "
-    )
+    assert "check the JSON conclusion member itself" in review
+    assert "reject it unless it states the explicit final answer" in review
 
 
 @pytest.mark.parametrize("language", ["ja", "en"])
@@ -1275,7 +1275,7 @@ def test_nonstandard_definitions_are_justified_but_standard_ones_are_not_explain
         require_epsilon_delta=False,
     )
     assert f"Output language: {language}" in prompt
-    assert "must be\njustified in the first section" in prompt
+    assert "must be justified in the first section from the evidence actually supplied" in prompt
     assert "power series of the exponential" in prompt
     assert "Do not explain a standard definition or fact" in prompt
     assert "do not add a definition step when the proof uses only standard notation" in prompt
@@ -1285,8 +1285,10 @@ def test_nonstandard_definitions_are_justified_but_standard_ones_are_not_explain
         explanation=_reviewable_explanation(),
         language=language,
     )
-    assert "reject it if no section justifies the\ndefinition" in review
-    assert "reject a justification of a standard definition that the proof does not need" in review
+    assert "reject an unproved identification with a\nstandard object" in review
+    assert "reject a justification of a standard definition that the proof does not need" in (
+        review.lower().replace("\n", " ")
+    )
 
 
 def test_last_section_stops_before_the_answer_that_the_conclusion_states() -> None:
@@ -1300,3 +1302,286 @@ def test_last_section_stops_before_the_answer_that_the_conclusion_states() -> No
     )
     assert "stop the last section at the calculation that precedes the answer" in prompt
     assert "the conclusion alone states it" in prompt
+
+
+MULTILINE_CLAIM = """import Mathlib
+theorem square_nonnegative (x : ℝ) : 0 ≤ x ^ 2 := by
+  have h :
+      0 ≤ x ^ 2 := by
+    positivity
+  exact h"""
+
+
+def _claim_payload(start: int, end: int, source: str = MULTILINE_CLAIM) -> str:
+    value = json.loads(explanation_payload())
+    value["sections"][0]["references"] = [{
+        "start_line": start, "end_line": end,
+        "excerpt": "\n".join(source.splitlines()[start - 1:end]),
+    }]
+    return json.dumps(value, ensure_ascii=False)
+
+
+def test_new_generation_requires_full_multiline_claim_header_without_fabricating_refs() -> None:
+    client = FakeClient(_claim_payload(5, 5))
+    with pytest.raises(ExplanationGenerationError) as error:
+        LeanProofExplainer(client, "explain-model", "test", max_attempts=1).explain(
+            theorem_statement="Prove nonnegativity.", lean_code=MULTILINE_CLAIM, verified=True,
+        )
+    assert error.value.attempt_failures == ("reference_header",)
+    assert len(client.prompts) == 1
+    assert "[[3, 4]]" in client.prompts[0]
+
+
+def test_model_can_correct_missing_claim_header_with_exact_original_source() -> None:
+    client = FakeClient(_claim_payload(5, 5), _claim_payload(3, 5))
+    value = LeanProofExplainer(client, "explain-model", "test", max_attempts=2).explain(
+        theorem_statement="Prove nonnegativity.", lean_code=MULTILINE_CLAIM, verified=True,
+    )
+    assert value.sections[0].references[0].start_line == 3
+    assert value.sections[0].references[0].end_line == 5
+    assert "local claim header" in client.prompts[1]
+
+
+def test_saved_explanation_is_readable_without_new_header_coverage_rule() -> None:
+    from pals_agent.explanations import proof_explanation_from_api
+
+    payload = json.loads(_claim_payload(5, 5))
+    payload.update(model="historic-model", provider="historic-provider", elapsed_ms=1)
+    value = proof_explanation_from_api(payload, lean_code=MULTILINE_CLAIM)
+    assert value.sections[0].references[0].start_line == 5
+
+
+def test_qa_rejects_missing_claim_header_before_spending_a_model_call() -> None:
+    from pals_agent.explanations import proof_explanation_from_api
+
+    payload = json.loads(_claim_payload(5, 5))
+    payload.update(model="historic-model", provider="historic-provider", elapsed_ms=1)
+    explanation = proof_explanation_from_api(payload, lean_code=MULTILINE_CLAIM)
+    client = FakeClient()
+    reviewer = LeanGroundedOutputReviewer(client, "explain-model", "test", max_attempts=1)
+    with pytest.raises(ProofOutputReviewError) as error:
+        reviewer.review_explanation(
+            theorem_statement="Prove nonnegativity.", lean_code=MULTILINE_CLAIM,
+            explanation=explanation, language="ja",
+        )
+    assert error.value.category == "rejected"
+    assert "header 3-4" in error.value.rationale
+    assert not client.prompts
+
+
+def test_qa_with_complete_claim_header_still_requests_independent_math_review() -> None:
+    from pals_agent.explanations import proof_explanation_from_api
+
+    payload = json.loads(_claim_payload(3, 5))
+    payload.update(model="historic-model", provider="historic-provider", elapsed_ms=1)
+    explanation = proof_explanation_from_api(payload, lean_code=MULTILINE_CLAIM)
+    client = FakeClient('{"approved": true, "rationale": "Supported mathematics."}')
+    reviewer = LeanGroundedOutputReviewer(client, "explain-model", "test", max_attempts=1)
+    reviewer.review_explanation(
+        theorem_statement="Prove nonnegativity.", lean_code=MULTILINE_CLAIM,
+        explanation=explanation, language="ja",
+    )
+    assert len(client.prompts) == 1
+
+
+def test_characterization_requires_actual_result_in_conclusion_in_generation_and_qa() -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    generation = _explanation_prompt(
+        theorem_statement="Characterize all common multiples.", lean_code=LEAN_CODE, language="en",
+    )
+    review = _output_review_prompt(
+        theorem_statement="Characterize all common multiples.", lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(), language="en",
+    )
+    assert "compute, solve, determine, characterize or classify" in generation
+    assert "conclusion; proving both implications in the sections does not replace" in generation
+    assert "check the JSON conclusion member itself" in review
+    assert "generic proof-complete conclusion must be rejected" in review
+
+
+def test_claim_scanner_ignores_comments_strings_and_nonassigned_tactic_have() -> None:
+    from pals_agent.explanations import _local_claim_headers
+
+    source = '''/- outer
+  have fake :
+    False := by
+  /- nested -/
+-/
+def text := "have fake : False := by"
+theorem test : True := by
+  have h : True
+  · trivial
+  let other := 1
+  have h2 :
+      True := by
+    trivial
+  exact h2'''
+    assert _local_claim_headers(source) == [(11, 12)]
+
+
+@pytest.mark.parametrize("separator", ["\n", "\r\n", "\r", "\x85", "\u2028", "\u2029"])
+def test_reference_ranges_preserve_original_api_line_separators(separator: str) -> None:
+    from pals_agent.explanations import _line_reference_table, _validated_reference
+
+    source = separator.join(["first", "  second", "third"])
+    table = json.loads(_line_reference_table(source))
+    assert table[0]["separator_after"] == separator
+    assert table[1]["text"] == "  second"
+    excerpt = "first" + separator + "  second"
+    reference = _validated_reference({"start_line": 1, "end_line": 2, "excerpt": excerpt}, source)
+    assert reference.excerpt == excerpt
+    if separator != "\n":
+        with pytest.raises(ValueError, match="excerpt does not exactly match"):
+            _validated_reference({"start_line": 1, "end_line": 2,
+                                  "excerpt": "first\n  second"}, source)
+
+
+@pytest.mark.parametrize("character", ["\x0b", "\x0c", "\x1c", "\x1d", "\x1e"])
+def test_python_only_separators_do_not_invent_api_lines(character: str) -> None:
+    from pals_agent.explanations import _line_reference_table, _validated_reference
+
+    source = "first" + character + "second\nthird"
+    table = json.loads(_line_reference_table(source))
+    assert len(table) == 2
+    assert table[0]["text"] == "first" + character + "second"
+    assert _validated_reference({"start_line": 2, "end_line": 2, "excerpt": "third"}, source)
+
+
+def test_generation_and_qa_reject_invented_nonstandard_bridges_and_keep_real_sources() -> None:
+    from pals_agent.explanations import _explanation_prompt, _output_review_prompt
+
+    generation = _explanation_prompt(
+        theorem_statement="Find the minimum of the defined energy.",
+        lean_code=MULTILINE_CLAIM, language="en",
+    )
+    review = _output_review_prompt(
+        theorem_statement="Find the minimum of the defined energy.", lean_code=MULTILINE_CLAIM,
+        explanation=_reviewable_explanation(), language="en",
+    )
+    for prompt in (generation, review):
+        assert "Source comments, suggestive names and an assigned formula do not prove" in prompt
+        assert "do not silently substitute a convenient model" in prompt
+        assert "do not invent an exponential, multiplication, convergence claim" in prompt
+        assert "complete claim header" in prompt
+    assert "reject an unproved identification" in review
+    assert "derive that from\nthe power series" not in generation
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+def test_output_qa_requires_local_evidence_without_relaxing_soundness(language: str) -> None:
+    from pals_agent.explanations import (
+        _output_review_decision,
+        _output_review_prompt,
+        proof_explanation_from_api,
+    )
+
+    # Actual nontrivial, previously compiled corpus; no fake mathematical verdict.
+    corpus = Path(__file__).resolve().parents[2] / "testdata/explanation-grounding-v1"
+    case = json.loads((corpus / "corpus.json").read_text())["cases"][1]
+    source = (corpus / case["source"]).read_text()
+    lines = source.splitlines()
+    payload = {
+        "overview": "Fix coprime natural numbers, including zero.",
+        "sections": [{
+            "id": "quotient",
+            "title": "Internal correspondence label",
+            "summary": "Coprimality gives the quotient divisibility needed for the forward "
+                       "implication. Transitivity gives the converse.",
+            "references": [{"start_line": 8, "end_line": 19,
+                            "excerpt": "\n".join(lines[7:19])}],
+        }],
+        "conclusion": "The conditions $a\\mid n$ and $b\\mid n$ hold exactly when $ab\\mid n$.",
+        "model": "saved-output", "provider": "synthetic", "elapsed_ms": 0,
+    }
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source,
+        explanation=explanation, language=language,
+    )
+    assert "identify its candidate JSON field path, quote a short exact" in prompt
+    assert "For a missing requested result, quote" in prompt
+    assert "identify BOTH actual passages by field path and short quotation" in prompt
+    assert "different proof obligations" in prompt
+    assert "EACH must satisfy\nthe evidence requirement independently" in prompt
+    # These actual defects still require rejection; no blanket permission to reuse text.
+    assert "Keep rejecting genuinely repeated substantive derivations" in prompt
+    assert "reject an unproved identification" in prompt
+    assert "check the JSON conclusion member itself" in prompt
+    assert "generic proof-complete conclusion must be rejected" in prompt
+    structured = json.loads(prompt.split(
+        "Candidate explanation JSON (structured evidence; field names and internal titles "
+        "are not shown):\n", 1,
+    )[1])
+    assert structured["explanation"]["sections"] == payload["sections"]
+    assert structured["explanation"]["conclusion"] == payload["conclusion"]
+    # Old wire responses remain byte-preserving decisions; evidence is a prompt
+    # requirement, not a new schema gate or a post-hoc approval rewrite.
+    for approved in (False, True):
+        legacy = {"approved": approved, "rationale": "An unchanged saved review reason."}
+        assert _output_review_decision(legacy) == (approved, legacy["rationale"])
+
+
+def _saved_coprime_excerpt(separator: str, *, legacy: bool):
+    corpus = Path(__file__).resolve().parents[2] / "testdata/explanation-grounding-v1"
+    case = json.loads((corpus / "corpus.json").read_text())["cases"][1]
+    lines = (corpus / case["source"]).read_text().splitlines()
+    source = separator.join(lines)
+    excerpt = ("\n" if legacy else separator).join(lines[7:19])
+    payload = {
+        "overview": "Fix coprime natural numbers, including zero.",
+        "sections": [{"id": "divisibility", "title": "Both implications",
+                      "summary": "Euclid's lemma gives the quotient divisibility in the forward "
+                                 "direction. Each factor divides the product in the converse.",
+                      "references": [{"start_line": 8, "end_line": 19, "excerpt": excerpt}]}],
+        "conclusion": "Both divisibilities hold if and only if $ab\\mid n$.",
+        "model": "saved-output", "provider": "synthetic", "elapsed_ms": 1,
+    }
+    return case, source, payload, separator.join(lines[7:19])
+
+
+
+
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+@pytest.mark.parametrize("kind", ["explanation", "clarification"])
+def test_final_semantic_check_uses_the_actual_output_fields(language, kind) -> None:
+    from pals_agent.explanations import _output_review_prompt, proof_explanation_from_api
+
+    case, source, payload, _ = _saved_coprime_excerpt("\n", legacy=False)
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    clarification = ProofClarification(
+        section_id="divisibility", question="Why is the quotient a natural number?",
+        answer="Natural-number divisibility already asserts a natural-number witness, "
+               "so the quotient belongs to the same domain without a positivity assumption.",
+        key_points=("The witness is natural.", "No division by a possibly zero input is used."),
+        references=explanation.sections[0].references, model="saved-output", provider="synthetic",
+        prompt="", raw_model_output="", elapsed_ms=0,
+    ) if kind == "clarification" else None
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source, explanation=explanation,
+        language=language, clarification=clarification,
+        selected_text="The quotient is natural." if clarification else "",
+    )
+    marker = f"Final semantic approval check ({kind}):"
+    assert prompt.index(marker) > prompt.index("Ground every reported defect")
+    assert prompt.index(marker) > prompt.index('"approved": false')
+    assert "For EITHER verdict, include in rationale" in prompt
+    assert "Return approved=true only if ALL" in prompt
+    if kind == "explanation":
+        assert "inspect explanation.conclusion\nITSELF" in prompt
+        assert "cannot substitute for that answer in the conclusion field" in prompt
+        assert "must restate the actual result or claim" in prompt
+        assert "For a proof-only request, do not invent a separate computation" in prompt
+        assert "Passing the conclusion check cannot excuse an invalid\nbridge elsewhere" in prompt
+        assert "quote from its actual text" in prompt
+    else:
+        assert "clarification.question and clarification.answer" in prompt
+        assert "path clarification.answer and a short exact quote" in prompt
+        assert "explanation.conclusion" not in prompt
+        assert "Final semantic approval check (explanation)" not in prompt
+        assert "must answer the explicit learner question" in prompt
+        assert "reject a circular restatement of that lemma" in prompt
+        assert "clarification_context.selected_text" in prompt
+    assert "do not invent\nmissing text" in prompt
