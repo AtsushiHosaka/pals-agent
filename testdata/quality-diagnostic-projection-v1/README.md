@@ -1,0 +1,9 @@
+# 実verifierの診断語彙を品質分類へ対応
+
+Agent #49のr4471260201とr4471260216を修正した。lean.not_foundとlake.not_foundは通常のコンパイル失敗から実行環境の障害へ移す。実parserが返すlean.errorとlean.unknownIdentifierも、既知のコンパイル診断として保持する。未知の新コードはunclassifiedのままとする。
+
+2026-11-05 JST、実stderr parserからEMFとDraft202012 Schemaまでの新2件、および既存のUDP・Schema・実mTLS HTTPを含む対象205件が通過した。実際のLeanVerifierに存在しない実行ファイルを指定し、HTTP入口からfileへruntime分類が出る2例も含む。この2例ではコンパイラやモデルは実行していない。
+
+共有Schemaの変更は閉じた診断enumの3項目追加だけで、dimensionやunitは変更していない。独立レビューでも実parser2件とAPI/Agentの分類・Schemaの照合を確認した。Ruff、対象moduleのstrict mypy、diff検査も通過した。未変更の依存moduleにあるmypy診断は、対象moduleの検査とは分けて扱う。
+
+APIへ渡す既存HTTP修復情報が元runtime codeを集約する問題は残るため、API終端までruntime分類を保証したとは報告しない。親#217に残差を記録する。collectorの有効化・CloudWatchへの配送・本番配備は行っていない。
