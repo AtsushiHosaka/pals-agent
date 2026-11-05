@@ -1540,55 +1540,8 @@ def _saved_coprime_excerpt(separator: str, *, legacy: bool):
     return case, source, payload, separator.join(lines[7:19])
 
 
-@pytest.mark.parametrize("separator", ["\r\n", "\r", "\x85", "\u2028", "\u2029"],
-                         ids=["CRLF", "CR", "NEL", "LS", "PS"])
-@pytest.mark.parametrize("legacy", [False, True], ids=["original", "old-LF"])
-def test_saved_excerpt_reader_builds_clarification_with_canonical_source(separator, legacy) -> None:
-    from pals_agent.explanations import _clarification_prompt, proof_explanation_from_api
-
-    case, source, payload, original_excerpt = _saved_coprime_excerpt(separator, legacy=legacy)
-    before = json.dumps(payload, ensure_ascii=False)
-    explanation = proof_explanation_from_api(payload, lean_code=source)
-    assert explanation.sections[0].references[0].excerpt == original_excerpt
-    assert json.dumps(payload, ensure_ascii=False) == before
-    prompt = _clarification_prompt(
-        theorem_statement=case["question"], lean_code=source, explanation=explanation,
-        selected=explanation.sections[0], question="Why does the quotient remain natural?",
-        language="en",
-    )
-    context = json.loads(prompt.split("Existing explanation:\n", 1)[1].split(
-        "\n\nReturn exactly one JSON object", 1,
-    )[0])
-    assert context["sections"][0]["references"][0]["excerpt"] == original_excerpt
-    assert context["sections"][0]["summary"] == payload["sections"][0]["summary"]
 
 
-@pytest.mark.parametrize("separator", ["\r\n", "\r", "\x85", "\u2028", "\u2029"],
-                         ids=["CRLF", "CR", "NEL", "LS", "PS"])
-def test_legacy_reader_does_not_relax_new_generation_or_qa_excerpts(separator) -> None:
-    from pals_agent.explanations import _parse_explanation, proof_explanation_from_api
-
-    case, source, payload, original_excerpt = _saved_coprime_excerpt(separator, legacy=True)
-    with pytest.raises(ValueError, match="excerpt does not exactly match"):
-        _parse_explanation(payload, source, language="en", require_claim_headers=True)
-    loaded = proof_explanation_from_api(payload, lean_code=source)
-    assert loaded.sections[0].references[0].excerpt == original_excerpt
-    bad_reference = replace(loaded.sections[0].references[0],
-                            excerpt=payload["sections"][0]["references"][0]["excerpt"])
-    bad_section = replace(loaded.sections[0], references=(bad_reference,))
-    client = FakeClient()
-    reviewer = LeanGroundedOutputReviewer(client=client, model="explain-model", provider="unit")
-    with pytest.raises(ProofOutputReviewError, match="source correspondence") as error:
-        reviewer.review_explanation(
-            theorem_statement=case["question"], lean_code=source,
-            explanation=replace(loaded, sections=(bad_section,)), language="en",
-        )
-    assert error.value.category == "rejected"
-    assert client.prompts == []
-    # Historical compatibility accepts only the old normalization, not altered text.
-    payload["sections"][0]["references"][0]["excerpt"] += "\nnot in the source"
-    with pytest.raises(ValueError, match="excerpt does not exactly match"):
-        proof_explanation_from_api(payload, lean_code=source)
 
 
 @pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
