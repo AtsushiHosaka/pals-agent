@@ -191,8 +191,9 @@ _KNOWN_REQUEST_ERRORS: Final = REQUEST_ERROR_TAXONOMY.keys() | {
 
 _LEAN_COMPILE_CODES: Final = frozenset({
     "lean.compile_error", "lean.unsolved_goals", "lean.type_mismatch", "lean.tactic_failed",
-    "lean.syntax_error", "lean.unknown_identifier", "lean.declaration_uses_sorry",
-    "lean.output_limit", "lean.already_declared", "lean.no_goals", "lean.not_found",
+    "lean.syntax_error", "lean.unknown_identifier", "lean.unknownIdentifier", "lean.error",
+    "lean.declaration_uses_sorry",
+    "lean.output_limit", "lean.already_declared", "lean.no_goals",
     "lean.undeclared_theorem", "lean.failed", "lean.disallowed_metaprogramming",
     "lean.disallowed_attribute", "lean.disallowed_trusted_declaration",
     "lean.disallowed_syntax_quotation", "lean.disallowed_placeholder", "lean.disallowed_option",
@@ -205,7 +206,8 @@ _LEAN_PRECEDENCE: Final[tuple[tuple[frozenset[str], str], ...]] = (
     (frozenset({"lean.compile_interrupted", "lean.compile_deadline_interrupted"}),
      "infra.verifier_interrupted"),
     (frozenset({"lean.timeout", "lean.verifier_timeout"}), "infra.timeout"),
-    (frozenset({"lean.sandbox_setup_failed", "lean.project_not_found", "lean.prlimit_not_found"}),
+    (frozenset({"lean.sandbox_setup_failed", "lean.project_not_found", "lean.prlimit_not_found",
+                "lean.not_found", "lake.not_found"}),
      "verifier.runtime_unavailable"),
     (frozenset({"lean.trusted_audit_failed"}), "verifier.trusted_audit_failed"),
     (frozenset({"lean.statement_mismatch"}), "verifier.statement_mismatch"),
