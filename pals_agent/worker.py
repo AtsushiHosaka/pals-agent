@@ -1481,7 +1481,9 @@ class SqsProofWorker:
                 clarification_context=clarification_context,
                 content=content,
                 lean_code=lean_code,
-                parent_explanation_content=_public_explanation_content(explanation),
+                parent_explanation_content=_stored_parent_explanation_content(
+                    summary_payload, explanation,
+                ),
                 generator_session_id=claim_id,
                 review=review,
             )
@@ -2160,6 +2162,10 @@ def _validate_claim_resource(
             "updated_at",
             "diagnostics",
         }
+        if "output_language" in resource:
+            expected_keys.add("output_language")
+            if resource["output_language"] is not None:
+                _required_output_language(resource)
         if set(resource) != expected_keys or resource.get("id") != resource_id:
             raise ValueError("clarification claim resource identity/fields are invalid")
         _bounded_text(resource.get("proof_job_id"), maximum=200)
@@ -2767,6 +2773,24 @@ def _public_explanation_content(explanation: ProofExplanation) -> dict[str, Any]
         "provider": explanation.provider,
         "elapsed_ms": explanation.elapsed_ms,
     }
+
+
+def _stored_parent_explanation_content(
+    payload: dict[str, Any], model_context: ProofExplanation,
+) -> dict[str, Any]:
+    """Keep the immutable API parent's bytes separate from canonical model context.
+
+    The saved loader already validated every original-or-legacy excerpt against the
+    source. Only excerpts differ in its canonical view; parent identity must retain
+    their saved form. Project known content fields, never API transport metadata.
+    """
+    content = _public_explanation_content(model_context)
+    for section, saved_section in zip(content["sections"], payload["sections"], strict=True):
+        for reference, saved_reference in zip(
+            section["references"], saved_section["references"], strict=True,
+        ):
+            reference["excerpt"] = saved_reference["excerpt"]
+    return content
 
 
 def _public_clarification_content(clarification: ProofClarification) -> dict[str, Any]:

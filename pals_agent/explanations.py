@@ -138,6 +138,7 @@ an unanswered question. Give concise checkable verdict evidence, not hidden step
 """
 
 
+
 class TextGenerationClient(Protocol):
     def generate(
         self,
