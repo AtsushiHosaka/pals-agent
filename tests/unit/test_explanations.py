@@ -1112,7 +1112,7 @@ def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridg
     with pytest.raises(ProofOutputReviewError) as error:
         reviewer.review_explanation(
             theorem_statement="Every natural n satisfies n + 0 = n.",
-            lean_code="theorem target (n : Nat) : n + 0 = n := by simp",
+            lean_code=LEAN_CODE,
             explanation=_reviewable_explanation(), language="en",
         )
     assert error.value.category == "rejected"
