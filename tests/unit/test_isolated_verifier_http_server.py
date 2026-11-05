@@ -6,6 +6,7 @@ import json
 import socket
 import ssl
 import subprocess
+import sys
 import tempfile
 from collections.abc import Iterator
 from contextlib import contextmanager, suppress
@@ -636,6 +637,43 @@ def test_recipe_admission_records_only_actual_compile_attempts(
                       "private_compiler_message", "proof-1", str(_ADMISSION_ID)):
         assert forbidden not in path.read_text()
     quality_events.reset_for_tests()
+
+
+@pytest.mark.parametrize("missing", ["lean", "lake"])
+def test_missing_actual_executables_are_runtime_failures_through_http(
+    tls_contexts, monkeypatch, tmp_path, missing,
+) -> None:
+    from pals_agent import quality_events
+    from pals_agent.lean import LeanVerifier
+
+    path = tmp_path.resolve() / "quality.jsonl"
+    path.touch(mode=0o600)
+    for name, value in ((quality_events.ENABLED_ENV, "true"),
+                        (quality_events.ENVIRONMENT_ENV, "probe"),
+                        (quality_events.TRANSPORT_ENV, "file"),
+                        (quality_events.FILE_ENV, str(path))):
+        monkeypatch.setenv(name, value)
+    quality_events.reset_for_tests()
+    verifier = LeanVerifier(
+        lean_binary=str(tmp_path / "missing-lean") if missing == "lean" else sys.executable,
+        lake_binary=str(tmp_path / "missing-lake"),
+        project_dir=tmp_path,
+    )
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    try:
+        with _running_server(server_context, client_spki_sha256, verifier):
+            response = _request(client_context, _verify_request(
+                "theorem parity (n : Nat) : n % 2 = 0 ∨ n % 2 = 1 := by omega"
+            ))
+        assert response[0] == 422
+        (event,) = [json.loads(line) for line in path.read_text().splitlines()]
+        assert event["diagnostic_code"] == f"{missing}.not_found"
+        assert event["failure_code"] == "verifier.runtime_unavailable"
+        assert event["FailureClass"] == "verifier"
+        assert "missing-lean" not in path.read_text()
+        assert "missing-lake" not in path.read_text()
+    finally:
+        quality_events.reset_for_tests()
 
 
 def test_failed_quality_transport_does_not_change_verifier_response(
