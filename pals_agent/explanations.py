@@ -81,6 +81,29 @@ while omitting the claim it establishes. The required header ranges are listed b
 line table. Use the smallest faithful ranges that include those headers; do not fabricate prose
 for an unrelated line or claim that one automated line records unseen intermediate states.
 """
+_GROUNDED_REVIEW_RATIONALE_INSTRUCTION = """Ground every reported defect in the actual candidate.
+For each criticism in rationale, identify its candidate JSON field path, quote a short exact
+span from that field, and explain the specific invalid inference or violated requirement
+against the question, hypotheses and supplied evidence. For a missing requested result, quote
+the actual conclusion and say which required answer is absent; do not invent a quotation of
+missing text. Field paths locate evidence, not learner-visible headings. A field path or an
+exact quotation alone does not establish a mathematical defect.
+Before alleging duplication, identify BOTH actual passages by field path and short quotation,
+and identify the same substantive derivation or complete final calculation being performed
+again. Recalling an established fact as a premise for a new inference is not re-proving it.
+In particular, deriving a global bound and then using it to characterize equality or attainment
+are different proof obligations. Likewise, invoking a proved lemma in a converse or a later
+case is legitimate dependency, not duplication merely because the fact or symbols reappear.
+Keep rejecting genuinely repeated substantive derivations and the prohibited repeated complete
+final calculation; do not relax those rules to approve mathematical or presentation defects.
+Assess every claim before approving. When rejecting, prefer one decisive, fully supported
+defect over extra speculative complaints. If you report multiple defects, EACH must satisfy
+the evidence requirement independently. Finding one real error does not justify appending an
+unrelated unsubstantiated accusation about another correct step. Do not treat a different
+proof obligation, a supported standard inference, or a permitted brief final restatement as a
+stylistic defect. Do not invent a missing premise or claim an omitted passage contains words
+that are not there. Give a concise checkable evidence summary, not hidden chain-of-thought.
+"""
 
 
 class TextGenerationClient(Protocol):
@@ -1482,6 +1505,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
 {output_quality_review}
+{_GROUNDED_REVIEW_RATIONALE_INSTRUCTION}
 Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be

@@ -1,6 +1,7 @@
 import json
 import uuid
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 
@@ -1465,3 +1466,57 @@ def test_generation_and_qa_reject_invented_nonstandard_bridges_and_keep_real_sou
         assert "complete claim header" in prompt
     assert "reject an unproved identification" in review
     assert "derive that from\nthe power series" not in generation
+
+
+@pytest.mark.parametrize("language", ["en", "ja", "zh-Hans", "zh-Hant"])
+def test_output_qa_requires_local_evidence_without_relaxing_soundness(language: str) -> None:
+    from pals_agent.explanations import (
+        _output_review_decision,
+        _output_review_prompt,
+        proof_explanation_from_api,
+    )
+
+    # Actual nontrivial, previously compiled corpus; no fake mathematical verdict.
+    corpus = Path(__file__).resolve().parents[2] / "testdata/explanation-grounding-v1"
+    case = json.loads((corpus / "corpus.json").read_text())["cases"][1]
+    source = (corpus / case["source"]).read_text()
+    lines = source.splitlines()
+    payload = {
+        "overview": "Fix coprime natural numbers, including zero.",
+        "sections": [{
+            "id": "quotient",
+            "title": "Internal correspondence label",
+            "summary": "Coprimality gives the quotient divisibility needed for the forward "
+                       "implication. Transitivity gives the converse.",
+            "references": [{"start_line": 8, "end_line": 19,
+                            "excerpt": "\n".join(lines[7:19])}],
+        }],
+        "conclusion": "The conditions $a\\mid n$ and $b\\mid n$ hold exactly when $ab\\mid n$.",
+        "model": "saved-output", "provider": "synthetic", "elapsed_ms": 0,
+    }
+    explanation = proof_explanation_from_api(payload, lean_code=source)
+    prompt = _output_review_prompt(
+        theorem_statement=case["question"], lean_code=source,
+        explanation=explanation, language=language,
+    )
+    assert "identify its candidate JSON field path, quote a short exact" in prompt
+    assert "For a missing requested result, quote" in prompt
+    assert "identify BOTH actual passages by field path and short quotation" in prompt
+    assert "different proof obligations" in prompt
+    assert "EACH must satisfy\nthe evidence requirement independently" in prompt
+    # These actual defects still require rejection; no blanket permission to reuse text.
+    assert "Keep rejecting genuinely repeated substantive derivations" in prompt
+    assert "reject an unproved identification" in prompt
+    assert "check the JSON conclusion member itself" in prompt
+    assert "generic proof-complete conclusion must be rejected" in prompt
+    structured = json.loads(prompt.split(
+        "Candidate explanation JSON (structured evidence; field names and internal titles "
+        "are not shown):\n", 1,
+    )[1])
+    assert structured["explanation"]["sections"] == payload["sections"]
+    assert structured["explanation"]["conclusion"] == payload["conclusion"]
+    # Old wire responses remain byte-preserving decisions; evidence is a prompt
+    # requirement, not a new schema gate or a post-hoc approval rewrite.
+    for approved in (False, True):
+        legacy = {"approved": approved, "rationale": "An unchanged saved review reason."}
+        assert _output_review_decision(legacy) == (approved, legacy["rationale"])
