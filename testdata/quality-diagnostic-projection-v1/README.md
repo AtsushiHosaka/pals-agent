@@ -7,7 +7,13 @@ Agent #49のr4471260201とr4471260216を修正した。lean.not_foundとlake.not
 共有Schemaの変更は閉じた診断enumの3項目追加だけで、dimensionやunitは変更していない。独立レビューでも実parser2件とAPI/Agentの分類・Schemaの照合を確認した。Ruff、対象moduleのstrict mypy、diff検査も通過した。未変更の依存moduleにあるmypy診断は、対象moduleの検査とは分けて扱う。
 
 APIへ渡す既存HTTP修復情報が元runtime codeを集約する問題は残るため、API終端までruntime分類を保証したとは報告しない。親#217に残差を記録する。collectorの有効化・CloudWatchへの配送・本番配備は行っていない。
-## 統合ブランチでの再確認
+## QA修正を含む統合確認
+
+Agent #53の最終bf7a7bacを#51へ通常mergeしたbd7838fで、既存の説明・追加質問・claim・品質・実HTTPの574件と、評価用raw保存の16件が通過した。計590件である。2つの同名test_recording.pyを通常のimport設定で同時指定した初回は収集に失敗したため、raw保存の組はimportlibモードで分離して実行した。検査内容と期待値は変えていない。
+
+この後のQA修正は、固定4入力×各3回×旧新版の24QAで別に限定受入した。最初の失敗群と原本を保持し、詳細はtestdata/qa-semantic-priority-v1/README.mdに記録した。一般の数学的精度、本番、追加質問の実モデル精度を証明しない。runtime診断のHTTP集約の残差は、この統合でも未修正である。
+
+## 診断分類と親参照の統合時点の記録
 
 2026年11月5日12時台JST、Agent #55の保存済み親参照・nullableな出力言語の互換性修正と、Agent #49の診断分類修正をAgent #51へ通常mergeした。説明・追加質問・claim・品質Schema・実HTTP verifierを含む562件が通過した。未採用のAgent #53のQAプロンプトは取り込んでいない。
 
