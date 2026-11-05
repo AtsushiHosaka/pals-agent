@@ -76,13 +76,15 @@ def digest(raw: bytes) -> str:
 def save(path: Path, value: object) -> None:
     with open(path, "x", encoding="utf-8", opener=lambda p, f: os.open(p, f, 0o600)) as f:
         json.dump(value, f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
 
 
 def response_record(status: int, body: bytes, elapsed: float) -> dict:
     try:
         parsed = json.loads(body)
         parse_status = "json"
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, RecursionError):
         parsed, parse_status = None, "invalid_json_or_utf8"
     return {
         "http_status": status,
@@ -91,6 +93,25 @@ def response_record(status: int, body: bytes, elapsed: float) -> dict:
         "parse_status": parse_status,
         "response": parsed,
     }
+
+
+def record_received_response(
+    directory: Path, call: int, status: int, body: bytes, elapsed: float
+) -> None:
+    # Commit a flat, parse-independent envelope first. Any later decoder,
+    # serializer or parsed-artifact write failure leaves these original bytes.
+    raw_path = directory / f"provider-{call}-raw.json"
+    save(
+        raw_path,
+        {
+            "http_status": status,
+            "elapsed_seconds": elapsed,
+            "body_base64": base64.b64encode(body).decode("ascii"),
+        },
+    )
+    parsed = response_record(status, body, elapsed)
+    parsed["raw_envelope_sha256"] = digest(raw_path.read_bytes())
+    save(directory / f"provider-{call}.json", parsed)
 
 
 def module(arm: str, directory: Path):
@@ -284,9 +305,12 @@ def run(args: argparse.Namespace) -> None:
             )
             start = time.monotonic()
             response = HardDeadlineHttpTransport().request(**kwargs)
-            save(
-                args.output / f"provider-{self.calls}.json",
-                response_record(response.status_code, response.body, time.monotonic() - start),
+            record_received_response(
+                args.output,
+                self.calls,
+                response.status_code,
+                response.body,
+                time.monotonic() - start,
             )
             return response
 

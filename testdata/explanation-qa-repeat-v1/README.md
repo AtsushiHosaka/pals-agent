@@ -72,3 +72,11 @@ usage単体からキャッシュ書込の保持時間は確定できません。
 独立したread-only確認でも24件の理由と6セルの採点、usage、費用の再集計が一致しました。Git外の保存先で作成した114ファイルのarchive manifestのSHA256は`149398ca7cfaadcac2e1cc25c23e0fde24fed585246a571e31b6289a9d347cf5`です。元の保存出力・過去の測定原本は変更していません。
 
 拒否理由に根拠のない欠陥が加わる問題は、別の受入対象として[pals#252](https://github.com/AtsushiHosaka/pals/issues/252)へ引き継ぎました。この測定では現行sourceを変更していません。#233/#216と同様に、今回の反復結果だけで本番の解消とは判断しません。
+
+## 受信記録の後続修正
+
+PRレビューで、JSONの過深な入れ子や通常のValueErrorが発生すると、受信済みのHTTP本文を保存する前にharnessが失敗する経路が指摘されました。前述の24件の原本が失われたという指摘ではありません。今回の測定と採点は保持します。
+
+今後のharnessは、解析に依存しないHTTP状態・時間・base64本文のflatなenvelopeを先に排他的作成し、flush/fsync後にJSON解析と派生artifact保存へ進みます。解析や派生保存が失敗しても、先に保存した原本は残します。原本自体の書込が失敗した場合まで、保存成功とは扱いません。追加のモデル呼出しはありません。
+
+`python -m pytest -o addopts='' -q testdata/explanation-qa-repeat-v1/test_recording.py`で8件がPASSしました。非JSON、不正UTF8、過深JSON、明示ValueError/RecursionError、parsed保存の書込失敗・既存fileとの競合、通常JSONの原本保持を確認しています。静的検査とdiff検査も通りました。このoffline件数はモデル品質の分母へ足しません。
