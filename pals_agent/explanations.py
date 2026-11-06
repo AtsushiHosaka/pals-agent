@@ -745,7 +745,9 @@ def _parse_explanation(
             )
         )
     if require_epsilon_delta:
-        if language == "ja" and not overview.startswith("$\\varepsilon>0$ を任意に取ります。"):
+        if language == "ja" and not re.match(
+            r"^\$(?:ε>0|0<ε)\$", _normalize_x_squared_math(overview)
+        ):
             raise ValueError(
                 "x-squared continuity explanation must start with the mathematical proof"
             )
@@ -1061,7 +1063,8 @@ def _explanation_prompt(
     x_squared_instruction = ""
     if require_epsilon_delta:
         opening_instruction = (
-            "The overview must begin exactly with:\n$\\varepsilon>0$ を任意に取ります。"
+            "Begin with an arbitrary positive epsilon, using natural Japanese wording. "
+            "For example: $\\varepsilon>0$ を任意に取ります。"
             if language == "ja"
             else (
                 "Begin directly with an epsilon-delta proof in the requested output language, "
@@ -1529,7 +1532,7 @@ def _is_x_squared_continuity(theorem_statement: str) -> bool:
     return "連続" in compact and ("x²" in compact or "x^2" in compact)
 
 
-def _has_x_squared_epsilon_delta(text: str) -> bool:
+def _normalize_x_squared_math(text: str) -> str:
     compact = (
         re.sub(r"\s+", "", text)
         .replace("\\varepsilon", "ε")
@@ -1549,40 +1552,105 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
     compact = re.sub(r"\\leq?(?![A-Za-z])", "<=", compact)
     compact = re.sub(r"\\lt(?![A-Za-z])", "<", compact)
     compact = re.sub(r"\\frac\{ε\}\{([^{}]*)\}", r"ε/(\1)", compact)
-    compact = compact.replace("{", "").replace("}", "")
-    construction = re.search(r"δ(?::=|=)(?P<choice>[^$。、；;]{1,200})", compact)
-    has_delta_construction = construction is not None and "ε" in construction.group("choice")
-    has_sufficient_delta_choice = (
-        construction is not None
-        and _is_sufficient_x_squared_delta_choice(construction.group("choice"))
+    return compact.replace("{", "").replace("}", "")
+
+
+def _x_squared_delta_choice(compact: str) -> str | None:
+    """Read the complete bounded expression, without consuming adjacent proof prose."""
+    construction = re.search(r"δ(?::=|=)", compact)
+    if construction is None:
+        return None
+    remaining = compact[construction.end() :]
+    if not remaining.startswith("min("):
+        return None
+    depth = 0
+    for index, character in enumerate(remaining[:200]):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                choice = remaining[: index + 1]
+                suffix = remaining[index + 1 :]
+                if suffix.startswith(">0"):
+                    choice += ">0"
+                    suffix = suffix[2:]
+                # Do not silently truncate +1, a multiplier, another equality, etc.
+                if suffix and suffix[0] not in "$。、；;":
+                    # Only complete definition clauses end the expression. A
+                    # suffix such as の2倍 or に1を加えた値 changes its value.
+                    definition_end = re.match(
+                        r"(?:と(?:おく|おきます|置く|置きます|定める|定めます|する|します)"
+                        r"|を(?:選ぶ|選びます|取る|取ります))(?=[。、；;]|$)",
+                        suffix,
+                    )
+                    if definition_end is None:
+                        return None
+                return choice
+    return None
+
+
+def _has_x_squared_epsilon_delta(text: str) -> bool:
+    compact = _normalize_x_squared_math(text)
+    choice = _x_squared_delta_choice(compact)
+    if choice is None:
+        return False
+    # Bind the point consistently across the delta, neighborhood, and estimate.
+    # These are alpha-renamings of the same proof, not new mathematical cases.
+    variable = r"[A-Za-z](?:_[0-9]+)?"
+    points = set(re.findall(rf"\|({variable})\|", choice))
+    difference = re.search(rf"\|({variable})\^2-({variable})\^2\|=", compact)
+    if len(points) != 1 or difference is None:
+        return False
+    point = next(iter(points))
+    difference_variables = set(difference.groups())
+    if len(difference_variables) != 2 or point not in difference_variables:
+        return False
+    varying = next(iter(difference_variables - {point}))
+    names = {point: "a", varying: "x"}
+    names_pattern = re.compile(
+        rf"(?<![A-Za-z0-9_])(?:{re.escape(point)}|{re.escape(varying)})(?![A-Za-z0-9_])"
     )
+    compact = names_pattern.sub(lambda match: names[match.group()], compact)
+    choice = names_pattern.sub(lambda match: names[match.group()], choice)
+    has_sufficient_delta_choice = _is_sufficient_x_squared_delta_choice(choice)
     has_positive_delta = (
         "δ>0" in compact
         or "0<δ" in compact
-        or (construction is not None and re.search(r">0", construction.group("choice")) is not None)
+        or choice.endswith(">0")
     )
+    distance = r"\|(?:x-a|a-x)\|"
+    sum_bound = r"\|(?:x\+a|a\+x)\|"
     factorization = re.search(
         (
-            r"\|x\^2-a\^2\|="
-            r"(?:\|x-a\|\*?\|x\+a\||\|x\+a\|\*?\|x-a\|)"
+            r"\|(?:x\^2-a\^2|a\^2-x\^2)\|="
+            rf"(?:{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
         ),
         compact,
     )
-    neighborhood_position = compact.find("|x-a|<δ")
+    neighborhood = re.search(rf"(?:{distance}<δ|δ>{distance})", compact)
     applies_delta_neighborhood = (
-        factorization is not None and 0 <= neighborhood_position < factorization.start()
-    )
-    applies_epsilon_bound = (
         factorization is not None
-        and re.search(
-            r"[^$。、；;]{0,240}<=?ε",
-            compact[factorization.end() :],
-        )
-        is not None
+        and neighborhood is not None
+        and neighborhood.start() < factorization.start()
     )
+    estimate = None
+    if factorization is not None:
+        following = compact[factorization.end() :]
+        estimate = re.match(r"<=?[^$。、；;]{0,240}", following)
+        if estimate is None:
+            # A separate sentence may estimate the same difference or product.
+            estimate = re.search(
+                rf"(?<![A-Za-z0-9_.*+/^)|-])(?:\|(?:x\^2-a\^2|a\^2-x\^2)\|"
+                rf"|{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
+                r"<=?[^$。、；;]{0,240}",
+                following,
+            )
+    applies_epsilon_bound = estimate is not None and re.search(
+        r"<=?ε(?=$|[^A-Za-z0-9_+\-*/^(=<>])", estimate.group()
+    ) is not None
     return (
-        has_delta_construction
-        and has_sufficient_delta_choice
+        has_sufficient_delta_choice
         and has_positive_delta
         and applies_delta_neighborhood
         and applies_epsilon_bound
