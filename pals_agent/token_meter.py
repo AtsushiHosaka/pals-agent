@@ -57,10 +57,11 @@ def active_token_meter() -> TokenMeter | None:
 def optional_token_calls() -> Iterator[None]:
     """Mark calls in this context as optimizations whose failure must not poison the request.
 
-    Usage is recorded exactly as for required calls (permit, receipt, usage report). A failure
-    after the permit still leaves the same ``unknown`` receipt, which the API ledger treats as an
-    unresolved call. The only difference: ``failed`` is not set, so concurrent required calls are
-    not cancelled, and the error is ``OptionalTokenCallFailed`` for the caller to absorb.
+    Usage is recorded exactly as for required calls (permit, receipt, usage report). The permit
+    carries ``optional: true``; a failure after the permit leaves the usual ``unknown`` receipt,
+    which the API ledger then treats as unused (no charge, no blocker) only for such permits. A
+    successful optional call is billed like any other. ``failed`` is not set, so concurrent
+    required calls are not cancelled, and ``OptionalTokenCallFailed`` is raised for the caller.
     """
     token = _optional.set(True)
     try:
@@ -282,6 +283,9 @@ class TokenMeter:
                         input_token_bound=input_bound,
                         output_token_bound=output_bound,
                         payload_sha256=hashlib.sha256(data).hexdigest(),
+                        # Declared so the API ledger neither bills nor blocks on this call if it
+                        # fails (an `unknown` receipt). Omitted for every required call.
+                        **({"optional": True} if _optional.get() else {}),
                     ),
                     timeout_seconds=self._remaining(deadline),
                 )

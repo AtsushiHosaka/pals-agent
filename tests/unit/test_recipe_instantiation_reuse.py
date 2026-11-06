@@ -425,7 +425,8 @@ def test_only_instantiation_settlements_wait_for_the_api_owned_compile():
     client.settle_proof_request(request_id=REQUEST_ID, payload={
         "claim_id": claim, "private_evidence": {"recipe_instantiation_correspondence": {}}})
     assert seen == [15.0, INSTANTIATION_SETTLE_TIMEOUT_SECONDS]
-    assert 90 < INSTANTIATION_SETTLE_TIMEOUT_SECONDS < 120  # API verifier bound < worker < ALB
+    # the API's 90 s verifier bound < the worker's settle wait < the 240 s claim lease
+    assert 90 < INSTANTIATION_SETTLE_TIMEOUT_SECONDS < 240
 
 
 # --- metered fault injection: optional calls may fail without poisoning the request -----------
@@ -444,7 +445,7 @@ def metered(instance, exact=(SCOPE_MISS, EXACT_REJECT), enabled=True, recipes=(P
 
 FAULTS = {
     "http-5xx": 503, "quota": 429, "timeout": HttpDeadlineExceeded("injected"),
-    "invalid-json": "not json", "provider-error": 500,
+    "invalid-json": "not json", "wrong-shape": {"unexpected": 1},
 }
 
 
@@ -464,7 +465,8 @@ def test_metered_optional_call_faults_continue_on_the_old_path(stage, fault):
     assert result.answer is None
     permits = {p["call_id"] for p in ledger.permits}
     assert permits == {r["call_id"] for r in ledger.receipts}  # every permit has a receipt
-    assert any(r["status"] == "unknown" for r in ledger.receipts) or fault == "invalid-json"
+    answered_ok = fault in {"invalid-json", "wrong-shape"}  # the call itself succeeded
+    assert any(r["status"] == "unknown" for r in ledger.receipts) or answered_ok
 
 
 def test_metered_exact_hit_is_not_cancelled_by_an_optional_proposal_fault():
@@ -502,3 +504,118 @@ def test_late_instance_review_is_skipped_so_the_settle_fits_the_claim_lease(monk
     assert result.outcome == "formal" and result.answer is None
     assert len(transport.calls) == 4  # the proposal ran; no review call was made
     assert reuse.INSTANCE_LATEST_START_SECONDS < 0
+
+
+# --- ledger-level fault injection: the optional declaration, and connection failures ------------
+class CountFaultTransport(InstanceTransport):
+    """Fails the token-count endpoint for instance-stage calls (before any permit exists)."""
+
+    def request(self, **kwargs):
+        if kwargs["url"].endswith("/input_tokens"):
+            body = json.loads(kwargs["body"])
+            if is_instance_call(body):
+                return HttpResponse(503, b'{"error":{}}')
+        return super().request(**kwargs)
+
+
+class FaultLedger(Ledger):
+    """Faults only on calls the worker declared optional (permit.optional) or only required."""
+
+    def __init__(self, events, *, permit=None, receipt=None, required_permit=None):
+        super().__init__(events)
+        self.optional_ids, self.fault = set(), (permit, receipt, required_permit)
+
+    def permit_token_call(self, payload, *, timeout_seconds):
+        permit, _, required_permit = self.fault
+        optional = payload.get("optional") is True
+        super().permit_token_call(payload, timeout_seconds=timeout_seconds)
+        if optional:
+            self.optional_ids.add(payload["call_id"])
+            if permit:
+                raise permit
+        elif required_permit:
+            raise required_permit
+
+    def record_token_receipt(self, payload, *, timeout_seconds):
+        _, receipt, _ = self.fault
+        super().record_token_receipt(payload, timeout_seconds=timeout_seconds)
+        if receipt and payload["call_id"] in self.optional_ids and payload["status"] == "success":
+            raise receipt
+
+
+def ledger_run(instance, ledger, exact=(SCOPE_MISS, EXACT_REJECT), transport=InstanceTransport):
+    meter = TokenMeter(ledger, OP, REQUEST_ID, CLAIM_ID, time.monotonic() + 30)
+    channel = transport([dict(READY, recipe_intent=INTENT), *exact], instance)
+    search, _ = lookup([POWER])
+    error = result = None
+    with token_meter_scope(meter), usage_scope([].append):
+        try:
+            result = make_engine(channel).answer(
+                BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID)
+        except TokenMeterError as caught:
+            error = caught
+    return result, error, meter
+
+
+EXACT_HIT = [dict(MATCH, recipe_id=POWER["recipe_id"]),
+             dict(REVIEW, recipe_id=POWER["recipe_id"])]
+
+
+@pytest.mark.parametrize("fault", sorted(FAULTS))
+def test_exact_hit_stays_answered_when_the_optional_proposal_fails(fault):
+    ledger = FaultLedger([])
+    result, error, meter = ledger_run([FAULTS[fault]], ledger, exact=EXACT_HIT)
+    assert error is None and not meter.failed
+    assert result.outcome == "answered"
+    assert result.private_evidence["lean_route"] == "catalog_reuse"
+    assert result.answer["text"] == POWER_ANSWER
+    # only the proposal declared itself optional; every required permit omits the field
+    declared = [p for p in ledger.permits if p.get("optional")]
+    assert len(declared) == 1 and len(ledger.permits) == 4
+    assert {p["call_id"] for p in ledger.permits} == {r["call_id"] for r in ledger.receipts}
+    unknown = [r for r in ledger.receipts if r["status"] == "unknown"]
+    assert all(r["call_id"] == declared[0]["call_id"] for r in unknown)
+
+
+@pytest.mark.parametrize("where", ["count", "permit-5xx", "permit-budget", "receipt-lost"])
+def test_connection_faults_of_the_optional_call_are_absorbed(where):
+    from pals_agent.api_client import PalsApiError
+
+    kwargs = {"permit": None, "receipt": None}
+    transport = InstanceTransport
+    if where == "count":
+        transport = CountFaultTransport
+    elif where == "permit-5xx":
+        kwargs["permit"] = PalsApiError("down", status_code=503)
+    elif where == "permit-budget":
+        kwargs["permit"] = PalsApiError(
+            "no", status_code=402, error_code="token_budget_exceeded")
+    else:
+        kwargs["receipt"] = PalsApiError("lost", status_code=503)
+    ledger = FaultLedger([], **kwargs)
+    result, error, meter = ledger_run([proposal(), review()], ledger, transport=transport)
+    old = ledger_run([], Ledger([]))[0]
+    assert error is None and not meter.failed
+    if where == "receipt-lost":
+        # a lost success acknowledgement is not a success: the old path continues
+        assert result.outcome == old.outcome == "formal"
+    else:
+        assert result.outcome == old.outcome == "formal"
+        assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
+
+
+def test_a_required_call_failing_beside_the_optional_proposal_still_fails_the_request():
+    from pals_agent.api_client import PalsApiError
+
+    ledger = FaultLedger([], required_permit=PalsApiError("down", status_code=503))
+    result, error, meter = ledger_run([proposal(), review()], ledger)
+    assert result is None and isinstance(error, TokenMeterError) and meter.failed
+    assert not isinstance(error, OptionalTokenCallFailed)
+
+
+def test_required_permits_never_carry_the_optional_declaration():
+    ledger = Ledger([])
+    result, error, _ = ledger_run([proposal(), review()], ledger)
+    assert error is None and result.outcome == "answered"
+    flags = [p.get("optional") for p in ledger.permits]
+    assert flags.count(True) == 2 and flags.count(None) == 3  # proposal + instance review only
