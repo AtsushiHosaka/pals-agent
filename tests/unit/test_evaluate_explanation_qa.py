@@ -45,6 +45,11 @@ LIVE = [
 KEY = {"OPENAI_API_KEY": "test-key-not-real"}
 
 
+# 54 cases: 49 go to the reviewer, 5 are stopped by the structural layer before any model.
+MODEL_CASES = 49
+STRUCTURAL_CASES = 5
+
+
 def _run(argv: list[str], **kwargs: Any) -> tuple[int, list[str]]:
     lines: list[str] = []
     code = qa.run(argv, out=lines.append, **kwargs)
@@ -126,7 +131,7 @@ def test_case_file_has_the_required_shape_and_passes_the_structural_layer() -> N
     case_file = qa.load_cases(qa.DEFAULT_CASES)
     groups = [c.group for c in case_file.cases]
     assert groups.count("valid_notation") == 22
-    assert groups.count("wrong") == 25
+    assert groups.count("wrong") == 29
     assert groups.count("summary_first") == 3
     assert {c.expected for c in case_file.cases if c.group == "valid_notation"} == {"approve"}
     assert {c.expected for c in case_file.cases if c.group != "valid_notation"} == {"reject"}
@@ -154,8 +159,9 @@ def test_dry_run_is_the_default_needs_no_key_and_calls_no_model() -> None:
     report = json.loads(lines[0])
     assert code == 0
     assert report["mode"] == "dry-run"
-    assert report["cases"] == 50
-    assert report["by_group"] == {"valid_notation": 22, "wrong": 25, "summary_first": 3}
+    assert report["cases"] == 54
+    assert report["structural_cases"] == 5
+    assert report["by_group"] == {"valid_notation": 22, "wrong": 29, "summary_first": 3}
     assert "no model was called" in report["note"]
 
 
@@ -218,10 +224,10 @@ def test_live_run_with_expected_decisions_exits_zero_and_accounts_cost() -> None
     code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: reviewer)
     report = json.loads(lines[0])
     assert code == 0
-    assert reviewer.calls == 50
+    assert reviewer.calls == MODEL_CASES
     assert report["summary"]["false_accepts"] == 0
     assert report["summary"]["false_rejects"] == 0
-    assert report["spent_usd"] == pytest.approx(50 * (3000 * 1 + 500 * 4) / 1_000_000)
+    assert report["spent_usd"] == pytest.approx(MODEL_CASES * (3000 * 1 + 500 * 4) / 1_000_000)
 
 
 def test_report_carries_each_reviewers_reason_category_and_raw_output() -> None:
@@ -234,7 +240,9 @@ def test_report_carries_each_reviewers_reason_category_and_raw_output() -> None:
     rejected = results["wrong-01-epsilon-plus-one"]
     assert (rejected["category"], rejected["rationale"]) == ("rejected", "delta fails")
     assert rejected["reviewer_session_id"] == "sess-no"
-    assert all("raw_reviewer_outputs" in r for r in results.values())
+    assert all(
+        "raw_reviewer_outputs" in r for r in results.values() if r.get("layer") != "structure"
+    )
 
 
 def test_recording_client_keeps_raw_answers_and_forwards_the_timeout() -> None:
@@ -368,8 +376,8 @@ def test_repeats_run_every_case_n_times_and_report_agreement_per_case() -> None:
     report = json.loads(lines[0])
     assert code == 1
     assert report["repeats"] == 3
-    assert reviewer.calls == 150
-    assert report["summary"]["runs"] == 150
+    assert reviewer.calls == 3 * MODEL_CASES
+    assert report["summary"]["runs"] == 3 * MODEL_CASES + STRUCTURAL_CASES
     assert report["summary"]["false_rejects"] == 3
     assert report["summary"]["agreement_by_case"]["valid-01-base"] == {
         "runs": 3,
@@ -394,6 +402,8 @@ def test_repeats_scale_the_worst_case_estimate_and_must_be_positive() -> None:
 def test_every_rejected_case_names_the_checks_it_fails_and_presentation_cases_a_quote() -> None:
     for case in qa.load_cases(qa.DEFAULT_CASES).cases:
         if case.expected != "reject":
+            continue
+        if case.structural_label is not None:
             continue
         assert case.expected_failed_checks, case.id
         assert set(case.expected_failed_checks) <= set(EPSILON_DELTA_CHECK_IDS)
@@ -438,7 +448,7 @@ def test_review_infrastructure_errors_are_errors_not_decisions() -> None:
     code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: StubReviewer(error=True))
     summary = json.loads(lines[0])["summary"]
     assert code == 1
-    assert summary["errors"] == 50
+    assert summary["errors"] == MODEL_CASES
     assert summary["false_accepts"] == 0
 
 
@@ -468,7 +478,11 @@ def test_run_stops_before_a_call_that_could_exceed_the_remaining_budget() -> Non
     report = json.loads(lines[0])
     assert code == 1
     assert report["stopped_early_for_budget"] is True
-    assert reviewer.calls == len(report["results"]) < 50
+    assert (
+        reviewer.calls
+        == len([r for r in report["results"] if r.get("layer") != "structure"])
+        < MODEL_CASES
+    )
     # Each call spends about 0.3 USD; the guard stops before the budget is overshot by much.
     assert report["spent_usd"] < 2.0 + 0.35
 
@@ -528,3 +542,54 @@ def test_the_report_records_whether_other_defect_was_switched_off() -> None:
     _, ablation = _run(["--without-other-defect"])
     assert json.loads(plain[0])["without_other_defect"] is False
     assert json.loads(ablation[0])["without_other_defect"] is True
+
+
+def test_structural_cases_are_stopped_before_any_model_and_reported_as_rejected() -> None:
+    case_file = qa.load_cases(qa.DEFAULT_CASES)
+    structural = {c.id: c.structural_label for c in case_file.cases if c.structural_label}
+    assert structural == {
+        "wrong-26-false-claim-of-separate-lean-verification": "lean_term",
+        "wrong-27-lemma-name-in-prose": "lean_term",
+        "wrong-28-library-name-in-prose": "lean_term",
+        "wrong-29-tactic-command-in-prose": "lean_term",
+        "wrong-30-english-overview-in-a-japanese-explanation": "output_language",
+    }
+    reviewer = StubReviewer()
+    code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: reviewer)
+    results = {r["id"]: r for r in json.loads(lines[0])["results"]}
+    assert code == 0
+    assert reviewer.calls == MODEL_CASES  # no structural case reached the reviewer
+    for case_id, label in structural.items():
+        assert results[case_id]["layer"] == "structure"
+        assert results[case_id]["structural_label"] == label
+        assert results[case_id]["actual"] == "reject"
+
+
+def test_every_case_that_goes_to_the_reviewer_passes_the_strict_structural_layer() -> None:
+    from pals_agent.explanations import _parse_explanation
+
+    document = json.loads(qa.DEFAULT_CASES.read_text(encoding="utf-8"))
+    checked = 0
+    for case in document["cases"]:
+        if case.get("rejected_by") == "structure":
+            continue
+        payload = {k: case[k] for k in ("overview", "sections", "conclusion")}
+        _parse_explanation(
+            payload,
+            document["lean_code"],
+            language=case["language"],
+            require_linear_ending=True,
+            strict_prose=True,
+        )
+        checked += 1
+    assert checked == MODEL_CASES
+
+
+def test_a_case_marked_structural_must_really_be_rejected_by_that_layer(tmp_path: Path) -> None:
+    document = json.loads(qa.DEFAULT_CASES.read_text(encoding="utf-8"))
+    target = next(c for c in document["cases"] if c["id"] == "wrong-27-lemma-name-in-prose")
+    target["expected_structural_label"] = "output_language"
+    path = tmp_path / "cases.json"
+    path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+    code, lines = _run(["--cases", str(path)])
+    assert code == 2 and "structural layer must reject" in lines[0]

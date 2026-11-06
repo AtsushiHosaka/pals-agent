@@ -121,21 +121,27 @@ _EPSILON_DELTA_ELEMENTS: tuple[tuple[str, str, str], ...] = (
         "an upper bound for |x+a| that the final estimate uses (|x+a|<2|a|+1, or "
         "|x+a|<=|x-a|+2|a|) is derived: its basis (the triangle inequality, with |x-a|<1 or "
         "|x|<|a|+1) is in the text, or is one evident step because the text has just stated "
-        "|x|<|a|+1 (or |x-a|<1) or writes |x+a|=|2a+(x-a)|.",
-        "A bound asserted with no basis at all, where the step to it is not evident, is missing.",
+        "|x|<|a|+1 (or |x-a|<1) or writes |x+a|=|2a+(x-a)|. The bound that is derived must "
+        "imply the bound the final estimate uses. If that bound is written through a named "
+        "constant (C=2|a|+1), the definition of C must be large enough for it.",
+        "A bound asserted with no basis at all, where the step to it is not evident, is missing. "
+        "Deriving a weaker bound but concluding a stronger one is wrong (|x+a|<1+2|a| does not "
+        "give |x+a|<|a|+1, so it does not give |x+a|<C for C=|a|+1).",
     ),
     (
         "final_inequality",
-        "every inequality the text asserts is true for the delta actually chosen, and the "
-        "chain reaches epsilon, or a fixed multiple of epsilon such as 2 epsilon (a chain may "
-        "end in an equality such as `= ε`). The step from delta to epsilon "
-        "(delta(2|a|+1)<=epsilon when delta<=epsilon/(2|a|+1)) is evident from the definition "
-        "of the minimum.",
-        "Most important: a false inequality is wrong, for example delta<=epsilon/(2|a|+1) "
-        "claimed for delta=min(1, epsilon/(|a|+1)), or a chain ending in epsilon+1. A chain "
-        "that never reaches epsilon (it stops at delta) is missing. A true claim that is only "
-        "a fixed multiple of epsilon (|x²-a²|<2 epsilon for delta=min(1, epsilon/(|a|+1))) is "
-        "fine.",
+        "the chain of inequalities ends at epsilon (or a fixed multiple of epsilon such as 2 "
+        "epsilon; it may end in an equality such as `= ε`), and every inequality the text "
+        "asserts anywhere, about delta or about any other quantity, is true. The step from "
+        "delta to epsilon (delta(2|a|+1)<=epsilon when delta<=epsilon/(2|a|+1)) is evident from "
+        "the definition of the minimum. For a named constant, every inequality that uses it "
+        "must be true for its definition.",
+        "Check first that the chain reaches epsilon: one that stops at delta (it ends at "
+        "delta(2|a|+1)) or at another quantity is missing. Then check that every asserted "
+        "inequality is true: a false one is wrong, for example delta<=epsilon/(2|a|+1) claimed "
+        "for delta=min(1, epsilon/(|a|+1)), |x+a|<C for C=|a|+1 after only |x+a|<1+2|a|, or a "
+        "chain ending in epsilon+1. A true claim that is only a fixed multiple of epsilon "
+        "(|x²-a²|<2 epsilon for delta=min(1, epsilon/(|a|+1))) is fine.",
     ),
     (
         "conclusion",
@@ -622,6 +628,24 @@ class LeanGroundedOutputReviewer:
 CHECKLIST_SAMPLES = 2
 
 
+def single_sample_catch_all_ids(review: ProofOutputReview) -> tuple[str, ...]:
+    """Catch-all elements that some sample reported wrong but not every sample (no content).
+
+    These do not reject (the catch-alls need every sample) but are worth counting: they show
+    how often one sample alone accuses a good explanation, or one sample alone sees a leak.
+    """
+    found: list[str] = []
+    for check_id in EPSILON_DELTA_CHECK_IDS:
+        if check_id not in _AND_IDS:
+            continue
+        votes = [
+            check for sample in review.samples for check in sample if check.id == check_id
+        ]
+        if votes and any(v.blocks for v in votes) and not all(v.blocks for v in votes):
+            found.append(check_id)
+    return tuple(found)
+
+
 def _combine_samples(
     outcomes: list[ProofOutputReview | ProofOutputReviewError],
     checklist_ids: tuple[str, ...] = EPSILON_DELTA_CHECK_IDS,
@@ -816,7 +840,7 @@ class LeanProofExplainer:
                 lean_code,
                 language=language,
                 require_linear_ending=True,
-                require_prose_language=True,
+                strict_prose=True,
             ),
             deadline=deadline,
             timeout_seconds=timeout_seconds,
@@ -1018,7 +1042,7 @@ def _parse_explanation(
     *,
     language: str = "ja",
     require_linear_ending: bool = False,
-    require_prose_language: bool = False,
+    strict_prose: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
     overview = _required_bounded_language_text(
@@ -1033,8 +1057,8 @@ def _parse_explanation(
         minimum=1,
         maximum=600,
     )
-    _reject_lean_source_terms(overview, "overview")
-    _reject_lean_source_terms(conclusion, "conclusion")
+    _reject_lean_source_terms(overview, "overview", strict=strict_prose, language=language)
+    _reject_lean_source_terms(conclusion, "conclusion", strict=strict_prose, language=language)
     raw_sections = _required_list(payload, "sections")
     if not 1 <= len(raw_sections) <= 20:
         raise ValueError("sections must contain between 1 and 20 items")
@@ -1061,8 +1085,10 @@ def _parse_explanation(
             minimum=1,
             maximum=800,
         )
-        _reject_lean_source_terms(title, "section title")
-        _reject_lean_source_terms(summary, "section summary")
+        _reject_lean_source_terms(title, "section title", strict=strict_prose, language=language)
+        _reject_lean_source_terms(
+            summary, "section summary", strict=strict_prose, language=language
+        )
         sections.append(
             ExplanationSection(
                 id=section_id,
@@ -1071,7 +1097,7 @@ def _parse_explanation(
                 references=references,
             )
         )
-    if require_prose_language:
+    if strict_prose:
         _require_prose_language([overview, *(s.summary for s in sections), conclusion], language)
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
@@ -1088,27 +1114,30 @@ _MIN_PROSE_LETTERS = 8
 
 
 def _require_prose_language(texts: list[str], language: str) -> None:
-    """Reject an explanation whose prose (outside math) is not in the requested language.
+    """Reject an explanation with a field whose prose (outside math) is not in the language.
 
-    This is a deterministic script check, deliberately coarse: it catches prose written in
-    another language, not wording. Too little prose to judge is accepted.
+    Each field (overview, every section summary, conclusion) is judged on its own, so one
+    English paragraph cannot hide inside a long Japanese explanation. This is a deterministic
+    script check, deliberately coarse: it catches prose written in another language, not
+    wording. A field with too little prose to judge is accepted.
     """
-    prose = _MATH_SPAN_PATTERN.sub(" ", "\n".join(texts))
-    letters = [c for c in prose if unicodedata.category(c).startswith("L")]
-    if len(letters) < _MIN_PROSE_LETTERS:
-        return
-    total = len(letters)
-    kana = sum(1 for c in letters if 0x3040 <= ord(c) <= 0x30FF)
-    han = sum(1 for c in letters if 0x4E00 <= ord(c) <= 0x9FFF)
-    latin = sum(1 for c in letters if c.isascii())
-    ok = {
-        "ja": (kana + han) / total >= _JA_SHARE and kana / total >= _JA_KANA_SHARE,
-        "en": latin / total >= _EN_SHARE,
-        "zh-Hans": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
-        "zh-Hant": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
-    }[language]
-    if not ok:
-        raise ValueError("explanation prose is not written in the requested output language")
+    for text in texts:
+        prose = _MATH_SPAN_PATTERN.sub(" ", text)
+        letters = [c for c in prose if unicodedata.category(c).startswith("L")]
+        if len(letters) < _MIN_PROSE_LETTERS:
+            continue
+        total = len(letters)
+        kana = sum(1 for c in letters if 0x3040 <= ord(c) <= 0x30FF)
+        han = sum(1 for c in letters if 0x4E00 <= ord(c) <= 0x9FFF)
+        latin = sum(1 for c in letters if c.isascii())
+        ok = {
+            "ja": (kana + han) / total >= _JA_SHARE and kana / total >= _JA_KANA_SHARE,
+            "en": latin / total >= _EN_SHARE,
+            "zh-Hans": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
+            "zh-Hant": han / total >= _ZH_SHARE and kana / total < _JA_KANA_SHARE / 2,
+        }[language]
+        if not ok:
+            raise ValueError("explanation prose is not written in the requested output language")
 
 
 def _reject_repeated_final_equation(last_section: str, conclusion: str) -> None:
@@ -1340,8 +1369,26 @@ def _bounded_text_value(
     return value
 
 
-def _reject_lean_source_terms(text: str, label: str) -> None:
+# Leaks that the fixed tactic list does not see. They are checked outside math, on generated
+# explanations only (`strict`): a lowercase snake_case name (a library lemma such as
+# `abs_add_le`), the words Lean / Mathlib, and a tactic written as a command at a line start.
+# A snake_case name needs a lowercase word of two letters or more, so `x_0` and `a_n` do not
+# match; English prose has no such token. "Lean" is rejected in every language: a learner
+# proof has no reason to talk about the checker, and a claim of what Lean verified is the
+# false statement the review is asked to catch.
+_SNAKE_CASE_NAME_PATTERN = re.compile(r"(?<![A-Za-z0-9_])[a-z]{2,}(?:_[a-z0-9]+)+(?![A-Za-z0-9_])")
+_LEAN_BRAND_PATTERN = re.compile(r"(?<![A-Za-z])(?:Lean|Mathlib)(?![A-Za-z])")
+_TACTIC_COMMAND_LINE_PATTERN = re.compile(
+    r"(?m)^[ \t]*(?:exact|apply|refine|intro|intros|constructor|obtain|specialize|unfold"
+    r"|positivity|calc)\b(?=[ \t]*(?:$|[^A-Za-z \t]|[A-Za-z0-9_']+(?:[_.]|[ \t]*$)))"
+)
+
+
+def _reject_lean_source_terms(
+    text: str, label: str, *, strict: bool = False, language: str = "ja"
+) -> None:
     """Keep learner prose independent from the Lean implementation vocabulary."""
+    _ = language
     if "`" in text:
         raise ValueError(f"{label} must not quote Lean source code")
     source_term = _LEAN_SOURCE_TERM_PATTERN.search(text)
@@ -1354,6 +1401,19 @@ def _reject_lean_source_terms(text: str, label: str) -> None:
         raise ValueError(
             f"{label} must not mention Lean identifier: {qualified_identifier.group(0)}"
         )
+    if not strict:
+        return
+    # A line break written as \n before a word is read back as a literal backslash-n by the
+    # JSON repair (it looks like a TeX command), so a command line is also looked for there.
+    prose = _MATH_SPAN_PATTERN.sub(" ", text).replace("\\n", "\n")
+    for pattern, kind in (
+        (_SNAKE_CASE_NAME_PATTERN, "lemma name"),
+        (_LEAN_BRAND_PATTERN, "checker name"),
+        (_TACTIC_COMMAND_LINE_PATTERN, "tactic command"),
+    ):
+        leak = pattern.search(prose)
+        if leak is not None:
+            raise ValueError(f"{label} must not mention Lean {kind}: {leak.group(0).strip()}")
 
 
 def _is_japanese_code_point(character: str) -> bool:

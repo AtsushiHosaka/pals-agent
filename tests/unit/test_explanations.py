@@ -1372,6 +1372,86 @@ def test_every_regression_case_is_in_its_own_language() -> None:
         )
     )["cases"]
     assert len(cases) > 40
+    checked = 0
     for case in cases:
+        if case.get("rejected_by") == "structure":
+            continue  # these are written to be stopped
         texts = [case["overview"], *(s["summary"] for s in case["sections"]), case["conclusion"]]
         _require_prose_language(texts, case["language"])
+        checked += 1
+    assert checked == 49
+
+
+# --- Lean vocabulary that the fixed tactic list misses, and per-field language -------------
+
+
+def _ja_payload(summary: str, overview: str = "任意の自然数 $n$ を固定します。") -> str:
+    return _prose_payload(overview, summary, "よって、等式は任意の自然数について成り立ちます。")
+
+
+LEAKS = {
+    "lemma-name": "ここで mul_comm より順序を入れ替えられます。",
+    "lemma-name-2": "abs_sub_lt_iff を用いると距離の評価が得られます。",
+    "lean-checks": "Lean が各不等式を検証しました。",
+    "mathlib": "Mathlib の補題により成り立ちます。",
+    "lean4": "Lean4 で確認済みです。",
+    "exact-line": "三角不等式です。\nexact abs_add_le _ _\n以上です。",
+    "apply-line": "評価します。\napply le_trans\n以上です。",
+    "bare-tactic-line": "評価します。\nintro x\n以上です。",
+}
+CLEAN = [
+    "$n$ に $0$ を足しても値は変わらないので、$n+0=n$ が成り立ちます。",
+    "三角不等式から、$|x+a|\\le|x|+|a|$ が従います。",
+    "$a_n$ は数列で、$x_0$ は固定した点です。",  # math, and short names with one letter
+    "ここで $\\text{Lean}$ という語は数式中の記号として現れるだけです。",
+]
+
+
+@pytest.mark.parametrize("name", sorted(LEAKS))
+def test_leaked_library_names_checker_names_and_tactic_lines_are_rejected_and_retried(
+    name: str,
+) -> None:
+    payload = _ja_payload(LEAKS[name])
+    explainer, client = build_explainer(payload, payload)
+    with pytest.raises(ExplanationGenerationError) as raised:
+        explainer.explain(theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True)
+    assert raised.value.attempt_failures == ("lean_term", "lean_term")
+    assert len(client.prompts) == 2
+
+
+@pytest.mark.parametrize("summary", CLEAN)
+def test_ordinary_prose_and_math_symbols_are_not_mistaken_for_leaks(summary: str) -> None:
+    explainer, client = build_explainer(_ja_payload(summary))
+    explainer.explain(theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True)
+    assert len(client.prompts) == 1
+
+
+def test_stored_explanations_are_not_held_to_the_strict_vocabulary_check() -> None:
+    from pals_agent.explanations import proof_explanation_from_api
+
+    payload = json.loads(_ja_payload(LEAKS["lean-checks"]))
+    payload.update(model="m", provider="p", elapsed_ms=0)
+    proof_explanation_from_api(payload, lean_code=LEAN_CODE)
+
+
+def test_each_field_is_judged_for_language_so_one_english_field_cannot_hide() -> None:
+    long_japanese = "加法の単位元に関する性質から、任意の自然数について等式が成り立ちます。" * 4
+    payload = _ja_payload(
+        long_japanese, overview="Fix an arbitrary natural number n and add zero to it."
+    )
+    explainer, client = build_explainer(payload, payload)
+    with pytest.raises(ExplanationGenerationError) as raised:
+        explainer.explain(theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True)
+    assert raised.value.attempt_failures == ("output_language", "output_language")
+    # The whole text would pass a ratio over all fields: the Japanese is long enough.
+    from pals_agent.explanations import _require_prose_language
+
+    whole = [json.loads(payload)["overview"] + json.loads(payload)["sections"][0]["summary"]]
+    _require_prose_language(whole, "ja")
+
+
+def test_a_short_field_with_little_prose_is_not_judged() -> None:
+    payload = _ja_payload("$n+0=n$ です。", overview="Fix $n$.")
+    explainer, client = build_explainer(payload)
+    explainer.explain(theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True)
+    assert len(client.prompts) == 1

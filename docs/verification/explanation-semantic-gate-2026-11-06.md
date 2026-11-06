@@ -206,14 +206,15 @@ one false rejection was a `point_fixed` marked `missing` on a valid case. A defe
 reports is better evidence than a string match, so the report is taken at its word and the
 remaining risk is handled by sampling.
 
-Why two samples with OR: the remaining errors are independent single-run misses, about 6% of
-wrong runs. If the two samples miss independently, a wrong explanation is approved with
-probability about 0.4% (6% squared). A false rejection of a valid explanation (about 2% per run)
-becomes up to about 4%, but a rejection is absorbed by the existing single regeneration with
-feedback, which produces a new candidate and a new pair of reviews, so learners still receive an
-explanation; a missed defect cannot be taken back. The estimate assumes independent samples
-(same model and prompt, sampled separately), which `--repeats` on the regression set checks
-rather than proves.
+Why two samples with OR (and what the estimate does not cover): a single-run miss, about 6% of
+wrong runs, becomes about 0.4% (6% squared) **only if the two samples miss independently**
+(same model and prompt, sampled separately; `--repeats` checks this, it does not prove it).
+A class of defect that the reviewer misses *every* time is not helped by a second sample, and a
+catch-all that needs both samples (AND) is detected with probability squared, not better. That is
+why leaks that code can see are checked by code (below), not left to two samples. A false
+rejection of a valid explanation (about 2% per run) becomes up to about 4%, but a rejection is
+absorbed by the existing single regeneration with feedback; a missed defect cannot be taken
+back.
 
 **Cost:** the x² explanation review costs two review calls instead of one (the review is the
 cheaper part of an explanation, and latency is about one call because the samples run in
@@ -394,3 +395,42 @@ Changes:
 5. Ablation: `scripts/evaluate_explanation_qa.py --without-other-defect` runs the same cases
    without asking `other_defect` (the reviewer's `checklist_ids`); production always asks every
    element, and the report records which setting was used.
+
+## Review of d05181a: what the reviewer missed and what code now checks
+
+1. **wrong-19 was approved in 3 of 3 runs** (alias `C=|a|+1`, then "`|x+a|<1+2|a|`, hence
+   `|x+a|<C`"). `sum_bound` only asked whether a basis for the derived bound is in the text, and
+   `final_inequality` had been narrowed to "true for the chosen δ"; the narrowed `other_defect`
+   no longer caught it. Now: `sum_bound` requires the derived bound to **imply** the bound the final
+   estimate uses and says that a weaker bound followed by a stronger conclusion is wrong; if the
+   bound is written through a named constant, the definition of that constant must be large
+   enough (checked by `sum_bound` for the bound on `|x+a|`). `final_inequality` covers every
+   inequality the text asserts, about δ or any other quantity, including inequalities that use a
+   named constant; it also starts with "the chain ends at ε", with "check first that the chain
+   reaches ε" in its failure text, aimed at the chain that stops at δ (wrong-16, missed 1 of 3).
+2. **Leaks that no fixed list sees, now rejected by code** (generated explanations only, text
+   outside math): a lowercase snake_case name with a word of two or more letters (`mul_comm`,
+   `abs_sub_lt_iff`; `x_0` and `a_n` do not match), the words `Lean` / `Mathlib` / `Lean4` in
+   every language (a learner proof has no reason to speak about the checker; a claim of what Lean
+   verified is exactly the false statement the review is asked to catch, and "Lean" is not
+   something an English proof says), and a tactic written as a command at a line start
+   (`exact`, `apply`, `refine`, `intro`, `constructor`, `obtain`, `positivity`, `calc`, ... followed
+   by an argument that looks like code or by the end of the line). A literal backslash-n counts as
+   a line break, because the JSON repair turns a newline before a word into one. Stored
+   explanations are not checked. Failure label: `lean_term`, with the usual retries.
+   Measured on the repository's data: the 49 regression cases that go to the reviewer, 0 rejected;
+   158 Japanese prose fields in testdata and seeds (questions, answers, statements), 0 rejected by
+   the language check and 7 by the vocabulary check, all in
+   `testdata/requested-math-seeds-v1/corpus.json` (hand-written seed answers that say "Lean";
+   they never pass through the explainer). All explanation fixtures of the test suite pass.
+3. **Language is judged per field** (overview, each section summary, conclusion), not over the
+   whole text, so an English overview cannot hide in a long Japanese explanation. Fields with fewer
+   than 8 letters of prose are not judged.
+4. **Cases the structural layer must stop** (`rejected_by: structure`, checked at load time and
+   never sent to a model): wrong-26 (a Lean-verification claim, moved here because it names
+   Lean), wrong-27 (a lemma name), wrong-28 (`Mathlib`), wrong-29 (a tactic line), wrong-30 (an
+   English overview in a Japanese explanation). The 49 other cases must pass the strict layer.
+5. **Single-sample catch-all remarks are counted**: when only one of the two samples reports
+   `presentation` or `other_defect` the explanation is approved, and the worker logs
+   `explanation_review_single_sample_remark` with the resource kind, a 16-hex hash of the id and
+   the element ids, never text.

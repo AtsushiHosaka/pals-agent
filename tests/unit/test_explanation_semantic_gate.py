@@ -633,6 +633,25 @@ def test_the_writer_is_given_the_same_requirements_as_the_reviewer() -> None:
     assert "(for example delta=epsilon-|a| or delta=1-epsilon)" not in writer
 
 
+def test_the_bound_must_imply_the_bound_the_estimate_uses_and_every_inequality_is_checked() -> None:
+    definitions = _definitions(_x_squared_review_prompt())
+    sum_bound = definitions["sum_bound"]
+    assert "must imply the bound the final estimate uses" in sum_bound
+    assert "definition of C must be large enough" in sum_bound
+    assert "Deriving a weaker bound but concluding a stronger one is wrong" in sum_bound
+    assert "|x+a|<1+2|a| does not give |x+a|<|a|+1" in sum_bound
+    final = definitions["final_inequality"]
+    # The chain has to reach epsilon (checked first); every asserted inequality must be true,
+    # about delta or about any other quantity, including inequalities that use a named constant.
+    assert final.startswith("the chain of inequalities ends at epsilon")
+    assert final.index("Check first that the chain reaches epsilon") < final.index(
+        "Then check that every asserted inequality is true"
+    )
+    assert "about delta or about any other quantity, is true" in final
+    assert "For a named constant, every inequality that uses it must be true" in final
+    assert "|x+a|<C for C=|a|+1 after only |x+a|<1+2|a|" in final
+
+
 def test_evident_facts_need_no_reason_but_unclear_positivity_does() -> None:
     prompt = _x_squared_review_prompt()
     definitions = _definitions(prompt)
@@ -683,7 +702,7 @@ def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -
     assert "The opening's notation, wording and word order are not presentation defects" in prompt
     assert "previews the proof plan or the conclusion" in _definitions(prompt)["presentation"]
     assert "Reject summary-first or conclusion-preview exposition" in prompt  # general rubric
-    assert "a chain may end in an equality such as `= ε`" in prompt
+    assert "it may end in an equality such as `= ε`" in prompt
 
 
 def _sqrt_fraction(value: Fraction) -> Fraction:

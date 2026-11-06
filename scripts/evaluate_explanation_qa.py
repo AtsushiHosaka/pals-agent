@@ -47,6 +47,7 @@ from pals_agent.explanations import (  # noqa: E402
     ProofOutputReviewError,
     _output_review_prompt,
     _parse_explanation,
+    _validation_failure_reason,
 )
 
 DEFAULT_CASES = ROOT / "testdata" / "explanation-qa-v1" / "cases.json"
@@ -91,6 +92,8 @@ class Case:
     defect_quote: str | None = None
     # Checklist ids a correct reviewer fails for this (rejected) case; diagnostic only.
     expected_failed_checks: tuple[str, ...] = ()
+    # Set for a case the structural layer must reject (no model call): the failure label.
+    structural_label: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,12 +128,37 @@ def load_cases(path: Path) -> CaseFile:
                 raise CaseFileError(f"{case_id}: only valid_notation cases are approved")
             language = str(raw.get("language", "ja"))
             payload = {k: raw[k] for k in ("overview", "sections", "conclusion")}
+            # Cases are built from the generic structure (they must parse leniently); the
+            # production strict checks (output language per field, leaked Lean vocabulary) then
+            # either pass (a case for the reviewer) or reject with the label the case names
+            # (a case the structural layer must stop before any model sees it).
             try:
                 overview, sections, conclusion = _parse_explanation(
                     payload, lean_code, language=language, require_linear_ending=True
                 )
             except (KeyError, TypeError, ValueError) as exc:
                 raise CaseFileError(f"{case_id}: fails the structural layer: {exc}") from exc
+            structural_label: str | None = None
+            try:
+                _parse_explanation(
+                    payload,
+                    lean_code,
+                    language=language,
+                    require_linear_ending=True,
+                    strict_prose=True,
+                )
+            except ValueError as exc:
+                structural_label = _validation_failure_reason(exc)
+            if raw.get("rejected_by") == "structure":
+                if expected != "reject" or structural_label != raw.get("expected_structural_label"):
+                    raise CaseFileError(
+                        f"{case_id}: the structural layer must reject it as "
+                        f"{raw.get('expected_structural_label')!r}, got {structural_label!r}"
+                    )
+            elif structural_label is not None:
+                raise CaseFileError(
+                    f"{case_id}: the strict structural layer rejects it ({structural_label})"
+                )
             explanation = ProofExplanation(
                 overview=overview,
                 sections=tuple(_section(s) for s in sections),
@@ -145,7 +173,7 @@ def load_cases(path: Path) -> CaseFile:
             expected_checks = tuple(raw.get("expected_failed_checks", ()))
             if not set(expected_checks) <= set(EPSILON_DELTA_CHECK_IDS):
                 raise CaseFileError(f"{case_id}: unknown id in expected_failed_checks")
-            if expected == "reject" and not expected_checks:
+            if expected == "reject" and not expected_checks and structural_label is None:
                 raise CaseFileError(f"{case_id}: a rejected case names the checks it fails")
             if group == "summary_first" and not defect_quote:
                 raise CaseFileError(f"{case_id}: defect_quote is required (presentation)")
@@ -160,6 +188,9 @@ def load_cases(path: Path) -> CaseFile:
                     explanation=explanation,
                     defect_quote=str(defect_quote) if defect_quote else None,
                     expected_failed_checks=expected_checks,
+                    structural_label=(
+                        structural_label if raw.get("rejected_by") == "structure" else None
+                    ),
                 )
             )
     except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
@@ -249,10 +280,14 @@ def run(
         out(f"invalid case file: {exc}")
         return 2
     cases = [c for c in case_file.cases if args.group in (None, c.group)]
-    prompts = {c.id: qa_prompt(case_file, c) for c in cases}
+    # Cases the structural layer must stop are checked at load time and never sent to a model.
+    structural = [c for c in cases if c.structural_label is not None]
+    model_cases = [c for c in cases if c.structural_label is None]
+    prompts = {c.id: qa_prompt(case_file, c) for c in model_cases}
     report: dict[str, Any] = {
         "mode": "execute" if args.execute else "dry-run",
         "cases": len(cases),
+        "structural_cases": len(structural),
         "repeats": args.repeats,
         "without_other_defect": args.without_other_defect,
         "by_group": {g: sum(1 for c in cases if c.group == g) for g in GROUPS},
@@ -281,7 +316,7 @@ def run(
     except Refused as exc:
         out(f"refused: {exc}")
         return 2
-    return _emit_live(args, case_file, cases, prompts, reviewer, report, out)
+    return _emit_live(args, case_file, model_cases, structural, prompts, reviewer, report, out)
 
 
 # Each review runs CHECKLIST_SAMPLES independent samples in parallel (one rejection rejects),
@@ -354,6 +389,7 @@ def _emit_live(
     args: argparse.Namespace,
     case_file: CaseFile,
     cases: Sequence[Case],
+    structural: Sequence[Case],
     prompts: Mapping[str, str],
     reviewer: Reviewer,
     report: dict[str, Any],
@@ -434,13 +470,28 @@ def _emit_live(
                 "raw_reviewer_outputs": list(raw_outputs) if raw_outputs is not None else [],
             }
         )
+    model_results = len(results)
+    results.extend(
+        {
+            "id": case.id,
+            "repeat": 1,
+            "group": case.group,
+            "expected": case.expected,
+            "actual": "reject",
+            "layer": "structure",
+            "structural_label": case.structural_label,
+            "expected_failed_checks": [],
+            "failed_checks": [],
+        }
+        for case in structural
+    )
     report["results"] = results
     report["spent_usd"] = round(spent, 6)
     report["stopped_early_for_budget"] = stopped_early
     report["summary"] = summarize(results)
     ok = (
         not stopped_early
-        and len(results) == len(planned)
+        and model_results == len(planned)
         and all(r["actual"] == r["expected"] for r in results)
     )
     return _emit(args, report, out, 0 if ok else 1)

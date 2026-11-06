@@ -37,6 +37,7 @@ from pals_agent.explanations import (
     _names_another_property,
     _requires_epsilon_delta,
     proof_explanation_from_api,
+    single_sample_catch_all_ids,
 )
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
@@ -1658,6 +1659,7 @@ class SqsProofWorker:
                     failures=private_review_failures,
                 )
             _note_review_flag_contradiction("explanation", proof_job_id, review)
+            _note_single_sample_remarks("explanation", proof_job_id, review)
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -2663,6 +2665,20 @@ def _note_review_flag_contradiction(
             "explanation_review_flag_contradicted_checklist resource=%s id=%s",
             resource,
             resource_id,
+        )
+
+
+def _note_single_sample_remarks(
+    resource: ResourceKind, resource_id: str, review: ProofOutputReview
+) -> None:
+    """Content-free count of catch-all remarks made by one review sample only."""
+    elements = single_sample_catch_all_ids(review)
+    if elements:
+        _logger.warning(
+            "explanation_review_single_sample_remark resource=%s resource_sha256=%s elements=%s",
+            resource,
+            hashlib.sha256(resource_id.encode("utf-8")).hexdigest()[:16],
+            ",".join(elements),
         )
 
 

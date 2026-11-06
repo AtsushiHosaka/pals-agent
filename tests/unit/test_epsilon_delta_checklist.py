@@ -30,9 +30,10 @@ from pals_agent.explanations import (
     ProofExplanation,
     ProofOutputReview,
     ProofOutputReviewError,
+    single_sample_catch_all_ids,
 )
 from pals_agent.usage import capture_usage, report_usage
-from pals_agent.worker import _note_review_flag_contradiction
+from pals_agent.worker import _note_review_flag_contradiction, _note_single_sample_remarks
 
 LEAN = "theorem t : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
 STATEMENT = "x² が連続であることを説明してください。"
@@ -536,3 +537,42 @@ def test_clarification_review_keeps_the_original_format_and_a_single_call() -> N
     assert review.samples == () and review.rationale == "fine"
     assert len(client.prompts) == 1
     assert "Checklist (give every id exactly once)" not in client.prompts[0]
+
+
+# --- a catch-all remark made by one sample only is counted, without content --------------
+
+
+def test_single_sample_catch_all_remarks_are_identified_and_logged_without_content(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    secret = "a remark about the text that must not be logged"
+    client = Client(
+        by_thread=(
+            [_answer()],
+            [
+                _answer(
+                    {"presentation": ("wrong", "", secret), "other_defect": ("wrong", "", secret)}
+                )
+            ],
+        )
+    )
+    review = _review(client)
+    assert single_sample_catch_all_ids(review) == ("presentation", "other_defect")
+    with caplog.at_level(logging.WARNING):
+        _note_single_sample_remarks("explanation", "job-42", review)
+    assert "explanation_review_single_sample_remark" in caplog.text
+    assert "elements=presentation,other_defect" in caplog.text
+    assert "job-42" not in caplog.text  # only a hash of the resource id
+    assert "resource_sha256=" in caplog.text
+    assert secret not in caplog.text
+
+
+def test_no_single_sample_remark_means_no_log_line(caplog: pytest.LogCaptureFixture) -> None:
+    agreeing = Client(_answer({"presentation": ("wrong", "", "both say so")}))
+    with pytest.raises(ProofOutputReviewError):
+        _review(agreeing)  # both samples: a rejection, not a remark
+    clean = _review(Client(_answer()))
+    assert single_sample_catch_all_ids(clean) == ()
+    with caplog.at_level(logging.WARNING):
+        _note_single_sample_remarks("explanation", "job-1", clean)
+    assert caplog.text == ""
