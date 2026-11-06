@@ -1,20 +1,26 @@
 """Decision table of the x² epsilon-delta checklist review (stub models only).
 
-The reviewer answers one entry per required element. The decision is computed in code:
-reject iff an element is "missing", or "wrong" with a quote that really occurs in the proof.
-The reviewer's own `approved` flag is ignored. Missing, repeated or unknown ids and bad
-statuses are schema failures (fail-closed). Other reviews keep their original format.
+The reviewer answers one entry per required element and the code decides: any element that is
+not "ok" rejects (a nonblank note is required for it; the quote is only informational). The
+review is sampled twice, independently and in parallel, and either sample can reject. The
+reviewer's own `approved` flag is ignored. Missing, repeated or unknown ids, bad statuses and
+blank notes are schema failures (fail-closed). Other reviews keep their original format.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import threading
+import time
+import uuid
+from collections.abc import Callable
 from typing import Any
 
 import pytest
 
 from pals_agent.explanations import (
+    CHECKLIST_SAMPLES,
     EPSILON_DELTA_CHECK_IDS,
     ExplanationSection,
     LeanGroundedOutputReviewer,
@@ -24,26 +30,22 @@ from pals_agent.explanations import (
     ProofOutputReview,
     ProofOutputReviewError,
 )
+from pals_agent.usage import capture_usage, report_usage
 from pals_agent.worker import _note_review_flag_contradiction
 
 LEAN = "theorem t : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
 STATEMENT = "x² が連続であることを説明してください。"
-OVERVIEW = "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。"
-SUMMARY = (
-    "$\\delta=\\min\\left(1,\\dfrac{\\varepsilon}{2|a|+1}\\right)$ とおきます。\n"
-    "$|x-a|<\\delta$ のとき $|x^2-a^2|<\\delta(2|a|+1)\\le\\varepsilon$ です。"
-)
-CONCLUSION = "$a$ は任意なので、$x^2$ は連続です。"
-QUOTE = "|x^2-a^2|<\\delta(2|a|+1)"  # really in SUMMARY
+ADD_ZERO = "theorem add_zero_nat (n : Nat) : n + 0 = n := by\n  simp"
 MATH_IDS = [i for i in EPSILON_DELTA_CHECK_IDS if i != "presentation"]
+CALL_ID = "11111111-1111-4111-8111-111111111111"
 
 
 def _explanation() -> ProofExplanation:
     ref = LeanLineReference(2, 2, "  continuity")
     return ProofExplanation(
-        overview=OVERVIEW,
-        sections=(ExplanationSection("s", "t", SUMMARY, (ref,)),),
-        conclusion=CONCLUSION,
+        overview="$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+        sections=(ExplanationSection("s", "t", "$|x^2-a^2|<\\varepsilon$ です。", (ref,)),),
+        conclusion="$a$ は任意なので、$x^2$ は連続です。",
         model="m",
         provider="p",
         prompt="",
@@ -53,14 +55,52 @@ def _explanation() -> ProofExplanation:
 
 
 class Client:
-    def __init__(self, *answers: str | Exception) -> None:
+    """Thread-safe stub. `answers` are consumed in call order; the last one repeats.
+
+    `by_thread` instead gives the first sample answer set 0 and the second answer set 1, so a
+    test can make exactly one of two parallel samples misbehave.
+    """
+
+    def __init__(
+        self,
+        *answers: str | Exception,
+        by_thread: tuple[list[str | Exception], list[str | Exception]] | None = None,
+        delay: float = 0.0,
+        usage: bool = False,
+    ) -> None:
         self.answers = list(answers)
+        self.by_thread = by_thread
+        self.delay = delay
+        self.usage = usage
         self.prompts: list[str] = []
+        self._lock = threading.Lock()
+        self._roles: dict[int, int] = {}
+        self._starts: list[int] = []
+        self._counts = [0, 0]
 
     def generate(self, *, model: str, prompt: str, timeout_seconds: float | None = None) -> str:
         _ = (model, timeout_seconds)
-        self.prompts.append(prompt)
-        answer = self.answers.pop(0)
+        with self._lock:
+            self.prompts.append(prompt)
+            if self.by_thread is not None:
+                # A new sample starts with a prompt that is not a schema retry; a retry
+                # belongs to the sample running in the same thread (workers may be reused).
+                ident = threading.get_ident()
+                if "failed schema validation" in prompt and ident in self._roles:
+                    role = self._roles[ident]
+                else:
+                    role = len(self._starts)
+                    self._starts.append(ident)
+                    self._roles[ident] = role
+                script = self.by_thread[role]
+                answer = script[min(self._counts[role], len(script) - 1)]
+                self._counts[role] += 1
+            else:
+                answer = self.answers[0] if len(self.answers) == 1 else self.answers.pop(0)
+        if self.delay:
+            time.sleep(self.delay)
+        if self.usage:
+            report_usage(CALL_ID, "gpt-6-luna", {"input_tokens": 10, "output_tokens": 5})
         if isinstance(answer, Exception):
             raise answer
         return answer
@@ -83,118 +123,212 @@ def _answer(
     return json.dumps(payload, ensure_ascii=False)
 
 
-def _review(client: Client, *, statement: str = STATEMENT, lean: str = LEAN) -> ProofOutputReview:
-    reviewer = LeanGroundedOutputReviewer(client=client, model="m", provider="p", max_attempts=2)
-    return reviewer.review_explanation(
+def _reviewer(client: Client, **kwargs: Any) -> LeanGroundedOutputReviewer:
+    return LeanGroundedOutputReviewer(
+        client=client, model="m", provider="p", max_attempts=2, **kwargs
+    )
+
+
+def _review(
+    client: Client, *, statement: str = STATEMENT, lean: str = LEAN, **kwargs: Any
+) -> ProofOutputReview:
+    return _reviewer(client, **kwargs).review_explanation(
         theorem_statement=statement, lean_code=lean, explanation=_explanation(), language="ja"
     )
 
 
-def test_all_ok_is_approved_and_the_checks_are_returned_in_order() -> None:
-    review = _review(Client(_answer()))
-    assert [c.id for c in review.checks] == list(EPSILON_DELTA_CHECK_IDS)
-    assert not any(c.blocks for c in review.checks)
+# --- one sample: every element that is not ok rejects, with or without a quote -----------
+
+
+def test_all_ok_is_approved_with_both_samples_returned_in_order() -> None:
+    client = Client(_answer())
+    review = _review(client)
+    assert len(review.samples) == CHECKLIST_SAMPLES == 2
+    for sample in review.samples:
+        assert [c.id for c in sample] == list(EPSILON_DELTA_CHECK_IDS)
+        assert not any(c.blocks for c in sample)
+    assert len(client.prompts) == 2 and client.prompts[0] == client.prompts[1]
     assert review.approved_flag_contradicted_checks is False
 
 
+@pytest.mark.parametrize("status", ["missing", "wrong"])
 @pytest.mark.parametrize("check_id", MATH_IDS)
-def test_one_missing_element_rejects_without_any_quote(check_id: str) -> None:
-    client = Client(_answer({check_id: ("missing", "", f"no {check_id} here")}))
+@pytest.mark.parametrize("quote", ["", "an excerpt that is not in the proof at all", "x"])
+def test_any_element_that_is_not_ok_rejects_whatever_its_quote(
+    check_id: str, status: str, quote: str
+) -> None:
+    client = Client(_answer({check_id: (status, quote, f"{check_id} is {status}")}))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
     assert raised.value.category == "rejected"
-    assert f"{check_id} (missing): no {check_id} here" in raised.value.rationale
-    assert len(client.prompts) == 1  # a valid negative decision is final, never re-asked
+    assert f"{check_id} ({status}): {check_id} is {status}" in raised.value.rationale
+    assert len(client.prompts) == 2  # both samples ran
 
 
-@pytest.mark.parametrize("check_id", EPSILON_DELTA_CHECK_IDS)
-def test_one_wrong_element_with_a_quote_from_the_proof_rejects(check_id: str) -> None:
-    client = Client(_answer({check_id: ("wrong", QUOTE, "false step")}))
+def test_presentation_wrong_rejects_too() -> None:
+    client = Client(_answer({"presentation": ("wrong", "", "opening previews the plan")}))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
-    assert raised.value.category == "rejected"
-    assert "false step" in raised.value.rationale
-    assert QUOTE not in raised.value.rationale  # quotes are never kept in the reason
-    assert [c.id for c in raised.value.checks if c.blocks] == [check_id]
+    assert "presentation (wrong)" in raised.value.rationale
 
 
-@pytest.mark.parametrize("quote", ["", "x", "an invented sentence that is not in the proof"])
-def test_wrong_without_a_quote_from_the_proof_does_not_reject(quote: str) -> None:
-    review = _review(Client(_answer({"final_inequality": ("wrong", quote, "claims error")})))
-    (check,) = [c for c in review.checks if c.id == "final_inequality"]
-    assert check.status == "wrong" and check.blocks is False
-
-
-def test_quote_matching_ignores_whitespace_width_and_tex_spacing() -> None:
-    quote = "｜x^2 - a^2｜<\\delta\\,(2|a|+1)"
-    with pytest.raises(ProofOutputReviewError):
-        _review(Client(_answer({"final_inequality": ("wrong", quote, "n")})))
-
-
-def test_missing_with_an_invented_quote_still_rejects() -> None:
-    with pytest.raises(ProofOutputReviewError):
-        _review(Client(_answer({"sum_bound": ("missing", "not in the proof at all", "n")})))
+def test_the_rejection_reason_keeps_notes_but_not_quotes() -> None:
+    secret = "a quoted proof passage"
+    client = Client(_answer({"sum_bound": ("missing", secret, "no reason for the bound")}))
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert "no reason for the bound" in raised.value.rationale
+    assert secret not in raised.value.rationale
 
 
 def test_notes_on_ok_elements_never_reject() -> None:
-    review = _review(Client(_answer({"conclusion": ("ok", QUOTE, "could be more explicit")})))
-    assert not any(c.blocks for c in review.checks)
+    review = _review(Client(_answer({"conclusion": ("ok", "", "could be more explicit")})))
+    assert not any(c.blocks for sample in review.samples for c in sample)
 
 
-# --- the reviewer's `approved` flag is ignored -------------------------------------------
-
-
-def test_approved_true_cannot_override_a_missing_element() -> None:
-    answer = _answer({"delta_bounded_by_one": ("missing", "", "no minimum")}, approved=True)
+@pytest.mark.parametrize("status", ["missing", "wrong"])
+def test_a_failed_element_without_a_note_is_a_schema_failure(status: str) -> None:
+    bad = _answer({"final_inequality": (status, "q", "   ")})
+    client = Client(bad)
     with pytest.raises(ProofOutputReviewError) as raised:
-        _review(Client(answer))
+        _review(client)
+    assert raised.value.category == "schema"
+
+
+# --- two independent samples, either can reject ------------------------------------------
+
+
+def test_one_rejecting_sample_is_enough_to_reject() -> None:
+    client = Client(
+        by_thread=(
+            [_answer()],
+            [_answer({"delta_bounded_by_one": ("missing", "", "no minimum with 1")})],
+        )
+    )
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
     assert raised.value.category == "rejected"
+    assert "delta_bounded_by_one (missing): no minimum with 1" in raised.value.rationale
+    assert len(raised.value.samples) == 2  # the approving sample is kept for the report
 
 
-def test_approved_false_cannot_reject_when_every_element_is_ok_and_is_flagged() -> None:
-    review = _review(Client(_answer(approved=False)))
-    assert review.approved_flag_contradicted_checks is True
+def test_the_rejection_reason_is_the_union_of_what_both_samples_rejected() -> None:
+    client = Client(
+        by_thread=(
+            [_answer({"factorization": ("wrong", "", "a sum, not a product")})],
+            [_answer({"conclusion": ("missing", "", "no conclusion")})],
+        )
+    )
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    reason = raised.value.rationale
+    assert "factorization (wrong): a sum, not a product" in reason
+    assert "conclusion (missing): no conclusion" in reason
+    assert reason.index("factorization") < reason.index("conclusion")  # checklist order
 
 
-def test_agreeing_or_absent_approved_flag_is_not_flagged() -> None:
-    assert _review(Client(_answer(approved=True))).approved_flag_contradicted_checks is False
-    assert _review(Client(_answer())).approved_flag_contradicted_checks is False
+def test_a_sample_that_approves_cannot_outvote_a_rejection() -> None:
+    client = Client(by_thread=([_answer()] * 1, [_answer({"sum_bound": ("missing", "", "n")})] * 1))
+    with pytest.raises(ProofOutputReviewError):
+        _review(client)
 
 
-def test_flag_contradiction_is_logged_without_any_proof_text(
-    caplog: pytest.LogCaptureFixture,
-) -> None:
-    contradicted = _review(Client(_answer(approved=False)))
-    with caplog.at_level(logging.WARNING):
-        _note_review_flag_contradiction("explanation", "job-1", contradicted)
-    assert "explanation_review_flag_contradicted_checklist" in caplog.text
-    assert "job-1" in caplog.text
-    assert "delta" not in caplog.text and "reviewed" not in caplog.text
-    caplog.clear()
-    with caplog.at_level(logging.WARNING):
-        _note_review_flag_contradiction("explanation", "job-1", _review(Client(_answer())))
-    assert caplog.text == ""
+def test_two_independent_review_sessions_are_opened() -> None:
+    issued: list[uuid.UUID] = []
+
+    def factory() -> uuid.UUID:
+        value = uuid.uuid4()
+        issued.append(value)
+        return value
+
+    review = _review(Client(_answer()), session_id_factory=factory)
+    assert len(issued) == 2 and issued[0] != issued[1]
+    assert review.session_id == str(issued[0])
+
+
+def test_the_samples_run_in_parallel() -> None:
+    client = Client(_answer(), delay=0.3)
+    started = time.monotonic()
+    _review(client)
+    assert time.monotonic() - started < 0.55  # sequential would take >= 0.6
+
+
+def test_both_samples_are_metered() -> None:
+    client = Client(_answer(), usage=True)
+    with capture_usage() as records:
+        _review(client)
+    assert len(records) == 2
+    assert all(record["input_tokens"] == 10 for record in records)
 
 
 # --- fail-closed -------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("check_id", EPSILON_DELTA_CHECK_IDS)
-def test_a_missing_required_id_is_a_schema_failure_never_an_approval(check_id: str) -> None:
-    client = Client(_answer(drop=check_id), _answer(drop=check_id))
+def test_one_sample_with_a_transport_failure_fails_the_review() -> None:
+    client = Client(by_thread=([_answer()], [RuntimeError("down")]))
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert raised.value.category == "transport"
+    assert len(client.prompts) == 2
+
+
+def test_one_sample_with_malformed_output_fails_the_review() -> None:
+    client = Client(by_thread=([_answer()], ["not json"]))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
     assert raised.value.category == "schema"
-    assert len(client.prompts) == 2
-    assert "failed schema validation" in client.prompts[1]
+
+
+def test_a_rejection_is_conclusive_even_if_the_other_sample_failed() -> None:
+    client = Client(
+        by_thread=([_answer({"sum_bound": ("missing", "", "n")})], [RuntimeError("down")])
+    )
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert raised.value.category == "rejected"
+
+
+def test_an_unexpected_error_in_one_sample_surfaces_after_the_other_finished(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    finished = threading.Event()
+    original = LeanGroundedOutputReviewer._review
+
+    def flaky(self: LeanGroundedOutputReviewer, **kwargs: Any) -> ProofOutputReview:
+        if kwargs["session_id"].endswith("-bad"):
+            raise ValueError("boom")
+        time.sleep(0.1)
+        try:
+            return original(self, **kwargs)
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(LeanGroundedOutputReviewer, "_review", flaky)
+    ids = iter(["good", "x-bad"])
+    reviewer = _reviewer(Client(_answer()), session_id_factory=lambda: ids.__next__())
+    with pytest.raises(ValueError, match="boom"):
+        reviewer.review_explanation(
+            theorem_statement=STATEMENT, lean_code=LEAN, explanation=_explanation(), language="ja"
+        )
+    assert finished.is_set()  # the pool joined the healthy sample before the error left
+
+
+@pytest.mark.parametrize("check_id", EPSILON_DELTA_CHECK_IDS)
+def test_a_missing_required_id_is_a_schema_failure_never_an_approval(check_id: str) -> None:
+    client = Client(_answer(drop=check_id))
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert raised.value.category == "schema"
+    assert any("failed schema validation" in p for p in client.prompts)
 
 
 def test_a_complete_second_answer_after_an_incomplete_first_is_used() -> None:
-    review = _review(Client(_answer(drop="conclusion"), _answer()))
-    assert len(review.checks) == len(EPSILON_DELTA_CHECK_IDS)
+    client = Client(by_thread=([_answer(drop="conclusion"), _answer()], [_answer()]))
+    review = _review(client)
+    assert all(len(sample) == len(EPSILON_DELTA_CHECK_IDS) for sample in review.samples)
 
 
-def _raw(mutate: Any) -> str:
+def _raw(mutate: Callable[[dict[str, Any]], object]) -> str:
     payload = json.loads(_answer())
     mutate(payload)
     return json.dumps(payload, ensure_ascii=False)
@@ -213,40 +347,74 @@ def _raw(mutate: Any) -> str:
         _raw(lambda p: p.update(approved="yes")),  # non-boolean flag
         _raw(lambda p: p.update(checks="none")),  # not a list
         _raw(lambda p: p.pop("rationale")),
-        _raw(lambda p: p["checks"][-1].update(status="missing")),  # presentation has no "missing"
+        _raw(lambda p: p["checks"][-1].update(status="missing", note="n")),  # presentation
     ],
 )
 def test_malformed_checklists_are_schema_failures(bad: str) -> None:
     with pytest.raises(ProofOutputReviewError) as raised:
-        _review(Client(bad, bad))
+        _review(Client(bad))
     assert raised.value.category == "schema"
 
 
-def test_transport_failure_is_never_an_approval() -> None:
+# --- the reviewer's `approved` flag is ignored -------------------------------------------
+
+
+def test_approved_true_cannot_override_a_missing_element() -> None:
+    answer = _answer({"delta_bounded_by_one": ("missing", "", "no minimum")}, approved=True)
     with pytest.raises(ProofOutputReviewError) as raised:
-        _review(Client(RuntimeError("down")))
-    assert raised.value.category == "transport"
+        _review(Client(answer))
+    assert raised.value.category == "rejected"
 
 
-# --- other reviews are unchanged ---------------------------------------------------------
+def test_approved_false_cannot_reject_when_every_element_is_ok_and_is_flagged() -> None:
+    assert _review(Client(_answer(approved=False))).approved_flag_contradicted_checks is True
 
 
-def test_other_theorems_keep_the_original_approved_rationale_format() -> None:
-    add_zero = "theorem add_zero_nat (n : Nat) : n + 0 = n := by\n  simp"
+def test_agreeing_or_absent_approved_flag_is_not_flagged() -> None:
+    assert _review(Client(_answer(approved=True))).approved_flag_contradicted_checks is False
+    assert _review(Client(_answer())).approved_flag_contradicted_checks is False
+
+
+def test_flag_contradiction_is_logged_without_any_proof_text(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    contradicted = _review(Client(_answer(approved=False)))
+    with caplog.at_level(logging.WARNING):
+        _note_review_flag_contradiction("explanation", "job-1", contradicted)
+    assert "explanation_review_flag_contradicted_checklist" in caplog.text
+    assert "job-1" in caplog.text
+    assert "reviewed" not in caplog.text
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        _note_review_flag_contradiction("explanation", "job-1", _review(Client(_answer())))
+    assert caplog.text == ""
+
+
+# --- other reviews are unchanged (one call, original format) -----------------------------
+
+
+def test_other_theorems_keep_the_original_format_and_a_single_call() -> None:
     client = Client('{"approved": false, "rationale": "gap"}')
     with pytest.raises(ProofOutputReviewError) as raised:
-        _review(client, statement="n + 0 = n を示せ", lean=add_zero)
+        _review(client, statement="n + 0 = n を示せ", lean=ADD_ZERO)
     assert raised.value.category == "rejected" and raised.value.rationale == "gap"
+    assert len(client.prompts) == 1
     assert "Checklist (give every id exactly once)" not in client.prompts[0]
-    assert raised.value.checks == ()
+    assert raised.value.samples == ()
     # A checklist answer is not valid for them.
-    bad = Client(_answer(), _answer())
     with pytest.raises(ProofOutputReviewError) as schema:
-        _review(bad, statement="n + 0 = n を示せ", lean=add_zero)
+        _review(Client(_answer()), statement="n + 0 = n を示せ", lean=ADD_ZERO)
     assert schema.value.category == "schema"
 
 
-def test_clarification_review_keeps_the_original_format() -> None:
+def test_other_theorems_are_metered_once() -> None:
+    client = Client('{"approved": true, "rationale": "ok"}', usage=True)
+    with capture_usage() as records:
+        _review(client, statement="n + 0 = n を示せ", lean=ADD_ZERO)
+    assert len(records) == 1
+
+
+def test_clarification_review_keeps_the_original_format_and_a_single_call() -> None:
     clarification = ProofClarification(
         section_id="s",
         question="q",
@@ -260,13 +428,13 @@ def test_clarification_review_keeps_the_original_format() -> None:
         elapsed_ms=0,
     )
     client = Client('{"approved": true, "rationale": "fine"}')
-    reviewer = LeanGroundedOutputReviewer(client=client, model="m", provider="p")
-    review = reviewer.review_clarification(
+    review = _reviewer(client).review_clarification(
         theorem_statement=STATEMENT,
         lean_code=LEAN,
         explanation=_explanation(),
         clarification=clarification,
         language="ja",
     )
-    assert review.checks == () and review.rationale == "fine"
+    assert review.samples == () and review.rationale == "fine"
+    assert len(client.prompts) == 1
     assert "Checklist (give every id exactly once)" not in client.prompts[0]

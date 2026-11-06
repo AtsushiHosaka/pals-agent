@@ -96,7 +96,7 @@ python scripts/evaluate_explanation_qa.py --execute --budget-usd N \
 
 Prices are supplied by the operator (the repository has no price table). The run is refused when
 the worst case of all cases and repeats exceeds the budget (default output bound 16384 tokens
-per call; a malformed answer is retried once), and stops before a call that could exceed what is left. The report lists false
+per call; each review runs two samples, each retrying a malformed answer once), and stops before a call that could exceed what is left. The report lists false
 accepts (wrong or summary-first approved), false rejects (valid rejected), errors, and the
 mismatched case ids. Exit status 0 means every case got its expected decision.
 
@@ -160,24 +160,48 @@ So the x² review (and only it) asks for a fixed checklist and the code decides:
 
 This list is the single source (`EPSILON_DELTA_CHECK_IDS`) for the prompt, the response format
 and the decision; every defect the earlier rubric listed belongs to exactly one element (a
-test pins that). Each answer is `{id, status: ok|missing|wrong, quote, note}`.
+test pins that). Each answer is `{id, status: ok|missing|wrong, quote, note}`; `quote` is informational.
 
-Decision (deterministic, `LeanGroundedOutputReviewer._review`):
+Decision (deterministic code, `LeanGroundedOutputReviewer.review_explanation`):
 
-- reject iff some element is `missing`, or `wrong` with a `quote` that really occurs in the
-  proof (whitespace, width, `$`, braces and TeX spacing ignored; at least four characters);
-- otherwise approve. The reviewer's own `approved` flag is ignored; a disagreement with the
-  checklist is kept in memory and logged without text
-  (`explanation_review_flag_contradicted_checklist`).
-- a missing, repeated or unknown id, an unknown status, or `presentation: missing` is a schema
-  failure (retried once, then fail-closed). Transport failure never approves.
+- One sample rejects iff some element is `missing` or `wrong`. A `missing` or `wrong` entry must
+  have a nonblank `note` (schema). `quote` is informational: it is kept in the report, never
+  checked against the proof and never used in the decision.
+- The review is sampled **twice, independently and in parallel** (two sessions, the same prompt;
+  `ThreadPoolExecutor` with copied contexts, like the existing parallel recipe reviews, so both
+  calls reach the claim's meter and reporter). The explanation is approved only if both samples
+  approve; **either sample can reject**.
+- A rejection is conclusive whatever the other sample did. If no sample rejected and one failed
+  (transport, malformed output, incomplete checklist), the review fails; a missing vote is never an
+  approval. Pool shutdown joins both samples even when one raises.
+- The reviewer's own `approved` flag is ignored; a disagreement with the checklist is kept in
+  memory and logged without text (`explanation_review_flag_contradicted_checklist`).
+- A missing, repeated or unknown id, an unknown status, `presentation: missing`, or a blank note on
+  a failed element is a schema failure (retried once per sample, then fail-closed).
+- The rejection reason is built only from the failed elements of the rejecting samples (union of
+  ids, in checklist order) with their notes; quotes and proof text are not stored or logged.
 
-Why a `wrong` that quotes nothing in the proof does not count: a false claim must point at
-text. An accusation that cannot be located is more likely a hallucination or an over-reading
-(the failure mode behind the false rejections), and a real error is quotable, because a wrong
-statement is a statement; an absence is reported as `missing`, which needs no quote. The
-cost is a real error whose quote the reviewer mangles beyond the normalization; the prompt
-tells the reviewer to copy it verbatim and to use `missing` for absences.
+Why the quote check was removed: the first checklist version counted a `wrong` only if its quote
+occurred in the proof. In the real-model run (35 cases x 3), 7 of the 10 false approvals were
+elements the reviewer had judged `wrong`: the model rewrote its quote (`\delta` to `δ`, `\le` to
+`≤`, dropped `$`) and the exact match discarded a detected defect. Without the quote
+requirement, only 3 pure misses remained (one run each of wrong-12, wrong-02, wrong-16) and the
+one false rejection was a `point_fixed` marked `missing` on a valid case. A defect the reviewer
+reports is better evidence than a string match, so the report is taken at its word and the
+remaining risk is handled by sampling.
+
+Why two samples with OR: the remaining errors are independent single-run misses, about 6% of
+wrong runs. If the two samples miss independently, a wrong explanation is approved with
+probability about 0.4% (6% squared). A false rejection of a valid explanation (about 2% per run)
+becomes up to about 4%, but a rejection is absorbed by the existing single regeneration with
+feedback, which produces a new candidate and a new pair of reviews, so learners still receive an
+explanation; a missed defect cannot be taken back. The estimate assumes independent samples
+(same model and prompt, sampled separately), which `--repeats` on the regression set checks
+rather than proves.
+
+**Cost:** the x² explanation review costs two review calls instead of one (the review is the
+cheaper part of an explanation, and latency is about one call because the samples run in
+parallel). Other theorems, clarifications and other reviews are unchanged (one call).
 
 Why rejection by `missing` is safe against over-reading: the status rule says an element is `ok`
 when the text lets a reader verify it, that a brief standard fact (minimum of positives is
@@ -191,7 +215,7 @@ original `{approved, rationale}` format and behaviour.
 Regression cases (v1.3): 15 valid (including 5 where each element holds by a one-phrase
 standard fact), 17 wrong (at least one case per element, each with
 `expected_failed_checks`), 3 summary-first. Truth of each case was fixed mathematically before
-any model run. The report lists every check with its status, the failing ids, whether the
+any model run. The report lists the checks of each sample with their status, the failing ids, whether the
 rejection hit the expected element, and flag contradictions. `--repeats 3` is the intended
 measurement; the target is no false approvals and no false rejections in any run.
 

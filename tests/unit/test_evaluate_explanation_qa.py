@@ -58,7 +58,6 @@ def _checks(failing: tuple[str, ...]) -> tuple[ReviewCheck, ...]:
             status="missing" if i in failing else "ok",
             quote="",
             note="gap" if i in failing else "",
-            blocks=i in failing,
         )
         for i in EPSILON_DELTA_CHECK_IDS
     )
@@ -110,7 +109,7 @@ class StubReviewer:
                 category="rejected",
                 rationale="delta fails",
                 session_id="sess-no",
-                checks=_checks(case.expected_failed_checks),
+                samples=(_checks(case.expected_failed_checks),) * 2,
             )
         return ProofOutputReview(
             "explanation",
@@ -118,7 +117,7 @@ class StubReviewer:
             "m",
             "sess-ok",
             "looks valid",
-            checks=_checks(()),
+            samples=(_checks(()),) * 2,
             approved_flag_contradicted_checks=case.id in self.contradicted,
         )
 
@@ -281,7 +280,11 @@ def test_report_lists_the_checks_and_whether_the_approved_flag_contradicted_them
     assert results["valid-02-dfrac-vert-equality-end"]["approved_flag_contradicted_checks"]
     assert not results["valid-01-base"]["approved_flag_contradicted_checks"]
     assert report["summary"]["approved_flag_contradictions"] == 1
-    assert [c["id"] for c in results["valid-01-base"]["checks"]] == list(EPSILON_DELTA_CHECK_IDS)
+    # Each independent review sample is kept; the two-sample review reports both.
+    assert len(results["valid-01-base"]["samples"]) == 2
+    assert [c["id"] for c in results["valid-01-base"]["samples"][0]] == list(
+        EPSILON_DELTA_CHECK_IDS
+    )
     rejected = results["wrong-01-epsilon-plus-one"]
     assert rejected["expected_failed_checks"] == ["final_inequality"]
     assert rejected["failed_checks"] == ["final_inequality"]
@@ -295,7 +298,7 @@ def test_a_rejection_for_another_element_than_the_case_was_built_for_is_reported
             if case.id == "wrong-01-epsilon-plus-one":
                 self.calls += 1
                 raise ProofOutputReviewError(
-                    "no", category="rejected", rationale="r", checks=_checks(("conclusion",))
+                    "no", category="rejected", rationale="r", samples=(_checks(("conclusion",)),)
                 )
             return super().review_explanation(explanation=explanation, **kwargs)
 
@@ -336,8 +339,6 @@ def test_repeats_scale_the_worst_case_estimate_and_must_be_positive() -> None:
 
 
 def test_every_rejected_case_names_the_checks_it_fails_and_presentation_cases_a_quote() -> None:
-    from pals_agent.explanations import _normalize_quote_text, _visible_proof_text
-
     for case in qa.load_cases(qa.DEFAULT_CASES).cases:
         if case.expected != "reject":
             continue
@@ -345,8 +346,14 @@ def test_every_rejected_case_names_the_checks_it_fails_and_presentation_cases_a_
         assert set(case.expected_failed_checks) <= set(EPSILON_DELTA_CHECK_IDS)
         if case.group == "summary_first":
             assert case.expected_failed_checks == ("presentation",)
-            visible = _normalize_quote_text(_visible_proof_text(case.explanation))
-            assert _normalize_quote_text(case.defect_quote or "") in visible, case.id
+            proof = "".join(
+                (
+                    case.explanation.overview
+                    + "".join(sec.summary for sec in case.explanation.sections)
+                    + case.explanation.conclusion
+                ).split()
+            )
+            assert "".join((case.defect_quote or "").split()) in proof, case.id
     covered = {i for c in qa.load_cases(qa.DEFAULT_CASES).cases for i in c.expected_failed_checks}
     assert covered == set(EPSILON_DELTA_CHECK_IDS)  # every element has a wrong case
 

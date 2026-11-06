@@ -315,7 +315,7 @@ def test_rejected_wrong_proof_is_corrected_once_with_qa_feedback() -> None:
     assert "wrong delta or bound" in generator.prompts[1]
     assert "=\\varepsilon$" in candidate.sections[0].summary
     assert review.kind == "explanation"
-    assert len(qa.prompts) == 2
+    assert len(qa.prompts) == 4  # two independent samples per candidate
 
 
 def test_two_wrong_proofs_end_as_review_failure_not_validation_failure() -> None:
@@ -560,7 +560,7 @@ def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -
         assert fragment in status_rule, fragment
     assert "Never mark an element missing or wrong because of notation or phrasing" in prompt
     assert "Style, level of detail, how explicit a step is" in prompt
-    assert '"wrong" whose quote is not in the proof does not count' in prompt
+    assert "must have a nonblank `note`" in prompt
     # Tolerated notation is listed only in the status rule, never as a defect of an element.
     for definition in _definitions(prompt).values():
         for notation in TOLERATED_NOTATION:

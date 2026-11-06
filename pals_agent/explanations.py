@@ -4,9 +4,10 @@ import json
 import math
 import re
 import time
-import unicodedata
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
+from contextvars import copy_context
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
@@ -107,14 +108,15 @@ class ProofOutputReviewError(RuntimeError):
         category: Literal["rejected", "transport", "schema"] = "schema",
         rationale: str = "",
         session_id: str | None = None,
-        checks: tuple[ReviewCheck, ...] = (),
+        samples: tuple[tuple[ReviewCheck, ...], ...] = (),
     ) -> None:
         super().__init__(message)
         self.category = category
         self.rationale = rationale[:2000]
         self.session_id = session_id
-        # In memory only (regression tooling). Never log or persist: quotes are proof text.
-        self.checks = checks
+        # In memory only (regression tooling): the checks of each independent review sample.
+        # Never log or persist; quotes and notes can contain proof text.
+        self.samples = samples
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,8 +128,9 @@ class ProofOutputReview:
     reviewer_model: str
     session_id: str
     rationale: str
-    checks: tuple[ReviewCheck, ...] = ()
-    # The reviewer's own `approved` flag disagreed with its checklist (the checklist decides).
+    # The checklist of each independent review sample (two for the x² epsilon-delta review).
+    samples: tuple[tuple[ReviewCheck, ...], ...] = ()
+    # A reviewer's own `approved` flag disagreed with its checklist (the checklist decides).
     approved_flag_contradicted_checks: bool = False
 
 
@@ -137,11 +140,13 @@ class ReviewCheck:
 
     id: str
     status: Literal["ok", "missing", "wrong"]
-    quote: str
+    quote: str  # informational only: it is never checked against the proof
     note: str
-    # Whether this check rejects the explanation: "missing" always does; "wrong" does when
-    # its quote is really in the proof (an accusation that points at no text does not).
-    blocks: bool
+
+    @property
+    def blocks(self) -> bool:
+        """Any element that is not ok rejects the explanation."""
+        return self.status != "ok"
 
 
 @dataclass(frozen=True, slots=True)
@@ -260,24 +265,45 @@ class LeanGroundedOutputReviewer:
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofOutputReview:
-        return self._review(
-            kind="explanation",
-            session_id=str(self.session_id_factory()),
-            prompt=_output_review_prompt(
-                theorem_statement=theorem_statement,
-                lean_code=lean_code,
-                explanation=explanation,
-                language=language,
-            ),
-            deadline=deadline,
-            timeout_seconds=timeout_seconds,
-            # The x² epsilon-delta requirement is judged element by element (see the checklist).
-            checklist_visible_text=(
-                _normalize_quote_text(_visible_proof_text(explanation))
-                if _requires_epsilon_delta(theorem_statement, lean_code)
-                else None
-            ),
+        prompt = _output_review_prompt(
+            theorem_statement=theorem_statement,
+            lean_code=lean_code,
+            explanation=explanation,
+            language=language,
         )
+        if not _requires_epsilon_delta(theorem_statement, lean_code):
+            return self._review(
+                kind="explanation",
+                session_id=str(self.session_id_factory()),
+                prompt=prompt,
+                deadline=deadline,
+                timeout_seconds=timeout_seconds,
+            )
+        # The x² epsilon-delta requirement is judged element by element, twice and
+        # independently, and either sample can reject (see `_combine_samples`).
+        sessions = [str(self.session_id_factory()) for _ in range(CHECKLIST_SAMPLES)]
+
+        def sample(session_id: str) -> ProofOutputReview | ProofOutputReviewError:
+            try:
+                return self._review(
+                    kind="explanation",
+                    session_id=session_id,
+                    prompt=prompt,
+                    deadline=deadline,
+                    timeout_seconds=timeout_seconds,
+                    checklist=True,
+                )
+            except ProofOutputReviewError as error:
+                return error
+
+        # Separate Contexts keep the claim-bound meter/reporter, so every sample is counted;
+        # joining the pool drains the other sample even when one raises.
+        with ThreadPoolExecutor(
+            max_workers=CHECKLIST_SAMPLES, thread_name_prefix="pals-explanation-review"
+        ) as pool:
+            futures = [pool.submit(copy_context().run, sample, sid) for sid in sessions]
+            outcomes = [future.result() for future in futures]
+        return _combine_samples(outcomes)
 
     def review_clarification(
         self,
@@ -318,7 +344,7 @@ class LeanGroundedOutputReviewer:
         prompt: str,
         deadline: float | None,
         timeout_seconds: float | None,
-        checklist_visible_text: str | None = None,
+        checklist: bool = False,
     ) -> ProofOutputReview:
         _validate_deadline_options(deadline, timeout_seconds)
         validation_error = ""
@@ -352,12 +378,10 @@ class LeanGroundedOutputReviewer:
             contradicted = False
             try:
                 payload = _parse_json_object(raw_output)
-                if checklist_visible_text is None:
+                if not checklist:
                     approved, rationale = _output_review_decision(payload)
                 else:
-                    checks, rationale, flag = _epsilon_delta_checks(
-                        payload, checklist_visible_text
-                    )
+                    checks, rationale, flag = _epsilon_delta_checks(payload)
                     approved = not any(check.blocks for check in checks)
                     contradicted = flag is not None and flag != approved
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
@@ -376,7 +400,7 @@ class LeanGroundedOutputReviewer:
                     reviewer_model=self.model,
                     session_id=session_id,
                     rationale=rationale,
-                    checks=checks,
+                    samples=(checks,) if checks else (),
                     approved_flag_contradicted_checks=contradicted,
                 )
             # A valid negative decision settles this candidate. Only malformed review
@@ -384,9 +408,9 @@ class LeanGroundedOutputReviewer:
             raise ProofOutputReviewError(
                 "independent reviewer rejected the output",
                 category="rejected",
-                rationale=_checklist_rationale(checks, rationale),
+                rationale=_checklist_rationale((checks,), rationale),
                 session_id=session_id,
-                checks=checks,
+                samples=(checks,) if checks else (),
             )
 
         raise ProofOutputReviewError(
@@ -394,6 +418,51 @@ class LeanGroundedOutputReviewer:
             category="schema",
             session_id=session_id,
         )
+
+
+# The x² checklist review runs this many independent samples; one rejection rejects.
+CHECKLIST_SAMPLES = 2
+
+
+def _combine_samples(
+    outcomes: list[ProofOutputReview | ProofOutputReviewError],
+) -> ProofOutputReview:
+    """Approve only if every sample approved; any rejection rejects.
+
+    A rejection is conclusive whatever the other sample did. Otherwise a sample that failed
+    (transport or malformed) fails the review: a missing vote is never an approval.
+    """
+    samples = tuple(sample for outcome in outcomes for sample in outcome.samples)
+    rejected = [
+        o for o in outcomes if isinstance(o, ProofOutputReviewError) and o.category == "rejected"
+    ]
+    if rejected:
+        raise ProofOutputReviewError(
+            "independent reviewer rejected the output",
+            category="rejected",
+            rationale=_checklist_rationale(
+                tuple(sample for outcome in rejected for sample in outcome.samples),
+                rejected[0].rationale.partition("\nReviewer: ")[2],
+            ),
+            session_id=rejected[0].session_id,
+            samples=samples,
+        )
+    for outcome in outcomes:
+        if isinstance(outcome, ProofOutputReviewError):
+            raise outcome
+    approvals = [o for o in outcomes if isinstance(o, ProofOutputReview)]
+    first = approvals[0]
+    return ProofOutputReview(
+        kind=first.kind,
+        reviewer_provider=first.reviewer_provider,
+        reviewer_model=first.reviewer_model,
+        session_id=first.session_id,
+        rationale=first.rationale,
+        samples=samples,
+        approved_flag_contradicted_checks=any(
+            a.approved_flag_contradicted_checks for a in approvals
+        ),
+    )
 
 
 class ProofSemanticReviewUnavailable(RuntimeError):
@@ -1466,34 +1535,8 @@ Candidate {output_kind} JSON (structured evidence; field names and internal titl
 {json.dumps(reviewed_output, ensure_ascii=False, sort_keys=True)}"""
 
 
-_MIN_QUOTE_CODE_POINTS = 4
-_TEX_SPACING_AND_SIZING = re.compile(
-    r"\\(?:left|right|bigl|bigr|Bigl|Bigr|big|Big|quad|qquad|displaystyle)(?![A-Za-z])"
-    r"|\\[,;:! ]"
-)
-
-
-def _visible_proof_text(explanation: ProofExplanation) -> str:
-    """What the learner reads, joined by a separator that no quote can match across."""
-    return "\x00".join(
-        [
-            explanation.overview,
-            *(section.summary for section in explanation.sections),
-            explanation.conclusion,
-        ]
-    )
-
-
-def _normalize_quote_text(text: str) -> str:
-    """Ignore whitespace, full/half width, `$` delimiters, braces and TeX spacing commands."""
-    normalized = unicodedata.normalize("NFKC", text)
-    normalized = _TEX_SPACING_AND_SIZING.sub("", normalized)
-    normalized = normalized.replace("\\dfrac", "\\frac").replace("\\tfrac", "\\frac")
-    return re.sub(r"[\s${}]", "", normalized)
-
-
 def _epsilon_delta_checks(
-    payload: dict[str, Any], visible_normalized: str
+    payload: dict[str, Any],
 ) -> tuple[tuple[ReviewCheck, ...], str, bool | None]:
     """Parse the closed checklist; a missing, repeated or unknown id is a schema failure."""
     allowed = {"rationale", "checks", "approved"}
@@ -1523,26 +1566,25 @@ def _epsilon_delta_checks(
             or len(quote) > 4_000
             or len(note) > 2_000
             or (check_id == "presentation" and status == "missing")
+            # An element that is not ok has to say what is missing or wrong.
+            or (status != "ok" and not note.strip())
         ):
             raise ValueError("invalid or repeated checklist entry")
-        needle = _normalize_quote_text(quote)
-        grounded = len(needle) >= _MIN_QUOTE_CODE_POINTS and needle in visible_normalized
-        by_id[check_id] = ReviewCheck(
-            id=check_id,
-            status=status,
-            quote=quote,
-            note=note,
-            blocks=status == "missing" or (status == "wrong" and grounded),
-        )
+        by_id[check_id] = ReviewCheck(id=check_id, status=status, quote=quote, note=note)
     if set(by_id) != set(EPSILON_DELTA_CHECK_IDS):
         raise ValueError("every checklist id must be answered exactly once")
     return tuple(by_id[i] for i in EPSILON_DELTA_CHECK_IDS), rationale, flag
 
 
-def _checklist_rationale(checks: tuple[ReviewCheck, ...], rationale: str) -> str:
+def _checklist_rationale(samples: tuple[tuple[ReviewCheck, ...], ...], rationale: str) -> str:
     """Private rejection reason: the failed elements and their notes, never the quotes."""
-    failed = [f"{c.id} ({c.status}): {c.note.strip()}" for c in checks if c.blocks]
-    return "Checks: " + " | ".join(failed) + f"\nReviewer: {rationale}" if failed else rationale
+    failed: dict[str, str] = {}
+    for checks in samples:
+        for check in checks:
+            if check.blocks:
+                failed.setdefault(check.id, f"{check.id} ({check.status}): {check.note.strip()}")
+    ordered = [failed[i] for i in EPSILON_DELTA_CHECK_IDS if i in failed]
+    return "Checks: " + " | ".join(ordered) + f"\nReviewer: {rationale}" if ordered else rationale
 
 
 def _review_approved(payload: dict[str, Any]) -> bool:
@@ -1724,10 +1766,9 @@ Status. "ok": the text lets a reader verify the element. Brief standard facts ne
 proof and make an element ok: the minimum of positive numbers is positive; each argument of a
 minimum bounds it from above (so delta<=1 and delta<= the second argument); the triangle
 inequality; the difference of squares. "missing": the element is absent, or asserted where a
-reason is required. "wrong": the text states something false for that element; copy the
-false statement verbatim into `quote` (a "wrong" whose quote is not in the proof does not
-count, so use "missing" for something that is absent). For "missing", `quote` may be the
-sentence just before the place where the element belongs, or empty.
+reason is required. "wrong": the text states something false for that element. Every
+"missing" or "wrong" entry must have a nonblank `note` saying what is missing or wrong; its
+`quote` (a short excerpt of the relevant sentence) is optional.
 Never mark an element missing or wrong because of notation or phrasing: \\frac or \\dfrac,
 \\lvert or \\vert, \\min or \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands,
 |(x-a)(x+a)|, "delta is positive" in words, epsilon>0 before or after the point or in display

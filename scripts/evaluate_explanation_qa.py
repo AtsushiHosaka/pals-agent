@@ -37,17 +37,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from pals_agent.explanations import (  # noqa: E402
-    _MIN_QUOTE_CODE_POINTS,
+    CHECKLIST_SAMPLES,
     EPSILON_DELTA_CHECK_IDS,
     ExplanationSection,
     LeanLineReference,
     ProofExplanation,
     ProofOutputReview,
     ProofOutputReviewError,
-    _normalize_quote_text,
     _output_review_prompt,
     _parse_explanation,
-    _visible_proof_text,
 )
 
 DEFAULT_CASES = ROOT / "testdata" / "explanation-qa-v1" / "cases.json"
@@ -150,11 +148,8 @@ def load_cases(path: Path) -> CaseFile:
                 raise CaseFileError(f"{case_id}: a rejected case names the checks it fails")
             if group == "summary_first" and not defect_quote:
                 raise CaseFileError(f"{case_id}: defect_quote is required (presentation)")
-            if defect_quote:
-                needle = _normalize_quote_text(str(defect_quote))
-                visible = _normalize_quote_text(_visible_proof_text(explanation))
-                if len(needle) < _MIN_QUOTE_CODE_POINTS or needle not in visible:
-                    raise CaseFileError(f"{case_id}: defect_quote is not a passage of the proof")
+            if defect_quote and _squash(str(defect_quote)) not in _squash(_proof_text(explanation)):
+                raise CaseFileError(f"{case_id}: defect_quote is not a passage of the proof")
             cases.append(
                 Case(
                     id=case_id,
@@ -169,6 +164,16 @@ def load_cases(path: Path) -> CaseFile:
     except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
         raise CaseFileError(f"cannot read case file: {type(exc).__name__}: {exc}") from exc
     return CaseFile(statement, lean_code, tuple(cases))
+
+
+def _squash(text: str) -> str:
+    return "".join(text.split())
+
+
+def _proof_text(explanation: ProofExplanation) -> str:
+    return "\n".join(
+        [explanation.overview, *(s.summary for s in explanation.sections), explanation.conclusion]
+    )
 
 
 def _section(section: ExplanationSection) -> ExplanationSection:
@@ -265,9 +270,9 @@ def run(
     return _emit_live(args, case_file, cases, prompts, reviewer, report, out)
 
 
-# A review may ask twice (an ungrounded rejection is re-checked once), each ask may retry a
-# malformed answer up to `max_attempts` times.
-ASKS_PER_REVIEW = 2
+# Each review runs CHECKLIST_SAMPLES independent samples in parallel (one rejection rejects),
+# and each sample may retry a malformed answer up to `max_attempts` times.
+ASKS_PER_REVIEW = CHECKLIST_SAMPLES
 
 
 def _total_worst_case(
@@ -355,7 +360,7 @@ def _emit_live(
             "category": None,
             "rationale": "",
             "reviewer_session_id": None,
-            "checks": [],
+            "samples": [],
             "approved_flag_contradicted_checks": False,
         }
         recorder = getattr(reviewer, "client", None)
@@ -377,7 +382,7 @@ def _emit_live(
                     category="approved",
                     rationale=review.rationale,
                     reviewer_session_id=review.session_id,
-                    checks=[asdict(c) for c in review.checks],
+                    samples=[[asdict(c) for c in sample] for sample in review.samples],
                     approved_flag_contradicted_checks=review.approved_flag_contradicted_checks,
                 )
             except ProofOutputReviewError as exc:
@@ -386,7 +391,7 @@ def _emit_live(
                     category=exc.category,
                     rationale=exc.rationale,
                     reviewer_session_id=exc.session_id,
-                    checks=[asdict(c) for c in exc.checks],
+                    samples=[[asdict(c) for c in sample] for sample in exc.samples],
                 )
             except Exception as exc:  # noqa: BLE001 - report as an error, never as a decision
                 decision = "error"
@@ -400,7 +405,9 @@ def _emit_live(
                 "expected": case.expected,
                 "actual": decision,
                 "expected_failed_checks": list(case.expected_failed_checks),
-                "failed_checks": [c["id"] for c in detail["checks"] if c["blocks"]],
+                "failed_checks": sorted(
+                    {c["id"] for sample in detail["samples"] for c in sample if c["status"] != "ok"}
+                ),
                 **detail,
                 # The reviewer's structured JSON answers, one per attempt, exactly as returned.
                 "raw_reviewer_outputs": list(raw_outputs) if raw_outputs is not None else [],
