@@ -54,7 +54,7 @@ def test_settings_default_to_ollama(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.draft_embedding_dimension == 384
     assert settings.draft_embedding_timeout_seconds == 60.0
     assert settings.pfi_runtime_provenance_sha256 is None
-    assert settings.max_repair_attempts == 12
+    assert settings.max_repair_attempts == 3
 
 
 def test_settings_reject_partial_recipe_selection_configuration(

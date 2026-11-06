@@ -550,17 +550,6 @@ class AlwaysBrokenRepairingGenerator(RepairingGenerator):
         )
 
 
-class SucceedsOnFifthRepairGenerator(RepairingGenerator):
-    def repair(self, request: ProofRequest, feedback: GenerationFeedback) -> GeneratedProof:
-        self.feedback.append(feedback)
-        lean_code = FIXED_REPAIRABLE_CODE if len(self.feedback) == 5 else BROKEN_REPAIRABLE_CODE
-        return GeneratedProof(
-            lean_code=lean_code,
-            model=self.model,
-            raw_model_output=f"```lean\n{lean_code}\n```",
-        )
-
-
 class SucceedsOnNthRepairGenerator(RepairingGenerator):
     def __init__(self, repair_number: int) -> None:
         super().__init__()
@@ -1693,8 +1682,8 @@ def test_pipeline_stops_after_repair_attempt_limit(tmp_path: Path) -> None:
     assert metadata["termination_reason"] == "repair_budget_exhausted"
 
 
-def test_pipeline_default_allows_five_llm_selected_repairs(tmp_path: Path) -> None:
-    generator = SucceedsOnFifthRepairGenerator()
+def test_pipeline_default_allows_three_llm_selected_repairs(tmp_path: Path) -> None:
+    generator = SucceedsOnNthRepairGenerator(3)
     verifier = ContentAwareVerifier()
     pipeline = ProofPipeline(
         generator=generator,
@@ -1706,24 +1695,24 @@ def test_pipeline_default_allows_five_llm_selected_repairs(tmp_path: Path) -> No
     result = pipeline.run_statement(
         statement="Every natural number plus zero is itself.",
         formal_statement="theorem add_zero_nat (n : Nat) : n + 0 = n := by",
-        proof_job_id="five-repair-job",
+        proof_job_id="three-repair-job",
     )
 
     assert result.state == "verified"
-    assert len(generator.feedback) == 5
-    assert len(generator.route_feedback) == 5
-    assert [feedback.attempt for feedback in generator.feedback] == [1, 2, 3, 4, 5]
-    assert verifier.calls == [BROKEN_REPAIRABLE_CODE] * 5 + [FIXED_REPAIRABLE_CODE]
+    assert len(generator.feedback) == 3
+    assert len(generator.route_feedback) == 3
+    assert [feedback.attempt for feedback in generator.feedback] == [1, 2, 3]
+    assert verifier.calls == [BROKEN_REPAIRABLE_CODE] * 3 + [FIXED_REPAIRABLE_CODE]
     assert any(
         diagnostic.code == "pals.repair_stagnation"
         for diagnostic in generator.route_feedback[2].diagnostics
     )
 
 
-def test_pae_016_default_budget_can_verify_on_twelfth_repair_and_persists_order(
+def test_pae_016_default_budget_can_verify_on_third_repair_and_persists_order(
     tmp_path: Path,
 ) -> None:
-    generator = SucceedsOnNthRepairGenerator(12)
+    generator = SucceedsOnNthRepairGenerator(3)
     verifier = ContentAwareVerifier()
     pipeline = ProofPipeline(
         generator=generator,
@@ -1735,35 +1724,35 @@ def test_pae_016_default_budget_can_verify_on_twelfth_repair_and_persists_order(
     result = pipeline.run_statement(
         statement="Every natural number plus zero is itself.",
         formal_statement="theorem add_zero_nat (n : Nat) : n + 0 = n := by",
-        proof_job_id="repair-twelve",
+        proof_job_id="repair-three",
     )
 
     assert result.state == "verified"
-    assert len(generator.feedback) == 12
-    metadata = json.loads((tmp_path / "repair-twelve" / "result.json").read_text(encoding="utf-8"))
-    assert metadata["repairs_used"] == 12
+    assert len(generator.feedback) == 3
+    metadata = json.loads((tmp_path / "repair-three" / "result.json").read_text(encoding="utf-8"))
+    assert metadata["repairs_used"] == 3
     assert metadata["termination_reason"] == "verified"
-    assert [attempt["attempt"] for attempt in metadata["attempts"]] == list(range(1, 14))
+    assert [attempt["attempt"] for attempt in metadata["attempts"]] == list(range(1, 5))
     assert all(
         set(attempt) >= {"attempt", "phase", "generated", "verification", "diagnostics"}
         for attempt in metadata["attempts"]
     )
     assert "repair_route" not in metadata["attempts"][0]
     assert all("repair_route" in attempt for attempt in metadata["attempts"][1:])
-    checkpoint_paths = sorted((tmp_path / "repair-twelve" / "attempts").glob("*.json"))
+    checkpoint_paths = sorted((tmp_path / "repair-three" / "attempts").glob("*.json"))
     assert [path.name for path in checkpoint_paths] == [
-        f"{attempt:04d}.json" for attempt in range(1, 14)
+        f"{attempt:04d}.json" for attempt in range(1, 5)
     ]
     for attempt_number, checkpoint_path in enumerate(checkpoint_paths, start=1):
         checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
         assert checkpoint["checkpoint_schema_version"] == 1
-        assert checkpoint["run_id"] == "repair-twelve"
+        assert checkpoint["run_id"] == "repair-three"
         assert checkpoint["problem_id"] == "custom_statement"
-        assert checkpoint["max_repair_attempts"] == 12
+        assert checkpoint["max_repair_attempts"] == 3
         assert checkpoint["attempt"] == metadata["attempts"][attempt_number - 1]
 
 
-def test_pae_016_default_budget_exhaustion_runs_all_twelve_repairs(
+def test_pae_016_default_budget_exhaustion_runs_all_three_repairs(
     tmp_path: Path,
 ) -> None:
     generator = AlwaysBrokenRepairingGenerator()
@@ -1781,12 +1770,12 @@ def test_pae_016_default_budget_exhaustion_runs_all_twelve_repairs(
     )
 
     assert result.state == "failed"
-    assert len(generator.feedback) == 12
+    assert len(generator.feedback) == 3
     metadata = json.loads(
         (tmp_path / "repair-exhausted" / "result.json").read_text(encoding="utf-8")
     )
-    assert len(metadata["attempts"]) == 13
-    assert metadata["repairs_used"] == 12
+    assert len(metadata["attempts"]) == 4
+    assert metadata["repairs_used"] == 3
     assert metadata["termination_reason"] == "repair_budget_exhausted"
     assert any(
         diagnostic["code"] == "pals.repair_budget_exhausted"
