@@ -11,11 +11,17 @@ import time
 
 import pytest
 
-from pals_agent.http_transport import HttpResponse
+from pals_agent.http_transport import HttpDeadlineExceeded, HttpResponse
 from pals_agent.openai import OpenAIResponsesClient
 from pals_agent.proof_reuse import ProofReuseRuntime
 from pals_agent.recipe_instantiation import elaborate, render_answer
-from pals_agent.token_meter import TokenMeter, token_meter_scope
+from pals_agent.token_meter import (
+    OptionalTokenCallFailed,
+    TokenMeter,
+    TokenMeterError,
+    optional_token_calls,
+    token_meter_scope,
+)
 from pals_agent.usage import usage_scope
 from tests.unit.test_proof_reuse import READY, CatalogBoundary, ProviderTransport
 from tests.unit.test_proof_reuse_lean_flow import (
@@ -100,6 +106,8 @@ class InstanceTransport(ProviderTransport):
 
     @staticmethod
     def reply(body, response):
+        if isinstance(response, Exception):
+            raise response
         if isinstance(response, int):
             return HttpResponse(response, b'{"error":{"code":"insufficient_quota"}}')
         text = response if isinstance(response, str) else json.dumps(response, ensure_ascii=False)
@@ -418,3 +426,79 @@ def test_only_instantiation_settlements_wait_for_the_api_owned_compile():
         "claim_id": claim, "private_evidence": {"recipe_instantiation_correspondence": {}}})
     assert seen == [15.0, INSTANTIATION_SETTLE_TIMEOUT_SECONDS]
     assert 90 < INSTANTIATION_SETTLE_TIMEOUT_SECONDS < 120  # API verifier bound < worker < ALB
+
+
+# --- metered fault injection: optional calls may fail without poisoning the request -----------
+def metered(instance, exact=(SCOPE_MISS, EXACT_REJECT), enabled=True, recipes=(POWER,)):
+    transport = InstanceTransport(
+        [dict(READY, recipe_intent=INTENT), *exact], instance)
+    ledger = Ledger([])
+    meter = TokenMeter(ledger, OP, REQUEST_ID, CLAIM_ID, time.monotonic() + 30)
+    usage = []
+    search, _ = lookup(list(recipes))
+    with token_meter_scope(meter), usage_scope(usage.append):
+        result = make_engine(transport, enabled).answer(
+            BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID)
+    return result, meter, ledger, usage
+
+
+FAULTS = {
+    "http-5xx": 503, "quota": 429, "timeout": HttpDeadlineExceeded("injected"),
+    "invalid-json": "not json", "provider-error": 500,
+}
+
+
+@pytest.mark.parametrize("fault", sorted(FAULTS))
+@pytest.mark.parametrize("stage", ["proposal", "review"])
+def test_metered_optional_call_faults_continue_on_the_old_path(stage, fault):
+    old, old_meter, _, _ = metered([], enabled=False)
+    instance = ([FAULTS[fault]] if stage == "proposal" else [proposal(), FAULTS[fault]])
+    result, meter, ledger, usage = metered(instance)
+    assert not meter.failed and not old_meter.failed
+    assert (result.outcome, result.private_evidence["lean_route"]) == (
+        old.outcome, old.private_evidence["lean_route"]) == ("formal", "dsp_scope_mismatch")
+    # the concurrent exact judgment completed and was not cancelled by the optional fault
+    assert result.private_evidence["recipe_scope_assessment"] == old.private_evidence[
+        "recipe_scope_assessment"]
+    assert "recipe_independent_review" in result.private_evidence
+    assert result.answer is None
+    permits = {p["call_id"] for p in ledger.permits}
+    assert permits == {r["call_id"] for r in ledger.receipts}  # every permit has a receipt
+    assert any(r["status"] == "unknown" for r in ledger.receipts) or fault == "invalid-json"
+
+
+def test_metered_exact_hit_is_not_cancelled_by_an_optional_proposal_fault():
+    exact = [dict(MATCH, recipe_id=POWER["recipe_id"]), dict(REVIEW, recipe_id=POWER["recipe_id"])]
+    result, meter, _, _ = metered([FAULTS["quota"]], exact=exact)
+    assert result.outcome == "answered" and not meter.failed
+    assert result.private_evidence["lean_route"] == "catalog_reuse"
+    assert result.answer["text"] == POWER_ANSWER
+
+
+def test_required_call_faults_still_poison_the_meter_exactly_as_before():
+    transport = InstanceTransport([dict(READY, recipe_intent=INTENT), 500], [])
+    ledger = Ledger([])
+    meter = TokenMeter(ledger, OP, REQUEST_ID, CLAIM_ID, time.monotonic() + 30)
+    search, _ = lookup([RECIPE])
+    with token_meter_scope(meter), pytest.raises(TokenMeterError) as caught:
+        make_engine(transport).answer(BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID)
+    assert meter.failed and not isinstance(caught.value, OptionalTokenCallFailed)
+
+
+def test_optional_marker_is_scoped_to_its_context():
+    from pals_agent.token_meter import _optional
+
+    assert _optional.get() is False
+    with optional_token_calls():
+        assert _optional.get() is True
+    assert _optional.get() is False
+
+
+def test_late_instance_review_is_skipped_so_the_settle_fits_the_claim_lease(monkeypatch):
+    import pals_agent.proof_reuse as reuse
+
+    monkeypatch.setattr(reuse, "INSTANCE_LATEST_START_SECONDS", -1.0)
+    result, transport, _ = run([proposal(), review()])
+    assert result.outcome == "formal" and result.answer is None
+    assert len(transport.calls) == 4  # the proposal ran; no review call was made
+    assert reuse.INSTANCE_LATEST_START_SECONDS < 0

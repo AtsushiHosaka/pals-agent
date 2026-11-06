@@ -67,7 +67,11 @@ from pals_agent.recipe_semantic import (
     attempt as semantic_attempt,
 )
 from pals_agent.runtime_latency import latency_stage
-from pals_agent.token_meter import active_token_meter
+from pals_agent.token_meter import (
+    OptionalTokenCallFailed,
+    active_token_meter,
+    optional_token_calls,
+)
 
 _OUTPUT_LANGUAGE_INSTRUCTION = (
     "request.output_language selects the learner-facing prose language: en is English, "
@@ -155,6 +159,9 @@ _CHOICE_QUESTION = {
 MAX_SECONDS = 180.0
 MAX_ROUNDS = 5
 INSTANCE_REVIEW_MIN_SECONDS = 30.0  # budget kept for the independent instance review
+# The claim lease is 240 s and an instantiation settle may wait up to 105 s for the API compile:
+# an instance review may only start early enough for the answer to be settled inside the lease.
+INSTANCE_LATEST_START_SECONDS = 110.0
 INSTANCE_CANDIDATES = 3  # top-ranked Recipes considered for specialization
 QA_OUTPUT_TOKEN_LIMIT = 12000
 _LANGUAGES = {"en", "ja", "zh-Hans", "zh-Hant"}
@@ -1155,6 +1162,7 @@ class ProofReuseRuntime:
             evidence["lean_route"] = "dsp_scope_mismatch"
             if proposal is not None and (
                 deadline - time.monotonic() > INSTANCE_REVIEW_MIN_SECONDS
+                and time.monotonic() - started <= INSTANCE_LATEST_START_SECONDS
             ):
                 instantiated = self._recipe_instantiation(
                     request, context, preflight, proposal, evidence,
@@ -1241,6 +1249,7 @@ class ProofReuseRuntime:
                      "bindings": {"type": "array", "items": _object(
                          {"variable": _STRING, "value": _STRING})}}
         try:
+          with optional_token_calls():
             proposed = self._call(
                 ANSWER_SCOPE_REVIEW
                 + "The stored results below are universal statements already proved in Lean. "
@@ -1274,7 +1283,7 @@ class ProofReuseRuntime:
                 and (proposed["bindings"] or proposed["requested_proposition"])
             ):
                 return None
-        except (OpenAIError, ProofReuseError):
+        except (OpenAIError, ProofReuseError, OptionalTokenCallFailed):
             return None
         if proposed["instance_recipe_id"] is None:
             return None
@@ -1367,8 +1376,9 @@ class ProofReuseRuntime:
             output_token_limit=QA_OUTPUT_TOKEN_LIMIT,
           )
         try:
-            reviewed = ask()
-        except (OpenAIError, ProofReuseError):
+            with optional_token_calls():
+                reviewed = ask()
+        except (OpenAIError, ProofReuseError, OptionalTokenCallFailed):
             # Optimization only: no approval, the existing DSP path continues.
             evidence["recipe_instantiation"] = {
                 "decision": "review_unavailable", **identity, "class": "inst_review_unavailable"}
