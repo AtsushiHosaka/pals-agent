@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 from collections import defaultdict
@@ -231,6 +232,15 @@ def run(
     args = _parser().parse_args(argv)
     if args.repeats < 1:
         out("--repeats must be at least 1")
+        return 2
+    for name in ("budget_usd", "input_usd_per_mtok", "output_usd_per_mtok"):
+        value = getattr(args, name)
+        # NaN compares False with everything, so only a finite positive number passes.
+        if value is not None and not (math.isfinite(value) and value > 0):
+            out(f"--{name.replace('_', '-')} must be a finite number greater than 0")
+            return 2
+    if args.max_output_tokens < 1:
+        out("--max-output-tokens must be at least 1")
         return 2
     env = os.environ if environ is None else environ
     try:

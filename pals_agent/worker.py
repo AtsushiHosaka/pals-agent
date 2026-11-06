@@ -33,7 +33,8 @@ from pals_agent.explanations import (
     ProofSemanticReview,
     ProofSemanticReviewer,
     ProofSemanticReviewUnavailable,
-    _is_x_squared_continuity,
+    _asks_about_x_squared_continuity,
+    _names_another_property,
     _requires_epsilon_delta,
     proof_explanation_from_api,
 )
@@ -41,6 +42,7 @@ from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
     matches_x_squared_continuity,
+    targets_another_property_of_a_function,
 )
 from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
@@ -2558,10 +2560,22 @@ def _target_matches_statement(
     statement: str,
     target_declaration: LeanTargetDeclaration,
 ) -> bool:
-    """Apply deterministic checks before the independent semantic review."""
-    if not _is_x_squared_continuity(statement):
+    """Apply deterministic checks before the independent semantic review.
+
+    A request about the continuity of x² needs a target that is that statement. The only
+    exception is a request that itself names another property (derivative, uniform
+    continuity) together with a target about such a property: that pair is left to the
+    semantic review. The decision reads the Lean target, never only the request wording, so
+    "prove it without derivatives" does not switch the check off.
+    """
+    if not _asks_about_x_squared_continuity(statement):
         return True
-    return matches_x_squared_continuity(target_declaration.proposition)
+    proposition = target_declaration.proposition
+    if matches_x_squared_continuity(proposition):
+        return True
+    return _names_another_property(statement) and targets_another_property_of_a_function(
+        proposition
+    )
 
 
 def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:

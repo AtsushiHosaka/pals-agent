@@ -125,8 +125,8 @@ class StubReviewer:
 def test_case_file_has_the_required_shape_and_passes_the_structural_layer() -> None:
     case_file = qa.load_cases(qa.DEFAULT_CASES)
     groups = [c.group for c in case_file.cases]
-    assert groups.count("valid_notation") == 21
-    assert groups.count("wrong") == 23
+    assert groups.count("valid_notation") == 22
+    assert groups.count("wrong") == 25
     assert groups.count("summary_first") == 3
     assert {c.expected for c in case_file.cases if c.group == "valid_notation"} == {"approve"}
     assert {c.expected for c in case_file.cases if c.group != "valid_notation"} == {"reject"}
@@ -154,8 +154,8 @@ def test_dry_run_is_the_default_needs_no_key_and_calls_no_model() -> None:
     report = json.loads(lines[0])
     assert code == 0
     assert report["mode"] == "dry-run"
-    assert report["cases"] == 47
-    assert report["by_group"] == {"valid_notation": 21, "wrong": 23, "summary_first": 3}
+    assert report["cases"] == 50
+    assert report["by_group"] == {"valid_notation": 22, "wrong": 25, "summary_first": 3}
     assert "no model was called" in report["note"]
 
 
@@ -218,10 +218,10 @@ def test_live_run_with_expected_decisions_exits_zero_and_accounts_cost() -> None
     code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: reviewer)
     report = json.loads(lines[0])
     assert code == 0
-    assert reviewer.calls == 47
+    assert reviewer.calls == 50
     assert report["summary"]["false_accepts"] == 0
     assert report["summary"]["false_rejects"] == 0
-    assert report["spent_usd"] == pytest.approx(47 * (3000 * 1 + 500 * 4) / 1_000_000)
+    assert report["spent_usd"] == pytest.approx(50 * (3000 * 1 + 500 * 4) / 1_000_000)
 
 
 def test_report_carries_each_reviewers_reason_category_and_raw_output() -> None:
@@ -290,6 +290,60 @@ def test_report_lists_the_checks_and_whether_the_approved_flag_contradicted_them
     assert report["summary"]["rejected_for_an_unexpected_check"] == []
 
 
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [
+            "--execute",
+            "--budget-usd",
+            "nan",
+            "--input-usd-per-mtok",
+            "1",
+            "--output-usd-per-mtok",
+            "4",
+        ],
+        [
+            "--execute",
+            "--budget-usd",
+            "inf",
+            "--input-usd-per-mtok",
+            "1",
+            "--output-usd-per-mtok",
+            "4",
+        ],
+        ["--execute", "--budget-usd=-5", "--input-usd-per-mtok", "1", "--output-usd-per-mtok", "4"],
+        ["--execute", "--budget-usd", "5", "--input-usd-per-mtok=-1", "--output-usd-per-mtok", "4"],
+        [
+            "--execute",
+            "--budget-usd",
+            "5",
+            "--input-usd-per-mtok",
+            "1",
+            "--output-usd-per-mtok",
+            "nan",
+        ],
+        [
+            "--execute",
+            "--budget-usd",
+            "5",
+            "--input-usd-per-mtok",
+            "0",
+            "--output-usd-per-mtok",
+            "4",
+        ],
+        ["--budget-usd", "nan"],
+        ["--input-usd-per-mtok=-1"],
+        ["--max-output-tokens", "0"],
+    ],
+)
+def test_non_finite_or_non_positive_budget_and_prices_are_refused(argv: list[str]) -> None:
+    reviewer = StubReviewer()
+    code, lines = _run(argv, environ=KEY, reviewer_factory=lambda: reviewer)
+    assert code == 2
+    assert "must be" in lines[0]
+    assert reviewer.calls == 0
+
+
 def test_a_rejection_for_another_element_than_the_case_was_built_for_is_reported() -> None:
     class Elsewhere(StubReviewer):
         def review_explanation(self, *, explanation: ProofExplanation, **kwargs: Any) -> Any:
@@ -314,8 +368,8 @@ def test_repeats_run_every_case_n_times_and_report_agreement_per_case() -> None:
     report = json.loads(lines[0])
     assert code == 1
     assert report["repeats"] == 3
-    assert reviewer.calls == 141
-    assert report["summary"]["runs"] == 141
+    assert reviewer.calls == 150
+    assert report["summary"]["runs"] == 150
     assert report["summary"]["false_rejects"] == 3
     assert report["summary"]["agreement_by_case"]["valid-01-base"] == {
         "runs": 3,
@@ -384,7 +438,7 @@ def test_review_infrastructure_errors_are_errors_not_decisions() -> None:
     code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: StubReviewer(error=True))
     summary = json.loads(lines[0])["summary"]
     assert code == 1
-    assert summary["errors"] == 47
+    assert summary["errors"] == 50
     assert summary["false_accepts"] == 0
 
 
@@ -414,7 +468,7 @@ def test_run_stops_before_a_call_that_could_exceed_the_remaining_budget() -> Non
     report = json.loads(lines[0])
     assert code == 1
     assert report["stopped_early_for_budget"] is True
-    assert reviewer.calls == len(report["results"]) < 47
+    assert reviewer.calls == len(report["results"]) < 50
     # Each call spends about 0.3 USD; the guard stops before the budget is overshot by much.
     assert report["spent_usd"] < 2.0 + 0.35
 

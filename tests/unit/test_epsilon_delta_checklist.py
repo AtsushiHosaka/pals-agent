@@ -36,7 +36,8 @@ from pals_agent.worker import _note_review_flag_contradiction
 LEAN = "theorem t : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
 STATEMENT = "x² が連続であることを説明してください。"
 ADD_ZERO = "theorem add_zero_nat (n : Nat) : n + 0 = n := by\n  simp"
-MATH_IDS = [i for i in EPSILON_DELTA_CHECK_IDS if i != "presentation"]
+CATCH_ALL_IDS = ["presentation", "other_defect"]  # ok or wrong only
+MATH_IDS = [i for i in EPSILON_DELTA_CHECK_IDS if i not in CATCH_ALL_IDS]
 CALL_ID = "11111111-1111-4111-8111-111111111111"
 
 
@@ -165,11 +166,19 @@ def test_any_element_that_is_not_ok_rejects_whatever_its_quote(
     assert len(client.prompts) == 2  # both samples ran
 
 
-def test_presentation_wrong_rejects_too() -> None:
-    client = Client(_answer({"presentation": ("wrong", "", "opening previews the plan")}))
+@pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
+def test_the_catch_all_elements_reject_on_wrong(check_id: str) -> None:
+    client = Client(_answer({check_id: ("wrong", "", "some other defect")}))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
-    assert "presentation (wrong)" in raised.value.rationale
+    assert f"{check_id} (wrong): some other defect" in raised.value.rationale
+
+
+@pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
+def test_the_catch_all_elements_cannot_be_missing(check_id: str) -> None:
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(Client(_answer({check_id: ("missing", "", "n")})))
+    assert raised.value.category == "schema"
 
 
 def test_the_rejection_reason_keeps_notes_but_not_quotes() -> None:
@@ -187,12 +196,28 @@ def test_notes_on_ok_elements_never_reject() -> None:
 
 
 @pytest.mark.parametrize("status", ["missing", "wrong"])
-def test_a_failed_element_without_a_note_is_a_schema_failure(status: str) -> None:
-    bad = _answer({"final_inequality": (status, "q", "   ")})
-    client = Client(bad)
+def test_a_failed_element_without_a_note_still_rejects_with_a_fixed_reason(status: str) -> None:
+    """A negative vote stands without a reason; it is never retried into an approval."""
+    client = Client(_answer({"final_inequality": (status, "q", "   ")}))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
-    assert raised.value.category == "schema"
+    assert raised.value.category == "rejected"
+    assert f"final_inequality ({status}): (the reviewer gave no reason)" in raised.value.rationale
+    assert len(client.prompts) == 2  # no schema retry
+
+
+def test_the_quote_key_is_optional() -> None:
+    payload = json.loads(_answer())
+    for check in payload["checks"]:
+        del check["quote"]
+    review = _review(Client(json.dumps(payload)))
+    assert all(c.quote == "" for sample in review.samples for c in sample)
+    rejecting = json.loads(_answer({"sum_bound": ("missing", "", "no step")}))
+    for check in rejecting["checks"]:
+        del check["quote"]
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(Client(json.dumps(rejecting)))
+    assert raised.value.category == "rejected"
 
 
 # --- two independent samples, either can reject ------------------------------------------
@@ -347,7 +372,8 @@ def _raw(mutate: Callable[[dict[str, Any]], object]) -> str:
         _raw(lambda p: p.update(approved="yes")),  # non-boolean flag
         _raw(lambda p: p.update(checks="none")),  # not a list
         _raw(lambda p: p.pop("rationale")),
-        _raw(lambda p: p["checks"][-1].update(status="missing", note="n")),  # presentation
+        _raw(lambda p: p["checks"][-1].update(status="missing", note="n")),  # other_defect
+        _raw(lambda p: p["checks"][-2].update(status="missing", note="n")),  # presentation
     ],
 )
 def test_malformed_checklists_are_schema_failures(bad: str) -> None:

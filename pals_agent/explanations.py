@@ -1174,6 +1174,11 @@ theorem: give an explicit positive delta choice and use the factorization/bound 
 Write the mathematical proof itself from the first sentence. {opening_instruction}
 Then proceed in textbook order: fix the real point, choose delta explicitly, assume the
 delta-neighborhood condition, derive the factorization and epsilon bound, and conclude continuity.
+The proof must contain these elements, which an independent reviewer checks one by one:
+{_EPSILON_DELTA_WRITER_ELEMENTS}
+A fact that is evident from the definitions or is a brief standard fact ({_EVIDENT_FACTS}) needs
+at most a phrase; do not pad it into a paragraph, and do not leave out a step that is not
+evident. Any valid choice of delta that makes these elements hold is fine.
 Do not begin with a summary. Do not create visible section titles, a proof-plan preview, or a
 conclusion preview. Never use source-commentary headings such as ライブラリの利用, 示したい内容,
 or 連続性判定を使う. Use direct proof prose such as “Fix”, “Let”, “Set”, “Assume”, and
@@ -1535,6 +1540,9 @@ Candidate {output_kind} JSON (structured evidence; field names and internal titl
 {json.dumps(reviewed_output, ensure_ascii=False, sort_keys=True)}"""
 
 
+_NO_REASON_GIVEN = "(the reviewer gave no reason)"
+
+
 def _epsilon_delta_checks(
     payload: dict[str, Any],
 ) -> tuple[tuple[ReviewCheck, ...], str, bool | None]:
@@ -1553,10 +1561,13 @@ def _epsilon_delta_checks(
         raise ValueError("checks must be a list")
     by_id: dict[str, ReviewCheck] = {}
     for raw in raw_checks:
-        if not isinstance(raw, dict) or set(raw) != {"id", "status", "quote", "note"}:
-            raise ValueError("each check must have id, status, quote and note")
+        if (
+            not isinstance(raw, dict)
+            or not {"id", "status", "note"} <= set(raw) <= {"id", "status", "quote", "note"}
+        ):
+            raise ValueError("each check must have id, status and note (quote is optional)")
         check_id, status = raw["id"], raw["status"]
-        quote, note = raw["quote"], raw["note"]
+        quote, note = raw.get("quote", ""), raw["note"]
         if (
             check_id not in EPSILON_DELTA_CHECK_IDS
             or check_id in by_id
@@ -1565,11 +1576,12 @@ def _epsilon_delta_checks(
             or not isinstance(note, str)
             or len(quote) > 4_000
             or len(note) > 2_000
-            or (check_id == "presentation" and status == "missing")
-            # An element that is not ok has to say what is missing or wrong.
-            or (status != "ok" and not note.strip())
+            or (check_id in _OK_OR_WRONG_ONLY and status == "missing")
         ):
             raise ValueError("invalid or repeated checklist entry")
+        if status != "ok" and not note.strip():
+            # A negative vote stands without a reason (it is never retried into an approval).
+            note = _NO_REASON_GIVEN
         by_id[check_id] = ReviewCheck(id=check_id, status=status, quote=quote, note=note)
     if set(by_id) != set(EPSILON_DELTA_CHECK_IDS):
         raise ValueError("every checklist id must be answered exactly once")
@@ -1678,22 +1690,43 @@ Lean candidate source:
 ```"""
 
 
-# A request about another property of x² (derivative, uniform continuity, ...) is not the
-# continuity question, even though it mentions both x² and 連続.
+# A request that names another property of x² (derivative, uniform continuity, ...).
 _OTHER_PROPERTY_PATTERN = re.compile(r"導関数|微分|一様|derivative|differentiab|uniform")
+# Wording that adds a second function, a sum or another proposition to the request.
+_NOT_ONLY_X_SQUARED_PATTERN = re.compile(
+    r"x\^(?!2(?![0-9]))|x\^\{(?!2\})|[³⁴⁵⁶⁷⁸⁹]"  # another power
+    r"|x(?:\^2|²)[+\-−*/×÷]|[+\-−*/×÷]x(?:\^2|²)"  # x² combined with something
+    r"|\(x[+\-−]"  # (x-1)^2 and the like
+    r"|sin|cos|exp|log|sqrt|√"  # other functions
+)
+
+
+def _asks_about_x_squared_continuity(theorem_statement: str) -> bool:
+    """The request mentions both x² and continuity (it may also name another property)."""
+    compact = re.sub(r"\s+", "", theorem_statement).lower()
+    return "連続" in compact and ("x²" in compact or "x^2" in compact)
+
+
+def _names_another_property(theorem_statement: str) -> bool:
+    return _OTHER_PROPERTY_PATTERN.search(re.sub(r"\s+", "", theorem_statement).lower()) is not None
 
 
 def _is_x_squared_continuity(theorem_statement: str) -> bool:
-    """Auxiliary natural-language guess: did the learner ask why x² is continuous?
+    """Conservative wording check: the request asks only for the continuity of x².
 
-    This is only a fallback for when the Lean target cannot be read. The authoritative test is
-    `_requires_epsilon_delta`, which reads the formalized statement.
+    Used when the Lean target cannot be read as one declaration (for example a helper lemma
+    plus the main theorem). It is deliberately biased towards False: wrongly requiring an
+    epsilon-delta proof makes a correct explanation of another claim fail review, while
+    missing the requirement only leaves the general review in force. It is False when the
+    request names another property (derivative, uniform continuity), another power or
+    function, an expression combined with x², or says 連続 more than once (several claims).
     """
     compact = re.sub(r"\s+", "", theorem_statement).lower()
     return (
-        "連続" in compact
-        and ("x²" in compact or "x^2" in compact)
-        and _OTHER_PROPERTY_PATTERN.search(compact) is None
+        _asks_about_x_squared_continuity(theorem_statement)
+        and not _names_another_property(theorem_statement)
+        and _NOT_ONLY_X_SQUARED_PATTERN.search(compact) is None
+        and compact.count("連続") == 1
     )
 
 
@@ -1710,53 +1743,109 @@ def _requires_epsilon_delta(theorem_statement: str, lean_code: str) -> bool:
     return _is_x_squared_continuity(theorem_statement)
 
 
-# Required elements of an epsilon-delta proof that x² is continuous. This list is the single
-# source for the review prompt, the response format and the decision.
-EPSILON_DELTA_CHECK_IDS = (
-    "epsilon_arbitrary",
-    "point_fixed",
-    "delta_positive_justified",
-    "delta_bounded_by_one",
-    "delta_depends_on_point_and_epsilon",
-    "factorization",
-    "sum_bound",
-    "final_inequality",
-    "conclusion",
-    "presentation",
+# Required elements of an epsilon-delta proof that x² is continuous. This table is the single
+# source: the review prompt and its response format, the decision, and the generation prompt
+# all read it, so what is asked of the writer and of the reviewer cannot drift apart.
+# (id, requirement, how the element fails). A requirement is what must hold; the reviewer
+# alone also gets the failure text. Elements without a requirement for the writer are the two
+# catch-alls at the end (they take status ok or wrong only).
+_EPSILON_DELTA_ELEMENTS: tuple[tuple[str, str, str], ...] = (
+    (
+        "epsilon_arbitrary",
+        "an arbitrary positive epsilon is introduced.",
+        "",
+    ),
+    (
+        "point_fixed",
+        "an arbitrary real point a is fixed (not one particular number), and x with "
+        "|x-a|<delta is taken.",
+        "",
+    ),
+    (
+        "delta_positive_justified",
+        "delta>0 is stated, or is evident from the definition of delta (a minimum of positive "
+        "quantities, a quotient of positive quantities, ...).",
+        "Only a definition whose positivity is not evident (for example delta=epsilon-|a| or "
+        "delta=1-epsilon), given with no reason, is missing.",
+    ),
+    (
+        "delta_bounded_by_one",
+        "the proof's own construction guarantees the property of x that its estimate of |x+a| "
+        "relies on. In the standard route delta is a minimum with 1, so |x-a|<delta gives "
+        "|x-a|<1 (delta<=1 is evident and needs no further word); another valid construction, "
+        "for example delta=sqrt(a²+epsilon)-|a| used with |x+a|<=|x-a|+2|a|, needs no bound by "
+        "1 and is fine.",
+        "A construction that relies on a bound it does not guarantee fails: no minimum with 1 "
+        "yet |x-a|<1 is assumed, an extra assumption on x that delta does not imply, or a "
+        "delta that is enlarged (delta plus 1, twice delta) while still claimed to be at most 1.",
+    ),
+    (
+        "delta_depends_on_point_and_epsilon",
+        "delta is an explicit formula in epsilon and a (a named constant standing for such an "
+        "expression counts).",
+        "A delta that ignores a (for example min(1, epsilon)) or is a fixed number fails.",
+    ),
+    (
+        "factorization",
+        "|x²-a²| is factored as |x-a||x+a|.",
+        "A sum instead of a product, or another function such as x³, fails.",
+    ),
+    (
+        "sum_bound",
+        "an upper bound for |x+a| is derived and is the one the final estimate uses (for "
+        "example |x+a|<2|a|+1, or |x+a|<=|x-a|+2|a|); one standard step is enough "
+        "(|x|<|a|+1 and the triangle inequality, or |x+a|=|2a+(x-a)|).",
+        "An assertion with no step at all, where the bound is not evident, is missing.",
+    ),
+    (
+        "final_inequality",
+        "the last inequality of the chain is true and reaches epsilon, or a fixed multiple of "
+        "epsilon such as 2 epsilon (a chain may end in an equality such as `= ε`). The step "
+        "from delta to epsilon (delta(2|a|+1)<=epsilon when delta<=epsilon/(2|a|+1)) is "
+        "evident from the definition of the minimum.",
+        "It fails if the text asserts a false inequality (for example delta<=epsilon/(2|a|+1) "
+        "for delta=min(1, epsilon/(|a|+1)), or a chain ending in epsilon+1), or if the chain "
+        "never reaches epsilon (it stops at delta). A true claim that is only a fixed "
+        "multiple of epsilon (|x²-a²|<2 epsilon for delta=min(1, epsilon/(|a|+1))) is fine.",
+    ),
+    (
+        "conclusion",
+        "continuity at a is concluded, hence everywhere because a is arbitrary.",
+        "",
+    ),
+    (
+        "presentation",
+        "",
+        "Status is ok or wrong only. Wrong when the opening previews the proof plan or the "
+        "conclusion, the text shows section headings, bullets or numbered steps, the same "
+        "calculation is written twice, a mathematical expression is outside $...$, or Lean "
+        "tactics or identifiers are mentioned. A general fact stated first and then applied "
+        "is not a repetition.",
+    ),
+    (
+        "other_defect",
+        "",
+        "Status is ok or wrong only. Wrong when the text has any other defect the elements "
+        "above do not cover: a false mathematical claim anywhere in it (including a false "
+        "statement about another function or property), a false claim about what Lean "
+        "verified (such as separate verification of the derivation steps), circular "
+        "reasoning, prose that is not in the requested output language, or a reference to "
+        "Lean lines that does not match what the text says. Ok if there is none.",
+    ),
 )
+EPSILON_DELTA_CHECK_IDS = tuple(element[0] for element in _EPSILON_DELTA_ELEMENTS)
+# Elements that cannot be "missing": they judge what the text says, not what it lacks.
+_OK_OR_WRONG_ONLY = frozenset({"presentation", "other_defect"})
 _EPSILON_DELTA_CHECK_DEFINITIONS = {
-    "epsilon_arbitrary": "an arbitrary positive epsilon is introduced.",
-    "point_fixed": "an arbitrary real point a is fixed (not one particular number), and x with "
-    "|x-a|<delta is taken.",
-    "delta_positive_justified": "delta>0 is stated, or is evident from the definition of delta "
-    "(a minimum of positive quantities, a quotient of positive quantities, ...). Only a "
-    "definition whose positivity is not evident (for example delta=epsilon-|a| or "
-    "delta=1-epsilon), given with no reason, is missing.",
-    "delta_bounded_by_one": "|x-a|<1 follows from |x-a|<delta. If delta is defined as a "
-    "minimum with 1 (or by an equivalent device), delta<=1 is evident and no further word is "
-    "needed. A delta with no such bound, or a delta that is enlarged (delta plus 1, twice "
-    "delta) while still claimed to be at most 1, fails.",
-    "delta_depends_on_point_and_epsilon": "delta is an explicit formula in epsilon and a (a "
-    "named constant that stands for such an expression counts); a delta that ignores a (for "
-    "example min(1, epsilon)) or a fixed number fails.",
-    "factorization": "|x²-a²| is factored as |x-a||x+a| (a product; not a sum, not another "
-    "function such as x³).",
-    "sum_bound": "|x+a|<2|a|+1, or an equivalent bound, is derived; one standard step is "
-    "enough (|x|<|a|+1 and the triangle inequality, or |x+a|=|2a+(x-a)|). An assertion with "
-    "no step at all, where the bound is not evident, is missing.",
-    "final_inequality": "a valid chain, for the delta actually chosen, shows |x²-a²| is at most "
-    "(or below) epsilon, or a fixed multiple of epsilon such as 2 epsilon (a chain may end in "
-    "an equality such as `= ε`). The step from delta to epsilon (delta(2|a|+1)<=epsilon when "
-    "delta<=epsilon/(2|a|+1)) is evident from the definition of the minimum. A chain that "
-    "ends in epsilon+1 or in delta, or that needs delta to be smaller than chosen (for "
-    "example epsilon/(|a|+1) in place of epsilon/(2|a|+1)), fails.",
-    "conclusion": "continuity at a is concluded, hence everywhere because a is arbitrary.",
-    "presentation": "status is ok or wrong only. Wrong when the opening previews the proof plan "
-    "or the conclusion, the text shows section headings, bullets or numbered steps, the same "
-    "calculation is written twice, a mathematical expression is outside $...$, or Lean tactics "
-    "or identifiers are mentioned. A general fact stated first and then applied is not a "
-    "repetition.",
+    check_id: " ".join(part for part in (requirement, failure) if part)
+    for check_id, requirement, failure in _EPSILON_DELTA_ELEMENTS
 }
+# Evident facts need no word of justification (the proof is already verified by Lean).
+_EVIDENT_FACTS = (
+    "a minimum or quotient of positive numbers is positive; each argument of a minimum bounds "
+    "it from above (so delta<=1 and delta<= the second argument); the triangle inequality; "
+    "the difference of squares; cancelling a stated bound ((epsilon/C)C=epsilon)"
+)
 _EPSILON_DELTA_REVIEW_REQUIREMENT = (
     """EPSILON-DELTA REQUIREMENT. The learner asked why x² is continuous, so the explanation
 must itself be an epsilon-delta proof of continuity, not an appeal to a continuity theorem.
@@ -1768,18 +1857,17 @@ Checklist (give every id exactly once):
         f"- {check_id}: {_EPSILON_DELTA_CHECK_DEFINITIONS[check_id]}"
         for check_id in EPSILON_DELTA_CHECK_IDS
     )
-    + """
+    + f"""
 Status. The proof is already verified by Lean: ask only whether the argument is
 mathematically sound and complete, not whether every evident fact is spelled out. "ok": the
 element is stated, or is evident from the definitions in the text and brief standard facts,
-which need no word of justification: a minimum or quotient of positive numbers is positive;
-each argument of a minimum bounds it from above (so delta<=1 and delta<= the second
-argument); the triangle inequality; the difference of squares; cancelling a stated bound
-((epsilon/C)C=epsilon). "missing": the element is absent, or it is not evident and the text
-gives no reason. "wrong": the text states something false for that element. Every "missing"
-or "wrong" entry must have a nonblank `note` saying what is missing or wrong; its `quote`
-(a short excerpt of the relevant sentence) is optional.
-Never mark an element missing or wrong because of notation or phrasing: \\frac or \\dfrac,
+which need no word of justification: {_EVIDENT_FACTS}. "missing": the element is absent,
+or it is not evident and the text gives no reason. "wrong": the text states something
+false for that element. Every "missing" or "wrong" entry should have a `note` saying what is
+missing or wrong (a failed entry without one still counts); its `quote` (a short excerpt of
+the relevant sentence) is optional.
+"""
+    + """Never mark an element missing or wrong because of notation or phrasing: \\frac or \\dfrac,
 \\lvert or \\vert, \\min or \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands,
 |(x-a)(x+a)|, "delta is positive" in words, epsilon>0 before or after the point or in display
 math, any variable names for the point and the variable, braces or parentheses for the
@@ -1789,9 +1877,14 @@ epsilon/(2(|a|+1))), x introduced explicitly or implicitly, sized delimiters
 named constant for a bound (C=2|a|+1, defined first and used in place of the expression), a
 general identity with other variable names (|u²-v²|=|u-v||u+v|) stated before it is applied.
 Style, level of detail, how explicit a step is, and the order of presentation are never
-grounds either. The opening's
-notation, wording and word order are not presentation defects.
+grounds either. The opening's notation, wording and word order are not presentation defects.
 """
+)
+# What the writer is told, from the same table: the requirement of every proof element.
+_EPSILON_DELTA_WRITER_ELEMENTS = "\n".join(
+    f"- {requirement}"
+    for check_id, requirement, _ in _EPSILON_DELTA_ELEMENTS
+    if requirement
 )
 _LEGACY_RESPONSE_FORMAT = """Return exactly one JSON object and no surrounding text:
 {"approved": true, "rationale": "a concise review reason"}
@@ -1808,10 +1901,9 @@ _CHECKLIST_RESPONSE_FORMAT = (
     + """
 ]}
 Every status above is only a placeholder: judge each element on its own. `status` is "ok",
-"missing" or "wrong"; `note` says in a few words what is missing or wrong."""
+"missing" or "wrong" ("ok" or "wrong" for presentation and other_defect); `note` says in a few
+words what is missing or wrong."""
 )
-
-
 
 
 def _line_reference_table(lean_code: str) -> str:

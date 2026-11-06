@@ -76,11 +76,15 @@ verification (`pals.theorem_alignment_failed`). A Lean statement written another
 
 ## Real-model regression set
 
-`testdata/explanation-qa-v1/cases.json` (v1.3 has 35 cases; the counts below are the v1.0 set): 23 labelled explanations of x² continuity, every one
-passing the structural layer: 10 valid notation variants (expected approve), 10 wrong (ε+1,
-no minimum with 1, δ ignoring the point, coefficient too small, δ doubled, δ plus 1, product
-continuity instead of ε–δ, another function, ε never introduced, δ independent of the point)
-and 3 summary-first or numbered-step presentations (expected reject).
+`testdata/explanation-qa-v1/cases.json` is the current set (v1.6, 50 cases: 22 valid, 25 wrong, 3
+summary-first; the count history is in the file's `revision` field). Every case passes the
+structural layer. Valid cases are correct proofs in different notations and layouts, with
+different valid choices of δ (including one that needs no minimum with 1) and with facts
+that are evident from the definitions left unstated. Wrong cases each break one checklist
+element (ε+1 or δ endings, no minimum with 1, δ ignoring the point, coefficient too small,
+δ doubled or plus 1, product continuity instead of ε–δ, another function or point, an
+alias rebound, δ whose positivity fails, a hidden false claim, a false claim of separate
+Lean verification, ...). Summary-first cases are presentation defects.
 
 `scripts/evaluate_explanation_qa.py` runs the production reviewer path
 (`AgentSettings.from_env()` → `build_proof_output_reviewer()` → `review_explanation()`).
@@ -150,17 +154,24 @@ So the x² review (and only it) asks for a fixed checklist and the code decides:
 | `epsilon_arbitrary` | an arbitrary positive ε is introduced |
 | `point_fixed` | an arbitrary real point a is fixed; x with \|x-a\|<δ is taken |
 | `delta_positive_justified` | δ>0 is stated or evident from δ's definition (min or quotient of positive quantities); only a definition whose positivity is not evident (δ=ε-|a|, δ=1-ε) needs a reason |
-| `delta_bounded_by_one` | \|x-a\|<1 follows from \|x-a\|<δ; a minimum with 1 (or equivalent) makes δ≤1 evident |
+| `delta_bounded_by_one` | the proof's own construction guarantees the property its |x+a| estimate relies on; with a minimum with 1, δ≤1 is evident. Another valid construction (δ=√(a²+ε)-|a|) needs no such bound |
 | `delta_depends_on_point_and_epsilon` | δ is an explicit formula in ε and a |
 | `factorization` | \|x²-a²\| = \|x-a\|\|x+a\| |
-| `sum_bound` | \|x+a\|<2\|a\|+1 (or equivalent) is derived; one standard step suffices |
-| `final_inequality` | a valid chain, for the chosen δ, reaches ε or a fixed multiple of ε (not ε+1, not δ) |
+| `sum_bound` | an upper bound for \|x+a\| that the final estimate uses (2\|a\|+1, or \|x-a\|+2\|a\|) is derived; one standard step suffices |
+| `final_inequality` | the last inequality of the chain is true and reaches ε or a fixed multiple of ε; a false inequality for the chosen δ (e.g. δ≤ε/(2\|a\|+1) for δ=min(1,ε/(\|a\|+1))) or a chain that stops at δ fails; a true weaker claim (<2ε for that δ) is fine |
 | `conclusion` | continuity at a, hence everywhere |
-| `presentation` | no plan or conclusion preview in the opening, headings, bullets, repeats, math outside `$`, Lean terms |
+| `presentation` (ok/wrong) | no plan or conclusion preview in the opening, headings, bullets, the same calculation twice, math outside `$`, Lean terms |
+| `other_defect` (ok/wrong) | anything else: a false claim anywhere (another function or property), a false claim about what Lean verified, circular reasoning, prose not in the requested language, a mismatched Lean reference |
 
-This list is the single source (`EPSILON_DELTA_CHECK_IDS`) for the prompt, the response format
-and the decision; every defect the earlier rubric listed belongs to exactly one element (a
-test pins that). Each answer is `{id, status: ok|missing|wrong, quote, note}`; `quote` is informational.
+This table (`_EPSILON_DELTA_ELEMENTS`) is the single source for the review prompt, the response
+format, the decision and the **generation prompt**: the writer is told the same requirement of
+every proof element, the same list of evident facts and that an evident fact needs at most a
+phrase, so writer and reviewer cannot drift apart (a test pins it). Every defect the earlier
+rubric listed, and every rejection condition of the original review rubric (headings,
+math outside `$`, repeated calculation, Lean terms, false claims, circularity, language,
+false claims about Lean), belongs to exactly one element (tests pin that); `other_defect` exists
+because the reviewer's `approved` flag is ignored, so a defect outside the proof elements
+would otherwise never be able to reject. Each answer is `{id, status: ok|missing|wrong, quote, note}`; `quote` is optional and informational; a failed element without a note still rejects (a fixed reason is filled in) instead of being retried as a schema failure.
 
 Decision (deterministic code, `LeanGroundedOutputReviewer.review_explanation`):
 
@@ -313,3 +324,29 @@ a named constant standing for such an expression, and `presentation` defines rep
 same calculation written twice and says a general fact stated first and then applied is not a
 repetition. These are hypotheses about the cause (the reviewer's rationale was not recorded);
 the next `--repeats 3` run tests them.
+
+## Which statements count as the continuity of x²
+
+- `matches_x_squared_continuity` (Lean side) recognises `Continuous` of the real square function
+  in its usual spellings: `fun x : ℝ => x ^ 2`, `fun (x : ℝ) => ...`, `Real`, a type-ascribed
+  body `(x ^ 2 : ℝ)`, the exponent `(2 : ℕ)`, `x * x`, and the typed sections
+  `((· ^ 2) : ℝ → ℝ)`, `(· * · : ℝ → ℝ)`. It does not recognise an untyped function
+  (`fun x => x ^ 2`, `(· ^ 2)`): over a default type it need not be ℝ, so granting it would be a
+  false positive. Other powers, sums, `(x-1)^2`, `x^2^2`, `x^22`, `ContinuousAt`,
+  conjunctions, ℕ and `2^x` are not recognised either (tests pin both lists).
+- The epsilon-delta requirement follows the readable Lean target: a request in English still
+  gets the checklist if the target is x² continuity (a), and a readable target that does not match
+  never gets it, whatever the request says (b).
+- When the target is not one declaration (a helper lemma plus the main theorem) the wording is a
+  **conservative** fallback: the request must mention x² and 連続 once, and must name no other
+  property (導関数, 微分, 一様, derivative, differentiable, uniform), no other power or function,
+  no expression combined with x² (`x²+1`, `(x-1)²`) and no second 連続. The fallback is biased
+  towards "no requirement" on purpose: wrongly requiring ε–δ makes a correct explanation of
+  another claim fail review, while missing it leaves the general review in force. Dropping the
+  fallback entirely would lose the requirement for correct proofs that use a helper lemma, so it
+  was narrowed rather than removed.
+- The worker's alignment check before verification (`_target_matches_statement`) reads the Lean
+  target: a request about the continuity of x² needs an x² continuity target. The only exception
+  is a request that names another property itself (a derivative, uniform continuity) paired with a
+  target about such a property. "Prove x² is continuous without derivatives" no longer switches
+  the check off. English requests without 連続 are still not aligned deterministically (unchanged).

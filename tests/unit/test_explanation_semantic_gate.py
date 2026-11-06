@@ -506,15 +506,29 @@ STANDARD_FACTS = [
 ]
 # Typical defects, and the single element each one must fail.
 DEFECT_TO_ELEMENT = {
-    "A delta with no such bound": "delta_bounded_by_one",
-    "delta that ignores a": "delta_depends_on_point_and_epsilon",
-    "ends in epsilon+1 or in delta": "final_inequality",
-    "epsilon/(|a|+1) in place of epsilon/(2|a|+1)": "final_inequality",
+    "A construction that relies on a bound it does not guarantee fails": "delta_bounded_by_one",
+    "A delta that ignores a": "delta_depends_on_point_and_epsilon",
+    "a chain ending in epsilon+1": "final_inequality",
+    "for delta=min(1, epsilon/(|a|+1))": "final_inequality",
     "delta plus 1, twice delta": "delta_bounded_by_one",
-    "not a sum, not another function": "factorization",
+    "A sum instead of a product": "factorization",
     "for example delta=epsilon-|a| or delta=1-epsilon": "delta_positive_justified",
     "An assertion with no step at all": "sum_bound",
     "previews the proof plan or the conclusion": "presentation",
+}
+# Every rejection condition of the original (pre-checklist) rubric belongs to exactly one
+# element, so switching off `approved` loses none of them.
+LEGACY_REJECTIONS = {
+    "section headings, bullets or numbered steps": "presentation",
+    "outside $...$": "presentation",
+    "the same calculation is written twice": "presentation",
+    "previews the proof plan or the conclusion": "presentation",
+    "Lean tactics or identifiers": "presentation",
+    "a false mathematical claim anywhere in it": "other_defect",
+    "circular reasoning": "other_defect",
+    "not in the requested output language": "other_defect",
+    "about what Lean verified": "other_defect",
+    "Lean lines that does not match": "other_defect",
 }
 
 
@@ -540,7 +554,7 @@ def test_checklist_ids_are_defined_exactly_once_and_in_the_response_format() -> 
     prompt = _x_squared_review_prompt()
     definitions = _definitions(prompt)
     assert tuple(definitions) == EPSILON_DELTA_CHECK_IDS
-    assert len(EPSILON_DELTA_CHECK_IDS) == len(set(EPSILON_DELTA_CHECK_IDS)) == 10
+    assert len(EPSILON_DELTA_CHECK_IDS) == len(set(EPSILON_DELTA_CHECK_IDS)) == 11
     for check_id in EPSILON_DELTA_CHECK_IDS:
         assert prompt.count(f"- {check_id}: ") == 1
         assert f'{{"id": "{check_id}", "status": "ok"' in prompt
@@ -552,6 +566,46 @@ def test_each_known_defect_is_assigned_to_exactly_one_element(defect: str, eleme
     assert owners == [element]
 
 
+@pytest.mark.parametrize(("condition", "element"), sorted(LEGACY_REJECTIONS.items()))
+def test_each_original_rejection_condition_belongs_to_exactly_one_element(
+    condition: str, element: str
+) -> None:
+    owners = [
+        i for i, text in _definitions(_x_squared_review_prompt()).items() if condition in text
+    ]
+    assert owners == [element]
+
+
+def test_the_two_catch_all_elements_are_ok_or_wrong_only() -> None:
+    definitions = _definitions(_x_squared_review_prompt())
+    for catch_all in ("presentation", "other_defect"):
+        assert "Status is ok or wrong only" in definitions[catch_all]
+
+
+def test_the_writer_is_given_the_same_requirements_as_the_reviewer() -> None:
+    """Both prompts read one table: every requirement the reviewer checks is told to the writer."""
+    from pals_agent.explanations import _EPSILON_DELTA_ELEMENTS, _explanation_prompt
+
+    writer = " ".join(
+        _explanation_prompt(
+            theorem_statement=STATEMENT, lean_code=SOURCE, language="ja", require_epsilon_delta=True
+        ).split()
+    )
+    reviewer = _x_squared_review_prompt()
+    for check_id, requirement, _failure in _EPSILON_DELTA_ELEMENTS:
+        if requirement:
+            assert " ".join(requirement.split()) in writer, check_id
+            assert " ".join(requirement.split()) in reviewer, check_id
+    for fact in STANDARD_FACTS:
+        assert fact in writer and fact in reviewer
+    # The writer is told the same relaxed standard: an evident fact needs at most a phrase.
+    assert "at most a phrase" in writer
+    assert "do not pad it into a paragraph" in writer
+    assert "Any valid choice of delta that makes these elements hold is fine" in writer
+    # The reviewer-only failure text is not given to the writer as a rule list.
+    assert "(for example delta=epsilon-|a| or delta=1-epsilon)" not in writer
+
+
 def test_evident_facts_need_no_reason_but_unclear_positivity_does() -> None:
     prompt = _x_squared_review_prompt()
     definitions = _definitions(prompt)
@@ -559,9 +613,8 @@ def test_evident_facts_need_no_reason_but_unclear_positivity_does() -> None:
     assert "stated, or is evident from the definition of delta" in positivity
     assert "a minimum of positive quantities, a quotient of positive quantities" in positivity
     assert "delta=epsilon-|a| or delta=1-epsilon" in positivity
-    assert (
-        "delta<=1 is evident and no further word is needed" in definitions["delta_bounded_by_one"]
-    )
+    assert "delta<=1 is evident and needs no further word" in definitions["delta_bounded_by_one"]
+    assert "delta=sqrt(a²+epsilon)-|a|" in definitions["delta_bounded_by_one"]  # other proofs
     assert "one standard step is enough" in definitions["sum_bound"]
     assert "is evident from the definition of the minimum" in definitions["final_inequality"]
     assert "The proof is already verified by Lean" in prompt
@@ -593,7 +646,7 @@ def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -
         assert fragment in status_rule, fragment
     assert "Never mark an element missing or wrong because of notation or phrasing" in prompt
     assert "Style, level of detail, how explicit a step is" in prompt
-    assert "must have a nonblank `note`" in prompt
+    assert "a failed entry without one still counts" in prompt
     # Tolerated notation is listed only in the status rule, never as a defect of an element.
     for definition in _definitions(prompt).values():
         for notation in TOLERATED_NOTATION:
@@ -603,6 +656,13 @@ def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -
     assert "previews the proof plan or the conclusion" in _definitions(prompt)["presentation"]
     assert "Reject summary-first or conclusion-preview exposition" in prompt  # general rubric
     assert "a chain may end in an equality such as `= ε`" in prompt
+
+
+def _sqrt_fraction(value: Fraction) -> Fraction:
+    """A rational approximation of sqrt from above, accurate enough for a grid check."""
+    import math
+
+    return Fraction(math.isqrt(int(value * 10**12) + 1), 10**6)
 
 
 def _delta_is_sufficient(delta: Callable[[Fraction, Fraction], Fraction]) -> bool:
@@ -641,6 +701,24 @@ def test_each_rejected_delta_in_the_rubric_really_fails_and_the_accepted_one_wor
     }
     for name, delta in wrong.items():
         assert not _delta_is_sufficient(delta), name
+
+    # Another valid construction (no minimum with 1) is sufficient; deltas whose positivity
+    # is not evident are not even positive for some a or epsilon.
+    assert _delta_is_sufficient(lambda a, e: _sqrt_fraction(a * a + e) - abs(a))
+    for name, delta in {
+        "eps-|a|": lambda a, e: min(Fraction(1), e / (2 * abs(a) + 1), e - abs(a)),
+        "1-eps": lambda a, e: min(1 - e, e / (2 * abs(a) + 1)),
+    }.items():
+        assert any(delta(Fraction(n, 2), e) <= 0 for n in range(-8, 9) for e in (1, 10)), name
+
+    # delta=min(1, eps/(|a|+1)) fails <= eps but does give < 2 eps (a fixed multiple is fine).
+    for n in range(-8, 9):
+        a = Fraction(n, 2)
+        for e in (Fraction(1, 100), Fraction(1), Fraction(10), Fraction(1000)):
+            d = min(Fraction(1), e / (abs(a) + 1))
+            for fraction in (Fraction(-99, 100), Fraction(99, 100)):
+                x = a + fraction * d
+                assert abs(x * x - a * a) < 2 * e
 
 
 def test_clarification_review_does_not_get_the_explanation_requirement() -> None:

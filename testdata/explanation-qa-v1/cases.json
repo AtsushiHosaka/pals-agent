@@ -1,6 +1,6 @@
 {
   "schema": "pals.explanation-qa-regression.v1",
-  "revision": "v1.5: owner decision: positivity of delta that is evident from its definition needs no reason, so the old wrong-12 (no positivity reason, delta=min(1, eps/(2|a|+1))) is now valid-21; wrong-23 and wrong-24 are deltas whose positivity is not evident and fails (delta<=0 for some a or eps). v1.4: merged Codex notation/alias regressions: 5 more valid cases (aligned chain, sized delimiters, named bound alias, general identity first, connected equalities) and 5 more wrong cases (alias rebound, alias constant too small, neighborhood of another point, estimate for a different point, repeated factor). v1.3: 5 more valid cases whose elements hold by one-phrase standard facts, 7 more wrong cases (one per checklist element: only one point, no positivity reason, extra assumption instead of a minimum, factorization as a sum, bare |x+a| bound, chain ending at delta, no conclusion); expected_failed_checks names the checklist ids a correct reviewer fails. Truth was fixed mathematically before any model run. v1.2: wrong and summary_first cases carry defect_quote, the passage a reviewer can quote to reject them. v1.1: valid cases now justify every step (positivity of delta from two positive numbers, triangle inequality for |x|, delta <= eps/(2|a|+1), x introduced) and are split in two sections; v1.0 asserted these steps without reason. Wrong cases keep exactly one intended defect each.",
+  "revision": "v1.6: valid-22 (delta=sqrt(a^2+eps)-|a|, a valid proof without a minimum with 1); wrong-25/26 hide a false claim (x^2 not differentiable; steps verified separately by Lean) inside an otherwise correct proof. v1.5: owner decision: positivity of delta that is evident from its definition needs no reason, so the old wrong-12 (no positivity reason, delta=min(1, eps/(2|a|+1))) is now valid-21; wrong-23 and wrong-24 are deltas whose positivity is not evident and fails (delta<=0 for some a or eps). v1.4: merged Codex notation/alias regressions: 5 more valid cases (aligned chain, sized delimiters, named bound alias, general identity first, connected equalities) and 5 more wrong cases (alias rebound, alias constant too small, neighborhood of another point, estimate for a different point, repeated factor). v1.3: 5 more valid cases whose elements hold by one-phrase standard facts, 7 more wrong cases (one per checklist element: only one point, no positivity reason, extra assumption instead of a minimum, factorization as a sum, bare |x+a| bound, chain ending at delta, no conclusion); expected_failed_checks names the checklist ids a correct reviewer fails. Truth was fixed mathematically before any model run. v1.2: wrong and summary_first cases carry defect_quote, the passage a reviewer can quote to reject them. v1.1: valid cases now justify every step (positivity of delta from two positive numbers, triangle inequality for |x|, delta <= eps/(2|a|+1), x introduced) and are split in two sections; v1.0 asserted these steps without reason. Wrong cases keep exactly one intended defect each.",
   "description": "x² の連続性の説明を独立QAに通す小さな回帰セット。valid_notation は承認、wrong と summary_first は拒否が期待値。数学的内容は人手で確認済みだが、実QAの判定は未検証。",
   "theorem_statement": "x² が連続であることを説明してください。",
   "lean_code": "import Mathlib\n\ntheorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity",
@@ -729,6 +729,41 @@
           "id": "step-2",
           "title": "評価",
           "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-22-delta-with-a-square-root",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "min(1,·) を使わない別の妥当な証明。δ=√(a²+ε)-|a|、δ(δ+2|a|)=ε（積 (√-|a|)(√+|a|)=ε）。数学的に正しい",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ",
+          "summary": "$\\delta=\\sqrt{a^2+\\varepsilon}-|a|$ とおきます。$\\sqrt{a^2+\\varepsilon}>|a|$ なので $\\delta>0$ で、$\\delta(\\delta+2|a|)=(\\sqrt{a^2+\\varepsilon}-|a|)(\\sqrt{a^2+\\varepsilon}+|a|)=\\varepsilon$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$|x+a|=|2a+(x-a)|\\le2|a|+|x-a|$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(|x-a|+2|a|)<\\delta(\\delta+2|a|)=\\varepsilon$ です（$t\\mapsto t(t+2|a|)$ は $t\\ge0$ で増加）。",
           "references": [
             {
               "start_line": 3,
@@ -1566,6 +1601,82 @@
       "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
       "expected_failed_checks": [
         "factorization"
+      ]
+    },
+    {
+      "id": "wrong-25-false-claim-about-differentiability",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ の議論は正しいが、節の途中に偽の主張（x² は微分不能）が混ざる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。なお、$x^2$ は微分可能ではありません。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "other_defect"
+      ]
+    },
+    {
+      "id": "wrong-26-false-claim-of-separate-lean-verification",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ の議論は正しいが、導出の各ステップを Lean が個別に検証したと偽る（検証されたのは定理全体）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "step-1",
+          "title": "δ の選択",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$1$ と $\\frac{\\varepsilon}{2|a|+1}$ はともに正なので、$\\delta$ は正です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        },
+        {
+          "id": "step-2",
+          "title": "評価",
+          "summary": "$|x-a|<\\delta$ を満たす実数 $x$ をとります。$\\delta\\le1$ と三角不等式より $|x|\\le|a|+|x-a|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。$\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ なので、$|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\delta(2|a|+1)\\le\\varepsilon$ となります。これらの不等式の変形は、それぞれ Lean が個別に検証済みです。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "expected_failed_checks": [
+        "other_defect"
       ]
     },
     {

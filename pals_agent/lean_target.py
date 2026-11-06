@@ -223,19 +223,42 @@ def strip_redundant_parentheses(value: str) -> str | None:
     return value
 
 
+_BINDER_NAME = r"[A-Za-z_][A-Za-z0-9_']*"
+_OTHER_PROPERTY_TARGET = re.compile(
+    r"(?<![A-Za-z0-9_.])(?:deriv\w*|fderiv\w*|Differentiable\w*|HasDeriv\w*|HasFDeriv\w*"
+    r"|UniformContinuous\w*|LipschitzWith\w*|AntilipschitzWith\w*)(?![A-Za-z0-9_])"
+)
+
+
+def targets_another_property_of_a_function(proposition: str) -> bool:
+    """Whether the Lean statement is about a derivative, differentiability, uniform continuity or
+    a Lipschitz bound, i.e. a property other than plain continuity."""
+    return _OTHER_PROPERTY_TARGET.search(proposition) is not None
+
+
 def matches_x_squared_continuity(proposition: str) -> bool:
-    """Whether a formalized proposition is `Continuous (fun x : ℝ => x ^ 2)` (any variable name).
+    """Whether a formalized proposition is `Continuous` of the real square function.
+
+    Recognised: `fun x : ℝ => x ^ 2` with the binder as `x : ℝ` or `(x : ℝ)`, `Real` for `ℝ`,
+    a type-ascribed body `(x ^ 2 : ℝ)`, the exponent `(2 : ℕ)`, the product `x * x`, and the
+    typed sections `((· ^ 2) : ℝ → ℝ)` / `(· * ·  : ℝ → ℝ)`. An untyped function (`fun x => x ^ 2`
+    or `(· ^ 2)`) elaborates over a default type, not necessarily ℝ, so it is not recognised.
+    Everything else (x ^ 3, x ^ 2 + x, (x - 1) ^ 2, x ^ 2 ^ 2, x ^ 22, ContinuousAt, conjunctions,
+    ℕ, 2 ^ x) is not.
 
     This reads the verified Lean statement, so it does not depend on how the learner phrased the
     request (language, `x^{2}`, `xの2乗`, full-width characters, ...).
     """
     declaration = re.sub(r"\s+", "", proposition).replace("²", "^2")
+    declaration = re.sub(r"(?<![A-Za-z0-9_.])Real(?![A-Za-z0-9_.])", "ℝ", declaration)
     if not declaration.startswith("Continuous"):
         return False
-    expression = strip_redundant_parentheses(
-        declaration[len("Continuous") :],
-    )
-    if expression is None or not expression.startswith("fun"):
+    expression = strip_redundant_parentheses(declaration[len("Continuous") :])
+    if expression is None:
+        return False
+    if re.fullmatch(r"\(?(?:·\^2|·\*·)\)?:ℝ→ℝ", expression):
+        return True
+    if not expression.startswith("fun"):
         return False
 
     lambda_body = expression[len("fun") :]
@@ -250,22 +273,25 @@ def matches_x_squared_continuity(proposition: str) -> bool:
     body = lambda_body[arrow_position + arrow_width :]
 
     binder_match = re.fullmatch(
-        r"(?P<variable>[A-Za-z_][A-Za-z0-9_']*)(?::(?P<type>.+))?",
-        binder,
+        rf"(?:\((?P<v1>{_BINDER_NAME}):(?P<t1>.+)\)|(?P<v2>{_BINDER_NAME}):(?P<t2>.+))", binder
     )
     if binder_match is None:
         return False
-    binder_type = binder_match.group("type")
-    if binder_type is None:
-        return False
-    normalized_type = strip_redundant_parentheses(binder_type)
-    if normalized_type != "ℝ":
+    variable = binder_match.group("v1") or binder_match.group("v2")
+    binder_type = binder_match.group("t1") or binder_match.group("t2")
+    if strip_redundant_parentheses(binder_type) != "ℝ":
         return False
 
     normalized_body = strip_redundant_parentheses(body)
-    if normalized_body is None or "^" not in normalized_body:
+    if normalized_body is not None and normalized_body.endswith(":ℝ"):
+        normalized_body = strip_redundant_parentheses(normalized_body[: -len(":ℝ")])
+    if normalized_body is None:
+        return False
+    if normalized_body == f"{variable}*{variable}":
+        return True
+    if "^" not in normalized_body:
         return False
     base, exponent = normalized_body.rsplit("^", maxsplit=1)
     normalized_base = strip_redundant_parentheses(base)
     normalized_exponent = strip_redundant_parentheses(exponent)
-    return normalized_base == binder_match.group("variable") and normalized_exponent == "2"
+    return normalized_base == variable and normalized_exponent in {"2", "2:ℕ"}
