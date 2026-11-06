@@ -317,6 +317,23 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def terminalize_stalled_proof_job(
+        self, *, proof_job_id: str, receive_count: int, observed: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Ask the API to end a job that keeps failing closed on its own data.
+
+        No generation claim is involved. The API decides atomically and refuses (HTTP 409) while
+        a live worker holds the job, a compile is pending, or the job is no longer what
+        `observed` says; a refusal leaves nothing behind.
+        """
+        resource_id = _path_segment(proof_job_id)
+        return self._request(
+            "POST",
+            f"/v1/internal/proof-jobs/{resource_id}/no-progress-terminalizations",
+            {"receive_count": receive_count, "observed": observed},
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
     def update_proof_job(
         self,
         *,
