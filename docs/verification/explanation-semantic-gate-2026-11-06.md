@@ -29,7 +29,7 @@ widened again.
 | Coefficient check (`≥2|a|+1`, factor forms) | δ is sufficient | QA lists the failing cases (coefficient too small such as ε/(|a|+1), δ plus 1, δ doubled, no minimum). **No deterministic sufficiency check remains** |
 | `δ>0` / `0<δ` present | δ is positive | QA: reject when δ is not shown to be positive (words are fine) |
 | One point `a` bound across δ, the neighborhood and the estimate | The proof is about one function and one point | QA: reject another function or another point than the fixed one |
-| `|x-a|<δ` followed by `|x²-a²|=|x-a||x+a|` followed by `≤ε` | A real estimate down to ε | QA: justified bound on `|x+a|`, a valid chain to ε; a bound ending in ε+1 or 2ε is rejected; ending in `= ε` is accepted |
+| `|x-a|<δ` followed by `|x²-a²|=|x-a||x+a|` followed by `≤ε` | A real estimate down to ε | QA: justified bound on `|x+a|`, a valid chain to ε; a bound ending in ε+1 is rejected (a fixed multiple such as 2ε is a valid ε–δ ending, see the checklist); ending in `= ε` is accepted |
 | Word 連続/continuity after the estimate | A conclusion exists | QA: concludes continuity at the point, hence everywhere |
 | Suffix guards (`+1`, `*2`, `=1`, `の2倍`) | A modified δ | QA enumerates adding 1 and multiplying by a constant |
 | Labels `x_squared_opening`, `x_squared_epsilon_delta` | Failure reasons | Retired. A persistent defect now ends as `review:rejected,…` (`pals.explanation_review_failed`) |
@@ -154,7 +154,7 @@ So the x² review (and only it) asks for a fixed checklist and the code decides:
 | `delta_depends_on_point_and_epsilon` | δ is an explicit formula in ε and a |
 | `factorization` | \|x²-a²\| = \|x-a\|\|x+a\| |
 | `sum_bound` | \|x+a\|<2\|a\|+1 (or equivalent) is derived |
-| `final_inequality` | a valid chain, for the chosen δ, reaches ε exactly (not ε+1, 2ε, δ) |
+| `final_inequality` | a valid chain, for the chosen δ, reaches ε or a fixed multiple of ε (not ε+1, not δ) |
 | `conclusion` | continuity at a, hence everywhere |
 | `presentation` | no plan or conclusion preview in the opening, headings, bullets, repeats, math outside `$`, Lean terms |
 
@@ -200,3 +200,53 @@ valid proof rejects it; an `ok` on an absent element approves it); repeats measu
 Elements the checklist does not name are not checked mathematically, except through
 `presentation` and the general rubric. δ sufficiency is judged by `final_inequality` and
 `delta_bounded_by_one` rather than by a deterministic rule.
+
+## Merged notation and alias regressions (Codex 210ece8)
+
+Codex extended the text gate again (sized delimiters, `aligned`/`align*`/`array` layouts, one
+named bound alias such as `C = 2|a|+1`, cancellation `(ε/C)C = ε`). This branch merged that
+commit and kept the design without a text gate. What each of its rules protected, and where
+that now lives:
+
+| Mathematical point the rule protected | Now |
+|---|---|
+| Layout and delimiter sizes (`\bigl`, `\Bigl`, `aligned`, `align*`, `array`) do not change the proof | Structural layer accepts them in one attempt (`test_x_squared_notation_migration.py`, 14 layout styles + 8 size families); regression cases `valid-16`, `valid-17` |
+| A named positive bound `C` and a closing cancellation `(ε/C)C = ε` | `final_inequality` and `sum_bound` judge the chain; cases `valid-18` (accept) |
+| The alias must be defined once, with a sufficient constant, for the fixed point; rebinding or a wrong constant breaks the proof | `sum_bound`, `delta_depends_on_point_and_epsilon`, `final_inequality`; cases `wrong-18` (rebound to 1), `wrong-19` (`C = |a|+1`) |
+| Connected equalities may rewrite the product before the inequality | `final_inequality`; case `valid-20` |
+| A preceding general identity (other variables `u, v`) must not decide which variables the proof is about | `point_fixed`, `factorization`; case `valid-19` (accept), `wrong-21` (δ for `b` but an estimate for another point `a`: capture) |
+| The neighborhood must be about the fixed point | `point_fixed`; case `wrong-20` (`|x-b|<δ`) |
+| The factorization must be the product `|x-a||x+a|` | `factorization`; cases `wrong-14`, `wrong-22` |
+| Insufficient or modified δ (`ε/(|a|+1)`, `+1`, `×2`, `ε+1` ending) | `delta_bounded_by_one`, `final_inequality`; cases `wrong-01`, `wrong-04`..`wrong-06` |
+
+Every input of Codex's notation test file that the gate had to accept is a valid proof, and
+every input it had to refuse is also pushed through the structural layer, which must not decide
+either way (only the checklist can). 118 such parametrized inputs are in
+`tests/unit/test_x_squared_notation_migration.py`.
+
+What could not be moved, and why:
+
+- Tests of the normalizer's own safety (unknown macros such as `\unknown`, `\text{=}`, an
+  unknown environment, `\biglunknown`, `\leftarrow` not being erased): they assert behaviour of
+  code that no longer exists. A reader-side analogue, "this TeX does not render", is not a
+  checklist element; it would only be caught if the reviewer reports it under `presentation`
+  (math outside valid TeX is not in that definition).
+- Independent cells or rows that a gate must not fuse into a product (`array{ll}` with
+  `|x-a|&|x+a|`): whether adjacent array cells are a product is a rendering question, not a
+  mathematical error. A reviewer reading the TeX source can treat it either way; no regression
+  case was added because the expected verdict is not well defined.
+- "Bound alias cannot be the varying variable" (a name collision `X`/`x`): a naming-collision
+  of the gate's regexes; as mathematics, using `X` for both a bound and the variable is only
+  ambiguous notation, not a false proof.
+- Weaker-ending gate controls (`≤ 2ε` as the last step): these tested that the gate required
+  a bridge to ε, "not a claim that the theorem or retained bounds become false". A proof that
+  ends at a fixed multiple of ε is a valid ε–δ proof, so the checklist accepts it (the
+  `final_inequality` definition says so) and no wrong case was made from it. Endings that
+  really do not reach ε (`ε+1`, `δ`) stay wrong cases.
+- Strictness requirements of the gate (`<` before the cancellation, strict `δ` bridge): the
+  proof is also valid with `≤`; they were gate artefacts.
+
+Review of Codex's intent: its sample, `C = 2|a|+1`, `δ = min(1, ε/C)`, first bound `|x-a|C`
+and later `(ε/C)C = ε`, is the shape of `valid-18`, so the case that motivated the change is
+kept as a positive regression. The deployed gate rejected that shape because it looked for
+the absolute value inside δ literally; the new design has no such dependency.

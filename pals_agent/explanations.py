@@ -1697,10 +1697,11 @@ _EPSILON_DELTA_CHECK_DEFINITIONS = {
     "function such as x³).",
     "sum_bound": "|x+a|<2|a|+1, or an equivalent bound, is derived; the triangle inequality "
     "with |x-a|<1 is enough, a bare assertion is missing.",
-    "final_inequality": "a valid chain, for the delta actually chosen, reaches |x²-a²| at most "
-    "(or below) exactly epsilon (a chain may end in an equality such as `= ε`). A chain that "
-    "ends in epsilon+1, 2 epsilon or delta, or that needs delta to be smaller than chosen (for "
-    "example epsilon/(|a|+1) in place of epsilon/(2|a|+1)), fails.",
+    "final_inequality": "a valid chain, for the delta actually chosen, shows |x²-a²| is at most "
+    "(or below) epsilon, or a fixed multiple of epsilon such as 2 epsilon (a chain may end in "
+    "an equality such as `= ε`). A chain that ends in epsilon+1 or in delta, or that needs "
+    "delta to be smaller than chosen (for example epsilon/(|a|+1) in place of "
+    "epsilon/(2|a|+1)), fails.",
     "conclusion": "continuity at a is concluded, hence everywhere because a is arbitrary.",
     "presentation": "status is ok or wrong only. Wrong when the opening previews the proof plan "
     "or the conclusion, the text shows section headings, bullets or numbered steps, a "

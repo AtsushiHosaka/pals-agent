@@ -508,7 +508,7 @@ STANDARD_FACTS = [
 DEFECT_TO_ELEMENT = {
     "A delta with no such bound": "delta_bounded_by_one",
     "delta that ignores a": "delta_depends_on_point_and_epsilon",
-    "ends in epsilon+1, 2 epsilon or delta": "final_inequality",
+    "ends in epsilon+1 or in delta": "final_inequality",
     "epsilon/(|a|+1) in place of epsilon/(2|a|+1)": "final_inequality",
     "delta plus 1, twice delta": "delta_bounded_by_one",
     "not a sum, not another function": "factorization",
