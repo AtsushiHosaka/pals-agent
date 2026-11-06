@@ -1548,11 +1548,48 @@ def _normalize_x_squared_math(text: str) -> str:
         .replace("\\min", "min")
         .replace("²", "^2")
     )
-    compact = re.sub(r"\\(?:left|right|quad|qquad|[,;:!])", "", compact)
+    # Remove only finite presentation commands followed by an actual delimiter.
+    # Unknown macro names, mathematical tokens and ordinary prose remain intact.
+    compact = re.sub(
+        r"\\(?:bigg|Bigg|big|Big)(?:l|r|m)?(?=[|()[\]]|\\[{}])", "", compact
+    )
+    compact = _normalize_x_squared_layout(compact)
+    compact = re.sub(
+        r"\\(?:left|right)(?=[|()[\]]|\\[{}])|\\(?:quad|qquad|[,;:!])", "", compact
+    )
     compact = re.sub(r"\\leq?(?![A-Za-z])", "<=", compact)
     compact = re.sub(r"\\lt(?![A-Za-z])", "<", compact)
     compact = re.sub(r"\\frac\{ε\}\{([^{}]*)\}", r"ε/(\1)", compact)
     return compact.replace("{", "").replace("}", "")
+
+
+def _normalize_x_squared_layout(compact: str) -> str:
+    """Flatten bounded, non-nested mathematical alignment presentation only."""
+    def layout(match: re.Match[str]) -> str:
+        body = match.group("body")
+        if "\\begin" in body or "\\end" in body:
+            return match.group()
+        commands = re.findall(r"\\([A-Za-z]+)", body.replace("\\\\", ""))
+        if any(command not in {
+            "frac", "left", "right", "le", "leq", "lt", "quad", "qquad"
+        } for command in commands):
+            return match.group()
+        if match.group("environment") == "array":
+            columns = re.match(r"\{[lcr]{1,8}\}", body)
+            if columns is None:
+                return match.group()
+            body = body[columns.end():]
+        relation = r"(?:[=<>]|\\leq?(?![A-Za-z])|\\lt(?![A-Za-z]))"
+        body = re.sub(rf"\\\\(?=&?{relation})", "", body)
+        body = re.sub(rf"(?<!\\)&(?={relation})", "", body)
+        return re.sub(r"(?<=[=<>])&", "", body)
+
+    return re.sub(
+        r"\\begin\{(?P<environment>aligned|align\*?|array)\}"
+        r"(?P<body>.{0,4096}?)\\end\{(?P=environment)\}",
+        layout,
+        compact,
+    )
 
 
 def _x_squared_delta_choice(compact: str) -> str | None:
@@ -1595,6 +1632,10 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
     choice = _x_squared_delta_choice(compact)
     if choice is None:
         return False
+    resolved = _resolve_x_squared_bound_alias(compact, choice)
+    if resolved is None:
+        return False
+    choice, bound_alias = resolved
     # Bind the point consistently across the delta, neighborhood, and estimate.
     # These are alpha-renamings of the same proof, not new mathematical cases.
     variable = r"[A-Za-z](?:_[0-9]+)?"
@@ -1610,14 +1651,71 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
         if other != point
     )
     return any(
-        _has_x_squared_estimate(compact, choice, point=point, varying=varying)
+        bound_alias not in {point, varying}
+        and _has_x_squared_estimate(
+            compact, choice, point=point, varying=varying, bound_alias=bound_alias
+        )
         for varying in varying_points
     )
 
 
-def _has_x_squared_estimate(compact: str, choice: str, *, point: str, varying: str) -> bool:
+def _resolve_x_squared_bound_alias(compact: str, choice: str) -> tuple[str, str | None] | None:
+    """Resolve one preceding uppercase bound definition, never the whole proof."""
+    alias_choice = re.fullmatch(
+        r"min\(1,ε/(?:\((?P<parenthesized>[A-Z])\)|(?P<bare>[A-Z]))\)(?P<positive>>0)?",
+        choice,
+    )
+    if alias_choice is None:
+        return choice, None
+    alias = alias_choice.group("parenthesized") or alias_choice.group("bare")
+    definitions = list(re.finditer(
+        rf"(?<![A-Za-z0-9_εδ/*+)|^\-]){alias}\)*"
+        r"(?::=|=|\\coloneqq(?![A-Za-z])|\\coloneq(?![A-Za-z])|\\colon="
+        r"|\\gets(?![A-Za-z])|\\leftarrow(?![A-Za-z])|←|<-)",
+        compact,
+    ))
+    if re.search(
+        rf"(?<![A-Za-z0-9_]){alias}\$?を"
+        r"(?:\d+に(?:置き換(?:える|えます)|(?:置換|変更|更新|再定義)(?:する|します)"
+        r"|する|します|置く|置きます)"
+        r"|\d+倍(?:に(?:する|します)|して(?:変更|更新|再定義)(?:する|します)|する|します))"
+        r"(?=[。、；;]|$)", compact
+    ):
+        return None
+    construction = re.search(r"δ(?::=|=)", compact)
+    if len(definitions) != 1 or construction is None:
+        return None
+    definition = definitions[0]
+    if not 0 < construction.start() - definition.end() <= 512:
+        return None
+    expression = re.split(
+        r"[$。、；;]", compact[definition.end():construction.start()], maxsplit=1
+    )[0]
+    expression = expression.removesuffix(">0")
+    point_names = set(re.findall(r"\|([A-Za-z](?:_[0-9]+)?)\|", expression))
+    if len(point_names) != 1 or alias in point_names:
+        return None
+    point = next(iter(point_names))
+    canonical = re.sub(rf"\|{re.escape(point)}\|", "|a|", expression)
+    if not _is_sufficient_x_squared_delta_choice("min(1,ε/(" + canonical + "))"):
+        return None
+    resolved = "min(1,ε/(" + expression + "))"
+    if alias_choice.group("positive"):
+        resolved += ">0"
+    return resolved, alias
+
+
+def _has_x_squared_estimate(
+    compact: str, choice: str, *, point: str, varying: str, bound_alias: str | None = None
+) -> bool:
     # Normalize only the isolated delta choice. Renaming the entire proof could
     # capture a different point already named a or x in an earlier identity.
+    literal_choice = choice.removesuffix(">0")
+    literal_denominator: str | None = None
+    if literal_choice.startswith("min(1,ε/(") and literal_choice.endswith("))"):
+        literal_denominator = literal_choice[len("min(1,ε/("):-2]
+    elif literal_choice.startswith("min(1,\\fracε") and literal_choice.endswith(")"):
+        literal_denominator = literal_choice[len("min(1,\\fracε"):-1]
     point_pattern = re.escape(point)
     varying_pattern = re.escape(varying)
     choice = re.sub(
@@ -1661,6 +1759,36 @@ def _has_x_squared_estimate(compact: str, choice: str, *, point: str, varying: s
         applies_epsilon_bound = estimate is not None and re.search(
             r"<=?ε(?=$|[^A-Za-z0-9_+\-*/^(=<>])", estimate.group()
         ) is not None
+        if not applies_epsilon_bound and (
+            bound_alias is not None or literal_denominator is not None
+        ):
+            # Later separate estimates may carry the strict epsilon bridge. Do
+            # not accept an isolated final |difference| < epsilon assertion:
+            # this additional route requires the same sufficient positive
+            # literal denominator or its unique alias, ending exactly at epsilon.
+            if bound_alias is not None:
+                quotient = rf"(?:ε/{bound_alias}|ε/\({bound_alias}\))"
+                bound_factor = re.escape(bound_alias)
+            else:
+                if literal_denominator is None:
+                    continue
+                bound_factor = rf"\({re.escape(literal_denominator)}\)"
+                quotient = rf"ε/{bound_factor}"
+            product = rf"(?:\({quotient}\)|{quotient})\*?{bound_factor}"
+            cancellation = (
+                rf"(?:<={distance}\*?{bound_factor})?"
+                rf"(?:<{product}=ε|<δ\*?{bound_factor}<={product}=ε)"
+            )
+            separate = re.finditer(
+                rf"(?<![A-Za-z0-9_.*+/^)|-])(?:{difference}"
+                rf"|{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
+                r"(?P<estimate><=?[^$。、；;]{0,240})",
+                following,
+            )
+            applies_epsilon_bound = (
+                estimate is not None and re.fullmatch(cancellation, estimate.group()) is not None
+                or any(re.fullmatch(cancellation, item.group("estimate")) for item in separate)
+            )
         if applies_epsilon_bound and re.search(
             r"(?:連続|continuous|continuity)", compact[factorization.end() :], re.IGNORECASE
         ):
