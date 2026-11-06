@@ -33,12 +33,17 @@ from pals_agent.explanations import (
     ProofSemanticReview,
     ProofSemanticReviewer,
     ProofSemanticReviewUnavailable,
-    _is_x_squared_continuity,
+    _asks_about_x_squared_continuity,
+    _names_another_property,
+    _requires_epsilon_delta,
     proof_explanation_from_api,
+    single_sample_catch_all_ids,
 )
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
+    matches_x_squared_continuity,
+    targets_another_property_of_a_function,
 )
 from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
@@ -128,6 +133,26 @@ _TERMINAL_MARGIN_SECONDS: Final = 30.0
 # An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
 # interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
 _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
+# A delivery that fails closed for a reason the job's own stored data carries (data any worker
+# version rejects) three times in a row can never succeed on a fourth: SQS has redelivered it
+# after two full visibility timeouts. The queue's receive count is the only state that survives a
+# worker restart. The worker holds no claim and takes none: it tells the API the count and what
+# it saw, and the API decides atomically (live claim, pending compile, change since, idle time).
+# A refusal or an outage leaves nothing behind, so the next delivery simply asks again; acting at
+# the third receive leaves two more before the redrive policy moves the message to the DLQ.
+_NO_PROGRESS_TERMINALIZE_RECEIVE_COUNT: Final = 3
+_NO_PROGRESS_TERMINALIZABLE_STATES: Final = frozenset(
+    {
+        "queued",
+        "retrieving_context",
+        "drafting",
+        "sketching",
+        "proving",
+        "compiling",
+        "repairing",
+        "semantic_review",
+    }
+)
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
 _CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
@@ -253,6 +278,10 @@ class ProofJobApi(Protocol):
     def record_usage(self, *, proof_job_id: str, claim_id: str, usage: dict[str, Any]) -> None: ...
 
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]: ...
+
+    def terminalize_stalled_proof_job(
+        self, *, proof_job_id: str, receive_count: int, observed: dict[str, Any]
+    ) -> dict[str, Any]: ...
 
     def get_proof_job_chat_input(self, proof_job_id: str) -> dict[str, Any]: ...
 
@@ -441,6 +470,19 @@ class WorkerSqsUnavailableError(RuntimeError):
     """SQS failed continuously past the outage limit, so this lane cannot do its work."""
 
 
+class _NoProgressDelivery(Exception):
+    """A delivery failed closed because of the job's own data, not an outage or a live worker.
+
+    Only these paths may be terminalized, and only on a late delivery. Transport failures, a busy
+    claim, a pending API-owned compile and local configuration problems keep returning False.
+    """
+
+    def __init__(self, reason: str, proof_job: dict[str, Any]) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.proof_job = proof_job
+
+
 @dataclass(frozen=True, slots=True)
 class SqsProofWorker:
     settings: AgentSettings
@@ -588,6 +630,9 @@ class SqsProofWorker:
                         task.id,
                         claim_id=claim_id,
                         extend_visibility=extend_visibility,
+                        delivery_attempt=(
+                            queue_timing["receive_count"] if queue_timing is not None else None
+                        ),
                     )
             elif task.kind == "explanation":
                 with traced_delivery(
@@ -628,15 +673,45 @@ class SqsProofWorker:
         *,
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
+        delivery_attempt: int | None = None,
     ) -> bool:
+        """Process one delivery of a proof job.
+
+        `delivery_attempt` is the queue's receive count for this message. It is only used to
+        stop a job that keeps failing closed for reasons carried by its own data; callers that
+        do not know it (or recurse within one delivery) never terminalize.
+        """
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
         proof_job = self.api_client.get_proof_job(proof_job_id)
         if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
             return True
+        try:
+            return self._process_proof_job_delivery(
+                proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
+        except _NoProgressDelivery as stalled:
+            if (
+                delivery_attempt is None
+                or delivery_attempt < _NO_PROGRESS_TERMINALIZE_RECEIVE_COUNT
+            ):
+                return False
+            return self._terminalize_no_progress(
+                proof_job_id, stalled=stalled, delivery_attempt=delivery_attempt,
+            )
+
+    def _process_proof_job_delivery(
+        self,
+        proof_job_id: str,
+        *,
+        proof_job: dict[str, Any],
+        claim_id: str | None,
+        extend_visibility: VisibilityExtender | None,
+    ) -> bool:
         context = proof_job.get("request_context", {})
         if not isinstance(context, dict):
-            return False
+            raise _NoProgressDelivery("request_context_invalid", proof_job)
         link_latency_request(context.get("proof_request_id"))
         with ExitStack() as stack:
             try:
@@ -646,11 +721,51 @@ class SqsProofWorker:
                 )
                 stack.enter_context(linked_chat_scope(context, payload))
             except (PalsApiError, ValueError, TypeError, KeyError):
+                # What this scope rejects depends on the worker's own version (the models and
+                # route it knows, its image parser), so a newer worker may accept the same job.
+                # Not a verdict about the job: leave it for redelivery.
                 return False
             return self._process_proof_job(
                 proof_job_id, proof_job=proof_job, claim_id=claim_id,
                 extend_visibility=extend_visibility,
             )
+
+    def _terminalize_no_progress(
+        self,
+        proof_job_id: str,
+        *,
+        stalled: _NoProgressDelivery,
+        delivery_attempt: int,
+    ) -> bool:
+        """Ask the API to end a job that cannot progress. No claim is taken or left.
+
+        The API refuses while a live worker holds the job, while its own verifier still has a
+        compile pending, or when the job is no longer what this delivery saw; any refusal or
+        failure returns False and the next delivery asks again.
+        """
+        snapshot = stalled.proof_job
+        if snapshot.get("state") not in _NO_PROGRESS_TERMINALIZABLE_STATES:
+            return False
+        if _has_pending_api_candidate(snapshot):
+            return False  # The API-owned verifier still has work in flight.
+        try:
+            response = self.api_client.terminalize_stalled_proof_job(
+                proof_job_id=proof_job_id,
+                receive_count=delivery_attempt,
+                observed=_observed_job(snapshot),
+            )
+        except Exception:
+            return False
+        if not isinstance(response, dict) or response.get("outcome") not in {
+            "terminalized", "already_terminal",
+        }:
+            return False
+        note_latency("no_progress_terminalized", 1)
+        _logger.warning(
+            "worker_proof_job_no_progress_terminalized reason=%s receive_count=%d job_sha256=%s",
+            stalled.reason, delivery_attempt, _text_sha256(proof_job_id)[:16],
+        )
+        return True
 
     def _process_proof_job(
         self, proof_job_id: str, *, proof_job: dict[str, Any],
@@ -664,11 +779,13 @@ class SqsProofWorker:
         if state == "semantic_review":
             lean_code = proof_job.get("lean_code")
             if not isinstance(lean_code, str) or not lean_code.strip():
-                return False
+                raise _NoProgressDelivery("semantic_review_lean_code_missing", proof_job)
+            if _absent(proof_job, "verification_candidate_id"):
+                raise _NoProgressDelivery("semantic_review_candidate_missing", proof_job)
             try:
                 candidate_id = _required_verification_candidate_id(proof_job)
             except ValueError:
-                return False
+                return False  # An id format this version does not know is not a missing one.
             is_recipe_attempt = proof_job.get("attempt_source") == "recipe"
             if is_recipe_attempt:
                 return self._request_recipe_review(
@@ -677,23 +794,34 @@ class SqsProofWorker:
                     claim_id=claim_id,
                     extend_visibility=extend_visibility,
                 )
+            if _absent(proof_job, "generation_session_id"):
+                raise _NoProgressDelivery("semantic_review_session_missing", proof_job)
             try:
                 generation_session_id = _required_generation_session_id(proof_job)
             except ValueError:
                 return False
+            stored_target = (
+                proof_job["status_context"].get("target_declaration")
+                if isinstance(proof_job.get("status_context"), dict)
+                else None
+            )
+            if not isinstance(stored_target, dict):
+                raise _NoProgressDelivery("semantic_review_target_missing", proof_job)
             target_declaration = _persisted_target_declaration(proof_job, lean_code)
             if target_declaration is None:
-                return False
+                return False  # Declaration extraction is this version's parser, not the job's.
             artifact_uri = proof_job.get("result_artifact_uri")
             if not isinstance(artifact_uri, str) or not artifact_uri:
-                return False
+                raise _NoProgressDelivery("semantic_review_artifact_missing", proof_job)
             # A legacy/stale job session may differ from the immutable candidate's
             # owner claim. Check before sending any source to the external reviewer.
-            binding = self._matching_candidate_binding(
+            binding, binding_definitive = self._candidate_binding_lookup(
                 proof_job_id=proof_job_id, candidate_id=candidate_id,
                 claim_id=generation_session_id, lean_code=lean_code,
                 result_artifact_uri=artifact_uri, source_binding_sha256=None,
             )
+            if binding is None and binding_definitive:
+                raise _NoProgressDelivery("semantic_review_binding_mismatch", proof_job)
             if binding is None or binding["candidate_status"] != "semantic_review":
                 return False
             request_context = proof_job.get("request_context")
@@ -829,10 +957,9 @@ class SqsProofWorker:
         context = proof_job.get("request_context")
         context = context if isinstance(context, dict) else {}
         request_linked = "proof_request_id" in context
-        if request_linked and (
-            not isinstance(context["proof_request_id"], str)
-            or not _is_canonical_uuid4(context["proof_request_id"])
-        ):
+        if request_linked and not isinstance(context["proof_request_id"], str):
+            raise _NoProgressDelivery("linked_request_id_invalid", proof_job)
+        if request_linked and not _is_canonical_uuid4(context["proof_request_id"]):
             return False
         formal_statement = context.get("formal_statement")
         if not isinstance(formal_statement, str) or not formal_statement.strip():
@@ -841,7 +968,11 @@ class SqsProofWorker:
         if _has_api_compile_failure(proof_job) and api_repair_seed is None:
             # The API is the compiler authority.  Do not discard or recreate a candidate when
             # its durable repair seed is incomplete; retain the receipt for a later readback.
-            # In particular, do not take a new claim that would delay that retry.
+            # In particular, do not take a new claim that would delay that retry. Only a status
+            # with no seed fields at all is final for every version; a seed this version
+            # cannot read may be readable by another and stays for redelivery.
+            if _repair_seed_fields_absent(proof_job):
+                raise _NoProgressDelivery("compile_failure_without_repair_seed", proof_job)
             return False
 
         if claim_id is None or extend_visibility is None:
@@ -1132,6 +1263,21 @@ class SqsProofWorker:
         self, *, proof_job_id: str, candidate_id: str, claim_id: str,
         lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
     ) -> dict[str, Any] | None:
+        return self._candidate_binding_lookup(
+            proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
+            lean_code=lean_code, result_artifact_uri=result_artifact_uri,
+            source_binding_sha256=source_binding_sha256,
+        )[0]
+
+    def _candidate_binding_lookup(
+        self, *, proof_job_id: str, candidate_id: str, claim_id: str,
+        lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
+    ) -> tuple[dict[str, Any] | None, bool]:
+        """Return the exact binding, or None and whether it definitively names other evidence.
+
+        An unreachable API, or an answer in a shape this version does not know, is not a verdict
+        about the job; a well-formed binding whose values differ from the job's is.
+        """
         expected = {
             "schema_version": "pals.verification-candidate-binding.v1",
             "proof_job_id": proof_job_id,
@@ -1146,17 +1292,19 @@ class SqsProofWorker:
                 proof_job_id=proof_job_id, candidate_id=candidate_id,
             )
         except (PalsApiError, ValueError):
-            return None
+            return None, False
         if (
             not isinstance(binding, dict)
             or set(binding) != {*expected, "candidate_status"}
-            or any(binding.get(key) != value for key, value in expected.items())
             or binding.get("candidate_status") not in {
                 "compiling", "semantic_review", "verified", "verification_failed",
             }
         ):
-            return None
-        return binding
+            # A shape or status this version does not know may be a newer API's contract.
+            return None, False
+        if any(binding.get(key) != value for key, value in expected.items()):
+            return None, True  # A well-formed binding that names other evidence.
+        return binding, True
 
     def _wait_for_candidate_reconciliation(
         self,
@@ -1616,7 +1764,7 @@ class SqsProofWorker:
                 reason,
                 started_at=started_at,
                 language=language,
-                x_squared_gate=_is_x_squared_continuity(theorem_statement),
+                x_squared_gate=_requires_epsilon_delta(theorem_statement, lean_code),
                 lean_lines=len(lean_code.splitlines()),
             )
 
@@ -1653,6 +1801,8 @@ class SqsProofWorker:
                     content_of=_public_explanation_content,
                     failures=private_review_failures,
                 )
+            _note_review_flag_contradiction("explanation", proof_job_id, review)
+            _note_single_sample_remarks("explanation", proof_job_id, review)
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -2441,36 +2591,6 @@ def _aware_timestamp(value: Any) -> None:
         raise ValueError("timestamp field must include a timezone")
 
 
-def _strip_redundant_parentheses(value: str) -> str | None:
-    """Strip only balanced pairs that surround the complete expression."""
-    depth = 0
-    for character in value:
-        if character == "(":
-            depth += 1
-        elif character == ")":
-            depth -= 1
-            if depth < 0:
-                return None
-    if depth != 0:
-        return None
-
-    while value.startswith("(") and value.endswith(")"):
-        depth = 0
-        surrounds_complete_expression = True
-        for index, character in enumerate(value):
-            if character == "(":
-                depth += 1
-            elif character == ")":
-                depth -= 1
-            if depth == 0 and index != len(value) - 1:
-                surrounds_complete_expression = False
-                break
-        if not surrounds_complete_expression:
-            break
-        value = value[1:-1]
-    return value
-
-
 def _without_lean_comments(source: str) -> str:
     output: list[str] = []
     index = 0
@@ -2581,61 +2701,26 @@ def _theorem_propositions(lean_code: str) -> list[str]:
     return propositions
 
 
-def _matches_x_squared_continuity(proposition: str) -> bool:
-    declaration = re.sub(r"\s+", "", proposition).replace("²", "^2")
-    if not declaration.startswith("Continuous"):
-        return False
-    expression = _strip_redundant_parentheses(
-        declaration[len("Continuous") :],
-    )
-    if expression is None or not expression.startswith("fun"):
-        return False
-
-    lambda_body = expression[len("fun") :]
-    arrow_positions = [
-        position for position in (lambda_body.find("=>"), lambda_body.find("↦")) if position >= 0
-    ]
-    if not arrow_positions:
-        return False
-    arrow_position = min(arrow_positions)
-    arrow_width = 2 if lambda_body[arrow_position:].startswith("=>") else 1
-    binder = lambda_body[:arrow_position]
-    body = lambda_body[arrow_position + arrow_width :]
-
-    binder_match = re.fullmatch(
-        r"(?P<variable>[A-Za-z_][A-Za-z0-9_']*)(?::(?P<type>.+))?",
-        binder,
-    )
-    if binder_match is None:
-        return False
-    binder_type = binder_match.group("type")
-    if binder_type is None:
-        return False
-    normalized_type = _strip_redundant_parentheses(binder_type)
-    if normalized_type != "ℝ":
-        return False
-
-    normalized_body = _strip_redundant_parentheses(body)
-    if normalized_body is None or "^" not in normalized_body:
-        return False
-    base, exponent = normalized_body.rsplit("^", maxsplit=1)
-    normalized_base = _strip_redundant_parentheses(base)
-    normalized_exponent = _strip_redundant_parentheses(exponent)
-    return normalized_base == binder_match.group("variable") and normalized_exponent == "2"
-
-
 def _target_matches_statement(
     statement: str,
     target_declaration: LeanTargetDeclaration,
 ) -> bool:
-    """Apply deterministic checks before the independent semantic review."""
-    normalized_statement = re.sub(r"\s+", "", statement).lower()
-    is_x_squared_continuity = "連続" in normalized_statement and (
-        "x²" in normalized_statement or "x^2" in normalized_statement
-    )
-    if not is_x_squared_continuity:
+    """Apply deterministic checks before the independent semantic review.
+
+    A request about the continuity of x² needs a target that is that statement. The only
+    exception is a request that itself names another property (derivative, uniform
+    continuity) together with a target about such a property: that pair is left to the
+    semantic review. The decision reads the Lean target, never only the request wording, so
+    "prove it without derivatives" does not switch the check off.
+    """
+    if not _asks_about_x_squared_continuity(statement):
         return True
-    return _matches_x_squared_continuity(target_declaration.proposition)
+    proposition = target_declaration.proposition
+    if matches_x_squared_continuity(proposition):
+        return True
+    return _names_another_property(statement) and targets_another_property_of_a_function(
+        proposition
+    )
 
 
 def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:
@@ -2695,7 +2780,12 @@ def _log_generation_failure(
     x_squared_gate: bool,
     lean_lines: int,
 ) -> None:
-    """Every terminal explanation failure, since the API reports them all as one error code."""
+    """Every terminal explanation failure, since the API reports them all as one error code.
+
+    `x_squared_gate` keeps its historical name for log compatibility. It no longer names a text
+    gate: it records that the verified statement is the continuity of x², so the explanation was
+    required to be an epsilon-delta proof, which the independent review enforces.
+    """
     _logger.error(
         "explanation_generation_failed resource=%s id=%s reason=%s elapsed_ms=%d "
         "language=%s x_squared_gate=%s lean_lines=%d",
@@ -2707,6 +2797,32 @@ def _log_generation_failure(
         x_squared_gate,
         lean_lines,
     )
+
+
+def _note_review_flag_contradiction(
+    resource: ResourceKind, resource_id: str, review: ProofOutputReview
+) -> None:
+    """Content-free record that the reviewer's `approved` flag disagreed with its checklist."""
+    if review.approved_flag_contradicted_checks:
+        _logger.warning(
+            "explanation_review_flag_contradicted_checklist resource=%s id=%s",
+            resource,
+            resource_id,
+        )
+
+
+def _note_single_sample_remarks(
+    resource: ResourceKind, resource_id: str, review: ProofOutputReview
+) -> None:
+    """Content-free count of catch-all remarks made by one review sample only."""
+    elements = single_sample_catch_all_ids(review)
+    if elements:
+        _logger.warning(
+            "explanation_review_single_sample_remark resource=%s resource_sha256=%s elements=%s",
+            resource,
+            hashlib.sha256(resource_id.encode("utf-8")).hexdigest()[:16],
+            ",".join(elements),
+        )
 
 
 def _review_failure_reason(failures: list[dict[str, Any]]) -> str:
@@ -3260,6 +3376,52 @@ def _synthetic_failure_attempt(
         "checkpoint_status": "published",
         "repair_route": None,
     }
+
+
+def _observed_job(proof_job: dict[str, Any]) -> dict[str, Any]:
+    """Scalar identifiers of what this delivery saw; no Lean source, statement or diagnostics."""
+    lean_code = proof_job.get("lean_code")
+    candidate_id = proof_job.get("verification_candidate_id")
+    candidate_state = proof_job.get("verification_candidate_state")
+    return {
+        "state": proof_job.get("state"),
+        "verification_candidate_id": candidate_id if isinstance(candidate_id, str) else None,
+        "verification_candidate_state": (
+            candidate_state if isinstance(candidate_state, str) else None
+        ),
+        "lean_sha256": (
+            hashlib.sha256(lean_code.encode("utf-8")).hexdigest()
+            if isinstance(lean_code, str)
+            else None
+        ),
+    }
+
+
+def _absent(payload: dict[str, Any], key: str) -> bool:
+    value = payload.get(key)
+    return not isinstance(value, str) or not value.strip()
+
+
+def _repair_seed_fields_absent(proof_job: dict[str, Any]) -> bool:
+    """True when the stored compile-failure status lacks the repair seed fields altogether.
+
+    Anything deeper (the generated proof, the route, diagnostics) is parsed by this worker's own
+    code, which a newer worker may read differently, so a seed that merely fails to parse is not
+    treated as missing.
+
+    Only a job that is itself `compiling` can be judged: in any other state (for example
+    `repairing`, where only a failed candidate of an earlier attempt remains) the missing seed
+    says nothing about this job, so it is left for redelivery.
+    """
+    if proof_job.get("state") != "compiling":
+        return False
+    context = proof_job.get("status_context")
+    if not isinstance(context, dict) or context.get("stage") != "compiling":
+        return True
+    return not isinstance(context.get("attempt_evidence"), dict) or any(
+        type(context.get(key)) is not int
+        for key in ("repairs_used", "max_repair_attempts", "verification_elapsed_ms")
+    )
 
 
 def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
