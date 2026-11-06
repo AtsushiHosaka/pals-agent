@@ -38,6 +38,7 @@ if str(ROOT) not in sys.path:
 
 from pals_agent.explanations import (  # noqa: E402
     _MIN_QUOTE_CODE_POINTS,
+    EPSILON_DELTA_CHECK_IDS,
     ExplanationSection,
     LeanLineReference,
     ProofExplanation,
@@ -87,8 +88,10 @@ class Case:
     expected: str
     language: str
     explanation: ProofExplanation
-    # The passage of the explanation a reviewer can quote to reject it (rejected groups only).
+    # A passage a reviewer can quote to reject it (always given for summary_first cases).
     defect_quote: str | None = None
+    # Checklist ids a correct reviewer fails for this (rejected) case; diagnostic only.
+    expected_failed_checks: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -140,9 +143,15 @@ def load_cases(path: Path) -> CaseFile:
                 elapsed_ms=0,
             )
             defect_quote = raw.get("defect_quote")
-            if expected == "reject":
-                # Rejection needs a verbatim quote, so every rejected case must be quotable.
-                needle = _normalize_quote_text(str(defect_quote or ""))
+            expected_checks = tuple(raw.get("expected_failed_checks", ()))
+            if not set(expected_checks) <= set(EPSILON_DELTA_CHECK_IDS):
+                raise CaseFileError(f"{case_id}: unknown id in expected_failed_checks")
+            if expected == "reject" and not expected_checks:
+                raise CaseFileError(f"{case_id}: a rejected case names the checks it fails")
+            if group == "summary_first" and not defect_quote:
+                raise CaseFileError(f"{case_id}: defect_quote is required (presentation)")
+            if defect_quote:
+                needle = _normalize_quote_text(str(defect_quote))
                 visible = _normalize_quote_text(_visible_proof_text(explanation))
                 if len(needle) < _MIN_QUOTE_CODE_POINTS or needle not in visible:
                     raise CaseFileError(f"{case_id}: defect_quote is not a passage of the proof")
@@ -154,6 +163,7 @@ def load_cases(path: Path) -> CaseFile:
                     language=language,
                     explanation=explanation,
                     defect_quote=str(defect_quote) if defect_quote else None,
+                    expected_failed_checks=expected_checks,
                 )
             )
     except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
@@ -345,8 +355,8 @@ def _emit_live(
             "category": None,
             "rationale": "",
             "reviewer_session_id": None,
-            "defects": [],
-            "ungrounded_rejection_overridden": False,
+            "checks": [],
+            "approved_flag_contradicted_checks": False,
         }
         recorder = getattr(reviewer, "client", None)
         raw_outputs: list[str] | None = (
@@ -367,8 +377,8 @@ def _emit_live(
                     category="approved",
                     rationale=review.rationale,
                     reviewer_session_id=review.session_id,
-                    defects=[asdict(d) for d in review.defects],
-                    ungrounded_rejection_overridden=review.ungrounded_rejection_overridden,
+                    checks=[asdict(c) for c in review.checks],
+                    approved_flag_contradicted_checks=review.approved_flag_contradicted_checks,
                 )
             except ProofOutputReviewError as exc:
                 decision = "reject" if exc.category == "rejected" else "error"
@@ -376,7 +386,7 @@ def _emit_live(
                     category=exc.category,
                     rationale=exc.rationale,
                     reviewer_session_id=exc.session_id,
-                    defects=[asdict(d) for d in exc.defects],
+                    checks=[asdict(c) for c in exc.checks],
                 )
             except Exception as exc:  # noqa: BLE001 - report as an error, never as a decision
                 decision = "error"
@@ -389,6 +399,8 @@ def _emit_live(
                 "group": case.group,
                 "expected": case.expected,
                 "actual": decision,
+                "expected_failed_checks": list(case.expected_failed_checks),
+                "failed_checks": [c["id"] for c in detail["checks"] if c["blocks"]],
                 **detail,
                 # The reviewer's structured JSON answers, one per attempt, exactly as returned.
                 "raw_reviewer_outputs": list(raw_outputs) if raw_outputs is not None else [],
@@ -421,8 +433,19 @@ def summarize(results: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         "false_accepts": sum(r["actual"] == "approve" for r in wrong),
         "false_rejects": sum(r["actual"] == "reject" for r in valid),
         "errors": sum(r["actual"] == "error" for r in results),
-        "ungrounded_rejection_overrides": sum(
-            bool(r.get("ungrounded_rejection_overridden")) for r in results
+        "approved_flag_contradictions": sum(
+            bool(r.get("approved_flag_contradicted_checks")) for r in results
+        ),
+        # Rejected as expected, but not for the element the case was built to fail.
+        "rejected_for_an_unexpected_check": sorted(
+            {
+                r["id"]
+                for r in results
+                if r["expected"] == "reject"
+                and r["actual"] == "reject"
+                and r.get("failed_checks")
+                and not set(r["failed_checks"]) & set(r.get("expected_failed_checks", ()))
+            }
         ),
         "agreement_by_case": {
             case_id: {**counts, "rate": round(counts["agree"] / counts["runs"], 3)}

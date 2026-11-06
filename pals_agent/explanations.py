@@ -107,14 +107,14 @@ class ProofOutputReviewError(RuntimeError):
         category: Literal["rejected", "transport", "schema"] = "schema",
         rationale: str = "",
         session_id: str | None = None,
-        defects: tuple[ReviewDefect, ...] = (),
+        checks: tuple[ReviewCheck, ...] = (),
     ) -> None:
         super().__init__(message)
         self.category = category
         self.rationale = rationale[:2000]
         self.session_id = session_id
-        # In memory only (regression tooling). Never log or persist: the quotes are proof text.
-        self.defects = defects
+        # In memory only (regression tooling). Never log or persist: quotes are proof text.
+        self.checks = checks
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,20 +126,22 @@ class ProofOutputReview:
     reviewer_model: str
     session_id: str
     rationale: str
-    defects: tuple[ReviewDefect, ...] = ()
-    # True when a rejection that quoted no real defect was reversed after one re-check.
-    ungrounded_rejection_overridden: bool = False
+    checks: tuple[ReviewCheck, ...] = ()
+    # The reviewer's own `approved` flag disagreed with its checklist (the checklist decides).
+    approved_flag_contradicted_checks: bool = False
 
 
 @dataclass(frozen=True, slots=True)
-class ReviewDefect:
-    """One reviewer concern. Only a grounded error can reject an explanation."""
+class ReviewCheck:
+    """One required element of the epsilon-delta proof, judged by the reviewer."""
 
-    severity: Literal["error", "nit"]
+    id: str
+    status: Literal["ok", "missing", "wrong"]
     quote: str
-    reason: str
-    # The quote occurs in the learner-visible proof (whitespace, width and TeX spacing ignored).
-    grounded: bool
+    note: str
+    # Whether this check rejects the explanation: "missing" always does; "wrong" does when
+    # its quote is really in the proof (an accusation that points at no text does not).
+    blocks: bool
 
 
 @dataclass(frozen=True, slots=True)
@@ -258,67 +260,23 @@ class LeanGroundedOutputReviewer:
         deadline: float | None = None,
         timeout_seconds: float | None = None,
     ) -> ProofOutputReview:
-        """Reject only on an error defect quoted from the proof."""
-        session_id = str(self.session_id_factory())
-        prompt = _output_review_prompt(
-            theorem_statement=theorem_statement,
-            lean_code=lean_code,
-            explanation=explanation,
-            language=language,
-        )
-        _validate_deadline_options(deadline, timeout_seconds)
-        visible = _normalize_quote_text(_visible_proof_text(explanation))
-        first = self._ask(
-            prompt, _explanation_review_decision, session_id, deadline, timeout_seconds
-        )
-        first_defects = _ground_defects(first.defects, visible)
-        self._raise_if_grounded_error(first_defects, first.rationale, session_id)
-        if first.approved:
-            return self._approval(session_id, first.rationale, first_defects, overridden=False)
-        # approved=false with no quotable error is an unsupported (or self-contradicting)
-        # rejection. Ask once more for a concrete quoted defect; without one, approve.
-        second = self._ask(
-            _with_ungrounded_recheck(prompt, first.rationale),
-            _explanation_review_decision,
-            session_id,
-            deadline,
-            timeout_seconds,
-        )
-        second_defects = _ground_defects(second.defects, visible)
-        self._raise_if_grounded_error(second_defects, second.rationale, session_id)
-        return self._approval(session_id, second.rationale, second_defects, overridden=True)
-
-    def _raise_if_grounded_error(
-        self, defects: tuple[ReviewDefect, ...], rationale: str, session_id: str
-    ) -> None:
-        errors = [d for d in defects if d.severity == "error" and d.grounded]
-        if not errors:
-            return
-        reasons = " | ".join(d.reason.strip() for d in errors if d.reason.strip())
-        raise ProofOutputReviewError(
-            "independent reviewer rejected the output",
-            category="rejected",
-            rationale=f"Defects: {reasons}\nReviewer: {rationale}" if reasons else rationale,
-            session_id=session_id,
-            defects=defects,
-        )
-
-    def _approval(
-        self,
-        session_id: str,
-        rationale: str,
-        defects: tuple[ReviewDefect, ...],
-        *,
-        overridden: bool,
-    ) -> ProofOutputReview:
-        return ProofOutputReview(
+        return self._review(
             kind="explanation",
-            reviewer_provider=self.provider,
-            reviewer_model=self.model,
-            session_id=session_id,
-            rationale=rationale,
-            defects=defects,
-            ungrounded_rejection_overridden=overridden,
+            session_id=str(self.session_id_factory()),
+            prompt=_output_review_prompt(
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                explanation=explanation,
+                language=language,
+            ),
+            deadline=deadline,
+            timeout_seconds=timeout_seconds,
+            # The x² epsilon-delta requirement is judged element by element (see the checklist).
+            checklist_visible_text=(
+                _normalize_quote_text(_visible_proof_text(explanation))
+                if _requires_epsilon_delta(theorem_statement, lean_code)
+                else None
+            ),
         )
 
     def review_clarification(
@@ -360,35 +318,9 @@ class LeanGroundedOutputReviewer:
         prompt: str,
         deadline: float | None,
         timeout_seconds: float | None,
+        checklist_visible_text: str | None = None,
     ) -> ProofOutputReview:
         _validate_deadline_options(deadline, timeout_seconds)
-        decision = self._ask(prompt, _legacy_review_decision, session_id, deadline, timeout_seconds)
-        if decision.approved:
-            return ProofOutputReview(
-                kind=kind,
-                reviewer_provider=self.provider,
-                reviewer_model=self.model,
-                session_id=session_id,
-                rationale=decision.rationale,
-            )
-        # A valid negative decision settles this candidate. Only malformed review
-        # responses are retryable; another vote must not publish rejected output.
-        raise ProofOutputReviewError(
-            "independent reviewer rejected the output",
-            category="rejected",
-            rationale=decision.rationale,
-            session_id=session_id,
-        )
-
-    def _ask(
-        self,
-        prompt: str,
-        parse: Callable[[dict[str, Any]], _ReviewDecision],
-        session_id: str,
-        deadline: float | None,
-        timeout_seconds: float | None,
-    ) -> _ReviewDecision:
-        """One review call; only a malformed answer is retried, transport never is."""
         validation_error = ""
         current_prompt = prompt
         for attempt in range(1, self.max_attempts + 1):
@@ -416,8 +348,18 @@ class LeanGroundedOutputReviewer:
                     session_id=session_id,
                 ) from exc
             _raise_if_deadline_reached(deadline, self.monotonic)
+            checks: tuple[ReviewCheck, ...] = ()
+            contradicted = False
             try:
-                return parse(_parse_json_object(raw_output))
+                payload = _parse_json_object(raw_output)
+                if checklist_visible_text is None:
+                    approved, rationale = _output_review_decision(payload)
+                else:
+                    checks, rationale, flag = _epsilon_delta_checks(
+                        payload, checklist_visible_text
+                    )
+                    approved = not any(check.blocks for check in checks)
+                    contradicted = flag is not None and flag != approved
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 _raise_if_deadline_reached(deadline, self.monotonic)
                 validation_error = str(exc)
@@ -426,6 +368,27 @@ class LeanGroundedOutputReviewer:
                         f"{prompt}\n\nThe previous response failed schema validation: "
                         f"{validation_error}\nReturn the exact JSON object only."
                     )
+                continue
+            if approved:
+                return ProofOutputReview(
+                    kind=kind,
+                    reviewer_provider=self.provider,
+                    reviewer_model=self.model,
+                    session_id=session_id,
+                    rationale=rationale,
+                    checks=checks,
+                    approved_flag_contradicted_checks=contradicted,
+                )
+            # A valid negative decision settles this candidate. Only malformed review
+            # responses are retryable; another vote must not publish rejected output.
+            raise ProofOutputReviewError(
+                "independent reviewer rejected the output",
+                category="rejected",
+                rationale=_checklist_rationale(checks, rationale),
+                session_id=session_id,
+                checks=checks,
+            )
+
         raise ProofOutputReviewError(
             f"independent output review did not approve the output: {validation_error}",
             category="schema",
@@ -1336,29 +1299,6 @@ Copy every `excerpt` exactly from the referenced `text` values, preserving leadi
 spaces and joining multi-line ranges with a single newline."""
 
 
-_CLARIFICATION_RESPONSE_FORMAT = """Return exactly one JSON object and no surrounding text:
-{"approved": true, "rationale": "a concise review reason"}
-or
-{"approved": false, "rationale": "a concise review reason"}"""
-_EXPLANATION_RESPONSE_FORMAT = """DEFECT REPORTING. List every concern in `defects`. You may set
-`approved` to false ONLY IF at least one defect has severity "error" and its `quote` is copied
-verbatim from the learner-visible proof between BEGIN and END LEARNER-VISIBLE PROOF (one
-contiguous excerpt of at least a few symbols; whitespace and TeX spacing may differ, the
-characters may not). A concern you cannot quote, and every matter of style, level of detail,
-notation, or how explicitly something is said, is severity "nit" or is left out; it never
-justifies rejection. An error defect states a specific false statement, invalid inference, or
-violated requirement. If a required element is missing altogether, quote the sentence just
-before the place where it is missing and say in `reason` what is missing. `approved` must
-agree with `defects`: with no error defect, `approved` is true.
-
-Return exactly one JSON object and no surrounding text:
-{"approved": true, "rationale": "a concise review reason", "defects": []}
-or
-{"approved": false, "rationale": "a concise review reason", "defects": [
-  {"severity": "error", "quote": "verbatim excerpt of the visible proof",
-   "reason": "what is wrong with it"}]}"""
-
-
 def _output_review_prompt(
     *,
     theorem_statement: str,
@@ -1475,16 +1415,11 @@ def _output_review_prompt(
             "bullets, numbered steps, and commentary that substitutes for direct proof prose.\n"
         )
     )
-    semantic_requirement = (
-        _EPSILON_DELTA_REVIEW_REQUIREMENT
-        if clarification is None and _requires_epsilon_delta(theorem_statement, lean_code)
-        else ""
+    checklist_review = clarification is None and _requires_epsilon_delta(
+        theorem_statement, lean_code
     )
-    response_format = (
-        _CLARIFICATION_RESPONSE_FORMAT
-        if clarification is not None
-        else _EXPLANATION_RESPONSE_FORMAT
-    )
+    semantic_requirement = _EPSILON_DELTA_REVIEW_REQUIREMENT if checklist_review else ""
+    response_format = _CHECKLIST_RESPONSE_FORMAT if checklist_review else _LEGACY_RESPONSE_FORMAT
     return f"""You are an independent review session for learner-facing mathematical output.
 {ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
@@ -1531,50 +1466,11 @@ Candidate {output_kind} JSON (structured evidence; field names and internal titl
 {json.dumps(reviewed_output, ensure_ascii=False, sort_keys=True)}"""
 
 
-@dataclass(frozen=True, slots=True)
-class _ReviewDecision:
-    approved: bool
-    rationale: str
-    defects: tuple[tuple[str, str, str], ...] = ()  # (severity, quote, reason) as returned
-
-
-_MAX_REVIEW_DEFECTS = 20
 _MIN_QUOTE_CODE_POINTS = 4
 _TEX_SPACING_AND_SIZING = re.compile(
     r"\\(?:left|right|bigl|bigr|Bigl|Bigr|big|Big|quad|qquad|displaystyle)(?![A-Za-z])"
     r"|\\[,;:! ]"
 )
-
-
-def _legacy_review_decision(payload: dict[str, Any]) -> _ReviewDecision:
-    approved, rationale = _output_review_decision(payload)
-    return _ReviewDecision(approved=approved, rationale=rationale)
-
-
-def _explanation_review_decision(payload: dict[str, Any]) -> _ReviewDecision:
-    """Closed schema: approved, rationale and an optional list of quoted defects."""
-    if not {"approved", "rationale"} <= set(payload) <= {"approved", "rationale", "defects"}:
-        raise ValueError("explanation review must contain approved, rationale and defects only")
-    approved, rationale = _output_review_decision(
-        {"approved": payload["approved"], "rationale": payload["rationale"]}
-    )
-    raw_defects = payload.get("defects", [])
-    if not isinstance(raw_defects, list) or len(raw_defects) > _MAX_REVIEW_DEFECTS:
-        raise ValueError("review defects must be a short list")
-    defects: list[tuple[str, str, str]] = []
-    for raw in raw_defects:
-        if (
-            not isinstance(raw, dict)
-            or set(raw) != {"severity", "quote", "reason"}
-            or raw["severity"] not in {"error", "nit"}
-            or not isinstance(raw["quote"], str)
-            or not isinstance(raw["reason"], str)
-            or len(raw["quote"]) > 4_000
-            or len(raw["reason"]) > 2_000
-        ):
-            raise ValueError("each review defect must have severity, quote and reason")
-        defects.append((raw["severity"], raw["quote"], raw["reason"]))
-    return _ReviewDecision(approved=approved, rationale=rationale, defects=tuple(defects))
 
 
 def _visible_proof_text(explanation: ProofExplanation) -> str:
@@ -1596,32 +1492,57 @@ def _normalize_quote_text(text: str) -> str:
     return re.sub(r"[\s${}]", "", normalized)
 
 
-def _ground_defects(
-    decision_defects: tuple[tuple[str, str, str], ...], visible_normalized: str
-) -> tuple[ReviewDefect, ...]:
-    grounded: list[ReviewDefect] = []
-    for severity, quote, reason in decision_defects:
+def _epsilon_delta_checks(
+    payload: dict[str, Any], visible_normalized: str
+) -> tuple[tuple[ReviewCheck, ...], str, bool | None]:
+    """Parse the closed checklist; a missing, repeated or unknown id is a schema failure."""
+    allowed = {"rationale", "checks", "approved"}
+    if not {"rationale", "checks"} <= set(payload) <= allowed:
+        raise ValueError("checklist review must contain rationale and checks only")
+    rationale = payload["rationale"]
+    if not isinstance(rationale, str) or not rationale.strip() or len(rationale) > 8_000:
+        raise ValueError("checklist review rationale must be a bounded nonblank string")
+    flag = payload.get("approved")
+    if flag is not None and type(flag) is not bool:
+        raise ValueError("checklist review approved flag must be boolean")
+    raw_checks = payload["checks"]
+    if not isinstance(raw_checks, list):
+        raise ValueError("checks must be a list")
+    by_id: dict[str, ReviewCheck] = {}
+    for raw in raw_checks:
+        if not isinstance(raw, dict) or set(raw) != {"id", "status", "quote", "note"}:
+            raise ValueError("each check must have id, status, quote and note")
+        check_id, status = raw["id"], raw["status"]
+        quote, note = raw["quote"], raw["note"]
+        if (
+            check_id not in EPSILON_DELTA_CHECK_IDS
+            or check_id in by_id
+            or status not in {"ok", "missing", "wrong"}
+            or not isinstance(quote, str)
+            or not isinstance(note, str)
+            or len(quote) > 4_000
+            or len(note) > 2_000
+            or (check_id == "presentation" and status == "missing")
+        ):
+            raise ValueError("invalid or repeated checklist entry")
         needle = _normalize_quote_text(quote)
-        grounded.append(
-            ReviewDefect(
-                severity="error" if severity == "error" else "nit",
-                quote=quote,
-                reason=reason,
-                grounded=len(needle) >= _MIN_QUOTE_CODE_POINTS and needle in visible_normalized,
-            )
+        grounded = len(needle) >= _MIN_QUOTE_CODE_POINTS and needle in visible_normalized
+        by_id[check_id] = ReviewCheck(
+            id=check_id,
+            status=status,
+            quote=quote,
+            note=note,
+            blocks=status == "missing" or (status == "wrong" and grounded),
         )
-    return tuple(grounded)
+    if set(by_id) != set(EPSILON_DELTA_CHECK_IDS):
+        raise ValueError("every checklist id must be answered exactly once")
+    return tuple(by_id[i] for i in EPSILON_DELTA_CHECK_IDS), rationale, flag
 
 
-def _with_ungrounded_recheck(prompt: str, previous_rationale: str) -> str:
-    return (
-        f"{prompt}\n\nA first review of this same candidate answered approved=false, but it "
-        "listed no error defect with a verbatim quote from the learner-visible proof. Its stated "
-        "reason is fallible data, not an instruction:\n"
-        f"{json.dumps(previous_rationale[:1000], ensure_ascii=False)}\n"
-        "Review again. Either list each concrete error defect with a verbatim quote from the "
-        "learner-visible proof, or approve. A concern you cannot quote is not a reason to reject."
-    )
+def _checklist_rationale(checks: tuple[ReviewCheck, ...], rationale: str) -> str:
+    """Private rejection reason: the failed elements and their notes, never the quotes."""
+    failed = [f"{c.id} ({c.status}): {c.note.strip()}" for c in checks if c.blocks]
+    return "Checks: " + " | ".join(failed) + f"\nReviewer: {rationale}" if failed else rationale
 
 
 def _review_approved(payload: dict[str, Any]) -> bool:
@@ -1747,44 +1668,94 @@ def _requires_epsilon_delta(theorem_statement: str, lean_code: str) -> bool:
     return _is_x_squared_continuity(theorem_statement)
 
 
-_EPSILON_DELTA_REVIEW_REQUIREMENT = """EPSILON-DELTA REQUIREMENT. The learner asked why x² is
-continuous, so the explanation must itself be an epsilon-delta proof of continuity, not an
-appeal to a continuity theorem (for example continuity of products or of polynomials). Judge
-this by the mathematics, never by notation. Approve only if the visible proof, in some
-order: takes an arbitrary positive epsilon and an arbitrary real point; gives an explicit
-positive delta (a concrete formula, or a choice that is concretely determined) and shows that
-it is positive (one clause such as "the minimum of two positive numbers" is enough); assumes
-x is within delta of the point and bounds |x²-a²| through the factorization (x-a)(x+a) with a
-justified bound on |x+a|; shows by a valid chain that the bound is at most epsilon (a chain
-may end in an equality such as `= ε`, and may use any equivalent algebra); and concludes
-continuity at that point, hence everywhere because the point is arbitrary.
-Reject when any of these holds: epsilon is never introduced as an arbitrary positive number;
-delta is not shown to be positive even in one clause; delta does not actually force the
-epsilon bound, for example a delta without the minimum with 1 (large epsilon breaks it), a
-delta that ignores the point, a coefficient that is too small (such as ε/(|a|+1) in place of
-ε/(2|a|+1)), a delta enlarged by adding 1 or by multiplying by 2 or another constant, or a
-bound that ends in ε+1 or 2ε instead of ε; a necessary bound is missing or unjustified; the
-argument is about another function or another point than the one fixed; or the argument is
-not an epsilon-delta argument.
-Do not reject for notation or phrasing: \\frac or \\dfrac, \\lvert or \\vert, \\min or
-\\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands, a factorization written as
-|(x-a)(x+a)|, "delta is positive" stated in words, ε>0 given before or after the point or in
-display math, any variable names for the point and the variable, or any equivalent form of the
-delta. Do not reject the opening for its notation, wording, or the order in which epsilon and
-the point are introduced alone; a proof-plan or conclusion preview in the opening, and visible
-section headings, are still rejected as stated above.
-Brief standard facts need no further proof and satisfy the general rule on essential
-inferences: the minimum of positive numbers is positive; each argument of a minimum bounds it
-from above (so δ≤1 and δ≤ the second argument); the triangle inequality gives
-|x|≤|a|+|x-a|. Taking an arbitrary x with |x-a|<δ is fine whether x is introduced explicitly
-or implicitly. Mixing | | with \\lvert \\rvert, writing the minimum with parentheses or braces,
-and any other correct choice of delta (for example ε/(2(|a|+1)) in place of ε/(2|a|+1)) are
-fine.
-Decision rule: approve unless you can name one specific defect from the reject list above, or
-one specific inference that is false. Never reject because the notation, wording, or level of
-detail differs from what you would have written. If you reject, report the defect as an
-error with a verbatim quote of the defective step.
+# Required elements of an epsilon-delta proof that x² is continuous. This list is the single
+# source for the review prompt, the response format and the decision.
+EPSILON_DELTA_CHECK_IDS = (
+    "epsilon_arbitrary",
+    "point_fixed",
+    "delta_positive_justified",
+    "delta_bounded_by_one",
+    "delta_depends_on_point_and_epsilon",
+    "factorization",
+    "sum_bound",
+    "final_inequality",
+    "conclusion",
+    "presentation",
+)
+_EPSILON_DELTA_CHECK_DEFINITIONS = {
+    "epsilon_arbitrary": "an arbitrary positive epsilon is introduced.",
+    "point_fixed": "an arbitrary real point a is fixed (not one particular number), and x with "
+    "|x-a|<delta is taken.",
+    "delta_positive_justified": "delta>0 is justified; one clause such as \"the minimum of two "
+    "positive numbers\" is enough. Stating delta>0 with no reason at all is missing.",
+    "delta_bounded_by_one": "|x-a|<1 follows from |x-a|<delta, because delta is defined with a "
+    "minimum with 1 (or an equivalent device). A delta with no such bound, or a delta that is "
+    "enlarged (delta plus 1, twice delta) while still claimed to be at most 1, fails.",
+    "delta_depends_on_point_and_epsilon": "delta is an explicit formula in epsilon and a; a "
+    "delta that ignores a (for example min(1, epsilon)) or a fixed number fails.",
+    "factorization": "|x²-a²| is factored as |x-a||x+a| (a product; not a sum, not another "
+    "function such as x³).",
+    "sum_bound": "|x+a|<2|a|+1, or an equivalent bound, is derived; the triangle inequality "
+    "with |x-a|<1 is enough, a bare assertion is missing.",
+    "final_inequality": "a valid chain, for the delta actually chosen, reaches |x²-a²| at most "
+    "(or below) exactly epsilon (a chain may end in an equality such as `= ε`). A chain that "
+    "ends in epsilon+1, 2 epsilon or delta, or that needs delta to be smaller than chosen (for "
+    "example epsilon/(|a|+1) in place of epsilon/(2|a|+1)), fails.",
+    "conclusion": "continuity at a is concluded, hence everywhere because a is arbitrary.",
+    "presentation": "status is ok or wrong only. Wrong when the opening previews the proof plan "
+    "or the conclusion, the text shows section headings, bullets or numbered steps, a "
+    "derivation is repeated, a mathematical expression is outside $...$, or Lean tactics or "
+    "identifiers are mentioned.",
+}
+_EPSILON_DELTA_REVIEW_REQUIREMENT = (
+    """EPSILON-DELTA REQUIREMENT. The learner asked why x² is continuous, so the explanation
+must itself be an epsilon-delta proof of continuity, not an appeal to a continuity theorem.
+Judge the mathematics, never the notation. Your decision is computed from the checklist
+below, one entry per id; your `approved` field is ignored.
+Checklist (give every id exactly once):
 """
+    + "\n".join(
+        f"- {check_id}: {_EPSILON_DELTA_CHECK_DEFINITIONS[check_id]}"
+        for check_id in EPSILON_DELTA_CHECK_IDS
+    )
+    + """
+Status. "ok": the text lets a reader verify the element. Brief standard facts need no further
+proof and make an element ok: the minimum of positive numbers is positive; each argument of a
+minimum bounds it from above (so delta<=1 and delta<= the second argument); the triangle
+inequality; the difference of squares. "missing": the element is absent, or asserted where a
+reason is required. "wrong": the text states something false for that element; copy the
+false statement verbatim into `quote` (a "wrong" whose quote is not in the proof does not
+count, so use "missing" for something that is absent). For "missing", `quote` may be the
+sentence just before the place where the element belongs, or empty.
+Never mark an element missing or wrong because of notation or phrasing: \\frac or \\dfrac,
+\\lvert or \\vert, \\min or \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands,
+|(x-a)(x+a)|, "delta is positive" in words, epsilon>0 before or after the point or in display
+math, any variable names for the point and the variable, braces or parentheses for the
+minimum, mixing | | with \\lvert \\rvert, any other correct choice of delta (for example
+epsilon/(2(|a|+1))), x introduced explicitly or implicitly. Style, level of detail, how
+explicit a step is, and the order of presentation are never grounds either. The opening's
+notation, wording and word order are not presentation defects.
+"""
+)
+_LEGACY_RESPONSE_FORMAT = """Return exactly one JSON object and no surrounding text:
+{"approved": true, "rationale": "a concise review reason"}
+or
+{"approved": false, "rationale": "a concise review reason"}"""
+_CHECKLIST_RESPONSE_FORMAT = (
+    """Return exactly one JSON object and no surrounding text, with every checklist id once:
+{"rationale": "a concise review reason", "checks": [
+"""
+    + ",\n".join(
+        f'  {{"id": "{check_id}", "status": "ok", "quote": "", "note": ""}}'
+        for check_id in EPSILON_DELTA_CHECK_IDS
+    )
+    + """
+]}
+Every status above is only a placeholder: judge each element on its own. `status` is "ok",
+"missing" or "wrong"; `note` says in a few words what is missing or wrong."""
+)
+
+
 
 
 def _line_reference_table(lean_code: str) -> str:

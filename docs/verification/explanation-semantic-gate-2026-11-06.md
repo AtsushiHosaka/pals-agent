@@ -76,7 +76,7 @@ verification (`pals.theorem_alignment_failed`). A Lean statement written another
 
 ## Real-model regression set
 
-`testdata/explanation-qa-v1/cases.json`: 23 labelled explanations of x² continuity, every one
+`testdata/explanation-qa-v1/cases.json` (v1.3 has 35 cases; the counts below are the v1.0 set): 23 labelled explanations of x² continuity, every one
 passing the structural layer: 10 valid notation variants (expected approve), 10 wrong (ε+1,
 no minimum with 1, δ ignoring the point, coefficient too small, δ doubled, δ plus 1, product
 continuity instead of ε–δ, another function, ε never introduced, δ independent of the point)
@@ -95,8 +95,8 @@ python scripts/evaluate_explanation_qa.py --execute --budget-usd N \
 ```
 
 Prices are supplied by the operator (the repository has no price table). The run is refused when
-the worst case of all cases and repeats exceeds the budget (default output bound 16384 tokens per
-call; each review may ask twice, each ask may retry a malformed answer), and stops before a call that could exceed what is left. The report lists false
+the worst case of all cases and repeats exceeds the budget (default output bound 16384 tokens
+per call; a malformed answer is retried once), and stops before a call that could exceed what is left. The report lists false
 accepts (wrong or summary-first approved), false rejects (valid rejected), errors, and the
 mismatched case ids. Exit status 0 means every case got its expected decision.
 
@@ -128,60 +128,75 @@ hypotheses to be confirmed with the new report fields (`rationale`, `category`,
 id, and `raw_reviewer_outputs`, the structured JSON answers exactly as returned (one per
 attempt), captured by a transparent wrapper around the production client.
 
-## Quote-grounded rejection (explanation review only)
+## Checklist review (x² epsilon-delta requirement)
 
-The second and third real runs showed the remaining false rejections were not a rubric gap: the
-reviewer wrote "this is a valid epsilon-delta proof" with `approved=false`, or objected that a
-step was "not made explicit". Wording in the rubric does not remove this kind of variance, so
-the decision is now made by code from structured evidence.
+This replaces the prose reject list and decision rule described in the sections above for the
+x² review; those sections remain as history of how the checklist came about.
 
-Reviewer output for an explanation (clarification and other reviews are unchanged):
-`{"approved", "rationale", "defects": [{"severity": "error"|"nit", "quote", "reason"}]}`.
-`approved` and `rationale` stay for compatibility; a missing `defects` list is accepted. The
-prompt says: reject only with an `error` defect whose `quote` is copied verbatim from the
-learner-visible proof; an unquotable concern, style, level of detail, notation and how explicit
-something is are `nit` or omitted; a missing element is reported by quoting the sentence just
-before the gap and describing the gap in `reason`.
+Real-model runs with the rubric-only design (v1.0 to v1.2 cases, gpt-6-luna) showed two
+problems that more wording did not fix: a valid proof was sometimes rejected with
+`approved=false` while the rationale called it valid, or for a step that was merely not spelled
+out; and a quote-grounded rejection protocol (every rejection must quote a defect from the
+proof) removed those false rejections (30/30 valid approved) but made the reviewer miss an
+omission: for a delta with no `min{1,·}` it answered `approved=true, defects=[]` three times out
+of three (the earlier, quote-free version rejected all 30 wrong runs). A free-form "list your
+defects" question lets the reviewer skip an element it does not think of; asking about every
+element does not.
 
-Decision (`LeanGroundedOutputReviewer.review_explanation`, deterministic code):
+So the x² review (and only it) asks for a fixed checklist and the code decides:
 
-| Reviewer answer | Result |
+| id | required element |
 |---|---|
-| any `error` defect whose quote occurs in the proof | rejected (even if `approved=true`) |
-| `approved=true`, no such defect | approved (nits and invented quotes are ignored) |
-| `approved=false`, no such defect | one re-check of the same candidate that asks for quoted defects or approval |
-| re-check returns a quoted `error` | rejected |
-| re-check returns none | approved; `ungrounded_rejection_overridden=True` |
-| transport failure, malformed output, or unreadable schema, in the first call or the re-check | failure (never approval) |
+| `epsilon_arbitrary` | an arbitrary positive ε is introduced |
+| `point_fixed` | an arbitrary real point a is fixed; x with \|x-a\|<δ is taken |
+| `delta_positive_justified` | δ>0 is justified (one clause suffices) |
+| `delta_bounded_by_one` | \|x-a\|<1 follows from \|x-a\|<δ (minimum with 1 or equivalent) |
+| `delta_depends_on_point_and_epsilon` | δ is an explicit formula in ε and a |
+| `factorization` | \|x²-a²\| = \|x-a\|\|x+a\| |
+| `sum_bound` | \|x+a\|<2\|a\|+1 (or equivalent) is derived |
+| `final_inequality` | a valid chain, for the chosen δ, reaches ε exactly (not ε+1, 2ε, δ) |
+| `conclusion` | continuity at a, hence everywhere |
+| `presentation` | no plan or conclusion preview in the opening, headings, bullets, repeats, math outside `$`, Lean terms |
 
-A quote occurs in the proof when, after NFKC folding (full/half width), removal of whitespace,
-`$` and braces and of TeX spacing/sizing commands, and `\dfrac`→`\frac`, it is at least four
-characters long and is a substring of the overview, section summaries and conclusion joined by a
-separator no quote can span. Quotes are never logged or stored: the rejection rationale keeps the
-reasons of the grounded defects, not the quotes. The override leaves a content-free log line
-(`explanation_review_ungrounded_rejection_overridden resource=… id=…`) and the in-memory flag on
-`ProofOutputReview`; the signed review evidence sent to the API is unchanged, because its schema
-is closed.
+This list is the single source (`EPSILON_DELTA_CHECK_IDS`) for the prompt, the response format
+and the decision; every defect the earlier rubric listed belongs to exactly one element (a
+test pins that). Each answer is `{id, status: ok|missing|wrong, quote, note}`.
 
-Cost: one extra call only when a rejection is unsupported.
+Decision (deterministic, `LeanGroundedOutputReviewer._review`):
 
-Regression cases now carry `defect_quote`, the passage a reviewer can quote to reject them; the
-loader refuses a rejected case that has none. `--repeats N` runs every case N times; the report
-adds per-run `defects`, `ungrounded_rejection_overridden`, per-case agreement rates, and counts
-false accepts, false rejects and overrides.
+- reject iff some element is `missing`, or `wrong` with a `quote` that really occurs in the
+  proof (whitespace, width, `$`, braces and TeX spacing ignored; at least four characters);
+- otherwise approve. The reviewer's own `approved` flag is ignored; a disagreement with the
+  checklist is kept in memory and logged without text
+  (`explanation_review_flag_contradicted_checklist`).
+- a missing, repeated or unknown id, an unknown status, or `presentation: missing` is a schema
+  failure (retried once, then fail-closed). Transport failure never approves.
 
-### Safety argument and residual risk
+Why a `wrong` that quotes nothing in the proof does not count: a false claim must point at
+text. An accusation that cannot be located is more likely a hallucination or an over-reading
+(the failure mode behind the false rejections), and a real error is quotable, because a wrong
+statement is a statement; an absence is reported as `missing`, which needs no quote. The
+cost is a real error whose quote the reviewer mangles beyond the normalization; the prompt
+tells the reviewer to copy it verbatim and to use `missing` for absences.
 
-- Grounding removes rejections with no evidence and self-contradictions; an invented quote
-  cannot reject. It does not remove a rejection that quotes a real passage with an unsound reason
-  (for example an over-literal reading of "let x with |x-a|<δ"). That risk is reduced only by the
-  prompt's definition of an error defect and is measured by `--repeats`.
-- Turning an unsupported rejection into an approval can approve a real defect the reviewer fails
-  to quote. The main case is an omission ("a necessary bound is missing") that has no passage of
-  its own. Mitigations: the prompt tells the reviewer to quote the sentence just before the gap;
-  the re-check asks again with the first reason attached; wrong-case coverage (each rejected
-  regression case has a quotable passage) is measured with `--repeats`. Wrong δ forms and
-  presentation defects are quotable by construction.
-- Fail-closed behaviour is unchanged: no reviewer, transport failure, or schema failure never
-  approves. The override applies only when the reviewer answered validly but gave no grounded
-  reason.
+Why rejection by `missing` is safe against over-reading: the status rule says an element is `ok`
+when the text lets a reader verify it, that a brief standard fact (minimum of positives is
+positive, each argument of a minimum bounds it, triangle inequality, difference of squares)
+is enough, and that notation, wording, style, level of detail and order are never grounds. The
+reviewer's job per element is a narrow yes/no, not a global judgement.
+
+Clarification, answer and Recipe reviews, and explanation reviews of other theorems, keep the
+original `{approved, rationale}` format and behaviour.
+
+Regression cases (v1.3): 15 valid (including 5 where each element holds by a one-phrase
+standard fact), 17 wrong (at least one case per element, each with
+`expected_failed_checks`), 3 summary-first. Truth of each case was fixed mathematically before
+any model run. The report lists every check with its status, the failing ids, whether the
+rejection hit the expected element, and flag contradictions. `--repeats 3` is the intended
+measurement; the target is no false approvals and no false rejections in any run.
+
+Residual risks: the reviewer can still answer a single element wrongly (a false `missing` on a
+valid proof rejects it; an `ok` on an absent element approves it); repeats measure how often.
+Elements the checklist does not name are not checked mathematically, except through
+`presentation` and the general rubric. δ sufficiency is judged by `final_inequality` and
+`delta_bounded_by_one` rather than by a deterministic rule.

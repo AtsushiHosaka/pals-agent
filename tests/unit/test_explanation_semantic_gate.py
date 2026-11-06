@@ -19,6 +19,7 @@ from typing import Any
 import pytest
 
 from pals_agent.explanations import (
+    EPSILON_DELTA_CHECK_IDS,
     ExplanationGenerationError,
     LeanGroundedOutputReviewer,
     LeanProofExplainer,
@@ -163,8 +164,24 @@ class StubClient:
         return self.answer(prompt)
 
 
-def _approve(_: str) -> str:
-    return '{"approved": true, "rationale": "valid epsilon-delta proof"}'
+CHECKLIST_MARKER = "Checklist (give every id exactly once)"
+
+
+def _checks_answer(fails: dict[str, tuple[str, str, str]] | None = None, **extra: Any) -> str:
+    """A checklist answer: every id ok, except `fails[id] = (status, quote, note)`."""
+    fails = fails or {}
+    checks = []
+    for check_id in EPSILON_DELTA_CHECK_IDS:
+        status, quote, note = fails.get(check_id, ("ok", "", ""))
+        checks.append({"id": check_id, "status": status, "quote": quote, "note": note})
+    return json.dumps({"rationale": "checked", "checks": checks, **extra}, ensure_ascii=False)
+
+
+def _approve(prompt: str) -> str:
+    """Answer in whichever format the prompt asks for: checklist for x², legacy otherwise."""
+    if CHECKLIST_MARKER in prompt:
+        return _checks_answer()
+    return '{"approved": true, "rationale": "valid proof"}'
 
 
 def _explainer(*payloads: dict[str, Any]) -> tuple[LeanProofExplainer, StubClient]:
@@ -234,19 +251,26 @@ def test_retired_x_squared_failure_labels_are_gone() -> None:
 # (ii) QA semantics reject bad explanations; the rejection drives the existing correction loop.
 
 
+# Which checklist element fails for each wrong fixture (the stub quotes a "wrong" passage).
+WRONG_CHECK = {
+    "epsilon_plus_one_bound": ("final_inequality", "wrong"),
+    "delta_ignores_point": ("delta_depends_on_point_and_epsilon", "wrong"),
+    "delta_without_min": ("delta_bounded_by_one", "missing"),
+    "other_function": ("factorization", "wrong"),
+    "not_epsilon_delta": ("epsilon_arbitrary", "missing"),
+    "missing_bound": ("sum_bound", "missing"),
+}
+
+
 def _semantic_stub(prompt: str) -> str:
-    """Stands in for a mathematician: rejects exactly the known-wrong fixtures, with a quote."""
-    wrong = [_wrong_marker(payload) for payload in WRONG_VARIANTS.values()]
-    found = [marker for marker in wrong if marker in prompt]
-    if not found:
-        return json.dumps({"approved": True, "rationale": "ok", "defects": []})
-    return json.dumps(
-        {
-            "approved": False,
-            "rationale": "wrong delta or bound",
-            "defects": [{"severity": "error", "quote": found[0], "reason": "wrong delta or bound"}],
-        }
-    )
+    """Stands in for a mathematician: fails exactly the known-wrong fixtures."""
+    for name, payload in WRONG_VARIANTS.items():
+        marker = _wrong_marker(payload)
+        if marker in prompt:
+            check_id, status = WRONG_CHECK[name]
+            quote = marker if status == "wrong" else ""
+            return _checks_answer({check_id: (status, quote, "wrong delta or bound")})
+    return _approve(prompt)
 
 
 @pytest.mark.parametrize("name", sorted(WRONG_VARIANTS))
@@ -322,7 +346,7 @@ def test_generation_prompt_still_requires_epsilon_delta() -> None:
     assert "explicit positive delta" in generator.prompts[0]
 
 
-def test_review_requirement_is_semantic_and_notation_tolerant() -> None:
+def test_review_prompt_asks_for_the_checklist_and_ignores_the_approved_flag() -> None:
     explainer, _ = _explainer(_payload())
     candidate = _explain(explainer)
     reviewer, qa = _reviewer(_approve)
@@ -330,10 +354,8 @@ def test_review_requirement_is_semantic_and_notation_tolerant() -> None:
         theorem_statement=STATEMENT, lean_code=SOURCE, explanation=candidate, language="ja"
     )
     prompt = qa.prompts[0]
-    assert REQUIREMENT_MARKER in prompt
-    assert "arbitrary" in prompt and "explicit" in prompt
-    assert "Do not reject for notation" in prompt
-    assert "Reject" in prompt.split(REQUIREMENT_MARKER, 1)[1]
+    assert REQUIREMENT_MARKER in prompt and CHECKLIST_MARKER in prompt
+    assert "`approved` field is ignored" in " ".join(prompt.split())
 
 
 # (iii) Other theorems are unchanged.
@@ -464,45 +486,36 @@ def test_worker_alignment_gate_no_longer_demands_x_squared_for_other_properties(
     )
 
 
-# Contract of the real x² review prompt: every rejection condition and every tolerated
-# notation is present, and no sentence cancels another.
+# Contract of the real x² review prompt: the checklist is the single, one-to-one list of
+# required elements; notation is tolerated in one place; nothing cancels anything else.
 
-REJECTION_CRITERIA = [
-    "never introduced as an arbitrary positive",  # epsilon setup missing
-    "not shown to be positive",
-    "without the minimum with 1",
-    "ignores the point",
-    "coefficient that is too small",
-    "adding 1",
-    "multiplying by 2",
-    "ε+1",
-    "another function",
-    "another point",
-    "not an epsilon-delta argument",
-    "necessary bound is missing",
-    "proof-plan or conclusion preview in the opening",
-    "visible section headings",
-]
-GENERAL_REJECTIONS = ["Reject summary-first or conclusion-preview exposition"]
-# Boundary between "tolerate notation" and "reject defects", as the reviewer reads it.
-BOUNDARY_RULES = [
-    "Decision rule: approve unless you can name one specific defect",
-    "error with a verbatim quote of the defective step",
-    "Never reject because the notation, wording, or level of detail differs",
-    "the triangle inequality gives",
-    "is enough",
-]
 TOLERATED_NOTATION = [
     "\\dfrac",
     "\\vert",
     "\\operatorname{min}",
     "\\leqslant",
     "|(x-a)(x+a)|",
-    "stated in words",
+    "in words",
     "display math",
     "any variable names",
-    "= ε",
 ]
+STANDARD_FACTS = [
+    "the minimum of positive numbers is positive",
+    "each argument of a minimum bounds it from above",
+    "the triangle inequality",
+]
+# Typical defects, and the single element each one must fail.
+DEFECT_TO_ELEMENT = {
+    "A delta with no such bound": "delta_bounded_by_one",
+    "delta that ignores a": "delta_depends_on_point_and_epsilon",
+    "ends in epsilon+1, 2 epsilon or delta": "final_inequality",
+    "epsilon/(|a|+1) in place of epsilon/(2|a|+1)": "final_inequality",
+    "delta plus 1, twice delta": "delta_bounded_by_one",
+    "not a sum, not another function": "factorization",
+    "Stating delta>0 with no reason at all is missing": "delta_positive_justified",
+    "a bare assertion is missing": "sum_bound",
+    "previews the proof plan or the conclusion": "presentation",
+}
 
 
 def _x_squared_review_prompt() -> str:
@@ -515,37 +528,48 @@ def _x_squared_review_prompt() -> str:
     return " ".join(qa.prompts[0].split())
 
 
-def test_review_prompt_states_every_rejection_condition_and_tolerated_notation() -> None:
-    prompt = _x_squared_review_prompt()
-    for fragment in [
-        *REJECTION_CRITERIA,
-        *GENERAL_REJECTIONS,
-        *TOLERATED_NOTATION,
-        *BOUNDARY_RULES,
-    ]:
-        assert fragment in prompt, fragment
+def _definitions(prompt: str) -> dict[str, str]:
+    block = prompt[prompt.index(CHECKLIST_MARKER) : prompt.index("Status. ")]
+    return {
+        match.group(1): match.group(2)
+        for match in re.finditer(r"- ([a-z_]+): (.*?)(?= - [a-z_]+: |$)", block)
+    }
 
 
-def test_review_prompt_acceptances_and_rejections_do_not_contradict_each_other() -> None:
+def test_checklist_ids_are_defined_exactly_once_and_in_the_response_format() -> None:
     prompt = _x_squared_review_prompt()
-    requirement = prompt[prompt.index(REQUIREMENT_MARKER) :]
-    requirement = requirement[: requirement.index("Do not reveal hidden")]
-    reject_part = requirement[
-        requirement.index("Reject when any") : requirement.index("Do not reject for notation")
-    ]
-    accept_part = requirement[requirement.index("Do not reject for notation") :]
-    # What is tolerated is never also listed as a defect, and vice versa.
-    for notation in TOLERATED_NOTATION:
-        assert notation not in reject_part, notation
-    for criterion in REJECTION_CRITERIA[:11]:
-        assert criterion not in accept_part, criterion
-    # A blanket "opening wording is no reason to reject" would cancel the summary-first rule.
-    assert "opening's wording is also not a reason to reject" not in prompt
-    opening_sentences = [sentence for sentence in accept_part.split(". ") if "opening" in sentence]
-    assert opening_sentences
-    for sentence in opening_sentences:
-        assert "proof-plan or conclusion preview" in sentence
-        assert "still rejected" in sentence
+    definitions = _definitions(prompt)
+    assert tuple(definitions) == EPSILON_DELTA_CHECK_IDS
+    assert len(EPSILON_DELTA_CHECK_IDS) == len(set(EPSILON_DELTA_CHECK_IDS)) == 10
+    for check_id in EPSILON_DELTA_CHECK_IDS:
+        assert prompt.count(f"- {check_id}: ") == 1
+        assert f'{{"id": "{check_id}", "status": "ok"' in prompt
+
+
+@pytest.mark.parametrize(("defect", "element"), sorted(DEFECT_TO_ELEMENT.items()))
+def test_each_known_defect_is_assigned_to_exactly_one_element(defect: str, element: str) -> None:
+    owners = [i for i, text in _definitions(_x_squared_review_prompt()).items() if defect in text]
+    assert owners == [element]
+
+
+def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -> None:
+    prompt = _x_squared_review_prompt()
+    status_rule = prompt[prompt.index("Status. ") :]
+    status_rule = status_rule[: status_rule.index("Return exactly one JSON object")]
+    for fragment in [*TOLERATED_NOTATION, *STANDARD_FACTS]:
+        assert fragment in status_rule, fragment
+    assert "Never mark an element missing or wrong because of notation or phrasing" in prompt
+    assert "Style, level of detail, how explicit a step is" in prompt
+    assert '"wrong" whose quote is not in the proof does not count' in prompt
+    # Tolerated notation is listed only in the status rule, never as a defect of an element.
+    for definition in _definitions(prompt).values():
+        for notation in TOLERATED_NOTATION:
+            assert notation not in definition, notation
+    # The opening's wording is tolerated, a plan or conclusion preview in it is not.
+    assert "The opening's notation, wording and word order are not presentation defects" in prompt
+    assert "previews the proof plan or the conclusion" in _definitions(prompt)["presentation"]
+    assert "Reject summary-first or conclusion-preview exposition" in prompt  # general rubric
+    assert "a chain may end in an equality such as `= ε`" in prompt
 
 
 def _delta_is_sufficient(delta: Callable[[Fraction, Fraction], Fraction]) -> bool:
