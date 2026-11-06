@@ -169,6 +169,23 @@ def test_real_assessment_path_reuses_general_theorem_without_any_lean(monkeypatc
     assert result.private_evidence["answer_qa"]["approved"] is True
 
 
+@pytest.mark.parametrize("language", ["ja", "en"])
+def test_compute_answer_must_end_with_the_explicit_result_and_review_rejects_side_remarks(language):
+    engine, transport = runtime([READY, decision()])
+
+    result = engine.answer(dict(REQUEST, output_language=language))
+
+    assert result.outcome == "answered"
+    answer_prompt, review_prompt = transport.calls[1]["input"], transport.calls[2]["input"]
+    assert "last sentence of answer must state the explicit final result itself" in answer_prompt
+    assert "Do not end with a side remark" in answer_prompt
+    assert "style example only; take the actual result from your own derivation" in answer_prompt
+    assert "reject an answer whose last sentence does not state the explicit final result" in (
+        review_prompt
+    )
+    assert "ends with a side remark or the justification of a lemma" in review_prompt
+
+
 def test_unmetered_answer_format_rejection_is_final_and_never_published():
     raw_answer = "ここで x^m∈I, x∈√(IJ) となります。"
     engine, transport = runtime(

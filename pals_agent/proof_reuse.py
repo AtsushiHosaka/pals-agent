@@ -34,6 +34,8 @@ from pals_agent.math_conventions import MEANINGS as CONVENTION_MEANINGS
 from pals_agent.math_conventions import known_readings, with_readings
 from pals_agent.math_conventions import parse_claim as parse_conventions
 from pals_agent.math_task import (
+    ANSWER_ENDING,
+    ANSWER_ENDING_REVIEW,
     ANSWER_SCOPE_REVIEW,
     DERIVE_ANSWER_INSTRUCTION,
     PREFLIGHT_TASK_INSTRUCTION,
@@ -610,7 +612,9 @@ class ProofReuseRuntime:
                 "mathematical object, its domain and variables before using them, and use "
                 "precise mathematical terminology. For function problems, the first sentence "
                 "of answer must define the function and its domain. Definitions in premises "
-                "are not visible definitions and do not replace this sentence. Write answer "
+                "are not visible definitions and do not replace this sentence. "
+                + ANSWER_ENDING
+                + "Write answer "
                 "in request.output_language. "
                 + _OUTPUT_LANGUAGE_INSTRUCTION
                 + "Write the answer "
@@ -769,6 +773,7 @@ class ProofReuseRuntime:
                         + (_CATALOG_REVIEW if catalog_recipe is not None else
                            "No Lean verification occurred; reject any claim otherwise. ")
                         + ANSWER_SCOPE_REVIEW
+                        + ANSWER_ENDING_REVIEW
                         + _OUTPUT_LANGUAGE_INSTRUCTION
                         + "Reject learner-facing prose in a different language; mathematical "
                         "notation, code and cited names need not be translated. Do not trust "
