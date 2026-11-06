@@ -44,6 +44,7 @@ def usage_is_acknowledged(call_id: str) -> bool:
 # Official pricing provenance: docs/billing-model-price-snapshots-2026-09-29.md.
 PRICE_SNAPSHOTS = {
     "text-embedding-3-small": "openai-text-embedding-3-small-standard-2026-09-30",
+    "text-embedding-3-large": "openai-text-embedding-3-large-standard-2026-11-02",
     # v1 usage does not carry cache-write counts. These snapshots explicitly
     # estimate all input at the cache-write upper bound, not a claimed invoice.
     "gpt-6-luna": "openai-gpt-6-luna-standard-upper-bound-2026-09-30",

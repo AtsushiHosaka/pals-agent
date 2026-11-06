@@ -205,7 +205,7 @@ class TokenMeter:
                 raise TokenMeterError("token_payload_changed")
             if embedding:
                 if (
-                    model != "text-embedding-3-small"
+                    model not in {"text-embedding-3-small", "text-embedding-3-large"}
                     or set(payload) != {"model", "input", "dimensions"}
                     or not payload["input"]
                 ):

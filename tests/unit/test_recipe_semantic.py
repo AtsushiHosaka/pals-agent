@@ -15,6 +15,10 @@ from pals_agent.proof_request_worker import ProofRequestProcessor
 from pals_agent.proof_reuse import ProofReuseRuntime
 from pals_agent.recipe_semantic import SemanticReuseError, attempt
 from pals_agent.recipe_semantic_contract import (
+    BINDING as contract_binding,
+)
+from pals_agent.recipe_semantic_contract import (
+    CONTENT_FIELDS,
     CONTENT_SCHEMA,
     SCHEMA_VERSION,
     digest,
@@ -29,13 +33,19 @@ from tests.unit.test_recipe_exact_input import recipe, request
 from tests.unit.test_token_meter import OP, Ledger
 
 
+@pytest.fixture(autouse=True)
+def judges_only(monkeypatch):
+    """Call-count tests cover the judges; test_recipe_semantic_retrieval covers the vector."""
+    monkeypatch.setattr("pals_agent.recipe_semantic.query_embedding", lambda *a, **k: None)
+
+
 def inputs():
     r = request("任意の非負整数 n に対して、実数上の x^n の連続性を証明してください。")
     r["generation_model"] = "gpt-6.1-sol"
     r["generation_reasoning_effort"] = "high"
     row = recipe()
     batch = {
-        "schema_version": "pals.recipe-catalog-batch.v1",
+        "schema_version": "pals.recipe-catalog-window.v1",
         "request_id": r["id"],
         "claim_id": "00000000-0000-4000-8000-000000000002",
         "request_revision": 1,
@@ -52,16 +62,14 @@ def inputs():
         "output_language": "ja",
         "toolchain_sha256": row["toolchain_sha256"],
         "complete": True,
-        "truncated": False,
         "reason": None,
-        "total_count": 1,
+        "catalog_count": 1,
+        "catalog_sha256": "c" * 64,
+        "retrieval_profile": "pals.recipe-retrieval.embedding-cosine.v1",
         "recipes": [row],
     }
     batch["batch_sha256"] = digest(
-        {
-            "schema_version": CONTENT_SCHEMA,
-            **{k: batch[k] for k in ("output_language", "toolchain_sha256", "recipes")},
-        }
+        {"schema_version": CONTENT_SCHEMA, **{k: batch[k] for k in CONTENT_FIELDS}}
     )
     verdict = {
         "schema_version": SCHEMA_VERSION,
@@ -97,8 +105,22 @@ def inputs():
     return r, batch, verdict
 
 
+def embedding_body(body):
+    vector = [0.0] * body["dimensions"]
+    vector[0] = 1.0
+    return json.dumps(
+        {
+            "model": body["model"],
+            "data": [{"embedding": vector}],
+            "usage": {"prompt_tokens": 12, "total_tokens": 12},
+        }
+    ).encode()
+
+
 class Provider:
-    def __init__(self, verdict, *, malformed=False, missing_id=False):
+    def __init__(self, verdict, *, malformed=False, missing_id=False, embedding_fails=False):
+        self.embedding_fails = embedding_fails
+        self.embeddings = []
         self.verdict = verdict
         self.malformed = malformed
         self.missing_id = missing_id
@@ -108,6 +130,11 @@ class Provider:
 
     def request(self, **kwargs):
         body = json.loads(kwargs["body"])
+        if kwargs["url"].endswith("/embeddings"):
+            self.embeddings.append(body)
+            if self.embedding_fails:
+                return HttpResponse(500, b"{}")
+            return HttpResponse(200, embedding_body(body))
         if kwargs["url"].endswith("/input_tokens"):
             return HttpResponse(200, b'{"object":"response.input_tokens","input_tokens":1000}')
         self.calls.append(body)
@@ -156,7 +183,7 @@ def test_real_two_call_path_matches_stored_source_and_complete_usage_without_int
     with usage_scope(records.append):
         result = ChatRuntime(client, proof).answer(
             r,
-            recipe_batch=lambda: batch,
+            recipe_batch=lambda _vector: batch,
             claim_id=batch["claim_id"],
         )
     assert result.outcome == "answered"
@@ -193,7 +220,7 @@ def test_paid_meter_calls_have_real_roles_ids_usage_and_success_receipts():
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert result.answer is not None and not meter.failed
@@ -216,7 +243,7 @@ def test_parser_failure_joins_peer_and_retains_every_spent_call():
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert provider.returned.is_set() and len(records) == len(provider.calls) == 2
@@ -234,7 +261,7 @@ def test_missing_actual_provider_id_cannot_fabricate_correspondence_but_usage_su
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert len(records) == 2 and all("provider_request_id" not in value for value in records)
@@ -263,9 +290,9 @@ def test_incomplete_batch_is_explicit_fallback_and_unowned_batch_is_failure():
     incomplete = dict(
         batch,
         complete=False,
-        truncated=True,
-        reason="count_limit",
-        total_count=None,
+        reason="catalog_limit",
+        catalog_count=4097,
+        retrieval_profile=None,
         recipes=[],
         batch_sha256=None,
     )
@@ -290,7 +317,7 @@ def test_processor_preserves_actual_provider_ids_and_current_claim_in_settlement
                 "lease_expires_at": (datetime.now(UTC) + timedelta(seconds=240)).isoformat(),
             }
 
-        def get_proof_request_recipe_batch(self, **kwargs):
+        def get_proof_request_recipe_window(self, **kwargs):
             assert kwargs["request_id"] == r["id"] and kwargs["claim_id"] == batch["claim_id"]
             return batch
 
@@ -372,12 +399,16 @@ def test_wrong_known_model_fails_closed_and_keeps_actual_provider_costs(paid):
         ledger = Ledger([])
         meter = TokenMeter(ledger, OP, r["id"], batch["claim_id"], time.monotonic() + 30)
         with usage_scope(records.append), token_meter_scope(meter), pytest.raises(TokenMeterError):
-            attempt(client, r, batch["claim_id"], lambda: batch, deadline=time.monotonic() + 30)
+            attempt(
+                client, r, batch["claim_id"], lambda _vector: batch, deadline=time.monotonic() + 30
+            )
         assert meter.failed and len(ledger.permits) == len(ledger.receipts) == 2
         assert all(v["status"] == "unknown" for v in ledger.receipts)
     else:
         with usage_scope(records.append), pytest.raises(OpenAIError):
-            attempt(client, r, batch["claim_id"], lambda: batch, deadline=time.monotonic() + 30)
+            attempt(
+                client, r, batch["claim_id"], lambda _vector: batch, deadline=time.monotonic() + 30
+            )
     assert len(records) == 2 and all(v["model"] == "gpt-6.1-sol" for v in records)
 
 
@@ -408,7 +439,7 @@ def test_independent_nonacceptance_stays_diagnostic_and_retains_costs():
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert result.answer is None and len(records) == 2
@@ -434,7 +465,7 @@ def test_shared_actual_provider_id_cannot_be_recast_as_two_independent_reviews()
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert len(records) == 2
@@ -459,7 +490,7 @@ def test_complete_batch_tampering_fails_before_any_model_call(mutation):
             OpenAIResponsesClient(api_key="test", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert not provider.calls
@@ -478,7 +509,7 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
     transport = BatchTransport()
     client = PalsApiClient("https://api.invalid", "isolated", transport=transport)
     assert (
-        client.get_proof_request_recipe_batch(
+        client.get_proof_request_recipe_window(
             request_id=r["id"],
             claim_id=batch["claim_id"],
             output_language="ja",
@@ -486,9 +517,21 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
         == batch
     )
     sent = transport.requested
-    assert sent["method"] == "POST" and sent["url"].endswith(f"/{r['id']}/recipe-batch")
+    assert sent["method"] == "POST" and sent["url"].endswith(f"/{r['id']}/recipe-window")
     assert json.loads(sent["body"]) == {"claim_id": batch["claim_id"], "output_language": "ja"}
     assert sent["headers"]["X-PALS-Worker-Secret"] == "isolated"
+    client.get_proof_request_recipe_window(
+        request_id=r["id"],
+        claim_id=batch["claim_id"],
+        output_language="ja",
+        query_embedding=[1.0],
+    )
+    assert json.loads(transport.requested["body"]) == {
+        "claim_id": batch["claim_id"],
+        "output_language": "ja",
+        "query_embedding": [1.0],
+        "embedding_binding": contract_binding,
+    }
 
 
 def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
@@ -502,7 +545,7 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
     from pals_agent import recipe_semantic_contract as contract
 
     assert hashlib.sha256(contract.BASE.encode()).hexdigest() == (
-        "6ece96d39ce5526c14dbeb8ca6e20ed1e7a22bbe5d3c925fcc3348ffe3c3517a"
+        "192fb0dcbe66bce67bad32098995ae2136900a79c1dc2dd5fdf777539beb989f"
     )
     assert hashlib.sha256(rfc8785.dumps(contract.SCHEMA)).hexdigest() == (
         "800d484003ee988403d102d99d4dc071dfc572c3dfa9e756932accde775ab2df"
@@ -518,9 +561,8 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
         {"natural_zero": "include", "zero_pow_zero": "include"},
         assessment_session="00000000-0000-4000-8000-000000000001",
         review_session="00000000-0000-4000-8000-000000000002",
-        retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "d956ec60496799999345f6155b5b724c51d8ad53d28090d16bddfa619439327b",
-        "review": "554439c60e639b5a0b1be47f3c0d57ad925bd84b514c9cf5203fa2d6ded215dd",
+        "assessment": "b12c6ce8f03c0d541f65cd14ebe96d434f187901c9a8cd61a61d4e2da91ba12a",
+        "review": "6d585e81921b8ec8eca147aa47dcfafa62572921a468117ac6317c33ac80c6f6",
     }

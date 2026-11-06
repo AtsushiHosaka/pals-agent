@@ -1,4 +1,4 @@
-"""Closed full-authority catalog and retrieved semantic input/review contract.
+"""Closed API-attested retrieved window and semantic input/review contract.
 
 Model scopes are independent interpretations, not kernel-certified NL equality.
 Retrieved-window policy includes explicit compound-task enumeration; schema stays v6.
@@ -19,8 +19,25 @@ from pals_agent.math_conventions import MEANINGS
 CONVENTION_IDS = tuple(MEANINGS)
 
 SCHEMA_VERSION = "pals.recipe-dual-scope-review.v2"
-BATCH_SCHEMA = "pals.recipe-catalog-batch.v1"
-CONTENT_SCHEMA = "pals.recipe-catalog-batch-content.v1"
+BATCH_SCHEMA = "pals.recipe-catalog-window.v1"
+CONTENT_SCHEMA = "pals.recipe-catalog-window-content.v1"
+RETRIEVAL_PROFILES = {
+    "pals.recipe-retrieval.char-ngram-bm25.v1",
+    "pals.recipe-retrieval.embedding-cosine.v1",
+}
+WINDOW_SIZE = 5
+MAX_CATALOG_ENTRIES = 4096
+EMBEDDING_MODEL = "text-embedding-3-large"
+EMBEDDING_DIMENSION = 1024
+EMBEDDING_ENDPOINT = "https://api.openai.com/v1/embeddings"
+BINDING = {
+    "provider": "openai",
+    "model": EMBEDDING_MODEL,
+    "dimension": EMBEDDING_DIMENSION,
+    "endpoint": EMBEDDING_ENDPOINT,
+    "text_version": "pals.recipe-retrieval-text.v1",
+}
+BINDING_SHA256 = hashlib.sha256(json.dumps(BINDING, separators=(",", ":")).encode()).hexdigest()
 DIMENSIONS = ("objects", "domain", "assumptions", "quantifiers", "conclusion", "method")
 BATCH_FIELDS = {
     "schema_version",
@@ -31,9 +48,10 @@ BATCH_FIELDS = {
     "output_language",
     "toolchain_sha256",
     "complete",
-    "truncated",
     "reason",
-    "total_count",
+    "catalog_count",
+    "catalog_sha256",
+    "retrieval_profile",
     "recipes",
     "batch_sha256",
 }
@@ -343,11 +361,11 @@ BASE = (
 )
 
 SUBSET_POLICY = (
-    "The authority input is a validated COMPLETE bounded catalog, identified by c"
-    "atalog_batch_sha256.\nMODEL input below contains ONLY a retrieved subset of t"
-    "hat catalog, not every catalog entry. A suitable\nRecipe may be absent from t"
-    "he shown subset. Inspect every SHOWN candidate; retrieval, its score, positi"
-    "on,\nfamiliar names, topical similarity and repeated keywords are not evidenc"
+    "The authority input is an API-attested retrieved window of the admitted catal"
+    "og, identified by catalog_batch_sha256.\nMODEL input below contains ONLY that "
+    "retrieved subset of the catalog, not every catalog entry. A suitable\nRecipe m"
+    "ay be absent from the shown subset. Inspect every SHOWN candidate; retrieval, "
+    "its score, position,\nfamiliar names, topical similarity and repeated keywords are not evidenc"
     "e of mathematical identity.\nSelect only among the shown candidates when ever"
     "y original scope and answer gate passes. If no shown\ncandidate certainly qua"
     "lifies, retain miss/needs_input/nonproof as applicable; never infer a match "
@@ -356,10 +374,10 @@ SUBSET_POLICY = (
 )
 
 FULL_SHOWN_POLICY = (
-    "The authority input is a validated COMPLETE bounded catalog, identified by c"
-    "atalog_batch_sha256.\nMODEL input below contains ALL catalog entries because "
-    "the complete catalog fits in the candidate window.\nInspect every SHOWN candi"
-    "date; retrieval, its score, position, familiar names, topical similarity and"
+    "The authority input is an API-attested retrieved window of the admitted catal"
+    "og, identified by catalog_batch_sha256.\nMODEL input below contains ALL catalo"
+    "g entries because the complete catalog fits in the candidate window.\nInspect "
+    "every SHOWN candidate; retrieval, its score, position, familiar names, topical similarity and"
     "\nrepeated keywords are not evidence of mathematical identity. Select only am"
     "ong the shown candidates\nwhen every original scope and answer gate passes. I"
     "f none certainly qualifies, retain\nmiss/needs_input/nonproof as applicable; "
@@ -407,20 +425,42 @@ ROLE = {
 }
 
 
+CONTENT_FIELDS = (
+    "output_language",
+    "toolchain_sha256",
+    "catalog_count",
+    "catalog_sha256",
+    "retrieval_profile",
+    "recipes",
+)
+
+
 def validate_batch(request: dict[str, Any], batch: dict[str, Any]) -> list[dict[str, Any]]:
     need(isinstance(batch, dict) and set(batch) == BATCH_FIELDS, "batch_shape_invalid")
     need(
         batch["schema_version"] == BATCH_SCHEMA
         and batch["complete"] is True
-        and batch["truncated"] is False
         and batch["reason"] is None,
         "complete_batch_required",
     )
     need(
-        type(batch["total_count"]) is int and 0 <= batch["total_count"] <= 32, "batch_count_invalid"
+        type(batch["catalog_count"]) is int
+        and 0 <= batch["catalog_count"] <= MAX_CATALOG_ENTRIES
+        and sha(batch["catalog_sha256"]),
+        "batch_count_invalid",
     )
     rows = batch["recipes"]
-    need(isinstance(rows, list) and len(rows) == batch["total_count"], "batch_count_changed")
+    need(
+        isinstance(rows, list)
+        and len(rows) <= min(WINDOW_SIZE, batch["catalog_count"])
+        and (bool(rows) or batch["catalog_count"] == 0),
+        "batch_count_changed",
+    )
+    need(
+        batch["retrieval_profile"] in RETRIEVAL_PROFILES
+        or (batch["catalog_count"] == 0 and batch["retrieval_profile"] is None),
+        "batch_profile_invalid",
+    )
     need(
         len(json.dumps(batch, ensure_ascii=False, separators=(",", ":")).encode())
         <= MAX_BATCH_BYTES,
@@ -509,45 +549,19 @@ def validate_batch(request: dict[str, Any], batch: dict[str, Any]) -> list[dict[
             "candidate_source_or_answer_changed",
         )
         seen.append((row["recipe_id"], row["recipe_revision"], row["entry_sha256"]))
+    # Rows keep the API's rank order, which is ranking evidence and never identity.
     need(
-        seen == sorted(set(seen)) and len({(r[0], r[1]) for r in seen}) == len(seen),
+        len(set(seen)) == len(seen)
+        and len({(r[0], r[1]) for r in seen}) == len(seen)
+        and len({r[2] for r in seen}) == len(seen),
         "batch_order_or_duplicate_invalid",
     )
     core = {
         "schema_version": CONTENT_SCHEMA,
-        **{k: batch[k] for k in ("output_language", "toolchain_sha256", "recipes")},
+        **{k: batch[k] for k in CONTENT_FIELDS},
     }
     need(batch["batch_sha256"] == digest(core), "batch_digest_changed")
     return cast(list[dict[str, Any]], rows)
-
-
-def subset_rows(batch: dict[str, Any], retrieved_entry_sha256s: object) -> list[dict[str, Any]]:
-    """Retain full catalog authority while selecting a bounded model window."""
-    rows = batch["recipes"]
-    need(isinstance(rows, list) and 1 <= len(rows) <= 32, "bounded_schema_catalog_required")
-    core = {
-        "schema_version": CONTENT_SCHEMA,
-        **{k: batch[k] for k in ("output_language", "toolchain_sha256", "recipes")},
-    }
-    need(batch["batch_sha256"] == digest(core), "schema_catalog_digest_changed")
-    need(
-        isinstance(retrieved_entry_sha256s, (list, tuple))
-        and 1 <= len(retrieved_entry_sha256s) <= min(5, len(rows)),
-        "retrieval_subset_count_invalid",
-    )
-    pins = cast(list[str] | tuple[str, ...], retrieved_entry_sha256s)
-    need(
-        all(type(pin) is str and sha(pin) for pin in pins),
-        "retrieval_subset_sha_invalid",
-    )
-    need(
-        len(set(pins)) == len(pins),
-        "retrieval_subset_duplicate",
-    )
-    index = {row["entry_sha256"]: row for row in rows}
-    need(len(index) == len(rows), "full_catalog_entry_sha_ambiguous")
-    need(all(pin in index for pin in pins), "retrieval_subset_not_in_full_catalog")
-    return [index[pin] for pin in pins]
 
 
 def prompts(
@@ -557,10 +571,9 @@ def prompts(
     *,
     assessment_session: str,
     review_session: str,
-    retrieved_entry_sha256s: object,
 ) -> dict[str, str]:
-    rows = validate_batch(request, batch)
-    selected = subset_rows(batch, retrieved_entry_sha256s)
+    selected = validate_batch(request, batch)
+    need(bool(selected), "empty_window_has_no_model_input")
     need(
         uuid(assessment_session) and uuid(review_session) and assessment_session != review_session,
         "independent_sessions_required",
@@ -578,10 +591,10 @@ def prompts(
         projected["target_sha256"] = hashlib.sha256(row["target_source"].encode()).hexdigest()
         need(set(projected) == MODEL_CANDIDATE_FIELDS, "model_catalog_projection_changed")
         candidates.append(projected)
-    all_shown = len(selected) == len(rows)
+    all_shown = len(selected) == batch["catalog_count"]
     catalog = {
         "catalog_batch_sha256": batch["batch_sha256"],
-        "catalog_candidate_count": len(rows),
+        "catalog_candidate_count": batch["catalog_count"],
         "shown_candidate_count": len(selected),
         "candidate_scope": "full_catalog_shown"
         if all_shown
@@ -679,8 +692,6 @@ def parse(
     raw: str,
     batch: dict[str, Any],
     known_conventions: dict[str, str],
-    *,
-    retrieved_entry_sha256s: object,
 ) -> dict[str, Any]:
     need(text(raw, MAX_RESULT_BYTES), "response_bytes_invalid")
     value = json.loads(raw, object_pairs_hook=unique)
@@ -719,18 +730,6 @@ def parse(
             and value["answer_qa"] is False
             and value["source_target_sha256"] is None,
             "response_nonreuse_selection_invalid",
-        )
-    # The original static-schema/scope/source gate above is never replaced by
-    # retrieval. A valid but unshown source still cannot be selected by a judge.
-    subset = subset_rows(batch, retrieved_entry_sha256s)
-    if value["action"] == "reuse":
-        need(
-            any(
-                (row["recipe_id"], row["recipe_revision"])
-                == (value["recipe_id"], value["recipe_revision"])
-                for row in subset
-            ),
-            "response_selected_outside_retrieval_subset",
         )
     return cast(dict[str, Any], value)
 
@@ -797,7 +796,7 @@ def fresh_plain_request(request: dict[str, Any]) -> bool:
 
 
 def read_batch(request: dict[str, Any], claim_id: str, batch: Any) -> list[dict[str, Any]] | None:
-    """Intact complete entries or an explicit unusable overflow; never an untrusted prefix."""
+    """An intact window or an explicit unusable refusal; never an untrusted prefix."""
     need(isinstance(batch, dict) and set(batch) == BATCH_FIELDS, "batch_shape_invalid")
     need(uuid(claim_id) and batch["claim_id"] == claim_id, "batch_claim_mismatch")
     if batch["complete"] is False:
@@ -815,15 +814,17 @@ def read_batch(request: dict[str, Any], claim_id: str, batch: Any) -> list[dict[
             "batch_context_mismatch",
         )
         need(
-            batch["truncated"] is True
-            and batch["recipes"] == []
+            batch["recipes"] == []
             and batch["batch_sha256"] is None
+            and type(batch["catalog_count"]) is int
+            and sha(batch["catalog_sha256"])
             and (
-                batch["reason"] == "count_limit"
-                and batch["total_count"] is None
+                batch["reason"] == "catalog_limit"
+                and batch["catalog_count"] > MAX_CATALOG_ENTRIES
+                and batch["retrieval_profile"] is None
                 or batch["reason"] == "byte_limit"
-                and type(batch["total_count"]) is int
-                and 0 <= batch["total_count"] <= 32
+                and 0 < batch["catalog_count"] <= MAX_CATALOG_ENTRIES
+                and batch["retrieval_profile"] in RETRIEVAL_PROFILES
             ),
             "batch_overflow_invalid",
         )

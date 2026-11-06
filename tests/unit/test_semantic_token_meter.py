@@ -29,6 +29,12 @@ from tests.unit.test_recipe_semantic import inputs
 from tests.unit.test_token_meter import CLAIM, OP, REQUEST, Ledger, Provider
 
 
+@pytest.fixture(autouse=True)
+def judges_only(monkeypatch):
+    """Call-count tests cover the judges; test_recipe_semantic_retrieval covers the vector."""
+    monkeypatch.setattr("pals_agent.recipe_semantic.query_embedding", lambda *a, **k: None)
+
+
 class AtomicLedger(Ledger):
     def __init__(self, events, *, lost_ack=False):
         super().__init__(events)
@@ -198,7 +204,7 @@ class AtomicProcessorApi(ApiBoundary):
             "lease_expires_at": (datetime.now(UTC) + timedelta(seconds=240)).isoformat(),
         }
 
-    def get_proof_request_recipe_batch(self, **kwargs):
+    def get_proof_request_recipe_window(self, **kwargs):
         return self.batch
 
     def permit_token_call(self, payload, **kwargs):
@@ -262,7 +268,7 @@ def test_independent_parser_failure_still_joins_successful_atomic_peer():
             OpenAIResponsesClient(api_key="isolated-boundary", transport=provider),
             r,
             batch["claim_id"],
-            lambda: batch,
+            lambda _vector: batch,
             deadline=time.monotonic() + 30,
         )
     assert (
@@ -327,7 +333,7 @@ def test_real_api_client_processor_uses_seven_worker_http_requests_not_nine():
                     "billing_operation_id": OP,
                     "lease_expires_at": (datetime.now(UTC) + timedelta(seconds=240)).isoformat(),
                 }
-            elif path == "recipe-batch":
+            elif path == "recipe-window":
                 value = batch
             elif path == "token-permits":
                 value = {"permitted": True}

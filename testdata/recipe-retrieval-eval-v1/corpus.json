@@ -1,0 +1,2486 @@
+{
+ "schema_version": "pals.recipe-retrieval-eval.v1",
+ "positives": [
+  {
+   "recipe_id": "textbook.measure_integration.markov_inequality",
+   "text": "測度空間 (X, μ) 上の [0,∞] 値可測関数 f と ε ∈ [0,∞] に対して、ε·μ({x | ε ≤ f(x)}) ≤ ∫ f dμ を証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.convex_hull_minimal",
+   "text": "実ベクトル空間 E の部分集合 s が凸集合 t に含まれているとき、s の凸包も t に含まれますか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.topology_general.metric_closed_iff_seq_limits",
+   "text": "距離空間 X の部分集合 C が閉集合であることと、C の点列 a_n が L に収束するなら必ず L ∈ C となることは同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.cofactor_expansion_row",
+   "text": "K を体、A を K 上の n+1 次正方行列、i を行番号とする。第 i 行と第 j 列を除いた小行列を A_ij として、det A = Σ_j (-1)^(i+j) a_ij det A_ij となることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.module_quotient_of_free",
+   "text": "環 R 上の任意の加群 N について、N の元の集合を基底とする自由 R 加群から N への全射 R 線形写像が存在するというのは本当ですか。示してください。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.sin_cos_addition",
+   "text": "任意の実数 a, b について、sin(a+b) = sin a cos b + cos a sin b と cos(a+b) = cos a cos b - sin a sin b が成り立つことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.multivariable.continuous_iff_components",
+   "text": "写像 f: ℝⁿ → ℝᵐ が連続であることと、f のすべての成分関数が連続であることは同値であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.field_galois.algebraic_extension_transitive",
+   "text": "体の拡大 K/F と L/K がどちらも代数拡大ならば、L/F も代数拡大になることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.topology_general.continuous_iff_image_closure",
+   "text": "位相空間の間の写像 f: X → Y が連続であることは、任意の部分集合 S ⊆ X について f(cl S) ⊆ cl(f(S)) が成り立つことと同値ですか。証明してください。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.pid_irreducible_is_prime",
+   "text": "単項イデアル整域 R の既約元 p は素元であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.natural_transformation_iso_iff_components",
+   "text": "関手 F, G: C → D の間の自然変換 τ が自然同型であることと、すべての対象 X について成分 τ_X が同型射であることは同値であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.extreme_value_theorem",
+   "text": "a ≤ b とする。関数 f が閉区間 [a,b] 上で連続ならば、f は [a,b] 上で最小値と最大値をとることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.bessel_inequality_finite",
+   "text": "複素内積空間 E の正規直交系 (v_i) と点 x、有限集合 s に対して、Σ_{i∈s} |⟨v_i, x⟩|² ≤ ‖x‖² が成り立つことを示してください（ベッセルの不等式）。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.cauchy_integral_formula_disc",
+   "text": "f を開円板 |z-c| < R で正則、閉円板で連続な関数とする。|w-c| < R のとき、円周 |z-c| = R 上の積分 ∮ f(z)/(z-w) dz = 2πi f(w) となることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.matrix_unit_iff_det_unit",
+   "text": "可換環 R 上の n 次正方行列 A が行列環の可逆元であることと、det A が R の可逆元であることは同値ですか。示してください。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.log_of_product",
+   "text": "s, t > 0 のとき、log(st) = log s + log t が成り立つことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.linear_continuous_iff_bounded",
+   "text": "ℝ または ℂ 上のノルム空間 E, F の間の線形写像 f が連続であることと、ある定数 C が存在してすべての x で ‖f(x)‖ ≤ C‖x‖ が成り立つことは同値であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.separable_first_integral",
+   "text": "実数全体で y' = g(t)h(y) が成り立ち、すべての t で h(y(t)) ≠ 0 とする。H が y(t) で微分係数 1/h(y(t)) をもち、G' = g であるとき、H(y(t)) - G(t) は t によらず一定であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.lagrange_interpolation_unique",
+   "text": "相異なる n 個の節点 v_i と値 r_i が与えられたとき、次数が n 未満の実係数多項式 P で、すべての i について P(v_i) = r_i を満たすものがちょうど1つ存在することを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.cauchy_iff_convergent",
+   "text": "実数列 (a_n) がコーシー列であることと収束することは同値であると聞きました。これを証明してください。",
+   "set": "textbook",
+   "style": "decide"
+  },
+  {
+   "recipe_id": "textbook.number_theory.moebius_divisor_sum",
+   "text": "正の整数 n について、n の正の約数 d にわたる μ(d) の総和は、n = 1 のとき 1、n ≥ 2 のとき 0 になることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.bounded_inverse_theorem",
+   "text": "バナッハ空間 E, F の間の全単射な有界線形作用素 T には、有界線形な逆作用素 S（S(Tx) = x かつ T(Sy) = y）が存在することを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.pigeonhole_congruent_integers",
+   "text": "n を正の整数とする。n より多くの要素をもつ整数の有限集合 s には、差が n で割り切れる相異なる2元が存在することを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.derivative_of_holomorphic_is_holomorphic",
+   "text": "開集合 U 上で正則な関数 f の導関数 f' も U 上で正則であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.orbit_stabilizer_theorem",
+   "text": "有限群 G が集合 X に作用しているとき、点 x の軌道の大きさと x の固定部分群の位数の積は |G| に等しいことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.maximal_is_greatest_of_linear",
+   "text": "全順序集合の部分集合 S において、S の極大元は S の最大元になりますか。証明してください。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.multivariable.mean_value_inequality",
+   "text": "実ノルム空間の凸集合 s の各点で f が微分可能で、そこでの導関数の作用素ノルムが C 以下ならば、s の任意の2点 x, y について ‖f(y) - f(x)‖ ≤ C‖y - x‖ となることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.zorn_lemma",
+   "text": "半順序集合のすべての鎖（空の鎖も含む）が上界をもつならば、その半順序集合は極大元をもつことを示してください（ツォルンの補題）。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.second_order_solution_space_subspace",
+   "text": "実数全体で定義された斉次線形方程式 y'' + p(t)y' + q(t)y = 0 の解全体は、実関数全体のなすベクトル空間の部分空間になることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.strong_induction",
+   "text": "自然数上の命題 P について、任意の n で「m < n なるすべての m で P(m) ならば P(n)」が成り立つなら、すべての n で P(n) が成り立つこと（強い帰納法）を示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.convex_interior_closure",
+   "text": "実ノルム空間の凸部分集合 S の内部と閉包はどちらも凸集合であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.infinite_cardinal_add_mul",
+   "text": "無限基数 κ, λ に対して、κ + λ = max(κ, λ) かつ κ·λ = max(κ, λ) となることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.action_orbits_eq_or_disjoint",
+   "text": "群 G が集合 X に作用しているとき、任意の x, y ∈ X について、軌道 Gx と Gy は一致するか互いに素であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.fundamental_theorem_second",
+   "text": "F が a と b を端点とする閉区間の各点で f を導関数にもち、f がその閉区間上で連続ならば、∫_a^b f(x) dx = F(b) - F(a) となることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.two_vertices_same_degree",
+   "text": "頂点を2個以上もつ有限単純グラフには、次数が等しい相異なる2頂点が存在することを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.first_isomorphism_theorem",
+   "text": "群準同型 f: G → H について、x ker f ↦ f(x) は G/ker f から f の像への同型写像になることを示してください（第一同型定理）。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.ae_countable_conjunction",
+   "text": "可算個の性質 p_n がそれぞれほとんど至るところ成り立つなら、ほとんどすべての x が全部の p_n を同時に満たすことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.number_theory.two_quadratic_residue",
+   "text": "p を奇素数とする。合同式 x² ≡ 2 (mod p) が整数解をもつことと、p ≡ 1 または 7 (mod 8) であることは同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.integral_extension_incomparability",
+   "text": "環 S が R 上整で、Q が S の素イデアル、J が Q を真に含む S のイデアルならば、J の R への縮約は Q の縮約を真に含むことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.exists_eigenvalue_alg_closed",
+   "text": "代数閉体 K 上の0でない有限次元ベクトル空間 V の線形変換 f は、固有値をもつことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.harmonic_oscillator_energy_conservation",
+   "text": "y'' = -ω² y の実数全体での解 y について、エネルギー y'² + ω² y² が時刻によらず一定であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.equivalence_iff_quasi_inverse",
+   "text": "関手 F: C → D が圏同値であることと、id_C ≅ G∘F かつ F∘G ≅ id_D を満たす関手 G: D → C が存在することは同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_sequence_supremum",
+   "text": "[0,∞] 値の可測関数の列 f_n に対して、各点上限 x ↦ sup_n f_n(x) も可測であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.spectral_theorem_self_adjoint",
+   "text": "有限次元内積空間上の自己共役な線形変換 T には、固有ベクトルからなる正規直交基底が存在し、固有値はすべて実数であることを示してください（スペクトル定理）。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.alternating_group_index_and_order",
+   "text": "有限集合 X が2個以上の元をもつとき、X 上の交代群は対称群の正規部分群で指数が 2 であり、2·|A(X)| = |X|! が成り立つことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.span_exchange",
+   "text": "体 K 上のベクトル空間 V の部分集合 s と元 x, y について、x が s ∪ {y} の張る部分空間に属し、s の張る部分空間には属さないならば、y は s ∪ {x} の張る部分空間に属することを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.krull_intersection_theorem",
+   "text": "ネーター局所環 R の真のイデアル I について、I のすべての冪の共通部分が零イデアルになること(クルルの共通部分定理)を示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.field_galois.finite_field_exists_unique",
+   "text": "素数 p と正の整数 n に対して、位数 p^n の体が存在し、位数 p^n の任意の2つの体は環として同型であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.invertible_iff_det_ne_zero",
+   "text": "体 K 上の n 次正方行列 A が、AB = BA = E をみたす行列 B をもつことと det A ≠ 0 は同値ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.third_isomorphism_modules",
+   "text": "環 R 上の加群 M の部分加群 S ⊆ T について、商加群 (M/S)/(T/S) は M/T と同型であることを示せ。ただし T/S は T の M/S における像とする。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.multivariable.partials_exist_not_continuous",
+   "text": "関数 f(x,y) = xy/(x²+y²) (ただし f(0,0) = 0)について、原点での x 方向・y 方向の偏微分係数がどちらも 0 であるのに、f は原点で連続でないことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.noetherian_iff_ideals_fg",
+   "text": "可換環 R がネーター環であることと、R のすべてのイデアルが有限生成であることは同値であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.finite_dimensional_closed_ball_compact",
+   "text": "ℝ または ℂ 上の有限次元ノルム空間 E において、閉球はコンパクトであり、とくに E は局所コンパクトであることを証明してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.strict_convex_unique_minimizer",
+   "text": "実ベクトル空間 E の部分集合 S 上で f が狭義凸のとき、f の S 上の最小点は高々1つしかないというのは正しいか判定せよ。正しいなら証明せよ。",
+   "set": "textbook",
+   "style": "decide"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.condexp_pull_out",
+   "text": "確率空間 (Ω, F, P) と部分σ加法族 G ⊆ F があり、X が G 可測で、Y と XY が可積分であるとする。このとき E[XY | G] = X·E[Y | G] がほとんど確実に成り立つことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.double_counting_relation",
+   "text": "有限集合 A, B と A×B 上の関係 r について、A の各元 a に対し r(a,b) をみたす b∈B の個数を数えて A 全体で足した値は、B の各元 b に対し r(a,b) をみたす a∈A の個数を数えて B 全体で足した値に等しいこと(二重数え上げ)を示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_comparison_set",
+   "text": "可測空間 α 上の実数値可測関数 f, g について、集合 {x | f(x) ≤ g(x)} が可測集合であることを証明しなさい。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.comap_prime_ideal",
+   "text": "可換環の準同型 φ : A → B と B の素イデアル Q について、φ による Q の逆像 φ⁻¹(Q) は A の素イデアルであることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.ode_uniqueness_lipschitz",
+   "text": "E を実ノルム空間とし、v(t,x) は各 t について x ↦ v(t,x) が共通のリプシッツ定数 K でグローバルにリプシッツであるとする。f, g : ℝ → E が [a,b] 上連続で、各 t∈[a,b) で f, g の右微分がそれぞれ v(t,f(t)), v(t,g(t)) に等しく、f(a) = g(a) ならば、[a,b] 上で f = g であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.field_galois.splitting_field_is_normal",
+   "text": "体 F 上の多項式 f の分解体 E は F の正規拡大になるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.limit_sin_over_x",
+   "text": "x が 0 でない値をとりながら 0 に近づくとき、sin x / x が 1 に収束することを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.convex_local_min_is_global",
+   "text": "ノルム空間 E の部分集合 S 上で関数 f が凸で、a∈S が S 上の局所最小点ならば、a は S 上の大域最小点でもあるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.dvr_ideals_are_powers_of_uniformizer",
+   "text": "離散付値環 R の既約元 π について、R の零でないイデアルはすべて (π^k) の形になることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.variance_affine",
+   "text": "X を2乗可積分な確率変数、a, b を実数とするとき、Var(aX + b) = a² Var(X) が成り立つかを判定し、成り立つなら証明せよ。",
+   "set": "textbook",
+   "style": "decide"
+  },
+  {
+   "recipe_id": "textbook.multivariable.partials_from_total_derivative",
+   "text": "f : ℝ² → ℝ が点 (p,q) で全微分可能で、その微分が線形写像 L であるとき、x, y それぞれに関する (p,q) での偏微分係数は L(1,0), L(0,1) に等しいことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.term_by_term_derivative",
+   "text": "各 n について g_n : ℝ → ℝ は微分可能で、すべての y で |g_n'(y)| ≤ u_n をみたし、Σ u_n は収束し、ある点 y₀ で Σ g_n(y₀) が収束するとする。このとき Σ g_n(y) は任意の y で収束し、その和は項別微分できる(導関数が Σ g_n'(y) になる)ことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.uniform_limit_integral",
+   "text": "閉区間 [a, b] 上で連続な関数列 f_n が [a, b] 上で f に一様収束するとき、∫_a^b f_n(x) dx → ∫_a^b f(x) dx となることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.riemann_removable_singularity",
+   "text": "s ⊂ ℂ を開集合、c∈s とし、f が s∖{c} で正則かつ有界であるとする。このとき、s 上で正則で s∖{c} 上では f と一致する関数 g が存在することを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.order_of_power_formula",
+   "text": "群 G の元 g が有限位数をもち、m が自然数のとき、g^m の位数は ord(g)/gcd(ord(g), m) に等しいことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.mazur_ulam_surjective_isometry",
+   "text": "実ノルム空間 E から F への全射な等長写像 f は、全単射なアフィン等長写像と一致することを示してください(マズール・ウラムの定理)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.field_galois.abel_ruffini_solvable_by_radicals_implies_solvable_group",
+   "text": "体 F の拡大体 E の元 x が F 上べき根で解け、q が F 上の既約多項式で x が q の根であるならば、q のガロア群は可解群であることを示せ(アーベル・ルフィニの定理の主要部分)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.domain_characteristic_prime_or_zero",
+   "text": "整域の標数は 0 か素数のどちらかであることを、正しいか判定したうえで示せ。",
+   "set": "textbook",
+   "style": "decide"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.five_lemma_modules",
+   "text": "環 R 上の加群の可換図式で、上下2つの行がどちらも5項の完全列であるとする。第1の縦写像が全射、第2と第4の縦写像が全単射、第5の縦写像が単射ならば、第3の縦写像は全単射であることを示せ(5項補題)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.topology_general.compact_closed_positive_distance",
+   "text": "距離空間 X のコンパクト集合 K と閉集合 C が互いに素ならば、ある r > 0 が存在して、すべての x∈K, y∈C について d(x,y) ≥ r となることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.cauchy_riemann_necessary",
+   "text": "f = u + iv が z = x + iy で複素微分可能で微分係数が f'(z) のとき、u, v は (x,y) で偏微分可能で、u_x = v_y = Re f'(z)、u_y = -v_x = -Im f'(z) が成り立つことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.projection_theorem_orthogonal_decomposition",
+   "text": "ヒルベルト空間 H の閉部分空間 M と任意の x∈H について、x = y + z (y∈M, z∈M の直交補空間)となる分解がただ一通り存在することを示してください(射影定理)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.snake_lemma_modules",
+   "text": "可換環 R 上の加群の可換図式で、上の行 M₁→M₂→M₃ は完全で M₂→M₃ は全射、下の行 N₁→N₂→N₃ は完全で N₁→N₂ は単射とする。縦写像 i₁, i₂, i₃ について、K₂, K₃ をそれぞれ i₂, i₃ の核、C₁, C₂ をそれぞれ i₁, i₂ の余核とし、F : K₂→K₃ と G : C₁→C₂ を上下の行の写像から誘導される写像とする。このとき、R 線形写像 δ : K₃→C₁ で K₂→K₃→C₁→C₂ が完全列になるものが存在することを示せ(蛇の補題)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.multivariable.polar_coordinates_integral",
+   "text": "f : ℝ² → ℝ が可積分ならば、平面全体での f の積分は、(0,∞)×(-π,π) 上での r·f(r cos θ, r sin θ) の積分に等しいことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.exists_norming_functional",
+   "text": "ℝ または ℂ 上のノルム空間 E の零でない元 x に対して、有界線形汎関数 g で ‖g‖ = 1 かつ g(x) = ‖x‖ となるものが存在することを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.multivariable.zero_derivative_constant_on_connected",
+   "text": "実ノルム空間 E の連結な開集合 U 上で関数 f が微分可能で、U のすべての点で微分が 0 ならば、f は U 上で定数であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.number_theory.chinese_remainder",
+   "text": "互いに素な正の整数 m, n と自然数 a, b に対して、x ≡ a (mod m) かつ x ≡ b (mod n) をみたす自然数 x が存在し、さらに自然数 y がこの2つの合同式をみたすことと y ≡ x (mod mn) は同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.contractible_simply_connected",
+   "text": "可縮な空間はすべて単連結であるというのは正しいか判定せよ。正しいなら証明せよ。",
+   "set": "textbook",
+   "style": "decide"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.eventually_lt_of_limsup_lt",
+   "text": "実数列 a_n が上に有界で limsup a_n < c ならば、ある N が存在して、n ≥ N であるすべての n について a_n < c となることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.topology_general.continuous_ext_on_dense",
+   "text": "位相空間 X からハウスドルフ空間 Y への連続写像 f, g が X の稠密な部分集合 S 上で一致するならば、f = g であることは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.isometry_preserves_angle",
+   "text": "ユークリッドアフィン空間の間の等長写像 f は(向きのない)角を保つ、すなわち a ≠ b, c ≠ b のとき ∠f(a)f(b)f(c) = ∠abc であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.jordan_chevalley_decomposition",
+   "text": "完全体 K 上の有限次元ベクトル空間 V の線形変換 f は、f = N + S (N は冪零、S は半単純)と書け、N, S はともに f の多項式として表せることを示してください(ジョルダン・シュヴァレー分解)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.schur_intertwiner_bijective_or_zero",
+   "text": "体 k 上のモノイド(または群)G の既約表現 ρ, σ の間の絡作用素 φ は、全単射であるか零写像であるかのどちらかであることを証明せよ(シューアの補題)。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.subspace_eq_of_le_of_finrank_le",
+   "text": "有限次元ベクトル空間 V の部分空間 S, T について、S ⊆ T かつ dim T ≤ dim S ならば S = T であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.adjoint_of_composition",
+   "text": "有限次元内積空間 E, F, G の間の線形写像 B: E → F と A: F → G について、合成 A∘B の随伴写像が B*∘A* になることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.is_lub_iff_eps",
+   "text": "実数 α が集合 S の上限であることは、α が S の上界であり、かつ任意の ε > 0 に対して α - ε < x を満たす x ∈ S が存在することと同値であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.maschke_invariant_complement",
+   "text": "G を有限群とし、その位数が体 k において 0 でないとする。このとき k[G]-加群 V の任意の k[G]-部分加群 W に対して、W の補部分加群となる k[G]-部分加群 W' が存在するというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.number_theory.order_dvd_totient",
+   "text": "n を正の整数、a を n と互いに素な自然数とする。a の n を法とする乗法的位数が φ(n) を割り切ることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.characteristic_root_exponential_solution",
+   "text": "実数 p, q, r, t について r² + p r + q = 0 が成り立つとき、s ↦ e^{rs} の t における微分が r e^{rt} であり、かつ s ↦ r e^{rs} の t における微分が -p·r e^{rt} - q e^{rt} であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.number_theory.coprime_iff_bezout",
+   "text": "整数 m, n について、gcd(m, n) = 1 であることと、m x + n y = 1 を満たす整数 x, y が存在することは同値であることを証明してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.localization_at_prime_is_local",
+   "text": "可換環 R の素イデアル P に対し、R の P での局所化 S は局所環になることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.binom_absorption",
+   "text": "自然数 a, b に対して、(a+1)·C(a, b) = (b+1)·C(a+1, b+1) が成り立つことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.second_isomorphism",
+   "text": "ベクトル空間 V の部分空間 S, T について、商空間 S/(S ∩ T) と (S + T)/T は線形同型であることは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.spectrum_is_quasi_compact",
+   "text": "可換環 A の素スペクトル Spec A はザリスキー位相に関して準コンパクトであることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.improper_comparison_test",
+   "text": "関数 f, g と実数 a について、f が (a, ∞) 上で連続、(a, ∞) 上で |f| ≤ g、かつ g が (a, ∞) 上で可積分ならば、f も (a, ∞) 上で可積分であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.continuity_from_above_counterexample",
+   "text": "半直線 [n, ∞)（n は自然数）はどれもルベーグ測度が無限大であり、しかもそれらの共通部分は空集合になることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.character_is_class_function",
+   "text": "体 k 上の有限次元表現 ρ: G → GL(V) の指標 χ について、任意の g, h ∈ G に対し χ(h g h⁻¹) = χ(g) が成り立つこと（指標が類関数であること）を証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.polynomial_factor_theorem",
+   "text": "因数定理を示してください。可換環 R 上の多項式 f と元 c について、X - c が f を割り切ることと f(c) = 0 は同値です。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.circle_integral_zpow_vanishes",
+   "text": "整数 m ≠ -1、半径 R > 0、円 |z - c| = R 上にない点 w について、この円周上での (z - w)^m の周回積分は 0 になることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.topology_general.banach_fixed_point",
+   "text": "空でない完備距離空間 X 上の縮小写像 f（定数 0 ≤ K < 1 で d(f(x), f(y)) ≤ K d(x, y)）は不動点をただ一つ持ち、任意の初期点から反復列 f^n(z) がその不動点に収束することを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.countable_union_of_countable",
+   "text": "高々可算な添字集合 I で添字付けられた、高々可算集合の族 (A_i) の和集合は高々可算であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.expectation_indep_mul",
+   "text": "確率空間上の可積分な確率変数 X, Y が独立ならば、積 XY も可積分で E[XY] = E[X]E[Y] が成り立つことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.multinomial_factorial_identity",
+   "text": "有限集合 s 上の自然数値関数 f に対して、多項係数 M(f) は (∏_{i∈s} f(i)!)·M(f) = (∑_{i∈s} f(i))! を満たすことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.lie_jacobi_cyclic_sum",
+   "text": "リー環 L の任意の元 a, b, c に対して、ヤコビ恒等式 [a,[b,c]] + [b,[c,a]] + [c,[a,b]] = 0 が成り立つことを、ライプニッツ形の公理から導いてください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.underdetermined_homogeneous",
+   "text": "m < n のとき、m×n 行列 A に対する同次連立一次方程式 Ax = 0 は自明でない解を持つことを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.banach_fixed_point_real_constant",
+   "text": "空でない完備距離空間上の写像 g が、ある 0 ≤ K < 1 について d(g(x), g(y)) ≤ K d(x, y) を満たすなら、g の不動点はちょうど一つであるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.field_galois.algebraic_extension_of_perfect_field_is_separable",
+   "text": "完全体 F の任意の代数拡大 E/F は分離拡大であることを示せ。特に標数 0 の体でもこれが成り立つ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.axiom_of_choice",
+   "text": "集合族 (B_k)_{k∈K} の各 B_k が空でないとき、すべての k について h(k) ∈ B_k となる選択関数 h が存在することを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.alternating_sum_binomials",
+   "text": "n ≥ 1 のとき、∑_{k=0}^{n} (-1)^k C(n, k) = 0 であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.mfderiv_id_const",
+   "text": "多様体 M の恒等写像の点 x における接写像は x での接空間の恒等写像であり、定値写像の接写像は零写像であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.group_theory.third_isomorphism_theorem",
+   "text": "群 G の正規部分群 N ≤ M について、剰余群 (G/N)/(M/N) は G/M と同型であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_indicator_restriction",
+   "text": "f が可測関数で A が可測集合のとき、A 上では f に等しく A の外では 0 となる関数は可測であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.sample_variance_algebra",
+   "text": "n ≥ 1 とし、x_0, ..., x_{n-1} の標本平均を m とする。このとき任意の実数 a について ∑_i (x_i - a)² = ∑_i (x_i - m)² + n(m - a)² が成り立つことを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.uniform_convergence_eps",
+   "text": "実数値関数列 G_n が S 上で f に一様収束することは、任意の ε > 0 に対してある N が存在し、n ≥ N かつ S の任意の x について |G_n(x) - f(x)| < ε が成り立つことと同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.cayley_hamilton_matrix",
+   "text": "ケーリー・ハミルトンの定理を示してください。可換環上の正方行列は、その特性多項式で零化されます。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.holomorphic_series_m_test",
+   "text": "U を ℂ の開集合とし、各 f_n が U 上で正則で、U 上で |f_n(z)| ≤ M_n となる収束級数 ∑ M_n があるとする。このとき ∑ f_n は U 上で正則であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.padic_integer_unit_iff_norm_one",
+   "text": "素数 p について、p 進整数 w が Z_p の単元であることと ‖w‖ = 1 は同値であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.first_order_compactness",
+   "text": "コンパクト性定理を示せ。一階理論 T がモデルを持つことと、T の任意の有限部分集合がモデルを持つことは同値である。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.number_theory.congruence_cancel",
+   "text": "整数 a, b, c と正の整数 m について、gcd(c, m) = 1 かつ ca ≡ cb (mod m) ならば a ≡ b (mod m) であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.topology_general.heine_borel_euclidean",
+   "text": "ユークリッド空間 ℝ^n の部分集合 K がコンパクトであることと、K が閉集合かつ有界であることは同値であることを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.finite_dimensional_subspace_closed",
+   "text": "ℝ または ℂ 上のノルム空間の有限次元部分空間は閉集合であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.integral_extension_field_iff",
+   "text": "環の単射準同型 R → S によって整域 S が R 上整であるとき、R が体であることと S が体であることは同値であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.smooth_partition_of_unity_exists",
+   "text": "M を有限次元実ベクトル空間をモデルとするハウスドルフかつσコンパクトな滑らかな多様体、s を閉集合、U を s を被う開集合の族とする。このとき U に従属する s 上の滑らかな1の分割が存在することを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.ode.damped_oscillator_energy_decreasing",
+   "text": "γ ≥ 0 とする。ℝ 上の方程式 y'' + 2γ y' + ω² y = 0 の解について、エネルギー y'² + ω² y² が時間とともに単調非増加であることを示せ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.field_galois.artin_fixed_field_theorem",
+   "text": "有限群 G が体 E に体の自己同型として忠実に作用するとき、固定体 E^G 上 E はガロア拡大であり、拡大次数 [E : E^G] は |G| に等しいことを証明せよ。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.chebyshev_inequality",
+   "text": "チェビシェフの不等式は、2乗可積分な確率変数 X と c > 0 に対し P(|X - E[X]| ≥ c) ≤ Var(X)/c² と主張しますが、これは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.exterior_power_dimension",
+   "text": "体 K 上の d 次元ベクトル空間 V の p 次外冪の次元は C(d, p) であることを示してください。",
+   "set": "textbook",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.natural_power_continuous",
+   "text": "n を自然数とするとき、関数 f(x) = x^n が実数全体で連続であることを証明してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.natural_power_continuous",
+   "text": "自然数 $m$ に対して、$\\mathbb{R}$ から $\\mathbb{R}$ への写像 $t \\mapsto t^m$ は連続ですか？ 理由も教えてください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.right_limit_and_discontinuity",
+   "text": "f: R → R が f(0) = 1 を満たし、任意の正の実数 x に対して f(x) = 0 であるとする（x < 0 については何も仮定しない）。このとき、x を 0 に右から近づけたときの f(x) の極限は 0 であり、かつ f は x = 0 で連続でないことを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.right_limit_and_discontinuity",
+   "text": "実数値関数 $g$ について $g(0)=1$ で、$t>0$ なら常に $g(t)=0$ だとします（負の側の条件はありません）。右側極限 $\\lim_{t\\to +0} g(t)$ は 0 になり、しかも $g$ は $t=0$ で不連続である、と言えますか？ 証明もお願いします。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.cubic_derivative",
+   "text": "任意の実数 x について、関数 y^3 − 3y の x における微分係数が 3x^2 − 3 であることを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.cubic_derivative",
+   "text": "$f(t)=t^3-3t$ は各実数 $a$ で微分可能で、$a$ での導関数の値は $3a^2-3$ になりますか？ 導出してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.pi_gt_305",
+   "text": "円周率 π が 3.05 より大きいことを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.pi_gt_305",
+   "text": "$\\pi > 3.05$ は本当に成り立ちますか？ 証明を教えてください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.linear_injective_iff_zero_kernel",
+   "text": "体 K 上のベクトル空間 V, W と線形写像 f: V → W について、f が単射であることと、「f(x) = 0 ならば x = 0」が成り立つことは同値であることを証明してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.linear_injective_iff_zero_kernel",
+   "text": "体 $K$ 上の線形写像 $T: V \\to W$ について、$T$ が単射であるための必要十分条件は、すべての $v \\in V$ で $T(v)=0$ なら $v=0$ となること、と言えますか？ 示してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.linear_system_unique_solution",
+   "text": "実数 x, y について、連立方程式 3x + 2y = 7, x − y = −1 が成り立つことと、x = 1 かつ y = 2 であることは同値であることを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.linear_system_unique_solution",
+   "text": "実数 $a, b$ に対して、$3a+2b=7$ かつ $a-b=-1$ となるのは $a=1,\\ b=2$ のときに限る（逆に $a=1, b=2$ なら両方の式が成り立つ）と言えますか？ 確認したいです。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.determinant_nonzero_decision",
+   "text": "実数成分の行列 [[1, 2], [3, 5]] の行列式が 0 でないことを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.determinant_nonzero_decision",
+   "text": "2×2 行列 $\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$ の行列式は 0 になりますか？ 0 でないなら、その確認をお願いします。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.rational_power_continuous",
+   "text": "自然数 n に対し、実数全体で定義された関数 (x^n + sin x) / (1 + x^2) が連続であることを証明せよ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.rational_power_continuous",
+   "text": "$m$ を自然数として、$h(t)=\\dfrac{t^m+\\sin t}{1+t^2}$ は $\\mathbb{R}$ 上で連続ですか？ 理由もつけてください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.exponential_product_derivative",
+   "text": "任意の実数 x について、関数 y·e^y の x における微分係数が (x + 1)e^x であることを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.exponential_product_derivative",
+   "text": "$f(t)=t\\,e^{t}$ を微分すると、すべての実数 $a$ で $f'(a)=(a+1)e^{a}$ になりますか？ 確かめてください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.reciprocal_derivative",
+   "text": "0 でない実数 x に対して、関数 1/y の x における微分係数が −1/x^2 であることを証明してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.reciprocal_derivative",
+   "text": "$a\\neq 0$ のとき、$f(t)=1/t$ の $a$ での微分係数は $-1/a^2$ になる、で合っていますか？ 示してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.absolute_value_not_differentiable",
+   "text": "関数 f(x) = |x| は x = 0 で微分可能でないことを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.absolute_value_not_differentiable",
+   "text": "絶対値関数 $y=|x|$ は原点で微分できますか？ できないなら証明してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.quadratic_not_injective",
+   "text": "実数全体を定義域とする関数 f(x) = x^2 が単射でないことを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.quadratic_not_injective",
+   "text": "$g:\\mathbb{R}\\to\\mathbb{R},\\ g(t)=t^2$ は単射ですか？ 単射かどうかを判定し、理由を述べてください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.linear_system_inconsistent",
+   "text": "x + y = 1 かつ 2x + 2y = 3 を同時に満たす実数 x, y は存在しないことを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.linear_system_inconsistent",
+   "text": "連立方程式 $a+b=1,\\ 2a+2b=3$ は実数解を持ちますか？ 持たないなら証明してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.composite_injective_implies_first",
+   "text": "写像 f: A → B, g: B → C について、合成 g∘f が単射ならば f も単射であることを証明してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.composite_injective_implies_first",
+   "text": "関数 $p: X \\to Y$, $q: Y \\to Z$ があって $q \\circ p$ が単射のとき、$p$ も単射だと言えますか？ 証明をお願いします。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.rank_nullity",
+   "text": "K を斜体（可除環）とし、V, W を K 上の加群、V は有限次元とする。K 線形写像 f: V → W について、dim(f の像) + dim(f の核) = dim V が成り立つことを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.rank_nullity",
+   "text": "斜体 $D$ 上の加群 $V, W$ があり $V$ は有限次元だとします。線形写像 $T: V \\to W$ について、$\\dim \\mathrm{Im}\\,T + \\dim \\mathrm{Ker}\\,T = \\dim V$（階数・退化次数の定理）は成り立ちますか？ 証明してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.projection_not_injective",
+   "text": "R × R から R への写像 (a, b) ↦ a（第1成分への射影）が単射でないことを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.projection_not_injective",
+   "text": "平面 $\\mathbb{R}^2$ から $\\mathbb{R}$ への射影 $(s,t)\\mapsto s$ は単射ですか？ 単射でないなら示してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.product_determinant_nonzero_iff",
+   "text": "実数成分の n 次正方行列 A, B について、det(AB) ≠ 0 であることと、det A ≠ 0 かつ det B ≠ 0 であることは同値であることを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.product_determinant_nonzero_iff",
+   "text": "$P, Q$ を実数成分の $n$ 次正方行列とします。$\\det(PQ)\\neq 0$ と、「$\\det P\\neq 0$ かつ $\\det Q\\neq 0$」は同値と言えますか？ 証明をお願いします。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.continuous_endpoint_sign_change_has_root",
+   "text": "a ≤ b を満たす実数 a, b と、閉区間 [a, b] 上で連続な関数 f が f(a) < 0, f(b) > 0 を満たすとき、[a, b] 内に f(x) = 0 となる x が存在することを示してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.continuous_endpoint_sign_change_has_root",
+   "text": "$p\\le q$ とし、閉区間 $[p,q]$ で連続な関数 $g$ が $g(p)<0<g(q)$ を満たすなら、$g(c)=0$ となる $c\\in[p,q]$ は必ず存在しますか？ 中間値の定理で示してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.sum_derivative",
+   "text": "実数値関数 f, g が点 a で微分可能で、微分係数がそれぞれ f′, g′ であるとき、f + g も a で微分可能で、その微分係数は f′ + g′ であることを示せ。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.sum_derivative",
+   "text": "$u, v:\\mathbb{R}\\to\\mathbb{R}$ が点 $x_0$ で微分可能で、$u'(x_0)=\\alpha$, $v'(x_0)=\\beta$ とします。和 $u+v$ の $x_0$ での微分係数は $\\alpha+\\beta$ になりますか？ 証明してください。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "requested.tan_one_degree_irrational",
+   "text": "tan 1°（1度の正接）が無理数であることを証明してください。",
+   "set": "requested",
+   "style": "imperative"
+  },
+  {
+   "recipe_id": "requested.tan_one_degree_irrational",
+   "text": "$\\tan(\\pi/180)$ は有理数ですか、それとも無理数ですか？ 無理数だと思うので、証明をお願いします。",
+   "set": "requested",
+   "style": "question"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.lie_ideal_bracket_le_inf",
+   "text": "リー代数のイデアルを二つ選んで、その二つのブラケット積を作ると、元の二つのイデアルの共通部分に収まるのってなんで？証明を教えて",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.character_orthogonality_irreducible",
+   "text": "$k=\\bar k,\\ |H|\\neq 0$ in $k$, $\\alpha,\\beta$ 既約: $\\frac{1}{|H|}\\sum_{h\\in H}\\chi_\\alpha(h)\\,\\chi_\\beta(h^{-1})=\\begin{cases}1 & \\alpha\\cong\\beta\\\\ 0 & \\text{otherwise}\\end{cases}$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.dirichlet_primes_in_progression",
+   "text": "合同式 p ≡ r (mod m) をみたす素数 p が無数に存在する。ただし m は正の整数で、r は m と互いに素な整数とする。この事実の証明を知りたい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.mean_value_theorem",
+   "text": "If a function is continuous on [a,b] and differentiable on (a,b), why is there an interior point where the derivative equals the average slope (f(b)-f(a))/(b-a)? Please give a proof.",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.taylor_lagrange_remainder",
+   "text": "ラグランジュ剰余項つきテイラーの定理",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.improper_integral_exp_neg",
+   "text": "eのマイナスx乗を0から無限大まで積分するとちょうど1になるのって、なんで？広義積分として収束することも含めて証明を教えて",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.card_union_add_card_inter",
+   "text": "$|P\\cup Q|+|P\\cap Q|=|P|+|Q|$ （$P,Q$ は有限集合）",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.inclusion_exclusion_principle",
+   "text": "有限個の有限集合の合併の元の個数は、空でない部分族ごとの共通部分の元数に、符号 (-1)^(部分族の大きさ+1) を付けて足し上げたものに等しい。この等式の証明を示したい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.power_series_negative_binomial",
+   "text": "Over any commutative ring, why does the formal series with coefficients C(d+n, d) become exactly 1 after multiplying by (1-X)^(d+1)?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.pid_krull_dimension_one",
+   "text": "PID 非体 クルル次元は1",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.artinian_iff_noetherian_dim_zero",
+   "text": "イデアルが下に無限に減り続けない可換環って、ネーター的で素イデアルがぜんぶ極大な環と同じなんですか？なんで成り立つの？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.maximal_radical_implies_primary",
+   "text": "$\\sqrt{\\mathfrak{a}}\\in\\mathrm{Max}(\\Lambda)\\ \\Rightarrow\\ \\mathfrak{a}\\ \\text{primary}$ （$\\Lambda$ は可換環）",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.euler_formula",
+   "text": "cosθ + i sinθ に等しい、虚数の偏角 iθ を指数関数に代入した値は（θ は実数）。余弦と正弦で表せるこの等式を証明してほしい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.principal_log_exp",
+   "text": "For a complex number z whose imaginary part lies in (-π, π], why does the principal branch of the logarithm of exp(z) give back z?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.constant_real_part_implies_constant",
+   "text": "実部が定数の正則関数は定数",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.field_galois.rational_cyclotomic_extension_galois_group",
+   "text": "1のn乗根を有理数体にくっつけてできる体って、ガロア拡大で、次数がオイラーのトーシェント関数の値になって、ガロア群がmod nの可逆な余りの乗法群と同じになるのはなんで？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.field_galois.splitting_field_exists_unique",
+   "text": "$\\forall\\, \\psi\\in \\Bbbk[T]:\\ \\exists\\,\\Sigma\\ \\text{splitting field of }\\psi \\text{ over } \\Bbbk,\\ \\text{and } \\Sigma_1,\\Sigma_2\\ \\text{splitting fields}\\Rightarrow \\Sigma_1\\cong_{\\Bbbk}\\Sigma_2$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.field_galois.perfect_field_of_char_zero_or_finite",
+   "text": "完全体である、のは、標数ゼロの任意の体、および元の個数が有限な任意の体。この主張を示したい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.convex_family_intersection",
+   "text": "Is the intersection of any collection of convex subsets of a real vector space again convex? Why?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.riemann_lebesgue_real_line",
+   "text": "リーマン・ルベーグの補題",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.cauchy_schwarz_finite_sum",
+   "text": "実数を並べた二つの組で、対応する数どうしを掛けて全部足した値の二乗が、それぞれの二乗和を掛けたもの以下になるのはなぜ？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.banach_steinhaus_uniform_boundedness",
+   "text": "$\\{T_\\lambda\\}_{\\lambda\\in\\Lambda}\\subset B(\\mathcal X,\\mathcal Y)$, $\\mathcal X$ Banach: $\\forall \\xi\\ \\sup_\\lambda\\|T_\\lambda \\xi\\|<\\infty \\Rightarrow \\sup_\\lambda\\|T_\\lambda\\|<\\infty$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.best_approximation_iff_orthogonal",
+   "text": "u−v が部分線形空間 K のすべての元と直交することは、K の元 v が u に最も近い（距離が下限に一致する）ことと同値。内積をもつ線形空間での証明は？",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.spectrum_compact_banach_algebra",
+   "text": "In a complex Banach algebra, why is the set of complex numbers λ for which a - λ fails to be invertible always compact?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.ptolemy_cyclic_quadrilateral",
+   "text": "トレミーの定理 共円",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.path_homotopy_concat",
+   "text": "道を2本つなぐとき、それぞれを端点を固定したまま連続的に変形した道に取り替えても、つないだ結果も端点固定で連続変形できるのはなんで？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.simply_connected_iff_loops",
+   "text": "$Z$ 単連結 $\\iff$ $Z$ 弧状連結 $\\wedge\\ \\forall z\\,\\forall\\omega\\in\\Omega_z Z:\\ \\omega\\simeq_{\\partial} c_z$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.group_theory.normal_iff_left_coset_eq_right_coset",
+   "text": "左剰余類と右剰余類がどの元についても一致する、ということは部分群が正規であることと同値になる。この同値の示し方を知りたい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.group_theory.left_cosets_eq_or_disjoint",
+   "text": "Why can two left cosets of a subgroup never partially overlap, i.e. they are either identical or share no element?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.group_theory.burnside_lemma",
+   "text": "バーンサイドの補題",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.nilpotent_trace_zero",
+   "text": "何回か繰り返すとゼロ写像になる線形変換の対角和がゼロになるのはなんで？有限次元の場合で教えて",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.polarization_general",
+   "text": "$\\langle u,w\\rangle=\\tfrac14\\big(\\|u+w\\|^2-\\|u-w\\|^2+\\iota(\\|u-\\iota w\\|^2-\\|u+\\iota w\\|^2)\\big)$, $\\mathbb K=\\mathbb R,\\mathbb C$ （第1変数共役線形, 実の場合 $\\iota=0$）",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.idempotent_map_diagonalizable",
+   "text": "冪等な線形変換（二回施しても一回と同じ）では、固有値1の固有空間と固有値0の固有空間の和が全空間に一致する。これを示したい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.li_card_eq_finrank_spans",
+   "text": "In a finite-dimensional vector space, why does a linearly independent list whose length equals the dimension automatically span the whole space?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.basis_coordinates_unique",
+   "text": "基底での成分表示の一意性",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.matrix_mul_assoc",
+   "text": "行列を3つ掛けるとき、先にどっちの二つを掛けても結果が同じになるのはなんで？サイズはちゃんと合っているとして証明を教えて",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.reals_uncountable",
+   "text": "$|\\mathbb N|<|\\mathbb R|$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.injective_iff_left_inverse",
+   "text": "左逆写像が存在することと一対一写像であることは同値（定義域が空でないとき）。この対応の証明を知りたい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.cantor_schroeder_bernstein",
+   "text": "If there is a one-to-one map from A into B and another one-to-one map from B into A, how do we prove there is a bijection between A and B?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.sigma_algebra_countable_inter",
+   "text": "可算個の可測集合の共通部分",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_of_halfline_preimages",
+   "text": "関数の値がa以下になる点の集まりが、どんな実数aでも可測なら、その関数自体が可測っていえるのはなぜ？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.simple_function_approximation",
+   "text": "$\\psi:Z\\to[0,\\infty]$ measurable $\\Rightarrow\\ \\exists\\, s_k$ simple, $0\\le s_k\\le s_{k+1}$, $s_k(z)\\to\\psi(z)\\ \\forall z$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.abelian_mono_iff_kernel_zero",
+   "text": "アーベル圏において、核射が零射であることと、その射が単射的（モノ）であることは同値。この同値の証明を教えてほしい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.semisimple_iff_sum_of_simples",
+   "text": "Is a module semisimple exactly when it equals the sum of all its simple submodules? How is this proved?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.simple_endomorphism_is_unit",
+   "text": "シューアの補題 自己準同型",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.multivariable.gradient_steepest_ascent",
+   "text": "関数が微分できる点で、いちばん急に増える向きが勾配の向きになるのってなんで？その向きに進んだときの変化率が勾配の長さになる理由も知りたい",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.multivariable.local_extremum_gradient_zero",
+   "text": "$\\varphi:H\\to\\mathbb R$ differentiable at $q$, $q$ local extremum $\\Rightarrow \\nabla\\varphi(q)=0$ （$H$ は実ヒルベルト空間）",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.multivariable.fderiv_iff_components",
+   "text": "ℝ^m に値をとる写像が、ある線形写像 L を点での微分にもつことは、各座標関数の微分が L の対応する座標成分であることと同値。ノルム空間上の写像で、この同値を示したい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.number_theory.sq_eq_one_mod_prime",
+   "text": "Modulo a prime p, why must any integer whose square is congruent to 1 be congruent to either 1 or -1?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.number_theory.infinite_primes",
+   "text": "素数は無限個",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.number_theory.primitive_root_prime",
+   "text": "素数で割った余りの世界に、べき乗していくと p-1 回目で初めて1に戻る数があるのはなんで？その数は p と互いに素ですよね",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.ode.matrix_exponential_add_commuting",
+   "text": "$MN=NM\\Rightarrow e^{M+N}=e^{M}e^{N}$ for $M,N\\in \\mathbb R^{r\\times r}$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.ode.integrating_factor_derivative",
+   "text": "P の導関数が p、y の導関数が q − p y であるとき、e^P と y の積の導関数は e^{P(t)} q(t) になる。1階線形微分方程式の積分因子の計算としてこれを確かめたい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.ode.non_uniqueness_without_lipschitz",
+   "text": "Can the ODE y' = 2 sqrt|y| with y(0) = 0 have more than one solution on the whole real line? Show two different ones.",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.condexp_indep_eq",
+   "text": "独立なσ代数での条件付期待値",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.indep_event_compl",
+   "text": "事象AとBが独立なとき、Aと「Bが起きない」という事象も独立になるのって、どうやって示すの？",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.gaussian_indep_add",
+   "text": "$U\\perp\\!\\!\\!\\perp V,\\ U\\sim N(\\mu_1,\\sigma_1^2),\\ V\\sim N(\\mu_2,\\sigma_2^2)\\Rightarrow U+V\\sim N(\\mu_1+\\mu_2,\\sigma_1^2+\\sigma_2^2)$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.ratio_test",
+   "text": "級数が収束する、ただし各項は零でなく、隣り合う項の絶対値の比の極限が1未満のとき。極限が1を超えれば収束しない。この判定法の証明を示したい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.rearrangement_absolute",
+   "text": "If a real series converges absolutely, why does reordering its terms not change the limit of the partial sums?",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.abel_power_series_lemma",
+   "text": "冪級数 絶対収束 アーベル",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.low_degree_irreducible_iff_no_root",
+   "text": "2次か3次の多項式が因数分解できないかどうかは、根があるかどうかだけで決まるのはなんで？係数は体の中で考えるとして教えて",
+   "set": "hard",
+   "style": "informal"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.pid_nonzero_prime_is_maximal",
+   "text": "$\\mathfrak q\\in\\mathrm{Spec}\\,D,\\ \\mathfrak q\\ne0,\\ D\\ \\text{PID}\\Rightarrow\\mathfrak q\\in\\mathrm{Max}\\,D$",
+   "set": "hard",
+   "style": "symbolic"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.pid_is_ufd",
+   "text": "素元分解が一意にできる整域であること、のは、すべての単項イデアル整域について成り立つ。この主張の証明の筋道を知りたい。",
+   "set": "hard",
+   "style": "synonym"
+  },
+  {
+   "recipe_id": "textbook.topology_general.metric_space_normal",
+   "text": "Prove that every metric space satisfies the normality separation axiom: any two disjoint closed sets can be separated by disjoint open sets.",
+   "set": "hard",
+   "style": "english"
+  },
+  {
+   "recipe_id": "textbook.topology_general.connected_between_closure",
+   "text": "連結集合の閉包は連結",
+   "set": "hard",
+   "style": "terse"
+  },
+  {
+   "recipe_id": "textbook.topology_general.cauchy_convergent_subsequence",
+   "text": "コーシー列の一部の項だけ取り出した部分列が収束するなら、元の列も同じ値に収束するのはなぜですか？",
+   "set": "hard",
+   "style": "informal"
+  }
+ ],
+ "negatives": [
+  {
+   "recipe_id": "textbook.measure_integration.markov_inequality",
+   "text": "測度空間 (X, μ) 上の [0,∞] 値関数 f と ε ∈ [0,∞] に対して、ε·μ({x | ε ≤ f(x)}) ≤ ∫ f dμ を証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "f が可測であるという仮定を外した。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.convex_hull_minimal",
+   "text": "実ベクトル空間 E の部分集合 s と凸集合 t について、s の凸包が t に含まれているなら、s も t に含まれますか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "含意の向きを逆にし、凸包の包含から s ⊆ t を導く主張にした。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.metric_closed_iff_seq_limits",
+   "text": "位相空間 X の部分集合 C が閉集合であることと、C の点列 a_n が L に収束するなら必ず L ∈ C となることは同値であることを示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "距離空間を一般の位相空間に変えた（点列では閉集合を特徴づけられない）。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.cofactor_expansion_row",
+   "text": "K を体、A を K 上の n+1 次正方行列、i を行番号とする。第 i 行と第 j 列を除いた小行列を A_ij として、det A = Σ_j (-1)^(i·j) a_ij det A_ij となることを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "符号の指数を i+j から積 i·j に変えた。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.module_quotient_of_free",
+   "text": "環 R 上の任意の加群 N について、N の元の集合を基底とする自由 R 加群から N への全単射な R 線形写像が存在するというのは本当ですか。示してください。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "全射に加えて単射も要求し、任意の加群が自由加群になるという強い主張にした。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.sin_cos_addition",
+   "text": "任意の実数 a, b について、sin(a+b) = sin a cos b + cos a sin b と cos(a+b) = cos a cos b + sin a sin b が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "cos の加法定理の符号を - から + に変えた。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.continuous_iff_components",
+   "text": "写像 f: ℝⁿ → ℝᵐ が連続であることと、f のすべての成分関数が一様連続であることは同値であることを証明せよ。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "成分関数の連続性を一様連続性に変えた。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.algebraic_extension_transitive",
+   "text": "体の拡大の塔 F ⊆ K ⊆ L について、L/F が代数拡大ならば、K/F と L/K はどちらも代数拡大になることを証明せよ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "仮定と結論を入れ替え、L/F の代数性から K/F と L/K の代数性を導く向きにした。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.continuous_iff_image_closure",
+   "text": "位相空間の間の写像 f: X → Y が連続であることは、任意の部分集合 S ⊆ X について f(cl S) = cl(f(S)) が成り立つことと同値ですか。証明してください。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "包含 ⊆ を等号 = に強め、逆向きの包含も要求した。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.pid_irreducible_is_prime",
+   "text": "整域 R の既約元 p は素元であることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "単項イデアル整域という仮定を単なる整域に弱めた。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.natural_transformation_iso_iff_components",
+   "text": "関手 F, G: C → D の間の自然変換 τ が自然同型であることと、すべての対象 X について成分 τ_X が左逆射をもつことは同値であることを示せ。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "成分が両側逆射をもつ（同型射）条件を左逆射だけに弱めた。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.extreme_value_theorem",
+   "text": "a ≤ b とする。関数 f が閉区間 [a,b] 上で連続ならば、[a,b] の各点 t に対して、f(x) ≤ f(t) ≤ f(y) を満たす x, y ∈ [a,b] が存在することを証明せよ。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "最小・最大点 x, y を t によらず先に選ぶ主張から、t ごとに x, y を選ぶ主張に量化子の順序を変えた。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.bessel_inequality_finite",
+   "text": "複素内積空間 E の正規直交系 (v_i) と点 x、有限集合 s に対して、Σ_{i∈s} |⟨v_i, x⟩| ≤ ‖x‖ が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "両辺の2乗をやめ、指数を2から1に変えた。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.cauchy_integral_formula_disc",
+   "text": "f を開円板 |z-c| < R で正則、閉円板で連続な関数とする。|w-c| < R のとき、円周 |z-c| = R 上の積分 ∮ f(z)/(z-w) dz = πi f(w) となることを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "右辺の係数を 2πi から πi に変えた。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.matrix_unit_iff_det_unit",
+   "text": "可換環 R 上の n 次正方行列 A が行列環の可逆元であることと、det A ≠ 0 であることは同値ですか。示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "det A が R の可逆元である条件を、零でない（体のときの条件）に変えた。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.log_of_product",
+   "text": "s > 0 かつ t は任意の実数のとき、log(st) = log s + log t が成り立つことを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "t > 0 の仮定を外した（t = 0 などで成り立たない）。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.linear_continuous_iff_bounded",
+   "text": "ℝ または ℂ 上のノルム空間 E, F の間の線形写像 f が連続であることと、各 x ごとに定数 C_x が存在して ‖f(x)‖ ≤ C_x‖x‖ が成り立つことは同値であることを証明せよ。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "x によらない一様な定数 C を、x ごとに取れる定数 C_x に変えた。"
+  },
+  {
+   "recipe_id": "textbook.ode.separable_first_integral",
+   "text": "実数全体で y' = g(t)h(y) が成り立ち、すべての t で h(y(t)) ≠ 0 とする。H が y(t) で微分係数 1/h(y(t)) をもつとき、H(y(t)) - G(t) は t によらず一定であることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "G' = g という仮定を外し、G を任意の関数にした。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.lagrange_interpolation_unique",
+   "text": "相異なる n 個の節点 v_i と値 r_i が与えられたとき、次数が n 以下の実係数多項式 P で、すべての i について P(v_i) = r_i を満たすものがちょうど1つ存在することを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "次数の上限を n 未満から n 以下に変え、一意性が成り立たなくなる。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.cauchy_iff_convergent",
+   "text": "有理数列 (a_n) がコーシー列であることと、有理数に収束することは同値であると聞きました。これを証明してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "実数列を有理数列に変えた（ℚ は完備でない）。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.moebius_divisor_sum",
+   "text": "正の整数 n について、n の正の約数 d にわたる μ(d)² の総和は、n = 1 のとき 1、n ≥ 2 のとき 0 になることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "和の各項を μ(d) から μ(d)² に変えた（指数の変更）。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.bounded_inverse_theorem",
+   "text": "バナッハ空間 E, F の間の全射な有界線形作用素 T には、有界線形な右逆作用素 S（T(Sy) = y）が存在することを証明せよ。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "全単射と両側逆作用素を、全射と右逆作用素だけに弱めた。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.pigeonhole_congruent_integers",
+   "text": "n を正の整数とする。n 個以上の要素をもつ整数の有限集合 s には、差が n で割り切れる相異なる2元が存在することを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "要素数の条件を n より多い から n 個以上 に変えた（n 個では成り立たない）。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.derivative_of_holomorphic_is_holomorphic",
+   "text": "実数直線の開集合 U 上で微分可能な関数 f の導関数 f' も U 上で微分可能であることを示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "複素正則関数を実変数の微分可能関数に変えた。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.orbit_stabilizer_theorem",
+   "text": "有限群 G が集合 X に作用しているとき、点 x の軌道の大きさと x の固定部分群の位数の積は 2|G| に等しいことを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "右辺を |G| から 2|G| に変えた。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.maximal_is_greatest_of_linear",
+   "text": "半順序集合の部分集合 S において、S の極大元は S の最大元になりますか。証明してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "全順序の仮定を外して半順序にした。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.mean_value_inequality",
+   "text": "実ノルム空間の凸集合 s の各点で f が微分可能で、そこでの導関数の作用素ノルムが C 以下ならば、s の任意の相異なる2点 x, y について ‖f(y) - f(x)‖ < C‖y - x‖ となることを証明せよ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "不等式を ≤ から狭義の < に強めた。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.zorn_lemma",
+   "text": "半順序集合が極大元をもつならば、そのすべての鎖（空の鎖も含む）が上界をもつことを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "含意の向きを逆にした。"
+  },
+  {
+   "recipe_id": "textbook.ode.second_order_solution_space_subspace",
+   "text": "実数全体で定義された斉次線形方程式 y'' + p(t)y' + q(t)y = 0 の解全体は、実関数全体のなすベクトル空間の2次元部分空間になることを証明せよ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "部分空間であることに加え、次元が2であるという結論を足した。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.strong_induction",
+   "text": "自然数上の命題 P について、すべての n で P(n) が成り立つなら、任意の n で「m < n なるすべての m で P(m) ならば P(n)」が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "仮定と結論を入れ替えた。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.convex_interior_closure",
+   "text": "実ノルム空間の凸部分集合 S の内部と閉包と境界はいずれも凸集合であることを証明せよ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "境界も凸であるという結論を追加した（一般に偽）。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.infinite_cardinal_add_mul",
+   "text": "有限基数 κ, λ に対して、κ + λ = max(κ, λ) かつ κ·λ = max(κ, λ) となることを示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "無限基数を有限基数に変えた。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.action_orbits_eq_or_disjoint",
+   "text": "群 G が集合 X に作用しているとき、任意の x, y ∈ X について軌道 Gx と Gy が一致するか、または任意の x, y ∈ X について Gx と Gy が互いに素であることを示せ。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "「任意の x, y について（一致または互いに素）」を「（任意の x, y で一致）または（任意の x, y で互いに素）」に量化子の位置を変えた。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.fundamental_theorem_second",
+   "text": "F が a と b を端点とする開区間の各点で f を導関数にもち、f がその開区間上で連続ならば、∫_a^b f(x) dx = F(b) - F(a) となることを示せ。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "条件を課す区間を閉区間から開区間に変えた（端点での挙動が保証されない）。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.two_vertices_same_degree",
+   "text": "頂点を3個以上もつ有限単純グラフには、次数が等しい相異なる3頂点が存在することを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "頂点数の条件と等次数頂点の個数を2から3に変えた。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.first_isomorphism_theorem",
+   "text": "群準同型 f: G → H について、x ker f ↦ f(x) は G/ker f から H への同型写像になることを示してください。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "像への同型を、H 全体への同型（f の全射性を含む）に強めた。"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.ae_countable_conjunction",
+   "text": "任意個数（非可算でもよい）の性質 p_i がそれぞれほとんど至るところ成り立つなら、ほとんどすべての x が全部の p_i を同時に満たすことを証明せよ。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "可算個の性質を任意の添字集合（非可算を含む）に変えた。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.two_quadratic_residue",
+   "text": "p を奇素数とする。合同式 x² ≡ 2 (mod p) が整数解をもつことと、p ≡ 1 または 5 (mod 8) であることは同値であることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "法 8 の剰余の条件を 1 または 7 から 1 または 5 に変えた。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.integral_extension_incomparability",
+   "text": "環 S が R 上整で、Q が S のイデアル、J が Q を真に含む S のイデアルならば、J の R への縮約は Q の縮約を真に含むことを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "Q が素イデアルであるという仮定を外した。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.exists_eigenvalue_alg_closed",
+   "text": "代数閉体 K 上の0でない無限次元ベクトル空間 V の線形変換 f は、固有値をもつことを示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "有限次元を無限次元に変えた（シフト作用素など反例がある）。"
+  },
+  {
+   "recipe_id": "textbook.ode.harmonic_oscillator_energy_conservation",
+   "text": "y'' = -ω² y の実数全体での解 y について、y'² + ω y² が時刻によらず一定であることを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "保存量の係数を ω² から ω に変えた（指数の変更）。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.equivalence_iff_quasi_inverse",
+   "text": "関手 F: C → D が圏同値であることと、id_C ≅ G∘F を満たす関手 G: D → C が存在することは同値であることを示してください。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "両側の擬逆（G∘F と F∘G の両方）を、片側 id_C ≅ G∘F だけに弱めた。"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_sequence_supremum",
+   "text": "[0,∞] 値の関数の列 f_n に対して、各点上限 x ↦ sup_n f_n(x) も可測であることを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "各 f_n が可測であるという仮定を外した。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.spectral_theorem_self_adjoint",
+   "text": "有限次元内積空間上の線形変換 T に、固有ベクトルからなる正規直交基底が存在し固有値がすべて実数ならば、T は自己共役であることを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "自己共役から固有基底の存在を導く向きを逆にした。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.alternating_group_index_and_order",
+   "text": "有限集合 X が2個以上の元をもつとき、X 上の交代群は対称群の正規部分群で指数が 3 であり、3·|A(X)| = |X|! が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "指数を 2 から 3 に、関係式の係数も 2 から 3 に変えており、偽の主張になる。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.span_exchange",
+   "text": "体 K 上のベクトル空間 V の部分集合 s と元 x, y について、x が s ∪ {y} の張る部分空間に属するならば、y は s ∪ {x} の張る部分空間に属することを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "x が span(s) に属さないという仮定を落としており、x ∈ span(s) かつ y ∉ span(s) の場合に成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.krull_intersection_theorem",
+   "text": "ネーター環 R の真のイデアル I について、I のすべての冪の共通部分が零イデアルになること(クルルの共通部分定理)を示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "局所環という仮定を落としており、ℤ×ℤ の冪等なイデアルなどが反例になる。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.finite_field_exists_unique",
+   "text": "素数 p と非負整数 n に対して、位数 p^n の体が存在し、位数 p^n の任意の2つの体は環として同型であることを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "n が正という仮定を落として n = 0 を許しており、位数 1 の体は存在しない。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.invertible_iff_det_ne_zero",
+   "text": "整数環 ℤ 上の n 次正方行列 A が、AB = BA = E をみたす整数行列 B をもつことと det A ≠ 0 は同値ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "係数を体から整数環 ℤ に変えており、ℤ 上では可逆性は det A = ±1 と同値で det A ≠ 0 とは同値でない。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.third_isomorphism_modules",
+   "text": "環 R 上の加群 M の部分加群 S, T について、商加群 (M/S)/(T/S) は M/T と同型であることを示せ。ただし T/S は T の M/S における像とする。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "S ⊆ T という仮定を落としており、一般には (M/S)/(T の像) は M/(S+T) と同型になるだけである。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.partials_exist_not_continuous",
+   "text": "関数 f(x,y) = xy/(x²+y²) (ただし f(0,0) = 0)について、原点での x 方向・y 方向の偏微分係数がどちらも 1 であるのに、f は原点で連続でないことを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "原点での偏微分係数を 0 から 1 に変えており、実際には 0 なので偽になる。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.noetherian_iff_ideals_fg",
+   "text": "可換環 R がネーター環であることと、R のすべてのイデアルが高々2個の元で生成されることは同値であることを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "有限生成を高々2個の元で生成に変えており、ℚ[x,y,z] のようにネーター環でも成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.finite_dimensional_closed_ball_compact",
+   "text": "ℝ または ℂ 上の有限次元ノルム空間 E において、開球はコンパクトであり、とくに E は局所コンパクトであることを証明してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "閉球を開球に変えており、E ≠ 0 のとき開球は閉集合でないのでコンパクトにならない。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.strict_convex_unique_minimizer",
+   "text": "実ベクトル空間 E の部分集合 S 上で f が狭義凸のとき、f の S 上の最小点はちょうど1つ存在するというのは正しいか判定せよ。正しいなら証明せよ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "高々1つをちょうど1つ(存在も主張)に強めており、ℝ 上の e^x のように最小点をもたない例がある。"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.condexp_pull_out",
+   "text": "確率空間 (Ω, F, P) と部分σ加法族 G ⊆ F があり、X が G 可測で、XY が可積分であるとする。このとき E[XY | G] = X·E[Y | G] がほとんど確実に成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "Y が可積分という仮定を落としており、E[Y|G] が定義されなくなるなど一般には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.double_counting_relation",
+   "text": "有限集合 A, B と A×B 上の関係 r について、A の各元 a に対し r(a,b) をみたす b∈B の個数を数えて A 全体で足した値は、B の各元 b に対し r(a,b) をみたす a∈A の個数を数えて B 全体で足した値より 1 大きいことを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "両辺が等しいという結論を、片方が 1 大きいという主張に変えており、実際は常に等しいので偽になる。"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_comparison_set",
+   "text": "可測空間 α 上の実数値可測関数 f と実数値関数 g について、集合 {x | f(x) ≤ g(x)} が可測集合であることを証明しなさい。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "g の可測性という仮定を落としており、g が非可測なら集合も可測とは限らない。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.comap_prime_ideal",
+   "text": "可換環の準同型 φ : A → B と B のイデアル Q について、φ⁻¹(Q) が A の素イデアルならば、Q は B の素イデアルであることを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "逆像が素イデアルなら元のイデアルも素イデアルという逆向きの主張で、一般には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.ode.ode_uniqueness_lipschitz",
+   "text": "E を実ノルム空間とし、v(t,x) は各 t について x ↦ v(t,x) が共通のリプシッツ定数 K でグローバルにリプシッツであるとする。f, g : ℝ → E が [a,b] 上連続で、各 t∈(a,b) で f, g が(両側)微分可能でその微分がそれぞれ v(t,f(t)), v(t,g(t)) に等しく、f(a) = g(a) ならば、[a,b] 上で f = g であることを示せ。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "解の条件を各点での右微分から開区間での両側微分に変えており、仮定の形が異なる別の主張になる。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.splitting_field_is_normal",
+   "text": "体 F の拡大体 E が F の正規拡大ならば、E は F 上のある多項式の分解体になるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "分解体ならば正規拡大という主張を逆にしており、無限次の正規拡大は1つの多項式の分解体にならない。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.limit_sin_over_x",
+   "text": "x が正の値をとりながら 0 に近づくとき(右側極限)、sin x / x が 1 に収束することを示せ。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "両側極限を x → 0+ の右側極限に変えており、示すべき内容が異なる。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.convex_local_min_is_global",
+   "text": "ノルム空間 E の部分集合 S 上の関数 f について、a∈S が S 上の局所最小点ならば、a は S 上の大域最小点でもあるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "f が凸という仮定を落としており、局所最小点が大域最小点でない例がある。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.dvr_ideals_are_powers_of_uniformizer",
+   "text": "離散付値環 R の元 π について、R の零でないイデアルはすべて (π^k) の形になることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "π が既約元という仮定を落としており、π が単元や 0 などの場合には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.variance_affine",
+   "text": "X を2乗可積分な確率変数、a, b を実数とするとき、Var(aX + b) = a Var(X) が成り立つかを判定し、成り立つなら証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "係数の指数を 2 から 1 に変えており、a ≠ 0, 1 かつ Var(X) > 0 のとき成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.partials_from_total_derivative",
+   "text": "f : ℝ² → ℝ が点 (p,q) で x, y それぞれに関して偏微分可能で、偏微分係数が線形写像 L に対して L(1,0), L(0,1) に等しいとき、f は (p,q) で全微分可能でその微分は L であることを証明せよ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "全微分可能から偏微分の値を導く向きを逆にしており、偏微分可能だけでは全微分可能とは限らない。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.term_by_term_derivative",
+   "text": "各 n について g_n : ℝ → ℝ は微分可能で、各 y で |g_n'(y)| ≤ u_n(y) をみたし、各 y ごとに Σ u_n(y) は収束し、ある点 y₀ で Σ g_n(y₀) が収束するとする。このとき Σ g_n(y) は任意の y で収束し、その和は項別微分できる(導関数が Σ g_n'(y) になる)ことを示せ。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "y によらない一様な上界 u_n を、y ごとの上界 u_n(y) に変えており、項別微分の根拠が失われる。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.uniform_limit_integral",
+   "text": "閉区間 [a, b] 上で連続な関数列 f_n が [a, b] 上で f に各点収束するとき、∫_a^b f_n(x) dx → ∫_a^b f(x) dx となることを示せ。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "一様収束を各点収束に弱めており、積分と極限の交換が一般には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.riemann_removable_singularity",
+   "text": "s ⊂ ℂ を開集合、c∈s とし、f が s∖{c} で正則であるとする。このとき、s 上で正則で s∖{c} 上では f と一致する関数 g が存在することを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "有界性の仮定を落としており、f(z) = 1/(z-c) のような極をもつ例で成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.order_of_power_formula",
+   "text": "群 G の元 g が有限位数をもち、m が自然数のとき、g^m の位数は ord(g)/gcd(ord(g), 2m) に等しいことを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "gcd の引数を m から 2m に変えており、位数 2 の g と m = 1 などで成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.mazur_ulam_surjective_isometry",
+   "text": "複素ノルム空間 E から F への全射な等長写像 f は、全単射な複素アフィン等長写像と一致することを示してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "実ノルム空間を複素ノルム空間に変えており、複素共役のように複素線形でない全射等長写像が反例になる。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.abel_ruffini_solvable_by_radicals_implies_solvable_group",
+   "text": "体 F の拡大体 E の元 x が q の根で、q が F 上の既約多項式であるとする。q のガロア群が可解群ならば、x は F 上べき根で解けることを示せ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "べき根で解ければガロア群が可解、という向きを逆にしており、標数の条件などがなければ成り立たない別の命題になる。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.domain_characteristic_prime_or_zero",
+   "text": "整域の標数は素数であることを、正しいか判定したうえで示せ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "0 でなければ素数という結論を、必ず素数という強い結論に変えており、ℤ のような標数 0 の整域が反例になる。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.five_lemma_modules",
+   "text": "環 R 上の加群の可換図式で、上下2つの行がどちらも5項の完全列であるとする。第1の縦写像が全射、第2と第4の縦写像が全単射ならば、第3の縦写像は全単射であることを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "第5の縦写像が単射という仮定を落としており、第3の縦写像の単射性が保証されない。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.compact_closed_positive_distance",
+   "text": "距離空間 X のコンパクト集合 K と閉集合 C が互いに素ならば、各 x∈K に対してある r > 0 が存在して、すべての y∈C について d(x,y) ≥ r となることを示してください。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "r が x に依存してよいことになっており、すべての x∈K で共通の r が取れるという元の主張より弱い。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.cauchy_riemann_necessary",
+   "text": "f = u + iv について、u, v が (x,y) で偏微分可能で u_x = v_y, u_y = -v_x(コーシー・リーマンの関係式)をみたすならば、f は z = x + iy で複素微分可能であることを示せ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "複素微分可能から関係式を導く向きを逆にしており、偏微分可能性とCR方程式だけでは複素微分可能とは限らない。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.projection_theorem_orthogonal_decomposition",
+   "text": "ヒルベルト空間 H の部分空間 M と任意の x∈H について、x = y + z (y∈M, z∈M の直交補空間)となる分解がただ一通り存在することを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "M が閉という仮定を落としており、稠密な真部分空間では分解が存在しない。"
+  },
+  {
+   "recipe_id": "textbook.modules_categories.snake_lemma_modules",
+   "text": "可換環 R 上の加群の可換図式で、上の行 M₁→M₂→M₃ は完全で M₂→M₃ は全射、下の行 N₁→N₂→N₃ は完全で N₁→N₂ は単射とする。縦写像 i₁, i₂, i₃ について、K₂, K₃ をそれぞれ i₂, i₃ の核、C₁, C₂ をそれぞれ i₁, i₂ の余核とし、F : K₂→K₃ と G : C₁→C₂ を上下の行の写像から誘導される写像とする。このとき、R 線形写像 δ : K₃→C₁ で K₂→K₃→C₁→C₂ が完全列になり、さらに G が単射であるものが存在することを示せ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "完全性に加えて G が単射という結論を追加しており、これは δ = 0 を強いるため一般には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.polar_coordinates_integral",
+   "text": "f : ℝ² → ℝ が可積分ならば、平面全体での f の積分は、(0,∞)×(0,π) 上での r·f(r cos θ, r sin θ) の積分に等しいことを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "角度の範囲を (-π,π) から (0,π) に変えており、平面の上半分しか覆わないので成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.exists_norming_functional",
+   "text": "ℝ または ℂ 上のノルム空間 E の零でない元 x に対して、有界線形汎関数 g で ‖g‖ = 1 かつ g(x) = 2‖x‖ となるものが存在することを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "g(x) = ‖x‖ を g(x) = 2‖x‖ に変えており、|g(x)| ≤ ‖g‖‖x‖ に反して偽になる。"
+  },
+  {
+   "recipe_id": "textbook.multivariable.zero_derivative_constant_on_connected",
+   "text": "実ノルム空間 E の開集合 U 上で関数 f が微分可能で、U のすべての点で微分が 0 ならば、f は U 上で定数であることを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "連結性の仮定を落としており、非連結な開集合では成分ごとに異なる定数をとる例がある。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.chinese_remainder",
+   "text": "互いに素な正の整数 m, n に対して、ある自然数 x が存在して、すべての自然数 a, b について x ≡ a (mod m) かつ x ≡ b (mod n) が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "a, b を与えてから x を選ぶ順序を、先に x を選ぶ形に入れ替えており、m, n > 1 では成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.contractible_simply_connected",
+   "text": "単連結な空間はすべて可縮であるというのは正しいか判定せよ。正しいなら証明せよ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "可縮ならば単連結という含意を逆にしており、球面 S² のような単連結だが可縮でない空間が反例になる。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.eventually_lt_of_limsup_lt",
+   "text": "実数列 a_n が上に有界で limsup a_n < c ならば、すべての n について a_n < c となることを示せ。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "十分大きいすべての n(ある N 以降)を、すべての n に変えており、最初の有限個の項が c を超える例がある。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.continuous_ext_on_dense",
+   "text": "位相空間 X から位相空間 Y への連続写像 f, g が X の稠密な部分集合 S 上で一致するならば、f = g であることは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "Y がハウスドルフという仮定を落としており、密着位相をもつ Y などで成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.isometry_preserves_angle",
+   "text": "ユークリッドアフィン空間の間の写像 f が、a ≠ b, c ≠ b のとき ∠f(a)f(b)f(c) = ∠abc をみたす(角を保つ)ならば、f は等長写像であることを示せ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "等長写像ならば角を保つという向きを逆にしており、相似拡大など角を保つが等長でない写像が反例になる。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.jordan_chevalley_decomposition",
+   "text": "体 K 上の有限次元ベクトル空間 V の線形変換 f は、f = N + S (N は冪零、S は半単純)と書け、N, S はともに f の多項式として表せることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "K が完全体という仮定を落としており、不完全体では半単純成分が f の多項式として得られない場合がある。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.schur_intertwiner_bijective_or_zero",
+   "text": "体 k 上のモノイド(または群)G の既約表現 ρ と任意の表現 σ の間の絡作用素 φ は、全単射であるか零写像であるかのどちらかであることを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "σ が既約という仮定を落としており、σ が可約だと像が真部分表現になり全単射でも零でもない例がある。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.subspace_eq_of_le_of_finrank_le",
+   "text": "有限次元ベクトル空間 V の部分空間 S, T について、dim T ≤ dim S ならば S = T であることを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "包含関係 S ⊆ T の仮定が消えており、次元の大小だけでは S = T は従わない。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.adjoint_of_composition",
+   "text": "有限次元内積空間 E, F, G の間の線形写像 B: E → F と A: F → G について、合成 A∘B の随伴写像が A*∘B* になることを示してください。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "随伴の合成順序が B*∘A* から A*∘B* に入れ替わっている（一般に成り立たず、定義域も合わない）。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.is_lub_iff_eps",
+   "text": "実数 α が集合 S の上限であることは、α が S の上界であり、かつ ある x ∈ S が存在して任意の ε > 0 に対し α - ε < x が成り立つことと同値であることを示せ。",
+   "set": "textbook",
+   "kind": "quantifier_change",
+   "reason": "「任意の ε に対して x が存在」が「x が存在して任意の ε に対し」に入れ替わり、x が ε に依存しなくなる（α が S の最大元であることになる）。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.maschke_invariant_complement",
+   "text": "G を有限群とする。このとき k[G]-加群 V の任意の k[G]-部分加群 W に対して、W の補部分加群となる k[G]-部分加群 W' が存在するというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "位数が体 k で 0 でないという仮定を落としており、標数が |G| を割る場合は補加群が存在しない。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.order_dvd_totient",
+   "text": "n を正の整数、a を n と互いに素な自然数とする。φ(n) が a の n を法とする乗法的位数を割り切ることを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "整除の向きが逆になり、位数が φ(n) の真の約数になる場合には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.ode.characteristic_root_exponential_solution",
+   "text": "実数 p, q, r, t について r² + p r - q = 0 が成り立つとき、s ↦ e^{rs} の t における微分が r e^{rt} であり、かつ s ↦ r e^{rs} の t における微分が -p·r e^{rt} - q e^{rt} であることを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "特性方程式の定数項の符号が +q から -q に変わり、2階微分の式と整合しなくなる。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.coprime_iff_bezout",
+   "text": "整数 m, n について、gcd(m, n) = 1 であることと、m x + n y = 1 を満たす自然数 x, y が存在することは同値であることを証明してください。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "係数 x, y の範囲が整数から自然数に狭まり、例えば m = 1, n = 1 以外の多くの場合で右辺が成立しなくなる。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.localization_at_prime_is_local",
+   "text": "可換環 R の積閉集合 M に対し、R の M による局所化 S は局所環になることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "素イデアルでの局所化という条件が任意の積閉集合による局所化に一般化されており、局所環になるとは限らない。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.binom_absorption",
+   "text": "自然数 a, b に対して、(a+1)·C(a, b) = (b+2)·C(a+1, b+1) が成り立つことを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "右辺の係数が (b+1) から (b+2) に変わり、等式が一般に成り立たなくなる。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.second_isomorphism",
+   "text": "ベクトル空間 V の部分空間 S, T について、商空間 S/(S ∩ T) と (S + T)/S は線形同型であることは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "右辺の商空間の分母が T から S に変わり、次元が一致するとは限らない別の主張になる。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.spectrum_is_quasi_compact",
+   "text": "可換環 A の素スペクトル Spec A はザリスキー位相に関して準コンパクトかつハウスドルフであることを示せ。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "ハウスドルフ性という強い結論が加わっており、Spec A は一般にハウスドルフではない。"
+  },
+  {
+   "recipe_id": "textbook.calculus_single.improper_comparison_test",
+   "text": "関数 f, g と実数 a について、f が (a, ∞) 上で連続、(a, ∞) 上で |f| ≤ g、かつ f が (a, ∞) 上で可積分ならば、g も (a, ∞) 上で可積分であることを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "可積分性を仮定する側と結論の側が入れ替わり、大きい方の関数 g の可積分性は f の可積分性から従わない。"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.continuity_from_above_counterexample",
+   "text": "半直線 [n, ∞)（n は自然数）はどれもルベーグ測度が無限大であり、しかもそれらの共通部分はちょうど1点からなる集合になることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "共通部分の元の個数が0個（空集合）から1個に変わり、主張が偽になる。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.character_is_class_function",
+   "text": "体 k 上の有限次元表現 ρ: G → GL(V) の指標 χ について、χ(g) = χ(g') ならば g と g' は G の中で共役であること（指標の値が共役類を決定すること）を証明せよ。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "「共役なら指標が等しい」の逆向きの主張になっており、一般には成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.ring_theory.polynomial_factor_theorem",
+   "text": "可換環 R 上の多項式 f と元 c について、X + c が f を割り切ることと f(c) = 0 は同値であることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "因子が X - c から X + c に変わり、同値の対象が f(-c) = 0 でなければならなくなる。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.circle_integral_zpow_vanishes",
+   "text": "整数 m、半径 R > 0、円 |z - c| = R 上にない点 w について、この円周上での (z - w)^m の周回積分は 0 になることを証明せよ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "m ≠ -1 の仮定を落としており、m = -1 で w が円の内部にあると積分は 2πi になる。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.banach_fixed_point",
+   "text": "空でない完備距離空間 X 上の写像 f が定数 0 ≤ K ≤ 1 で d(f(x), f(y)) ≤ K d(x, y) を満たすとき、f は不動点をただ一つ持ち、任意の初期点から反復列 f^n(z) がその不動点に収束することを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "縮小率の条件が K < 1 から K ≤ 1 に緩められ、恒等写像など不動点が一意でない例が入る。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.countable_union_of_countable",
+   "text": "任意の添字集合 I で添字付けられた、高々可算集合の族 (A_i) の和集合は高々可算であることを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "添字集合が高々可算であるという仮定を落としており、非可算個の一点集合の和集合は非可算になる。"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.expectation_indep_mul",
+   "text": "確率空間上の可積分な確率変数 X, Y について、積 XY も可積分で E[XY] = E[X]E[Y] が成り立つことを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "X, Y の独立性の仮定を落としており、例えば Y = X では E[X²] ≠ E[X]² となり得る。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.multinomial_factorial_identity",
+   "text": "有限集合 s 上の自然数値関数 f に対して、多項係数 M(f) は (∏_{i∈s} f(i)!)·M(f) = (∑_{i∈s} f(i) + 1)! を満たすことを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "右辺の階乗の中身が総和から総和+1に変わり、等式が成り立たなくなる。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.lie_jacobi_cyclic_sum",
+   "text": "リー環 L の任意の元 a, b, c に対して、[a,[b,c]] + [b,[c,a]] + [c,[b,a]] = 0 が成り立つことを、ライプニッツ形の公理から導いてください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "第3項が [c,[a,b]] から [c,[b,a]] に変わり、符号が反転して恒等式でなくなる。"
+  },
+  {
+   "recipe_id": "textbook.linear_basic.underdetermined_homogeneous",
+   "text": "m < n のとき、m×n 行列 A に対する同次連立一次方程式 yA = 0（y は長さ m の行ベクトル）は自明でない解を持つことを示してください。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "右からのかけ算（列ベクトル x）から左からのかけ算（行ベクトル y）に変わり、m < n では A が行フルランクなら非自明解を持たない。"
+  },
+  {
+   "recipe_id": "textbook.fourier_convex_numeric.banach_fixed_point_real_constant",
+   "text": "空でない距離空間上の写像 g が、ある 0 ≤ K < 1 について d(g(x), g(y)) ≤ K d(x, y) を満たすなら、g の不動点はちょうど一つであるというのは本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "完備性の仮定を落としており、完備でない空間では不動点が存在しない縮小写像がある。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.algebraic_extension_of_perfect_field_is_separable",
+   "text": "任意の体 F の任意の代数拡大 E/F は分離拡大であることを示せ。特に標数 0 の体でもこれが成り立つ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "F が完全体であるという仮定を落としており、標数 p の不完全体 F_p(t) の非分離拡大が反例になる。"
+  },
+  {
+   "recipe_id": "textbook.logic_sets.axiom_of_choice",
+   "text": "集合族 (B_k)_{k∈K} について、すべての k について h(k) ∈ B_k となる選択関数 h が存在することを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "各 B_k が空でないという仮定を落としており、空集合を含む族には選択関数が存在しない。"
+  },
+  {
+   "recipe_id": "textbook.combinatorics_graphs.alternating_sum_binomials",
+   "text": "n ≥ 0 のとき、∑_{k=0}^{n} (-1)^k C(n, k) = 0 であることを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "条件が n ≥ 1 から n ≥ 0 に変わり、n = 0 では和が 1 になって主張が偽になる。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.mfderiv_id_const",
+   "text": "多様体 M の恒等写像の点 x における接写像は零写像であり、定値写像の接写像は x での接空間の恒等写像であることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "恒等写像の接写像と定値写像の接写像の値（恒等写像と零写像）が入れ替わっている。"
+  },
+  {
+   "recipe_id": "textbook.group_theory.third_isomorphism_theorem",
+   "text": "群 G の正規部分群 N ≤ M について、剰余群 (G/N)/(M/N) は G/N と同型であることを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "同型の相手が G/M から G/N に変わり、M ≠ N では位数が合わず成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.measure_integration.measurable_indicator_restriction",
+   "text": "関数 f と集合 A について、A 上では f に等しく A の外では 0 となる関数が可測ならば、f は可測関数であり A は可測集合であることを示してください。",
+   "set": "textbook",
+   "kind": "converse",
+   "reason": "仮定と結論が入れ替わっており、f が A の外で非可測でも制限した関数は可測になり得る。"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.sample_variance_algebra",
+   "text": "n ≥ 1 とし、x_0, ..., x_{n-1} の標本平均を m とする。このとき任意の実数 a について ∑_i (x_i - a)² = ∑_i (x_i - m)² + (m - a)² が成り立つことを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "補正項の係数 n が 1 に変わり、n ≥ 2 では等式が成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.real_analysis.uniform_convergence_eps",
+   "text": "実数値関数列 G_n が S 上で f に一様収束することは、S の任意の x と任意の ε > 0 に対してある N が存在し、n ≥ N ならば |G_n(x) - f(x)| < ε が成り立つことと同値であることを示してください。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "N が x に依存してよい形（各点収束の条件）になっており、一様収束とは同値でない。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.cayley_hamilton_matrix",
+   "text": "可換環上の正方行列は、その特性多項式で零化され、しかも特性多項式は行列を零化する次数最小のモニック多項式であることを示してください。",
+   "set": "textbook",
+   "kind": "added_conclusion",
+   "reason": "特性多項式が最小次数のモニック零化多項式である（最小多項式と一致する）という強い結論が加わっており、一般には偽。"
+  },
+  {
+   "recipe_id": "textbook.complex_analysis.holomorphic_series_m_test",
+   "text": "U を ℂ の開集合とし、各 f_n が U 上で正則で、U の各点 z で ∑ |f_n(z)| が収束するとする。このとき ∑ f_n は U 上で正則であることを示せ。",
+   "set": "textbook",
+   "kind": "pointwise_vs_uniform",
+   "reason": "点によらない上界 M_n による一様な評価が各点での絶対収束に弱められており、和が正則とは限らない。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.padic_integer_unit_iff_norm_one",
+   "text": "素数 p について、p 進整数 w が Z_p の単元であることと ‖w‖ < 1 は同値であることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "ノルムの条件が ‖w‖ = 1 から ‖w‖ < 1 に変わり、後者は単元でないこと（極大イデアルの元）の特徴づけになる。"
+  },
+  {
+   "recipe_id": "textbook.advanced_undergrad.first_order_compactness",
+   "text": "二階論理の理論 T がモデルを持つことと、T の任意の有限部分集合がモデルを持つことは同値であることを示せ。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "一階理論から二階論理の理論に変わり、二階論理ではコンパクト性が成り立たない。"
+  },
+  {
+   "recipe_id": "textbook.number_theory.congruence_cancel",
+   "text": "整数 a, b, c と正の整数 m について、ca ≡ cb (mod m) ならば a ≡ b (mod m) であることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "gcd(c, m) = 1 の仮定を落としており、c が m と互いに素でないと約分できない。"
+  },
+  {
+   "recipe_id": "textbook.topology_general.heine_borel_euclidean",
+   "text": "無限次元ヒルベルト空間の部分集合 K がコンパクトであることと、K が閉集合かつ有界であることは同値であることを証明せよ。",
+   "set": "textbook",
+   "kind": "domain_change",
+   "reason": "有限次元ユークリッド空間から無限次元ヒルベルト空間に変わり、閉単位球が非コンパクトなので偽になる。"
+  },
+  {
+   "recipe_id": "textbook.functional_analysis.finite_dimensional_subspace_closed",
+   "text": "ℝ または ℂ 上のノルム空間の部分空間は閉集合であることを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "有限次元の仮定を落としており、無限次元の稠密な真部分空間は閉でない。"
+  },
+  {
+   "recipe_id": "textbook.commutative_algebra.integral_extension_field_iff",
+   "text": "環準同型 R → S によって整域 S が R 上整であるとき、R が体であることと S が体であることは同値であることを示せ。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "準同型が単射であるという仮定を落としており、ℤ → 𝔽_p のような場合は S が体でも R は体でない。"
+  },
+  {
+   "recipe_id": "textbook.geometry_homotopy.smooth_partition_of_unity_exists",
+   "text": "M を有限次元実ベクトル空間をモデルとするハウスドルフな滑らかな多様体、s を閉集合、U を s を被う開集合の族とする。このとき U に従属する s 上の滑らかな1の分割が存在することを示してください。",
+   "set": "textbook",
+   "kind": "dropped_hypothesis",
+   "reason": "σコンパクト性の仮定を落としており、非パラコンパクトな多様体では1の分割が存在しない。"
+  },
+  {
+   "recipe_id": "textbook.ode.damped_oscillator_energy_decreasing",
+   "text": "γ ≤ 0 とする。ℝ 上の方程式 y'' + 2γ y' + ω² y = 0 の解について、エネルギー y'² + ω² y² が時間とともに単調非増加であることを示せ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "減衰係数の条件が γ ≥ 0 から γ ≤ 0 に変わり、γ < 0 ではエネルギーが増加し得る。"
+  },
+  {
+   "recipe_id": "textbook.field_galois.artin_fixed_field_theorem",
+   "text": "有限群 G が体 E に体の自己同型として忠実に作用するとき、固定体 E^G 上 E はガロア拡大であり、拡大次数 [E : E^G] は 2|G| に等しいことを証明せよ。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "拡大次数が |G| から 2|G| に変わり、Artin の定理の等式と矛盾する。"
+  },
+  {
+   "recipe_id": "textbook.probability_statistics.chebyshev_inequality",
+   "text": "2乗可積分な確率変数 X と c > 0 に対し P(X - E[X] ≥ c) ≤ Var(X)/c² という片側の不等式は本当ですか。証明もお願いします。",
+   "set": "textbook",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "絶対値を取った両側の事象 |X - E[X]| ≥ c が、片側の事象 X - E[X] ≥ c に変わっている。"
+  },
+  {
+   "recipe_id": "textbook.linear_advanced.exterior_power_dimension",
+   "text": "体 K 上の d 次元ベクトル空間 V の p 次外冪の次元は C(d+p-1, p) であることを示してください。",
+   "set": "textbook",
+   "kind": "changed_constant",
+   "reason": "次元の式が C(d, p) から C(d+p-1, p)（対称冪の次元）に変わり、外冪では一般に成り立たない。"
+  },
+  {
+   "recipe_id": "requested.natural_power_continuous",
+   "text": "n を自然数とするとき、関数 f(x) = x^n が実数全体で一様連続であることを証明してください。",
+   "set": "requested",
+   "kind": "pointwise_vs_uniform",
+   "reason": "連続性を一様連続性に変えており、n ≥ 2 では x^n は R 上で一様連続でないため別の主張になる。"
+  },
+  {
+   "recipe_id": "requested.right_limit_and_discontinuity",
+   "text": "f: R → R が f(0) = 1 を満たし、任意の正の実数 x に対して f(x) = 0 であるとする（x < 0 については何も仮定しない）。このとき、x → 0 の（両側）極限は 0 であり、かつ f は x = 0 で連続でないことを示せ。",
+   "set": "requested",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "右側極限を両側極限に置き換えており、x < 0 側の情報がないため同じ証明は使えない。"
+  },
+  {
+   "recipe_id": "requested.cubic_derivative",
+   "text": "任意の実数 x について、関数 y^3 − 3y の x における微分係数が 3x^2 + 3 であることを示してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "微分係数の定数項を −3 から +3 に変えており、主張が偽になる。"
+  },
+  {
+   "recipe_id": "requested.pi_gt_305",
+   "text": "円周率 π が 3.15 より大きいことを示してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "下界を 3.05 から 3.15 に変えており、π = 3.14159... なので偽になる。"
+  },
+  {
+   "recipe_id": "requested.linear_injective_iff_zero_kernel",
+   "text": "体 K 上のベクトル空間 V, W と、線形性を仮定しない単なる写像 f: V → W について、f が単射であることと、「f(x) = 0 ならば x = 0」が成り立つことは同値であることを証明してください。",
+   "set": "requested",
+   "kind": "dropped_hypothesis",
+   "reason": "線形性の仮定を外しており、非線形写像では f(x)=f(y) から f(x−y)=0 を導けず同値が成り立たない。"
+  },
+  {
+   "recipe_id": "requested.linear_system_unique_solution",
+   "text": "実数 x, y について、連立方程式 3x + 2y = 8, x − y = −1 が成り立つことと、x = 1 かつ y = 2 であることは同値であることを示せ。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "第1式の右辺を 7 から 8 に変えており、解は (6/5, 11/5) になるので同値が成り立たない。"
+  },
+  {
+   "recipe_id": "requested.determinant_nonzero_decision",
+   "text": "実数成分の行列 [[1, 2], [3, 6]] の行列式が 0 でないことを示してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "成分 5 を 6 に変えており、行列式が −1 から 0 になるので主張が偽になる。"
+  },
+  {
+   "recipe_id": "requested.rational_power_continuous",
+   "text": "自然数 n に対し、実数全体で定義された関数 (x^n + sin x) / (1 − x^2) が連続であることを証明せよ。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "分母の符号を 1 + x^2 から 1 − x^2 に変えており、x = ±1 で分母が 0 になるため連続でない。"
+  },
+  {
+   "recipe_id": "requested.exponential_product_derivative",
+   "text": "任意の実数 x について、関数 y·e^y の x における微分係数が (x + 2)e^x であることを示してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "微分係数の因子 (x+1) を (x+2) に変えており、正しい値は (x+1)e^x なので偽になる。"
+  },
+  {
+   "recipe_id": "requested.reciprocal_derivative",
+   "text": "0 の場合も含めた任意の実数 x に対して、関数 1/y の x における微分係数が −1/x^2 であることを証明してください。",
+   "set": "requested",
+   "kind": "dropped_hypothesis",
+   "reason": "x ≠ 0 の仮定を外しており、x = 0 では 1/y が定義できず微分もできない。"
+  },
+  {
+   "recipe_id": "requested.absolute_value_not_differentiable",
+   "text": "関数 f(x) = |x| は x = 0 で右側微分可能であることを示してください。",
+   "set": "requested",
+   "kind": "one_sided_vs_two_sided",
+   "reason": "両側の微分不可能性を右側微分の存在に変えており、右微分係数 1 が存在するので結論が逆になる。"
+  },
+  {
+   "recipe_id": "requested.quadratic_not_injective",
+   "text": "非負の実数全体を定義域とする関数 f(x) = x^2 が単射でないことを示してください。",
+   "set": "requested",
+   "kind": "domain_change",
+   "reason": "定義域を R から [0, ∞) に制限しており、制限すると x^2 は単射になるので主張が偽になる。"
+  },
+  {
+   "recipe_id": "requested.linear_system_inconsistent",
+   "text": "x + y = 1 かつ 2x + 2y = 2 を同時に満たす実数 x, y は存在しないことを示してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "第2式の右辺を 3 から 2 に変えており、第2式が第1式の2倍になって解が無数に存在するので偽になる。"
+  },
+  {
+   "recipe_id": "requested.composite_injective_implies_first",
+   "text": "写像 f: A → B, g: B → C について、f が単射ならば合成 g∘f も単射であることを証明してください。",
+   "set": "requested",
+   "kind": "converse",
+   "reason": "仮定と結論を入れ替えており、g が単射でなければ g∘f は単射と限らないので偽になる。"
+  },
+  {
+   "recipe_id": "requested.rank_nullity",
+   "text": "K を斜体（可除環）とし、V, W を K 上の加群、V は有限次元とする。K 線形写像 f: V → W について、dim(f の像) + dim(f の核) = dim W が成り立つことを示せ。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "右辺を dim V から dim W に変えており、dim V ≠ dim W の一般の場合に偽になる。"
+  },
+  {
+   "recipe_id": "requested.projection_not_injective",
+   "text": "R × {0}（x 軸上の点全体）を定義域とする第1成分への射影 (a, 0) ↦ a が単射でないことを示せ。",
+   "set": "requested",
+   "kind": "domain_change",
+   "reason": "定義域を R×R から x 軸 R×{0} に制限しており、この制限では射影は単射になるので偽になる。"
+  },
+  {
+   "recipe_id": "requested.product_determinant_nonzero_iff",
+   "text": "実数成分の n 次正方行列 A, B について、det(AB) ≠ 0 であることと、det A ≠ 0 または det B ≠ 0 であることは同値であることを示せ。",
+   "set": "requested",
+   "kind": "quantifier_change",
+   "reason": "右辺の「かつ」を「または」に変えており、det(AB)=detA·detB なので一方が 0 なら積は 0 となり同値が成り立たない。"
+  },
+  {
+   "recipe_id": "requested.continuous_endpoint_sign_change_has_root",
+   "text": "a ≤ b を満たす実数 a, b と、関数 f が f(a) < 0, f(b) > 0 を満たす（連続性は仮定しない）とき、[a, b] 内に f(x) = 0 となる x が存在することを示してください。",
+   "set": "requested",
+   "kind": "dropped_hypothesis",
+   "reason": "区間上の連続性の仮定を外しており、不連続関数では零点を飛び越えられるので偽になる。"
+  },
+  {
+   "recipe_id": "requested.sum_derivative",
+   "text": "実数値関数 f, g と点 a について、f + g が a で微分可能でその微分係数が s ならば、f, g もそれぞれ a で微分可能であり、微分係数の和が s であることを示せ。",
+   "set": "requested",
+   "kind": "converse",
+   "reason": "和の微分可能性から各関数の微分可能性を導く逆向きの主張に変えており、個々は微分不可能でも和が微分可能な例があり偽になる。"
+  },
+  {
+   "recipe_id": "requested.tan_one_degree_irrational",
+   "text": "tan 1（1ラジアンの正接）が無理数であることを証明してください。",
+   "set": "requested",
+   "kind": "changed_constant",
+   "reason": "角度を 1度（π/180 ラジアン）から 1ラジアンに変えており、Niven の定理による証明は使えず別の議論が必要になる。"
+  }
+ ]
+}
