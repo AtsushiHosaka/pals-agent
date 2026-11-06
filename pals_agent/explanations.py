@@ -16,6 +16,7 @@ from pals_agent.figure_calls import (
     split_figure,
 )
 from pals_agent.lean_target import LeanTargetDeclaration
+from pals_agent.learning_policy import LEARNING_POLICY
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
@@ -1258,6 +1259,7 @@ def _clarification_prompt(
         "conclusion": explanation.conclusion,
     }
     return f"""Clarify one part of an existing Lean proof explanation for a learner.
+{LEARNING_POLICY}
 The theorem statement and verified Lean code below are the only sources of truth for the target
 claim and its assumptions.
 Provide user-facing rationale, not hidden chain-of-thought. Focus on the selected

@@ -494,7 +494,7 @@ def test_recipe_batch_client_uses_current_claim_and_bounded_authenticated_endpoi
 
 
 def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
-    """Explicit compound-task delta from v12; static schema remains v6.
+    """Compound-task policy plus curriculum presentation delta; schema stays v6.
 
     New golden bytes identify the changed prompt, not a new provider measurement,
     catalog admission or production latency result.
@@ -504,7 +504,7 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
     from pals_agent import recipe_semantic_contract as contract
 
     assert hashlib.sha256(contract.BASE.encode()).hexdigest() == (
-        "6ece96d39ce5526c14dbeb8ca6e20ed1e7a22bbe5d3c925fcc3348ffe3c3517a"
+        "cf32a87f99916905094eafa7304d09e7325609184bee9984bdc4717c4b55f1e9"
     )
     assert hashlib.sha256(rfc8785.dumps(contract.SCHEMA)).hexdigest() == (
         "800d484003ee988403d102d99d4dc071dfc572c3dfa9e756932accde775ab2df"
@@ -523,8 +523,8 @@ def test_runtime_schema_and_compound_task_policy_have_explicit_golden_bytes():
         retrieved_entry_sha256s=[batch["recipes"][0]["entry_sha256"]],
     )
     assert {role: hashlib.sha256(value.encode()).hexdigest() for role, value in result.items()} == {
-        "assessment": "d956ec60496799999345f6155b5b724c51d8ad53d28090d16bddfa619439327b",
-        "review": "554439c60e639b5a0b1be47f3c0d57ad925bd84b514c9cf5203fa2d6ded215dd",
+        "assessment": "c65f12be779c54b40238901c28b69815c0dacb08812dbf1da4203f5186fb92ce",
+        "review": "7f975d375211bd34eda2c395cd906d9c571a88a7e18a142cf6a8fdd88f20df54",
     }
 
 
