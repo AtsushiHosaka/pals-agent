@@ -1,3 +1,9 @@
+> **Superseded (2026-11-06).** The text gate this follow-up extended (`_has_x_squared_epsilon_delta`,
+> `_normalize_x_squared_math` and the bound-alias resolver) was removed when `pals-agent` moved the
+> epsilon-delta requirement to the independent checklist review; see
+> `explanation-semantic-gate-2026-11-06.md`, section "Merged notation and alias regressions" for
+> where each case went. This record is kept unchanged as history.
+
 # Continuity explanation notation and bound aliases
 
 This is a source-only follow-up to deployed worker
