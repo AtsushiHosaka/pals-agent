@@ -70,6 +70,9 @@ verification (`pals.theorem_alignment_failed`). A Lean statement written another
 - Structural length limits (summary 800, overview and conclusion 600 code points) are unchanged
   and can still reject a long valid proof.
 - Style rules that the old opening check enforced (no summary first) now depend on the reviewer.
+- First real-model run (gpt-6-luna, v1.0 cases): all 10 wrong and 3 summary-first cases were rejected,
+  but 4 of 10 valid notation variants were also rejected (operatorname/leqslant, mathrm/lvert,
+  renamed variables, `\gt` with positivity in words). Revision below; to be re-measured.
 
 ## Real-model regression set
 
@@ -96,3 +99,31 @@ the worst case of all cases exceeds the budget (default output bound 16384 token
 attempts), and stops before a call that could exceed what is left. The report lists false
 accepts (wrong or summary-first approved), false rejects (valid rejected), errors, and the
 mismatched case ids. Exit status 0 means every case got its expected decision.
+
+## Revision after the first real-model run
+
+The reviewer's reasons for the four false rejections were not recorded, so the causes below are
+hypotheses to be confirmed with the new report fields (`rationale`, `category`,
+`raw_reviewer_outputs` per case):
+
+1. The v1.0 valid cases were thinner than the rubric: they asserted `δ>0` and
+   `|x|<|a|+1` without reason and never introduced `x`. A strict reviewer can object to that
+   for a mathematical reason, which would be a case defect, not a notation rejection. v1.1
+   cases justify every step (positivity from two positive numbers, the triangle inequality,
+   `δ ≤ ε/(2|a|+1)`), introduce `x` (or `y`) explicitly, and split into two sections. Wrong
+   cases keep exactly one intended defect each.
+2. The rubric said what to tolerate and what to reject but not how to decide between them.
+   It now has a decision rule (approve unless one specific listed defect or one specific false
+   inference can be named; never reject for notation, wording or level of detail; quote the
+   defective step), accepts brief standard facts (minimum of positives, arguments of a minimum
+   bound it, triangle inequality), a positivity clause of one phrase, mixed `|·|`/`\lvert`,
+   braces or parentheses for the minimum, and other correct choices of δ.
+3. The general review rules (`ANSWER_PRESENTATION`, `ANSWER_SCOPE_REVIEW`, "reject a missing
+   essential inference", source-correspondence) were read for conflicts with an x² ε–δ proof.
+   None demands more than the rubric does; the only tension is "reject a missing essential
+   inference", which the brief-facts clause now settles for this context. They are unchanged.
+
+`scripts/evaluate_explanation_qa.py` now records, per case, `category` (`approved`,
+`rejected`, or the infrastructure category), the reviewer's `rationale`, the reviewer session
+id, and `raw_reviewer_outputs`, the structured JSON answers exactly as returned (one per
+attempt), captured by a transparent wrapper around the production client.

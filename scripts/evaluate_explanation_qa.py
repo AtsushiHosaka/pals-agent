@@ -263,11 +263,32 @@ def _check_live_preconditions(
         raise Refused("--input-usd-per-mtok and --output-usd-per-mtok are required for --execute")
 
 
+class RecordingClient:
+    """Transparent wrapper that keeps the reviewer's raw answers for the report."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner = inner
+        self.outputs: list[str] = []
+
+    def generate(self, *, model: str, prompt: str, timeout_seconds: float | None = None) -> str:
+        if timeout_seconds is None:
+            output: str = self.inner.generate(model=model, prompt=prompt)
+        else:
+            output = self.inner.generate(
+                model=model, prompt=prompt, timeout_seconds=timeout_seconds
+            )
+        self.outputs.append(output)
+        return output
+
+
 def _production_reviewer() -> Reviewer:
+    import dataclasses
+
     from pals_agent.factory import build_proof_output_reviewer
     from pals_agent.settings import AgentSettings
 
-    return build_proof_output_reviewer(AgentSettings.from_env())  # type: ignore[return-value]
+    reviewer = build_proof_output_reviewer(AgentSettings.from_env())
+    return dataclasses.replace(reviewer, client=RecordingClient(reviewer.client))  # type: ignore[return-value]
 
 
 def _emit_live(
@@ -296,22 +317,48 @@ def _emit_live(
             stopped_early = True
             break
         decision = "error"
+        detail: dict[str, Any] = {"category": None, "rationale": "", "reviewer_session_id": None}
+        recorder = getattr(reviewer, "client", None)
+        raw_outputs: list[str] | None = (
+            recorder.outputs if isinstance(recorder, RecordingClient) else None
+        )
+        if raw_outputs is not None:
+            raw_outputs.clear()
         with capture_usage() as records:
             try:
-                reviewer.review_explanation(
+                review = reviewer.review_explanation(
                     theorem_statement=case_file.theorem_statement,
                     lean_code=case_file.lean_code,
                     explanation=case.explanation,
                     language=case.language,
                 )
                 decision = "approve"
+                detail.update(
+                    category="approved",
+                    rationale=review.rationale,
+                    reviewer_session_id=review.session_id,
+                )
             except ProofOutputReviewError as exc:
                 decision = "reject" if exc.category == "rejected" else "error"
-            except Exception:  # noqa: BLE001 - report as an error, never as a decision
+                detail.update(
+                    category=exc.category,
+                    rationale=exc.rationale,
+                    reviewer_session_id=exc.session_id,
+                )
+            except Exception as exc:  # noqa: BLE001 - report as an error, never as a decision
                 decision = "error"
+                detail.update(category=f"exception:{type(exc).__name__}")
         spent += actual_usd(records, args.input_usd_per_mtok, args.output_usd_per_mtok)
         results.append(
-            {"id": case.id, "group": case.group, "expected": case.expected, "actual": decision}
+            {
+                "id": case.id,
+                "group": case.group,
+                "expected": case.expected,
+                "actual": decision,
+                **detail,
+                # The reviewer's structured JSON answers, one per attempt, exactly as returned.
+                "raw_reviewer_outputs": list(raw_outputs) if raw_outputs is not None else [],
+            }
         )
     report["results"] = results
     report["spent_usd"] = round(spent, 6)

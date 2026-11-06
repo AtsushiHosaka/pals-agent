@@ -45,6 +45,16 @@ def _run(argv: list[str], **kwargs: Any) -> tuple[int, list[str]]:
     return code, lines
 
 
+def _key(explanation: ProofExplanation) -> str:
+    return "\n".join(
+        [
+            explanation.overview,
+            *(sec.summary for sec in explanation.sections),
+            explanation.conclusion,
+        ]
+    )
+
+
 class StubReviewer:
     """Approves the cases expected to be approved; records spend through the usage scope."""
 
@@ -52,9 +62,7 @@ class StubReviewer:
 
     def __init__(self, *, flip: set[str] = frozenset(), error: bool = False) -> None:  # type: ignore[assignment]
         case_file = qa.load_cases(qa.DEFAULT_CASES)
-        self.expected = {
-            c.explanation.overview + c.explanation.sections[0].summary: c for c in case_file.cases
-        }
+        self.expected = {_key(c.explanation): c for c in case_file.cases}
         self.flip = flip
         self.error = error
         self.calls = 0
@@ -68,11 +76,13 @@ class StubReviewer:
         )
         if self.error:
             raise ProofOutputReviewError("down", category="transport")
-        case = self.expected[explanation.overview + explanation.sections[0].summary]
+        case = self.expected[_key(explanation)]
         approve = (case.expected == "approve") != (case.id in self.flip)
         if not approve:
-            raise ProofOutputReviewError("no", category="rejected", rationale="wrong")
-        return ProofOutputReview("explanation", "p", "m", "s", "ok")
+            raise ProofOutputReviewError(
+                "no", category="rejected", rationale="delta fails", session_id="sess-no"
+            )
+        return ProofOutputReview("explanation", "p", "m", "sess-ok", "looks valid")
 
 
 def test_case_file_has_the_required_shape_and_passes_the_structural_layer() -> None:
@@ -85,6 +95,20 @@ def test_case_file_has_the_required_shape_and_passes_the_structural_layer() -> N
     assert {c.expected for c in case_file.cases if c.group != "valid_notation"} == {"reject"}
     for case in case_file.cases:
         assert "EPSILON-DELTA REQUIREMENT" in qa.qa_prompt(case_file, case)
+
+
+def test_valid_cases_justify_every_step_so_a_rejection_cannot_blame_the_case() -> None:
+    """v1.0 asserted positivity and |x| < |a| + 1 without reason; a strict reviewer may object."""
+    for case in qa.load_cases(qa.DEFAULT_CASES).cases:
+        if case.group != "valid_notation":
+            continue
+        text = " ".join(section.summary for section in case.explanation.sections)
+        assert "triangle inequality" in text or "三角不等式" in text, case.id
+        assert "positive" in text or "正" in text, case.id
+        assert "|x-a|<\\delta" in text.replace("\\lvert ", "|").replace("\\rvert ", "|").replace(
+            "\\vert ", "|"
+        ).replace("|y-b|", "|x-a|"), case.id
+        assert len(case.explanation.sections) == 2, case.id
 
 
 def test_dry_run_is_the_default_needs_no_key_and_calls_no_model() -> None:
@@ -163,6 +187,52 @@ def test_live_run_with_expected_decisions_exits_zero_and_accounts_cost() -> None
     assert report["summary"]["false_accepts"] == 0
     assert report["summary"]["false_rejects"] == 0
     assert report["spent_usd"] == pytest.approx(23 * (3000 * 1 + 500 * 4) / 1_000_000)
+
+
+def test_report_carries_each_reviewers_reason_category_and_raw_output() -> None:
+    code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: StubReviewer())
+    results = {r["id"]: r for r in json.loads(lines[0])["results"]}
+    assert code == 0
+    approved = results["valid-01-base"]
+    assert (approved["category"], approved["rationale"]) == ("approved", "looks valid")
+    assert approved["reviewer_session_id"] == "sess-ok"
+    rejected = results["wrong-01-epsilon-plus-one"]
+    assert (rejected["category"], rejected["rationale"]) == ("rejected", "delta fails")
+    assert rejected["reviewer_session_id"] == "sess-no"
+    assert all("raw_reviewer_outputs" in r for r in results.values())
+
+
+def test_recording_client_keeps_raw_answers_and_forwards_the_timeout() -> None:
+    class Inner:
+        def __init__(self) -> None:
+            self.calls: list[Any] = []
+
+        def generate(self, *, model: str, prompt: str, timeout_seconds: float | None = None) -> str:
+            self.calls.append((model, prompt, timeout_seconds))
+            return '{"approved": false, "rationale": "r"}'
+
+    inner = Inner()
+    client = qa.RecordingClient(inner)
+    client.generate(model="m", prompt="p")
+    client.generate(model="m", prompt="q", timeout_seconds=3.0)
+    assert client.outputs == ['{"approved": false, "rationale": "r"}'] * 2
+    assert inner.calls == [("m", "p", None), ("m", "q", 3.0)]
+
+
+def test_a_reviewer_with_a_recording_client_has_its_raw_outputs_in_the_report() -> None:
+    class Recorded(StubReviewer):
+        def __init__(self) -> None:
+            super().__init__()
+            self.client = qa.RecordingClient(None)
+
+        def review_explanation(self, *, explanation: ProofExplanation, **kwargs: Any) -> Any:
+            self.client.outputs.append('{"approved": true, "rationale": "raw"}')
+            return super().review_explanation(explanation=explanation, **kwargs)
+
+    code, lines = _run(LIVE, environ=KEY, reviewer_factory=lambda: Recorded())
+    first = json.loads(lines[0])["results"][0]
+    assert code == 0
+    assert first["raw_reviewer_outputs"] == ['{"approved": true, "rationale": "raw"}']
 
 
 def test_false_accept_and_false_reject_are_reported_and_fail_the_run() -> None:

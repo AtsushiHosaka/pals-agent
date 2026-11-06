@@ -1558,19 +1558,19 @@ appeal to a continuity theorem (for example continuity of products or of polynom
 this by the mathematics, never by notation. Approve only if the visible proof, in some
 order: takes an arbitrary positive epsilon and an arbitrary real point; gives an explicit
 positive delta (a concrete formula, or a choice that is concretely determined) and shows that
-it is positive; assumes x is within delta of the point and bounds |x²-a²| through the
-factorization (x-a)(x+a) with a justified bound on |x+a|; shows by a valid chain that the bound
-is at most epsilon (a chain may end in an equality such as `= ε`, and may use any equivalent
-algebra); and concludes continuity at that point, hence everywhere because the point is
-arbitrary.
+it is positive (one clause such as "the minimum of two positive numbers" is enough); assumes
+x is within delta of the point and bounds |x²-a²| through the factorization (x-a)(x+a) with a
+justified bound on |x+a|; shows by a valid chain that the bound is at most epsilon (a chain
+may end in an equality such as `= ε`, and may use any equivalent algebra); and concludes
+continuity at that point, hence everywhere because the point is arbitrary.
 Reject when any of these holds: epsilon is never introduced as an arbitrary positive number;
-delta is not shown to be positive; delta does not actually force the epsilon bound, for
-example a delta without the minimum with 1 (large epsilon breaks it), a delta that ignores
-the point, a coefficient that is too small (such as ε/(|a|+1) in place of ε/(2|a|+1)), a delta
-enlarged by adding 1 or by multiplying by 2 or another constant, or a bound that ends in ε+1
-or 2ε instead of ε; a necessary bound is missing or unjustified; the argument is about
-another function or another point than the one fixed; or the argument is not an
-epsilon-delta argument.
+delta is not shown to be positive even in one clause; delta does not actually force the
+epsilon bound, for example a delta without the minimum with 1 (large epsilon breaks it), a
+delta that ignores the point, a coefficient that is too small (such as ε/(|a|+1) in place of
+ε/(2|a|+1)), a delta enlarged by adding 1 or by multiplying by 2 or another constant, or a
+bound that ends in ε+1 or 2ε instead of ε; a necessary bound is missing or unjustified; the
+argument is about another function or another point than the one fixed; or the argument is
+not an epsilon-delta argument.
 Do not reject for notation or phrasing: \\frac or \\dfrac, \\lvert or \\vert, \\min or
 \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands, a factorization written as
 |(x-a)(x+a)|, "delta is positive" stated in words, ε>0 given before or after the point or in
@@ -1578,6 +1578,17 @@ display math, any variable names for the point and the variable, or any equivale
 delta. Do not reject the opening for its notation, wording, or the order in which epsilon and
 the point are introduced alone; a proof-plan or conclusion preview in the opening, and visible
 section headings, are still rejected as stated above.
+Brief standard facts need no further proof and satisfy the general rule on essential
+inferences: the minimum of positive numbers is positive; each argument of a minimum bounds it
+from above (so δ≤1 and δ≤ the second argument); the triangle inequality gives
+|x|≤|a|+|x-a|. Taking an arbitrary x with |x-a|<δ is fine whether x is introduced explicitly
+or implicitly. Mixing | | with \\lvert \\rvert, writing the minimum with parentheses or braces,
+and any other correct choice of delta (for example ε/(2(|a|+1)) in place of ε/(2|a|+1)) are
+fine.
+Decision rule: approve unless you can name one specific defect from the reject list above, or
+one specific inference that is false. Never reject because the notation, wording, or level of
+detail differs from what you would have written. If you reject, quote the defective step in
+the rationale.
 """
 
 

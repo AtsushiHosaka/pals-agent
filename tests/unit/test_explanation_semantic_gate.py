@@ -478,6 +478,14 @@ REJECTION_CRITERIA = [
     "visible section headings",
 ]
 GENERAL_REJECTIONS = ["Reject summary-first or conclusion-preview exposition"]
+# Boundary between "tolerate notation" and "reject defects", as the reviewer reads it.
+BOUNDARY_RULES = [
+    "Decision rule: approve unless you can name one specific defect",
+    "quote the defective step",
+    "Never reject because the notation, wording, or level of detail differs",
+    "the triangle inequality gives",
+    "is enough",
+]
 TOLERATED_NOTATION = [
     "\\dfrac",
     "\\vert",
@@ -503,7 +511,12 @@ def _x_squared_review_prompt() -> str:
 
 def test_review_prompt_states_every_rejection_condition_and_tolerated_notation() -> None:
     prompt = _x_squared_review_prompt()
-    for fragment in [*REJECTION_CRITERIA, *GENERAL_REJECTIONS, *TOLERATED_NOTATION]:
+    for fragment in [
+        *REJECTION_CRITERIA,
+        *GENERAL_REJECTIONS,
+        *TOLERATED_NOTATION,
+        *BOUNDARY_RULES,
+    ]:
         assert fragment in prompt, fragment
 
 
