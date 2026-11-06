@@ -16,7 +16,7 @@ from pals_agent.lean_target import (
 )
 from pals_agent.models import Diagnostic, ProofJobState, ProofRequest
 from pals_agent.openmath import OpenMathStructuringError
-from pals_agent.pipeline import ApiRepairSeed
+from pals_agent.pipeline import ApiRepairSeed, ProofPipeline, _deadline_exceeded
 from pals_agent.private_recipe_selection import (
     RecipeNotSelected,
     RecipeSelected,
@@ -34,6 +34,7 @@ from pals_agent.worker import (
     _has_pending_api_candidate,
     _verified_candidate_matches_statement,
 )
+from tests.unit.test_repair_runtime_spec import ApiRepairGenerator, RecordingFaultStore
 
 _RECIPE_TOOLCHAIN = ToolchainFingerprintV1(
     lean_version="v4.19.0",
@@ -1416,3 +1417,197 @@ def test_unavailable_settlement_response_loss_acks_durable_failure_without_secon
     assert worker.process_proof_job("job-semantic") is True
     assert reviewer.calls == 1
     assert api.evidence == []
+
+
+_SEEDED_CLAIM_ID = "11111111-1111-4111-8111-111111111111"
+
+
+class _SeededRepairApi(RecordingApi):
+    """A job whose API verifier rejected attempt 2, plus a claim that takes ``claim_seconds``."""
+
+    def __init__(self, clock: list[float], *, claim_seconds: float) -> None:
+        super().__init__()
+        self.clock = clock
+        self.claim_seconds = claim_seconds
+
+    def acquire_proof_generation_claim(self, **kwargs: Any) -> dict[str, Any]:
+        self.clock[0] += self.claim_seconds
+        return super().acquire_proof_generation_claim(**kwargs)
+
+    def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
+        generated = {
+            "lean_code": "theorem old_candidate : True := by\n  exact missing_name\n",
+            "model": "test-model",
+            "provider": "test-provider",
+            "elapsed_ms": 1,
+            "draft": None,
+            "sketch": None,
+            "stage_diagnostics": [],
+        }
+        return {
+            "id": proof_job_id,
+            "state": "compiling",
+            "chat_id": "chat-1",
+            "output_language": "en",
+            "theorem_statement": "prove True",
+            "request_context": {},
+            "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
+            "verification_candidate_state": "verification_failed",
+            "diagnostics": [
+                {
+                    "severity": "error",
+                    "message": "Lean verification failed.",
+                    "code": "verifier_compile_failed",
+                }
+            ],
+            "status_context": {
+                "schema_version": "pals.proof-status-context.v1",
+                "stage": "compiling",
+                "attempt_evidence": {
+                    "attempt": 2,
+                    "phase": "compile",
+                    "generated": generated,
+                    "verification": {
+                        "success": False,
+                        "diagnostics": [],
+                        "elapsed_ms": 0,
+                    },
+                    "diagnostics": [],
+                    "checkpoint_status": "published",
+                    "repair_route": {
+                        "route": "sketch",
+                        "selector_attempts": [
+                            {
+                                "attempt": 1,
+                                "outcome": "selected",
+                                "diagnostic_code": None,
+                                "route": "sketch",
+                            }
+                        ],
+                    },
+                },
+                "repairs_used": 1,
+                "max_repair_attempts": 3,
+                "verification_elapsed_ms": 0,
+            },
+        }
+
+
+def _seeded_repair_worker(
+    *, claim_seconds: float, settings: Any,
+) -> tuple[SqsProofWorker, _SeededRepairApi, ApiRepairGenerator]:
+    clock = [1000.0]
+    api = _SeededRepairApi(clock, claim_seconds=claim_seconds)
+    generator = ApiRepairGenerator()
+    pipeline = ProofPipeline(
+        generator=generator,
+        verifier=None,
+        artifact_store=RecordingFaultStore(fail_checkpoint_at=99),
+        max_repair_attempts=3,
+        verification_mode="api_reconcile",
+    )
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, settings),
+        api_client=cast(Any, api),
+        pipeline=pipeline,
+        explainer=ExplainerThatMustNotRun(),
+        monotonic=lambda: clock[0],
+    )
+    return worker, api, generator
+
+
+def test_pjd_011_resumed_repair_after_the_job_deadline_ends_as_budget_exhausted() -> None:
+    worker, api, generator = _seeded_repair_worker(
+        claim_seconds=301.0,
+        settings=SimpleNamespace(max_repair_attempts=3, proof_job_deadline_seconds=300),
+    )
+
+    acknowledged = worker.process_proof_job(
+        "job-1", claim_id=_SEEDED_CLAIM_ID, extend_visibility=lambda _seconds: None
+    )
+
+    assert acknowledged is True
+    assert generator.route_feedback == []
+    assert generator.repair_feedback == []
+    assert [update["state"] for update in api.updates] == ["failed"]
+    context = api.updates[0]["context"]
+    assert context["termination_reason"] == "repair_budget_exhausted"
+    assert context["termination_event"] == {
+        "reason": "repair_budget_exhausted",
+        "attempt": 2,
+        "source": "repair_budget",
+    }
+    assert (context["repairs_used"], context["max_repair_attempts"]) == (1, 1)
+
+
+def test_pjd_012_resumed_repair_before_the_job_deadline_proceeds_to_route_selection() -> None:
+    worker, api, generator = _seeded_repair_worker(
+        claim_seconds=299.0,
+        settings=SimpleNamespace(max_repair_attempts=3, proof_job_deadline_seconds=300),
+    )
+
+    # The memory artifact store has no durable S3 candidate URI, so the worker keeps the
+    # receipt after generation; the point is that route selection and repair both ran.
+    worker.process_proof_job(
+        "job-1", claim_id=_SEEDED_CLAIM_ID, extend_visibility=lambda _seconds: None
+    )
+
+    assert len(generator.route_feedback) == 1
+    assert len(generator.repair_feedback) == 1
+    assert "failed" not in [update["state"] for update in api.updates]
+    assert [update["state"] for update in api.updates][0] == "repairing"
+
+
+@pytest.mark.parametrize(
+    ("settings", "claim_seconds", "expected_stop"),
+    [
+        (SimpleNamespace(proof_job_deadline_seconds=60), 61.0, True),
+        (SimpleNamespace(proof_job_deadline_seconds=60), 59.0, False),
+        (SimpleNamespace(), 301.0, True),
+        (SimpleNamespace(), 299.0, False),
+    ],
+)
+def test_pjd_013_worker_uses_the_configured_deadline_and_default_when_unset(
+    settings: Any, claim_seconds: float, expected_stop: bool,
+) -> None:
+    worker, api, generator = _seeded_repair_worker(
+        claim_seconds=claim_seconds, settings=settings
+    )
+
+    worker.process_proof_job(
+        "job-1", claim_id=_SEEDED_CLAIM_ID, extend_visibility=lambda _seconds: None
+    )
+
+    assert [update["state"] for update in api.updates] == (
+        ["failed"] if expected_stop else ["repairing", "proving", "compiling", "compiling"]
+    )
+    assert len(generator.repair_feedback) == (0 if expected_stop else 1)
+
+
+def test_pjd_015_recursive_calls_keep_the_outermost_start_of_the_budget() -> None:
+    worker, api, generator = _seeded_repair_worker(
+        claim_seconds=0.0, settings=SimpleNamespace(proof_job_deadline_seconds=300)
+    )
+
+    # The nested call made after an API verification passes the first call's start time on.
+    worker.process_proof_job(
+        "job-1",
+        claim_id=_SEEDED_CLAIM_ID,
+        extend_visibility=lambda _seconds: None,
+        deadline_started_at=1000.0 - 301.0,
+    )
+
+    assert [update["state"] for update in api.updates] == ["failed"]
+    assert generator.repair_feedback == []
+
+
+def test_pjd_014_deadline_scope_is_not_left_open_after_the_worker_run() -> None:
+    worker, _api, _generator = _seeded_repair_worker(
+        claim_seconds=301.0, settings=SimpleNamespace(proof_job_deadline_seconds=300)
+    )
+
+    worker.process_proof_job(
+        "job-1", claim_id=_SEEDED_CLAIM_ID, extend_visibility=lambda _seconds: None
+    )
+
+    assert _deadline_exceeded.get() is None
