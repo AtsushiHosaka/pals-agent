@@ -1,3 +1,8 @@
+> **Superseded (2026-11-06).** The text gate described here (`_has_x_squared_epsilon_delta`
+> and the opening-pattern requirement) was removed. The epsilon-delta requirement is now judged
+> by the independent QA review; see `explanation-semantic-gate-2026-11-06.md`. This record is
+> kept unchanged as history.
+
 # X-squared explanation validator hotfix, 2026-11-06
 
 This records the initial `0b340f8` candidate, which was held before production

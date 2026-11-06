@@ -541,7 +541,9 @@ def test_x_squared_continuity_requires_an_epsilon_delta_explanation() -> None:
     assert "連続性判定を使う" in client.prompts[0]
 
 
-def test_x_squared_continuity_retries_old_summary_first_exposition() -> None:
+def test_x_squared_summary_first_exposition_is_left_to_independent_review() -> None:
+    # Exposition order and epsilon-delta content are judged by the independent QA, not by
+    # a text pattern (see test_explanation_semantic_gate.py), so structure alone accepts it.
     old_style = epsilon_delta_payload(
         overview=(
             "実数の平方関数について、差を因数分解する証明方針を先に要約します。"
@@ -549,16 +551,16 @@ def test_x_squared_continuity_retries_old_summary_first_exposition() -> None:
             "$\\delta>0$ とします。"
         )
     )
-    explainer, client = build_explainer(old_style, old_style)
+    explainer, client = build_explainer(old_style)
 
-    with pytest.raises(ExplanationGenerationError):
-        explainer.explain(
-            theorem_statement="x² が連続であることを説明してください。",
-            lean_code=LEAN_CODE,
-            verified=True,
-        )
+    result = explainer.explain(
+        theorem_statement="x² が連続であることを説明してください。",
+        lean_code=LEAN_CODE,
+        verified=True,
+    )
 
-    assert len(client.prompts) == 2
+    assert len(client.prompts) == 1
+    assert "証明方針を先に要約" in result.overview
 
 
 @pytest.mark.parametrize(
@@ -743,21 +745,25 @@ def test_x_squared_continuity_accepts_english_epsilon_delta_explanation() -> Non
         ),
     ],
 )
-def test_x_squared_continuity_rejects_incomplete_epsilon_delta_markers(
+def test_x_squared_continuity_incomplete_epsilon_delta_is_left_to_independent_review(
     overview: str,
     conclusion: str,
 ) -> None:
-    invalid = epsilon_delta_payload(overview=overview, conclusion=conclusion)
-    explainer, client = build_explainer(invalid, invalid)
+    # These texts are mathematically incomplete or wrong. They are no longer recognized by
+    # surface patterns (which also rejected valid proofs); the independent QA, whose rubric
+    # carries the epsilon-delta requirement, rejects them. See test_explanation_semantic_gate.py.
+    explainer, client = build_explainer(
+        epsilon_delta_payload(overview=overview, conclusion=conclusion)
+    )
 
-    with pytest.raises(ExplanationGenerationError):
-        explainer.explain(
-            theorem_statement="x² が連続であることを説明してください。",
-            lean_code=LEAN_CODE,
-            verified=True,
-        )
+    result = explainer.explain(
+        theorem_statement="x² が連続であることを説明してください。",
+        lean_code=LEAN_CODE,
+        verified=True,
+    )
 
-    assert len(client.prompts) == 2
+    assert len(client.prompts) == 1
+    assert result.conclusion == conclusion
 
 
 def test_refuses_to_explain_unverified_lean_without_calling_llm() -> None:
@@ -866,8 +872,6 @@ def test_validation_failures_are_reported_as_closed_labels(raw_output: str, reas
 @pytest.mark.parametrize(
     ("message", "reason"),
     [
-        ("x-squared continuity explanation must start with the proof", "x_squared_opening"),
-        ("x-squared continuity explanation must include reasoning", "x_squared_epsilon_delta"),
         ("sections must contain between 1 and 20 items", "section_count"),
         ("duplicate explanation section id: private-text", "duplicate_section"),
         ("overview must be a non-empty string", "empty_field"),

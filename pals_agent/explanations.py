@@ -26,6 +26,7 @@ _LEAN_SOURCE_TERM_PATTERN = re.compile(
 _LEAN_QUALIFIED_IDENTIFIER_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_])[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+(?![A-Za-z0-9_])"
 )
+_LATIN_ABBREVIATIONS = frozenset({"e.g", "i.e"})
 _BARE_LATEX_JSON_BACKSLASH_PATTERN = re.compile(
     r'(?<!\\)\\(?=(?:[A-Za-z]{2,}|(?!["\\\\/bfnrt]|u[0-9A-Fa-f]{4})))'
 )
@@ -486,7 +487,6 @@ class LeanProofExplainer:
                 value,
                 lean_code,
                 language=language,
-                require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
                 require_linear_ending=True,
             ),
             deadline=deadline,
@@ -649,10 +649,6 @@ def _validation_failure_reason(exc: Exception) -> str:
         return "repeated_final_equation"
     if "code points" in message:
         return "text_length"
-    if "x-squared continuity explanation must start" in message:
-        return "x_squared_opening"
-    if "x-squared continuity explanation must include" in message:
-        return "x_squared_epsilon_delta"
     if "sections must contain" in message:
         return "section_count"
     if "duplicate explanation section id" in message:
@@ -690,7 +686,6 @@ def _parse_explanation(
     lean_code: str,
     *,
     language: str = "ja",
-    require_epsilon_delta: bool = False,
     require_linear_ending: bool = False,
 ) -> tuple[str, tuple[ExplanationSection, ...], str]:
     _require_output_language(language)
@@ -744,19 +739,6 @@ def _parse_explanation(
                 references=references,
             )
         )
-    if require_epsilon_delta:
-        if language == "ja" and not re.match(
-            r"^\$(?:ε>0|0<ε)\$", _normalize_x_squared_math(overview)
-        ):
-            raise ValueError(
-                "x-squared continuity explanation must start with the mathematical proof"
-            )
-        if not _has_x_squared_epsilon_delta(
-            "\n".join([overview, *(section.summary for section in sections), conclusion])
-        ):
-            raise ValueError(
-                "x-squared continuity explanation must include epsilon-delta reasoning"
-            )
     if require_linear_ending:
         _reject_repeated_final_equation(sections[-1].summary, conclusion)
     return overview, tuple(sections), conclusion
@@ -998,8 +980,10 @@ def _reject_lean_source_terms(text: str, label: str) -> None:
     source_term = _LEAN_SOURCE_TERM_PATTERN.search(text)
     if source_term is not None:
         raise ValueError(f"{label} must not mention Lean tactic or command: {source_term.group(0)}")
-    qualified_identifier = _LEAN_QUALIFIED_IDENTIFIER_PATTERN.search(text)
-    if qualified_identifier is not None:
+    for qualified_identifier in _LEAN_QUALIFIED_IDENTIFIER_PATTERN.finditer(text):
+        # "e.g." and "i.e." are ordinary English abbreviations, not namespaced identifiers.
+        if qualified_identifier.group(0).lower() in _LATIN_ABBREVIATIONS:
+            continue
         raise ValueError(
             f"{label} must not mention Lean identifier: {qualified_identifier.group(0)}"
         )
@@ -1387,6 +1371,11 @@ def _output_review_prompt(
             "bullets, numbered steps, and commentary that substitutes for direct proof prose.\n"
         )
     )
+    semantic_requirement = (
+        _EPSILON_DELTA_REVIEW_REQUIREMENT
+        if clarification is None and _is_x_squared_continuity(theorem_statement)
+        else ""
+    )
     return f"""You are an independent review session for learner-facing mathematical output.
 {ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
@@ -1412,7 +1401,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 `$x^m\\in I$` and `$x\\in\\sqrt{{IJ}}$`. Apply this formatting check to explanation
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
-{output_quality_review}
+{output_quality_review}{semantic_requirement}
 Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
@@ -1528,174 +1517,32 @@ Lean candidate source:
 
 
 def _is_x_squared_continuity(theorem_statement: str) -> bool:
+    """Whether the learner asked why x² is continuous (selects the epsilon-delta requirement)."""
     compact = re.sub(r"\s+", "", theorem_statement).lower()
     return "連続" in compact and ("x²" in compact or "x^2" in compact)
 
 
-def _normalize_x_squared_math(text: str) -> str:
-    compact = (
-        re.sub(r"\s+", "", text)
-        .replace("\\varepsilon", "ε")
-        .replace("\\epsilon", "ε")
-        .replace("\\delta", "δ")
-        .replace("\\lvert", "|")
-        .replace("\\rvert", "|")
-        .replace("\\cdot", "*")
-        .replace("\\times", "*")
-        .replace("≤", "<=")
-        .replace("\\{", "(")
-        .replace("\\}", ")")
-        .replace("\\min", "min")
-        .replace("²", "^2")
-    )
-    compact = re.sub(r"\\(?:left|right|quad|qquad|[,;:!])", "", compact)
-    compact = re.sub(r"\\leq?(?![A-Za-z])", "<=", compact)
-    compact = re.sub(r"\\lt(?![A-Za-z])", "<", compact)
-    compact = re.sub(r"\\frac\{ε\}\{([^{}]*)\}", r"ε/(\1)", compact)
-    return compact.replace("{", "").replace("}", "")
-
-
-def _x_squared_delta_choice(compact: str) -> str | None:
-    """Read the complete bounded expression, without consuming adjacent proof prose."""
-    construction = re.search(r"δ(?::=|=)", compact)
-    if construction is None:
-        return None
-    remaining = compact[construction.end() :]
-    if not remaining.startswith("min("):
-        return None
-    depth = 0
-    for index, character in enumerate(remaining[:200]):
-        if character == "(":
-            depth += 1
-        elif character == ")":
-            depth -= 1
-            if depth == 0:
-                choice = remaining[: index + 1]
-                suffix = remaining[index + 1 :]
-                if suffix.startswith(">0"):
-                    choice += ">0"
-                    suffix = suffix[2:]
-                # Do not silently truncate +1, a multiplier, another equality, etc.
-                if suffix and suffix[0] not in "$。、；;":
-                    # Only complete definition clauses end the expression. A
-                    # suffix such as の2倍 or に1を加えた値 changes its value.
-                    definition_end = re.match(
-                        r"(?:と(?:おく|おきます|置く|置きます|定める|定めます|する|します)"
-                        r"|を(?:選ぶ|選びます|取る|取ります))(?=[。、；;]|$)",
-                        suffix,
-                    )
-                    if definition_end is None:
-                        return None
-                return choice
-    return None
-
-
-def _has_x_squared_epsilon_delta(text: str) -> bool:
-    compact = _normalize_x_squared_math(text)
-    choice = _x_squared_delta_choice(compact)
-    if choice is None:
-        return False
-    # Bind the point consistently across the delta, neighborhood, and estimate.
-    # These are alpha-renamings of the same proof, not new mathematical cases.
-    variable = r"[A-Za-z](?:_[0-9]+)?"
-    points = set(re.findall(rf"\|({variable})\|", choice))
-    if len(points) != 1:
-        return False
-    point = next(iter(points))
-    varying_points = dict.fromkeys(
-        other
-        for difference in re.finditer(rf"\|({variable})\^2-({variable})\^2\|=", compact)
-        if point in difference.groups()
-        for other in difference.groups()
-        if other != point
-    )
-    return any(
-        _has_x_squared_estimate(compact, choice, point=point, varying=varying)
-        for varying in varying_points
-    )
-
-
-def _has_x_squared_estimate(compact: str, choice: str, *, point: str, varying: str) -> bool:
-    # Normalize only the isolated delta choice. Renaming the entire proof could
-    # capture a different point already named a or x in an earlier identity.
-    point_pattern = re.escape(point)
-    varying_pattern = re.escape(varying)
-    choice = re.sub(
-        rf"(?<![A-Za-z0-9_]){point_pattern}(?![A-Za-z0-9_])", "a", choice
-    )
-    has_sufficient_delta_choice = _is_sufficient_x_squared_delta_choice(choice)
-    has_positive_delta = (
-        "δ>0" in compact
-        or "0<δ" in compact
-        or choice.endswith(">0")
-    )
-    if not has_sufficient_delta_choice or not has_positive_delta:
-        return False
-    distance = rf"\|(?:{varying_pattern}-{point_pattern}|{point_pattern}-{varying_pattern})\|"
-    sum_bound = rf"\|(?:{varying_pattern}\+{point_pattern}|{point_pattern}\+{varying_pattern})\|"
-    difference = (
-        rf"\|(?:{varying_pattern}\^2-{point_pattern}\^2"
-        rf"|{point_pattern}\^2-{varying_pattern}\^2)\|"
-    )
-    neighborhood = re.search(rf"(?:{distance}<δ|δ>{distance})", compact)
-    if neighborhood is None:
-        return False
-    factorizations = re.compile(
-        rf"{difference}=(?:{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
-    )
-    for factorization in factorizations.finditer(compact, neighborhood.end()):
-        following = compact[factorization.end() :]
-        # A connected chain may rewrite the product before applying inequalities.
-        # Only mathematical tokens belong to that chain, not unrelated prose.
-        estimate = re.match(
-            r"(?:=[A-Za-z0-9_εδ+\-*/^()|=\\.]{1,240})?<=?[^$。、；;]{0,240}", following
-        )
-        if estimate is None:
-            # A separate sentence may estimate the same difference or product.
-            estimate = re.search(
-                rf"(?<![A-Za-z0-9_.*+/^)|-])(?:{difference}"
-                rf"|{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
-                r"<=?[^$。、；;]{0,240}",
-                following,
-            )
-        applies_epsilon_bound = estimate is not None and re.search(
-            r"<=?ε(?=$|[^A-Za-z0-9_+\-*/^(=<>])", estimate.group()
-        ) is not None
-        if applies_epsilon_bound and re.search(
-            r"(?:連続|continuous|continuity)", compact[factorization.end() :], re.IGNORECASE
-        ):
-            return True
-    return False
-
-
-def _is_sufficient_x_squared_delta_choice(choice: str) -> bool:
-    denominator = (
-        r"(?:"
-        r"(?P<a_coefficient_first>\d+)\*?\|a\|\+(?P<constant_last>\d+)"
-        r"|"
-        r"(?P<constant_first>\d+)\+(?P<a_coefficient_last>\d+)\*?\|a\|"
-        r"|"
-        r"(?P<outer_factor>\d+)\*?\(\|a\|\+(?P<inner_constant>\d+)\)"
-        r")"
-    )
-    direct = re.fullmatch(
-        rf"min\(1,ε/\({denominator}\)\)(?:>0)?",
-        choice,
-    )
-    fraction = re.fullmatch(
-        rf"min\(1,\\fracε{denominator}\)(?:>0)?",
-        choice,
-    )
-    matched = direct if direct is not None else fraction
-    if matched is None:
-        return False
-    outer_factor = matched.group("outer_factor")
-    if outer_factor is not None:
-        factor = int(outer_factor)
-        return factor >= 2 and factor * int(matched.group("inner_constant")) >= 1
-    a_coefficient = matched.group("a_coefficient_first") or matched.group("a_coefficient_last")
-    constant = matched.group("constant_last") or matched.group("constant_first")
-    return int(a_coefficient) >= 2 and int(constant) >= 1
+_EPSILON_DELTA_REVIEW_REQUIREMENT = """EPSILON-DELTA REQUIREMENT. The learner asked why x² is
+continuous, so the explanation must itself be an epsilon-delta proof of continuity, not an
+appeal to a continuity theorem (for example continuity of products or of polynomials). Judge
+this by the mathematics, never by notation. Approve only if the visible proof, in some
+order: takes an arbitrary positive epsilon and an arbitrary real point; gives an explicit
+positive delta (a concrete formula, or a choice that is concretely determined) and shows that
+it is positive;
+assumes x is within delta of the point and bounds |x²-a²| through the factorization
+(x-a)(x+a) with a justified bound on |x+a|; shows by a valid chain that the bound is at most
+epsilon (a chain may end in an equality such as `= ε`, and may use any equivalent algebra);
+and concludes continuity at that point, hence everywhere because the point is arbitrary.
+Reject when delta is not shown to be positive, delta does not actually force the epsilon
+bound (for example a missing minimum with 1, an uncorrected constant, a delta that ignores the
+point, or a bound ending in ε+1 or 2ε), a necessary bound is missing or unjustified, the
+argument is about another function or point, or the argument is not an epsilon-delta argument.
+Do not reject for notation or phrasing: \\frac or \\dfrac, \\lvert or \\vert, \\min or
+\\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands, a factorization written as
+|(x-a)(x+a)|, "delta is positive" stated in words, ε>0 given before or after the point or in
+display math, any variable names for the point and the variable, or any equivalent form of the
+delta. The opening's wording is also not a reason to reject if the proof is otherwise valid.
+"""
 
 
 def _line_reference_table(lean_code: str) -> str:
