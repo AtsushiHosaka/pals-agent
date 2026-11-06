@@ -1,7 +1,9 @@
 """A proof job whose deliveries fail closed on its own data must reach a terminal state.
 
-The queue's receive count is the only state that survives a worker restart, so the decision
-is made from it; a live generation claim or an API-owned compile always defers the decision.
+The queue's receive count is the only state that survives a worker restart, so the worker
+reports it. The worker never takes a generation claim for this: it tells the API the count and
+what it saw, and the API decides. A refusal therefore leaves nothing held, and a later delivery
+asks again.
 """
 
 from __future__ import annotations
@@ -14,7 +16,6 @@ from typing import Any, cast
 import pytest
 
 from pals_agent.api_client import PalsApiError
-from pals_agent.models import Diagnostic, ProofJobState
 from pals_agent.settings import AgentSettings
 from pals_agent.worker import SqsProofWorker
 
@@ -24,14 +25,6 @@ SESSION_ID = "33333333-3333-4333-8333-333333333333"
 REQUEST_ID = "44444444-4444-4444-8444-444444444444"
 LEAN_CODE = "theorem sample : True := by\n  trivial"
 ARTIFACT = "s3://pals-artifacts/proof-jobs/job-1/result.lean"
-
-MESSAGES = {
-    "en": "Proof verification could not continue and was stopped.",
-    "ja": "検証を続けられなかったため、処理を終了しました。",
-    "zh-Hans": "验证无法继续，已终止处理。",
-    "zh-Hant": "驗證無法繼續，已終止處理。",
-}
-
 
 def semantic_review_job(**changes: Any) -> dict[str, Any]:
     job: dict[str, Any] = {
@@ -86,17 +79,11 @@ class Api:
     def __init__(self, job: dict[str, Any], *, binding: Any = "match") -> None:
         self.job = job
         self.binding = binding
-        self.reads = 0
-        self.claims: list[str] = []
-        self.updates: list[dict[str, Any]] = []
-        self.claim_status = "acquired"
-        self.claim_error: Exception | None = None
-        self.update_failures = 0
-        self.job_after_claim: dict[str, Any] | None = None
-        self.reconciliation_retries = 0
+        self.terminalizations: list[dict[str, Any]] = []
+        self.terminalize_errors: list[Exception] = []
+        self.response: Any = {"outcome": "terminalized"}
 
     def get_proof_job(self, proof_job_id: str) -> dict[str, Any]:
-        self.reads += 1
         return deepcopy(self.job)
 
     def get_proof_job_chat_input(self, proof_job_id: str) -> dict[str, Any]:
@@ -105,11 +92,12 @@ class Api:
     def get_verification_candidate_binding(self, **kwargs: Any) -> dict[str, Any]:
         if isinstance(self.binding, Exception):
             raise self.binding
-        if self.binding == "mismatch":
-            lean_sha = "0" * 64
-        else:
-            lean_sha = hashlib.sha256(LEAN_CODE.encode()).hexdigest()
-        return {
+        lean_sha = (
+            "0" * 64
+            if self.binding == "mismatch"
+            else hashlib.sha256(LEAN_CODE.encode()).hexdigest()
+        )
+        result = {
             "schema_version": "pals.verification-candidate-binding.v1",
             **kwargs,
             "mutation_claim_id": SESSION_ID,
@@ -118,42 +106,31 @@ class Api:
             "source_binding_sha256": None,
             "candidate_status": "semantic_review",
         }
+        if self.binding == "unknown_shape":
+            result["new_field_from_a_newer_api"] = 1
+        if self.binding == "unknown_status":
+            result["candidate_status"] = "quarantined"
+        return result
 
     def retry_verification_candidate_reconciliation(self, **kwargs: Any) -> dict[str, Any]:
-        self.reconciliation_retries += 1
         raise PalsApiError("reconciliation unavailable")
 
-    def acquire_proof_generation_claim(self, *, proof_job_id: str, claim_id: str,
-                                       required_lease_ms: int = 3_600_000) -> dict[str, Any]:
-        self.claims.append(claim_id)
-        if self.claim_error is not None:
-            raise self.claim_error
-        resource = deepcopy(self.job_after_claim or self.job)
-        if self.claim_status == "terminal":
-            resource["state"] = "failed"
-        else:
-            # The API reports the job's current claim as its generation session.
-            resource["generation_session_id"] = claim_id
-        return {
-            "claim_status": self.claim_status,
-            "lease_remaining_ms": None if self.claim_status == "terminal" else 3_600_000,
-            "resource": resource,
-        }
-
-    def update_proof_job(
-        self, *, proof_job_id: str, claim_id: str, state: ProofJobState,
-        diagnostics: list[Diagnostic], result_artifact_uri: str | None,
-        lean_code: str | None, context: dict[str, Any],
+    def terminalize_stalled_proof_job(
+        self, *, proof_job_id: str, receive_count: int, observed: dict[str, Any]
     ) -> dict[str, Any]:
-        if self.update_failures:
-            self.update_failures -= 1
-            raise PalsApiError("temporarily unavailable")
-        self.updates.append({
-            "proof_job_id": proof_job_id, "claim_id": claim_id, "state": state,
-            "diagnostics": diagnostics, "result_artifact_uri": result_artifact_uri,
-            "lean_code": lean_code, "context": context,
-        })
-        return {"update_status": "terminal", "lease_remaining_ms": None}
+        self.terminalizations.append(
+            {"proof_job_id": proof_job_id, "receive_count": receive_count, "observed": observed}
+        )
+        if self.terminalize_errors:
+            raise self.terminalize_errors.pop(0)
+        return cast(dict[str, Any], self.response)
+
+    # A worker must never take a claim or write the job itself to end it.
+    def acquire_proof_generation_claim(self, **kwargs: Any) -> dict[str, Any]:
+        raise AssertionError("terminalization must not take a generation claim")
+
+    def update_proof_job(self, **kwargs: Any) -> dict[str, Any]:
+        raise AssertionError("terminalization must not write the job itself")
 
 
 class Reviewer:
@@ -182,18 +159,23 @@ def process(w: SqsProofWorker, attempt: int | None, *, visibility: Any = None) -
     )
 
 
+# What the job's own stored data makes impossible for every worker version.
 STRUCTURAL = {
-    "compile_failure_without_repair_seed": lambda: compile_failed_job(),
+    "compile_failure_without_any_repair_seed_fields": lambda: compile_failed_job(),
+    "compile_failure_with_wrong_stage": lambda: compile_failed_job(
+        status_context={"stage": "failed"}),
+    "compile_failure_with_non_integer_budget": lambda: compile_failed_job(
+        status_context={"stage": "compiling", "attempt_evidence": {}, "repairs_used": "0",
+                        "max_repair_attempts": 12, "verification_elapsed_ms": 1}),
     "semantic_blank_lean_code": lambda: semantic_review_job(lean_code="  "),
-    "semantic_bad_candidate_id": lambda: semantic_review_job(verification_candidate_id="nope"),
+    "semantic_missing_candidate_id": lambda: semantic_review_job(verification_candidate_id=None),
     "semantic_missing_generation_session": lambda: semantic_review_job(
         generation_session_id=None),
-    "semantic_lean_without_target": lambda: semantic_review_job(
-        lean_code="def x := 1", status_context={}),
+    "semantic_no_stored_target": lambda: semantic_review_job(status_context={}),
     "semantic_missing_artifact": lambda: semantic_review_job(result_artifact_uri=None),
-    "invalid_linked_request_id": lambda: compile_failed_job(
+    "linked_request_id_not_text": lambda: compile_failed_job(
         state="queued", verification_candidate_id=None, verification_candidate_state=None,
-        diagnostics=[], request_context={"proof_request_id": "not-a-uuid"}),
+        diagnostics=[], request_context={"proof_request_id": 7}),
 }
 
 
@@ -205,125 +187,144 @@ def test_structural_failure_before_the_third_delivery_is_left_for_redelivery(
     api = Api(STRUCTURAL[name]())
 
     assert process(worker(api), attempt) is False
-    assert api.claims == [] and api.updates == []
+    assert api.terminalizations == []
 
 
 @pytest.mark.parametrize("name", STRUCTURAL)
 @pytest.mark.parametrize("attempt", [3, 4, 5])
-def test_structural_failure_on_a_late_delivery_fails_the_job_with_a_typed_diagnostic(
+def test_structural_failure_on_a_late_delivery_asks_the_api_without_a_claim(
     name: str, attempt: int
 ) -> None:
     api = Api(STRUCTURAL[name]())
 
     assert process(worker(api), attempt) is True
 
-    assert api.claims == [CLAIM_ID]
-    (update,) = api.updates
-    assert update["state"] == "failed"
-    assert update["claim_id"] == CLAIM_ID
-    assert [(d.severity, d.code, d.message) for d in update["diagnostics"]] == [
-        ("error", "pals.proof_job_no_progress", MESSAGES["en"])
-    ]
-    assert update["context"]["stage"] == "failed"
-    assert update["context"]["schema_version"] == "pals.proof-status-context.v1"
-    assert update["context"]["termination_reason"] == "non_repairable_failure"
-    # Evidence that was already stored must survive the terminal write.
-    assert update["lean_code"] == api.job["lean_code"]
-    assert update["result_artifact_uri"] == api.job["result_artifact_uri"]
+    (call,) = api.terminalizations
+    assert call["proof_job_id"] == "job-1" and call["receive_count"] == attempt
+    job = api.job
+    assert call["observed"] == {
+        "state": job["state"],
+        "verification_candidate_id": job["verification_candidate_id"],
+        "verification_candidate_state": job["verification_candidate_state"],
+        "lean_sha256": hashlib.sha256(job["lean_code"].encode()).hexdigest(),
+    }
 
 
-@pytest.mark.parametrize("language", sorted(MESSAGES))
-def test_failure_diagnostic_is_localized_to_the_job_language(language: str) -> None:
-    api = Api(compile_failed_job(output_language=language))
+def test_the_request_names_the_job_by_scalars_and_never_by_content() -> None:
+    api = Api(compile_failed_job())
+
+    process(worker(api), 3)
+
+    (call,) = api.terminalizations
+    assert set(call) == {"proof_job_id", "receive_count", "observed"}
+    assert set(call["observed"]) == {
+        "state", "verification_candidate_id", "verification_candidate_state", "lean_sha256",
+    }
+    assert LEAN_CODE not in str(call) and "theorem" not in str(call)
+
+
+def test_an_already_finished_job_is_acknowledged() -> None:
+    api = Api(compile_failed_job())
+    api.response = {"outcome": "already_terminal"}
 
     assert process(worker(api), 3) is True
-
-    (diagnostic,) = api.updates[0]["diagnostics"]
-    assert (diagnostic.code, diagnostic.message) == ("pals.proof_job_no_progress",
-                                                     MESSAGES[language])
-
-
-def test_a_live_generation_claim_defers_the_decision() -> None:
-    api = Api(compile_failed_job())
-    api.claim_status = "busy"
-
-    assert process(worker(api), 5) is False
-    assert api.updates == []
-
-
-def test_a_job_that_became_terminal_is_acknowledged_without_a_write() -> None:
-    api = Api(compile_failed_job())
-    api.claim_status = "terminal"
-
-    assert process(worker(api), 3) is True
-    assert api.updates == []
 
 
 @pytest.mark.parametrize(
-    "error", [PalsApiError("api down"), RuntimeError("unexpected"), ValueError("malformed")]
+    "error",
+    [
+        PalsApiError("refused", status_code=409, error_code="proof_job_not_terminalizable"),
+        PalsApiError("an API that does not have the route yet", status_code=404),
+        PalsApiError("api down", status_code=503),
+        RuntimeError("transport"),
+    ],
 )
-def test_an_unavailable_claim_api_never_terminalizes(error: Exception) -> None:
+def test_a_refusal_or_outage_leaves_the_delivery_for_the_next_one_with_nothing_held(
+    error: Exception,
+) -> None:
     api = Api(compile_failed_job())
-    api.claim_error = error
+    api.terminalize_errors = [error]
 
-    assert process(worker(api), 5) is False
-    assert api.updates == []
+    first = process(worker(api), 3)
+    second = process(worker(api), 4)  # the next delivery asks again and succeeds
+
+    assert (first, second) == (False, True)
+    assert [call["receive_count"] for call in api.terminalizations] == [3, 4]
 
 
-def test_a_job_that_changed_between_read_and_claim_is_not_failed() -> None:
+@pytest.mark.parametrize("response", [{}, {"outcome": "refused"}, {"outcome": 1}])
+def test_an_unrecognized_answer_is_not_an_acknowledgement(response: Any) -> None:
     api = Api(compile_failed_job())
-    api.job_after_claim = compile_failed_job(state="repairing", verification_candidate_state=None)
-
-    assert process(worker(api), 4) is False
-    assert api.updates == []
-
-
-def test_a_job_that_changes_before_the_claim_is_not_claimed() -> None:
-    api = Api(compile_failed_job())
-    original = api.get_proof_job
-    reads = []
-
-    def read(proof_job_id: str) -> dict[str, Any]:
-        reads.append(proof_job_id)
-        if len(reads) > 1:
-            api.job = compile_failed_job(state="repairing", verification_candidate_state=None)
-        return original(proof_job_id)
-
-    api.get_proof_job = read  # type: ignore[method-assign]
-
-    assert process(worker(api), 4) is False
-    assert api.claims == [] and api.updates == []
-
-
-def test_a_transient_terminal_write_failure_is_retried_on_the_same_claim() -> None:
-    api = Api(compile_failed_job())
-    api.update_failures = 2
-
-    assert process(worker(api), 3) is True
-    assert api.claims == [CLAIM_ID] and len(api.updates) == 1
-
-
-def test_a_persistent_terminal_write_failure_leaves_the_delivery_for_redelivery() -> None:
-    api = Api(compile_failed_job())
-    api.update_failures = 3
+    api.response = response
 
     assert process(worker(api), 3) is False
-    assert api.updates == []
 
 
-def test_a_semantic_review_binding_the_api_cannot_provide_is_not_a_job_defect() -> None:
-    api = Api(semantic_review_job(), binding=PalsApiError("api down"))
+# Reasons that depend on this worker's version or configuration, or that may be transient.
+NOT_STRUCTURAL = {
+    "seed_present_but_unreadable_by_this_version": lambda: compile_failed_job(
+        status_context={"stage": "compiling", "attempt_evidence": {"attempt": 1},
+                        "repairs_used": 0, "max_repair_attempts": 12,
+                        "verification_elapsed_ms": 5}),
+    "semantic_candidate_id_in_an_unknown_format": lambda: semantic_review_job(
+        verification_candidate_id="not-a-uuid4"),
+    "semantic_generation_session_in_an_unknown_format": lambda: semantic_review_job(
+        generation_session_id="nope"),
+    "semantic_target_that_this_parser_extracts_differently": lambda: semantic_review_job(
+        status_context={"target_declaration": {
+            "kind": "theorem", "name": "other", "proposition": "False"}}),
+    "linked_request_id_in_an_unknown_format": lambda: compile_failed_job(
+        state="queued", verification_candidate_id=None, verification_candidate_state=None,
+        diagnostics=[], request_context={"proof_request_id": "not-a-uuid"}),
+    "model_this_worker_does_not_know": lambda: compile_failed_job(
+        state="queued", verification_candidate_id=None, verification_candidate_state=None,
+        diagnostics=[], request_context={"generation_model": "gpt-7-from-the-future"}),
+    "verified_job": lambda: semantic_review_job(state="verified", lean_code=""),
+    "pending_api_compile": lambda: compile_failed_job(
+        verification_candidate_state="compiling",
+        diagnostics=[{"severity": "info", "message": "Verification is pending.",
+                      "code": "pals.verification_pending"}]),
+}
+
+
+@pytest.mark.parametrize("name", NOT_STRUCTURAL)
+def test_what_a_newer_worker_or_a_retry_could_handle_is_never_terminalized(name: str) -> None:
+    api = Api(NOT_STRUCTURAL[name]())
 
     assert process(worker(api), 5) is False
-    assert api.claims == [] and api.updates == []
+    assert api.terminalizations == []
 
 
-def test_a_semantic_review_binding_that_does_not_match_the_job_is_terminalized() -> None:
+def test_chat_input_this_version_rejects_is_not_a_verdict_about_the_job() -> None:
+    job = compile_failed_job(
+        state="queued", verification_candidate_id=None, verification_candidate_state=None,
+        diagnostics=[],
+        request_context={"chat_route": {"schema_version": "pals.chat-route.v9"},
+                         "generation_model": "gpt-6-luna"},
+    )
+    api = Api(job)
+
+    assert process(worker(api), 5) is False
+    assert api.terminalizations == []
+
+
+def test_a_binding_that_names_other_evidence_is_terminalized() -> None:
     api = Api(semantic_review_job(), binding="mismatch")
 
     assert process(worker(api), 3) is True
-    assert api.updates[0]["state"] == "failed"
-    assert api.updates[0]["lean_code"] == LEAN_CODE
+    assert len(api.terminalizations) == 1
+
+
+@pytest.mark.parametrize(
+    "binding", [PalsApiError("api down"), "unknown_shape", "unknown_status"]
+)
+def test_a_binding_the_api_cannot_provide_or_in_an_unknown_shape_is_not_a_job_defect(
+    binding: Any,
+) -> None:
+    api = Api(semantic_review_job(), binding=binding)
+
+    assert process(worker(api), 5) is False
+    assert api.terminalizations == []
 
 
 def test_local_review_configuration_is_not_a_job_defect() -> None:
@@ -336,7 +337,7 @@ def test_local_review_configuration_is_not_a_job_defect() -> None:
     )
 
     assert process(w, 5) is False
-    assert api.claims == [] and api.updates == []
+    assert api.terminalizations == []
 
 
 def test_visibility_that_cannot_be_extended_is_not_a_job_defect() -> None:
@@ -346,33 +347,25 @@ def test_visibility_that_cannot_be_extended_is_not_a_job_defect() -> None:
         raise RuntimeError("sqs unavailable")
 
     assert process(worker(api), 5, visibility=denied) is False
-    assert api.claims == [] and api.updates == []
-
-
-def test_a_pending_api_owned_compile_is_never_terminalized() -> None:
-    api = Api(compile_failed_job(
-        verification_candidate_state="compiling",
-        diagnostics=[{"severity": "info", "message": "Verification is pending.",
-                      "code": "pals.verification_pending"}],
-    ))
-
-    assert process(worker(api), 5) is False
-    assert api.claims == [] and api.updates == []
-
-
-def test_a_verified_job_is_never_failed() -> None:
-    api = Api(semantic_review_job(state="verified", lean_code=""))
-
-    assert process(worker(api), 5) is False
-    assert api.claims == [] and api.updates == []
+    assert api.terminalizations == []
 
 
 @pytest.mark.parametrize("state", ["failed", "canceled"])
-def test_a_terminal_job_is_acknowledged_without_claim_or_write(state: str) -> None:
+def test_a_terminal_job_is_acknowledged_without_asking_the_api(state: str) -> None:
     api = Api(compile_failed_job(state=state))
 
     assert process(worker(api), 5) is True
-    assert api.claims == [] and api.updates == []
+    assert api.terminalizations == []
+
+
+def test_the_worker_has_no_terminalization_path_that_takes_a_claim() -> None:
+    import inspect
+
+    from pals_agent import worker as module
+
+    source = inspect.getsource(module.SqsProofWorker._terminalize_no_progress)
+    assert "acquire_proof_generation_claim" not in source
+    assert "update_proof_job" not in source
 
 
 def test_run_once_passes_the_queue_receive_count_to_the_proof_job(monkeypatch: Any) -> None:
@@ -418,3 +411,33 @@ def test_run_once_passes_the_queue_receive_count_to_the_proof_job(monkeypatch: A
     assert w.run_once() is True
     assert seen == [4]
     assert queue.deleted == [{"QueueUrl": "q", "ReceiptHandle": "r"}]
+
+
+def test_the_client_posts_only_the_documented_body_and_no_claim() -> None:
+    from pals_agent.api_client import PalsApiClient
+
+    sent: list[dict[str, Any]] = []
+
+    class Transport:
+        def request(self, **kwargs: Any) -> Any:
+            sent.append(kwargs)
+            return SimpleNamespace(status_code=200, body=b'{"outcome":"terminalized"}')
+
+    client = PalsApiClient(
+        base_url="http://api.invalid", worker_secret="s", transport=cast(Any, Transport())
+    )
+
+    result = client.terminalize_stalled_proof_job(
+        proof_job_id="job-1", receive_count=3,
+        observed={"state": "compiling", "verification_candidate_id": None,
+                  "verification_candidate_state": None, "lean_sha256": None},
+    )
+
+    assert result == {"outcome": "terminalized"}
+    (request,) = sent
+    assert request["method"] == "POST"
+    assert request["url"].endswith("/v1/internal/proof-jobs/job-1/no-progress-terminalizations")
+    import json
+
+    assert set(json.loads(request["body"])) == {"receive_count", "observed"}
+    assert request["headers"]["X-PALS-Worker-Secret"] == "s"
