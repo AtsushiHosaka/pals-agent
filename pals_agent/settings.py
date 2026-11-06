@@ -8,7 +8,7 @@ from typing import Literal
 from urllib.parse import urlsplit
 
 from pals_agent.model_roles import LEAN_GENERATION_MODEL, ModelRole, fixed_model_default
-from pals_agent.models import DEFAULT_MAX_REPAIR_ATTEMPTS
+from pals_agent.models import DEFAULT_MAX_REPAIR_ATTEMPTS, DEFAULT_PROOF_JOB_DEADLINE_SECONDS
 
 _SEMANTIC_EVALUATOR_TOKEN_RE = re.compile(
     r"[A-Za-z0-9][A-Za-z0-9._:/@+\-]{0,255}",
@@ -60,6 +60,7 @@ class AgentSettings:
     request_linked_typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
+    proof_job_deadline_seconds: int = DEFAULT_PROOF_JOB_DEADLINE_SECONDS
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -203,6 +204,12 @@ class AgentSettings:
                 DEFAULT_MAX_REPAIR_ATTEMPTS,
                 minimum=1,
                 maximum=64,
+            ),
+            proof_job_deadline_seconds=_bounded_ascii_int_env(
+                "PALS_PROOF_JOB_DEADLINE_SECONDS",
+                DEFAULT_PROOF_JOB_DEADLINE_SECONDS,
+                minimum=60,
+                maximum=1800,
             ),
             worker_idle_sleep_seconds=float(
                 os.getenv("PALS_AGENT_WORKER_IDLE_SLEEP_SECONDS", "2.0")

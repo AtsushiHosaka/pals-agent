@@ -45,6 +45,8 @@ from pals_agent.lean_target import (
 from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
 from pals_agent.models import (
+    DEFAULT_MAX_REPAIR_ATTEMPTS,
+    DEFAULT_PROOF_JOB_DEADLINE_SECONDS,
     Diagnostic,
     GeneratedDraft,
     GeneratedProof,
@@ -55,7 +57,7 @@ from pals_agent.models import (
 )
 from pals_agent.openai import OpenAIError
 from pals_agent.openmath import OpenMathStructuringError
-from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set
+from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set, proof_deadline_scope
 from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
 from pals_agent.proof_request_worker import ProofRequestProcessor
@@ -630,9 +632,14 @@ class SqsProofWorker:
         *,
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
+        deadline_started_at: float | None = None,
     ) -> bool:
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
+        # The generate/verify/repair loop recurses through this method within one delivery;
+        # the outermost call fixes the start of its wall-clock budget.
+        if deadline_started_at is None:
+            deadline_started_at = self.monotonic()
         proof_job = self.api_client.get_proof_job(proof_job_id)
         if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
             return True
@@ -652,11 +659,13 @@ class SqsProofWorker:
             return self._process_proof_job(
                 proof_job_id, proof_job=proof_job, claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                deadline_started_at=deadline_started_at,
             )
 
     def _process_proof_job(
         self, proof_job_id: str, *, proof_job: dict[str, Any],
         claim_id: str | None, extend_visibility: VisibilityExtender | None,
+        deadline_started_at: float,
     ) -> bool:
         state = proof_job.get("state")
         if state in _NON_VERIFIED_TERMINAL_STATES:
@@ -826,6 +835,7 @@ class SqsProofWorker:
                 proof_job_id,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                deadline_started_at=deadline_started_at,
             )
 
         context = proof_job.get("request_context")
@@ -919,7 +929,9 @@ class SqsProofWorker:
                 state=status,
                 raw=status_context,
                 diagnostics=api_diagnostics,
-                max_repair_attempts=getattr(self.settings, "max_repair_attempts", 12),
+                max_repair_attempts=getattr(
+                    self.settings, "max_repair_attempts", DEFAULT_MAX_REPAIR_ATTEMPTS
+                ),
                 language=language,
             )
             if status == "compiling" and isinstance(lean_code, str) and lean_code.strip():
@@ -947,6 +959,9 @@ class SqsProofWorker:
                 run_kwargs["api_repair_seed"] = api_repair_seed
             if request_linked:
                 run_kwargs["request_linked"] = True
+            deadline_at = deadline_started_at + getattr(
+                self.settings, "proof_job_deadline_seconds", DEFAULT_PROOF_JOB_DEADLINE_SECONDS
+            )
             pipeline = self._pipeline_for_proof()
             if (
                 self.recipe_attempt_planner is not None
@@ -986,7 +1001,9 @@ class SqsProofWorker:
                 run_kwargs["prepared_request"] = prepared
             with usage_scope(lambda usage: self.api_client.record_usage(
                 proof_job_id=proof_job_id, claim_id=claim_id, usage=usage
-            )), latency_stage("proof_pipeline"):
+            )), proof_deadline_scope(
+                lambda: self.monotonic() >= deadline_at
+            ), latency_stage("proof_pipeline"):
                 run_result = pipeline.run_statement(**run_kwargs)
         except OpenMathStructuringError:
             on_status(
@@ -1097,6 +1114,7 @@ class SqsProofWorker:
                 proof_job_id,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                deadline_started_at=deadline_started_at,
             )
         if latest_state != "verified" or not latest_lean_code:
             return False

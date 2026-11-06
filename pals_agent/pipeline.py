@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol, cast
 
@@ -85,6 +87,21 @@ TerminationReason = Literal[
     "repair_route_selection_failed",
     "artifact_store_failure",
 ]
+
+
+_deadline_exceeded: ContextVar[Callable[[], bool] | None] = ContextVar(
+    "pals_proof_deadline_exceeded", default=None
+)
+
+
+@contextmanager
+def proof_deadline_scope(exceeded: Callable[[], bool]) -> Iterator[None]:
+    """Let the repair loop ask whether this job's wall-clock budget has passed."""
+    token = _deadline_exceeded.set(exceeded)
+    try:
+        yield
+    finally:
+        _deadline_exceeded.reset(token)
 
 
 class LeanGenerator(Protocol):
@@ -745,6 +762,22 @@ class ProofPipeline:
                 )
             )
             return None
+        # Gate only the start of a repair (route selection and generation); a verification
+        # already in flight is never cut. The first repair is always allowed so a time stop
+        # can report a valid budget receipt (repairs_used == max_repair_attempts >= 1).
+        deadline_exceeded = _deadline_exceeded.get()
+        if repairs_used >= 1 and deadline_exceeded is not None and deadline_exceeded():
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="pals.repair_budget_exhausted",
+                    message=(
+                        "Lean repair stopped after reaching the proof job time budget "
+                        f"with {repairs_used} repair generations used."
+                    ),
+                )
+            )
+            return None
         if not callable(getattr(self.generator, "repair", None)):
             cumulative_diagnostics.append(
                 Diagnostic(
@@ -943,6 +976,13 @@ class ProofPipeline:
             termination_reason,
             attempt=latest_attempt,
         )
+        # A time-budget stop spends fewer repairs than configured. Report the budget actually
+        # consumed so the receipt remains an exhausted budget (repairs_used == max).
+        max_repair_attempts = (
+            min(self.max_repair_attempts, repairs_used)
+            if termination_reason == "repair_budget_exhausted"
+            else self.max_repair_attempts
+        )
         metadata = {
                 "proof_job_id": proof_job_id,
                 "problem_id": problem_id,
@@ -969,7 +1009,7 @@ class ProofPipeline:
                 },
                 "attempts": attempts,
                 "repairs_used": repairs_used,
-                "max_repair_attempts": self.max_repair_attempts,
+                "max_repair_attempts": max_repair_attempts,
                 "termination_reason": termination_reason,
                 "termination_event": termination_event,
                 "diagnostics": [diagnostic.to_api() for diagnostic in diagnostics],
@@ -1005,7 +1045,7 @@ class ProofPipeline:
                 "verification_elapsed_ms": verification.elapsed_ms,
                 "attempts": latest_attempt,
                 "repairs_used": repairs_used,
-                "max_repair_attempts": self.max_repair_attempts,
+                "max_repair_attempts": max_repair_attempts,
                 "termination_reason": termination_reason,
                 "termination_event": termination_event,
                 "attempt_evidence": attempts[-1],

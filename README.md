@@ -127,6 +127,8 @@ PALS_OPENAI_MAX_OUTPUT_TOKENS=16384
 
 # Bounded Lean diagnostic repair loop
 PALS_MAX_REPAIR_ATTEMPTS=3
+# Wall-clock limit (60..1800 s) after which no further repair is started
+PALS_PROOF_JOB_DEADLINE_SECONDS=300
 
 # API-only Proof Flow Index retrieval
 PALS_API_BASE_URL=http://localhost:8000
@@ -138,7 +140,10 @@ PALS_DRAFT_EMBEDDING_DIM=384
 Each failed repairable candidate is checkpointed before another LLM-selected
 `draft`, `sketch`, or `prove` route. Route selection makes at most three real
 calls and never invents a fallback route. The default budget permits three
-repair generations after the initial candidate.
+repair generations after the initial candidate. Once the proof-job deadline has
+passed, and at least one repair has been used, no further repair is started; the
+job then ends as `repair_budget_exhausted`. A verification already in flight is
+never cut short.
 
 ## Verified Worker Updates
 

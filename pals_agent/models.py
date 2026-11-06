@@ -14,6 +14,7 @@ FormalStatementSource = Literal["user"]
 VerificationHarnessSource = Literal["user"]
 SelectedProofMethod = Literal["epsilon_delta"]
 DEFAULT_MAX_REPAIR_ATTEMPTS = 3
+DEFAULT_PROOF_JOB_DEADLINE_SECONDS = 300
 ProofJobState = Literal[
     "queued",
     "retrieving_context",
