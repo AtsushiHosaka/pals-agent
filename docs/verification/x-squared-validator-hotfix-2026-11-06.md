@@ -1,5 +1,9 @@
 # X-squared explanation validator hotfix, 2026-11-06
 
+This records the initial `0b340f8` candidate, which was held before production
+activation after additional regressions were found. The corrected source and
+new evidence are in `x-squared-validator-followup-2026-11-06.md`.
+
 Working baseline: deployed worker source
 `6e5c58dec2459962b2df498385d47cd8d6abe3a2`.
 

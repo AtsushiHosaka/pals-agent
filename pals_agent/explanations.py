@@ -1599,68 +1599,73 @@ def _has_x_squared_epsilon_delta(text: str) -> bool:
     # These are alpha-renamings of the same proof, not new mathematical cases.
     variable = r"[A-Za-z](?:_[0-9]+)?"
     points = set(re.findall(rf"\|({variable})\|", choice))
-    difference = re.search(rf"\|({variable})\^2-({variable})\^2\|=", compact)
-    if len(points) != 1 or difference is None:
+    if len(points) != 1:
         return False
     point = next(iter(points))
-    difference_variables = set(difference.groups())
-    if len(difference_variables) != 2 or point not in difference_variables:
-        return False
-    varying = next(iter(difference_variables - {point}))
-    names = {point: "a", varying: "x"}
-    names_pattern = re.compile(
-        rf"(?<![A-Za-z0-9_])(?:{re.escape(point)}|{re.escape(varying)})(?![A-Za-z0-9_])"
+    varying_points = dict.fromkeys(
+        other
+        for difference in re.finditer(rf"\|({variable})\^2-({variable})\^2\|=", compact)
+        if point in difference.groups()
+        for other in difference.groups()
+        if other != point
     )
-    compact = names_pattern.sub(lambda match: names[match.group()], compact)
-    choice = names_pattern.sub(lambda match: names[match.group()], choice)
+    return any(
+        _has_x_squared_estimate(compact, choice, point=point, varying=varying)
+        for varying in varying_points
+    )
+
+
+def _has_x_squared_estimate(compact: str, choice: str, *, point: str, varying: str) -> bool:
+    # Normalize only the isolated delta choice. Renaming the entire proof could
+    # capture a different point already named a or x in an earlier identity.
+    point_pattern = re.escape(point)
+    varying_pattern = re.escape(varying)
+    choice = re.sub(
+        rf"(?<![A-Za-z0-9_]){point_pattern}(?![A-Za-z0-9_])", "a", choice
+    )
     has_sufficient_delta_choice = _is_sufficient_x_squared_delta_choice(choice)
     has_positive_delta = (
         "δ>0" in compact
         or "0<δ" in compact
         or choice.endswith(">0")
     )
-    distance = r"\|(?:x-a|a-x)\|"
-    sum_bound = r"\|(?:x\+a|a\+x)\|"
-    factorization = re.search(
-        (
-            r"\|(?:x\^2-a\^2|a\^2-x\^2)\|="
-            rf"(?:{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
-        ),
-        compact,
+    if not has_sufficient_delta_choice or not has_positive_delta:
+        return False
+    distance = rf"\|(?:{varying_pattern}-{point_pattern}|{point_pattern}-{varying_pattern})\|"
+    sum_bound = rf"\|(?:{varying_pattern}\+{point_pattern}|{point_pattern}\+{varying_pattern})\|"
+    difference = (
+        rf"\|(?:{varying_pattern}\^2-{point_pattern}\^2"
+        rf"|{point_pattern}\^2-{varying_pattern}\^2)\|"
     )
     neighborhood = re.search(rf"(?:{distance}<δ|δ>{distance})", compact)
-    applies_delta_neighborhood = (
-        factorization is not None
-        and neighborhood is not None
-        and neighborhood.start() < factorization.start()
+    if neighborhood is None:
+        return False
+    factorizations = re.compile(
+        rf"{difference}=(?:{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
     )
-    estimate = None
-    if factorization is not None:
+    for factorization in factorizations.finditer(compact, neighborhood.end()):
         following = compact[factorization.end() :]
-        estimate = re.match(r"<=?[^$。、；;]{0,240}", following)
+        # A connected chain may rewrite the product before applying inequalities.
+        # Only mathematical tokens belong to that chain, not unrelated prose.
+        estimate = re.match(
+            r"(?:=[A-Za-z0-9_εδ+\-*/^()|=\\.]{1,240})?<=?[^$。、；;]{0,240}", following
+        )
         if estimate is None:
             # A separate sentence may estimate the same difference or product.
             estimate = re.search(
-                rf"(?<![A-Za-z0-9_.*+/^)|-])(?:\|(?:x\^2-a\^2|a\^2-x\^2)\|"
+                rf"(?<![A-Za-z0-9_.*+/^)|-])(?:{difference}"
                 rf"|{distance}\*?{sum_bound}|{sum_bound}\*?{distance})"
                 r"<=?[^$。、；;]{0,240}",
                 following,
             )
-    applies_epsilon_bound = estimate is not None and re.search(
-        r"<=?ε(?=$|[^A-Za-z0-9_+\-*/^(=<>])", estimate.group()
-    ) is not None
-    return (
-        has_sufficient_delta_choice
-        and has_positive_delta
-        and applies_delta_neighborhood
-        and applies_epsilon_bound
-        and re.search(
-            r"(?:連続|continuous|continuity)",
-            compact[factorization.end() if factorization is not None else 0 :],
-            re.IGNORECASE,
-        )
-        is not None
-    )
+        applies_epsilon_bound = estimate is not None and re.search(
+            r"<=?ε(?=$|[^A-Za-z0-9_+\-*/^(=<>])", estimate.group()
+        ) is not None
+        if applies_epsilon_bound and re.search(
+            r"(?:連続|continuous|continuity)", compact[factorization.end() :], re.IGNORECASE
+        ):
+            return True
+    return False
 
 
 def _is_sufficient_x_squared_delta_choice(choice: str) -> bool:
