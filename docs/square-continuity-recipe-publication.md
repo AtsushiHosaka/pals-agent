@@ -13,7 +13,7 @@ All files are under `testdata/square-continuity-recipe-v1/`.
 
 | File | Role |
 | --- | --- |
-| `card.json` | Statement, domain, assumptions, quantifiers, conclusion, `proof_method_tag: epsilon_delta`, stored Japanese answer, paraphrases, aliases, ten hard negatives |
+| `card.json` | Statement, domain, assumptions, quantifiers, conclusion, `proof_method_tag: epsilon_delta`, stored Japanese answer, paraphrases, aliases, thirteen hard negatives |
 | `proofs/square_continuous_explicit_epsilon_delta.lean` | The single theorem; its proof body is the one in the manifest |
 | `publication/continuity.square.explicit-epsilon-delta.json` | Canonical `pals.recipe-authoring-manifest.v1` (author `pals.principal.v1/claude/square-continuity-recipe-20261106`) |
 | `publication.py` | `manifest` and `entry` commands; `entry` needs a real admitted compiler receipt |
@@ -43,7 +43,7 @@ recorded in this repository, not an observation of production.** See step 0.
 - The API repository's `RecipeAuthoringManifestV1.parse`, `RecipeMaterializerV1`,
   `validate_materialized_recipe` and `RecipeSearchEntry` accept the manifest and an entry built
   with a synthetic receipt (see its `tests/unit/test_square_continuity_recipe.py`).
-- All 82 formulas in `card.json` render with KaTeX 0.16.47 in strict mode.
+- All 89 formulas in `card.json` render with KaTeX 0.16.47 in strict mode.
 - The answer passes the repository's own x² gate (`_has_x_squared_epsilon_delta`) and the Lean
   vocabulary gate, and its inequalities hold in exact rational arithmetic on 94,464 points.
 - The local ranker puts the card in the top three of 21 entries for the exact statement and all
@@ -78,7 +78,7 @@ recorded in this repository, not an observation of production.** See step 0.
    functions that take a cursor, but no wrapper exists. Either add one, or quiesce traffic.
 6. **Replay on the real path.** The Japanese incident request must return a `lean_catalog`
    answer with `answer_sha256`, `lean_sha256` and the source hash equal to the admitted entry, and
-   no `formal_job_id`. Run the ten hard negatives in `card.json` through the real two judges
+   no `formal_job_id`. Run the thirteen hard negatives in `card.json` through the real two judges
    (a small paid regression) and expect no reuse for any of them; none of that has been run.
 
 ## Not done on purpose
@@ -92,7 +92,7 @@ recorded in this repository, not an observation of production.** See step 0.
 
 ## Risks to know before step 5
 
-- The lexical fallback is weak for short symbolic queries. Against a catalog where all ten hard
+- The lexical fallback is weak for short symbolic queries. Against a catalog where all thirteen hard
   negatives are separate near-duplicate entries, three of twelve paraphrases left the API's top
   five. The embedding path must carry those; publish the vector with the entry.
 - The five-entry judge window may contain the natural-power Recipe ahead of this card. The judges

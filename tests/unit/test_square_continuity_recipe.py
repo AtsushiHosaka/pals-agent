@@ -50,12 +50,12 @@ RECIPE_ID = "continuity.square.explicit-epsilon-delta"
 CLAIM_ID = "00000000-0000-4000-8000-000000000002"
 
 # Drift pins: the same constants are asserted by the API repository's contract tests.
-CARD_SHA256 = "f32eb06b793c3ef62907c06ea254338f7f1d085771f67de95aa4464f5d74e4fc"
+CARD_SHA256 = "8a3378edfe82d1add7e4dc39c14bb9e4f7ece06f8d966be9d631abd84080682c"
 MANIFEST_SHA256 = "2b1db0f70b206c03a3eca2118c51ac682d856914ec56d5e8d971e0392cdec613"
 MATERIALIZED_SHA256 = "e2da4f1afaa5a1b627197b216e4e2f5cc40638fcf2e4f38f64033670b4becba1"
-ANSWER_SHA256 = "f5b9b52a81d76f8c0e1e6785a4c49abcca4110ee6fec4d0a2ef20e4afeaf5fdb"
+ANSWER_SHA256 = "57cd701b970841728a828a9456beae94e53cf4a5b20d83cbc7e3ed257e573bde"
 SEED_DRAFT_XML_SHA256 = "e5cc2280d3c7f7120c50593d7d0be859b26e08b253f55221787eee1048e60efd"
-SYNTHETIC_ENTRY_SHA256 = "a83421e7763c160fae9fa0a4b8d8d91e28aed6a8b8bdfe6ea6b2a94371447ed9"
+SYNTHETIC_ENTRY_SHA256 = "152a3019f71c5d4afa883d76bce1e3bff578200c19448c3d9a621b87841571a2"
 
 
 def publication_module():
@@ -309,9 +309,14 @@ def test_answer_is_an_explicit_epsilon_delta_proof_accepted_by_the_repo_validato
     assert "`" not in answer and "\\\\" not in answer
     for paragraph in answer.strip().split("\n\n"):
         assert paragraph.strip().endswith("。")
-    # Variables are bound before use: a and epsilon are introduced, x is quantified.
-    assert answer.startswith("$a$ を任意の実数、$\\varepsilon>0$ を任意に取ります。")
+    # Variables are bound before use. The definition quantifies epsilon and delta in order
+    # and only then fixes an arbitrary epsilon, so the opening does not pre-fix epsilon.
+    assert answer.startswith("$a$ を任意の実数とします。")
+    assert "任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し" in answer
+    assert answer.index("となることです。") < answer.index("そこで $\\varepsilon>0$ を任意に取り")
     assert "すべての実数 $x$" in answer
+    # delta shrinks with |a|, not with a: a negative a of large modulus is not "large".
+    assert "$|a|$ が大きいほど小さくなる" in answer and "$a$ が大きいほど" not in answer
     # Only claims the Lean target supports: pointwise continuity, nothing about uniformity.
     for foreign in ("一様", "微分", "導関数", "コンパクト"):
         assert foreign not in answer
@@ -450,11 +455,14 @@ def test_every_hard_negative_is_distinct_and_excluded_by_a_stored_scope_field():
         "rational_power",
         "natural_power",
         "complex_square",
+        "lipschitz",
+        "shifted_square",
+        "without_epsilon_delta",
     }
     variants = set(value["question_variants"]["ja"] + value["question_variants"]["en"])
     for item in negatives.values():
         assert item["statement"] != value["statement"] and item["statement"] not in variants
-        assert item["dimension"] in {"objects", "domain", "quantifiers", "conclusion"}
+        assert item["dimension"] in {"objects", "domain", "quantifiers", "conclusion", "method"}
         assert item["reason"].strip()
     assert "x^3" not in fields and "x^3" in negatives["cube"]["statement"].replace(" ", "")
     assert "[0,1]" in negatives["restricted_domain"]["statement"] and "[0,1]" not in fields
@@ -472,6 +480,11 @@ def test_every_hard_negative_is_distinct_and_excluded_by_a_stored_scope_field():
     assert "有理数" in negatives["rational_power"]["statement"] and "有理数" not in fields
     assert "任意の自然数" in negatives["natural_power"]["statement"] and "自然数 $n$" not in fields
     assert "複素数" in negatives["complex_square"]["statement"] and "複素数" not in fields
+    assert "リプシッツ" in negatives["lipschitz"]["statement"] and "リプシッツ" not in fields
+    assert "(x-1)^2" in negatives["shifted_square"]["statement"] and "(x-1)" not in fields
+    # A request that excludes the stored method conflicts with the card's declared method.
+    assert "使わず" in negatives["without_epsilon_delta"]["statement"]
+    assert value["proof_method_tag"] == "epsilon_delta" and "使わず" not in fields
     assert "\\mathbb{R}" in fields
 
 
@@ -596,7 +609,11 @@ def test_two_scripted_approvals_return_the_stored_answer_and_catalog_binding(sta
 
 
 @pytest.mark.parametrize("negative", [item["statement"] for item in card()["hard_negatives"]])
-def test_one_dissent_or_a_changed_target_prevents_reuse_for_every_wrong_statement(negative):
+def test_reuse_needs_both_scripted_approvals_and_the_selected_target_hash(negative):
+    """Aggregation rule only: it holds for any statement and says nothing about the judges.
+
+    The replies are scripted, so this cannot show that the real judges reject a hard negative.
+    """
     row = candidate_row(synthetic_entry())
     approve, decline = verdict(row), verdict(row, "miss")
     for assessment, review in ((approve, decline), (decline, approve), (decline, decline)):
