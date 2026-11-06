@@ -69,6 +69,7 @@ def test_malformed_claim_conventions_are_refused(value):
 
 def test_unknown_relevant_reading_is_asked_before_anything_else():
     counterexample = dict(READY["premise_check"], counterexample="the zero ring",
+                          counterexample_proof="1 = 0 there",
                           conventions=["zero_ring_domain"])
     engine, transport = runtime([dict(READY, premise_check=counterexample)])
     result = engine.answer(with_conventions())
@@ -137,7 +138,8 @@ def test_a_model_question_about_a_known_reading_is_not_asked():
 
 
 def test_a_counterexample_question_is_still_asked_with_known_readings():
-    check = dict(READY["premise_check"], conventions=["zero_pow_zero"], counterexample="x = 0")
+    check = dict(READY["premise_check"], conventions=["zero_pow_zero"], counterexample="x = 0",
+                 counterexample_proof="0^0 is undefined under this reading")
     question = {"text": "This seems to fail at x = 0. Which claim?", "options": []}
     engine, _ = runtime([dict(READY, premise_check=check, action="needs_input", question=question)])
     result = engine.answer(dict(REQUEST, math_conventions={"policy": "default", "choices": {}}))

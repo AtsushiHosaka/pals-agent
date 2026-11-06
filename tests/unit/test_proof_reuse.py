@@ -28,7 +28,8 @@ READY = {
     "question": None,
     "reason": "Domain and goal are supplied.",
     "premise_check": {
-        "counterexample": "", "truth_depends_on": [], "assumed_defaults": [], "conventions": []
+        "counterexample": "", "counterexample_proof": "", "truth_depends_on": [],
+        "assumed_defaults": [], "conventions": [],
     },
 }
 
