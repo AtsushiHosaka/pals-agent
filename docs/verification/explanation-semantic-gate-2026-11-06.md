@@ -149,11 +149,11 @@ So the x² review (and only it) asks for a fixed checklist and the code decides:
 |---|---|
 | `epsilon_arbitrary` | an arbitrary positive ε is introduced |
 | `point_fixed` | an arbitrary real point a is fixed; x with \|x-a\|<δ is taken |
-| `delta_positive_justified` | δ>0 is justified (one clause suffices) |
-| `delta_bounded_by_one` | \|x-a\|<1 follows from \|x-a\|<δ (minimum with 1 or equivalent) |
+| `delta_positive_justified` | δ>0 is stated or evident from δ's definition (min or quotient of positive quantities); only a definition whose positivity is not evident (δ=ε-|a|, δ=1-ε) needs a reason |
+| `delta_bounded_by_one` | \|x-a\|<1 follows from \|x-a\|<δ; a minimum with 1 (or equivalent) makes δ≤1 evident |
 | `delta_depends_on_point_and_epsilon` | δ is an explicit formula in ε and a |
 | `factorization` | \|x²-a²\| = \|x-a\|\|x+a\| |
-| `sum_bound` | \|x+a\|<2\|a\|+1 (or equivalent) is derived |
+| `sum_bound` | \|x+a\|<2\|a\|+1 (or equivalent) is derived; one standard step suffices |
 | `final_inequality` | a valid chain, for the chosen δ, reaches ε or a fixed multiple of ε (not ε+1, not δ) |
 | `conclusion` | continuity at a, hence everywhere |
 | `presentation` | no plan or conclusion preview in the opening, headings, bullets, repeats, math outside `$`, Lean terms |
@@ -274,3 +274,42 @@ Review of Codex's intent: its sample, `C = 2|a|+1`, `δ = min(1, ε/C)`, first b
 and later `(ε/C)C = ε`, is the shape of `valid-18`, so the case that motivated the change is
 kept as a positive regression. The deployed gate rejected that shape because it looked for
 the absolute value inside δ literally; the new design has no such dependency.
+
+## Evident facts need no reason (owner decision)
+
+The proof is verified by Lean; the explanation has to be mathematically sound and complete, not
+to spell out every evident fact. The old `wrong-12` (δ=min(1, ε/(2|a|+1)) with no sentence about
+δ>0) was therefore a valid explanation, not a defect; it is now the valid case
+`valid-21-positivity-evident-from-the-definition` (decision recorded in the case file's
+`revision` and `note`). Changes to the checklist:
+
+- `delta_positive_justified`: ok when δ>0 is stated or evident from the definition (a minimum or
+  quotient of positive quantities). Missing only when the definition does not make positivity
+  evident (δ=ε-|a|, δ=1-ε) and no reason is given. Two such wrong cases were added:
+  `wrong-23` (δ=min{1, ε/(2|a|+1), ε-|a|}, ≤0 when |a|≥ε) and `wrong-24`
+  (δ=min{1-ε, ε/(2|a|+1)}, ≤0 when ε≥1); both are chains that are otherwise correct, so only the
+  positivity is in question.
+- `delta_bounded_by_one`: with δ defined as a minimum with 1, δ≤1 is evident. A δ with no such
+  bound, or enlarged (δ+1, 2δ) while claimed ≤1, still fails.
+- `sum_bound`: one standard step suffices (|x|<|a|+1 and the triangle inequality, or
+  |x+a|=|2a+(x-a)|); an assertion with no step at all, where the bound is not evident, is
+  still missing (`wrong-15`).
+- `final_inequality`: the step δ(2|a|+1)≤ε from δ≤ε/(2|a|+1) is evident from the definition of
+  the minimum.
+- Status rule: "ok" is stated or evident from the definitions and brief standard facts
+  (minimum/quotient of positives is positive, each argument bounds a minimum, triangle
+  inequality, difference of squares, cancelling a stated bound `(ε/C)C=ε`); "missing" is absent
+  or not evident and given no reason.
+- Still rejected (unchanged): ε+1 or δ endings, doubled or enlarged δ, no minimum with 1,
+  coefficient too small, δ ignoring the point, another point or function, rebound aliases.
+
+Observed over-judgement on valid cases (valid-17 sized delimiters, valid-18 named bound alias,
+valid-19 general identity first, one run in three each) was addressed in the prompt, not in the
+cases: the tolerated list now names sized delimiters (`\bigl \bigr \Bigl \Bigr \left \right`),
+multi-line layouts (`aligned`, `align*`, `array`), a named constant for a bound
+(`C=2|a|+1`, defined first and used in place of the expression), and a general identity with
+other variable names stated before it is applied; `delta_depends_on_point_and_epsilon` accepts
+a named constant standing for such an expression, and `presentation` defines repetition as the
+same calculation written twice and says a general fact stated first and then applied is not a
+repetition. These are hypotheses about the cause (the reviewer's rationale was not recorded);
+the next `--repeats 3` run tests them.

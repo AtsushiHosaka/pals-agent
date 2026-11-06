@@ -500,7 +500,7 @@ TOLERATED_NOTATION = [
     "any variable names",
 ]
 STANDARD_FACTS = [
-    "the minimum of positive numbers is positive",
+    "a minimum or quotient of positive numbers is positive",
     "each argument of a minimum bounds it from above",
     "the triangle inequality",
 ]
@@ -512,8 +512,8 @@ DEFECT_TO_ELEMENT = {
     "epsilon/(|a|+1) in place of epsilon/(2|a|+1)": "final_inequality",
     "delta plus 1, twice delta": "delta_bounded_by_one",
     "not a sum, not another function": "factorization",
-    "Stating delta>0 with no reason at all is missing": "delta_positive_justified",
-    "a bare assertion is missing": "sum_bound",
+    "for example delta=epsilon-|a| or delta=1-epsilon": "delta_positive_justified",
+    "An assertion with no step at all": "sum_bound",
     "previews the proof plan or the conclusion": "presentation",
 }
 
@@ -550,6 +550,39 @@ def test_checklist_ids_are_defined_exactly_once_and_in_the_response_format() -> 
 def test_each_known_defect_is_assigned_to_exactly_one_element(defect: str, element: str) -> None:
     owners = [i for i, text in _definitions(_x_squared_review_prompt()).items() if defect in text]
     assert owners == [element]
+
+
+def test_evident_facts_need_no_reason_but_unclear_positivity_does() -> None:
+    prompt = _x_squared_review_prompt()
+    definitions = _definitions(prompt)
+    positivity = definitions["delta_positive_justified"]
+    assert "stated, or is evident from the definition of delta" in positivity
+    assert "a minimum of positive quantities, a quotient of positive quantities" in positivity
+    assert "delta=epsilon-|a| or delta=1-epsilon" in positivity
+    assert (
+        "delta<=1 is evident and no further word is needed" in definitions["delta_bounded_by_one"]
+    )
+    assert "one standard step is enough" in definitions["sum_bound"]
+    assert "is evident from the definition of the minimum" in definitions["final_inequality"]
+    assert "The proof is already verified by Lean" in prompt
+    assert "need no word of justification" in prompt
+
+
+@pytest.mark.parametrize(
+    "tolerated",
+    [
+        "sized delimiters (\\bigl \\bigr \\Bigl \\Bigr \\left \\right)",
+        "multi-line layouts (aligned, align*, array)",
+        "a named constant for a bound (C=2|a|+1",
+        "a general identity with other variable names",
+    ],
+)
+def test_layout_alias_and_general_identity_are_listed_as_tolerated(tolerated: str) -> None:
+    prompt = _x_squared_review_prompt()
+    assert tolerated in prompt
+    # They are tolerated in the status rule only, never named as a defect of an element.
+    for definition in _definitions(prompt).values():
+        assert tolerated not in definition
 
 
 def test_prompt_states_the_status_rule_standard_facts_and_tolerated_notation() -> None:

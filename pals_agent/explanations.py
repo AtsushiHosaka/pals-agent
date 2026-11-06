@@ -1728,27 +1728,34 @@ _EPSILON_DELTA_CHECK_DEFINITIONS = {
     "epsilon_arbitrary": "an arbitrary positive epsilon is introduced.",
     "point_fixed": "an arbitrary real point a is fixed (not one particular number), and x with "
     "|x-a|<delta is taken.",
-    "delta_positive_justified": "delta>0 is justified; one clause such as \"the minimum of two "
-    "positive numbers\" is enough. Stating delta>0 with no reason at all is missing.",
-    "delta_bounded_by_one": "|x-a|<1 follows from |x-a|<delta, because delta is defined with a "
-    "minimum with 1 (or an equivalent device). A delta with no such bound, or a delta that is "
-    "enlarged (delta plus 1, twice delta) while still claimed to be at most 1, fails.",
-    "delta_depends_on_point_and_epsilon": "delta is an explicit formula in epsilon and a; a "
-    "delta that ignores a (for example min(1, epsilon)) or a fixed number fails.",
+    "delta_positive_justified": "delta>0 is stated, or is evident from the definition of delta "
+    "(a minimum of positive quantities, a quotient of positive quantities, ...). Only a "
+    "definition whose positivity is not evident (for example delta=epsilon-|a| or "
+    "delta=1-epsilon), given with no reason, is missing.",
+    "delta_bounded_by_one": "|x-a|<1 follows from |x-a|<delta. If delta is defined as a "
+    "minimum with 1 (or by an equivalent device), delta<=1 is evident and no further word is "
+    "needed. A delta with no such bound, or a delta that is enlarged (delta plus 1, twice "
+    "delta) while still claimed to be at most 1, fails.",
+    "delta_depends_on_point_and_epsilon": "delta is an explicit formula in epsilon and a (a "
+    "named constant that stands for such an expression counts); a delta that ignores a (for "
+    "example min(1, epsilon)) or a fixed number fails.",
     "factorization": "|x²-a²| is factored as |x-a||x+a| (a product; not a sum, not another "
     "function such as x³).",
-    "sum_bound": "|x+a|<2|a|+1, or an equivalent bound, is derived; the triangle inequality "
-    "with |x-a|<1 is enough, a bare assertion is missing.",
+    "sum_bound": "|x+a|<2|a|+1, or an equivalent bound, is derived; one standard step is "
+    "enough (|x|<|a|+1 and the triangle inequality, or |x+a|=|2a+(x-a)|). An assertion with "
+    "no step at all, where the bound is not evident, is missing.",
     "final_inequality": "a valid chain, for the delta actually chosen, shows |x²-a²| is at most "
     "(or below) epsilon, or a fixed multiple of epsilon such as 2 epsilon (a chain may end in "
-    "an equality such as `= ε`). A chain that ends in epsilon+1 or in delta, or that needs "
-    "delta to be smaller than chosen (for example epsilon/(|a|+1) in place of "
-    "epsilon/(2|a|+1)), fails.",
+    "an equality such as `= ε`). The step from delta to epsilon (delta(2|a|+1)<=epsilon when "
+    "delta<=epsilon/(2|a|+1)) is evident from the definition of the minimum. A chain that "
+    "ends in epsilon+1 or in delta, or that needs delta to be smaller than chosen (for "
+    "example epsilon/(|a|+1) in place of epsilon/(2|a|+1)), fails.",
     "conclusion": "continuity at a is concluded, hence everywhere because a is arbitrary.",
     "presentation": "status is ok or wrong only. Wrong when the opening previews the proof plan "
-    "or the conclusion, the text shows section headings, bullets or numbered steps, a "
-    "derivation is repeated, a mathematical expression is outside $...$, or Lean tactics or "
-    "identifiers are mentioned.",
+    "or the conclusion, the text shows section headings, bullets or numbered steps, the same "
+    "calculation is written twice, a mathematical expression is outside $...$, or Lean tactics "
+    "or identifiers are mentioned. A general fact stated first and then applied is not a "
+    "repetition.",
 }
 _EPSILON_DELTA_REVIEW_REQUIREMENT = (
     """EPSILON-DELTA REQUIREMENT. The learner asked why x² is continuous, so the explanation
@@ -1762,20 +1769,27 @@ Checklist (give every id exactly once):
         for check_id in EPSILON_DELTA_CHECK_IDS
     )
     + """
-Status. "ok": the text lets a reader verify the element. Brief standard facts need no further
-proof and make an element ok: the minimum of positive numbers is positive; each argument of a
-minimum bounds it from above (so delta<=1 and delta<= the second argument); the triangle
-inequality; the difference of squares. "missing": the element is absent, or asserted where a
-reason is required. "wrong": the text states something false for that element. Every
-"missing" or "wrong" entry must have a nonblank `note` saying what is missing or wrong; its
-`quote` (a short excerpt of the relevant sentence) is optional.
+Status. The proof is already verified by Lean: ask only whether the argument is
+mathematically sound and complete, not whether every evident fact is spelled out. "ok": the
+element is stated, or is evident from the definitions in the text and brief standard facts,
+which need no word of justification: a minimum or quotient of positive numbers is positive;
+each argument of a minimum bounds it from above (so delta<=1 and delta<= the second
+argument); the triangle inequality; the difference of squares; cancelling a stated bound
+((epsilon/C)C=epsilon). "missing": the element is absent, or it is not evident and the text
+gives no reason. "wrong": the text states something false for that element. Every "missing"
+or "wrong" entry must have a nonblank `note` saying what is missing or wrong; its `quote`
+(a short excerpt of the relevant sentence) is optional.
 Never mark an element missing or wrong because of notation or phrasing: \\frac or \\dfrac,
 \\lvert or \\vert, \\min or \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands,
 |(x-a)(x+a)|, "delta is positive" in words, epsilon>0 before or after the point or in display
 math, any variable names for the point and the variable, braces or parentheses for the
 minimum, mixing | | with \\lvert \\rvert, any other correct choice of delta (for example
-epsilon/(2(|a|+1))), x introduced explicitly or implicitly. Style, level of detail, how
-explicit a step is, and the order of presentation are never grounds either. The opening's
+epsilon/(2(|a|+1))), x introduced explicitly or implicitly, sized delimiters
+(\\bigl \\bigr \\Bigl \\Bigr \\left \\right), multi-line layouts (aligned, align*, array), a
+named constant for a bound (C=2|a|+1, defined first and used in place of the expression), a
+general identity with other variable names (|u²-v²|=|u-v||u+v|) stated before it is applied.
+Style, level of detail, how explicit a step is, and the order of presentation are never
+grounds either. The opening's
 notation, wording and word order are not presentation defects.
 """
 )
