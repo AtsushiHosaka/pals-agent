@@ -1,0 +1,42 @@
+{
+  "natural_power_continuous": {
+    "source": "import Mathlib\n\nexample : ∀ (n : ℕ), Continuous (fun x : ℝ => x ^ n) := by\n  intro n\n  induction n with\n  | zero => simpa using (continuous_const : Continuous (fun _ : ℝ => (1 : ℝ)))\n  | succ n ih => simpa only [pow_succ, Pi.mul_apply, id_eq] using ih.fun_mul continuous_id\n",
+    "instances": {
+      "2": {
+        "proposition": "Continuous (fun x : ℝ => x ^ 2)",
+        "tail": "\n\ntheorem pals_recipe_instance : Continuous (fun x : ℝ => x ^ 2) := pals_recipe_general 2\n"
+      },
+      "3": {
+        "proposition": "Continuous (fun x : ℝ => x ^ 3)",
+        "tail": "\n\ntheorem pals_recipe_instance : Continuous (fun x : ℝ => x ^ 3) := pals_recipe_general 3\n"
+      }
+    }
+  },
+  "named_signature_binders": {
+    "source": "theorem add_comm_nat (a b : Nat) : a + b = b + a := Nat.add_comm a b\n",
+    "bindings": [
+      [
+        "a",
+        "3"
+      ],
+      [
+        "b",
+        "4"
+      ]
+    ],
+    "proposition": "3 + 4 = 4 + 3",
+    "tail": "\n\ntheorem pals_recipe_instance : 3 + 4 = 4 + 3 := add_comm_nat 3 4\n"
+  },
+  "partial_prefix_leaves_remaining_forall": {
+    "source": "theorem two_le_pow_add (n : Nat) : ∀ m : Nat, n ≤ n + m := fun m => Nat.le_add_right n m\n",
+    "bindings": [
+      [
+        "n",
+        "5"
+      ]
+    ],
+    "proposition": "∀ (m : Nat), 5 ≤ 5 + m",
+    "tail": "\n\ntheorem pals_recipe_instance : ∀ (m : Nat), 5 ≤ 5 + m := two_le_pow_add 5\n"
+  },
+  "module_sha256": "6e894fa9e907c3009bbdd9d3853a8af929ffaaa75f13d3fd31fedea5ad44271d"
+}
