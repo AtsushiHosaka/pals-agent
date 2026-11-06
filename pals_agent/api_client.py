@@ -254,7 +254,9 @@ class PalsApiClient:
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
         # An instantiation settlement waits for the API-owned Lean compile (13-52 s measured with
-        # Mathlib). The API bounds that call at 90 s and the ALB idles at 120 s.
+        # Mathlib). The API bounds that call at 90 s. The worker reaches pals-api through Caddy,
+        # which has no proxy timeout of its own (docs/recipe-instantiation-rollout.md), so this
+        # 105 s wait and the 240 s claim lease are the binding limits.
         extended = (
             isinstance(payload.get("private_evidence"), dict)
             and "recipe_instantiation_correspondence" in payload["private_evidence"]
