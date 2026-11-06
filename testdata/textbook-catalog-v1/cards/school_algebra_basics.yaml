@@ -1,0 +1,1797 @@
+- id: fraction_add_general_denominators
+  kind: gap
+  level: middle
+  topic: 文字式・分数式の和
+  statement: 実数$a,b,c,d$について$b\neq 0$かつ$d\neq 0$なら、$\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{ad+bc}{bd}$である。
+  statement_en: For real a, b, c, d with b ≠ 0 and d ≠ 0, a/b + c/d = (ad + bc)/(bd).
+  assumptions:
+  - $a,b,c,d$は実数
+  - $b\neq 0$かつ$d\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{ad+bc}{bd}$が成り立つ。
+  answer: |
+    $a,b,c,d$を実数とし、$b\neq 0$かつ$d\neq 0$とする。このとき$bd\neq 0$である。分母と分子に同じ$0$でない数を掛けても分数の値は変わらないので、$\dfrac{a}{b}=\dfrac{ad}{bd}$、$\dfrac{c}{d}=\dfrac{bc}{bd}$である。分母がそろったので分子を足すと、$\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{ad+bc}{bd}$を得る。
+  strategy: Rewrite both fractions over the common denominator bd.
+  sketch:
+  - 'setup: Note that bd is nonzero because b and d are nonzero.'
+  - 'derive: Expand a/b to ad/(bd) and c/d to bc/(bd).'
+  - 'conclude: Add the numerators over the common denominator.'
+  openmath: (forall (a b c d) (-> (and (!= b 0) (!= d 0)) (= (+ (/ a b) (/ c d)) (/ (+ (* a d) (* b c)) (* b d)))))
+  hard_negative:
+    statement: $\dfrac{a}{b}+\dfrac{c}{d}=\dfrac{a+c}{b+d}$である。
+    reason: $a=b=c=d=1$のとき左辺は$2$、右辺は$1$である。分母どうしは足せない。
+  target: |
+    ∀ (a b c d : ℝ), b ≠ 0 → d ≠ 0 → a / b + c / d = (a * d + b * c) / (b * d)
+  proof: |
+    by
+      intro a b c d hb hd
+      exact div_add_div a c hb hd
+- id: exponent_laws_natural_power
+  kind: textbook
+  level: middle
+  topic: 文字式・指数法則
+  statement: 実数$a,b$と自然数$m,n$について、$a^m a^n=a^{m+n}$、$(a^m)^n=a^{mn}$、$(ab)^n=a^n b^n$が成り立つ。ただし$a^0=1$とする。
+  statement_en: For real a, b and natural numbers m, n, with the convention a^0 = 1, a^m a^n = a^(m+n), (a^m)^n = a^(mn) and (ab)^n = a^n b^n.
+  assumptions:
+  - $a,b$は実数
+  - $m,n$は$0$以上の整数で、$a^0=1$とする
+  quantifiers:
+  - 任意の実数$a,b$と$0$以上の整数$m,n$
+  conclusion: $a^m a^n=a^{m+n}$、$(a^m)^n=a^{mn}$、$(ab)^n=a^n b^n$が成り立つ。
+  answer: |
+    $a,b$を実数、$m,n$を$0$以上の整数とし、$x^0=1$、$x^{k+1}=x^k x$と定める。三つの等式を$n$についての帰納法で示す。
+    $n=0$のとき、$a^m a^0=a^m=a^{m+0}$、$(a^m)^0=1=a^{m\cdot 0}$、$(ab)^0=1=a^0 b^0$である。
+    $n$で成り立つとする。第一式は$a^m a^{n+1}=a^m a^n a=a^{m+n}a=a^{m+n+1}$となる。第二式は、第一式を用いて$(a^m)^{n+1}=(a^m)^n a^m=a^{mn}a^m=a^{mn+m}=a^{m(n+1)}$となる。第三式は$(ab)^{n+1}=(ab)^n ab=a^n b^n ab=a^{n+1}b^{n+1}$となる。よって、すべての$n$で成り立つ。
+  strategy: Induct on n using the recursive definition of powers.
+  sketch:
+  - 'setup: Define powers by x^0 = 1 and x^(k+1) = x^k x.'
+  - 'induction: Check each identity for n = 0.'
+  - 'derive: Assuming the case n, extract one factor to get the case n+1.'
+  - 'conclude: All three identities hold for every n.'
+  openmath: (forall (a b m n) (-> (and (in m N) (in n N)) (and (= (* (^ a m) (^ a n)) (^ a (+ m n))) (= (^ (^ a m) n) (^ a (* m n))) (= (^ (* a b) n) (* (^ a n) (^ b n))))))
+  hard_negative:
+    statement: $(a+b)^n=a^n+b^n$が成り立つ。
+    reason: $a=b=1$、$n=2$で左辺は$4$、右辺は$2$である。指数は積には分配するが、和には分配しない。
+  target: |
+    ∀ (a b : ℝ) (m n : ℕ), a ^ m * a ^ n = a ^ (m + n) ∧ (a ^ m) ^ n = a ^ (m * n) ∧ (a * b) ^ n = a ^ n * b ^ n
+  proof: |
+    by
+      intro a b m n
+      exact ⟨(pow_add a m n).symm, (pow_mul a m n).symm, mul_pow a b n⟩
+- id: power_quotient_of_exponent_le
+  kind: gap
+  level: middle
+  topic: 文字式・同じ底のべきの商
+  statement: $0$でない実数$a$と$n\leq m$を満たす自然数$m,n$について、$\dfrac{a^m}{a^n}=a^{m-n}$である。
+  statement_en: For a nonzero real a and natural numbers n ≤ m, a^m / a^n = a^(m-n).
+  assumptions:
+  - $a$は$0$でない実数
+  - $m,n$は$0$以上の整数で$n\leq m$
+  quantifiers:
+  - 任意の$a$と$m,n$
+  conclusion: $\dfrac{a^m}{a^n}=a^{m-n}$が成り立つ。
+  answer: |
+    $a$を$0$でない実数、$m,n$を$n\leq m$を満たす$0$以上の整数とする。$k=m-n$とおくと$k$は$0$以上の整数で、$m=n+k$である。指数法則より$a^m=a^n a^k$である。$a\neq 0$より$a^n\neq 0$なので、両辺を$a^n$で割ると$\dfrac{a^m}{a^n}=a^k=a^{m-n}$を得る。
+  strategy: Write m = n + k and cancel a^n.
+  sketch:
+  - 'setup: Put k = m - n, a natural number since n ≤ m.'
+  - 'derive: The exponent law gives a^m = a^n a^k.'
+  - 'conclude: Divide by the nonzero number a^n.'
+  openmath: (forall (a m n) (-> (and (!= a 0) (in m N) (in n N) (<= n m)) (= (/ (^ a m) (^ a n)) (^ a (- m n)))))
+  hard_negative:
+    statement: $a=0$のときも$\dfrac{a^m}{a^n}=a^{m-n}$である。
+    reason: $n\geq 1$なら分母$a^n$が$0$になり、左辺は定義されない。
+  target: |
+    ∀ (a : ℝ) (m n : ℕ), a ≠ 0 → n ≤ m → a ^ m / a ^ n = a ^ (m - n)
+  proof: |
+    by
+      intro a m n ha hnm
+      rw [pow_sub₀ a ha hnm, div_eq_mul_inv]
+- id: product_zero_iff_factor_zero
+  kind: gap
+  level: middle
+  topic: 文字式・積が0になる条件
+  statement: 実数$a,b$について、$ab=0$であることと、$a=0$または$b=0$であることは同値である。
+  statement_en: For real a and b, ab = 0 if and only if a = 0 or b = 0.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $ab=0$と「$a=0$または$b=0$」は同値である。
+  answer: |
+    $a,b$を実数とする。$a=0$または$b=0$なら、$0$との積は$0$なので$ab=0$である。逆に$ab=0$とする。$a=0$なら結論は成り立つ。$a\neq 0$なら、両辺に$\dfrac{1}{a}$を掛けて$b=\dfrac{1}{a}\cdot ab=0$となる。よって$a=0$または$b=0$である。
+  strategy: Multiply by the inverse of a when a is nonzero.
+  sketch:
+  - 'derive: A zero factor makes the product zero.'
+  - 'case_split: For the converse, consider whether a is zero.'
+  - 'derive: If a ≠ 0, multiplying ab = 0 by 1/a gives b = 0.'
+  - 'conclude: Hence one of the factors is zero.'
+  openmath: (forall (a b) (<-> (= (* a b) 0) (or (= a 0) (= b 0))))
+  hard_negative:
+    statement: $ab=c$なら、$a=c$または$b=c$である。
+    reason: $a=b=2$、$c=4$が反例である。積の値が$0$であることが必要である。
+  target: |
+    ∀ (a b : ℝ), a * b = 0 ↔ a = 0 ∨ b = 0
+  proof: |
+    by
+      intro a b
+      exact mul_eq_zero
+- id: squares_equal_iff_equal_or_negative
+  kind: gap
+  level: middle
+  topic: 文字式・平方が等しい条件
+  statement: 実数$a,b$について、$a^2=b^2$であることと、$a=b$または$a=-b$であることは同値である。
+  statement_en: For real a and b, a² = b² if and only if a = b or a = -b.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a^2=b^2$と「$a=b$または$a=-b$」は同値である。
+  answer: |
+    $a,b$を実数とする。$a^2-b^2=(a-b)(a+b)$である。したがって$a^2=b^2$は$(a-b)(a+b)=0$と同値である。実数の積が$0$になるのはいずれかの因数が$0$のときに限るので、これは$a-b=0$または$a+b=0$、すなわち$a=b$または$a=-b$と同値である。
+  strategy: Factor a² - b² and use the zero product property.
+  sketch:
+  - 'translate: Rewrite a² = b² as (a-b)(a+b) = 0.'
+  - 'apply_theorem: A product of reals is zero exactly when a factor is zero.'
+  - 'conclude: This gives a = b or a = -b.'
+  openmath: (forall (a b) (<-> (= (^ a 2) (^ b 2)) (or (= a b) (= a (neg b)))))
+  hard_negative:
+    statement: $a^2=b^2$なら$a=b$である。
+    reason: $a=1$、$b=-1$が反例である。$a,b$がともに$0$以上という条件を加えれば$a=b$といえる。
+  target: |
+    ∀ (a b : ℝ), a ^ 2 = b ^ 2 ↔ a = b ∨ a = -b
+  proof: |
+    by
+      intro a b
+      exact sq_eq_sq_iff_eq_or_eq_neg
+- id: difference_of_squares_factorization
+  kind: gap
+  level: middle
+  topic: 因数分解・平方の差
+  statement: 平方の差の公式。実数$a,b$について$a^2-b^2=(a+b)(a-b)$である。
+  statement_en: Difference of squares. For real a and b, a² - b² = (a + b)(a - b).
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a^2-b^2=(a+b)(a-b)$が成り立つ。
+  answer: |
+    $a,b$を実数とする。分配法則により右辺を展開すると、$(a+b)(a-b)=a^2-ab+ba-b^2$となる。$ab=ba$より中央の二項は打ち消し合い、$a^2-b^2$を得る。
+  strategy: Expand the product by distributivity and cancel the cross terms.
+  sketch:
+  - 'derive: Distributivity gives a² - ab + ba - b².'
+  - 'conclude: The cross terms cancel, leaving a² - b².'
+  openmath: (forall (a b) (= (- (^ a 2) (^ b 2)) (* (+ a b) (- a b))))
+  hard_negative:
+    statement: $a^2+b^2=(a+b)(a-b)$である。
+    reason: $a=b=1$のとき左辺は$2$、右辺は$0$である。この公式が扱うのは平方の差だけである。
+  target: |
+    ∀ (a b : ℝ), a ^ 2 - b ^ 2 = (a + b) * (a - b)
+  proof: |
+    by
+      intro a b
+      ring
+- id: sum_and_difference_of_cubes_factorization
+  kind: textbook
+  level: high
+  topic: 因数分解・立方の和と差
+  statement: 立方の和と差の公式。実数$a,b$について$a^3+b^3=(a+b)(a^2-ab+b^2)$、$a^3-b^3=(a-b)(a^2+ab+b^2)$である。
+  statement_en: Sum and difference of cubes. For real a and b, a³ + b³ = (a + b)(a² - ab + b²) and a³ - b³ = (a - b)(a² + ab + b²).
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a^3+b^3=(a+b)(a^2-ab+b^2)$と$a^3-b^3=(a-b)(a^2+ab+b^2)$が成り立つ。
+  answer: |
+    $a,b$を実数とする。分配法則で展開すると、$(a+b)(a^2-ab+b^2)=a^3-a^2b+ab^2+a^2b-ab^2+b^3=a^3+b^3$である。同様に、$(a-b)(a^2+ab+b^2)=a^3+a^2b+ab^2-a^2b-ab^2-b^3=a^3-b^3$である。
+  strategy: Expand each product and cancel the mixed terms.
+  sketch:
+  - 'derive: Expand (a+b)(a²-ab+b²); the mixed terms cancel to give a³+b³.'
+  - 'derive: Expand (a-b)(a²+ab+b²); the mixed terms cancel to give a³-b³.'
+  - 'conclude: Both identities hold for all real a and b.'
+  openmath: (forall (a b) (and (= (+ (^ a 3) (^ b 3)) (* (+ a b) (+ (- (^ a 2) (* a b)) (^ b 2)))) (= (- (^ a 3) (^ b 3)) (* (- a b) (+ (+ (^ a 2) (* a b)) (^ b 2))))))
+  hard_negative:
+    statement: $a^3+b^3=(a+b)(a^2+ab+b^2)$である。
+    reason: $a=b=1$のとき左辺は$2$、右辺は$6$である。和の公式では第二因数の$ab$の符号が負になる。
+  target: |
+    ∀ (a b : ℝ), a ^ 3 + b ^ 3 = (a + b) * (a ^ 2 - a * b + b ^ 2) ∧ a ^ 3 - b ^ 3 = (a - b) * (a ^ 2 + a * b + b ^ 2)
+  proof: |
+    by
+      intro a b
+      constructor <;> ring
+- id: cross_multiplication_factorization
+  kind: textbook
+  level: high
+  topic: 因数分解・たすき掛け
+  statement: たすき掛けの公式。実数$a,b,c,d,x$について$acx^2+(ad+bc)x+bd=(ax+b)(cx+d)$である。
+  statement_en: Cross-multiplication factorization. For real a, b, c, d, x, acx² + (ad + bc)x + bd = (ax + b)(cx + d).
+  assumptions:
+  - $a,b,c,d,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,d,x$
+  conclusion: $acx^2+(ad+bc)x+bd=(ax+b)(cx+d)$が成り立つ。
+  answer: |
+    $a,b,c,d,x$を実数とする。右辺を分配法則で展開すると、$(ax+b)(cx+d)=acx^2+adx+bcx+bd=acx^2+(ad+bc)x+bd$となり、左辺に一致する。
+  strategy: Expand the right side and collect the coefficient of x.
+  sketch:
+  - 'derive: Expand (ax+b)(cx+d) into four terms.'
+  - 'conclude: Collect adx and bcx to get the left side.'
+  openmath: (forall (a b c d x) (= (+ (+ (* (* a c) (^ x 2)) (* (+ (* a d) (* b c)) x)) (* b d)) (* (+ (* a x) b) (+ (* c x) d))))
+  hard_negative:
+    statement: $acx^2+(ab+cd)x+bd=(ax+b)(cx+d)$である。
+    reason: $a=2$、$b=1$、$c=1$、$d=3$、$x=1$のとき左辺は$10$、右辺は$12$である。$x$の係数は$ad+bc$でなければならない。
+  target: |
+    ∀ (a b c d x : ℝ), a * c * x ^ 2 + (a * d + b * c) * x + b * d = (a * x + b) * (c * x + d)
+  proof: |
+    by
+      intro a b c d x
+      ring
+- id: three_cubes_minus_triple_product_factorization
+  kind: textbook
+  level: high
+  topic: 因数分解・三つの立方の和
+  statement: 実数$a,b,c$について$a^3+b^3+c^3-3abc=(a+b+c)(a^2+b^2+c^2-ab-bc-ca)$である。
+  statement_en: For real a, b, c, a³ + b³ + c³ - 3abc = (a + b + c)(a² + b² + c² - ab - bc - ca).
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: $a^3+b^3+c^3-3abc=(a+b+c)(a^2+b^2+c^2-ab-bc-ca)$が成り立つ。
+  answer: |
+    $a,b,c$を実数とする。右辺の第二因数に$a$、$b$、$c$をそれぞれ掛ける。
+    $a$を掛けると$a^3+ab^2+ac^2-a^2b-abc-a^2c$となる。
+    $b$を掛けると$a^2b+b^3+bc^2-ab^2-b^2c-abc$となる。
+    $c$を掛けると$a^2c+b^2c+c^3-abc-bc^2-ac^2$となる。
+    三つを足すと、$ab^2,ac^2,a^2b,a^2c,b^2c,bc^2$の項はすべて打ち消し合い、$a^3+b^3+c^3-3abc$が残る。
+  strategy: Distribute each of a, b, c over the second factor and cancel.
+  sketch:
+  - 'derive: Multiply the second factor by a, by b and by c.'
+  - 'derive: Add the three results; all mixed quadratic-linear terms cancel.'
+  - 'conclude: What remains is a³ + b³ + c³ - 3abc.'
+  openmath: (forall (a b c) (= (- (+ (+ (^ a 3) (^ b 3)) (^ c 3)) (* 3 (* (* a b) c))) (* (+ (+ a b) c) (- (- (- (+ (+ (^ a 2) (^ b 2)) (^ c 2)) (* a b)) (* b c)) (* c a)))))
+  hard_negative:
+    statement: $a^3+b^3+c^3-3abc=(a+b+c)(a^2+b^2+c^2+ab+bc+ca)$である。
+    reason: $a=b=c=1$のとき左辺は$0$、右辺は$18$である。第二因数の積の項は負号でなければならない。
+  target: |
+    ∀ (a b c : ℝ), a ^ 3 + b ^ 3 + c ^ 3 - 3 * a * b * c = (a + b + c) * (a ^ 2 + b ^ 2 + c ^ 2 - a * b - b * c - c * a)
+  proof: |
+    by
+      intro a b c
+      ring
+- id: power_difference_factorization_general
+  kind: textbook
+  level: high
+  topic: 因数分解・べきの差の一般形
+  statement: 実数$a,b$と自然数$n$について、$a^{n+1}-b^{n+1}=(a-b)\sum_{k=0}^{n}a^k b^{n-k}$である。指数が任意の場合の一般形である。ただし$a^0=b^0=1$とする。
+  statement_en: General form for arbitrary exponent. For real a, b and a natural number n, with x^0 = 1, a^(n+1) - b^(n+1) = (a - b) times the sum over k from 0 to n of a^k b^(n-k).
+  assumptions:
+  - $a,b$は実数
+  - $n$は$0$以上の整数で、$a^0=b^0=1$とする
+  quantifiers:
+  - 任意の実数$a,b$と$0$以上の整数$n$
+  conclusion: $a^{n+1}-b^{n+1}=(a-b)\sum_{k=0}^{n}a^k b^{n-k}$が成り立つ。
+  answer: |
+    $a,b$を実数、$n$を$0$以上の整数とし、$S=\sum_{k=0}^{n}a^k b^{n-k}$とおく。$aS=\sum_{k=0}^{n}a^{k+1}b^{n-k}=\sum_{j=1}^{n+1}a^j b^{n+1-j}$であり、$bS=\sum_{k=0}^{n}a^k b^{n+1-k}=\sum_{j=0}^{n}a^j b^{n+1-j}$である。
+    差をとると、$j=1,\dots,n$の項は打ち消し合い、$aS$の$j=n+1$の項$a^{n+1}$と$bS$の$j=0$の項$b^{n+1}$だけが残る。よって$(a-b)S=a^{n+1}-b^{n+1}$である。
+  strategy: Multiply the sum by a and by b, then telescope.
+  sketch:
+  - 'setup: Let S be the sum of a^k b^(n-k) for k from 0 to n.'
+  - 'derive: Reindex aS and bS over the same terms a^j b^(n+1-j).'
+  - 'derive: The terms with j from 1 to n cancel in the difference.'
+  - 'conclude: Only a^(n+1) and b^(n+1) remain, so (a-b)S = a^(n+1) - b^(n+1).'
+  openmath: (forall (a b n) (-> (in n N) (= (- (^ a (+ n 1)) (^ b (+ n 1))) (* (- a b) (sum (natural_range (+ n 1)) (lambda (k) (* (^ a k) (^ b (- n k)))))))))
+  hard_negative:
+    statement: $a^{n+1}+b^{n+1}=(a+b)\sum_{k=0}^{n}a^k b^{n-k}$である。
+    reason: $n=1$、$a=b=1$のとき左辺は$2$、右辺は$4$である。和の形には、この公式をそのまま適用できない。
+  target: |
+    ∀ (a b : ℝ) (n : ℕ), a ^ (n + 1) - b ^ (n + 1) = (a - b) * ∑ k ∈ Finset.range (n + 1), a ^ k * b ^ (n - k)
+  proof: |
+    by
+      intro a b n
+      have h := geom_sum₂_mul a b (n + 1)
+      simp only [Nat.add_sub_cancel] at h
+      rw [← h, mul_comm]
+- id: sophie_germain_identity
+  kind: named
+  level: high
+  topic: 因数分解・ソフィ・ジェルマンの恒等式
+  statement: ソフィ・ジェルマンの恒等式。実数$a,b$について$a^4+4b^4=(a^2+2ab+2b^2)(a^2-2ab+2b^2)$である。
+  statement_en: Sophie Germain identity. For real a and b, a⁴ + 4b⁴ = (a² + 2ab + 2b²)(a² - 2ab + 2b²).
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $a^4+4b^4=(a^2+2ab+2b^2)(a^2-2ab+2b^2)$が成り立つ。
+  answer: |
+    $a,b$を実数とする。右辺を項ごとに展開する。$a^2$を掛けた部分は$a^4-2a^3b+2a^2b^2$、$2ab$を掛けた部分は$2a^3b-4a^2b^2+4ab^3$、$2b^2$を掛けた部分は$2a^2b^2-4ab^3+4b^4$である。これらを足すと、$a^3b$、$a^2b^2$、$ab^3$の項はいずれも係数の和が$0$となり、$a^4+4b^4$が残る。
+  strategy: Expand the product term by term and cancel.
+  sketch:
+  - 'derive: Distribute a², 2ab and 2b² over the second factor.'
+  - 'derive: The coefficients of a³b, a²b² and ab³ sum to zero.'
+  - 'conclude: The product equals a⁴ + 4b⁴.'
+  openmath: (forall (a b) (= (+ (^ a 4) (* 4 (^ b 4))) (* (+ (+ (^ a 2) (* 2 (* a b))) (* 2 (^ b 2))) (+ (- (^ a 2) (* 2 (* a b))) (* 2 (^ b 2))))))
+  hard_negative:
+    statement: $a^4+b^4=(a^2+2ab+2b^2)(a^2-2ab+2b^2)$である。
+    reason: $a=0$、$b=1$のとき左辺は$1$、右辺は$4$である。$b^4$の係数は$4$でなければならない。
+  target: |
+    ∀ (a b : ℝ), a ^ 4 + 4 * b ^ 4 = (a ^ 2 + 2 * a * b + 2 * b ^ 2) * (a ^ 2 - 2 * a * b + 2 * b ^ 2)
+  proof: |
+    by
+      intro a b
+      ring
+- id: linear_equation_solution_formula
+  kind: textbook
+  level: middle
+  topic: 一次方程式・解の公式
+  statement: 実数$a,b,x$について$a\neq 0$なら、$ax=b$であることと$x=\dfrac{b}{a}$であることは同値である。
+  statement_en: For real a, b, x with a ≠ 0, ax = b if and only if x = b/a.
+  assumptions:
+  - $a,b,x$は実数
+  - $a\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $ax=b$と$x=\dfrac{b}{a}$は同値である。
+  answer: |
+    $a,b,x$を実数とし、$a\neq 0$とする。$ax=b$なら、両辺を$a$で割って$x=\dfrac{b}{a}$である。逆に$x=\dfrac{b}{a}$なら、両辺に$a$を掛けて$ax=b$である。
+  strategy: Divide or multiply by the nonzero coefficient a.
+  sketch:
+  - 'derive: From ax = b, divide by a to get x = b/a.'
+  - 'derive: From x = b/a, multiply by a to get ax = b.'
+  - 'conclude: The two conditions are equivalent.'
+  openmath: (forall (a b x) (-> (!= a 0) (<-> (= (* a x) b) (= x (/ b a)))))
+  hard_negative:
+    statement: $a=0$でも、$ax=b$の解は$x=\dfrac{b}{a}$のただ一つである。
+    reason: $a=b=0$ならすべての$x$が解で、$a=0$、$b\neq 0$なら解はない。どちらの場合も$\dfrac{b}{a}$は定義されない。
+  target: |
+    ∀ (a b x : ℝ), a ≠ 0 → (a * x = b ↔ x = b / a)
+  proof: |
+    by
+      intro a b x ha
+      rw [eq_div_iff ha, mul_comm]
+- id: linear_equation_solution_classification
+  kind: textbook
+  level: high
+  topic: 一次方程式・解の個数の分類
+  statement: 実数$a,b$について、$x$の方程式$ax=b$の解がただ一つであることは$a\neq 0$と同値であり、すべての実数$x$が解であることは$a=b=0$と同値であり、解がないことは$a=0$かつ$b\neq 0$と同値である。
+  statement_en: For real a and b, the equation ax = b has a unique solution iff a ≠ 0, every real x is a solution iff a = b = 0, and there is no solution iff a = 0 and b ≠ 0.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: 解がただ一つであることは$a\neq 0$と、すべての$x$が解であることは$a=b=0$と、解がないことは「$a=0$かつ$b\neq 0$」と同値である。
+  answer: |
+    $a,b$を実数とする。次の三つの場合に分ける。
+    $a\neq 0$のとき、$ax=b$は$x=\dfrac{b}{a}$と同値なので、解はただ一つある。
+    $a=b=0$のとき、方程式は$0=0$となるので、すべての実数$x$が解である。
+    $a=0$かつ$b\neq 0$のとき、$ax=0\neq b$なので、解はない。
+    この三つの場合は$a,b$のすべての場合を重複なく尽くし、「解がただ一つ」「すべての$x$が解」「解がない」も互いに排反である。よって、各場合の仮定と結論は同値になる。
+  strategy: Split into the three exhaustive cases on a and b.
+  sketch:
+  - 'case_split: Consider a ≠ 0, then a = b = 0, then a = 0 with b ≠ 0.'
+  - 'derive: If a ≠ 0, the only solution is x = b/a.'
+  - 'derive: If a = b = 0, the equation reads 0 = 0 for every x.'
+  - 'derive: If a = 0 and b ≠ 0, the left side is always 0, which differs from b.'
+  - 'conclude: The cases are exhaustive and the outcomes exclusive, so each implication is an equivalence.'
+  openmath: (forall (a b) (and (<-> (exists (x) (and (= (* a x) b) (forall (y) (-> (= (* a y) b) (= y x))))) (!= a 0)) (<-> (forall (x) (= (* a x) b)) (and (= a 0) (= b 0))) (<-> (not (exists (x) (= (* a x) b))) (and (= a 0) (!= b 0)))))
+  hard_negative:
+    statement: $a=0$なら、$ax=b$には解がない。
+    reason: $a=b=0$ならすべての実数が解である。解がないのは$b\neq 0$のときだけである。
+  target: |
+    ∀ (a b : ℝ), ((∃! x : ℝ, a * x = b) ↔ a ≠ 0) ∧ ((∀ x : ℝ, a * x = b) ↔ (a = 0 ∧ b = 0)) ∧ ((¬ ∃ x : ℝ, a * x = b) ↔ (a = 0 ∧ b ≠ 0))
+  proof: |
+    by
+      intro a b
+      refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
+      · rintro ⟨x, hx, hu⟩ ha
+        have hx' : a * x = b := hx
+        have h1 : x + 1 = x := hu (x + 1) (by
+          show a * (x + 1) = b
+          rw [ha] at hx' ⊢
+          linarith)
+        linarith
+      · intro ha
+        refine ⟨b / a, ?_, ?_⟩
+        · show a * (b / a) = b
+          field_simp
+        · intro y hy
+          have hy' : a * y = b := hy
+          rw [eq_div_iff ha, mul_comm]
+          exact hy'
+      · intro h
+        have h0 := h 0
+        have h1 := h 1
+        constructor <;> linarith
+      · rintro ⟨rfl, rfl⟩ x
+        exact zero_mul x
+      · intro h
+        by_cases ha : a = 0
+        · refine ⟨ha, ?_⟩
+          intro hb
+          exact h ⟨0, by rw [ha, hb, zero_mul]⟩
+        · exact (h ⟨b / a, by field_simp⟩).elim
+      · rintro ⟨ha, hb⟩ ⟨x, hx⟩
+        apply hb
+        rw [← hx, ha, zero_mul]
+- id: two_variable_system_explicit_solution
+  kind: gap
+  level: high
+  topic: 連立一次方程式・二元の解の公式
+  statement: 二元の場合の解の公式。実数$a,b,c,d,e,f,x,y$について$ad-bc\neq 0$なら、$ax+by=e$かつ$cx+dy=f$であることと、$x=\dfrac{ed-bf}{ad-bc}$かつ$y=\dfrac{af-ec}{ad-bc}$であることは同値である。
+  statement_en: Two-variable case. For real a, b, c, d, e, f, x, y with ad - bc ≠ 0, ax + by = e and cx + dy = f hold if and only if x = (ed - bf)/(ad - bc) and y = (af - ec)/(ad - bc).
+  assumptions:
+  - $a,b,c,d,e,f,x,y$は実数
+  - $ad-bc\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d,e,f,x,y$
+  conclusion: 連立方程式と$x=\dfrac{ed-bf}{ad-bc}$、$y=\dfrac{af-ec}{ad-bc}$は同値である。
+  answer: |
+    $a,b,c,d,e,f,x,y$を実数とし、$D=ad-bc\neq 0$とする。$ax+by=e$かつ$cx+dy=f$とする。第一式の$d$倍から第二式の$b$倍を引くと$Dx=ed-bf$となり、第二式の$a$倍から第一式の$c$倍を引くと$Dy=af-ec$となる。$D\neq 0$で割れば、$x,y$は結論の形になる。
+    逆に$x=\dfrac{ed-bf}{D}$、$y=\dfrac{af-ec}{D}$とする。$ax+by=\dfrac{aed-abf+abf-bec}{D}=\dfrac{e(ad-bc)}{D}=e$である。同様に$cx+dy=\dfrac{ced-cbf+adf-dec}{D}=\dfrac{f(ad-bc)}{D}=f$である。
+  strategy: Eliminate each variable by a linear combination, then substitute back.
+  sketch:
+  - 'setup: Put D = ad - bc, which is nonzero.'
+  - 'derive: d times the first equation minus b times the second gives Dx = ed - bf.'
+  - 'derive: a times the second equation minus c times the first gives Dy = af - ec.'
+  - 'derive: Dividing by D gives the stated values of x and y.'
+  - 'conclude: Substituting those values back verifies both equations.'
+  openmath: (forall (a b c d e f x y) (-> (!= (- (* a d) (* b c)) 0) (<-> (and (= (+ (* a x) (* b y)) e) (= (+ (* c x) (* d y)) f)) (and (= x (/ (- (* e d) (* b f)) (- (* a d) (* b c)))) (= y (/ (- (* a f) (* e c)) (- (* a d) (* b c))))))))
+  hard_negative:
+    statement: $ad-bc=0$でも、$a,b,c,d$がすべて$0$でなければこの公式で解が求まる。
+    reason: $a=b=c=d=1$では$ad-bc=0$で分母が$0$になる。このとき解は存在しないか無数にある。
+  target: |
+    ∀ (a b c d e f x y : ℝ), a * d - b * c ≠ 0 → ((a * x + b * y = e ∧ c * x + d * y = f) ↔ (x = (e * d - b * f) / (a * d - b * c) ∧ y = (a * f - e * c) / (a * d - b * c)))
+  proof: |
+    by
+      intro a b c d e f x y hD
+      constructor
+      · rintro ⟨h1, h2⟩
+        constructor
+        · rw [eq_div_iff hD, ← h1, ← h2]
+          ring
+        · rw [eq_div_iff hD, ← h1, ← h2]
+          ring
+      · rintro ⟨rfl, rfl⟩
+        constructor
+        · have hs : a * ((e * d - b * f) / (a * d - b * c)) + b * ((a * f - e * c) / (a * d - b * c)) = (a * (e * d - b * f) + b * (a * f - e * c)) / (a * d - b * c) := by ring
+          rw [hs, div_eq_iff hD]
+          ring
+        · have hs : c * ((e * d - b * f) / (a * d - b * c)) + d * ((a * f - e * c) / (a * d - b * c)) = (c * (e * d - b * f) + d * (a * f - e * c)) / (a * d - b * c) := by ring
+          rw [hs, div_eq_iff hD]
+          ring
+- id: two_variable_system_unique_iff_determinant
+  kind: textbook
+  level: high
+  topic: 連立一次方程式・ただ一つの解をもつ条件
+  statement: 実数$a,b,c,d,e,f$について、連立方程式$ax+by=e$、$cx+dy=f$の実数解$(x,y)$がただ一つであることと、$ad-bc\neq 0$であることは同値である。
+  statement_en: For real a, b, c, d, e, f, the system ax + by = e, cx + dy = f has exactly one real solution (x, y) if and only if ad - bc ≠ 0.
+  assumptions:
+  - $a,b,c,d,e,f$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,d,e,f$
+  conclusion: 実数解がただ一つであることと$ad-bc\neq 0$は同値である。
+  answer: |
+    $a,b,c,d,e,f$を実数とする。$ad-bc\neq 0$のとき、第一式の$d$倍から第二式の$b$倍を引き、第二式の$a$倍から第一式の$c$倍を引くと、解は$x=\dfrac{ed-bf}{ad-bc}$、$y=\dfrac{af-ec}{ad-bc}$に限られる。これを代入すると、$ax+by=\dfrac{e(ad-bc)}{ad-bc}=e$、$cx+dy=\dfrac{f(ad-bc)}{ad-bc}=f$となり、両式を満たす。よって解はただ一つである。
+    逆に、解$(x,y)$がただ一つあり、$ad-bc=0$と仮定する。$(x-b,y+a)$を代入すると、第一式の左辺は変わらず、第二式の左辺は$ad-bc=0$だけ増えるので、これも解である。一意性から$b=a=0$である。同様に$(x-d,y+c)$も解になるので$d=c=0$である。すると$a=b=c=d=0$となり、$(x+1,y)$も解になる。これは一意性に反する。よって$ad-bc\neq 0$である。
+  strategy: Use the explicit formula one way and shift a solution along kernel directions the other way.
+  sketch:
+  - 'derive: If ad - bc ≠ 0, elimination forces one value of (x, y), which does solve the system.'
+  - 'contradiction: Suppose a unique solution (x, y) exists and ad - bc = 0.'
+  - 'construct: The points (x-b, y+a) and (x-d, y+c) are also solutions.'
+  - 'derive: Uniqueness forces a = b = c = d = 0.'
+  - 'conclude: Then (x+1, y) is another solution, a contradiction.'
+  openmath: (forall (a b c d e f) (<-> (exists (x y) (and (= (+ (* a x) (* b y)) e) (= (+ (* c x) (* d y)) f) (forall (u v) (-> (and (= (+ (* a u) (* b v)) e) (= (+ (* c u) (* d v)) f)) (and (= u x) (= v y)))))) (!= (- (* a d) (* b c)) 0)))
+  hard_negative:
+    statement: $ad-bc=0$なら、この連立方程式に解はない。
+    reason: $x+y=1$、$2x+2y=2$は$ad-bc=0$だが無数の解をもつ。$ad-bc=0$が否定するのは解の一意性だけである。
+  target: |
+    ∀ (a b c d e f : ℝ), (∃! p : ℝ × ℝ, a * p.1 + b * p.2 = e ∧ c * p.1 + d * p.2 = f) ↔ a * d - b * c ≠ 0
+  proof: |
+    by
+      intro a b c d e f
+      constructor
+      · rintro ⟨⟨x, y⟩, ⟨h1, h2⟩, hu⟩ hD
+        have h1' : a * x + b * y = e := h1
+        have h2' : c * x + d * y = f := h2
+        have hu' : ∀ u v : ℝ, a * u + b * v = e → c * u + d * v = f → u = x ∧ v = y := by
+          intro u v hA hB
+          have h := hu (u, v) ⟨hA, hB⟩
+          exact ⟨congrArg Prod.fst h, congrArg Prod.snd h⟩
+        have A := hu' (x - b) (y + a) (by linarith) (by linarith)
+        have B := hu' (x - d) (y + c) (by linarith) (by linarith)
+        have hb : b = 0 := by linarith [A.1]
+        have ha : a = 0 := by linarith [A.2]
+        have hd : d = 0 := by linarith [B.1]
+        have hc : c = 0 := by linarith [B.2]
+        have C := hu' (x + 1) y (by rw [ha, hb] at h1' ⊢; linarith) (by rw [hc, hd] at h2' ⊢; linarith)
+        linarith [C.1]
+      · intro hD
+        refine ⟨((e * d - b * f) / (a * d - b * c), (a * f - e * c) / (a * d - b * c)), ⟨?_, ?_⟩, ?_⟩
+        · show a * ((e * d - b * f) / (a * d - b * c)) + b * ((a * f - e * c) / (a * d - b * c)) = e
+          have hs : a * ((e * d - b * f) / (a * d - b * c)) + b * ((a * f - e * c) / (a * d - b * c)) = (a * (e * d - b * f) + b * (a * f - e * c)) / (a * d - b * c) := by ring
+          rw [hs, div_eq_iff hD]
+          ring
+        · show c * ((e * d - b * f) / (a * d - b * c)) + d * ((a * f - e * c) / (a * d - b * c)) = f
+          have hs : c * ((e * d - b * f) / (a * d - b * c)) + d * ((a * f - e * c) / (a * d - b * c)) = (c * (e * d - b * f) + d * (a * f - e * c)) / (a * d - b * c) := by ring
+          rw [hs, div_eq_iff hD]
+          ring
+        · rintro ⟨u, v⟩ ⟨h1, h2⟩
+          have h1' : a * u + b * v = e := h1
+          have h2' : c * u + d * v = f := h2
+          refine Prod.ext ?_ ?_
+          · show u = (e * d - b * f) / (a * d - b * c)
+            rw [eq_div_iff hD, ← h1', ← h2']
+            ring
+          · show v = (a * f - e * c) / (a * d - b * c)
+            rw [eq_div_iff hD, ← h1', ← h2']
+            ring
+- id: two_variable_system_degenerate_solvability
+  kind: gap
+  level: high
+  topic: 連立一次方程式・行列式が0のときの解の存在
+  statement: 実数$a,b,c,d,e,f$が$ad-bc=0$を満たし、$a,b$の少なくとも一方が$0$でないとする。このとき連立方程式$ax+by=e$、$cx+dy=f$に実数解があることと、$af-ce=0$かつ$bf-de=0$であることは同値である。
+  statement_en: Let a, b, c, d, e, f be real with ad - bc = 0 and with a or b nonzero. The system ax + by = e, cx + dy = f has a real solution if and only if af - ce = 0 and bf - de = 0.
+  assumptions:
+  - $a,b,c,d,e,f$は実数
+  - $ad-bc=0$
+  - $a\neq 0$または$b\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d,e,f$
+  conclusion: 実数解が存在することと「$af-ce=0$かつ$bf-de=0$」は同値である。
+  answer: |
+    $a,b,c,d,e,f$を実数とし、$ad-bc=0$かつ$a\neq 0$または$b\neq 0$とする。解$(x,y)$があるとする。$af-ce=a(cx+dy)-c(ax+by)=(ad-bc)y=0$であり、$bf-de=b(cx+dy)-d(ax+by)=-(ad-bc)x=0$である。
+    逆に$af=ce$かつ$bf=de$とする。$a\neq 0$のとき、$(x,y)=\left(\dfrac{e}{a},0\right)$をとる。第一式は$a\cdot\dfrac{e}{a}=e$より成り立ち、第二式は$c\cdot\dfrac{e}{a}=\dfrac{af}{a}=f$より成り立つ。$b\neq 0$のとき、$(x,y)=\left(0,\dfrac{e}{b}\right)$をとる。第一式は$b\cdot\dfrac{e}{b}=e$より成り立ち、第二式は$d\cdot\dfrac{e}{b}=\dfrac{bf}{b}=f$より成り立つ。
+  strategy: Compute the two quantities from a solution, and build a solution on a coordinate axis for the converse.
+  sketch:
+  - 'derive: From a solution, af - ce = (ad - bc)y = 0.'
+  - 'derive: Likewise bf - de = -(ad - bc)x = 0.'
+  - 'case_split: For the converse, consider whether a or b is nonzero.'
+  - 'construct: Take (e/a, 0) or (0, e/b) respectively.'
+  - 'conclude: The conditions make the second equation hold, so a solution exists.'
+  openmath: (forall (a b c d e f) (-> (and (or (!= a 0) (!= b 0)) (= (- (* a d) (* b c)) 0)) (<-> (exists (x y) (and (= (+ (* a x) (* b y)) e) (= (+ (* c x) (* d y)) f))) (and (= (- (* a f) (* c e)) 0) (= (- (* b f) (* d e)) 0)))))
+  hard_negative:
+    statement: $a=b=0$の場合も、$af-ce=0$かつ$bf-de=0$なら解がある。
+    reason: $a=b=c=d=0$、$e=1$、$f=0$では条件を満たすが、第一式が$0=1$となり解はない。
+  target: |
+    ∀ (a b c d e f : ℝ), (a ≠ 0 ∨ b ≠ 0) → a * d - b * c = 0 → ((∃ x y : ℝ, a * x + b * y = e ∧ c * x + d * y = f) ↔ (a * f - c * e = 0 ∧ b * f - d * e = 0))
+  proof: |
+    by
+      intro a b c d e f hne hD
+      constructor
+      · rintro ⟨x, y, h1, h2⟩
+        constructor
+        · rw [← h1, ← h2]
+          linear_combination y * hD
+        · rw [← h1, ← h2]
+          linear_combination (-x) * hD
+      · rintro ⟨h3, h4⟩
+        rcases hne with ha | hb
+        · refine ⟨e / a, 0, ?_, ?_⟩
+          · rw [mul_zero, add_zero]
+            field_simp
+          · rw [mul_zero, add_zero]
+            field_simp
+            linarith
+        · refine ⟨0, e / b, ?_, ?_⟩
+          · rw [mul_zero, zero_add]
+            field_simp
+          · rw [mul_zero, zero_add]
+            field_simp
+            linarith
+- id: two_variable_system_degenerate_solution_line
+  kind: gap
+  level: high
+  topic: 連立一次方程式・解が無数にあるときの表示
+  statement: 実数$a,b,c,d,e,f$が$ad-bc=0$を満たし、$a,b$の少なくとも一方が$0$でないとする。$(x_0,y_0)$が連立方程式$ax+by=e$、$cx+dy=f$の解なら、$(x,y)$が解であることと、ある実数$t$で$x=x_0-bt$、$y=y_0+at$と書けることは同値である。
+  statement_en: Let ad - bc = 0 with a or b nonzero, and let (x0, y0) solve ax + by = e, cx + dy = f. Then (x, y) is a solution if and only if x = x0 - bt and y = y0 + at for some real t.
+  assumptions:
+  - $a,b,c,d,e,f,x_0,y_0$は実数
+  - $ad-bc=0$かつ$a\neq 0$または$b\neq 0$
+  - $(x_0,y_0)$は連立方程式の解
+  quantifiers:
+  - 任意の実数$a,b,c,d,e,f,x_0,y_0,x,y$
+  - ある実数$t$
+  conclusion: $(x,y)$が解であることと、ある実数$t$で$x=x_0-bt$、$y=y_0+at$と書けることは同値である。
+  answer: |
+    $a,b,c,d,e,f,x_0,y_0$を実数とし、$ad-bc=0$、$a\neq 0$または$b\neq 0$、$ax_0+by_0=e$、$cx_0+dy_0=f$とする。$(x,y)$を実数の組とする。
+    ある実数$t$で$x=x_0-bt$、$y=y_0+at$と書けるなら、$ax+by=ax_0+by_0=e$であり、$cx+dy=cx_0+dy_0+(ad-bc)t=f$である。
+    逆に$(x,y)$が解とする。$u=x-x_0$、$v=y-y_0$とおくと、第一式の差から$au+bv=0$である。仮定より$a^2+b^2\neq 0$なので、$t=\dfrac{av-bu}{a^2+b^2}$とおける。$(a^2+b^2)(-bt)=-abv+b^2u=a(au)+b^2u=(a^2+b^2)u$より$u=-bt$である。また$(a^2+b^2)at=a^2v-abu=a^2v+b(bv)=(a^2+b^2)v$より$v=at$である。よって$x=x_0-bt$、$y=y_0+at$である。
+  strategy: Verify the parametrized points directly, and recover t from the first equation for the converse.
+  sketch:
+  - 'derive: Points x0 - bt, y0 + at solve the first equation identically.'
+  - 'derive: The second equation changes by (ad - bc)t = 0, so it still holds.'
+  - 'setup: For a solution (x, y), put u = x - x0 and v = y - y0, so au + bv = 0.'
+  - 'construct: Since a² + b² ≠ 0, define t = (av - bu)/(a² + b²).'
+  - 'derive: Using au + bv = 0, check u = -bt and v = at.'
+  - 'conclude: Every solution has the stated form.'
+  openmath: (forall (a b c d e f x0 y0) (-> (and (or (!= a 0) (!= b 0)) (= (- (* a d) (* b c)) 0) (= (+ (* a x0) (* b y0)) e) (= (+ (* c x0) (* d y0)) f)) (forall (x y) (<-> (and (= (+ (* a x) (* b y)) e) (= (+ (* c x) (* d y)) f)) (exists (t) (and (= x (- x0 (* b t))) (= y (+ y0 (* a t)))))))))
+  hard_negative:
+    statement: $ad-bc\neq 0$でも、$(x_0-bt,y_0+at)$はすべて解である。
+    reason: $a=d=1$、$b=c=0$、$e=f=0$、$(x_0,y_0)=(0,0)$のとき、$t=1$で$(0,1)$となるが、第二式$y=0$を満たさない。
+  target: |
+    ∀ (a b c d e f x₀ y₀ : ℝ), (a ≠ 0 ∨ b ≠ 0) → a * d - b * c = 0 → a * x₀ + b * y₀ = e → c * x₀ + d * y₀ = f → ∀ x y : ℝ, (a * x + b * y = e ∧ c * x + d * y = f) ↔ ∃ t : ℝ, x = x₀ - b * t ∧ y = y₀ + a * t
+  proof: |
+    by
+      intro a b c d e f x₀ y₀ hne hD h1 h2 x y
+      constructor
+      · rintro ⟨h3, _⟩
+        have hn : a ^ 2 + b ^ 2 ≠ 0 := by
+          rcases hne with h | h <;> positivity
+        have key : a * (x - x₀) + b * (y - y₀) = 0 := by linarith
+        have ht : (a * (y - y₀) - b * (x - x₀)) / (a ^ 2 + b ^ 2) * (a ^ 2 + b ^ 2) = a * (y - y₀) - b * (x - x₀) :=
+          div_mul_cancel₀ _ hn
+        refine ⟨(a * (y - y₀) - b * (x - x₀)) / (a ^ 2 + b ^ 2), ?_, ?_⟩
+        · apply mul_right_cancel₀ hn
+          linear_combination a * key + b * ht
+        · apply mul_right_cancel₀ hn
+          linear_combination b * key - a * ht
+      · rintro ⟨t, rfl, rfl⟩
+        constructor
+        · linear_combination h1
+        · linear_combination h2 + t * hD
+- id: homogeneous_two_variable_nontrivial_iff_determinant
+  kind: textbook
+  level: high
+  topic: 連立一次方程式・同次形の非自明解
+  statement: 実数$a,b,c,d$について、$ax+by=0$、$cx+dy=0$が$(x,y)\neq(0,0)$である実数解をもつことと、$ad-bc=0$であることは同値である。
+  statement_en: For real a, b, c, d, the system ax + by = 0, cx + dy = 0 has a real solution (x, y) other than (0, 0) if and only if ad - bc = 0.
+  assumptions:
+  - $a,b,c,d$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  - ある実数$x,y$
+  conclusion: $(0,0)$以外の実数解をもつことと$ad-bc=0$は同値である。
+  answer: |
+    $a,b,c,d$を実数とする。$(x,y)\neq(0,0)$が解であるとする。第一式の$d$倍から第二式の$b$倍を引くと$(ad-bc)x=0$であり、第二式の$a$倍から第一式の$c$倍を引くと$(ad-bc)y=0$である。$x,y$の一方は$0$でないので$ad-bc=0$である。
+    逆に$ad-bc=0$とする。$a\neq 0$または$b\neq 0$なら、$(x,y)=(-b,a)$は$(0,0)$でなく、$a(-b)+ba=0$、$c(-b)+da=ad-bc=0$を満たす。$a=b=0$のとき第一式はつねに成り立つ。$c\neq 0$または$d\neq 0$なら、$(x,y)=(-d,c)$は$(0,0)$でなく、$c(-d)+dc=0$を満たす。$c=d=0$なら第二式もつねに成り立つので、$(x,y)=(1,0)$が$(0,0)$でない解である。
+  strategy: Eliminate variables for one direction and exhibit a kernel vector by cases for the other.
+  sketch:
+  - 'derive: Elimination gives (ad - bc)x = 0 and (ad - bc)y = 0.'
+  - 'derive: A nonzero x or y forces ad - bc = 0.'
+  - 'case_split: For the converse, consider whether (a, b) is zero.'
+  - 'construct: Use (-b, a) if (a, b) is nonzero.'
+  - 'construct: Otherwise use (-d, c), or (1, 0) when all coefficients vanish.'
+  - 'conclude: In every case a nonzero solution exists.'
+  openmath: (forall (a b c d) (<-> (exists (x y) (and (or (!= x 0) (!= y 0)) (= (+ (* a x) (* b y)) 0) (= (+ (* c x) (* d y)) 0))) (= (- (* a d) (* b c)) 0)))
+  hard_negative:
+    statement: $ad-bc\neq 0$のときも、$(0,0)$以外の解がある。
+    reason: $a=d=1$、$b=c=0$なら方程式は$x=0$、$y=0$であり、解は$(0,0)$だけである。
+  target: |
+    ∀ (a b c d : ℝ), (∃ x y : ℝ, (x ≠ 0 ∨ y ≠ 0) ∧ a * x + b * y = 0 ∧ c * x + d * y = 0) ↔ a * d - b * c = 0
+  proof: |
+    by
+      intro a b c d
+      constructor
+      · rintro ⟨x, y, h, h1, h2⟩
+        rcases h with hx | hy
+        · have hm : (a * d - b * c) * x = 0 := by linear_combination d * h1 - b * h2
+          exact (mul_eq_zero.mp hm).resolve_right hx
+        · have hm : (a * d - b * c) * y = 0 := by linear_combination a * h2 - c * h1
+          exact (mul_eq_zero.mp hm).resolve_right hy
+      · intro hD
+        by_cases hab : a ≠ 0 ∨ b ≠ 0
+        · refine ⟨-b, a, ?_, by ring, by linarith⟩
+          rcases hab with h | h
+          · exact Or.inr h
+          · exact Or.inl (neg_ne_zero.mpr h)
+        · have ha : a = 0 := by
+            by_contra h
+            exact hab (Or.inl h)
+          have hb : b = 0 := by
+            by_contra h
+            exact hab (Or.inr h)
+          by_cases hcd : c ≠ 0 ∨ d ≠ 0
+          · refine ⟨-d, c, ?_, by rw [ha, hb]; ring, by ring⟩
+            rcases hcd with h | h
+            · exact Or.inr h
+            · exact Or.inl (neg_ne_zero.mpr h)
+          · have hc : c = 0 := by
+              by_contra h
+              exact hcd (Or.inl h)
+            have hd : d = 0 := by
+              by_contra h
+              exact hcd (Or.inr h)
+            exact ⟨1, 0, Or.inl one_ne_zero, by rw [ha, hb]; ring, by rw [hc, hd]; ring⟩
+- id: two_variable_system_no_solution_ratio_form
+  kind: gap
+  level: high
+  topic: 連立一次方程式・比の形の不能条件
+  statement: 係数が$0$でない場合に限った比の形の不能条件。実数$a,b,c,d,e,f$について$c,d,f$がすべて$0$でなく、$\dfrac{a}{c}=\dfrac{b}{d}\neq\dfrac{e}{f}$なら、連立方程式$ax+by=e$、$cx+dy=f$に実数解はない。
+  statement_en: Ratio form, restricted to nonzero c, d, f. If real a, b, c, d, e, f satisfy c, d, f ≠ 0 and a/c = b/d ≠ e/f, then ax + by = e, cx + dy = f has no real solution.
+  assumptions:
+  - $a,b,c,d,e,f$は実数
+  - $c,d,f$はすべて$0$でない
+  - $\dfrac{a}{c}=\dfrac{b}{d}$かつ$\dfrac{a}{c}\neq\dfrac{e}{f}$
+  quantifiers:
+  - 任意の実数$a,b,c,d,e,f$
+  conclusion: 連立方程式に実数解はない。
+  answer: |
+    $a,b,c,d,e,f$を実数とし、$c,d,f$はすべて$0$でなく、$\dfrac{a}{c}=\dfrac{b}{d}\neq\dfrac{e}{f}$とする。$k=\dfrac{a}{c}$とおくと$a=kc$、$b=kd$である。実数解$(x,y)$があると仮定すると、$e=ax+by=k(cx+dy)=kf$となる。$f\neq 0$より$k=\dfrac{e}{f}$であり、$\dfrac{a}{c}\neq\dfrac{e}{f}$に反する。よって実数解はない。
+  strategy: Write the first left side as a multiple of the second and compare right sides.
+  sketch:
+  - 'setup: Let k = a/c, so a = kc and b = kd.'
+  - 'contradiction: Assume a solution (x, y) exists.'
+  - 'derive: Then e = ax + by = k(cx + dy) = kf.'
+  - 'conclude: Hence k = e/f, contradicting the hypothesis.'
+  openmath: (forall (a b c d e f) (-> (and (!= c 0) (!= d 0) (!= f 0) (= (/ a c) (/ b d)) (!= (/ a c) (/ e f))) (not (exists (x y) (and (= (+ (* a x) (* b y)) e) (= (+ (* c x) (* d y)) f))))))
+  hard_negative:
+    statement: $\dfrac{a}{c}=\dfrac{b}{d}=\dfrac{e}{f}$のときも、実数解はない。
+    reason: $a=b=c=d=e=f=1$なら、二式はともに$x+y=1$であり、解は無数にある。
+  target: |
+    ∀ (a b c d e f : ℝ), c ≠ 0 → d ≠ 0 → f ≠ 0 → a / c = b / d → a / c ≠ e / f → ¬ ∃ x y : ℝ, a * x + b * y = e ∧ c * x + d * y = f
+  proof: |
+    by
+      intro a b c d e f hc hd hf hab hne
+      rintro ⟨x, y, h1, h2⟩
+      apply hne
+      have ha : a = a / c * c := (div_mul_cancel₀ a hc).symm
+      have hb : b = a / c * d := by
+        rw [hab]
+        exact (div_mul_cancel₀ b hd).symm
+      rw [eq_div_iff hf, ← h1, ← h2]
+      generalize a / c = k at ha hb ⊢
+      rw [ha, hb]
+      ring
+- id: proportion_iff_cross_product
+  kind: gap
+  level: middle
+  topic: 比例式・内項の積と外項の積
+  statement: 実数$a,b,c,d$について$b\neq 0$かつ$d\neq 0$なら、$\dfrac{a}{b}=\dfrac{c}{d}$であることと$ad=bc$であることは同値である。
+  statement_en: For real a, b, c, d with b ≠ 0 and d ≠ 0, a/b = c/d if and only if ad = bc.
+  assumptions:
+  - $a,b,c,d$は実数
+  - $b\neq 0$かつ$d\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $\dfrac{a}{b}=\dfrac{c}{d}$と$ad=bc$は同値である。
+  answer: |
+    $a,b,c,d$を実数とし、$b\neq 0$かつ$d\neq 0$とする。$bd\neq 0$なので、$\dfrac{a}{b}=\dfrac{c}{d}$は両辺に$bd$を掛けた等式$ad=bc$と同値である。
+  strategy: Multiply both sides by the nonzero number bd.
+  sketch:
+  - 'setup: Note that bd is nonzero.'
+  - 'translate: Multiplying by bd is reversible.'
+  - 'conclude: It turns a/b = c/d into ad = bc.'
+  openmath: (forall (a b c d) (-> (and (!= b 0) (!= d 0)) (<-> (= (/ a b) (/ c d)) (= (* a d) (* b c)))))
+  hard_negative:
+    statement: $\dfrac{a}{b}=\dfrac{c}{d}$であることと$ab=cd$であることは同値である。
+    reason: $a=1,b=2,c=2,d=1$のとき$ab=cd=2$だが、$\dfrac{a}{b}=\dfrac{1}{2}$、$\dfrac{c}{d}=2$で等しくない。外項の積と内項の積は$ad=bc$である。
+  target: |
+    ∀ (a b c d : ℝ), b ≠ 0 → d ≠ 0 → (a / b = c / d ↔ a * d = b * c)
+  proof: |
+    by
+      intro a b c d hb hd
+      rw [div_eq_div_iff hb hd, mul_comm c b]
+- id: proportion_iff_common_ratio
+  kind: gap
+  level: middle
+  topic: 比例式・比の値をkとおく
+  statement: 実数$a,b,c,d$について$b\neq 0$かつ$d\neq 0$なら、$\dfrac{a}{b}=\dfrac{c}{d}$であることと、ある実数$k$で$a=kb$、$c=kd$と書けることは同値である。
+  statement_en: For real a, b, c, d with b ≠ 0 and d ≠ 0, a/b = c/d if and only if a = kb and c = kd for some real k.
+  assumptions:
+  - $a,b,c,d$は実数
+  - $b\neq 0$かつ$d\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  - ある実数$k$
+  conclusion: $\dfrac{a}{b}=\dfrac{c}{d}$と「ある$k$で$a=kb$、$c=kd$」は同値である。
+  answer: |
+    $a,b,c,d$を実数とし、$b\neq 0$かつ$d\neq 0$とする。$\dfrac{a}{b}=\dfrac{c}{d}$なら、この共通の値を$k$とおくと$a=kb$、$c=kd$である。逆に、ある実数$k$で$a=kb$、$c=kd$と書けるなら、$\dfrac{a}{b}=k=\dfrac{c}{d}$である。
+  strategy: Name the common value of the two ratios k.
+  sketch:
+  - 'construct: Let k be the common value of a/b and c/d.'
+  - 'derive: Multiplying gives a = kb and c = kd.'
+  - 'conclude: Conversely, dividing by b and d gives k both times.'
+  openmath: (forall (a b c d) (-> (and (!= b 0) (!= d 0)) (<-> (= (/ a b) (/ c d)) (exists (k) (and (= a (* k b)) (= c (* k d)))))))
+  hard_negative:
+    statement: $a=kb$、$c=ld$なら$\dfrac{a}{b}=\dfrac{c}{d}$である。
+    reason: $k=1$、$l=2$、$b=d=1$なら$\dfrac{a}{b}=1$、$\dfrac{c}{d}=2$である。比の値は共通でなければならない。
+  target: |
+    ∀ (a b c d : ℝ), b ≠ 0 → d ≠ 0 → (a / b = c / d ↔ ∃ k : ℝ, a = k * b ∧ c = k * d)
+  proof: |
+    by
+      intro a b c d hb hd
+      constructor
+      · intro h
+        exact ⟨a / b, (div_mul_cancel₀ a hb).symm, by
+          rw [h]
+          exact (div_mul_cancel₀ c hd).symm⟩
+      · rintro ⟨k, rfl, rfl⟩
+        rw [mul_div_cancel_right₀ _ hb, mul_div_cancel_right₀ _ hd]
+- id: proportion_swap_inner_terms
+  kind: gap
+  level: middle
+  topic: 比例式・内項の交換
+  statement: 実数$a,b,c,d$について$b,c,d$がすべて$0$でないなら、$\dfrac{a}{b}=\dfrac{c}{d}$であることと$\dfrac{a}{c}=\dfrac{b}{d}$であることは同値である。
+  statement_en: For real a, b, c, d with b, c, d nonzero, a/b = c/d if and only if a/c = b/d.
+  assumptions:
+  - $a,b,c,d$は実数
+  - $b,c,d$はすべて$0$でない
+  quantifiers:
+  - 任意の実数$a,b,c,d$
+  conclusion: $\dfrac{a}{b}=\dfrac{c}{d}$と$\dfrac{a}{c}=\dfrac{b}{d}$は同値である。
+  answer: |
+    $a,b,c,d$を実数とし、$b,c,d$はすべて$0$でないとする。$bd\neq 0$なので、$\dfrac{a}{b}=\dfrac{c}{d}$は両辺に$bd$を掛けた$ad=bc$と同値である。$cd\neq 0$なので、$\dfrac{a}{c}=\dfrac{b}{d}$は両辺に$cd$を掛けた$ad=bc$と同値である。よって二つの比例式は同値である。
+  strategy: Reduce both proportions to the same cross-product equation.
+  sketch:
+  - 'translate: Multiplying by bd turns a/b = c/d into ad = bc.'
+  - 'translate: Multiplying by cd turns a/c = b/d into ad = bc.'
+  - 'conclude: Both proportions are equivalent to the same equation.'
+  openmath: (forall (a b c d) (-> (and (!= b 0) (!= c 0) (!= d 0)) (<-> (= (/ a b) (/ c d)) (= (/ a c) (/ b d)))))
+  hard_negative:
+    statement: $c=0$でも、$\dfrac{a}{b}=\dfrac{c}{d}$なら$\dfrac{a}{c}=\dfrac{b}{d}$である。
+    reason: $a=c=0$、$b=d=1$では前者は成り立つが、$\dfrac{a}{c}$の分母が$0$で定義されない。
+  target: |
+    ∀ (a b c d : ℝ), b ≠ 0 → c ≠ 0 → d ≠ 0 → (a / b = c / d ↔ a / c = b / d)
+  proof: |
+    by
+      intro a b c d hb hc hd
+      rw [div_eq_div_iff hb hd, div_eq_div_iff hc hd, mul_comm c b]
+- id: continued_ratio_iff_cross_products
+  kind: gap
+  level: high
+  topic: 比例式・連比
+  statement: 実数$a,b,c,x,y,z$について$x,y,z$がすべて$0$でないとき、$a:b:c=x:y:z$、すなわちある実数$k$で$a=kx$、$b=ky$、$c=kz$と書けることは、$ay=bx$かつ$bz=cy$と同値である。
+  statement_en: For real a, b, c, x, y, z with x, y, z nonzero, a = kx, b = ky, c = kz for some real k if and only if ay = bx and bz = cy.
+  assumptions:
+  - $a,b,c,x,y,z$は実数
+  - $x,y,z$はすべて$0$でない
+  quantifiers:
+  - 任意の実数$a,b,c,x,y,z$
+  - ある実数$k$
+  conclusion: 「ある$k$で$a=kx$、$b=ky$、$c=kz$」と「$ay=bx$かつ$bz=cy$」は同値である。
+  answer: |
+    $a,b,c,x,y,z$を実数とし、$x,y,z$はすべて$0$でないとする。ある実数$k$で$a=kx$、$b=ky$、$c=kz$と書けるなら、$ay=kxy=bx$、$bz=kyz=cy$である。
+    逆に$ay=bx$かつ$bz=cy$とする。$k=\dfrac{a}{x}$とおくと$a=kx$である。$ay=bx$より$b=\dfrac{ay}{x}=ky$である。また$ayz=bxz=x(bz)=xcy$であり、$y\neq 0$で割ると$az=cx$となる。よって$c=\dfrac{az}{x}=kz$である。
+  strategy: Define k = a/x and use the middle term to link a and c.
+  sketch:
+  - 'derive: The forward direction follows by substituting the multiples of k.'
+  - 'construct: For the converse, set k = a/x.'
+  - 'derive: The condition ay = bx gives b = ky.'
+  - 'derive: Combining both conditions and cancelling y gives az = cx.'
+  - 'conclude: Hence c = kz as well.'
+  openmath: (forall (a b c x y z) (-> (and (!= x 0) (!= y 0) (!= z 0)) (<-> (exists (k) (and (= a (* k x)) (= b (* k y)) (= c (* k z)))) (and (= (* a y) (* b x)) (= (* b z) (* c y))))))
+  hard_negative:
+    statement: $y=0$でも、$x,z\neq 0$で$ay=bx$かつ$bz=cy$なら$a:b:c=x:y:z$である。
+    reason: $a=c=1$、$b=0$、$x=1$、$y=0$、$z=2$は二つの等式を満たすが、$a=kx$から$k=1$、$c=kz$から$k=\dfrac{1}{2}$となり矛盾する。
+  target: |
+    ∀ (a b c x y z : ℝ), x ≠ 0 → y ≠ 0 → z ≠ 0 → ((∃ k : ℝ, a = k * x ∧ b = k * y ∧ c = k * z) ↔ (a * y = b * x ∧ b * z = c * y))
+  proof: |
+    by
+      intro a b c x y z hx hy hz
+      constructor
+      · rintro ⟨k, rfl, rfl, rfl⟩
+        constructor <;> ring
+      · rintro ⟨h1, h2⟩
+        have hm : y * (a * z - c * x) = 0 := by linear_combination z * h1 + x * h2
+        have h3 : a * z - c * x = 0 := (mul_eq_zero.mp hm).resolve_left hy
+        refine ⟨a / x, (div_mul_cancel₀ a hx).symm, ?_, ?_⟩
+        · rw [div_mul_eq_mul_div, eq_div_iff hx]
+          linarith
+        · rw [div_mul_eq_mul_div, eq_div_iff hx]
+          linarith
+- id: abs_value_cases_by_sign
+  kind: gap
+  level: middle
+  topic: 絶対値・符号による場合分け
+  statement: 実数$a$について、$a\geq 0$なら$|a|=a$であり、$a<0$なら$|a|=-a$である。
+  statement_en: For real a, |a| = a if a ≥ 0, and |a| = -a if a < 0.
+  assumptions:
+  - $a$は実数
+  quantifiers:
+  - 任意の実数$a$
+  conclusion: $a\geq 0$なら$|a|=a$、$a<0$なら$|a|=-a$である。
+  answer: |
+    $a$を実数とする。$|a|$は数直線上の原点と$a$の距離である。$a\geq 0$なら、$a$は原点の右側または原点にあるので、距離は$a$である。$a<0$なら、$a$は原点の左側にあるので、距離は$-a$である。
+  strategy: Read the two cases from the definition as a distance from the origin.
+  sketch:
+  - 'case_split: Consider a ≥ 0 and a < 0.'
+  - 'derive: The distance from the origin is a in the first case.'
+  - 'conclude: The distance from the origin is -a in the second case.'
+  openmath: (forall (a) (and (-> (>= a 0) (= (abs a) a)) (-> (< a 0) (= (abs a) (neg a)))))
+  hard_negative:
+    statement: すべての実数$a$で$|a|=a$である。
+    reason: $a=-1$なら$|a|=1\neq a$である。$a$の符号で場合分けが必要である。
+  target: |
+    ∀ a : ℝ, (0 ≤ a → |a| = a) ∧ (a < 0 → |a| = -a)
+  proof: |
+    by
+      intro a
+      exact ⟨abs_of_nonneg, abs_of_neg⟩
+- id: abs_of_product_and_quotient
+  kind: gap
+  level: high
+  topic: 絶対値・積と商
+  statement: 実数$a,b$について$|ab|=|a||b|$である。さらに$b\neq 0$なら$\left|\dfrac{a}{b}\right|=\dfrac{|a|}{|b|}$である。
+  statement_en: For real a and b, |ab| = |a||b|. If moreover b ≠ 0, then |a/b| = |a|/|b|.
+  assumptions:
+  - $a,b$は実数
+  - 商の等式では$b\neq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $|ab|=|a||b|$であり、$b\neq 0$なら$\left|\dfrac{a}{b}\right|=\dfrac{|a|}{|b|}$である。
+  answer: |
+    $a,b$を実数とする。$a,b$の符号で場合分けする。$a\geq 0$かつ$b\geq 0$なら$ab\geq 0$で、$|ab|=ab=|a||b|$である。$a<0$かつ$b<0$なら$ab>0$で、$|ab|=ab=(-a)(-b)=|a||b|$である。一方が$0$以上で他方が負なら$ab\leq 0$で、$|ab|=-ab=|a||b|$である。
+    次に$b\neq 0$とする。積の等式を$a=\dfrac{a}{b}\cdot b$に用いると$|a|=\left|\dfrac{a}{b}\right||b|$である。$|b|\neq 0$で割ると$\left|\dfrac{a}{b}\right|=\dfrac{|a|}{|b|}$を得る。
+  strategy: Split on the signs for the product, then apply the product rule to a = (a/b)b.
+  sketch:
+  - 'case_split: Consider the signs of a and b.'
+  - 'derive: In each case |ab| = |a||b|.'
+  - 'derive: Applying this to a = (a/b)b gives |a| = |a/b||b|.'
+  - 'conclude: Dividing by |b| gives the quotient rule.'
+  openmath: (forall (a b) (and (= (abs (* a b)) (* (abs a) (abs b))) (-> (!= b 0) (= (abs (/ a b)) (/ (abs a) (abs b))))))
+  hard_negative:
+    statement: $|a+b|=|a|+|b|$である。
+    reason: $a=1$、$b=-1$なら左辺は$0$、右辺は$2$である。絶対値は積と商には分配するが、和には分配しない。
+  target: |
+    ∀ a b : ℝ, |a * b| = |a| * |b| ∧ (b ≠ 0 → |a / b| = |a| / |b|)
+  proof: |
+    by
+      intro a b
+      exact ⟨abs_mul a b, fun _ => abs_div a b⟩
+- id: triangle_inequality_real_numbers
+  kind: named
+  level: high
+  topic: 絶対値・三角不等式
+  statement: 三角不等式。実数$a,b$について$|a+b|\leq|a|+|b|$である。
+  statement_en: Triangle inequality. For real a and b, |a + b| ≤ |a| + |b|.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $|a+b|\leq|a|+|b|$が成り立つ。
+  answer: |
+    $a,b$を実数とする。$a\leq|a|$かつ$b\leq|b|$なので、$a+b\leq|a|+|b|$である。また$-a\leq|a|$かつ$-b\leq|b|$なので、$-(a+b)\leq|a|+|b|$である。$|a+b|$は$a+b$か$-(a+b)$のどちらかに等しいので、$|a+b|\leq|a|+|b|$である。
+  strategy: Bound both a + b and its negative by |a| + |b|.
+  sketch:
+  - 'derive: From a ≤ |a| and b ≤ |b| we get a + b ≤ |a| + |b|.'
+  - 'derive: From -a ≤ |a| and -b ≤ |b| we get -(a + b) ≤ |a| + |b|.'
+  - 'conclude: |a + b| is one of these two numbers, so the bound follows.'
+  openmath: (forall (a b) (<= (abs (+ a b)) (+ (abs a) (abs b))))
+  hard_negative:
+    statement: $|a-b|\leq|a|-|b|$である。
+    reason: $a=0$、$b=1$なら左辺は$1$、右辺は$-1$である。差の場合、右辺は$|a|+|b|$でなければならない。
+  target: |
+    ∀ a b : ℝ, |a + b| ≤ |a| + |b|
+  proof: |
+    by
+      intro a b
+      exact abs_add_le a b
+- id: triangle_equality_iff_product_nonneg
+  kind: gap
+  level: high
+  topic: 絶対値・三角不等式の等号条件
+  statement: 実数$a,b$について、$|a+b|=|a|+|b|$であることと$ab\geq 0$であることは同値である。
+  statement_en: For real a and b, |a + b| = |a| + |b| if and only if ab ≥ 0.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $|a+b|=|a|+|b|$と$ab\geq 0$は同値である。
+  answer: |
+    $a,b$を実数とする。$ab\geq 0$なら、「$a,b\geq 0$」または「$a,b\leq 0$」が成り立つ。前者なら$|a+b|=a+b=|a|+|b|$であり、後者なら$|a+b|=-a-b=|a|+|b|$である。
+    $ab<0$なら、$a,b$は異符号である。$a>0>b$のとき、$a+b<a+(-b)=|a|+|b|$かつ$-(a+b)<a+(-b)=|a|+|b|$なので、$|a+b|<|a|+|b|$である。$a<0<b$のときも、$a,b$を入れ替えれば同様である。よって等号は成り立たない。
+  strategy: Split on whether a and b have the same sign.
+  sketch:
+  - 'case_split: Consider ab ≥ 0 and ab < 0.'
+  - 'derive: If a and b have the same sign, both sides equal the sum of their sizes.'
+  - 'derive: If a > 0 > b, both a + b and -(a + b) are strictly less than a - b.'
+  - 'conclude: So equality holds exactly when ab ≥ 0.'
+  openmath: (forall (a b) (<-> (= (abs (+ a b)) (+ (abs a) (abs b))) (>= (* a b) 0)))
+  hard_negative:
+    statement: $|a+b|=|a|+|b|$なら$a,b\geq 0$である。
+    reason: $a=b=-1$でも等号が成り立つ。$a,b$がともに$0$以下の場合も含む。
+  target: |
+    ∀ a b : ℝ, |a + b| = |a| + |b| ↔ 0 ≤ a * b
+  proof: |
+    by
+      intro a b
+      rw [abs_add_eq_add_abs_iff, mul_nonneg_iff]
+- id: reverse_triangle_inequality_real_numbers
+  kind: gap
+  level: high
+  topic: 絶対値・差に関する三角不等式
+  statement: 実数$a,b$について$\bigl||a|-|b|\bigr|\leq|a-b|$である。
+  statement_en: For real a and b, ||a| - |b|| ≤ |a - b|.
+  assumptions:
+  - $a,b$は実数
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\bigl||a|-|b|\bigr|\leq|a-b|$が成り立つ。
+  answer: |
+    $a,b$を実数とする。三角不等式より$|a|=|(a-b)+b|\leq|a-b|+|b|$なので、$|a|-|b|\leq|a-b|$である。$a,b$を入れ替えると$|b|-|a|\leq|b-a|=|a-b|$である。$\bigl||a|-|b|\bigr|$は$|a|-|b|$か$|b|-|a|$のどちらかに等しいので、結論を得る。
+  strategy: Apply the triangle inequality to a = (a - b) + b and to its swap.
+  sketch:
+  - 'apply_theorem: The triangle inequality gives |a| ≤ |a - b| + |b|.'
+  - 'derive: Swapping a and b gives |b| - |a| ≤ |a - b|.'
+  - 'conclude: Both signs of |a| - |b| are bounded by |a - b|.'
+  openmath: (forall (a b) (<= (abs (- (abs a) (abs b))) (abs (- a b))))
+  hard_negative:
+    statement: $|a-b|\leq\bigl||a|-|b|\bigr|$である。
+    reason: $a=1$、$b=-1$なら左辺は$2$、右辺は$0$である。この向きの不等式は$ab\geq 0$のときに限る。
+  target: |
+    ∀ a b : ℝ, |(|a| - |b|)| ≤ |a - b|
+  proof: |
+    by
+      intro a b
+      exact abs_abs_sub_abs_le_abs_sub a b
+- id: abs_eq_iff_with_sign_condition
+  kind: gap
+  level: high
+  topic: 絶対値・方程式
+  statement: 実数$x,a$について、$|x|=a$であることと、$a\geq 0$かつ「$x=a$または$x=-a$」であることは同値である。$a$の符号を限定しない形である。
+  statement_en: For real x and a, with no sign assumption on a, |x| = a if and only if a ≥ 0 and (x = a or x = -a).
+  assumptions:
+  - $x,a$は実数
+  quantifiers:
+  - 任意の実数$x,a$
+  conclusion: $|x|=a$と「$a\geq 0$かつ、$x=a$または$x=-a$」は同値である。
+  answer: |
+    $x,a$を実数とする。$|x|=a$なら、絶対値は$0$以上なので$a\geq 0$である。また$x\geq 0$なら$x=|x|=a$であり、$x<0$なら$x=-|x|=-a$である。
+    逆に$a\geq 0$とする。$x=a$なら$|x|=|a|=a$であり、$x=-a$なら$|x|=|{-a}|=|a|=a$である。
+  strategy: Use nonnegativity of the absolute value and split on the sign of x.
+  sketch:
+  - 'derive: |x| = a forces a ≥ 0 because absolute values are nonnegative.'
+  - 'case_split: The sign of x gives x = a or x = -a.'
+  - 'conclude: Conversely, a ≥ 0 gives |±a| = a.'
+  openmath: (forall (x a) (<-> (= (abs x) a) (and (>= a 0) (or (= x a) (= x (neg a))))))
+  hard_negative:
+    statement: $|x|=a$と「$x=a$または$x=-a$」は同値である。
+    reason: $a=x=-1$なら「$x=a$」は成り立つが、$|x|=1\neq a$である。$a\geq 0$の条件を落とせない。
+  target: |
+    ∀ x a : ℝ, |x| = a ↔ 0 ≤ a ∧ (x = a ∨ x = -a)
+  proof: |
+    by
+      intro x a
+      constructor
+      · intro h
+        have ha : 0 ≤ a := h ▸ abs_nonneg x
+        exact ⟨ha, (abs_eq ha).mp h⟩
+      · rintro ⟨ha, h⟩
+        exact (abs_eq ha).mpr h
+- id: abs_less_and_greater_iff_intervals
+  kind: gap
+  level: high
+  topic: 絶対値・不等式
+  statement: 実数$x,a$について、$|x|<a$は$-a<x<a$と同値であり、$|x|>a$は「$x<-a$または$x>a$」と同値である。
+  statement_en: For real x and a, |x| < a if and only if -a < x < a, and |x| > a if and only if x < -a or x > a.
+  assumptions:
+  - $x,a$は実数
+  quantifiers:
+  - 任意の実数$x,a$
+  conclusion: $|x|<a$は$-a<x<a$と、$|x|>a$は「$x<-a$または$x>a$」と同値である。
+  answer: |
+    $x,a$を実数とする。$x\leq|x|$かつ$-x\leq|x|$であり、$|x|$は$x$か$-x$のどちらかに等しい。
+    $|x|<a$なら、$x<a$かつ$-x<a$、すなわち$-a<x<a$である。逆に$-a<x<a$なら、$x<a$かつ$-x<a$なので$|x|<a$である。
+    $|x|>a$とする。$|x|=x$なら$x>a$であり、$|x|=-x$なら$x<-a$である。逆に$x>a$なら$|x|\geq x>a$であり、$x<-a$なら$|x|\geq -x>a$である。
+  strategy: Use x ≤ |x|, -x ≤ |x| and the fact that |x| equals x or -x.
+  sketch:
+  - 'setup: Record x ≤ |x|, -x ≤ |x|, and that |x| equals x or -x.'
+  - 'derive: Hence |x| < a holds exactly when both x < a and -x < a.'
+  - 'derive: If |x| > a, then x > a or -x > a according to the value of |x|.'
+  - 'conclude: Conversely, either alternative gives |x| > a by the first bounds.'
+  openmath: (forall (x a) (and (<-> (< (abs x) a) (and (< (neg a) x) (< x a))) (<-> (> (abs x) a) (or (< x (neg a)) (> x a)))))
+  hard_negative:
+    statement: $|x|>a$は$x>a$と同値である。
+    reason: $x=-3$、$a=1$なら$|x|>a$だが$x>a$ではない。$x<-a$の側を落とせない。
+  target: |
+    ∀ x a : ℝ, (|x| < a ↔ -a < x ∧ x < a) ∧ (a < |x| ↔ x < -a ∨ a < x)
+  proof: |
+    by
+      intro x a
+      refine ⟨abs_lt, ?_⟩
+      rw [lt_abs, lt_neg, or_comm]
+- id: abs_two_points_sum_piecewise
+  kind: gap
+  level: high
+  topic: 絶対値・二つの絶対値の和の場合分け
+  statement: 実数$a\leq b$と$x$について、$|x-a|+|x-b|$は、$x<a$のとき$a+b-2x$、$a\leq x\leq b$のとき$b-a$、$x>b$のとき$2x-a-b$である。
+  statement_en: For real a ≤ b and x, |x - a| + |x - b| equals a + b - 2x if x < a, b - a if a ≤ x ≤ b, and 2x - a - b if x > b.
+  assumptions:
+  - $a,b,x$は実数
+  - $a\leq b$
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $x$の範囲ごとに、$|x-a|+|x-b|$は$a+b-2x$、$b-a$、$2x-a-b$である。
+  answer: |
+    $a,b,x$を実数とし、$a\leq b$とする。$x<a$なら$x-a<0$かつ$x-b<0$なので、和は$(a-x)+(b-x)=a+b-2x$である。$a\leq x\leq b$なら$x-a\geq 0$かつ$x-b\leq 0$なので、和は$(x-a)+(b-x)=b-a$である。$x>b$なら$x-a>0$かつ$x-b>0$なので、和は$(x-a)+(x-b)=2x-a-b$である。
+  strategy: Determine the sign of x - a and x - b in each of the three ranges.
+  sketch:
+  - 'case_split: Consider x < a, a ≤ x ≤ b and x > b.'
+  - 'derive: Determine the signs of x - a and x - b in each range.'
+  - 'conclude: Remove the absolute values and simplify.'
+  openmath: (forall (a b x) (-> (<= a b) (and (-> (< x a) (= (+ (abs (- x a)) (abs (- x b))) (- (+ a b) (* 2 x)))) (-> (and (<= a x) (<= x b)) (= (+ (abs (- x a)) (abs (- x b))) (- b a))) (-> (> x b) (= (+ (abs (- x a)) (abs (- x b))) (- (- (* 2 x) a) b))))))
+  hard_negative:
+    statement: $a\leq x\leq b$のとき$|x-a|+|x-b|=2x-a-b$である。
+    reason: $a=0$、$b=2$、$x=0$なら左辺は$2$、右辺は$-2$である。$x-b\leq 0$なので$|x-b|=b-x$と外す。
+  target: |
+    ∀ a b x : ℝ, a ≤ b → (x < a → |x - a| + |x - b| = a + b - 2 * x) ∧ (a ≤ x → x ≤ b → |x - a| + |x - b| = b - a) ∧ (b < x → |x - a| + |x - b| = 2 * x - a - b)
+  proof: |
+    by
+      intro a b x hab
+      refine ⟨?_, ?_, ?_⟩
+      · intro h
+        rw [abs_of_neg (by linarith), abs_of_neg (by linarith)]
+        ring
+      · intro h1 h2
+        rw [abs_of_nonneg (by linarith), abs_of_nonpos (by linarith)]
+        ring
+      · intro h
+        rw [abs_of_pos (by linarith), abs_of_pos (by linarith)]
+        ring
+- id: abs_two_points_sum_equals_distance_iff_between
+  kind: gap
+  level: high
+  topic: 絶対値・二点からの距離の和の最小
+  statement: 実数$a\leq b$と$x$について、$|x-a|+|x-b|=b-a$であることと$a\leq x\leq b$であることは同値である。
+  statement_en: For real a ≤ b and x, |x - a| + |x - b| = b - a if and only if a ≤ x ≤ b.
+  assumptions:
+  - $a,b,x$は実数
+  - $a\leq b$
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $|x-a|+|x-b|=b-a$と$a\leq x\leq b$は同値である。
+  answer: |
+    $a,b,x$を実数とし、$a\leq b$とする。$a\leq x\leq b$なら$|x-a|+|x-b|=(x-a)+(b-x)=b-a$である。
+    $x<a$なら、和は$(a-x)+(b-x)=(b-a)+2(a-x)>b-a$である。$x>b$なら、和は$(x-a)+(x-b)=(b-a)+2(x-b)>b-a$である。よって$x$が$a$と$b$の間になければ等号は成り立たない。
+  strategy: Compute the sum in each range of x and compare with b - a.
+  sketch:
+  - 'derive: For a ≤ x ≤ b the sum equals b - a.'
+  - 'derive: For x < a the sum equals (b - a) + 2(a - x), which is larger.'
+  - 'derive: For x > b the sum equals (b - a) + 2(x - b), which is larger.'
+  - 'conclude: Equality holds exactly on the interval.'
+  openmath: (forall (a b x) (-> (<= a b) (<-> (= (+ (abs (- x a)) (abs (- x b))) (- b a)) (and (<= a x) (<= x b)))))
+  hard_negative:
+    statement: $|x-a|+|x-b|=b-a$なら$x=\dfrac{a+b}{2}$である。
+    reason: $a=0$、$b=2$、$x=\dfrac{1}{2}$でも等号が成り立つ。等号は区間全体で成り立つ。
+  target: |
+    ∀ a b x : ℝ, a ≤ b → (|x - a| + |x - b| = b - a ↔ a ≤ x ∧ x ≤ b)
+  proof: |
+    by
+      intro a b x hab
+      constructor
+      · intro h
+        constructor
+        · by_contra hlt
+          push_neg at hlt
+          rw [abs_of_neg (by linarith), abs_of_neg (by linarith)] at h
+          linarith
+        · by_contra hgt
+          push_neg at hgt
+          rw [abs_of_pos (by linarith), abs_of_pos (by linarith)] at h
+          linarith
+      · rintro ⟨h1, h2⟩
+        rw [abs_of_nonneg (by linarith), abs_of_nonpos (by linarith)]
+        ring
+- id: sqrt_of_square_is_abs
+  kind: gap
+  level: high
+  topic: 平方根・平方の平方根
+  statement: 実数$a$について$\sqrt{a^2}=|a|$である。$a$の符号を限定しない形である。
+  statement_en: For every real a, with no sign assumption, √(a²) = |a|.
+  assumptions:
+  - $a$は実数
+  quantifiers:
+  - 任意の実数$a$
+  conclusion: $\sqrt{a^2}=|a|$が成り立つ。
+  answer: |
+    $a$を実数とする。$|a|\geq 0$であり、$|a|^2=a^2$である。$\sqrt{a^2}$は、$2$乗して$a^2$になる$0$以上の実数のことであり、そのような実数はただ一つである。よって$\sqrt{a^2}=|a|$である。
+  strategy: Check that |a| is the nonnegative number whose square is a².
+  sketch:
+  - 'derive: |a| is nonnegative and |a|² = a².'
+  - 'apply_theorem: The nonnegative square root of a² is unique.'
+  - 'conclude: Therefore √(a²) = |a|.'
+  openmath: (forall (a) (= (root (^ a 2) 2) (abs a)))
+  hard_negative:
+    statement: すべての実数$a$で$\sqrt{a^2}=a$である。
+    reason: $a=-1$なら左辺は$1$、右辺は$-1$である。$a\geq 0$のときだけ$\sqrt{a^2}=a$となる。
+  target: |
+    ∀ a : ℝ, Real.sqrt (a ^ 2) = |a|
+  proof: |
+    by
+      intro a
+      exact Real.sqrt_sq_eq_abs a
+- id: sqrt_eq_iff_nonneg_and_square
+  kind: gap
+  level: high
+  topic: 平方根・定義による言い換え
+  statement: $x\geq 0$と実数$a$について、$\sqrt{x}=a$であることと、$a\geq 0$かつ$a^2=x$であることは同値である。
+  statement_en: For real x ≥ 0 and real a, √x = a if and only if a ≥ 0 and a² = x.
+  assumptions:
+  - $x,a$は実数
+  - $x\geq 0$
+  quantifiers:
+  - 任意の実数$x,a$
+  conclusion: $\sqrt{x}=a$と「$a\geq 0$かつ$a^2=x$」は同値である。
+  answer: |
+    $x,a$を実数とし、$x\geq 0$とする。$\sqrt{x}$は、$2$乗して$x$になる$0$以上の実数である。$\sqrt{x}=a$なら、$a\geq 0$かつ$a^2=x$である。
+    逆に$a\geq 0$かつ$a^2=x$とする。$(a-\sqrt{x})(a+\sqrt{x})=a^2-x=0$である。$a+\sqrt{x}=0$なら$a,\sqrt{x}\geq 0$より$a=\sqrt{x}=0$であり、そうでなければ$a-\sqrt{x}=0$である。いずれの場合も$a=\sqrt{x}$である。
+  strategy: Use the definition one way and factor the difference of squares the other way.
+  sketch:
+  - 'derive: By definition, √x = a gives a ≥ 0 and a² = x.'
+  - 'derive: Conversely, (a - √x)(a + √x) = a² - x = 0.'
+  - 'case_split: Consider whether the factor a + √x vanishes.'
+  - 'conclude: In both cases a = √x.'
+  openmath: (forall (x a) (-> (>= x 0) (<-> (= (root x 2) a) (and (>= a 0) (= (^ a 2) x)))))
+  hard_negative:
+    statement: $x\geq 0$のとき、$\sqrt{x}=a$と$a^2=x$は同値である。
+    reason: $x=1$、$a=-1$なら$a^2=x$だが$\sqrt{x}=1\neq a$である。$a\geq 0$の条件を落とせない。
+  target: |
+    ∀ x a : ℝ, 0 ≤ x → (Real.sqrt x = a ↔ 0 ≤ a ∧ a ^ 2 = x)
+  proof: |
+    by
+      intro x a hx
+      constructor
+      · rintro rfl
+        exact ⟨Real.sqrt_nonneg x, Real.sq_sqrt hx⟩
+      · rintro ⟨ha, rfl⟩
+        exact Real.sqrt_sq ha
+- id: sqrt_mul_sqrt_of_nonneg
+  kind: gap
+  level: middle
+  topic: 平方根・積の性質
+  statement: 実数$a,b\geq 0$について$\sqrt{a}\sqrt{b}=\sqrt{ab}$である。
+  statement_en: For real a, b ≥ 0, √a √b = √(ab).
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$かつ$b\geq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{a}\sqrt{b}=\sqrt{ab}$が成り立つ。
+  answer: |
+    $a,b$を$0$以上の実数とする。$\sqrt{a}\sqrt{b}\geq 0$であり、$(\sqrt{a}\sqrt{b})^2=(\sqrt{a})^2(\sqrt{b})^2=ab$である。$\sqrt{ab}$は$2$乗して$ab$になるただ一つの$0$以上の実数なので、$\sqrt{a}\sqrt{b}=\sqrt{ab}$である。
+  strategy: Show the product is the nonnegative square root of ab.
+  sketch:
+  - 'derive: The product √a √b is nonnegative.'
+  - 'derive: Its square is ab.'
+  - 'conclude: By uniqueness of the nonnegative root it equals √(ab).'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (= (* (root a 2) (root b 2)) (root (* a b) 2))))
+  hard_negative:
+    statement: $ab\geq 0$なら$\sqrt{a}\sqrt{b}=\sqrt{ab}$である。
+    reason: $a=b=-1$なら$ab=1\geq 0$だが、$\sqrt{a}$は実数の範囲で定義されない。$a,b$それぞれが$0$以上である必要がある。
+  target: |
+    ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → Real.sqrt a * Real.sqrt b = Real.sqrt (a * b)
+  proof: |
+    by
+      intro a b ha _
+      exact (Real.sqrt_mul ha b).symm
+- id: sqrt_lt_sqrt_iff_of_nonneg
+  kind: gap
+  level: middle
+  topic: 平方根・大小関係
+  statement: 実数$a,b\geq 0$について、$\sqrt{a}<\sqrt{b}$であることと$a<b$であることは同値である。
+  statement_en: For real a, b ≥ 0, √a < √b if and only if a < b.
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$かつ$b\geq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{a}<\sqrt{b}$と$a<b$は同値である。
+  answer: |
+    $a,b$を$0$以上の実数とする。$\sqrt{a}<\sqrt{b}$なら、$\sqrt{b}>0$であり、$b-a=(\sqrt{b}-\sqrt{a})(\sqrt{b}+\sqrt{a})>0$となるので$a<b$である。
+    逆に$a<b$とする。$\sqrt{b}\leq\sqrt{a}$と仮定すると、$0\leq\sqrt{b}\leq\sqrt{a}$の平方をとって$b\leq a$となり、矛盾する。よって$\sqrt{a}<\sqrt{b}$である。
+  strategy: Factor b - a for one direction and argue by contradiction for the other.
+  sketch:
+  - 'derive: b - a = (√b - √a)(√b + √a).'
+  - 'derive: If √a < √b, both factors are positive, so a < b.'
+  - 'contradiction: If a < b but √b ≤ √a, then squaring nonnegative numbers gives b ≤ a.'
+  - 'conclude: The two inequalities are equivalent.'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (<-> (< (root a 2) (root b 2)) (< a b))))
+  hard_negative:
+    statement: 実数$x,y$について、$x<y$と$x^2<y^2$は同値である。
+    reason: $x=-2$、$y=1$なら$x<y$だが$x^2>y^2$である。平方根と違い、$x,y$が$0$以上という条件がないと平方は大小を保たない。
+  target: |
+    ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → (Real.sqrt a < Real.sqrt b ↔ a < b)
+  proof: |
+    by
+      intro a b ha _
+      exact Real.sqrt_lt_sqrt_iff ha
+- id: sqrt_of_sum_le_sum_of_sqrts
+  kind: gap
+  level: high
+  topic: 平方根・和の平方根の評価と等号条件
+  statement: 実数$a,b\geq 0$について$\sqrt{a+b}\leq\sqrt{a}+\sqrt{b}$であり、等号が成り立つことと$ab=0$であることは同値である。
+  statement_en: For real a, b ≥ 0, √(a+b) ≤ √a + √b, and equality holds if and only if ab = 0.
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$かつ$b\geq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{a+b}\leq\sqrt{a}+\sqrt{b}$であり、等号と$ab=0$は同値である。
+  answer: |
+    $a,b$を$0$以上の実数とする。$(\sqrt{a}+\sqrt{b})^2=a+b+2\sqrt{a}\sqrt{b}\geq a+b$である。$0$以上の二数の大小は平方の大小と一致するので、$\sqrt{a+b}\leq\sqrt{a}+\sqrt{b}$である。
+    等号が成り立つことは、両辺の平方が等しいこと、すなわち$\sqrt{a}\sqrt{b}=0$と同値である。これは$a=0$または$b=0$と同値であり、$ab=0$と同値である。
+  strategy: Compare the squares of the two nonnegative sides.
+  sketch:
+  - 'derive: The square of √a + √b is a + b + 2√a√b.'
+  - 'derive: This is at least a + b, which gives the inequality.'
+  - 'translate: Equality of nonnegative numbers means equality of their squares.'
+  - 'conclude: So equality holds exactly when √a√b = 0, that is ab = 0.'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (and (<= (root (+ a b) 2) (+ (root a 2) (root b 2))) (<-> (= (root (+ a b) 2) (+ (root a 2) (root b 2))) (= (* a b) 0)))))
+  hard_negative:
+    statement: $a,b\geq 0$なら$\sqrt{a+b}=\sqrt{a}+\sqrt{b}$である。
+    reason: $a=b=1$なら左辺は$\sqrt{2}$、右辺は$2$である。平方根は和に分配しない。
+  target: |
+    ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → Real.sqrt (a + b) ≤ Real.sqrt a + Real.sqrt b ∧ (Real.sqrt (a + b) = Real.sqrt a + Real.sqrt b ↔ a * b = 0)
+  proof: |
+    by
+      intro a b ha hb
+      have hsa := Real.sq_sqrt ha
+      have hsb := Real.sq_sqrt hb
+      have na := Real.sqrt_nonneg a
+      have nb := Real.sqrt_nonneg b
+      have hab : 0 ≤ a + b := add_nonneg ha hb
+      refine ⟨Real.sqrt_le_iff.mpr ⟨add_nonneg na nb, by nlinarith [mul_nonneg na nb]⟩, ?_, ?_⟩
+      · intro h
+        have hs := Real.sq_sqrt hab
+        rw [h] at hs
+        have hp : Real.sqrt a * Real.sqrt b = 0 := by nlinarith
+        rcases mul_eq_zero.mp hp with h0 | h0
+        · rw [(Real.sqrt_eq_zero ha).mp h0, zero_mul]
+        · rw [(Real.sqrt_eq_zero hb).mp h0, mul_zero]
+      · intro h
+        rcases mul_eq_zero.mp h with h0 | h0
+        · rw [h0]
+          simp
+        · rw [h0]
+          simp
+- id: rationalize_denominator_two_square_roots
+  kind: textbook
+  level: high
+  topic: 平方根・分母の有理化
+  statement: 実数$a,b\geq 0$について$a\neq b$なら、$\dfrac{1}{\sqrt{a}+\sqrt{b}}=\dfrac{\sqrt{a}-\sqrt{b}}{a-b}$かつ$\dfrac{1}{\sqrt{a}-\sqrt{b}}=\dfrac{\sqrt{a}+\sqrt{b}}{a-b}$である。
+  statement_en: For real a, b ≥ 0 with a ≠ b, 1/(√a + √b) = (√a - √b)/(a - b) and 1/(√a - √b) = (√a + √b)/(a - b).
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$、$b\geq 0$、$a\neq b$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\dfrac{1}{\sqrt{a}+\sqrt{b}}=\dfrac{\sqrt{a}-\sqrt{b}}{a-b}$と$\dfrac{1}{\sqrt{a}-\sqrt{b}}=\dfrac{\sqrt{a}+\sqrt{b}}{a-b}$が成り立つ。
+  answer: |
+    $a,b$を$0$以上の実数とし、$a\neq b$とする。$(\sqrt{a}+\sqrt{b})(\sqrt{a}-\sqrt{b})=a-b\neq 0$なので、$\sqrt{a}+\sqrt{b}$と$\sqrt{a}-\sqrt{b}$はどちらも$0$でない。$\dfrac{1}{\sqrt{a}+\sqrt{b}}$の分母と分子に$\sqrt{a}-\sqrt{b}$を掛けると$\dfrac{\sqrt{a}-\sqrt{b}}{a-b}$となる。$\dfrac{1}{\sqrt{a}-\sqrt{b}}$の分母と分子に$\sqrt{a}+\sqrt{b}$を掛けると$\dfrac{\sqrt{a}+\sqrt{b}}{a-b}$となる。
+  strategy: Multiply numerator and denominator by the conjugate.
+  sketch:
+  - 'derive: The product of the two conjugates is a - b, which is nonzero.'
+  - 'derive: So neither conjugate vanishes.'
+  - 'conclude: Multiplying top and bottom by the other conjugate gives both formulas.'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0) (!= a b)) (and (= (/ 1 (+ (root a 2) (root b 2))) (/ (- (root a 2) (root b 2)) (- a b))) (= (/ 1 (- (root a 2) (root b 2))) (/ (+ (root a 2) (root b 2)) (- a b))))))
+  hard_negative:
+    statement: $a=b>0$でも$\dfrac{1}{\sqrt{a}+\sqrt{b}}=\dfrac{\sqrt{a}-\sqrt{b}}{a-b}$である。
+    reason: $a=b$なら右辺の分母が$0$になり、定義されない。左辺は$\dfrac{1}{2\sqrt{a}}$として定義されるので、この場合は別に扱う。
+  target: |
+    ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → a ≠ b → 1 / (Real.sqrt a + Real.sqrt b) = (Real.sqrt a - Real.sqrt b) / (a - b) ∧ 1 / (Real.sqrt a - Real.sqrt b) = (Real.sqrt a + Real.sqrt b) / (a - b)
+  proof: |
+    by
+      intro a b ha hb hab
+      have hs := Real.sq_sqrt ha
+      have ht := Real.sq_sqrt hb
+      have hab' : a - b ≠ 0 := sub_ne_zero.mpr hab
+      have hprod : (Real.sqrt a + Real.sqrt b) * (Real.sqrt a - Real.sqrt b) = a - b := by
+        linear_combination hs - ht
+      have hsum : Real.sqrt a + Real.sqrt b ≠ 0 := by
+        intro h
+        rw [h, zero_mul] at hprod
+        exact hab' hprod.symm
+      have hdiff : Real.sqrt a - Real.sqrt b ≠ 0 := by
+        intro h
+        rw [h, mul_zero] at hprod
+        exact hab' hprod.symm
+      constructor
+      · rw [div_eq_div_iff hsum hab']
+        linear_combination -hprod
+      · rw [div_eq_div_iff hdiff hab']
+        linear_combination -hprod
+- id: rationalize_denominator_linear_in_surd
+  kind: gap
+  level: high
+  topic: 平方根・p+q√rの逆数
+  statement: 実数$p,q,r$について$r\geq 0$かつ$p^2\neq q^2 r$なら、$\dfrac{1}{p+q\sqrt{r}}=\dfrac{p-q\sqrt{r}}{p^2-q^2 r}$である。
+  statement_en: For real p, q, r with r ≥ 0 and p² ≠ q²r, 1/(p + q√r) = (p - q√r)/(p² - q²r).
+  assumptions:
+  - $p,q,r$は実数
+  - $r\geq 0$
+  - $p^2\neq q^2 r$
+  quantifiers:
+  - 任意の実数$p,q,r$
+  conclusion: $\dfrac{1}{p+q\sqrt{r}}=\dfrac{p-q\sqrt{r}}{p^2-q^2 r}$が成り立つ。
+  answer: |
+    $p,q,r$を実数とし、$r\geq 0$かつ$p^2\neq q^2 r$とする。$(\sqrt{r})^2=r$より$(p+q\sqrt{r})(p-q\sqrt{r})=p^2-q^2 r\neq 0$である。よって$p+q\sqrt{r}\neq 0$であり、$\dfrac{1}{p+q\sqrt{r}}$の分母と分子に$p-q\sqrt{r}$を掛けることができる。すると$\dfrac{p-q\sqrt{r}}{p^2-q^2 r}$を得る。
+  strategy: Multiply numerator and denominator by the conjugate p - q√r.
+  sketch:
+  - 'derive: The conjugate product is p² - q²r.'
+  - 'derive: The hypothesis makes this nonzero, so p + q√r ≠ 0.'
+  - 'conclude: Multiplying top and bottom by the conjugate gives the formula.'
+  openmath: (forall (p q r) (-> (and (>= r 0) (!= (^ p 2) (* (^ q 2) r))) (= (/ 1 (+ p (* q (root r 2)))) (/ (- p (* q (root r 2))) (- (^ p 2) (* (^ q 2) r))))))
+  hard_negative:
+    statement: $r\geq 0$であれば、$p,q$によらず$p+q\sqrt{r}$の逆数はこの式で表せる。
+    reason: $p=2$、$q=-1$、$r=4$なら$p+q\sqrt{r}=0$であり、逆数は存在しない。$p^2\neq q^2 r$の条件を落とせない。
+  target: |
+    ∀ p q r : ℝ, 0 ≤ r → p ^ 2 - q ^ 2 * r ≠ 0 → 1 / (p + q * Real.sqrt r) = (p - q * Real.sqrt r) / (p ^ 2 - q ^ 2 * r)
+  proof: |
+    by
+      intro p q r hr hn
+      have hs := Real.sq_sqrt hr
+      have hprod : (p + q * Real.sqrt r) * (p - q * Real.sqrt r) = p ^ 2 - q ^ 2 * r := by
+        linear_combination (-q ^ 2) * hs
+      have hden : p + q * Real.sqrt r ≠ 0 := by
+        intro h
+        rw [h, zero_mul] at hprod
+        exact hn hprod.symm
+      rw [div_eq_div_iff hden hn]
+      linear_combination -hprod
+- id: rational_coefficients_unique_for_irrational_surd
+  kind: textbook
+  level: high
+  topic: 平方根・無理数の係数比較
+  statement: 有理数$p,q,s,t$と実数$r\geq 0$について、$\sqrt{r}$が無理数で$p+q\sqrt{r}=s+t\sqrt{r}$なら、$p=s$かつ$q=t$である。
+  statement_en: For rational p, q, s, t and real r ≥ 0 with √r irrational, p + q√r = s + t√r implies p = s and q = t.
+  assumptions:
+  - $p,q,s,t$は有理数
+  - $r$は$0$以上の実数で、$\sqrt{r}$は無理数
+  - $p+q\sqrt{r}=s+t\sqrt{r}$
+  quantifiers:
+  - 任意の有理数$p,q,s,t$と実数$r$
+  conclusion: $p=s$かつ$q=t$である。
+  answer: |
+    $p,q,s,t$を有理数、$r$を$0$以上の実数とし、$\sqrt{r}$は無理数で$p+q\sqrt{r}=s+t\sqrt{r}$とする。$q\neq t$と仮定すると、$\sqrt{r}=\dfrac{s-p}{q-t}$となる。右辺は有理数なので、$\sqrt{r}$が無理数であることに反する。よって$q=t$である。これを等式に代入すると$p=s$を得る。
+  strategy: A difference in the surd coefficients would make √r rational.
+  sketch:
+  - 'contradiction: Suppose q ≠ t.'
+  - 'derive: Solving for √r gives (s - p)/(q - t), a rational number.'
+  - 'derive: This contradicts the irrationality of √r, so q = t.'
+  - 'conclude: Cancelling the surd term gives p = s.'
+  openmath: (forall (p q s t r) (-> (and (in p Q) (in q Q) (in s Q) (in t Q) (>= r 0) (notin (root r 2) Q) (= (+ p (* q (root r 2))) (+ s (* t (root r 2))))) (and (= p s) (= q t))))
+  hard_negative:
+    statement: 実数$p,q,s,t$についても、$\sqrt{r}$が無理数で$p+q\sqrt{r}=s+t\sqrt{r}$なら$p=s$かつ$q=t$である。
+    reason: $r=2$、$p=\sqrt{2}$、$q=0$、$s=0$、$t=1$が反例である。係数が有理数であることが必要である。
+  target: |
+    ∀ (p q s t : ℚ) (r : ℝ), 0 ≤ r → Irrational (Real.sqrt r) → (p : ℝ) + (q : ℝ) * Real.sqrt r = (s : ℝ) + (t : ℝ) * Real.sqrt r → p = s ∧ q = t
+  proof: |
+    by
+      intro p q s t r _ hirr h
+      by_cases hqt : q = t
+      · subst hqt
+        have hps : (p : ℝ) = (s : ℝ) := by linarith
+        exact ⟨by exact_mod_cast hps, rfl⟩
+      · exfalso
+        apply hirr
+        have hne : (q : ℝ) - (t : ℝ) ≠ 0 := by
+          exact sub_ne_zero.mpr (by exact_mod_cast hqt)
+        refine ⟨(s - p) / (q - t), ?_⟩
+        push_cast
+        rw [div_eq_iff hne]
+        linear_combination -h
+- id: nested_square_root_plus_form
+  kind: gap
+  level: high
+  topic: 二重根号・和の形
+  statement: 実数$a,b\geq 0$について$\sqrt{a+b+2\sqrt{ab}}=\sqrt{a}+\sqrt{b}$である。
+  statement_en: For real a, b ≥ 0, √(a + b + 2√(ab)) = √a + √b.
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$かつ$b\geq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{a+b+2\sqrt{ab}}=\sqrt{a}+\sqrt{b}$が成り立つ。
+  answer: |
+    $a,b$を$0$以上の実数とする。$\sqrt{ab}=\sqrt{a}\sqrt{b}$なので、$a+b+2\sqrt{ab}=(\sqrt{a}+\sqrt{b})^2$である。$\sqrt{a}+\sqrt{b}\geq 0$なので、$0$以上の数の平方の平方根はもとの数に等しく、$\sqrt{a+b+2\sqrt{ab}}=\sqrt{a}+\sqrt{b}$である。
+  strategy: Recognize the radicand as the square of a nonnegative number.
+  sketch:
+  - 'derive: The radicand equals (√a + √b)².'
+  - 'derive: The number √a + √b is nonnegative.'
+  - 'conclude: Taking the square root returns √a + √b.'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (= (root (+ (+ a b) (* 2 (root (* a b) 2))) 2) (+ (root a 2) (root b 2)))))
+  hard_negative:
+    statement: $\sqrt{a+b+\sqrt{ab}}=\sqrt{a}+\sqrt{b}$である。
+    reason: $a=b=1$なら左辺は$\sqrt{3}$、右辺は$2$である。根号の前の係数$2$が必要である。
+  target: |
+    ∀ a b : ℝ, 0 ≤ a → 0 ≤ b → Real.sqrt (a + b + 2 * Real.sqrt (a * b)) = Real.sqrt a + Real.sqrt b
+  proof: |
+    by
+      intro a b ha hb
+      have hs := Real.sq_sqrt ha
+      have ht := Real.sq_sqrt hb
+      rw [Real.sqrt_mul ha]
+      have h : a + b + 2 * (Real.sqrt a * Real.sqrt b) = (Real.sqrt a + Real.sqrt b) ^ 2 := by
+        linear_combination -hs - ht
+      rw [h]
+      exact Real.sqrt_sq (add_nonneg (Real.sqrt_nonneg a) (Real.sqrt_nonneg b))
+- id: nested_square_root_minus_form_ordered
+  kind: gap
+  level: high
+  topic: 二重根号・差の形
+  statement: 実数$a,b\geq 0$について$\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$である。大小が分かっていれば絶対値は外れ、$a\geq b$なら$\sqrt{a}-\sqrt{b}$、$a\leq b$なら$\sqrt{b}-\sqrt{a}$に等しい。
+  statement_en: For real a, b ≥ 0, √(a + b - 2√(ab)) = |√a - √b|. If a ≥ b this is √a - √b, and if a ≤ b it is √b - √a.
+  assumptions:
+  - $a,b$は実数
+  - $a\geq 0$かつ$b\geq 0$
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$が成り立つ。
+  answer: $a,b$を$0$以上の実数とする。$\sqrt{ab}=\sqrt{a}\sqrt{b}$なので、$a+b-2\sqrt{ab}=(\sqrt{a})^2+(\sqrt{b})^2-2\sqrt{a}\sqrt{b}=(\sqrt{a}-\sqrt{b})^2$である。任意の実数$u$について$\sqrt{u^2}=|u|$なので、$\sqrt{a+b-2\sqrt{ab}}=|\sqrt{a}-\sqrt{b}|$を得る。
+  strategy: Recognize the radicand as a square and use the order to choose the sign.
+  sketch:
+  - 'derive: The radicand equals (√a - √b)².'
+  - 'derive: The hypothesis a ≥ b makes √a - √b nonnegative.'
+  - 'conclude: Taking the square root returns √a - √b.'
+  openmath: (forall (a b) (-> (and (>= a 0) (>= b 0)) (= (root (- (+ a b) (* 2 (root (* a b) 2))) 2) (abs (- (root a 2) (root b 2))))))
+  hard_negative:
+    statement: $a,b\geq 0$の大小によらず$\sqrt{a+b-2\sqrt{ab}}=\sqrt{a}-\sqrt{b}$である。
+    reason: $a=1$、$b=4$なら左辺は$\sqrt{5-4}=1$、右辺は$-1$である。絶対値を付けなければ$a\geq b$が必要である。
+  target: '∀ a b : ℝ, 0 ≤ a → 0 ≤ b → Real.sqrt (a + b - 2 * Real.sqrt (a * b)) = |Real.sqrt a - Real.sqrt b|'
+  proof: |-
+    by
+      intro a b ha hb
+      have hs := Real.sq_sqrt ha
+      have ht := Real.sq_sqrt hb
+      rw [Real.sqrt_mul ha]
+      have h : a + b - 2 * (Real.sqrt a * Real.sqrt b) = (Real.sqrt a - Real.sqrt b) ^ 2 := by
+        linear_combination -hs - ht
+      rw [h, Real.sqrt_sq_eq_abs]
+- id: nested_square_root_general_formula
+  kind: textbook
+  level: high
+  topic: 二重根号・一般の外し方
+  statement: 実数$p,q$が$p\geq 0$、$0\leq q\leq p^2$を満たすとする。$s=\sqrt{p^2-q}$とおくと、$\sqrt{p+\sqrt{q}}=\sqrt{\dfrac{p+s}{2}}+\sqrt{\dfrac{p-s}{2}}$かつ$\sqrt{p-\sqrt{q}}=\sqrt{\dfrac{p+s}{2}}-\sqrt{\dfrac{p-s}{2}}$である。
+  statement_en: Let real p, q satisfy p ≥ 0 and 0 ≤ q ≤ p². With s = √(p² - q), √(p + √q) = √((p+s)/2) + √((p-s)/2) and √(p - √q) = √((p+s)/2) - √((p-s)/2).
+  assumptions:
+  - $p,q$は実数
+  - $p\geq 0$
+  - $0\leq q\leq p^2$
+  quantifiers:
+  - 任意の実数$p,q$
+  conclusion: $s=\sqrt{p^2-q}$として、$\sqrt{p\pm\sqrt{q}}=\sqrt{\dfrac{p+s}{2}}\pm\sqrt{\dfrac{p-s}{2}}$（複号同順）である。
+  answer: |
+    $p,q$を実数とし、$p\geq 0$、$0\leq q\leq p^2$とする。$s=\sqrt{p^2-q}$とおくと、$s\geq 0$、$s^2=p^2-q$である。$s^2\leq p^2$と$p\geq 0$より$s\leq p$である。
+    $u=\sqrt{\dfrac{p+s}{2}}$、$v=\sqrt{\dfrac{p-s}{2}}$とおく。根号の中は$0$以上で、$u\geq v\geq 0$である。また$u^2+v^2=p$であり、$u^2v^2=\dfrac{p^2-s^2}{4}=\dfrac{q}{4}$である。$2uv\geq 0$かつ$(2uv)^2=q$より、$\sqrt{q}=2uv$である。
+    したがって$p+\sqrt{q}=u^2+v^2+2uv=(u+v)^2$、$p-\sqrt{q}=u^2+v^2-2uv=(u-v)^2$である。$u+v\geq 0$かつ$u-v\geq 0$なので、平方根をとると$\sqrt{p+\sqrt{q}}=u+v$、$\sqrt{p-\sqrt{q}}=u-v$を得る。
+  strategy: Introduce u and v as the claimed radicals and write each radicand as a square.
+  sketch:
+  - 'setup: Put s = √(p² - q), noting 0 ≤ s ≤ p.'
+  - 'construct: Put u = √((p+s)/2) and v = √((p-s)/2), so u ≥ v ≥ 0.'
+  - 'derive: Then u² + v² = p and (2uv)² = p² - s² = q.'
+  - 'derive: Since 2uv ≥ 0, this gives √q = 2uv.'
+  - 'derive: So p + √q = (u + v)² and p - √q = (u - v)².'
+  - 'conclude: Take square roots using u + v ≥ 0 and u - v ≥ 0.'
+  openmath: (forall (p q) (-> (and (>= p 0) (>= q 0) (<= q (^ p 2))) (and (= (root (+ p (root q 2)) 2) (+ (root (/ (+ p (root (- (^ p 2) q) 2)) 2) 2) (root (/ (- p (root (- (^ p 2) q) 2)) 2) 2))) (= (root (- p (root q 2)) 2) (- (root (/ (+ p (root (- (^ p 2) q) 2)) 2) 2) (root (/ (- p (root (- (^ p 2) q) 2)) 2) 2))))))
+  hard_negative:
+    statement: $q>p^2$でもこの公式で二重根号を外せる。
+    reason: $p=1$、$q=4$なら$p^2-q<0$かつ$p-\sqrt{q}<0$で、実数の範囲では根号の中が負になり定義されない。
+  target: |
+    ∀ p q : ℝ, 0 ≤ p → 0 ≤ q → q ≤ p ^ 2 → Real.sqrt (p + Real.sqrt q) = Real.sqrt ((p + Real.sqrt (p ^ 2 - q)) / 2) + Real.sqrt ((p - Real.sqrt (p ^ 2 - q)) / 2) ∧ Real.sqrt (p - Real.sqrt q) = Real.sqrt ((p + Real.sqrt (p ^ 2 - q)) / 2) - Real.sqrt ((p - Real.sqrt (p ^ 2 - q)) / 2)
+  proof: |
+    by
+      intro p q hp hq hqp
+      have hd : 0 ≤ p ^ 2 - q := by linarith
+      have hs2 : Real.sqrt (p ^ 2 - q) ^ 2 = p ^ 2 - q := Real.sq_sqrt hd
+      have hs0 : 0 ≤ Real.sqrt (p ^ 2 - q) := Real.sqrt_nonneg _
+      have hsp : Real.sqrt (p ^ 2 - q) ≤ p := Real.sqrt_le_iff.mpr ⟨hp, by linarith⟩
+      generalize Real.sqrt (p ^ 2 - q) = s at hs2 hs0 hsp ⊢
+      have hx : 0 ≤ (p + s) / 2 := by linarith
+      have hy : 0 ≤ (p - s) / 2 := by linarith
+      have hu2 := Real.sq_sqrt hx
+      have hv2 := Real.sq_sqrt hy
+      have hu0 := Real.sqrt_nonneg ((p + s) / 2)
+      have hv0 := Real.sqrt_nonneg ((p - s) / 2)
+      have hle : Real.sqrt ((p - s) / 2) ≤ Real.sqrt ((p + s) / 2) := Real.sqrt_le_sqrt (by linarith)
+      generalize Real.sqrt ((p + s) / 2) = u at hu2 hu0 hle ⊢
+      generalize Real.sqrt ((p - s) / 2) = v at hv2 hv0 hle ⊢
+      have huv : 0 ≤ 2 * u * v := by
+        have := mul_nonneg hu0 hv0
+        linarith
+      have hqeq : q = (2 * u * v) ^ 2 := by
+        have h4 : (2 * u * v) ^ 2 = 4 * u ^ 2 * v ^ 2 := by ring
+        rw [h4, hu2, hv2]
+        linear_combination hs2
+      have hrq : Real.sqrt q = 2 * u * v := by
+        rw [hqeq]
+        exact Real.sqrt_sq huv
+      have hplus : p + 2 * u * v = (u + v) ^ 2 := by
+        linear_combination -hu2 - hv2
+      have hminus : p - 2 * u * v = (u - v) ^ 2 := by
+        linear_combination -hu2 - hv2
+      rw [hrq, hplus, hminus]
+      exact ⟨Real.sqrt_sq (add_nonneg hu0 hv0), Real.sqrt_sq (sub_nonneg.mpr hle)⟩
+- id: sum_of_cubes_in_sum_and_product
+  kind: gap
+  level: high
+  topic: 対称式・和と積による立方の和
+  statement: 実数$x,y,s,p$が$x+y=s$、$xy=p$を満たすなら、$x^3+y^3=s^3-3ps$である。
+  statement_en: If real x, y, s, p satisfy x + y = s and xy = p, then x³ + y³ = s³ - 3ps.
+  assumptions:
+  - $x,y,s,p$は実数
+  - $x+y=s$かつ$xy=p$
+  quantifiers:
+  - 任意の実数$x,y,s,p$
+  conclusion: $x^3+y^3=s^3-3ps$が成り立つ。
+  answer: |
+    $x,y,s,p$を実数とし、$x+y=s$、$xy=p$とする。$s^3=(x+y)^3=x^3+3x^2y+3xy^2+y^3=x^3+y^3+3xy(x+y)=x^3+y^3+3ps$である。移項すると$x^3+y^3=s^3-3ps$を得る。
+  strategy: Expand the cube of the sum and regroup the mixed terms.
+  sketch:
+  - 'derive: Expand s³ = (x + y)³.'
+  - 'derive: The mixed terms equal 3xy(x + y) = 3ps.'
+  - 'conclude: Rearranging gives x³ + y³ = s³ - 3ps.'
+  openmath: (forall (x y s p) (-> (and (= (+ x y) s) (= (* x y) p)) (= (+ (^ x 3) (^ y 3)) (- (^ s 3) (* 3 (* p s))))))
+  hard_negative:
+    statement: $x^3+y^3=s^3-3p$である。
+    reason: $x=y=1$なら$s=2$、$p=1$で、左辺は$2$、右辺は$5$である。$3p$にはさらに$s$が掛かる。
+  target: |
+    ∀ x y s p : ℝ, x + y = s → x * y = p → x ^ 3 + y ^ 3 = s ^ 3 - 3 * p * s
+  proof: |
+    by
+      intro x y s p hs hp
+      subst hs hp
+      ring
+- id: power_sum_recurrence_two_variables
+  kind: gap
+  level: high
+  topic: 対称式・べき乗和の漸化式
+  statement: 実数$x,y,s,p$が$x+y=s$、$xy=p$を満たすなら、すべての自然数$n$で$x^{n+2}+y^{n+2}=s(x^{n+1}+y^{n+1})-p(x^n+y^n)$である。ただし$x^0=y^0=1$とする。
+  statement_en: If real x, y, s, p satisfy x + y = s and xy = p, then for every natural number n, with x^0 = y^0 = 1, x^(n+2) + y^(n+2) = s(x^(n+1) + y^(n+1)) - p(x^n + y^n).
+  assumptions:
+  - $x,y,s,p$は実数
+  - $x+y=s$かつ$xy=p$
+  - $n$は$0$以上の整数で、$x^0=y^0=1$とする
+  quantifiers:
+  - 任意の実数$x,y,s,p$と$0$以上の整数$n$
+  conclusion: $x^{n+2}+y^{n+2}=s(x^{n+1}+y^{n+1})-p(x^n+y^n)$が成り立つ。
+  answer: |
+    $x,y,s,p$を実数とし、$x+y=s$、$xy=p$とする。$n$を$0$以上の整数とする。$s(x^{n+1}+y^{n+1})=(x+y)(x^{n+1}+y^{n+1})=x^{n+2}+xy^{n+1}+yx^{n+1}+y^{n+2}$である。ここで$xy^{n+1}+yx^{n+1}=xy(x^n+y^n)=p(x^n+y^n)$である。したがって$s(x^{n+1}+y^{n+1})=x^{n+2}+y^{n+2}+p(x^n+y^n)$であり、移項すると結論を得る。
+  strategy: Multiply x^(n+1) + y^(n+1) by x + y and factor xy from the mixed terms.
+  sketch:
+  - 'derive: Expand (x + y)(x^(n+1) + y^(n+1)).'
+  - 'derive: The mixed terms equal xy(x^n + y^n) = p(x^n + y^n).'
+  - 'conclude: Rearranging gives the recurrence.'
+  openmath: (forall (x y s p n) (-> (and (= (+ x y) s) (= (* x y) p) (in n N)) (= (+ (^ x (+ n 2)) (^ y (+ n 2))) (- (* s (+ (^ x (+ n 1)) (^ y (+ n 1)))) (* p (+ (^ x n) (^ y n)))))))
+  hard_negative:
+    statement: $x^{n+2}+y^{n+2}=s(x^{n+1}+y^{n+1})+p(x^n+y^n)$である。
+    reason: $x=y=1$、$n=0$なら$s=2$、$p=1$で、左辺は$2$、右辺は$6$である。第二項の符号は負である。
+  target: |
+    ∀ (x y s p : ℝ) (n : ℕ), x + y = s → x * y = p → x ^ (n + 2) + y ^ (n + 2) = s * (x ^ (n + 1) + y ^ (n + 1)) - p * (x ^ n + y ^ n)
+  proof: |
+    by
+      intro x y s p n hs hp
+      subst hs hp
+      ring
+- id: real_pair_with_given_sum_and_product_iff
+  kind: textbook
+  level: high
+  topic: 対称式・和と積が与えられた実数の存在
+  statement: 実数$s,p$について、$x+y=s$かつ$xy=p$を満たす実数$x,y$が存在することと、$4p\leq s^2$であることは同値である。
+  statement_en: For real s and p, real numbers x and y with x + y = s and xy = p exist if and only if 4p ≤ s².
+  assumptions:
+  - $s,p$は実数
+  quantifiers:
+  - 任意の実数$s,p$
+  - ある実数$x,y$
+  conclusion: $x+y=s$、$xy=p$となる実数$x,y$の存在と$4p\leq s^2$は同値である。
+  answer: |
+    $s,p$を実数とする。実数$x,y$が$x+y=s$、$xy=p$を満たすなら、$s^2-4p=(x-y)^2\geq 0$なので$4p\leq s^2$である。
+    逆に$4p\leq s^2$とする。$d=\sqrt{s^2-4p}$とおくと$d$は実数で、$d^2=s^2-4p$である。$x=\dfrac{s+d}{2}$、$y=\dfrac{s-d}{2}$とおくと、$x+y=s$であり、$xy=\dfrac{s^2-d^2}{4}=p$である。
+  strategy: Use the square of x - y for one direction and an explicit square root for the other.
+  sketch:
+  - 'derive: From a real pair, s² - 4p = (x - y)², which is nonnegative.'
+  - 'construct: Conversely, put d = √(s² - 4p), x = (s + d)/2 and y = (s - d)/2.'
+  - 'derive: Then x + y = s.'
+  - 'conclude: Also xy = (s² - d²)/4 = p.'
+  openmath: (forall (s p) (-> (and (in s R) (in p R)) (<-> (exists (x y) (and (in x R) (in y R) (= (+ x y) s) (= (* x y) p))) (<= (* 4 p) (^ s 2)))))
+  hard_negative:
+    statement: $x+y=s$、$xy=p$となる実数の存在は$4p<s^2$と同値である。
+    reason: $s=2$、$p=1$では$x=y=1$が存在するが、$4p=s^2$である。等号の場合を除けない。
+  target: |
+    ∀ s p : ℝ, (∃ x y : ℝ, x + y = s ∧ x * y = p) ↔ 4 * p ≤ s ^ 2
+  proof: |
+    by
+      intro s p
+      constructor
+      · rintro ⟨x, y, rfl, rfl⟩
+        nlinarith [sq_nonneg (x - y)]
+      · intro h
+        have hd := Real.sq_sqrt (sub_nonneg.mpr h)
+        refine ⟨(s + Real.sqrt (s ^ 2 - 4 * p)) / 2, (s - Real.sqrt (s ^ 2 - 4 * p)) / 2, by ring, ?_⟩
+        linear_combination (-1 / 4) * hd
+- id: reciprocal_sum_equals_reciprocal_of_sum_iff
+  kind: gap
+  level: high
+  topic: 対称式・逆数の和の条件
+  statement: $0$でない実数$a,b,c$が$a+b+c\neq 0$を満たすとき、$\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=\dfrac{1}{a+b+c}$であることと、$(a+b)(b+c)(c+a)=0$であることは同値である。
+  statement_en: For nonzero real a, b, c with a + b + c ≠ 0, 1/a + 1/b + 1/c = 1/(a + b + c) if and only if (a + b)(b + c)(c + a) = 0.
+  assumptions:
+  - $a,b,c$は$0$でない実数
+  - $a+b+c\neq 0$
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: $\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=\dfrac{1}{a+b+c}$と$(a+b)(b+c)(c+a)=0$は同値である。
+  answer: |
+    $a,b,c$を$0$でない実数とし、$a+b+c\neq 0$とする。$abc(a+b+c)\neq 0$なので、与えられた等式は、両辺に$abc(a+b+c)$を掛けた$(ab+bc+ca)(a+b+c)=abc$と同値である。
+    一方、展開すると$(a+b)(b+c)(c+a)=(a+b+c)(ab+bc+ca)-abc$である。よって、与えられた等式は$(a+b)(b+c)(c+a)=0$と同値である。
+  strategy: Clear denominators and recognize the symmetric factorization.
+  sketch:
+  - 'translate: Multiply by the nonzero number abc(a + b + c).'
+  - 'derive: The equation becomes (ab + bc + ca)(a + b + c) = abc.'
+  - 'derive: Expansion gives (a+b)(b+c)(c+a) = (a+b+c)(ab+bc+ca) - abc.'
+  - 'conclude: So the equation is equivalent to (a+b)(b+c)(c+a) = 0.'
+  openmath: (forall (a b c) (-> (and (!= a 0) (!= b 0) (!= c 0) (!= (+ (+ a b) c) 0)) (<-> (= (+ (+ (/ 1 a) (/ 1 b)) (/ 1 c)) (/ 1 (+ (+ a b) c))) (= (* (* (+ a b) (+ b c)) (+ c a)) 0))))
+  hard_negative:
+    statement: この等式が成り立つなら、必ず$a+b=0$である。
+    reason: $a=2$、$b=1$、$c=-1$は等式を満たすが、$a+b=3$である。$0$になるのは$b+c$である。どの和が$0$になるかは決まらない。
+  target: |
+    ∀ a b c : ℝ, a ≠ 0 → b ≠ 0 → c ≠ 0 → a + b + c ≠ 0 → (1 / a + 1 / b + 1 / c = 1 / (a + b + c) ↔ (a + b) * (b + c) * (c + a) = 0)
+  proof: |
+    by
+      intro a b c ha hb hc hs
+      have hne : a * b * c * (a + b + c) ≠ 0 := mul_ne_zero (mul_ne_zero (mul_ne_zero ha hb) hc) hs
+      have key : 1 / a + 1 / b + 1 / c - 1 / (a + b + c) = (a + b) * (b + c) * (c + a) / (a * b * c * (a + b + c)) := by
+        field_simp
+        ring
+      rw [← sub_eq_zero, key, div_eq_zero_iff]
+      exact or_iff_left hne
+- id: fundamental_theorem_symmetric_polynomials
+  kind: named
+  level: 2
+  topic: 対称式・基本対称式の基本定理
+  statement: 対称式の基本定理。自然数$n$と実数係数の$n$変数対称多項式$f$に対して、$f$は基本対称式$e_1,\dots,e_n$の実数係数多項式として表せる。
+  statement_en: Fundamental theorem of symmetric polynomials. For a natural number n, every symmetric polynomial in n variables with real coefficients is a polynomial with real coefficients in the elementary symmetric polynomials e_1, ..., e_n.
+  assumptions:
+  - $n$は自然数
+  - $f$は実数係数の$n$変数対称多項式
+  quantifiers:
+  - 任意の$n$と$f$
+  - ある実数係数$n$変数多項式$g$
+  conclusion: $f=g(e_1,\dots,e_n)$となる$g$が存在する。
+  answer: |
+    $n$を自然数、$f$を実数係数の$n$変数$x_1,\dots,x_n$の対称多項式とする。$e_k$を$k$次の基本対称式とする。単項式$x_1^{d_1}\cdots x_n^{d_n}$の指数の組$(d_1,\dots,d_n)$に辞書式順序を入れ、$0$でない多項式で係数が$0$でない最大の単項式を先頭項とよぶ。辞書式順序は整列順序なので、指数の組についての帰納法が使える。
+    $f=0$なら$g=0$でよい。$f\neq 0$とし、先頭項を$cx_1^{d_1}\cdots x_n^{d_n}$とする。$f$は対称なので、指数を並べ替えた単項式も同じ係数で現れる。先頭項の指数は最大なので$d_1\geq d_2\geq\dots\geq d_n$である。
+    $e_k$の先頭項は$x_1\cdots x_k$であり、積の先頭項は先頭項の積である。よって$h=e_1^{d_1-d_2}e_2^{d_2-d_3}\cdots e_{n-1}^{d_{n-1}-d_n}e_n^{d_n}$の先頭項は$x_1^{d_1}\cdots x_n^{d_n}$である。したがって$f-ch$は対称多項式で、$0$であるか、先頭項の指数の組が$(d_1,\dots,d_n)$より小さい。
+    帰納法の仮定より$f-ch$は$e_1,\dots,e_n$の多項式である。$h$もそうなので、$f$も$e_1,\dots,e_n$の多項式である。
+  strategy: Remove the lexicographically leading term with a product of elementary symmetric polynomials and induct.
+  sketch:
+  - 'setup: Order monomials lexicographically, which is a well-ordering of exponent tuples.'
+  - 'derive: Symmetry forces the leading exponents to satisfy d_1 ≥ ... ≥ d_n.'
+  - 'construct: Let h be the product of e_k^(d_k - d_(k+1)), with d_(n+1) = 0.'
+  - 'derive: The polynomial h has the same leading monomial as f.'
+  - 'induction: Subtracting c h gives a symmetric polynomial with a smaller leading monomial.'
+  - 'conclude: By well-founded induction, f is a polynomial in e_1, ..., e_n.'
+  openmath: (forall (n f) (-> (and (in n N) (symmetric_polynomial f n)) (exists (g) (= (polynomial_in_elementary_symmetric g n) f))))
+  hard_negative:
+    statement: $x_1,x_2$の任意の多項式は$e_1=x_1+x_2$、$e_2=x_1x_2$の多項式として表せる。
+    reason: $e_1,e_2$の多項式は$x_1,x_2$を入れ替えても変わらないが、$x_1$は変わる。対称性の仮定が必要である。
+  target: |
+    ∀ (n : ℕ) (f : MvPolynomial (Fin n) ℝ), f.IsSymmetric → ∃ g : MvPolynomial (Fin n) ℝ, MvPolynomial.aeval (fun i : Fin n => MvPolynomial.esymm (Fin n) ℝ ((i : ℕ) + 1)) g = f
+  proof: |
+    by
+      intro n f hf
+      obtain ⟨g, hg⟩ := MvPolynomial.esymmAlgHom_fin_surjective ℝ (le_refl n) (⟨f, hf⟩ : MvPolynomial.symmetricSubalgebra (Fin n) ℝ)
+      refine ⟨g, ?_⟩
+      have h := congrArg (MvPolynomial.symmetricSubalgebra (Fin n) ℝ).val hg
+      rw [MvPolynomial.esymmAlgHom, MvPolynomial.comp_aeval_apply] at h
+      exact h
+- id: abs_sub_le_iff_closed_interval
+  kind: gap
+  level: high
+  topic: 絶対値・不等式
+  statement: 実数$a,r,x$について、$|x-a|\leq r$であることと$a-r\leq x\leq a+r$であることは同値である。
+  statement_en: For reals a, r, x, |x-a| ≤ r if and only if a-r ≤ x ≤ a+r.
+  assumptions:
+  - $a,r,x$は実数
+  quantifiers:
+  - 任意の実数$a,r,x$
+  conclusion: $|x-a|\leq r$と$a-r\leq x\leq a+r$は同値である。
+  answer: |
+    $a,r,x$を実数とし、$y=x-a$とおく。$|y|$は$y$と$-y$の大きい方なので、$|y|\leq r$は「$y\leq r$かつ$-y\leq r$」と同値である。
+    $y\leq r$は$x\leq a+r$と同値であり、$-y\leq r$は$a-r\leq x$と同値である。$r<0$のときは両辺とも成り立たず、同値は保たれる。
+  strategy: Write |y| as the larger of y and -y and shift by a.
+  sketch:
+  - 'setup: Put y = x - a.'
+  - 'derive: |y| ≤ r holds exactly when y ≤ r and -y ≤ r.'
+  - 'conclude: Rewriting both gives a-r ≤ x ≤ a+r.'
+  openmath: (forall (a r x) (<-> (<= (abs (- x a)) r) (and (<= (- a r) x) (<= x (+ a r)))))
+  hard_negative:
+    statement: 実数$a,r,x$について、$|x-a|<r$であることと$a-r\leq x\leq a+r$であることは同値である。
+    reason: $r>0$、$x=a+r$のとき右の条件は成り立つが$|x-a|=r$である。端点の扱いが異なる。
+  target: |
+    ∀ (a r x : ℝ), |x - a| ≤ r ↔ a - r ≤ x ∧ x ≤ a + r
+  proof: |
+    by
+      intro a r x
+      rw [abs_sub_le_iff]
+      constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith

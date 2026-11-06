@@ -1,0 +1,110 @@
+{
+  "schema_version": "pals.old-draft-generalization-proposal.v1",
+  "source": "docs/highschool-math-draft-candidates.json in AtsushiHosaka/pals",
+  "status": "proposal only; nothing was deleted or replaced",
+  "hold": "Concrete examples stay until reuse can specialize a general form to a numeric question.",
+  "lean_check": "Every general_form_lean compiled with Lean 4.32.0-rc1 and Mathlib 8b62164d808cd0f23b7d8cc28190a6c1a1bb483a.",
+  "replace_candidates": [
+    {
+      "draft_id": "hs_linear_equation_2x_plus_3_solution",
+      "current_statement": "For every real x, 2*x + 3 = 11 if and only if x = 4.",
+      "general_form_lean": "a ≠ 0 → (a * x + b = c ↔ x = (c - b) / a)",
+      "closest_catalog_card": "school_algebra_basics.linear_equation_solution_formula"
+    },
+    {
+      "draft_id": "hs_linear_inequality_2x_plus_3_solution",
+      "current_statement": "For every real x, 2*x + 3 ≤ 11 if and only if x ≤ 4.",
+      "general_form_lean": "0 < a → (a * x + b ≤ c ↔ x ≤ (c - b) / a)",
+      "closest_catalog_card": "school_inequalities.linear_ineq_by_coeff_sign"
+    },
+    {
+      "draft_id": "hs_reverse_linear_inequality_solution",
+      "current_statement": "For every real x, -2*x + 5 < 1 if and only if 2 < x.",
+      "general_form_lean": "a < 0 → (a * x + b < c ↔ (c - b) / a < x)",
+      "closest_catalog_card": "school_inequalities.linear_ineq_by_coeff_sign"
+    },
+    {
+      "draft_id": "hs_linear_system_sum_difference_unique",
+      "current_statement": "For all real x and y, if x + y = 7 and x - y = 1, then x = 4 and y = 3.",
+      "general_form_lean": "(x + y = s ∧ x - y = d) ↔ (x = (s + d) / 2 ∧ y = (s - d) / 2)",
+      "closest_catalog_card": null
+    },
+    {
+      "draft_id": "hs_quadratic_factor_roots",
+      "current_statement": "For every real x, (x - 2)*(x + 1) = 0 if and only if x = 2 or x = -1.",
+      "general_form_lean": "(x - p) * (x - q) = 0 ↔ x = p ∨ x = q",
+      "closest_catalog_card": "school_quadratic.factored_quadratic_roots"
+    },
+    {
+      "draft_id": "hs_square_eq_four_roots",
+      "current_statement": "For every real x, x^2 = 4 if and only if x = 2 or x = -2.",
+      "general_form_lean": "x ^ 2 = a ^ 2 ↔ x = a ∨ x = -a",
+      "closest_catalog_card": "school_algebra_basics.squares_equal_iff_equal_or_negative"
+    },
+    {
+      "draft_id": "hs_shifted_square_zero_characterization",
+      "current_statement": "For every real x, (x - 3)^2 = 0 if and only if x = 3.",
+      "general_form_lean": "(x - a) ^ 2 = 0 ↔ x = a",
+      "closest_catalog_card": null
+    },
+    {
+      "draft_id": "hs_shifted_quadratic_has_no_real_root",
+      "current_statement": "For every real x, x^2 - 6*x + 10 is not equal to 0.",
+      "general_form_lean": "0 < q → (x - p) ^ 2 + q ≠ 0",
+      "closest_catalog_card": "school_quadratic.real_root_iff_discriminant_nonneg"
+    },
+    {
+      "draft_id": "hs_square_plus_one_strictly_positive",
+      "current_statement": "For every real x, 0 < x^2 + 1.",
+      "general_form_lean": "0 < k → 0 < x ^ 2 + k",
+      "closest_catalog_card": "school_quadratic.quadratic_positive_everywhere_iff"
+    },
+    {
+      "draft_id": "hs_quadratic_tangent_lower_bound",
+      "current_statement": "For every real x, 2*x - 1 ≤ x^2.",
+      "general_form_lean": "2 * a * x - a ^ 2 ≤ x ^ 2",
+      "closest_catalog_card": "school_inequalities.sq_add_sq_ge_two_mul"
+    },
+    {
+      "draft_id": "hs_abs_shifted_closed_interval",
+      "current_statement": "For every real x, |x - 3| ≤ 2 if and only if 1 ≤ x and x ≤ 5.",
+      "general_form_lean": "|x - a| ≤ r ↔ a - r ≤ x ∧ x ≤ a + r",
+      "closest_catalog_card": "school_algebra_basics.abs_sub_le_iff_closed_interval"
+    },
+    {
+      "draft_id": "hs_abs_open_interval",
+      "current_statement": "For every real x, |x| < 3 if and only if -3 < x and x < 3.",
+      "general_form_lean": "|x| < r ↔ -r < x ∧ x < r",
+      "closest_catalog_card": "school_algebra_basics.abs_less_and_greater_iff_intervals"
+    },
+    {
+      "draft_id": "hs_rational_half_equation_solution",
+      "current_statement": "For every real x, if x is not equal to -1 and x/(x + 1) = 1/2, then x = 1.",
+      "general_form_lean": "x + a ≠ 0 → c ≠ 1 → (x / (x + a) = c ↔ x = a * c / (1 - c))",
+      "closest_catalog_card": null
+    },
+    {
+      "draft_id": "hs_square_sub_one_nonnegative_right",
+      "current_statement": "For every real x, if 1 ≤ x, then 0 ≤ x^2 - 1.",
+      "general_form_lean": "0 ≤ a → a ≤ x → 0 ≤ x ^ 2 - a ^ 2",
+      "closest_catalog_card": "school_inequalities.compare_abs_squares"
+    }
+  ],
+  "keep_as_is": [
+    "hs_sum_of_squares_zero_characterization",
+    "hs_two_variable_quadratic_inequality",
+    "hs_amgm_two_nonnegative",
+    "hs_cauchy_schwarz_two_dimensions",
+    "hs_square_root_existence_nonnegative",
+    "hs_product_nonnegative_from_nonnegative",
+    "trig_sin_range_closed",
+    "trig_cos_range_closed",
+    "trig_pythagorean_identity",
+    "trig_sin_cos_product_upper_half",
+    "trig_sin_cos_product_lower_half",
+    "trig_sin_double_angle",
+    "trig_cos_double_angle",
+    "trig_fourth_power_lower_bound",
+    "trig_tan_as_sine_over_cosine"
+  ]
+}

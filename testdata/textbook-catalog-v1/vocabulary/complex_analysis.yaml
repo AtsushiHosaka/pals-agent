@@ -1,0 +1,47 @@
+# Proposed additive OpenMath vocabulary for complex analysis cards (cd=pals2).
+complex_imaginary_unit: {args: [], returns: term, meaning: "the imaginary unit i"}
+pi_constant: {args: [], returns: term, meaning: "the circle constant pi"}
+complex_conj: {args: [term], returns: term, meaning: "complex conjugate of z"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+imag_part: {args: [term], returns: term, meaning: "imaginary part of z"}
+principal_log: {args: [term], returns: term, meaning: "principal branch of the complex logarithm"}
+principal_arg: {args: [term], returns: term, meaning: "principal argument of z in (-pi, pi]"}
+factorial: {args: [term], returns: term, meaning: "n factorial"}
+open_disc: {args: [term, term], returns: term, meaning: "open disc with centre c and radius R"}
+closed_disc: {args: [term, term], returns: term, meaning: "closed disc with centre c and radius R"}
+circle_set: {args: [term, term], returns: term, meaning: "circle with centre c and radius R as a set"}
+set_frontier: {args: [term], returns: term, meaning: "topological boundary of a set"}
+set_closure: {args: [term], returns: term, meaning: "topological closure of a set"}
+open_set: {args: [term], returns: prop, meaning: "U is open"}
+connected_set: {args: [term], returns: prop, meaning: "U is connected (preconnected)"}
+bounded_set: {args: [term], returns: prop, meaning: "U is bounded"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set S"}
+holomorphic_on: {args: [term, term], returns: prop, meaning: "f is complex differentiable at each point of the set U"}
+holomorphic_at: {args: [term, term], returns: prop, meaning: "f is complex differentiable at z"}
+entire_function: {args: [term], returns: prop, meaning: "f is complex differentiable on the whole plane"}
+analytic_on: {args: [term, term], returns: prop, meaning: "f has a convergent power series expansion near each point of U"}
+has_complex_deriv_at: {args: [term, term, term], returns: prop, meaning: "f has complex derivative d at z"}
+complex_deriv: {args: [term, term], returns: term, meaning: "complex derivative f'(z)"}
+iterated_complex_deriv: {args: [term, term, term], returns: term, meaning: "n-th complex derivative of f at z"}
+circle_integral: {args: [term_function, term, term], returns: term, meaning: "contour integral of a function over the positively oriented circle with centre c and radius R"}
+series_has_sum: {args: [term_function, term], returns: prop, meaning: "the series over natural numbers n of g(n) converges unconditionally to s"}
+range_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(k) over k from 0 to n-1"}
+principal_log_fn: {args: [], returns: term, meaning: "the principal logarithm as a function"}
+re_component: {args: [term], returns: term, meaning: "the real function (x, y) -> Re f(x + iy) of a complex function f"}
+im_component: {args: [term], returns: term, meaning: "the real function (x, y) -> Im f(x + iy) of a complex function f"}
+has_partial_x: {args: [term, term, term, term], returns: prop, meaning: "the two-variable real function g has partial derivative d in x at (x, y)"}
+has_partial_y: {args: [term, term, term, term], returns: prop, meaning: "the two-variable real function g has partial derivative d in y at (x, y)"}
+real_differentiable_at: {args: [term, term], returns: prop, meaning: "f is differentiable at z as a map between real vector spaces"}
+real_differential: {args: [term, term, term], returns: term, meaning: "real total differential of f at z applied to the vector v"}
+tends_to_at_infinity: {args: [term, term], returns: prop, meaning: "f(z) tends to c as |z| tends to infinity"}
+polynomial_degree: {args: [term], returns: term, meaning: "degree of a polynomial p"}
+poly_eval: {args: [term, term], returns: term, meaning: "value p(z) of a polynomial p"}
+complex_polynomial: {args: [term], returns: prop, meaning: "p is a polynomial with complex coefficients"}
+circle_mean: {args: [term, term, term], returns: term, meaning: "mean value of f over the circle with centre c and radius R, (1/2pi) times the integral over [0, 2pi] of f(c + R e^(it))"}
+accumulation_point_of_agreement: {args: [term, term, term], returns: prop, meaning: "a is an accumulation point of the set where f and g agree"}
+eventually_zero_near: {args: [term, term], returns: prop, meaning: "f vanishes identically on a neighbourhood of a"}
+eventually_nonzero_punctured: {args: [term, term], returns: prop, meaning: "f has no zeros on a punctured neighbourhood of a"}
+locally_uniform_limit: {args: [term, term, term], returns: prop, meaning: "the function sequence F converges locally uniformly to f on U"}
+derivative_sequence: {args: [term], returns: term, meaning: "the sequence of complex derivatives of a function sequence"}
+derivative_function: {args: [term], returns: term, meaning: "the complex derivative of f as a function"}
+summable_sequence: {args: [term], returns: prop, meaning: "the real sequence u is summable"}

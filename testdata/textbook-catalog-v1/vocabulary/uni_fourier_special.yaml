@@ -1,0 +1,99 @@
+# Proposed additive OpenMath vocabulary for Fourier analysis and special functions.
+gamma_fn: {args: [term], returns: term, meaning: "Euler gamma function Gamma(s)"}
+beta_integral: {args: [term, term], returns: term, meaning: "Euler beta integral B(u,v), the integral of x^(u-1) (1-x)^(v-1) over (0,1)"}
+factorial: {args: [term], returns: term, meaning: "n factorial"}
+integrable_on_ioi: {args: [term_function, term], returns: prop, meaning: "f is integrable on the open half-line from a to plus infinity"}
+integral_ioi: {args: [term, term_function], returns: term, meaning: "improper integral of f over the half-line from a to plus infinity"}
+interval_integrable: {args: [term_function, term, term], returns: prop, meaning: "f is integrable on the interval between a and b"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by a lambda converges to L"}
+prod_over: {args: [term, term_function], returns: term, meaning: "finite product of the indexed expression over the finite set S"}
+finset_range: {args: [term], returns: term, meaning: "the index set {0, ..., n-1}"}
+open_interval: {args: [term, term], returns: term, meaning: "open interval (a, b) of real numbers"}
+fn_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a with x different from a; arguments f, a, L"}
+complex_gamma_fn: {args: [term], returns: term, meaning: "Gamma function of a complex argument, holomorphic off the nonpositive integers"}
+complex_sin: {args: [term], returns: term, meaning: "sine of a complex number"}
+real_cosh: {args: [term], returns: term, meaning: "hyperbolic cosine of a real number"}
+euler_gamma_constant: {args: [], returns: term, meaning: "Euler-Mascheroni constant"}
+range_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(k) over k from 0 to n-1"}
+euclidean_ball_volume: {args: [term, term], returns: term, meaning: "Lebesgue volume of the open ball of radius r in Euclidean n-space; arguments n, r"}
+seq_asymp_equiv: {args: [term_function, term_function], returns: prop, meaning: "two positive sequences are asymptotically equivalent, their ratio tending to 1"}
+complex_i: {args: [], returns: term, meaning: "the imaginary unit i of the complex numbers"}
+complex_cot: {args: [term], returns: term, meaning: "cotangent of a complex number"}
+series_has_sum: {args: [term_function, term], returns: prop, meaning: "the series over natural numbers n of g(n) converges unconditionally to s"}
+fourier_coeff_on: {args: [term, term, term, term], returns: term, meaning: "n-th complex Fourier coefficient of f on (a,b], normalized by 1/(b-a)"}
+fourier_coeff_circle: {args: [term, term, term], returns: term, meaning: "n-th Fourier coefficient of f on the circle of period T"}
+fourier_mode_circle: {args: [term, term, term], returns: term, meaning: "value at x of the n-th Fourier mode on the circle of period T"}
+integrable_circle: {args: [term, term], returns: prop, meaning: "f is integrable on the circle of period T"}
+integral_circle: {args: [term, term_function], returns: term, meaning: "integral over the circle of period T with total mass one"}
+continuous_circle_function: {args: [term, term], returns: prop, meaning: "f is a continuous complex function on the circle of period T"}
+square_integrable_on: {args: [term, term, term], returns: prop, meaning: "f is square integrable on the interval (a,b]"}
+l2_circle_space: {args: [term], returns: term, meaning: "L2 space of the circle of period T with normalized measure"}
+has_sum_fn: {args: [term_function, term], returns: prop, meaning: "the series of the indexed expression sums unconditionally to s"}
+interval_integrable_fn: {args: [term, term, term], returns: prop, meaning: "the function g is integrable on the interval between a and b"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at x with derivative d; arguments f, d, x"}
+tends_to_zero_cofinite: {args: [term_function], returns: prop, meaning: "the family indexed by the integers tends to 0 as the absolute value of the index tends to infinity"}
+tends_to_zero_at_infinity: {args: [term_function], returns: prop, meaning: "the function tends to 0 as the absolute value of its real argument tends to infinity"}
+series_converges_l2_circle: {args: [term, term], returns: prop, meaning: "the Fourier series of f in L2 of the circle of period T converges to f in the L2 norm; arguments T, f"}
+fourier_coeff_circle_fn: {args: [term, term_function, term], returns: term, meaning: "n-th Fourier coefficient on the circle of period T of the function given by a lambda; arguments T, f, n"}
+complex_conj: {args: [term], returns: term, meaning: "complex conjugate of z"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of real numbers"}
+finset_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(i) over i in the finite set s, in the order s g"}
+integrable_real_line: {args: [term_function], returns: prop, meaning: "f is integrable on the whole real line"}
+integral_real_line: {args: [term_function], returns: term, meaning: "integral of f over the whole real line"}
+fourier_transform: {args: [term], returns: term, meaning: "Fourier transform of f with the kernel exp(-2 pi i x w)"}
+inverse_fourier_transform: {args: [term], returns: term, meaning: "inverse Fourier transform of g with the kernel exp(2 pi i x w)"}
+integrable_on_space: {args: [term, term], returns: prop, meaning: "f is integrable on the finite-dimensional real inner product space V; arguments V, f"}
+convolution_of: {args: [term, term], returns: term, meaning: "convolution of f and g, whose value at x is the integral of f(t) g(x-t) over t"}
+fn_deriv: {args: [term], returns: term, meaning: "the derivative function f' of f"}
+l2_space_on: {args: [term], returns: term, meaning: "the complex L2 space of the finite-dimensional real inner product space V"}
+integral_over_space: {args: [term, term_function], returns: term, meaning: "integral over the finite-dimensional real inner product space V; arguments V, f"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}
+tends_to_zero_at_infinity_space: {args: [term, term], returns: prop, meaning: "the function f on V tends to 0 at infinity; arguments V, f"}
+locally_integrable_euclidean: {args: [term, term], returns: prop, meaning: "f is locally integrable on R^n; arguments n, f"}
+smooth_compact_support_euclidean: {args: [term, term], returns: prop, meaning: "g is a smooth compactly supported function on R^n; arguments n, g"}
+ae_zero_euclidean: {args: [term, term], returns: prop, meaning: "f vanishes almost everywhere on R^n; arguments n, f"}
+integral_euclidean: {args: [term, term_function], returns: term, meaning: "integral over R^n; arguments n, f"}
+schwartz_on: {args: [term, term], returns: prop, meaning: "f is a complex Schwartz function on the space V; arguments V, f"}
+finite_add_comm_group: {args: [term], returns: prop, meaning: "G is a finite additive abelian group"}
+group_order: {args: [term], returns: term, meaning: "the number of elements of the finite group G"}
+complex_add_character_of: {args: [term, term], returns: prop, meaning: "chi is a homomorphism from the additive group G to the nonzero complex numbers; arguments chi, G"}
+sum_over_group: {args: [term, term_function], returns: term, meaning: "sum over all elements of the finite group G; arguments G, f"}
+sum_over_characters: {args: [term, term_function], returns: term, meaning: "sum over all complex additive characters of the finite group G; arguments G, f"}
+character_group_size: {args: [term], returns: term, meaning: "the number of complex additive characters of the finite group G"}
+group_zero: {args: [term], returns: term, meaning: "the zero element of the additive group G"}
+character_family_is_basis: {args: [term], returns: prop, meaning: "the complex additive characters of G form a basis of the space of complex functions on G"}
+zmod_std_character: {args: [term, term], returns: term, meaning: "exp(2 pi i j / N) for j in Z/NZ; arguments N, j"}
+zmod_dft: {args: [term, term, term], returns: term, meaning: "value at k of the discrete Fourier transform of Phi on Z/NZ, with kernel exp(-2 pi i j k / N); arguments N, Phi, k"}
+zmod_dft_fn: {args: [term, term_function, term], returns: term, meaning: "value at k of the discrete Fourier transform on Z/NZ of the function given by a lambda; arguments N, Phi, k"}
+zmod_ring: {args: [term], returns: term, meaning: "the ring Z/NZ"}
+kronecker_delta: {args: [term, term], returns: term, meaning: "the value 1 if the two arguments are equal and 0 otherwise"}
+bernoulli_number: {args: [term], returns: term, meaning: "the n-th Bernoulli number, with B_1 = -1/2"}
+bernoulli_polynomial: {args: [term], returns: term, meaning: "the n-th Bernoulli polynomial"}
+bernoulli_power_series_identity: {args: [], returns: prop, meaning: "the exponential generating series of the Bernoulli numbers times (exp X - 1) equals X as formal power series"}
+binomial: {args: [term, term], returns: term, meaning: "binomial coefficient C(n,k)"}
+poly_eval: {args: [term, term], returns: term, meaning: "the value f(x) of the polynomial f at x"}
+poly_degree: {args: [term], returns: term, meaning: "the degree of the polynomial f"}
+poly_leading_coeff: {args: [term], returns: term, meaning: "leading coefficient of the polynomial f"}
+poly_derivative: {args: [term], returns: term, meaning: "the formal derivative of the polynomial f"}
+poly_comp: {args: [term, term], returns: term, meaning: "the composition f(g) of polynomials"}
+poly_one_add_x: {args: [], returns: term, meaning: "the polynomial 1 + X"}
+poly_x_pow: {args: [term], returns: term, meaning: "the monomial X^n"}
+chebyshev_t: {args: [term, term], returns: term, meaning: "Chebyshev polynomial of the first kind over the commutative ring R; arguments R, n"}
+chebyshev_u: {args: [term, term], returns: term, meaning: "Chebyshev polynomial of the second kind over the commutative ring R; arguments R, n"}
+comm_ring: {args: [term], returns: prop, meaning: "R is a commutative ring with unity"}
+integral_domain: {args: [term], returns: prop, meaning: "R is an integral domain"}
+two_ne_zero_in: {args: [term], returns: prop, meaning: "2 is nonzero in the ring R"}
+poly_roots_are: {args: [term, term], returns: prop, meaning: "the multiset of roots of the real polynomial p consists of the elements of the finite set S, each with multiplicity one"}
+chebyshev_node_set: {args: [term], returns: term, meaning: "the set of cos((2k+1) pi / (2n)) for k = 0, ..., n-1"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+integer_range: {args: [term, term], returns: term, meaning: "set of integers k with a <= k <= b"}
+real_polynomial: {args: [term], returns: prop, meaning: "P is a polynomial with real coefficients"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+series_summable_fn: {args: [term_function], returns: prop, meaning: "the series of the indexed expression converges unconditionally"}
+series_sum_fn: {args: [term_function], returns: term, meaning: "sum of the series of the indexed expression"}
+fn_continuous_at: {args: [term_function, term], returns: prop, meaning: "f is continuous at the point a"}
+differentiable_on: {args: [term_function, term], returns: prop, meaning: "f is differentiable on the set S"}
+holomorphic_fn_on: {args: [term_function, term], returns: prop, meaning: "the function given by the lambda is complex differentiable at each point of U"}
+dim_of: {args: [term, term], returns: term, meaning: "dimension of V over K (arguments K, V)"}
+fd_inner_product_space: {args: [term, term], returns: prop, meaning: "E is a finite-dimensional inner product space over K, where K is R or C (arguments K, E)"}

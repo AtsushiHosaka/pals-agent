@@ -1,0 +1,31 @@
+# Proposed additive OpenMath vocabulary for the logic_sets domain (cd=pals2).
+relates: {args: [term, term, term], returns: prop, meaning: "the binary relation R holds of x and y"}
+complement: {args: [term], returns: term, meaning: "complement of a set in the ambient type"}
+indexed_union: {args: [term_function], returns: term, meaning: "union of an indexed family of sets"}
+indexed_inter: {args: [term_function], returns: term, meaning: "intersection of an indexed family of sets"}
+powerset: {args: [term], returns: term, meaning: "the set of all subsets of A"}
+preimage: {args: [term, term], returns: term, meaning: "inverse image of B under f"}
+injective: {args: [term], returns: prop, meaning: "f is injective"}
+surjective: {args: [term], returns: prop, meaning: "f is surjective onto its codomain"}
+bijective: {args: [term], returns: prop, meaning: "f is bijective"}
+fn_comp: {args: [term, term], returns: term, meaning: "composition g after f"}
+map_between: {args: [term, term, term], returns: prop, meaning: "f is a map from A to B"}
+equivalence_relation: {args: [term, term], returns: prop, meaning: "R is an equivalence relation on X"}
+equiv_class: {args: [term, term], returns: term, meaning: "equivalence class of x under R"}
+quotient_set: {args: [term, term], returns: term, meaning: "set of equivalence classes of R on X"}
+partition_of: {args: [term, term], returns: prop, meaning: "c is a partition of X"}
+partial_order: {args: [term, term], returns: prop, meaning: "R is a partial order on X"}
+linear_order: {args: [term, term], returns: prop, meaning: "R is a linear order on X"}
+well_order: {args: [term, term], returns: prop, meaning: "R is a well-order on X"}
+well_founded: {args: [term], returns: prop, meaning: "the relation R is well-founded"}
+chain_of: {args: [term, term], returns: prop, meaning: "C is a chain with respect to R"}
+upper_bound: {args: [term, term, term], returns: prop, meaning: "u is an upper bound of C with respect to R"}
+greatest_element: {args: [term, term, term], returns: prop, meaning: "a is the greatest element of S with respect to R"}
+maximal_element: {args: [term, term, term], returns: prop, meaning: "a is a maximal element of S with respect to R"}
+finite_set: {args: [term], returns: prop, meaning: "A is a finite set"}
+countable: {args: [term], returns: prop, meaning: "A is finite or countably infinite"}
+is_cardinal: {args: [term], returns: prop, meaning: "a is a cardinal number"}
+aleph_zero: {args: [], returns: term, meaning: "the cardinal of the natural numbers"}
+is_ordinal: {args: [term], returns: prop, meaning: "a is an ordinal number"}
+limit_ordinal: {args: [term], returns: prop, meaning: "a is a limit ordinal"}
+omega_ordinal: {args: [], returns: term, meaning: "the least infinite ordinal"}

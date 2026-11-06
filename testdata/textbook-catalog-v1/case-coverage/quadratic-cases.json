@@ -1,0 +1,2030 @@
+{
+ "schema_version": "pals.case-coverage.v1",
+ "topic": "quadratic functions, equations and inequalities",
+ "note": "The evaluation problems are separate from the cards. Each proof instantiates the listed cards with numbers. Extrema cases state the bound; the value is attained at the named point of the interval.",
+ "questions": [
+  {
+   "id": "vertex",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "axis_sign",
+    "leading",
+    "vertex_value_sign"
+   ]
+  },
+  {
+   "id": "root_count",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "constant",
+    "discriminant",
+    "leading",
+    "linear"
+   ]
+  },
+  {
+   "id": "root_signs",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "discriminant",
+    "leading",
+    "signs"
+   ]
+  },
+  {
+   "id": "root_placement",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "boundary",
+    "discriminant",
+    "leading",
+    "relation"
+   ]
+  },
+  {
+   "id": "interval_extrema",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "axis",
+    "boundary",
+    "opening",
+    "target"
+   ]
+  },
+  {
+   "id": "range_monotone",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "opening",
+    "side"
+   ]
+  },
+  {
+   "id": "inequality",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "discriminant",
+    "leading",
+    "relation"
+   ]
+  },
+  {
+   "id": "tangent",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "boundary",
+    "line_relation",
+    "opening",
+    "point",
+    "position"
+   ]
+  },
+  {
+   "id": "coefficients",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "boundary",
+    "given"
+   ]
+  },
+  {
+   "id": "transformations",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "move",
+    "opening"
+   ]
+  },
+  {
+   "id": "parameter",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "condition",
+    "opening"
+   ]
+  },
+  {
+   "id": "x_axis_chord",
+   "coverage_matrix_family": "school.h1.quadratic-equations-inequalities",
+   "axes": [
+    "boundary",
+    "discriminant",
+    "opening"
+   ]
+  },
+  {
+   "id": "graph_reading",
+   "coverage_matrix_family": "school.h1.quadratic-graphs-extrema",
+   "axes": [
+    "axis",
+    "boundary",
+    "opening"
+   ]
+  }
+ ],
+ "added_cards": [
+  "both_roots_greater_than_iff_any_leading",
+  "both_roots_less_than_iff_any_leading",
+  "roots_straddle_iff_any_leading",
+  "both_roots_in_open_interval_any_leading",
+  "both_roots_negative_iff_coefficients",
+  "zero_root_iff_constant_term_zero",
+  "quadratic_range_concave",
+  "quadratic_monotone_each_side_of_axis_concave",
+  "concave_quadratic_max_on_interval_cases",
+  "concave_quadratic_min_at_farther_endpoint",
+  "factored_inequality_closed_outside",
+  "negative_leading_inequality_table",
+  "double_root_inequality_any_leading",
+  "quadratic_negative_everywhere_iff",
+  "quadratic_positive_everywhere_iff_general",
+  "tangent_line_difference_and_unique_contact",
+  "tangent_through_point_iff",
+  "reflection_across_point",
+  "axis_sign_iff_coefficient_product"
+ ],
+ "cases": [
+  {
+   "question": "vertex",
+   "id": "vertex.left_below",
+   "axes": {
+    "axis_sign": "negative",
+    "vertex_value_sign": "negative",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=x^2+2x-1$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, x^2+2*x-1 = 1 * (x - (-1)) ^ 2 + (-2)",
+   "proof": "intro x\nhave h := complete_square_general 1 2 (-1) x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.left_on",
+   "axes": {
+    "axis_sign": "negative",
+    "vertex_value_sign": "zero",
+    "leading": "negative"
+   },
+   "problem": "放物線$y=-x^2-2x-1$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, -x^2-2*x-1 = (-1) * (x - (-1)) ^ 2 + (0)",
+   "proof": "intro x\nhave h := complete_square_general (-1) (-2) (-1) x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.left_above",
+   "axes": {
+    "axis_sign": "negative",
+    "vertex_value_sign": "positive",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=x^2+2x+3$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, x^2+2*x+3 = 1 * (x - (-1)) ^ 2 + (2)",
+   "proof": "intro x\nhave h := complete_square_general 1 2 3 x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.on_below",
+   "axes": {
+    "axis_sign": "zero",
+    "vertex_value_sign": "negative",
+    "leading": "negative"
+   },
+   "problem": "放物線$y=-x^2-1$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, -x^2-1 = (-1) * (x - (0)) ^ 2 + (-1)",
+   "proof": "intro x\nhave h := complete_square_general (-1) 0 (-1) x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.origin",
+   "axes": {
+    "axis_sign": "zero",
+    "vertex_value_sign": "zero",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=2x^2$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, 2*x^2 = 2 * (x - (0)) ^ 2 + (0)",
+   "proof": "intro x\nhave h := complete_square_general 2 0 0 x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.on_above",
+   "axes": {
+    "axis_sign": "zero",
+    "vertex_value_sign": "positive",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=x^2+1$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, x^2+1 = 1 * (x - (0)) ^ 2 + (1)",
+   "proof": "intro x\nhave h := complete_square_general 1 0 1 x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.right_below",
+   "axes": {
+    "axis_sign": "positive",
+    "vertex_value_sign": "negative",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=x^2-5x+6$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, x^2-5*x+6 = 1 * (x - (5/2)) ^ 2 + (-1/4)",
+   "proof": "intro x\nhave h := complete_square_general 1 (-5) 6 x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.right_on",
+   "axes": {
+    "axis_sign": "positive",
+    "vertex_value_sign": "zero",
+    "leading": "negative"
+   },
+   "problem": "放物線$y=-x^2+2x-1$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, -x^2+2*x-1 = (-1) * (x - (1)) ^ 2 + (0)",
+   "proof": "intro x\nhave h := complete_square_general (-1) 2 (-1) x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "vertex",
+   "id": "vertex.right_above",
+   "axes": {
+    "axis_sign": "positive",
+    "vertex_value_sign": "positive",
+    "leading": "positive"
+   },
+   "problem": "放物線$y=x^2-2x+3$の頂点の座標を求めよ。",
+   "statement": "∀ x : ℝ, x^2-2*x+3 = 1 * (x - (1)) ^ 2 + (2)",
+   "proof": "intro x\nhave h := complete_square_general 1 (-2) 3 x (by norm_num)\nlinear_combination h",
+   "cards": [
+    "complete_square_general"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.pos_up",
+   "axes": {
+    "discriminant": "positive",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | x^2-5*x+6 = 0}.ncard = 2",
+   "proof": "have h := (root_count_by_discriminant 1 (-5) 6 (by norm_num)).1 (by norm_num)\nhave e : {x : ℝ | x^2-5*x+6 = 0} = {x : ℝ | 1 * x ^ 2 + (-5) * x + 6 = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.pos_down",
+   "axes": {
+    "discriminant": "positive",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+x+1=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | -x^2+x+1 = 0}.ncard = 2",
+   "proof": "have h := (root_count_by_discriminant (-1) 1 1 (by norm_num)).1 (by norm_num)\nhave e : {x : ℝ | -x^2+x+1 = 0} = {x : ℝ | (-1) * x ^ 2 + 1 * x + 1 = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.zero_up",
+   "axes": {
+    "discriminant": "zero",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-2x+1=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | x^2-2*x+1 = 0}.ncard = 1",
+   "proof": "have h := (root_count_by_discriminant 1 (-2) 1 (by norm_num)).2.1 (by norm_num)\nhave e : {x : ℝ | x^2-2*x+1 = 0} = {x : ℝ | 1 * x ^ 2 + (-2) * x + 1 = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.zero_down",
+   "axes": {
+    "discriminant": "zero",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+2x-1=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | -x^2+2*x-1 = 0}.ncard = 1",
+   "proof": "have h := (root_count_by_discriminant (-1) 2 (-1) (by norm_num)).2.1 (by norm_num)\nhave e : {x : ℝ | -x^2+2*x-1 = 0} = {x : ℝ | (-1) * x ^ 2 + 2 * x + (-1) = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.neg_up",
+   "axes": {
+    "discriminant": "negative",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2+x+1=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | x^2+x+1 = 0} = ∅",
+   "proof": "have h := (root_count_by_discriminant 1 1 1 (by norm_num)).2.2 (by norm_num)\nhave e : {x : ℝ | x^2+x+1 = 0} = {x : ℝ | 1 * x ^ 2 + 1 * x + 1 = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.neg_down",
+   "axes": {
+    "discriminant": "negative",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+x-1=0$の実数解の個数を求めよ。",
+   "statement": "{x : ℝ | -x^2+x-1 = 0} = ∅",
+   "proof": "have h := (root_count_by_discriminant (-1) 1 (-1) (by norm_num)).2.2 (by norm_num)\nhave e : {x : ℝ | -x^2+x-1 = 0} = {x : ℝ | (-1) * x ^ 2 + 1 * x + (-1) = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.degenerate_linear",
+   "axes": {
+    "leading": "zero",
+    "linear": "nonzero"
+   },
+   "problem": "$a=0$、$b=2$、$c=3$のとき、$ax^2+bx+c=0$の解の個数を求めよ。",
+   "statement": "∃! x : ℝ, 0 * x ^ 2 + 2 * x + 3 = 0",
+   "proof": "obtain ⟨x, hx, u⟩ := (linear_equation_solution_classification 2 (-3)).1.2 (by norm_num)\nhave hx' : 2 * x = -3 := hx\nrefine ⟨x, ?_, ?_⟩\n· show 0 * x ^ 2 + 2 * x + 3 = 0\n  linarith\n· intro y hy\n  have hy' : 0 * y ^ 2 + 2 * y + 3 = 0 := hy\n  exact u y (show 2 * y = -3 by linarith)",
+   "cards": [
+    "linear_equation_solution_classification"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.degenerate_none",
+   "axes": {
+    "leading": "zero",
+    "linear": "zero",
+    "constant": "nonzero"
+   },
+   "problem": "$a=b=0$、$c=3$のとき、$ax^2+bx+c=0$の解の個数を求めよ。",
+   "statement": "¬ ∃ x : ℝ, 0 * x ^ 2 + 0 * x + 3 = 0",
+   "proof": "rintro ⟨x, hx⟩\nexact (linear_equation_solution_classification 0 (-3)).2.2.2 ⟨rfl, (by norm_num)⟩ ⟨x, by linarith⟩",
+   "cards": [
+    "linear_equation_solution_classification"
+   ]
+  },
+  {
+   "question": "root_count",
+   "id": "root_count.degenerate_all",
+   "axes": {
+    "leading": "zero",
+    "linear": "zero",
+    "constant": "zero"
+   },
+   "problem": "$a=b=c=0$のとき、$ax^2+bx+c=0$を満たす$x$を求めよ。",
+   "statement": "∀ x : ℝ, 0 * x ^ 2 + 0 * x + 0 = 0",
+   "proof": "intro x\nhave h := (linear_equation_solution_classification 0 0).2.1.2 ⟨rfl, rfl⟩ x\nlinarith",
+   "cards": [
+    "linear_equation_solution_classification"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.both_pos_up",
+   "axes": {
+    "signs": "both positive",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ 0 < p ∧ 0 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_positive_iff_coefficients 1 (-5) 6 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_positive_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.both_pos_down",
+   "axes": {
+    "signs": "both positive",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x-6 = (-1) * (x - p) * (x - q)) ∧ 0 < p ∧ 0 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_positive_iff_coefficients (-1) 5 (-6) (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_positive_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.double_pos",
+   "axes": {
+    "signs": "double positive",
+    "discriminant": "zero"
+   },
+   "problem": "方程式$x^2-2x+1=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-2*x+1 = 1 * (x - p) * (x - q)) ∧ 0 < p ∧ 0 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_positive_iff_coefficients 1 (-2) 1 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_positive_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.both_neg_up",
+   "axes": {
+    "signs": "both negative",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2+5x+6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2+5*x+6 = 1 * (x - p) * (x - q)) ∧ p < 0 ∧ q < 0",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_negative_iff_coefficients 1 5 6 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_negative_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.both_neg_down",
+   "axes": {
+    "signs": "both negative",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2-5x-6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2-5*x-6 = (-1) * (x - p) * (x - q)) ∧ p < 0 ∧ q < 0",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_negative_iff_coefficients (-1) (-5) (-6) (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_negative_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.double_neg",
+   "axes": {
+    "signs": "double negative",
+    "discriminant": "zero"
+   },
+   "problem": "方程式$x^2+2x+1=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2+2*x+1 = 1 * (x - p) * (x - q)) ∧ p < 0 ∧ q < 0",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_negative_iff_coefficients 1 2 1 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_negative_iff_coefficients"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.opposite_up",
+   "axes": {
+    "signs": "opposite",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x-6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x-6 = 1 * (x - p) * (x - q)) ∧ p < 0 ∧ 0 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (opposite_sign_roots_iff 1 (-5) (-6) (by norm_num)).2 (by norm_num)\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "opposite_sign_roots_iff"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.opposite_down",
+   "axes": {
+    "signs": "opposite",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x+6=0$の2解の符号を調べよ。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x+6 = (-1) * (x - p) * (x - q)) ∧ p < 0 ∧ 0 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (opposite_sign_roots_iff (-1) 5 6 (by norm_num)).2 (by norm_num)\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "opposite_sign_roots_iff"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.zero_and_pos",
+   "axes": {
+    "signs": "zero and positive",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-3x=0$の解を求めよ。",
+   "statement": "∀ x : ℝ, x^2-3*x = 0 ↔ x = 0 ∨ x = 3",
+   "proof": "intro x\nhave h := (zero_root_iff_constant_term_zero 1 (-3) 0 (by norm_num)).1 rfl x\nhave e : -(-3 : ℝ) / (1) = 3 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "zero_root_iff_constant_term_zero"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.zero_and_neg",
+   "axes": {
+    "signs": "zero and negative",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2+3x=0$の解を求めよ。",
+   "statement": "∀ x : ℝ, x^2+3*x = 0 ↔ x = 0 ∨ x = -3",
+   "proof": "intro x\nhave h := (zero_root_iff_constant_term_zero 1 3 0 (by norm_num)).1 rfl x\nhave e : -(3 : ℝ) / (1) = -3 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "zero_root_iff_constant_term_zero"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.zero_and_pos_down",
+   "axes": {
+    "signs": "zero and positive",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+3x=0$の解を求めよ。",
+   "statement": "∀ x : ℝ, -x^2+3*x = 0 ↔ x = 0 ∨ x = 3",
+   "proof": "intro x\nhave h := (zero_root_iff_constant_term_zero (-1) 3 0 (by norm_num)).1 rfl x\nhave e : -(3 : ℝ) / (-1) = 3 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "zero_root_iff_constant_term_zero"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.double_zero",
+   "axes": {
+    "signs": "double zero"
+   },
+   "problem": "方程式$x^2=0$の解を求めよ。",
+   "statement": "∀ x : ℝ, x ^ 2 = 0 ↔ x = 0",
+   "proof": "intro x\nhave h := (zero_root_iff_constant_term_zero 1 0 0 (by norm_num)).1 rfl x\nhave e : -(0 : ℝ) / 1 = 0 := by norm_num\nrw [e, or_self] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "zero_root_iff_constant_term_zero"
+   ]
+  },
+  {
+   "question": "root_signs",
+   "id": "root_signs.no_real_root",
+   "axes": {
+    "signs": "none",
+    "discriminant": "negative"
+   },
+   "problem": "方程式$x^2+x+1=0$は実数解をもつか。",
+   "statement": "¬ ∃ x : ℝ, x ^ 2 + x + 1 = 0",
+   "proof": "rintro ⟨x, hx⟩\nhave h := (real_root_iff_discriminant_nonneg 1 1 1 (by norm_num)).1 ⟨x, by linarith⟩\nnorm_num at h",
+   "cards": [
+    "real_root_iff_discriminant_nonneg"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_greater_up",
+   "axes": {
+    "relation": "both greater than k",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の解はともに$1$より大きいか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ 1 < p ∧ 1 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_greater_than_iff 1 (-5) 6 1 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_greater_than_iff"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_greater_down",
+   "axes": {
+    "relation": "both greater than k",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$の解はともに$1$より大きいか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x-6 = (-1) * (x - p) * (x - q)) ∧ 1 < p ∧ 1 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_greater_than_iff_any_leading (-1) 5 (-6) 1 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_greater_than_iff_any_leading"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_greater_double",
+   "axes": {
+    "relation": "both greater than k",
+    "discriminant": "zero"
+   },
+   "problem": "方程式$x^2-4x+4=0$の解はともに$1$より大きいか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-4*x+4 = 1 * (x - p) * (x - q)) ∧ 1 < p ∧ 1 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_greater_than_iff 1 (-4) 4 1 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_greater_than_iff"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_less_up",
+   "axes": {
+    "relation": "both less than k",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の解はともに$4$より小さいか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ p < 4 ∧ q < 4",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_less_than_iff_any_leading 1 (-5) 6 4 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_less_than_iff_any_leading"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_less_down",
+   "axes": {
+    "relation": "both less than k",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$の解はともに$4$より小さいか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x-6 = (-1) * (x - p) * (x - q)) ∧ p < 4 ∧ q < 4",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (both_roots_less_than_iff_any_leading (-1) 5 (-6) 4 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "both_roots_less_than_iff_any_leading"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.straddle_up",
+   "axes": {
+    "relation": "k between the roots",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の解は$\\dfrac{5}{2}$の両側にあるか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ p < 5/2 ∧ 5/2 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (roots_straddle_iff_value_negative 1 (-5) 6 (5/2) (by norm_num)).1 (by norm_num)\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "roots_straddle_iff_value_negative"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.straddle_down",
+   "axes": {
+    "relation": "k between the roots",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$の解は$\\dfrac{5}{2}$の両側にあるか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x-6 = (-1) * (x - p) * (x - q)) ∧ p < 5/2 ∧ 5/2 < q",
+   "proof": "obtain ⟨p, q, h, hp, hq⟩ := (roots_straddle_iff_any_leading (-1) 5 (-6) (5/2) (by norm_num)).1 (by norm_num)\nexact ⟨p, q, fun x => by linear_combination h x, hp, hq⟩",
+   "cards": [
+    "roots_straddle_iff_any_leading"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_inside_up",
+   "axes": {
+    "relation": "both in (k,l)",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$の解はともに$1<x<4$にあるか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ 1 < p ∧ p < 4 ∧ 1 < q ∧ q < 4",
+   "proof": "obtain ⟨p, q, h, h1, h2, h3, h4⟩ := (both_roots_in_open_interval_iff 1 (-5) 6 1 4 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, h1, h2, h3, h4⟩",
+   "cards": [
+    "both_roots_in_open_interval_iff"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.both_inside_down",
+   "axes": {
+    "relation": "both in (k,l)",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$の解はともに$1<x<4$にあるか。",
+   "statement": "∃ p q : ℝ, (∀ x : ℝ, -x^2+5*x-6 = (-1) * (x - p) * (x - q)) ∧ 1 < p ∧ p < 4 ∧ 1 < q ∧ q < 4",
+   "proof": "obtain ⟨p, q, h, h1, h2, h3, h4⟩ := (both_roots_in_open_interval_any_leading (-1) 5 (-6) 1 4 (by norm_num)).2 ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩\nexact ⟨p, q, fun x => by linear_combination h x, h1, h2, h3, h4⟩",
+   "cards": [
+    "both_roots_in_open_interval_any_leading"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.exactly_one_up",
+   "axes": {
+    "relation": "exactly one in (k,l)",
+    "leading": "positive"
+   },
+   "problem": "方程式$x^2-5x+6=0$は$0<x<\\dfrac{5}{2}$にちょうど1つの解をもつか。",
+   "statement": "∃! x : ℝ, 0 < x ∧ x < 5/2 ∧ x^2-5*x+6 = 0",
+   "proof": "obtain ⟨x, ⟨h1, h2, h3⟩, u⟩ := sign_change_unique_root_between 1 (-5) 6 0 (5/2) (by norm_num) (by norm_num)\nrefine ⟨x, ⟨h1, h2, by linarith⟩, ?_⟩\nrintro y ⟨k1, k2, k3⟩\nexact u y ⟨k1, k2, by linarith⟩",
+   "cards": [
+    "sign_change_unique_root_between"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.exactly_one_down",
+   "axes": {
+    "relation": "exactly one in (k,l)",
+    "leading": "negative"
+   },
+   "problem": "方程式$-x^2+5x-6=0$は$0<x<\\dfrac{5}{2}$にちょうど1つの解をもつか。",
+   "statement": "∃! x : ℝ, 0 < x ∧ x < 5/2 ∧ -x^2+5*x-6 = 0",
+   "proof": "obtain ⟨x, ⟨h1, h2, h3⟩, u⟩ := sign_change_unique_root_between (-1) 5 (-6) 0 (5/2) (by norm_num) (by norm_num)\nrefine ⟨x, ⟨h1, h2, by linarith⟩, ?_⟩\nrintro y ⟨k1, k2, k3⟩\nexact u y ⟨k1, k2, by linarith⟩",
+   "cards": [
+    "sign_change_unique_root_between"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.root_at_k_other_greater",
+   "axes": {
+    "relation": "root at k, other greater"
+   },
+   "problem": "方程式$x^2-5x+6=0$が$x=2$を解にもつとき、もう1つの解を求めよ。",
+   "statement": "∀ x : ℝ, x^2-5*x+6 = 0 ↔ x = 2 ∨ x = 3",
+   "proof": "intro x\nhave h := (other_root_from_one_root 1 (-5) 6 2 (by norm_num) (by norm_num)).2 x\nhave e : -(-5 : ℝ) / (1) - 2 = 3 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "other_root_from_one_root"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.root_at_k_other_less",
+   "axes": {
+    "relation": "root at k, other less"
+   },
+   "problem": "方程式$x^2-5x+6=0$が$x=3$を解にもつとき、もう1つの解を求めよ。",
+   "statement": "∀ x : ℝ, x^2-5*x+6 = 0 ↔ x = 3 ∨ x = 2",
+   "proof": "intro x\nhave h := (other_root_from_one_root 1 (-5) 6 3 (by norm_num) (by norm_num)).2 x\nhave e : -(-5 : ℝ) / (1) - 3 = 2 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "other_root_from_one_root"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.double_root_at_k",
+   "axes": {
+    "relation": "double root at k"
+   },
+   "problem": "方程式$x^2-2x+1=0$が$x=1$を解にもつとき、もう1つの解を求めよ。",
+   "statement": "∀ x : ℝ, x^2-2*x+1 = 0 ↔ x = 1 ∨ x = 1",
+   "proof": "intro x\nhave h := (other_root_from_one_root 1 (-2) 1 1 (by norm_num) (by norm_num)).2 x\nhave e : -(-2 : ℝ) / (1) - 1 = 1 := by norm_num\nrw [e] at h\nexact ⟨fun k => h.1 (by linarith), fun k => by have := h.2 k; linarith⟩",
+   "cards": [
+    "other_root_from_one_root"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.axis_at_k",
+   "axes": {
+    "relation": "axis exactly at k",
+    "boundary": "true"
+   },
+   "problem": "方程式$x^2-2x-3=0$の解はともに$1$より大きいか。(軸が$x=1$にある)",
+   "statement": "¬ ∃ p q : ℝ, (∀ x : ℝ, x^2-2*x-3 = 1 * (x - p) * (x - q)) ∧ 1 < p ∧ 1 < q",
+   "proof": "rintro ⟨p, q, h, hp, hq⟩\nhave r := (both_roots_greater_than_iff 1 (-2) (-3) 1 (by norm_num)).1 ⟨p, q, fun x => by linear_combination h x, hp, hq⟩\nnorm_num at r",
+   "cards": [
+    "both_roots_greater_than_iff"
+   ]
+  },
+  {
+   "question": "root_placement",
+   "id": "root_placement.value_zero_at_k",
+   "axes": {
+    "relation": "root exactly at k",
+    "boundary": "true"
+   },
+   "problem": "方程式$x^2-5x+6=0$の解はともに$2$より大きいか。($x=2$で値が$0$になる)",
+   "statement": "¬ ∃ p q : ℝ, (∀ x : ℝ, x^2-5*x+6 = 1 * (x - p) * (x - q)) ∧ 2 < p ∧ 2 < q",
+   "proof": "rintro ⟨p, q, h, hp, hq⟩\nhave r := (both_roots_greater_than_iff 1 (-5) 6 2 (by norm_num)).1 ⟨p, q, fun x => by linear_combination h x, hp, hq⟩\nnorm_num at r",
+   "cards": [
+    "both_roots_greater_than_iff"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_left",
+   "axes": {
+    "opening": "up",
+    "target": "min",
+    "axis": "left of interval"
+   },
+   "problem": "$\\,2\\leq x\\leq 3\\,$における$y=x^2-2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, 2 ≤ x → x ≤ 3 → 0 ≤ x^2-2*x",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) 0 2 3 (by norm_num) (by norm_num)).1 (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_inside",
+   "axes": {
+    "opening": "up",
+    "target": "min",
+    "axis": "inside"
+   },
+   "problem": "$\\,0\\leq x\\leq 3\\,$における$y=x^2-2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 3 → -1 ≤ x^2-2*x",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) 0 0 3 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_left_end",
+   "axes": {
+    "opening": "up",
+    "target": "min",
+    "axis": "at left end",
+    "boundary": "true"
+   },
+   "problem": "$\\,1\\leq x\\leq 3\\,$における$y=x^2-2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, 1 ≤ x → x ≤ 3 → -1 ≤ x^2-2*x",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) 0 1 3 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_right_end",
+   "axes": {
+    "opening": "up",
+    "target": "min",
+    "axis": "at right end",
+    "boundary": "true"
+   },
+   "problem": "$\\,-1\\leq x\\leq 1\\,$における$y=x^2-2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, -1 ≤ x → x ≤ 1 → -1 ≤ x^2-2*x",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) 0 (-1) 1 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_right",
+   "axes": {
+    "opening": "up",
+    "target": "min",
+    "axis": "right of interval"
+   },
+   "problem": "$\\,-2\\leq x\\leq 0\\,$における$y=x^2-2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, -2 ≤ x → x ≤ 0 → 0 ≤ x^2-2*x",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) 0 (-2) 0 (by norm_num) (by norm_num)).2.2 (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_right_far",
+   "axes": {
+    "opening": "up",
+    "target": "max",
+    "axis": "left of midpoint"
+   },
+   "problem": "$\\,0\\leq x\\leq 3\\,$における$y=x^2-2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 3 → x^2-2*x ≤ 3",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_max_at_farther_endpoint 1 (-2) 0 0 3 x (by norm_num) h1 h2).2 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_max_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_left_far",
+   "axes": {
+    "opening": "up",
+    "target": "max",
+    "axis": "right of midpoint"
+   },
+   "problem": "$\\,-1\\leq x\\leq (3/2)\\,$における$y=x^2-2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, -1 ≤ x → x ≤ (3/2) → x^2-2*x ≤ 3",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_max_at_farther_endpoint 1 (-2) 0 (-1) (3/2) x (by norm_num) h1 h2).1 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_max_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_mid",
+   "axes": {
+    "opening": "up",
+    "target": "max",
+    "axis": "at midpoint",
+    "boundary": "true"
+   },
+   "problem": "$\\,0\\leq x\\leq 2\\,$における$y=x^2-2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 2 → x^2-2*x ≤ 0",
+   "proof": "intro x h1 h2\nhave h := (convex_quadratic_max_at_farther_endpoint 1 (-2) 0 0 2 x (by norm_num) h1 h2).1 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_max_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_left",
+   "axes": {
+    "opening": "down",
+    "target": "max",
+    "axis": "left of interval"
+   },
+   "problem": "$\\,2\\leq x\\leq 3\\,$における$y=-x^2+2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, 2 ≤ x → x ≤ 3 → -x^2+2*x ≤ 0",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_max_on_interval_cases (-1) 2 0 2 3 (by norm_num) (by norm_num)).1 (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_max_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_inside",
+   "axes": {
+    "opening": "down",
+    "target": "max",
+    "axis": "inside"
+   },
+   "problem": "$\\,0\\leq x\\leq 3\\,$における$y=-x^2+2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 3 → -x^2+2*x ≤ 1",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_max_on_interval_cases (-1) 2 0 0 3 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_max_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_left_end",
+   "axes": {
+    "opening": "down",
+    "target": "max",
+    "axis": "at left end",
+    "boundary": "true"
+   },
+   "problem": "$\\,1\\leq x\\leq 3\\,$における$y=-x^2+2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, 1 ≤ x → x ≤ 3 → -x^2+2*x ≤ 1",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_max_on_interval_cases (-1) 2 0 1 3 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_max_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_right_end",
+   "axes": {
+    "opening": "down",
+    "target": "max",
+    "axis": "at right end",
+    "boundary": "true"
+   },
+   "problem": "$\\,-1\\leq x\\leq 1\\,$における$y=-x^2+2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, -1 ≤ x → x ≤ 1 → -x^2+2*x ≤ 1",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_max_on_interval_cases (-1) 2 0 (-1) 1 (by norm_num) (by norm_num)).2.1 (by norm_num) (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_max_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.max_axis_right",
+   "axes": {
+    "opening": "down",
+    "target": "max",
+    "axis": "right of interval"
+   },
+   "problem": "$\\,-2\\leq x\\leq 0\\,$における$y=-x^2+2x$の最大値を求めよ。",
+   "statement": "∀ x : ℝ, -2 ≤ x → x ≤ 0 → -x^2+2*x ≤ 0",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_max_on_interval_cases (-1) 2 0 (-2) 0 (by norm_num) (by norm_num)).2.2 (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_max_on_interval_cases"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_right_far",
+   "axes": {
+    "opening": "down",
+    "target": "min",
+    "axis": "left of midpoint"
+   },
+   "problem": "$\\,0\\leq x\\leq 3\\,$における$y=-x^2+2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 3 → -3 ≤ -x^2+2*x",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_min_at_farther_endpoint (-1) 2 0 0 3 x (by norm_num) h1 h2).2 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_min_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_left_far",
+   "axes": {
+    "opening": "down",
+    "target": "min",
+    "axis": "right of midpoint"
+   },
+   "problem": "$\\,-1\\leq x\\leq (3/2)\\,$における$y=-x^2+2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, -1 ≤ x → x ≤ (3/2) → -3 ≤ -x^2+2*x",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_min_at_farther_endpoint (-1) 2 0 (-1) (3/2) x (by norm_num) h1 h2).1 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_min_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "interval_extrema",
+   "id": "interval_extrema.min_axis_mid",
+   "axes": {
+    "opening": "down",
+    "target": "min",
+    "axis": "at midpoint",
+    "boundary": "true"
+   },
+   "problem": "$\\,0\\leq x\\leq 2\\,$における$y=-x^2+2x$の最小値を求めよ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 2 → 0 ≤ -x^2+2*x",
+   "proof": "intro x h1 h2\nhave h := (concave_quadratic_min_at_farther_endpoint (-1) 2 0 0 2 x (by norm_num) h1 h2).1 (by norm_num)\nnorm_num at h\nlinarith",
+   "cards": [
+    "concave_quadratic_min_at_farther_endpoint"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.range_up",
+   "axes": {
+    "opening": "up"
+   },
+   "problem": "$y=x^2-2x+3$の値域を求めよ。",
+   "statement": "Set.range (fun x : ℝ => x^2-2*x+3) = Set.Ici 2",
+   "proof": "have h := quadratic_range_convex 1 (-2) 3 (by norm_num)\nhave e : (fun x : ℝ => x^2-2*x+3) = (fun x : ℝ => 1 * x ^ 2 + (-2) * x + 3) := by\n  funext x\n  ring\nrw [e, h]\nnorm_num",
+   "cards": [
+    "quadratic_range_convex"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.range_down",
+   "axes": {
+    "opening": "down"
+   },
+   "problem": "$y=-x^2+2x+1$の値域を求めよ。",
+   "statement": "Set.range (fun x : ℝ => -x^2+2*x+1) = Set.Iic 2",
+   "proof": "have h := quadratic_range_concave (-1) 2 1 (by norm_num)\nhave e : (fun x : ℝ => -x^2+2*x+1) = (fun x : ℝ => (-1) * x ^ 2 + 2 * x + 1) := by\n  funext x\n  ring\nrw [e, h]\nnorm_num",
+   "cards": [
+    "quadratic_range_concave"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.up_right",
+   "axes": {
+    "opening": "up",
+    "side": "right of axis"
+   },
+   "problem": "$y=x^2-2x+3$が$x\\geq 1$で増加であることを示せ。",
+   "statement": "StrictMonoOn (fun x : ℝ => x^2-2*x+3) (Set.Ici 1)",
+   "proof": "have h := (quadratic_monotone_each_side_of_axis 1 (-2) 3 (by norm_num)).1\nhave e1 : (fun x : ℝ => x^2-2*x+3) = (fun x : ℝ => 1 * x ^ 2 + (-2) * x + 3) := by\n  funext x\n  ring\nhave e2 : -(-2 : ℝ) / (2 * (1)) = 1 := by norm_num\nrw [e2] at h\nrw [e1]\nexact h",
+   "cards": [
+    "quadratic_monotone_each_side_of_axis"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.up_left",
+   "axes": {
+    "opening": "up",
+    "side": "left of axis"
+   },
+   "problem": "$y=x^2-2x+3$が$x\\leq 1$で減少であることを示せ。",
+   "statement": "StrictAntiOn (fun x : ℝ => x^2-2*x+3) (Set.Iic 1)",
+   "proof": "have h := (quadratic_monotone_each_side_of_axis 1 (-2) 3 (by norm_num)).2\nhave e1 : (fun x : ℝ => x^2-2*x+3) = (fun x : ℝ => 1 * x ^ 2 + (-2) * x + 3) := by\n  funext x\n  ring\nhave e2 : -(-2 : ℝ) / (2 * (1)) = 1 := by norm_num\nrw [e2] at h\nrw [e1]\nexact h",
+   "cards": [
+    "quadratic_monotone_each_side_of_axis"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.down_right",
+   "axes": {
+    "opening": "down",
+    "side": "right of axis"
+   },
+   "problem": "$y=-x^2+2x+1$が$x\\geq 1$で減少であることを示せ。",
+   "statement": "StrictAntiOn (fun x : ℝ => -x^2+2*x+1) (Set.Ici 1)",
+   "proof": "have h := (quadratic_monotone_each_side_of_axis_concave (-1) 2 1 (by norm_num)).1\nhave e1 : (fun x : ℝ => -x^2+2*x+1) = (fun x : ℝ => (-1) * x ^ 2 + 2 * x + 1) := by\n  funext x\n  ring\nhave e2 : -(2 : ℝ) / (2 * (-1)) = 1 := by norm_num\nrw [e2] at h\nrw [e1]\nexact h",
+   "cards": [
+    "quadratic_monotone_each_side_of_axis_concave"
+   ]
+  },
+  {
+   "question": "range_monotone",
+   "id": "range_monotone.down_left",
+   "axes": {
+    "opening": "down",
+    "side": "left of axis"
+   },
+   "problem": "$y=-x^2+2x+1$が$x\\leq 1$で増加であることを示せ。",
+   "statement": "StrictMonoOn (fun x : ℝ => -x^2+2*x+1) (Set.Iic 1)",
+   "proof": "have h := (quadratic_monotone_each_side_of_axis_concave (-1) 2 1 (by norm_num)).2\nhave e1 : (fun x : ℝ => -x^2+2*x+1) = (fun x : ℝ => (-1) * x ^ 2 + 2 * x + 1) := by\n  funext x\n  ring\nhave e2 : -(2 : ℝ) / (2 * (-1)) = 1 := by norm_num\nrw [e2] at h\nrw [e1]\nexact h",
+   "cards": [
+    "quadratic_monotone_each_side_of_axis_concave"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_pos_gt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "positive",
+    "relation": ">"
+   },
+   "problem": "不等式$x^2-5x+6>0$を解け。",
+   "statement": "∀ x : ℝ, 0 < x^2-5*x+6 ↔ x < 2 ∨ 3 < x",
+   "proof": "intro x\nhave e : x^2-5*x+6 = 1 * (x - 2) * (x - 3) := by ring\nrw [e]\nexact (factored_inequality_between_and_outside 1 2 3 x (by norm_num) (by norm_num)).2",
+   "cards": [
+    "factored_inequality_between_and_outside"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_pos_lt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "positive",
+    "relation": "<"
+   },
+   "problem": "不等式$x^2-5x+6<0$を解け。",
+   "statement": "∀ x : ℝ, x^2-5*x+6 < 0 ↔ 2 < x ∧ x < 3",
+   "proof": "intro x\nhave e : x^2-5*x+6 = 1 * (x - 2) * (x - 3) := by ring\nrw [e]\nexact (factored_inequality_between_and_outside 1 2 3 x (by norm_num) (by norm_num)).1",
+   "cards": [
+    "factored_inequality_between_and_outside"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_pos_ge",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "positive",
+    "relation": ">="
+   },
+   "problem": "不等式$x^2-5x+6\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, 0 ≤ x^2-5*x+6 ↔ x ≤ 2 ∨ 3 ≤ x",
+   "proof": "intro x\nhave e : x^2-5*x+6 = 1 * (x - 2) * (x - 3) := by ring\nrw [e]\nexact factored_inequality_closed_outside 1 2 3 x (by norm_num) (by norm_num)",
+   "cards": [
+    "factored_inequality_closed_outside"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_pos_le",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "positive",
+    "relation": "<="
+   },
+   "problem": "不等式$x^2-5x+6\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, x^2-5*x+6 ≤ 0 ↔ 2 ≤ x ∧ x ≤ 3",
+   "proof": "intro x\nhave e : x^2-5*x+6 = 1 * (x - 2) * (x - 3) := by ring\nrw [e]\nexact factored_inequality_closed_interval 1 2 3 x (by norm_num) (by norm_num)",
+   "cards": [
+    "factored_inequality_closed_interval"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_zero_gt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "zero",
+    "relation": ">"
+   },
+   "problem": "不等式$x^2-2x+1>0$を解け。",
+   "statement": "∀ x : ℝ, 0 < x^2-2*x+1 ↔ x ≠ 1",
+   "proof": "intro x\nhave e : x^2-2*x+1 = 1 * (x - 1) ^ 2 := by ring\nrw [e]\nexact (double_root_inequality 1 1 x (by norm_num)).1",
+   "cards": [
+    "double_root_inequality"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_zero_le",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "zero",
+    "relation": "<="
+   },
+   "problem": "不等式$x^2-2x+1\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, x^2-2*x+1 ≤ 0 ↔ x = 1",
+   "proof": "intro x\nhave e : x^2-2*x+1 = 1 * (x - 1) ^ 2 := by ring\nrw [e]\nexact (double_root_inequality 1 1 x (by norm_num)).2",
+   "cards": [
+    "double_root_inequality"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_zero_ge",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "zero",
+    "relation": ">="
+   },
+   "problem": "不等式$x^2-2x+1\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, 0 ≤ x^2-2*x+1",
+   "proof": "intro x\nhave e : x^2-2*x+1 = 1 * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading 1 1 x).1 (by norm_num)).1",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_zero_lt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "zero",
+    "relation": "<"
+   },
+   "problem": "不等式$x^2-2x+1<0$を解け。",
+   "statement": "∀ x : ℝ, ¬ x^2-2*x+1 < 0",
+   "proof": "intro x\nhave e : x^2-2*x+1 = 1 * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading 1 1 x).1 (by norm_num)).2.1",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_neg_gt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "negative",
+    "relation": ">"
+   },
+   "problem": "不等式$x^2+x+1>0$を解け。",
+   "statement": "∀ x : ℝ, 0 < x^2+x+1",
+   "proof": "intro x\nhave h := (quadratic_positive_everywhere_iff 1 1 1 (by norm_num)).2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_positive_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_neg_ge",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "negative",
+    "relation": ">="
+   },
+   "problem": "不等式$x^2+x+1\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, 0 ≤ x^2+x+1",
+   "proof": "intro x\nhave h := (quadratic_positive_everywhere_iff 1 1 1 (by norm_num)).2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_positive_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_neg_lt",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "negative",
+    "relation": "<"
+   },
+   "problem": "不等式$x^2+x+1<0$を解け。",
+   "statement": "∀ x : ℝ, ¬ x^2+x+1 < 0",
+   "proof": "intro x k\nhave h := (quadratic_positive_everywhere_iff 1 1 1 (by norm_num)).2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_positive_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.up_neg_le",
+   "axes": {
+    "leading": "positive",
+    "discriminant": "negative",
+    "relation": "<="
+   },
+   "problem": "不等式$x^2+x+1\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, ¬ x^2+x+1 ≤ 0",
+   "proof": "intro x k\nhave h := (quadratic_positive_everywhere_iff 1 1 1 (by norm_num)).2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_positive_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_pos_gt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "positive",
+    "relation": ">"
+   },
+   "problem": "不等式$-x^2+5x-6>0$を解け。",
+   "statement": "∀ x : ℝ, 0 < -x^2+5*x-6 ↔ 2 < x ∧ x < 3",
+   "proof": "intro x\nhave e : -x^2+5*x-6 = (-1) * (x - 2) * (x - 3) := by ring\nrw [e]\nexact negative_leading_inequality_between (-1) 2 3 x (by norm_num) (by norm_num)",
+   "cards": [
+    "negative_leading_inequality_between"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_pos_ge",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "positive",
+    "relation": ">="
+   },
+   "problem": "不等式$-x^2+5x-6\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, 0 ≤ -x^2+5*x-6 ↔ 2 ≤ x ∧ x ≤ 3",
+   "proof": "intro x\nhave e : -x^2+5*x-6 = (-1) * (x - 2) * (x - 3) := by ring\nrw [e]\nexact (negative_leading_inequality_table (-1) 2 3 x (by norm_num) (by norm_num)).2.1",
+   "cards": [
+    "negative_leading_inequality_table"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_pos_lt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "positive",
+    "relation": "<"
+   },
+   "problem": "不等式$-x^2+5x-6<0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+5*x-6 < 0 ↔ x < 2 ∨ 3 < x",
+   "proof": "intro x\nhave e : -x^2+5*x-6 = (-1) * (x - 2) * (x - 3) := by ring\nrw [e]\nexact (negative_leading_inequality_table (-1) 2 3 x (by norm_num) (by norm_num)).2.2.1",
+   "cards": [
+    "negative_leading_inequality_table"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_pos_le",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "positive",
+    "relation": "<="
+   },
+   "problem": "不等式$-x^2+5x-6\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+5*x-6 ≤ 0 ↔ x ≤ 2 ∨ 3 ≤ x",
+   "proof": "intro x\nhave e : -x^2+5*x-6 = (-1) * (x - 2) * (x - 3) := by ring\nrw [e]\nexact (negative_leading_inequality_table (-1) 2 3 x (by norm_num) (by norm_num)).2.2.2",
+   "cards": [
+    "negative_leading_inequality_table"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_zero_le",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "zero",
+    "relation": "<="
+   },
+   "problem": "不等式$-x^2+2x-1\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+2*x-1 ≤ 0",
+   "proof": "intro x\nhave e : -x^2+2*x-1 = (-1) * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading (-1) 1 x).2 (by norm_num)).1",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_zero_gt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "zero",
+    "relation": ">"
+   },
+   "problem": "不等式$-x^2+2x-1>0$を解け。",
+   "statement": "∀ x : ℝ, ¬ 0 < -x^2+2*x-1",
+   "proof": "intro x\nhave e : -x^2+2*x-1 = (-1) * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading (-1) 1 x).2 (by norm_num)).2.1",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_zero_lt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "zero",
+    "relation": "<"
+   },
+   "problem": "不等式$-x^2+2x-1<0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+2*x-1 < 0 ↔ x ≠ 1",
+   "proof": "intro x\nhave e : -x^2+2*x-1 = (-1) * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading (-1) 1 x).2 (by norm_num)).2.2.1",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_zero_ge",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "zero",
+    "relation": ">="
+   },
+   "problem": "不等式$-x^2+2x-1\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, 0 ≤ -x^2+2*x-1 ↔ x = 1",
+   "proof": "intro x\nhave e : -x^2+2*x-1 = (-1) * (x - 1) ^ 2 := by ring\nrw [e]\nexact ((double_root_inequality_any_leading (-1) 1 x).2 (by norm_num)).2.2.2",
+   "cards": [
+    "double_root_inequality_any_leading"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_neg_lt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "negative",
+    "relation": "<"
+   },
+   "problem": "不等式$-x^2+x-1<0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+x-1 < 0",
+   "proof": "intro x\nhave h := (quadratic_negative_everywhere_iff (-1) 1 (-1) (by norm_num)).1.2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_negative_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_neg_le",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "negative",
+    "relation": "<="
+   },
+   "problem": "不等式$-x^2+x-1\\leq 0$を解け。",
+   "statement": "∀ x : ℝ, -x^2+x-1 ≤ 0",
+   "proof": "intro x\nhave h := (quadratic_negative_everywhere_iff (-1) 1 (-1) (by norm_num)).1.2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_negative_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_neg_gt",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "negative",
+    "relation": ">"
+   },
+   "problem": "不等式$-x^2+x-1>0$を解け。",
+   "statement": "∀ x : ℝ, ¬ 0 < -x^2+x-1",
+   "proof": "intro x k\nhave h := (quadratic_negative_everywhere_iff (-1) 1 (-1) (by norm_num)).1.2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_negative_everywhere_iff"
+   ]
+  },
+  {
+   "question": "inequality",
+   "id": "inequality.down_neg_ge",
+   "axes": {
+    "leading": "negative",
+    "discriminant": "negative",
+    "relation": ">="
+   },
+   "problem": "不等式$-x^2+x-1\\geq 0$を解け。",
+   "statement": "∀ x : ℝ, ¬ 0 ≤ -x^2+x-1",
+   "proof": "intro x k\nhave h := (quadratic_negative_everywhere_iff (-1) 1 (-1) (by norm_num)).1.2 ⟨by norm_num, by norm_num⟩ x\nlinarith",
+   "cards": [
+    "quadratic_negative_everywhere_iff"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.line_two_points",
+   "axes": {
+    "line_relation": "two points"
+   },
+   "problem": "放物線$y=x^2$と直線$y=x+1$の共有点の個数を求めよ。",
+   "statement": "{x : ℝ | x ^ 2 = x + 1}.ncard = 2",
+   "proof": "have h := (root_count_by_discriminant 1 (-1) (-1) (by norm_num)).1 (by norm_num)\nhave e : {x : ℝ | x ^ 2 = x + 1} = {x : ℝ | 1 * x ^ 2 + (-1) * x + (-1) = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.line_none",
+   "axes": {
+    "line_relation": "no point"
+   },
+   "problem": "放物線$y=x^2$と直線$y=x-1$の共有点の個数を求めよ。",
+   "statement": "{x : ℝ | x ^ 2 = x - 1} = ∅",
+   "proof": "have h := (root_count_by_discriminant 1 (-1) 1 (by norm_num)).2.2 (by norm_num)\nhave e : {x : ℝ | x ^ 2 = x - 1} = {x : ℝ | 1 * x ^ 2 + (-1) * x + 1 = 0} := by\n  ext x\n  simp only [Set.mem_setOf_eq]\n  constructor <;> intro k <;> linarith\nrw [e]\nexact h",
+   "cards": [
+    "root_count_by_discriminant"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.line_tangent_up",
+   "axes": {
+    "line_relation": "tangent",
+    "opening": "up"
+   },
+   "problem": "放物線$y=x^2$と直線$y=2x-1$は接するか。",
+   "statement": "∃! x : ℝ, x^2 = 2 * x + (-1)",
+   "proof": "obtain ⟨x, hx, u⟩ := (parabola_line_tangent_iff_discriminant 1 0 0 2 (-1) (by norm_num)).2 (by norm_num)\nhave hx' : 1 * x ^ 2 + 0 * x + 0 = 2 * x + (-1) := hx\nrefine ⟨x, ?_, ?_⟩\n· show x^2 = 2 * x + (-1)\n  linarith\n· intro y hy\n  have hy' : y^2 = 2 * y + (-1) := hy\n  exact u y (show 1 * y ^ 2 + 0 * y + 0 = 2 * y + (-1) by linarith)",
+   "cards": [
+    "parabola_line_tangent_iff_discriminant"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.line_tangent_down",
+   "axes": {
+    "line_relation": "tangent",
+    "opening": "down"
+   },
+   "problem": "放物線$y=-x^2$と直線$y=-2x+1$は接するか。",
+   "statement": "∃! x : ℝ, -x^2 = -2 * x + (1)",
+   "proof": "obtain ⟨x, hx, u⟩ := (parabola_line_tangent_iff_discriminant (-1) 0 0 (-2) 1 (by norm_num)).2 (by norm_num)\nhave hx' : (-1) * x ^ 2 + 0 * x + 0 = (-2) * x + 1 := hx\nrefine ⟨x, ?_, ?_⟩\n· show -x^2 = -2 * x + (1)\n  linarith\n· intro y hy\n  have hy' : -y^2 = -2 * y + (1) := hy\n  exact u y (show (-1) * y ^ 2 + 0 * y + 0 = (-2) * y + 1 by linarith)",
+   "cards": [
+    "parabola_line_tangent_iff_discriminant"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.at_point_up",
+   "axes": {
+    "position": "above tangent",
+    "opening": "up"
+   },
+   "problem": "放物線$y=x^2$は$x=1$における接線$y=2x-1$の上側にあることを示せ。",
+   "statement": "∀ x : ℝ, 2 * x - 1 ≤ x ^ 2",
+   "proof": "intro x\nhave h := (parabola_above_tangent_line 1 0 0 1 x (by norm_num)).1\nnorm_num at h\nlinarith",
+   "cards": [
+    "parabola_above_tangent_line"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.at_point_down",
+   "axes": {
+    "position": "below tangent",
+    "opening": "down"
+   },
+   "problem": "放物線$y=-x^2$は$x=1$における接線$y=-2x+1$の下側にあることを示せ。",
+   "statement": "∀ x : ℝ, -x ^ 2 ≤ -2 * x + 1",
+   "proof": "intro x\nhave h := (tangent_line_difference_and_unique_contact (-1) 0 0 1 x).1\nnlinarith [sq_nonneg (x - 1)]",
+   "cards": [
+    "tangent_line_difference_and_unique_contact"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.through_outside_point",
+   "axes": {
+    "point": "outside (two tangents)"
+   },
+   "problem": "点$(0,-1)$を通る$y=x^2$の接線の接点を求めよ。",
+   "statement": "∀ p : ℝ, (-1 : ℝ) = p ^ 2 + 2 * p * (0 - p) ↔ p = 1 ∨ p = -1",
+   "proof": "intro p\nhave h := tangent_through_point_iff 1 0 0 p 0 (-1)\nconstructor\n· intro k\n  have k2 := h.1 (by linarith)\n  have k3 : (p - 1) * (p + 1) = 0 := by nlinarith\n  rcases mul_eq_zero.1 k3 with r | r\n  · exact Or.inl (by linarith)\n  · exact Or.inr (by linarith)\n· intro k\n  have k2 : 1 * (p - 0) ^ 2 = 1 * 0 ^ 2 + 0 * 0 + 0 - (-1) := by rcases k with rfl | rfl <;> norm_num\n  have k3 := h.2 k2\n  linarith",
+   "cards": [
+    "tangent_through_point_iff"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.through_curve_point",
+   "axes": {
+    "point": "on the parabola (one tangent)",
+    "boundary": "true"
+   },
+   "problem": "点$(1,1)$を通る$y=x^2$の接線の接点を求めよ。",
+   "statement": "∀ p : ℝ, (1 : ℝ) = p ^ 2 + 2 * p * (1 - p) ↔ p = 1",
+   "proof": "intro p\nhave h := tangent_through_point_iff 1 0 0 p 1 1\nconstructor\n· intro k\n  have k2 := h.1 (by linarith)\n  have k3 : (p - 1) ^ 2 = 0 := by nlinarith\n  exact sub_eq_zero.1 (pow_eq_zero_iff two_ne_zero |>.1 k3)\n· rintro rfl\n  norm_num",
+   "cards": [
+    "tangent_through_point_iff"
+   ]
+  },
+  {
+   "question": "tangent",
+   "id": "tangent.through_inside_point",
+   "axes": {
+    "point": "inside (no tangent)"
+   },
+   "problem": "点$(0,1)$を通る$y=x^2$の接線はあるか。",
+   "statement": "¬ ∃ p : ℝ, (1 : ℝ) = p ^ 2 + 2 * p * (0 - p)",
+   "proof": "rintro ⟨p, k⟩\nhave h := (tangent_through_point_iff 1 0 0 p 0 1).1 (by linarith)\nnlinarith [sq_nonneg p]",
+   "cards": [
+    "tangent_through_point_iff"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.three_points",
+   "axes": {
+    "given": "three points"
+   },
+   "problem": "3点$(0,1),(1,2),(2,5)$を通る放物線はただ1つであることを示せ。",
+   "statement": "∃! t : ℝ × ℝ × ℝ, t.1 * 0 ^ 2 + t.2.1 * 0 + t.2.2 = 1 ∧ t.1 * 1 ^ 2 + t.2.1 * 1 + t.2.2 = 2 ∧ t.1 * 2 ^ 2 + t.2.1 * 2 + t.2.2 = 5",
+   "proof": "exact parabola_through_three_points 0 1 2 1 2 5 (by norm_num) (by norm_num) (by norm_num)",
+   "cards": [
+    "parabola_through_three_points"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.vertex_and_point",
+   "axes": {
+    "given": "vertex and a point"
+   },
+   "problem": "頂点が$(1,2)$で点$(0,3)$を通る放物線を求めよ。",
+   "statement": "∀ a b c : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - 1) ^ 2 + 2) → c = 3 → a = 1 ∧ b = -2",
+   "proof": "intro a b c h hc\nobtain ⟨hb, hc'⟩ := (vertex_form_coefficients a b c 1 2).1 h\nhave ha : a = 1 := by\n  rw [hc] at hc'\n  linarith\nconstructor\n· exact ha\n· rw [hb, ha]\n  norm_num",
+   "cards": [
+    "vertex_form_coefficients"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.axis_and_two_points",
+   "axes": {
+    "given": "axis and two points"
+   },
+   "problem": "軸が$x=1$で2点$(0,1),(3,4)$を通る放物線を求めよ。",
+   "statement": "∀ a b c q : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - 1) ^ 2 + q) → c = 1 → 9 * a + 3 * b + c = 4 → a = 1 ∧ q = 0",
+   "proof": "intro a b c q h hc h3\nobtain ⟨hb, hc'⟩ := (vertex_form_coefficients a b c 1 q).1 h\nconstructor <;> linarith",
+   "cards": [
+    "vertex_form_coefficients"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.two_intercepts_and_point",
+   "axes": {
+    "given": "two x-intercepts and a point"
+   },
+   "problem": "$x$軸と$x=1,3$で交わり点$(0,6)$を通る放物線を求めよ。",
+   "statement": "∀ a b c : ℝ, a ≠ 0 → (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - 1) * (x - 3)) → c = 6 → a = 2 ∧ b = -8",
+   "proof": "intro a b c ha h hc\nobtain ⟨h1, h2⟩ := (vieta_sum_product_iff_factorization a b c 1 3 ha).1 h\nrw [hc] at h2\nhave a2 : a = 2 := by\n  field_simp at h2\n  linarith\nsubst a2\nconstructor\n· rfl\n· linarith",
+   "cards": [
+    "vieta_sum_product_iff_factorization"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.tangent_axis_and_point",
+   "axes": {
+    "given": "tangent to the x-axis and a point",
+    "boundary": "true"
+   },
+   "problem": "$x$軸に$x=2$で接し点$(0,8)$を通る放物線を求めよ。",
+   "statement": "∀ a b c : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = a * (x - 2) ^ 2 + 0) → c = 8 → a = 2 ∧ b = -8",
+   "proof": "intro a b c h hc\nobtain ⟨hb, hc'⟩ := (vertex_form_coefficients a b c 2 0).1 h\nhave ha : a = 2 := by\n  rw [hc] at hc'\n  linarith\nconstructor\n· exact ha\n· rw [hb, ha]\n  norm_num",
+   "cards": [
+    "vertex_form_coefficients"
+   ]
+  },
+  {
+   "question": "coefficients",
+   "id": "coefficients.identity_compare",
+   "axes": {
+    "given": "identity in x"
+   },
+   "problem": "$ax^2+bx+c=2x^2-3x+1$が$x$の恒等式となる$a,b,c$を求めよ。",
+   "statement": "∀ a b c : ℝ, (∀ x : ℝ, a * x ^ 2 + b * x + c = 2 * x ^ 2 - 3 * x + 1) → a = 2 ∧ b = -3 ∧ c = 1",
+   "proof": "intro a b c h\nexact quadratic_coefficients_unique a b c 2 (-3) 1 (fun x => by linear_combination h x)",
+   "cards": [
+    "quadratic_coefficients_unique"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.translate",
+   "axes": {
+    "move": "translation"
+   },
+   "problem": "$y=x^2-2x+3$を$x$方向に$1$、$y$方向に$2$平行移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, (x - 1) ^ 2 - 2 * (x - 1) + 3 + 2 = x ^ 2 - 4 * x + 8",
+   "proof": "intro x\nhave h := (translation_moves_vertex 1 (-2) 3 1 2 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "translation_moves_vertex"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_x_axis",
+   "axes": {
+    "move": "reflection in the x-axis"
+   },
+   "problem": "$y=x^2-2x+3$を$x$軸に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, -(x ^ 2 - 2 * x + 3) = -x ^ 2 + 2 * x - 3",
+   "proof": "intro x\nhave h := (reflection_across_horizontal_line 1 (-2) 3 0 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_horizontal_line"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_x_axis_down",
+   "axes": {
+    "move": "reflection in the x-axis",
+    "opening": "down"
+   },
+   "problem": "$y=-x^2+2x$を$x$軸に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, -(-x ^ 2 + 2 * x) = x ^ 2 - 2 * x",
+   "proof": "intro x\nhave h := (reflection_across_horizontal_line (-1) 2 0 0 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_horizontal_line"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_y_axis",
+   "axes": {
+    "move": "reflection in the y-axis"
+   },
+   "problem": "$y=x^2-2x+3$を$y$軸に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, (-x) ^ 2 - 2 * (-x) + 3 = x ^ 2 + 2 * x + 3",
+   "proof": "intro x\nhave h := (reflection_across_vertical_line 1 (-2) 3 0 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_vertical_line"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_origin",
+   "axes": {
+    "move": "reflection in the origin"
+   },
+   "problem": "$y=x^2-2x+3$を原点に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, -((-x) ^ 2 - 2 * (-x) + 3) = -x ^ 2 - 2 * x - 3",
+   "proof": "intro x\nhave h := (reflection_across_point 1 (-2) 3 0 0 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_point"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_vertical_line",
+   "axes": {
+    "move": "reflection in x=k"
+   },
+   "problem": "$y=x^2-2x+3$を直線$x=2$に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, (4 - x) ^ 2 - 2 * (4 - x) + 3 = x ^ 2 - 6 * x + 11",
+   "proof": "intro x\nhave h := (reflection_across_vertical_line 1 (-2) 3 2 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_vertical_line"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_horizontal_line",
+   "axes": {
+    "move": "reflection in y=l"
+   },
+   "problem": "$y=x^2-2x+3$を直線$y=1$に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, 2 - (x ^ 2 - 2 * x + 3) = -x ^ 2 + 2 * x - 1",
+   "proof": "intro x\nhave h := (reflection_across_horizontal_line 1 (-2) 3 1 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_horizontal_line"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.reflect_point",
+   "axes": {
+    "move": "reflection in a point"
+   },
+   "problem": "$y=x^2-2x+3$を点$(1,1)$に関して対称移動した放物線を求めよ。",
+   "statement": "∀ x : ℝ, 2 - ((2 - x) ^ 2 - 2 * (2 - x) + 3) = -x ^ 2 + 2 * x - 1",
+   "proof": "intro x\nhave h := (reflection_across_point 1 (-2) 3 1 1 (by norm_num)).1 x\nlinear_combination h",
+   "cards": [
+    "reflection_across_point"
+   ]
+  },
+  {
+   "question": "transformations",
+   "id": "transformations.translate_exists",
+   "axes": {
+    "move": "which translation"
+   },
+   "problem": "$y=x^2+4x+7$は$y=x^2-2x+3$を平行移動したものであることを示せ。",
+   "statement": "∃ p q : ℝ, ∀ x : ℝ, x ^ 2 + 4 * x + 7 = (x - p) ^ 2 - 2 * (x - p) + 3 + q",
+   "proof": "obtain ⟨p, q, h⟩ := (translate_iff_same_leading_coefficient 1 (-2) 3 1 4 7 (by norm_num)).2 rfl\nexact ⟨p, q, fun x => by linear_combination h x⟩",
+   "cards": [
+    "translate_iff_same_leading_coefficient"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.positive_on_interval",
+   "axes": {
+    "condition": "positive on an interval",
+    "opening": "up"
+   },
+   "problem": "$m>0$のとき、$2\\leq x\\leq 3$で$x^2-2x+m>0$であることを示せ。",
+   "statement": "∀ m : ℝ, 0 < m → ∀ x : ℝ, 2 ≤ x → x ≤ 3 → 0 < x ^ 2 - 2 * x + m",
+   "proof": "intro m hm x h1 h2\nhave h := (convex_quadratic_min_on_interval_cases 1 (-2) m 2 3 (by norm_num) (by norm_num)).1 (by norm_num) x h1 h2\nnorm_num at h\nlinarith",
+   "cards": [
+    "convex_quadratic_min_on_interval_cases"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.nonneg_on_interval_down",
+   "axes": {
+    "condition": "nonnegative on an interval",
+    "opening": "down"
+   },
+   "problem": "$0\\leq x\\leq 2$で$-x^2+2x\\geq 0$であることを示せ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 2 → 0 ≤ -x ^ 2 + 2 * x",
+   "proof": "intro x h1 h2\nhave h := concave_quadratic_nonneg_from_endpoints (-1) 2 0 0 2 x (by norm_num) h1 h2 (by norm_num) (by norm_num)\nlinarith",
+   "cards": [
+    "concave_quadratic_nonneg_from_endpoints"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.nonpos_on_interval_up",
+   "axes": {
+    "condition": "nonpositive on an interval",
+    "opening": "up"
+   },
+   "problem": "$0\\leq x\\leq 2$で$x^2-2x\\leq 0$であることを示せ。",
+   "statement": "∀ x : ℝ, 0 ≤ x → x ≤ 2 → x ^ 2 - 2 * x ≤ 0",
+   "proof": "intro x h1 h2\nhave h := concave_quadratic_nonneg_from_endpoints (-1) 2 0 0 2 x (by norm_num) h1 h2 (by norm_num) (by norm_num)\nlinarith",
+   "cards": [
+    "concave_quadratic_nonneg_from_endpoints"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.exists_negative",
+   "axes": {
+    "condition": "some value negative"
+   },
+   "problem": "$x^2-x-1<0$を満たす実数$x$があることを示せ。",
+   "statement": "∃ x : ℝ, x ^ 2 - x - 1 < 0",
+   "proof": "by_contra hn\npush_neg at hn\nrcases (quadratic_nonneg_everywhere_iff_general 1 (-1) (-1)).1 (fun x => by linarith [hn x]) with ⟨h, _⟩ | ⟨_, h⟩\n· norm_num at h\n· norm_num at h",
+   "cards": [
+    "quadratic_nonneg_everywhere_iff_general"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.always_positive_param",
+   "axes": {
+    "condition": "positive for all x with a parameter in the leading term"
+   },
+   "problem": "すべての実数$x$で$mx^2+2x+1>0$となる$m$の範囲を求めよ。",
+   "statement": "∀ m : ℝ, (∀ x : ℝ, 0 < m * x ^ 2 + 2 * x + 1) ↔ 1 < m",
+   "proof": "intro m\nhave h := quadratic_positive_everywhere_iff_general m 2 1\nrw [h]\nconstructor\n· rintro (⟨_, h2, _⟩ | ⟨_, h2⟩)\n  · norm_num at h2\n  · nlinarith\n· intro hm\n  right\n  exact ⟨by linarith, by nlinarith⟩",
+   "cards": [
+    "quadratic_positive_everywhere_iff_general"
+   ]
+  },
+  {
+   "question": "parameter",
+   "id": "parameter.always_nonpositive_param",
+   "axes": {
+    "condition": "nonpositive for all x with a parameter in the constant term",
+    "opening": "down"
+   },
+   "problem": "すべての実数$x$で$-x^2+2x+m\\leq 0$となる$m$の範囲を求めよ。",
+   "statement": "∀ m : ℝ, (∀ x : ℝ, -x ^ 2 + 2 * x + m ≤ 0) ↔ m ≤ -1",
+   "proof": "intro m\nhave h := (quadratic_negative_everywhere_iff (-1) 2 m (by norm_num)).2\nconstructor\n· intro k\n  have r := h.1 (fun x => by linarith [k x])\n  linarith [r.2]\n· intro k x\n  have r := h.2 ⟨by norm_num, by linarith⟩ x\n  linarith",
+   "cards": [
+    "quadratic_negative_everywhere_iff"
+   ]
+  },
+  {
+   "question": "x_axis_chord",
+   "id": "x_axis_chord.two_points_up",
+   "axes": {
+    "discriminant": "positive",
+    "opening": "up"
+   },
+   "problem": "$y=x^2-5x+6$が$x$軸から切り取る線分の長さを求めよ。",
+   "statement": "Real.sqrt ((-5 : ℝ) ^ 2 - 4 * 1 * 6) / |(1 : ℝ)| = 1",
+   "proof": "have h := root_difference_from_discriminant 1 (-5) 6 2 3 (by norm_num) (by norm_num) (fun x => by ring)\nlinarith",
+   "cards": [
+    "root_difference_from_discriminant"
+   ]
+  },
+  {
+   "question": "x_axis_chord",
+   "id": "x_axis_chord.two_points_down",
+   "axes": {
+    "discriminant": "positive",
+    "opening": "down"
+   },
+   "problem": "$y=-2x^2+8x-6$が$x$軸から切り取る線分の長さを求めよ。",
+   "statement": "Real.sqrt ((8 : ℝ) ^ 2 - 4 * (-2) * (-6)) / |(-2 : ℝ)| = 2",
+   "proof": "have h := root_difference_from_discriminant (-2) 8 (-6) 1 3 (by norm_num) (by norm_num) (fun x => by ring)\nlinarith",
+   "cards": [
+    "root_difference_from_discriminant"
+   ]
+  },
+  {
+   "question": "x_axis_chord",
+   "id": "x_axis_chord.tangent",
+   "axes": {
+    "discriminant": "zero",
+    "boundary": "true"
+   },
+   "problem": "$y=x^2-2x+1$が$x$軸から切り取る線分の長さを求めよ。",
+   "statement": "Real.sqrt ((-2 : ℝ) ^ 2 - 4 * 1 * 1) / |(1 : ℝ)| = 0",
+   "proof": "have h := root_difference_from_discriminant 1 (-2) 1 1 1 (by norm_num) (by norm_num) (fun x => by ring)\nlinarith",
+   "cards": [
+    "root_difference_from_discriminant"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.up_right",
+   "axes": {
+    "opening": "up",
+    "axis": "right of the y-axis"
+   },
+   "problem": "$y=x^2+bx$の軸が$y$軸より右にあるとき、$b$の符号を答えよ。",
+   "statement": "∀ b : ℝ, 0 < -b / (2 * 1) → b < 0",
+   "proof": "intro b k\nhave h := (axis_sign_iff_coefficient_product 1 b (by norm_num)).1.1 k\nlinarith",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.up_left",
+   "axes": {
+    "opening": "up",
+    "axis": "left of the y-axis"
+   },
+   "problem": "$y=x^2+bx$の軸が$y$軸より左にあるとき、$b$の符号を答えよ。",
+   "statement": "∀ b : ℝ, -b / (2 * 1) < 0 → 0 < b",
+   "proof": "intro b k\nhave h := (axis_sign_iff_coefficient_product 1 b (by norm_num)).2.1.1 k\nlinarith",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.up_on",
+   "axes": {
+    "opening": "up",
+    "axis": "on the y-axis",
+    "boundary": "true"
+   },
+   "problem": "$y=x^2+bx$の軸が$y$軸であるとき、$b$を答えよ。",
+   "statement": "∀ b : ℝ, -b / (2 * 1) = 0 → b = 0",
+   "proof": "intro b k\nexact (axis_sign_iff_coefficient_product 1 b (by norm_num)).2.2.1 k",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.down_right",
+   "axes": {
+    "opening": "down",
+    "axis": "right of the y-axis"
+   },
+   "problem": "$y=-x^2+bx$の軸が$y$軸より右にあるとき、$b$の符号を答えよ。",
+   "statement": "∀ b : ℝ, 0 < -b / (2 * (-1)) → 0 < b",
+   "proof": "intro b k\nhave h := (axis_sign_iff_coefficient_product (-1) b (by norm_num)).1.1 k\nlinarith",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.down_left",
+   "axes": {
+    "opening": "down",
+    "axis": "left of the y-axis"
+   },
+   "problem": "$y=-x^2+bx$の軸が$y$軸より左にあるとき、$b$の符号を答えよ。",
+   "statement": "∀ b : ℝ, -b / (2 * (-1)) < 0 → b < 0",
+   "proof": "intro b k\nhave h := (axis_sign_iff_coefficient_product (-1) b (by norm_num)).2.1.1 k\nlinarith",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  },
+  {
+   "question": "graph_reading",
+   "id": "graph_reading.down_on",
+   "axes": {
+    "opening": "down",
+    "axis": "on the y-axis",
+    "boundary": "true"
+   },
+   "problem": "$y=-x^2+bx$の軸が$y$軸であるとき、$b$を答えよ。",
+   "statement": "∀ b : ℝ, -b / (2 * (-1)) = 0 → b = 0",
+   "proof": "intro b k\nexact (axis_sign_iff_coefficient_product (-1) b (by norm_num)).2.2.1 k",
+   "cards": [
+    "axis_sign_iff_coefficient_product"
+   ]
+  }
+ ]
+}

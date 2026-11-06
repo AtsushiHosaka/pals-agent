@@ -1,0 +1,84 @@
+# Proposed additive OpenMath vocabulary (cd=pals2) for modules and categories.
+is_ring: {args: [term], returns: prop, meaning: "R is a ring"}
+is_comm_ring: {args: [term], returns: prop, meaning: "R is a commutative ring"}
+is_pid: {args: [term], returns: prop, meaning: "R is a principal ideal domain"}
+is_module: {args: [term, term], returns: prop, meaning: "M is a module over the ring R"}
+is_submodule: {args: [term, term], returns: prop, meaning: "N is a submodule of the module M"}
+module_hom: {args: [term, term, term, term], returns: prop, meaning: "f is an R-linear map from M to N, in the order f R M N"}
+module_iso: {args: [term, term, term], returns: prop, meaning: "A and B are isomorphic as R-modules, in the order R A B"}
+map_kernel: {args: [term], returns: term, meaning: "kernel of a linear map"}
+map_image: {args: [term], returns: term, meaning: "image of a linear map"}
+quotient_module: {args: [term, term], returns: term, meaning: "quotient module M/N"}
+image_submodule: {args: [term, term], returns: term, meaning: "image f(N) of a submodule N under a linear map f"}
+preimage_submodule: {args: [term, term], returns: term, meaning: "preimage of a submodule N under a linear map f"}
+quotient_proj: {args: [term, term], returns: term, meaning: "canonical projection M to M/N"}
+submodule_sum: {args: [term, term], returns: term, meaning: "sum N1+N2 of two submodules"}
+submodule_inter: {args: [term, term], returns: term, meaning: "intersection of two submodules"}
+map_compose: {args: [term, term], returns: term, meaning: "composite g after f of two maps, in the order g f"}
+identity_map: {args: [term], returns: term, meaning: "identity map of a module"}
+zero_module: {args: [], returns: term, meaning: "the zero module"}
+zero_map: {args: [term, term], returns: term, meaning: "zero map from M to N"}
+exact_pair: {args: [term, term], returns: prop, meaning: "the image of f equals the kernel of g, in the order f g"}
+injective_map: {args: [term], returns: prop, meaning: "the map is injective"}
+surjective_map: {args: [term], returns: prop, meaning: "the map is surjective"}
+bijective_map: {args: [term], returns: prop, meaning: "the map is bijective"}
+direct_sum_modules: {args: [term, term], returns: term, meaning: "direct sum of two modules"}
+post_compose: {args: [term], returns: term, meaning: "the map k to f after k between Hom sets"}
+free_module: {args: [term, term], returns: prop, meaning: "M is a free R-module, in the order R M"}
+free_module_on: {args: [term, term], returns: term, meaning: "free R-module on the set S, in the order R S"}
+projective_module: {args: [term, term], returns: prop, meaning: "M is a projective R-module, in the order R M"}
+injective_module: {args: [term, term], returns: prop, meaning: "M is an injective R-module, in the order R M"}
+flat_module: {args: [term, term], returns: prop, meaning: "M is a flat R-module, in the order R M"}
+sum_inclusion_left: {args: [term, term], returns: term, meaning: "inclusion of A into the direct sum of A and C"}
+sum_projection_right: {args: [term, term], returns: term, meaning: "projection of the direct sum of A and C onto C"}
+tensor_product_module: {args: [term, term, term], returns: term, meaning: "tensor product of M and N over R, in the order R M N"}
+pure_tensor: {args: [term, term], returns: term, meaning: "pure tensor m tensor n"}
+tensor_identity_map: {args: [term, term], returns: term, meaning: "the map id_Q tensor f, in the order Q f"}
+bilinear_map: {args: [term, term, term, term, term], returns: prop, meaning: "f is R-bilinear from M and N to P, in the order f R M N P"}
+torsion_submodule: {args: [term, term], returns: term, meaning: "torsion submodule of M over R, in the order R M"}
+finitely_generated_module: {args: [term, term], returns: prop, meaning: "M is a finitely generated R-module, in the order R M"}
+noetherian_module: {args: [term, term], returns: prop, meaning: "M is a Noetherian R-module, in the order R M"}
+artinian_module: {args: [term, term], returns: prop, meaning: "M is an Artinian R-module, in the order R M"}
+simple_module: {args: [term, term], returns: prop, meaning: "M is a simple R-module, in the order R M"}
+semisimple_module: {args: [term, term], returns: prop, meaning: "M is a semisimple R-module, in the order R M"}
+sum_of_simple_submodules: {args: [term, term], returns: term, meaning: "sum of all simple submodules of M, in the order R M"}
+irreducible_element: {args: [term, term], returns: prop, meaning: "a is an irreducible element of R"}
+free_rank_module: {args: [term, term], returns: term, meaning: "the free module R^n, in the order R n"}
+prime_power_quotient_sum: {args: [term, term, term, term], returns: term, meaning: "direct sum over i below m of R modulo p_i to the e_i, in the order R p e m"}
+direct_complement: {args: [term, term, term], returns: prop, meaning: "N and N' are direct complements in M, in the order N N' M"}
+is_category: {args: [term], returns: prop, meaning: "C is a category"}
+abelian_category: {args: [term], returns: prop, meaning: "C is an abelian category"}
+object_of: {args: [term, term], returns: prop, meaning: "X is an object of the category C"}
+morphism_between: {args: [term, term, term], returns: prop, meaning: "f is a morphism from X to Y, in the order f X Y"}
+cat_compose: {args: [term, term], returns: term, meaning: "composite of morphisms, g after f, in the order g f"}
+cat_identity: {args: [term], returns: term, meaning: "identity morphism of X"}
+mono_morphism: {args: [term], returns: prop, meaning: "f is a monomorphism"}
+epi_morphism: {args: [term], returns: prop, meaning: "f is an epimorphism"}
+iso_morphism: {args: [term], returns: prop, meaning: "f is an isomorphism"}
+functor_between: {args: [term, term, term], returns: prop, meaning: "F is a functor from C to D, in the order F C D"}
+functor_on_morphism: {args: [term, term], returns: term, meaning: "F(f) for a functor F and morphism f"}
+functor_on_object: {args: [term, term], returns: term, meaning: "F(X) for a functor F and object X"}
+full_functor: {args: [term], returns: prop, meaning: "F is full"}
+faithful_functor: {args: [term], returns: prop, meaning: "F is faithful"}
+equivalence_functor: {args: [term], returns: prop, meaning: "F is an equivalence of categories"}
+functor_compose: {args: [term, term], returns: term, meaning: "composite functor, G after F, in the order G F"}
+identity_functor: {args: [term], returns: term, meaning: "identity functor of a category"}
+nat_trans_between: {args: [term, term, term], returns: prop, meaning: "t is a natural transformation from F to G, in the order t F G"}
+nat_trans_component: {args: [term, term], returns: term, meaning: "component of a natural transformation at an object"}
+naturally_isomorphic: {args: [term, term], returns: prop, meaning: "functors F and G are naturally isomorphic"}
+adjoint_pair: {args: [term, term], returns: prop, meaning: "F is left adjoint to G, in the order F G"}
+adjunction_unit: {args: [term, term, term], returns: term, meaning: "unit of the adjunction of F and G at X, in the order F G X"}
+limit_cone: {args: [term, term], returns: prop, meaning: "c is a limit cone of the diagram K, in the order c K"}
+cone_apex: {args: [term], returns: term, meaning: "apex of a cone"}
+cone_leg: {args: [term, term], returns: term, meaning: "leg of a cone at an index"}
+functor_image_cone: {args: [term, term], returns: term, meaning: "image of a cone under a functor, in the order G c"}
+functor_image_diagram: {args: [term, term], returns: term, meaning: "composite of a diagram with a functor, in the order G K"}
+presheaf_on: {args: [term, term], returns: prop, meaning: "F is a set-valued contravariant functor on C, in the order F C"}
+hom_functor: {args: [term], returns: term, meaning: "representable functor Hom(-,X)"}
+nat_trans_set: {args: [term, term], returns: term, meaning: "set of natural transformations from F to G"}
+hom_set: {args: [term, term], returns: term, meaning: "set of morphisms from X to Y"}
+yoneda_map: {args: [term], returns: term, meaning: "natural transformation Hom(-,X) to Hom(-,Y) induced by f"}
+bijection_between: {args: [term, term, term], returns: prop, meaning: "e is a bijection from A to B, in the order e A B"}
+pullback_projection_right: {args: [term, term], returns: term, meaning: "projection from the pullback of f and g to the domain of g, in the order f g"}
+kernel_inclusion: {args: [term], returns: term, meaning: "kernel morphism of f in an abelian category"}
+zero_morphism_cat: {args: [], returns: term, meaning: "zero morphism"}

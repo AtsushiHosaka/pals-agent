@@ -1,0 +1,1816 @@
+- id: subspace_inter_closed
+  kind: gap
+  level: 1
+  topic: 線形代数・部分空間の共通部分
+  statement: ベクトル空間の2つの部分空間$S,T$の共通部分はスカラー倍と和で閉じる。すなわち$x,y\in S\cap T$とスカラー$a$に対し$ax+y\in S\cap T$である。
+  statement_en: For subspaces S and T of a vector space over a field K, x, y in S ∩ T and a in K imply a x + y in S ∩ T.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $S,T$は$V$の部分空間
+  - $x,y$は$S\cap T$の元
+  quantifiers:
+  - 任意の部分空間$S,T$、スカラー$a\in K$、ベクトル$x,y\in V$
+  conclusion: $ax+y\in S\cap T$である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$S,T$を$V$の部分空間とし、$a\in K$、$x,y\in S\cap T$とする。$x,y$はともに$S$に属するので、$S$が部分空間であることから$ax+y\in S$である。同様に$x,y$はともに$T$に属するので、$ax+y\in T$である。したがって$ax+y\in S\cap T$である。
+  strategy: Check membership in each subspace separately.
+  sketch:
+  - 'setup: Take x, y in S ∩ T and a scalar a.'
+  - 'derive: Closure of S gives a x + y in S, and closure of T gives a x + y in T.'
+  - 'conclude: Hence a x + y lies in the intersection.'
+  openmath: (forall (K V S T a x y) (-> (and (vector_space_over V K) (subspace_of S V) (subspace_of T V) (in a K) (in x (inter S T)) (in y (inter S T))) (in (+ (* a x) y) (inter S T))))
+  hard_negative:
+    statement: 2つの部分空間の和集合S∪Tも常に部分空間である。
+    reason: R^2のx軸とy軸の和集合は(1,0)と(0,1)を含むが、その和(1,1)を含まない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (S T : Submodule K V) (a : K) (x y : V), x ∈ S ⊓ T → y ∈ S ⊓ T → a • x + y ∈ S ⊓ T
+  proof: |
+    by
+      intro K _ V _ _ S T a x y hx hy
+      exact (S ⊓ T).add_mem ((S ⊓ T).smul_mem a hx) hy
+- id: subspace_sum_mem_iff
+  kind: gap
+  level: 1
+  topic: 線形代数・部分空間の和
+  statement: 部分空間$S,T$に対し、$x$が$S+T$に属することと、$y\in S$と$z\in T$により$x=y+z$と書けることは同値である。
+  statement_en: For subspaces S and T, x lies in S + T if and only if x = y + z for some y in S and z in T.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $S,T$は$V$の部分空間
+  quantifiers:
+  - 任意の部分空間$S,T$とベクトル$x\in V$
+  conclusion: $x\in S+T$と、$y\in S$, $z\in T$による表示$x=y+z$の存在は同値である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$S,T$を$V$の部分空間とし、$S+T$を$S$と$T$を含む最小の部分空間とする。$U=\{y+z\mid y\in S,\ z\in T\}$とおき、$U=S+T$を示す。これが示せれば、$x\in S+T$は$x\in U$と同じことなので主張が従う。
+
+    $y,y'\in S$、$z,z'\in T$、$a\in K$について$a(y+z)+(y'+z')=(ay+y')+(az+z')$であり、$0=0+0\in U$なので、$U$は部分空間である。また$y=y+0$、$z=0+z$より$U$は$S$と$T$を含む。逆に$S$と$T$を含む部分空間は和で閉じるので、すべての$y+z$を含み、したがって$U$を含む。よって$U$は$S$と$T$を含む最小の部分空間であり、$S+T$に等しい。
+  strategy: Show the set of sums y + z is the smallest subspace containing S and T.
+  sketch:
+  - 'construct: Define U as the set of all y + z with y in S and z in T.'
+  - 'derive: U is closed under addition and scalar multiplication and contains S and T.'
+  - 'derive: Any subspace containing S and T contains every y + z.'
+  - 'conclude: U equals S + T, which gives the equivalence.'
+  openmath: (forall (K V S T x) (-> (and (vector_space_over V K) (subspace_of S V) (subspace_of T V)) (<-> (in x (subspace_sum S T)) (exists (y z) (and (in y S) (in z T) (= x (+ y z)))))))
+  hard_negative:
+    statement: x∈S+Tならば、x=y+z(y∈S, z∈T)の分解は一意である。
+    reason: 一意性にはS∩T={0}が必要である。S=TでS≠{0}なら、0でないy∈Sについて0=0+0=y+(-y)となる。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (S T : Submodule K V) (x : V), x ∈ S ⊔ T ↔ ∃ y ∈ S, ∃ z ∈ T, y + z = x
+  proof: |
+    by
+      intro K _ V _ _ S T x
+      exact Submodule.mem_sup
+- id: dimension_formula
+  kind: textbook
+  level: 1
+  topic: 線形代数・次元公式
+  statement: 有限次元ベクトル空間の部分空間$S,T$について$\dim(S+T)+\dim(S\cap T)=\dim S+\dim T$が成り立つ。
+  statement_en: For subspaces S and T of a finite-dimensional vector space, dim(S + T) + dim(S ∩ T) = dim S + dim T.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $S,T$は$V$の部分空間
+  quantifiers:
+  - 任意の部分空間$S,T$
+  conclusion: $\dim(S+T)+\dim(S\cap T)=\dim S+\dim T$が成り立つ。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$S,T$を$V$の部分空間とする。$S\cap T$の基底$u_1,\dots,u_r$を取り、これを延長して$S$の基底$u_1,\dots,u_r,v_1,\dots,v_p$と$T$の基底$u_1,\dots,u_r,w_1,\dots,w_q$を作る。$r+p+q$個のベクトル$u_1,\dots,u_r,v_1,\dots,v_p,w_1,\dots,w_q$が$S+T$の基底であることを示す。
+
+    $S+T$の元は$S$の元と$T$の元の和なので、これらのベクトルは$S+T$を生成する。次に一次関係$\sum_i a_iu_i+\sum_j b_jv_j+\sum_k c_kw_k=0$があるとする。$t=\sum_k c_kw_k=-(\sum_i a_iu_i+\sum_j b_jv_j)$は$T$と$S$の両方に属するので、$t=\sum_i d_iu_i$と書ける。$\sum_k c_kw_k-\sum_i d_iu_i=0$と$u_1,\dots,u_r,w_1,\dots,w_q$の一次独立性から、すべての$c_k$は$0$である。すると$\sum_i a_iu_i+\sum_j b_jv_j=0$となり、$u_1,\dots,u_r,v_1,\dots,v_p$の一次独立性からすべての$a_i,b_j$も$0$である。
+
+    よって$\dim(S+T)=r+p+q$である。$\dim(S\cap T)=r$、$\dim S=r+p$、$\dim T=r+q$なので、両辺はともに$2r+p+q$となり等式が成り立つ。
+  strategy: Extend a basis of the intersection to bases of S and T and show the union is a basis of the sum.
+  sketch:
+  - 'construct: Pick a basis u of S ∩ T and extend it to bases u ∪ v of S and u ∪ w of T.'
+  - 'derive: The family u ∪ v ∪ w spans S + T.'
+  - 'derive: In a linear relation, the w-part lies in S ∩ T, so its coefficients vanish by independence of u ∪ w.'
+  - 'derive: The remaining relation vanishes by independence of u ∪ v.'
+  - 'conclude: Counting the basis of S + T gives the formula.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (finite_dim_space V) (subspace_of S V) (subspace_of T V)) (= (+ (dimension (subspace_sum S T)) (dimension (inter S T))) (+ (dimension S) (dimension T)))))
+  hard_negative:
+    statement: dim(S+T)=dim S+dim Tが常に成り立つ。
+    reason: S∩T≠{0}なら成り立たない。S=T≠{0}ではdim(S+T)=dim Sである。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S T : Submodule K V), Module.finrank K ↥(S ⊔ T) + Module.finrank K ↥(S ⊓ T) = Module.finrank K ↥S + Module.finrank K ↥T
+  proof: |
+    by
+      intro K _ V _ _ _ S T
+      exact Submodule.finrank_sup_add_finrank_inf_eq S T
+- id: direct_sum_dimension
+  kind: gap
+  level: 1
+  topic: 線形代数・直和の次元
+  statement: 有限次元ベクトル空間$V$が$V=S\oplus T$と直和分解されるなら$\dim S+\dim T=\dim V$である。
+  statement_en: If V is finite-dimensional and S and T are complementary subspaces, then dim S + dim T = dim V.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $S,T$は$V$の部分空間
+  - $S\cap T=\{0\}$かつ$S+T=V$
+  quantifiers:
+  - 任意の互いに補な部分空間$S,T$
+  conclusion: $\dim S+\dim T=\dim V$が成り立つ。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$S,T$を$S\cap T=\{0\}$かつ$S+T=V$を満たす部分空間とする。次元公式から$\dim(S+T)+\dim(S\cap T)=\dim S+\dim T$である。仮定より左辺は$\dim V+0$なので、$\dim V=\dim S+\dim T$を得る。
+  strategy: Specialize the dimension formula to complementary subspaces.
+  sketch:
+  - 'apply_theorem: Apply dim(S + T) + dim(S ∩ T) = dim S + dim T.'
+  - 'derive: Substitute S + T = V and S ∩ T = {0}.'
+  - 'conclude: This gives dim S + dim T = dim V.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (finite_dim_space V) (complementary_subspaces S T V)) (= (+ (dimension S) (dimension T)) (dimension V))))
+  hard_negative:
+    statement: dim S+dim T=dim Vならば、V=S⊕Tである。
+    reason: R^2でS=T=x軸とすると次元の和は2だが、S+TはR^2にならない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S T : Submodule K V), IsCompl S T → Module.finrank K ↥S + Module.finrank K ↥T = Module.finrank K V
+  proof: |
+    by
+      intro K _ V _ _ _ S T h
+      exact Submodule.finrank_add_eq_of_isCompl h
+- id: subspace_eq_of_le_of_finrank_le
+  kind: gap
+  level: 1
+  topic: 線形代数・部分空間の次元
+  statement: 有限次元ベクトル空間の部分空間が$S\subseteq T$かつ$\dim T\leq\dim S$を満たすなら$S=T$である。
+  statement_en: If S ⊆ T are subspaces of a finite-dimensional space and dim T ≤ dim S, then S = T.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $S,T$は$V$の部分空間
+  - $S\subseteq T$
+  - $\dim T\leq\dim S$
+  quantifiers:
+  - 任意の部分空間$S,T$
+  conclusion: $S=T$である。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$S,T$を$S\subseteq T$かつ$\dim T\leq\dim S$を満たす部分空間とする。$S$の基底を取ると、これは$T$の中の一次独立な族であり、個数は$\dim S$である。$S\subseteq T$より$\dim S\leq\dim T$なので、仮定と合わせて$\dim S=\dim T$である。この族は$T$の次元と同じ個数の一次独立系なので、$T$を生成する。よって$T\subseteq S$となり、$S=T$である。
+  strategy: A basis of S is an independent family in T of full size, so it spans T.
+  sketch:
+  - 'setup: Take a basis of S, viewed as an independent family in T.'
+  - 'derive: S ⊆ T and the hypothesis give dim S = dim T.'
+  - 'apply_theorem: An independent family with dim T elements spans T.'
+  - 'conclude: Hence T ⊆ S, so S = T.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (finite_dim_space V) (subspace_of S V) (subspace_of T V) (subset S T) (<= (dimension T) (dimension S))) (= S T)))
+  hard_negative:
+    statement: dim S=dim TならばS=Tである。
+    reason: 包含S⊂Tが必要である。R^2のx軸とy軸はどちらも1次元だが異なる。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S T : Submodule K V), S ≤ T → Module.finrank K ↥T ≤ Module.finrank K ↥S → S = T
+  proof: |
+    by
+      intro K _ V _ _ _ S T h hd
+      exact Submodule.eq_of_le_of_finrank_le h hd
+- id: subspaces_meet_of_large_dim
+  kind: gap
+  level: 1
+  topic: 線形代数・部分空間の交わり
+  statement: 有限次元ベクトル空間$V$の部分空間$S,T$が$\dim V<\dim S+\dim T$を満たすなら、$S\cap T$は$0$でないベクトルを含む。
+  statement_en: If S and T are subspaces of a finite-dimensional V with dim V < dim S + dim T, then S ∩ T contains a nonzero vector.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $S,T$は$V$の部分空間
+  - $\dim V<\dim S+\dim T$
+  quantifiers:
+  - 任意の部分空間$S,T$
+  conclusion: $x\neq0$, $x\in S$, $x\in T$を満たすベクトル$x$が存在する。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$S,T$を$\dim V<\dim S+\dim T$を満たす部分空間とする。$S\cap T=\{0\}$と仮定する。次元公式から$\dim(S+T)=\dim S+\dim T$である。$S+T$は$V$の部分空間なので$\dim(S+T)\leq\dim V$となり、$\dim S+\dim T\leq\dim V$が得られて仮定に反する。よって$S\cap T$は$0$でないベクトルを含む。
+  strategy: Argue by contradiction using the dimension formula.
+  sketch:
+  - 'contradiction: Suppose S ∩ T = {0}.'
+  - 'apply_theorem: The dimension formula gives dim(S + T) = dim S + dim T.'
+  - 'derive: Since S + T ⊆ V, dim S + dim T ≤ dim V.'
+  - 'conclude: This contradicts the hypothesis, so a nonzero common vector exists.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (finite_dim_space V) (subspace_of S V) (subspace_of T V) (< (dimension V) (+ (dimension S) (dimension T)))) (exists (x) (and (!= x zero_vector) (in x S) (in x T)))))
+  hard_negative:
+    statement: dim V=dim S+dim Tの場合にも、S∩Tは必ず0でないベクトルを含む。
+    reason: R^2のx軸とy軸は次元の和が2=dim R^2だが、共通部分は{0}である。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S T : Submodule K V), Module.finrank K V < Module.finrank K ↥S + Module.finrank K ↥T → ∃ x : V, x ≠ 0 ∧ x ∈ S ∧ x ∈ T
+  proof: |
+    by
+      intro K _ V _ _ _ S T h
+      by_contra hne
+      have hd : Disjoint S T := by
+        refine Submodule.disjoint_def.mpr ?_
+        intro x hx hxT
+        by_contra hx0
+        exact hne ⟨x, hx0, hx, hxT⟩
+      exact absurd (Submodule.finrank_add_finrank_le_of_disjoint hd) (not_le.mpr h)
+- id: li_iff_sum_zero
+  kind: textbook
+  level: 1
+  topic: 線形代数・一次独立の特徴付け
+  statement: 有限個のベクトルの族$(v_i)_{i\in I}$が一次独立であることと、$\sum_i c_iv_i=0$ならばすべての$c_i$が$0$であることは同値である。
+  statement_en: A finite family v is linearly independent if and only if Σ c_i v_i = 0 implies c_i = 0 for all i.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $(v_i)_{i\in I}$は有限集合$I$で添字づけられた$V$のベクトルの族
+  quantifiers:
+  - 任意の有限族$(v_i)_{i\in I}$
+  conclusion: 一次独立性と、自明な一次関係しか持たないことは同値である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$(v_i)_{i\in I}$を有限集合$I$で添字づけられた$V$のベクトルの族とする。一次独立性を、係数から一次結合への対応$(c_i)_i\mapsto\sum_i c_iv_i$が単射であることと定める。
+
+    この対応が単射なら、$\sum_i c_iv_i=0=\sum_i 0\cdot v_i$からすべての$c_i$が$0$である。逆に自明な一次関係しか持たないとする。$\sum_i c_iv_i=\sum_i d_iv_i$なら$\sum_i(c_i-d_i)v_i=0$なので、すべての$i$で$c_i=d_i$となり、対応は単射である。
+  strategy: Translate injectivity of the coefficient map into triviality of its kernel.
+  sketch:
+  - 'translate: View independence as injectivity of the map c to Σ c_i v_i.'
+  - 'derive: Injectivity applied to the zero combination forces c = 0.'
+  - 'derive: Conversely, two equal combinations differ by a zero combination, so their coefficients agree.'
+  - 'conclude: The two conditions are equivalent.'
+  openmath: (forall (K V v) (-> (and (vector_space_over V K) (finite_set v)) (<-> (linearly_independent_family v) (forall (c) (-> (= (linear_combination c v) zero_vector) (forall (i) (= (fn_value c i) 0)))))))
+  hard_negative:
+    statement: すべてのc_iが0のときΣc_i v_i=0となるので、どの族も一次独立である。
+    reason: 一次独立は逆向きの含意を要求する。v_1=v_2のときc=(1,-1)でも和が0となるので一次独立でない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (ι : Type*) [Fintype ι] (v : ι → V), LinearIndependent K v ↔ ∀ c : ι → K, ∑ i, c i • v i = 0 → ∀ i, c i = 0
+  proof: |
+    by
+      intro K _ V _ _ ι _ v
+      exact Fintype.linearIndependent_iff
+- id: li_cons_iff
+  kind: gap
+  level: 1
+  topic: 線形代数・一次独立な族への追加
+  statement: ベクトル$x$を族$v_1,\dots,v_n$の先頭に加えた族が一次独立であることと、$(v_i)$が一次独立かつ$x$が$(v_i)$の生成する部分空間に属さないことは同値である。
+  statement_en: The family (x, v_1, ..., v_n) is linearly independent if and only if v is linearly independent and x is not in the span of v.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $x$は$V$のベクトル
+  - $v_1,\dots,v_n$は$V$のベクトル
+  quantifiers:
+  - 任意の自然数$n$、ベクトル$x$、族$(v_i)$
+  conclusion: $(x,v_1,\dots,v_n)$の一次独立性は、$(v_i)$の一次独立性かつ$x\notin\operatorname{span}(v_1,\dots,v_n)$と同値である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$n$を自然数、$x,v_1,\dots,v_n$を$V$のベクトルとする。
+
+    $(x,v_1,\dots,v_n)$が一次独立なら、その部分族である$(v_i)$も一次独立である。$x=\sum_i c_iv_i$と書けるとすると、$1\cdot x-\sum_i c_iv_i=0$は$x$の係数が$1$の非自明な関係となり矛盾する。よって$x\notin\operatorname{span}(v_1,\dots,v_n)$である。
+
+    逆に$(v_i)$が一次独立で$x\notin\operatorname{span}(v_1,\dots,v_n)$とし、$ax+\sum_i c_iv_i=0$とする。$a\neq0$なら$x=-a^{-1}\sum_i c_iv_i$となり矛盾するので、$a=0$である。すると$\sum_i c_iv_i=0$となり、$(v_i)$の一次独立性からすべての$c_i$が$0$である。
+  strategy: Separate the coefficient of x in a linear relation.
+  sketch:
+  - 'derive: If (x, v) is independent, then v is independent and x in span(v) would give a nontrivial relation.'
+  - 'setup: Conversely, take a relation a x + Σ c_i v_i = 0.'
+  - 'case_split: If a ≠ 0 then x lies in span(v), a contradiction, so a = 0.'
+  - 'conclude: Independence of v gives all c_i = 0.'
+  openmath: (forall (K V x v) (-> (vector_space_over V K) (<-> (linearly_independent_family (family_cons x v)) (and (linearly_independent_family v) (notin x (linear_span v))))))
+  hard_negative:
+    statement: vの各ベクトルとxが平行でなければ、(x,v_1,…,v_n)は一次独立である。
+    reason: R^2でe_1,e_2,e_1+e_2はどの2つも平行でないが、3本は一次従属である。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (n : ℕ) (x : V) (v : Fin n → V), LinearIndependent K (Fin.cons x v : Fin (n + 1) → V) ↔ LinearIndependent K v ∧ x ∉ Submodule.span K (Set.range v)
+  proof: |
+    by
+      intro K _ V _ _ n x v
+      exact linearIndependent_finCons
+- id: li_card_le_finrank
+  kind: gap
+  level: 1
+  topic: 線形代数・一次独立系の個数
+  statement: 有限次元ベクトル空間$V$の一次独立な有限族の個数は$\dim V$以下である。
+  statement_en: A linearly independent finite family in a finite-dimensional space V has at most dim V members.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $(v_i)_{i\in I}$は有限集合$I$で添字づけられた$V$の一次独立な族
+  quantifiers:
+  - 任意の一次独立な有限族$(v_i)_{i\in I}$
+  conclusion: $|I|\leq\dim V$である。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$(v_i)_{i\in I}$を有限集合$I$で添字づけられた$V$の一次独立な族とする。$i\neq j$で$v_i=v_j$なら$v_i-v_j=0$が非自明な関係になるので、$i\mapsto v_i$は単射である。したがって集合$s=\{v_i\mid i\in I\}$は一次独立で、$|s|=|I|$である。
+
+    $t$を$V$の基底とすると、$|t|=\dim V$かつ$s\subseteq\operatorname{span}(t)=V$である。シュタイニッツの交換定理は、一次独立な集合$s$が有限集合$t$の生成する部分空間に含まれるとき、$s\subseteq t'\subseteq s\cup t$かつ$|t'|=|t|$を満たす有限集合$t'$が存在することを述べる。これを適用すると$|I|=|s|\leq|t'|=\dim V$を得る。
+  strategy: Compare with a basis using the exchange theorem.
+  sketch:
+  - 'setup: Take a basis of V with dim V elements.'
+  - 'apply_theorem: The Steinitz exchange theorem bounds an independent family by any spanning set.'
+  - 'conclude: Hence the size of v is at most dim V.'
+  openmath: (forall (K V v) (-> (and (vector_space_over V K) (finite_dim_space V) (finite_set v) (linearly_independent_family v)) (<= (size v) (dimension V))))
+  hard_negative:
+    statement: dim V個以下のベクトルからなる族は一次独立である。
+    reason: 個数の不等式は必要条件にすぎない。零ベクトルを含む族や、同じベクトルを繰り返す族は一次独立でない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (ι : Type*) [Fintype ι] (v : ι → V), LinearIndependent K v → Fintype.card ι ≤ Module.finrank K V
+  proof: |
+    by
+      intro K _ V _ _ _ ι _ v h
+      exact h.fintype_card_le_finrank
+- id: steinitz_exchange
+  kind: named
+  level: 1
+  topic: 線形代数・シュタイニッツの交換定理
+  statement: 一次独立な集合$s$が有限集合$t$の生成する部分空間に含まれるとき、$s\subseteq t'\subseteq s\cup t$かつ$|t'|=|t|$を満たす有限集合$t'$が存在する(シュタイニッツの交換定理)。
+  statement_en: If s is linearly independent and contained in the span of a finite set t, then there is a finite set t' with s ⊆ t' ⊆ s ∪ t and |t'| = |t|.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $s$は$V$の一次独立な部分集合
+  - $t$は$V$の有限部分集合
+  - $s\subseteq\operatorname{span}(t)$
+  quantifiers:
+  - 任意の集合$s$と有限集合$t$
+  conclusion: $s\subseteq t'\subseteq s\cup t$かつ$|t'|=|t|$となる有限集合$t'$が存在する。
+  answer: |
+    $V$を体$K$上のベクトル空間、$s$を$V$の一次独立な部分集合、$t$を$V$の有限部分集合とし、$s\subseteq\operatorname{span}(t)$とする。$s$は無限集合の可能性があるので、まず有限部分集合について示す。
+
+    次の主張を$s$の有限部分集合$s_0$の個数に関する帰納法で示す。有限集合$u$で、$s_0\subseteq u\subseteq s_0\cup t$、$|u|=|t|$、$\operatorname{span}(u)=\operatorname{span}(t)$を満たすものが存在する。
+
+    $s_0$が空なら$u=t$でよい。次に$s_0=s_1\cup\{x\}$、$x\notin s_1$とし、$s_1$に対する$u$を取る。$x\in u$なら、この$u$が$s_0$についても条件を満たす。$x\notin u$とする。$x\in\operatorname{span}(t)=\operatorname{span}(u)$なので、$x=\sum_{z\in u}c_zz$と書ける。$s$は一次独立で$x\notin s_1$なので、$x\notin\operatorname{span}(s_1)$である。したがって$y\in u\setminus s_1$で$c_y\neq0$となるものが存在する。$u'=(u\setminus\{y\})\cup\{x\}$とおく。$x\notin u$より$|u'|=|u|=|t|$である。$y=c_y^{-1}(x-\sum_{z\neq y}c_zz)\in\operatorname{span}(u')$かつ$x\in\operatorname{span}(u)$なので、$\operatorname{span}(u')=\operatorname{span}(u)=\operatorname{span}(t)$である。$y\notin s_1$より$s_0\subseteq u'$であり、$u\subseteq s_1\cup t$より$u'\subseteq s_0\cup t$である。よって$u'$が$s_0$に対する条件を満たす。
+
+    $s$が$|t|+1$個以上の元を持つとすると、$|t|+1$個の元からなる部分集合$s_0$に対して$u$を取れる。すると$|t|+1=|s_0|\leq|u|=|t|$となり矛盾する。よって$s$は有限集合であり、$s_0=s$に主張を適用した$u$が求める$t'$である。
+  strategy: Exchange elements of t for elements of s one at a time, keeping the span and the size.
+  sketch:
+  - 'setup: Start from u = t, which spans a space containing s.'
+  - 'derive: For x in s outside u, write x as a combination of u.'
+  - 'derive: Independence of s gives y in u outside s with nonzero coefficient.'
+  - 'apply_theorem: The exchange lemma lets y be replaced by x without changing the span.'
+  - 'induction: Repeat, increasing the part of s inside u while keeping |u| = |t|.'
+  - 'conclude: The process ends with a set t'' containing s, with t'' ⊆ s ∪ t and |t''| = |t|.'
+  openmath: (forall (K V s t) (-> (and (vector_space_over V K) (linearly_independent_family s) (finite_set t) (subset s (linear_span t))) (exists (u) (and (finite_set u) (subset u (union s t)) (subset s u) (= (size u) (size t))))))
+  hard_negative:
+    statement: sが一次独立でなくても、s⊂span(t)ならsの個数はtの個数以下である。
+    reason: 一次独立性が必要である。R^2でt={e_1,e_2}、s={e_1,e_2,e_1+e_2}とすると個数の不等式が成り立たない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (s : Set V) (t : Finset V), LinearIndepOn K id s → s ⊆ ↑(Submodule.span K (t : Set V)) → ∃ t' : Finset V, (t' : Set V) ⊆ s ∪ ↑t ∧ s ⊆ ↑t' ∧ t'.card = t.card
+  proof: |
+    by
+      intro K _ V _ _ s t hs hst
+      classical
+      exact exists_of_linearIndepOn_of_finite_span hs hst
+- id: span_exchange
+  kind: gap
+  level: 1
+  topic: 線形代数・交換補題
+  statement: $x\in\operatorname{span}(s\cup\{y\})$かつ$x\notin\operatorname{span}(s)$ならば$y\in\operatorname{span}(s\cup\{x\})$である。
+  statement_en: If x is in span(s ∪ {y}) but not in span(s), then y is in span(s ∪ {x}).
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $s$は$V$の部分集合
+  - $x\in\operatorname{span}(s\cup\{y\})$
+  - $x\notin\operatorname{span}(s)$
+  quantifiers:
+  - 任意の集合$s$、ベクトル$x,y$
+  conclusion: $y\in\operatorname{span}(s\cup\{x\})$である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$s$を$V$の部分集合、$x,y$を$V$のベクトルとし、$x\in\operatorname{span}(s\cup\{y\})$かつ$x\notin\operatorname{span}(s)$とする。仮定から$x=ay+w$($a\in K$, $w\in\operatorname{span}(s)$)と書ける。$a=0$なら$x=w\in\operatorname{span}(s)$となって仮定に反するので、$a\neq0$である。したがって$y=a^{-1}(x-w)$となり、$y\in\operatorname{span}(s\cup\{x\})$である。
+  strategy: Solve the expression of x for y using that its coefficient is nonzero.
+  sketch:
+  - 'setup: Write x = a y + w with w in span(s).'
+  - 'contradiction: If a = 0 then x lies in span(s), which is excluded.'
+  - 'derive: Solve to get y = a^{-1}(x - w).'
+  - 'conclude: Therefore y lies in span(s ∪ {x}).'
+  openmath: (forall (K V s x y) (-> (and (vector_space_over V K) (in x (linear_span (union s (set y)))) (notin x (linear_span s))) (in y (linear_span (union s (set x))))))
+  hard_negative:
+    statement: x∈span(s∪{y})ならば、常にy∈span(s∪{x})である。
+    reason: x∉span(s)が必要である。s={e_1}、x=e_1、y=e_2では前提を満たすがe_2はspan({e_1})に属さない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (s : Set V) (x y : V), x ∈ Submodule.span K (insert y s) → x ∉ Submodule.span K s → y ∈ Submodule.span K (insert x s)
+  proof: |
+    by
+      intro K _ V _ _ s x y hx hxs
+      exact mem_span_insert_exchange hx hxs
+- id: basis_coordinates_unique
+  kind: gap
+  level: 1
+  topic: 線形代数・基底と座標の一意性
+  statement: $(b_i)_{i\in I}$が有限個のベクトルからなる基底で、$\sum_i c_ib_i=\sum_i d_ib_i$ならば、すべての$i$で$c_i=d_i$である。
+  statement_en: If b is a finite basis and Σ c_i b_i = Σ d_i b_i, then c = d.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $(b_i)_{i\in I}$は有限集合$I$で添字づけられた$V$の基底
+  quantifiers:
+  - 任意の係数族$(c_i)_{i\in I},(d_i)_{i\in I}$
+  conclusion: すべての$i\in I$で$c_i=d_i$である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$(b_i)_{i\in I}$を有限集合$I$で添字づけられた$V$の基底、$(c_i),(d_i)$を$K$の元の族とし、$\sum_i c_ib_i=\sum_i d_ib_i$とする。移項すると$\sum_i(c_i-d_i)b_i=0$である。基底は一次独立なので、すべての$i$で$c_i-d_i=0$である。よってすべての$i$で$c_i=d_i$である。
+  strategy: Subtract the two expressions and use independence of the basis.
+  sketch:
+  - 'derive: Subtract to obtain Σ (c_i - d_i) b_i = 0.'
+  - 'apply_theorem: Linear independence of b forces every c_i - d_i to vanish.'
+  - 'conclude: Thus c = d.'
+  openmath: (forall (K V b c d) (-> (and (vector_space_over V K) (basis_family b V) (finite_set b) (= (linear_combination c b) (linear_combination d b))) (= c d)))
+  hard_negative:
+    statement: bがVを生成する族なら、一次結合の係数は一意である。
+    reason: 生成するだけでは一意でない。R^1でb=(1,1)なら1=1・b_1+0・b_2=0・b_1+1・b_2である。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (ι : Type*) [Fintype ι] (b : Module.Basis ι K V) (c d : ι → K), ∑ i, c i • b i = ∑ i, d i • b i → c = d
+  proof: |
+    by
+      intro K _ V _ _ ι _ b c d h
+      have hli := Fintype.linearIndependent_iff.mp b.linearIndependent (fun i => c i - d i) (by
+        simp only [sub_smul, Finset.sum_sub_distrib, h, sub_self])
+      funext i
+      exact sub_eq_zero.mp (hli i)
+- id: basis_card_invariant
+  kind: textbook
+  level: 1
+  topic: 線形代数・次元の不変性
+  statement: ベクトル空間の2つの有限基底の個数は等しい。
+  statement_en: Any two finite bases of a vector space have the same number of elements.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $(b_i)_{i\in I}$と$(c_j)_{j\in J}$は有限集合で添字づけられた$V$の基底
+  quantifiers:
+  - 任意の有限基底$(b_i)_{i\in I},(c_j)_{j\in J}$
+  conclusion: $|I|=|J|$である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$(b_i)_{i\in I}$と$(c_j)_{j\in J}$を有限集合で添字づけられた$V$の基底とする。一次独立な族の添字は値と一対一に対応するので、$s=\{b_i\mid i\in I\}$は$|I|$個の元からなる一次独立な集合である。また$t=\{c_j\mid j\in J\}$は$|J|$個の元からなる有限集合で、$V$を生成する。
+
+    シュタイニッツの交換定理は、一次独立な集合$s$が有限集合$t$の生成する部分空間に含まれるとき、$s\subseteq t'$かつ$|t'|=|t|$を満たす有限集合$t'$が存在することを含む。これを適用すると$|I|\leq|t'|=|J|$である。$2$つの基底の役割を入れ替えると$|J|\leq|I|$である。したがって$|I|=|J|$である。
+  strategy: Apply the exchange theorem in both directions.
+  sketch:
+  - 'apply_theorem: b is independent and c spans V, so |b| ≤ |c| by the exchange theorem.'
+  - 'apply_theorem: Swapping the roles gives |c| ≤ |b|.'
+  - 'conclude: Hence |b| = |c|.'
+  openmath: (forall (K V b c) (-> (and (vector_space_over V K) (basis_family b V) (basis_family c V) (finite_set b) (finite_set c)) (= (size b) (size c))))
+  hard_negative:
+    statement: Vを生成する2つの有限族の個数は等しい。
+    reason: 生成系は余分なベクトルを含んでもよい。R^1で(1)と(1,1)はともに生成系だが個数が異なる。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (ι κ : Type*) [Fintype ι] [Fintype κ], Module.Basis ι K V → Module.Basis κ K V → Fintype.card ι = Fintype.card κ
+  proof: |
+    by
+      intro K _ V _ _ ι κ _ _ b c
+      rw [← Module.finrank_eq_card_basis b, ← Module.finrank_eq_card_basis c]
+- id: li_extends_to_basis
+  kind: textbook
+  level: 2
+  topic: 線形代数・基底の延長
+  statement: ベクトル空間の一次独立な部分集合$s$は基底に延長できる。すなわち$s$を含む集合$t$で、$t$自身が$V$の基底となるものが存在する。
+  statement_en: Every linearly independent subset s of a vector space is contained in a subset t that is a basis of the space.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $s$は$V$の一次独立な部分集合
+  quantifiers:
+  - 任意の一次独立な集合$s$
+  conclusion: $s\subseteq t$かつ$t$が$V$の基底となる集合$t$が存在する。
+  answer: |
+    $V$を体$K$上のベクトル空間、$s$を$V$の一次独立な部分集合とする。$s$を含む$V$の一次独立な部分集合全体を、包含で順序づける。この順序集合は$s$を含むので空でない。空でない鎖の和集合は一次独立である。実際、和集合の有限部分集合は鎖のどれか$1$つの元に含まれ、その元は一次独立である。またこの和集合は$s$を含むので、鎖の上界である。空の鎖の上界としては$s$を取れる。よってツォルンの補題により、極大元$t$が存在する。
+
+    $t$が$V$を生成することを示す。$x\in V$が$\operatorname{span}(t)$に属さないとする。$t$の相異なる元$y_1,\dots,y_k$について$ax+\sum_i c_iy_i=0$とする。$a\neq0$なら$x\in\operatorname{span}(t)$となり矛盾するので、$a=0$である。すると$t$の一次独立性からすべての$c_i$は$0$である。よって$t\cup\{x\}$は$t$より真に大きい一次独立な集合であり、$t$の極大性に反する。したがって$t$は$V$を生成し、一次独立なので基底である。
+  strategy: Take a maximal independent set containing s by Zorn's lemma and show that it spans.
+  sketch:
+  - 'setup: Order the independent sets containing s by inclusion.'
+  - 'derive: The union of a chain of independent sets is independent.'
+  - 'apply_theorem: Zorn''s lemma gives a maximal element t.'
+  - 'contradiction: A vector outside span(t) could be added to t, contradicting maximality.'
+  - 'conclude: Therefore t is an independent spanning set containing s.'
+  openmath: (forall (K V s) (-> (and (vector_space_over V K) (linearly_independent_family s)) (exists (t) (and (subset s t) (basis_family t V)))))
+  hard_negative:
+    statement: Vの任意の部分集合sに対し、sを含む基底が存在する。
+    reason: 一次独立性が必要である。0を含む集合や一次従属な集合を含む基底は存在しない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (s : Set V), LinearIndepOn K id s → ∃ (t : Set V) (b : Module.Basis t K V), s ⊆ t ∧ ∀ i : t, b i = (i : V)
+  proof: |
+    by
+      intro K _ V _ _ s hs
+      refine ⟨hs.extend (Set.subset_univ s), Module.Basis.extend hs, hs.subset_extend (Set.subset_univ s), ?_⟩
+      intro i
+      exact Module.Basis.extend_apply_self hs i
+- id: li_card_eq_finrank_spans
+  kind: gap
+  level: 1
+  topic: 線形代数・次元個の一次独立系
+  statement: 有限次元ベクトル空間$V$のちょうど$\dim V$個のベクトルからなる一次独立な族は$V$を生成する。
+  statement_en: A linearly independent family of exactly dim V vectors in a finite-dimensional space V spans V.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $(v_i)_{i\in I}$は有限集合$I$で添字づけられた$V$の一次独立な族
+  - $|I|=\dim V$
+  quantifiers:
+  - 任意の有限族$(v_i)_{i\in I}$
+  conclusion: $\operatorname{span}\{v_i\mid i\in I\}=V$である。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$(v_i)_{i\in I}$を有限集合$I$で添字づけられた$V$の一次独立な族とし、$|I|=\dim V$とする。$\operatorname{span}\{v_i\mid i\in I\}\neq V$と仮定し、$x\in V\setminus\operatorname{span}\{v_i\mid i\in I\}$を取る。$(v_i)_{i\in I}$に$x$を加えた族は一次独立であり、個数は$\dim V+1$である。これは一次独立な有限族の個数が$\dim V$以下であることに反する。よって$\operatorname{span}\{v_i\mid i\in I\}=V$である。
+  strategy: A vector outside the span would give an independent family that is too large.
+  sketch:
+  - 'contradiction: Suppose some x lies outside span(v).'
+  - 'derive: Adding x to v keeps independence and gives dim V + 1 vectors.'
+  - 'apply_theorem: Independent families have at most dim V members.'
+  - 'conclude: This is impossible, so v spans V.'
+  openmath: (forall (K V v) (-> (and (vector_space_over V K) (finite_dim_space V) (finite_set v) (linearly_independent_family v) (= (size v) (dimension V))) (= (linear_span v) V)))
+  hard_negative:
+    statement: dim V個のベクトルからなる族は常にVを生成する。
+    reason: 一次独立性が必要である。R^2でe_1,2e_1は2本だがx軸しか生成しない。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (ι : Type*) [Fintype ι] (v : ι → V), LinearIndependent K v → Fintype.card ι = Module.finrank K V → Submodule.span K (Set.range v) = ⊤
+  proof: |
+    by
+      intro K _ V _ _ _ ι _ v h hc
+      exact h.span_eq_top_of_card_eq_finrank' hc
+- id: iso_iff_finrank_eq
+  kind: textbook
+  level: 1
+  topic: 線形代数・同型と次元
+  statement: 有限次元ベクトル空間$V,W$が同型であることと、$\dim V=\dim W$であることは同値である。
+  statement_en: Finite-dimensional vector spaces V and W over K are isomorphic if and only if dim V = dim W.
+  assumptions:
+  - $V,W$は同じ体$K$上の有限次元ベクトル空間
+  quantifiers:
+  - 任意の有限次元ベクトル空間$V,W$
+  conclusion: $V$と$W$が同型であることと$\dim V=\dim W$は同値である。
+  answer: |
+    $V,W$を体$K$上の有限次元ベクトル空間とする。線形同型写像は単射なので一次独立な族を一次独立な族に移し、全射なので生成系を生成系に移す。よって$V$の基底は$W$の基底に移り、$V,W$が同型なら$\dim V=\dim W$である。
+
+    逆に$\dim V=\dim W=n$なら、$V$の基底$(v_i)_{i=1}^n$と$W$の基底$(w_i)_{i=1}^n$を取れる。$\sum_i c_iv_i$を$\sum_i c_iw_i$に移す写像は線形であり、逆写像$\sum_i c_iw_i\mapsto\sum_i c_iv_i$を持つので同型である。
+  strategy: Isomorphisms carry bases to bases, and matching bases define an isomorphism.
+  sketch:
+  - 'derive: A linear isomorphism carries a basis of V to a basis of W, so the dimensions agree.'
+  - 'setup: If the dimensions agree, index bases of V and W by the same set.'
+  - 'construct: Define the linear map sending Σ c_i v_i to Σ c_i w_i.'
+  - 'conclude: Its inverse is the map in the other direction, so V and W are isomorphic.'
+  openmath: (forall (K V W) (-> (and (vector_space_over V K) (vector_space_over W K) (finite_dim_space V) (finite_dim_space W)) (<-> (isomorphic_spaces V W) (= (dimension V) (dimension W)))))
+  hard_negative:
+    statement: 次元が等しい2つのベクトル空間の間の線形写像は常に同型写像である。
+    reason: 次元が正のとき、零写像は同型写像でない。同型写像が存在することと、個々の写像が同型であることは異なる。
+  target: |
+    ∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] [AddCommGroup W] [Module K W] [FiniteDimensional K W], Nonempty (V ≃ₗ[K] W) ↔ Module.finrank K V = Module.finrank K W
+  proof: |
+    by
+      intro K _ V W _ _ _ _ _ _
+      exact FiniteDimensional.nonempty_linearEquiv_iff_finrank_eq
+- id: injective_preserves_li
+  kind: gap
+  level: 1
+  topic: 線形代数・単射と一次独立
+  statement: 単射な線形写像$f$は一次独立な族を一次独立な族に移す。
+  statement_en: An injective linear map f sends a linearly independent family to a linearly independent family.
+  assumptions:
+  - $V,W$は体$K$上のベクトル空間
+  - $f:V\to W$は単射な線形写像
+  - $(v_i)_{i\in I}$は$V$の一次独立な族
+  quantifiers:
+  - 任意の線形写像$f$と族$(v_i)_{i\in I}$
+  conclusion: 族$(f(v_i))_{i\in I}$は一次独立である。
+  answer: |
+    $V,W$を体$K$上のベクトル空間、$f:V\to W$を単射な線形写像、$(v_i)_{i\in I}$を$V$の一次独立な族とする。$I$の有限部分集合$J$について$\sum_{i\in J}c_if(v_i)=0$とする。線形性から$f(\sum_{i\in J}c_iv_i)=0=f(0)$であり、$f$は単射なので$\sum_{i\in J}c_iv_i=0$である。$(v_i)$は一次独立なので、すべての$c_i$が$0$である。
+  strategy: Pull a linear relation back through f using injectivity.
+  sketch:
+  - 'setup: Take a finite relation Σ c_i f(v_i) = 0.'
+  - 'derive: Linearity gives f(Σ c_i v_i) = 0 = f(0).'
+  - 'derive: Injectivity gives Σ c_i v_i = 0.'
+  - 'conclude: Independence of v gives all c_i = 0.'
+  openmath: (forall (K V W f v) (-> (and (vector_space_over V K) (vector_space_over W K) (linear_map_between f V W) (injective_function f) (linearly_independent_family v)) (linearly_independent_family (family_image f v))))
+  hard_negative:
+    statement: 任意の線形写像は一次独立な族を一次独立な族に移す。
+    reason: 単射性が必要である。零写像はどの族も零ベクトルの族に移し、空でない族は一次独立でなくなる。
+  target: |
+    ∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W] (ι : Type*) (f : V →ₗ[K] W) (v : ι → V), Function.Injective f → LinearIndependent K v → LinearIndependent K (fun i => f (v i))
+  proof: |
+    by
+      intro K _ V W _ _ _ _ ι f v hf hv
+      exact hv.map' f (LinearMap.ker_eq_bot.mpr hf)
+- id: inj_iff_surj_of_equal_dim
+  kind: gap
+  level: 1
+  topic: 線形代数・単射と全射の同値
+  statement: $\dim V=\dim W$である有限次元ベクトル空間の間の線形写像$f$について、$f$が単射であることと全射であることは同値である。
+  statement_en: For a linear map between finite-dimensional spaces with dim V = dim W, injectivity and surjectivity are equivalent.
+  assumptions:
+  - $V,W$は体$K$上の有限次元ベクトル空間
+  - $\dim V=\dim W$
+  - $f:V\to W$は線形写像
+  quantifiers:
+  - 任意の線形写像$f$
+  conclusion: $f$が単射であることと全射であることは同値である。
+  answer: |
+    $V,W$を$\dim V=\dim W$を満たす体$K$上の有限次元ベクトル空間、$f:V\to W$を線形写像とする。次元定理から$\dim\operatorname{Im}f+\dim\ker f=\dim V$である。$f$が単射であることは$\dim\ker f=0$と同値であり、これは$\dim\operatorname{Im}f=\dim V$と同値である。$\dim V=\dim W$なので、これは$\dim\operatorname{Im}f=\dim W$と同値である。$\operatorname{Im}f\subseteq W$なので、この等式は$\operatorname{Im}f=W$、すなわち$f$の全射性と同値である。
+  strategy: Translate both properties into dimensions through rank-nullity.
+  sketch:
+  - 'apply_theorem: Use dim Im f + dim Ker f = dim V.'
+  - 'translate: Injectivity means dim Ker f = 0, which means dim Im f = dim V.'
+  - 'translate: With dim V = dim W this means dim Im f = dim W.'
+  - 'conclude: A subspace of full dimension equals W, which is surjectivity.'
+  openmath: (forall (K V W f) (-> (and (vector_space_over V K) (vector_space_over W K) (finite_dim_space V) (finite_dim_space W) (= (dimension V) (dimension W)) (linear_map_between f V W)) (<-> (injective_function f) (surjective_function f))))
+  hard_negative:
+    statement: 無限次元の空間からそれ自身への線形写像でも、単射と全射は同値である。
+    reason: 数列空間の右シフトは単射だが全射でない。有限次元性が必要である。
+  target: |
+    ∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] [AddCommGroup W] [Module K W] [FiniteDimensional K W] (f : V →ₗ[K] W), Module.finrank K V = Module.finrank K W → (Function.Injective f ↔ Function.Surjective f)
+  proof: |
+    by
+      intro K _ V W _ _ _ _ _ _ f h
+      exact LinearMap.injective_iff_surjective_of_finrank_eq_finrank h
+- id: kernel_nontrivial_of_dim_lt
+  kind: gap
+  level: 1
+  topic: 線形代数・核の非自明性
+  statement: $\dim W<\dim V$である有限次元ベクトル空間の間の線形写像$f:V\to W$には、$f(x)=0$を満たす$0$でない$x$が存在する。
+  statement_en: If dim W < dim V for finite-dimensional spaces, every linear map f from V to W has a nonzero x with f(x) = 0.
+  assumptions:
+  - $V,W$は体$K$上の有限次元ベクトル空間
+  - $\dim W<\dim V$
+  - $f:V\to W$は線形写像
+  quantifiers:
+  - 任意の線形写像$f$
+  conclusion: $x\neq0$かつ$f(x)=0$を満たす$x\in V$が存在する。
+  answer: |
+    $V,W$を$\dim W<\dim V$を満たす体$K$上の有限次元ベクトル空間、$f:V\to W$を線形写像とする。次元定理から$\dim\ker f=\dim V-\dim\operatorname{Im}f$である。$\operatorname{Im}f$は$W$の部分空間なので$\dim\operatorname{Im}f\leq\dim W<\dim V$であり、$\dim\ker f>0$となる。したがって$\ker f$は$0$でないベクトルを含む。
+  strategy: Bound the kernel dimension from below by rank-nullity.
+  sketch:
+  - 'apply_theorem: Use dim Ker f = dim V - dim Im f.'
+  - 'derive: dim Im f ≤ dim W < dim V.'
+  - 'conclude: Hence dim Ker f > 0, so the kernel has a nonzero vector.'
+  openmath: (forall (K V W f) (-> (and (vector_space_over V K) (vector_space_over W K) (finite_dim_space V) (finite_dim_space W) (< (dimension W) (dimension V)) (linear_map_between f V W)) (exists (x) (and (!= x zero_vector) (= (fn_value f x) zero_vector)))))
+  hard_negative:
+    statement: dim V<dim Wなら、線形写像f:V→Wは単射である。
+    reason: 次元の不等式は単射性を保証しない。0<dim V<dim Wのとき、零写像は単射でない。
+  target: |
+    ∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] [AddCommGroup W] [Module K W] [FiniteDimensional K W] (f : V →ₗ[K] W), Module.finrank K W < Module.finrank K V → ∃ x : V, x ≠ 0 ∧ f x = 0
+  proof: |
+    by
+      intro K _ V W _ _ _ _ _ _ f h
+      obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot (LinearMap.ker_ne_bot_of_finrank_lt h)
+      exact ⟨x, hx0, hx⟩
+- id: first_isomorphism
+  kind: named
+  level: 2
+  topic: 線形代数・準同型定理
+  statement: 線形写像$f:V\to W$に対し、$x+\ker f$を$f(x)$に移す写像は$V/\ker f$から$\operatorname{Im}f$への線形同型である(準同型定理)。
+  statement_en: For a linear map f from V to W, the assignment x + Ker f to f(x) is a linear isomorphism from V/Ker f onto Im f.
+  assumptions:
+  - $V,W$は体$K$上のベクトル空間
+  - $f:V\to W$は線形写像
+  quantifiers:
+  - 任意の線形写像$f$
+  conclusion: すべての$x\in V$で$e(x+\ker f)=f(x)$を満たす線形同型$e:V/\ker f\to\operatorname{Im}f$が存在する。
+  answer: |
+    $V,W$を体$K$上のベクトル空間、$f:V\to W$を線形写像とする。$x+\ker f=y+\ker f$なら$x-y\in\ker f$なので$f(x)=f(y)$となり、$e(x+\ker f)=f(x)$は矛盾なく定まる。$e$の線形性は$f$の線形性から従う。$e(x+\ker f)=0$なら$x\in\ker f$なので、$x+\ker f$は商空間の零元であり、$e$は単射である。$\operatorname{Im}f$の元は$f(x)=e(x+\ker f)$の形なので、$e$は全射である。よって$e$は線形同型である。
+  strategy: Define the induced map on the quotient and check that it is well defined and bijective.
+  sketch:
+  - 'construct: Set e(x + Ker f) = f(x).'
+  - 'derive: x - y in Ker f gives f(x) = f(y), so e is well defined.'
+  - 'derive: Linearity of e follows from linearity of f.'
+  - 'derive: The kernel of e is trivial, so e is injective.'
+  - 'conclude: Every f(x) is hit, so e is an isomorphism onto Im f.'
+  openmath: (forall (K V W f) (-> (and (vector_space_over V K) (vector_space_over W K) (linear_map_between f V W)) (exists (e) (and (linear_equiv_between e (quotient_space V (kernel f)) (range_of f)) (forall (x) (= (fn_value e (quotient_class x (kernel f))) (fn_value f x)))))))
+  hard_negative:
+    statement: V/Ker fはWと同型である。
+    reason: 同型の相手はIm fである。fが全射でないとき、R→R^2のx軸への埋め込みではV/Ker f=RだがWはR^2である。
+  target: |
+    ∀ (K : Type*) [Field K] (V W : Type*) [AddCommGroup V] [Module K V] [AddCommGroup W] [Module K W] (f : V →ₗ[K] W), ∃ e : (V ⧸ LinearMap.ker f) ≃ₗ[K] LinearMap.range f, ∀ x : V, (e (Submodule.Quotient.mk x) : W) = f x
+  proof: |
+    by
+      intro K _ V W _ _ _ _ f
+      exact ⟨f.quotKerEquivRange, fun x => LinearMap.quotKerEquivRange_apply_mk f x⟩
+- id: second_isomorphism
+  kind: textbook
+  level: 2
+  topic: 線形代数・第二同型定理
+  statement: 部分空間$S,T$に対し、$S/(S\cap T)$と$(S+T)/T$は線形同型である。
+  statement_en: For subspaces S and T, the quotient S/(S ∩ T) is linearly isomorphic to (S + T)/T.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $S,T$は$V$の部分空間
+  quantifiers:
+  - 任意の部分空間$S,T$
+  conclusion: $S/(S\cap T)$と$(S+T)/T$は線形同型である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$S,T$を$V$の部分空間とする。写像$g:S\to(S+T)/T$を$g(x)=x+T$で定めると線形である。$y\in S$, $z\in T$について$(y+z)+T=y+T=g(y)$なので、$g$は全射である。$x\in S$について$g(x)=0$は$x\in T$と同値なので、$\ker g=S\cap T$である。準同型定理を$g$に適用すると、$S/(S\cap T)$と$(S+T)/T$は線形同型である。
+  strategy: Apply the first isomorphism theorem to the map from S to (S + T)/T.
+  sketch:
+  - 'construct: Define g(x) = x + T from S to (S + T)/T.'
+  - 'derive: (y + z) + T = y + T shows that g is surjective.'
+  - 'derive: The kernel of g is S ∩ T.'
+  - 'apply_theorem: The first isomorphism theorem gives the isomorphism.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (subspace_of S V) (subspace_of T V)) (isomorphic_spaces (quotient_space S (inter S T)) (quotient_space (subspace_sum S T) T))))
+  hard_negative:
+    statement: S/(S∩T)はS+Tと同型である。
+    reason: 次元が合わない。S=T≠{0}なら左辺は{0}だが右辺はSである。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (S T : Submodule K V), Nonempty ((↥S ⧸ (S ⊓ T).comap S.subtype) ≃ₗ[K] (↥(S ⊔ T) ⧸ T.comap (S ⊔ T).subtype))
+  proof: |
+    by
+      intro K _ V _ _ S T
+      exact ⟨LinearMap.quotientInfEquivSupQuotient S T⟩
+- id: third_isomorphism
+  kind: textbook
+  level: 2
+  topic: 線形代数・第三同型定理
+  statement: 部分空間$S\subseteq T$に対し、$(V/S)/(T/S)$と$V/T$は線形同型である。
+  statement_en: For subspaces S ⊆ T of V, the quotient (V/S)/(T/S) is linearly isomorphic to V/T.
+  assumptions:
+  - $V$は体$K$上のベクトル空間
+  - $S,T$は$V$の部分空間
+  - $S\subseteq T$
+  quantifiers:
+  - 任意の部分空間$S,T$
+  conclusion: $(V/S)/(T/S)$と$V/T$は線形同型である。
+  answer: |
+    $V$を体$K$上のベクトル空間、$S\subseteq T$を$V$の部分空間とし、$T/S$を$T$の$V/S$における像とする。$x+S=y+S$なら$x-y\in S\subseteq T$なので、$h(x+S)=x+T$により線形写像$h:V/S\to V/T$が矛盾なく定まり、$h$は全射である。$h(x+S)=0$は$x\in T$と同値なので、$\ker h=T/S$である。準同型定理を$h$に適用すると、$(V/S)/(T/S)$と$V/T$は線形同型である。
+  strategy: Apply the first isomorphism theorem to the natural map from V/S to V/T.
+  sketch:
+  - 'construct: Define h(x + S) = x + T, which is well defined because S ⊆ T.'
+  - 'derive: h is linear and surjective.'
+  - 'derive: The kernel of h is T/S.'
+  - 'apply_theorem: The first isomorphism theorem gives the isomorphism.'
+  openmath: (forall (K V S T) (-> (and (vector_space_over V K) (subspace_of S V) (subspace_of T V) (subset S T)) (isomorphic_spaces (quotient_space (quotient_space V S) (quotient_space T S)) (quotient_space V T))))
+  hard_negative:
+    statement: S⊂Tのとき(V/S)/(T/S)はV/Sと同型である。
+    reason: S={0}, T=V=Rとすると(V/S)/(T/S)は{0}だが、V/SはRである。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] (S T : Submodule K V), S ≤ T → Nonempty (((V ⧸ S) ⧸ T.map S.mkQ) ≃ₗ[K] (V ⧸ T))
+  proof: |
+    by
+      intro K _ V _ _ S T h
+      exact ⟨Submodule.quotientQuotientEquivQuotient S T h⟩
+- id: quotient_dimension
+  kind: gap
+  level: 2
+  topic: 線形代数・商空間の次元
+  statement: 有限次元ベクトル空間$V$の部分空間$S$について$\dim(V/S)+\dim S=\dim V$である。
+  statement_en: For a subspace S of a finite-dimensional space V, dim(V/S) + dim S = dim V.
+  assumptions:
+  - $V$は体$K$上の有限次元ベクトル空間
+  - $S$は$V$の部分空間
+  quantifiers:
+  - 任意の部分空間$S$
+  conclusion: $\dim(V/S)+\dim S=\dim V$が成り立つ。
+  answer: |
+    $V$を体$K$上の有限次元ベクトル空間、$S$を$V$の部分空間とする。自然な射影$p:V\to V/S$は全射な線形写像であり、$\ker p=S$である。次元定理から$\dim\operatorname{Im}p+\dim\ker p=\dim V$である。$\operatorname{Im}p=V/S$なので、$\dim(V/S)+\dim S=\dim V$を得る。
+  strategy: Apply rank-nullity to the quotient projection.
+  sketch:
+  - 'setup: Let p be the projection from V onto V/S.'
+  - 'derive: p is surjective with kernel S.'
+  - 'apply_theorem: Rank-nullity for p gives the formula.'
+  openmath: (forall (K V S) (-> (and (vector_space_over V K) (finite_dim_space V) (subspace_of S V)) (= (+ (dimension (quotient_space V S)) (dimension S)) (dimension V))))
+  hard_negative:
+    statement: Vが無限次元でもSが無限次元なら、V/Sは有限次元である。
+    reason: 無限次元空間を2つ直和した空間で一方の成分をSとすると、V/Sはもう一方の成分と同型で無限次元である。
+  target: |
+    ∀ (K : Type*) [Field K] (V : Type*) [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S : Submodule K V), Module.finrank K (V ⧸ S) + Module.finrank K ↥S = Module.finrank K V
+  proof: |
+    by
+      intro K _ V _ _ _ S
+      exact Submodule.finrank_quotient_add_finrank S
+- id: matrix_mul_assoc
+  kind: gap
+  level: 1
+  topic: 線形代数・行列積の結合法則
+  statement: サイズの合う行列$A,B,C$について$(AB)C=A(BC)$である。
+  statement_en: For matrices A, B, C of compatible sizes over a field, (AB)C = A(BC).
+  assumptions:
+  - $A$は体$K$上の$l\times m$行列
+  - $B$は体$K$上の$m\times n$行列
+  - $C$は体$K$上の$n\times p$行列
+  quantifiers:
+  - 任意の行列$A,B,C$
+  conclusion: $(AB)C=A(BC)$が成り立つ。
+  answer: |
+    $A=(a_{ij})$を体$K$上の$l\times m$行列、$B=(b_{jk})$を$m\times n$行列、$C=(c_{kq})$を$n\times p$行列とする。分配法則から、$(AB)C$の$(i,q)$成分は$\sum_k(\sum_j a_{ij}b_{jk})c_{kq}=\sum_k\sum_j a_{ij}b_{jk}c_{kq}$である。同様に、$A(BC)$の$(i,q)$成分は$\sum_j\sum_k a_{ij}b_{jk}c_{kq}$である。有限和の順序は交換できるので、両者は等しい。
+  strategy: Compare entries and interchange finite sums.
+  sketch:
+  - 'translate: Write the (i, l) entry of each side as a double sum.'
+  - 'derive: Interchange the order of the finite sums.'
+  - 'conclude: The entries agree, so the matrices are equal.'
+  openmath: (forall (A B C) (= (matrix_mul (matrix_mul A B) C) (matrix_mul A (matrix_mul B C))))
+  hard_negative:
+    statement: 正方行列A,Bについて常にAB=BAである。
+    reason: 行列積は可換でない。2次の行列単位E_12,E_21ではE_12E_21=E_11だがE_21E_12=E_22である。
+  target: |
+    ∀ (K : Type*) [Field K] (l m n p : Type*) [Fintype m] [Fintype n] (A : Matrix l m K) (B : Matrix m n K) (C : Matrix n p K), A * B * C = A * (B * C)
+  proof: |
+    by
+      intro K _ l m n p _ _ A B C
+      exact Matrix.mul_assoc A B C
+- id: transpose_mul
+  kind: gap
+  level: 1
+  topic: 線形代数・転置と積
+  statement: サイズの合う行列$A,B$について$AB$の転置は$B$の転置と$A$の転置の積である。
+  statement_en: For matrices A and B of compatible sizes over a field, the transpose of AB equals B^T A^T.
+  assumptions:
+  - $A$は体$K$上の$l\times m$行列
+  - $B$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A,B$
+  conclusion: $(AB)^{\top}=B^{\top}A^{\top}$が成り立つ。
+  answer: |
+    $A=(a_{ij})$を体$K$上の$l\times m$行列、$B=(b_{jk})$を$m\times n$行列とする。$(AB)^{\top}$の$(k,i)$成分は$AB$の$(i,k)$成分であり、$\sum_j a_{ij}b_{jk}$である。$B^{\top}A^{\top}$の$(k,i)$成分は$\sum_j b_{jk}a_{ij}$である。体の乗法は可換なので、両者は等しい。
+  strategy: Compare entries using commutativity of the field.
+  sketch:
+  - 'translate: Write the (i, j) entry of each side as a sum over k.'
+  - 'derive: Commutativity of multiplication in K matches the terms.'
+  - 'conclude: The two matrices are equal.'
+  openmath: (forall (A B) (= (matrix_transpose (matrix_mul A B)) (matrix_mul (matrix_transpose B) (matrix_transpose A))))
+  hard_negative:
+    statement: (AB)^T=A^T B^Tである。
+    reason: 順序が逆である。A^T B^Tは一般にサイズが合わず、正方行列でもE_12,E_21を使うと等式が成り立たない。
+  target: |
+    ∀ (K : Type*) [Field K] (l m n : Type*) [Fintype m] (A : Matrix l m K) (B : Matrix m n K), (A * B).transpose = B.transpose * A.transpose
+  proof: |
+    by
+      intro K _ l m n _ A B
+      exact Matrix.transpose_mul A B
+- id: trace_mul_comm_rect
+  kind: gap
+  level: 1
+  topic: 線形代数・トレースの巡回性
+  statement: $m\times n$行列$A$と$n\times m$行列$B$について$\operatorname{tr}(AB)=\operatorname{tr}(BA)$である。
+  statement_en: For an m by n matrix A and an n by m matrix B over a field, tr(AB) = tr(BA).
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  - $B$は体$K$上の$n\times m$行列
+  quantifiers:
+  - 任意の行列$A,B$
+  conclusion: $\operatorname{tr}(AB)=\operatorname{tr}(BA)$が成り立つ。
+  answer: |
+    $A=(a_{ij})$を体$K$上の$m\times n$行列、$B=(b_{ji})$を$n\times m$行列とする。$\operatorname{tr}(AB)=\sum_i\sum_j a_{ij}b_{ji}$であり、$\operatorname{tr}(BA)=\sum_j\sum_i b_{ji}a_{ij}$である。有限和の順序交換と体の乗法の可換性により、両者は等しい。
+  strategy: Write both traces as double sums and swap the order.
+  sketch:
+  - 'translate: Expand tr(AB) and tr(BA) as double sums.'
+  - 'derive: Swap the finite sums and commute the factors.'
+  - 'conclude: The two traces agree.'
+  openmath: (forall (A B) (= (matrix_trace (matrix_mul A B)) (matrix_trace (matrix_mul B A))))
+  hard_negative:
+    statement: 3つの正方行列について常にtr(ABC)=tr(ACB)である。
+    reason: 保たれるのは巡回置換だけである。A=E_12, B=E_23, C=E_31ではtr(ABC)=1だがACB=0なのでtr(ACB)=0である。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [Fintype n] (A : Matrix m n K) (B : Matrix n m K), Matrix.trace (A * B) = Matrix.trace (B * A)
+  proof: |
+    by
+      intro K _ m n _ _ A B
+      exact Matrix.trace_mul_comm A B
+- id: trace_similarity
+  kind: gap
+  level: 1
+  topic: 線形代数・相似とトレース
+  statement: $P$が正則な正方行列なら$\operatorname{tr}(P^{-1}AP)=\operatorname{tr}(A)$である。
+  statement_en: If P is an invertible square matrix, then tr(P^{-1} A P) = tr(A).
+  assumptions:
+  - $A,P$は体$K$上の同じ次数の正方行列
+  - $\det P\neq0$
+  quantifiers:
+  - 任意の正方行列$A$と正則行列$P$
+  conclusion: $\operatorname{tr}(P^{-1}AP)=\operatorname{tr}(A)$が成り立つ。
+  answer: |
+    $A,P$を体$K$上の同じ次数の正方行列とし、$\det P\neq0$とする。このとき$P$には逆行列$P^{-1}$がある。等式$\operatorname{tr}(XY)=\operatorname{tr}(YX)$を$X=P^{-1}A$, $Y=P$に適用すると、$\operatorname{tr}(P^{-1}AP)=\operatorname{tr}(PP^{-1}A)$である。$I$を単位行列とすると$PP^{-1}=I$なので、右辺は$\operatorname{tr}(A)$である。
+  strategy: Use cyclicity of the trace to cancel P.
+  sketch:
+  - 'apply_theorem: tr(XY) = tr(YX) gives tr(P^{-1} A P) = tr(P P^{-1} A).'
+  - 'derive: Invertibility of P gives P P^{-1} = I.'
+  - 'conclude: The trace equals tr(A).'
+  openmath: (forall (K A P) (-> (and (matrix_over_field A K) (matrix_over_field P K) (!= (matrix_det P) 0)) (= (matrix_trace (matrix_mul (matrix_mul (matrix_inverse P) A) P)) (matrix_trace A))))
+  hard_negative:
+    statement: tr(A)=tr(B)ならAとBは相似である。
+    reason: 逆は成り立たない。2次の零行列とE_12はどちらもトレース0だが相似でない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (P A : Matrix n n K), P.det ≠ 0 → Matrix.trace (P⁻¹ * A * P) = Matrix.trace A
+  proof: |
+    by
+      intro K _ n _ _ P A hP
+      rw [Matrix.trace_mul_comm, ← Matrix.mul_assoc, Matrix.mul_nonsing_inv P (isUnit_iff_ne_zero.mpr hP), Matrix.one_mul]
+- id: invertible_iff_det_ne_zero
+  kind: textbook
+  level: 1
+  topic: 線形代数・正則性の判定
+  statement: 体上の正方行列$A$について、$AB=BA=I$となる$B$が存在することと$\det A\neq0$は同値である。
+  statement_en: A square matrix A over a field has a two-sided inverse if and only if det A ≠ 0.
+  assumptions:
+  - $A$は体$K$上の正方行列
+  - $I$は単位行列
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: $AB=BA=I$となる$B$の存在と$\det A\neq0$は同値である。
+  answer: |
+    $A$を体$K$上の正方行列、$I$を単位行列とする。$AB=I$となる$B$があれば、行列式の乗法性から$\det A\cdot\det B=\det I=1$なので、$\det A\neq0$である。逆に$\det A\neq0$のとき、$B=(\det A)^{-1}\operatorname{adj}A$とおく。余因子行列の等式$A\operatorname{adj}A=(\operatorname{adj}A)A=(\det A)I$から、$AB=BA=I$である。
+  strategy: Use multiplicativity of det one way and the adjugate identity the other way.
+  sketch:
+  - 'derive: AB = I gives det A det B = 1, so det A ≠ 0.'
+  - 'construct: If det A ≠ 0, set B = (det A)^{-1} adj A.'
+  - 'apply_theorem: The adjugate identity gives AB = BA = I.'
+  - 'conclude: The two conditions are equivalent.'
+  openmath: (forall (K A) (-> (matrix_over_field A K) (<-> (exists (B) (and (= (matrix_mul A B) identity_matrix) (= (matrix_mul B A) identity_matrix))) (!= (matrix_det A) 0))))
+  hard_negative:
+    statement: 整数成分の正方行列はdet A≠0なら整数成分の逆行列を持つ。
+    reason: 体でない環ではdet Aが単元である必要がある。1次の行列(2)は整数成分の逆行列を持たない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), (∃ B : Matrix n n K, A * B = 1 ∧ B * A = 1) ↔ A.det ≠ 0
+  proof: |
+    by
+      intro K _ n _ _ A
+      constructor
+      · rintro ⟨B, hB, _⟩
+        exact Matrix.det_ne_zero_of_right_inverse hB
+      · intro h
+        have hu : IsUnit A.det := isUnit_iff_ne_zero.mpr h
+        exact ⟨A⁻¹, Matrix.mul_nonsing_inv A hu, Matrix.nonsing_inv_mul A hu⟩
+- id: left_inverse_is_right_inverse
+  kind: gap
+  level: 1
+  topic: 線形代数・片側逆行列
+  statement: 体上の同じ次数の正方行列$A,B$が$AB=I$を満たすなら$BA=I$である。
+  statement_en: If A and B are square matrices of the same order over a field and AB = I, then BA = I.
+  assumptions:
+  - $A,B$は体$K$上の同じ次数の正方行列
+  - $AB=I$
+  - $I$は単位行列
+  quantifiers:
+  - 任意の正方行列$A,B$
+  conclusion: $BA=I$が成り立つ。
+  answer: |
+    $A,B$を体$K$上の同じ次数の正方行列、$I$を単位行列とし、$AB=I$とする。行列式の乗法性から$\det A\cdot\det B=1$なので$\det A\neq0$であり、逆行列$A^{-1}$が存在する。$AB=I$の両辺に左から$A^{-1}$を掛けると$B=A^{-1}$である。したがって$BA=A^{-1}A=I$である。
+  strategy: The determinant shows A is invertible, and then B must be its inverse.
+  sketch:
+  - 'derive: Taking determinants of AB = I shows det A ≠ 0.'
+  - 'apply_theorem: So A has a two-sided inverse.'
+  - 'derive: Left multiplication by A^{-1} gives B = A^{-1}.'
+  - 'conclude: Hence BA = I.'
+  openmath: (forall (K A B) (-> (and (matrix_over_field A K) (matrix_over_field B K) (= (matrix_row_count A) (matrix_column_count A)) (= (matrix_row_count B) (matrix_row_count A)) (= (matrix_column_count B) (matrix_row_count A)) (= (matrix_mul A B) identity_matrix)) (= (matrix_mul B A) identity_matrix)))
+  hard_negative:
+    statement: 長方形行列でもAB=IならBA=Iである。
+    reason: A=(1 0), B=(1 0)^Tとすると、AB=(1)だがBAは2次の単位行列でない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A B : Matrix n n K), A * B = 1 → B * A = 1
+  proof: |
+    by
+      intro K _ n _ _ A B h
+      exact mul_eq_one_comm.mp h
+- id: det_zero_iff_nontrivial_kernel
+  kind: gap
+  level: 1
+  topic: 線形代数・行列式と斉次方程式
+  statement: 体上の正方行列$A$について、$\det A=0$であることと$Ax=0$が$0$でない解を持つことは同値である。
+  statement_en: For a square matrix A over a field, det A = 0 if and only if Ax = 0 has a nonzero solution.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: $\det A=0$と、$x\neq0$かつ$Ax=0$を満たす$x\in K^n$の存在は同値である。
+  answer: |
+    $A$を体$K$上の$n$次正方行列とする。$2$つの条件の否定どうしが同値であることを示す。
+
+    $\det A\neq0$なら$A$は逆行列を持ち、$Ax=0$から$x=A^{-1}Ax=0$となるので、$0$でない解はない。逆に$Ax=0$が$0$以外の解を持たないとすると、$x\mapsto Ax$は$K^n$から$K^n$への単射な線形写像である。定義域と値域の次元が等しいので、この写像は全射でもある。$K^n$の標準基底$e_j$について$Ab_j=e_j$となる$b_j$を取り、$b_j$を列に並べた行列を$B$とすると、単位行列$I$について$AB=I$である。行列式の乗法性から$\det A\cdot\det B=1$なので、$\det A\neq0$である。
+  strategy: Prove the contrapositive of each direction through invertibility.
+  sketch:
+  - 'derive: If det A ≠ 0, then A is invertible, so Ax = 0 forces x = 0.'
+  - 'setup: Conversely, suppose Ax = 0 has only the zero solution.'
+  - 'translate: Then x to Ax is an injective linear endomorphism of K^n.'
+  - 'apply_theorem: Injective endomorphisms of a finite-dimensional space are bijective.'
+  - 'conclude: So A is invertible and det A ≠ 0.'
+  openmath: (forall (K A) (-> (matrix_over_field A K) (<-> (= (matrix_det A) 0) (exists (x) (and (!= x zero_vector) (= (matrix_vector_mul A x) zero_vector))))))
+  hard_negative:
+    statement: Ax=0が0でない解を持つなら、Aは零行列である。
+    reason: A=E_11(2次)はdet A=0でx=(0,1)が解だが零行列でない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), A.det = 0 ↔ ∃ x : n → K, x ≠ 0 ∧ A.mulVec x = 0
+  proof: |
+    by
+      intro K _ n _ _ A
+      rw [← Matrix.exists_mulVec_eq_zero_iff]
+- id: rank_mul_le_min
+  kind: gap
+  level: 1
+  topic: 線形代数・積の階数
+  statement: サイズの合う行列$A,B$について$\operatorname{rank}(AB)\leq\min(\operatorname{rank}A,\operatorname{rank}B)$である。
+  statement_en: For matrices A and B of compatible sizes over a field, rank(AB) ≤ min(rank A, rank B).
+  assumptions:
+  - $A$は体$K$上の$l\times m$行列
+  - $B$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A,B$
+  conclusion: $\operatorname{rank}(AB)\leq\min(\operatorname{rank}A,\operatorname{rank}B)$が成り立つ。
+  answer: |
+    $A$を体$K$上の$l\times m$行列、$B$を$m\times n$行列とする。行列の階数は、その行列が定める線形写像の像の次元である。$AB$の像は$A$の像に含まれるので、$\operatorname{rank}(AB)\leq\operatorname{rank}A$である。一方、$AB$の像は$B$の像を$A$で写したものであり、線形写像は部分空間の次元を増やさない。したがって$\operatorname{rank}(AB)\leq\operatorname{rank}B$である。$2$つの不等式から主張が従う。
+  strategy: Compare the images of AB, A and B as linear maps.
+  sketch:
+  - 'translate: View the matrices as linear maps and the rank as the dimension of the image.'
+  - 'derive: Im(AB) ⊆ Im(A) gives rank(AB) ≤ rank A.'
+  - 'derive: Im(AB) = A(Im B) has dimension at most dim Im B.'
+  - 'conclude: Both bounds give the minimum.'
+  openmath: (forall (K A B) (-> (and (matrix_over_field A K) (matrix_over_field B K)) (and (<= (matrix_rank (matrix_mul A B)) (matrix_rank A)) (<= (matrix_rank (matrix_mul A B)) (matrix_rank B)))))
+  hard_negative:
+    statement: rank(AB)=min(rank A, rank B)である。
+    reason: 等号は一般に成り立たない。A=E_12, B=E_12ではどちらも階数1だがAB=0である。
+  target: |
+    ∀ (K : Type*) [Field K] (l m n : Type*) [Fintype m] [Fintype n] (A : Matrix l m K) (B : Matrix m n K), (A * B).rank ≤ min A.rank B.rank
+  proof: |
+    by
+      intro K _ l m n _ _ A B
+      exact Matrix.rank_mul_le A B
+- id: row_rank_eq_column_rank
+  kind: textbook
+  level: 1
+  topic: 線形代数・行階数と列階数
+  statement: 体上の行列について、行ベクトルが生成する部分空間の次元と列ベクトルが生成する部分空間の次元は等しい。
+  statement_en: For a matrix over a field, the dimension of the span of its rows equals the dimension of the span of its columns.
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A$
+  conclusion: $A$の行階数と列階数は等しい。
+  answer: |
+    $A$を体$K$上の$m\times n$行列とする。列階数を$r$とし、列空間の基底を列に並べた$m\times r$行列を$C$とする。$A$の各列は$C$の列の一次結合なので、$r\times n$行列$R$を用いて$A=CR$と書ける。$A$の第$i$行は、$C$の第$i$行を係数とする$R$の行の一次結合である。よって$A$の行空間は$R$の$r$個の行が生成する空間に含まれ、行階数は$r$以下である。
+
+    すなわち、任意の行列について行階数は列階数以下である。これを$A$の転置に適用すると、$A$の列階数は行階数以下である。したがって両者は等しい。
+  strategy: Factor A through a basis of its column space and apply the bound to the transpose as well.
+  sketch:
+  - 'construct: Let C consist of a basis of the column space, with r columns.'
+  - 'derive: Each column of A is a combination of columns of C, so A = C R with R having r rows.'
+  - 'derive: Each row of A is a combination of the r rows of R, so the row rank is at most r.'
+  - 'derive: Applying this to the transpose gives the reverse inequality.'
+  - 'conclude: Row rank and column rank are equal.'
+  openmath: (forall (K A) (-> (matrix_over_field A K) (= (dimension (linear_span (matrix_rows A))) (dimension (linear_span (matrix_columns A))))))
+  hard_negative:
+    statement: Aの行空間と列空間はベクトル空間として一致する。
+    reason: 一致するのは次元だけである。A=E_12の行空間はe_2で張られ、列空間はe_1で張られる。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [Fintype n] (A : Matrix m n K), Module.finrank K ↥(Submodule.span K (Set.range A.row)) = Module.finrank K ↥(Submodule.span K (Set.range A.col))
+  proof: |
+    by
+      intro K _ m n _ _ A
+      rw [← Matrix.rank_eq_finrank_span_row, ← Matrix.rank_eq_finrank_span_cols]
+- id: rank_invariant_left_mul
+  kind: gap
+  level: 1
+  topic: 線形代数・基本変形と階数
+  statement: $P$が正則行列なら、$P$を左から掛けても行列の階数は変わらない。すなわち$\operatorname{rank}(PA)=\operatorname{rank}A$である。
+  statement_en: If P is an invertible square matrix, then rank(PA) = rank A for every matrix A of compatible size.
+  assumptions:
+  - $P$は体$K$上の$m$次正方行列
+  - $\det P\neq0$
+  - $A$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A$と正則行列$P$
+  conclusion: $\operatorname{rank}(PA)=\operatorname{rank}A$が成り立つ。
+  answer: |
+    $P$を$\det P\neq0$を満たす体$K$上の$m$次正方行列、$A$を$K$上の$m\times n$行列とする。積の階数の不等式$\operatorname{rank}(XY)\leq\operatorname{rank}Y$から、$\operatorname{rank}(PA)\leq\operatorname{rank}A$である。$P$には逆行列があるので、$A=P^{-1}(PA)$に同じ不等式を適用すると$\operatorname{rank}A\leq\operatorname{rank}(PA)$である。よって$\operatorname{rank}(PA)=\operatorname{rank}A$である。
+  strategy: Apply the product rank inequality twice, once with P^{-1}.
+  sketch:
+  - 'apply_theorem: rank(PA) ≤ rank A by the product inequality.'
+  - 'derive: A = P^{-1}(PA) gives rank A ≤ rank(PA).'
+  - 'conclude: The ranks are equal, so elementary row operations preserve rank.'
+  openmath: (forall (K P A) (-> (and (matrix_over_field P K) (matrix_over_field A K) (!= (matrix_det P) 0)) (= (matrix_rank (matrix_mul P A)) (matrix_rank A))))
+  hard_negative:
+    statement: Pが正則でなくてもrank(PA)=rank Aである。
+    reason: P=0のときrank(PA)=0であり、A≠0なら成り立たない。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [DecidableEq m] [Fintype n] (P : Matrix m m K) (A : Matrix m n K), P.det ≠ 0 → (P * A).rank = A.rank
+  proof: |
+    by
+      intro K _ m n _ _ _ P A hP
+      exact Matrix.rank_mul_eq_right_of_isUnit_det P A (isUnit_iff_ne_zero.mpr hP)
+- id: rank_sum_le_of_mul_eq_zero
+  kind: gap
+  level: 2
+  topic: 線形代数・積が零の行列の階数
+  statement: $l\times m$行列$A$と$m\times n$行列$B$が$AB=0$を満たすなら$\operatorname{rank}A+\operatorname{rank}B\leq m$である。
+  statement_en: If A is an l by m matrix and B an m by n matrix over a field with AB = 0, then rank A + rank B ≤ m.
+  assumptions:
+  - $A$は体$K$上の$l\times m$行列
+  - $B$は体$K$上の$m\times n$行列
+  - $AB=0$
+  quantifiers:
+  - 任意の行列$A,B$
+  conclusion: $\operatorname{rank}A+\operatorname{rank}B\leq m$が成り立つ。
+  answer: |
+    $A$を体$K$上の$l\times m$行列、$B$を$m\times n$行列とし、$AB=0$とする。$AB=0$は$B$の像が$A$の核に含まれることを意味するので、$\operatorname{rank}B\leq\dim\ker A$である。$x\mapsto Ax$に次元定理を適用すると、$\dim\ker A=m-\operatorname{rank}A$である。したがって$\operatorname{rank}A+\operatorname{rank}B\leq m$である。
+  strategy: The image of B sits in the kernel of A, so apply rank-nullity to A.
+  sketch:
+  - 'translate: AB = 0 means Im B ⊆ Ker A.'
+  - 'derive: So rank B ≤ dim Ker A.'
+  - 'apply_theorem: Rank-nullity gives dim Ker A = m - rank A.'
+  - 'conclude: Therefore rank A + rank B ≤ m.'
+  openmath: (forall (K A B) (-> (and (matrix_over_field A K) (matrix_over_field B K) (= (matrix_mul A B) zero_matrix)) (<= (+ (matrix_rank A) (matrix_rank B)) (matrix_column_count A))))
+  hard_negative:
+    statement: AB=0ならばA=0またはB=0である。
+    reason: A=B=E_12(2次)はAB=0だがどちらも零行列でない。
+  target: |
+    ∀ (K : Type*) [Field K] (l m n : Type*) [Fintype l] [Fintype m] [Fintype n] (A : Matrix l m K) (B : Matrix m n K), A * B = 0 → A.rank + B.rank ≤ Fintype.card m
+  proof: |
+    by
+      intro K _ l m n _ _ _ A B h
+      exact Matrix.rank_add_rank_le_card_of_mul_eq_zero h
+- id: solution_space_dimension
+  kind: textbook
+  level: 1
+  topic: 線形代数・解空間の次元
+  statement: $m\times n$行列$A$について、斉次方程式$Ax=0$の解空間の次元は$n-\operatorname{rank}A$である。すなわち$\operatorname{rank}A+\dim\{x\mid Ax=0\}=n$である。
+  statement_en: For an m by n matrix A over a field, rank A + dim{x | Ax = 0} = n.
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A$
+  conclusion: $\operatorname{rank}A+\dim\{x\mid Ax=0\}=n$が成り立つ。
+  answer: |
+    $A$を体$K$上の$m\times n$行列とする。線形写像$f:K^n\to K^m$を$f(x)=Ax$で定める。$f$の像の次元は$\operatorname{rank}A$であり、$f$の核は$Ax=0$の解空間である。次元定理を適用すると、$\operatorname{rank}A+\dim\{x\mid Ax=0\}=\dim K^n=n$を得る。
+  strategy: Apply rank-nullity to multiplication by A.
+  sketch:
+  - 'translate: Let f(x) = Ax from K^n to K^m.'
+  - 'derive: The image has dimension rank A, and the kernel is the solution space.'
+  - 'apply_theorem: Rank-nullity gives the formula.'
+  openmath: (forall (K A) (-> (matrix_over_field A K) (= (+ (matrix_rank A) (dimension (matrix_null_space A))) (matrix_column_count A))))
+  hard_negative:
+    statement: 解空間の次元はm-rank Aである。
+    reason: 未知数の個数はnである。A=(1 1)ではm=1, rank A=1だが解空間は1次元である。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [Fintype n] [DecidableEq n] (A : Matrix m n K), A.rank + Module.finrank K ↥(LinearMap.ker A.mulVecLin) = Fintype.card n
+  proof: |
+    by
+      intro K _ m n _ _ _ A
+      rw [Matrix.rank, LinearMap.finrank_range_add_finrank_ker, Module.finrank_fintype_fun_eq_card]
+- id: gauss_diagonalization
+  kind: textbook
+  level: 1
+  topic: 線形代数・基本変形による対角化
+  statement: 体上の任意の正方行列$A$は、ある行の定数倍を別の行に加える基本変形と、列について同様の基本変形を繰り返すことで対角行列に変形できる。
+  statement_en: Every square matrix A over a field can be brought to a diagonal matrix by operations adding a multiple of one row to another and of one column to another, that is LAL' = D for products L, L' of such elementary matrices.
+  assumptions:
+  - $A$は体$K$上の正方行列
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: 行の基本行列の積$L$、列の基本行列の積$L'$、対角行列$D$で$LAL'=D$となるものが存在する。
+  answer: |
+    $A$を体$K$上の$n$次正方行列とする。$i\neq j$と$c\in K$に対し、単位行列$I$と、$(i,j)$成分だけが$1$の行列$e_{ij}$を用いて、基本行列を$T_{ij}(c)=I+ce_{ij}$と定める。$T_{ij}(c)$を左から掛けると第$j$行の$c$倍が第$i$行に加わり、右から掛けると第$i$列の$c$倍が第$j$列に加わる。したがって、行と列の基本変形を繰り返して対角行列にできれば、基本行列の積$L,L'$と対角行列$D$で$LAL'=D$となるものが得られる。添字を$1,\dots,n$と番号づけ、$n$に関する帰納法で示す。
+
+    $n\leq1$なら$A$は既に対角である。$n\geq2$とする。$A=0$なら既に対角なので、$a_{ij}\neq0$となる$(i,j)$を取る。$a_{nj}=0$のときは$i\neq n$なので、第$i$行を第$n$行に加えて$a_{nj}\neq0$とする。次に$a_{nn}=0$のときは$j\neq n$なので、第$j$列を第$n$列に加えて$a_{nn}\neq0$とする。
+
+    $a_{nn}\neq0$となったので、$i<n$について第$n$行の$-a_{in}/a_{nn}$倍を第$i$行に加え、第$n$列の$a_{nn}$以外を$0$にする。続いて$j<n$について第$n$列の$-a_{nj}/a_{nn}$倍を第$j$列に加え、第$n$行の$a_{nn}$以外を$0$にする。こうして左上の$n-1$次行列$A'$と$a_{nn}$からなるブロック対角行列が得られる。
+
+    帰納法の仮定から、$A'$は$n-1$次の基本変形で対角行列になる。これらの基本変形は第$1$行から第$n-1$行、第$1$列から第$n-1$列だけを用いるので、$n$次の基本変形とみなしても第$n$行と第$n$列を変えない。したがって$A$は対角行列に変形できる。
+  strategy: Make the last diagonal entry nonzero, clear its row and column, and induct on the order.
+  sketch:
+  - 'induction: Induct on the order n.'
+  - 'case_split: If A = 0 it is already diagonal.'
+  - 'derive: Otherwise, adding a row and a column makes the entry a_nn nonzero.'
+  - 'derive: Using a_nn, clear the rest of the last row and column.'
+  - 'apply_theorem: Apply the induction hypothesis to the remaining block of order n - 1.'
+  - 'conclude: Products of the operations give LAL'' = D.'
+  openmath: (forall (K A) (-> (matrix_over_field A K) (exists (L M D) (and (transvection_product L) (transvection_product M) (diagonal_matrix D) (= (matrix_mul (matrix_mul L A) M) D)))))
+  hard_negative:
+    statement: 行の基本変形だけで任意の正方行列を対角行列にできる。
+    reason: 行変形は行空間を変えない。第1行が(1,1)で第2行が0の行列の行空間は(1,1)で張られるが、対角行列の行空間は座標ベクトルで張られるので一致しない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), ∃ (L L' : List (Matrix.TransvectionStruct n K)) (D : n → K), (L.map Matrix.TransvectionStruct.toMatrix).prod * A * (L'.map Matrix.TransvectionStruct.toMatrix).prod = Matrix.diagonal D
+  proof: |
+    by
+      intro K _ n _ _ A
+      exact Matrix.Pivot.exists_list_transvec_mul_mul_list_transvec_eq_diagonal A
+- id: linear_system_solvable_iff_in_col_span
+  kind: gap
+  level: 1
+  topic: 線形代数・連立方程式の可解性
+  statement: 連立一次方程式$Ax=b$が解を持つことと、$b$が$A$の列ベクトルの生成する部分空間に属することは同値である。
+  statement_en: The linear system Ax = b has a solution if and only if b lies in the span of the columns of A.
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  - $b$は$K^m$のベクトル
+  quantifiers:
+  - 任意の行列$A$とベクトル$b$
+  conclusion: $Ax=b$の可解性と、$b$が$A$の列の生成する部分空間に属することは同値である。
+  answer: |
+    $A$を体$K$上の$m\times n$行列、$b$を$K^m$のベクトルとし、$A$の列を$a_1,\dots,a_n$とする。$x\in K^n$について$Ax=\sum_j x_ja_j$である。したがって$Ax=b$を満たす$x$が存在することは、$b$が$a_1,\dots,a_n$の一次結合で書けることと同じである。これは$b$が列ベクトルの生成する部分空間に属することにほかならない。
+  strategy: Read Ax as the combination of columns with coefficients x.
+  sketch:
+  - 'translate: Write Ax = Σ x_j a_j with a_j the columns of A.'
+  - 'derive: A solution x is exactly a coefficient family expressing b.'
+  - 'conclude: Solvability is membership of b in the column span.'
+  openmath: (forall (A b) (<-> (exists (x) (= (matrix_vector_mul A x) b)) (in b (linear_span (matrix_columns A)))))
+  hard_negative:
+    statement: Ax=bが解を持つことと、bがAの行ベクトルの生成する部分空間に属することは同値である。
+    reason: 関係するのは列空間である。A=E_12, b=(1,0)^Tは解x=(0,1)^Tを持つが、行空間はe_2で張られるのでbを含まない。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype n] (A : Matrix m n K) (b : m → K), (∃ x : n → K, A.mulVec x = b) ↔ b ∈ Submodule.span K (Set.range A.col)
+  proof: |
+    by
+      intro K _ m n _ A b
+      classical
+      rw [← Matrix.range_mulVecLin]
+      rfl
+- id: linear_system_solution_structure
+  kind: gap
+  level: 1
+  topic: 線形代数・連立方程式の解の構造
+  statement: $x_0$が$Ax=b$の解であるとき、$x$が$Ax=b$の解であることと$x-x_0$が$Ay=0$の解であることは同値である。
+  statement_en: If x_0 solves Ax = b, then x solves Ax = b if and only if x - x_0 solves the homogeneous system Ay = 0.
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  - $b\in K^m$
+  - $x_0\in K^n$は$Ax=b$の解
+  quantifiers:
+  - 任意の行列$A$、ベクトル$b,x_0,x$
+  conclusion: $Ax=b$と$A(x-x_0)=0$は同値である。
+  answer: |
+    $A$を体$K$上の$m\times n$行列、$b\in K^m$とし、$x_0,x\in K^n$で$Ax_0=b$とする。$A$の線形性から$A(x-x_0)=Ax-Ax_0=Ax-b$である。したがって$A(x-x_0)=0$は$Ax=b$と同値である。
+  strategy: Use linearity of A and the equation for x_0.
+  sketch:
+  - 'derive: Linearity gives A(x - x_0) = Ax - b.'
+  - 'conclude: This vanishes exactly when Ax = b.'
+  openmath: (forall (A b u x) (-> (= (matrix_vector_mul A u) b) (<-> (= (matrix_vector_mul A x) b) (= (matrix_vector_mul A (- x u)) zero_vector))))
+  hard_negative:
+    statement: Ax=bの2つの解の和もAx=bの解である。
+    reason: A(x+y)=2bであり、b≠0なら2b≠bなので和は解にならない。b≠0のとき解全体は部分空間でない。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype n] (A : Matrix m n K) (b : m → K) (x₀ x : n → K), A.mulVec x₀ = b → (A.mulVec x = b ↔ A.mulVec (x - x₀) = 0)
+  proof: |
+    by
+      intro K _ m n _ A b x₀ x h
+      rw [Matrix.mulVec_sub, h, sub_eq_zero]
+- id: underdetermined_homogeneous
+  kind: gap
+  level: 1
+  topic: 線形代数・斉次方程式の非自明解
+  statement: $m<n$ならば、$m\times n$行列$A$の斉次方程式$Ax=0$は$0$でない解を持つ。
+  statement_en: If m < n, then the homogeneous system Ax = 0 with an m by n matrix A has a nonzero solution.
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  - $m<n$
+  quantifiers:
+  - 任意の自然数$m,n$と行列$A$
+  conclusion: $x\neq0$かつ$Ax=0$を満たす$x\in K^n$が存在する。
+  answer: |
+    $m<n$を自然数、$A$を体$K$上の$m\times n$行列とする。$x\mapsto Ax$は$K^n$から$K^m$への線形写像である。次元定理から解空間の次元は$n-\operatorname{rank}A$であり、$\operatorname{rank}A\leq m<n$なので正である。したがって$0$でない解が存在する。
+  strategy: Use the dimension of the solution space and rank A ≤ m.
+  sketch:
+  - 'translate: View x to Ax as a linear map from K^n to K^m.'
+  - 'derive: rank A ≤ m < n.'
+  - 'apply_theorem: Rank-nullity gives a kernel of positive dimension.'
+  - 'conclude: A nonzero solution exists.'
+  openmath: (forall (A) (-> (< (matrix_row_count A) (matrix_column_count A)) (exists (x) (and (!= x zero_vector) (= (matrix_vector_mul A x) zero_vector)))))
+  hard_negative:
+    statement: m<nならば、非斉次方程式Ax=bは常に解を持つ。
+    reason: 零行列でb≠0のとき解を持たない。m<nが保証するのは斉次方程式の非自明解だけである。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : ℕ) (A : Matrix (Fin m) (Fin n) K), m < n → ∃ x : Fin n → K, x ≠ 0 ∧ A.mulVec x = 0
+  proof: |
+    by
+      intro K _ m n A h
+      have hf : Module.finrank K (Fin m → K) < Module.finrank K (Fin n → K) := by
+        simpa only [Module.finrank_fin_fun] using h
+      obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot (LinearMap.ker_ne_bot_of_finrank_lt (f := A.mulVecLin) hf)
+      exact ⟨x, hx0, hx⟩
+- id: invertible_system_unique_solution
+  kind: gap
+  level: 1
+  topic: 線形代数・正則行列の連立方程式
+  statement: $A$が正則な正方行列なら、$Ax=b$と$x=A^{-1}b$は同値である。特に解は一意に存在する。
+  statement_en: If A is an invertible square matrix, then Ax = b if and only if x = A^{-1} b, so the solution exists and is unique.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $\det A\neq0$
+  quantifiers:
+  - 任意の正方行列$A$、ベクトル$b,x\in K^n$
+  conclusion: $Ax=b$と$x=A^{-1}b$は同値である。
+  answer: |
+    $A$を$\det A\neq0$を満たす体$K$上の$n$次正方行列、$b,x\in K^n$とする。このとき$A$には逆行列$A^{-1}$がある。$Ax=b$の両辺に左から$A^{-1}$を掛けると$x=A^{-1}b$である。逆に$x=A^{-1}b$なら$Ax=AA^{-1}b=b$である。
+  strategy: Multiply by the inverse in each direction.
+  sketch:
+  - 'derive: Multiplying Ax = b on the left by A^{-1} gives x = A^{-1} b.'
+  - 'derive: Substituting x = A^{-1} b gives Ax = b.'
+  - 'conclude: The two equations are equivalent.'
+  openmath: (forall (K A b x) (-> (and (matrix_over_field A K) (!= (matrix_det A) 0)) (<-> (= (matrix_vector_mul A x) b) (= x (matrix_vector_mul (matrix_inverse A) b)))))
+  hard_negative:
+    statement: det A=0のときもAx=bはただ1つの解を持つ。
+    reason: det A=0では解がないか無数にある(体が無限のとき)。A=0でb≠0なら解はない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (b x : n → K), A.det ≠ 0 → (A.mulVec x = b ↔ x = A⁻¹.mulVec b)
+  proof: |
+    by
+      intro K _ n _ _ A b x h
+      have hu : IsUnit A.det := isUnit_iff_ne_zero.mpr h
+      constructor
+      · rintro rfl
+        rw [Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul A hu, Matrix.one_mulVec]
+      · rintro rfl
+        rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv A hu, Matrix.one_mulVec]
+- id: rouche_capelli
+  kind: named
+  level: 1
+  topic: 線形代数・ルーシェ・カペリの定理
+  statement: 連立一次方程式$Ax=b$が解を持つことと、拡大係数行列$(A\mid b)$の階数が$A$の階数に等しいことは同値である(ルーシェ・カペリの定理)。
+  statement_en: The system Ax = b has a solution if and only if the augmented matrix (A | b) has the same rank as A (Rouché-Capelli).
+  assumptions:
+  - $A$は体$K$上の$m\times n$行列
+  - $b$は$K^m$のベクトル
+  quantifiers:
+  - 任意の行列$A$とベクトル$b$
+  conclusion: $Ax=b$の可解性と$\operatorname{rank}(A\mid b)=\operatorname{rank}A$は同値である。
+  answer: |
+    $A$を体$K$上の$m\times n$行列、$b$を$K^m$のベクトルとし、$A$の列空間を$U$、$A$の右に列$b$を加えた拡大係数行列を$(A\mid b)$とする。$(A\mid b)$の列空間は$U+Kb$である。$Ax=b$が解を持つことは$b\in U$と同値である。
+
+    $b\in U$なら$U+Kb=U$なので、階数は等しい。逆に階数が等しければ、$U\subseteq U+Kb$で次元が同じなので$U=U+Kb$となり、$b\in U$である。
+  strategy: Compare the column spaces of A and (A | b).
+  sketch:
+  - 'setup: Let U be the column space of A, so the column space of (A | b) is U + K b.'
+  - 'translate: Ax = b is solvable if and only if b is in U.'
+  - 'derive: If b is in U then U + K b = U, so the ranks agree.'
+  - 'derive: If the ranks agree, the inclusion U ⊆ U + K b is an equality by dimension.'
+  - 'conclude: Hence b is in U, which is solvability.'
+  openmath: (forall (K A b) (-> (matrix_over_field A K) (<-> (exists (x) (= (matrix_vector_mul A x) b)) (= (matrix_rank (augmented_matrix A b)) (matrix_rank A)))))
+  hard_negative:
+    statement: rank A=mならば解は一意である。
+    reason: rank A=mは解の存在を保証するが、一意性にはrank A=nが必要である。A=(1 1), b=(1)の解は無数にある。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [Fintype n] (A : Matrix m n K) (b : m → K), (∃ x : n → K, A.mulVec x = b) ↔ (Matrix.fromCols A (Matrix.of fun i (_ : Unit) => b i)).rank = A.rank
+  proof: |
+    by
+      intro K _ m n _ _ A b
+      classical
+      have hcols : Set.range (Matrix.fromCols A (Matrix.of fun i (_ : Unit) => b i)).col = Set.range A.col ∪ {b} := by
+        ext w
+        constructor
+        · rintro ⟨j | u, rfl⟩
+          · exact Or.inl ⟨j, rfl⟩
+          · exact Or.inr rfl
+        · rintro (⟨j, rfl⟩ | rfl)
+          · exact ⟨Sum.inl j, rfl⟩
+          · exact ⟨Sum.inr (), rfl⟩
+      have hsup : Submodule.span K (Set.range (Matrix.fromCols A (Matrix.of fun i (_ : Unit) => b i)).col) = Submodule.span K (Set.range A.col) ⊔ Submodule.span K {b} := by
+        rw [hcols, Submodule.span_union]
+      have hsol : (∃ x : n → K, A.mulVec x = b) ↔ b ∈ Submodule.span K (Set.range A.col) := by
+        rw [← Matrix.range_mulVecLin]
+        rfl
+      rw [hsol, Matrix.rank_eq_finrank_span_cols, Matrix.rank_eq_finrank_span_cols, hsup]
+      constructor
+      · intro hb
+        have : Submodule.span K {b} ≤ Submodule.span K (Set.range A.col) := (Submodule.span_singleton_le_iff_mem b _).mpr hb
+        rw [sup_eq_left.mpr this]
+      · intro h
+        have hle : Submodule.span K (Set.range A.col) ≤ Submodule.span K (Set.range A.col) ⊔ Submodule.span K {b} := le_sup_left
+        have heq := Submodule.eq_of_le_of_finrank_le hle h.le
+        have hmem : b ∈ Submodule.span K (Set.range A.col) ⊔ Submodule.span K {b} :=
+          Submodule.mem_sup_right (Submodule.mem_span_singleton_self b)
+        rw [← heq] at hmem
+        exact hmem
+- id: det_row_linear
+  kind: gap
+  level: 1
+  topic: 線形代数・行列式の多重線形性
+  statement: 行列式は各行について線形である。すなわち$A$の第$i$行を$au+v$に置き換えた行列の行列式は、第$i$行を$u$に置き換えたものの$a$倍と第$i$行を$v$に置き換えたものの和である。
+  statement_en: The determinant is linear in each row. Replacing row i of A by a u + v gives a times the determinant with row i replaced by u, plus the determinant with row i replaced by v.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $i$は行の添字
+  - $u,v$は$K^n$の行ベクトル
+  - $a\in K$
+  quantifiers:
+  - 任意の行列$A$、行$i$、スカラー$a$、ベクトル$u,v$
+  conclusion: 第$i$行に関する線形性の等式が成り立つ。
+  answer: |
+    $A=(a_{kl})$を体$K$上の$n$次正方行列、$i$を行の添字、$a\in K$、$u,v\in K^n$とする。ライプニッツの公式では、行列式は置換$\sigma$にわたる和$\sum_\sigma\operatorname{sgn}(\sigma)\prod_k a_{k,\sigma(k)}$であり、各項は第$i$行の成分をちょうど$1$つ含む。
+
+    第$i$行が$au+v$のとき、その成分は$au_{\sigma(i)}+v_{\sigma(i)}$である。したがって各項は$a\operatorname{sgn}(\sigma)u_{\sigma(i)}\prod_{k\neq i}a_{k,\sigma(k)}+\operatorname{sgn}(\sigma)v_{\sigma(i)}\prod_{k\neq i}a_{k,\sigma(k)}$に分かれる。$\sigma$について総和を取ると、第$1$の部分は第$i$行を$u$に置き換えた行列の行列式の$a$倍になり、第$2$の部分は第$i$行を$v$に置き換えた行列の行列式になる。
+  strategy: Expand with the Leibniz formula, where each term has one factor from row i.
+  sketch:
+  - 'translate: Write the determinant by the Leibniz formula.'
+  - 'derive: Each term contains exactly one factor from row i.'
+  - 'derive: Distribute a u_{σ(i)} + v_{σ(i)} in every term.'
+  - 'conclude: Summing over permutations gives the claimed identity.'
+  openmath: (forall (A i a u v) (= (matrix_det (matrix_row_replaced A i (+ (* a u) v))) (+ (* a (matrix_det (matrix_row_replaced A i u))) (matrix_det (matrix_row_replaced A i v)))))
+  hard_negative:
+    statement: det(A+B)=det A+det Bである。
+    reason: 線形なのは1行ずつについてである。A=B=Iの2次ではdet(2I)=4だがdet I+det I=2である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (i : n) (a : K) (u v : n → K), (A.updateRow i (a • u + v)).det = a * (A.updateRow i u).det + (A.updateRow i v).det
+  proof: |
+    by
+      intro K _ n _ _ A i a u v
+      rw [Matrix.det_updateRow_add, Matrix.det_updateRow_smul]
+- id: det_swap_rows
+  kind: gap
+  level: 1
+  topic: 線形代数・行の交換と行列式
+  statement: 正方行列の異なる2行を入れ替えると行列式の符号が反転する。
+  statement_en: Exchanging two distinct rows of a square matrix changes the sign of the determinant.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $i,j$は異なる行の添字
+  quantifiers:
+  - 任意の行列$A$と行$i,j$
+  conclusion: 第$i$行と第$j$行を入れ替えた行列の行列式は$-\det A$である。
+  answer: |
+    $A=(a_{kl})$を体$K$上の$n$次正方行列、$i\neq j$を行の添字とし、$\tau$を$i$と$j$の互換とする。第$i$行と第$j$行を入れ替えた行列の行列式は、ライプニッツの公式により$\sum_\sigma\operatorname{sgn}(\sigma)\prod_k a_{\tau(k),\sigma(k)}$である。$k=\tau(k')$と置き直すと、各項は$\operatorname{sgn}(\sigma)\prod_{k'}a_{k',\sigma\tau(k')}$となる。$\operatorname{sgn}(\sigma\tau)=-\operatorname{sgn}(\sigma)$であり、$\sigma\mapsto\sigma\tau$は置換全体の全単射なので、総和は$-\det A$である。
+  strategy: Reindex the Leibniz formula by the transposition of i and j.
+  sketch:
+  - 'setup: Let τ be the transposition exchanging i and j.'
+  - 'translate: Write the Leibniz formula of the matrix with exchanged rows.'
+  - 'derive: Reindexing by τ turns σ into σ τ.'
+  - 'derive: Use sgn(σ τ) = -sgn(σ) and that σ to σ τ is a bijection.'
+  - 'conclude: The determinant equals -det A.'
+  openmath: (forall (A i j) (-> (!= i j) (= (matrix_det (matrix_rows_swapped A i j)) (neg (matrix_det A)))))
+  hard_negative:
+    statement: 第i行に第j行の定数倍を加えると行列式の符号が反転する。
+    reason: i≠jならこの変形で行列式は変わらない。符号が反転するのは行の交換である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (i j : n), i ≠ j → (A.submatrix (Equiv.swap i j) id).det = -A.det
+  proof: |
+    by
+      intro K _ n _ _ A i j h
+      rw [Matrix.det_permute, Equiv.Perm.sign_swap h]
+      simp only [Units.val_neg, Units.val_one, Int.cast_neg, Int.cast_one, neg_mul, one_mul]
+- id: det_equal_rows_zero
+  kind: gap
+  level: 1
+  topic: 線形代数・行列式の交代性
+  statement: 正方行列の異なる2行が等しければ行列式は$0$である。
+  statement_en: If two distinct rows of a square matrix are equal, its determinant is 0.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $i,j$は異なる行の添字
+  - 第$i$行と第$j$行は等しい
+  quantifiers:
+  - 任意の行列$A$と行$i,j$
+  conclusion: $\det A=0$である。
+  answer: |
+    $A=(a_{kl})$を体$K$上の$n$次正方行列、$i\neq j$を行の添字とし、第$i$行と第$j$行が等しいとする。$\tau$を$i$と$j$の互換とする。$\sigma\mapsto\sigma\tau$は偶置換全体から奇置換全体への全単射である。
+
+    偶置換$\sigma$について、$\sigma\tau$の項の積は、$k=\tau(l)$と置き直すと$\prod_k a_{k,\sigma\tau(k)}=\prod_l a_{\tau(l),\sigma(l)}$である。第$i$行と第$j$行が等しいので、これは$\prod_l a_{l,\sigma(l)}$に等しい。符号は$\sigma$と$\sigma\tau$で逆なので、$2$つの項の和は$0$である。ライプニッツの公式の全項がこの組に分かれるので$\det A=0$である。この議論は$2$で割らないので、標数$2$でも成り立つ。
+  strategy: Pair the Leibniz terms of σ and σ τ, which cancel.
+  sketch:
+  - 'setup: Let τ be the transposition exchanging i and j.'
+  - 'construct: Partition the permutations into pairs {σ, σ τ}.'
+  - 'derive: Equal rows make the two products equal, and their signs are opposite.'
+  - 'conclude: Every pair cancels, so det A = 0.'
+  openmath: (forall (A i j) (-> (and (!= i j) (forall (k) (= (matrix_entry A i k) (matrix_entry A j k)))) (= (matrix_det A) 0)))
+  hard_negative:
+    statement: det A=0ならば、Aには等しい2行がある。
+    reason: 逆は成り立たない。第1行が(1,2)で第2行が(2,4)の行列はdet A=0だが2行は異なる。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (i j : n), i ≠ j → (∀ k, A i k = A j k) → A.det = 0
+  proof: |
+    by
+      intro K _ n _ _ A i j h hr
+      exact Matrix.det_zero_of_row_eq h (funext hr)
+- id: det_mul
+  kind: textbook
+  level: 1
+  topic: 線形代数・行列式の乗法性
+  statement: 同じ次数の正方行列$A,B$について$\det(AB)=\det A\cdot\det B$である。
+  statement_en: For square matrices A and B of the same order over a field, det(AB) = det A det B.
+  assumptions:
+  - $A,B$は体$K$上の同じ次数の正方行列
+  quantifiers:
+  - 任意の正方行列$A,B$
+  conclusion: $\det(AB)=\det A\cdot\det B$が成り立つ。
+  answer: |
+    $A=(a_{ij})$と$B$を体$K$上の$n$次正方行列とする。$e_1,\dots,e_n$を行ベクトルの標準基底とする。$AB$の第$i$行は、$A$の第$i$行に右から$B$を掛けたものであり、$\sum_j a_{ij}(e_jB)$である。$e_jB$は$B$の第$j$行である。
+
+    行列式の各行についての線形性を$n$個の行すべてに使うと、$\det(AB)=\sum_{f}\prod_i a_{i,f(i)}\det B_f$となる。ここで$f$は$\{1,\dots,n\}$から自身への写像全体を動き、$B_f$は第$i$行が$B$の第$f(i)$行である行列である。
+
+    $f$が単射でないなら$B_f$は等しい$2$行を持つので、$\det B_f=0$である。$f$が単射なら$f$は置換$\sigma$である。$\sigma$を互換の積に書くと、行の交換ごとに行列式の符号が反転するので、$\det B_\sigma=\operatorname{sgn}(\sigma)\det B$である。したがって$\det(AB)=\sum_\sigma\operatorname{sgn}(\sigma)\prod_i a_{i,\sigma(i)}\det B=\det A\cdot\det B$である。
+  strategy: Treat det(AB) as an alternating multilinear function of the rows of A.
+  sketch:
+  - 'setup: Fix B and define F(A) = det(AB).'
+  - 'derive: Row i of AB is row i of A times B, so F is multilinear and alternating in the rows.'
+  - 'apply_theorem: Such a function equals F(I) det A.'
+  - 'conclude: Since F(I) = det B, the formula follows.'
+  openmath: (forall (A B) (= (matrix_det (matrix_mul A B)) (* (matrix_det A) (matrix_det B))))
+  hard_negative:
+    statement: 長方形行列A,Bについても、ABとBAがどちらも正方ならdet(AB)=det(BA)である。
+    reason: A=(1 0)とB=(1 0)^TではAB=(1)でdet 1だが、BAは2次の行列E_11でdet 0である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A B : Matrix n n K), (A * B).det = A.det * B.det
+  proof: |
+    by
+      intro K _ n _ _ A B
+      exact Matrix.det_mul A B
+- id: det_transpose
+  kind: textbook
+  level: 1
+  topic: 線形代数・行列式の転置不変性
+  statement: 正方行列の転置の行列式はもとの行列式に等しい。
+  statement_en: The determinant of the transpose of a square matrix equals the determinant of the matrix.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: $\det(A^{\top})=\det A$が成り立つ。
+  answer: |
+    $A=(a_{kl})$を体$K$上の$n$次正方行列とする。ライプニッツの公式から$\det A^{\top}=\sum_\sigma\operatorname{sgn}(\sigma)\prod_k a_{\sigma(k),k}$である。各項で添字を$k=\sigma^{-1}(l)$と置き直すと、積は$\prod_l a_{l,\sigma^{-1}(l)}$となる。$\operatorname{sgn}(\sigma^{-1})=\operatorname{sgn}(\sigma)$であり、$\sigma\mapsto\sigma^{-1}$は置換全体の全単射なので、総和は$\det A$に等しい。
+  strategy: Reindex the Leibniz formula by the inverse permutation.
+  sketch:
+  - 'translate: Write det A^T by the Leibniz formula.'
+  - 'derive: Reindex each product by σ^{-1}.'
+  - 'derive: Use sgn(σ^{-1}) = sgn(σ) and that inversion is a bijection on permutations.'
+  - 'conclude: The sum equals det A.'
+  openmath: (forall (A) (= (matrix_det (matrix_transpose A)) (matrix_det A)))
+  hard_negative:
+    statement: A^T=Aでなければdet A^T≠det Aである。
+    reason: 転置で行列が変わっても行列式は常に等しい。E_12とE_21はどちらも行列式0である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), A.transpose.det = A.det
+  proof: |
+    by
+      intro K _ n _ _ A
+      exact Matrix.det_transpose A
+- id: det_scalar_mul
+  kind: gap
+  level: 1
+  topic: 線形代数・行列式とスカラー倍
+  statement: $n$次正方行列$A$とスカラー$a$について$\det(aA)=a^n\det A$である。
+  statement_en: For an n by n matrix A and a scalar a, det(aA) = a^n det A.
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $a\in K$
+  quantifiers:
+  - 任意の正方行列$A$とスカラー$a$
+  conclusion: $\det(aA)=a^n\det A$が成り立つ。
+  answer: |
+    $A$を体$K$上の$n$次正方行列、$a\in K$とする。$aA$は$A$の$n$個の行すべてを$a$倍した行列である。行列式は各行について線形なので、$1$行ごとに$a$をくくり出せる。$n$行についてくくり出すと$\det(aA)=a^n\det A$である。
+  strategy: Pull the scalar out of each of the n rows.
+  sketch:
+  - 'translate: aA is A with every row multiplied by a.'
+  - 'apply_theorem: Linearity in each row extracts one factor a per row.'
+  - 'conclude: The n rows give the factor a^n.'
+  openmath: (forall (a A) (= (matrix_det (matrix_scale a A)) (* (^ a (matrix_order A)) (matrix_det A))))
+  hard_negative:
+    statement: det(aA)=a det Aである。
+    reason: 2次の単位行列でa=2とするとdet(2I)=4だがa det I=2である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (a : K) (A : Matrix n n K), (a • A).det = a ^ Fintype.card n * A.det
+  proof: |
+    by
+      intro K _ n _ _ a A
+      exact Matrix.det_smul A a
+- id: det_upper_triangular
+  kind: gap
+  level: 1
+  topic: 線形代数・三角行列の行列式
+  statement: 上三角行列の行列式は対角成分の積である。
+  statement_en: The determinant of an upper triangular matrix is the product of its diagonal entries.
+  assumptions:
+  - $A=(a_{ij})$は体$K$上の$n$次正方行列
+  - $j<i$なら$a_{ij}=0$
+  quantifiers:
+  - 任意の上三角行列$A$
+  conclusion: $\det A=\prod_i a_{ii}$が成り立つ。
+  answer: |
+    $A=(a_{ij})$を体$K$上の$n$次正方行列とし、$j<i$なら$a_{ij}=0$とする。ライプニッツの公式の項$\prod_i a_{i,\sigma(i)}$が$0$でないなら、すべての$i$で$\sigma(i)\geq i$である。$\sigma$は$\{1,\dots,n\}$の置換なので$\sum_i\sigma(i)=\sum_i i$であり、すべての$i$で等号$\sigma(i)=i$が成り立つ。よって$0$でない項を与えうるのは恒等置換だけであり、$\det A=\prod_i a_{ii}$である。
+  strategy: Only the identity permutation contributes in the Leibniz formula.
+  sketch:
+  - 'translate: Write det A by the Leibniz formula.'
+  - 'derive: A nonzero term requires σ(i) ≥ i for all i.'
+  - 'derive: Summing over i forces σ to be the identity.'
+  - 'conclude: The determinant is the product of the diagonal entries.'
+  openmath: (forall (A) (-> (upper_triangular_matrix A) (= (matrix_det A) (matrix_diagonal_product A))))
+  hard_negative:
+    statement: 任意の正方行列の行列式は対角成分の積である。
+    reason: 第1行が(0,1)で第2行が(1,0)の行列は対角成分の積が0だが行列式は-1である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : ℕ) (A : Matrix (Fin n) (Fin n) K), (∀ i j, j < i → A i j = 0) → A.det = ∏ i, A i i
+  proof: |
+    by
+      intro K _ n A h
+      exact Matrix.det_of_upperTriangular (fun i j hij => h i j hij)
+- id: cofactor_expansion_row
+  kind: textbook
+  level: 1
+  topic: 線形代数・余因子展開
+  statement: $n+1$次正方行列$A$と行$i$について$\det A=\sum_j(-1)^{i+j}a_{ij}\det A_{ij}$である。ここで$A_{ij}$は$A$から第$i$行と第$j$列を除いた行列である。
+  statement_en: For a square matrix A of order n + 1 and a row i, det A = Σ_j (-1)^{i+j} a_ij det A_ij, where A_ij deletes row i and column j.
+  assumptions:
+  - $A$は体$K$上の$n+1$次正方行列
+  - $i$は行の添字
+  quantifiers:
+  - 任意の自然数$n$、行列$A$、行$i$
+  conclusion: 第$i$行に関する余因子展開の等式が成り立つ。
+  answer: |
+    $n$を自然数、$A=(a_{ij})$を体$K$上の$n+1$次正方行列とし、行と列の添字は$0$から$n$までとする。$i$を行の添字とする。$A_{ij}$を$A$から第$i$行と第$j$列を除いた行列とし、$e_j$を第$j$成分だけが$1$の行ベクトルとする。
+
+    第$i$行は$\sum_j a_{ij}e_j$なので、行についての線形性から$\det A=\sum_j a_{ij}\det B_j$である。ここで$B_j$は$A$の第$i$行を$e_j$に置き換えた行列である。
+
+    $B_j$の第$i$行を隣接行との交換$i$回で先頭へ移し、第$j$列を隣接列との交換$j$回で先頭へ移す。他の行と列の順序は保たれ、行の交換でも列の交換でも行列式の符号は反転するので、符号$(-1)^{i+j}$が現れる。得られた行列は先頭の行が$(1,0,\dots,0)$であり、残りの右下の部分が$A_{ij}$である。ライプニッツの公式で$0$でない項を与えうる置換は先頭の添字を固定するものだけなので、この行列の行列式は$\det A_{ij}$である。よって$\det B_j=(-1)^{i+j}\det A_{ij}$であり、等式が従う。
+  strategy: Split row i into standard vectors and move each resulting entry to the corner.
+  sketch:
+  - 'derive: Write row i as Σ_j a_ij e_j and use linearity in that row.'
+  - 'setup: Let B_j be A with row i replaced by e_j.'
+  - 'derive: Moving row i and column j to the front gives the sign (-1)^{i+j}.'
+  - 'derive: The resulting block triangular matrix has determinant det A_ij.'
+  - 'conclude: Summing over j gives the expansion.'
+  openmath: (forall (A i) (= (matrix_det A) (sum (matrix_order A) (lambda (j) (* (^ -1 (+ i j)) (* (matrix_entry A i j) (matrix_det (matrix_minor_deleted A i j))))))))
+  hard_negative:
+    statement: 余因子展開の符号は(-1)^{i+j}を付けなくてもよい。
+    reason: 第1行が(0,1)で第2行が(1,0)の行列を第1行で展開すると、符号なしでは1となるが行列式は-1である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : ℕ) (A : Matrix (Fin (n + 1)) (Fin (n + 1)) K) (i : Fin (n + 1)), A.det = ∑ j : Fin (n + 1), (-1) ^ ((i : ℕ) + (j : ℕ)) * A i j * (A.submatrix i.succAbove j.succAbove).det
+  proof: |
+    by
+      intro K _ n A i
+      exact Matrix.det_succ_row A i
+- id: adjugate_product
+  kind: textbook
+  level: 1
+  topic: 線形代数・余因子行列
+  statement: 正方行列$A$とその余因子行列$\operatorname{adj}A$について$A\operatorname{adj}A=(\operatorname{adj}A)A=(\det A)I$である。
+  statement_en: For a square matrix A and its adjugate adj A, A adj A = adj A A = (det A) I.
+  assumptions:
+  - $A$は体$K$上の正方行列
+  - $I$は単位行列
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: $A\operatorname{adj}A=(\operatorname{adj}A)A=(\det A)I$が成り立つ。
+  answer: |
+    $A=(a_{ik})$を体$K$上の$n$次正方行列、$I$を単位行列とする。$A_{jk}$を$A$から第$j$行と第$k$列を除いた行列、$C_{jk}=(-1)^{j+k}\det A_{jk}$を$(j,k)$余因子とする。$\operatorname{adj}A$は$(k,j)$成分が$C_{jk}$の行列である。
+
+    $A\operatorname{adj}A$の$(i,j)$成分は$\sum_k a_{ik}C_{jk}$である。$i=j$なら、これは第$i$行に関する余因子展開なので$\det A$である。$i\neq j$なら、これは$A$の第$j$行を第$i$行で置き換えた行列の第$j$行に関する展開である。この置き換えで$A_{jk}$は変わらない。その行列は等しい$2$行を持つので、和は$0$である。よって$A\operatorname{adj}A=(\det A)I$である。
+
+    $\det(A^{\top})=\det A$から$A^{\top}$の$(k,j)$余因子は$C_{jk}$なので、$\operatorname{adj}(A^{\top})=(\operatorname{adj}A)^{\top}$である。今示した等式を$A^{\top}$に適用して転置を取ると、$(\operatorname{adj}A)A=(\det A)I$を得る。
+  strategy: Read the entries of the product as cofactor expansions of A or of a matrix with two equal rows.
+  sketch:
+  - 'translate: The (i, j) entry of A adj A is Σ_k a_ik C_jk.'
+  - 'case_split: For i = j this is the cofactor expansion of det A.'
+  - 'case_split: For i ≠ j this expands a matrix with two equal rows, so it is 0.'
+  - 'derive: The same holds for adj A times A by expanding along columns.'
+  - 'conclude: Both products equal (det A) I.'
+  openmath: (forall (A) (and (= (matrix_mul A (matrix_adjugate A)) (matrix_scale (matrix_det A) identity_matrix)) (= (matrix_mul (matrix_adjugate A) A) (matrix_scale (matrix_det A) identity_matrix))))
+  hard_negative:
+    statement: A adj A=Iである。
+    reason: 右辺は(det A)Iである。A=2Iの1次ではadj A=(1)でA adj A=(2)となる。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), A * A.adjugate = A.det • (1 : Matrix n n K) ∧ A.adjugate * A = A.det • (1 : Matrix n n K)
+  proof: |
+    by
+      intro K _ n _ _ A
+      exact ⟨Matrix.mul_adjugate A, Matrix.adjugate_mul A⟩
+- id: inverse_by_adjugate
+  kind: gap
+  level: 1
+  topic: 線形代数・逆行列の公式
+  statement: $\det A\neq0$なら$A^{-1}=(\det A)^{-1}\operatorname{adj}A$である。
+  statement_en: If det A ≠ 0, then A^{-1} = (det A)^{-1} adj A.
+  assumptions:
+  - $A$は体$K$上の正方行列
+  - $\det A\neq0$
+  quantifiers:
+  - 任意の正方行列$A$
+  conclusion: $A^{-1}=(\det A)^{-1}\operatorname{adj}A$が成り立つ。
+  answer: |
+    $A$を$\det A\neq0$を満たす体$K$上の正方行列、$\operatorname{adj}A$をその余因子行列、$I$を単位行列とし、$B=(\det A)^{-1}\operatorname{adj}A$とおく。$A\operatorname{adj}A=(\det A)I$の両辺を$\det A$で割ると$AB=I$である。$(\operatorname{adj}A)A=(\det A)I$からも同様に$BA=I$である。逆行列は一意なので、$A^{-1}=B$である。
+  strategy: Divide the adjugate identity by det A.
+  sketch:
+  - 'apply_theorem: Use A adj A = adj A A = (det A) I.'
+  - 'derive: Dividing by det A gives a two-sided inverse.'
+  - 'conclude: Uniqueness of the inverse gives the formula.'
+  openmath: (forall (K A) (-> (and (matrix_over_field A K) (!= (matrix_det A) 0)) (= (matrix_inverse A) (matrix_scale (/ 1 (matrix_det A)) (matrix_adjugate A)))))
+  hard_negative:
+    statement: det A=0でもAの逆行列は(det A)^{-1}adj Aで与えられる。
+    reason: det A=0のときAは正則でなく、逆行列が存在しない。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K), A.det ≠ 0 → A⁻¹ = (A.det)⁻¹ • A.adjugate
+  proof: |
+    by
+      intro K _ n _ _ A h
+      rw [Matrix.inv_def, Ring.inverse_eq_inv']
+- id: cofactor_mismatch_zero
+  kind: gap
+  level: 1
+  topic: 線形代数・異なる行の余因子
+  statement: $i\neq j$のとき、第$i$行の成分と第$j$行の余因子を掛けて足した和は$0$である。すなわち$\sum_k a_{ik}(\operatorname{adj}A)_{kj}=0$である。
+  statement_en: If i ≠ j, the sum of the entries of row i times the cofactors of row j is zero, that is Σ_k a_ik (adj A)_kj = 0.
+  assumptions:
+  - $A$は体$K$上の正方行列
+  - $i,j$は異なる行の添字
+  quantifiers:
+  - 任意の行列$A$と行$i,j$
+  conclusion: $\sum_k a_{ik}(\operatorname{adj}A)_{kj}=0$である。
+  answer: |
+    $A=(a_{ik})$を体$K$上の正方行列、$\operatorname{adj}A$をその余因子行列、$I$を単位行列、$i\neq j$を行の添字とする。和$\sum_k a_{ik}(\operatorname{adj}A)_{kj}$は$A\operatorname{adj}A$の$(i,j)$成分である。$A\operatorname{adj}A=(\det A)I$であり、単位行列の$(i,j)$成分は$i\neq j$のとき$0$である。したがって和は$0$である。
+  strategy: Read the sum as an off-diagonal entry of A adj A.
+  sketch:
+  - 'translate: The sum is the (i, j) entry of A adj A.'
+  - 'apply_theorem: A adj A = (det A) I.'
+  - 'conclude: The off-diagonal entry vanishes for i ≠ j.'
+  openmath: (forall (A i j) (-> (!= i j) (= (sum (matrix_order A) (lambda (k) (* (matrix_entry A i k) (matrix_entry (matrix_adjugate A) k j)))) 0)))
+  hard_negative:
+    statement: i=jのときもこの和は0である。
+    reason: i=jでは和はdet Aに等しい。A=Iの1次では和は1である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (i j : n), i ≠ j → ∑ k, A i k * A.adjugate k j = 0
+  proof: |
+    by
+      intro K _ n _ _ A i j h
+      have hij := congrFun (congrFun (Matrix.mul_adjugate A) i) j
+      simpa only [Matrix.mul_apply, Matrix.smul_apply, Matrix.one_apply_ne h, smul_zero] using hij
+- id: cramer_rule
+  kind: named
+  level: 1
+  topic: 線形代数・クラメルの公式
+  statement: $\det A\neq0$かつ$Ax=b$ならば、$x_i=\det(A_i(b))/\det A$である。ここで$A_i(b)$は$A$の第$i$列を$b$で置き換えた行列である(クラメルの公式)。
+  statement_en: If det A ≠ 0 and Ax = b, then x_i = det(A_i(b)) / det A, where A_i(b) is A with column i replaced by b (Cramer's rule).
+  assumptions:
+  - $A$は体$K$上の$n$次正方行列
+  - $\det A\neq0$
+  - $x,b\in K^n$で$Ax=b$
+  quantifiers:
+  - 任意の正方行列$A$、ベクトル$b,x$、添字$i$
+  conclusion: $x_i=\det(A_i(b))/\det A$である。
+  answer: |
+    $A$を$\det A\neq0$を満たす体$K$上の$n$次正方行列、$x,b\in K^n$を$Ax=b$を満たすベクトル、$i$を添字とし、$A_i(c)$で$A$の第$i$列を$c$で置き換えた行列を表す。$A$の列を$a_1,\dots,a_n$とすると$b=\sum_j x_ja_j$である。行列式は第$i$列について線形なので、$\det A_i(b)=\sum_j x_j\det A_i(a_j)$である。$j\neq i$なら$A_i(a_j)$は等しい$2$列を持つので行列式は$0$であり、$j=i$なら$A_i(a_i)=A$である。よって$\det A_i(b)=x_i\det A$となり、$\det A\neq0$で割ると$x_i=\det(A_i(b))/\det A$を得る。
+  strategy: Expand b along the columns and use multilinearity and the alternating property in column i.
+  sketch:
+  - 'translate: Write b = Σ_j x_j a_j with a_j the columns of A.'
+  - 'derive: Linearity in column i gives det A_i(b) = Σ_j x_j det A_i(a_j).'
+  - 'derive: Terms with j ≠ i vanish because of two equal columns.'
+  - 'derive: The remaining term gives x_i det A.'
+  - 'conclude: Divide by det A ≠ 0.'
+  openmath: (forall (K A b x i) (-> (and (matrix_over_field A K) (!= (matrix_det A) 0) (= (matrix_vector_mul A x) b)) (= (fn_value x i) (/ (matrix_det (matrix_column_replaced A i b)) (matrix_det A)))))
+  hard_negative:
+    statement: det A=0でもAx=bの解はx_i=det(A_i(b))/det Aで与えられる。
+    reason: det A=0では分母が0であり、解が存在しないか一意でない。A=0でb=0ならどのxも解である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : Type*) [Fintype n] [DecidableEq n] (A : Matrix n n K) (b x : n → K), A.det ≠ 0 → A.mulVec x = b → ∀ i, x i = (A.updateCol i b).det / A.det
+  proof: |
+    by
+      intro K _ n _ _ A b x h hx i
+      have hc : A.mulVec (A.cramer b) = A.det • b := Matrix.mulVec_cramer A b
+      have hA : A.mulVec (A.det • x) = A.det • b := by
+        rw [Matrix.mulVec_smul, hx]
+      have hinj : A.det • x = A.cramer b := Matrix.mulVec_injective_of_isUnit (Matrix.isUnit_iff_isUnit_det A |>.mpr (isUnit_iff_ne_zero.mpr h)) (hA.trans hc.symm)
+      have hi := congrFun hinj i
+      rw [Pi.smul_apply, smul_eq_mul, Matrix.cramer_apply] at hi
+      rw [eq_div_iff h, ← hi, mul_comm]
+- id: vandermonde_det
+  kind: named
+  level: 1
+  topic: 線形代数・ファンデルモンドの行列式
+  statement: 第$i$行が$(1,v_i,v_i^2,\dots,v_i^{n-1})$である$n$次行列の行列式は$\prod_{i<j}(v_j-v_i)$である(ファンデルモンドの行列式)。
+  statement_en: The determinant of the n by n matrix whose row i is (1, v_i, v_i^2, ..., v_i^{n-1}) equals the product of v_j - v_i over all i < j (Vandermonde).
+  assumptions:
+  - $v_1,\dots,v_n$は体$K$の元
+  quantifiers:
+  - 任意の自然数$n$と族$(v_i)$
+  conclusion: 行列式は$\prod_{i<j}(v_j-v_i)$に等しい。
+  answer: |
+    $n$を自然数、$v_1,\dots,v_n$を体$K$の元とし、$V(v_1,\dots,v_n)$を第$i$行が$(1,v_i,\dots,v_i^{n-1})$である$n$次行列とする。$n$に関する帰納法で示す。$n\leq1$なら行列式は$1$であり、右辺の空積も$1$である。
+
+    $n\geq2$とする。$k=n,n-1,\dots,2$の順に、第$k$列から第$k-1$列の$v_1$倍を引く。この操作で行列式は変わらない。操作後の$(i,k)$成分($k\geq2$)は$v_i^{k-1}-v_1v_i^{k-2}=(v_i-v_1)v_i^{k-2}$であり、第$1$列は$1$のままである。特に第$1$行は$(1,0,\dots,0)$となる。
+
+    第$1$行に関する余因子展開を行うと、行列式は$(i,k)$成分が$(v_i-v_1)v_i^{k-2}$である$n-1$次行列($i,k=2,\dots,n$)の行列式に等しい。第$i$行から因子$v_i-v_1$をくくり出すと、残りは$V(v_2,\dots,v_n)$である。よって$\det V(v_1,\dots,v_n)=\prod_{i\geq2}(v_i-v_1)\cdot\det V(v_2,\dots,v_n)$である。帰納法の仮定から$\det V(v_2,\dots,v_n)=\prod_{2\leq i<j}(v_j-v_i)$なので、$\det V(v_1,\dots,v_n)=\prod_{i<j}(v_j-v_i)$である。
+  strategy: Clear the first row by column operations, factor out differences and induct.
+  sketch:
+  - 'derive: Subtract v_1 times each column from the column on its right, working from the right.'
+  - 'derive: The first row becomes (1, 0, ..., 0) and the determinant is unchanged.'
+  - 'apply_theorem: Expand along the first row.'
+  - 'derive: Factor v_i - v_1 out of each remaining row.'
+  - 'induction: The rest is a Vandermonde matrix of order n - 1.'
+  - 'conclude: The product over i < j follows.'
+  openmath: (forall (v) (= (matrix_det (vandermonde_matrix v)) (vandermonde_difference_product v)))
+  hard_negative:
+    statement: ファンデルモンドの行列式はΠ_{i<j}(v_i+v_j)である。
+    reason: 有理数体では成り立たない。n=2, v=(1,2)とすると行列式は2-1=1だが、積は1+2=3である。標数2では$v_j-v_i=v_j+v_i$となり両者は一致するので、反例には体を指定する必要がある。
+  target: |
+    ∀ (K : Type*) [Field K] (n : ℕ) (v : Fin n → K), (Matrix.vandermonde v).det = ∏ i, ∏ j ∈ Finset.Ioi i, (v j - v i)
+  proof: |
+    by
+      intro K _ n v
+      exact Matrix.det_vandermonde v
+- id: vandermonde_ne_zero_iff
+  kind: gap
+  level: 1
+  topic: 線形代数・ファンデルモンド行列の正則性
+  statement: ファンデルモンド行列の行列式が$0$でないことと、$v_1,\dots,v_n$が互いに相異なることは同値である。
+  statement_en: The Vandermonde determinant is nonzero if and only if v_1, ..., v_n are pairwise distinct.
+  assumptions:
+  - $v_1,\dots,v_n$は体$K$の元
+  quantifiers:
+  - 任意の自然数$n$と族$(v_i)$
+  conclusion: 第$i$行が$(1,v_i,\dots,v_i^{n-1})$である行列の行列式が$0$でないことと、$v_1,\dots,v_n$が相異なることは同値である。
+  answer: |
+    $n$を自然数、$v_1,\dots,v_n$を体$K$の元とし、第$i$行が$(1,v_i,\dots,v_i^{n-1})$である$n$次行列を考える。ファンデルモンドの行列式の公式により、この行列の行列式は$\prod_{i<j}(v_j-v_i)$に等しい。体には零因子がないので、この積が$0$でないことは、すべての$i<j$で$v_j\neq v_i$であることと同値である。これは$v_1,\dots,v_n$が互いに相異なることにほかならない。
+  strategy: Read the nonvanishing of the product formula factor by factor.
+  sketch:
+  - 'apply_theorem: The determinant equals the product of v_j - v_i over i < j.'
+  - 'derive: A field has no zero divisors, so the product is nonzero exactly when all factors are.'
+  - 'conclude: This means v is injective.'
+  openmath: (forall (K v) (-> (and (field K) (forall (i) (in (fn_value v i) K))) (<-> (!= (matrix_det (vandermonde_matrix v)) 0) (injective_function v))))
+  hard_negative:
+    statement: ファンデルモンド行列の行列式が0でないことは、v_iがすべて0でないことと同値である。
+    reason: v_1=v_2=1はどちらも0でないが行列式は0である。また(0,1)は0を含むが行列式は1である。
+  target: |
+    ∀ (K : Type*) [Field K] (n : ℕ) (v : Fin n → K), (Matrix.vandermonde v).det ≠ 0 ↔ Function.Injective v
+  proof: |
+    by
+      intro K _ n v
+      exact Matrix.det_vandermonde_ne_zero_iff
+- id: block_upper_triangular_det
+  kind: textbook
+  level: 1
+  topic: 線形代数・ブロック三角行列の行列式
+  statement: 正方行列$A,D$と行列$B$からなるブロック上三角行列について、第1行が$(A,B)$で第2行が$(0,D)$である行列の行列式は$\det A\cdot\det D$である。
+  statement_en: For square matrices A and D and a matrix B, the block upper triangular matrix with block rows (A, B) and (0, D) has determinant det A det D.
+  assumptions:
+  - $A$は体$K$上の$m$次正方行列
+  - $D$は体$K$上の$n$次正方行列
+  - $B$は体$K$上の$m\times n$行列
+  quantifiers:
+  - 任意の行列$A,B,D$
+  conclusion: $\det\begin{pmatrix}A&B\\0&D\end{pmatrix}=\det A\cdot\det D$である。
+  answer: |
+    $A$を体$K$上の$m$次正方行列、$D$を$n$次正方行列、$B$を$m\times n$行列とし、$M=\begin{pmatrix}A&B\\0&D\end{pmatrix}$とする。$A$の行と列に対応する添字の集合を$P$、$D$の行と列に対応する添字の集合を$Q$とする。
+
+    ライプニッツの公式で$M$の項$\prod_k M_{k,\sigma(k)}$が$0$でないとする。$k\in Q$について左下の零ブロックを避けるので、$\sigma(k)\in Q$である。よって$\sigma(Q)\subseteq Q$であり、$\sigma$は全単射で$Q$は有限なので$\sigma(Q)=Q$、したがって$\sigma(P)=P$である。
+
+    このような$\sigma$は$P$の置換$\sigma_1$と$Q$の置換$\sigma_2$の組と一対一に対応し、$\operatorname{sgn}(\sigma)=\operatorname{sgn}(\sigma_1)\operatorname{sgn}(\sigma_2)$である。その項は$B$の成分を含まず、$\prod_{k\in P}A_{k,\sigma_1(k)}\prod_{k\in Q}D_{k,\sigma_2(k)}$に等しい。$\sigma_1,\sigma_2$について総和を分けると$\det M=\det A\cdot\det D$となる。
+  strategy: Show that contributing permutations split along the blocks in the Leibniz formula.
+  sketch:
+  - 'translate: Write the determinant by the Leibniz formula.'
+  - 'derive: A nonzero term must send the D-indices to D-indices, because the lower-left block is zero.'
+  - 'derive: Bijectivity then forces σ to preserve the A-indices as well.'
+  - 'derive: The sign and the product split into A-part and D-part, with no entry of B.'
+  - 'conclude: Summing gives det A det D.'
+  openmath: (forall (A B D) (= (matrix_det (block_matrix A B zero_matrix D)) (* (matrix_det A) (matrix_det D))))
+  hard_negative:
+    statement: 一般のブロック行列について、第1行(A,B)、第2行(C,D)の行列式はdet A det D-det B det Cである。
+    reason: 2×2の各ブロックが1次のときだけ成り立つ形である。A=D=0, B=C=I(2次)では公式の値は-1だが、行列式は1である。
+  target: |
+    ∀ (K : Type*) [Field K] (m n : Type*) [Fintype m] [DecidableEq m] [Fintype n] [DecidableEq n] (A : Matrix m m K) (B : Matrix m n K) (D : Matrix n n K), (Matrix.fromBlocks A B 0 D).det = A.det * D.det
+  proof: |
+    by
+      intro K _ m n _ _ _ _ A B D
+      exact Matrix.det_fromBlocks_zero₂₁ A B D

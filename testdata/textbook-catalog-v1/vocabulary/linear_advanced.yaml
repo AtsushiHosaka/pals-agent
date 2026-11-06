@@ -1,0 +1,80 @@
+# Proposed additive OpenMath vocabulary for advanced linear algebra (cd=pals2).
+vector_space: {args: [term, term], returns: prop, meaning: "V is a vector space over the field K"}
+fd_vector_space: {args: [term, term], returns: prop, meaning: "V is a finite-dimensional vector space over the field K"}
+alg_closed_field: {args: [term], returns: prop, meaning: "K is an algebraically closed field"}
+endomorphism: {args: [term, term, term], returns: prop, meaning: "f is a K-linear endomorphism of V (arguments K, V, f)"}
+smul: {args: [term, term], returns: term, meaning: "scalar multiple a x of a vector x"}
+eigenspace: {args: [term, term], returns: term, meaning: "eigenspace of f for mu"}
+family_injective: {args: [term], returns: prop, meaning: "the indexed family has pairwise distinct values"}
+is_basis_family: {args: [term, term, term], returns: prop, meaning: "the family b is a basis of V over K (arguments K, V, b)"}
+op_comp: {args: [term, term], returns: term, meaning: "composition g after f of linear maps or product of matrices"}
+identity_map: {args: [term], returns: term, meaning: "identity map of V"}
+span_of_eigenspaces: {args: [term], returns: term, meaning: "sum of all eigenspaces of f"}
+span_of_gen_eigenspaces: {args: [term], returns: term, meaning: "sum of all generalized eigenspaces of f"}
+whole_space: {args: [term], returns: term, meaning: "V regarded as a subspace of itself"}
+charpoly: {args: [term], returns: term, meaning: "characteristic polynomial of an endomorphism or square matrix"}
+kernel: {args: [term], returns: term, meaning: "kernel of a linear map"}
+subspace_sum: {args: [term, term], returns: term, meaning: "sum of two subspaces"}
+subspace_inter: {args: [term, term], returns: term, meaning: "intersection of two subspaces"}
+is_complement: {args: [term, term], returns: prop, meaning: "two subspaces are complementary: their sum is the whole space and their intersection is zero"}
+coprime_polys: {args: [term, term], returns: prop, meaning: "polynomials p and q are coprime"}
+squarefree_poly: {args: [term], returns: prop, meaning: "the polynomial is squarefree"}
+injective_map: {args: [term], returns: prop, meaning: "the map is injective"}
+invariant_subspace: {args: [term, term], returns: prop, meaning: "f maps the subspace W into itself (arguments f, W)"}
+dim_of: {args: [term, term], returns: term, meaning: "dimension of V over K (arguments K, V)"}
+matrix_square: {args: [term, term], returns: prop, meaning: "A is a square matrix with entries in K (arguments K, A)"}
+op_pow: {args: [term, term], returns: term, meaning: "k-th iterate f^k of an operator (arguments f, k)"}
+nilpotent_op: {args: [term], returns: prop, meaning: "the operator is nilpotent"}
+semisimple_op: {args: [term], returns: prop, meaning: "the operator is semisimple"}
+polynomial_in: {args: [term, term], returns: prop, meaning: "n is a polynomial expression in the operator f (arguments n, f)"}
+perfect_field: {args: [term], returns: prop, meaning: "K is a perfect field"}
+trace_of: {args: [term], returns: term, meaning: "trace of an operator or matrix"}
+linearly_independent_family: {args: [term], returns: prop, meaning: "the family v is linearly independent"}
+eigenvalue_of: {args: [term, term], returns: prop, meaning: "c is an eigenvalue of T (arguments T, c)"}
+eigenvector_of: {args: [term, term, term], returns: prop, meaning: "v is an eigenvector of T with eigenvalue c (arguments T, c, v)"}
+minimal_polynomial: {args: [term, term], returns: term, meaning: "minimal polynomial of the element or operator x over the field F (arguments x, F)"}
+polynomial_eval: {args: [term, term], returns: term, meaning: "polynomial p evaluated at the element or operator a (arguments p, a)"}
+range_of: {args: [term], returns: term, meaning: "range of a map"}
+zero_subspace: {args: [term], returns: term, meaning: "zero subspace of E"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}
+orthogonal_complement: {args: [term], returns: term, meaning: "orthogonal complement of a subspace"}
+orthonormal_family: {args: [term, term], returns: prop, meaning: "e is an orthonormal family in E (arguments e, E)"}
+inner_product_space_over: {args: [term, term], returns: prop, meaning: "E is an inner product space over K, where K is R or C (arguments K, E)"}
+fd_inner_product_space: {args: [term, term], returns: prop, meaning: "E is a finite-dimensional inner product space over K, where K is R or C (arguments K, E)"}
+imaginary_unit: {args: [term], returns: term, meaning: "imaginary unit of K when K is C, and 0 when K is R"}
+family_span_upto: {args: [term, term], returns: term, meaning: "span of the vectors v_i with index i at most k (arguments v, k)"}
+subspace_in: {args: [term, term], returns: prop, meaning: "S is a linear subspace of E (arguments S, E)"}
+orthogonal_projection: {args: [term, term], returns: term, meaning: "orthogonal projection of x onto the subspace S (arguments S, x)"}
+family_extends_to_onb: {args: [term, term, term], returns: prop, meaning: "the set u is an orthonormal basis of E containing the orthonormal set v (arguments u, v, E)"}
+orthonormal_set: {args: [term, term], returns: prop, meaning: "v is an orthonormal subset of the inner product space E (arguments v, E)"}
+adjoint: {args: [term], returns: term, meaning: "adjoint of a linear map between inner product spaces"}
+symmetric_operator: {args: [term], returns: prop, meaning: "T satisfies inner(Tx,y)=inner(x,Ty), that is T is self-adjoint"}
+conjugate: {args: [term], returns: term, meaning: "complex conjugate"}
+linear_map_over: {args: [term, term, term, term], returns: prop, meaning: "L is a K-linear map from X to Y (arguments K, X, Y, L)"}
+matrix_transpose: {args: [term], returns: term, meaning: "transpose of a matrix"}
+matrix_det: {args: [term], returns: term, meaning: "determinant of a square matrix"}
+dot_product: {args: [term, term], returns: term, meaning: "standard dot product of coordinate vectors"}
+matrix_vector: {args: [term, term], returns: term, meaning: "matrix A applied to the coordinate vector x (arguments A, x)"}
+real_symmetric_matrix: {args: [term], returns: prop, meaning: "A is a real symmetric matrix"}
+positive_definite_matrix: {args: [term], returns: prop, meaning: "the square matrix is positive definite"}
+quadratic_form: {args: [term, term, term], returns: prop, meaning: "q is a quadratic form on V over K (arguments K, V, q)"}
+char_not_two: {args: [term], returns: prop, meaning: "2 is invertible in the field K"}
+associated_bilinear: {args: [term, term, term], returns: term, meaning: "value B(x,y) of the symmetric bilinear form associated to the quadratic form q (arguments q, x, y)"}
+bilinear_form: {args: [term, term, term], returns: prop, meaning: "B is a bilinear form on V over K (arguments K, V, B)"}
+symmetric_form: {args: [term], returns: prop, meaning: "the bilinear form is symmetric"}
+form_value: {args: [term, term, term], returns: term, meaning: "value B(x,y) of a bilinear form (arguments B, x, y)"}
+forms_equivalent: {args: [term, term], returns: prop, meaning: "two quadratic forms are isometric under a linear isomorphism"}
+weighted_squares_form: {args: [term], returns: term, meaning: "the diagonal quadratic form with coefficients w, sending x to the sum of w_i x_i^2"}
+count_positive: {args: [term], returns: term, meaning: "number of indices with positive coefficient in the family"}
+count_negative: {args: [term], returns: term, meaning: "number of indices with negative coefficient in the family"}
+dual_annihilator: {args: [term], returns: term, meaning: "subspace of linear functionals vanishing on W"}
+double_dual_map: {args: [term, term], returns: term, meaning: "canonical map from V to its double dual (arguments K, V)"}
+bijective_map: {args: [term], returns: prop, meaning: "the map is bijective"}
+tensor_product_module: {args: [term, term, term], returns: term, meaning: "tensor product of M and N over R (arguments R, M, N)"}
+pure_tensor: {args: [term, term], returns: term, meaning: "pure tensor m tensor n"}
+bilinear_map: {args: [term, term, term, term, term], returns: prop, meaning: "f is R-bilinear from M and N to P (arguments f, R, M, N, P)"}
+exterior_power: {args: [term, term, term], returns: term, meaning: "n-th exterior power of V over K (arguments K, n, V)"}
+exterior_generator: {args: [term], returns: term, meaning: "the image of a vector x in the exterior algebra"}
+binomial: {args: [term, term], returns: term, meaning: "binomial coefficient C(n,k)"}
+module_over: {args: [term, term], returns: prop, meaning: "M is a module over R"}

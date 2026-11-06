@@ -1,0 +1,99 @@
+analytic_at: {args: [term, term], returns: prop, meaning: "f is complex analytic at c"}
+analytic_on: {args: [term, term], returns: prop, meaning: "f has a convergent power series expansion near each point of U"}
+analytic_order: {args: [term, term], returns: term, meaning: "order of vanishing of the analytic function f at c, a natural number or the infinite order"}
+analytic_order_fn: {args: [term_function, term], returns: term, meaning: "order of vanishing at c of the analytic function given by the lambda"}
+annulus_about: {args: [term, term, term], returns: term, meaning: "the set of z with r < |z-c| < R, in the order c r R"}
+bounded_set: {args: [term], returns: prop, meaning: "U is bounded"}
+circle_integral: {args: [term_function, term, term], returns: term, meaning: "contour integral of a function over the positively oriented circle with centre c and radius R"}
+circle_mean_fn: {args: [term_function, term, term], returns: term, meaning: "mean value of the function over the circle with centre c and radius R"}
+circle_set: {args: [term, term], returns: term, meaning: "circle with centre c and radius R as a set"}
+closed_annulus_about: {args: [term, term, term], returns: term, meaning: "the set of z with r <= |z-c| <= R, in the order c r R"}
+closed_disc: {args: [term, term], returns: term, meaning: "closed disc with centre c and radius R"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of real numbers"}
+compact_set: {args: [term], returns: prop, meaning: "S is a compact set"}
+complex_conj: {args: [term], returns: term, meaning: "complex conjugate of z"}
+complex_deriv: {args: [term, term], returns: term, meaning: "complex derivative f'(z)"}
+complex_deriv_fn: {args: [term_function, term], returns: term, meaning: "complex derivative at z of the function given by the lambda"}
+complex_imaginary_unit: {args: [], returns: term, meaning: "the imaginary unit i"}
+complex_polynomial: {args: [term], returns: prop, meaning: "p is a polynomial with complex coefficients"}
+connected_set: {args: [term], returns: prop, meaning: "U is connected (preconnected)"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set S"}
+continuous_path: {args: [term], returns: prop, meaning: "g is a continuous map from the unit interval to the complex plane"}
+convex_hull: {args: [term], returns: term, meaning: "convex hull of the set S"}
+covering_map_on: {args: [term, term], returns: prop, meaning: "f is a covering map over the set S of the target"}
+dense_in: {args: [term, term], returns: prop, meaning: "S is dense in the topological space X"}
+derivative_function: {args: [term], returns: term, meaning: "the complex derivative of f as a function"}
+divisor_factor_product: {args: [term, term], returns: term, meaning: "the finite product of (z-u)^D(u) over the support of D, in the order D z"}
+divisor_log_sum: {args: [term, term, term], returns: term, meaning: "sum over u of D(u) log(R/|c-u|), in the order D c R"}
+divisor_on: {args: [term_function, term], returns: term, meaning: "divisor of the meromorphic function on U, sending each point of U to the order there"}
+divisor_total: {args: [term], returns: term, meaning: "sum of the values of a finitely supported divisor"}
+entire_function: {args: [term], returns: prop, meaning: "f is complex differentiable on the whole plane"}
+eq_near: {args: [term_function, term_function, term], returns: prop, meaning: "the two functions agree on a neighbourhood of c"}
+eq_off_discrete: {args: [term_function, term_function, term], returns: prop, meaning: "the two functions agree on U outside a subset of U with no accumulation point in U"}
+eq_punctured_near: {args: [term_function, term_function, term], returns: prop, meaning: "the two functions agree on a punctured neighbourhood of c"}
+exp_function: {args: [], returns: term, meaning: "the complex exponential function"}
+extended_min: {args: [term, term], returns: term, meaning: "minimum of two values in the integers extended by the infinite order"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+finite_support_divisor: {args: [term], returns: prop, meaning: "the divisor D has finite support"}
+fn_maps_to: {args: [term, term, term], returns: prop, meaning: "f maps every element of A into B"}
+frequently_nonzero_punctured: {args: [term, term], returns: prop, meaning: "every punctured neighbourhood of c contains a point where f is nonzero"}
+harmonic_at: {args: [term, term], returns: prop, meaning: "u is C^2 near z with vanishing Laplacian near z"}
+harmonic_fn_at: {args: [term_function, term], returns: prop, meaning: "the real function given by the lambda is C^2 near z with vanishing Laplacian near z"}
+harmonic_on: {args: [term, term], returns: prop, meaning: "u is harmonic on a neighbourhood of each point of U"}
+has_complex_deriv_at: {args: [term, term, term], returns: prop, meaning: "f has complex derivative d at z"}
+has_complex_deriv_fn_at: {args: [term_function, term, term], returns: prop, meaning: "the function given by the lambda has complex derivative d at z, in the order function d z"}
+has_prod_fn: {args: [term_function, term], returns: prop, meaning: "the infinite product over natural numbers n converges unconditionally to P"}
+holomorphic_fn_on: {args: [term_function, term], returns: prop, meaning: "the function given by the lambda is complex differentiable at each point of U"}
+holomorphic_on: {args: [term, term], returns: prop, meaning: "f is complex differentiable at each point of the set U"}
+imag_part: {args: [term], returns: term, meaning: "imaginary part of z"}
+image_of: {args: [term, term], returns: term, meaning: "image of the set S under f"}
+infinite_order: {args: [], returns: term, meaning: "the infinite order of a function vanishing identically near a point"}
+injective_on: {args: [term, term], returns: prop, meaning: "f is injective on the set A"}
+inverse_extended: {args: [term], returns: term, meaning: "inverse of an extended nonnegative real, with 1/0 = infinity and 1/infinity = 0"}
+iterated_complex_deriv: {args: [term, term, term], returns: term, meaning: "n-th complex derivative of f at z"}
+iterated_deriv_function: {args: [term, term], returns: term, meaning: "the k-th derivative of f as a function, in the order k f"}
+iterated_deriv_sequence: {args: [term, term], returns: term, meaning: "the sequence of k-th derivatives of a function sequence, in the order k F"}
+limit_at_infinity_fn: {args: [term_function, term], returns: prop, meaning: "the function given by the lambda tends to L as |z| tends to infinity"}
+limit_norm_infinity_fn: {args: [term_function], returns: prop, meaning: "the modulus of the function given by the lambda tends to infinity as |z| tends to infinity"}
+limsup_nth_root_norm: {args: [term], returns: term, meaning: "limsup of |a_n|^(1/n)"}
+locally_uniform_limit: {args: [term, term, term], returns: prop, meaning: "the function sequence F converges locally uniformly to f on U"}
+meromorphic_at: {args: [term, term], returns: prop, meaning: "f is meromorphic at c"}
+meromorphic_on: {args: [term, term], returns: prop, meaning: "f is meromorphic at every point of U"}
+meromorphic_order: {args: [term, term], returns: term, meaning: "order of the meromorphic function f at c, an integer or the infinite order"}
+meromorphic_order_fn: {args: [term_function, term], returns: term, meaning: "order at c of the meromorphic function given by the lambda"}
+multipliable_fn: {args: [term_function], returns: prop, meaning: "the infinite product over natural numbers n converges unconditionally"}
+neighbourhood_of: {args: [term, term], returns: prop, meaning: "s is a neighbourhood of the point c"}
+nonzero_order_set_in: {args: [term, term], returns: term, meaning: "the set of points of K where the meromorphic order of f is nonzero"}
+open_disc: {args: [term, term], returns: term, meaning: "open disc with centre c and radius R"}
+open_first_quadrant: {args: [], returns: term, meaning: "the set of z with Re z > 0 and Im z > 0"}
+open_set: {args: [term], returns: prop, meaning: "S is an open set"}
+open_vertical_strip: {args: [term, term], returns: term, meaning: "the set of z with a < Re z < b"}
+pole_limit_punctured: {args: [term, term], returns: prop, meaning: "|f(z)| tends to infinity as z tends to c with z different from c"}
+poly_derivative: {args: [term], returns: term, meaning: "the formal derivative of the polynomial f"}
+poly_eval: {args: [term, term], returns: term, meaning: "value f(a) of the polynomial f at a"}
+polynomial_root_set: {args: [term], returns: term, meaning: "the set of complex roots of the polynomial p"}
+power_series_radius: {args: [term], returns: term, meaning: "radius of convergence in [0, infinity] of the power series with coefficients a"}
+range_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(k) over k from 0 to n-1"}
+real_differential: {args: [term, term, term], returns: term, meaning: "real total differential of f at z applied to the vector v"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+rectangle_boundary_integral: {args: [term, term, term], returns: term, meaning: "integral of f over the boundary of the axis-parallel rectangle with opposite corners z and w"}
+rectangle_set: {args: [term, term], returns: term, meaning: "closed axis-parallel rectangle with opposite corners z and w"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by a lambda converges to L"}
+series_has_sum: {args: [term_function, term], returns: prop, meaning: "the series over natural numbers n of g(n) converges unconditionally to s"}
+series_sum_fn: {args: [term_function], returns: term, meaning: "sum of the series of the indexed expression"}
+series_summable_fn: {args: [term_function], returns: prop, meaning: "the series of the indexed expression converges unconditionally"}
+set_closure: {args: [term], returns: term, meaning: "topological closure of S"}
+set_frontier: {args: [term], returns: term, meaning: "topological boundary of a set"}
+simply_connected_space: {args: [term], returns: prop, meaning: "X is a simply connected space"}
+singleton_set: {args: [term], returns: term, meaning: "the set containing only c"}
+strict_mono_index: {args: [term], returns: prop, meaning: "the index map from naturals to naturals is strictly increasing"}
+tprod_fn: {args: [term_function], returns: term, meaning: "value of the infinite product over natural numbers n"}
+uniform_tends_on: {args: [term, term, term], returns: prop, meaning: "the function sequence F tends to g uniformly on S"}
+vector_angle: {args: [term, term], returns: term, meaning: "unoriented angle in [0, pi] between two plane vectors"}
+zero_set_in: {args: [term, term], returns: term, meaning: "the set of zeros of f in K"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+prod_over: {args: [term, term_function], returns: term, meaning: "finite product of the indexed expression over the finite set S"}
+finset_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(i) over i in the finite set s, in the order s g"}
+fn_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a with x different from a; arguments f, a, L"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u; arguments f, u, a"}
+fn_subseq: {args: [term, term], returns: term, meaning: "subsequence i mapsto F_{r(i)} of a function sequence"}

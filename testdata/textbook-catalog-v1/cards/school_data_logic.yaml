@@ -1,0 +1,1184 @@
+- id: data_sum_deviation_zero
+  kind: gap
+  level: high
+  topic: データの分析・偏差の和
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$の平均を$\bar{x}=\frac{1}{|s|}\sum_{i\in s}x_i$とすると、偏差の和$\sum_{i\in s}(x_i-\bar{x})$は$0$である。
+  statement_en: For data x_i indexed by a nonempty finite set s with mean x̄ = (Σ_{i∈s} x_i)/|s|, the deviations sum to zero, that is Σ_{i∈s} (x_i - x̄) = 0.
+  assumptions:
+  - $s$は空でない有限集合
+  - $x_i\ (i\in s)$は実数
+  - $\bar{x}=\frac{1}{|s|}\sum_{i\in s}x_i$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i\ (i\in s)$
+  conclusion: $\sum_{i\in s}(x_i-\bar{x})=0$である。
+  answer: |
+    $s$を空でない有限集合、$x_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$とおく。$n\neq0$なので$\sum_{i\in s}x_i=n\bar{x}$である。定数$\bar{x}$を$n$個足した和は$n\bar{x}$だから、$\sum_{i\in s}(x_i-\bar{x})=\sum_{i\in s}x_i-n\bar{x}=0$である。
+  strategy: Split the sum and use the definition of the mean.
+  sketch:
+  - 'translate: The definition of the mean gives Σ x_i = |s| x̄.'
+  - 'derive: Summing the constant x̄ over s gives |s| x̄.'
+  - 'conclude: Hence Σ (x_i - x̄) = Σ x_i - |s| x̄ = 0.'
+  openmath: (forall (s x m) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (= (sum s (lambda (i) (- (fn_value x i) m))) 0)))
+  hard_negative:
+    statement: 任意の実数$a$について$\sum_{i\in s}(x_i-a)=0$が成り立つ。
+    reason: この和は$|s|(\bar{x}-a)$に等しいので、$a\neq\bar{x}$なら$0$にならない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x : ι → ℝ) (m : ℝ), s.Nonempty → m = (∑ i ∈ s, x i) / s.card → ∑ i ∈ s, (x i - m) = 0
+  proof: |
+    by
+      intro ι s x m hs hm
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * m := by
+        rw [hm]
+        field_simp
+      rw [Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, hS]
+      ring
+- id: data_mean_between_bounds
+  kind: gap
+  level: high
+  topic: データの分析・平均の範囲
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$が全ての$i\in s$で$a\leq x_i\leq b$を満たすなら、平均$\bar{x}$も$a\leq\bar{x}\leq b$を満たす。
+  statement_en: If data x_i indexed by a nonempty finite set s satisfy a ≤ x_i ≤ b for all i ∈ s, then the mean x̄ satisfies a ≤ x̄ ≤ b.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$a\leq x_i\leq b$
+  - $\bar{x}=\frac{1}{|s|}\sum_{i\in s}x_i$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i\ (i\in s)$
+  - 任意の実数$a,b$
+  conclusion: $a\leq\bar{x}\leq b$である。
+  answer: |
+    $s$を空でない有限集合、$a,b$を実数、$x_i\ (i\in s)$を全ての$i\in s$で$a\leq x_i\leq b$を満たす実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$とおく。不等式$a\leq x_i\leq b$を$i\in s$について足すと$na\leq\sum_{i\in s}x_i\leq nb$となる。$n>0$なので各辺を$n$で割ると$a\leq\bar{x}\leq b$を得る。
+  strategy: Sum the pointwise bounds over s and divide by |s|.
+  sketch:
+  - 'setup: Let n = |s| > 0.'
+  - 'derive: Summing a ≤ x_i ≤ b gives n a ≤ Σ x_i ≤ n b.'
+  - 'conclude: Dividing by n gives a ≤ x̄ ≤ b.'
+  openmath: (forall (s x a b m) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (and (<= a (fn_value x i)) (<= (fn_value x i) b)))) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (<= a m) (<= m b))))
+  hard_negative:
+    statement: 全ての$i\in s$で$a\leq x_i\leq b$なら、平均は$\frac{a+b}{2}$に等しい。
+    reason: 平均は$a$と$b$の間にあるだけである。$x_i$が全て$a$で$a<b$なら平均は$a$であり、$\frac{a+b}{2}$ではない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x : ι → ℝ) (a b m : ℝ), s.Nonempty → (∀ i ∈ s, a ≤ x i ∧ x i ≤ b) → m = (∑ i ∈ s, x i) / s.card → a ≤ m ∧ m ≤ b
+  proof: |
+    by
+      intro ι s x a b m hs hx hm
+      have hn : (0 : ℝ) < s.card := Nat.cast_pos.mpr (Finset.card_pos.mpr hs)
+      have h1 := Finset.card_nsmul_le_sum s x a (fun i hi => (hx i hi).1)
+      have h2 := Finset.sum_le_card_nsmul s x b (fun i hi => (hx i hi).2)
+      rw [nsmul_eq_mul] at h1 h2
+      rw [hm]
+      constructor
+      · rw [le_div_iff₀ hn]
+        linarith
+      · rw [div_le_iff₀ hn]
+        linarith
+- id: data_exists_on_both_sides_of_mean
+  kind: gap
+  level: high
+  topic: データの分析・平均以上の値の存在
+  statement: 空でない有限集合$s$で添字づけられたデータには、平均$\bar{x}$以上の値$x_i$と平均$\bar{x}$以下の値$x_j$が必ず存在する。
+  statement_en: For data x_i indexed by a nonempty finite set s with mean x̄, there is i ∈ s with x̄ ≤ x_i and there is j ∈ s with x_j ≤ x̄.
+  assumptions:
+  - $s$は空でない有限集合
+  - $\bar{x}=\frac{1}{|s|}\sum_{i\in s}x_i$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i\ (i\in s)$
+  conclusion: $\bar{x}\leq x_i$となる$i\in s$と、$x_j\leq\bar{x}$となる$j\in s$が存在する。
+  answer: |
+    $s$を空でない有限集合、$x_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$とおく。全ての$i\in s$で$x_i<\bar{x}$であると仮定する。$s$は空でないので、足し合わせると$\sum_{i\in s}x_i<n\bar{x}$となる。一方で平均の定義から$\sum_{i\in s}x_i=n\bar{x}$であり、矛盾する。よって$\bar{x}\leq x_i$となる$i\in s$が存在する。全ての$j\in s$で$x_j>\bar{x}$と仮定しても、同様に$\sum_{j\in s}x_j>n\bar{x}$となって矛盾するので、$x_j\leq\bar{x}$となる$j\in s$が存在する。
+  strategy: Compare the sum of the data with the sum of the constant mean.
+  sketch:
+  - 'translate: The sum of x_i over s equals the sum of the constant x̄ over s.'
+  - 'contradiction: If every x_i were below x̄, the first sum would be strictly smaller.'
+  - 'contradiction: If every x_j were above x̄, the first sum would be strictly larger.'
+  - 'conclude: Hence both kinds of index exist.'
+  openmath: (forall (s x m) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s)))) (and (exists (i) (and (in i s) (<= m (fn_value x i)))) (exists (j) (and (in j s) (<= (fn_value x j) m))))))
+  hard_negative:
+    statement: 平均より真に大きい値$x_i$が必ず存在する。
+    reason: 全ての$x_i$が等しいとき、どの値も平均に等しく、平均より真に大きい値はない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x : ι → ℝ) (m : ℝ), s.Nonempty → m = (∑ i ∈ s, x i) / s.card → (∃ i ∈ s, m ≤ x i) ∧ (∃ j ∈ s, x j ≤ m)
+  proof: |
+    by
+      intro ι s x m hs hm
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, m = ∑ i ∈ s, x i := by
+        rw [Finset.sum_const, nsmul_eq_mul, hm]
+        field_simp
+      exact ⟨Finset.exists_le_of_sum_le hs hS.le, Finset.exists_le_of_sum_le hs hS.ge⟩
+- id: data_mean_affine_transform
+  kind: gap
+  level: high
+  topic: データの分析・変量変換と平均
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$の平均を$\bar{x}$とし、定数$a,b$により$y_i=ax_i+b$と変換すると、$y_i$の平均$\bar{y}$は$a\bar{x}+b$である。
+  statement_en: If the data x_i over a nonempty finite set s have mean x̄ and y_i = a x_i + b for constants a, b, then the mean of the y_i is ȳ = a x̄ + b.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$y_i=ax_i+b$
+  - $\bar{x},\bar{y}$は$x_i,y_i$の平均
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  - 任意の実数$a,b$
+  conclusion: $\bar{y}=a\bar{x}+b$である。
+  answer: |
+    $s$を空でない有限集合、$a,b$を実数、$x_i,y_i\ (i\in s)$を全ての$i\in s$で$y_i=ax_i+b$を満たす実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$\bar{y}=\frac{1}{n}\sum_{i\in s}y_i$とおく。和の性質から$\sum_{i\in s}y_i=a\sum_{i\in s}x_i+nb=na\bar{x}+nb$である。両辺を$n$で割ると$\bar{y}=a\bar{x}+b$を得る。
+  strategy: Substitute the transform into the sum and split it.
+  sketch:
+  - 'setup: Rewrite Σ y_i as Σ (a x_i + b).'
+  - 'derive: Split the sum as a Σ x_i + |s| b = |s| (a x̄ + b).'
+  - 'conclude: Divide by |s| to obtain ȳ = a x̄ + b.'
+  openmath: (forall (s x y a b mx my) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s)))) (= my (+ (* a mx) b))))
+  hard_negative:
+    statement: $y_i=x_i^2$と変換すると、$y_i$の平均は$\bar{x}^2$である。
+    reason: 平均がそのまま移るのは$1$次式の変換だけである。$x_i$が$1$と$-1$の$2$個なら$y_i$の平均は$1$だが、$\bar{x}^2=0$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (a b mx my : ℝ), s.Nonempty → (∀ i ∈ s, y i = a * x i + b) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → my = a * mx + b
+  proof: |
+    by
+      intro ι s x y a b mx my hs hy hmx hmy
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      rw [hmy, Finset.sum_congr rfl hy, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hS]
+      field_simp
+- id: data_mean_of_two_groups
+  kind: gap
+  level: high
+  topic: データの分析・2群を合わせた平均
+  statement: 共通部分のない空でない有限集合$s,t$で添字づけられたデータについて、$s$での平均を$\bar{x}_s$、$t$での平均を$\bar{x}_t$とすると、$s\cup t$での平均は$\frac{|s|\bar{x}_s+|t|\bar{x}_t}{|s|+|t|}$である。
+  statement_en: For data on disjoint nonempty finite sets s and t with means m₁ on s and m₂ on t, the mean on s ∪ t equals (|s| m₁ + |t| m₂)/(|s| + |t|).
+  assumptions:
+  - $s,t$は空でない有限集合で$s\cap t=\emptyset$
+  - $\bar{x}_s,\bar{x}_t$は$s,t$での平均
+  quantifiers:
+  - 任意の有限集合$s,t$と実数値のデータ$x_i\ (i\in s\cup t)$
+  conclusion: $s\cup t$での平均は$\frac{|s|\bar{x}_s+|t|\bar{x}_t}{|s|+|t|}$である。
+  answer: |
+    $s,t$を共通部分のない空でない有限集合、$x_i\ (i\in s\cup t)$を実数とし、$\bar{x}_s=\frac{1}{|s|}\sum_{i\in s}x_i$、$\bar{x}_t=\frac{1}{|t|}\sum_{i\in t}x_i$とおく。$s\cap t=\emptyset$なので$|s\cup t|=|s|+|t|$であり、$\sum_{i\in s\cup t}x_i=\sum_{i\in s}x_i+\sum_{i\in t}x_i=|s|\bar{x}_s+|t|\bar{x}_t$である。これを$|s|+|t|$で割ると結論を得る。
+  strategy: Split the sum and the count over the disjoint union.
+  sketch:
+  - 'translate: Disjointness gives |s ∪ t| = |s| + |t|.'
+  - 'derive: The sum over s ∪ t is the sum over s plus the sum over t.'
+  - 'derive: Each partial sum equals the group size times the group mean.'
+  - 'conclude: Divide by |s| + |t|.'
+  openmath: (forall (s t x m1 m2) (-> (and (finite_set s) (!= s emptyset) (finite_set t) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t)))) (= (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t))) (/ (+ (* (size s) m1) (* (size t) m2)) (+ (size s) (size t))))))
+  hard_negative:
+    statement: $s\cup t$での平均は$\frac{\bar{x}_s+\bar{x}_t}{2}$である。
+    reason: 群の大きさで重みをつける必要がある。この式が正しいのは$|s|=|t|$または$\bar{x}_s=\bar{x}_t$のときに限る。
+  target: |
+    ∀ (ι : Type*) [DecidableEq ι] (s t : Finset ι) (x : ι → ℝ) (m₁ m₂ : ℝ), s.Nonempty → t.Nonempty → Disjoint s t → m₁ = (∑ i ∈ s, x i) / s.card → m₂ = (∑ i ∈ t, x i) / t.card → (∑ i ∈ s ∪ t, x i) / (s ∪ t).card = (s.card * m₁ + t.card * m₂) / (s.card + t.card)
+  proof: |
+    by
+      intro ι _ s t x m₁ m₂ hs ht hd hm₁ hm₂
+      have hn₁ : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hn₂ : (t.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr ht)
+      have hS₁ : ∑ i ∈ s, x i = s.card * m₁ := by
+        rw [hm₁]
+        field_simp
+      have hS₂ : ∑ i ∈ t, x i = t.card * m₂ := by
+        rw [hm₂]
+        field_simp
+      have hc : ((s ∪ t).card : ℝ) = s.card + t.card := by
+        rw [Finset.card_union_eq_card_add_card.mpr hd]
+        push_cast
+        rfl
+      rw [Finset.sum_union hd, hS₁, hS₂, hc]
+- id: data_variance_shortcut
+  kind: textbook
+  level: high
+  topic: データの分析・分散の計算公式
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$の平均を$\bar{x}$、分散を$V=\frac{1}{|s|}\sum_{i\in s}(x_i-\bar{x})^2$とすると、$V=\frac{1}{|s|}\sum_{i\in s}x_i^2-\bar{x}^2$である。
+  statement_en: For data x_i over a nonempty finite set s with mean x̄ and variance V = (Σ (x_i - x̄)²)/|s|, one has V = (Σ x_i²)/|s| - x̄².
+  assumptions:
+  - $s$は空でない有限集合
+  - $\bar{x}=\frac{1}{|s|}\sum_{i\in s}x_i$
+  - $V=\frac{1}{|s|}\sum_{i\in s}(x_i-\bar{x})^2$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i\ (i\in s)$
+  conclusion: $V=\frac{1}{|s|}\sum_{i\in s}x_i^2-\bar{x}^2$である。
+  answer: |
+    $s$を空でない有限集合、$x_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$V=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2$とおく。$(x_i-\bar{x})^2=x_i^2-2\bar{x}x_i+\bar{x}^2$を$i\in s$について足すと、$\sum_{i\in s}(x_i-\bar{x})^2=\sum_{i\in s}x_i^2-2\bar{x}\sum_{i\in s}x_i+n\bar{x}^2$となる。$\sum_{i\in s}x_i=n\bar{x}$を代入すると右辺は$\sum_{i\in s}x_i^2-n\bar{x}^2$である。両辺を$n$で割ると$V=\frac{1}{n}\sum_{i\in s}x_i^2-\bar{x}^2$を得る。
+  strategy: Expand each squared deviation and use Σ x_i = |s| x̄.
+  sketch:
+  - 'setup: Expand (x_i - x̄)² termwise.'
+  - 'derive: Summing gives Σ x_i² - 2 x̄ Σ x_i + |s| x̄².'
+  - 'derive: Substituting Σ x_i = |s| x̄ gives Σ x_i² - |s| x̄².'
+  - 'conclude: Divide by |s|.'
+  openmath: (forall (s x m V) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (= V (- (/ (sum s (lambda (i) (^ (fn_value x i) 2))) (size s)) (^ m 2)))))
+  hard_negative:
+    statement: 分散は$\frac{1}{|s|}\sum_{i\in s}x_i^2+\bar{x}^2$に等しい。
+    reason: $\bar{x}^2$の符号が逆である。全ての$x_i$が同じ値$c\neq0$なら分散は$0$だが、この式の値は$2c^2$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x : ι → ℝ) (m V : ℝ), s.Nonempty → m = (∑ i ∈ s, x i) / s.card → V = (∑ i ∈ s, (x i - m) ^ 2) / s.card → V = (∑ i ∈ s, x i ^ 2) / s.card - m ^ 2
+  proof: |
+    by
+      intro ι s x m V hs hm hV
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * m := by
+        rw [hm]
+        field_simp
+      have h : ∑ i ∈ s, (x i - m) ^ 2 = ∑ i ∈ s, x i ^ 2 - 2 * m * ∑ i ∈ s, x i + s.card * m ^ 2 := by
+        have hc : ∀ i ∈ s, (x i - m) ^ 2 = x i ^ 2 - 2 * m * x i + m ^ 2 := fun i _ => by ring
+        rw [Finset.sum_congr rfl hc, Finset.sum_add_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul]
+      rw [hV, h, hS]
+      field_simp
+      ring
+- id: data_variance_zero_iff_constant
+  kind: gap
+  level: high
+  topic: データの分析・分散が0となる条件
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$の分散$V$は$0$以上であり、$V=0$となるのは全ての$x_i$が平均$\bar{x}$に等しいときに限る。
+  statement_en: For data x_i over a nonempty finite set s with mean x̄, the variance V is nonnegative, and V = 0 if and only if x_i = x̄ for all i ∈ s.
+  assumptions:
+  - $s$は空でない有限集合
+  - $\bar{x}$は平均、$V=\frac{1}{|s|}\sum_{i\in s}(x_i-\bar{x})^2$は分散
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i\ (i\in s)$
+  conclusion: $V\geq0$であり、$V=0$と「全ての$i\in s$で$x_i=\bar{x}$」は同値である。
+  answer: |
+    $s$を空でない有限集合、$x_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$V=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2$とおく。各項$(x_i-\bar{x})^2$は$0$以上で$n>0$なので、$V\geq0$である。$V=0$は$\sum_{i\in s}(x_i-\bar{x})^2=0$と同値である。$0$以上の数の和が$0$になるのは全ての項が$0$のときに限るので、これは全ての$i\in s$で$(x_i-\bar{x})^2=0$、すなわち$x_i=\bar{x}$であることと同値である。
+  strategy: A sum of squares vanishes exactly when every term vanishes.
+  sketch:
+  - 'derive: Each squared deviation is nonnegative, so V ≥ 0.'
+  - 'translate: Since |s| ≠ 0, V = 0 iff the sum of squared deviations is 0.'
+  - 'derive: A sum of nonnegative terms is 0 iff each term is 0.'
+  - 'conclude: Each term is 0 iff x_i = x̄.'
+  openmath: (forall (s x m V) (-> (and (finite_set s) (!= s emptyset) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s)))) (and (>= V 0) (<-> (= V 0) (forall (i) (-> (in i s) (= (fn_value x i) m)))))))
+  hard_negative:
+    statement: 分散が$0$なら平均は$0$である。
+    reason: 分散が$0$なのは全ての値が等しいときであり、その値は$0$とは限らない。全ての$x_i$が$1$なら分散は$0$で平均は$1$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x : ι → ℝ) (m V : ℝ), s.Nonempty → m = (∑ i ∈ s, x i) / s.card → V = (∑ i ∈ s, (x i - m) ^ 2) / s.card → 0 ≤ V ∧ (V = 0 ↔ ∀ i ∈ s, x i = m)
+  proof: |
+    by
+      intro ι s x m V hs hm hV
+      have hn : (0 : ℝ) < s.card := Nat.cast_pos.mpr (Finset.card_pos.mpr hs)
+      have hnn : ∀ i ∈ s, 0 ≤ (x i - m) ^ 2 := fun i _ => sq_nonneg _
+      have h0 := Finset.sum_nonneg hnn
+      constructor
+      · rw [hV]
+        exact div_nonneg h0 hn.le
+      · rw [hV, div_eq_zero_iff, or_iff_left hn.ne', Finset.sum_eq_zero_iff_of_nonneg hnn]
+        constructor
+        · intro h i hi
+          have h1 := pow_eq_zero_iff (two_ne_zero) |>.mp (h i hi)
+          linarith
+        · intro h i hi
+          rw [h i hi]
+          ring
+- id: data_variance_affine_transform
+  kind: textbook
+  level: high
+  topic: データの分析・変量変換と分散
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$を、定数$a,b$により$y_i=ax_i+b$と変換すると、$y_i$の分散は$x_i$の分散の$a^2$倍である。
+  statement_en: If the data x_i over a nonempty finite set s are transformed by y_i = a x_i + b for constants a, b, then the variance of the y_i equals a² times the variance of the x_i.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$y_i=ax_i+b$
+  - $V_x,V_y$は$x_i,y_i$の分散
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  - 任意の実数$a,b$
+  conclusion: $V_y=a^2V_x$である。
+  answer: |
+    $s$を空でない有限集合、$a,b$を実数、$x_i,y_i\ (i\in s)$を全ての$i\in s$で$y_i=ax_i+b$を満たす実数とする。$n=|s|$とし、平均を$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$\bar{y}=\frac{1}{n}\sum_{i\in s}y_i$、分散を$V_x=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2$、$V_y=\frac{1}{n}\sum_{i\in s}(y_i-\bar{y})^2$とおく。和を分けると$\sum_{i\in s}y_i=a\sum_{i\in s}x_i+nb$なので、$\bar{y}=a\bar{x}+b$である。よって$y_i-\bar{y}=a(x_i-\bar{x})$であり、$(y_i-\bar{y})^2=a^2(x_i-\bar{x})^2$となる。これを$i\in s$について足して$n$で割ると$V_y=a^2V_x$を得る。
+  strategy: Show the deviations scale by a, using the transformed mean.
+  sketch:
+  - 'derive: Splitting the sum gives ȳ = a x̄ + b.'
+  - 'derive: Hence y_i - ȳ = a (x_i - x̄), so the constant b disappears.'
+  - 'derive: Squaring gives (y_i - ȳ)² = a² (x_i - x̄)².'
+  - 'conclude: Sum over s and divide by |s| to get V_y = a² V_x.'
+  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= Vy (* (^ a 2) Vx))))
+  hard_negative:
+    statement: $y_i=ax_i+b$の分散は$a^2V_x+b$である。
+    reason: 定数$b$を足しても偏差は変わらないので、分散に$b$は現れない。$a=1,\ b=1$で$x_i$が全て等しければ、分散は$0$のままである。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (a b mx my Vx Vy : ℝ), s.Nonempty → (∀ i ∈ s, y i = a * x i + b) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → Vy = a ^ 2 * Vx
+  proof: |
+    by
+      intro ι s x y a b mx my Vx Vy hs hy hmx hmy hVx hVy
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      have hmy' : my = a * mx + b := by
+        rw [hmy, Finset.sum_congr rfl hy, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hS]
+        field_simp
+      have h : ∑ i ∈ s, (y i - my) ^ 2 = a ^ 2 * ∑ i ∈ s, (x i - mx) ^ 2 := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i hi
+        rw [hy i hi, hmy']
+        ring
+      rw [hVy, hVx, h]
+      ring
+- id: data_stddev_affine_transform
+  kind: gap
+  level: high
+  topic: データの分析・変量変換と標準偏差
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$を、定数$a,b$により$y_i=ax_i+b$と変換すると、$y_i$の標準偏差は$x_i$の標準偏差の$|a|$倍である。
+  statement_en: If the data x_i over a nonempty finite set s are transformed by y_i = a x_i + b, then the standard deviation of the y_i equals |a| times that of the x_i.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$y_i=ax_i+b$
+  - $V_x,V_y$は$x_i,y_i$の分散で、標準偏差はその$0$以上の平方根
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  - 任意の実数$a,b$
+  conclusion: $\sqrt{V_y}=|a|\sqrt{V_x}$である。
+  answer: |
+    $s$を空でない有限集合、$a,b$を実数、$x_i,y_i\ (i\in s)$を全ての$i\in s$で$y_i=ax_i+b$を満たす実数とする。$n=|s|$とし、平均を$\bar{x},\bar{y}$、分散を$V_x=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2$、$V_y=\frac{1}{n}\sum_{i\in s}(y_i-\bar{y})^2$とおく。和を分けると$\bar{y}=a\bar{x}+b$なので$y_i-\bar{y}=a(x_i-\bar{x})$であり、$2$乗して足すと$V_y=a^2V_x$となる。$a^2\geq0$と$V_x\geq0$から$\sqrt{a^2V_x}=\sqrt{a^2}\sqrt{V_x}$であり、$\sqrt{a^2}=|a|$なので、$\sqrt{V_y}=|a|\sqrt{V_x}$を得る。
+  strategy: Reduce to the variance relation and take square roots with care for the sign of a.
+  sketch:
+  - 'derive: The transformed mean is a x̄ + b, so deviations scale by a.'
+  - 'derive: Hence V_y = a² V_x.'
+  - 'translate: Take square roots, splitting the root of the product.'
+  - 'conclude: Use √(a²) = |a| to get √V_y = |a| √V_x.'
+  openmath: (forall (s x y a b mx my Vx Vy) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value y i) (+ (* a (fn_value x i)) b)))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s)))) (= (root Vy 2) (* (abs a) (root Vx 2)))))
+  hard_negative:
+    statement: $y_i=ax_i+b$の標準偏差は$x_i$の標準偏差の$a$倍である。
+    reason: $a<0$かつ$V_x>0$のとき、この値は負になる。標準偏差は$0$以上なので、倍率は$a$ではなく$|a|$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (a b mx my Vx Vy : ℝ), s.Nonempty → (∀ i ∈ s, y i = a * x i + b) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → Real.sqrt Vy = |a| * Real.sqrt Vx
+  proof: |
+    by
+      intro ι s x y a b mx my Vx Vy hs hy hmx hmy hVx hVy
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      have hmy' : my = a * mx + b := by
+        rw [hmy, Finset.sum_congr rfl hy, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hS]
+        field_simp
+      have h : ∑ i ∈ s, (y i - my) ^ 2 = a ^ 2 * ∑ i ∈ s, (x i - mx) ^ 2 := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i hi
+        rw [hy i hi, hmy']
+        ring
+      have hV : Vy = a ^ 2 * Vx := by
+        rw [hVy, hVx, h]
+        ring
+      rw [hV, Real.sqrt_mul (sq_nonneg a), Real.sqrt_sq_eq_abs]
+- id: data_standardized_mean_variance
+  kind: gap
+  level: high
+  topic: データの分析・標準化
+  statement: 空でない有限集合$s$で添字づけられたデータ$x_i$の平均を$\bar{x}$、分散を$V>0$とし、$z_i=\frac{x_i-\bar{x}}{\sqrt{V}}$と標準化すると、$z_i$の平均は$0$、分散は$1$である。
+  statement_en: If the data x_i over a nonempty finite set s have mean x̄ and variance V > 0, then the standardized values z_i = (x_i - x̄)/√V have mean 0 and variance 1.
+  assumptions:
+  - $s$は空でない有限集合
+  - $V>0$
+  - 全ての$i\in s$で$z_i=\frac{x_i-\bar{x}}{\sqrt{V}}$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,z_i\ (i\in s)$
+  conclusion: $z_i$の平均は$0$であり、$z_i$の分散は$1$である。
+  answer: |
+    $s$を空でない有限集合、$x_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$V=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2>0$とする。全ての$i\in s$で$z_i=\frac{x_i-\bar{x}}{\sqrt{V}}$とおく。$\sum_{i\in s}(x_i-\bar{x})=\sum_{i\in s}x_i-n\bar{x}=0$なので、$\sum_{i\in s}z_i=0$であり、$z_i$の平均$\bar{z}$は$0$である。したがって$z_i$の分散は$\frac{1}{n}\sum_{i\in s}z_i^2$であり、$z_i^2=\frac{(x_i-\bar{x})^2}{V}$と$\sum_{i\in s}(x_i-\bar{x})^2=nV$から、その値は$\frac{1}{n}\cdot\frac{nV}{V}=1$である。
+  strategy: Deviations sum to zero, so the mean vanishes; then the squared terms sum to n.
+  sketch:
+  - 'derive: Deviations from the mean sum to zero, so Σ z_i = 0 and the mean of z is 0.'
+  - 'translate: The variance of z is therefore (Σ z_i²)/|s|.'
+  - 'derive: Since (√V)² = V, z_i² = (x_i - x̄)²/V.'
+  - 'conclude: Using Σ (x_i - x̄)² = |s| V, the variance of z is 1.'
+  openmath: (forall (s x z m V mz Vz) (-> (and (finite_set s) (!= s emptyset) (> V 0) (= m (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= V (/ (sum s (lambda (i) (^ (- (fn_value x i) m) 2))) (size s))) (forall (i) (-> (in i s) (= (fn_value z i) (/ (- (fn_value x i) m) (root V 2))))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s)))) (and (= mz 0) (= Vz 1))))
+  hard_negative:
+    statement: 分散が$0$のデータでも、$z_i=\frac{x_i-\bar{x}}{\sqrt{V}}$と標準化すれば分散は$1$になる。
+    reason: $V=0$のときは$\sqrt{V}=0$で割ることになり、標準化が定義できない。$V>0$は外せない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x z : ι → ℝ) (m V mz Vz : ℝ), s.Nonempty → 0 < V → m = (∑ i ∈ s, x i) / s.card → V = (∑ i ∈ s, (x i - m) ^ 2) / s.card → (∀ i ∈ s, z i = (x i - m) / Real.sqrt V) → mz = (∑ i ∈ s, z i) / s.card → Vz = (∑ i ∈ s, (z i - mz) ^ 2) / s.card → mz = 0 ∧ Vz = 1
+  proof: |
+    by
+      intro ι s x z m V mz Vz hs hVpos hm hV hz hmz hVz
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hS : ∑ i ∈ s, x i = s.card * m := by
+        rw [hm]
+        field_simp
+      have hdev : ∑ i ∈ s, (x i - m) = 0 := by
+        rw [Finset.sum_sub_distrib, Finset.sum_const, nsmul_eq_mul, hS]
+        ring
+      have hmz0 : mz = 0 := by
+        rw [hmz, Finset.sum_congr rfl hz, ← Finset.sum_div, hdev, zero_div, zero_div]
+      have hQ : ∑ i ∈ s, (x i - m) ^ 2 = V * s.card := by
+        have hVn := hV
+        rw [eq_div_iff hn] at hVn
+        exact hVn.symm
+      have hsq : Real.sqrt V ^ 2 = V := Real.sq_sqrt hVpos.le
+      have hc : ∀ i ∈ s, (z i - mz) ^ 2 = (x i - m) ^ 2 / V := by
+        intro i hi
+        rw [hz i hi, hmz0, sub_zero, div_pow, hsq]
+      refine ⟨hmz0, ?_⟩
+      rw [hVz, Finset.sum_congr rfl hc, ← Finset.sum_div, hQ]
+      field_simp
+- id: data_variance_of_two_groups
+  kind: gap
+  level: high
+  topic: データの分析・2群を合わせた分散
+  statement: 共通部分のない空でない有限集合$s,t$で添字づけられたデータについて、$s,t$での平均を$\bar{x}_s,\bar{x}_t$、分散を$V_s,V_t$とすると、$s\cup t$での分散は$\frac{|s|V_s+|t|V_t}{|s|+|t|}+\frac{|s||t|(\bar{x}_s-\bar{x}_t)^2}{(|s|+|t|)^2}$である。
+  statement_en: For data on disjoint nonempty finite sets s and t with means m₁, m₂ and variances V₁, V₂, the variance on s ∪ t equals (|s| V₁ + |t| V₂)/(|s| + |t|) + |s| |t| (m₁ - m₂)²/(|s| + |t|)².
+  assumptions:
+  - $s,t$は空でない有限集合で$s\cap t=\emptyset$
+  - $\bar{x}_s,\bar{x}_t$は$s,t$での平均、$V_s,V_t$は$s,t$での分散
+  - $W$は$s\cup t$での分散
+  quantifiers:
+  - 任意の有限集合$s,t$と実数値のデータ$x_i\ (i\in s\cup t)$
+  conclusion: $W=\frac{|s|V_s+|t|V_t}{|s|+|t|}+\frac{|s||t|(\bar{x}_s-\bar{x}_t)^2}{(|s|+|t|)^2}$である。
+  answer: |
+    $s,t$を共通部分のない空でない有限集合、$x_i\ (i\in s\cup t)$を実数とし、$n_1=|s|$、$n_2=|t|$、$N=n_1+n_2$とおく。$s,t$での平均を$\bar{x}_s,\bar{x}_t$、分散を$V_s,V_t$とし、$s\cup t$での平均を$M$、分散を$W$とする。
+    空でない有限集合$u$上の平均$m$と分散$v$については、$(x_i-m)^2=x_i^2-2mx_i+m^2$を足して$\sum_{i\in u}x_i=|u|m$を使うと、$\sum_{i\in u}x_i^2=|u|(v+m^2)$が成り立つ。これを$s,t,s\cup t$に使う。$s\cap t=\emptyset$より$|s\cup t|=N$であり、和は$s$上と$t$上に分かれるので、$N(W+M^2)=n_1(V_s+\bar{x}_s^2)+n_2(V_t+\bar{x}_t^2)$となる。
+    同様に$M=\frac{n_1\bar{x}_s+n_2\bar{x}_t}{N}$である。よって$W=\frac{n_1V_s+n_2V_t}{N}+\frac{n_1\bar{x}_s^2+n_2\bar{x}_t^2}{N}-\frac{(n_1\bar{x}_s+n_2\bar{x}_t)^2}{N^2}$である。後ろの$2$項は、$N(n_1\bar{x}_s^2+n_2\bar{x}_t^2)-(n_1\bar{x}_s+n_2\bar{x}_t)^2=n_1n_2(\bar{x}_s-\bar{x}_t)^2$から$\frac{n_1n_2(\bar{x}_s-\bar{x}_t)^2}{N^2}$に等しい。これが結論である。
+  strategy: Express each sum of squares by variance and mean, then combine over the disjoint union.
+  sketch:
+  - 'derive: For any nonempty finite u with mean m and variance v, Σ_u x_i² = |u| (v + m²).'
+  - 'translate: Disjointness splits the count and both sums over s ∪ t.'
+  - 'derive: This gives W = (n₁(V₁ + m₁²) + n₂(V₂ + m₂²))/N - M² with M = (n₁ m₁ + n₂ m₂)/N.'
+  - 'derive: Simplify the mean terms using N(n₁ m₁² + n₂ m₂²) - (n₁ m₁ + n₂ m₂)² = n₁ n₂ (m₁ - m₂)².'
+  - 'conclude: The result is the within-group term plus the between-group term.'
+  openmath: (forall (s t x m1 m2 V1 V2 M W) (-> (and (finite_set s) (!= s emptyset) (finite_set t) (!= t emptyset) (= (inter s t) emptyset) (= m1 (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= m2 (/ (sum t (lambda (i) (fn_value x i))) (size t))) (= V1 (/ (sum s (lambda (i) (^ (- (fn_value x i) m1) 2))) (size s))) (= V2 (/ (sum t (lambda (i) (^ (- (fn_value x i) m2) 2))) (size t))) (= M (/ (sum (union s t) (lambda (i) (fn_value x i))) (size (union s t)))) (= W (/ (sum (union s t) (lambda (i) (^ (- (fn_value x i) M) 2))) (size (union s t))))) (= W (+ (/ (+ (* (size s) V1) (* (size t) V2)) (+ (size s) (size t))) (/ (* (* (size s) (size t)) (^ (- m1 m2) 2)) (^ (+ (size s) (size t)) 2))))))
+  hard_negative:
+    statement: $s\cup t$での分散は、各群の分散の重みつき平均$\frac{|s|V_s+|t|V_t}{|s|+|t|}$に等しい。
+    reason: 群の平均の差から生じる項が抜けている。$s$の値が全て$0$、$t$の値が全て$1$なら$V_s=V_t=0$だが、合わせた分散は正である。
+  target: |
+    ∀ (ι : Type*) [DecidableEq ι] (s t : Finset ι) (x : ι → ℝ) (m₁ m₂ V₁ V₂ M W : ℝ), s.Nonempty → t.Nonempty → Disjoint s t → m₁ = (∑ i ∈ s, x i) / s.card → m₂ = (∑ i ∈ t, x i) / t.card → V₁ = (∑ i ∈ s, (x i - m₁) ^ 2) / s.card → V₂ = (∑ i ∈ t, (x i - m₂) ^ 2) / t.card → M = (∑ i ∈ s ∪ t, x i) / (s ∪ t).card → W = (∑ i ∈ s ∪ t, (x i - M) ^ 2) / (s ∪ t).card → W = (s.card * V₁ + t.card * V₂) / (s.card + t.card) + s.card * t.card * (m₁ - m₂) ^ 2 / (s.card + t.card) ^ 2
+  proof: |
+    by
+      intro ι _ s t x m₁ m₂ V₁ V₂ M W hs ht hd hm₁ hm₂ hV₁ hV₂ hM hW
+      have key : ∀ (u : Finset ι) (m v : ℝ), u.Nonempty → m = (∑ i ∈ u, x i) / u.card → v = (∑ i ∈ u, (x i - m) ^ 2) / u.card → ∑ i ∈ u, x i ^ 2 = u.card * (v + m ^ 2) := by
+        intro u m v hu hm hv
+        have hn : (u.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hu)
+        have hS : ∑ i ∈ u, x i = u.card * m := by
+          rw [hm]
+          field_simp
+        have hc : ∀ i ∈ u, (x i - m) ^ 2 = x i ^ 2 - 2 * m * x i + m ^ 2 := fun i _ => by ring
+        have h : ∑ i ∈ u, (x i - m) ^ 2 = ∑ i ∈ u, x i ^ 2 - 2 * m * ∑ i ∈ u, x i + u.card * m ^ 2 := by
+          rw [Finset.sum_congr rfl hc, Finset.sum_add_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul]
+        rw [hv, h, hS]
+        field_simp
+        ring
+      have hn₁ : (0 : ℝ) < s.card := Nat.cast_pos.mpr (Finset.card_pos.mpr hs)
+      have hn₂ : (0 : ℝ) < t.card := Nat.cast_pos.mpr (Finset.card_pos.mpr ht)
+      have hN : (s.card : ℝ) + t.card ≠ 0 := by positivity
+      have hc : ((s ∪ t).card : ℝ) = s.card + t.card := by
+        rw [Finset.card_union_eq_card_add_card.mpr hd]
+        push_cast
+        rfl
+      have k₁ := key s m₁ V₁ hs hm₁ hV₁
+      have k₂ := key t m₂ V₂ ht hm₂ hV₂
+      have k₃ := key (s ∪ t) M W (hs.mono Finset.subset_union_left) hM hW
+      rw [Finset.sum_union hd, k₁, k₂, hc] at k₃
+      have hS₁ : ∑ i ∈ s, x i = s.card * m₁ := by
+        rw [hm₁, mul_div_cancel₀ _ hn₁.ne']
+      have hS₂ : ∑ i ∈ t, x i = t.card * m₂ := by
+        rw [hm₂, mul_div_cancel₀ _ hn₂.ne']
+      have hM' : M = (s.card * m₁ + t.card * m₂) / (s.card + t.card) := by
+        rw [hM, Finset.sum_union hd, hS₁, hS₂, hc]
+      have hW' : W = (s.card * (V₁ + m₁ ^ 2) + t.card * (V₂ + m₂ ^ 2)) / (s.card + t.card) - M ^ 2 := by
+        rw [eq_sub_iff_add_eq, eq_div_iff hN]
+        linarith
+      have alg : ∀ n k a₁ a₂ u v : ℝ, n + k ≠ 0 → (n * (a₁ + u ^ 2) + k * (a₂ + v ^ 2)) / (n + k) - ((n * u + k * v) / (n + k)) ^ 2 = (n * a₁ + k * a₂) / (n + k) + n * k * (u - v) ^ 2 / (n + k) ^ 2 := by
+        intro n k a₁ a₂ u v h
+        field_simp
+        ring
+      rw [hW', hM']
+      exact alg _ _ _ _ _ _ hN
+- id: data_covariance_shortcut
+  kind: textbook
+  level: high
+  topic: データの分析・共分散の計算公式
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$の平均を$\bar{x},\bar{y}$、共分散を$C=\frac{1}{|s|}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$とすると、$C=\frac{1}{|s|}\sum_{i\in s}x_iy_i-\bar{x}\bar{y}$である。
+  statement_en: For paired data (x_i, y_i) over a nonempty finite set s with means x̄, ȳ and covariance C = (Σ (x_i - x̄)(y_i - ȳ))/|s|, one has C = (Σ x_i y_i)/|s| - x̄ ȳ.
+  assumptions:
+  - $s$は空でない有限集合
+  - $\bar{x},\bar{y}$は$x_i,y_i$の平均
+  - $C=\frac{1}{|s|}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  conclusion: $C=\frac{1}{|s|}\sum_{i\in s}x_iy_i-\bar{x}\bar{y}$である。
+  answer: |
+    $s$を空でない有限集合、$x_i,y_i\ (i\in s)$を実数とし、$n=|s|$、$\bar{x}=\frac{1}{n}\sum_{i\in s}x_i$、$\bar{y}=\frac{1}{n}\sum_{i\in s}y_i$、$C=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$とおく。$(x_i-\bar{x})(y_i-\bar{y})=x_iy_i-\bar{x}y_i-\bar{y}x_i+\bar{x}\bar{y}$を$i\in s$について足すと、$\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})=\sum_{i\in s}x_iy_i-\bar{x}\sum_{i\in s}y_i-\bar{y}\sum_{i\in s}x_i+n\bar{x}\bar{y}$となる。$\sum_{i\in s}x_i=n\bar{x}$と$\sum_{i\in s}y_i=n\bar{y}$を代入すると、右辺は$\sum_{i\in s}x_iy_i-n\bar{x}\bar{y}$である。両辺を$n$で割ると結論を得る。
+  strategy: Expand each product of deviations and substitute the two sums.
+  sketch:
+  - 'setup: Expand (x_i - x̄)(y_i - ȳ) termwise.'
+  - 'derive: Summing gives Σ x_i y_i - x̄ Σ y_i - ȳ Σ x_i + |s| x̄ ȳ.'
+  - 'derive: Substituting Σ x_i = |s| x̄ and Σ y_i = |s| ȳ leaves Σ x_i y_i - |s| x̄ ȳ.'
+  - 'conclude: Divide by |s|.'
+  openmath: (forall (s x y mx my c) (-> (and (finite_set s) (!= s emptyset) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= c (- (/ (sum s (lambda (i) (* (fn_value x i) (fn_value y i)))) (size s)) (* mx my)))))
+  hard_negative:
+    statement: 共分散はつねに$0$以上である。
+    reason: 分散と違い、共分散は積の和なので負にもなる。$(x_i,y_i)$が$(0,1),(1,0)$の$2$組なら共分散は$-\frac{1}{4}$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (mx my C : ℝ), s.Nonempty → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → C = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → C = (∑ i ∈ s, x i * y i) / s.card - mx * my
+  proof: |
+    by
+      intro ι s x y mx my C hs hmx hmy hC
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hSx : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      have hSy : ∑ i ∈ s, y i = s.card * my := by
+        rw [hmy]
+        field_simp
+      have hc : ∀ i ∈ s, (x i - mx) * (y i - my) = x i * y i - mx * y i - my * x i + mx * my := fun i _ => by ring
+      have h : ∑ i ∈ s, (x i - mx) * (y i - my) = ∑ i ∈ s, x i * y i - mx * ∑ i ∈ s, y i - my * ∑ i ∈ s, x i + s.card * (mx * my) := by
+        rw [Finset.sum_congr rfl hc, Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul]
+      rw [hC, h, hSx, hSy]
+      field_simp
+      ring
+- id: data_covariance_affine_transform
+  kind: gap
+  level: high
+  topic: データの分析・変量変換と共分散
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$を、定数$a,b,c,d$により$u_i=ax_i+b$、$v_i=cy_i+d$と変換すると、$u_i,v_i$の共分散は$x_i,y_i$の共分散の$ac$倍である。
+  statement_en: If paired data (x_i, y_i) over a nonempty finite set s are transformed by u_i = a x_i + b and v_i = c y_i + d, then the covariance of u and v equals a c times the covariance of x and y.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$u_i=ax_i+b$かつ$v_i=cy_i+d$
+  - $C_{xy},C_{uv}$はそれぞれの共分散
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i,u_i,v_i\ (i\in s)$
+  - 任意の実数$a,b,c,d$
+  conclusion: $C_{uv}=acC_{xy}$である。
+  answer: |
+    $s$を空でない有限集合、$a,b,c,d$を実数、$x_i,y_i,u_i,v_i\ (i\in s)$を全ての$i\in s$で$u_i=ax_i+b$、$v_i=cy_i+d$を満たす実数とする。$n=|s|$とし、平均を$\bar{x},\bar{y},\bar{u},\bar{v}$、共分散を$C_{xy}=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$、$C_{uv}=\frac{1}{n}\sum_{i\in s}(u_i-\bar{u})(v_i-\bar{v})$とおく。和を分けると$\bar{u}=a\bar{x}+b$、$\bar{v}=c\bar{y}+d$である。よって$u_i-\bar{u}=a(x_i-\bar{x})$、$v_i-\bar{v}=c(y_i-\bar{y})$であり、積は$(u_i-\bar{u})(v_i-\bar{v})=ac(x_i-\bar{x})(y_i-\bar{y})$となる。これを$i\in s$について足して$n$で割ると$C_{uv}=acC_{xy}$を得る。
+  strategy: Show each deviation scales by its slope and the shifts disappear.
+  sketch:
+  - 'derive: The transformed means are a x̄ + b and c ȳ + d.'
+  - 'derive: Hence u_i - ū = a (x_i - x̄) and v_i - v̄ = c (y_i - ȳ).'
+  - 'derive: Each product of deviations is multiplied by a c.'
+  - 'conclude: Sum over s and divide by |s| to get C_uv = a c C_xy.'
+  openmath: (forall (s x y u v a b c d mx my mu mv Cxy Cuv) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s)))) (= Cuv (* (* a c) Cxy))))
+  hard_negative:
+    statement: $u_i=ax_i+b$、$v_i=cy_i+d$の共分散は$x_i,y_i$の共分散の$a^2c^2$倍である。
+    reason: 倍率は分散の場合と異なり、各偏差の倍率の積$ac$である。$a=c=2$で$C_{xy}\neq0$なら、実際の倍率は$4$であって$16$ではない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y u v : ι → ℝ) (a b c d mx my mu mv Cxy Cuv : ℝ), s.Nonempty → (∀ i ∈ s, u i = a * x i + b) → (∀ i ∈ s, v i = c * y i + d) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → mu = (∑ i ∈ s, u i) / s.card → mv = (∑ i ∈ s, v i) / s.card → Cxy = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → Cuv = (∑ i ∈ s, (u i - mu) * (v i - mv)) / s.card → Cuv = a * c * Cxy
+  proof: |
+    by
+      intro ι s x y u v a b c d mx my mu mv Cxy Cuv hs hu hv hmx hmy hmu hmv hCxy hCuv
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hSx : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      have hSy : ∑ i ∈ s, y i = s.card * my := by
+        rw [hmy]
+        field_simp
+      have hmu' : mu = a * mx + b := by
+        rw [hmu, Finset.sum_congr rfl hu, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hSx]
+        field_simp
+      have hmv' : mv = c * my + d := by
+        rw [hmv, Finset.sum_congr rfl hv, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hSy]
+        field_simp
+      have h : ∑ i ∈ s, (u i - mu) * (v i - mv) = a * c * ∑ i ∈ s, (x i - mx) * (y i - my) := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro i hi
+        rw [hu i hi, hv i hi, hmu', hmv']
+        ring
+      rw [hCuv, hCxy, h]
+      ring
+- id: data_variance_of_sum
+  kind: gap
+  level: high
+  topic: データの分析・和の分散
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$と$z_i=x_i+y_i$について、$z_i$の分散は$V_x+2C_{xy}+V_y$である。ここで$V_x,V_y$は分散、$C_{xy}$は共分散である。
+  statement_en: For paired data (x_i, y_i) over a nonempty finite set s and z_i = x_i + y_i, the variance of z equals V_x + 2 C_xy + V_y, where V_x, V_y are the variances and C_xy the covariance.
+  assumptions:
+  - $s$は空でない有限集合
+  - 全ての$i\in s$で$z_i=x_i+y_i$
+  - $V_x,V_y,V_z$は分散、$C_{xy}$は共分散
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i,z_i\ (i\in s)$
+  conclusion: $V_z=V_x+2C_{xy}+V_y$である。
+  answer: |
+    $s$を空でない有限集合、$x_i,y_i,z_i\ (i\in s)$を全ての$i\in s$で$z_i=x_i+y_i$を満たす実数とする。$n=|s|$とし、平均を$\bar{x},\bar{y},\bar{z}$、分散を$V_x,V_y,V_z$、共分散を$C_{xy}=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$とおく。和を分けると$\bar{z}=\bar{x}+\bar{y}$なので、$z_i-\bar{z}=(x_i-\bar{x})+(y_i-\bar{y})$である。両辺を$2$乗すると$(z_i-\bar{z})^2=(x_i-\bar{x})^2+2(x_i-\bar{x})(y_i-\bar{y})+(y_i-\bar{y})^2$となる。これを$i\in s$について足して$n$で割ると$V_z=V_x+2C_{xy}+V_y$を得る。
+  strategy: Write the deviation of the sum as the sum of deviations and expand its square.
+  sketch:
+  - 'derive: The mean of z is x̄ + ȳ.'
+  - 'derive: Hence z_i - z̄ = (x_i - x̄) + (y_i - ȳ).'
+  - 'derive: Expand the square termwise.'
+  - 'conclude: Sum over s and divide by |s|.'
+  openmath: (forall (s x y z mx my mz Vx Vy Vz c) (-> (and (finite_set s) (!= s emptyset) (forall (i) (-> (in i s) (= (fn_value z i) (+ (fn_value x i) (fn_value y i))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mz (/ (sum s (lambda (i) (fn_value z i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vz (/ (sum s (lambda (i) (^ (- (fn_value z i) mz) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s)))) (= Vz (+ (+ Vx (* 2 c)) Vy))))
+  hard_negative:
+    statement: $x_i+y_i$の分散は、つねに$V_x+V_y$に等しい。
+    reason: この式は$C_{xy}=0$のときに限って正しい。$y_i=x_i$かつ$V_x>0$なら、和の分散は$4V_x$で$2V_x$より大きい。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y z : ι → ℝ) (mx my mz Vx Vy Vz C : ℝ), s.Nonempty → (∀ i ∈ s, z i = x i + y i) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → mz = (∑ i ∈ s, z i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → Vz = (∑ i ∈ s, (z i - mz) ^ 2) / s.card → C = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → Vz = Vx + 2 * C + Vy
+  proof: |
+    by
+      intro ι s x y z mx my mz Vx Vy Vz C hs hz hmx hmy hmz hVx hVy hVz hC
+      have hmz' : mz = mx + my := by
+        rw [hmz, Finset.sum_congr rfl hz, Finset.sum_add_distrib, add_div, ← hmx, ← hmy]
+      have h : ∑ i ∈ s, (z i - mz) ^ 2 = ∑ i ∈ s, (x i - mx) ^ 2 + 2 * ∑ i ∈ s, (x i - mx) * (y i - my) + ∑ i ∈ s, (y i - my) ^ 2 := by
+        rw [Finset.mul_sum, ← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
+        apply Finset.sum_congr rfl
+        intro i hi
+        rw [hz i hi, hmz']
+        ring
+      rw [hVz, h, hVx, hVy, hC]
+      ring
+- id: data_correlation_abs_le_one
+  kind: textbook
+  level: high
+  topic: データの分析・相関係数の範囲
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$の分散を$V_x>0,\ V_y>0$、共分散を$C$とすると、相関係数$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$は$|r|\leq1$を満たす。
+  statement_en: For paired data (x_i, y_i) over a nonempty finite set s with variances V_x, V_y > 0 and covariance C, the correlation coefficient r = C/(√V_x √V_y) satisfies |r| ≤ 1.
+  assumptions:
+  - $s$は空でない有限集合
+  - $V_x>0,\ V_y>0$
+  - $C$は共分散、$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  conclusion: $|r|\leq1$である。
+  answer: |
+    $s$を空でない有限集合、$x_i,y_i\ (i\in s)$を実数とし、$n=|s|$とする。平均を$\bar{x},\bar{y}$とし、$V_x=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2>0$、$V_y=\frac{1}{n}\sum_{i\in s}(y_i-\bar{y})^2>0$、$C=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$、$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$とおく。
+    偏差$x_i-\bar{x}$と$y_i-\bar{y}$にコーシー・シュワルツの不等式を使うと、$\left(\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})\right)^2\leq\sum_{i\in s}(x_i-\bar{x})^2\sum_{i\in s}(y_i-\bar{y})^2$である。両辺を$n^2$で割ると$C^2\leq V_xV_y$となる。平方根をとると$|C|\leq\sqrt{V_x}\sqrt{V_y}$であり、$\sqrt{V_x}\sqrt{V_y}>0$で割ると$|r|\leq1$を得る。
+  strategy: Apply the Cauchy-Schwarz inequality for finite sums to the deviations.
+  sketch:
+  - 'apply_theorem: Cauchy-Schwarz for finite sums applied to the deviations bounds the squared sum of products.'
+  - 'derive: Dividing by |s|² gives C² ≤ V_x V_y.'
+  - 'derive: Taking square roots gives |C| ≤ √V_x √V_y.'
+  - 'conclude: Dividing by the positive denominator gives |r| ≤ 1.'
+  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<= (abs r) 1)))
+  hard_negative:
+    statement: 分散が$0$のデータを含む場合でも、$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$は相関係数として意味をもち$|r|\leq1$である。
+    reason: $V_x=0$または$V_y=0$なら分母が$0$となり、相関係数は定義されない。$V_x>0,\ V_y>0$は外せない。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (mx my Vx Vy C r : ℝ), s.Nonempty → 0 < Vx → 0 < Vy → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → C = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → r = C / (Real.sqrt Vx * Real.sqrt Vy) → |r| ≤ 1
+  proof: |
+    by
+      intro ι s x y mx my Vx Vy C r hs hVx0 hVy0 hmx hmy hVx hVy hC hr
+      have hp : 0 < Real.sqrt Vx * Real.sqrt Vy := mul_pos (Real.sqrt_pos.mpr hVx0) (Real.sqrt_pos.mpr hVy0)
+      have cs : (∑ i ∈ s, (x i - mx) * (y i - my)) ^ 2 ≤ (∑ i ∈ s, (x i - mx) ^ 2) * ∑ i ∈ s, (y i - my) ^ 2 := Finset.sum_mul_sq_le_sq_mul_sq s _ _
+      have hC2 : C ^ 2 ≤ Vx * Vy := by
+        rw [hC, hVx, hVy, div_pow, div_mul_div_comm, ← sq]
+        gcongr
+      rw [hr, abs_div, abs_of_pos hp, div_le_one hp, ← Real.sqrt_mul hVx0.le]
+      exact Real.abs_le_sqrt hC2
+- id: data_correlation_affine_transform
+  kind: gap
+  level: high
+  topic: データの分析・変量変換と相関係数
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$の分散が正であるとき、$u_i=ax_i+b$、$v_i=cy_i+d$と変換すると、相関係数は$ac>0$なら変わらず、$ac<0$なら符号だけが変わる。
+  statement_en: If paired data (x_i, y_i) over a nonempty finite set s have positive variances and u_i = a x_i + b, v_i = c y_i + d, then the correlation coefficient of u and v equals that of x and y when a c > 0, and equals its negative when a c < 0.
+  assumptions:
+  - $s$は空でない有限集合
+  - $V_x>0,\ V_y>0$
+  - 全ての$i\in s$で$u_i=ax_i+b$かつ$v_i=cy_i+d$
+  - $r_{xy},r_{uv}$はそれぞれの相関係数
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i,u_i,v_i\ (i\in s)$
+  - 任意の実数$a,b,c,d$
+  conclusion: $ac>0$なら$r_{uv}=r_{xy}$であり、$ac<0$なら$r_{uv}=-r_{xy}$である。
+  answer: |
+    $s$を空でない有限集合、$a,b,c,d$を実数、$x_i,y_i,u_i,v_i\ (i\in s)$を全ての$i\in s$で$u_i=ax_i+b$、$v_i=cy_i+d$を満たす実数とする。$\bar{x},\bar{y}$を$x_i,y_i$の平均、$V_x,V_y$を$x_i,y_i$の分散で$V_x>0,\ V_y>0$とし、$V_u,V_v$を$u_i,v_i$の分散、$C_{xy},C_{uv}$を共分散、$r_{xy}=\frac{C_{xy}}{\sqrt{V_x}\sqrt{V_y}}$、$r_{uv}=\frac{C_{uv}}{\sqrt{V_u}\sqrt{V_v}}$とおく。
+    和を分けると$u_i$の平均は$a\bar{x}+b$、$v_i$の平均は$c\bar{y}+d$なので、偏差はそれぞれ$a(x_i-\bar{x})$、$c(y_i-\bar{y})$である。これから$V_u=a^2V_x$、$V_v=c^2V_y$、$C_{uv}=acC_{xy}$が従う。よって$\sqrt{V_u}\sqrt{V_v}=|a||c|\sqrt{V_x}\sqrt{V_y}=|ac|\sqrt{V_x}\sqrt{V_y}$であり、$ac\neq0$のとき$r_{uv}=\frac{ac}{|ac|}r_{xy}$となる。$ac>0$なら$|ac|=ac$で$r_{uv}=r_{xy}$であり、$ac<0$なら$|ac|=-ac$で$r_{uv}=-r_{xy}$である。
+  strategy: Track how variances and covariance scale, then simplify the sign factor a c over |a c|.
+  sketch:
+  - 'derive: Deviations of u and v are a (x_i - x̄) and c (y_i - ȳ).'
+  - 'derive: Hence V_u = a² V_x, V_v = c² V_y and C_uv = a c C_xy.'
+  - 'derive: The denominator becomes |a c| √V_x √V_y.'
+  - 'case_split: If a c > 0, then |a c| = a c and r_uv = r_xy.'
+  - 'case_split: If a c < 0, then |a c| = -a c and r_uv = -r_xy.'
+  openmath: (forall (s x y u v a b c d mx my mu mv Vx Vy Vu Vv Cxy Cuv r t) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (forall (i) (-> (in i s) (and (= (fn_value u i) (+ (* a (fn_value x i)) b)) (= (fn_value v i) (+ (* c (fn_value y i)) d))))) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= mu (/ (sum s (lambda (i) (fn_value u i))) (size s))) (= mv (/ (sum s (lambda (i) (fn_value v i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= Vu (/ (sum s (lambda (i) (^ (- (fn_value u i) mu) 2))) (size s))) (= Vv (/ (sum s (lambda (i) (^ (- (fn_value v i) mv) 2))) (size s))) (= Cxy (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= Cuv (/ (sum s (lambda (i) (* (- (fn_value u i) mu) (- (fn_value v i) mv)))) (size s))) (= r (/ Cxy (* (root Vx 2) (root Vy 2)))) (= t (/ Cuv (* (root Vu 2) (root Vv 2))))) (and (-> (> (* a c) 0) (= t r)) (-> (< (* a c) 0) (= t (neg r))))))
+  hard_negative:
+    statement: $u_i=ax_i+b$、$v_i=cy_i+d$と変換すると、相関係数は$a,c$によらず変わらない。
+    reason: 倍率の大きさは消えるが符号は残る。$a=-1,\ c=1$で$r_{xy}\neq0$なら、相関係数は$-r_{xy}$となり元の値と異なる。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y u v : ι → ℝ) (a b c d mx my mu mv Vx Vy Vu Vv Cxy Cuv r r' : ℝ), s.Nonempty → 0 < Vx → 0 < Vy → (∀ i ∈ s, u i = a * x i + b) → (∀ i ∈ s, v i = c * y i + d) → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → mu = (∑ i ∈ s, u i) / s.card → mv = (∑ i ∈ s, v i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → Vu = (∑ i ∈ s, (u i - mu) ^ 2) / s.card → Vv = (∑ i ∈ s, (v i - mv) ^ 2) / s.card → Cxy = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → Cuv = (∑ i ∈ s, (u i - mu) * (v i - mv)) / s.card → r = Cxy / (Real.sqrt Vx * Real.sqrt Vy) → r' = Cuv / (Real.sqrt Vu * Real.sqrt Vv) → (0 < a * c → r' = r) ∧ (a * c < 0 → r' = -r)
+  proof: |
+    by
+      intro ι s x y u v a b c d mx my mu mv Vx Vy Vu Vv Cxy Cuv r r' hs hVx0 hVy0 hu hv hmx hmy hmu hmv hVx hVy hVu hVv hCxy hCuv hr hr'
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hSx : ∑ i ∈ s, x i = s.card * mx := by
+        rw [hmx]
+        field_simp
+      have hSy : ∑ i ∈ s, y i = s.card * my := by
+        rw [hmy]
+        field_simp
+      have hmu' : mu = a * mx + b := by
+        rw [hmu, Finset.sum_congr rfl hu, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hSx]
+        field_simp
+      have hmv' : mv = c * my + d := by
+        rw [hmv, Finset.sum_congr rfl hv, Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const, nsmul_eq_mul, hSy]
+        field_simp
+      have hVu' : Vu = a ^ 2 * Vx := by
+        have h : ∑ i ∈ s, (u i - mu) ^ 2 = a ^ 2 * ∑ i ∈ s, (x i - mx) ^ 2 := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hu i hi, hmu']
+          ring
+        rw [hVu, hVx, h]
+        ring
+      have hVv' : Vv = c ^ 2 * Vy := by
+        have h : ∑ i ∈ s, (v i - mv) ^ 2 = c ^ 2 * ∑ i ∈ s, (y i - my) ^ 2 := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hv i hi, hmv']
+          ring
+        rw [hVv, hVy, h]
+        ring
+      have hCuv' : Cuv = a * c * Cxy := by
+        have h : ∑ i ∈ s, (u i - mu) * (v i - mv) = a * c * ∑ i ∈ s, (x i - mx) * (y i - my) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hu i hi, hv i hi, hmu', hmv']
+          ring
+        rw [hCuv, hCxy, h]
+        ring
+      have hp : Real.sqrt Vx * Real.sqrt Vy ≠ 0 := (mul_pos (Real.sqrt_pos.mpr hVx0) (Real.sqrt_pos.mpr hVy0)).ne'
+      have hden : Real.sqrt Vu * Real.sqrt Vv = |a * c| * (Real.sqrt Vx * Real.sqrt Vy) := by
+        rw [hVu', hVv', Real.sqrt_mul (sq_nonneg a), Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq_eq_abs, Real.sqrt_sq_eq_abs, abs_mul]
+        ring
+      constructor
+      · intro h
+        rw [hr', hr, hden, hCuv', abs_of_pos h, mul_div_mul_left _ _ h.ne']
+      · intro h
+        rw [hr', hr, hden, hCuv', abs_of_neg h, neg_mul, div_neg, mul_div_mul_left _ _ h.ne]
+- id: data_correlation_abs_one_iff_linear
+  kind: textbook
+  level: high
+  topic: データの分析・相関係数と直線関係
+  statement: 空でない有限集合$s$で添字づけられた$2$変量データ$(x_i,y_i)$の分散が正であるとき、相関係数$r$について、$|r|=1$であることと、ある定数$k$があって全ての$i\in s$で$y_i-\bar{y}=k(x_i-\bar{x})$となることは同値である。
+  statement_en: For paired data (x_i, y_i) over a nonempty finite set s with positive variances, the correlation coefficient r satisfies |r| = 1 if and only if there is a constant k with y_i - ȳ = k (x_i - x̄) for all i ∈ s.
+  assumptions:
+  - $s$は空でない有限集合
+  - $V_x>0,\ V_y>0$
+  - $r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$は相関係数
+  quantifiers:
+  - 任意の空でない有限集合$s$と実数$x_i,y_i\ (i\in s)$
+  conclusion: $|r|=1$と「ある実数$k$が存在して全ての$i\in s$で$y_i-\bar{y}=k(x_i-\bar{x})$」は同値である。
+  answer: |
+    $s$を空でない有限集合、$x_i,y_i\ (i\in s)$を実数とし、$n=|s|$とする。平均を$\bar{x},\bar{y}$とし、$V_x=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})^2>0$、$V_y=\frac{1}{n}\sum_{i\in s}(y_i-\bar{y})^2>0$、$C=\frac{1}{n}\sum_{i\in s}(x_i-\bar{x})(y_i-\bar{y})$、$r=\frac{C}{\sqrt{V_x}\sqrt{V_y}}$とおく。$r^2=\frac{C^2}{V_xV_y}$なので、$|r|=1$は$C^2=V_xV_y$と同値である。
+    $C^2=V_xV_y$とし、$k=\frac{C}{V_x}$とおく。$(y_i-\bar{y}-k(x_i-\bar{x}))^2$を展開して足すと、$\sum_{i\in s}(y_i-\bar{y}-k(x_i-\bar{x}))^2=n(V_y-2kC+k^2V_x)=n\left(V_y-\frac{C^2}{V_x}\right)=0$となる。$2$乗の和が$0$なので各項が$0$であり、全ての$i\in s$で$y_i-\bar{y}=k(x_i-\bar{x})$である。
+    逆に、全ての$i\in s$で$y_i-\bar{y}=k(x_i-\bar{x})$となる実数$k$があるとする。これを共分散と分散の定義に代入すると$C=kV_x$、$V_y=k^2V_x$なので、$C^2=k^2V_x^2=V_xV_y$である。
+  strategy: Reduce to C² = V_x V_y, then choose the slope k = C/V_x and expand a sum of squares.
+  sketch:
+  - 'translate: Since r² = C²/(V_x V_y), |r| = 1 is equivalent to C² = V_x V_y.'
+  - 'construct: Assuming C² = V_x V_y, set k = C/V_x.'
+  - 'derive: The sum of (y_i - ȳ - k(x_i - x̄))² equals |s| (V_y - C²/V_x) = 0.'
+  - 'derive: Each term vanishes, giving the linear relation.'
+  - 'derive: Conversely the relation gives C = k V_x and V_y = k² V_x.'
+  - 'conclude: Hence C² = V_x V_y and |r| = 1.'
+  openmath: (forall (s x y mx my Vx Vy c r) (-> (and (finite_set s) (!= s emptyset) (> Vx 0) (> Vy 0) (= mx (/ (sum s (lambda (i) (fn_value x i))) (size s))) (= my (/ (sum s (lambda (i) (fn_value y i))) (size s))) (= Vx (/ (sum s (lambda (i) (^ (- (fn_value x i) mx) 2))) (size s))) (= Vy (/ (sum s (lambda (i) (^ (- (fn_value y i) my) 2))) (size s))) (= c (/ (sum s (lambda (i) (* (- (fn_value x i) mx) (- (fn_value y i) my)))) (size s))) (= r (/ c (* (root Vx 2) (root Vy 2))))) (<-> (= (abs r) 1) (exists (k) (forall (i) (-> (in i s) (= (- (fn_value y i) my) (* k (- (fn_value x i) mx)))))))))
+  hard_negative:
+    statement: $|r|=1$なら、全ての$i\in s$で$y_i-\bar{y}=x_i-\bar{x}$である。
+    reason: 直線の傾きは$1$とは限らない。$y_i=2x_i$かつ$V_x>0$なら$r=1$だが、$y_i-\bar{y}=2(x_i-\bar{x})$である。
+  target: |
+    ∀ (ι : Type*) (s : Finset ι) (x y : ι → ℝ) (mx my Vx Vy C r : ℝ), s.Nonempty → 0 < Vx → 0 < Vy → mx = (∑ i ∈ s, x i) / s.card → my = (∑ i ∈ s, y i) / s.card → Vx = (∑ i ∈ s, (x i - mx) ^ 2) / s.card → Vy = (∑ i ∈ s, (y i - my) ^ 2) / s.card → C = (∑ i ∈ s, (x i - mx) * (y i - my)) / s.card → r = C / (Real.sqrt Vx * Real.sqrt Vy) → (|r| = 1 ↔ ∃ k : ℝ, ∀ i ∈ s, y i - my = k * (x i - mx))
+  proof: |
+    by
+      intro ι s x y mx my Vx Vy C r hs hVx0 hVy0 hmx hmy hVx hVy hC hr
+      have hn : (s.card : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Finset.card_ne_zero.mpr hs)
+      have hB : ∑ i ∈ s, (x i - mx) ^ 2 = Vx * s.card := ((eq_div_iff hn).mp hVx).symm
+      have hD : ∑ i ∈ s, (y i - my) ^ 2 = Vy * s.card := ((eq_div_iff hn).mp hVy).symm
+      have hA : ∑ i ∈ s, (x i - mx) * (y i - my) = C * s.card := ((eq_div_iff hn).mp hC).symm
+      have hne : Vx * Vy ≠ 0 := (mul_pos hVx0 hVy0).ne'
+      have hr2 : r ^ 2 = C ^ 2 / (Vx * Vy) := by
+        rw [hr, div_pow, mul_pow, Real.sq_sqrt hVx0.le, Real.sq_sqrt hVy0.le]
+      have hiff : |r| = 1 ↔ C ^ 2 = Vx * Vy := by
+        constructor
+        · intro h
+          have h1 : r ^ 2 = 1 := by
+            rw [← sq_abs, h]
+            norm_num
+          rw [hr2, div_eq_one_iff_eq hne] at h1
+          exact h1
+        · intro h
+          have h1 : r ^ 2 = 1 := by
+            rw [hr2, h]
+            exact div_self hne
+          have h2 : |r| ^ 2 = 1 := by
+            rw [sq_abs]
+            exact h1
+          exact (pow_eq_one_iff_of_nonneg (abs_nonneg r) two_ne_zero).mp h2
+      rw [hiff]
+      constructor
+      · intro h
+        refine ⟨C / Vx, ?_⟩
+        have hc : ∀ i ∈ s, (y i - my - C / Vx * (x i - mx)) ^ 2 = (y i - my) ^ 2 - 2 * (C / Vx) * ((x i - mx) * (y i - my)) + (C / Vx) ^ 2 * (x i - mx) ^ 2 := fun i _ => by ring
+        have hval : Vy - 2 * (C / Vx) * C + (C / Vx) ^ 2 * Vx = 0 := by
+          have hx : Vx ≠ 0 := hVx0.ne'
+          have e : Vy - 2 * (C / Vx) * C + (C / Vx) ^ 2 * Vx = (Vy * Vx - C ^ 2) / Vx := by
+            field_simp
+            ring
+          rw [e, h]
+          ring
+        have hsum : ∑ i ∈ s, (y i - my - C / Vx * (x i - mx)) ^ 2 = 0 := by
+          rw [Finset.sum_congr rfl hc, Finset.sum_add_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum, ← Finset.mul_sum, hD, hA, hB]
+          linear_combination (s.card : ℝ) * hval
+        have hz := (Finset.sum_eq_zero_iff_of_nonneg (fun i _ => sq_nonneg _)).mp hsum
+        intro i hi
+        have h0 := (pow_eq_zero_iff two_ne_zero).mp (hz i hi)
+        linarith
+      · rintro ⟨k, hk⟩
+        have hA' : C * s.card = k * (Vx * s.card) := by
+          rw [← hA, ← hB, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hk i hi]
+          ring
+        have hD' : Vy * s.card = k ^ 2 * (Vx * s.card) := by
+          rw [← hD, ← hB, Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro i hi
+          rw [hk i hi]
+          ring
+        have hCk : C = k * Vx := mul_right_cancel₀ hn (by rw [hA']; ring)
+        have hVk : Vy = k ^ 2 * Vx := mul_right_cancel₀ hn (by rw [hD']; ring)
+        rw [hCk, hVk]
+        ring
+- id: finset_card_union_two
+  kind: named
+  level: high
+  topic: 集合・包含排除原理（2集合）
+  statement: 包含排除原理の$2$集合の場合。有限集合$A,B$について$|A\cup B|=|A|+|B|-|A\cap B|$である。
+  statement_en: Inclusion-exclusion for two sets. For finite sets A and B, |A ∪ B| = |A| + |B| - |A ∩ B|.
+  assumptions:
+  - $A,B$は有限集合
+  quantifiers:
+  - 任意の有限集合$A,B$
+  conclusion: $|A\cup B|=|A|+|B|-|A\cap B|$である。
+  answer: |
+    $A,B$を有限集合とする。$A\cup B$は共通部分のない$A$と$B\setminus A$の和集合なので、$|A\cup B|=|A|+|B\setminus A|$である。また$B$は共通部分のない$B\setminus A$と$A\cap B$の和集合なので、$|B|=|B\setminus A|+|A\cap B|$である。第$2$式から得られる$|B\setminus A|=|B|-|A\cap B|$を第$1$式に代入すると、$|A\cup B|=|A|+|B|-|A\cap B|$を得る。
+  strategy: Split A ∪ B and B into disjoint pieces through B \ A.
+  sketch:
+  - 'setup: Write A ∪ B as the disjoint union of A and B \ A.'
+  - 'setup: Write B as the disjoint union of B \ A and A ∩ B.'
+  - 'derive: Counting gives |A ∪ B| = |A| + |B \ A| and |B| = |B \ A| + |A ∩ B|.'
+  - 'conclude: Eliminate |B \ A|.'
+  openmath: (forall (A B) (-> (and (finite_set A) (finite_set B)) (= (size (union A B)) (- (+ (size A) (size B)) (size (inter A B))))))
+  hard_negative:
+    statement: 有限集合$A,B$についてつねに$|A\cup B|=|A|+|B|$である。
+    reason: この式は$A\cap B=\emptyset$のときに限って正しい。$A=B=\{1\}$なら左辺は$1$、右辺は$2$である。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (A B : Finset α), ((A ∪ B).card : ℤ) = A.card + B.card - (A ∩ B).card
+  proof: |
+    by
+      intro α _ A B
+      have h := Finset.card_union_add_card_inter A B
+      omega
+- id: finset_card_union_three
+  kind: named
+  level: high
+  topic: 集合・包含排除原理（3集合）
+  statement: 包含排除原理の$3$集合の場合。有限集合$A,B,C$について$|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|B\cap C|-|C\cap A|+|A\cap B\cap C|$である。
+  statement_en: Inclusion-exclusion for three sets. For finite sets A, B, C, |A ∪ B ∪ C| = |A| + |B| + |C| - |A ∩ B| - |B ∩ C| - |C ∩ A| + |A ∩ B ∩ C|.
+  assumptions:
+  - $A,B,C$は有限集合
+  quantifiers:
+  - 任意の有限集合$A,B,C$
+  conclusion: $|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|B\cap C|-|C\cap A|+|A\cap B\cap C|$である。
+  answer: |
+    $A,B,C$を有限集合とする。有限集合$X,Y$についての公式$|X\cup Y|=|X|+|Y|-|X\cap Y|$を使う。$X=A\cup B,\ Y=C$とすると$|A\cup B\cup C|=|A\cup B|+|C|-|(A\cup B)\cap C|$である。ここで$|A\cup B|=|A|+|B|-|A\cap B|$である。また$(A\cup B)\cap C=(A\cap C)\cup(B\cap C)$であり、$(A\cap C)\cap(B\cap C)=A\cap B\cap C$なので、$|(A\cup B)\cap C|=|A\cap C|+|B\cap C|-|A\cap B\cap C|$である。これらを代入すると結論を得る。
+  strategy: Apply the two-set formula twice after distributing the intersection.
+  sketch:
+  - 'apply_theorem: Apply the two-set formula to A ∪ B and C.'
+  - 'apply_theorem: Apply the two-set formula to A and B.'
+  - 'derive: Distribute (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C) and apply the two-set formula again.'
+  - 'conclude: Substitute all three equalities.'
+  openmath: (forall (A B D) (-> (and (finite_set A) (finite_set B) (finite_set D)) (= (size (union (union A B) D)) (+ (- (- (- (+ (+ (size A) (size B)) (size D)) (size (inter A B))) (size (inter B D))) (size (inter D A))) (size (inter (inter A B) D))))))
+  hard_negative:
+    statement: $|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|B\cap C|-|C\cap A|$である。
+    reason: $3$つ全てに属する要素を引きすぎている。$A=B=C=\{1\}$なら左辺は$1$、右辺は$0$である。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (A B C : Finset α), ((A ∪ B ∪ C).card : ℤ) = A.card + B.card + C.card - (A ∩ B).card - (B ∩ C).card - (C ∩ A).card + (A ∩ B ∩ C).card
+  proof: |
+    by
+      intro α _ A B C
+      have h1 := Finset.card_union_add_card_inter (A ∪ B) C
+      have h2 := Finset.card_union_add_card_inter A B
+      have h3 := Finset.card_union_add_card_inter (A ∩ C) (B ∩ C)
+      have e1 : (A ∪ B) ∩ C = (A ∩ C) ∪ (B ∩ C) := Finset.union_inter_distrib_right A B C
+      have e2 : (A ∩ C) ∩ (B ∩ C) = A ∩ B ∩ C := by
+        ext a
+        simp only [Finset.mem_inter]
+        tauto
+      have e3 : C ∩ A = A ∩ C := Finset.inter_comm C A
+      rw [e1] at h1
+      rw [e2] at h3
+      rw [e3]
+      omega
+- id: finset_card_neither_of_two
+  kind: gap
+  level: high
+  topic: 集合・どちらにも属さない要素の個数
+  statement: 有限集合$U$の部分集合$A,B$について、$A$にも$B$にも属さない$U$の要素の個数は$|U\setminus(A\cup B)|=|U|-|A|-|B|+|A\cap B|$である。
+  statement_en: For subsets A and B of a finite set U, the number of elements of U in neither A nor B is |U \ (A ∪ B)| = |U| - |A| - |B| + |A ∩ B|.
+  assumptions:
+  - $U$は有限集合
+  - $A\subseteq U,\ B\subseteq U$
+  quantifiers:
+  - 任意の有限集合$U$とその部分集合$A,B$
+  conclusion: $|U\setminus(A\cup B)|=|U|-|A|-|B|+|A\cap B|$である。
+  answer: |
+    $U$を有限集合、$A,B$を$U$の部分集合とする。$A\cup B\subseteq U$なので、$U$は共通部分のない$U\setminus(A\cup B)$と$A\cup B$の和集合であり、$|U\setminus(A\cup B)|=|U|-|A\cup B|$である。包含排除原理$|A\cup B|=|A|+|B|-|A\cap B|$を代入すると結論を得る。
+  strategy: Count the complement of the union, then apply two-set inclusion-exclusion.
+  sketch:
+  - 'translate: Since A ∪ B ⊆ U, |U \ (A ∪ B)| = |U| - |A ∪ B|.'
+  - 'apply_theorem: Apply |A ∪ B| = |A| + |B| - |A ∩ B|.'
+  - 'conclude: Substitute to get the formula.'
+  openmath: (forall (U A B) (-> (and (finite_set U) (subset A U) (subset B U)) (= (size (setdiff U (union A B))) (+ (- (- (size U) (size A)) (size B)) (size (inter A B))))))
+  hard_negative:
+    statement: 有限集合$U,A,B$について、包含関係を仮定しなくても$|U\setminus(A\cup B)|=|U|-|A|-|B|+|A\cap B|$である。
+    reason: $A,B$が$U$からはみ出すと成り立たない。$U=\{1\},\ A=\{2\},\ B=\emptyset$なら左辺は$1$、右辺は$0$である。
+  target: |
+    ∀ (α : Type*) [DecidableEq α] (U A B : Finset α), A ⊆ U → B ⊆ U → ((U \ (A ∪ B)).card : ℤ) = U.card - A.card - B.card + (A ∩ B).card
+  proof: |
+    by
+      intro α _ U A B hA hB
+      have h1 := Finset.card_sdiff_add_card_eq_card (Finset.union_subset hA hB)
+      have h2 := Finset.card_union_add_card_inter A B
+      omega
+- id: pred_forall_contrapositive
+  kind: gap
+  level: high
+  topic: 命題と条件・全称命題の対偶
+  statement: 集合$\alpha$上の条件$P,Q$について、「全ての$x$で$P(x)$ならば$Q(x)$」と、その対偶「全ての$x$で$Q(x)$でないならば$P(x)$でない」は同値である。
+  statement_en: For predicates P and Q on a type, "for all x, P x implies Q x" is equivalent to its contrapositive "for all x, not Q x implies not P x".
+  assumptions:
+  - $P,Q$は集合$\alpha$上の条件
+  quantifiers:
+  - 任意の集合$\alpha$と$\alpha$上の条件$P,Q$
+  conclusion: $\forall x,\,(P(x)\Rightarrow Q(x))$と$\forall x,\,(\neg Q(x)\Rightarrow\neg P(x))$は同値である。
+  answer: |
+    $\alpha$を集合、$P,Q$を$\alpha$上の条件とする。全ての$x$で$P(x)\Rightarrow Q(x)$が成り立つとする。$x\in\alpha$で$\neg Q(x)$とする。$P(x)$が成り立つと$Q(x)$も成り立って矛盾するので、$\neg P(x)$である。逆に、全ての$x$で$\neg Q(x)\Rightarrow\neg P(x)$が成り立つとする。$x\in\alpha$で$P(x)$とする。$Q(x)$が成り立たないとすると$\neg P(x)$となって矛盾するので、$Q(x)$である。
+  strategy: Prove each direction pointwise by contradiction.
+  sketch:
+  - 'setup: Fix x and assume the universal implication with ¬Q x.'
+  - 'contradiction: P x would give Q x, so ¬P x holds.'
+  - 'setup: Conversely fix x and assume the contrapositive with P x.'
+  - 'contradiction: ¬Q x would give ¬P x, so Q x holds.'
+  openmath: (forall (A P Q) (<-> (forall (x) (-> (in x A) (-> (holds_at P x) (holds_at Q x)))) (forall (x) (-> (in x A) (-> (not (holds_at Q x)) (not (holds_at P x)))))))
+  hard_negative:
+    statement: 「全ての$x$で$P(x)$ならば$Q(x)$」は、その裏「全ての$x$で$P(x)$でないならば$Q(x)$でない」と同値である。
+    reason: 同値なのは対偶であって裏ではない。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると元の命題は真だが、$x=\frac{1}{2}$が裏の反例になる。
+  target: |
+    ∀ (α : Type*) (P Q : α → Prop), (∀ x, P x → Q x) ↔ ∀ x, ¬Q x → ¬P x
+  proof: |
+    by
+      intro α P Q
+      constructor
+      · intro h x hq hp
+        exact hq (h x hp)
+      · intro h x hp
+        by_contra hq
+        exact h x hq hp
+- id: pred_not_forall_imp_counterexample
+  kind: gap
+  level: high
+  topic: 命題と条件・反例
+  statement: 集合$\alpha$上の条件$P,Q$について、「全ての$x$で$P(x)$ならば$Q(x)$」の否定は、「$P(x)$を満たし$Q(x)$を満たさない$x$（反例）が存在する」と同値である。
+  statement_en: For predicates P and Q on a type, the negation of "for all x, P x implies Q x" is equivalent to the existence of a counterexample x with P x and not Q x.
+  assumptions:
+  - $P,Q$は集合$\alpha$上の条件
+  quantifiers:
+  - 任意の集合$\alpha$と$\alpha$上の条件$P,Q$
+  conclusion: $\neg\forall x,\,(P(x)\Rightarrow Q(x))$と$\exists x,\,(P(x)\land\neg Q(x))$は同値である。
+  answer: |
+    $\alpha$を集合、$P,Q$を$\alpha$上の条件とする。$P(a)$を満たし$Q(a)$を満たさない$a\in\alpha$があるとする。全ての$x$で$P(x)\Rightarrow Q(x)$が成り立つなら$Q(a)$が成り立つので矛盾する。よって全称命題は偽である。
+    逆に、全称命題が偽であるとし、$P(x)$を満たし$Q(x)$を満たさない$x$が存在しないと仮定する。$x\in\alpha$で$P(x)$とする。$Q(x)$が成り立たないとするとそのような$x$が存在してしまうので、$Q(x)$である。これは全称命題が真であることを意味し、矛盾する。したがって反例が存在する。
+  strategy: A counterexample refutes the implication; otherwise argue by contradiction.
+  sketch:
+  - 'derive: A witness with P x and ¬Q x refutes the universal implication.'
+  - 'contradiction: Assume the universal implication fails but no witness exists.'
+  - 'derive: Then any x with P x must satisfy Q x.'
+  - 'conclude: This proves the universal implication, a contradiction.'
+  openmath: (forall (A P Q) (<-> (not (forall (x) (-> (in x A) (-> (holds_at P x) (holds_at Q x))))) (exists (x) (and (in x A) (and (holds_at P x) (not (holds_at Q x)))))))
+  hard_negative:
+    statement: 「全ての$x$で$P(x)$ならば$Q(x)$」の否定は、「$P(x)$でなく$Q(x)$である$x$が存在する」と同値である。
+    reason: 反例は仮定を満たす必要がある。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると全称命題は真なのに、$x=\frac{1}{2}$はこの条件を満たす。
+  target: |
+    ∀ (α : Type*) (P Q : α → Prop), (¬∀ x, P x → Q x) ↔ ∃ x, P x ∧ ¬Q x
+  proof: |
+    by
+      intro α P Q
+      constructor
+      · intro h
+        by_contra hne
+        apply h
+        intro x hp
+        by_contra hq
+        exact hne ⟨x, hp, hq⟩
+      · rintro ⟨x, hp, hq⟩ h
+        exact hq (h x hp)
+- id: sufficient_iff_truth_set_subset
+  kind: textbook
+  level: high
+  topic: 命題と条件・十分条件と必要条件
+  statement: 集合$\alpha$上の条件$P,Q$について、$P$が$Q$の十分条件であること（$Q$が$P$の必要条件であること）は、真理集合の包含$\{x\mid P(x)\}\subseteq\{x\mid Q(x)\}$と同値である。
+  statement_en: For predicates P and Q on a type, P being sufficient for Q (equivalently, Q being necessary for P), that is ∀ x, P x → Q x, is equivalent to the inclusion of truth sets {x | P x} ⊆ {x | Q x}.
+  assumptions:
+  - $P,Q$は集合$\alpha$上の条件
+  - $P$が$Q$の十分条件であるとは、全ての$x$で$P(x)\Rightarrow Q(x)$が成り立つこと
+  quantifiers:
+  - 任意の集合$\alpha$と$\alpha$上の条件$P,Q$
+  conclusion: 全ての$x$で$P(x)\Rightarrow Q(x)$であることと$\{x\mid P(x)\}\subseteq\{x\mid Q(x)\}$は同値である。
+  answer: |
+    $\alpha$を集合、$P,Q$を$\alpha$上の条件とし、$S=\{x\in\alpha\mid P(x)\}$、$T=\{x\in\alpha\mid Q(x)\}$とおく。$x\in S$は$P(x)$と同じことであり、$x\in T$は$Q(x)$と同じことである。よって「全ての$x$で$P(x)\Rightarrow Q(x)$」は「全ての$x$で$x\in S\Rightarrow x\in T$」と言い換えられ、これは$S\subseteq T$の定義そのものである。
+  strategy: Unfold the definition of inclusion of truth sets.
+  sketch:
+  - 'translate: Membership in a truth set is the same as satisfying the condition.'
+  - 'conclude: The universal implication is then the definition of inclusion.'
+  openmath: (forall (U p q) (<-> (forall (x) (-> (and (in x U) (holds_at p x)) (holds_at q x))) (subset (suchthat U (lambda (x) (holds_at p x))) (suchthat U (lambda (x) (holds_at q x))))))
+  hard_negative:
+    statement: $P$が$Q$の十分条件であることは、$\{x\mid Q(x)\}\subseteq\{x\mid P(x)\}$と同値である。
+    reason: 包含の向きが逆である。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると$P$は$Q$の十分条件だが、$x=\frac{1}{2}$は$Q$の真理集合に入り$P$の真理集合に入らない。
+  target: |
+    ∀ (α : Type*) (P Q : α → Prop), (∀ x, P x → Q x) ↔ {x | P x} ⊆ {x | Q x}
+  proof: |
+    by
+      intro α P Q
+      exact Iff.rfl
+- id: necessary_sufficient_iff_truth_set_eq
+  kind: gap
+  level: high
+  topic: 命題と条件・必要十分条件
+  statement: 集合$\alpha$上の条件$P,Q$について、$P$が$Q$の必要十分条件であることは、真理集合の相等$\{x\mid P(x)\}=\{x\mid Q(x)\}$と同値である。
+  statement_en: For predicates P and Q on a type, P being necessary and sufficient for Q, that is ∀ x, P x ↔ Q x, is equivalent to the equality of truth sets {x | P x} = {x | Q x}.
+  assumptions:
+  - $P,Q$は集合$\alpha$上の条件
+  quantifiers:
+  - 任意の集合$\alpha$と$\alpha$上の条件$P,Q$
+  conclusion: 全ての$x$で$P(x)\Leftrightarrow Q(x)$であることと$\{x\mid P(x)\}=\{x\mid Q(x)\}$は同値である。
+  answer: |
+    $\alpha$を集合、$P,Q$を$\alpha$上の条件とし、$S=\{x\in\alpha\mid P(x)\}$、$T=\{x\in\alpha\mid Q(x)\}$とおく。$2$つの集合が等しいとは、全ての$x$で$x\in S$と$x\in T$が同値であることである。$x\in S$は$P(x)$と同じことであり、$x\in T$は$Q(x)$と同じことなので、これは全ての$x$で$P(x)\Leftrightarrow Q(x)$であることにほかならない。
+  strategy: Use extensionality of sets and unfold membership in truth sets.
+  sketch:
+  - 'translate: Two sets are equal iff they have the same members.'
+  - 'conclude: Membership in the truth sets is exactly P x and Q x.'
+  openmath: (forall (U p q) (<-> (forall (x) (-> (in x U) (<-> (holds_at p x) (holds_at q x)))) (= (suchthat U (lambda (x) (holds_at p x))) (suchthat U (lambda (x) (holds_at q x))))))
+  hard_negative:
+    statement: 全ての$x$で$P(x)\Rightarrow Q(x)$なら、$\{x\mid P(x)\}=\{x\mid Q(x)\}$である。
+    reason: 片方向の含意から分かるのは包含だけである。実数で$P(x)$を$x>1$、$Q(x)$を$x>0$とすると含意は成り立つが、真理集合は異なる。
+  target: |
+    ∀ (α : Type*) (P Q : α → Prop), (∀ x, P x ↔ Q x) ↔ {x | P x} = {x | Q x}
+  proof: |
+    by
+      intro α P Q
+      exact Set.ext_iff.symm
+- id: implication_cycle_iff
+  kind: gap
+  level: high
+  topic: 命題と条件・同値の循環証明
+  statement: 命題$P,Q,R$について、$P\Rightarrow Q$、$Q\Rightarrow R$、$R\Rightarrow P$が全て成り立てば、$P,Q,R$は互いに同値である。
+  statement_en: For propositions P, Q, R, if P implies Q, Q implies R and R implies P, then P, Q and R are mutually equivalent.
+  assumptions:
+  - $P\Rightarrow Q$
+  - $Q\Rightarrow R$
+  - $R\Rightarrow P$
+  quantifiers:
+  - 任意の命題$P,Q,R$
+  conclusion: $P\Leftrightarrow Q$かつ$Q\Leftrightarrow R$である。
+  answer: |
+    $P,Q,R$を命題とし、$P\Rightarrow Q$、$Q\Rightarrow R$、$R\Rightarrow P$が成り立つとする。$Q$が成り立つとすると$Q\Rightarrow R$から$R$が成り立ち、$R\Rightarrow P$から$P$が成り立つ。よって$Q\Rightarrow P$であり、$P\Rightarrow Q$と合わせて$P\Leftrightarrow Q$である。$R$が成り立つとすると$R\Rightarrow P$から$P$が成り立ち、$P\Rightarrow Q$から$Q$が成り立つ。よって$R\Rightarrow Q$であり、$Q\Rightarrow R$と合わせて$Q\Leftrightarrow R$である。
+  strategy: Chain the given implications around the cycle to get each converse.
+  sketch:
+  - 'derive: Q implies R implies P, so Q implies P.'
+  - 'derive: R implies P implies Q, so R implies Q.'
+  - 'conclude: Combine with the given implications.'
+  openmath: (forall (P Q R) (-> (and (-> (proposition_holds P) (proposition_holds Q)) (-> (proposition_holds Q) (proposition_holds R)) (-> (proposition_holds R) (proposition_holds P))) (and (<-> (proposition_holds P) (proposition_holds Q)) (<-> (proposition_holds Q) (proposition_holds R)))))
+  hard_negative:
+    statement: $P\Rightarrow Q$と$Q\Rightarrow R$が成り立てば、$P,Q,R$は互いに同値である。
+    reason: 循環を閉じる$R\Rightarrow P$がないと同値は出ない。$P,Q$が偽で$R$が真なら$2$つの含意は成り立つが、$Q\Leftrightarrow R$は成り立たない。
+  target: |
+    ∀ (P Q R : Prop), (P → Q) → (Q → R) → (R → P) → (P ↔ Q) ∧ (Q ↔ R)
+  proof: |
+    by
+      intro P Q R h1 h2 h3
+      exact ⟨⟨h1, fun q => h3 (h2 q)⟩, ⟨h2, fun r => h1 (h3 r)⟩⟩
+- id: proof_by_contradiction_template
+  kind: named
+  level: high
+  topic: 命題と証明・背理法
+  statement: 背理法の定型。命題$P,Q$について、$P$の否定から$Q$と$Q$の否定の両方が導けるなら、$P$は真である。
+  statement_en: Proof by contradiction. For propositions P and Q, if ¬P implies Q and ¬P implies ¬Q, then P holds.
+  assumptions:
+  - $\neg P\Rightarrow Q$
+  - $\neg P\Rightarrow\neg Q$
+  quantifiers:
+  - 任意の命題$P,Q$
+  conclusion: $P$は真である。
+  answer: |
+    $P,Q$を命題とし、$\neg P\Rightarrow Q$と$\neg P\Rightarrow\neg Q$が成り立つとする。$P$が偽であると仮定すると、$\neg P$が成り立つので、$Q$と$\neg Q$がともに成り立つ。これは矛盾である。命題は真か偽のどちらかなので、$P$は真である。
+  strategy: Assume the negation of P and derive a contradiction.
+  sketch:
+  - 'contradiction: Assume P is false.'
+  - 'derive: The two hypotheses then give both Q and ¬Q.'
+  - 'conclude: This is impossible, so P is true.'
+  openmath: (forall (P Q) (-> (and (-> (not (proposition_holds P)) (proposition_holds Q)) (-> (not (proposition_holds P)) (not (proposition_holds Q)))) (proposition_holds P)))
+  hard_negative:
+    statement: $P$の否定から何らかの命題$Q$が導ければ、$P$は真である。
+    reason: 矛盾が出ていなければ結論できない。$P$が偽で$Q$が真なら$\neg P\Rightarrow Q$は成り立つが、$P$は偽である。
+  target: |
+    ∀ (P Q : Prop), (¬P → Q) → (¬P → ¬Q) → P
+  proof: |
+    by
+      intro P Q h1 h2
+      by_contra hn
+      exact h2 hn (h1 hn)
+- id: implication_by_contradiction_template
+  kind: gap
+  level: high
+  topic: 命題と証明・含意の背理法
+  statement: 命題$P,Q,R$について、「$P$かつ$Q$でない」から$R$と$R$の否定の両方が導けるなら、$P\Rightarrow Q$である。
+  statement_en: For propositions P, Q, R, if "P and not Q" implies both R and ¬R, then P implies Q.
+  assumptions:
+  - $P\land\neg Q\Rightarrow R$
+  - $P\land\neg Q\Rightarrow\neg R$
+  quantifiers:
+  - 任意の命題$P,Q,R$
+  conclusion: $P\Rightarrow Q$である。
+  answer: |
+    $P,Q,R$を命題とし、$P\land\neg Q\Rightarrow R$と$P\land\neg Q\Rightarrow\neg R$が成り立つとする。$P$が成り立つとする。$Q$が偽であると仮定すると$P\land\neg Q$が成り立つので、$R$と$\neg R$がともに成り立ち、矛盾する。よって$Q$は真である。したがって$P\Rightarrow Q$である。
+  strategy: Assume P, negate Q, and derive a contradiction from the hypotheses.
+  sketch:
+  - 'setup: Assume P.'
+  - 'contradiction: Assume ¬Q, so P ∧ ¬Q holds.'
+  - 'derive: The hypotheses give both R and ¬R.'
+  - 'conclude: Hence Q holds, which proves P implies Q.'
+  openmath: (forall (P Q R) (-> (and (-> (and (proposition_holds P) (not (proposition_holds Q))) (proposition_holds R)) (-> (and (proposition_holds P) (not (proposition_holds Q))) (not (proposition_holds R)))) (-> (proposition_holds P) (proposition_holds Q))))
+  hard_negative:
+    statement: 「$P$でなく$Q$である」から$R$と$R$の否定の両方が導けるなら、$P\Rightarrow Q$である。
+    reason: 否定する側が違う。$P$が真で$Q$が偽なら「$P$でなく$Q$である」は偽なので仮定は成り立つが、$P\Rightarrow Q$は偽である。
+  target: |
+    ∀ (P Q R : Prop), (P ∧ ¬Q → R) → (P ∧ ¬Q → ¬R) → P → Q
+  proof: |
+    by
+      intro P Q R h1 h2 hp
+      by_contra hq
+      exact h2 ⟨hp, hq⟩ (h1 ⟨hp, hq⟩)
+- id: or_iff_not_left_imp_right
+  kind: gap
+  level: high
+  topic: 命題と証明・「または」の示し方
+  statement: 命題$P,Q$について、「$P$または$Q$」は「$P$でないならば$Q$」と同値である。
+  statement_en: For propositions P and Q, "P or Q" is equivalent to "not P implies Q".
+  assumptions:
+  - $P,Q$は命題
+  quantifiers:
+  - 任意の命題$P,Q$
+  conclusion: $P\lor Q$と$\neg P\Rightarrow Q$は同値である。
+  answer: |
+    $P,Q$を命題とする。$P\lor Q$が成り立つとし、$\neg P$を仮定する。$P$は成り立たないので$Q$が成り立つ。よって$\neg P\Rightarrow Q$である。
+    逆に$\neg P\Rightarrow Q$が成り立つとする。命題$P$は真か偽のどちらかである。$P$が真なら$P\lor Q$は成り立つ。$P$が偽なら仮定から$Q$が真となり、やはり$P\lor Q$が成り立つ。
+  strategy: Eliminate the disjunction in one direction and split on P in the other.
+  sketch:
+  - 'derive: From P ∨ Q and ¬P, the case P is impossible, so Q holds.'
+  - 'case_split: Conversely split on whether P is true.'
+  - 'derive: If P is true then P ∨ Q holds at once.'
+  - 'conclude: If P is false the hypothesis gives Q, so P ∨ Q holds.'
+  openmath: (forall (P Q) (<-> (or (proposition_holds P) (proposition_holds Q)) (-> (not (proposition_holds P)) (proposition_holds Q))))
+  hard_negative:
+    statement: 「$P$または$Q$」は「$P$でないならば$Q$でない」と同値である。
+    reason: 結論側を否定してはいけない。$P$が偽で$Q$が真なら「$P$または$Q$」は真だが、「$P$でないならば$Q$でない」は偽である。
+  target: |
+    ∀ (P Q : Prop), (P ∨ Q) ↔ (¬P → Q)
+  proof: |
+    by
+      intro P Q
+      exact or_iff_not_imp_left

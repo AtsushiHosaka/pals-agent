@@ -1,0 +1,2124 @@
+- id: sin_sq_add_cos_sq
+  kind: named
+  level: high
+  topic: 三角比・基本の相互関係
+  statement: 任意の実数$x$について$\sin^2x+\cos^2x=1$である。
+  statement_en: For every real x, sin²x + cos²x = 1.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\sin^2x+\cos^2x=1$が成り立つ。
+  answer: |
+    $x$を実数とする。$\cos x,\sin x$は、角$x$の動径と単位円$u^2+v^2=1$の交点の座標$(u,v)=(\cos x,\sin x)$として定義される。この点は単位円上にあるので、円の方程式に代入すると$\cos^2x+\sin^2x=1$を得る。
+  strategy: Substitute the unit-circle coordinates of the angle into the circle equation.
+  sketch:
+  - 'setup: Take the point of the unit circle at angle x, whose coordinates are (cos x, sin x).'
+  - 'conclude: Substituting the coordinates into u² + v² = 1 gives the identity.'
+  openmath: (forall (x) (= (+ (^ (sin x) 2) (^ (cos x) 2)) 1))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin x+\cos x=1$である。
+    reason: $x=\pi/4$では左辺は$\sqrt{2}$である。成り立つのは平方の和についてである。
+  target: |
+    ∀ x : ℝ, Real.sin x ^ 2 + Real.cos x ^ 2 = 1
+  proof: |
+    by
+      intro x
+      exact Real.sin_sq_add_cos_sq x
+- id: one_add_tan_sq
+  kind: textbook
+  level: high
+  topic: 三角比・基本の相互関係
+  statement: 実数$x$が$\cos x\neq0$をみたすとき、$1+\tan^2x=\dfrac{1}{\cos^2x}$である。
+  statement_en: If x is real and cos x ≠ 0, then 1 + tan²x = 1/cos²x.
+  assumptions:
+  - $x$は実数
+  - $\cos x\neq0$
+  quantifiers:
+  - $\cos x\neq0$をみたす任意の実数$x$
+  conclusion: $1+\tan^2x=1/\cos^2x$が成り立つ。
+  answer: |
+    $x$を$\cos x\neq0$をみたす実数とする。$\tan x=\sin x/\cos x$であるから
+    $1+\tan^2x=\frac{\cos^2x+\sin^2x}{\cos^2x}=\frac{1}{\cos^2x}$
+    である。最後の等号には$\sin^2x+\cos^2x=1$を用いた。
+  strategy: Rewrite tan as sin over cos, put the sum over cos², and apply the Pythagorean identity.
+  sketch:
+  - 'setup: Assume cos x ≠ 0 so that tan x = sin x / cos x.'
+  - 'derive: 1 + tan²x = (cos²x + sin²x) / cos²x.'
+  - 'conclude: The numerator equals 1.'
+  openmath: (forall (x) (-> (!= (cos x) 0) (= (+ 1 (^ (tan x) 2)) (/ 1 (^ (cos x) 2)))))
+  hard_negative:
+    statement: 実数$x$が$\cos x\neq0$をみたすとき、$1-\tan^2x=\dfrac{1}{\cos^2x}$である。
+    reason: $x=\pi/4$では左辺は$0$、右辺は$2$である。
+  target: |
+    ∀ x : ℝ, Real.cos x ≠ 0 → 1 + Real.tan x ^ 2 = 1 / Real.cos x ^ 2
+  proof: |
+    by
+      intro x hx
+      have h := Real.sin_sq_add_cos_sq x
+      rw [Real.tan_eq_sin_div_cos]
+      field_simp
+      linarith
+- id: sin_mul_cos_of_add_eq
+  kind: gap
+  level: high
+  topic: 三角関数・和と積の置き換え
+  statement: 実数$x,t$が$\sin x+\cos x=t$をみたすとき、$\sin x\cos x=\dfrac{t^2-1}{2}$である。
+  statement_en: If x and t are real and sin x + cos x = t, then sin x cos x = (t² - 1)/2.
+  assumptions:
+  - $x,t$は実数
+  - $\sin x+\cos x=t$
+  quantifiers:
+  - $\sin x+\cos x=t$をみたす任意の実数$x,t$
+  conclusion: $\sin x\cos x=(t^2-1)/2$が成り立つ。
+  answer: |
+    $x,t$を$\sin x+\cos x=t$をみたす実数とする。両辺を2乗すると$\sin^2x+2\sin x\cos x+\cos^2x=t^2$である。$\sin^2x+\cos^2x=1$を代入すると$1+2\sin x\cos x=t^2$となり、$\sin x\cos x=(t^2-1)/2$を得る。
+  strategy: Square the defining relation and eliminate sin²x + cos²x.
+  sketch:
+  - 'setup: Assume sin x + cos x = t.'
+  - 'derive: Squaring gives sin²x + 2 sin x cos x + cos²x = t².'
+  - 'apply_theorem: Replace sin²x + cos²x by 1.'
+  - 'conclude: Solve for sin x cos x.'
+  openmath: (forall (x t) (-> (= (+ (sin x) (cos x)) t) (= (* (sin x) (cos x)) (/ (- (^ t 2) 1) 2))))
+  hard_negative:
+    statement: 実数$x,t$が$\sin x-\cos x=t$をみたすとき、$\sin x\cos x=\dfrac{t^2-1}{2}$である。
+    reason: $x=\pi/4$では$t=0$であり、左辺は$1/2$、右辺は$-1/2$である。差の場合は$(1-t^2)/2$になる。
+  target: |
+    ∀ x t : ℝ, Real.sin x + Real.cos x = t → Real.sin x * Real.cos x = (t ^ 2 - 1) / 2
+  proof: |
+    by
+      intro x t ht
+      subst ht
+      linear_combination (-1 / 2) * Real.sin_sq_add_cos_sq x
+- id: sin_cos_bounds
+  kind: textbook
+  level: high
+  topic: 三角関数・値域
+  statement: 任意の実数$x$について$-1\leq\sin x\leq1$かつ$-1\leq\cos x\leq1$である。
+  statement_en: For every real x, -1 ≤ sin x ≤ 1 and -1 ≤ cos x ≤ 1.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\sin x$と$\cos x$はともに$-1$以上$1$以下である。
+  answer: |
+    $x$を実数とする。$\sin^2x+\cos^2x=1$と$\cos^2x\geq0$から$\sin^2x\leq1$であり、したがって$-1\leq\sin x\leq1$である。$\sin$と$\cos$を入れ替えた同じ議論により$-1\leq\cos x\leq1$である。
+  strategy: Bound each square by the Pythagorean identity and take square roots.
+  sketch:
+  - 'apply_theorem: Use sin²x + cos²x = 1.'
+  - 'derive: Since cos²x ≥ 0, sin²x ≤ 1, hence |sin x| ≤ 1.'
+  - 'conclude: The same argument with the roles exchanged bounds cos x.'
+  openmath: (forall (x) (and (<= (neg 1) (sin x)) (<= (sin x) 1) (<= (neg 1) (cos x)) (<= (cos x) 1)))
+  hard_negative:
+    statement: $\cos x\neq0$をみたす任意の実数$x$について$-1\leq\tan x\leq1$である。
+    reason: $x=\pi/3$では$\tan x=\sqrt{3}>1$である。$\tan$の値域は実数全体である。
+  target: |
+    ∀ x : ℝ, -1 ≤ Real.sin x ∧ Real.sin x ≤ 1 ∧ -1 ≤ Real.cos x ∧ Real.cos x ≤ 1
+  proof: |
+    by
+      intro x
+      exact ⟨Real.neg_one_le_sin x, Real.sin_le_one x, Real.neg_one_le_cos x, Real.cos_le_one x⟩
+- id: sin_eq_sqrt_of_mem_interval
+  kind: gap
+  level: high
+  topic: 三角比・正弦と余弦の変換
+  statement: 実数$x$が$0\leq x\leq\pi$をみたすとき、$\sin x=\sqrt{1-\cos^2x}$である。この区間に限った形である。
+  statement_en: If 0 ≤ x ≤ π, then sin x = √(1 - cos²x). This form is restricted to that interval.
+  assumptions:
+  - $x$は実数
+  - $0\leq x\leq\pi$
+  quantifiers:
+  - $0\leq x\leq\pi$をみたす任意の実数$x$
+  conclusion: $\sin x=\sqrt{1-\cos^2x}$が成り立つ。
+  answer: |
+    $x$を$0\leq x\leq\pi$をみたす実数とする。$\sin^2x+\cos^2x=1$より$1-\cos^2x=\sin^2x$である。この区間では$\sin x\geq0$なので、$\sqrt{\sin^2x}=\sin x$となる。よって$\sin x=\sqrt{1-\cos^2x}$である。
+  strategy: Use the Pythagorean identity and the nonnegativity of sine on [0, π] to remove the square root.
+  sketch:
+  - 'apply_theorem: The Pythagorean identity gives 1 - cos²x = sin²x.'
+  - 'derive: On [0, π] we have sin x ≥ 0.'
+  - 'conclude: So the square root of sin²x equals sin x.'
+  openmath: (forall (x) (-> (and (<= 0 x) (<= x pi)) (= (sin x) (root (- 1 (^ (cos x) 2)) 2))))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin x=\sqrt{1-\cos^2x}$である。
+    reason: $x=-\pi/2$では左辺は$-1$、右辺は$1$である。一般には$|\sin x|=\sqrt{1-\cos^2x}$である。
+  target: |
+    ∀ x : ℝ, 0 ≤ x → x ≤ Real.pi → Real.sin x = Real.sqrt (1 - Real.cos x ^ 2)
+  proof: |
+    by
+      intro x h0 hpi
+      have hs : 0 ≤ Real.sin x := Real.sin_nonneg_of_nonneg_of_le_pi h0 hpi
+      have h : 1 - Real.cos x ^ 2 = Real.sin x ^ 2 := by linarith [Real.sin_sq_add_cos_sq x]
+      rw [h, Real.sqrt_sq hs]
+- id: exists_angle_of_unit_circle
+  kind: gap
+  level: high
+  topic: 三角関数・単位円の媒介変数表示
+  statement: 実数$a,b$が$a^2+b^2=1$をみたすとき、$a=\cos\theta$かつ$b=\sin\theta$となる実数$\theta$が存在する。
+  statement_en: If a and b are real with a² + b² = 1, then there is a real θ with a = cos θ and b = sin θ.
+  assumptions:
+  - $a,b$は実数
+  - $a^2+b^2=1$
+  quantifiers:
+  - $a^2+b^2=1$をみたす任意の実数$a,b$
+  - ある実数$\theta$
+  conclusion: $a=\cos\theta$かつ$b=\sin\theta$となる$\theta$が存在する。
+  answer: |
+    $a,b$を$a^2+b^2=1$をみたす実数とする。$a^2\leq1$より$-1\leq a\leq1$である。$\cos$は$[0,\pi]$で連続であり$\cos0=1$、$\cos\pi=-1$なので、中間値の定理により$\cos t=a$となる$t\in[0,\pi]$がとれる。この$t$について$\sin t\geq0$であり、$\sin^2t=1-a^2=b^2$であるから$\sin t=|b|$である。$b\geq0$なら$\theta=t$とおき、$b<0$なら$\theta=-t$とおく。どちらの場合も$\cos\theta=\cos t=a$であり、$\sin\theta=b$である。
+  strategy: Choose t in [0, π] with cos t = a and fix the sign of sine by replacing t with -t if needed.
+  sketch:
+  - 'derive: The relation forces -1 ≤ a ≤ 1.'
+  - 'apply_theorem: The intermediate value theorem gives t in [0, π] with cos t = a.'
+  - 'derive: sin t ≥ 0 and sin²t = b², so sin t = |b|.'
+  - 'case_split: Take θ = t if b ≥ 0 and θ = -t if b < 0.'
+  - 'conclude: Both coordinates match.'
+  openmath: (forall (a b) (-> (= (+ (^ a 2) (^ b 2)) 1) (exists (t) (and (= a (cos t)) (= b (sin t))))))
+  hard_negative:
+    statement: 実数$a,b$が$a^2+b^2=1$をみたすとき、$a=\cos\theta$かつ$b=\sin\theta$となる$\theta$を$0\leq\theta\leq\pi$の範囲でとれる。
+    reason: $(a,b)=(0,-1)$では$\sin\theta=-1$が必要だが、$0\leq\theta\leq\pi$では$\sin\theta\geq0$である。
+  target: |
+    ∀ a b : ℝ, a ^ 2 + b ^ 2 = 1 → ∃ θ : ℝ, a = Real.cos θ ∧ b = Real.sin θ
+  proof: |
+    by
+      intro a b h
+      have hn : ‖(⟨a, b⟩ : ℂ)‖ = 1 := by
+        rw [Complex.norm_def, Complex.normSq_apply]
+        have : a * a + b * b = 1 := by nlinarith
+        simp [this]
+      refine ⟨Complex.arg ⟨a, b⟩, ?_, ?_⟩
+      · have := Complex.norm_mul_cos_arg (⟨a, b⟩ : ℂ)
+        rw [hn, one_mul] at this
+        exact this.symm
+      · have := Complex.norm_mul_sin_arg (⟨a, b⟩ : ℂ)
+        rw [hn, one_mul] at this
+        exact this.symm
+- id: sin_cos_pi_div_two_sub
+  kind: gap
+  level: high
+  topic: 三角比・余角
+  statement: 任意の実数$x$について$\sin\left(\dfrac{\pi}{2}-x\right)=\cos x$かつ$\cos\left(\dfrac{\pi}{2}-x\right)=\sin x$である。
+  statement_en: For every real x, sin(π/2 - x) = cos x and cos(π/2 - x) = sin x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: 余角の正弦は余弦に、余角の余弦は正弦に等しい。
+  answer: |
+    $x$を実数とする。加法定理と$\sin(\pi/2)=1$、$\cos(\pi/2)=0$より
+    $\sin\left(\frac{\pi}{2}-x\right)=\sin\frac{\pi}{2}\cos x-\cos\frac{\pi}{2}\sin x=\cos x,$
+    $\cos\left(\frac{\pi}{2}-x\right)=\cos\frac{\pi}{2}\cos x+\sin\frac{\pi}{2}\sin x=\sin x$
+    である。
+  strategy: Expand with the subtraction formulas and the values at π/2.
+  sketch:
+  - 'apply_theorem: Apply the subtraction formulas to π/2 - x.'
+  - 'derive: Substitute sin(π/2) = 1 and cos(π/2) = 0.'
+  - 'conclude: Both identities follow.'
+  openmath: (forall (x) (and (= (sin (- (/ pi 2) x)) (cos x)) (= (cos (- (/ pi 2) x)) (sin x))))
+  hard_negative:
+    statement: 任意の実数$x$について$\cos\left(\dfrac{\pi}{2}+x\right)=\sin x$である。
+    reason: $x=\pi/2$では左辺は$-1$、右辺は$1$である。正しくは$\cos(\pi/2+x)=-\sin x$である。
+  target: |
+    ∀ x : ℝ, Real.sin (Real.pi / 2 - x) = Real.cos x ∧ Real.cos (Real.pi / 2 - x) = Real.sin x
+  proof: |
+    by
+      intro x
+      exact ⟨Real.sin_pi_div_two_sub x, Real.cos_pi_div_two_sub x⟩
+- id: tan_pi_div_two_sub
+  kind: gap
+  level: high
+  topic: 三角比・余角
+  statement: 実数$x$が$\sin x\neq0$かつ$\cos x\neq0$をみたすとき、$\tan\left(\dfrac{\pi}{2}-x\right)=\dfrac{1}{\tan x}$である。
+  statement_en: If x is real with sin x ≠ 0 and cos x ≠ 0, then tan(π/2 - x) = 1/tan x.
+  assumptions:
+  - $x$は実数
+  - $\sin x\neq0$
+  - $\cos x\neq0$
+  quantifiers:
+  - $\sin x\neq0$かつ$\cos x\neq0$をみたす任意の実数$x$
+  conclusion: 余角の正接は正接の逆数に等しい。
+  answer: |
+    $x$を$\sin x\neq0$かつ$\cos x\neq0$をみたす実数とする。$\sin(\pi/2-x)=\cos x$、$\cos(\pi/2-x)=\sin x$であり、$\cos(\pi/2-x)\neq0$なので
+    $\tan\left(\frac{\pi}{2}-x\right)=\frac{\cos x}{\sin x}=\frac{1}{\sin x/\cos x}=\frac{1}{\tan x}$
+    である。
+  strategy: Write the tangent as a quotient and apply the complementary-angle formulas.
+  sketch:
+  - 'setup: Assume sin x and cos x are nonzero, so all the quotients are defined.'
+  - 'apply_theorem: sin(π/2 - x) = cos x and cos(π/2 - x) = sin x.'
+  - 'conclude: The quotient is cos x / sin x = 1 / tan x.'
+  openmath: (forall (x) (-> (and (!= (sin x) 0) (!= (cos x) 0)) (= (tan (- (/ pi 2) x)) (/ 1 (tan x)))))
+  hard_negative:
+    statement: $\sin x\neq0$かつ$\cos x\neq0$をみたす実数$x$について$\tan\left(\dfrac{\pi}{2}-x\right)=\tan x$である。
+    reason: 余角では正接は逆数になる。$x=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが$\tan(\pi/6)=1/\sqrt{3}$であり一致しない。等しくなるのは$\tan x=\pm1$のときに限る。
+  target: |
+    ∀ x : ℝ, Real.sin x ≠ 0 → Real.cos x ≠ 0 → Real.tan (Real.pi / 2 - x) = 1 / Real.tan x
+  proof: |
+    by
+      intro x _ _
+      rw [Real.tan_pi_div_two_sub, one_div]
+- id: sin_cos_tan_pi_sub
+  kind: gap
+  level: high
+  topic: 三角比・補角
+  statement: 任意の実数$x$について$\sin(\pi-x)=\sin x$かつ$\cos(\pi-x)=-\cos x$であり、$\cos x\neq0$ならば$\tan(\pi-x)=-\tan x$である。
+  statement_en: For every real x, sin(π - x) = sin x and cos(π - x) = -cos x, and if cos x ≠ 0 then tan(π - x) = -tan x.
+  assumptions:
+  - $x$は実数
+  - $\tan$の式については$\cos x\neq0$
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: 補角の正弦は等しく、余弦と正接は符号が反転する。
+  answer: |
+    $x$を実数とする。加法定理と$\sin\pi=0$、$\cos\pi=-1$より
+    $\sin(\pi-x)=\sin\pi\cos x-\cos\pi\sin x=\sin x,$
+    $\cos(\pi-x)=\cos\pi\cos x+\sin\pi\sin x=-\cos x$
+    である。$\cos x\neq0$のときは$\cos(\pi-x)\neq0$であり、$\tan(\pi-x)=\sin x/(-\cos x)=-\tan x$となる。
+  strategy: Expand with the subtraction formulas at π and divide.
+  sketch:
+  - 'apply_theorem: Apply the subtraction formulas to π - x.'
+  - 'derive: Substitute sin π = 0 and cos π = -1.'
+  - 'derive: If cos x ≠ 0, divide the sine by the cosine.'
+  - 'conclude: This gives all three identities.'
+  openmath: (forall (x) (and (= (sin (- pi x)) (sin x)) (= (cos (- pi x)) (neg (cos x))) (-> (!= (cos x) 0) (= (tan (- pi x)) (neg (tan x))))))
+  hard_negative:
+    statement: $\cos x\neq0$をみたす任意の実数$x$について$\tan(\pi-x)=\tan x$である。
+    reason: $x=\pi/4$では左辺は$-1$、右辺は$1$である。周期の式$\tan(\pi+x)=\tan x$と混同している。
+  target: |
+    ∀ x : ℝ, Real.sin (Real.pi - x) = Real.sin x ∧ Real.cos (Real.pi - x) = -Real.cos x ∧ (Real.cos x ≠ 0 → Real.tan (Real.pi - x) = -Real.tan x)
+  proof: |
+    by
+      intro x
+      exact ⟨Real.sin_pi_sub x, Real.cos_pi_sub x, fun _ => Real.tan_pi_sub x⟩
+- id: sin_cos_shift_half_pi_pi
+  kind: gap
+  level: high
+  topic: 三角関数・角の平行移動
+  statement: 任意の実数$x$について$\sin\left(x+\dfrac{\pi}{2}\right)=\cos x$、$\cos\left(x+\dfrac{\pi}{2}\right)=-\sin x$、$\sin(x+\pi)=-\sin x$、$\cos(x+\pi)=-\cos x$である。
+  statement_en: For every real x, sin(x + π/2) = cos x, cos(x + π/2) = -sin x, sin(x + π) = -sin x and cos(x + π) = -cos x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: 角に$\pi/2$または$\pi$を加えたときの正弦と余弦は上の4式で表される。
+  answer: |
+    $x$を実数とする。加法定理に$\sin(\pi/2)=1$、$\cos(\pi/2)=0$を代入すると
+    $\sin(x+\pi/2)=\cos x$、$\cos(x+\pi/2)=-\sin x$である。同様に$\sin\pi=0$、$\cos\pi=-1$を代入すると$\sin(x+\pi)=-\sin x$、$\cos(x+\pi)=-\cos x$である。
+  strategy: Expand with the addition formulas and the values at π/2 and π.
+  sketch:
+  - 'apply_theorem: Apply the addition formulas with second angle π/2.'
+  - 'apply_theorem: Apply the addition formulas with second angle π.'
+  - 'conclude: Substitute the values of sine and cosine at those angles.'
+  openmath: (forall (x) (and (= (sin (+ x (/ pi 2))) (cos x)) (= (cos (+ x (/ pi 2))) (neg (sin x))) (= (sin (+ x pi)) (neg (sin x))) (= (cos (+ x pi)) (neg (cos x)))))
+  hard_negative:
+    statement: 任意の実数$x$について$\cos\left(x+\dfrac{\pi}{2}\right)=\sin x$である。
+    reason: $x=\pi/2$では左辺は$-1$、右辺は$1$である。符号が逆である。
+  target: |
+    ∀ x : ℝ, Real.sin (x + Real.pi / 2) = Real.cos x ∧ Real.cos (x + Real.pi / 2) = -Real.sin x ∧ Real.sin (x + Real.pi) = -Real.sin x ∧ Real.cos (x + Real.pi) = -Real.cos x
+  proof: |
+    by
+      intro x
+      exact ⟨Real.sin_add_pi_div_two x, Real.cos_add_pi_div_two x, Real.sin_add_pi x, Real.cos_add_pi x⟩
+- id: angle_sum_pi_sin_cos
+  kind: gap
+  level: high
+  topic: 三角比・和が π の三つの角
+  statement: 実数$A,B,C$が$A+B+C=\pi$をみたすとき、$\sin(A+B)=\sin C$、$\cos(A+B)=-\cos C$、$\sin\dfrac{A+B}{2}=\cos\dfrac{C}{2}$、$\cos\dfrac{A+B}{2}=\sin\dfrac{C}{2}$である。
+  statement_en: If A, B, C are real with A + B + C = π, then sin(A+B) = sin C, cos(A+B) = -cos C, sin((A+B)/2) = cos(C/2) and cos((A+B)/2) = sin(C/2).
+  assumptions:
+  - $A,B,C$は実数
+  - $A+B+C=\pi$
+  quantifiers:
+  - $A+B+C=\pi$をみたす任意の実数$A,B,C$
+  conclusion: $A+B$の三角関数を$C$で表す4つの等式が成り立つ。
+  answer: |
+    $A,B,C$を$A+B+C=\pi$をみたす実数とする。$A+B=\pi-C$であるから、補角の公式により$\sin(A+B)=\sin C$、$\cos(A+B)=-\cos C$である。また$(A+B)/2=\pi/2-C/2$であるから、余角の公式により$\sin((A+B)/2)=\cos(C/2)$、$\cos((A+B)/2)=\sin(C/2)$である。
+  strategy: Rewrite A + B as π - C and apply the supplementary and complementary angle formulas.
+  sketch:
+  - 'translate: A + B = π - C and (A + B)/2 = π/2 - C/2.'
+  - 'apply_theorem: Use the supplementary angle formulas for A + B.'
+  - 'apply_theorem: Use the complementary angle formulas for (A + B)/2.'
+  - 'conclude: The four identities follow.'
+  openmath: (forall (a b c) (-> (= (+ (+ a b) c) pi) (and (= (sin (+ a b)) (sin c)) (= (cos (+ a b)) (neg (cos c))) (= (sin (/ (+ a b) 2)) (cos (/ c 2))) (= (cos (/ (+ a b) 2)) (sin (/ c 2))))))
+  hard_negative:
+    statement: 実数$A,B,C$が$A+B+C=2\pi$をみたすとき、$\sin(A+B)=\sin C$である。
+    reason: $A=B=C=2\pi/3$では左辺は$-\sqrt{3}/2$、右辺は$\sqrt{3}/2$である。和が$2\pi$のときは$\sin(A+B)=-\sin C$である。
+  target: |
+    ∀ A B C : ℝ, A + B + C = Real.pi → Real.sin (A + B) = Real.sin C ∧ Real.cos (A + B) = -Real.cos C ∧ Real.sin ((A + B) / 2) = Real.cos (C / 2) ∧ Real.cos ((A + B) / 2) = Real.sin (C / 2)
+  proof: |
+    by
+      intro A B C h
+      have h1 : A + B = Real.pi - C := by linarith
+      have h2 : (A + B) / 2 = Real.pi / 2 - C / 2 := by rw [h1]; ring
+      rw [h2, h1]
+      exact ⟨Real.sin_pi_sub C, Real.cos_pi_sub C, Real.sin_pi_div_two_sub _, Real.cos_pi_div_two_sub _⟩
+- id: sin_cos_add_two_int_pi
+  kind: gap
+  level: high
+  topic: 三角関数・周期
+  statement: 任意の実数$x$と整数$n$について$\sin(x+2n\pi)=\sin x$かつ$\cos(x+2n\pi)=\cos x$である。
+  statement_en: For every real x and integer n, sin(x + 2nπ) = sin x and cos(x + 2nπ) = cos x.
+  assumptions:
+  - $x$は実数
+  - $n$は整数
+  quantifiers:
+  - 任意の実数$x$と整数$n$
+  conclusion: $\sin$と$\cos$は$2n\pi$の平行移動で不変である。
+  answer: |
+    $x$を実数、$n$を整数とする。$\sin 2\pi=0$、$\cos 2\pi=1$と加法定理から、任意の実数$y$について$\sin(y+2\pi)=\sin y$、$\cos(y+2\pi)=\cos y$である。$y$を$y-2\pi$に置き換えれば$\sin(y-2\pi)=\sin y$、$\cos(y-2\pi)=\cos y$も得られる。$n\geq0$のときは前者を$n$回、$n<0$のときは後者を$-n$回繰り返すと、結論を得る。
+  strategy: Prove invariance under ±2π by the addition formulas and iterate over the integer n.
+  sketch:
+  - 'apply_theorem: The addition formulas with sin 2π = 0 and cos 2π = 1 give period 2π.'
+  - 'derive: Replacing y by y - 2π handles the negative direction.'
+  - 'induction: Iterate |n| times.'
+  - 'conclude: The value at x + 2nπ equals the value at x.'
+  openmath: (forall (x n) (-> (in n Z) (and (= (sin (+ x (* (* 2 n) pi))) (sin x)) (= (cos (+ x (* (* 2 n) pi))) (cos x)))))
+  hard_negative:
+    statement: 任意の実数$x$と整数$n$について$\sin(x+n\pi)=\sin x$である。
+    reason: $x=\pi/2$、$n=1$では左辺は$-1$、右辺は$1$である。$\pi$は$\sin$の周期ではない。
+  target: |
+    ∀ (x : ℝ) (n : ℤ), Real.sin (x + 2 * n * Real.pi) = Real.sin x ∧ Real.cos (x + 2 * n * Real.pi) = Real.cos x
+  proof: |
+    by
+      intro x n
+      have h : x + 2 * (n : ℝ) * Real.pi = x + n * (2 * Real.pi) := by ring
+      rw [h]
+      exact ⟨Real.sin_add_int_mul_two_pi x n, Real.cos_add_int_mul_two_pi x n⟩
+- id: tan_add_int_mul_pi
+  kind: gap
+  level: high
+  topic: 三角関数・周期
+  statement: 実数$x$が$\cos x\neq0$をみたし、$n$が整数のとき、$\tan(x+n\pi)=\tan x$である。
+  statement_en: If x is real with cos x ≠ 0 and n is an integer, then tan(x + nπ) = tan x.
+  assumptions:
+  - $x$は実数
+  - $\cos x\neq0$
+  - $n$は整数
+  quantifiers:
+  - $\cos x\neq0$をみたす任意の実数$x$と任意の整数$n$
+  conclusion: $\tan$は$n\pi$の平行移動で不変である。
+  answer: |
+    $x$を$\cos x\neq0$をみたす実数、$n$を整数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$、$\cos(y+\pi)=-\cos y$であり、$y$を$y-\pi$に置き換えると$\sin(y-\pi)=-\sin y$、$\cos(y-\pi)=-\cos y$でもある。$n\geq0$なら前者を、$n<0$なら後者を$|n|$回繰り返すと$\sin(x+n\pi)=(-1)^n\sin x$、$\cos(x+n\pi)=(-1)^n\cos x$である。$\cos(x+n\pi)\neq0$であり、割り算で$(-1)^n$が消えるので$\tan(x+n\pi)=\sin x/\cos x=\tan x$である。
+  strategy: Shifting by nπ multiplies both sine and cosine by (-1)^n, which cancels in the quotient.
+  sketch:
+  - 'setup: Assume cos x ≠ 0.'
+  - 'derive: Iterating the shift by π gives the factor (-1)^n on both sine and cosine.'
+  - 'derive: In particular cos(x + nπ) ≠ 0.'
+  - 'conclude: The factor cancels in the quotient.'
+  openmath: (forall (x n) (-> (and (!= (cos x) 0) (in n Z)) (= (tan (+ x (* n pi))) (tan x))))
+  hard_negative:
+    statement: 実数$x$が$\cos x\neq0$かつ$\sin x\neq0$をみたし、$n$が整数のとき、$\tan\left(x+\dfrac{n\pi}{2}\right)=\tan x$である。
+    reason: $x=\pi/4$、$n=1$では左辺は$\tan(3\pi/4)=-1$、右辺は$1$である。$\tan$の周期は$\pi$である。
+  target: |
+    ∀ (x : ℝ) (n : ℤ), Real.cos x ≠ 0 → Real.tan (x + n * Real.pi) = Real.tan x
+  proof: |
+    by
+      intro x n _
+      exact Real.tan_add_int_mul_pi x n
+- id: sin_cos_tan_parity
+  kind: textbook
+  level: high
+  topic: 三角関数・偶奇
+  statement: 任意の実数$x$について$\sin(-x)=-\sin x$かつ$\cos(-x)=\cos x$であり、$\cos x\neq0$ならば$\tan(-x)=-\tan x$である。
+  statement_en: For every real x, sin(-x) = -sin x and cos(-x) = cos x, and if cos x ≠ 0 then tan(-x) = -tan x.
+  assumptions:
+  - $x$は実数
+  - $\tan$の式については$\cos x\neq0$
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\sin$と$\tan$は奇関数、$\cos$は偶関数である。
+  answer: |
+    $x$を実数とする。角$x$の単位円上の点$(\cos x,\sin x)$と角$-x$の点は第1座標の軸について対称なので、$\cos(-x)=\cos x$、$\sin(-x)=-\sin x$である。$\cos x\neq0$のときは$\cos(-x)\neq0$であり、$\tan(-x)=-\sin x/\cos x=-\tan x$である。
+  strategy: Reflect the unit-circle point across the first axis and divide.
+  sketch:
+  - 'setup: Compare the unit-circle points at angles x and -x.'
+  - 'derive: They are mirror images across the first axis, so cosine agrees and sine changes sign.'
+  - 'conclude: If cos x ≠ 0, the quotient changes sign.'
+  openmath: (forall (x) (and (= (sin (neg x)) (neg (sin x))) (= (cos (neg x)) (cos x)) (-> (!= (cos x) 0) (= (tan (neg x)) (neg (tan x))))))
+  hard_negative:
+    statement: 任意の実数$x$について$\cos(-x)=-\cos x$である。
+    reason: $x=0$では左辺は$1$、右辺は$-1$である。$\cos$は奇関数ではなく偶関数である。
+  target: |
+    ∀ x : ℝ, Real.sin (-x) = -Real.sin x ∧ Real.cos (-x) = Real.cos x ∧ (Real.cos x ≠ 0 → Real.tan (-x) = -Real.tan x)
+  proof: |
+    by
+      intro x
+      exact ⟨Real.sin_neg x, Real.cos_neg x, fun _ => Real.tan_neg x⟩
+- id: sin_cos_int_mul_pi
+  kind: gap
+  level: high
+  topic: 三角関数・整数倍の角の値
+  statement: 任意の整数$n$について$\sin n\pi=0$かつ$\cos n\pi=(-1)^n$である。
+  statement_en: For every integer n, sin nπ = 0 and cos nπ = (-1)^n.
+  assumptions:
+  - $n$は整数
+  quantifiers:
+  - 任意の整数$n$
+  conclusion: $\sin n\pi=0$かつ$\cos n\pi=(-1)^n$が成り立つ。
+  answer: |
+    $n$を整数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$、$\cos(y+\pi)=-\cos y$であり、$\sin0=0$、$\cos0=1$である。$y=0$から始めて角を$\pi$ずつ動かすと、正の向きでも負の向きでも1回ごとに符号が反転する。したがって$\sin n\pi=(-1)^n\sin0=0$、$\cos n\pi=(-1)^n\cos0=(-1)^n$である。
+  strategy: Induct on the integer n using the shift formulas for π.
+  sketch:
+  - 'setup: Start from sin 0 = 0 and cos 0 = 1.'
+  - 'induction: Each shift by ±π changes both signs.'
+  - 'conclude: After n shifts the values are 0 and (-1)^n.'
+  openmath: (forall (n) (-> (in n Z) (and (= (sin (* n pi)) 0) (= (cos (* n pi)) (^ (neg 1) n)))))
+  hard_negative:
+    statement: 任意の整数$n$について$\cos n\pi=1$である。
+    reason: $n=1$では$\cos\pi=-1$である。$\cos n\pi=1$となるのは$n$が偶数のときに限る。
+  target: |
+    ∀ n : ℤ, Real.sin (n * Real.pi) = 0 ∧ Real.cos (n * Real.pi) = (-1 : ℝ) ^ n
+  proof: |
+    by
+      intro n
+      exact ⟨Real.sin_int_mul_pi n, Real.cos_int_mul_pi n⟩
+- id: sinusoid_period
+  kind: gap
+  level: high
+  topic: 三角関数・周期
+  statement: 実数$a,\omega,b,x$について$\omega\neq0$のとき、$a\sin\left(\omega\left(x+\dfrac{2\pi}{\omega}\right)+b\right)=a\sin(\omega x+b)$である。すなわち$2\pi/\omega$は周期の一つであり、最小周期が$2\pi/|\omega|$であるという主張は含まない。
+  statement_en: For real a, ω, b, x with ω ≠ 0, a sin(ω(x + 2π/ω) + b) = a sin(ωx + b). This says 2π/ω is a period; it does not claim minimality (least period 2π/|ω|).
+  assumptions:
+  - $a,\omega,b,x$は実数
+  - $\omega\neq0$
+  quantifiers:
+  - $\omega\neq0$をみたす任意の実数$a,\omega,b,x$
+  conclusion: $x\mapsto a\sin(\omega x+b)$は$2\pi/\omega$を周期にもつ。
+  answer: |
+    $a,\omega,b,x$を実数とし、$\omega\neq0$とする。$\omega(x+2\pi/\omega)+b=(\omega x+b)+2\pi$であり、$\sin$は$2\pi$を周期にもつので、$\sin(\omega(x+2\pi/\omega)+b)=\sin(\omega x+b)$である。両辺に$a$を掛ければ結論を得る。
+  strategy: Distribute ω inside the argument so the shift becomes exactly 2π.
+  sketch:
+  - 'setup: Assume ω ≠ 0 so that 2π/ω is defined.'
+  - 'derive: The argument equals (ωx + b) + 2π.'
+  - 'apply_theorem: Sine has period 2π.'
+  - 'conclude: Multiply both sides by a.'
+  openmath: (forall (a w b x) (-> (!= w 0) (= (* a (sin (+ (* w (+ x (/ (* 2 pi) w))) b))) (* a (sin (+ (* w x) b))))))
+  hard_negative:
+    statement: 実数$a,\omega,b,x$について$a\sin(\omega(x+2\pi)+b)=a\sin(\omega x+b)$である。
+    reason: $a=1$、$\omega=1/2$、$b=0$、$x=\pi$では左辺は$\sin(3\pi/2)=-1$、右辺は$\sin(\pi/2)=1$である。周期は$\omega$に依存する。
+  target: |
+    ∀ a w b x : ℝ, w ≠ 0 → a * Real.sin (w * (x + 2 * Real.pi / w) + b) = a * Real.sin (w * x + b)
+  proof: |
+    by
+      intro a w b x hw
+      have h : w * (x + 2 * Real.pi / w) + b = (w * x + b) + 2 * Real.pi := by
+        field_simp
+        ring
+      rw [h, Real.sin_add_two_pi]
+- id: sin_period_ge_two_pi
+  kind: gap
+  level: high
+  topic: 三角関数・基本周期
+  statement: 正の実数$T$が任意の実数$x$について$\sin(x+T)=\sin x$をみたすならば、$T\geq2\pi$である。
+  statement_en: If T > 0 and sin(x + T) = sin x for every real x, then T ≥ 2π.
+  assumptions:
+  - $T$は正の実数
+  - 任意の実数$x$について$\sin(x+T)=\sin x$
+  quantifiers:
+  - 上の条件をみたす任意の正の実数$T$
+  conclusion: $T\geq2\pi$である。
+  answer: |
+    $T$を正の実数とし、任意の実数$x$について$\sin(x+T)=\sin x$が成り立つとする。$0<T<2\pi$と仮定して矛盾を導く。$x=\pi/2$を代入すると、$\sin(\pi/2+T)=\cos T$なので$\cos T=1$である。一方、倍角の公式より$\cos T=1-2\sin^2(T/2)$であり、$0<T/2<\pi$から$\sin(T/2)>0$なので$\cos T<1$である。これは矛盾である。よって$T\geq2\pi$である。
+  strategy: Evaluate at x = π/2 to force cos T = 1, which is impossible on (0, 2π).
+  sketch:
+  - 'contradiction: Assume 0 < T < 2π.'
+  - 'derive: Taking x = π/2 gives cos T = 1.'
+  - 'apply_theorem: cos T = 1 - 2 sin²(T/2) by the double-angle formula.'
+  - 'derive: 0 < T/2 < π gives sin(T/2) > 0, so cos T < 1.'
+  - 'conclude: This contradicts cos T = 1.'
+  openmath: (forall (T) (-> (and (> T 0) (forall (x) (= (sin (+ x T)) (sin x)))) (<= (* 2 pi) T)))
+  hard_negative:
+    statement: 正の実数$T$が任意の実数$x$について$|\sin(x+T)|=|\sin x|$をみたすならば、$T\geq2\pi$である。
+    reason: $T=\pi$は条件をみたすが$\pi<2\pi$である。$|\sin x|$の周期は$\pi$である。
+  target: |
+    ∀ T : ℝ, 0 < T → (∀ x : ℝ, Real.sin (x + T) = Real.sin x) → 2 * Real.pi ≤ T
+  proof: |
+    by
+      intro T hT h
+      by_contra hlt
+      have hlt' : T < 2 * Real.pi := not_le.mp hlt
+      have h1 := h (Real.pi / 2)
+      have h2 : Real.sin (Real.pi / 2 + T) = Real.cos T := by
+        rw [add_comm, Real.sin_add_pi_div_two]
+      rw [h2, Real.sin_pi_div_two] at h1
+      have hneg : -(2 * Real.pi) < T := by linarith [Real.pi_pos]
+      have := (Real.cos_eq_one_iff_of_lt_of_lt hneg hlt').mp h1
+      linarith
+- id: sin_cos_sub
+  kind: textbook
+  level: high
+  topic: 三角関数・加法定理
+  statement: 任意の実数$x,y$について$\sin(x-y)=\sin x\cos y-\cos x\sin y$かつ$\cos(x-y)=\cos x\cos y+\sin x\sin y$である。
+  statement_en: For all real x, y, sin(x-y) = sin x cos y - cos x sin y and cos(x-y) = cos x cos y + sin x sin y.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 差の角の正弦と余弦の公式が成り立つ。
+  answer: |
+    $x,y$を実数とする。和の加法定理$\sin(x+z)=\sin x\cos z+\cos x\sin z$、$\cos(x+z)=\cos x\cos z-\sin x\sin z$で$z=-y$とおく。$\cos(-y)=\cos y$、$\sin(-y)=-\sin y$を代入すると結論を得る。
+  strategy: Apply the sum formulas to x + (-y) and use the parity of sine and cosine.
+  sketch:
+  - 'apply_theorem: Use the sum formulas with second angle -y.'
+  - 'derive: Substitute cos(-y) = cos y and sin(-y) = -sin y.'
+  - 'conclude: The difference formulas follow.'
+  openmath: (forall (x y) (and (= (sin (- x y)) (- (* (sin x) (cos y)) (* (cos x) (sin y)))) (= (cos (- x y)) (+ (* (cos x) (cos y)) (* (sin x) (sin y))))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\cos(x-y)=\cos x\cos y-\sin x\sin y$である。
+    reason: $x=y=\pi/2$では左辺は$1$、右辺は$-1$である。差の角では符号が和の角と逆になる。
+  target: |
+    ∀ x y : ℝ, Real.sin (x - y) = Real.sin x * Real.cos y - Real.cos x * Real.sin y ∧ Real.cos (x - y) = Real.cos x * Real.cos y + Real.sin x * Real.sin y
+  proof: |
+    by
+      intro x y
+      exact ⟨Real.sin_sub x y, Real.cos_sub x y⟩
+- id: tan_add_formula
+  kind: named
+  level: high
+  topic: 三角関数・正接の加法定理
+  statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)\neq0$をみたすとき、$\tan(x+y)=\dfrac{\tan x+\tan y}{1-\tan x\tan y}$である。
+  statement_en: If x, y are real with cos x ≠ 0, cos y ≠ 0 and cos(x+y) ≠ 0, then tan(x+y) = (tan x + tan y)/(1 - tan x tan y).
+  assumptions:
+  - $x,y$は実数
+  - $\cos x\neq0$
+  - $\cos y\neq0$
+  - $\cos(x+y)\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: 和の角の正接の公式が成り立つ。
+  answer: |
+    $x,y$を$\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)\neq0$をみたす実数とする。加法定理より
+    $\tan(x+y)=\dfrac{\sin x\cos y+\cos x\sin y}{\cos x\cos y-\sin x\sin y}$である。ここで分母は$\cos(x+y)\neq0$である。分子と分母を$\cos x\cos y\neq0$で割ると、分子は$\tan x+\tan y$、分母は$1-\tan x\tan y$となる。分母の$1-\tan x\tan y=\cos(x+y)/(\cos x\cos y)$は$0$でない。よって結論を得る。
+  strategy: Write tan(x+y) as a quotient via the addition formulas and divide by cos x cos y.
+  sketch:
+  - 'setup: Assume cos x, cos y and cos(x+y) are nonzero.'
+  - 'apply_theorem: Expand the numerator and denominator by the addition formulas.'
+  - 'derive: Divide both by cos x cos y.'
+  - 'derive: The new denominator 1 - tan x tan y equals cos(x+y)/(cos x cos y), which is nonzero.'
+  - 'conclude: The quotient is the claimed formula.'
+  openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0) (!= (cos (+ x y)) 0)) (= (tan (+ x y)) (/ (+ (tan x) (tan y)) (- 1 (* (tan x) (tan y)))))))
+  hard_negative:
+    statement: $\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)\neq0$のとき$\tan(x+y)=\dfrac{\tan x+\tan y}{1+\tan x\tan y}$である。
+    reason: 分母の符号が違う。$x=y=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが、右辺は$\dfrac{2/\sqrt3}{4/3}=\dfrac{\sqrt3}{2}$である。
+  target: |
+    ∀ x y : ℝ, Real.cos x ≠ 0 → Real.cos y ≠ 0 → Real.cos (x + y) ≠ 0 → Real.tan (x + y) = (Real.tan x + Real.tan y) / (1 - Real.tan x * Real.tan y)
+  proof: |
+    by
+      intro x y hx hy hxy
+      have hd : Real.cos x * Real.cos y - Real.sin x * Real.sin y ≠ 0 := by rwa [← Real.cos_add]
+      have h1 : 1 - Real.tan x * Real.tan y = (Real.cos x * Real.cos y - Real.sin x * Real.sin y) / (Real.cos x * Real.cos y) := by
+        rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos]
+        field_simp
+      have h2 : Real.tan x + Real.tan y = (Real.sin x * Real.cos y + Real.cos x * Real.sin y) / (Real.cos x * Real.cos y) := by
+        rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos]
+        field_simp
+      rw [h1, h2, Real.tan_eq_sin_div_cos, Real.sin_add, Real.cos_add]
+      field_simp
+- id: tan_sub_formula
+  kind: textbook
+  level: high
+  topic: 三角関数・正接の加法定理
+  statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$、$\cos(x-y)\neq0$をみたすとき、$\tan(x-y)=\dfrac{\tan x-\tan y}{1+\tan x\tan y}$である。
+  statement_en: If x, y are real with cos x ≠ 0, cos y ≠ 0 and cos(x-y) ≠ 0, then tan(x-y) = (tan x - tan y)/(1 + tan x tan y).
+  assumptions:
+  - $x,y$は実数
+  - $\cos x\neq0$
+  - $\cos y\neq0$
+  - $\cos(x-y)\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: 差の角の正接の公式が成り立つ。
+  answer: |
+    $x,y$を$\cos x\neq0$、$\cos y\neq0$、$\cos(x-y)\neq0$をみたす実数とする。差の角の公式より
+    $\tan(x-y)=\dfrac{\sin x\cos y-\cos x\sin y}{\cos x\cos y+\sin x\sin y}$である。ここで分母は$\cos(x-y)\neq0$である。分子と分母を$\cos x\cos y\neq0$で割ると、分子は$\tan x-\tan y$、分母は$1+\tan x\tan y$となり、この分母は$\cos(x-y)/(\cos x\cos y)$なので$0$でない。よって結論を得る。
+  strategy: Write tan(x-y) as a quotient via the difference formulas and divide by cos x cos y.
+  sketch:
+  - 'setup: Assume cos x, cos y and cos(x-y) are nonzero.'
+  - 'apply_theorem: Expand the numerator and denominator by the difference formulas.'
+  - 'derive: Divide both by cos x cos y.'
+  - 'conclude: The new denominator equals cos(x-y)/(cos x cos y), nonzero, so the formula holds.'
+  openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0) (!= (cos (- x y)) 0)) (= (tan (- x y)) (/ (- (tan x) (tan y)) (+ 1 (* (tan x) (tan y)))))))
+  hard_negative:
+    statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$、$\cos(x-y)\neq0$をみたすとき、$\tan(x-y)=\dfrac{\tan x-\tan y}{1-\tan x\tan y}$である。
+    reason: $x=\pi/3$、$y=\pi/6$では$\tan x\tan y=1$なので右辺の分母が$0$になるが、左辺は$\tan(\pi/6)=1/\sqrt{3}$である。分母の符号は$+$である。
+  target: |
+    ∀ x y : ℝ, Real.cos x ≠ 0 → Real.cos y ≠ 0 → Real.cos (x - y) ≠ 0 → Real.tan (x - y) = (Real.tan x - Real.tan y) / (1 + Real.tan x * Real.tan y)
+  proof: |
+    by
+      intro x y hx hy hxy
+      have hd : Real.cos x * Real.cos y + Real.sin x * Real.sin y ≠ 0 := by rwa [← Real.cos_sub]
+      have h1 : 1 + Real.tan x * Real.tan y = (Real.cos x * Real.cos y + Real.sin x * Real.sin y) / (Real.cos x * Real.cos y) := by
+        rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos]
+        field_simp
+      have h2 : Real.tan x - Real.tan y = (Real.sin x * Real.cos y - Real.cos x * Real.sin y) / (Real.cos x * Real.cos y) := by
+        rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos]
+        field_simp
+      rw [h1, h2, Real.tan_eq_sin_div_cos, Real.sin_sub, Real.cos_sub]
+      field_simp
+- id: tan_mul_tan_eq_one_iff
+  kind: gap
+  level: high
+  topic: 三角関数・正接の積
+  statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x\tan y=1$と$\cos(x+y)=0$は同値である。
+  statement_en: If x, y are real with cos x ≠ 0 and cos y ≠ 0, then tan x tan y = 1 if and only if cos(x+y) = 0.
+  assumptions:
+  - $x,y$は実数
+  - $\cos x\neq0$
+  - $\cos y\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: $\tan x\tan y=1$と$\cos(x+y)=0$は同値である。
+  answer: |
+    $x,y$を$\cos x\neq0$、$\cos y\neq0$をみたす実数とする。$\tan x\tan y=\dfrac{\sin x\sin y}{\cos x\cos y}$であるから、$\tan x\tan y=1$は$\sin x\sin y=\cos x\cos y$、すなわち$\cos x\cos y-\sin x\sin y=0$と同値である。左辺は加法定理により$\cos(x+y)$に等しい。
+  strategy: Clear the denominator and recognize the addition formula for cosine.
+  sketch:
+  - 'setup: Assume cos x and cos y are nonzero.'
+  - 'translate: tan x tan y = 1 is equivalent to sin x sin y = cos x cos y.'
+  - 'apply_theorem: cos x cos y - sin x sin y = cos(x+y).'
+  - 'conclude: Hence the two conditions are equivalent.'
+  openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0)) (<-> (= (* (tan x) (tan y)) 1) (= (cos (+ x y)) 0))))
+  hard_negative:
+    statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x\tan y=1$と$\cos(x-y)=0$は同値である。
+    reason: $x=\pi/4$、$y=-\pi/4$では$\cos(x-y)=0$だが$\tan x\tan y=-1$である。$\cos(x-y)=0$に対応するのは$\tan x\tan y=-1$である。
+  target: |
+    ∀ x y : ℝ, Real.cos x ≠ 0 → Real.cos y ≠ 0 → (Real.tan x * Real.tan y = 1 ↔ Real.cos (x + y) = 0)
+  proof: |
+    by
+      intro x y hx hy
+      rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos, Real.cos_add]
+      have h : Real.sin x / Real.cos x * (Real.sin y / Real.cos y) = Real.sin x * Real.sin y / (Real.cos x * Real.cos y) := by
+        field_simp
+      rw [h, div_eq_one_iff_eq (mul_ne_zero hx hy)]
+      constructor
+      · intro e
+        rw [e]
+        ring
+      · intro e
+        linarith
+- id: sin_cos_add_mul_sub
+  kind: gap
+  level: high
+  topic: 三角関数・加法定理の積
+  statement: 任意の実数$x,y$について$\sin(x+y)\sin(x-y)=\sin^2x-\sin^2y$かつ$\cos(x+y)\cos(x-y)=\cos^2x-\sin^2y$である。
+  statement_en: For all real x, y, sin(x+y)sin(x-y) = sin²x - sin²y and cos(x+y)cos(x-y) = cos²x - sin²y.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 和の角と差の角の積が平方の差で表される。
+  answer: |
+    $x,y$を実数とする。加法定理で展開すると
+    $\sin(x+y)\sin(x-y)=\sin^2x\cos^2y-\cos^2x\sin^2y$である。$\cos^2y=1-\sin^2y$、$\cos^2x=1-\sin^2x$を代入すると、$\sin^2x\sin^2y$の項が消えて$\sin^2x-\sin^2y$となる。同様に$\cos(x+y)\cos(x-y)=\cos^2x\cos^2y-\sin^2x\sin^2y$であり、$\cos^2y=1-\sin^2y$を代入すると$\cos^2x-(\cos^2x+\sin^2x)\sin^2y=\cos^2x-\sin^2y$となる。
+  strategy: Expand both factors by the addition formulas and eliminate cosines with the Pythagorean identity.
+  sketch:
+  - 'apply_theorem: Expand both products by the addition and difference formulas.'
+  - 'derive: The product is a difference of squares in sin x cos y and cos x sin y.'
+  - 'apply_theorem: Replace cos²y by 1 - sin²y and cos²x by 1 - sin²x where needed.'
+  - 'conclude: The mixed terms cancel.'
+  openmath: (forall (x y) (and (= (* (sin (+ x y)) (sin (- x y))) (- (^ (sin x) 2) (^ (sin y) 2))) (= (* (cos (+ x y)) (cos (- x y))) (- (^ (cos x) 2) (^ (sin y) 2)))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\cos(x+y)\cos(x-y)=\cos^2x-\cos^2y$である。
+    reason: $x=y=0$では左辺は$1$、右辺は$0$である。右辺の第2項は$\sin^2y$である。
+  target: |
+    ∀ x y : ℝ, Real.sin (x + y) * Real.sin (x - y) = Real.sin x ^ 2 - Real.sin y ^ 2 ∧ Real.cos (x + y) * Real.cos (x - y) = Real.cos x ^ 2 - Real.sin y ^ 2
+  proof: |
+    by
+      intro x y
+      have h1 := Real.sin_sq_add_cos_sq x
+      have h2 := Real.sin_sq_add_cos_sq y
+      rw [Real.sin_add, Real.sin_sub, Real.cos_add, Real.cos_sub]
+      constructor
+      · linear_combination Real.sin x ^ 2 * h2 - Real.sin y ^ 2 * h1
+      · linear_combination Real.cos x ^ 2 * h2 - Real.sin y ^ 2 * h1
+- id: sin_cos_eq_iff_two_pi
+  kind: gap
+  level: high
+  topic: 三角方程式・角の決定
+  statement: 実数$x,y$について、$\sin x=\sin y$かつ$\cos x=\cos y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
+  statement_en: For real x, y, sin x = sin y and cos x = cos y hold if and only if x = y + 2nπ for some integer n.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  - ある整数$n$
+  conclusion: 正弦と余弦がともに等しいことは、角の差が$2\pi$の整数倍であることと同値である。
+  answer: |
+    $x,y$を実数とする。$\sin x=\sin y$かつ$\cos x=\cos y$とする。差の角の公式より$\cos(x-y)=\cos^2y+\sin^2y=1$である。$x-y=2n\pi+r$となる整数$n$と$0\leq r<2\pi$をとると$\cos r=1$である。$r>0$なら$0<r/2<\pi$より$\sin(r/2)>0$であり、$\cos r=1-2\sin^2(r/2)<1$となって矛盾する。したがって$r=0$であり、$x=y+2n\pi$である。逆に$x=y+2n\pi$なら、$\sin,\cos$が$2\pi$を周期にもつことから両方の等式が成り立つ。
+  strategy: Reduce the equalities to cos(x-y) = 1 and locate its solutions by the half-angle identity.
+  sketch:
+  - 'derive: Equal sine and cosine give cos(x-y) = 1 by the difference formula.'
+  - 'construct: Write x - y = 2nπ + r with 0 ≤ r < 2π.'
+  - 'contradiction: If r > 0, then cos r = 1 - 2 sin²(r/2) < 1.'
+  - 'derive: So r = 0 and x = y + 2nπ.'
+  - 'conclude: The converse follows from the period 2π.'
+  openmath: (forall (x y) (<-> (and (= (sin x) (sin y)) (= (cos x) (cos y))) (exists (n) (and (in n Z) (= x (+ y (* (* 2 n) pi)))))))
+  hard_negative:
+    statement: 実数$x,y$について、$\sin x=\sin y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=0$、$y=\pi$では$\sin x=\sin y$だが、$x-y=-\pi$は$2\pi$の整数倍ではない。
+  target: |
+    ∀ x y : ℝ, (Real.sin x = Real.sin y ∧ Real.cos x = Real.cos y) ↔ ∃ n : ℤ, x = y + 2 * n * Real.pi
+  proof: |
+    by
+      intro x y
+      constructor
+      · rintro ⟨hs, hc⟩
+        have h : Real.cos (x - y) = 1 := by
+          rw [Real.cos_sub, hs, hc]
+          linarith [Real.sin_sq_add_cos_sq y]
+        obtain ⟨n, hn⟩ := (Real.cos_eq_one_iff (x - y)).mp h
+        exact ⟨n, by linarith⟩
+      · rintro ⟨n, rfl⟩
+        have h : y + 2 * (n : ℝ) * Real.pi = y + n * (2 * Real.pi) := by ring
+        rw [h]
+        exact ⟨Real.sin_add_int_mul_two_pi y n, Real.cos_add_int_mul_two_pi y n⟩
+- id: sin_double_angle
+  kind: named
+  level: high
+  topic: 三角関数・倍角の公式
+  statement: 任意の実数$x$について$\sin2x=2\sin x\cos x$である。
+  statement_en: For every real x, sin 2x = 2 sin x cos x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\sin2x=2\sin x\cos x$が成り立つ。
+  answer: |
+    $x$を実数とする。加法定理$\sin(x+y)=\sin x\cos y+\cos x\sin y$で$y=x$とおくと$\sin2x=\sin x\cos x+\cos x\sin x=2\sin x\cos x$である。
+  strategy: Put y = x in the addition formula for sine.
+  sketch:
+  - 'apply_theorem: Use the addition formula for sine with y = x.'
+  - 'conclude: The two terms are equal.'
+  openmath: (forall (x) (= (sin (* 2 x)) (* (* 2 (sin x)) (cos x))))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin2x=2\sin x$である。
+    reason: $x=\pi/2$では左辺は$0$、右辺は$2$である。
+  target: |
+    ∀ x : ℝ, Real.sin (2 * x) = 2 * Real.sin x * Real.cos x
+  proof: |
+    by
+      intro x
+      exact Real.sin_two_mul x
+- id: cos_double_angle_forms
+  kind: named
+  level: high
+  topic: 三角関数・倍角の公式
+  statement: 任意の実数$x$について$\cos2x=\cos^2x-\sin^2x=2\cos^2x-1=1-2\sin^2x$である。
+  statement_en: For every real x, cos 2x = cos²x - sin²x = 2cos²x - 1 = 1 - 2sin²x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\cos2x$の3つの表し方はすべて正しい。
+  answer: |
+    $x$を実数とする。加法定理$\cos(x+y)=\cos x\cos y-\sin x\sin y$で$y=x$とおくと$\cos2x=\cos^2x-\sin^2x$である。$\sin^2x=1-\cos^2x$を代入すると$2\cos^2x-1$となり、$\cos^2x=1-\sin^2x$を代入すると$1-2\sin^2x$となる。
+  strategy: Put y = x in the addition formula for cosine and eliminate one square at a time.
+  sketch:
+  - 'apply_theorem: Use the addition formula for cosine with y = x.'
+  - 'derive: Substitute sin²x = 1 - cos²x for the second form.'
+  - 'derive: Substitute cos²x = 1 - sin²x for the third form.'
+  - 'conclude: All three expressions equal cos 2x.'
+  openmath: (forall (x) (and (= (cos (* 2 x)) (- (^ (cos x) 2) (^ (sin x) 2))) (= (cos (* 2 x)) (- (* 2 (^ (cos x) 2)) 1)) (= (cos (* 2 x)) (- 1 (* 2 (^ (sin x) 2))))))
+  hard_negative:
+    statement: 任意の実数$x$について$\cos2x=1-2\cos^2x$である。
+    reason: $x=0$では左辺は$1$、右辺は$-1$である。$1-2\sin^2x$と$\sin,\cos$を取り違えている。
+  target: |
+    ∀ x : ℝ, Real.cos (2 * x) = Real.cos x ^ 2 - Real.sin x ^ 2 ∧ Real.cos (2 * x) = 2 * Real.cos x ^ 2 - 1 ∧ Real.cos (2 * x) = 1 - 2 * Real.sin x ^ 2
+  proof: |
+    by
+      intro x
+      have h := Real.sin_sq_add_cos_sq x
+      have hc := Real.cos_two_mul x
+      exact ⟨by linarith, hc, by linarith⟩
+- id: tan_double_angle
+  kind: textbook
+  level: high
+  topic: 三角関数・倍角の公式
+  statement: 実数$x$が$\cos x\neq0$、$\cos2x\neq0$をみたすとき、$\tan2x=\dfrac{2\tan x}{1-\tan^2x}$である。
+  statement_en: If x is real with cos x ≠ 0 and cos 2x ≠ 0, then tan 2x = 2 tan x/(1 - tan²x).
+  assumptions:
+  - $x$は実数
+  - $\cos x\neq0$
+  - $\cos2x\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x$
+  conclusion: $\tan$の倍角の公式が成り立つ。
+  answer: |
+    $x$を$\cos x\neq0$、$\cos2x\neq0$をみたす実数とする。正接の加法定理で$y=x$とおく。条件$\cos x\neq0$、$\cos y\neq0$、$\cos(x+y)=\cos2x\neq0$がみたされるので、$\tan2x=\dfrac{\tan x+\tan x}{1-\tan x\tan x}=\dfrac{2\tan x}{1-\tan^2x}$である。
+  strategy: Put y = x in the addition formula for tangent after checking its hypotheses.
+  sketch:
+  - 'setup: Assume cos x ≠ 0 and cos 2x ≠ 0.'
+  - 'apply_theorem: Use the tangent addition formula with y = x.'
+  - 'conclude: Combine the numerator and the denominator.'
+  openmath: (forall (x) (-> (and (!= (cos x) 0) (!= (cos (* 2 x)) 0)) (= (tan (* 2 x)) (/ (* 2 (tan x)) (- 1 (^ (tan x) 2))))))
+  hard_negative:
+    statement: $\cos x\neq0$、$\cos2x\neq0$のとき$\tan2x=\dfrac{2\tan x}{1+\tan^2x}$である。
+    reason: 分母の符号が違う。$x=\pi/6$では$\tan(\pi/3)=\sqrt{3}$だが、右辺は$\dfrac{2/\sqrt3}{4/3}=\dfrac{\sqrt3}{2}$である。$1+\tan^2x=1/\cos^2x$は正接の倍角の分母ではない。
+  target: |
+    ∀ x : ℝ, Real.cos x ≠ 0 → Real.cos (2 * x) ≠ 0 → Real.tan (2 * x) = 2 * Real.tan x / (1 - Real.tan x ^ 2)
+  proof: |
+    by
+      intro x _ _
+      exact Real.tan_two_mul
+- id: half_angle_squares
+  kind: textbook
+  level: high
+  topic: 三角関数・半角の公式
+  statement: 任意の実数$x$について$\sin^2\dfrac{x}{2}=\dfrac{1-\cos x}{2}$かつ$\cos^2\dfrac{x}{2}=\dfrac{1+\cos x}{2}$である。
+  statement_en: For every real x, sin²(x/2) = (1 - cos x)/2 and cos²(x/2) = (1 + cos x)/2.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: 半角の平方が$\cos x$で表される。
+  answer: |
+    $x$を実数とする。倍角の公式を角$x/2$に適用すると$\cos x=1-2\sin^2(x/2)$、$\cos x=2\cos^2(x/2)-1$である。それぞれを$\sin^2(x/2)$、$\cos^2(x/2)$について解くと結論を得る。
+  strategy: Apply the double-angle forms of cosine at angle x/2 and solve for the squares.
+  sketch:
+  - 'apply_theorem: Use cos 2u = 1 - 2 sin²u and cos 2u = 2 cos²u - 1 with u = x/2.'
+  - 'conclude: Solve each equation for the square.'
+  openmath: (forall (x) (and (= (^ (sin (/ x 2)) 2) (/ (- 1 (cos x)) 2)) (= (^ (cos (/ x 2)) 2) (/ (+ 1 (cos x)) 2))))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin^2\dfrac{x}{2}=\dfrac{1+\cos x}{2}$である。
+    reason: $x=0$では左辺は$0$、右辺は$1$である。$\sin$の半角では分子が$1-\cos x$になる。
+  target: |
+    ∀ x : ℝ, Real.sin (x / 2) ^ 2 = (1 - Real.cos x) / 2 ∧ Real.cos (x / 2) ^ 2 = (1 + Real.cos x) / 2
+  proof: |
+    by
+      intro x
+      have h := Real.cos_two_mul (x / 2)
+      have h1 : 2 * (x / 2) = x := by ring
+      rw [h1] at h
+      have hp := Real.sin_sq_add_cos_sq (x / 2)
+      exact ⟨by linarith, by linarith⟩
+- id: half_angle_sqrt
+  kind: textbook
+  level: high
+  topic: 三角関数・半角の公式
+  statement: 実数$x$について、$0\leq x\leq2\pi$ならば$\sin\dfrac{x}{2}=\sqrt{\dfrac{1-\cos x}{2}}$であり、$-\pi\leq x\leq\pi$ならば$\cos\dfrac{x}{2}=\sqrt{\dfrac{1+\cos x}{2}}$である。符号の定まる区間に限った形である。
+  statement_en: For real x, if 0 ≤ x ≤ 2π then sin(x/2) = √((1 - cos x)/2), and if -π ≤ x ≤ π then cos(x/2) = √((1 + cos x)/2). These forms are restricted to the intervals where the sign is known.
+  assumptions:
+  - $x$は実数
+  - $\sin$の式には$0\leq x\leq2\pi$
+  - $\cos$の式には$-\pi\leq x\leq\pi$
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: 指定の区間では半角の値が$\cos x$の平方根で表される。
+  answer: |
+    $x$を実数とする。半角の公式より$\sin^2(x/2)=(1-\cos x)/2$、$\cos^2(x/2)=(1+\cos x)/2$である。$0\leq x\leq2\pi$なら$0\leq x/2\leq\pi$なので$\sin(x/2)\geq0$であり、平方根をとると第1の式を得る。$-\pi\leq x\leq\pi$なら$-\pi/2\leq x/2\leq\pi/2$なので$\cos(x/2)\geq0$であり、平方根をとると第2の式を得る。
+  strategy: Take nonnegative square roots of the half-angle formulas on the intervals where the sign is known.
+  sketch:
+  - 'apply_theorem: Start from the half-angle formulas for the squares.'
+  - 'derive: On [0, 2π], x/2 lies in [0, π], so sin(x/2) ≥ 0.'
+  - 'derive: On [-π, π], x/2 lies in [-π/2, π/2], so cos(x/2) ≥ 0.'
+  - 'conclude: Take the nonnegative square roots.'
+  openmath: (forall (x) (and (-> (and (<= 0 x) (<= x (* 2 pi))) (= (sin (/ x 2)) (root (/ (- 1 (cos x)) 2) 2))) (-> (and (<= (neg pi) x) (<= x pi)) (= (cos (/ x 2)) (root (/ (+ 1 (cos x)) 2) 2)))))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin\dfrac{x}{2}=\sqrt{\dfrac{1-\cos x}{2}}$である。
+    reason: $x=-\pi$では左辺は$-1$、右辺は$1$である。符号は$x/2$の範囲で決まる。
+  target: |
+    ∀ x : ℝ, (0 ≤ x → x ≤ 2 * Real.pi → Real.sin (x / 2) = Real.sqrt ((1 - Real.cos x) / 2)) ∧ (-Real.pi ≤ x → x ≤ Real.pi → Real.cos (x / 2) = Real.sqrt ((1 + Real.cos x) / 2))
+  proof: |
+    by
+      intro x
+      exact ⟨fun h0 h1 => Real.sin_half_eq_sqrt h0 h1, fun h0 h1 => Real.cos_half h0 h1⟩
+- id: tan_half_substitution
+  kind: gap
+  level: high
+  topic: 三角関数・半角の正接による置き換え
+  statement: 実数$x,t$が$\cos\dfrac{x}{2}\neq0$かつ$t=\tan\dfrac{x}{2}$をみたすとき、$\sin x=\dfrac{2t}{1+t^2}$かつ$\cos x=\dfrac{1-t^2}{1+t^2}$である。
+  statement_en: If x and t are real with cos(x/2) ≠ 0 and t = tan(x/2), then sin x = 2t/(1+t²) and cos x = (1-t²)/(1+t²).
+  assumptions:
+  - $x,t$は実数
+  - $\cos(x/2)\neq0$
+  - $t=\tan(x/2)$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,t$
+  conclusion: $\sin x$と$\cos x$は$t$の有理式で表される。
+  answer: |
+    $x,t$を$\cos(x/2)\neq0$、$t=\tan(x/2)$をみたす実数とする。$c=\cos(x/2)$、$s=\sin(x/2)$とおくと$t=s/c$であり、$1+t^2=1/c^2$である。倍角の公式より$\sin x=2sc=2(s/c)c^2=2t/(1+t^2)$である。また$\cos x=c^2-s^2=c^2(1-t^2)=(1-t^2)/(1+t^2)$である。
+  strategy: Apply the double-angle formulas at x/2 and factor c² = 1/(1+t²).
+  sketch:
+  - 'setup: Put c = cos(x/2) and s = sin(x/2), so t = s/c.'
+  - 'apply_theorem: 1 + t² = 1/c².'
+  - 'derive: sin x = 2sc = 2t c² by the double-angle formula.'
+  - 'derive: cos x = c² - s² = c²(1 - t²).'
+  - 'conclude: Substitute c² = 1/(1 + t²).'
+  openmath: (forall (x t) (-> (and (!= (cos (/ x 2)) 0) (= t (tan (/ x 2)))) (and (= (sin x) (/ (* 2 t) (+ 1 (^ t 2)))) (= (cos x) (/ (- 1 (^ t 2)) (+ 1 (^ t 2)))))))
+  hard_negative:
+    statement: 任意の実数$x$について、$\cos x=\dfrac{1-t^2}{1+t^2}$となる$t=\tan\dfrac{x}{2}$をとれる。
+    reason: $x=\pi$では$\cos(x/2)=0$であり、$\tan(x/2)$は定義されない。この置き換えでは$x=\pi$に対応する$t$がない。
+  target: |
+    ∀ x t : ℝ, Real.cos (x / 2) ≠ 0 → t = Real.tan (x / 2) → Real.sin x = 2 * t / (1 + t ^ 2) ∧ Real.cos x = (1 - t ^ 2) / (1 + t ^ 2)
+  proof: |
+    by
+      intro x t hc ht
+      have hp := Real.sin_sq_add_cos_sq (x / 2)
+      have h1 : 2 * (x / 2) = x := by ring
+      have hs := Real.sin_two_mul (x / 2)
+      have hd := Real.cos_two_mul (x / 2)
+      rw [h1] at hs hd
+      have hd' : 1 + t ^ 2 = 1 / Real.cos (x / 2) ^ 2 := by
+        rw [ht, Real.tan_eq_sin_div_cos]
+        field_simp
+        linarith
+      rw [ht, Real.tan_eq_sin_div_cos] at *
+      constructor
+      · rw [hd', hs]
+        field_simp
+      · rw [hd', hd]
+        field_simp
+        nlinarith
+- id: sin_triple_angle
+  kind: textbook
+  level: high
+  topic: 三角関数・三倍角の公式
+  statement: 任意の実数$x$について$\sin3x=3\sin x-4\sin^3x$である。
+  statement_en: For every real x, sin 3x = 3 sin x - 4 sin³x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\sin3x$は$\sin x$の3次式で表される。
+  answer: |
+    $x$を実数とする。加法定理と倍角の公式より
+    $\sin3x=\sin2x\cos x+\cos2x\sin x=2\sin x\cos^2x+(1-2\sin^2x)\sin x$である。$\cos^2x=1-\sin^2x$を代入して整理すると$3\sin x-4\sin^3x$となる。
+  strategy: Split 3x as 2x + x and rewrite everything in terms of sin x.
+  sketch:
+  - 'apply_theorem: Use the addition formula with 2x and x.'
+  - 'apply_theorem: Replace sin 2x and cos 2x by the double-angle formulas.'
+  - 'derive: Replace cos²x by 1 - sin²x.'
+  - 'conclude: Collect the terms.'
+  openmath: (forall (x) (= (sin (* 3 x)) (- (* 3 (sin x)) (* 4 (^ (sin x) 3)))))
+  hard_negative:
+    statement: 任意の実数$x$について$\sin3x=4\sin^3x-3\sin x$である。
+    reason: $x=\pi/2$では左辺は$-1$、右辺は$1$である。$\cos$の三倍角の形と取り違えている。
+  target: |
+    ∀ x : ℝ, Real.sin (3 * x) = 3 * Real.sin x - 4 * Real.sin x ^ 3
+  proof: |
+    by
+      intro x
+      exact Real.sin_three_mul x
+- id: cos_triple_angle
+  kind: textbook
+  level: high
+  topic: 三角関数・三倍角の公式
+  statement: 任意の実数$x$について$\cos3x=4\cos^3x-3\cos x$である。
+  statement_en: For every real x, cos 3x = 4 cos³x - 3 cos x.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  conclusion: $\cos3x$は$\cos x$の3次式で表される。
+  answer: |
+    $x$を実数とする。加法定理と倍角の公式より
+    $\cos3x=\cos2x\cos x-\sin2x\sin x=(2\cos^2x-1)\cos x-2\sin^2x\cos x$である。$\sin^2x=1-\cos^2x$を代入して整理すると$4\cos^3x-3\cos x$となる。
+  strategy: Split 3x as 2x + x and rewrite everything in terms of cos x.
+  sketch:
+  - 'apply_theorem: Use the addition formula with 2x and x.'
+  - 'apply_theorem: Replace cos 2x and sin 2x by the double-angle formulas.'
+  - 'derive: Replace sin²x by 1 - cos²x.'
+  - 'conclude: Collect the terms.'
+  openmath: (forall (x) (= (cos (* 3 x)) (- (* 4 (^ (cos x) 3)) (* 3 (cos x)))))
+  hard_negative:
+    statement: 任意の実数$x$について$\cos3x=3\cos x-4\cos^3x$である。
+    reason: $x=0$では左辺は$1$、右辺は$-1$である。$\sin$の三倍角の形と取り違えている。
+  target: |
+    ∀ x : ℝ, Real.cos (3 * x) = 4 * Real.cos x ^ 3 - 3 * Real.cos x
+  proof: |
+    by
+      intro x
+      exact Real.cos_three_mul x
+- id: cos_nat_mul_polynomial
+  kind: gap
+  level: high
+  topic: 三角関数・整数倍角と多項式
+  statement: 任意の$0$以上の整数$n$に対して、任意の実数$x$で$\cos nx=P(\cos x)$となる実数係数多項式$P$が存在する。
+  statement_en: For every nonnegative integer n there is a real polynomial P with cos nx = P(cos x) for all real x.
+  assumptions:
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$0$以上の整数$n$
+  - ある実数係数多項式$P$
+  - 任意の実数$x$
+  conclusion: $\cos nx$は$\cos x$の多項式で表される。
+  answer: |
+    任意の$0$以上の整数$n$に対して、任意の実数$x$で$\cos nx=P_n(\cos x)$となる実数係数多項式$P_n$が存在することを、$n$に関する帰納法で示す。$n=0$では定数多項式$P_0=1$、$n=1$では$P_1(u)=u$とすればよい。$P_n,P_{n+1}$が得られているとする。積和の公式より$\cos(n+2)x+\cos nx=2\cos(n+1)x\cos x$であるから、$\cos(n+2)x=2\cos x\,P_{n+1}(\cos x)-P_n(\cos x)$である。よって$P_{n+2}(u)=2uP_{n+1}(u)-P_n(u)$は実数係数多項式であり、$\cos(n+2)x=P_{n+2}(\cos x)$をみたす。
+  strategy: Use the three-term recurrence from the product-to-sum formula and induct in steps of two.
+  sketch:
+  - 'setup: Take P_0 = 1 and P_1(u) = u.'
+  - 'apply_theorem: cos(n+2)x + cos nx = 2 cos(n+1)x cos x.'
+  - 'construct: Define P_{n+2}(u) = 2u P_{n+1}(u) - P_n(u).'
+  - 'induction: Two-step induction gives the identity for every n.'
+  - 'conclude: Each P_n is a real polynomial.'
+  openmath: (forall (n) (-> (in n N) (exists (p) (and (polynomial_over p R) (forall (x) (= (cos (* n x)) (polynomial_eval p (cos x))))))))
+  hard_negative:
+    statement: 任意の$0$以上の整数$n$に対して、任意の実数$x$で$\sin nx=P(\sin x)$となる実数係数多項式$P$が存在する。
+    reason: $n=2$では、$x=\pi/4$と$x=3\pi/4$で$\sin x$が等しいのに$\sin2x$は$1$と$-1$であり、そのような$P$はない。
+  target: |
+    ∀ n : ℕ, ∃ P : Polynomial ℝ, ∀ x : ℝ, Real.cos (n * x) = P.eval (Real.cos x)
+  proof: |
+    by
+      intro n
+      exact ⟨Polynomial.Chebyshev.T ℝ n, fun x => (Polynomial.Chebyshev.T_real_cos x n).symm⟩
+- id: sin_add_sin
+  kind: textbook
+  level: high
+  topic: 三角関数・和積の公式
+  statement: 任意の実数$x,y$について$\sin x+\sin y=2\sin\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$である。
+  statement_en: For all real x, y, sin x + sin y = 2 sin((x+y)/2) cos((x-y)/2).
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 正弦の和が積で表される。
+  answer: |
+    $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\sin x=\sin u\cos v+\cos u\sin v$、$\sin y=\sin u\cos v-\cos u\sin v$である。辺々を加えると$\sin x+\sin y=2\sin u\cos v$を得る。
+  strategy: Write x and y as u + v and u - v and add the two addition formulas.
+  sketch:
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand sin(u+v) and sin(u-v).'
+  - 'conclude: Adding the two equations cancels the cos u sin v terms.'
+  openmath: (forall (x y) (= (+ (sin x) (sin y)) (* (* 2 (sin (/ (+ x y) 2))) (cos (/ (- x y) 2)))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\sin x+\sin y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
+    reason: $x=y=\pi/2$では左辺は$2$、右辺は$0$である。第2の因子は$\cos$である。
+  target: |
+    ∀ x y : ℝ, Real.sin x + Real.sin y = 2 * Real.sin ((x + y) / 2) * Real.cos ((x - y) / 2)
+  proof: |
+    by
+      intro x y
+      have h1 := Real.sin_add ((x + y) / 2) ((x - y) / 2)
+      have h2 := Real.sin_sub ((x + y) / 2) ((x - y) / 2)
+      rw [show (x + y) / 2 + (x - y) / 2 = x by ring] at h1
+      rw [show (x + y) / 2 - (x - y) / 2 = y by ring] at h2
+      rw [h1, h2]
+      ring
+- id: sin_sub_sin
+  kind: textbook
+  level: high
+  topic: 三角関数・和積の公式
+  statement: 任意の実数$x,y$について$\sin x-\sin y=2\cos\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
+  statement_en: For all real x, y, sin x - sin y = 2 cos((x+y)/2) sin((x-y)/2).
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 正弦の差が積で表される。
+  answer: |
+    $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\sin x=\sin u\cos v+\cos u\sin v$、$\sin y=\sin u\cos v-\cos u\sin v$である。辺々を引くと$\sin x-\sin y=2\cos u\sin v$を得る。
+  strategy: Write x and y as u + v and u - v and subtract the two addition formulas.
+  sketch:
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand sin(u+v) and sin(u-v).'
+  - 'conclude: Subtracting cancels the sin u cos v terms.'
+  openmath: (forall (x y) (= (- (sin x) (sin y)) (* (* 2 (cos (/ (+ x y) 2))) (sin (/ (- x y) 2)))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\sin x-\sin y=2\sin\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$である。
+    reason: $x=\pi/2$、$y=-\pi/2$では左辺は$2$、右辺は$0$である。これは和の公式の右辺である。
+  target: |
+    ∀ x y : ℝ, Real.sin x - Real.sin y = 2 * Real.cos ((x + y) / 2) * Real.sin ((x - y) / 2)
+  proof: |
+    by
+      intro x y
+      have h1 := Real.sin_add ((x + y) / 2) ((x - y) / 2)
+      have h2 := Real.sin_sub ((x + y) / 2) ((x - y) / 2)
+      rw [show (x + y) / 2 + (x - y) / 2 = x by ring] at h1
+      rw [show (x + y) / 2 - (x - y) / 2 = y by ring] at h2
+      rw [h1, h2]
+      ring
+- id: cos_add_cos
+  kind: textbook
+  level: high
+  topic: 三角関数・和積の公式
+  statement: 任意の実数$x,y$について$\cos x+\cos y=2\cos\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$である。
+  statement_en: For all real x, y, cos x + cos y = 2 cos((x+y)/2) cos((x-y)/2).
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 余弦の和が積で表される。
+  answer: |
+    $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\cos x=\cos u\cos v-\sin u\sin v$、$\cos y=\cos u\cos v+\sin u\sin v$である。辺々を加えると$\cos x+\cos y=2\cos u\cos v$を得る。
+  strategy: Write x and y as u + v and u - v and add the two addition formulas for cosine.
+  sketch:
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand cos(u+v) and cos(u-v).'
+  - 'conclude: Adding cancels the sin u sin v terms.'
+  openmath: (forall (x y) (= (+ (cos x) (cos y)) (* (* 2 (cos (/ (+ x y) 2))) (cos (/ (- x y) 2)))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\cos x+\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
+    reason: $x=y=0$では左辺は$2$、右辺は$0$である。
+  target: |
+    ∀ x y : ℝ, Real.cos x + Real.cos y = 2 * Real.cos ((x + y) / 2) * Real.cos ((x - y) / 2)
+  proof: |
+    by
+      intro x y
+      have h1 := Real.cos_add ((x + y) / 2) ((x - y) / 2)
+      have h2 := Real.cos_sub ((x + y) / 2) ((x - y) / 2)
+      rw [show (x + y) / 2 + (x - y) / 2 = x by ring] at h1
+      rw [show (x + y) / 2 - (x - y) / 2 = y by ring] at h2
+      rw [h1, h2]
+      ring
+- id: cos_sub_cos
+  kind: textbook
+  level: high
+  topic: 三角関数・和積の公式
+  statement: 任意の実数$x,y$について$\cos x-\cos y=-2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
+  statement_en: For all real x, y, cos x - cos y = -2 sin((x+y)/2) sin((x-y)/2).
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 余弦の差が積で表される。
+  answer: |
+    $x,y$を実数とし、$u=(x+y)/2$、$v=(x-y)/2$とおくと$x=u+v$、$y=u-v$である。加法定理より$\cos x=\cos u\cos v-\sin u\sin v$、$\cos y=\cos u\cos v+\sin u\sin v$である。辺々を引くと$\cos x-\cos y=-2\sin u\sin v$を得る。
+  strategy: Write x and y as u + v and u - v and subtract the two addition formulas for cosine.
+  sketch:
+  - 'construct: Put u = (x+y)/2 and v = (x-y)/2.'
+  - 'apply_theorem: Expand cos(u+v) and cos(u-v).'
+  - 'conclude: Subtracting cancels the cos u cos v terms.'
+  openmath: (forall (x y) (= (- (cos x) (cos y)) (* (* (neg 2) (sin (/ (+ x y) 2))) (sin (/ (- x y) 2)))))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。
+    reason: $x=0$、$y=\pi$では左辺は$2$、右辺は$-2$である。係数の符号は負である。
+  target: |
+    ∀ x y : ℝ, Real.cos x - Real.cos y = -2 * Real.sin ((x + y) / 2) * Real.sin ((x - y) / 2)
+  proof: |
+    by
+      intro x y
+      have h1 := Real.cos_add ((x + y) / 2) ((x - y) / 2)
+      have h2 := Real.cos_sub ((x + y) / 2) ((x - y) / 2)
+      rw [show (x + y) / 2 + (x - y) / 2 = x by ring] at h1
+      rw [show (x + y) / 2 - (x - y) / 2 = y by ring] at h2
+      rw [h1, h2]
+      ring
+- id: sin_mul_cos_product_to_sum
+  kind: textbook
+  level: high
+  topic: 三角関数・積和の公式
+  statement: 任意の実数$x,y$について$\sin x\cos y=\dfrac{\sin(x+y)+\sin(x-y)}{2}$である。
+  statement_en: For all real x, y, sin x cos y = (sin(x+y) + sin(x-y))/2.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 正弦と余弦の積が和で表される。
+  answer: |
+    $x,y$を実数とする。加法定理より$\sin(x+y)=\sin x\cos y+\cos x\sin y$、$\sin(x-y)=\sin x\cos y-\cos x\sin y$である。辺々を加えて$2$で割ると結論を得る。
+  strategy: Add the addition and subtraction formulas for sine.
+  sketch:
+  - 'apply_theorem: Expand sin(x+y) and sin(x-y).'
+  - 'conclude: Add and divide by 2.'
+  openmath: (forall (x y) (= (* (sin x) (cos y)) (/ (+ (sin (+ x y)) (sin (- x y))) 2)))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\sin x\cos y=\dfrac{\sin(x+y)-\sin(x-y)}{2}$である。
+    reason: $x=\pi/2$、$y=0$では左辺は$1$、右辺は$0$である。この右辺は$\cos x\sin y$に等しい。
+  target: |
+    ∀ x y : ℝ, Real.sin x * Real.cos y = (Real.sin (x + y) + Real.sin (x - y)) / 2
+  proof: |
+    by
+      intro x y
+      rw [Real.sin_add, Real.sin_sub]
+      ring
+- id: cos_mul_cos_product_to_sum
+  kind: textbook
+  level: high
+  topic: 三角関数・積和の公式
+  statement: 任意の実数$x,y$について$\cos x\cos y=\dfrac{\cos(x+y)+\cos(x-y)}{2}$である。
+  statement_en: For all real x, y, cos x cos y = (cos(x+y) + cos(x-y))/2.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 余弦の積が和で表される。
+  answer: |
+    $x,y$を実数とする。加法定理より$\cos(x+y)=\cos x\cos y-\sin x\sin y$、$\cos(x-y)=\cos x\cos y+\sin x\sin y$である。辺々を加えて$2$で割ると結論を得る。
+  strategy: Add the addition and subtraction formulas for cosine.
+  sketch:
+  - 'apply_theorem: Expand cos(x+y) and cos(x-y).'
+  - 'conclude: Add and divide by 2.'
+  openmath: (forall (x y) (= (* (cos x) (cos y)) (/ (+ (cos (+ x y)) (cos (- x y))) 2)))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\cos x\cos y=\dfrac{\cos(x+y)-\cos(x-y)}{2}$である。
+    reason: $x=y=0$では左辺は$1$、右辺は$0$である。
+  target: |
+    ∀ x y : ℝ, Real.cos x * Real.cos y = (Real.cos (x + y) + Real.cos (x - y)) / 2
+  proof: |
+    by
+      intro x y
+      rw [Real.cos_add, Real.cos_sub]
+      ring
+- id: sin_mul_sin_product_to_sum
+  kind: textbook
+  level: high
+  topic: 三角関数・積和の公式
+  statement: 任意の実数$x,y$について$\sin x\sin y=\dfrac{\cos(x-y)-\cos(x+y)}{2}$である。
+  statement_en: For all real x, y, sin x sin y = (cos(x-y) - cos(x+y))/2.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  conclusion: 正弦の積が余弦の差で表される。
+  answer: |
+    $x,y$を実数とする。加法定理より$\cos(x-y)=\cos x\cos y+\sin x\sin y$、$\cos(x+y)=\cos x\cos y-\sin x\sin y$である。辺々を引いて$2$で割ると結論を得る。
+  strategy: Subtract the addition formula for cosine from the subtraction formula.
+  sketch:
+  - 'apply_theorem: Expand cos(x-y) and cos(x+y).'
+  - 'conclude: Subtract and divide by 2.'
+  openmath: (forall (x y) (= (* (sin x) (sin y)) (/ (- (cos (- x y)) (cos (+ x y))) 2)))
+  hard_negative:
+    statement: 任意の実数$x,y$について$\sin x\sin y=\dfrac{\cos(x+y)-\cos(x-y)}{2}$である。
+    reason: $x=y=\pi/2$では左辺は$1$、右辺は$-1$である。引く順序が逆である。
+  target: |
+    ∀ x y : ℝ, Real.sin x * Real.sin y = (Real.cos (x - y) - Real.cos (x + y)) / 2
+  proof: |
+    by
+      intro x y
+      rw [Real.cos_add, Real.cos_sub]
+      ring
+- id: sum_cos_sin_multiples
+  kind: gap
+  level: high
+  topic: 三角関数・積和による総和
+  statement: 実数$x$が$\sin\dfrac{x}{2}\neq0$をみたし、$n$が$0$以上の整数のとき、$\displaystyle\sum_{k=1}^{n}\cos kx=\dfrac{\sin\left(n+\frac{1}{2}\right)x-\sin\frac{x}{2}}{2\sin\frac{x}{2}}$かつ$\displaystyle\sum_{k=1}^{n}\sin kx=\dfrac{\cos\frac{x}{2}-\cos\left(n+\frac{1}{2}\right)x}{2\sin\frac{x}{2}}$である。
+  statement_en: If x is real with sin(x/2) ≠ 0 and n is a nonnegative integer, then the sum of cos kx for k = 1..n equals (sin((n+1/2)x) - sin(x/2))/(2 sin(x/2)), and the sum of sin kx for k = 1..n equals (cos(x/2) - cos((n+1/2)x))/(2 sin(x/2)).
+  assumptions:
+  - $x$は実数
+  - $\sin(x/2)\neq0$
+  - $n$は$0$以上の整数
+  quantifiers:
+  - $\sin(x/2)\neq0$をみたす任意の実数$x$と任意の$0$以上の整数$n$
+  conclusion: 等差に並ぶ角の余弦と正弦の和が閉じた式で表される。
+  answer: |
+    $x$を$\sin(x/2)\neq0$をみたす実数、$n$を$0$以上の整数とする。積和の公式より、各$k$について
+    $2\sin(x/2)\cos kx=\sin(k+1/2)x-\sin(k-1/2)x$である。$k=1,\dots,n$で辺々を加えると右辺は隣どうしが消えて$\sin(n+1/2)x-\sin(x/2)$となる。同様に$2\sin(x/2)\sin kx=\cos(k-1/2)x-\cos(k+1/2)x$を加えると$\cos(x/2)-\cos(n+1/2)x$となる。どちらも両辺を$2\sin(x/2)\neq0$で割れば結論を得る。$n=0$では両辺とも$0$である。
+  strategy: Multiply by 2 sin(x/2), turn each term into a difference by the product-to-sum formulas, and telescope.
+  sketch:
+  - 'setup: Assume sin(x/2) ≠ 0.'
+  - 'apply_theorem: 2 sin(x/2) cos kx = sin((k+1/2)x) - sin((k-1/2)x).'
+  - 'apply_theorem: 2 sin(x/2) sin kx = cos((k-1/2)x) - cos((k+1/2)x).'
+  - 'derive: The sums telescope.'
+  - 'conclude: Divide by 2 sin(x/2).'
+  openmath: (forall (x n) (-> (and (!= (sin (/ x 2)) 0) (in n N)) (and (= (sum (natural_range n) (lambda (k) (cos (* (+ k 1) x)))) (/ (- (sin (* (+ n (/ 1 2)) x)) (sin (/ x 2))) (* 2 (sin (/ x 2))))) (= (sum (natural_range n) (lambda (k) (sin (* (+ k 1) x)))) (/ (- (cos (/ x 2)) (cos (* (+ n (/ 1 2)) x))) (* 2 (sin (/ x 2))))))))
+  hard_negative:
+    statement: 任意の実数$x$と$0$以上の整数$n$について$\displaystyle\sum_{k=1}^{n}\cos kx=\dfrac{\sin\left(n+\frac{1}{2}\right)x-\sin\frac{x}{2}}{2\sin\frac{x}{2}}$である。
+    reason: $x=2\pi$、$n=1$では左辺は$1$だが、右辺の分母は$0$である。$\sin(x/2)=0$の場合は別に扱う必要がある。
+  target: |
+    ∀ (x : ℝ) (n : ℕ), Real.sin (x / 2) ≠ 0 → ∑ k ∈ Finset.range n, Real.cos (((k : ℝ) + 1) * x) = (Real.sin (((n : ℝ) + 1 / 2) * x) - Real.sin (x / 2)) / (2 * Real.sin (x / 2)) ∧ ∑ k ∈ Finset.range n, Real.sin (((k : ℝ) + 1) * x) = (Real.cos (x / 2) - Real.cos (((n : ℝ) + 1 / 2) * x)) / (2 * Real.sin (x / 2))
+  proof: |
+    by
+      intro x n h
+      have hd : 2 * Real.sin (x / 2) ≠ 0 := mul_ne_zero two_ne_zero h
+      have e00 : (((0 : ℕ) : ℝ) + 1 / 2) * x = x / 2 := by
+        push_cast
+        ring
+      have e0 : ∀ m : ℕ, ((m : ℝ) + 1 + 1 / 2) * x = ((m : ℝ) + 1) * x + x / 2 := fun m => by ring
+      have e1 : ∀ m : ℕ, ((m : ℝ) + 1 / 2) * x = ((m : ℝ) + 1) * x - x / 2 := fun m => by ring
+      have hc : ∀ m : ℕ, 2 * Real.sin (x / 2) * ∑ k ∈ Finset.range m, Real.cos (((k : ℝ) + 1) * x) = Real.sin (((m : ℝ) + 1 / 2) * x) - Real.sin (x / 2) := by
+        intro m
+        induction m with
+        | zero =>
+          rw [e00]
+          simp
+        | succ m ih =>
+          rw [Finset.sum_range_succ, mul_add, ih]
+          push_cast
+          rw [e0, e1, Real.sin_add, Real.sin_sub]
+          ring
+      have hs : ∀ m : ℕ, 2 * Real.sin (x / 2) * ∑ k ∈ Finset.range m, Real.sin (((k : ℝ) + 1) * x) = Real.cos (x / 2) - Real.cos (((m : ℝ) + 1 / 2) * x) := by
+        intro m
+        induction m with
+        | zero =>
+          rw [e00]
+          simp
+        | succ m ih =>
+          rw [Finset.sum_range_succ, mul_add, ih]
+          push_cast
+          rw [e0, e1, Real.cos_add, Real.cos_sub]
+          ring
+      constructor
+      · rw [eq_div_iff hd, mul_comm]
+        exact hc n
+      · rw [eq_div_iff hd, mul_comm]
+        exact hs n
+- id: harmonic_addition
+  kind: named
+  level: high
+  topic: 三角関数・合成
+  statement: 実数$a,b$の少なくとも一方が$0$でないとき、$\cos\alpha=\dfrac{a}{\sqrt{a^2+b^2}}$、$\sin\alpha=\dfrac{b}{\sqrt{a^2+b^2}}$をみたす実数$\alpha$が存在し、任意の実数$x$について$a\sin x+b\cos x=\sqrt{a^2+b^2}\sin(x+\alpha)$である。
+  statement_en: If real a, b are not both zero, there is a real α with cos α = a/√(a²+b²) and sin α = b/√(a²+b²), and for every real x, a sin x + b cos x = √(a²+b²) sin(x+α).
+  assumptions:
+  - $a,b$は実数
+  - $a\neq0$または$b\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$a,b$
+  - ある実数$\alpha$
+  - 任意の実数$x$
+  conclusion: $a\sin x+b\cos x$は振幅$\sqrt{a^2+b^2}$の正弦に合成できる。
+  answer: |
+    $a,b$を、少なくとも一方が$0$でない実数とする。$r=\sqrt{a^2+b^2}$とおくと$r>0$であり、$(a/r)^2+(b/r)^2=1$である。単位円上の点は角を用いて$(\cos\alpha,\sin\alpha)$と表せるので、$\cos\alpha=a/r$、$\sin\alpha=b/r$となる実数$\alpha$がとれる。任意の実数$x$について、加法定理より
+    $a\sin x+b\cos x=r(\cos\alpha\sin x+\sin\alpha\cos x)=r\sin(x+\alpha)$である。
+  strategy: Normalize (a, b) to a point of the unit circle, name its angle, and recognize the addition formula.
+  sketch:
+  - 'setup: Put r = √(a²+b²) > 0.'
+  - 'apply_theorem: (a/r, b/r) lies on the unit circle, so it equals (cos α, sin α) for some α.'
+  - 'derive: a sin x + b cos x = r(cos α sin x + sin α cos x).'
+  - 'conclude: The addition formula gives r sin(x+α).'
+  openmath: (forall (a b) (-> (or (!= a 0) (!= b 0)) (exists (t) (and (= (cos t) (/ a (root (+ (^ a 2) (^ b 2)) 2))) (= (sin t) (/ b (root (+ (^ a 2) (^ b 2)) 2))) (forall (x) (= (+ (* a (sin x)) (* b (cos x))) (* (root (+ (^ a 2) (^ b 2)) 2) (sin (+ x t)))))))))
+  hard_negative:
+    statement: 実数$a,b$について、任意の実数$x$で$a\sin x+b\cos x=(a+b)\sin(x+\alpha)$となる実数$\alpha$が存在する。
+    reason: $a=b=1$では左辺の最大値は$\sqrt{2}$だが、右辺は最大値$2$をとる。振幅は$\sqrt{a^2+b^2}$である。
+  target: |
+    ∀ a b : ℝ, (a ≠ 0 ∨ b ≠ 0) → ∃ α : ℝ, Real.cos α = a / Real.sqrt (a ^ 2 + b ^ 2) ∧ Real.sin α = b / Real.sqrt (a ^ 2 + b ^ 2) ∧ ∀ x : ℝ, a * Real.sin x + b * Real.cos x = Real.sqrt (a ^ 2 + b ^ 2) * Real.sin (x + α)
+  proof: |
+    by
+      intro a b hab
+      have hpos : 0 < a ^ 2 + b ^ 2 := by
+        rcases hab with h | h
+        · have := sq_pos_of_ne_zero h
+          positivity
+        · have := sq_pos_of_ne_zero h
+          positivity
+      have hr : 0 < Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_pos.mpr hpos
+      obtain ⟨α, hc, hs⟩ : ∃ α : ℝ, Real.sqrt (a ^ 2 + b ^ 2) * Real.cos α = a ∧ Real.sqrt (a ^ 2 + b ^ 2) * Real.sin α = b := by
+        have hn : ‖(⟨a, b⟩ : ℂ)‖ = Real.sqrt (a ^ 2 + b ^ 2) := by
+          rw [Complex.norm_def, Complex.normSq_apply]
+          congr 1
+          ring
+        have h1 := Complex.norm_mul_cos_arg (⟨a, b⟩ : ℂ)
+        have h2 := Complex.norm_mul_sin_arg (⟨a, b⟩ : ℂ)
+        rw [hn] at h1 h2
+        exact ⟨_, h1, h2⟩
+      refine ⟨α, ?_, ?_, ?_⟩
+      · rw [eq_div_iff hr.ne']
+        linarith
+      · rw [eq_div_iff hr.ne']
+        linarith
+      · intro x
+        rw [Real.sin_add]
+        linear_combination (-Real.sin x) * hc - Real.cos x * hs
+- id: sin_cos_combination_bound
+  kind: gap
+  level: high
+  topic: 三角関数・合成と値域
+  statement: 任意の実数$a,b,x$について$|a\sin x+b\cos x|\leq\sqrt{a^2+b^2}$である。
+  statement_en: For all real a, b, x, |a sin x + b cos x| ≤ √(a²+b²).
+  assumptions:
+  - $a,b,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,x$
+  conclusion: $a\sin x+b\cos x$の絶対値は$\sqrt{a^2+b^2}$以下である。
+  answer: |
+    $a,b,x$を実数とする。展開して$\sin^2x+\cos^2x=1$を用いると
+    $(a\sin x+b\cos x)^2+(a\cos x-b\sin x)^2=a^2+b^2$である。第2項は$0$以上なので$(a\sin x+b\cos x)^2\leq a^2+b^2$である。両辺の非負の平方根をとると結論を得る。
+  strategy: Complete the sum of squares with the companion expression a cos x - b sin x.
+  sketch:
+  - 'derive: (a sin x + b cos x)² + (a cos x - b sin x)² = a² + b².'
+  - 'derive: Discarding the nonnegative second square gives the bound on the square.'
+  - 'conclude: Take square roots.'
+  openmath: (forall (a b x) (<= (abs (+ (* a (sin x)) (* b (cos x)))) (root (+ (^ a 2) (^ b 2)) 2)))
+  hard_negative:
+    statement: 任意の実数$a,b,x$について$|a\sin x+b\cos x|\leq\max\{|a|,|b|\}$である。
+    reason: $a=b=1$、$x=\pi/4$では左辺は$\sqrt{2}$、右辺は$1$である。
+  target: |
+    ∀ a b x : ℝ, |a * Real.sin x + b * Real.cos x| ≤ Real.sqrt (a ^ 2 + b ^ 2)
+  proof: |
+    by
+      intro a b x
+      apply Real.abs_le_sqrt
+      have h := Real.sin_sq_add_cos_sq x
+      have e : (a * Real.sin x + b * Real.cos x) ^ 2 + (a * Real.cos x - b * Real.sin x) ^ 2 = (a ^ 2 + b ^ 2) * (Real.sin x ^ 2 + Real.cos x ^ 2) := by ring
+      rw [h, mul_one] at e
+      nlinarith [sq_nonneg (a * Real.cos x - b * Real.sin x)]
+- id: exists_sin_cos_combination_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・解の存在
+  statement: 実数$a,b,c$について、$a\sin x+b\cos x=c$をみたす実数$x$が存在することと、$c^2\leq a^2+b^2$であることは同値である。
+  statement_en: For real a, b, c, the equation a sin x + b cos x = c has a real solution x if and only if c² ≤ a² + b².
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  - ある実数$x$
+  conclusion: 解の存在は$c^2\leq a^2+b^2$と同値である。
+  answer: |
+    $a,b,c$を実数とする。$a\sin x+b\cos x=c$となる$x$があれば、$(a\sin x+b\cos x)^2+(a\cos x-b\sin x)^2=a^2+b^2$より$c^2\leq a^2+b^2$である。逆に$c^2\leq a^2+b^2$とする。$a=b=0$なら$c=0$であり、どの$x$も解である。そうでないとき$r=\sqrt{a^2+b^2}>0$とおくと、合成により実数$\alpha$がとれて、任意の$x$で$a\sin x+b\cos x=r\sin(x+\alpha)$である。$|c/r|\leq1$なので、$\sin$の連続性と$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$および中間値の定理から$\sin y=c/r$となる$y$がとれる。$x=y-\alpha$とおくと$a\sin x+b\cos x=r\sin y=c$である。
+  strategy: The forward direction is the Cauchy-type bound; the converse combines the harmonic form with the intermediate value theorem.
+  sketch:
+  - 'derive: A solution forces c² ≤ a² + b² by the sum-of-squares identity.'
+  - 'case_split: If a = b = 0 then c = 0 and every x solves the equation.'
+  - 'apply_theorem: Otherwise write a sin x + b cos x = r sin(x+α) with r > 0.'
+  - 'apply_theorem: Since |c/r| ≤ 1, the intermediate value theorem gives y with sin y = c/r.'
+  - 'conclude: x = y - α is a solution.'
+  openmath: (forall (a b c) (<-> (exists (x) (= (+ (* a (sin x)) (* b (cos x))) c)) (<= (^ c 2) (+ (^ a 2) (^ b 2)))))
+  hard_negative:
+    statement: 実数$a,b,c$について、$a\sin x+b\cos x=c$をみたす実数$x$が存在することと、$|c|\leq|a|+|b|$であることは同値である。
+    reason: $a=b=1$、$c=2$では$|c|\leq|a|+|b|$だが、$a\sin x+b\cos x\leq\sqrt{2}$なので解がない。
+  target: |
+    ∀ a b c : ℝ, (∃ x : ℝ, a * Real.sin x + b * Real.cos x = c) ↔ c ^ 2 ≤ a ^ 2 + b ^ 2
+  proof: |
+    by
+      intro a b c
+      constructor
+      · rintro ⟨x, rfl⟩
+        have h := Real.sin_sq_add_cos_sq x
+        have e : (a * Real.sin x + b * Real.cos x) ^ 2 + (a * Real.cos x - b * Real.sin x) ^ 2 = (a ^ 2 + b ^ 2) * (Real.sin x ^ 2 + Real.cos x ^ 2) := by ring
+        rw [h, mul_one] at e
+        nlinarith [sq_nonneg (a * Real.cos x - b * Real.sin x)]
+      · intro hc
+        by_cases h0 : a ^ 2 + b ^ 2 = 0
+        · have ha : a = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          have hb : b = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          have hc0 : c = 0 := by nlinarith [sq_nonneg c]
+          exact ⟨0, by simp [ha, hb, hc0]⟩
+        · have hpos : 0 < a ^ 2 + b ^ 2 := lt_of_le_of_ne (by positivity) (Ne.symm h0)
+          have hr : 0 < Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_pos.mpr hpos
+          obtain ⟨α, hca, hsa⟩ : ∃ α : ℝ, Real.sqrt (a ^ 2 + b ^ 2) * Real.cos α = a ∧ Real.sqrt (a ^ 2 + b ^ 2) * Real.sin α = b := by
+            have hn : ‖(⟨a, b⟩ : ℂ)‖ = Real.sqrt (a ^ 2 + b ^ 2) := by
+              rw [Complex.norm_def, Complex.normSq_apply]
+              congr 1
+              ring
+            have h1 := Complex.norm_mul_cos_arg (⟨a, b⟩ : ℂ)
+            have h2 := Complex.norm_mul_sin_arg (⟨a, b⟩ : ℂ)
+            rw [hn] at h1 h2
+            exact ⟨_, h1, h2⟩
+          have hb : |c| ≤ Real.sqrt (a ^ 2 + b ^ 2) := Real.abs_le_sqrt hc
+          have h1 : -1 ≤ c / Real.sqrt (a ^ 2 + b ^ 2) := by
+            rw [le_div_iff₀ hr]
+            linarith [(abs_le.mp hb).1]
+          have h2 : c / Real.sqrt (a ^ 2 + b ^ 2) ≤ 1 := by
+            rw [div_le_iff₀ hr]
+            linarith [(abs_le.mp hb).2]
+          obtain ⟨y, hy⟩ : ∃ y : ℝ, Real.sin y = c / Real.sqrt (a ^ 2 + b ^ 2) := ⟨_, Real.sin_arcsin h1 h2⟩
+          refine ⟨y - α, ?_⟩
+          have hu : Real.sin y = Real.sin (y - α) * Real.cos α + Real.cos (y - α) * Real.sin α := by
+            rw [← Real.sin_add, sub_add_cancel]
+          have hc' : Real.sqrt (a ^ 2 + b ^ 2) * Real.sin y = c := by
+            rw [hy]
+            field_simp
+          rw [← hc', hu]
+          linear_combination (-Real.sin (y - α)) * hca - Real.cos (y - α) * hsa
+- id: quadratic_form_sin_cos_double_angle
+  kind: gap
+  level: high
+  topic: 三角関数・2次式の次数下げ
+  statement: 任意の実数$a,b,c,x$について$a\cos^2x+b\sin x\cos x+c\sin^2x=\dfrac{a+c}{2}+\dfrac{a-c}{2}\cos2x+\dfrac{b}{2}\sin2x$である。
+  statement_en: For all real a, b, c, x, a cos²x + b sin x cos x + c sin²x = (a+c)/2 + ((a-c)/2) cos 2x + (b/2) sin 2x.
+  assumptions:
+  - $a,b,c,x$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,x$
+  conclusion: $\sin x,\cos x$の同次2次式は$\cos2x,\sin2x$の1次式で表される。
+  answer: |
+    $a,b,c,x$を実数とする。倍角の公式より$\cos^2x=(1+\cos2x)/2$、$\sin^2x=(1-\cos2x)/2$、$\sin x\cos x=(\sin2x)/2$である。これらを左辺に代入して$\cos2x,\sin2x$について整理すると右辺を得る。
+  strategy: Lower the degree of each square and of the product by the double-angle formulas.
+  sketch:
+  - 'apply_theorem: cos²x = (1+cos 2x)/2 and sin²x = (1-cos 2x)/2.'
+  - 'apply_theorem: sin x cos x = (sin 2x)/2.'
+  - 'conclude: Substitute and collect the terms.'
+  openmath: (forall (a b c x) (= (+ (+ (* a (^ (cos x) 2)) (* b (* (sin x) (cos x)))) (* c (^ (sin x) 2))) (+ (+ (/ (+ a c) 2) (* (/ (- a c) 2) (cos (* 2 x)))) (* (/ b 2) (sin (* 2 x))))))
+  hard_negative:
+    statement: 任意の実数$a,b,c,x$について$a\cos^2x+b\sin x\cos x+c\sin^2x=\dfrac{a+c}{2}+\dfrac{a-c}{2}\cos2x+b\sin2x$である。
+    reason: $a=c=0$、$b=1$、$x=\pi/4$では左辺は$1/2$、右辺は$1$である。$\sin2x$の係数は$b/2$である。
+  target: |
+    ∀ a b c x : ℝ, a * Real.cos x ^ 2 + b * (Real.sin x * Real.cos x) + c * Real.sin x ^ 2 = (a + c) / 2 + (a - c) / 2 * Real.cos (2 * x) + b / 2 * Real.sin (2 * x)
+  proof: |
+    by
+      intro a b c x
+      rw [Real.cos_two_mul, Real.sin_two_mul]
+      linear_combination c * Real.sin_sq_add_cos_sq x
+- id: sin_eq_zero_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・基本形
+  statement: 実数$x$について、$\sin x=0$であることと、$x=n\pi$となる整数$n$が存在することは同値である。
+  statement_en: For real x, sin x = 0 if and only if x = nπ for some integer n.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  - ある整数$n$
+  conclusion: $\sin x=0$の解は$\pi$の整数倍全体である。
+  answer: |
+    $x$を実数とする。任意の実数$y$について$\sin(y+\pi)=-\sin y$であり、$y$を$y-\pi$に置き換えると$\sin(y-\pi)=-\sin y$でもある。これらを繰り返すと、整数$n$と実数$r$について$\sin(n\pi+r)=(-1)^n\sin r$である。$x=n\pi$となる整数$n$があれば、$r=0$として$\sin x=0$である。逆に$\sin x=0$とし、$x=n\pi+r$となる整数$n$と$0\leq r<\pi$をとる。$\sin x=(-1)^n\sin r$なので$\sin r=0$である。$\sin$は開区間$(0,\pi)$で正であるから$r=0$であり、$x=n\pi$である。
+  strategy: Reduce x modulo π and use the positivity of sine on (0, π).
+  sketch:
+  - 'derive: sin nπ = 0 gives one direction.'
+  - 'construct: Write x = nπ + r with 0 ≤ r < π.'
+  - 'derive: sin x = (-1)^n sin r, so sin r = 0.'
+  - 'conclude: Since sine is positive on (0, π), r = 0.'
+  openmath: (forall (x) (<-> (= (sin x) 0) (exists (n) (and (in n Z) (= x (* n pi))))))
+  hard_negative:
+    statement: 実数$x$について、$\sin x=0$であることと、$x=2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=\pi$では$\sin x=0$だが、$x$は$2\pi$の整数倍ではない。
+  target: |
+    ∀ x : ℝ, Real.sin x = 0 ↔ ∃ n : ℤ, x = n * Real.pi
+  proof: |
+    by
+      intro x
+      rw [Real.sin_eq_zero_iff]
+      exact ⟨fun ⟨n, h⟩ => ⟨n, h.symm⟩, fun ⟨n, h⟩ => ⟨n, h.symm⟩⟩
+- id: cos_eq_zero_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・基本形
+  statement: 実数$x$について、$\cos x=0$であることと、$x=\dfrac{\pi}{2}+n\pi$となる整数$n$が存在することは同値である。
+  statement_en: For real x, cos x = 0 if and only if x = π/2 + nπ for some integer n.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  - ある整数$n$
+  conclusion: $\cos x=0$の解は$\pi/2+n\pi$の形の数全体である。
+  answer: |
+    $x$を実数とする。$\cos x=\sin(x+\pi/2)$であるから、$\cos x=0$は$\sin(x+\pi/2)=0$と同値である。$\sin y=0$となるのは$y$が$\pi$の整数倍のときに限るので、これは$x+\pi/2=m\pi$となる整数$m$の存在と同値である。$n=m-1$とおくと$x=\pi/2+n\pi$である。
+  strategy: Shift by π/2 to reduce to the zeros of sine.
+  sketch:
+  - 'translate: cos x = sin(x + π/2).'
+  - 'apply_theorem: sin y = 0 exactly when y is an integer multiple of π.'
+  - 'conclude: Reindex with n = m - 1.'
+  openmath: (forall (x) (<-> (= (cos x) 0) (exists (n) (and (in n Z) (= x (+ (/ pi 2) (* n pi)))))))
+  hard_negative:
+    statement: 実数$x$について、$\cos x=0$であることと、$x=\dfrac{\pi}{2}+2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=-\pi/2$では$\cos x=0$だが、$x-\pi/2=-\pi$は$2\pi$の整数倍ではない。
+  target: |
+    ∀ x : ℝ, Real.cos x = 0 ↔ ∃ n : ℤ, x = Real.pi / 2 + n * Real.pi
+  proof: |
+    by
+      intro x
+      rw [Real.cos_eq_zero_iff]
+      constructor
+      · rintro ⟨n, h⟩
+        exact ⟨n, by rw [h]; ring⟩
+      · rintro ⟨n, h⟩
+        exact ⟨n, by rw [h]; ring⟩
+- id: tan_domain_iff
+  kind: gap
+  level: high
+  topic: 三角関数・正接の定義域
+  statement: $\tan x$が定義される条件$\cos x\neq0$は、実数$x$について、任意の整数$n$で$x\neq\dfrac{\pi}{2}+n\pi$であることと同値である。
+  statement_en: For real x, the condition cos x ≠ 0 under which tan x is defined is equivalent to x ≠ π/2 + nπ for every integer n.
+  assumptions:
+  - $x$は実数
+  quantifiers:
+  - 任意の実数$x$
+  - 任意の整数$n$
+  conclusion: $\tan$の定義域は$\pi/2+n\pi$の形の数を除いた実数全体である。
+  answer: |
+    $x$を実数とする。$\tan x=\sin x/\cos x$は$\cos x\neq0$のときに定義される。$\cos x=0$となるのは$x=\pi/2+n\pi$となる整数$n$があるときに限る。この同値の両辺を否定すると、$\cos x\neq0$は、どの整数$n$についても$x\neq\pi/2+n\pi$であることと同値である。
+  strategy: Negate the description of the zeros of cosine.
+  sketch:
+  - 'setup: tan x is defined exactly when cos x ≠ 0.'
+  - 'apply_theorem: cos x = 0 exactly when x = π/2 + nπ for some integer n.'
+  - 'conclude: Negate both sides.'
+  openmath: (forall (x) (<-> (!= (cos x) 0) (forall (n) (-> (in n Z) (!= x (+ (/ pi 2) (* n pi)))))))
+  hard_negative:
+    statement: 実数$x$について、$\cos x\neq0$であることと、任意の整数$n$で$x\neq\dfrac{\pi}{2}+2n\pi$であることは同値である。
+    reason: $x=3\pi/2$は右の条件をみたすが$\cos x=0$である。除くべき点の間隔は$\pi$である。
+  target: |
+    ∀ x : ℝ, Real.cos x ≠ 0 ↔ ∀ n : ℤ, x ≠ Real.pi / 2 + n * Real.pi
+  proof: |
+    by
+      intro x
+      constructor
+      · rintro h n rfl
+        apply h
+        rw [Real.cos_eq_zero_iff]
+        exact ⟨n, by ring⟩
+      · intro h hc
+        obtain ⟨n, hn⟩ := Real.cos_eq_zero_iff.mp hc
+        exact h n (by rw [hn]; ring)
+- id: sin_eq_sin_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・一般解
+  statement: 実数$x,y$について、$\sin x=\sin y$であることと、$x=y+2n\pi$または$x=\pi-y+2n\pi$となる整数$n$が存在することは同値である。
+  statement_en: For real x, y, sin x = sin y if and only if there is an integer n with x = y + 2nπ or x = π - y + 2nπ.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  - ある整数$n$
+  conclusion: $\sin x=\sin y$の一般解は2系列で表される。
+  answer: |
+    $x,y$を実数とする。和積の公式より$\sin x-\sin y=2\cos\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。したがって$\sin x=\sin y$は、$\sin\dfrac{x-y}{2}=0$または$\cos\dfrac{x+y}{2}=0$と同値である。前者は$(x-y)/2=n\pi$となる整数$n$の存在、すなわち$x=y+2n\pi$と同値である。後者は$(x+y)/2=\pi/2+n\pi$となる整数$n$の存在、すなわち$x=\pi-y+2n\pi$と同値である。
+  strategy: Factor sin x - sin y by the sum-to-product formula and solve each factor.
+  sketch:
+  - 'apply_theorem: sin x - sin y = 2 cos((x+y)/2) sin((x-y)/2).'
+  - 'case_split: One of the factors vanishes.'
+  - 'derive: sin((x-y)/2) = 0 gives x = y + 2nπ.'
+  - 'derive: cos((x+y)/2) = 0 gives x = π - y + 2nπ.'
+  - 'conclude: Each step is reversible.'
+  openmath: (forall (x y) (<-> (= (sin x) (sin y)) (exists (n) (and (in n Z) (or (= x (+ y (* (* 2 n) pi))) (= x (+ (- pi y) (* (* 2 n) pi))))))))
+  hard_negative:
+    statement: 実数$x,y$について、$\sin x=\sin y$であることと、$x=\pm y+2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=\pi/3$、$y=2\pi/3$では$\sin x=\sin y$だが、$x-y=-\pi/3$も$x+y=\pi$も$2\pi$の整数倍ではない。$\pm y$の形は$\cos$の場合である。
+  target: |
+    ∀ x y : ℝ, Real.sin x = Real.sin y ↔ ∃ n : ℤ, x = y + 2 * n * Real.pi ∨ x = Real.pi - y + 2 * n * Real.pi
+  proof: |
+    by
+      intro x y
+      rw [Real.sin_eq_sin_iff]
+      constructor
+      · rintro ⟨k, h | h⟩
+        · refine ⟨-k, Or.inl ?_⟩
+          push_cast
+          rw [h]
+          ring
+        · refine ⟨k, Or.inr ?_⟩
+          rw [h]
+          ring
+      · rintro ⟨n, h | h⟩
+        · refine ⟨-n, Or.inl ?_⟩
+          push_cast
+          rw [h]
+          ring
+        · refine ⟨n, Or.inr ?_⟩
+          rw [h]
+          ring
+- id: cos_eq_cos_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・一般解
+  statement: 実数$x,y$について、$\cos x=\cos y$であることと、$x=y+2n\pi$または$x=-y+2n\pi$となる整数$n$が存在することは同値である。
+  statement_en: For real x, y, cos x = cos y if and only if there is an integer n with x = y + 2nπ or x = -y + 2nπ.
+  assumptions:
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x,y$
+  - ある整数$n$
+  conclusion: $\cos x=\cos y$の一般解は2系列で表される。
+  answer: |
+    $x,y$を実数とする。和積の公式より$\cos x-\cos y=-2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$である。したがって$\cos x=\cos y$は、$\sin\dfrac{x-y}{2}=0$または$\sin\dfrac{x+y}{2}=0$と同値である。前者は$(x-y)/2=n\pi$となる整数$n$の存在、すなわち$x=y+2n\pi$と同値である。後者は$(x+y)/2=n\pi$となる整数$n$の存在、すなわち$x=-y+2n\pi$と同値である。
+  strategy: Factor cos x - cos y by the sum-to-product formula and solve each factor.
+  sketch:
+  - 'apply_theorem: cos x - cos y = -2 sin((x+y)/2) sin((x-y)/2).'
+  - 'case_split: One of the factors vanishes.'
+  - 'derive: sin((x-y)/2) = 0 gives x = y + 2nπ.'
+  - 'derive: sin((x+y)/2) = 0 gives x = -y + 2nπ.'
+  - 'conclude: Each step is reversible.'
+  openmath: (forall (x y) (<-> (= (cos x) (cos y)) (exists (n) (and (in n Z) (or (= x (+ y (* (* 2 n) pi))) (= x (+ (neg y) (* (* 2 n) pi))))))))
+  hard_negative:
+    statement: 実数$x,y$について、$\cos x=\cos y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=\pi/3$、$y=-\pi/3$では$\cos x=\cos y$だが、$x-y=2\pi/3$は$2\pi$の整数倍ではない。
+  target: |
+    ∀ x y : ℝ, Real.cos x = Real.cos y ↔ ∃ n : ℤ, x = y + 2 * n * Real.pi ∨ x = -y + 2 * n * Real.pi
+  proof: |
+    by
+      intro x y
+      rw [Real.cos_eq_cos_iff]
+      constructor
+      · rintro ⟨k, h | h⟩
+        · refine ⟨-k, Or.inl ?_⟩
+          push_cast
+          rw [h]
+          ring
+        · refine ⟨k, Or.inr ?_⟩
+          rw [h]
+          ring
+      · rintro ⟨n, h | h⟩
+        · refine ⟨-n, Or.inl ?_⟩
+          push_cast
+          rw [h]
+          ring
+        · refine ⟨n, Or.inr ?_⟩
+          rw [h]
+          ring
+- id: tan_eq_tan_iff
+  kind: gap
+  level: high
+  topic: 三角方程式・一般解
+  statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x=\tan y$であることと、$x=y+n\pi$となる整数$n$が存在することは同値である。
+  statement_en: If x, y are real with cos x ≠ 0 and cos y ≠ 0, then tan x = tan y if and only if x = y + nπ for some integer n.
+  assumptions:
+  - $x,y$は実数
+  - $\cos x\neq0$
+  - $\cos y\neq0$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  - ある整数$n$
+  conclusion: $\tan x=\tan y$の一般解は$x=y+n\pi$である。
+  answer: |
+    $x,y$を$\cos x\neq0$、$\cos y\neq0$をみたす実数とする。$\tan x=\tan y$は、分母を払うと$\sin x\cos y=\cos x\sin y$、すなわち$\sin x\cos y-\cos x\sin y=0$と同値である。差の角の公式より左辺は$\sin(x-y)$である。$\sin(x-y)=0$は$x-y=n\pi$となる整数$n$の存在と同値であり、これは$x=y+n\pi$である。
+  strategy: Clear denominators to reach sin(x - y) = 0 and solve it.
+  sketch:
+  - 'setup: Assume cos x and cos y are nonzero.'
+  - 'translate: tan x = tan y is equivalent to sin x cos y - cos x sin y = 0.'
+  - 'apply_theorem: The left side equals sin(x - y).'
+  - 'conclude: sin(x - y) = 0 exactly when x - y is an integer multiple of π.'
+  openmath: (forall (x y) (-> (and (!= (cos x) 0) (!= (cos y) 0)) (<-> (= (tan x) (tan y)) (exists (n) (and (in n Z) (= x (+ y (* n pi))))))))
+  hard_negative:
+    statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたすとき、$\tan x=\tan y$であることと、$x=y+2n\pi$となる整数$n$が存在することは同値である。
+    reason: $x=\pi/4$、$y=5\pi/4$では$\tan x=\tan y=1$だが、$x-y=-\pi$は$2\pi$の整数倍ではない。
+  target: |
+    ∀ x y : ℝ, Real.cos x ≠ 0 → Real.cos y ≠ 0 → (Real.tan x = Real.tan y ↔ ∃ n : ℤ, x = y + n * Real.pi)
+  proof: |
+    by
+      intro x y hx hy
+      rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos, div_eq_div_iff hx hy]
+      constructor
+      · intro h
+        have hs : Real.sin (x - y) = 0 := by
+          rw [Real.sin_sub]
+          linarith
+        obtain ⟨n, hn⟩ := Real.sin_eq_zero_iff.mp hs
+        exact ⟨n, by linarith⟩
+      · rintro ⟨n, hn⟩
+        have hs : Real.sin (x - y) = 0 := by
+          rw [Real.sin_eq_zero_iff]
+          exact ⟨n, by linarith⟩
+        rw [Real.sin_sub] at hs
+        linarith
+- id: exists_unique_sin_principal
+  kind: gap
+  level: high
+  topic: 三角方程式・解の一意性
+  statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$-\dfrac{\pi}{2}\leq x\leq\dfrac{\pi}{2}$かつ$\sin x=a$をみたす実数$x$がただ一つ存在する。
+  statement_en: If a is real with -1 ≤ a ≤ 1, there is exactly one real x with -π/2 ≤ x ≤ π/2 and sin x = a.
+  assumptions:
+  - $a$は実数
+  - $-1\leq a\leq1$
+  quantifiers:
+  - $-1\leq a\leq1$をみたす任意の実数$a$
+  - ただ一つの実数$x$
+  conclusion: 区間$[-\pi/2,\pi/2]$に$\sin x=a$の解がただ一つある。
+  answer: |
+    $a$を$-1\leq a\leq1$をみたす実数とする。$\sin$は連続で$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$であるから、中間値の定理により区間$[-\pi/2,\pi/2]$に$\sin x=a$の解がある。$-\pi/2\leq x<y\leq\pi/2$なら和積の公式より$\sin y-\sin x=2\cos\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$であり、$-\pi/2<(x+y)/2<\pi/2$、$0<(y-x)/2\leq\pi/2$からこれは正である。よって$\sin$はこの区間で狭義に増加し、解はただ一つである。
+  strategy: Existence by the intermediate value theorem and uniqueness by strict monotonicity.
+  sketch:
+  - 'apply_theorem: The intermediate value theorem gives a solution on [-π/2, π/2].'
+  - 'apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2) for x < y.'
+  - 'derive: Both factors are positive on the interval, so sine is strictly increasing.'
+  - 'conclude: The solution is unique.'
+  openmath: (forall (a) (-> (and (<= (neg 1) a) (<= a 1)) (exists (x) (and (<= (neg (/ pi 2)) x) (<= x (/ pi 2)) (= (sin x) a) (forall (y) (-> (and (<= (neg (/ pi 2)) y) (<= y (/ pi 2)) (= (sin y) a)) (= y x)))))))
+  hard_negative:
+    statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$0\leq x\leq\pi$かつ$\sin x=a$をみたす実数$x$がただ一つ存在する。
+    reason: $a=1/2$では$x=\pi/6$と$x=5\pi/6$の二つがあり、$a=-1/2$では解がない。
+  target: |
+    ∀ a : ℝ, -1 ≤ a → a ≤ 1 → ∃! x : ℝ, -(Real.pi / 2) ≤ x ∧ x ≤ Real.pi / 2 ∧ Real.sin x = a
+  proof: |
+    by
+      intro a h1 h2
+      refine ⟨Real.arcsin a, ⟨Real.neg_pi_div_two_le_arcsin a, Real.arcsin_le_pi_div_two a, Real.sin_arcsin h1 h2⟩, ?_⟩
+      rintro y ⟨hy1, hy2, hy3⟩
+      apply Real.strictMonoOn_sin.injOn ⟨hy1, hy2⟩ ⟨Real.neg_pi_div_two_le_arcsin a, Real.arcsin_le_pi_div_two a⟩
+      rw [hy3, Real.sin_arcsin h1 h2]
+- id: exists_unique_cos_principal
+  kind: gap
+  level: high
+  topic: 三角方程式・解の一意性
+  statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$0\leq x\leq\pi$かつ$\cos x=a$をみたす実数$x$がただ一つ存在する。
+  statement_en: If a is real with -1 ≤ a ≤ 1, there is exactly one real x with 0 ≤ x ≤ π and cos x = a.
+  assumptions:
+  - $a$は実数
+  - $-1\leq a\leq1$
+  quantifiers:
+  - $-1\leq a\leq1$をみたす任意の実数$a$
+  - ただ一つの実数$x$
+  conclusion: 区間$[0,\pi]$に$\cos x=a$の解がただ一つある。
+  answer: |
+    $a$を$-1\leq a\leq1$をみたす実数とする。$\cos$は連続で$\cos0=1$、$\cos\pi=-1$であるから、中間値の定理により区間$[0,\pi]$に$\cos x=a$の解がある。$0\leq x<y\leq\pi$なら和積の公式より$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$であり、$0<(x+y)/2<\pi$、$0<(y-x)/2\leq\pi/2$からこれは正である。よって$\cos$はこの区間で狭義に減少し、解はただ一つである。
+  strategy: Existence by the intermediate value theorem and uniqueness by strict monotonicity.
+  sketch:
+  - 'apply_theorem: The intermediate value theorem gives a solution on [0, π].'
+  - 'apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2) for x < y.'
+  - 'derive: Both factors are positive on the interval, so cosine is strictly decreasing.'
+  - 'conclude: The solution is unique.'
+  openmath: (forall (a) (-> (and (<= (neg 1) a) (<= a 1)) (exists (x) (and (<= 0 x) (<= x pi) (= (cos x) a) (forall (y) (-> (and (<= 0 y) (<= y pi) (= (cos y) a)) (= y x)))))))
+  hard_negative:
+    statement: 実数$a$が$-1\leq a\leq1$をみたすとき、$-\pi\leq x\leq\pi$かつ$\cos x=a$をみたす実数$x$がただ一つ存在する。
+    reason: $a=1/2$では$x=\pi/3$と$x=-\pi/3$の二つがある。
+  target: |
+    ∀ a : ℝ, -1 ≤ a → a ≤ 1 → ∃! x : ℝ, 0 ≤ x ∧ x ≤ Real.pi ∧ Real.cos x = a
+  proof: |
+    by
+      intro a h1 h2
+      refine ⟨Real.arccos a, ⟨Real.arccos_nonneg a, Real.arccos_le_pi a, Real.cos_arccos h1 h2⟩, ?_⟩
+      rintro y ⟨hy1, hy2, hy3⟩
+      apply Real.strictAntiOn_cos.injOn ⟨hy1, hy2⟩ ⟨Real.arccos_nonneg a, Real.arccos_le_pi a⟩
+      rw [hy3, Real.cos_arccos h1 h2]
+- id: exists_unique_tan_principal
+  kind: gap
+  level: high
+  topic: 三角方程式・解の一意性
+  statement: 任意の実数$a$について、$-\dfrac{\pi}{2}<x<\dfrac{\pi}{2}$かつ$\tan x=a$をみたす実数$x$がただ一つ存在する。
+  statement_en: For every real a, there is exactly one real x with -π/2 < x < π/2 and tan x = a.
+  assumptions:
+  - $a$は実数
+  quantifiers:
+  - 任意の実数$a$
+  - ただ一つの実数$x$
+  conclusion: 開区間$(-\pi/2,\pi/2)$に$\tan x=a$の解がただ一つある。
+  answer: |
+    $a$を実数とする。$r=\sqrt{1+a^2}$とおくと$(1/r)^2+(a/r)^2=1$であり、$0<1/r\leq1$である。$\cos$は連続で$\cos0=1$、$\cos\pi=-1$であるから、中間値の定理により$\cos x=1/r$となる$x\in[0,\pi]$がとれる。$\cos x>0$より$0\leq x<\pi/2$である。$\sin x\geq0$と$\sin^2x=a^2/r^2$から$\sin x=|a|/r$である。$a\geq0$ならこの$x$を、$a<0$なら$-x$をとると、開区間$(-\pi/2,\pi/2)$の点で$\tan$の値が$a$となる。一意性を示す。$-\pi/2<x<y<\pi/2$なら$\tan y-\tan x=\dfrac{\sin(y-x)}{\cos x\cos y}$であり、$0<y-x<\pi$から分子は正、$\cos x,\cos y>0$から分母も正である。よって$\tan$はこの区間で狭義に増加し、解はただ一つである。
+  strategy: Build the solution from a point of the unit circle and use strict monotonicity for uniqueness.
+  sketch:
+  - 'construct: Take x in [0, π] with cos x = 1/√(1+a²).'
+  - 'derive: Then x < π/2 and sin x = |a|/√(1+a²).'
+  - 'case_split: Use x if a ≥ 0 and -x if a < 0 to get tan = a.'
+  - 'apply_theorem: tan y - tan x = sin(y-x)/(cos x cos y) > 0 for x < y in the interval.'
+  - 'conclude: The solution is unique.'
+  openmath: (forall (a) (exists (x) (and (< (neg (/ pi 2)) x) (< x (/ pi 2)) (= (tan x) a) (forall (y) (-> (and (< (neg (/ pi 2)) y) (< y (/ pi 2)) (= (tan y) a)) (= y x))))))
+  hard_negative:
+    statement: 任意の実数$a$について、$-\pi<x<\pi$かつ$\cos x\neq0$かつ$\tan x=a$をみたす実数$x$がただ一つ存在する。
+    reason: $a=1$では$x=\pi/4$と$x=-3\pi/4$の二つがある。区間の幅が周期$\pi$を超えている。
+  target: |
+    ∀ a : ℝ, ∃! x : ℝ, -(Real.pi / 2) < x ∧ x < Real.pi / 2 ∧ Real.tan x = a
+  proof: |
+    by
+      intro a
+      refine ⟨Real.arctan a, ⟨Real.neg_pi_div_two_lt_arctan a, Real.arctan_lt_pi_div_two a, Real.tan_arctan a⟩, ?_⟩
+      rintro y ⟨hy1, hy2, hy3⟩
+      apply Real.strictMonoOn_tan.injOn ⟨hy1, hy2⟩ ⟨Real.neg_pi_div_two_lt_arctan a, Real.arctan_lt_pi_div_two a⟩
+      rw [hy3, Real.tan_arctan a]
+- id: sin_strict_mono_interval
+  kind: gap
+  level: high
+  topic: 三角不等式・単調性
+  statement: 実数$x,y$が$-\dfrac{\pi}{2}\leq x<y\leq\dfrac{\pi}{2}$をみたすとき、$\sin x<\sin y$である。
+  statement_en: If x, y are real with -π/2 ≤ x < y ≤ π/2, then sin x < sin y.
+  assumptions:
+  - $x,y$は実数
+  - $-\pi/2\leq x<y\leq\pi/2$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: $\sin$は区間$[-\pi/2,\pi/2]$で狭義に増加する。
+  answer: |
+    $x,y$を$-\pi/2\leq x<y\leq\pi/2$をみたす実数とする。和積の公式より$\sin y-\sin x=2\cos\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$である。$-\pi/2<(x+y)/2<\pi/2$より$\cos((x+y)/2)>0$である。$0<(y-x)/2\leq\pi/2$より$\sin((y-x)/2)>0$である。よって$\sin y-\sin x>0$である。
+  strategy: Factor the difference by the sum-to-product formula and determine the sign of each factor.
+  sketch:
+  - 'apply_theorem: sin y - sin x = 2 cos((x+y)/2) sin((y-x)/2).'
+  - 'derive: (x+y)/2 lies in (-π/2, π/2), so the cosine is positive.'
+  - 'derive: (y-x)/2 lies in (0, π/2], so the sine is positive.'
+  - 'conclude: The difference is positive.'
+  openmath: (forall (x y) (-> (and (<= (neg (/ pi 2)) x) (< x y) (<= y (/ pi 2))) (< (sin x) (sin y))))
+  hard_negative:
+    statement: 実数$x,y$が$0\leq x<y\leq\pi$をみたすとき、$\sin x<\sin y$である。
+    reason: $x=\pi/2$、$y=\pi$では$\sin x=1$、$\sin y=0$である。
+  target: |
+    ∀ x y : ℝ, -(Real.pi / 2) ≤ x → x < y → y ≤ Real.pi / 2 → Real.sin x < Real.sin y
+  proof: |
+    by
+      intro x y h1 h2 h3
+      exact Real.sin_lt_sin_of_lt_of_le_pi_div_two h1 h3 h2
+- id: cos_strict_anti_interval
+  kind: gap
+  level: high
+  topic: 三角不等式・単調性
+  statement: 実数$x,y$が$0\leq x<y\leq\pi$をみたすとき、$\cos y<\cos x$である。
+  statement_en: If x, y are real with 0 ≤ x < y ≤ π, then cos y < cos x.
+  assumptions:
+  - $x,y$は実数
+  - $0\leq x<y\leq\pi$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: $\cos$は区間$[0,\pi]$で狭義に減少する。
+  answer: |
+    $x,y$を$0\leq x<y\leq\pi$をみたす実数とする。和積の公式より$\cos x-\cos y=2\sin\dfrac{x+y}{2}\sin\dfrac{y-x}{2}$である。$0<(x+y)/2<\pi$より$\sin((x+y)/2)>0$である。$0<(y-x)/2\leq\pi/2$より$\sin((y-x)/2)>0$である。よって$\cos x-\cos y>0$である。
+  strategy: Factor the difference by the sum-to-product formula and determine the sign of each factor.
+  sketch:
+  - 'apply_theorem: cos x - cos y = 2 sin((x+y)/2) sin((y-x)/2).'
+  - 'derive: (x+y)/2 lies in (0, π), so its sine is positive.'
+  - 'derive: (y-x)/2 lies in (0, π/2], so its sine is positive.'
+  - 'conclude: The difference is positive.'
+  openmath: (forall (x y) (-> (and (<= 0 x) (< x y) (<= y pi)) (< (cos y) (cos x))))
+  hard_negative:
+    statement: 実数$x,y$が$-\pi\leq x<y\leq0$をみたすとき、$\cos y<\cos x$である。
+    reason: $x=-\pi$、$y=0$では$\cos y=1$、$\cos x=-1$である。この区間では$\cos$は増加する。
+  target: |
+    ∀ x y : ℝ, 0 ≤ x → x < y → y ≤ Real.pi → Real.cos y < Real.cos x
+  proof: |
+    by
+      intro x y h1 h2 h3
+      exact Real.cos_lt_cos_of_nonneg_of_le_pi h1 h3 h2
+- id: tan_lt_tan_iff
+  kind: gap
+  level: high
+  topic: 三角不等式・単調性
+  statement: 実数$x,y$が$-\dfrac{\pi}{2}<x<\dfrac{\pi}{2}$、$-\dfrac{\pi}{2}<y<\dfrac{\pi}{2}$をみたすとき、$\tan x<\tan y$と$x<y$は同値である。
+  statement_en: If x, y are real and both lie in (-π/2, π/2), then tan x < tan y if and only if x < y.
+  assumptions:
+  - $x,y$は実数
+  - $-\pi/2<x<\pi/2$
+  - $-\pi/2<y<\pi/2$
+  quantifiers:
+  - 上の条件をみたす任意の実数$x,y$
+  conclusion: この区間では$\tan x<\tan y$と$x<y$は同値である。
+  answer: |
+    $x,y$を開区間$(-\pi/2,\pi/2)$の実数とする。この区間で$\cos$は正なので、差の角の公式より$\tan y-\tan x=\dfrac{\sin y\cos x-\cos y\sin x}{\cos x\cos y}=\dfrac{\sin(y-x)}{\cos x\cos y}$である。$x<y$なら$0<y-x<\pi$であり$\sin(y-x)>0$なので$\tan x<\tan y$である。$x\geq y$なら、$x=y$では$\tan x=\tan y$であり、$x>y$では同じ議論により$\tan y<\tan x$である。したがって$\tan x<\tan y$なら$x<y$である。
+  strategy: Express tan y - tan x as sin(y-x)/(cos x cos y) and read off its sign.
+  sketch:
+  - 'derive: tan y - tan x = sin(y-x)/(cos x cos y) with a positive denominator.'
+  - 'derive: If x < y then 0 < y-x < π, so the difference is positive.'
+  - 'case_split: If x ≥ y then tan x ≥ tan y by the same computation.'
+  - 'conclude: The two inequalities are equivalent.'
+  openmath: (forall (x y) (-> (and (< (neg (/ pi 2)) x) (< x (/ pi 2)) (< (neg (/ pi 2)) y) (< y (/ pi 2))) (<-> (< (tan x) (tan y)) (< x y))))
+  hard_negative:
+    statement: 実数$x,y$が$\cos x\neq0$、$\cos y\neq0$をみたし$0<x<y<\pi$であるとき、$\tan x<\tan y$である。
+    reason: $x=\pi/4$、$y=3\pi/4$では$\tan x=1$、$\tan y=-1$である。単調なのは$\pi/2$をまたがない区間である。
+  target: |
+    ∀ x y : ℝ, -(Real.pi / 2) < x → x < Real.pi / 2 → -(Real.pi / 2) < y → y < Real.pi / 2 → (Real.tan x < Real.tan y ↔ x < y)
+  proof: |
+    by
+      intro x y h1 h2 h3 h4
+      exact Real.strictMonoOn_tan.lt_iff_lt ⟨h1, h2⟩ ⟨h3, h4⟩
+- id: sin_ge_iff_on_interval
+  kind: gap
+  level: high
+  topic: 三角不等式・解の範囲
+  statement: 実数$a,x$が$-\dfrac{\pi}{2}\leq a\leq\dfrac{\pi}{2}$、$-\dfrac{\pi}{2}\leq x\leq\dfrac{3\pi}{2}$をみたすとき、$\sin a\leq\sin x$と$a\leq x\leq\pi-a$は同値である。
+  statement_en: If a, x are real with -π/2 ≤ a ≤ π/2 and -π/2 ≤ x ≤ 3π/2, then sin a ≤ sin x if and only if a ≤ x ≤ π - a.
+  assumptions:
+  - $a,x$は実数
+  - $-\pi/2\leq a\leq\pi/2$
+  - $-\pi/2\leq x\leq3\pi/2$
+  quantifiers:
+  - 上の条件をみたす任意の実数$a,x$
+  conclusion: この周期の範囲で$\sin x\geq\sin a$の解は$a\leq x\leq\pi-a$である。
+  answer: |
+    $a,x$を$-\pi/2\leq a\leq\pi/2$、$-\pi/2\leq x\leq3\pi/2$をみたす実数とする。$\sin$は$[-\pi/2,\pi/2]$で狭義に増加する。$x\leq\pi/2$のとき、$\sin a\leq\sin x$は$a\leq x$と同値である。さらに$x\leq\pi/2\leq\pi-a$は常に成り立つので、$a\leq x\leq\pi-a$とも同値である。$x>\pi/2$のときは$\pi-x\in[-\pi/2,\pi/2)$であり$\sin x=\sin(\pi-x)$なので、$\sin a\leq\sin x$は$a\leq\pi-x$すなわち$x\leq\pi-a$と同値である。さらに$a\leq\pi/2<x$は常に成り立つので、$a\leq x\leq\pi-a$とも同値である。
+  strategy: Split at x = π/2 and use strict monotonicity of sine, reflecting x by π - x on the upper part.
+  sketch:
+  - 'apply_theorem: Sine is strictly increasing on [-π/2, π/2].'
+  - 'case_split: Split according to x ≤ π/2 or x > π/2.'
+  - 'derive: For x ≤ π/2 the inequality means a ≤ x, and x ≤ π - a is automatic.'
+  - 'derive: For x > π/2 use sin x = sin(π - x), so the inequality means x ≤ π - a, and a ≤ x is automatic.'
+  - 'conclude: Both cases give a ≤ x ≤ π - a.'
+  openmath: (forall (a x) (-> (and (<= (neg (/ pi 2)) a) (<= a (/ pi 2)) (<= (neg (/ pi 2)) x) (<= x (/ (* 3 pi) 2))) (<-> (<= (sin a) (sin x)) (and (<= a x) (<= x (- pi a))))))
+  hard_negative:
+    statement: 任意の実数$x$と$-\dfrac{\pi}{2}\leq a\leq\dfrac{\pi}{2}$をみたす実数$a$について、$\sin a\leq\sin x$と$a\leq x\leq\pi-a$は同値である。
+    reason: $a=0$、$x=2\pi$では$\sin a\leq\sin x$だが$x\leq\pi$をみたさない。$x$の範囲を1周期に限る必要がある。
+  target: |
+    ∀ a x : ℝ, -(Real.pi / 2) ≤ a → a ≤ Real.pi / 2 → -(Real.pi / 2) ≤ x → x ≤ 3 * Real.pi / 2 → (Real.sin a ≤ Real.sin x ↔ a ≤ x ∧ x ≤ Real.pi - a)
+  proof: |
+    by
+      intro a x ha1 ha2 hx1 hx2
+      have hpi := Real.pi_pos
+      by_cases h : x ≤ Real.pi / 2
+      · have hm := Real.strictMonoOn_sin.le_iff_le (a := a) (b := x) ⟨ha1, ha2⟩ ⟨hx1, h⟩
+        rw [hm]
+        constructor
+        · intro hax
+          exact ⟨hax, by linarith⟩
+        · exact fun hc => hc.1
+      · have h' : Real.pi / 2 < x := not_le.mp h
+        have hm := Real.strictMonoOn_sin.le_iff_le (a := a) (b := Real.pi - x) ⟨ha1, ha2⟩ ⟨by linarith, by linarith⟩
+        rw [Real.sin_pi_sub] at hm
+        rw [hm]
+        constructor
+        · intro hax
+          exact ⟨by linarith, by linarith⟩
+        · intro hc
+          linarith [hc.2]
+- id: cos_ge_iff_on_interval
+  kind: gap
+  level: high
+  topic: 三角不等式・解の範囲
+  statement: 実数$a,x$が$0\leq a\leq\pi$、$-\pi\leq x\leq\pi$をみたすとき、$\cos a\leq\cos x$と$|x|\leq a$は同値である。
+  statement_en: If a, x are real with 0 ≤ a ≤ π and -π ≤ x ≤ π, then cos a ≤ cos x if and only if |x| ≤ a.
+  assumptions:
+  - $a,x$は実数
+  - $0\leq a\leq\pi$
+  - $-\pi\leq x\leq\pi$
+  quantifiers:
+  - 上の条件をみたす任意の実数$a,x$
+  conclusion: この周期の範囲で$\cos x\geq\cos a$の解は$|x|\leq a$である。
+  answer: |
+    $a,x$を$0\leq a\leq\pi$、$-\pi\leq x\leq\pi$をみたす実数とする。$\cos$は偶関数なので$\cos x=\cos|x|$であり、$|x|\in[0,\pi]$である。$\cos$は$[0,\pi]$で狭義に減少するから、$\cos a\leq\cos|x|$は$|x|\leq a$と同値である。
+  strategy: Replace x by |x| using evenness, then use strict monotonicity on [0, π].
+  sketch:
+  - 'translate: cos x = cos |x| and |x| lies in [0, π].'
+  - 'apply_theorem: Cosine is strictly decreasing on [0, π].'
+  - 'conclude: cos a ≤ cos |x| is equivalent to |x| ≤ a.'
+  openmath: (forall (a x) (-> (and (<= 0 a) (<= a pi) (<= (neg pi) x) (<= x pi)) (<-> (<= (cos a) (cos x)) (<= (abs x) a))))
+  hard_negative:
+    statement: 実数$a,x$が$0\leq a\leq\pi$、$-\pi\leq x\leq\pi$をみたすとき、$\cos a\leq\cos x$と$x\leq a$は同値である。
+    reason: $a=\pi/2$、$x=-\pi$では$x\leq a$だが$\cos a=0$、$\cos x=-1$である。下側の限界$-a$を落とせない。
+  target: |
+    ∀ a x : ℝ, 0 ≤ a → a ≤ Real.pi → -Real.pi ≤ x → x ≤ Real.pi → (Real.cos a ≤ Real.cos x ↔ |x| ≤ a)
+  proof: |
+    by
+      intro a x ha1 ha2 hx1 hx2
+      rw [← Real.cos_abs x]
+      exact Real.strictAntiOn_cos.le_iff_ge ⟨ha1, ha2⟩ ⟨abs_nonneg x, abs_le.mpr ⟨hx1, hx2⟩⟩
+- id: range_comp_sin_cos
+  kind: gap
+  level: high
+  topic: 三角関数・置き換えと値域
+  statement: 実数値関数$f$と実数$y$について、$f(\sin x)=y$をみたす実数$x$が存在することは、$-1\leq t\leq1$かつ$f(t)=y$をみたす実数$t$が存在することと同値である。$\cos$についても同じである。
+  statement_en: For a real function f and real y, f(sin x) = y has a real solution x if and only if f(t) = y for some t with -1 ≤ t ≤ 1; the same holds with cos in place of sin.
+  assumptions:
+  - $f$は実数全体で定義された実数値関数
+  - $y$は実数
+  quantifiers:
+  - 任意の実数値関数$f$と実数$y$
+  conclusion: $f(\sin x)$と$f(\cos x)$の値域は$f$の区間$[-1,1]$での値域に等しい。
+  answer: |
+    $f$を実数値関数、$y$を実数とする。$f(\sin x)=y$となる$x$があれば、$t=\sin x$は$-1\leq t\leq1$と$f(t)=y$をみたす。逆に$-1\leq t\leq1$かつ$f(t)=y$となる$t$があるとする。$\sin$は連続で$\sin(-\pi/2)=-1$、$\sin(\pi/2)=1$であるから、中間値の定理により$\sin x=t$となる$x$がとれる。この$x$について$f(\sin x)=y$である。$\cos$については$\cos0=1$、$\cos\pi=-1$を用いて同様に示せる。
+  strategy: The substitution t = sin x is onto [-1, 1], so existence on either side transfers.
+  sketch:
+  - 'derive: Given x, take t = sin x, which lies in [-1, 1].'
+  - 'apply_theorem: Given t in [-1, 1], the intermediate value theorem gives x with sin x = t.'
+  - 'derive: Then f(sin x) = f(t) = y.'
+  - 'conclude: The same argument works for cosine with the values at 0 and π.'
+  openmath: (forall (f y) (and (<-> (exists (x) (= (fn_value f (sin x)) y)) (exists (t) (and (<= (neg 1) t) (<= t 1) (= (fn_value f t) y)))) (<-> (exists (x) (= (fn_value f (cos x)) y)) (exists (t) (and (<= (neg 1) t) (<= t 1) (= (fn_value f t) y))))))
+  hard_negative:
+    statement: 実数値関数$f$と実数$y$について、$f(\sin x)=y$をみたす実数$x$が存在することは、$f(t)=y$をみたす実数$t$が存在することと同値である。
+    reason: $f(t)=t$、$y=2$では$t=2$が解だが、$\sin x=2$となる$x$はない。置き換えた変数の範囲を$[-1,1]$に制限する必要がある。
+  target: |
+    ∀ (f : ℝ → ℝ) (y : ℝ), ((∃ x : ℝ, f (Real.sin x) = y) ↔ ∃ t : ℝ, -1 ≤ t ∧ t ≤ 1 ∧ f t = y) ∧ ((∃ x : ℝ, f (Real.cos x) = y) ↔ ∃ t : ℝ, -1 ≤ t ∧ t ≤ 1 ∧ f t = y)
+  proof: |
+    by
+      intro f y
+      constructor
+      · constructor
+        · rintro ⟨x, hx⟩
+          exact ⟨Real.sin x, Real.neg_one_le_sin x, Real.sin_le_one x, hx⟩
+        · rintro ⟨t, h1, h2, ht⟩
+          exact ⟨Real.arcsin t, by rw [Real.sin_arcsin h1 h2, ht]⟩
+      · constructor
+        · rintro ⟨x, hx⟩
+          exact ⟨Real.cos x, Real.neg_one_le_cos x, Real.cos_le_one x, hx⟩
+        · rintro ⟨t, h1, h2, ht⟩
+          exact ⟨Real.arccos t, by rw [Real.cos_arccos h1 h2, ht]⟩
+- id: angle_sum_pi_tan_identity
+  kind: gap
+  level: high
+  topic: 三角関数・和が π の三つの角
+  statement: 実数$A,B,C$が$A+B+C=\pi$、$\cos A\neq0$、$\cos B\neq0$、$\cos C\neq0$をみたすとき、$\tan A+\tan B+\tan C=\tan A\tan B\tan C$である。
+  statement_en: If A, B, C are real with A + B + C = π and cos A, cos B, cos C all nonzero, then tan A + tan B + tan C = tan A tan B tan C.
+  assumptions:
+  - $A,B,C$は実数
+  - $A+B+C=\pi$
+  - $\cos A,\cos B,\cos C$はいずれも$0$でない
+  quantifiers:
+  - 上の条件をみたす任意の実数$A,B,C$
+  conclusion: 三つの正接の和と積が等しい。
+  answer: |
+    $A,B,C$を$A+B+C=\pi$、$\cos A\neq0$、$\cos B\neq0$、$\cos C\neq0$をみたす実数とする。$C=\pi-(A+B)$より$\sin C=\sin(A+B)=\sin A\cos B+\cos A\sin B$、$\cos C=-\cos(A+B)=\sin A\sin B-\cos A\cos B$である。結論の両辺に$\cos A\cos B\cos C\neq0$を掛けると、示すべき式は
+    $(\sin A\cos B+\cos A\sin B)\cos C+\cos A\cos B\sin C=\sin A\sin B\sin C$となる。左辺の括弧は$\sin C$であるから、左辺は$\sin C(\cos C+\cos A\cos B)$である。$\cos C+\cos A\cos B=\sin A\sin B$なので、左辺は右辺に等しい。
+  strategy: Clear denominators and substitute sin C and cos C in terms of A and B.
+  sketch:
+  - 'setup: Assume the cosines are nonzero so all tangents are defined.'
+  - 'derive: sin C = sin(A+B) and cos C = sin A sin B - cos A cos B.'
+  - 'translate: Multiply the claim by cos A cos B cos C.'
+  - 'derive: The left side becomes sin C (cos C + cos A cos B).'
+  - 'conclude: That equals sin A sin B sin C.'
+  openmath: (forall (a b c) (-> (and (= (+ (+ a b) c) pi) (!= (cos a) 0) (!= (cos b) 0) (!= (cos c) 0)) (= (+ (+ (tan a) (tan b)) (tan c)) (* (* (tan a) (tan b)) (tan c)))))
+  hard_negative:
+    statement: 実数$A,B,C$が$A+B+C=\dfrac{\pi}{2}$をみたし、余弦がいずれも$0$でないとき、$\tan A+\tan B+\tan C=\tan A\tan B\tan C$である。
+    reason: $A=B=C=\pi/6$では左辺は$\sqrt{3}$、右辺は$1/(3\sqrt{3})$である。和が$\pi$であることが必要である。
+  target: |
+    ∀ A B C : ℝ, A + B + C = Real.pi → Real.cos A ≠ 0 → Real.cos B ≠ 0 → Real.cos C ≠ 0 → Real.tan A + Real.tan B + Real.tan C = Real.tan A * Real.tan B * Real.tan C
+  proof: |
+    by
+      intro A B C h ha hb hc
+      have hC : C = Real.pi - (A + B) := by linarith
+      have hs : Real.sin C = Real.sin A * Real.cos B + Real.cos A * Real.sin B := by
+        rw [hC, Real.sin_pi_sub, Real.sin_add]
+      have hco : Real.cos C = Real.sin A * Real.sin B - Real.cos A * Real.cos B := by
+        rw [hC, Real.cos_pi_sub, Real.cos_add]
+        ring
+      rw [Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos, Real.tan_eq_sin_div_cos]
+      field_simp
+      rw [hs]
+      rw [hco]
+      ring

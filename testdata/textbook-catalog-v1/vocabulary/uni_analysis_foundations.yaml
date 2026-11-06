@@ -1,0 +1,62 @@
+# Proposed additive OpenMath vocabulary for the foundations of analysis.
+strict_mono_index: {args: [term], returns: prop, meaning: "the index map from naturals to naturals is strictly increasing"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by a lambda converges to L"}
+seq_antitone: {args: [term], returns: prop, meaning: "the real sequence a is nonincreasing"}
+real_series_summable: {args: [term_function], returns: prop, meaning: "the series of the terms given by a lambda converges unconditionally"}
+real_series_sum: {args: [term_function], returns: term, meaning: "the sum of the series of the terms given by a lambda"}
+real_partial_sum: {args: [term_function, term], returns: term, meaning: "sum of the first N terms given by a lambda"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+fn_continuous_at: {args: [term_function, term], returns: prop, meaning: "f is continuous at the point a"}
+fn_limit_at_top: {args: [term_function, term], returns: prop, meaning: "f(x) tends to L as x tends to plus infinity; arguments f, L"}
+fn_limit_at_bot: {args: [term_function, term], returns: prop, meaning: "f(x) tends to L as x tends to minus infinity; arguments f, L"}
+fn_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a with x different from a; arguments f, a, L"}
+fn_right_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the right; arguments f, a, L"}
+fn_left_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the left; arguments f, a, L"}
+uniform_continuous: {args: [term], returns: prop, meaning: "f is uniformly continuous"}
+uniform_continuous_on: {args: [term, term], returns: prop, meaning: "f is uniformly continuous on the set S"}
+open_interval: {args: [term, term], returns: term, meaning: "open interval (a, b) of reals"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u; arguments f, u, a"}
+cont_diff_at: {args: [term, term, term], returns: prop, meaning: "f is of class C^k near a; arguments k, f, a"}
+iterated_deriv: {args: [term_function, term, term], returns: term, meaning: "n-th derivative of f evaluated at x; arguments f, n, x"}
+binom: {args: [term, term], returns: term, meaning: "binomial coefficient n choose k"}
+metric_space: {args: [term], returns: prop, meaning: "X is a metric space"}
+complete_space: {args: [term], returns: prop, meaning: "X is a complete metric space"}
+closed_in: {args: [term, term], returns: prop, meaning: "C is a closed subset of the topological space X"}
+dist_to_set: {args: [term, term], returns: term, meaning: "infimum of the distances from the point x to the set S"}
+# Added with the university expansion; copied unchanged from the other domain vocabularies,
+# except fn_tends_to_infinity_at_top, fn_tends_to_infinity_at_bot and discontinuity_set, which are new.
+is_lub: {args: [term, term], returns: prop, meaning: "a is the least upper bound of the set S"}
+is_glb: {args: [term, term], returns: prop, meaning: "a is the greatest lower bound of the set S"}
+seq_monotone: {args: [term], returns: prop, meaning: "the real sequence a is nondecreasing"}
+seq_limsup: {args: [term], returns: term, meaning: "limit superior of the real sequence a"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of reals"}
+fn_continuous_on: {args: [term_function, term], returns: prop, meaning: "f is continuous on the set S"}
+seq_fn_tends_to_infinity: {args: [term_function], returns: prop, meaning: "the sequence given by a lambda diverges to plus infinity"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b"}
+closed_half_line_right: {args: [term], returns: term, meaning: "closed half-line from a to plus infinity"}
+max_of: {args: [term, term], returns: term, meaning: "maximum of two real numbers"}
+fn_tends_to_infinity_at_top: {args: [term_function], returns: prop, meaning: "f(x) diverges to plus infinity as x tends to plus infinity"}
+fn_tends_to_infinity_at_bot: {args: [term_function], returns: prop, meaning: "f(x) diverges to plus infinity as x tends to minus infinity"}
+countable_set: {args: [term], returns: prop, meaning: "S is a countable set"}
+discontinuity_set: {args: [term], returns: term, meaning: "the set of points at which f is not continuous"}
+fn_monotone: {args: [term_function], returns: prop, meaning: "f is nondecreasing on the whole real line"}
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+cont_diff_on: {args: [term_function, term, term], returns: prop, meaning: "f is n times continuously differentiable on the set S; arguments f, n, S"}
+iterated_deriv_within: {args: [term_function, term, term, term], returns: term, meaning: "n-th derivative of f within the set S evaluated at x; arguments f, n, S, x"}
+differentiable_on: {args: [term_function, term], returns: prop, meaning: "f is differentiable on the set S"}
+open_interval_between: {args: [term, term], returns: term, meaning: "open interval between a and b, in whichever order they lie"}
+closed_interval_between: {args: [term, term], returns: term, meaning: "closed interval between a and b, in whichever order they lie"}
+convex_function_on: {args: [term, term], returns: prop, meaning: "f is a convex function on the set S"}
+uniform_converges_on: {args: [term_function, term_function, term], returns: prop, meaning: "the function sequence given by a two-variable lambda converges uniformly on S to the function given by a lambda"}
+singleton_set: {args: [term], returns: term, meaning: "the singleton set containing x"}
+cauchy_seq: {args: [term, term], returns: prop, meaning: "a is a Cauchy sequence in the metric space X"}
+sequentially_compact_in: {args: [term, term], returns: prop, meaning: "K is a sequentially compact subset of X"}
+totally_bounded_in: {args: [term, term], returns: prop, meaning: "S is a totally bounded subset of the metric space X"}
+open_ball: {args: [term, term], returns: term, meaning: "open ball with center x and radius r"}
+closed_ball: {args: [term, term], returns: term, meaning: "closed ball with center x and radius r"}
+closure_of: {args: [term], returns: term, meaning: "topological closure of S"}
+iterate_of: {args: [term, term, term], returns: term, meaning: "n-fold iterate of f applied to x"}
+compact_set: {args: [term], returns: prop, meaning: "S is a compact set"}
+continuous_map: {args: [term], returns: prop, meaning: "f is continuous"}
+image_of: {args: [term, term], returns: term, meaning: "image of the set S under f"}

@@ -1,0 +1,56 @@
+# Proposed additive OpenMath vocabulary for functional analysis (cd=pals2).
+normed_space: {args: [term], returns: prop, meaning: "E is a normed vector space over R or C"}
+banach_space: {args: [term], returns: prop, meaning: "E is a Banach space"}
+inner_product_space: {args: [term], returns: prop, meaning: "E is an inner product space"}
+hilbert_space: {args: [term], returns: prop, meaning: "E is a Hilbert space"}
+norm: {args: [term], returns: term, meaning: "norm of a vector or operator norm of a bounded operator"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+linear_operator: {args: [term, term, term], returns: prop, meaning: "T is a linear map from E to F"}
+bounded_operator: {args: [term, term, term], returns: prop, meaning: "T is a bounded linear operator from E to F"}
+bounded_operator_space: {args: [term, term], returns: term, meaning: "the normed space of bounded linear operators from E to F"}
+continuous_map: {args: [term], returns: prop, meaning: "f is continuous"}
+continuous_map_at: {args: [term, term], returns: prop, meaning: "f is continuous at x"}
+operator_comp: {args: [term, term], returns: term, meaning: "composition of operators S after T"}
+identity_operator: {args: [term], returns: term, meaning: "identity operator on E"}
+surjective_on: {args: [term, term], returns: prop, meaning: "f maps onto the space F"}
+bijective_on: {args: [term, term, term], returns: prop, meaning: "f is a bijection from E to F"}
+open_map: {args: [term], returns: prop, meaning: "f sends open sets to open sets"}
+closed_graph: {args: [term], returns: prop, meaning: "the graph of f is closed in the product space"}
+closed_set: {args: [term], returns: prop, meaning: "S is a closed set"}
+open_set: {args: [term], returns: prop, meaning: "S is an open set"}
+compact_set: {args: [term], returns: prop, meaning: "S is a compact set"}
+closed_ball: {args: [term, term], returns: term, meaning: "closed ball with centre x and radius r"}
+unit_closed_ball: {args: [term], returns: term, meaning: "closed unit ball of the normed space E"}
+series_summable: {args: [term], returns: prop, meaning: "the series of the family or sequence a converges unconditionally"}
+series_abs_summable: {args: [term], returns: prop, meaning: "the series of norms of a converges"}
+partial_sums_converge: {args: [term], returns: prop, meaning: "the sequence of partial sums of the series of a converges"}
+complete_space: {args: [term], returns: prop, meaning: "the normed space E is complete"}
+finite_dim_space: {args: [term], returns: prop, meaning: "E is finite dimensional"}
+locally_compact_space: {args: [term], returns: prop, meaning: "E is locally compact"}
+seminorm_definite: {args: [term, term], returns: prop, meaning: "p is a norm on the vector space E"}
+subspace_of: {args: [term, term], returns: prop, meaning: "K is a linear subspace of E"}
+proper_subspace_of: {args: [term, term], returns: prop, meaning: "K is a proper linear subspace of E"}
+dual_space: {args: [term], returns: term, meaning: "continuous dual of the normed space E"}
+weak_star_compact: {args: [term, term], returns: prop, meaning: "the subset S of the dual of E is compact in the weak-* topology"}
+canonical_embedding: {args: [term], returns: term, meaning: "canonical map from E into its double dual"}
+restricts_to: {args: [term, term, term], returns: prop, meaning: "g restricted to the subspace K equals f"}
+orthogonal_complement: {args: [term], returns: term, meaning: "orthogonal complement of a subspace"}
+convex_set: {args: [term], returns: prop, meaning: "S is convex"}
+orthonormal_family: {args: [term, term], returns: prop, meaning: "e is an orthonormal family in E"}
+hilbert_basis: {args: [term, term], returns: prop, meaning: "b is an orthonormal basis of the Hilbert space E in the complete sense"}
+series_sum_fn: {args: [term_function], returns: term, meaning: "sum of the series of the indexed expression"}
+adjoint: {args: [term], returns: term, meaning: "Hilbert space adjoint of a bounded operator"}
+kernel: {args: [term], returns: term, meaning: "kernel of a linear map"}
+range_of: {args: [term], returns: term, meaning: "range of a map"}
+compact_operator: {args: [term], returns: prop, meaning: "T is a compact operator"}
+banach_algebra: {args: [term], returns: prop, meaning: "A is a complete normed unital ring or algebra"}
+complex_banach_algebra: {args: [term], returns: prop, meaning: "A is a complete normed unital complex algebra"}
+unit_of: {args: [term], returns: term, meaning: "multiplicative identity of the algebra A"}
+spectrum_of: {args: [term], returns: term, meaning: "spectrum of an element or operator"}
+spectral_radius: {args: [term], returns: term, meaning: "spectral radius of an element"}
+nonempty_set: {args: [term], returns: prop, meaning: "S is nonempty"}
+pointwise_tends_to: {args: [term, term], returns: prop, meaning: "the operators g_n converge pointwise to f"}
+operator_tends_to: {args: [term, term], returns: prop, meaning: "the operators T_n converge to T in operator norm"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by the function of n converges to L"}
+series_summable_fn: {args: [term_function], returns: prop, meaning: "the series of the indexed expression converges unconditionally"}
+invertible_operators: {args: [term, term], returns: term, meaning: "set of bounded linear operators from E to F having a bounded linear inverse"}

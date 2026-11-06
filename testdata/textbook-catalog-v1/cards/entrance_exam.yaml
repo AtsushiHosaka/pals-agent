@@ -1,0 +1,2016 @@
+- id: sqrt_two_add_sqrt_three_irrational
+  kind: textbook
+  level: 1
+  topic: 無理数・平方根の和
+  statement: $\sqrt{2}+\sqrt{3}$は無理数である。
+  statement_en: The real number √2 + √3 is irrational.
+  assumptions:
+  - $\sqrt{2},\sqrt{3}$は正の平方根
+  quantifiers:
+  - なし
+  conclusion: $\sqrt{2}+\sqrt{3}$は無理数である。
+  answer: |
+    $\sqrt{2},\sqrt{3}$を正の平方根とする。$\sqrt{2}+\sqrt{3}$が有理数$q$に等しいと仮定する。両辺を$2$乗すると$5+2\sqrt{6}=q^2$となり、$\sqrt{6}=\dfrac{q^2-5}{2}$は有理数になる。
+    一方、$\sqrt{6}=\dfrac{a}{b}$ ($a,b$は互いに素な正の整数) とすると、$a^2=6b^2$より$a$は偶数である。$a=2c$とおくと$2c^2=3b^2$より$b$も偶数となり、$a,b$が互いに素であることに反する。したがって$\sqrt{6}$は無理数であり、矛盾が生じる。よって$\sqrt{2}+\sqrt{3}$は無理数である。
+  strategy: Square the assumed rational value to force √6 to be rational.
+  sketch:
+  - 'setup: Assume √2 + √3 = q with q rational.'
+  - 'derive: Squaring gives √6 = (q² - 5)/2, so √6 would be rational.'
+  - 'apply_theorem: 6 is not a perfect square, so √6 is irrational.'
+  - 'conclude: This contradiction shows √2 + √3 is irrational.'
+  openmath: (notin (+ (root 2 2) (root 3 2)) Q)
+  hard_negative:
+    statement: 任意の正の整数a,bについて√a+√bは無理数である。
+    reason: a=4, b=9とすると√a+√b=5で有理数である。平方数でない数の平方根を使う点が必要になる。
+  target: |
+    Irrational (Real.sqrt 2 + Real.sqrt 3)
+  proof: |
+    by
+      have h6 : Irrational (Real.sqrt 6) := by
+        have : Irrational (Real.sqrt ((6 : ℕ) : ℝ)) := irrational_sqrt_natCast_iff.mpr (by norm_num)
+        simpa using this
+      rintro ⟨q, hq⟩
+      apply h6
+      refine ⟨(q ^ 2 - 5) / 2, ?_⟩
+      have h2 : Real.sqrt 2 ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+      have h3 : Real.sqrt 3 ^ 2 = 3 := Real.sq_sqrt (by norm_num)
+      have hm : Real.sqrt 6 = Real.sqrt 2 * Real.sqrt 3 := by
+        rw [← Real.sqrt_mul (by norm_num)]; norm_num
+      push_cast
+      rw [hq, hm]
+      nlinarith
+- id: log_ten_two_irrational
+  kind: textbook
+  level: 1
+  topic: 無理数・対数
+  statement: $\log_{10}2=\dfrac{\log 2}{\log 10}$（$\log$は自然対数）は無理数である。
+  statement_en: The real number log_10 2 = log 2 / log 10 is irrational.
+  assumptions:
+  - $\log$を自然対数とし、$\log_{10}2$は$\dfrac{\log 2}{\log 10}$で定める
+  quantifiers:
+  - なし
+  conclusion: $\log_{10}2$は無理数である。
+  answer: |
+    $\log$を自然対数とし、$\log_{10}2=\dfrac{\log 2}{\log 10}$とする。$\log 2,\log 10>0$より$\log_{10}2>0$なので、有理数であれば正の整数$a,b$により$\dfrac{\log 2}{\log 10}=\dfrac{a}{b}$と書ける。このとき$b\log 2=a\log 10$より$2^b=10^a$が成り立つ。$a\geq 1$より右辺は$5$で割り切れるが、左辺は$2$の累乗なので$5$で割り切れない。この矛盾から$\log_{10}2$は無理数である。
+  strategy: Clear denominators to get an equation between powers and compare divisibility by 5.
+  sketch:
+  - 'setup: Assume log_10 2 = a/b with positive integers a and b.'
+  - 'translate: Exponentiating gives 10^a = 2^b.'
+  - 'derive: Since a ≥ 1, 5 divides the left side.'
+  - 'contradiction: A power of 2 is not divisible by 5.'
+  openmath: (notin (/ (ln 2) (ln 10)) Q)
+  hard_negative:
+    statement: 2以上の任意の整数a,bについてlog_a bは無理数である。
+    reason: a=4, b=8のときlog_4 8=3/2で有理数である。aとbが同じ数の累乗のときは同じ議論が使えない。
+  target: |
+    Irrational (Real.log 2 / Real.log 10)
+  proof: |
+    by
+      rintro ⟨q, hq⟩
+      have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+      have hl10 : 0 < Real.log 10 := Real.log_pos (by norm_num)
+      have hqpos : 0 < (q : ℝ) := by rw [hq]; positivity
+      have hq0 : 0 < q := by exact_mod_cast hqpos
+      have hnum : 0 < q.num := Rat.num_pos.mpr hq0
+      obtain ⟨a, ha⟩ := Int.eq_ofNat_of_zero_le hnum.le
+      have hb : (0 : ℝ) < q.den := by exact_mod_cast q.den_pos
+      have hqeq : (q : ℝ) = (a : ℝ) / q.den := by
+        rw [Rat.cast_def, ha]; simp
+      have heq : (q.den : ℝ) * Real.log 2 = a * Real.log 10 := by
+        have h1 : Real.log 2 = q * Real.log 10 := by rw [hq]; field_simp
+        rw [h1, hqeq]; field_simp
+      have hpow : ((2 : ℝ) ^ q.den) = (10 : ℝ) ^ a := by
+        have : Real.log ((2 : ℝ) ^ q.den) = Real.log ((10 : ℝ) ^ a) := by
+          rw [Real.log_pow, Real.log_pow, heq]
+        exact Real.log_injOn_pos (Set.mem_Ioi.mpr (by positivity)) (Set.mem_Ioi.mpr (by positivity)) this
+      have hnat : (2 : ℕ) ^ q.den = 10 ^ a := by exact_mod_cast hpow
+      have ha0 : a ≠ 0 := by omega
+      have h5 : 5 ∣ (2 : ℕ) ^ q.den := by
+        rw [hnat]
+        exact dvd_pow (by norm_num) ha0
+      have := (Nat.Prime.dvd_of_dvd_pow (by norm_num) h5)
+      omega
+- id: sin_cos_one_degree_irrational
+  kind: textbook
+  level: 1
+  topic: 無理数・三角関数の値
+  statement: $\sin 1^\circ$と$\cos 1^\circ$はともに無理数である。
+  statement_en: Both sin 1° and cos 1° are irrational, where 1° = π/180.
+  assumptions:
+  - $1^\circ$は$\dfrac{\pi}{180}$ラジアン
+  quantifiers:
+  - なし
+  conclusion: $\sin 1^\circ$と$\cos 1^\circ$はともに無理数である。
+  answer: |
+    $1^\circ=\dfrac{\pi}{180}$ラジアンとする。実数$\theta$について$\cos\theta$が有理数なら、$\cos 0=1$と$\cos(n+1)\theta=2\cos\theta\cos n\theta-\cos(n-1)\theta$を用いた帰納法により、すべての自然数$n$で$\cos n\theta$は有理数である。
+    $\cos 1^\circ$が有理数なら、$\theta=1^\circ$、$n=30$として$\cos 30^\circ=\dfrac{\sqrt{3}}{2}$が有理数となり、$\sqrt{3}$が無理数であることに反する。$\sin 1^\circ$が有理数なら、$\cos 2^\circ=1-2\sin^2 1^\circ$が有理数なので、$\theta=2^\circ$、$n=15$として同じく$\cos 30^\circ$が有理数となり矛盾する。したがって$\sin 1^\circ$と$\cos 1^\circ$はともに無理数である。
+  strategy: Propagate rationality of cos θ to cos nθ by the three-term recurrence and reach cos 30°.
+  sketch:
+  - 'induction: If cos θ is rational, then cos nθ is rational for all n by cos(n+1)θ = 2cos θ cos nθ - cos(n-1)θ.'
+  - 'case_split: Treat cos 1° and sin 1° separately.'
+  - 'derive: If cos 1° is rational, take θ = 1° and n = 30 to make cos 30° rational.'
+  - 'derive: If sin 1° is rational, then cos 2° = 1 - 2sin²1° is rational; take θ = 2° and n = 15.'
+  - 'contradiction: cos 30° = √3/2 is irrational.'
+  openmath: (and (notin (sin (/ pi 180)) Q) (notin (cos (/ pi 180)) Q))
+  hard_negative:
+    statement: 任意の正の整数nについてsin n°は無理数である。
+    reason: n=30のときsin 30°=1/2で有理数である。
+  target: |
+    Irrational (Real.sin (Real.pi / 180)) ∧ Irrational (Real.cos (Real.pi / 180))
+  proof: |
+    by
+      have hc30 : Irrational (Real.cos (Real.pi / 6)) := by
+        rw [Real.cos_pi_div_six]
+        have h3 : Irrational (Real.sqrt 3) := by
+          have : Irrational (Real.sqrt ((3 : ℕ) : ℝ)) := irrational_sqrt_natCast_iff.mpr (by norm_num)
+          simpa using this
+        simpa using h3.div_natCast (m := 2) (by norm_num)
+      have key : ∀ θ : ℝ, (∃ q : ℚ, Real.cos θ = q) → ∀ n : ℕ,
+          (∃ q : ℚ, Real.cos (n * θ) = q) ∧ (∃ q : ℚ, Real.cos ((n + 1) * θ) = q) := by
+        intro θ ⟨c, hc⟩ n
+        induction n with
+        | zero => exact ⟨⟨1, by simp⟩, ⟨c, by simpa using hc⟩⟩
+        | succ k ih =>
+          obtain ⟨⟨a, ha⟩, ⟨b, hb⟩⟩ := ih
+          refine ⟨⟨b, by push_cast; exact hb⟩, ⟨2 * c * b - a, ?_⟩⟩
+          have e1 : ((k : ℝ) + 1 + 1) * θ = ((k : ℝ) + 1) * θ + θ := by ring
+          have e2 : (k : ℝ) * θ = ((k : ℝ) + 1) * θ - θ := by ring
+          have h1 := Real.cos_add (((k : ℝ) + 1) * θ) θ
+          have h2 := Real.cos_sub (((k : ℝ) + 1) * θ) θ
+          rw [← e2] at h2
+          push_cast
+          rw [e1, h1]
+          rw [hb, hc] at h1 ⊢
+          rw [hb, hc, ha] at h2
+          rw [ha] at *
+          linarith
+      constructor
+      · rintro ⟨s, hs⟩
+        apply hc30
+        have hc2 : ∃ q : ℚ, Real.cos (2 * (Real.pi / 180)) = q := by
+          refine ⟨1 - 2 * s ^ 2, ?_⟩
+          have := Real.cos_two_mul (Real.pi / 180)
+          have h1 := Real.sin_sq_add_cos_sq (Real.pi / 180)
+          rw [← hs] at *
+          push_cast
+          rw [← hs]
+          nlinarith
+        obtain ⟨⟨q, hq⟩, _⟩ := key _ hc2 15
+        refine ⟨q, ?_⟩
+        rw [← hq]; congr 1; push_cast; ring
+      · rintro ⟨c, hc⟩
+        apply hc30
+        obtain ⟨⟨q, hq⟩, _⟩ := key (Real.pi / 180) ⟨c, hc.symm⟩ 30
+        refine ⟨q, ?_⟩
+        rw [← hq]; congr 1; push_cast; ring
+- id: cos_twenty_degrees_irrational
+  kind: textbook
+  level: 1
+  topic: 無理数・三倍角の公式
+  statement: $\cos 20^\circ$は無理数である。
+  statement_en: The real number cos 20° = cos(π/9) is irrational.
+  assumptions:
+  - $20^\circ$は$\dfrac{\pi}{9}$ラジアン
+  quantifiers:
+  - なし
+  conclusion: $\cos 20^\circ$は無理数である。
+  answer: |
+    $20^\circ=\dfrac{\pi}{9}$ラジアンとし、$c=\cos 20^\circ$とおく。三倍角の公式から$\cos 60^\circ=4c^3-3c$なので、$\dfrac{1}{2}=4c^3-3c$であり、$x=2c$は$x^3-3x-1=0$をみたす。
+    $x$が有理数なら$x=\dfrac{p}{q}$ ($p,q$は互いに素な整数、$q\geq 1$) と書け、$p^3-3pq^2-q^3=0$となる。$q$は$p^3$を割り切るので$q=1$であり、$p$は$q^3=1$を割り切るので$p=\pm 1$である。しかし$x=1$では$x^3-3x-1=-3$、$x=-1$では$x^3-3x-1=1$となり、方程式をみたさない。したがって$x$は無理数であり、$\cos 20^\circ$も無理数である。
+  strategy: Use the triple-angle formula to get a cubic with integer coefficients and test its rational roots.
+  sketch:
+  - 'derive: The triple-angle formula gives 4c³ - 3c = 1/2 for c = cos 20°.'
+  - 'translate: Then x = 2c is a root of x³ - 3x - 1.'
+  - 'setup: Write a rational x as p/q in lowest terms and clear denominators.'
+  - 'derive: Coprimality forces q = 1 and p = ±1.'
+  - 'contradiction: Neither 1 nor -1 is a root.'
+  openmath: (notin (cos (/ pi 9)) Q)
+  hard_negative:
+    statement: cos 3θが有理数ならcos θも有理数である。
+    reason: θ=20°のときcos 3θ=1/2は有理数だが、cos θは無理数である。
+  target: |
+    Irrational (Real.cos (Real.pi / 9))
+  proof: |
+    by
+      rintro ⟨q, hq⟩
+      have h3 : Real.cos (3 * (Real.pi / 9)) = 4 * Real.cos (Real.pi / 9) ^ 3 - 3 * Real.cos (Real.pi / 9) :=
+        Real.cos_three_mul _
+      have h4 : 3 * (Real.pi / 9) = Real.pi / 3 := by ring
+      rw [h4, Real.cos_pi_div_three, ← hq] at h3
+      have hr : (8 : ℚ) * q ^ 3 - 6 * q - 1 = 0 := by
+        have : (((8 : ℚ) * q ^ 3 - 6 * q - 1 : ℚ) : ℝ) = 0 := by push_cast; linarith
+        exact_mod_cast this
+      have hdq : (q.den : ℚ) ≠ 0 := by exact_mod_cast q.den_nz
+      have hint : (q.num * 2) ^ 3 - 3 * (q.num * 2) * (q.den : ℤ) ^ 2 - (q.den : ℤ) ^ 3 = 0 := by
+        have : ((q.num : ℚ) * 2) ^ 3 - 3 * ((q.num : ℚ) * 2) * (q.den : ℚ) ^ 2 - (q.den : ℚ) ^ 3 = 0 := by
+          have e : (q.num : ℚ) = q * q.den := (Rat.mul_den_eq_num q).symm
+          rw [e]
+          have : (q * q.den * 2) ^ 3 - 3 * (q * q.den * 2) * (q.den : ℚ) ^ 2 - (q.den : ℚ) ^ 3
+              = (q.den : ℚ) ^ 3 * (8 * q ^ 3 - 6 * q - 1) := by ring
+          rw [this, hr]; ring
+        exact_mod_cast this
+      have hcop : IsCoprime q.num (q.den : ℤ) := by
+        rw [Int.isCoprime_iff_gcd_eq_one]
+        exact q.reduced
+      obtain ⟨d, hdd⟩ : ∃ d : ℤ, d = (q.den : ℤ) := ⟨_, rfl⟩
+      have hdpos : 0 < d := by rw [hdd]; exact_mod_cast q.den_pos
+      rw [← hdd] at hint hcop
+      have hdvd : d ∣ 8 := by
+        have h1 : d ∣ q.num ^ 3 * 8 := ⟨3 * (q.num * 2) * d + d ^ 2, by linear_combination hint⟩
+        exact (hcop.pow_left (m := 3)).symm.dvd_of_dvd_mul_left h1
+      have hdle : d ≤ 8 := Int.le_of_dvd (by norm_num) hdvd
+      have hnd : q.num ∣ d ^ 3 := ⟨(q.num ^ 2 * 8 - 6 * d ^ 2), by linear_combination -hint⟩
+      have hnu : IsUnit q.num := (hcop.pow_right (n := 3)).isUnit_of_dvd' dvd_rfl hnd
+      rcases Int.isUnit_iff.mp hnu with h | h <;> rw [h] at hint <;> interval_cases d <;> omega
+- id: cube_root_two_irrational
+  kind: textbook
+  level: 1
+  topic: 無理数・累乗根
+  statement: $2$の$3$乗根は無理数である。
+  statement_en: The real cube root 2^(1/3) is irrational.
+  assumptions:
+  - $2$の$3$乗根は正の実数$2^{1/3}$
+  quantifiers:
+  - なし
+  conclusion: $2$の$3$乗根は無理数である。
+  answer: |
+    $2^{1/3}$を$2$の正の実数の$3$乗根とする。$2^{1/3}=\dfrac{p}{q}$ ($p,q$は互いに素な正の整数) と仮定すると$p^3=2q^3$である。左辺が偶数なので$p$は偶数であり、$p=2r$とおくと$4r^3=q^3$となる。すると$q$も偶数となり、$p,q$が互いに素であることに反する。したがって$2$の$3$乗根は無理数である。
+  strategy: Assume a reduced fraction and derive that numerator and denominator are both even.
+  sketch:
+  - 'setup: Assume 2^(1/3) = p/q in lowest terms.'
+  - 'derive: Then p³ = 2q³, so p is even.'
+  - 'derive: Writing p = 2r gives 4r³ = q³, so q is even.'
+  - 'contradiction: p and q were coprime.'
+  openmath: (notin (root 2 3) Q)
+  hard_negative:
+    statement: 任意の正の整数aについてaの3乗根は無理数である。
+    reason: a=8のとき3乗根は2である。立方数でないという条件が必要になる。
+  target: |
+    Irrational ((2 : ℝ) ^ ((1 : ℝ) / 3))
+  proof: |
+    by
+      have h : ((2 : ℝ) ^ ((1 : ℝ) / 3)) ^ 3 = ((2 : ℤ) : ℝ) := by
+        rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]; norm_num
+      refine irrational_nrt_of_notint_nrt 3 2 h ?_ (by norm_num)
+      rintro ⟨y, hy⟩
+      rw [hy] at h
+      have hz : y ^ 3 = 2 := by exact_mod_cast h
+      have h1 : y < 2 := by nlinarith [sq_nonneg (y), sq_nonneg (y + 1)]
+      have h2 : -2 < y := by nlinarith [sq_nonneg (y), sq_nonneg (y - 1)]
+      interval_cases y <;> omega
+- id: cube_root_two_rational_independence
+  kind: textbook
+  level: 1
+  topic: 無理数・有理数上の一次独立
+  statement: 有理数$a,b,c$が$a+b\sqrt[3]{2}+c\sqrt[3]{4}=0$をみたすなら$a=b=c=0$である。
+  statement_en: If rational numbers a, b, c satisfy a + b·2^(1/3) + c·(2^(1/3))² = 0, then a = b = c = 0.
+  assumptions:
+  - $a,b,c$は有理数
+  - $a+b\sqrt[3]{2}+c\sqrt[3]{4}=0$
+  quantifiers:
+  - 任意の有理数$a,b,c$
+  conclusion: $a=b=c=0$である。
+  answer: |
+    $a,b,c$を$a+b\sqrt[3]{2}+c\sqrt[3]{4}=0$をみたす有理数とする。$t=\sqrt[3]{2}$とおくと$t^3=2$、$t^2=\sqrt[3]{4}$である。$t$は無理数である。実際、$t=\dfrac{p}{q}$ ($p,q$は互いに素な正の整数) とすると$p^3=2q^3$より$p$は偶数で、$p=2r$とおくと$4r^3=q^3$より$q$も偶数となり矛盾する。
+    与式$a+bt+ct^2=0$に$t$を掛けると$at+bt^2+2c=0$となる。この式の$c$倍から与式の$b$倍を引いて$t^2$を消すと、$(ac-b^2)t+(2c^2-ab)=0$を得る。$t$は無理数で$ac-b^2,2c^2-ab$は有理数なので、$ac=b^2$かつ$2c^2=ab$である。すると$b^3=b\cdot ac=c\cdot ab=2c^3$となる。
+    $c\neq 0$なら$\left(\dfrac{b}{c}\right)^3=2$より$\dfrac{b}{c}=t$が有理数となって矛盾する。よって$c=0$であり、$b^3=0$より$b=0$、与式から$a=0$が従う。
+  strategy: Eliminate t² between the relation and its multiple by t, then use irrationality of t twice.
+  sketch:
+  - 'setup: Let t = 2^(1/3), so t³ = 2 and t is irrational.'
+  - 'derive: Multiply the relation by t and eliminate t² to get (ac - b²)t + (2c² - ab) = 0.'
+  - 'apply_theorem: Irrationality of t gives ac = b² and 2c² = ab.'
+  - 'derive: These imply b³ = 2c³.'
+  - 'contradiction: If c ≠ 0 then b/c = t would be rational.'
+  - 'conclude: Hence c = 0, then b = 0, then a = 0.'
+  openmath: (forall (a b c) (-> (and (in a Q) (in b Q) (in c Q) (= (+ (+ a (* b (root 2 3))) (* c (^ (root 2 3) 2))) 0)) (and (= a 0) (= b 0) (= c 0))))
+  hard_negative:
+    statement: 実数a,b,cがa+b∛2+c∛4=0を満たすならa=b=c=0である。
+    reason: a=∛2, b=-1, c=0が反例である。係数が有理数であることが必要になる。
+  target: |
+    ∀ a b c : ℚ, (a : ℝ) + b * (2 : ℝ) ^ ((1 : ℝ) / 3) + c * ((2 : ℝ) ^ ((1 : ℝ) / 3)) ^ 2 = 0 → a = 0 ∧ b = 0 ∧ c = 0
+  proof: |
+    by
+      intro a b c h
+      obtain ⟨t, ht⟩ : ∃ t : ℝ, t = (2 : ℝ) ^ ((1 : ℝ) / 3) := ⟨_, rfl⟩
+      rw [← ht] at h
+      have ht3 : t ^ 3 = 2 := by
+        rw [ht, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num)]; norm_num
+      have hirr : Irrational t := by
+        have hz : t ^ 3 = ((2 : ℤ) : ℝ) := by rw [ht3]; norm_num
+        refine irrational_nrt_of_notint_nrt 3 2 hz ?_ (by norm_num)
+        rintro ⟨y, hy⟩
+        rw [hy] at hz
+        have hz' : y ^ 3 = 2 := by exact_mod_cast hz
+        have h1 : y < 2 := by nlinarith [sq_nonneg y, sq_nonneg (y + 1)]
+        have h2 : -2 < y := by nlinarith [sq_nonneg y, sq_nonneg (y - 1)]
+        interval_cases y <;> omega
+      have key : ((a : ℝ) * c - b ^ 2) * t + (2 * c ^ 2 - a * b) = 0 := by
+        linear_combination (c * t - b) * h - (c : ℝ) ^ 2 * ht3
+      have rat_zero : ∀ u v : ℚ, (u : ℝ) * t + v = 0 → u = 0 := by
+        intro u v huv
+        by_contra hu
+        apply hirr
+        have hu' : (u : ℝ) ≠ 0 := by exact_mod_cast hu
+        refine ⟨-v / u, ?_⟩
+        push_cast
+        field_simp
+        linarith
+      have h1 : a * c - b ^ 2 = 0 := rat_zero (a * c - b ^ 2) (2 * c ^ 2 - a * b) (by push_cast; exact key)
+      have h2 : 2 * c ^ 2 - a * b = 0 := by
+        have h1' : ((a : ℝ) * c - b ^ 2) = 0 := by exact_mod_cast h1
+        rw [h1', zero_mul, zero_add] at key
+        exact_mod_cast key
+      have h3 : b ^ 3 = 2 * c ^ 3 := by linear_combination (-b) * h1 - c * h2
+      have hc : c = 0 := by
+        by_contra hne
+        apply hirr
+        have hc' : (c : ℝ) ≠ 0 := by exact_mod_cast hne
+        refine ⟨b / c, ?_⟩
+        have h3' : ((b : ℝ) / c) ^ 3 = t ^ 3 := by
+          have : (b : ℝ) ^ 3 = 2 * (c : ℝ) ^ 3 := by exact_mod_cast h3
+          rw [ht3, div_pow, this]; field_simp
+        have := (Odd.strictMono_pow (R := ℝ) (n := 3) (by decide)).injective h3'
+        push_cast
+        exact this
+      subst hc
+      have hb : b = 0 := by
+        have : b ^ 3 = 0 := by rw [h3]; ring
+        exact pow_eq_zero_iff (by norm_num) |>.mp this
+      subst hb
+      simp at h
+      exact ⟨h, rfl, rfl⟩
+- id: exp_one_gt_two_point_seven
+  kind: textbook
+  level: 1
+  topic: 数の評価・自然対数の底
+  statement: 自然対数の底$e$は$e>2.7$をみたす。
+  statement_en: Euler's number satisfies e > 2.7.
+  assumptions:
+  - $e=\exp 1$
+  quantifiers:
+  - なし
+  conclusion: $e>2.7$である。
+  answer: |
+    $e=\exp 1$とする。$e=\sum_{k\geq 0}\dfrac{1}{k!}$の各項は正なので、$e$は最初の$6$項の和より大きい。その和は$1+1+\dfrac{1}{2}+\dfrac{1}{6}+\dfrac{1}{24}+\dfrac{1}{120}=\dfrac{163}{60}$である。$163>162=2.7\cdot 60$より$\dfrac{163}{60}>2.7$なので、$e>2.7$である。
+  strategy: Bound e from below by a partial sum of its exponential series.
+  sketch:
+  - 'apply_theorem: For the exponential series with positive terms, e is at least any partial sum.'
+  - 'derive: The sum of the first six terms is 163/60.'
+  - 'conclude: Since 163/60 > 2.7, we get e > 2.7.'
+  openmath: (< (/ 27 10) (exp 1))
+  hard_negative:
+    statement: e>2.72である。
+    reason: e=2.7182…なので2.72より小さい。定数を変えると成り立たない。
+  target: |
+    (27 / 10 : ℝ) < Real.exp 1
+  proof: |
+    by
+      have h := Real.sum_le_exp_of_nonneg (x := 1) (by norm_num) 6
+      have e : ∑ i ∈ Finset.range 6, (1 : ℝ) ^ i / (Nat.factorial i : ℝ) = 163 / 60 := by
+        norm_num [Finset.sum_range_succ, Nat.factorial]
+      rw [e] at h
+      linarith
+- id: pi_between_three_point_one_and_three_point_two
+  kind: textbook
+  level: 1
+  topic: 数の評価・円周率
+  statement: 円周率$\pi$は$3.1<\pi<3.2$をみたす。
+  statement_en: The circle constant satisfies 3.1 < π < 3.2.
+  assumptions:
+  - $\pi$は円周率
+  quantifiers:
+  - なし
+  conclusion: $3.1<\pi<3.2$である。
+  answer: |
+    $\pi$を円周率とする。$0<x<\dfrac{\pi}{2}$で$\sin x<x<\tan x$が成り立つことを用いる。
+    加法定理より$\sin 15^\circ=\sin(45^\circ-30^\circ)=\dfrac{\sqrt{6}-\sqrt{2}}{4}$、$\cos 15^\circ=\dfrac{\sqrt{6}+\sqrt{2}}{4}$である。$x=\dfrac{\pi}{12}$とすると$\pi>12\sin 15^\circ=3(\sqrt{6}-\sqrt{2})$である。$2.449^2<6$より$\sqrt{6}>2.449$、$1.415^2>2$より$\sqrt{2}<1.415$なので、$\pi>3\cdot 1.034>3.1$である。
+    半角の公式$\tan\dfrac{\theta}{2}=\dfrac{1-\cos\theta}{\sin\theta}$に$\theta=15^\circ$を代入して分母を有理化すると、$\tan 7.5^\circ=\dfrac{4-\sqrt{6}-\sqrt{2}}{\sqrt{6}-\sqrt{2}}=\sqrt{6}+\sqrt{2}-\sqrt{3}-2$である。$x=\dfrac{\pi}{24}$とすると$\pi<24\tan 7.5^\circ$である。$2.45^2>6$より$\sqrt{6}<2.45$、$\sqrt{2}<1.415$、$1.732^2<3$より$\sqrt{3}>1.732$なので、$\tan 7.5^\circ<0.133$である。よって$\pi<24\cdot 0.133=3.192<3.2$である。
+  strategy: Apply sin x < x at π/12 and x < tan x at π/24 with explicit surds.
+  sketch:
+  - 'apply_theorem: Use sin x < x < tan x for 0 < x < π/2.'
+  - 'derive: At x = π/12, π > 12 sin 15° = 3(√6 - √2) > 3.1.'
+  - 'derive: The half-angle formula gives tan 7.5° = √6 + √2 - √3 - 2 < 0.133.'
+  - 'conclude: At x = π/24, π < 24 tan 7.5° < 3.2.'
+  openmath: (and (< (/ 31 10) pi) (< pi (/ 32 10)))
+  hard_negative:
+    statement: π<3.14である。
+    reason: π=3.1415…なので3.14より大きい。
+  target: |
+    (31 / 10 : ℝ) < Real.pi ∧ Real.pi < 32 / 10
+  proof: |
+    by
+      have h1 := Real.pi_gt_d2
+      have h2 := Real.pi_lt_d2
+      constructor <;> linarith
+- id: log_ten_two_between_bounds
+  kind: textbook
+  level: 1
+  topic: 数の評価・常用対数
+  statement: $\dfrac{3}{10}<\log_{10}2<\dfrac{1}{3}$である。
+  statement_en: The common logarithm of 2 satisfies 3/10 < log_10 2 < 1/3.
+  assumptions:
+  - $\log$を自然対数とし、$\log_{10}2$は$\dfrac{\log 2}{\log 10}$で定める
+  quantifiers:
+  - なし
+  conclusion: $\dfrac{3}{10}<\log_{10}2<\dfrac{1}{3}$である。
+  answer: |
+    $\log$を自然対数とし、$\log_{10}2=\dfrac{\log 2}{\log 10}$とする。$\log$は増加関数で$\log 10>0$である。$2^{10}=1024>1000=10^3$なので、対数をとると$10\log 2>3\log 10$であり、$\log_{10}2>\dfrac{3}{10}$である。また$2^3=8<10$なので、$3\log 2<\log 10$であり、$\log_{10}2<\dfrac{1}{3}$である。
+  strategy: Compare integer powers of 2 and 10 and take logarithms.
+  sketch:
+  - 'derive: 2^10 > 10³ gives 10 log 2 > 3 log 10.'
+  - 'derive: 2³ < 10 gives 3 log 2 < log 10.'
+  - 'conclude: Dividing by log 10 > 0 gives both bounds.'
+  openmath: (and (< (/ 3 10) (/ (ln 2) (ln 10))) (< (/ (ln 2) (ln 10)) (/ 1 3)))
+  hard_negative:
+    statement: log_10 2>0.31である。
+    reason: 2^100<10^31なのでlog_10 2<0.31である。
+  target: |
+    (3 / 10 : ℝ) < Real.log 2 / Real.log 10 ∧ Real.log 2 / Real.log 10 < 1 / 3
+  proof: |
+    by
+      have hl : 0 < Real.log 10 := Real.log_pos (by norm_num)
+      have h1 : Real.log ((10 : ℝ) ^ 3) < Real.log ((2 : ℝ) ^ 10) := Real.log_lt_log (by norm_num) (by norm_num)
+      have h2 : Real.log ((2 : ℝ) ^ 3) < Real.log 10 := Real.log_lt_log (by norm_num) (by norm_num)
+      rw [Real.log_pow, Real.log_pow] at h1
+      rw [Real.log_pow] at h2
+      push_cast at h1 h2
+      constructor
+      · rw [lt_div_iff₀ hl]; linarith
+      · rw [div_lt_iff₀ hl]; linarith
+- id: exp_pi_gt_pi_exp
+  kind: textbook
+  level: 1
+  topic: 数の大小比較・指数と対数
+  statement: $\pi^e<e^\pi$である。
+  statement_en: The inequality π^e < e^π holds.
+  assumptions:
+  - $e$は自然対数の底、$\pi$は円周率
+  quantifiers:
+  - なし
+  conclusion: $\pi^e<e^\pi$である。
+  answer: |
+    $e$を自然対数の底、$\pi$を円周率とする。$x>0$、$x\neq 1$では$\log x<x-1$である。実際、$f(x)=x-1-\log x$は$f^{\prime}(x)=1-\dfrac{1}{x}$より$x=1$でのみ最小値$0$をとる。
+    $e=\sum_{k\geq 0}\dfrac{1}{k!}$で、$k\geq 2$では$k!\geq 2^{k-1}$（$k\geq 3$では真に大きい）なので$e<1+1+\dfrac{1}{2}+\dfrac{1}{4}+\cdots=3$である。また円に内接する正六角形の周の長さ$6$は円周$2\pi$より短いので$\pi>3$である。よって$e<3<\pi$であり、$\dfrac{\pi}{e}\neq 1$なので、$x=\dfrac{\pi}{e}$を代入すると$\log\pi-1<\dfrac{\pi}{e}-1$、すなわち$e\log\pi<\pi$を得る。指数関数は増加関数なので、$\pi^e=\exp(e\log\pi)<\exp(\pi)=e^\pi$である。
+  strategy: Apply log x < x - 1 at x = π/e and exponentiate.
+  sketch:
+  - 'apply_theorem: log x < x - 1 for x > 0 with x ≠ 1.'
+  - 'setup: Take x = π/e, which is not 1 because π > 3 > e.'
+  - 'derive: This gives e log π < π.'
+  - 'conclude: Exponentiating yields π^e < e^π.'
+  openmath: (< (^ pi (exp 1)) (exp pi))
+  hard_negative:
+    statement: 0<a<bならa^b>b^aである。
+    reason: a=2, b=3では2³=8<9=3²である。
+  target: |
+    Real.pi ^ (Real.exp 1) < Real.exp Real.pi
+  proof: |
+    by
+      have hpi := Real.pi_pos
+      have he := Real.exp_pos 1
+      have hne : Real.pi / Real.exp 1 ≠ 1 := by
+        intro h
+        rw [div_eq_one_iff_eq he.ne'] at h
+        have := Real.exp_one_lt_d9
+        have := Real.pi_gt_three
+        linarith
+      have h := Real.log_lt_sub_one_of_pos (div_pos hpi he) hne
+      rw [Real.log_div hpi.ne' he.ne', Real.log_exp] at h
+      rw [Real.rpow_def_of_pos hpi]
+      apply Real.exp_lt_exp.mpr
+      have h2 : Real.log Real.pi < Real.pi / Real.exp 1 := by linarith
+      rw [lt_div_iff₀ he] at h2
+      exact h2
+- id: fourth_power_add_four_composite
+  kind: textbook
+  level: 1
+  topic: 整数・因数分解と素数
+  statement: $2$以上の整数$n$について$n^4+4$は素数でない。
+  statement_en: For every integer n ≥ 2, n⁴ + 4 is not prime.
+  assumptions:
+  - $n$は自然数
+  - $n\geq 2$
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $n^4+4$は素数でない。
+  answer: |
+    $n$を$2$以上の整数とする。$n^4+4=(n^2+2)^2-(2n)^2=(n^2+2n+2)(n^2-2n+2)$と因数分解できる。$n\geq 2$のとき、$n^2-2n+2=(n-1)^2+1\geq 2$であり、$n^2+2n+2\geq 2$でもある。したがって$n^4+4$は$2$以上の整数$2$個の積であり、素数でない。
+  strategy: Factor by completing the square and check both factors exceed 1.
+  sketch:
+  - 'derive: n⁴ + 4 = (n² + 2n + 2)(n² - 2n + 2).'
+  - 'derive: For n ≥ 2 the factor n² - 2n + 2 = (n-1)² + 1 is at least 2.'
+  - 'derive: The other factor is also at least 2.'
+  - 'conclude: A product of two integers at least 2 is not prime.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 2)) (notin (+ (^ n 4) 4) P)))
+  hard_negative:
+    statement: 1以上の整数nについてn⁴+4は素数でない。
+    reason: n=1のとき値は5で素数である。因数n²-2n+2が1になる。
+  target: |
+    ∀ n : ℕ, 2 ≤ n → ¬ Nat.Prime (n ^ 4 + 4)
+  proof: |
+    by
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+      have e : (m + 2) ^ 4 + 4 = ((m + 2) ^ 2 + 2 * (m + 2) + 2) * ((m + 1) ^ 2 + 1) := by ring
+      rw [e]
+      apply Nat.not_prime_mul
+      · have : 0 < (m + 2) ^ 2 := by positivity
+        omega
+      · have : 0 < (m + 1) ^ 2 := by positivity
+        omega
+- id: euler_quadratic_prime_run_fails_at_forty
+  kind: textbook
+  level: 1
+  topic: 整数・素数を与える多項式
+  statement: $n^2+n+41$は$n=0,1,\dots,39$で素数だが、$n=40$では素数でない。
+  statement_en: The value n² + n + 41 is prime for all natural numbers n < 40, but it is not prime for n = 40.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - $n<40$をみたす任意の自然数$n$
+  conclusion: $n<40$で素数であり、$n=40$の値は素数でない。
+  answer: |
+    $n$を$n<40$をみたす自然数とし、$N=n^2+n+41$とおく。$41\leq N\leq 39^2+39+41=1601<41^2$なので、$N$が合成数なら$37$以下の素因数$p$をもつ。そのような$p$が存在しないことを示す。
+    $n^2+n=n(n+1)$は偶数なので$N$は奇数であり、$p\neq 2$である。$p$が奇素数で$N$を割り切るなら、$p$は$4N=(2n+1)^2+163$も割り切るので、$-163$は$p$を法として平方数と合同である。$p$を法とする$-163$の値と平方数の値は次のとおりであり、いずれも$-163$の値は平方数の値に含まれない。
+    $p=3$: $-163\equiv 2$、平方数は$0,1$。
+    $p=5$: $-163\equiv 2$、平方数は$0,1,4$。
+    $p=7$: $-163\equiv 5$、平方数は$0,1,2,4$。
+    $p=11$: $-163\equiv 2$、平方数は$0,1,3,4,5,9$。
+    $p=13$: $-163\equiv 6$、平方数は$0,1,3,4,9,10,12$。
+    $p=17$: $-163\equiv 7$、平方数は$0,1,2,4,8,9,13,15,16$。
+    $p=19$: $-163\equiv 8$、平方数は$0,1,4,5,6,7,9,11,16,17$。
+    $p=23$: $-163\equiv 21$、平方数は$0,1,2,3,4,6,8,9,12,13,16,18$。
+    $p=29$: $-163\equiv 11$、平方数は$0,1,4,5,6,7,9,13,16,20,22,23,24,25,28$。
+    $p=31$: $-163\equiv 23$、平方数は$0,1,2,4,5,7,8,9,10,14,16,18,19,20,25,28$。
+    $p=37$: $-163\equiv 22$、平方数は$0,1,3,4,7,9,10,11,12,16,21,25,26,27,28,30,33,34,36$。
+    よって$n<40$で$N$は素数である。$n=40$では$40^2+40+41=40\cdot 41+41=41^2$なので素数でない。
+  strategy: Check the forty values by finite computation and factor the value at n = 40.
+  sketch:
+  - 'derive: For n < 40 the value is at most 1601, which is below 41².'
+  - 'case_split: Check each of the forty values against primes up to 40.'
+  - 'derive: At n = 40 the value equals 41².'
+  - 'conclude: The value at n = 40 is composite.'
+  openmath: (and (forall (n) (-> (and (in n N) (< n 40)) (in (+ (+ (^ n 2) n) 41) P))) (notin (+ (+ (^ 40 2) 40) 41) P))
+  hard_negative:
+    statement: 全ての自然数nについてn²+n+41は素数である。
+    reason: n=40で41²となり、素数でない。
+  target: |
+    (∀ n : ℕ, n < 40 → Nat.Prime (n ^ 2 + n + 41)) ∧ ¬ Nat.Prime (40 ^ 2 + 40 + 41)
+  proof: |
+    by
+      constructor
+      · intro n hn
+        interval_cases n <;> norm_num
+      · norm_num
+- id: prime_square_add_two_prime
+  kind: textbook
+  level: 1
+  topic: 整数・合同式と素数
+  statement: 素数$p$について、$p^2+2$が素数であることと$p=3$であることは同値である。
+  statement_en: For a prime p, the number p² + 2 is prime if and only if p = 3.
+  assumptions:
+  - $p$は素数
+  quantifiers:
+  - 任意の素数$p$
+  conclusion: $p^2+2$が素数であることと$p=3$は同値である。
+  answer: |
+    $p$を素数とする。$p=3$のとき$p^2+2=11$は素数である。$p\neq 3$のとき、$p$は$3$で割り切れないので$p^2\equiv 1\pmod 3$であり、$p^2+2$は$3$で割り切れる。$p\geq 2$より$p^2+2\geq 6>3$なので、$p^2+2$は素数でない。したがって求める$p$は$3$だけである。
+  strategy: Work modulo 3 to show p² + 2 is a multiple of 3 for p ≠ 3.
+  sketch:
+  - 'case_split: Separate p = 3 from p ≠ 3.'
+  - 'derive: If p = 3 then p² + 2 = 11 is prime.'
+  - 'derive: If p ≠ 3 then p² ≡ 1 mod 3, so 3 divides p² + 2.'
+  - 'conclude: Since p² + 2 > 3, it is composite.'
+  openmath: (forall (p) (-> (in p P) (<-> (in (+ (^ p 2) 2) P) (= p 3))))
+  hard_negative:
+    statement: 素数pについてp²+4が素数ならp=3である。
+    reason: p=5のときp²+4=29は素数である。定数を変えると3を法とする議論が使えない。
+  target: |
+    ∀ p : ℕ, Nat.Prime p → (Nat.Prime (p ^ 2 + 2) ↔ p = 3)
+  proof: |
+    by
+      intro p hp
+      constructor
+      · intro h
+        by_contra hne
+        have h3 : ¬ 3 ∣ p := fun hd => hne ((Nat.prime_dvd_prime_iff_eq Nat.prime_three hp).mp hd).symm
+        have hmod : (p ^ 2 + 2) % 3 = 0 := by
+          have : p % 3 = 1 ∨ p % 3 = 2 := by omega
+          rcases this with h1 | h1 <;> simp [Nat.pow_mod, Nat.add_mod, h1]
+        have hd : 3 ∣ p ^ 2 + 2 := Nat.dvd_of_mod_eq_zero hmod
+        have := (Nat.prime_dvd_prime_iff_eq Nat.prime_three h).mp hd
+        nlinarith [hp.two_le]
+      · rintro rfl
+        norm_num
+- id: two_pow_add_one_prime_exponent_power_of_two
+  kind: textbook
+  level: 1
+  topic: 整数・フェルマー型の素数
+  statement: $n\geq 1$で$2^n+1$が素数なら$n$は$2$の累乗である。
+  statement_en: If n ≥ 1 and 2^n + 1 is prime, then n is a power of 2.
+  assumptions:
+  - $n$は$1$以上の自然数
+  - $2^n+1$は素数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $n=2^k$となる自然数$k$が存在する。
+  answer: |
+    $n$を$2^n+1$が素数である$1$以上の自然数とする。$n=2^k m$ ($k$は自然数、$m$は奇数) と書く。$m\geq 3$と仮定し、$x=2^{2^k}$とおくと、$m$が奇数なので$x+1$は$x^m+1=2^n+1$を割り切る。$x\geq 2$と$m\geq 3$より$1<x+1<x^m+1$なので$2^n+1$は素数でなく、矛盾する。したがって$m=1$であり、$n=2^k$である。
+  strategy: Split off the odd part of n and factor x^m + 1 by x + 1.
+  sketch:
+  - 'setup: Write n = 2^k m with m odd and let x = 2^(2^k).'
+  - 'contradiction: Assume m ≥ 3.'
+  - 'derive: For odd m, x + 1 divides x^m + 1 = 2^n + 1.'
+  - 'derive: The divisor x + 1 is strictly between 1 and 2^n + 1.'
+  - 'conclude: So m = 1 and n is a power of 2.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 1) (in (+ (^ 2 n) 1) P)) (exists (k) (and (in k N) (= n (^ 2 k))))))
+  hard_negative:
+    statement: nが2の累乗なら2^n+1は素数である。
+    reason: n=32では2^32+1=641·6700417であり、逆は成り立たない。
+  target: |
+    ∀ n : ℕ, n ≠ 0 → Nat.Prime (2 ^ n + 1) → ∃ k : ℕ, n = 2 ^ k
+  proof: |
+    by
+      intro n hn hp
+      exact Nat.pow_of_pow_add_prime (by norm_num) hn hp
+- id: two_pow_sub_one_prime_exponent_prime
+  kind: textbook
+  level: 1
+  topic: 整数・メルセンヌ型の素数
+  statement: $2^n-1$が素数なら$n$は素数である。
+  statement_en: If 2^n - 1 is prime, then n is prime.
+  assumptions:
+  - $n$は自然数
+  - $2^n-1$は素数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $n$は素数である。
+  answer: |
+    $n$を$2^n-1$が素数である自然数とする。$n=0,1$のとき$2^n-1$は$0,1$であり素数でないので、$n\geq 2$である。$n$が合成数で$n=ab$ ($a,b\geq 2$) と書けるとすると、$2^a-1$は$(2^a)^b-1=2^n-1$を割り切る。$a\geq 2$と$b\geq 2$より$1<2^a-1<2^n-1$なので$2^n-1$は素数でなく、矛盾する。したがって$n$は素数である。
+  strategy: A factorization of the exponent yields a proper factor of 2^n - 1.
+  sketch:
+  - 'case_split: Exclude n = 0 and n = 1, where 2^n - 1 is 0 or 1.'
+  - 'contradiction: Assume n = ab with a, b ≥ 2.'
+  - 'derive: Then 2^a - 1 divides 2^(ab) - 1.'
+  - 'derive: The divisor is strictly between 1 and 2^n - 1.'
+  - 'conclude: Hence n is prime.'
+  openmath: (forall (n) (-> (and (in n N) (in (- (^ 2 n) 1) P)) (in n P)))
+  hard_negative:
+    statement: nが素数なら2^n-1は素数である。
+    reason: n=11では2^11-1=2047=23·89であり、逆は成り立たない。
+  target: |
+    ∀ n : ℕ, Nat.Prime (2 ^ n - 1) → Nat.Prime n
+  proof: |
+    by
+      intro n hp
+      have hn : n ≠ 1 := by
+        rintro rfl
+        norm_num at hp
+      exact (Nat.prime_of_pow_sub_one_prime hn hp).2
+- id: fifth_power_sub_self_divisible_by_thirty
+  kind: textbook
+  level: 1
+  topic: 整数・整除
+  statement: 任意の整数$n$について$n^5-n$は$30$で割り切れる。
+  statement_en: For every integer n, 30 divides n⁵ - n.
+  assumptions:
+  - $n$は整数
+  quantifiers:
+  - 任意の整数$n$
+  conclusion: $30$は$n^5-n$を割り切る。
+  answer: |
+    $n$を整数とする。$n^5-n=(n-1)n(n+1)(n^2+1)$である。$(n-1)n(n+1)$は連続する$3$整数の積なので、$2$と$3$で割り切れる。$5$で割った余りを見ると、$n\equiv 0,\pm 1\pmod 5$なら$(n-1)n(n+1)$が$5$で割り切れ、$n\equiv\pm 2\pmod 5$なら$n^2+1\equiv 0\pmod 5$である。$2,3,5$は互いに素なので、$n^5-n$は$30$で割り切れる。
+  strategy: Factor n⁵ - n and check divisibility by 2, 3 and 5 separately.
+  sketch:
+  - 'derive: n⁵ - n = (n-1)n(n+1)(n²+1).'
+  - 'derive: Three consecutive integers give divisibility by 2 and 3.'
+  - 'case_split: Modulo 5, either n(n-1)(n+1) or n² + 1 is 0.'
+  - 'conclude: Coprimality of 2, 3, 5 gives divisibility by 30.'
+  openmath: (forall (n) (-> (in n Z) (exists (k) (and (in k Z) (= (- (^ n 5) n) (* 30 k))))))
+  hard_negative:
+    statement: 任意の整数nについてn³-nは30で割り切れる。
+    reason: n=2のときn³-n=6であり、30で割り切れない。
+  target: |
+    ∀ n : ℤ, (30 : ℤ) ∣ n ^ 5 - n
+  proof: |
+    by
+      intro n
+      have h : ∀ x : ZMod 30, x ^ 5 - x = 0 := by decide
+      have := (ZMod.intCast_zmod_eq_zero_iff_dvd (n ^ 5 - n) 30).mp (by push_cast; exact h _)
+      exact_mod_cast this
+- id: consecutive_product_divisible_by_factorial
+  kind: textbook
+  level: 1
+  topic: 整数・連続整数の積
+  statement: 連続する$k$個の自然数の積は$k!$で割り切れる。
+  statement_en: For natural numbers n and k, k! divides the product n(n+1)...(n+k-1).
+  assumptions:
+  - $n,k$は自然数
+  quantifiers:
+  - 任意の自然数$n,k$
+  conclusion: $k!$は積$n(n+1)\cdots(n+k-1)$を割り切る。
+  answer: |
+    $n,k$を自然数 ($0$を含む) とし、積$n(n+1)\cdots(n+k-1)$を考える。$k=0$のときは空積$1$を$0!=1$が割り切る。$k\geq 1$かつ$n=0$のときは積が$0$なので成り立つ。$n\geq 1$かつ$k\geq 1$のとき、$\dfrac{n(n+1)\cdots(n+k-1)}{k!}$は二項係数$\binom{n+k-1}{k}$に等しい。二項係数は$n+k-1$個からものを$k$個選ぶ方法の数なので整数であり、積は$k!$で割り切れる。
+  strategy: Identify the quotient with a binomial coefficient.
+  sketch:
+  - 'case_split: Handle k = 0 and n = 0 directly.'
+  - 'derive: For n, k ≥ 1 the quotient by k! equals C(n+k-1, k).'
+  - 'conclude: Binomial coefficients are integers.'
+  openmath: (forall (n k) (-> (and (in n N) (in k N)) (exists (m) (and (in m N) (= (product (natural_range k) (lambda (i) (+ n i))) (* (factorial k) m))))))
+  hard_negative:
+    statement: 連続するk個の自然数の積は(k+1)!で割り切れる。
+    reason: k=1, n=1のとき積は1であり、2!で割り切れない。
+  target: |
+    ∀ n k : ℕ, Nat.factorial k ∣ ∏ i ∈ Finset.range k, (n + i)
+  proof: |
+    by
+      intro n k
+      rw [← Nat.ascFactorial_eq_prod_range]
+      exact Nat.factorial_dvd_ascFactorial n k
+- id: integer_valued_quadratic_criterion
+  kind: textbook
+  level: 1
+  topic: 多項式・整数値をとる条件
+  statement: 実数$a,b,c$について、$ax^2+bx+c$がすべての整数$x$で整数値をとることと、$2a$、$a+b$、$c$がともに整数であることは同値である。
+  statement_en: For real a, b, c, the value an² + bn + c is an integer for every integer n if and only if 2a, a+b and c are all integers.
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  - 任意の整数$n$
+  conclusion: すべての整数での整数値性と、$2a$、$a+b$、$c$の整数性は同値である。
+  answer: |
+    $a,b,c$を実数とし、$f(x)=ax^2+bx+c$とおく。すべての整数で$f$が整数値をとるとする。$f(0)=c$は整数であり、$f(1)=a+b+c$から$a+b$も整数である。さらに$f(1)+f(-1)-2f(0)=2a$も整数である。
+    逆に$2a$、$a+b$、$c$が整数であるとする。整数$n$について$f(n)=2a\cdot\dfrac{n(n-1)}{2}+(a+b)n+c$と書ける。$n(n-1)$は偶数なので$\dfrac{n(n-1)}{2}$は整数であり、$f(n)$は整数である。
+  strategy: Evaluate at 0, ±1 for one direction and rewrite in the binomial basis for the other.
+  sketch:
+  - 'derive: f(0) gives c, f(1) - f(0) gives a + b, and f(1) + f(-1) - 2f(0) gives 2a.'
+  - 'derive: Conversely f(n) = 2a · n(n-1)/2 + (a+b)n + c.'
+  - 'apply_theorem: n(n-1) is even, so n(n-1)/2 is an integer.'
+  - 'conclude: Hence f(n) is an integer for every integer n.'
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R)) (<-> (forall (n) (-> (in n Z) (exists (m) (and (in m Z) (= (+ (+ (* a (^ n 2)) (* b n)) c) m))))) (and (in (* 2 a) Z) (in (+ a b) Z) (in c Z)))))
+  hard_negative:
+    statement: ax²+bx+cが全ての整数xで整数値をとるなら、a,b,cはともに整数である。
+    reason: a=b=1/2, c=0とするとn(n+1)/2は常に整数だが、aとbは整数でない。
+  target: |
+    ∀ a b c : ℝ, (∀ n : ℤ, ∃ m : ℤ, a * (n : ℝ) ^ 2 + b * n + c = m) ↔ ∃ p q r : ℤ, 2 * a = p ∧ a + b = q ∧ c = r
+  proof: |
+    by
+      intro a b c
+      constructor
+      · intro h
+        obtain ⟨m0, h0⟩ := h 0
+        obtain ⟨m1, h1⟩ := h 1
+        obtain ⟨m2, h2⟩ := h (-1)
+        push_cast at h0 h1 h2
+        refine ⟨m1 + m2 - 2 * m0, m1 - m0, m0, ?_, ?_, ?_⟩ <;> push_cast <;> linarith
+      · rintro ⟨p, q, r, hp, hq, hr⟩ n
+        obtain ⟨k, hk⟩ : Even (n * (n - 1)) := Int.even_mul_pred_self n
+        have hk' : (n : ℝ) * (n - 1) = k + k := by exact_mod_cast hk
+        refine ⟨p * k + q * n + r, ?_⟩
+        push_cast
+        rw [← hp, ← hq, ← hr]
+        linear_combination a * hk'
+- id: three_unit_fractions_sum_one
+  kind: textbook
+  level: 1
+  topic: 整数・不定方程式の評価
+  statement: $a\leq b\leq c$をみたす正の整数について、$\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=1$となるのは$(a,b,c)=(2,3,6),(2,4,4),(3,3,3)$のときに限る。
+  statement_en: For positive integers a ≤ b ≤ c, 1/a + 1/b + 1/c = 1 holds if and only if (a,b,c) is (2,3,6), (2,4,4) or (3,3,3).
+  assumptions:
+  - $a,b,c$は正の整数
+  - $a\leq b\leq c$
+  quantifiers:
+  - 任意の自然数$a,b,c$
+  conclusion: 解は$(2,3,6)$、$(2,4,4)$、$(3,3,3)$のちょうど$3$組である。
+  answer: |
+    $a,b,c$を$a\leq b\leq c$をみたす正の整数とし、$\dfrac{1}{a}+\dfrac{1}{b}+\dfrac{1}{c}=1$とする。$1\leq\dfrac{3}{a}$より$a\leq 3$である。$\dfrac{1}{b}+\dfrac{1}{c}>0$なので$a=1$は起こらない。
+    $a=2$のとき$\dfrac{1}{b}+\dfrac{1}{c}=\dfrac{1}{2}$で、$\dfrac{1}{2}\leq\dfrac{2}{b}$より$2\leq b\leq 4$である。$b=2$では$\dfrac{1}{c}=0$となり不適で、$b=3$では$c=6$、$b=4$では$c=4$となる。
+    $a=3$のとき$\dfrac{1}{b}+\dfrac{1}{c}=\dfrac{2}{3}$で、$\dfrac{2}{3}\leq\dfrac{2}{b}$より$b\leq 3$なので$b=3$であり、$c=3$となる。
+    逆に$(2,3,6)$、$(2,4,4)$、$(3,3,3)$は$\dfrac{1}{2}+\dfrac{1}{3}+\dfrac{1}{6}=\dfrac{1}{2}+\dfrac{1}{4}+\dfrac{1}{4}=\dfrac{1}{3}+\dfrac{1}{3}+\dfrac{1}{3}=1$より条件をみたす。
+  strategy: Bound the smallest variable first, then the next, leaving finitely many cases.
+  sketch:
+  - 'derive: Since a is smallest, 1 ≤ 3/a and so a ≤ 3.'
+  - 'case_split: a = 1 is impossible; treat a = 2 and a = 3.'
+  - 'derive: For a = 2, b ≤ 4; for a = 3, b ≤ 3.'
+  - 'derive: Solving for c in each remaining case gives the three triples.'
+  - 'conclude: Direct calculation confirms all three triples.'
+  openmath: (forall (a b c) (-> (and (in a N) (in b N) (in c N) (< 0 a) (<= a b) (<= b c)) (<-> (= (+ (+ (/ 1 a) (/ 1 b)) (/ 1 c)) 1) (or (and (= a 2) (= b 3) (= c 6)) (and (= a 2) (= b 4) (= c 4)) (and (= a 3) (= b 3) (= c 3))))))
+  hard_negative:
+    statement: 順序の条件a≤b≤cを外しても、正の整数解は同じ3組だけである。
+    reason: (a,b,c)=(3,2,6)も等式を満たす。順序を外すと並べ替えた解が増える。
+  target: |
+    ∀ a b c : ℕ, 0 < a → a ≤ b → b ≤ c → ((1 : ℚ) / a + 1 / b + 1 / c = 1 ↔ (a = 2 ∧ b = 3 ∧ c = 6) ∨ (a = 2 ∧ b = 4 ∧ c = 4) ∨ (a = 3 ∧ b = 3 ∧ c = 3))
+  proof: |
+    by
+      intro a b c ha hab hbc
+      have hb : 0 < b := by omega
+      have hc : 0 < c := by omega
+      constructor
+      · intro h
+        have haq : (a : ℚ) ≠ 0 := by positivity
+        have hbq : (b : ℚ) ≠ 0 := by positivity
+        have hcq : (c : ℚ) ≠ 0 := by positivity
+        have eq : b * c + a * c + a * b = a * b * c := by
+          field_simp at h
+          have : ((b * c + a * c + a * b : ℕ) : ℚ) = ((a * b * c : ℕ) : ℚ) := by
+            push_cast; linarith
+          exact_mod_cast this
+        have ha3 : a ≤ 3 := by
+          by_contra hne
+          have h4 : 4 ≤ a := by omega
+          have hbcpos : 0 < b * c := by positivity
+          nlinarith [Nat.mul_le_mul_right c hab, Nat.mul_le_mul_right b (le_trans hab hbc), Nat.mul_le_mul_right (b * c) h4]
+        interval_cases a
+        · nlinarith
+        · have hb4 : b ≤ 4 := by
+            by_contra hne
+            have : 5 ≤ b := by omega
+            nlinarith [Nat.mul_le_mul_right c this]
+          interval_cases b <;> omega
+        · have hb3 : b ≤ 3 := by
+            by_contra hne
+            have : 4 ≤ b := by omega
+            nlinarith [Nat.mul_le_mul_right c this]
+          interval_cases b
+          omega
+      · rintro (⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩ | ⟨rfl, rfl, rfl⟩) <;> norm_num
+- id: pythagorean_product_divisible_by_sixty
+  kind: textbook
+  level: 1
+  topic: 整数・ピタゴラス数
+  statement: 整数$a,b,c$が$a^2+b^2=c^2$をみたすなら$abc$は$60$で割り切れる。
+  statement_en: If integers a, b, c satisfy a² + b² = c², then 60 divides abc.
+  assumptions:
+  - $a,b,c$は整数
+  - $a^2+b^2=c^2$
+  quantifiers:
+  - 任意の整数$a,b,c$
+  conclusion: $60$は$abc$を割り切る。
+  answer: |
+    $a,b,c$を$a^2+b^2=c^2$をみたす整数とする。$3,4,5$が$abc$を割り切ることを順に示す。
+    $3$で割り切れない整数の平方は$3$を法として$1$である。$a,b,c$がどれも$3$で割り切れないと左辺は$1+1\equiv 2\pmod 3$、右辺は$c^2\equiv 1\pmod 3$となって合わないので、$3$は$abc$を割り切る。
+    $5$で割り切れない整数の平方は$5$を法として$\pm 1$である。$a,b,c$がどれも$5$で割り切れないと、左辺は$5$を法として$0$か$\pm 2$であり、$c^2\equiv\pm 1$に合わない。よって$5$は$abc$を割り切る。
+    $a,b$がともに奇数なら$c^2\equiv 2\pmod 4$となり不合理である。$a,b$がともに偶数なら$4$は$ab$を割り切る。一方だけが偶数の場合、対称性より$a$を偶数として$b,c$は奇数である。奇数の平方は$8$を法として$1$なので$a^2=c^2-b^2\equiv 0\pmod 8$であり、$4$は$a$を割り切る。いずれの場合も$4$は$abc$を割り切る。
+    $3,4,5$は互いに素なので、$60$は$abc$を割り切る。
+  strategy: Check divisibility by 3, 4 and 5 using squares modulo 3, 8 and 5.
+  sketch:
+  - 'derive: Squares modulo 3 force 3 to divide abc.'
+  - 'derive: Squares modulo 5 force 5 to divide abc.'
+  - 'case_split: Compare the parities of a and b.'
+  - 'derive: Squares modulo 8 force 4 to divide abc in every parity case.'
+  - 'conclude: Coprimality of 3, 4, 5 gives 60.'
+  openmath: (forall (a b c) (-> (and (in a Z) (in b Z) (in c Z) (= (+ (^ a 2) (^ b 2)) (^ c 2))) (exists (k) (and (in k Z) (= (* (* a b) c) (* 60 k))))))
+  hard_negative:
+    statement: 整数a,b,cがa²+b²=c²を満たすならabcは120で割り切れる。
+    reason: (a,b,c)=(3,4,5)のときabc=60であり、120で割り切れない。
+  target: |
+    ∀ a b c : ℤ, a ^ 2 + b ^ 2 = c ^ 2 → (60 : ℤ) ∣ a * b * c
+  proof: |
+    by
+      intro a b c h
+      have h3 : ∀ x y z : ZMod 3, x ^ 2 + y ^ 2 = z ^ 2 → x * y * z = 0 := by decide
+      have h5 : ∀ x y z : ZMod 5, x ^ 2 + y ^ 2 = z ^ 2 → x * y * z = 0 := by decide +kernel
+      have h8 : ∀ x y z : ZMod 8, x ^ 2 + y ^ 2 = z ^ 2 → 2 * (x * y * z) = 0 := by decide +kernel
+      have d3 : (3 : ℤ) ∣ a * b * c := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 3).mp (by
+        push_cast; exact h3 _ _ _ (by exact_mod_cast congrArg (Int.cast : ℤ → ZMod 3) h))
+      have d5 : (5 : ℤ) ∣ a * b * c := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 5).mp (by
+        push_cast; exact h5 _ _ _ (by exact_mod_cast congrArg (Int.cast : ℤ → ZMod 5) h))
+      have d8 : (8 : ℤ) ∣ 2 * (a * b * c) := (ZMod.intCast_zmod_eq_zero_iff_dvd _ 8).mp (by
+        push_cast; exact h8 _ _ _ (by exact_mod_cast congrArg (Int.cast : ℤ → ZMod 8) h))
+      omega
+- id: no_rational_point_on_circle_radius_sqrt_three
+  kind: textbook
+  level: 1
+  topic: 整数・無限降下法
+  statement: $x^2+y^2=3$をみたす有理数$x,y$は存在しない。
+  statement_en: There are no rational numbers x and y with x² + y² = 3.
+  assumptions:
+  - $x,y$は有理数
+  quantifiers:
+  - 有理数$x,y$の存在
+  conclusion: $x^2+y^2=3$をみたす有理数$x,y$は存在しない。
+  answer: |
+    $x,y$を$x^2+y^2=3$をみたす有理数とする。共通の分母$n\geq 1$により$x=\dfrac{p}{n}$、$y=\dfrac{q}{n}$と書くと、整数$p,q$と正の整数$n$について$p^2+q^2=3n^2$である。このような組のうち$n$が最小のものをとる。
+    平方数は$3$を法として$0$か$1$なので、$p^2+q^2\equiv 0\pmod 3$より$p,q$はともに$3$で割り切れる。$p=3u$、$q=3v$とおくと$3(u^2+v^2)=n^2$となり、$n$も$3$で割り切れる。$n=3w$とおくと$u^2+v^2=3w^2$となり、$1\leq w<n$である。これは$n$の最小性に反する。したがって有理数解は存在しない。
+  strategy: Clear denominators and run an infinite descent modulo 3.
+  sketch:
+  - 'translate: A rational solution gives integers with p² + q² = 3n² and n ≥ 1.'
+  - 'derive: Squares modulo 3 force 3 | p and 3 | q.'
+  - 'derive: Then 3 | n, and dividing by 3 gives a solution with n/3.'
+  - 'induction: Strong induction on n shows n = 0.'
+  - 'contradiction: The common denominator n is positive.'
+  openmath: (not (exists (x y) (and (in x Q) (in y Q) (= (+ (^ x 2) (^ y 2)) 3))))
+  hard_negative:
+    statement: x²+y²=2を満たす有理数x,yは存在しない。
+    reason: x=y=1が解である。右辺を変えると3を法とする議論が使えない。
+  target: |
+    ¬ ∃ x y : ℚ, x ^ 2 + y ^ 2 = 3
+  proof: |
+    by
+      have zm : ∀ x y : ZMod 3, x ^ 2 + y ^ 2 = 0 → x = 0 ∧ y = 0 := by decide
+      have descent : ∀ c : ℕ, ∀ a b : ℤ, a ^ 2 + b ^ 2 = 3 * (c : ℤ) ^ 2 → c = 0 := by
+        intro c
+        induction c using Nat.strong_induction_on with
+        | _ c ih =>
+          intro a b h
+          by_contra hc
+          have h0 : ((a : ZMod 3)) ^ 2 + (b : ZMod 3) ^ 2 = 0 := by
+            have := congrArg (Int.cast : ℤ → ZMod 3) h
+            push_cast at this
+            rw [this]
+            have h30 : (3 : ZMod 3) = 0 := by decide
+            rw [h30, zero_mul]
+          obtain ⟨ha, hb⟩ := zm _ _ h0
+          obtain ⟨u, rfl⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd a 3).mp ha
+          obtain ⟨v, rfl⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd b 3).mp hb
+          have h1 : 3 * (u ^ 2 + v ^ 2) = (c : ℤ) ^ 2 := by
+            push_cast at h
+            have h' : 3 * (3 * (u ^ 2 + v ^ 2)) = 3 * (c : ℤ) ^ 2 := by linear_combination h
+            linarith
+          have hd : (3 : ℤ) ∣ (c : ℤ) := Int.Prime.dvd_pow' Nat.prime_three ⟨_, h1.symm⟩
+          have hd' : 3 ∣ c := by exact_mod_cast hd
+          obtain ⟨w, rfl⟩ := hd'
+          have h2 : u ^ 2 + v ^ 2 = 3 * (w : ℤ) ^ 2 := by
+            push_cast at h1
+            have h' : 3 * (u ^ 2 + v ^ 2) = 3 * (3 * (w : ℤ) ^ 2) := by linear_combination h1
+            linarith
+          have hw := ih w (by omega) u v h2
+          omega
+      rintro ⟨x, y, h⟩
+      have hx : (x.den : ℚ) ≠ 0 := by exact_mod_cast x.den_nz
+      have hy : (y.den : ℚ) ≠ 0 := by exact_mod_cast y.den_nz
+      have e : ((x.num * y.den : ℤ) : ℚ) ^ 2 + ((y.num * x.den : ℤ) : ℚ) ^ 2 = 3 * ((x.den * y.den : ℕ) : ℚ) ^ 2 := by
+        push_cast
+        have ex : (x.num : ℚ) = x * x.den := (Rat.mul_den_eq_num x).symm
+        have ey : (y.num : ℚ) = y * y.den := (Rat.mul_den_eq_num y).symm
+        rw [ex, ey]
+        linear_combination ((x.den : ℚ) * y.den) ^ 2 * h
+      have e' : (x.num * y.den) ^ 2 + (y.num * x.den) ^ 2 = 3 * ((x.den * y.den : ℕ) : ℤ) ^ 2 := by
+        exact_mod_cast e
+      have := descent _ _ _ e'
+      have hxy : x.den * y.den ≠ 0 := Nat.mul_ne_zero x.den_nz y.den_nz
+      exact hxy this
+- id: fibonacci_gcd_identity
+  kind: textbook
+  level: 1
+  topic: 数列・フィボナッチ数の整除
+  statement: フィボナッチ数について$\gcd(F_m,F_n)=F_{\gcd(m,n)}$である。
+  statement_en: For natural numbers m and n, the Fibonacci numbers satisfy gcd(F_m, F_n) = F_gcd(m,n).
+  assumptions:
+  - $F_0=0$、$F_1=1$、$F_{k+2}=F_{k+1}+F_k$
+  quantifiers:
+  - 任意の自然数$m,n$
+  conclusion: $\gcd(F_m,F_n)=F_{\gcd(m,n)}$である。
+  answer: |
+    $(F_k)$を$F_0=0$、$F_1=1$、$F_{k+2}=F_{k+1}+F_k$で定まる数列とし、$m,n$を自然数とする。$\gcd(0,a)=a$とする。
+    第一に、$m\geq 1$で$F_{m+n}=F_m F_{n+1}+F_{m-1}F_n$であることを、すべての$n$について$m$の帰納法で示す。$m=1$では$F_{n+1}=F_1F_{n+1}+F_0F_n$である。$m$で成り立つとすると、$n+1$に適用して$F_{m+1+n}=F_mF_{n+2}+F_{m-1}F_{n+1}=F_m(F_{n+1}+F_n)+F_{m-1}F_{n+1}=F_{m+1}F_{n+1}+F_mF_n$となる。
+    第二に、$\gcd(F_{n+1},F_n)=\gcd(F_n,F_{n-1})=\dots=\gcd(F_1,F_0)=1$である。したがって$m\geq 1$で$\gcd(F_{m+n},F_n)=\gcd(F_mF_{n+1},F_n)=\gcd(F_m,F_n)$となる。この等式は$m=0$でも$\gcd(F_n,F_n)=F_n=\gcd(0,F_n)$より成り立つ。
+    第三に、$\gcd(F_m,F_n)=F_{\gcd(m,n)}$を$m+n$についての強帰納法で示す。$m=0$なら$\gcd(0,F_n)=F_n=F_{\gcd(0,n)}$であり、$n=0$でも同様である。$1\leq n\leq m$なら、第二の等式と帰納法の仮定より$\gcd(F_m,F_n)=\gcd(F_{m-n},F_n)=F_{\gcd(m-n,n)}=F_{\gcd(m,n)}$である。$1\leq m<n$の場合は$m,n$を入れ替えて同様である。
+  strategy: Use the addition formula and coprimality of neighbours to transfer the Euclidean algorithm to indices.
+  sketch:
+  - 'induction: Prove F_{m+n} = F_m F_{n+1} + F_{m-1} F_n.'
+  - 'derive: Consecutive Fibonacci numbers are coprime.'
+  - 'derive: Therefore gcd(F_{m+n}, F_n) = gcd(F_m, F_n).'
+  - 'induction: Run the Euclidean algorithm on the indices.'
+  - 'conclude: The algorithm ends at F_gcd(m,n).'
+  openmath: (forall (m n) (-> (and (in m N) (in n N)) (= (fibonacci (gcd m n)) (gcd (fibonacci m) (fibonacci n)))))
+  hard_negative:
+    statement: gcd(m,n)=1ならF_{mn}=F_m F_nである。
+    reason: m=2, n=3のときF_6=8だがF_2 F_3=2である。
+  target: |
+    ∀ m n : ℕ, Nat.fib (Nat.gcd m n) = Nat.gcd (Nat.fib m) (Nat.fib n)
+  proof: |
+    by
+      intro m n
+      exact Nat.fib_gcd m n
+- id: sum_of_factorials_perfect_square
+  kind: textbook
+  level: 1
+  topic: 整数・合同式と平方数
+  statement: 正の整数$n$について、$1!+2!+\dots+n!$が平方数となるのは$n=1$または$n=3$のときに限る。
+  statement_en: For n ≥ 1, the sum 1! + 2! + ... + n! is a perfect square if and only if n = 1 or n = 3.
+  assumptions:
+  - $n$は$1$以上の自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: 和が平方数となるのは$n=1$と$n=3$のときだけである。
+  answer: |
+    $n$を正の整数とし、$T_n=1!+2!+\dots+n!$とおく。$T_1=1=1^2$、$T_3=9=3^2$であり、$T_2=3$は平方数でない。$n\geq 4$では、$T_4=33\equiv 3\pmod 5$であり、$k\geq 5$なら$k!$は$5$で割り切れるので、$T_n\equiv 3\pmod 5$である。平方数は$5$を法として$0,1,4$のいずれかなので、$n\geq 4$の$T_n$は平方数でない。
+  strategy: Check small n directly and use residues modulo 5 for n ≥ 4.
+  sketch:
+  - 'case_split: Check n = 1, 2, 3 directly.'
+  - 'induction: For n ≥ 4 the sum is 3 modulo 5, since k! is divisible by 5 for k ≥ 5.'
+  - 'derive: Squares modulo 5 are 0, 1 or 4.'
+  - 'conclude: No sum with n ≥ 4 is a square.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 1)) (<-> (exists (r) (and (in r N) (= (sum (oriented_interval 1 n) (lambda (k) (factorial k))) (^ r 2)))) (or (= n 1) (= n 3)))))
+  hard_negative:
+    statement: 1!+2!+…+n!が平方数となる正の整数nはn=1だけである。
+    reason: n=3のとき和は9=3²である。
+  target: |
+    ∀ n : ℕ, 1 ≤ n → (IsSquare (∑ k ∈ Finset.range n, Nat.factorial (k + 1)) ↔ n = 1 ∨ n = 3)
+  proof: |
+    by
+      have hs : ∀ m : ℕ, 4 ≤ m → (∑ k ∈ Finset.range m, Nat.factorial (k + 1)) % 5 = 3 := by
+        intro m hm
+        induction m, hm using Nat.le_induction with
+        | base => decide
+        | succ m hm ih =>
+          have h5 : 5 ∣ Nat.factorial (m + 1) := Nat.dvd_factorial (by norm_num) (by omega)
+          have h0 : Nat.factorial (m + 1) % 5 = 0 := Nat.mod_eq_zero_of_dvd h5
+          rw [Finset.sum_range_succ, Nat.add_mod, ih, h0]
+      intro n hn
+      constructor
+      · rintro ⟨r, hr⟩
+        by_contra hne
+        have hcases : n = 2 ∨ 4 ≤ n := by omega
+        rcases hcases with rfl | h4
+        · have : r * r = 3 := by
+            rw [← hr]; decide
+          have hr2 : r ≤ 1 ∨ 2 ≤ r := by omega
+          rcases hr2 with h | h
+          · interval_cases r <;> omega
+          · nlinarith
+        · have hmod := hs n h4
+          rw [hr] at hmod
+          have : r % 5 = 0 ∨ r % 5 = 1 ∨ r % 5 = 2 ∨ r % 5 = 3 ∨ r % 5 = 4 := by omega
+          rcases this with h | h | h | h | h <;> simp [Nat.mul_mod, h] at hmod
+      · rintro (rfl | rfl)
+        · exact ⟨1, by decide⟩
+        · exact ⟨3, by decide⟩
+- id: four_consecutive_product_not_square
+  kind: textbook
+  level: 1
+  topic: 整数・平方数の間の評価
+  statement: 連続する$4$個の正の整数の積は平方数でない。
+  statement_en: For every positive integer n, the product n(n+1)(n+2)(n+3) is not a perfect square.
+  assumptions:
+  - $n$は$1$以上の自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $n(n+1)(n+2)(n+3)$は平方数でない。
+  answer: |
+    $n$を正の整数とする。$s=n^2+3n$とおくと$s\geq 1$であり、$n(n+3)=s$、$(n+1)(n+2)=s+2$より$n(n+1)(n+2)(n+3)=s(s+2)=s^2+2s$である。$s^2<s^2+2s<(s+1)^2$なので、この積は連続する$2$つの平方数の間に真に挟まれる。したがって積は平方数でない。
+  strategy: Trap the product strictly between two consecutive squares.
+  sketch:
+  - 'setup: Let s = n² + 3n, so s ≥ 1.'
+  - 'derive: The product equals s(s + 2).'
+  - 'derive: Hence s² < s(s + 2) < (s + 1)².'
+  - 'conclude: No square lies strictly between consecutive squares.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 1)) (not (exists (k) (and (in k N) (= (* (* (* n (+ n 1)) (+ n 2)) (+ n 3)) (^ k 2)))))))
+  hard_negative:
+    statement: 連続する4個の正の整数の積に1を加えた数は平方数でない。
+    reason: n(n+1)(n+2)(n+3)+1=(n²+3n+1)²であり、常に平方数である。
+  target: |
+    ∀ n : ℕ, 1 ≤ n → ¬ IsSquare (n * (n + 1) * (n + 2) * (n + 3))
+  proof: |
+    by
+      intro n hn
+      rintro ⟨k, hk⟩
+      have e : n * (n + 1) * (n + 2) * (n + 3) = (n ^ 2 + 3 * n) * (n ^ 2 + 3 * n + 2) := by ring
+      rw [e] at hk
+      obtain ⟨s, hs⟩ : ∃ s, s = n ^ 2 + 3 * n := ⟨_, rfl⟩
+      rw [← hs] at hk
+      have hspos : 0 < s := by rw [hs]; positivity
+      have h1 : s < k := by
+        by_contra hne
+        have : k ≤ s := by omega
+        nlinarith
+      have h2 : k < s + 1 := by
+        by_contra hne
+        have : s + 1 ≤ k := by omega
+        nlinarith
+      omega
+- id: power_swap_equation_integer_solution
+  kind: textbook
+  level: 1
+  topic: 整数・不定方程式
+  statement: $a<b$をみたす正の整数$a,b$について、$a^b=b^a$となるのは$(a,b)=(2,4)$のときに限る。
+  statement_en: For positive integers a and b with a < b, a^b = b^a holds if and only if a = 2 and b = 4.
+  assumptions:
+  - $a,b$は正の整数
+  - $a<b$
+  quantifiers:
+  - 任意の自然数$a,b$
+  conclusion: $a^b=b^a$となるのは$a=2$、$b=4$のときだけである。
+  answer: |
+    $a,b$を$a<b$をみたす正の整数とし、$a^b=b^a$とする。$a<b$より$a^a$は$a^b=b^a$を割り切る。各素数$p$について$p$の指数を比べると$a$倍された不等式が得られるので、$a$は$b$を割り切る。
+    $b=ak$とおくと$a<b$より$k\geq 2$である。$a^{ak}=(ak)^a$の両辺の$a$乗根をとると$a^k=ak$であり、$a^{k-1}=k$となる。$a=1$なら$k=1$となって不適なので$a\geq 2$であり、$2^{k-1}\leq k$を得る。$k\geq 3$では$2^{k-1}>k$なので$k=2$であり、$a=2$、$b=4$である。逆に$2^4=4^2$が成り立つ。
+  strategy: Show a divides b, reduce to a^(k-1) = k and compare growth.
+  sketch:
+  - 'derive: a^a divides b^a, so a divides b.'
+  - 'setup: Write b = ak with k ≥ 2.'
+  - 'derive: Taking a-th roots gives a^k = ak, so a^(k-1) = k.'
+  - 'derive: a = 1 is impossible, so a ≥ 2 and 2^(k-1) ≤ k.'
+  - 'conclude: Thus k = 2 and a = 2, which gives b = 4, and indeed 2⁴ = 4².'
+  openmath: (forall (a b) (-> (and (in a N) (in b N) (< 0 a) (< a b)) (<-> (= (^ a b) (^ b a)) (and (= a 2) (= b 4)))))
+  hard_negative:
+    statement: a<bを満たす正の実数でa^b=b^aとなるものはa=2, b=4だけである。
+    reason: a=9/4, b=27/8もa^b=b^a=(3/2)^(27/4)を満たす。
+  target: |
+    ∀ a b : ℕ, 0 < a → a < b → (a ^ b = b ^ a ↔ a = 2 ∧ b = 4)
+  proof: |
+    by
+      intro a b ha hab
+      constructor
+      swap
+      · rintro ⟨rfl, rfl⟩
+        norm_num
+      intro h
+      have hdvd : a ∣ b := by
+        apply (Nat.pow_dvd_pow_iff ha.ne').mp
+        rw [← h]
+        exact pow_dvd_pow a hab.le
+      obtain ⟨k, rfl⟩ := hdvd
+      have hk : 2 ≤ k := by
+        by_contra hne
+        have : k ≤ 1 := by omega
+        have : a * k ≤ a * 1 := Nat.mul_le_mul_left a this
+        omega
+      obtain ⟨m, rfl⟩ : ∃ m, k = m + 2 := ⟨k - 2, by omega⟩
+      have h' : (a ^ (m + 2)) ^ a = (a * (m + 2)) ^ a := by
+        rw [← pow_mul, mul_comm (m + 2) a]; exact h
+      have h1 : a ^ (m + 2) = a * (m + 2) := (Nat.pow_left_inj ha.ne').mp h'
+      have h2 : a ^ (m + 1) = m + 2 := by
+        apply Nat.eq_of_mul_eq_mul_left ha
+        rw [← h1]; ring
+      have ha2 : 2 ≤ a := by
+        by_contra hne
+        have : a = 1 := by omega
+        subst this
+        simp at h2
+      have hpow : ∀ j : ℕ, j + 3 < 2 ^ (j + 2) := by
+        intro j
+        induction j with
+        | zero => norm_num
+        | succ j ih =>
+          have e : 2 ^ (j + 1 + 2) = 2 * 2 ^ (j + 2) := by ring
+          omega
+      match m, h2 with
+      | 0, h2 =>
+        have : a = 2 := by simpa using h2
+        subst this
+        exact ⟨rfl, rfl⟩
+      | m + 1, h2 =>
+        have := Nat.pow_le_pow_left ha2 (m + 2)
+        have := hpow m
+        have e : a ^ (m + 1 + 1) = a ^ (m + 2) := by ring_nf
+        omega
+- id: infinitely_many_primes_three_mod_four
+  kind: textbook
+  level: 1
+  topic: 整数・素数の無限性
+  statement: $4$で割って$3$余る素数は無限に存在する。
+  statement_en: For every natural number N there is a prime p > N with p ≡ 3 mod 4.
+  assumptions:
+  - $N$は自然数
+  quantifiers:
+  - 任意の自然数$N$
+  - ある素数$p$
+  conclusion: $p>N$かつ$p\equiv 3\pmod 4$をみたす素数$p$が存在する。
+  answer: |
+    $N$を自然数とする。$M=4\cdot N!-1$とおくと$M\geq 3$であり、$M\equiv 3\pmod 4$である。$M$は奇数なので素因数はすべて奇数である。それらがすべて$4$で割って$1$余るなら$M\equiv 1\pmod 4$となって矛盾するので、$4$で割って$3$余る素因数$q$がある。$q\leq N$なら$q$は$N!$を割り切るので、$M$と$M+1=4\cdot N!$の両方を割り切り、$q$は$1$を割り切ることになって矛盾する。よって$q>N$であり、$p=q$が条件をみたす。
+  strategy: Take a prime factor of 4·N! - 1 that is 3 modulo 4.
+  sketch:
+  - 'construct: Let M = 4·N! - 1, which is 3 modulo 4.'
+  - 'derive: A product of primes that are 1 modulo 4 is 1 modulo 4, so M has a prime factor q ≡ 3 mod 4.'
+  - 'contradiction: If q ≤ N then q divides both M and M + 1.'
+  - 'conclude: Therefore q > N.'
+  openmath: (forall (m) (-> (in m N) (exists (p k) (and (in p P) (in k N) (> p m) (= p (+ (* 4 k) 3))))))
+  hard_negative:
+    statement: 4で割って1余る自然数は、1より大きければ4で割って1余る素因数を必ずもつ。
+    reason: 21=3·7は4で割って1余るが、素因数はどちらも4で割って3余る。
+  target: |
+    ∀ N : ℕ, ∃ p : ℕ, N < p ∧ Nat.Prime p ∧ p % 4 = 3
+  proof: |
+    by
+      have key : ∀ m : ℕ, m % 4 = 3 → ∃ p : ℕ, Nat.Prime p ∧ p ∣ m ∧ p % 4 = 3 := by
+        intro m
+        induction m using Nat.strong_induction_on with
+        | _ m ih =>
+          intro hm
+          have hm1 : m ≠ 1 := by omega
+          have hp := Nat.minFac_prime hm1
+          have hd := Nat.minFac_dvd m
+          obtain ⟨r, hr⟩ := hd
+          obtain ⟨p, hpe⟩ : ∃ p, p = m.minFac := ⟨_, rfl⟩
+          rw [← hpe] at hp hr
+          have hodd : p % 2 = 1 := by
+            rcases hp.eq_two_or_odd with h | h
+            · subst h
+              omega
+            · exact h
+          have hcase : p % 4 = 1 ∨ p % 4 = 3 := by omega
+          rcases hcase with h1 | h3
+          · have hrmod : r % 4 = 3 := by
+              have hmm : (p * r) % 4 = 3 := by rw [← hr]; exact hm
+              rw [Nat.mul_mod, h1] at hmm
+              omega
+            have hrlt : r < m := by
+              have := hp.two_le
+              have hrpos : 0 < r := by omega
+              nlinarith
+            obtain ⟨q, hq, hqd, hq3⟩ := ih r hrlt hrmod
+            exact ⟨q, hq, hr ▸ Dvd.dvd.mul_left hqd p, hq3⟩
+          · exact ⟨p, hp, ⟨r, hr⟩, h3⟩
+      intro N
+      have hf := Nat.factorial_pos N
+      obtain ⟨q, hq, hd, h3⟩ := key (4 * (Nat.factorial N - 1) + 3) (by omega)
+      refine ⟨q, ?_, hq, h3⟩
+      by_contra hle
+      have hq0 : 0 < q := hq.pos
+      have hdf : q ∣ Nat.factorial N := Nat.dvd_factorial hq0 (by omega)
+      have e : 4 * (Nat.factorial N - 1) + 3 + 1 = 4 * Nat.factorial N := by omega
+      have h1 : q ∣ 1 := (Nat.dvd_add_right hd).mp (e ▸ Dvd.dvd.mul_left hdf 4)
+      exact hq.one_lt.ne' (Nat.dvd_one.mp h1)
+- id: harmonic_sum_not_integer
+  kind: textbook
+  level: 1
+  topic: 整数・2進付値
+  statement: $n\geq 2$のとき、$1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$は整数でない。
+  statement_en: For n ≥ 2, the harmonic sum 1 + 1/2 + ... + 1/n is not an integer.
+  assumptions:
+  - $n$は$2$以上の自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$は整数でない。
+  answer: |
+    $n$を$2$以上の自然数とし、$H=1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$とおく。$2^e\leq n$となる最大の整数$e$をとると、$n\geq 2$より$e\geq 1$である。$2^{e+1}>n$なので、$1$以上$n$以下の整数のうち$2^e$で割り切れるものは$2^e$だけである。$1$以上$n$以下の各整数を$2$の累乗と奇数の積に分解し、その奇数部分全体の最小公倍数を$m$とする。$m$は奇数である。
+    $H$に整数$m2^{e-1}$を掛ける。$1\leq k\leq n$、$k\neq 2^e$の項では、$k=2^f o$ ($o$は奇数) と書くと$f\leq e-1$であり、$o$は$m$を割り切るので、$\dfrac{m2^{e-1}}{k}$は整数である。$k=2^e$の項は$\dfrac{m}{2}$であり、$m$が奇数なので整数でない。したがって$m2^{e-1}H$は整数でなく、$H$も整数でない。
+  strategy: Isolate the unique term with the largest power of 2 in its denominator.
+  sketch:
+  - 'setup: Take the largest e with 2^e ≤ n, so e ≥ 1.'
+  - 'derive: Among 1, ..., n only 2^e is divisible by 2^e.'
+  - 'construct: Multiply the sum by 2^(e-1)m, where m is the lcm of the odd parts.'
+  - 'derive: Every term becomes an integer except m/2.'
+  - 'conclude: The sum cannot be an integer.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 2)) (notin (sum (oriented_interval 1 n) (lambda (k) (/ 1 k))) Z)))
+  hard_negative:
+    statement: n≥1のとき1+1/2+…+1/nは整数でない。
+    reason: n=1のとき和は1であり整数である。
+  target: |
+    ∀ n : ℕ, 2 ≤ n → ¬ ∃ m : ℤ, ∑ k ∈ Finset.range n, (1 : ℚ) / ((k : ℚ) + 1) = m
+  proof: |
+    by
+      intro n hn
+      rintro ⟨m, hm⟩
+      apply harmonic_not_int hn
+      have : harmonic n = (m : ℚ) := by
+        rw [← hm, harmonic]
+        apply Finset.sum_congr rfl
+        intro k _
+        push_cast
+        rw [one_div]
+      rw [this]
+      simp [Rat.isInt]
+- id: integer_polynomial_odd_at_zero_one_no_root
+  kind: textbook
+  level: 1
+  topic: 多項式・整数係数と偶奇
+  statement: 整数係数多項式$P$で$P(0)$と$P(1)$がともに奇数なら、$P$は整数の根をもたない。
+  statement_en: If P is a polynomial with integer coefficients and P(0), P(1) are both odd, then P has no integer root.
+  assumptions:
+  - $P$は整数係数多項式
+  - $P(0)$と$P(1)$は奇数
+  quantifiers:
+  - 任意の整数係数多項式$P$
+  - 任意の整数$n$
+  conclusion: すべての整数$n$で$P(n)\neq 0$である。
+  answer: |
+    $P$を$P(0)$と$P(1)$がともに奇数である整数係数多項式とする。整数$a,b$について、$a-b$は各$a^i-b^i$を割り切るので、$P(a)-P(b)$を割り切る。
+    $P(n)=0$となる整数$n$があるとする。$n$が偶数なら、$2$は$n-0$を割り切るので$P(n)-P(0)=-P(0)$を割り切り、$P(0)$が偶数となって矛盾する。$n$が奇数なら、$2$は$n-1$を割り切るので$P(n)-P(1)=-P(1)$を割り切り、$P(1)$が偶数となって矛盾する。したがって整数の根はない。
+  strategy: Use a - b | P(a) - P(b) with b = 0 or 1 according to the parity of n.
+  sketch:
+  - 'apply_theorem: For integers a, b, a - b divides P(a) - P(b).'
+  - 'case_split: Split on the parity of a hypothetical root n.'
+  - 'derive: If n is even, P(0) is even.'
+  - 'derive: If n is odd, P(1) is even.'
+  - 'conclude: Both contradict the hypotheses.'
+  openmath: (forall (f) (-> (and (polynomial_over f Z) (exists (a) (and (in a Z) (= (polynomial_eval f 0) (+ (* 2 a) 1)))) (exists (b) (and (in b Z) (= (polynomial_eval f 1) (+ (* 2 b) 1))))) (forall (n) (-> (in n Z) (!= (polynomial_eval f n) 0)))))
+  hard_negative:
+    statement: 整数係数多項式PでP(0)が奇数なら、Pは整数の根をもたない。
+    reason: P(x)=x-1はP(0)=-1が奇数だが、整数の根1をもつ。
+  target: |
+    ∀ (P : Polynomial ℤ), Odd (P.eval 0) → Odd (P.eval 1) → ∀ n : ℤ, P.eval n ≠ 0
+  proof: |
+    by
+      intro P h0 h1 n hn
+      obtain ⟨a, ha⟩ := h0
+      obtain ⟨b, hb⟩ := h1
+      rcases Int.even_or_odd n with he | ho
+      · have d := Polynomial.sub_dvd_eval_sub n 0 P
+        rw [hn, sub_zero] at d
+        have := dvd_trans he.two_dvd d
+        omega
+      · have d := Polynomial.sub_dvd_eval_sub n 1 P
+        rw [hn] at d
+        obtain ⟨k, hk⟩ := ho
+        have h2 : (2 : ℤ) ∣ n - 1 := ⟨k, by omega⟩
+        have := dvd_trans h2 d
+        omega
+- id: power_sums_integer_from_sum_and_product
+  kind: textbook
+  level: 1
+  topic: 数列・解のべき乗和
+  statement: 複素数$x,y$について$x+y$と$xy$が整数なら、すべての自然数$n$で$x^n+y^n$は整数である。
+  statement_en: If complex numbers x and y have integer sum and integer product, then x^n + y^n is an integer for every natural number n.
+  assumptions:
+  - $x,y$は複素数
+  - $x+y$と$xy$は整数
+  quantifiers:
+  - 任意の複素数$x,y$
+  - 任意の自然数$n$
+  conclusion: $x^n+y^n$は整数である。
+  answer: |
+    $x,y$を$x+y$と$xy$が整数である複素数とする。$S_n=x^n+y^n$とおくと$S_0=2$、$S_1=x+y$であり、展開すると$S_{n+2}=(x+y)S_{n+1}-xyS_n$が成り立つ。$x+y$と$xy$が整数なので、連続する$2$項が整数なら次の項も整数である。帰納法によりすべての自然数$n$で$S_n$は整数である。
+  strategy: Use the three-term recurrence for power sums and induct on consecutive pairs.
+  sketch:
+  - 'setup: Let S_n = x^n + y^n, so S_0 = 2 and S_1 = x + y.'
+  - 'derive: S_{n+2} = (x + y)S_{n+1} - xy S_n.'
+  - 'induction: If S_n and S_{n+1} are integers, then so is S_{n+2}.'
+  - 'conclude: Every S_n is an integer.'
+  openmath: (forall (x y) (-> (and (in x C) (in y C) (in (+ x y) Z) (in (* x y) Z)) (forall (n) (-> (in n N) (in (+ (^ x n) (^ y n)) Z)))))
+  hard_negative:
+    statement: x+yが整数なら、全ての自然数nでx^n+y^nは整数である。
+    reason: x=y=1/2のときx²+y²=1/2である。xyが整数という条件が必要になる。
+  target: |
+    ∀ x y : ℂ, (∃ s : ℤ, x + y = s) → (∃ p : ℤ, x * y = p) → ∀ n : ℕ, ∃ m : ℤ, x ^ n + y ^ n = m
+  proof: |
+    by
+      rintro x y ⟨s, hs⟩ ⟨p, hp⟩ n
+      have key : ∀ k : ℕ, (∃ m : ℤ, x ^ k + y ^ k = m) ∧ (∃ m : ℤ, x ^ (k + 1) + y ^ (k + 1) = m) := by
+        intro k
+        induction k with
+        | zero => exact ⟨⟨2, by norm_num⟩, ⟨s, by simpa using hs⟩⟩
+        | succ k ih =>
+          obtain ⟨⟨a, ha⟩, ⟨b, hb⟩⟩ := ih
+          refine ⟨⟨b, hb⟩, ⟨s * b - p * a, ?_⟩⟩
+          push_cast
+          rw [← hs, ← hp, ← ha, ← hb]
+          ring
+      exact (key n).1
+- id: floor_two_add_sqrt_three_power_odd
+  kind: textbook
+  level: 1
+  topic: 数列・共役と整数部分
+  statement: すべての自然数$n$について$(2+\sqrt{3})^n$の整数部分は奇数である。
+  statement_en: For every natural number n, the floor of (2 + √3)^n is odd.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $\lfloor(2+\sqrt{3})^n\rfloor$は奇数である。
+  answer: |
+    $n$を自然数とし、$S_n=(2+\sqrt{3})^n+(2-\sqrt{3})^n$とおく。$2+\sqrt{3}$と$2-\sqrt{3}$の和は$4$、積は$1$なので、$S_0=2$、$S_1=4$、$S_{n+2}=4S_{n+1}-S_n$である。帰納法によりすべての$S_n$は偶数の整数である。
+    $n=0$では$(2+\sqrt{3})^0=1$の整数部分は$1$で奇数である。$n\geq 1$では$0<2-\sqrt{3}<1$より$0<(2-\sqrt{3})^n<1$である。よって$S_n-1<(2+\sqrt{3})^n<S_n$となり、整数部分は$S_n-1$で奇数である。
+  strategy: Add the conjugate power to get an even integer and read off the floor.
+  sketch:
+  - 'setup: Let S_n = (2+√3)^n + (2-√3)^n.'
+  - 'induction: S_{n+2} = 4S_{n+1} - S_n with S_0 = 2, S_1 = 4 shows S_n is even.'
+  - 'derive: For n ≥ 1, 0 < (2-√3)^n < 1.'
+  - 'derive: Therefore the floor of (2+√3)^n is S_n - 1.'
+  - 'conclude: S_n - 1 is odd, and n = 0 is checked directly.'
+  openmath: (forall (n) (-> (in n N) (exists (k) (and (in k Z) (= (floor (^ (+ 2 (root 3 2)) n)) (+ (* 2 k) 1))))))
+  hard_negative:
+    statement: 全ての正の整数nについて(1+√2)^nの整数部分は奇数である。
+    reason: n=1のとき整数部分は2で偶数である。共役の絶対値は1未満だが負になることがある。
+  target: |
+    ∀ n : ℕ, Odd ⌊(2 + Real.sqrt 3) ^ n⌋
+  proof: |
+    by
+      intro n
+      have s3 : Real.sqrt 3 ^ 2 = 3 := Real.sq_sqrt (by norm_num)
+      have h1 : 1 < Real.sqrt 3 := by
+        rw [Real.lt_sqrt (by norm_num)]; norm_num
+      have h2 : Real.sqrt 3 < 2 := by
+        rw [Real.sqrt_lt' (by norm_num)]; norm_num
+      have key : ∀ k : ℕ, (∃ m : ℤ, (2 + Real.sqrt 3) ^ k + (2 - Real.sqrt 3) ^ k = 2 * m) ∧
+          (∃ m : ℤ, (2 + Real.sqrt 3) ^ (k + 1) + (2 - Real.sqrt 3) ^ (k + 1) = 2 * m) := by
+        intro k
+        induction k with
+        | zero => exact ⟨⟨1, by norm_num⟩, ⟨2, by norm_num⟩⟩
+        | succ k ih =>
+          obtain ⟨⟨a, ha⟩, ⟨b, hb⟩⟩ := ih
+          refine ⟨⟨b, hb⟩, ⟨4 * b - a, ?_⟩⟩
+          push_cast
+          have e : (2 + Real.sqrt 3) ^ (k + 1 + 1) + (2 - Real.sqrt 3) ^ (k + 1 + 1)
+              = 4 * ((2 + Real.sqrt 3) ^ (k + 1) + (2 - Real.sqrt 3) ^ (k + 1))
+                - ((2 + Real.sqrt 3) ^ k + (2 - Real.sqrt 3) ^ k) := by
+            have e1 : (2 + Real.sqrt 3) ^ 2 = 4 * (2 + Real.sqrt 3) - 1 := by nlinarith
+            have e2 : (2 - Real.sqrt 3) ^ 2 = 4 * (2 - Real.sqrt 3) - 1 := by nlinarith
+            calc _ = (2 + Real.sqrt 3) ^ k * (2 + Real.sqrt 3) ^ 2 + (2 - Real.sqrt 3) ^ k * (2 - Real.sqrt 3) ^ 2 := by ring
+              _ = _ := by rw [e1, e2]; ring
+          rw [e, hb, ha]; ring
+      cases n with
+      | zero => simp
+      | succ k =>
+        obtain ⟨⟨m, hm⟩, _⟩ := key (k + 1)
+        have hb0 : 0 < 2 - Real.sqrt 3 := by linarith
+        have hb1 : 2 - Real.sqrt 3 < 1 := by linarith
+        have hp0 : 0 < (2 - Real.sqrt 3) ^ (k + 1) := pow_pos hb0 _
+        have hp1 : (2 - Real.sqrt 3) ^ (k + 1) < 1 := pow_lt_one₀ hb0.le hb1 (by omega)
+        have hf : ⌊(2 + Real.sqrt 3) ^ (k + 1)⌋ = 2 * m - 1 := by
+          rw [Int.floor_eq_iff]
+          push_cast
+          constructor <;> linarith
+        rw [hf]
+        exact ⟨m - 1, by ring⟩
+- id: sqrt_two_sub_one_power_as_sqrt_difference
+  kind: textbook
+  level: 1
+  topic: 数列・ペル方程式型の表示
+  statement: すべての自然数$n$について、$(\sqrt{2}-1)^n=\sqrt{m+1}-\sqrt{m}$となる自然数$m$が存在する。
+  statement_en: For every natural number n there is a natural number m with (√2 - 1)^n = √(m+1) - √m.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  - ある自然数$m$
+  conclusion: $(\sqrt{2}-1)^n=\sqrt{m+1}-\sqrt{m}$となる$m$が存在する。
+  answer: |
+    $n$を自然数とする。自然数$x,y$で$(1+\sqrt{2})^n=x+y\sqrt{2}$かつ$(1-\sqrt{2})^n=x-y\sqrt{2}$となるものがあることを、帰納法で確かめる。$n=0$では$x=1$、$y=0$である。$n$で成り立つなら、$(x+y\sqrt{2})(1+\sqrt{2})=(x+2y)+(x+y)\sqrt{2}$、$(x-y\sqrt{2})(1-\sqrt{2})=(x+2y)-(x+y)\sqrt{2}$より$n+1$でも成り立つ。
+    二つの式を辺々掛けると$x^2-2y^2=(-1)^n$を得る。また$(\sqrt{2}-1)^n=(-1)^n(1-\sqrt{2})^n=(-1)^n(x-y\sqrt{2})$である。
+    $n$が偶数のとき、$x^2=2y^2+1$なので、値は$x-y\sqrt{2}=\sqrt{2y^2+1}-\sqrt{2y^2}$となり、$m=2y^2$とすればよい。$n$が奇数のとき、$2y^2=x^2+1$なので、値は$y\sqrt{2}-x=\sqrt{x^2+1}-\sqrt{x^2}$となり、$m=x^2$とすればよい。
+  strategy: Track (1+√2)^n = x + y√2 and use the norm equation x² - 2y² = (-1)^n.
+  sketch:
+  - 'induction: Write (1+√2)^n = x + y√2 with natural numbers x and y.'
+  - 'derive: Then x² - 2y² = (-1)^n and (√2-1)^n = (-1)^n (x - y√2).'
+  - 'case_split: Split on the parity of n.'
+  - 'construct: For even n take m = 2y²; for odd n take m = x².'
+  - 'conclude: In each case the value equals √(m+1) - √m.'
+  openmath: (forall (n) (-> (in n N) (exists (m) (and (in m N) (= (^ (- (root 2 2) 1) n) (- (root (+ m 1) 2) (root m 2)))))))
+  hard_negative:
+    statement: 全ての自然数nについて、(√3-1)^n=√(m+1)-√mとなる自然数mが存在する。
+    reason: n=1のとき√3-1≈0.732である。√(m+1)-√mはmについて減少し、m=0で1、m=1で約0.414なので、0.732に等しくならない。
+  target: |
+    ∀ n : ℕ, ∃ m : ℕ, (Real.sqrt 2 - 1) ^ n = Real.sqrt ((m : ℝ) + 1) - Real.sqrt m
+  proof: "by\n  intro n\n  have s2 : Real.sqrt 2 ^ 2 = 2 := Real.sq_sqrt (by norm_num)\n  have h1 : 1 < Real.sqrt 2 := by\n    rw [Real.lt_sqrt (by norm_num)]; norm_num\n  have key : ∀ k : ℕ, ∃ x y : ℕ, (Real.sqrt 2 - 1) ^ k = (-1 : ℝ) ^ k * (x - y * Real.sqrt 2) ∧\n      ((x : ℤ) ^ 2 - 2 * (y : ℤ) ^ 2 = (-1) ^ k) := by\n    intro k\n    induction k with\n    | zero => exact ⟨1, 0, by norm_num, by norm_num⟩\n    | succ k ih =>\n      obtain ⟨x, y, hv, hn⟩ := ih\n      refine ⟨x + 2 * y, x + y, ?_, ?_⟩\n      · rw [pow_succ, hv, pow_succ]\n        push_cast\n        linear_combination (-(-1 : ℝ) ^ k * y) * s2 \n      · push_cast\n        rw [pow_succ (-1 : ℤ) k, ← hn]\n        ring\n  obtain ⟨x, y, hv, hn⟩ := key n\n  have hsq : ∀ z : ℕ, Real.sqrt ((z : ℝ) ^ 2) = z := fun z => Real.sqrt_sq (Nat.cast_nonneg z)\n  have hsq2 : Real.sqrt (2 * (y : ℝ) ^ 2) = y * Real.sqrt 2 := by\n    rw [mul_comm, Real.sqrt_mul (by positivity), Real.sqrt_sq (Nat.cast_nonneg y)]\n  rcases Nat.even_or_odd n with he | ho\n  · refine ⟨2 * y ^ 2, ?_⟩\n    rw [he.neg_one_pow] at hn hv\n    have hx : (x : ℝ) ^ 2 = 2 * (y : ℝ) ^ 2 + 1 := by\n      have : ((x : ℤ) : ℝ) ^ 2 - 2 * ((y : ℤ) : ℝ) ^ 2 = ((1 : ℤ) : ℝ) := by exact_mod_cast hn\n      push_cast at this\n      linarith\n    push_cast\n    rw [← hx, hsq, hsq2, hv]\n    ring\n  · refine ⟨x ^ 2, ?_⟩\n    rw [ho.neg_one_pow] at hn hv\n    have hx : (x : ℝ) ^ 2 + 1 = 2 * (y : ℝ) ^ 2 := by\n      have : ((x : ℤ) : ℝ) ^ 2 - 2 * ((y : ℤ) : ℝ) ^ 2 = ((-1 : ℤ) : ℝ) := by exact_mod_cast hn\n      push_cast at this\n      linarith\n    push_cast\n    rw [hx, hsq, hsq2, hv]\n    ring\n"
+- id: regular_polygon_chord_product
+  kind: textbook
+  level: 1
+  topic: 複素数・正多角形の弦の積
+  statement: 単位円に内接する正$(n+1)$角形で、$1$つの頂点から他の$n$個の頂点までの距離の積は$n+1$である。
+  statement_en: For every natural number n, the product over k from 1 to n of |1 - exp(2πik/(n+1))| equals n + 1.
+  assumptions:
+  - 頂点は$1$の$(n+1)$乗根
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: 距離の積は$n+1$である。
+  answer: |
+    $n$を自然数とし、$\zeta=\exp\left(\dfrac{2\pi i}{n+1}\right)$とおく。頂点は$1$の$(n+1)$乗根$1,\zeta,\dots,\zeta^n$である。多項式の等式$x^{n+1}-1=(x-1)\prod_{k=1}^{n}(x-\zeta^k)$の両辺を$x-1$で割ると、$1+x+\dots+x^n=\prod_{k=1}^{n}(x-\zeta^k)$を得る。$x=1$を代入すると$\prod_{k=1}^{n}(1-\zeta^k)=n+1$である。両辺の絶対値をとると、$|1-\zeta^k|$は頂点$1$と頂点$\zeta^k$の距離なので結論が従う。$n=0$のときは空積で、両辺とも$1$である。
+  strategy: Factor x^(n+1) - 1 over the roots of unity, divide by x - 1 and evaluate at 1.
+  sketch:
+  - 'setup: Let ζ = exp(2πi/(n+1)).'
+  - 'derive: x^(n+1) - 1 = (x - 1) times the product of (x - ζ^k).'
+  - 'derive: Dividing by x - 1 gives 1 + x + ... + x^n as that product.'
+  - 'derive: Setting x = 1 gives a product equal to n + 1.'
+  - 'conclude: Taking absolute values gives the chord product.'
+  openmath: (forall (n) (-> (in n N) (= (product (natural_range n) (lambda (k) (abs (- 1 (exp (/ (* (* (* 2 pi) complex_i) (+ k 1)) (+ n 1))))))) (+ n 1))))
+  hard_negative:
+    statement: 半径rの円に内接する正(n+1)角形でも、1頂点から他の頂点までの距離の積はn+1である。
+    reason: 距離の積はr^n(n+1)である。n=1, r=2では直径4となり、2に等しくない。
+  target: |
+    ∀ n : ℕ, ∏ k ∈ Finset.range n, ‖1 - Complex.exp (2 * Real.pi * Complex.I * ((k : ℂ) + 1) / ((n : ℂ) + 1))‖ = (n : ℝ) + 1
+  proof: |
+    by
+      intro n
+      have hμ := Complex.isPrimitiveRoot_exp (n + 1) (by omega)
+      have h := hμ.prod_one_sub_pow_eq_order
+      have h' := congrArg (fun z : ℂ => ‖z‖) h
+      simp only [norm_prod] at h'
+      have e : ∀ k ∈ Finset.range n, ‖1 - Complex.exp (2 * Real.pi * Complex.I * ((k : ℂ) + 1) / ((n : ℂ) + 1))‖
+          = ‖1 - Complex.exp (2 * Real.pi * Complex.I / ((n + 1 : ℕ) : ℂ)) ^ (k + 1)‖ := by
+        intro k _
+        rw [← Complex.exp_nat_mul]
+        congr 3
+        push_cast
+        ring
+      rw [Finset.prod_congr rfl e, h']
+      have : ((n : ℂ) + 1) = ((n + 1 : ℕ) : ℂ) := by push_cast; rfl
+      rw [this, Complex.norm_natCast]
+      push_cast
+      rfl
+- id: abs_sin_multiple_angle_bound
+  kind: textbook
+  level: 1
+  topic: 不等式・三角関数
+  statement: 自然数$n$と実数$x$について$|\sin nx|\leq n|\sin x|$である。
+  statement_en: For every natural number n and real number x, |sin nx| ≤ n|sin x|.
+  assumptions:
+  - $n$は自然数
+  - $x$は実数
+  quantifiers:
+  - 任意の自然数$n$
+  - 任意の実数$x$
+  conclusion: $|\sin nx|\leq n|\sin x|$である。
+  answer: |
+    $x$を実数とし、自然数$n$についての帰納法で示す。$n=0$では両辺とも$0$である。$n$で成り立つとする。加法定理から$\sin(n+1)x=\sin nx\cos x+\cos nx\sin x$である。三角不等式と$|\cos x|\leq 1$、$|\cos nx|\leq 1$より、$|\sin(n+1)x|\leq|\sin nx|+|\sin x|\leq(n+1)|\sin x|$となる。
+  strategy: Induct on n using the addition formula and |cos| ≤ 1.
+  sketch:
+  - 'induction: The case n = 0 is trivial.'
+  - 'derive: Expand sin((n+1)x) by the addition formula.'
+  - 'derive: The triangle inequality and |cos| ≤ 1 give |sin((n+1)x)| ≤ |sin nx| + |sin x|.'
+  - 'conclude: The induction hypothesis gives the bound.'
+  openmath: (forall (n x) (-> (and (in n N) (in x R)) (<= (abs (sin (* n x))) (* n (abs (sin x))))))
+  hard_negative:
+    statement: 自然数nと実数xについて|sin nx|≤|sin x|である。
+    reason: n=2, x=π/4のとき左辺は1、右辺は√2/2である。
+  target: |
+    ∀ (n : ℕ) (x : ℝ), |Real.sin (n * x)| ≤ n * |Real.sin x|
+  proof: |
+    by
+      intro n x
+      induction n with
+      | zero => simp
+      | succ k ih =>
+        have e : ((k + 1 : ℕ) : ℝ) * x = k * x + x := by push_cast; ring
+        rw [e, Real.sin_add]
+        calc |Real.sin (k * x) * Real.cos x + Real.cos (k * x) * Real.sin x|
+            ≤ |Real.sin (k * x) * Real.cos x| + |Real.cos (k * x) * Real.sin x| := abs_add_le _ _
+          _ = |Real.sin (k * x)| * |Real.cos x| + |Real.cos (k * x)| * |Real.sin x| := by
+              rw [abs_mul, abs_mul]
+          _ ≤ |Real.sin (k * x)| * 1 + 1 * |Real.sin x| := by
+              gcongr
+              · exact Real.abs_cos_le_one _
+              · exact Real.abs_cos_le_one _
+          _ ≤ ((k + 1 : ℕ) : ℝ) * |Real.sin x| := by
+              push_cast
+              linarith
+- id: reciprocal_squares_partial_sum_bound
+  kind: textbook
+  level: 1
+  topic: 不等式・部分和の評価
+  statement: $n\geq 1$のとき$1+\dfrac{1}{2^2}+\dots+\dfrac{1}{n^2}\leq 2-\dfrac{1}{n}$である。
+  statement_en: For every n ≥ 1, the sum of 1/k² for 1 ≤ k ≤ n is at most 2 - 1/n.
+  assumptions:
+  - $n$は$1$以上の自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: 和は$2-\dfrac{1}{n}$以下である。
+  answer: |
+    $n$を$1$以上の自然数とする。$k\geq 2$では$\dfrac{1}{k^2}\leq\dfrac{1}{k(k-1)}=\dfrac{1}{k-1}-\dfrac{1}{k}$である。これを$k=2$から$n$まで加えると、右辺の和は$1-\dfrac{1}{n}$になる。$k=1$の項$1$を加えて、和は$2-\dfrac{1}{n}$以下である。$n=1$では和は$1$で、$2-1$に等しい。
+  strategy: Compare with a telescoping sum.
+  sketch:
+  - 'derive: For k ≥ 2, 1/k² ≤ 1/(k-1) - 1/k.'
+  - 'derive: Summing from 2 to n telescopes to 1 - 1/n.'
+  - 'conclude: Adding the first term 1 gives 2 - 1/n.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 1)) (<= (sum (oriented_interval 1 n) (lambda (k) (/ 1 (^ k 2)))) (- 2 (/ 1 n)))))
+  hard_negative:
+    statement: 全てのn≥1で1+1/2²+…+1/n²≤3/2である。
+    reason: n=7で和は約1.5118となり、3/2を超える。
+  target: |
+    ∀ n : ℕ, 1 ≤ n → ∑ k ∈ Finset.range n, (1 : ℝ) / ((k : ℝ) + 1) ^ 2 ≤ 2 - 1 / (n : ℝ)
+  proof: |
+    by
+      intro n hn
+      induction n, hn using Nat.le_induction with
+      | base => norm_num
+      | succ m hm ih =>
+        rw [Finset.sum_range_succ]
+        have hm0 : (0 : ℝ) < m := by exact_mod_cast hm
+        have step : (1 : ℝ) / ((m : ℝ) + 1) ^ 2 ≤ 1 / (m : ℝ) - 1 / ((m : ℝ) + 1) := by
+          have e : 1 / (m : ℝ) - 1 / ((m : ℝ) + 1) = 1 / ((m : ℝ) * ((m : ℝ) + 1)) := by
+            field_simp; ring
+          rw [e]
+          apply one_div_le_one_div_of_le (by positivity)
+          nlinarith
+        push_cast
+        linarith
+- id: harmonic_sum_log_bounds
+  kind: textbook
+  level: 1
+  topic: 不等式・積分との比較
+  statement: $n\geq 1$のとき$\log(n+1)\leq 1+\dfrac{1}{2}+\dots+\dfrac{1}{n}\leq 1+\log n$である。
+  statement_en: For every n ≥ 1, log(n+1) ≤ 1 + 1/2 + ... + 1/n ≤ 1 + log n.
+  assumptions:
+  - $n$は$1$以上の自然数
+  - $\log$は自然対数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $\log(n+1)\leq 1+\dfrac{1}{2}+\dots+\dfrac{1}{n}\leq 1+\log n$である。
+  answer: |
+    $n$を$1$以上の自然数とし、$\log$を自然対数とする。$\dfrac{1}{x}$は$x>0$で減少関数なので、$k\geq 1$で$\dfrac{1}{k+1}\leq\int_k^{k+1}\dfrac{dx}{x}\leq\dfrac{1}{k}$である。右側の不等式を$k=1$から$n$まで加えると、$\log(n+1)\leq 1+\dfrac{1}{2}+\dots+\dfrac{1}{n}$となる。左側の不等式を$k=1$から$n-1$まで加えると、$\dfrac{1}{2}+\dots+\dfrac{1}{n}\leq\log n$となり、$1$を加えて上からの評価を得る。
+  strategy: Compare the sum with the integral of 1/x on unit intervals.
+  sketch:
+  - 'derive: Monotonicity gives 1/(k+1) ≤ ∫_k^(k+1) dx/x ≤ 1/k.'
+  - 'derive: Summing the upper bound for 1 ≤ k ≤ n gives log(n+1) ≤ H_n.'
+  - 'derive: Summing the lower bound for 1 ≤ k ≤ n-1 gives H_n - 1 ≤ log n.'
+  - 'conclude: Both bounds hold.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 1)) (and (<= (ln (+ n 1)) (sum (oriented_interval 1 n) (lambda (k) (/ 1 k)))) (<= (sum (oriented_interval 1 n) (lambda (k) (/ 1 k))) (+ 1 (ln n))))))
+  hard_negative:
+    statement: n≥1のとき1+1/2+…+1/n≤log nである。
+    reason: n=1のとき左辺は1、右辺は0である。
+  target: |
+    ∀ n : ℕ, 1 ≤ n → Real.log ((n : ℝ) + 1) ≤ ∑ k ∈ Finset.range n, (1 : ℝ) / ((k : ℝ) + 1) ∧ ∑ k ∈ Finset.range n, (1 : ℝ) / ((k : ℝ) + 1) ≤ 1 + Real.log n
+  proof: |
+    by
+      intro n _
+      have e : ∑ k ∈ Finset.range n, (1 : ℝ) / ((k : ℝ) + 1) = ((harmonic n : ℚ) : ℝ) := by
+        simp [harmonic]
+      rw [e]
+      have h1 := log_add_one_le_harmonic n
+      have h2 := harmonic_le_one_add_log n
+      push_cast at h1
+      exact ⟨h1, h2⟩
+- id: integral_power_over_one_add_x_tends_zero
+  kind: textbook
+  level: 1
+  topic: 極限・はさみうちと積分
+  statement: $I_n=\int_0^1\dfrac{x^n}{1+x}\,dx$は$n\to\infty$で$0$に収束する。
+  statement_en: The integrals of x^n/(1+x) over [0,1] tend to 0 as n tends to infinity.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 自然数$n$についての数列$(I_n)$
+  conclusion: $\lim_{n\to\infty}I_n=0$である。
+  answer: |
+    自然数$n$について$I_n=\int_0^1\dfrac{x^n}{1+x}\,dx$とおく。$0\leq x\leq 1$では$1\leq 1+x$なので、$0\leq\dfrac{x^n}{1+x}\leq x^n$である。これを$0$から$1$まで積分すると$0\leq I_n\leq\dfrac{1}{n+1}$となる。$\dfrac{1}{n+1}\to 0$なので、はさみうちの原理により$I_n\to 0$である。
+  strategy: Bound the integrand by x^n and squeeze.
+  sketch:
+  - 'derive: On [0,1], 0 ≤ x^n/(1+x) ≤ x^n.'
+  - 'derive: Integrating gives 0 ≤ I_n ≤ 1/(n+1).'
+  - 'apply_theorem: The squeeze theorem applies since 1/(n+1) tends to 0.'
+  - 'conclude: I_n tends to 0.'
+  openmath: (seq_limit_of (lambda (n) (interval_integral 0 1 (lambda (x) (/ (^ x n) (+ 1 x))))) 0)
+  hard_negative:
+    statement: (n+1)∫_0^1 x^n/(1+x)dxはn→∞で0に収束する。
+    reason: 1/(1+x)≥1/2より、この値は常に1/2以上である。
+  target: |
+    Filter.Tendsto (fun n : ℕ => ∫ x in (0 : ℝ)..1, x ^ n / (1 + x)) Filter.atTop (nhds 0)
+  proof: |
+    by
+      have hint : ∀ n : ℕ, IntervalIntegrable (fun x : ℝ => x ^ n / (1 + x)) MeasureTheory.volume 0 1 := by
+        intro n
+        apply ContinuousOn.intervalIntegrable
+        apply ContinuousOn.div (by fun_prop) (by fun_prop)
+        intro x hx
+        rw [Set.uIcc_of_le zero_le_one] at hx
+        have := hx.1
+        positivity
+      apply squeeze_zero (g := fun n : ℕ => 1 / ((n : ℝ) + 1))
+      · intro n
+        apply intervalIntegral.integral_nonneg zero_le_one
+        intro x hx
+        have := hx.1
+        positivity
+      · intro n
+        have e : ∫ x in (0 : ℝ)..1, x ^ n = 1 / ((n : ℝ) + 1) := by
+          rw [integral_pow]; simp
+        rw [← e]
+        apply intervalIntegral.integral_mono_on zero_le_one (hint n) (Continuous.intervalIntegrable (by fun_prop) _ _)
+        intro x hx
+        have h0 := hx.1
+        apply div_le_self (by positivity)
+        linarith
+      · exact tendsto_one_div_add_atTop_nhds_zero_nat
+- id: integral_identity_twenty_two_sevenths_minus_pi
+  kind: textbook
+  level: 1
+  topic: 積分・円周率の評価
+  statement: $\int_0^1\dfrac{x^4(1-x)^4}{1+x^2}\,dx=\dfrac{22}{7}-\pi$である。
+  statement_en: The integral over [0,1] of x⁴(1-x)⁴/(1+x²) equals 22/7 - π.
+  assumptions:
+  - $\pi$は円周率
+  quantifiers:
+  - なし
+  conclusion: 積分の値は$\dfrac{22}{7}-\pi$である。
+  answer: |
+    $\pi$を円周率とする。多項式の等式$x^4(1-x)^4=(x^6-4x^5+5x^4-4x^2+4)(1+x^2)-4$より、被積分関数は$x^6-4x^5+5x^4-4x^2+4-\dfrac{4}{1+x^2}$に等しい。$\int_0^1\dfrac{dx}{1+x^2}=\arctan 1=\dfrac{\pi}{4}$を用いて項別に積分すると、$\dfrac{1}{7}-\dfrac{2}{3}+1-\dfrac{4}{3}+4-\pi=\dfrac{22}{7}-\pi$となる。
+  strategy: Divide the numerator by 1 + x² and integrate term by term using arctan.
+  sketch:
+  - 'derive: Polynomial division gives x⁶ - 4x⁵ + 5x⁴ - 4x² + 4 - 4/(1+x²).'
+  - 'construct: An antiderivative is x⁷/7 - 2x⁶/3 + x⁵ - 4x³/3 + 4x - 4 arctan x.'
+  - 'apply_theorem: Apply the fundamental theorem of calculus on [0,1].'
+  - 'derive: arctan 1 = π/4 gives the value 22/7 - π.'
+  openmath: (= (interval_integral 0 1 (lambda (x) (/ (* (^ x 4) (^ (- 1 x) 4)) (+ 1 (^ x 2))))) (- (/ 22 7) pi))
+  hard_negative:
+    statement: ∫_0^1 x⁴(1-x)⁴/(1+x²)dx=0であり、π=22/7である。
+    reason: 被積分関数は(0,1)で正なので積分は正であり、π<22/7である。
+  target: |
+    ∫ x in (0 : ℝ)..1, x ^ 4 * (1 - x) ^ 4 / (1 + x ^ 2) = 22 / 7 - Real.pi
+  proof: |
+    by
+      have hder : ∀ x ∈ Set.uIcc (0 : ℝ) 1, HasDerivAt (fun y : ℝ => y ^ 7 / 7 - 2 * y ^ 6 / 3 + y ^ 5 - 4 * y ^ 3 / 3 + 4 * y - 4 * Real.arctan y)
+          (x ^ 4 * (1 - x) ^ 4 / (1 + x ^ 2)) x := by
+        intro x _
+        have hd := (((((hasDerivAt_pow 7 x).div_const 7).sub (((hasDerivAt_pow 6 x).const_mul 2).div_const 3)).add (hasDerivAt_pow 5 x)).sub
+          (((hasDerivAt_pow 3 x).const_mul 4).div_const 3)).add ((hasDerivAt_id x).const_mul 4) |>.sub ((Real.hasDerivAt_arctan x).const_mul 4)
+        refine HasDerivAt.congr_deriv (f := fun y : ℝ => y ^ 7 / 7 - 2 * y ^ 6 / 3 + y ^ 5 - 4 * y ^ 3 / 3 + 4 * y - 4 * Real.arctan y) hd ?_
+        have : (1 + x ^ 2) ≠ 0 := by positivity
+        push_cast
+        field_simp
+        ring
+      have hc : IntervalIntegrable (fun x : ℝ => x ^ 4 * (1 - x) ^ 4 / (1 + x ^ 2)) MeasureTheory.volume 0 1 := by
+        apply Continuous.intervalIntegrable
+        apply Continuous.div (by fun_prop) (by fun_prop)
+        intro x
+        positivity
+      rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hder hc]
+      simp only [Real.arctan_one, Real.arctan_zero]
+      norm_num
+      ring
+- id: orthocenter_vector_from_circumcenter
+  kind: textbook
+  level: 1
+  topic: ベクトル・外心と垂心
+  statement: 実内積空間の元$a,b,c$が$\|a\|=\|b\|=\|c\|$をみたすとき、$H=a+b+c$について$H-a$と$b-c$、$H-b$と$c-a$、$H-c$と$a-b$は直交する。
+  statement_en: In a real inner product space, if ‖a‖ = ‖b‖ = ‖c‖ and H = a + b + c, then H - a ⟂ b - c, H - b ⟂ c - a and H - c ⟂ a - b.
+  assumptions:
+  - $V$は実内積空間
+  - $a,b,c$は$V$の元
+  - $\|a\|=\|b\|=\|c\|$
+  quantifiers:
+  - 任意の実内積空間$V$
+  - 任意の$a,b,c\in V$
+  conclusion: $H=a+b+c$について$3$組の内積がすべて$0$である。
+  answer: |
+    $V$を実内積空間、$a,b,c\in V$を$\|a\|=\|b\|=\|c\|$をみたす元とし、$H=a+b+c$とおく。$H-a=b+c$なので、$\langle H-a,b-c\rangle=\langle b+c,b-c\rangle=\|b\|^2-\|c\|^2=0$である。同じ計算で$\langle H-b,c-a\rangle=\|c\|^2-\|a\|^2=0$、$\langle H-c,a-b\rangle=\|a\|^2-\|b\|^2=0$である。原点を外心とする三角形の頂点が$a,b,c$であるとき、この等式は$H$が垂心であることを表している。
+  strategy: Expand the inner product of a sum and a difference.
+  sketch:
+  - 'derive: H - a = b + c.'
+  - 'derive: (b + c)·(b - c) = ‖b‖² - ‖c‖² = 0.'
+  - 'derive: The other two pairs follow by the same calculation.'
+  - 'conclude: All three inner products vanish.'
+  openmath: (forall (V a b c) (-> (and (inner_product_space_over R V) (= (norm a) (norm b)) (= (norm b) (norm c))) (and (= (inner_product (- (+ (+ a b) c) a) (- b c)) 0) (= (inner_product (- (+ (+ a b) c) b) (- c a)) 0) (= (inner_product (- (+ (+ a b) c) c) (- a b)) 0))))
+  hard_negative:
+    statement: ノルムの条件がなくても、H=a+b+cについてH-aとb-cは直交する。
+    reason: a=0, b=(2,0), c=(1,0)のとき内積は(3,0)·(1,0)=3である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b c : V), ‖a‖ = ‖b‖ → ‖b‖ = ‖c‖ → inner ℝ ((a + b + c) - a) (b - c) = 0 ∧ inner ℝ ((a + b + c) - b) (c - a) = 0 ∧ inner ℝ ((a + b + c) - c) (a - b) = 0
+  proof: |
+    by
+      intro V _ _ a b c hab hbc
+      refine ⟨?_, ?_, ?_⟩
+      · have e : (a + b + c) - a = b + c := by abel
+        rw [e, real_inner_add_sub_eq_zero_iff]
+        exact hbc
+      · have e : (a + b + c) - b = c + a := by abel
+        rw [e, real_inner_add_sub_eq_zero_iff]
+        exact (hab.trans hbc).symm
+      · have e : (a + b + c) - c = a + b := by abel
+        rw [e, real_inner_add_sub_eq_zero_iff]
+        exact hab
+- id: tetrahedron_opposite_edges_perpendicular
+  kind: textbook
+  level: 1
+  topic: ベクトル・四面体の対辺
+  statement: $4$点$A,B,C,D$で$AB\perp CD$かつ$AC\perp BD$なら$AD\perp BC$である。
+  statement_en: For points a, b, c, d in a real inner product space, if b - a ⟂ d - c and c - a ⟂ d - b, then d - a ⟂ c - b.
+  assumptions:
+  - $V$は実内積空間で、$a,b,c,d$は$A,B,C,D$の位置ベクトル
+  - $\langle b-a,d-c\rangle=0$
+  - $\langle c-a,d-b\rangle=0$
+  quantifiers:
+  - 任意の実内積空間$V$
+  - 任意の$a,b,c,d\in V$
+  conclusion: $\langle d-a,c-b\rangle=0$である。
+  answer: |
+    $V$を実内積空間とし、$a,b,c,d\in V$が$\langle b-a,d-c\rangle=0$と$\langle c-a,d-b\rangle=0$をみたすとする。内積を展開すると、仮定は$\langle b,d\rangle-\langle b,c\rangle-\langle a,d\rangle+\langle a,c\rangle=0$と$\langle c,d\rangle-\langle b,c\rangle-\langle a,d\rangle+\langle a,b\rangle=0$である。第$2$式から第$1$式を引くと$\langle c,d\rangle+\langle a,b\rangle-\langle b,d\rangle-\langle a,c\rangle=0$となる。この左辺は$\langle d-a,c-b\rangle$を展開したものに等しいので、$\langle d-a,c-b\rangle=0$である。
+  strategy: Expand all inner products and subtract the two hypotheses.
+  sketch:
+  - 'derive: Expand both hypotheses bilinearly.'
+  - 'derive: Subtracting the first from the second gives c·d + a·b - b·d - a·c = 0.'
+  - 'conclude: That expression equals (d - a)·(c - b).'
+  openmath: (forall (V a b c d) (-> (and (inner_product_space_over R V) (= (inner_product (- b a) (- d c)) 0) (= (inner_product (- c a) (- d b)) 0)) (= (inner_product (- d a) (- c b)) 0)))
+  hard_negative:
+    statement: AB⊥CDだけでAD⊥BCである。
+    reason: a=(0,0,0), b=(1,0,0), c=(0,1,0), d=(0,1,1)ではAB⊥CDだが、(d-a)·(c-b)=1である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b c d : V), inner ℝ (b - a) (d - c) = 0 → inner ℝ (c - a) (d - b) = 0 → inner ℝ (d - a) (c - b) = 0
+  proof: |
+    by
+      intro V _ _ a b c d h1 h2
+      simp only [inner_sub_left, inner_sub_right] at h1 h2 ⊢
+      linarith [real_inner_comm a b, real_inner_comm a c, real_inner_comm a d, real_inner_comm b c, real_inner_comm b d, real_inner_comm c d]
+- id: triangle_side_product_inequality
+  kind: textbook
+  level: 1
+  topic: 不等式・三角形の辺
+  statement: 正の実数$a,b,c$について$(a+b-c)(b+c-a)(c+a-b)\leq abc$である。
+  statement_en: For positive real numbers a, b, c, (a+b-c)(b+c-a)(c+a-b) ≤ abc.
+  assumptions:
+  - $a,b,c$は正の実数
+  quantifiers:
+  - 任意の正の実数$a,b,c$
+  conclusion: $(a+b-c)(b+c-a)(c+a-b)\leq abc$である。
+  answer: |
+    $a,b,c$を正の実数とし、$x=a+b-c$、$y=b+c-a$、$z=c+a-b$とおく。$x+y=2b$、$y+z=2c$、$z+x=2a$はいずれも正なので、$x,y,z$のうち$0$以下のものは高々$1$つである。$1$つが$0$以下なら他の$2$つは正で、$xyz\leq 0<abc$より成り立つ。
+    すべて正なら、相加平均と相乗平均の不等式から$xy\leq\left(\dfrac{x+y}{2}\right)^2=b^2$、$yz\leq c^2$、$zx\leq a^2$である。これらを掛けて$(xyz)^2\leq(abc)^2$となり、$xyz,abc>0$より$xyz\leq abc$を得る。
+  strategy: Substitute the three factors and apply AM-GM pairwise after a sign check.
+  sketch:
+  - 'setup: Let x = a+b-c, y = b+c-a, z = c+a-b.'
+  - 'derive: Pairwise sums are 2a, 2b, 2c, so at most one of x, y, z is nonpositive.'
+  - 'case_split: If one is nonpositive, the left side is at most 0.'
+  - 'apply_theorem: Otherwise AM-GM gives xy ≤ b², yz ≤ c², zx ≤ a².'
+  - 'conclude: Multiplying gives xyz ≤ abc.'
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (> a 0) (> b 0) (> c 0)) (<= (* (* (- (+ a b) c) (- (+ b c) a)) (- (+ c a) b)) (* (* a b) c))))
+  hard_negative:
+    statement: 正の条件を外しても、実数a,b,cについて(a+b-c)(b+c-a)(c+a-b)≤abcである。
+    reason: a=-2, b=c=-1のとき左辺は0、右辺は-2である。
+  target: |
+    ∀ a b c : ℝ, 0 < a → 0 < b → 0 < c → (a + b - c) * (b + c - a) * (c + a - b) ≤ a * b * c
+  proof: |
+    by
+      intro a b c ha hb hc
+      rcases le_total a b with h1 | h1 <;> rcases le_total b c with h2 | h2 <;> rcases le_total a c with h3 | h3 <;>
+        nlinarith [mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h2), mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h3), mul_nonneg (sub_nonneg.2 h2) (sub_nonneg.2 h3),
+          mul_nonneg ha.le (sq_nonneg (a - b)), mul_nonneg hb.le (sq_nonneg (b - c)), mul_nonneg hc.le (sq_nonneg (a - c)),
+          mul_nonneg ha.le (mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h3)), mul_nonneg hb.le (mul_nonneg (sub_nonneg.2 h1) (sub_nonneg.2 h2)), mul_nonneg hc.le (mul_nonneg (sub_nonneg.2 h2) (sub_nonneg.2 h3))]
+- id: triangle_sine_sum_upper_bound
+  kind: textbook
+  level: 1
+  topic: 不等式・三角形の内角
+  statement: $A,B,C>0$、$A+B+C=\pi$のとき$\sin A+\sin B+\sin C\leq\dfrac{3\sqrt{3}}{2}$である。
+  statement_en: If A, B, C > 0 and A + B + C = π, then sin A + sin B + sin C ≤ 3√3/2.
+  assumptions:
+  - $A,B,C$は正の実数
+  - $A+B+C=\pi$
+  quantifiers:
+  - 任意の正の実数$A,B,C$
+  conclusion: $\sin A+\sin B+\sin C\leq\dfrac{3\sqrt{3}}{2}$である。
+  answer: |
+    $A,B,C$を$A+B+C=\pi$をみたす正の実数とする。区間$[0,\pi]$で$(\sin x)^{\prime\prime}=-\sin x\leq 0$なので、$\sin x$はこの区間で上に凸であり、$A,B,C$はこの区間に入る。イェンセンの不等式より$\dfrac{\sin A+\sin B+\sin C}{3}\leq\sin\dfrac{A+B+C}{3}=\sin\dfrac{\pi}{3}=\dfrac{\sqrt{3}}{2}$である。両辺を$3$倍すれば結論を得る。
+  strategy: Apply Jensen's inequality for the concave function sin on [0, π].
+  sketch:
+  - 'derive: A, B, C lie in [0, π], where sin is concave.'
+  - 'apply_theorem: Jensen''s inequality with equal weights.'
+  - 'derive: The mean angle is π/3, and sin(π/3) = √3/2.'
+  - 'conclude: Multiplying by 3 gives the bound.'
+  openmath: (forall (A B C) (-> (and (in A R) (in B R) (in C R) (> A 0) (> B 0) (> C 0) (= (+ (+ A B) C) pi)) (<= (+ (+ (sin A) (sin B)) (sin C)) (/ (* 3 (root 3 2)) 2))))
+  hard_negative:
+    statement: A,B,C>0ならA+B+C=πでなくてもsin A+sin B+sin C≤3√3/2である。
+    reason: A=B=C=π/2のとき和は3で、3√3/2≈2.598を超える。
+  target: |
+    ∀ A B C : ℝ, 0 < A → 0 < B → 0 < C → A + B + C = Real.pi → Real.sin A + Real.sin B + Real.sin C ≤ 3 * Real.sqrt 3 / 2
+  proof: |
+    by
+      intro A B C hA hB hC hs
+      have hc := strictConcaveOn_sin_Icc.concaveOn
+      have hm : ∀ i ∈ (Finset.univ : Finset (Fin 3)), (![A, B, C] i) ∈ Set.Icc 0 Real.pi := by
+        intro i _
+        fin_cases i <;> simp <;> constructor <;> linarith
+      have h := hc.le_map_sum (t := Finset.univ) (w := fun _ : Fin 3 => (1 : ℝ) / 3) (p := ![A, B, C])
+        (fun _ _ => by norm_num) (by simp) hm
+      simp only [Fin.sum_univ_three, smul_eq_mul, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two, Matrix.head_cons, Matrix.tail_cons] at h
+      have e : 1 / 3 * A + 1 / 3 * B + 1 / 3 * C = Real.pi / 3 := by linarith
+      simp at h
+      have e2 : 3⁻¹ * A + 3⁻¹ * B + 3⁻¹ * C = Real.pi / 3 := by linarith
+      rw [e2, Real.sin_pi_div_three] at h
+      linarith
+- id: dice_product_multiple_of_six_count
+  kind: textbook
+  level: 1
+  topic: 場合の数・包除原理
+  statement: $n$個のさいころの目の積が$6$の倍数になる出方は$6^n-4^n-3^n+2^n$通りである。
+  statement_en: Among the 6^n outcomes of n dice, the number whose product of faces is divisible by 6 equals 6^n - 4^n - 3^n + 2^n, stated as count + 4^n + 3^n = 6^n + 2^n.
+  assumptions:
+  - $n$は自然数
+  - さいころの目は$1$から$6$
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: 積が$6$の倍数となる出方の数を$N$とすると$N+4^n+3^n=6^n+2^n$であり、移項すると$N=6^n-4^n-3^n+2^n$である。
+  answer: |
+    $n$を自然数とし、$n$個のさいころの目の出方$6^n$通りのうち、積が$6$の倍数となるものの数を$N$とする。積が$6$の倍数でないのは、積が$2$の倍数でないか$3$の倍数でないときである。積が$2$の倍数でないのはすべての目が$1,3,5$のときで$3^n$通りある。積が$3$の倍数でないのはすべての目が$1,2,4,5$のときで$4^n$通りある。両方をみたすのはすべての目が$1,5$のときで$2^n$通りある。包除原理より$6$の倍数でない出方は$3^n+4^n-2^n$通りなので、$N=6^n-4^n-3^n+2^n$である。$4^n$と$3^n$を移項すれば、この式は$N+4^n+3^n=6^n+2^n$と同じである。
+  strategy: Count the complement by inclusion-exclusion on non-divisibility by 2 and by 3.
+  sketch:
+  - 'translate: The product is not divisible by 6 exactly when it is odd or not divisible by 3.'
+  - 'derive: An odd product means all faces lie in {1,3,5}, giving 3^n outcomes.'
+  - 'derive: A product prime to 3 means all faces lie in {1,2,4,5}, giving 4^n outcomes.'
+  - 'derive: Both conditions mean all faces lie in {1,5}, giving 2^n outcomes.'
+  - 'apply_theorem: Inclusion-exclusion gives 3^n + 4^n - 2^n outcomes in the complement.'
+  - 'conclude: Subtract from 6^n.'
+  openmath: (forall (n) (-> (in n N) (= (+ (+ (size (suchthat (function_set (natural_range n) (natural_range 6)) (lambda (f) (exists (k) (and (in k N) (= (product (natural_range n) (lambda (i) (+ (fn_value f i) 1))) (* 6 k))))))) (^ 4 n)) (^ 3 n)) (+ (^ 6 n) (^ 2 n)))))
+  hard_negative:
+    statement: n個のさいころの目の積が6の倍数でない出方は4^n+3^n通りである。
+    reason: 全ての目が1,5である2^n通りを二重に数えている。n=1では6の倍数でない目は5通りで、4+3=7に等しくない。
+  target: |
+    ∀ n : ℕ, (Finset.univ.filter (fun f : Fin n → Fin 6 => 6 ∣ ∏ i, ((f i : ℕ) + 1))).card + 4 ^ n + 3 ^ n = 6 ^ n + 2 ^ n
+  proof: |
+    by
+      intro n
+      have key : ∀ S : Finset (Fin 6), (Finset.univ.filter (fun f : Fin n → Fin 6 => ∀ i, f i ∈ S)).card = S.card ^ n := by
+        intro S
+        have : Finset.univ.filter (fun f : Fin n → Fin 6 => ∀ i, f i ∈ S) = Fintype.piFinset (fun _ => S) := by
+          ext f; simp [Fintype.mem_piFinset]
+        rw [this, Fintype.card_piFinset]
+        simp
+      have h2 : ∀ x : Fin 6, ¬ 2 ∣ (x : ℕ) + 1 ↔ x ∈ ({0, 2, 4} : Finset (Fin 6)) := by decide
+      have h3 : ∀ x : Fin 6, ¬ 3 ∣ (x : ℕ) + 1 ↔ x ∈ ({0, 1, 3, 4} : Finset (Fin 6)) := by decide
+      have hdiv : ∀ f : Fin n → Fin 6, ¬ (6 ∣ ∏ i, ((f i : ℕ) + 1)) ↔
+          (∀ i, f i ∈ ({0, 2, 4} : Finset (Fin 6))) ∨ (∀ i, f i ∈ ({0, 1, 3, 4} : Finset (Fin 6))) := by
+        intro f
+        have e6 : 6 ∣ ∏ i, ((f i : ℕ) + 1) ↔ 2 ∣ ∏ i, ((f i : ℕ) + 1) ∧ 3 ∣ ∏ i, ((f i : ℕ) + 1) := by
+          constructor
+          · intro h; exact ⟨dvd_trans (by norm_num) h, dvd_trans (by norm_num) h⟩
+          · rintro ⟨a, b⟩
+            exact (by norm_num : Nat.Coprime 2 3).mul_dvd_of_dvd_of_dvd a b
+        rw [e6, Prime.dvd_finsetProd_iff Nat.prime_two.prime, Prime.dvd_finsetProd_iff Nat.prime_three.prime]
+        simp only [← h2, ← h3]
+        simp only [Finset.mem_univ, true_and]
+        rw [not_and_or, not_exists, not_exists]
+      have hA := key {0, 2, 4}
+      have hB := key {0, 1, 3, 4}
+      have hAB := key {0, 4}
+      have hcard : (Finset.univ.filter (fun f : Fin n → Fin 6 => (∀ i, f i ∈ ({0, 2, 4} : Finset (Fin 6))) ∧ (∀ i, f i ∈ ({0, 1, 3, 4} : Finset (Fin 6))))) = (Finset.univ.filter (fun f : Fin n → Fin 6 => ∀ i, f i ∈ ({0, 4} : Finset (Fin 6)))) := by
+        ext f
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, ← forall_and]
+        apply forall_congr'
+        intro i
+        generalize f i = x
+        revert x
+        decide
+      have hun := Finset.card_union_add_card_inter (Finset.univ.filter (fun f : Fin n → Fin 6 => ∀ i, f i ∈ ({0, 2, 4} : Finset (Fin 6)))) (Finset.univ.filter (fun f : Fin n → Fin 6 => ∀ i, f i ∈ ({0, 1, 3, 4} : Finset (Fin 6))))
+      rw [← Finset.filter_or, ← Finset.filter_and, hcard, hA, hB, hAB] at hun
+      have hcomp := Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset (Fin n → Fin 6))) (fun f => 6 ∣ ∏ i, ((f i : ℕ) + 1))
+      have hne : Finset.univ.filter (fun f : Fin n → Fin 6 => ¬ 6 ∣ ∏ i, ((f i : ℕ) + 1)) = Finset.univ.filter (fun f : Fin n → Fin 6 => (∀ i, f i ∈ ({0, 2, 4} : Finset (Fin 6))) ∨ (∀ i, f i ∈ ({0, 1, 3, 4} : Finset (Fin 6)))) := by
+        ext f
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+        exact hdiv f
+      rw [hne] at hcomp
+      have hc1 : Fintype.card (Fin n → Fin 6) = 6 ^ n := by simp
+      rw [Finset.card_univ, hc1] at hcomp
+      have c3 : ({0, 2, 4} : Finset (Fin 6)).card = 3 := by decide
+      have c4 : ({0, 1, 3, 4} : Finset (Fin 6)).card = 4 := by decide
+      have c2 : ({0, 4} : Finset (Fin 6)).card = 2 := by decide
+      rw [c3, c4, c2] at hun
+      omega
+- id: triangle_walk_return_probability
+  kind: textbook
+  level: 1
+  topic: 確率・漸化式の閉じた形
+  statement: 三角形の頂点を毎回他の$2$頂点へ等確率で動く点が、$n$回後に出発点にいる確率は$\dfrac{1}{3}+\dfrac{2}{3}\left(-\dfrac{1}{2}\right)^n$である。
+  statement_en: A point starts at a vertex of a triangle and at each step moves to one of the other two vertices with probability 1/2, independently. With the vertices as residues mod 3, each step +1 or +2, and all 2^n step sequences equally likely, the probability of being at the start after n steps equals 1/3 + (2/3)(-1/2)^n.
+  assumptions:
+  - 頂点を$3$を法とする剰余で表し、$1$回の移動は$+1$か$+2$である
+  - $n$回の移動の列$2^n$通りは等確率である
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: 移動量の和が$3$で割り切れる列の割合、すなわち$n$回後に出発点にいる確率は$\dfrac{1}{3}+\dfrac{2}{3}\left(-\dfrac{1}{2}\right)^n$である。
+  answer: |
+    $n$を自然数とする。三角形の頂点を$3$を法とする剰余で表し、$1$回の移動を$+1$か$+2$とする。長さ$n$の移動の列$2^n$通りのうち、移動量の和が$3$で割り切れるものの個数を$c_n$とし、$p_n=\dfrac{c_n}{2^n}$とおく。$p_n$は$n$回後に出発点にいる確率であり、空列の和は$0$なので$c_0=1$、$p_0=1$である。
+    長さ$n$の列の和が$3$で割り切れるなら、$+1$と$+2$のどちらを続けても和は$3$で割り切れない。割り切れないなら、続ける移動のうちちょうど一方で和が$3$で割り切れる。よって$c_{n+1}=2^n-c_n$であり、$2^{n+1}$で割ると$p_{n+1}=\dfrac{1-p_n}{2}$である。
+    この式は$p_{n+1}-\dfrac{1}{3}=-\dfrac{1}{2}\left(p_n-\dfrac{1}{3}\right)$と変形できる。$p_n-\dfrac{1}{3}$は初項$\dfrac{2}{3}$、公比$-\dfrac{1}{2}$の等比数列なので、$p_n=\dfrac{1}{3}+\dfrac{2}{3}\left(-\dfrac{1}{2}\right)^n$である。
+  strategy: Condition on the position after n steps to get a recurrence, then shift by the fixed point 1/3 to obtain a geometric sequence.
+  sketch:
+  - 'setup: Encode vertices mod 3 and steps as +1 or +2, with all 2^n step sequences equally likely.'
+  - 'translate: Conditioning on the position after n steps gives p_{n+1} = (1 - p_n)/2 with p_0 = 1.'
+  - 'derive: Subtracting the fixed point gives p_{n+1} - 1/3 = (-1/2)(p_n - 1/3).'
+  - 'induction: The shifted sequence is geometric with first term 2/3.'
+  - 'conclude: p_n = 1/3 + (2/3)(-1/2)^n.'
+  openmath: (forall (n) (-> (in n N) (= (/ (size (suchthat (function_set (natural_range n) (natural_range 2)) (lambda (s) (exists (k) (and (in k N) (= (sum (natural_range n) (lambda (i) (+ (fn_value s i) 1))) (* 3 k))))))) (^ 2 n)) (+ (/ 1 3) (* (/ 2 3) (^ (/ (neg 1) 2) n))))))
+  hard_negative:
+    statement: n回後に出発点にいる確率は1/3+(2/3)(1/2)^nである。
+    reason: n=1では1回で必ず出発点を離れるので確率は0だが、この式の値は2/3である。公比は-1/2でなければならない。
+  target: |
+    ∀ n : ℕ, ((Finset.univ.filter (fun s : Fin n → Fin 2 => 3 ∣ ∑ i, ((s i : ℕ) + 1))).card : ℝ) / 2 ^ n = 1 / 3 + 2 / 3 * (-1 / 2 : ℝ) ^ n
+  proof: |
+    by
+      obtain ⟨A, hA⟩ : ∃ A : ℕ → ℕ → ℕ, ∀ m r, A m r =
+          (Finset.univ.filter (fun s : Fin m → Fin 2 => (∑ i, ((s i : ℕ) + 1)) % 3 = r)).card :=
+        ⟨_, fun _ _ => rfl⟩
+      have step : ∀ m r : ℕ, r < 3 → A (m + 1) r = A m ((r + 2) % 3) + A m ((r + 1) % 3) := by
+        intro m r hr
+        simp only [hA, Finset.card_filter]
+        rw [← (Fin.consEquiv (fun _ : Fin (m + 1) => Fin 2)).sum_comp, Fintype.sum_prod_type, Fin.sum_univ_two]
+        have e1 : ∀ S : ℕ, (1 + S) % 3 = r ↔ S % 3 = (r + 2) % 3 := by
+          intro S; omega
+        have e2 : ∀ S : ℕ, (2 + S) % 3 = r ↔ S % 3 = (r + 1) % 3 := by
+          intro S; omega
+        congr 1
+        · apply Finset.sum_congr rfl
+          intro s _
+          have e : (∑ i, (((Fin.consEquiv (fun _ : Fin (m + 1) => Fin 2)) ((0 : Fin 2), s) i : ℕ) + 1)) = 1 + ∑ i, ((s i : ℕ) + 1) := by
+            simp [Fin.sum_univ_succ, Fin.consEquiv]
+          rw [e]
+          exact if_congr (e1 _) rfl rfl
+        · apply Finset.sum_congr rfl
+          intro s _
+          have e : (∑ i, (((Fin.consEquiv (fun _ : Fin (m + 1) => Fin 2)) ((1 : Fin 2), s) i : ℕ) + 1)) = 2 + ∑ i, ((s i : ℕ) + 1) := by
+            simp [Fin.sum_univ_succ, Fin.consEquiv]
+          rw [e]
+          exact if_congr (e2 _) rfl rfl
+      have key : ∀ m : ℕ, (A m 0 : ℝ) = 2 ^ m * (1 / 3 + 2 / 3 * (-1 / 2 : ℝ) ^ m) ∧
+          (A m 1 : ℝ) = 2 ^ m * (1 / 3 - 1 / 3 * (-1 / 2 : ℝ) ^ m) ∧
+          (A m 2 : ℝ) = 2 ^ m * (1 / 3 - 1 / 3 * (-1 / 2 : ℝ) ^ m) := by
+        intro m
+        induction m with
+        | zero =>
+          have h0 : A 0 0 = 1 := by rw [hA]; decide
+          have h1 : A 0 1 = 0 := by rw [hA]; decide
+          have h2 : A 0 2 = 0 := by rw [hA]; decide
+          rw [h0, h1, h2]
+          norm_num
+        | succ k ih =>
+          obtain ⟨i0, i1, i2⟩ := ih
+          have s0 : A (k + 1) 0 = A k 2 + A k 1 := step k 0 (by norm_num)
+          have s1 : A (k + 1) 1 = A k 0 + A k 2 := step k 1 (by norm_num)
+          have s2 : A (k + 1) 2 = A k 1 + A k 0 := step k 2 (by norm_num)
+          rw [s0, s1, s2]
+          push_cast
+          rw [i0, i1, i2, pow_succ (2 : ℝ) k, pow_succ (-1 / 2 : ℝ) k]
+          refine ⟨by ring, by ring, by ring⟩
+      intro n
+      have e : Finset.univ.filter (fun s : Fin n → Fin 2 => 3 ∣ ∑ i, ((s i : ℕ) + 1)) =
+          Finset.univ.filter (fun s : Fin n → Fin 2 => (∑ i, ((s i : ℕ) + 1)) % 3 = 0) :=
+        Finset.filter_congr (fun s _ => by omega)
+      rw [e, ← hA, (key n).1]
+      exact mul_div_cancel_left₀ _ (by positivity)

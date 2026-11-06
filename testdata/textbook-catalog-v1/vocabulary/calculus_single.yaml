@@ -1,0 +1,36 @@
+# Proposed additive OpenMath vocabulary for single-variable calculus.
+# Function arguments are lambdas: an abstract f is written (lambda (x) (fn_value f x)).
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of real numbers"}
+open_interval: {args: [term, term], returns: term, meaning: "open interval (a, b) of real numbers"}
+fn_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a with x different from a; arguments f, a, L"}
+fn_right_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the right; arguments f, a, L"}
+fn_left_limit_at: {args: [term_function, term, term], returns: prop, meaning: "f(x) tends to L as x tends to a from the left; arguments f, a, L"}
+fn_limit_at_top: {args: [term_function, term], returns: prop, meaning: "f(x) tends to L as x tends to plus infinity; arguments f, L"}
+fn_continuous_at: {args: [term_function, term], returns: prop, meaning: "f is continuous at the point a"}
+fn_continuous_on: {args: [term_function, term], returns: prop, meaning: "f is continuous on the set S"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+fn_injective: {args: [term_function], returns: prop, meaning: "f is injective"}
+fn_monotone: {args: [term_function], returns: prop, meaning: "f is nondecreasing on the whole real line"}
+fn_strict_mono: {args: [term_function], returns: prop, meaning: "f is strictly increasing on the whole real line"}
+fn_strict_anti: {args: [term_function], returns: prop, meaning: "f is strictly decreasing on the whole real line"}
+fn_monotone_on: {args: [term_function, term], returns: prop, meaning: "f is nondecreasing on the set S"}
+infimum_on_right: {args: [term_function, term], returns: term, meaning: "infimum of f(x) over x greater than a; arguments f, a"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u; arguments f, u, a"}
+local_min_at: {args: [term_function, term], returns: prop, meaning: "f has a local minimum at a"}
+local_max_at: {args: [term_function, term], returns: prop, meaning: "f has a local maximum at a"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b; arguments a, b, f"}
+interval_integrable: {args: [term_function, term, term], returns: prop, meaning: "f is integrable on the interval between a and b"}
+integrable_on_ioi: {args: [term_function, term], returns: prop, meaning: "f is integrable on the open half-line from a to plus infinity"}
+integral_ioi: {args: [term, term_function], returns: term, meaning: "improper integral of f over the half-line from a to plus infinity"}
+seq_map: {args: [term, term], returns: term, meaning: "the sequence n maps to f(x_n), obtained by applying f to a sequence x; arguments f, x"}
+open_interval_between: {args: [term, term], returns: term, meaning: "open interval between a and b, in whichever order they lie"}
+closed_interval_between: {args: [term, term], returns: term, meaning: "closed interval between a and b, in whichever order they lie"}
+cont_diff_on: {args: [term_function, term, term], returns: prop, meaning: "f is n times continuously differentiable on the set S; arguments f, n, S"}
+iterated_deriv_within: {args: [term_function, term, term, term], returns: term, meaning: "n-th derivative of f within the set S evaluated at x; arguments f, n, S, x"}
+differentiable_on: {args: [term_function, term], returns: prop, meaning: "f is differentiable on the set S"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}
+deriv_value: {args: [term, term], returns: term, meaning: "value f'(x) of the derivative of f; arguments f, x"}
+arctan_value: {args: [term], returns: term, meaning: "real inverse tangent arctan x"}
+seq_limit_of: {args: [term_function, term], returns: prop, meaning: "the real sequence n maps to s(n), given as a lambda, converges to L"}
+open_half_line_right: {args: [term], returns: term, meaning: "open half-line from a to plus infinity"}

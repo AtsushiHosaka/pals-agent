@@ -1,0 +1,4 @@
+# Proposed additive OpenMath vocabulary (cd=pals2). The deployed validator does not accept it yet.
+natural_range: {args: [term], returns: term, meaning: "the finite index set of natural numbers 0, ..., n-1"}
+symmetric_polynomial: {args: [term, term], returns: prop, meaning: "f is a symmetric polynomial in n variables; arguments f n"}
+polynomial_in_elementary_symmetric: {args: [term, term], returns: term, meaning: "the polynomial obtained from g by replacing its i-th variable with the i-th elementary symmetric polynomial in n variables; arguments g n"}

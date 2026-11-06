@@ -1,0 +1,69 @@
+# Proposed additive OpenMath vocabulary for multivariable calculus (cd=pals2).
+# Names reused from other domain files keep their signature.
+fn_value: {args: [term, term], returns: term, meaning: "function value f(x)"}
+has_deriv_at: {args: [term_function, term, term], returns: prop, meaning: "f is differentiable at a with derivative u; arguments f, u, a"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b; arguments a, b, f"}
+integral_real_line: {args: [term_function], returns: term, meaning: "integral of f over the whole real line"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of real numbers"}
+pi: {args: [], returns: term, meaning: "the circle constant pi"}
+normed_space: {args: [term], returns: prop, meaning: "E is a normed vector space over R or C"}
+banach_space: {args: [term], returns: prop, meaning: "E is a Banach space"}
+hilbert_space: {args: [term], returns: prop, meaning: "E is a Hilbert space"}
+norm: {args: [term], returns: term, meaning: "norm of a vector or operator norm of a bounded operator"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+continuous_map: {args: [term], returns: prop, meaning: "f is continuous"}
+continuous_map_at: {args: [term, term], returns: prop, meaning: "f is continuous at x"}
+operator_comp: {args: [term, term], returns: term, meaning: "composition of operators S after T"}
+operator_add: {args: [term, term], returns: term, meaning: "sum of two operators"}
+inverse_operator: {args: [term], returns: term, meaning: "inverse of an invertible operator"}
+function_compose_map: {args: [term, term], returns: term, meaning: "composite g after f"}
+euclidean_space: {args: [term], returns: term, meaning: "n-dimensional Euclidean space"}
+open_set: {args: [term], returns: prop, meaning: "S is an open set"}
+convex_set: {args: [term], returns: prop, meaning: "S is a convex subset of a real vector space"}
+preconnected_in: {args: [term, term], returns: prop, meaning: "S is a connected subset of X, the empty set allowed"}
+product_set: {args: [term, term], returns: term, meaning: "product of the sets S and T as a subset of the product"}
+image_of: {args: [term, term], returns: term, meaning: "image of the set S under f"}
+map_between: {args: [term, term, term], returns: prop, meaning: "f is a map from X to Y"}
+component_fn: {args: [term, term], returns: term, meaning: "i-th component function of a vector-valued map f"}
+coordinate_of: {args: [term, term], returns: term, meaning: "i-th coordinate of the vector x"}
+basis_vector: {args: [term], returns: term, meaning: "i-th standard basis vector"}
+ordered_pair: {args: [term, term], returns: term, meaning: "the point (x, y) of a product"}
+first_coord: {args: [term], returns: term, meaning: "first component of a point of a product"}
+second_coord: {args: [term], returns: term, meaning: "second component of a point of a product"}
+has_fderiv_at: {args: [term, term, term], returns: prop, meaning: "f is Frechet differentiable at a with derivative L; arguments f, L, a"}
+has_strict_fderiv_at: {args: [term, term, term], returns: prop, meaning: "f is strictly differentiable at a with derivative L; arguments f, L, a"}
+differentiable_at: {args: [term, term], returns: prop, meaning: "f is Frechet differentiable at a"}
+fderiv_at: {args: [term, term], returns: term, meaning: "Frechet derivative of f at a"}
+gradient_at: {args: [term, term], returns: term, meaning: "gradient of a real-valued f at a"}
+cont_diff: {args: [term, term], returns: prop, meaning: "f is of class C^k; arguments k, f"}
+cont_diff_at: {args: [term, term, term], returns: prop, meaning: "f is of class C^k near a; arguments k, f, a"}
+little_o_at: {args: [term_function, term_function, term], returns: prop, meaning: "f is little-o of g as the variable tends to a; arguments f, g, a"}
+scalar_multiple: {args: [term, term], returns: term, meaning: "scalar multiple c v of a vector or linear functional"}
+linear_iso: {args: [term], returns: prop, meaning: "L is an invertible bounded linear map"}
+continuous_linear_map: {args: [term], returns: prop, meaning: "L is a bounded linear map"}
+restricted_to_second: {args: [term], returns: term, meaning: "partial derivative in the second factor: the restriction of L on a product to vectors (0, y)"}
+restricted_to_first: {args: [term], returns: term, meaning: "partial derivative in the first factor: the restriction of L on a product to vectors (x, 0)"}
+local_extremum_at: {args: [term, term], returns: prop, meaning: "f has a local maximum or minimum at a"}
+local_extremum_on: {args: [term, term, term], returns: prop, meaning: "f restricted to S has a local extremum at a; arguments f, S, a"}
+level_set_through: {args: [term, term], returns: term, meaning: "the level set of g through the point a"}
+local_inverse_of: {args: [term, term, term], returns: prop, meaning: "g inverts f near a and near f(a); arguments g, f, a"}
+locally_graph_of: {args: [term, term, term], returns: prop, meaning: "near u the level set of f through u is the graph of phi; arguments f, phi, u"}
+box_region: {args: [term, term], returns: term, meaning: "the closed box of points between the corners a and b of R^n"}
+set_integral: {args: [term, term_function], returns: term, meaning: "integral of f over the set S with Lebesgue measure; arguments S, f"}
+integral_whole_space: {args: [term_function], returns: term, meaning: "integral of f over the whole Euclidean space"}
+integrable_on_set: {args: [term_function, term], returns: prop, meaning: "f is integrable on the set S; arguments f, S"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set S; arguments f, S"}
+measurable_set: {args: [term], returns: prop, meaning: "S is Lebesgue measurable"}
+injective_on_set: {args: [term, term], returns: prop, meaning: "f is injective on the set S; arguments f, S"}
+linear_det: {args: [term], returns: term, meaning: "determinant of a linear endomorphism"}
+polar_map: {args: [], returns: term, meaning: "the map (r, t) to (r cos t, r sin t)"}
+polar_domain: {args: [], returns: term, meaning: "the set of (r, t) with r positive and t between minus pi and pi"}
+box_boundary_flux: {args: [term, term, term], returns: term, meaning: "sum over the coordinate directions of the integral of the normal component of F over the front face minus the back face of the box from a to b; arguments F, a, b"}
+divergence_at: {args: [term, term], returns: term, meaning: "divergence of the vector field F at x"}
+pointwise_product: {args: [term, term], returns: term, meaning: "the function x to f(x) g(x)"}
+index_set: {args: [term], returns: term, meaning: "the finite index set of the n coordinates"}
+homogeneous_of_degree: {args: [term, term], returns: prop, meaning: "f(t x) = t^k f(x) for all t > 0 and all x; arguments f, k"}
+deriv_at_point: {args: [term_function, term], returns: term, meaning: "derivative of the one-variable function f at a; arguments f, a"}
+right_inverse_near: {args: [term, term, term], returns: prop, meaning: "f(g(y)) = y for all y near b; arguments f, g, b"}
+integrable_on_whole_space: {args: [term], returns: prop, meaning: "f is integrable on the whole Euclidean space"}
+has_fderiv_within: {args: [term, term, term, term], returns: prop, meaning: "f restricted to S has derivative L at a; arguments f, L, S, a"}

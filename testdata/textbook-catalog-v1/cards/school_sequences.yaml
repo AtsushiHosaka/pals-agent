@@ -1,0 +1,2088 @@
+- id: arith_general_term
+  kind: textbook
+  level: high
+  topic: 等差数列・一般項
+  statement: 初項$a_1$、公差$d$の等差数列$(a_n)_{n\geq 1}$の一般項は$a_n=a_1+(n-1)d$である。
+  statement_en: If a real sequence satisfies a_{n+1} = a_n + d for all n ≥ 1, then a_n = a_1 + (n-1)d for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=a_n+d$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$d$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=a_1+(n-1)d$が成り立つ。
+  answer: |
+    $d$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=a_n+d$をみたす実数列とする。$n$についての帰納法で$a_n=a_1+(n-1)d$を示す。
+    $n=1$のとき右辺は$a_1$なので成り立つ。ある$n\geq 1$で成り立つと仮定すると、$a_{n+1}=a_n+d=a_1+(n-1)d+d=a_1+nd$となり、$n+1$でも成り立つ。
+  strategy: Induct on n starting from n = 1 and add d at each step.
+  sketch:
+  - 'induction: Check n = 1, where the formula reads a_1 = a_1.'
+  - 'derive: Assume the formula for n and add d using the recurrence.'
+  - 'conclude: The formula holds for all n ≥ 1.'
+  openmath: (forall (a d) (-> (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (+ (seq_value a 1) (* (- n 1) d)))))))
+  hard_negative:
+    statement: 公差$d$の等差数列では$a_n=a_1+nd$である。
+    reason: $n=1$とすると$a_1=a_1+d$となり、$d\neq 0$のとき成り立たない。初項からの増分は$n-1$回分である。
+  target: |
+    ∀ (a : ℕ → ℝ) (d : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) → ∀ n : ℕ, 1 ≤ n → a n = a 1 + ((n : ℝ) - 1) * d
+  proof: |
+    by
+      intro a d h n hn
+      induction n, hn using Nat.le_induction with
+      | base => simp
+      | succ n hn ih =>
+        rw [h n hn, ih]
+        push_cast
+        ring
+- id: arith_sum_first_last
+  kind: textbook
+  level: high
+  topic: 等差数列・和（初項と末項）
+  statement: 等差数列$(a_n)_{n\geq 1}$の初項から第$n$項までの和は、初項と末項を用いて$\dfrac{n(a_1+a_n)}{2}$と表される。
+  statement_en: If a real sequence satisfies a_{n+1} = a_n + d for all n ≥ 1, then the sum of a_k for 1 ≤ k ≤ n equals n(a_1 + a_n)/2 for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=a_n+d$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$d$
+  - 任意の自然数$n\geq 1$
+  conclusion: $\sum_{k=1}^{n}a_k=\dfrac{n(a_1+a_n)}{2}$が成り立つ。
+  answer: |
+    $d$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=a_n+d$をみたす実数列とする。まず帰納法により、すべての$m\geq 1$で$a_m=a_1+(m-1)d$である。
+    和の公式を$n$についての帰納法で示す。$n=1$のとき両辺は$a_1$である。ある$n\geq 1$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}a_k=\dfrac{n(a_1+a_n)}{2}+a_{n+1}=\dfrac{n(2a_1+(n-1)d)}{2}+a_1+nd=\dfrac{(n+1)(2a_1+nd)}{2}=\dfrac{(n+1)(a_1+a_{n+1})}{2}$
+    となり、$n+1$でも成り立つ。
+  strategy: Use the general term and induct on n.
+  sketch:
+  - 'derive: Obtain a_m = a_1 + (m-1)d for all m ≥ 1 by induction.'
+  - 'induction: Check n = 1, where both sides equal a_1.'
+  - 'derive: Add a_{n+1} to the formula for n and rewrite with the general term.'
+  - 'conclude: Simplify to (n+1)(a_1 + a_{n+1})/2.'
+  openmath: (forall (a d) (-> (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (sum (oriented_interval 1 n) (lambda (k) (seq_value a k))) (/ (* n (+ (seq_value a 1) (seq_value a n))) 2))))))
+  hard_negative:
+    statement: 任意の実数列について、$\sum_{k=1}^{n}a_k=\dfrac{n(a_1+a_n)}{2}$が成り立つ。
+    reason: 等差数列でなければ成り立たない。$a_1=0,\ a_2=1,\ a_3=0$では$n=3$の左辺は$1$、右辺は$0$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (d : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) → ∀ n : ℕ, 1 ≤ n → ∑ k ∈ Finset.Icc 1 n, a k = (n : ℝ) * (a 1 + a n) / 2
+  proof: |
+    by
+      intro a d h n hn
+      have key : ∀ m : ℕ, 1 ≤ m → a m = a 1 + ((m : ℝ) - 1) * d := by
+        intro m hm
+        induction m, hm using Nat.le_induction with
+        | base => simp
+        | succ m hm ih =>
+          rw [h m hm, ih]
+          push_cast
+          ring
+      induction n, hn using Nat.le_induction with
+      | base =>
+        rw [Finset.Icc_self, Finset.sum_singleton]
+        push_cast
+        ring
+      | succ n hn ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih, key n hn, key (n + 1) (by omega)]
+        push_cast
+        ring
+- id: arith_sum_first_diff
+  kind: textbook
+  level: high
+  topic: 等差数列・和（初項と公差）
+  statement: 初項$a$、公差$d$の等差数列の初項から第$n$項までの和は$\dfrac{n\{2a+(n-1)d\}}{2}$である。
+  statement_en: For real a, d and natural n, the sum of a + (k-1)d for 1 ≤ k ≤ n equals n(2a + (n-1)d)/2.
+  assumptions:
+  - $a,d$は実数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の実数$a,d$
+  - 任意の$0$以上の整数$n$
+  conclusion: $\sum_{k=1}^{n}\{a+(k-1)d\}=\dfrac{n\{2a+(n-1)d\}}{2}$が成り立つ。
+  answer: |
+    $a,d$を実数とし、$n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき両辺は$0$である。ある$n$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}\{a+(k-1)d\}=\dfrac{n\{2a+(n-1)d\}}{2}+a+nd=\dfrac{(n+1)(2a+nd)}{2}$
+    である。最後の等号は両辺を展開すれば確かめられる。よって$n+1$でも成り立つ。
+  strategy: Induct on n and add the next term a + nd.
+  sketch:
+  - 'induction: For n = 0 both sides vanish.'
+  - 'derive: Add a + nd to the formula for n.'
+  - 'conclude: Expand both sides to obtain the formula for n + 1.'
+  openmath: (forall (a d n) (-> (and (in a R) (in d R) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (+ a (* (- k 1) d)))) (/ (* n (+ (* 2 a) (* (- n 1) d))) 2))))
+  hard_negative:
+    statement: 初項$a$、公差$d$の等差数列の和は$\dfrac{n(2a+nd)}{2}$である。
+    reason: $n=1$のとき左辺は$a$、右辺は$a+\dfrac{d}{2}$であり、$d\neq 0$なら一致しない。正しくは$nd$ではなく$(n-1)d$である。
+  target: |
+    ∀ (a d : ℝ) (n : ℕ), ∑ k ∈ Finset.Icc 1 n, (a + ((k : ℝ) - 1) * d) = (n : ℝ) * (2 * a + ((n : ℝ) - 1) * d) / 2
+  proof: |
+    by
+      intro a d n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        push_cast
+        ring
+- id: arith_mean_iff
+  kind: gap
+  level: high
+  topic: 等差数列・等差中項
+  statement: 実数$a,b,c$がこの順に等差数列をなすことと、$2b=a+c$が成り立つことは同値である。
+  statement_en: Real numbers a, b, c form an arithmetic progression in this order, that is, b = a + d and c = b + d for some real d, if and only if 2b = a + c.
+  assumptions:
+  - $a,b,c$は実数
+  quantifiers:
+  - 任意の実数$a,b,c$
+  conclusion: ある実数$d$で$b=a+d,\ c=b+d$となることと$2b=a+c$は同値である。
+  answer: |
+    $a,b,c$を実数とする。ある実数$d$で$b=a+d$、$c=b+d$が成り立つとする。このとき$a+c=(b-d)+(b+d)=2b$である。
+    逆に$2b=a+c$とし、$d=b-a$とおく。$b=a+d$は定義から成り立ち、$b+d=2b-a=c$である。
+  strategy: Eliminate d in one direction and take d = b - a in the other.
+  sketch:
+  - 'derive: From b = a + d and c = b + d obtain a + c = 2b.'
+  - 'construct: Conversely set d = b - a.'
+  - 'conclude: Check c = b + d from 2b = a + c.'
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R)) (<-> (exists (d) (and (in d R) (= b (+ a d)) (= c (+ b d)))) (= (* 2 b) (+ a c)))))
+  hard_negative:
+    statement: $2b=a+c$ならば、$a,c,b$もこの順に等差数列をなす。
+    reason: $a=0,\ b=1,\ c=2$は$2b=a+c$をみたすが、$0,2,1$は等差数列でない。条件は並ぶ順序に依存する。
+  target: |
+    ∀ (a b c : ℝ), (∃ d : ℝ, b = a + d ∧ c = b + d) ↔ 2 * b = a + c
+  proof: |
+    by
+      intro a b c
+      constructor
+      · rintro ⟨d, h1, h2⟩
+        linarith
+      · intro h
+        exact ⟨b - a, by ring, by linarith⟩
+- id: arith_iff_linear_term
+  kind: gap
+  level: high
+  topic: 等差数列・一次式による特徴付け
+  statement: 数列$(a_n)_{n\geq 1}$が等差数列であることと、一般項が$n$の高々一次式$a_n=pn+q$で表されることは同値である。
+  statement_en: A real sequence satisfies a_{n+1} = a_n + d for all n ≥ 1 for some real d if and only if a_n = p·n + q for all n ≥ 1 for some real p and q.
+  assumptions:
+  - $(a_n)$は実数列
+  quantifiers:
+  - 任意の実数列$(a_n)$
+  conclusion: ある$d$ですべての$n\geq 1$について$a_{n+1}=a_n+d$となることと、ある$p,q$ですべての$n\geq 1$について$a_n=pn+q$となることは同値である。
+  answer: |
+    $(a_n)_{n\geq 1}$を実数列とする。すべての$n\geq 1$で$a_{n+1}=a_n+d$とする。$p=d,\ q=a_1-d$とおき、$a_n=pn+q$を帰納法で示す。$n=1$では$p+q=a_1$である。$a_n=pn+q$なら$a_{n+1}=pn+q+d=p(n+1)+q$である。
+    逆にすべての$n\geq 1$で$a_n=pn+q$とする。$d=p$とおくと$a_{n+1}-a_n=p(n+1)+q-(pn+q)=d$である。
+  strategy: Choose p = d and q = a_1 - d for one direction, and subtract consecutive values for the other.
+  sketch:
+  - 'construct: Given d, set p = d and q = a_1 - d.'
+  - 'induction: Prove a_n = p·n + q from n = 1.'
+  - 'derive: Given p and q, compute a_{n+1} - a_n = p.'
+  - 'conclude: The two descriptions are equivalent.'
+  openmath: (forall (a) (<-> (exists (d) (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d)))))) (exists (p q) (and (in p R) (in q R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (+ (* p n) q))))))))
+  hard_negative:
+    statement: 一般項が$n$の二次式$a_n=pn^2+qn+r$である数列も等差数列である。
+    reason: $a_n=n^2$では$a_2-a_1=3,\ a_3-a_2=5$であり、隣り合う項の差が一定でない。二次式になるのは等差数列の和のほうである。
+  target: |
+    ∀ (a : ℕ → ℝ), (∃ d : ℝ, ∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) ↔ ∃ p q : ℝ, ∀ n : ℕ, 1 ≤ n → a n = p * (n : ℝ) + q
+  proof: |
+    by
+      intro a
+      constructor
+      · rintro ⟨d, h⟩
+        refine ⟨d, a 1 - d, ?_⟩
+        intro n hn
+        induction n, hn using Nat.le_induction with
+        | base =>
+          push_cast
+          ring
+        | succ n hn ih =>
+          rw [h n hn, ih]
+          push_cast
+          ring
+      · rintro ⟨p, q, h⟩
+        refine ⟨p, ?_⟩
+        intro n hn
+        rw [h (n + 1) (by omega), h n hn]
+        push_cast
+        ring
+- id: arith_sum_max_at_sign_change
+  kind: gap
+  level: high
+  topic: 等差数列・和の最大
+  statement: 公差が負の等差数列$(a_n)_{n\geq 1}$で$a_k\geq 0$かつ$a_{k+1}\leq 0$となる$k\geq 1$があれば、初項からの和$S_n$は$n=k$で最大となる。
+  statement_en: If a real sequence satisfies a_{n+1} = a_n + d for all n ≥ 1 with d < 0, and a_k ≥ 0 and a_{k+1} ≤ 0 for some k ≥ 1, then the partial sum S_n of a_1, ..., a_n satisfies S_n ≤ S_k for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=a_n+d$をみたす
+  - $d<0$
+  - $k\geq 1$で$a_k\geq 0$かつ$a_{k+1}\leq 0$
+  quantifiers:
+  - 任意の実数列$(a_n)$、実数$d$、自然数$k$
+  - 任意の自然数$n\geq 1$
+  conclusion: $\sum_{i=1}^{n}a_i\leq\sum_{i=1}^{k}a_i$が成り立つ。
+  answer: |
+    $d<0$とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=a_n+d$をみたす実数列とする。$k\geq 1$で$a_k\geq 0$、$a_{k+1}\leq 0$とし、$S_n=\sum_{i=1}^{n}a_i$とおく。
+    $d<0$より数列は減少するので、$1\leq i\leq k$なら$a_i\geq a_k\geq 0$であり、$i\geq k+1$なら$a_i\leq a_{k+1}\leq 0$である。
+    $n\leq k$のとき、$S_k-S_n=\sum_{i=n+1}^{k}a_i\geq 0$である。$n\geq k$のとき、$S_n-S_k=\sum_{i=k+1}^{n}a_i\leq 0$である。どちらの場合も$S_n\leq S_k$である。
+  strategy: Use monotonicity to fix the sign of each term on both sides of k and compare the partial sums.
+  sketch:
+  - 'derive: Since d < 0, a_i ≥ a_k ≥ 0 for 1 ≤ i ≤ k.'
+  - 'derive: Likewise a_i ≤ a_{k+1} ≤ 0 for i ≥ k + 1.'
+  - 'case_split: For n ≤ k the difference S_k - S_n is a sum of nonnegative terms.'
+  - 'case_split: For n ≥ k the difference S_n - S_k is a sum of nonpositive terms.'
+  - 'conclude: In both cases S_n ≤ S_k.'
+  openmath: (forall (a d k) (-> (and (in d R) (< d 0) (in k N) (>= k 1) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d)))) (>= (seq_value a k) 0) (<= (seq_value a (+ k 1)) 0)) (forall (n) (-> (and (in n N) (>= n 1)) (<= (sum (oriented_interval 1 n) (lambda (i) (seq_value a i))) (sum (oriented_interval 1 k) (lambda (i) (seq_value a i))))))))
+  hard_negative:
+    statement: 公差が正の等差数列でも、$a_k\leq 0$かつ$a_{k+1}\geq 0$となる$k$で和$S_n$は最大となる。
+    reason: 公差が正なら$a_i>0$の項を加え続けて和は増えるので、最大は存在しない。このとき$n=k$は和の最小を与える。
+  target: |
+    ∀ (a : ℕ → ℝ) (d : ℝ) (k : ℕ), d < 0 → (∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) → 1 ≤ k → 0 ≤ a k → a (k + 1) ≤ 0 → ∀ n : ℕ, 1 ≤ n → ∑ i ∈ Finset.Icc 1 n, a i ≤ ∑ i ∈ Finset.Icc 1 k, a i
+  proof: |
+    by
+      intro a d k hd h hk hak hak1 n hn
+      have nonneg : ∀ j i : ℕ, 1 ≤ i → i + j = k → 0 ≤ a i := by
+        intro j
+        induction j with
+        | zero =>
+          intro i _ hi
+          have e : i = k := by omega
+          rw [e]
+          exact hak
+        | succ j ih =>
+          intro i hi hij
+          have h1 := ih (i + 1) (by omega) (by omega)
+          rw [h i hi] at h1
+          linarith
+      have nonpos : ∀ m : ℕ, k ≤ m → a (m + 1) ≤ 0 := by
+        intro m hm
+        induction m, hm using Nat.le_induction with
+        | base => exact hak1
+        | succ m hm ih =>
+          rw [h (m + 1) (by omega)]
+          linarith
+      rcases le_total n k with hnk | hkn
+      · apply Finset.sum_le_sum_of_subset_of_nonneg
+        · exact Finset.Icc_subset_Icc_right hnk
+        · intro i hi _
+          rw [Finset.mem_Icc] at hi
+          exact nonneg (k - i) i hi.1 (by omega)
+      · clear hn
+        induction n, hkn using Nat.le_induction with
+        | base => exact le_rfl
+        | succ m hm ih =>
+          rw [Finset.sum_Icc_succ_top (by omega)]
+          have h1 := nonpos m hm
+          linarith
+- id: arith_symmetric_pair
+  kind: gap
+  level: high
+  topic: 等差数列・両端から等距離の項の和
+  statement: 等差数列$(a_n)_{n\geq 1}$と$1\leq k\leq n$について、$a_k+a_{n+1-k}=a_1+a_n$が成り立つ。
+  statement_en: If a real sequence satisfies a_{n+1} = a_n + d for all n ≥ 1, then a_k + a_{n+1-k} = a_1 + a_n whenever 1 ≤ k ≤ n.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=a_n+d$をみたす
+  - $1\leq k\leq n$
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$d$
+  - $1\leq k\leq n$をみたす任意の自然数$k,n$
+  conclusion: $a_k+a_{n+1-k}=a_1+a_n$が成り立つ。
+  answer: |
+    $d$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=a_n+d$をみたす実数列とする。$k,n$を$1\leq k\leq n$をみたす自然数とする。帰納法により、すべての$m\geq 1$で$a_m=a_1+(m-1)d$である。
+    $k\leq n$より$n+1-k\geq 1$なので、この式を$m=k,\ n+1-k,\ n$に使えて、
+    $a_k+a_{n+1-k}=2a_1+\{(k-1)+(n-k)\}d=2a_1+(n-1)d=a_1+a_n$
+    となる。
+  strategy: Substitute the general term into both sides.
+  sketch:
+  - 'derive: Obtain a_m = a_1 + (m-1)d for all m ≥ 1.'
+  - 'translate: Note that n + 1 - k ≥ 1 because k ≤ n.'
+  - 'conclude: Substitute and collect the multiples of d.'
+  openmath: (forall (a d) (-> (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d))))) (forall (k n) (-> (and (in k N) (in n N) (>= k 1) (<= k n)) (= (+ (seq_value a k) (seq_value a (- (+ n 1) k))) (+ (seq_value a 1) (seq_value a n)))))))
+  hard_negative:
+    statement: 等差数列で$a_k+a_{n-k}=a_1+a_n$が成り立つ。
+    reason: 添字の和が$n$となり$1+n$と一致しないので、差は$d$だけずれる。$a_n=n$で$k=1,\ n=3$なら左辺は$3$、右辺は$4$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (d : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) → ∀ k n : ℕ, 1 ≤ k → k ≤ n → a k + a (n + 1 - k) = a 1 + a n
+  proof: |
+    by
+      intro a d h k n hk hkn
+      have key : ∀ m : ℕ, 1 ≤ m → a m = a 1 + ((m : ℝ) - 1) * d := by
+        intro m hm
+        induction m, hm using Nat.le_induction with
+        | base => simp
+        | succ m hm ih =>
+          rw [h m hm, ih]
+          push_cast
+          ring
+      have e : ((n + 1 - k : ℕ) : ℝ) = (n : ℝ) + 1 - (k : ℝ) := by
+        rw [Nat.cast_sub (by omega)]
+        push_cast
+        ring
+      rw [key k hk, key (n + 1 - k) (by omega), key n (by omega), e]
+      ring
+- id: arith_every_other_step
+  kind: gap
+  level: high
+  topic: 等差数列・一つおきの項
+  statement: すべての$n\geq 1$で$a_{n+2}=a_n+d$をみたす数列$(a_n)_{n\geq 1}$では、奇数番目と偶数番目がそれぞれ公差$d$の等差数列をなし、$a_{2m-1}=a_1+(m-1)d$、$a_{2m}=a_2+(m-1)d$である。
+  statement_en: If a real sequence satisfies a_{n+2} = a_n + d for all n ≥ 1, then a_{2m-1} = a_1 + (m-1)d and a_{2m} = a_2 + (m-1)d for all m ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+2}=a_n+d$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$d$
+  - 任意の自然数$m\geq 1$
+  conclusion: $a_{2m-1}=a_1+(m-1)d$かつ$a_{2m}=a_2+(m-1)d$が成り立つ。
+  answer: |
+    $d$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+2}=a_n+d$をみたす実数列とする。$m$についての帰納法で示す。
+    $m=1$のとき、二つの式は$a_1=a_1$、$a_2=a_2$である。ある$m\geq 1$で成り立つと仮定する。漸化式を$n=2m-1$と$n=2m$に使うと、
+    $a_{2m+1}=a_{2m-1}+d=a_1+md$、$a_{2m+2}=a_{2m}+d=a_2+md$
+    となり、$m+1$でも成り立つ。
+  strategy: Induct on m, proving the odd and even formulas together.
+  sketch:
+  - 'induction: For m = 1 both formulas are trivial.'
+  - 'derive: Apply the recurrence at n = 2m - 1 and at n = 2m.'
+  - 'conclude: Both formulas pass to m + 1.'
+  openmath: (forall (a d) (-> (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 2)) (+ (seq_value a n) d))))) (forall (m) (-> (and (in m N) (>= m 1)) (and (= (seq_value a (- (* 2 m) 1)) (+ (seq_value a 1) (* (- m 1) d))) (= (seq_value a (* 2 m)) (+ (seq_value a 2) (* (- m 1) d))))))))
+  hard_negative:
+    statement: $a_{n+2}=a_n+d$をみたす数列は全体として公差$\dfrac{d}{2}$の等差数列である。
+    reason: $a_1,a_2$は独立に選べる。$a_1=0,\ a_2=5,\ d=2$なら$a_3=2$であり、隣り合う差は$5,-3$と一定でない。
+  target: |
+    ∀ (a : ℕ → ℝ) (d : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 2) = a n + d) → ∀ m : ℕ, 1 ≤ m → a (2 * m - 1) = a 1 + ((m : ℝ) - 1) * d ∧ a (2 * m) = a 2 + ((m : ℝ) - 1) * d
+  proof: |
+    by
+      intro a d h
+      have key : ∀ j : ℕ, a (2 * j + 1) = a 1 + (j : ℝ) * d ∧ a (2 * j + 2) = a 2 + (j : ℝ) * d := by
+        intro j
+        induction j with
+        | zero => simp
+        | succ j ih =>
+          have h1 := h (2 * j + 1) (by omega)
+          have h2 := h (2 * j + 2) (by omega)
+          have e1 : 2 * (j + 1) + 1 = 2 * j + 1 + 2 := by ring
+          have e2 : 2 * (j + 1) + 2 = 2 * j + 2 + 2 := by ring
+          rw [e1, e2, h1, h2, ih.1, ih.2]
+          push_cast
+          constructor <;> ring
+      intro m hm
+      obtain ⟨j, rfl⟩ : ∃ j, m = j + 1 := ⟨m - 1, by omega⟩
+      have e1 : 2 * (j + 1) - 1 = 2 * j + 1 := by omega
+      have e2 : 2 * (j + 1) = 2 * j + 2 := by ring
+      rw [e1, e2, (key j).1, (key j).2]
+      push_cast
+      constructor <;> ring
+- id: arith_common_terms_lcm
+  kind: gap
+  level: high
+  topic: 整数全体を添字とする等差数列・共通項
+  statement: 正の整数$d,e$と整数$p,q$について、$x$が$p+di$と$q+ej$（$i,j$は負も含む任意の整数）の両方の形に表されるとき、同じく両方の形に表される整数$y$は、$y-x$が$d,e$の最小公倍数で割り切れる整数全体である。添字を正に限った数列の共通項では、添字の下限の条件が別に必要である。
+  statement_en: Let d, e be positive integers and p, q integers. If x = p + d·i and x = q + e·j for some integers i and j, then an integer y has both forms p + d·i and q + e·j, with integer indices, if and only if lcm(d, e) divides y - x.
+  assumptions:
+  - $d,e$は正の整数、$p,q,x$は整数
+  - $x$はある整数$i,j$で$x=p+di$かつ$x=q+ej$と表される
+  quantifiers:
+  - 任意の整数$p,q,d,e,x$
+  - 任意の整数$y$
+  conclusion: $y$が$p+di$と$q+ej$の両方の形に表されることと、$\mathrm{lcm}(d,e)$が$y-x$を割り切ることは同値である。
+  answer: |
+    $d,e$を正の整数、$p,q,x$を整数とし、$x=p+di_0=q+ej_0$となる整数$i_0,j_0$があるとする。$y$を整数とする。
+    $y=p+di=q+ej$となる整数$i,j$があるとする。$y-x=d(i-i_0)=e(j-j_0)$なので、$y-x$は$d$と$e$の公倍数である。公倍数は最小公倍数で割り切れるので、$\mathrm{lcm}(d,e)$は$y-x$を割り切る。
+    逆に$\mathrm{lcm}(d,e)$が$y-x$を割り切るとする。$d,e$はそれぞれ$\mathrm{lcm}(d,e)$を割り切るので、ある整数$s,t$で$y-x=ds=et$である。よって$y=p+d(i_0+s)=q+e(j_0+t)$と表される。
+  strategy: Express y - x through each progression and use that common multiples are exactly the multiples of the least common multiple.
+  sketch:
+  - 'setup: Fix one common value x with indices i_0 and j_0.'
+  - 'derive: A common value y gives y - x as a multiple of both d and e.'
+  - 'apply_theorem: Common multiples are divisible by the lcm.'
+  - 'construct: Conversely write y - x as d·s and e·t and shift the indices.'
+  - 'conclude: The common values are exactly x plus multiples of the lcm.'
+  openmath: (forall (p q d e x) (-> (and (in p Z) (in q Z) (in d Z) (in e Z) (in x Z) (> d 0) (> e 0) (exists (i) (and (in i Z) (= x (+ p (* d i))))) (exists (j) (and (in j Z) (= x (+ q (* e j)))))) (forall (y) (-> (in y Z) (<-> (and (exists (i) (and (in i Z) (= y (+ p (* d i))))) (exists (j) (and (in j Z) (= y (+ q (* e j)))))) (exists (c) (and (in c Z) (= (- y x) (* (lcm d e) c)))))))))
+  hard_negative:
+    statement: 二つの等差数列の共通項は、公差の積$de$ごとに現れる。
+    reason: 共通項の間隔は積ではなく最小公倍数である。$d=4,\ e=6,\ p=q=0$では共通項は$12$ごとに現れ、$24$ごとではない。
+  target: |
+    ∀ (p q d e x : ℤ), 0 < d → 0 < e → (∃ i : ℤ, x = p + d * i) → (∃ j : ℤ, x = q + e * j) → ∀ y : ℤ, ((∃ i : ℤ, y = p + d * i) ∧ (∃ j : ℤ, y = q + e * j)) ↔ ((Int.lcm d e : ℤ) ∣ y - x)
+  proof: |
+    by
+      intro p q d e x _ _ hx1 hx2 y
+      obtain ⟨i0, hi0⟩ := hx1
+      obtain ⟨j0, hj0⟩ := hx2
+      constructor
+      · rintro ⟨⟨i, hi⟩, ⟨j, hj⟩⟩
+        rw [Int.coe_lcm]
+        apply lcm_dvd
+        · exact ⟨i - i0, by rw [hi, hi0]; ring⟩
+        · exact ⟨j - j0, by rw [hj, hj0]; ring⟩
+      · intro h
+        obtain ⟨s, hs⟩ := (Int.dvd_lcm_left d e).trans h
+        obtain ⟨t, ht⟩ := (Int.dvd_lcm_right d e).trans h
+        exact ⟨⟨i0 + s, by linarith [mul_add d i0 s]⟩, ⟨j0 + t, by linarith [mul_add e j0 t]⟩⟩
+- id: geom_general_term
+  kind: textbook
+  level: high
+  topic: 等比数列・一般項
+  statement: 初項$a_1$、公比$r$の等比数列$(a_n)_{n\geq 1}$の一般項は$a_n=a_1r^{n-1}$である。
+  statement_en: If a real sequence satisfies a_{n+1} = r·a_n for all n ≥ 1, then a_n = a_1·r^(n-1) for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=ra_n$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$r$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=a_1r^{n-1}$が成り立つ。
+  answer: |
+    $r$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=ra_n$をみたす実数列とする。$n$についての帰納法で示す。
+    $n=1$のとき、$r^0=1$なので右辺は$a_1$である。ある$n\geq 1$で$a_n=a_1r^{n-1}$と仮定すると、$a_{n+1}=ra_n=a_1r^{n}$となり、$n+1$でも成り立つ。
+  strategy: Induct on n and multiply by r at each step.
+  sketch:
+  - 'induction: Check n = 1 using r^0 = 1.'
+  - 'derive: Multiply the formula for n by r.'
+  - 'conclude: The formula holds for all n ≥ 1.'
+  openmath: (forall (a r) (-> (and (in r R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (* r (seq_value a n)))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (* (seq_value a 1) (^ r (- n 1))))))))
+  hard_negative:
+    statement: 公比$r$の等比数列では$a_n=a_1r^{n}$である。
+    reason: $n=1$とすると$a_1=a_1r$となり、$a_1\neq 0,\ r\neq 1$のとき成り立たない。指数は$n-1$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (r : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 1) = r * a n) → ∀ n : ℕ, 1 ≤ n → a n = a 1 * r ^ (n - 1)
+  proof: |
+    by
+      intro a r h
+      have key : ∀ m : ℕ, a (m + 1) = a 1 * r ^ m := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          rw [h (m + 1) (by omega), ih, pow_succ]
+          ring
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      simpa using key m
+- id: geom_sum_ne_one
+  kind: textbook
+  level: high
+  topic: 等比数列・和（公比が1でない場合）
+  statement: 公比$r\neq 1$の等比数列の初項$a$から第$n$項までの和は$\dfrac{a(r^n-1)}{r-1}$である。
+  statement_en: For real a and r with r ≠ 1 and natural n, the sum of a·r^(k-1) for 1 ≤ k ≤ n equals a(r^n - 1)/(r - 1).
+  assumptions:
+  - $a,r$は実数で$r\neq 1$
+  - $n$は自然数
+  quantifiers:
+  - $r\neq 1$をみたす任意の実数$a,r$
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}ar^{k-1}=\dfrac{a(r^n-1)}{r-1}$が成り立つ。
+  answer: |
+    $a,r$を実数とし$r\neq 1$、$n$を自然数とする。$S=\sum_{k=1}^{n}ar^{k-1}$とおく。$rS=\sum_{k=1}^{n}ar^{k}$であるから、両者の差をとると途中の項が消えて、$rS-S=ar^n-a$となる。$r-1\neq 0$で割れば$S=\dfrac{a(r^n-1)}{r-1}$である。
+  strategy: Subtract S from r·S so that the middle terms cancel, then divide by r - 1.
+  sketch:
+  - 'setup: Let S be the sum and compute r·S.'
+  - 'derive: The difference r·S - S telescopes to a·r^n - a.'
+  - 'conclude: Divide by r - 1, which is nonzero.'
+  openmath: (forall (a r n) (-> (and (in a R) (in r R) (!= r 1) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (* a (^ r (- k 1))))) (/ (* a (- (^ r n) 1)) (- r 1)))))
+  hard_negative:
+    statement: 公比$r=1$のときも和は$\dfrac{a(r^n-1)}{r-1}$で与えられる。
+    reason: $r=1$では分母が$0$となり式が意味をもたない。このときの和は$na$である。
+  target: |
+    ∀ (a r : ℝ) (n : ℕ), r ≠ 1 → ∑ k ∈ Finset.Icc 1 n, a * r ^ (k - 1) = a * (r ^ n - 1) / (r - 1)
+  proof: |
+    by
+      intro a r n hr
+      have hr1 : r - 1 ≠ 0 := sub_ne_zero.mpr hr
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih, Nat.add_sub_cancel]
+        field_simp
+        ring
+- id: geom_mean_iff
+  kind: gap
+  level: high
+  topic: 等比数列・等比中項
+  statement: 実数$a\neq 0$と$b,c$について、$a,b,c$がこの順に等比数列をなすことと$b^2=ac$は同値である。
+  statement_en: For real a ≠ 0 and real b, c, there is a real r with b = a·r and c = b·r if and only if b^2 = a·c.
+  assumptions:
+  - $a,b,c$は実数
+  - $a\neq 0$
+  quantifiers:
+  - $a\neq 0$をみたす任意の実数$a,b,c$
+  conclusion: ある実数$r$で$b=ar,\ c=br$となることと$b^2=ac$は同値である。
+  answer: |
+    $a,b,c$を実数とし$a\neq 0$とする。ある実数$r$で$b=ar$、$c=br$とする。このとき$ac=a\cdot ar\cdot r=(ar)^2=b^2$である。
+    逆に$b^2=ac$とし、$r=\dfrac{b}{a}$とおく。$a\neq 0$より$ar=b$である。また$br=\dfrac{b^2}{a}=\dfrac{ac}{a}=c$である。
+  strategy: Substitute directly in one direction and take r = b/a in the other.
+  sketch:
+  - 'derive: From b = a·r and c = b·r obtain a·c = b^2.'
+  - 'construct: Conversely set r = b/a, which is defined since a ≠ 0.'
+  - 'conclude: Use b^2 = a·c to check c = b·r.'
+  openmath: (forall (a b c) (-> (and (in a R) (in b R) (in c R) (!= a 0)) (<-> (exists (r) (and (in r R) (= b (* a r)) (= c (* b r)))) (= (^ b 2) (* a c)))))
+  hard_negative:
+    statement: $a=0$の場合も、$b^2=ac$ならば$a,b,c$はこの順に等比数列をなす。
+    reason: $a=b=0,\ c=1$は$b^2=ac$をみたすが、$c=br$となる$r$は存在しない。
+  target: |
+    ∀ (a b c : ℝ), a ≠ 0 → ((∃ r : ℝ, b = a * r ∧ c = b * r) ↔ b ^ 2 = a * c)
+  proof: |
+    by
+      intro a b c ha
+      constructor
+      · rintro ⟨r, h1, h2⟩
+        rw [h2, h1]
+        ring
+      · intro h
+        refine ⟨b / a, by field_simp, ?_⟩
+        apply mul_left_cancel₀ ha
+        rw [← h]
+        field_simp
+- id: arith_geom_sum
+  kind: gap
+  level: high
+  topic: 数列の和・（等差）×（等比）
+  statement: 実数$r\neq 1$について、$\sum_{k=1}^{n}kr^{k-1}=\dfrac{1-(n+1)r^n+nr^{n+1}}{(1-r)^2}$が成り立つ。
+  statement_en: For real r ≠ 1 and natural n, the sum of k·r^(k-1) for 1 ≤ k ≤ n equals (1 - (n+1)r^n + n·r^(n+1))/(1 - r)^2.
+  assumptions:
+  - $r$は実数で$r\neq 1$
+  - $n$は自然数
+  quantifiers:
+  - $r\neq 1$をみたす任意の実数$r$
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}kr^{k-1}=\dfrac{1-(n+1)r^n+nr^{n+1}}{(1-r)^2}$が成り立つ。
+  answer: |
+    $r$を$r\neq 1$をみたす実数、$n$を自然数とし、$S=\sum_{k=1}^{n}kr^{k-1}$とおく。$rS=\sum_{k=1}^{n}kr^{k}$との差をとり、同じ指数の項をまとめると、
+    $(1-r)S=\sum_{k=1}^{n}r^{k-1}-nr^n=\dfrac{1-r^n}{1-r}-nr^n$
+    となる。ここで和の計算に公比$r\neq 1$の等比数列の和の公式を使った。両辺を$1-r\neq 0$で割って整理すると、
+    $S=\dfrac{1-r^n-nr^n(1-r)}{(1-r)^2}=\dfrac{1-(n+1)r^n+nr^{n+1}}{(1-r)^2}$
+    である。
+  strategy: Subtract r·S from S to reduce to a geometric sum, then divide by 1 - r.
+  sketch:
+  - 'setup: Let S be the sum and write out r·S.'
+  - 'derive: Terms with equal exponents combine, giving (1 - r)S = sum of r^(k-1) - n·r^n.'
+  - 'apply_theorem: Evaluate the geometric sum using r ≠ 1.'
+  - 'conclude: Divide by 1 - r and simplify.'
+  openmath: (forall (r n) (-> (and (in r R) (!= r 1) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (* k (^ r (- k 1))))) (/ (+ (- 1 (* (+ n 1) (^ r n))) (* n (^ r (+ n 1)))) (^ (- 1 r) 2)))))
+  hard_negative:
+    statement: $r=1$でも同じ公式で$\sum_{k=1}^{n}k$が求められる。
+    reason: $r=1$では分母が$0$となり公式は使えない。このときの和は$\dfrac{n(n+1)}{2}$である。
+  target: |
+    ∀ (r : ℝ) (n : ℕ), r ≠ 1 → ∑ k ∈ Finset.Icc 1 n, (k : ℝ) * r ^ (k - 1) = (1 - ((n : ℝ) + 1) * r ^ n + (n : ℝ) * r ^ (n + 1)) / (1 - r) ^ 2
+  proof: |
+    by
+      intro r n hr
+      have hr1 : 1 - r ≠ 0 := sub_ne_zero.mpr (Ne.symm hr)
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih, Nat.add_sub_cancel]
+        push_cast
+        field_simp
+        ring
+- id: sum_natural_numbers
+  kind: named
+  level: high
+  topic: Σの公式・自然数の和
+  statement: $1$から$n$までの自然数の和は$\sum_{k=1}^{n}k=\dfrac{n(n+1)}{2}$である（ガウスの和）。
+  statement_en: For natural n, the sum of k for 1 ≤ k ≤ n equals n(n+1)/2.
+  assumptions:
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$0$以上の整数$n$
+  conclusion: $\sum_{k=1}^{n}k=\dfrac{n(n+1)}{2}$が成り立つ。
+  answer: |
+    $n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき両辺は$0$である。ある$n$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}k=\dfrac{n(n+1)}{2}+(n+1)=\dfrac{(n+1)(n+2)}{2}$
+    となり、$n+1$でも成り立つ。
+  strategy: Induct on n and add the next term n + 1.
+  sketch:
+  - 'induction: For n = 0 both sides vanish.'
+  - 'derive: Add n + 1 to the formula for n and factor out n + 1.'
+  - 'conclude: The formula holds for n + 1.'
+  openmath: (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) k)) (/ (* n (+ n 1)) 2))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}k=\dfrac{n(n-1)}{2}$である。
+    reason: $n=1$のとき左辺は$1$、右辺は$0$である。この式は$\sum_{k=1}^{n-1}k$の値を与える。
+  target: |
+    ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, (k : ℝ) = (n : ℝ) * ((n : ℝ) + 1) / 2
+  proof: |
+    by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        push_cast
+        ring
+- id: sum_squares_formula
+  kind: textbook
+  level: high
+  topic: Σの公式・平方の和
+  statement: $0$以上の整数$n$について、$\sum_{k=1}^{n}k^2=\dfrac{n(n+1)(2n+1)}{6}$である。
+  statement_en: For natural n, the sum of k^2 for 1 ≤ k ≤ n equals n(n+1)(2n+1)/6.
+  assumptions:
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$0$以上の整数$n$
+  conclusion: $\sum_{k=1}^{n}k^2=\dfrac{n(n+1)(2n+1)}{6}$が成り立つ。
+  answer: |
+    $n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき両辺は$0$である。ある$n$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}k^2=\dfrac{n(n+1)(2n+1)}{6}+(n+1)^2=\dfrac{(n+1)\{n(2n+1)+6(n+1)\}}{6}=\dfrac{(n+1)(n+2)(2n+3)}{6}$
+    である。最後の等号は$2n^2+7n+6=(n+2)(2n+3)$による。よって$n+1$でも成り立つ。
+  strategy: Induct on n, adding (n+1)^2 and factoring.
+  sketch:
+  - 'induction: For n = 0 both sides vanish.'
+  - 'derive: Add (n+1)^2 and factor out n + 1.'
+  - 'derive: Factor 2n^2 + 7n + 6 as (n+2)(2n+3).'
+  - 'conclude: The formula holds for n + 1.'
+  openmath: (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (^ k 2))) (/ (* n (* (+ n 1) (+ (* 2 n) 1))) 6))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}k^2=\left(\sum_{k=1}^{n}k\right)^2$である。
+    reason: $n=2$のとき左辺は$5$、右辺は$9$である。この形の等式が成り立つのは立方の和と自然数の和の関係である。
+  target: |
+    ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, (k : ℝ) ^ 2 = (n : ℝ) * ((n : ℝ) + 1) * (2 * (n : ℝ) + 1) / 6
+  proof: |
+    by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        push_cast
+        ring
+- id: sum_cubes_nicomachus
+  kind: named
+  level: high
+  topic: Σの公式・立方の和
+  statement: $0$以上の整数$n$について、$\sum_{k=1}^{n}k^3=\left\{\dfrac{n(n+1)}{2}\right\}^2$である（ニコマコスの定理）。
+  statement_en: For natural n, the sum of k^3 for 1 ≤ k ≤ n equals (n(n+1)/2)^2.
+  assumptions:
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の$0$以上の整数$n$
+  conclusion: $\sum_{k=1}^{n}k^3=\left\{\dfrac{n(n+1)}{2}\right\}^2$が成り立つ。
+  answer: |
+    $n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき両辺は$0$である。ある$n$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}k^3=\dfrac{n^2(n+1)^2}{4}+(n+1)^3=\dfrac{(n+1)^2\{n^2+4(n+1)\}}{4}=\dfrac{(n+1)^2(n+2)^2}{4}$
+    となり、$n+1$でも成り立つ。
+  strategy: Induct on n, adding (n+1)^3 and factoring out (n+1)^2.
+  sketch:
+  - 'induction: For n = 0 both sides vanish.'
+  - 'derive: Add (n+1)^3 and factor out (n+1)^2.'
+  - 'derive: Recognize n^2 + 4n + 4 as (n+2)^2.'
+  - 'conclude: The formula holds for n + 1.'
+  openmath: (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (^ k 3))) (^ (/ (* n (+ n 1)) 2) 2))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}k^3=\dfrac{n^2(n+1)^2}{2}$である。
+    reason: $n=1$のとき左辺は$1$、右辺は$2$である。二乗するので分母は$4$になる。
+  target: |
+    ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, (k : ℝ) ^ 3 = ((n : ℝ) * ((n : ℝ) + 1) / 2) ^ 2
+  proof: |
+    by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        push_cast
+        ring
+- id: sum_linearity_with_constant
+  kind: gap
+  level: high
+  topic: Σの性質・線形性
+  statement: 数列$(a_k),(b_k)$と定数$p,q,c$について、$\sum_{k=1}^{n}(pa_k+qb_k+c)=p\sum_{k=1}^{n}a_k+q\sum_{k=1}^{n}b_k+nc$が成り立つ。
+  statement_en: For real sequences a, b, real constants p, q, c and natural n, the sum of p·a_k + q·b_k + c for 1 ≤ k ≤ n equals p times the sum of a_k plus q times the sum of b_k plus n·c.
+  assumptions:
+  - $(a_k),(b_k)$は実数列
+  - $p,q,c$は$k$によらない実数
+  - $n$は自然数
+  quantifiers:
+  - 任意の実数列$(a_k),(b_k)$と実数$p,q,c$
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}(pa_k+qb_k+c)=p\sum_{k=1}^{n}a_k+q\sum_{k=1}^{n}b_k+nc$が成り立つ。
+  answer: |
+    $(a_k),(b_k)$を実数列、$p,q,c$を実数、$n$を自然数とする。左辺を項ごとに並べ替えて、$pa_k$の和、$qb_k$の和、$c$の和に分ける。有限和なので並べ替えてよい。$pa_k$の和からは共通因数$p$を、$qb_k$の和からは$q$をくくり出せる。$c$は$k=1,\dots,n$の$n$回現れるので、その和は$nc$である。これらを合わせると右辺になる。
+  strategy: Split the finite sum term by term and factor out the constants.
+  sketch:
+  - 'derive: Rearrange the finite sum into three separate sums.'
+  - 'derive: Factor p and q out of the first two sums.'
+  - 'derive: The constant c is added n times.'
+  - 'conclude: Combine the three results.'
+  openmath: (forall (a b p q c n) (-> (and (in p R) (in q R) (in c R) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (+ (* p (seq_value a k)) (+ (* q (seq_value b k)) c)))) (+ (* p (sum (oriented_interval 1 n) (lambda (k) (seq_value a k)))) (+ (* q (sum (oriented_interval 1 n) (lambda (k) (seq_value b k)))) (* n c))))))
+  hard_negative:
+    statement: 積についても$\sum_{k=1}^{n}a_kb_k=\left(\sum_{k=1}^{n}a_k\right)\left(\sum_{k=1}^{n}b_k\right)$が成り立つ。
+    reason: $a_k=b_k=1,\ n=2$なら左辺は$2$、右辺は$4$である。Σが分配するのは和と定数倍だけである。
+  target: |
+    ∀ (a b : ℕ → ℝ) (p q c : ℝ) (n : ℕ), ∑ k ∈ Finset.Icc 1 n, (p * a k + q * b k + c) = p * ∑ k ∈ Finset.Icc 1 n, a k + q * ∑ k ∈ Finset.Icc 1 n, b k + (n : ℝ) * c
+  proof: |
+    by
+      intro a b p q c n
+      rw [Finset.sum_add_distrib, Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.mul_sum, Finset.sum_const]
+      simp [nsmul_eq_mul]
+- id: sum_consecutive_product
+  kind: gap
+  level: high
+  topic: 数列の和・連続する整数の積
+  statement: $0$以上の整数$m,n$について、連続する$m$個の整数の積の和は$\sum_{k=1}^{n}k(k+1)\cdots(k+m-1)=\dfrac{n(n+1)\cdots(n+m)}{m+1}$である。
+  statement_en: For natural m and n, the sum over 1 ≤ k ≤ n of the product of k + i for 0 ≤ i < m equals the product of n + i for 0 ≤ i ≤ m divided by m + 1.
+  assumptions:
+  - $m,n$は$0$以上の整数
+  quantifiers:
+  - 任意の$0$以上の整数$m,n$
+  conclusion: $\sum_{k=1}^{n}\prod_{i=0}^{m-1}(k+i)=\dfrac{1}{m+1}\prod_{i=0}^{m}(n+i)$が成り立つ。
+  answer: |
+    $m,n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき左辺は空和で$0$であり、右辺の積は$i=0$の因数$0$を含むので$0$である。
+    ある$n$で成り立つと仮定する。$Q=\prod_{i=0}^{m-1}(n+1+i)$とおく。$\prod_{i=0}^{m}(n+i)=nQ$であり、$\prod_{i=0}^{m}(n+1+i)=Q(n+1+m)$である。よって
+    $\sum_{k=1}^{n+1}\prod_{i=0}^{m-1}(k+i)=\dfrac{nQ}{m+1}+Q=\dfrac{Q(n+m+1)}{m+1}=\dfrac{1}{m+1}\prod_{i=0}^{m}(n+1+i)$
+    となり、$n+1$でも成り立つ。
+  strategy: Induct on n, factoring the common product Q out of the old sum and the new term.
+  sketch:
+  - 'induction: For n = 0 the sum is empty and the right side has the factor 0.'
+  - 'setup: Let Q be the product of n + 1 + i for 0 ≤ i < m.'
+  - 'derive: The product up to n + m equals n·Q and the product up to n + 1 + m equals Q(n + m + 1).'
+  - 'derive: Add the new term Q to n·Q/(m + 1).'
+  - 'conclude: The result is Q(n + m + 1)/(m + 1).'
+  openmath: (forall (m n) (-> (and (in m N) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (product (natural_range m) (lambda (i) (+ k i))))) (/ (product (natural_range (+ m 1)) (lambda (i) (+ n i))) (+ m 1)))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}k(k+1)=\dfrac{n(n+1)}{2}$である。
+    reason: $n=2$のとき左辺は$8$、右辺は$3$である。和をとると因数が一つ増えて$\dfrac{n(n+1)(n+2)}{3}$となり、分母は増えた後の因数の個数である。
+  target: |
+    ∀ m n : ℕ, ∑ k ∈ Finset.Icc 1 n, ∏ i ∈ Finset.range m, ((k : ℝ) + (i : ℝ)) = (∏ i ∈ Finset.range (m + 1), ((n : ℝ) + (i : ℝ))) / ((m : ℝ) + 1)
+  proof: |
+    by
+      intro m n
+      have hm : (m : ℝ) + 1 ≠ 0 := by positivity
+      induction n with
+      | zero =>
+        rw [Finset.prod_range_succ']
+        simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        have e1 : ∏ i ∈ Finset.range (m + 1), ((n : ℝ) + (i : ℝ)) = (∏ i ∈ Finset.range m, (((n + 1 : ℕ) : ℝ) + (i : ℝ))) * (n : ℝ) := by
+          rw [Finset.prod_range_succ']
+          congr 1
+          · apply Finset.prod_congr rfl
+            intro i _
+            push_cast
+            ring
+          · simp
+        rw [e1, Finset.prod_range_succ]
+        generalize (∏ i ∈ Finset.range m, (((n + 1 : ℕ) : ℝ) + (i : ℝ))) = Q
+        push_cast
+        field_simp
+        ring
+- id: sum_index_shift
+  kind: gap
+  level: high
+  topic: Σの性質・添字のずらし
+  statement: 数列$(a_k)$と自然数$m,n$について、$\sum_{k=1}^{n}a_{k+m}=\sum_{k=m+1}^{m+n}a_k$が成り立つ。
+  statement_en: For a real sequence a and natural m, n, the sum of a_{k+m} for 1 ≤ k ≤ n equals the sum of a_k for m + 1 ≤ k ≤ m + n.
+  assumptions:
+  - $(a_k)$は実数列
+  - $m,n$は自然数
+  quantifiers:
+  - 任意の実数列$(a_k)$
+  - 任意の自然数$m,n$
+  conclusion: $\sum_{k=1}^{n}a_{k+m}=\sum_{k=m+1}^{m+n}a_k$が成り立つ。
+  answer: |
+    $(a_k)$を実数列、$m,n$を自然数とする。$k$が$1$から$n$まで動くとき、$j=k+m$は$m+1$から$m+n$まで一度ずつ動く。したがって左辺の項$a_{k+m}$と右辺の項$a_j$は一対一に対応し、両辺の和は等しい。
+  strategy: Substitute j = k + m, which is a bijection between the two index ranges.
+  sketch:
+  - 'translate: Set j = k + m.'
+  - 'derive: As k runs over 1 to n, j runs once over m + 1 to m + n.'
+  - 'conclude: The two sums have the same terms.'
+  openmath: (forall (a m n) (-> (and (in m N) (in n N)) (= (sum (oriented_interval 1 n) (lambda (k) (seq_value a (+ k m)))) (sum (oriented_interval (+ m 1) (+ m n)) (lambda (k) (seq_value a k))))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}a_{k+m}=\sum_{k=m+1}^{n}a_k$である。
+    reason: 添字をずらすと上端も$m$だけずれる。$a_k=1,\ m=1,\ n=2$なら左辺は$2$、右辺は$1$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (m n : ℕ), ∑ k ∈ Finset.Icc 1 n, a (k + m) = ∑ k ∈ Finset.Icc (m + 1) (m + n), a k
+  proof: |
+    by
+      intro a m n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih, ← add_assoc m n 1, Finset.sum_Icc_succ_top (by omega)]
+        rw [show n + 1 + m = m + n + 1 by ring]
+- id: sum_range_difference
+  kind: gap
+  level: high
+  topic: Σの性質・途中からの和
+  statement: 数列$(a_k)$と$m\leq n$をみたす自然数$m,n$について、$\sum_{k=m+1}^{n}a_k=\sum_{k=1}^{n}a_k-\sum_{k=1}^{m}a_k$が成り立つ。
+  statement_en: For a real sequence a and natural numbers m ≤ n, the sum of a_k for m + 1 ≤ k ≤ n equals the sum of a_k for 1 ≤ k ≤ n minus the sum of a_k for 1 ≤ k ≤ m.
+  assumptions:
+  - $(a_k)$は実数列
+  - $m,n$は自然数で$m\leq n$
+  quantifiers:
+  - 任意の実数列$(a_k)$
+  - $m\leq n$をみたす任意の自然数$m,n$
+  conclusion: $\sum_{k=m+1}^{n}a_k=\sum_{k=1}^{n}a_k-\sum_{k=1}^{m}a_k$が成り立つ。
+  answer: |
+    $(a_k)$を実数列、$m,n$を$m\leq n$をみたす自然数とする。添字の集合$\{1,\dots,n\}$は$\{1,\dots,m\}$と$\{m+1,\dots,n\}$に重なりなく分かれるので、$\sum_{k=1}^{n}a_k=\sum_{k=1}^{m}a_k+\sum_{k=m+1}^{n}a_k$である。$\sum_{k=1}^{m}a_k$を移項すれば結論を得る。
+  strategy: Split the index set at m and move one sum to the other side.
+  sketch:
+  - 'derive: Split 1, ..., n into 1, ..., m and m + 1, ..., n.'
+  - 'conclude: Subtract the sum up to m.'
+  openmath: (forall (a m n) (-> (and (in m N) (in n N) (<= m n)) (= (sum (oriented_interval (+ m 1) n) (lambda (k) (seq_value a k))) (- (sum (oriented_interval 1 n) (lambda (k) (seq_value a k))) (sum (oriented_interval 1 m) (lambda (k) (seq_value a k)))))))
+  hard_negative:
+    statement: $\sum_{k=m}^{n}a_k=\sum_{k=1}^{n}a_k-\sum_{k=1}^{m}a_k$である。
+    reason: $a_m$は右辺で打ち消され左辺に残る。$m\geq 1$では$a_m\neq 0$のとき一致しない。引くのは$m-1$までの和である。
+  target: |
+    ∀ (a : ℕ → ℝ) (m n : ℕ), m ≤ n → ∑ k ∈ Finset.Icc (m + 1) n, a k = ∑ k ∈ Finset.Icc 1 n, a k - ∑ k ∈ Finset.Icc 1 m, a k
+  proof: |
+    by
+      intro a m n hmn
+      induction n, hmn using Nat.le_induction with
+      | base => simp
+      | succ n hn ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), Finset.sum_Icc_succ_top (by omega), ih]
+        ring
+- id: sum_reverse_order
+  kind: gap
+  level: high
+  topic: Σの性質・逆順の和
+  statement: 数列$(a_k)$と自然数$n$について、項を逆順に並べても和は変わらず、$\sum_{k=1}^{n}a_{n+1-k}=\sum_{k=1}^{n}a_k$が成り立つ。
+  statement_en: For a real sequence a and natural n, the sum of a_{n+1-k} for 1 ≤ k ≤ n equals the sum of a_k for 1 ≤ k ≤ n.
+  assumptions:
+  - $(a_k)$は実数列
+  - $n$は自然数
+  quantifiers:
+  - 任意の実数列$(a_k)$
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}a_{n+1-k}=\sum_{k=1}^{n}a_k$が成り立つ。
+  answer: |
+    $(a_k)$を実数列、$n$を自然数とする。$1\leq k\leq n$に対し$j=n+1-k$とおくと$1\leq j\leq n$であり、$k=n+1-j$と戻せる。よって$k\mapsto j$は$\{1,\dots,n\}$からそれ自身への全単射である。左辺は右辺の項を並べ替えただけなので、両辺は等しい。
+  strategy: The map k to n + 1 - k is a bijection of the index set onto itself.
+  sketch:
+  - 'translate: Set j = n + 1 - k.'
+  - 'derive: The map is its own inverse on 1, ..., n.'
+  - 'conclude: The sum is unchanged by this reordering.'
+  openmath: (forall (a n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (seq_value a (- (+ n 1) k)))) (sum (oriented_interval 1 n) (lambda (k) (seq_value a k))))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}a_{n-k}=\sum_{k=1}^{n}a_k$である。
+    reason: 左辺の添字は$0$から$n-1$まで動くので範囲が異なる。$a_0=0,\ a_1=1,\ n=1$なら左辺は$0$、右辺は$1$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (n : ℕ), ∑ k ∈ Finset.Icc 1 n, a (n + 1 - k) = ∑ k ∈ Finset.Icc 1 n, a k
+  proof: |
+    by
+      intro a n
+      refine Finset.sum_nbij' (fun k => n + 1 - k) (fun k => n + 1 - k) ?_ ?_ ?_ ?_ ?_
+      · intro k hk
+        rw [Finset.mem_Icc] at hk ⊢
+        omega
+      · intro k hk
+        rw [Finset.mem_Icc] at hk ⊢
+        omega
+      · intro k hk
+        rw [Finset.mem_Icc] at hk
+        show n + 1 - (n + 1 - k) = k
+        omega
+      · intro k hk
+        rw [Finset.mem_Icc] at hk
+        show n + 1 - (n + 1 - k) = k
+        omega
+      · intro k _
+        rfl
+- id: periodic_sequence_sum
+  kind: gap
+  level: high
+  topic: 数列の和・周期数列
+  statement: 周期$p\geq 1$の数列$(a_n)_{n\geq 1}$、すなわちすべての$n\geq 1$で$a_{n+p}=a_n$をみたす数列について、$\sum_{k=1}^{pm}a_k=m\sum_{k=1}^{p}a_k$が成り立つ。
+  statement_en: If p ≥ 1 and a real sequence satisfies a_{n+p} = a_n for all n ≥ 1, then the sum of a_k for 1 ≤ k ≤ p·m equals m times the sum of a_k for 1 ≤ k ≤ p for every natural m.
+  assumptions:
+  - $p\geq 1$は自然数
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+p}=a_n$をみたす
+  quantifiers:
+  - 任意の自然数$p\geq 1$と実数列$(a_n)$
+  - 任意の$0$以上の整数$m$
+  conclusion: $\sum_{k=1}^{pm}a_k=m\sum_{k=1}^{p}a_k$が成り立つ。
+  answer: |
+    $p\geq 1$を自然数、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+p}=a_n$をみたす実数列とする。$T=\sum_{k=1}^{p}a_k$とおく。
+    まず、すべての$0$以上の整数$N$で$\sum_{k=1}^{N+p}a_k=T+\sum_{k=1}^{N}a_k$であることを$N$についての帰納法で示す。$N=0$では両辺とも$T$である。$N$で成り立つとき、$a_{N+1+p}=a_{N+1}$より
+    $\sum_{k=1}^{N+1+p}a_k=T+\sum_{k=1}^{N}a_k+a_{N+1}=T+\sum_{k=1}^{N+1}a_k$
+    となる。
+    次に$m$についての帰納法で結論を示す。$m=0$では両辺とも$0$である。$m$で成り立つとき、上の式で$N=pm$とすれば$\sum_{k=1}^{p(m+1)}a_k=T+mT=(m+1)T$となる。
+  strategy: Show that adding one period to the upper limit adds T, then induct on the number of periods.
+  sketch:
+  - 'setup: Let T be the sum over the first period.'
+  - 'induction: Prove that the sum up to N + p equals T plus the sum up to N.'
+  - 'induction: Induct on m using N = p·m.'
+  - 'conclude: The sum over m periods equals m·T.'
+  openmath: (forall (a p) (-> (and (in p N) (>= p 1) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n p)) (seq_value a n))))) (forall (m) (-> (in m N) (= (sum (oriented_interval 1 (* p m)) (lambda (k) (seq_value a k))) (* m (sum (oriented_interval 1 p) (lambda (k) (seq_value a k)))))))))
+  hard_negative:
+    statement: 周期$p$の数列では、任意の$N$について$\sum_{k=1}^{N}a_k=\dfrac{N}{p}\sum_{k=1}^{p}a_k$である。
+    reason: $N$が$p$の倍数でなければ端数の項が残る。$p=2,\ a_1=1,\ a_2=0,\ N=1$なら左辺は$1$、右辺は$\dfrac{1}{2}$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p : ℕ), 1 ≤ p → (∀ n : ℕ, 1 ≤ n → a (n + p) = a n) → ∀ m : ℕ, ∑ k ∈ Finset.Icc 1 (p * m), a k = (m : ℝ) * ∑ k ∈ Finset.Icc 1 p, a k
+  proof: |
+    by
+      intro a p _ h m
+      have key : ∀ N : ℕ, ∑ k ∈ Finset.Icc 1 (N + p), a k = ∑ k ∈ Finset.Icc 1 p, a k + ∑ k ∈ Finset.Icc 1 N, a k := by
+        intro N
+        induction N with
+        | zero => simp
+        | succ N ih =>
+          rw [show N + 1 + p = N + p + 1 by ring, Finset.sum_Icc_succ_top (by omega), ih, Finset.sum_Icc_succ_top (by omega), show N + p + 1 = N + 1 + p by ring, h (N + 1) (by omega)]
+          ring
+      induction m with
+      | zero => simp
+      | succ m ih =>
+        rw [show p * (m + 1) = p * m + p by ring, key, ih]
+        push_cast
+        ring
+- id: telescoping_sum
+  kind: textbook
+  level: high
+  topic: 数列の和・差の形の和
+  statement: 数列$(b_k)$と$0$以上の整数$n$について、$\sum_{k=1}^{n}(b_{k+1}-b_k)=b_{n+1}-b_1$が成り立つ。
+  statement_en: For a real sequence b and natural n, the sum of b_{k+1} - b_k for 1 ≤ k ≤ n equals b_{n+1} - b_1.
+  assumptions:
+  - $(b_k)$は実数列
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の実数列$(b_k)$
+  - 任意の$0$以上の整数$n$
+  conclusion: $\sum_{k=1}^{n}(b_{k+1}-b_k)=b_{n+1}-b_1$が成り立つ。
+  answer: |
+    $(b_k)$を実数列、$n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき両辺は$0$である。ある$n$で成り立つと仮定すると、
+    $\sum_{k=1}^{n+1}(b_{k+1}-b_k)=b_{n+1}-b_1+b_{n+2}-b_{n+1}=b_{n+2}-b_1$
+    となり、$n+1$でも成り立つ。
+  strategy: Induct on n; consecutive terms cancel.
+  sketch:
+  - 'induction: For n = 0 both sides vanish.'
+  - 'derive: Adding the next difference cancels b_{n+1}.'
+  - 'conclude: Only b_{n+2} - b_1 remains.'
+  openmath: (forall (b n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (- (seq_value b (+ k 1)) (seq_value b k)))) (- (seq_value b (+ n 1)) (seq_value b 1)))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}(b_{k+2}-b_k)=b_{n+2}-b_1$である。
+    reason: 差の間隔が$2$なら残る項は四つになる。正しくは$b_{n+2}+b_{n+1}-b_2-b_1$である。
+  target: |
+    ∀ (b : ℕ → ℝ) (n : ℕ), ∑ k ∈ Finset.Icc 1 n, (b (k + 1) - b k) = b (n + 1) - b 1
+  proof: |
+    by
+      intro b n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        ring
+- id: difference_sequence_general_term
+  kind: textbook
+  level: high
+  topic: 階差数列・一般項
+  statement: 数列$(a_n)_{n\geq 1}$の階差数列を$b_k=a_{k+1}-a_k$とすると、$n\geq 2$のとき$a_n=a_1+\sum_{k=1}^{n-1}b_k$である。
+  statement_en: If b_k = a_{k+1} - a_k for all k ≥ 1, then a_n = a_1 + (sum of b_k for 1 ≤ k ≤ n - 1) for all n ≥ 2.
+  assumptions:
+  - $(a_n),(b_k)$は実数列で、すべての$k\geq 1$について$b_k=a_{k+1}-a_k$をみたす
+  - $n\geq 2$
+  quantifiers:
+  - 任意の実数列$(a_n),(b_k)$
+  - 任意の自然数$n\geq 2$
+  conclusion: $a_n=a_1+\sum_{k=1}^{n-1}b_k$が成り立つ。
+  answer: |
+    $(a_n)_{n\geq 1},(b_k)_{k\geq 1}$をすべての$k\geq 1$で$b_k=a_{k+1}-a_k$をみたす実数列とし、$n\geq 2$とする。
+    $\sum_{k=1}^{n-1}b_k=\sum_{k=1}^{n-1}(a_{k+1}-a_k)$において、隣り合う項は$a_2$から$a_{n-1}$まで打ち消し合う。残るのは$a_n-a_1$である。よって$a_n=a_1+\sum_{k=1}^{n-1}b_k$である。
+  strategy: Telescope the sum of differences up to n - 1.
+  sketch:
+  - 'translate: Replace b_k by a_{k+1} - a_k in the sum.'
+  - 'derive: Adjacent terms cancel, leaving a_n - a_1.'
+  - 'conclude: Move a_1 to the other side.'
+  openmath: (forall (a b) (-> (forall (k) (-> (and (in k N) (>= k 1)) (= (seq_value b k) (- (seq_value a (+ k 1)) (seq_value a k))))) (forall (n) (-> (and (in n N) (>= n 2)) (= (seq_value a n) (+ (seq_value a 1) (sum (oriented_interval 1 (- n 1)) (lambda (k) (seq_value b k)))))))))
+  hard_negative:
+    statement: 階差数列$b_k$について$a_n=a_1+\sum_{k=1}^{n}b_k$である。
+    reason: 和の上端が一つ多い。この右辺は$a_{n+1}$に等しく、$a_n=n,\ n=2$なら右辺は$3$、左辺は$2$である。
+  target: |
+    ∀ (a b : ℕ → ℝ), (∀ k : ℕ, 1 ≤ k → b k = a (k + 1) - a k) → ∀ n : ℕ, 2 ≤ n → a n = a 1 + ∑ k ∈ Finset.Icc 1 (n - 1), b k
+  proof: |
+    by
+      intro a b h
+      have key : ∀ m : ℕ, a (m + 1) = a 1 + ∑ k ∈ Finset.Icc 1 m, b k := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          rw [Finset.sum_Icc_succ_top (by omega), h (m + 1) (by omega)]
+          linarith
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      simpa using key m
+- id: partial_fraction_consecutive
+  kind: gap
+  level: high
+  topic: 部分分数・隣接整数の積の逆数和（特殊形）
+  statement: 隣り合う自然数の積の逆数という特殊形について、$\sum_{k=1}^{n}\dfrac{1}{k(k+1)}=\dfrac{n}{n+1}$が成り立つ。
+  statement_en: 'Special form for consecutive integers: for natural n, the sum of 1/(k(k+1)) for 1 ≤ k ≤ n equals n/(n+1).'
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}\dfrac{1}{k(k+1)}=\dfrac{n}{n+1}$が成り立つ。
+  answer: |
+    $n$を自然数とする。$k\geq 1$について$\dfrac{1}{k(k+1)}=\dfrac{1}{k}-\dfrac{1}{k+1}$である。これを$k=1$から$n$まで加えると、隣り合う項が打ち消し合い、$1-\dfrac{1}{n+1}=\dfrac{n}{n+1}$が残る。
+  strategy: Decompose into partial fractions and telescope.
+  sketch:
+  - 'derive: Write 1/(k(k+1)) as 1/k - 1/(k+1).'
+  - 'derive: Summing from 1 to n cancels the middle terms.'
+  - 'conclude: The sum is 1 - 1/(n+1) = n/(n+1).'
+  openmath: (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (/ 1 (* k (+ k 1))))) (/ n (+ n 1)))))
+  hard_negative:
+    statement: 隣り合う奇数の積でも、この特殊形と同じく$\dfrac{1}{(2k-1)(2k+1)}=\dfrac{1}{2k-1}-\dfrac{1}{2k+1}$と分解できる。
+    reason: 右辺は$\dfrac{2}{(2k-1)(2k+1)}$に等しいので、係数$\dfrac{1}{2}$が必要である。係数なしの分解は差が$1$の場合に限る。
+  target: |
+    ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, 1 / ((k : ℝ) * ((k : ℝ) + 1)) = (n : ℝ) / ((n : ℝ) + 1)
+  proof: |
+    by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        have h1 : (n : ℝ) + 1 ≠ 0 := by positivity
+        have h2 : (n : ℝ) + 1 + 1 ≠ 0 := by positivity
+        push_cast
+        field_simp
+        ring
+- id: partial_fraction_arith
+  kind: gap
+  level: high
+  topic: 部分分数・等差数列の隣接項の積の逆数和（一般形）
+  statement: 公差$d\neq 0$の等差数列$(c_k)_{k\geq 1}$の項がすべて$0$でないとき、$\sum_{k=1}^{n}\dfrac{1}{c_kc_{k+1}}=\dfrac{1}{d}\left(\dfrac{1}{c_1}-\dfrac{1}{c_{n+1}}\right)$が成り立つ。
+  statement_en: If c_{k+1} = c_k + d with d ≠ 0 and c_k ≠ 0 for all k ≥ 1, then the sum of 1/(c_k c_{k+1}) for 1 ≤ k ≤ n equals (1/d)(1/c_1 - 1/c_{n+1}).
+  assumptions:
+  - $(c_k)$は実数列で、すべての$k\geq 1$について$c_{k+1}=c_k+d$かつ$c_k\neq 0$をみたす
+  - $d\neq 0$
+  - $n$は自然数
+  quantifiers:
+  - 任意の実数列$(c_k)$と実数$d\neq 0$
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}\dfrac{1}{c_kc_{k+1}}=\dfrac{1}{d}\left(\dfrac{1}{c_1}-\dfrac{1}{c_{n+1}}\right)$が成り立つ。
+  answer: |
+    $d\neq 0$を実数、$(c_k)_{k\geq 1}$をすべての$k\geq 1$で$c_{k+1}=c_k+d$かつ$c_k\neq 0$をみたす実数列とし、$n$を自然数とする。各$k\geq 1$について、
+    $\dfrac{1}{c_k}-\dfrac{1}{c_{k+1}}=\dfrac{c_{k+1}-c_k}{c_kc_{k+1}}=\dfrac{d}{c_kc_{k+1}}$
+    であるから、$\dfrac{1}{c_kc_{k+1}}=\dfrac{1}{d}\left(\dfrac{1}{c_k}-\dfrac{1}{c_{k+1}}\right)$である。これを$k=1$から$n$まで加えると、隣り合う項が打ち消し合い、$\dfrac{1}{d}\left(\dfrac{1}{c_1}-\dfrac{1}{c_{n+1}}\right)$が残る。
+  strategy: Write each term as a difference of reciprocals scaled by 1/d and telescope.
+  sketch:
+  - 'derive: Compute 1/c_k - 1/c_{k+1} = d/(c_k c_{k+1}).'
+  - 'derive: Divide by d, which is nonzero.'
+  - 'derive: Sum from 1 to n so that adjacent terms cancel.'
+  - 'conclude: Only the first and last reciprocals remain.'
+  openmath: (forall (c d) (-> (and (in d R) (!= d 0) (forall (k) (-> (and (in k N) (>= k 1)) (and (= (seq_value c (+ k 1)) (+ (seq_value c k) d)) (!= (seq_value c k) 0))))) (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (/ 1 (* (seq_value c k) (seq_value c (+ k 1)))))) (* (/ 1 d) (- (/ 1 (seq_value c 1)) (/ 1 (seq_value c (+ n 1))))))))))
+  hard_negative:
+    statement: 公差$d$によらず$\dfrac{1}{c_kc_{k+1}}=\dfrac{1}{c_k}-\dfrac{1}{c_{k+1}}$と分解できる。
+    reason: 右辺は$\dfrac{d}{c_kc_{k+1}}$に等しいので、$d=1$のときしか成り立たない。一般には係数$\dfrac{1}{d}$が必要である。
+  target: |
+    ∀ (c : ℕ → ℝ) (d : ℝ), d ≠ 0 → (∀ k : ℕ, 1 ≤ k → c (k + 1) = c k + d) → (∀ k : ℕ, 1 ≤ k → c k ≠ 0) → ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, 1 / (c k * c (k + 1)) = (1 / d) * (1 / c 1 - 1 / c (n + 1))
+  proof: |
+    by
+      intro c d hd h hc n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        have h0 := hc 1 (by omega)
+        have h1 := hc (n + 1) (by omega)
+        have h2 := hc (n + 1 + 1) (by omega)
+        have e : c (n + 1 + 1) - c (n + 1) = d := by
+          rw [h (n + 1) (by omega)]
+          ring
+        have t : 1 / (c (n + 1) * c (n + 1 + 1)) = (1 / d) * (1 / c (n + 1) - 1 / c (n + 1 + 1)) := by
+          field_simp
+          linarith
+        rw [t]
+        ring
+- id: telescoping_sqrt_rationalize
+  kind: gap
+  level: high
+  topic: 数列の和・分母の有理化
+  statement: 自然数$n$について、$\sum_{k=1}^{n}\dfrac{1}{\sqrt{k}+\sqrt{k+1}}=\sqrt{n+1}-1$が成り立つ。これは公差$1$の等差数列$c_k=k$についての特殊形である。
+  statement_en: For natural n, the sum of 1/(√k + √(k+1)) for 1 ≤ k ≤ n equals √(n+1) - 1.
+  assumptions:
+  - $n$は自然数
+  quantifiers:
+  - 任意の自然数$n$
+  conclusion: $\sum_{k=1}^{n}\dfrac{1}{\sqrt{k}+\sqrt{k+1}}=\sqrt{n+1}-1$が成り立つ。
+  answer: |
+    $n$を自然数とする。$k\geq 1$について、$(\sqrt{k+1}-\sqrt{k})(\sqrt{k+1}+\sqrt{k})=(k+1)-k=1$であり、$\sqrt{k+1}+\sqrt{k}>0$なので、$\dfrac{1}{\sqrt{k}+\sqrt{k+1}}=\sqrt{k+1}-\sqrt{k}$である。これを$k=1$から$n$まで加えると、隣り合う項が打ち消し合い、$\sqrt{n+1}-\sqrt{1}=\sqrt{n+1}-1$が残る。
+  strategy: Rationalize each denominator and telescope.
+  sketch:
+  - 'derive: Multiply √(k+1) - √k by √(k+1) + √k to get 1.'
+  - 'derive: Hence each term equals √(k+1) - √k.'
+  - 'conclude: The sum telescopes to √(n+1) - 1.'
+  openmath: (forall (n) (-> (in n N) (= (sum (oriented_interval 1 n) (lambda (k) (/ 1 (+ (root k 2) (root (+ k 1) 2))))) (- (root (+ n 1) 2) 1))))
+  hard_negative:
+    statement: $\sum_{k=1}^{n}\dfrac{1}{\sqrt{k}+\sqrt{k+2}}=\sqrt{n+2}-1$である。
+    reason: $\sqrt{k+2}$と$\sqrt{k}$の平方の差は$2$なので係数$\dfrac{1}{2}$が付き、残る項も四つになる。$n=1$では左辺は$\dfrac{1}{1+\sqrt{3}}$、右辺は$\sqrt{3}-1$で一致しない。
+  target: |
+    ∀ n : ℕ, ∑ k ∈ Finset.Icc 1 n, 1 / (Real.sqrt (k : ℝ) + Real.sqrt ((k : ℝ) + 1)) = Real.sqrt ((n : ℝ) + 1) - 1
+  proof: |
+    by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+        rw [Finset.sum_Icc_succ_top (by omega), ih]
+        push_cast
+        have hx : (0 : ℝ) ≤ (n : ℝ) + 1 := by positivity
+        have hy : (0 : ℝ) ≤ (n : ℝ) + 1 + 1 := by positivity
+        have sx := Real.sq_sqrt hx
+        have sy := Real.sq_sqrt hy
+        have px : 0 < Real.sqrt ((n : ℝ) + 1) := Real.sqrt_pos.mpr (by positivity)
+        have py : 0 < Real.sqrt ((n : ℝ) + 1 + 1) := Real.sqrt_pos.mpr (by positivity)
+        have ne : Real.sqrt ((n : ℝ) + 1) + Real.sqrt ((n : ℝ) + 1 + 1) ≠ 0 := by positivity
+        have t : 1 / (Real.sqrt ((n : ℝ) + 1) + Real.sqrt ((n : ℝ) + 1 + 1)) = Real.sqrt ((n : ℝ) + 1 + 1) - Real.sqrt ((n : ℝ) + 1) := by
+          field_simp
+          nlinarith
+        rw [t]
+        ring
+- id: term_from_partial_sum
+  kind: textbook
+  level: high
+  topic: 和と一般項・差をとる
+  statement: 数列$(a_n)_{n\geq 1}$の初項から第$n$項までの和を$S_n$とすると、$a_1=S_1$であり、$n\geq 2$のとき$a_n=S_n-S_{n-1}$である。
+  statement_en: If S_n is the sum of a_k for 1 ≤ k ≤ n for all n ≥ 1, then S_1 = a_1 and a_n = S_n - S_{n-1} for all n ≥ 2.
+  assumptions:
+  - $(a_n),(S_n)$は実数列で、すべての$n\geq 1$について$S_n=\sum_{k=1}^{n}a_k$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n),(S_n)$
+  - 任意の自然数$n\geq 2$
+  conclusion: $S_1=a_1$であり、$n\geq 2$で$a_n=S_n-S_{n-1}$が成り立つ。
+  answer: |
+    $(a_n)_{n\geq 1},(S_n)_{n\geq 1}$をすべての$n\geq 1$で$S_n=\sum_{k=1}^{n}a_k$をみたす実数列とする。$n=1$とすれば$S_1=a_1$である。$n\geq 2$のとき$n-1\geq 1$なので$S_{n-1}=\sum_{k=1}^{n-1}a_k$である。$S_n$はこれに$a_n$を加えたものなので、$S_n-S_{n-1}=a_n$である。
+  strategy: The sum up to n differs from the sum up to n - 1 by the last term.
+  sketch:
+  - 'derive: Taking n = 1 gives S_1 = a_1.'
+  - 'derive: For n ≥ 2, S_n = S_{n-1} + a_n.'
+  - 'conclude: Subtract S_{n-1}.'
+  openmath: (forall (a S) (-> (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value S n) (sum (oriented_interval 1 n) (lambda (k) (seq_value a k)))))) (and (= (seq_value S 1) (seq_value a 1)) (forall (n) (-> (and (in n N) (>= n 2)) (= (seq_value a n) (- (seq_value S n) (seq_value S (- n 1)))))))))
+  hard_negative:
+    statement: $S_n$の式から$n\geq 2$で求めた$a_n$の式は、$n=1$でもそのまま成り立つ。
+    reason: $S_n=n^2+1$では$n\geq 2$で$a_n=2n-1$だが、$a_1=S_1=2$であり、$2n-1$の$n=1$での値$1$と一致しない。$n=1$は別に確かめる必要がある。
+  target: |
+    ∀ (a S : ℕ → ℝ), (∀ n : ℕ, 1 ≤ n → S n = ∑ k ∈ Finset.Icc 1 n, a k) → S 1 = a 1 ∧ ∀ n : ℕ, 2 ≤ n → a n = S n - S (n - 1)
+  proof: |
+    by
+      intro a S h
+      constructor
+      · rw [h 1 le_rfl]
+        simp
+      · intro n hn
+        obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+        rw [Nat.add_sub_cancel, h (m + 1) (by omega), h m (by omega), Finset.sum_Icc_succ_top (by omega)]
+        ring
+- id: quadratic_sum_arith_iff
+  kind: gap
+  level: high
+  topic: 和と一般項・定数項と等差数列
+  statement: 初項から第$n$項までの和が$\sum_{k=1}^{n}a_k=pn^2+qn+r$で与えられる数列$(a_n)_{n\geq 1}$が等差数列であるための必要十分条件は$r=0$である。
+  statement_en: If the sum of a_k for 1 ≤ k ≤ n equals p·n^2 + q·n + r for all n ≥ 1, then the sequence a is arithmetic, meaning a_{n+1} = a_n + d for all n ≥ 1 for some real d, if and only if r = 0.
+  assumptions:
+  - $(a_n)$は実数列
+  - $p,q,r$は実数で、すべての$n\geq 1$について$\sum_{k=1}^{n}a_k=pn^2+qn+r$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,q,r$
+  conclusion: ある$d$ですべての$n\geq 1$について$a_{n+1}=a_n+d$となることと$r=0$は同値である。
+  answer: |
+    $p,q,r$を実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$\sum_{k=1}^{n}a_k=pn^2+qn+r$をみたす実数列とする。$n=1$とすれば$a_1=p+q+r$である。$m\geq 1$について、$m+1$と$m$の場合の差をとると、$a_{m+1}=p\{(m+1)^2-m^2\}+q=p(2m+1)+q$である。
+    数列が公差$d$の等差数列であるとする。$a_2=3p+q,\ a_3=5p+q$より$d=a_3-a_2=2p$である。さらに$d=a_2-a_1=2p-r$であるから$r=0$となる。
+    逆に$r=0$とする。$a_1=p+q$であり、これは$a_{m+1}=p(2m+1)+q$で$m=0$とした値に等しい。よって$a_2-a_1=2p$であり、$m\geq 1$についても$a_{m+2}-a_{m+1}=2p$である。したがって公差$2p$の等差数列である。
+  strategy: Compute the terms by subtracting consecutive sums and compare a_2 - a_1 with a_3 - a_2.
+  sketch:
+  - 'derive: a_1 = p + q + r.'
+  - 'derive: For m ≥ 1, subtraction gives a_{m+1} = p(2m+1) + q.'
+  - 'derive: If the sequence is arithmetic then a_3 - a_2 = a_2 - a_1, which forces r = 0.'
+  - 'derive: If r = 0 then every consecutive difference equals 2p.'
+  - 'conclude: The sequence is arithmetic exactly when r = 0.'
+  openmath: (forall (a p q r) (-> (and (in p R) (in q R) (in r R) (forall (n) (-> (and (in n N) (>= n 1)) (= (sum (oriented_interval 1 n) (lambda (k) (seq_value a k))) (+ (* p (^ n 2)) (+ (* q n) r)))))) (<-> (exists (d) (and (in d R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (seq_value a n) d)))))) (= r 0))))
+  hard_negative:
+    statement: 和が$n$の二次式で表されれば、定数項によらず数列は初項から等差数列である。
+    reason: $\sum_{k=1}^{n}a_k=n^2+1$では$a_1=2,\ a_2=3,\ a_3=5$であり、差は$1,2$と一定でない。等差になるのは第$2$項以降だけである。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q r : ℝ), (∀ n : ℕ, 1 ≤ n → ∑ k ∈ Finset.Icc 1 n, a k = p * (n : ℝ) ^ 2 + q * (n : ℝ) + r) → ((∃ d : ℝ, ∀ n : ℕ, 1 ≤ n → a (n + 1) = a n + d) ↔ r = 0)
+  proof: |
+    by
+      intro a p q r h
+      have h1 : a 1 = p + q + r := by
+        have e := h 1 le_rfl
+        rw [Finset.Icc_self, Finset.sum_singleton] at e
+        rw [e]
+        push_cast
+        ring
+      have key : ∀ m : ℕ, 1 ≤ m → a (m + 1) = p * (2 * (m : ℝ) + 1) + q := by
+        intro m hm
+        have e1 := h (m + 1) (by omega)
+        rw [Finset.sum_Icc_succ_top (by omega), h m hm] at e1
+        push_cast at e1
+        linear_combination e1
+      constructor
+      · rintro ⟨d, hd⟩
+        have e1 := hd 1 le_rfl
+        have e2 := hd 2 (by norm_num)
+        have k1 := key 1 le_rfl
+        have k2 := key 2 (by norm_num)
+        norm_num at e1 e2 k1 k2
+        linarith
+      · intro hr
+        refine ⟨2 * p, ?_⟩
+        intro n hn
+        obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+        rcases Nat.eq_zero_or_pos m with rfl | hm
+        · have k1 := key 1 le_rfl
+          norm_num at k1 ⊢
+          rw [k1, h1, hr]
+          ring
+        · rw [key (m + 1) (by omega), key m hm]
+          push_cast
+          ring
+- id: sum_linear_in_term_ratio
+  kind: gap
+  level: high
+  topic: 和と一般項・和が項の一次式の場合
+  statement: $p\neq 1$とし、数列$(a_n)_{n\geq 1}$の和がすべての$n\geq 1$で$\sum_{k=1}^{n}a_k=pa_n+q$をみたすならば、$a_1=\dfrac{q}{1-p}$であり、$a_{n+1}=\dfrac{p}{p-1}a_n$である。
+  statement_en: If p ≠ 1 and the sum of a_k for 1 ≤ k ≤ n equals p·a_n + q for all n ≥ 1, then a_1 = q/(1-p) and a_{n+1} = (p/(p-1))·a_n for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列
+  - $p,q$は実数で$p\neq 1$
+  - すべての$n\geq 1$について$\sum_{k=1}^{n}a_k=pa_n+q$
+  quantifiers:
+  - 任意の実数列$(a_n)$と$p\neq 1$をみたす実数$p,q$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_1=\dfrac{q}{1-p}$かつ$a_{n+1}=\dfrac{p}{p-1}a_n$が成り立つ。
+  answer: |
+    $p,q$を実数とし$p\neq 1$、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$\sum_{k=1}^{n}a_k=pa_n+q$をみたす実数列とする。$n=1$とすると$a_1=pa_1+q$であり、$1-p\neq 0$で割って$a_1=\dfrac{q}{1-p}$を得る。
+    $n\geq 1$とする。$n+1$の場合の和は$n$の場合の和に$a_{n+1}$を加えたものなので、$pa_{n+1}+q=pa_n+q+a_{n+1}$である。整理すると$(p-1)a_{n+1}=pa_n$となり、$p-1\neq 0$で割って$a_{n+1}=\dfrac{p}{p-1}a_n$を得る。
+  strategy: Subtract the relations for n + 1 and n to eliminate the sum.
+  sketch:
+  - 'derive: Taking n = 1 gives a_1 = p·a_1 + q.'
+  - 'derive: Subtracting consecutive relations gives a_{n+1} = p·a_{n+1} - p·a_n.'
+  - 'conclude: Divide by p - 1, which is nonzero.'
+  openmath: (forall (a p q) (-> (and (in p R) (in q R) (!= p 1) (forall (n) (-> (and (in n N) (>= n 1)) (= (sum (oriented_interval 1 n) (lambda (k) (seq_value a k))) (+ (* p (seq_value a n)) q))))) (and (= (seq_value a 1) (/ q (- 1 p))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (* (/ p (- p 1)) (seq_value a n))))))))
+  hard_negative:
+    statement: $p=1$でも同じ式で$a_{n+1}=\dfrac{p}{p-1}a_n$と求められる。
+    reason: $p=1$では分母が$0$である。このとき$n$と$n+1$の差から$n\geq 1$で$a_n=0$が従い、$n=1$の式から$q=0$でなければ条件をみたす数列はない。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q : ℝ), p ≠ 1 → (∀ n : ℕ, 1 ≤ n → ∑ k ∈ Finset.Icc 1 n, a k = p * a n + q) → a 1 = q / (1 - p) ∧ ∀ n : ℕ, 1 ≤ n → a (n + 1) = p / (p - 1) * a n
+  proof: |
+    by
+      intro a p q hp h
+      have h1 : 1 - p ≠ 0 := sub_ne_zero.mpr (Ne.symm hp)
+      have h2 : p - 1 ≠ 0 := sub_ne_zero.mpr hp
+      constructor
+      · have e := h 1 le_rfl
+        rw [Finset.Icc_self, Finset.sum_singleton] at e
+        rw [eq_div_iff h1]
+        linear_combination e
+      · intro n hn
+        have e := h (n + 1) (by omega)
+        rw [Finset.sum_Icc_succ_top (by omega), h n hn] at e
+        rw [div_mul_eq_mul_div, eq_div_iff h2]
+        linear_combination -e
+- id: recur_fixed_point
+  kind: gap
+  level: high
+  topic: 隣接二項間漸化式・特性方程式
+  statement: $\alpha=p\alpha+q$をみたす実数$\alpha$があるとき、$a_{n+1}=pa_n+q$は$a_{n+1}-\alpha=p(a_n-\alpha)$と変形できる。
+  statement_en: If α = p·α + q and a_{n+1} = p·a_n + q for all n ≥ 1, then a_{n+1} - α = p(a_n - α) for all n ≥ 1.
+  assumptions:
+  - $p,q,\alpha$は実数で$\alpha=p\alpha+q$
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+q$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,q,\alpha$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_{n+1}-\alpha=p(a_n-\alpha)$が成り立つ。
+  answer: |
+    $p,q,\alpha$を$\alpha=p\alpha+q$をみたす実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=pa_n+q$をみたす実数列とする。$n\geq 1$について、二つの式を辺々引くと$a_{n+1}-\alpha=pa_n+q-(p\alpha+q)=p(a_n-\alpha)$である。
+  strategy: Subtract the fixed point equation from the recurrence.
+  sketch:
+  - 'setup: Write the recurrence and α = p·α + q side by side.'
+  - 'conclude: Subtracting cancels q and leaves p(a_n - α).'
+  openmath: (forall (a p q alpha) (-> (and (in p R) (in q R) (in alpha R) (= alpha (+ (* p alpha) q)) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) q))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (- (seq_value a (+ n 1)) alpha) (* p (- (seq_value a n) alpha)))))))
+  hard_negative:
+    statement: $p=1,\ q\neq 0$のときも$\alpha=p\alpha+q$をみたす$\alpha$をとって同じ変形ができる。
+    reason: $p=1$なら$\alpha=\alpha+q$となり、$q\neq 0$では解$\alpha$が存在しない。この場合の数列は公差$q$の等差数列である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q α : ℝ), α = p * α + q → (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + q) → ∀ n : ℕ, 1 ≤ n → a (n + 1) - α = p * (a n - α)
+  proof: |
+    by
+      intro a p q α hα h n hn
+      rw [h n hn]
+      linear_combination -hα
+- id: recur_first_order_solution
+  kind: textbook
+  level: high
+  topic: 隣接二項間漸化式・一般項
+  statement: $p\neq 1$のとき、$a_{n+1}=pa_n+q$をみたす数列$(a_n)_{n\geq 1}$の一般項は$a_n=p^{n-1}\left(a_1-\dfrac{q}{1-p}\right)+\dfrac{q}{1-p}$である。
+  statement_en: If p ≠ 1 and a_{n+1} = p·a_n + q for all n ≥ 1, then a_n = p^(n-1)(a_1 - q/(1-p)) + q/(1-p) for all n ≥ 1.
+  assumptions:
+  - $p,q$は実数で$p\neq 1$
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+q$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と$p\neq 1$をみたす実数$p,q$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=p^{n-1}\left(a_1-\dfrac{q}{1-p}\right)+\dfrac{q}{1-p}$が成り立つ。
+  answer: |
+    $p,q$を実数とし$p\neq 1$、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=pa_n+q$をみたす実数列とする。$\alpha=\dfrac{q}{1-p}$とおくと、$p\alpha+q=\dfrac{pq+q(1-p)}{1-p}=\alpha$である。これと漸化式の差をとれば、$a_{n+1}-\alpha=p(a_n-\alpha)$となる。
+    したがって$(a_n-\alpha)$は公比$p$の等比数列であり、$a_n-\alpha=p^{n-1}(a_1-\alpha)$である。$\alpha$を移項すれば結論を得る。
+  strategy: Shift by the fixed point to get a geometric sequence.
+  sketch:
+  - 'construct: Set α = q/(1-p), so α = p·α + q.'
+  - 'derive: Subtract to obtain a_{n+1} - α = p(a_n - α).'
+  - 'apply_theorem: The shifted sequence is geometric with ratio p.'
+  - 'conclude: Solve for a_n.'
+  openmath: (forall (a p q) (-> (and (in p R) (in q R) (!= p 1) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) q))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (+ (* (^ p (- n 1)) (- (seq_value a 1) (/ q (- 1 p)))) (/ q (- 1 p))))))))
+  hard_negative:
+    statement: $p=1$のときも同じ公式で一般項が得られる。
+    reason: $p=1$では分母$1-p$が$0$となり公式は意味をもたない。このときの一般項は$a_n=a_1+(n-1)q$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q : ℝ), p ≠ 1 → (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + q) → ∀ n : ℕ, 1 ≤ n → a n = p ^ (n - 1) * (a 1 - q / (1 - p)) + q / (1 - p)
+  proof: |
+    by
+      intro a p q hp h
+      have h1 : 1 - p ≠ 0 := sub_ne_zero.mpr (Ne.symm hp)
+      have hα : p * (q / (1 - p)) + q = q / (1 - p) := by
+        field_simp
+        ring
+      have key : ∀ m : ℕ, a (m + 1) = p ^ m * (a 1 - q / (1 - p)) + q / (1 - p) := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          rw [h (m + 1) (by omega), ih, pow_succ]
+          linear_combination hα
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      simpa using key m
+- id: recur_divide_by_power
+  kind: gap
+  level: high
+  topic: 隣接二項間漸化式・累乗で割る変形
+  statement: $p\neq 0$とし、すべての$n\geq 1$で$a_{n+1}=pa_n+f(n)$をみたす数列では、すべての自然数$m$について$a_{m+1}=p^m\left(a_1+\sum_{k=1}^{m}\dfrac{f(k)}{p^k}\right)$である。
+  statement_en: If p ≠ 0 and a_{n+1} = p·a_n + f(n) for all n ≥ 1, then a_{m+1} = p^m(a_1 + sum of f(k)/p^k for 1 ≤ k ≤ m) for every natural m.
+  assumptions:
+  - $p$は$0$でない実数
+  - $(a_n),(f(n))$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+f(n)$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n),(f(n))$と実数$p\neq 0$
+  - 任意の自然数$m$
+  conclusion: $a_{m+1}=p^m\left(a_1+\sum_{k=1}^{m}\dfrac{f(k)}{p^k}\right)$が成り立つ。
+  answer: |
+    $p\neq 0$を実数、$(a_n),(f(n))$をすべての$n\geq 1$で$a_{n+1}=pa_n+f(n)$をみたす実数列とする。漸化式の両辺を$p^{n}$で割ると、$\dfrac{a_{n+1}}{p^{n}}=\dfrac{a_n}{p^{n-1}}+\dfrac{f(n)}{p^{n}}$となる。
+    $b_n=\dfrac{a_{n}}{p^{n-1}}$とおくと、$b_{n+1}-b_n=\dfrac{f(n)}{p^{n}}$である。$b_1=a_1$なので、$n=1$から$m$まで加えて$b_{m+1}=a_1+\sum_{k=1}^{m}\dfrac{f(k)}{p^k}$を得る。両辺に$p^m$を掛ければ結論となる。
+  strategy: Divide by p^n to turn the recurrence into a difference equation, then sum.
+  sketch:
+  - 'translate: Divide the recurrence by p^n and set b_n = a_n/p^(n-1).'
+  - 'derive: The differences of b are f(n)/p^n.'
+  - 'derive: Sum from n = 1 to m using b_1 = a_1.'
+  - 'conclude: Multiply by p^m.'
+  openmath: (forall (a f p) (-> (and (in p R) (!= p 0) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) (seq_value f n)))))) (forall (m) (-> (in m N) (= (seq_value a (+ m 1)) (* (^ p m) (+ (seq_value a 1) (sum (oriented_interval 1 m) (lambda (k) (/ (seq_value f k) (^ p k)))))))))))
+  hard_negative:
+    statement: $a_{n+1}=pa_n+f(n)$の両辺を$p^{n+1}$で割れば、$\dfrac{a_{n+1}}{p^{n+1}}=\dfrac{a_n}{p^{n}}+\dfrac{f(n)}{p^{n}}$となる。
+    reason: $f(n)$の項も$p^{n+1}$で割るので、正しくは$\dfrac{f(n)}{p^{n+1}}$である。$p=2,\ f(n)=1,\ a_1=0,\ n=1$なら$a_2=1$で、左辺$\dfrac{1}{4}$に対し右辺は$\dfrac{1}{2}$である。
+  target: |
+    ∀ (a f : ℕ → ℝ) (p : ℝ), p ≠ 0 → (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + f n) → ∀ m : ℕ, a (m + 1) = p ^ m * (a 1 + ∑ k ∈ Finset.Icc 1 m, f k / p ^ k)
+  proof: |
+    by
+      intro a f p hp h m
+      induction m with
+      | zero => simp
+      | succ m ih =>
+        rw [h (m + 1) (by omega), ih, Finset.sum_Icc_succ_top (by omega)]
+        have hpow : p ^ (m + 1) ≠ 0 := pow_ne_zero _ hp
+        have e : p ^ (m + 1) * (f (m + 1) / p ^ (m + 1)) = f (m + 1) := by
+          field_simp
+        calc p * (p ^ m * (a 1 + ∑ k ∈ Finset.Icc 1 m, f k / p ^ k)) + f (m + 1)
+            = p ^ (m + 1) * (a 1 + ∑ k ∈ Finset.Icc 1 m, f k / p ^ k) + p ^ (m + 1) * (f (m + 1) / p ^ (m + 1)) := by
+              rw [e, pow_succ]
+              ring
+          _ = p ^ (m + 1) * (a 1 + (∑ k ∈ Finset.Icc 1 m, f k / p ^ k + f (m + 1) / p ^ (m + 1))) := by ring
+- id: recur_power_forcing_distinct
+  kind: gap
+  level: high
+  topic: 隣接二項間漸化式・非同次項が累乗（$r\neq p$）
+  statement: $r\neq p$のとき、$a_{n+1}=pa_n+qr^n$をみたす数列$(a_n)_{n\geq 1}$の一般項は、$c=\dfrac{q}{r-p}$として$a_n=(a_1-cr)p^{n-1}+cr^n$である。
+  statement_en: If r ≠ p and a_{n+1} = p·a_n + q·r^n for all n ≥ 1, then with c = q/(r-p) we have a_n = (a_1 - c·r)p^(n-1) + c·r^n for all n ≥ 1.
+  assumptions:
+  - $p,q,r$は実数で$r\neq p$
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+qr^n$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と$r\neq p$をみたす実数$p,q,r$
+  - 任意の自然数$n\geq 1$
+  conclusion: $c=\dfrac{q}{r-p}$として$a_n=(a_1-cr)p^{n-1}+cr^n$が成り立つ。
+  answer: |
+    $p,q,r$を実数とし$r\neq p$、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=pa_n+qr^n$をみたす実数列とする。$c=\dfrac{q}{r-p}$とおくと$cr=pc+q$である。
+    $b_n=a_n-cr^n$とおく。$b_{n+1}=pa_n+qr^n-cr^{n+1}=pa_n+qr^n-(pc+q)r^n=p(a_n-cr^n)=pb_n$なので、$(b_n)$は公比$p$の等比数列である。よって$b_n=p^{n-1}b_1=p^{n-1}(a_1-cr)$であり、$a_n=(a_1-cr)p^{n-1}+cr^n$となる。
+  strategy: Subtract the particular solution c·r^n to obtain a geometric sequence.
+  sketch:
+  - 'construct: Set c = q/(r-p), so c·r = p·c + q.'
+  - 'translate: Let b_n = a_n - c·r^n.'
+  - 'derive: Then b_{n+1} = p·b_n.'
+  - 'apply_theorem: Hence b_n = p^(n-1)·b_1.'
+  - 'conclude: Solve for a_n.'
+  openmath: (forall (a p q r) (-> (and (in p R) (in q R) (in r R) (!= r p) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) (* q (^ r n))))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (+ (* (- (seq_value a 1) (* (/ q (- r p)) r)) (^ p (- n 1))) (* (/ q (- r p)) (^ r n))))))))
+  hard_negative:
+    statement: $r=p$のときも$c=\dfrac{q}{r-p}$として同じ形の一般項が得られる。
+    reason: $r=p$では分母が$0$である。このときの一般項は$a_n=p^{n-1}\{a_1+(n-1)q\}$となり、$n$に比例する項が現れる。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q r : ℝ), r ≠ p → (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + q * r ^ n) → ∀ n : ℕ, 1 ≤ n → a n = (a 1 - q / (r - p) * r) * p ^ (n - 1) + q / (r - p) * r ^ n
+  proof: |
+    by
+      intro a p q r hr h
+      have h1 : r - p ≠ 0 := sub_ne_zero.mpr hr
+      have hc : q / (r - p) * r = p * (q / (r - p)) + q := by
+        field_simp
+        ring
+      have key : ∀ m : ℕ, a (m + 1) = (a 1 - q / (r - p) * r) * p ^ m + q / (r - p) * r ^ (m + 1) := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          rw [h (m + 1) (by omega), ih]
+          linear_combination (-(r ^ (m + 1))) * hc
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      simpa using key m
+- id: recur_power_forcing_resonant
+  kind: gap
+  level: high
+  topic: 隣接二項間漸化式・非同次項が同じ底の累乗（$r=p$）
+  statement: $a_{n+1}=pa_n+qp^n$をみたす数列$(a_n)_{n\geq 1}$の一般項は$a_n=p^{n-1}\{a_1+(n-1)q\}$である。
+  statement_en: If a_{n+1} = p·a_n + q·p^n for all n ≥ 1, then a_n = p^(n-1)(a_1 + (n-1)q) for all n ≥ 1.
+  assumptions:
+  - $p,q$は実数
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+qp^n$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,q$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=p^{n-1}\{a_1+(n-1)q\}$が成り立つ。
+  answer: |
+    $p,q$を実数、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=pa_n+qp^n$をみたす実数列とする。$n$についての帰納法で示す。$n=1$のとき$p^0=1$なので右辺は$a_1$である。ある$n\geq 1$で成り立つと仮定すると、
+    $a_{n+1}=p\cdot p^{n-1}\{a_1+(n-1)q\}+qp^n=p^n\{a_1+(n-1)q+q\}=p^n(a_1+nq)$
+    となり、$n+1$でも成り立つ。
+  strategy: Induct on n and factor out p^n.
+  sketch:
+  - 'induction: Check n = 1 using p^0 = 1.'
+  - 'derive: Substitute the formula for n into the recurrence.'
+  - 'conclude: Factor out p^n to get the formula for n + 1.'
+  openmath: (forall (a p q) (-> (and (in p R) (in q R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) (* q (^ p n))))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (* (^ p (- n 1)) (+ (seq_value a 1) (* (- n 1) q))))))))
+  hard_negative:
+    statement: $a_{n+1}=pa_n+qp^n$の一般項は、ある定数$A,c$で$a_n=Ap^{n-1}+cp^n$と表される。
+    reason: $p=2,\ q=1,\ a_1=0$では$a_1,a_2,a_3=0,2,8$であり、$a_n=Ap^{n-1}+cp^n$は$2^{n-1}$の定数倍になるが、$0,2,8$はそうならない。$n$に比例する項が必要である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q : ℝ), (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + q * p ^ n) → ∀ n : ℕ, 1 ≤ n → a n = p ^ (n - 1) * (a 1 + ((n : ℝ) - 1) * q)
+  proof: |
+    by
+      intro a p q h
+      have key : ∀ m : ℕ, a (m + 1) = p ^ m * (a 1 + (m : ℝ) * q) := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          rw [h (m + 1) (by omega), ih]
+          push_cast
+          ring
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      rw [Nat.add_sub_cancel, key m]
+      push_cast
+      ring
+- id: recur_linear_forcing
+  kind: gap
+  level: high
+  topic: 隣接二項間漸化式・非同次項が一次式
+  statement: $a_{n+1}=pa_n+sn+t$をみたす数列$(a_n)_{n\geq 1}$について、定数$c,e$が$c=pc+s$、$c+e=pe+t$をみたすならば、$a_n=p^{n-1}(a_1-c-e)+cn+e$である。
+  statement_en: If a_{n+1} = p·a_n + s·n + t for all n ≥ 1 and constants c, e satisfy c = p·c + s and c + e = p·e + t, then a_n = p^(n-1)(a_1 - c - e) + c·n + e for all n ≥ 1.
+  assumptions:
+  - $p,s,t,c,e$は実数で、$c=pc+s$かつ$c+e=pe+t$
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+1}=pa_n+sn+t$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,s,t,c,e$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=p^{n-1}(a_1-c-e)+cn+e$が成り立つ。
+  answer: |
+    $p,s,t,c,e$を$c=pc+s$、$c+e=pe+t$をみたす実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+1}=pa_n+sn+t$をみたす実数列とする。$b_n=a_n-cn-e$とおく。
+    $c(n+1)+e=(pc+s)n+pe+t=p(cn+e)+sn+t$であるから、漸化式から引いて$b_{n+1}=pb_n$を得る。よって$(b_n)$は公比$p$の等比数列であり、$b_n=p^{n-1}b_1=p^{n-1}(a_1-c-e)$である。$a_n=b_n+cn+e$より結論を得る。
+  strategy: Subtract the linear particular solution c·n + e to obtain a geometric sequence.
+  sketch:
+  - 'translate: Let b_n = a_n - c·n - e.'
+  - 'derive: The conditions on c and e give c(n+1) + e = p(c·n + e) + s·n + t.'
+  - 'derive: Subtracting from the recurrence gives b_{n+1} = p·b_n.'
+  - 'apply_theorem: Hence b_n = p^(n-1)·b_1.'
+  - 'conclude: Solve for a_n.'
+  openmath: (forall (a p s t c e) (-> (and (in p R) (in s R) (in t R) (in c R) (in e R) (= c (+ (* p c) s)) (= (+ c e) (+ (* p e) t)) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (+ (* p (seq_value a n)) (+ (* s n) t)))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (+ (* (^ p (- n 1)) (- (- (seq_value a 1) c) e)) (+ (* c n) e)))))))
+  hard_negative:
+    statement: 任意の$p,s,t$について$c=pc+s$、$c+e=pe+t$をみたす定数$c,e$が存在する。
+    reason: $p=1,\ s\neq 0$では$c=c+s$が成り立たない。このときの一般項は$n$の二次式となり、$cn+e$の形では引ききれない。
+  target: |
+    ∀ (a : ℕ → ℝ) (p s t c e : ℝ), c = p * c + s → c + e = p * e + t → (∀ n : ℕ, 1 ≤ n → a (n + 1) = p * a n + s * (n : ℝ) + t) → ∀ n : ℕ, 1 ≤ n → a n = p ^ (n - 1) * (a 1 - c - e) + c * (n : ℝ) + e
+  proof: |
+    by
+      intro a p s t c e hc he h
+      have key : ∀ m : ℕ, a (m + 1) = p ^ m * (a 1 - c - e) + c * ((m : ℝ) + 1) + e := by
+        intro m
+        induction m with
+        | zero =>
+          simp
+          ring
+        | succ m ih =>
+          rw [h (m + 1) (by omega), ih]
+          push_cast
+          linear_combination (-((m : ℝ) + 1)) * hc - he
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      rw [Nat.add_sub_cancel, key m]
+      push_cast
+      ring
+- id: recur_reciprocal_transform
+  kind: gap
+  level: high
+  topic: 漸化式の変形・逆数をとる
+  statement: すべての$n\geq 1$で$a_n\neq 0$、$pa_n+q\neq 0$であり$a_{n+1}=\dfrac{a_n}{pa_n+q}$をみたす数列では、$\dfrac{1}{a_{n+1}}=\dfrac{q}{a_n}+p$が成り立つ。
+  statement_en: If a_n ≠ 0, p·a_n + q ≠ 0 and a_{n+1} = a_n/(p·a_n + q) for all n ≥ 1, then 1/a_{n+1} = q/a_n + p for all n ≥ 1.
+  assumptions:
+  - $(a_n)$は実数列
+  - $p,q$は実数
+  - すべての$n\geq 1$について$a_n\neq 0$、$pa_n+q\neq 0$、$a_{n+1}=\dfrac{a_n}{pa_n+q}$
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,q$
+  - 任意の自然数$n\geq 1$
+  conclusion: $\dfrac{1}{a_{n+1}}=\dfrac{q}{a_n}+p$が成り立つ。
+  answer: |
+    $p,q$を実数、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_n\neq 0$、$pa_n+q\neq 0$、$a_{n+1}=\dfrac{a_n}{pa_n+q}$をみたす実数列とする。$n\geq 1$について両辺の逆数をとると、$\dfrac{1}{a_{n+1}}=\dfrac{pa_n+q}{a_n}=p+\dfrac{q}{a_n}$である。
+  strategy: Take reciprocals of both sides and split the fraction.
+  sketch:
+  - 'translate: Invert the recurrence, using a_n ≠ 0 and p·a_n + q ≠ 0.'
+  - 'conclude: Split (p·a_n + q)/a_n into p + q/a_n.'
+  openmath: (forall (a p q) (-> (and (in p R) (in q R) (forall (n) (-> (and (in n N) (>= n 1)) (and (!= (seq_value a n) 0) (!= (+ (* p (seq_value a n)) q) 0) (= (seq_value a (+ n 1)) (/ (seq_value a n) (+ (* p (seq_value a n)) q))))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (/ 1 (seq_value a (+ n 1))) (+ (/ q (seq_value a n)) p))))))
+  hard_negative:
+    statement: $a_{n+1}=\dfrac{a_n}{pa_n+q}$の逆数をとれば、$\dfrac{1}{a_{n+1}}=\dfrac{p}{a_n}+q$となる。
+    reason: $p$と$q$の位置が入れ替わっている。$p=1,\ q=2,\ a_1=2$なら$a_2=\dfrac{1}{2}$で、左辺は$2$、右辺は$\dfrac{5}{2}$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q : ℝ), (∀ n : ℕ, 1 ≤ n → a n ≠ 0) → (∀ n : ℕ, 1 ≤ n → p * a n + q ≠ 0) → (∀ n : ℕ, 1 ≤ n → a (n + 1) = a n / (p * a n + q)) → ∀ n : ℕ, 1 ≤ n → 1 / a (n + 1) = q / a n + p
+  proof: |
+    by
+      intro a p q h0 h1 h n hn
+      have e0 := h0 n hn
+      have e1 := h1 n hn
+      rw [h n hn]
+      field_simp
+      ring
+- id: recur_log_transform
+  kind: gap
+  level: high
+  topic: 漸化式の変形・対数をとる
+  statement: $b>0,\ b\neq 1,\ c>0$、$m$を自然数とする。正の数列が$a_{n+1}=ca_n^{\,m}$をみたすならば、$\log_b a_{n+1}=m\log_b a_n+\log_b c$である。
+  statement_en: Let b > 0, b ≠ 1, c > 0 and let m be a natural number. If a_n > 0 and a_{n+1} = c·a_n^m for all n ≥ 1, then log_b a_{n+1} = m·log_b a_n + log_b c for all n ≥ 1.
+  assumptions:
+  - $b,c$は実数で$b>0,\ b\neq 1,\ c>0$
+  - $m$は自然数
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_n>0$かつ$a_{n+1}=ca_n^{\,m}$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$、実数$b,c$、自然数$m$
+  - 任意の自然数$n\geq 1$
+  conclusion: $\log_b a_{n+1}=m\log_b a_n+\log_b c$が成り立つ。
+  answer: |
+    $b,c$を$b>0,\ b\neq 1,\ c>0$をみたす実数、$m$を自然数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_n>0$、$a_{n+1}=ca_n^{\,m}$をみたす実数列とする。$n\geq 1$について、$c>0$、$a_n^{\,m}>0$なので、積と累乗の対数法則により$\log_b a_{n+1}=\log_b c+\log_b a_n^{\,m}=\log_b c+m\log_b a_n$である。
+  strategy: Take logarithms and apply the product and power laws.
+  sketch:
+  - 'translate: Apply log_b to both sides, which are positive.'
+  - 'conclude: Use the product and power laws of logarithms.'
+  openmath: (forall (a b c m) (-> (and (in b R) (> b 0) (!= b 1) (in c R) (> c 0) (in m N) (forall (n) (-> (and (in n N) (>= n 1)) (and (> (seq_value a n) 0) (= (seq_value a (+ n 1)) (* c (^ (seq_value a n) m))))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (/ (ln (seq_value a (+ n 1))) (ln b)) (+ (* m (/ (ln (seq_value a n)) (ln b))) (/ (ln c) (ln b))))))))
+  hard_negative:
+    statement: $a_n$が正でなくても、$a_{n+1}=ca_n^{\,m}$の両辺の対数をとって同じ式が得られる。
+    reason: $a_n$が正でなければ$\log_b a_n$は定義されない。$a_n<0$では$\log_b a_n^{\,2}=2\log_b|a_n|$であり、絶対値が必要になる。
+  target: |
+    ∀ (a : ℕ → ℝ) (b c : ℝ) (m : ℕ), 0 < b → b ≠ 1 → 0 < c → (∀ n : ℕ, 1 ≤ n → 0 < a n) → (∀ n : ℕ, 1 ≤ n → a (n + 1) = c * a n ^ m) → ∀ n : ℕ, 1 ≤ n → Real.logb b (a (n + 1)) = (m : ℝ) * Real.logb b (a n) + Real.logb b c
+  proof: |
+    by
+      intro a b c m _ _ hc ha h n hn
+      rw [h n hn, Real.logb_mul hc.ne' (pow_ne_zero _ (ha n hn).ne'), Real.logb_pow]
+      ring
+- id: three_term_factorization
+  kind: gap
+  level: high
+  topic: 隣接三項間漸化式・特性方程式の解による変形
+  statement: $\alpha+\beta=p$、$\alpha\beta=-q$のとき（$\alpha,\beta$は$x^2=px+q$の解）、$a_{n+2}=pa_{n+1}+qa_n$は$a_{n+2}-\alpha a_{n+1}=\beta(a_{n+1}-\alpha a_n)$と変形できる。
+  statement_en: If α + β = p, α·β = -q and a_{n+2} = p·a_{n+1} + q·a_n for all n ≥ 1, then a_{n+2} - α·a_{n+1} = β(a_{n+1} - α·a_n) for all n ≥ 1.
+  assumptions:
+  - $p,q,\alpha,\beta$は実数で、$\alpha+\beta=p$かつ$\alpha\beta=-q$
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+2}=pa_{n+1}+qa_n$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$p,q,\alpha,\beta$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_{n+2}-\alpha a_{n+1}=\beta(a_{n+1}-\alpha a_n)$が成り立つ。
+  answer: |
+    $p,q,\alpha,\beta$を$\alpha+\beta=p$、$\alpha\beta=-q$をみたす実数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+2}=pa_{n+1}+qa_n$をみたす実数列とする。$n\geq 1$について、漸化式に$p=\alpha+\beta$、$q=-\alpha\beta$を代入すると$a_{n+2}=(\alpha+\beta)a_{n+1}-\alpha\beta a_n$である。$\alpha a_{n+1}$を移項すれば$a_{n+2}-\alpha a_{n+1}=\beta a_{n+1}-\alpha\beta a_n=\beta(a_{n+1}-\alpha a_n)$となる。
+  strategy: Substitute p and q by the sum and product of the roots and factor.
+  sketch:
+  - 'translate: Replace p by α + β and q by -α·β.'
+  - 'derive: Move α·a_{n+1} to the left.'
+  - 'conclude: Factor β on the right.'
+  openmath: (forall (a p q alpha beta) (-> (and (in p R) (in q R) (in alpha R) (in beta R) (= (+ alpha beta) p) (= (* alpha beta) (neg q)) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 2)) (+ (* p (seq_value a (+ n 1))) (* q (seq_value a n))))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (- (seq_value a (+ n 2)) (* alpha (seq_value a (+ n 1)))) (* beta (- (seq_value a (+ n 1)) (* alpha (seq_value a n)))))))))
+  hard_negative:
+    statement: $\alpha,\beta$が$x^2=px+q$の解なら、$a_{n+2}-\alpha a_{n+1}=\alpha(a_{n+1}-\alpha a_n)$である。
+    reason: 右辺の係数はもう一方の解$\beta$である。$p=3,\ q=-2,\ \alpha=1,\ \beta=2,\ a_1=0,\ a_2=1$では$a_3=3$であり、$n=1$の左辺は$2$、右辺は$1$である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q α β : ℝ), α + β = p → α * β = -q → (∀ n : ℕ, 1 ≤ n → a (n + 2) = p * a (n + 1) + q * a n) → ∀ n : ℕ, 1 ≤ n → a (n + 2) - α * a (n + 1) = β * (a (n + 1) - α * a n)
+  proof: |
+    by
+      intro a p q α β h1 h2 h n hn
+      rw [h n hn]
+      linear_combination (-a (n + 1)) * h1 + (a n) * h2
+- id: three_term_double_root
+  kind: textbook
+  level: high
+  topic: 隣接三項間漸化式・特性方程式が重解の場合
+  statement: $\alpha\neq 0$のとき、$a_{n+2}=2\alpha a_{n+1}-\alpha^2a_n$（特性方程式が重解$\alpha$をもつ形）をみたす数列$(a_n)_{n\geq 1}$は、ある定数$A,B$で$a_n=(A+Bn)\alpha^n$と表される。
+  statement_en: If α ≠ 0 and a_{n+2} = 2α·a_{n+1} - α^2·a_n for all n ≥ 1, then there are real A and B with a_n = (A + B·n)α^n for all n ≥ 1.
+  assumptions:
+  - $\alpha$は$0$でない実数
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+2}=2\alpha a_{n+1}-\alpha^2a_n$をみたす
+  quantifiers:
+  - 任意の実数列$(a_n)$と実数$\alpha\neq 0$
+  - ある実数$A,B$
+  - 任意の自然数$n\geq 1$
+  conclusion: すべての$n\geq 1$で$a_n=(A+Bn)\alpha^n$となる実数$A,B$が存在する。
+  answer: |
+    $\alpha\neq 0$を実数、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+2}=2\alpha a_{n+1}-\alpha^2a_n$をみたす実数列とする。$B=\dfrac{a_2-\alpha a_1}{\alpha^2}$、$A=\dfrac{a_1}{\alpha}-B$とおくと、$(A+B)\alpha=a_1$であり、$(A+2B)\alpha^2=a_1\alpha+B\alpha^2=a_2$である。よって$n=1,2$で$a_n=(A+Bn)\alpha^n$が成り立つ。
+    $n$と$n+1$で成り立つと仮定する。漸化式より
+    $a_{n+2}=2\alpha\{A+B(n+1)\}\alpha^{n+1}-\alpha^2(A+Bn)\alpha^n=\{2A+2B(n+1)-A-Bn\}\alpha^{n+2}=\{A+B(n+2)\}\alpha^{n+2}$
+    である。よって帰納法によりすべての$n\geq 1$で成り立つ。
+  strategy: Fit A and B to the first two terms and propagate by two-step induction.
+  sketch:
+  - 'construct: Set B = (a_2 - α·a_1)/α^2 and A = a_1/α - B.'
+  - 'derive: The formula holds for n = 1 and n = 2.'
+  - 'induction: Assume the formula for n and n + 1.'
+  - 'derive: Substitute into the recurrence and collect terms.'
+  - 'conclude: The formula holds for all n ≥ 1.'
+  openmath: (forall (a alpha) (-> (and (in alpha R) (!= alpha 0) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 2)) (- (* (* 2 alpha) (seq_value a (+ n 1))) (* (^ alpha 2) (seq_value a n))))))) (exists (A B) (and (in A R) (in B R) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (* (+ A (* B n)) (^ alpha n)))))))))
+  hard_negative:
+    statement: 重解の場合も$a_n=A\alpha^n$の形だけで表される。
+    reason: $\alpha=1$では漸化式$a_{n+2}=2a_{n+1}-a_n$を$a_n=n$がみたすが、定数列$A$では表せない。$n\alpha^n$の項が必要である。
+  target: |
+    ∀ (a : ℕ → ℝ) (α : ℝ), α ≠ 0 → (∀ n : ℕ, 1 ≤ n → a (n + 2) = 2 * α * a (n + 1) - α ^ 2 * a n) → ∃ A B : ℝ, ∀ n : ℕ, 1 ≤ n → a n = (A + B * (n : ℝ)) * α ^ n
+  proof: |
+    by
+      intro a α hα h
+      obtain ⟨A, B, hA, hB⟩ : ∃ A B : ℝ, a 1 = (A + B) * α ∧ a 2 = (A + 2 * B) * α ^ 2 := by
+        refine ⟨a 1 / α - (a 2 - α * a 1) / α ^ 2, (a 2 - α * a 1) / α ^ 2, ?_, ?_⟩
+        · field_simp
+          ring
+        · field_simp
+          ring
+      have key : ∀ m : ℕ, a (m + 1) = (A + B * ((m : ℝ) + 1)) * α ^ (m + 1) ∧ a (m + 2) = (A + B * ((m : ℝ) + 2)) * α ^ (m + 2) := by
+        intro m
+        induction m with
+        | zero =>
+          constructor
+          · rw [zero_add, hA]
+            push_cast
+            ring
+          · rw [zero_add, hB]
+            push_cast
+            ring
+        | succ m ih =>
+          constructor
+          · rw [show m + 1 + 1 = m + 2 from rfl, ih.2]
+            push_cast
+            ring
+          · rw [h (m + 1) (by omega), show m + 1 + 1 = m + 2 from rfl, ih.1, ih.2]
+            push_cast
+            ring
+      refine ⟨A, B, ?_⟩
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      rw [(key m).1]
+      push_cast
+      ring
+- id: three_term_uniqueness
+  kind: gap
+  level: high
+  topic: 隣接三項間漸化式・初項と第2項による決定
+  statement: 同じ関数$F$について$a_{n+2}=F(n,a_{n+1},a_n)$、$b_{n+2}=F(n,b_{n+1},b_n)$をみたす数列が$a_1=b_1$、$a_2=b_2$をみたせば、すべての$n\geq 1$で$a_n=b_n$である。
+  statement_en: If two real sequences satisfy a_{n+2} = F(n, a_{n+1}, a_n) and b_{n+2} = F(n, b_{n+1}, b_n) for all n ≥ 1 with the same F, and a_1 = b_1 and a_2 = b_2, then a_n = b_n for all n ≥ 1.
+  assumptions:
+  - $(a_n),(b_n)$は実数列
+  - $F$は自然数と二つの実数から実数への関数で、すべての$n\geq 1$について$a_{n+2}=F(n,a_{n+1},a_n)$、$b_{n+2}=F(n,b_{n+1},b_n)$
+  - $a_1=b_1$かつ$a_2=b_2$
+  quantifiers:
+  - 任意の実数列$(a_n),(b_n)$と関数$F$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n=b_n$が成り立つ。
+  answer: |
+    $F$を自然数と二つの実数に実数を対応させる関数とする。$(a_n)_{n\geq 1},(b_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+2}=F(n,a_{n+1},a_n)$、$b_{n+2}=F(n,b_{n+1},b_n)$をみたし、$a_1=b_1$、$a_2=b_2$である実数列とする。
+    「$a_n=b_n$かつ$a_{n+1}=b_{n+1}$」を$n$についての帰納法で示す。$n=1$では仮定そのものである。$n$で成り立つとすると、$a_{n+2}=F(n,a_{n+1},a_n)=F(n,b_{n+1},b_n)=b_{n+2}$なので$n+1$でも成り立つ。
+  strategy: Prove equality at two consecutive indices together by induction.
+  sketch:
+  - 'setup: Induct on the statement that a and b agree at n and n + 1.'
+  - 'induction: The base case is the pair of initial conditions.'
+  - 'derive: Equal inputs to F give a_{n+2} = b_{n+2}.'
+  - 'conclude: The sequences agree at all n ≥ 1.'
+  openmath: (forall (a b F) (-> (and (= (seq_value a 1) (seq_value b 1)) (= (seq_value a 2) (seq_value b 2)) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 2)) (fn_value (fn_value (fn_value F n) (seq_value a (+ n 1))) (seq_value a n))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value b (+ n 2)) (fn_value (fn_value (fn_value F n) (seq_value b (+ n 1))) (seq_value b n)))))) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a n) (seq_value b n))))))
+  hard_negative:
+    statement: 三項間漸化式では初項だけが等しければ二つの数列は一致する。
+    reason: $a_{n+2}=a_{n+1}$では$a_1=1,\ a_2=1$と$b_1=1,\ b_2=2$は初項が等しいが、$a_3=1,\ b_3=2$で異なる。第$2$項も必要である。
+  target: |
+    ∀ (a b : ℕ → ℝ) (F : ℕ → ℝ → ℝ → ℝ), a 1 = b 1 → a 2 = b 2 → (∀ n : ℕ, 1 ≤ n → a (n + 2) = F n (a (n + 1)) (a n)) → (∀ n : ℕ, 1 ≤ n → b (n + 2) = F n (b (n + 1)) (b n)) → ∀ n : ℕ, 1 ≤ n → a n = b n
+  proof: |
+    by
+      intro a b F h1 h2 ha hb
+      have key : ∀ m : ℕ, a (m + 1) = b (m + 1) ∧ a (m + 2) = b (m + 2) := by
+        intro m
+        induction m with
+        | zero => exact ⟨h1, h2⟩
+        | succ m ih =>
+          refine ⟨ih.2, ?_⟩
+          rw [ha (m + 1) (by omega), hb (m + 1) (by omega), show a (m + 1 + 1) = b (m + 1 + 1) from ih.2, ih.1]
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      exact (key m).1
+- id: three_term_integer_valued
+  kind: gap
+  level: high
+  topic: 隣接三項間漸化式・項が整数であること
+  statement: 整数$p,q$について$a_{n+2}=pa_{n+1}+qa_n$をみたす実数列$(a_n)_{n\geq 1}$で$a_1,a_2$が整数ならば、すべての項が整数である。
+  statement_en: If p and q are integers, a_{n+2} = p·a_{n+1} + q·a_n for all n ≥ 1, and a_1 and a_2 are integers, then a_n is an integer for all n ≥ 1.
+  assumptions:
+  - $p,q$は整数
+  - $(a_n)$は実数列で、すべての$n\geq 1$について$a_{n+2}=pa_{n+1}+qa_n$をみたす
+  - $a_1,a_2$は整数
+  quantifiers:
+  - 任意の実数列$(a_n)$と整数$p,q$
+  - 任意の自然数$n\geq 1$
+  conclusion: $a_n$は整数である。
+  answer: |
+    $p,q$を整数とし、$(a_n)_{n\geq 1}$をすべての$n\geq 1$で$a_{n+2}=pa_{n+1}+qa_n$をみたし、$a_1,a_2$が整数である実数列とする。
+    「$a_n$と$a_{n+1}$がともに整数である」を$n$についての帰納法で示す。$n=1$は仮定である。$n$で成り立つとすると、整数の和と積は整数なので$a_{n+2}=pa_{n+1}+qa_n$は整数であり、$n+1$でも成り立つ。
+  strategy: Prove integrality of two consecutive terms together by induction.
+  sketch:
+  - 'setup: Induct on the statement that a_n and a_{n+1} are integers.'
+  - 'induction: The base case is the assumption on a_1 and a_2.'
+  - 'derive: The recurrence expresses a_{n+2} as an integer combination.'
+  - 'conclude: Every term is an integer.'
+  openmath: (forall (a p q) (-> (and (in p Z) (in q Z) (in (seq_value a 1) Z) (in (seq_value a 2) Z) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 2)) (+ (* p (seq_value a (+ n 1))) (* q (seq_value a n))))))) (forall (n) (-> (and (in n N) (>= n 1)) (in (seq_value a n) Z)))))
+  hard_negative:
+    statement: $a_1$だけが整数なら、整数係数の三項間漸化式の項はすべて整数である。
+    reason: $a_{n+2}=a_{n+1}$で$a_1=1,\ a_2=\dfrac{1}{2}$とすると$a_3=\dfrac{1}{2}$である。初項だけでは足りず、$a_2$の仮定も必要である。
+  target: |
+    ∀ (a : ℕ → ℝ) (p q : ℤ), (∃ z : ℤ, a 1 = z) → (∃ z : ℤ, a 2 = z) → (∀ n : ℕ, 1 ≤ n → a (n + 2) = (p : ℝ) * a (n + 1) + (q : ℝ) * a n) → ∀ n : ℕ, 1 ≤ n → ∃ z : ℤ, a n = z
+  proof: |
+    by
+      intro a p q h1 h2 h
+      have key : ∀ m : ℕ, (∃ z : ℤ, a (m + 1) = z) ∧ (∃ z : ℤ, a (m + 2) = z) := by
+        intro m
+        induction m with
+        | zero => exact ⟨h1, h2⟩
+        | succ m ih =>
+          refine ⟨ih.2, ?_⟩
+          obtain ⟨x, hx⟩ := ih.1
+          obtain ⟨y, hy⟩ := ih.2
+          refine ⟨p * y + q * x, ?_⟩
+          rw [h (m + 1) (by omega), show a (m + 1 + 1) = (y : ℝ) from hy, hx]
+          push_cast
+          ring
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      exact (key m).1
+- id: two_step_induction
+  kind: textbook
+  level: high
+  topic: 数学的帰納法・二つ前までを仮定する形
+  statement: 述語$P$について、$P(1)$と$P(2)$が成り立ち、すべての$n\geq 1$で「$P(n)$かつ$P(n+1)$ならば$P(n+2)$」が成り立つならば、すべての$n\geq 1$で$P(n)$が成り立つ。
+  statement_en: For a predicate P on the natural numbers, if P(1) and P(2) hold and P(n) and P(n+1) together imply P(n+2) for all n ≥ 1, then P(n) holds for all n ≥ 1.
+  assumptions:
+  - $P$は自然数上の述語
+  - $P(1)$と$P(2)$が成り立つ
+  - すべての$n\geq 1$で、$P(n)$かつ$P(n+1)$ならば$P(n+2)$
+  quantifiers:
+  - 任意の述語$P$
+  - 任意の自然数$n\geq 1$
+  conclusion: $P(n)$が成り立つ。
+  answer: |
+    $P$を自然数上の述語とし、$P(1)$と$P(2)$が成り立ち、すべての$n\geq 1$で「$P(n)$かつ$P(n+1)$ならば$P(n+2)$」が成り立つとする。$Q(n)$を「$P(n)$かつ$P(n+1)$」と定める。$Q(1)$は仮定から成り立つ。$Q(n)$が成り立つとすると、$P(n+1)$が成り立ち、仮定から$P(n+2)$も成り立つので、$Q(n+1)$が成り立つ。通常の帰納法によりすべての$n\geq 1$で$Q(n)$が成り立ち、特に$P(n)$が成り立つ。
+  strategy: Apply ordinary induction to the conjunction of P(n) and P(n+1).
+  sketch:
+  - 'translate: Define Q(n) as P(n) and P(n+1).'
+  - 'induction: Q(1) is the pair of base cases.'
+  - 'derive: Q(n) implies Q(n+1) by the assumption.'
+  - 'conclude: Q(n) holds for all n ≥ 1, so P(n) does.'
+  openmath: (forall (S) (-> (and (in 1 S) (in 2 S) (forall (n) (-> (and (in n N) (>= n 1) (in n S) (in (+ n 1) S)) (in (+ n 2) S)))) (forall (n) (-> (and (in n N) (>= n 1)) (in n S)))))
+  hard_negative:
+    statement: $P(1)$が成り立ち、「$P(n)$かつ$P(n+1)$ならば$P(n+2)$」が成り立てば、$P(2)$を確かめなくてもすべての$n\geq 1$で$P(n)$が成り立つ。
+    reason: $P(n)$を「$n=1$」とすると、$P(n)$かつ$P(n+1)$となる$n$がないので後半は成り立つが、$P(2)$は偽である。基底は二つ必要である。
+  target: |
+    ∀ P : ℕ → Prop, P 1 → P 2 → (∀ n : ℕ, 1 ≤ n → P n → P (n + 1) → P (n + 2)) → ∀ n : ℕ, 1 ≤ n → P n
+  proof: |
+    by
+      intro P h1 h2 h
+      have key : ∀ m : ℕ, P (m + 1) ∧ P (m + 2) := by
+        intro m
+        induction m with
+        | zero => exact ⟨h1, h2⟩
+        | succ m ih => exact ⟨ih.2, h (m + 1) (by omega) ih.1 ih.2⟩
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      exact (key m).1
+- id: recur_invariant_interval
+  kind: gap
+  level: high
+  topic: 数学的帰納法・漸化式の項の範囲
+  statement: 関数$F$が区間$[l,u]$を自分自身の中へ写し、$a_1\in[l,u]$かつ$a_{n+1}=F(a_n)$ならば、すべての$n\geq 1$で$l\leq a_n\leq u$である。
+  statement_en: If a function F satisfies l ≤ F(x) ≤ u whenever l ≤ x ≤ u, and l ≤ a_1 ≤ u and a_{n+1} = F(a_n) for all n ≥ 1, then l ≤ a_n ≤ u for all n ≥ 1.
+  assumptions:
+  - $F$は実数から実数への関数で、$l\leq x\leq u$ならば$l\leq F(x)\leq u$
+  - $(a_n)$は実数列で$l\leq a_1\leq u$、すべての$n\geq 1$について$a_{n+1}=F(a_n)$
+  quantifiers:
+  - 任意の実数列$(a_n)$、関数$F$、実数$l,u$
+  - 任意の自然数$n\geq 1$
+  conclusion: $l\leq a_n\leq u$が成り立つ。
+  answer: |
+    $l,u$を実数、$F$を$l\leq x\leq u$なら$l\leq F(x)\leq u$となる関数とする。$(a_n)_{n\geq 1}$を$l\leq a_1\leq u$、すべての$n\geq 1$で$a_{n+1}=F(a_n)$をみたす実数列とする。$n$についての帰納法で示す。$n=1$は仮定である。$l\leq a_n\leq u$とすると、$F$の性質から$l\leq F(a_n)=a_{n+1}\leq u$である。
+  strategy: Induct on n using the invariance of the interval under F.
+  sketch:
+  - 'induction: The base case is the assumption on a_1.'
+  - 'derive: Applying F to a_n stays inside the interval.'
+  - 'conclude: All terms lie in the interval.'
+  openmath: (forall (a F l u) (-> (and (in l R) (in u R) (forall (x) (-> (and (in x R) (<= l x) (<= x u)) (and (<= l (fn_value F x)) (<= (fn_value F x) u)))) (<= l (seq_value a 1)) (<= (seq_value a 1) u) (forall (n) (-> (and (in n N) (>= n 1)) (= (seq_value a (+ n 1)) (fn_value F (seq_value a n)))))) (forall (n) (-> (and (in n N) (>= n 1)) (and (<= l (seq_value a n)) (<= (seq_value a n) u))))))
+  hard_negative:
+    statement: $a_1$が区間内にあり$F(a_1)$も区間内にあれば、すべての項は区間内にある。
+    reason: $F(x)=2x$、区間$[0,1]$、$a_1=\dfrac{1}{2}$では$a_2=1$は区間内だが$a_3=2$は外に出る。区間全体が自分自身に写ることが必要である。
+  target: |
+    ∀ (a : ℕ → ℝ) (F : ℝ → ℝ) (l u : ℝ), (∀ x : ℝ, l ≤ x → x ≤ u → l ≤ F x ∧ F x ≤ u) → l ≤ a 1 → a 1 ≤ u → (∀ n : ℕ, 1 ≤ n → a (n + 1) = F (a n)) → ∀ n : ℕ, 1 ≤ n → l ≤ a n ∧ a n ≤ u
+  proof: |
+    by
+      intro a F l u hF h1 h2 h n hn
+      induction n, hn using Nat.le_induction with
+      | base => exact ⟨h1, h2⟩
+      | succ n hn ih =>
+        rw [h n hn]
+        exact hF (a n) ih.1 ih.2
+- id: recur_inequality_geometric_bound
+  kind: gap
+  level: high
+  topic: 数学的帰納法・漸化不等式
+  statement: $r\geq 0$とし、すべての$n\geq 1$で$e_{n+1}\leq re_n$をみたす実数列について、$e_n\leq e_1r^{n-1}$が成り立つ。
+  statement_en: If r ≥ 0 and a real sequence satisfies e_{n+1} ≤ r·e_n for all n ≥ 1, then e_n ≤ e_1·r^(n-1) for all n ≥ 1.
+  assumptions:
+  - $r$は実数で$r\geq 0$
+  - $(e_n)$は実数列で、すべての$n\geq 1$について$e_{n+1}\leq re_n$をみたす
+  quantifiers:
+  - 任意の実数列$(e_n)$と実数$r\geq 0$
+  - 任意の自然数$n\geq 1$
+  conclusion: $e_n\leq e_1r^{n-1}$が成り立つ。
+  answer: |
+    $r\geq 0$を実数、$(e_n)_{n\geq 1}$をすべての$n\geq 1$で$e_{n+1}\leq re_n$をみたす実数列とする。$n$についての帰納法で示す。$n=1$のとき両辺は$e_1$である。$e_n\leq e_1r^{n-1}$と仮定する。$r\geq 0$なので両辺に$r$を掛けても向きは変わらず、$e_{n+1}\leq re_n\leq e_1r^{n}$である。
+  strategy: Induct on n, multiplying the bound by the nonnegative r.
+  sketch:
+  - 'induction: For n = 1 both sides equal e_1.'
+  - 'derive: Multiply the bound by r, using r ≥ 0.'
+  - 'conclude: Combine with e_{n+1} ≤ r·e_n.'
+  openmath: (forall (e r) (-> (and (in r R) (>= r 0) (forall (n) (-> (and (in n N) (>= n 1)) (<= (seq_value e (+ n 1)) (* r (seq_value e n)))))) (forall (n) (-> (and (in n N) (>= n 1)) (<= (seq_value e n) (* (seq_value e 1) (^ r (- n 1))))))))
+  hard_negative:
+    statement: $r<0$でも$e_{n+1}\leq re_n$から$e_n\leq e_1r^{n-1}$が導ける。
+    reason: 負の数を掛けると不等号の向きが変わる。$r=-1,\ e_1=-1,\ e_2=-5,\ e_3=5$は$e_2\leq 1$、$e_3\leq 5$をみたすが、$e_3\leq e_1r^2=-1$は成り立たない。
+  target: |
+    ∀ (e : ℕ → ℝ) (r : ℝ), 0 ≤ r → (∀ n : ℕ, 1 ≤ n → e (n + 1) ≤ r * e n) → ∀ n : ℕ, 1 ≤ n → e n ≤ e 1 * r ^ (n - 1)
+  proof: |
+    by
+      intro e r hr h
+      have key : ∀ m : ℕ, e (m + 1) ≤ e 1 * r ^ m := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          calc e (m + 1 + 1) ≤ r * e (m + 1) := h (m + 1) (by omega)
+            _ ≤ r * (e 1 * r ^ m) := mul_le_mul_of_nonneg_left ih hr
+            _ = e 1 * r ^ (m + 1) := by ring
+      intro n hn
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      simpa using key m
+- id: int_sub_dvd_pow_sub_pow
+  kind: gap
+  level: high
+  topic: 数学的帰納法・整除の定型
+  statement: 整数$a,b$と$0$以上の整数$n$について、$a-b$は$a^n-b^n$を割り切る。
+  statement_en: For integers a, b and natural n, a - b divides a^n - b^n.
+  assumptions:
+  - $a,b$は整数
+  - $n$は$0$以上の整数
+  quantifiers:
+  - 任意の整数$a,b$
+  - 任意の$0$以上の整数$n$
+  conclusion: ある整数$c$で$a^n-b^n=(a-b)c$となる。
+  answer: |
+    $a,b$を整数、$n$を$0$以上の整数とする。$n$についての帰納法で示す。$n=0$のとき$a^0-b^0=0$であり、$a-b$で割り切れる。$a^n-b^n=(a-b)c$となる整数$c$があるとすると、
+    $a^{n+1}-b^{n+1}=a(a^n-b^n)+(a-b)b^n=(a-b)(ac+b^n)$
+    であり、$n+1$でも割り切れる。
+  strategy: Induct on n, splitting a^(n+1) - b^(n+1) into a(a^n - b^n) + (a - b)b^n.
+  sketch:
+  - 'induction: For n = 0 the difference is 0.'
+  - 'derive: Write a^(n+1) - b^(n+1) as a(a^n - b^n) + (a - b)b^n.'
+  - 'conclude: Both terms are divisible by a - b.'
+  openmath: (forall (a b n) (-> (and (in a Z) (in b Z) (in n N)) (exists (c) (and (in c Z) (= (- (^ a n) (^ b n)) (* (- a b) c))))))
+  hard_negative:
+    statement: 整数$a,b$と$0$以上の整数$n$について、$a+b$は$a^n+b^n$を割り切る。
+    reason: $a=1,\ b=2,\ n=2$では$3$は$5$を割り切らない。和の形が成り立つのは$n$が奇数のときである。
+  target: |
+    ∀ (a b : ℤ) (n : ℕ), ∃ c : ℤ, a ^ n - b ^ n = (a - b) * c
+  proof: |
+    by
+      intro a b n
+      induction n with
+      | zero => exact ⟨0, by simp⟩
+      | succ n ih =>
+        obtain ⟨c, hc⟩ := ih
+        refine ⟨a * c + b ^ n, ?_⟩
+        linear_combination a * hc
+- id: group_unique_block
+  kind: gap
+  level: high
+  topic: 群数列・第N項の属する群（一般形）
+  statement: 第$i$群の項数を$c_i\geq 1$とする群数列で、全体の第$N$項（$N\geq 1$）の属する群はただ一つ定まる。すなわち$\sum_{i=1}^{m-1}c_i<N\leq\sum_{i=1}^{m}c_i$をみたす$m\geq 1$がただ一つ存在する。
+  statement_en: If c_i ≥ 1 for all i ≥ 1 and N ≥ 1, then there is exactly one m ≥ 1 such that the sum of c_i for 1 ≤ i ≤ m - 1 is less than N and N is at most the sum of c_i for 1 ≤ i ≤ m.
+  assumptions:
+  - $(c_i)$は自然数列で、すべての$i\geq 1$について$c_i\geq 1$
+  - $N\geq 1$は自然数
+  quantifiers:
+  - 任意の自然数列$(c_i)$
+  - 任意の自然数$N\geq 1$
+  - ただ一つの自然数$m\geq 1$
+  conclusion: $\sum_{i=1}^{m-1}c_i<N\leq\sum_{i=1}^{m}c_i$をみたす$m\geq 1$がただ一つ存在する。
+  answer: |
+    $(c_i)_{i\geq 1}$をすべての$i\geq 1$で$c_i\geq 1$をみたす自然数列とし、$N\geq 1$を自然数とする。$T_m=\sum_{i=1}^{m}c_i$とおく。$T_0=0$であり、$T_{m+1}\geq T_m+1$なので、$(T_m)$は狭義単調増加で$T_m\geq m$である。
+    特に$T_N\geq N$なので、$N\leq T_m$となる$m$が存在する。そのような最小の$m$を考える。$T_0=0<N$より$m\geq 1$であり、最小性から$T_{m-1}<N$である。これで存在が示された。
+    一意性を示す。$y\geq 1$も$T_{y-1}<N\leq T_y$をみたすとする。$y<m$なら$y\leq m-1$より$T_y\leq T_{m-1}<N$となり矛盾する。$y>m$なら$m\leq y-1$より$T_m\leq T_{y-1}<N$となり矛盾する。よって$y=m$である。
+  strategy: Take the least m with N ≤ T_m for existence and use monotonicity of T for uniqueness.
+  sketch:
+  - 'setup: Let T_m be the partial sums of the group sizes.'
+  - 'derive: T is strictly increasing, T_0 = 0 and T_m ≥ m.'
+  - 'construct: Take the least m with N ≤ T_m.'
+  - 'derive: Minimality gives T_{m-1} < N and m ≥ 1.'
+  - 'contradiction: Any other index y contradicts monotonicity.'
+  - 'conclude: Such m exists and is unique.'
+  openmath: (forall (c N1) (-> (and (forall (i) (-> (and (in i N) (>= i 1)) (and (in (seq_value c i) N) (>= (seq_value c i) 1)))) (in N1 N) (>= N1 1)) (exists (m) (and (in m N) (>= m 1) (< (sum (oriented_interval 1 (- m 1)) (lambda (i) (seq_value c i))) N1) (<= N1 (sum (oriented_interval 1 m) (lambda (i) (seq_value c i)))) (forall (y) (-> (and (in y N) (>= y 1) (< (sum (oriented_interval 1 (- y 1)) (lambda (i) (seq_value c i))) N1) (<= N1 (sum (oriented_interval 1 y) (lambda (i) (seq_value c i))))) (= y m)))))))
+  hard_negative:
+    statement: 空の群（$c_i=0$）を許しても、条件をみたす$m$はただ一つ存在する。
+    reason: すべての$i$で$c_i=0$なら和はつねに$0$であり、$N\leq\sum_{i=1}^{m}c_i$をみたす$m$は存在しない。
+  target: |
+    ∀ c : ℕ → ℕ, (∀ i : ℕ, 1 ≤ i → 1 ≤ c i) → ∀ N : ℕ, 1 ≤ N → ∃! m : ℕ, 1 ≤ m ∧ ∑ i ∈ Finset.Icc 1 (m - 1), c i < N ∧ N ≤ ∑ i ∈ Finset.Icc 1 m, c i
+  proof: |
+    by
+      intro c hc N hN
+      have step : ∀ m : ℕ, ∑ i ∈ Finset.Icc 1 m, c i + 1 ≤ ∑ i ∈ Finset.Icc 1 (m + 1), c i := by
+        intro m
+        rw [Finset.sum_Icc_succ_top (by omega)]
+        have h1 := hc (m + 1) (by omega)
+        omega
+      have large : ∀ m : ℕ, m ≤ ∑ i ∈ Finset.Icc 1 m, c i := by
+        intro m
+        induction m with
+        | zero => simp
+        | succ m ih =>
+          have h1 := step m
+          omega
+      have mono : ∀ x y : ℕ, x ≤ y → ∑ i ∈ Finset.Icc 1 x, c i ≤ ∑ i ∈ Finset.Icc 1 y, c i := by
+        intro x y hxy
+        induction y, hxy using Nat.le_induction with
+        | base => exact le_rfl
+        | succ y _ ih =>
+          have h1 := step y
+          omega
+      have hex : ∃ m : ℕ, N ≤ ∑ i ∈ Finset.Icc 1 m, c i := ⟨N, large N⟩
+      obtain ⟨j, hj1, hj2⟩ : ∃ j : ℕ, ∑ i ∈ Finset.Icc 1 j, c i < N ∧ N ≤ ∑ i ∈ Finset.Icc 1 (j + 1), c i := by
+        classical
+        have spec := Nat.find_spec hex
+        have hne : Nat.find hex ≠ 0 := by
+          intro h0
+          rw [h0] at spec
+          simp at spec
+          omega
+        obtain ⟨j, hj⟩ := Nat.exists_eq_succ_of_ne_zero hne
+        have hmin : ¬ N ≤ ∑ i ∈ Finset.Icc 1 j, c i := Nat.find_min hex (by omega)
+        rw [hj] at spec
+        exact ⟨j, by omega, spec⟩
+      refine ⟨j + 1, ⟨by omega, by simpa using hj1, hj2⟩, ?_⟩
+      rintro y ⟨hy, h3, h4⟩
+      rcases lt_trichotomy y (j + 1) with hlt | heq | hgt
+      · have h5 := mono y j (by omega)
+        omega
+      · exact heq
+      · have h5 := mono (j + 1) (y - 1) (by omega)
+        omega
+- id: group_triangular_location
+  kind: gap
+  level: high
+  topic: 群数列・第m群がm項の場合（特殊形）
+  statement: 第$m$群が$m$項からなるという特殊な群数列では、全体の第$N$項（$N\geq 1$）の属する群は、$\dfrac{m(m-1)}{2}<N\leq\dfrac{m(m+1)}{2}$をみたすただ一つの$m\geq 1$である。
+  statement_en: 'Special form for groups of size m: for every natural N ≥ 1 there is exactly one m ≥ 1 with m(m-1)/2 < N ≤ m(m+1)/2, stated as m(m-1) < 2N ≤ m(m+1).'
+  assumptions:
+  - $N\geq 1$は自然数
+  quantifiers:
+  - 任意の自然数$N\geq 1$
+  - ただ一つの自然数$m\geq 1$
+  conclusion: $m(m-1)<2N\leq m(m+1)$をみたす$m\geq 1$がただ一つ存在する。
+  answer: |
+    $N\geq 1$を自然数とする。第$m$群までの項数は$\dfrac{m(m+1)}{2}$であるから、示すべき不等式は$m(m-1)<2N\leq m(m+1)$と同じである。$m=2N$とすれば$2N\leq m(m+1)$となるので、これをみたす$m$が存在する。そのような最小の$m$を考える。$m=0$では右辺が$0$となるので$m\geq 1$であり、最小性から$(m-1)m<2N$である。これで存在が示された。
+    一意性を示す。$f(y)=y(y+1)$は単調増加である。$y\geq 1$が$y(y-1)<2N\leq y(y+1)$をみたすとする。$y<m$なら$y\leq m-1$より$f(y)\leq f(m-1)=(m-1)m<2N$となり矛盾する。$y>m$なら$m\leq y-1$より$f(m)\leq f(y-1)=(y-1)y<2N$となり矛盾する。よって$y=m$である。
+  strategy: Take the least m with 2N ≤ m(m+1) for existence and use monotonicity of y(y+1) for uniqueness.
+  sketch:
+  - 'translate: The first m groups contain m(m+1)/2 terms.'
+  - 'construct: Take the least m with 2N ≤ m(m+1).'
+  - 'derive: Minimality gives m(m-1) < 2N and m ≥ 1.'
+  - 'contradiction: Any other index contradicts monotonicity of y(y+1).'
+  - 'conclude: Such m exists and is unique.'
+  openmath: (forall (N1) (-> (and (in N1 N) (>= N1 1)) (exists (m) (and (in m N) (>= m 1) (< (* m (- m 1)) (* 2 N1)) (<= (* 2 N1) (* m (+ m 1))) (forall (y) (-> (and (in y N) (>= y 1) (< (* y (- y 1)) (* 2 N1)) (<= (* 2 N1) (* y (+ y 1)))) (= y m)))))))
+  hard_negative:
+    statement: 第$m$群の項数によらず、第$N$項の属する群は$\dfrac{m(m-1)}{2}<N\leq\dfrac{m(m+1)}{2}$で決まる。
+    reason: 第$m$群が$2^{m-1}$項の場合、第$7$項は第$3$群に属するが、この不等式は$m=4$を与える。この式は第$m$群が$m$項の場合に限る。
+  target: |
+    ∀ N : ℕ, 1 ≤ N → ∃! m : ℕ, 1 ≤ m ∧ m * (m - 1) < 2 * N ∧ 2 * N ≤ m * (m + 1)
+  proof: |
+    by
+      intro N hN
+      have hex : ∃ m : ℕ, 2 * N ≤ m * (m + 1) := ⟨2 * N, by nlinarith⟩
+      obtain ⟨j, hj1, hj2⟩ : ∃ j : ℕ, j * (j + 1) < 2 * N ∧ 2 * N ≤ (j + 1) * (j + 1 + 1) := by
+        classical
+        have spec := Nat.find_spec hex
+        have hne : Nat.find hex ≠ 0 := by
+          intro h0
+          rw [h0] at spec
+          omega
+        obtain ⟨j, hj⟩ := Nat.exists_eq_succ_of_ne_zero hne
+        have hmin : ¬ 2 * N ≤ j * (j + 1) := Nat.find_min hex (by omega)
+        rw [hj] at spec
+        exact ⟨j, by omega, spec⟩
+      refine ⟨j + 1, ⟨by omega, ?_, hj2⟩, ?_⟩
+      · rw [Nat.add_sub_cancel, mul_comm]
+        exact hj1
+      · rintro y ⟨hy, h3, h4⟩
+        obtain ⟨z, rfl⟩ : ∃ z, y = z + 1 := ⟨y - 1, by omega⟩
+        rw [Nat.add_sub_cancel, mul_comm] at h3
+        rcases lt_trichotomy z j with hlt | heq | hgt
+        · have h5 : (z + 1) * (z + 1 + 1) ≤ j * (j + 1) := Nat.mul_le_mul (by omega) (by omega)
+          omega
+        · rw [heq]
+        · have h5 : (j + 1) * (j + 1 + 1) ≤ z * (z + 1) := Nat.mul_le_mul (by omega) (by omega)
+          omega
+- id: group_sum_natural_numbers
+  kind: gap
+  level: high
+  topic: 群数列・第m群の和
+  statement: 自然数の列$1,2,3,\dots$を第$m$群が$m$項となるように区切るという特殊な群数列では、第$m$群は$\dfrac{m(m-1)}{2}+j$（$1\leq j\leq m$）からなり、その和は$\dfrac{m(m^2+1)}{2}$である。
+  statement_en: For natural m, the sum of m(m-1)/2 + j for 1 ≤ j ≤ m, which is the m-th group when 1, 2, 3, ... is split into groups of sizes 1, 2, 3, ..., equals m(m^2+1)/2.
+  assumptions:
+  - $m$は自然数
+  quantifiers:
+  - 任意の自然数$m$
+  conclusion: $\sum_{j=1}^{m}\left\{\dfrac{m(m-1)}{2}+j\right\}=\dfrac{m(m^2+1)}{2}$が成り立つ。
+  answer: |
+    $m$を自然数とする。第$m-1$群までの項数は$\dfrac{m(m-1)}{2}$なので、第$m$群の第$j$項は$\dfrac{m(m-1)}{2}+j$である。定数の和と$\sum_{j=1}^{m}j=\dfrac{m(m+1)}{2}$を使うと、
+    $\sum_{j=1}^{m}\left\{\dfrac{m(m-1)}{2}+j\right\}=\dfrac{m^2(m-1)}{2}+\dfrac{m(m+1)}{2}=\dfrac{m(m^2-m+m+1)}{2}=\dfrac{m(m^2+1)}{2}$
+    である。
+  strategy: Split the sum into a constant part and the sum of j.
+  sketch:
+  - 'translate: The first m - 1 groups contain m(m-1)/2 terms.'
+  - 'derive: Split the group sum into m copies of m(m-1)/2 and the sum of j.'
+  - 'apply_theorem: Use the formula for the sum of 1 through m.'
+  - 'conclude: Simplify to m(m^2+1)/2.'
+  openmath: (forall (m) (-> (in m N) (= (sum (oriented_interval 1 m) (lambda (j) (+ (/ (* m (- m 1)) 2) j))) (/ (* m (+ (^ m 2) 1)) 2))))
+  hard_negative:
+    statement: 第$m$群の和は$\dfrac{m(m+1)}{2}$である。
+    reason: これは第$m$群までの項数であり、和ではない。$m=2$では第$2$群は$2,3$で和は$5$だが、この式の値は$3$である。
+  target: |
+    ∀ m : ℕ, ∑ j ∈ Finset.Icc 1 m, ((m : ℝ) * ((m : ℝ) - 1) / 2 + (j : ℝ)) = (m : ℝ) * ((m : ℝ) ^ 2 + 1) / 2
+  proof: |
+    by
+      intro m
+      have g : ∀ n : ℕ, ∑ j ∈ Finset.Icc 1 n, (j : ℝ) = (n : ℝ) * ((n : ℝ) + 1) / 2 := by
+        intro n
+        induction n with
+        | zero => simp
+        | succ n ih =>
+          rw [Finset.sum_Icc_succ_top (by omega), ih]
+          push_cast
+          ring
+      rw [Finset.sum_add_distrib, g, Finset.sum_const, Nat.card_Icc, nsmul_eq_mul, Nat.add_sub_cancel]
+      ring

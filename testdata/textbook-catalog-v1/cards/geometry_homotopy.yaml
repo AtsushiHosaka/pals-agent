@@ -1,0 +1,1201 @@
+- id: homotopic_maps_equivalence
+  kind: gap
+  level: 3
+  topic: ホモトピー・同値関係
+  statement: 位相空間$X$から$Y$への連続写像全体の上で、ホモトピックという関係は同値関係である。
+  statement_en: For topological spaces X and Y, the relation of being homotopic is an equivalence relation on the continuous maps from X to Y.
+  assumptions:
+  - $X,Y$は位相空間
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  conclusion: ホモトピックという関係は反射律、対称律、推移律を満たす。
+  answer: |
+    $X,Y$を位相空間とし、$f,g,h:X\to Y$を連続写像とする。$f$と$g$がホモトピックであるとは、連続写像$H:[0,1]\times X\to Y$で$H(0,x)=f(x)$かつ$H(1,x)=g(x)$となるものが存在することである。
+    反射律は、$H(t,x)=f(x)$という時間によらないホモトピーで示せる。
+    対称律を示す。$H$が$f$から$g$へのホモトピーなら、$(t,x)\mapsto H(1-t,x)$は連続で、$g$から$f$へのホモトピーである。
+    推移律を示す。$H$を$f$から$g$へのホモトピー、$K$を$g$から$h$へのホモトピーとする。$t\leq1/2$では$L(t,x)=H(2t,x)$、$t\geq1/2$では$L(t,x)=K(2t-1,x)$とおく。$t=1/2$では両者の値がともに$g(x)$である。$[0,1/2]\times X$と$[1/2,1]\times X$は閉集合なので、貼り合わせ補題より$L$は連続である。$L(0,x)=f(x)$、$L(1,x)=h(x)$なので、$L$は$f$から$h$へのホモトピーである。
+  strategy: Use the constant homotopy, time reversal and time-rescaled concatenation.
+  sketch:
+  - 'construct: For reflexivity take H(t,x) = f(x).'
+  - 'construct: For symmetry reverse time, H''(t,x) = H(1-t,x).'
+  - 'construct: For transitivity run H on [0,1/2] and K on [1/2,1], each at double speed.'
+  - 'derive: The two pieces agree at t = 1/2, so the pasting lemma gives continuity.'
+  - 'conclude: The three properties make homotopy an equivalence relation.'
+  openmath: (forall (X Y) (forall (f g h) (-> (and (in f (continuous_maps X Y)) (in g (continuous_maps X Y)) (in h (continuous_maps X Y))) (and (homotopic f f) (-> (homotopic f g) (homotopic g f)) (-> (and (homotopic f g) (homotopic g h)) (homotopic f h))))))
+  hard_negative:
+    statement: fとgがホモトピックなら、すべての点xでf(x)=g(x)である。
+    reason: ホモトピックな写像は一般に異なる。ℝからℝへの恒等写像と定値写像0はH(t,x)=(1-t)xでホモトピックだが、等しくない。
+  target: |
+    ∀ (X Y : Type*) [TopologicalSpace X] [TopologicalSpace Y], Equivalence (ContinuousMap.Homotopic : C(X, Y) → C(X, Y) → Prop)
+  proof: |
+    by
+      intro X Y _ _
+      exact ContinuousMap.Homotopic.equivalence
+- id: contractible_iff_id_nullhomotopic
+  kind: textbook
+  level: 3
+  topic: ホモトピー・可縮空間
+  statement: 位相空間$Y$が可縮であることと、$Y$の恒等写像がある定値写像にホモトピックであることは同値である。
+  statement_en: A topological space Y is contractible if and only if its identity map is homotopic to a constant map on Y.
+  assumptions:
+  - $Y$は位相空間
+  quantifiers:
+  - 任意の位相空間$Y$
+  conclusion: $Y$が可縮であることと、ある点$c\in Y$について恒等写像が$c$への定値写像にホモトピックであることは同値である。
+  answer: |
+    $Y$を位相空間とする。$Y$が可縮であるとは、$Y$が一点空間$\{*\}$とホモトピー同値であることとする。
+    $Y$が可縮であるとし、連続写像$f:Y\to\{*\}$と$g:\{*\}\to Y$で$g\circ f$が$\mathrm{id}_Y$にホモトピックとなるものをとる。$c=g(*)$とおくと、$g\circ f$は$c$への定値写像である。よって$\mathrm{id}_Y$は$c$への定値写像にホモトピックである。
+    逆に$\mathrm{id}_Y$が$c\in Y$への定値写像にホモトピックであるとする。$f:Y\to\{*\}$を唯一の写像、$g:\{*\}\to Y$を$g(*)=c$で定める。$g\circ f$は$c$への定値写像なので$\mathrm{id}_Y$にホモトピックであり、$f\circ g$は$\{*\}$の恒等写像に等しい。よって$Y$は一点空間とホモトピー同値である。
+  strategy: Compare the composites of the maps between Y and a one-point space with the identity.
+  sketch:
+  - 'setup: Define contractible as homotopy equivalent to a one-point space.'
+  - 'derive: A homotopy equivalence Y to a point has a composite Y to Y that is constant and homotopic to the identity.'
+  - 'construct: Conversely, from id homotopic to the constant map at c, take f to the point and g sending the point to c.'
+  - 'derive: The composite g after f is the constant map at c, homotopic to id, and f after g is the identity of the point.'
+  - 'conclude: So f and g form a homotopy equivalence.'
+  openmath: (forall (Y) (<-> (contractible_space Y) (exists (c) (and (in c Y) (homotopic (identity_map Y) (constant_map Y c))))))
+  hard_negative:
+    statement: Yの任意の連続写像Y→Yが定値写像に等しければ、そのときに限りYは可縮である。
+    reason: 可縮性の条件はホモトピックであって写像の等号ではない。ℝは可縮だが、恒等写像は定値写像に等しくない。
+  target: |
+    ∀ (Y : Type*) [TopologicalSpace Y], ContractibleSpace Y ↔ ∃ c : Y, (ContinuousMap.id Y).Homotopic (ContinuousMap.const Y c)
+  proof: |
+    by
+      intro Y _
+      exact contractible_iff_id_nullhomotopic Y
+- id: maps_into_contractible_homotopic
+  kind: gap
+  level: 3
+  topic: ホモトピー・可縮空間
+  statement: 位相空間$X$から可縮空間$Y$への2つの連続写像は常にホモトピックである。
+  statement_en: If Y is contractible, then any two continuous maps from a topological space X to Y are homotopic.
+  assumptions:
+  - $X$は位相空間
+  - $Y$は可縮な位相空間
+  - $f,g:X\to Y$は連続
+  quantifiers:
+  - 任意の位相空間$X,Y$
+  - 任意の連続写像$f,g$
+  conclusion: $f$と$g$はホモトピックである。
+  answer: |
+    $X$を位相空間、$Y$を可縮な位相空間、$f,g:X\to Y$を連続写像とする。$Y$は一点空間とホモトピー同値なので、$\mathrm{id}_Y$はある点$c\in Y$への定値写像にホモトピックである。そのホモトピーを$H:[0,1]\times Y\to Y$とし、$H(0,y)=y$、$H(1,y)=c$とする。
+    $(t,x)\mapsto H(t,f(x))$は連続で、$f$から$c$への定値写像へのホモトピーである。同様に$(t,x)\mapsto H(t,g(x))$は$g$から$c$への定値写像へのホモトピーである。ホモトピックという関係は同値関係なので、対称律と推移律より$f$と$g$はホモトピックである。
+  strategy: Compose the contraction of Y with each map and connect through the constant map.
+  sketch:
+  - 'setup: Choose c in Y and a homotopy from the identity of Y to the constant map at c.'
+  - 'derive: Precomposing with f shows f is homotopic to the constant map X to c.'
+  - 'derive: The same argument applies to g.'
+  - 'conclude: By symmetry and transitivity f and g are homotopic.'
+  openmath: (forall (X Y) (-> (contractible_space Y) (forall (f g) (-> (and (in f (continuous_maps X Y)) (in g (continuous_maps X Y))) (homotopic f g)))))
+  hard_negative:
+    statement: Xが可縮なら、任意の位相空間Yへの2つの連続写像f, g:X→Yはホモトピックである。
+    reason: 定義域が可縮でも値域が弧状連結でなければ成り立たない。Yが2点離散空間なら、X=ℝからの異なる2つの定値写像はホモトピックでない。
+  target: |
+    ∀ (X Y : Type*) [TopologicalSpace X] [TopologicalSpace Y] [ContractibleSpace Y] (f g : C(X, Y)), f.Homotopic g
+  proof: |
+    by
+      intro X Y _ _ _ f g
+      obtain ⟨c, hc⟩ := id_nullhomotopic Y
+      have h : ∀ u : C(X, Y), u.Homotopic (ContinuousMap.const X c) := by
+        intro u
+        simpa using hc.comp (ContinuousMap.Homotopic.refl u)
+      exact (h f).trans (h g).symm
+- id: straight_line_homotopy
+  kind: gap
+  level: 3
+  topic: ホモトピー・直線ホモトピー
+  statement: 実ノルム空間$E$への2つの連続写像$f,g:X\to E$は、$(1-t)f(x)+tg(x)$で与えられるホモトピーでつながる。
+  statement_en: For continuous maps f, g from a topological space X to a real normed space E, the formula H(t,x) = (1-t)f(x) + tg(x) defines a homotopy from f to g.
+  assumptions:
+  - $X$は位相空間
+  - $E$は実ノルム空間
+  - $f,g:X\to E$は連続
+  quantifiers:
+  - 任意の位相空間$X$と実ノルム空間$E$
+  - 任意の連続写像$f,g$
+  conclusion: すべての$t\in[0,1]$と$x\in X$で$H(t,x)=(1-t)f(x)+tg(x)$となる、$f$から$g$へのホモトピー$H$が存在する。
+  answer: |
+    $X$を位相空間、$E$を実ノルム空間、$f,g:X\to E$を連続写像とする。$H(t,x)=(1-t)f(x)+tg(x)$とおく。$E$の和とスカラー倍は連続であり、$f,g$も連続なので、$H$は$[0,1]\times X$上で連続である。さらに$H(0,x)=f(x)$、$H(1,x)=g(x)$である。よって$H$は$f$から$g$へのホモトピーである。
+  strategy: Write down the affine interpolation and check continuity and the endpoints.
+  sketch:
+  - 'construct: Define H(t,x) = (1-t)f(x) + tg(x).'
+  - 'derive: H is continuous because vector addition and scalar multiplication are continuous.'
+  - 'conclude: H(0,x) = f(x) and H(1,x) = g(x), so H is a homotopy from f to g.'
+  openmath: (forall (X E f g) (-> (and (normed_space E) (in f (continuous_maps X E)) (in g (continuous_maps X E))) (exists (H) (and (homotopy_between H f g) (forall (t x) (-> (and (in t unit_interval) (in x X)) (= (fn_value H (ordered_pair t x)) (+ (* (- 1 t) (fn_value f x)) (* t (fn_value g x))))))))))
+  hard_negative:
+    statement: Eの任意の部分集合Sに値をとる連続写像f, g:X→Sは、S内で直線ホモトピーによりつながる。
+    reason: 線分がSに含まれる保証が必要である。Sが凸でなければ、たとえば円周上の2点を結ぶ線分は円周の外に出る。
+  target: |
+    ∀ (X E : Type*) [TopologicalSpace X] [NormedAddCommGroup E] [NormedSpace ℝ E] (f g : C(X, E)), ∃ F : f.Homotopy g, ∀ (t : unitInterval) (x : X), F (t, x) = (1 - (t : ℝ)) • f x + (t : ℝ) • g x
+  proof: |
+    by
+      intro X E _ _ _ f g
+      refine ⟨ContinuousMap.Homotopy.affine f g, ?_⟩
+      intro t x
+      simp [AffineMap.lineMap_apply_module]
+- id: homotopy_equivalence_relation
+  kind: textbook
+  level: 3
+  topic: ホモトピー同値
+  statement: 位相空間のホモトピー同値は反射律、対称律、推移律を満たす。
+  statement_en: Homotopy equivalence of topological spaces is reflexive, symmetric and transitive.
+  assumptions:
+  - $X,Y,Z$は位相空間
+  quantifiers:
+  - 任意の位相空間$X,Y,Z$
+  conclusion: $X$と$X$はホモトピー同値である。$X$と$Y$がホモトピー同値なら$Y$と$X$もホモトピー同値である。$X$と$Y$、$Y$と$Z$がホモトピー同値なら$X$と$Z$もホモトピー同値である。
+  answer: |
+    $X,Y,Z$を位相空間とする。$X$と$Y$がホモトピー同値であるとは、連続写像$f:X\to Y$と$g:Y\to X$で、$g\circ f$が$\mathrm{id}_X$に、$f\circ g$が$\mathrm{id}_Y$にホモトピックとなるものが存在することである。
+    反射律は、$f=g=\mathrm{id}_X$で成り立つ。対称律は、組$(f,g)$の役割を入れ替えた組$(g,f)$で成り立つ。
+    推移律を示す。$f:X\to Y$、$g:Y\to X$を$X$と$Y$の間のホモトピー同値の組、$h:Y\to Z$、$k:Z\to Y$を$Y$と$Z$の間の組とする。ホモトピーは連続写像を前後に合成しても保たれる。$k\circ h$は$\mathrm{id}_Y$にホモトピックなので、$(g\circ k)\circ(h\circ f)=g\circ(k\circ h)\circ f$は$g\circ f$にホモトピックであり、これは$\mathrm{id}_X$にホモトピックである。同様に、$f\circ g$が$\mathrm{id}_Y$にホモトピックなので、$(h\circ f)\circ(g\circ k)$は$h\circ k$にホモトピックであり、これは$\mathrm{id}_Z$にホモトピックである。ホモトピックという関係は推移的なので、組$(h\circ f,g\circ k)$により$X$と$Z$はホモトピー同値である。
+  strategy: Use identities, swap the inverse pair, and compose while using that homotopy respects composition.
+  sketch:
+  - 'construct: The identity with itself gives reflexivity.'
+  - 'construct: Swapping f and its homotopy inverse g gives symmetry.'
+  - 'construct: For transitivity take h after f with homotopy inverse g after k.'
+  - 'derive: Since k after h is homotopic to the identity, g k h f is homotopic to g f, hence to the identity.'
+  - 'derive: The other composite is handled the same way.'
+  - 'conclude: So the composite is a homotopy equivalence.'
+  openmath: (forall (X Y Z) (and (homotopy_equivalent X X) (-> (homotopy_equivalent X Y) (homotopy_equivalent Y X)) (-> (and (homotopy_equivalent X Y) (homotopy_equivalent Y Z)) (homotopy_equivalent X Z))))
+  hard_negative:
+    statement: ホモトピー同値な2つの空間は同相である。
+    reason: ℝと一点空間はホモトピー同値だが、濃度が異なるので同相でない。
+  target: |
+    ∀ (X Y Z : Type*) [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z], Nonempty (ContinuousMap.HomotopyEquiv X X) ∧ (Nonempty (ContinuousMap.HomotopyEquiv X Y) → Nonempty (ContinuousMap.HomotopyEquiv Y X)) ∧ (Nonempty (ContinuousMap.HomotopyEquiv X Y) → Nonempty (ContinuousMap.HomotopyEquiv Y Z) → Nonempty (ContinuousMap.HomotopyEquiv X Z))
+  proof: |
+    by
+      intro X Y Z _ _ _
+      exact ⟨⟨ContinuousMap.HomotopyEquiv.refl X⟩, fun ⟨e⟩ => ⟨e.symm⟩, fun ⟨e⟩ ⟨e'⟩ => ⟨e.trans e'⟩⟩
+- id: convex_set_contractible
+  kind: gap
+  level: 3
+  topic: ホモトピー・凸集合
+  statement: 実位相線形空間の空でない凸部分集合は、部分空間として可縮である。
+  statement_en: A nonempty convex subset of a real topological vector space is contractible in the subspace topology.
+  assumptions:
+  - $E$は実位相線形空間
+  - $S\subseteq E$は凸
+  - $S$は空でない
+  quantifiers:
+  - 任意の実位相線形空間$E$
+  - 任意の凸部分集合$S$
+  conclusion: 部分空間$S$は可縮である。
+  answer: |
+    $E$を実位相線形空間、$S$を$E$の空でない凸部分集合とし、$c\in S$を1つとる。$H:[0,1]\times S\to S$を$H(t,x)=(1-t)x+tc$で定める。$S$は凸なので$H$の値は$S$に入る。$E$の和とスカラー倍は連続なので$H$は連続である。$H(0,x)=x$、$H(1,x)=c$である。
+    よって$S$の恒等写像は$c$への定値写像にホモトピックである。恒等写像が定値写像にホモトピックな空間は、一点空間とホモトピー同値である（$S\to\{*\}$と$*\mapsto c$が組をなす）。したがって$S$は可縮である。
+  strategy: Contract S linearly onto a chosen point, using convexity to stay inside S.
+  sketch:
+  - 'setup: Pick c in S, which is possible since S is nonempty.'
+  - 'construct: Define H(t,x) = (1-t)x + tc on [0,1] times S.'
+  - 'derive: Convexity keeps H(t,x) in S, and the vector space operations make H continuous.'
+  - 'conclude: H is a homotopy from the identity of S to the constant map at c.'
+  openmath: (forall (E S) (-> (and (topological_vector_space E) (subset S E) (convex_set S) (!= S emptyset)) (contractible_space (subspace_topology_on E S))))
+  hard_negative:
+    statement: 実位相線形空間の空でない部分集合は常に可縮である。
+    reason: 凸性を落とすと成り立たない。ℝの2点からなる部分集合は連結でないので可縮でない。
+  target: |
+    ∀ (E : Type*) [AddCommGroup E] [Module ℝ E] [TopologicalSpace E] [ContinuousAdd E] [ContinuousSMul ℝ E] (S : Set E), Convex ℝ S → S.Nonempty → ContractibleSpace S
+  proof: |
+    by
+      intro E _ _ _ _ _ S hS hne
+      exact hS.contractibleSpace hne
+- id: path_homotopy_concat
+  kind: gap
+  level: 3
+  topic: 道のホモトピー・連結
+  statement: 端点を固定してホモトピックな道を連結すると、連結した道も端点を固定してホモトピックである。
+  statement_en: If p₀, p₁ are path homotopic paths from x to y and q₀, q₁ are path homotopic paths from y to z, then the concatenations p₀·q₀ and p₁·q₁ are path homotopic.
+  assumptions:
+  - $X$は位相空間
+  - $p_0,p_1$は$x$から$y$への道
+  - $q_0,q_1$は$y$から$z$への道
+  - $p_0$と$p_1$は端点を固定してホモトピック
+  - $q_0$と$q_1$は端点を固定してホモトピック
+  quantifiers:
+  - 任意の点$x,y,z\in X$
+  - 任意の道$p_0,p_1,q_0,q_1$
+  conclusion: $p_0\cdot q_0$と$p_1\cdot q_1$は端点を固定してホモトピックである。
+  answer: |
+    $X$を位相空間、$x,y,z\in X$とし、$p_0,p_1$を$x$から$y$への道、$q_0,q_1$を$y$から$z$への道とする。道の連結$p\cdot q$は、$s\leq1/2$で$p(2s)$、$s\geq1/2$で$q(2s-1)$をとる道である。
+    $F:[0,1]\times[0,1]\to X$を$p_0$から$p_1$への端点を固定したホモトピー、$G$を$q_0$から$q_1$への端点を固定したホモトピーとする。$s\leq1/2$では$H(t,s)=F(t,2s)$、$s\geq1/2$では$H(t,s)=G(t,2s-1)$とおく。$s=1/2$ではどちらの式の値も$y$なので、貼り合わせ補題より$H$は連続である。$H(0,s)=(p_0\cdot q_0)(s)$、$H(1,s)=(p_1\cdot q_1)(s)$である。また$H(t,0)=F(t,0)=x$、$H(t,1)=G(t,1)=z$なので端点は固定される。
+  strategy: Glue the two path homotopies along the midpoint of the parameter.
+  sketch:
+  - 'setup: Let F and G be the given endpoint-fixing homotopies.'
+  - 'construct: Define H(t,s) = F(t,2s) for s ≤ 1/2 and H(t,s) = G(t,2s-1) for s ≥ 1/2.'
+  - 'derive: Both formulas give y at s = 1/2, so H is continuous by the pasting lemma.'
+  - 'conclude: H fixes the endpoints and joins the two concatenations.'
+  openmath: (forall (x y z a b c d) (-> (and (in a (paths x y)) (in b (paths x y)) (in c (paths y z)) (in d (paths y z)) (path_homotopic a b) (path_homotopic c d)) (path_homotopic (path_concat a c) (path_concat b d))))
+  hard_negative:
+    statement: 同じ点を基点とするループα, βについて、連結α·βとβ·αは常にホモトピックである。
+    reason: 連結は一般に可換でない。8の字空間の基本群は2元生成の自由群なので、2つの輪を表すループでは順序を入れ替えるとホモトピー類が変わる。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] (x y z : X) (p₀ p₁ : Path x y) (q₀ q₁ : Path y z), p₀.Homotopic p₁ → q₀.Homotopic q₁ → (p₀.trans q₀).Homotopic (p₁.trans q₁)
+  proof: |
+    by
+      intro X _ x y z p₀ p₁ q₀ q₁ hp hq
+      exact hp.hcomp hq
+- id: path_concat_assoc_homotopic
+  kind: gap
+  level: 3
+  topic: 道のホモトピー・結合律
+  statement: 道の連結は、端点を固定したホモトピーの意味で結合的である。
+  statement_en: For composable paths p, q, r, the concatenations (p·q)·r and p·(q·r) are path homotopic.
+  assumptions:
+  - $X$は位相空間
+  - $p$は$x_0$から$x_1$への道
+  - $q$は$x_1$から$x_2$への道
+  - $r$は$x_2$から$x_3$への道
+  quantifiers:
+  - 任意の点$x_0,x_1,x_2,x_3\in X$
+  - 任意の道$p,q,r$
+  conclusion: $(p\cdot q)\cdot r$と$p\cdot(q\cdot r)$は端点を固定してホモトピックである。
+  answer: |
+    $X$を位相空間、$x_0,x_1,x_2,x_3\in X$とし、$p,q,r$を順に$x_0$から$x_1$、$x_1$から$x_2$、$x_2$から$x_3$への道とする。道の連結$u\cdot v$は、$s\leq1/2$で$u(2s)$、$s\geq1/2$で$v(2s-1)$をとる道である。
+    $\gamma=p\cdot(q\cdot r)$とおく。$\gamma(s)$は$s\leq1/2$で$p(2s)$、$1/2\leq s\leq3/4$で$q(4s-2)$、$s\geq3/4$で$r(4s-3)$である。$\varphi:[0,1]\to[0,1]$を、$s\leq1/4$で$2s$、$1/4\leq s\leq1/2$で$s+1/4$、$s\geq1/2$で$s/2+1/2$と定める。継ぎ目の値は$\varphi(1/4)=1/2$、$\varphi(1/2)=3/4$で一致するので$\varphi$は連続であり、$\varphi(0)=0$、$\varphi(1)=1$である。
+    代入すると、$\gamma(\varphi(s))$は$s\leq1/4$で$p(4s)$、$1/4\leq s\leq1/2$で$q(4s-1)$、$s\geq1/2$で$r(2s-1)$となる。これは$(p\cdot q)\cdot r$に等しい。
+    $H(t,s)=\gamma((1-t)\varphi(s)+ts)$とおく。$(1-t)\varphi(s)+ts$は$[0,1]$の点なので$H$は定義され、連続である。$H(0,s)=((p\cdot q)\cdot r)(s)$、$H(1,s)=\gamma(s)$である。$H(t,0)=\gamma(0)=x_0$、$H(t,1)=\gamma(1)=x_3$なので端点は固定される。
+  strategy: Exhibit one concatenation as a reparametrization of the other and interpolate the reparametrization.
+  sketch:
+  - 'setup: Let γ = p·(q·r).'
+  - 'construct: Find a piecewise linear φ of [0,1] with φ(0)=0, φ(1)=1 and (p·q)·r = γ∘φ.'
+  - 'construct: Define H(t,s) = γ((1-t)s + tφ(s)).'
+  - 'derive: H is continuous, fixes the endpoints, and joins γ to γ∘φ.'
+  - 'conclude: Hence the two concatenations are path homotopic.'
+  openmath: (forall (w x y z a b c) (-> (and (in a (paths w x)) (in b (paths x y)) (in c (paths y z))) (path_homotopic (path_concat (path_concat a b) c) (path_concat a (path_concat b c)))))
+  hard_negative:
+    statement: (p·q)·rとp·(q·r)は写像として等しい。
+    reason: パラメータの割り当てが異なる。前者ではpがs∈[0,1/4]で走り、後者ではpがs∈[0,1/2]で走るので、一般に写像として異なる。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] (x₀ x₁ x₂ x₃ : X) (p : Path x₀ x₁) (q : Path x₁ x₂) (r : Path x₂ x₃), ((p.trans q).trans r).Homotopic (p.trans (q.trans r))
+  proof: |
+    by
+      intro X _ x₀ x₁ x₂ x₃ p q r
+      exact ⟨Path.Homotopy.transAssoc p q r⟩
+- id: path_identity_inverse_homotopic
+  kind: gap
+  level: 3
+  topic: 道のホモトピー・単位元と逆元
+  statement: 定値道は道の連結の単位元として働き、逆向きの道は逆元として働く。いずれも端点を固定したホモトピーの意味で成り立つ。
+  statement_en: For a path p from x to y, the concatenations p·c_y and c_x·p are path homotopic to p, and p·p⁻¹ and p⁻¹·p are path homotopic to the constant paths at x and y.
+  assumptions:
+  - $X$は位相空間
+  - $p$は$x$から$y$への道
+  quantifiers:
+  - 任意の点$x,y\in X$
+  - 任意の道$p$
+  conclusion: $p\cdot c_y$と$c_x\cdot p$は$p$にホモトピックであり、$p\cdot p^{-1}$は$c_x$に、$p^{-1}\cdot p$は$c_y$にホモトピックである。いずれも端点を固定したホモトピーである。
+  answer: |
+    $X$を位相空間、$x,y\in X$、$p$を$x$から$y$への道とする。$c_x,c_y$を$x,y$での定値道、$p^{-1}(s)=p(1-s)$を逆向きの道とする。連結$u\cdot v$は、$s\leq1/2$で$u(2s)$、$s\geq1/2$で$v(2s-1)$をとる道である。
+    単位元について示す。$\varphi(s)=\min(2s,1)$とおくと$p\cdot c_y=p\circ\varphi$であり、$\varphi(0)=0$、$\varphi(1)=1$である。$H(t,s)=p((1-t)\varphi(s)+ts)$は連続で、$t=0$で$p\cdot c_y$、$t=1$で$p$になり、$H(t,0)=x$、$H(t,1)=y$である。$c_x\cdot p$については$\psi(s)=\max(2s-1,0)$を用いて$c_x\cdot p=p\circ\psi$とし、同じ式で$p$へのホモトピーを得る。
+    逆元について示す。$s\leq1/2$では$H(t,s)=p(2(1-t)s)$、$s\geq1/2$では$H(t,s)=p((1-t)(2-2s))$とおく。$s=1/2$では両者がともに$p(1-t)$なので、貼り合わせ補題より$H$は連続である。$t=0$では$p\cdot p^{-1}$になり、$t=1$では$c_x$になる。$H(t,0)=H(t,1)=p(0)=x$なので端点は固定される。$p^{-1}\cdot p$については、$p$を$p^{-1}$に置き換えて同じ議論を行うと、$c_y$へのホモトピーを得る。
+  strategy: Use reparametrization for the unit laws and a run-out-and-back homotopy for the inverse laws.
+  sketch:
+  - 'derive: p·c_y and c_x·p are reparametrizations of p, so linear interpolation of parameters gives homotopies to p.'
+  - 'construct: For inverses define H(t,s) = p(2ts) for s ≤ 1/2 and p(t(2-2s)) for s ≥ 1/2.'
+  - 'derive: The two formulas agree at s = 1/2, and H fixes the endpoints at x.'
+  - 'derive: H joins c_x at t = 0 to p·p⁻¹ at t = 1.'
+  - 'conclude: Replacing p by p⁻¹ gives the last homotopy.'
+  openmath: (forall (x y p) (-> (in p (paths x y)) (and (path_homotopic (path_concat p (path_refl y)) p) (path_homotopic (path_concat (path_refl x) p) p) (path_homotopic (path_concat p (path_reverse p)) (path_refl x)) (path_homotopic (path_concat (path_reverse p) p) (path_refl y)))))
+  hard_negative:
+    statement: p·p⁻¹はxを始点とする定値道に写像として等しい。
+    reason: 等しいのはホモトピー類だけである。pが定値でなければp·p⁻¹はxと異なる点を通るので、定値道に等しくない。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] (x y : X) (p : Path x y), (p.trans (Path.refl y)).Homotopic p ∧ ((Path.refl x).trans p).Homotopic p ∧ (p.trans p.symm).Homotopic (Path.refl x) ∧ (p.symm.trans p).Homotopic (Path.refl y)
+  proof: |
+    by
+      intro X _ x y p
+      exact ⟨⟨Path.Homotopy.transRefl p⟩, ⟨Path.Homotopy.reflTrans p⟩, ⟨(Path.Homotopy.reflTransSymm p).symm⟩, ⟨(Path.Homotopy.reflSymmTrans p).symm⟩⟩
+- id: fundamental_group_basepoint_iso
+  kind: textbook
+  level: 3
+  topic: 基本群・基点の取り替え
+  statement: 弧状連結空間では、任意の2点を基点とする基本群は同型である。
+  statement_en: In a path-connected space X, the fundamental groups at any two base points x and y are isomorphic.
+  assumptions:
+  - $X$は弧状連結な位相空間
+  - $x,y\in X$
+  quantifiers:
+  - 任意の弧状連結空間$X$
+  - 任意の点$x,y$
+  conclusion: $\pi_1(X,x)$と$\pi_1(X,y)$は群として同型である。
+  answer: |
+    $X$を弧状連結な位相空間、$x,y\in X$とする。道$u$と$v$が端点を固定してホモトピックであることを$u\simeq v$と書く。連結$\cdot$はホモトピー類の上で定義され、結合的で、定値道$c_x,c_y$が単位元、逆向きの道が逆元として働く。
+    弧状連結性より$x$から$y$への道$\gamma$をとる。$x$を基点とするループ$\alpha$に対し$\Phi([\alpha])=[\gamma^{-1}\cdot\alpha\cdot\gamma]$と定める。$\alpha\simeq\alpha'$なら連結のホモトピー不変性より$\gamma^{-1}\cdot\alpha\cdot\gamma\simeq\gamma^{-1}\cdot\alpha'\cdot\gamma$なので、$\Phi$は$\pi_1(X,x)$から$\pi_1(X,y)$への写像として定義される。
+    $\gamma\cdot\gamma^{-1}\simeq c_x$より$(\gamma^{-1}\cdot\alpha\cdot\gamma)\cdot(\gamma^{-1}\cdot\beta\cdot\gamma)\simeq\gamma^{-1}\cdot\alpha\cdot\beta\cdot\gamma$なので、$\Phi$は積を保つ。
+    $y$を基点とするループ$\beta$に対し$\Psi([\beta])=[\gamma\cdot\beta\cdot\gamma^{-1}]$と定める。$\gamma\cdot(\gamma^{-1}\cdot\alpha\cdot\gamma)\cdot\gamma^{-1}\simeq\alpha$と$\gamma^{-1}\cdot(\gamma\cdot\beta\cdot\gamma^{-1})\cdot\gamma\simeq\beta$より、$\Psi$は$\Phi$の逆写像である。よって$\Phi$は群の同型である。
+  strategy: Conjugate loops by a path joining the two base points.
+  sketch:
+  - 'setup: Choose a path γ from x to y by path-connectedness.'
+  - 'construct: Send the class of a loop α at x to the class of γ⁻¹·α·γ.'
+  - 'derive: The map is well defined because concatenation respects path homotopy.'
+  - 'derive: It is multiplicative because γ·γ⁻¹ is homotopic to the constant path.'
+  - 'conclude: Conjugating by γ⁻¹ gives the inverse, so the map is an isomorphism.'
+  openmath: (forall (X x y) (-> (and (path_connected_space X) (in x X) (in y X)) (group_isomorphic (fundamental_group X x) (fundamental_group X y))))
+  hard_negative:
+    statement: 任意の位相空間で、任意の2点を基点とする基本群は同型である。
+    reason: 弧状連結性が必要である。円周と一点の非交和では、円周上の点の基本群はℤで、孤立点の基本群は自明である。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] [PathConnectedSpace X] (x y : X), Nonempty (FundamentalGroup X x ≃* FundamentalGroup X y)
+  proof: |
+    by
+      intro X _ _ x y
+      exact ⟨FundamentalGroup.fundamentalGroupMulEquivOfPathConnected x y⟩
+- id: fundamental_group_map_functorial
+  kind: textbook
+  level: 3
+  topic: 基本群・関手性
+  statement: 連続写像が誘導する基本群の準同型は合成と恒等写像を保つ。すなわち$(g\circ f)_*=g_*\circ f_*$かつ$(\mathrm{id}_X)_*=\mathrm{id}$である。
+  statement_en: For continuous maps f from X to Y and g from Y to Z and a base point x, the induced homomorphisms on fundamental groups satisfy (g∘f)_* = g_*∘f_* and (id_X)_* = id.
+  assumptions:
+  - $X,Y,Z$は位相空間
+  - $f:X\to Y$と$g:Y\to Z$は連続
+  - $x\in X$
+  - $u\in\pi_1(X,x)$
+  quantifiers:
+  - 任意の連続写像$f,g$
+  - 任意の基点$x$
+  - 任意の$u\in\pi_1(X,x)$
+  conclusion: $(g\circ f)_*(u)=g_*(f_*(u))$かつ$(\mathrm{id}_X)_*(u)=u$である。
+  answer: |
+    $X,Y,Z$を位相空間、$f:X\to Y$と$g:Y\to Z$を連続写像、$x\in X$、$u\in\pi_1(X,x)$とする。誘導準同型$f_*:\pi_1(X,x)\to\pi_1(Y,f(x))$は、ループ$\alpha$の類$[\alpha]$を$[f\circ\alpha]$に写す。
+    $u=[\alpha]$とする。$f_*(u)=[f\circ\alpha]$であり、$g_*(f_*(u))=[g\circ(f\circ\alpha)]$である。写像の合成は結合的なので$g\circ(f\circ\alpha)=(g\circ f)\circ\alpha$であり、この類は$(g\circ f)_*(u)$である。また$\mathrm{id}_X\circ\alpha=\alpha$なので$(\mathrm{id}_X)_*(u)=u$である。
+  strategy: Check both identities on a representative loop.
+  sketch:
+  - 'setup: Represent p by a loop α at x.'
+  - 'derive: f_*(p) is the class of f∘α, so g_*(f_*(p)) is the class of g∘(f∘α).'
+  - 'derive: Associativity of composition identifies this with (g∘f)∘α.'
+  - 'conclude: The identity map fixes α, hence fixes its class.'
+  openmath: (forall (X Y Z f g x p) (-> (and (in f (continuous_maps X Y)) (in g (continuous_maps Y Z)) (in x X) (in p (fundamental_group X x))) (and (= (fn_value (induced_hom (map_compose g f) x) p) (fn_value (induced_hom g (fn_value f x)) (fn_value (induced_hom f x) p))) (= (fn_value (induced_hom (identity_map X) x) p) p))))
+  hard_negative:
+    statement: f_*が単射ならfも単射である。
+    reason: 誘導準同型の性質は写像自身の性質を導かない。ℝからℝへの定値写像は単射でないが、基本群が自明なのでf_*は単射である。
+  target: |
+    ∀ (X Y Z : Type*) [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z] (f : C(X, Y)) (g : C(Y, Z)) (x : X) (p : FundamentalGroup X x), FundamentalGroup.map (g.comp f) x p = FundamentalGroup.map g (f x) (FundamentalGroup.map f x p) ∧ FundamentalGroup.map (ContinuousMap.id X) x p = p
+  proof: |
+    by
+      intro X Y Z _ _ _ f g x p
+      obtain ⟨q⟩ := p
+      exact ⟨rfl, rfl⟩
+- id: simply_connected_iff_loops
+  kind: textbook
+  level: 3
+  topic: 単連結空間
+  statement: 位相空間$Y$が単連結であることと、$Y$が弧状連結で、任意のループが定値道に端点を固定してホモトピックであることは同値である。
+  statement_en: A space Y is simply connected if and only if it is path-connected and every loop at any base point is path homotopic to the constant path.
+  assumptions:
+  - $Y$は位相空間
+  quantifiers:
+  - 任意の位相空間$Y$
+  conclusion: $Y$が単連結であることと、$Y$が弧状連結で、任意の$x\in Y$と$x$を基点とする任意のループ$\gamma$について$\gamma\simeq c_x$であることは同値である。
+  answer: |
+    $Y$を位相空間とする。道$u,v$が端点を固定してホモトピックであることを$u\simeq v$と書き、$c_x$を$x$での定値道とする。$Y$が単連結であるとは、$Y$が空でなく、任意の2点$x,y$について$x$から$y$への道のホモトピー類がちょうど1つ存在することである。
+    $Y$が単連結であるとする。任意の2点を結ぶ道が存在し$Y$は空でないので、$Y$は弧状連結である。$x$を基点とするループ$\gamma$と$c_x$は$x$から$x$への道なので、同じ類に属し、$\gamma\simeq c_x$である。
+    逆に$Y$が弧状連結で、任意のループが定値道にホモトピックであるとする。弧状連結性より、$Y$は空でなく、任意の2点の間に道が少なくとも1つある。$p,q$を$x$から$y$への道とする。$p\cdot q^{-1}$は$x$を基点とするループなので$p\cdot q^{-1}\simeq c_x$である。連結の結合性、単位元と逆元の性質、ホモトピー不変性より、$p\simeq p\cdot(q^{-1}\cdot q)\simeq(p\cdot q^{-1})\cdot q\simeq c_x\cdot q\simeq q$である。よって道のホモトピー類はちょうど1つであり、$Y$は単連結である。
+  strategy: Reduce comparison of two paths to the loop formed by one path and the inverse of the other.
+  sketch:
+  - 'derive: Simply connected spaces are path-connected and any two paths with the same endpoints are homotopic.'
+  - 'derive: Applying this to a loop and the constant path gives the forward direction.'
+  - 'setup: For the converse take paths p and q from x to y.'
+  - 'derive: The loop p·q⁻¹ is homotopic to c_x, so p ≃ p·q⁻¹·q ≃ q.'
+  - 'conclude: Path-connectedness and uniqueness of path classes give simple connectivity.'
+  openmath: (forall (Y) (<-> (simply_connected_space Y) (and (path_connected_space Y) (forall (x c) (-> (and (in x Y) (in c (paths x x))) (path_homotopic c (path_refl x)))))))
+  hard_negative:
+    statement: 弧状連結な空間は単連結である。
+    reason: 円周は弧状連結だが、基本群がℤなので単連結でない。
+  target: |
+    ∀ (Y : Type*) [TopologicalSpace Y], SimplyConnectedSpace Y ↔ PathConnectedSpace Y ∧ ∀ (x : Y) (γ : Path x x), Path.Homotopic γ (Path.refl x)
+  proof: |
+    by
+      intro Y _
+      exact simply_connected_iff_loops_nullhomotopic
+- id: contractible_simply_connected
+  kind: gap
+  level: 3
+  topic: 単連結空間・可縮空間
+  statement: 可縮空間は単連結である。
+  statement_en: Every contractible space is simply connected.
+  assumptions:
+  - $Y$は可縮な位相空間
+  quantifiers:
+  - 任意の可縮空間$Y$
+  conclusion: $Y$は単連結である。
+  answer: |
+    $Y$を可縮な位相空間とする。$Y$は一点空間とホモトピー同値なので、ある点$c\in Y$と連続写像$H:[0,1]\times Y\to Y$で$H(0,y)=y$、$H(1,y)=c$となるものがある。道$u,v$が端点を固定してホモトピックであることを$u\simeq v$と書く。単連結であることは、弧状連結で任意のループが定値道に$\simeq$であることと同値なので、この2つを示す。
+    各$y\in Y$について$t\mapsto H(t,y)$は$y$から$c$への道である。よって$Y$は弧状連結である。
+    $\gamma$を$x$を基点とするループとし、$\sigma(t)=H(t,x)$とおく。$\sigma$は$x$から$c$への道である。$G:[0,1]^2\to Y$を$G(t,s)=H(t,\gamma(s))$で定める。$G(0,s)=\gamma(s)$、$G(1,s)=c$、$G(t,0)=G(t,1)=\sigma(t)$である。
+    正方形$[0,1]^2$内の、$(0,0)$から$(1,1)$への2つの折れ線を考える。$A$は$(t,s)=(0,0)$から$(0,1)$を経て$(1,1)$へ進み、$B$は$(0,0)$から$(1,0)$を経て$(1,1)$へ進むものとする。どちらも連結と同じ速さで進むようにパラメータをとる。$G\circ A=\gamma\cdot\sigma$、$G\circ B=\sigma\cdot c_c$である。正方形は凸なので、$(1-u)A(r)+uB(r)$は$A$から$B$への端点を固定したホモトピーであり、$G$と合成すると$\gamma\cdot\sigma\simeq\sigma\cdot c_c\simeq\sigma$を得る。
+    連結の結合性と逆元の性質より、$\gamma\simeq\gamma\cdot(\sigma\cdot\sigma^{-1})\simeq(\gamma\cdot\sigma)\cdot\sigma^{-1}\simeq\sigma\cdot\sigma^{-1}\simeq c_x$である。よって$Y$は単連結である。
+  strategy: Transfer simple connectivity from a point along a homotopy equivalence.
+  sketch:
+  - 'setup: Y is homotopy equivalent to a one-point space.'
+  - 'derive: A homotopy equivalence induces an equivalence of fundamental groupoids.'
+  - 'derive: The fundamental groupoid of a point has one object and one morphism.'
+  - 'conclude: So Y is nonempty with exactly one path class between any two points.'
+  openmath: (forall (Y) (-> (contractible_space Y) (simply_connected_space Y)))
+  hard_negative:
+    statement: 単連結空間は可縮である。
+    reason: 逆は成り立たない。2次元球面は単連結だが可縮でない。
+  target: |
+    ∀ (Y : Type*) [TopologicalSpace Y] [ContractibleSpace Y], SimplyConnectedSpace Y
+  proof: |
+    by
+      intro Y _ _
+      infer_instance
+- id: simply_connected_paths_unique
+  kind: gap
+  level: 3
+  topic: 単連結空間・道のホモトピー
+  statement: 単連結空間では、同じ端点をもつ2つの道は常に端点を固定してホモトピックであり、基本群は自明である。
+  statement_en: In a simply connected space, any two paths with the same endpoints are path homotopic and every fundamental group is trivial.
+  assumptions:
+  - $X$は単連結な位相空間
+  quantifiers:
+  - 任意の単連結空間$X$
+  - 任意の点$x,y$
+  - $x$から$y$への任意の道$p,q$
+  conclusion: $p$と$q$は端点を固定してホモトピックであり、$\pi_1(X,x)$の元は高々1つである。
+  answer: |
+    $X$を単連結な位相空間とする。単連結とは、$X$が空でなく、任意の2点$x,y$について$x$から$y$への道のホモトピー類がちょうど1つ存在することである。
+    $x,y\in X$とし、$p,q$を$x$から$y$への道とする。ホモトピー類は1つだけなので$p,q$は同じ類に属し、端点を固定してホモトピックである。
+    $y=x$の場合を考えると、$x$を基点とするループのホモトピー類は1つだけである。$\pi_1(X,x)$はこの類全体なので、元は高々1つであり、定値道の類だけからなる自明な群である。
+  strategy: Read off both claims from the uniqueness of path classes.
+  sketch:
+  - 'setup: Simple connectivity means exactly one path class between any two points.'
+  - 'derive: Two paths from x to y lie in the same class, so they are homotopic.'
+  - 'conclude: Taking y = x shows the fundamental group has only one element.'
+  openmath: (forall (X) (-> (simply_connected_space X) (and (forall (x y p q) (-> (and (in p (paths x y)) (in q (paths x y))) (path_homotopic p q))) (forall (x) (-> (in x X) (trivial_group (fundamental_group X x)))))))
+  hard_negative:
+    statement: 基本群が自明な空間では、任意の2点を結ぶ道が存在する。
+    reason: 弧状連結性は基本群の自明性から従わない。2点離散空間では基本群はどの基点でも自明だが、2点を結ぶ道はない。
+  target: |
+    ∀ (X : Type*) [TopologicalSpace X] [SimplyConnectedSpace X], (∀ (x y : X) (p q : Path x y), p.Homotopic q) ∧ ∀ x : X, Subsingleton (FundamentalGroup X x)
+  proof: |
+    by
+      intro X _ _
+      exact ⟨fun _ _ p q => SimplyConnectedSpace.paths_homotopic p q, fun _ => inferInstance⟩
+- id: covering_path_lifting
+  kind: textbook
+  level: 4
+  topic: 被覆写像・道の持ち上げ
+  statement: 被覆写像$p:E\to X$と道$\gamma:[0,1]\to X$、および$\gamma(0)=p(e)$となる点$e\in E$に対し、$e$を始点とする$\gamma$の持ち上げが一意に存在する。
+  statement_en: Let p from E to X be a covering map, γ a path in X and e a point of E with γ(0) = p(e). Then there is a unique continuous path Γ in E with p∘Γ = γ and Γ(0) = e.
+  assumptions:
+  - $E,X$は位相空間
+  - $p:E\to X$は被覆写像
+  - $\gamma:[0,1]\to X$は連続
+  - $e\in E$
+  - $\gamma(0)=p(e)$
+  quantifiers:
+  - 任意の被覆写像$p$
+  - 任意の道$\gamma$
+  - 任意の点$e$
+  conclusion: $p\circ\Gamma=\gamma$かつ$\Gamma(0)=e$を満たす連続写像$\Gamma:[0,1]\to E$が一意に存在する。
+  answer: |
+    $E,X$を位相空間、$p:E\to X$を被覆写像、$\gamma:[0,1]\to X$を連続写像、$e\in E$を$\gamma(0)=p(e)$を満たす点とする。被覆写像とは、$X$の各点が均等に被覆される開近傍$U$をもつ連続写像である。$U$が均等に被覆されるとは、$p^{-1}(U)$が互いに交わらない開集合の和であり、その各開集合（シート）$S$について$p|_S:S\to U$が同相写像であることをいう。
+    存在を示す。均等に被覆される開集合の$\gamma$による逆像は$[0,1]$の開被覆をなす。$[0,1]$はコンパクトなので、ルベーグの数の補題より分割$0=t_0<t_1<\dots<t_n=1$があり、各$\gamma([t_l,t_{l+1}])$は均等に被覆されるある開集合$U_l$に含まれる。$\Gamma(0)=e$とする。$[0,t_l]$上の連続写像$\Gamma$で$p\circ\Gamma=\gamma$となるものができたとする。$p(\Gamma(t_l))=\gamma(t_l)\in U_l$なので、$\Gamma(t_l)$を含む$p^{-1}(U_l)$のシート$S$がある。$[t_l,t_{l+1}]$上で$\Gamma=(p|_S)^{-1}\circ\gamma$と定める。$t_l$で値は一致するので、貼り合わせ補題より$\Gamma$は$[0,t_{l+1}]$上で連続であり、$p\circ\Gamma=\gamma$である。$n$段で$[0,1]$全体の持ち上げを得る。
+    一意性を示す。$\Gamma_1,\Gamma_2$を2つの持ち上げとし、$A=\{t\mid\Gamma_1(t)=\Gamma_2(t)\}$とおく。$0\in A$である。$t\in[0,1]$をとり、$\gamma(t)$の均等に被覆される開近傍$U$をとる。$t\in A$なら、$\Gamma_1(t)$を含むシート$S$について、$t$の近くで$\Gamma_1,\Gamma_2$はともに$S$に値をとる。$p|_S$は単射で$p\circ\Gamma_1=p\circ\Gamma_2$なので、$t$の近くで$\Gamma_1=\Gamma_2$である。$t\notin A$なら、$\Gamma_1(t),\Gamma_2(t)$は$p$での像が等しい異なる点なので異なるシートに属する。シートは交わらない開集合なので、$t$の近くで$\Gamma_1\neq\Gamma_2$である。よって$A$は開かつ閉である。$[0,1]$は連結なので$A=[0,1]$である。
+  strategy: Subdivide the interval so each piece lies in an evenly covered set, lift step by step, and use connectedness for uniqueness.
+  sketch:
+  - 'setup: Cover X by evenly covered open sets.'
+  - 'derive: Compactness of [0,1] gives a subdivision with each γ([t_i,t_{i+1}]) inside one such set.'
+  - 'construct: Inductively extend Γ using the local inverse of p on the sheet containing Γ(t_i).'
+  - 'derive: The resulting Γ is continuous with p∘Γ = γ and Γ(0) = e.'
+  - 'derive: The agreement set of two lifts is open and closed in [0,1] and contains 0.'
+  - 'conclude: Connectedness of [0,1] gives uniqueness.'
+  openmath: (forall (E X p c e) (-> (and (in p (continuous_maps E X)) (covering_map p) (in c (continuous_maps unit_interval X)) (in e E) (= (fn_value c 0) (fn_value p e))) (exists (h) (and (in h (continuous_maps unit_interval E)) (= (map_compose p h) c) (= (fn_value h 0) e) (forall (k) (-> (and (in k (continuous_maps unit_interval E)) (= (map_compose p k) c) (= (fn_value k 0) e)) (= k h)))))))
+  hard_negative:
+    statement: 局所同相写像p:E→Xなら、任意の道γとγ(0)=p(e)となるeについて持ち上げが存在する。
+    reason: 局所同相だけでは存在しない。開区間(0,1)からℝへの包含写像は局所同相だが、γ(0)=1/2からγ(1)=2へ進む道は持ち上がらない。
+  target: |
+    ∀ (E X : Type*) [TopologicalSpace E] [TopologicalSpace X] (p : E → X), IsCoveringMap p → ∀ (γ : C(unitInterval, X)) (e : E), γ 0 = p e → ∃! Γ : C(unitInterval, E), p ∘ Γ = γ ∧ Γ 0 = e
+  proof: |
+    by
+      intro E X _ _ p cov γ e h
+      exact ⟨cov.liftPath γ e h, ⟨cov.liftPath_lifts γ e h, cov.liftPath_zero γ e h⟩, fun Γ hΓ => (cov.eq_liftPath_iff' h).mpr hΓ⟩
+- id: covering_lift_uniqueness
+  kind: gap
+  level: 4
+  topic: 被覆写像・持ち上げの一意性
+  statement: 被覆写像$p:E\to X$と連結な空間$A$について、連続写像$g_1,g_2:A\to E$が$p\circ g_1=p\circ g_2$を満たし、1点で一致するならば$g_1=g_2$である。
+  statement_en: Let p from E to X be a covering map and A a preconnected space. If continuous maps g₁, g₂ from A to E satisfy p∘g₁ = p∘g₂ and agree at one point, then g₁ = g₂.
+  assumptions:
+  - $E,X,A$は位相空間
+  - $p:E\to X$は被覆写像
+  - $A$は連結
+  - $g_1,g_2:A\to E$は連続
+  - $p\circ g_1=p\circ g_2$
+  - ある点$a\in A$で$g_1(a)=g_2(a)$
+  quantifiers:
+  - 任意の被覆写像$p$
+  - 任意の連続写像$g_1,g_2$
+  - 任意の点$a$
+  conclusion: $g_1=g_2$である。
+  answer: |
+    $E,X,A$を位相空間、$p:E\to X$を被覆写像、$A$を連結空間、$g_1,g_2:A\to E$を$p\circ g_1=p\circ g_2$を満たす連続写像とし、ある点$a\in A$で$g_1(a)=g_2(a)$とする。被覆写像なので、$X$の各点は開近傍$U$で次を満たすものをもつ。$p^{-1}(U)$は互いに交わらない開集合（シート）の和であり、$p$は各シートから$U$への同相写像を与える。
+    $T=\{b\in A\mid g_1(b)=g_2(b)\}$とおく。$b\in A$をとり、$p(g_1(b))=p(g_2(b))$の上の開近傍$U$を上のようにとる。
+    $b\in T$の場合、$g_1(b)$を含むシート$S$をとると、$g_1^{-1}(S)\cap g_2^{-1}(S)$は$b$を含む開集合である。その上で$g_1,g_2$は$S$に値をとり、$p|_S$は単射で$p\circ g_1=p\circ g_2$なので、$g_1=g_2$である。よって$T$は開集合である。
+    $b\notin T$の場合、$g_1(b)\neq g_2(b)$は$p$での像が等しいので、異なるシート$S_1,S_2$に属する。$g_1^{-1}(S_1)\cap g_2^{-1}(S_2)$は$b$を含む開集合であり、その上で$g_1\neq g_2$である。よって$T^c$は開集合である。
+    $a\in T$なので$T$は空でなく、$A$は連結なので$T=A$である。
+  strategy: Show that the agreement set is open and closed using sheets over an evenly covered neighborhood.
+  sketch:
+  - 'setup: Let S be the set where g₁ and g₂ agree; it contains a.'
+  - 'derive: If g₁(b) = g₂(b), both maps stay in one sheet near b, where p is injective, so b is interior to S.'
+  - 'derive: If g₁(b) ≠ g₂(b), the values lie in different sheets, so b is interior to the complement.'
+  - 'conclude: S is nonempty, open and closed in a connected space, so S = A.'
+  openmath: (forall (A E p g h a) (-> (and (covering_map p) (preconnected_space A) (in g (continuous_maps A E)) (in h (continuous_maps A E)) (= (map_compose p g) (map_compose p h)) (in a A) (= (fn_value g a) (fn_value h a))) (= g h)))
+  hard_negative:
+    statement: Aが連結でなくても、1点で一致する2つの持ち上げは等しい。
+    reason: Aが2点離散空間で、pが2重被覆なら、1点で一致し他の点で異なる持ち上げが存在する。
+  target: |
+    ∀ (E X A : Type*) [TopologicalSpace E] [TopologicalSpace X] [TopologicalSpace A] [PreconnectedSpace A] (p : E → X) (g₁ g₂ : A → E), IsCoveringMap p → Continuous g₁ → Continuous g₂ → p ∘ g₁ = p ∘ g₂ → ∀ a, g₁ a = g₂ a → g₁ = g₂
+  proof: |
+    by
+      intro E X A _ _ _ _ p g₁ g₂ cov h₁ h₂ he a ha
+      exact cov.eq_of_comp_eq h₁ h₂ he a ha
+- id: chart_contains_point
+  kind: gap
+  level: 4
+  topic: 多様体・座標近傍
+  statement: 局所座標系をもつ空間の各点$x$は、$x$に付随するチャートの定義域に含まれ、その定義域と像はともに開集合である。
+  statement_en: In a charted space M modelled on H, each point x lies in the source of its preferred chart, x maps into the target, and both the source and the target are open.
+  assumptions:
+  - $H$は位相空間
+  - $M$は$H$をモデルとする局所座標系をもつ空間
+  - $x\in M$
+  quantifiers:
+  - 任意の位相空間$H,M$
+  - 任意の点$x$
+  conclusion: $x$に付随するチャート$\varphi_x$について、$x$は定義域に属し、$\varphi_x(x)$は像に属し、定義域は$M$の開集合、像は$H$の開集合である。
+  answer: |
+    $H$を位相空間、$M$を$H$をモデルとする局所座標系をもつ空間、$x\in M$とする。局所座標系の定義により、$M$の各点$x$にはチャート$\varphi_x$が1つ割り当てられ、その定義域は$x$を含む。チャートは、$M$の開集合と$H$の開集合の間の同相写像である。
+    したがって$\varphi_x$の定義域は$M$の開集合で$x$を含み、$\varphi_x$の像は$H$の開集合である。$x$は定義域の点なので、$\varphi_x(x)$は像に属する。
+  strategy: Unpack the definition of a charted space and of a partial homeomorphism.
+  sketch:
+  - 'setup: The structure assigns to each x a chart whose source contains x.'
+  - 'derive: A chart is a homeomorphism between open sets, so source and target are open.'
+  - 'conclude: The chart sends x into its target.'
+  openmath: (forall (M x) (-> (in x M) (and (in x (chart_source (chart_at M x))) (open_set (chart_source (chart_at M x))) (in (fn_value (chart_at M x) x) (chart_target (chart_at M x))) (open_set (chart_target (chart_at M x))))))
+  hard_negative:
+    statement: 各点のチャートの定義域はM全体である。
+    reason: チャートは局所的な同相写像である。2次元球面をℝ²上の多様体と見ると、球面はコンパクトで平面の開集合と同相でないので、1つのチャートでは全体を覆えない。
+  target: |
+    ∀ (H M : Type*) [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M] (x : M), x ∈ (chartAt H x).source ∧ IsOpen (chartAt H x).source ∧ chartAt H x x ∈ (chartAt H x).target ∧ IsOpen (chartAt H x).target
+  proof: |
+    by
+      intro H M _ _ _ x
+      exact ⟨mem_chart_source H x, (chartAt H x).open_source, mem_chart_target H x, (chartAt H x).open_target⟩
+- id: mfderiv_chain_rule
+  kind: gap
+  level: 4
+  topic: 多様体・接写像の連鎖律
+  statement: 局所座標系をもつ空間（座標変換の滑らかさは仮定せず、多様体とは限らない）の間の写像$f,g$がそれぞれ$x$と$f(x)$で微分可能なら、$g\circ f$は$x$で微分可能で、接写像について$d(g\circ f)_x=dg_{f(x)}\circ df_x$が成り立つ。微分可能性と接写像は、各点に付随するチャートでの座標表示で定める。
+  statement_en: Let f and g be maps between charted spaces, where smoothness of the transition maps is not assumed, so the spaces need not be manifolds. If f is differentiable at x and g is differentiable at f(x) in the preferred charts, then g∘f is differentiable at x and d(g∘f)_x = dg_{f(x)}∘df_x.
+  assumptions:
+  - $E_1,E_2,E_3$は実ノルム空間
+  - $I_l:H_l\to E_l$は角つきモデル（$l=1,2,3$）
+  - $M_l$は$H_l$をモデルとする局所座標系をもつ空間
+  - $f:M_1\to M_2$は$x$で微分可能
+  - $g:M_2\to M_3$は$f(x)$で微分可能
+  quantifiers:
+  - 任意の写像$f,g$
+  - 任意の点$x\in M_1$
+  conclusion: $g\circ f$は$x$で微分可能で、$d(g\circ f)_x=dg_{f(x)}\circ df_x$である。
+  answer: |
+    $l=1,2,3$について$E_l$を実ノルム空間、$H_l$を位相空間、$I_l:H_l\to E_l$を角つきモデル、$M_l$を$H_l$をモデルとする局所座標系をもつ空間とする。座標変換の滑らかさは仮定しない。$f:M_1\to M_2$は$x\in M_1$で、$g:M_2\to M_3$は$f(x)$で微分可能であるとする。
+    定義を確認する。$M_l$の点$y$に対し、$y$に付随するチャートと$I_l$の合成を$\varphi^l_y$と書く。$a=\varphi^1_x(x)$、$b=\varphi^2_{f(x)}(f(x))$とおき、$\tilde f=\varphi^2_{f(x)}\circ f\circ(\varphi^1_x)^{-1}$、$\tilde g=\varphi^3_{g(f(x))}\circ g\circ(\varphi^2_{f(x)})^{-1}$とする。$f$が$x$で微分可能であるとは、$f$が$x$で連続で、$\tilde f$が集合$\operatorname{range}I_1$内で$a$で微分可能であることをいう。接写像$df_x:E_1\to E_2$はその微分である。$g$についても同様である。角つきモデルの定義より、$\operatorname{range}I_l$内での微分は一意に定まる。
+    $g\circ f$は連続写像の合成として$x$で連続である。$u\in\operatorname{range}I_1$が$a$に近いとき、$(\varphi^1_x)^{-1}(u)$は$x$に近い。$f$の$x$での連続性より、その$f$による像は$\varphi^2_{f(x)}$の定義域に入る。その範囲では$(\varphi^2_{f(x)})^{-1}\circ\varphi^2_{f(x)}$が恒等写像なので、$g\circ f$の座標表示は$a$の近くの$\operatorname{range}I_1$上で$\tilde g\circ\tilde f$に等しい。
+    $\tilde f$は$\operatorname{range}I_1$の点を$\operatorname{range}I_2$の点に写し、$\tilde f(a)=b$である。部分集合内の微分についての連鎖律より、$\tilde g\circ\tilde f$は$\operatorname{range}I_1$内で$a$で微分可能で、その微分は$dg_{f(x)}\circ df_x$である。微分の一意性より、これが$d(g\circ f)_x$に等しい。
+  strategy: Reduce to the chain rule in normed spaces through chart representations.
+  sketch:
+  - 'setup: Choose the preferred charts at x, f(x) and g(f(x)).'
+  - 'translate: Differentiability means the chart representations of f and g are differentiable.'
+  - 'derive: The representation of g∘f is the composite of the two representations.'
+  - 'apply_theorem: The chain rule in normed spaces gives differentiability and the composite derivative.'
+  - 'conclude: The tangent map is the derivative of the representation, so the formula follows.'
+  openmath: (forall (f g x) (-> (and (mdifferentiable_at f x) (mdifferentiable_at g (fn_value f x))) (and (mdifferentiable_at (map_compose g f) x) (= (mfderiv (map_compose g f) x) (map_compose (mfderiv g (fn_value f x)) (mfderiv f x))))))
+  hard_negative:
+    statement: g∘fがxで微分可能ならfはxで微分可能である。
+    reason: gが定値写像ならg∘fは常に微分可能だが、fは微分可能とは限らない。
+  target: |
+    ∀ (E E' E'' H H' H'' M M' M'' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup E'] [NormedSpace ℝ E'] [NormedAddCommGroup E''] [NormedSpace ℝ E''] [TopologicalSpace H] [TopologicalSpace H'] [TopologicalSpace H''] (I : ModelWithCorners ℝ E H) (I' : ModelWithCorners ℝ E' H') (I'' : ModelWithCorners ℝ E'' H'') [TopologicalSpace M] [ChartedSpace H M] [TopologicalSpace M'] [ChartedSpace H' M'] [TopologicalSpace M''] [ChartedSpace H'' M''] (f : M → M') (g : M' → M'') (x : M), MDifferentiableAt I I' f x → MDifferentiableAt I' I'' g (f x) → MDifferentiableAt I I'' (g ∘ f) x ∧ mfderiv I I'' (g ∘ f) x = (mfderiv I' I'' g (f x)).comp (mfderiv I I' f x)
+  proof: |
+    by
+      intro E E' E'' H H' H'' M M' M'' _ _ _ _ _ _ _ _ _ I I' I'' _ _ _ _ _ _ f g x hf hg
+      exact ⟨hg.comp x hf, mfderiv_comp x hg hf⟩
+- id: mfderiv_id_const
+  kind: gap
+  level: 4
+  topic: 多様体・接写像
+  statement: 局所座標系をもつ空間（座標変換の滑らかさは仮定せず、多様体とは限らない）の恒等写像の接写像は接空間の恒等写像であり、定値写像の接写像は零写像である。接写像は、各点に付随するチャートでの座標表示の微分で定める。
+  statement_en: On charted spaces, where smoothness of the transition maps is not assumed, so the spaces need not be manifolds, the tangent map in the preferred charts of the identity at x is the identity of the tangent space at x, and the tangent map of a constant map is zero.
+  assumptions:
+  - $E_1,E_2$は実ノルム空間
+  - $I_l:H_l\to E_l$は角つきモデル（$l=1,2$）
+  - $M_l$は$H_l$をモデルとする局所座標系をもつ空間
+  - $x\in M_1$
+  - $c\in M_2$
+  quantifiers:
+  - 任意の点$x\in M_1$
+  - 任意の点$c\in M_2$
+  conclusion: $M_1$の恒等写像の$x$での接写像は恒等写像であり、$c$への定値写像の$x$での接写像は$0$である。
+  answer: |
+    $l=1,2$について$E_l$を実ノルム空間、$H_l$を位相空間、$I_l:H_l\to E_l$を角つきモデル、$M_l$を$H_l$をモデルとする局所座標系をもつ空間とし、$x\in M_1$、$c\in M_2$とする。$M_l$の点$y$に付随するチャートと$I_l$の合成を$\varphi^l_y$と書き、$a=\varphi^1_x(x)$とする。写像$h$の$x$での接写像は、座標表示$\varphi_{h(x)}\circ h\circ(\varphi^1_x)^{-1}$の、$\operatorname{range}I_1$内での$a$における微分である。角つきモデルの定義より、この微分は一意に定まる。
+    恒等写像の座標表示は$\varphi^1_x\circ(\varphi^1_x)^{-1}$であり、$a$の近くの$\operatorname{range}I_1$上で恒等写像に等しい。恒等写像の微分は恒等写像なので、接写像は恒等写像である。
+    $c$への定値写像の座標表示は、定数$\varphi^2_c(c)$をとる定値写像である。定値写像の微分は$0$なので、接写像は零写像である。
+  strategy: Compute both tangent maps from their chart representations.
+  sketch:
+  - 'translate: Write the maps in the preferred charts at x and at the value point.'
+  - 'derive: The identity map is represented near x by the identity, whose derivative is the identity.'
+  - 'derive: A constant map is represented by a constant, whose derivative is zero.'
+  - 'conclude: The tangent maps are as claimed.'
+  openmath: (forall (M N x c) (-> (and (in x M) (in c N)) (and (= (mfderiv (identity_map M) x) (identity_map (tangent_space M x))) (= (mfderiv (constant_map M c) x) zero_linear_map))))
+  hard_negative:
+    statement: 接写像が至るところ零写像なら、写像は定値写像である。
+    reason: 定義域の連結性が必要である。2つの連結成分をもつ多様体で、成分ごとに異なる定数をとる写像は接写像が零だが定値でない。
+  target: |
+    ∀ (E E' H H' M M' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup E'] [NormedSpace ℝ E'] [TopologicalSpace H] [TopologicalSpace H'] (I : ModelWithCorners ℝ E H) (I' : ModelWithCorners ℝ E' H') [TopologicalSpace M] [ChartedSpace H M] [TopologicalSpace M'] [ChartedSpace H' M'] (x : M) (c : M'), mfderiv I I (id : M → M) x = ContinuousLinearMap.id ℝ (TangentSpace I x) ∧ mfderiv I I' (fun _ : M => c) x = 0
+  proof: |
+    by
+      intro E E' H H' M M' _ _ _ _ _ _ I I' _ _ _ _ x c
+      exact ⟨mfderiv_id, mfderiv_const⟩
+- id: mfderiv_eq_fderiv_normed
+  kind: gap
+  level: 4
+  topic: 多様体・ノルム空間上の微分
+  statement: ノルム空間を自分自身をモデルとする多様体と見ると、多様体としての微分可能性はフレシェ微分可能性と同値であり、$x$でフレシェ微分可能なとき、接写像はフレシェ微分に一致する。
+  statement_en: For a map f between real normed spaces viewed as manifolds over themselves, manifold differentiability at x is equivalent to Fréchet differentiability at x, and when f is Fréchet differentiable at x the tangent map equals the Fréchet derivative.
+  assumptions:
+  - $E,F$は実ノルム空間
+  - $f:E\to F$は写像
+  - $x\in E$
+  quantifiers:
+  - 任意の写像$f$
+  - 任意の点$x$
+  conclusion: $f$の$x$での多様体としての微分可能性はフレシェ微分可能性と同値であり、$f$が$x$でフレシェ微分可能なら$x$での接写像はフレシェ微分に等しい。
+  answer: |
+    $E,F$を実ノルム空間、$f:E\to F$を写像、$x\in E$とする。$E,F$を自分自身をモデルとする多様体と見るとき、モデルとチャートはともに恒等写像であり、$\operatorname{range}I=E$である。したがって$f$の座標表示は$f$自身である。
+    多様体としての微分可能性の定義は、$f$が$x$で連続で、座標表示が$\operatorname{range}I$内で微分可能であることである。ここでは「$f$が$x$で連続で、かつ$f$が$x$でフレシェ微分可能」となる。フレシェ微分可能なら連続なので、これはフレシェ微分可能性と同値である。
+    $f$が$x$でフレシェ微分可能なとき、接写像は座標表示の$\operatorname{range}I=E$内での微分なので、$f$の$x$でのフレシェ微分に等しい。
+  strategy: The charts are identities, so the chart representation is f itself.
+  sketch:
+  - 'setup: On a normed space viewed as a manifold over itself every preferred chart is the identity.'
+  - 'translate: The chart representation of f is f.'
+  - 'derive: Manifold differentiability reduces to continuity at x plus Fréchet differentiability.'
+  - 'derive: Fréchet differentiability already implies continuity.'
+  - 'conclude: The two notions and the two derivatives coincide.'
+  openmath: (forall (E F f x) (-> (and (normed_space E) (normed_space F)) (and (<-> (mdifferentiable_at f x) (frechet_differentiable_at f x)) (-> (frechet_differentiable_at f x) (= (mfderiv f x) (frechet_derivative f x))))))
+  hard_negative:
+    statement: ノルム空間の間の写像について、多様体としての微分可能性はガトー微分可能性と同値である。
+    reason: ガトー微分可能性はフレシェ微分可能性より弱い。f(x,y)=x³y/(x⁶+y²), f(0,0)=0は原点でガトー微分可能だが、曲線y=x³に沿ってfの値が1/2なので原点で連続でない。
+  target: '∀ (E E'' : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup E''] [NormedSpace ℝ E''] (f : E → E'') (x : E), (MDifferentiableAt (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E'') f x ↔ DifferentiableAt ℝ f x) ∧ (DifferentiableAt ℝ f x → mfderiv (modelWithCornersSelf ℝ E) (modelWithCornersSelf ℝ E'') f x = fderiv ℝ f x)'
+  proof: |-
+    by
+      intro E E' _ _ _ _ f x
+      exact ⟨mdifferentiableAt_iff_differentiableAt, fun _ => mfderiv_eq_fderiv⟩
+- id: smooth_bump_exists
+  kind: textbook
+  level: 4
+  topic: 微分構造・隆起関数
+  statement: 有限次元実ノルム空間の点$x$の近傍$s$に対し、値が$[0,1]$に入り$f(x)=1$で、台がコンパクトかつ$s$に含まれる$C^\infty$関数$f$が存在する。
+  statement_en: For a neighborhood s of a point x in a finite-dimensional real normed space, there is a C^∞ function f with values in [0,1], f(x) = 1, and compact support contained in s.
+  assumptions:
+  - $E$は有限次元実ノルム空間
+  - $x\in E$
+  - $s$は$x$の近傍
+  quantifiers:
+  - 任意の有限次元実ノルム空間$E$
+  - 任意の点$x$と近傍$s$
+  conclusion: $C^\infty$関数$f:E\to\mathbb{R}$で、台（$f\neq0$となる点全体の閉包）がコンパクトかつ$s$に含まれ、値が$[0,1]$に入り、$f(x)=1$となるものが存在する。
+  answer: |
+    $E$を有限次元実ノルム空間、$x\in E$、$s$を$x$の近傍とする。$E$の基底を1つとり、その座標についてのユークリッドノルムを$|\cdot|$と書く。有限次元ではすべてのノルムは同値なので、$|\cdot|$の定める位相はもとの位相に等しく、$C^\infty$であることの意味も変わらない。よって$d>0$で、閉球$\overline{B}=\{y\mid|y-x|\leq d\}$が$s$に含まれるものがとれる。$\overline{B}$は有界閉集合なのでコンパクトである。
+    $\lambda:\mathbb{R}\to\mathbb{R}$を、$t\leq0$で$\lambda(t)=0$、$t>0$で$\lambda(t)=e^{-1/t}$と定める。$\lambda$は$C^\infty$である。$\rho(t)=\lambda(t)/(\lambda(t)+\lambda(1-t))$とおく。$t>0$または$1-t>0$なので分母は正であり、$\rho$は$C^\infty$で値は$[0,1]$に入る。$t\leq0$で$\rho(t)=0$、$t\geq1$で$\rho(t)=1$である。
+    $f(y)=\rho(2-2|y-x|/d)$とおく。値は$[0,1]$に入り、$|y-x|\leq d/2$で$f(y)=1$、$|y-x|\geq d$で$f(y)=0$である。特に$f(x)=1$である。$|\cdot|^2$は多項式なので、$|\cdot|$は$0$以外で$C^\infty$である。よって$f$は$y\neq x$で$C^\infty$であり、$x$の近くでは定数$1$なので$C^\infty$である。$f\neq0$となる点は$|y-x|<d$を満たすので、台は$\overline{B}$に含まれる。台は$\overline{B}$の閉部分集合なのでコンパクトであり、$s$に含まれる。
+  strategy: Build a radial cutoff from the function e^{-1/t} after passing to a Euclidean norm.
+  sketch:
+  - 'setup: Transfer to a Euclidean norm using finite dimensionality and choose a closed ball in s.'
+  - 'construct: From e^{-1/t} build a smooth ρ that is 0 for t ≤ 0 and 1 for t ≥ 1.'
+  - 'construct: Define f(y) = ρ(2 - 2‖y-x‖/d).'
+  - 'derive: f equals 1 near x, vanishes outside the ball, and is smooth since the norm is smooth away from x.'
+  - 'conclude: Its support is a closed ball, which is compact in finite dimensions and lies in s.'
+  openmath: (forall (E s x) (-> (and (finite_dim_space E) (normed_space E) (in x (interior_of s))) (exists (f) (and (smooth_function f) (subset (topological_support f) s) (compact_support f) (forall (y) (and (<= 0 (fn_value f y)) (<= (fn_value f y) 1))) (= (fn_value f x) 1)))))
+  hard_negative:
+    statement: 同じ条件で、fを実解析的にとることもできる。
+    reason: 連結な領域で実解析的な関数が開集合上で0なら全体で0である。Eの次元が1以上なら、コンパクト台で0でない実解析的関数は存在しない。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] (s : Set E) (x : E), s ∈ nhds x → ∃ f : E → ℝ, tsupport f ⊆ s ∧ HasCompactSupport f ∧ ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) f ∧ Set.range f ⊆ Set.Icc 0 1 ∧ f x = 1
+  proof: |
+    by
+      intro E _ _ _ s x hs
+      exact exists_contDiff_tsupport_subset (n := ⊤) hs
+- id: smooth_partition_of_unity_exists
+  kind: named
+  level: 4
+  topic: 微分構造・1の分割
+  statement: 有限次元モデルをもつハウスドルフで$\sigma$コンパクトな$C^\infty$多様体$M$の閉集合$s$と、$s$を覆う開集合族$(U_i)_{i\in\iota}$に対し、$(U_i)$に従属する$s$上の滑らかな1の分割が存在する。
+  statement_en: Let M be a Hausdorff σ-compact smooth manifold modelled on a finite-dimensional real space, s a closed subset and U a family of open sets covering s. Then there is a smooth partition of unity on s subordinate to U.
+  assumptions:
+  - $E$は有限次元実ノルム空間
+  - $I:H\to E$は角つきモデル
+  - $M$は$I$をモデルとする$C^\infty$多様体
+  - $M$はハウスドルフかつ$\sigma$コンパクト
+  - $s$は$M$の閉集合
+  - $(U_i)_{i\in\iota}$は$M$の開集合の族
+  - $s\subseteq\bigcup_{i\in\iota}U_i$
+  quantifiers:
+  - 任意の閉集合$s$
+  - 任意の添字集合$\iota$と開集合族$(U_i)_{i\in\iota}$
+  conclusion: $C^\infty$関数$f_i:M\to[0,1]$の族で、台の族が局所有限、各$f_i$の台が$U_i$に含まれ、$M$上で$\sum_if_i\leq1$、$s$上で$\sum_if_i=1$となるものが存在する。
+  answer: |
+    $E$を有限次元実ノルム空間、$H$を位相空間、$I:H\to E$を角つきモデル、$M$を$I$をモデルとするハウスドルフかつ$\sigma$コンパクトな$C^\infty$多様体とする。$s$を$M$の閉集合、$(U_i)_{i\in\iota}$を$s$を覆う$M$の開集合の族とする。関数の台とは、関数の値が$0$でない点全体の閉包である。
+    次の2つの標準的事実を使う。$I$は$H$から閉集合$\operatorname{range}I$への同相写像である。また$E$の点$a$と$a$を含む開集合$O$に対し、$C^\infty$関数$b:E\to[0,1]$で、$a$の近くで$1$をとり、台がコンパクトかつ$O$に含まれるものが存在する。
+    第1段階として、$x\in M$と$x$を含む開集合$W$に対し、$C^\infty$関数$h:M\to[0,1]$で、$x$の開近傍の上で$1$をとり、台がコンパクトかつ$W$に含まれるものを作る。$x$に付随するチャートと$I$の合成を$\varphi$とし、その定義域を$M_x$とする。$\varphi$は$M_x$上で$C^\infty$であり、$M_x$から$\operatorname{range}I$の相対開集合への同相写像である。よって$E$の開集合$O$で$O\cap\operatorname{range}I=\varphi(M_x\cap W)$となるものがある。$a=\varphi(x)$と$O$に対する$b$をとり、$C$を$b$の台と$\operatorname{range}I$の共通部分とする。$C$はコンパクトで$\varphi(M_x\cap W)$に含まれるので、$C'=\varphi^{-1}(C)$は$M_x\cap W$に含まれるコンパクト集合であり、$M$はハウスドルフなので閉集合である。$M_x$上で$h=b\circ\varphi$、$M\setminus C'$上で$h=0$と定める。$M_x\setminus C'$では$b\circ\varphi=0$なので定義は整合し、$h$は2つの開集合上でそれぞれ$C^\infty$である。$h$の台は$C'$に含まれる。特に$C'$は$x$のコンパクトな近傍なので、$M$は局所コンパクトである。
+    第2段階として、コンパクト集合の増大列を作る。$M=\bigcup_nL_n$を$L_n$がコンパクトとなるようにとる。$K_{-1}=K_0=\emptyset$とする。$K_{n+1}$を、コンパクト集合$K_n\cup L_n$を覆う有限個のコンパクト近傍の和とする。すると$K_n\subseteq\operatorname{int}K_{n+1}$であり、$\bigcup_nK_n=M$である。$n\geq0$について$A_n=s\cap(K_{n+1}\setminus\operatorname{int}K_n)$、$W_n=\operatorname{int}K_{n+2}\setminus K_{n-1}$とおく。$A_n$はコンパクトで、$W_n$は開集合で、$A_n\subseteq W_n$である。$x\in s$について$x\in K_{n+1}$となる最小の$n$をとると$x\in A_n$なので、$s=\bigcup_nA_n$である。
+    第3段階として、関数の族を選ぶ。$x\in A_n$に対し$x\in U_{i(x)}$となる添字$i(x)$を選び、$W=U_{i(x)}\cap W_n$に第1段階を適用して$h_x$を得る。$h_x=1$となる$x$の開近傍全体は$A_n$を覆うので、有限個で覆える。各$n$で選んだ有限個の関数を順に並べて$h_1,h_2,\dots$とし、対応する添字を$i_1,i_2,\dots$とする。$h_j$の台は$U_{i_j}$に含まれる。$s$の各点である$h_j$が$1$をとる。この族の台は局所有限である。実際、任意の点$y$はある$N$について$\operatorname{int}K_{N+1}$に属する。$n\geq N+2$なら$W_n$は$\operatorname{int}K_{N+1}$と交わらず、$n\leq N+1$の範囲の関数は有限個だからである。
+    第4段階として、$g_j=h_j\prod_{k<j}(1-h_k)$とおく。$g_j$は$C^\infty$で、$0\leq g_j\leq1$であり、台は$h_j$の台に含まれる。帰納法より$\sum_{j\leq m}g_j=1-\prod_{j\leq m}(1-h_j)$である。局所有限性より各点の近くで和と積は有限個の項だけの計算になるので、$\sum_jg_j=1-\prod_j(1-h_j)$は$C^\infty$で、値は$1$以下である。$s$の点ではある$h_j$が$1$なので、積は$0$で和は$1$である。
+    第5段階として、$f_i=\sum_{j:\,i_j=i}g_j$とおく。局所有限な和なので$f_i$は$C^\infty$で、$0\leq f_i\leq1$である。局所有限な閉集合族の和集合は閉集合なので、$f_i$の台は$g_j$（$i_j=i$）の台の和集合に含まれ、したがって$U_i$に含まれる。一点の近くで0でない$g_j$は有限個なので、$(f_i)$の台も局所有限である。$\sum_if_i=\sum_jg_j$なので、$M$上で$\sum_if_i\leq1$、$s$上で$\sum_if_i=1$である。
+  strategy: Refine by locally finite smooth bump functions, then normalize by a telescoping product.
+  sketch:
+  - 'setup: M is locally compact, σ-compact and Hausdorff, hence paracompact.'
+  - 'construct: Choose smooth bump functions near each point of s, supported inside some U_i.'
+  - 'derive: Extract a locally finite subfamily whose interiors of level sets cover s.'
+  - 'construct: Define f_j = g_j ∏_{k<j}(1 - g_k), which telescopes to a sum 1 on s.'
+  - 'derive: Local finiteness makes the sums and products smooth.'
+  - 'conclude: Group the functions by index i to get a partition subordinate to U.'
+  openmath: (forall (E M S U) (-> (and (finite_dim_space E) (smooth_manifold_modeled_on M E) (hausdorff_space M) (sigma_compact_space M) (closed_set S) (open_cover_of U S)) (exists (f) (and (smooth_partition_of_unity f S) (subordinate_to f U)))))
+  hard_negative:
+    statement: 同じ条件で、ハウスドルフ性を除いても滑らかな1の分割が存在する。
+    reason: 原点が2つある直線では2つの原点を連続関数で分離できず、開被覆に従属する1の分割は存在しない。
+  target: |
+    ∀ (ι E H M : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] [TopologicalSpace H] (I : ModelWithCorners ℝ E H) [TopologicalSpace M] [ChartedSpace H M] [IsManifold I ((⊤ : ℕ∞) : WithTop ℕ∞) M] [T2Space M] [SigmaCompactSpace M] (s : Set M) (U : ι → Set M), IsClosed s → (∀ i, IsOpen (U i)) → s ⊆ ⋃ i, U i → ∃ f : SmoothPartitionOfUnity ι I M s, f.IsSubordinate U ∧ ∀ x ∈ s, ∑ᶠ i, f i x = 1
+  proof: |
+    by
+      intro ι E H M _ _ _ _ I _ _ _ _ _ s U hs hU hc
+      obtain ⟨f, hf⟩ := SmoothPartitionOfUnity.exists_isSubordinate I hs U hU hc
+      exact ⟨f, hf, fun x hx => f.sum_eq_one hx⟩
+- id: law_of_cosines_angle
+  kind: named
+  level: high
+  topic: ユークリッド幾何・余弦定理
+  statement: 実内積空間上のアフィン空間の3点$a,b,c$について、$|ac|^2=|ab|^2+|cb|^2-2|ab||cb|\cos\angle abc$が成り立つ。
+  statement_en: For points a, b, c of a real inner product (Euclidean affine) space, |ac|² = |ab|² + |cb|² - 2|ab||cb|cos∠abc.
+  assumptions:
+  - $V$は実内積空間
+  - $P$は$V$上のアフィン空間
+  - $a,b,c\in P$
+  quantifiers:
+  - 任意の3点$a,b,c$
+  conclusion: $|ac|^2=|ab|^2+|cb|^2-2|ab||cb|\cos\angle abc$である。
+  answer: |
+    $V$を実内積空間、$P$を$V$上のアフィン空間、$a,b,c\in P$とする。$|xy|$は2点$x,y$の距離$\|x-y\|$を表し、$x-y\in V$は2点の差のベクトルである。$a\neq b$かつ$c\neq b$のとき、$\angle abc\in[0,\pi]$は$\langle a-b,c-b\rangle=|ab||cb|\cos\angle abc$で定まる。
+    $u=a-b$、$v=c-b$とおくと$a-c=u-v$である。内積を展開すると$|ac|^2=\|u-v\|^2=\|u\|^2+\|v\|^2-2\langle u,v\rangle$である。
+    $u\neq0$かつ$v\neq0$なら、$\langle u,v\rangle=|ab||cb|\cos\angle abc$を代入して主張の等式を得る。$u=0$または$v=0$なら、$\langle u,v\rangle=0$であり、右辺の第3項も$|ab||cb|=0$より$\angle abc$の値によらず$0$なので、等式はそのまま成り立つ。
+  strategy: Expand the squared norm of a difference of vectors from b.
+  sketch:
+  - 'setup: Put u = a - b and v = c - b, so a - c = u - v.'
+  - 'derive: Expanding gives |u-v|² = |u|² + |v|² - 2⟨u,v⟩.'
+  - 'apply_theorem: The definition of angle gives ⟨u,v⟩ = |u||v|cos∠abc.'
+  - 'conclude: Substituting yields the law of cosines.'
+  openmath: (forall (a b c) (= (^ (dist_of a c) 2) (- (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2)) (* 2 (dist_of a b) (dist_of c b) (cos (euclid_angle a b c))))))
+  hard_negative:
+    statement: 余弦定理の符号を取り違えた等式$|ac|^2=|ab|^2+|cb|^2+2|ab||cb|\cos\angle abc$が常に成り立つ。
+    reason: 正三角形で$|ab|=|cb|=|ac|=1$、$\angle abc=\pi/3$とすると、左辺は$1$、右辺は$1+1+2\cdot\frac12=3$であり一致しない。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c : P), dist a c ^ 2 = dist a b ^ 2 + dist c b ^ 2 - 2 * dist a b * dist c b * Real.cos (EuclideanGeometry.angle a b c)
+  proof: |
+    by
+      intro V P _ _ _ _ a b c
+      simp only [sq]
+      exact EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_sub_two_mul_dist_mul_dist_mul_cos_angle a b c
+- id: parallelogram_law_norm
+  kind: gap
+  level: 2
+  topic: ユークリッド幾何・中線定理
+  statement: 実内積空間のベクトル$x,y$について$\|x+y\|^2+\|x-y\|^2=2(\|x\|^2+\|y\|^2)$が成り立つ。
+  statement_en: For vectors x, y in a real inner product space, ‖x+y‖² + ‖x-y‖² = 2(‖x‖² + ‖y‖²).
+  assumptions:
+  - $V$は実内積空間
+  - $x,y\in V$
+  quantifiers:
+  - 任意のベクトル$x,y$
+  conclusion: $\|x+y\|^2+\|x-y\|^2=2(\|x\|^2+\|y\|^2)$である。
+  answer: |
+    $V$を実内積空間、$x,y\in V$とする。内積の双線形性と対称性より、$\|x+y\|^2=\|x\|^2+2\langle x,y\rangle+\|y\|^2$、$\|x-y\|^2=\|x\|^2-2\langle x,y\rangle+\|y\|^2$である。2式を足すと$\langle x,y\rangle$の項が打ち消され、主張の等式を得る。
+  strategy: Expand both squared norms by bilinearity and add them.
+  sketch:
+  - 'derive: ‖x+y‖² = ‖x‖² + 2⟨x,y⟩ + ‖y‖².'
+  - 'derive: ‖x-y‖² = ‖x‖² - 2⟨x,y⟩ + ‖y‖².'
+  - 'conclude: Adding cancels the inner product terms.'
+  openmath: (forall (V x y) (-> (and (inner_product_space V) (in x V) (in y V)) (= (+ (^ (norm (+ x y)) 2) (^ (norm (- x y)) 2)) (* 2 (+ (^ (norm x) 2) (^ (norm y) 2))))))
+  hard_negative:
+    statement: 任意の実ノルム空間で同じ等式が成り立つ。
+    reason: ℝ²のℓ^∞ノルムでx=(1,0), y=(0,1)とすると左辺は2、右辺は4である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (x y : V), ‖x + y‖ ^ 2 + ‖x - y‖ ^ 2 = 2 * (‖x‖ ^ 2 + ‖y‖ ^ 2)
+  proof: |
+    by
+      intro V _ _ x y
+      exact parallelogram_law_with_norm ℝ x y
+- id: pythagoras_angle_iff
+  kind: named
+  level: high
+  topic: ユークリッド幾何・三平方の定理
+  statement: 実内積空間上のアフィン空間の点$a,b,c$が$a\neq b$、$c\neq b$を満たすとき、$|ac|^2=|ab|^2+|cb|^2$であることと$\angle abc=\pi/2$であることは同値である。
+  statement_en: For points with a ≠ b and c ≠ b, |ac|² = |ab|² + |cb|² holds if and only if ∠abc = π/2.
+  assumptions:
+  - $V$は実内積空間
+  - $P$は$V$上のアフィン空間
+  - $a\neq b$
+  - $c\neq b$
+  quantifiers:
+  - 任意の3点$a,b,c$
+  conclusion: $|ac|^2=|ab|^2+|cb|^2$と$\angle abc=\pi/2$は同値である。
+  answer: |
+    $V$を実内積空間、$P$を$V$上のアフィン空間、$a,b,c\in P$とし、$a\neq b$、$c\neq b$とする。$|xy|$は2点の距離、$\angle abc\in[0,\pi]$はベクトル$a-b,c-b$のなす角である。
+    余弦定理より$|ac|^2=|ab|^2+|cb|^2-2|ab||cb|\cos\angle abc$である。$a\neq b$、$c\neq b$なので$|ab||cb|\neq0$である。したがって$|ac|^2=|ab|^2+|cb|^2$は$\cos\angle abc=0$と同値である。$[0,\pi]$で余弦が$0$となるのは$\pi/2$だけなので、これは$\angle abc=\pi/2$と同値である。
+  strategy: Apply the law of cosines and use that cosine vanishes on [0,π] only at π/2.
+  sketch:
+  - 'apply_theorem: The law of cosines gives |ac|² = |ab|² + |cb|² - 2|ab||cb|cos∠abc.'
+  - 'derive: Since a ≠ b and c ≠ b, the product |ab||cb| is nonzero.'
+  - 'translate: The equation is therefore equivalent to cos∠abc = 0.'
+  - 'conclude: On [0,π] this is equivalent to ∠abc = π/2.'
+  openmath: (forall (a b c) (-> (and (!= a b) (!= c b)) (<-> (= (^ (dist_of a c) 2) (+ (^ (dist_of a b) 2) (^ (dist_of c b) 2))) (= (euclid_angle a b c) (/ pi 2)))))
+  hard_negative:
+    statement: '|ac|²<|ab|²+|cb|²なら∠abcは鈍角である。'
+    reason: 不等号の向きが逆である。余弦定理より、この不等式はcos∠abc>0を意味するので、∠abcは鋭角である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c : P), a ≠ b → c ≠ b → (dist a c ^ 2 = dist a b ^ 2 + dist c b ^ 2 ↔ EuclideanGeometry.angle a b c = Real.pi / 2)
+  proof: |
+    by
+      intro V P _ _ _ _ a b c _ _
+      simp only [sq]
+      exact EuclideanGeometry.dist_sq_eq_dist_sq_add_dist_sq_iff_angle_eq_pi_div_two a b c
+- id: triangle_angle_sum
+  kind: textbook
+  level: middle
+  topic: ユークリッド幾何・三角形の内角の和
+  statement: 実内積空間上のアフィン空間の相異なる3点$a,b,c$について、$\angle abc+\angle bca+\angle cab=\pi$である。
+  statement_en: For three distinct points a, b, c of a Euclidean affine space, ∠abc + ∠bca + ∠cab = π.
+  assumptions:
+  - $V$は実内積空間
+  - $P$は$V$上のアフィン空間
+  - $a\neq b$
+  - $b\neq c$
+  - $c\neq a$
+  quantifiers:
+  - 任意の3点$a,b,c$
+  conclusion: $\angle abc+\angle bca+\angle cab=\pi$である。
+  answer: |
+    $V$を実内積空間、$P$を$V$上のアフィン空間、$a,b,c\in P$を相異なる3点とする。$\angle xyz\in[0,\pi]$は$\langle x-y,z-y\rangle=\|x-y\|\|z-y\|\cos\angle xyz$で定まる角である。
+    3点が同一直線上にある場合、1点が他の2点の間にある。たとえば$b$が$a$と$c$の間にあれば、$a-b$と$c-b$は逆向きなので$\angle abc=\pi$であり、$b-c$と$a-c$は同じ向きなので$\angle bca=0$、同様に$\angle cab=0$である。他の場合も同様で、和は$\pi$である。
+    3点が同一直線上にない場合、$b-a$と$c-a$は1次独立である。これらが張る2次元部分空間から複素平面$\mathbb{C}$への、内積を保つ線形同型$T$をとる。ここで$\mathbb{C}$の内積は$\langle w,z\rangle=\operatorname{Re}(w\bar z)$である。$A=0$、$B=T(b-a)$、$C=T(c-a)$とおくと、3点の差の内積が保たれるので角も保たれる。
+    $D(z,w)=\operatorname{Im}(w\bar z)$とおくと、$D$は交代的な双線形形式である。展開すると$D(B-A,C-A)=D(C-B,A-B)=D(A-C,B-C)=D(A,B)+D(B,C)+D(C,A)$であり、1次独立性よりこの値は$0$でない。負なら$T$に複素共役を合成する。複素共役は内積を保ち$D$の符号を変えるので、この値は正であるとしてよい。
+    $z_1=(C-A)/(B-A)$、$z_2=(A-B)/(C-B)$、$z_3=(B-C)/(A-C)$とおく。$\operatorname{Im}(w/z)$の符号は$D(z,w)$の符号に等しいので、$z_1,z_2,z_3$の虚部は正である。各$z_l$の偏角を$(0,\pi)$の範囲にとり、$\theta_1,\theta_2,\theta_3$とする。$w/z$の偏角$\theta\in(0,\pi)$について$\cos\theta=\operatorname{Re}(w\bar z)/(|w||z|)$であり、$[0,\pi]$で余弦は単射なので、$\theta$は$w,z$のなす角である。よって$\theta_1=\angle cab$、$\theta_2=\angle abc$、$\theta_3=\angle bca$である。
+    $z_1z_2z_3=\dfrac{(C-A)(A-B)(B-C)}{(B-A)(C-B)(A-C)}=(-1)^3=-1$なので、$e^{i(\theta_1+\theta_2+\theta_3)}=-1$である。$\theta_1+\theta_2+\theta_3\in(0,3\pi)$であり、この範囲で$e^{i\theta}=-1$となるのは$\theta=\pi$だけである。よって3つの角の和は$\pi$である。
+  strategy: Draw the parallel to bc through a and use alternate angles.
+  sketch:
+  - 'case_split: In the collinear case one angle is π and the others are 0.'
+  - 'construct: Otherwise put d = a + (b-c) and e = a + (c-b) on the parallel to bc through a.'
+  - 'derive: Comparing inner products gives ∠dab = ∠abc and ∠eac = ∠bca.'
+  - 'derive: Rays ab and ac lie on the same side of the line, so ∠dab + ∠bac + ∠cae = π.'
+  - 'conclude: Substituting the alternate angles gives the sum π.'
+  openmath: (forall (a b c) (-> (and (!= a b) (!= b c) (!= c a)) (= (+ (euclid_angle a b c) (euclid_angle b c a) (euclid_angle c a b)) pi)))
+  hard_negative:
+    statement: 球面上の三角形でも内角の和はπである。
+    reason: 球面三角形では内角の和はπより大きく、超過分は三角形の面積に比例する。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c : P), a ≠ b → b ≠ c → c ≠ a → EuclideanGeometry.angle a b c + EuclideanGeometry.angle b c a + EuclideanGeometry.angle c a b = Real.pi
+  proof: |
+    by
+      intro V P _ _ _ _ a b c hab _ _
+      exact EuclideanGeometry.angle_add_angle_add_angle_eq_pi c hab.symm
+- id: ptolemy_cyclic_quadrilateral
+  kind: named
+  level: high
+  topic: ユークリッド幾何・トレミーの定理
+  statement: 実内積空間上のアフィン空間の点$a,b,c,d$が同一球面上にあり、線分$ac$と線分$bd$が内点$p$で交わる（$\angle apc=\angle bpd=\pi$）とき、$|ab||cd|+|bc||da|=|ac||bd|$である。
+  statement_en: If points a, b, c, d lie on a common sphere and the segments ac and bd cross at an interior point p, meaning ∠apc = ∠bpd = π, then |ab||cd| + |bc||da| = |ac||bd|.
+  assumptions:
+  - $V$は実内積空間
+  - $P$は$V$上のアフィン空間
+  - $a,b,c,d$は同一球面上にある
+  - $\angle apc=\pi$
+  - $\angle bpd=\pi$
+  quantifiers:
+  - 任意の点$a,b,c,d,p$
+  conclusion: $|ab||cd|+|bc||da|=|ac||bd|$である。
+  answer: |
+    $V$を実内積空間、$P$を$V$上のアフィン空間、$a,b,c,d,p\in P$とする。$a,b,c,d$は中心$o$、半径$r$の球面上にあり、$\angle apc=\angle bpd=\pi$とする。$|xy|$は2点の距離である。$\angle apc=\pi$は、$a\neq p$、$c\neq p$で$a-p$と$c-p$が逆向きであること、すなわち$p$が線分$ac$の内点であることを意味する。$\angle bpd=\pi$についても同様である。
+    $\alpha=|ap|$、$\gamma=|cp|$、$\beta=|bp|$、$\delta=|dp|$とおくと、これらは正である。単位ベクトル$e,f$を用いて$a-p=\alpha e$、$c-p=-\gamma e$、$b-p=\beta f$、$d-p=-\delta f$と書ける。$|ac|=\alpha+\gamma$、$|bd|=\beta+\delta$である。$t=\langle e,f\rangle$、$w=p-o$とおく。
+    第1段階として方べきの定理を示す。$\|a-o\|^2=\|w+\alpha e\|^2=r^2$より$\alpha^2+2\alpha\langle e,w\rangle+\|w\|^2=r^2$である。同様に$\|c-o\|^2=r^2$より$\gamma^2-2\gamma\langle e,w\rangle+\|w\|^2=r^2$である。第1式に$\gamma$を、第2式に$\alpha$を掛けて足すと、$\alpha\gamma(\alpha+\gamma)+(\alpha+\gamma)\|w\|^2=(\alpha+\gamma)r^2$である。よって$\alpha\gamma=r^2-\|w\|^2$である。同じ計算で$\beta\delta=r^2-\|w\|^2$なので、$\alpha\gamma=\beta\delta$である。
+    第2段階として各辺の長さを計算する。ベクトルを展開すると、$|ab|^2=\alpha^2+\beta^2-2\alpha\beta t$、$|bc|^2=\beta^2+\gamma^2+2\beta\gamma t$、$|cd|^2=\gamma^2+\delta^2-2\gamma\delta t$、$|da|^2=\delta^2+\alpha^2+2\alpha\delta t$である。
+    $\delta=\alpha\gamma/\beta$を代入すると、$|cd|^2=(\gamma^2/\beta^2)|ab|^2$、$|da|^2=(\alpha^2/\beta^2)|bc|^2$である。したがって$|cd|=(\gamma/\beta)|ab|$、$|da|=(\alpha/\beta)|bc|$である。
+    第3段階として結論を導く。$|ab||cd|+|bc||da|=\dfrac{\gamma|ab|^2+\alpha|bc|^2}{\beta}$である。分子に第2段階の式を代入すると$t$の項は打ち消され、分子は$\gamma\alpha^2+\gamma\beta^2+\alpha\beta^2+\alpha\gamma^2=(\alpha+\gamma)(\alpha\gamma+\beta^2)$となる。よって全体は$(\alpha+\gamma)(\alpha\gamma/\beta+\beta)=(\alpha+\gamma)(\delta+\beta)=|ac||bd|$である。
+  strategy: Use the power of the point and similar triangles to express everything through a, b, c, p, then close with Stewart's theorem.
+  sketch:
+  - 'apply_theorem: The intersecting chords theorem gives |ap||cp| = |bp||dp|.'
+  - 'derive: Triangles apb and dpc are similar, so |cd| = (|cp|/|bp|)|ab|.'
+  - 'derive: Triangles bpc and apd are similar, so |da| = (|ap|/|bp|)|bc|.'
+  - 'translate: Substituting these and |dp| = |ap||cp|/|bp| reduces the claim to an identity in triangle abc.'
+  - 'apply_theorem: That identity is Stewart''s theorem for the point p on side ac.'
+  - 'conclude: Ptolemy''s equality follows.'
+  openmath: (forall (a b c d p) (-> (and (cospherical_points (set a b c d)) (= (euclid_angle a p c) pi) (= (euclid_angle b p d) pi)) (= (+ (* (dist_of a b) (dist_of c d)) (* (dist_of b c) (dist_of d a))) (* (dist_of a c) (dist_of b d)))))
+  hard_negative:
+    statement: 任意の平面四角形abcdで|ab||cd|+|bc||da|=|ac||bd|が成り立つ。
+    reason: 一般の四角形では、左辺が右辺以上であるという不等式(トレミーの不等式)しか成り立たない。等号には同一円周上にあることが必要である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c d p : P), EuclideanGeometry.Cospherical ({a, b, c, d} : Set P) → EuclideanGeometry.angle a p c = Real.pi → EuclideanGeometry.angle b p d = Real.pi → dist a b * dist c d + dist b c * dist d a = dist a c * dist b d
+  proof: |
+    by
+      intro V P _ _ _ _ a b c d p h hapc hbpd
+      exact EuclideanGeometry.mul_dist_add_mul_dist_eq_mul_dist_of_cospherical h hapc hbpd
+- id: power_of_a_point_lines
+  kind: textbook
+  level: high
+  topic: ユークリッド幾何・方べきの定理
+  statement: 実内積空間上のアフィン空間の点$a,b,c,d$が同一球面上にあり、点$p$が$a,b$のアフィン包と$c,d$のアフィン包の両方に属するとき、$|ap||bp|=|cp||dp|$である。
+  statement_en: If points a, b, c, d lie on a common sphere and p lies in the affine span of {a,b} and in the affine span of {c,d} (a line when the two points differ, a single point otherwise), then |ap||bp| = |cp||dp|.
+  assumptions:
+  - $V$は実内積空間
+  - $P$は$V$上のアフィン空間
+  - $a,b,c,d$は同一球面上にある
+  - $p$は$a,b$のアフィン包に属する
+  - $p$は$c,d$のアフィン包に属する
+  quantifiers:
+  - 任意の点$a,b,c,d,p$
+  conclusion: $|ap||bp|=|cp||dp|$である。
+  answer: |
+    $V$を実内積空間、$P$を$V$上のアフィン空間、$a,b,c,d,p\in P$とする。$a,b,c,d$は中心$o$、半径$r$の球面上にあり、$p$は$a,b$のアフィン包と$c,d$のアフィン包の両方に属するとする。$|xy|$は2点の距離である。$a=b$や$c=d$の場合も含めて、次の計算が成り立つ。
+    $p$は$a,b$のアフィン包に属するので、実数$\lambda$があって$p=a+\lambda v$となる。ここで$v=b-a$である。$w=p-o$とおくと、$a-o=w-\lambda v$、$b-o=w+(1-\lambda)v$である。$\|a-o\|^2=\|b-o\|^2=r^2$より、次の2式を得る。
+    $r^2=\|w\|^2-2\lambda\langle w,v\rangle+\lambda^2\|v\|^2$
+    $r^2=\|w\|^2+2(1-\lambda)\langle w,v\rangle+(1-\lambda)^2\|v\|^2$
+    第1式に$1-\lambda$を、第2式に$\lambda$を掛けて足すと、$\langle w,v\rangle$の項が打ち消され、$r^2=\|w\|^2+\lambda(1-\lambda)\|v\|^2$となる。
+    一方、$a-p=-\lambda v$、$b-p=(1-\lambda)v$なので、$|ap||bp|=|\lambda(1-\lambda)|\|v\|^2=\bigl|\|w\|^2-r^2\bigr|$である。$c,d$についても同じ計算で$|cp||dp|=\bigl|\|w\|^2-r^2\bigr|$である。よって両者は等しい。
+  strategy: Express each product as the absolute value of the power of p with respect to the sphere.
+  sketch:
+  - 'setup: Let o and r be the center and radius of the sphere and m the midpoint of ab.'
+  - 'derive: Since om is orthogonal to ab, |op|² - r² = |mp|² - |ma|².'
+  - 'derive: For p on line ab, |ap||bp| = ||mp|² - |ma|²|.'
+  - 'derive: So |ap||bp| = ||op|² - r²|, and the same holds for c, d.'
+  - 'conclude: The two products are equal.'
+  openmath: (forall (a b c d p) (-> (and (cospherical_points (set a b c d)) (on_line p a b) (on_line p c d)) (= (* (dist_of a p) (dist_of b p)) (* (dist_of c p) (dist_of d p)))))
+  hard_negative:
+    statement: pが直線ab, cdの交点であれば、4点が同一球面上になくても|ap||bp|=|cp||dp|が成り立つ。
+    reason: 平面でp=0, a=(1,0), b=(-1,0), c=(0,1), d=(0,-2)とすると、左辺は1、右辺は2である。
+  target: |
+    ∀ (V P : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] (a b c d p : P), EuclideanGeometry.Cospherical ({a, b, c, d} : Set P) → p ∈ affineSpan ℝ ({a, b} : Set P) → p ∈ affineSpan ℝ ({c, d} : Set P) → dist a p * dist b p = dist c p * dist d p
+  proof: |
+    by
+      intro V P _ _ _ _ a b c d p h hab hcd
+      exact EuclideanGeometry.mul_dist_eq_mul_dist_of_cospherical h hab hcd
+- id: inner_zero_iff_right_angle
+  kind: gap
+  level: high
+  topic: ユークリッド幾何・直交と角
+  statement: 実内積空間の$0$でないベクトル$x,y$について、$\langle x,y\rangle=0$であることと$x$と$y$のなす角が$\pi/2$であることは同値である。
+  statement_en: For nonzero vectors x, y in a real inner product space, ⟨x,y⟩ = 0 if and only if the angle between x and y equals π/2.
+  assumptions:
+  - $V$は実内積空間
+  - $x\neq0$
+  - $y\neq0$
+  quantifiers:
+  - 任意のベクトル$x,y$
+  conclusion: $\langle x,y\rangle=0$であることと$x,y$のなす角が$\pi/2$であることは同値である。
+  answer: |
+    $V$を実内積空間、$x,y$を$V$の$0$でないベクトルとする。$x,y$のなす角$\theta\in[0,\pi]$は$\langle x,y\rangle=\|x\|\|y\|\cos\theta$で定まる。$x,y$は$0$でないので$\|x\|\|y\|\neq0$であり、$\langle x,y\rangle=0$は$\cos\theta=0$と同値である。$[0,\pi]$で余弦が$0$となるのは$\pi/2$だけなので、これは$\theta=\pi/2$と同値である。
+  strategy: Use the defining formula of the angle and the injectivity of cosine on [0,π].
+  sketch:
+  - 'setup: The angle θ in [0,π] satisfies ⟨x,y⟩ = ‖x‖‖y‖cos θ.'
+  - 'translate: Since x and y are nonzero, ⟨x,y⟩ = 0 is equivalent to cos θ = 0.'
+  - 'conclude: On [0,π], cos θ = 0 holds exactly at θ = π/2.'
+  openmath: (forall (x y) (-> (and (!= x 0) (!= y 0)) (<-> (= (inner_product x y) 0) (= (vector_angle x y) (/ pi 2)))))
+  hard_negative:
+    statement: ⟨x,y⟩>0ならxとyのなす角は鈍角である。
+    reason: ⟨x,y⟩>0はcosθ>0を意味するので、なす角は鋭角である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (x y : V), x ≠ 0 → y ≠ 0 → (inner ℝ x y = 0 ↔ InnerProductGeometry.angle x y = Real.pi / 2)
+  proof: |
+    by
+      intro V _ _ x y _ _
+      exact InnerProductGeometry.inner_eq_zero_iff_angle_eq_pi_div_two x y
+- id: mazur_ulam_surjective_isometry
+  kind: named
+  level: 4
+  topic: 等長写像・マズール=ウラムの定理
+  statement: マズール・ウラムの定理。実ノルム空間の間の全射等長写像はアフィン写像である。すなわち全単射なアフィン等長写像に一致する。
+  statement_en: A surjective isometry between real normed spaces is affine; it coincides with a bijective affine isometry.
+  assumptions:
+  - $E,F$は実ノルム空間
+  - $f:E\to F$は等長
+  - $f$は全射
+  quantifiers:
+  - 任意の実ノルム空間$E,F$
+  - 任意の写像$f$
+  conclusion: $f$と写像として等しい全単射なアフィン等長写像が存在する。
+  answer: |
+    $E,F$を実ノルム空間、$f:E\to F$を全射な等長写像とする。等長なので$f$は単射であり、したがって全単射で、$f^{-1}$も等長である。
+    第1段階として次を示す。$x,y\in E$の中点を$z=(x+y)/2$とする。$x,y$を固定する$E$の全単射等長写像全体を$W$とすると、任意の$g\in W$について$g(z)=z$である。$\rho(v)=2z-v$とおくと、$\rho$は等長で$\rho\circ\rho=\mathrm{id}$、$\rho(x)=y$、$\rho(y)=x$、$\rho(z)=z$である。また$\|v-\rho(v)\|=2\|v-z\|$である。$g\in W$に対し$g^*=\rho\circ g^{-1}\circ\rho\circ g$とおくと、$g^*(x)=\rho(g^{-1}(y))=\rho(y)=x$であり、同様に$g^*(y)=y$なので$g^*\in W$である。$\rho$と$g$が等長であることから、
+    $\|g^*(z)-z\|=\|g^{-1}(\rho(g(z)))-z\|=\|\rho(g(z))-g(z)\|=2\|g(z)-z\|$
+    である。$\lambda=\sup_{g\in W}\|g(z)-z\|$とおく。$\|g(z)-z\|\leq\|g(z)-g(x)\|+\|x-z\|=2\|x-z\|$なので$\lambda$は有限である。上の等式より任意の$g\in W$で$2\|g(z)-z\|\leq\lambda$なので、$2\lambda\leq\lambda$であり$\lambda=0$である。
+    第2段階として、$f$が中点を保つことを示す。$x,y\in E$、$z=(x+y)/2$、$z'=(f(x)+f(y))/2$とし、$\rho(v)=2z-v$、$\rho'(w)=2z'-w$とおく。$g=\rho\circ f^{-1}\circ\rho'\circ f$は$E$の全単射等長写像である。$g(x)=\rho(f^{-1}(f(y)))=\rho(y)=x$であり、同様に$g(y)=y$である。第1段階より$g(z)=z$である。$\rho(z)=z$なので$f^{-1}(\rho'(f(z)))=z$、すなわち$\rho'(f(z))=f(z)$である。これは$2z'-f(z)=f(z)$を意味し、$f(z)=z'$である。
+    第3段階として、$h(v)=f(v)-f(0)$とおく。$h$は等長で$h(0)=0$であり、中点を保つ。$y=0$の場合から$h(x/2)=h(x)/2$である。よって$h(x+y)=h((2x+2y)/2)=(h(2x)+h(2y))/2=h(x)+h(y)$であり、$h$は加法的である。加法性より$h$は有理数倍を保ち、連続なので実数倍も保つ。したがって$h$は線形な全単射等長写像であり、$f=h+f(0)$は全単射なアフィン等長写像である。
+  strategy: Show midpoints are preserved by a reflection argument, then upgrade midpoint preservation and continuity to affineness.
+  sketch:
+  - 'setup: f is injective as an isometry, hence bijective, and f⁻¹ is an isometry.'
+  - 'derive: For bijective isometries g fixing x and y, g* = ρg⁻¹ρg also fixes them and moves z twice as far as g, where ρ is the reflection at the midpoint z.'
+  - 'derive: The supremum of ‖g(z) - z‖ is finite, so it is 0 and every such g fixes z.'
+  - 'apply_theorem: Applying this to ρf⁻¹ρ''f, with ρ'' the reflection at the midpoint of f(x), f(y), shows f preserves midpoints.'
+  - 'derive: Then f - f(0) is additive, and continuity makes it real linear.'
+  - 'conclude: So f is a bijective affine isometry.'
+  openmath: (forall (f) (-> (and (isometry f) (surjective f)) (affine_isometry_equiv f)))
+  hard_negative:
+    statement: 実ノルム空間の間の等長写像は、全射でなくても常にアフィン写像である。
+    reason: f:ℝ→ℝ²(ℓ^∞ノルム)をf(t)=(t,sin t)とすると、|sin s-sin t|≤|s-t|より等長だがアフィンでない。全射性または値域の狭義凸性が必要である。
+  target: |
+    ∀ (E F : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] (f : E → F), Isometry f → Function.Surjective f → ∃ g : AffineIsometryEquiv ℝ E F, ⇑g = f
+  proof: |
+    by
+      intro E F _ _ _ _ f hf hs
+      let e : IsometryEquiv E F := ⟨Equiv.ofBijective f ⟨hf.injective, hs⟩, hf⟩
+      exact ⟨e.toRealAffineIsometryEquiv, rfl⟩
+- id: isometry_preserves_angle
+  kind: gap
+  level: 2
+  topic: 等長写像・角の保存
+  statement: 実内積空間上のアフィン空間の間の等長写像$f$は、$a\neq b$、$c\neq b$となる点について$\angle f(a)f(b)f(c)=\angle abc$を満たす。
+  statement_en: An isometry f between Euclidean affine spaces preserves unoriented angles, that is, ∠f(a)f(b)f(c) = ∠abc for a ≠ b and c ≠ b.
+  assumptions:
+  - $V,W$は実内積空間
+  - $P,Q$はそれぞれ$V,W$上のアフィン空間
+  - $f:P\to Q$は等長写像
+  - $a\neq b$
+  - $c\neq b$
+  quantifiers:
+  - 任意の$f$
+  - 任意の点$a,b,c$
+  conclusion: $\angle f(a)f(b)f(c)=\angle abc$である。
+  answer: |
+    $V,W$を実内積空間、$P,Q$をそれぞれ$V,W$上のアフィン空間、$f:P\to Q$を等長写像とし、$a,b,c\in P$は$a\neq b$、$c\neq b$を満たすとする。$|xy|$は2点の距離であり、$\angle xyz\in[0,\pi]$はベクトル$x-y,z-y$のなす角である。
+    余弦定理より$\cos\angle abc=\dfrac{|ab|^2+|cb|^2-|ac|^2}{2|ab||cb|}$である。$a\neq b$、$c\neq b$なので分母は$0$でない。$f$は距離を保つので$f(a)\neq f(b)$、$f(c)\neq f(b)$であり、$f(a),f(b),f(c)$についての右辺の値は同じである。よって2つの角の余弦は等しい。角は$[0,\pi]$の値をとり、この範囲で余弦は単射なので、2つの角は等しい。
+  strategy: Recover the angle from the three side lengths by the law of cosines.
+  sketch:
+  - 'apply_theorem: The law of cosines expresses cos∠abc through |ab|, |cb| and |ac|.'
+  - 'derive: The denominator is nonzero because a ≠ b and c ≠ b.'
+  - 'derive: f preserves the three distances, so the cosines of the two angles agree.'
+  - 'conclude: Cosine is injective on [0,π], so the angles are equal.'
+  openmath: (forall (f a b c) (-> (and (isometry f) (!= a b) (!= c b)) (= (euclid_angle (fn_value f a) (fn_value f b) (fn_value f c)) (euclid_angle a b c))))
+  hard_negative:
+    statement: 実内積空間の間の線形同型は角を保つ。
+    reason: ℝ²のT(x,y)=(2x,y)は線形同型だが、直交する(1,1)と(1,-1)を内積3のベクトルに写す。
+  target: |
+    ∀ (V W P Q : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] [MetricSpace P] [NormedAddTorsor V P] [NormedAddCommGroup W] [InnerProductSpace ℝ W] [MetricSpace Q] [NormedAddTorsor W Q] (f : P → Q) (a b c : P), Isometry f → a ≠ b → c ≠ b → EuclideanGeometry.angle (f a) (f b) (f c) = EuclideanGeometry.angle a b c
+  proof: |
+    by
+      intro V W P Q _ _ _ _ _ _ _ _ f a b c hf _ _
+      exact hf.affineIsometryOfStrictConvexSpace.angle_map a b c
+- id: convex_interior_closure
+  kind: gap
+  level: 2
+  topic: 凸集合・内部と閉包
+  statement: 実ノルム空間の凸集合の内部と閉包はともに凸集合である。
+  statement_en: The interior and the closure of a convex subset of a real normed space are convex.
+  assumptions:
+  - $E$は実ノルム空間
+  - $S\subseteq E$は凸
+  quantifiers:
+  - 任意の実ノルム空間$E$
+  - 任意の凸集合$S$
+  conclusion: $\operatorname{int}(S)$と$\overline{S}$はともに凸である。
+  answer: |
+    $E$を実ノルム空間、$S$を$E$の凸部分集合とし、$t\in[0,1]$とする。
+    閉包について示す。$x,y\in\overline{S}$とする。$x,y$に収束する$S$の点列$(x_n),(y_n)$をとる。凸性より$(1-t)x_n+ty_n\in S$であり、これは$(1-t)x+ty$に収束する。よって$(1-t)x+ty\in\overline{S}$である。
+    内部について示す。$x,y\in\operatorname{int}(S)$とする。半径$r>0$を、$B(x,r)$と$B(y,r)$がともに$S$に含まれるようにとる。$z=(1-t)x+ty$とする。$\|w\|<r$なら$x+w\in S$、$y+w\in S$なので、凸性より$z+w=(1-t)(x+w)+t(y+w)\in S$である。したがって$B(z,r)\subseteq S$であり、$z\in\operatorname{int}(S)$である。
+  strategy: Take limits of convex combinations for the closure and translate a common ball for the interior.
+  sketch:
+  - 'derive: For closure points, approximate by sequences in S; convex combinations converge to the combination of limits.'
+  - 'setup: For interior points x and y choose r with balls of radius r around both inside S.'
+  - 'derive: For z = (1-t)x + ty and small w, z + w = (1-t)(x+w) + t(y+w) lies in S.'
+  - 'conclude: So z is interior, and both sets are convex.'
+  openmath: (forall (S) (-> (convex_set S) (and (convex_set (interior_of S)) (convex_set (closure_of S)))))
+  hard_negative:
+    statement: 集合の閉包が凸ならその集合も凸である。
+    reason: 逆は成り立たない。平面の開円板から中心を除いた集合は凸でないが、その閉包は閉円板なので凸である。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] (S : Set E), Convex ℝ S → Convex ℝ (interior S) ∧ Convex ℝ (closure S)
+  proof: |
+    by
+      intro E _ _ S hS
+      exact ⟨hS.interior, hS.closure⟩
+- id: arc_length_additive_chord_bound
+  kind: gap
+  level: 3
+  topic: 曲線・弧長
+  statement: 曲線$f$の全変動としての弧長は区間の分割について加法的であり、端点間の距離は弧長以下である。弧長の値は無限大もとりうる。
+  statement_en: For a map f from ℝ to a pseudo-extended-metric space (distances may be ∞ or 0 between distinct points; ordinary metric spaces included) and a ≤ b ≤ c, the total variation (arc length) satisfies L(a,b) + L(b,c) = L(a,c) in [0,∞], and d(f(a), f(c)) ≤ L(a,c).
+  assumptions:
+  - $E$は擬拡張距離空間（値$\infty$や異なる2点間の$0$を許す距離をもつ空間で、通常の距離空間を含む）
+  - $f:\mathbb{R}\to E$は写像
+  - $a\leq b\leq c$
+  quantifiers:
+  - 任意の写像$f$
+  - 任意の実数$a,b,c$
+  conclusion: $L(a,b)+L(b,c)=L(a,c)$かつ$d(f(a),f(c))\leq L(a,c)$である。
+  answer: |
+    $E$を擬拡張距離空間（距離$d$が値$\infty$をとってよく、異なる2点間で$0$になってもよい空間で、通常の距離空間を含む）、$f:\mathbb{R}\to E$を写像、$a\leq b\leq c$を実数とする。連続性は仮定しない。$u\leq v$について、$[u,v]$内の単調増加な有限列$t_0\leq\dots\leq t_n$に対する和$\sum_{l<n}d(f(t_{l+1}),f(t_l))$の上限を$L(u,v)\in[0,\infty]$とする。
+    $L(a,b)+L(b,c)\leq L(a,c)$を示す。$[a,b]$内の有限列と$[b,c]$内の有限列をつなげると、$[a,c]$内の単調増加な有限列になる。その和はもとの2つの和に、つなぎ目の距離（$0$以上）を加えたものなので、2つの和の合計以上である。両方の列について上限をとると不等式を得る。
+    $L(a,c)\leq L(a,b)+L(b,c)$を示す。$[a,c]$内の単調増加な有限列に、順序を保つ位置で$b$を挿入する。三角不等式より和は減らない。挿入後の列は$b$で2つに分かれ、前半は$[a,b]$内、後半は$[b,c]$内の列なので、和は$L(a,b)+L(b,c)$以下である。もとの列について上限をとると不等式を得る。
+    2項の列$a,c$の和は$d(f(c),f(a))$なので、$d(f(a),f(c))\leq L(a,c)$である。
+  strategy: Compare partitions of [a,c] with pairs of partitions of [a,b] and [b,c].
+  sketch:
+  - 'setup: L(a,c) is the supremum of polygonal sums over partitions of [a,c].'
+  - 'derive: Concatenating partitions of [a,b] and [b,c] gives L(a,b) + L(b,c) ≤ L(a,c).'
+  - 'derive: Inserting b in a partition does not decrease the sum by the triangle inequality, giving the reverse inequality.'
+  - 'conclude: The two-point partition gives d(f(a),f(c)) ≤ L(a,c).'
+  openmath: (forall (f a b c) (-> (and (<= a b) (<= b c)) (and (= (+ (total_variation f (closed_interval a b)) (total_variation f (closed_interval b c))) (total_variation f (closed_interval a c))) (<= (dist_of (fn_value f a) (fn_value f c)) (total_variation f (closed_interval a c))))))
+  hard_negative:
+    statement: 連続な曲線の弧長は常に有限である。
+    reason: 連続でも有界変動とは限らない。[0,1]上のf(t)=t sin(1/t), f(0)=0のグラフの弧長は無限大である。
+  target: |
+    ∀ (E : Type*) [PseudoEMetricSpace E] (f : ℝ → E) (a b c : ℝ), a ≤ b → b ≤ c → eVariationOn f (Set.Icc a b) + eVariationOn f (Set.Icc b c) = eVariationOn f (Set.Icc a c) ∧ edist (f a) (f c) ≤ eVariationOn f (Set.Icc a c)
+  proof: |
+    by
+      intro E _ f a b c hab hbc
+      constructor
+      · simpa using eVariationOn.Icc_add_Icc f (s := Set.univ) hab hbc (Set.mem_univ b)
+      · exact eVariationOn.edist_le f (Set.left_mem_Icc.2 (hab.trans hbc)) (Set.right_mem_Icc.2 (hab.trans hbc))
+- id: curve_displacement_le_speed_integral
+  kind: gap
+  level: 2
+  topic: 曲線・速度と変位
+  statement: 完備な実ノルム空間に値をとる$C^1$曲線$\gamma$について、$a\leq b$なら$\|\gamma(b)-\gamma(a)\|\leq\int_a^b\|\gamma'(t)\|\,dt$である。
+  statement_en: For a C¹ curve γ with values in a complete real normed space and a ≤ b, ‖γ(b) - γ(a)‖ ≤ ∫_a^b ‖γ'(t)‖ dt.
+  assumptions:
+  - $E$は完備な実ノルム空間
+  - $\gamma,\gamma':\mathbb{R}\to E$は写像
+  - $a\leq b$
+  - $\gamma$は$[a,b]$の各点で微分$\gamma'$をもつ
+  - $\gamma'$は$[a,b]$上で連続
+  quantifiers:
+  - 任意の曲線$\gamma$
+  - 任意の実数$a,b$
+  conclusion: $\|\gamma(b)-\gamma(a)\|\leq\int_a^b\|\gamma'(t)\|\,dt$である。
+  answer: |
+    $E$を完備な実ノルム空間、$\gamma,\gamma':\mathbb{R}\to E$を写像、$a\leq b$を実数とする。$[a,b]$の各点$t$で$\gamma$は微分係数$\gamma'(t)$をもち、$\gamma'$は$[a,b]$上で連続であるとする。
+    $\gamma'$は$[a,b]$上で連続で$E$は完備なので、$\gamma'$は$[a,b]$上で積分可能である。微分積分学の基本定理より$\gamma(b)-\gamma(a)=\int_a^b\gamma'(t)\,dt$である。$a\leq b$なので、積分のノルムはノルムの積分以下であり、$\left\|\int_a^b\gamma'(t)\,dt\right\|\leq\int_a^b\|\gamma'(t)\|\,dt$である。これが主張の不等式である。
+  strategy: Apply the fundamental theorem of calculus and the norm bound for integrals.
+  sketch:
+  - 'setup: γ'' is continuous, hence integrable on [a,b].'
+  - 'apply_theorem: The fundamental theorem of calculus gives γ(b) - γ(a) = ∫_a^b γ''(t) dt.'
+  - 'derive: The norm of an integral is at most the integral of the norm when a ≤ b.'
+  - 'conclude: This yields the claimed bound.'
+  openmath: (forall (g h a b) (-> (and (<= a b) (forall (t) (-> (in t (closed_interval a b)) (derivative_at g (fn_value h t) t))) (continuous_on_set h (closed_interval a b))) (<= (norm (- (fn_value g b) (fn_value g a))) (interval_integral a b (lambda (t) (norm (fn_value h t)))))))
+  hard_negative:
+    statement: 同じ条件で‖γ(b)-γ(a)‖=∫_a^b‖γ'(t)‖dtである。
+    reason: 等号は速度の向きが一定のときに限る。単位円をt∈[0,2π]で1周する曲線では、左辺は0で右辺は2πである。
+  target: |
+    ∀ (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E] (γ γ' : ℝ → E) (a b : ℝ), a ≤ b → (∀ t ∈ Set.uIcc a b, HasDerivAt γ (γ' t) t) → ContinuousOn γ' (Set.uIcc a b) → ‖γ b - γ a‖ ≤ ∫ t in a..b, ‖γ' t‖
+  proof: |
+    by
+      intro E _ _ _ γ γ' a b hab hd hc
+      have hint : IntervalIntegrable γ' MeasureTheory.volume a b := hc.intervalIntegrable
+      rw [← intervalIntegral.integral_eq_sub_of_hasDerivAt hd hint]
+      exact intervalIntegral.norm_integral_le_integral_norm hab

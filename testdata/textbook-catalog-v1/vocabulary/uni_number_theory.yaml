@@ -1,0 +1,78 @@
+# Proposed additive OpenMath vocabulary for elementary and analytic number theory.
+comm_ring: {args: [term], returns: prop, meaning: "R is a commutative ring with unity"}
+padic_valuation: {args: [term, term], returns: term, meaning: "exponent of the prime q in the factorization of n"}
+field: {args: [term], returns: prop, meaning: "K is a field"}
+integral_domain: {args: [term], returns: prop, meaning: "R is an integral domain"}
+prime_element: {args: [term, term], returns: prop, meaning: "a is a prime element of R"}
+integer_range: {args: [term, term], returns: term, meaning: "set of integers k with a <= k <= b"}
+monoid_one: {args: [term], returns: term, meaning: "identity element of the monoid G"}
+element_order: {args: [term], returns: term, meaning: "order of a group element"}
+multiplicative_order: {args: [term, term], returns: term, meaning: "multiplicative order of a modulo n"}
+euler_phi: {args: [term], returns: term, meaning: "Euler totient function of n"}
+units_of_order_count: {args: [term, term], returns: term, meaning: "number of reduced residues modulo n of order exactly d, in the order n d"}
+units_power_root_count: {args: [term, term], returns: term, meaning: "number of reduced residues u modulo n with u^d = 1, in the order n d"}
+units_power_sum: {args: [term, term], returns: term, meaning: "sum of x^i in Z/nZ over all reduced residues x modulo n, in the order n i"}
+cyclic_group: {args: [term], returns: prop, meaning: "G is a cyclic group"}
+zmod_units: {args: [term], returns: term, meaning: "the unit group of the integers modulo n"}
+carmichael_lambda: {args: [term], returns: term, meaning: "Carmichael function of n, the exponent of the unit group of Z/nZ"}
+nat_mod: {args: [term, term], returns: term, meaning: "remainder of a on division by m, in the order a m"}
+jacobi_symbol: {args: [term, term], returns: term, meaning: "Jacobi symbol (a/b) for an integer a and a positive odd integer b"}
+legendre_symbol: {args: [term, term], returns: term, meaning: "Legendre symbol (a/p)"}
+zmod_sqrt_count: {args: [term, term], returns: term, meaning: "number of solutions of x^2 = a in Z/pZ, in the order p a"}
+zmod_nonzero_square_count: {args: [term], returns: term, meaning: "number of squares among the reduced residues modulo p"}
+gauss_lemma_count: {args: [term, term], returns: term, meaning: "number of x with 1 <= x <= (p-1)/2 whose product ax has remainder greater than (p-1)/2 modulo p, in the order a p"}
+floor: {args: [term], returns: term, meaning: "greatest integer not exceeding the real number x"}
+rational_denominator: {args: [term], returns: term, meaning: "denominator of a rational number in lowest terms"}
+irrational: {args: [term], returns: prop, meaning: "x is an irrational real number"}
+infinite_set: {args: [term], returns: prop, meaning: "S is an infinite set"}
+real_convergent: {args: [term, term], returns: term, meaning: "n-th continued fraction convergent of the real number x, in the order x n"}
+cf_numerator: {args: [term, term], returns: term, meaning: "numerator p_n of the n-th convergent of the regular continued fraction of v, in the order v n"}
+cf_denominator: {args: [term, term], returns: term, meaning: "denominator q_n of the n-th convergent of the regular continued fraction of v, in the order v n"}
+cf_continues_after: {args: [term, term], returns: prop, meaning: "the regular continued fraction of v does not stop at the n-th convergent, in the order v n"}
+cf_terminates: {args: [term], returns: prop, meaning: "the regular continued fraction of v is finite"}
+binomial: {args: [term, term], returns: term, meaning: "binomial coefficient C(n,k)"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+digit_sum: {args: [term, term], returns: term, meaning: "sum of the base-b digits of n, in the order (b, n)"}
+indicator_le: {args: [term, term], returns: term, meaning: "1 if a <= b and 0 otherwise, in the order a b"}
+min_of: {args: [term, term], returns: term, meaning: "minimum of a and b"}
+max_of: {args: [term, term], returns: term, meaning: "maximum of two real numbers"}
+arithmetic_function: {args: [term, term], returns: prop, meaning: "f is an arithmetic function with values in A vanishing at 0, in the order f A"}
+dirichlet_convolution: {args: [term, term], returns: term, meaning: "Dirichlet convolution f*g of arithmetic functions"}
+dirichlet_invertible: {args: [term], returns: prop, meaning: "the arithmetic function f is invertible under Dirichlet convolution"}
+unit_element: {args: [term, term], returns: prop, meaning: "a is a unit of R"}
+multiplicative_arithmetic_function: {args: [term, term], returns: prop, meaning: "f is a multiplicative arithmetic function with values in A, in the order f A"}
+moebius: {args: [term], returns: term, meaning: "Moebius function of n"}
+sum_over_divisors: {args: [term, term_function], returns: term, meaning: "sum of f(d) over the positive divisors d of n"}
+product_over_prime_divisors: {args: [term, term_function], returns: term, meaning: "product of f(p) over the prime divisors p of n"}
+squarefree: {args: [term], returns: prop, meaning: "the natural number has no square factor other than 1"}
+divisor_count: {args: [term], returns: term, meaning: "number of positive divisors of a positive integer n"}
+distinct_prime_factor_count: {args: [term], returns: term, meaning: "number omega(n) of distinct prime factors of n"}
+prime_factor_count: {args: [term], returns: term, meaning: "number Omega(n) of prime factors of n counted with multiplicity"}
+fermat_number: {args: [term], returns: term, meaning: "Fermat number 2^(2^n)+1"}
+lucas_lehmer_seq: {args: [term], returns: term, meaning: "Lucas-Lehmer sequence s_0 = 4, s_(i+1) = s_i^2-2"}
+primorial: {args: [term], returns: term, meaning: "product of all primes not exceeding n"}
+chebyshev_psi: {args: [term], returns: term, meaning: "Chebyshev function psi(x), the sum of the von Mangoldt function over m <= x"}
+chebyshev_theta: {args: [term], returns: term, meaning: "Chebyshev function theta(x), the sum of log p over primes p <= x"}
+lcm_upto: {args: [term], returns: term, meaning: "least common multiple of 1, ..., n"}
+prime_counting: {args: [term], returns: term, meaning: "number of primes not exceeding x"}
+von_mangoldt: {args: [term], returns: term, meaning: "von Mangoldt function of n"}
+complete_normed_field: {args: [term], returns: prop, meaning: "F is a complete normed field"}
+completely_multiplicative: {args: [term, term], returns: prop, meaning: "f is a completely multiplicative function from N to F with f(0) = 0 and f(1) = 1, in the order f F"}
+series_abs_summable: {args: [term], returns: prop, meaning: "the series of norms of a converges"}
+series_sum: {args: [term], returns: term, meaning: "sum of the series of a"}
+inv_of: {args: [term], returns: term, meaning: "multiplicative inverse of x"}
+prime_product_has_value: {args: [term_function, term], returns: prop, meaning: "the product of g(p) over all primes p converges unconditionally to the value s"}
+real_part: {args: [term], returns: term, meaning: "real part of z"}
+riemann_zeta: {args: [term], returns: term, meaning: "Riemann zeta function at s"}
+riemann_zeta_fn: {args: [], returns: term, meaning: "the Riemann zeta function as a function on the complex plane"}
+series_summable_fn: {args: [term_function], returns: prop, meaning: "the series of the indexed expression converges unconditionally"}
+prime_indicator_reciprocal: {args: [term], returns: term, meaning: "1/n if n is prime and 0 otherwise"}
+prime_indicator_power: {args: [term, term], returns: term, meaning: "n^r if n is prime and 0 otherwise, in the order n r"}
+dirichlet_character: {args: [term, term], returns: prop, meaning: "c is a complex Dirichlet character modulo M, in the order c M"}
+dirichlet_trivial_character: {args: [term], returns: term, meaning: "trivial Dirichlet character modulo M"}
+dirichlet_character_sum: {args: [term, term, term], returns: term, meaning: "sum of chi(a^(-1)) chi(b) over all complex Dirichlet characters chi modulo M, in the order M a b"}
+dirichlet_series_abs_summable: {args: [term, term], returns: prop, meaning: "the series of c(n) n^(-s) over n >= 1 converges absolutely, in the order c s"}
+dirichlet_l_series: {args: [term, term], returns: term, meaning: "sum of the series of c(n) n^(-s) over n >= 1, in the order c s"}
+dirichlet_l_function: {args: [term, term], returns: term, meaning: "analytically continued Dirichlet L-function of the character c at s, in the order c s"}
+von_mangoldt_dirichlet_terms: {args: [term], returns: term, meaning: "the sequence n -> Lambda(n) n^(-s) for the complex number s"}
+complex_deriv: {args: [term, term], returns: term, meaning: "complex derivative f'(z)"}

@@ -1,0 +1,65 @@
+# Proposed additive OpenMath vocabulary for inequalities, convex analysis, Fourier analysis and numerics.
+fn_value: {args: [term, term], returns: term, meaning: "function value f(x)"}
+seq_value: {args: [term, term], returns: term, meaning: "n-th term a_n of a sequence"}
+pi: {args: [], returns: term, meaning: "the circle constant pi"}
+complex_i: {args: [], returns: term, meaning: "the imaginary unit i of the complex numbers"}
+norm: {args: [term], returns: term, meaning: "norm of a vector or operator norm of a bounded operator"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+normed_space: {args: [term], returns: prop, meaning: "E is a normed vector space over R or C"}
+inner_product_space: {args: [term], returns: prop, meaning: "E is an inner product space"}
+metric_space: {args: [term], returns: prop, meaning: "X is a metric space"}
+complete_space: {args: [term], returns: prop, meaning: "X is a complete metric space"}
+dist_of: {args: [term, term], returns: term, meaning: "distance between x and y"}
+iterate_of: {args: [term, term, term], returns: term, meaning: "n-fold iterate of f applied to x"}
+closed_set: {args: [term], returns: prop, meaning: "S is a closed set"}
+compact_set: {args: [term], returns: prop, meaning: "S is a compact set"}
+finite_set: {args: [term], returns: prop, meaning: "S is a finite set"}
+finite_dim_space: {args: [term], returns: prop, meaning: "E is finite dimensional"}
+hausdorff_space: {args: [term], returns: prop, meaning: "X is a Hausdorff space"}
+convex_set: {args: [term], returns: prop, meaning: "S is a convex subset of a real vector space"}
+orthonormal_family: {args: [term, term], returns: prop, meaning: "e is an orthonormal family in E"}
+series_sum_fn: {args: [term_function], returns: term, meaning: "sum of the series of the indexed expression"}
+series_summable: {args: [term], returns: prop, meaning: "the series of the family or sequence a converges unconditionally"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b"}
+integral_real_line: {args: [term_function], returns: term, meaning: "integral of f over the whole real line"}
+integrable_real_line: {args: [term_function], returns: prop, meaning: "f is integrable on the whole real line"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of real numbers"}
+real_vector_space: {args: [term], returns: prop, meaning: "E is a real vector space"}
+vector_finrank: {args: [term], returns: term, meaning: "dimension of the finite dimensional real vector space E"}
+locally_convex_tvs: {args: [term], returns: prop, meaning: "E is a real locally convex topological vector space"}
+convex_function_on: {args: [term, term], returns: prop, meaning: "f is a convex function on the set S"}
+strict_convex_function_on: {args: [term, term], returns: prop, meaning: "f is a strictly convex function on the set S"}
+minimizer_on: {args: [term, term, term], returns: prop, meaning: "a minimizes f over the set S"}
+local_minimizer_on: {args: [term, term, term], returns: prop, meaning: "a is a local minimizer of f over the set S"}
+sublevel_set_on: {args: [term, term, term], returns: term, meaning: "set of x in S with f(x) at most r"}
+set_family_inter: {args: [term], returns: term, meaning: "intersection of all members of a family of sets"}
+convex_hull: {args: [term], returns: term, meaning: "convex hull of the set S"}
+extreme_points: {args: [term], returns: term, meaning: "set of extreme points of S"}
+set_closure: {args: [term], returns: term, meaning: "topological closure of S"}
+continuous_linear_functional: {args: [term], returns: prop, meaning: "f is a continuous real linear functional"}
+has_frechet_derivative_at: {args: [term, term, term], returns: prop, meaning: "f has Frechet derivative L at the point a"}
+fourier_coeff_on: {args: [term, term, term, term], returns: term, meaning: "n-th complex Fourier coefficient of f on (a,b], normalized by 1/(b-a)"}
+fourier_coeff_circle: {args: [term, term, term], returns: term, meaning: "n-th Fourier coefficient of f on the circle of period T"}
+fourier_mode_circle: {args: [term, term, term], returns: term, meaning: "value at x of the n-th Fourier mode on the circle of period T"}
+fourier_l2_family: {args: [term], returns: term, meaning: "family of Fourier modes in L2 of the circle of period T with normalized measure"}
+l2_circle_space: {args: [term], returns: term, meaning: "L2 space of the circle of period T with normalized measure"}
+integrable_circle: {args: [term, term], returns: prop, meaning: "f is integrable on the circle of period T"}
+integral_circle: {args: [term, term_function], returns: term, meaning: "integral over the circle of period T with total mass one"}
+continuous_circle_function: {args: [term, term], returns: prop, meaning: "f is a continuous complex function on the circle of period T"}
+square_integrable_on: {args: [term, term, term], returns: prop, meaning: "f is square integrable on the interval (a,b]"}
+has_sum_fn: {args: [term_function, term], returns: prop, meaning: "the series of the indexed expression sums unconditionally to s"}
+tends_to_zero_at_infinity: {args: [term_function], returns: prop, meaning: "the function tends to 0 as the absolute value of its real argument tends to infinity"}
+fourier_transform: {args: [term], returns: term, meaning: "Fourier transform of f with the kernel exp(-2 pi i x w)"}
+big_o_power_decay: {args: [term, term], returns: prop, meaning: "f(x) is O(|x|^(-b)) as |x| tends to infinity"}
+real_polynomial: {args: [term], returns: prop, meaning: "P is a polynomial with real coefficients"}
+polynomial_degree: {args: [term], returns: term, meaning: "degree of the polynomial P"}
+polynomial_eval: {args: [term, term], returns: term, meaning: "polynomial p evaluated at the element a"}
+injective_on: {args: [term, term], returns: prop, meaning: "f is injective on the set S"}
+convex_function_on_line: {args: [term], returns: prop, meaning: "f is a convex function on the whole real line"}
+has_derivative_at: {args: [term, term, term], returns: prop, meaning: "the real function f has derivative d at x"}
+fn_continuous_real: {args: [term], returns: prop, meaning: "the real function f is continuous on the whole line"}
+twice_continuously_differentiable_on: {args: [term, term], returns: prop, meaning: "f is C2 on the set S"}
+second_derivative_within: {args: [term, term, term], returns: term, meaning: "second derivative of f at x computed within the set S"}
+trapezoid_sum: {args: [term, term, term, term], returns: term, meaning: "composite trapezoidal rule of f with N subintervals on the interval from a to b"}
+interval_integrable_fn: {args: [term, term, term], returns: prop, meaning: "the function g is integrable on the interval between a and b"}
+fourier_coeff_family: {args: [term, term], returns: term, meaning: "family of Fourier coefficients of f on the circle of period T"}

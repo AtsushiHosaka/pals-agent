@@ -1,0 +1,2424 @@
+- id: inner_bilinear_expansion
+  kind: gap
+  level: high
+  topic: ベクトル・内積の展開
+  statement: |
+    実内積空間のベクトル $\vec a,\vec b,\vec c,\vec d$ と実数 $p,q,r,s$ に対し、$(p\vec a+q\vec b)\cdot(r\vec c+s\vec d)=pr\,\vec a\cdot\vec c+ps\,\vec a\cdot\vec d+qr\,\vec b\cdot\vec c+qs\,\vec b\cdot\vec d$ が成り立つ。
+  statement_en: For vectors a, b, c, d in a real inner product space and real numbers p, q, r, s, (pa+qb)·(rc+sd) = pr a·c + ps a·d + qr b·c + qs b·d.
+  assumptions:
+  - $\vec a,\vec b,\vec c,\vec d$ は実内積空間のベクトル
+  - $p,q,r,s$ は実数
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec c,\vec d$ と任意の実数 $p,q,r,s$
+  conclusion: |
+    $(p\vec a+q\vec b)\cdot(r\vec c+s\vec d)=pr\,\vec a\cdot\vec c+ps\,\vec a\cdot\vec d+qr\,\vec b\cdot\vec c+qs\,\vec b\cdot\vec d$ である。
+  answer: |
+    $\vec a,\vec b,\vec c,\vec d$ を実内積空間のベクトル、$p,q,r,s$ を実数とする。実内積は各成分について線形である。第1成分の線形性より、左辺は $p\,\vec a\cdot(r\vec c+s\vec d)+q\,\vec b\cdot(r\vec c+s\vec d)$ に等しい。第2成分の線形性で各項を展開すると $pr\,\vec a\cdot\vec c+ps\,\vec a\cdot\vec d+qr\,\vec b\cdot\vec c+qs\,\vec b\cdot\vec d$ となる。
+  strategy: Expand by linearity in the first slot, then in the second slot.
+  sketch:
+  - 'apply_theorem: Use linearity of the real inner product in the first argument.'
+  - 'apply_theorem: Use linearity in the second argument on each term.'
+  - 'conclude: Collect the four terms.'
+  openmath: (forall (V a b c d p q r s) (-> (inner_product_space_over R V) (= (inner_product (+ (smul p a) (smul q b)) (+ (smul r c) (smul s d))) (+ (* p r (inner_product a c)) (* p s (inner_product a d)) (* q r (inner_product b c)) (* q s (inner_product b d))))))
+  hard_negative:
+    statement: |
+      複素内積空間でも、複素数 $p,q,r,s$ に対して同じ係数で展開できる。
+    reason: |
+      複素内積は片方の成分について共役線形なので、係数の片方は共役になる。$\vec a=\vec c$ を単位ベクトル、$q=s=0$、$p=r=i$ とすると、値は $1$ であり $pr=-1$ と異なる。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b c d : V) (p q r s : ℝ), inner ℝ (p • a + q • b) (r • c + s • d) = p * r * inner ℝ a c + p * s * inner ℝ a d + q * r * inner ℝ b c + q * s * inner ℝ b d
+  proof: |
+    by
+      intro V _ _ a b c d p q r s
+      simp only [inner_add_left, inner_add_right, real_inner_smul_left, real_inner_smul_right]
+      ring
+- id: norm_sq_linear_combination
+  kind: gap
+  level: high
+  topic: ベクトル・大きさの2乗
+  statement: |
+    実内積空間のベクトル $\vec a,\vec b$ と実数 $p,q$ に対し、$|p\vec a+q\vec b|^2=p^2|\vec a|^2+2pq\,\vec a\cdot\vec b+q^2|\vec b|^2$ が成り立つ。
+  statement_en: For vectors a, b in a real inner product space and real numbers p, q, |pa+qb|^2 = p^2|a|^2 + 2pq a·b + q^2|b|^2.
+  assumptions:
+  - $\vec a,\vec b$ は実内積空間のベクトル
+  - $p,q$ は実数
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$ と任意の実数 $p,q$
+  conclusion: |
+    $|p\vec a+q\vec b|^2=p^2|\vec a|^2+2pq\,\vec a\cdot\vec b+q^2|\vec b|^2$ である。
+  answer: |
+    $\vec a,\vec b$ を実内積空間のベクトル、$p,q$ を実数とする。$|\vec x|^2=\vec x\cdot\vec x$ と内積の線形性、対称性より、$(p\vec a+q\vec b)\cdot(p\vec a+q\vec b)=p^2\,\vec a\cdot\vec a+2pq\,\vec a\cdot\vec b+q^2\,\vec b\cdot\vec b$ である。$\vec a\cdot\vec a=|\vec a|^2$、$\vec b\cdot\vec b=|\vec b|^2$ を代入すると求める等式を得る。
+  strategy: Write the squared norm as an inner product and expand using bilinearity and symmetry.
+  sketch:
+  - 'translate: Write |pa+qb|^2 as (pa+qb)·(pa+qb).'
+  - 'derive: Expand with bilinearity and the symmetry a·b = b·a.'
+  - 'conclude: Replace a·a and b·b by |a|^2 and |b|^2.'
+  openmath: (forall (V a b p q) (-> (inner_product_space_over R V) (= (^ (norm (+ (smul p a) (smul q b))) 2) (+ (* (^ p 2) (^ (norm a) 2)) (* 2 p q (inner_product a b)) (* (^ q 2) (^ (norm b) 2))))))
+  hard_negative:
+    statement: |
+      $|p\vec a+q\vec b|=|p||\vec a|+|q||\vec b|$ がつねに成り立つ。
+    reason: |
+      $\vec a,\vec b$ を直交する単位ベクトル、$p=q=1$ とすると左辺は $\sqrt 2$、右辺は $2$ である。一般に成り立つのは $\le$ だけである。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V) (p q : ℝ), ‖p • a + q • b‖ ^ 2 = p ^ 2 * ‖a‖ ^ 2 + 2 * p * q * inner ℝ a b + q ^ 2 * ‖b‖ ^ 2
+  proof: |
+    by
+      intro V _ _ a b p q
+      rw [norm_add_sq_real, norm_smul, norm_smul, real_inner_smul_left, real_inner_smul_right, mul_pow, mul_pow, Real.norm_eq_abs, Real.norm_eq_abs, sq_abs, sq_abs]
+      ring
+- id: sum_diff_perpendicular_iff_equal_norm
+  kind: gap
+  level: high
+  topic: ベクトル・直交と大きさ
+  statement: |
+    実内積空間のベクトル $\vec a,\vec b$ について、$(\vec a+\vec b)\cdot(\vec a-\vec b)=0$ であることと $|\vec a|=|\vec b|$ であることは同値である。
+  statement_en: For vectors a, b in a real inner product space, (a+b)·(a-b) = 0 if and only if |a| = |b|.
+  assumptions:
+  - $\vec a,\vec b$ は実内積空間のベクトル
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$
+  conclusion: |
+    $(\vec a+\vec b)\cdot(\vec a-\vec b)=0$ と $|\vec a|=|\vec b|$ は同値である。
+  answer: |
+    $\vec a,\vec b$ を実内積空間のベクトルとする。内積の線形性と対称性より $(\vec a+\vec b)\cdot(\vec a-\vec b)=|\vec a|^2-|\vec b|^2$ である。よって左の条件は $|\vec a|^2=|\vec b|^2$ と同値である。大きさは $0$ 以上の実数なので、これは $|\vec a|=|\vec b|$ と同値である。
+  strategy: Expand the inner product to a difference of squared norms and use nonnegativity of norms.
+  sketch:
+  - 'derive: Expand (a+b)·(a-b) = |a|^2 - |b|^2.'
+  - 'translate: The vanishing is equivalent to |a|^2 = |b|^2.'
+  - 'conclude: Norms are nonnegative, so this is equivalent to |a| = |b|.'
+  openmath: (forall (V a b) (-> (inner_product_space_over R V) (<-> (= (inner_product (+ a b) (- a b)) 0) (= (norm a) (norm b)))))
+  hard_negative:
+    statement: |
+      $(\vec a+\vec b)\cdot(\vec a-\vec b)=0$ ならば $\vec a=\vec b$ または $\vec a=-\vec b$ である。
+    reason: |
+      大きさが等しいだけでは向きは決まらない。平面の $\vec a=(1,0)$、$\vec b=(0,1)$ は条件を満たすが、どちらでもない。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V), inner ℝ (a + b) (a - b) = 0 ↔ ‖a‖ = ‖b‖
+  proof: |
+    by
+      intro V _ _ a b
+      exact real_inner_add_sub_eq_zero_iff a b
+- id: minimal_norm_on_line_orthogonal
+  kind: gap
+  level: high
+  topic: ベクトル・大きさの最小と垂直
+  statement: |
+    実内積空間のベクトル $\vec a,\vec b$ について $\vec b\neq\vec 0$ とし、$t_0=-\dfrac{\vec a\cdot\vec b}{|\vec b|^2}$ とおく。このとき $(\vec a+t_0\vec b)\cdot\vec b=0$ であり、すべての実数 $t$ に対して $|\vec a+t_0\vec b|\le|\vec a+t\vec b|$ が成り立つ。
+  statement_en: Let a, b be vectors in a real inner product space with b ≠ 0 and t₀ = -(a·b)/|b|^2. Then (a+t₀b)·b = 0, and |a+t₀b| ≤ |a+tb| for every real t.
+  assumptions:
+  - $\vec a,\vec b$ は実内積空間のベクトル
+  - $\vec b\neq\vec 0$
+  - $t_0=-\dfrac{\vec a\cdot\vec b}{|\vec b|^2}$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$ と任意の実数 $t$
+  conclusion: |
+    $\vec a+t_0\vec b$ は $\vec b$ に垂直であり、$|\vec a+t\vec b|$ は $t=t_0$ で最小になる。
+  answer: |
+    $\vec a,\vec b$ を実内積空間のベクトル、$\vec b\neq\vec 0$、$t_0=-\dfrac{\vec a\cdot\vec b}{|\vec b|^2}$ とする。まず $(\vec a+t_0\vec b)\cdot\vec b=\vec a\cdot\vec b+t_0|\vec b|^2=0$ である。次に実数 $t$ をとり、$\vec u=\vec a+t_0\vec b$ とおくと $\vec a+t\vec b=\vec u+(t-t_0)\vec b$ である。$\vec u\cdot\vec b=0$ より $|\vec a+t\vec b|^2=|\vec u|^2+(t-t_0)^2|\vec b|^2\ge|\vec u|^2$ となる。両辺とも $0$ 以上なので $|\vec u|\le|\vec a+t\vec b|$ を得る。
+  strategy: Check orthogonality directly, then split a+tb into an orthogonal sum and apply the Pythagorean expansion.
+  sketch:
+  - 'derive: Compute (a+t₀b)·b = a·b + t₀|b|^2 = 0.'
+  - 'setup: Put u = a+t₀b and write a+tb = u+(t-t₀)b.'
+  - 'derive: Since u·b = 0, |a+tb|^2 = |u|^2 + (t-t₀)^2|b|^2.'
+  - 'conclude: The extra term is nonnegative, so |u| ≤ |a+tb|.'
+  openmath: (forall (V a b) (-> (and (inner_product_space_over R V) (!= b 0)) (and (= (inner_product (+ a (smul (/ (neg (inner_product a b)) (^ (norm b) 2)) b)) b) 0) (forall (t) (<= (norm (+ a (smul (/ (neg (inner_product a b)) (^ (norm b) 2)) b))) (norm (+ a (smul t b))))))))
+  hard_negative:
+    statement: |
+      $|\vec a+t\vec b|$ は $t=\dfrac{\vec a\cdot\vec b}{|\vec b|^2}$ で最小になる。
+    reason: |
+      符号が逆である。$\vec a=\vec b$ を単位ベクトルとすると、その $t=1$ で値は $2$ だが、$t=-1$ で値は $0$ になる。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V), b ≠ 0 → inner ℝ (a + (-(inner ℝ a b) / ‖b‖ ^ 2) • b) b = 0 ∧ ∀ t : ℝ, ‖a + (-(inner ℝ a b) / ‖b‖ ^ 2) • b‖ ≤ ‖a + t • b‖
+  proof: |
+    by
+      intro V _ _ a b hb
+      have hb2 : 0 < ‖b‖ ^ 2 := by positivity
+      have horth : inner ℝ (a + (-(inner ℝ a b) / ‖b‖ ^ 2) • b) b = 0 := by
+        rw [inner_add_left, real_inner_smul_left, real_inner_self_eq_norm_sq]
+        field_simp
+        ring
+      refine ⟨horth, fun t => ?_⟩
+      set t₀ : ℝ := -(inner ℝ a b) / ‖b‖ ^ 2 with ht₀
+      have e : a + t • b = (a + t₀ • b) + (t - t₀) • b := by module
+      have hsq : ‖a + t • b‖ ^ 2 = ‖a + t₀ • b‖ ^ 2 + (t - t₀) ^ 2 * ‖b‖ ^ 2 := by
+        rw [e, norm_add_sq_real, real_inner_smul_right, horth, norm_smul, mul_pow, Real.norm_eq_abs, sq_abs]
+        ring
+      have hle : ‖a + t₀ • b‖ ^ 2 ≤ ‖a + t • b‖ ^ 2 := by
+        rw [hsq]
+        nlinarith [mul_nonneg (sq_nonneg (t - t₀)) hb2.le]
+      exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp hle
+- id: independent_coefficient_comparison
+  kind: gap
+  level: high
+  topic: ベクトル・係数比較
+  statement: |
+    実ベクトル空間のベクトル $\vec a,\vec b$ が1次独立であるとする。実数 $p,q,r,s$ が $p\vec a+q\vec b=r\vec a+s\vec b$ を満たすならば、$p=r$ かつ $q=s$ である。
+  statement_en: If vectors a, b of a real vector space are linearly independent and pa+qb = ra+sb for real numbers p, q, r, s, then p = r and q = s.
+  assumptions:
+  - $\vec a,\vec b$ は1次独立
+  - $p\vec a+q\vec b=r\vec a+s\vec b$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$ と任意の実数 $p,q,r,s$
+  conclusion: |
+    $p=r$ かつ $q=s$ である。
+  answer: |
+    $\vec a,\vec b$ を1次独立な実ベクトル空間のベクトルとし、実数 $p,q,r,s$ が $p\vec a+q\vec b=r\vec a+s\vec b$ を満たすとする。移項すると $(p-r)\vec a+(q-s)\vec b=\vec 0$ である。1次独立の定義より $p-r=0$ かつ $q-s=0$ となるので、$p=r$ かつ $q=s$ である。
+  strategy: Move everything to one side and apply the definition of linear independence.
+  sketch:
+  - 'derive: Rearrange to (p-r)a + (q-s)b = 0.'
+  - 'apply_theorem: Linear independence forces both coefficients to vanish.'
+  - 'conclude: Hence p = r and q = s.'
+  openmath: (forall (V a b p q r s) (-> (and (real_vector_space V) (linearly_independent_pair a b) (= (+ (smul p a) (smul q b)) (+ (smul r a) (smul s b)))) (and (= p r) (= q s))))
+  hard_negative:
+    statement: |
+      $\vec a\neq\vec 0$、$\vec b\neq\vec 0$ であれば、$p\vec a+q\vec b=r\vec a+s\vec b$ から $p=r$、$q=s$ が従う。
+    reason: |
+      平行な場合に成り立たない。$\vec a=\vec b\neq\vec 0$ なら $1\vec a+0\vec b=0\vec a+1\vec b$ だが係数は異なる。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b : V), LinearIndependent ℝ ![a, b] → ∀ p q r s : ℝ, p • a + q • b = r • a + s • b → p = r ∧ q = s
+  proof: |
+    by
+      intro V _ _ a b h p q r s hEq
+      have h0 : (p - r) • a + (q - s) • b = 0 := by linear_combination (norm := module) hEq
+      obtain ⟨h1, h2⟩ := LinearIndependent.pair_iff.mp h _ _ h0
+      exact ⟨by linarith, by linarith⟩
+- id: independent_pair_iff_not_parallel
+  kind: gap
+  level: high
+  topic: ベクトル・1次独立と平行
+  statement: |
+    実ベクトル空間の $\vec 0$ でないベクトル $\vec a,\vec b$ について、$\vec a,\vec b$ が1次独立であることと、$\vec b$ が $\vec a$ の実数倍でないことは同値である。
+  statement_en: For nonzero vectors a, b of a real vector space, a and b are linearly independent if and only if b is not a real multiple of a.
+  assumptions:
+  - $\vec a\neq\vec 0$
+  - $\vec b\neq\vec 0$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$
+  conclusion: |
+    $\vec a,\vec b$ が1次独立であることと、どの実数 $k$ についても $\vec b\neq k\vec a$ であることは同値である。
+  answer: |
+    $\vec a,\vec b$ を実ベクトル空間の $\vec 0$ でないベクトルとする。1次独立であると仮定する。もし $\vec b=k\vec a$ なら $k\vec a+(-1)\vec b=\vec 0$ となり、係数 $-1$ が $0$ でないので矛盾する。逆に、$\vec b$ がどの $\vec a$ の実数倍でもないと仮定し、$s\vec a+t\vec b=\vec 0$ とする。$t\neq 0$ なら $\vec b=-\dfrac{s}{t}\vec a$ となって仮定に反するので、$t=0$ である。すると $s\vec a=\vec 0$ であり、$\vec a\neq\vec 0$ より $s=0$ となる。よって1次独立である。
+  strategy: Prove each direction by producing a nontrivial relation or solving for b.
+  sketch:
+  - 'contradiction: If b = ka, then ka + (-1)b = 0 is a nontrivial relation.'
+  - 'setup: Conversely assume b is no multiple of a and take sa+tb = 0.'
+  - 'case_split: If t ≠ 0, solve b = -(s/t)a, a contradiction.'
+  - 'derive: So t = 0, then sa = 0 and a ≠ 0 give s = 0.'
+  - 'conclude: The pair is independent.'
+  openmath: (forall (V a b) (-> (and (real_vector_space V) (!= a 0) (!= b 0)) (<-> (linearly_independent_pair a b) (forall (k) (!= b (smul k a))))))
+  hard_negative:
+    statement: |
+      $\vec a=\vec 0$ の場合も含めて、$\vec b$ が $\vec a$ の実数倍でなければ $\vec a,\vec b$ は1次独立である。
+    reason: |
+      $\vec a=\vec 0$、$\vec b\neq\vec 0$ とすると $\vec b$ は $\vec a$ の実数倍でないが、$1\vec a+0\vec b=\vec 0$ なので1次独立でない。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b : V), a ≠ 0 → b ≠ 0 → (LinearIndependent ℝ ![a, b] ↔ ∀ k : ℝ, b ≠ k • a)
+  proof: |
+    by
+      intro V _ _ a b ha hb
+      rw [LinearIndependent.pair_iff]
+      constructor
+      · intro h k hk
+        have h0 : k • a + (-1 : ℝ) • b = 0 := by rw [hk]; module
+        have := (h k (-1) h0).2
+        norm_num at this
+      · intro h s t hst
+        by_cases ht : t = 0
+        · subst ht
+          have hs : s • a = 0 := by simpa using hst
+          exact ⟨(smul_eq_zero.mp hs).resolve_right ha, rfl⟩
+        · exfalso
+          apply h (-(s / t))
+          have : t • b = (-s) • a := by linear_combination (norm := module) hst
+          calc b = t⁻¹ • (t • b) := by rw [smul_smul, inv_mul_cancel₀ ht, one_smul]
+            _ = -(s / t) • a := by rw [this, smul_smul]; congr 1; field_simp
+- id: internal_division_formula
+  kind: textbook
+  level: high
+  topic: ベクトル・内分点
+  statement: 実内積空間の点$\mathrm{A},\mathrm{B},\mathrm{P}$の位置ベクトルを$\vec a,\vec b,\vec p$とし、$m,n>0$とする。$\mathrm{P}$が線分$\mathrm{AB}$上にあり$n\,\mathrm{AP}=m\,\mathrm{PB}$を満たす（すなわち$\mathrm{P}$が線分$\mathrm{AB}$を$m:n$に内分する）ことと、$\vec p=\dfrac{n\vec a+m\vec b}{m+n}$であることは同値である。
+  statement_en: Let a, b, p be vectors in a real inner product space and m, n > 0. Then p lies on the segment from a to b with n|p-a| = m|b-p| if and only if p = (na+mb)/(m+n).
+  assumptions:
+  - $m>0$
+  - $n>0$
+  - $\vec p=\dfrac{n\vec a+m\vec b}{m+n}$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec p$ と任意の正の実数 $m,n$
+  conclusion: $\mathrm{P}$が線分$\mathrm{AB}$上にあり$n|\vec p-\vec a|=m|\vec b-\vec p|$であることと、$\vec p=\dfrac{n\vec a+m\vec b}{m+n}$であることは同値である。
+  answer: |-
+    $\vec a,\vec b,\vec p$を実内積空間のベクトル、$m,n>0$とする。
+
+    （右から左）$\vec p=\dfrac{n\vec a+m\vec b}{m+n}$とする。係数$\dfrac{n}{m+n},\dfrac{m}{m+n}$は正で和が$1$なので、$\vec p$は線分$\mathrm{AB}$上にある。また$\vec p-\vec a=\dfrac{m}{m+n}(\vec b-\vec a)$、$\vec b-\vec p=\dfrac{n}{m+n}(\vec b-\vec a)$なので、$n|\vec p-\vec a|=\dfrac{mn}{m+n}|\vec b-\vec a|=m|\vec b-\vec p|$である。
+
+    （左から右）$\vec p$が線分$\mathrm{AB}$上にあるので、$0\le\lambda\le1$の$\lambda$で$\vec p=\vec a+\lambda(\vec b-\vec a)$と書ける。このとき$|\vec p-\vec a|=\lambda|\vec b-\vec a|$、$|\vec b-\vec p|=(1-\lambda)|\vec b-\vec a|$なので、条件$n|\vec p-\vec a|=m|\vec b-\vec p|$は$\{n\lambda-m(1-\lambda)\}|\vec b-\vec a|=0$となる。$\vec a=\vec b$なら$\vec p=\vec a$であり、$\dfrac{n\vec a+m\vec b}{m+n}=\vec a$でもある。$\vec a\ne\vec b$なら$n\lambda=m(1-\lambda)$より$\lambda=\dfrac{m}{m+n}$であり、$\vec p=\dfrac{n}{m+n}\vec a+\dfrac{m}{m+n}\vec b$を得る。
+  strategy: Express p-a and b-p as positive multiples of b-a and take norms.
+  sketch:
+  - 'derive: The coefficients are positive and sum to 1, so p lies on the segment.'
+  - 'derive: p-a = (m/(m+n))(b-a) and b-p = (n/(m+n))(b-a).'
+  - 'conclude: Taking norms gives n|p-a| = m|b-p|.'
+  openmath: (forall (V a b p m n) (-> (and (inner_product_space_over R V) (in a V) (in b V) (in p V) (in m R) (in n R) (> m 0) (> n 0)) (<-> (and (in_segment p a b) (= (* n (norm (- p a))) (* m (norm (- b p))))) (= p (+ (smul (/ n (+ m n)) a) (smul (/ m (+ m n)) b))))))
+  hard_negative:
+    statement: |
+      線分 $\mathrm{AB}$ を $m:n$ に内分する点の位置ベクトルは $\dfrac{m\vec a+n\vec b}{m+n}$ である。
+    reason: |
+      係数が逆である。$m=1$、$n=3$ のときこの点は $\mathrm{A}$ より $\mathrm{B}$ に近いが、$1:3$ に内分する点は $\mathrm{A}$ に近い。
+  target: '∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b P : V) (m n : ℝ), 0 < m → 0 < n → ((P ∈ segment ℝ a b ∧ n * ‖P - a‖ = m * ‖b - P‖) ↔ P = (n / (m + n)) • a + (m / (m + n)) • b)'
+  proof: |
+    by
+      intro V _ _ a b P m n hm hn
+      have hmn : m + n ≠ 0 := by positivity
+      constructor
+      · rintro ⟨⟨x, y, hx, hy, hxy, hP⟩, h⟩
+        have hy' : y = 1 - x := by linarith
+        subst hP
+        subst hy'
+        have h1 : x • a + (1 - x) • b - a = (1 - x) • (b - a) := by module
+        have h2 : b - (x • a + (1 - x) • b) = x • (b - a) := by module
+        rw [h1, h2, norm_smul, norm_smul, Real.norm_of_nonneg hx, Real.norm_of_nonneg hy] at h
+        by_cases hab : ‖b - a‖ = 0
+        · have hba : b = a := by
+            have := norm_eq_zero.mp hab
+            exact sub_eq_zero.mp this
+          subst hba
+          match_scalars <;> field_simp <;> ring
+        · have hxy : n * (1 - x) = m * x := by
+            have : n * (1 - x) * ‖b - a‖ = m * x * ‖b - a‖ := by linarith
+            exact mul_right_cancel₀ hab this
+          have hx' : x = n / (m + n) := by
+            field_simp
+            linarith
+          subst hx'
+          match_scalars <;> field_simp <;> ring
+      · intro h
+        subst h
+        have hn' : 0 ≤ n / (m + n) := by positivity
+        have hm' : 0 ≤ m / (m + n) := by positivity
+        have hsum : n / (m + n) + m / (m + n) = 1 := by field_simp; ring
+        refine ⟨⟨n / (m + n), m / (m + n), hn', hm', hsum, rfl⟩, ?_⟩
+        have h1 : (n / (m + n)) • a + (m / (m + n)) • b - a = (m / (m + n)) • (b - a) := by
+          match_scalars <;> field_simp <;> ring
+        have h2 : b - ((n / (m + n)) • a + (m / (m + n)) • b) = (n / (m + n)) • (b - a) := by
+          match_scalars <;> field_simp <;> ring
+        rw [h1, h2, norm_smul, norm_smul, Real.norm_of_nonneg hn', Real.norm_of_nonneg hm']
+        field_simp
+- id: external_division_formula
+  kind: textbook
+  level: high
+  topic: ベクトル・外分点
+  statement: 実内積空間の点$\mathrm{A},\mathrm{B},\mathrm{P}$の位置ベクトルを$\vec a,\vec b,\vec p$とし、$m,n>0$、$m\neq n$とする。$n(\vec p-\vec a)=m(\vec p-\vec b)$（すなわち$\mathrm{P}$が線分$\mathrm{AB}$を$m:n$に外分する）ことと、$\vec p=\dfrac{-n\vec a+m\vec b}{m-n}$であることは同値である。
+  statement_en: Let a, b, p be vectors in a real inner product space, m, n > 0, m ≠ n. Then n(p-a) = m(p-b) if and only if p = (-na+mb)/(m-n).
+  assumptions:
+  - $m>0$
+  - $n>0$
+  - $m\neq n$
+  - $\vec p=\dfrac{-n\vec a+m\vec b}{m-n}$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec p$ と任意の正の実数 $m,n$
+  conclusion: $n(\vec p-\vec a)=m(\vec p-\vec b)$と$\vec p=\dfrac{-n\vec a+m\vec b}{m-n}$は同値である。
+  answer: $\vec a,\vec b,\vec p$を実内積空間のベクトル、$m,n>0$、$m\neq n$とする。$m-n\ne0$である。$n(\vec p-\vec a)=m(\vec p-\vec b)$を整理すると$(m-n)\vec p=m\vec b-n\vec a$となる。$m-n\ne0$なので、これは$\vec p=\dfrac{-n\vec a+m\vec b}{m-n}$と同値である（各変形は逆にたどれる）。
+  strategy: Clear the denominator, rearrange to n(p-a) = m(p-b), then take norms.
+  sketch:
+  - 'derive: From the formula, (m-n)p = mb - na.'
+  - 'derive: Rearranging gives n(p-a) = m(p-b).'
+  - 'conclude: Taking norms with m, n > 0 gives n|p-a| = m|p-b|.'
+  openmath: (forall (V a b p m n) (-> (and (inner_product_space_over R V) (in a V) (in b V) (in p V) (in m R) (in n R) (> m 0) (> n 0) (!= m n)) (<-> (= p (+ (smul (/ (neg n) (- m n)) a) (smul (/ m (- m n)) b))) (= (smul n (- p a)) (smul m (- p b))))))
+  hard_negative:
+    statement: |
+      $m=n$ のときも、線分 $\mathrm{AB}$ を $m:n$ に外分する点が $\dfrac{-n\vec a+m\vec b}{m-n}$ で定まる。
+    reason: |
+      $m=n$ では分母が $0$ になる。実際、$\mathrm{A}\neq\mathrm{B}$ なら $\mathrm{PA}=\mathrm{PB}$ を満たす直線 $\mathrm{AB}$ 上の点は中点だけで、外分点は存在しない。
+  target: '∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b P : V) (m n : ℝ), 0 < m → 0 < n → m ≠ n → (P = (-n / (m - n)) • a + (m / (m - n)) • b ↔ n • (P - a) = m • (P - b))'
+  proof: |
+    by
+      intro V _ _ a b P m n hm hn hne
+      have hd : m - n ≠ 0 := sub_ne_zero.mpr hne
+      constructor
+      · intro h
+        subst h
+        match_scalars <;> field_simp <;> ring
+      · intro h
+        have h3 : n • (P - a) - m • (P - b) = 0 := by rw [h]; simp
+        have h' : (m - n) • P = (-n) • a + m • b := by
+          calc (m - n) • P = (-n) • a + m • b - (n • (P - a) - m • (P - b)) := by module
+            _ = (-n) • a + m • b := by rw [h3, sub_zero]
+        have : P = (m - n)⁻¹ • ((m - n) • P) := by rw [smul_smul, inv_mul_cancel₀ hd, one_smul]
+        rw [this, h']
+        match_scalars <;> field_simp
+- id: weighted_zero_sum_point_position
+  kind: gap
+  level: high
+  topic: ベクトル・点の位置の決定
+  statement: |
+    実ベクトル空間の点 $\mathrm{A},\mathrm{B},\mathrm{C},\mathrm{P}$ の位置ベクトルを $\vec a,\vec b,\vec c,\vec p$ とし、実数 $\alpha,\beta,\gamma$ が $\alpha+\beta+\gamma\neq 0$ を満たすとする。$\alpha\overrightarrow{\mathrm{PA}}+\beta\overrightarrow{\mathrm{PB}}+\gamma\overrightarrow{\mathrm{PC}}=\vec 0$ ならば、$\vec p=\dfrac{\alpha\vec a+\beta\vec b+\gamma\vec c}{\alpha+\beta+\gamma}$ である。
+  statement_en: Let a, b, c, p be vectors of a real vector space and α, β, γ real numbers with α+β+γ ≠ 0. If α(a-p)+β(b-p)+γ(c-p) = 0, then p = (αa+βb+γc)/(α+β+γ).
+  assumptions:
+  - $\alpha+\beta+\gamma\neq 0$
+  - $\alpha(\vec a-\vec p)+\beta(\vec b-\vec p)+\gamma(\vec c-\vec p)=\vec 0$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec c,\vec p$ と任意の実数 $\alpha,\beta,\gamma$
+  conclusion: |
+    $\vec p=\dfrac{\alpha\vec a+\beta\vec b+\gamma\vec c}{\alpha+\beta+\gamma}$ である。
+  answer: |
+    $\vec a,\vec b,\vec c,\vec p$ を実ベクトル空間のベクトル、$\alpha,\beta,\gamma$ を $\alpha+\beta+\gamma\neq 0$ を満たす実数とし、$\alpha(\vec a-\vec p)+\beta(\vec b-\vec p)+\gamma(\vec c-\vec p)=\vec 0$ とする。展開して整理すると $(\alpha+\beta+\gamma)\vec p=\alpha\vec a+\beta\vec b+\gamma\vec c$ である。両辺を $\alpha+\beta+\gamma$ で割ると求める式を得る。
+  strategy: Collect the terms in p and divide by the nonzero coefficient sum.
+  sketch:
+  - 'derive: Expand to (α+β+γ)p = αa+βb+γc.'
+  - 'conclude: Divide by α+β+γ ≠ 0.'
+  openmath: (forall (V a b c p x y z) (-> (and (real_vector_space V) (!= (+ x y z) 0) (= (+ (smul x (- a p)) (smul y (- b p)) (smul z (- c p))) 0)) (= p (smul (/ 1 (+ x y z)) (+ (smul x a) (smul y b) (smul z c))))))
+  hard_negative:
+    statement: |
+      $\alpha+\beta+\gamma=0$ でも、$\alpha\overrightarrow{\mathrm{PA}}+\beta\overrightarrow{\mathrm{PB}}+\gamma\overrightarrow{\mathrm{PC}}=\vec 0$ は点 $\mathrm{P}$ をただ1つに定める。
+    reason: |
+      和が $0$ なら $\vec p$ の係数が消える。$\alpha=1$、$\beta=-1$、$\gamma=0$、$\mathrm{A}=\mathrm{B}$ とすると、どの点 $\mathrm{P}$ も条件を満たす。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b c p : V) (α β γ : ℝ), α + β + γ ≠ 0 → α • (a - p) + β • (b - p) + γ • (c - p) = 0 → p = (1 / (α + β + γ)) • (α • a + β • b + γ • c)
+  proof: |
+    by
+      intro V _ _ a b c p α β γ hs h
+      have key : (α + β + γ) • p = α • a + β • b + γ • c := by
+        linear_combination (norm := module) (-1 : ℝ) • h
+      rw [← key, smul_smul, one_div, inv_mul_cancel₀ hs, one_smul]
+- id: weighted_point_area_ratio
+  kind: gap
+  level: high
+  topic: ベクトル・面積比
+  statement: |
+    座標平面の点 $\mathrm{A}(a_1,a_2),\mathrm{B}(b_1,b_2),\mathrm{C}(c_1,c_2),\mathrm{P}(p_1,p_2)$ と $\alpha,\beta,\gamma>0$ について、$\alpha\overrightarrow{\mathrm{PA}}+\beta\overrightarrow{\mathrm{PB}}+\gamma\overrightarrow{\mathrm{PC}}=\vec 0$ とする。$\vec x,\vec y$ の作る三角形の面積を $\dfrac12|x_1y_2-x_2y_1|$ とするとき、$\triangle\mathrm{PBC},\triangle\mathrm{PCA},\triangle\mathrm{PAB}$ の面積の比は $\alpha:\beta:\gamma$ である。すなわち $\beta\triangle\mathrm{PBC}=\alpha\triangle\mathrm{PCA}$ かつ $\gamma\triangle\mathrm{PBC}=\alpha\triangle\mathrm{PAB}$ が成り立つ。
+  statement_en: For points A, B, C, P in the coordinate plane and α, β, γ > 0 with α PA + β PB + γ PC = 0 (as vectors), the areas S(x,y) = |x₁y₂-x₂y₁|/2 of triangles PBC, PCA, PAB are in the ratio α:β:γ, that is β·PBC = α·PCA and γ·PBC = α·PAB.
+  assumptions:
+  - $\alpha,\beta,\gamma>0$
+  - $\alpha\overrightarrow{\mathrm{PA}}+\beta\overrightarrow{\mathrm{PB}}+\gamma\overrightarrow{\mathrm{PC}}=\vec 0$ が各成分で成り立つ
+  quantifiers:
+  - 任意の実数 $a_1,a_2,b_1,b_2,c_1,c_2,p_1,p_2$ と任意の正の実数 $\alpha,\beta,\gamma$
+  conclusion: |
+    $\beta\triangle\mathrm{PBC}=\alpha\triangle\mathrm{PCA}$ かつ $\gamma\triangle\mathrm{PBC}=\alpha\triangle\mathrm{PAB}$ である。
+  answer: |
+    $a_1,a_2,b_1,b_2,c_1,c_2,p_1,p_2$ を実数、$\alpha,\beta,\gamma>0$ とする。$\vec x=\overrightarrow{\mathrm{PA}}$、$\vec y=\overrightarrow{\mathrm{PB}}$、$\vec z=\overrightarrow{\mathrm{PC}}$ とおくと、仮定は $\alpha\vec x+\beta\vec y+\gamma\vec z=\vec 0$ である。$D(\vec u,\vec v)=u_1v_2-u_2v_1$ は双線形で $D(\vec v,\vec v)=0$、$D(\vec u,\vec v)=-D(\vec v,\vec u)$ を満たす。$\beta\vec y=-\alpha\vec x-\gamma\vec z$ より $\beta D(\vec y,\vec z)=-\alpha D(\vec x,\vec z)=\alpha D(\vec z,\vec x)$ である。また $\gamma\vec z=-\alpha\vec x-\beta\vec y$ より $\gamma D(\vec y,\vec z)=-\alpha D(\vec y,\vec x)=\alpha D(\vec x,\vec y)$ である。絶対値をとり $\dfrac12$ を掛けると、$\alpha,\beta,\gamma>0$ より求める2式を得る。
+  strategy: Use bilinearity and antisymmetry of the determinant to eliminate one vector, then take absolute values.
+  sketch:
+  - 'setup: Put x, y, z for the vectors from P and D(u,v) = u₁v₂-u₂v₁.'
+  - 'derive: From βy = -αx-γz obtain βD(y,z) = αD(z,x).'
+  - 'derive: From γz = -αx-βy obtain γD(y,z) = αD(x,y).'
+  - 'conclude: Take absolute values using positivity of α, β, γ.'
+  openmath: (forall (a1 a2 b1 b2 c1 c2 p1 p2 x y z) (-> (and (> x 0) (> y 0) (> z 0) (= (+ (* x (- a1 p1)) (* y (- b1 p1)) (* z (- c1 p1))) 0) (= (+ (* x (- a2 p2)) (* y (- b2 p2)) (* z (- c2 p2))) 0)) (and (= (* y (* (/ 1 2) (abs (- (* (- b1 p1) (- c2 p2)) (* (- b2 p2) (- c1 p1)))))) (* x (* (/ 1 2) (abs (- (* (- c1 p1) (- a2 p2)) (* (- c2 p2) (- a1 p1))))))) (= (* z (* (/ 1 2) (abs (- (* (- b1 p1) (- c2 p2)) (* (- b2 p2) (- c1 p1)))))) (* x (* (/ 1 2) (abs (- (* (- a1 p1) (- b2 p2)) (* (- a2 p2) (- b1 p1))))))))))
+  hard_negative:
+    statement: |
+      $\triangle\mathrm{PBC},\triangle\mathrm{PCA},\triangle\mathrm{PAB}$ の面積の比は $\dfrac1\alpha:\dfrac1\beta:\dfrac1\gamma$ である。
+    reason: |
+      比は逆数ではなく $\alpha:\beta:\gamma$ である。$\alpha=2$、$\beta=\gamma=1$ のとき $\mathrm{P}$ は $\mathrm{A}$ に近い点になり、$\mathrm{A}$ の対辺側の $\triangle\mathrm{PBC}$ が最大で、面積は全体の $\dfrac12$ になる。
+  target: |
+    ∀ (a₁ a₂ b₁ b₂ c₁ c₂ p₁ p₂ α β γ : ℝ), 0 < α → 0 < β → 0 < γ → α * (a₁ - p₁) + β * (b₁ - p₁) + γ * (c₁ - p₁) = 0 → α * (a₂ - p₂) + β * (b₂ - p₂) + γ * (c₂ - p₂) = 0 → β * (1 / 2 * |(b₁ - p₁) * (c₂ - p₂) - (b₂ - p₂) * (c₁ - p₁)|) = α * (1 / 2 * |(c₁ - p₁) * (a₂ - p₂) - (c₂ - p₂) * (a₁ - p₁)|) ∧ γ * (1 / 2 * |(b₁ - p₁) * (c₂ - p₂) - (b₂ - p₂) * (c₁ - p₁)|) = α * (1 / 2 * |(a₁ - p₁) * (b₂ - p₂) - (a₂ - p₂) * (b₁ - p₁)|)
+  proof: |
+    by
+      intro a₁ a₂ b₁ b₂ c₁ c₂ p₁ p₂ α β γ hα hβ hγ h1 h2
+      have e1 : β * ((b₁ - p₁) * (c₂ - p₂) - (b₂ - p₂) * (c₁ - p₁)) = α * ((c₁ - p₁) * (a₂ - p₂) - (c₂ - p₂) * (a₁ - p₁)) := by
+        linear_combination (c₂ - p₂) * h1 - (c₁ - p₁) * h2
+      have e2 : γ * ((b₁ - p₁) * (c₂ - p₂) - (b₂ - p₂) * (c₁ - p₁)) = α * ((a₁ - p₁) * (b₂ - p₂) - (a₂ - p₂) * (b₁ - p₁)) := by
+        linear_combination (b₁ - p₁) * h2 - (b₂ - p₂) * h1
+      have a1 := congrArg abs e1
+      have a2 := congrArg abs e2
+      rw [abs_mul, abs_mul, abs_of_pos hα, abs_of_pos hβ] at a1
+      rw [abs_mul, abs_mul, abs_of_pos hα, abs_of_pos hγ] at a2
+      constructor <;> linarith
+- id: cevian_intersection_formula
+  kind: gap
+  level: high
+  topic: ベクトル・2直線の交点
+  statement: |
+    実ベクトル空間の1次独立なベクトル $\vec a,\vec b$ と $\alpha\beta\neq 1$ を満たす実数 $\alpha,\beta$ を考える。実数 $s,t$ について、直線 $\mathrm{AD}$ 上の点 $(1-s)\vec a+s\beta\vec b$（$\vec d=\beta\vec b$）と直線 $\mathrm{BC}$ 上の点 $(1-t)\vec b+t\alpha\vec a$（$\vec c=\alpha\vec a$）が一致するならば、その点は $\dfrac{\alpha(1-\beta)}{1-\alpha\beta}\vec a+\dfrac{\beta(1-\alpha)}{1-\alpha\beta}\vec b$ である。
+  statement_en: Let a, b be linearly independent vectors of a real vector space and αβ ≠ 1. If real s, t satisfy (1-s)a + sβb = (1-t)b + tαa, then this common point equals (α(1-β)/(1-αβ))a + (β(1-α)/(1-αβ))b.
+  assumptions:
+  - $\vec a,\vec b$ は1次独立
+  - $\alpha\beta\neq 1$
+  - $(1-s)\vec a+s\beta\vec b=(1-t)\vec b+t\alpha\vec a$
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$ と任意の実数 $\alpha,\beta,s,t$
+  conclusion: |
+    共有点は $\dfrac{\alpha(1-\beta)}{1-\alpha\beta}\vec a+\dfrac{\beta(1-\alpha)}{1-\alpha\beta}\vec b$ である。
+  answer: |
+    $\vec a,\vec b$ を実ベクトル空間の1次独立なベクトル、$\alpha,\beta,s,t$ を $\alpha\beta\neq 1$ を満たす実数とし、$(1-s)\vec a+s\beta\vec b=(1-t)\vec b+t\alpha\vec a$ とする。1次独立性から係数を比較すると $1-s=t\alpha$ かつ $s\beta=1-t$ である。第2式から $t=1-s\beta$ となり、第1式に代入すると $s(1-\alpha\beta)=1-\alpha$ を得る。$1-\alpha\beta\neq 0$ より $s=\dfrac{1-\alpha}{1-\alpha\beta}$ である。よって $1-s=\dfrac{\alpha(1-\beta)}{1-\alpha\beta}$、$s\beta=\dfrac{\beta(1-\alpha)}{1-\alpha\beta}$ となり、共有点は主張の形になる。
+  strategy: Compare coefficients using independence, solve the linear system for s and substitute.
+  sketch:
+  - 'apply_theorem: Independence gives 1-s = tα and sβ = 1-t.'
+  - 'derive: Eliminate t to get s(1-αβ) = 1-α.'
+  - 'derive: Since αβ ≠ 1, solve for s and compute 1-s and sβ.'
+  - 'conclude: Substitute these coefficients into the common point.'
+  openmath: (forall (V a b x y s t) (-> (and (real_vector_space V) (linearly_independent_pair a b) (!= (* x y) 1) (= (+ (smul (- 1 s) a) (smul (* s y) b)) (+ (smul (- 1 t) b) (smul (* t x) a)))) (= (+ (smul (- 1 s) a) (smul (* s y) b)) (+ (smul (/ (* x (- 1 y)) (- 1 (* x y))) a) (smul (/ (* y (- 1 x)) (- 1 (* x y))) b)))))
+  hard_negative:
+    statement: |
+      $\alpha\beta=1$ のときも、直線 $\mathrm{AD}$ と直線 $\mathrm{BC}$ はただ1点で交わる。
+    reason: |
+      $\alpha=2$、$\beta=\dfrac12$ とすると、$\overrightarrow{\mathrm{AD}}=\dfrac12\vec b-\vec a$、$\overrightarrow{\mathrm{BC}}=2\vec a-\vec b$ は平行で、2直線は異なる平行線なので共有点がない。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b : V) (α β s t : ℝ), LinearIndependent ℝ ![a, b] → α * β ≠ 1 → (1 - s) • a + (s * β) • b = (1 - t) • b + (t * α) • a → (1 - s) • a + (s * β) • b = (α * (1 - β) / (1 - α * β)) • a + (β * (1 - α) / (1 - α * β)) • b
+  proof: |
+    by
+      intro V _ _ a b α β s t hli hne hEq
+      have h0 : (1 - s - t * α) • a + (s * β - (1 - t)) • b = 0 := by linear_combination (norm := module) hEq
+      obtain ⟨h1, h2⟩ := LinearIndependent.pair_iff.mp hli _ _ h0
+      have hd : 1 - α * β ≠ 0 := fun h => hne (by linarith)
+      have hs : s * (1 - α * β) = 1 - α := by linear_combination -h1 - α * h2
+      have c1 : 1 - s = α * (1 - β) / (1 - α * β) := by
+        rw [eq_div_iff hd]; linear_combination -hs
+      have c2 : s * β = β * (1 - α) / (1 - α * β) := by
+        rw [eq_div_iff hd]; linear_combination β * hs
+      rw [c1, c2]
+- id: collinear_iff_direction_multiple
+  kind: textbook
+  level: high
+  topic: ベクトル・共線条件
+  statement: |
+    実ベクトル空間の点 $\mathrm{A},\mathrm{B},\mathrm{C}$ の位置ベクトルを $\vec a,\vec b,\vec c$ とし、$\mathrm{A}\neq\mathrm{B}$ とする。3点が同一直線上にあることと、ある実数 $t$ により $\overrightarrow{\mathrm{AC}}=t\overrightarrow{\mathrm{AB}}$ となることは同値である。
+  statement_en: For points a ≠ b and c of a real vector space, a, b, c are collinear if and only if c-a = t(b-a) for some real t.
+  assumptions:
+  - $\mathrm{A}\neq\mathrm{B}$
+  quantifiers:
+  - 任意の点 $\mathrm{A},\mathrm{B},\mathrm{C}$
+  conclusion: |
+    3点が同一直線上にあることと、ある実数 $t$ により $\vec c-\vec a=t(\vec b-\vec a)$ となることは同値である。
+  answer: |
+    $\vec a,\vec b,\vec c$ を実ベクトル空間のベクトルとし、$\vec a\neq\vec b$ とする。3点が同一直線上にあるとは、あるベクトル $\vec v$ と実数 $r_1,r_2,r_3$ により各点が $\vec a+r_i\vec v$ と書けることである。まず3点が同一直線上にあるとする。$\vec a$ を基点として $\vec b-\vec a=r\vec v$、$\vec c-\vec a=r'\vec v$ と書ける。$\vec a\neq\vec b$ より $r\neq 0$ なので、$t=\dfrac{r'}{r}$ とすると $\vec c-\vec a=t(\vec b-\vec a)$ である。逆に $\vec c-\vec a=t(\vec b-\vec a)$ なら、$\vec v=\vec b-\vec a$ とおくと $\vec a=\vec a+0\vec v$、$\vec b=\vec a+1\vec v$、$\vec c=\vec a+t\vec v$ であり、3点は同一直線上にある。
+  strategy: Use a common direction vector based at a; divide by the nonzero coefficient of b.
+  sketch:
+  - 'translate: Collinearity means all points are a + r v for a fixed v.'
+  - 'derive: Write b-a = rv and c-a = r''v; a ≠ b forces r ≠ 0.'
+  - 'construct: Take t = r''/r.'
+  - 'conclude: Conversely v = b-a exhibits the three points with coefficients 0, 1, t.'
+  openmath: (forall (V a b c) (-> (and (real_vector_space V) (!= a b)) (<-> (collinear_points a b c) (exists (t) (= (- c a) (smul t (- b a)))))))
+  hard_negative:
+    statement: |
+      $\mathrm{A}=\mathrm{B}$ の場合も、3点が同一直線上にあることと $\overrightarrow{\mathrm{AC}}=t\overrightarrow{\mathrm{AB}}$ となる $t$ の存在は同値である。
+    reason: |
+      $\mathrm{A}=\mathrm{B}\neq\mathrm{C}$ のとき3点は同一直線上にあるが、$\overrightarrow{\mathrm{AB}}=\vec 0$ なので $\overrightarrow{\mathrm{AC}}\neq t\overrightarrow{\mathrm{AB}}$ である。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b c : V), a ≠ b → (Collinear ℝ ({a, b, c} : Set V) ↔ ∃ t : ℝ, c - a = t • (b - a))
+  proof: |
+    by
+      intro V _ _ a b c hab
+      rw [collinear_iff_of_mem (p₀ := a) (by simp)]
+      constructor
+      · rintro ⟨v, hv⟩
+        obtain ⟨r, hr⟩ := hv b (by simp)
+        obtain ⟨r', hr'⟩ := hv c (by simp)
+        simp only [vadd_eq_add] at hr hr'
+        have hr0 : r ≠ 0 := by
+          rintro rfl
+          exact hab (by simpa using hr.symm)
+        refine ⟨r' / r, ?_⟩
+        have e1 : b - a = r • v := by rw [hr]; abel
+        have e2 : c - a = r' • v := by rw [hr']; abel
+        rw [e1, e2, smul_smul, div_mul_cancel₀ _ hr0]
+      · rintro ⟨t, ht⟩
+        refine ⟨b - a, ?_⟩
+        intro p hp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+        rcases hp with rfl | rfl | rfl
+        · exact ⟨0, by simp⟩
+        · exact ⟨1, by simp⟩
+        · exact ⟨t, by rw [← ht]; simp⟩
+- id: line_ab_coefficient_sum_one
+  kind: gap
+  level: high
+  topic: ベクトル・直線上の点の係数
+  statement: |
+    実ベクトル空間の1次独立なベクトル $\vec a,\vec b$ と実数 $x,y$ について、点 $x\vec a+y\vec b$ が2点 $\mathrm{A},\mathrm{B}$ を通る直線上にあることと、$x+y=1$ であることは同値である。
+  statement_en: For linearly independent vectors a, b of a real vector space and real numbers x, y, the point xa+yb lies on the line through a and b if and only if x+y = 1.
+  assumptions:
+  - $\vec a,\vec b$ は1次独立
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b$ と任意の実数 $x,y$
+  conclusion: |
+    $x\vec a+y\vec b$ が直線 $\mathrm{AB}$ 上にあることと $x+y=1$ は同値である。
+  answer: |
+    $\vec a,\vec b$ を実ベクトル空間の1次独立なベクトル、$x,y$ を実数とする。直線 $\mathrm{AB}$ 上の点は、実数 $r$ により $(1-r)\vec a+r\vec b$ と書ける点である。$x\vec a+y\vec b$ が直線上にあれば、ある $r$ で $x\vec a+y\vec b=(1-r)\vec a+r\vec b$ となる。1次独立性から $x=1-r$、$y=r$ なので $x+y=1$ である。逆に $x+y=1$ なら $x=1-y$ であり、$x\vec a+y\vec b=(1-y)\vec a+y\vec b$ は $r=y$ の点として直線上にある。
+  strategy: Parametrize the line and compare coefficients using independence.
+  sketch:
+  - 'translate: Points of the line are (1-r)a+rb.'
+  - 'apply_theorem: Independence gives x = 1-r and y = r, so x+y = 1.'
+  - 'conclude: Conversely take r = y.'
+  openmath: (forall (V a b x y) (-> (and (real_vector_space V) (linearly_independent_pair a b)) (<-> (on_line (+ (smul x a) (smul y b)) a b) (= (+ x y) 1))))
+  hard_negative:
+    statement: |
+      $\vec a\neq\vec b$ であれば、1次独立でなくても $x\vec a+y\vec b$ が直線 $\mathrm{AB}$ 上にあることと $x+y=1$ は同値である。
+    reason: |
+      $\vec b=2\vec a\neq\vec 0$ とすると、直線 $\mathrm{AB}$ は原点を通り、$x=y=0$ の点は直線上にあるが $x+y\neq 1$ である。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b : V), LinearIndependent ℝ ![a, b] → ∀ x y : ℝ, (x • a + y • b ∈ affineSpan ℝ ({a, b} : Set V) ↔ x + y = 1)
+  proof: |
+    by
+      intro V _ _ a b hli x y
+      rw [mem_affineSpan_pair_iff_exists_lineMap_eq]
+      constructor
+      · rintro ⟨r, hr⟩
+        rw [AffineMap.lineMap_apply] at hr
+        simp only [vsub_eq_sub, vadd_eq_add] at hr
+        have h0 : (x - (1 - r)) • a + (y - r) • b = 0 := by
+          linear_combination (norm := module) (-1 : ℝ) • hr
+        obtain ⟨h1, h2⟩ := LinearIndependent.pair_iff.mp hli _ _ h0
+        linarith
+      · intro h
+        refine ⟨y, ?_⟩
+        rw [AffineMap.lineMap_apply]
+        simp only [vsub_eq_sub, vadd_eq_add]
+        have hx : x = 1 - y := by linarith
+        rw [hx]; module
+- id: triangle_region_coefficients
+  kind: gap
+  level: high
+  topic: ベクトル・点の存在範囲
+  statement: |
+    実ベクトル空間のベクトル $\vec a,\vec b,\vec p$ について、点 $\vec p$ が3点 $\vec 0,\vec a,\vec b$ の凸包（三角形 $\mathrm{OAB}$ の周および内部）に属することと、$s,t\ge 0$、$s+t\le 1$ を満たす実数 $s,t$ により $\vec p=s\vec a+t\vec b$ と書けることは同値である。
+  statement_en: For vectors a, b, p of a real vector space, p lies in the convex hull of 0, a, b if and only if p = sa+tb for some real s, t with s, t ≥ 0 and s+t ≤ 1.
+  assumptions:
+  - $\vec a,\vec b,\vec p$ は実ベクトル空間のベクトル
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec p$
+  conclusion: |
+    $\vec p$ が凸包に属することと、$s,t\ge 0$、$s+t\le 1$ である $s,t$ により $\vec p=s\vec a+t\vec b$ と書けることは同値である。
+  answer: |
+    $\vec a,\vec b,\vec p$ を実ベクトル空間のベクトルとする。有限個の点の凸包は、それらの点の係数が $0$ 以上で和が $1$ の1次結合の全体である。したがって $\vec p$ が凸包に属することは、$\lambda,s,t\ge 0$、$\lambda+s+t=1$ を満たす実数により $\vec p=\lambda\vec 0+s\vec a+t\vec b=s\vec a+t\vec b$ と書けることと同値である。このような $\lambda,s,t$ があれば、$s,t\ge 0$ かつ $s+t=1-\lambda\le 1$ である。逆に $s,t\ge 0$、$s+t\le 1$ かつ $\vec p=s\vec a+t\vec b$ なら、$\lambda=1-s-t\ge 0$ とおくと $\lambda+s+t=1$ であり、$\vec p=\lambda\vec 0+s\vec a+t\vec b$ なので $\vec p$ は凸包に属する。
+  strategy: Describe the hull as the nonnegative combinations of 0, a, b with coefficient sum 1, and drop the coefficient of 0.
+  sketch:
+  - 'translate: The hull is the set of combinations λ0+sa+tb with λ, s, t ≥ 0 and λ+s+t = 1.'
+  - 'derive: Such a combination equals sa+tb because the coefficient of 0 contributes nothing.'
+  - 'derive: Then s, t ≥ 0 and s+t = 1-λ ≤ 1.'
+  - 'construct: Conversely, given s, t ≥ 0 with s+t ≤ 1, put λ = 1-s-t ≥ 0.'
+  - 'conclude: Then p = λ0+sa+tb is a convex combination, so p lies in the hull.'
+  openmath: (forall (V a b p) (-> (real_vector_space V) (<-> (in p (convex_hull (set 0 a b))) (exists (s t) (and (>= s 0) (>= t 0) (<= (+ s t) 1) (= p (+ (smul s a) (smul t b))))))))
+  hard_negative:
+    statement: |
+      $\vec p=s\vec a+t\vec b$ で $s+t\le 1$ でありさえすれば、$\vec p$ は三角形 $\mathrm{OAB}$ の周または内部にある。
+    reason: |
+      $s,t\ge 0$ を外すと成り立たない。$\vec a,\vec b$ が1次独立のとき、$s=-1$、$t=0$ の点 $-\vec a$ は三角形の外にある。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b P : V), P ∈ convexHull ℝ ({0, a, b} : Set V) ↔ ∃ s t : ℝ, 0 ≤ s ∧ 0 ≤ t ∧ s + t ≤ 1 ∧ P = s • a + t • b
+  proof: |
+    by
+      intro V _ _ a b P
+      rw [convexHull_insert (Set.insert_nonempty a {b}), convexHull_pair, mem_convexJoin]
+      constructor
+      · rintro ⟨z, hz, q, ⟨α, β, hα, hβ, hαβ, rfl⟩, u, v, hu, hv, huv, rfl⟩
+        simp only [Set.mem_singleton_iff] at hz
+        subst hz
+        refine ⟨v * α, v * β, by positivity, by positivity, ?_, ?_⟩
+        · have : v * α + v * β = v := by rw [← mul_add, hαβ, mul_one]
+          linarith
+        · simp only [smul_zero, zero_add, smul_add, smul_smul]
+      · rintro ⟨s, t, hs, ht, hst, rfl⟩
+        by_cases h0 : s + t = 0
+        · have hs0 : s = 0 := by linarith
+          have ht0 : t = 0 := by linarith
+          refine ⟨0, by simp, a, left_mem_segment ℝ a b, ?_⟩
+          simp [hs0, ht0, left_mem_segment]
+        · have hpos : 0 < s + t := lt_of_le_of_ne (by positivity) (Ne.symm h0)
+          refine ⟨0, by simp, (s / (s + t)) • a + (t / (s + t)) • b, ⟨s / (s + t), t / (s + t), by positivity, by positivity, by field_simp, rfl⟩, ?_⟩
+          refine ⟨1 - (s + t), s + t, by linarith, hpos.le, by ring, ?_⟩
+          simp only [smul_zero, zero_add, smul_add, smul_smul]
+          rw [mul_div_cancel₀ _ h0, mul_div_cancel₀ _ h0]
+- id: plane_abc_coefficient_sum_one
+  kind: gap
+  level: high
+  topic: ベクトル・平面上の点の係数
+  statement: |
+    実ベクトル空間の1次独立なベクトル $\vec a,\vec b,\vec c$ と実数 $x,y,z$ について、点 $x\vec a+y\vec b+z\vec c$ が3点 $\mathrm{A},\mathrm{B},\mathrm{C}$ を通る平面上にあることと、$x+y+z=1$ であることは同値である。
+  statement_en: For linearly independent vectors a, b, c of a real vector space and real numbers x, y, z, the point xa+yb+zc lies in the affine span of a, b, c (the plane ABC) if and only if x+y+z = 1.
+  assumptions:
+  - $\vec a,\vec b,\vec c$ は1次独立
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec c$ と任意の実数 $x,y,z$
+  conclusion: |
+    $x\vec a+y\vec b+z\vec c$ が平面 $\mathrm{ABC}$ 上にあることと $x+y+z=1$ は同値である。
+  answer: |
+    $\vec a,\vec b,\vec c$ を実ベクトル空間の1次独立なベクトル、$x,y,z$ を実数とする。平面 $\mathrm{ABC}$ の点は、実数 $s,t$ により $\vec a+s(\vec b-\vec a)+t(\vec c-\vec a)$ と書ける点である。$x\vec a+y\vec b+z\vec c$ が平面上にあれば、$x\vec a+y\vec b+z\vec c=(1-s-t)\vec a+s\vec b+t\vec c$ となる。1次独立性から $x=1-s-t$、$y=s$、$z=t$ なので $x+y+z=1$ である。逆に $x+y+z=1$ なら $x=1-y-z$ であり、この点は $s=y$、$t=z$ の点として平面上にある。
+  strategy: Parametrize the plane from the base point a and compare coefficients.
+  sketch:
+  - 'translate: Points of the plane are a + s(b-a) + t(c-a).'
+  - 'derive: Rewrite as (1-s-t)a + sb + tc.'
+  - 'apply_theorem: Independence of a, b, c gives x = 1-s-t, y = s, z = t.'
+  - 'conclude: Hence x+y+z = 1; conversely take s = y and t = z.'
+  openmath: (forall (V a b c x y z) (-> (and (real_vector_space V) (linearly_independent_triple a b c)) (<-> (on_plane (+ (smul x a) (smul y b) (smul z c)) a b c) (= (+ x y z) 1))))
+  hard_negative:
+    statement: |
+      1次独立でなくても、点 $x\vec a+y\vec b+z\vec c$ が平面 $\mathrm{ABC}$ 上にあることと $x+y+z=1$ は同値である。
+    reason: |
+      平面 $\mathrm{ABC}$ が原点を通るとき、たとえば空間の $\vec a=(1,0,0)$、$\vec b=(0,1,0)$、$\vec c=(1,1,0)$ なら、$x=y=z=0$ の点は平面上にあるが $x+y+z\neq 1$ である。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b c : V), LinearIndependent ℝ ![a, b, c] → ∀ x y z : ℝ, (x • a + y • b + z • c ∈ affineSpan ℝ ({a, b, c} : Set V) ↔ x + y + z = 1)
+  proof: |
+    by
+      intro V _ _ a b c hli x y z
+      have ha : a ∈ affineSpan ℝ ({a, b, c} : Set V) := subset_affineSpan ℝ _ (by simp)
+      have key : ∀ P : V, P ∈ affineSpan ℝ ({a, b, c} : Set V) ↔ ∃ s t : ℝ, P - a = s • (b - a) + t • (c - a) := by
+        intro P
+        rw [← AffineSubspace.vsub_right_mem_direction_iff_mem ha P, direction_affineSpan, vectorSpan_eq_span_vsub_set_right ℝ (show a ∈ ({a, b, c} : Set V) by simp)]
+        simp only [Set.image_insert_eq, Set.image_singleton, vsub_eq_sub, sub_self, Submodule.span_insert_zero, Submodule.mem_span_pair]
+        constructor
+        · rintro ⟨s, t, h⟩; exact ⟨s, t, h.symm⟩
+        · rintro ⟨s, t, h⟩; exact ⟨s, t, h.symm⟩
+      rw [key]
+      constructor
+      · rintro ⟨s, t, h⟩
+        have h0 : ∀ g : Fin 3 → ℝ, ∑ i, g i • (![a, b, c] i) = 0 → ∀ i, g i = 0 := Fintype.linearIndependent_iff.mp hli
+        have h1 := h0 ![x + s + t - 1, y - s, z - t] (by
+          simp only [Fin.sum_univ_three, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val]
+          linear_combination (norm := module) h)
+        have e0 := h1 0
+        have e1 := h1 1
+        have e2 := h1 2
+        simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val] at e0 e1 e2
+        linarith
+      · intro h
+        refine ⟨y, z, ?_⟩
+        have hx : x = 1 - y - z := by linarith
+        rw [hx]; module
+- id: coplanar_iff_affine_combination
+  kind: textbook
+  level: high
+  topic: ベクトル・同一平面条件
+  statement: |
+    実ベクトル空間の点 $\mathrm{A},\mathrm{B},\mathrm{C}$ が同一直線上にないとき、点 $\mathrm{P}$ について、4点 $\mathrm{A},\mathrm{B},\mathrm{C},\mathrm{P}$ が同一平面上にあることと、実数 $s,t$ により $\vec p=\vec a+s(\vec b-\vec a)+t(\vec c-\vec a)$ と書けることは同値である。
+  statement_en: If points a, b, c of a real vector space are not collinear, then a, b, c, p are coplanar if and only if p = a + s(b-a) + t(c-a) for some real s, t.
+  assumptions:
+  - $\mathrm{A},\mathrm{B},\mathrm{C}$ は同一直線上にない
+  quantifiers:
+  - 任意の点 $\mathrm{A},\mathrm{B},\mathrm{C},\mathrm{P}$
+  conclusion: |
+    4点が同一平面上にあることと、$\vec p=\vec a+s(\vec b-\vec a)+t(\vec c-\vec a)$ となる実数 $s,t$ が存在することは同値である。
+  answer: |
+    $\vec a,\vec b,\vec c,\vec p$ を実ベクトル空間のベクトルとし、$\mathrm{A},\mathrm{B},\mathrm{C}$ は同一直線上にないとする。4点が同一平面上にあるとは、差のベクトルが張る空間の次元が $2$ 以下であることである。$W$ を $\vec b-\vec a,\vec c-\vec a$ が張る部分空間、$W'$ を $\vec b-\vec a,\vec c-\vec a,\vec p-\vec a$ が張る部分空間とする。3点が同一直線上にないので $\vec b-\vec a,\vec c-\vec a$ は1次独立であり、$\dim W=2$ である。4点が同一平面上にあれば $\dim W'\le 2$ で、$W\subset W'$ より $W=W'$ となる。よって $\vec p-\vec a\in W$ であり、$\vec p-\vec a=s(\vec b-\vec a)+t(\vec c-\vec a)$ と書ける。逆にこの形に書けるなら $\vec p-\vec a\in W$ なので $W'=W$ であり、$\dim W'=2$ より4点は同一平面上にある。
+  strategy: Compare the direction space of the three points with that of the four points by dimension.
+  sketch:
+  - 'setup: Let W and W'' be the spans of differences from a for three and four points.'
+  - 'derive: Non-collinearity gives dim W = 2.'
+  - 'derive: Coplanarity gives dim W'' ≤ 2, so W = W'' and p-a lies in W.'
+  - 'translate: Membership in W is the required expression.'
+  - 'conclude: Conversely p-a in W gives W'' = W, of dimension 2.'
+  openmath: (forall (V a b c p) (-> (and (real_vector_space V) (not (collinear_points a b c))) (<-> (coplanar_points a b c p) (exists (s t) (= p (+ a (smul s (- b a)) (smul t (- c a))))))))
+  hard_negative:
+    statement: |
+      $\mathrm{A},\mathrm{B},\mathrm{C}$ が同一直線上にあっても、4点が同一平面上にあれば $\vec p=\vec a+s(\vec b-\vec a)+t(\vec c-\vec a)$ と書ける。
+    reason: |
+      3点が直線 $\ell$ 上にあり $\mathrm{P}$ が $\ell$ 上にないとき、4点は同一平面上にあるが、右辺の形の点はすべて $\ell$ 上にある。
+  target: |
+    ∀ (V : Type*) [AddCommGroup V] [Module ℝ V] (a b c p : V), ¬ Collinear ℝ ({a, b, c} : Set V) → (Coplanar ℝ ({a, b, c, p} : Set V) ↔ ∃ s t : ℝ, p = a + s • (b - a) + t • (c - a))
+  proof: |
+    by
+      intro V _ _ a b c p hc
+      have ha : a ∈ affineSpan ℝ ({a, b, c} : Set V) := subset_affineSpan ℝ _ (by simp)
+      have key : p ∈ affineSpan ℝ ({a, b, c} : Set V) ↔ ∃ s t : ℝ, p = a + s • (b - a) + t • (c - a) := by
+        rw [← AffineSubspace.vsub_right_mem_direction_iff_mem ha p, direction_affineSpan, vectorSpan_eq_span_vsub_set_right ℝ (show a ∈ ({a, b, c} : Set V) by simp)]
+        simp only [Set.image_insert_eq, Set.image_singleton, vsub_eq_sub, sub_self, Submodule.span_insert_zero, Submodule.mem_span_pair]
+        constructor
+        · rintro ⟨s, t, h⟩; exact ⟨s, t, by rw [add_assoc, h]; abel⟩
+        · rintro ⟨s, t, h⟩; exact ⟨s, t, by rw [h]; module⟩
+      have hset : ({a, b, c, p} : Set V) = insert p {a, b, c} := by
+        ext x; simp only [Set.mem_insert_iff, Set.mem_singleton_iff]; tauto
+      rw [← key, hset]
+      constructor
+      · intro hcop
+        have hind := affineIndependent_iff_not_collinear_set.mpr hc
+        have hfin : FiniteDimensional ℝ (vectorSpan ℝ (insert p {a, b, c} : Set V)) :=
+          finiteDimensional_vectorSpan_of_finite ℝ (by simp)
+        have hW : Module.finrank ℝ (vectorSpan ℝ ({a, b, c} : Set V)) = 2 := by
+          have := hind.finrank_vectorSpan (n := 2) (by simp)
+          have hr : Set.range ![a, b, c] = ({a, b, c} : Set V) := by
+            ext x
+            constructor
+            · rintro ⟨i, rfl⟩
+              fin_cases i <;> simp
+            · intro h
+              simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at h
+              rcases h with rfl | rfl | rfl
+              · exact ⟨0, rfl⟩
+              · exact ⟨1, rfl⟩
+              · exact ⟨2, rfl⟩
+          rwa [hr] at this
+        have hle : vectorSpan ℝ ({a, b, c} : Set V) ≤ vectorSpan ℝ (insert p {a, b, c} : Set V) :=
+          vectorSpan_mono ℝ (Set.subset_insert _ _)
+        have hW' : Module.finrank ℝ (vectorSpan ℝ (insert p {a, b, c} : Set V)) ≤ 2 :=
+          coplanar_iff_finrank_le_two.mp hcop
+        have heq := Submodule.eq_of_le_of_finrank_le hle (by omega)
+        rw [← AffineSubspace.vsub_right_mem_direction_iff_mem ha p, direction_affineSpan, heq]
+        exact vsub_mem_vectorSpan ℝ (by simp) (by simp)
+      · intro hp
+        exact (coplanar_insert_iff_of_mem_affineSpan hp).mpr (coplanar_triple ℝ a b c)
+- id: foot_of_perpendicular_to_plane_exists
+  kind: gap
+  level: high
+  topic: ベクトル・平面への垂線の足
+  statement: |
+    実内積空間のベクトル $\vec a,\vec b,\vec p$ に対し、実数 $s,t$ で $\vec p-(s\vec a+t\vec b)$ が $\vec a$ にも $\vec b$ にも垂直になるものが存在する。つまり、$\vec a,\vec b$ の張る平面に点 $\vec p$ から垂線の足を下ろせる。
+  statement_en: For vectors a, b, p in a real inner product space there are real numbers s, t such that p-(sa+tb) is orthogonal to both a and b.
+  assumptions:
+  - $\vec a,\vec b,\vec p$ は実内積空間のベクトル
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec p$
+  - ある実数 $s,t$
+  conclusion: |
+    $(\vec p-(s\vec a+t\vec b))\cdot\vec a=0$ かつ $(\vec p-(s\vec a+t\vec b))\cdot\vec b=0$ を満たす $s,t$ が存在する。
+  answer: |
+    $\vec a,\vec b,\vec p$ を実内積空間のベクトルとし、$K$ を $\vec a,\vec b$ の張る部分空間とする。$K$ は有限次元なので、有限次元部分空間への直交分解により、$\vec p=\vec q+\vec r$（$\vec q\in K$、$\vec r$ は $K$ のすべてのベクトルに垂直）と書ける。$\vec q\in K$ より実数 $s,t$ で $\vec q=s\vec a+t\vec b$ と書ける。$\vec a,\vec b\in K$ なので、$\vec r=\vec p-(s\vec a+t\vec b)$ は $\vec a$ にも $\vec b$ にも垂直である。
+  strategy: Take the orthogonal projection of p onto the finite-dimensional span of a and b.
+  sketch:
+  - 'setup: Let K be the span of a and b, a finite-dimensional subspace.'
+  - 'apply_theorem: Decompose p = q + r with q in K and r orthogonal to K.'
+  - 'derive: Write q = sa+tb.'
+  - 'conclude: r = p-(sa+tb) is orthogonal to a and b, which lie in K.'
+  openmath: (forall (V a b p) (-> (inner_product_space_over R V) (exists (s t) (and (= (inner_product (- p (+ (smul s a) (smul t b))) a) 0) (= (inner_product (- p (+ (smul s a) (smul t b))) b) 0)))))
+  hard_negative:
+    statement: |
+      つねに、そのような実数の組 $(s,t)$ はただ1つである。
+    reason: |
+      $\vec a,\vec b$ が1次従属だと一意でない。$\vec a=\vec b\neq\vec 0$ なら $s+t$ だけが決まり、$(s,t)$ は無数にある。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b p : V), ∃ s t : ℝ, inner ℝ (p - (s • a + t • b)) a = 0 ∧ inner ℝ (p - (s • a + t • b)) b = 0
+  proof: |
+    by
+      intro V _ _ a b p
+      let K : Submodule ℝ V := Submodule.span ℝ {a, b}
+      have hK : FiniteDimensional ℝ K := FiniteDimensional.span_of_finite ℝ (by simp)
+      obtain ⟨s, t, hst⟩ := Submodule.mem_span_pair.mp (K.starProjection_apply_mem p)
+      refine ⟨s, t, ?_⟩
+      have horth := K.sub_starProjection_mem_orthogonal p
+      rw [← hst] at horth
+      have ha : a ∈ K := Submodule.subset_span (by simp)
+      have hb : b ∈ K := Submodule.subset_span (by simp)
+      exact ⟨by rw [real_inner_comm]; exact (Submodule.mem_orthogonal _ _).mp horth a ha, by rw [real_inner_comm]; exact (Submodule.mem_orthogonal _ _).mp horth b hb⟩
+- id: inner_eq_norm_norm_cos
+  kind: textbook
+  level: high
+  topic: 内積と角・内積の定義式
+  statement: |
+    実内積空間の $\vec 0$ でないベクトル $\vec a,\vec b$ のなす角を $\theta$（$0\le\theta\le\pi$）とすると、$\vec a\cdot\vec b=|\vec a||\vec b|\cos\theta$ である。
+  statement_en: For nonzero vectors a, b in a real inner product space with angle θ between them, a·b = |a||b| cos θ.
+  assumptions:
+  - $\vec a\neq\vec 0$、$\vec b\neq\vec 0$
+  - $\theta=\arccos\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$（なす角の定義）
+  quantifiers:
+  - 任意の $\vec 0$ でないベクトル $\vec a,\vec b$
+  conclusion: |
+    $\vec a\cdot\vec b=|\vec a||\vec b|\cos\theta$ である。
+  answer: |
+    $\vec a,\vec b$ を実内積空間の $\vec 0$ でないベクトルとする。なす角は $\theta=\arccos\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ で定まる。コーシー・シュワルツの不等式より $\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ は $-1$ 以上 $1$ 以下である。したがって $\cos\theta=\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ であり、分母を払うと $\vec a\cdot\vec b=|\vec a||\vec b|\cos\theta$ を得る。
+  strategy: Use the arccos definition of the angle, valid by Cauchy-Schwarz, and clear the denominator.
+  sketch:
+  - 'translate: The angle is arccos of (a·b)/(|a||b|).'
+  - 'apply_theorem: Cauchy-Schwarz puts this quotient in [-1,1], so cos θ equals it.'
+  - 'conclude: Multiply by |a||b|.'
+  openmath: (forall (V a b) (-> (and (inner_product_space_over R V) (!= a 0) (!= b 0)) (= (inner_product a b) (* (norm a) (norm b) (cos (vector_angle a b))))))
+  hard_negative:
+    statement: |
+      $\vec 0$ でないベクトル $\vec a,\vec b$ に対し、$\vec a\cdot\vec b=\cos\theta$ である。
+    reason: |
+      単位ベクトルのときだけ成り立つ。$\vec a=\vec b$、$|\vec a|=2$ なら $\theta=0$ で、左辺は $4$、右辺は $1$ である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V), a ≠ 0 → b ≠ 0 → inner ℝ a b = ‖a‖ * ‖b‖ * Real.cos (InnerProductGeometry.angle a b)
+  proof: |
+    by
+      intro V _ _ a b _ _
+      rw [← InnerProductGeometry.cos_angle_mul_norm_mul_norm a b]
+      ring
+- id: inner_sign_acute_obtuse
+  kind: gap
+  level: high
+  topic: 内積と角・内積の符号
+  statement: |
+    実内積空間の $\vec 0$ でないベクトル $\vec a,\vec b$ のなす角を $\theta$（$0\le\theta\le\pi$）とする。$\vec a\cdot\vec b>0$ であることと $\theta<\dfrac{\pi}{2}$ であることは同値であり、$\vec a\cdot\vec b<0$ であることと $\theta>\dfrac{\pi}{2}$ であることは同値である。
+  statement_en: For nonzero vectors a, b in a real inner product space with angle θ, a·b > 0 if and only if θ < π/2, and a·b < 0 if and only if θ > π/2.
+  assumptions:
+  - $\vec a\neq\vec 0$
+  - $\vec b\neq\vec 0$
+  - $\theta$ は $\vec a,\vec b$ のなす角
+  quantifiers:
+  - 任意の $\vec 0$ でないベクトル $\vec a,\vec b$
+  conclusion: |
+    $\vec a\cdot\vec b>0\iff\theta<\dfrac{\pi}{2}$ かつ $\vec a\cdot\vec b<0\iff\theta>\dfrac{\pi}{2}$ である。
+  answer: |
+    $\vec a,\vec b$ を実内積空間の $\vec 0$ でないベクトル、$\theta=\arccos\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ をなす角とする。$|\vec a||\vec b|>0$ なので、$\vec a\cdot\vec b$ と $x=\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ の符号は等しい。コーシー・シュワルツの不等式より $-1\le x\le 1$ である。$\arccos$ は狭義単調減少で $\arccos 0=\dfrac{\pi}{2}$ だから、$x>0\iff\arccos x<\dfrac{\pi}{2}$ である。また $x\ge 0\iff\arccos x\le\dfrac{\pi}{2}$ の否定をとると $x<0\iff\arccos x>\dfrac{\pi}{2}$ である。これらは主張の2つの同値である。
+  strategy: The sign of a·b equals the sign of the normalized quotient; apply monotonicity of arccos around 0.
+  sketch:
+  - 'translate: Set x = (a·b)/(|a||b|), which has the sign of a·b.'
+  - 'apply_theorem: arccos is strictly decreasing with arccos 0 = π/2.'
+  - 'derive: x > 0 iff arccos x < π/2.'
+  - 'conclude: Negating x ≥ 0 iff arccos x ≤ π/2 gives the obtuse case.'
+  openmath: (forall (V a b) (-> (and (inner_product_space_over R V) (!= a 0) (!= b 0)) (and (<-> (> (inner_product a b) 0) (< (vector_angle a b) (/ pi 2))) (<-> (< (inner_product a b) 0) (> (vector_angle a b) (/ pi 2))))))
+  hard_negative:
+    statement: |
+      $\vec a\cdot\vec b\ge 0$ であることと $\theta<\dfrac{\pi}{2}$ であることは同値である。
+    reason: |
+      垂直なベクトルで成り立たない。$\vec a\cdot\vec b=0$ のとき $\theta=\dfrac{\pi}{2}$ である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V), a ≠ 0 → b ≠ 0 → (0 < inner ℝ a b ↔ InnerProductGeometry.angle a b < Real.pi / 2) ∧ (inner ℝ a b < 0 ↔ Real.pi / 2 < InnerProductGeometry.angle a b)
+  proof: |
+    by
+      intro V _ _ a b ha hb
+      have hn : 0 < ‖a‖ * ‖b‖ := by positivity
+      unfold InnerProductGeometry.angle
+      constructor
+      · rw [Real.arccos_lt_pi_div_two, div_pos_iff_of_pos_right hn]
+      · rw [← not_le, ← not_le, Real.arccos_le_pi_div_two, div_nonneg_iff]
+        constructor
+        · intro h h'
+          rcases h' with ⟨h1, _⟩ | ⟨_, h2⟩
+          · exact h h1
+          · exact absurd h2 (not_le.mpr hn)
+        · intro h h'
+          exact h (Or.inl ⟨h', hn.le⟩)
+- id: cos_angle_components
+  kind: textbook
+  level: high
+  topic: 内積と角・成分表示
+  statement: |
+    $n$ 次元ユークリッド空間（$n=2,3$ を含む）の $\vec 0$ でないベクトル $\vec a=(a_i)$、$\vec b=(b_i)$ のなす角を $\theta$ とすると、$\cos\theta=\dfrac{\sum_i a_ib_i}{\sqrt{\sum_i a_i^2}\sqrt{\sum_i b_i^2}}$ である。
+  statement_en: For nonzero vectors a, b in n-dimensional Euclidean space with angle θ, cos θ = (Σ a_i b_i) / (√(Σ a_i²) √(Σ b_i²)).
+  assumptions:
+  - $\vec a\neq\vec 0$
+  - $\vec b\neq\vec 0$
+  - $\theta$ は $\vec a,\vec b$ のなす角
+  quantifiers:
+  - 任意の自然数 $n$ と $n$ 次元の $\vec 0$ でないベクトル $\vec a,\vec b$
+  conclusion: |
+    $\cos\theta=\dfrac{\sum_i a_ib_i}{\sqrt{\sum_i a_i^2}\sqrt{\sum_i b_i^2}}$ である。
+  answer: |
+    $n$ を自然数、$\vec a,\vec b$ を $n$ 次元ユークリッド空間の $\vec 0$ でないベクトル、$\theta$ をそのなす角とする。なす角の定義より $\cos\theta=\dfrac{\vec a\cdot\vec b}{|\vec a||\vec b|}$ である。標準内積は $\vec a\cdot\vec b=\sum_i a_ib_i$ であり、大きさは $|\vec a|=\sqrt{\sum_i a_i^2}$、$|\vec b|=\sqrt{\sum_i b_i^2}$ である。これらを代入すると求める式を得る。
+  strategy: Substitute the coordinate formulas for the inner product and norms into cos θ.
+  sketch:
+  - 'translate: cos θ = (a·b)/(|a||b|).'
+  - 'apply_theorem: The standard inner product is Σ a_i b_i and the norm is the root of Σ a_i².'
+  - 'conclude: Substitute.'
+  openmath: (forall (n a b) (-> (and (in a (euclidean_space n)) (in b (euclidean_space n)) (!= a 0) (!= b 0)) (= (cos (vector_angle a b)) (/ (range_sum n (lambda (i) (* (vector_component a i) (vector_component b i)))) (* (root (range_sum n (lambda (i) (^ (vector_component a i) 2))) 2) (root (range_sum n (lambda (i) (^ (vector_component b i) 2))) 2))))))
+  hard_negative:
+    statement: |
+      $\cos\theta=\dfrac{\sum_i a_ib_i}{\sqrt{\sum_i a_i^2b_i^2}}$ である。
+    reason: |
+      $\vec a=\vec b=(1,1)$ では $\theta=0$ だが、右辺は $\dfrac{2}{\sqrt 2}=\sqrt 2$ となり $1$ を超える。
+  target: |
+    ∀ (n : ℕ) (a b : EuclideanSpace ℝ (Fin n)), a ≠ 0 → b ≠ 0 → Real.cos (InnerProductGeometry.angle a b) = (∑ i, a i * b i) / (√(∑ i, a i ^ 2) * √(∑ i, b i ^ 2))
+  proof: |
+    by
+      intro n a b _ _
+      rw [InnerProductGeometry.cos_angle, EuclideanSpace.norm_eq, EuclideanSpace.norm_eq, PiLp.inner_apply]
+      simp [mul_comm]
+- id: triangle_area_inner_formula
+  kind: textbook
+  level: high
+  topic: 内積と面積・三角形の面積
+  statement: 実内積空間の$\vec 0$でないベクトル$\vec a,\vec b$のなす角を$\theta$とすると、三角形の面積の2つの公式の値は一致する。すなわち（面積そのものは扱わず、2式の等式として）$\dfrac12|\vec a||\vec b|\sin\theta=\dfrac12\sqrt{|\vec a|^2|\vec b|^2-(\vec a\cdot\vec b)^2}$が成り立つ。
+  statement_en: 'For nonzero vectors a, b in a real inner product space with angle θ, the two area expressions agree: (1/2)|a||b| sin θ = (1/2)√(|a|²|b|² - (a·b)²) (the card states this identity only, not that either expression is an area).'
+  assumptions:
+  - $\vec a\neq\vec 0$
+  - $\vec b\neq\vec 0$
+  - $\theta$ は $\vec a,\vec b$ のなす角
+  quantifiers:
+  - 任意の $\vec 0$ でないベクトル $\vec a,\vec b$
+  conclusion: |
+    $\dfrac12|\vec a||\vec b|\sin\theta=\dfrac12\sqrt{|\vec a|^2|\vec b|^2-(\vec a\cdot\vec b)^2}$ である。
+  answer: |
+    $\vec a,\vec b$ を実内積空間の $\vec 0$ でないベクトル、$\theta$（$0\le\theta\le\pi$）をそのなす角とする。$\sin\theta\ge 0$ なので $|\vec a||\vec b|\sin\theta=\sqrt{|\vec a|^2|\vec b|^2\sin^2\theta}$ である。$\sin^2\theta=1-\cos^2\theta$ と $\vec a\cdot\vec b=|\vec a||\vec b|\cos\theta$ より、根号の中は $|\vec a|^2|\vec b|^2-(\vec a\cdot\vec b)^2$ に等しい。両辺に $\dfrac12$ を掛けると求める等式を得る。
+  strategy: Rewrite the sine through the cosine using nonnegativity of sin on [0,π].
+  sketch:
+  - 'derive: sin θ ≥ 0 on [0,π], so |a||b| sin θ = √(|a|²|b|² sin²θ).'
+  - 'derive: sin²θ = 1 - cos²θ and a·b = |a||b| cos θ.'
+  - 'conclude: The radicand equals |a|²|b|² - (a·b)².'
+  openmath: (forall (V a b) (-> (and (inner_product_space_over R V) (!= a 0) (!= b 0)) (= (* (/ 1 2) (* (norm a) (norm b) (sin (vector_angle a b)))) (* (/ 1 2) (root (- (* (^ (norm a) 2) (^ (norm b) 2)) (^ (inner_product a b) 2)) 2)))))
+  hard_negative:
+    statement: |
+      三角形の面積は $\dfrac12\left(|\vec a|^2|\vec b|^2-(\vec a\cdot\vec b)^2\right)$ である。
+    reason: |
+      根号を落としている。$\vec a,\vec b$ が垂直で $|\vec a|=2$、$|\vec b|=1$ なら面積は $1$ だが、この式の値は $2$ である。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b : V), a ≠ 0 → b ≠ 0 → 1 / 2 * (‖a‖ * ‖b‖ * Real.sin (InnerProductGeometry.angle a b)) = 1 / 2 * √(‖a‖ ^ 2 * ‖b‖ ^ 2 - (inner ℝ a b) ^ 2)
+  proof: |
+    by
+      intro V _ _ a b _ _
+      have h := InnerProductGeometry.sin_angle_mul_norm_mul_norm a b
+      rw [real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq] at h
+      rw [show ‖a‖ ^ 2 * ‖b‖ ^ 2 - (inner ℝ a b) ^ 2 = ‖a‖ ^ 2 * ‖b‖ ^ 2 - inner ℝ a b * inner ℝ a b by ring, ← h]
+      ring
+- id: parallel_iff_determinant_zero
+  kind: gap
+  level: high
+  topic: ベクトル・平行条件の成分表示
+  statement: |
+    平面のベクトル $\vec a=(a_1,a_2)\neq\vec 0$ と $\vec b=(b_1,b_2)$ について、$a_1b_2-a_2b_1=0$ であることと、ある実数 $k$ により $\vec b=k\vec a$ となることは同値である。
+  statement_en: For a plane vector a = (a₁,a₂) ≠ 0 and b = (b₁,b₂), a₁b₂ - a₂b₁ = 0 if and only if b = ka for some real k.
+  assumptions:
+  - $(a_1,a_2)\neq(0,0)$
+  quantifiers:
+  - 任意の実数 $a_1,a_2,b_1,b_2$
+  conclusion: |
+    $a_1b_2-a_2b_1=0$ と、$b_1=ka_1$ かつ $b_2=ka_2$ となる実数 $k$ の存在は同値である。
+  answer: |
+    $a_1,a_2,b_1,b_2$ を実数とし、$(a_1,a_2)\neq(0,0)$ とする。$a_1b_2-a_2b_1=0$ とする。$a_1\neq 0$ のときは $k=\dfrac{b_1}{a_1}$ とおくと、$b_1=ka_1$ であり、$b_2=\dfrac{a_2b_1}{a_1}=ka_2$ である。$a_2\neq 0$ のときは $k=\dfrac{b_2}{a_2}$ とおくと、$b_2=ka_2$ であり、$b_1=\dfrac{a_1b_2}{a_2}=ka_1$ である。逆に $b_1=ka_1$、$b_2=ka_2$ なら $a_1b_2-a_2b_1=k(a_1a_2-a_2a_1)=0$ である。
+  strategy: Divide by a nonzero component of a and solve for k.
+  sketch:
+  - 'case_split: Either a₁ ≠ 0 or a₂ ≠ 0.'
+  - 'construct: Take k = b₁/a₁ or k = b₂/a₂ respectively.'
+  - 'derive: The determinant condition gives the other component.'
+  - 'conclude: Conversely substitute b = ka into the determinant.'
+  openmath: (forall (a1 a2 b1 b2) (-> (or (!= a1 0) (!= a2 0)) (<-> (= (- (* a1 b2) (* a2 b1)) 0) (exists (k) (and (= b1 (* k a1)) (= b2 (* k a2)))))))
+  hard_negative:
+    statement: |
+      $\vec a=\vec 0$ の場合も、$a_1b_2-a_2b_1=0$ ならば $\vec b=k\vec a$ となる $k$ がある。
+    reason: |
+      $\vec a=\vec 0$、$\vec b=(1,0)$ では行列式は $0$ だが、$k\vec a=\vec 0\neq\vec b$ である。
+  target: |
+    ∀ (a₁ a₂ b₁ b₂ : ℝ), (a₁ ≠ 0 ∨ a₂ ≠ 0) → (a₁ * b₂ - a₂ * b₁ = 0 ↔ ∃ k : ℝ, b₁ = k * a₁ ∧ b₂ = k * a₂)
+  proof: |
+    by
+      intro a₁ a₂ b₁ b₂ h
+      constructor
+      · intro hd
+        rcases h with h | h
+        · refine ⟨b₁ / a₁, by field_simp, ?_⟩
+          field_simp
+          linarith
+        · refine ⟨b₂ / a₂, ?_, by field_simp⟩
+          field_simp
+          linarith
+      · rintro ⟨k, rfl, rfl⟩
+        ring
+- id: circle_diameter_inner_zero
+  kind: gap
+  level: high
+  topic: ベクトル・直径の上の円
+  statement: |
+    実内積空間の点 $\mathrm{A},\mathrm{B},\mathrm{P}$ の位置ベクトルを $\vec a,\vec b,\vec p$ とする。$(\vec p-\vec a)\cdot(\vec p-\vec b)=0$ であることと、$\mathrm{P}$ が線分 $\mathrm{AB}$ を直径とする円（球面）上にあること、すなわち $\left|\vec p-\dfrac{\vec a+\vec b}{2}\right|=\dfrac{|\vec a-\vec b|}{2}$ は同値である。
+  statement_en: For vectors a, b, p in a real inner product space, (p-a)·(p-b) = 0 if and only if |p - (a+b)/2| = |a-b|/2.
+  assumptions:
+  - $\vec a,\vec b,\vec p$ は実内積空間のベクトル
+  quantifiers:
+  - 任意のベクトル $\vec a,\vec b,\vec p$
+  conclusion: |
+    $(\vec p-\vec a)\cdot(\vec p-\vec b)=0$ と $\left|\vec p-\dfrac{\vec a+\vec b}{2}\right|=\dfrac{|\vec a-\vec b|}{2}$ は同値である。
+  answer: |
+    $\vec a,\vec b,\vec p$ を実内積空間のベクトルとし、$\vec u=\vec p-\vec a$、$\vec v=\vec p-\vec b$ とおく。$\vec p-\dfrac{\vec a+\vec b}{2}=\dfrac12(\vec u+\vec v)$ であり、$|\vec a-\vec b|=|\vec u-\vec v|$ である。よって右の条件は $|\vec u+\vec v|=|\vec u-\vec v|$ と同値である。大きさは $0$ 以上なので、これは $|\vec u+\vec v|^2=|\vec u-\vec v|^2$ と同値である。$|\vec u+\vec v|^2-|\vec u-\vec v|^2=4\,\vec u\cdot\vec v$ だから、これは $\vec u\cdot\vec v=0$ と同値である。
+  strategy: Substitute u = p-a, v = p-b and compare |u+v| with |u-v| through 4u·v.
+  sketch:
+  - 'setup: Put u = p-a and v = p-b.'
+  - 'translate: The sphere condition becomes |u+v| = |u-v|.'
+  - 'derive: |u+v|² - |u-v|² = 4u·v.'
+  - 'conclude: The two conditions are equivalent.'
+  openmath: (forall (V a b p) (-> (inner_product_space_over R V) (<-> (= (inner_product (- p a) (- p b)) 0) (= (norm (- p (smul (/ 1 2) (+ a b)))) (/ (norm (- a b)) 2)))))
+  hard_negative:
+    statement: |
+      $(\vec p-\vec a)\cdot(\vec p-\vec b)>0$ ならば $\mathrm{P}$ は線分 $\mathrm{AB}$ を直径とする円の内部にある。
+    reason: |
+      符号が逆である。$\mathrm{P}$ が線分 $\mathrm{AB}$ の中点なら値は $-\dfrac{|\vec a-\vec b|^2}{4}$ で負であり、内積が正の点は円の外部にある。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (a b p : V), inner ℝ (p - a) (p - b) = 0 ↔ ‖p - (1 / 2 : ℝ) • (a + b)‖ = ‖a - b‖ / 2
+  proof: |
+    by
+      intro V _ _ a b p
+      have e1 : p - (1 / 2 : ℝ) • (a + b) = (1 / 2 : ℝ) • ((p - a) + (p - b)) := by module
+      have e2 : a - b = (p - b) - (p - a) := by abel
+      rw [e1, e2, norm_smul, norm_sub_rev (p - b) (p - a), Real.norm_of_nonneg (by norm_num)]
+      have hsq : ‖(p - a) + (p - b)‖ ^ 2 - ‖(p - a) - (p - b)‖ ^ 2 = 4 * inner ℝ (p - a) (p - b) := by
+        rw [norm_add_sq_real (p - a) (p - b), norm_sub_sq_real (p - a) (p - b)]; ring
+      constructor
+      · intro h
+        have h' : ‖(p - a) + (p - b)‖ ^ 2 = ‖(p - a) - (p - b)‖ ^ 2 := by rw [h] at hsq; linarith
+        have := (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp h'
+        rw [this]; ring
+      · intro h
+        have h' : ‖(p - a) + (p - b)‖ = ‖(p - a) - (p - b)‖ := by linarith
+        rw [h'] at hsq
+        linarith
+- id: angle_bisector_division_vector
+  kind: gap
+  level: high
+  topic: ベクトル・角の二等分線
+  statement: |
+    実内積空間の $\vec 0$ でないベクトル $\vec b,\vec c$ に対し、$\vec d=\dfrac{|\vec c|\vec b+|\vec b|\vec c}{|\vec b|+|\vec c|}$ とし、$\vec d\neq\vec 0$ とする。このとき $\vec b$ と $\vec d$ のなす角は $\vec c$ と $\vec d$ のなす角に等しい。つまり $\vec d$ は $\vec b,\vec c$ の作る角の二等分線の方向にある。
+  statement_en: For nonzero vectors b, c in a real inner product space, let d = (|c|b + |b|c)/(|b|+|c|) with d ≠ 0. Then the angle between b and d equals the angle between c and d.
+  assumptions:
+  - $\vec b\neq\vec 0$
+  - $\vec c\neq\vec 0$
+  - $\vec d=\dfrac{|\vec c|\vec b+|\vec b|\vec c}{|\vec b|+|\vec c|}$
+  - $\vec d\neq\vec 0$
+  quantifiers:
+  - 任意のベクトル $\vec b,\vec c,\vec d$
+  conclusion: |
+    $\vec b$ と $\vec d$ のなす角は $\vec c$ と $\vec d$ のなす角に等しい。
+  answer: |
+    $\vec b,\vec c$ を実内積空間の $\vec 0$ でないベクトル、$\vec d=\dfrac{|\vec c|\vec b+|\vec b|\vec c}{|\vec b|+|\vec c|}\neq\vec 0$ とし、$L=|\vec b|+|\vec c|$ とおく。内積を計算すると $\vec b\cdot\vec d=\dfrac{|\vec b|\left(|\vec b||\vec c|+\vec b\cdot\vec c\right)}{L}$、$\vec c\cdot\vec d=\dfrac{|\vec c|\left(|\vec b||\vec c|+\vec b\cdot\vec c\right)}{L}$ である。よって $\dfrac{\vec b\cdot\vec d}{|\vec b||\vec d|}=\dfrac{\vec c\cdot\vec d}{|\vec c||\vec d|}=\dfrac{|\vec b||\vec c|+\vec b\cdot\vec c}{L|\vec d|}$ である。なす角はこの値の $\arccos$ だから、2つのなす角は等しい。
+  strategy: Compute both normalized inner products with d and observe that they coincide.
+  sketch:
+  - 'derive: Expand b·d and c·d by bilinearity.'
+  - 'derive: Each has the factor (|b||c| + b·c)/(|b|+|c|) times |b| or |c|.'
+  - 'derive: After dividing by |b||d| and |c||d| the quotients coincide.'
+  - 'conclude: The angles are arccos of equal numbers.'
+  openmath: (forall (V b c d) (-> (and (inner_product_space_over R V) (!= b 0) (!= c 0) (= d (smul (/ 1 (+ (norm b) (norm c))) (+ (smul (norm c) b) (smul (norm b) c)))) (!= d 0)) (= (vector_angle b d) (vector_angle c d))))
+  hard_negative:
+    statement: |
+      $\vec d=\dfrac{\vec b+\vec c}{2}$ は、つねに $\vec b,\vec c$ の作る角を二等分する。
+    reason: |
+      それは中線の方向で、$|\vec b|=|\vec c|$ のときしか二等分しない。$\vec b=(1,0)$、$\vec c=(0,3)$ なら $\vec d=\left(\dfrac12,\dfrac32\right)$ は $\vec c$ に近い方向にある。
+  target: |
+    ∀ (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V] (b c D : V), b ≠ 0 → c ≠ 0 → D = (1 / (‖b‖ + ‖c‖)) • (‖c‖ • b + ‖b‖ • c) → D ≠ 0 → InnerProductGeometry.angle b D = InnerProductGeometry.angle c D
+  proof: |
+    by
+      intro V _ _ b c D hb hc hD _
+      have hbn : ‖b‖ ≠ 0 := norm_ne_zero_iff.mpr hb
+      have hcn : ‖c‖ ≠ 0 := norm_ne_zero_iff.mpr hc
+      have h1 : inner ℝ b D = (1 / (‖b‖ + ‖c‖)) * (‖c‖ * ‖b‖ ^ 2 + ‖b‖ * inner ℝ b c) := by
+        rw [hD, real_inner_smul_right, inner_add_right, real_inner_smul_right, real_inner_smul_right, real_inner_self_eq_norm_sq]
+      have h2 : inner ℝ c D = (1 / (‖b‖ + ‖c‖)) * (‖c‖ * inner ℝ b c + ‖b‖ * ‖c‖ ^ 2) := by
+        rw [hD, real_inner_smul_right, inner_add_right, real_inner_smul_right, real_inner_smul_right, real_inner_self_eq_norm_sq, real_inner_comm b c]
+      unfold InnerProductGeometry.angle
+      congr 1
+      rw [h1, h2]
+      generalize ‖D‖ = d
+      generalize inner ℝ b c = q
+      by_cases hd : d = 0
+      · simp [hd]
+      · have hs : ‖b‖ + ‖c‖ ≠ 0 := by positivity
+        field_simp
+        ring
+- id: space_line_symmetric_form
+  kind: textbook
+  level: high
+  topic: 空間の直線・方程式の対称形
+  statement: |
+    空間の点 $(x_0,y_0,z_0)$ を通り方向ベクトル $(l,m,n)$（$l,m,n$ はいずれも $0$ でない）の直線について、点 $(x,y,z)$ が $\dfrac{x-x_0}{l}=\dfrac{y-y_0}{m}=\dfrac{z-z_0}{n}$ を満たすことと、ある実数 $t$ により $(x,y,z)=(x_0+tl,\,y_0+tm,\,z_0+tn)$ と書けることは同値である。
+  statement_en: For real l, m, n all nonzero, (x-x₀)/l = (y-y₀)/m = (z-z₀)/n if and only if (x,y,z) = (x₀+tl, y₀+tm, z₀+tn) for some real t.
+  assumptions:
+  - $l\neq 0$
+  - $m\neq 0$
+  - $n\neq 0$
+  quantifiers:
+  - 任意の実数 $x_0,y_0,z_0,l,m,n,x,y,z$
+  conclusion: |
+    対称形の方程式を満たすことと、媒介変数表示 $x=x_0+tl$、$y=y_0+tm$、$z=z_0+tn$ をもつことは同値である。
+  answer: |
+    $x_0,y_0,z_0,l,m,n,x,y,z$ を実数とし、$l,m,n\neq 0$ とする。対称形の式が成り立つとき、その共通の値を $t$ とおく。$\dfrac{x-x_0}{l}=t$ より $x=x_0+tl$ であり、同様に $y=y_0+tm$、$z=z_0+tn$ である。逆に $x=x_0+tl$、$y=y_0+tm$、$z=z_0+tn$ とすると、$l,m,n\neq 0$ より $\dfrac{x-x_0}{l}=\dfrac{y-y_0}{m}=\dfrac{z-z_0}{n}=t$ である。
+  strategy: Name the common ratio t and clear denominators in each direction.
+  sketch:
+  - 'setup: Let t be the common value of the three fractions.'
+  - 'derive: Clearing denominators gives the parametric form.'
+  - 'conclude: Conversely dividing by l, m, n recovers the common ratio t.'
+  openmath: (forall (x0 y0 z0 l m n x y z) (-> (and (!= l 0) (!= m 0) (!= n 0)) (<-> (and (= (/ (- x x0) l) (/ (- y y0) m)) (= (/ (- y y0) m) (/ (- z z0) n))) (exists (t) (and (= x (+ x0 (* t l))) (= y (+ y0 (* t m))) (= z (+ z0 (* t n))))))))
+  hard_negative:
+    statement: |
+      $l=0$ の場合も、同じ分数の形の式が直線を表す。
+    reason: |
+      $l=0$ では分母が $0$ になり式が意味をもたない。この場合は $x=x_0$ と $\dfrac{y-y_0}{m}=\dfrac{z-z_0}{n}$ を別に書く必要がある。
+  target: |
+    ∀ (x₀ y₀ z₀ l m n x y z : ℝ), l ≠ 0 → m ≠ 0 → n ≠ 0 → (((x - x₀) / l = (y - y₀) / m ∧ (y - y₀) / m = (z - z₀) / n) ↔ ∃ t : ℝ, x = x₀ + t * l ∧ y = y₀ + t * m ∧ z = z₀ + t * n)
+  proof: |
+    by
+      intro x₀ y₀ z₀ l m n x y z hl hm hn
+      constructor
+      · rintro ⟨h1, h2⟩
+        refine ⟨(y - y₀) / m, ?_, ?_, ?_⟩
+        · rw [← h1]; field_simp; ring
+        · field_simp; ring
+        · rw [h2]; field_simp; ring
+      · rintro ⟨t, rfl, rfl, rfl⟩
+        constructor <;> field_simp <;> ring
+- id: plane_equation_normal_form
+  kind: textbook
+  level: high
+  topic: 空間の平面・法線ベクトル
+  statement: 点$(x_0,y_0,z_0)$が平面$ax+by+cz+d=0$上にあるとき、点$(x,y,z)$がこの平面上にあることと、$a(x-x_0)+b(y-y_0)+c(z-z_0)=0$であることは同値である。
+  statement_en: If (x₀,y₀,z₀) lies on the plane ax+by+cz+d = 0, then (x,y,z) lies on the plane if and only if a(x-x₀)+b(y-y₀)+c(z-z₀) = 0.
+  assumptions:
+  - $ax_0+by_0+cz_0+d=0$
+  quantifiers:
+  - 任意の実数 $a,b,c,d,x_0,y_0,z_0,x,y,z$
+  conclusion: |
+    $ax+by+cz+d=0$ と $a(x-x_0)+b(y-y_0)+c(z-z_0)=0$ は同値である。
+  answer: |
+    $a,b,c,d,x_0,y_0,z_0,x,y,z$ を実数とし、$ax_0+by_0+cz_0+d=0$ とする。$d=-(ax_0+by_0+cz_0)$ を代入すると、$ax+by+cz+d=a(x-x_0)+b(y-y_0)+c(z-z_0)$ である。したがって一方が $0$ であることと他方が $0$ であることは同値である。
+  strategy: Eliminate d using the base point on the plane.
+  sketch:
+  - 'derive: The base point gives d = -(ax₀+by₀+cz₀).'
+  - 'conclude: The two left-hand sides are equal, so the conditions are equivalent.'
+  openmath: (forall (a b c d x0 y0 z0 x y z) (-> (= (+ (* a x0) (* b y0) (* c z0) d) 0) (<-> (= (+ (* a x) (* b y) (* c z) d) 0) (= (+ (* a (- x x0)) (* b (- y y0)) (* c (- z z0))) 0))))
+  hard_negative:
+    statement: |
+      任意の点 $(x_0,y_0,z_0)$ について、$ax+by+cz+d=0$ と $a(x-x_0)+b(y-y_0)+c(z-z_0)=0$ は同値である。
+    reason: |
+      基準点が平面上にないと、右の式は平行な別の平面を表す。$a=1$、$b=c=d=0$、$x_0=1$ なら、左は $x=0$、右は $x=1$ である。
+  target: |
+    ∀ (a b c d x₀ y₀ z₀ x y z : ℝ), a * x₀ + b * y₀ + c * z₀ + d = 0 → (a * x + b * y + c * z + d = 0 ↔ a * (x - x₀) + b * (y - y₀) + c * (z - z₀) = 0)
+  proof: |
+    by
+      intro a b c d x₀ y₀ z₀ x y z h
+      constructor <;> intro h' <;> linarith
+- id: plane_parametric_iff_cross_normal
+  kind: textbook
+  level: high
+  topic: 空間の平面・媒介変数表示と法線
+  statement: |
+    空間のベクトル $\vec u=(u_1,u_2,u_3)$、$\vec v=(v_1,v_2,v_3)$ が平行でないとし、$\vec n=(u_2v_3-u_3v_2,\,u_3v_1-u_1v_3,\,u_1v_2-u_2v_1)\neq\vec 0$ とする。点 $(x,y,z)$ について、$\vec n\cdot(x-x_0,y-y_0,z-z_0)=0$ であることと、実数 $s,t$ により $(x,y,z)=(x_0,y_0,z_0)+s\vec u+t\vec v$ と書けることは同値である。
+  statement_en: Let u, v be space vectors with cross product n = u×v ≠ 0. Then n·(x-x₀, y-y₀, z-z₀) = 0 if and only if (x,y,z) = (x₀,y₀,z₀) + su + tv for some real s, t.
+  assumptions:
+  - $\vec n=(u_2v_3-u_3v_2,\,u_3v_1-u_1v_3,\,u_1v_2-u_2v_1)\neq\vec 0$
+  quantifiers:
+  - 任意の実数 $u_1,u_2,u_3,v_1,v_2,v_3,x_0,y_0,z_0,x,y,z$
+  conclusion: |
+    法線形の方程式と、媒介変数 $s,t$ による表示は同値である。
+  answer: |
+    $u_i,v_i,x_0,y_0,z_0,x,y,z$ を実数とし、$\vec n=(n_1,n_2,n_3)=(u_2v_3-u_3v_2,\,u_3v_1-u_1v_3,\,u_1v_2-u_2v_1)\neq\vec 0$ とする。$\vec w=(x-x_0,y-y_0,z-z_0)$ とおく。$\vec w=s\vec u+t\vec v$ なら、$\vec n\cdot\vec u=\vec n\cdot\vec v=0$（直接計算）より $\vec n\cdot\vec w=0$ である。逆に $\vec n\cdot\vec w=0$ とする。$N=|\vec n|^2>0$、$A=(\vec w\times\vec v)\cdot\vec n$、$B=(\vec u\times\vec w)\cdot\vec n$ とおくと、成分ごとの展開により恒等式 $N\vec w=A\vec u+B\vec v+(\vec n\cdot\vec w)\vec n$ が成り立つ。$\vec n\cdot\vec w=0$ より $\vec w=\dfrac{A}{N}\vec u+\dfrac{B}{N}\vec v$ となり、$s=\dfrac{A}{N}$、$t=\dfrac{B}{N}$ が求める実数である。
+  strategy: The easy direction is orthogonality of the cross product; for the converse use the explicit dual-basis identity and divide by |n|².
+  sketch:
+  - 'derive: n·u = n·v = 0 by direct computation, so the parametric form satisfies the equation.'
+  - 'setup: For the converse put w = (x-x₀,y-y₀,z-z₀), N = |n|², A = (w×v)·n, B = (u×w)·n.'
+  - 'derive: Expanding components gives N w = A u + B v + (n·w) n.'
+  - 'construct: With n·w = 0 take s = A/N and t = B/N.'
+  - 'conclude: Then w = su + tv.'
+  openmath: (forall (u1 u2 u3 v1 v2 v3 x0 y0 z0 x y z) (-> (!= (+ (^ (- (* u2 v3) (* u3 v2)) 2) (^ (- (* u3 v1) (* u1 v3)) 2) (^ (- (* u1 v2) (* u2 v1)) 2)) 0) (<-> (= (+ (* (- (* u2 v3) (* u3 v2)) (- x x0)) (* (- (* u3 v1) (* u1 v3)) (- y y0)) (* (- (* u1 v2) (* u2 v1)) (- z z0))) 0) (exists (s t) (and (= x (+ x0 (* s u1) (* t v1))) (= y (+ y0 (* s u2) (* t v2))) (= z (+ z0 (* s u3) (* t v3))))))))
+  hard_negative:
+    statement: |
+      $\vec u,\vec v$ が平行でも、$\vec n\cdot(x-x_0,y-y_0,z-z_0)=0$ は媒介変数表示と同値である。
+    reason: |
+      平行なら $\vec n=\vec 0$ で方程式は全空間で成り立つが、媒介変数表示の点は直線または1点にとどまる。
+  target: |
+    ∀ (u₁ u₂ u₃ v₁ v₂ v₃ x₀ y₀ z₀ x y z : ℝ), (u₂ * v₃ - u₃ * v₂) ^ 2 + (u₃ * v₁ - u₁ * v₃) ^ 2 + (u₁ * v₂ - u₂ * v₁) ^ 2 ≠ 0 → ((u₂ * v₃ - u₃ * v₂) * (x - x₀) + (u₃ * v₁ - u₁ * v₃) * (y - y₀) + (u₁ * v₂ - u₂ * v₁) * (z - z₀) = 0 ↔ ∃ s t : ℝ, x = x₀ + s * u₁ + t * v₁ ∧ y = y₀ + s * u₂ + t * v₂ ∧ z = z₀ + s * u₃ + t * v₃)
+  proof: |
+    by
+      intro u₁ u₂ u₃ v₁ v₂ v₃ x₀ y₀ z₀ x y z hN
+      constructor
+      · intro h
+        set n₁ := u₂ * v₃ - u₃ * v₂ with hn₁
+        set n₂ := u₃ * v₁ - u₁ * v₃ with hn₂
+        set n₃ := u₁ * v₂ - u₂ * v₁ with hn₃
+        set w₁ := x - x₀ with hw₁
+        set w₂ := y - y₀ with hw₂
+        set w₃ := z - z₀ with hw₃
+        set N := n₁ ^ 2 + n₂ ^ 2 + n₃ ^ 2 with hNdef
+        set A := (w₂ * v₃ - w₃ * v₂) * n₁ + (w₃ * v₁ - w₁ * v₃) * n₂ + (w₁ * v₂ - w₂ * v₁) * n₃ with hA
+        set B := (u₂ * w₃ - u₃ * w₂) * n₁ + (u₃ * w₁ - u₁ * w₃) * n₂ + (u₁ * w₂ - u₂ * w₁) * n₃ with hB
+        have e1 : N * w₁ = A * u₁ + B * v₁ := by
+          simp only [hNdef, hA, hB, hn₁, hn₂, hn₃] at *
+          linear_combination (u₂ * v₃ - u₃ * v₂) * h
+        have e2 : N * w₂ = A * u₂ + B * v₂ := by
+          simp only [hNdef, hA, hB, hn₁, hn₂, hn₃] at *
+          linear_combination (u₃ * v₁ - u₁ * v₃) * h
+        have e3 : N * w₃ = A * u₃ + B * v₃ := by
+          simp only [hNdef, hA, hB, hn₁, hn₂, hn₃] at *
+          linear_combination (u₁ * v₂ - u₂ * v₁) * h
+        refine ⟨A / N, B / N, ?_, ?_, ?_⟩
+        · have : x - x₀ = (A / N) * u₁ + (B / N) * v₁ := by
+            rw [← hw₁]; field_simp; linarith
+          linarith
+        · have : y - y₀ = (A / N) * u₂ + (B / N) * v₂ := by
+            rw [← hw₂]; field_simp; linarith
+          linarith
+        · have : z - z₀ = (A / N) * u₃ + (B / N) * v₃ := by
+            rw [← hw₃]; field_simp; linarith
+          linarith
+      · rintro ⟨s, t, rfl, rfl, rfl⟩
+        ring
+- id: line_plane_intersection_parameter
+  kind: gap
+  level: high
+  topic: 空間の直線と平面・交点
+  statement: 直線$(x_0+tl,\,y_0+tm,\,z_0+tn)$と平面$ax+by+cz+d=0$について$al+bm+cn\neq 0$とする。このとき、$t$に対応する点が平面上にあることと、$t=-\dfrac{ax_0+by_0+cz_0+d}{al+bm+cn}$であることは同値である。
+  statement_en: For the line (x₀+tl, y₀+tm, z₀+tn) and plane ax+by+cz+d = 0 with al+bm+cn ≠ 0, the point with parameter t lies on the plane if and only if t = -(ax₀+by₀+cz₀+d)/(al+bm+cn).
+  assumptions:
+  - $al+bm+cn\neq 0$
+  quantifiers:
+  - 任意の実数 $a,b,c,d,x_0,y_0,z_0,l,m,n,t$
+  conclusion: |
+    点が平面上にあることと $t=-\dfrac{ax_0+by_0+cz_0+d}{al+bm+cn}$ は同値である。
+  answer: |
+    $a,b,c,d,x_0,y_0,z_0,l,m,n,t$ を実数とし、$al+bm+cn\neq 0$ とする。平面の式に代入して $t$ でまとめると $a(x_0+tl)+b(y_0+tm)+c(z_0+tn)+d=t(al+bm+cn)+(ax_0+by_0+cz_0+d)$ である。この値が $0$ であることは、$al+bm+cn\neq 0$ で割ると $t=-\dfrac{ax_0+by_0+cz_0+d}{al+bm+cn}$ と同値である。
+  strategy: Substitute the line into the plane equation and solve the resulting linear equation in t.
+  sketch:
+  - 'derive: Substitution gives t(al+bm+cn) + (ax₀+by₀+cz₀+d) = 0.'
+  - 'conclude: Divide by al+bm+cn ≠ 0.'
+  openmath: (forall (a b c d x0 y0 z0 l m n t) (-> (!= (+ (* a l) (* b m) (* c n)) 0) (<-> (= (+ (* a (+ x0 (* t l))) (* b (+ y0 (* t m))) (* c (+ z0 (* t n))) d) 0) (= t (/ (neg (+ (* a x0) (* b y0) (* c z0) d)) (+ (* a l) (* b m) (* c n)))))))
+  hard_negative:
+    statement: |
+      $al+bm+cn=0$ の場合も、直線と平面はただ1点で交わる。
+    reason: |
+      方向ベクトルが法線に垂直なので、直線は平面に平行である。基準点が平面上にあれば直線全体が平面に含まれ、そうでなければ共有点がない。
+  target: |
+    ∀ (a b c d x₀ y₀ z₀ l m n t : ℝ), a * l + b * m + c * n ≠ 0 → (a * (x₀ + t * l) + b * (y₀ + t * m) + c * (z₀ + t * n) + d = 0 ↔ t = -(a * x₀ + b * y₀ + c * z₀ + d) / (a * l + b * m + c * n))
+  proof: |
+    by
+      intro a b c d x₀ y₀ z₀ l m n t h
+      rw [eq_div_iff h]
+      constructor <;> intro h' <;> linear_combination h'
+- id: point_plane_distance
+  kind: textbook
+  level: high
+  topic: 空間の平面・点と平面の距離
+  statement: |
+    $(a,b,c)\neq(0,0,0)$ とする。点 $(x_0,y_0,z_0)$ と平面 $ax+by+cz+d=0$ の距離は $\dfrac{|ax_0+by_0+cz_0+d|}{\sqrt{a^2+b^2+c^2}}$ である。すなわち、平面上のどの点までの距離もこの値以上であり、平面上にこの値を実現する点がある。
+  statement_en: If (a,b,c) ≠ 0, then every point of the plane ax+by+cz+d = 0 has distance at least |ax₀+by₀+cz₀+d|/√(a²+b²+c²) from (x₀,y₀,z₀), and some point of the plane attains this value.
+  assumptions:
+  - $a^2+b^2+c^2\neq 0$
+  quantifiers:
+  - 任意の実数 $a,b,c,d,x_0,y_0,z_0$
+  conclusion: |
+    平面上の点までの距離の最小値は $\dfrac{|ax_0+by_0+cz_0+d|}{\sqrt{a^2+b^2+c^2}}$ である。
+  answer: |
+    $a,b,c,d,x_0,y_0,z_0$ を実数、$N=a^2+b^2+c^2\neq 0$、$k=ax_0+by_0+cz_0+d$ とする。点 $(x,y,z)$ が平面上にあれば $k=a(x_0-x)+b(y_0-y)+c(z_0-z)$ である。コーシー・シュワルツの不等式より $k^2\le N\left((x-x_0)^2+(y-y_0)^2+(z-z_0)^2\right)$ である。両辺の平方根をとり $\sqrt N$ で割ると、距離は $\dfrac{|k|}{\sqrt N}$ 以上である。次に $x=x_0-\dfrac{ka}{N}$、$y=y_0-\dfrac{kb}{N}$、$z=z_0-\dfrac{kc}{N}$ とする。代入すると $ax+by+cz+d=k-k=0$ なのでこの点は平面上にある。その距離の2乗は $\dfrac{k^2}{N}$ であり、距離は $\dfrac{|k|}{\sqrt N}$ に等しい。
+  strategy: Bound the distance from below by Cauchy-Schwarz and attain it at the foot of the perpendicular.
+  sketch:
+  - 'setup: Put N = a²+b²+c² and k = ax₀+by₀+cz₀+d.'
+  - 'derive: On the plane k = a(x₀-x)+b(y₀-y)+c(z₀-z).'
+  - 'apply_theorem: Cauchy-Schwarz gives k² ≤ N times the squared distance.'
+  - 'construct: The foot is (x₀,y₀,z₀) - (k/N)(a,b,c).'
+  - 'derive: This point lies on the plane and has squared distance k²/N.'
+  - 'conclude: The minimum distance is |k|/√N.'
+  openmath: (forall (a b c d x0 y0 z0) (-> (!= (+ (^ a 2) (^ b 2) (^ c 2)) 0) (and (forall (x y z) (-> (= (+ (* a x) (* b y) (* c z) d) 0) (<= (/ (abs (+ (* a x0) (* b y0) (* c z0) d)) (root (+ (^ a 2) (^ b 2) (^ c 2)) 2)) (root (+ (^ (- x x0) 2) (^ (- y y0) 2) (^ (- z z0) 2)) 2)))) (exists (x y z) (and (= (+ (* a x) (* b y) (* c z) d) 0) (= (root (+ (^ (- x x0) 2) (^ (- y y0) 2) (^ (- z z0) 2)) 2) (/ (abs (+ (* a x0) (* b y0) (* c z0) d)) (root (+ (^ a 2) (^ b 2) (^ c 2)) 2))))))))
+  hard_negative:
+    statement: |
+      点と平面の距離は $\dfrac{|ax_0+by_0+cz_0+d|}{a^2+b^2+c^2}$ である。
+    reason: |
+      分母の根号を落としている。平面 $2x=0$ と点 $(1,0,0)$ の距離は $1$ だが、この式の値は $\dfrac12$ である。
+  target: |
+    ∀ (a b c d x₀ y₀ z₀ : ℝ), a ^ 2 + b ^ 2 + c ^ 2 ≠ 0 → (∀ x y z : ℝ, a * x + b * y + c * z + d = 0 → |a * x₀ + b * y₀ + c * z₀ + d| / √(a ^ 2 + b ^ 2 + c ^ 2) ≤ √((x - x₀) ^ 2 + (y - y₀) ^ 2 + (z - z₀) ^ 2)) ∧ ∃ x y z : ℝ, a * x + b * y + c * z + d = 0 ∧ √((x - x₀) ^ 2 + (y - y₀) ^ 2 + (z - z₀) ^ 2) = |a * x₀ + b * y₀ + c * z₀ + d| / √(a ^ 2 + b ^ 2 + c ^ 2)
+  proof: |
+    by
+      intro a b c d x₀ y₀ z₀ hN
+      have hNpos : 0 < a ^ 2 + b ^ 2 + c ^ 2 := lt_of_le_of_ne (by positivity) (Ne.symm hN)
+      have hS : 0 < √(a ^ 2 + b ^ 2 + c ^ 2) := Real.sqrt_pos.mpr hNpos
+      constructor
+      · intro x y z h
+        rw [div_le_iff₀ hS, ← Real.sqrt_mul (by positivity)]
+        apply Real.abs_le_sqrt
+        have hk : a * x₀ + b * y₀ + c * z₀ + d = a * (x₀ - x) + b * (y₀ - y) + c * (z₀ - z) := by linarith
+        rw [hk]
+        nlinarith [sq_nonneg (a * (y₀ - y) - b * (x₀ - x)), sq_nonneg (a * (z₀ - z) - c * (x₀ - x)), sq_nonneg (b * (z₀ - z) - c * (y₀ - y))]
+      · set k := a * x₀ + b * y₀ + c * z₀ + d with hk
+        set N := a ^ 2 + b ^ 2 + c ^ 2 with hNdef
+        refine ⟨x₀ - k * a / N, y₀ - k * b / N, z₀ - k * c / N, ?_, ?_⟩
+        · field_simp
+          rw [hk, hNdef]; ring
+        · have : (x₀ - k * a / N - x₀) ^ 2 + (y₀ - k * b / N - y₀) ^ 2 + (z₀ - k * c / N - z₀) ^ 2 = k ^ 2 / N := by
+            field_simp
+            rw [hNdef]; ring
+          rw [this, Real.sqrt_div (sq_nonneg k), Real.sqrt_sq_eq_abs]
+- id: complex_norm_mul_div_pow
+  kind: textbook
+  level: high
+  topic: 複素数・絶対値の性質
+  statement: |
+    複素数 $z,w$ と自然数 $n$ に対し、$|zw|=|z||w|$ および $|z^n|=|z|^n$ が成り立つ。さらに $w\neq 0$ ならば $\left|\dfrac{z}{w}\right|=\dfrac{|z|}{|w|}$ である。
+  statement_en: For complex numbers z, w and a natural number n, |zw| = |z||w| and |z^n| = |z|^n; moreover if w ≠ 0, then |z/w| = |z|/|w|.
+  assumptions:
+  - $z,w$ は複素数
+  - $n$ は自然数
+  - 商の式では $w\neq 0$
+  quantifiers:
+  - 任意の複素数 $z,w$ と任意の自然数 $n$
+  conclusion: |
+    $|zw|=|z||w|$、$|z^n|=|z|^n$、および $w\neq 0$ のとき $\left|\dfrac{z}{w}\right|=\dfrac{|z|}{|w|}$ である。
+  answer: |
+    $z,w$ を複素数、$n$ を自然数とする。$|z|^2=z\bar z$ と $\overline{zw}=\bar z\bar w$ より、$|zw|^2=zw\,\bar z\bar w=|z|^2|w|^2$ である。絶対値は $0$ 以上なので $|zw|=|z||w|$ である。$|z^n|=|z|^n$ はこの式と $n$ についての帰納法から従う。$w\neq 0$ のとき、$z=\dfrac{z}{w}\cdot w$ に積の式を用いると $|z|=\left|\dfrac{z}{w}\right||w|$ であり、$|w|$ で割ると商の式を得る。
+  strategy: Derive multiplicativity from |z|² = z z̄, then use induction for powers and division for quotients.
+  sketch:
+  - 'derive: |zw|² = zw z̄w̄ = |z|²|w|², so |zw| = |z||w|.'
+  - 'induction: The power formula follows by induction on n.'
+  - 'conclude: Apply the product formula to z = (z/w)w and divide by |w|.'
+  openmath: (forall (z w n) (-> (and (in z C) (in w C) (in n N)) (and (= (abs (* z w)) (* (abs z) (abs w))) (= (abs (^ z n)) (^ (abs z) n)) (-> (!= w 0) (= (abs (/ z w)) (/ (abs z) (abs w)))))))
+  hard_negative:
+    statement: |
+      複素数 $z,w$ に対し $|z+w|=|z|+|w|$ である。
+    reason: |
+      積と違い和については等式が成り立たない。$z=1$、$w=-1$ なら左辺は $0$、右辺は $2$ である。
+  target: |
+    ∀ (z w : ℂ) (n : ℕ), ‖z * w‖ = ‖z‖ * ‖w‖ ∧ (w ≠ 0 → ‖z / w‖ = ‖z‖ / ‖w‖) ∧ ‖z ^ n‖ = ‖z‖ ^ n
+  proof: |
+    by
+      intro z w n
+      exact ⟨norm_mul z w, fun _ => norm_div z w, norm_pow z n⟩
+- id: conj_eq_radius_sq_div
+  kind: gap
+  level: high
+  topic: 複素数・絶対値一定の共役
+  statement: |
+    複素数 $z$ と実数 $r>0$ について $|z|=r$ ならば、$\bar z=\dfrac{r^2}{z}$ である。特に $|z|=1$ ならば $\bar z=\dfrac1z$ である。
+  statement_en: If a complex number z satisfies |z| = r for a real r > 0, then conj(z) = r²/z.
+  assumptions:
+  - $r>0$
+  - $|z|=r$
+  quantifiers:
+  - 任意の複素数 $z$ と任意の正の実数 $r$
+  conclusion: |
+    $\bar z=\dfrac{r^2}{z}$ である。
+  answer: |
+    $z$ を複素数、$r>0$ を実数とし、$|z|=r$ とする。$|z|>0$ より $z\neq 0$ である。$\bar z z=|z|^2=r^2$ なので、両辺を $z$ で割ると $\bar z=\dfrac{r^2}{z}$ を得る。
+  strategy: Use z̄z = |z|² and divide by the nonzero z.
+  sketch:
+  - 'derive: |z| = r > 0 forces z ≠ 0.'
+  - 'conclude: z̄z = r², so z̄ = r²/z.'
+  openmath: (forall (z r) (-> (and (in z C) (> r 0) (= (abs z) r)) (= (complex_conj z) (/ (^ r 2) z))))
+  hard_negative:
+    statement: |
+      $0$ でないすべての複素数 $z$ について $\bar z=\dfrac1z$ である。
+    reason: |
+      $|z|=1$ が必要である。$z=2$ なら $\bar z=2$ だが $\dfrac1z=\dfrac12$ である。
+  target: |
+    ∀ (z : ℂ) (r : ℝ), 0 < r → ‖z‖ = r → (starRingEnd ℂ) z = (r : ℂ) ^ 2 / z
+  proof: |
+    by
+      intro z r hr h
+      have hz : z ≠ 0 := by
+        rintro rfl
+        simp at h
+        linarith
+      rw [eq_div_iff hz, Complex.conj_mul', h]
+- id: norm_sub_eq_norm_one_sub_conj_mul
+  kind: gap
+  level: high
+  topic: 複素数・絶対値1の等式
+  statement: |
+    複素数 $z,a$ について $|z|=1$ ならば、$|z-a|=|1-\bar a z|$ である。
+  statement_en: If complex numbers z, a satisfy |z| = 1, then |z-a| = |1 - conj(a) z|.
+  assumptions:
+  - $|z|=1$
+  quantifiers:
+  - 任意の複素数 $z,a$
+  conclusion: |
+    $|z-a|=|1-\bar a z|$ である。
+  answer: |
+    $z,a$ を複素数とし、$|z|=1$ とする。$\bar z z=|z|^2=1$ なので $1-\bar a z=\bar z z-\bar a z=\overline{(z-a)}\,z$ である。絶対値をとると、$|\overline{z-a}|=|z-a|$ と $|z|=1$ より $|1-\bar a z|=|z-a|$ を得る。
+  strategy: Factor 1 - āz as conj(z-a) z using z̄z = 1 and take absolute values.
+  sketch:
+  - 'derive: z̄z = 1, so 1 - āz = conj(z-a) z.'
+  - 'conclude: Take absolute values with |conj(z-a)| = |z-a| and |z| = 1.'
+  openmath: (forall (z a) (-> (and (in z C) (in a C) (= (abs z) 1)) (= (abs (- z a)) (abs (- 1 (* (complex_conj a) z))))))
+  hard_negative:
+    statement: |
+      $|z|=1$ ならば $|z-a|=|1-az|$ である。
+    reason: |
+      共役を落とすと成り立たない。$z=a=i$ のとき左辺は $0$、右辺は $|1-i^2|=2$ である。
+  target: |
+    ∀ z a : ℂ, ‖z‖ = 1 → ‖z - a‖ = ‖1 - (starRingEnd ℂ) a * z‖
+  proof: |
+    by
+      intro z a h
+      have h1 : (starRingEnd ℂ) z * z = 1 := by
+        rw [Complex.conj_mul', h]; simp
+      have e : 1 - (starRingEnd ℂ) a * z = (starRingEnd ℂ) (z - a) * z := by
+        rw [map_sub, sub_mul, h1]
+      rw [e, norm_mul, h, mul_one, RCLike.norm_conj]
+- id: polar_form_mul_div
+  kind: textbook
+  level: high
+  topic: 複素数・極形式の積と商
+  statement: |
+    実数 $r,s,\alpha,\beta$ に対し、$r(\cos\alpha+i\sin\alpha)\cdot s(\cos\beta+i\sin\beta)=rs(\cos(\alpha+\beta)+i\sin(\alpha+\beta))$ である。さらに $s\neq 0$ ならば、$\dfrac{r(\cos\alpha+i\sin\alpha)}{s(\cos\beta+i\sin\beta)}=\dfrac{r}{s}(\cos(\alpha-\beta)+i\sin(\alpha-\beta))$ である。
+  statement_en: For real r, s, α, β, r(cos α + i sin α)·s(cos β + i sin β) = rs(cos(α+β) + i sin(α+β)); if s ≠ 0, then the quotient equals (r/s)(cos(α-β) + i sin(α-β)).
+  assumptions:
+  - $r,s,\alpha,\beta$ は実数
+  - 商の式では $s\neq 0$
+  quantifiers:
+  - 任意の実数 $r,s,\alpha,\beta$
+  conclusion: |
+    積は $rs(\cos(\alpha+\beta)+i\sin(\alpha+\beta))$、商は $\dfrac{r}{s}(\cos(\alpha-\beta)+i\sin(\alpha-\beta))$ である。
+  answer: |
+    $r,s,\alpha,\beta$ を実数とする。左辺を展開し $i^2=-1$ を用いると、積は $rs\left((\cos\alpha\cos\beta-\sin\alpha\sin\beta)+i(\sin\alpha\cos\beta+\cos\alpha\sin\beta)\right)$ である。加法定理よりこれは $rs(\cos(\alpha+\beta)+i\sin(\alpha+\beta))$ である。$s\neq 0$ とする。$\cos^2\beta+\sin^2\beta=1$ より $\cos\beta+i\sin\beta\neq 0$ なので、分母は $0$ でない。積の式を $\dfrac{r}{s},\,s,\,\alpha-\beta,\,\beta$ に適用すると、$\dfrac{r}{s}(\cos(\alpha-\beta)+i\sin(\alpha-\beta))\cdot s(\cos\beta+i\sin\beta)=r(\cos\alpha+i\sin\alpha)$ である。分母で割ると商の式を得る。
+  strategy: Expand and use the addition formulas; deduce the quotient by applying the product formula to the claimed result.
+  sketch:
+  - 'derive: Expand the product with i² = -1.'
+  - 'apply_theorem: Use the addition formulas for cos and sin.'
+  - 'derive: The denominator is nonzero because cos²β + sin²β = 1 and s ≠ 0.'
+  - 'conclude: Multiply the claimed quotient by the denominator using the product formula.'
+  openmath: (forall (r s x y) (-> (and (in r R) (in s R) (in x R) (in y R)) (and (= (* (* r (+ (cos x) (* (sin x) complex_imaginary_unit))) (* s (+ (cos y) (* (sin y) complex_imaginary_unit)))) (* (* r s) (+ (cos (+ x y)) (* (sin (+ x y)) complex_imaginary_unit)))) (-> (!= s 0) (= (/ (* r (+ (cos x) (* (sin x) complex_imaginary_unit))) (* s (+ (cos y) (* (sin y) complex_imaginary_unit)))) (* (/ r s) (+ (cos (- x y)) (* (sin (- x y)) complex_imaginary_unit))))))))
+  hard_negative:
+    statement: |
+      商の偏角は $\alpha+\beta$ であり、$\dfrac{r(\cos\alpha+i\sin\alpha)}{s(\cos\beta+i\sin\beta)}=\dfrac{r}{s}(\cos(\alpha+\beta)+i\sin(\alpha+\beta))$ である。
+    reason: |
+      $r=s=1$、$\alpha=\beta=\dfrac{\pi}{2}$ なら左辺は $1$、右辺は $\cos\pi+i\sin\pi=-1$ である。商では偏角の差をとる。
+  target: |
+    ∀ (r s a b : ℝ), ((r : ℂ) * ((Real.cos a : ℂ) + (Real.sin a : ℂ) * Complex.I)) * ((s : ℂ) * ((Real.cos b : ℂ) + (Real.sin b : ℂ) * Complex.I)) = ((r * s : ℝ) : ℂ) * ((Real.cos (a + b) : ℂ) + (Real.sin (a + b) : ℂ) * Complex.I) ∧ (s ≠ 0 → ((r : ℂ) * ((Real.cos a : ℂ) + (Real.sin a : ℂ) * Complex.I)) / ((s : ℂ) * ((Real.cos b : ℂ) + (Real.sin b : ℂ) * Complex.I)) = ((r / s : ℝ) : ℂ) * ((Real.cos (a - b) : ℂ) + (Real.sin (a - b) : ℂ) * Complex.I))
+  proof: |
+    by
+      intro r s a b
+      have hmul : ∀ (r s a b : ℝ), ((r : ℂ) * ((Real.cos a : ℂ) + (Real.sin a : ℂ) * Complex.I)) * ((s : ℂ) * ((Real.cos b : ℂ) + (Real.sin b : ℂ) * Complex.I)) = ((r * s : ℝ) : ℂ) * ((Real.cos (a + b) : ℂ) + (Real.sin (a + b) : ℂ) * Complex.I) := by
+        intro r s a b
+        rw [Real.cos_add, Real.sin_add]
+        simp only [Complex.ofReal_add, Complex.ofReal_sub, Complex.ofReal_mul]
+        linear_combination ((r : ℂ) * s * Real.sin a * Real.sin b) * Complex.I_sq
+      refine ⟨hmul r s a b, fun hs => ?_⟩
+      have hne : (s : ℂ) * ((Real.cos b : ℂ) + (Real.sin b : ℂ) * Complex.I) ≠ 0 := by
+        apply mul_ne_zero (by exact_mod_cast hs)
+        intro h
+        have := congrArg norm h
+        rw [Complex.norm_add_mul_I, show Real.cos b ^ 2 + Real.sin b ^ 2 = 1 by linarith [Real.sin_sq_add_cos_sq b], Real.sqrt_one, norm_zero] at this
+        norm_num at this
+      rw [div_eq_iff hne, mul_comm ((r / s : ℝ) : ℂ), mul_assoc]
+      have := hmul (r / s) s (a - b) b
+      rw [sub_add_cancel, div_mul_cancel₀ _ hs] at this
+      rw [← this]
+      ring
+- id: polar_form_equality
+  kind: textbook
+  level: high
+  topic: 複素数・極形式の相等
+  statement: |
+    正の実数 $r,s$ と実数 $\alpha,\beta$ について、$r(\cos\alpha+i\sin\alpha)=s(\cos\beta+i\sin\beta)$ であることと、$r=s$ かつある整数 $k$ により $\alpha=\beta+2k\pi$ であることは同値である。
+  statement_en: For positive real r, s and real α, β, r(cos α + i sin α) = s(cos β + i sin β) if and only if r = s and α = β + 2kπ for some integer k.
+  assumptions:
+  - $r>0$
+  - $s>0$
+  quantifiers:
+  - 任意の正の実数 $r,s$ と任意の実数 $\alpha,\beta$
+  conclusion: |
+    等式と、$r=s$ かつ $\alpha=\beta+2k\pi$ となる整数 $k$ の存在は同値である。
+  answer: |
+    $r,s>0$、$\alpha,\beta$ を実数とする。等式が成り立つとする。$|\cos\alpha+i\sin\alpha|=|\cos\beta+i\sin\beta|=1$ なので、絶対値をとると $r=s$ である。$r\neq 0$ で割って実部と虚部を比べると、$\cos\alpha=\cos\beta$ かつ $\sin\alpha=\sin\beta$ である。余弦と正弦がともに等しい実数は $2\pi$ の整数倍だけ異なるので、ある整数 $k$ で $\alpha=\beta+2k\pi$ である。逆に $r=s$、$\alpha=\beta+2k\pi$ なら、余弦と正弦の周期性より両辺は等しい。
+  strategy: Take moduli to compare r and s, then compare real and imaginary parts and use periodicity.
+  sketch:
+  - 'derive: Taking absolute values gives r = s.'
+  - 'derive: Cancel r and compare parts to get cos α = cos β and sin α = sin β.'
+  - 'apply_theorem: Equal cosine and sine mean the angles differ by 2kπ.'
+  - 'conclude: The converse is periodicity of cos and sin.'
+  openmath: (forall (r s x y) (-> (and (> r 0) (> s 0) (in x R) (in y R)) (<-> (= (* r (+ (cos x) (* (sin x) complex_imaginary_unit))) (* s (+ (cos y) (* (sin y) complex_imaginary_unit)))) (and (= r s) (exists (k) (and (in k Z) (= x (+ y (* 2 k pi)))))))))
+  hard_negative:
+    statement: |
+      $r,s$ が $0$ でない実数であれば、等式と「$r=s$ かつ $\alpha=\beta+2k\pi$」は同値である。
+    reason: |
+      負の値を許すと成り立たない。$r=1$、$\alpha=0$、$s=-1$、$\beta=\pi$ なら両辺はともに $1$ だが、$r\neq s$ である。
+  target: |
+    ∀ (r s a b : ℝ), 0 < r → 0 < s → ((r : ℂ) * ((Real.cos a : ℂ) + (Real.sin a : ℂ) * Complex.I) = (s : ℂ) * ((Real.cos b : ℂ) + (Real.sin b : ℂ) * Complex.I) ↔ r = s ∧ ∃ k : ℤ, a = b + 2 * k * Real.pi)
+  proof: |
+    by
+      intro r s a b hr hs
+      constructor
+      · intro h
+        have hnorm : ∀ (t : ℝ), ‖(Real.cos t : ℂ) + (Real.sin t : ℂ) * Complex.I‖ = 1 := by
+          intro t
+          rw [Complex.norm_add_mul_I]
+          rw [show Real.cos t ^ 2 + Real.sin t ^ 2 = 1 by linarith [Real.sin_sq_add_cos_sq t]]
+          simp
+        have hrs : r = s := by
+          have := congrArg norm h
+          rw [norm_mul, norm_mul, hnorm, hnorm, Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg hr.le, Real.norm_of_nonneg hs.le] at this
+          linarith
+        subst hrs
+        have hr' : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+        have h' := mul_left_cancel₀ hr' h
+        have hc := congrArg Complex.re h'
+        have hs' := congrArg Complex.im h'
+        simp at hc hs'
+        obtain ⟨k, hk⟩ := Real.Angle.angle_eq_iff_two_pi_dvd_sub.mp (Real.Angle.cos_sin_inj hc hs')
+        exact ⟨rfl, k, by linarith⟩
+      · rintro ⟨rfl, k, rfl⟩
+        have hc : Real.cos (b + 2 * k * Real.pi) = Real.cos b := by
+          rw [show b + 2 * (k : ℝ) * Real.pi = b + k * (2 * Real.pi) by ring, Real.cos_add_int_mul_two_pi]
+        have hs : Real.sin (b + 2 * k * Real.pi) = Real.sin b := by
+          rw [show b + 2 * (k : ℝ) * Real.pi = b + k * (2 * Real.pi) by ring, Real.sin_add_int_mul_two_pi]
+        rw [hc, hs]
+- id: arg_mul_div_mod_two_pi
+  kind: gap
+  level: high
+  topic: 複素数・偏角の加法性
+  statement: |
+    $0$ でない複素数 $z,w$ の偏角の主値を $\arg$（値は $-\pi$ より大きく $\pi$ 以下）とする。ある整数 $k$ により $\arg(zw)=\arg z+\arg w+2k\pi$ であり、ある整数 $l$ により $\arg\dfrac{z}{w}=\arg z-\arg w+2l\pi$ である。
+  statement_en: For nonzero complex numbers z, w and the principal argument arg, arg(zw) = arg z + arg w + 2kπ for some integer k, and arg(z/w) = arg z - arg w + 2lπ for some integer l.
+  assumptions:
+  - $z\neq 0$
+  - $w\neq 0$
+  - $\arg$ は偏角の主値
+  quantifiers:
+  - 任意の $0$ でない複素数 $z,w$
+  - ある整数 $k,l$
+  conclusion: |
+    積と商の偏角の主値は、和と差に $2\pi$ の整数倍を加えたものに等しい。
+  answer: |
+    $z,w$ を $0$ でない複素数とし、$\alpha=\arg z$、$\beta=\arg w$ とする。$z=|z|(\cos\alpha+i\sin\alpha)$、$w=|w|(\cos\beta+i\sin\beta)$ と書ける。極形式の積の公式より $zw=|z||w|(\cos(\alpha+\beta)+i\sin(\alpha+\beta))$ であり、また $zw=|zw|(\cos\arg(zw)+i\sin\arg(zw))$ である。極形式の相等から、ある整数 $k$ で $\arg(zw)=\alpha+\beta+2k\pi$ である。商の公式を使えば同様に、ある整数 $l$ で $\arg\dfrac{z}{w}=\alpha-\beta+2l\pi$ である。
+  strategy: Write both sides in polar form and apply equality of polar forms.
+  sketch:
+  - 'setup: Write z and w in polar form with the principal arguments.'
+  - 'apply_theorem: The product and quotient formulas give polar forms with angles α+β and α-β.'
+  - 'apply_theorem: Equality of polar forms says angles agree up to 2π times an integer.'
+  - 'conclude: This yields the integers k and l.'
+  openmath: (forall (z w) (-> (and (in z C) (in w C) (!= z 0) (!= w 0)) (and (exists (k) (and (in k Z) (= (principal_arg (* z w)) (+ (principal_arg z) (principal_arg w) (* 2 k pi))))) (exists (l) (and (in l Z) (= (principal_arg (/ z w)) (+ (- (principal_arg z) (principal_arg w)) (* 2 l pi))))))))
+  hard_negative:
+    statement: |
+      偏角の主値について、つねに $\arg(zw)=\arg z+\arg w$ である。
+    reason: |
+      $2\pi$ の整数倍のずれを無視している。$z=w=-1$ なら $\arg(zw)=\arg 1=0$ だが、右辺は $2\pi$ である。
+  target: |
+    ∀ z w : ℂ, z ≠ 0 → w ≠ 0 → (∃ k : ℤ, Complex.arg (z * w) = Complex.arg z + Complex.arg w + 2 * k * Real.pi) ∧ (∃ k : ℤ, Complex.arg (z / w) = Complex.arg z - Complex.arg w + 2 * k * Real.pi)
+  proof: |
+    by
+      intro z w hz hw
+      constructor
+      · have h := Complex.arg_mul_coe_angle hz hw
+        rw [← Real.Angle.coe_add, Real.Angle.angle_eq_iff_two_pi_dvd_sub] at h
+        obtain ⟨k, hk⟩ := h
+        exact ⟨k, by linarith⟩
+      · have h := Complex.arg_div_coe_angle hz hw
+        rw [← Real.Angle.coe_sub, Real.Angle.angle_eq_iff_two_pi_dvd_sub] at h
+        obtain ⟨k, hk⟩ := h
+        exact ⟨k, by linarith⟩
+- id: arg_conj_inv
+  kind: gap
+  level: high
+  topic: 複素数・共役と逆数の偏角
+  statement: |
+    $0$ でない複素数 $z$ の偏角の主値が $\pi$ でない（$z$ が負の実数でない）とき、$\arg\bar z=-\arg z$ かつ $\arg z^{-1}=-\arg z$ である。
+  statement_en: If z is a nonzero complex number with principal argument different from π, then arg(conj z) = -arg z and arg(z⁻¹) = -arg z.
+  assumptions:
+  - $z\neq 0$
+  - $\arg z\neq\pi$
+  quantifiers:
+  - 任意の複素数 $z$
+  conclusion: |
+    $\arg\bar z=-\arg z$ かつ $\arg z^{-1}=-\arg z$ である。
+  answer: |
+    $z$ を $0$ でない複素数、$\theta=\arg z$ とし、$\theta\neq\pi$ とする。このとき $-\pi<\theta<\pi$ であり、$-\theta$ も $-\pi$ より大きく $\pi$ 以下である。$z=|z|(\cos\theta+i\sin\theta)$ より、$\bar z=|z|(\cos(-\theta)+i\sin(-\theta))$、$z^{-1}=\dfrac{\bar z}{|z|^2}=\dfrac{1}{|z|}(\cos(-\theta)+i\sin(-\theta))$ である。どちらも絶対値が正の極形式で角が主値の範囲にあるので、偏角の主値は $-\theta$ である。
+  strategy: Compute polar forms of conj z and z⁻¹ with angle -θ, which stays in the principal range since θ ≠ π.
+  sketch:
+  - 'setup: Put θ = arg z, so -π < θ < π.'
+  - 'derive: conj z and z⁻¹ have polar forms with angle -θ.'
+  - 'conclude: -θ is in (-π, π], so it is the principal argument.'
+  openmath: (forall (z) (-> (and (in z C) (!= z 0) (!= (principal_arg z) pi)) (and (= (principal_arg (complex_conj z)) (neg (principal_arg z))) (= (principal_arg (^ z (neg 1))) (neg (principal_arg z))))))
+  hard_negative:
+    statement: |
+      $0$ でないすべての複素数 $z$ について $\arg\bar z=-\arg z$ である。
+    reason: |
+      負の実数で成り立たない。$z=-1$ なら $\bar z=-1$ で $\arg\bar z=\pi$ だが、$-\arg z=-\pi$ である。
+  target: |
+    ∀ z : ℂ, z ≠ 0 → Complex.arg z ≠ Real.pi → Complex.arg ((starRingEnd ℂ) z) = -Complex.arg z ∧ Complex.arg z⁻¹ = -Complex.arg z
+  proof: |
+    by
+      intro z _ h
+      rw [Complex.arg_conj, Complex.arg_inv, if_neg h]
+      exact ⟨rfl, rfl⟩
+- id: arg_pow_mod_two_pi
+  kind: gap
+  level: high
+  topic: 複素数・べきの偏角
+  statement: |
+    $0$ でない複素数 $z$ と自然数 $n$ について、偏角の主値に関して、ある整数 $k$ により $\arg(z^n)=n\arg z+2k\pi$ である。
+  statement_en: For a nonzero complex number z and a natural number n, arg(z^n) = n arg z + 2kπ for some integer k, where arg is the principal argument.
+  assumptions:
+  - $z\neq 0$
+  quantifiers:
+  - 任意の複素数 $z$ と任意の自然数 $n$
+  - ある整数 $k$
+  conclusion: |
+    $\arg(z^n)=n\arg z+2k\pi$ となる整数 $k$ が存在する。
+  answer: |
+    $z$ を $0$ でない複素数とし、$n$ についての帰納法で示す。$n=0$ では $\arg 1=0$ なので $k=0$ でよい。ある $n$ で $\arg(z^n)=n\arg z+2k\pi$ とする。$z^n,z\neq 0$ なので、積の偏角の性質より、ある整数 $l$ で $\arg(z^{n+1})=\arg(z^n)+\arg z+2l\pi$ である。帰納法の仮定を代入すると $\arg(z^{n+1})=(n+1)\arg z+2(k+l)\pi$ となる。
+  strategy: Induct on n using additivity of the argument modulo 2π.
+  sketch:
+  - 'induction: For n = 0 both sides vanish with k = 0.'
+  - 'apply_theorem: arg(z^(n+1)) = arg(z^n) + arg z + 2lπ.'
+  - 'conclude: Substitute the hypothesis to get the integer k+l.'
+  openmath: (forall (z n) (-> (and (in z C) (in n N) (!= z 0)) (exists (k) (and (in k Z) (= (principal_arg (^ z n)) (+ (* n (principal_arg z)) (* 2 k pi)))))))
+  hard_negative:
+    statement: |
+      主値について $\arg(z^n)=n\arg z$ である。
+    reason: |
+      $z=i$、$n=4$ なら $\arg(z^4)=\arg 1=0$ だが、$4\arg i=2\pi$ である。
+  target: |
+    ∀ (z : ℂ) (n : ℕ), z ≠ 0 → ∃ k : ℤ, Complex.arg (z ^ n) = n * Complex.arg z + 2 * k * Real.pi
+  proof: |
+    by
+      intro z n hz
+      induction n with
+      | zero => exact ⟨0, by simp⟩
+      | succ n ih =>
+        obtain ⟨k, hk⟩ := ih
+        have h := Complex.arg_mul_coe_angle (pow_ne_zero n hz) hz
+        rw [← Real.Angle.coe_add, Real.Angle.angle_eq_iff_two_pi_dvd_sub, ← pow_succ] at h
+        obtain ⟨l, hl⟩ := h
+        refine ⟨k + l, ?_⟩
+        push_cast
+        rw [hk] at hl
+        linarith
+- id: polar_form_pow
+  kind: textbook
+  level: high
+  topic: 複素数・ド・モアブルの定理の実用形
+  statement: |
+    実数 $r,\theta$ と自然数 $n$ に対し、$\left(r(\cos\theta+i\sin\theta)\right)^n=r^n(\cos n\theta+i\sin n\theta)$ である。これは絶対値 $r$ を含めた極形式のべきの公式である。
+  statement_en: For real r, θ and a natural number n, (r(cos θ + i sin θ))^n = r^n (cos nθ + i sin nθ).
+  assumptions:
+  - $r,\theta$ は実数
+  - $n$ は自然数
+  quantifiers:
+  - 任意の実数 $r,\theta$ と任意の自然数 $n$
+  conclusion: |
+    $\left(r(\cos\theta+i\sin\theta)\right)^n=r^n(\cos n\theta+i\sin n\theta)$ である。
+  answer: |
+    $r,\theta$ を実数、$n$ を自然数とする。積のべきの法則より、左辺は $r^n(\cos\theta+i\sin\theta)^n$ である。ド・モアブルの定理より $(\cos\theta+i\sin\theta)^n=\cos n\theta+i\sin n\theta$ なので、求める等式を得る。
+  strategy: Split off r^n and apply de Moivre's formula.
+  sketch:
+  - 'derive: (r w)^n = r^n w^n.'
+  - 'apply_theorem: De Moivre''s formula gives w^n = cos nθ + i sin nθ for w = cos θ + i sin θ.'
+  - 'conclude: Combine the two equalities.'
+  openmath: (forall (r x n) (-> (and (in r R) (in x R) (in n N)) (= (^ (* r (+ (cos x) (* (sin x) complex_imaginary_unit))) n) (* (^ r n) (+ (cos (* n x)) (* (sin (* n x)) complex_imaginary_unit))))))
+  hard_negative:
+    statement: |
+      $\left(r(\cos\theta+i\sin\theta)\right)^n=r(\cos n\theta+i\sin n\theta)$ である。
+    reason: |
+      絶対値のべきを落としている。$r=2$、$\theta=0$、$n=2$ なら左辺は $4$、右辺は $2$ である。
+  target: |
+    ∀ (r θ : ℝ) (n : ℕ), ((r : ℂ) * ((Real.cos θ : ℂ) + (Real.sin θ : ℂ) * Complex.I)) ^ n = ((r ^ n : ℝ) : ℂ) * ((Real.cos (n * θ) : ℂ) + (Real.sin (n * θ) : ℂ) * Complex.I)
+  proof: |
+    by
+      intro r θ n
+      rw [mul_pow]
+      have := Complex.cos_add_sin_mul_I_pow n (θ : ℂ)
+      push_cast
+      rw [this]
+- id: de_moivre_integer_exponent
+  kind: named
+  level: high
+  topic: 複素数・ド・モアブルの定理（整数指数）
+  statement: |
+    ド・モアブルの定理の整数指数の形。実数 $\theta$ と整数 $n$（負でもよい）に対し、$(\cos\theta+i\sin\theta)^n=\cos n\theta+i\sin n\theta$ である。
+  statement_en: De Moivre's formula for integer exponents. For real θ and an integer n, (cos θ + i sin θ)^n = cos nθ + i sin nθ.
+  assumptions:
+  - $\theta$ は実数
+  - $n$ は整数
+  quantifiers:
+  - 任意の実数 $\theta$ と任意の整数 $n$
+  conclusion: |
+    $(\cos\theta+i\sin\theta)^n=\cos n\theta+i\sin n\theta$ である。
+  answer: |
+    $\theta$ を実数、$n$ を整数とする。オイラーの公式より $\cos t+i\sin t=e^{it}$ が任意の実数 $t$ で成り立つ。指数法則より $(e^{i\theta})^n=e^{in\theta}$ であり、これは整数 $n$ について正しい。両辺をオイラーの公式で書き直すと $(\cos\theta+i\sin\theta)^n=\cos n\theta+i\sin n\theta$ を得る。
+  strategy: Rewrite through Euler's formula and use the exponential law for integer powers.
+  sketch:
+  - 'translate: cos t + i sin t = exp(it) for real t.'
+  - 'apply_theorem: exp(iθ)^n = exp(inθ) for integer n.'
+  - 'conclude: Translate back with Euler''s formula.'
+  openmath: (forall (x n) (-> (and (in x R) (in n Z)) (= (^ (+ (cos x) (* (sin x) complex_imaginary_unit)) n) (+ (cos (* n x)) (* (sin (* n x)) complex_imaginary_unit)))))
+  hard_negative:
+    statement: |
+      整数 $n$ について $(\sin\theta+i\cos\theta)^n=\sin n\theta+i\cos n\theta$ である。
+    reason: |
+      実部と虚部を入れ替えると成り立たない。$\theta=0$、$n=2$ なら左辺は $i^2=-1$、右辺は $i$ である。
+  target: |
+    ∀ (θ : ℝ) (n : ℤ), ((Real.cos θ : ℂ) + (Real.sin θ : ℂ) * Complex.I) ^ n = (Real.cos (n * θ) : ℂ) + (Real.sin (n * θ) : ℂ) * Complex.I
+  proof: |
+    by
+      intro θ n
+      have hE : ∀ t : ℝ, (Real.cos t : ℂ) + (Real.sin t : ℂ) * Complex.I = Complex.exp ((t : ℂ) * Complex.I) := by
+        intro t
+        rw [Complex.exp_mul_I]
+        push_cast
+        rfl
+      rw [hE, hE, ← Complex.exp_int_mul]
+      congr 1
+      push_cast
+      ring
+- id: nth_roots_polar
+  kind: textbook
+  level: high
+  topic: 複素数・n乗根の極形式
+  statement: |
+    正の整数 $n$、正の実数 $r$、実数 $\alpha$ と複素数 $z$ について、$z^n=r^n(\cos\alpha+i\sin\alpha)$ であることと、ある整数 $k$（$0\le k<n$）により $z=r\left(\cos\dfrac{\alpha+2k\pi}{n}+i\sin\dfrac{\alpha+2k\pi}{n}\right)$ であることは同値である。
+  statement_en: For a positive integer n, r > 0, real α and complex z, z^n = r^n(cos α + i sin α) if and only if z = r(cos((α+2kπ)/n) + i sin((α+2kπ)/n)) for some natural number k < n.
+  assumptions:
+  - $n>0$
+  - $r>0$
+  quantifiers:
+  - 任意の正の整数 $n$、正の実数 $r$、実数 $\alpha$、複素数 $z$
+  - ある整数 $k$（$0\le k<n$）
+  conclusion: |
+    $z^n=r^n(\cos\alpha+i\sin\alpha)$ の解は $z=r\left(\cos\dfrac{\alpha+2k\pi}{n}+i\sin\dfrac{\alpha+2k\pi}{n}\right)$（$0\le k<n$）で尽くされる。
+  answer: |
+    $n$ を正の整数、$r>0$、$\alpha$ を実数、$z$ を複素数とする。$\theta_k=\dfrac{\alpha+2k\pi}{n}$ とおく。ド・モアブルの定理より $\left(r(\cos\theta_k+i\sin\theta_k)\right)^n=r^n(\cos(\alpha+2k\pi)+i\sin(\alpha+2k\pi))=r^n(\cos\alpha+i\sin\alpha)$ なので、この形の $z$ は解である。逆に $z^n=r^n(\cos\alpha+i\sin\alpha)$ とする。$w_0=r(\cos\theta_0+i\sin\theta_0)\neq 0$ とおくと $w_0^n=z^n$ であり、$\left(\dfrac{z}{w_0}\right)^n=1$ である。$1$ の $n$ 乗根は $\zeta^k$（$\zeta=\cos\dfrac{2\pi}{n}+i\sin\dfrac{2\pi}{n}$、$0\le k<n$）で尽くされるので、$z=w_0\zeta^k$ となる $k$ がある。極形式の積の公式により $w_0\zeta^k=r(\cos\theta_k+i\sin\theta_k)$ である。
+  strategy: Verify each candidate by de Moivre; conversely divide by one solution and use the classification of n-th roots of unity.
+  sketch:
+  - 'derive: Each candidate satisfies the equation by de Moivre and periodicity.'
+  - 'setup: Let w₀ be the candidate with k = 0.'
+  - 'derive: Then (z/w₀)^n = 1.'
+  - 'apply_theorem: The n-th roots of unity are the powers ζ^k with k < n.'
+  - 'conclude: z = w₀ζ^k has the required polar form.'
+  openmath: (forall (n r x z) (-> (and (in n N) (> n 0) (> r 0) (in x R) (in z C)) (<-> (= (^ z n) (* (^ r n) (+ (cos x) (* (sin x) complex_imaginary_unit)))) (exists (k) (and (in k N) (< k n) (= z (* r (+ (cos (/ (+ x (* 2 k pi)) n)) (* (sin (/ (+ x (* 2 k pi)) n)) complex_imaginary_unit)))))))))
+  hard_negative:
+    statement: |
+      $z^n=r^n(\cos\alpha+i\sin\alpha)$ の解は $z=r\left(\cos\dfrac{\alpha}{n}+i\sin\dfrac{\alpha}{n}\right)$ だけである。
+    reason: |
+      解は $n$ 個ある。$n=2$、$r=1$、$\alpha=0$ なら $z=1$ のほかに $z=-1$ も解である。
+  target: |
+    ∀ (n : ℕ) (r α : ℝ) (z : ℂ), 0 < n → 0 < r → (z ^ n = ((r ^ n : ℝ) : ℂ) * ((Real.cos α : ℂ) + (Real.sin α : ℂ) * Complex.I) ↔ ∃ k : ℕ, k < n ∧ z = (r : ℂ) * ((Real.cos ((α + 2 * k * Real.pi) / n) : ℂ) + (Real.sin ((α + 2 * k * Real.pi) / n) : ℂ) * Complex.I))
+  proof: |
+    by
+      intro n r α z hn hr
+      have hE : ∀ t : ℝ, (Real.cos t : ℂ) + (Real.sin t : ℂ) * Complex.I = Complex.exp ((t : ℂ) * Complex.I) := by
+        intro t
+        rw [Complex.exp_mul_I]
+        push_cast
+        rfl
+      have hn0 : n ≠ 0 := hn.ne'
+      have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn0
+      have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+      simp only [hE]
+      have hpow : ∀ k : ℕ, ((r : ℂ) * Complex.exp ((((α + 2 * k * Real.pi) / n : ℝ) : ℂ) * Complex.I)) ^ n = ((r ^ n : ℝ) : ℂ) * Complex.exp ((α : ℂ) * Complex.I) := by
+        intro k
+        rw [mul_pow, ← Complex.exp_nat_mul]
+        have : (n : ℂ) * ((((α + 2 * k * Real.pi) / n : ℝ) : ℂ) * Complex.I) = (α : ℂ) * Complex.I + k * (2 * Real.pi * Complex.I) := by
+          push_cast
+          field_simp
+        rw [this, Complex.exp_add, Complex.exp_nat_mul, Complex.exp_two_pi_mul_I, one_pow, mul_one]
+        push_cast
+        rfl
+      constructor
+      · intro h
+        haveI : NeZero n := ⟨hn0⟩
+        set w₀ : ℂ := (r : ℂ) * Complex.exp (((α / n : ℝ) : ℂ) * Complex.I) with hw₀
+        have hw₀ne : w₀ ≠ 0 := mul_ne_zero hrC (Complex.exp_ne_zero _)
+        have hw₀pow : w₀ ^ n = ((r ^ n : ℝ) : ℂ) * Complex.exp ((α : ℂ) * Complex.I) := by
+          have := hpow 0
+          simpa [hw₀] using this
+        have hu : (z / w₀) ^ n = 1 := by
+          rw [div_pow, h, hw₀pow, div_self]
+          exact mul_ne_zero (by exact_mod_cast (pow_ne_zero n hr.ne')) (Complex.exp_ne_zero _)
+        obtain ⟨k, hk, hkeq⟩ := (Complex.isPrimitiveRoot_exp n hn0).eq_pow_of_pow_eq_one hu
+        refine ⟨k, hk, ?_⟩
+        have hz : z = w₀ * Complex.exp (2 * Real.pi * Complex.I / n) ^ k := by
+          rw [hkeq]; field_simp
+        rw [hz, hw₀, mul_assoc, ← Complex.exp_nat_mul, ← Complex.exp_add]
+        congr 2
+        push_cast
+        field_simp
+      · rintro ⟨k, _, rfl⟩
+        exact hpow k
+- id: rotation_about_point
+  kind: textbook
+  level: high
+  topic: 複素数平面・点のまわりの回転
+  statement: |
+    複素数 $a,z,w$ と実数 $\theta$ について、$w=a+(z-a)(\cos\theta+i\sin\theta)$ ならば $|w-a|=|z-a|$ である。さらに $z\neq a$ ならば、偏角の主値に関して、ある整数 $k$ により $\arg\dfrac{w-a}{z-a}=\theta+2k\pi$ である。つまり $w$ は点 $a$ のまわりに $z$ を角 $\theta$ だけ回転した点である。
+  statement_en: If w = a + (z-a)(cos θ + i sin θ), then |w-a| = |z-a|; and if z ≠ a, then arg((w-a)/(z-a)) = θ + 2kπ for some integer k.
+  assumptions:
+  - $w=a+(z-a)(\cos\theta+i\sin\theta)$
+  - 偏角の式では $z\neq a$
+  quantifiers:
+  - 任意の複素数 $a,z,w$ と任意の実数 $\theta$
+  - ある整数 $k$
+  conclusion: |
+    $|w-a|=|z-a|$ であり、$z\neq a$ のとき $\arg\dfrac{w-a}{z-a}=\theta+2k\pi$ となる整数 $k$ が存在する。
+  answer: |
+    $a,z,w$ を複素数、$\theta$ を実数とし、$w=a+(z-a)(\cos\theta+i\sin\theta)$ とする。$u=\cos\theta+i\sin\theta$ とおくと $w-a=(z-a)u$ である。$|u|=\sqrt{\cos^2\theta+\sin^2\theta}=1$ なので $|w-a|=|z-a|$ である。$z\neq a$ のとき $\dfrac{w-a}{z-a}=u$ である。$u$ は絶対値 $1$ で角 $\theta$ の極形式なので、極形式の相等より $\arg u=\theta+2k\pi$ となる整数 $k$ がある。
+  strategy: Factor w-a = (z-a)u with |u| = 1 and read off the modulus and argument of u.
+  sketch:
+  - 'setup: Put u = cos θ + i sin θ, so w-a = (z-a)u.'
+  - 'derive: |u| = 1 gives |w-a| = |z-a|.'
+  - 'conclude: The quotient is u, whose principal argument is θ up to 2kπ.'
+  openmath: (forall (a z w x) (-> (and (in a C) (in z C) (in w C) (in x R) (= w (+ a (* (- z a) (+ (cos x) (* (sin x) complex_imaginary_unit)))))) (and (= (abs (- w a)) (abs (- z a))) (-> (!= z a) (exists (k) (and (in k Z) (= (principal_arg (/ (- w a) (- z a))) (+ x (* 2 k pi)))))))))
+  hard_negative:
+    statement: |
+      $w=z(\cos\theta+i\sin\theta)$ は点 $a$ のまわりの回転を表す。
+    reason: |
+      これは原点のまわりの回転である。$a=1$、$z=2$、$\theta=\pi$ なら $w=-2$ で、$|w-a|=3$ だが $|z-a|=1$ である。
+  target: |
+    ∀ (a z w : ℂ) (θ : ℝ), w = a + (z - a) * ((Real.cos θ : ℂ) + (Real.sin θ : ℂ) * Complex.I) → ‖w - a‖ = ‖z - a‖ ∧ (z ≠ a → ∃ k : ℤ, Complex.arg ((w - a) / (z - a)) = θ + 2 * k * Real.pi)
+  proof: |
+    by
+      intro a z w θ h
+      have e : w - a = (z - a) * ((Real.cos θ : ℂ) + (Real.sin θ : ℂ) * Complex.I) := by rw [h]; ring
+      have hnorm : ‖(Real.cos θ : ℂ) + (Real.sin θ : ℂ) * Complex.I‖ = 1 := by
+        rw [Complex.norm_add_mul_I, show Real.cos θ ^ 2 + Real.sin θ ^ 2 = 1 by linarith [Real.sin_sq_add_cos_sq θ]]
+        simp
+      refine ⟨by rw [e, norm_mul, hnorm, mul_one], fun hza => ?_⟩
+      have hd : z - a ≠ 0 := sub_ne_zero.mpr hza
+      rw [e, mul_div_cancel_left₀ _ hd]
+      have h' := Complex.arg_cos_add_sin_mul_I_coe_angle (θ : Real.Angle)
+      simp only [Real.Angle.cos_coe, Real.Angle.sin_coe] at h'
+      obtain ⟨k, hk⟩ := Real.Angle.angle_eq_iff_two_pi_dvd_sub.mp h'
+      exact ⟨k, by push_cast at hk ⊢; linarith⟩
+- id: perpendicular_iff_ratio_re_zero
+  kind: gap
+  level: high
+  topic: 複素数平面・垂直条件
+  statement: |
+    複素数 $a,b,c$ について $a\neq b$ とする。平面のベクトルとして $\overrightarrow{\mathrm{AB}}\cdot\overrightarrow{\mathrm{AC}}=0$ であることと、$\dfrac{c-a}{b-a}$ の実部が $0$ であることは同値である。
+  statement_en: For complex numbers a ≠ b and c, the real inner product Re(conj(b-a)(c-a)) of the plane vectors b-a and c-a vanishes if and only if Re((c-a)/(b-a)) = 0.
+  assumptions:
+  - $a\neq b$
+  quantifiers:
+  - 任意の複素数 $a,b,c$
+  conclusion: |
+    $\overrightarrow{\mathrm{AB}}\cdot\overrightarrow{\mathrm{AC}}=0$ と $\operatorname{Re}\dfrac{c-a}{b-a}=0$ は同値である。
+  answer: |
+    $a,b,c$ を複素数とし、$a\neq b$、$u=\dfrac{c-a}{b-a}$ とおく。複素数 $x,y$ を平面ベクトルとみた内積は $\operatorname{Re}(y\bar x)$ である。$c-a=u(b-a)$ より、$\overrightarrow{\mathrm{AB}}\cdot\overrightarrow{\mathrm{AC}}=\operatorname{Re}\left(u(b-a)\overline{(b-a)}\right)=|b-a|^2\operatorname{Re}u$ である。$|b-a|^2>0$ なので、この値が $0$ であることは $\operatorname{Re}u=0$ と同値である。
+  strategy: Express the inner product as |b-a|² Re u for the ratio u.
+  sketch:
+  - 'setup: Put u = (c-a)/(b-a), so c-a = u(b-a).'
+  - 'translate: The inner product of x and y is Re(y conj x).'
+  - 'derive: The inner product equals |b-a|² Re u.'
+  - 'conclude: Since |b-a|² > 0, it vanishes iff Re u = 0.'
+  openmath: (forall (a b c) (-> (and (in a C) (in b C) (in c C) (!= a b)) (<-> (= (real_part (* (complex_conj (- b a)) (- c a))) 0) (= (real_part (/ (- c a) (- b a))) 0))))
+  hard_negative:
+    statement: |
+      $\dfrac{c-a}{b-a}$ の虚部が $0$ であれば $\overrightarrow{\mathrm{AB}}$ と $\overrightarrow{\mathrm{AC}}$ は垂直である。
+    reason: |
+      虚部が $0$ の場合は平行である。$c-a=2(b-a)$ なら比は $2$ だが、内積は $2|b-a|^2\neq 0$ である。
+  target: |
+    ∀ a b c : ℂ, a ≠ b → (inner ℝ (b - a) (c - a) = 0 ↔ ((c - a) / (b - a)).re = 0)
+  proof: |
+    by
+      intro a b c hab
+      have hd : b - a ≠ 0 := sub_ne_zero.mpr hab.symm
+      have hn : (0:ℝ) < ‖b - a‖ ^ 2 := by positivity
+      set u := (c - a) / (b - a) with hu
+      have e : c - a = u * (b - a) := by rw [hu]; field_simp
+      have h1 : inner ℝ (b - a) (c - a) = ‖b - a‖ ^ 2 * u.re := by
+        have e' : u * (b - a) * (starRingEnd ℂ) (b - a) = ((‖b - a‖ ^ 2 : ℝ) : ℂ) * u := by
+          rw [mul_assoc, Complex.mul_conj', Complex.ofReal_pow, mul_comm]
+        rw [Complex.inner, e, e', Complex.re_ofReal_mul]
+      rw [h1]
+      constructor
+      · intro h
+        exact (mul_eq_zero.mp h).resolve_left hn.ne'
+      · intro h
+        rw [h, mul_zero]
+- id: collinear_iff_ratio_im_zero
+  kind: gap
+  level: high
+  topic: 複素数平面・共線条件
+  statement: |
+    複素数 $a,b,c$ について $a\neq b$ とする。3点 $a,b,c$ が同一直線上にあることと、$\dfrac{c-a}{b-a}$ の虚部が $0$ であること（比が実数であること）は同値である。
+  statement_en: For complex numbers a ≠ b and c, the points a, b, c are collinear if and only if Im((c-a)/(b-a)) = 0.
+  assumptions:
+  - $a\neq b$
+  quantifiers:
+  - 任意の複素数 $a,b,c$
+  conclusion: |
+    3点が同一直線上にあることと $\operatorname{Im}\dfrac{c-a}{b-a}=0$ は同値である。
+  answer: |
+    $a,b,c$ を複素数とし、$a\neq b$ とする。3点が同一直線上にあるとする。方向を表す複素数 $v$ と実数 $r,r'$ により $b-a=rv$、$c-a=r'v$ と書ける。$a\neq b$ より $r\neq 0$ かつ $v\neq 0$ なので、$\dfrac{c-a}{b-a}=\dfrac{r'}{r}$ は実数である。逆に比 $u=\dfrac{c-a}{b-a}$ が実数とする。$c=a+u(b-a)$ だから、$v=b-a$ とおくと $a=a+0v$、$b=a+1v$、$c=a+uv$ と書け、3点は同一直線上にある。
+  strategy: Use a common real direction based at a; the ratio of real multiples of v is real.
+  sketch:
+  - 'translate: Collinear points are a + r v with real r.'
+  - 'derive: b-a = rv and c-a = r''v with r ≠ 0, so the ratio is r''/r.'
+  - 'conclude: Conversely if the ratio u is real, use v = b-a with coefficients 0, 1, u.'
+  openmath: (forall (a b c) (-> (and (in a C) (in b C) (in c C) (!= a b)) (<-> (collinear_points a b c) (= (imag_part (/ (- c a) (- b a))) 0))))
+  hard_negative:
+    statement: |
+      $\dfrac{c-a}{b-a}$ の実部が $0$ であることと、3点が同一直線上にあることは同値である。
+    reason: |
+      実部が $0$ の場合は垂直である。$a=0$、$b=1$、$c=i$ なら比は $i$ で実部は $0$ だが、3点は同一直線上にない。
+  target: |
+    ∀ a b c : ℂ, a ≠ b → (Collinear ℝ ({a, b, c} : Set ℂ) ↔ ((c - a) / (b - a)).im = 0)
+  proof: |
+    by
+      intro a b c hab
+      have hd : b - a ≠ 0 := sub_ne_zero.mpr hab.symm
+      rw [collinear_iff_of_mem (p₀ := a) (by simp)]
+      constructor
+      · rintro ⟨v, hv⟩
+        obtain ⟨r, hr⟩ := hv b (by simp)
+        obtain ⟨r', hr'⟩ := hv c (by simp)
+        simp only [vadd_eq_add] at hr hr'
+        have hr0 : r ≠ 0 := by
+          rintro rfl
+          exact hab (by simpa using hr.symm)
+        have e1 : b - a = (r : ℂ) * v := by rw [hr, Complex.real_smul]; ring
+        have e2 : c - a = (r' : ℂ) * v := by rw [hr', Complex.real_smul]; ring
+        have hv0 : v ≠ 0 := by
+          rintro rfl
+          exact hd (by simpa using e1)
+        have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr0
+        rw [e1, e2, mul_div_mul_right _ _ hv0, ← Complex.ofReal_div]
+        exact Complex.ofReal_im _
+      · intro h
+        refine ⟨b - a, ?_⟩
+        intro p hp
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hp
+        rcases hp with rfl | rfl | rfl
+        · exact ⟨0, by simp⟩
+        · exact ⟨1, by simp⟩
+        · refine ⟨((p - a) / (b - a)).re, ?_⟩
+          have hu : (p - a) / (b - a) = ((((p - a) / (b - a)).re : ℝ) : ℂ) := by
+            apply Complex.ext <;> simp [h]
+          rw [vadd_eq_add, Complex.real_smul, ← hu]
+          field_simp
+          ring
+- id: angle_eq_abs_arg_ratio
+  kind: gap
+  level: high
+  topic: 複素数平面・なす角と偏角
+  statement: |
+    複素数 $a,b,c$ について $a\neq b$、$a\neq c$ とする。ベクトル $\overrightarrow{\mathrm{AB}},\overrightarrow{\mathrm{AC}}$ のなす角 $\angle\mathrm{BAC}$（$0$ 以上 $\pi$ 以下）は、$\left|\arg\dfrac{c-a}{b-a}\right|$ に等しい。ここで $\arg$ は偏角の主値である。
+  statement_en: For complex numbers a, b, c with a ≠ b and a ≠ c, the unoriented angle between b-a and c-a equals |arg((c-a)/(b-a))|, where arg is the principal argument.
+  assumptions:
+  - $a\neq b$
+  - $a\neq c$
+  - $\arg$ は偏角の主値
+  quantifiers:
+  - 任意の複素数 $a,b,c$
+  conclusion: |
+    $\angle\mathrm{BAC}=\left|\arg\dfrac{c-a}{b-a}\right|$ である。
+  answer: |
+    $a,b,c$ を複素数、$a\neq b$、$a\neq c$ とする。$u=\dfrac{c-a}{b-a}$、$\varphi=\arg u$ とおく。$\overrightarrow{\mathrm{AB}}\cdot\overrightarrow{\mathrm{AC}}=|b-a|^2\operatorname{Re}u$、$|\overrightarrow{\mathrm{AB}}||\overrightarrow{\mathrm{AC}}|=|b-a|^2|u|$ である。したがって、なす角の余弦は $\dfrac{\operatorname{Re}u}{|u|}=\cos\varphi=\cos|\varphi|$ に等しい。$-\pi<\varphi\le\pi$ より $0\le|\varphi|\le\pi$ であり、余弦はこの範囲で単射である。ゆえになす角は $|\varphi|$ に等しい。
+  strategy: Compute the cosine of the angle from Re u/|u| and use injectivity of cos on [0,π].
+  sketch:
+  - 'setup: Put u = (c-a)/(b-a) and φ = arg u.'
+  - 'derive: The cosine of the angle is Re u/|u| = cos φ = cos|φ|.'
+  - 'apply_theorem: |φ| lies in [0,π], where cos is injective.'
+  - 'conclude: The angle equals |φ|.'
+  openmath: (forall (a b c) (-> (and (in a C) (in b C) (in c C) (!= a b) (!= a c)) (= (vector_angle (- b a) (- c a)) (abs (principal_arg (/ (- c a) (- b a)))))))
+  hard_negative:
+    statement: |
+      つねに $\angle\mathrm{BAC}=\arg\dfrac{c-a}{b-a}$ である。
+    reason: |
+      偏角は向きをもつので負にもなる。$a=0$、$b=i$、$c=1$ なら比は $-i$ で偏角は $-\dfrac{\pi}{2}$ だが、なす角は $\dfrac{\pi}{2}$ である。
+  target: |
+    ∀ a b c : ℂ, a ≠ b → a ≠ c → InnerProductGeometry.angle (b - a) (c - a) = |Complex.arg ((c - a) / (b - a))|
+  proof: |
+    by
+      intro a b c hab hac
+      rw [InnerProductGeometry.angle_comm]
+      exact Complex.angle_eq_abs_arg (sub_ne_zero.mpr hac.symm) (sub_ne_zero.mpr hab.symm)
+- id: equilateral_iff_sum_squares_eq
+  kind: textbook
+  level: high
+  topic: 複素数平面・正三角形の条件
+  statement: |
+    複素数 $a,b,c$ について $a\neq b$ とする。$|a-b|=|b-c|=|c-a|$ であること（3点が正三角形の頂点であること）と、$a^2+b^2+c^2=ab+bc+ca$ であることは同値である。
+  statement_en: For complex numbers a ≠ b and c, |a-b| = |b-c| = |c-a| if and only if a²+b²+c² = ab+bc+ca.
+  assumptions:
+  - $a\neq b$
+  quantifiers:
+  - 任意の複素数 $a,b,c$
+  conclusion: |
+    $|a-b|=|b-c|=|c-a|$ と $a^2+b^2+c^2=ab+bc+ca$ は同値である。
+  answer: |
+    $a,b,c$ を複素数とし、$a\neq b$、$u=\dfrac{c-a}{b-a}$ とおく。$c=a+u(b-a)$ を代入すると $a^2+b^2+c^2-ab-bc-ca=(b-a)^2(u^2-u+1)$ である。$b-a\neq 0$ より、代数的な条件は $u^2-u+1=0$ と同値である。また $|b-c|=|b-a||1-u|$、$|c-a|=|b-a||u|$ なので、距離の条件は $|1-u|=1$ かつ $|u|=1$ と同値である。$u=x+yi$ とする。$|u|=|1-u|=1$ なら $x^2+y^2=1$ かつ $(1-x)^2+y^2=1$ より $x=\dfrac12$、$y^2=\dfrac34$ である。このとき実部と虚部を計算して $u^2-u+1=0$ を得る。逆に $u^2-u+1=0$ とする。実部と虚部から $x^2-y^2-x+1=0$、$y(2x-1)=0$ である。$y=0$ なら $x^2-x+1=0$ となり、これは実数解をもたないので $y\neq 0$ である。よって $x=\dfrac12$、$y^2=\dfrac34$ であり、$|u|=|1-u|=1$ である。
+  strategy: Reduce both conditions to statements about the ratio u = (c-a)/(b-a) and compare them by real and imaginary parts.
+  sketch:
+  - 'setup: Put u = (c-a)/(b-a) and substitute c = a+u(b-a).'
+  - 'derive: The algebraic condition is equivalent to u²-u+1 = 0.'
+  - 'derive: The distance condition is equivalent to |u| = |1-u| = 1.'
+  - 'translate: Write u = x+yi.'
+  - 'derive: |u| = |1-u| = 1 is equivalent to x = 1/2 and y² = 3/4.'
+  - 'conclude: u²-u+1 = 0 is also equivalent to x = 1/2 and y² = 3/4.'
+  openmath: (forall (a b c) (-> (and (in a C) (in b C) (in c C) (!= a b)) (<-> (and (= (abs (- a b)) (abs (- b c))) (= (abs (- b c)) (abs (- c a)))) (= (+ (^ a 2) (^ b 2) (^ c 2)) (+ (* a b) (* b c) (* c a))))))
+  hard_negative:
+    statement: |
+      $a^2+b^2+c^2=ab+bc+ca$ を満たす複素数 $a,b,c$ は、つねに相異なる3点で正三角形をなす。
+    reason: |
+      $a=b=c$ が式を満たす。正三角形と結論するには $a\neq b$ が必要である。
+  target: |
+    ∀ a b c : ℂ, a ≠ b → ((‖a - b‖ = ‖b - c‖ ∧ ‖b - c‖ = ‖c - a‖) ↔ a ^ 2 + b ^ 2 + c ^ 2 = a * b + b * c + c * a)
+  proof: |
+    by
+      intro a b c hab
+      have hd : b - a ≠ 0 := sub_ne_zero.mpr hab.symm
+      have hdn : 0 < ‖b - a‖ := norm_pos_iff.mpr hd
+      set u := (c - a) / (b - a) with hu
+      have hc : c = a + u * (b - a) := by rw [hu]; field_simp; ring
+      have n1 : ‖a - b‖ = ‖b - a‖ := norm_sub_rev a b
+      have n2 : ‖b - c‖ = ‖b - a‖ * ‖1 - u‖ := by
+        rw [← norm_mul, hc]; congr 1; ring
+      have n3 : ‖c - a‖ = ‖b - a‖ * ‖u‖ := by
+        rw [← norm_mul, hc]; congr 1; ring
+      have halg : a ^ 2 + b ^ 2 + c ^ 2 = a * b + b * c + c * a ↔ u ^ 2 - u + 1 = 0 := by
+        have hexp : a ^ 2 + b ^ 2 + c ^ 2 - (a * b + b * c + c * a) = (b - a) ^ 2 * (u ^ 2 - u + 1) := by
+          rw [hc]; ring
+        constructor
+        · intro h
+          have : (b - a) ^ 2 * (u ^ 2 - u + 1) = 0 := by rw [← hexp, h]; ring
+          exact (mul_eq_zero.mp this).resolve_left (pow_ne_zero 2 hd)
+        · intro h
+          have : a ^ 2 + b ^ 2 + c ^ 2 - (a * b + b * c + c * a) = 0 := by rw [hexp, h, mul_zero]
+          exact sub_eq_zero.mp this
+      rw [halg, n1, n2, n3]
+      have hn : ∀ w : ℂ, ‖w‖ ^ 2 = w.re ^ 2 + w.im ^ 2 := by
+        intro w
+        rw [Complex.sq_norm, Complex.normSq_apply]; ring
+      have hone : ∀ w : ℂ, ‖w‖ = 1 ↔ w.re ^ 2 + w.im ^ 2 = 1 := by
+        intro w
+        rw [← hn, pow_eq_one_iff_of_nonneg (norm_nonneg w) two_ne_zero]
+      have hcancel : (‖b - a‖ = ‖b - a‖ * ‖1 - u‖ ∧ ‖b - a‖ * ‖1 - u‖ = ‖b - a‖ * ‖u‖) ↔ (‖1 - u‖ = 1 ∧ ‖u‖ = 1) := by
+        constructor
+        · rintro ⟨h1, h2⟩
+          have h3 : ‖1 - u‖ = 1 := by
+            have := mul_left_cancel₀ hdn.ne' (show ‖b - a‖ * ‖1 - u‖ = ‖b - a‖ * 1 by linarith)
+            exact this
+          have h4 := mul_left_cancel₀ hdn.ne' h2
+          exact ⟨h3, by linarith⟩
+        · rintro ⟨h1, h2⟩
+          rw [h1, h2]; simp
+      rw [hcancel, hone, hone]
+      simp only [Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im]
+      constructor
+      · rintro ⟨h1, h2⟩
+        have hx : u.re = 1 / 2 := by nlinarith
+        have hy : u.im ^ 2 = 3 / 4 := by rw [hx] at h2; linarith
+        apply Complex.ext
+        · simp [pow_two, hx]
+          nlinarith
+        · simp [pow_two, hx]
+          ring
+      · intro h
+        have hre := congrArg Complex.re h
+        have him := congrArg Complex.im h
+        simp [pow_two] at hre him
+        have hy0 : u.im ≠ 0 := by
+          intro hy
+          rw [hy] at hre
+          nlinarith [sq_nonneg (u.re - 1 / 2)]
+        have hx : u.re = 1 / 2 := by
+          have : u.im * (2 * u.re - 1) = 0 := by linarith
+          have := (mul_eq_zero.mp this).resolve_left hy0
+          linarith
+        rw [hx] at hre
+        have hy : u.im ^ 2 = 3 / 4 := by nlinarith
+        rw [hx]
+        constructor <;> nlinarith
+- id: apollonius_circle_complex
+  kind: named
+  level: high
+  topic: 複素数平面・アポロニウスの円
+  statement: |
+    アポロニウスの円の複素数表示。複素数 $a,b,z$ と正の実数 $k\neq 1$ について、$|z-a|=k|z-b|$ であることと、$\left|z-\dfrac{a-k^2b}{1-k^2}\right|=\dfrac{k|a-b|}{|1-k^2|}$ であることは同値である。
+  statement_en: Apollonius circle in complex form. For complex a, b, z and real k > 0 with k ≠ 1, |z-a| = k|z-b| if and only if |z - (a-k²b)/(1-k²)| = k|a-b|/|1-k²|.
+  assumptions:
+  - $k>0$
+  - $k\neq 1$
+  quantifiers:
+  - 任意の複素数 $a,b,z$ と $1$ でない任意の正の実数 $k$
+  conclusion: |
+    $|z-a|=k|z-b|$ と $\left|z-\dfrac{a-k^2b}{1-k^2}\right|=\dfrac{k|a-b|}{|1-k^2|}$ は同値である。
+  answer: |
+    $a,b,z$ を複素数、$k>0$、$k\neq 1$ とする。$k>0$、$k\neq 1$ より $1-k^2\neq 0$ である。$\vec A=z-a$、$\vec B=z-b$ とおき、複素数を平面ベクトルとみる。$(1-k^2)\left(z-\dfrac{a-k^2b}{1-k^2}\right)=\vec A-k^2\vec B$ であり、$a-b=\vec B-\vec A$ である。よって右の条件の両辺に $|1-k^2|$ を掛けると $|\vec A-k^2\vec B|=k|\vec B-\vec A|$ となる。実部と虚部で展開すると $|\vec A-k^2\vec B|^2-k^2|\vec B-\vec A|^2=(1-k^2)\left(|\vec A|^2-k^2|\vec B|^2\right)$ である。$1-k^2\neq 0$ なので、$|\vec A-k^2\vec B|=k|\vec B-\vec A|$ は $|\vec A|^2=k^2|\vec B|^2$ と同値である。大きさは $0$ 以上なので、これは $|z-a|=k|z-b|$ と同値である。
+  strategy: Multiply by 1-k², set A = z-a and B = z-b, and compare squared norms through one identity.
+  sketch:
+  - 'derive: Since k > 0 and k ≠ 1, 1-k² ≠ 0.'
+  - 'translate: With A = z-a and B = z-b, the circle condition is |A-k²B| = k|B-A|.'
+  - 'derive: |A-k²B|² - k²|B-A|² = (1-k²)(|A|² - k²|B|²).'
+  - 'conclude: Both conditions are equivalent to |A|² = k²|B|².'
+  openmath: (forall (a b z k) (-> (and (in a C) (in b C) (in z C) (> k 0) (!= k 1)) (<-> (= (abs (- z a)) (* k (abs (- z b)))) (= (abs (- z (/ (- a (* (^ k 2) b)) (- 1 (^ k 2))))) (/ (* k (abs (- a b))) (abs (- 1 (^ k 2))))))))
+  hard_negative:
+    statement: |
+      $k=1$ のときも、$|z-a|=k|z-b|$ は円を表す。
+    reason: |
+      $k=1$ の場合、$a\neq b$ なら条件は線分 $\mathrm{AB}$ の垂直二等分線を表し、円ではない。公式の分母も $0$ になる。
+  target: |
+    ∀ (a b z : ℂ) (k : ℝ), 0 < k → k ≠ 1 → (‖z - a‖ = k * ‖z - b‖ ↔ ‖z - (a - (k : ℂ) ^ 2 * b) / (1 - (k : ℂ) ^ 2)‖ = k * ‖a - b‖ / |1 - k ^ 2|)
+  proof: |
+    by
+      intro a b z k hk hk1
+      have hk2 : 1 - k ^ 2 ≠ 0 := by
+        intro h
+        have : (k - 1) * (k + 1) = 0 := by linarith
+        rcases mul_eq_zero.mp this with h | h
+        · exact hk1 (by linarith)
+        · linarith
+      have hkC : (1 - (k : ℂ) ^ 2) = ((1 - k ^ 2 : ℝ) : ℂ) := by push_cast; rfl
+      have hkC0 : (1 - (k : ℂ) ^ 2) ≠ 0 := by rw [hkC]; exact_mod_cast hk2
+      have hd : |1 - k ^ 2| ≠ 0 := abs_ne_zero.mpr hk2
+      have hn : ∀ w : ℂ, ‖w‖ ^ 2 = w.re ^ 2 + w.im ^ 2 := by
+        intro w
+        rw [Complex.sq_norm, Complex.normSq_apply]; ring
+      have e : (1 - (k : ℂ) ^ 2) * (z - (a - (k : ℂ) ^ 2 * b) / (1 - (k : ℂ) ^ 2)) = (z - a) - ((k ^ 2 : ℝ) : ℂ) * (z - b) := by
+        push_cast
+        field_simp
+        ring
+      have h1 : ‖z - (a - (k : ℂ) ^ 2 * b) / (1 - (k : ℂ) ^ 2)‖ * |1 - k ^ 2| = ‖(z - a) - ((k ^ 2 : ℝ) : ℂ) * (z - b)‖ := by
+        rw [← e, norm_mul, hkC, Complex.norm_real, Real.norm_eq_abs, mul_comm]
+      have hab : a - b = (z - b) - (z - a) := by ring
+      have hid : ‖(z - a) - ((k ^ 2 : ℝ) : ℂ) * (z - b)‖ ^ 2 - (k * ‖a - b‖) ^ 2 = (1 - k ^ 2) * (‖z - a‖ ^ 2 - (k * ‖z - b‖) ^ 2) := by
+        rw [mul_pow, mul_pow, hn, hn (a - b), hn (z - a), hn (z - b), hab]
+        simp only [Complex.sub_re, Complex.sub_im, Complex.re_ofReal_mul, Complex.im_ofReal_mul]
+        ring
+      rw [eq_div_iff hd, h1]
+      constructor
+      · intro h
+        have h2 : ‖(z - a) - ((k ^ 2 : ℝ) : ℂ) * (z - b)‖ ^ 2 = (k * ‖a - b‖) ^ 2 := by
+          have : ‖z - a‖ ^ 2 - (k * ‖z - b‖) ^ 2 = 0 := by rw [h]; ring
+          rw [this, mul_zero] at hid
+          linarith
+        exact (sq_eq_sq₀ (norm_nonneg _) (by positivity)).mp h2
+      · intro h
+        have h2 : (1 - k ^ 2) * (‖z - a‖ ^ 2 - (k * ‖z - b‖) ^ 2) = 0 := by rw [← hid, h]; ring
+        have h3 := (mul_eq_zero.mp h2).resolve_left hk2
+        exact (sq_eq_sq₀ (norm_nonneg _) (by positivity)).mp (by linarith)
+- id: root_of_unity_power_sum_divisibility
+  kind: gap
+  level: high
+  topic: 1のn乗根・べきの和
+  statement: |
+    正の整数 $n$ と $1$ の原始 $n$ 乗根 $\zeta$、自然数 $k$ について、$\sum_{j=0}^{n-1}(\zeta^k)^j$ は、$n\mid k$ のとき $n$ に等しく、それ以外のとき $0$ に等しい。
+  statement_en: Let n be a positive integer, ζ a primitive n-th root of unity and k a natural number. Then the sum of (ζ^k)^j over 0 ≤ j < n equals n if n divides k, and 0 otherwise.
+  assumptions:
+  - $n>0$
+  - $\zeta$ は $1$ の原始 $n$ 乗根
+  quantifiers:
+  - 任意の正の整数 $n$、原始 $n$ 乗根 $\zeta$、自然数 $k$
+  conclusion: |
+    和は $n\mid k$ のとき $n$、それ以外のとき $0$ である。
+  answer: |
+    $n$ を正の整数、$\zeta$ を $1$ の原始 $n$ 乗根、$k$ を自然数とし、$x=\zeta^k$ とおく。原始根の定義より、$x=1$ と $n\mid k$ は同値である。$n\mid k$ のときは各項が $1$ なので和は $n$ である。$n\nmid k$ のときは $x\neq 1$ であり、$(x-1)\sum_{j=0}^{n-1}x^j=x^n-1=(\zeta^n)^k-1=0$ である。$x-1\neq 0$ で割ると和は $0$ である。
+  strategy: Split according to whether ζ^k = 1, using the geometric sum identity otherwise.
+  sketch:
+  - 'translate: For primitive ζ, ζ^k = 1 exactly when n divides k.'
+  - 'case_split: If n divides k, every term is 1 and the sum is n.'
+  - 'derive: Otherwise x = ζ^k ≠ 1 and (x-1)·sum = x^n - 1 = 0.'
+  - 'conclude: Dividing by x-1 gives 0.'
+  openmath: (forall (z n k) (-> (and (in z C) (in n N) (in k N) (> n 0) (primitive_root_of_unity z n)) (and (-> (dvd n k) (= (range_sum n (lambda (j) (^ (^ z k) j))) n)) (-> (not (dvd n k)) (= (range_sum n (lambda (j) (^ (^ z k) j))) 0)))))
+  hard_negative:
+    statement: |
+      $\zeta^n=1$ を満たすだけの $\zeta$ についても、$n\nmid k$ なら和は $0$ である。
+    reason: |
+      原始根でないと成り立たない。$\zeta=1$、$n=2$、$k=1$ なら $2\nmid 1$ だが、和は $2$ である。
+  target: |
+    ∀ (ζ : ℂ) (n k : ℕ), 0 < n → IsPrimitiveRoot ζ n → ∑ j ∈ Finset.range n, (ζ ^ k) ^ j = if n ∣ k then (n : ℂ) else 0
+  proof: |
+    by
+      intro ζ n k _ h
+      split_ifs with hd
+      · rw [(h.pow_eq_one_iff_dvd k).mpr hd]
+        simp
+      · have hne : ζ ^ k ≠ 1 := fun e => hd ((h.pow_eq_one_iff_dvd k).mp e)
+        have hmul := geom_sum_mul (ζ ^ k) n
+        rw [← pow_mul, mul_comm k n, pow_mul, h.pow_eq_one, one_pow, sub_self] at hmul
+        exact (mul_eq_zero.mp hmul).resolve_right (sub_ne_zero.mpr hne)
+- id: cos_sin_sum_regular_polygon
+  kind: gap
+  level: high
+  topic: 1のn乗根・余弦と正弦の和
+  statement: |
+    $2$ 以上の整数 $n$ に対し、$\sum_{k=0}^{n-1}\cos\dfrac{2\pi k}{n}=0$ かつ $\sum_{k=0}^{n-1}\sin\dfrac{2\pi k}{n}=0$ である。
+  statement_en: For an integer n ≥ 2, the sums of cos(2πk/n) and of sin(2πk/n) over 0 ≤ k < n are both 0.
+  assumptions:
+  - $n\ge 2$
+  quantifiers:
+  - $2$ 以上の任意の整数 $n$
+  conclusion: |
+    余弦の和と正弦の和はともに $0$ である。
+  answer: |
+    $n\ge 2$ を整数とし、$\zeta=\cos\dfrac{2\pi}{n}+i\sin\dfrac{2\pi}{n}$ とおく。$\zeta^n=1$、$\zeta\neq 1$ なので、$(\zeta-1)\sum_{k=0}^{n-1}\zeta^k=\zeta^n-1=0$ より $\sum_{k=0}^{n-1}\zeta^k=0$ である。ド・モアブルの定理より $\zeta^k=\cos\dfrac{2\pi k}{n}+i\sin\dfrac{2\pi k}{n}$ である。和の実部と虚部がともに $0$ であることから、主張の2式を得る。
+  strategy: Take the real and imaginary parts of the vanishing geometric sum of ζ^k.
+  sketch:
+  - 'setup: Let ζ = cos(2π/n) + i sin(2π/n), a root of unity different from 1.'
+  - 'derive: The geometric sum of ζ^k vanishes.'
+  - 'apply_theorem: De Moivre gives ζ^k = cos(2πk/n) + i sin(2πk/n).'
+  - 'conclude: Take real and imaginary parts.'
+  openmath: (forall (n) (-> (and (in n N) (>= n 2)) (and (= (range_sum n (lambda (k) (cos (/ (* 2 pi k) n)))) 0) (= (range_sum n (lambda (k) (sin (/ (* 2 pi k) n)))) 0))))
+  hard_negative:
+    statement: |
+      すべての正の整数 $n$ について $\sum_{k=0}^{n-1}\cos\dfrac{2\pi k}{n}=0$ である。
+    reason: |
+      $n=1$ では $\cos 0=1$ なので和は $1$ である。
+  target: |
+    ∀ n : ℕ, 2 ≤ n → ∑ k ∈ Finset.range n, Real.cos (2 * Real.pi * k / n) = 0 ∧ ∑ k ∈ Finset.range n, Real.sin (2 * Real.pi * k / n) = 0
+  proof: |
+    by
+      intro n hn
+      have hn0 : n ≠ 0 := by omega
+      have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn0
+      have geom := (Complex.isPrimitiveRoot_exp n hn0).geom_sum_eq_zero (by omega)
+      have e : ∀ k : ℕ, Complex.exp (2 * Real.pi * Complex.I / n) ^ k = Complex.exp (((2 * Real.pi * k / n : ℝ) : ℂ) * Complex.I) := by
+        intro k
+        rw [← Complex.exp_nat_mul]
+        congr 1
+        push_cast
+        field_simp
+      simp only [e] at geom
+      constructor
+      · have := congrArg Complex.re geom
+        simpa only [Complex.re_sum, Complex.exp_ofReal_mul_I_re, Complex.zero_re] using this
+      · have := congrArg Complex.im geom
+        simpa only [Complex.im_sum, Complex.exp_ofReal_mul_I_im, Complex.zero_im] using this
+- id: prod_one_sub_root_of_unity
+  kind: gap
+  level: high
+  topic: 1のn乗根・積の公式
+  statement: |
+    正の整数 $n$ と $1$ の原始 $n$ 乗根 $\zeta$ に対し、$\prod_{k=1}^{n-1}(1-\zeta^k)=n$ であり、$\prod_{k=1}^{n-1}|1-\zeta^k|=n$ である。後者は、単位円に内接する正 $n$ 角形の1頂点から他の頂点までの距離の積が $n$ であることを表す。
+  statement_en: For a positive integer n and a primitive n-th root of unity ζ, the product of (1-ζ^k) over 1 ≤ k < n equals n, and the product of |1-ζ^k| over the same range equals n.
+  assumptions:
+  - $n>0$
+  - $\zeta$ は $1$ の原始 $n$ 乗根
+  quantifiers:
+  - 任意の正の整数 $n$ と任意の原始 $n$ 乗根 $\zeta$
+  conclusion: |
+    $\prod_{k=1}^{n-1}(1-\zeta^k)=n$ かつ $\prod_{k=1}^{n-1}|1-\zeta^k|=n$ である。
+  answer: |
+    $n$ を正の整数、$\zeta$ を $1$ の原始 $n$ 乗根とする。$1,\zeta,\dots,\zeta^{n-1}$ は $x^n-1$ の相異なる $n$ 個の根なので、$x^n-1=\prod_{k=0}^{n-1}(x-\zeta^k)$ である。$k=0$ の因子 $x-1$ で割ると、多項式の等式 $\sum_{j=0}^{n-1}x^j=\prod_{k=1}^{n-1}(x-\zeta^k)$ を得る。$x=1$ を代入すると $n=\prod_{k=1}^{n-1}(1-\zeta^k)$ である。両辺の絶対値をとると、積の絶対値は絶対値の積なので $\prod_{k=1}^{n-1}|1-\zeta^k|=n$ である。
+  strategy: Factor x^n - 1 over the roots of unity, cancel x-1 and evaluate at 1.
+  sketch:
+  - 'apply_theorem: x^n - 1 is the product of x - ζ^k for 0 ≤ k < n.'
+  - 'derive: Cancel x-1 to express the geometric sum as the remaining product.'
+  - 'derive: Evaluate at x = 1 to get the value n.'
+  - 'conclude: Taking absolute values gives the chord product.'
+  openmath: (forall (z n) (-> (and (in z C) (in n N) (> n 0) (primitive_root_of_unity z n)) (and (= (ico_product 1 n (lambda (k) (- 1 (^ z k)))) n) (= (ico_product 1 n (lambda (k) (abs (- 1 (^ z k))))) n))))
+  hard_negative:
+    statement: |
+      $\zeta^n=1$ を満たす任意の $\zeta$ について $\prod_{k=1}^{n-1}(1-\zeta^k)=n$ である。
+    reason: |
+      原始根でないと成り立たない。$\zeta=1$、$n=2$ なら左辺は $1-1=0$ である。
+  target: |
+    ∀ (ζ : ℂ) (n : ℕ), 0 < n → IsPrimitiveRoot ζ n → ∏ k ∈ Finset.Ico 1 n, (1 - ζ ^ k) = n ∧ ∏ k ∈ Finset.Ico 1 n, ‖1 - ζ ^ k‖ = n
+  proof: |
+    by
+      intro ζ n hn h
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      have e : ∏ k ∈ Finset.Ico 1 (m + 1), (1 - ζ ^ k) = ((m + 1 : ℕ) : ℂ) := by
+        rw [Finset.prod_Ico_eq_prod_range]
+        simp only [Nat.add_sub_cancel, add_comm 1]
+        have := h.prod_one_sub_pow_eq_order
+        push_cast
+        exact this
+      refine ⟨e, ?_⟩
+      rw [← norm_prod, e, Complex.norm_natCast]
+- id: pow_sub_one_factorization
+  kind: gap
+  level: high
+  topic: 1のn乗根・因数分解
+  statement: |
+    正の整数 $n$ と $1$ の原始 $n$ 乗根 $\zeta$、複素数 $z$ に対し、$z^n-1=\prod_{k=0}^{n-1}(z-\zeta^k)$ である。
+  statement_en: For a positive integer n, a primitive n-th root of unity ζ and a complex number z, z^n - 1 equals the product of (z - ζ^k) over 0 ≤ k < n.
+  assumptions:
+  - $n>0$
+  - $\zeta$ は $1$ の原始 $n$ 乗根
+  quantifiers:
+  - 任意の正の整数 $n$、原始 $n$ 乗根 $\zeta$、複素数 $z$
+  conclusion: |
+    $z^n-1=\prod_{k=0}^{n-1}(z-\zeta^k)$ である。
+  answer: |
+    $n$ を正の整数、$\zeta$ を $1$ の原始 $n$ 乗根、$z$ を複素数とする。$\zeta$ は原始根なので $1,\zeta,\dots,\zeta^{n-1}$ は相異なり、$(\zeta^k)^n=1$ より、いずれも多項式 $x^n-1$ の根である。$x^n-1$ は最高次の係数が $1$ の $n$ 次式で $n$ 個の相異なる根をもつから、因数定理より $x^n-1=\prod_{k=0}^{n-1}(x-\zeta^k)$ である。$x=z$ を代入すると求める等式を得る。
+  strategy: The powers of ζ are n distinct roots of the monic polynomial x^n - 1, so the factor theorem applies.
+  sketch:
+  - 'derive: The powers ζ^k for 0 ≤ k < n are distinct roots of x^n - 1.'
+  - 'apply_theorem: A monic polynomial of degree n with n distinct roots is the product of its linear factors.'
+  - 'conclude: Evaluate at z.'
+  openmath: (forall (x z n) (-> (and (in x C) (in z C) (in n N) (> n 0) (primitive_root_of_unity x n)) (= (- (^ z n) 1) (ico_product 0 n (lambda (k) (- z (^ x k)))))))
+  hard_negative:
+    statement: |
+      $\zeta^n=1$ を満たすだけの $\zeta$ についても $z^n-1=\prod_{k=0}^{n-1}(z-\zeta^k)$ である。
+    reason: |
+      $\zeta=1$、$n=2$ なら右辺は $(z-1)^2$ で、$z^2-1$ と異なる。根が重複してはいけない。
+  target: |
+    ∀ (ζ z : ℂ) (n : ℕ), 0 < n → IsPrimitiveRoot ζ n → z ^ n - 1 = ∏ k ∈ Finset.range n, (z - ζ ^ k)
+  proof: |
+    by
+      intro ζ z n hn h
+      have := X_pow_sub_C_eq_prod h hn (one_pow n)
+      have h2 := congrArg (Polynomial.eval z) this
+      simpa [Polynomial.eval_prod] using h2
+- id: conj_root_of_unity
+  kind: gap
+  level: high
+  topic: 1のn乗根・共役
+  statement: |
+    正の整数 $n$ と $\zeta^n=1$ を満たす複素数 $\zeta$ に対し、$\bar\zeta=\zeta^{-1}=\zeta^{n-1}$ である。
+  statement_en: For a positive integer n and a complex number ζ with ζ^n = 1, conj(ζ) = ζ⁻¹ = ζ^(n-1).
+  assumptions:
+  - $n>0$
+  - $\zeta^n=1$
+  quantifiers:
+  - 任意の正の整数 $n$ と任意の複素数 $\zeta$
+  conclusion: |
+    $\bar\zeta=\zeta^{-1}$ かつ $\bar\zeta=\zeta^{n-1}$ である。
+  answer: |
+    $n$ を正の整数、$\zeta$ を $\zeta^n=1$ を満たす複素数とする。絶対値をとると $|\zeta|^n=1$ であり、$|\zeta|\ge 0$ と $n>0$ より $|\zeta|=1$ である。よって $\bar\zeta\zeta=|\zeta|^2=1$ なので $\bar\zeta=\zeta^{-1}$ である。また $\zeta^{n-1}\zeta=\zeta^n=1$ より $\zeta^{n-1}=\zeta^{-1}$ である。
+  strategy: Deduce |ζ| = 1, then use z̄z = |z|² and ζ^(n-1) ζ = 1.
+  sketch:
+  - 'derive: |ζ|^n = 1 with n > 0 gives |ζ| = 1.'
+  - 'derive: z̄z = |z|² = 1 yields conj ζ = ζ⁻¹.'
+  - 'conclude: ζ^(n-1) ζ = 1 yields ζ^(n-1) = ζ⁻¹.'
+  openmath: (forall (z n) (-> (and (in z C) (in n N) (> n 0) (= (^ z n) 1)) (and (= (complex_conj z) (^ z (neg 1))) (= (complex_conj z) (^ z (- n 1))))))
+  hard_negative:
+    statement: |
+      $0$ でないすべての複素数 $\zeta$ について $\bar\zeta=\zeta^{-1}$ である。
+    reason: |
+      絶対値が $1$ のときだけ成り立つ。$\zeta=2$ なら $\bar\zeta=2$、$\zeta^{-1}=\dfrac12$ である。
+  target: |
+    ∀ (ζ : ℂ) (n : ℕ), 0 < n → ζ ^ n = 1 → (starRingEnd ℂ) ζ = ζ⁻¹ ∧ (starRingEnd ℂ) ζ = ζ ^ (n - 1)
+  proof: |
+    by
+      intro ζ n hn h
+      have hnorm : ‖ζ‖ = 1 := Complex.norm_eq_one_of_pow_eq_one h hn.ne'
+      have h1 : (starRingEnd ℂ) ζ = ζ⁻¹ := (Complex.inv_eq_conj hnorm).symm
+      refine ⟨h1, ?_⟩
+      rw [h1]
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      rw [Nat.add_sub_cancel]
+      rw [pow_succ] at h
+      exact (eq_inv_of_mul_eq_one_left h).symm
+- id: cube_root_factorization_sum_cubes
+  kind: gap
+  level: high
+  topic: 1の3乗根・3次式の因数分解
+  statement: |
+    $\omega^3=1$、$\omega\neq 1$ を満たす複素数 $\omega$ と複素数 $a,b,c$ に対し、$a^3+b^3+c^3-3abc=(a+b+c)(a+\omega b+\omega^2c)(a+\omega^2b+\omega c)$ である。
+  statement_en: If ω³ = 1 and ω ≠ 1, then for complex a, b, c, a³+b³+c³-3abc = (a+b+c)(a+ωb+ω²c)(a+ω²b+ωc).
+  assumptions:
+  - $\omega^3=1$
+  - $\omega\neq 1$
+  quantifiers:
+  - 任意の複素数 $\omega,a,b,c$
+  conclusion: |
+    $a^3+b^3+c^3-3abc=(a+b+c)(a+\omega b+\omega^2c)(a+\omega^2b+\omega c)$ である。
+  answer: |
+    $\omega,a,b,c$ を複素数とし、$\omega^3=1$、$\omega\neq 1$ とする。$(\omega-1)(\omega^2+\omega+1)=\omega^3-1=0$ と $\omega\neq 1$ より $\omega^2+\omega+1=0$ である。後ろの2因子を展開して $\omega^3=1$、$\omega^4=\omega$、$\omega+\omega^2=-1$ を用いると、$(a+\omega b+\omega^2c)(a+\omega^2b+\omega c)=a^2+b^2+c^2-ab-bc-ca$ である。これに $a+b+c$ を掛けると $a^3+b^3+c^3-3abc$ となる。
+  strategy: Derive ω²+ω+1 = 0, reduce the product of the last two factors and multiply by a+b+c.
+  sketch:
+  - 'derive: ω³ = 1 and ω ≠ 1 give ω²+ω+1 = 0.'
+  - 'derive: The last two factors multiply to a²+b²+c²-ab-bc-ca.'
+  - 'conclude: Multiplying by a+b+c gives a³+b³+c³-3abc.'
+  openmath: (forall (w a b c) (-> (and (in w C) (in a C) (in b C) (in c C) (= (^ w 3) 1) (!= w 1)) (= (- (+ (^ a 3) (^ b 3) (^ c 3)) (* 3 a b c)) (* (+ a b c) (+ a (* w b) (* (^ w 2) c)) (+ a (* (^ w 2) b) (* w c))))))
+  hard_negative:
+    statement: |
+      $\omega=1$ でも同じ因数分解が成り立つ。
+    reason: |
+      $\omega=1$ なら右辺は $(a+b+c)^3$ である。$a=b=c=1$ で左辺は $0$、右辺は $27$ である。
+  target: |
+    ∀ (ω a b c : ℂ), ω ^ 3 = 1 → ω ≠ 1 → a ^ 3 + b ^ 3 + c ^ 3 - 3 * a * b * c = (a + b + c) * (a + ω * b + ω ^ 2 * c) * (a + ω ^ 2 * b + ω * c)
+  proof: |
+    by
+      intro ω a b c h3 h1
+      have h : ω ^ 2 + ω + 1 = 0 := by
+        have : (ω - 1) * (ω ^ 2 + ω + 1) = 0 := by linear_combination h3
+        exact (mul_eq_zero.mp this).resolve_left (sub_ne_zero.mpr h1)
+      linear_combination -(a + b + c) * (a * b + a * c + (b ^ 2 + c ^ 2) * (ω - 1) + b * c * (ω ^ 2 - ω + 1)) * h
+- id: root_of_unity_filter
+  kind: gap
+  level: high
+  topic: 1のn乗根・係数の抽出
+  statement: |
+    正の整数 $n$、$1$ の原始 $n$ 乗根 $\zeta$、複素数列 $f_0,\dots,f_{m-1}$ について、$\sum_{j=0}^{n-1}\sum_{k=0}^{m-1}f_k(\zeta^j)^k=n\sum_{0\le k<m,\ n\mid k}f_k$ である。多項式 $F(x)=\sum_k f_kx^k$ で書くと、$\sum_{j=0}^{n-1}F(\zeta^j)$ は $n$ の倍数番目の係数の和の $n$ 倍である。
+  statement_en: For a positive integer n, a primitive n-th root of unity ζ and complex numbers f_0, ..., f_(m-1), the sum over 0 ≤ j < n of the sum over 0 ≤ k < m of f_k (ζ^j)^k equals n times the sum of f_k over those k < m divisible by n.
+  assumptions:
+  - $n>0$
+  - $\zeta$ は $1$ の原始 $n$ 乗根
+  quantifiers:
+  - 任意の正の整数 $n$、自然数 $m$、原始 $n$ 乗根 $\zeta$、複素数列 $f$
+  conclusion: |
+    $\sum_{j=0}^{n-1}\sum_{k=0}^{m-1}f_k(\zeta^j)^k=n\sum_{0\le k<m,\ n\mid k}f_k$ である。
+  answer: |
+    $n$ を正の整数、$m$ を自然数、$\zeta$ を $1$ の原始 $n$ 乗根、$f$ を複素数列とする。和の順序を交換し $(\zeta^j)^k=(\zeta^k)^j$ を用いると、左辺は $\sum_{k=0}^{m-1}f_k\sum_{j=0}^{n-1}(\zeta^k)^j$ である。内側の和は、$n\mid k$ のとき各項が $1$ なので $n$ である。$n\nmid k$ のときは $\zeta^k\neq 1$ かつ $(\zeta^k)^n=1$ であり、等比数列の和の公式から $0$ である。よって $n\mid k$ である項だけが残り、値は $n\sum_{0\le k<m,\ n\mid k}f_k$ である。
+  strategy: Swap the order of summation and evaluate the inner geometric sum according to divisibility.
+  sketch:
+  - 'derive: Swap sums and write (ζ^j)^k = (ζ^k)^j.'
+  - 'case_split: If n divides k, the inner sum is n.'
+  - 'derive: Otherwise ζ^k ≠ 1 is an n-th root of unity, so the inner sum is 0.'
+  - 'conclude: Only multiples of n remain.'
+  openmath: (forall (z n m f) (-> (and (in z C) (in n N) (in m N) (> n 0) (primitive_root_of_unity z n)) (= (range_sum n (lambda (j) (range_sum m (lambda (k) (* (seq_value f k) (^ (^ z j) k)))))) (* n (range_sum_multiples_of n m (lambda (k) (seq_value f k)))))))
+  hard_negative:
+    statement: |
+      $\zeta^n=1$ を満たすだけの $\zeta$ についても同じ等式が成り立つ。
+    reason: |
+      原始根でないと成り立たない。$\zeta=1$、$n=2$、$m=2$、$f_0=0$、$f_1=1$ なら左辺は $2$ だが、$2\nmid 1$ なので右辺は $0$ である。
+  target: |
+    ∀ (ζ : ℂ) (n m : ℕ) (f : ℕ → ℂ), 0 < n → IsPrimitiveRoot ζ n → ∑ j ∈ Finset.range n, ∑ k ∈ Finset.range m, f k * (ζ ^ j) ^ k = n * ∑ k ∈ (Finset.range m).filter (fun k => n ∣ k), f k
+  proof: |
+    by
+      intro ζ n m f _ h
+      have hs : ∀ k : ℕ, ∑ j ∈ Finset.range n, (ζ ^ k) ^ j = if n ∣ k then (n : ℂ) else 0 := by
+        intro k
+        split_ifs with hd
+        · rw [(h.pow_eq_one_iff_dvd k).mpr hd]
+          simp
+        · have hne : ζ ^ k ≠ 1 := fun e => hd ((h.pow_eq_one_iff_dvd k).mp e)
+          have hmul := geom_sum_mul (ζ ^ k) n
+          rw [← pow_mul, mul_comm k n, pow_mul, h.pow_eq_one, one_pow, sub_self] at hmul
+          exact (mul_eq_zero.mp hmul).resolve_right (sub_ne_zero.mpr hne)
+      rw [Finset.sum_comm, Finset.sum_filter, Finset.mul_sum]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      have e : ∀ j : ℕ, f k * (ζ ^ j) ^ k = f k * (ζ ^ k) ^ j := by
+        intro j
+        rw [← pow_mul, ← pow_mul, mul_comm j k]
+      simp only [e]
+      rw [← Finset.mul_sum, hs k]
+      split_ifs <;> ring

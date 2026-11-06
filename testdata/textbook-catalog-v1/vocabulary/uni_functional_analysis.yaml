@@ -1,0 +1,132 @@
+# Proposed additive OpenMath vocabulary for university functional analysis (cd=pals2).
+additive_haar_measure: {args: [term, term], returns: prop, meaning: "m is an additive Haar measure on the finite-dimensional real normed space E, in the order m E"}
+adjoint: {args: [term], returns: term, meaning: "Hilbert space adjoint of a bounded operator"}
+ae_zero_on: {args: [term, term, term], returns: prop, meaning: "for mu-almost every x in U, f(x) = 0, arguments f, U, mu"}
+banach_algebra: {args: [term], returns: prop, meaning: "A is a complete normed unital ring or algebra"}
+banach_space: {args: [term], returns: prop, meaning: "E is a Banach space"}
+bijective_on: {args: [term, term, term], returns: prop, meaning: "f is a bijection from E to F"}
+bounded_bilinear_form: {args: [term, term], returns: prop, meaning: "B is a bounded bilinear form on H, viewed as B(u)(w), arguments B, H"}
+bounded_operator: {args: [term, term, term], returns: prop, meaning: "T is a bounded linear operator from E to F"}
+bump_outer_radius: {args: [term], returns: term, meaning: "radius of a ball containing the support of the bump function"}
+cfc_apply: {args: [term_function, term], returns: term, meaning: "continuous functional calculus f(a) of a normal element, arguments f, a"}
+character_of: {args: [term, term], returns: prop, meaning: "f is a nonzero continuous multiplicative linear functional on A, arguments f, A"}
+character_space: {args: [term], returns: term, meaning: "space of characters of A"}
+closed_graph: {args: [term], returns: prop, meaning: "the graph of f is closed in the product space"}
+closed_set: {args: [term], returns: prop, meaning: "S is a closed set"}
+closure_of: {args: [term], returns: term, meaning: "topological closure of S"}
+comm_algebra: {args: [term], returns: prop, meaning: "the multiplication of A is commutative"}
+comm_cstar_algebra: {args: [term], returns: prop, meaning: "A is a commutative unital complex C*-algebra"}
+compact_operator: {args: [term], returns: prop, meaning: "T is a compact operator"}
+compact_support: {args: [term], returns: prop, meaning: "f has compact support"}
+complete_space: {args: [term], returns: prop, meaning: "X is a complete metric space"}
+complex_banach_algebra: {args: [term], returns: prop, meaning: "A is a complete normed unital complex algebra"}
+complex_imaginary_unit: {args: [], returns: term, meaning: "the imaginary unit i"}
+complex_polynomial: {args: [term], returns: prop, meaning: "p is a polynomial with complex coefficients"}
+complex_unital_algebra: {args: [term], returns: prop, meaning: "A is a unital associative algebra over C"}
+complex_vector_space: {args: [term], returns: prop, meaning: "E is a vector space over C"}
+conjugate: {args: [term], returns: term, meaning: "complex conjugate"}
+continuous_functions_on: {args: [term], returns: term, meaning: "space of continuous complex functions on X"}
+continuous_linear_functional: {args: [term], returns: prop, meaning: "f is a continuous real linear functional"}
+continuous_map: {args: [term], returns: prop, meaning: "f is continuous"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set S"}
+convex_hull: {args: [term], returns: term, meaning: "convex hull of the set S"}
+convex_set: {args: [term], returns: prop, meaning: "S is a convex subset of a real vector space"}
+convolution_at: {args: [term, term, term, term], returns: term, meaning: "value at x of the convolution of phi and g for mu, arguments phi, g, mu, x"}
+cstar_algebra: {args: [term], returns: prop, meaning: "A is a unital complex C*-algebra"}
+cstar_ring: {args: [term], returns: prop, meaning: "A is a normed ring with an involution satisfying the C*-identity"}
+dense_in: {args: [term, term], returns: prop, meaning: "S is dense in the topological space X"}
+densely_defined_operator: {args: [term, term, term], returns: prop, meaning: "T is a linear operator from a dense subspace of E to F"}
+deriv_value: {args: [term, term], returns: term, meaning: "value f'(x) of the derivative of f; arguments f, x"}
+dirac_delta: {args: [term], returns: term, meaning: "Dirac tempered distribution at x"}
+direct_complement: {args: [term, term, term], returns: prop, meaning: "N and N' are direct complements in M, in the order N N' M"}
+dist_to_set: {args: [term, term], returns: term, meaning: "infimum of the distances from the point x to the set S"}
+dual_space: {args: [term], returns: term, meaning: "continuous dual of the normed space E"}
+eigenspace: {args: [term, term], returns: term, meaning: "eigenspace of f for mu"}
+eigenvalue_of: {args: [term, term], returns: prop, meaning: "c is an eigenvalue of T (arguments T, c)"}
+finite_dim_space: {args: [term], returns: prop, meaning: "E is finite dimensional"}
+finite_exponent: {args: [term], returns: prop, meaning: "the exponent p is finite"}
+finset_range: {args: [term], returns: term, meaning: "the index set {0, ..., n-1}"}
+finset_sum: {args: [term, term_function], returns: term, meaning: "finite sum of g(i) over i in the finite set s, in the order s g"}
+fn_smul: {args: [term, term], returns: term, meaning: "pointwise product x mapsto phi(x) f(x), arguments phi, f"}
+function_conj: {args: [term], returns: term, meaning: "pointwise complex conjugate of a function"}
+gelfand_transform: {args: [term], returns: term, meaning: "Gelfand transform of the commutative algebra A"}
+gns_cyclic_vector: {args: [term], returns: term, meaning: "image of the unit in the GNS Hilbert space of f"}
+gns_representation: {args: [term], returns: term, meaning: "GNS representation of f by left multiplication"}
+has_sum_fn: {args: [term_function, term], returns: prop, meaning: "the series of the indexed expression sums unconditionally to s"}
+hilbert_basis: {args: [term, term], returns: prop, meaning: "b is an orthonormal basis of the Hilbert space E in the complete sense"}
+hilbert_space: {args: [term], returns: prop, meaning: "E is a Hilbert space"}
+holder_exponents: {args: [term, term, term], returns: prop, meaning: "p, q, r lie in (0, infinity] and 1/p + 1/q = 1/r, arguments p, q, r"}
+identity_operator: {args: [term], returns: term, meaning: "identity operator on E"}
+imag_part: {args: [term], returns: term, meaning: "imaginary part of z"}
+image_of: {args: [term, term], returns: term, meaning: "image of the set S under f"}
+injective_map: {args: [term], returns: prop, meaning: "the map is injective"}
+integrable_fn: {args: [term, term], returns: prop, meaning: "f is integrable with respect to mu"}
+integral_wrt: {args: [term_function, term], returns: term, meaning: "integral of an integrable function with respect to mu"}
+is_measure: {args: [term], returns: prop, meaning: "mu is a measure"}
+isometric_linear_map: {args: [term, term, term], returns: prop, meaning: "U is a linear isometry from E to F"}
+isometric_map: {args: [term], returns: prop, meaning: "the map preserves norms"}
+lebesgue_measure: {args: [], returns: term, meaning: "Lebesgue measure on the real line"}
+linear_operator: {args: [term, term, term], returns: prop, meaning: "T is a linear map from E to F"}
+locally_integrable_on: {args: [term, term, term], returns: prop, meaning: "f is locally integrable on U with respect to mu, arguments f, U, mu"}
+lp_norm: {args: [term, term, term], returns: term, meaning: "L^p(mu) norm of f"}
+lp_sequence_space: {args: [term], returns: term, meaning: "space of p-summable families"}
+lp_space: {args: [term, term], returns: term, meaning: "Banach space L^p(mu) of a.e. classes"}
+mem_lp: {args: [term, term, term], returns: prop, meaning: "f belongs to L^p(mu)"}
+nonneg_element: {args: [term], returns: prop, meaning: "0 <= a in the order of the C*-algebra"}
+nontrivial_ring: {args: [term], returns: prop, meaning: "R is not the zero ring"}
+norm: {args: [term], returns: term, meaning: "norm of a vector"}
+normal_element: {args: [term], returns: prop, meaning: "a* a = a a*"}
+normal_space: {args: [term], returns: prop, meaning: "X is a normal space"}
+normalized_bump: {args: [term, term], returns: prop, meaning: "phi is a smooth nonnegative bump function with integral 1 for mu, arguments phi, mu"}
+normed_space: {args: [term], returns: prop, meaning: "E is a normed vector space over R or C"}
+open_set: {args: [term], returns: prop, meaning: "U is open"}
+operator_comp: {args: [term, term], returns: term, meaning: "composition of operators S after T"}
+orthogonal_complement: {args: [term], returns: term, meaning: "orthogonal complement of a subspace"}
+orthogonal_projection: {args: [term, term], returns: term, meaning: "orthogonal projection of x onto the subspace S (arguments S, x)"}
+orthonormal_family: {args: [term, term], returns: prop, meaning: "e is an orthonormal family in E"}
+pointwise_tends_to: {args: [term, term], returns: prop, meaning: "the operators g_n converge pointwise to f"}
+polynomial_eval: {args: [term, term], returns: term, meaning: "polynomial p evaluated at the element or number a (arguments p, a)"}
+positive_functional: {args: [term, term], returns: prop, meaning: "f is a positive linear functional on A, arguments f, A"}
+quotient_class: {args: [term, term], returns: term, meaning: "coset x + S in the quotient by the subspace S, in the order (x, S)"}
+quotient_space: {args: [term, term], returns: term, meaning: "quotient vector space V/S, in the order (V, S)"}
+r1_space: {args: [term], returns: prop, meaning: "X is an R1 topological space"}
+range_of: {args: [term], returns: term, meaning: "range of a map"}
+real_vector_space: {args: [term], returns: prop, meaning: "E is a real vector space"}
+reflexive_space: {args: [term], returns: prop, meaning: "the canonical map from E to its double dual is surjective"}
+regular_measure: {args: [term, term], returns: prop, meaning: "mu is a regular Borel measure on X, arguments mu, X"}
+resolvent_set: {args: [term], returns: term, meaning: "resolvent set of a, the complex z with z - a invertible"}
+resolvent_value: {args: [term, term], returns: term, meaning: "value (z - a)^(-1) of the resolvent of a at z, arguments a, z"}
+restricts_to: {args: [term, term, term], returns: prop, meaning: "g restricted to the subspace K equals f"}
+rkhs: {args: [term, term, term], returns: prop, meaning: "H is a Hilbert space of functions from X to V with bounded point evaluations, arguments H, X, V"}
+rkhs_kernel_section: {args: [term, term, term], returns: term, meaning: "adjoint of evaluation at x applied to v, arguments H, x, v"}
+schwartz_line_deriv: {args: [term, term], returns: term, meaning: "directional derivative of a Schwartz function, arguments m, g"}
+schwartz_on: {args: [term, term], returns: prop, meaning: "f is a complex Schwartz function on the space V; arguments V, f"}
+separable_space: {args: [term], returns: prop, meaning: "X has a countable dense subset"}
+seq_fn_tends_to: {args: [term_function, term], returns: prop, meaning: "the sequence given by the function of n converges to L"}
+series_abs_summable: {args: [term], returns: prop, meaning: "the series of norms of a converges"}
+series_sum_fn: {args: [term_function], returns: term, meaning: "sum of the series of the indexed expression"}
+series_summable: {args: [term], returns: prop, meaning: "the series of the family or sequence a converges unconditionally"}
+series_summable_fn: {args: [term_function], returns: prop, meaning: "the series of the indexed expression converges unconditionally"}
+smooth_function: {args: [term], returns: prop, meaning: "f is infinitely differentiable"}
+span_of_eigenspaces: {args: [term], returns: term, meaning: "sum of all eigenspaces of f"}
+spectral_radius: {args: [term], returns: term, meaning: "spectral radius of an element"}
+spectrum_in: {args: [term, term], returns: term, meaning: "spectrum of a computed in the subalgebra S, arguments S, a"}
+spectrum_of: {args: [term], returns: term, meaning: "spectrum of an element or operator"}
+star_element: {args: [term], returns: term, meaning: "involution a* of the element a"}
+star_ordered: {args: [term], returns: prop, meaning: "the order on A is given by 0 <= a iff a is a finite sum of elements b* b"}
+star_subalgebra: {args: [term, term], returns: prop, meaning: "S is a *-subalgebra of A containing the unit, arguments S, A"}
+strict_mono_index: {args: [term], returns: prop, meaning: "the index map from naturals to naturals is strictly increasing"}
+sublinear_functional: {args: [term, term], returns: prop, meaning: "N on E satisfies N(cx) = cN(x) for c > 0 and N(x+y) <= N(x) + N(y), arguments N, E"}
+subspace_of: {args: [term, term], returns: prop, meaning: "K is a linear subspace of E"}
+support_subset: {args: [term, term], returns: prop, meaning: "the closed support of g is contained in U, arguments g, U"}
+surjective_on: {args: [term, term], returns: prop, meaning: "f maps onto the space F"}
+tempered_line_deriv: {args: [term, term], returns: term, meaning: "directional derivative of a tempered distribution, arguments m, T"}
+topological_vector_space: {args: [term], returns: prop, meaning: "E is a real topological vector space"}
+unit_element: {args: [term, term], returns: prop, meaning: "a is a unit of R"}
+unit_of: {args: [term], returns: term, meaning: "multiplicative identity of the algebra A"}
+unital_star_hom: {args: [term, term, term], returns: prop, meaning: "f is a unital *-homomorphism from A to B"}
+unitary_element: {args: [term, term], returns: prop, meaning: "u* u = u u* = 1 in A, arguments u, A"}
+weak_tends_to: {args: [term, term], returns: prop, meaning: "the sequence x converges weakly to a, tested on bounded functionals"}
+weakly_locally_compact: {args: [term], returns: prop, meaning: "X is weakly locally compact"}
+zero_subspace: {args: [term], returns: term, meaning: "zero subspace of E"}
+inner_product_space_over: {args: [term, term], returns: prop, meaning: "E is an inner product space over K, where K is R or C (arguments K, E)"}

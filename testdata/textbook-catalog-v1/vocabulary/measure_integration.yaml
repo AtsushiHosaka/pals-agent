@@ -1,0 +1,75 @@
+# Proposed additive OpenMath vocabulary for measure and integration theory (cd=pals2).
+measurable_set: {args: [term], returns: prop, meaning: "A is a measurable set"}
+measurable_fn: {args: [term], returns: prop, meaning: "f is a measurable function"}
+countable_set: {args: [term], returns: prop, meaning: "S is countable"}
+set_interior: {args: [term], returns: term, meaning: "interior of a set"}
+set_preimage: {args: [term, term], returns: term, meaning: "preimage of the set A under f"}
+set_translate: {args: [term, term], returns: term, meaning: "translate of the set S by a"}
+set_dilate: {args: [term, term], returns: term, meaning: "preimage of S under multiplication by a"}
+set_seq_union: {args: [term], returns: term, meaning: "union of a sequence of sets"}
+set_seq_inter: {args: [term], returns: term, meaning: "intersection of a sequence of sets"}
+set_seq_limsup: {args: [term], returns: term, meaning: "limit superior of a sequence of sets"}
+increasing_sets: {args: [term], returns: prop, meaning: "the sequence of sets is increasing"}
+decreasing_sets: {args: [term], returns: prop, meaning: "the sequence of sets is decreasing"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a,b]"}
+half_line_right: {args: [term], returns: term, meaning: "half line [a, infinity)"}
+half_line_left: {args: [term], returns: term, meaning: "half line (-infinity, a]"}
+extended_infinity: {args: [], returns: term, meaning: "positive infinity in the extended nonnegative reals"}
+is_measure: {args: [term], returns: prop, meaning: "mu is a measure"}
+finite_measure: {args: [term], returns: prop, meaning: "mu is a finite measure"}
+sigma_finite_measure: {args: [term], returns: prop, meaning: "mu is a sigma-finite measure"}
+lebesgue_measure: {args: [], returns: term, meaning: "Lebesgue measure on the real line"}
+measure_of: {args: [term, term], returns: term, meaning: "value mu(A) of a measure on a set"}
+measure_seq: {args: [term, term], returns: term, meaning: "sequence n mapsto mu(A_n)"}
+product_measure: {args: [term, term], returns: term, meaning: "product measure of mu and nu"}
+with_density: {args: [term, term], returns: term, meaning: "measure with density f with respect to mu"}
+abs_continuous: {args: [term, term], returns: prop, meaning: "mu is absolutely continuous with respect to nu"}
+mutually_singular: {args: [term, term], returns: prop, meaning: "mu and nu are mutually singular"}
+signed_measure: {args: [term], returns: prop, meaning: "s is a finite signed measure"}
+nonneg_on_subsets: {args: [term, term], returns: prop, meaning: "s is nonnegative on every measurable subset of A"}
+nonpos_on_subsets: {args: [term, term], returns: prop, meaning: "s is nonpositive on every measurable subset of A"}
+ae_eq: {args: [term, term, term], returns: prop, meaning: "(ae_eq mu f g): f equals g almost everywhere with respect to mu"}
+ae_le: {args: [term, term, term], returns: prop, meaning: "(ae_le mu f g): f is at most g almost everywhere with respect to mu"}
+ae_fn_seq_tends_to: {args: [term, term, term], returns: prop, meaning: "(ae_fn_seq_tends_to mu F g): the function sequence F tends to g almost everywhere with respect to mu"}
+ae_eventually_outside: {args: [term, term], returns: prop, meaning: "almost every point lies in only finitely many sets of the sequence"}
+pointwise_tends_to: {args: [term, term], returns: prop, meaning: "the function sequence F tends to g pointwise"}
+uniform_tends_on: {args: [term, term, term], returns: prop, meaning: "the function sequence F tends to g uniformly on S"}
+tends_in_measure: {args: [term, term, term], returns: prop, meaning: "the function sequence F tends to g in measure mu"}
+fn_seq_increasing: {args: [term], returns: prop, meaning: "the function sequence is pointwise increasing"}
+fn_seq_sup: {args: [term], returns: term, meaning: "pointwise supremum of a function sequence"}
+fn_seq_liminf: {args: [term], returns: term, meaning: "pointwise limit inferior of a function sequence"}
+fn_seq_sum: {args: [term], returns: term, meaning: "pointwise sum of a series of functions"}
+fn_indicator: {args: [term, term], returns: term, meaning: "function f restricted to A and zero outside A"}
+simple_fn: {args: [term], returns: prop, meaning: "f is a simple function"}
+lintegral: {args: [term_function, term], returns: term, meaning: "Lebesgue integral of a nonnegative extended-valued function"}
+integral_wrt: {args: [term_function, term], returns: term, meaning: "integral of an integrable function with respect to mu"}
+integral_seq: {args: [term, term], returns: term, meaning: "sequence n mapsto integral of F_n with respect to mu"}
+integrable_fn: {args: [term, term], returns: prop, meaning: "f is integrable with respect to mu"}
+mem_lp: {args: [term, term, term], returns: prop, meaning: "f belongs to L^p(mu)"}
+lp_norm: {args: [term, term, term], returns: term, meaning: "L^p(mu) norm of f"}
+lp_space: {args: [term, term], returns: term, meaning: "Banach space L^p(mu) of a.e. classes"}
+complete_space: {args: [term], returns: prop, meaning: "the normed space is complete"}
+locally_integrable: {args: [term, term], returns: prop, meaning: "f is locally integrable with respect to mu"}
+ae_ball_average_converges: {args: [term, term], returns: prop, meaning: "for almost every x, averages of f over balls shrinking to x tend to f(x)"}
+pointwise_sum: {args: [term, term], returns: term, meaning: "pointwise sum of two functions"}
+pointwise_product: {args: [term, term], returns: term, meaning: "pointwise product of two functions"}
+fn_le_set: {args: [term, term], returns: term, meaning: "the set of x with f(x) <= g(x)"}
+nat_half_lines: {args: [], returns: term, meaning: "the sequence of half lines [n, infinity) indexed by natural n"}
+unit_bump_seq: {args: [], returns: term, meaning: "the sequence of indicators of the intervals (n, n+1]"}
+zero_function: {args: [], returns: term, meaning: "the constant zero function"}
+ae_holds: {args: [term, term], returns: prop, meaning: "(ae_holds mu p): the predicate p holds almost everywhere with respect to mu"}
+ae_holds_all_indices: {args: [term, term], returns: prop, meaning: "(ae_holds_all_indices mu p): almost every x satisfies p_n(x) for all n simultaneously"}
+lintegral_seq_sup: {args: [term, term], returns: term, meaning: "supremum over n of the integrals of F_n with respect to mu"}
+lintegral_seq_liminf: {args: [term, term], returns: term, meaning: "limit inferior over n of the integrals of F_n with respect to mu"}
+fn_abs: {args: [term], returns: term, meaning: "pointwise absolute value of a function"}
+real_pos_part: {args: [term], returns: term, meaning: "max(x,0) viewed as an extended nonnegative real"}
+set_compl: {args: [term], returns: term, meaning: "complement of a set in the sample space"}
+fn_superlevel_set: {args: [term, term], returns: term, meaning: "the set of x with e <= f(x)"}
+lintegral_iterated: {args: [term, term, term], returns: term, meaning: "iterated integral of the nonnegative f, inner over y with nu, outer over x with mu"}
+lintegral_iterated_swap: {args: [term, term, term], returns: term, meaning: "iterated integral of the nonnegative f, inner over x with mu, outer over y with nu"}
+integral_iterated: {args: [term, term, term], returns: term, meaning: "iterated integral of f, inner over y with nu, outer over x with mu"}
+integral_iterated_swap: {args: [term, term, term], returns: term, meaning: "iterated integral of f, inner over x with mu, outer over y with nu"}
+fn_subseq: {args: [term, term], returns: term, meaning: "subsequence i mapsto F_{r(i)} of a function sequence"}
+series_sum: {args: [term], returns: term, meaning: "sum of the series of a"}
+fn_continuous: {args: [term_function], returns: prop, meaning: "f is continuous on the whole real line"}
+fn_monotone: {args: [term_function], returns: prop, meaning: "f is nondecreasing on the whole real line"}

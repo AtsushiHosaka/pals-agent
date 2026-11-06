@@ -1,0 +1,67 @@
+# Proposed additive OpenMath vocabulary for homotopy theory, manifolds and Euclidean geometry.
+continuous_maps: {args: [term, term], returns: term, meaning: "set C(X, Y) of continuous maps from X to Y"}
+homotopic: {args: [term, term], returns: prop, meaning: "continuous maps f and g are homotopic"}
+homotopy_between: {args: [term, term, term], returns: prop, meaning: "H is a homotopy from f to g"}
+identity_map: {args: [term], returns: term, meaning: "identity map of the space X"}
+constant_map: {args: [term, term], returns: term, meaning: "constant map on X with value c"}
+map_compose: {args: [term, term], returns: term, meaning: "composite g after f of two maps, in the order g f"}
+ordered_pair: {args: [term, term], returns: term, meaning: "ordered pair (a, b)"}
+unit_interval: {args: [], returns: term, meaning: "the closed unit interval [0, 1]"}
+contractible_space: {args: [term], returns: prop, meaning: "X is a contractible topological space"}
+homotopy_equivalent: {args: [term, term], returns: prop, meaning: "spaces X and Y are homotopy equivalent"}
+topological_vector_space: {args: [term], returns: prop, meaning: "E is a real topological vector space"}
+paths: {args: [term, term], returns: term, meaning: "set of continuous paths from x to y"}
+path_homotopic: {args: [term, term], returns: prop, meaning: "paths p and q are homotopic relative to their endpoints"}
+path_concat: {args: [term, term], returns: term, meaning: "concatenation of path p followed by path q"}
+path_reverse: {args: [term], returns: term, meaning: "reverse of the path p"}
+path_refl: {args: [term], returns: term, meaning: "constant path at the point x"}
+path_connected_space: {args: [term], returns: prop, meaning: "X is a path-connected space"}
+simply_connected_space: {args: [term], returns: prop, meaning: "X is a simply connected space"}
+fundamental_group: {args: [term, term], returns: term, meaning: "fundamental group of X at the base point x"}
+group_isomorphic: {args: [term, term], returns: prop, meaning: "groups G and H are isomorphic"}
+trivial_group: {args: [term], returns: prop, meaning: "G is the trivial group"}
+induced_hom: {args: [term, term], returns: term, meaning: "homomorphism of fundamental groups induced by f at the base point x"}
+covering_map: {args: [term], returns: prop, meaning: "p is a covering map"}
+preconnected_space: {args: [term], returns: prop, meaning: "X is a preconnected space"}
+convex_set: {args: [term], returns: prop, meaning: "S is a convex subset of a real vector space"}
+normed_space: {args: [term], returns: prop, meaning: "E is a normed vector space over R or C"}
+norm: {args: [term], returns: term, meaning: "norm of a vector or operator norm of a bounded operator"}
+inner_product: {args: [term, term], returns: term, meaning: "inner product of x and y"}
+dist_of: {args: [term, term], returns: term, meaning: "distance between x and y"}
+pi_constant: {args: [], returns: term, meaning: "the circle constant pi"}
+surjective: {args: [term], returns: prop, meaning: "f is surjective onto its codomain"}
+open_set: {args: [term], returns: prop, meaning: "S is an open set"}
+closed_set: {args: [term], returns: prop, meaning: "S is a closed set"}
+closed_interval: {args: [term, term], returns: term, meaning: "closed interval [a, b] of reals"}
+continuous_on_set: {args: [term, term], returns: prop, meaning: "f is continuous on the set S"}
+finite_dim_space: {args: [term], returns: prop, meaning: "E is finite dimensional"}
+hausdorff_space: {args: [term], returns: prop, meaning: "X is a Hausdorff space"}
+chart_at: {args: [term, term], returns: term, meaning: "preferred chart of the charted space M around x"}
+chart_source: {args: [term], returns: term, meaning: "source (domain) of the chart c"}
+chart_target: {args: [term], returns: term, meaning: "target (image) of the chart c"}
+mdifferentiable_at: {args: [term, term], returns: prop, meaning: "map f between manifolds is differentiable at x"}
+mfderiv: {args: [term, term], returns: term, meaning: "manifold derivative (tangent map) of f at x"}
+tangent_space: {args: [term, term], returns: term, meaning: "tangent space of M at x"}
+zero_linear_map: {args: [], returns: term, meaning: "zero linear map"}
+frechet_differentiable_at: {args: [term, term], returns: prop, meaning: "f between normed spaces is Frechet differentiable at x"}
+frechet_derivative: {args: [term, term], returns: term, meaning: "Frechet derivative of f at x"}
+smooth_function: {args: [term], returns: prop, meaning: "f is infinitely differentiable"}
+topological_support: {args: [term], returns: term, meaning: "closure of the set where f is nonzero"}
+compact_support: {args: [term], returns: prop, meaning: "f has compact support"}
+smooth_manifold: {args: [term], returns: prop, meaning: "M is a smooth manifold"}
+sigma_compact_space: {args: [term], returns: prop, meaning: "X is a sigma-compact space"}
+open_cover_of: {args: [term, term], returns: prop, meaning: "the family U of open sets covers S"}
+smooth_partition_of_unity: {args: [term, term], returns: prop, meaning: "f is a smooth partition of unity on the closed set S"}
+subordinate_to: {args: [term, term], returns: prop, meaning: "partition of unity f is subordinate to the cover U"}
+euclid_angle: {args: [term, term, term], returns: term, meaning: "unoriented angle at b between a and c"}
+vector_angle: {args: [term, term], returns: term, meaning: "unoriented angle between vectors x and y"}
+cospherical_points: {args: [term], returns: prop, meaning: "the set S of points lies on a common sphere"}
+on_line: {args: [term, term, term], returns: prop, meaning: "p lies on the affine line through a and b"}
+affine_isometry_equiv: {args: [term], returns: prop, meaning: "f is a bijective affine isometry"}
+interior_of: {args: [term], returns: term, meaning: "topological interior of S"}
+closure_of: {args: [term], returns: term, meaning: "topological closure of S"}
+convex_hull: {args: [term], returns: term, meaning: "convex hull of S"}
+total_variation: {args: [term, term], returns: term, meaning: "total variation (arc length) of the curve f over the set S"}
+derivative_at: {args: [term, term, term], returns: prop, meaning: "curve g has derivative v at t"}
+isometry: {args: [term], returns: prop, meaning: "f preserves distances"}
+interval_integral: {args: [term, term, term_function], returns: term, meaning: "oriented definite integral of f from a to b"}

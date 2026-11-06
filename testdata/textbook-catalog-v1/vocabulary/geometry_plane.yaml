@@ -1,0 +1,12 @@
+# Proposed additive OpenMath vocabulary for quadrilaterals, areas and elementary solid geometry (cd=pals2).
+parallelogram: {args: [term, term, term, term], returns: prop, meaning: "abcd is a parallelogram with vertices in this order, that is the vectors from a to b and from d to c agree"}
+triangle_area: {args: [term, term, term], returns: term, meaning: "area of the convex hull of the three points a, b, c in the plane"}
+quadrilateral_area: {args: [term, term, term, term], returns: term, meaning: "area of the convex hull of the four points a, b, c, d in the plane"}
+convex_polygon_points: {args: [term, term], returns: prop, meaning: "p_0, ..., p_(n+2) are the vertices of a convex polygon in order, every triple with increasing indices having positive orientation (arguments p, n)"}
+polygon_interior_angle_sum: {args: [term, term], returns: term, meaning: "sum of the n+3 interior angles of the polygon p_0, ..., p_(n+2) (arguments p, n)"}
+polygon_exterior_angle_sum: {args: [term, term], returns: term, meaning: "sum of pi minus the interior angle over the n+3 vertices of the polygon p_0, ..., p_(n+2) (arguments p, n)"}
+on_plane: {args: [term, term, term, term], returns: prop, meaning: "p lies in the affine span of a, b and c, in the order p a b c"}
+in_affine_subspace: {args: [term, term], returns: prop, meaning: "p lies in the affine subspace s (arguments p, s)"}
+perpendicular_to_subspace: {args: [term, term, term], returns: prop, meaning: "the line through a and h is orthogonal to every direction of the affine subspace s (arguments a, h, s)"}
+perpendicular_to_plane: {args: [term, term, term, term, term], returns: prop, meaning: "the line through a and h is orthogonal to the plane through x, y, z (arguments a, h, x, y, z)"}
+division_point: {args: [term, term, term], returns: term, meaning: "the point a + r(b - a) on the line through a and b (arguments a, b, r)"}

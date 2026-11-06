@@ -1,0 +1,26 @@
+# Proposed additive OpenMath vocabulary (cd=pals2). The deployed validator does not accept it yet.
+fn_value: {args: [term, term], returns: term, meaning: "function value f(x)"}
+subgroup_of: {args: [term, term], returns: prop, meaning: "H is a subgroup of G"}
+dvd: {args: [term, term], returns: prop, meaning: "a divides b"}
+seq_value: {args: [term, term], returns: term, meaning: "n-th term a_n of a sequence"}
+seq_tends_to: {args: [term, term], returns: prop, meaning: "sequence a converges to L"}
+pi: {args: [], returns: term, meaning: "the circle constant pi"}
+dist_of: {args: [term, term], returns: term, meaning: "distance between x and y"}
+euclid_angle: {args: [term, term, term], returns: term, meaning: "unoriented angle at b between a and c"}
+cospherical_points: {args: [term], returns: prop, meaning: "the set S of points lies on a common sphere"}
+on_line: {args: [term, term, term], returns: prop, meaning: "p lies on the affine line through a and b"}
+collinear_points: {args: [term, term, term], returns: prop, meaning: "a, b and c lie on a common line"}
+midpoint_of: {args: [term, term], returns: term, meaning: "midpoint of a and b"}
+strictly_between: {args: [term, term, term], returns: prop, meaning: "b lies strictly between a and c"}
+same_side_of_line: {args: [term, term, term, term], returns: prop, meaning: "p and q lie strictly on the same side of the line through a and b"}
+opposite_side_of_line: {args: [term, term, term, term], returns: prop, meaning: "p and q lie strictly on opposite sides of the line through a and b"}
+parallel_lines: {args: [term, term, term, term], returns: prop, meaning: "the line through a and b is parallel to the line through c and d"}
+perpendicular_lines: {args: [term, term, term, term], returns: prop, meaning: "the line through a and b is perpendicular to the line through c and d"}
+congruent_triangles: {args: [term, term, term, term, term, term], returns: prop, meaning: "triangle abc is congruent to triangle def in this vertex order"}
+similar_triangles: {args: [term, term, term, term, term, term], returns: prop, meaning: "triangle abc is similar to triangle def in this vertex order"}
+centroid_of: {args: [term, term, term], returns: term, meaning: "centroid of triangle abc"}
+circumcenter_of: {args: [term, term, term], returns: term, meaning: "circumcenter of triangle abc"}
+orthocenter_of: {args: [term, term, term], returns: term, meaning: "orthocenter of triangle abc"}
+incenter_of: {args: [term, term, term], returns: term, meaning: "incenter of triangle abc"}
+on_circle: {args: [term, term, term], returns: prop, meaning: "p lies on the circle with centre c and radius r"}
+tangent_to_circle_at: {args: [term, term, term, term], returns: prop, meaning: "the line through t and p is tangent at t to the circle with centre c and radius r; arguments t p c r"}

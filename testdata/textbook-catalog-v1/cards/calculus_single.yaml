@@ -1,0 +1,1891 @@
+- id: limit_epsilon_delta
+  kind: textbook
+  level: 1
+  topic: 関数の極限・ε-δ論法
+  statement: $f:\mathbb{R}\to\mathbb{R}$と$a,L\in\mathbb{R}$について、$x\to a$（$x\neq a$）で$f(x)\to L$となることは、次の条件と同値である。任意の$\varepsilon>0$に対してある$\delta>0$が存在し、$x\neq a$かつ$|x-a|<\delta$を満たす全ての$x$で$|f(x)-L|<\varepsilon$となる。
+  statement_en: For f on the reals, f(x) tends to L as x tends to a with x different from a if and only if for every ε > 0 there is δ > 0 such that x ≠ a and |x-a| < δ imply |f(x)-L| < ε.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,L\in\mathbb{R}$
+  conclusion: $x\to a$（$x\neq a$）での極限が$L$であることは、$\forall\varepsilon>0\ \exists\delta>0\ \forall x\ (x\neq a,\ |x-a|<\delta\Rightarrow|f(x)-L|<\varepsilon)$と同値である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,L\in\mathbb{R}$とする。$x\to a$（$x\neq a$）で$f(x)\to L$とは、$L$の任意の近傍$V$に対して$a$のある近傍$U$が存在し、$x\in U$かつ$x\neq a$ならば$f(x)\in V$となることである。
+    この極限が成り立つとする。$\varepsilon>0$に対し、$V=(L-\varepsilon,L+\varepsilon)$は$L$の近傍なので、対応する$U$がとれる。$U$は$a$の近傍なので、$(a-\delta,a+\delta)\subset U$となる$\delta>0$がある。このとき$x\neq a$かつ$|x-a|<\delta$ならば$f(x)\in V$、すなわち$|f(x)-L|<\varepsilon$である。
+    逆に$\varepsilon$-$\delta$条件を仮定し、$V$を$L$の近傍とする。$(L-\varepsilon,L+\varepsilon)\subset V$となる$\varepsilon>0$をとり、条件から得られる$\delta$について$U=(a-\delta,a+\delta)$とおく。すると$x\in U$かつ$x\neq a$ならば$f(x)\in V$である。
+  strategy: Rewrite the punctured-neighborhood limit in the metric basis of neighborhoods.
+  sketch:
+  - 'translate: Express the filter limit using balls around L and punctured balls around a.'
+  - 'derive: Replace dist by the absolute value of the difference.'
+  - 'conclude: The resulting condition is the ε-δ condition.'
+  openmath: (forall (f a L) (<-> (fn_limit_at (lambda (x) (fn_value f x)) a L) (forall (e) (-> (> e 0) (exists (d) (and (> d 0) (forall (x) (-> (and (!= x a) (< (abs (- x a)) d)) (< (abs (- (fn_value f x) L)) e)))))))))
+  hard_negative:
+    statement: 極限の定義で量化子を入れ替え、あるδ>0が全てのε>0に対して同時に条件を満たすとしても同値である。
+    reason: その条件はaの除外近傍でf=Lとなることを意味する。f(x)=x, a=0, L=0は極限の定義を満たすが、この条件を満たさない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a L : ℝ), Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds L) ↔ ∀ ε > 0, ∃ δ > 0, ∀ x, x ≠ a → |x - a| < δ → |f x - L| < ε
+  proof: |
+    by
+      intro f a L
+      simp only [Metric.tendsto_nhdsWithin_nhds, Real.dist_eq, Set.mem_compl_iff, Set.mem_singleton_iff]
+- id: limit_unique
+  kind: gap
+  level: 1
+  topic: 関数の極限・一意性
+  statement: $f:\mathbb{R}\to\mathbb{R}$の$x\to a$（$x\neq a$）での極限は、存在すれば一意である。
+  statement_en: If f(x) tends to L and to M as x tends to a with x ≠ a, then L = M.
+  assumptions:
+  - $x\to a$（$x\neq a$）で$f(x)\to L$
+  - $x\to a$（$x\neq a$）で$f(x)\to M$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,L,M\in\mathbb{R}$
+  conclusion: $L=M$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,L,M\in\mathbb{R}$とし、$x\to a$（$x\neq a$）で$f(x)\to L$かつ$f(x)\to M$とする。$L\neq M$と仮定して矛盾を導く。
+    $\varepsilon=|L-M|/2>0$とおく。仮定より$\delta_1,\delta_2>0$が存在して、$0<|x-a|<\delta_1$ならば$|f(x)-L|<\varepsilon$、$0<|x-a|<\delta_2$ならば$|f(x)-M|<\varepsilon$となる。$\delta=\min(\delta_1,\delta_2)$とし、$x=a+\delta/2$をとると$0<|x-a|<\delta$である。三角不等式より$|L-M|\leq|L-f(x)|+|f(x)-M|<2\varepsilon=|L-M|$となり、矛盾する。よって$L=M$である。
+  strategy: Separate two distinct limits by disjoint neighborhoods and use that the punctured neighborhood is nonempty.
+  sketch:
+  - 'contradiction: Suppose L ≠ M and put ε = |L-M|/2.'
+  - 'derive: Choose x ≠ a close to a so that f(x) is within ε of both L and M.'
+  - 'derive: The triangle inequality gives |L-M| < 2ε.'
+  - 'conclude: This contradicts the choice of ε.'
+  openmath: (forall (f a L M) (-> (and (fn_limit_at (lambda (x) (fn_value f x)) a L) (fn_limit_at (lambda (x) (fn_value f x)) a M)) (= L M)))
+  hard_negative:
+    statement: $x\to a$（$x\neq a$）で$f(x)\to L$ならば、$L=f(a)$である。
+    reason: $x\neq0$で$f(x)=0$、$f(0)=1$とすると、$x\to0$（$x\neq0$）の極限は$0$だが$f(0)=1$である。この極限は$a$での値と無関係である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a L M : ℝ), Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds L) → Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds M) → L = M
+  proof: |
+    by
+      intro f a L M hL hM
+      exact tendsto_nhds_unique hL hM
+- id: limit_preserves_weak_order
+  kind: gap
+  level: 1
+  topic: 関数の極限・大小関係
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$について、$a$以外の全ての$x$で$f(x)\leq g(x)$であり、$x\to a$（$x\neq a$）で$f(x)\to L$、$g(x)\to M$ならば、$L\leq M$である。
+  statement_en: If f(x) ≤ g(x) for all x ≠ a, and f → L and g → M as x → a, then L ≤ M.
+  assumptions:
+  - $x\neq a$で$f(x)\leq g(x)$
+  - $x\to a$（$x\neq a$）で$f(x)\to L$
+  - $x\to a$（$x\neq a$）で$g(x)\to M$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,L,M\in\mathbb{R}$
+  conclusion: $L\leq M$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,L,M\in\mathbb{R}$とする。$x\neq a$で$f(x)\leq g(x)$であり、$x\to a$（$x\neq a$）で$f(x)\to L$、$g(x)\to M$とする。$L>M$と仮定して矛盾を導く。
+    $\varepsilon=(L-M)/2>0$とおくと、$L-\varepsilon=M+\varepsilon$である。極限の定義より$\delta>0$が存在して、$0<|x-a|<\delta$ならば$f(x)>L-\varepsilon$かつ$g(x)<M+\varepsilon$となる。$x=a+\delta/2$をとると$g(x)<M+\varepsilon=L-\varepsilon<f(x)$であり、$f(x)\leq g(x)$に反する。よって$L\leq M$である。
+  strategy: Argue by contradiction with a band of half the gap.
+  sketch:
+  - 'contradiction: Assume L > M and set ε = (L-M)/2.'
+  - 'derive: Near a, f(x) > L-ε and g(x) < M+ε.'
+  - 'conclude: Since L-ε = M+ε this gives g(x) < f(x), a contradiction.'
+  openmath: (forall (f g a L M) (-> (and (forall (x) (-> (!= x a) (<= (fn_value f x) (fn_value g x)))) (fn_limit_at (lambda (x) (fn_value f x)) a L) (fn_limit_at (lambda (x) (fn_value g x)) a M)) (<= L M)))
+  hard_negative:
+    statement: x≠aでf(x)<g(x)ならば、極限についてもL<Mが成り立つ。
+    reason: f(x)=0, g(x)=x^2, a=0とするとx≠aでf(x)<g(x)だが、極限はともに0である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a L M : ℝ), (∀ x, x ≠ a → f x ≤ g x) → Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds L) → Filter.Tendsto g (nhdsWithin a {a}ᶜ) (nhds M) → L ≤ M
+  proof: |
+    by
+      intro f g a L M h hf hg
+      refine le_of_tendsto_of_tendsto hf hg ?_
+      filter_upwards [self_mem_nhdsWithin] with x hx
+      exact h x hx
+- id: limit_sequential_criterion
+  kind: textbook
+  level: 1
+  topic: 関数の極限・点列による特徴づけ
+  statement: $f:\mathbb{R}\to\mathbb{R}$と$a,L\in\mathbb{R}$について、$x\to a$（$x\neq a$）で$f(x)\to L$となることは、全ての項が$a$と異なり$a$に収束する任意の実数列$(x_n)$に対して$f(x_n)\to L$となることと同値である。
+  statement_en: f(x) → L as x → a with x ≠ a if and only if f(x_n) → L for every real sequence (x_n) with x_n ≠ a for all n and x_n → a.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,L\in\mathbb{R}$
+  - 全ての$n$で$x_n\neq a$を満たす任意の実数列$(x_n)$
+  conclusion: 関数の極限が$L$であることは、上の点列についての条件と同値である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,L\in\mathbb{R}$とする。
+    まず$x\to a$（$x\neq a$）で$f(x)\to L$とし、$(x_n)$を全ての$n$で$x_n\neq a$、かつ$x_n\to a$を満たす実数列とする。$\varepsilon>0$に対し、$0<|x-a|<\delta$ならば$|f(x)-L|<\varepsilon$となる$\delta>0$をとる。$x_n\to a$より、ある$N$があって$n\geq N$で$|x_n-a|<\delta$である。$x_n\neq a$なので$0<|x_n-a|<\delta$となり、$|f(x_n)-L|<\varepsilon$を得る。よって$f(x_n)\to L$である。
+    逆を対偶で示す。$x\to a$（$x\neq a$）で$f(x)\to L$が成り立たないとする。このとき、ある$\varepsilon>0$が存在して、任意の$\delta>0$に対し$0<|x-a|<\delta$かつ$|f(x)-L|\geq\varepsilon$となる$x$がある。各$n\in\mathbb{N}$について$\delta=1/(n+1)$としてこの$x$を$x_n$とおく。すると$x_n\neq a$かつ$x_n\to a$であるが、全ての$n$で$|f(x_n)-L|\geq\varepsilon$なので$f(x_n)\not\to L$である。これで点列についての条件が成り立たないことが示された。
+  strategy: Use first countability of the punctured neighborhood filter; shift indices to meet the everywhere-different condition.
+  sketch:
+  - 'derive: The forward direction composes the limit with a sequence tending to a inside the punctured neighborhood.'
+  - 'contradiction: If the limit fails, some ε > 0 has witnesses in each shrinking punctured ball.'
+  - 'construct: The witnesses form a sequence x_n ≠ a with x_n → a.'
+  - 'conclude: Then f(x_n) stays ε away from L, contradicting the hypothesis.'
+  openmath: (forall (f a L) (<-> (fn_limit_at (lambda (t) (fn_value f t)) a L) (forall (x) (-> (and (forall (n) (!= (seq_value x n) a)) (seq_tends_to x a)) (seq_tends_to (seq_map f x) L)))))
+  hard_negative:
+    statement: aと異なる値をとりaに収束するある実数列(x_n)についてf(x_n)→Lならば、x→aでf(x)→Lである。
+    reason: f(x)=sin(1/x), a=0, x_n=1/(nπ+π)とするとf(x_n)=0→0だが、fはx→0で収束しない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a L : ℝ), Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds L) ↔ ∀ x : ℕ → ℝ, (∀ n, x n ≠ a) → Filter.Tendsto x Filter.atTop (nhds a) → Filter.Tendsto (fun n => f (x n)) Filter.atTop (nhds L)
+  proof: |
+    by
+      intro f a L
+      constructor
+      · intro h x hx hxa
+        exact h.comp (tendsto_nhdsWithin_iff.mpr ⟨hxa, Filter.Eventually.of_forall hx⟩)
+      · intro h
+        rw [Filter.tendsto_iff_seq_tendsto]
+        intro x hx
+        obtain ⟨hx1, hx2⟩ := tendsto_nhdsWithin_iff.mp hx
+        obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp hx2
+        have h2 := h (fun n => x (n + N)) (fun n => hN _ (Nat.le_add_left _ _)) ((Filter.tendsto_add_atTop_iff_nat N).mpr hx1)
+        exact (Filter.tendsto_add_atTop_iff_nat (f := f ∘ x) N).mp h2
+- id: continuity_epsilon_delta
+  kind: textbook
+  level: 1
+  topic: 連続性・ε-δ論法
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$a$で連続であることは、任意の$\varepsilon>0$に対してある$\delta>0$が存在し、$|x-a|<\delta$ならば$|f(x)-f(a)|<\varepsilon$となることと同値である。
+  statement_en: f is continuous at a if and only if for every ε > 0 there is δ > 0 such that |x-a| < δ implies |f(x)-f(a)| < ε.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a\in\mathbb{R}$
+  conclusion: $f$の$a$での連続性は上の$\varepsilon$-$\delta$条件と同値である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a\in\mathbb{R}$とする。$f$が$a$で連続であるとは、$f(a)$の任意の近傍$V$に対して$a$のある近傍$U$が存在し、$x\in U$ならば$f(x)\in V$となることである。
+    $f$が$a$で連続であるとする。$\varepsilon>0$に対し、$V=(f(a)-\varepsilon,f(a)+\varepsilon)$について対応する$U$をとり、$(a-\delta,a+\delta)\subset U$となる$\delta>0$を選ぶ。このとき$|x-a|<\delta$ならば$|f(x)-f(a)|<\varepsilon$である。
+    逆に$\varepsilon$-$\delta$条件を仮定し、$V$を$f(a)$の近傍とする。$(f(a)-\varepsilon,f(a)+\varepsilon)\subset V$となる$\varepsilon>0$をとり、条件から得られる$\delta$について$U=(a-\delta,a+\delta)$とおく。すると$x\in U$ならば$f(x)\in V$である。
+  strategy: Rewrite continuity at a point in the metric neighborhood basis.
+  sketch:
+  - 'translate: Express continuity at a with balls around a and f(a).'
+  - 'conclude: Replacing dist by |x-a| gives the ε-δ condition.'
+  openmath: (forall (f a) (<-> (fn_continuous_at (lambda (x) (fn_value f x)) a) (forall (e) (-> (> e 0) (exists (d) (and (> d 0) (forall (x) (-> (< (abs (- x a)) d) (< (abs (- (fn_value f x) (fn_value f a))) e)))))))))
+  hard_negative:
+    statement: δをxごとに選べる形にした条件、すなわち任意のε>0と任意のxに対しあるδ>0が存在して|x-a|<δならば|f(x)-f(a)|<εという条件は、連続性と同値である。
+    reason: x≠aならδ=|x-a|とすると|x-a|<δは成り立たず、条件は空虚に満たされる。x=aでは|f(a)-f(a)|=0<εである。よって不連続な関数でもこの条件は成り立つ。
+  target: |
+    ∀ (f : ℝ → ℝ) (a : ℝ), ContinuousAt f a ↔ ∀ ε > 0, ∃ δ > 0, ∀ x, |x - a| < δ → |f x - f a| < ε
+  proof: |
+    by
+      intro f a
+      simp only [Metric.continuousAt_iff, Real.dist_eq]
+- id: continuity_iff_one_sided_limits
+  kind: gap
+  level: 1
+  topic: 片側極限・連続性
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$a$で連続であることは、$x\to a-0$と$x\to a+0$での片側極限がともに$f(a)$であることと同値である。
+  statement_en: f is continuous at a if and only if both the left limit and the right limit of f at a exist and equal f(a).
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a\in\mathbb{R}$
+  conclusion: $f$が$a$で連続であることは、$\lim_{x\to a-0}f(x)=f(a)$かつ$\lim_{x\to a+0}f(x)=f(a)$であることと同値である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a\in\mathbb{R}$とする。
+    $f$が$a$で連続であるとする。$\varepsilon>0$に対し、$|x-a|<\delta$ならば$|f(x)-f(a)|<\varepsilon$となる$\delta>0$をとる。この$\delta$は$a-\delta<x<a$の範囲でも$a<x<a+\delta$の範囲でも同じ不等式を与えるので、左右の片側極限はともに$f(a)$である。
+    逆に左右の片側極限がともに$f(a)$であるとする。$\varepsilon>0$に対し、$\delta_1,\delta_2>0$が存在して、$a-\delta_1<x<a$ならば$|f(x)-f(a)|<\varepsilon$、$a<x<a+\delta_2$ならば$|f(x)-f(a)|<\varepsilon$となる。$\delta=\min(\delta_1,\delta_2)$とする。$|x-a|<\delta$のとき、$x\neq a$なら上のどちらかの不等式が使え、$x=a$なら$|f(x)-f(a)|=0<\varepsilon$である。よって$f$は$a$で連続である。
+  strategy: Split the neighborhood of a into the left part, the point a, and the right part.
+  sketch:
+  - 'derive: Continuity restricts to each side, giving both one-sided limits.'
+  - 'setup: Conversely fix ε > 0 and take δ₁ on the left and δ₂ on the right.'
+  - 'derive: With δ = min(δ₁, δ₂) the bound holds on both sides and trivially at x = a.'
+  - 'conclude: Hence f is continuous at a.'
+  openmath: (forall (f a) (<-> (fn_continuous_at (lambda (x) (fn_value f x)) a) (and (fn_left_limit_at (lambda (x) (fn_value f x)) a (fn_value f a)) (fn_right_limit_at (lambda (x) (fn_value f x)) a (fn_value f a)))))
+  hard_negative:
+    statement: 左右の片側極限が存在して互いに等しければ、fはaで連続である。
+    reason: 片側極限が等しくてもf(a)と異なれば不連続である。x≠0でf(x)=0, f(0)=1がその例である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a : ℝ), ContinuousAt f a ↔ Filter.Tendsto f (nhdsWithin a (Set.Iio a)) (nhds (f a)) ∧ Filter.Tendsto f (nhdsWithin a (Set.Ioi a)) (nhds (f a))
+  proof: |
+    by
+      intro f a
+      exact continuousAt_iff_continuous_left'_right'
+- id: monotone_right_limit_exists
+  kind: textbook
+  level: 2
+  topic: 片側極限・単調関数
+  statement: 単調増加な$f:\mathbb{R}\to\mathbb{R}$は各点$a$で右極限をもち、その値は$\inf\{f(x)\mid x>a\}$である。ここで単調増加とは、$x\leq y$ならば$f(x)\leq f(y)$となることをいう。
+  statement_en: If f is nondecreasing on the reals, then at each a the right limit of f exists and equals the infimum of f(x) over x > a.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は単調増加（$x\leq y$ならば$f(x)\leq f(y)$）
+  quantifiers:
+  - 任意の単調増加関数$f:\mathbb{R}\to\mathbb{R}$と$a\in\mathbb{R}$
+  conclusion: $x\to a+0$で$f(x)\to\inf\{f(x)\mid x>a\}$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を単調増加、すなわち$x\leq y$ならば$f(x)\leq f(y)$を満たす関数とし、$a\in\mathbb{R}$とする。集合$A=\{f(x)\mid x>a\}$は空でなく、$x>a$では$f(a)\leq f(x)$なので下に有界である。よって下限$m=\inf A$が存在する。
+    $\varepsilon>0$を任意にとる。下限の定義より、$f(y)<m+\varepsilon$となる$y>a$がとれる。$a<x<y$ならば、$m\leq f(x)\leq f(y)<m+\varepsilon$である。したがって$\delta=y-a$とすれば、$a<x<a+\delta$のとき$|f(x)-m|<\varepsilon$となる。よって$x\to a+0$で$f(x)\to m$である。
+  strategy: Show the infimum exists from the bound f(a), then use monotonicity on (a, y).
+  sketch:
+  - 'derive: The set of values for x > a is bounded below by f(a), so its infimum m exists.'
+  - 'construct: For ε > 0 pick y > a with f(y) < m + ε.'
+  - 'derive: For a < x < y monotonicity gives m ≤ f(x) < m + ε.'
+  - 'conclude: Therefore the right limit is m.'
+  openmath: (forall (f a) (-> (fn_monotone (lambda (x) (fn_value f x))) (exists (m S) (and (forall (y) (<-> (in y S) (exists (x) (and (> x a) (= y (fn_value f x)))))) (is_glb S m) (fn_right_limit_at (lambda (x) (fn_value f x)) a m)))))
+  hard_negative:
+    statement: 単調増加関数の右極限は常にf(a)に等しい。
+    reason: x≤0でf(x)=0, x>0でf(x)=1とすると単調増加だが、0での右極限は1でf(0)=0と異なる。
+  target: |
+    ∀ (f : ℝ → ℝ) (a : ℝ), Monotone f → Filter.Tendsto f (nhdsWithin a (Set.Ioi a)) (nhds (sInf (f '' Set.Ioi a)))
+  proof: |
+    by
+      intro f a hf
+      exact hf.tendsto_nhdsGT a
+- id: monotone_bounded_limit_at_infinity
+  kind: gap
+  level: 1
+  topic: 無限遠での極限・単調有界
+  statement: 単調増加かつ上に有界な$f:\mathbb{R}\to\mathbb{R}$は、$x\to+\infty$で収束する。
+  statement_en: A nondecreasing function on the reals that is bounded above converges as x tends to +∞.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は単調増加
+  - ある$M\in\mathbb{R}$について全ての$x$で$f(x)\leq M$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$
+  - ある$L\in\mathbb{R}$
+  conclusion: $x\to+\infty$で$f(x)$はある実数$L$に収束する。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を単調増加とし、全ての$x$で$f(x)\leq M$となる$M\in\mathbb{R}$があるとする。値域$f(\mathbb{R})$は空でなく上に有界なので、上限$L=\sup f(\mathbb{R})$が存在する。
+    $\varepsilon>0$に対し、上限の定義より$f(y)>L-\varepsilon$となる$y$がとれる。$x\geq y$ならば、単調性から$L-\varepsilon<f(y)\leq f(x)\leq L$であり、$|f(x)-L|<\varepsilon$となる。よって$x\to+\infty$で$f(x)\to L$である。
+  strategy: Take the supremum of the range and use monotonicity past a near-supremum point.
+  sketch:
+  - 'derive: The range is bounded above, so it has a supremum L.'
+  - 'construct: For ε > 0 pick y with f(y) > L - ε.'
+  - 'conclude: For x ≥ y, L - ε < f(x) ≤ L, so f(x) → L.'
+  openmath: (forall (f) (-> (and (fn_monotone (lambda (x) (fn_value f x))) (exists (M) (forall (x) (<= (fn_value f x) M)))) (exists (L) (fn_limit_at_top (lambda (x) (fn_value f x)) L))))
+  hard_negative:
+    statement: 上に有界な関数はx→+∞で収束する。
+    reason: sin xは有界だが、x→+∞で収束しない。単調性が必要である。
+  target: |
+    ∀ (f : ℝ → ℝ), Monotone f → (∃ M, ∀ x, f x ≤ M) → ∃ L, Filter.Tendsto f Filter.atTop (nhds L)
+  proof: |
+    by
+      rintro f hf ⟨M, hM⟩
+      exact ⟨_, tendsto_atTop_ciSup hf ⟨M, by rintro _ ⟨x, rfl⟩; exact hM x⟩⟩
+- id: intermediate_value_theorem
+  kind: named
+  level: 1
+  topic: 連続性・中間値の定理
+  statement: 中間値の定理。$a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続で、$u$が$f(a)$と$f(b)$の間の値ならば、$f(c)=u$となる$c\in[a,b]$が存在する。
+  statement_en: Intermediate value theorem. If f is continuous on [a,b] with a ≤ b and u lies between f(a) and f(b), then f(c) = u for some c in [a,b].
+  assumptions:
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  - $f(a)\leq u\leq f(b)$または$f(b)\leq u\leq f(a)$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b,u\in\mathbb{R}$
+  - ある$c\in[a,b]$
+  conclusion: $f(c)=u$となる$c\in[a,b]$が存在する。
+  answer: |
+    $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続、$u\in\mathbb{R}$は$f(a)\leq u\leq f(b)$または$f(b)\leq u\leq f(a)$を満たすとする。$f(b)\leq u\leq f(a)$の場合は、$-f$と$-u$を考えれば$-f(a)\leq-u\leq-f(b)$の場合に帰着する。以下$f(a)\leq u\leq f(b)$とする。
+    $S=\{x\in[a,b]\mid f(x)\leq u\}$とおく。$a\in S$であり$S$は上に有界なので、$c=\sup S\in[a,b]$が存在する。$S$の点列$(x_n)$で$x_n\to c$となるものをとると、連続性より$f(c)=\lim f(x_n)\leq u$である。
+    $f(c)<u$と仮定する。$f(b)\geq u$より$c\neq b$なので$c<b$である。連続性より$\delta>0$が存在して、$c<x<\min(c+\delta,b)$では$f(x)<u$となる。そのような$x$は$S$に属して$c$より大きいので、$c=\sup S$に反する。よって$f(c)=u$である。
+  strategy: Take the supremum of the sublevel set and rule out strict inequality by continuity.
+  sketch:
+  - 'setup: Reduce to f(a) ≤ u ≤ f(b) by replacing f with -f if needed.'
+  - 'construct: Let c be the supremum of {x in [a,b] : f(x) ≤ u}.'
+  - 'derive: Continuity gives f(c) ≤ u.'
+  - 'contradiction: If f(c) < u and c < b, points just right of c also lie in the set.'
+  - 'conclude: Thus f(c) = u.'
+  openmath: (forall (f a b u) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (or (and (<= (fn_value f a) u) (<= u (fn_value f b))) (and (<= (fn_value f b) u) (<= u (fn_value f a))))) (exists (c) (and (in c (closed_interval a b)) (= (fn_value f c) u)))))
+  hard_negative:
+    statement: fが[a,b]で各点の左右の極限をもつだけで、f(a)とf(b)の間の値はすべてとられる。
+    reason: x<0で-1、x≥0で1の関数は片側極限をもつが、0という値をとらない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b u : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → ((f a ≤ u ∧ u ≤ f b) ∨ (f b ≤ u ∧ u ≤ f a)) → ∃ c ∈ Set.Icc a b, f c = u
+  proof: |
+    by
+      intro f a b u hab hf hu
+      rcases hu with h | h
+      · obtain ⟨c, hc, e⟩ := intermediate_value_Icc hab hf h
+        exact ⟨c, hc, e⟩
+      · obtain ⟨c, hc, e⟩ := intermediate_value_Icc' hab hf h
+        exact ⟨c, hc, e⟩
+- id: extreme_value_theorem
+  kind: named
+  level: 1
+  topic: 連続性・最大値最小値の定理
+  statement: 最大値・最小値の定理。$a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続ならば、$f$は$[a,b]$上で最大値と最小値をとる。
+  statement_en: Extreme value theorem. A function continuous on a closed interval [a,b] with a ≤ b attains a minimum and a maximum on [a,b].
+  assumptions:
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$x,y\in[a,b]$
+  conclusion: 全ての$t\in[a,b]$で$f(x)\leq f(t)\leq f(y)$となる$x,y\in[a,b]$が存在する。
+  answer: |
+    $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続とする。ボルツァーノ・ワイエルシュトラスの定理（有界な実数列は収束部分列をもつ）を用いる。$[a,b]$は閉集合なので、$[a,b]$内の点列の収束部分列の極限は$[a,b]$に属する。
+    $f$が$[a,b]$上で上に有界でないとすると、各$n$について$f(x_n)>n$となる$x_n\in[a,b]$がとれる。収束部分列$x_{n_k}\to c\in[a,b]$をとると、連続性より$f(x_{n_k})\to f(c)$である。これは$f(x_{n_k})>n_k\to\infty$に矛盾する。
+    よって$[a,b]\neq\emptyset$上の上限$M=\sup_{t\in[a,b]}f(t)$が存在する。各$n$について$f(y_n)>M-1/(n+1)$となる$y_n\in[a,b]$をとり、収束部分列の極限を$y\in[a,b]$とする。連続性より$f(y)=M$であり、全ての$t\in[a,b]$で$f(t)\leq f(y)$である。
+    同じ議論を$-f$に適用すると、全ての$t\in[a,b]$で$-f(t)\leq-f(x)$となる$x\in[a,b]$が得られる。すなわち$f(x)\leq f(t)$である。
+  strategy: Use sequential compactness of [a,b] first for boundedness and then to attain the supremum.
+  sketch:
+  - 'contradiction: An unbounded f gives points x_n with f(x_n) > n.'
+  - 'apply_theorem: Bolzano-Weierstrass gives a convergent subsequence in [a,b].'
+  - 'derive: Continuity makes f(x_{n_k}) convergent, contradicting unboundedness.'
+  - 'construct: Take a sequence with f(y_n) → sup f and a convergent subsequence with limit y.'
+  - 'conclude: Continuity gives f(y) = sup f; apply the same to -f for the minimum.'
+  openmath: (forall (f a b) (-> (and (<= a b) (fn_continuous_on (lambda (t) (fn_value f t)) (closed_interval a b))) (exists (x y) (and (in x (closed_interval a b)) (in y (closed_interval a b)) (forall (t) (-> (in t (closed_interval a b)) (and (<= (fn_value f x) (fn_value f t)) (<= (fn_value f t) (fn_value f y)))))))))
+  hard_negative:
+    statement: 開区間(a,b)で連続な関数は(a,b)上で最大値をとる。
+    reason: (0,1)上のf(x)=1/xは連続だが上に有界でなく、最大値をとらない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → ∃ x ∈ Set.Icc a b, ∃ y ∈ Set.Icc a b, ∀ t ∈ Set.Icc a b, f x ≤ f t ∧ f t ≤ f y
+  proof: |
+    by
+      intro f a b hab hf
+      have hne : (Set.Icc a b).Nonempty := Set.nonempty_Icc.mpr hab
+      obtain ⟨x, hx, hxm⟩ := isCompact_Icc.exists_isMinOn hne hf
+      obtain ⟨y, hy, hym⟩ := isCompact_Icc.exists_isMaxOn hne hf
+      exact ⟨x, hx, y, hy, fun t ht => ⟨isMinOn_iff.mp hxm t ht, isMaxOn_iff.mp hym t ht⟩⟩
+- id: continuous_bounded_on_closed_interval
+  kind: gap
+  level: 1
+  topic: 連続性・有界性
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$[a,b]=\{x\mid a\leq x\leq b\}$で連続ならば、$f$は$[a,b]$上で有界である。$a>b$のとき$[a,b]$は空集合である。
+  statement_en: A function continuous on a closed interval [a,b] is bounded on [a,b].
+  assumptions:
+  - $f$は$[a,b]$で連続
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$C\in\mathbb{R}$
+  conclusion: 全ての$x\in[a,b]$で$|f(x)|\leq C$となる$C\in\mathbb{R}$が存在する。
+  answer: |
+    $a,b\in\mathbb{R}$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]=\{x\mid a\leq x\leq b\}$で連続とする。$a>b$なら$[a,b]$は空集合なので、$C=0$でよい。以下$a\leq b$とする。
+    結論が成り立たないとすると、各$n$について$|f(x_n)|>n$となる$x_n\in[a,b]$がとれる。ボルツァーノ・ワイエルシュトラスの定理（有界な実数列は収束部分列をもつ）より、収束部分列$x_{n_k}\to c$がとれる。$[a,b]$は閉集合なので$c\in[a,b]$である。連続性より$f(x_{n_k})\to f(c)$であるから$|f(x_{n_k})|$は有界である。これは$|f(x_{n_k})|>n_k\to\infty$に矛盾する。
+  strategy: A sequence violating boundedness has a convergent subsequence, contradicting continuity.
+  sketch:
+  - 'contradiction: Suppose |f(x_n)| > n for points x_n in [a,b].'
+  - 'apply_theorem: Extract a subsequence converging to some c in [a,b].'
+  - 'conclude: Continuity forces f along the subsequence to converge, a contradiction.'
+  openmath: (forall (f a b) (-> (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (exists (C) (forall (x) (-> (in x (closed_interval a b)) (<= (abs (fn_value f x)) C))))))
+  hard_negative:
+    statement: 半開区間(a,b]で連続な関数は有界である。
+    reason: (0,1]上のf(x)=1/xは連続だが有界でない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), ContinuousOn f (Set.Icc a b) → ∃ C, ∀ x ∈ Set.Icc a b, |f x| ≤ C
+  proof: |
+    by
+      intro f a b hf
+      simpa only [Real.norm_eq_abs] using isCompact_Icc.exists_bound_of_continuousOn hf
+- id: fixed_point_unit_interval
+  kind: gap
+  level: 1
+  topic: 連続性・不動点
+  statement: $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続で$f([a,b])\subset[a,b]$ならば、$f(c)=c$となる$c\in[a,b]$が存在する。
+  statement_en: If a ≤ b, f is continuous on [a,b] and maps [a,b] into itself, then f has a fixed point c in [a,b].
+  assumptions:
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  - $x\in[a,b]$ならば$f(x)\in[a,b]$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$c\in[a,b]$
+  conclusion: $f(c)=c$となる$c\in[a,b]$が存在する。
+  answer: |
+    $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続で、$x\in[a,b]$ならば$f(x)\in[a,b]$を満たすとする。$g(x)=f(x)-x$とおくと、$g$は$[a,b]$で連続である。$f(a)\geq a$より$g(a)\geq0$であり、$f(b)\leq b$より$g(b)\leq0$である。中間値の定理（$[a,b]$で連続な関数は$g(a)$と$g(b)$の間の値を$[a,b]$上でとる）より、$g(c)=0$となる$c\in[a,b]$が存在する。この$c$が$f(c)=c$を満たす。
+  strategy: Apply the intermediate value theorem to f(x) - x.
+  sketch:
+  - 'construct: Define g(x) = f(x) - x, continuous on [0,1].'
+  - 'derive: g(0) ≥ 0 and g(1) ≤ 0 since f maps into [0,1].'
+  - 'apply_theorem: The intermediate value theorem yields c with g(c) = 0.'
+  - 'conclude: Then f(c) = c.'
+  openmath: (forall (f a b) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (closed_interval a b)) (in (fn_value f x) (closed_interval a b))))) (exists (c) (and (in c (closed_interval a b)) (= (fn_value f c) c)))))
+  hard_negative:
+    statement: $f$が開区間$(a,b)$で連続で$(a,b)$を$(a,b)$の中へ写すならば不動点をもつ。
+    reason: $a<b$のとき$f(x)=(x+a)/2$は$(a,b)$を$(a,b)$の中へ写す連続関数だが、不動点は$a$だけで$(a,b)$に属さない。閉区間であることが必要である。
+  target: '∀ (f : ℝ → ℝ) (a b : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Icc a b, f x ∈ Set.Icc a b) → ∃ c ∈ Set.Icc a b, f c = c'
+  proof: |
+    by
+      intro f a b hab hf hm
+      have hg : ContinuousOn (fun x => f x - x) (Set.Icc a b) := hf.sub continuousOn_id
+      have h0 := (hm a (Set.left_mem_Icc.mpr hab)).1
+      have h1 := (hm b (Set.right_mem_Icc.mpr hab)).2
+      obtain ⟨c, hc, e⟩ := intermediate_value_Icc' hab hg (show (0 : ℝ) ∈ Set.Icc (f b - b) (f a - a) from ⟨by linarith, by linarith⟩)
+      exact ⟨c, hc, by simpa [sub_eq_zero] using e⟩
+- id: continuous_injective_strictly_monotone
+  kind: textbook
+  level: 1
+  topic: 連続性・単射と単調性
+  statement: 連続かつ単射な$f:\mathbb{R}\to\mathbb{R}$は、狭義単調増加または狭義単調減少である。
+  statement_en: A continuous injective function on the reals is strictly increasing or strictly decreasing.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は連続
+  - $f$は単射
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$
+  conclusion: $f$は狭義単調増加または狭義単調減少である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を連続かつ単射とする。$T=\{(x,y)\in\mathbb{R}^2\mid x<y\}$とおき、$g(x,y)=f(y)-f(x)$と定める。$g$は連続で、単射性より$T$上で$0$にならない。
+    $g$の符号が$T$上で一定であることを示す。$(x_0,y_0),(x_1,y_1)\in T$をとり、$s\in[0,1]$に対し$x_s=(1-s)x_0+sx_1$、$y_s=(1-s)y_0+sy_1$とおく。$x_0<y_0$かつ$x_1<y_1$より$x_s<y_s$なので、$(x_s,y_s)\in T$である。$\varphi(s)=g(x_s,y_s)$は$[0,1]$で連続で$0$にならないから、中間値の定理より$\varphi(0)$と$\varphi(1)$は同符号である。
+    $g$がいつも正なら、$x<y$で$f(x)<f(y)$なので$f$は狭義単調増加である。$g$がいつも負なら、$f$は狭義単調減少である。
+  strategy: The difference f(y) - f(x) is continuous and nonvanishing on the convex set of pairs x < y, so it has constant sign.
+  sketch:
+  - 'construct: Let T be the convex set of pairs (x, y) with x < y and put g(x, y) = f(y) - f(x).'
+  - 'derive: g is continuous on T and has no zero because f is injective.'
+  - 'apply_theorem: The intermediate value theorem on segments in T shows that g has constant sign.'
+  - 'conclude: A positive sign means f is strictly increasing, a negative sign strictly decreasing.'
+  openmath: (forall (f) (-> (and (fn_continuous (lambda (x) (fn_value f x))) (fn_injective (lambda (x) (fn_value f x)))) (or (fn_strict_mono (lambda (x) (fn_value f x))) (fn_strict_anti (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: 実数全体で単射な関数は、連続でなくても単調である。
+    reason: f(0)=1, f(1)=0で他の点ではf(x)=xとすると単射だが単調ではない。
+  target: |
+    ∀ (f : ℝ → ℝ), Continuous f → Function.Injective f → StrictMono f ∨ StrictAnti f
+  proof: |
+    by
+      intro f hf hi
+      exact hf.strictMono_of_inj hi
+- id: differentiable_implies_continuous
+  kind: gap
+  level: 1
+  topic: 微分・連続性との関係
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$a$で微分可能で微分係数が$u$ならば、$f$は$a$で連続である。
+  statement_en: If f has derivative u at a, then f is continuous at a.
+  assumptions:
+  - $f$は$a$で微分可能で微分係数は$u$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,u\in\mathbb{R}$
+  conclusion: $f$は$a$で連続である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とし、$f$は$a$で微分可能で微分係数が$u$であるとする。$x\neq a$のとき
+    $f(x)-f(a)=\dfrac{f(x)-f(a)}{x-a}\cdot(x-a)$
+    である。$x\to a$で第1因子は$u$に、第2因子は$0$に収束するので、積は$u\cdot0=0$に収束する。よって$f(x)\to f(a)$であり、$f$は$a$で連続である。
+  strategy: Write the increment as the difference quotient times x - a.
+  sketch:
+  - 'derive: f(x)-f(a) equals the difference quotient times (x-a) for x ≠ a.'
+  - 'derive: The product tends to u · 0 = 0 as x → a.'
+  - 'conclude: Hence f(x) → f(a).'
+  openmath: (forall (f a u) (-> (has_deriv_at (lambda (x) (fn_value f x)) u a) (fn_continuous_at (lambda (x) (fn_value f x)) a)))
+  hard_negative:
+    statement: fがaで連続ならば、fはaで微分可能である。
+    reason: f(x)=|x|は0で連続だが、0で微分可能でない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a u : ℝ), HasDerivAt f u a → ContinuousAt f a
+  proof: |
+    by
+      intro f a u hf
+      exact hf.continuousAt
+- id: chain_rule
+  kind: textbook
+  level: 1
+  topic: 微分法・合成関数の微分
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$について、$f$が$a$で微分可能で微分係数が$u$、$g$が$f(a)$で微分可能で微分係数が$v$ならば、$g\circ f$は$a$で微分可能で微分係数は$vu$である。
+  statement_en: If f has derivative u at a and g has derivative v at f(a), then g ∘ f has derivative v·u at a.
+  assumptions:
+  - $f$は$a$で微分可能で微分係数は$u$
+  - $g$は$f(a)$で微分可能で微分係数は$v$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,u,v\in\mathbb{R}$
+  conclusion: $g\circ f$の$a$での微分係数は$vu$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,u,v\in\mathbb{R}$とし、$f$は$a$で微分可能で微分係数が$u$、$g$は$b=f(a)$で微分可能で微分係数が$v$であるとする。
+    $y\neq b$では$\eta(y)=\dfrac{g(y)-g(b)}{y-b}-v$、$y=b$では$\eta(b)=0$と定める。すると全ての$y$で$g(y)-g(b)=(v+\eta(y))(y-b)$が成り立つ。$g$の$b$での微分可能性より、$y\to b$で$\eta(y)\to0=\eta(b)$であり、$\eta$は$b$で連続である。
+    $y=f(x)$を代入して$x-a\ (\neq0)$で割ると
+    $\dfrac{g(f(x))-g(f(a))}{x-a}=(v+\eta(f(x)))\dfrac{f(x)-f(a)}{x-a}$
+    となる。微分可能な$f$は$a$で連続なので、$x\to a$で$f(x)\to b$であり、$\eta(f(x))\to0$である。よって右辺は$vu$に収束する。
+  strategy: Use the Carathéodory form of differentiability of g to avoid dividing by f(x)-f(a).
+  sketch:
+  - 'construct: Write g(y)-g(f(a)) = (v+ε(y))(y-f(a)) with ε continuous at f(a) and ε(f(a)) = 0.'
+  - 'derive: Substitute y = f(x) and divide by x-a.'
+  - 'derive: Continuity of f at a gives ε(f(x)) → 0.'
+  - 'conclude: The quotient tends to v·u.'
+  openmath: (forall (f g a u v) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (has_deriv_at (lambda (y) (fn_value g y)) v (fn_value f a))) (has_deriv_at (lambda (x) (fn_value g (fn_value f x))) (* v u) a)))
+  hard_negative:
+    statement: g∘fがaで微分可能ならば、gはf(a)で微分可能である。
+    reason: fが定数関数ならg∘fは常に微分可能だが、gには何も条件が課されない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a u v : ℝ), HasDerivAt f u a → HasDerivAt g v (f a) → HasDerivAt (fun x => g (f x)) (v * u) a
+  proof: |
+    by
+      intro f g a u v hf hg
+      exact hg.comp a hf
+- id: product_rule
+  kind: textbook
+  level: 1
+  topic: 微分法・積の微分
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$が$a$で微分可能で微分係数がそれぞれ$u,v$ならば、積$fg$の$a$での微分係数は$ug(a)+f(a)v$である。
+  statement_en: If f and g have derivatives u and v at a, then fg has derivative u·g(a) + f(a)·v at a.
+  assumptions:
+  - $f$の$a$での微分係数は$u$
+  - $g$の$a$での微分係数は$v$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,u,v\in\mathbb{R}$
+  conclusion: $fg$の$a$での微分係数は$ug(a)+f(a)v$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,u,v\in\mathbb{R}$とし、$f,g$の$a$での微分係数がそれぞれ$u,v$であるとする。$x\neq a$で
+    $\dfrac{f(x)g(x)-f(a)g(a)}{x-a}=\dfrac{f(x)-f(a)}{x-a}g(x)+f(a)\dfrac{g(x)-g(a)}{x-a}$
+    である。微分可能な$g$は$a$で連続なので、$x\to a$で$g(x)\to g(a)$である。よって右辺は$ug(a)+f(a)v$に収束する。
+  strategy: Add and subtract f(a)g(x) in the difference quotient.
+  sketch:
+  - 'derive: Decompose the increment as (f(x)-f(a))g(x) + f(a)(g(x)-g(a)).'
+  - 'apply_theorem: g is continuous at a because it is differentiable there.'
+  - 'conclude: Passing to the limit gives u·g(a) + f(a)·v.'
+  openmath: (forall (f g a u v) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (has_deriv_at (lambda (x) (fn_value g x)) v a)) (has_deriv_at (lambda (x) (* (fn_value f x) (fn_value g x))) (+ (* u (fn_value g a)) (* (fn_value f a) v)) a)))
+  hard_negative:
+    statement: 積fgの微分係数は常にuvである。
+    reason: f(x)=g(x)=x, a=1では(x^2)'=2だが、uv=1である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a u v : ℝ), HasDerivAt f u a → HasDerivAt g v a → HasDerivAt (fun x => f x * g x) (u * g a + f a * v) a
+  proof: |
+    by
+      intro f g a u v hf hg
+      exact hf.mul hg
+- id: quotient_rule
+  kind: textbook
+  level: 1
+  topic: 微分法・商の微分
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$が$a$で微分可能で微分係数がそれぞれ$u,v$であり、$g(a)\neq0$ならば、$f/g$の$a$での微分係数は$(ug(a)-f(a)v)/g(a)^2$である。
+  statement_en: If f and g have derivatives u and v at a and g(a) ≠ 0, then f/g has derivative (u·g(a) - f(a)·v)/g(a)² at a.
+  assumptions:
+  - $f$の$a$での微分係数は$u$
+  - $g$の$a$での微分係数は$v$
+  - $g(a)\neq0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,u,v\in\mathbb{R}$
+  conclusion: $f/g$の$a$での微分係数は$(ug(a)-f(a)v)/g(a)^2$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,u,v\in\mathbb{R}$とし、$f,g$の$a$での微分係数がそれぞれ$u,v$で、$g(a)\neq0$であるとする。微分可能な$g$は$a$で連続で$g(a)\neq0$なので、$a$の近くで$g(x)\neq0$である。そのような$x\neq a$について
+    $\dfrac{1}{x-a}\left(\dfrac{f(x)}{g(x)}-\dfrac{f(a)}{g(a)}\right)=\dfrac{1}{g(x)g(a)}\left(\dfrac{f(x)-f(a)}{x-a}g(a)-f(a)\dfrac{g(x)-g(a)}{x-a}\right)$
+    が成り立つ。$x\to a$で$g(x)\to g(a)$なので、右辺は$(ug(a)-f(a)v)/g(a)^2$に収束する。
+  strategy: Put the difference of quotients over a common denominator and pass to the limit.
+  sketch:
+  - 'derive: Near a, g(x) ≠ 0 by continuity.'
+  - 'derive: Combine f(x)/g(x) - f(a)/g(a) over the denominator g(x)g(a).'
+  - 'derive: Divide by x-a and split the numerator into the two difference quotients.'
+  - 'conclude: The limit is (u·g(a) - f(a)·v)/g(a)².'
+  openmath: (forall (f g a u v) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (has_deriv_at (lambda (x) (fn_value g x)) v a) (!= (fn_value g a) 0)) (has_deriv_at (lambda (x) (/ (fn_value f x) (fn_value g x))) (/ (- (* u (fn_value g a)) (* (fn_value f a) v)) (^ (fn_value g a) 2)) a)))
+  hard_negative:
+    statement: 商の微分係数の分子はug(a)+f(a)vである。
+    reason: f(x)=1, g(x)=x, a=1では(1/x)'=-1だが、その式では(0·1+1·1)/1=1となる。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a u v : ℝ), HasDerivAt f u a → HasDerivAt g v a → g a ≠ 0 → HasDerivAt (fun x => f x / g x) ((u * g a - f a * v) / g a ^ 2) a
+  proof: |
+    by
+      intro f g a u v hf hg hne
+      exact hf.div hg hne
+- id: power_rule_natural
+  kind: gap
+  level: 1
+  topic: 微分法・べき関数
+  statement: $n\in\mathbb{N}$（$0$を含む）と$x\in\mathbb{R}$に対し、$y\mapsto y^{n+1}$の$x$での微分係数は$(n+1)x^n$である。ただし$x^0=1$とする。
+  statement_en: For a natural number n, the derivative of x^(n+1) at x is (n+1)x^n.
+  assumptions:
+  - $n\in\mathbb{N}$（$0$を含む）
+  quantifiers:
+  - 任意の$n\in\mathbb{N}$と$x\in\mathbb{R}$
+  conclusion: $y\mapsto y^{n+1}$の$x$での微分係数は$(n+1)x^n$である。
+  answer: |
+    $n\in\mathbb{N}$（$0$を含む）、$x\in\mathbb{R}$とする。ただし$x^0=1$とする。$n$に関する帰納法で示す。
+    $n=0$では$y\mapsto y$の微分係数は$1=1\cdot x^0$である。
+    $n$で成り立つとする。$y^{n+2}=y^{n+1}\cdot y$に積の微分の公式を用いると、微分係数は$(n+1)x^n\cdot x+x^{n+1}\cdot1=(n+2)x^{n+1}$である。これは$n+1$の場合の主張である。
+  strategy: Induct on n with the product rule.
+  sketch:
+  - 'induction: The base case is the derivative of y, which is 1.'
+  - 'apply_theorem: Write y^(n+2) = y^(n+1)·y and use the product rule.'
+  - 'conclude: The result simplifies to (n+2)x^(n+1).'
+  openmath: (forall (n x) (-> (in n N) (has_deriv_at (lambda (y) (^ y (+ n 1))) (* (+ n 1) (^ x n)) x)))
+  hard_negative:
+    statement: 実数の指数pについて、x<0でも y^p の微分係数は常にpx^(p-1)である。
+    reason: p=1/2ならx<0で実数値のy^pは定義されず、微分係数の式は意味をもたない。
+  target: |
+    ∀ (n : ℕ) (x : ℝ), HasDerivAt (fun y : ℝ => y ^ (n + 1)) (((n : ℝ) + 1) * x ^ n) x
+  proof: |
+    by
+      intro n x
+      simpa using hasDerivAt_pow (n + 1) x
+- id: real_power_derivative
+  kind: gap
+  level: 1
+  topic: 微分法・実数べき
+  statement: $x>0$と$p\in\mathbb{R}$に対し、$y\mapsto y^p$の$x$での微分係数は$px^{p-1}$である。
+  statement_en: For x > 0 and real p, the function y^p has derivative p·x^(p-1) at x.
+  assumptions:
+  - $x>0$
+  quantifiers:
+  - 任意の$x,p\in\mathbb{R}$
+  conclusion: $y\mapsto y^p$の$x$での微分係数は$px^{p-1}$である。
+  answer: |
+    $x>0$、$p\in\mathbb{R}$とする。$y>0$では$y^p=\exp(p\log y)$であり、$x$の近くの$y$はこの範囲にある。$(\exp)'=\exp$と$y>0$での$(\log y)'=1/y$に合成関数の微分を用いると、$x$での微分係数は$\exp(p\log x)\cdot p/x=x^p\cdot p/x$である。$x^p/x=x^{p-1}$なので、これは$px^{p-1}$に等しい。
+  strategy: Write y^p as exp(p log y) and use the chain rule.
+  sketch:
+  - 'translate: For y > 0, y^p = exp(p log y).'
+  - 'apply_theorem: The chain rule gives exp(p log x)·p/x.'
+  - 'conclude: This equals p·x^(p-1).'
+  openmath: (forall (x p) (-> (> x 0) (has_deriv_at (lambda (y) (^ y p)) (* p (^ x (- p 1))) x)))
+  hard_negative:
+    statement: 0<p<1のときも、y^pはx=0で微分係数px^(p-1)をもつ。
+    reason: p=1/2では差分商は1/√hとなり、h→0+で発散する。
+  target: |
+    ∀ (x p : ℝ), 0 < x → HasDerivAt (fun y : ℝ => y ^ p) (p * x ^ (p - 1)) x
+  proof: |
+    by
+      intro x p hx
+      exact Real.hasDerivAt_rpow_const (Or.inl hx.ne')
+- id: exp_composite_derivative
+  kind: gap
+  level: 1
+  topic: 微分法・指数関数との合成
+  statement: $f:\mathbb{R}\to\mathbb{R}$の$a$での微分係数が$u$ならば、$x\mapsto e^{f(x)}$の$a$での微分係数は$e^{f(a)}u$である。
+  statement_en: If f has derivative u at a, then exp(f(x)) has derivative exp(f(a))·u at a.
+  assumptions:
+  - $f$の$a$での微分係数は$u$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,u\in\mathbb{R}$
+  conclusion: $x\mapsto e^{f(x)}$の$a$での微分係数は$e^{f(a)}u$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とし、$f$の$a$での微分係数が$u$であるとする。指数関数は全実数で微分可能で、$f(a)$での微分係数は$e^{f(a)}$である。合成関数の微分の公式より、$x\mapsto e^{f(x)}$の$a$での微分係数は$e^{f(a)}u$である。
+  strategy: Apply the chain rule to exp and f.
+  sketch:
+  - 'apply_theorem: exp has derivative exp(f(a)) at f(a).'
+  - 'conclude: The chain rule gives exp(f(a))·u.'
+  openmath: (forall (f a u) (-> (has_deriv_at (lambda (x) (fn_value f x)) u a) (has_deriv_at (lambda (x) (exp (fn_value f x))) (* (exp (fn_value f a)) u) a)))
+  hard_negative:
+    statement: exp(f(x))のaでの微分係数はexp(u)である。
+    reason: f(x)=x, a=1ではu=1で両者は一致するが、f(x)=2x, a=0では微分係数は2でexp(2)と異なる。
+  target: |
+    ∀ (f : ℝ → ℝ) (a u : ℝ), HasDerivAt f u a → HasDerivAt (fun x => Real.exp (f x)) (Real.exp (f a) * u) a
+  proof: |
+    by
+      intro f a u hf
+      exact hf.exp
+- id: log_composite_derivative
+  kind: gap
+  level: 1
+  topic: 微分法・対数微分
+  statement: $f:\mathbb{R}\to\mathbb{R}$の$a$での微分係数が$u$で$f(a)>0$ならば、$x\mapsto\log f(x)$の$a$での微分係数は$u/f(a)$である。
+  statement_en: If f has derivative u at a and f(a) > 0, then log f(x) has derivative u/f(a) at a.
+  assumptions:
+  - $f$の$a$での微分係数は$u$
+  - $f(a)>0$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,u\in\mathbb{R}$
+  conclusion: $x\mapsto\log f(x)$の$a$での微分係数は$u/f(a)$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とし、$f$の$a$での微分係数が$u$で$f(a)>0$であるとする。対数関数は$y>0$で微分可能で、$f(a)$での微分係数は$1/f(a)$である。合成関数の微分の公式より、$x\mapsto\log f(x)$の$a$での微分係数は$(1/f(a))\cdot u=u/f(a)$である。
+  strategy: Apply the chain rule to log and f.
+  sketch:
+  - 'apply_theorem: log has derivative 1/f(a) at f(a) > 0.'
+  - 'conclude: The chain rule gives u/f(a).'
+  openmath: (forall (f a u) (-> (and (has_deriv_at (lambda (x) (fn_value f x)) u a) (> (fn_value f a) 0)) (has_deriv_at (lambda (x) (ln (fn_value f x))) (/ u (fn_value f a)) a)))
+  hard_negative:
+    statement: $f$が$a$で微分可能で$f(a)\geq0$ならば、$x\mapsto\log f(x)$は$a$で微分可能である。
+    reason: $f(x)=x$、$a=0$では$f(a)=0$で、$\log x$は$0$の近くで$-\infty$へ発散するので$0$で微分可能でない。$f(a)>0$という仮定が必要である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a u : ℝ), HasDerivAt f u a → 0 < f a → HasDerivAt (fun x => Real.log (f x)) (u / f a) a
+  proof: |
+    by
+      intro f a u hf hpos
+      exact hf.log hpos.ne'
+- id: trig_derivatives_sin_cos
+  kind: gap
+  level: 1
+  topic: 微分法・三角関数
+  statement: 任意の$x\in\mathbb{R}$で、$\sin$の$x$での微分係数は$\cos x$であり、$\cos$の$x$での微分係数は$-\sin x$である。
+  statement_en: For every real x, sin has derivative cos x at x and cos has derivative -sin x at x.
+  assumptions:
+  - $x\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $(\sin x)'=\cos x$かつ$(\cos x)'=-\sin x$である。
+  answer: |
+    $x\in\mathbb{R}$とする。加法定理と、標準的な極限$\lim_{h\to0}\sin h/h=1$を用いる。
+    まず倍角の公式より$\cos h-1=-2\sin^2(h/2)$なので、$h\neq0$で
+    $\dfrac{\cos h-1}{h}=-\sin\dfrac{h}{2}\cdot\dfrac{\sin(h/2)}{h/2}$
+    である。$h\to0$で第1因子は$0$に、第2因子は$1$に収束するので、$(\cos h-1)/h\to0$である。
+    加法定理より、$h\neq0$で
+    $\dfrac{\sin(x+h)-\sin x}{h}=\sin x\cdot\dfrac{\cos h-1}{h}+\cos x\cdot\dfrac{\sin h}{h}$
+    であり、$h\to0$で右辺は$\cos x$に収束する。同様に
+    $\dfrac{\cos(x+h)-\cos x}{h}=\cos x\cdot\dfrac{\cos h-1}{h}-\sin x\cdot\dfrac{\sin h}{h}$
+    であり、右辺は$-\sin x$に収束する。
+  strategy: Expand with the addition formulas and use the standard limits at zero.
+  sketch:
+  - 'derive: Expand sin(x+h) and cos(x+h) with the addition formulas.'
+  - 'apply_theorem: Use sin h / h → 1 and (cos h - 1)/h → 0.'
+  - 'conclude: The difference quotients tend to cos x and -sin x.'
+  openmath: (forall (x) (and (has_deriv_at (lambda (y) (sin y)) (cos x) x) (has_deriv_at (lambda (y) (cos y)) (neg (sin x)) x)))
+  hard_negative:
+    statement: 度数法でのsinの導関数もcosに等しい。
+    reason: 度数法ではsin(πx/180)を微分することになり、導関数に係数π/180が現れる。
+  target: |
+    ∀ x : ℝ, HasDerivAt Real.sin (Real.cos x) x ∧ HasDerivAt Real.cos (-Real.sin x) x
+  proof: |
+    by
+      intro x
+      exact ⟨Real.hasDerivAt_sin x, Real.hasDerivAt_cos x⟩
+- id: arctan_derivative
+  kind: gap
+  level: 1
+  topic: 微分法・逆三角関数
+  statement: 任意の$x\in\mathbb{R}$で、$\arctan$の$x$での微分係数は$1/(1+x^2)$である。
+  statement_en: For every real x, arctan has derivative 1/(1+x²) at x.
+  assumptions:
+  - $x\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $\arctan$の$x$での微分係数は$1/(1+x^2)$である。
+  answer: |
+    $x\in\mathbb{R}$とする。$\tan:(-\pi/2,\pi/2)\to\mathbb{R}$は微分可能な全単射で、導関数$1/\cos^2y$は$0$にならない。$\arctan$はその逆関数である。
+    $y=\arctan x\in(-\pi/2,\pi/2)$とおくと$\tan y=x$である。逆関数の微分の公式より、$\arctan$の$x$での微分係数は$1/(1/\cos^2y)=\cos^2y$である。$1+\tan^2y=1/\cos^2y$より$\cos^2y=1/(1+x^2)$なので、結論を得る。
+  strategy: Differentiate the inverse of tan and rewrite with 1 + tan² = 1/cos².
+  sketch:
+  - 'setup: Let y = arctan x so tan y = x and cos y ≠ 0.'
+  - 'apply_theorem: The inverse function rule gives derivative cos² y.'
+  - 'conclude: Using 1 + tan² y = 1/cos² y this is 1/(1+x²).'
+  openmath: (forall (x) (has_deriv_at (lambda (y) (arctan_value y)) (/ 1 (+ 1 (^ x 2))) x))
+  hard_negative:
+    statement: arctanの微分係数は1/cos^2 xである。
+    reason: それはtanの導関数である。x=0では一致するが、x=1で1/2と1/cos^2 1は異なる。
+  target: |
+    ∀ x : ℝ, HasDerivAt Real.arctan (1 / (1 + x ^ 2)) x
+  proof: |
+    by
+      intro x
+      exact Real.hasDerivAt_arctan x
+- id: rolle_theorem
+  kind: named
+  level: 1
+  topic: 平均値の定理・ロルの定理
+  statement: ロルの定理。$a<b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続、$(a,b)$の各点$x$で微分可能で微分係数が$g(x)$、$f(a)=f(b)$ならば、$g(c)=0$となる$c\in(a,b)$が存在する。
+  statement_en: Rolle's theorem. If a < b, f is continuous on [a,b], differentiable on (a,b) with derivative g, and f(a) = f(b), then g(c) = 0 for some c in (a,b).
+  assumptions:
+  - $a<b$
+  - $f$は$[a,b]$で連続
+  - $f$は$(a,b)$の各点$x$で微分可能で微分係数は$g(x)$
+  - $f(a)=f(b)$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$c\in(a,b)$
+  conclusion: $g(c)=0$となる$c\in(a,b)$が存在する。
+  answer: |
+    $a<b$とし、$f,g:\mathbb{R}\to\mathbb{R}$について、$f$は$[a,b]$で連続、$(a,b)$の各点$x$で微分可能で微分係数が$g(x)$、$f(a)=f(b)$であるとする。最大値・最小値の定理より、$f$は$[a,b]$で最大値$M$と最小値$m$をとる。
+    $M=m$なら$f$は$[a,b]$で定数なので、$c=(a+b)/2$で$g(c)=0$である。
+    $M\neq m$なら、$M,m$の少なくとも一方は$f(a)=f(b)$と異なるので、その値は内点$c\in(a,b)$でとられる。$c$で最大値をとる場合、小さい$h>0$で$(f(c+h)-f(c))/h\leq0$なので$h\to0$として$g(c)\leq0$を得る。小さい$h<0$では$(f(c+h)-f(c))/h\geq0$なので$g(c)\geq0$を得る。よって$g(c)=0$である。最小値の場合は$-f$に同じ議論を適用する。
+  strategy: The extreme value theorem gives an interior extremum unless f is constant.
+  sketch:
+  - 'apply_theorem: f attains its maximum and minimum on [a,b].'
+  - 'case_split: If they coincide, f is constant and the derivative vanishes everywhere.'
+  - 'derive: Otherwise f(a) = f(b) forces one extremum at an interior point c.'
+  - 'apply_theorem: The derivative at an interior extremum is zero.'
+  - 'conclude: Hence g(c) = 0.'
+  openmath: (forall (f g a b) (-> (and (< a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (= (fn_value f a) (fn_value f b)) (forall (x) (-> (in x (open_interval a b)) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x)))) (exists (c) (and (in c (open_interval a b)) (= (fn_value g c) 0)))))
+  hard_negative:
+    statement: fが(a,b)の点で微分可能でなくても、連続でf(a)=f(b)ならば、f'(c)=0となる点がある。
+    reason: f(x)=1-|x|を[-1,1]で考えると、f(-1)=f(1)だが、微分可能な点での微分係数は±1であり0にならない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), a < b → ContinuousOn f (Set.Icc a b) → f a = f b → (∀ x ∈ Set.Ioo a b, HasDerivAt f (g x) x) → ∃ c ∈ Set.Ioo a b, g c = 0
+  proof: |
+    by
+      intro f g a b hab hc he hd
+      exact exists_hasDerivAt_eq_zero hab hc he hd
+- id: mean_value_theorem
+  kind: named
+  level: 1
+  topic: 平均値の定理
+  statement: 平均値の定理。$a<b$とし、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続、$(a,b)$の各点$x$で微分可能で微分係数が$g(x)$ならば、$f(b)-f(a)=g(c)(b-a)$となる$c\in(a,b)$が存在する。
+  statement_en: Mean value theorem. If a < b, f is continuous on [a,b] and differentiable on (a,b) with derivative g, then f(b) - f(a) = g(c)(b-a) for some c in (a,b).
+  assumptions:
+  - $a<b$
+  - $f$は$[a,b]$で連続
+  - $f$は$(a,b)$の各点$x$で微分可能で微分係数は$g(x)$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$c\in(a,b)$
+  conclusion: $f(b)-f(a)=g(c)(b-a)$となる$c\in(a,b)$が存在する。
+  answer: |
+    $a<b$とし、$f,g:\mathbb{R}\to\mathbb{R}$について、$f$は$[a,b]$で連続、$(a,b)$の各点$x$で微分可能で微分係数が$g(x)$であるとする。
+    $h(x)=f(x)-\dfrac{f(b)-f(a)}{b-a}(x-a)$とおく。$h$は$[a,b]$で連続、$(a,b)$で微分可能で、$h'(x)=g(x)-\dfrac{f(b)-f(a)}{b-a}$である。また$h(a)=h(b)=f(a)$である。ロルの定理より$h'(c)=0$となる$c\in(a,b)$が存在し、これを整理すると$f(b)-f(a)=g(c)(b-a)$を得る。
+  strategy: Subtract the secant line and apply Rolle's theorem.
+  sketch:
+  - 'construct: Let h(x) = f(x) - (f(b)-f(a))(x-a)/(b-a).'
+  - 'derive: h(a) = h(b) and h is differentiable on (a,b).'
+  - 'apply_theorem: Rolle''s theorem gives c with h''(c) = 0.'
+  - 'conclude: Rearranging gives f(b)-f(a) = g(c)(b-a).'
+  openmath: (forall (f g a b) (-> (and (< a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (open_interval a b)) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x)))) (exists (c) (and (in c (open_interval a b)) (= (- (fn_value f b) (fn_value f a)) (* (fn_value g c) (- b a)))))))
+  hard_negative:
+    statement: 連続性を仮定しなくても、(a,b)で微分可能なら同じ結論が成り立つ。
+    reason: 区間[0,1)で0、f(1)=1の関数は(0,1)で微分係数0だが、f(1)-f(0)=1である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), a < b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a b, HasDerivAt f (g x) x) → ∃ c ∈ Set.Ioo a b, f b - f a = g c * (b - a)
+  proof: |
+    by
+      intro f g a b hab hc hd
+      obtain ⟨c, hc', e⟩ := exists_hasDerivAt_eq_slope f g hab hc hd
+      refine ⟨c, hc', ?_⟩
+      rw [e, div_mul_cancel₀ _ (sub_ne_zero.mpr hab.ne')]
+- id: local_extremum_derivative_zero
+  kind: textbook
+  level: 1
+  topic: 微分法・極値の必要条件
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$a$で極大または極小をとり、$a$での微分係数が$u$ならば、$u=0$である。
+  statement_en: If f has a local extremum at a and has derivative u at a, then u = 0.
+  assumptions:
+  - $f$は$a$で極大または極小をとる
+  - $f$の$a$での微分係数は$u$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,u\in\mathbb{R}$
+  conclusion: $u=0$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とし、$f$は$a$で極大または極小をとり、$a$での微分係数が$u$であるとする。
+    極大の場合を示す。ある$\delta>0$があって$|h|<\delta$で$f(a+h)\leq f(a)$である。$0<h<\delta$では$(f(a+h)-f(a))/h\leq0$なので、$h\to+0$として$u\leq0$を得る。$-\delta<h<0$では$(f(a+h)-f(a))/h\geq0$なので、$h\to-0$として$u\geq0$を得る。よって$u=0$である。
+    極小の場合は、$-f$が$a$で極大をとり微分係数が$-u$なので、$-u=0$となる。
+  strategy: Compare the signs of the right and left difference quotients.
+  sketch:
+  - 'setup: Treat a local maximum; the minimum follows from -f.'
+  - 'derive: The right difference quotient is at most 0, so u ≤ 0.'
+  - 'derive: The left difference quotient is at least 0, so u ≥ 0.'
+  - 'conclude: Therefore u = 0.'
+  openmath: (forall (f a u) (-> (and (or (local_max_at (lambda (x) (fn_value f x)) a) (local_min_at (lambda (x) (fn_value f x)) a)) (has_deriv_at (lambda (x) (fn_value f x)) u a)) (= u 0)))
+  hard_negative:
+    statement: aでの微分係数が0ならば、fはaで極値をとる。
+    reason: f(x)=x^3はx=0で微分係数0だが、極値をとらない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a u : ℝ), IsLocalExtr f a → HasDerivAt f u a → u = 0
+  proof: |
+    by
+      intro f a u he hd
+      exact he.hasDerivAt_eq_zero hd
+- id: nonnegative_derivative_monotone
+  kind: textbook
+  level: 1
+  topic: 平均値の定理・単調性
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続、$(a,b)$の各点$x$で微分係数$g(x)\geq0$をもつならば、$x\leq y$を満たす$x,y\in[a,b]$で$f(x)\leq f(y)$である。
+  statement_en: If f is continuous on [a,b] and differentiable on (a,b) with nonnegative derivative, then f is nondecreasing on [a,b].
+  assumptions:
+  - $f$は$[a,b]$で連続
+  - $f$は$(a,b)$の各点$x$で微分可能で微分係数は$g(x)$
+  - $x\in(a,b)$で$g(x)\geq0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $f$は$[a,b]$で単調増加である。すなわち$x,y\in[a,b]$、$x\leq y$ならば$f(x)\leq f(y)$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,b\in\mathbb{R}$とし、$f$は$[a,b]$で連続、$(a,b)$の各点$x$で微分係数$g(x)$をもち、$g(x)\geq0$であるとする。
+    $x,y\in[a,b]$、$x\leq y$とする。$x=y$なら$f(x)=f(y)$である。$x<y$なら、$f$は$[x,y]$で連続、$(x,y)\subset(a,b)$で微分可能である。平均値の定理より、$f(y)-f(x)=g(c)(y-x)$となる$c\in(x,y)$が存在する。$c\in(a,b)$より$g(c)\geq0$であり、$y-x>0$なので$f(x)\leq f(y)$である。
+  strategy: Apply the mean value theorem on an arbitrary subinterval.
+  sketch:
+  - 'setup: Take x < y in [a,b].'
+  - 'apply_theorem: The mean value theorem gives c in (x,y) with f(y)-f(x) = g(c)(y-x).'
+  - 'conclude: Since g(c) ≥ 0 and y-x > 0, f(x) ≤ f(y).'
+  openmath: (forall (f g a b) (-> (and (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (open_interval a b)) (and (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x) (>= (fn_value g x) 0))))) (fn_monotone_on (lambda (x) (fn_value f x)) (closed_interval a b))))
+  hard_negative:
+    statement: 区間とは限らない定義域で導関数が非負なら、fはその定義域で単調増加である。
+    reason: 定義域が{x≠0}のとき、f(x)=-1/xの導関数は正だが、f(-1)=1>f(1)=-1である。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a b, HasDerivAt f (g x) x) → (∀ x ∈ Set.Ioo a b, 0 ≤ g x) → MonotoneOn f (Set.Icc a b)
+  proof: |
+    by
+      intro f g a b hc hd hn
+      refine monotoneOn_of_deriv_nonneg (convex_Icc a b) hc ?_ ?_
+      · rw [interior_Icc]
+        exact fun x hx => (hd x hx).differentiableAt.differentiableWithinAt
+      · rw [interior_Icc]
+        intro x hx
+        rw [(hd x hx).deriv]
+        exact hn x hx
+- id: zero_derivative_constant
+  kind: gap
+  level: 1
+  topic: 平均値の定理・定数関数
+  statement: $f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続で、$(a,b)$の各点で微分係数が$0$ならば、全ての$x\in[a,b]$で$f(x)=f(a)$である。
+  statement_en: If f is continuous on [a,b] and has derivative 0 at every point of (a,b), then f(x) = f(a) for all x in [a,b].
+  assumptions:
+  - $f$は$[a,b]$で連続
+  - $x\in(a,b)$で$f$の微分係数は$0$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - 任意の$x\in[a,b]$
+  conclusion: $f(x)=f(a)$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,b\in\mathbb{R}$とし、$f$は$[a,b]$で連続で、$(a,b)$の各点で微分係数が$0$であるとする。$x\in[a,b]$をとる。
+    $x=a$なら明らかである。$a<x\leq b$なら、$f$は$[a,x]$で連続、$(a,x)\subset(a,b)$で微分可能である。平均値の定理より、$c\in(a,x)$が存在して$f(x)-f(a)$は$c$での微分係数と$x-a$の積に等しい。$c$での微分係数は$0$なので、$f(x)=f(a)$である。
+  strategy: Apply the mean value theorem on [a,x].
+  sketch:
+  - 'case_split: The case x = a is immediate.'
+  - 'apply_theorem: For a < x use the mean value theorem on [a,x].'
+  - 'derive: The intermediate derivative vanishes because c lies in (a,b).'
+  - 'conclude: Hence f(x) = f(a).'
+  openmath: (forall (f a b x) (-> (and (fn_continuous_on (lambda (t) (fn_value f t)) (closed_interval a b)) (forall (y) (-> (in y (open_interval a b)) (has_deriv_at (lambda (t) (fn_value f t)) 0 y))) (in x (closed_interval a b))) (= (fn_value f x) (fn_value f a))))
+  hard_negative:
+    statement: 定義域が区間でなくても、導関数が0ならfは定数である。
+    reason: 定義域が{x≠0}のとき、f(x)=x/|x|は導関数が0だが定数でない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Ioo a b, HasDerivAt f 0 x) → ∀ x ∈ Set.Icc a b, f x = f a
+  proof: |
+    by
+      intro f a b hc hd x hx
+      rcases eq_or_lt_of_le hx.1 with rfl | h
+      · rfl
+      · obtain ⟨c, _, e⟩ := exists_hasDerivAt_eq_slope f (fun _ => (0 : ℝ)) h (hc.mono (Set.Icc_subset_Icc_right hx.2)) (fun y hy => hd y ⟨hy.1, hy.2.trans_le hx.2⟩)
+        have hne : x - a ≠ 0 := sub_ne_zero.mpr h.ne'
+        have h0 : f x - f a = 0 := by
+          have := (eq_div_iff hne).mp e
+          linarith
+        linarith
+- id: same_derivative_differ_by_constant
+  kind: gap
+  level: 1
+  topic: 平均値の定理・原始関数
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$の各点$x$での微分係数がともに$h(x)$ならば、ある定数$C$について全ての$x$で$f(x)=g(x)+C$である。
+  statement_en: If f and g are differentiable on the reals with the same derivative h, then f(x) = g(x) + C for a constant C and all x.
+  assumptions:
+  - 全ての$x$で$f$の微分係数は$h(x)$
+  - 全ての$x$で$g$の微分係数は$h(x)$
+  quantifiers:
+  - 任意の$f,g,h:\mathbb{R}\to\mathbb{R}$
+  - ある$C\in\mathbb{R}$
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $f(x)=g(x)+C$である。
+  answer: |
+    $f,g,h:\mathbb{R}\to\mathbb{R}$とし、全ての$x$で$f,g$の微分係数がともに$h(x)$であるとする。$k=f-g$とおくと、$k$は全実数で微分可能で導関数は$0$である。
+    $x\neq0$とする。$0$と$x$を端点とする閉区間で平均値の定理を用いると、$k(x)-k(0)$は$0$と$x$の間の点での微分係数と$x$の積に等しいので、$0$である。よって全ての$x$で$k(x)=k(0)$である。$C=f(0)-g(0)$とおくと$f(x)=g(x)+C$となる。
+  strategy: The difference has zero derivative everywhere, so it is constant.
+  sketch:
+  - 'derive: The difference f - g has derivative 0 everywhere.'
+  - 'apply_theorem: A function with zero derivative on the reals is constant.'
+  - 'conclude: Take C = f(0) - g(0).'
+  openmath: (forall (f g h) (-> (and (forall (x) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value h x) x)) (forall (x) (has_deriv_at (lambda (t) (fn_value g t)) (fn_value h x) x))) (exists (C) (forall (x) (= (fn_value f x) (+ (fn_value g x) C))))))
+  hard_negative:
+    statement: 導関数の差が定数ならば、f-gは定数である。
+    reason: f(x)=x, g(x)=0では導関数の差は定数1だが、f-g=xは定数でない。
+  target: |
+    ∀ (f g h : ℝ → ℝ), (∀ x, HasDerivAt f (h x) x) → (∀ x, HasDerivAt g (h x) x) → ∃ C, ∀ x, f x = g x + C
+  proof: |
+    by
+      intro f g h hf hg
+      have hd : ∀ x, HasDerivAt (fun y => f y - g y) 0 x := by
+        intro x
+        have h1 := (hf x).sub (hg x)
+        rw [sub_self] at h1
+        exact h1
+      have hconst := is_const_of_deriv_eq_zero (f := fun y => f y - g y) (fun x => (hd x).differentiableAt) (fun x => (hd x).deriv)
+      refine ⟨f 0 - g 0, fun x => ?_⟩
+      have h1 : f x - g x = f 0 - g 0 := hconst x 0
+      linarith
+- id: lipschitz_from_derivative_bound
+  kind: gap
+  level: 1
+  topic: 平均値の定理・リプシッツ評価
+  statement: $f:\mathbb{R}\to\mathbb{R}$の各点$t$での微分係数が$g(t)$で、全ての$t$で$|g(t)|\leq C$ならば、任意の$x,y\in\mathbb{R}$で$|f(y)-f(x)|\leq C|y-x|$である。
+  statement_en: If f is differentiable on the reals with |f'| ≤ C, then |f(y)-f(x)| ≤ C|y-x| for all x, y.
+  assumptions:
+  - 全ての$t$で$f$の微分係数は$g(t)$
+  - 全ての$t$で$|g(t)|\leq C$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$C,x,y\in\mathbb{R}$
+  conclusion: $|f(y)-f(x)|\leq C|y-x|$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$C,x,y\in\mathbb{R}$とし、全ての$t$で$f$の微分係数が$g(t)$、$|g(t)|\leq C$であるとする。
+    $x=y$なら両辺は$0$である。$x\neq y$なら、$x$と$y$を端点とする閉区間で平均値の定理を用いて、$f(y)-f(x)=g(c)(y-x)$となる$c$がとれる。両辺の絶対値をとると$|f(y)-f(x)|=|g(c)||y-x|\leq C|y-x|$である。
+  strategy: Apply the mean value theorem and bound the intermediate derivative.
+  sketch:
+  - 'case_split: The case x = y is trivial.'
+  - 'apply_theorem: For x ≠ y the mean value theorem gives c with f(y)-f(x) = g(c)(y-x).'
+  - 'conclude: Taking absolute values and using |g(c)| ≤ C gives the bound.'
+  openmath: (forall (f g C x y) (-> (and (forall (t) (has_deriv_at (lambda (s) (fn_value f s)) (fn_value g t) t)) (forall (t) (<= (abs (fn_value g t)) C))) (<= (abs (- (fn_value f y) (fn_value f x))) (* C (abs (- y x))))))
+  hard_negative:
+    statement: fが有界ならば、fはあるCで|f(y)-f(x)|≤C|y-x|を満たす。
+    reason: sin(x^2)は有界だが導関数が非有界で、この評価を満たすCは存在しない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (C x y : ℝ), (∀ t, HasDerivAt f (g t) t) → (∀ t, |g t| ≤ C) → |f y - f x| ≤ C * |y - x|
+  proof: |
+    by
+      intro f g C x y hd hb
+      have := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le (s := Set.univ) (C := C) (f := f) (f' := g) (x := x) (y := y) (fun t _ => (hd t).hasDerivWithinAt) (fun t _ => by simpa only [Real.norm_eq_abs] using hb t) convex_univ (Set.mem_univ _) (Set.mem_univ _)
+      simpa only [Real.norm_eq_abs] using this
+- id: first_derivative_test_minimum
+  kind: textbook
+  level: 1
+  topic: 微分法・第1次導関数判定
+  statement: $\delta>0$とし、$f:\mathbb{R}\to\mathbb{R}$が$a$で連続、$0<|x-a|<\delta$の各点$x$で微分係数$g(x)$をもつとする。$(a-\delta,a)$で$g\leq0$、$(a,a+\delta)$で$g\geq0$ならば、$f$は$a$で極小をとる。
+  statement_en: If f is continuous at a, differentiable on a punctured neighborhood of a, with f' ≤ 0 on the left of a and f' ≥ 0 on the right, then f has a local minimum at a.
+  assumptions:
+  - $\delta>0$
+  - $f$は$a$で連続
+  - $0<|x-a|<\delta$で$f$の微分係数は$g(x)$
+  - $x\in(a-\delta,a)$で$g(x)\leq0$
+  - $x\in(a,a+\delta)$で$g(x)\geq0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,\delta\in\mathbb{R}$
+  conclusion: $f$は$a$で極小をとる。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a\in\mathbb{R}$、$\delta>0$とする。$f$は$a$で連続、$0<|x-a|<\delta$の各点$x$で微分係数$g(x)$をもち、$(a-\delta,a)$で$g\leq0$、$(a,a+\delta)$で$g\geq0$であるとする。
+    $x\in(a-\delta,a)$をとる。$[x,a)$の各点で$f$は微分可能なので連続であり、$a$でも連続なので、$f$は$[x,a]$で連続である。平均値の定理より$f(a)-f(x)=g(c)(a-x)$となる$c\in(x,a)$があり、$g(c)\leq0$より$f(x)\geq f(a)$である。
+    $x\in(a,a+\delta)$なら、同様に$f(x)-f(a)=g(c)(x-a)$となる$c\in(a,x)$があり、$g(c)\geq0$より$f(x)\geq f(a)$である。
+    したがって$|x-a|<\delta$で$f(x)\geq f(a)$であり、$f$は$a$で極小をとる。
+  strategy: Apply monotonicity from the sign of the derivative separately on each side.
+  sketch:
+  - 'derive: On the left of a, f is nonincreasing, so f(x) ≥ f(a).'
+  - 'derive: On the right of a, f is nondecreasing, so f(x) ≥ f(a).'
+  - 'conclude: Both sides give f(x) ≥ f(a) near a, so a is a local minimum.'
+  openmath: (forall (f g a d) (-> (and (> d 0) (fn_continuous_at (lambda (x) (fn_value f x)) a) (forall (x) (-> (and (!= x a) (< (abs (- x a)) d)) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x))) (forall (x) (-> (in x (open_interval (- a d) a)) (<= (fn_value g x) 0))) (forall (x) (-> (in x (open_interval a (+ a d))) (>= (fn_value g x) 0)))) (local_min_at (lambda (x) (fn_value f x)) a)))
+  hard_negative:
+    statement: 連続性を仮定しなくても、左側でf'≤0、右側でf'≥0ならばaは極小点である。
+    reason: x≠0でf(x)=x^2, f(0)=1とすると符号の条件は満たすが、0は極小点でない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a δ : ℝ), 0 < δ → ContinuousAt f a → (∀ x, x ≠ a → |x - a| < δ → HasDerivAt f (g x) x) → (∀ x ∈ Set.Ioo (a - δ) a, g x ≤ 0) → (∀ x ∈ Set.Ioo a (a + δ), 0 ≤ g x) → IsLocalMin f a
+  proof: |
+    by
+      intro f g a δ hδ hc hd hl hr
+      have hnear : ∀ x ∈ Set.Ioo (a - δ) a, HasDerivAt f (g x) x := fun x hx =>
+        hd x hx.2.ne (by rw [abs_lt]; constructor <;> linarith [hx.1, hx.2])
+      have hnear' : ∀ x ∈ Set.Ioo a (a + δ), HasDerivAt f (g x) x := fun x hx =>
+        hd x hx.1.ne' (by rw [abs_lt]; constructor <;> linarith [hx.1, hx.2])
+      refine isLocalMin_of_deriv hc ?_ ?_ ?_
+      · refine eventually_nhdsWithin_iff.mpr (Metric.eventually_nhds_iff.mpr ⟨δ, hδ, fun x hx hne => ?_⟩)
+        exact (hd x hne (by rwa [Real.dist_eq] at hx)).differentiableAt
+      · filter_upwards [Ioo_mem_nhdsLT (show a - δ < a by linarith)] with x hx
+        rw [(hnear x hx).deriv]
+        exact hl x hx
+      · filter_upwards [Ioo_mem_nhdsGT (show a < a + δ by linarith)] with x hx
+        rw [(hnear' x hx).deriv]
+        exact hr x hx
+- id: second_derivative_test_maximum
+  kind: textbook
+  level: 1
+  topic: 微分法・第2次導関数判定
+  statement: $\delta>0$とし、$f,g:\mathbb{R}\to\mathbb{R}$について、$|x-a|<\delta$の各点$x$で$f$の微分係数が$g(x)$であり、$g(a)=0$で、$g$の$a$での微分係数$u$が負ならば、$f$は$a$で極大をとる。
+  statement_en: If δ > 0, f has derivative g(x) at every x with |x-a| < δ, g(a) = 0, and g has derivative u < 0 at a, then f has a local maximum at a.
+  assumptions:
+  - $\delta>0$
+  - $|x-a|<\delta$の各点$x$で$f$の微分係数は$g(x)$
+  - $g(a)=0$
+  - $g$の$a$での微分係数は$u$
+  - $u<0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,u,\delta\in\mathbb{R}$
+  conclusion: $f$は$a$で極大をとる。
+  answer: |
+    $\delta>0$とし、$f,g:\mathbb{R}\to\mathbb{R}$、$a,u\in\mathbb{R}$とする。$|x-a|<\delta$の各点$x$で$f$の微分係数は$g(x)$であり、$g(a)=0$、$g$の$a$での微分係数は$u<0$であるとする。
+    $g(a)=0$より、$x\to a$で$g(x)/(x-a)=(g(x)-g(a))/(x-a)\to u<0$である。よってある$\delta'\in(0,\delta]$があって、$0<|x-a|<\delta'$で$g(x)/(x-a)<0$となる。すなわち$(a-\delta',a)$で$g>0$、$(a,a+\delta')$で$g<0$である。
+    $x\in(a-\delta',a)$なら、$f$は$[x,a]$で微分可能なので連続であり、平均値の定理より$f(a)-f(x)=g(c)(a-x)$となる$c\in(x,a)$がある。$g(c)>0$より$f(x)<f(a)$である。$x\in(a,a+\delta')$なら、同様に$f(x)-f(a)=g(c)(x-a)$となる$c\in(a,x)$があり、$g(c)<0$より$f(x)<f(a)$である。よって$f$は$a$で極大をとる。
+  strategy: The sign of the second derivative determines the sign of f' on each side.
+  sketch:
+  - 'derive: Since f''(a) = 0 and u < 0, f''(x)/(x-a) is negative near a.'
+  - 'derive: So f'' is positive on the left of a and negative on the right.'
+  - 'apply_theorem: The first derivative test applies.'
+  - 'conclude: Thus a is a local maximum.'
+  openmath: (forall (f g a u d) (-> (and (> d 0) (forall (x) (-> (< (abs (- x a)) d) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x))) (= (fn_value g a) 0) (has_deriv_at (lambda (x) (fn_value g x)) u a) (< u 0)) (local_max_at (lambda (x) (fn_value f x)) a)))
+  hard_negative:
+    statement: f'(a)=0かつf''(a)≤0ならば、fはaで極大をとる。
+    reason: f(x)=x^3は a=0でf'(0)=f''(0)=0だが、極大をとらない。
+  target: '∀ (f g : ℝ → ℝ) (a u δ : ℝ), 0 < δ → (∀ x : ℝ, |x - a| < δ → HasDerivAt f (g x) x) → g a = 0 → HasDerivAt g u a → u < 0 → IsLocalMax f a'
+  proof: |
+    by
+      intro f g a u δ hδ hf hg0 hg hu
+      have hnear : ∀ x : ℝ, |x - a| < δ → deriv f x = g x := fun x hx => (hf x hx).deriv
+      have hev : deriv f =ᶠ[nhds a] g := by
+        have : ∀ᶠ x in nhds a, |x - a| < δ := by
+          have : Metric.ball a δ ∈ nhds a := Metric.ball_mem_nhds a hδ
+          filter_upwards [this] with x hx
+          simpa [Real.dist_eq] using hx
+        filter_upwards [this] with x hx using hnear x hx
+      have h2 : HasDerivAt (deriv f) u a := hg.congr_of_eventuallyEq hev
+      have h0 : deriv f a = 0 := by rw [hnear a (by simpa using hδ), hg0]
+      have hca : ContinuousAt f a := (hf a (by simpa using hδ)).continuousAt
+      exact isLocalMax_of_deriv_deriv_neg (by rw [h2.deriv]; exact hu) h0 hca
+- id: taylor_lagrange_remainder
+  kind: named
+  level: 2
+  topic: テイラーの定理・ラグランジュの剰余
+  statement: テイラーの定理。$a\neq x$、$n\in\mathbb{N}$とし、$I$を$a$と$x$を端点とする閉区間、$J$をその内部とする。$f:\mathbb{R}\to\mathbb{R}$が$I$で$C^n$級で、$I$内で考えた$n$階導関数$f^{(n)}$が$J$で微分可能ならば、ある$c\in J$について$f(x)=\sum_{k=0}^n\frac{f^{(k)}(a)}{k!}(x-a)^k+\frac{f^{(n+1)}(c)}{(n+1)!}(x-a)^{n+1}$である。導関数は全て$I$内で考えたものとする。
+  statement_en: Taylor's theorem with Lagrange remainder. If a ≠ x, f is C^n on the closed interval between a and x, and the n-th derivative within that interval is differentiable on the open interval, then for some c in the open interval, f(x) = sum_{k≤n} f^(k)(a)(x-a)^k/k! + f^(n+1)(c)(x-a)^(n+1)/(n+1)!, with derivatives taken within the closed interval.
+  assumptions:
+  - $a\neq x$
+  - $f$は$a$と$x$を端点とする閉区間$I$で$C^n$級
+  - $I$内で考えた$f^{(n)}$は$I$の内部で微分可能
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$、$a,x\in\mathbb{R}$、$n\in\mathbb{N}$
+  - $I$の内部のある$c$
+  conclusion: $f(x)=\sum_{k=0}^n\frac{f^{(k)}(a)}{k!}(x-a)^k+\frac{f^{(n+1)}(c)}{(n+1)!}(x-a)^{n+1}$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$、$a,x\in\mathbb{R}$、$a\neq x$、$n\in\mathbb{N}$（$0$を含む）とする。$I$を$a$と$x$を端点とする閉区間、$J$をその内部とし、$f^{(k)}$は$I$内で考えた$k$階導関数を表す。$f$は$I$で$C^n$級で、$f^{(n)}$は$J$で微分可能であるとする。
+    $t\in I$に対し$F(t)=\sum_{k=0}^n\frac{f^{(k)}(t)}{k!}(x-t)^k$、$G(t)=(x-t)^{n+1}$とおく。ただし$(x-t)^0=1$である。$F,G$は$I$で連続、$J$で微分可能である。$t\in J$で$F$を項別に微分すると、$k\geq1$の項の導関数は$\frac{f^{(k+1)}(t)}{k!}(x-t)^k-\frac{f^{(k)}(t)}{(k-1)!}(x-t)^{k-1}$であり、$k=0$の項の導関数は$f'(t)$である。和をとると打ち消し合い、$F'(t)=\frac{f^{(n+1)}(t)}{n!}(x-t)^n$となる。また$G'(t)=-(n+1)(x-t)^n$である。
+    コーシーの平均値の定理（$F,G$が閉区間で連続、内部で微分可能ならば、内部のある点$c$で$(F(x)-F(a))G'(c)=(G(x)-G(a))F'(c)$）を用いる。$F(x)=f(x)$、$G(x)=0$、$G(a)=(x-a)^{n+1}$なので
+    $-(n+1)(x-c)^n(f(x)-F(a))=-(x-a)^{n+1}\frac{f^{(n+1)}(c)}{n!}(x-c)^n$
+    である。$c\in J$より$x-c\neq0$なので、$(n+1)(x-c)^n$で割ると$f(x)-F(a)=\frac{f^{(n+1)}(c)}{(n+1)!}(x-a)^{n+1}$を得る。$F(a)$はテイラー多項式の$x$での値なので、これが結論である。
+  strategy: Apply Cauchy's mean value theorem to the remainder as a function of the expansion point and to (x-t)^(n+1).
+  sketch:
+  - 'construct: Let F(t) = f(x) - sum_{k≤n} f^(k)(t)(x-t)^k/k!.'
+  - 'derive: The derivative telescopes to F''(t) = -f^(n+1)(t)(x-t)^n/n!.'
+  - 'construct: Let G(t) = (x-t)^(n+1), so G(x) = 0 = F(x).'
+  - 'apply_theorem: Cauchy''s mean value theorem gives c with F(a)/G(a) = F''(c)/G''(c).'
+  - 'derive: The quotient on the right equals f^(n+1)(c)/(n+1)!.'
+  - 'conclude: Rearranging gives the Lagrange form.'
+  openmath: (forall (f a x n) (-> (and (!= a x) (in n N) (cont_diff_on (lambda (t) (fn_value f t)) n (closed_interval_between a x)) (differentiable_on (lambda (t) (iterated_deriv_within (lambda (s) (fn_value f s)) n (closed_interval_between a x) t)) (open_interval_between a x))) (exists (c) (and (in c (open_interval_between a x)) (= (fn_value f x) (+ (sum (natural_range (+ n 1)) (lambda (k) (* (/ (iterated_deriv_within (lambda (s) (fn_value f s)) k (closed_interval_between a x) a) (factorial k)) (^ (- x a) k)))) (/ (* (iterated_deriv_within (lambda (s) (fn_value f s)) (+ n 1) (closed_interval_between a x) c) (^ (- x a) (+ n 1))) (factorial (+ n 1)))))))))
+  hard_negative:
+    statement: C^∞級の関数はテイラー級数の和に常に等しい。
+    reason: x≠0でexp(-1/x^2), f(0)=0はC^∞級で、0でのテイラー級数は恒等的に0だが、関数は0でない。
+  target: |
+    ∀ (f : ℝ → ℝ) (a x : ℝ) (n : ℕ), a ≠ x → ContDiffOn ℝ n f (Set.uIcc a x) → DifferentiableOn ℝ (iteratedDerivWithin n f (Set.uIcc a x)) (Set.uIoo a x) → ∃ c ∈ Set.uIoo a x, f x = ∑ k ∈ Finset.range (n + 1), iteratedDerivWithin k f (Set.uIcc a x) a / (k.factorial : ℝ) * (x - a) ^ k + iteratedDerivWithin (n + 1) f (Set.uIcc a x) c * (x - a) ^ (n + 1) / ((n + 1).factorial : ℝ)
+  proof: |
+    by
+      intro f a x n hax hf hd
+      obtain ⟨c, hc, e⟩ := taylor_mean_remainder_lagrange hax hf hd
+      refine ⟨c, hc, ?_⟩
+      rw [taylor_within_apply] at e
+      have hs : ∑ k ∈ Finset.range (n + 1), iteratedDerivWithin k f (Set.uIcc a x) a / (k.factorial : ℝ) * (x - a) ^ k = ∑ k ∈ Finset.range (n + 1), ((k.factorial : ℝ)⁻¹ * (x - a) ^ k) • iteratedDerivWithin k f (Set.uIcc a x) a := by
+        refine Finset.sum_congr rfl fun k _ => ?_
+        rw [smul_eq_mul]
+        ring
+      rw [hs, ← e]
+      ring
+- id: taylor_second_order
+  kind: gap
+  level: 1
+  topic: テイラーの定理・2次の展開
+  statement: $a<b$とし、$f,f_1,f_2:\mathbb{R}\to\mathbb{R}$について、全ての$x$で$f$の微分係数が$f_1(x)$、$f_1$の微分係数が$f_2(x)$ならば、ある$c\in(a,b)$で$f(b)=f(a)+f_1(a)(b-a)+f_2(c)(b-a)^2/2$である。
+  statement_en: If f is twice differentiable on the reals with first derivative f1 and second derivative f2, and a < b, then f(b) = f(a) + f1(a)(b-a) + f2(c)(b-a)²/2 for some c in (a,b).
+  assumptions:
+  - $a<b$
+  - 全ての$x$で$f$の微分係数は$f_1(x)$
+  - 全ての$x$で$f_1$の微分係数は$f_2(x)$
+  quantifiers:
+  - 任意の$f,f_1,f_2:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - ある$c\in(a,b)$
+  conclusion: $f(b)=f(a)+f_1(a)(b-a)+f_2(c)(b-a)^2/2$となる$c\in(a,b)$が存在する。
+  answer: |
+    $a<b$とし、$f,f_1,f_2:\mathbb{R}\to\mathbb{R}$について、全ての$x$で$f$の微分係数が$f_1(x)$、$f_1$の微分係数が$f_2(x)$であるとする。
+    定数$K$を$f(b)=f(a)+f_1(a)(b-a)+K(b-a)^2/2$となるように定め、$g(x)=f(x)-f(a)-f_1(a)(x-a)-K(x-a)^2/2$とおく。$g(a)=g(b)=0$なので、ロルの定理より$g'(c_1)=0$となる$c_1\in(a,b)$が存在する。
+    $g'(x)=f_1(x)-f_1(a)-K(x-a)$は$g'(a)=0=g'(c_1)$を満たす。$g'$は微分可能で$(g')'(x)=f_2(x)-K$なので、再びロルの定理より$f_2(c)-K=0$となる$c\in(a,c_1)\subset(a,b)$が存在する。この$c$について$K=f_2(c)$であり、$K$の定義式が結論を与える。
+  strategy: Choose the constant making the error vanish at b, then apply Rolle's theorem twice.
+  sketch:
+  - 'construct: Choose K with f(b) = f(a) + f1(a)(b-a) + K(b-a)²/2.'
+  - 'construct: Define g(x) = f(x) - f(a) - f1(a)(x-a) - K(x-a)²/2, so g(a) = g(b) = 0.'
+  - 'apply_theorem: Rolle''s theorem gives c1 in (a,b) with g''(c1) = 0.'
+  - 'derive: Also g''(a) = 0, so Rolle''s theorem applied to g'' gives c in (a,c1) with g''''(c) = 0.'
+  - 'conclude: Since g''''(c) = f2(c) - K, we get K = f2(c).'
+  openmath: (forall (f f1 f2 a b) (-> (and (< a b) (forall (x) (has_deriv_at (lambda (t) (fn_value f t)) (fn_value f1 x) x)) (forall (x) (has_deriv_at (lambda (t) (fn_value f1 t)) (fn_value f2 x) x))) (exists (c) (and (in c (open_interval a b)) (= (fn_value f b) (+ (fn_value f a) (* (fn_value f1 a) (- b a)) (/ (* (fn_value f2 c) (^ (- b a) 2)) 2)))))))
+  hard_negative:
+    statement: 上の等式でcをaに取り替えても成り立つ。
+    reason: f(x)=x^3, a=0, b=1ではf_2(0)=0となり、右辺は0だが左辺は1である。
+  target: |
+    ∀ (f f1 f2 : ℝ → ℝ) (a b : ℝ), a < b → (∀ x, HasDerivAt f (f1 x) x) → (∀ x, HasDerivAt f1 (f2 x) x) → ∃ c ∈ Set.Ioo a b, f b = f a + f1 a * (b - a) + f2 c * (b - a) ^ 2 / 2
+  proof: |
+    by
+      intro f f1 f2 a b hab hf hf1
+      have hba : b - a ≠ 0 := sub_ne_zero.mpr hab.ne'
+      obtain ⟨K, hK⟩ : ∃ K : ℝ, K * (b - a) ^ 2 / 2 = f b - f a - f1 a * (b - a) :=
+        ⟨(f b - f a - f1 a * (b - a)) * 2 / (b - a) ^ 2, by field_simp⟩
+      have hg : ∀ x, HasDerivAt (fun y => f y - f a - f1 a * (y - a) - K * (y - a) ^ 2 / 2) (f1 x - f1 a - K * (x - a)) x := by
+        intro x
+        have h1 := (hf x).sub_const (f a)
+        have h2 : HasDerivAt (fun y => f1 a * (y - a)) (f1 a) x := by
+          simpa using ((hasDerivAt_id x).sub_const a).const_mul (f1 a)
+        have h3 : HasDerivAt (fun y => K * (y - a) ^ 2 / 2) (K * (x - a)) x := by
+          have h4 := (((hasDerivAt_id' x).sub_const a).pow 2).const_mul K |>.div_const 2
+          exact h4.congr_deriv (by norm_num; ring)
+        exact (h1.sub h2).sub h3
+      obtain ⟨c1, hc1, e1⟩ := exists_hasDerivAt_eq_zero hab (fun x _ => (hg x).continuousAt.continuousWithinAt) (by simp; linarith) (fun x _ => hg x)
+      have hg2 : ∀ x, HasDerivAt (fun y => f1 y - f1 a - K * (y - a)) (f2 x - K) x := by
+        intro x
+        have h1 := (hf1 x).sub_const (f1 a)
+        have h2 : HasDerivAt (fun y => K * (y - a)) K x := by
+          simpa using ((hasDerivAt_id x).sub_const a).const_mul K
+        exact h1.sub h2
+      obtain ⟨c, hc, e2⟩ := exists_hasDerivAt_eq_zero hc1.1 (fun x _ => (hg2 x).continuousAt.continuousWithinAt) (by simp; linarith) (fun x _ => hg2 x)
+      refine ⟨c, ⟨hc.1, hc.2.trans hc1.2⟩, ?_⟩
+      have hKc : f2 c = K := by linarith
+      rw [hKc]
+      linarith
+- id: add_one_le_exp
+  kind: gap
+  level: 1
+  topic: 指数関数・基本不等式
+  statement: 任意の$x\in\mathbb{R}$に対して$1+x\leq e^x$である。
+  statement_en: For every real x, 1 + x ≤ e^x.
+  assumptions:
+  - $x\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $1+x\leq e^x$である。
+  answer: |
+    $x\in\mathbb{R}$とする。$g(t)=e^t-1-t$とおくと、$g(0)=0$、$g'(t)=e^t-1$である。$x\neq0$なら、平均値の定理より$g(x)=g(x)-g(0)=(e^c-1)x$となる$c$が$0$と$x$の間に存在する。$x>0$なら$c>0$なので$e^c-1>0$、$x<0$なら$c<0$なので$e^c-1<0$であり、どちらの場合も$(e^c-1)x>0$である。$x=0$なら$g(0)=0$である。よって$g(x)\geq0$、すなわち$1+x\leq e^x$である。
+  strategy: Minimize e^x - 1 - x using the sign of its derivative.
+  sketch:
+  - 'construct: Let g(x) = e^x - 1 - x.'
+  - 'derive: g''(x) = e^x - 1 is negative for x < 0 and positive for x > 0.'
+  - 'conclude: g attains its minimum g(0) = 0, so g ≥ 0.'
+  openmath: (forall (x) (<= (+ 1 x) (exp x)))
+  hard_negative:
+    statement: 任意の実数xに対して1+x+x^2/2≤e^xである。
+    reason: x=-1で左辺は1/2だが、右辺はe^(-1)≈0.37である。この不等式が成り立つのはx≥0のときである。
+  target: |
+    ∀ x : ℝ, 1 + x ≤ Real.exp x
+  proof: |
+    by
+      intro x
+      linarith [Real.add_one_le_exp x]
+- id: log_le_sub_one
+  kind: gap
+  level: 1
+  topic: 対数関数・基本不等式
+  statement: 任意の$x>0$に対して$\log x\leq x-1$である。
+  statement_en: For every x > 0, log x ≤ x - 1.
+  assumptions:
+  - $x>0$
+  quantifiers:
+  - 任意の正の実数$x$
+  conclusion: $\log x\leq x-1$である。
+  answer: |
+    $x>0$とする。任意の$y\in\mathbb{R}$で$1+y\leq e^y$が成り立つ（$e^y-1-y$は$y=0$で最小値$0$をとる）。$y=\log x$を代入すると$1+\log x\leq e^{\log x}=x$となる。これを移項して$\log x\leq x-1$を得る。
+  strategy: Substitute y = log x into 1 + y ≤ e^y.
+  sketch:
+  - 'apply_theorem: Use 1 + y ≤ e^y for all real y.'
+  - 'derive: With y = log x this gives 1 + log x ≤ x.'
+  - 'conclude: Rearrange to log x ≤ x - 1.'
+  openmath: (forall (x) (-> (> x 0) (<= (ln x) (- x 1))))
+  hard_negative:
+    statement: 任意のx>0に対してlog x<x-1である。
+    reason: x=1では両辺とも0であり、等号が成り立つ。
+  target: |
+    ∀ x : ℝ, 0 < x → Real.log x ≤ x - 1
+  proof: |
+    by
+      intro x hx
+      exact Real.log_le_sub_one_of_pos hx
+- id: abs_sin_le_abs
+  kind: gap
+  level: 1
+  topic: 三角関数・基本不等式
+  statement: 任意の$x\in\mathbb{R}$に対して$|\sin x|\leq|x|$である。
+  statement_en: For every real x, |sin x| ≤ |x|.
+  assumptions:
+  - $x\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $|\sin x|\leq|x|$である。
+  answer: |
+    $x\in\mathbb{R}$とする。$x=0$なら両辺は$0$である。$x\neq0$なら、$\sin$に$0$と$x$を端点とする閉区間で平均値の定理を用いると、$\sin x-\sin0=x\cos c$となる$c$が$0$と$x$の間に存在する。$\sin0=0$、$|\cos c|\leq1$なので、$|\sin x|=|x||\cos c|\leq|x|$である。
+  strategy: Apply the mean value theorem to sin on the interval between 0 and x.
+  sketch:
+  - 'case_split: The case x = 0 is immediate.'
+  - 'apply_theorem: The mean value theorem gives sin x = x cos c.'
+  - 'conclude: Since |cos c| ≤ 1, |sin x| ≤ |x|.'
+  openmath: (forall (x) (<= (abs (sin x)) (abs x)))
+  hard_negative:
+    statement: 任意の実数xに対して|sin x|≥|x|/2である。
+    reason: x=πでは左辺は0だが、右辺はπ/2である。
+  target: |
+    ∀ x : ℝ, |Real.sin x| ≤ |x|
+  proof: |
+    by
+      intro x
+      simpa using Real.abs_sin_sub_sin_le x 0
+- id: cos_quadratic_lower_bound
+  kind: gap
+  level: 1
+  topic: 三角関数・基本不等式
+  statement: 任意の$x\in\mathbb{R}$に対して$1-x^2/2\leq\cos x$である。
+  statement_en: For every real x, 1 - x²/2 ≤ cos x.
+  assumptions:
+  - $x\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x\in\mathbb{R}$
+  conclusion: $1-x^2/2\leq\cos x$である。
+  answer: |
+    $x\in\mathbb{R}$とする。倍角の公式より$\cos x=1-2\sin^2(x/2)$である。不等式$|\sin y|\leq|y|$（$y\in\mathbb{R}$。$\sin$に平均値の定理を用いて得られる）を$y=x/2$に用いると、$\sin^2(x/2)\leq x^2/4$である。したがって$\cos x\geq1-2\cdot x^2/4=1-x^2/2$である。
+  strategy: Use the half-angle formula and |sin y| ≤ |y|.
+  sketch:
+  - 'translate: Write cos x = 1 - 2 sin²(x/2).'
+  - 'apply_theorem: Bound |sin(x/2)| ≤ |x/2|.'
+  - 'conclude: Hence cos x ≥ 1 - x²/2.'
+  openmath: (forall (x) (<= (- 1 (/ (^ x 2) 2)) (cos x)))
+  hard_negative:
+    statement: 任意の実数xに対してcos x≤1-x^2/2である。
+    reason: x=2で左辺はcos 2≈-0.42だが、右辺は-1である。
+  target: |
+    ∀ x : ℝ, 1 - x ^ 2 / 2 ≤ Real.cos x
+  proof: |
+    by
+      intro x
+      exact Real.one_sub_sq_div_two_le_cos
+- id: log_of_product
+  kind: gap
+  level: 1
+  topic: 対数関数・基本恒等式
+  statement: $x,y>0$ならば$\log(xy)=\log x+\log y$である。
+  statement_en: If x, y > 0, then log(xy) = log x + log y.
+  assumptions:
+  - $x>0$
+  - $y>0$
+  quantifiers:
+  - 任意の$x,y\in\mathbb{R}$
+  conclusion: $\log(xy)=\log x+\log y$である。
+  answer: |
+    $x,y>0$とする。指数法則より$e^{\log x+\log y}=e^{\log x}e^{\log y}=xy$である。一方$e^{\log(xy)}=xy$である。指数関数は単射なので、$\log(xy)=\log x+\log y$である。
+  strategy: Apply exp to both sides and use the exponential law.
+  sketch:
+  - 'derive: exp(log x + log y) = exp(log x)·exp(log y) = xy.'
+  - 'conclude: Taking log, the inverse of exp, gives the identity.'
+  openmath: (forall (x y) (-> (and (> x 0) (> y 0)) (= (ln (* x y)) (+ (ln x) (ln y)))))
+  hard_negative:
+    statement: x, y>0ならばlog(x+y)=log x+log yである。
+    reason: x=y=1では左辺はlog 2だが、右辺は0である。
+  target: |
+    ∀ x y : ℝ, 0 < x → 0 < y → Real.log (x * y) = Real.log x + Real.log y
+  proof: |
+    by
+      intro x y hx hy
+      exact Real.log_mul hx.ne' hy.ne'
+- id: sin_cos_addition
+  kind: gap
+  level: 1
+  topic: 三角関数・加法定理
+  statement: 任意の$x,y\in\mathbb{R}$に対して$\sin(x+y)=\sin x\cos y+\cos x\sin y$かつ$\cos(x+y)=\cos x\cos y-\sin x\sin y$である。
+  statement_en: For all real x, y, sin(x+y) = sin x cos y + cos x sin y and cos(x+y) = cos x cos y - sin x sin y.
+  assumptions:
+  - $x,y\in\mathbb{R}$
+  quantifiers:
+  - 任意の$x,y\in\mathbb{R}$
+  conclusion: $\sin$と$\cos$の加法定理が成り立つ。
+  answer: |
+    $x,y\in\mathbb{R}$とする。$\sin,\cos$は冪級数で定義され、項別微分によって$(\sin x)'=\cos x$、$(\cos x)'=-\sin x$、および$\sin0=0$、$\cos0=1$が得られているものとする。
+    $y$を固定し、$S(x)=\sin(x+y)-\sin x\cos y-\cos x\sin y$、$C(x)=\cos(x+y)-\cos x\cos y+\sin x\sin y$とおく。微分すると$S'=C$、$C'=-S$なので、$(S^2+C^2)'=2SC-2CS=0$である。したがって$S^2+C^2$は定数である。$S(0)=\sin y-\sin y=0$、$C(0)=\cos y-\cos y=0$より、この定数は$0$である。よって全ての$x$で$S(x)=C(x)=0$である。
+  strategy: Show that the squared error of both formulas has zero derivative and vanishes at x = 0.
+  sketch:
+  - 'setup: Define sin and cos by power series, so their derivatives are known without the addition formulas.'
+  - 'construct: Fix y and define the errors S(x) and C(x).'
+  - 'derive: S'' = C and C'' = -S, so S² + C² has zero derivative.'
+  - 'derive: S(0) = C(0) = 0, so S² + C² vanishes identically.'
+  - 'conclude: Hence S = C = 0.'
+  openmath: (forall (x y) (and (= (sin (+ x y)) (+ (* (sin x) (cos y)) (* (cos x) (sin y)))) (= (cos (+ x y)) (- (* (cos x) (cos y)) (* (sin x) (sin y))))))
+  hard_negative:
+    statement: 任意の実数x, yに対してsin(x+y)=sin x+sin yである。
+    reason: x=y=π/2では左辺は0だが、右辺は2である。
+  target: |
+    ∀ x y : ℝ, Real.sin (x + y) = Real.sin x * Real.cos y + Real.cos x * Real.sin y ∧ Real.cos (x + y) = Real.cos x * Real.cos y - Real.sin x * Real.sin y
+  proof: |
+    by
+      intro x y
+      exact ⟨Real.sin_add x y, Real.cos_add x y⟩
+- id: limit_sin_over_x
+  kind: gap
+  level: 1
+  topic: 標準的な極限・三角関数
+  statement: $x\to0$（$x\neq0$）で$\sin x/x\to1$である。
+  statement_en: sin x / x tends to 1 as x tends to 0 with x ≠ 0.
+  assumptions:
+  - $x\neq0$で考える
+  quantifiers:
+  - $0$と異なる実数$x$
+  conclusion: $x\to0$（$x\neq0$）で$\sin x/x\to1$である。
+  answer: |
+    $x$を$0$と異なる実数とする。まず$0<x<\pi/2$とする。単位円で中心角$x$の扇形の面積$x/2$は、それを含む直角三角形の面積$(\tan x)/2$以下で、それに含まれる二等辺三角形の面積$(\sin x)/2$以上である。さらに包含は真なので$\sin x<x<\tan x$である。$\sin x<x$より$\sin x/x<1$であり、$x<\sin x/\cos x$に$\cos x/x>0$を掛けて$\cos x<\sin x/x$を得る。
+    $\cos x$と$\sin x/x$はともに偶関数なので、$-\pi/2<x<0$でも$\cos x<\sin x/x<1$が成り立つ。$x\to0$で$\cos x\to1$なので、はさみうちにより$\sin x/x\to1$である。
+  strategy: Squeeze sin x / x between cos x and 1 by comparing areas on the unit circle.
+  sketch:
+  - 'derive: For 0 < x < π/2, comparing areas on the unit circle gives sin x < x < tan x.'
+  - 'derive: Dividing by sin x and inverting gives cos x < sin x / x < 1.'
+  - 'derive: Both bounds are even in x, so they also hold for -π/2 < x < 0.'
+  - 'conclude: Since cos x → 1 as x → 0, the squeeze theorem gives the limit 1.'
+  openmath: (fn_limit_at (lambda (x) (/ (sin x) x)) 0 1)
+  hard_negative:
+    statement: x→+∞でもsin x/x→1である。
+    reason: 不等式|sin x/x|≤1/xより、x→+∞での極限は0である。
+  target: |
+    Filter.Tendsto (fun x : ℝ => Real.sin x / x) (nhdsWithin 0 {0}ᶜ) (nhds 1)
+  proof: |
+    by
+      have h := hasDerivAt_iff_tendsto_slope.mp (Real.hasDerivAt_sin 0)
+      rw [Real.cos_zero] at h
+      refine h.congr fun x => ?_
+      simp [slope_def_field]
+- id: limit_one_add_div_rpow
+  kind: textbook
+  level: 1
+  topic: 標準的な極限・指数関数
+  statement: 任意の$t\in\mathbb{R}$に対し、$x\to+\infty$で$(1+t/x)^x\to e^t$である。
+  statement_en: For every real t, (1 + t/x)^x tends to e^t as x tends to +∞.
+  assumptions:
+  - $t\in\mathbb{R}$
+  quantifiers:
+  - 任意の$t\in\mathbb{R}$
+  conclusion: $x\to+\infty$で$(1+t/x)^x\to e^t$である。
+  answer: |
+    $t\in\mathbb{R}$とする。$t=0$なら$x>0$で$(1+0)^x=1=e^0$である。以下$t\neq0$とする。
+    $x>|t|$では$1+t/x>0$なので、$(1+t/x)^x=\exp(x\log(1+t/x))$である。$h=t/x$とおくと、$x\to+\infty$で$h\to0$、$h\neq0$であり、$x\log(1+t/x)=t\cdot\log(1+h)/h$である。$\log(1+h)/h$は$\log$の$1$での差分商なので、$h\to0$で$\log$の$1$での微分係数$1$に収束する。よって指数部は$t$に収束する。指数関数は連続なので、$(1+t/x)^x\to e^t$である。
+  strategy: Write the power as an exponential and reduce the exponent to the derivative of log at 1.
+  sketch:
+  - 'translate: For large x, (1+t/x)^x = exp(x log(1+t/x)).'
+  - 'derive: With h = t/x, the exponent equals t·log(1+h)/h.'
+  - 'apply_theorem: log(1+h)/h → 1 as h → 0 because log has derivative 1 at 1.'
+  - 'conclude: Continuity of exp gives the limit e^t.'
+  openmath: (forall (t) (fn_limit_at_top (lambda (x) (^ (+ 1 (/ t x)) x)) (exp t)))
+  hard_negative:
+    statement: x→+∞で(1+t/x)^(x^2)→e^tである。
+    reason: t=1では指数部がx^2 log(1+1/x)となり、これはおよそxなので発散する。
+  target: |
+    ∀ t : ℝ, Filter.Tendsto (fun x : ℝ => (1 + t / x) ^ x) Filter.atTop (nhds (Real.exp t))
+  proof: |
+    by
+      intro t
+      exact Real.tendsto_one_add_div_rpow_exp t
+- id: limit_x_log_x_at_zero
+  kind: gap
+  level: 1
+  topic: 標準的な極限・対数関数
+  statement: $x\to+0$で$x\log x\to0$である。
+  statement_en: x log x tends to 0 as x tends to 0 from the right.
+  assumptions:
+  - $x>0$で考える
+  quantifiers:
+  - 正の実数$x$
+  conclusion: $x\to+0$で$x\log x\to0$である。
+  answer: |
+    $x>0$とし、$y=-\log x$とおく。$x=e^{-y}$であり、$x\to+0$のとき$y\to+\infty$である。また$x\log x=-ye^{-y}$である。
+    $y>0$では指数級数の項がすべて正なので$e^y\geq y^2/2$であり、$0\leq ye^{-y}\leq2/y$である。$y\to+\infty$で$2/y\to0$なので、はさみうちにより$ye^{-y}\to0$である。よって$x\log x\to0$である。
+  strategy: Substitute y = -log x and use that the exponential dominates y.
+  sketch:
+  - 'translate: With y = -log x, x log x = -y e^(-y) and y → +∞.'
+  - 'derive: e^y ≥ y²/2 for y ≥ 0, so 0 ≤ y e^(-y) ≤ 2/y.'
+  - 'conclude: The squeeze theorem gives the limit 0.'
+  openmath: (fn_right_limit_at (lambda (x) (* x (ln x))) 0 0)
+  hard_negative:
+    statement: x→0+でlog x/x→0である。
+    reason: x→0+でlog x→-∞かつ1/x→+∞なので、log x/x→-∞である。
+  target: |
+    Filter.Tendsto (fun x : ℝ => x * Real.log x) (nhdsWithin 0 (Set.Ioi 0)) (nhds 0)
+  proof: |
+    by
+      have h := tendsto_log_mul_rpow_nhdsGT_zero (r := 1) zero_lt_one
+      refine h.congr fun x => ?_
+      rw [Real.rpow_one, mul_comm]
+- id: fundamental_theorem_first
+  kind: named
+  level: 1
+  topic: 微分積分学の基本定理
+  statement: 微分積分学の基本定理（第1形）。$f:\mathbb{R}\to\mathbb{R}$が連続ならば、任意の$a,b\in\mathbb{R}$について$F(x)=\int_a^xf(t)\,dt$は$b$で微分可能で、$F'(b)=f(b)$である。
+  statement_en: Fundamental theorem of calculus, first form. If f is continuous on the reals, then F(x) = ∫_a^x f(t) dt has derivative f(b) at b.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は連続
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $F(x)=\int_a^xf(t)\,dt$の$b$での微分係数は$f(b)$である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を連続とし、$a,b\in\mathbb{R}$、$F(x)=\int_a^xf(t)\,dt$とする。積分は向きつきで、$x<a$では$\int_a^x=-\int_x^a$である。
+    $h\neq0$に対し、$F(b+h)-F(b)=\int_b^{b+h}f(t)\,dt$かつ$f(b)=\frac1h\int_b^{b+h}f(b)\,dt$なので
+    $\dfrac{F(b+h)-F(b)}{h}-f(b)=\dfrac1h\int_b^{b+h}(f(t)-f(b))\,dt$
+    である。$\varepsilon>0$に対し、$f$の$b$での連続性より、$|t-b|<\delta$ならば$|f(t)-f(b)|<\varepsilon$となる$\delta>0$がとれる。$0<|h|<\delta$なら、$b$と$b+h$の間の$t$は$|t-b|<\delta$を満たすので、右辺の絶対値は$\frac{1}{|h|}\cdot|h|\varepsilon=\varepsilon$以下である。よって差分商は$f(b)$に収束する。
+  strategy: Express the difference quotient minus f(b) as an average of f(t) - f(b) and use continuity at b.
+  sketch:
+  - 'derive: Additivity gives F(b+h)-F(b) = ∫_b^(b+h) f(t) dt.'
+  - 'derive: Subtracting f(b) writes the error as (1/h)∫_b^(b+h)(f(t)-f(b)) dt.'
+  - 'apply_theorem: Continuity at b bounds the integrand by ε for small h.'
+  - 'conclude: The difference quotient tends to f(b).'
+  openmath: (forall (f a b) (-> (fn_continuous (lambda (x) (fn_value f x))) (has_deriv_at (lambda (x) (interval_integral a x (lambda (t) (fn_value f t)))) (fn_value f b) b)))
+  hard_negative:
+    statement: fが積分可能なだけで、全ての点でF'(b)=f(b)である。
+    reason: x≠0でf(x)=0, f(0)=1とするとF=0なので、F'(0)=0≠f(0)である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), Continuous f → HasDerivAt (fun x => ∫ t in a..x, f t) (f b) b
+  proof: |
+    by
+      intro f a b hf
+      exact intervalIntegral.integral_hasDerivAt_right (hf.intervalIntegrable _ _) (hf.stronglyMeasurableAtFilter _ _) hf.continuousAt
+- id: fundamental_theorem_second
+  kind: named
+  level: 1
+  topic: 微分積分学の基本定理
+  statement: 微分積分学の基本定理（第2形）。$a$と$b$を端点とする閉区間の各点$x$で$F:\mathbb{R}\to\mathbb{R}$の微分係数が$f(x)$であり、$f$がその閉区間で連続ならば、$\int_a^bf(x)\,dx=F(b)-F(a)$である。
+  statement_en: Fundamental theorem of calculus, second form. If F has derivative f at each point of the closed interval between a and b and f is continuous there, then ∫_a^b f(x) dx = F(b) - F(a).
+  assumptions:
+  - $a$と$b$を端点とする閉区間の各点$x$で$F$の微分係数は$f(x)$
+  - $f$はその閉区間で連続
+  quantifiers:
+  - 任意の$F,f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $\int_a^bf(x)\,dx=F(b)-F(a)$である。
+  answer: |
+    $F,f:\mathbb{R}\to\mathbb{R}$、$a,b\in\mathbb{R}$とする。$a$と$b$を端点とする閉区間の各点$x$で$F$の微分係数が$f(x)$であり、$f$はその閉区間で連続であるとする。$a=b$なら両辺は$0$である。$a>b$の場合は、$a<b$の場合の結論を$a,b$を入れ替えて用いると$\int_a^bf=-\int_b^af=-(F(a)-F(b))=F(b)-F(a)$となる。以下$a<b$とする。
+    $x\in[a,b]$に対し$G(x)=\int_a^xf(t)\,dt$とおく。$M=\max_{[a,b]}|f|$とすると$|G(x)-G(y)|\leq M|x-y|$なので、$G$は$[a,b]$で連続である。
+    $x\in(a,b)$で$G'(x)=f(x)$を示す。$\varepsilon>0$に対し、$f$の$x$での連続性より、$(x-\delta,x+\delta)\subset[a,b]$かつ$|t-x|<\delta$で$|f(t)-f(x)|<\varepsilon$となる$\delta>0$がとれる。$0<|h|<\delta$なら
+    $\left|\dfrac{G(x+h)-G(x)}{h}-f(x)\right|=\left|\dfrac1h\int_x^{x+h}(f(t)-f(x))\,dt\right|\leq\varepsilon$
+    である。
+    $F-G$は$[a,b]$で連続、$(a,b)$で導関数が$0$なので、平均値の定理より$[a,b]$で定数である。よって$F(b)-G(b)=F(a)-G(a)=F(a)$であり、$\int_a^bf(x)\,dx=G(b)=F(b)-F(a)$である。
+  strategy: Compare F with the indefinite integral; their difference has zero derivative.
+  sketch:
+  - 'construct: Let G(x) = ∫_a^x f(t) dt.'
+  - 'apply_theorem: The argument of the first form gives G'' = f at interior points, and G is continuous on the interval.'
+  - 'derive: F - G has zero derivative at interior points, hence is constant on the interval.'
+  - 'conclude: F(b) - F(a) = G(b) - G(a) = ∫_a^b f(x) dx.'
+  openmath: (forall (F f a b) (-> (and (forall (x) (-> (in x (closed_interval_between a b)) (has_deriv_at (lambda (t) (fn_value F t)) (fn_value f x) x))) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval_between a b))) (= (interval_integral a b (lambda (x) (fn_value f x))) (- (fn_value F b) (fn_value F a)))))
+  hard_negative:
+    statement: Fが1点を除いて微分可能でF'=fならば、∫_a^b f(x)dx=F(b)-F(a)である。
+    reason: x<0でF=0、x≥0でF=1とすると、[-1,1]の0以外でF'=0だが、F(1)-F(-1)=1である。
+  target: |
+    ∀ (F f : ℝ → ℝ) (a b : ℝ), (∀ x ∈ Set.uIcc a b, HasDerivAt F (f x) x) → ContinuousOn f (Set.uIcc a b) → ∫ x in a..b, f x = F b - F a
+  proof: |
+    by
+      intro F f a b hd hc
+      exact intervalIntegral.integral_eq_sub_of_hasDerivAt hd hc.intervalIntegrable
+- id: integral_monotone
+  kind: gap
+  level: 1
+  topic: 定積分・不等式
+  statement: $a\leq b$で、$f,g:\mathbb{R}\to\mathbb{R}$が$[a,b]$でルベーグ積分可能かつ$[a,b]$で$f\leq g$ならば、$\int_a^bf\leq\int_a^bg$である。
+  statement_en: If a ≤ b, f and g are integrable on [a,b], and f ≤ g on [a,b], then ∫_a^b f ≤ ∫_a^b g.
+  assumptions:
+  - $a\leq b$
+  - $f,g$は$[a,b]$でルベーグ積分可能
+  - $x\in[a,b]$で$f(x)\leq g(x)$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $\int_a^bf(x)\,dx\leq\int_a^bg(x)\,dx$である。
+  answer: |
+    $a\leq b$とし、$f,g:\mathbb{R}\to\mathbb{R}$は$[a,b]$でルベーグ積分可能で、$x\in[a,b]$で$f(x)\leq g(x)$であるとする。$g-f$は$[a,b]$で積分可能かつ非負である。非負の関数の積分は非負なので、$\int_a^b(g-f)\geq0$である。積分の線形性より$\int_a^bg-\int_a^bf\geq0$である。
+  strategy: Reduce to nonnegativity of the integral of g - f.
+  sketch:
+  - 'derive: g - f is nonnegative and integrable on [a,b].'
+  - 'apply_theorem: The integral of a nonnegative function is nonnegative.'
+  - 'conclude: Linearity gives ∫f ≤ ∫g.'
+  openmath: (forall (f g a b) (-> (and (<= a b) (interval_integrable (lambda (x) (fn_value f x)) a b) (interval_integrable (lambda (x) (fn_value g x)) a b) (forall (x) (-> (in x (closed_interval a b)) (<= (fn_value f x) (fn_value g x))))) (<= (interval_integral a b (lambda (x) (fn_value f x))) (interval_integral a b (lambda (x) (fn_value g x))))))
+  hard_negative:
+    statement: ∫_a^b f≤∫_a^b gならば、[a,b]の全ての点でf≤gである。
+    reason: 区間[-1,1]でf(x)=x, g(x)=0とすると積分はともに0だが、x=1でf>gである。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), a ≤ b → IntervalIntegrable f MeasureTheory.volume a b → IntervalIntegrable g MeasureTheory.volume a b → (∀ x ∈ Set.Icc a b, f x ≤ g x) → (∫ x in a..b, f x) ≤ ∫ x in a..b, g x
+  proof: |
+    by
+      intro f g a b hab hf hg h
+      exact intervalIntegral.integral_mono_on hab hf hg h
+- id: integral_two_sided_bound
+  kind: gap
+  level: 1
+  topic: 定積分・不等式
+  statement: $a\leq b$で、$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続かつ$[a,b]$で$m\leq f\leq M$ならば、$m(b-a)\leq\int_a^bf\leq M(b-a)$である。
+  statement_en: If a ≤ b, f is continuous on [a,b], and m ≤ f ≤ M on [a,b], then m(b-a) ≤ ∫_a^b f ≤ M(b-a).
+  assumptions:
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  - $x\in[a,b]$で$m\leq f(x)\leq M$
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b,m,M\in\mathbb{R}$
+  conclusion: $m(b-a)\leq\int_a^bf(x)\,dx\leq M(b-a)$である。
+  answer: |
+    $a\leq b$、$m,M\in\mathbb{R}$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続で、$x\in[a,b]$で$m\leq f(x)\leq M$であるとする。連続関数$f$は$[a,b]$で積分可能である。定数関数$m,M$と$f$に積分の単調性（$[a,b]$上で$\varphi\leq\psi$なら$\int_a^b\varphi\leq\int_a^b\psi$）を用いると、$\int_a^bm\,dx\leq\int_a^bf\,dx\leq\int_a^bM\,dx$である。定数の積分はそれぞれ$m(b-a)$、$M(b-a)$である。
+  strategy: Compare f with the constant functions m and M.
+  sketch:
+  - 'derive: f is integrable because it is continuous on [a,b].'
+  - 'apply_theorem: Monotonicity of the integral gives ∫m ≤ ∫f ≤ ∫M.'
+  - 'conclude: The constant integrals equal m(b-a) and M(b-a).'
+  openmath: (forall (f a b m M) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b)) (forall (x) (-> (in x (closed_interval a b)) (and (<= m (fn_value f x)) (<= (fn_value f x) M))))) (and (<= (* m (- b a)) (interval_integral a b (lambda (x) (fn_value f x)))) (<= (interval_integral a b (lambda (x) (fn_value f x))) (* M (- b a))))))
+  hard_negative:
+    statement: b<aでもm(b-a)≤∫_a^b f≤M(b-a)である。
+    reason: a=1, b=0, f=1, m=0, M=2とすると、∫_a^b f=-1だが、m(b-a)=0である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b m M : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → (∀ x ∈ Set.Icc a b, m ≤ f x ∧ f x ≤ M) → m * (b - a) ≤ ∫ x in a..b, f x ∧ (∫ x in a..b, f x) ≤ M * (b - a)
+  proof: |
+    by
+      intro f a b m M hab hf h
+      have hI : IntervalIntegrable f MeasureTheory.volume a b := hf.intervalIntegrable_of_Icc hab
+      have hm : IntervalIntegrable (fun _ : ℝ => m) MeasureTheory.volume a b := intervalIntegrable_const
+      have hM : IntervalIntegrable (fun _ : ℝ => M) MeasureTheory.volume a b := intervalIntegrable_const
+      constructor
+      · have h1 := intervalIntegral.integral_mono_on hab hm hI (fun x hx => (h x hx).1)
+        rw [intervalIntegral.integral_const, smul_eq_mul, mul_comm] at h1
+        exact h1
+      · have h1 := intervalIntegral.integral_mono_on hab hI hM (fun x hx => (h x hx).2)
+        rw [intervalIntegral.integral_const, smul_eq_mul, mul_comm (b - a)] at h1
+        exact h1
+- id: integral_logarithmic_derivative
+  kind: gap
+  level: 1
+  topic: 定積分・対数微分型の積分
+  statement: $a$と$b$を端点とする閉区間の各点$x$で$f:\mathbb{R}\to\mathbb{R}$の微分係数が$g(x)$、$g$がその閉区間で連続、その閉区間で$f>0$ならば、$\int_a^bg(x)/f(x)\,dx=\log f(b)-\log f(a)$である。
+  statement_en: If f is positive and differentiable with continuous derivative g on the closed interval between a and b, then ∫_a^b g(x)/f(x) dx = log f(b) - log f(a).
+  assumptions:
+  - $a$と$b$を端点とする閉区間の各点$x$で$f$の微分係数は$g(x)$
+  - $g$はその閉区間で連続
+  - その閉区間で$f(x)>0$
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  conclusion: $\int_a^b\frac{g(x)}{f(x)}\,dx=\log f(b)-\log f(a)$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a,b\in\mathbb{R}$とする。$a$と$b$を端点とする閉区間$I$の各点$x$で$f$の微分係数が$g(x)$であり、$g$は$I$で連続、$I$で$f>0$であるとする。
+    合成関数の微分より、$x\in I$で$\log f$の微分係数は$g(x)/f(x)$である。$f$は$I$の各点で微分可能なので連続で、正なので、$g/f$は$I$で連続である。微分積分学の基本定理（$I$の各点で$F$の微分係数が連続関数$\varphi$に等しければ$\int_a^b\varphi=F(b)-F(a)$）を$F=\log f$に用いると、結論を得る。
+  strategy: Recognize g/f as the derivative of log f and apply the fundamental theorem.
+  sketch:
+  - 'apply_theorem: The chain rule gives (log f)'' = g/f on the interval.'
+  - 'derive: g/f is continuous because f is continuous and positive.'
+  - 'apply_theorem: The fundamental theorem of calculus applies.'
+  - 'conclude: The integral equals log f(b) - log f(a).'
+  openmath: (forall (f g a b) (-> (and (forall (x) (-> (in x (closed_interval_between a b)) (and (has_deriv_at (lambda (t) (fn_value f t)) (fn_value g x) x) (> (fn_value f x) 0)))) (fn_continuous_on (lambda (x) (fn_value g x)) (closed_interval_between a b))) (= (interval_integral a b (lambda (x) (/ (fn_value g x) (fn_value f x)))) (- (ln (fn_value f b)) (ln (fn_value f a))))))
+  hard_negative:
+    statement: $f$が閉区間内で$0$になっても同じ公式が成り立つ。
+    reason: $f(x)=x$、$g(x)=1$、区間$[0,2]$では、$1/x$は$0$の近くで積分可能でなく、$\log f(0)$も定義されない。分母が$0$になる点では公式は意味をもたない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a b : ℝ), (∀ x ∈ Set.uIcc a b, HasDerivAt f (g x) x) → ContinuousOn g (Set.uIcc a b) → (∀ x ∈ Set.uIcc a b, 0 < f x) → ∫ x in a..b, g x / f x = Real.log (f b) - Real.log (f a)
+  proof: |
+    by
+      intro f g a b hd hg hp
+      have hcf : ContinuousOn f (Set.uIcc a b) := fun x hx => (hd x hx).continuousAt.continuousWithinAt
+      exact intervalIntegral.integral_eq_sub_of_hasDerivAt (f := fun x => Real.log (f x)) (fun x hx => (hd x hx).log (hp x hx).ne') (ContinuousOn.intervalIntegrable (hg.div hcf fun x hx => (hp x hx).ne'))
+- id: improper_integral_exp_neg
+  kind: textbook
+  level: 1
+  topic: 広義積分・指数関数
+  statement: $e^{-x}$は$(0,\infty)$でルベーグ積分可能で、$\int_{(0,\infty)}e^{-x}\,dx=1$であり、$t\to+\infty$で$\int_0^te^{-x}\,dx\to1$である。
+  statement_en: e^(-x) is integrable on (0,∞), ∫_0^∞ e^(-x) dx = 1, and ∫_0^t e^(-x) dx tends to 1 as t tends to +∞.
+  assumptions:
+  - 積分区間は$(0,\infty)$
+  quantifiers:
+  - $t\to+\infty$
+  conclusion: $e^{-x}$は$(0,\infty)$で積分可能で積分の値は$1$であり、$t\to+\infty$で$\int_0^te^{-x}\,dx\to1$である。
+  answer: |
+    変数$x,t$は実数で、関数$e^{-x}$を$(0,\infty)$上で考える。$t>0$に対し、微分積分学の基本定理より$\int_0^te^{-x}\,dx=[-e^{-x}]_0^t=1-e^{-t}$である。$t\to+\infty$で$e^{-t}\to0$なので、この積分は$1$に収束する。これは最後の主張である。
+    被積分関数は正なので、$t$が$+\infty$へ増大するとき$\chi_{(0,t)}(x)e^{-x}$は$e^{-x}$へ単調に増大する。ここで$\chi_{(0,t)}$は$(0,t)$の定義関数である。単調収束定理より$\int_{(0,\infty)}e^{-x}\,dx=\lim_{t\to\infty}\int_0^te^{-x}\,dx=1<\infty$である。よって$e^{-x}$は$(0,\infty)$で積分可能で、積分の値は$1$である。
+  strategy: Compute the proper integral on [0,t] and let t tend to infinity.
+  sketch:
+  - 'apply_theorem: The fundamental theorem gives ∫_0^t e^(-x) dx = 1 - e^(-t).'
+  - 'derive: e^(-t) → 0 as t → +∞.'
+  - 'derive: Positivity of the integrand turns convergence into integrability.'
+  - 'conclude: The improper integral equals 1.'
+  openmath: (and (integrable_on_ioi (lambda (x) (exp (neg x))) 0) (= (integral_ioi 0 (lambda (x) (exp (neg x)))) 1) (fn_limit_at_top (lambda (t) (interval_integral 0 t (lambda (x) (exp (neg x))))) 1))
+  hard_negative:
+    statement: e^xも(0,∞)で積分可能で、∫_0^∞ e^x dx=-1である。
+    reason: ∫_0^t e^x dx=e^t-1はt→+∞で発散する。
+  target: |
+    MeasureTheory.IntegrableOn (fun x : ℝ => Real.exp (-x)) (Set.Ioi 0) ∧ (∫ x in Set.Ioi (0 : ℝ), Real.exp (-x)) = 1 ∧ Filter.Tendsto (fun t : ℝ => ∫ x in (0 : ℝ)..t, Real.exp (-x)) Filter.atTop (nhds 1)
+  proof: |
+    by
+      refine ⟨integrableOn_exp_neg_Ioi 0, integral_exp_neg_Ioi_zero, ?_⟩
+      have h := MeasureTheory.intervalIntegral_tendsto_integral_Ioi 0 (integrableOn_exp_neg_Ioi 0) Filter.tendsto_id
+      rwa [integral_exp_neg_Ioi_zero] at h
+- id: improper_integral_power_at_infinity
+  kind: textbook
+  level: 1
+  topic: 広義積分・べき関数（無限区間）
+  statement: $p>1$ならば$x^{-p}$は$(1,\infty)$でルベーグ積分可能で、$\int_{(1,\infty)}x^{-p}\,dx=1/(p-1)$である。
+  statement_en: If p > 1, then x^(-p) is integrable on (1,∞) and ∫_1^∞ x^(-p) dx = 1/(p-1).
+  assumptions:
+  - $p>1$
+  quantifiers:
+  - 任意の$p\in\mathbb{R}$
+  conclusion: $x^{-p}$は$(1,\infty)$で積分可能で、積分の値は$1/(p-1)$である。
+  answer: |
+    $p>1$とする。$t>1$に対し、微分積分学の基本定理より$\int_1^tx^{-p}\,dx=\left[\dfrac{x^{1-p}}{1-p}\right]_1^t=\dfrac{1-t^{1-p}}{p-1}$である。$1-p<0$より$t\to+\infty$で$t^{1-p}\to0$なので、この積分は$1/(p-1)$に収束する。
+    被積分関数は正なので、単調収束定理より$\int_{(1,\infty)}x^{-p}\,dx=\lim_{t\to\infty}\int_1^tx^{-p}\,dx=1/(p-1)<\infty$である。よって$x^{-p}$は$(1,\infty)$で積分可能で、積分の値は$1/(p-1)$である。
+  strategy: Integrate on [1,t] with the power rule and let t tend to infinity.
+  sketch:
+  - 'apply_theorem: The fundamental theorem gives ∫_1^t x^(-p) dx = (1 - t^(1-p))/(p-1).'
+  - 'derive: Since p > 1, t^(1-p) → 0.'
+  - 'derive: Positivity of the integrand gives integrability.'
+  - 'conclude: The value is 1/(p-1).'
+  openmath: (forall (p) (-> (> p 1) (and (integrable_on_ioi (lambda (x) (^ x (neg p))) 1) (= (integral_ioi 1 (lambda (x) (^ x (neg p)))) (/ 1 (- p 1))))))
+  hard_negative:
+    statement: p=1でもx^(-p)は(1,∞)で積分可能である。
+    reason: ∫_1^t x^(-1)dx=log tはt→+∞で発散する。
+  target: |
+    ∀ p : ℝ, 1 < p → MeasureTheory.IntegrableOn (fun x : ℝ => x ^ (-p)) (Set.Ioi 1) ∧ (∫ x in Set.Ioi (1 : ℝ), x ^ (-p)) = 1 / (p - 1)
+  proof: |
+    by
+      intro p hp
+      have h : -p < -1 := by linarith
+      refine ⟨integrableOn_Ioi_rpow_of_lt h one_pos, ?_⟩
+      rw [integral_Ioi_rpow_of_lt h one_pos, Real.one_rpow]
+      have h1 : p - 1 ≠ 0 := by linarith
+      have h2 : -p + 1 ≠ 0 := by linarith
+      field_simp
+      ring
+- id: improper_integral_power_at_zero
+  kind: textbook
+  level: 1
+  topic: 広義積分・べき関数（端点の特異性）
+  statement: $p<1$ならば$x^{-p}$は区間$(0,1]$でルベーグ積分可能で、$\int_0^1x^{-p}\,dx=1/(1-p)$である。
+  statement_en: If p < 1, then x^(-p) is integrable on (0,1] and ∫_0^1 x^(-p) dx = 1/(1-p).
+  assumptions:
+  - $p<1$
+  quantifiers:
+  - 任意の$p\in\mathbb{R}$
+  conclusion: $x^{-p}$は$(0,1]$で積分可能で、積分の値は$1/(1-p)$である。
+  answer: |
+    $p<1$とする。$0<s<1$に対し、微分積分学の基本定理より$\int_s^1x^{-p}\,dx=\left[\dfrac{x^{1-p}}{1-p}\right]_s^1=\dfrac{1-s^{1-p}}{1-p}$である。$1-p>0$より$s\to+0$で$s^{1-p}\to0$なので、この積分は$1/(1-p)$に収束する。
+    被積分関数は$(0,1]$で正なので、単調収束定理より$\int_{(0,1]}x^{-p}\,dx=\lim_{s\to+0}\int_s^1x^{-p}\,dx=1/(1-p)<\infty$である。よって$x^{-p}$は$(0,1]$で積分可能で、積分の値は$1/(1-p)$である。
+  strategy: Integrate on [s,1] and let s tend to 0 from the right.
+  sketch:
+  - 'apply_theorem: The fundamental theorem gives ∫_s^1 x^(-p) dx = (1 - s^(1-p))/(1-p).'
+  - 'derive: Since p < 1, s^(1-p) → 0 as s → 0+.'
+  - 'derive: Positivity of the integrand gives integrability.'
+  - 'conclude: The value is 1/(1-p).'
+  openmath: (forall (p) (-> (< p 1) (and (interval_integrable (lambda (x) (^ x (neg p))) 0 1) (= (interval_integral 0 1 (lambda (x) (^ x (neg p)))) (/ 1 (- 1 p))))))
+  hard_negative:
+    statement: p>1でも∫_0^1 x^(-p)dx=1/(1-p)である。
+    reason: p=2では∫_s^1 x^(-2)dx=1/s-1がs→0+で発散する。公式の値-1は負で、正の関数の積分として不合理である。
+  target: |
+    ∀ p : ℝ, p < 1 → IntervalIntegrable (fun x : ℝ => x ^ (-p)) MeasureTheory.volume 0 1 ∧ (∫ x in (0 : ℝ)..1, x ^ (-p)) = 1 / (1 - p)
+  proof: |
+    by
+      intro p hp
+      have h : -1 < -p := by linarith
+      refine ⟨intervalIntegral.intervalIntegrable_rpow' h, ?_⟩
+      rw [integral_rpow (Or.inl h), Real.one_rpow, Real.zero_rpow (by linarith)]
+      have h1 : 1 - p ≠ 0 := by linarith
+      have h2 : -p + 1 ≠ 0 := by linarith
+      field_simp
+      ring
+- id: improper_power_diverges_at_infinity
+  kind: gap
+  level: 1
+  topic: 広義積分・発散
+  statement: $p\leq1$ならば$x^{-p}$は$(1,\infty)$でルベーグ積分可能でない。
+  statement_en: If p ≤ 1, then x^(-p) is not integrable on (1,∞).
+  assumptions:
+  - $p\leq1$
+  quantifiers:
+  - 任意の$p\in\mathbb{R}$
+  conclusion: $x^{-p}$は$(1,\infty)$で積分可能でない。
+  answer: |
+    $p\leq1$とする。$x\geq1$と$-p\geq-1$より$x^{-p}\geq x^{-1}>0$である。$x^{-p}$が$(1,\infty)$で積分可能であると仮定し、積分の値を$A<\infty$とする。被積分関数は正なので、任意の$t>1$で
+    $A\geq\int_1^tx^{-p}\,dx\geq\int_1^tx^{-1}\,dx=\log t$
+    である。$t\to+\infty$で$\log t\to+\infty$なので矛盾する。よって$x^{-p}$は$(1,\infty)$で積分可能でない。
+  strategy: Compare with 1/x, whose integral is log t.
+  sketch:
+  - 'derive: For x ≥ 1 and p ≤ 1, x^(-p) ≥ x^(-1).'
+  - 'derive: Therefore ∫_1^t x^(-p) dx ≥ log t.'
+  - 'conclude: Since log t → +∞, the positive integrand is not integrable.'
+  openmath: (forall (p) (-> (<= p 1) (not (integrable_on_ioi (lambda (x) (^ x (neg p))) 1))))
+  hard_negative:
+    statement: p≤2ならばx^(-p)は(1,∞)で積分可能でない。
+    reason: p=2では∫_1^∞ x^(-2)dx=1であり、積分可能である。
+  target: |
+    ∀ p : ℝ, p ≤ 1 → ¬ MeasureTheory.IntegrableOn (fun x : ℝ => x ^ (-p)) (Set.Ioi 1)
+  proof: |
+    by
+      intro p hp h
+      have h1 := (integrableOn_Ioi_rpow_iff zero_lt_one).mp h
+      linarith
+- id: improper_comparison_test
+  kind: gap
+  level: 1
+  topic: 広義積分・比較判定法
+  statement: $f,g:\mathbb{R}\to\mathbb{R}$について、$f$が$(a,\infty)$で連続で、$(a,\infty)$で$|f|\leq g$かつ$g$が$(a,\infty)$でルベーグ積分可能ならば、$f$も$(a,\infty)$で積分可能である。
+  statement_en: If f is continuous on (a,∞), |f| ≤ g there, and g is integrable on (a,∞), then f is integrable on (a,∞).
+  assumptions:
+  - $f$は$(a,\infty)$で連続
+  - $x>a$で$|f(x)|\leq g(x)$
+  - $g$は$(a,\infty)$で積分可能
+  quantifiers:
+  - 任意の$f,g:\mathbb{R}\to\mathbb{R}$と$a\in\mathbb{R}$
+  conclusion: $f$は$(a,\infty)$で積分可能である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$、$a\in\mathbb{R}$とする。$f$は$(a,\infty)$で連続で、$x>a$で$|f(x)|\leq g(x)$であり、$g$は$(a,\infty)$で積分可能であるとする。$f$は連続なので$(a,\infty)$で可測である。また$\int_{(a,\infty)}|f|\leq\int_{(a,\infty)}g<\infty$である。可測で絶対値の積分が有限な関数はルベーグ積分可能なので、$f$は$(a,\infty)$で積分可能である。
+  strategy: Dominate |f| by the integrable function g.
+  sketch:
+  - 'derive: Continuity of f gives measurability on (a,∞).'
+  - 'derive: The bound |f| ≤ g gives a finite integral of |f|.'
+  - 'conclude: Thus f is integrable on (a,∞).'
+  openmath: (forall (f g a) (-> (and (fn_continuous_on (lambda (x) (fn_value f x)) (open_half_line_right a)) (forall (x) (-> (> x a) (<= (abs (fn_value f x)) (fn_value g x)))) (integrable_on_ioi (lambda (x) (fn_value g x)) a)) (integrable_on_ioi (lambda (x) (fn_value f x)) a)))
+  hard_negative:
+    statement: 不等式|f|≤gが成り立ちfが積分可能ならば、gも積分可能である。
+    reason: f=0, g=1は(a,∞)で|f|≤gを満たし、fは積分可能だが、gは積分可能でない。
+  target: |
+    ∀ (f g : ℝ → ℝ) (a : ℝ), ContinuousOn f (Set.Ioi a) → (∀ x ∈ Set.Ioi a, |f x| ≤ g x) → MeasureTheory.IntegrableOn g (Set.Ioi a) → MeasureTheory.IntegrableOn f (Set.Ioi a)
+  proof: |
+    by
+      intro f g a hf h hg
+      refine MeasureTheory.Integrable.mono' hg (hf.aestronglyMeasurable measurableSet_Ioi) ?_
+      exact MeasureTheory.ae_restrict_of_forall_mem measurableSet_Ioi fun x hx => by simpa only [Real.norm_eq_abs] using h x hx
+- id: riemann_sum_convergence
+  kind: textbook
+  level: 1
+  topic: 定積分・リーマン和
+  statement: $a\leq b$で$f:\mathbb{R}\to\mathbb{R}$が$[a,b]$で連続ならば、$[a,b]$を$n+1$等分した左端点のリーマン和は$n\to\infty$で$\int_a^bf(x)\,dx$に収束する。すなわち$h=(b-a)/(n+1)$として$h\sum_{k=0}^nf(a+kh)\to\int_a^bf(x)\,dx$である。
+  statement_en: If a ≤ b and f is continuous on [a,b], the left-endpoint Riemann sums for the partition of [a,b] into n+1 equal parts converge to ∫_a^b f(x) dx as n → ∞.
+  assumptions:
+  - $a\leq b$
+  - $f$は$[a,b]$で連続
+  quantifiers:
+  - 任意の$f:\mathbb{R}\to\mathbb{R}$と$a,b\in\mathbb{R}$
+  - $n\in\mathbb{N}$に対し$h=(b-a)/(n+1)$とする
+  conclusion: $n\to\infty$で$h\sum_{k=0}^nf(a+kh)\to\int_a^bf(x)\,dx$である。
+  answer: |
+    $a\leq b$とし、$f:\mathbb{R}\to\mathbb{R}$は$[a,b]$で連続とする。$n\in\mathbb{N}$に対し$h=(b-a)/(n+1)$、$x_k=a+kh$（$0\leq k\leq n+1$）とおく。$x_0=a$、$x_{n+1}=b$である。
+    $\varepsilon>0$をとる。ハイネ・カントールの定理（閉区間上の連続関数は一様連続である）より$\delta>0$が存在して、$s,t\in[a,b]$、$|s-t|<\delta$ならば$|f(s)-f(t)|<\varepsilon/(b-a+1)$となる。$h<\delta$となる十分大きな$n$をとる。$t\in[x_k,x_{k+1}]$では$|t-x_k|\leq h<\delta$なので
+    $\left|hf(x_k)-\int_{x_k}^{x_{k+1}}f(t)\,dt\right|=\left|\int_{x_k}^{x_{k+1}}(f(x_k)-f(t))\,dt\right|\leq\dfrac{\varepsilon h}{b-a+1}$
+    である。$k=0,\dots,n$で和をとり、$(n+1)h=b-a$を用いると
+    $\left|h\sum_{k=0}^nf(x_k)-\int_a^bf(t)\,dt\right|\leq\dfrac{\varepsilon(b-a)}{b-a+1}<\varepsilon$
+    を得る。これは$h<\delta$となる全ての$n$で成り立つので、リーマン和は積分に収束する。
+  strategy: Use uniform continuity to bound the error on each subinterval and sum the bounds.
+  sketch:
+  - 'apply_theorem: f is uniformly continuous on [a,b].'
+  - 'setup: Fix ε > 0, take the matching δ, and choose n with h = (b-a)/(n+1) < δ.'
+  - 'derive: Split the integral into n+1 subintervals by additivity.'
+  - 'derive: On each subinterval, |h f(x_k) - ∫ f| ≤ εh/(b-a+1).'
+  - 'conclude: Summing gives a total error below ε.'
+  openmath: (forall (f a b) (-> (and (<= a b) (fn_continuous_on (lambda (x) (fn_value f x)) (closed_interval a b))) (seq_limit_of (lambda (n) (* (/ (- b a) (+ n 1)) (sum (natural_range (+ n 1)) (lambda (k) (fn_value f (+ a (* k (/ (- b a) (+ n 1))))))))) (interval_integral a b (lambda (x) (fn_value f x))))))
+  hard_negative:
+    statement: $f$が$[a,b]$で有界であれば、等分の左端点リーマン和は常に積分に収束する。
+    reason: $[0,1]$上のディリクレ関数（有理数で$1$、無理数で$0$）は有界である。分点$k/(n+1)$は全て有理数なので左端点リーマン和は常に$1$だが、積分は$0$である。連続性（または積分可能性）が必要である。
+  target: |
+    ∀ (f : ℝ → ℝ) (a b : ℝ), a ≤ b → ContinuousOn f (Set.Icc a b) → Filter.Tendsto (fun n : ℕ => (b - a) / ((n : ℝ) + 1) * ∑ k ∈ Finset.range (n + 1), f (a + (k : ℝ) * ((b - a) / ((n : ℝ) + 1)))) Filter.atTop (nhds (∫ x in a..b, f x))
+  proof: |
+    by
+        intro f a b hab hf
+        rw [Metric.tendsto_atTop]
+        intro ε hε
+        have huc := isCompact_Icc.uniformContinuousOn_of_continuous hf
+        have hL : 0 ≤ b - a := sub_nonneg.2 hab
+        have hL1 : 0 < b - a + 1 := by linarith
+        have hε' : 0 < ε / (b - a + 1) := div_pos hε hL1
+        obtain ⟨δ, hδ, hu⟩ := Metric.uniformContinuousOn_iff.mp huc _ hε'
+        obtain ⟨N, hN⟩ := exists_nat_gt ((b - a) / δ)
+        refine ⟨N, fun n hn => ?_⟩
+        have hn1 : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+        obtain ⟨h, hh⟩ : ∃ h, h = (b - a) / ((n : ℝ) + 1) := ⟨_, rfl⟩
+        rw [← hh]
+        have hhn : ((n : ℝ) + 1) * h = b - a := by rw [hh]; field_simp
+        have hh0 : 0 ≤ h := by rw [hh]; exact div_nonneg hL hn1.le
+        have hhδ : h < δ := by
+          have h1 : (N : ℝ) ≤ n := by exact_mod_cast hn
+          have h2 : (b - a) / δ < (n : ℝ) + 1 := by linarith
+          rw [div_lt_iff₀ hδ] at h2
+          rw [hh, div_lt_iff₀ hn1]
+          linarith
+        have hmem : ∀ k : ℕ, k ≤ n + 1 → a + (k : ℝ) * h ∈ Set.Icc a b := by
+          intro k hk
+          have h1 : (k : ℝ) ≤ (n : ℝ) + 1 := by exact_mod_cast hk
+          have h2 : (k : ℝ) * h ≤ ((n : ℝ) + 1) * h := mul_le_mul_of_nonneg_right h1 hh0
+          have h3 : 0 ≤ (k : ℝ) * h := mul_nonneg (Nat.cast_nonneg k) hh0
+          exact ⟨by linarith, by linarith⟩
+        have hsucc : ∀ k : ℕ, a + ((k + 1 : ℕ) : ℝ) * h = a + (k : ℝ) * h + h := by
+          intro k
+          push_cast
+          ring
+        have hsub : ∀ k : ℕ, k < n + 1 → Set.uIcc (a + (k : ℝ) * h) (a + ((k + 1 : ℕ) : ℝ) * h) ⊆ Set.Icc a b := by
+          intro k hk
+          exact Set.OrdConnected.uIcc_subset inferInstance (hmem k hk.le) (hmem (k + 1) hk)
+        have hint : ∀ k < n + 1, IntervalIntegrable f MeasureTheory.volume (a + (k : ℝ) * h) (a + ((k + 1 : ℕ) : ℝ) * h) := fun k hk =>
+          ContinuousOn.intervalIntegrable (hf.mono (hsub k hk))
+        have hsum := intervalIntegral.sum_integral_adjacent_intervals (a := fun k : ℕ => a + (k : ℝ) * h) hint
+        have h0 : a + ((0 : ℕ) : ℝ) * h = a := by simp
+        have hend : a + ((n + 1 : ℕ) : ℝ) * h = b := by
+          push_cast
+          linarith
+        simp only [h0, hend] at hsum
+        have key : ∀ k ∈ Finset.range (n + 1), |h * f (a + (k : ℝ) * h) - ∫ t in (a + (k : ℝ) * h)..(a + ((k + 1 : ℕ) : ℝ) * h), f t| ≤ ε / (b - a + 1) * h := by
+          intro k hk
+          have hk' := Finset.mem_range.mp hk
+          have hI := hint k hk'
+          have e1 : (∫ t in (a + (k : ℝ) * h)..(a + ((k + 1 : ℕ) : ℝ) * h), (f t - f (a + (k : ℝ) * h))) = (∫ t in (a + (k : ℝ) * h)..(a + ((k + 1 : ℕ) : ℝ) * h), f t) - h * f (a + (k : ℝ) * h) := by
+            rw [intervalIntegral.integral_sub hI intervalIntegrable_const, intervalIntegral.integral_const, hsucc k, smul_eq_mul]
+            ring_nf
+          have e2 := intervalIntegral.norm_integral_le_of_norm_le_const (a := a + (k : ℝ) * h) (b := a + ((k + 1 : ℕ) : ℝ) * h) (C := ε / (b - a + 1)) (f := fun t => f t - f (a + (k : ℝ) * h)) (by
+            intro t ht
+            rw [hsucc k, Set.uIoc_of_le (by linarith)] at ht
+            have hts : t ∈ Set.Icc a b := hsub k hk' (by
+              rw [hsucc k, Set.uIcc_of_le (by linarith)]
+              exact ⟨ht.1.le, ht.2⟩)
+            have hd : dist t (a + (k : ℝ) * h) < δ := by
+              rw [Real.dist_eq, abs_of_pos (by linarith [ht.1])]
+              linarith [ht.2]
+            have := hu t hts _ (hmem k hk'.le) hd
+            rw [Real.dist_eq] at this
+            rw [Real.norm_eq_abs]
+            exact this.le)
+          rw [e1, Real.norm_eq_abs, hsucc k] at e2
+          have e3 : |a + (k : ℝ) * h + h - (a + (k : ℝ) * h)| = h := by
+            rw [add_sub_cancel_left, abs_of_nonneg hh0]
+          rw [e3, abs_sub_comm, ← hsucc k] at e2
+          exact e2
+        rw [Real.dist_eq, ← hsum, Finset.mul_sum, ← Finset.sum_sub_distrib]
+        calc _ ≤ ∑ k ∈ Finset.range (n + 1), |h * f (a + (k : ℝ) * h) - ∫ t in (a + (k : ℝ) * h)..(a + ((k + 1 : ℕ) : ℝ) * h), f t| := Finset.abs_sum_le_sum_abs _ _
+          _ ≤ ∑ _k ∈ Finset.range (n + 1), ε / (b - a + 1) * h := Finset.sum_le_sum key
+          _ = ε / (b - a + 1) * (b - a) := by
+            rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+            push_cast
+            rw [← hhn]
+            ring
+          _ < ε := by
+            rw [div_mul_eq_mul_div, div_lt_iff₀ hL1]
+            nlinarith

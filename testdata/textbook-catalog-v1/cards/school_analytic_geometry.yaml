@@ -1,0 +1,2854 @@
+- id: dist_euclidean_plane_coordinates
+  kind: textbook
+  level: high
+  topic: 図形と方程式・2点間の距離
+  statement: 座標平面（ユークリッド平面）の2点$(x_1,y_1)$、$(x_2,y_2)$の距離は$\sqrt{(x_1-x_2)^2+(y_1-y_2)^2}$に等しい。
+  statement_en: The distance in the Euclidean plane between the points (x1,y1) and (x2,y2) equals √((x1-x2)^2+(y1-y2)^2).
+  assumptions:
+  - $x_1,y_1,x_2,y_2$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2$
+  conclusion: 2点の距離は$\sqrt{(x_1-x_2)^2+(y_1-y_2)^2}$である。
+  answer: |
+    $x_1,y_1,x_2,y_2$を実数とする。ユークリッド平面の距離は、2点の差のベクトルのノルムであり、各成分の差の平方の和の平方根で定義される。第1成分の差は$x_1-x_2$、第2成分の差は$y_1-y_2$である。実数の距離について$|x_1-x_2|^2=(x_1-x_2)^2$、$|y_1-y_2|^2=(y_1-y_2)^2$が成り立つので、距離は$\sqrt{(x_1-x_2)^2+(y_1-y_2)^2}$に等しい。
+  strategy: Unfold the Euclidean distance as the square root of the sum of squared coordinate distances.
+  sketch:
+  - 'translate: The distance in the Euclidean plane is the square root of the sum over the two coordinates of the squared coordinate distances.'
+  - 'derive: The coordinate distances are |x1-x2| and |y1-y2|, and squaring removes the absolute values.'
+  - 'conclude: The distance equals √((x1-x2)^2+(y1-y2)^2).'
+  openmath: (forall (x1 y1 x2 y2) (= (dist_of (plane_point x1 y1) (plane_point x2 y2)) (root (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) 2)))
+  hard_negative:
+    statement: 2点の距離は$|x_1-x_2|+|y_1-y_2|$に等しい。
+    reason: これは各座標の差の絶対値の和であり、$(0,0)$と$(1,1)$では$2$となるが、距離は$\sqrt{2}$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ : ℝ), dist (!₂[x₁, y₁] : EuclideanSpace ℝ (Fin 2)) !₂[x₂, y₂] = Real.sqrt ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2)
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂
+      rw [EuclideanSpace.dist_eq, Fin.sum_univ_two]
+      simp [Real.dist_eq, sq_abs]
+- id: coordinate_distance_triangle_inequality
+  kind: gap
+  level: high
+  topic: 図形と方程式・三角不等式
+  statement: 実数$x_1,y_1,x_2,y_2,x_3,y_3$について、$\sqrt{(x_1-x_3)^2+(y_1-y_3)^2}\le\sqrt{(x_1-x_2)^2+(y_1-y_2)^2}+\sqrt{(x_2-x_3)^2+(y_2-y_3)^2}$が成り立つ。
+  statement_en: For real numbers x1,y1,x2,y2,x3,y3, √((x1-x3)^2+(y1-y3)^2) ≤ √((x1-x2)^2+(y1-y2)^2) + √((x2-x3)^2+(y2-y3)^2).
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x_3,y_3$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: 座標で書いた距離について三角不等式が成り立つ。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とする。$u=x_1-x_2$、$v=y_1-y_2$、$s=x_2-x_3$、$t=y_2-y_3$とおき、$A=\sqrt{u^2+v^2}$、$B=\sqrt{s^2+t^2}$とする。
+
+    $(u^2+v^2)(s^2+t^2)-(us+vt)^2=(ut-vs)^2\ge0$なので$(us+vt)^2\le A^2B^2$であり、$A,B\ge0$より$us+vt\le AB$である。
+
+    $x_1-x_3=u+s$、$y_1-y_3=v+t$だから、$(x_1-x_3)^2+(y_1-y_3)^2=A^2+B^2+2(us+vt)\le A^2+B^2+2AB=(A+B)^2$となる。$A+B\ge0$なので両辺の平方根をとると$\sqrt{(x_1-x_3)^2+(y_1-y_3)^2}\le A+B$を得る。
+  strategy: Reduce to a two-dimensional Cauchy-Schwarz bound by squaring both sides.
+  sketch:
+  - 'setup: Put u=x1-x2, v=y1-y2, s=x2-x3, t=y2-y3, A=√(u^2+v^2), B=√(s^2+t^2).'
+  - 'derive: The identity (u^2+v^2)(s^2+t^2)-(us+vt)^2=(ut-vs)^2 gives us+vt ≤ AB.'
+  - 'derive: The squared left distance is (u+s)^2+(v+t)^2 = A^2+B^2+2(us+vt) ≤ (A+B)^2.'
+  - 'conclude: Taking square roots of nonnegative quantities gives the inequality.'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (<= (root (+ (^ (- x1 x3) 2) (^ (- y1 y3) 2)) 2) (+ (root (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) 2) (root (+ (^ (- x2 x3) 2) (^ (- y2 y3) 2)) 2))))
+  hard_negative:
+    statement: 3点が同一直線上になくても等号が成り立つことがある。
+    reason: 等号は差のベクトル$(x_1-x_2,y_1-y_2)$と$(x_2-x_3,y_2-y_3)$の一方が零ベクトルであるか、同じ向きであるときだけ成り立つ。$(0,0)$、$(1,0)$、$(1,1)$では左辺が$\sqrt{2}$、右辺が$2$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), Real.sqrt ((x₁ - x₃) ^ 2 + (y₁ - y₃) ^ 2) ≤ Real.sqrt ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2) + Real.sqrt ((x₂ - x₃) ^ 2 + (y₂ - y₃) ^ 2)
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃
+      have hP : 0 ≤ (x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2 := by positivity
+      have hQ : 0 ≤ (x₂ - x₃) ^ 2 + (y₂ - y₃) ^ 2 := by positivity
+      have hdot : (x₁ - x₂) * (x₂ - x₃) + (y₁ - y₂) * (y₂ - y₃) ≤ Real.sqrt ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2) * Real.sqrt ((x₂ - x₃) ^ 2 + (y₂ - y₃) ^ 2) := by
+        rw [← Real.sqrt_mul hP]
+        refine Real.le_sqrt_of_sq_le ?_
+        linarith [sq_nonneg ((x₁ - x₂) * (y₂ - y₃) - (y₁ - y₂) * (x₂ - x₃))]
+      rw [Real.sqrt_le_left (by positivity)]
+      have e₁ := Real.sq_sqrt hP
+      have e₂ := Real.sq_sqrt hQ
+      linarith
+- id: right_angle_iff_pythagoras_coordinates
+  kind: gap
+  level: high
+  topic: 図形と方程式・直角の条件
+  statement: 3点$A(x_1,y_1)$、$B(x_2,y_2)$、$C(x_3,y_3)$について、$AB^2=AC^2+BC^2$であることと、$\overrightarrow{CA}\cdot\overrightarrow{CB}=(x_1-x_3)(x_2-x_3)+(y_1-y_3)(y_2-y_3)=0$であることは同値である。
+  statement_en: For points A(x1,y1), B(x2,y2), C(x3,y3), AB^2 = AC^2 + BC^2 if and only if (x1-x3)(x2-x3)+(y1-y3)(y2-y3) = 0.
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x_3,y_3$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: $AB^2=AC^2+BC^2$と$(x_1-x_3)(x_2-x_3)+(y_1-y_3)(y_2-y_3)=0$は同値である。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とする。$x_1-x_2=(x_1-x_3)-(x_2-x_3)$と$y_1-y_2=(y_1-y_3)-(y_2-y_3)$を展開すると、
+    $(x_1-x_2)^2+(y_1-y_2)^2=(x_1-x_3)^2+(y_1-y_3)^2+(x_2-x_3)^2+(y_2-y_3)^2-2\{(x_1-x_3)(x_2-x_3)+(y_1-y_3)(y_2-y_3)\}$
+    となる。よって$AB^2=AC^2+BC^2$は、波かっこの中が$0$であることと同値である。
+  strategy: Expand AB^2 through the point C and compare with AC^2+BC^2.
+  sketch:
+  - 'derive: Write x1-x2=(x1-x3)-(x2-x3) and likewise for y, then expand.'
+  - 'translate: AB^2 equals AC^2+BC^2 minus twice the dot product of CA and CB.'
+  - 'conclude: The Pythagorean relation holds exactly when the dot product vanishes.'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (<-> (= (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) (+ (+ (^ (- x1 x3) 2) (^ (- y1 y3) 2)) (+ (^ (- x2 x3) 2) (^ (- y2 y3) 2)))) (= (+ (* (- x1 x3) (- x2 x3)) (* (- y1 y3) (- y2 y3))) 0)))
+  hard_negative:
+    statement: $AC^2=AB^2+BC^2$なら$\overrightarrow{CA}\cdot\overrightarrow{CB}=0$である。
+    reason: この等式で直角になるのは$B$の角である。$C(0,0)$、$B(1,0)$、$A(1,1)$では等式が成り立つが、$\overrightarrow{CA}\cdot\overrightarrow{CB}=1$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), (x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2 = (x₁ - x₃) ^ 2 + (y₁ - y₃) ^ 2 + ((x₂ - x₃) ^ 2 + (y₂ - y₃) ^ 2) ↔ (x₁ - x₃) * (x₂ - x₃) + (y₁ - y₃) * (y₂ - y₃) = 0
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃
+      constructor
+      · intro h
+        linear_combination (-1 / 2 : ℝ) * h
+      · intro h
+        linear_combination (-2 : ℝ) * h
+- id: median_theorem_coordinates
+  kind: named
+  level: high
+  topic: 図形と方程式・中線定理
+  statement: 中線定理の座標形。$A(x_1,y_1)$、$B(x_2,y_2)$、$C(x_3,y_3)$、$BC$の中点を$M$とすると$AB^2+AC^2=2(AM^2+BM^2)$が成り立つ。
+  statement_en: 'Median theorem in coordinates: for A(x1,y1), B(x2,y2), C(x3,y3) and the midpoint M of BC, AB^2+AC^2 = 2(AM^2+BM^2).'
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x_3,y_3$は実数
+  - $M=\left(\frac{x_2+x_3}{2},\frac{y_2+y_3}{2}\right)$
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: $AB^2+AC^2=2(AM^2+BM^2)$である。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とし、$M=\left(\frac{x_2+x_3}{2},\frac{y_2+y_3}{2}\right)$とする。$x$座標の部分だけを調べる。$p=x_1-\frac{x_2+x_3}{2}$、$h=\frac{x_2-x_3}{2}$とおくと、$x_1-x_2=p-h$、$x_1-x_3=p+h$、$x_2-\frac{x_2+x_3}{2}=h$である。よって$(p-h)^2+(p+h)^2=2(p^2+h^2)$より、$(x_1-x_2)^2+(x_1-x_3)^2$は$AM^2$と$BM^2$の$x$成分の和の$2$倍に等しい。$y$座標についても同じ等式が成り立つので、加えて$AB^2+AC^2=2(AM^2+BM^2)$を得る。
+  strategy: Coordinates split the identity into the same one-dimensional identity for x and y.
+  sketch:
+  - 'setup: For the x part put p=x1-(x2+x3)/2 and h=(x2-x3)/2.'
+  - 'derive: Then x1-x2=p-h and x1-x3=p+h, and (p-h)^2+(p+h)^2=2(p^2+h^2).'
+  - 'derive: The same computation holds for the y coordinates.'
+  - 'conclude: Adding the two coordinate identities gives AB^2+AC^2=2(AM^2+BM^2).'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (= (+ (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) (+ (^ (- x1 x3) 2) (^ (- y1 y3) 2))) (* 2 (+ (+ (^ (- x1 (/ (+ x2 x3) 2)) 2) (^ (- y1 (/ (+ y2 y3) 2)) 2)) (+ (^ (- x2 (/ (+ x2 x3) 2)) 2) (^ (- y2 (/ (+ y2 y3) 2)) 2))))))
+  hard_negative:
+    statement: $M$が$BC$上の任意の点でも$AB^2+AC^2=2(AM^2+BM^2)$が成り立つ。
+    reason: 中点でない点では成り立たない。$A(0,1)$、$B(0,0)$、$C(2,0)$、$M(1/2,0)$では左辺が$6$、右辺が$3$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), (x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2 + ((x₁ - x₃) ^ 2 + (y₁ - y₃) ^ 2) = 2 * ((x₁ - (x₂ + x₃) / 2) ^ 2 + (y₁ - (y₂ + y₃) / 2) ^ 2 + ((x₂ - (x₂ + x₃) / 2) ^ 2 + (y₂ - (y₂ + y₃) / 2) ^ 2))
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃
+      ring
+- id: internal_division_iff_ratio_equation
+  kind: textbook
+  level: high
+  topic: 図形と方程式・内分点
+  statement: $m,n>0$とする。点$(p,q)$について、ベクトルの等式$n(p-x_1,q-y_1)=m(x_2-p,y_2-q)$が成り立つことと、$(p,q)$が内分点の公式$p=\frac{nx_1+mx_2}{m+n}$、$q=\frac{ny_1+my_2}{m+n}$を満たすことは同値である。
+  statement_en: For m,n>0, n(p-x1)=m(x2-p) and n(q-y1)=m(y2-q) hold if and only if p=(n x1+m x2)/(m+n) and q=(n y1+m y2)/(m+n).
+  assumptions:
+  - $m>0$、$n>0$
+  - $x_1,y_1,x_2,y_2,p,q$は実数
+  quantifiers:
+  - 任意の実数$m,n,x_1,y_1,x_2,y_2,p,q$
+  conclusion: 比の等式は内分点の公式と同値である。
+  answer: |
+    $m,n>0$とし、$x_1,y_1,x_2,y_2,p,q$を実数とする。$m+n\ne0$である。$n(p-x_1)=m(x_2-p)$を整理すると$(m+n)p=nx_1+mx_2$となり、これは$p=\frac{nx_1+mx_2}{m+n}$と同値である。$q$についても同様に、$n(q-y_1)=m(y_2-q)$は$q=\frac{ny_1+my_2}{m+n}$と同値である。2つを合わせて結論を得る。
+  strategy: Solve each linear coordinate equation for the division point, using m+n ≠ 0.
+  sketch:
+  - 'translate: The ratio condition is one linear equation in each coordinate.'
+  - 'derive: n(p-x1)=m(x2-p) rearranges to (m+n)p=n x1+m x2, and m+n>0 allows division.'
+  - 'conclude: The y coordinate is identical, so both coordinate formulas are equivalent to the ratio equations.'
+  openmath: (forall (m n x1 y1 x2 y2 p q) (-> (and (> m 0) (> n 0)) (<-> (and (= (* n (- p x1)) (* m (- x2 p))) (= (* n (- q y1)) (* m (- y2 q)))) (and (= p (/ (+ (* n x1) (* m x2)) (+ m n))) (= q (/ (+ (* n y1) (* m y2)) (+ m n)))))))
+  hard_negative:
+    statement: 内分点の公式は$p=\frac{mx_1+nx_2}{m+n}$である。
+    reason: 係数が逆である。$m:n$に内分する点は$m$が大きいほど$(x_2,y_2)$に近い。$x_1=0$、$x_2=3$、$m=2$、$n=1$の内分点は$2$であり、この式の値$1$は$1:2$の内分点である。
+  target: |
+    ∀ (m n x₁ y₁ x₂ y₂ p q : ℝ), 0 < m → 0 < n → ((n * (p - x₁) = m * (x₂ - p) ∧ n * (q - y₁) = m * (y₂ - q)) ↔ (p = (n * x₁ + m * x₂) / (m + n) ∧ q = (n * y₁ + m * y₂) / (m + n)))
+  proof: |
+    by
+      intro m n x₁ y₁ x₂ y₂ p q hm hn
+      have hs : m + n ≠ 0 := by positivity
+      rw [eq_div_iff hs, eq_div_iff hs]
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        constructor <;> linarith
+      · rintro ⟨h₁, h₂⟩
+        constructor <;> linarith
+- id: external_division_iff_ratio_equation
+  kind: gap
+  level: high
+  topic: 図形と方程式・外分点
+  statement: $m,n>0$、$m\ne n$とする。点$(p,q)$について、$n(p-x_1,q-y_1)=m(p-x_2,q-y_2)$が成り立つことと、$(p,q)$が外分点の公式$p=\frac{mx_2-nx_1}{m-n}$、$q=\frac{my_2-ny_1}{m-n}$を満たすことは同値である。
+  statement_en: For m,n>0 with m≠n, n(p-x1)=m(p-x2) and n(q-y1)=m(q-y2) hold if and only if p=(m x2-n x1)/(m-n) and q=(m y2-n y1)/(m-n).
+  assumptions:
+  - $m>0$、$n>0$、$m\ne n$
+  - $x_1,y_1,x_2,y_2,p,q$は実数
+  quantifiers:
+  - 任意の実数$m,n,x_1,y_1,x_2,y_2,p,q$
+  conclusion: 比の等式は外分点の公式と同値である。
+  answer: |
+    $m,n>0$、$m\ne n$とし、$x_1,y_1,x_2,y_2,p,q$を実数とする。$m\ne n$より$m-n\ne0$である。$n(p-x_1)=m(p-x_2)$を整理すると$(m-n)p=mx_2-nx_1$となり、これは$p=\frac{mx_2-nx_1}{m-n}$と同値である。$q$についても同様である。2つを合わせて結論を得る。
+  strategy: Solve each linear coordinate equation for the division point, using m-n ≠ 0.
+  sketch:
+  - 'translate: The external ratio condition is one linear equation per coordinate.'
+  - 'derive: n(p-x1)=m(p-x2) rearranges to (m-n)p=m x2-n x1.'
+  - 'conclude: Since m≠n, dividing by m-n gives the formula, and the argument reverses.'
+  openmath: (forall (m n x1 y1 x2 y2 p q) (-> (and (> m 0) (> n 0) (!= m n)) (<-> (and (= (* n (- p x1)) (* m (- p x2))) (= (* n (- q y1)) (* m (- q y2)))) (and (= p (/ (- (* m x2) (* n x1)) (- m n))) (= q (/ (- (* m y2) (* n y1)) (- m n)))))))
+  hard_negative:
+    statement: $m=n$でも$m:n$に外分する点が存在する。
+    reason: $m=n$なら等式は$x_1=x_2$かつ$y_1=y_2$を要求し、相異なる2点に対して解がない。公式の分母も$0$になる。
+  target: |
+    ∀ (m n x₁ y₁ x₂ y₂ p q : ℝ), 0 < m → 0 < n → m ≠ n → ((n * (p - x₁) = m * (p - x₂) ∧ n * (q - y₁) = m * (q - y₂)) ↔ (p = (m * x₂ - n * x₁) / (m - n) ∧ q = (m * y₂ - n * y₁) / (m - n)))
+  proof: |
+    by
+      intro m n x₁ y₁ x₂ y₂ p q hm hn hmn
+      have hs : m - n ≠ 0 := sub_ne_zero.mpr hmn
+      rw [eq_div_iff hs, eq_div_iff hs]
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        constructor <;> linarith
+      · rintro ⟨h₁, h₂⟩
+        constructor <;> linarith
+- id: segment_point_distance_scale
+  kind: gap
+  level: high
+  topic: 図形と方程式・線分上の点
+  statement: $0\le t\le1$のとき、$P=((1-t)x_1+tx_2,(1-t)y_1+ty_2)$と$A(x_1,y_1)$、$B(x_2,y_2)$について$AP=t\cdot AB$かつ$PB=(1-t)\cdot AB$が成り立つ。
+  statement_en: For 0≤t≤1 and P=((1-t)x1+t x2,(1-t)y1+t y2), with A(x1,y1) and B(x2,y2), one has AP=t·AB and PB=(1-t)·AB.
+  assumptions:
+  - $0\le t\le1$
+  - $x_1,y_1,x_2,y_2$は実数
+  quantifiers:
+  - 任意の実数$t,x_1,y_1,x_2,y_2$
+  conclusion: $AP=t\cdot AB$かつ$PB=(1-t)\cdot AB$である。
+  answer: |
+    $0\le t\le1$とし、$x_1,y_1,x_2,y_2$を実数とする。$P$を上の点、$D=(x_2-x_1)^2+(y_2-y_1)^2$とする。$P$の$x$座標から$x_1$を引くと$t(x_2-x_1)$、$y$座標についても同様なので、$AP^2=t^2D$である。$t\ge0$より$AP=\sqrt{t^2}\sqrt{D}=t\sqrt{D}=t\cdot AB$となる。同様に$x_2$から$P$の$x$座標を引くと$(1-t)(x_2-x_1)$なので$PB^2=(1-t)^2D$であり、$1-t\ge0$より$PB=(1-t)\cdot AB$である。
+  strategy: Factor t or 1-t out of the coordinate differences and take square roots using the sign conditions.
+  sketch:
+  - 'derive: The coordinate differences from A to P are t(x2-x1) and t(y2-y1).'
+  - 'derive: Hence AP^2=t^2 AB^2, and t≥0 gives AP=t·AB.'
+  - 'derive: The differences from P to B are (1-t)(x2-x1) and (1-t)(y2-y1).'
+  - 'conclude: Hence PB^2=(1-t)^2 AB^2, and 1-t≥0 gives PB=(1-t)·AB.'
+  openmath: (forall (t x1 y1 x2 y2) (-> (and (<= 0 t) (<= t 1)) (and (= (root (+ (^ (- (+ (* (- 1 t) x1) (* t x2)) x1) 2) (^ (- (+ (* (- 1 t) y1) (* t y2)) y1) 2)) 2) (* t (root (+ (^ (- x2 x1) 2) (^ (- y2 y1) 2)) 2))) (= (root (+ (^ (- x2 (+ (* (- 1 t) x1) (* t x2))) 2) (^ (- y2 (+ (* (- 1 t) y1) (* t y2))) 2)) 2) (* (- 1 t) (root (+ (^ (- x2 x1) 2) (^ (- y2 y1) 2)) 2))))))
+  hard_negative:
+    statement: 任意の実数$t$について$AP=t\cdot AB$が成り立つ。
+    reason: $t<0$では左辺が非負で右辺が負になりうる。$A(0,0)$、$B(1,0)$、$t=-1$では$AP=1$、$t\cdot AB=-1$である。正しくは$AP=|t|\cdot AB$である。
+  target: |
+    ∀ (t x₁ y₁ x₂ y₂ : ℝ), 0 ≤ t → t ≤ 1 → Real.sqrt (((1 - t) * x₁ + t * x₂ - x₁) ^ 2 + ((1 - t) * y₁ + t * y₂ - y₁) ^ 2) = t * Real.sqrt ((x₂ - x₁) ^ 2 + (y₂ - y₁) ^ 2) ∧ Real.sqrt ((x₂ - ((1 - t) * x₁ + t * x₂)) ^ 2 + (y₂ - ((1 - t) * y₁ + t * y₂)) ^ 2) = (1 - t) * Real.sqrt ((x₂ - x₁) ^ 2 + (y₂ - y₁) ^ 2)
+  proof: |
+    by
+      intro t x₁ y₁ x₂ y₂ h0 h1
+      constructor
+      · have h : ((1 - t) * x₁ + t * x₂ - x₁) ^ 2 + ((1 - t) * y₁ + t * y₂ - y₁) ^ 2 = t ^ 2 * ((x₂ - x₁) ^ 2 + (y₂ - y₁) ^ 2) := by ring
+        rw [h, Real.sqrt_mul (sq_nonneg t), Real.sqrt_sq h0]
+      · have h : (x₂ - ((1 - t) * x₁ + t * x₂)) ^ 2 + (y₂ - ((1 - t) * y₁ + t * y₂)) ^ 2 = (1 - t) ^ 2 * ((x₂ - x₁) ^ 2 + (y₂ - y₁) ^ 2) := by ring
+        rw [h, Real.sqrt_mul (sq_nonneg (1 - t)), Real.sqrt_sq (by linarith)]
+- id: centroid_divides_medians_two_one
+  kind: textbook
+  level: high
+  topic: 図形と方程式・重心
+  statement: $A(x_1,y_1)$、$B(x_2,y_2)$、$C(x_3,y_3)$について、各頂点と対辺の中点を結ぶ線分を$2:1$に内分する点は3本とも$\left(\frac{x_1+x_2+x_3}{3},\frac{y_1+y_2+y_3}{3}\right)$である。
+  statement_en: For A(x1,y1), B(x2,y2), C(x3,y3), the point dividing each segment from a vertex to the midpoint of the opposite side in the ratio 2:1 is ((x1+x2+x3)/3,(y1+y2+y3)/3).
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x_3,y_3$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: 3本の中線の$2:1$の内分点は1点$\left(\frac{x_1+x_2+x_3}{3},\frac{y_1+y_2+y_3}{3}\right)$に一致する。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とする。$A$と$BC$の中点$\left(\frac{x_2+x_3}{2},\frac{y_2+y_3}{2}\right)$を結ぶ線分を$2:1$に内分する点の$x$座標は、内分点の公式より$\frac{1}{3}\left(x_1+2\cdot\frac{x_2+x_3}{2}\right)=\frac{x_1+x_2+x_3}{3}$である。$y$座標も同様に$\frac{y_1+y_2+y_3}{3}$である。この結果は3頂点について対称なので、$B$と$CA$の中点、$C$と$AB$の中点についても同じ点を得る。
+  strategy: Apply the division formula to one median and use the symmetry of the result.
+  sketch:
+  - 'derive: The 2:1 point on the median from A has x coordinate (x1+2(x2+x3)/2)/3=(x1+x2+x3)/3.'
+  - 'derive: The y coordinate is computed the same way.'
+  - 'conclude: The result is symmetric in the three vertices, so all three medians give the same point.'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (and (= (/ (+ x1 (* 2 (/ (+ x2 x3) 2))) 3) (/ (+ (+ x1 x2) x3) 3)) (= (/ (+ y1 (* 2 (/ (+ y2 y3) 2))) 3) (/ (+ (+ y1 y2) y3) 3)) (= (/ (+ x2 (* 2 (/ (+ x3 x1) 2))) 3) (/ (+ (+ x1 x2) x3) 3)) (= (/ (+ y2 (* 2 (/ (+ y3 y1) 2))) 3) (/ (+ (+ y1 y2) y3) 3)) (= (/ (+ x3 (* 2 (/ (+ x1 x2) 2))) 3) (/ (+ (+ x1 x2) x3) 3)) (= (/ (+ y3 (* 2 (/ (+ y1 y2) 2))) 3) (/ (+ (+ y1 y2) y3) 3))))
+  hard_negative:
+    statement: 中線を頂点の側から$1:2$に内分する点も同じ点である。
+    reason: 比が逆である。$A(0,0)$、$B(3,0)$、$C(0,3)$の$A$からの中線を$1:2$に内分する点は$(1/2,1/2)$であり、重心$(1,1)$と異なる。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), ((x₁ + 2 * ((x₂ + x₃) / 2)) / 3 = (x₁ + x₂ + x₃) / 3 ∧ (y₁ + 2 * ((y₂ + y₃) / 2)) / 3 = (y₁ + y₂ + y₃) / 3) ∧ ((x₂ + 2 * ((x₃ + x₁) / 2)) / 3 = (x₁ + x₂ + x₃) / 3 ∧ (y₂ + 2 * ((y₃ + y₁) / 2)) / 3 = (y₁ + y₂ + y₃) / 3) ∧ ((x₃ + 2 * ((x₁ + x₂) / 2)) / 3 = (x₁ + x₂ + x₃) / 3 ∧ (y₃ + 2 * ((y₁ + y₂) / 2)) / 3 = (y₁ + y₂ + y₃) / 3)
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃
+      refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩, ?_, ?_⟩ <;> ring
+- id: triangle_area_cross_product_formula
+  kind: textbook
+  level: high
+  topic: 図形と方程式・三角形の面積
+  statement: 実数$a_1,a_2,b_1,b_2$について、ベクトル$(a_1,a_2)$、$(b_1,b_2)$の作る三角形の面積の2つの公式の値は一致する。すなわち（面積そのものは扱わず、2式の等式として）$\frac12\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=\frac12|a_1b_2-a_2b_1|$である。
+  statement_en: 'For real a1,a2,b1,b2, the two triangle-area expressions agree: (1/2)√((a1²+a2²)(b1²+b2²)-(a1b1+a2b2)²) = (1/2)|a1b2-a2b1| (identity only; no area is defined).'
+  assumptions:
+  - $a_1,a_2,b_1,b_2$は実数
+  quantifiers:
+  - 任意の実数$a_1,a_2,b_1,b_2$
+  conclusion: $\frac12\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=\frac12|a_1b_2-a_2b_1|$である。
+  answer: |
+    $a_1,a_2,b_1,b_2$を実数とする。展開すると$(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2=(a_1b_2-a_2b_1)^2$である。実数$z$について$\sqrt{z^2}=|z|$なので、$\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=|a_1b_2-a_2b_1|$となる。両辺を$2$で割って結論を得る。
+  strategy: Recognize the radicand as the square of the cross product.
+  sketch:
+  - 'derive: Expanding shows the radicand equals (a1 b2-a2 b1)^2.'
+  - 'derive: The square root of a square is the absolute value.'
+  - 'conclude: Dividing by 2 gives the identity.'
+  openmath: (forall (a1 a2 b1 b2) (= (/ (root (- (* (+ (^ a1 2) (^ a2 2)) (+ (^ b1 2) (^ b2 2))) (^ (+ (* a1 b1) (* a2 b2)) 2)) 2) 2) (/ (abs (- (* a1 b2) (* a2 b1))) 2)))
+  hard_negative:
+    statement: 絶対値なしで$\frac12\sqrt{(a_1^2+a_2^2)(b_1^2+b_2^2)-(a_1b_1+a_2b_2)^2}=\frac12(a_1b_2-a_2b_1)$が成り立つ。
+    reason: 右辺は符号をもつ。$(a_1,a_2)=(0,1)$、$(b_1,b_2)=(1,0)$では左辺が$\frac12$、右辺が$-\frac12$である。
+  target: |
+    ∀ (a₁ a₂ b₁ b₂ : ℝ), Real.sqrt ((a₁ ^ 2 + a₂ ^ 2) * (b₁ ^ 2 + b₂ ^ 2) - (a₁ * b₁ + a₂ * b₂) ^ 2) / 2 = |a₁ * b₂ - a₂ * b₁| / 2
+  proof: |
+    by
+      intro a₁ a₂ b₁ b₂
+      have h : (a₁ ^ 2 + a₂ ^ 2) * (b₁ ^ 2 + b₂ ^ 2) - (a₁ * b₁ + a₂ * b₂) ^ 2 = (a₁ * b₂ - a₂ * b₁) ^ 2 := by ring
+      rw [h, Real.sqrt_sq_eq_abs]
+- id: line_two_points_iff_parametric
+  kind: gap
+  level: high
+  topic: 図形と方程式・2点を通る直線
+  statement: 相異なる2点$(x_1,y_1)$、$(x_2,y_2)$について、$(x_2-x_1)(y-y_1)=(y_2-y_1)(x-x_1)$が成り立つことと、ある実数$t$で$x=x_1+t(x_2-x_1)$、$y=y_1+t(y_2-y_1)$と書けることは同値である。
+  statement_en: For distinct points (x1,y1),(x2,y2), (x2-x1)(y-y1)=(y2-y1)(x-x1) holds if and only if x=x1+t(x2-x1), y=y1+t(y2-y1) for some real t.
+  assumptions:
+  - $(x_1,y_1)\ne(x_2,y_2)$
+  - $x,y$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x,y$
+  conclusion: 直線の方程式とパラメータ表示は同値である。
+  answer: |
+    $(x_1,y_1)\ne(x_2,y_2)$とし、$x,y$を実数とする。
+
+    ある$t$で$x=x_1+t(x_2-x_1)$、$y=y_1+t(y_2-y_1)$と書けるなら、両辺とも$t(x_2-x_1)(y_2-y_1)$となり方程式が成り立つ。
+
+    逆に方程式が成り立つとする。$x_2\ne x_1$のとき$t=\frac{x-x_1}{x_2-x_1}$とおくと$x=x_1+t(x_2-x_1)$であり、方程式を$x_2-x_1$で割って$y-y_1=t(y_2-y_1)$を得る。$x_2=x_1$のとき、2点が異なるので$y_2\ne y_1$である。方程式の左辺は$0$なので$(y_2-y_1)(x-x_1)=0$となり$x=x_1$である。$t=\frac{y-y_1}{y_2-y_1}$とおくと$y=y_1+t(y_2-y_1)$であり、$x=x_1=x_1+t(x_2-x_1)$も成り立つ。
+  strategy: Substitute the parametrization for one direction, and divide by a nonzero coordinate difference for the other.
+  sketch:
+  - 'derive: Substituting the parametrization makes both sides t(x2-x1)(y2-y1).'
+  - 'case_split: For the converse, split on whether x2=x1.'
+  - 'construct: If x2≠x1 take t=(x-x1)/(x2-x1) and divide the equation by x2-x1.'
+  - 'construct: If x2=x1 then y2≠y1, the equation forces x=x1, and t=(y-y1)/(y2-y1) works.'
+  - 'conclude: Both directions are established.'
+  openmath: (forall (x1 y1 x2 y2 x y) (-> (not (and (= x1 x2) (= y1 y2))) (<-> (= (* (- x2 x1) (- y y1)) (* (- y2 y1) (- x x1))) (exists (t) (and (= x (+ x1 (* t (- x2 x1)))) (= y (+ y1 (* t (- y2 y1)))))))))
+  hard_negative:
+    statement: 2点が一致していても、方程式を満たす点はパラメータ表示で書ける。
+    reason: 2点が一致すると方程式はすべての点で成り立つが、パラメータ表示はその1点しか表さない。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x y : ℝ), ¬(x₁ = x₂ ∧ y₁ = y₂) → ((x₂ - x₁) * (y - y₁) = (y₂ - y₁) * (x - x₁) ↔ ∃ t : ℝ, x = x₁ + t * (x₂ - x₁) ∧ y = y₁ + t * (y₂ - y₁))
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x y hne
+      constructor
+      · intro h
+        by_cases hx : x₂ - x₁ = 0
+        · have hy : y₂ - y₁ ≠ 0 := by
+            intro hy
+            exact hne ⟨by linarith, by linarith⟩
+          refine ⟨(y - y₁) / (y₂ - y₁), ?_, ?_⟩
+          · have hxx : (y₂ - y₁) * (x - x₁) = 0 := by rw [← h, hx]; ring
+            have : x - x₁ = 0 := (mul_eq_zero.mp hxx).resolve_left hy
+            rw [hx]; linarith
+          · field_simp; ring
+        · refine ⟨(x - x₁) / (x₂ - x₁), ?_, ?_⟩
+          · field_simp; ring
+          · field_simp
+            linear_combination h
+      · rintro ⟨t, rfl, rfl⟩
+        ring
+- id: line_two_points_slope_form_iff
+  kind: gap
+  level: middle
+  topic: 図形と方程式・傾きを使う直線の式
+  statement: 傾きを使う特殊形。$x_1\ne x_2$のとき、$y=y_1+\frac{y_2-y_1}{x_2-x_1}(x-x_1)$は$(x_2-x_1)(y-y_1)=(y_2-y_1)(x-x_1)$と同値である。
+  statement_en: 'Slope form, for x1≠x2 only: y=y1+((y2-y1)/(x2-x1))(x-x1) is equivalent to (x2-x1)(y-y1)=(y2-y1)(x-x1).'
+  assumptions:
+  - $x_1\ne x_2$
+  - $y_1,y_2,x,y$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x,y$
+  conclusion: 傾きの形と分母を払った形は同値である。
+  answer: |
+    $x_1\ne x_2$とし、$y_1,y_2,x,y$を実数とする。$x_2-x_1\ne0$なので、$y=y_1+\frac{y_2-y_1}{x_2-x_1}(x-x_1)$の両辺に$x_2-x_1$を掛けても同値である。掛けて整理すると$(x_2-x_1)(y-y_1)=(y_2-y_1)(x-x_1)$となる。
+  strategy: Multiply through by the nonzero denominator x2-x1.
+  sketch:
+  - 'setup: The assumption x1≠x2 makes x2-x1 nonzero.'
+  - 'derive: Multiplying the slope form by x2-x1 gives the cleared form.'
+  - 'conclude: Multiplication by a nonzero number is reversible, so the forms are equivalent.'
+  openmath: (forall (x1 y1 x2 y2 x y) (-> (!= x1 x2) (<-> (= y (+ y1 (* (/ (- y2 y1) (- x2 x1)) (- x x1)))) (= (* (- x2 x1) (- y y1)) (* (- y2 y1) (- x x1))))))
+  hard_negative:
+    statement: 相異なる2点を通る直線は常に傾きの形で書ける。
+    reason: $x_1=x_2$の直線は$y$軸に平行で傾きをもたない。この場合に使えるのは分母を払った形$(x_2-x_1)(y-y_1)=(y_2-y_1)(x-x_1)$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x y : ℝ), x₁ ≠ x₂ → (y = y₁ + (y₂ - y₁) / (x₂ - x₁) * (x - x₁) ↔ (x₂ - x₁) * (y - y₁) = (y₂ - y₁) * (x - x₁))
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x y h
+      have hd : x₂ - x₁ ≠ 0 := sub_ne_zero.mpr (Ne.symm h)
+      constructor
+      · intro hy
+        rw [hy]; field_simp; ring
+      · intro hy
+        field_simp
+        linear_combination hy
+- id: collinear_iff_determinant_zero
+  kind: textbook
+  level: high
+  topic: 図形と方程式・3点が同一直線上にある条件
+  statement: 3点$(x_1,y_1)$、$(x_2,y_2)$、$(x_3,y_3)$がある直線$ax+by=c$（$(a,b)\ne(0,0)$）の上にあることは、$(x_2-x_1)(y_3-y_1)=(y_2-y_1)(x_3-x_1)$と同値である。
+  statement_en: Three points (x1,y1),(x2,y2),(x3,y3) lie on a common line ax+by=c with (a,b)≠(0,0) if and only if (x2-x1)(y3-y1)=(y2-y1)(x3-x1).
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x_3,y_3$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: 3点が同一直線上にあることと$(x_2-x_1)(y_3-y_1)=(y_2-y_1)(x_3-x_1)$は同値である。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とし、$D=(x_2-x_1)(y_3-y_1)-(y_2-y_1)(x_3-x_1)$とする。
+
+    3点が直線$ax+by=c$、$(a,b)\ne(0,0)$の上にあるとする。引き算して$a(x_2-x_1)+b(y_2-y_1)=0$、$a(x_3-x_1)+b(y_3-y_1)=0$を得る。1つ目に$y_3-y_1$、2つ目に$y_2-y_1$を掛けて引くと$aD=0$、1つ目に$x_3-x_1$、2つ目に$x_2-x_1$を掛けて引くと$bD=0$である。$a,b$の少なくとも一方は$0$でないので$D=0$である。
+
+    逆に$D=0$とする。$(x_2,y_2)\ne(x_1,y_1)$なら、$a=y_2-y_1$、$b=x_1-x_2$、$c=ax_1+by_1$とおく。$(a,b)\ne(0,0)$であり、$(x_2,y_2)$は定義からこの直線の上にある。$(x_3,y_3)$では$a(x_3-x_1)+b(y_3-y_1)=-D=0$なので、やはり直線の上にある。$(x_2,y_2)=(x_1,y_1)$かつ$(x_3,y_3)\ne(x_1,y_1)$なら、$a=y_3-y_1$、$b=x_1-x_3$として同様に直線を得る。3点がすべて一致するなら直線$x=x_1$が3点を含む。
+  strategy: Eliminate a and b with cross multiplication, and construct the line from a nonzero difference for the converse.
+  sketch:
+  - 'setup: Put D=(x2-x1)(y3-y1)-(y2-y1)(x3-x1).'
+  - 'derive: A common line gives a(x2-x1)+b(y2-y1)=0 and a(x3-x1)+b(y3-y1)=0, hence aD=bD=0.'
+  - 'conclude: Since (a,b)≠(0,0), D=0.'
+  - 'case_split: Conversely split on which of the differences from (x1,y1) is nonzero.'
+  - 'construct: Use a=y2-y1, b=x1-x2 if the second point differs, and a=y3-y1, b=x1-x3 if only the third differs.'
+  - 'construct: If all three points coincide, take the line x=x1.'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (<-> (exists (a b c) (and (not (and (= a 0) (= b 0))) (= (+ (* a x1) (* b y1)) c) (= (+ (* a x2) (* b y2)) c) (= (+ (* a x3) (* b y3)) c))) (= (* (- x2 x1) (- y3 y1)) (* (- y2 y1) (- x3 x1)))))
+  hard_negative:
+    statement: 3点が同一直線上にあれば、ある実数$t$で$(x_3,y_3)=(x_1,y_1)+t(x_2-x_1,y_2-y_1)$と書ける。
+    reason: $(x_1,y_1)=(x_2,y_2)$なら成り立たない。$(0,0)$、$(0,0)$、$(1,0)$は同一直線上にあるが、右辺は常に$(0,0)$である。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), (∃ a b c : ℝ, ¬(a = 0 ∧ b = 0) ∧ a * x₁ + b * y₁ = c ∧ a * x₂ + b * y₂ = c ∧ a * x₃ + b * y₃ = c) ↔ (x₂ - x₁) * (y₃ - y₁) = (y₂ - y₁) * (x₃ - x₁)
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃
+      constructor
+      · rintro ⟨a, b, c, hab, h₁, h₂, h₃⟩
+        have e₁ : a * (x₂ - x₁) + b * (y₂ - y₁) = 0 := by linarith
+        have e₂ : a * (x₃ - x₁) + b * (y₃ - y₁) = 0 := by linarith
+        have ha : a * ((x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁)) = 0 := by
+          linear_combination (y₃ - y₁) * e₁ - (y₂ - y₁) * e₂
+        have hb : b * ((x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁)) = 0 := by
+          linear_combination (x₂ - x₁) * e₂ - (x₃ - x₁) * e₁
+        by_contra hne
+        have hD : (x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁) ≠ 0 := sub_ne_zero.mpr hne
+        exact hab ⟨(mul_eq_zero.mp ha).resolve_right hD, (mul_eq_zero.mp hb).resolve_right hD⟩
+      · intro h
+        by_cases h₁ : x₂ - x₁ = 0 ∧ y₂ - y₁ = 0
+        · by_cases h₂ : x₃ - x₁ = 0 ∧ y₃ - y₁ = 0
+          · refine ⟨1, 0, x₁, by simp, by ring, ?_, ?_⟩
+            · linarith [h₁.1]
+            · linarith [h₂.1]
+          · refine ⟨y₃ - y₁, x₁ - x₃, (y₃ - y₁) * x₁ + (x₁ - x₃) * y₁, ?_, rfl, ?_, ?_⟩
+            · rintro ⟨h3, h4⟩
+              exact h₂ ⟨by linarith, h3⟩
+            · have e₁ : x₂ = x₁ := by linarith [h₁.1]
+              have e₂ : y₂ = y₁ := by linarith [h₁.2]
+              rw [e₁, e₂]
+            · ring
+        · refine ⟨y₂ - y₁, x₁ - x₂, (y₂ - y₁) * x₁ + (x₁ - x₂) * y₁, ?_, rfl, by ring, ?_⟩
+          · rintro ⟨h3, h4⟩
+            exact h₁ ⟨by linarith, h3⟩
+          · linear_combination -h
+- id: line_equation_unique_up_to_scalar
+  kind: gap
+  level: high
+  topic: 図形と方程式・直線の方程式の一意性
+  statement: $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$とする。方程式$ax+by=c$と$a'x+b'y=c'$の解の全体が一致するなら、$0$でない実数$k$があって$a'=ka$、$b'=kb$、$c'=kc$である。
+  statement_en: If (a,b)≠(0,0), (a',b')≠(0,0) and ax+by=c, a'x+b'y=c' have the same solutions, there is a real k≠0 with a'=ka, b'=kb and c'=kc.
+  assumptions:
+  - $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$
+  - すべての実数$x,y$について$ax+by=c$と$a'x+b'y=c'$は同値
+  quantifiers:
+  - 任意の実数$a,b,c,a',b',c'$
+  conclusion: $a'=ka$、$b'=kb$、$c'=kc$となる$0$でない実数$k$がある。
+  answer: |
+    $a,b,c,a',b',c'$を実数とし、$(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$、かつ2つの方程式の解の全体が一致するとする。$N=a^2+b^2>0$とおく。
+
+    点$P=\left(\frac{ac}{N},\frac{bc}{N}\right)$は$ax+by=c$を満たし、$Q=P+(-b,a)$も同じ方程式を満たす。仮定より$P,Q$は$a'x+b'y=c'$も満たす。引くと$-a'b+b'a=0$、すなわち$ab'=a'b$である。
+
+    $k=\frac{aa'+bb'}{N}$とおく。$ab'=a'b$を使うと$ka=\frac{a^2a'+b(ab')}{N}=\frac{a^2a'+b^2a'}{N}=a'$であり、同様に$kb=b'$である。もし$k=0$なら$a'=b'=0$となり仮定に反するので、$k\ne0$である。最後に$P$が$a'x+b'y=c'$を満たすので、$c'=k(a\cdot\frac{ac}{N}+b\cdot\frac{bc}{N})=kc$である。
+  strategy: Test both equations on two explicit points of the first line to compare coefficients.
+  sketch:
+  - 'setup: Put N=a^2+b^2 and choose P=(ac/N,bc/N) and Q=P+(-b,a) on the first line.'
+  - 'derive: Both points satisfy the second equation, and subtracting gives ab''=a''b.'
+  - 'construct: Let k=(aa''+bb'')/N.'
+  - 'derive: The relation ab''=a''b gives a''=ka and b''=kb.'
+  - 'contradiction: k=0 would force a''=b''=0, so k≠0.'
+  - 'conclude: Evaluating the second equation at P gives c''=kc.'
+  openmath: (forall (a b c a2 b2 c2) (-> (and (not (and (= a 0) (= b 0))) (not (and (= a2 0) (= b2 0))) (forall (x y) (<-> (= (+ (* a x) (* b y)) c) (= (+ (* a2 x) (* b2 y)) c2)))) (exists (k) (and (!= k 0) (= a2 (* k a)) (= b2 (* k b)) (= c2 (* k c))))))
+  hard_negative:
+    statement: 解の全体が一致するなら$a=a'$、$b=b'$、$c=c'$である。
+    reason: 係数は定数倍の分だけ自由に変わる。$x+y=1$と$2x+2y=2$は解の全体が一致するが、係数は異なる。
+  target: |
+    ∀ (a b c a' b' c' : ℝ), ¬(a = 0 ∧ b = 0) → ¬(a' = 0 ∧ b' = 0) → (∀ x y : ℝ, a * x + b * y = c ↔ a' * x + b' * y = c') → ∃ k : ℝ, k ≠ 0 ∧ a' = k * a ∧ b' = k * b ∧ c' = k * c
+  proof: |
+    by
+      intro a b c a' b' c' hab hab' h
+      have hN : a ^ 2 + b ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have hP : a * (a * c / (a ^ 2 + b ^ 2)) + b * (b * c / (a ^ 2 + b ^ 2)) = c := by
+        field_simp
+      have h₀ := (h _ _).mp hP
+      have h₁ := (h (a * c / (a ^ 2 + b ^ 2) - b) (b * c / (a ^ 2 + b ^ 2) + a)).mp (by linear_combination hP)
+      have hcross : a * b' = b * a' := by linear_combination h₁ - h₀
+      have ha' : a' * (a ^ 2 + b ^ 2) = (a * a' + b * b') * a := by linear_combination (-b) * hcross
+      have hb' : b' * (a ^ 2 + b ^ 2) = (a * a' + b * b') * b := by linear_combination (a) * hcross
+      refine ⟨(a * a' + b * b') / (a ^ 2 + b ^ 2), ?_, ?_, ?_, ?_⟩
+      · intro hk
+        have h0 : a * a' + b * b' = 0 := by
+          rcases div_eq_zero_iff.mp hk with h | h
+          · exact h
+          · exact absurd h hN
+        apply hab'
+        rw [h0, zero_mul] at ha' hb'
+        exact ⟨(mul_eq_zero.mp ha').resolve_right hN, (mul_eq_zero.mp hb').resolve_right hN⟩
+      · field_simp; linear_combination ha'
+      · field_simp; linear_combination hb'
+      · rw [← h₀]
+        field_simp
+- id: lines_cross_unique_intersection
+  kind: textbook
+  level: high
+  topic: 図形と方程式・2直線の交点
+  statement: $ab'-a'b\ne0$のとき、2直線$ax+by=c$、$a'x+b'y=c'$の共有点はただ1つで、$x=\frac{cb'-c'b}{ab'-a'b}$、$y=\frac{ac'-a'c}{ab'-a'b}$である。
+  statement_en: If ab'-a'b≠0, a point (x,y) lies on both lines ax+by=c and a'x+b'y=c' if and only if x=(cb'-c'b)/(ab'-a'b) and y=(ac'-a'c)/(ab'-a'b).
+  assumptions:
+  - $ab'-a'b\ne0$
+  - $c,c',x,y$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,a',b',c',x,y$
+  conclusion: $(x,y)$が2直線の上にあることは、$x,y$が上の式で与えられることと同値である。
+  answer: |
+    $a,b,c,a',b',c',x,y$を実数とし、$D=ab'-a'b\ne0$とする。
+
+    $ax+by=c$、$a'x+b'y=c'$とする。1つ目に$b'$、2つ目に$b$を掛けて引くと$Dx=cb'-c'b$である。2つ目に$a$、1つ目に$a'$を掛けて引くと$Dy=ac'-a'c$である。$D\ne0$で割って上の式を得る。
+
+    逆に$Dx=cb'-c'b$、$Dy=ac'-a'c$とする。すると$D(ax+by)=a(cb'-c'b)+b(ac'-a'c)=c(ab'-a'b)=Dc$であり、$D\ne0$より$ax+by=c$である。同様に$D(a'x+b'y)=a'(cb'-c'b)+b'(ac'-a'c)=Dc'$より$a'x+b'y=c'$である。
+  strategy: Eliminate one variable at a time and check the formulas by substitution.
+  sketch:
+  - 'setup: Put D=ab''-a''b, which is nonzero.'
+  - 'derive: Eliminating y and then x gives Dx=cb''-c''b and Dy=ac''-a''c.'
+  - 'derive: Conversely D(ax+by)=Dc and D(a''x+b''y)=Dc'' by direct expansion.'
+  - 'conclude: Canceling D gives both directions.'
+  openmath: (forall (a b c a2 b2 c2 x y) (-> (!= (- (* a b2) (* a2 b)) 0) (<-> (and (= (+ (* a x) (* b y)) c) (= (+ (* a2 x) (* b2 y)) c2)) (and (= x (/ (- (* c b2) (* c2 b)) (- (* a b2) (* a2 b)))) (= y (/ (- (* a c2) (* a2 c)) (- (* a b2) (* a2 b))))))))
+  hard_negative:
+    statement: $ab'-a'b=0$でも共有点は上の式で与えられる。
+    reason: 分母が$0$になり式に意味がない。実際、$x+y=0$と$x+y=1$には共有点がなく、$x+y=0$と$2x+2y=0$には無数にある。
+  target: |
+    ∀ (a b c a' b' c' x y : ℝ), a * b' - a' * b ≠ 0 → ((a * x + b * y = c ∧ a' * x + b' * y = c') ↔ (x = (c * b' - c' * b) / (a * b' - a' * b) ∧ y = (a * c' - a' * c) / (a * b' - a' * b)))
+  proof: |
+    by
+      intro a b c a' b' c' x y hD
+      rw [eq_div_iff hD, eq_div_iff hD]
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        constructor
+        · linear_combination b' * h₁ - b * h₂
+        · linear_combination a * h₂ - a' * h₁
+      · rintro ⟨h₁, h₂⟩
+        constructor
+        · apply mul_left_cancel₀ hD
+          linear_combination a * h₁ + b * h₂
+        · apply mul_left_cancel₀ hD
+          linear_combination a' * h₁ + b' * h₂
+- id: lines_zero_det_disjoint_or_equal
+  kind: gap
+  level: high
+  topic: 図形と方程式・平行な2直線
+  statement: $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$、$ab'=a'b$のとき、2直線$ax+by=c$、$a'x+b'y=c'$は共有点をもたないか、または一致する。
+  statement_en: If (a,b)≠(0,0), (a',b')≠(0,0) and ab'=a'b, then the lines ax+by=c and a'x+b'y=c' either have no common point or have the same solutions.
+  assumptions:
+  - $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$
+  - $ab'=a'b$
+  quantifiers:
+  - 任意の実数$a,b,c,a',b',c'$
+  conclusion: 2直線は共有点をもたないか、解の全体が一致する。
+  answer: |
+    $a,b,c,a',b',c'$を実数とし、$(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$、$ab'=a'b$とする。共有点がなければ結論は成り立つので、共有点$(x_0,y_0)$があるとする。
+
+    任意の実数$x,y$について$E=ax+by-c$、$E'=a'x+b'y-c'$とおく。$c=ax_0+by_0$、$c'=a'x_0+b'y_0$を代入すると、$ab'=a'b$から$a'E=aE'$と$b'E=bE'$を得る。
+
+    $E=0$なら$aE'=bE'=0$であり、$(a,b)\ne(0,0)$より$E'=0$である。$E'=0$なら$a'E=b'E=0$であり、$(a',b')\ne(0,0)$より$E=0$である。よって2つの方程式の解の全体は一致する。
+  strategy: If a common point exists, express both linear forms relative to it and compare using ab'=a'b.
+  sketch:
+  - 'case_split: Either there is no common point, which is the first alternative, or a common point (x0,y0) exists.'
+  - 'setup: Put E=ax+by-c and E''=a''x+b''y-c'' and substitute c=ax0+by0, c''=a''x0+b''y0.'
+  - 'derive: The relation ab''=a''b gives a''E=aE'' and b''E=bE''.'
+  - 'derive: E=0 forces aE''=bE''=0, so E''=0 since (a,b)≠(0,0).'
+  - 'conclude: Symmetrically E''=0 forces E=0, so the solution sets coincide.'
+  openmath: (forall (a b c a2 b2 c2) (-> (and (not (and (= a 0) (= b 0))) (not (and (= a2 0) (= b2 0))) (= (* a b2) (* a2 b))) (or (forall (x y) (not (and (= (+ (* a x) (* b y)) c) (= (+ (* a2 x) (* b2 y)) c2)))) (forall (x y) (<-> (= (+ (* a x) (* b y)) c) (= (+ (* a2 x) (* b2 y)) c2))))))
+  hard_negative:
+    statement: $ab'=a'b$なら2直線は必ず共有点をもたない。
+    reason: 一致する場合を落としている。$x+y=1$と$2x+2y=2$は$ab'=a'b$を満たし、解の全体が一致する。
+  target: |
+    ∀ (a b c a' b' c' : ℝ), ¬(a = 0 ∧ b = 0) → ¬(a' = 0 ∧ b' = 0) → a * b' = a' * b → (∀ x y : ℝ, ¬(a * x + b * y = c ∧ a' * x + b' * y = c')) ∨ (∀ x y : ℝ, a * x + b * y = c ↔ a' * x + b' * y = c')
+  proof: |
+    by
+      intro a b c a' b' c' hab hab' hcross
+      by_cases hc : ∃ x y : ℝ, a * x + b * y = c ∧ a' * x + b' * y = c'
+      · right
+        obtain ⟨x₀, y₀, h₀, h₀'⟩ := hc
+        intro x y
+        have key₁ : a' * (a * x + b * y - c) = a * (a' * x + b' * y - c') + 0 := by
+          rw [← h₀, ← h₀']; linear_combination (y₀ - y) * hcross
+        have key₂ : b' * (a * x + b * y - c) = b * (a' * x + b' * y - c') + 0 := by
+          rw [← h₀, ← h₀']; linear_combination (x - x₀) * hcross
+        constructor
+        · intro h
+          have hz : a * x + b * y - c = 0 := by linarith
+          rw [hz, mul_zero, add_zero] at key₁ key₂
+          have ha := key₁.symm
+          have hb := key₂.symm
+          have hE : a' * x + b' * y - c' = 0 := by
+            by_contra hE
+            exact hab ⟨(mul_eq_zero.mp ha).resolve_right hE, (mul_eq_zero.mp hb).resolve_right hE⟩
+          linarith
+        · intro h
+          have hz : a' * x + b' * y - c' = 0 := by linarith
+          rw [hz, mul_zero, add_zero] at key₁ key₂
+          have hE : a * x + b * y - c = 0 := by
+            by_contra hE
+            exact hab' ⟨(mul_eq_zero.mp key₁).resolve_right hE, (mul_eq_zero.mp key₂).resolve_right hE⟩
+          linarith
+      · left
+        intro x y h
+        exact hc ⟨x, y, h⟩
+- id: slope_lines_perpendicular_iff_product_minus_one
+  kind: gap
+  level: high
+  topic: 図形と方程式・傾きと垂直条件
+  statement: 傾きの形に限る特殊形。2直線$y=mx+k$、$y=m'x+k'$が点$(x_0,y_0)$で交わるとき、各直線上の任意の点と$(x_0,y_0)$を結ぶベクトルが常に直交することは$mm'=-1$と同値である。
+  statement_en: 'Slope form only: if the lines y=mx+k and y=m''x+k'' both pass through (x0,y0), then the vectors from (x0,y0) to points of the two lines are always orthogonal if and only if mm''=-1.'
+  assumptions:
+  - $y_0=mx_0+k$、$y_0=m'x_0+k'$
+  quantifiers:
+  - 任意の実数$m,k,m',k',x_0,y_0$
+  conclusion: すべての実数$x_1,x_2$について$(x_1-x_0)(x_2-x_0)+(mx_1+k-y_0)(m'x_2+k'-y_0)=0$であることと、$mm'=-1$は同値である。
+  answer: |
+    $m,k,m',k',x_0,y_0$を実数とし、$y_0=mx_0+k$、$y_0=m'x_0+k'$とする。このとき$mx_1+k-y_0=m(x_1-x_0)$、$m'x_2+k'-y_0=m'(x_2-x_0)$である。したがって内積は$(x_1-x_0)(x_2-x_0)(1+mm')$に等しい。
+
+    $mm'=-1$ならこれはすべての$x_1,x_2$で$0$である。逆に常に$0$なら、$x_1=x_2=x_0+1$とおいて$1+mm'=0$を得る。
+  strategy: Factor the dot product using that both lines pass through the common point.
+  sketch:
+  - 'derive: Since the lines pass through (x0,y0), m x1+k-y0=m(x1-x0) and m''x2+k''-y0=m''(x2-x0).'
+  - 'derive: The dot product equals (x1-x0)(x2-x0)(1+mm'').'
+  - 'conclude: It vanishes for all x1,x2 exactly when 1+mm''=0, testing x1=x2=x0+1.'
+  openmath: (forall (m k m2 k2 x0 y0) (-> (and (= y0 (+ (* m x0) k)) (= y0 (+ (* m2 x0) k2))) (<-> (forall (x1 x2) (= (+ (* (- x1 x0) (- x2 x0)) (* (- (+ (* m x1) k) y0) (- (+ (* m2 x2) k2) y0))) 0)) (= (* m m2) (neg 1)))))
+  hard_negative:
+    statement: どの垂直な2直線についても傾きの積は$-1$である。
+    reason: $y$軸に平行な直線には傾きがない。$x=0$と$y=0$は垂直だが、この条件で判定できない。一般形では$aa'+bb'=0$を使う。
+  target: |
+    ∀ (m k m' k' x₀ y₀ : ℝ), y₀ = m * x₀ + k → y₀ = m' * x₀ + k' → ((∀ x₁ x₂ : ℝ, (x₁ - x₀) * (x₂ - x₀) + (m * x₁ + k - y₀) * (m' * x₂ + k' - y₀) = 0) ↔ m * m' = -1)
+  proof: |
+    by
+      intro m k m' k' x₀ y₀ h₁ h₂
+      have e₁ : ∀ x : ℝ, m * x + k - y₀ = m * (x - x₀) := by intro x; rw [h₁]; ring
+      have e₂ : ∀ x : ℝ, m' * x + k' - y₀ = m' * (x - x₀) := by intro x; rw [h₂]; ring
+      constructor
+      · intro h
+        have := h (x₀ + 1) (x₀ + 1)
+        rw [e₁, e₂] at this
+        linear_combination this
+      · intro h x₁ x₂
+        rw [e₁, e₂]
+        linear_combination (x₁ - x₀) * (x₂ - x₀) * h
+- id: general_lines_perpendicular_iff_normals_orthogonal
+  kind: gap
+  level: high
+  topic: 図形と方程式・一般形の垂直条件
+  statement: 一般形の垂直条件。$(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$のとき、直線$ax+by=c$上の2点を結ぶベクトルと直線$a'x+b'y=c'$上の2点を結ぶベクトルが常に直交することは、$aa'+bb'=0$と同値である。
+  statement_en: 'General form: for (a,b)≠(0,0) and (a'',b'')≠(0,0), aa''+bb''=0 if and only if every vector between two points of ax+by=c is orthogonal to every vector between two points of a''x+b''y=c''.'
+  assumptions:
+  - $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$
+  quantifiers:
+  - 任意の実数$a,b,c,a',b',c'$
+  conclusion: $aa'+bb'=0$は、2直線の方向ベクトルが常に直交することと同値である。
+  answer: |
+    $a,b,c,a',b',c'$を実数とし、$(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$とする。$N=a^2+b^2>0$、$N'=a'^2+b'^2>0$とおく。
+
+    $aa'+bb'=0$とする。第1の直線上の2点の差を$(u,v)$、第2の直線上の2点の差を$(s,t)$とすると、$au+bv=0$、$a's+b't=0$である。$E=av-bu$、$E'=a't-b's$とおくと、$Nu=(au+bv)a-bE=-bE$、$Nv=(au+bv)b+aE=aE$であり、同様に$N's=-b'E'$、$N't=a'E'$である。よって$NN'(us+vt)=EE'(aa'+bb')=0$となり、$N,N'\ne0$より$us+vt=0$である。
+
+    逆に、差のベクトルが常に直交するとする。$P=\left(\frac{ac}{N},\frac{bc}{N}\right)$と$P+(-b,a)$は第1の直線の上にあり、$Q=\left(\frac{a'c'}{N'},\frac{b'c'}{N'}\right)$と$Q+(-b',a')$は第2の直線の上にある。差のベクトルはそれぞれ$(-b,a)$、$(-b',a')$なので、内積$bb'+aa'$は$0$である。
+  strategy: Write direction vectors as multiples of (-b,a) and (-b',a') and test on explicit points for the converse.
+  sketch:
+  - 'setup: Put N=a^2+b^2 and N''=a''^2+b''^2, both positive.'
+  - 'derive: A difference (u,v) of points of the first line satisfies au+bv=0, so Nu=-bE and Nv=aE with E=av-bu.'
+  - 'derive: Likewise N''s=-b''E'' and N''t=a''E'' for the second line.'
+  - 'derive: Hence NN''(us+vt)=EE''(aa''+bb''), which is zero under the condition.'
+  - 'construct: For the converse take explicit points on both lines with differences (-b,a) and (-b'',a'').'
+  - 'conclude: The dot product of these differences is aa''+bb'', so it must vanish.'
+  openmath: (forall (a b c a2 b2 c2) (-> (and (not (and (= a 0) (= b 0))) (not (and (= a2 0) (= b2 0)))) (<-> (= (+ (* a a2) (* b b2)) 0) (forall (x1 y1 x2 y2 s1 t1 s2 t2) (-> (and (= (+ (* a x1) (* b y1)) c) (= (+ (* a x2) (* b y2)) c) (= (+ (* a2 s1) (* b2 t1)) c2) (= (+ (* a2 s2) (* b2 t2)) c2)) (= (+ (* (- x1 x2) (- s1 s2)) (* (- y1 y2) (- t1 t2))) 0))))))
+  hard_negative:
+    statement: $ab'-a'b=0$なら2直線は垂直である。
+    reason: これは平行の条件である。$x+y=0$と$x+y=1$はこれを満たすが、方向ベクトルはともに$(1,-1)$で内積は$2$である。
+  target: |
+    ∀ (a b c a' b' c' : ℝ), ¬(a = 0 ∧ b = 0) → ¬(a' = 0 ∧ b' = 0) → (a * a' + b * b' = 0 ↔ ∀ x₁ y₁ x₂ y₂ s₁ t₁ s₂ t₂ : ℝ, a * x₁ + b * y₁ = c → a * x₂ + b * y₂ = c → a' * s₁ + b' * t₁ = c' → a' * s₂ + b' * t₂ = c' → (x₁ - x₂) * (s₁ - s₂) + (y₁ - y₂) * (t₁ - t₂) = 0)
+  proof: |
+    by
+      intro a b c a' b' c' hab hab'
+      have hN : a ^ 2 + b ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have hN' : a' ^ 2 + b' ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a' = 0
+        · have hb₀ : b' ≠ 0 := fun hb₀ => hab' ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      constructor
+      · intro hD x₁ y₁ x₂ y₂ s₁ t₁ s₂ t₂ h₁ h₂ h₃ h₄
+        have hA : a * (x₁ - x₂) + b * (y₁ - y₂) = 0 := by linarith
+        have hB : a' * (s₁ - s₂) + b' * (t₁ - t₂) = 0 := by linarith
+        have hZ : (a ^ 2 + b ^ 2) * (a' ^ 2 + b' ^ 2) * ((x₁ - x₂) * (s₁ - s₂) + (y₁ - y₂) * (t₁ - t₂)) = 0 := by
+          linear_combination ((a' * (s₁ - s₂) + b' * (t₁ - t₂)) * (a * a' + b * b') + (a' * (t₁ - t₂) - b' * (s₁ - s₂)) * (b * a' - a * b')) * hA + ((a * (y₁ - y₂) - b * (x₁ - x₂)) * (a * b' - b * a')) * hB + ((a * (y₁ - y₂) - b * (x₁ - x₂)) * (a' * (t₁ - t₂) - b' * (s₁ - s₂))) * hD
+        exact (mul_eq_zero.mp hZ).resolve_left (mul_ne_zero hN hN')
+      · intro h
+        have hP : a * (a * c / (a ^ 2 + b ^ 2)) + b * (b * c / (a ^ 2 + b ^ 2)) = c := by field_simp
+        have hQ : a' * (a' * c' / (a' ^ 2 + b' ^ 2)) + b' * (b' * c' / (a' ^ 2 + b' ^ 2)) = c' := by field_simp
+        have := h (a * c / (a ^ 2 + b ^ 2) - b) (b * c / (a ^ 2 + b ^ 2) + a) _ _ (a' * c' / (a' ^ 2 + b' ^ 2) - b') (b' * c' / (a' ^ 2 + b' ^ 2) + a') _ _ (by linear_combination hP) hP (by linear_combination hQ) hQ
+        linear_combination this
+- id: foot_of_perpendicular_formula
+  kind: gap
+  level: high
+  topic: 図形と方程式・垂線の足
+  statement: $(a,b)\ne(0,0)$とする。点$(p,q)$から直線$ax+by+c=0$に下ろした垂線の足は$\left(p-\frac{a(ap+bq+c)}{a^2+b^2},q-\frac{b(ap+bq+c)}{a^2+b^2}\right)$である。すなわち、$(x,y)$が直線の上にあり、ある実数$s$で$(x,y)=(p,q)+s(a,b)$と書けることは、$(x,y)$がこの点であることと同値である。
+  statement_en: For (a,b)≠(0,0), (x,y) lies on ax+by+c=0 and equals (p,q)+s(a,b) for some real s if and only if x=p-a(ap+bq+c)/(a^2+b^2) and y=q-b(ap+bq+c)/(a^2+b^2).
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $c,p,q,x,y$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,x,y$
+  conclusion: 垂線の足は上の座標で与えられる点ただ1つである。
+  answer: |
+    $a,b,c,p,q,x,y$を実数とし、$(a,b)\ne(0,0)$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。
+
+    $(x,y)=(p+sa,q+sb)$が直線の上にあるとする。代入すると$w+sN=0$なので$s=-\frac{w}{N}$であり、$x=p-\frac{aw}{N}$、$y=q-\frac{bw}{N}$を得る。
+
+    逆に$x=p-\frac{aw}{N}$、$y=q-\frac{bw}{N}$とする。$s=-\frac{w}{N}$とおけば$(x,y)=(p,q)+s(a,b)$である。また$ax+by+c=w-\frac{(a^2+b^2)w}{N}=0$なので、$(x,y)$は直線の上にある。
+  strategy: Substitute the normal line through (p,q) into the equation of the line and solve for s.
+  sketch:
+  - 'setup: Put N=a^2+b^2>0 and w=ap+bq+c.'
+  - 'derive: Substituting (p+sa,q+sb) into the line gives w+sN=0, so s=-w/N.'
+  - 'derive: This yields the stated coordinates of the foot.'
+  - 'conclude: Conversely those coordinates lie on the line and on the normal through (p,q).'
+  openmath: (forall (a b c p q x y) (-> (not (and (= a 0) (= b 0))) (<-> (and (= (+ (+ (* a x) (* b y)) c) 0) (exists (s) (and (= x (+ p (* s a))) (= y (+ q (* s b)))))) (and (= x (- p (/ (* a (+ (+ (* a p) (* b q)) c)) (+ (^ a 2) (^ b 2))))) (= y (- q (/ (* b (+ (+ (* a p) (* b q)) c)) (+ (^ a 2) (^ b 2)))))))))
+  hard_negative:
+    statement: 垂線の足は$\left(p-\frac{ap+bq+c}{a},q-\frac{ap+bq+c}{b}\right)$である。
+    reason: 分母が誤りで、$a=0$や$b=0$では意味がない。$x+y=0$と点$(1,1)$の垂線の足は$(0,0)$だが、この式は$(-1,-1)$を与える。
+  target: |
+    ∀ (a b c p q x y : ℝ), ¬(a = 0 ∧ b = 0) → ((a * x + b * y + c = 0 ∧ ∃ s : ℝ, x = p + s * a ∧ y = q + s * b) ↔ (x = p - a * (a * p + b * q + c) / (a ^ 2 + b ^ 2) ∧ y = q - b * (a * p + b * q + c) / (a ^ 2 + b ^ 2)))
+  proof: |
+    by
+      intro a b c p q x y hab
+      have hN : a ^ 2 + b ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      constructor
+      · rintro ⟨hl, s, rfl, rfl⟩
+        have hs : s * (a ^ 2 + b ^ 2) = -(a * p + b * q + c) := by linear_combination hl
+        have hs' : s = -(a * p + b * q + c) / (a ^ 2 + b ^ 2) := by
+          rw [eq_div_iff hN]; exact hs
+        rw [hs']
+        constructor <;> ring
+      · rintro ⟨rfl, rfl⟩
+        constructor
+        · field_simp; ring
+        · exact ⟨-(a * p + b * q + c) / (a ^ 2 + b ^ 2), by ring, by ring⟩
+- id: point_line_distance_formula
+  kind: named
+  level: high
+  topic: 図形と方程式・点と直線の距離
+  statement: 点と直線の距離の公式。$(a,b)\ne(0,0)$のとき、直線$ax+by+c=0$上の点と点$(p,q)$との距離の最小値は$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}$である。
+  statement_en: 'Point-line distance formula: for (a,b)≠(0,0), the minimum of the distance from (p,q) to the points of ax+by+c=0 equals |ap+bq+c|/√(a^2+b^2).'
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $c,p,q$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,p,q$
+  conclusion: 距離の最小値は$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}$である。
+  answer: |
+    $a,b,c,p,q$を実数とし、$(a,b)\ne(0,0)$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。
+
+    まず下から評価する。$(x,y)$が直線の上にあるとすると$ax+by+c=0$より$w=a(p-x)+b(q-y)$である。$N\{(x-p)^2+(y-q)^2\}-w^2=\{a(q-y)-b(p-x)\}^2\ge0$なので、$|w|\le\sqrt{N}\sqrt{(x-p)^2+(y-q)^2}$となる。よって距離は$\frac{|w|}{\sqrt{N}}$以上である。
+
+    次に最小値をとる点を示す。$x_0=p-\frac{aw}{N}$、$y_0=q-\frac{bw}{N}$とおくと$ax_0+by_0+c=w-w=0$なので、$(x_0,y_0)$は直線の上にある。また$(x_0-p)^2+(y_0-q)^2=\frac{(a^2+b^2)w^2}{N^2}=\frac{w^2}{N}$であり、距離は$\frac{|w|}{\sqrt{N}}$に等しい。
+  strategy: Bound the distance below by Cauchy-Schwarz and attain the bound at the foot of the perpendicular.
+  sketch:
+  - 'setup: Put N=a^2+b^2>0 and w=ap+bq+c.'
+  - 'derive: For (x,y) on the line, w=a(p-x)+b(q-y).'
+  - 'derive: Lagrange''s identity gives w^2≤N((x-p)^2+(y-q)^2), so the distance is at least |w|/√N.'
+  - 'construct: Take the foot x0=p-aw/N, y0=q-bw/N, which lies on the line.'
+  - 'conclude: Its squared distance is w^2/N, so the lower bound is the minimum.'
+  openmath: (forall (a b c p q) (-> (not (and (= a 0) (= b 0))) (and (exists (x y) (and (= (+ (+ (* a x) (* b y)) c) 0) (= (/ (abs (+ (+ (* a p) (* b q)) c)) (root (+ (^ a 2) (^ b 2)) 2)) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2)))) (forall (x y) (-> (= (+ (+ (* a x) (* b y)) c) 0) (<= (/ (abs (+ (+ (* a p) (* b q)) c)) (root (+ (^ a 2) (^ b 2)) 2)) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2)))))))
+  hard_negative:
+    statement: 距離の公式で分母を$a^2+b^2$としてもよい。
+    reason: 平方根が必要である。$3x+4y=0$と点$(0,5)$の距離は$4$であるが、分母を$25$にすると$\frac{4}{5}$になる。
+  target: |
+    ∀ (a b c p q : ℝ), ¬(a = 0 ∧ b = 0) → IsLeast {d : ℝ | ∃ x y : ℝ, a * x + b * y + c = 0 ∧ d = Real.sqrt ((x - p) ^ 2 + (y - q) ^ 2)} (|a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2))
+  proof: |
+    by
+      intro a b c p q hab
+      have hN : 0 < a ^ 2 + b ^ 2 := by
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      constructor
+      · refine ⟨p - a * (a * p + b * q + c) / (a ^ 2 + b ^ 2), q - b * (a * p + b * q + c) / (a ^ 2 + b ^ 2), ?_, ?_⟩
+        · field_simp; ring
+        · have h : (p - a * (a * p + b * q + c) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - b * (a * p + b * q + c) / (a ^ 2 + b ^ 2) - q) ^ 2 = (a * p + b * q + c) ^ 2 / (a ^ 2 + b ^ 2) := by
+            field_simp; ring
+          rw [h, Real.sqrt_div (sq_nonneg _), Real.sqrt_sq_eq_abs]
+      · rintro d ⟨x, y, hl, rfl⟩
+        rw [div_le_iff₀ (Real.sqrt_pos.mpr hN), ← Real.sqrt_mul (by positivity)]
+        apply Real.abs_le_sqrt
+        have hw : a * p + b * q + c = a * (p - x) + b * (q - y) := by linear_combination hl
+        rw [hw]
+        linarith [sq_nonneg (a * (q - y) - b * (p - x))]
+- id: segment_meets_line_iff_sign_product
+  kind: gap
+  level: high
+  topic: 図形と方程式・領域と線分
+  statement: 実数$a,b,c$について、2点$(x_1,y_1)$、$(x_2,y_2)$を結ぶ線分が方程式$ax+by+c=0$を満たす点をもつことと、$(ax_1+by_1+c)(ax_2+by_2+c)\le0$は同値である。
+  statement_en: For real a,b,c, the segment joining (x1,y1) and (x2,y2) contains a point satisfying ax+by+c=0 if and only if (a x1+b y1+c)(a x2+b y2+c) ≤ 0.
+  assumptions:
+  - $a,b,c,x_1,y_1,x_2,y_2$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,x_1,y_1,x_2,y_2$
+  conclusion: 線分と直線の共有点の存在は$(ax_1+by_1+c)(ax_2+by_2+c)\le0$と同値である。
+  answer: |
+    $a,b,c,x_1,y_1,x_2,y_2$を実数とし、$u=ax_1+by_1+c$、$v=ax_2+by_2+c$とおく。線分上の点$((1-t)x_1+tx_2,(1-t)y_1+ty_2)$（$0\le t\le1$）で$ax+by+c$の値は$(1-t)u+tv$である。
+
+    $0\le t\le1$で$(1-t)u+tv=0$となる$t$があるとする。$t=0$なら$u=0$であり$uv=0$である。$t>0$なら$tv=-(1-t)u$より$t(uv)=-(1-t)u^2\le0$であり、$uv\le0$である。
+
+    逆に$uv\le0$とする。$u=v$なら$u^2\le0$より$u=v=0$であり、$t=0$でよい。$u\ne v$なら$t=\frac{u}{u-v}$とおく。$t=\frac{u(u-v)}{(u-v)^2}$で、$u(u-v)=u^2-uv\ge0$より$t\ge0$である。$1-t=\frac{-v(u-v)}{(u-v)^2}$で、$-v(u-v)=v^2-uv\ge0$より$t\le1$である。このとき$(1-t)u+tv=\frac{-vu+uv}{u-v}=0$である。
+  strategy: Reduce to the affine function (1-t)u+tv of t on [0,1] and solve for its zero.
+  sketch:
+  - 'setup: Put u and v for the values of ax+by+c at the endpoints; on the segment the value is (1-t)u+tv.'
+  - 'derive: A zero at t>0 gives t·uv=-(1-t)u^2≤0, and a zero at t=0 gives u=0.'
+  - 'case_split: For the converse, split on u=v and u≠v.'
+  - 'construct: If u=v then u^2≤0, so u=v=0 and t=0 works.'
+  - 'construct: If u≠v take t=u/(u-v).'
+  - 'conclude: The conditions u^2-uv≥0 and v^2-uv≥0 give 0≤t≤1.'
+  openmath: (forall (a b c x1 y1 x2 y2) (<-> (exists (t) (and (<= 0 t) (<= t 1) (= (+ (+ (* a (+ (* (- 1 t) x1) (* t x2))) (* b (+ (* (- 1 t) y1) (* t y2)))) c) 0))) (<= (* (+ (+ (* a x1) (* b y1)) c) (+ (+ (* a x2) (* b y2)) c)) 0)))
+  hard_negative:
+    statement: 線分と直線が共有点をもつなら$(ax_1+by_1+c)(ax_2+by_2+c)<0$である。
+    reason: 端点が直線の上にあると積は$0$である。$y=0$と$(0,0)$、$(1,1)$を結ぶ線分がその例である。
+  target: |
+    ∀ (a b c x₁ y₁ x₂ y₂ : ℝ), (∃ t : ℝ, 0 ≤ t ∧ t ≤ 1 ∧ a * ((1 - t) * x₁ + t * x₂) + b * ((1 - t) * y₁ + t * y₂) + c = 0) ↔ (a * x₁ + b * y₁ + c) * (a * x₂ + b * y₂ + c) ≤ 0
+  proof: |
+    by
+      intro a b c x₁ y₁ x₂ y₂
+      have key : ∀ t : ℝ, a * ((1 - t) * x₁ + t * x₂) + b * ((1 - t) * y₁ + t * y₂) + c = (1 - t) * (a * x₁ + b * y₁ + c) + t * (a * x₂ + b * y₂ + c) := by
+        intro t; ring
+      simp only [key]
+      generalize a * x₁ + b * y₁ + c = u
+      generalize a * x₂ + b * y₂ + c = v
+      constructor
+      · rintro ⟨t, h0, h1, h⟩
+        rcases h0.eq_or_lt with rfl | ht
+        · have hu : u = 0 := by linarith
+          simp [hu]
+        · have hv : v * t = -((1 - t) * u) := by linarith
+          have hz : t * (u * v) ≤ 0 := by
+            have : t * (u * v) = -((1 - t) * u ^ 2) := by linear_combination u * hv
+            rw [this]
+            have : 0 ≤ (1 - t) * u ^ 2 := mul_nonneg (by linarith) (sq_nonneg u)
+            linarith
+          by_contra hc
+          push Not at hc
+          have := mul_pos ht hc
+          linarith
+      · intro h
+        by_cases hd : u - v = 0
+        · have huv : u = v := by linarith
+          subst huv
+          have hu : u = 0 := pow_eq_zero_iff two_ne_zero |>.mp (le_antisymm (by linarith) (sq_nonneg u))
+          exact ⟨0, le_refl _, zero_le_one, by simp [hu]⟩
+        · have hpos : 0 < (u - v) ^ 2 := by positivity
+          refine ⟨u * (u - v) / (u - v) ^ 2, ?_, ?_, ?_⟩
+          · apply div_nonneg _ hpos.le
+            linarith [sq_nonneg u]
+          · rw [div_le_one hpos]
+            linarith [sq_nonneg v]
+          · field_simp; ring
+- id: reflection_across_line_formula
+  kind: gap
+  level: high
+  topic: 図形と方程式・直線に関する対称点
+  statement: $(a,b)\ne(0,0)$、$w=ap+bq+c$、$r=p-\frac{2aw}{a^2+b^2}$、$s=q-\frac{2bw}{a^2+b^2}$とする。点$(p,q)$と$(r,s)$の中点は直線$ax+by+c=0$の上にあり、この直線上の任意の点から$(p,q)$と$(r,s)$までの距離は等しい。
+  statement_en: For (a,b)≠(0,0), w=ap+bq+c, r=p-2aw/(a^2+b^2) and s=q-2bw/(a^2+b^2), the midpoint of (p,q) and (r,s) lies on ax+by+c=0, and every point of this line is equidistant from (p,q) and (r,s).
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $c,p,q$は実数
+  quantifiers:
+  - 任意の実数$a,b,c,p,q$
+  conclusion: $(r,s)$は直線に関する$(p,q)$の対称点で、直線上の点までの距離を保つ。
+  answer: |
+    $a,b,c,p,q$を実数とし、$(a,b)\ne(0,0)$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおき、$r=p-\frac{2aw}{N}$、$s=q-\frac{2bw}{N}$とする。
+
+    中点は$\left(p-\frac{aw}{N},q-\frac{bw}{N}\right)$であり、これを代入すると$ax+by+c=w-\frac{Nw}{N}=0$である。
+
+    $(x,y)$を直線上の点とする。$a(x-p)+b(y-q)=-w$である。展開すると
+    $(x-r)^2+(y-s)^2-(x-p)^2-(y-q)^2=\frac{4w}{N}\{a(x-p)+b(y-q)\}+\frac{4w^2}{N}=\frac{4w}{N}(-w+w)=0$
+    となる。距離の平方が等しいので距離も等しい。
+  strategy: Check the midpoint directly and expand the difference of squared distances.
+  sketch:
+  - 'setup: Put N=a^2+b^2 and w=ap+bq+c.'
+  - 'derive: The midpoint is (p-aw/N,q-bw/N), which satisfies the line equation.'
+  - 'derive: For (x,y) on the line, a(x-p)+b(y-q)=-w.'
+  - 'derive: The difference of the squared distances equals (4w/N)(a(x-p)+b(y-q)+w)=0.'
+  - 'conclude: Hence the two distances are equal.'
+  openmath: (forall (a b c p q) (-> (not (and (= a 0) (= b 0))) (exists (r s) (and (= r (- p (/ (* (* 2 a) (+ (+ (* a p) (* b q)) c)) (+ (^ a 2) (^ b 2))))) (= s (- q (/ (* (* 2 b) (+ (+ (* a p) (* b q)) c)) (+ (^ a 2) (^ b 2))))) (= (+ (+ (* a (/ (+ p r) 2)) (* b (/ (+ q s) 2))) c) 0) (forall (x y) (-> (= (+ (+ (* a x) (* b y)) c) 0) (= (root (+ (^ (- x r) 2) (^ (- y s) 2)) 2) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2))))))))
+  hard_negative:
+    statement: 直線上にない任意の点からも$(p,q)$と$(r,s)$までの距離は等しい。
+    reason: $(p,q)$が直線上にないとき、距離が等しい点の全体は直線そのものである。$y=0$、$(p,q)=(0,1)$、$(r,s)=(0,-1)$で点$(0,2)$の距離は$1$と$3$である。
+  target: |
+    ∀ (a b c p q : ℝ), ¬(a = 0 ∧ b = 0) → ∃ r s : ℝ, r = p - 2 * a * (a * p + b * q + c) / (a ^ 2 + b ^ 2) ∧ s = q - 2 * b * (a * p + b * q + c) / (a ^ 2 + b ^ 2) ∧ a * ((p + r) / 2) + b * ((q + s) / 2) + c = 0 ∧ ∀ x y : ℝ, a * x + b * y + c = 0 → Real.sqrt ((x - r) ^ 2 + (y - s) ^ 2) = Real.sqrt ((x - p) ^ 2 + (y - q) ^ 2)
+  proof: |
+    by
+      intro a b c p q hab
+      have hN : a ^ 2 + b ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      refine ⟨_, _, rfl, rfl, ?_, ?_⟩
+      · field_simp; ring
+      · intro x y hl
+        congr 1
+        have hw : a * (x - p) + b * (y - q) = -(a * p + b * q + c) := by linear_combination hl
+        have : (x - (p - 2 * a * (a * p + b * q + c) / (a ^ 2 + b ^ 2))) ^ 2 + (y - (q - 2 * b * (a * p + b * q + c) / (a ^ 2 + b ^ 2))) ^ 2 - ((x - p) ^ 2 + (y - q) ^ 2) = 4 * (a * p + b * q + c) * (a * (x - p) + b * (y - q) + (a * p + b * q + c)) / (a ^ 2 + b ^ 2) := by
+          field_simp; ring
+        rw [hw] at this
+        simp only [neg_add_cancel, mul_zero, zero_div] at this
+        linarith
+- id: circle_general_form_positive_center_radius
+  kind: textbook
+  level: high
+  topic: 図形と方程式・円の一般形
+  statement: $l^2+m^2-4n>0$のとき、$x^2+y^2+lx+my+n=0$は中心$\left(-\frac{l}{2},-\frac{m}{2}\right)$、半径$\frac{\sqrt{l^2+m^2-4n}}{2}$の円の方程式と同値である。
+  statement_en: If l^2+m^2-4n>0, then x^2+y^2+lx+my+n=0 is equivalent to the equation of the circle with center (-l/2,-m/2) and positive radius √(l^2+m^2-4n)/2.
+  assumptions:
+  - $l^2+m^2-4n>0$
+  quantifiers:
+  - 任意の実数$l,m,n,x,y$
+  conclusion: 半径は正であり、一般形は標準形$\left(x+\frac{l}{2}\right)^2+\left(y+\frac{m}{2}\right)^2=\left(\frac{\sqrt{l^2+m^2-4n}}{2}\right)^2$と同値である。
+  answer: |
+    $l,m,n$を$l^2+m^2-4n>0$を満たす実数とし、$x,y$を実数とする。$\sqrt{l^2+m^2-4n}>0$なので半径は正である。平方完成により
+    $x^2+y^2+lx+my+n=\left(x+\frac{l}{2}\right)^2+\left(y+\frac{m}{2}\right)^2-\frac{l^2+m^2-4n}{4}$
+    である。$\left(\frac{\sqrt{l^2+m^2-4n}}{2}\right)^2=\frac{l^2+m^2-4n}{4}$なので、左辺が$0$であることは標準形と同値である。
+  strategy: Complete the square in x and y.
+  sketch:
+  - 'derive: Positivity of l^2+m^2-4n makes its square root and the radius positive.'
+  - 'derive: Completing the square rewrites the left side with constant -(l^2+m^2-4n)/4.'
+  - 'conclude: The general form is equivalent to the standard form with that radius.'
+  openmath: (forall (l m n) (-> (> (- (+ (^ l 2) (^ m 2)) (* 4 n)) 0) (and (> (/ (root (- (+ (^ l 2) (^ m 2)) (* 4 n)) 2) 2) 0) (forall (x y) (<-> (= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l x)) (* m y)) n) 0) (= (+ (^ (- x (/ (neg l) 2)) 2) (^ (- y (/ (neg m) 2)) 2)) (^ (/ (root (- (+ (^ l 2) (^ m 2)) (* 4 n)) 2) 2) 2)))))))
+  hard_negative:
+    statement: $x^2+y^2+lx+my+n=0$はどの実数$l,m,n$でも円を表す。
+    reason: $x^2+y^2+1=0$には解がなく、$x^2+y^2=0$の解は原点だけである。
+  target: |
+    ∀ (l m n : ℝ), 0 < l ^ 2 + m ^ 2 - 4 * n → 0 < Real.sqrt (l ^ 2 + m ^ 2 - 4 * n) / 2 ∧ ∀ x y : ℝ, x ^ 2 + y ^ 2 + l * x + m * y + n = 0 ↔ (x - (-l / 2)) ^ 2 + (y - (-m / 2)) ^ 2 = (Real.sqrt (l ^ 2 + m ^ 2 - 4 * n) / 2) ^ 2
+  proof: |
+    by
+      intro l m n h
+      refine ⟨by positivity, fun x y => ?_⟩
+      rw [div_pow, Real.sq_sqrt h.le]
+      constructor
+      · intro e; linear_combination e
+      · intro e; linear_combination e
+- id: circle_general_form_nonpositive_degenerate
+  kind: gap
+  level: high
+  topic: 図形と方程式・円の一般形の退化
+  statement: $x^2+y^2+lx+my+n=0$について、$l^2+m^2-4n=0$なら解は1点$\left(-\frac{l}{2},-\frac{m}{2}\right)$だけであり、$l^2+m^2-4n<0$なら実数解をもたない。
+  statement_en: 'For x^2+y^2+lx+my+n=0: if l^2+m^2-4n=0 the only solution is (-l/2,-m/2), and if l^2+m^2-4n<0 there is no real solution.'
+  assumptions:
+  - $l,m,n$は実数
+  quantifiers:
+  - 任意の実数$l,m,n,x,y$
+  conclusion: 判別量が$0$なら解は1点、負なら解はない。
+  answer: |
+    $l,m,n$を実数とし、$x,y$を実数とする。平方完成により
+    $x^2+y^2+lx+my+n=\left(x+\frac{l}{2}\right)^2+\left(y+\frac{m}{2}\right)^2-\frac{l^2+m^2-4n}{4}$
+    である。
+
+    $l^2+m^2-4n=0$のとき、左辺が$0$であることは2つの平方の和が$0$であることと同値であり、これは$x=-\frac{l}{2}$、$y=-\frac{m}{2}$と同値である。
+
+    $l^2+m^2-4n<0$のとき、右辺は正なので左辺は$0$にならない。
+  strategy: Complete the square and use that a sum of squares vanishes only when both vanish.
+  sketch:
+  - 'derive: Completing the square gives a sum of two squares minus (l^2+m^2-4n)/4.'
+  - 'case_split: Treat l^2+m^2-4n=0 and l^2+m^2-4n<0 separately.'
+  - 'derive: In the zero case the sum of squares is zero exactly at (-l/2,-m/2).'
+  - 'conclude: In the negative case the expression is strictly positive.'
+  openmath: (forall (l m n) (and (-> (= (- (+ (^ l 2) (^ m 2)) (* 4 n)) 0) (forall (x y) (<-> (= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l x)) (* m y)) n) 0) (and (= x (/ (neg l) 2)) (= y (/ (neg m) 2)))))) (-> (< (- (+ (^ l 2) (^ m 2)) (* 4 n)) 0) (forall (x y) (!= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l x)) (* m y)) n) 0)))))
+  hard_negative:
+    statement: $l^2+m^2-4n<0$でも半径$\frac{\sqrt{|l^2+m^2-4n|}}{2}$の円を表す。
+    reason: 実数解はない。$x^2+y^2+1=0$では$l^2+m^2-4n=-4$だが、左辺は常に$1$以上である。
+  target: |
+    ∀ (l m n : ℝ), (l ^ 2 + m ^ 2 - 4 * n = 0 → ∀ x y : ℝ, x ^ 2 + y ^ 2 + l * x + m * y + n = 0 ↔ (x = -l / 2 ∧ y = -m / 2)) ∧ (l ^ 2 + m ^ 2 - 4 * n < 0 → ∀ x y : ℝ, x ^ 2 + y ^ 2 + l * x + m * y + n ≠ 0)
+  proof: |
+    by
+      intro l m n
+      have key : ∀ x y : ℝ, x ^ 2 + y ^ 2 + l * x + m * y + n = (x + l / 2) ^ 2 + (y + m / 2) ^ 2 - (l ^ 2 + m ^ 2 - 4 * n) / 4 := by
+        intro x y; ring
+      constructor
+      · intro h x y
+        rw [key, h]
+        constructor
+        · intro e
+          have e' : (x + l / 2) ^ 2 + (y + m / 2) ^ 2 = 0 := by linarith
+          obtain ⟨h₁, h₂⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp e'
+          have h₃ := pow_eq_zero_iff two_ne_zero |>.mp h₁
+          have h₄ := pow_eq_zero_iff two_ne_zero |>.mp h₂
+          constructor <;> linarith
+        · rintro ⟨rfl, rfl⟩
+          ring
+      · intro h x y
+        rw [key]
+        have h₁ := sq_nonneg (x + l / 2)
+        have h₂ := sq_nonneg (y + m / 2)
+        apply ne_of_gt
+        generalize (x + l / 2) ^ 2 = A at *
+        generalize (y + m / 2) ^ 2 = B at *
+        linarith
+- id: circle_center_radius_determined_by_set
+  kind: gap
+  level: high
+  topic: 図形と方程式・円の中心と半径の一意性
+  statement: $r,r'>0$とする。2つの方程式$(x-a)^2+(y-b)^2=r^2$と$(x-a')^2+(y-b')^2=r'^2$の解の全体が一致するなら、$a=a'$、$b=b'$、$r=r'$である。
+  statement_en: For r,r'>0, if (x-a)^2+(y-b)^2=r^2 and (x-a')^2+(y-b')^2=r'^2 have the same solutions, then a=a', b=b' and r=r'.
+  assumptions:
+  - $r>0$、$r'>0$
+  - すべての実数$x,y$について2つの方程式は同値
+  quantifiers:
+  - 任意の実数$a,b,r,a',b',r'$
+  conclusion: $a=a'$、$b=b'$、$r=r'$である。
+  answer: |
+    $a,b,r,a',b',r'$を実数とし、$r,r'>0$、かつ2つの方程式の解の全体が一致するとする。
+
+    $(a+r,b)$と$(a-r,b)$は第1の方程式を満たすので、第2の方程式も満たす。引くと$(a+r-a')^2-(a-r-a')^2=4r(a-a')=0$であり、$r>0$より$a=a'$である。$(a,b+r)$と$(a,b-r)$から同様に$b=b'$を得る。すると$(a+r,b)$を第2の方程式に代入して$r^2=r'^2$となり、$r,r'>0$より$r=r'$である。
+  strategy: Test the second equation at the four axis points of the first circle.
+  sketch:
+  - 'setup: The points (a±r,b) and (a,b±r) lie on the first circle, hence on the second.'
+  - 'derive: Subtracting the equations at (a+r,b) and (a-r,b) gives 4r(a-a'')=0, so a=a''.'
+  - 'derive: Likewise b=b''.'
+  - 'conclude: Substituting (a+r,b) gives r^2=r''^2, and positivity gives r=r''.'
+  openmath: (forall (a b r a2 b2 r2) (-> (and (> r 0) (> r2 0) (forall (x y) (<-> (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (+ (^ (- x a2) 2) (^ (- y b2) 2)) (^ r2 2))))) (and (= a a2) (= b b2) (= r r2))))
+  hard_negative:
+    statement: $r,r'$の符号を問わず$r=r'$である。
+    reason: 方程式には$r^2$しか現れない。$x^2+y^2=1$は$r=1$でも$r=-1$でも同じ解をもつ。
+  target: |
+    ∀ (a b r a' b' r' : ℝ), 0 < r → 0 < r' → (∀ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ↔ (x - a') ^ 2 + (y - b') ^ 2 = r' ^ 2) → a = a' ∧ b = b' ∧ r = r'
+  proof: |
+    by
+      intro a b r a' b' r' hr hr' h
+      have h₁ := (h (a + r) b).mp (by ring)
+      have h₂ := (h (a - r) b).mp (by ring)
+      have h₃ := (h a (b + r)).mp (by ring)
+      have h₄ := (h a (b - r)).mp (by ring)
+      have ea : r * (a - a') = 0 := by linear_combination (h₁ - h₂) / 4
+      have eb : r * (b - b') = 0 := by linear_combination (h₃ - h₄) / 4
+      have ea' : a = a' := by
+        have := (mul_eq_zero.mp ea).resolve_left hr.ne'
+        linarith
+      have eb' : b = b' := by
+        have := (mul_eq_zero.mp eb).resolve_left hr.ne'
+        linarith
+      subst ea' eb'
+      refine ⟨rfl, rfl, ?_⟩
+      have : r ^ 2 = r' ^ 2 := by linear_combination h₁
+      exact (pow_left_inj₀ hr.le hr'.le two_ne_zero).mp this
+- id: circle_through_three_noncollinear_points_unique
+  kind: textbook
+  level: high
+  topic: 図形と方程式・3点を通る円
+  statement: 3点$(x_1,y_1)$、$(x_2,y_2)$、$(x_3,y_3)$が$(x_2-x_1)(y_3-y_1)-(y_2-y_1)(x_3-x_1)\ne0$を満たすとき、3点を通る円（中心と正の半径の組）はただ1つ存在する。
+  statement_en: If (x2-x1)(y3-y1)-(y2-y1)(x3-x1)≠0, there is exactly one triple of a center and a positive radius whose circle passes through the three points (x1,y1),(x2,y2),(x3,y3).
+  assumptions:
+  - $(x_2-x_1)(y_3-y_1)-(y_2-y_1)(x_3-x_1)\ne0$
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x_3,y_3$
+  conclusion: 3点を通る円の中心と正の半径はただ1組存在する。
+  answer: |
+    $x_1,y_1,x_2,y_2,x_3,y_3$を実数とする。$u=x_2-x_1$、$v=y_2-y_1$、$s=x_3-x_1$、$t=y_3-y_1$とおき、$D=ut-vs\ne0$とする。
+
+    中心を$(x_1+X,y_1+Y)$、半径を$\rho>0$とする。3点を通ることは、$X^2+Y^2=\rho^2$と
+    $2(uX+vY)=u^2+v^2$、$2(sX+tY)=s^2+t^2$
+    が同時に成り立つことと同値である。第2、第3の式は$X,Y$の連立1次方程式であり、$D\ne0$より解はただ1組である。解は$X=\frac{t(u^2+v^2)-v(s^2+t^2)}{2D}$、$Y=\frac{u(s^2+t^2)-s(u^2+v^2)}{2D}$である。
+
+    もし$X=Y=0$なら第2の式から$u=v=0$となり$D=0$に反する。よって$X^2+Y^2>0$であり、$\rho=\sqrt{X^2+Y^2}$は正の半径としてただ1つ定まる。
+  strategy: Subtract the circle equations to get a linear system for the center, then fix the radius.
+  sketch:
+  - 'setup: Translate by (x1,y1) with u,v,s,t the coordinate differences and D=ut-vs≠0.'
+  - 'translate: Passing through the three points is equivalent to X^2+Y^2=ρ^2 together with two linear equations for the center (X,Y).'
+  - 'derive: Since D≠0, the linear system has exactly one solution.'
+  - 'derive: X=Y=0 would force u=v=0 and D=0, so X^2+Y^2>0.'
+  - 'conclude: The radius ρ=√(X^2+Y^2) is the unique positive choice.'
+  openmath: (forall (x1 y1 x2 y2 x3 y3) (-> (!= (- (* (- x2 x1) (- y3 y1)) (* (- y2 y1) (- x3 x1))) 0) (exists (a b r) (and (> r 0) (= (+ (^ (- x1 a) 2) (^ (- y1 b) 2)) (^ r 2)) (= (+ (^ (- x2 a) 2) (^ (- y2 b) 2)) (^ r 2)) (= (+ (^ (- x3 a) 2) (^ (- y3 b) 2)) (^ r 2)) (forall (c d e) (-> (and (> e 0) (= (+ (^ (- x1 c) 2) (^ (- y1 d) 2)) (^ e 2)) (= (+ (^ (- x2 c) 2) (^ (- y2 d) 2)) (^ e 2)) (= (+ (^ (- x3 c) 2) (^ (- y3 d) 2)) (^ e 2))) (and (= c a) (= d b) (= e r))))))))
+  hard_negative:
+    statement: 相異なる3点なら常に3点を通る円がある。
+    reason: 同一直線上の3点には円がない。$(0,0)$、$(1,0)$、$(2,0)$で中心の$x$座標は$\frac12$かつ$1$となり矛盾する。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x₃ y₃ : ℝ), (x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁) ≠ 0 → ∃! c : ℝ × ℝ × ℝ, 0 < c.2.2 ∧ (x₁ - c.1) ^ 2 + (y₁ - c.2.1) ^ 2 = c.2.2 ^ 2 ∧ (x₂ - c.1) ^ 2 + (y₂ - c.2.1) ^ 2 = c.2.2 ^ 2 ∧ (x₃ - c.1) ^ 2 + (y₃ - c.2.1) ^ 2 = c.2.2 ^ 2
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x₃ y₃ hD
+      obtain ⟨u, hu⟩ : ∃ u, u = x₂ - x₁ := ⟨_, rfl⟩
+      obtain ⟨v, hv⟩ : ∃ v, v = y₂ - y₁ := ⟨_, rfl⟩
+      obtain ⟨s, hs⟩ : ∃ s, s = x₃ - x₁ := ⟨_, rfl⟩
+      obtain ⟨t, ht⟩ : ∃ t, t = y₃ - y₁ := ⟨_, rfl⟩
+      have ex₂ : x₂ = x₁ + u := by linarith
+      have ey₂ : y₂ = y₁ + v := by linarith
+      have ex₃ : x₃ = x₁ + s := by linarith
+      have ey₃ : y₃ = y₁ + t := by linarith
+      subst ex₂ ey₂ ex₃ ey₃
+      have hD' : u * t - v * s ≠ 0 := by
+        intro h; apply hD; rw [hu, hv, hs, ht] at h; linarith
+      clear hu hv hs ht hD
+      have hcx : ∃ X Y : ℝ, 2 * (u * X + v * Y) = u ^ 2 + v ^ 2 ∧ 2 * (s * X + t * Y) = s ^ 2 + t ^ 2 := by
+        refine ⟨(t * (u ^ 2 + v ^ 2) - v * (s ^ 2 + t ^ 2)) / (2 * (u * t - v * s)), (u * (s ^ 2 + t ^ 2) - s * (u ^ 2 + v ^ 2)) / (2 * (u * t - v * s)), ?_, ?_⟩
+        · have e : 2 * (u * ((t * (u ^ 2 + v ^ 2) - v * (s ^ 2 + t ^ 2)) / (2 * (u * t - v * s))) + v * ((u * (s ^ 2 + t ^ 2) - s * (u ^ 2 + v ^ 2)) / (2 * (u * t - v * s)))) = (u * (t * (u ^ 2 + v ^ 2) - v * (s ^ 2 + t ^ 2)) + v * (u * (s ^ 2 + t ^ 2) - s * (u ^ 2 + v ^ 2))) / (u * t - v * s) := by
+            field_simp
+          rw [e, div_eq_iff hD']; ring
+        · have e : 2 * (s * ((t * (u ^ 2 + v ^ 2) - v * (s ^ 2 + t ^ 2)) / (2 * (u * t - v * s))) + t * ((u * (s ^ 2 + t ^ 2) - s * (u ^ 2 + v ^ 2)) / (2 * (u * t - v * s)))) = (s * (t * (u ^ 2 + v ^ 2) - v * (s ^ 2 + t ^ 2)) + t * (u * (s ^ 2 + t ^ 2) - s * (u ^ 2 + v ^ 2))) / (u * t - v * s) := by
+            field_simp
+          rw [e, div_eq_iff hD']; ring
+      obtain ⟨X, Y, hX, hY⟩ := hcx
+      have hpos : 0 < X ^ 2 + Y ^ 2 := by
+        by_contra hc
+        have hsq : X ^ 2 + Y ^ 2 = 0 := le_antisymm (not_lt.mp hc) (by positivity)
+        obtain ⟨hX2, hY2⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp hsq
+        have hX0 : X = 0 := pow_eq_zero_iff two_ne_zero |>.mp hX2
+        have hY0 : Y = 0 := pow_eq_zero_iff two_ne_zero |>.mp hY2
+        rw [hX0, hY0] at hX
+        have huv : u ^ 2 + v ^ 2 = 0 := by linear_combination -hX
+        obtain ⟨hu2, hv2⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp huv
+        have h1 : u = 0 := pow_eq_zero_iff two_ne_zero |>.mp hu2
+        have h2 : v = 0 := pow_eq_zero_iff two_ne_zero |>.mp hv2
+        apply hD'; rw [h1, h2]; ring
+      refine ⟨(x₁ + X, y₁ + Y, Real.sqrt (X ^ 2 + Y ^ 2)), ⟨Real.sqrt_pos.mpr hpos, ?_, ?_, ?_⟩, ?_⟩
+      · simp only [Real.sq_sqrt hpos.le]; ring
+      · simp only [Real.sq_sqrt hpos.le]; linear_combination -hX
+      · simp only [Real.sq_sqrt hpos.le]; linear_combination -hY
+      · rintro ⟨c₁, c₂, ρ⟩ ⟨hρ, h₁, h₂, h₃⟩
+        simp only at hρ h₁ h₂ h₃
+        have e₁ : 2 * (u * (c₁ - x₁) + v * (c₂ - y₁)) = u ^ 2 + v ^ 2 := by linear_combination h₁ - h₂
+        have e₂ : 2 * (s * (c₁ - x₁) + t * (c₂ - y₁)) = s ^ 2 + t ^ 2 := by linear_combination h₁ - h₃
+        have d₁ : (u * t - v * s) * (c₁ - x₁ - X) = 0 := by
+          linear_combination (t / 2) * (e₁ - hX) - (v / 2) * (e₂ - hY)
+        have d₂ : (u * t - v * s) * (c₂ - y₁ - Y) = 0 := by
+          linear_combination (u / 2) * (e₂ - hY) - (s / 2) * (e₁ - hX)
+        have c1 : c₁ = x₁ + X := by
+          have := (mul_eq_zero.mp d₁).resolve_left hD'
+          linarith
+        have c2 : c₂ = y₁ + Y := by
+          have := (mul_eq_zero.mp d₂).resolve_left hD'
+          linarith
+        subst c1 c2
+        have hρ2 : ρ ^ 2 = X ^ 2 + Y ^ 2 := by linear_combination -h₁
+        have : ρ = Real.sqrt (X ^ 2 + Y ^ 2) := by
+          rw [← hρ2, Real.sqrt_sq hρ.le]
+        rw [this]
+- id: circle_diameter_form_iff_right_angle_dot
+  kind: textbook
+  level: high
+  topic: 図形と方程式・直径の両端と円
+  statement: 2点$(x_1,y_1)$、$(x_2,y_2)$について、$(x-x_1)(x-x_2)+(y-y_1)(y-y_2)=0$は、中心がこの2点の中点で半径の平方が$\frac{(x_1-x_2)^2+(y_1-y_2)^2}{4}$である方程式と同値である。
+  statement_en: For points (x1,y1) and (x2,y2), (x-x1)(x-x2)+(y-y1)(y-y2)=0 is equivalent to (x-(x1+x2)/2)^2+(y-(y1+y2)/2)^2=((x1-x2)^2+(y1-y2)^2)/4.
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x,y$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x,y$
+  conclusion: 直径の両端を使う円の方程式は、中心と半径を使う方程式と同値である。
+  answer: |
+    $x_1,y_1,x_2,y_2,x,y$を実数とする。$\left(x-\frac{x_1+x_2}{2}\right)^2-\frac{(x_1-x_2)^2}{4}=(x-x_1)(x-x_2)$であり、$y$についても同じ等式が成り立つ。辺々加えると
+    $\left(x-\frac{x_1+x_2}{2}\right)^2+\left(y-\frac{y_1+y_2}{2}\right)^2-\frac{(x_1-x_2)^2+(y_1-y_2)^2}{4}=(x-x_1)(x-x_2)+(y-y_1)(y-y_2)$
+    である。よって一方が$0$であることと他方が$0$であることは同値である。
+  strategy: Show that both equations have the same left side after completing the square in each coordinate.
+  sketch:
+  - 'derive: Completing the square gives (x-x1)(x-x2)=(x-(x1+x2)/2)^2-(x1-x2)^2/4.'
+  - 'derive: The same identity holds for y.'
+  - 'conclude: Adding the two identities shows that the equations are equivalent.'
+  openmath: (forall (x1 y1 x2 y2 x y) (<-> (= (+ (* (- x x1) (- x x2)) (* (- y y1) (- y y2))) 0) (= (+ (^ (- x (/ (+ x1 x2) 2)) 2) (^ (- y (/ (+ y1 y2) 2)) 2)) (/ (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) 4))))
+  hard_negative:
+    statement: この方程式の解のうち2点$(x_1,y_1)$、$(x_2,y_2)$は除かれる。
+    reason: 方程式はこの2点でも成り立つ。$(x,y)=(x_1,y_1)$を代入すると第1の因子がともに$0$になる。直角を作る点として扱うときだけ2点を別に除く。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x y : ℝ), (x - x₁) * (x - x₂) + (y - y₁) * (y - y₂) = 0 ↔ (x - (x₁ + x₂) / 2) ^ 2 + (y - (y₁ + y₂) / 2) ^ 2 = ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2) / 4
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x y
+      constructor
+      · intro h; linear_combination h
+      · intro h; linear_combination h
+- id: line_meets_circle_iff_dist_le_radius
+  kind: textbook
+  level: high
+  topic: 図形と方程式・円と直線の位置関係
+  statement: $(a,b)\ne(0,0)$、$r>0$のとき、直線$ax+by+c=0$と円$(x-p)^2+(y-q)^2=r^2$が共有点をもつことは、中心と直線の距離$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}$が$r$以下であることと同値である。
+  statement_en: For (a,b)≠(0,0) and r>0, the line ax+by+c=0 meets the circle (x-p)^2+(y-q)^2=r^2 if and only if |ap+bq+c|/√(a^2+b^2) ≤ r.
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $r>0$
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,r$
+  conclusion: 共有点の存在は$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}\le r$と同値である。
+  answer: |
+    $a,b,c,p,q,r$を実数とし、$(a,b)\ne(0,0)$、$r>0$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。両辺が非負なので、$\frac{|w|}{\sqrt{N}}\le r$は$w^2\le r^2N$と同値である。
+
+    共有点$(x,y)$があるとする。$w=a(p-x)+b(q-y)$であり、$N\{(x-p)^2+(y-q)^2\}-w^2=\{a(q-y)-b(p-x)\}^2\ge0$なので$w^2\le Nr^2$である。
+
+    逆に$w^2\le r^2N$とする。$K=\sqrt{r^2N-w^2}$とおき、$x=p-\frac{aw+bK}{N}$、$y=q-\frac{bw-aK}{N}$とする。すると$ax+by+c=w-\frac{(a^2+b^2)w}{N}=0$である。また$(x-p)^2+(y-q)^2=\frac{(aw+bK)^2+(bw-aK)^2}{N^2}=\frac{w^2+K^2}{N}=r^2$である。よって$(x,y)$は共有点である。
+  strategy: Translate the distance condition to w^2≤r^2N, use Cauchy-Schwarz one way and construct a point the other way.
+  sketch:
+  - 'translate: With N=a^2+b^2 and w=ap+bq+c, the distance condition is w^2≤r^2 N.'
+  - 'derive: A common point gives w=a(p-x)+b(q-y), and Lagrange''s identity gives w^2≤Nr^2.'
+  - 'construct: Conversely put K=√(r^2 N-w^2), x=p-(aw+bK)/N, y=q-(bw-aK)/N.'
+  - 'derive: This point satisfies the line equation.'
+  - 'conclude: Its squared distance from the center is (w^2+K^2)/N=r^2, so it is a common point.'
+  openmath: (forall (a b c p q r) (-> (and (not (and (= a 0) (= b 0))) (> r 0)) (<-> (exists (x y) (and (= (+ (+ (* a x) (* b y)) c) 0) (= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)))) (<= (/ (abs (+ (+ (* a p) (* b q)) c)) (root (+ (^ a 2) (^ b 2)) 2)) r))))
+  hard_negative:
+    statement: $(a,b)=(0,0)$でも距離の式で判定できる。
+    reason: このとき方程式は直線を表さず、距離の式の分母が$0$になる。
+  target: |
+    ∀ (a b c p q r : ℝ), ¬(a = 0 ∧ b = 0) → 0 < r → ((∃ x y : ℝ, a * x + b * y + c = 0 ∧ (x - p) ^ 2 + (y - q) ^ 2 = r ^ 2) ↔ |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) ≤ r)
+  proof: |
+    by
+      intro a b c p q r hab hr
+      have hN : 0 < a ^ 2 + b ^ 2 := by
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have hd : |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) ≤ r ↔ (a * p + b * q + c) ^ 2 ≤ r ^ 2 * (a ^ 2 + b ^ 2) := by
+        rw [div_le_iff₀ (Real.sqrt_pos.mpr hN), ← sq_le_sq₀ (abs_nonneg _) (by positivity), sq_abs, mul_pow, Real.sq_sqrt hN.le]
+      rw [hd]
+      constructor
+      · rintro ⟨x, y, hl, hc⟩
+        have hw : a * p + b * q + c = a * (p - x) + b * (q - y) := by linear_combination hl
+        rw [hw, ← hc]
+        linarith [sq_nonneg (a * (q - y) - b * (p - x))]
+      · intro h
+        have hE : 0 ≤ r ^ 2 * (a ^ 2 + b ^ 2) - (a * p + b * q + c) ^ 2 := by linarith
+        obtain ⟨K, hK⟩ : ∃ K : ℝ, K ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - (a * p + b * q + c) ^ 2 := ⟨_, Real.sq_sqrt hE⟩
+        refine ⟨p - (a * (a * p + b * q + c) + b * K) / (a ^ 2 + b ^ 2), q - (b * (a * p + b * q + c) - a * K) / (a ^ 2 + b ^ 2), ?_, ?_⟩
+        · field_simp; ring
+        · have : (p - (a * (a * p + b * q + c) + b * K) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - (b * (a * p + b * q + c) - a * K) / (a ^ 2 + b ^ 2) - q) ^ 2 = ((a * p + b * q + c) ^ 2 + K ^ 2) / (a ^ 2 + b ^ 2) := by
+            field_simp; ring
+          rw [this, hK]
+          field_simp; ring
+- id: line_tangent_circle_iff_dist_eq_radius
+  kind: textbook
+  level: high
+  topic: 図形と方程式・円と直線の接する条件
+  statement: $(a,b)\ne(0,0)$、$r>0$のとき、直線$ax+by+c=0$と円$(x-p)^2+(y-q)^2=r^2$の共有点がちょうど1つであることは、中心と直線の距離$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}$が$r$に等しいことと同値である。
+  statement_en: For (a,b)≠(0,0) and r>0, the line ax+by+c=0 and the circle (x-p)^2+(y-q)^2=r^2 have exactly one common point if and only if |ap+bq+c|/√(a^2+b^2) = r.
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $r>0$
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,r$
+  conclusion: 共有点がちょうど1つであることは$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}=r$と同値である。
+  answer: |
+    $a,b,c,p,q,r$を実数とし、$(a,b)\ne(0,0)$、$r>0$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。距離の条件は$w^2=r^2N$と同値である。
+
+    共有点$(x,y)$について$e=b(x-p)-a(y-q)$とおくと、$w=-a(x-p)-b(y-q)$より$e^2=r^2N-w^2$である。また$K^2=r^2N-w^2$を満たす実数$K$に対し、$\left(p-\frac{aw+bK}{N},q-\frac{bw-aK}{N}\right)$は直線上にあり、中心からの距離の平方は$\frac{w^2+K^2}{N}=r^2$なので共有点である。
+
+    共有点がただ1つとする。共有点があるので$r^2N-w^2=e^2\ge0$である。もし$r^2N-w^2>0$なら$K=\pm\sqrt{r^2N-w^2}$は異なる2つの共有点を与える。実際、2点が一致すれば$bK=aK=0$となり、$K\ne0$から$a=b=0$となって矛盾する。よって$w^2=r^2N$である。
+
+    逆に$w^2=r^2N$とする。$K=0$で共有点が存在する。任意の共有点$(x,y)$について$e^2=0$なので$e=0$であり、$a(x-p)+b(y-q)=-w$と合わせて$N(x-p)=-aw$、$N(y-q)=-bw$を得る。よって$(x,y)=\left(p-\frac{aw}{N},q-\frac{bw}{N}\right)$と定まり、共有点はただ1つである。
+  strategy: Parametrize common points by K with K^2=r^2N-w^2, and show the number of points depends on whether this is zero.
+  sketch:
+  - 'translate: With N=a^2+b^2 and w=ap+bq+c, the condition is w^2=r^2 N.'
+  - 'derive: For a common point, e=b(x-p)-a(y-q) satisfies e^2=r^2 N-w^2.'
+  - 'construct: Every K with K^2=r^2 N-w^2 yields a common point (p-(aw+bK)/N,q-(bw-aK)/N).'
+  - 'contradiction: If r^2 N-w^2>0, the values ±K give two distinct points, against uniqueness.'
+  - 'derive: If w^2=r^2 N then e=0 for every common point, and with a(x-p)+b(y-q)=-w this determines (x,y).'
+  - 'conclude: The point obtained from K=0 is the unique common point.'
+  openmath: (forall (a b c p q r) (-> (and (not (and (= a 0) (= b 0))) (> r 0)) (<-> (exists (x y) (and (= (+ (+ (* a x) (* b y)) c) 0) (= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (forall (u v) (-> (and (= (+ (+ (* a u) (* b v)) c) 0) (= (+ (^ (- u p) 2) (^ (- v q) 2)) (^ r 2))) (and (= u x) (= v y)))))) (= (/ (abs (+ (+ (* a p) (* b q)) c)) (root (+ (^ a 2) (^ b 2)) 2)) r))))
+  hard_negative:
+    statement: $r>0$を仮定しなくても、共有点がちょうど1つなら距離は$r$に等しい。
+    reason: $r<0$では距離は非負なので$r$に等しくなれない。$x=1$と$x^2+y^2=1$は$r=-1$でも共有点がちょうど1つであるが、距離は$1$であり$r$と異なる。
+  target: |
+    ∀ (a b c p q r : ℝ), ¬(a = 0 ∧ b = 0) → 0 < r → ((∃! P : ℝ × ℝ, a * P.1 + b * P.2 + c = 0 ∧ (P.1 - p) ^ 2 + (P.2 - q) ^ 2 = r ^ 2) ↔ |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) = r)
+  proof: |
+    by
+      intro a b c p q r hab hr
+      have hN : 0 < a ^ 2 + b ^ 2 := by
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have hd : |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) = r ↔ (a * p + b * q + c) ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) := by
+        rw [div_eq_iff (Real.sqrt_pos.mpr hN).ne', ← sq_eq_sq₀ (abs_nonneg _) (by positivity), sq_abs, mul_pow, Real.sq_sqrt hN.le]
+      rw [hd]
+      obtain ⟨w, hw⟩ : ∃ w, w = a * p + b * q + c := ⟨_, rfl⟩
+      rw [← hw]
+      have hpt : ∀ K : ℝ, K ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 → (a * (p - (a * w + b * K) / (a ^ 2 + b ^ 2)) + b * (q - (b * w - a * K) / (a ^ 2 + b ^ 2)) + c = 0 ∧ (p - (a * w + b * K) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - (b * w - a * K) / (a ^ 2 + b ^ 2) - q) ^ 2 = r ^ 2) := by
+        intro K hK
+        constructor
+        · rw [hw]; field_simp; ring
+        · have : (p - (a * w + b * K) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - (b * w - a * K) / (a ^ 2 + b ^ 2) - q) ^ 2 = (w ^ 2 + K ^ 2) / (a ^ 2 + b ^ 2) := by
+            field_simp; ring
+          rw [this, hK]
+          field_simp; ring
+      have hle : ∀ x y : ℝ, a * x + b * y + c = 0 → (x - p) ^ 2 + (y - q) ^ 2 = r ^ 2 → (b * (x - p) - a * (y - q)) ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := by
+        intro x y hl hc
+        have hw' : w = -(a * (x - p) + b * (y - q)) := by rw [hw]; linear_combination hl
+        rw [hw', ← hc]; ring
+      constructor
+      · rintro ⟨⟨x, y⟩, ⟨hl, hc⟩, huniq⟩
+        simp only at hl hc huniq
+        have hsq := hle x y hl hc
+        by_contra hne
+        have hK0 : r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 ≠ 0 := by
+          intro h0; exact hne (by linarith)
+        have hE : 0 ≤ r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := by rw [← hsq]; positivity
+        obtain ⟨K, hK⟩ : ∃ K : ℝ, K ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := ⟨_, Real.sq_sqrt hE⟩
+        have hKne : K ≠ 0 := by
+          rintro rfl; apply hK0; rw [← hK]; ring
+        have h₁ := huniq (p - (a * w + b * K) / (a ^ 2 + b ^ 2), q - (b * w - a * K) / (a ^ 2 + b ^ 2)) (hpt K hK)
+        have h₂ := huniq (p - (a * w + b * (-K)) / (a ^ 2 + b ^ 2), q - (b * w - a * (-K)) / (a ^ 2 + b ^ 2)) (hpt (-K) (by rw [neg_sq]; exact hK))
+        have h₃ := h₁.trans h₂.symm
+        have e₁ := congrArg Prod.fst h₃
+        have e₂ := congrArg Prod.snd h₃
+        simp only at e₁ e₂
+        have g₁ : b * K = 0 := by
+          have e : (a * w + b * K) / (a ^ 2 + b ^ 2) = (a * w + b * (-K)) / (a ^ 2 + b ^ 2) := by linarith
+          rw [div_left_inj' hN.ne'] at e
+          linarith
+        have g₂ : a * K = 0 := by
+          have e : (b * w - a * K) / (a ^ 2 + b ^ 2) = (b * w - a * (-K)) / (a ^ 2 + b ^ 2) := by linarith
+          rw [div_left_inj' hN.ne'] at e
+          linarith
+        exact hab ⟨(mul_eq_zero.mp g₂).resolve_right hKne, (mul_eq_zero.mp g₁).resolve_right hKne⟩
+      · intro h
+        have hK0 : (0 : ℝ) ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := by rw [h]; ring
+        refine ⟨(p - (a * w + b * 0) / (a ^ 2 + b ^ 2), q - (b * w - a * 0) / (a ^ 2 + b ^ 2)), hpt 0 hK0, ?_⟩
+        rintro ⟨x, y⟩ ⟨hl, hc⟩
+        simp only at hl hc
+        have hsq := hle x y hl hc
+        have he : b * (x - p) - a * (y - q) = 0 := by
+          have : (b * (x - p) - a * (y - q)) ^ 2 = 0 := by rw [hsq, h]; ring
+          exact pow_eq_zero_iff two_ne_zero |>.mp this
+        have hw' : a * (x - p) + b * (y - q) = -w := by rw [hw]; linear_combination hl
+        have g₁ : (a * w + b * 0) / (a ^ 2 + b ^ 2) = -(x - p) := by
+          rw [div_eq_iff hN.ne']; linear_combination a * hw' + b * he
+        have g₂ : (b * w - a * 0) / (a ^ 2 + b ^ 2) = -(y - q) := by
+          rw [div_eq_iff hN.ne']; linear_combination b * hw' - a * he
+        exact Prod.ext (by simp only; linarith) (by simp only; linarith)
+- id: line_secant_circle_iff_dist_lt_radius
+  kind: textbook
+  level: high
+  topic: 図形と方程式・円と直線が2点で交わる条件
+  statement: $(a,b)\ne(0,0)$、$r>0$のとき、直線$ax+by+c=0$と円$(x-p)^2+(y-q)^2=r^2$が相異なる2点を共有することは、中心と直線の距離$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}$が$r$より小さいことと同値である。
+  statement_en: For (a,b)≠(0,0) and r>0, the line ax+by+c=0 and the circle (x-p)^2+(y-q)^2=r^2 share two distinct points if and only if |ap+bq+c|/√(a^2+b^2) < r.
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $r>0$
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,r$
+  conclusion: 相異なる2つの共有点の存在は$\frac{|ap+bq+c|}{\sqrt{a^2+b^2}}<r$と同値である。
+  answer: |
+    $a,b,c,p,q,r$を実数とし、$(a,b)\ne(0,0)$、$r>0$とする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。距離の条件は$w^2<r^2N$と同値である。
+
+    共有点$(x,y)$について$e=b(x-p)-a(y-q)$とおくと、$e^2=r^2N-w^2$である。
+
+    相異なる共有点$(x_1,y_1)$、$(x_2,y_2)$があるとして、$r^2N-w^2\le0$と仮定する。すると$e^2\le0$より2点とも$e=0$である。引くと$b(x_1-x_2)-a(y_1-y_2)=0$であり、直線の方程式を引くと$a(x_1-x_2)+b(y_1-y_2)=0$である。この2式から$N(x_1-x_2)=N(y_1-y_2)=0$となり、2点が一致して矛盾する。よって$w^2<r^2N$である。
+
+    逆に$w^2<r^2N$とし、$K=\sqrt{r^2N-w^2}>0$とおく。$\left(p-\frac{aw\pm bK}{N},q-\frac{bw\mp aK}{N}\right)$は直線上にあり、中心からの距離の平方は$\frac{w^2+K^2}{N}=r^2$である。2点が一致すると$bK=aK=0$となり、$K\ne0$より$a=b=0$となって矛盾する。よって2点は異なる。
+  strategy: Use the quantity e=b(x-p)-a(y-q), whose square is r^2N-w^2, and construct two points from ±K.
+  sketch:
+  - 'translate: With N=a^2+b^2 and w=ap+bq+c, the condition is w^2<r^2 N.'
+  - 'derive: Every common point satisfies e^2=r^2 N-w^2 with e=b(x-p)-a(y-q).'
+  - 'contradiction: If r^2 N-w^2≤0 then e=0 at both points, and with the line equation the two points coincide.'
+  - 'construct: Conversely K=√(r^2 N-w^2)>0 gives the two candidates (p-(aw±bK)/N,q-(bw∓aK)/N).'
+  - 'derive: Both lie on the line and at squared distance (w^2+K^2)/N=r^2 from the center.'
+  - 'conclude: They differ since a=b=0 is excluded and K≠0.'
+  openmath: (forall (a b c p q r) (-> (and (not (and (= a 0) (= b 0))) (> r 0)) (<-> (exists (x1 y1 x2 y2) (and (not (and (= x1 x2) (= y1 y2))) (= (+ (+ (* a x1) (* b y1)) c) 0) (= (+ (^ (- x1 p) 2) (^ (- y1 q) 2)) (^ r 2)) (= (+ (+ (* a x2) (* b y2)) c) 0) (= (+ (^ (- x2 p) 2) (^ (- y2 q) 2)) (^ r 2)))) (< (/ (abs (+ (+ (* a p) (* b q)) c)) (root (+ (^ a 2) (^ b 2)) 2)) r))))
+  hard_negative:
+    statement: 距離が$r$以下なら相異なる2点を共有する。
+    reason: 距離が$r$に等しいときは接して共有点は1つである。$y=1$と$x^2+y^2=1$の共有点は$(0,1)$だけである。
+  target: |
+    ∀ (a b c p q r : ℝ), ¬(a = 0 ∧ b = 0) → 0 < r → ((∃ x₁ y₁ x₂ y₂ : ℝ, ¬(x₁ = x₂ ∧ y₁ = y₂) ∧ a * x₁ + b * y₁ + c = 0 ∧ (x₁ - p) ^ 2 + (y₁ - q) ^ 2 = r ^ 2 ∧ a * x₂ + b * y₂ + c = 0 ∧ (x₂ - p) ^ 2 + (y₂ - q) ^ 2 = r ^ 2) ↔ |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) < r)
+  proof: |
+    by
+      intro a b c p q r hab hr
+      have hN : 0 < a ^ 2 + b ^ 2 := by
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have hd : |a * p + b * q + c| / Real.sqrt (a ^ 2 + b ^ 2) < r ↔ (a * p + b * q + c) ^ 2 < r ^ 2 * (a ^ 2 + b ^ 2) := by
+        rw [div_lt_iff₀ (Real.sqrt_pos.mpr hN), ← sq_lt_sq₀ (abs_nonneg _) (by positivity), sq_abs, mul_pow, Real.sq_sqrt hN.le]
+      rw [hd]
+      obtain ⟨w, hw⟩ : ∃ w, w = a * p + b * q + c := ⟨_, rfl⟩
+      rw [← hw]
+      have hpt : ∀ K : ℝ, K ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 → (a * (p - (a * w + b * K) / (a ^ 2 + b ^ 2)) + b * (q - (b * w - a * K) / (a ^ 2 + b ^ 2)) + c = 0 ∧ (p - (a * w + b * K) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - (b * w - a * K) / (a ^ 2 + b ^ 2) - q) ^ 2 = r ^ 2) := by
+        intro K hK
+        constructor
+        · rw [hw]; field_simp; ring
+        · have : (p - (a * w + b * K) / (a ^ 2 + b ^ 2) - p) ^ 2 + (q - (b * w - a * K) / (a ^ 2 + b ^ 2) - q) ^ 2 = (w ^ 2 + K ^ 2) / (a ^ 2 + b ^ 2) := by
+            field_simp; ring
+          rw [this, hK]
+          field_simp; ring
+      have hle : ∀ x y : ℝ, a * x + b * y + c = 0 → (x - p) ^ 2 + (y - q) ^ 2 = r ^ 2 → (b * (x - p) - a * (y - q)) ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := by
+        intro x y hl hc
+        have hw' : w = -(a * (x - p) + b * (y - q)) := by rw [hw]; linear_combination hl
+        rw [hw', ← hc]; ring
+      constructor
+      · rintro ⟨x₁, y₁, x₂, y₂, hne, hl₁, hc₁, hl₂, hc₂⟩
+        have h₁ := hle x₁ y₁ hl₁ hc₁
+        have h₂ := hle x₂ y₂ hl₂ hc₂
+        by_contra hge
+        push Not at hge
+        have hle0 : r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 ≤ 0 := by linarith
+        have he₁ : b * (x₁ - p) - a * (y₁ - q) = 0 :=
+          pow_eq_zero_iff two_ne_zero |>.mp (le_antisymm (h₁.trans_le hle0) (sq_nonneg _))
+        have he₂ : b * (x₂ - p) - a * (y₂ - q) = 0 :=
+          pow_eq_zero_iff two_ne_zero |>.mp (le_antisymm (h₂.trans_le hle0) (sq_nonneg _))
+        have ha₁ : a * (x₁ - x₂) + b * (y₁ - y₂) = 0 := by linarith
+        have hb₁ : b * (x₁ - x₂) - a * (y₁ - y₂) = 0 := by linarith
+        apply hne
+        have g₁ : (a ^ 2 + b ^ 2) * (x₁ - x₂) = 0 := by linear_combination a * ha₁ + b * hb₁
+        have g₂ : (a ^ 2 + b ^ 2) * (y₁ - y₂) = 0 := by linear_combination b * ha₁ - a * hb₁
+        constructor
+        · have := (mul_eq_zero.mp g₁).resolve_left hN.ne'
+          linarith
+        · have := (mul_eq_zero.mp g₂).resolve_left hN.ne'
+          linarith
+      · intro h
+        have hE : 0 < r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := by linarith
+        obtain ⟨K, hK⟩ : ∃ K : ℝ, K ^ 2 = r ^ 2 * (a ^ 2 + b ^ 2) - w ^ 2 := ⟨_, Real.sq_sqrt hE.le⟩
+        have hKne : K ≠ 0 := by
+          rintro rfl; rw [← hK] at hE; simp at hE
+        obtain ⟨h₁, h₂⟩ := hpt K hK
+        obtain ⟨h₃, h₄⟩ := hpt (-K) (by rw [neg_sq]; exact hK)
+        refine ⟨_, _, _, _, ?_, h₁, h₂, h₃, h₄⟩
+        rintro ⟨e₁, e₂⟩
+        have g₁ : b * K = 0 := by
+          have e : (a * w + b * K) / (a ^ 2 + b ^ 2) = (a * w + b * (-K)) / (a ^ 2 + b ^ 2) := by linarith
+          rw [div_left_inj' hN.ne'] at e
+          linarith
+        have g₂ : a * K = 0 := by
+          have e : (b * w - a * K) / (a ^ 2 + b ^ 2) = (b * w - a * (-K)) / (a ^ 2 + b ^ 2) := by linarith
+          rw [div_left_inj' hN.ne'] at e
+          linarith
+        exact hab ⟨(mul_eq_zero.mp g₂).resolve_right hKne, (mul_eq_zero.mp g₁).resolve_right hKne⟩
+- id: circle_tangent_at_point
+  kind: textbook
+  level: high
+  topic: 図形と方程式・円の接線の方程式
+  statement: $r>0$とし、点$(x_0,y_0)$は円$(x-a)^2+(y-b)^2=r^2$の上にあるとする。直線$(x_0-a)(x-a)+(y_0-b)(y-b)=r^2$とこの円の共有点は$(x_0,y_0)$だけである。
+  statement_en: For r>0 and (x0,y0) on the circle (x-a)^2+(y-b)^2=r^2, the only common point of the circle and the line (x0-a)(x-a)+(y0-b)(y-b)=r^2 is (x0,y0).
+  assumptions:
+  - $r>0$
+  - $(x_0-a)^2+(y_0-b)^2=r^2$
+  quantifiers:
+  - 任意の実数$a,b,r,x_0,y_0,x,y$
+  conclusion: $(x,y)$が円と直線の両方の上にあることは、$(x,y)=(x_0,y_0)$と同値である。
+  answer: |
+    $a,b,r,x_0,y_0,x,y$を実数とし、$r>0$、$(x_0-a)^2+(y_0-b)^2=r^2$とする。
+
+    $(x,y)$が円と直線の上にあるとする。$(x-x_0)^2+(y-y_0)^2=\{(x-a)^2+(y-b)^2\}+\{(x_0-a)^2+(y_0-b)^2\}-2\{(x_0-a)(x-a)+(y_0-b)(y-b)\}=r^2+r^2-2r^2=0$である。よって$x=x_0$、$y=y_0$である。
+
+    逆に$(x,y)=(x_0,y_0)$なら、円の方程式は仮定そのものであり、直線の方程式の左辺も$(x_0-a)^2+(y_0-b)^2=r^2$である。
+  strategy: Expand the squared distance to (x0,y0) using the circle and line equations.
+  sketch:
+  - 'derive: For a common point, (x-x0)^2+(y-y0)^2 expands in terms of the two circle equations and the line equation.'
+  - 'derive: This value is r^2+r^2-2r^2=0.'
+  - 'conclude: Hence (x,y)=(x0,y0), and the converse is direct substitution.'
+  openmath: (forall (a b r x0 y0 x y) (-> (and (> r 0) (= (+ (^ (- x0 a) 2) (^ (- y0 b) 2)) (^ r 2))) (<-> (and (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (+ (* (- x0 a) (- x a)) (* (- y0 b) (- y b))) (^ r 2))) (and (= x x0) (= y y0)))))
+  hard_negative:
+    statement: 中心が$(a,b)$の円でも接線は$x_0x+y_0y=r^2$である。
+    reason: これは中心が原点の場合だけの式である。$(x-1)^2+y^2=1$の点$(2,0)$では、この式は$x=\frac12$を与えるが、接線は$x=2$である。
+  target: |
+    ∀ (a b r x₀ y₀ x y : ℝ), 0 < r → (x₀ - a) ^ 2 + (y₀ - b) ^ 2 = r ^ 2 → (((x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ∧ (x₀ - a) * (x - a) + (y₀ - b) * (y - b) = r ^ 2) ↔ (x = x₀ ∧ y = y₀))
+  proof: |
+    by
+      intro a b r x₀ y₀ x y hr h₀
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        have hs : (x - x₀) ^ 2 + (y - y₀) ^ 2 = 0 := by linear_combination h₁ + h₀ - 2 * h₂
+        obtain ⟨h₃, h₄⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp hs
+        have h₅ := pow_eq_zero_iff two_ne_zero |>.mp h₃
+        have h₆ := pow_eq_zero_iff two_ne_zero |>.mp h₄
+        constructor <;> linarith
+      · rintro ⟨rfl, rfl⟩
+        exact ⟨h₀, by linear_combination h₀⟩
+- id: tangent_direction_iff_perpendicular_to_radius
+  kind: gap
+  level: high
+  topic: 図形と方程式・接線と半径
+  statement: 点$(x_0,y_0)$が円$(x-a)^2+(y-b)^2=r^2$の上にあり、$(u,v)\ne(0,0)$とする。$(x_0,y_0)$を通り方向$(u,v)$の直線$(x_0+tu,y_0+tv)$が円と$t=0$でしか交わらないことは、$u(x_0-a)+v(y_0-b)=0$と同値である。
+  statement_en: For (x0,y0) on the circle (x-a)^2+(y-b)^2=r^2 and (u,v)≠(0,0), the line (x0+tu,y0+tv) meets the circle only at t=0 if and only if u(x0-a)+v(y0-b)=0.
+  assumptions:
+  - $(x_0-a)^2+(y_0-b)^2=r^2$
+  - $(u,v)\ne(0,0)$
+  quantifiers:
+  - 任意の実数$a,b,r,x_0,y_0,u,v$
+  conclusion: 接することと、方向ベクトルが半径に直交することは同値である。
+  answer: |
+    $a,b,r,x_0,y_0,u,v$を実数とし、$(x_0-a)^2+(y_0-b)^2=r^2$、$(u,v)\ne(0,0)$とする。$N=u^2+v^2>0$、$S=u(x_0-a)+v(y_0-b)$とおく。展開して仮定を使うと、すべての実数$t$について
+    $(x_0+tu-a)^2+(y_0+tv-b)^2-r^2=t(tN+2S)$
+    である。
+
+    円と$t=0$でしか交わらないとする。$t=-\frac{2S}{N}$では右辺が$0$なので、この$t$は$0$でなければならず、$S=0$である。
+
+    逆に$S=0$とする。円と交わる$t$では$t^2N=0$であり、$N>0$より$t=0$である。
+  strategy: Reduce the intersection condition to the quadratic t(tN+2S)=0 in t.
+  sketch:
+  - 'setup: Put N=u^2+v^2>0 and S=u(x0-a)+v(y0-b).'
+  - 'derive: The circle equation along the line becomes t(tN+2S)=0.'
+  - 'derive: The second root t=-2S/N must equal 0 if the line meets the circle only at t=0, so S=0.'
+  - 'conclude: Conversely S=0 leaves t^2 N=0, so t=0.'
+  openmath: (forall (a b r x0 y0 u v) (-> (and (= (+ (^ (- x0 a) 2) (^ (- y0 b) 2)) (^ r 2)) (not (and (= u 0) (= v 0)))) (<-> (forall (t) (-> (= (+ (^ (- (+ x0 (* t u)) a) 2) (^ (- (+ y0 (* t v)) b) 2)) (^ r 2)) (= t 0))) (= (+ (* u (- x0 a)) (* v (- y0 b))) 0))))
+  hard_negative:
+    statement: $(u,v)=(0,0)$でも接線の条件と$u(x_0-a)+v(y_0-b)=0$は同値である。
+    reason: $(u,v)=(0,0)$では$(x_0+tu,y_0+tv)$は1点のままで、すべての$t$が円の方程式を満たし、$t=0$でしか交わらないという条件は成り立たない。一方、内積は$0$である。
+  target: |
+    ∀ (a b r x₀ y₀ u v : ℝ), (x₀ - a) ^ 2 + (y₀ - b) ^ 2 = r ^ 2 → ¬(u = 0 ∧ v = 0) → ((∀ t : ℝ, (x₀ + t * u - a) ^ 2 + (y₀ + t * v - b) ^ 2 = r ^ 2 → t = 0) ↔ u * (x₀ - a) + v * (y₀ - b) = 0)
+  proof: |
+    by
+      intro a b r x₀ y₀ u v h₀ huv
+      have hN : u ^ 2 + v ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : u = 0
+        · have hb₀ : v ≠ 0 := fun hb₀ => huv ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have key : ∀ t : ℝ, (x₀ + t * u - a) ^ 2 + (y₀ + t * v - b) ^ 2 - r ^ 2 = t * (t * (u ^ 2 + v ^ 2) + 2 * (u * (x₀ - a) + v * (y₀ - b))) := by
+        intro t; linear_combination h₀
+      constructor
+      · intro h
+        have ht := h (-(2 * (u * (x₀ - a) + v * (y₀ - b))) / (u ^ 2 + v ^ 2)) (by
+          have := key (-(2 * (u * (x₀ - a) + v * (y₀ - b))) / (u ^ 2 + v ^ 2))
+          have hz : -(2 * (u * (x₀ - a) + v * (y₀ - b))) / (u ^ 2 + v ^ 2) * (u ^ 2 + v ^ 2) + 2 * (u * (x₀ - a) + v * (y₀ - b)) = 0 := by
+            field_simp; ring
+          rw [hz, mul_zero] at this
+          linarith)
+        rcases div_eq_zero_iff.mp ht with h' | h'
+        · linarith
+        · exact absurd h' hN
+      · intro hS t ht
+        have := key t
+        rw [hS, ht, sub_self] at this
+        have h2 : t ^ 2 * (u ^ 2 + v ^ 2) = 0 := by linear_combination -this
+        have := (mul_eq_zero.mp h2).resolve_right hN
+        exact pow_eq_zero_iff two_ne_zero |>.mp this
+- id: tangent_length_sq_eq_power
+  kind: gap
+  level: high
+  topic: 図形と方程式・接線の長さ
+  statement: 点$(x_0,y_0)$が円$(x-a)^2+(y-b)^2=r^2$の上にあり、$(x_0-a)(p-x_0)+(y_0-b)(q-y_0)=0$とする（$(p,q)$が接線の上にある）。このとき接線の長さの平方は$(p-x_0)^2+(q-y_0)^2=(p-a)^2+(q-b)^2-r^2$である。
+  statement_en: If (x0,y0) is on the circle (x-a)^2+(y-b)^2=r^2 and (x0-a)(p-x0)+(y0-b)(q-y0)=0, then (p-x0)^2+(q-y0)^2=(p-a)^2+(q-b)^2-r^2.
+  assumptions:
+  - $(x_0-a)^2+(y_0-b)^2=r^2$
+  - $(x_0-a)(p-x_0)+(y_0-b)(q-y_0)=0$
+  quantifiers:
+  - 任意の実数$a,b,r,x_0,y_0,p,q$
+  conclusion: $(p-x_0)^2+(q-y_0)^2=(p-a)^2+(q-b)^2-r^2$である。
+  answer: |
+    $a,b,r,x_0,y_0,p,q$を実数とし、2つの仮定が成り立つとする。$p-a=(p-x_0)+(x_0-a)$、$q-b=(q-y_0)+(y_0-b)$を展開すると
+    $(p-a)^2+(q-b)^2=(p-x_0)^2+(q-y_0)^2+2\{(x_0-a)(p-x_0)+(y_0-b)(q-y_0)\}+(x_0-a)^2+(y_0-b)^2$
+    である。波かっこの中は$0$で、最後の2項の和は$r^2$である。移項して結論を得る。
+  strategy: Split the vector from the center to P at the contact point and use orthogonality.
+  sketch:
+  - 'derive: Write p-a=(p-x0)+(x0-a) and q-b=(q-y0)+(y0-b) and expand.'
+  - 'derive: The cross term vanishes by the orthogonality assumption.'
+  - 'conclude: The remaining square of the radius is r^2, so moving it gives the formula.'
+  openmath: (forall (a b r x0 y0 p q) (-> (and (= (+ (^ (- x0 a) 2) (^ (- y0 b) 2)) (^ r 2)) (= (+ (* (- x0 a) (- p x0)) (* (- y0 b) (- q y0))) 0)) (= (+ (^ (- p x0) 2) (^ (- q y0) 2)) (- (+ (^ (- p a) 2) (^ (- q b) 2)) (^ r 2)))))
+  hard_negative:
+    statement: $(x_0,y_0)$が円上の任意の点でも同じ等式が成り立つ。
+    reason: 直交の仮定が必要である。$x^2+y^2=1$、$(x_0,y_0)=(1,0)$、$(p,q)=(2,0)$では左辺が$1$、右辺が$3$である。
+  target: |
+    ∀ (a b r x₀ y₀ p q : ℝ), (x₀ - a) ^ 2 + (y₀ - b) ^ 2 = r ^ 2 → (x₀ - a) * (p - x₀) + (y₀ - b) * (q - y₀) = 0 → (p - x₀) ^ 2 + (q - y₀) ^ 2 = (p - a) ^ 2 + (q - b) ^ 2 - r ^ 2
+  proof: |
+    by
+      intro a b r x₀ y₀ p q h₀ h
+      linear_combination (-2 : ℝ) * h - h₀
+- id: tangent_contact_exists_iff_outside
+  kind: gap
+  level: high
+  topic: 図形と方程式・円外の点からの接線
+  statement: $r>0$とする。点$(p,q)$を通る円$(x-a)^2+(y-b)^2=r^2$の接線が存在すること、すなわち円上の点$(x_0,y_0)$で$(x_0-a)(p-a)+(y_0-b)(q-b)=r^2$となるものが存在することは、$(p-a)^2+(q-b)^2\ge r^2$と同値である。
+  statement_en: For r>0, there is a point (x0,y0) on the circle (x-a)^2+(y-b)^2=r^2 with (x0-a)(p-a)+(y0-b)(q-b)=r^2 if and only if (p-a)^2+(q-b)^2 ≥ r^2.
+  assumptions:
+  - $r>0$
+  - $a,b,p,q$は実数
+  quantifiers:
+  - 任意の実数$a,b,r,p,q$
+  conclusion: 接点の存在は$(p-a)^2+(q-b)^2\ge r^2$と同値である。
+  answer: |
+    $a,b,r,p,q$を実数とし、$r>0$とする。$P=p-a$、$Q=q-b$、$N=P^2+Q^2$とおく。
+
+    接点$(x_0,y_0)$があるとし、$X=x_0-a$、$Y=y_0-b$とする。$X^2+Y^2=r^2$、$XP+YQ=r^2$である。$(X^2+Y^2)(P^2+Q^2)-(XP+YQ)^2=(XQ-YP)^2\ge0$より$r^2N\ge r^4$となり、$r^2>0$で割って$N\ge r^2$である。
+
+    逆に$N\ge r^2$とする。$N>0$である。$s=\sqrt{N-r^2}$、$X=\frac{r^2P-rQs}{N}$、$Y=\frac{r^2Q+rPs}{N}$とおくと、$X^2+Y^2=\frac{r^2(r^2+s^2)N}{N^2}=r^2$である。また$XP+YQ=\frac{r^2(P^2+Q^2)}{N}=r^2$である。よって$(a+X,b+Y)$が求める接点である。
+  strategy: Use Cauchy-Schwarz for necessity and an explicit contact point for sufficiency.
+  sketch:
+  - 'setup: Shift the center to the origin with P=p-a, Q=q-b, N=P^2+Q^2.'
+  - 'derive: A contact point (X,Y) satisfies X^2+Y^2=r^2 and XP+YQ=r^2.'
+  - 'derive: Lagrange''s identity gives r^2 N≥r^4, hence N≥r^2.'
+  - 'construct: Conversely take s=√(N-r^2), X=(r^2 P-r Q s)/N and Y=(r^2 Q+r P s)/N.'
+  - 'conclude: Direct computation gives X^2+Y^2=r^2 and XP+YQ=r^2.'
+  openmath: (forall (a b r p q) (-> (> r 0) (<-> (exists (x0 y0) (and (= (+ (^ (- x0 a) 2) (^ (- y0 b) 2)) (^ r 2)) (= (+ (* (- x0 a) (- p a)) (* (- y0 b) (- q b))) (^ r 2)))) (>= (+ (^ (- p a) 2) (^ (- q b) 2)) (^ r 2)))))
+  hard_negative:
+    statement: 円の内部の点からも接線が引ける。
+    reason: $(p-a)^2+(q-b)^2<r^2$なら接点は存在しない。$x^2+y^2=1$と原点では、接点の条件の左辺が常に$0$で右辺が$1$である。
+  target: |
+    ∀ (a b r p q : ℝ), 0 < r → ((∃ x₀ y₀ : ℝ, (x₀ - a) ^ 2 + (y₀ - b) ^ 2 = r ^ 2 ∧ (x₀ - a) * (p - a) + (y₀ - b) * (q - b) = r ^ 2) ↔ r ^ 2 ≤ (p - a) ^ 2 + (q - b) ^ 2)
+  proof: |
+    by
+      intro a b r p q hr
+      constructor
+      · rintro ⟨x₀, y₀, h₁, h₂⟩
+        have hr2 : 0 < r ^ 2 := by positivity
+        have : r ^ 2 * r ^ 2 ≤ r ^ 2 * ((p - a) ^ 2 + (q - b) ^ 2) := by
+          calc r ^ 2 * r ^ 2 = ((x₀ - a) * (p - a) + (y₀ - b) * (q - b)) ^ 2 := by rw [h₂]; ring
+            _ ≤ ((x₀ - a) ^ 2 + (y₀ - b) ^ 2) * ((p - a) ^ 2 + (q - b) ^ 2) := by
+                linarith [sq_nonneg ((x₀ - a) * (q - b) - (y₀ - b) * (p - a))]
+            _ = r ^ 2 * ((p - a) ^ 2 + (q - b) ^ 2) := by rw [h₁]
+        exact le_of_mul_le_mul_left this hr2
+      · intro h
+        have hN : 0 < (p - a) ^ 2 + (q - b) ^ 2 := lt_of_lt_of_le (by positivity) h
+        obtain ⟨s, hs⟩ : ∃ s : ℝ, s ^ 2 = (p - a) ^ 2 + (q - b) ^ 2 - r ^ 2 := ⟨_, Real.sq_sqrt (by linarith)⟩
+        refine ⟨a + (r ^ 2 * (p - a) - r * (q - b) * s) / ((p - a) ^ 2 + (q - b) ^ 2), b + (r ^ 2 * (q - b) + r * (p - a) * s) / ((p - a) ^ 2 + (q - b) ^ 2), ?_, ?_⟩
+        · have : (a + (r ^ 2 * (p - a) - r * (q - b) * s) / ((p - a) ^ 2 + (q - b) ^ 2) - a) ^ 2 + (b + (r ^ 2 * (q - b) + r * (p - a) * s) / ((p - a) ^ 2 + (q - b) ^ 2) - b) ^ 2 = r ^ 2 * (r ^ 2 + s ^ 2) / ((p - a) ^ 2 + (q - b) ^ 2) := by
+            field_simp; ring
+          rw [this, hs]
+          field_simp; ring
+        · field_simp; ring
+- id: chord_length_sq_formula
+  kind: gap
+  level: high
+  topic: 図形と方程式・弦の長さ
+  statement: $(a,b)\ne(0,0)$とする。相異なる2点$(x_1,y_1)$、$(x_2,y_2)$が直線$ax+by+c=0$と円$(x-p)^2+(y-q)^2=r^2$の共有点なら、弦の長さの平方は$4\left(r^2-\frac{(ap+bq+c)^2}{a^2+b^2}\right)$である。
+  statement_en: For (a,b)≠(0,0), if two distinct points (x1,y1),(x2,y2) lie on both the line ax+by+c=0 and the circle (x-p)^2+(y-q)^2=r^2, then (x1-x2)^2+(y1-y2)^2=4(r^2-(ap+bq+c)^2/(a^2+b^2)).
+  assumptions:
+  - $(a,b)\ne(0,0)$
+  - $(x_1,y_1)\ne(x_2,y_2)$
+  - 2点は直線と円の両方の上にある
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,r,x_1,y_1,x_2,y_2$
+  conclusion: $(x_1-x_2)^2+(y_1-y_2)^2=4\left(r^2-\frac{(ap+bq+c)^2}{a^2+b^2}\right)$である。
+  answer: |
+    $a,b,c,p,q,r,x_1,y_1,x_2,y_2$を実数とし、$(a,b)\ne(0,0)$、$(x_1,y_1)\ne(x_2,y_2)$、2点が直線と円の上にあるとする。$N=a^2+b^2>0$、$w=ap+bq+c$とおく。
+
+    $e_1=x_1-x_2$、$e_2=y_1-y_2$、$m_1=x_1+x_2-2p$、$m_2=y_1+y_2-2q$とする。直線の方程式から$ae_1+be_2=0$、$am_1+bm_2=-2w$である。円の方程式を引くと$e_1m_1+e_2m_2=0$である。
+
+    $C=am_2-bm_1$とおくと、これらの関係から$Ce_1=m_2(ae_1+be_2)-b(e_1m_1+e_2m_2)=0$、$Ce_2=a(e_1m_1+e_2m_2)-m_1(ae_1+be_2)=0$である。$(e_1,e_2)\ne(0,0)$なので$C=0$である。すると$N(m_1^2+m_2^2)=(am_1+bm_2)^2+C^2=4w^2$となる。
+
+    一方、中線定理の計算により$e_1^2+e_2^2+m_1^2+m_2^2=2\{(x_1-p)^2+(y_1-q)^2\}+2\{(x_2-p)^2+(y_2-q)^2\}=4r^2$である。よって$e_1^2+e_2^2=4r^2-\frac{4w^2}{N}$を得る。
+  strategy: Compare the chord vector e and the doubled midpoint vector m; both are constrained by the line and the circle.
+  sketch:
+  - 'setup: Put e=(x1-x2,y1-y2), m=(x1+x2-2p,y1+y2-2q), N=a^2+b^2, w=ap+bq+c.'
+  - 'derive: The equations give a e1+b e2=0, a m1+b m2=-2w and e·m=0.'
+  - 'derive: Put C=a m2-b m1; then C e1=C e2=0, and e≠0 forces C=0.'
+  - 'derive: Hence N|m|^2=(a m1+b m2)^2+C^2=4w^2.'
+  - 'derive: The parallelogram identity gives |e|^2+|m|^2=4r^2.'
+  - 'conclude: Therefore |e|^2=4r^2-4w^2/N.'
+  openmath: (forall (a b c p q r x1 y1 x2 y2) (-> (and (not (and (= a 0) (= b 0))) (not (and (= x1 x2) (= y1 y2))) (= (+ (+ (* a x1) (* b y1)) c) 0) (= (+ (+ (* a x2) (* b y2)) c) 0) (= (+ (^ (- x1 p) 2) (^ (- y1 q) 2)) (^ r 2)) (= (+ (^ (- x2 p) 2) (^ (- y2 q) 2)) (^ r 2))) (= (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2)) (* 4 (- (^ r 2) (/ (^ (+ (+ (* a p) (* b q)) c) 2) (+ (^ a 2) (^ b 2))))))))
+  hard_negative:
+    statement: 弦の長さの平方は$r^2-\frac{(ap+bq+c)^2}{a^2+b^2}$である。
+    reason: これは弦の半分の長さの平方である。$y=0$と$x^2+y^2=1$の弦の長さは$2$で、その平方は$4$である。
+  target: |
+    ∀ (a b c p q r x₁ y₁ x₂ y₂ : ℝ), ¬(a = 0 ∧ b = 0) → ¬(x₁ = x₂ ∧ y₁ = y₂) → a * x₁ + b * y₁ + c = 0 → a * x₂ + b * y₂ + c = 0 → (x₁ - p) ^ 2 + (y₁ - q) ^ 2 = r ^ 2 → (x₂ - p) ^ 2 + (y₂ - q) ^ 2 = r ^ 2 → (x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2 = 4 * (r ^ 2 - (a * p + b * q + c) ^ 2 / (a ^ 2 + b ^ 2))
+  proof: |
+    by
+      intro a b c p q r x₁ y₁ x₂ y₂ hab hne hl₁ hl₂ hc₁ hc₂
+      have hN : a ^ 2 + b ^ 2 ≠ 0 := by
+        apply ne_of_gt
+        by_cases ha₀ : a = 0
+        · have hb₀ : b ≠ 0 := fun hb₀ => hab ⟨ha₀, hb₀⟩
+          positivity
+        · positivity
+      have he : a * (x₁ - x₂) + b * (y₁ - y₂) = 0 := by linarith
+      have hd : (x₁ - x₂) * (x₁ + x₂ - 2 * p) + (y₁ - y₂) * (y₁ + y₂ - 2 * q) = 0 := by linear_combination hc₁ - hc₂
+      have hm : a * (x₁ + x₂ - 2 * p) + b * (y₁ + y₂ - 2 * q) = -2 * (a * p + b * q + c) := by linear_combination hl₁ + hl₂
+      have hC₁ : (x₁ - x₂) * (a * (y₁ + y₂ - 2 * q) - b * (x₁ + x₂ - 2 * p)) = 0 := by
+        linear_combination (y₁ + y₂ - 2 * q) * he - b * hd
+      have hC₂ : (y₁ - y₂) * (a * (y₁ + y₂ - 2 * q) - b * (x₁ + x₂ - 2 * p)) = 0 := by
+        linear_combination a * hd - (x₁ + x₂ - 2 * p) * he
+      have hC : a * (y₁ + y₂ - 2 * q) - b * (x₁ + x₂ - 2 * p) = 0 := by
+        by_contra hC
+        exact hne ⟨by linarith [(mul_eq_zero.mp hC₁).resolve_right hC], by linarith [(mul_eq_zero.mp hC₂).resolve_right hC]⟩
+      have hsum : (a ^ 2 + b ^ 2) * ((x₁ + x₂ - 2 * p) ^ 2 + (y₁ + y₂ - 2 * q) ^ 2) = 4 * (a * p + b * q + c) ^ 2 := by
+        have : (a ^ 2 + b ^ 2) * ((x₁ + x₂ - 2 * p) ^ 2 + (y₁ + y₂ - 2 * q) ^ 2) = (a * (x₁ + x₂ - 2 * p) + b * (y₁ + y₂ - 2 * q)) ^ 2 + (a * (y₁ + y₂ - 2 * q) - b * (x₁ + x₂ - 2 * p)) ^ 2 := by ring
+        rw [this, hm, hC]; ring
+      have hpar : (x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2 + ((x₁ + x₂ - 2 * p) ^ 2 + (y₁ + y₂ - 2 * q) ^ 2) = 4 * r ^ 2 := by
+        linear_combination 2 * hc₁ + 2 * hc₂
+      have hmval : (x₁ + x₂ - 2 * p) ^ 2 + (y₁ + y₂ - 2 * q) ^ 2 = 4 * (a * p + b * q + c) ^ 2 / (a ^ 2 + b ^ 2) := by
+        rw [eq_div_iff hN]; linear_combination hsum
+      have : 4 * (r ^ 2 - (a * p + b * q + c) ^ 2 / (a ^ 2 + b ^ 2)) = 4 * r ^ 2 - 4 * (a * p + b * q + c) ^ 2 / (a ^ 2 + b ^ 2) := by ring
+      rw [this, ← hmval]
+      linarith
+- id: radical_axis_common_points
+  kind: gap
+  level: high
+  topic: 図形と方程式・2円の共有点と根軸
+  statement: 実数$x,y$が$x^2+y^2+lx+my+n=0$と$x^2+y^2+l'x+m'y+n'=0$をともに満たすことは、前者と1次方程式$(l-l')x+(m-m')y+(n-n')=0$をともに満たすことと同値である。
+  statement_en: Real x,y satisfy both x^2+y^2+lx+my+n=0 and x^2+y^2+l'x+m'y+n'=0 if and only if they satisfy the first and (l-l')x+(m-m')y+(n-n')=0.
+  assumptions:
+  - $l,m,n,l',m',n',x,y$は実数
+  quantifiers:
+  - 任意の実数$l,m,n,l',m',n',x,y$
+  conclusion: 2円の共有点は、一方の円と差の1次方程式の共有点と同じである。
+  answer: |
+    $l,m,n,l',m',n',x,y$を実数とする。第1の式の左辺から第2の式の左辺を引くと$(l-l')x+(m-m')y+(n-n')$である。第1の式が成り立つとき、第2の式の左辺が$0$であることとこの差が$0$であることは同値である。
+  strategy: Subtract the two general forms to cancel the quadratic terms.
+  sketch:
+  - 'derive: The difference of the two left sides is (l-l'')x+(m-m'')y+(n-n'').'
+  - 'conclude: Given the first equation, the second holds exactly when this difference vanishes.'
+  openmath: (forall (l m n l2 m2 n2 x y) (<-> (and (= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l x)) (* m y)) n) 0) (= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l2 x)) (* m2 y)) n2) 0)) (and (= (+ (+ (+ (+ (^ x 2) (^ y 2)) (* l x)) (* m y)) n) 0) (= (+ (+ (* (- l l2) x) (* (- m m2) y)) (- n n2)) 0))))
+  hard_negative:
+    statement: 差の1次方程式を満たす点は2つの円の共有点である。
+    reason: 一方の円の上にあるという条件が必要である。$(x-2)^2+y^2=1$と$(x+2)^2+y^2=1$では差の式は$x=0$だが、点$(0,0)$はどちらの円の上にもない。
+  target: |
+    ∀ (l m n l' m' n' x y : ℝ), ((x ^ 2 + y ^ 2 + l * x + m * y + n = 0 ∧ x ^ 2 + y ^ 2 + l' * x + m' * y + n' = 0) ↔ (x ^ 2 + y ^ 2 + l * x + m * y + n = 0 ∧ (l - l') * x + (m - m') * y + (n - n') = 0))
+  proof: |
+    by
+      intro l m n l' m' n' x y
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        exact ⟨h₁, by linear_combination h₁ - h₂⟩
+      · rintro ⟨h₁, h₂⟩
+        exact ⟨h₁, by linear_combination h₁ - h₂⟩
+- id: two_circles_meet_iff_triangle_inequality
+  kind: textbook
+  level: high
+  topic: 図形と方程式・2円の位置関係
+  statement: $r,r'>0$、中心間の距離を$d=\sqrt{(a'-a)^2+(b'-b)^2}$とする。円$(x-a)^2+(y-b)^2=r^2$と円$(x-a')^2+(y-b')^2=r'^2$が共有点をもつことは、$|r-r'|\le d\le r+r'$と同値である。
+  statement_en: For r,r'>0 and d=√((a'-a)^2+(b'-b)^2), the circles (x-a)^2+(y-b)^2=r^2 and (x-a')^2+(y-b')^2=r'^2 meet if and only if |r-r'| ≤ d ≤ r+r'.
+  assumptions:
+  - $r>0$、$r'>0$
+  quantifiers:
+  - 任意の実数$a,b,r,a',b',r'$
+  conclusion: 共有点の存在は$|r-r'|\le d\le r+r'$と同値である。
+  answer: |
+    $a,b,r,a',b',r'$を実数とし、$r,r'>0$とする。$A=a'-a$、$B=b'-b$、$D=A^2+B^2$、$d=\sqrt{D}$とおく。$|r-r'|\le d\le r+r'$は$(r-r')^2\le D\le(r+r')^2$と同値である。
+
+    共有点$(x,y)$があるとし、$u=x-a$、$v=y-b$とする。$u^2+v^2=r^2$、$(u-A)^2+(v-B)^2=r'^2$である。$T=u(u-A)+v(v-B)$とおくと、$r^2r'^2-T^2=\{u(v-B)-v(u-A)\}^2\ge0$より$|T|\le rr'$である。$D=r^2+r'^2-2T$なので$(r-r')^2\le D\le(r+r')^2$を得る。
+
+    逆に$(r-r')^2\le D\le(r+r')^2$とする。
+
+    $D=0$のとき、$A=B=0$であり$r=r'$である。$(a+r,b)$は両方の円の上にある。
+
+    $D>0$のとき、$W=\frac{D+r^2-r'^2}{2}$とおく。$4(r^2D-W^2)=\{D-(r-r')^2\}\{(r+r')^2-D\}\ge0$である。$K=\sqrt{r^2D-W^2}$、$x=a+\frac{WA-KB}{D}$、$y=b+\frac{WB+KA}{D}$とおく。すると$(x-a)^2+(y-b)^2=\frac{W^2+K^2}{D}=r^2$である。また$A(x-a)+B(y-b)=W$なので、$(x-a')^2+(y-b')^2=r^2-2W+D=r'^2$である。よって$(x,y)$は共有点である。
+  strategy: Use Cauchy-Schwarz for necessity and an explicit intersection point built along and across the center line for sufficiency.
+  sketch:
+  - 'setup: Put A=a''-a, B=b''-b, D=A^2+B^2.'
+  - 'translate: The inequalities are equivalent to (r-r'')^2≤D≤(r+r'')^2.'
+  - 'derive: A common point gives T=u(u-A)+v(v-B) with |T|≤rr'' and D=r^2+r''^2-2T.'
+  - 'case_split: Conversely split on D=0 and D>0.'
+  - 'construct: If D=0 then r=r'' and (a+r,b) lies on both circles.'
+  - 'construct: If D>0 set W=(D+r^2-r''^2)/2 and K=√(r^2 D-W^2), and take x=a+(WA-KB)/D, y=b+(WB+KA)/D.'
+  - 'derive: The factorization 4(r^2 D-W^2)=(D-(r-r'')^2)((r+r'')^2-D) shows K is real.'
+  - 'conclude: Direct computation shows the point is on both circles.'
+  openmath: (forall (a b r a2 b2 r2) (-> (and (> r 0) (> r2 0)) (<-> (exists (x y) (and (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (+ (^ (- x a2) 2) (^ (- y b2) 2)) (^ r2 2)))) (and (<= (abs (- r r2)) (root (+ (^ (- a2 a) 2) (^ (- b2 b) 2)) 2)) (<= (root (+ (^ (- a2 a) 2) (^ (- b2 b) 2)) 2) (+ r r2))))))
+  hard_negative:
+    statement: $d\le r+r'$だけで2円は共有点をもつ。
+    reason: 一方が他方の内部にあると共有点はない。$x^2+y^2=1$と$x^2+y^2=4$では$d=0\le3$だが共有点はない。
+  target: |
+    ∀ (a b r a' b' r' : ℝ), 0 < r → 0 < r' → ((∃ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ∧ (x - a') ^ 2 + (y - b') ^ 2 = r' ^ 2) ↔ (|r - r'| ≤ Real.sqrt ((a' - a) ^ 2 + (b' - b) ^ 2) ∧ Real.sqrt ((a' - a) ^ 2 + (b' - b) ^ 2) ≤ r + r'))
+  proof: |
+    by
+      intro a b r a' b' r' hr hr'
+      obtain ⟨A, hA⟩ : ∃ A, A = a' - a := ⟨_, rfl⟩
+      obtain ⟨B, hB⟩ : ∃ B, B = b' - b := ⟨_, rfl⟩
+      have ea : a' = a + A := by linarith
+      have eb : b' = b + B := by linarith
+      rw [← hA, ← hB]
+      subst ea eb
+      clear hA hB
+      have hD : 0 ≤ A ^ 2 + B ^ 2 := by positivity
+      have hup : Real.sqrt (A ^ 2 + B ^ 2) ≤ r + r' ↔ A ^ 2 + B ^ 2 ≤ (r + r') ^ 2 := by
+        rw [Real.sqrt_le_left (by positivity)]
+      have hlo : |r - r'| ≤ Real.sqrt (A ^ 2 + B ^ 2) ↔ (r - r') ^ 2 ≤ A ^ 2 + B ^ 2 := by
+        constructor
+        · intro h
+          have := sq_le_sq' (by linarith [neg_abs_le (r - r'), Real.sqrt_nonneg (A ^ 2 + B ^ 2), abs_nonneg (r - r')]) (le_trans (le_abs_self (r - r')) h)
+          rwa [Real.sq_sqrt hD] at this
+        · exact Real.abs_le_sqrt
+      rw [hup, hlo]
+      constructor
+      · rintro ⟨x, y, h₁, h₂⟩
+        obtain ⟨u, hu⟩ : ∃ u, u = x - a := ⟨_, rfl⟩
+        obtain ⟨v, hv⟩ : ∃ v, v = y - b := ⟨_, rfl⟩
+        have ex : x = a + u := by linarith
+        have ey : y = b + v := by linarith
+        subst ex ey
+        have e₁ : u ^ 2 + v ^ 2 = r ^ 2 := by linear_combination h₁
+        have e₂ : (u - A) ^ 2 + (v - B) ^ 2 = r' ^ 2 := by linear_combination h₂
+        have hcs : (u * (u - A) + v * (v - B)) ^ 2 ≤ (r * r') ^ 2 := by
+          rw [mul_pow, ← e₁, ← e₂]
+          linarith [sq_nonneg (u * (v - B) - v * (u - A))]
+        have habs := abs_le_of_sq_le_sq' hcs (by positivity)
+        have hT : A ^ 2 + B ^ 2 = r ^ 2 + r' ^ 2 - 2 * (u * (u - A) + v * (v - B)) := by
+          linear_combination e₁ + e₂
+        constructor
+        · linarith [habs.2]
+        · linarith [habs.1]
+      · rintro ⟨hl, hu⟩
+        by_cases h0 : A ^ 2 + B ^ 2 = 0
+        · obtain ⟨hA2, hB2⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp h0
+          have hA0 : A = 0 := pow_eq_zero_iff two_ne_zero |>.mp hA2
+          have hB0 : B = 0 := pow_eq_zero_iff two_ne_zero |>.mp hB2
+          have hrr : r = r' := by
+            rw [h0] at hl
+            have : (r - r') ^ 2 = 0 := le_antisymm hl (sq_nonneg _)
+            have := pow_eq_zero_iff two_ne_zero |>.mp this
+            linarith
+          subst hrr
+          refine ⟨a + r, b, by ring, ?_⟩
+          rw [hA0, hB0]; ring
+        · have hDpos : 0 < A ^ 2 + B ^ 2 := lt_of_le_of_ne hD (Ne.symm h0)
+          obtain ⟨W, hW⟩ : ∃ W, W = (A ^ 2 + B ^ 2 + r ^ 2 - r' ^ 2) / 2 := ⟨_, rfl⟩
+          have hE : 0 ≤ r ^ 2 * (A ^ 2 + B ^ 2) - W ^ 2 := by
+            have h4 : 4 * (r ^ 2 * (A ^ 2 + B ^ 2) - W ^ 2) = (A ^ 2 + B ^ 2 - (r - r') ^ 2) * ((r + r') ^ 2 - (A ^ 2 + B ^ 2)) := by
+              rw [hW]; ring
+            have := mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hu)
+            linarith
+          obtain ⟨K, hK⟩ : ∃ K : ℝ, K ^ 2 = r ^ 2 * (A ^ 2 + B ^ 2) - W ^ 2 := ⟨_, Real.sq_sqrt hE⟩
+          have hs : (W ^ 2 + K ^ 2) / (A ^ 2 + B ^ 2) = r ^ 2 := by
+            rw [hK]; field_simp; ring
+          have h₁ : ((W * A - K * B) / (A ^ 2 + B ^ 2)) ^ 2 + ((W * B + K * A) / (A ^ 2 + B ^ 2)) ^ 2 = (W ^ 2 + K ^ 2) / (A ^ 2 + B ^ 2) := by
+            field_simp; ring
+          have h₂ : A * ((W * A - K * B) / (A ^ 2 + B ^ 2)) + B * ((W * B + K * A) / (A ^ 2 + B ^ 2)) = W := by
+            field_simp; ring
+          refine ⟨a + (W * A - K * B) / (A ^ 2 + B ^ 2), b + (W * B + K * A) / (A ^ 2 + B ^ 2), ?_, ?_⟩
+          · rw [← hs, ← h₁]; ring
+          · have : r' ^ 2 = r ^ 2 - 2 * W + (A ^ 2 + B ^ 2) := by rw [hW]; ring
+            rw [this, ← hs, ← h₁]
+            linear_combination (-2 : ℝ) * h₂
+- id: circles_externally_tangent_unique_point
+  kind: gap
+  level: high
+  topic: 図形と方程式・外接する2円
+  statement: $r,r'>0$で中心間の距離が$r+r'$に等しいとき、2円$(x-a)^2+(y-b)^2=r^2$、$(x-a')^2+(y-b')^2=r'^2$の共有点は、中心を結ぶ線分を$r:r'$に内分する点$\left(\frac{r'a+ra'}{r+r'},\frac{r'b+rb'}{r+r'}\right)$だけである。
+  statement_en: For r,r'>0 with center distance r+r', the only common point of the circles (x-a)^2+(y-b)^2=r^2 and (x-a')^2+(y-b')^2=r'^2 is ((r'a+ra')/(r+r'),(r'b+rb')/(r+r')).
+  assumptions:
+  - $r>0$、$r'>0$
+  - $\sqrt{(a'-a)^2+(b'-b)^2}=r+r'$
+  quantifiers:
+  - 任意の実数$a,b,r,a',b',r',x,y$
+  conclusion: $(x,y)$が両方の円の上にあることは、$(x,y)$が内分点であることと同値である。
+  answer: |
+    $a,b,r,a',b',r',x,y$を実数とし、$r,r'>0$、$\sqrt{(a'-a)^2+(b'-b)^2}=r+r'$とする。$A=a'-a$、$B=b'-b$、$h=r+r'>0$とおくと、$A^2+B^2=h^2$である。
+
+    $(x,y)$が両方の円の上にあるとし、$u=x-a$、$v=y-b$とする。$u^2+v^2=r^2$である。2つの円の式を引くと$2(uA+vB)=r^2+h^2-r'^2=2rh$となり、$uA+vB=rh$である。すると
+    $(hu-rA)^2+(hv-rB)^2=h^2r^2-2rh\cdot rh+r^2h^2=0$
+    なので$hu=rA$、$hv=rB$である。これは$x=\frac{r'a+ra'}{r+r'}$、$y=\frac{r'b+rb'}{r+r'}$を意味する。
+
+    逆に$(x,y)$がこの点なら、$x-a=\frac{rA}{h}$、$y-b=\frac{rB}{h}$なので$(x-a)^2+(y-b)^2=\frac{r^2(A^2+B^2)}{h^2}=r^2$である。また$x-a'=-\frac{r'A}{h}$、$y-b'=-\frac{r'B}{h}$なので$(x-a')^2+(y-b')^2=r'^2$である。
+  strategy: Show that a common point makes a sum of two squares vanish, forcing the division point.
+  sketch:
+  - 'setup: Put A=a''-a, B=b''-b, h=r+r'', so A^2+B^2=h^2.'
+  - 'derive: For a common point with u=x-a, v=y-b, subtracting the circle equations gives uA+vB=rh.'
+  - 'derive: Then (hu-rA)^2+(hv-rB)^2=0.'
+  - 'derive: Hence hu=rA and hv=rB, which is the internal division formula.'
+  - 'conclude: Conversely the division point lies on both circles by direct substitution.'
+  openmath: (forall (a b r a2 b2 r2 x y) (-> (and (> r 0) (> r2 0) (= (root (+ (^ (- a2 a) 2) (^ (- b2 b) 2)) 2) (+ r r2))) (<-> (and (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (+ (^ (- x a2) 2) (^ (- y b2) 2)) (^ r2 2))) (and (= x (/ (+ (* r2 a) (* r a2)) (+ r r2))) (= y (/ (+ (* r2 b) (* r b2)) (+ r r2)))))))
+  hard_negative:
+    statement: 接点は中心を結ぶ線分を$r':r$に内分する。
+    reason: 比が逆である。$x^2+y^2=1$と$(x-3)^2+y^2=4$の接点は$(1,0)$で、線分を$1:2=r:r'$に内分する。
+  target: |
+    ∀ (a b r a' b' r' x y : ℝ), 0 < r → 0 < r' → Real.sqrt ((a' - a) ^ 2 + (b' - b) ^ 2) = r + r' → (((x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ∧ (x - a') ^ 2 + (y - b') ^ 2 = r' ^ 2) ↔ (x = (r' * a + r * a') / (r + r') ∧ y = (r' * b + r * b') / (r + r')))
+  proof: |
+    by
+      intro a b r a' b' r' x y hr hr' hd
+      have hs : 0 < r + r' := by positivity
+      have hD : (a' - a) ^ 2 + (b' - b) ^ 2 = (r + r') ^ 2 := by
+        rw [← hd, Real.sq_sqrt (by positivity)]
+      constructor
+      · rintro ⟨h₁, h₂⟩
+        have hdot : (x - a) * (a' - a) + (y - b) * (b' - b) = r * (r + r') := by
+          linear_combination (1 / 2 : ℝ) * h₁ - (1 / 2 : ℝ) * h₂ + (1 / 2 : ℝ) * hD
+        have hz : ((r + r') * (x - a) - r * (a' - a)) ^ 2 + ((r + r') * (y - b) - r * (b' - b)) ^ 2 = 0 := by
+          linear_combination (r + r') ^ 2 * h₁ - 2 * r * (r + r') * hdot + r ^ 2 * hD
+        obtain ⟨hz₁, hz₂⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp hz
+        have e₁ := pow_eq_zero_iff two_ne_zero |>.mp hz₁
+        have e₂ := pow_eq_zero_iff two_ne_zero |>.mp hz₂
+        constructor
+        · rw [eq_div_iff hs.ne']; linear_combination e₁
+        · rw [eq_div_iff hs.ne']; linear_combination e₂
+      · rintro ⟨rfl, rfl⟩
+        constructor
+        · have : ((r' * a + r * a') / (r + r') - a) ^ 2 + ((r' * b + r * b') / (r + r') - b) ^ 2 = r ^ 2 * ((a' - a) ^ 2 + (b' - b) ^ 2) / (r + r') ^ 2 := by
+            field_simp; ring
+          rw [this, hD]; field_simp
+        · have : ((r' * a + r * a') / (r + r') - a') ^ 2 + ((r' * b + r * b') / (r + r') - b') ^ 2 = r' ^ 2 * ((a' - a) ^ 2 + (b' - b) ^ 2) / (r + r') ^ 2 := by
+            field_simp; ring
+          rw [this, hD]; field_simp
+- id: perpendicular_bisector_locus
+  kind: textbook
+  level: high
+  topic: 図形と方程式・軌跡（垂直二等分線）
+  statement: 2点$(x_1,y_1)$、$(x_2,y_2)$から等距離にある点$(x,y)$の条件は$2(x_2-x_1)x+2(y_2-y_1)y=x_2^2+y_2^2-x_1^2-y_1^2$である。
+  statement_en: A point (x,y) is equidistant from (x1,y1) and (x2,y2) if and only if 2(x2-x1)x+2(y2-y1)y=x2^2+y2^2-x1^2-y1^2.
+  assumptions:
+  - $x_1,y_1,x_2,y_2,x,y$は実数
+  quantifiers:
+  - 任意の実数$x_1,y_1,x_2,y_2,x,y$
+  conclusion: 等距離の条件は上の1次方程式と同値である。
+  answer: |
+    $x_1,y_1,x_2,y_2,x,y$を実数とする。距離は非負なので、2つの距離が等しいことは距離の平方が等しいことと同値である。$(x-x_1)^2+(y-y_1)^2=(x-x_2)^2+(y-y_2)^2$を展開すると$x^2+y^2$が消え、$2(x_2-x_1)x+2(y_2-y_1)y=x_2^2+y_2^2-x_1^2-y_1^2$となる。各段階は同値変形である。
+  strategy: Square the distances and cancel the quadratic terms.
+  sketch:
+  - 'translate: Nonnegative distances are equal exactly when their squares are equal.'
+  - 'derive: Expanding both squares cancels x^2+y^2.'
+  - 'conclude: The remaining linear equation is the stated one.'
+  openmath: (forall (x1 y1 x2 y2 x y) (<-> (= (root (+ (^ (- x x1) 2) (^ (- y y1) 2)) 2) (root (+ (^ (- x x2) 2) (^ (- y y2) 2)) 2)) (= (+ (* (* 2 (- x2 x1)) x) (* (* 2 (- y2 y1)) y)) (- (- (+ (^ x2 2) (^ y2 2)) (^ x1 2)) (^ y1 2)))))
+  hard_negative:
+    statement: 2点が一致していても、等距離の点の全体は直線である。
+    reason: 2点が一致するとすべての点が等距離であり、方程式も$0=0$になる。
+  target: |
+    ∀ (x₁ y₁ x₂ y₂ x y : ℝ), Real.sqrt ((x - x₁) ^ 2 + (y - y₁) ^ 2) = Real.sqrt ((x - x₂) ^ 2 + (y - y₂) ^ 2) ↔ 2 * (x₂ - x₁) * x + 2 * (y₂ - y₁) * y = x₂ ^ 2 + y₂ ^ 2 - x₁ ^ 2 - y₁ ^ 2
+  proof: |
+    by
+      intro x₁ y₁ x₂ y₂ x y
+      rw [Real.sqrt_inj (by positivity) (by positivity)]
+      constructor
+      · intro h; linear_combination h
+      · intro h; linear_combination h
+- id: apollonius_circle_locus
+  kind: named
+  level: high
+  topic: 図形と方程式・アポロニウスの円
+  statement: アポロニウスの円。$m,n>0$、$m\ne n$のとき、2点$A(x_1,y_1)$、$B(x_2,y_2)$について$n\cdot AP=m\cdot BP$を満たす点$P(x,y)$の条件は、中心$\left(\frac{m^2x_2-n^2x_1}{m^2-n^2},\frac{m^2y_2-n^2y_1}{m^2-n^2}\right)$、半径の平方$\frac{m^2n^2\cdot AB^2}{(m^2-n^2)^2}$の円の方程式である。
+  statement_en: 'Apollonius circle: for m,n>0 with m≠n, n·AP=m·BP holds if and only if (x-(m^2 x2-n^2 x1)/(m^2-n^2))^2+(y-(m^2 y2-n^2 y1)/(m^2-n^2))^2=m^2 n^2 AB^2/(m^2-n^2)^2.'
+  assumptions:
+  - $m>0$、$n>0$、$m\ne n$
+  quantifiers:
+  - 任意の実数$m,n,x_1,y_1,x_2,y_2,x,y$
+  conclusion: $n\cdot AP=m\cdot BP$は上の円の方程式と同値である。
+  answer: |
+    $m,n,x_1,y_1,x_2,y_2,x,y$を実数とし、$m,n>0$、$m\ne n$とする。$k=m^2-n^2$とおくと$k\ne0$である。両辺が非負なので、$n\cdot AP=m\cdot BP$は$n^2AP^2=m^2BP^2$と同値である。
+
+    $X_1=x-x_1$、$X_2=x-x_2$とおくと、円の中心の$x$座標について$x-\frac{m^2x_2-n^2x_1}{k}=\frac{m^2X_2-n^2X_1}{k}$である。$x_1-x_2=X_2-X_1$なので
+    $(m^2X_2-n^2X_1)^2-m^2n^2(X_1-X_2)^2=k(m^2X_2^2-n^2X_1^2)$
+    が展開で確かめられる。$y$についても同じ等式が成り立つ。加えて$k^2$で割ると
+    $\left(x-\frac{m^2x_2-n^2x_1}{k}\right)^2+\left(y-\frac{m^2y_2-n^2y_1}{k}\right)^2-\frac{m^2n^2AB^2}{k^2}=\frac{m^2BP^2-n^2AP^2}{k}$
+    を得る。よって円の方程式は$n^2AP^2=m^2BP^2$と同値である。
+  strategy: Square the ratio condition and identify the difference with the circle equation up to the factor m^2-n^2.
+  sketch:
+  - 'translate: Since both sides are nonnegative, the ratio condition is n^2 AP^2=m^2 BP^2.'
+  - 'setup: Put k=m^2-n^2≠0 and X1=x-x1, X2=x-x2.'
+  - 'derive: The identity (m^2 X2-n^2 X1)^2-m^2 n^2 (X1-X2)^2=k(m^2 X2^2-n^2 X1^2) holds, and likewise for y.'
+  - 'derive: Adding and dividing by k^2 expresses the circle equation''s difference as (m^2 BP^2-n^2 AP^2)/k.'
+  - 'conclude: Since k≠0, the circle equation is equivalent to the ratio condition.'
+  openmath: (forall (m n x1 y1 x2 y2 x y) (-> (and (> m 0) (> n 0) (!= m n)) (<-> (= (* n (root (+ (^ (- x x1) 2) (^ (- y y1) 2)) 2)) (* m (root (+ (^ (- x x2) 2) (^ (- y y2) 2)) 2))) (= (+ (^ (- x (/ (- (* (^ m 2) x2) (* (^ n 2) x1)) (- (^ m 2) (^ n 2)))) 2) (^ (- y (/ (- (* (^ m 2) y2) (* (^ n 2) y1)) (- (^ m 2) (^ n 2)))) 2)) (/ (* (* (^ m 2) (^ n 2)) (+ (^ (- x1 x2) 2) (^ (- y1 y2) 2))) (^ (- (^ m 2) (^ n 2)) 2))))))
+  hard_negative:
+    statement: $m=n$でも条件を満たす点の全体は円である。
+    reason: $m=n$では2点から等距離の点の条件になり、相異なる2点なら直線（垂直二等分線）である。
+  target: |
+    ∀ (m n x₁ y₁ x₂ y₂ x y : ℝ), 0 < m → 0 < n → m ≠ n → (n * Real.sqrt ((x - x₁) ^ 2 + (y - y₁) ^ 2) = m * Real.sqrt ((x - x₂) ^ 2 + (y - y₂) ^ 2) ↔ (x - (m ^ 2 * x₂ - n ^ 2 * x₁) / (m ^ 2 - n ^ 2)) ^ 2 + (y - (m ^ 2 * y₂ - n ^ 2 * y₁) / (m ^ 2 - n ^ 2)) ^ 2 = m ^ 2 * n ^ 2 * ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2) / (m ^ 2 - n ^ 2) ^ 2)
+  proof: |
+    by
+      intro m n x₁ y₁ x₂ y₂ x y hm hn hne
+      have hk : m ^ 2 - n ^ 2 ≠ 0 := by
+        intro h
+        apply hne
+        have : m ^ 2 = n ^ 2 := by linarith
+        exact (pow_left_inj₀ hm.le hn.le two_ne_zero).mp this
+      have hP : 0 ≤ (x - x₁) ^ 2 + (y - y₁) ^ 2 := by positivity
+      have hQ : 0 ≤ (x - x₂) ^ 2 + (y - y₂) ^ 2 := by positivity
+      have hsq : n * Real.sqrt ((x - x₁) ^ 2 + (y - y₁) ^ 2) = m * Real.sqrt ((x - x₂) ^ 2 + (y - y₂) ^ 2) ↔ n ^ 2 * ((x - x₁) ^ 2 + (y - y₁) ^ 2) = m ^ 2 * ((x - x₂) ^ 2 + (y - y₂) ^ 2) := by
+        rw [← sq_eq_sq₀ (by positivity) (by positivity), mul_pow, mul_pow, Real.sq_sqrt hP, Real.sq_sqrt hQ]
+      have key : (x - (m ^ 2 * x₂ - n ^ 2 * x₁) / (m ^ 2 - n ^ 2)) ^ 2 + (y - (m ^ 2 * y₂ - n ^ 2 * y₁) / (m ^ 2 - n ^ 2)) ^ 2 - m ^ 2 * n ^ 2 * ((x₁ - x₂) ^ 2 + (y₁ - y₂) ^ 2) / (m ^ 2 - n ^ 2) ^ 2 = (m ^ 2 * ((x - x₂) ^ 2 + (y - y₂) ^ 2) - n ^ 2 * ((x - x₁) ^ 2 + (y - y₁) ^ 2)) / (m ^ 2 - n ^ 2) := by
+        field_simp
+        ring
+      rw [hsq]
+      constructor
+      · intro h
+        have hz : m ^ 2 * ((x - x₂) ^ 2 + (y - y₂) ^ 2) - n ^ 2 * ((x - x₁) ^ 2 + (y - y₁) ^ 2) = 0 := by linarith
+        rw [hz, zero_div] at key
+        linarith
+      · intro h
+        rw [h, sub_self] at key
+        have := (div_eq_zero_iff.mp key.symm).resolve_right hk
+        linarith
+- id: homothety_image_of_circle_locus
+  kind: gap
+  level: high
+  topic: 図形と方程式・軌跡（円の相似拡大）
+  statement: $k\ne0$とする。点$(x_0,y_0)$が円$(x-a)^2+(y-b)^2=r^2$の上を動くとき、定点$(p,q)$を中心に$k$倍した点$(x,y)=(p+k(x_0-p),q+k(y_0-q))$の全体は、方程式$(x-(p+k(a-p)))^2+(y-(q+k(b-q)))^2=(kr)^2$で表される。
+  statement_en: For k≠0, (x,y)=(p+k(x0-p),q+k(y0-q)) for some (x0,y0) on the circle (x-a)^2+(y-b)^2=r^2 if and only if (x-(p+k(a-p)))^2+(y-(q+k(b-q)))^2=(kr)^2.
+  assumptions:
+  - $k\ne0$
+  quantifiers:
+  - 任意の実数$k,p,q,a,b,r,x,y$
+  conclusion: 軌跡は上の方程式で表される。
+  answer: |
+    $k,p,q,a,b,r,x,y$を実数とし、$k\ne0$とする。
+
+    $(x_0,y_0)$が円の上にあり、$x=p+k(x_0-p)$、$y=q+k(y_0-q)$とする。$x-(p+k(a-p))=k(x_0-a)$、$y-(q+k(b-q))=k(y_0-b)$なので、平方の和は$k^2\{(x_0-a)^2+(y_0-b)^2\}=k^2r^2$である。
+
+    逆に$(x,y)$が方程式を満たすとする。$k\ne0$なので$x_0=p+\frac{x-p}{k}$、$y_0=q+\frac{y-q}{k}$とおける。このとき$x=p+k(x_0-p)$、$y=q+k(y_0-q)$である。また$x_0-a=\frac{x-(p+k(a-p))}{k}$、$y_0-b=\frac{y-(q+k(b-q))}{k}$なので、$(x_0-a)^2+(y_0-b)^2=\frac{(kr)^2}{k^2}=r^2$である。
+  strategy: Substitute directly for one direction and solve for the original point using k≠0 for the other.
+  sketch:
+  - 'derive: For a point on the image, x-(p+k(a-p))=k(x0-a) and y-(q+k(b-q))=k(y0-b).'
+  - 'derive: Summing squares gives k^2 r^2.'
+  - 'construct: Conversely define x0=p+(x-p)/k and y0=q+(y-q)/k, using k≠0.'
+  - 'conclude: This point lies on the original circle and maps to (x,y).'
+  openmath: (forall (k p q a b r x y) (-> (!= k 0) (<-> (exists (x0 y0) (and (= (+ (^ (- x0 a) 2) (^ (- y0 b) 2)) (^ r 2)) (= x (+ p (* k (- x0 p)))) (= y (+ q (* k (- y0 q)))))) (= (+ (^ (- x (+ p (* k (- a p)))) 2) (^ (- y (+ q (* k (- b q)))) 2)) (^ (* k r) 2)))))
+  hard_negative:
+    statement: 軌跡の中心は$(ka,kb)$である。
+    reason: 中心は$(p+k(a-p),q+k(b-q))$であり、定点が原点でなければ一般に$(ka,kb)$と異なる。$x^2+y^2=1$、定点$(1,0)$、$k=\frac12$の軌跡の中心は$\left(\frac12,0\right)$であり、$(0,0)$ではない。
+  target: |
+    ∀ (k p q a b r x y : ℝ), k ≠ 0 → ((∃ x₀ y₀ : ℝ, (x₀ - a) ^ 2 + (y₀ - b) ^ 2 = r ^ 2 ∧ x = p + k * (x₀ - p) ∧ y = q + k * (y₀ - q)) ↔ (x - (p + k * (a - p))) ^ 2 + (y - (q + k * (b - q))) ^ 2 = (k * r) ^ 2)
+  proof: |
+    by
+      intro k p q a b r x y hk
+      constructor
+      · rintro ⟨x₀, y₀, h, rfl, rfl⟩
+        linear_combination k ^ 2 * h
+      · intro h
+        refine ⟨p + (x - p) / k, q + (y - q) / k, ?_, ?_, ?_⟩
+        · have : (p + (x - p) / k - a) ^ 2 + (q + (y - q) / k - b) ^ 2 = ((x - (p + k * (a - p))) ^ 2 + (y - (q + k * (b - q))) ^ 2) / k ^ 2 := by
+            field_simp; ring
+          rw [this, h]; field_simp
+        · field_simp; ring
+        · field_simp; ring
+- id: angle_bisector_equal_distance_locus
+  kind: gap
+  level: high
+  topic: 図形と方程式・軌跡（角の二等分線）
+  statement: $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$とする。点$(x,y)$が2直線$ax+by+c=0$、$a'x+b'y+c'=0$から等距離にあることは、$\frac{ax+by+c}{\sqrt{a^2+b^2}}=\pm\frac{a'x+b'y+c'}{\sqrt{a'^2+b'^2}}$と同値である。
+  statement_en: For (a,b)≠(0,0) and (a',b')≠(0,0), |ax+by+c|/√(a^2+b^2)=|a'x+b'y+c'|/√(a'^2+b'^2) if and only if (ax+by+c)/√(a^2+b^2)=±(a'x+b'y+c')/√(a'^2+b'^2).
+  assumptions:
+  - $(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$
+  quantifiers:
+  - 任意の実数$a,b,c,a',b',c',x,y$
+  conclusion: 等距離の条件は、符号の異なる2本の1次方程式のどちらかが成り立つことと同値である。
+  answer: |
+    $a,b,c,a',b',c',x,y$を実数とし、$(a,b)\ne(0,0)$、$(a',b')\ne(0,0)$とする。$\sqrt{a^2+b^2}$、$\sqrt{a'^2+b'^2}$は正なので、$\frac{|ax+by+c|}{\sqrt{a^2+b^2}}=\left|\frac{ax+by+c}{\sqrt{a^2+b^2}}\right|$であり、もう一方も同様である。実数$z,w$について$|z|=|w|$は$z=w$または$z=-w$と同値である。これを2つの分数に適用して結論を得る。
+  strategy: Pull the positive denominators inside the absolute values and use that |z|=|w| means z=±w.
+  sketch:
+  - 'derive: The square roots are nonnegative, so the absolute values move across the fractions.'
+  - 'derive: For real z,w, |z|=|w| holds exactly when z=w or z=-w.'
+  - 'conclude: Applying this to the two normalized forms gives the two equations.'
+  openmath: (forall (a b c a2 b2 c2 x y) (-> (and (not (and (= a 0) (= b 0))) (not (and (= a2 0) (= b2 0)))) (<-> (= (/ (abs (+ (+ (* a x) (* b y)) c)) (root (+ (^ a 2) (^ b 2)) 2)) (/ (abs (+ (+ (* a2 x) (* b2 y)) c2)) (root (+ (^ a2 2) (^ b2 2)) 2))) (or (= (/ (+ (+ (* a x) (* b y)) c) (root (+ (^ a 2) (^ b 2)) 2)) (/ (+ (+ (* a2 x) (* b2 y)) c2) (root (+ (^ a2 2) (^ b2 2)) 2))) (= (/ (+ (+ (* a x) (* b y)) c) (root (+ (^ a 2) (^ b 2)) 2)) (neg (/ (+ (+ (* a2 x) (* b2 y)) c2) (root (+ (^ a2 2) (^ b2 2)) 2))))))))
+  hard_negative:
+    statement: 等距離の点は$ax+by+c=a'x+b'y+c'$の1本の直線上にある。
+    reason: 正規化と符号の両方を落としている。$x=0$と$y=0$から等距離の点は$y=x$と$y=-x$の2本の上にあるが、この式は$y=x$しか与えない。
+  target: |
+    ∀ (a b c a' b' c' x y : ℝ), ¬(a = 0 ∧ b = 0) → ¬(a' = 0 ∧ b' = 0) → (|a * x + b * y + c| / Real.sqrt (a ^ 2 + b ^ 2) = |a' * x + b' * y + c'| / Real.sqrt (a' ^ 2 + b' ^ 2) ↔ ((a * x + b * y + c) / Real.sqrt (a ^ 2 + b ^ 2) = (a' * x + b' * y + c') / Real.sqrt (a' ^ 2 + b' ^ 2) ∨ (a * x + b * y + c) / Real.sqrt (a ^ 2 + b ^ 2) = -((a' * x + b' * y + c') / Real.sqrt (a' ^ 2 + b' ^ 2))))
+  proof: |
+    by
+      intro a b c a' b' c' x y hab hab'
+      have hs : |Real.sqrt (a ^ 2 + b ^ 2)| = Real.sqrt (a ^ 2 + b ^ 2) := abs_of_nonneg (Real.sqrt_nonneg _)
+      have hs' : |Real.sqrt (a' ^ 2 + b' ^ 2)| = Real.sqrt (a' ^ 2 + b' ^ 2) := abs_of_nonneg (Real.sqrt_nonneg _)
+      rw [← abs_eq_abs, abs_div, abs_div, hs, hs']
+- id: linear_form_max_on_disc
+  kind: gap
+  level: high
+  topic: 図形と方程式・領域と最大最小（円板）
+  statement: $r\ge0$、$a,b,p,q$を実数とする。円板$(x-p)^2+(y-q)^2\le r^2$における$ax+by$の最大値は$ap+bq+r\sqrt{a^2+b^2}$である（$p=q=0$なら$r\sqrt{a^2+b^2}$）。
+  statement_en: For r≥0 and real a,b,p,q, the maximum of ax+by over the disc (x-p)^2+(y-q)^2≤r^2 equals ap+bq+r√(a^2+b^2).
+  assumptions:
+  - $r\ge0$
+  - $a,b,p,q$は実数
+  quantifiers:
+  - 任意の実数$a,b,p,q,r$
+  conclusion: 最大値は$ap+bq+r\sqrt{a^2+b^2}$である。
+  answer: |-
+    $a,b,p,q,r$を実数とし、$r\ge0$とする。$S=\sqrt{a^2+b^2}$とおく。
+
+    上からの評価。円板内の点$(x,y)$について$u=x-p$、$v=y-q$とおくと$u^2+v^2\le r^2$である。$(a^2+b^2)(u^2+v^2)-(au+bv)^2=(av-bu)^2\ge0$より$(au+bv)^2\le S^2r^2$であり、$rS\ge0$なので$au+bv\le rS$である。よって$ax+by=ap+bq+(au+bv)\le ap+bq+rS$である。
+
+    等号をとる点。$S=0$なら$a=b=0$であり、中心$(p,q)$で$ax+by=0=ap+bq+rS$である。$S>0$なら点$\left(p+\frac{ra}{S},q+\frac{rb}{S}\right)$は$u^2+v^2=r^2$を満たし、そこでの値は$ap+bq+\frac{r(a^2+b^2)}{S}=ap+bq+rS$である。
+  strategy: Bound by Cauchy-Schwarz and attain the bound at the boundary point in the direction (a,b).
+  sketch:
+  - 'setup: Put S=√(a^2+b^2).'
+  - 'derive: Lagrange''s identity gives (ax+by)^2≤S^2 r^2 on the disc, so ax+by≤rS.'
+  - 'case_split: Split on S=0 and S>0 to attain the bound.'
+  - 'construct: If S=0 use the origin; if S>0 use (ra/S,rb/S).'
+  - 'conclude: The bound rS is the maximum.'
+  openmath: (forall (a b p q r) (-> (>= r 0) (and (exists (x y) (and (<= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (= (+ (+ (* a p) (* b q)) (* r (root (+ (^ a 2) (^ b 2)) 2))) (+ (* a x) (* b y))))) (forall (x y) (-> (<= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (<= (+ (* a x) (* b y)) (+ (+ (* a p) (* b q)) (* r (root (+ (^ a 2) (^ b 2)) 2)))))))))
+  hard_negative:
+    statement: 中心が$(p,q)$の円板でも最大値は$r\sqrt{a^2+b^2}$である。
+    reason: 中心での値$ap+bq$が加わる。$(x-1)^2+y^2\le1$での$x$の最大値は$2$であるが、この式は$1$を与える。
+  target: '∀ (a b p q r : ℝ), 0 ≤ r → IsGreatest {s : ℝ | ∃ x y : ℝ, (x - p) ^ 2 + (y - q) ^ 2 ≤ r ^ 2 ∧ s = a * x + b * y} (a * p + b * q + r * Real.sqrt (a ^ 2 + b ^ 2))'
+  proof: |
+    by
+      intro a b p q r hr
+      have hS : 0 ≤ Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_nonneg _
+      have hSS : Real.sqrt (a ^ 2 + b ^ 2) ^ 2 = a ^ 2 + b ^ 2 := Real.sq_sqrt (by positivity)
+      constructor
+      · by_cases h0 : Real.sqrt (a ^ 2 + b ^ 2) = 0
+        · have ha : a = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          have hb : b = 0 := by nlinarith [sq_nonneg a, sq_nonneg b]
+          refine ⟨p, q, by simp; positivity, ?_⟩
+          rw [h0, ha, hb]; ring
+        · have hpos : 0 < Real.sqrt (a ^ 2 + b ^ 2) := lt_of_le_of_ne hS (Ne.symm h0)
+          refine ⟨p + r * a / Real.sqrt (a ^ 2 + b ^ 2), q + r * b / Real.sqrt (a ^ 2 + b ^ 2), ?_, ?_⟩
+          · have : (r * a / Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 + (r * b / Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 = r ^ 2 := by
+              field_simp
+              rw [hSS]
+            nlinarith [this]
+          · field_simp
+            nlinarith [hSS]
+      · rintro s ⟨x, y, hxy, rfl⟩
+        have h1 : (a * (x - p) + b * (y - q)) ^ 2 ≤ (a ^ 2 + b ^ 2) * r ^ 2 := by
+          nlinarith [sq_nonneg (a * (y - q) - b * (x - p)), mul_le_mul_of_nonneg_left hxy (by positivity : (0:ℝ) ≤ a ^ 2 + b ^ 2)]
+        have h2 : a * (x - p) + b * (y - q) ≤ Real.sqrt (a ^ 2 + b ^ 2) * r := by
+          apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
+          nlinarith [hSS]
+        nlinarith [h2]
+- id: linear_function_on_triangle_le_max_vertices
+  kind: gap
+  level: high
+  topic: 図形と方程式・領域と最大最小（三角形）
+  statement: $s,t,u\ge0$、$s+t+u=1$のとき、点$(sx_1+tx_2+ux_3,sy_1+ty_2+uy_3)$での$ax+by+c$の値は、3頂点$(x_i,y_i)$での値の最大値以下である。
+  statement_en: For s,t,u≥0 with s+t+u=1, the value of ax+by+c at (s x1+t x2+u x3,s y1+t y2+u y3) is at most the maximum of its values at the three vertices.
+  assumptions:
+  - $s,t,u\ge0$、$s+t+u=1$
+  quantifiers:
+  - 任意の実数$a,b,c,x_1,y_1,x_2,y_2,x_3,y_3,s,t,u$
+  conclusion: 1次式の値は3頂点での値の最大値を超えない。
+  answer: |
+    $a,b,c,x_1,y_1,x_2,y_2,x_3,y_3,s,t,u$を実数とし、$s,t,u\ge0$、$s+t+u=1$とする。$f(x,y)=ax+by+c$、$f_i=f(x_i,y_i)$、$M=\max\{f_1,f_2,f_3\}$とおく。$s+t+u=1$より、点$(sx_1+tx_2+ux_3,sy_1+ty_2+uy_3)$での$f$の値は$sf_1+tf_2+uf_3$に等しい。$s,t,u\ge0$と$f_i\le M$より、これは$sM+tM+uM=M$以下である。
+  strategy: Write the value as a convex combination of the vertex values.
+  sketch:
+  - 'derive: Using s+t+u=1, the value at the point equals s f1+t f2+u f3.'
+  - 'derive: Each f_i is at most M=max{f1,f2,f3}, and s,t,u are nonnegative.'
+  - 'conclude: The value is at most (s+t+u)M=M.'
+  openmath: (forall (a b c x1 y1 x2 y2 x3 y3 s t u) (-> (and (>= s 0) (>= t 0) (>= u 0) (= (+ (+ s t) u) 1)) (exists (m) (and (or (= m (+ (+ (* a x1) (* b y1)) c)) (= m (+ (+ (* a x2) (* b y2)) c)) (= m (+ (+ (* a x3) (* b y3)) c))) (<= (+ (+ (* a (+ (+ (* s x1) (* t x2)) (* u x3))) (* b (+ (+ (* s y1) (* t y2)) (* u y3)))) c) m)))))
+  hard_negative:
+    statement: $s,t,u$の符号を問わず同じ不等式が成り立つ。
+    reason: $s,t,u\ge0$でないと点は三角形の外に出る。$f(x,y)=x$、頂点の$x$座標が$0,1,0$、$(s,t,u)=(-1,2,0)$では値は$2$で、最大値$1$を超える。
+  target: |
+    ∀ (a b c x₁ y₁ x₂ y₂ x₃ y₃ s t u : ℝ), 0 ≤ s → 0 ≤ t → 0 ≤ u → s + t + u = 1 → a * (s * x₁ + t * x₂ + u * x₃) + b * (s * y₁ + t * y₂ + u * y₃) + c ≤ max (max (a * x₁ + b * y₁ + c) (a * x₂ + b * y₂ + c)) (a * x₃ + b * y₃ + c)
+  proof: |
+    by
+      intro a b c x₁ y₁ x₂ y₂ x₃ y₃ s t u hs ht hu hsum
+      have h₁ : a * x₁ + b * y₁ + c ≤ max (max (a * x₁ + b * y₁ + c) (a * x₂ + b * y₂ + c)) (a * x₃ + b * y₃ + c) := le_trans (le_max_left _ _) (le_max_left _ _)
+      have h₂ : a * x₂ + b * y₂ + c ≤ max (max (a * x₁ + b * y₁ + c) (a * x₂ + b * y₂ + c)) (a * x₃ + b * y₃ + c) := le_trans (le_max_right _ _) (le_max_left _ _)
+      have h₃ : a * x₃ + b * y₃ + c ≤ max (max (a * x₁ + b * y₁ + c) (a * x₂ + b * y₂ + c)) (a * x₃ + b * y₃ + c) := le_max_right _ _
+      generalize max (max (a * x₁ + b * y₁ + c) (a * x₂ + b * y₂ + c)) (a * x₃ + b * y₃ + c) = M at *
+      have e : a * (s * x₁ + t * x₂ + u * x₃) + b * (s * y₁ + t * y₂ + u * y₃) + c = s * (a * x₁ + b * y₁ + c) + t * (a * x₂ + b * y₂ + c) + u * (a * x₃ + b * y₃ + c) := by
+        linear_combination (-c) * hsum
+      have e₂ : M = s * M + t * M + u * M := by linear_combination (-M) * hsum
+      rw [e, e₂]
+      exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left h₁ hs) (mul_le_mul_of_nonneg_left h₂ ht)) (mul_le_mul_of_nonneg_left h₃ hu)
+- id: disc_in_half_plane_iff
+  kind: gap
+  level: high
+  topic: 図形と方程式・領域の包含（円板と半平面）
+  statement: $r\ge0$のとき、円板$(x-p)^2+(y-q)^2\le r^2$が半平面$ax+by\le c$に含まれることは、$ap+bq+r\sqrt{a^2+b^2}\le c$と同値である。
+  statement_en: For r≥0, the disc (x-p)^2+(y-q)^2≤r^2 is contained in the half-plane ax+by≤c if and only if ap+bq+r√(a^2+b^2)≤c.
+  assumptions:
+  - $r\ge0$
+  quantifiers:
+  - 任意の実数$a,b,c,p,q,r$
+  conclusion: 包含は$ap+bq+r\sqrt{a^2+b^2}\le c$と同値である。
+  answer: |
+    $a,b,c,p,q,r$を実数とし、$r\ge0$とする。$S=\sqrt{a^2+b^2}$とおく。
+
+    $ap+bq+rS\le c$とする。$(x-p)^2+(y-q)^2\le r^2$なら、$(a^2+b^2)\{(x-p)^2+(y-q)^2\}-\{a(x-p)+b(y-q)\}^2=\{a(y-q)-b(x-p)\}^2\ge0$より$a(x-p)+b(y-q)\le rS$である。よって$ax+by\le ap+bq+rS\le c$である。
+
+    逆に円板が半平面に含まれるとする。$S=0$なら$a=b=0$であり、中心$(p,q)$を代入して$0\le c$を得る。これは示すべき式である。$S>0$なら点$\left(p+\frac{ra}{S},q+\frac{rb}{S}\right)$は円板の上にあり、この点で$ax+by=ap+bq+rS$である。よって$ap+bq+rS\le c$である。
+  strategy: Bound the linear form on the disc by Cauchy-Schwarz and test the extreme boundary point.
+  sketch:
+  - 'setup: Put S=√(a^2+b^2).'
+  - 'derive: Lagrange''s identity gives a(x-p)+b(y-q)≤rS on the disc, so the condition implies the inclusion.'
+  - 'case_split: For the converse, split on S=0 and S>0.'
+  - 'derive: If S=0 the center gives 0≤c.'
+  - 'conclude: If S>0 the point (p+ra/S,q+rb/S) of the disc gives ap+bq+rS≤c.'
+  openmath: (forall (a b c p q r) (-> (>= r 0) (<-> (forall (x y) (-> (<= (+ (^ (- x p) 2) (^ (- y q) 2)) (^ r 2)) (<= (+ (* a x) (* b y)) c))) (<= (+ (+ (* a p) (* b q)) (* r (root (+ (^ a 2) (^ b 2)) 2))) c))))
+  hard_negative:
+    statement: 中心が半平面に入れば円板も半平面に含まれる。
+    reason: 半径の分の余裕が必要である。$x\le1$と$x^2+y^2\le4$では中心は半平面に入るが、点$(2,0)$は入らない。
+  target: |
+    ∀ (a b c p q r : ℝ), 0 ≤ r → ((∀ x y : ℝ, (x - p) ^ 2 + (y - q) ^ 2 ≤ r ^ 2 → a * x + b * y ≤ c) ↔ a * p + b * q + r * Real.sqrt (a ^ 2 + b ^ 2) ≤ c)
+  proof: |
+    by
+      intro a b c p q r hr
+      have hN : 0 ≤ a ^ 2 + b ^ 2 := by positivity
+      constructor
+      · intro h
+        by_cases h0 : a ^ 2 + b ^ 2 = 0
+        · have := h p q (by simp; positivity)
+          rw [h0]; simpa using this
+        · have hpos : 0 < a ^ 2 + b ^ 2 := lt_of_le_of_ne hN (Ne.symm h0)
+          have hS : 0 < Real.sqrt (a ^ 2 + b ^ 2) := Real.sqrt_pos.mpr hpos
+          have hSq := Real.sq_sqrt hN
+          have := h (p + r * a / Real.sqrt (a ^ 2 + b ^ 2)) (q + r * b / Real.sqrt (a ^ 2 + b ^ 2)) (by
+            apply le_of_eq
+            field_simp
+            rw [hSq]; ring)
+          have e : a * (p + r * a / Real.sqrt (a ^ 2 + b ^ 2)) + b * (q + r * b / Real.sqrt (a ^ 2 + b ^ 2)) = a * p + b * q + r * Real.sqrt (a ^ 2 + b ^ 2) := by
+            field_simp
+            linear_combination (-r) * hSq
+          linarith
+      · intro h x y hd
+        have hsq : (a * (x - p) + b * (y - q)) ^ 2 ≤ (r * Real.sqrt (a ^ 2 + b ^ 2)) ^ 2 := by
+          rw [mul_pow, Real.sq_sqrt hN]
+          linarith [sq_nonneg (a * (y - q) - b * (x - p)), mul_le_mul_of_nonneg_right hd hN]
+        have := (abs_le_of_sq_le_sq' hsq (by positivity)).2
+        linarith
+- id: disc_in_disc_iff
+  kind: gap
+  level: high
+  topic: 図形と方程式・領域の包含（2つの円板）
+  statement: $r,r'>0$のとき、円板$(x-a)^2+(y-b)^2\le r^2$が円板$(x-a')^2+(y-b')^2\le r'^2$に含まれることは、中心間の距離$d$が$d+r\le r'$を満たすことと同値である。
+  statement_en: For r,r'>0, the disc (x-a)^2+(y-b)^2≤r^2 is contained in the disc (x-a')^2+(y-b')^2≤r'^2 if and only if √((a-a')^2+(b-b')^2)+r≤r'.
+  assumptions:
+  - $r>0$、$r'>0$
+  quantifiers:
+  - 任意の実数$a,b,r,a',b',r'$
+  conclusion: 包含は$\sqrt{(a-a')^2+(b-b')^2}+r\le r'$と同値である。
+  answer: |
+    $a,b,r,a',b',r'$を実数とし、$r,r'>0$とする。$A=a-a'$、$B=b-b'$、$d=\sqrt{A^2+B^2}$とおく。
+
+    $d+r\le r'$とする。$(x,y)$が第1の円板の上にあるとし、$u=x-a$、$v=y-b$とおく。$(u^2+v^2)(A^2+B^2)-(uA+vB)^2=(uB-vA)^2\ge0$より$uA+vB\le rd$である。よって
+    $(x-a')^2+(y-b')^2=(u+A)^2+(v+B)^2\le r^2+2rd+d^2=(d+r)^2\le r'^2$
+    である。
+
+    逆に包含が成り立つとする。$d=0$なら$a=a'$、$b=b'$であり、点$(a+r,b)$を代入して$r^2\le r'^2$、すなわち$r\le r'$を得る。これが示すべき式である。$d>0$なら点$\left(a+\frac{rA}{d},b+\frac{rB}{d}\right)$は第1の円板の上にある。この点で$(x-a')^2+(y-b')^2=\left(1+\frac{r}{d}\right)^2d^2=(d+r)^2$なので、$(d+r)^2\le r'^2$である。$r'>0$より$d+r\le r'$である。
+  strategy: Use Cauchy-Schwarz for sufficiency and the farthest boundary point from the second center for necessity.
+  sketch:
+  - 'setup: Put A=a-a'', B=b-b'', d=√(A^2+B^2).'
+  - 'derive: For (u,v) with u^2+v^2≤r^2, Lagrange''s identity gives uA+vB≤rd.'
+  - 'derive: Hence the squared distance to the second center is at most (d+r)^2≤r''^2.'
+  - 'case_split: For necessity, split on d=0 and d>0.'
+  - 'derive: If d=0 test (a+r,b), which gives r≤r''.'
+  - 'conclude: If d>0 test (a+rA/d,b+rB/d), whose squared distance is (d+r)^2, and so d+r≤r''.'
+  openmath: (forall (a b r a2 b2 r2) (-> (and (> r 0) (> r2 0)) (<-> (forall (x y) (-> (<= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (<= (+ (^ (- x a2) 2) (^ (- y b2) 2)) (^ r2 2)))) (<= (+ (root (+ (^ (- a a2) 2) (^ (- b b2) 2)) 2) r) r2))))
+  hard_negative:
+    statement: 中心間の距離が$r'$以下なら包含が成り立つ。
+    reason: 第1の円板の半径を無視している。$x^2+y^2\le1$と$(x-1)^2+y^2\le1$では中心間の距離が$1=r'$だが、点$(-1,0)$は第2の円板に入らない。
+  target: |
+    ∀ (a b r a' b' r' : ℝ), 0 < r → 0 < r' → ((∀ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 ≤ r ^ 2 → (x - a') ^ 2 + (y - b') ^ 2 ≤ r' ^ 2) ↔ Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) + r ≤ r')
+  proof: |
+    by
+      intro a b r a' b' r' hr hr'
+      have hN : 0 ≤ (a - a') ^ 2 + (b - b') ^ 2 := by positivity
+      have hSq := Real.sq_sqrt hN
+      have hS0 := Real.sqrt_nonneg ((a - a') ^ 2 + (b - b') ^ 2)
+      constructor
+      · intro h
+        by_cases h0 : (a - a') ^ 2 + (b - b') ^ 2 = 0
+        · obtain ⟨hA2, hB2⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp h0
+          have hA : a - a' = 0 := pow_eq_zero_iff two_ne_zero |>.mp hA2
+          have hB : b - b' = 0 := pow_eq_zero_iff two_ne_zero |>.mp hB2
+          have e₁ : a' = a := by linarith
+          have e₂ : b' = b := by linarith
+          subst e₁ e₂
+          have := h (a' + r) b' (by ring_nf; rfl)
+          have h2 : r ^ 2 ≤ r' ^ 2 := by linarith
+          have := (abs_le_of_sq_le_sq' h2 hr'.le).2
+          rw [h0]; simpa using this
+        · have hpos : 0 < (a - a') ^ 2 + (b - b') ^ 2 := lt_of_le_of_ne hN (Ne.symm h0)
+          have hS : 0 < Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) := Real.sqrt_pos.mpr hpos
+          have hw := h (a + r * (a - a') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2)) (b + r * (b - b') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2)) (by
+            apply le_of_eq
+            field_simp
+            rw [hSq]; ring)
+          have e : (a + r * (a - a') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) - a') ^ 2 + (b + r * (b - b') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) - b') ^ 2 = (Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) + r) ^ 2 := by
+            have ee : (a + r * (a - a') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) - a') ^ 2 + (b + r * (b - b') / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) - b') ^ 2 = (1 + r / Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2)) ^ 2 * ((a - a') ^ 2 + (b - b') ^ 2) := by
+              field_simp; ring
+            rw [ee, ← hSq]
+            rw [Real.sqrt_sq hS.le]
+            field_simp
+          rw [e] at hw
+          exact (abs_le_of_sq_le_sq' hw hr'.le).2
+      · intro h x y hd
+        have hdot : (x - a) * (a - a') + (y - b) * (b - b') ≤ r * Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) := by
+          have hsq : ((x - a) * (a - a') + (y - b) * (b - b')) ^ 2 ≤ (r * Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2)) ^ 2 := by
+            rw [mul_pow, hSq]
+            linarith [sq_nonneg ((x - a) * (b - b') - (y - b) * (a - a')), mul_le_mul_of_nonneg_right hd hN]
+          exact (abs_le_of_sq_le_sq' hsq (by positivity)).2
+        have hb : (Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) + r) ^ 2 ≤ r' ^ 2 := by
+          exact pow_le_pow_left₀ (by positivity) h 2
+        have e : (x - a') ^ 2 + (y - b') ^ 2 = (x - a) ^ 2 + (y - b) ^ 2 + 2 * ((x - a) * (a - a') + (y - b) * (b - b')) + Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) ^ 2 := by
+          rw [hSq]; ring
+        have e₂ : (Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) + r) ^ 2 = Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2) ^ 2 + 2 * (r * Real.sqrt ((a - a') ^ 2 + (b - b') ^ 2)) + r ^ 2 := by ring
+        linarith
+- id: dist_to_circle_max_min
+  kind: gap
+  level: high
+  topic: 図形と方程式・円上の点までの距離の最大最小
+  statement: $r>0$とする。点$(p,q)$と中心$(a,b)$の距離を$d$とすると、円$(x-a)^2+(y-b)^2=r^2$上の点と$(p,q)$の距離の最大値は$d+r$、最小値は$|d-r|$である。
+  statement_en: For r>0 and d=√((a-p)^2+(b-q)^2), the distance from (p,q) to the points of the circle (x-a)^2+(y-b)^2=r^2 has maximum d+r and minimum |d-r|.
+  assumptions:
+  - $r>0$
+  - $d=\sqrt{(a-p)^2+(b-q)^2}$
+  quantifiers:
+  - 任意の実数$a,b,r,p,q$
+  conclusion: 最大値は$d+r$、最小値は$|d-r|$である。
+  answer: |
+    $a,b,r,p,q$を実数とし、$r>0$、$d=\sqrt{(a-p)^2+(b-q)^2}$とする。$A=a-p$、$B=b-q$とおく。
+
+    $(x,y)$を円上の点とし、$u=x-a$、$v=y-b$、$T=uA+vB$とする。$r^2d^2-T^2=(uB-vA)^2\ge0$より$|T|\le rd$である。$(x-p)^2+(y-q)^2=(u+A)^2+(v+B)^2=r^2+2T+d^2$なので、$(d-r)^2\le(x-p)^2+(y-q)^2\le(d+r)^2$である。したがって距離は$|d-r|$以上$d+r$以下である。
+
+    上下の値をとる点を示す。$d=0$なら$(p,q)=(a,b)$であり、円上のすべての点で距離は$r$である。このとき$d+r=|d-r|=r$である。$d>0$なら$e=\pm1$に対し点$\left(a+\frac{erA}{d},b+\frac{erB}{d}\right)$は円上にある。この点で$(x-p)^2+(y-q)^2=\left(1+\frac{er}{d}\right)^2d^2=(d+er)^2$である。$e=1$で距離$d+r$、$e=-1$で距離$|d-r|$となる。
+  strategy: Bound the squared distance using the dot product T and attain both bounds on the line through P and the center.
+  sketch:
+  - 'setup: Put A=a-p, B=b-q, d=√(A^2+B^2), and for a circle point u=x-a, v=y-b, T=uA+vB.'
+  - 'derive: Lagrange''s identity gives |T|≤rd.'
+  - 'derive: The squared distance is r^2+2T+d^2, so it lies between (d-r)^2 and (d+r)^2.'
+  - 'case_split: For attainment split on d=0 and d>0.'
+  - 'derive: If d=0 every circle point has distance r=d+r=|d-r|.'
+  - 'construct: If d>0 take (a+erA/d,b+erB/d) with e=±1.'
+  - 'conclude: The squared distance there is (d+er)^2, attaining both bounds.'
+  openmath: (forall (a b r p q) (-> (> r 0) (and (exists (x y) (and (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (+ (root (+ (^ (- a p) 2) (^ (- b q) 2)) 2) r) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2)))) (forall (x y) (-> (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (<= (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2) (+ (root (+ (^ (- a p) 2) (^ (- b q) 2)) 2) r)))) (exists (x y) (and (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (= (abs (- (root (+ (^ (- a p) 2) (^ (- b q) 2)) 2) r)) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2)))) (forall (x y) (-> (= (+ (^ (- x a) 2) (^ (- y b) 2)) (^ r 2)) (<= (abs (- (root (+ (^ (- a p) 2) (^ (- b q) 2)) 2) r)) (root (+ (^ (- x p) 2) (^ (- y q) 2)) 2)))))))
+  hard_negative:
+    statement: 最小値は常に$d-r$である。
+    reason: 点が円の内部にあると$d-r<0$となり距離になれない。$x^2+y^2=4$と$(1,0)$では$d-r=-1$で、最小値は$1$である。
+  target: |
+    ∀ (a b r p q : ℝ), 0 < r → IsGreatest {s : ℝ | ∃ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ∧ s = Real.sqrt ((x - p) ^ 2 + (y - q) ^ 2)} (Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) + r) ∧ IsLeast {s : ℝ | ∃ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 ∧ s = Real.sqrt ((x - p) ^ 2 + (y - q) ^ 2)} |Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) - r|
+  proof: |
+    by
+      intro a b r p q hr
+      have hN : 0 ≤ (a - p) ^ 2 + (b - q) ^ 2 := by positivity
+      have hSq := Real.sq_sqrt hN
+      have hS0 := Real.sqrt_nonneg ((a - p) ^ 2 + (b - q) ^ 2)
+      have hbound : ∀ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 → |(x - a) * (a - p) + (y - b) * (b - q)| ≤ r * Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) := by
+        intro x y h
+        apply abs_le_of_sq_le_sq _ (by positivity)
+        rw [mul_pow, hSq, ← h]
+        linarith [sq_nonneg ((x - a) * (b - q) - (y - b) * (a - p))]
+      have hexpand : ∀ x y : ℝ, (x - a) ^ 2 + (y - b) ^ 2 = r ^ 2 → (x - p) ^ 2 + (y - q) ^ 2 = r ^ 2 + 2 * ((x - a) * (a - p) + (y - b) * (b - q)) + Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) ^ 2 := by
+        intro x y h
+        rw [hSq]; linear_combination h
+      by_cases h0 : (a - p) ^ 2 + (b - q) ^ 2 = 0
+      · have hS : Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) = 0 := by rw [h0]; simp
+        obtain ⟨hA2, hB2⟩ := (add_eq_zero_iff_of_nonneg (sq_nonneg _) (sq_nonneg _)).mp h0
+        have hA : a - p = 0 := pow_eq_zero_iff two_ne_zero |>.mp hA2
+        have hB : b - q = 0 := pow_eq_zero_iff two_ne_zero |>.mp hB2
+        have e₁ : p = a := by linarith
+        have e₂ : q = b := by linarith
+        subst e₁ e₂
+        have hall : ∀ x y : ℝ, (x - p) ^ 2 + (y - q) ^ 2 = r ^ 2 → Real.sqrt ((x - p) ^ 2 + (y - q) ^ 2) = r := by
+          intro x y h; rw [h, Real.sqrt_sq hr.le]
+        rw [hS, zero_add, zero_sub, abs_neg, abs_of_pos hr]
+        constructor
+        · refine ⟨⟨p + r, q, by ring, (hall _ _ (by ring)).symm⟩, ?_⟩
+          rintro s ⟨x, y, h, rfl⟩
+          exact (hall x y h).le
+        · refine ⟨⟨p + r, q, by ring, (hall _ _ (by ring)).symm⟩, ?_⟩
+          rintro s ⟨x, y, h, rfl⟩
+          exact (hall x y h).ge
+      · have hpos : 0 < (a - p) ^ 2 + (b - q) ^ 2 := lt_of_le_of_ne hN (Ne.symm h0)
+        have hS : 0 < Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) := Real.sqrt_pos.mpr hpos
+        obtain ⟨d, hd⟩ : ∃ d, d = Real.sqrt ((a - p) ^ 2 + (b - q) ^ 2) := ⟨_, rfl⟩
+        rw [← hd] at hS hS0 hSq hbound hexpand ⊢
+        have hon : ∀ e : ℝ, e ^ 2 = 1 → (a + e * r * (a - p) / d - a) ^ 2 + (b + e * r * (b - q) / d - b) ^ 2 = r ^ 2 := by
+          intro e he
+          have : (a + e * r * (a - p) / d - a) ^ 2 + (b + e * r * (b - q) / d - b) ^ 2 = e ^ 2 * r ^ 2 * ((a - p) ^ 2 + (b - q) ^ 2) / d ^ 2 := by
+            field_simp; ring
+          rw [this, he, ← hSq]; field_simp
+        have hval : ∀ e : ℝ, e ^ 2 = 1 → (a + e * r * (a - p) / d - p) ^ 2 + (b + e * r * (b - q) / d - q) ^ 2 = (d + e * r) ^ 2 := by
+          intro e he
+          have : (a + e * r * (a - p) / d - p) ^ 2 + (b + e * r * (b - q) / d - q) ^ 2 = (1 + e * r / d) ^ 2 * ((a - p) ^ 2 + (b - q) ^ 2) := by
+            field_simp; ring
+          rw [this, ← hSq]; field_simp
+        constructor
+        · refine ⟨⟨a + 1 * r * (a - p) / d, b + 1 * r * (b - q) / d, hon 1 (by norm_num), ?_⟩, ?_⟩
+          · rw [hval 1 (by norm_num), Real.sqrt_sq (by positivity)]; ring
+          · rintro s ⟨x, y, h, rfl⟩
+            rw [Real.sqrt_le_left (by positivity), hexpand x y h]
+            have := (abs_le.mp (hbound x y h)).2
+            have e : (d + r) ^ 2 = d ^ 2 + 2 * (r * d) + r ^ 2 := by ring
+            linarith
+        · refine ⟨⟨a + (-1) * r * (a - p) / d, b + (-1) * r * (b - q) / d, hon (-1) (by norm_num), ?_⟩, ?_⟩
+          · rw [hval (-1) (by norm_num), Real.sqrt_sq_eq_abs]; congr 1; ring
+          · rintro s ⟨x, y, h, rfl⟩
+            apply Real.abs_le_sqrt
+            rw [hexpand x y h]
+            have := (abs_le.mp (hbound x y h)).1
+            have e : (d - r) ^ 2 = d ^ 2 - 2 * (r * d) + r ^ 2 := by ring
+            linarith
+- id: parabola_tangents_sweep_region
+  kind: gap
+  level: high
+  topic: 図形と方程式・直線の通過領域
+  statement: $a>0$とする。実数$t$を動かすとき、直線$y=2atx-at^2$が通過する点の全体は領域$y\le ax^2$である。
+  statement_en: For a>0, a point (x,y) lies on some line y=2atx-at^2 with t real if and only if y≤ax^2.
+  assumptions:
+  - $a>0$
+  quantifiers:
+  - 任意の実数$a,x,y$
+  conclusion: $y=2atx-at^2$となる実数$t$が存在することは$y\le ax^2$と同値である。
+  answer: |
+    $a>0$とし、$x,y$を実数とする。
+
+    $y=2atx-at^2$となる$t$があるとする。$ax^2-y=a(x-t)^2\ge0$なので$y\le ax^2$である。
+
+    逆に$y\le ax^2$とする。$\frac{ax^2-y}{a}\ge0$なので$s=\sqrt{\frac{ax^2-y}{a}}$とおける。$t=x+s$とすると$2atx-at^2=ax^2-as^2=ax^2-(ax^2-y)=y$である。
+  strategy: Regard the line equation as a quadratic in t and complete the square.
+  sketch:
+  - 'derive: Completing the square gives ax^2-(2atx-at^2)=a(x-t)^2.'
+  - 'derive: Since a>0, this is nonnegative, so y≤ax^2 is necessary.'
+  - 'construct: Conversely take t=x+√((ax^2-y)/a).'
+  - 'conclude: Direct computation gives 2atx-at^2=y.'
+  openmath: (forall (a x y) (-> (> a 0) (<-> (exists (t) (= y (- (* (* (* 2 a) t) x) (* a (^ t 2))))) (<= y (* a (^ x 2))))))
+  hard_negative:
+    statement: $a<0$でも通過領域は$y\le ax^2$である。
+    reason: $a<0$では不等号が逆になる。$a=-1$の直線$y=-2tx+t^2$は$t=1$で点$(0,1)$を通るが、$y\le ax^2$は$1\le0$となり成り立たない。
+  target: |
+    ∀ (a x y : ℝ), 0 < a → ((∃ t : ℝ, y = 2 * a * t * x - a * t ^ 2) ↔ y ≤ a * x ^ 2)
+  proof: |
+    by
+      intro a x y ha
+      constructor
+      · rintro ⟨t, rfl⟩
+        linarith [mul_nonneg ha.le (sq_nonneg (x - t))]
+      · intro h
+        have hE : 0 ≤ (a * x ^ 2 - y) / a := div_nonneg (by linarith) ha.le
+        refine ⟨x + Real.sqrt ((a * x ^ 2 - y) / a), ?_⟩
+        have hs := Real.sq_sqrt hE
+        have ha' : a * ((a * x ^ 2 - y) / a) = a * x ^ 2 - y := by field_simp
+        have : 2 * a * (x + Real.sqrt ((a * x ^ 2 - y) / a)) * x - a * (x + Real.sqrt ((a * x ^ 2 - y) / a)) ^ 2 = a * x ^ 2 - a * Real.sqrt ((a * x ^ 2 - y) / a) ^ 2 := by ring
+        rw [this, hs, ha']; ring
+- id: parabola_focus_directrix_iff_standard
+  kind: textbook
+  level: high
+  topic: 二次曲線・放物線の定義と標準形
+  statement: $p\ne0$とする。点$(x,y)$が焦点$(p,0)$と準線$x=-p$から等距離にあることは、$y^2=4px$と同値である。
+  statement_en: For p≠0, (x,y) is equidistant from the focus (p,0) and the directrix x=-p, that is √((x-p)^2+y^2)=|x+p|, if and only if y^2=4px.
+  assumptions:
+  - $p\ne0$
+  quantifiers:
+  - 任意の実数$p,x,y$
+  conclusion: $\sqrt{(x-p)^2+y^2}=|x+p|$は$y^2=4px$と同値である。
+  answer: |
+    $p,x,y$を実数とし、$p\ne0$とする。準線$x=-p$までの距離は$|x+p|=\sqrt{(x+p)^2}$である。2つの平方根の中身は非負なので、$\sqrt{(x-p)^2+y^2}=\sqrt{(x+p)^2}$は$(x-p)^2+y^2=(x+p)^2$と同値である。展開して整理すると$y^2=4px$となる。
+  strategy: Write the distance to the directrix as a square root and square both sides.
+  sketch:
+  - 'translate: The distance to the directrix is |x+p|=√((x+p)^2).'
+  - 'derive: Square roots of nonnegative numbers are equal exactly when the numbers are equal.'
+  - 'conclude: Expanding (x-p)^2+y^2=(x+p)^2 gives y^2=4px.'
+  openmath: (forall (p x y) (-> (!= p 0) (<-> (= (root (+ (^ (- x p) 2) (^ y 2)) 2) (abs (+ x p))) (= (^ y 2) (* (* 4 p) x)))))
+  hard_negative:
+    statement: $y^2=4px$の焦点は$(-p,0)$である。
+    reason: 符号が逆である。$p=1$で点$(1,2)$は$y^2=4x$の上にあり、$(1,0)$までの距離は$2$、$x=-1$までの距離も$2$であるが、$(-1,0)$までの距離は$2\sqrt{2}$である。
+  target: |
+    ∀ (p x y : ℝ), p ≠ 0 → (Real.sqrt ((x - p) ^ 2 + y ^ 2) = |x + p| ↔ y ^ 2 = 4 * p * x)
+  proof: |
+    by
+      intro p x y hp
+      rw [← Real.sqrt_sq_eq_abs, Real.sqrt_inj (by positivity) (by positivity)]
+      constructor
+      · intro h; linear_combination h
+      · intro h; linear_combination h
+- id: ellipse_focal_sum_iff_standard
+  kind: textbook
+  level: high
+  topic: 二次曲線・楕円の定義と標準形
+  statement: $0<c<a$、$b>0$、$b^2=a^2-c^2$とする。2焦点$(\pm c,0)$までの距離の和が$2a$であることは、$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$と同値である。
+  statement_en: For 0<c<a, b>0 and b^2=a^2-c^2, √((x-c)^2+y^2)+√((x+c)^2+y^2)=2a if and only if x^2/a^2+y^2/b^2=1.
+  assumptions:
+  - $0<c<a$
+  - $b>0$、$b^2=a^2-c^2$
+  quantifiers:
+  - 任意の実数$a,b,c,x,y$
+  conclusion: 距離の和が$2a$であることは標準形と同値である。
+  answer: |
+    $a,b,c,x,y$を実数とし、$0<c<a$、$b>0$、$b^2=a^2-c^2$とする。$d_1=\sqrt{(x-c)^2+y^2}$、$d_2=\sqrt{(x+c)^2+y^2}$とおく。
+
+    $d_1+d_2=2a$とする。$d_2^2-d_1^2=4cx$より$(d_2-d_1)\cdot2a=4cx$であり、$a(d_2-d_1)=2cx$である。これと$a(d_1+d_2)=2a^2$を加えて$ad_2=a^2+cx$を得る。2乗すると$a^2\{(x+c)^2+y^2\}=(a^2+cx)^2$となる。整理すると$(a^2-c^2)x^2+a^2y^2=a^2(a^2-c^2)$、すなわち$b^2x^2+a^2y^2=a^2b^2$である。両辺を$a^2b^2$で割って標準形を得る。
+
+    逆に標準形が成り立つとする。$b^2x^2+a^2y^2=a^2b^2$である。$a^2y^2\ge0$より$x^2\le a^2$なので$|x|\le a$であり、$c<a$から$|cx|<a^2$である。また$b^2=a^2-c^2$を使うと$a^2\{(x\mp c)^2+y^2\}=(a^2\mp cx)^2$となる。$a\mp\frac{cx}{a}>0$なので$d_1=a-\frac{cx}{a}$、$d_2=a+\frac{cx}{a}$である。加えて$d_1+d_2=2a$を得る。
+  strategy: Use the difference of squares of the focal distances for one direction and the focal radius formula for the other.
+  sketch:
+  - 'setup: Put d1,d2 for the focal distances; note d2^2-d1^2=4cx.'
+  - 'derive: From d1+d2=2a get a(d2-d1)=2cx, and so a d2=a^2+cx.'
+  - 'derive: Squaring and using b^2=a^2-c^2 gives b^2 x^2+a^2 y^2=a^2 b^2.'
+  - 'derive: Conversely the standard form gives |x|≤a, and so |cx|<a^2.'
+  - 'derive: The relation b^2=a^2-c^2 then gives a^2 d1^2=(a^2-cx)^2 and a^2 d2^2=(a^2+cx)^2.'
+  - 'conclude: Positivity gives d1=a-cx/a and d2=a+cx/a, which sum to 2a.'
+  openmath: (forall (a b c x y) (-> (and (< 0 c) (< c a) (> b 0) (= (^ b 2) (- (^ a 2) (^ c 2)))) (<-> (= (+ (root (+ (^ (- x c) 2) (^ y 2)) 2) (root (+ (^ (+ x c) 2) (^ y 2)) 2)) (* 2 a)) (= (+ (/ (^ x 2) (^ a 2)) (/ (^ y 2) (^ b 2))) 1))))
+  hard_negative:
+    statement: 楕円の係数の条件は$b^2=a^2+c^2$である。
+    reason: 点$(0,b)$での距離の和は$2\sqrt{b^2+c^2}$なので、和が$2a$であるためには$b^2=a^2-c^2$でなければならない。
+  target: |
+    ∀ (a b c x y : ℝ), 0 < c → c < a → 0 < b → b ^ 2 = a ^ 2 - c ^ 2 → (Real.sqrt ((x - c) ^ 2 + y ^ 2) + Real.sqrt ((x + c) ^ 2 + y ^ 2) = 2 * a ↔ x ^ 2 / a ^ 2 + y ^ 2 / b ^ 2 = 1)
+  proof: |
+    by
+      intro a b c x y hc hca hb hbs
+      have ha : 0 < a := by linarith
+      have hP : 0 ≤ (x - c) ^ 2 + y ^ 2 := by positivity
+      have hQ : 0 ≤ (x + c) ^ 2 + y ^ 2 := by positivity
+      constructor
+      · intro h
+        have hd1 := Real.sq_sqrt hP
+        have hd2 := Real.sq_sqrt hQ
+        obtain ⟨d₁, hd₁⟩ : ∃ d, d = Real.sqrt ((x - c) ^ 2 + y ^ 2) := ⟨_, rfl⟩
+        obtain ⟨d₂, hd₂⟩ : ∃ d, d = Real.sqrt ((x + c) ^ 2 + y ^ 2) := ⟨_, rfl⟩
+        rw [← hd₁] at h hd1
+        rw [← hd₂] at h hd2
+        have hdiff : a * (d₂ - d₁) = 2 * c * x := by
+          have : (d₂ - d₁) * (d₂ + d₁) = 4 * c * x := by linear_combination hd2 - hd1
+          rw [add_comm d₂, h] at this
+          linear_combination this / 2
+        have hd₂a : a * d₂ = a ^ 2 + c * x := by
+          have : a * (d₁ + d₂) = 2 * a ^ 2 := by rw [h]; ring
+          linear_combination (hdiff + this) / 2
+        have key : a ^ 2 * ((x + c) ^ 2 + y ^ 2) = (a ^ 2 + c * x) ^ 2 := by
+          rw [← hd2, ← hd₂a]; ring
+        field_simp
+        rw [hbs]
+        linear_combination key
+      · intro h
+        have hab : b ^ 2 * x ^ 2 + a ^ 2 * y ^ 2 = a ^ 2 * b ^ 2 := by
+          field_simp at h
+          linear_combination h
+        have hxa : x ^ 2 ≤ a ^ 2 := by
+          have h0 : 0 ≤ b ^ 2 * (a ^ 2 - x ^ 2) := by
+            have e : b ^ 2 * (a ^ 2 - x ^ 2) = a ^ 2 * y ^ 2 := by linear_combination -hab
+            rw [e]; positivity
+          have := nonneg_of_mul_nonneg_right h0 (by positivity : 0 < b ^ 2)
+          linarith
+        have habsx := abs_le_of_sq_le_sq' hxa ha.le
+        have hca' := mul_lt_mul_of_pos_right hca ha
+        have hcx : c * x < a * a ∧ -(a * a) < c * x := by
+          have h₁ := mul_le_mul_of_nonneg_left habsx.1 hc.le
+          have h₂ := mul_le_mul_of_nonneg_left habsx.2 hc.le
+          constructor <;> linarith
+        have e₁ : (x - c) ^ 2 + y ^ 2 = (a - c * x / a) ^ 2 := by
+          have : a ^ 2 * ((x - c) ^ 2 + y ^ 2) = (a ^ 2 - c * x) ^ 2 := by
+            rw [hbs] at hab; linear_combination hab
+          field_simp
+          linear_combination this
+        have e₂ : (x + c) ^ 2 + y ^ 2 = (a + c * x / a) ^ 2 := by
+          have : a ^ 2 * ((x + c) ^ 2 + y ^ 2) = (a ^ 2 + c * x) ^ 2 := by
+            rw [hbs] at hab; linear_combination hab
+          field_simp
+          linear_combination this
+        have n₁ : 0 ≤ a - c * x / a := by
+          rw [sub_nonneg, div_le_iff₀ ha]; exact hcx.1.le
+        have n₂ : 0 ≤ a + c * x / a := by
+          have : -a ≤ c * x / a := by
+            rw [le_div_iff₀ ha]; linarith [hcx.2]
+          linarith
+        rw [e₁, e₂, Real.sqrt_sq n₁, Real.sqrt_sq n₂]
+        ring
+- id: hyperbola_focal_difference_iff_standard
+  kind: textbook
+  level: high
+  topic: 二次曲線・双曲線の定義と標準形
+  statement: $0<a<c$、$b>0$、$b^2=c^2-a^2$とする。2焦点$(\pm c,0)$までの距離の差の絶対値が$2a$であることは、$\frac{x^2}{a^2}-\frac{y^2}{b^2}=1$と同値である。
+  statement_en: For 0<a<c, b>0 and b^2=c^2-a^2, |√((x-c)^2+y^2)-√((x+c)^2+y^2)|=2a if and only if x^2/a^2-y^2/b^2=1.
+  assumptions:
+  - $0<a<c$
+  - $b>0$、$b^2=c^2-a^2$
+  quantifiers:
+  - 任意の実数$a,b,c,x,y$
+  conclusion: 距離の差の絶対値が$2a$であることは標準形と同値である。
+  answer: |
+    $a,b,c,x,y$を実数とし、$0<a<c$、$b>0$、$b^2=c^2-a^2$とする。$d_1=\sqrt{(x-c)^2+y^2}$、$d_2=\sqrt{(x+c)^2+y^2}$とおく。
+
+    $|d_1-d_2|=2a$とする。$d_2-d_1=2a\varepsilon$（$\varepsilon=\pm1$）と書ける。$d_2^2-d_1^2=4cx$より$2a\varepsilon(d_2+d_1)=4cx$である。$d_2+d_1=2d_2-2a\varepsilon$を代入して整理すると$ad_2=\varepsilon(a^2+cx)$となる。2乗すると$a^2\{(x+c)^2+y^2\}=(a^2+cx)^2$である。$b^2=c^2-a^2$を使って整理すると$b^2x^2-a^2y^2=a^2b^2$となり、$a^2b^2$で割って標準形を得る。
+
+    逆に標準形が成り立つとする。$b^2x^2-a^2y^2=a^2b^2$である。$a^2y^2\ge0$より$x^2\ge a^2$なので、$x\ge a$または$x\le-a$である。$b^2=c^2-a^2$を使うと$a^2\{(x\mp c)^2+y^2\}=(a^2\mp cx)^2$であり、$d_1=\left|a-\frac{cx}{a}\right|$、$d_2=\left|a+\frac{cx}{a}\right|$である。
+
+    $x\ge a$のとき$\frac{cx}{a}\ge c>a$なので$d_1=\frac{cx}{a}-a$、$d_2=\frac{cx}{a}+a$であり、$d_1-d_2=-2a$である。$x\le-a$のとき$\frac{cx}{a}\le-c<-a$なので$d_1=a-\frac{cx}{a}$、$d_2=-a-\frac{cx}{a}$であり、$d_1-d_2=2a$である。どちらの場合も$|d_1-d_2|=2a$である。
+  strategy: Use the difference of squares of the focal distances, then determine signs from the branch of the hyperbola.
+  sketch:
+  - 'setup: Put d1,d2 for the focal distances; d2^2-d1^2=4cx.'
+  - 'case_split: Write d2-d1=2aε with ε=±1.'
+  - 'derive: Substituting d2+d1=2d2-2aε gives a d2=ε(a^2+cx).'
+  - 'derive: Squaring and using b^2=c^2-a^2 gives b^2 x^2-a^2 y^2=a^2 b^2.'
+  - 'derive: Conversely the standard form gives x^2≥a^2 and d1=|a-cx/a|, d2=|a+cx/a|.'
+  - 'case_split: Split on the branches x≥a and x≤-a.'
+  - 'conclude: In each branch |cx/a|>a resolves the signs, and |d1-d2|=2a.'
+  openmath: (forall (a b c x y) (-> (and (< 0 a) (< a c) (> b 0) (= (^ b 2) (- (^ c 2) (^ a 2)))) (<-> (= (abs (- (root (+ (^ (- x c) 2) (^ y 2)) 2) (root (+ (^ (+ x c) 2) (^ y 2)) 2))) (* 2 a)) (= (- (/ (^ x 2) (^ a 2)) (/ (^ y 2) (^ b 2))) 1))))
+  hard_negative:
+    statement: 絶対値なしで$\sqrt{(x-c)^2+y^2}-\sqrt{(x+c)^2+y^2}=2a$が標準形と同値である。
+    reason: この式は片方の枝$x\le-a$しか表さない。$x=a$、$y=0$は標準形を満たすが、左辺は$(c-a)-(c+a)=-2a$である。
+  target: |
+    ∀ (a b c x y : ℝ), 0 < a → a < c → 0 < b → b ^ 2 = c ^ 2 - a ^ 2 → (|Real.sqrt ((x - c) ^ 2 + y ^ 2) - Real.sqrt ((x + c) ^ 2 + y ^ 2)| = 2 * a ↔ x ^ 2 / a ^ 2 - y ^ 2 / b ^ 2 = 1)
+  proof: |
+    by
+      intro a b c x y ha hac hb hbs
+      have hc : 0 < c := by linarith
+      have hP : 0 ≤ (x - c) ^ 2 + y ^ 2 := by positivity
+      have hQ : 0 ≤ (x + c) ^ 2 + y ^ 2 := by positivity
+      constructor
+      · intro h
+        have hd1 := Real.sq_sqrt hP
+        have hd2 := Real.sq_sqrt hQ
+        obtain ⟨d₁, hd₁⟩ : ∃ d, d = Real.sqrt ((x - c) ^ 2 + y ^ 2) := ⟨_, rfl⟩
+        obtain ⟨d₂, hd₂⟩ : ∃ d, d = Real.sqrt ((x + c) ^ 2 + y ^ 2) := ⟨_, rfl⟩
+        rw [← hd₁, ← hd₂] at h
+        rw [← hd₁] at hd1
+        rw [← hd₂] at hd2
+        have key : a ^ 2 * ((x + c) ^ 2 + y ^ 2) = (a ^ 2 + c * x) ^ 2 := by
+          have hm : (d₂ - d₁) * (d₂ + d₁) = 4 * c * x := by linear_combination hd2 - hd1
+          rcases abs_eq (by positivity : (0 : ℝ) ≤ 2 * a) |>.mp h with h' | h'
+          · have e₂ : d₂ = d₁ - 2 * a := by linarith
+            have e₃ : a * d₂ = -(a ^ 2 + c * x) := by
+              have hh : d₂ - d₁ = -(2 * a) := by linarith
+              rw [hh] at hm
+              have hs : d₂ + d₁ = 2 * d₂ + 2 * a := by linarith
+              rw [hs] at hm
+              linear_combination (-1 / 4 : ℝ) * hm
+            rw [← hd2]
+            calc a ^ 2 * d₂ ^ 2 = (a * d₂) ^ 2 := by ring
+              _ = _ := by rw [e₃]; ring
+          · have hh : d₂ - d₁ = 2 * a := by linarith
+            have e₃ : a * d₂ = a ^ 2 + c * x := by
+              rw [hh] at hm
+              have hs : d₂ + d₁ = 2 * d₂ - 2 * a := by linarith
+              rw [hs] at hm
+              linear_combination (1 / 4 : ℝ) * hm
+            rw [← hd2]
+            calc a ^ 2 * d₂ ^ 2 = (a * d₂) ^ 2 := by ring
+              _ = _ := by rw [e₃]
+        field_simp
+        rw [hbs]
+        linear_combination -key
+      · intro h
+        have hab : b ^ 2 * x ^ 2 - a ^ 2 * y ^ 2 = a ^ 2 * b ^ 2 := by
+          field_simp at h
+          linear_combination h
+        have hxa : a ^ 2 ≤ x ^ 2 := by
+          have h0 : 0 ≤ b ^ 2 * (x ^ 2 - a ^ 2) := by
+            have e : b ^ 2 * (x ^ 2 - a ^ 2) = a ^ 2 * y ^ 2 := by linear_combination hab
+            rw [e]; positivity
+          have := nonneg_of_mul_nonneg_right h0 (by positivity : 0 < b ^ 2)
+          linarith
+        have e₁ : (x - c) ^ 2 + y ^ 2 = (a - c * x / a) ^ 2 := by
+          have : a ^ 2 * ((x - c) ^ 2 + y ^ 2) = (a ^ 2 - c * x) ^ 2 := by
+            rw [hbs] at hab; linear_combination -hab
+          field_simp
+          linear_combination this
+        have e₂ : (x + c) ^ 2 + y ^ 2 = (a + c * x / a) ^ 2 := by
+          have : a ^ 2 * ((x + c) ^ 2 + y ^ 2) = (a ^ 2 + c * x) ^ 2 := by
+            rw [hbs] at hab; linear_combination -hab
+          field_simp
+          linear_combination this
+        rw [e₁, e₂, Real.sqrt_sq_eq_abs, Real.sqrt_sq_eq_abs]
+        have hcases : a ≤ x ∨ x ≤ -a := by
+          have hx := sq_le_sq.mp hxa
+          rw [abs_of_pos ha] at hx
+          rcases le_abs.mp hx with h' | h'
+          · exact Or.inl h'
+          · exact Or.inr (by linarith)
+        have hac' := mul_lt_mul_of_pos_right hac ha
+        have hk : a < c * x / a ∨ c * x / a < -a := by
+          rcases hcases with hx | hx
+          · left
+            rw [lt_div_iff₀ ha]
+            have := mul_le_mul_of_nonneg_left hx hc.le
+            linarith
+          · right
+            rw [div_lt_iff₀ ha]
+            have := mul_le_mul_of_nonneg_left hx hc.le
+            linarith
+        rcases hk with hk | hk
+        · rw [abs_of_neg (by linarith : a - c * x / a < 0), abs_of_pos (by linarith : 0 < a + c * x / a)]
+          rw [abs_of_neg (by linarith)]
+          ring
+        · rw [abs_of_pos (by linarith : 0 < a - c * x / a), abs_of_neg (by linarith : a + c * x / a < 0)]
+          rw [abs_of_pos (by linarith)]
+          ring
+- id: conic_eccentricity_iff_standard
+  kind: gap
+  level: high
+  topic: 二次曲線・離心率による統一的な定義
+  statement: $a>0$、$e>0$、$e\ne1$とする。点$(x,y)$の焦点$(ae,0)$までの距離が準線$x=\frac{a}{e}$までの距離の$e$倍であることは、$x^2+\frac{y^2}{1-e^2}=a^2$と同値である。
+  statement_en: For a>0, e>0 and e≠1, √((x-ae)^2+y^2)=e|x-a/e| if and only if x^2+y^2/(1-e^2)=a^2.
+  assumptions:
+  - $a>0$、$e>0$、$e\ne1$
+  quantifiers:
+  - 任意の実数$a,e,x,y$
+  conclusion: $\sqrt{(x-ae)^2+y^2}=e\left|x-\frac{a}{e}\right|$は$x^2+\frac{y^2}{1-e^2}=a^2$と同値である。
+  answer: |
+    $a,e,x,y$を実数とし、$a>0$、$e>0$、$e\ne1$とする。$e>0$より$e\left|x-\frac{a}{e}\right|=|ex-a|=\sqrt{(ex-a)^2}$である。2つの平方根の中身は非負なので、与えられた等式は$(x-ae)^2+y^2=(ex-a)^2$と同値である。展開して整理すると$(1-e^2)x^2+y^2=(1-e^2)a^2$となる。$e>0$、$e\ne1$より$1-e^2\ne0$なので、両辺を$1-e^2$で割った$x^2+\frac{y^2}{1-e^2}=a^2$と同値である。
+  strategy: Absorb e into the absolute value, square, and divide by the nonzero number 1-e^2.
+  sketch:
+  - 'derive: Since e>0, e|x-a/e|=|ex-a|=√((ex-a)^2).'
+  - 'derive: The equation is therefore equivalent to (x-ae)^2+y^2=(ex-a)^2.'
+  - 'derive: Expanding gives (1-e^2)x^2+y^2=(1-e^2)a^2.'
+  - 'conclude: Since e>0 and e≠1, 1-e^2≠0 and dividing gives the standard form.'
+  openmath: (forall (a e x y) (-> (and (> a 0) (> e 0) (!= e 1)) (<-> (= (root (+ (^ (- x (* a e)) 2) (^ y 2)) 2) (* e (abs (- x (/ a e))))) (= (+ (^ x 2) (/ (^ y 2) (- 1 (^ e 2)))) (^ a 2)))))
+  hard_negative:
+    statement: $e=1$でも同じ標準形が放物線を表す。
+    reason: $e=1$では$1-e^2=0$で標準形の分母が$0$になる。この場合は放物線で、方程式の形が変わる。
+  target: |
+    ∀ (a e x y : ℝ), 0 < a → 0 < e → e ≠ 1 → (Real.sqrt ((x - a * e) ^ 2 + y ^ 2) = e * |x - a / e| ↔ x ^ 2 + y ^ 2 / (1 - e ^ 2) = a ^ 2)
+  proof: |
+    by
+      intro a e x y ha he hne
+      have hk : 1 - e ^ 2 ≠ 0 := by
+        intro h
+        apply hne
+        have : e ^ 2 = 1 ^ 2 := by linarith
+        exact (pow_left_inj₀ he.le zero_le_one two_ne_zero).mp this
+      have hr : e * |x - a / e| = Real.sqrt ((e * x - a) ^ 2) := by
+        rw [Real.sqrt_sq_eq_abs, ← abs_of_pos he, ← abs_mul, abs_of_pos he]
+        congr 1
+        field_simp
+      rw [hr, Real.sqrt_inj (by positivity) (by positivity)]
+      constructor
+      · intro h
+        field_simp
+        linear_combination h
+      · intro h
+        field_simp at h
+        linear_combination h
+- id: ellipse_focal_radius
+  kind: gap
+  level: high
+  topic: 二次曲線・楕円の焦半径
+  statement: $0<c<a$、$b>0$、$b^2=a^2-c^2$とする。楕円$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$上の点$(x,y)$の焦点$(c,0)$、$(-c,0)$までの距離はそれぞれ$a-\frac{cx}{a}$、$a+\frac{cx}{a}$である。
+  statement_en: For 0<c<a, b>0, b^2=a^2-c^2 and (x,y) on x^2/a^2+y^2/b^2=1, √((x-c)^2+y^2)=a-cx/a and √((x+c)^2+y^2)=a+cx/a.
+  assumptions:
+  - $0<c<a$
+  - $b>0$、$b^2=a^2-c^2$
+  - $\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$
+  quantifiers:
+  - 任意の実数$a,b,c,x,y$
+  conclusion: $\sqrt{(x-c)^2+y^2}=a-\frac{cx}{a}$かつ$\sqrt{(x+c)^2+y^2}=a+\frac{cx}{a}$である。
+  answer: |
+    $a,b,c,x,y$を実数とし、$0<c<a$、$b>0$、$b^2=a^2-c^2$、$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$とする。分母を払うと$b^2x^2+a^2y^2=a^2b^2$である。$a^2y^2\ge0$より$x^2\le a^2$なので$|x|\le a$であり、$c<a$から$|cx|<a^2$である。
+
+    $b^2=a^2-c^2$を使うと$a^2\{(x-c)^2+y^2\}=(a^2-cx)^2$、$a^2\{(x+c)^2+y^2\}=(a^2+cx)^2$が成り立つ。よって$(x-c)^2+y^2=\left(a-\frac{cx}{a}\right)^2$、$(x+c)^2+y^2=\left(a+\frac{cx}{a}\right)^2$である。$|cx|<a^2$より$a\mp\frac{cx}{a}>0$なので、平方根をとって結論を得る。
+  strategy: Show each squared focal distance is a perfect square and determine its sign from |x|≤a.
+  sketch:
+  - 'derive: Clearing denominators gives b^2 x^2+a^2 y^2=a^2 b^2, so x^2≤a^2.'
+  - 'derive: With c<a this gives |cx|<a^2.'
+  - 'derive: The relation b^2=a^2-c^2 gives (x∓c)^2+y^2=(a∓cx/a)^2.'
+  - 'conclude: The bases a∓cx/a are positive, so the square roots are as stated.'
+  openmath: (forall (a b c x y) (-> (and (< 0 c) (< c a) (> b 0) (= (^ b 2) (- (^ a 2) (^ c 2))) (= (+ (/ (^ x 2) (^ a 2)) (/ (^ y 2) (^ b 2))) 1)) (and (= (root (+ (^ (- x c) 2) (^ y 2)) 2) (- a (/ (* c x) a))) (= (root (+ (^ (+ x c) 2) (^ y 2)) 2) (+ a (/ (* c x) a))))))
+  hard_negative:
+    statement: 楕円上では焦点$(c,0)$までの距離は$a+\frac{cx}{a}$である。
+    reason: 符号が逆である。$(a,0)$での距離は$a-c$であるが、この式は$a+c$を与える。
+  target: |
+    ∀ (a b c x y : ℝ), 0 < c → c < a → 0 < b → b ^ 2 = a ^ 2 - c ^ 2 → x ^ 2 / a ^ 2 + y ^ 2 / b ^ 2 = 1 → Real.sqrt ((x - c) ^ 2 + y ^ 2) = a - c * x / a ∧ Real.sqrt ((x + c) ^ 2 + y ^ 2) = a + c * x / a
+  proof: |
+    by
+      intro a b c x y hc hca hb hbs h
+      have ha : 0 < a := by linarith
+      have hab : b ^ 2 * x ^ 2 + a ^ 2 * y ^ 2 = a ^ 2 * b ^ 2 := by
+        field_simp at h
+        linear_combination h
+      have hxa : x ^ 2 ≤ a ^ 2 := by
+        have h0 : 0 ≤ b ^ 2 * (a ^ 2 - x ^ 2) := by
+          have e : b ^ 2 * (a ^ 2 - x ^ 2) = a ^ 2 * y ^ 2 := by linear_combination -hab
+          rw [e]; positivity
+        have := nonneg_of_mul_nonneg_right h0 (by positivity : 0 < b ^ 2)
+        linarith
+      have habsx := abs_le_of_sq_le_sq' hxa ha.le
+      have hca' := mul_lt_mul_of_pos_right hca ha
+      have hcx : c * x < a * a ∧ -(a * a) < c * x := by
+        have h₁ := mul_le_mul_of_nonneg_left habsx.1 hc.le
+        have h₂ := mul_le_mul_of_nonneg_left habsx.2 hc.le
+        constructor <;> linarith
+      have e₁ : (x - c) ^ 2 + y ^ 2 = (a - c * x / a) ^ 2 := by
+        have : a ^ 2 * ((x - c) ^ 2 + y ^ 2) = (a ^ 2 - c * x) ^ 2 := by
+          rw [hbs] at hab; linear_combination hab
+        field_simp
+        linear_combination this
+      have e₂ : (x + c) ^ 2 + y ^ 2 = (a + c * x / a) ^ 2 := by
+        have : a ^ 2 * ((x + c) ^ 2 + y ^ 2) = (a ^ 2 + c * x) ^ 2 := by
+          rw [hbs] at hab; linear_combination hab
+        field_simp
+        linear_combination this
+      have n₁ : 0 ≤ a - c * x / a := by
+        rw [sub_nonneg, div_le_iff₀ ha]; exact hcx.1.le
+      have n₂ : 0 ≤ a + c * x / a := by
+        have : -a ≤ c * x / a := by
+          rw [le_div_iff₀ ha]; linarith [hcx.2]
+        linarith
+      rw [e₁, e₂, Real.sqrt_sq n₁, Real.sqrt_sq n₂]
+      exact ⟨rfl, rfl⟩
+- id: ellipse_parametrization_cos_sin
+  kind: gap
+  level: high
+  topic: 二次曲線・楕円のパラメータ表示
+  statement: $a,b>0$のとき、$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$は、ある実数$\theta$で$x=a\cos\theta$、$y=b\sin\theta$と書けることと同値である。
+  statement_en: For a,b>0, x^2/a^2+y^2/b^2=1 if and only if x=a cos θ and y=b sin θ for some real θ.
+  assumptions:
+  - $a>0$、$b>0$
+  quantifiers:
+  - 任意の実数$a,b,x,y$
+  conclusion: 楕円の方程式とパラメータ表示は同値である。
+  answer: |
+    $a,b>0$とし、$x,y$を実数とする。
+
+    $x=a\cos\theta$、$y=b\sin\theta$なら、$\frac{x^2}{a^2}+\frac{y^2}{b^2}=\cos^2\theta+\sin^2\theta=1$である。
+
+    逆に$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$とする。複素数$z=\frac{x}{a}+\frac{y}{b}i$の絶対値は$1$である。$z$の偏角の1つを$\theta$とすると、極形式から$\frac{x}{a}=\cos\theta$、$\frac{y}{b}=\sin\theta$であり、$x=a\cos\theta$、$y=b\sin\theta$を得る。
+  strategy: Rescale to the unit circle and use the polar form of a complex number.
+  sketch:
+  - 'derive: The parametrization satisfies the equation since cos^2+sin^2=1.'
+  - 'construct: Conversely form z=x/a+(y/b)i, whose absolute value is 1.'
+  - 'conclude: The argument θ of z gives x/a=cos θ and y/b=sin θ.'
+  openmath: (forall (a b x y) (-> (and (> a 0) (> b 0)) (<-> (= (+ (/ (^ x 2) (^ a 2)) (/ (^ y 2) (^ b 2))) 1) (exists (t) (and (= x (* a (cos t))) (= y (* b (sin t))))))))
+  hard_negative:
+    statement: $\theta$は原点と点$(x,y)$を結ぶ線分の偏角である。
+    reason: 楕円では$\theta$は偏角と一致しない。$a=2$、$b=1$、$\theta=\frac{\pi}{4}$の点は$(\sqrt{2},\frac{\sqrt{2}}{2})$で、原点から見た偏角は$\frac{\pi}{4}$ではない。
+  target: |
+    ∀ (a b x y : ℝ), 0 < a → 0 < b → (x ^ 2 / a ^ 2 + y ^ 2 / b ^ 2 = 1 ↔ ∃ θ : ℝ, x = a * Real.cos θ ∧ y = b * Real.sin θ)
+  proof: |
+    by
+      intro a b x y ha hb
+      constructor
+      · intro h
+        have hnorm : ‖(⟨x / a, y / b⟩ : ℂ)‖ = 1 := by
+          rw [Complex.norm_def, Complex.normSq_mk, show x / a * (x / a) + y / b * (y / b) = 1 by rw [← h]; ring, Real.sqrt_one]
+        refine ⟨Complex.arg ⟨x / a, y / b⟩, ?_, ?_⟩
+        · have := Complex.norm_mul_cos_arg (⟨x / a, y / b⟩ : ℂ)
+          rw [hnorm, one_mul] at this
+          simp only at this
+          rw [this]; field_simp
+        · have := Complex.norm_mul_sin_arg (⟨x / a, y / b⟩ : ℂ)
+          rw [hnorm, one_mul] at this
+          simp only at this
+          rw [this]; field_simp
+      · rintro ⟨θ, rfl, rfl⟩
+        have : (a * Real.cos θ) ^ 2 / a ^ 2 + (b * Real.sin θ) ^ 2 / b ^ 2 = Real.cos θ ^ 2 + Real.sin θ ^ 2 := by
+          field_simp
+        rw [this, Real.cos_sq_add_sin_sq]
+- id: quadratic_graph_vertex_form_focus_directrix
+  kind: gap
+  level: high
+  topic: 二次曲線・2次関数のグラフと放物線
+  statement: $a\ne0$とする。$y-k=a(x-h)^2$であることは、点$(x,y)$が焦点$\left(h,k+\frac{1}{4a}\right)$と準線$y=k-\frac{1}{4a}$から等距離にあることと同値である。
+  statement_en: For a≠0, y-k=a(x-h)^2 if and only if √((x-h)^2+(y-k-1/(4a))^2)=|y-k+1/(4a)|, that is (x,y) is equidistant from the focus (h,k+1/(4a)) and the directrix y=k-1/(4a).
+  assumptions:
+  - $a\ne0$
+  quantifiers:
+  - 任意の実数$a,h,k,x,y$
+  conclusion: 2次関数のグラフは焦点と準線で定まる放物線である。
+  answer: |
+    $a,h,k,x,y$を実数とし、$a\ne0$とする。$f=\frac{1}{4a}$、$Y=y-k$とおく。準線までの距離は$|Y+f|=\sqrt{(Y+f)^2}$である。平方根の中身は非負なので、等距離の条件は$(x-h)^2+(Y-f)^2=(Y+f)^2$と同値である。これは$(x-h)^2=4fY=\frac{Y}{a}$と同値であり、$a\ne0$より$Y=a(x-h)^2$と同値である。
+  strategy: Square the distance equation and use 4·(1/(4a))=1/a.
+  sketch:
+  - 'setup: Put f=1/(4a) and Y=y-k.'
+  - 'translate: Equal distances are equivalent to (x-h)^2+(Y-f)^2=(Y+f)^2.'
+  - 'derive: Expanding gives (x-h)^2=4fY=Y/a.'
+  - 'conclude: Since a≠0, this is Y=a(x-h)^2.'
+  openmath: (forall (a h k x y) (-> (!= a 0) (<-> (= (- y k) (* a (^ (- x h) 2))) (= (root (+ (^ (- x h) 2) (^ (- (- y k) (/ 1 (* 4 a))) 2)) 2) (abs (+ (- y k) (/ 1 (* 4 a))))))))
+  hard_negative:
+    statement: 焦点は$\left(h,k+\frac{1}{a}\right)$である。
+    reason: 焦点と頂点の距離は$\frac{1}{4|a|}$である。$y=x^2$の頂点$(0,0)$はグラフ上にあり、点$\left(0,\frac14\right)$と直線$y=-\frac14$からの距離はともに$\frac14$である。一方、$(0,1)$までの距離は$1$であり、直線$y=-\frac14$までの距離$\frac14$と異なる。
+  target: |
+    ∀ (a h k x y : ℝ), a ≠ 0 → (y - k = a * (x - h) ^ 2 ↔ Real.sqrt ((x - h) ^ 2 + (y - k - 1 / (4 * a)) ^ 2) = |y - k + 1 / (4 * a)|)
+  proof: |
+    by
+      intro a h k x y ha
+      rw [← Real.sqrt_sq_eq_abs (y - k + 1 / (4 * a)), Real.sqrt_inj (by positivity) (by positivity)]
+      have key : (x - h) ^ 2 + (y - k - 1 / (4 * a)) ^ 2 - (y - k + 1 / (4 * a)) ^ 2 = (a * (x - h) ^ 2 - (y - k)) / a := by
+        field_simp
+        ring
+      constructor
+      · intro e
+        have hz : a * (x - h) ^ 2 - (y - k) = 0 := by linarith
+        rw [hz, zero_div] at key
+        linarith
+      · intro e
+        rw [e, sub_self] at key
+        have := (div_eq_zero_iff.mp key.symm).resolve_right ha
+        linarith

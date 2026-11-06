@@ -1,0 +1,42 @@
+# Proposed additive OpenMath vocabulary for finite combinatorics, simple graphs and posets.
+binom: {args: [term, term], returns: term, meaning: "binomial coefficient n choose k"}
+factorial: {args: [term], returns: term, meaning: "factorial n!"}
+powerset: {args: [term], returns: term, meaning: "set of all subsets of A"}
+k_subsets: {args: [term, term], returns: term, meaning: "set of the k-element subsets of A"}
+function_set: {args: [term, term], returns: term, meaning: "set of all functions from A to B"}
+permutation_set: {args: [term], returns: term, meaning: "set of all bijections from A to A"}
+derangement_set: {args: [term], returns: term, meaning: "set of permutations of A without fixed points"}
+multinomial_coeff: {args: [term, term], returns: term, meaning: "multinomial coefficient of the values of a natural-number function f on a finite index set I"}
+fibonacci: {args: [term], returns: term, meaning: "n-th Fibonacci number with F_0=0 and F_1=1"}
+catalan_number: {args: [term], returns: term, meaning: "n-th Catalan number defined by the convolution recurrence"}
+integer_range: {args: [term, term], returns: term, meaning: "set of integers k with a <= k <= b"}
+formal_power_series_mk: {args: [term_function], returns: term, meaning: "formal power series with the given coefficient function"}
+power_series_x: {args: [], returns: term, meaning: "the formal power series indeterminate X"}
+fn_maps_to: {args: [term, term, term], returns: prop, meaning: "f maps every element of A into B"}
+family_value: {args: [term, term], returns: term, meaning: "member S_i of an indexed family of sets"}
+simple_graph: {args: [term], returns: prop, meaning: "G is a finite or infinite simple graph"}
+finite_simple_graph: {args: [term], returns: prop, meaning: "G is a simple graph on a finite vertex set"}
+graph_vertices: {args: [term], returns: term, meaning: "vertex set of a graph"}
+graph_edges: {args: [term], returns: term, meaning: "edge set of a graph"}
+graph_adjacent: {args: [term, term, term], returns: prop, meaning: "u and v are adjacent in G"}
+graph_degree: {args: [term, term], returns: term, meaning: "degree of vertex v in G"}
+graph_connected: {args: [term], returns: prop, meaning: "G is connected and has a vertex"}
+graph_tree: {args: [term], returns: prop, meaning: "G is a tree"}
+graph_colorable: {args: [term, term], returns: prop, meaning: "G has a proper vertex coloring with k colors"}
+graph_clique_free: {args: [term, term], returns: prop, meaning: "G contains no clique on k vertices"}
+graph_path: {args: [term, term, term, term], returns: prop, meaning: "p is a path from u to v in G"}
+graph_closed_walk: {args: [term, term, term], returns: prop, meaning: "w is a closed walk at u in G"}
+walk_length: {args: [term], returns: term, meaning: "number of edges of a walk"}
+graph_eulerian_walk: {args: [term, term, term, term], returns: prop, meaning: "p is a walk from u to v in G using every edge exactly once"}
+poset: {args: [term], returns: prop, meaning: "P is a partially ordered set"}
+order_chain_in: {args: [term, term], returns: prop, meaning: "C is a chain of the poset P"}
+order_antichain_in: {args: [term, term], returns: prop, meaning: "A is an antichain of the poset P"}
+subset_antichain: {args: [term, term], returns: prop, meaning: "the family F of subsets of X is an antichain under inclusion"}
+indexed_union_over: {args: [term, term], returns: term, meaning: "union of the members S_i for i in I"}
+indexed_inter_over: {args: [term, term], returns: term, meaning: "intersection of the members S_i for i in T"}
+binary_relation_holds: {args: [term, term, term], returns: prop, meaning: "a is related to b by the relation r"}
+injective_on: {args: [term, term], returns: prop, meaning: "f is injective on the set A"}
+nat_mod: {args: [term, term], returns: term, meaning: "remainder of natural number a divided by positive b"}
+nat_div: {args: [term, term], returns: term, meaning: "floor of a divided by positive natural number b"}
+comm_semiring: {args: [term], returns: prop, meaning: "R is a commutative semiring"}
+comm_ring: {args: [term], returns: prop, meaning: "R is a commutative ring with unity"}

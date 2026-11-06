@@ -1,0 +1,1847 @@
+- id: sigma_algebra_countable_inter
+  kind: gap
+  level: 3
+  topic: σ加法族・可算交叉
+  statement: 可測空間$\alpha$の可測集合の列$(s_n)$について、共通部分$\bigcap_ns_n$は可測である。
+  statement_en: In a measurable space, the intersection of a sequence of measurable sets is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - 各$s_n$は可測集合
+  quantifiers:
+  - 任意の可測空間$\alpha$と$\alpha$の部分集合の列$(s_n)$
+  conclusion: $\bigcap_ns_n$は可測である。
+  answer: |
+    $\alpha$を可測空間、$(s_n)$を$\alpha$の可測集合の列とする。補集合を$^c$で表す。
+
+    ド・モルガンの法則より$\bigcap_ns_n=(\bigcup_ns_n^c)^c$である。$\sigma$加法族は補集合と可算和で閉じているので、$\bigcup_ns_n^c$は可測であり、その補集合である$\bigcap_ns_n$も可測である。
+  strategy: Rewrite the intersection as the complement of a countable union of complements.
+  sketch:
+  - 'translate: By De Morgan, the intersection of the s_n equals the complement of the union of their complements.'
+  - 'derive: Each complement is measurable, so their countable union is measurable.'
+  - 'conclude: The complement of that union is measurable, which is the intersection.'
+  openmath: (forall (s) (-> (forall (n) (measurable_set (seq_value s n))) (measurable_set (set_seq_inter s))))
+  hard_negative:
+    statement: 可測集合の任意個(非可算個でもよい)の共通部分は可測である。
+    reason: ボレル集合族では、非ボレル集合の各点の補集合をすべて交わると非ボレル集合の補集合になり、σ加法族は非可算の交叉で閉じていない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (s : ℕ → Set α), (∀ n, MeasurableSet (s n)) → MeasurableSet (⋂ n, s n)
+  proof: |
+    by
+      intro α _ s hs
+      exact MeasurableSet.iInter hs
+- id: sigma_algebra_limsup_measurable
+  kind: gap
+  level: 3
+  topic: σ加法族・上極限集合
+  statement: 可測空間$\alpha$の可測集合の列$(s_n)$について、上極限集合$\bigcap_n\bigcup_{k\geq n}s_k$は可測である。
+  statement_en: The limit superior of a sequence of measurable sets, the intersection over n of the unions over k ≥ n of s_k, is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - 各$s_n$は可測集合
+  quantifiers:
+  - 任意の可測空間$\alpha$と$\alpha$の部分集合の列$(s_n)$
+  conclusion: $\bigcap_n\bigcup_{k\geq n}s_k$は可測である。
+  answer: |
+    $\alpha$を可測空間、$(s_n)$を$\alpha$の可測集合の列とする。
+
+    各$n$について、$\bigcup_{k\geq n}s_k$は可測集合の可算和なので可測である。$\bigcap_n\bigcup_{k\geq n}s_k$はこれらの可算個の共通部分である。$\sigma$加法族は可算個の共通部分でも閉じているので、この集合は可測である。
+  strategy: Apply closure under countable unions and then under countable intersections.
+  sketch:
+  - 'setup: Fix n and form the tail union of the s_k with k ≥ n.'
+  - 'derive: Each tail union is a countable union of measurable sets, so it is measurable.'
+  - 'conclude: The countable intersection of the tail unions is measurable.'
+  openmath: (forall (s) (-> (forall (n) (measurable_set (seq_value s n))) (measurable_set (set_seq_limsup s))))
+  hard_negative:
+    statement: 可測集合列の上極限集合と下極限集合は常に一致する。
+    reason: s_nがnの偶奇で集合Aとその補集合Aᶜを交互にとると、上極限は全体集合、下極限は空集合になる。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (s : ℕ → Set α), (∀ n, MeasurableSet (s n)) → MeasurableSet (⋂ n, ⋃ k, ⋃ (_ : n ≤ k), s k)
+  proof: |
+    by
+      intro α _ s hs
+      exact MeasurableSet.iInter fun n => MeasurableSet.iUnion fun k => MeasurableSet.iUnion fun _ => hs k
+- id: measurable_of_halfline_preimages
+  kind: textbook
+  level: 3
+  topic: 可測関数・判定法
+  statement: $\alpha$を可測空間、$f:\alpha\to\mathbb{R}$を関数とする。全ての実数$a$で$\{x\mid f(x)\leq a\}$が可測ならば、$f$は可測である。
+  statement_en: A real-valued function f on a measurable space is measurable if {x | f(x) ≤ a} is measurable for every real a.
+  assumptions:
+  - $\alpha$は可測空間
+  - 全ての実数$a$で$\{x\mid f(x)\leq a\}$は可測
+  quantifiers:
+  - 任意の関数$f:\alpha\to\mathbb{R}$
+  conclusion: $f$は可測関数である。
+  answer: |
+    $\alpha$を可測空間、$f:\alpha\to\mathbb{R}$を、全ての実数$a$で$\{x\mid f(x)\leq a\}$が可測である関数とする。
+
+    $f^{-1}(B)$が可測となる$B\subset\mathbb{R}$の全体を$\mathcal{M}$とする。逆像は補集合と可算和を保つので、$\mathcal{M}$は$\sigma$加法族である。仮定から$\mathcal{M}$は全ての半直線$(-\infty,a]$を含む。
+
+    $(a,b]=(-\infty,b]\setminus(-\infty,a]$であり、開区間は$(a,b]$の形の集合の可算和である。さらに$\mathbb{R}$の開集合は有理数を端点とする開区間の可算和である。よって半直線全体はボレル集合族を生成し、$\mathcal{M}$はボレル集合族を含む。したがって$f$は可測である。
+  strategy: Use the good-sets principle with half lines as a generating family of the Borel σ-algebra.
+  sketch:
+  - 'setup: Let G be the family of Borel sets B with measurable preimage under f.'
+  - 'derive: Preimages commute with complements and countable unions, so G is a σ-algebra.'
+  - 'derive: By hypothesis G contains every half line (-∞,a].'
+  - 'apply_theorem: Half lines generate the Borel σ-algebra of ℝ.'
+  - 'conclude: G is the whole Borel σ-algebra, so f is measurable.'
+  openmath: (forall (f) (-> (forall (a) (measurable_set (set_preimage f (half_line_left a)))) (measurable_fn f)))
+  hard_negative:
+    statement: 全ての実数aで一点の逆像f⁻¹({a})が可測ならfは可測である。
+    reason: 非可測集合N⊂(0,1)に対しf(x)=x (x∈N)、f(x)=-x (x∉N)とすると、一点の逆像は高々2点だが、{f>0}=N∪(-∞,0)は可測でない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f : α → ℝ), (∀ a : ℝ, MeasurableSet (f ⁻¹' Set.Iic a)) → Measurable f
+  proof: |
+    by
+      intro α _ f hf
+      exact measurable_of_Iic hf
+- id: continuous_real_function_measurable
+  kind: gap
+  level: 3
+  topic: 可測関数・連続関数
+  statement: 連続関数$f:\mathbb{R}\to\mathbb{R}$はボレル可測である。
+  statement_en: Every continuous function from ℝ to ℝ is Borel measurable.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は連続
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  conclusion: $f$はボレル可測である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を連続関数とする。
+
+    $f^{-1}(B)$がボレル集合となる$B\subset\mathbb{R}$の全体を$\mathcal{M}$とする。逆像は補集合と可算和を保つので、$\mathcal{M}$は$\sigma$加法族である。$U$が開集合なら、連続性から$f^{-1}(U)$は開集合であり、ボレル集合である。よって$\mathcal{M}$は開集合を全て含む。ボレル集合族は開集合で生成されるので、$\mathcal{M}$はボレル集合族を含み、$f$はボレル可測である。
+  strategy: Check measurability on the generating family of open sets.
+  sketch:
+  - 'setup: Let U be an open subset of ℝ.'
+  - 'derive: The preimage of U under f is open, hence Borel.'
+  - 'conclude: Open sets generate the Borel σ-algebra, so f is measurable.'
+  openmath: (forall (f) (-> (fn_continuous (lambda (x) (fn_value f x))) (measurable_fn f)))
+  hard_negative:
+    statement: ボレル可測な関数はほとんど至る所連続である。
+    reason: 有理数の指示関数はボレル可測だが、全ての点で不連続である。
+  target: |
+    ∀ (f : ℝ → ℝ), Continuous f → Measurable f
+  proof: |
+    by
+      intro f hf
+      exact hf.measurable
+- id: measurable_add_and_mul
+  kind: gap
+  level: 3
+  topic: 可測関数・四則演算
+  statement: $\alpha$を可測空間、$f,g:\alpha\to\mathbb{R}$を可測関数とする。和$f+g$と積$fg$はともに可測である。
+  statement_en: If f and g are real-valued measurable functions, then f+g and fg are measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - $f,g:\alpha\to\mathbb{R}$は可測
+  quantifiers:
+  - 任意の可測関数$f,g$
+  conclusion: $f+g$と$fg$は可測である。
+  answer: |
+    $\alpha$を可測空間、$f,g:\alpha\to\mathbb{R}$を可測関数とする。$\Phi:\alpha\to\mathbb{R}^2$を$\Phi(x)=(f(x),g(x))$で定める。
+
+    $\Phi^{-1}(B)$が可測となる$B\subset\mathbb{R}^2$の全体は$\sigma$加法族である。開長方形$I\times J$については$\Phi^{-1}(I\times J)=f^{-1}(I)\cap g^{-1}(J)$なので、この$\sigma$加法族は開長方形を含む。$\mathbb{R}^2$の開集合は有理数を端点とする開長方形の可算和なので、開長方形は$\mathbb{R}^2$のボレル集合族を生成する。よって$\Phi$は可測である。
+
+    和$(s,t)\mapsto s+t$と積$(s,t)\mapsto st$は$\mathbb{R}^2\to\mathbb{R}$の連続写像であり、ボレル集合の逆像はボレル集合である。$f+g$と$fg$はこれらと$\Phi$の合成なので可測である。
+  strategy: Factor through the measurable pairing map and a continuous binary operation.
+  sketch:
+  - 'construct: Define the pairing map x ↦ (f(x), g(x)) into ℝ².'
+  - 'derive: Preimages of open rectangles are intersections of measurable sets, so the pairing is measurable.'
+  - 'derive: Addition and multiplication are continuous on ℝ², hence Borel measurable.'
+  - 'conclude: The compositions f+g and fg are measurable.'
+  openmath: (forall (f g) (-> (and (measurable_fn f) (measurable_fn g)) (and (measurable_fn (pointwise_sum f g)) (measurable_fn (pointwise_product f g)))))
+  hard_negative:
+    statement: f+gが可測ならf,gはともに可測である。
+    reason: 非可測関数fに対しg=-fとするとf+g=0は可測だが、f,gは可測でない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f g : α → ℝ), Measurable f → Measurable g → Measurable (fun x => f x + g x) ∧ Measurable (fun x => f x * g x)
+  proof: |
+    by
+      intro α _ f g hf hg
+      exact ⟨hf.add hg, hf.mul hg⟩
+- id: measurable_comparison_set
+  kind: gap
+  level: 3
+  topic: 可測関数・比較集合
+  statement: $\alpha$を可測空間、$f,g:\alpha\to\mathbb{R}$を可測関数とする。集合$\{x\mid f(x)\leq g(x)\}$は可測である。
+  statement_en: For real-valued measurable functions f and g, the set {x | f(x) ≤ g(x)} is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - $f,g:\alpha\to\mathbb{R}$は可測
+  quantifiers:
+  - 任意の可測関数$f,g$
+  conclusion: $\{x\mid f(x)\leq g(x)\}$は可測である。
+  answer: |
+    $\alpha$を可測空間、$f,g:\alpha\to\mathbb{R}$を可測関数とする。
+
+    有理数の稠密性から、$f(x)>g(x)$となるのは、ある有理数$q$で$f(x)>q$かつ$q>g(x)$となるときであり、そのときに限る。よって$\{x\mid f(x)>g(x)\}=\bigcup_{q\in\mathbb{Q}}(\{x\mid f(x)>q\}\cap\{x\mid g(x)<q\})$は可測集合の可算和であり、可測である。求める集合はその補集合なので可測である。
+  strategy: Separate the two values by a rational number and use a countable union.
+  sketch:
+  - 'translate: Pass to the complement {f > g}.'
+  - 'derive: f(x) > g(x) holds exactly when some rational q lies strictly between g(x) and f(x).'
+  - 'construct: Write {f > g} as the union over rational q of {f > q} ∩ {g < q}.'
+  - 'conclude: This union is countable and measurable, so its complement is measurable.'
+  openmath: (forall (f g) (-> (and (measurable_fn f) (measurable_fn g)) (measurable_set (fn_le_set f g))))
+  hard_negative:
+    statement: '{x | f(x)≤g(x)}が可測なら、fとgは可測である。'
+    reason: 非可測関数fに対してg=fとすると集合は全体で可測だが、f,gは可測でない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f g : α → ℝ), Measurable f → Measurable g → MeasurableSet {x | f x ≤ g x}
+  proof: |
+    by
+      intro α _ f g hf hg
+      exact measurableSet_le hf hg
+- id: measurable_pointwise_limit
+  kind: gap
+  level: 3
+  topic: 可測関数・各点極限
+  statement: $\alpha$を可測空間とする。可測関数の列$f_n:\alpha\to\mathbb{R}$が関数$g:\alpha\to\mathbb{R}$に各点収束するならば、$g$は可測である。
+  statement_en: If a sequence of real-valued measurable functions converges pointwise to g, then g is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - 各$f_n:\alpha\to\mathbb{R}$は可測
+  - 全ての$x$で$f_n(x)\to g(x)$
+  quantifiers:
+  - 任意の関数列$(f_n)$と関数$g$
+  conclusion: $g$は可測である。
+  answer: |
+    $\alpha$を可測空間、$f_n:\alpha\to\mathbb{R}$を可測関数の列、$g:\alpha\to\mathbb{R}$を全ての$x$で$f_n(x)\to g(x)$を満たす関数とする。
+
+    実数$a$を固定する。$g(x)<a$となるのは、ある自然数$m\geq 1$と$N$が存在して$n\geq N$で常に$f_n(x)\leq a-1/m$となるときであり、そのときに限る。実際、$g(x)<a-1/m$なら収束から十分大きな$n$で$f_n(x)<a-1/m$である。逆に上の条件があれば、極限をとって$g(x)\leq a-1/m<a$である。
+
+    よって$\{x\mid g(x)<a\}=\bigcup_m\bigcup_N\bigcap_{n\geq N}\{x\mid f_n(x)\leq a-1/m\}$は可測である。さらに$\{x\mid g(x)\leq a\}=\bigcap_{k\geq 1}\{x\mid g(x)<a+1/k\}$も可測である。半直線$(-\infty,a]$の全体はボレル集合族を生成するので、$g$は可測である。
+  strategy: Express sublevel sets of the limit through countable set operations on sublevel sets of the f_n.
+  sketch:
+  - 'setup: Fix a real number a.'
+  - 'translate: g(x) < a means f_n(x) ≤ a - 1/m for some m and all sufficiently large n.'
+  - 'construct: Write {g < a} as the union over m and N of the intersections over n ≥ N of {f_n ≤ a - 1/m}.'
+  - 'conclude: These sets are measurable for each a, so g is measurable.'
+  openmath: (forall (f g) (-> (and (forall (n) (measurable_fn (seq_value f n))) (pointwise_tends_to f g)) (measurable_fn g)))
+  hard_negative:
+    statement: 連続関数列の各点極限は連続である。
+    reason: f_n(x)=min(1,max(0,nx))は連続だが、極限は0でのジャンプをもつ。各点極限で保たれるのは可測性であり、連続性ではない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f : ℕ → α → ℝ) (g : α → ℝ), (∀ n, Measurable (f n)) → (∀ x, Filter.Tendsto (fun n => f n x) Filter.atTop (nhds (g x))) → Measurable g
+  proof: |
+    by
+      intro α _ f g hf hlim
+      exact measurable_of_tendsto_metrizable hf (tendsto_pi_nhds.2 hlim)
+- id: measurable_sequence_supremum
+  kind: gap
+  level: 3
+  topic: 可測関数・上限
+  statement: $\alpha$を可測空間とする。可測関数の列$f_n:\alpha\to[0,\infty]$の各点上限$x\mapsto\sup_nf_n(x)$は可測である。
+  statement_en: The pointwise supremum of a sequence of measurable functions with values in [0,∞] is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - 各$f_n:\alpha\to[0,\infty]$は可測
+  quantifiers:
+  - 任意の関数列$(f_n)$
+  conclusion: $x\mapsto\sup_nf_n(x)$は可測である。
+  answer: |
+    $\alpha$を可測空間、$f_n:\alpha\to[0,\infty]$を可測関数の列とする。
+
+    $a\in[0,\infty)$をとる。$\sup_nf_n(x)>a$となるのは、ある$n$で$f_n(x)>a$となるときであり、そのときに限る。よって$\{x\mid\sup_nf_n(x)>a\}=\bigcup_n\{x\mid f_n(x)>a\}$は可測集合の可算和であり、可測である。半直線$(a,\infty]$の全体は$[0,\infty]$のボレル集合族を生成するので、上限関数は可測である。
+  strategy: Identify the superlevel set of the supremum as a countable union of superlevel sets.
+  sketch:
+  - 'setup: Fix a in [0,∞].'
+  - 'derive: sup_n f_n(x) > a holds exactly when f_n(x) > a for some n.'
+  - 'construct: Hence {sup f_n > a} is the union of the sets {f_n > a}.'
+  - 'conclude: Superlevel sets generate the Borel σ-algebra of [0,∞], so the supremum is measurable.'
+  openmath: (forall (f) (-> (forall (n) (and (measurable_fn (seq_value f n)) (forall (x) (<= 0 (fn_value (seq_value f n) x))))) (measurable_fn (fn_seq_sup f))))
+  hard_negative:
+    statement: 可測関数からなる非可算族の各点上限は常に可測である。
+    reason: 非可測集合Nの各点aの指示関数1_{a}は可測だが、これら全ての上限はNの指示関数で可測でない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f : ℕ → α → ENNReal), (∀ n, Measurable (f n)) → Measurable (fun x => ⨆ n, f n x)
+  proof: |
+    by
+      intro α _ f hf
+      exact Measurable.iSup hf
+- id: monotone_real_function_measurable
+  kind: gap
+  level: 3
+  topic: 可測関数・単調関数
+  statement: 広義単調増加な関数$f:\mathbb{R}\to\mathbb{R}$はボレル可測である。
+  statement_en: Every monotone nondecreasing function from ℝ to ℝ is Borel measurable.
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$は広義単調増加
+  quantifiers:
+  - 任意の関数$f:\mathbb{R}\to\mathbb{R}$
+  conclusion: $f$はボレル可測である。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$を広義単調増加な関数とする。
+
+    実数$a$を固定し、$S=\{x\mid f(x)\leq a\}$とおく。単調性から、$x\in S$かつ$y\leq x$なら$y\in S$である。このような$\mathbb{R}$の部分集合は、空集合、$\mathbb{R}$、$(-\infty,c)$、$(-\infty,c]$のいずれかであり、どれもボレル集合である。半直線$(-\infty,a]$の全体はボレル集合族を生成し、$f^{-1}(B)$がボレル集合となる$B$の全体は$\sigma$加法族なので、$f$はボレル可測である。
+  strategy: Show that sublevel sets of a monotone function are intervals.
+  sketch:
+  - 'setup: Fix a and let S be {x | f(x) ≤ a}.'
+  - 'derive: If x is in S and y ≤ x, then f(y) ≤ f(x) ≤ a, so y is in S.'
+  - 'derive: Therefore S is empty, all of ℝ, or a half line, so S is Borel.'
+  - 'conclude: All half-line preimages are measurable, so f is measurable.'
+  openmath: (forall (f) (-> (fn_monotone (lambda (x) (fn_value f x))) (measurable_fn f)))
+  hard_negative:
+    statement: 単調増加関数は連続である。
+    reason: 0未満で0、0以上で1をとる階段関数は単調増加だが0で連続でない。可測性は連続性なしでも成り立つ。
+  target: |
+    ∀ (f : ℝ → ℝ), Monotone f → Measurable f
+  proof: |
+    by
+      intro f hf
+      exact hf.measurable
+- id: measurable_indicator_restriction
+  kind: gap
+  level: 3
+  topic: 可測関数・指示関数
+  statement: $\alpha$を可測空間、$f:\alpha\to\mathbb{R}$を可測関数、$A\subset\alpha$を可測集合とする。$A$上で$f$、$A$の外で$0$をとる関数$1_Af$は可測である。
+  statement_en: If f is measurable and A is a measurable set, the function equal to f on A and 0 outside A is measurable.
+  assumptions:
+  - $\alpha$は可測空間
+  - $f:\alpha\to\mathbb{R}$は可測
+  - $A$は可測集合
+  quantifiers:
+  - 任意の可測関数$f$と可測集合$A$
+  conclusion: 関数$1_Af$は可測である。
+  answer: |
+    $\alpha$を可測空間、$f:\alpha\to\mathbb{R}$を可測関数、$A\subset\alpha$を可測集合とする。$A^c$を$A$の補集合とする。
+
+    $B\subset\mathbb{R}$をボレル集合とする。$0\notin B$なら$(1_Af)^{-1}(B)=f^{-1}(B)\cap A$であり、$0\in B$なら$(1_Af)^{-1}(B)=(f^{-1}(B)\cap A)\cup A^c$である。どちらも$f$と$A$の可測性から可測なので、$1_Af$は可測である。
+  strategy: Compute the preimage of a Borel set by cases on whether it contains 0.
+  sketch:
+  - 'setup: Let B be a Borel subset of ℝ.'
+  - 'case_split: If 0 is not in B, the preimage is the intersection of f⁻¹(B) with A.'
+  - 'case_split: If 0 is in B, the preimage additionally contains the complement of A.'
+  - 'conclude: Both preimages are measurable, so the function is measurable.'
+  openmath: (forall (f A) (-> (and (measurable_fn f) (measurable_set A)) (measurable_fn (fn_indicator f A))))
+  hard_negative:
+    statement: fが可測ならば、任意の集合Aについて1_A fは可測である。
+    reason: f=1でAが非可測集合なら、1_A fはAの指示関数であり可測でない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f : α → ℝ) (A : Set α), Measurable f → MeasurableSet A → Measurable (A.indicator f)
+  proof: |
+    by
+      intro α _ f A hf hA
+      exact hf.indicator hA
+- id: measure_monotone
+  kind: gap
+  level: 3
+  topic: 測度・単調性
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度とする。ここで部分集合$S$に対し、$S$を含む可測集合$C$全体にわたる$\mu(C)$の下限を$\mu(S)$とする。$A\subset B$なら$\mu(A)\leq\mu(B)$である。
+  statement_en: A measure is monotone. If A ⊂ B then μ(A) ≤ μ(B).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $A\subset B$
+  quantifiers:
+  - 任意の測度$\mu$と部分集合$A,B$
+  conclusion: $\mu(A)\leq\mu(B)$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$A\subset B$を$\alpha$の部分集合とする。一般の部分集合$S$については、$S$を含む可測集合$C$全体にわたる$\mu(C)$の下限を$\mu(S)$とする。可測集合$S$では、次に示す単調性からこの値はもとの測度と一致する。
+
+    $A,B$が可測なら、$B$は互いに素な和$A\cup(B\setminus A)$に分かれるので、加法性から$\mu(B)=\mu(A)+\mu(B\setminus A)\geq\mu(A)$である。
+
+    一般の場合、$B$を含む可測集合は$A$も含む。よって$\mu(A)$の下限は$\mu(B)$の下限より広い範囲でとられるので、$\mu(A)\leq\mu(B)$である。
+  strategy: Split the larger set into the smaller one and the difference, then extend to the outer measure.
+  sketch:
+  - 'setup: First assume A and B are measurable.'
+  - 'derive: Additivity gives μ(B) = μ(A) + μ(B \ A) ≥ μ(A).'
+  - 'derive: For arbitrary sets, any measurable cover of B also covers A.'
+  - 'conclude: Taking infima over measurable covers gives μ(A) ≤ μ(B).'
+  openmath: (forall (mu A B) (-> (and (is_measure mu) (subset A B)) (<= (measure_of mu A) (measure_of mu B))))
+  hard_negative:
+    statement: Aが真にBに含まれるならμ(A)<μ(B)である。
+    reason: ルベーグ測度で区間[0,1]と開区間(0,1)はともに測度1である。真の包含から狭義の不等号は出ない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (A B : Set α), A ⊆ B → μ A ≤ μ B
+  proof: |
+    by
+      intro α _ μ A B h
+      exact MeasureTheory.measure_mono h
+- id: measure_countable_subadditive
+  kind: textbook
+  level: 3
+  topic: 測度・劣加法性
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度とする。部分集合$S$には、$S$を含む可測集合$C$全体にわたる$\mu(C)$の下限を$\mu(S)$として値を与える。任意の部分集合の列$(s_n)$について$\mu(\bigcup_ns_n)\leq\sum_n\mu(s_n)$が成り立つ。
+  statement_en: For any sequence of sets, μ(⋃ s_n) ≤ Σ μ(s_n).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  quantifiers:
+  - 任意の測度$\mu$と部分集合の列$(s_n)$
+  conclusion: $\mu(\bigcup_ns_n)\leq\sum_n\mu(s_n)$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$(s_n)$を$\alpha$の部分集合の列とする。部分集合$S$については、$S$を含む可測集合$C$全体にわたる$\mu(C)$の下限を$\mu(S)$とする。
+
+    まず$(C_n)$を可測集合の列とする。$t_n=C_n\setminus\bigcup_{k<n}C_k$は互いに素な可測集合で、$\bigcup_nt_n=\bigcup_nC_n$かつ$t_n\subset C_n$である。可算加法性と単調性から$\mu(\bigcup_nC_n)=\sum_n\mu(t_n)\leq\sum_n\mu(C_n)$である。
+
+    一般の場合を示す。$\sum_n\mu(s_n)=\infty$なら明らかなので、有限とする。$\varepsilon>0$に対し、$s_n$を含む可測集合$C_n$で$\mu(C_n)\leq\mu(s_n)+\varepsilon2^{-n-1}$となるものをとる。$\bigcup_nC_n$は$\bigcup_ns_n$を含む可測集合なので、$\mu(\bigcup_ns_n)\leq\mu(\bigcup_nC_n)\leq\sum_n\mu(C_n)\leq\sum_n\mu(s_n)+\varepsilon$である。$\varepsilon\to 0$とすればよい。
+  strategy: Disjointify the sequence and combine countable additivity with monotonicity.
+  sketch:
+  - 'construct: Define t_n as s_n minus the union of the earlier sets.'
+  - 'derive: The t_n are pairwise disjoint, have the same union, and satisfy t_n ⊂ s_n.'
+  - 'apply_theorem: Countable additivity gives μ(⋃ t_n) = Σ μ(t_n).'
+  - 'derive: Monotonicity bounds each μ(t_n) by μ(s_n).'
+  - 'conclude: Therefore μ(⋃ s_n) ≤ Σ μ(s_n).'
+  openmath: (forall (mu s) (-> (is_measure mu) (<= (measure_of mu (set_seq_union s)) (series_sum (measure_seq mu s)))))
+  hard_negative:
+    statement: 任意の集合列についてμ(⋃s_n)=Σμ(s_n)が成り立つ。
+    reason: s_n=[0,1]がすべて同じなら左辺は1で右辺は∞である。等号には互いに素であることと可測性が必要である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), μ (⋃ n, s n) ≤ ∑' n, μ (s n)
+  proof: |
+    by
+      intro α _ μ s
+      exact MeasureTheory.measure_iUnion_le s
+- id: measure_of_difference
+  kind: gap
+  level: 3
+  topic: 測度・差集合
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度(部分集合$S$には$S$を含む可測集合の測度の下限を値として与える)とする。$B\subset A$で、$B$が可測かつ$\mu(B)<\infty$ならば、$\mu(A\setminus B)=\mu(A)-\mu(B)$である。
+  statement_en: If B ⊂ A, B is measurable and μ(B) is finite, then μ(A \ B) = μ(A) - μ(B).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $B\subset A$
+  - $B$は可測
+  - $\mu(B)<\infty$
+  quantifiers:
+  - 任意の測度$\mu$と部分集合$A,B$
+  conclusion: $\mu(A\setminus B)=\mu(A)-\mu(B)$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$B\subset A$を部分集合、$B$を可測で$\mu(B)<\infty$とする。
+
+    カラテオドリの条件$\mu(A)=\mu(A\cap B)+\mu(A\setminus B)$を示す。$\leq$を示す。$C_1\supset A\cap B$、$C_2\supset A\setminus B$を可測とすると$\mu(A)\leq\mu(C_1\cup C_2)\leq\mu(C_1)+\mu(C_2)$であり、下限をとればよい。$\geq$を示す。$C\supset A$を可測とすると、$B$の可測性と加法性から$\mu(C)=\mu(C\cap B)+\mu(C\setminus B)\geq\mu(A\cap B)+\mu(A\setminus B)$である。$C$について下限をとればよい。
+
+    $B\subset A$なので$A\cap B=B$であり、$\mu(A)=\mu(B)+\mu(A\setminus B)$となる。$\mu(B)$は有限なので両辺から引くと$\mu(A\setminus B)=\mu(A)-\mu(B)$である。$\mu(A)=\infty$のときは両辺とも$\infty$である。
+  strategy: Apply additivity across the measurable set B and subtract the finite value.
+  sketch:
+  - 'derive: Measurability of B splits A into A ∩ B and A \ B additively.'
+  - 'derive: Since B ⊂ A, we get μ(A) = μ(B) + μ(A \ B).'
+  - 'conclude: Finiteness of μ(B) allows subtraction.'
+  openmath: (forall (mu A B) (-> (and (is_measure mu) (subset B A) (measurable_set B) (< (measure_of mu B) extended_infinity)) (= (measure_of mu (setdiff A B)) (- (measure_of mu A) (measure_of mu B)))))
+  hard_negative:
+    statement: μ(B)=∞でもB⊂Aならμ(A\B)=μ(A)-μ(B)が意味をもって成り立つ。
+    reason: A=ℝ,B=[0,∞)ではμ(A\B)=∞だが、右辺は∞-∞であり定まらない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (A B : Set α), B ⊆ A → MeasurableSet B → μ B ≠ ⊤ → μ (A \ B) = μ A - μ B
+  proof: |
+    by
+      intro α _ μ A B h hB hfin
+      exact MeasureTheory.measure_sdiff h hB.nullMeasurableSet hfin
+- id: measure_union_add_inter
+  kind: gap
+  level: 3
+  topic: 測度・包除
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度(部分集合$S$には$S$を含む可測集合の測度の下限を値として与える)、$A,B$を部分集合で$B$は可測とする。$\mu(A\cup B)+\mu(A\cap B)=\mu(A)+\mu(B)$が成り立つ。
+  statement_en: If B is measurable, then μ(A ∪ B) + μ(A ∩ B) = μ(A) + μ(B).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $B$は可測
+  quantifiers:
+  - 任意の測度$\mu$と部分集合$A,B$
+  conclusion: $\mu(A\cup B)+\mu(A\cap B)=\mu(A)+\mu(B)$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$A,B$を部分集合、$B$を可測とする。
+
+    可測な$B$と任意の部分集合$T$について、カラテオドリの条件$\mu(T)=\mu(T\cap B)+\mu(T\setminus B)$が成り立つ。$\leq$は、$C_1\supset T\cap B$、$C_2\supset T\setminus B$を可測とすると$\mu(T)\leq\mu(C_1\cup C_2)\leq\mu(C_1)+\mu(C_2)$となることから、下限をとって得られる。$\geq$は、$C\supset T$を可測とすると$\mu(C)=\mu(C\cap B)+\mu(C\setminus B)\geq\mu(T\cap B)+\mu(T\setminus B)$となることから、$C$について下限をとって得られる。
+
+    $T=A$とすると$\mu(A)=\mu(A\cap B)+\mu(A\setminus B)$である。$T=A\cup B$とすると$\mu(A\cup B)=\mu(B)+\mu(A\setminus B)$である。第1式の両辺に$\mu(B)$を足して第2式を代入すると、$\mu(A)+\mu(B)=\mu(A\cap B)+\mu(A\cup B)$を得る。加法だけを使うので、どの項が$\infty$でも成り立つ。
+  strategy: Split A and A ∪ B along B and add the resulting identities.
+  sketch:
+  - 'derive: Measurability of B gives μ(A) = μ(A ∩ B) + μ(A \ B).'
+  - 'derive: Likewise μ(A ∪ B) = μ(B) + μ(A \ B).'
+  - 'conclude: Adding μ(B) to the first identity and substituting the second yields the claim without subtraction.'
+  openmath: (forall (mu A B) (-> (and (is_measure mu) (measurable_set B)) (= (+ (measure_of mu (union A B)) (measure_of mu (inter A B))) (+ (measure_of mu A) (measure_of mu B)))))
+  hard_negative:
+    statement: 測度ではA,Bがどちらも非可測であっても常にμ(A∪B)+μ(A∩B)=μ(A)+μ(B)が成り立つ。
+    reason: ルベーグ外測度でAを非可測集合、Bをその[0,1]内の補集合とすると、右辺の外測度の和は1を超え、左辺は1なので等式は成り立たない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (A B : Set α), MeasurableSet B → μ (A ∪ B) + μ (A ∩ B) = μ A + μ B
+  proof: |
+    by
+      intro α _ μ A B hB
+      exact MeasureTheory.measure_union_add_inter A hB
+- id: measure_continuity_from_below
+  kind: textbook
+  level: 3
+  topic: 測度・下からの連続性
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度(部分集合$S$には$S$を含む可測集合の測度の下限を値として与える)とする。単調増加な部分集合の列$(s_n)$について、$\mu(s_n)$は$[0,\infty]$で$\mu(\bigcup_ns_n)$に収束する。
+  statement_en: For an increasing sequence of sets, μ(s_n) converges to μ(⋃ s_n).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $(s_n)$は単調増加
+  quantifiers:
+  - 任意の測度$\mu$と部分集合の列$(s_n)$
+  conclusion: $\mu(s_n)$は$[0,\infty]$で$\mu(\bigcup_ns_n)$に収束する。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$(s_n)$を単調増加な部分集合の列とする。
+
+    まず可測な単調増加列$(D_n)$を考える。$t_0=D_0$、$t_{n+1}=D_{n+1}\setminus D_n$は互いに素な可測集合で、$\bigcup_{k\leq n}t_k=D_n$かつ$\bigcup_nt_n=\bigcup_nD_n$である。可算加法性から$\mu(\bigcup_nD_n)=\sum_k\mu(t_k)=\lim_n\mu(D_n)$である。
+
+    一般の場合を示す。各部分集合$S$には$\mu(C)=\mu(S)$となる可測な$C\supset S$がある。実際、$\mu(S)=\infty$なら$C=\alpha$とし、有限なら$\mu(C_k)\leq\mu(S)+1/k$となる可測な$C_k\supset S$の共通部分を$C$とする。
+
+    そこで$s_n$に対し$C_n\supset s_n$をとり、$D_n=\bigcap_{k\geq n}C_k$とおく。$(s_n)$は単調増加なので$s_n\subset D_n\subset C_n$であり、$\mu(D_n)=\mu(s_n)$である。$(D_n)$は可測な単調増加列なので、$\mu(\bigcup_ns_n)\leq\mu(\bigcup_nD_n)=\lim_n\mu(D_n)=\lim_n\mu(s_n)\leq\mu(\bigcup_ns_n)$となる。最後の不等式は単調性による。
+  strategy: Decompose into disjoint increments and read the partial sums as the measures of s_n.
+  sketch:
+  - 'construct: Define increments t_n = s_n \ s_{n-1}.'
+  - 'derive: The increments are disjoint, and their partial unions are the s_n.'
+  - 'apply_theorem: Countable additivity expresses μ(⋃ s_n) as the sum of μ(t_k).'
+  - 'derive: Partial sums of that series equal μ(s_n).'
+  - 'conclude: Therefore μ(s_n) converges to μ(⋃ s_n).'
+  openmath: (forall (mu s) (-> (and (is_measure mu) (increasing_sets s)) (seq_tends_to (measure_seq mu s) (measure_of mu (set_seq_union s)))))
+  hard_negative:
+    statement: 単調減少な集合列なら、有限性の仮定なしにμ(s_n)→μ(⋂s_n)が成り立つ。
+    reason: s_n=[n,∞)ではルベーグ測度が全て∞だが、共通部分は空集合で測度0である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), Monotone s → Filter.Tendsto (fun n => μ (s n)) Filter.atTop (nhds (μ (⋃ n, s n)))
+  proof: |
+    by
+      intro α _ μ s hm
+      exact MeasureTheory.tendsto_measure_iUnion_atTop hm
+- id: measure_continuity_from_above
+  kind: textbook
+  level: 3
+  topic: 測度・上からの連続性
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度とする。単調減少な可測集合の列$(s_n)$で$\mu(s_0)<\infty$ならば、$\mu(s_n)$は$\mu(\bigcap_ns_n)$に収束する。
+  statement_en: For a decreasing sequence of measurable sets with μ(s_0) finite, μ(s_n) converges to μ(⋂ s_n).
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$s_n$は可測
+  - $(s_n)$は単調減少
+  - $\mu(s_0)<\infty$
+  quantifiers:
+  - 任意の測度$\mu$と集合列$(s_n)$
+  conclusion: $\mu(s_n)$は$\mu(\bigcap_ns_n)$に収束する。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$(s_n)$を$\mu(s_0)<\infty$を満たす単調減少な可測集合の列とする。
+
+    $r_n=s_0\setminus s_n$は単調増加な可測集合の列で、$\bigcup_nr_n=s_0\setminus\bigcap_ns_n$である。下からの連続性は、可測な単調増加列$(r_n)$について$\mu(r_n)\to\mu(\bigcup_nr_n)$となるという定理である。$\mu(s_0)<\infty$なので、加法性から$\mu(r_n)=\mu(s_0)-\mu(s_n)$および$\mu(\bigcup_nr_n)=\mu(s_0)-\mu(\bigcap_ns_n)$と書ける。これらを代入して$\mu(s_0)$から引くと、$\mu(s_n)\to\mu(\bigcap_ns_n)$を得る。
+  strategy: Pass to the increasing differences from s_0 and use continuity from below.
+  sketch:
+  - 'construct: Define r_n = s_0 \ s_n, an increasing sequence of measurable sets.'
+  - 'translate: The union of the r_n is s_0 minus the intersection of the s_n.'
+  - 'apply_theorem: Continuity from below gives μ(r_n) → μ(⋃ r_n).'
+  - 'derive: Finiteness of μ(s_0) turns these into μ(s_0) - μ(s_n) and μ(s_0) - μ(⋂ s_n).'
+  - 'conclude: Subtracting from μ(s_0) gives the claim.'
+  openmath: (forall (mu s) (-> (and (is_measure mu) (forall (n) (measurable_set (seq_value s n))) (decreasing_sets s) (< (measure_of mu (seq_value s 0)) extended_infinity)) (seq_tends_to (measure_seq mu s) (measure_of mu (set_seq_inter s)))))
+  hard_negative:
+    statement: 単調減少な可測集合列なら、μ(s_0)=∞でもμ(s_n)→μ(⋂s_n)である。
+    reason: s_n=[n,∞)はルベーグ測度が全て∞で、共通部分の測度は0である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), (∀ n, MeasurableSet (s n)) → Antitone s → μ (s 0) ≠ ⊤ → Filter.Tendsto (fun n => μ (s n)) Filter.atTop (nhds (μ (⋂ n, s n)))
+  proof: |
+    by
+      intro α _ μ s hs hm h0
+      exact MeasureTheory.tendsto_measure_iInter_atTop (fun n => (hs n).nullMeasurableSet) hm ⟨0, h0⟩
+- id: continuity_from_above_counterexample
+  kind: gap
+  level: 3
+  topic: 測度・上からの連続性の反例
+  statement: $\mathbb{R}$上のルベーグ測度$\mathrm{vol}$について、全ての自然数$n$で$\mathrm{vol}([n,\infty))=\infty$であり、$[n,\infty)$は$n$について単調減少し、その共通部分は空集合である。
+  statement_en: The half lines [n,∞) are decreasing and all have infinite Lebesgue measure, yet their intersection is empty.
+  assumptions:
+  - $\mathrm{vol}$は$\mathbb{R}$上のルベーグ測度
+  quantifiers:
+  - 全ての自然数$n$
+  conclusion: 全ての$n$で$\mathrm{vol}([n,\infty))=\infty$であり、列$([n,\infty))_n$は単調減少で、$\bigcap_n[n,\infty)=\emptyset$である。
+  answer: |
+    $\mathrm{vol}$を$\mathbb{R}$上のルベーグ測度とし、$n$を自然数とする。
+
+    $[n,\infty)$は全ての自然数$m$について長さ$m$の区間$[n,n+m]$を含むので、単調性から測度は全ての$m$以上であり、$\infty$である。$m\leq n$なら$[n,\infty)\subset[m,\infty)$なので、列は単調減少である。任意の実数$x$に対し$n>x$となる自然数$n$をとると$x\notin[n,\infty)$なので、共通部分は空集合である。
+
+    したがって$\mathrm{vol}(\bigcap_n[n,\infty))=0$だが$\mathrm{vol}([n,\infty))\to\infty$であり、有限性の仮定なしでは上からの連続性は成り立たない。
+  strategy: Compute the measures from subintervals and use the Archimedean property for the intersection.
+  sketch:
+  - 'derive: The half line [n,∞) contains intervals of every length, so its measure is infinite.'
+  - 'derive: If m ≤ n then [n,∞) ⊂ [m,∞), so the sequence is decreasing.'
+  - 'setup: Fix a real number x.'
+  - 'derive: The Archimedean property gives n > x, so x is not in [n,∞).'
+  - 'conclude: The intersection is empty while every measure is infinite.'
+  openmath: (and (forall (n) (-> (in n N) (= (measure_of lebesgue_measure (half_line_right n)) extended_infinity))) (forall (n m) (-> (and (in n N) (in m N) (<= n m)) (subset (half_line_right m) (half_line_right n)))) (forall (x) (-> (in x R) (exists (n) (and (in n N) (notin x (half_line_right n)))))))
+  hard_negative:
+    statement: '[n,n+1)のように有界な区間列でも共通部分が空なら測度の極限は0になる。'
+    reason: '[n,n+1)は単調減少ではなく、全てのnで測度1である。上からの連続性の仮定である単調減少が成り立っていない。'
+  target: |
+    (∀ n : ℕ, MeasureTheory.volume (Set.Ici (n : ℝ)) = ⊤) ∧ Antitone (fun n : ℕ => Set.Ici (n : ℝ)) ∧ (⋂ n : ℕ, Set.Ici (n : ℝ)) = ∅
+  proof: |
+    by
+      refine ⟨fun n => Real.volume_Ici, fun m n h => Set.Ici_subset_Ici.2 (Nat.cast_le.2 h), ?_⟩
+      ext x
+      simp only [Set.mem_iInter, Set.mem_Ici, Set.mem_empty_iff_false, iff_false, not_forall, not_le]
+      exact exists_nat_gt x
+- id: lebesgue_measure_of_interval
+  kind: gap
+  level: 3
+  topic: ルベーグ測度・区間の測度
+  statement: 実数$a,b$について、閉区間$[a,b]$のルベーグ測度は$\max\{b-a,0\}$である。
+  statement_en: The Lebesgue measure of the closed interval [a,b] is max(b-a,0).
+  assumptions:
+  - $a,b$は実数
+  - $\mathrm{vol}$は$\mathbb{R}$上のルベーグ測度
+  quantifiers:
+  - 任意の実数$a,b$
+  conclusion: $\mathrm{vol}([a,b])=\max\{b-a,0\}$である。
+  answer: |
+    $a,b$を実数、$\mathrm{vol}$を$\mathbb{R}$上のルベーグ測度とする。ルベーグ測度は、全ての$a<b$で$\mathrm{vol}((a,b])=b-a$を満たす測度である。
+
+    $a>b$なら$[a,b]$は空集合で測度$0$であり、$\max\{b-a,0\}=0$と一致する。$a\leq b$とする。$\varepsilon>0$について$\{a\}\subset(a-\varepsilon,a]$なので$\mathrm{vol}(\{a\})\leq\varepsilon$であり、$\mathrm{vol}(\{a\})=0$である。$[a,b]=\{a\}\cup(a,b]$は互いに素な和なので$\mathrm{vol}([a,b])=b-a=\max\{b-a,0\}$である。$a=b$では$(a,b]$は空集合であり、同じ式が成り立つ。
+  strategy: Separate the empty case and use that Lebesgue measure extends interval length.
+  sketch:
+  - 'case_split: If a > b the interval is empty and both sides are 0.'
+  - 'derive: If a ≤ b the half-open interval (a,b] has measure b-a by construction of Lebesgue measure.'
+  - 'derive: A singleton has measure zero, so adding the endpoint a does not change the measure.'
+  - 'conclude: Therefore vol([a,b]) = max(b-a,0).'
+  openmath: (forall (a b) (= (measure_of lebesgue_measure (closed_interval a b)) (real_pos_part (- b a))))
+  hard_negative:
+    statement: 実数の任意の有界集合のルベーグ外測度は、その上限と下限の差に等しい。
+    reason: 有理数と[0,1]の共通部分は上限と下限の差が1だが、可算集合なので測度は0である。
+  target: |
+    ∀ (a b : ℝ), MeasureTheory.volume (Set.Icc a b) = ENNReal.ofReal (b - a)
+  proof: |
+    by
+      intro a b
+      exact Real.volume_Icc
+- id: lebesgue_countable_set_null
+  kind: gap
+  level: 3
+  topic: ルベーグ測度・可算集合
+  statement: $\mathbb{R}$の可算集合のルベーグ測度は$0$である。
+  statement_en: Every countable subset of ℝ has Lebesgue measure zero.
+  assumptions:
+  - $S\subset\mathbb{R}$は可算
+  - $\mathrm{vol}$は$\mathbb{R}$上のルベーグ測度
+  quantifiers:
+  - 任意の可算集合$S\subset\mathbb{R}$
+  conclusion: $\mathrm{vol}(S)=0$である。
+  answer: |
+    $S\subset\mathbb{R}$を可算集合、$\mathrm{vol}$を$\mathbb{R}$上のルベーグ測度とする。
+
+    $x\in\mathbb{R}$と$\varepsilon>0$について、$\{x\}$は長さ$2\varepsilon$の区間$[x-\varepsilon,x+\varepsilon]$に含まれるので$\mathrm{vol}(\{x\})\leq 2\varepsilon$であり、$\mathrm{vol}(\{x\})=0$である。$S$は可算個の一点集合の和なので、可算劣加法性から$\mathrm{vol}(S)\leq\sum_{x\in S}\mathrm{vol}(\{x\})=0$である。
+  strategy: Bound the measure by the sum over singletons.
+  sketch:
+  - 'derive: A singleton is contained in intervals of arbitrarily small length, so it is null.'
+  - 'translate: Write S as a countable union of singletons.'
+  - 'conclude: Countable subadditivity gives vol(S) = 0.'
+  openmath: (forall (S) (-> (countable_set S) (= (measure_of lebesgue_measure S) 0)))
+  hard_negative:
+    statement: ルベーグ測度0の集合は可算である。
+    reason: カントール集合は非可算だが測度0である。
+  target: |
+    ∀ (S : Set ℝ), S.Countable → MeasureTheory.volume S = 0
+  proof: |
+    by
+      intro S hS
+      exact hS.measure_zero MeasureTheory.volume
+- id: lebesgue_translation_invariance
+  kind: textbook
+  level: 3
+  topic: ルベーグ測度・平行移動不変性
+  statement: 任意の$S\subset\mathbb{R}$と実数$a$について、$\{x\mid x+a\in S\}$のルベーグ測度は$S$のルベーグ測度に等しい。一般の集合の値はルベーグ外測度で与える。
+  statement_en: For every subset S of ℝ and real a, the Lebesgue measure of {x | x+a ∈ S} equals that of S.
+  assumptions:
+  - $a$は実数
+  - $S\subset\mathbb{R}$
+  - $\mathrm{vol}$は$\mathbb{R}$上のルベーグ測度(一般の集合には外測度の値を与える)
+  quantifiers:
+  - 任意の集合$S\subset\mathbb{R}$と実数$a$
+  conclusion: $\mathrm{vol}(\{x\mid x+a\in S\})=\mathrm{vol}(S)$である。
+  answer: |
+    $S\subset\mathbb{R}$を任意の集合、$a$を実数とする。$\mathrm{vol}(S)$はルベーグ外測度の値、すなわち$S$を覆う開区間の可算族$(a_i,b_i)$にわたる$\sum_i(b_i-a_i)$の下限である。
+
+    $\{x\mid x+a\in S\}=S-a$である。族$(a_i,b_i)$が$S$を覆うことと、平行移動した族$(a_i-a,b_i-a)$が$S-a$を覆うことは同値である。この対応は被覆の間の全単射であり、長さの総和を変えない。よって下限も等しく、$\mathrm{vol}(S-a)=\mathrm{vol}(S)$である。
+  strategy: Translate interval covers and compare the infimum of total lengths.
+  sketch:
+  - 'translate: The set in question is the translate S - a.'
+  - 'derive: Translating an interval preserves its length.'
+  - 'construct: Covers of S by intervals correspond bijectively to covers of S - a with the same total length.'
+  - 'conclude: The infima defining outer measure coincide.'
+  openmath: (forall (S a) (= (measure_of lebesgue_measure (set_translate S a)) (measure_of lebesgue_measure S)))
+  hard_negative:
+    statement: ルベーグ測度は任意の連続全単射で不変である。
+    reason: x↦2xは連続全単射だが、区間の長さを2倍にする。
+  target: |
+    ∀ (S : Set ℝ) (a : ℝ), MeasureTheory.volume ((fun x => x + a) ⁻¹' S) = MeasureTheory.volume S
+  proof: |
+    by
+      intro S a
+      exact MeasureTheory.measure_preimage_add_right MeasureTheory.volume a S
+- id: lebesgue_dilation_formula
+  kind: gap
+  level: 3
+  topic: ルベーグ測度・拡大縮小
+  statement: 任意の$S\subset\mathbb{R}$と$a\neq 0$について、$\{x\mid ax\in S\}$のルベーグ測度は$S$のルベーグ測度の$|a|^{-1}$倍である。一般の集合の値はルベーグ外測度で与える。
+  statement_en: For a ≠ 0, the Lebesgue measure of {x | ax ∈ S} is |a|⁻¹ times that of S.
+  assumptions:
+  - $a\neq 0$
+  - $S\subset\mathbb{R}$
+  - $\mathrm{vol}$は$\mathbb{R}$上のルベーグ測度(一般の集合には外測度の値を与える)
+  quantifiers:
+  - 任意の集合$S\subset\mathbb{R}$と実数$a\neq 0$
+  conclusion: $\mathrm{vol}(\{x\mid ax\in S\})=|a|^{-1}\mathrm{vol}(S)$である。
+  answer: |
+    $S\subset\mathbb{R}$を任意の集合、$a\neq 0$を実数とする。$\mathrm{vol}(S)$はルベーグ外測度の値、すなわち$S$を覆う開区間の可算族にわたる長さの総和の下限である。
+
+    $\{x\mid ax\in S\}=a^{-1}S$である。写像$x\mapsto a^{-1}x$は開区間を開区間に写し、長さを$|a|^{-1}$倍する全単射である。したがって$S$の開区間被覆と$a^{-1}S$の開区間被覆は一対一に対応し、長さの総和は$|a|^{-1}$倍になる。正の定数倍は下限を保つので、$\mathrm{vol}(a^{-1}S)=|a|^{-1}\mathrm{vol}(S)$である。
+  strategy: Rescale interval covers by the factor a⁻¹ and compare infima.
+  sketch:
+  - 'translate: The set is S scaled by a⁻¹.'
+  - 'derive: Scaling an interval by a⁻¹ multiplies its length by |a|⁻¹.'
+  - 'construct: Interval covers of S correspond to covers of the scaled set with total length multiplied by |a|⁻¹.'
+  - 'conclude: Taking infima yields the formula.'
+  openmath: (forall (S a) (-> (!= a 0) (= (measure_of lebesgue_measure (set_dilate S a)) (* (/ 1 (abs a)) (measure_of lebesgue_measure S)))))
+  hard_negative:
+    statement: a=0でも同じ式vol({x | ax∈S})=|a|⁻¹vol(S)が成り立つ。
+    reason: a=0で0∈Sなら左辺は実数全体の測度∞で、0∉Sなら左辺は0である。Sの測度とは関係がなくなる。
+  target: |
+    ∀ (S : Set ℝ) (a : ℝ), a ≠ 0 → MeasureTheory.volume ((fun x => a * x) ⁻¹' S) = ENNReal.ofReal |a⁻¹| * MeasureTheory.volume S
+  proof: |
+    by
+      intro S a ha
+      exact Real.volume_preimage_mul_left ha S
+- id: lebesgue_null_set_empty_interior
+  kind: gap
+  level: 3
+  topic: ルベーグ測度・零集合の内部
+  statement: $\mathbb{R}$の部分集合$S$のルベーグ測度が$0$ならば、$S$の内部は空である。
+  statement_en: A subset of ℝ of Lebesgue measure zero has empty interior.
+  assumptions:
+  - $S\subset\mathbb{R}$
+  - $\mathrm{vol}(S)=0$
+  quantifiers:
+  - 任意の集合$S\subset\mathbb{R}$
+  conclusion: $S$の内部は空集合である。
+  answer: |
+    $S\subset\mathbb{R}$を$\mathrm{vol}(S)=0$を満たす集合とする。$\mathrm{vol}$はルベーグ測度である。
+
+    $S$の内部が空でないとすると、ある$a<b$で開区間$(a,b)$が$S$に含まれる。単調性から$0<b-a=\mathrm{vol}((a,b))\leq\mathrm{vol}(S)$となり、$\mathrm{vol}(S)=0$に矛盾する。
+  strategy: Argue by contradiction with an open subinterval of positive length.
+  sketch:
+  - 'contradiction: Suppose the interior of S is nonempty.'
+  - 'derive: The nonempty open interior has positive Lebesgue measure.'
+  - 'derive: Monotonicity gives vol(interior S) ≤ vol(S) = 0.'
+  - 'conclude: This is a contradiction, so the interior is empty.'
+  openmath: (forall (S) (-> (= (measure_of lebesgue_measure S) 0) (= (set_interior S) emptyset)))
+  hard_negative:
+    statement: 内部が空の集合はルベーグ測度0である。
+    reason: 無理数全体は内部が空だが測度は∞である。
+  target: |
+    ∀ (S : Set ℝ), MeasureTheory.volume S = 0 → interior S = ∅
+  proof: |
+    by
+      intro S hS
+      by_contra hne
+      have hpos : 0 < MeasureTheory.volume (interior S) :=
+        isOpen_interior.measure_pos MeasureTheory.volume (Set.nonempty_iff_ne_empty.2 hne)
+      have hle : MeasureTheory.volume (interior S) ≤ MeasureTheory.volume S :=
+        MeasureTheory.measure_mono interior_subset
+      rw [hS] at hle
+      exact absurd hpos (not_lt.2 hle)
+- id: borel_cantelli_limsup_null
+  kind: textbook
+  level: 3
+  topic: 測度・ボレル・カンテリの補題
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度(部分集合$S$には$S$を含む可測集合の測度の下限を値として与える)、$(s_n)$を部分集合の列とする。$\sum_n\mu(s_n)<\infty$ならば、上極限集合$\bigcap_N\bigcup_{k\geq N}s_k$の測度は$0$である(ボレル・カンテリの補題)。
+  statement_en: 'First Borel–Cantelli lemma: if Σ μ(s_n) is finite, the limit superior of the s_n has measure zero.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $\sum_n\mu(s_n)<\infty$
+  quantifiers:
+  - 任意の測度$\mu$と部分集合の列$(s_n)$
+  conclusion: $\mu(\bigcap_N\bigcup_{k\geq N}s_k)=0$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$(s_n)$を$\sum_n\mu(s_n)<\infty$を満たす部分集合の列とし、$L=\bigcap_N\bigcup_{k\geq N}s_k$とおく。
+
+    任意の$N$について$L\subset\bigcup_{k\geq N}s_k$である。この拡張された$\mu$も単調かつ可算劣加法的なので、$\mu(L)\leq\sum_{k\geq N}\mu(s_k)$である。級数は収束するので、右辺は$N\to\infty$で$0$に近づく。よって$\mu(L)=0$である。
+  strategy: Bound the limit superior by tails of the convergent series.
+  sketch:
+  - 'setup: Fix N; limsup s_n is contained in the tail union over k ≥ N.'
+  - 'derive: Subadditivity bounds its measure by the tail of Σ μ(s_k).'
+  - 'derive: The tail tends to 0 because the series is finite.'
+  - 'conclude: Hence the limit superior has measure zero.'
+  openmath: (forall (mu s) (-> (and (is_measure mu) (< (series_sum (measure_seq mu s)) extended_infinity)) (= (measure_of mu (set_seq_limsup s)) 0)))
+  hard_negative:
+    statement: Σμ(s_n)=∞なら、上極限集合の測度は必ず正である。
+    reason: s_n=[0,1/n]はΣμ(s_n)=∞だが、上極限は{0}で測度0である。逆の主張には独立性などの追加条件が要る。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), (∑' n, μ (s n)) ≠ ⊤ → μ (Filter.limsup s Filter.atTop) = 0
+  proof: |
+    by
+      intro α _ μ s h
+      exact MeasureTheory.measure_limsup_atTop_eq_zero h
+- id: borel_cantelli_almost_all_finitely_many
+  kind: gap
+  level: 3
+  topic: ほとんど至る所・ボレル・カンテリ
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$(s_n)$を部分集合の列とする。$\sum_n\mu(s_n)<\infty$ならば、$\mu$についてほとんど全ての$x$は、十分大きな全ての$n$で$x\notin s_n$を満たす。部分集合の値は、それを含む可測集合の測度の下限で与える。
+  statement_en: If Σ μ(s_n) is finite, then for almost every x, x lies outside s_n for all sufficiently large n.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - $\sum_n\mu(s_n)<\infty$
+  quantifiers:
+  - 任意の測度$\mu$と部分集合の列$(s_n)$
+  conclusion: $\mu$についてほとんど全ての$x$で、ある番号以降$x\notin s_n$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$(s_n)$を$\sum_n\mu(s_n)<\infty$を満たす部分集合の列とする。
+
+    無限個の$n$で$x\in s_n$となる点$x$の全体は、上極限集合$L=\bigcap_N\bigcup_{k\geq N}s_k$である。ボレル・カンテリの補題は、$\sum_n\mu(s_n)<\infty$なら$\mu(L)=0$であるという定理である。$L$の外の点$x$は有限個の$s_n$にしか属さないので、十分大きな全ての$n$で$x\notin s_n$となる。
+  strategy: Translate membership in infinitely many sets into the limit superior being null.
+  sketch:
+  - 'translate: Points in infinitely many s_n are exactly the limit superior.'
+  - 'apply_theorem: The Borel–Cantelli lemma shows this set is null.'
+  - 'conclude: Almost every point lies in only finitely many s_n, so eventually outside them.'
+  openmath: (forall (mu s) (-> (and (is_measure mu) (< (series_sum (measure_seq mu s)) extended_infinity)) (ae_eventually_outside mu s)))
+  hard_negative:
+    statement: Σμ(s_n)<∞なら、全ての点xが有限個のs_nにしか属さない。
+    reason: 全てのnでs_n={0}とするとルベーグ測度の総和は0だが、点0は全てのs_nに属する。結論はほとんど至る所でしか成り立たない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), (∑' n, μ (s n)) ≠ ⊤ → ∀ᵐ x ∂μ, ∀ᶠ n in Filter.atTop, x ∉ s n
+  proof: |
+    by
+      intro α _ μ s h
+      exact MeasureTheory.ae_eventually_notMem h
+- id: ae_countable_conjunction
+  kind: gap
+  level: 3
+  topic: ほとんど至る所・可算個の条件
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$(p_n)$を$\alpha$上の述語の列とする。各$p_n$が$\mu$についてほとんど至る所で成り立つならば、$\mu$についてほとんど全ての$x$で全ての$p_n(x)$が同時に成り立つ。
+  statement_en: If each of countably many properties p_n holds almost everywhere, then almost every x satisfies all p_n simultaneously.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$p_n$は$\mu$についてほとんど至る所で成り立つ
+  quantifiers:
+  - 任意の測度$\mu$と述語の列$(p_n)$
+  conclusion: $\mu$についてほとんど全ての$x$で、全ての$n$について$p_n(x)$が成り立つ。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$(p_n)$を$\alpha$上の述語の列とする。ほとんど至る所で成り立つとは、成り立たない点の全体がある可測な零集合に含まれることをいう。
+
+    $p_n(x)$が成り立たない点$x$の全体を$E_n$とおく。仮定から、$E_n$を含む可測集合$N_n$で$\mu(N_n)=0$となるものがある。全ての$p_n$が同時には成り立たない点の全体は$\bigcup_nE_n$であり、これは可測集合$\bigcup_nN_n$に含まれる。可算劣加法性から$\mu(\bigcup_nN_n)\leq\sum_n\mu(N_n)=0$なので、結論を得る。
+  strategy: Take the countable union of the exceptional null sets.
+  sketch:
+  - 'setup: Let E_n be the set where p_n fails, so each E_n is null.'
+  - 'translate: The set where some p_n fails is the union of the E_n.'
+  - 'conclude: Countable subadditivity shows that union is null.'
+  openmath: (forall (mu p) (-> (and (is_measure mu) (forall (n) (ae_holds mu (seq_value p n)))) (ae_holds_all_indices mu p)))
+  hard_negative:
+    statement: 実数tで添字付けられた非可算個の性質p_tがそれぞれほとんど至る所で成り立つなら、ほとんど全てのxで全てのp_tが同時に成り立つ。
+    reason: p_t(x)を「x≠t」とすると各p_tはルベーグ測度でa.e.に成り立つが、全てのtについて成り立つxは存在しない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (p : ℕ → α → Prop), (∀ n, ∀ᵐ x ∂μ, p n x) → ∀ᵐ x ∂μ, ∀ n, p n x
+  proof: |
+    by
+      intro α _ μ p h
+      exact MeasureTheory.ae_all_iff.2 h
+- id: null_sets_countable_union
+  kind: gap
+  level: 3
+  topic: 測度・零集合の可算和
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度(部分集合$S$には$S$を含む可測集合の測度の下限を値として与える)、$(s_n)$を部分集合の列とする。全ての$n$で$\mu(s_n)=0$ならば、$\mu(\bigcup_ns_n)=0$である。
+  statement_en: A countable union of null sets is null.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $\mu$は可測集合による下限で任意の部分集合に拡張する
+  - 全ての$n$で$\mu(s_n)=0$
+  quantifiers:
+  - 任意の測度$\mu$と部分集合の列$(s_n)$
+  conclusion: $\mu(\bigcup_ns_n)=0$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、部分集合$S$については$S$を含む可測集合の測度の下限を$\mu(S)$とする。$(s_n)$を全ての$n$で$\mu(s_n)=0$を満たす部分集合の列とする。
+
+    拡張された$\mu$は可算劣加法的なので、$\mu(\bigcup_ns_n)\leq\sum_n\mu(s_n)=0$である。$\mu$の値は非負なので、$\mu(\bigcup_ns_n)=0$である。
+  strategy: Apply countable subadditivity and nonnegativity.
+  sketch:
+  - 'apply_theorem: Countable subadditivity gives μ(⋃ s_n) ≤ Σ μ(s_n).'
+  - 'conclude: The sum vanishes, so the union is null.'
+  openmath: (forall (mu s) (-> (and (is_measure mu) (forall (n) (= (measure_of mu (seq_value s n)) 0))) (= (measure_of mu (set_seq_union s)) 0)))
+  hard_negative:
+    statement: 測度0の集合の任意個の和は測度0である。
+    reason: '[0,1]は一点集合の非可算和だが測度1である。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (s : ℕ → Set α), (∀ n, μ (s n) = 0) → μ (⋃ n, s n) = 0
+  proof: |
+    by
+      intro α _ μ s h
+      exact MeasureTheory.measure_iUnion_null h
+- id: ae_equal_continuous_functions_equal
+  kind: gap
+  level: 3
+  topic: ほとんど至る所・連続関数
+  statement: 連続関数$f,g:\mathbb{R}\to\mathbb{R}$がルベーグ測度についてほとんど至る所で等しいならば、全ての$x\in\mathbb{R}$で$f(x)=g(x)$である。
+  statement_en: Continuous functions on ℝ that agree Lebesgue-almost everywhere agree everywhere.
+  assumptions:
+  - $f,g:\mathbb{R}\to\mathbb{R}$は連続
+  - ルベーグ測度についてほとんど至る所で$f=g$
+  quantifiers:
+  - 任意の関数$f,g$
+  conclusion: 全ての$x$で$f(x)=g(x)$である。
+  answer: |
+    $f,g:\mathbb{R}\to\mathbb{R}$を連続関数とし、ルベーグ測度についてほとんど至る所で$f=g$とする。
+
+    $U=\{x\mid f(x)\neq g(x)\}$は連続性から開集合であり、仮定から測度$0$である。空でない開集合は長さが正の開区間を含むので、正の測度をもつ。よって$U$は空であり、全ての$x$で$f(x)=g(x)$である。
+  strategy: The disagreement set is open and null, hence empty.
+  sketch:
+  - 'setup: Let U be the set where f and g differ.'
+  - 'derive: Continuity makes U open, and the hypothesis makes U null.'
+  - 'derive: Nonempty open sets contain intervals and have positive measure.'
+  - 'conclude: Therefore U is empty and f = g.'
+  openmath: (forall (f g) (-> (and (fn_continuous (lambda (x) (fn_value f x))) (fn_continuous (lambda (x) (fn_value g x))) (ae_eq lebesgue_measure f g)) (forall (x) (= (fn_value f x) (fn_value g x)))))
+  hard_negative:
+    statement: 可測関数f,gがほとんど至る所で等しいなら全ての点で等しい。
+    reason: 有理数の指示関数と恒等的に0の関数はa.e.で等しいが、有理点では異なる。
+  target: |
+    ∀ (f g : ℝ → ℝ), Continuous f → Continuous g → (∀ᵐ x ∂(MeasureTheory.volume : MeasureTheory.Measure ℝ), f x = g x) → ∀ x, f x = g x
+  proof: |
+    by
+      intro f g hf hg h x
+      have heq : f = g := (Continuous.ae_eq_iff_eq MeasureTheory.volume hf hg).1 h
+      rw [heq]
+- id: integral_congr_almost_everywhere
+  kind: gap
+  level: 3
+  topic: 積分・ほとんど至る所の等式
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f,g:\alpha\to\mathbb{R}$を$\mu$可積分な関数とする。$\mu$についてほとんど至る所で$f=g$ならば、$\int f\,d\mu=\int g\,d\mu$である。
+  statement_en: If integrable functions f and g agree almost everywhere, then their integrals are equal.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $f,g$は$\mu$可積分
+  - $\mu$についてほとんど至る所で$f=g$
+  quantifiers:
+  - 任意の測度$\mu$と関数$f,g$
+  conclusion: $\int f\,d\mu=\int g\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f,g:\alpha\to\mathbb{R}$を$\mu$可積分な関数とし、$\mu$についてほとんど至る所で$f=g$とする。可積分とは、ほとんど至る所で可測関数に等しく$\int|f|\,d\mu<\infty$であることをいう。
+
+    $h=|f-g|$は可積分である。$h$にほとんど至る所で等しい非負可測関数$h'$をとると、ある可測な零集合$N$の外で$h'=0$である。$0\leq\varphi\leq h'$を単純関数とすると、$\varphi$が正の値をとる集合は$N$に含まれるので$\int\varphi\,d\mu=0$である。よって$\int h\,d\mu=\int h'\,d\mu=0$である。積分の線形性と不等式$|\int u\,d\mu|\leq\int|u|\,d\mu$から、$|\int f\,d\mu-\int g\,d\mu|\leq\int h\,d\mu=0$となる。
+  strategy: Estimate the difference of integrals by the integral of |f-g| which vanishes off a null set.
+  sketch:
+  - 'setup: Let N be the null set where f and g differ.'
+  - 'derive: The function |f-g| vanishes off N, so its integral is 0.'
+  - 'derive: The triangle inequality bounds |∫f - ∫g| by that integral.'
+  - 'conclude: Thus the integrals agree.'
+  openmath: (forall (mu f g) (-> (and (integrable_fn f mu) (integrable_fn g mu) (ae_eq mu f g)) (= (integral_wrt (lambda (x) (fn_value f x)) mu) (integral_wrt (lambda (x) (fn_value g x)) mu))))
+  hard_negative:
+    statement: 可積分な関数f,gの積分が等しいなら、f=gがほとんど至る所で成り立つ。
+    reason: '[-1,1]上のf(x)=xとg=0は積分がともに0だが、ほとんど全ての点で異なる。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f g : α → ℝ), MeasureTheory.Integrable f μ → MeasureTheory.Integrable g μ → (∀ᵐ x ∂μ, f x = g x) → ∫ x, f x ∂μ = ∫ x, g x ∂μ
+  proof: |
+    by
+      intro α _ μ f g _ _ h
+      exact MeasureTheory.integral_congr_ae h
+- id: simple_function_approximation
+  kind: textbook
+  level: 3
+  topic: 積分・単純関数近似
+  statement: $\alpha$を可測空間、$f:\alpha\to[0,\infty]$を可測関数とする。有限個の有限値をとる単純関数の列$(\varphi_n)$で、全ての$n,x$について$\varphi_n(x)\leq\varphi_{n+1}(x)$を満たし、全ての$x$で$\varphi_n(x)\to f(x)$となるものが存在する。
+  statement_en: Every measurable function with values in [0,∞] is the pointwise limit of an increasing sequence of finite-valued simple functions.
+  assumptions:
+  - $\alpha$は可測空間
+  - $f:\alpha\to[0,\infty]$は可測
+  quantifiers:
+  - 任意の可測関数$f$
+  conclusion: 全ての$n,x$で$\varphi_n(x)<\infty$かつ$\varphi_n(x)\leq\varphi_{n+1}(x)$となり、全ての$x$で$\varphi_n(x)\to f(x)$となる単純関数の列$(\varphi_n)$が存在する。
+  answer: |
+    $\alpha$を可測空間、$f:\alpha\to[0,\infty]$を可測関数とする。各自然数$n$について、$f(x)<\infty$なら$\varphi_n(x)=\min\{n,2^{-n}\lfloor 2^nf(x)\rfloor\}$、$f(x)=\infty$なら$\varphi_n(x)=n$と定める。
+
+    $\varphi_n$は値$k2^{-n}$ ($0\leq k\leq n2^n$)のいずれかをとる。$k<n2^n$の値の逆像は$\{x\mid k2^{-n}\leq f(x)<(k+1)2^{-n}\}$であり、値$n$の逆像は$\{x\mid f(x)\geq n\}$である。これらは$f$の可測性から可測なので、$\varphi_n$は有限値の単純関数である。
+
+    実数$s\geq 0$について$\lfloor 2s\rfloor\geq 2\lfloor s\rfloor$なので、$2^{-n}\lfloor 2^nt\rfloor\leq 2^{-n-1}\lfloor 2^{n+1}t\rfloor$である。$\min$の上限も$n$から$n+1$へ増えるので、$\varphi_n\leq\varphi_{n+1}$である。
+
+    $f(x)<\infty$なら、$n\geq f(x)$で$\varphi_n(x)=2^{-n}\lfloor 2^nf(x)\rfloor$であり、$0\leq f(x)-\varphi_n(x)<2^{-n}$である。$f(x)=\infty$なら$\varphi_n(x)=n\to\infty$である。いずれも$\varphi_n(x)\to f(x)$となる。
+  strategy: Round f down on a dyadic grid truncated at height n.
+  sketch:
+  - 'construct: Define φ_n as the minimum of n and the dyadic rounding of f at scale 2^{-n}.'
+  - 'derive: Each φ_n takes finitely many values on measurable preimages, so it is simple.'
+  - 'derive: Refining the grid and raising the truncation cannot lower the value, so φ_n increases.'
+  - 'case_split: If f(x) is finite, the error is at most 2^{-n} for large n.'
+  - 'case_split: If f(x) is infinite, φ_n(x) = n tends to infinity.'
+  - 'conclude: Hence φ_n converges pointwise to f.'
+  openmath: (forall (f) (-> (and (measurable_fn f) (forall (x) (<= 0 (fn_value f x)))) (exists (p) (and (forall (n) (and (simple_fn (seq_value p n)) (forall (x) (and (<= 0 (fn_value (seq_value p n) x)) (< (fn_value (seq_value p n) x) extended_infinity))))) (fn_seq_increasing p) (pointwise_tends_to p f)))))
+  hard_negative:
+    statement: 非負可測関数は、単調増加する単純関数列で常に一様に近似できる。
+    reason: 非有界なf(x)=xに対し有限個の値しかとらない単純関数とは差が無限大になる。一様近似には有界性が必要である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (f : α → ENNReal), Measurable f → ∃ φ : ℕ → MeasureTheory.SimpleFunc α ENNReal, (∀ n x, φ n x ≠ ⊤) ∧ (∀ n x, φ n x ≤ φ (n + 1) x) ∧ ∀ x, Filter.Tendsto (fun n => φ n x) Filter.atTop (nhds (f x))
+  proof: |
+    by
+      intro α _ f hf
+      refine ⟨MeasureTheory.SimpleFunc.eapprox f, fun n x => (MeasureTheory.SimpleFunc.eapprox_lt_top f n x).ne, fun n x => ?_, MeasureTheory.SimpleFunc.tendsto_eapprox hf⟩
+      exact MeasureTheory.SimpleFunc.monotone_eapprox f (Nat.le_succ n) x
+- id: monotone_convergence_theorem
+  kind: named
+  level: 3
+  topic: 積分・単調収束定理
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を可測関数の列で全ての$n,x$について$f_n(x)\leq f_{n+1}(x)$を満たすものとする。$\int\sup_nf_n\,d\mu=\sup_n\int f_n\,d\mu$が成り立つ(単調収束定理)。
+  statement_en: 'Monotone convergence theorem: for an increasing sequence of measurable functions f_n with values in [0,∞], the integral of sup f_n equals the supremum of the integrals.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$f_n:\alpha\to[0,\infty]$は可測
+  - 全ての$n,x$で$f_n(x)\leq f_{n+1}(x)$
+  quantifiers:
+  - 任意の測度$\mu$と関数列$(f_n)$
+  conclusion: $\int\sup_nf_n\,d\mu=\sup_n\int f_n\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を全ての$n,x$で$f_n(x)\leq f_{n+1}(x)$を満たす可測関数の列とし、$f=\sup_nf_n$とおく。非負可測関数$u$の積分は、$\varphi\leq u$を満たす有限値の非負単純関数$\varphi$にわたる$\int\varphi\,d\mu$の上限である。
+
+    $f_n\leq f$と積分の単調性から$\sup_n\int f_n\,d\mu\leq\int f\,d\mu$である。
+
+    逆向きを示す。$\varphi=\sum_ia_i1_{A_i}\leq f$を有限値の非負単純関数($A_i$は互いに素な可測集合、$a_i\geq 0$)とし、$0<c<1$とする。$E_n=\{x\mid f_n(x)\geq c\varphi(x)\}$は単調増加な可測集合の列である。$\varphi(x)=0$なら全ての$n$で$x\in E_n$である。$\varphi(x)>0$なら$c\varphi(x)<\varphi(x)\leq f(x)=\sup_nf_n(x)$なので、ある$n$で$x\in E_n$である。よって$\bigcup_nE_n=\alpha$である。
+
+    測度の下からの連続性から、$\int_{E_n}\varphi\,d\mu=\sum_ia_i\mu(A_i\cap E_n)\to\sum_ia_i\mu(A_i)=\int\varphi\,d\mu$である。$f_n\geq c\varphi1_{E_n}$なので$\int f_n\,d\mu\geq c\int_{E_n}\varphi\,d\mu$であり、$n\to\infty$として$\sup_n\int f_n\,d\mu\geq c\int\varphi\,d\mu$を得る。$c\to 1$とし、$\varphi$について上限をとれば$\sup_n\int f_n\,d\mu\geq\int f\,d\mu$である。
+  strategy: Compare the supremum with simple functions on the increasing sets where f_n dominates cφ.
+  sketch:
+  - 'derive: Monotonicity of the integral gives sup ∫ f_n ≤ ∫ sup f_n.'
+  - 'setup: Fix a simple function φ ≤ f and a constant c in (0,1).'
+  - 'construct: Let E_n be the set where f_n ≥ cφ; the E_n increase to the whole space.'
+  - 'apply_theorem: Continuity from below gives ∫ over E_n of φ tending to ∫ φ.'
+  - 'derive: Since c ∫ over E_n of φ ≤ ∫ f_n, we get c ∫ φ ≤ sup ∫ f_n.'
+  - 'conclude: Let c tend to 1 and take the supremum over simple φ.'
+  openmath: (forall (mu f) (-> (and (is_measure mu) (forall (n) (measurable_fn (seq_value f n))) (fn_seq_increasing f)) (= (lintegral (lambda (x) (fn_value (fn_seq_sup f) x)) mu) (lintegral_seq_sup f mu))))
+  hard_negative:
+    statement: 非負可測関数の単調減少列についても積分と極限が交換できる。
+    reason: f_n=1_{[n,∞)}は単調減少で極限0だが、全ての積分は∞である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : ℕ → α → ENNReal), (∀ n, Measurable (f n)) → (∀ n x, f n x ≤ f (n + 1) x) → ∫⁻ x, ⨆ n, f n x ∂μ = ⨆ n, ∫⁻ x, f n x ∂μ
+  proof: |
+    by
+      intro α _ μ f hf hmono
+      exact MeasureTheory.lintegral_iSup hf (monotone_nat_of_le_succ fun n x => hmono n x)
+- id: fatou_lemma
+  kind: named
+  level: 3
+  topic: 積分・ファトゥの補題
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を可測関数の列とする。$\int\liminf_nf_n\,d\mu\leq\liminf_n\int f_n\,d\mu$が成り立つ(ファトゥの補題)。
+  statement_en: 'Fatou''s lemma: for measurable functions f_n with values in [0,∞], the integral of liminf f_n is at most liminf of the integrals.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$f_n:\alpha\to[0,\infty]$は可測
+  quantifiers:
+  - 任意の測度$\mu$と関数列$(f_n)$
+  conclusion: $\int\liminf_nf_n\,d\mu\leq\liminf_n\int f_n\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を可測関数の列とする。
+
+    $g_k=\inf_{n\geq k}f_n$とおく。$\{x\mid g_k(x)<a\}=\bigcup_{n\geq k}\{x\mid f_n(x)<a\}$なので、$g_k$は可測である。$(g_k)$は単調増加で$\sup_kg_k=\liminf_nf_n$である。
+
+    単調収束定理は、非負可測関数の単調増加列について積分と上限が交換できるという定理である。これにより$\int\liminf_nf_n\,d\mu=\sup_k\int g_k\,d\mu$である。$n\geq k$で$g_k\leq f_n$なので$\int g_k\,d\mu\leq\inf_{n\geq k}\int f_n\,d\mu$である。$k$について上限をとると$\int\liminf_nf_n\,d\mu\leq\sup_k\inf_{n\geq k}\int f_n\,d\mu=\liminf_n\int f_n\,d\mu$となる。
+  strategy: Apply monotone convergence to the tail infima.
+  sketch:
+  - 'construct: Define g_k as the infimum of f_n over n ≥ k.'
+  - 'derive: The g_k are measurable and increase to liminf f_n.'
+  - 'apply_theorem: Monotone convergence gives ∫ liminf f_n = sup_k ∫ g_k.'
+  - 'derive: For n ≥ k we have ∫ g_k ≤ ∫ f_n, so ∫ g_k ≤ inf over n ≥ k of ∫ f_n.'
+  - 'conclude: Taking the supremum in k gives the claim.'
+  openmath: (forall (mu f) (-> (and (is_measure mu) (forall (n) (measurable_fn (seq_value f n)))) (<= (lintegral (lambda (x) (fn_value (fn_seq_liminf f) x)) mu) (lintegral_seq_liminf f mu))))
+  hard_negative:
+    statement: 非負可測関数列について常に∫liminf f_n=liminf∫f_nが成り立つ。
+    reason: f_n=1_{(n,n+1]}では左辺は0で右辺は1である。不等号は一般に等号にならない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : ℕ → α → ENNReal), (∀ n, Measurable (f n)) → ∫⁻ x, Filter.liminf (fun n => f n x) Filter.atTop ∂μ ≤ Filter.liminf (fun n => ∫⁻ x, f n x ∂μ) Filter.atTop
+  proof: |
+    by
+      intro α _ μ f hf
+      exact MeasureTheory.lintegral_liminf_le hf
+- id: dominated_convergence_theorem
+  kind: named
+  level: 3
+  topic: 積分・優収束定理
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$F_n,f,g:\alpha\to\mathbb{R}$を関数とする。各$F_n$が$\mu$についてほとんど至る所で可測関数に等しく、$g$が$\mu$可積分で、各$n$についてほとんど至る所で$|F_n|\leq g$であり、ほとんど全ての$x$で$F_n(x)\to f(x)$ならば、$\int F_n\,d\mu\to\int f\,d\mu$である(優収束定理)。
+  statement_en: 'Dominated convergence theorem: if measurable F_n satisfy |F_n| ≤ g almost everywhere with g integrable and F_n → f almost everywhere, then ∫F_n dμ → ∫f dμ.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$F_n$は$\mu$についてほとんど至る所で可測関数に等しい
+  - $g$は$\mu$可積分
+  - 全ての$n$について、ほとんど至る所で$|F_n|\leq g$
+  - ほとんど全ての$x$で$F_n(x)\to f(x)$
+  quantifiers:
+  - 任意の測度$\mu$、関数列$(F_n)$、関数$f,g$
+  conclusion: $\int F_n\,d\mu\to\int f\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とし、$F_n,f,g:\alpha\to\mathbb{R}$は次を満たすとする。各$F_n$はほとんど至る所で可測関数に等しい。$g$は$\mu$可積分である。各$n$についてほとんど至る所で$|F_n|\leq g$である。ほとんど全ての$x$で$F_n(x)\to f(x)$である。
+
+    例外点は可算個の零集合に収まるので、それらを含む可測な零集合$N$をとる。$N$の外で$F_n$と$g$は可測関数に一致し、$|F_n|\leq g$と$F_n\to f$が至る所で成り立つようにとれる。$N$上の値は積分に影響しないので、全ての関数を$N$上で$0$に置き換える。すると$f$は可測関数の各点極限として可測であり、$|f|\leq g$なので$f$も各$F_n$も可積分である。
+
+    $h_n=2g-|F_n-f|$は非負可測で、$2g$に各点収束する。ファトゥの補題は、非負可測関数列について$\int\liminf_nh_n\,d\mu\leq\liminf_n\int h_n\,d\mu$が成り立つという定理である。これにより$\int 2g\,d\mu\leq\liminf_n\int h_n\,d\mu=\int 2g\,d\mu-\limsup_n\int|F_n-f|\,d\mu$となる。$\int 2g\,d\mu$は有限なので引いてよく、$\limsup_n\int|F_n-f|\,d\mu\leq 0$である。よって$|\int F_n\,d\mu-\int f\,d\mu|\leq\int|F_n-f|\,d\mu\to 0$である。
+  strategy: Apply Fatou's lemma to the nonnegative functions 2g - |F_n - f|.
+  sketch:
+  - 'derive: Passing to the limit gives |f| ≤ g a.e., so f is integrable.'
+  - 'construct: Set h_n = 2g - |F_n - f|, nonnegative a.e. and converging a.e. to 2g.'
+  - 'apply_theorem: Fatou''s lemma gives ∫ 2g ≤ ∫ 2g - limsup ∫ |F_n - f|.'
+  - 'derive: Finiteness of ∫ 2g forces limsup ∫ |F_n - f| ≤ 0.'
+  - 'conclude: The triangle inequality yields ∫ F_n → ∫ f.'
+  openmath: (forall (mu F f g) (-> (and (is_measure mu) (forall (n) (ae_measurable_fn (seq_value F n) mu)) (integrable_fn g mu) (forall (n) (ae_le mu (fn_abs (seq_value F n)) g)) (ae_fn_seq_tends_to mu F f)) (seq_tends_to (integral_seq F mu) (integral_wrt (lambda (x) (fn_value f x)) mu))))
+  hard_negative:
+    statement: F_nがa.e.でfに収束すれば、優関数がなくても∫F_n→∫fである。
+    reason: F_n=n1_{(0,1/n)}は0へ各点収束するが、積分は全て1である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (F : ℕ → α → ℝ) (f g : α → ℝ), (∀ n, MeasureTheory.AEStronglyMeasurable (F n) μ) → MeasureTheory.Integrable g μ → (∀ n, ∀ᵐ x ∂μ, |F n x| ≤ g x) → (∀ᵐ x ∂μ, Filter.Tendsto (fun n => F n x) Filter.atTop (nhds (f x))) → Filter.Tendsto (fun n => ∫ x, F n x ∂μ) Filter.atTop (nhds (∫ x, f x ∂μ))
+  proof: |
+    by
+      intro α _ μ F f g hF hg hb hlim
+      refine MeasureTheory.tendsto_integral_of_dominated_convergence g hF hg (fun n => ?_) hlim
+      simpa only [Real.norm_eq_abs] using hb n
+- id: lintegral_of_series
+  kind: gap
+  level: 3
+  topic: 積分・項別積分
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を可測関数の列とする。$\int\sum_nf_n\,d\mu=\sum_n\int f_n\,d\mu$が成り立つ。
+  statement_en: For measurable f_n with values in [0,∞], the integral of Σ f_n equals Σ ∫ f_n.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 各$f_n:\alpha\to[0,\infty]$は可測
+  quantifiers:
+  - 任意の測度$\mu$と関数列$(f_n)$
+  conclusion: $\int\sum_nf_n\,d\mu=\sum_n\int f_n\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n:\alpha\to[0,\infty]$を可測関数の列とする。
+
+    部分和$S_N=\sum_{n\leq N}f_n$は単調増加する可測関数の列で、$\sup_NS_N=\sum_nf_n$である。非負可測関数について積分は加法的なので、$\int S_N\,d\mu=\sum_{n\leq N}\int f_n\,d\mu$である。単調収束定理は、非負可測関数の単調増加列について積分と上限が交換できるという定理である。これにより$\int\sum_nf_n\,d\mu=\sup_N\int S_N\,d\mu=\sup_N\sum_{n\leq N}\int f_n\,d\mu=\sum_n\int f_n\,d\mu$となる。
+  strategy: Apply monotone convergence to the partial sums.
+  sketch:
+  - 'construct: Form the increasing partial sums S_N of the series.'
+  - 'derive: Finite additivity gives ∫ S_N = Σ_{n≤N} ∫ f_n.'
+  - 'apply_theorem: Monotone convergence passes to N → ∞.'
+  - 'conclude: Hence the integral and the sum may be interchanged.'
+  openmath: (forall (mu f) (-> (and (is_measure mu) (forall (n) (measurable_fn (seq_value f n)))) (= (lintegral (lambda (x) (fn_value (fn_seq_sum f) x)) mu) (series_sum (integral_seq f mu)))))
+  hard_negative:
+    statement: 符号付きの可積分関数列についても、積分と級数は常に交換できる。
+    reason: n≥1でf_n=n1_{(0,1/n)}-(n+1)1_{(0,1/(n+1))}とすると各∫f_nは0だが、Σf_nは(0,1)上で1に収束し積分は1である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : ℕ → α → ENNReal), (∀ n, Measurable (f n)) → ∫⁻ x, ∑' n, f n x ∂μ = ∑' n, ∫⁻ x, f n x ∂μ
+  proof: |
+    by
+      intro α _ μ f hf
+      exact MeasureTheory.lintegral_tsum fun n => (hf n).aemeasurable
+- id: pointwise_limit_integral_counterexample
+  kind: gap
+  level: 3
+  topic: 積分・極限交換の反例
+  statement: 区間$(n,n+1]$の指示関数$1_{(n,n+1]}:\mathbb{R}\to[0,\infty]$の列は各点で$0$に収束するが、ルベーグ測度についての積分は全ての自然数$n$で$1$である。
+  statement_en: The indicators of the intervals (n,n+1] converge pointwise to 0, yet each has Lebesgue integral 1.
+  assumptions:
+  - $\mathbb{R}$上のルベーグ測度を考える
+  quantifiers:
+  - 全ての実数$x$と自然数$n$
+  conclusion: 各$x$で$1_{(n,n+1]}(x)\to 0$であり、全ての$n$で$\int 1_{(n,n+1]}\,dx=1$である。
+  answer: |
+    $n$を自然数とし、$1_{(n,n+1]}:\mathbb{R}\to[0,\infty]$を区間$(n,n+1]$の指示関数とする。積分は$\mathbb{R}$上のルベーグ測度についてとる。
+
+    実数$x$を固定する。$n\geq x$なら$x\notin(n,n+1]$なので、十分大きな全ての$n$で$1_{(n,n+1]}(x)=0$であり、$0$に収束する。一方、指示関数の積分は区間の長さに等しいので$\int 1_{(n,n+1]}\,dx=1$である。
+
+    したがって積分の極限$1$は極限関数の積分$0$と異なり、この列ではファトゥの補題の不等号が等号にならない。
+  strategy: Check eventual vanishing at each point and compute the integral as an interval length.
+  sketch:
+  - 'setup: Fix x and pick a natural number N with N ≥ x.'
+  - 'derive: For n ≥ N, x is not in (n,n+1], so the indicator vanishes at x.'
+  - 'derive: The integral of the indicator equals the length of the interval, namely 1.'
+  - 'conclude: Pointwise limits may lose mass, showing the inequality in Fatou''s lemma can be strict.'
+  openmath: (and (pointwise_tends_to unit_bump_seq zero_function) (forall (n) (= (lintegral (lambda (x) (fn_value (seq_value unit_bump_seq n) x)) lebesgue_measure) 1)))
+  hard_negative:
+    statement: 各点で$f$に収束する非負可測関数列$f_n$について、積分も$\int f\,d\mu$に収束する。
+    reason: $f_n=1_{(n,n+1]}$は各点で$0$に収束するが、$\int f_n\,d\mu=1$は$\int 0\,d\mu=0$に収束しない。優関数または単調性が必要である。
+  target: |
+    (∀ x : ℝ, Filter.Tendsto (fun n : ℕ => (Set.Ioc (n : ℝ) ((n : ℝ) + 1)).indicator (fun _ => (1 : ENNReal)) x) Filter.atTop (nhds 0)) ∧ (∀ n : ℕ, ∫⁻ x, (Set.Ioc (n : ℝ) ((n : ℝ) + 1)).indicator (fun _ => (1 : ENNReal)) x ∂MeasureTheory.volume = 1)
+  proof: |
+    by
+      refine ⟨fun x => ?_, fun n => ?_⟩
+      · refine tendsto_const_nhds.congr' ?_
+        obtain ⟨N, hN⟩ := exists_nat_ge x
+        filter_upwards [Filter.eventually_ge_atTop N] with n hn
+        have hx : x ≤ (n : ℝ) := hN.trans (by exact_mod_cast hn)
+        rw [Set.indicator_of_notMem]
+        intro hmem
+        exact absurd hmem.1 (not_lt.2 hx)
+      · rw [MeasureTheory.lintegral_indicator measurableSet_Ioc, MeasureTheory.setLIntegral_const, Real.volume_Ioc]
+        simp
+- id: markov_inequality
+  kind: textbook
+  level: 3
+  topic: 積分・マルコフの不等式
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f:\alpha\to[0,\infty]$を可測関数、$\varepsilon\in[0,\infty]$とする。$[0,\infty]$の積は$0\cdot\infty=0$とする。$\varepsilon\cdot\mu(\{x\mid\varepsilon\leq f(x)\})\leq\int f\,d\mu$が成り立つ(マルコフの不等式)。
+  statement_en: 'Markov''s inequality: for measurable f with values in [0,∞] and ε in [0,∞], ε·μ({x | ε ≤ f(x)}) ≤ ∫ f dμ.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $f:\alpha\to[0,\infty]$は可測
+  - $\varepsilon\in[0,\infty]$
+  - $0\cdot\infty=0$とする
+  quantifiers:
+  - 任意の測度$\mu$、可測関数$f$、値$\varepsilon\in[0,\infty]$
+  conclusion: $\varepsilon\cdot\mu(\{x\mid\varepsilon\leq f(x)\})\leq\int f\,d\mu$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f:\alpha\to[0,\infty]$を可測関数、$\varepsilon\in[0,\infty]$とする。$[0,\infty]$の積は$0\cdot\infty=0$とする。$E=\{x\mid\varepsilon\leq f(x)\}$は$f$の可測性から可測である。
+
+    $\varepsilon<\infty$とする。全ての点で$\varepsilon1_E\leq f$である。実際、$x\in E$なら定義から$\varepsilon\leq f(x)$であり、$x\notin E$なら左辺は$0$である。積分の単調性から$\varepsilon\mu(E)\leq\int f\,d\mu$となる。
+
+    $\varepsilon=\infty$とする。$\mu(E)=0$なら左辺は$0$である。そうでなければ、全ての自然数$m$について$m1_E\leq f$なので$m\mu(E)\leq\int f\,d\mu$である。$m\to\infty$とすると$\int f\,d\mu=\infty$となり、不等式が成り立つ。
+  strategy: Compare f pointwise with ε times the indicator of its superlevel set.
+  sketch:
+  - 'setup: Let E be the measurable superlevel set {ε ≤ f}.'
+  - 'derive: Pointwise, ε times the indicator of E is at most f.'
+  - 'conclude: Integrating gives ε μ(E) ≤ ∫ f dμ.'
+  openmath: (forall (mu f e) (-> (and (is_measure mu) (measurable_fn f)) (<= (* e (measure_of mu (fn_superlevel_set f e))) (lintegral (lambda (x) (fn_value f x)) mu))))
+  hard_negative:
+    statement: 非負可測関数fと正の数εについてε·μ({ε≤f})≥∫f dμが成り立つ。
+    reason: f=1_{[0,1]},ε=2では左辺は0で右辺は1である。不等号の向きが逆である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : α → ENNReal) (ε : ENNReal), Measurable f → ε * μ {x | ε ≤ f x} ≤ ∫⁻ x, f x ∂μ
+  proof: |
+    by
+      intro α _ μ f ε hf
+      exact MeasureTheory.mul_meas_ge_le_lintegral hf ε
+- id: nonneg_integral_zero_implies_ae_zero
+  kind: gap
+  level: 3
+  topic: 積分・積分零とa.e.零
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f:\alpha\to\mathbb{R}$を$\mu$可積分な関数とする。ほとんど至る所で$0\leq f$かつ$\int f\,d\mu=0$ならば、ほとんど至る所で$f=0$である。
+  statement_en: If an integrable function is nonnegative almost everywhere and has integral 0, then it vanishes almost everywhere.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $f$は$\mu$可積分
+  - $\mu$についてほとんど至る所で$0\leq f$
+  - $\int f\,d\mu=0$
+  quantifiers:
+  - 任意の測度$\mu$と関数$f$
+  conclusion: $\mu$についてほとんど至る所で$f=0$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f:\alpha\to\mathbb{R}$を$\mu$可積分な関数とし、ほとんど至る所で$0\leq f$かつ$\int f\,d\mu=0$とする。
+
+    可積分性から、ほとんど至る所で$f$に等しい可測関数$f'$がある。$u=\max\{f',0\}$は非負可測で、ほとんど至る所で$u=f$であり、$\int u\,d\mu=\int f\,d\mu=0$である。
+
+    マルコフの不等式は、非負可測関数$u$と$\varepsilon>0$について$\varepsilon\mu(\{x\mid u(x)\geq\varepsilon\})\leq\int u\,d\mu$が成り立つという定理である。$\varepsilon=1/n$とすると$\mu(\{x\mid u(x)\geq 1/n\})=0$である。$\{x\mid u(x)>0\}=\bigcup_{n\geq 1}\{x\mid u(x)\geq 1/n\}$は零集合の可算和なので零集合である。よってほとんど至る所で$u=0$であり、$f=0$である。
+  strategy: Apply Markov at the levels 1/n and take a countable union.
+  sketch:
+  - 'apply_theorem: Markov''s inequality gives μ({f ≥ 1/n}) = 0 for each n.'
+  - 'translate: The set {f > 0} is the union of the sets {f ≥ 1/n}.'
+  - 'derive: A countable union of null sets is null.'
+  - 'conclude: Combined with nonnegativity, f = 0 almost everywhere.'
+  openmath: (forall (mu f) (-> (and (integrable_fn f mu) (ae_le mu zero_function f) (= (integral_wrt (lambda (x) (fn_value f x)) mu) 0)) (ae_eq mu f zero_function)))
+  hard_negative:
+    statement: 可積分関数の積分が0ならば、非負でなくてもほとんど至る所で0である。
+    reason: '[-1,1]上のf(x)=xは積分が0だが、ほとんど全ての点で0でない。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : α → ℝ), MeasureTheory.Integrable f μ → (∀ᵐ x ∂μ, 0 ≤ f x) → ∫ x, f x ∂μ = 0 → ∀ᵐ x ∂μ, f x = 0
+  proof: |
+    by
+      intro α _ μ f hf h0 h
+      have hae := (MeasureTheory.integral_eq_zero_iff_of_nonneg_ae (f := f) (μ := μ) h0 hf).1 h
+      filter_upwards [hae] with x hx
+      simpa using hx
+- id: integrable_of_dominated
+  kind: gap
+  level: 3
+  topic: 積分・可積分性の判定
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度とする。$f:\alpha\to\mathbb{R}$がほとんど至る所で可測関数に等しく、$\mu$可積分な関数$g$によりほとんど至る所で$|f|\leq g$と押さえられるならば、$f$は$\mu$可積分である。
+  statement_en: If f is a.e. strongly measurable and |f| ≤ g almost everywhere for an integrable g, then f is integrable.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $f$は$\mu$についてほとんど至る所で可測関数に等しい
+  - $g$は$\mu$可積分
+  - $\mu$についてほとんど至る所で$|f|\leq g$
+  quantifiers:
+  - 任意の測度$\mu$と関数$f,g$
+  conclusion: $f$は$\mu$可積分である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度とする。$f:\alpha\to\mathbb{R}$をほとんど至る所で可測関数に等しい関数、$g:\alpha\to\mathbb{R}$を$\mu$可積分な関数とし、ほとんど至る所で$|f|\leq g$とする。可積分とは、ほとんど至る所で可測関数に等しく$\int|f|\,d\mu<\infty$であることをいう。
+
+    前半は仮定そのものである。ほとんど至る所で$|f|\leq g\leq|g|$であり、零集合の上の値は積分に影響しない。積分の単調性から$\int|f|\,d\mu\leq\int|g|\,d\mu<\infty$である。したがって$f$は可積分である。
+  strategy: Check measurability directly and bound the integral of |f| by that of g.
+  sketch:
+  - 'translate: Integrability means measurability plus a finite integral of |f|.'
+  - 'derive: Monotonicity of the integral gives ∫ |f| ≤ ∫ |g| which is finite.'
+  - 'conclude: Therefore f is integrable.'
+  openmath: (forall (mu f g) (-> (and (ae_measurable_fn f mu) (integrable_fn g mu) (ae_le mu (fn_abs f) g)) (integrable_fn f mu)))
+  hard_negative:
+    statement: 可測性を仮定しなくても|f|≤gなら可積分である。
+    reason: 非可測集合Nに対しf=1_N-1_{Nᶜ}は|f|=1だが、有限測度空間でも可積分ではない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f g : α → ℝ), MeasureTheory.AEStronglyMeasurable f μ → MeasureTheory.Integrable g μ → (∀ᵐ x ∂μ, |f x| ≤ g x) → MeasureTheory.Integrable f μ
+  proof: |
+    by
+      intro α _ μ f g hf hg h
+      refine hg.mono' hf ?_
+      simpa only [Real.norm_eq_abs] using h
+- id: product_measure_of_rectangle
+  kind: gap
+  level: 3
+  topic: 直積測度・長方形
+  statement: $\alpha,\beta$を可測空間、$\mu$を$\alpha$上の測度、$\nu$を$\beta$上の$\sigma$有限測度、$A\subset\alpha$、$B\subset\beta$を部分集合とする。直積測度は可測な$S$で$(\mu\times\nu)(S)=\int\nu(S_x)\,d\mu(x)$と定め、部分集合の値はそれを含む可測集合の測度の下限で与える。$(\mu\times\nu)(A\times B)=\mu(A)\nu(B)$である。
+  statement_en: Let μ be a measure on α and ν a σ-finite measure on β. For arbitrary subsets A ⊂ α and B ⊂ β (the measure of an arbitrary set is the infimum over measurable supersets, and 0·∞ = 0), (μ×ν)(A×B) = μ(A)·ν(B).
+  assumptions:
+  - $\mu$は$\alpha$上の測度
+  - $\nu$は$\beta$上の$\sigma$有限測度
+  - 部分集合の値は可測集合による下限で与える
+  - $0\cdot\infty=0$とする
+  quantifiers:
+  - 任意の$\mu,\nu$
+  - 任意の部分集合$A\subset\alpha$、$B\subset\beta$
+  conclusion: $(\mu\times\nu)(A\times B)=\mu(A)\nu(B)$である。
+  answer: |
+    $\alpha,\beta$を可測空間、$\mu$を$\alpha$上の測度、$\nu$を$\beta$上の$\sigma$有限測度、$A\subset\alpha$、$B\subset\beta$を部分集合とする。可測な$S\subset\alpha\times\beta$について、切片$S_x=\{y\mid(x,y)\in S\}$を用いて$(\mu\times\nu)(S)=\int\nu(S_x)\,d\mu(x)$と定める。$\nu$の$\sigma$有限性から$x\mapsto\nu(S_x)$は可測である。部分集合の値は、それを含む可測集合の測度の下限である。積は$0\cdot\infty=0$とする。
+
+    $A,B$が可測なら、$(A\times B)_x$は$x\in A$で$B$、$x\notin A$で空集合なので、$(\mu\times\nu)(A\times B)=\int 1_A(x)\nu(B)\,d\mu(x)=\mu(A)\nu(B)$である。
+
+    一般の場合に使う事実を述べる。部分集合$T$には$T$を含む可測集合$C$で測度が$T$の値に等しいものがある。実際、値が$\infty$なら全体をとり、有限なら測度が下限に近づく可測集合の列の共通部分をとればよい。
+
+    $\leq$を示す。$A,B$をそれぞれ同じ値の可測集合$C,D$で覆うと、$(\mu\times\nu)(A\times B)\leq(\mu\times\nu)(C\times D)=\mu(C)\nu(D)=\mu(A)\nu(B)$である。
+
+    $\geq$を示す。$A\times B$を含み同じ値をもつ可測集合$S$をとる。$x\in A$なら$S_x\supset B$なので$\nu(S_x)\geq\nu(B)$である。よって可測集合$U=\{x\mid\nu(S_x)\geq\nu(B)\}$は$A$を含む。$(\mu\times\nu)(S)=\int\nu(S_x)\,d\mu(x)\geq\nu(B)\mu(U)\geq\mu(A)\nu(B)$である。
+  strategy: Compute the slice function of the rectangle.
+  sketch:
+  - 'setup: Express the product measure through the integral of slice measures.'
+  - 'derive: The slice of A×B at x is B if x is in A and empty otherwise.'
+  - 'derive: The slice function equals ν(B) times the indicator of A, so measurable rectangles have measure μ(A)ν(B).'
+  - 'derive: For arbitrary A and B, measurable covers of A and B give the upper bound.'
+  - 'derive: A measurable cover S of A×B has ν(S_x) ≥ ν(B) for x in A, which gives the lower bound.'
+  - 'conclude: Hence (μ×ν)(A×B) = μ(A)ν(B).'
+  openmath: (forall (mu nu A B) (-> (and (is_measure mu) (sigma_finite_measure nu)) (= (measure_of (product_measure mu nu) (cartesian A B)) (* (measure_of mu A) (measure_of nu B)))))
+  hard_negative:
+    statement: 直積σ加法族の可測集合Sは全て長方形A×Bの形である。
+    reason: 対角線に近い帯集合{(x,y) | |x-y|<1}は直積可測だが長方形ではない。長方形は生成系である。
+  target: |
+    ∀ (α β : Type*) [MeasurableSpace α] [MeasurableSpace β] (μ : MeasureTheory.Measure α) (ν : MeasureTheory.Measure β) [MeasureTheory.SigmaFinite ν] (A : Set α) (B : Set β), (μ.prod ν) (A ×ˢ B) = μ A * ν B
+  proof: |
+    by
+      intro α β _ _ μ ν _ A B
+      exact MeasureTheory.Measure.prod_prod A B
+- id: tonelli_theorem
+  kind: textbook
+  level: 3
+  topic: 直積測度・トネリの定理
+  statement: $\alpha,\beta$を可測空間、$\mu,\nu$をそれぞれの上の$\sigma$有限測度、$f:\alpha\times\beta\to[0,\infty]$を可測関数とする。$\int f\,d(\mu\times\nu)=\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\int\int f(x,y)\,d\mu(x)\,d\nu(y)$である(トネリの定理)。
+  statement_en: 'Tonelli''s theorem: for σ-finite measures and a measurable f with values in [0,∞], the integral of f over the product equals both iterated integrals.'
+  assumptions:
+  - $\mu,\nu$は$\sigma$有限測度
+  - $f:\alpha\times\beta\to[0,\infty]$は可測
+  quantifiers:
+  - 任意の測度$\mu,\nu$と関数$f$
+  conclusion: $\int f\,d(\mu\times\nu)=\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\int\int f(x,y)\,d\mu(x)\,d\nu(y)$である。
+  answer: |
+    $\alpha,\beta$を可測空間、$\mu,\nu$をそれぞれの上の$\sigma$有限測度、$f:\alpha\times\beta\to[0,\infty]$を可測関数とする。$\mu\times\nu$は、可測な$A,B$で$(\mu\times\nu)(A\times B)=\mu(A)\nu(B)$を満たす測度である。$S_x=\{y\mid(x,y)\in S\}$、$S^y=\{x\mid(x,y)\in S\}$とする。
+
+    第1段階として、可測集合$S$について$x\mapsto\nu(S_x)$が可測であることを示す。まず$\nu$を有限とする。この性質をもつ$S$の全体を$\mathcal{D}$とする。長方形$A\times B$は$\nu(S_x)=1_A(x)\nu(B)$なので$\mathcal{D}$に属する。$\mathcal{D}$は包含関係のある差$T\setminus S$と単調増加な合併で閉じている。長方形全体は有限交叉で閉じているので、ディンキンの$\pi$-$\lambda$定理(有限交叉で閉じた族を含むディンキン族は、その族が生成する$\sigma$加法族を含む)から、$\mathcal{D}$は全ての可測集合を含む。一般の$\nu$では、$\nu(B_k)<\infty$を満たす単調増加な$B_k$で$\beta=\bigcup_kB_k$となるものをとり、$\nu(S_x)=\lim_k\nu(S_x\cap B_k)$とすればよい。$y\mapsto\mu(S^y)$も同様である。
+
+    第2段階として、$\lambda_1(S)=\int\nu(S_x)\,d\mu(x)$と$\lambda_2(S)=\int\mu(S^y)\,d\nu(y)$を考える。単調収束定理からこれらは測度であり、長方形上で$\mu(A)\nu(B)$に等しい。測度の一意性定理は、有限交叉で閉じた生成系の上で一致し、その生成系に全体を覆う有限測度の単調増加列があれば、測度が一致するという定理である。$\mu,\nu$の$\sigma$有限性からこの条件が満たされるので、$\lambda_1=\lambda_2=\mu\times\nu$である。これは$f=1_S$の場合の主張である。
+
+    第3段階として、積分の線形性から主張は非負単純関数でも成り立つ。一般の$f$には、有限値の非負単純関数の単調増加列$(\varphi_n)$で各点で$f$に収束するものがある。$x$を固定すると$y\mapsto f(x,y)$は可測で、単調収束定理から$\int f(x,y)\,d\nu(y)=\sup_n\int\varphi_n(x,y)\,d\nu(y)$である。これは可測関数の上限なので$x$について可測である。さらに外側に単調収束定理を用いると、$\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\sup_n\int\varphi_n\,d(\mu\times\nu)=\int f\,d(\mu\times\nu)$である。もう一方の順序も同様である。
+  strategy: Build up from indicators to simple functions to monotone limits.
+  sketch:
+  - 'setup: For indicators, the formula is the slice description of the product measure.'
+  - 'derive: Uniqueness of the product measure under σ-finiteness gives both orders.'
+  - 'derive: Linearity extends the identity to nonnegative simple functions.'
+  - 'apply_theorem: Approximate f by increasing simple functions and apply monotone convergence.'
+  - 'conclude: The identity holds for every nonnegative measurable f.'
+  openmath: (forall (mu nu f) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu) (measurable_fn f)) (and (= (lintegral (lambda (z) (fn_value f z)) (product_measure mu nu)) (lintegral_iterated f mu nu)) (= (lintegral (lambda (z) (fn_value f z)) (product_measure mu nu)) (lintegral_iterated_swap f mu nu)))))
+  hard_negative:
+    statement: σ有限性を仮定しなくても、非負可測関数の累次積分の順序は交換できる。
+    reason: '[0,1]のルベーグ測度と数え上げ測度で対角線の指示関数を積分すると、順序により値が0と1になる。'
+  target: |
+    ∀ (α β : Type*) [MeasurableSpace α] [MeasurableSpace β] (μ : MeasureTheory.Measure α) (ν : MeasureTheory.Measure β) [MeasureTheory.SigmaFinite μ] [MeasureTheory.SigmaFinite ν] (f : α × β → ENNReal), Measurable f → (∫⁻ z, f z ∂(μ.prod ν) = ∫⁻ x, ∫⁻ y, f (x, y) ∂ν ∂μ) ∧ (∫⁻ z, f z ∂(μ.prod ν) = ∫⁻ y, ∫⁻ x, f (x, y) ∂μ ∂ν)
+  proof: |
+    by
+      intro α β _ _ μ ν _ _ f hf
+      exact ⟨MeasureTheory.lintegral_prod f hf.aemeasurable, MeasureTheory.lintegral_prod_symm f hf.aemeasurable⟩
+- id: fubini_theorem
+  kind: named
+  level: 3
+  topic: 直積測度・フビニの定理
+  statement: $\alpha,\beta$を可測空間、$\mu,\nu$をそれぞれの上の$\sigma$有限測度、$f:\alpha\times\beta\to\mathbb{R}$を$\mu\times\nu$可積分な関数とする。$\int f\,d(\mu\times\nu)=\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\int\int f(x,y)\,d\mu(x)\,d\nu(y)$である(フビニの定理)。
+  statement_en: 'Fubini''s theorem: for σ-finite measures and a real-valued function integrable on the product, the integral equals both iterated integrals.'
+  assumptions:
+  - $\mu,\nu$は$\sigma$有限測度
+  - $f$は$\mu\times\nu$可積分
+  quantifiers:
+  - 任意の測度$\mu,\nu$と関数$f$
+  conclusion: $\int f\,d(\mu\times\nu)=\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\int\int f(x,y)\,d\mu(x)\,d\nu(y)$である。
+  answer: |
+    $\alpha,\beta$を可測空間、$\mu,\nu$をそれぞれの上の$\sigma$有限測度、$f:\alpha\times\beta\to\mathbb{R}$を$\mu\times\nu$可積分な関数とする。トネリの定理は、非負可測関数について直積測度の積分がどちらの順序の累次積分とも等しいという定理である。
+
+    可積分性から、$\mu\times\nu$についてほとんど至る所で$f$に等しい可測関数$f'$がある。$f\neq f'$となる点を含む可測な零集合を$N$とする。トネリの定理から$\int\nu(N_x)\,d\mu(x)=0$なので、ほとんど全ての$x$で$\nu(N_x)=0$であり、$f(x,\cdot)$と$f'(x,\cdot)$は$\nu$についてほとんど至る所で等しい。
+
+    $f'=f'^+-f'^-$と正部分と負部分に分ける。$f'^\pm$は非負可測で、$\int f'^\pm\,d(\mu\times\nu)<\infty$である。$F^\pm(x)=\int f'^\pm(x,y)\,d\nu(y)$とおくと、トネリの定理から$F^\pm$は可測で$\int F^\pm\,d\mu=\int f'^\pm\,d(\mu\times\nu)<\infty$である。特にほとんど全ての$x$で$F^\pm(x)<\infty$である。
+
+    このような$x$では$f(x,\cdot)$は$\nu$可積分であり、$\int f(x,y)\,d\nu(y)=F^+(x)-F^-(x)$である。したがって$\int\int f(x,y)\,d\nu(y)\,d\mu(x)=\int F^+\,d\mu-\int F^-\,d\mu=\int f'\,d(\mu\times\nu)=\int f\,d(\mu\times\nu)$である。もう一方の順序も、$x$と$y$の役割を入れ替えた同じ議論で得られる。
+  strategy: Split into positive and negative parts and apply Tonelli to each.
+  sketch:
+  - 'construct: Write f as the difference of its positive and negative parts.'
+  - 'derive: Integrability makes the integrals of both parts finite.'
+  - 'apply_theorem: Tonelli gives iterated formulas for both parts in both orders.'
+  - 'derive: Finiteness forces the inner integrals to be finite almost everywhere.'
+  - 'conclude: Subtracting the finite values gives the claim for f.'
+  openmath: (forall (mu nu f) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu) (integrable_fn f (product_measure mu nu))) (and (= (integral_wrt (lambda (z) (fn_value f z)) (product_measure mu nu)) (integral_iterated f mu nu)) (= (integral_wrt (lambda (z) (fn_value f z)) (product_measure mu nu)) (integral_iterated_swap f mu nu)))))
+  hard_negative:
+    statement: 両方の累次積分が存在して有限なら、それらは常に等しい。
+    reason: (0,1)²上のf(x,y)=(x²-y²)/(x²+y²)²では累次積分がπ/4と-π/4となる。fは直積測度について可積分でない。
+  target: |
+    ∀ (α β : Type*) [MeasurableSpace α] [MeasurableSpace β] (μ : MeasureTheory.Measure α) (ν : MeasureTheory.Measure β) [MeasureTheory.SigmaFinite μ] [MeasureTheory.SigmaFinite ν] (f : α × β → ℝ), MeasureTheory.Integrable f (μ.prod ν) → (∫ z, f z ∂(μ.prod ν) = ∫ x, ∫ y, f (x, y) ∂ν ∂μ) ∧ (∫ z, f z ∂(μ.prod ν) = ∫ y, ∫ x, f (x, y) ∂μ ∂ν)
+  proof: |
+    by
+      intro α β _ _ μ ν _ _ f hf
+      exact ⟨MeasureTheory.integral_prod f hf, MeasureTheory.integral_prod_symm f hf⟩
+- id: holder_inequality
+  kind: named
+  level: 3
+  topic: Lp空間・ヘルダーの不等式
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$p,q>1$を$1/p+1/q=1$なる実数とする。$f\in L^p(\mu)$、$g\in L^q(\mu)$がほとんど至る所で非負ならば、$\int fg\,d\mu\leq(\int f^p\,d\mu)^{1/p}(\int g^q\,d\mu)^{1/q}$が成り立つ(ヘルダーの不等式)。
+  statement_en: 'Hölder''s inequality: if 1/p + 1/q = 1 and f ∈ L^p, g ∈ L^q are nonnegative a.e., then ∫fg ≤ (∫f^p)^{1/p} (∫g^q)^{1/q}.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $p,q>1$かつ$1/p+1/q=1$
+  - $f,g$は$\mu$についてほとんど至る所で非負
+  - $f\in L^p(\mu)$、$g\in L^q(\mu)$
+  quantifiers:
+  - 任意の測度$\mu$、実数$p,q$、関数$f,g$
+  conclusion: $\int fg\,d\mu\leq(\int f^p\,d\mu)^{1/p}(\int g^q\,d\mu)^{1/q}$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$p,q>1$を$1/p+1/q=1$なる実数、$f\in L^p(\mu)$、$g\in L^q(\mu)$を$\mu$についてほとんど至る所で非負な実数値関数とする。$A=(\int f^p\,d\mu)^{1/p}$、$B=(\int g^q\,d\mu)^{1/q}$とおく。
+
+    $A=0$の場合、ほとんど至る所で非負な関数$f^p$の積分が$0$なので、ほとんど至る所で$f=0$である。よってほとんど至る所で$fg=0$であり、$\int fg\,d\mu=0$で右辺も$0$である。$B=0$でも同様である。
+
+    $A,B>0$とする。ヤングの不等式は、$u,v\geq 0$について$uv\leq u^p/p+v^q/q$が成り立つという定理である。$u=f/A$、$v=g/B$とすると、ほとんど至る所で$fg/(AB)\leq f^p/(pA^p)+g^q/(qB^q)$である。右辺は可積分なので$fg$も可積分である。積分すると$\int fg\,d\mu/(AB)\leq 1/p+1/q=1$となり、$\int fg\,d\mu\leq AB$を得る。
+  strategy: Normalize both functions and integrate Young's inequality.
+  sketch:
+  - 'setup: Let A and B be the L^p norm of f and the L^q norm of g.'
+  - 'case_split: If A or B is zero, then fg vanishes a.e. and both sides are consistent.'
+  - 'apply_theorem: For positive A, B, apply Young''s inequality to f/A and g/B pointwise.'
+  - 'derive: Integrating gives ∫ fg/(AB) ≤ 1/p + 1/q = 1.'
+  - 'conclude: Multiply through by AB.'
+  openmath: (forall (mu p q f g) (-> (and (is_measure mu) (> p 1) (> q 1) (= (+ (/ 1 p) (/ 1 q)) 1) (ae_le mu zero_function f) (ae_le mu zero_function g) (mem_lp f p mu) (mem_lp g q mu)) (<= (integral_wrt (lambda (x) (* (fn_value f x) (fn_value g x))) mu) (* (^ (integral_wrt (lambda (x) (^ (fn_value f x) p)) mu) (/ 1 p)) (^ (integral_wrt (lambda (x) (^ (fn_value g x) q)) mu) (/ 1 q))))))
+  hard_negative:
+    statement: p=q=1でも∫fg≤(∫f)(∫g)が成り立つ。
+    reason: '[0,1]上でf=g=n1_{[0,1/n]}とすると、右辺は1で左辺はnである。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (p q : ℝ) (f g : α → ℝ), p.HolderConjugate q → (∀ᵐ x ∂μ, 0 ≤ f x) → (∀ᵐ x ∂μ, 0 ≤ g x) → MeasureTheory.MemLp f (ENNReal.ofReal p) μ → MeasureTheory.MemLp g (ENNReal.ofReal q) μ → ∫ x, f x * g x ∂μ ≤ (∫ x, f x ^ p ∂μ) ^ (1 / p) * (∫ x, g x ^ q ∂μ) ^ (1 / q)
+  proof: |
+    by
+      intro α _ μ p q f g hpq hf hg hfp hgq
+      exact MeasureTheory.integral_mul_le_Lp_mul_Lq_of_nonneg hpq hf hg hfp hgq
+- id: minkowski_inequality
+  kind: textbook
+  level: 3
+  topic: Lp空間・ミンコフスキーの不等式
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$p\in[1,\infty]$とする。$f,g:\alpha\to\mathbb{R}$が$\mu$についてほとんど至る所で可測関数に等しいならば、$[0,\infty]$の値をとる$L^p$ノルムについて$\|f+g\|_p\leq\|f\|_p+\|g\|_p$が成り立つ(ミンコフスキーの不等式)。
+  statement_en: 'Minkowski''s inequality: for 1 ≤ p ≤ ∞ and a.e. strongly measurable f, g, we have ‖f+g‖_p ≤ ‖f‖_p + ‖g‖_p.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - $1\leq p\leq\infty$
+  - $f,g$は$\mu$についてほとんど至る所で可測関数に等しい
+  quantifiers:
+  - 任意の測度$\mu$、指数$p$、関数$f,g$
+  conclusion: $\|f+g\|_p\leq\|f\|_p+\|g\|_p$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$p\in[1,\infty]$、$f,g:\alpha\to\mathbb{R}$を$\mu$についてほとんど至る所で可測関数に等しい関数とする。$p<\infty$では$\|h\|_p=(\int|h|^p\,d\mu)^{1/p}\in[0,\infty]$、$p=\infty$では$\|h\|_\infty$はほとんど至る所で$|h|\leq c$となる$c$の下限である。
+
+    $p=\infty$では、ほとんど至る所で$|f+g|\leq|f|+|g|\leq\|f\|_\infty+\|g\|_\infty$なので成り立つ。$p=1$では、$|f+g|\leq|f|+|g|$を積分すればよい。
+
+    $1<p<\infty$とする。右辺が$\infty$なら明らかなので有限とする。$|f+g|^p\leq 2^{p-1}(|f|^p+|g|^p)$なので、$\|f+g\|_p<\infty$である。$\|f+g\|_p=0$なら自明なので、正とする。$q=p/(p-1)$とおくと$(p-1)q=p$である。
+
+    $|f+g|^p\leq|f||f+g|^{p-1}+|g||f+g|^{p-1}$を積分する。ヘルダーの不等式は、$1/p+1/q=1$と非負の$u\in L^p$、$v\in L^q$について$\int uv\,d\mu\leq\|u\|_p\|v\|_q$が成り立つという定理である。これを右辺の各項に用いると、$\||f+g|^{p-1}\|_q=\|f+g\|_p^{p-1}$なので$\|f+g\|_p^p\leq(\|f\|_p+\|g\|_p)\|f+g\|_p^{p-1}$となる。両辺を$\|f+g\|_p^{p-1}$で割ればよい。
+  strategy: Split one factor of |f+g|^p and apply Hölder with the conjugate exponent.
+  sketch:
+  - 'case_split: The cases p = 1 and p = ∞ follow directly from the pointwise triangle inequality.'
+  - 'setup: Assume 1 < p < ∞ and that the right side is finite.'
+  - 'derive: Convexity of t^p shows ‖f+g‖_p is finite.'
+  - 'derive: Bound |f+g|^p by |f||f+g|^{p-1} + |g||f+g|^{p-1}.'
+  - 'apply_theorem: Apply Hölder to both terms with the conjugate exponent.'
+  - 'conclude: Divide by ‖f+g‖_p^{p-1}.'
+  openmath: (forall (mu p f g) (-> (and (is_measure mu) (<= 1 p) (ae_measurable_fn f mu) (ae_measurable_fn g mu)) (<= (lp_norm (pointwise_sum f g) p mu) (+ (lp_norm f p mu) (lp_norm g p mu)))))
+  hard_negative:
+    statement: 0<p<1でも‖f+g‖_p≤‖f‖_p+‖g‖_pが成り立つ。
+    reason: '[0,1]の互いに素な半区間の指示関数f,gでp=1/2とすると、左辺は1で右辺は2·(1/2)^2=1/2である。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (p : ENNReal) (f g : α → ℝ), 1 ≤ p → MeasureTheory.AEStronglyMeasurable f μ → MeasureTheory.AEStronglyMeasurable g μ → MeasureTheory.eLpNorm (f + g) p μ ≤ MeasureTheory.eLpNorm f p μ + MeasureTheory.eLpNorm g p μ
+  proof: |
+    by
+      intro α _ μ p f g hp hf hg
+      exact MeasureTheory.eLpNorm_add_le hf hg hp
+- id: lp_inclusion_on_finite_measure
+  kind: gap
+  level: 3
+  topic: Lp空間・指数の包含
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度、$p,q\in[0,\infty]$を$p\leq q$なる指数とする。$f\in L^q(\mu)$ならば$f\in L^p(\mu)$である。ここで$L^0(\mu)$は、ほとんど至る所で可測関数に等しい関数の全体とする。
+  statement_en: On a finite measure space, if p ≤ q then L^q ⊂ L^p.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の有限測度
+  - $p\leq q$
+  - $f\in L^q(\mu)$
+  - $L^0(\mu)$の条件は可測性だけとする
+  quantifiers:
+  - 任意の有限測度$\mu$、指数$p,q\in[0,\infty]$、関数$f$
+  conclusion: $f\in L^p(\mu)$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度、$p,q\in[0,\infty]$を$p\leq q$なる指数、$f\in L^q(\mu)$とする。$0<r<\infty$について$f\in L^r(\mu)$は、$f$がほとんど至る所で可測関数に等しく$\int|f|^r\,d\mu<\infty$であることをいう。$L^\infty(\mu)$は本質的に有界な関数の全体、$L^0(\mu)$はほとんど至る所で可測関数に等しい関数の全体である。可測性は全ての場合に仮定に含まれる。
+
+    $p=0$または$p=q$なら明らかである。
+
+    $0<p<q<\infty$とする。$s=q/p>1$の共役指数を$s'$とする。ヘルダーの不等式は、$1/s+1/s'=1$と非負関数$u,v$について$\int uv\,d\mu\leq\|u\|_s\|v\|_{s'}$が成り立つという定理である。$u=|f|^p$、$v=1$に適用すると、$\int|f|^p\,d\mu\leq(\int|f|^q\,d\mu)^{p/q}\mu(\alpha)^{1-p/q}<\infty$である。
+
+    $0<p<q=\infty$とする。ほとんど至る所で$|f|\leq\|f\|_\infty$なので、$\int|f|^p\,d\mu\leq\|f\|_\infty^p\mu(\alpha)<\infty$である。
+  strategy: Apply Hölder with the constant function 1 using finiteness of the measure.
+  sketch:
+  - 'case_split: If q = ∞, bound |f|^p by a constant and use μ(α) finite.'
+  - 'case_split: If p < q < ∞, write |f|^p as |f|^p times 1.'
+  - 'apply_theorem: Hölder with exponent q/p gives ∫|f|^p ≤ (∫|f|^q)^{p/q} μ(α)^{1-p/q}.'
+  - 'conclude: The bound is finite, so f is in L^p.'
+  openmath: (forall (mu p q f) (-> (and (finite_measure mu) (<= p q) (mem_lp f q mu)) (mem_lp f p mu)))
+  hard_negative:
+    statement: ルベーグ測度のℝ上でもp≤qならL^q⊂L^pである。
+    reason: f(x)=1/(1+|x|)はL^2に属するがL^1に属さない。全体の測度が無限だと包含は成り立たない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) [MeasureTheory.IsFiniteMeasure μ] (p q : ENNReal) (f : α → ℝ), p ≤ q → MeasureTheory.MemLp f q μ → MeasureTheory.MemLp f p μ
+  proof: |
+    by
+      intro α _ μ _ p q f hpq hf
+      exact hf.mono_exponent hpq
+- id: lp_space_complete
+  kind: textbook
+  level: 4
+  topic: Lp空間・完備性
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$1\leq p\leq\infty$とする。実数値関数の$L^p(\mu)$空間は完備である(リース・フィッシャーの定理)。
+  statement_en: For 1 ≤ p ≤ ∞, the real L^p space is complete (Riesz–Fischer theorem).
+  assumptions:
+  - $1\leq p\leq\infty$
+  - $\mu$は可測空間$\alpha$上の測度
+  quantifiers:
+  - 任意の測度$\mu$と指数$p$
+  conclusion: $L^p(\mu)$は完備である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$1\leq p\leq\infty$とする。$(f_n)$を$L^p(\mu)$のコーシー列とする。$L^p(\mu)$の元はほとんど至る所で等しい関数を同一視した類なので、各$f_n$は可測な代表で表す。
+
+    $p<\infty$の場合を示す。$\|f_{n_{k+1}}-f_{n_k}\|_p<2^{-k}$となる狭義増加列$(n_k)$をとり、$g_K=\sum_{k<K}|f_{n_{k+1}}-f_{n_k}|$、$g=\sup_Kg_K$とおく。ミンコフスキーの不等式から$\|g_K\|_p\leq\sum_k2^{-k}=2$である。単調収束定理から$\int g^p\,d\mu=\lim_K\int g_K^p\,d\mu\leq 2^p$である。よって$g$はほとんど至る所で有限である。そのような点で$\sum_k(f_{n_{k+1}}-f_{n_k})$は絶対収束するので、$f_{n_k}(x)$は収束する。この極限を$f(x)$とし、残りの点で$f(x)=0$とおくと、$f$は可測である。
+
+    $\varepsilon>0$に対し、$n,m\geq N$で$\|f_n-f_m\|_p<\varepsilon$となる$N$をとる。$n\geq N$を固定する。ファトゥの補題は、非負可測関数列について積分と下極限の不等式$\int\liminf_lh_l\,d\mu\leq\liminf_l\int h_l\,d\mu$が成り立つという定理である。$h_l=|f_{n_l}-f_n|^p$に適用すると、$\int|f-f_n|^p\,d\mu\leq\liminf_l\int|f_{n_l}-f_n|^p\,d\mu\leq\varepsilon^p$である。よって$f-f_n\in L^p(\mu)$なので$f\in L^p(\mu)$であり、$n\geq N$で$\|f-f_n\|_p\leq\varepsilon$である。
+
+    $p=\infty$の場合を示す。各$n,m$で$|f_n-f_m|>\|f_n-f_m\|_\infty$となる点の集合は零集合であり、それらの可算和$N$も零集合である。$N$の外では全ての$n,m$で$|f_n(x)-f_m(x)|\leq\|f_n-f_m\|_\infty$なので、$(f_n)$は一様コーシーであり、一様に極限$f$をもつ。$N$上で$f=0$とおくと$f$は可測である。$\varepsilon>0$に対し$n,m\geq N_0$で$\|f_n-f_m\|_\infty\leq\varepsilon$となる$N_0$をとる。$m\to\infty$とすると、$n\geq N_0$で$N$の外の全ての点で$|f_n-f|\leq\varepsilon$である。よって$f\in L^\infty(\mu)$かつ$\|f_n-f\|_\infty\to 0$である。
+  strategy: Extract a fast subsequence, sum its increments, and pass to the limit with Fatou.
+  sketch:
+  - 'construct: Choose a subsequence with successive L^p distances below 2^{-k}.'
+  - 'derive: Minkowski and monotone convergence show the sum g of absolute increments is in L^p.'
+  - 'derive: Thus g is finite a.e., so the subsequence converges a.e. to a limit f.'
+  - 'apply_theorem: Fatou''s lemma shows ‖f - f_{n_k}‖_p tends to 0.'
+  - 'conclude: A Cauchy sequence with a convergent subsequence converges.'
+  openmath: (forall (mu p) (-> (and (is_measure mu) (<= 1 p)) (complete_space (lp_space p mu))))
+  hard_negative:
+    statement: L^p空間のコーシー列はほとんど至る所で収束する。
+    reason: タイプライター列は0にL^1収束するが、どの点でも収束しない。a.e.収束するのは部分列である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (p : ENNReal) [Fact (1 ≤ p)], CompleteSpace (MeasureTheory.Lp ℝ p μ)
+  proof: |
+    by
+      intro α _ μ p _
+      infer_instance
+- id: ae_convergence_implies_in_measure
+  kind: gap
+  level: 3
+  topic: 収束・測度収束とa.e.収束
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度とする。各$f_n:\alpha\to\mathbb{R}$がほとんど至る所で可測関数に等しく、ほとんど全ての$x$で$f_n(x)\to g(x)$ならば、$f_n$は$g$に測度収束する。すなわち全ての$\varepsilon>0$で$\mu(\{x\mid|f_n(x)-g(x)|\geq\varepsilon\})\to 0$である。
+  statement_en: On a finite measure space, almost everywhere convergence implies convergence in measure.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の有限測度
+  - 各$f_n$は$\mu$についてほとんど至る所で可測関数に等しい
+  - ほとんど全ての$x$で$f_n(x)\to g(x)$
+  quantifiers:
+  - 任意の関数列$(f_n)$と関数$g$
+  conclusion: 全ての$\varepsilon>0$で$\mu(\{x\mid|f_n(x)-g(x)|\geq\varepsilon\})\to 0$である。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度とする。$f_n,g:\alpha\to\mathbb{R}$について、各$f_n$はほとんど至る所で可測関数に等しく、ほとんど全ての$x$で$f_n(x)\to g(x)$とする。部分集合の値はそれを含む可測集合の測度の下限である。$\varepsilon>0$を固定する。
+
+    各$f_n$に対しほとんど至る所で等しい可測関数$f_n'$をとる。$f_n\neq f_n'$となる点と収束しない点の全体は可算個の零集合の和なので、ある可測な零集合$N$に含まれる。$N^c$を$N$の補集合とする。$N$の外で$g'=\lim_nf_n'$、$N$上で$g'=0$とおくと、$g'$は可測関数$1_{N^c}f_n'$の各点極限なので可測である。$N$の外では$f_n=f_n'$かつ$g=g'$である。
+
+    $E_n=\bigcup_{k\geq n}\{x\mid|f_k'(x)-g'(x)|\geq\varepsilon\}$は単調減少な可測集合の列である。$x\notin N$なら$f_k'(x)\to g'(x)$なので、十分大きな$n$で$x\notin E_n$である。よって$\bigcap_nE_n\subset N$であり、$\mu(\bigcap_nE_n)=0$である。測度は有限なので、上からの連続性から$\mu(E_n)\to 0$である。
+
+    $\{x\mid|f_n(x)-g(x)|\geq\varepsilon\}$は$E_n\cup N$に含まれるので、その値は$\mu(E_n)$以下であり、$0$に収束する。
+  strategy: Use continuity from above on the tails of the exceptional sets.
+  sketch:
+  - 'setup: Fix ε > 0 and define E_n as the tail union of {|f_k - g| ≥ ε}.'
+  - 'derive: The E_n decrease and their intersection is contained in the null set of nonconvergence.'
+  - 'apply_theorem: Finiteness of μ allows continuity from above.'
+  - 'conclude: Therefore μ({|f_n - g| ≥ ε}) tends to 0.'
+  openmath: (forall (mu f g) (-> (and (finite_measure mu) (forall (n) (ae_measurable_fn (seq_value f n) mu)) (ae_fn_seq_tends_to mu f g)) (tends_in_measure f g mu)))
+  hard_negative:
+    statement: 無限測度空間でも、a.e.収束は測度収束を導く。
+    reason: f_n=1_{[n,∞)}は0に各点収束するが、ε<1でμ({f_n≥ε})=∞である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) [MeasureTheory.IsFiniteMeasure μ] (f : ℕ → α → ℝ) (g : α → ℝ), (∀ n, MeasureTheory.AEStronglyMeasurable (f n) μ) → (∀ᵐ x ∂μ, Filter.Tendsto (fun n => f n x) Filter.atTop (nhds (g x))) → MeasureTheory.TendstoInMeasure μ f Filter.atTop g
+  proof: |
+    by
+      intro α _ μ _ f g hf h
+      exact MeasureTheory.tendstoInMeasure_of_tendsto_ae hf h
+- id: in_measure_convergence_subsequence_ae
+  kind: textbook
+  level: 3
+  topic: 収束・測度収束の部分列
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n,g:\alpha\to\mathbb{R}$を関数とする。$f_n$が$g$に測度収束するならば、狭義単調増加な$(n_k)$で、ほとんど全ての$x$について$f_{n_k}(x)\to g(x)$となるものが存在する。
+  statement_en: A sequence converging in measure has a subsequence converging almost everywhere to the same limit.
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の測度
+  - 全ての$\varepsilon>0$で$\mu(\{x\mid|f_n(x)-g(x)|\geq\varepsilon\})\to 0$
+  quantifiers:
+  - 任意の測度$\mu$、関数列$(f_n)$、関数$g$
+  conclusion: 狭義単調増加な$(n_k)$で、ほとんど全ての$x$について$f_{n_k}(x)\to g(x)$となるものが存在する。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の測度、$f_n,g:\alpha\to\mathbb{R}$を関数とし、全ての$\varepsilon>0$で$\mu(\{x\mid|f_n(x)-g(x)|\geq\varepsilon\})\to 0$とする。部分集合の値はそれを含む可測集合の測度の下限である。
+
+    仮定を$\varepsilon=2^{-k}$に使い、狭義単調増加な$(n_k)$で$\mu(s_k)\leq 2^{-k}$となるものを帰納的に選ぶ。ここで$s_k=\{x\mid|f_{n_k}(x)-g(x)|\geq 2^{-k}\}$である。$\sum_k\mu(s_k)<\infty$である。
+
+    ボレル・カンテリの補題は、$\sum_k\mu(s_k)<\infty$なら無限個の$s_k$に属する点の全体の測度が$0$であるという定理である。したがってほとんど全ての$x$は、十分大きな全ての$k$で$|f_{n_k}(x)-g(x)|<2^{-k}$を満たす。そのような$x$で$f_{n_k}(x)\to g(x)$である。
+  strategy: Pick a subsequence with summable exceptional measures and apply Borel–Cantelli.
+  sketch:
+  - 'construct: Choose n_k strictly increasing with μ({|f_{n_k} - g| ≥ 2^{-k}}) ≤ 2^{-k}.'
+  - 'apply_theorem: Borel–Cantelli shows almost every x lies in finitely many of these sets.'
+  - 'derive: For such x, |f_{n_k}(x) - g(x)| < 2^{-k} for large k.'
+  - 'conclude: The subsequence converges to g almost everywhere.'
+  openmath: (forall (mu f g) (-> (tends_in_measure f g mu) (exists (r) (and (forall (i j) (-> (< i j) (< (seq_value r i) (seq_value r j)))) (ae_fn_seq_tends_to mu (fn_subseq f r) g)))))
+  hard_negative:
+    statement: 測度収束する関数列は、列全体としてほとんど至る所で収束する。
+    reason: タイプライター列(長さが2^{-k}の二進区間の指示関数を順に並べた列)は0に測度収束するが、[0,1]のどの点でも収束しない。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) (f : ℕ → α → ℝ) (g : α → ℝ), MeasureTheory.TendstoInMeasure μ f Filter.atTop g → ∃ r : ℕ → ℕ, StrictMono r ∧ ∀ᵐ x ∂μ, Filter.Tendsto (fun i => f (r i) x) Filter.atTop (nhds (g x))
+  proof: |
+    by
+      intro α _ μ f g h
+      exact h.exists_seq_tendsto_ae
+- id: egorov_theorem
+  kind: textbook
+  level: 4
+  topic: 収束・エゴロフの定理
+  statement: $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度、$f_n,g:\alpha\to\mathbb{R}$を可測関数とする。ほとんど全ての$x$で$f_n(x)\to g(x)$ならば、任意の$\varepsilon>0$に対し$\mu(t)\leq\varepsilon$となる可測集合$t$が存在し、$f_n$は$t$の補集合上で$g$に一様収束する(エゴロフの定理)。
+  statement_en: 'Egorov''s theorem: on a finite measure space, if measurable functions converge a.e., then for every ε > 0 they converge uniformly outside a set of measure at most ε.'
+  assumptions:
+  - $\mu$は可測空間$\alpha$上の有限測度
+  - 各$f_n$と$g$は可測
+  - ほとんど全ての$x$で$f_n(x)\to g(x)$
+  - $\varepsilon>0$
+  quantifiers:
+  - 任意の関数列$(f_n)$、関数$g$、正の実数$\varepsilon$
+  conclusion: $\mu(t)\leq\varepsilon$となる可測集合$t$が存在し、$f_n$は$t$の補集合上で$g$に一様収束する。
+  answer: |
+    $\alpha$を可測空間、$\mu$を$\alpha$上の有限測度、$f_n,g:\alpha\to\mathbb{R}$を可測関数とし、ほとんど全ての$x$で$f_n(x)\to g(x)$とする。$\varepsilon>0$を固定する。
+
+    自然数$m\geq 1$と$n$について$A_{m,n}=\bigcup_{k\geq n}\{x\mid|f_k(x)-g(x)|\geq 1/m\}$とおく。これは可測で、$n$について単調減少である。$f_k(x)\to g(x)$となる点は十分大きな$n$で$A_{m,n}$に属さないので、$\bigcap_nA_{m,n}$は収束しない点の集合に含まれ、測度$0$である。測度は有限なので、上からの連続性から$\mu(A_{m,n})\to 0$である。よって$\mu(A_{m,n_m})\leq\varepsilon2^{-m}$となる$n_m$がとれる。
+
+    $t=\bigcup_{m\geq 1}A_{m,n_m}$は可測で、$\mu(t)\leq\sum_{m\geq 1}\varepsilon2^{-m}=\varepsilon$である。$x\notin t$なら、全ての$m$と$k\geq n_m$で$|f_k(x)-g(x)|<1/m$である。$n_m$は$x$によらないので、$f_k$は$t$の補集合上で$g$に一様収束する。
+  strategy: For each tolerance 1/m remove a tail set of small measure and take the union.
+  sketch:
+  - 'setup: Define E_{m,n} as the union over k ≥ n of {|f_k - g| ≥ 1/m}.'
+  - 'derive: For fixed m, the E_{m,n} decrease in n to a null set.'
+  - 'apply_theorem: Continuity from above gives n_m with μ(E_{m,n_m}) ≤ ε 2^{-m-1}.'
+  - 'construct: Let t be the union of the E_{m,n_m}.'
+  - 'derive: Then μ(t) ≤ ε by subadditivity.'
+  - 'conclude: Outside t we have |f_k - g| < 1/m for k ≥ n_m, which is uniform convergence.'
+  openmath: (forall (mu f g e) (-> (and (finite_measure mu) (forall (n) (measurable_fn (seq_value f n))) (measurable_fn g) (ae_fn_seq_tends_to mu f g) (> e 0)) (exists (t) (and (measurable_set t) (<= (measure_of mu t) e) (uniform_tends_on f g (set_compl t))))))
+  hard_negative:
+    statement: 有限測度空間でa.e.収束する関数列は、ある零集合の外で一様収束する。
+    reason: '[0,1]上のf_n(x)=x^nは[0,1)で0へ収束するが、どの零集合を除いても1の近くの値が残るので一様収束しない。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ : MeasureTheory.Measure α) [MeasureTheory.IsFiniteMeasure μ] (f : ℕ → α → ℝ) (g : α → ℝ), (∀ n, Measurable (f n)) → Measurable g → (∀ᵐ x ∂μ, Filter.Tendsto (fun n => f n x) Filter.atTop (nhds (g x))) → ∀ ε : ℝ, 0 < ε → ∃ t, MeasurableSet t ∧ μ t ≤ ENNReal.ofReal ε ∧ TendstoUniformlyOn f g Filter.atTop tᶜ
+  proof: |
+    by
+      intro α _ μ _ f g hf hg h ε hε
+      exact MeasureTheory.tendstoUniformlyOn_of_ae_tendsto' (fun n => (hf n).stronglyMeasurable) hg.stronglyMeasurable h hε
+- id: radon_nikodym_theorem
+  kind: named
+  level: 4
+  topic: 測度の分解・ラドン・ニコディムの定理
+  statement: $\alpha$を可測空間、$\mu,\nu$を$\alpha$上の$\sigma$有限測度で、$\mu$は$\nu$に絶対連続とする。可測関数$f:\alpha\to[0,\infty]$で、全ての可測集合$A$について$\mu(A)=\int_Af\,d\nu$となるものが存在する(ラドン・ニコディムの定理)。
+  statement_en: 'Radon–Nikodym theorem: for σ-finite measures μ and ν with μ ≪ ν, there is a measurable f with values in [0,∞] such that μ = f dν.'
+  assumptions:
+  - $\mu,\nu$は可測空間$\alpha$上の$\sigma$有限測度
+  - $\mu$は$\nu$に絶対連続
+  quantifiers:
+  - 任意の測度$\mu,\nu$
+  conclusion: 全ての可測集合$A$で$\mu(A)=\int_Af\,d\nu$となる可測関数$f:\alpha\to[0,\infty]$が存在する。
+  answer: |
+    $\alpha$を可測空間、$\mu,\nu$を$\alpha$上の$\sigma$有限測度で、$\nu(A)=0$なら$\mu(A)=0$を満たすものとする。ハーン分解定理は、有限な符号付き測度$s$に対し、可測集合$P$で、$P$の可測部分集合では$s\geq 0$、$P^c$の可測部分集合では$s\leq 0$となるものが存在するという定理である。
+
+    $\mu,\nu$が有限の場合を示す。全ての可測集合$A$で$\int_Ag\,d\nu\leq\mu(A)$を満たす可測関数$g:\alpha\to[0,\infty]$の全体を$\mathcal{F}$とする。$0\in\mathcal{F}$である。$g,h\in\mathcal{F}$なら、$A$を$A\cap\{g\geq h\}$と$A\cap\{g<h\}$に分けることで$\max\{g,h\}\in\mathcal{F}$である。
+
+    $m=\sup_{g\in\mathcal{F}}\int g\,d\nu\leq\mu(\alpha)<\infty$とする。$\int g_n\,d\nu\to m$となる$g_n\in\mathcal{F}$をとり、$h_n=\max\{g_1,\dots,g_n\}$、$f=\sup_nh_n$とおく。単調収束定理から$\int_Af\,d\nu=\lim_n\int_Ah_n\,d\nu\leq\mu(A)$なので、$f\in\mathcal{F}$かつ$\int f\,d\nu=m$である。
+
+    $\lambda(A)=\mu(A)-\int_Af\,d\nu$は非負の有限測度であり、$\nu(A)=0$なら$\lambda(A)=0$である。$\lambda(\alpha)>0$と仮定する。このとき$\nu(\alpha)>0$であり、$c=\lambda(\alpha)/(2\nu(\alpha))>0$とおくと$\lambda(\alpha)>c\nu(\alpha)$である。符号付き測度$s=\lambda-c\nu$のハーン分解$P$をとると、$0<s(\alpha)=s(P)+s(P^c)\leq s(P)$である。よって$\lambda(P)>c\nu(P)\geq 0$なので、$\nu(P)>0$である。
+
+    $f'=f+c1_P$とおく。可測集合$A$について、$A\cap P$では$s\geq 0$なので$\int_Af'\,d\nu=\int_Af\,d\nu+c\nu(A\cap P)\leq\int_Af\,d\nu+\lambda(A\cap P)\leq\int_Af\,d\nu+\lambda(A)=\mu(A)$である。したがって$f'\in\mathcal{F}$であり、$\int f'\,d\nu=m+c\nu(P)>m$となって$m$の定義に矛盾する。よって$\lambda=0$であり、$\mu(A)=\int_Af\,d\nu$である。
+
+    $\sigma$有限の場合を示す。$\mu,\nu$の$\sigma$有限性から、$\alpha$は$\mu(X_k),\nu(X_k)<\infty$を満たす互いに素な可測集合$X_k$の可算和である。$\mu,\nu$を$X_k$に制限すると、絶対連続性は保たれる。有限の場合から$X_k$上の密度$f_k$を得る。$X_k$上で$f=f_k$と定めると$f$は可測である。可測集合$A$について、$\mu(A)=\sum_k\mu(A\cap X_k)=\sum_k\int_{A\cap X_k}f_k\,d\nu=\int_Af\,d\nu$である。
+  strategy: Maximize the integral among subdensities and rule out a nonzero remainder with a Hahn decomposition.
+  sketch:
+  - 'setup: Reduce to finite measures by σ-finiteness.'
+  - 'construct: Let F be the functions g ≥ 0 with ∫_A g dν ≤ μ(A) for all measurable A.'
+  - 'derive: F is closed under maxima, and monotone convergence gives a maximizer f of the integral.'
+  - 'setup: Let μ_s = μ - f dν, a nonnegative measure.'
+  - 'contradiction: If μ_s ≠ 0, a Hahn decomposition of μ_s - cν yields a larger element of F.'
+  - 'conclude: Hence μ_s = 0 and μ = f dν.'
+  openmath: (forall (mu nu) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu) (abs_continuous mu nu)) (exists (f) (and (measurable_fn f) (= mu (with_density nu f))))))
+  hard_negative:
+    statement: 絶対連続性だけで、σ有限性なしに密度関数が存在する。
+    reason: '[0,1]のルベーグ測度は数え上げ測度に絶対連続だが、数え上げ測度はσ有限でなく、密度関数は存在しない。'
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ ν : MeasureTheory.Measure α) [MeasureTheory.SigmaFinite μ] [MeasureTheory.SigmaFinite ν], μ.AbsolutelyContinuous ν → ∃ f : α → ENNReal, Measurable f ∧ μ = ν.withDensity f
+  proof: |
+    by
+      intro α _ μ ν _ _ h
+      exact ⟨μ.rnDeriv ν, MeasureTheory.Measure.measurable_rnDeriv μ ν, (MeasureTheory.Measure.withDensity_rnDeriv_eq μ ν h).symm⟩
+- id: lebesgue_decomposition_theorem
+  kind: textbook
+  level: 4
+  topic: 測度の分解・ルベーグ分解
+  statement: $\alpha$を可測空間、$\mu,\nu$を$\alpha$上の$\sigma$有限測度とする。$\nu$と互いに特異な測度$s$と可測関数$f:\alpha\to[0,\infty]$で、全ての可測集合$A$について$\mu(A)=s(A)+\int_Af\,d\nu$となるものが存在する(ルベーグ分解定理)。
+  statement_en: 'Lebesgue decomposition: for σ-finite measures μ and ν, there exist a measure s mutually singular with ν and a measurable f such that μ = s + f dν.'
+  assumptions:
+  - $\mu,\nu$は可測空間$\alpha$上の$\sigma$有限測度
+  quantifiers:
+  - 任意の測度$\mu,\nu$
+  conclusion: $s$は$\nu$と互いに特異で、$f$は可測で、全ての可測集合$A$について$\mu(A)=s(A)+\int_Af\,d\nu$となる$s,f$が存在する。
+  answer: |
+    $\alpha$を可測空間、$\mu,\nu$を$\alpha$上の$\sigma$有限測度とする。ラドン・ニコディムの定理は、$\sigma$有限測度$\mu,\lambda$で$\mu$が$\lambda$に絶対連続なら、全ての可測集合$A$で$\mu(A)=\int_Ah\,d\lambda$となる可測関数$h:\alpha\to[0,\infty]$が存在するという定理である。
+
+    $\mu,\nu$が有限の場合を示す。$\mu$は$\mu+\nu$に絶対連続なので、$\mu(A)=\int_Ah\,d(\mu+\nu)$となる$h$がある。$\{h>1\}$の$\mu+\nu$測度が正なら、この集合$B$について$\mu(B)=\int_Bh\,d(\mu+\nu)>(\mu+\nu)(B)\geq\mu(B)$となって矛盾する。よって$h$を零集合の上で変更して、至る所$0\leq h\leq 1$としてよい。単純関数と単調収束定理により、非負可測関数$u$について$\int u\,d\mu=\int uh\,d\mu+\int uh\,d\nu$である。
+
+    $A=\{h=1\}$とおく。$\mu(A)=\int_Ah\,d(\mu+\nu)=\mu(A)+\nu(A)$で$\mu(A)$は有限なので、$\nu(A)=0$である。$s(E)=\mu(E\cap A)$と定めると$s(A^c)=0$なので、$s$は$\nu$と互いに特異である。
+
+    $E\subset A^c$を可測とする。$u_n=1_E\sum_{j\leq n}h^j$は有界なので$\int u_n\,d\mu<\infty$であり、上の等式から$\int u_n(1-h)\,d\mu=\int u_nh\,d\nu$である。$E$上で$0\leq h<1$なので、$u_n(1-h)=1_E(1-h^{n+1})$は$1_E$に単調増加し、$u_nh$は$1_Eh/(1-h)$に単調増加する。単調収束定理から$\mu(E)=\int_Eh/(1-h)\,d\nu$である。$f=(h/(1-h))1_{A^c}$とおけば、全ての可測集合$E$について$\mu(E)=\mu(E\cap A)+\mu(E\setminus A)=s(E)+\int_Ef\,d\nu$となる。
+
+    $\sigma$有限の場合を示す。$\alpha$を$\mu(X_k),\nu(X_k)<\infty$を満たす互いに素な可測集合$X_k$の可算和に分ける。$\mu,\nu$の$X_k$への制限に有限の場合を適用し、$s_k$、$f_k$、$\nu$の零集合$A_k\subset X_k$を得る。ここで$s_k$は$A_k$に集中する。$s=\sum_ks_k$とし、$X_k$上で$f=f_k$とおく。$A=\bigcup_kA_k$は$\nu(A)=0$かつ$s(A^c)=0$を満たす。可測集合$E$について$\mu(E)=\sum_k\mu(E\cap X_k)=\sum_k(s_k(E)+\int_{E\cap X_k}f_k\,d\nu)=s(E)+\int_Ef\,d\nu$である。
+  strategy: Apply Radon–Nikodym to μ with respect to μ + ν and split along {h = 1}.
+  sketch:
+  - 'setup: Reduce to finite measures by σ-finiteness.'
+  - 'apply_theorem: Radon–Nikodym gives μ = h d(μ+ν) with 0 ≤ h ≤ 1 a.e.'
+  - 'derive: The set A = {h = 1} satisfies ν(A) = 0.'
+  - 'construct: Let s be μ restricted to A and f = (h/(1-h)) on the complement of A.'
+  - 'conclude: Then s is singular with respect to ν and μ = s + f dν.'
+  openmath: (forall (mu nu) (-> (and (sigma_finite_measure mu) (sigma_finite_measure nu)) (exists (s f) (and (is_measure s) (mutually_singular s nu) (measurable_fn f) (= mu (+ s (with_density nu f)))))))
+  hard_negative:
+    statement: ルベーグ測度に対する分解で、特異部分は必ず原子(点質量)の和である。
+    reason: カントール関数のスティルチェス測度は原子をもたず、ルベーグ測度と互いに特異である。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (μ ν : MeasureTheory.Measure α) [MeasureTheory.SigmaFinite μ] [MeasureTheory.SigmaFinite ν], ∃ (s : MeasureTheory.Measure α) (f : α → ENNReal), s.MutuallySingular ν ∧ Measurable f ∧ μ = s + ν.withDensity f
+  proof: |
+    by
+      intro α _ μ ν _ _
+      exact ⟨μ.singularPart ν, μ.rnDeriv ν, MeasureTheory.Measure.mutuallySingular_singularPart μ ν, MeasureTheory.Measure.measurable_rnDeriv μ ν, MeasureTheory.Measure.haveLebesgueDecomposition_add μ ν⟩
+- id: hahn_decomposition_theorem
+  kind: textbook
+  level: 4
+  topic: 測度の分解・ハーン分解
+  statement: $\alpha$を可測空間、$s$を$\alpha$上の有限な符号付き測度とする。可測集合$i$で、$i$の可測部分集合では$s\geq 0$、$i$の補集合の可測部分集合では$s\leq 0$となるものが存在する(ハーン分解定理)。
+  statement_en: 'Hahn decomposition: for a finite signed measure s, there is a measurable set i such that s ≥ 0 on measurable subsets of i and s ≤ 0 on measurable subsets of its complement.'
+  assumptions:
+  - $s$は可測空間$\alpha$上の有限な符号付き測度
+  quantifiers:
+  - 任意の符号付き測度$s$
+  conclusion: $i$の可測部分集合で$s\geq 0$、$i$の補集合の可測部分集合で$s\leq 0$となる可測集合$i$が存在する。
+  answer: |
+    $\alpha$を可測空間、$s$を$\alpha$上の実数値で可算加法的な符号付き測度とする。全ての可測部分集合で$s$の値が$0$以下である可測集合を負集合と呼ぶ。空集合は負集合である。
+
+    負集合$A$全体にわたる$s(A)$の下限を$m$とする。$s(A_n)\to m$となる負集合の列をとり、$N=\bigcup_nA_n$とおく。$N$の可測部分集合$B$は、$B_n=B\cap(A_n\setminus\bigcup_{j<n}A_j)$の互いに素な和である。$B_n\subset A_n$なので$s(B)=\sum_ns(B_n)\leq 0$となり、$N$は負集合である。また$s(N)=s(A_n)+s(N\setminus A_n)\leq s(A_n)$なので$s(N)\leq m$である。$N$は負集合なので、$s(N)=m$であり、$m$は実数である。
+
+    $i=N^c$とする。$i^c=N$は負集合なので、残りは$i$の可測部分集合$B$で$s(B)\geq 0$となることである。$s(B)<0$なる$B\subset i$があると仮定して矛盾を導く。
+
+    $B_0=B$とする。$j\geq 1$について、$B_{j-1}$の全ての可測部分集合で$s\leq 0$なら止める。そうでなければ、$B_{j-1}$の可測部分集合$C$で$s(C)>1/k$となる自然数$k\geq 1$の最小値を$k_j$とし、この条件を満たす$C_j$をとって$B_j=B_{j-1}\setminus C_j$とおく。$D=B\setminus\bigcup_jC_j$とする。
+
+    $C_j$は互いに素なので、$s(\bigcup_jC_j)=\sum_js(C_j)$は実数として収束する。したがって$\sum_j1/k_j<\infty$であり、無限に続く場合は$k_j\to\infty$である。また$s(D)=s(B)-\sum_js(C_j)\leq s(B)<0$である。
+
+    $D$は負集合である。有限回で止まれば定義から明らかである。無限に続く場合、$C\subset D$が$s(C)>0$なら$s(C)>1/k$となる$k$がある。$k_j>k$なる$j$をとると、$C\subset B_{j-1}$なのでこれは$k_j$の最小性に反する。
+
+    $D\subset i$は$N$と交わらないので、$N\cup D$は負集合で$s(N\cup D)=m+s(D)<m$となる。これは$m$の定義に反する。
+  strategy: Minimize over negative sets and show the complement of a minimizer is positive.
+  sketch:
+  - 'setup: Call A negative if s ≤ 0 on all its measurable subsets, and let m be the infimum of s over negative sets.'
+  - 'construct: Take negative sets A_n with s(A_n) → m and let N be their union.'
+  - 'derive: N is negative and s(N) = m.'
+  - 'contradiction: A negative-valued subset of the complement of N would contain a negative set, which added to N beats m.'
+  - 'conclude: Thus i = Nᶜ is positive and iᶜ = N is negative.'
+  openmath: (forall (s) (-> (signed_measure s) (exists (i) (and (measurable_set i) (nonneg_on_subsets s i) (nonpos_on_subsets s (set_compl i))))))
+  hard_negative:
+    statement: ハーン分解の集合iは符号付き測度sに対して一意である。
+    reason: s=0なら全ての可測集合がiの条件を満たす。一意なのはs-零集合を除いてである。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (s : MeasureTheory.SignedMeasure α), ∃ i : Set α, MeasurableSet i ∧ (∀ A, MeasurableSet A → A ⊆ i → 0 ≤ s A) ∧ (∀ A, MeasurableSet A → A ⊆ iᶜ → s A ≤ 0)
+  proof: |
+    by
+      intro α _ s
+      obtain ⟨i, hi, h1, h2⟩ := s.exists_compl_positive_negative
+      refine ⟨i, hi, fun A hA hsub => ?_, fun A hA hsub => ?_⟩
+      · simpa using (MeasureTheory.VectorMeasure.restrict_le_restrict_iff 0 s hi).1 h1 hA hsub
+      · simpa using (MeasureTheory.VectorMeasure.restrict_le_restrict_iff s 0 hi.compl).1 h2 hA hsub
+- id: jordan_decomposition_theorem
+  kind: textbook
+  level: 4
+  topic: 測度の分解・ジョルダン分解
+  statement: $\alpha$を可測空間、$s$を$\alpha$上の有限な符号付き測度とする。互いに特異な有限測度$\mu,\nu$で、全ての可測集合$A$について$s(A)=\mu(A)-\nu(A)$となるものが存在する(ジョルダン分解定理)。
+  statement_en: 'Jordan decomposition: every finite signed measure s is a difference s = μ - ν of two mutually singular finite measures.'
+  assumptions:
+  - $s$は可測空間$\alpha$上の有限な符号付き測度
+  quantifiers:
+  - 任意の符号付き測度$s$
+  conclusion: 互いに特異な有限測度$\mu,\nu$で、全ての可測集合$A$について$s(A)=\mu(A)-\nu(A)$となるものが存在する。
+  answer: |
+    $\alpha$を可測空間、$s$を$\alpha$上の有限な符号付き測度とする。ハーン分解定理は、可測集合$i$で、$i$の可測部分集合では$s\geq 0$、$i^c$の可測部分集合では$s\leq 0$となるものが存在するという定理である。この$i$をとる。
+
+    可測集合$A$について$\mu(A)=s(A\cap i)$、$\nu(A)=-s(A\cap i^c)$と定める。$i$と$i^c$の性質から$\mu,\nu$は非負であり、$s$の可算加法性から可算加法的である。値は実数なので有限測度である。
+
+    全ての可測集合$A$について$s(A)=s(A\cap i)+s(A\cap i^c)=\mu(A)-\nu(A)$である。また$\mu(i^c)=0$かつ$\nu(i)=0$なので、$\mu,\nu$は互いに特異である。
+  strategy: Restrict s to the two pieces of a Hahn decomposition.
+  sketch:
+  - 'apply_theorem: Take a Hahn decomposition with positive set i.'
+  - 'construct: Define μ(A) = s(A ∩ i) and ν(A) = -s(A ∩ iᶜ).'
+  - 'derive: Both are finite measures and s(A) = μ(A) - ν(A).'
+  - 'conclude: μ vanishes on iᶜ and ν on i, so they are mutually singular.'
+  openmath: (forall (s) (-> (signed_measure s) (exists (mu nu) (and (finite_measure mu) (finite_measure nu) (mutually_singular mu nu) (forall (A) (-> (measurable_set A) (= (measure_of s A) (- (measure_of mu A) (measure_of nu A)))))))))
+  hard_negative:
+    statement: 符号付き測度を有限測度の差s=μ-νに書く方法は一意である。
+    reason: 任意の有限測度λを両方に足してs=(μ+λ)-(ν+λ)とできる。一意なのは互いに特異であるという条件を加えたときである。
+  target: |
+    ∀ (α : Type*) [MeasurableSpace α] (s : MeasureTheory.SignedMeasure α), ∃ μ ν : MeasureTheory.Measure α, MeasureTheory.IsFiniteMeasure μ ∧ MeasureTheory.IsFiniteMeasure ν ∧ μ.MutuallySingular ν ∧ ∀ A, MeasurableSet A → s A = (μ A).toReal - (ν A).toReal
+  proof: |
+    by
+      intro α _ s
+      refine ⟨s.toJordanDecomposition.posPart, s.toJordanDecomposition.negPart, s.toJordanDecomposition.posPart_finite, s.toJordanDecomposition.negPart_finite, s.toJordanDecomposition.mutuallySingular, fun A hA => ?_⟩
+      have h := s.toSignedMeasure_toJordanDecomposition
+      calc s A = s.toJordanDecomposition.toSignedMeasure A := by rw [h]
+        _ = (s.toJordanDecomposition.posPart A).toReal - (s.toJordanDecomposition.negPart A).toReal := by
+          rw [MeasureTheory.JordanDecomposition.toSignedMeasure, MeasureTheory.Measure.toSignedMeasure_sub_apply hA]
+          rfl
+- id: lebesgue_differentiation_theorem
+  kind: named
+  level: 4
+  topic: 微分・ルベーグの微分定理
+  statement: $f:\mathbb{R}\to\mathbb{R}$をルベーグ測度について局所可積分な関数とする。ほとんど全ての$x$で、$r\to 0+$のとき$\frac{1}{2r}\int_{x-r}^{x+r}f(t)\,dt\to f(x)$である(ルベーグの微分定理)。
+  statement_en: 'Lebesgue differentiation theorem: for locally integrable f on ℝ and almost every x, the average of f over the closed ball of radius r about x tends to f(x) as r → 0+.'
+  assumptions:
+  - $f:\mathbb{R}\to\mathbb{R}$はルベーグ測度について局所可積分
+  quantifiers:
+  - 任意の関数$f$
+  conclusion: ほとんど全ての$x$で、閉区間$[x-r,x+r]$上の$f$の平均は$r\to 0+$で$f(x)$に収束する。
+  answer: |
+    $f:\mathbb{R}\to\mathbb{R}$をルベーグ測度について局所可積分な関数とする。$A_rf(x)=\frac{1}{2r}\int_{x-r}^{x+r}f(t)\,dt$ ($r>0$)とおく。これは閉区間$[x-r,x+r]$上の$f$の平均である。$\mathrm{vol}$をルベーグ測度とし、$\|u\|_1=\int|u(t)|\,dt$とする。
+
+    局所化する。$N$を自然数とすると、局所可積分性と$[-N,N]$のコンパクト性から$f1_{[-N,N]}$は可積分である。$|x|<N$で$r<N-|x|$なら$A_r(f1_{[-N,N]})(x)=A_rf(x)$である。よって可積分な$f$について示せば、$N$についての可算和から一般の場合が従う。$f$をほとんど至る所で等しい可測関数に取り替えても$A_rf$は変わらないので、$f$は可測としてよい。
+
+    極大関数の評価を示す。可積分な$u$に対し$Mu(x)=\sup_{r>0}\frac{1}{2r}\int_{x-r}^{x+r}|u(t)|\,dt$とおく。$\lambda>0$について$\mathrm{vol}(\{x\mid Mu(x)>\lambda\})\leq(3/\lambda)\|u\|_1$である。この集合$E$は、積分が端点について連続であることから開集合である。$K\subset E$をコンパクトとする。$K$の各点$x$に$\int_{I_x}|u|>\lambda|I_x|$を満たす開区間$I_x=(x-r,x+r)$があり、有限個で$K$を覆う。この有限個から最長の区間$J_1$を選び、$J_1$と交わるものを除く。残りから最長の$J_2$を選ぶ操作を繰り返すと、互いに素な$J_1,\dots,J_l$を得る。除かれた区間はそれ以上の長さの$J_j$と交わるので、$J_j$を同じ中心で3倍した区間に含まれる。よって$\mathrm{vol}(K)\leq 3\sum_j|J_j|<(3/\lambda)\sum_j\int_{J_j}|u|\leq(3/\lambda)\|u\|_1$である。開集合のルベーグ測度はコンパクト部分集合の測度の上限なので、評価を得る。
+
+    $\Omega f(x)=\limsup_{r\to 0+}|A_rf(x)-f(x)|$とおく。$\delta>0$をとる。$\mathbb{R}$上のコンパクト台をもつ連続関数の全体は$L^1(\mathbb{R})$で稠密であるという定理から、そのような$h$で$u=f-h$が$\|u\|_1<\delta$を満たすものがある。$h$の連続性から$A_rh(x)\to h(x)$なので$\Omega h=0$である。$|A_ru|\leq Mu$なので、全ての$x$で$\Omega f(x)\leq Mu(x)+|u(x)|$である。
+
+    $\lambda>0$について$\{x\mid\Omega f(x)>2\lambda\}\subset\{x\mid Mu(x)>\lambda\}\cup\{x\mid|u(x)|>\lambda\}$である。極大関数の評価とマルコフの不等式($\lambda\mathrm{vol}(\{x\mid|u(x)|\geq\lambda\})\leq\|u\|_1$)から、右辺の外測度は$(3/\lambda)\delta+(1/\lambda)\delta=4\delta/\lambda$以下である。$\delta$は任意なので、$\{x\mid\Omega f(x)>2\lambda\}$は零集合である。$\{x\mid\Omega f(x)>0\}=\bigcup_{k\geq 1}\{x\mid\Omega f(x)>2/k\}$も零集合であり、ほとんど全ての$x$で$A_rf(x)\to f(x)$となる。
+  strategy: Combine a maximal inequality with L¹ density of continuous functions.
+  sketch:
+  - 'apply_theorem: The Vitali covering lemma gives a weak (1,1) bound for the Hardy–Littlewood maximal function.'
+  - 'derive: For continuous functions, averages converge at every point.'
+  - 'construct: Approximate f in L¹ on bounded intervals by a continuous function.'
+  - 'derive: The maximal bound controls the set where the averages of f fail to converge.'
+  - 'conclude: This bad set has arbitrarily small measure, hence is null.'
+  openmath: (forall (f) (-> (locally_integrable f lebesgue_measure) (ae_ball_average_converges f lebesgue_measure)))
+  hard_negative:
+    statement: 局所可積分関数の平均値は全ての点xでf(x)に収束する。
+    reason: 有理数の指示関数は局所可積分だが、平均は全ての点で0であり、有理点では値1に収束しない。
+  target: |
+    ∀ (f : ℝ → ℝ), MeasureTheory.LocallyIntegrable f MeasureTheory.volume → ∀ᵐ x ∂(MeasureTheory.volume : MeasureTheory.Measure ℝ), Filter.Tendsto (fun r : ℝ => MeasureTheory.average (MeasureTheory.volume.restrict (Metric.closedBall x r)) f) (nhdsWithin 0 (Set.Ioi 0)) (nhds (f x))
+  proof: |
+    by
+      intro f hf
+      filter_upwards [IsUnifLocDoublingMeasure.ae_tendsto_average MeasureTheory.volume hf 1] with x hx
+      refine hx (fun _ => x) (fun r => r) Filter.tendsto_id ?_
+      filter_upwards [self_mem_nhdsWithin] with r hr
+      rw [one_mul]
+      exact Metric.mem_closedBall_self (le_of_lt hr)
