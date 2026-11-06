@@ -84,6 +84,7 @@ class RecipeInstance:
     proposition_sha256: str
     bindings: tuple[tuple[str, str], ...]
     general_name: str
+    mode: str = "literal"
 
     def binding_objects(self) -> list[dict[str, str]]:
         return [{"variable": name, "value": value} for name, value in self.bindings]
@@ -204,12 +205,16 @@ def _parameters_of_group(inner: str) -> list[Parameter]:
     return [Parameter(name, type_text, _kind(type_text)) for name in names]
 
 
-def _signature_parameters(text: str) -> list[Parameter]:
+def _signature_parameters(text: str, *, allow_implicit: bool = False) -> list[Parameter]:
     parameters: list[Parameter] = []
     i = 0
     while i < len(text):
         if text[i].isspace():
             i += 1
+            continue
+        if text[i] in "{[⦃" and allow_implicit:
+            # Lean infers implicit and instance arguments; only explicit ones need a ``_``.
+            i = _group_end(text, i) + 1
             continue
         if text[i] != "(":
             raise InstantiationRejected("only explicit parenthesized binders are supported")
@@ -252,7 +257,7 @@ def _leading_forall(proposition: str) -> tuple[list[Parameter], str]:
     return parameters, rest
 
 
-def _parse(source: str) -> tuple[_Declaration, str]:
+def _parse(source: str, *, allow_implicit: bool = False) -> tuple[_Declaration, str]:
     if not isinstance(source, str) or not 0 < len(source) <= 200_000 or "\x00" in source:
         raise InstantiationRejected("Recipe source is invalid")
     masked = _mask(source)
@@ -286,7 +291,7 @@ def _parse(source: str) -> tuple[_Declaration, str]:
     assign = _depth_zero_index(masked, position, ":=")
     if colon is None or assign is None or assign < colon:
         raise InstantiationRejected("declaration signature is unsupported")
-    signature = _signature_parameters(masked[position:colon])
+    signature = _signature_parameters(masked[position:colon], allow_implicit=allow_implicit)
     proposition = _normal(masked[colon + 1:assign])
     if source[colon + 1:assign] != masked[colon + 1:assign]:
         raise InstantiationRejected("comments or strings inside the statement are unsupported")
@@ -301,12 +306,14 @@ def _parse(source: str) -> tuple[_Declaration, str]:
     ), masked
 
 
-def universal_parameters(source: str) -> tuple[Parameter, ...]:
-    """The maximal prefix of parameters that integer literals could instantiate (maybe empty)."""
+def universal_parameters(source: str, *, any_kind: bool = False) -> tuple[Parameter, ...]:
+    """The maximal numeric prefix (or, with ``any_kind``, every explicit parameter)."""
     try:
-        declaration, _ = _parse(source)
+        declaration, _ = _parse(source, allow_implicit=any_kind)
     except InstantiationRejected:
         return ()
+    if any_kind:
+        return declaration.parameters[:MAX_ARITY] if declaration.parameters else ()
     prefix: list[Parameter] = []
     for parameter in declaration.parameters[:MAX_BINDINGS]:
         if parameter.kind is None:
@@ -443,14 +450,45 @@ _WRAPPER: Final = {
 }
 
 
+_GENERAL_WRAPPER: Final = {
+    "en": (
+        "The statement you asked about is a special case of the following general result.",
+        "General result: {statement}",
+        "Applying this general result to the particular case gives the statement you asked about.",
+    ),
+    "ja": (
+        "ご質問の主張は、次の一般的な結果の特別な場合です。",
+        "一般的な結果：{statement}",
+        "この一般的な結果を当てはめると、ご質問の主張が得られます。",
+    ),
+    "zh-Hans": (
+        "您所问的命题是下面这个一般性结果的特例。",
+        "一般性结果：{statement}",
+        "把这个一般性结果应用到该特殊情形，就得到您所问的命题。",
+    ),
+    "zh-Hant": (
+        "您所問的命題是下面這個一般性結果的特例。",
+        "一般性結果：{statement}",
+        "把這個一般性結果應用到該特殊情形，就得到您所問的命題。",
+    ),
+}
+
+
 def render_answer(
     language: str, general_statement: str, bindings: tuple[tuple[str, str], ...] | list[
         tuple[str, str]
     ], stored_answer: str,
 ) -> str:
     """The displayed text: wrapper, the stored answer byte for byte, closing sentence."""
-    if language not in _WRAPPER or not bindings:
-        raise InstantiationRejected("unsupported answer language or empty substitution")
+    if language not in _WRAPPER:
+        raise InstantiationRejected("unsupported answer language")
+    if not bindings:
+        # Lean's elaborator chose the arguments; they are never asserted in prose.
+        intro, general, closing = _GENERAL_WRAPPER[language]
+        return (
+            intro + "\n\n" + general.format(statement=general_statement)
+            + "\n\n" + stored_answer + "\n\n" + closing
+        )
     for variable, value in bindings:
         if _DISPLAY_NAME.fullmatch(variable) is None or _INTEGER_LITERAL.fullmatch(value) is None:
             raise InstantiationRejected("substitution cannot be displayed")
@@ -460,3 +498,121 @@ def render_answer(
         intro.format(subst=subst) + "\n\n" + general.format(statement=general_statement)
         + "\n\n" + stored_answer + "\n\n" + closing.format(subst=subst)
     )
+
+
+# --- Lean-elaborated instantiation ---------------------------------------------------------------
+# The elaborator, not this module, finds the arguments: ``exact G _ .. _`` makes Lean unify the
+# requested proposition with the Recipe's statement (higher-order patterns, instance arguments,
+# dependent binders) and the kernel checks the resulting term.  The wrapper is a fixed template;
+# the only text that is not ours is the requested proposition, which is checked below and is the
+# literal statement of the theorem, so the verifier's statement alignment sees exactly it.
+#
+# Closed tactic/term vocabulary of the template (nothing else is ever emitted):
+#   ``first | ... ``, ``exact G <args>`` with args in {``_``, ``(name := literal)``,
+#   ``(by norm_num)``, ``(by decide)``}.  ``show``, ``change``, ``unfold``, ``simp`` and every
+#   other rewrite of the goal are outside the vocabulary, so the goal's type cannot be changed.
+MAX_ARITY: Final = 6
+MAX_PROPOSITION: Final = 2_000
+ELABORATION_VOCABULARY: Final = ("first", "exact", "_", "(name := literal)", "(by norm_num)",
+                                 "(by decide)")
+_FORBIDDEN_IN_PROPOSITION = re.compile(
+    r"(?<![\w'.])(by|show|change|unfold|simp|simpa|sorry|admit|axiom|decide|native_decide"
+    r"|from|have|let|do|fun_prop|exact|first|rfl|calc|at)(?![\w'.])|:=|;|#|--|/-|-/|\"|`|@\["
+)
+
+
+def check_proposition(requested: object) -> str:
+    """Single-line Lean proposition free of tactic, binding-command and comment syntax."""
+    if (
+        not isinstance(requested, str) or not requested.strip()
+        or len(requested) > MAX_PROPOSITION or "\x00" in requested
+        or any(ch in requested for ch in "\n\r\t\u2028\u2029")
+    ):
+        raise InstantiationRejected("requested proposition is not a bounded single line")
+    text = _normal(requested)
+    if _FORBIDDEN_IN_PROPOSITION.search(text):
+        raise InstantiationRejected("requested proposition contains tactic or command syntax")
+    depth = 0
+    for ch in text:
+        depth += ch in "([{⟨⦃"
+        depth -= ch in ")]}⟩⦄"
+        if depth < 0:
+            raise InstantiationRejected("requested proposition has unbalanced brackets")
+    if depth:
+        raise InstantiationRejected("requested proposition has unbalanced brackets")
+    return text
+
+
+def _alternatives(
+    general: str, arity: int, hints: list[tuple[str, str]], *, mathlib: bool
+) -> list[str]:
+    alternatives: list[str] = []
+    if hints:
+        named = " ".join(f"({name} := {_lean_term(value)})" for name, value in hints)
+        alternatives.append(f"exact {general} {named}")
+        alternatives.append(f"exact {general} {named} _")
+    for count in range(arity, -1, -1):
+        alternatives.append("exact " + " ".join([general] + ["_"] * count))
+    # `norm_num` only parses where Mathlib is imported; a parse error would void every alternative.
+    for tactic in (("norm_num", "decide") if mathlib else ("decide",)):
+        for side in (1, 2):
+            if side <= arity:
+                arguments = ["_"] * (arity - side) + [f"(by {tactic})"] * side
+                alternatives.append("exact " + " ".join([general] + arguments))
+    return alternatives
+
+
+def elaborate(
+    source: str, requested_proposition: object, hints: object = ()
+) -> RecipeInstance:
+    """Wrap a Recipe so that Lean itself unifies it with the requested proposition.
+
+    ``hints`` are optional unverified ``(name, literal)`` proposals; they are only extra named
+    arguments tried first, so a wrong hint costs a failed alternative, never a wrong theorem.
+    """
+    declaration, masked = _parse(source, allow_implicit=True)
+    proposition = check_proposition(requested_proposition)
+    arity = len(declaration.parameters)
+    if not 1 <= arity <= MAX_ARITY:
+        raise InstantiationRejected("binding count is outside the supported arity")
+    names = {parameter.name for parameter in declaration.parameters}
+    pairs: list[tuple[str, str]] = []
+    if not isinstance(hints, (list, tuple)) or len(hints) > MAX_BINDINGS:
+        raise InstantiationRejected("too many hints")
+    for item in hints:
+        name, value = (item["variable"], item["value"]) if isinstance(item, dict) else item
+        parameter = next((p for p in declaration.parameters if p.name == name), None)
+        if parameter is None or parameter.kind is None or name not in names:
+            raise InstantiationRejected("hint is not a numeric explicit parameter")
+        pairs.append((name, canonical_value(parameter.kind, value)))
+    if len({name for name, _ in pairs}) != len(pairs):
+        raise InstantiationRejected("duplicate hint")
+    if re.search(rf"(?<![\w'.])({INSTANCE_NAME}|{GENERAL_NAME})(?![\w'.])", masked):
+        raise InstantiationRejected("reserved declaration name already used")
+    general = declaration.name or GENERAL_NAME
+    mathlib = re.search(r"(?m)^import\s+Mathlib\b", masked) is not None
+    start, end = declaration.keyword_span
+    renamed = source[start:end] if declaration.name else f"theorem {GENERAL_NAME}"
+    alternatives = _alternatives(general, arity, pairs, mathlib=mathlib)
+    body = "\n".join(f"  | {alternative}" for alternative in alternatives)
+    instance = (source[:start] + renamed + source[end:]).rstrip("\n") + (
+        f"\n\ntheorem {INSTANCE_NAME} : {proposition} := by\n  first\n{body}\n"
+    )
+    return RecipeInstance(
+        source=instance,
+        source_sha256=hashlib.sha256(instance.encode()).hexdigest(),
+        proposition=proposition,
+        proposition_sha256=hashlib.sha256(proposition.encode()).hexdigest(),
+        bindings=tuple(pairs),
+        general_name=general,
+        mode="elaborated",
+    )
+
+
+def check_alignment(source: str, instance: RecipeInstance) -> bool:
+    """The appended theorem states exactly the requested proposition and nothing else changed."""
+    try:
+        rebuilt = elaborate(source, instance.proposition, instance.bindings)
+    except InstantiationRejected:
+        return False
+    return rebuilt == instance
