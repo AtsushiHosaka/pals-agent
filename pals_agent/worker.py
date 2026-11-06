@@ -128,6 +128,36 @@ _TERMINAL_MARGIN_SECONDS: Final = 30.0
 # An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
 # interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
 _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
+# A delivery that fails closed for a reason the job itself carries (not an outage) three times in a
+# row can never succeed on a fourth: SQS has redelivered it after two full visibility timeouts and
+# the job data has not changed. The queue's own receive count is the only state that survives a
+# worker restart. Acting at the third receive, not the last allowed one, leaves two more receives
+# to retry a terminalization write that failed on a transient API error before the redrive policy
+# moves the message to the dead-letter queue. A live generation claim always defers the decision.
+_NO_PROGRESS_TERMINALIZE_RECEIVE_COUNT: Final = 3
+_NO_PROGRESS_FAILURE_CODE: Final = "pals.proof_job_no_progress"
+_NO_PROGRESS_UPDATE_ATTEMPTS: Final = 3
+_NO_PROGRESS_TERMINALIZABLE_STATES: Final = frozenset(
+    {
+        "queued",
+        "retrieving_context",
+        "drafting",
+        "sketching",
+        "proving",
+        "compiling",
+        "repairing",
+        "semantic_review",
+    }
+)
+_NO_PROGRESS_SNAPSHOT_KEYS: Final = (
+    "state",
+    "lean_code",
+    "result_artifact_uri",
+    "status_context",
+    "diagnostics",
+    "verification_candidate_id",
+    "verification_candidate_state",
+)
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
 _CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
@@ -155,6 +185,7 @@ _LEARNER_FAILURE_MESSAGES: Final = {
         "pals.theorem_alignment_failed": (
             "The generated Lean theorem did not match the requested theorem."
         ),
+        "pals.proof_job_no_progress": "Proof verification could not continue and was stopped.",
         "pals.explanation_deadline_exceeded": "Explanation generation exceeded its deadline.",
         "pals.explanation_review_failed": "Explanation review failed.",
         "pals.explanation_failed": "Explanation generation failed.",
@@ -187,6 +218,7 @@ _LEARNER_FAILURE_MESSAGES: Final = {
         "pals.theorem_alignment_failed": (
             "生成された Lean 定理が要求された定理と一致しませんでした。"
         ),
+        "pals.proof_job_no_progress": "検証を続けられなかったため、処理を終了しました。",
         "pals.explanation_deadline_exceeded": "説明の生成が期限内に完了しませんでした。",
         "pals.explanation_review_failed": "説明のレビューに失敗しました。",
         "pals.explanation_failed": "説明の生成に失敗しました。",
@@ -213,6 +245,7 @@ _LEARNER_FAILURE_MESSAGES: Final = {
         "pals.artifact_checkpoint_failed": "无法持久保存证明结果。",
         "pals.artifact_persistence_failed": "无法持久保存证明结果。",
         "pals.theorem_alignment_failed": "生成的 Lean 定理与请求的定理不匹配。",
+        "pals.proof_job_no_progress": "验证无法继续，已终止处理。",
         "pals.explanation_deadline_exceeded": "说明生成已超过截止时间。",
         "pals.explanation_review_failed": "说明审核失败。",
         "pals.explanation_failed": "说明生成失败。",
@@ -237,6 +270,7 @@ _LEARNER_FAILURE_MESSAGES: Final = {
         "pals.artifact_checkpoint_failed": "無法持久保存證明結果。",
         "pals.artifact_persistence_failed": "無法持久保存證明結果。",
         "pals.theorem_alignment_failed": "產生的 Lean 定理與請求的定理不相符。",
+        "pals.proof_job_no_progress": "驗證無法繼續，已終止處理。",
         "pals.explanation_deadline_exceeded": "說明生成已超過截止時間。",
         "pals.explanation_review_failed": "說明審核失敗。",
         "pals.explanation_failed": "說明生成失敗。",
@@ -441,6 +475,19 @@ class WorkerSqsUnavailableError(RuntimeError):
     """SQS failed continuously past the outage limit, so this lane cannot do its work."""
 
 
+class _NoProgressDelivery(Exception):
+    """A delivery failed closed because of the job's own data, not an outage or a live worker.
+
+    Only these paths may be terminalized, and only on a late delivery. Transport failures, a busy
+    claim, a pending API-owned compile and local configuration problems keep returning False.
+    """
+
+    def __init__(self, reason: str, proof_job: dict[str, Any]) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.proof_job = proof_job
+
+
 @dataclass(frozen=True, slots=True)
 class SqsProofWorker:
     settings: AgentSettings
@@ -588,6 +635,9 @@ class SqsProofWorker:
                         task.id,
                         claim_id=claim_id,
                         extend_visibility=extend_visibility,
+                        delivery_attempt=(
+                            queue_timing["receive_count"] if queue_timing is not None else None
+                        ),
                     )
             elif task.kind == "explanation":
                 with traced_delivery(
@@ -628,15 +678,46 @@ class SqsProofWorker:
         *,
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
+        delivery_attempt: int | None = None,
     ) -> bool:
+        """Process one delivery of a proof job.
+
+        `delivery_attempt` is the queue's receive count for this message. It is only used to
+        stop a job that keeps failing closed for reasons carried by its own data; callers that
+        do not know it (or recurse within one delivery) never terminalize.
+        """
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
         proof_job = self.api_client.get_proof_job(proof_job_id)
         if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
             return True
+        try:
+            return self._process_proof_job_delivery(
+                proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
+        except _NoProgressDelivery as stalled:
+            if (
+                delivery_attempt is None
+                or delivery_attempt < _NO_PROGRESS_TERMINALIZE_RECEIVE_COUNT
+            ):
+                return False
+            return self._terminalize_no_progress(
+                proof_job_id, stalled=stalled, claim_id=claim_id,
+                delivery_attempt=delivery_attempt,
+            )
+
+    def _process_proof_job_delivery(
+        self,
+        proof_job_id: str,
+        *,
+        proof_job: dict[str, Any],
+        claim_id: str | None,
+        extend_visibility: VisibilityExtender | None,
+    ) -> bool:
         context = proof_job.get("request_context", {})
         if not isinstance(context, dict):
-            return False
+            raise _NoProgressDelivery("request_context_invalid", proof_job)
         link_latency_request(context.get("proof_request_id"))
         with ExitStack() as stack:
             try:
@@ -645,12 +726,86 @@ class SqsProofWorker:
                     if context.get("chat_route") is not None else None
                 )
                 stack.enter_context(linked_chat_scope(context, payload))
-            except (PalsApiError, ValueError, TypeError, KeyError):
+            except PalsApiError:
                 return False
+            except (ValueError, TypeError, KeyError) as exc:
+                raise _NoProgressDelivery("chat_input_invalid", proof_job) from exc
             return self._process_proof_job(
                 proof_job_id, proof_job=proof_job, claim_id=claim_id,
                 extend_visibility=extend_visibility,
             )
+
+    def _terminalize_no_progress(
+        self,
+        proof_job_id: str,
+        *,
+        stalled: _NoProgressDelivery,
+        claim_id: str | None,
+        delivery_attempt: int,
+    ) -> bool:
+        """Fail a job that cannot progress, under a claim no live worker holds.
+
+        The generation claim is the only fence against a worker that is still working, so it is
+        taken first and a busy claim ends the attempt. The job is failed only while it is still
+        exactly what the failing deliveries saw; anything the API changed in the meantime is
+        left for the next delivery to judge.
+        """
+        snapshot = stalled.proof_job
+        if claim_id is None or snapshot.get("state") not in _NO_PROGRESS_TERMINALIZABLE_STATES:
+            return False
+        if _has_pending_api_candidate(snapshot):
+            return False  # The API-owned verifier still has work in flight.
+        try:
+            current = self.api_client.get_proof_job(proof_job_id)
+            if _no_progress_snapshot(current) != _no_progress_snapshot(snapshot):
+                return False
+            raw = self.api_client.acquire_proof_generation_claim(
+                proof_job_id=proof_job_id, claim_id=claim_id, required_lease_ms=3_600_000,
+            )
+            status, resource = _parse_no_progress_claim(raw, proof_job_id=proof_job_id)
+        except Exception:
+            return False
+        if status == "terminal":
+            return True
+        if status != "acquired" or _no_progress_snapshot(resource) != _no_progress_snapshot(
+            snapshot
+        ):
+            return False
+        language = snapshot.get("output_language")
+        if language not in _OUTPUT_LANGUAGES:
+            language = "en"
+        diagnostics = _status_diagnostics(
+            [_localized_failure_diagnostic(_NO_PROGRESS_FAILURE_CODE, language=language)],
+            language=language,
+        )
+        failure_context = _proof_status_context(
+            state="failed",
+            raw={"stage": "no_progress"},
+            diagnostics=diagnostics,
+            max_repair_attempts=getattr(self.settings, "max_repair_attempts", 12),
+            language=language,
+        )
+        for _ in range(_NO_PROGRESS_UPDATE_ATTEMPTS):
+            try:
+                self.api_client.update_proof_job(
+                    proof_job_id=proof_job_id,
+                    claim_id=claim_id,
+                    state="failed",
+                    diagnostics=diagnostics,
+                    result_artifact_uri=snapshot.get("result_artifact_uri"),
+                    lean_code=snapshot.get("lean_code"),
+                    context=failure_context,
+                )
+            except PalsApiError:
+                continue
+            note_latency("no_progress_terminalized", 1)
+            _logger.warning(
+                "worker_proof_job_no_progress_terminalized reason=%s receive_count=%d "
+                "job_sha256=%s",
+                stalled.reason, delivery_attempt, _text_sha256(proof_job_id)[:16],
+            )
+            return True
+        return False
 
     def _process_proof_job(
         self, proof_job_id: str, *, proof_job: dict[str, Any],
@@ -664,11 +819,11 @@ class SqsProofWorker:
         if state == "semantic_review":
             lean_code = proof_job.get("lean_code")
             if not isinstance(lean_code, str) or not lean_code.strip():
-                return False
+                raise _NoProgressDelivery("semantic_review_lean_code_missing", proof_job)
             try:
                 candidate_id = _required_verification_candidate_id(proof_job)
-            except ValueError:
-                return False
+            except ValueError as exc:
+                raise _NoProgressDelivery("semantic_review_candidate_invalid", proof_job) from exc
             is_recipe_attempt = proof_job.get("attempt_source") == "recipe"
             if is_recipe_attempt:
                 return self._request_recipe_review(
@@ -679,21 +834,23 @@ class SqsProofWorker:
                 )
             try:
                 generation_session_id = _required_generation_session_id(proof_job)
-            except ValueError:
-                return False
+            except ValueError as exc:
+                raise _NoProgressDelivery("semantic_review_session_invalid", proof_job) from exc
             target_declaration = _persisted_target_declaration(proof_job, lean_code)
             if target_declaration is None:
-                return False
+                raise _NoProgressDelivery("semantic_review_target_missing", proof_job)
             artifact_uri = proof_job.get("result_artifact_uri")
             if not isinstance(artifact_uri, str) or not artifact_uri:
-                return False
+                raise _NoProgressDelivery("semantic_review_artifact_missing", proof_job)
             # A legacy/stale job session may differ from the immutable candidate's
             # owner claim. Check before sending any source to the external reviewer.
-            binding = self._matching_candidate_binding(
+            binding, binding_definitive = self._candidate_binding_lookup(
                 proof_job_id=proof_job_id, candidate_id=candidate_id,
                 claim_id=generation_session_id, lean_code=lean_code,
                 result_artifact_uri=artifact_uri, source_binding_sha256=None,
             )
+            if binding is None and binding_definitive:
+                raise _NoProgressDelivery("semantic_review_binding_mismatch", proof_job)
             if binding is None or binding["candidate_status"] != "semantic_review":
                 return False
             request_context = proof_job.get("request_context")
@@ -833,7 +990,7 @@ class SqsProofWorker:
             not isinstance(context["proof_request_id"], str)
             or not _is_canonical_uuid4(context["proof_request_id"])
         ):
-            return False
+            raise _NoProgressDelivery("linked_request_id_invalid", proof_job)
         formal_statement = context.get("formal_statement")
         if not isinstance(formal_statement, str) or not formal_statement.strip():
             formal_statement = None
@@ -841,8 +998,9 @@ class SqsProofWorker:
         if _has_api_compile_failure(proof_job) and api_repair_seed is None:
             # The API is the compiler authority.  Do not discard or recreate a candidate when
             # its durable repair seed is incomplete; retain the receipt for a later readback.
-            # In particular, do not take a new claim that would delay that retry.
-            return False
+            # In particular, do not take a new claim that would delay that retry. A late
+            # delivery that still finds no seed is terminalized by the caller.
+            raise _NoProgressDelivery("compile_failure_without_repair_seed", proof_job)
 
         if claim_id is None or extend_visibility is None:
             return False
@@ -1132,6 +1290,20 @@ class SqsProofWorker:
         self, *, proof_job_id: str, candidate_id: str, claim_id: str,
         lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
     ) -> dict[str, Any] | None:
+        return self._candidate_binding_lookup(
+            proof_job_id=proof_job_id, candidate_id=candidate_id, claim_id=claim_id,
+            lean_code=lean_code, result_artifact_uri=result_artifact_uri,
+            source_binding_sha256=source_binding_sha256,
+        )[0]
+
+    def _candidate_binding_lookup(
+        self, *, proof_job_id: str, candidate_id: str, claim_id: str,
+        lean_code: str, result_artifact_uri: str, source_binding_sha256: str | None,
+    ) -> tuple[dict[str, Any] | None, bool]:
+        """Return the exact binding, or None and whether the API definitively refused it.
+
+        An unreachable API is not a verdict about the job; an answer that does not match is.
+        """
         expected = {
             "schema_version": "pals.verification-candidate-binding.v1",
             "proof_job_id": proof_job_id,
@@ -1146,7 +1318,7 @@ class SqsProofWorker:
                 proof_job_id=proof_job_id, candidate_id=candidate_id,
             )
         except (PalsApiError, ValueError):
-            return None
+            return None, False
         if (
             not isinstance(binding, dict)
             or set(binding) != {*expected, "candidate_status"}
@@ -1155,8 +1327,8 @@ class SqsProofWorker:
                 "compiling", "semantic_review", "verified", "verification_failed",
             }
         ):
-            return None
-        return binding
+            return None, True
+        return binding, True
 
     def _wait_for_candidate_reconciliation(
         self,
@@ -3260,6 +3432,38 @@ def _synthetic_failure_attempt(
         "checkpoint_status": "published",
         "repair_route": None,
     }
+
+
+def _no_progress_snapshot(proof_job: dict[str, Any]) -> tuple[Any, ...]:
+    """The job fields whose change means somebody else made progress.
+
+    The API reports a job's current claim as its generation session, so taking the claim
+    changes that field by design; it is not part of the comparison.
+    """
+    return tuple(proof_job.get(key) for key in _NO_PROGRESS_SNAPSHOT_KEYS)
+
+
+def _parse_no_progress_claim(payload: Any, *, proof_job_id: str) -> tuple[str, dict[str, Any]]:
+    """Check only what a terminalization relies on in a claim answer.
+
+    `_parse_claim_envelope` rejects a claim on a job in `semantic_review`, because no generation
+    worker should ever work there. Failing such a job is exactly the case that needs the claim.
+    """
+    if not isinstance(payload, dict) or set(payload) != {
+        "claim_status", "lease_remaining_ms", "resource",
+    }:
+        raise ValueError("claim response fields do not match the API contract")
+    status = payload["claim_status"]
+    resource = payload["resource"]
+    if (
+        not isinstance(status, str)
+        or status not in _CLAIM_STATUSES
+        or not isinstance(resource, dict)
+        or resource.get("id") != proof_job_id
+        or not isinstance(resource.get("state"), str)
+    ):
+        raise ValueError("claim response is invalid")
+    return status, resource
 
 
 def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
