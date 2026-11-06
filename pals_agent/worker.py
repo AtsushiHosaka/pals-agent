@@ -1655,6 +1655,7 @@ class SqsProofWorker:
                     content_of=_public_explanation_content,
                     failures=private_review_failures,
                 )
+            _note_ungrounded_override("explanation", proof_job_id, review)
             content = _public_explanation_content(explanation)
             review_evidence = _output_review_evidence(
                 kind="explanation",
@@ -2637,6 +2638,19 @@ def _log_generation_failure(
         x_squared_gate,
         lean_lines,
     )
+
+
+def _note_ungrounded_override(
+    resource: ResourceKind, resource_id: str, review: ProofOutputReview
+) -> None:
+    """Content-free record that a rejection without a quotable defect was reversed."""
+    if review.ungrounded_rejection_overridden:
+        _logger.warning(
+            "explanation_review_ungrounded_rejection_overridden resource=%s id=%s "
+            "ungrounded_rejection_overridden=true",
+            resource,
+            resource_id,
+        )
 
 
 def _review_failure_reason(failures: list[dict[str, Any]]) -> str:

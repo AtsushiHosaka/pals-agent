@@ -1,6 +1,6 @@
 {
   "schema": "pals.explanation-qa-regression.v1",
-  "revision": "v1.1: valid cases now justify every step (positivity of delta from two positive numbers, triangle inequality for |x|, delta <= eps/(2|a|+1), x introduced) and are split in two sections; v1.0 asserted these steps without reason. Wrong cases keep exactly one intended defect each.",
+  "revision": "v1.2: wrong and summary_first cases carry defect_quote, the passage a reviewer can quote to reject them. v1.1: valid cases now justify every step (positivity of delta from two positive numbers, triangle inequality for |x|, delta <= eps/(2|a|+1), x introduced) and are split in two sections; v1.0 asserted these steps without reason. Wrong cases keep exactly one intended defect each.",
   "description": "x² の連続性の説明を独立QAに通す小さな回帰セット。valid_notation は承認、wrong と summary_first は拒否が期待値。数学的内容は人手で確認済みだが、実QAの判定は未検証。",
   "theorem_statement": "x² が連続であることを説明してください。",
   "lean_code": "import Mathlib\n\ntheorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity",
@@ -388,7 +388,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\le\\varepsilon+1"
     },
     {
       "id": "wrong-02-no-minimum-with-one",
@@ -423,7 +424,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "このとき $|x|\\le|a|+|x-a|<|a|+1$"
     },
     {
       "id": "wrong-03-delta-ignores-point",
@@ -458,7 +460,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min(1,\\varepsilon)"
     },
     {
       "id": "wrong-04-coefficient-too-small",
@@ -493,7 +496,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min\\left(1,\\frac{\\varepsilon}{|a|+1}\\right)"
     },
     {
       "id": "wrong-05-delta-doubled",
@@ -528,7 +532,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=2\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)"
     },
     {
       "id": "wrong-06-delta-plus-one",
@@ -563,7 +568,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)+1"
     },
     {
       "id": "wrong-07-not-epsilon-delta",
@@ -586,7 +592,8 @@
           ]
         }
       ],
-      "conclusion": "よって $x^2$ は連続です。"
+      "conclusion": "よって $x^2$ は連続です。",
+      "defect_quote": "連続関数の積は連続です"
     },
     {
       "id": "wrong-08-other-function",
@@ -609,7 +616,8 @@
           ]
         }
       ],
-      "conclusion": "よって $x^3$ は連続です。"
+      "conclusion": "よって $x^3$ は連続です。",
+      "defect_quote": "|x^3-a^3|"
     },
     {
       "id": "wrong-09-no-epsilon",
@@ -632,7 +640,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\min(1,1/(2|a|+1))"
     },
     {
       "id": "wrong-10-uniform-delta",
@@ -655,7 +664,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "\\delta=\\varepsilon/3"
     },
     {
       "id": "summaryfirst-01-proof-plan-opening",
@@ -690,7 +700,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "という方針で示します"
     },
     {
       "id": "summaryfirst-02-conclusion-preview-opening",
@@ -725,7 +736,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "結論から言うと"
     },
     {
       "id": "summaryfirst-03-numbered-steps",
@@ -748,7 +760,8 @@
           ]
         }
       ],
-      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+      "defect_quote": "1. $\\delta=\\min"
     }
   ]
 }

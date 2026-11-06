@@ -91,12 +91,12 @@ python scripts/evaluate_explanation_qa.py --input-usd-per-mtok P --output-usd-pe
 
 # live: needs OPENAI_API_KEY or PALS_OPENAI_API_KEY and all three of the options below
 python scripts/evaluate_explanation_qa.py --execute --budget-usd N \
-    --input-usd-per-mtok P --output-usd-per-mtok Q [--group wrong] [--json-out report.json]
+    --input-usd-per-mtok P --output-usd-per-mtok Q [--repeats 3] [--group wrong] [--json-out report.json]
 ```
 
 Prices are supplied by the operator (the repository has no price table). The run is refused when
-the worst case of all cases exceeds the budget (default output bound 16384 tokens per call, two
-attempts), and stops before a call that could exceed what is left. The report lists false
+the worst case of all cases and repeats exceeds the budget (default output bound 16384 tokens per
+call; each review may ask twice, each ask may retry a malformed answer), and stops before a call that could exceed what is left. The report lists false
 accepts (wrong or summary-first approved), false rejects (valid rejected), errors, and the
 mismatched case ids. Exit status 0 means every case got its expected decision.
 
@@ -127,3 +127,61 @@ hypotheses to be confirmed with the new report fields (`rationale`, `category`,
 `rejected`, or the infrastructure category), the reviewer's `rationale`, the reviewer session
 id, and `raw_reviewer_outputs`, the structured JSON answers exactly as returned (one per
 attempt), captured by a transparent wrapper around the production client.
+
+## Quote-grounded rejection (explanation review only)
+
+The second and third real runs showed the remaining false rejections were not a rubric gap: the
+reviewer wrote "this is a valid epsilon-delta proof" with `approved=false`, or objected that a
+step was "not made explicit". Wording in the rubric does not remove this kind of variance, so
+the decision is now made by code from structured evidence.
+
+Reviewer output for an explanation (clarification and other reviews are unchanged):
+`{"approved", "rationale", "defects": [{"severity": "error"|"nit", "quote", "reason"}]}`.
+`approved` and `rationale` stay for compatibility; a missing `defects` list is accepted. The
+prompt says: reject only with an `error` defect whose `quote` is copied verbatim from the
+learner-visible proof; an unquotable concern, style, level of detail, notation and how explicit
+something is are `nit` or omitted; a missing element is reported by quoting the sentence just
+before the gap and describing the gap in `reason`.
+
+Decision (`LeanGroundedOutputReviewer.review_explanation`, deterministic code):
+
+| Reviewer answer | Result |
+|---|---|
+| any `error` defect whose quote occurs in the proof | rejected (even if `approved=true`) |
+| `approved=true`, no such defect | approved (nits and invented quotes are ignored) |
+| `approved=false`, no such defect | one re-check of the same candidate that asks for quoted defects or approval |
+| re-check returns a quoted `error` | rejected |
+| re-check returns none | approved; `ungrounded_rejection_overridden=True` |
+| transport failure, malformed output, or unreadable schema, in the first call or the re-check | failure (never approval) |
+
+A quote occurs in the proof when, after NFKC folding (full/half width), removal of whitespace,
+`$` and braces and of TeX spacing/sizing commands, and `\dfrac`→`\frac`, it is at least four
+characters long and is a substring of the overview, section summaries and conclusion joined by a
+separator no quote can span. Quotes are never logged or stored: the rejection rationale keeps the
+reasons of the grounded defects, not the quotes. The override leaves a content-free log line
+(`explanation_review_ungrounded_rejection_overridden resource=… id=…`) and the in-memory flag on
+`ProofOutputReview`; the signed review evidence sent to the API is unchanged, because its schema
+is closed.
+
+Cost: one extra call only when a rejection is unsupported.
+
+Regression cases now carry `defect_quote`, the passage a reviewer can quote to reject them; the
+loader refuses a rejected case that has none. `--repeats N` runs every case N times; the report
+adds per-run `defects`, `ungrounded_rejection_overridden`, per-case agreement rates, and counts
+false accepts, false rejects and overrides.
+
+### Safety argument and residual risk
+
+- Grounding removes rejections with no evidence and self-contradictions; an invented quote
+  cannot reject. It does not remove a rejection that quotes a real passage with an unsound reason
+  (for example an over-literal reading of "let x with |x-a|<δ"). That risk is reduced only by the
+  prompt's definition of an error defect and is measured by `--repeats`.
+- Turning an unsupported rejection into an approval can approve a real defect the reviewer fails
+  to quote. The main case is an omission ("a necessary bound is missing") that has no passage of
+  its own. Mitigations: the prompt tells the reviewer to quote the sentence just before the gap;
+  the re-check asks again with the first reason attached; wrong-case coverage (each rejected
+  regression case has a quotable passage) is measured with `--repeats`. Wrong δ forms and
+  presentation defects are quotable by construction.
+- Fail-closed behaviour is unchanged: no reviewer, transport failure, or schema failure never
+  approves. The override applies only when the reviewer answered validly but gave no grounded
+  reason.

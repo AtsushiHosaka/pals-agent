@@ -28,7 +28,7 @@ import os
 import sys
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -37,13 +37,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from pals_agent.explanations import (  # noqa: E402
+    _MIN_QUOTE_CODE_POINTS,
     ExplanationSection,
     LeanLineReference,
     ProofExplanation,
     ProofOutputReview,
     ProofOutputReviewError,
+    _normalize_quote_text,
     _output_review_prompt,
     _parse_explanation,
+    _visible_proof_text,
 )
 
 DEFAULT_CASES = ROOT / "testdata" / "explanation-qa-v1" / "cases.json"
@@ -84,6 +87,8 @@ class Case:
     expected: str
     language: str
     explanation: ProofExplanation
+    # The passage of the explanation a reviewer can quote to reject it (rejected groups only).
+    defect_quote: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,22 +129,31 @@ def load_cases(path: Path) -> CaseFile:
                 )
             except (KeyError, TypeError, ValueError) as exc:
                 raise CaseFileError(f"{case_id}: fails the structural layer: {exc}") from exc
+            explanation = ProofExplanation(
+                overview=overview,
+                sections=tuple(_section(s) for s in sections),
+                conclusion=conclusion,
+                model="regression-fixture",
+                provider="regression-fixture",
+                prompt="",
+                raw_model_output="",
+                elapsed_ms=0,
+            )
+            defect_quote = raw.get("defect_quote")
+            if expected == "reject":
+                # Rejection needs a verbatim quote, so every rejected case must be quotable.
+                needle = _normalize_quote_text(str(defect_quote or ""))
+                visible = _normalize_quote_text(_visible_proof_text(explanation))
+                if len(needle) < _MIN_QUOTE_CODE_POINTS or needle not in visible:
+                    raise CaseFileError(f"{case_id}: defect_quote is not a passage of the proof")
             cases.append(
                 Case(
                     id=case_id,
                     group=group,
                     expected=expected,
                     language=language,
-                    explanation=ProofExplanation(
-                        overview=overview,
-                        sections=tuple(_section(s) for s in sections),
-                        conclusion=conclusion,
-                        model="regression-fixture",
-                        provider="regression-fixture",
-                        prompt="",
-                        raw_model_output="",
-                        elapsed_ms=0,
-                    ),
+                    explanation=explanation,
+                    defect_quote=str(defect_quote) if defect_quote else None,
                 )
             )
     except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
@@ -200,6 +214,9 @@ def run(
     out: Callable[[str], None] = print,
 ) -> int:
     args = _parser().parse_args(argv)
+    if args.repeats < 1:
+        out("--repeats must be at least 1")
+        return 2
     env = os.environ if environ is None else environ
     try:
         case_file = load_cases(args.cases)
@@ -211,6 +228,7 @@ def run(
     report: dict[str, Any] = {
         "mode": "execute" if args.execute else "dry-run",
         "cases": len(cases),
+        "repeats": args.repeats,
         "by_group": {g: sum(1 for c in cases if c.group == g) for g in GROUPS},
         "max_prompt_chars": max(len(p) for p in prompts.values()),
     }
@@ -237,14 +255,19 @@ def run(
     return _emit_live(args, case_file, cases, prompts, reviewer, report, out)
 
 
+# A review may ask twice (an ungrounded rejection is re-checked once), each ask may retry a
+# malformed answer up to `max_attempts` times.
+ASKS_PER_REVIEW = 2
+
+
 def _total_worst_case(
     args: argparse.Namespace, prompts: Mapping[str, str], *, attempts: int
 ) -> float:
-    return sum(
+    return float(args.repeats) * sum(
         worst_case_usd(
             p,
             max_output_tokens=args.max_output_tokens,
-            attempts=attempts,
+            attempts=attempts * ASKS_PER_REVIEW,
             input_price=args.input_usd_per_mtok,
             output_price=args.output_usd_per_mtok,
         )
@@ -305,11 +328,12 @@ def _emit_live(
     spent = 0.0
     results: list[dict[str, Any]] = []
     stopped_early = False
-    for case in cases:
+    planned = [(case, repeat) for repeat in range(1, args.repeats + 1) for case in cases]
+    for case, repeat in planned:
         next_worst = worst_case_usd(
             prompts[case.id],
             max_output_tokens=args.max_output_tokens,
-            attempts=reviewer.max_attempts,
+            attempts=reviewer.max_attempts * ASKS_PER_REVIEW,
             input_price=args.input_usd_per_mtok,
             output_price=args.output_usd_per_mtok,
         )
@@ -317,7 +341,13 @@ def _emit_live(
             stopped_early = True
             break
         decision = "error"
-        detail: dict[str, Any] = {"category": None, "rationale": "", "reviewer_session_id": None}
+        detail: dict[str, Any] = {
+            "category": None,
+            "rationale": "",
+            "reviewer_session_id": None,
+            "defects": [],
+            "ungrounded_rejection_overridden": False,
+        }
         recorder = getattr(reviewer, "client", None)
         raw_outputs: list[str] | None = (
             recorder.outputs if isinstance(recorder, RecordingClient) else None
@@ -337,6 +367,8 @@ def _emit_live(
                     category="approved",
                     rationale=review.rationale,
                     reviewer_session_id=review.session_id,
+                    defects=[asdict(d) for d in review.defects],
+                    ungrounded_rejection_overridden=review.ungrounded_rejection_overridden,
                 )
             except ProofOutputReviewError as exc:
                 decision = "reject" if exc.category == "rejected" else "error"
@@ -344,6 +376,7 @@ def _emit_live(
                     category=exc.category,
                     rationale=exc.rationale,
                     reviewer_session_id=exc.session_id,
+                    defects=[asdict(d) for d in exc.defects],
                 )
             except Exception as exc:  # noqa: BLE001 - report as an error, never as a decision
                 decision = "error"
@@ -352,6 +385,7 @@ def _emit_live(
         results.append(
             {
                 "id": case.id,
+                "repeat": repeat,
                 "group": case.group,
                 "expected": case.expected,
                 "actual": decision,
@@ -366,24 +400,35 @@ def _emit_live(
     report["summary"] = summarize(results)
     ok = (
         not stopped_early
-        and len(results) == len(cases)
+        and len(results) == len(planned)
         and all(r["actual"] == r["expected"] for r in results)
     )
     return _emit(args, report, out, 0 if ok else 1)
 
 
-def summarize(results: Sequence[Mapping[str, str]]) -> dict[str, Any]:
+def summarize(results: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
     by_group: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    per_case: dict[str, dict[str, int]] = defaultdict(lambda: {"runs": 0, "agree": 0})
     for r in results:
         by_group[r["group"]][r["actual"]] += 1
+        per_case[r["id"]]["runs"] += 1
+        per_case[r["id"]]["agree"] += int(r["actual"] == r["expected"])
     wrong = [r for r in results if r["expected"] == "reject"]
     valid = [r for r in results if r["expected"] == "approve"]
     return {
+        "runs": len(results),
         "by_group": {g: dict(v) for g, v in by_group.items()},
         "false_accepts": sum(r["actual"] == "approve" for r in wrong),
         "false_rejects": sum(r["actual"] == "reject" for r in valid),
         "errors": sum(r["actual"] == "error" for r in results),
-        "mismatched_ids": [r["id"] for r in results if r["actual"] != r["expected"]],
+        "ungrounded_rejection_overrides": sum(
+            bool(r.get("ungrounded_rejection_overridden")) for r in results
+        ),
+        "agreement_by_case": {
+            case_id: {**counts, "rate": round(counts["agree"] / counts["runs"], 3)}
+            for case_id, counts in per_case.items()
+        },
+        "mismatched_ids": sorted({r["id"] for r in results if r["actual"] != r["expected"]}),
     }
 
 
@@ -410,6 +455,12 @@ def _parser() -> argparse.ArgumentParser:
         type=int,
         default=16384,
         help="per-call output bound for the worst-case estimate (production cap: 16384)",
+    )
+    parser.add_argument(
+        "--repeats",
+        type=int,
+        default=1,
+        help="run every case N times to measure reviewer variance (cost scales with N)",
     )
     parser.add_argument("--json-out", type=Path, default=None)
     return parser

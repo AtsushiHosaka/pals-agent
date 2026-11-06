@@ -235,11 +235,17 @@ def test_retired_x_squared_failure_labels_are_gone() -> None:
 
 
 def _semantic_stub(prompt: str) -> str:
-    """Stands in for a mathematician: rejects exactly the known-wrong fixtures."""
+    """Stands in for a mathematician: rejects exactly the known-wrong fixtures, with a quote."""
     wrong = [_wrong_marker(payload) for payload in WRONG_VARIANTS.values()]
-    approved = not any(marker in prompt for marker in wrong)
+    found = [marker for marker in wrong if marker in prompt]
+    if not found:
+        return json.dumps({"approved": True, "rationale": "ok", "defects": []})
     return json.dumps(
-        {"approved": approved, "rationale": "ok" if approved else "wrong delta or bound"}
+        {
+            "approved": False,
+            "rationale": "wrong delta or bound",
+            "defects": [{"severity": "error", "quote": found[0], "reason": "wrong delta or bound"}],
+        }
     )
 
 
@@ -481,7 +487,7 @@ GENERAL_REJECTIONS = ["Reject summary-first or conclusion-preview exposition"]
 # Boundary between "tolerate notation" and "reject defects", as the reviewer reads it.
 BOUNDARY_RULES = [
     "Decision rule: approve unless you can name one specific defect",
-    "quote the defective step",
+    "error with a verbatim quote of the defective step",
     "Never reject because the notation, wording, or level of detail differs",
     "the triangle inequality gives",
     "is enough",

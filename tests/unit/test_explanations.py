@@ -301,7 +301,20 @@ def test_independent_output_rejection_is_final_even_if_next_response_would_appro
 ) -> None:
     explanation = _reviewable_explanation()
     responses = [
-        '{"approved": false, "rationale": "The derivation is repeated."}',
+        json.dumps(
+            {
+                "approved": False,
+                "rationale": "The derivation is repeated.",
+                "defects": [
+                    {
+                        "severity": "error",
+                        "quote": "0 を足しても値が変わらない性質",
+                        "reason": "repeated",
+                    }
+                ],
+            },
+            ensure_ascii=False,
+        ),
         '{"approved": true, "rationale": "The theorem is verified."}',
     ]
     if malformed_first:
@@ -323,7 +336,7 @@ def test_independent_output_rejection_is_final_even_if_next_response_would_appro
         )
 
     assert error.value.category == "rejected"
-    assert error.value.rationale == "The derivation is repeated."
+    assert "The derivation is repeated." in error.value.rationale
     assert error.value.session_id is not None
     assert len(client.prompts) == (2 if malformed_first else 1)
     assert len(client.responses) == 1
@@ -1113,7 +1126,16 @@ def test_automated_source_exposition_requires_bridges_without_literal_source_ste
 def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridge() -> None:
     reason = "The argument asserts a key intermediate fact without establishing it."
     client = FakeClient(
-        json.dumps({"approved": False, "rationale": reason}),
+        json.dumps(
+            {
+                "approved": False,
+                "rationale": reason,
+                "defects": [
+                    {"severity": "error", "quote": "現在の等式に当てはめます", "reason": reason}
+                ],
+            },
+            ensure_ascii=False,
+        ),
         json.dumps({"approved": True, "rationale": "The source compiled."}),
     )
     reviewer = LeanGroundedOutputReviewer(
@@ -1126,7 +1148,7 @@ def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridg
             explanation=_reviewable_explanation(), language="en",
         )
     assert error.value.category == "rejected"
-    assert error.value.rationale == reason
+    assert reason in error.value.rationale
     assert len(client.prompts) == 1
     assert len(client.responses) == 1
 
