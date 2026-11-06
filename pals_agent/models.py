@@ -13,7 +13,7 @@ RepairRouteAttemptOutcome = Literal[
 FormalStatementSource = Literal["user"]
 VerificationHarnessSource = Literal["user"]
 SelectedProofMethod = Literal["epsilon_delta"]
-DEFAULT_MAX_REPAIR_ATTEMPTS = 12
+DEFAULT_MAX_REPAIR_ATTEMPTS = 6
 ProofJobState = Literal[
     "queued",
     "retrieving_context",
