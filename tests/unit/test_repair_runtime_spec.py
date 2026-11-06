@@ -210,13 +210,13 @@ def test_pae_016_strict_repair_budget_accepts_only_ascii_base10_range(
     assert AgentSettings.from_env().max_repair_attempts == int(value)
 
 
-def test_pae_016_missing_repair_budget_uses_twelve(
+def test_pae_016_missing_repair_budget_uses_three(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("PALS_MAX_REPAIR_ATTEMPTS", raising=False)
     monkeypatch.delenv("PALS_AGENT_MAX_REPAIR_ATTEMPTS", raising=False)
 
-    assert AgentSettings.from_env().max_repair_attempts == 12
+    assert AgentSettings.from_env().max_repair_attempts == 3
 
 
 @pytest.mark.parametrize(
