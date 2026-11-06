@@ -387,8 +387,9 @@ def test_independent_proof_reviewer_binds_its_decision_to_one_new_session() -> N
     assert LEAN_CODE in client.prompts[0]
 
 
-def test_independent_proof_reviewer_raises_operational_failure_when_review_cannot_complete(
-) -> None:
+def test_independent_proof_reviewer_raises_operational_failure_when_review_cannot_complete() -> (
+    None
+):
     client = FakeClient('{"approved": true}')
     reviewer = LeanProofSemanticReviewer(
         client=client,
@@ -1091,7 +1092,9 @@ def test_automated_source_exposition_requires_bridges_without_literal_source_ste
     source = "theorem target (n : Nat) : n + 0 = n := by simp"
     prompt = _explanation_prompt(
         theorem_statement="Every natural n satisfies n + 0 = n.",
-        lean_code=source, language="en", require_epsilon_delta=False,
+        lean_code=source,
+        language="en",
+        require_epsilon_delta=False,
     )
     assert "Show each essential" in prompt
     assert "why its hypotheses hold" in prompt
@@ -1100,7 +1103,9 @@ def test_automated_source_exposition_requires_bridges_without_literal_source_ste
     assert "separately verified by Lean" in prompt
     review = _output_review_prompt(
         theorem_statement="Every natural n satisfies n + 0 = n.",
-        lean_code=source, explanation=_reviewable_explanation(), language="en",
+        lean_code=source,
+        explanation=_reviewable_explanation(),
+        language="en",
     )
     assert "Lean source lines alone are not grounds for rejection" in review
     assert "without a bibliographic citation or Lean lemma name" in review
@@ -1117,13 +1122,17 @@ def test_automation_does_not_override_rejection_for_a_missing_mathematical_bridg
         json.dumps({"approved": True, "rationale": "The source compiled."}),
     )
     reviewer = LeanGroundedOutputReviewer(
-        client=client, model="explain-model", provider="review-provider", max_attempts=2,
+        client=client,
+        model="explain-model",
+        provider="review-provider",
+        max_attempts=2,
     )
     with pytest.raises(ProofOutputReviewError) as error:
         reviewer.review_explanation(
             theorem_statement="Every natural n satisfies n + 0 = n.",
             lean_code="theorem target (n : Nat) : n + 0 = n := by simp",
-            explanation=_reviewable_explanation(), language="en",
+            explanation=_reviewable_explanation(),
+            language="en",
         )
     assert error.value.category == "rejected"
     assert error.value.rationale == reason
@@ -1139,9 +1148,11 @@ def test_semantic_review_schema_retry_is_bounded_without_echoing_raw_response(ra
     )
     with pytest.raises(ProofSemanticReviewUnavailable) as error:
         reviewer.review_proof(
-            theorem_statement="True", formal_statement=None,
+            theorem_statement="True",
+            formal_statement=None,
             target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
-            lean_code="example : True := by trivial", timeout_seconds=4,
+            lean_code="example : True := by trivial",
+            timeout_seconds=4,
         )
     assert error.value.failure_kind == "schema"
     assert len(client.prompts) == 2
@@ -1161,7 +1172,8 @@ def test_semantic_provider_error_is_never_retried_or_cast_as_math_rejection():
     )
     with pytest.raises(ProofSemanticReviewUnavailable) as error:
         reviewer.review_proof(
-            theorem_statement="True", formal_statement=None,
+            theorem_statement="True",
+            formal_statement=None,
             target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
             lean_code="example : True := by trivial",
         )
@@ -1174,7 +1186,8 @@ def test_valid_semantic_rejection_is_final_without_schema_revote():
     client = FakeClient('{"approved": false, "rationale": "The requested target differs."}')
     reviewer = LeanProofSemanticReviewer(client=client, model="explain-model", provider="test")
     review = reviewer.review_proof(
-        theorem_statement="False", formal_statement=None,
+        theorem_statement="False",
+        formal_statement=None,
         target_declaration=LeanTargetDeclaration(kind="example", name=None, proposition="True"),
         lean_code="example : True := by trivial",
     )
@@ -1226,12 +1239,16 @@ def test_stated_conventions_are_premises_for_explanation_and_its_review() -> Non
         "Conventions: 0^0 = 1. Every other definition keeps its standard meaning."
     )
     prompt = _explanation_prompt(
-        theorem_statement=statement, lean_code=LEAN_CODE, language="en",
+        theorem_statement=statement,
+        lean_code=LEAN_CODE,
+        language="en",
         require_epsilon_delta=False,
     )
     review = _output_review_prompt(
-        theorem_statement=statement, lean_code=LEAN_CODE,
-        explanation=_reviewable_explanation(), language="en",
+        theorem_statement=statement,
+        lean_code=LEAN_CODE,
+        explanation=_reviewable_explanation(),
+        language="en",
     )
     for text in (prompt, review):
         assert "is a premise of the claim" in text
@@ -1243,3 +1260,118 @@ def test_stated_conventions_are_premises_for_explanation_and_its_review() -> Non
     # The existing soundness gates are unchanged.
     assert "Reject circular reasoning" in review
     assert "A true equality with a wrong stated justification" in review
+
+
+# --- the output language is checked by code, not by the reviewer --------------------------
+
+
+def _prose_payload(overview: str, summary: str, conclusion: str) -> str:
+    return json.dumps(
+        {
+            "overview": overview,
+            "sections": [
+                {
+                    "id": "s",
+                    "title": "t",
+                    "summary": summary,
+                    "references": [
+                        {"start_line": 4, "end_line": 4, "excerpt": "  simpa using Nat.add_zero n"}
+                    ],
+                }
+            ],
+            "conclusion": conclusion,
+        },
+        ensure_ascii=False,
+    )
+
+
+ENGLISH = _prose_payload(
+    "Fix an arbitrary natural number $n$.",
+    "Adding zero to $n$ leaves it unchanged, which is the statement $n+0=n$.",
+    "Therefore the equality holds for every natural number.",
+)
+JAPANESE = _prose_payload(
+    "任意の自然数 $n$ を固定します。",
+    "$n$ に $0$ を足しても値は変わらないので、$n+0=n$ が成り立ちます。",
+    "よって、等式は任意の自然数について成り立ちます。",
+)
+CHINESE = _prose_payload(
+    "任取一个自然数 $n$。",
+    "给 $n$ 加上零不会改变它的值，所以 $n+0=n$ 成立。",
+    "因此该等式对每个自然数都成立。",
+)
+
+
+@pytest.mark.parametrize(
+    ("payload", "language", "accepted"),
+    [
+        (JAPANESE, "ja", True),
+        (ENGLISH, "ja", False),
+        (CHINESE, "ja", False),
+        (ENGLISH, "en", True),
+        (JAPANESE, "en", False),
+        (CHINESE, "zh-Hans", True),
+        (CHINESE, "zh-Hant", True),
+        (JAPANESE, "zh-Hans", False),
+        (ENGLISH, "zh-Hans", False),
+    ],
+)
+def test_prose_in_another_language_is_rejected_by_code_and_retried(
+    payload: str, language: str, accepted: bool
+) -> None:
+    explainer, client = build_explainer(payload, payload)
+    if accepted:
+        explainer.explain(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            verified=True,
+            language=language,
+        )
+        assert len(client.prompts) == 1
+        return
+    with pytest.raises(ExplanationGenerationError) as raised:
+        explainer.explain(
+            theorem_statement="n + 0 = n を示せ",
+            lean_code=LEAN_CODE,
+            verified=True,
+            language=language,
+        )
+    assert raised.value.attempt_failures == ("output_language", "output_language")
+    assert len(client.prompts) == 2
+
+
+def test_math_spans_do_not_count_as_prose_and_very_short_prose_is_not_judged() -> None:
+    from pals_agent.explanations import _require_prose_language
+
+    english_inside_math = (
+        "$\\text{this sentence is inside math and is ignored by the check}$ です。"
+    )
+    _require_prose_language([english_inside_math, "よって $x$ は連続です。"], "ja")
+    _require_prose_language(["Q.E.D."], "ja")  # fewer than 8 letters of prose
+    with pytest.raises(ValueError, match="output language"):
+        _require_prose_language(["Fix a real number and add zero to it."], "ja")
+
+
+def test_stored_explanations_are_not_language_checked_by_the_api_parser() -> None:
+    """`proof_explanation_from_api` defaults to ja; an English stored explanation stays valid."""
+    from pals_agent.explanations import proof_explanation_from_api
+
+    payload = json.loads(ENGLISH)
+    payload.update(model="m", provider="p", elapsed_ms=0)
+    proof_explanation_from_api(payload, lean_code=LEAN_CODE)
+
+
+def test_every_regression_case_is_in_its_own_language() -> None:
+    import pathlib
+
+    from pals_agent.explanations import _require_prose_language
+
+    cases = json.loads(
+        (pathlib.Path(__file__).parents[2] / "testdata/explanation-qa-v1/cases.json").read_text(
+            encoding="utf-8"
+        )
+    )["cases"]
+    assert len(cases) > 40
+    for case in cases:
+        texts = [case["overview"], *(s["summary"] for s in case["sections"]), case["conclusion"]]
+        _require_prose_language(texts, case["language"])

@@ -506,14 +506,14 @@ STANDARD_FACTS = [
 ]
 # Typical defects, and the single element each one must fail.
 DEFECT_TO_ELEMENT = {
-    "A construction that relies on a bound it does not guarantee fails": "delta_bounded_by_one",
+    "If delta is not defined with a minimum with 1": "delta_bounded_by_one",
     "A delta that ignores a": "delta_depends_on_point_and_epsilon",
     "a chain ending in epsilon+1": "final_inequality",
     "for delta=min(1, epsilon/(|a|+1))": "final_inequality",
     "delta plus 1, twice delta": "delta_bounded_by_one",
     "A sum instead of a product": "factorization",
     "for example delta=epsilon-|a| or delta=1-epsilon": "delta_positive_justified",
-    "An assertion with no step at all": "sum_bound",
+    "A bound asserted with no basis at all": "sum_bound",
     "previews the proof plan or the conclusion": "presentation",
 }
 # Every rejection condition of the original (pre-checklist) rubric belongs to exactly one
@@ -524,12 +524,13 @@ LEGACY_REJECTIONS = {
     "the same calculation is written twice": "presentation",
     "previews the proof plan or the conclusion": "presentation",
     "Lean tactics or identifiers": "presentation",
-    "a false mathematical claim anywhere in it": "other_defect",
+    "a false mathematical claim (": "other_defect",
     "circular reasoning": "other_defect",
-    "not in the requested output language": "other_defect",
     "about what Lean verified": "other_defect",
-    "Lean lines that does not match": "other_defect",
+    "circular reasoning (the conclusion is assumed)": "other_defect",
 }
+# Judged by code (or the structural layer), not by the reviewer.
+NOT_JUDGED_BY_THE_REVIEWER = ["not in the requested output language", "Lean lines that does not"]
 
 
 def _x_squared_review_prompt() -> str:
@@ -576,6 +577,32 @@ def test_each_original_rejection_condition_belongs_to_exactly_one_element(
     assert owners == [element]
 
 
+def test_language_and_lean_references_are_not_the_reviewers_job_in_checklist_mode() -> None:
+    prompt = _x_squared_review_prompt()
+    assert "all learner-facing prose is written in" not in prompt
+    assert "language-neutral" not in prompt
+    assert "narrowest line ranges" not in prompt  # the source-correspondence rules
+    assert "The output language and the Lean line references are checked elsewhere" in prompt
+    for condition in NOT_JUDGED_BY_THE_REVIEWER:
+        assert condition not in prompt
+
+
+def test_other_reviews_still_judge_language_and_source_correspondence() -> None:
+    explainer, _ = _explainer(_payload())
+    candidate = _explain(explainer)
+    reviewer, qa = _reviewer(_approve)
+    reviewer.review_explanation(
+        theorem_statement="n + 0 = n を示せ",
+        lean_code="theorem t (n : Nat) : n + 0 = n := by\n  simp",
+        explanation=candidate,
+        language="ja",
+    )
+    prompt = " ".join(qa.prompts[0].split())
+    assert "all learner-facing prose is written in `ja`" in prompt
+    assert "language-neutral" in prompt
+    assert "narrowest line ranges" in prompt
+
+
 def test_the_two_catch_all_elements_are_ok_or_wrong_only() -> None:
     definitions = _definitions(_x_squared_review_prompt())
     for catch_all in ("presentation", "other_defect"):
@@ -615,7 +642,8 @@ def test_evident_facts_need_no_reason_but_unclear_positivity_does() -> None:
     assert "delta=epsilon-|a| or delta=1-epsilon" in positivity
     assert "delta<=1 is evident and needs no further word" in definitions["delta_bounded_by_one"]
     assert "delta=sqrt(a²+epsilon)-|a|" in definitions["delta_bounded_by_one"]  # other proofs
-    assert "one standard step is enough" in definitions["sum_bound"]
+    assert "is one evident step because the text has just stated" in definitions["sum_bound"]
+    assert "no basis at all" in definitions["sum_bound"]
     assert "is evident from the definition of the minimum" in definitions["final_inequality"]
     assert "The proof is already verified by Lean" in prompt
     assert "need no word of justification" in prompt

@@ -498,3 +498,33 @@ def test_json_out_is_written(tmp_path: Path) -> None:
     code, lines = _run(["--json-out", str(target)])
     assert code == 0
     assert json.loads(target.read_text(encoding="utf-8")) == json.loads(lines[0])
+
+
+def test_the_ablation_flag_drops_other_defect_only_in_the_regression_tool(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent import factory, settings
+    from pals_agent.explanations import LeanGroundedOutputReviewer
+
+    class Silent:
+        def generate(self, **_: Any) -> str:
+            return "{}"
+
+    production = LeanGroundedOutputReviewer(client=Silent(), model="m", provider="p")
+    assert "other_defect" in production.checklist_ids  # production always asks every element
+    monkeypatch.setattr(settings.AgentSettings, "from_env", classmethod(lambda cls: object()))
+    monkeypatch.setattr(factory, "build_proof_output_reviewer", lambda _settings: production)
+
+    with_all = qa._production_reviewer()
+    ablated = qa._production_reviewer(without_other_defect=True)
+    assert "other_defect" in with_all.checklist_ids
+    assert "other_defect" not in ablated.checklist_ids
+    assert set(ablated.checklist_ids) == set(EPSILON_DELTA_CHECK_IDS) - {"other_defect"}
+    assert isinstance(ablated.client, qa.RecordingClient)
+
+
+def test_the_report_records_whether_other_defect_was_switched_off() -> None:
+    _, plain = _run([])
+    _, ablation = _run(["--without-other-defect"])
+    assert json.loads(plain[0])["without_other_defect"] is False
+    assert json.loads(ablation[0])["without_other_defect"] is True

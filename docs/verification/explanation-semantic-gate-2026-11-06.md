@@ -175,20 +175,25 @@ would otherwise never be able to reject. Each answer is `{id, status: ok|missing
 
 Decision (deterministic code, `LeanGroundedOutputReviewer.review_explanation`):
 
-- One sample rejects iff some element is `missing` or `wrong`. A `missing` or `wrong` entry must
-  have a nonblank `note` (schema). `quote` is informational: it is kept in the report, never
-  checked against the proof and never used in the decision.
+- A sample only reports its checklist; the code combines the two samples (next bullets). A failed
+  entry should have a `note`; if it has none a fixed reason is filled in and it still counts.
+  `quote` is informational: it is kept in the report, never checked against the proof and never
+  used in the decision.
 - The review is sampled **twice, independently and in parallel** (two sessions, the same prompt;
   `ThreadPoolExecutor` with copied contexts, like the existing parallel recipe reviews, so both
-  calls reach the claim's meter and reporter). The explanation is approved only if both samples
-  approve; **either sample can reject**.
-- A rejection is conclusive whatever the other sample did. If no sample rejected and one failed
-  (transport, malformed output, incomplete checklist), the review fails; a missing vote is never an
-  approval. Pool shutdown joins both samples even when one raises.
+  calls reach the claim's meter and reporter). Combination rule, per element:
+  the nine **core** elements (the mathematics of the proof) reject if **either** sample reports
+  them missing or wrong (OR: a missed defect cannot be taken back); the two **catch-alls**,
+  `presentation` and `other_defect`, reject only if **both** samples report the same element
+  wrong (AND: they are where a reviewer invents defects).
+- A core rejection is conclusive whatever the other sample did. Otherwise, if a sample failed
+  (transport, malformed output, incomplete checklist) the review fails: a catch-all needs every
+  vote and a missing vote is never an approval. Pool shutdown joins both samples even when one
+  raises.
 - The reviewer's own `approved` flag is ignored; a disagreement with the checklist is kept in
   memory and logged without text (`explanation_review_flag_contradicted_checklist`).
-- A missing, repeated or unknown id, an unknown status, `presentation: missing`, or a blank note on
-  a failed element is a schema failure (retried once per sample, then fail-closed).
+- A missing, repeated or unknown id, an unknown status, or `missing` on a catch-all is a schema
+  failure (retried once per sample, then fail-closed).
 - The rejection reason is built only from the failed elements of the rejecting samples (union of
   ids, in checklist order) with their notes; quotes and proof text are not stored or logged.
 
@@ -350,3 +355,42 @@ the next `--repeats 3` run tests them.
   is a request that names another property itself (a derivative, uniform continuity) paired with a
   target about such a property. "Prove x² is continuous without derivatives" no longer switches
   the check off. English requests without 連続 are still not aligned deterministically (unchanged).
+
+## Narrowing the catch-all and AND over the samples (measurement of 095afef)
+
+Measured with the full checklist (v1.6, 50 cases x 3, gpt-6-luna): valid 57/66 approved, wrong
+71/75 rejected, summary-first 9/9. The version before `other_defect` (18701ec, v1.5) had valid
+62/63 and wrong 64/69. Seven of the nine false rejections were `other_defect`, and the reasons
+were invented: "the explanation is not in Japanese" (it was), "the Lean reference is one
+automation line but is cited as the basis of each step" (references are verified by code), and a
+self-contradiction ("the last inequality does not hold ... but in fact it does").
+
+Changes:
+
+1. `other_defect` is limited to three things, each shown by a specific sentence: a false
+   mathematical claim (a wrong assertion about another function or property), a false claim about
+   what Lean verified (each inequality separately verified), circular reasoning. The output
+   language and the Lean references are no longer asked of the reviewer in checklist mode: the
+   sentences about the output language and the source-correspondence rules were removed from the
+   prompt (other reviews keep them).
+2. The output language is checked by code in the structural layer of every generated
+   explanation (`_require_prose_language`, used by `explain()` only, so stored explanations in
+   another language remain valid). The prose is the text with `$...$`, `$$...$$`, `\(...\)` and
+   `\[...\]` removed; at least 8 letters are needed to judge. ja: kana+kanji at least 0.3 of the
+   letters and kana at least 0.1 (so Chinese prose is not taken for Japanese); en: ASCII letters at
+   least 0.6; zh: kanji at least 0.3 and kana under 0.05. Japanese prose in the fixtures and in all
+   50 regression cases has a kana share above 0.5, English and Chinese prose are near 0 on the
+   Japanese measure, so the thresholds sit far from both populations. A failure retries the
+   generation like any structural failure (label `output_language`).
+3. Combination: core elements OR, catch-alls AND (see Decision). The reports still keep every
+   sample's catch-all remarks.
+4. Definitions follow what the measurement showed was missed. `delta_bounded_by_one`: if delta is
+   not a minimum with 1 and there is no equivalent mechanism, a claim such as `|x|<|a|+1` has no
+   basis (missing). `sum_bound`: the basis of the bound (triangle inequality with `|x-a|<1`)
+   is in the text or is one evident step because `|x|<|a|+1` was just stated; a bound asserted
+   with no basis is missing. `final_inequality`: every inequality the text asserts must be true
+   for the chosen delta; a false one (delta<=eps/(2|a|+1) for delta=min(1, eps/(|a|+1))) is wrong,
+   and this is stated first. The relaxed standard (evident facts need no word) is unchanged.
+5. Ablation: `scripts/evaluate_explanation_qa.py --without-other-defect` runs the same cases
+   without asking `other_defect` (the reviewer's `checklist_ids`); production always asks every
+   element, and the report records which setting was used.

@@ -22,6 +22,7 @@ import pytest
 from pals_agent.explanations import (
     CHECKLIST_SAMPLES,
     EPSILON_DELTA_CHECK_IDS,
+    EPSILON_DELTA_CORE_IDS,
     ExplanationSection,
     LeanGroundedOutputReviewer,
     LeanLineReference,
@@ -36,8 +37,8 @@ from pals_agent.worker import _note_review_flag_contradiction
 LEAN = "theorem t : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
 STATEMENT = "x² が連続であることを説明してください。"
 ADD_ZERO = "theorem add_zero_nat (n : Nat) : n + 0 = n := by\n  simp"
-CATCH_ALL_IDS = ["presentation", "other_defect"]  # ok or wrong only
-MATH_IDS = [i for i in EPSILON_DELTA_CHECK_IDS if i not in CATCH_ALL_IDS]
+CATCH_ALL_IDS = ["presentation", "other_defect"]  # ok or wrong only, AND over the samples
+MATH_IDS = list(EPSILON_DELTA_CORE_IDS)  # OR over the samples
 CALL_ID = "11111111-1111-4111-8111-111111111111"
 
 
@@ -167,7 +168,7 @@ def test_any_element_that_is_not_ok_rejects_whatever_its_quote(
 
 
 @pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
-def test_the_catch_all_elements_reject_on_wrong(check_id: str) -> None:
+def test_the_catch_all_elements_reject_when_every_sample_says_wrong(check_id: str) -> None:
     client = Client(_answer({check_id: ("wrong", "", "some other defect")}))
     with pytest.raises(ProofOutputReviewError) as raised:
         _review(client)
@@ -220,7 +221,78 @@ def test_the_quote_key_is_optional() -> None:
     assert raised.value.category == "rejected"
 
 
-# --- two independent samples, either can reject ------------------------------------------
+# --- two independent samples: core elements are OR, the catch-alls are AND -----------------
+
+
+@pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
+def test_a_catch_all_reported_by_only_one_sample_does_not_reject(check_id: str) -> None:
+    """The catch-alls are where a reviewer invents defects: one accusation is not enough."""
+    client = Client(by_thread=([_answer()], [_answer({check_id: ("wrong", "", "invented")})]))
+    review = _review(client)
+    assert len(review.samples) == 2
+    flagged = [c.id for sample in review.samples for c in sample if c.blocks]
+    assert flagged == [check_id]  # kept in the report, not used for the decision
+
+
+@pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
+def test_a_catch_all_wrong_in_one_sample_and_a_core_miss_in_the_other_rejects(
+    check_id: str,
+) -> None:
+    client = Client(
+        by_thread=(
+            [_answer({check_id: ("wrong", "", "x")})],
+            [_answer({"sum_bound": ("missing", "", "no basis")})],
+        )
+    )
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert "sum_bound (missing): no basis" in raised.value.rationale
+    assert check_id not in raised.value.rationale  # only one sample said it
+
+
+def test_the_two_catch_alls_are_counted_separately() -> None:
+    client = Client(
+        by_thread=(
+            [_answer({"presentation": ("wrong", "", "a")})],
+            [_answer({"other_defect": ("wrong", "", "b")})],
+        )
+    )
+    assert _review(client)  # no element was reported wrong by both samples
+
+
+@pytest.mark.parametrize("check_id", CATCH_ALL_IDS)
+def test_a_failed_sample_leaves_a_catch_all_undecided_and_fails_closed(check_id: str) -> None:
+    client = Client(by_thread=([_answer({check_id: ("wrong", "", "x")})], [RuntimeError("down")]))
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(client)
+    assert raised.value.category == "transport"
+
+
+def test_the_ablation_asks_every_core_element_but_not_other_defect() -> None:
+    ids = tuple(i for i in EPSILON_DELTA_CHECK_IDS if i != "other_defect")
+    answer = json.loads(_answer())
+    answer["checks"] = [c for c in answer["checks"] if c["id"] != "other_defect"]
+    client = Client(json.dumps(answer))
+    review = _review(client, checklist_ids=ids)
+    assert all(len(sample) == len(ids) for sample in review.samples)
+    assert "other_defect" not in client.prompts[0]
+    # An answer that still contains the dropped element is a schema failure.
+    with pytest.raises(ProofOutputReviewError) as raised:
+        _review(Client(_answer()), checklist_ids=ids)
+    assert raised.value.category == "schema"
+
+
+def test_the_default_asks_every_element_and_the_ids_are_validated() -> None:
+    client = Client(_answer())
+    _review(client)
+    assert "- other_defect:" in client.prompts[0]
+    with pytest.raises(ValueError, match="core element"):
+        _reviewer(Client(_answer()), checklist_ids=("presentation",))
+    with pytest.raises(ValueError, match="unknown id"):
+        _reviewer(Client(_answer()), checklist_ids=(*EPSILON_DELTA_CHECK_IDS, "made_up"))
+
+
+# --- either core sample can reject ------------------------------------------
 
 
 def test_one_rejecting_sample_is_enough_to_reject() -> None:

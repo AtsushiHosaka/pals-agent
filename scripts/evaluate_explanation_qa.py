@@ -254,6 +254,7 @@ def run(
         "mode": "execute" if args.execute else "dry-run",
         "cases": len(cases),
         "repeats": args.repeats,
+        "without_other_defect": args.without_other_defect,
         "by_group": {g: sum(1 for c in cases if c.group == g) for g in GROUPS},
         "max_prompt_chars": max(len(p) for p in prompts.values()),
     }
@@ -269,7 +270,10 @@ def run(
 
     try:
         _check_live_preconditions(args, env, priced)
-        reviewer = (reviewer_factory or _production_reviewer)()
+        reviewer = (
+            reviewer_factory
+            or (lambda: _production_reviewer(without_other_defect=args.without_other_defect))
+        )()
         worst = _total_worst_case(args, prompts, attempts=reviewer.max_attempts)
         report["worst_case_usd"] = worst
         if worst > args.budget_usd:
@@ -329,14 +333,21 @@ class RecordingClient:
         return output
 
 
-def _production_reviewer() -> Reviewer:
+def _production_reviewer(*, without_other_defect: bool = False) -> Reviewer:
     import dataclasses
 
     from pals_agent.factory import build_proof_output_reviewer
     from pals_agent.settings import AgentSettings
 
     reviewer = build_proof_output_reviewer(AgentSettings.from_env())
-    return dataclasses.replace(reviewer, client=RecordingClient(reviewer.client))  # type: ignore[return-value]
+    # Production always asks every element. The ablation drops other_defect only here, in
+    # this regression tool, to measure what that catch-all costs.
+    ids = tuple(
+        i for i in EPSILON_DELTA_CHECK_IDS if not (without_other_defect and i == "other_defect")
+    )
+    return dataclasses.replace(  # type: ignore[return-value]
+        reviewer, client=RecordingClient(reviewer.client), checklist_ids=ids
+    )
 
 
 def _emit_live(
@@ -501,6 +512,11 @@ def _parser() -> argparse.ArgumentParser:
         type=int,
         default=1,
         help="run every case N times to measure reviewer variance (cost scales with N)",
+    )
+    parser.add_argument(
+        "--without-other-defect",
+        action="store_true",
+        help="ablation: do not ask the other_defect element (production always asks it)",
     )
     parser.add_argument("--json-out", type=Path, default=None)
     return parser
