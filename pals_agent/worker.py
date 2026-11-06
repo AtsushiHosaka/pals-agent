@@ -3435,7 +3435,13 @@ def _repair_seed_fields_absent(proof_job: dict[str, Any]) -> bool:
     Anything deeper (the generated proof, the route, diagnostics) is parsed by this worker's own
     code, which a newer worker may read differently, so a seed that merely fails to parse is not
     treated as missing.
+
+    Only a job that is itself `compiling` can be judged: in any other state (for example
+    `repairing`, where only a failed candidate of an earlier attempt remains) the missing seed
+    says nothing about this job, so it is left for redelivery.
     """
+    if proof_job.get("state") != "compiling":
+        return False
     context = proof_job.get("status_context")
     if not isinstance(context, dict) or context.get("stage") != "compiling":
         return True
