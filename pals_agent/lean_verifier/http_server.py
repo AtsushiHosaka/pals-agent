@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import http.server
+import io
 import json
+import math
 import re
+import socket
 import ssl
 import threading
 import time
@@ -162,8 +165,13 @@ class IsolatedVerifierHttpSettings:
     recipe_admission_context: RecipeAdmissionVerifierContext
     port: int = _VERIFIER_PORT
     max_concurrent_compiles: int = 1
+    handshake_timeout_seconds: float = 5
+    http_timeout_seconds: float = 10
 
     def __post_init__(self) -> None:
+        for timeout in (self.handshake_timeout_seconds, self.http_timeout_seconds):
+            if not math.isfinite(timeout) or not 0 < timeout <= 30:
+                raise ValueError("verifier transport timeouts must be positive and bounded")
         if not self.bind_host or self.bind_host.strip() != self.bind_host:
             raise ValueError("bind_host must be a nonblank private endpoint host")
         if self.port != _VERIFIER_PORT:
@@ -207,20 +215,112 @@ class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
         self.admission_verifier = admission_verifier if admission_verifier is not None else verifier
         self.recipe_admission_context = settings.recipe_admission_context
         self.compile_slot = threading.BoundedSemaphore(settings.max_concurrent_compiles)
+        self._connection_slots = threading.BoundedSemaphore(16)
+        self._connection_threads: set[threading.Thread] = set()
+        self._connection_lock = threading.Lock()
         self.ready = True
         super().__init__((settings.bind_host, settings.port), _RequestHandler)
 
-    def get_request(self) -> tuple[ssl.SSLSocket, tuple[str, int]]:
-        connection, address = super().get_request()
+    def process_request(self, request: Any, client_address: Any) -> None:
+        if not self._connection_slots.acquire(blocking=False):
+            self.shutdown_request(request)
+            return
         try:
-            tls_connection = self.settings.ssl_context.wrap_socket(
-                connection,
-                server_side=True,
+            thread = threading.Thread(
+                target=self.process_request_thread, args=(request, client_address),
+                daemon=self.daemon_threads,
             )
+            with self._connection_lock:
+                # Track only successfully started threads. The worker cannot
+                # remove itself until it has been registered under this lock.
+                thread.start()
+                self._connection_threads.add(thread)
         except BaseException:
-            connection.close()
+            self._connection_slots.release()
             raise
-        return tls_connection, address
+
+    def process_request_thread(self, request: Any, client_address: Any) -> None:
+        connection: socket.socket = request
+        try:
+            request.settimeout(self.settings.handshake_timeout_seconds)
+            connection = self.settings.ssl_context.wrap_socket(
+                request, server_side=True, do_handshake_on_connect=False,
+            )
+            assert isinstance(connection, ssl.SSLSocket)
+            connection.do_handshake()
+            if not _trusted_peer(connection, self.settings):
+                return
+            connection.settimeout(self.settings.http_timeout_seconds)
+            self.finish_request(connection, client_address)
+        except OSError:
+            # TLS/idle transport failures carry no application result.
+            pass
+        except Exception:
+            self.handle_error(connection, client_address)
+        finally:
+            try:
+                self.shutdown_request(connection)
+            finally:
+                self._connection_slots.release()
+                with self._connection_lock:
+                    self._connection_threads.discard(threading.current_thread())
+
+    def server_close(self) -> None:
+        super().server_close()
+        if self.block_on_close:
+            with self._connection_lock:
+                threads = tuple(self._connection_threads)
+            for thread in threads:
+                if not thread.daemon:
+                    thread.join()
+
+
+def _trusted_peer(connection: socket.socket, settings: IsolatedVerifierHttpSettings) -> bool:
+    if not isinstance(connection, ssl.SSLSocket) or connection.version() != "TLSv1.3":
+        return False
+    peer_der = connection.getpeercert(binary_form=True)
+    if not isinstance(peer_der, bytes) or not peer_der:
+        return False
+    try:
+        certificate = x509.load_der_x509_certificate(peer_der)
+        client_spki_sha256 = hashlib.sha256(
+            certificate.public_key().public_bytes(
+                serialization.Encoding.DER,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+        ).hexdigest()
+        identities = certificate.extensions.get_extension_for_class(
+            x509.SubjectAlternativeName
+        ).value.get_values_for_type(x509.UniformResourceIdentifier)
+    except (ValueError, x509.ExtensionNotFound):
+        return False
+    return (
+        client_spki_sha256 == settings.reconciler_client_spki_sha256
+        and identities == [settings.reconciler_client_spiffe_uri]
+    )
+
+
+class _ReceiveDeadline(io.RawIOBase):
+    def __init__(self, source: Any, connection: socket.socket) -> None:
+        super().__init__()
+        self.source = source
+        self.connection = connection
+        self.deadline: float | None = None
+
+    def readable(self) -> bool:
+        return True
+
+    def readinto(self, buffer: Any) -> int | None:
+        if self.deadline is not None:
+            remaining = self.deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("HTTP receive deadline exceeded")
+            self.connection.settimeout(remaining)
+        return cast(int | None, self.source.readinto(buffer))
+
+    def close(self) -> None:
+        self.source.close()
+        super().close()
 
 
 class _RequestHandler(http.server.BaseHTTPRequestHandler):
@@ -228,6 +328,26 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
     server_version = ""
     sys_version = ""
+
+    def setup(self) -> None:
+        super().setup()
+        self.rfile.close()
+        self._receive = _ReceiveDeadline(
+            self.connection.makefile("rb", buffering=0), self.connection,
+        )
+        self.rfile = io.BufferedReader(self._receive)
+
+    def handle_one_request(self) -> None:
+        self._receive.deadline = time.monotonic() + self.server.settings.http_timeout_seconds
+        try:
+            super().handle_one_request()
+        finally:
+            self._end_receive()
+
+    def _end_receive(self) -> None:
+        # Compiler execution retains its independent, longer deadline.
+        self._receive.deadline = None
+        self.connection.settimeout(self.server.settings.http_timeout_seconds)
 
     def log_message(self, _format: str, *args: object) -> None:
         """The verifier never writes request material to an access log."""
@@ -237,6 +357,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         self.close_connection = True
 
     def do_GET(self) -> None:
+        self._end_receive()
         if self.path != "/ready" or not self._trusted_peer():
             self.close_connection = True
             return
@@ -423,29 +544,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         )
 
     def _trusted_peer(self) -> bool:
-        connection = self.connection
-        if not isinstance(connection, ssl.SSLSocket) or connection.version() != "TLSv1.3":
-            return False
-        peer_der = connection.getpeercert(binary_form=True)
-        if not isinstance(peer_der, bytes) or not peer_der:
-            return False
-        try:
-            certificate = x509.load_der_x509_certificate(peer_der)
-            client_spki_sha256 = hashlib.sha256(
-                certificate.public_key().public_bytes(
-                    serialization.Encoding.DER,
-                    serialization.PublicFormat.SubjectPublicKeyInfo,
-                )
-            ).hexdigest()
-            identities = certificate.extensions.get_extension_for_class(
-                x509.SubjectAlternativeName
-            ).value.get_values_for_type(x509.UniformResourceIdentifier)
-        except (ValueError, x509.ExtensionNotFound):
-            return False
-        return (
-            client_spki_sha256 == self.server.settings.reconciler_client_spki_sha256
-            and identities == [self.server.settings.reconciler_client_spiffe_uri]
-        )
+        return _trusted_peer(self.connection, self.server.settings)
 
     def _binding_headers_match(self) -> bool:
         binding = self.server.settings.binding
@@ -473,6 +572,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if not 1 <= length <= _MAX_REQUEST_BYTES:
             return None, None
         raw = self.rfile.read(length)
+        self._end_receive()
         if len(raw) != length:
             return None, None
         try:
@@ -520,6 +620,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if not 1 <= length <= _MAX_REQUEST_BYTES:
             return None, None
         raw = self.rfile.read(length)
+        self._end_receive()
         if len(raw) != length:
             return None, None
         try:
