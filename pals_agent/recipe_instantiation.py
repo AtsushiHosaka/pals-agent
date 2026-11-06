@@ -581,6 +581,10 @@ def elaborate(
         raise InstantiationRejected("too many hints")
     for item in hints:
         name, value = (item["variable"], item["value"]) if isinstance(item, dict) else item
+        if not isinstance(name, str) or _DISPLAY_NAME.fullmatch(name) is None:
+            # The API's wire contract carries only short display names; a hint is optional, so a
+            # name outside it is dropped and Lean's unification decides alone.
+            continue
         parameter = next((p for p in declaration.parameters if p.name == name), None)
         if parameter is None or parameter.kind is None or name not in names:
             raise InstantiationRejected("hint is not a numeric explicit parameter")

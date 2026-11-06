@@ -169,3 +169,14 @@ def test_rejections_carry_a_typed_inst_classification(source, bindings, code):
     with pytest.raises(InstantiationRejected) as caught:
         instantiate(source, bindings)
     assert caught.value.code == code
+
+
+def test_shared_module_is_byte_identical_across_repositories():
+    """pals-agent and pals-api carry the same grammar; changing one without the other fails here.
+
+    Update `module_sha256` in the shared vectors in BOTH repositories together with the module.
+    """
+    import hashlib
+
+    source = (Path(__file__).parents[2] / "pals_agent/recipe_instantiation.py").read_bytes()
+    assert hashlib.sha256(source).hexdigest() == VECTORS["module_sha256"]

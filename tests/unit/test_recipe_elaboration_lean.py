@@ -34,6 +34,12 @@ IMPLICIT = (
     "  List.length_append\n"
 )
 HYPOTHESIS = "theorem pred_succ (n : Nat) (h : 0 < n) : n - 1 + 1 = n := Nat.sub_add_cancel h\n"
+TYPECLASS = (
+    "theorem replicate_len {α : Type} [Inhabited α] (n : Nat) :\n"
+    "    (List.replicate n (default : α)).length = n := by simp\n"
+)
+DEPENDENT = "theorem fin_lt (n : Nat) (i : Fin (n + 1)) : i.val < n + 1 := i.isLt\n"
+HIGHER_ORDER = "theorem app_eq (f : Nat → Nat) (a : Nat) : f a = f a := rfl\n"
 EXISTS = "theorem some_nat : ∃ n : Nat, n = n := ⟨0, rfl⟩\n"
 
 
@@ -51,6 +57,11 @@ def verifier() -> LeanVerifier:
     pytest.param(IMPLICIT, "([1, 2] ++ [3]).length = [1, 2].length + [3].length",
                  id="implicit-type-argument"),
     pytest.param(HYPOTHESIS, "5 - 1 + 1 = 5", id="side-condition-closed-by-decide"),
+    pytest.param(TYPECLASS, "(List.replicate 3 (default : Nat)).length = 3",
+                 id="instance-argument"),
+    pytest.param(DEPENDENT, "(0 : Fin (2 + 1)).val < 2 + 1", id="dependent-binder-fin"),
+    pytest.param(HIGHER_ORDER, "(fun y => y + 1) (2 * 3) = (fun y => y + 1) (2 * 3)",
+                 id="higher-order-pattern-lambda-argument"),
 ])
 def test_elaborator_derives_arguments_and_verifier_accepts(source, request_):
     instance = elaborate(source, request_)
@@ -68,6 +79,9 @@ def test_elaborator_derives_arguments_and_verifier_accepts(source, request_):
     pytest.param(ADD, "(3 : Int) + 4 = 4 + 3", id="type-mismatch-nat-vs-int"),
     pytest.param(HYPOTHESIS, "0 - 1 + 1 = 0", id="unprovable-premise"),
     pytest.param(ADD, "3 + 4 = 4 + 4", id="wrong-statement"),
+    pytest.param(DEPENDENT, "(0 : Fin (2 + 1)).val < 2", id="dependent-binder-wrong-bound"),
+    pytest.param(HIGHER_ORDER, "(fun y => y + 1) 3 = (fun y => y + 2) 3",
+                 id="higher-order-two-different-functions"),
 ])
 def test_lean_refuses_what_is_not_an_instance(source, request_):
     instance = elaborate(source, request_)
@@ -110,9 +124,16 @@ def test_alignment_rejects_tampered_wrappers_and_foreign_sources():
 
 
 def test_hints_must_be_numeric_literals_of_explicit_parameters():
-    for hints in ([("zzz", "2")], [("a", "x")], [("a", "-1")], [("a", "1"), ("a", "2")]):
+    for hints in ([("z", "2")], [("a", "x")], [("a", "-1")], [("a", "1"), ("a", "2")]):
         with pytest.raises(InstantiationRejected):
             elaborate(ADD, "1 + 1 = 1 + 1", hints)
+
+
+def test_hint_names_outside_the_wire_pattern_are_dropped():
+    # The API accepts only short display names; anything else is left to Lean's unification.
+    source = "theorem pw (base exp : Nat) : base ^ exp = base ^ exp := rfl\n"
+    instance = elaborate(source, "2 ^ 3 = 2 ^ 3", [{"variable": "base", "value": "2"}])
+    assert instance.bindings == () and "(base :=" not in instance.source
 
 
 def test_elaborated_answer_never_asserts_arguments_in_prose():

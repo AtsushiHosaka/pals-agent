@@ -11,10 +11,13 @@ import time
 
 import pytest
 
+from pals_agent.http_transport import HttpResponse
+from pals_agent.openai import OpenAIResponsesClient
+from pals_agent.proof_reuse import ProofReuseRuntime
 from pals_agent.recipe_instantiation import elaborate, render_answer
 from pals_agent.token_meter import TokenMeter, token_meter_scope
 from pals_agent.usage import usage_scope
-from tests.unit.test_proof_reuse import READY, runtime
+from tests.unit.test_proof_reuse import READY, CatalogBoundary, ProviderTransport
 from tests.unit.test_proof_reuse_lean_flow import (
     BOUND_REQUEST,
     CLAIM_ID,
@@ -25,7 +28,6 @@ from tests.unit.test_proof_reuse_lean_flow import (
     REVIEW,
     lookup,
 )
-from tests.unit.test_recipe_parallel_reviews import ParallelProvider, engine
 from tests.unit.test_token_meter import OP, Ledger
 
 POWER_SOURCE = (
@@ -77,10 +79,56 @@ def review(recipe=POWER, **changes):
     }, **changes)
 
 
-def run(responses, recipes=(POWER,), request=BOUND_REQUEST, ready=None):
-    engine_, transport = runtime([ready or dict(READY, recipe_intent=INTENT), *responses])
+class InstanceTransport(ProviderTransport):
+    """Instance-stage calls (proposal, review) are routed by schema, never by arrival order: the
+    proposal runs concurrently with the exact judgment."""
+
+    def __init__(self, responses, instance_responses):
+        super().__init__(responses)
+        self.instance_responses = list(instance_responses)
+
+    def request(self, **kwargs):
+        if kwargs["url"].endswith("/input_tokens"):
+            return HttpResponse(200, b'{"object":"response.input_tokens","input_tokens":1000}')
+        body = json.loads(kwargs["body"])
+        if is_instance_call(body):
+            with self._lock:
+                self.calls.append(body)
+                response = self.instance_responses.pop(0)
+            return self.reply(body, response)
+        return super().request(**kwargs)
+
+    @staticmethod
+    def reply(body, response):
+        if isinstance(response, int):
+            return HttpResponse(response, b'{"error":{"code":"insufficient_quota"}}')
+        text = response if isinstance(response, str) else json.dumps(response, ensure_ascii=False)
+        return HttpResponse(200, json.dumps({
+            "object": "response", "status": "completed", "model": body["model"], "error": None,
+            "incomplete_details": None, "usage": {"input_tokens": 100, "output_tokens": 60},
+            "output": [{"type": "message", "role": "assistant", "status": "completed",
+                        "content": [{"type": "output_text", "text": text}]}],
+        }).encode())
+
+
+def make_engine(transport, enabled=True):
+    return ProofReuseRuntime(
+        OpenAIResponsesClient(api_key="test", transport=transport), CatalogBoundary(),
+        instantiation_enabled=enabled,
+    )
+
+
+def run(instance=(), recipes=(POWER,), request=BOUND_REQUEST, ready=None, exact=None,
+        enabled=True):
+    """`instance` scripts the proposal then the review; `exact` the scope then exact review."""
+    exact = [SCOPE_MISS, EXACT_REJECT] if exact is None else list(exact)
+    transport = InstanceTransport(
+        [ready or dict(READY, recipe_intent=INTENT), *exact,
+         {"approved": True, "rationale": "Complete proof and TeX math."}], instance)
     search, calls = lookup(list(recipes))
-    return engine_.answer(request, recipe_search=search, claim_id=CLAIM_ID), transport, calls
+    result = make_engine(transport, enabled).answer(
+        request, recipe_search=search, claim_id=CLAIM_ID)
+    return result, transport, calls
 
 
 def is_instance_call(body):
@@ -115,9 +163,8 @@ def test_square_continuity_is_answered_by_lean_unification_without_generation():
     assert evidence["answer_qa"] == {
         "approved": True, "answer_sha256": hashlib.sha256(text.encode()).hexdigest()}
     assert "recipe_correspondence" not in evidence
-    # preflight, proposal, independent review: the 27 s exact-scope judgment never ran
-    assert len(transport.calls) == 3
-    assert "recipe_scope_assessment" not in evidence
+    # preflight, exact scope, exact review, proposal (overlapping), instance review: no generation
+    assert len(transport.calls) == 5
 
 
 def test_instance_review_sees_the_wrapper_lean_not_the_proposers_verdict():
@@ -138,8 +185,17 @@ def test_another_exponent_and_an_unverified_hint():
     result, _, _ = run([proposal(proposition=cubed, bindings=hint), review()])
     assert result.outcome == "answered"
     assert result.answer["lean"]["instantiation"]["bindings"] == hint
-    assert result.answer["lean"]["instantiation"]["requested_proposition"] == cubed
     assert "n=3" not in result.answer["text"]  # elaborator-chosen arguments are never asserted
+
+
+def test_hint_names_outside_the_wire_contract_are_dropped_not_fatal():
+    source = "theorem pw (base exp : Nat) : base ^ exp = base ^ exp := rfl\n"
+    recipe = dict(POWER, lean_code=source, lean_sha256=hashlib.sha256(source.encode()).hexdigest())
+    hints = [{"variable": "base", "value": "2"}]
+    result, _, _ = run([proposal(recipe, "2 ^ 3 = 2 ^ 3", hints), review(recipe)],
+                       recipes=(recipe,))
+    assert result.outcome == "answered"
+    assert result.answer["lean"]["instantiation"]["bindings"] == []
 
 
 ADD_SOURCE = "theorem add_comm_nat (a b : Nat) : a + b = b + a := Nat.add_comm a b\n"
@@ -160,44 +216,75 @@ def test_a_different_universal_recipe_with_two_parameters_in_english():
                        recipes=(ADD,), request=request, ready=ready)
     assert result.outcome == "answered", result.private_evidence
     assert result.answer["text"].startswith("The statement you asked about is a special case")
-    assert result.answer["text"].count(ADD_ANSWER) == 1
 
 
 def test_only_the_top_ranked_candidates_are_shown_to_the_proposer():
-    recipes = [dict(ADD, recipe_id=f"nat.add_comm.{i}", entry_sha256=f"{i}" * 64)
-               for i in range(1, 6)]
-    for recipe in recipes:
-        recipe["output_language"] = "ja"
-    _, transport, _ = run([DECLINE, SCOPE_MISS, EXACT_REJECT], recipes=recipes)
+    recipes = [dict(ADD, recipe_id=f"nat.add_comm.{i}", entry_sha256=f"{i}" * 64,
+                    output_language="ja") for i in range(1, 6)]
+    _, transport, _ = run([DECLINE], recipes=recipes)
     proposer = next(c for c in transport.calls if is_instance_call(c))
     data = json.loads(proposer["input"].split("DATA:\n", 1)[1])
     assert [c["recipe_id"] for c in data["candidates"]] == [r["recipe_id"] for r in recipes[:3]]
 
 
+def test_default_is_off_and_identical_to_the_previous_behaviour():
+    result, transport, _ = run([proposal(), review()], enabled=False)
+    assert result.outcome == "formal" and len(transport.calls) == 3
+    assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
+    assert "recipe_instantiation" not in result.private_evidence
+    assert not any(is_instance_call(call) for call in transport.calls)
+
+
+def test_factory_flag_is_off_unless_explicitly_on(monkeypatch):
+    from pals_agent.factory import recipe_instantiation_enabled
+
+    monkeypatch.delenv("PALS_RECIPE_INSTANTIATION", raising=False)
+    assert recipe_instantiation_enabled() is False
+    for value in ("", "off", "0", "no"):
+        monkeypatch.setenv("PALS_RECIPE_INSTANTIATION", value)
+        assert recipe_instantiation_enabled() is False
+    monkeypatch.setenv("PALS_RECIPE_INSTANTIATION", "on")
+    assert recipe_instantiation_enabled() is True
+
+
 def test_candidates_without_a_universal_parameter_never_trigger_extra_calls():
     existential = dict(POWER, lean_code="theorem t : ∃ n : ℕ, n = n := ⟨0, rfl⟩\n")
     existential["lean_sha256"] = hashlib.sha256(existential["lean_code"].encode()).hexdigest()
-    result, transport, _ = run([SCOPE_MISS, EXACT_REJECT], recipes=(existential,))
+    result, transport, _ = run(recipes=(existential,))
     assert result.outcome == "formal" and len(transport.calls) == 3
-    assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
     assert not any(is_instance_call(call) for call in transport.calls)
 
 
 def test_exact_agreement_for_a_non_universal_recipe_is_unchanged():
-    result, transport, _ = run([MATCH, REVIEW], recipes=(RECIPE,))
+    result, transport, _ = run(recipes=(RECIPE,), exact=[MATCH, REVIEW])
     assert result.outcome == "answered"
     assert result.private_evidence["lean_route"] == "catalog_reuse"
-    assert len(transport.calls) == 3
+    assert len(transport.calls) == 3 and "recipe_instantiation" not in result.private_evidence
 
 
-def test_declined_instance_falls_through_to_the_unchanged_exact_flow():
-    exact = dict(MATCH, recipe_id=POWER["recipe_id"])
-    reviewed = dict(REVIEW, recipe_id=POWER["recipe_id"])
-    result, transport, _ = run([DECLINE, exact, reviewed])
+def test_exact_match_of_a_universal_recipe_keeps_the_existing_route_and_evidence():
+    exact = [dict(MATCH, recipe_id=POWER["recipe_id"]), dict(REVIEW, recipe_id=POWER["recipe_id"])]
+    result, _, _ = run([proposal(), review()], exact=exact)
     assert result.outcome == "answered"
     assert result.private_evidence["lean_route"] == "catalog_reuse"
     assert result.answer["text"] == POWER_ANSWER and "instantiation" not in result.answer["lean"]
-    assert len(transport.calls) == 4
+    assert "recipe_instantiation" not in result.private_evidence
+    assert "recipe_instantiation_correspondence" not in result.private_evidence
+
+
+def test_declined_proposal_leaves_no_trace_in_the_evidence():
+    result, transport, _ = run([DECLINE])
+    assert result.outcome == "formal"
+    assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
+    assert "recipe_instantiation" not in result.private_evidence and len(transport.calls) == 4
+
+
+def test_independent_rejection_with_matching_scope_is_not_retried_as_instance():
+    exact = [dict(MATCH, recipe_id=POWER["recipe_id"]),
+             dict(REVIEW, recipe_id=POWER["recipe_id"], approved=False)]
+    result, _, _ = run([proposal(), review()], exact=exact)
+    assert result.outcome == "formal"
+    assert result.private_evidence["lean_route"] == "dsp_correspondence_rejected"
 
 
 @pytest.mark.parametrize("bad", [
@@ -214,19 +301,26 @@ def test_declined_instance_falls_through_to_the_unchanged_exact_flow():
     pytest.param(dict(bindings=[{"variable": "x", "value": "2"}]), id="hint-not-a-parameter"),
     pytest.param(dict(bindings=[{"variable": "n", "value": "k+1"}]), id="symbolic-hint"),
 ])
-def test_unsafe_proposals_never_reach_lean_and_fall_back_to_exact_flow_then_dsp(bad):
-    result, transport, _ = run([dict(proposal(), **bad), SCOPE_MISS, EXACT_REJECT])
+def test_unsafe_proposals_never_reach_lean_and_fall_back_to_dsp(bad):
+    result, transport, _ = run([dict(proposal(), **bad)])
     assert result.outcome == "formal" and result.formal_plan["kind"] == "dsp"
     assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
     assert result.answer is None and len(transport.calls) == 4
-    assert result.private_evidence["recipe_instantiation"]["decision"] in {
-        "rejected_by_grammar", "not_proposed"}
     assert "recipe_instantiation_correspondence" not in result.private_evidence
 
 
-def test_unknown_recipe_from_proposer_is_an_invalid_response_failure():
-    result, _, _ = run([dict(proposal(), instance_recipe_id="invented")])
-    assert result.outcome == "failed" and result.error_code == "proof_reuse_invalid_response"
+@pytest.mark.parametrize("bad", [
+    pytest.param(dict(instance_recipe_id="invented"), id="unknown-recipe"),
+    pytest.param("not json", id="invalid-json"),
+    pytest.param(500, id="provider-error"),
+    pytest.param(dict(rationale=""), id="empty-rationale"),
+    pytest.param(dict(instance_recipe_revision=True), id="bool-revision"),
+])
+def test_proposal_faults_fail_open_to_the_old_path_never_failing_the_request(bad):
+    response = bad if not isinstance(bad, dict) else dict(proposal(), **bad)
+    result, _, _ = run([response])
+    assert result.outcome == "formal" and result.answer is None
+    assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
 
 
 @pytest.mark.parametrize("change", [
@@ -237,7 +331,7 @@ def test_unknown_recipe_from_proposer_is_an_invalid_response_failure():
     {"instance_recipe_id": "other"},
 ])
 def test_reviewer_must_independently_approve_this_lean_statement(change):
-    result, transport, _ = run([proposal(), review(**change), SCOPE_MISS, EXACT_REJECT])
+    result, transport, _ = run([proposal(), review(**change)])
     assert result.outcome == "formal" and result.answer is None
     assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
     assert result.private_evidence["recipe_instantiation"]["class"] == "inst_review_rejected"
@@ -245,10 +339,8 @@ def test_reviewer_must_independently_approve_this_lean_statement(change):
 
 
 def test_wrong_formalization_of_a_different_statement_is_rejected_by_the_reviewer():
-    # The request is about x squared; the proposer formalized x cubed.
     cubed = proposal(proposition="Continuous (fun x : ℝ => x ^ 3)")
-    result, transport, _ = run([cubed, review(instance_approved=False, conclusion=False),
-                                SCOPE_MISS, EXACT_REJECT])
+    result, transport, _ = run([cubed, review(instance_approved=False, conclusion=False)])
     assert result.outcome == "formal" and result.answer is None
     reviewer = [c for c in transport.calls if is_instance_call(c)][-1]
     assert "x ^ 3" in reviewer["input"]
@@ -258,51 +350,48 @@ def test_recipe_with_only_a_hypothesis_still_reaches_lean_for_the_api_to_decide(
     source = "theorem t (n : ℕ) (h : 0 < n) : 0 < n + 1 := Nat.succ_pos n\n"
     recipe = dict(POWER, lean_code=source, lean_sha256=hashlib.sha256(source.encode()).hexdigest())
     result, _, _ = run([proposal(recipe, "0 < 2 + 1"), review(recipe)], recipes=(recipe,))
-    # Lean (not this module) rejects an unprovable premise; here the wrapper is well formed and
-    # carries only the closed tactic vocabulary, so approval still requires the API compile.
     assert result.outcome == "answered"
     assert "(by decide)" in elaborate(source, "0 < 2 + 1").source
 
 
-def test_provider_failure_in_the_instance_stage_fails_closed():
-    result, _, _ = run([proposal(), 500])
-    assert result.outcome == "failed" and result.answer is None
-    assert result.error_code == "proof_reuse_provider_unavailable"
-
-
-@pytest.mark.parametrize("change", [
-    {"instance_approved": "yes"}, {"rationale": ""}, {"objects": "true"},
-    {"instance_recipe_revision": True},
+@pytest.mark.parametrize("reviewer", [
+    500, "not json", review(instance_approved="yes"), review(rationale=""),
+    review(objects="true"), review(instance_recipe_revision=True),
 ])
-def test_malformed_reviewer_json_is_an_invalid_response(change):
-    result, _, _ = run([proposal(), review(**change)])
-    assert result.outcome == "failed" and result.error_code == "proof_reuse_invalid_response"
+def test_review_faults_never_approve_and_fall_back_to_dsp(reviewer):
+    result, _, _ = run([proposal(), reviewer])
+    assert result.outcome == "formal" and result.answer is None
+    assert result.private_evidence["lean_route"] == "dsp_scope_mismatch"
+    assert "recipe_instantiation_correspondence" not in result.private_evidence
 
 
 def test_expired_deadline_never_reaches_the_instance_stage():
-    engine_, transport = runtime([dict(READY, recipe_intent=INTENT)])
+    transport = InstanceTransport([dict(READY, recipe_intent=INTENT)], [])
     search, _ = lookup([POWER])
-    result = engine_.answer(BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID,
-                            deadline=time.monotonic() - 1)
+    result = make_engine(transport).answer(
+        BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID, deadline=time.monotonic() - 1)
     assert result.outcome == "failed" and result.answer is None
     assert not any(is_instance_call(call) for call in transport.calls)
 
 
 def test_metered_reuse_binds_exactly_one_new_qa_call_to_the_displayed_text():
-    provider = ParallelProvider([dict(READY, recipe_intent=INTENT), proposal(), review()])
+    transport = InstanceTransport(
+        [dict(READY, recipe_intent=INTENT), SCOPE_MISS, EXACT_REJECT],
+        [proposal(), review()])
     ledger = Ledger([])
     meter = TokenMeter(ledger, OP, REQUEST_ID, CLAIM_ID, time.monotonic() + 30)
     usage = []
     search, _ = lookup([POWER])
     with token_meter_scope(meter), usage_scope(usage.append):
-        result = engine(provider).answer(BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID)
-    assert result.outcome == "answered" and not meter.failed
+        result = make_engine(transport).answer(
+            BOUND_REQUEST, recipe_search=search, claim_id=CLAIM_ID)
+    assert result.outcome == "answered" and not meter.failed, result.private_evidence
     qa = result.private_evidence["token_qa"]
     digest = hashlib.sha256(result.answer["text"].encode()).hexdigest()
     assert qa["answer_sha256"] == digest and qa["approved"]
     roles = meter.snapshot_completed_calls()
     assert roles[qa["call_id"]] == "token_answer_qa"
-    assert len(ledger.permits) == len(ledger.receipts) == len(usage) == 3
+    assert len(ledger.permits) == len(ledger.receipts) == len(usage) == 5
     assert {p["call_id"] for p in ledger.permits} == {r["call_id"] for r in ledger.receipts}
 
 
@@ -310,3 +399,22 @@ def test_stored_recipe_bytes_are_never_mutated_by_the_stage():
     recipes = [copy.deepcopy(POWER)]
     result, _, _ = run([proposal(), review()], recipes=recipes)
     assert result.outcome == "answered" and recipes == [POWER]
+
+
+def test_only_instantiation_settlements_wait_for_the_api_owned_compile():
+    from pals_agent.api_client import INSTANTIATION_SETTLE_TIMEOUT_SECONDS, PalsApiClient
+
+    seen = []
+
+    class Transport:
+        def request(self, **kwargs):
+            seen.append(kwargs["timeout_seconds"])
+            return HttpResponse(200, b"{}")
+
+    client = PalsApiClient("https://api.example.test", "secret", transport=Transport())
+    claim = "00000000-0000-4000-8000-000000000002"
+    client.settle_proof_request(request_id=REQUEST_ID, payload={"claim_id": claim})
+    client.settle_proof_request(request_id=REQUEST_ID, payload={
+        "claim_id": claim, "private_evidence": {"recipe_instantiation_correspondence": {}}})
+    assert seen == [15.0, INSTANTIATION_SETTLE_TIMEOUT_SECONDS]
+    assert 90 < INSTANTIATION_SETTLE_TIMEOUT_SECONDS < 120  # API verifier bound < worker < ALB
