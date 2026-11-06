@@ -25,6 +25,12 @@ theorem add_zero_nat (n : Nat) : n + 0 = n := by
   simpa using Nat.add_zero n"""
 
 
+X_SQUARED_LEAN_CODE = """import Mathlib
+
+theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by
+  continuity"""
+
+
 class FakeClient:
     def __init__(self, *responses: str) -> None:
         self.responses = list(responses)
@@ -114,7 +120,7 @@ def epsilon_delta_payload(
                         {
                             "start_line": 4,
                             "end_line": 4,
-                            "excerpt": "  simpa using Nat.add_zero n",
+                            "excerpt": "  continuity",
                         }
                     ],
                 }
@@ -510,7 +516,7 @@ def test_x_squared_continuity_requires_an_epsilon_delta_explanation() -> None:
 
     result = explainer.explain(
         theorem_statement="x² が連続であることを説明してください。",
-        lean_code=LEAN_CODE,
+        lean_code=X_SQUARED_LEAN_CODE,
         verified=True,
     )
 
@@ -555,7 +561,7 @@ def test_x_squared_summary_first_exposition_is_left_to_independent_review() -> N
 
     result = explainer.explain(
         theorem_statement="x² が連続であることを説明してください。",
-        lean_code=LEAN_CODE,
+        lean_code=X_SQUARED_LEAN_CODE,
         verified=True,
     )
 
@@ -625,7 +631,7 @@ def test_x_squared_continuity_accepts_equivalent_katex_notation(
 
     result = explainer.explain(
         theorem_statement="x² が連続であることを説明してください。",
-        lean_code=LEAN_CODE,
+        lean_code=X_SQUARED_LEAN_CODE,
         verified=True,
     )
 
@@ -653,7 +659,7 @@ def test_x_squared_continuity_accepts_english_epsilon_delta_explanation() -> Non
                         {
                             "start_line": 4,
                             "end_line": 4,
-                            "excerpt": "  simpa using Nat.add_zero n",
+                            "excerpt": "  continuity",
                         }
                     ],
                 }
@@ -665,7 +671,7 @@ def test_x_squared_continuity_accepts_english_epsilon_delta_explanation() -> Non
 
     result = explainer.explain(
         theorem_statement="x^2 が連続であることを証明してください。",
-        lean_code=LEAN_CODE,
+        lean_code=X_SQUARED_LEAN_CODE,
         verified=True,
         language="en",
     )
@@ -758,7 +764,7 @@ def test_x_squared_continuity_incomplete_epsilon_delta_is_left_to_independent_re
 
     result = explainer.explain(
         theorem_statement="x² が連続であることを説明してください。",
-        lean_code=LEAN_CODE,
+        lean_code=X_SQUARED_LEAN_CODE,
         verified=True,
     )
 

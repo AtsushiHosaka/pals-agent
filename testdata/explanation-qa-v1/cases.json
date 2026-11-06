@@ -1,0 +1,537 @@
+{
+  "schema": "pals.explanation-qa-regression.v1",
+  "description": "x² の連続性の説明を独立QAに通す小さな回帰セット。valid_notation は承認、wrong と summary_first は拒否が期待値。数学的内容は人手で確認済みだが、実QAの判定は未検証。",
+  "theorem_statement": "x² が連続であることを説明してください。",
+  "lean_code": "import Mathlib\n\ntheorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity",
+  "cases": [
+    {
+      "id": "valid-01-base",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "基本形",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-02-dfrac-vert-equality-end",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\dfrac, \\vert, 連鎖が = ε で終わる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\dfrac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$\\vert x-a\\vert<\\delta$ とすると $\\delta\\le1$ より $\\vert x\\vert<\\vert a\\vert+1$ なので、$\\vert x+a\\vert<2\\vert a\\vert+1$ です。したがって $\\vert x^2-a^2\\vert=\\vert x-a\\vert\\vert x+a\\vert<\\delta(2\\vert a\\vert+1)\\le\\dfrac{\\varepsilon}{2|a|+1}(2|a|+1)=\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-03-operatorname-leqslant",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\operatorname{min}, \\leqslant",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\operatorname{min}\\{1,\\varepsilon/(2|a|+1)\\}$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\leqslant1$ より $|x|<|a|+1$ なので、$|x+a|\\leqslant|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\leqslant\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-04-mathrm-lvert",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\mathrm{min}, \\lvert",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\mathrm{min}\\{1,\\varepsilon/(2|a|+1)\\}$ とおきます。$\\delta>0$ です。$\\lvert x-a\\rvert<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=\\lvert x-a\\rvert|x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-05-point-first-opening",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "点を先に述べる冒頭",
+      "overview": "実数 $a$ と $\\varepsilon>0$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-06-factorization-in-abs",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "|(x-a)(x+a)| を経由",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|(x-a)(x+a)|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-07-different-delta",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "別の十分な δ = min(1, ε/(2(|a|+1)))",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2(|a|+1)}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\delta\\cdot2(|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-08-renamed-variables",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "変数名 b, y",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $b$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|b|+1}\\right)$ とおきます。$\\delta>0$ です。$|y-b|<\\delta$ とすると $\\delta\\le1$ より $|y|<|b|+1$ なので、$|y+b|\\le|y|+|b|<2|b|+1$ です。したがって $|y^2-b^2|=|y-b||y+b|<\\delta(2|b|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$b$ は任意なので、平方関数は実数全体で連続です。"
+    },
+    {
+      "id": "valid-09-words-positive-and-gt",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "ja",
+      "note": "\\gt と『δ は正の数』",
+      "overview": "$\\varepsilon\\gt0$ と実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta$ は正の数です。$|x-a|<\\delta$ とすると $\\delta\\leq1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "valid-10-english",
+      "group": "valid_notation",
+      "expected": "approve",
+      "language": "en",
+      "note": "英語",
+      "overview": "Let $\\varepsilon>0$ be arbitrary and fix a real number $a$.",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "Put $\\delta=\\min\\!\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$, which is positive. If $|x-a|<\\delta$ then $|x|<|a|+1$ because $\\delta\\le1$, so $|x+a|\\le|x|+|a|<2|a|+1$. Hence $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$.",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "Since $a$ was arbitrary, $x^2$ is continuous on $\\mathbb{R}$."
+    },
+    {
+      "id": "wrong-01-epsilon-plus-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "評価が ε+1 で終わる",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon+1$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-02-no-minimum-with-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "min(1,·) がなく |x+a| の評価が正当化されない",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\frac{\\varepsilon}{2|a|+1}$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると このとき $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-03-delta-ignores-point",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ が a を無視",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min(1,\\varepsilon)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-04-coefficient-too-small",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "係数不足 ε/(|a|+1)",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-05-delta-doubled",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ を 2 倍",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=2\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le2$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-06-delta-plus-one",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "δ に 1 を加える",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)+1$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-07-not-epsilon-delta",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε–δ でなく積の連続性だけ",
+      "overview": "実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$x\\mapsto x$ は連続で、連続関数の積は連続です。よって $x\\mapsto x\\cdot x$ は点 $a$ で連続です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "よって $x^2$ は連続です。"
+    },
+    {
+      "id": "wrong-08-other-function",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "別の関数 x^3",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min(1,\\varepsilon/(3|a|+3))$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ のとき $|x^3-a^3|=|x-a||x^2+xa+a^2|<\\varepsilon$ となります。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "よって $x^3$ は連続です。"
+    },
+    {
+      "id": "wrong-09-no-epsilon",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "ε が導入されず固定の 1 だけを評価",
+      "overview": "実数 $a$ を任意に取ります。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min(1,1/(2|a|+1))$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $|x+a|<2|a|+1$ なので $|x^2-a^2|<1$ です。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "wrong-10-uniform-delta",
+      "group": "wrong",
+      "expected": "reject",
+      "language": "ja",
+      "note": "a によらない δ（誤り）",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\varepsilon/3$ とおくと、これは $a$ によらない正の数です。$|x-a|<\\delta$ のとき $|x^2-a^2|=|x-a||x+a|<\\varepsilon$ が任意の $a$ で成り立ちます。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "summaryfirst-01-proof-plan-opening",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "冒頭が証明方針の先出し",
+      "overview": "差 $x^2-a^2$ を因数分解し、$|x+a|$ を評価して $\\delta$ を選ぶ、という方針で示します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "summaryfirst-02-conclusion-preview-opening",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "冒頭が結論の先出し",
+      "overview": "結論から言うと、$x^2$ は実数全体で連続です。これを $\\varepsilon$-$\\delta$ 論法で確かめます。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "$\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ とおきます。$\\delta>0$ です。$|x-a|<\\delta$ とすると $\\delta\\le1$ より $|x|<|a|+1$ なので、$|x+a|\\le|x|+|a|<2|a|+1$ です。したがって $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    },
+    {
+      "id": "summaryfirst-03-numbered-steps",
+      "group": "summary_first",
+      "expected": "reject",
+      "language": "ja",
+      "note": "番号付き手順",
+      "overview": "$\\varepsilon>0$ を任意に取り、実数 $a$ を固定します。",
+      "sections": [
+        {
+          "id": "proof",
+          "title": "証明",
+          "summary": "1. $\\delta=\\min\\left(1,\\frac{\\varepsilon}{2|a|+1}\\right)$ と選ぶ。 2. $|x-a|<\\delta$ なら $|x+a|<2|a|+1$。 3. $|x^2-a^2|=|x-a||x+a|<\\delta(2|a|+1)\\le\\varepsilon$。",
+          "references": [
+            {
+              "start_line": 3,
+              "end_line": 4,
+              "excerpt": "theorem x_squared_continuous : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
+            }
+          ]
+        }
+      ],
+      "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。"
+    }
+  ]
+}

@@ -191,3 +191,81 @@ def _without_lean_comments_and_literals(source: str) -> str:
         elif character == "«":
             in_quoted_identifier = True
     return "".join(output)
+
+
+def strip_redundant_parentheses(value: str) -> str | None:
+    """Strip only balanced pairs that surround the complete expression."""
+    depth = 0
+    for character in value:
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth < 0:
+                return None
+    if depth != 0:
+        return None
+
+    while value.startswith("(") and value.endswith(")"):
+        depth = 0
+        surrounds_complete_expression = True
+        for index, character in enumerate(value):
+            if character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+            if depth == 0 and index != len(value) - 1:
+                surrounds_complete_expression = False
+                break
+        if not surrounds_complete_expression:
+            break
+        value = value[1:-1]
+    return value
+
+
+def matches_x_squared_continuity(proposition: str) -> bool:
+    """Whether a formalized proposition is `Continuous (fun x : ℝ => x ^ 2)` (any variable name).
+
+    This reads the verified Lean statement, so it does not depend on how the learner phrased the
+    request (language, `x^{2}`, `xの2乗`, full-width characters, ...).
+    """
+    declaration = re.sub(r"\s+", "", proposition).replace("²", "^2")
+    if not declaration.startswith("Continuous"):
+        return False
+    expression = strip_redundant_parentheses(
+        declaration[len("Continuous") :],
+    )
+    if expression is None or not expression.startswith("fun"):
+        return False
+
+    lambda_body = expression[len("fun") :]
+    arrow_positions = [
+        position for position in (lambda_body.find("=>"), lambda_body.find("↦")) if position >= 0
+    ]
+    if not arrow_positions:
+        return False
+    arrow_position = min(arrow_positions)
+    arrow_width = 2 if lambda_body[arrow_position:].startswith("=>") else 1
+    binder = lambda_body[:arrow_position]
+    body = lambda_body[arrow_position + arrow_width :]
+
+    binder_match = re.fullmatch(
+        r"(?P<variable>[A-Za-z_][A-Za-z0-9_']*)(?::(?P<type>.+))?",
+        binder,
+    )
+    if binder_match is None:
+        return False
+    binder_type = binder_match.group("type")
+    if binder_type is None:
+        return False
+    normalized_type = strip_redundant_parentheses(binder_type)
+    if normalized_type != "ℝ":
+        return False
+
+    normalized_body = strip_redundant_parentheses(body)
+    if normalized_body is None or "^" not in normalized_body:
+        return False
+    base, exponent = normalized_body.rsplit("^", maxsplit=1)
+    normalized_base = strip_redundant_parentheses(base)
+    normalized_exponent = strip_redundant_parentheses(exponent)
+    return normalized_base == binder_match.group("variable") and normalized_exponent == "2"

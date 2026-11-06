@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
+from fractions import Fraction
 from typing import Any
 
 import pytest
@@ -23,10 +24,17 @@ from pals_agent.explanations import (
     LeanProofExplainer,
     ProofExplanation,
     ProofOutputReviewError,
+    _is_x_squared_continuity,
     _parse_explanation,
+    _requires_epsilon_delta,
     _validation_failure_reason,
 )
-from pals_agent.worker import _generate_reviewed_candidate, _public_explanation_content
+from pals_agent.lean_target import extract_single_target_declaration
+from pals_agent.worker import (
+    _generate_reviewed_candidate,
+    _public_explanation_content,
+    _verified_candidate_matches_statement,
+)
 
 SOURCE = "theorem continuous_square : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity"
 STATEMENT = "x² が連続であることを説明してください。"
@@ -170,8 +178,10 @@ def _reviewer(answer: Callable[[str], str]) -> tuple[LeanGroundedOutputReviewer,
     return LeanGroundedOutputReviewer(client=client, model="m", provider="p"), client
 
 
-def _explain(explainer: LeanProofExplainer, statement: str = STATEMENT) -> ProofExplanation:
-    return explainer.explain(theorem_statement=statement, lean_code=SOURCE, verified=True)
+def _explain(
+    explainer: LeanProofExplainer, statement: str = STATEMENT, lean_code: str = SOURCE
+) -> ProofExplanation:
+    return explainer.explain(theorem_statement=statement, lean_code=lean_code, verified=True)
 
 
 def _explain_with_feedback(
@@ -323,6 +333,9 @@ def test_review_requirement_is_semantic_and_notation_tolerant() -> None:
 # (iii) Other theorems are unchanged.
 
 
+ADD_ZERO_LEAN = "theorem add_zero_nat (n : Nat) : n + 0 = n := by\n  simp"
+
+
 def test_other_theorems_do_not_get_the_epsilon_delta_requirement() -> None:
     explainer, generator = _explainer(
         {
@@ -332,20 +345,226 @@ def test_other_theorems_do_not_get_the_epsilon_delta_requirement() -> None:
                     "id": "zero",
                     "title": "零の加法",
                     "summary": "$0$ を足しても値は変わりません。",
-                    "references": [{"start_line": 2, "end_line": 2, "excerpt": "  continuity"}],
+                    "references": [
+                        {"start_line": 1, "end_line": 1, "excerpt": ADD_ZERO_LEAN.splitlines()[0]}
+                    ],
                 }
             ],
             "conclusion": "よって $n+0=n$ です。",
         }
     )
     statement = "n + 0 = n を示せ"
-    candidate = _explain(explainer, statement)
+    candidate = _explain(explainer, statement, ADD_ZERO_LEAN)
     assert "epsilon-delta explanation" not in generator.prompts[0]
+    reviewer, qa = _reviewer(_approve)
+    reviewer.review_explanation(
+        theorem_statement=statement,
+        lean_code=ADD_ZERO_LEAN,
+        explanation=candidate,
+        language="ja",
+    )
+    assert REQUIREMENT_MARKER not in qa.prompts[0]
+
+
+# The requirement follows the verified Lean statement, not the learner's wording.
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "Why is x^2 continuous?",
+        "x^{2} は連続ですか",
+        "xの2乗が連続な理由",
+        "x の二乗は連続？",
+        "ｘ²が連続である理由",
+        "Show that x**2 is continuous",
+        "x*x is continuous, why?",
+        "平方関数が連続になる理由を教えて",
+    ],
+)
+def test_epsilon_delta_requirement_follows_the_lean_statement_not_the_wording(
+    statement: str,
+) -> None:
+    explainer, generator = _explainer(_payload())
+    candidate = _explain(explainer, statement)
+    assert "epsilon-delta explanation" in generator.prompts[0]
     reviewer, qa = _reviewer(_approve)
     reviewer.review_explanation(
         theorem_statement=statement, lean_code=SOURCE, explanation=candidate, language="ja"
     )
+    assert REQUIREMENT_MARKER in qa.prompts[0]
+
+
+@pytest.mark.parametrize(
+    ("statement", "lean_code"),
+    [
+        (
+            "x² の導関数は連続か",
+            "theorem d : Continuous (deriv fun x : ℝ => x ^ 2) := by\n  fun_prop",
+        ),
+        (
+            "x^2 は一様連続でない",
+            "theorem u : ¬ UniformContinuous (fun x : ℝ => x ^ 2) := by\n  sorry",
+        ),
+        ("x² が連続", "theorem c : Continuous (fun x : ℝ => x ^ 3) := by\n  continuity"),
+        ("x² が連続", "theorem c : Continuous (fun x : ℝ => x) := by\n  continuity"),
+        ("x² が連続", "theorem c : ContinuousAt (fun x : ℝ => x ^ 2) 0 := by\n  fun_prop"),
+    ],
+)
+def test_other_statements_mentioning_x_squared_do_not_get_the_requirement(
+    statement: str, lean_code: str
+) -> None:
+    assert not _requires_epsilon_delta(statement, lean_code)
+    payload = _payload()
+    payload["sections"][0]["references"] = [
+        {"start_line": 1, "end_line": 1, "excerpt": lean_code.splitlines()[0]}
+    ]
+    explainer, generator = _explainer(payload)
+    candidate = _explain(explainer, statement, lean_code)
+    assert "epsilon-delta explanation" not in generator.prompts[0]
+    reviewer, qa = _reviewer(_approve)
+    reviewer.review_explanation(
+        theorem_statement=statement, lean_code=lean_code, explanation=candidate, language="ja"
+    )
     assert REQUIREMENT_MARKER not in qa.prompts[0]
+
+
+@pytest.mark.parametrize(
+    ("statement", "expected"),
+    [
+        ("x² が連続であることを説明してください。", True),
+        ("x^2 は連続？", True),
+        ("x² の導関数は連続か", False),
+        ("x^2 は一様連続でない", False),
+        ("x^2 の微分可能性と連続性", False),
+        ("n + 0 = n を示せ", False),
+    ],
+)
+def test_wording_is_only_a_fallback_when_no_single_lean_target_is_readable(
+    statement: str, expected: bool
+) -> None:
+    unreadable = "def helper : Nat := 1"
+    assert extract_single_target_declaration(unreadable) is None
+    assert _requires_epsilon_delta(statement, unreadable) is expected
+    assert _is_x_squared_continuity(statement) is expected
+
+
+def test_worker_alignment_gate_no_longer_demands_x_squared_for_other_properties() -> None:
+    derivative = "theorem d : Continuous (deriv fun x : ℝ => x ^ 2) := by\n  fun_prop"
+    assert _verified_candidate_matches_statement("x² の導関数は連続か", derivative)
+    # The continuity of x² itself is still checked deterministically.
+    assert not _verified_candidate_matches_statement(
+        "x² が連続であることを示せ", "theorem t : Continuous (fun x : ℝ => x) := by\n  fun_prop"
+    )
+
+
+# Contract of the real x² review prompt: every rejection condition and every tolerated
+# notation is present, and no sentence cancels another.
+
+REJECTION_CRITERIA = [
+    "never introduced as an arbitrary positive",  # epsilon setup missing
+    "not shown to be positive",
+    "without the minimum with 1",
+    "ignores the point",
+    "coefficient that is too small",
+    "adding 1",
+    "multiplying by 2",
+    "ε+1",
+    "another function",
+    "another point",
+    "not an epsilon-delta argument",
+    "necessary bound is missing",
+    "proof-plan or conclusion preview in the opening",
+    "visible section headings",
+]
+GENERAL_REJECTIONS = ["Reject summary-first or conclusion-preview exposition"]
+TOLERATED_NOTATION = [
+    "\\dfrac",
+    "\\vert",
+    "\\operatorname{min}",
+    "\\leqslant",
+    "|(x-a)(x+a)|",
+    "stated in words",
+    "display math",
+    "any variable names",
+    "= ε",
+]
+
+
+def _x_squared_review_prompt() -> str:
+    explainer, _ = _explainer(_payload())
+    candidate = _explain(explainer)
+    reviewer, qa = _reviewer(_approve)
+    reviewer.review_explanation(
+        theorem_statement=STATEMENT, lean_code=SOURCE, explanation=candidate, language="ja"
+    )
+    return " ".join(qa.prompts[0].split())
+
+
+def test_review_prompt_states_every_rejection_condition_and_tolerated_notation() -> None:
+    prompt = _x_squared_review_prompt()
+    for fragment in [*REJECTION_CRITERIA, *GENERAL_REJECTIONS, *TOLERATED_NOTATION]:
+        assert fragment in prompt, fragment
+
+
+def test_review_prompt_acceptances_and_rejections_do_not_contradict_each_other() -> None:
+    prompt = _x_squared_review_prompt()
+    requirement = prompt[prompt.index(REQUIREMENT_MARKER) :]
+    requirement = requirement[: requirement.index("Do not reveal hidden")]
+    reject_part = requirement[
+        requirement.index("Reject when any") : requirement.index("Do not reject for notation")
+    ]
+    accept_part = requirement[requirement.index("Do not reject for notation") :]
+    # What is tolerated is never also listed as a defect, and vice versa.
+    for notation in TOLERATED_NOTATION:
+        assert notation not in reject_part, notation
+    for criterion in REJECTION_CRITERIA[:11]:
+        assert criterion not in accept_part, criterion
+    # A blanket "opening wording is no reason to reject" would cancel the summary-first rule.
+    assert "opening's wording is also not a reason to reject" not in prompt
+    opening_sentences = [sentence for sentence in accept_part.split(". ") if "opening" in sentence]
+    assert opening_sentences
+    for sentence in opening_sentences:
+        assert "proof-plan or conclusion preview" in sentence
+        assert "still rejected" in sentence
+
+
+def _delta_is_sufficient(delta: Callable[[Fraction, Fraction], Fraction]) -> bool:
+    points = [Fraction(n, 2) for n in range(-8, 9)]
+    epsilons = [Fraction(1, 100), Fraction(1, 2), Fraction(1), Fraction(10), Fraction(1000)]
+    for a in points:
+        for eps in epsilons:
+            d = delta(a, eps)
+            if d <= 0:
+                return False
+            for fraction in (
+                Fraction(-99, 100),
+                Fraction(-1, 2),
+                Fraction(1, 2),
+                Fraction(99, 100),
+            ):
+                x = a + fraction * d
+                if abs(x * x - a * a) >= eps:
+                    return False
+    return True
+
+
+def test_each_rejected_delta_in_the_rubric_really_fails_and_the_accepted_one_works() -> None:
+    def good(a: Fraction, e: Fraction) -> Fraction:
+        return min(Fraction(1), e / (2 * abs(a) + 1))
+
+    assert _delta_is_sufficient(good)
+    assert _delta_is_sufficient(lambda a, e: min(Fraction(1), e / (4 * abs(a) + 2)))  # equivalent
+    wrong = {
+        "no minimum with 1": lambda a, e: e / (2 * abs(a) + 1),
+        "ignores the point": lambda a, e: min(Fraction(1), e),
+        "coefficient too small": lambda a, e: min(Fraction(1), e / (abs(a) + 1)),
+        "plus one": lambda a, e: good(a, e) + 1,
+        "doubled": lambda a, e: 2 * good(a, e),
+        "epsilon only": lambda a, e: e,
+    }
+    for name, delta in wrong.items():
+        assert not _delta_is_sufficient(delta), name
 
 
 def test_clarification_review_does_not_get_the_explanation_requirement() -> None:

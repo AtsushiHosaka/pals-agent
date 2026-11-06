@@ -34,11 +34,13 @@ from pals_agent.explanations import (
     ProofSemanticReviewer,
     ProofSemanticReviewUnavailable,
     _is_x_squared_continuity,
+    _requires_epsilon_delta,
     proof_explanation_from_api,
 )
 from pals_agent.lean_target import (
     LeanTargetDeclaration,
     extract_single_target_declaration,
+    matches_x_squared_continuity,
 )
 from pals_agent.linked_chat import linked_chat_scope
 from pals_agent.model_roles import ModelRole, fixed_model_default
@@ -1616,7 +1618,7 @@ class SqsProofWorker:
                 reason,
                 started_at=started_at,
                 language=language,
-                x_squared_gate=_is_x_squared_continuity(theorem_statement),
+                x_squared_gate=_requires_epsilon_delta(theorem_statement, lean_code),
                 lean_lines=len(lean_code.splitlines()),
             )
 
@@ -2441,36 +2443,6 @@ def _aware_timestamp(value: Any) -> None:
         raise ValueError("timestamp field must include a timezone")
 
 
-def _strip_redundant_parentheses(value: str) -> str | None:
-    """Strip only balanced pairs that surround the complete expression."""
-    depth = 0
-    for character in value:
-        if character == "(":
-            depth += 1
-        elif character == ")":
-            depth -= 1
-            if depth < 0:
-                return None
-    if depth != 0:
-        return None
-
-    while value.startswith("(") and value.endswith(")"):
-        depth = 0
-        surrounds_complete_expression = True
-        for index, character in enumerate(value):
-            if character == "(":
-                depth += 1
-            elif character == ")":
-                depth -= 1
-            if depth == 0 and index != len(value) - 1:
-                surrounds_complete_expression = False
-                break
-        if not surrounds_complete_expression:
-            break
-        value = value[1:-1]
-    return value
-
-
 def _without_lean_comments(source: str) -> str:
     output: list[str] = []
     index = 0
@@ -2581,61 +2553,14 @@ def _theorem_propositions(lean_code: str) -> list[str]:
     return propositions
 
 
-def _matches_x_squared_continuity(proposition: str) -> bool:
-    declaration = re.sub(r"\s+", "", proposition).replace("²", "^2")
-    if not declaration.startswith("Continuous"):
-        return False
-    expression = _strip_redundant_parentheses(
-        declaration[len("Continuous") :],
-    )
-    if expression is None or not expression.startswith("fun"):
-        return False
-
-    lambda_body = expression[len("fun") :]
-    arrow_positions = [
-        position for position in (lambda_body.find("=>"), lambda_body.find("↦")) if position >= 0
-    ]
-    if not arrow_positions:
-        return False
-    arrow_position = min(arrow_positions)
-    arrow_width = 2 if lambda_body[arrow_position:].startswith("=>") else 1
-    binder = lambda_body[:arrow_position]
-    body = lambda_body[arrow_position + arrow_width :]
-
-    binder_match = re.fullmatch(
-        r"(?P<variable>[A-Za-z_][A-Za-z0-9_']*)(?::(?P<type>.+))?",
-        binder,
-    )
-    if binder_match is None:
-        return False
-    binder_type = binder_match.group("type")
-    if binder_type is None:
-        return False
-    normalized_type = _strip_redundant_parentheses(binder_type)
-    if normalized_type != "ℝ":
-        return False
-
-    normalized_body = _strip_redundant_parentheses(body)
-    if normalized_body is None or "^" not in normalized_body:
-        return False
-    base, exponent = normalized_body.rsplit("^", maxsplit=1)
-    normalized_base = _strip_redundant_parentheses(base)
-    normalized_exponent = _strip_redundant_parentheses(exponent)
-    return normalized_base == binder_match.group("variable") and normalized_exponent == "2"
-
-
 def _target_matches_statement(
     statement: str,
     target_declaration: LeanTargetDeclaration,
 ) -> bool:
     """Apply deterministic checks before the independent semantic review."""
-    normalized_statement = re.sub(r"\s+", "", statement).lower()
-    is_x_squared_continuity = "連続" in normalized_statement and (
-        "x²" in normalized_statement or "x^2" in normalized_statement
-    )
-    if not is_x_squared_continuity:
+    if not _is_x_squared_continuity(statement):
         return True
-    return _matches_x_squared_continuity(target_declaration.proposition)
+    return matches_x_squared_continuity(target_declaration.proposition)
 
 
 def _verified_candidate_matches_statement(statement: str, lean_code: str) -> bool:
@@ -2695,7 +2620,12 @@ def _log_generation_failure(
     x_squared_gate: bool,
     lean_lines: int,
 ) -> None:
-    """Every terminal explanation failure, since the API reports them all as one error code."""
+    """Every terminal explanation failure, since the API reports them all as one error code.
+
+    `x_squared_gate` keeps its historical name for log compatibility. It no longer names a text
+    gate: it records that the verified statement is the continuity of x², so the explanation was
+    required to be an epsilon-delta proof, which the independent review enforces.
+    """
     _logger.error(
         "explanation_generation_failed resource=%s id=%s reason=%s elapsed_ms=%d "
         "language=%s x_squared_gate=%s lean_lines=%d",

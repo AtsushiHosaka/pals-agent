@@ -9,7 +9,11 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any, Literal, Protocol
 
-from pals_agent.lean_target import LeanTargetDeclaration
+from pals_agent.lean_target import (
+    LeanTargetDeclaration,
+    extract_single_target_declaration,
+    matches_x_squared_continuity,
+)
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
@@ -476,7 +480,7 @@ class LeanProofExplainer:
             theorem_statement=theorem_statement,
             lean_code=lean_code,
             language=language,
-            require_epsilon_delta=_is_x_squared_continuity(theorem_statement),
+            require_epsilon_delta=_requires_epsilon_delta(theorem_statement, lean_code),
         )
         prompt = _with_review_feedback(prompt, review_feedback)
         _validate_deadline_options(deadline, timeout_seconds)
@@ -1373,7 +1377,7 @@ def _output_review_prompt(
     )
     semantic_requirement = (
         _EPSILON_DELTA_REVIEW_REQUIREMENT
-        if clarification is None and _is_x_squared_continuity(theorem_statement)
+        if clarification is None and _requires_epsilon_delta(theorem_statement, lean_code)
         else ""
     )
     return f"""You are an independent review session for learner-facing mathematical output.
@@ -1516,10 +1520,36 @@ Lean candidate source:
 ```"""
 
 
+# A request about another property of x² (derivative, uniform continuity, ...) is not the
+# continuity question, even though it mentions both x² and 連続.
+_OTHER_PROPERTY_PATTERN = re.compile(r"導関数|微分|一様|derivative|differentiab|uniform")
+
+
 def _is_x_squared_continuity(theorem_statement: str) -> bool:
-    """Whether the learner asked why x² is continuous (selects the epsilon-delta requirement)."""
+    """Auxiliary natural-language guess: did the learner ask why x² is continuous?
+
+    This is only a fallback for when the Lean target cannot be read. The authoritative test is
+    `_requires_epsilon_delta`, which reads the formalized statement.
+    """
     compact = re.sub(r"\s+", "", theorem_statement).lower()
-    return "連続" in compact and ("x²" in compact or "x^2" in compact)
+    return (
+        "連続" in compact
+        and ("x²" in compact or "x^2" in compact)
+        and _OTHER_PROPERTY_PATTERN.search(compact) is None
+    )
+
+
+def _requires_epsilon_delta(theorem_statement: str, lean_code: str) -> bool:
+    """Whether the explanation must be an epsilon-delta proof of the continuity of x².
+
+    The verified Lean statement decides when it can be read: `Continuous (fun x : ℝ => x ^ 2)`
+    is recognised whatever language or notation the learner used. The wording of the learner's
+    request is consulted only when the artifact has no single readable target.
+    """
+    target = extract_single_target_declaration(lean_code)
+    if target is not None:
+        return matches_x_squared_continuity(target.proposition)
+    return _is_x_squared_continuity(theorem_statement)
 
 
 _EPSILON_DELTA_REVIEW_REQUIREMENT = """EPSILON-DELTA REQUIREMENT. The learner asked why x² is
@@ -1528,20 +1558,26 @@ appeal to a continuity theorem (for example continuity of products or of polynom
 this by the mathematics, never by notation. Approve only if the visible proof, in some
 order: takes an arbitrary positive epsilon and an arbitrary real point; gives an explicit
 positive delta (a concrete formula, or a choice that is concretely determined) and shows that
-it is positive;
-assumes x is within delta of the point and bounds |x²-a²| through the factorization
-(x-a)(x+a) with a justified bound on |x+a|; shows by a valid chain that the bound is at most
-epsilon (a chain may end in an equality such as `= ε`, and may use any equivalent algebra);
-and concludes continuity at that point, hence everywhere because the point is arbitrary.
-Reject when delta is not shown to be positive, delta does not actually force the epsilon
-bound (for example a missing minimum with 1, an uncorrected constant, a delta that ignores the
-point, or a bound ending in ε+1 or 2ε), a necessary bound is missing or unjustified, the
-argument is about another function or point, or the argument is not an epsilon-delta argument.
+it is positive; assumes x is within delta of the point and bounds |x²-a²| through the
+factorization (x-a)(x+a) with a justified bound on |x+a|; shows by a valid chain that the bound
+is at most epsilon (a chain may end in an equality such as `= ε`, and may use any equivalent
+algebra); and concludes continuity at that point, hence everywhere because the point is
+arbitrary.
+Reject when any of these holds: epsilon is never introduced as an arbitrary positive number;
+delta is not shown to be positive; delta does not actually force the epsilon bound, for
+example a delta without the minimum with 1 (large epsilon breaks it), a delta that ignores
+the point, a coefficient that is too small (such as ε/(|a|+1) in place of ε/(2|a|+1)), a delta
+enlarged by adding 1 or by multiplying by 2 or another constant, or a bound that ends in ε+1
+or 2ε instead of ε; a necessary bound is missing or unjustified; the argument is about
+another function or another point than the one fixed; or the argument is not an
+epsilon-delta argument.
 Do not reject for notation or phrasing: \\frac or \\dfrac, \\lvert or \\vert, \\min or
 \\operatorname{min}, ≤ or \\leq or \\leqslant, spacing commands, a factorization written as
 |(x-a)(x+a)|, "delta is positive" stated in words, ε>0 given before or after the point or in
 display math, any variable names for the point and the variable, or any equivalent form of the
-delta. The opening's wording is also not a reason to reject if the proof is otherwise valid.
+delta. Do not reject the opening for its notation, wording, or the order in which epsilon and
+the point are introduced alone; a proof-plan or conclusion preview in the opening, and visible
+section headings, are still rejected as stated above.
 """
 
 
