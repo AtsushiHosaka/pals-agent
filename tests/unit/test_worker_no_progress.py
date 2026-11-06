@@ -279,6 +279,10 @@ NOT_STRUCTURAL = {
     "model_this_worker_does_not_know": lambda: compile_failed_job(
         state="queued", verification_candidate_id=None, verification_candidate_state=None,
         diagnostics=[], request_context={"generation_model": "gpt-7-from-the-future"}),
+    "repairing_job_with_only_an_earlier_failed_candidate": lambda: compile_failed_job(
+        state="repairing"),
+    "drafting_job_with_only_an_earlier_failed_candidate": lambda: compile_failed_job(
+        state="drafting", status_context=None),
     "verified_job": lambda: semantic_review_job(state="verified", lean_code=""),
     "pending_api_compile": lambda: compile_failed_job(
         verification_candidate_state="compiling",
