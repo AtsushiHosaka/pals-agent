@@ -304,6 +304,11 @@ def _signature(text: str, start: int) -> str | None:
     return None
 
 
+def mask_lean_comments_and_strings(source: str) -> str:
+    """Blank comments and string contents, keeping every character offset (unlike the stripper)."""
+    return _masked_code(source)
+
+
 def _masked_code(source: str) -> str:
     """Blank comments and string contents while keeping every character offset."""
     masked = list(source)
