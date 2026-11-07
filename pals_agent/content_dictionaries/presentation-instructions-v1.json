@@ -1,6 +1,6 @@
 {
   "schema_version": "pals.presentation-instructions.v1",
-  "notes": "Presentation, language and format instructions that a learner request (or the router that rewrites it) appends to a mathematical claim, for example 'Write the proposition and the entire proof in English.' The independent proof review judges the mathematical claim only, so these instructions are removed from its input by a closed set of patterns; the explanation stage still receives the full request. A method the learner requires (epsilon-delta, induction, ...) is part of the claim and is never in this table. Patterns are regular expressions (case-insensitive); {LANG_EN} and {LANG_CJK} expand to the language names below. To widen the table add a language name or a pattern row; no code change is needed. A row may set join (default a space): the text put where the match was removed; Japanese and Chinese rows use an empty join so no stray space is left between characters. sentence_lexicon: a whole sentence that has no digit, no math symbol, no single-letter variable or Greek letter, only words of the lexicon, and at least one anchor word is a presentation instruction and is removed as a unit; any word outside the lexicon (a negation, a property, a qualifier such as 'but', 'only', 'except') keeps the sentence. At least one other sentence must remain.",
+  "notes": "Presentation, language and format instructions that a learner request (or the router that rewrites it) appends to a mathematical claim, for example 'Write the proposition and the entire proof in English.' The independent proof review judges the mathematical claim only, so these instructions are removed from its input by a closed set of patterns; the explanation stage still receives the full request. A method the learner requires (epsilon-delta, induction, ...) is part of the claim and is never in this table. Patterns are regular expressions (case-insensitive); {LANG_EN} and {LANG_CJK} expand to the language names below. To widen the table add a language name or a pattern row; no code change is needed. A row may set join (default a space): the text put where the match was removed; Japanese and Chinese rows use an empty join so no stray space is left between characters. sentence_lexicon: a whole sentence that has no digit, no math symbol, no single-letter variable or Greek letter, only words of the lexicon, and at least one anchor word is a presentation instruction and is removed as a unit; any word outside the lexicon (a negation, a property, a qualifier such as 'but', 'only', 'except') keeps the sentence. At least one other sentence must remain. language_followers_en: an English language name only counts as a language when the text ends there or one of these function words follows ('using the Chinese remainder theorem' and 'in Polish notation' are not language instructions). A sentence is also kept as a claim when, after the lexicon words are removed, it holds any character other than plain letters, blanks and light punctuation (fullwidth or italic letters, subscripts, Cyrillic, minus signs, set symbols), or a lower-case i or a variable-like a.",
   "language_names_en": [
     "english",
     "japanese",
@@ -60,11 +60,11 @@
   "patterns": [
     {
       "id": "en.write_in_language",
-      "re": "(?:(?:,|;|\\band\\b|\\balso\\b|\\bthen\\b|\\bplease\\b|\\bkindly\\b)\\s*)*\\b(?:write|answer|respond|reply|present|provide|give|describe|output|format|compose|state|include)\\s+(?:(?:the|a|an|entire|whole|full|complete|completely|proposition|propositions|statement|statements|theorem|claim|proof|proofs|explanation|answer|solution|and|both|all|everything|your|response|reply|it|them|this|that|its|each|every|step|steps|of|argument|reasoning|result|results|text|writing|also|as|well|state|give|present|provide|include|write|describe|detailed|careful|carefully|clearly)\\s+)*(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s+language)?\\b"
+      "re": "(?:(?:,|;|\\band\\b|\\balso\\b|\\bthen\\b|\\bplease\\b|\\bkindly\\b)\\s*)*(?:(?:please\\s+)?(?:do\\s+not|don't|never)\\s+)?\\b(?:write|answer|respond|reply|present|provide|give|describe|output|format|compose|state|include)\\s+(?:(?:the|a|an|entire|whole|full|complete|completely|proposition|propositions|statement|statements|theorem|claim|proof|proofs|explanation|answer|solution|and|both|all|everything|your|response|reply|it|them|this|that|its|each|every|step|steps|of|argument|reasoning|result|results|text|writing|also|as|well|state|give|present|provide|include|write|describe|detailed|careful|carefully|clearly)\\s+)*(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s*(?:,|and|or|/|&)\\s*(?:{LANG_EN}))*(?:\\s+language)?\\b(?:\\s+only(?!\\s+if\\b))?"
     },
     {
       "id": "en.in_language",
-      "re": "(?:,\\s*)?\\b(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s+language)?\\b"
+      "re": "(?:,\\s*)?\\b(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s*(?:,|and|or|/|&)\\s*(?:{LANG_EN}))*(?:\\s+language)?\\b(?:\\s+only(?!\\s+if\\b))?"
     },
     {
       "id": "en.language_only",
@@ -81,7 +81,7 @@
     },
     {
       "id": "ja.in_language",
-      "re": "(?:{LANG_CJK})\\s*で(?:の)?",
+      "re": "(?:(?:{LANG_CJK})\\s*(?:か|と|や|または|あるいは|、)\\s*)*(?:{LANG_CJK})\\s*で(?:の|なくて?|(?:書|答|出力|回答|記述)(?:かないで|くな|しないで))?",
       "join": ""
     },
     {
@@ -557,5 +557,75 @@
       "述べて",
       "韓国語"
     ]
-  }
+  },
+  "language_followers_en": [
+    "language",
+    "languages",
+    "and",
+    "or",
+    "but",
+    "if",
+    "then",
+    "so",
+    "please",
+    "only",
+    "using",
+    "with",
+    "without",
+    "for",
+    "to",
+    "as",
+    "because",
+    "since",
+    "while",
+    "when",
+    "the",
+    "a",
+    "an",
+    "too",
+    "also",
+    "first",
+    "step",
+    "briefly",
+    "concisely",
+    "in",
+    "on",
+    "at",
+    "by",
+    "from",
+    "that",
+    "which",
+    "thanks",
+    "thank",
+    "kindly",
+    "version",
+    "explanation",
+    "explanations",
+    "prove",
+    "show",
+    "let",
+    "explain",
+    "find",
+    "determine",
+    "suppose",
+    "assume",
+    "consider",
+    "verify",
+    "demonstrate",
+    "solve",
+    "compute",
+    "evaluate",
+    "check",
+    "is",
+    "are",
+    "does",
+    "do",
+    "why",
+    "what",
+    "how",
+    "can",
+    "write",
+    "give",
+    "answer"
+  ]
 }

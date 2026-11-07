@@ -46,7 +46,7 @@ def build_table(payload: dict[str, Any]) -> _Table:
     """Compile a table (the packaged one, or one a test supplies)."""
     if payload.get("schema_version") != SCHEMA_VERSION:
         raise RuntimeError("presentation instruction table has an unexpected schema version")
-    english = _alternation(payload["language_names_en"])
+    english = _language_names_en(payload)
     cjk = _alternation(payload["language_names_cjk"])
     compiled: list[tuple[str, re.Pattern[str], str]] = []
     seen: set[str] = set()
@@ -68,6 +68,18 @@ def build_table(payload: dict[str, Any]) -> _Table:
         anchors_en=frozenset(word.lower() for word in lexicon.get("anchors_en", ())),
         anchors_cjk=tuple(lexicon.get("anchors_cjk", ())),
     )
+
+
+def _language_names_en(payload: dict[str, Any]) -> str:
+    """The English language names, as a group that is not the start of a noun phrase.
+
+    ``using the Chinese remainder theorem`` and ``in Polish notation`` name a method or a notation,
+    not a language: the name only counts when it ends the phrase or a function word follows
+    (``language_followers_en``).  Removing it would leave ``remainder theorem`` in the claim.
+    """
+    followers = _alternation(payload.get("language_followers_en", []))
+    follow = rf"(?!-[a-z])(?!\s+(?!(?:{followers})\b)[a-z])" if followers else ""
+    return rf"(?:{_alternation(payload['language_names_en'])})(?![a-z]){follow}"
 
 
 def _alternation(names: list[str]) -> str:
@@ -115,6 +127,14 @@ def split_presentation_instructions(
 _SENTENCE = re.compile(r"[^.!?。！？\n]+(?:[.!?。！？]+|(?=\n)|$)|\n+")
 # Anything that can carry mathematics: digits, operators, relations, brackets, set symbols.
 _MATH_CHARACTER = re.compile(r"[0-9=^²³⁴-⁹+*/<>≤≥≠|√∑∫∞\[\]{}⟨⟩ℝℕℤℚℂ→↦∈∉∀∃∧∨¬×÷·∘′'`$\\_~]")
+# What is left of a sentence once the lexicon words are gone: plain letters, blanks and light
+# punctuation.  Anything else (fullwidth or italic letters, subscripts, Cyrillic, a minus sign,
+# a set symbol, a zero-width mark) may carry mathematics, so the sentence is a claim.
+_PLAIN_RESIDUE = re.compile(r"[a-z\s,;:.!?'\"()’、，。！？：；「」『』（）・]")
+_BULLET = re.compile(r"^\s*(?:[-*•・●○▪‣◦–—]+|\d{1,2}[.)]|\(\d{1,2}\))\s+")
+_ARTICLE_STOP = frozenset(
+    {"and", "or", "to", "of", "in", "for", "by", "with", "as", "so", "then", "be", "is", "are"}
+)
 _GREEK = re.compile(r"[α-ωΑ-Ω]")
 _CJK = re.compile(r"[぀-ヿ㐀-鿿豈-﫿ー]")
 
@@ -150,9 +170,11 @@ def _strip_instruction_sentences(text: str, table: _Table) -> tuple[str, list[st
 
 
 def _is_instruction_sentence(sentence: str, table: _Table) -> bool:
-    body = sentence.strip().lower()
+    body = _BULLET.sub("", sentence.strip().lower())
     if not body or _MATH_CHARACTER.search(body) or _GREEK.search(body):
         return False
+    if re.search(r"(?<![A-Za-z])i(?![A-Za-z])", sentence):
+        return False  # a lower-case i is an index; the pronoun is written I
     body = re.sub(r"(?<=[a-z])-(?=[a-z])", "", body)  # step-by-step
     cjk_hit = False
     for word in table.lexicon_cjk:
@@ -161,9 +183,15 @@ def _is_instruction_sentence(sentence: str, table: _Table) -> bool:
             cjk_hit = cjk_hit or any(word == anchor for anchor in table.anchors_cjk)
     if _CJK.search(body):
         return False  # a CJK character outside the lexicon: part of a claim
+    if _PLAIN_RESIDUE.sub("", body):
+        return False  # a character that may carry mathematics and that no table word covers
     tokens = re.findall(r"[a-z]+(?:'[a-z]+)?", body)
     if any(len(token) == 1 and token not in {"a", "i"} for token in tokens):
         return False  # a single-letter variable
+    for index, token in enumerate(tokens):
+        # ``a`` is the article only before a word: ``for all a`` quantifies a variable.
+        if token == "a" and (index + 1 == len(tokens) or tokens[index + 1] in _ARTICLE_STOP):
+            return False
     if any(token not in table.lexicon_en for token in tokens):
         return False
     return cjk_hit or any(token in table.anchors_en for token in tokens)
