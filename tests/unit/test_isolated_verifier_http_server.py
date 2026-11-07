@@ -34,7 +34,7 @@ _DEPLOYMENT_SHA = "a" * 64
 _ADMISSION_ID = UUID("e406e9fa-fd9f-4856-b5c4-18e9b3102128")
 
 
-def _admission_context() -> RecipeAdmissionVerifierContext:
+def _admission_context(library_profile: str | None = None) -> RecipeAdmissionVerifierContext:
     return RecipeAdmissionVerifierContext(
         toolchain_fingerprint={
             "schema_version": "pals.lean-toolchain-fingerprint.v1",
@@ -42,6 +42,7 @@ def _admission_context() -> RecipeAdmissionVerifierContext:
             "lake_manifest_sha256": "d" * 64,
             "verifier_sha256": "c" * 64,
             "materializer_version": "pals.recipe-materializer.v1",
+            **({} if library_profile is None else {"library_profile": library_profile}),
         },
         compiler_command={
             "schema_version": "pals.recipe-admission-compiler-command.v1",
@@ -113,6 +114,7 @@ def _running_server(
     max_concurrent_compiles: int = 1,
     handshake_timeout_seconds: float = 5,
     http_timeout_seconds: float = 10,
+    library_profile: str | None = None,
 ) -> Iterator[object]:
     settings = IsolatedVerifierHttpSettings(
         bind_host="127.0.0.1",
@@ -125,7 +127,7 @@ def _running_server(
         ssl_context=server_context,
         reconciler_client_spki_sha256=client_spki_sha256,
         reconciler_client_spiffe_uri="spiffe://pals/local/verified-reconciler",
-        recipe_admission_context=_admission_context(),
+        recipe_admission_context=_admission_context(library_profile),
         max_concurrent_compiles=max_concurrent_compiles,
         handshake_timeout_seconds=handshake_timeout_seconds,
         http_timeout_seconds=http_timeout_seconds,
@@ -837,6 +839,36 @@ def test_recipe_admission_rejects_noncanonical_or_tampered_bindings_before_compi
         ),
     ]
     assert verifier.calls == []
+
+
+@pytest.mark.parametrize(
+    ("server_profile", "request_profile"),
+    [("stacks-4.35", None), (None, "stacks-4.35")],
+)
+def test_recipe_admission_never_crosses_library_profiles(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    server_profile: str | None,
+    request_profile: str | None,
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    verifier = StubVerifier(_success())
+    source = "import Mathlib\n\nexample : True := by trivial\n"
+    own = _admission_context(server_profile)
+    foreign = _admission_context(request_profile)
+    assert own.toolchain_fingerprint_sha256 != foreign.toolchain_fingerprint_sha256
+    with _running_server(
+        server_context, client_spki_sha256, verifier, library_profile=server_profile
+    ):
+        rejected = _request(
+            client_context, _recipe_admission_request(source, foreign), canonical=True
+        )
+        accepted = _request(client_context, _recipe_admission_request(source, own), canonical=True)
+
+    assert rejected[0] == 400
+    assert rejected[1]["failure_code"] == "verifier_request_invalid"
+    assert accepted[0] == 200
+    assert accepted[1]["toolchain_fingerprint_sha256"] == own.toolchain_fingerprint_sha256
+    assert verifier.calls == [source]
 
 
 def test_recipe_admission_failure_never_returns_proof_job_or_artifact_fields(

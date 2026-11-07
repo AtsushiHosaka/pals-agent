@@ -31,6 +31,7 @@ from pals_agent.lean_environment import (
     materialize_lake_environment,
     parse_lake_environment,
 )
+from pals_agent.lean_profiles import LibraryProfile
 from pals_agent.lean_source_policy import (
     declared_theorem_names,
     find_source_violation,
@@ -103,6 +104,8 @@ class LeanVerifier:
     # Recipe admission receipts attest the literal `lake env lean --threads=1 Main.lean`, so that
     # exact command runs first and the audit artifact comes from a separate compile.
     literal_admission_command: bool = False
+    # None keeps the unrestricted default profile; see ``pals_agent.lean_profiles``.
+    library_profile: LibraryProfile | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "scratch_dir", Path(self.scratch_dir))
@@ -197,6 +200,8 @@ class LeanVerifier:
             )
 
         violation = find_source_violation(lean_code)
+        if violation is None and self.library_profile is not None:
+            violation = self.library_profile.import_violation(lean_code)
         if violation is not None:
             return VerificationResult(
                 success=False,
@@ -580,7 +585,12 @@ class LeanVerifier:
 
         nonce = secrets.token_hex(32)
         audit_file = audit_dir / "Audit.lean"
-        audit_file.write_text(TRUSTED_AUDIT_SOURCE, encoding="utf-8")
+        audit_file.write_text(
+            TRUSTED_AUDIT_SOURCE
+            if self.library_profile is None
+            else self.library_profile.audit_source,
+            encoding="utf-8",
+        )
         audit_file.chmod(0o400)
         lean_arguments = [
             lean_binary,

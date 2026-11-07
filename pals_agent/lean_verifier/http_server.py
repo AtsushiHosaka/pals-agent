@@ -29,6 +29,7 @@ from cryptography.hazmat.primitives import serialization
 
 from pals_agent import quality_events
 from pals_agent.lean import COMPILE_DEADLINE_INTERRUPTED, COMPILE_INTERRUPTED
+from pals_agent.lean_profiles import DEFAULT_PROFILE_NAME, known_profile_names
 from pals_agent.models import VerificationResult
 
 _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
@@ -86,12 +87,17 @@ def pinned_recipe_admission_context(
     *,
     project_dir: Path,
     verifier_sha256: str,
+    library_profile: str | None = None,
 ) -> RecipeAdmissionVerifierContext:
     """Bind admissions to the immutable files used by the same pinned Lean workspace.
 
     The command is intentionally normalized: the private verifier writes the untrusted source to a
     random scratch directory, so a literal temporary path must not enter an immutable receipt.
     ``Main.lean`` denotes that fixed file name within the fresh verifier-owned scratch directory.
+
+    ``library_profile`` is the name of a non-default library profile (``None`` for the default).
+    It is recorded in the fingerprint only when set, so default digests are byte-identical to
+    those issued before profiles existed and a profile's Recipes can never match another's.
     """
 
     if _SHA256_RE.fullmatch(verifier_sha256) is None:
@@ -116,6 +122,7 @@ def pinned_recipe_admission_context(
             "lake_manifest_sha256": manifest_sha256,
             "verifier_sha256": verifier_sha256,
             "materializer_version": _MATERIALIZER_VERSION,
+            **({} if library_profile is None else {"library_profile": library_profile}),
         },
         compiler_command={
             "schema_version": _ADMISSION_COMMAND_SCHEMA_VERSION,
@@ -834,13 +841,15 @@ def _sha256_bytes(value: bytes) -> str:
 
 
 def _validated_toolchain_fingerprint(value: object) -> dict[str, str]:
-    if not isinstance(value, dict) or set(value) != {
+    required = {
         "schema_version",
         "lean_version",
         "lake_manifest_sha256",
         "verifier_sha256",
         "materializer_version",
-    }:
+    }
+    # The optional key names a non-default library profile; the default never carries it.
+    if not isinstance(value, dict) or set(value) not in (required, required | {"library_profile"}):
         raise ValueError("toolchain fingerprint must be one closed v1 object")
     schema_version = value.get("schema_version")
     lean_version = value.get("lean_version")
@@ -857,12 +866,20 @@ def _validated_toolchain_fingerprint(value: object) -> dict[str, str]:
         or materializer_version != _MATERIALIZER_VERSION
     ):
         raise ValueError("toolchain fingerprint has an invalid v1 field")
+    library_profile = value.get("library_profile")
+    if "library_profile" in value and (
+        not isinstance(library_profile, str)
+        or library_profile == DEFAULT_PROFILE_NAME
+        or library_profile not in known_profile_names()
+    ):
+        raise ValueError("toolchain fingerprint names an invalid library profile")
     return {
         "schema_version": cast(str, schema_version),
         "lean_version": cast(str, lean_version),
         "lake_manifest_sha256": lake_manifest_sha256,
         "verifier_sha256": verifier_sha256,
         "materializer_version": cast(str, materializer_version),
+        **({"library_profile": library_profile} if isinstance(library_profile, str) else {}),
     }
 
 
