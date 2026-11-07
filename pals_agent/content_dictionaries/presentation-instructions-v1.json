@@ -1,0 +1,108 @@
+{
+  "schema_version": "pals.presentation-instructions.v1",
+  "notes": "Presentation, language and format instructions that a learner request (or the router that rewrites it) appends to a mathematical claim, for example 'Write the proposition and the entire proof in English.' The independent proof review judges the mathematical claim only, so these instructions are removed from its input by a closed set of patterns; the explanation stage still receives the full request. A method the learner requires (epsilon-delta, induction, ...) is part of the claim and is never in this table. Patterns are regular expressions (case-insensitive); {LANG_EN} and {LANG_CJK} expand to the language names below. To widen the table add a language name or a pattern row; no code change is needed. A row may set join (default a space): the text put where the match was removed; Japanese and Chinese rows use an empty join so no stray space is left between characters.",
+  "language_names_en": [
+    "english",
+    "japanese",
+    "chinese",
+    "simplified chinese",
+    "traditional chinese",
+    "korean",
+    "french",
+    "german",
+    "spanish",
+    "portuguese",
+    "italian",
+    "russian",
+    "arabic",
+    "hindi",
+    "thai",
+    "vietnamese",
+    "indonesian",
+    "turkish",
+    "dutch",
+    "polish"
+  ],
+  "language_names_cjk": [
+    "英語",
+    "日本語",
+    "中国語",
+    "簡体字中国語",
+    "繁体字中国語",
+    "中国語簡体字",
+    "中国語繁体字",
+    "韓国語",
+    "フランス語",
+    "ドイツ語",
+    "スペイン語",
+    "ポルトガル語",
+    "イタリア語",
+    "ロシア語",
+    "英文",
+    "日文",
+    "中文",
+    "英语",
+    "日语",
+    "韩语",
+    "法语",
+    "德语",
+    "西班牙语",
+    "简体中文",
+    "繁体中文",
+    "繁體中文",
+    "英語",
+    "日語",
+    "韓語",
+    "法語",
+    "德語",
+    "西班牙語"
+  ],
+  "patterns": [
+    {
+      "id": "en.write_in_language",
+      "re": "(?:(?:,|;|\\band\\b|\\balso\\b|\\bthen\\b|\\bplease\\b)\\s*)*\\b(?:write|answer|respond|reply|present|provide|give|describe|output|format|compose)\\s+(?:(?:the|a|an|entire|whole|full|complete|proposition|statement|theorem|claim|proof|explanation|answer|solution|and|both|all|everything|your|response|reply|it|them|this|that|its|each|every|step|steps|of|argument|reasoning|result|results|text|writing)\\s+)*(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s+language)?\\b"
+    },
+    {
+      "id": "en.in_language",
+      "re": "(?:,\\s*)?\\b(?:in|using)\\s+(?:the\\s+)?(?:{LANG_EN})(?:\\s+language)?\\b"
+    },
+    {
+      "id": "en.language_only",
+      "re": "\\b(?:{LANG_EN})\\s+only\\b|\\((?:in\\s+)?(?:{LANG_EN})\\)"
+    },
+    {
+      "id": "en.format",
+      "re": "(?:,\\s*)?\\b(?:step[- ]by[- ]step|in\\s+detail|in\\s+detailed\\s+steps|briefly|concisely|in\\s+simple\\s+terms|in\\s+plain\\s+(?:language|words)|for\\s+(?:a\\s+)?beginners?)\\b"
+    },
+    {
+      "id": "ja.write_in_language",
+      "re": "(?:(?:こと)?(?:を|は|が))?[、，]?(?:(?:命題|証明|説明|回答|解答|答え|解説|全体|全て|すべて|全文|全部)(?:と|も|は|を|の|、)*)*(?:{LANG_CJK})\\s*で\\s*(?:書いて|書け|書いてください|書き下して|答えて|回答して|出力して|記述して|述べて|お願いします|お願い|ください)+",
+      "join": ""
+    },
+    {
+      "id": "ja.in_language",
+      "re": "(?:{LANG_CJK})\\s*で(?:の)?",
+      "join": ""
+    },
+    {
+      "id": "ja.format",
+      "re": "丁寧に|詳しく|わかりやすく|分かりやすく|簡潔に|簡単に|ステップごとに|ステップバイステップで|初心者向けに",
+      "join": ""
+    },
+    {
+      "id": "zh.write_in_language",
+      "re": "(?:请|請)?(?:用|以|使用)(?:{LANG_CJK})(?:写出|寫出|写|寫|回答|作答|书写|書寫)(?:全部|所有|整个|整個)?(?:命题|命題|证明|證明|和|与|與|、)*",
+      "join": ""
+    },
+    {
+      "id": "zh.in_language",
+      "re": "(?:请|請)?(?:用|以|使用)(?:{LANG_CJK})",
+      "join": ""
+    },
+    {
+      "id": "zh.format",
+      "re": "详细地?|詳細地?|简洁|簡潔|分步|逐步",
+      "join": ""
+    }
+  ]
+}

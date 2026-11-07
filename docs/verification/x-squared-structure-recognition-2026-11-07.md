@@ -31,3 +31,18 @@ Sketch 文による置換(3件)と非置換(5件)、モデルを一度も呼ば�
 
 - 文法は選択器で、未知の言い回しは不命中になり、従来のモデル経路(保険の Sketch 判定を含む)へ行く。
 - 実モデルでの確認は未実施(この環境に API キーがない)。
+
+## 独立審査の入力から提示・言語の指示を分ける
+
+本番の英語 job 2件は、独立審査が `rejected` を返した(`proof_semantic_reviews.rationale`)。
+理由は「学習者が命題と証明全体を英語で求めたのに、候補は Lean で、英語の証明ではない」というもの。
+ルーターが statement に付ける「Write the proposition and the entire proof in English.」を、審査が数学的主張の一部と読んでいた。
+
+- `request_instructions.py` と `presentation-instructions-v1.json`(閉じた表)が、言語・提示・形式の指示を決定論的に取り除く。
+  取り除くのは「〜語で書け」、`Write … in English`、`请用英语写出…`、`step by step`、`丁寧に` など。
+  ε-δ のような方法の指定は主張の一部なので、取り除かない。
+- `_proof_semantic_review_prompt` は、取り除いた主張だけを `Learner request:` に入れ、
+  「提示・言語の要求は別の段が満たす。Lean の成果物が散文や指定言語でないことを理由に拒否しない」と明記する。
+- 証拠の digest は、API が永続化した statement から再計算するため、原文のまま。審査が見る入力だけが分離後になる。
+- 説明生成の段は、原文(指示を含む)を従来どおり受け取る(出力言語は `output_language`)。
+- 表の拡張は、言語名か pattern の行を足すだけ。

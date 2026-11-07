@@ -1455,3 +1455,14 @@ def test_a_short_field_with_little_prose_is_not_judged() -> None:
     explainer, client = build_explainer(payload)
     explainer.explain(theorem_statement="n + 0 = n を示せ", lean_code=LEAN_CODE, verified=True)
     assert len(client.prompts) == 1
+
+
+def test_the_explanation_stage_still_receives_the_presentation_instruction() -> None:
+    # The proof review drops "write ... in English"; the explanation stage keeps the full request.
+    explainer, client = build_explainer(explanation_payload())
+    explainer.explain(
+        theorem_statement="n + 0 = n を示せ。命題と証明をすべて英語で書いてください。",
+        lean_code=LEAN_CODE,
+        verified=True,
+    )
+    assert "命題と証明をすべて英語で書いてください" in client.prompts[0]

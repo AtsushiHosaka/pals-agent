@@ -18,6 +18,7 @@ from pals_agent.lean_target import (
     matches_x_squared_continuity,
 )
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
+from pals_agent.request_instructions import split_presentation_instructions
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_\\])(?:"
@@ -1969,6 +1970,15 @@ def _proof_semantic_review_prompt(
     lean_code: str,
 ) -> str:
     formal = formal_statement or "(No separate formal statement was supplied.)"
+    # Presentation, language and format instructions are not part of the mathematical claim.
+    split = split_presentation_instructions(theorem_statement)
+    theorem_statement = split.claim
+    removed_note = (
+        "\n(Presentation, language or format instructions were removed from this request; "
+        "another stage satisfies them.)"
+        if split.instructions
+        else ""
+    )
     return f"""You are an independent proof-review session. You did not generate this Lean
 candidate. {ANSWER_SCOPE_REVIEW}
 The deterministic parser extracted exactly this one target declaration; reject if it
@@ -2000,6 +2010,12 @@ only the notion it names: every other notion keeps its standard definition (a fi
 convention, such as replacing "is a field" by "every nonzero element is invertible", is weaker.
 Successful type checking does not establish that this is the theorem the learner requested.
 Base a rejection on that specific semantic mismatch, not on a guessed library-lemma meaning.
+Presentation, language and format requests (for example to write the proposition or the
+proof in a given language, in some style or at some length) are satisfied by a separate
+explanation stage, never by this Lean artifact. Never reject because the Lean source is not
+prose or is not written in such a language. A method the learner explicitly requires (for
+example the epsilon-delta definition) is part of the mathematical claim, not a presentation
+request.
 Lean compilation alone is not approval. Do not repair
 or continue the proof. Return exactly one JSON object and no surrounding text:
 {{\"approved\": true, \"rationale\": \"concise review rationale\"}}
@@ -2009,7 +2025,7 @@ The rationale must be nonblank, under 8,000 characters, and must not disclose hi
 chain-of-thought.
 
 Learner request:
-{theorem_statement}
+{theorem_statement}{removed_note}
 
 Learner-provided formal statement:
 {formal}
