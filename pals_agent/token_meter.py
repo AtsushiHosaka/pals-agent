@@ -33,6 +33,10 @@ class TokenBudgetExceededError(TokenMeterError):
     """Only an explicit authenticated permit denial, not uncertain metering."""
 
 
+class OptionalTokenCallFailed(TokenMeterError):
+    """An optional (best-effort) call failed; the meter and its siblings are unaffected."""
+
+
 class TokenMeterApi(Protocol):
     def permit_token_call(self, payload: dict[str, Any], *, timeout_seconds: float) -> None: ...
 
@@ -42,8 +46,27 @@ class TokenMeterApi(Protocol):
 _active: ContextVar[TokenMeter | None] = ContextVar("pals_token_meter", default=None)
 
 
+_optional: ContextVar[bool] = ContextVar("pals_token_optional_call", default=False)
+
+
 def active_token_meter() -> TokenMeter | None:
     return _active.get()
+
+
+@contextmanager
+def optional_token_calls() -> Iterator[None]:
+    """Mark calls in this context as optimizations whose failure must not poison the request.
+
+    Usage is recorded exactly as for required calls (permit, receipt, usage report). A failure
+    after the permit still leaves the same ``unknown`` receipt, which the API ledger treats as an
+    unresolved call. The only difference: ``failed`` is not set, so concurrent required calls are
+    not cancelled, and the error is ``OptionalTokenCallFailed`` for the caller to absorb.
+    """
+    token = _optional.set(True)
+    try:
+        yield
+    finally:
+        _optional.reset(token)
 
 
 @contextmanager
@@ -372,6 +395,8 @@ class TokenMeter:
                         ),
                         timeout_seconds=max(0.001, min(5.0, self.deadline - time.monotonic())),
                     )
+            if _optional.get():
+                raise OptionalTokenCallFailed("proof_reuse_optional_call_failed") from None
             with self._state_lock:
                 self.failed = True
             if isinstance(error, TokenBudgetExceededError):

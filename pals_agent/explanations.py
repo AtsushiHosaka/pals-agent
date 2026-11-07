@@ -118,8 +118,9 @@ _EPSILON_DELTA_ELEMENTS: tuple[tuple[str, str, str], ...] = (
     ),
     (
         "sum_bound",
-        "an upper bound for |x+a| that the final estimate uses (|x+a|<2|a|+1, or "
-        "|x+a|<=|x-a|+2|a|) is derived: its basis (the triangle inequality, with |x-a|<1 or "
+        "an upper bound for |x+a| that the final estimate uses (for example |x+a|<2|a|+1, "
+        "|x+a|<=2(|a|+1), or |x+a|<=|x-a|+2|a|; any constant that is large enough for the "
+        "estimate is fine) is derived: its basis (the triangle inequality, with |x-a|<1 or "
         "|x|<|a|+1) is in the text, or is one evident step because the text has just stated "
         "|x|<|a|+1 (or |x-a|<1) or writes |x+a|=|2a+(x-a)|. The bound that is derived must "
         "imply the bound the final estimate uses. If that bound is written through a named "
@@ -133,9 +134,10 @@ _EPSILON_DELTA_ELEMENTS: tuple[tuple[str, str, str], ...] = (
         "the chain of inequalities ends at epsilon (or a fixed multiple of epsilon such as 2 "
         "epsilon; it may end in an equality such as `= ε`), and every inequality the text "
         "asserts anywhere, about delta or about any other quantity, is true. The step from "
-        "delta to epsilon (delta(2|a|+1)<=epsilon when delta<=epsilon/(2|a|+1)) is evident from "
-        "the definition of the minimum. For a named constant, every inequality that uses it "
-        "must be true for its definition.",
+        "delta to epsilon (delta*K<=epsilon when delta<=epsilon/K, where K is the constant that "
+        "multiplies |x-a| in the estimate, for example K=2|a|+1, K=2(|a|+1) or K=2|a|+3) is "
+        "evident from the definition of the minimum. For a named constant, every inequality that "
+        "uses it must be true for its definition.",
         "Check first that the chain reaches epsilon: one that stops at delta (it ends at "
         "delta(2|a|+1)) or at another quantity is missing. Then check that every asserted "
         "inequality is true: a false one is wrong, for example delta<=epsilon/(2|a|+1) claimed "
