@@ -26,10 +26,7 @@ HARNESS = (
     "theorem pals_card_target {K : Type*} [Field K] {n : ℕ} (v : Fin n → K) : "
     "(∃ b : Fin n → K, (fun i => b i)=v) ↔ LinearIndependent K v ∧ n = n"
 )
-LET_HARNESS = (
-    "theorem pals_card_target (f : ℝ → ℝ) : "
-    "let p := f 0; let q := f 1; p = p ∧ q = q"
-)
+LET_HARNESS = "theorem pals_card_target (f : ℝ → ℝ) : let p := f 0; let q := f 1; p = p ∧ q = q"
 
 
 # ---------------------------------------------------------------- splice
@@ -138,9 +135,7 @@ def _feedback(
     return GenerationFeedback(
         attempt=1,
         previous_lean_code="theorem x : True := by sorry",
-        diagnostics=tuple(
-            Diagnostic(severity="error", code=code, message=code) for code in codes
-        ),
+        diagnostics=tuple(Diagnostic(severity="error", code=code, message=code) for code in codes),
         previous_draft=draft,
         previous_sketch=sketch,
     )
@@ -162,12 +157,18 @@ def test_policy_never_restarts_the_draft_for_a_statement_mismatch() -> None:
     carries = _sketch(f"{HARNESS} := by\n  sorry")
     lacks = _sketch("theorem pals_card_target : True := by\n  sorry")
     mismatch = "lean.formal_harness_mismatch"
-    assert deterministic_repair_route(
-        _request(), _feedback(mismatch, draft=_draft(), sketch=carries)
-    ).route == "prove"  # type: ignore[union-attr]
-    assert deterministic_repair_route(
-        _request(), _feedback(mismatch, draft=_draft(), sketch=lacks)
-    ).route == "sketch"  # type: ignore[union-attr]
+    assert (
+        deterministic_repair_route(
+            _request(), _feedback(mismatch, draft=_draft(), sketch=carries)
+        ).route
+        == "prove"
+    )  # type: ignore[union-attr]
+    assert (
+        deterministic_repair_route(
+            _request(), _feedback(mismatch, draft=_draft(), sketch=lacks)
+        ).route
+        == "sketch"
+    )  # type: ignore[union-attr]
 
 
 def test_policy_recognises_a_sketch_carrying_the_statement_with_other_layout() -> None:
@@ -184,12 +185,16 @@ def test_policy_recognises_a_sketch_carrying_the_statement_with_other_layout() -
 
 def test_policy_restarts_the_missing_stage() -> None:
     assert deterministic_repair_route(_request(), _feedback("lean.error")).route == "draft"  # type: ignore[union-attr]
-    assert deterministic_repair_route(
-        _request(), _feedback("lean.error", draft=_draft())
-    ).route == "sketch"  # type: ignore[union-attr]
-    assert deterministic_repair_route(
-        _request(), _feedback("lean.error", draft=_draft(), sketch=_sketch("  "))
-    ).route == "sketch"  # type: ignore[union-attr]
+    assert (
+        deterministic_repair_route(_request(), _feedback("lean.error", draft=_draft())).route
+        == "sketch"
+    )  # type: ignore[union-attr]
+    assert (
+        deterministic_repair_route(
+            _request(), _feedback("lean.error", draft=_draft(), sketch=_sketch("  "))
+        ).route
+        == "sketch"
+    )  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize("code", ["pals.repair_stagnation", "pals.proof_method_mismatch"])
@@ -367,8 +372,11 @@ class StagedGenerator:
     def generate_proof(self, request, draft, sketch, feedback=None):  # type: ignore[no-untyped-def]
         self.proof_feedback.append(feedback)
         return GeneratedProof(
-            lean_code=GOOD_PROOF, model=self.model, raw_model_output=GOOD_PROOF,
-            draft=draft, sketch=sketch,
+            lean_code=GOOD_PROOF,
+            model=self.model,
+            raw_model_output=GOOD_PROOF,
+            draft=draft,
+            sketch=sketch,
         )
 
     def repair(self, request, feedback):  # type: ignore[no-untyped-def]
