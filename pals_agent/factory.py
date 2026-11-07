@@ -47,6 +47,12 @@ from pals_agent.settings import AgentSettings, validate_release_generation_envir
 from pals_agent.typed_runtime import TypedProofFlowRuntime
 
 
+def recipe_instantiation_enabled() -> bool:
+    """Default OFF. Turn on only after the API has the verifier composition (deploy order:
+    API with PALS_RECIPE_INSTANTIATION=on and its verifier first, then the workers)."""
+    return os.environ.get("PALS_RECIPE_INSTANTIATION", "").strip().lower() in {"on", "true", "1"}
+
+
 def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
 
@@ -127,7 +133,10 @@ def build_proof_request_processor(
         ),
         runtime=ChatRuntime(
             client=client,
-            proof_runtime=ProofReuseRuntime(client=client, catalog=ApiProofReuseCatalog(settings)),
+            proof_runtime=ProofReuseRuntime(
+                client=client, catalog=ApiProofReuseCatalog(settings),
+                instantiation_enabled=recipe_instantiation_enabled(),
+            ),
         ),
     )
 
