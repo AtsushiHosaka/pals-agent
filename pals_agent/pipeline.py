@@ -15,6 +15,7 @@ from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
+from pals_agent.lean_templates import template_proof_for_request
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
     BenchmarkProblem,
@@ -182,6 +183,10 @@ class ProofPipeline:
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
     request_linked_typed_retriever: ProofFlowRetriever | None = None
+    # First attempts for requests that exactly match a verified template (the continuity of x²)
+    # are rendered without a model call. The result is compiled like any candidate; a failure
+    # repairs through the model as usual.
+    deterministic_templates: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -672,6 +677,28 @@ class ProofPipeline:
             ),
             "max_repair_attempts": self.max_repair_attempts,
         }
+
+        if feedback is None and self.deterministic_templates:
+            template = template_proof_for_request(request)
+            if template is not None:
+                _emit(
+                    on_status,
+                    "proving",
+                    diagnostics,
+                    None,
+                    None,
+                    {
+                        **context,
+                        "dsp_stage": "prove",
+                        "deterministic_template": template.prover_id,
+                    },
+                )
+                return GeneratedProof(
+                    lean_code=template.lean_code,
+                    model=template.prover_id,
+                    raw_model_output=f"[template] {template.prover_id}",
+                    provider="pals-template",
+                )
 
         staged_generator = _staged_generator(self.generator)
         if staged_generator is not None:
