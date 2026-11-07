@@ -45,6 +45,20 @@ def test_a_plain_lemma_with_documentation_tags_passes(tmp_path: Path, capsys) ->
     assert "2 Stacks modules" in capsys.readouterr().out
 
 
+def test_documentation_attributes_may_carry_several_strings(tmp_path: Path) -> None:
+    audit = _load()
+    package = _package(
+        tmp_path,
+        {
+            "StacksFrontier.A": _HEADER
+            + '@[sga "3 IV 6.3" "(c)"]\ntheorem a : True := trivial\n'
+            + '@[ega "IV 8.1.1", simp]\ntheorem b : True := trivial\n',
+        },
+    )
+
+    assert audit.main(["x", str(package), "StacksFrontier.A"]) == 0
+
+
 @pytest.mark.parametrize(
     "body",
     [

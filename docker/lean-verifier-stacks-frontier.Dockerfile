@@ -42,7 +42,7 @@ RUN test -n "${FRONTIER_MODULES}" \
     && xargs elan toolchain install < lean-toolchain \
     && lake exe cache get \
     && touch /build/pals_agent/__init__.py \
-    && PYTHONPATH=/build python3 -I /build/scripts/audit_frontier_closure.py \
+    && PYTHONPATH=/build python3 -P /build/scripts/audit_frontier_closure.py \
       .lake/packages/Stacks ${FRONTIER_MODULES} \
     && lake build StacksCore ${FRONTIER_MODULES}
 

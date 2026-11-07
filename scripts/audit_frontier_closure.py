@@ -19,7 +19,7 @@ from pals_agent.lean_source_policy import find_source_violation
 
 _IMPORT = re.compile(r"^(?:public\s+)?(?:meta\s+)?import\s+(?:all\s+)?(\S+)", re.MULTILINE)
 _BENIGN_ATTRIBUTE = re.compile(
-    r'\b(?:stacks_fixed|stacks|sga|ega|kerodon)\b(?:[ \t]+[A-Za-z0-9]{4})?(?:[ \t]+"[^"\n]*")?'
+    r'\b(?:stacks_fixed|stacks|sga|ega|kerodon)\b(?:[ \t]+[A-Za-z0-9]{4})?(?:[ \t]+"[^"\n]*")*'
 )
 
 
