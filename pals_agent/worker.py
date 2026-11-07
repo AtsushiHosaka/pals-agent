@@ -1776,7 +1776,7 @@ class SqsProofWorker:
         switch is on. Missing pieces would otherwise spend a model call that nothing can use.
         """
         if (
-            not getattr(self.settings, "speculative_explanation_enabled", True)
+            not getattr(self.settings, "speculative_explanation_enabled", False)
             or claim_id is None
             or extend_visibility is None
             or self.explainer is None

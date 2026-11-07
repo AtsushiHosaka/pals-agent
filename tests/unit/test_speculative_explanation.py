@@ -136,8 +136,10 @@ class TracedOutputReviewer(RecordingOutputReviewer):
 
 
 def _settings(**extra: Any) -> AgentSettings:
+    # The feature is off by default in production; these tests exercise it switched on.
+    values: dict[str, Any] = {"speculative_explanation_enabled": True, **extra}
     return cast(
-        AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17, **extra),
+        AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17, **values),
     )
 
 
@@ -351,3 +353,21 @@ def test_an_early_call_that_is_not_done_by_the_deadline_is_a_missed_deadline() -
             )
     finally:
         release.set()
+
+
+def test_the_switch_is_off_by_default_and_must_be_turned_on_explicitly(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent.settings import _strict_bool_env_default
+
+    name = "PALS_SPECULATIVE_EXPLANATION_ENABLED"
+    monkeypatch.delenv(name, raising=False)
+    assert _strict_bool_env_default(name, False) is False
+    monkeypatch.setenv(name, "true")
+    assert _strict_bool_env_default(name, False) is True
+    monkeypatch.setenv(name, "false")
+    assert _strict_bool_env_default(name, False) is False
+    # a settings object that does not carry the field behaves as off (no speculation)
+    bare = cast(AgentSettings, SimpleNamespace(explanation_model_timeout_seconds=17))
+    assert getattr(bare, "speculative_explanation_enabled", False) is False
+    assert AgentSettings.__dataclass_fields__["speculative_explanation_enabled"].default is False

@@ -62,7 +62,7 @@ class AgentSettings:
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     deterministic_templates_enabled: bool = True
     template_skips_retrieval_enabled: bool = True
-    speculative_explanation_enabled: bool = True
+    speculative_explanation_enabled: bool = False
     lemma_alias_repair_enabled: bool = True
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
@@ -209,7 +209,7 @@ class AgentSettings:
                 "PALS_TEMPLATE_SKIPS_RETRIEVAL_ENABLED", True
             ),
             speculative_explanation_enabled=_strict_bool_env_default(
-                "PALS_SPECULATIVE_EXPLANATION_ENABLED", True
+                "PALS_SPECULATIVE_EXPLANATION_ENABLED", False
             ),
             lemma_alias_repair_enabled=_strict_bool_env_default(
                 "PALS_LEMMA_ALIAS_REPAIR_ENABLED", True
