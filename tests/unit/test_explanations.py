@@ -1379,7 +1379,7 @@ def test_every_regression_case_is_in_its_own_language() -> None:
         texts = [case["overview"], *(s["summary"] for s in case["sections"]), case["conclusion"]]
         _require_prose_language(texts, case["language"])
         checked += 1
-    assert checked == 49
+    assert checked == 52
 
 
 # --- Lean vocabulary that the fixed tactic list misses, and per-field language -------------

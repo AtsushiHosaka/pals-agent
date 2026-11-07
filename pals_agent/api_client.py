@@ -27,6 +27,7 @@ _RECIPE_SEMANTIC_REVIEW_SCHEMA_VERSION = "pals.proof-semantic-review.v3"
 _OUTPUT_REVIEW_SCHEMA_VERSION = "pals.proof-output-review.v2"
 RECIPE_SEARCH_RESPONSE_BYTES = 2_097_152
 _SHA256_HEX_RE = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
+INSTANTIATION_SETTLE_TIMEOUT_SECONDS = 105.0
 _MODEL_ARTIFACT_URI_RE = re.compile(
     r"^s3://[A-Za-z0-9][A-Za-z0-9.-]{0,254}/proof-jobs/"
     r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}/result\.lean$",
@@ -252,9 +253,17 @@ class PalsApiClient:
     def settle_proof_request(
         self, *, request_id: str, payload: dict[str, Any]
     ) -> dict[str, Any]:
+        # An instantiation settlement waits for the API-owned Lean compile (13-52 s measured with
+        # Mathlib). The API bounds that call at 90 s and the ALB idles at 120 s.
+        extended = (
+            isinstance(payload.get("private_evidence"), dict)
+            and "recipe_instantiation_correspondence" in payload["private_evidence"]
+        )
         return self._request(
             "POST", f"/v1/internal/proof-requests/{_canonical_claim_id(request_id)}/settlements",
             payload, headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=INSTANTIATION_SETTLE_TIMEOUT_SECONDS if extended else None,
+            extend_timeout=extended,
         )
 
     def record_proof_request_usage(
@@ -622,6 +631,7 @@ class PalsApiClient:
         headers: dict[str, str] | None = None,
         timeout_seconds: float | None = None,
         max_response_bytes: int = MAX_HTTP_RESPONSE_BYTES,
+        extend_timeout: bool = False,
     ) -> dict[str, Any]:
         request_headers = {"Accept": "application/json", **(headers or {})}
         data = None
@@ -636,6 +646,7 @@ class PalsApiClient:
                 headers=request_headers,
                 body=data,
                 timeout_seconds=(self.timeout_seconds if timeout_seconds is None
+                                 else timeout_seconds if extend_timeout
                                  else min(self.timeout_seconds, timeout_seconds)),
             )
         except HardDeadlineHttpError:

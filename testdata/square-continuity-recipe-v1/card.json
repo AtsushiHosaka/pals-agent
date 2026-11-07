@@ -1,0 +1,168 @@
+{
+ "schema_version": "pals.square-continuity-card.v1",
+ "id": "continuity.square.explicit-epsilon-delta",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "square_continuous_explicit_epsilon_delta",
+ "source_path": "proofs/square_continuous_explicit_epsilon_delta.lean",
+ "target_source": "Continuous (fun x : ℝ => x ^ 2)",
+ "statement": "実数全体で定義された関数 $f(x)=x^2$（$x$ の2乗、二乗）が、$\\mathbb{R}$ のすべての点で連続であること（連続関数であること）を証明せよ。(Prove that x squared, $f(x)=x^2$, is continuous on the real line.)",
+ "domain": "実数上の関数の連続性：2乗関数（xの2乗、xの二乗、$x^2$）の $\\varepsilon$-$\\delta$ 論法による連続性の証明",
+ "assumptions": [
+  "$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$（$x$ は実数変数、指数 $2$ は自然数）。",
+  "連続性は実数の通常の距離 $|x-y|$ に関する各点での連続性（$\\varepsilon$-$\\delta$ による定義）を指す。"
+ ],
+ "quantifiers": [
+  "任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、すべての実数 $x$ について $|x-a|<\\delta$ ならば $|x^2-a^2|<\\varepsilon$ となる（$\\delta$ は $a$ と $\\varepsilon$ に依存してよい）。"
+ ],
+ "conclusion": "$f(x)=x^2$ は $\\mathbb{R}$ のすべての点で連続である。すなわち $f$ は $\\mathbb{R}$ 上の連続関数である。",
+ "proof_method_tag": "epsilon_delta",
+ "answer": "$a$ を任意の実数とします。$f(x)=x^2$ が $a$ で連続であるとは、任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、$|x-a|<\\delta$ を満たすすべての実数 $x$ について $|x^2-a^2|<\\varepsilon$ となることです。そこで $\\varepsilon>0$ を任意に取り、この $\\delta$ を具体的に与えます。\n\n$\\delta=\\min\\left\\{1,\\frac{\\varepsilon}{2|a|+1}\\right\\}$ と定めます。$2|a|+1>0$ なので $\\delta>0$ です。$1$ との最小値を取るのは、$x$ が $a$ から離れすぎて $|x+a|$ が大きくなるのを防ぐためです。\n\n実数 $x$ が $|x-a|<\\delta$ を満たすとします。$\\delta\\le 1$ より $|x-a|<1$ なので、三角不等式から $|x|\\le|x-a|+|a|<|a|+1$ となります。したがって $|x+a|\\le|x|+|a|<2|a|+1$ です。\n\nまた $x^2-a^2=(x-a)(x+a)$ なので $|x^2-a^2|=|x-a||x+a|$ です。$|x+a|<2|a|+1$ を使うと $|x^2-a^2|=|x-a||x+a|\\le|x-a|(2|a|+1)<\\varepsilon$ が得られます。最後の不等号は、$|x-a|<\\delta\\le\\frac{\\varepsilon}{2|a|+1}$ の両辺に正の数 $2|a|+1$ を掛けたものです。\n\n以上から、任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、上の $\\delta>0$ は $|x-a|<\\delta$ ならば $|x^2-a^2|<\\varepsilon$ を満たします。$\\delta$ は $|a|$ が大きいほど小さくなる（増えることはない）ように選んでいます。したがって $x^2$ は実数全体のすべての点で連続です。\n",
+ "proof_outline": [
+  "Fix a real point a and epsilon greater than zero.",
+  "Choose delta as the minimum of 1 and epsilon divided by 2|a|+1.",
+  "Bound |x+a| by 2|a|+1 whenever |x-a| is less than 1.",
+  "Factor |x^2-a^2| as |x-a||x+a| and conclude it is less than epsilon."
+ ],
+ "question_variants": {
+  "ja": [
+   "なんでxの二乗は連続なんですか。",
+   "xの二乗は連続であることを示してください。",
+   "x^2の連続性を証明してください。",
+   "f(x)=x² は連続であることを証明せよ。",
+   "関数 $f(x)=x^2$ が実数全体で連続であることを ε-δ論法で証明してください。",
+   "二次関数 y=x^2 が連続関数である理由を教えて",
+   "x²が連続であることの証明"
+  ],
+  "en": [
+   "Prove that x² is continuous.",
+   "Show that f(x)=x^2 is continuous on the real line.",
+   "Why is the square function continuous?",
+   "Prove that x squared is continuous using epsilon-delta."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "xの2乗",
+   "xの二乗",
+   "x^2",
+   "x²",
+   "2乗関数",
+   "二次関数 y=x^2",
+   "平方関数",
+   "連続性",
+   "連続関数",
+   "ε-δ論法",
+   "イプシロンデルタ"
+  ],
+  "en": [
+   "x squared",
+   "square function",
+   "squaring function",
+   "x^2",
+   "f(x)=x^2",
+   "continuity of x squared",
+   "continuous on the real line",
+   "epsilon delta proof",
+   "epsilon-delta definition of continuity",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "cube",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=x^3$ が実数全体で連続であることを証明せよ。",
+   "reason": "指数が3であり、同じ δ の式では評価できない（|x²+xa+a²| の評価が必要）。"
+  },
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=x^2$ が連続であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された弱い主張で、ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "uniform",
+   "dimension": "quantifiers",
+   "statement": "関数 $f(x)=x^2$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "δ が点 a に依存しない一様連続性は偽であり、保存証明の δ は a に依存する。"
+  },
+  {
+   "id": "differentiable",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^2$ が $\\mathbb{R}$ 上で微分可能であることを証明せよ。",
+   "reason": "結論が微分可能性であり、連続性の証明では答えにならない。"
+  },
+  {
+   "id": "existence",
+   "dimension": "quantifiers",
+   "statement": "$|x-1|<\\delta$ ならば $|x^2-1|<1$ となる $\\delta>0$ が存在することを示せ。",
+   "reason": "特定の点と特定の ε に対する存在の主張で、全点・全 ε の連続性ではない。"
+  },
+  {
+   "id": "at_zero_only",
+   "dimension": "quantifiers",
+   "statement": "関数 $f(x)=x^2$ が $x=0$ でのみ連続であることを証明せよ。",
+   "reason": "他の点では不連続という偽の主張を含む（実際はすべての点で連続）。"
+  },
+  {
+   "id": "at_zero",
+   "dimension": "quantifiers",
+   "statement": "関数 $f(x)=x^2$ が $x=0$ で連続であることを証明せよ。",
+   "reason": "1点での連続性だけを問う弱い主張である。"
+  },
+  {
+   "id": "rational_power",
+   "dimension": "objects",
+   "statement": "任意の有理数 $r$ について、$f(x)=x^r$ が実数全体で連続であることを証明せよ。",
+   "reason": "有理数冪は負の指数や $x<0$ で定義・連続性が成り立たない。一般の冪は別の命題である。"
+  },
+  {
+   "id": "natural_power",
+   "dimension": "objects",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n$ が実数全体で連続であることを証明せよ。",
+   "reason": "指数nについて一般化された主張で、n=2への特殊化は直接再利用の対象外である。"
+  },
+  {
+   "id": "lipschitz",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^2$ が $\\mathbb{R}$ 上でリプシッツ連続であることを証明せよ。",
+   "reason": "リプシッツ連続は偽であり（勾配が非有界）、各点連続の証明では答えにならない。"
+  },
+  {
+   "id": "shifted_square",
+   "dimension": "objects",
+   "statement": "関数 $f(x)=(x-1)^2$ が実数全体で連続であることを証明せよ。",
+   "reason": "別の関数である。平行移動した関数の連続性は、保存回答の $f(x)=x^2$ の証明そのものではない。"
+  },
+  {
+   "id": "without_epsilon_delta",
+   "dimension": "method",
+   "statement": "関数 $f(x)=x^2$ が実数全体で連続であることを、$\\varepsilon$-$\\delta$ 論法を使わずに（連続関数の積の連続性を用いて）証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（ε-δ論法）と異なる。"
+  },
+  {
+   "id": "complex_square",
+   "dimension": "domain",
+   "statement": "複素数全体で定義された関数 $f(z)=z^2$ が連続であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、距離も複素数の絶対値になる。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "pals-scripts/fixtures/lean-recipe-corpus.v1.json#square_recipe (proof re-authored for the pinned toolchain)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

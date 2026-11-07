@@ -60,6 +60,7 @@ class AgentSettings:
     request_linked_typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
+    deterministic_templates_enabled: bool = True
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -198,6 +199,9 @@ class AgentSettings:
                 "PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED"
             ),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
+            deterministic_templates_enabled=_strict_bool_env_default(
+                "PALS_DETERMINISTIC_TEMPLATES_ENABLED", True
+            ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
                 DEFAULT_MAX_REPAIR_ATTEMPTS,
@@ -431,6 +435,15 @@ def _validate_semantic_evaluator_configuration(
 
 def _strict_bool_env(name: str) -> bool:
     value = os.environ.get(name, "false")
+    if value not in {"true", "false"}:
+        raise ValueError(f"{name} must be true or false")
+    return value == "true"
+
+
+def _strict_bool_env_default(name: str, default: bool) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
     if value not in {"true", "false"}:
         raise ValueError(f"{name} must be true or false")
     return value == "true"
