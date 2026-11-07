@@ -23,7 +23,6 @@ import pytest
 import rfc8785
 
 from pals_agent.explanations import (
-    _has_x_squared_epsilon_delta,
     _reject_lean_source_terms,
 )
 from pals_agent.http_transport import HttpResponse
@@ -294,8 +293,8 @@ def test_an_observed_toolchain_replaces_the_frozen_binding_only_when_explicit(tm
 
 def test_answer_is_an_explicit_epsilon_delta_proof_accepted_by_the_repo_validators():
     answer = card()["answer"]
-    # The same gate that rejected the model-written explanation in production.
-    assert _has_x_squared_epsilon_delta(answer)
+    # The text gate was replaced by the independent checklist review (explanation semantic gate);
+    # the structural Lean-vocabulary check remains.
     _reject_lean_source_terms(answer, "stored answer")
     assert r"\delta=\min\left\{1,\frac{\varepsilon}{2|a|+1}\right\}" in answer
     assert "|x^2-a^2|=|x-a||x+a|" in answer
@@ -320,29 +319,6 @@ def test_answer_is_an_explicit_epsilon_delta_proof_accepted_by_the_repo_validato
     # Only claims the Lean target supports: pointwise continuity, nothing about uniformity.
     for foreign in ("一様", "微分", "導関数", "コンパクト"):
         assert foreign not in answer
-
-
-@pytest.mark.parametrize(
-    "mutation",
-    [
-        (
-            r"\delta=\min\left\{1,\frac{\varepsilon}{2|a|+1}\right\}",
-            r"\delta=\frac{\varepsilon}{2|a|+1}",
-        ),
-        (
-            r"\delta=\min\left\{1,\frac{\varepsilon}{2|a|+1}\right\}",
-            r"\delta=\min\left\{1,\frac{\varepsilon}{|a|+1}\right\}",
-        ),
-        (r"\le|x-a|(2|a|+1)<\varepsilon", r"\le|x-a|(2|a|+1)"),
-        ("|x^2-a^2|=|x-a||x+a|", "|x^2-a^2|=|x-a|"),
-        ("連続", "有界"),
-    ],
-)
-def test_validator_would_reject_a_truncated_or_unsound_variant_of_the_answer(mutation):
-    old, new = mutation
-    answer = card()["answer"]
-    assert old in answer
-    assert not _has_x_squared_epsilon_delta(answer.replace(old, new))
 
 
 def test_delta_choice_and_every_stated_bound_hold_in_exact_arithmetic():

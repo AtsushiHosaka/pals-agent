@@ -1,0 +1,149 @@
+{
+ "schema_version": "pals.power-continuity-card.v1",
+ "id": "continuity.power.natural.explicit-epsilon-delta",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "power_continuous_explicit_epsilon_delta",
+ "source_path": "proofs/power_continuous_explicit_epsilon_delta.lean",
+ "target_source": "∀ (n : ℕ), Continuous (fun x : ℝ => x ^ n)",
+ "statement": "任意の自然数 $n$（$0$ を含む）について、実数全体で定義された関数 $f(x)=x^n$（$x$ の $n$ 乗）が、$\\mathbb{R}$ のすべての点で連続であること（連続関数であること）を $\\varepsilon$-$\\delta$ 論法で証明せよ。(Prove that for every natural number n, including 0, the power function f(x)=x^n is continuous on the real line, using epsilon-delta. This covers x squared, x cubed and every fixed power.)",
+ "domain": "実数上の関数の連続性：冪関数（xのn乗、xのべき乗、$x^n$。$n$ は自然数）の $\\varepsilon$-$\\delta$ 論法による連続性の証明",
+ "assumptions": [
+  "$n$ は自然数（$0$ を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^n$（$x$ は実数変数）。",
+  "連続性は実数の通常の距離 $|x-y|$ に関する各点での連続性（$\\varepsilon$-$\\delta$ による定義）を指す。"
+ ],
+ "quantifiers": [
+  "任意の自然数 $n$、任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、すべての実数 $x$ について $|x-a|<\\delta$ ならば $|x^n-a^n|<\\varepsilon$ となる（$\\delta$ は $n$、$a$、$\\varepsilon$ に依存してよい）。"
+ ],
+ "conclusion": "任意の自然数 $n$ について $f(x)=x^n$ は $\\mathbb{R}$ のすべての点で連続である。すなわち $f$ は $\\mathbb{R}$ 上の連続関数である。",
+ "proof_method_tag": "epsilon_delta",
+ "answer": "$n$ を任意の自然数とし、$a$ を任意の実数とします。$f(x)=x^n$ が $a$ で連続であるとは、任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、$|x-a|<\\delta$ を満たすすべての実数 $x$ について $|x^n-a^n|<\\varepsilon$ となることです。そこで $\\varepsilon>0$ を任意に取り、この $\\delta$ を具体的に与えます。\n\nまず次の評価を示します。$|x-a|\\le 1$ のとき、$1$ 以上のすべての整数 $k$ について $|x^k-a^k|\\le k(|a|+1)^{k-1}|x-a|$ が成り立ちます。$k=1$ では両辺が等しいので成り立ちます。$k$ で成り立つと仮定します。$x^{k+1}-a^{k+1}=x(x^k-a^k)+a^k(x-a)$ と分けると、$|x-a|\\le 1$ から三角不等式により $|x|\\le|a|+1$ であり、$|a|^k\\le(|a|+1)^k$ でもあります。よって $|x^{k+1}-a^{k+1}|\\le(|a|+1)\\cdot k(|a|+1)^{k-1}|x-a|+(|a|+1)^k|x-a|=(k+1)(|a|+1)^k|x-a|$ となり、$k+1$ でも成り立ちます。$n=0$ のときは $x^0-a^0=0$ なので、$|x^n-a^n|\\le n(|a|+1)^{n-1}|x-a|$ は $n=0$ でも（右辺を $0$ として）成り立ちます。\n\n$C=n(|a|+1)^{n-1}+1$ とおきます（$n=0$ のときは $C=1$）。$C\\ge 1>0$ です。$\\delta=\\min\\left\\{1,\\frac{\\varepsilon}{C}\\right\\}$ と定めると、$1$ と $\\frac{\\varepsilon}{C}$ はどちらも正なので $\\delta>0$ です。$1$ との最小値を取るのは、$|x-a|\\le 1$ を保証して上の評価を使えるようにするためです。たとえば $n=2$ のときは $C=2|a|+3$ です。\n\n実数 $x$ が $|x-a|<\\delta$ を満たすとします。$\\delta\\le 1$ より $|x-a|\\le 1$ なので、上の評価から $|x^n-a^n|\\le n(|a|+1)^{n-1}|x-a|\\le C|x-a|$ です。また $|x-a|<\\delta\\le\\frac{\\varepsilon}{C}$ の両辺に正の数 $C$ を掛けると $C|x-a|<\\varepsilon$ です。したがって $|x^n-a^n|<\\varepsilon$ が得られます。\n\n以上から、任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、上の $\\delta>0$ は $|x-a|<\\delta$ ならば $|x^n-a^n|<\\varepsilon$ を満たします。したがって、任意の自然数 $n$ について $x^n$ は実数全体のすべての点で連続です。\n",
+ "proof_outline": [
+  "Fix a natural number n, a real point a and epsilon greater than zero.",
+  "Show |x^k-a^k| is at most k(|a|+1)^(k-1)|x-a| whenever |x-a| is at most 1, by induction on k.",
+  "Choose delta as the minimum of 1 and epsilon divided by C, where C = n(|a|+1)^(n-1)+1.",
+  "Conclude |x^n-a^n| is less than epsilon whenever |x-a| is less than delta."
+ ],
+ "question_variants": {
+  "ja": [
+   "xのn乗は連続であることを示してください。",
+   "任意の自然数nについてx^nが連続であることをε-δ論法で証明してください。",
+   "x^nの連続性を証明してください。",
+   "べき関数 f(x)=x^n は連続であることを証明せよ。",
+   "xの二乗が連続である理由をε-δ論法で教えてください。",
+   "x^3は連続であることを示してください。"
+  ],
+  "en": [
+   "Prove that x^n is continuous for every natural number n.",
+   "Show that the power function f(x)=x^n is continuous on the real line.",
+   "Why is x squared continuous? Use epsilon-delta.",
+   "Prove that x^3 is continuous using epsilon-delta."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "xのn乗",
+   "べき乗",
+   "冪関数",
+   "x^n",
+   "連続性",
+   "連続関数",
+   "ε-δ論法",
+   "イプシロンデルタ",
+   "xの2乗",
+   "xの二乗",
+   "x²"
+  ],
+  "en": [
+   "x to the n",
+   "power function",
+   "x^n",
+   "natural power",
+   "x squared",
+   "x cubed",
+   "continuity of power functions",
+   "epsilon delta proof",
+   "epsilon-delta definition of continuity",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=x^n$ が連続であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された弱い主張で、ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "uniform",
+   "dimension": "quantifiers",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "δ が点 a に依存しない一様連続性は偽であり、保存証明の δ は a に依存する。"
+  },
+  {
+   "id": "differentiable",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上で微分可能であることを証明せよ。",
+   "reason": "結論が微分可能性であり、連続性の証明では答えにならない。"
+  },
+  {
+   "id": "rational_power",
+   "dimension": "objects",
+   "statement": "任意の有理数 $r$ について、$f(x)=x^r$ が実数全体で連続であることを証明せよ。",
+   "reason": "有理数冪は負の指数や $x<0$ で定義・連続性が成り立たない。一般の冪は別の命題である。"
+  },
+  {
+   "id": "lipschitz",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=x^n$ が $\\mathbb{R}$ 上でリプシッツ連続であることを証明せよ。",
+   "reason": "リプシッツ連続は偽であり（勾配が非有界）、各点連続の証明では答えにならない。"
+  },
+  {
+   "id": "complex_square",
+   "dimension": "domain",
+   "statement": "複素数全体で定義された関数 $f(z)=z^2$ が連続であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、距離も複素数の絶対値になる。"
+  },
+  {
+   "id": "real_exponent",
+   "dimension": "objects",
+   "statement": "任意の実数 $r$ について、$f(x)=x^r$ が実数全体で連続であることを証明せよ。",
+   "reason": "実数冪は負の $x$ や負の指数で定義・連続性が成り立たない。自然数冪とは別の命題である。"
+  },
+  {
+   "id": "without_epsilon_delta",
+   "dimension": "method",
+   "statement": "任意の自然数 $n$ について $x^n$ が連続であることを、$\\varepsilon$-$\\delta$ 論法を使わずに証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（ε-δ論法）と異なる。"
+  },
+  {
+   "id": "at_a_point",
+   "dimension": "quantifiers",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n$ が $x=0$ で連続であることを証明せよ。",
+   "reason": "1点での連続性だけを問う弱い主張である。"
+  },
+  {
+   "id": "sum_with_constant",
+   "dimension": "objects",
+   "statement": "任意の自然数 $n$ について、$f(x)=x^n+1$ が実数全体で連続であることを証明せよ。",
+   "reason": "別の関数であり、保存回答の $f(x)=x^n$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form ε-δ proof for the natural-power family (n = 2 recovers the former dedicated x² card)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}

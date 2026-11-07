@@ -1,7 +1,6 @@
 import Mathlib
 
-theorem power_continuous_explicit_epsilon_delta :
-    ∀ (n : ℕ), Continuous (fun x : ℝ => x ^ n) := by
+theorem power_continuous_explicit_epsilon_delta : ∀ (n : ℕ), Continuous (fun x : ℝ => x ^ n) := by
   -- Key estimate: for |x - a| ≤ 1, |x^(m+1) - a^(m+1)| ≤ |x - a| * ((m+1) * (|a|+1)^m).
   have core : ∀ (m : ℕ) (x a : ℝ), |x - a| ≤ 1 →
       |x ^ (m + 1) - a ^ (m + 1)| ≤ |x - a| * ((m + 1) * (|a| + 1) ^ m) := by

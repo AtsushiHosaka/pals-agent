@@ -44,6 +44,7 @@ class RequestProposition:
     variable: str
     slots: tuple[tuple[str, str], ...]
     search_query: str
+    preferred_method: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +159,7 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
         property_id=prop_entry["id"],
         variable=variable,
         slots=tuple(sorted(slots.items())),
+        preferred_method=prop_entry.get("preferred_method"),
         search_query=" ".join(
             term for term in (function.get("search_terms"), prop_entry.get("search_terms")) if term
         ),
@@ -293,7 +295,13 @@ def deterministic_instance_proposal(
     parsed = parse_request(statement)
     if parsed is None:
         return None
-    for candidate in candidates:
+    # A property may prefer a proof method (continuity: epsilon-delta); stable otherwise.
+    ordered = sorted(
+        candidates,
+        key=lambda c: 0 if parsed.preferred_method and c.get("proof_method_tag")
+        == parsed.preferred_method else 1,
+    )
+    for candidate in ordered:
         bindings = bind_recipe(candidate.get("target_source", ""), parsed.proposition)
         if bindings is None:
             continue

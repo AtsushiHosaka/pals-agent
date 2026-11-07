@@ -58,6 +58,8 @@ def sq(variable: str = "x", k: str = "2") -> str:
         ("Why is x squared continuous?", sq()),
         ("Prove that x^3 is continuous on the real line", sq(k="3")),
         ("Show that x cubed is continuous", sq(k="3")),
+        ("x to the power 3 is continuous", sq(k="3")),
+        ("x to the power of 4 is continuous", sq(k="4")),
         ("x² の連続性を説明して\n\nConventions: the natural numbers start at 1.", sq()),
     ],
 )

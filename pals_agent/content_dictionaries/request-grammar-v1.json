@@ -1,6 +1,6 @@
 {
   "schema_version": "pals.request-grammar.v1",
-  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property.",
+  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first.",
   "variable": {
     "pattern": "[a-z]"
   },
@@ -51,7 +51,7 @@
           }
         },
         {
-          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+to\\s+the\\s+(?:power\\s+of\\s+)?(?P<k>[0-9]{1,9})(?![0-9])"
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+to\\s+the\\s+(?:power\\s+(?:of\\s+)?)?(?P<k>[0-9]{1,9})(?![0-9])"
         }
       ],
       "search_terms": "power function exponent natural number x^n real"
@@ -69,7 +69,8 @@
         "continuity",
         "continuous"
       ],
-      "search_terms": "continuous continuity"
+      "search_terms": "continuous continuity",
+      "preferred_method": "epsilon_delta"
     }
   ],
   "function_binders": [
