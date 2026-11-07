@@ -1,0 +1,160 @@
+{
+  "schema_version": "pals.request-grammar.v1",
+  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property.",
+  "variable": {
+    "pattern": "[a-z]"
+  },
+  "numerals": {
+    "kanji": {
+      "零": 0,
+      "〇": 0,
+      "一": 1,
+      "二": 2,
+      "三": 3,
+      "四": 4,
+      "五": 5,
+      "六": 6,
+      "七": 7,
+      "八": 8,
+      "九": 9,
+      "十": 10
+    }
+  },
+  "functions": [
+    {
+      "id": "power",
+      "lean_body": "{v} ^ {k}",
+      "slots": {
+        "k": "natural"
+      },
+      "forms": [
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*\\^\\s*\\{?\\s*(?P<k>[0-9]{1,9})\\s*\\}?(?![0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*(?P<k>[0-9]{1,9})\\s*乗"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*(?P<k>[零〇一二三四五六七八九十])\\s*乗",
+          "numerals": "kanji"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+squared",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+cubed",
+          "fixed": {
+            "k": 3
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+to\\s+the\\s+(?:power\\s+of\\s+)?(?P<k>[0-9]{1,9})(?![0-9])"
+        }
+      ],
+      "search_terms": "power function exponent natural number x^n real"
+    }
+  ],
+  "properties": [
+    {
+      "id": "continuous",
+      "lean": "Continuous (fun {v} : ℝ => {body})",
+      "forms": [
+        "連続関数",
+        "連続性",
+        "連続である",
+        "連続",
+        "continuity",
+        "continuous"
+      ],
+      "search_terms": "continuous continuity"
+    }
+  ],
+  "function_binders": [
+    "f\\s*\\(\\s*(?P<v>[a-z])\\s*\\)\\s*=",
+    "y\\s*="
+  ],
+  "domains": [
+    {
+      "id": "real_line",
+      "forms": [
+        "実数全体で",
+        "実数全体",
+        "実数上で",
+        "実数上",
+        "全実数で",
+        "ℝ上で",
+        "ℝ上",
+        "r上で",
+        "r上",
+        "on the real line",
+        "on the reals",
+        "on ℝ",
+        "everywhere"
+      ]
+    }
+  ],
+  "fillers": [
+    "について",
+    "に関して",
+    "することを",
+    "ことを",
+    "ことは",
+    "こと",
+    "ことが",
+    "説明してください",
+    "説明して",
+    "説明せよ",
+    "説明",
+    "証明してください",
+    "証明して",
+    "証明せよ",
+    "証明",
+    "示してください",
+    "示して",
+    "示せ",
+    "教えてください",
+    "教えて",
+    "ください",
+    "お願いします",
+    "お願い",
+    "なぜ",
+    "どうして",
+    "理由",
+    "ですか",
+    "です",
+    "ますか",
+    "でしょうか",
+    "か",
+    "を",
+    "は",
+    "が",
+    "の",
+    "で",
+    "に",
+    "も",
+    "や",
+    "関数",
+    "って",
+    "とは",
+    "なの",
+    "か？",
+    "explain",
+    "please",
+    "prove",
+    "show",
+    "why",
+    "is",
+    "are",
+    "the",
+    "that",
+    "function",
+    "of",
+    "tell me",
+    "can you",
+    "である",
+    "ある"
+  ]
+}

@@ -66,6 +66,7 @@ from pals_agent.recipe_semantic import (
 from pals_agent.recipe_semantic import (
     attempt as semantic_attempt,
 )
+from pals_agent.request_proposition import deterministic_instance_proposal, parse_request
 from pals_agent.runtime_latency import latency_stage
 from pals_agent.token_meter import (
     OptionalTokenCallFailed,
@@ -292,6 +293,8 @@ class ProofReuseRuntime:
     # Default OFF (PALS_RECIPE_INSTANTIATION=on in the factory). Enable only after the API has the
     # private verifier composition: otherwise the API sends the request to DSP anyway.
     instantiation_enabled: bool = False
+    # Model-free specialization for requests the vocabulary table covers (needs the flag above).
+    grammar_instantiation: bool = True
 
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
@@ -315,6 +318,12 @@ class ProofReuseRuntime:
             ) if allow_exact_input else None
             if exact is not None:
                 return exact
+            grammar = self.grammar_recipe_input(
+                request, recipe_search=recipe_search, claim_id=claim_id, deadline=deadline,
+                started=started,
+            )
+            if grammar is not None:
+                return grammar
             evidence["phase"] = "recipe_semantic_review"
             semantic = self.semantic_recipe_input(
                 request, recipe_batch=recipe_batch, claim_id=claim_id, deadline=deadline,
@@ -955,6 +964,67 @@ class ProofReuseRuntime:
             "applied_conventions": copy.deepcopy(APPLIED),
             "recipe_exact_input_correspondence": receipt,
         })
+
+    def grammar_recipe_input(
+        self, request: dict[str, Any], *, recipe_search: RecipeSearch | None,
+        claim_id: str | None, deadline: float, started: float,
+    ) -> ProofReuseResult | None:
+        """Specialize a stored universal Recipe for a request the vocabulary covers completely.
+
+        No model proposes anything here: the Lean proposition comes from the vocabulary table, the
+        Recipe from the deterministic search words of that table, the arguments from a syntactic
+        match that Lean's elaborator re-checks. The independent review of the derived instance and
+        the API's re-derivation and compile are unchanged. Every miss returns None (the request
+        then takes the established route); this stage never fails a request.
+        """
+        if (
+            not self.instantiation_enabled or not self.grammar_instantiation
+            or recipe_search is None or claim_id is None
+            or request.get("context_turns") or request.get("chat_history")
+            or request.get("attachment_ids") or request.get("chat_images")
+            or request.get("material_context") or current_chat_images()
+            or _conversation_history(request)
+        ):
+            return None
+        statement, language, _ = _request_input(request)
+        parsed = parse_request(statement)
+        if parsed is None or not parsed.search_query:
+            return None
+        request_id, revision = request.get("id"), request.get("revision")
+        try:
+            if (
+                not isinstance(request_id, str) or str(UUID(request_id)) != request_id
+                or str(UUID(claim_id)) != claim_id
+                or type(revision) is not int or revision < 1
+            ):
+                return None
+            recipes = validate_recipe_candidates(
+                recipe_search(parsed.search_query, language), language=language,
+            )
+        except ValueError:
+            return None
+        eligible = self._instance_candidates(recipes)
+        direct = deterministic_instance_proposal(statement, eligible)
+        if direct is None or deadline - time.monotonic() <= INSTANCE_REVIEW_MIN_SECONDS:
+            return None
+        chosen = direct.pop("chosen")
+        proposal = {"proposed": direct, "chosen": chosen, "proposal_id": str(uuid4()),
+                    "shown": []}
+        meter = active_token_meter()
+        qa_role = "token_answer_qa" if meter is not None else str(ModelRole.PROOF_REVIEW)
+        evidence: dict[str, Any] = {
+            "schema_version": "pals.proof-reuse-assessment.v1",
+            "phase": "recipe_grammar_instantiation",
+            "grammar": {"function": parsed.function_id, "property": parsed.property_id,
+                        "slots": dict(parsed.slots)},
+        }
+        context = {"original_statement": statement, "clarifications": [],
+                   "output_language": language}
+        return self._recipe_instantiation(
+            request, context, {"statement": statement}, proposal, evidence,
+            request_id=request_id, claim_id=claim_id, revision=revision,
+            deadline=deadline, started=started, qa_role=qa_role, meter=meter,
+        )
 
     def _recipe_first(
         self, request: dict[str, Any], context: dict[str, Any], preflight: dict[str, Any],

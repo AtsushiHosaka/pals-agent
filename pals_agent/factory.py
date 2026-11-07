@@ -47,6 +47,12 @@ from pals_agent.settings import AgentSettings, validate_release_generation_envir
 from pals_agent.typed_runtime import TypedProofFlowRuntime
 
 
+def recipe_grammar_enabled() -> bool:
+    """The model-free grammar stage runs unless PALS_RECIPE_GRAMMAR is explicitly off. It also
+    needs PALS_RECIPE_INSTANTIATION, so it is inert on its own."""
+    return os.environ.get("PALS_RECIPE_GRAMMAR", "").strip().lower() not in {"off", "false", "0"}
+
+
 def recipe_instantiation_enabled() -> bool:
     """Default OFF. Turn on only after the API has the verifier composition (deploy order:
     API with PALS_RECIPE_INSTANTIATION=on and its verifier first, then the workers)."""
@@ -136,6 +142,7 @@ def build_proof_request_processor(
             proof_runtime=ProofReuseRuntime(
                 client=client, catalog=ApiProofReuseCatalog(settings),
                 instantiation_enabled=recipe_instantiation_enabled(),
+                grammar_instantiation=recipe_grammar_enabled(),
             ),
         ),
     )

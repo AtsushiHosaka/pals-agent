@@ -119,10 +119,12 @@ class InstanceTransport(ProviderTransport):
         }).encode())
 
 
-def make_engine(transport, enabled=True):
+def make_engine(transport, enabled=True, grammar=False):
+    """The grammar stage has its own tests (test_request_proposition); it is off here so these
+    tests keep exercising the model-proposal route."""
     return ProofReuseRuntime(
         OpenAIResponsesClient(api_key="test", transport=transport), CatalogBoundary(),
-        instantiation_enabled=enabled,
+        instantiation_enabled=enabled, grammar_instantiation=grammar,
     )
 
 
