@@ -27,13 +27,16 @@ from importlib import resources
 from typing import Any, Final
 
 from pals_agent.recipe_instantiation import InstantiationRejected, _leading_forall
+from pals_agent.request_instructions import split_presentation_instructions
 
 SCHEMA_VERSION: Final = "pals.request-grammar.v1"
 _SUPERSCRIPTS: Final = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789")
 _SUPERSCRIPT_RUN: Final = re.compile(r"[⁰¹²³⁴⁵⁶⁷⁸⁹]+")
-_SEPARATORS: Final = re.compile(r"[\s、。，,.．!！?？$\\()（）\[\]「」『』:：;；\"'`*_]+")
+_SEPARATORS: Final = re.compile(r"[\s、。，,.．!！?？$\\()（）\[\]「」『』:：;；\"`*_]+")
 _CONVENTIONS_NOTE: Final = re.compile(r"\n\s*\nConventions:.*\Z", re.DOTALL)
 _MAX_REQUEST_CHARS: Final = 400
+# A decimal literal slot: at most nine integer digits, no leading zero, up to six decimals.
+_DECIMAL: Final = re.compile(r"(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,6})?")
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,11 +120,17 @@ def _literal_forms(forms: list[str]) -> tuple[str, ...]:
     )
 
 
+def _prepare(text: str) -> str:
+    """Superscripts to ``^k``, NFKC, the appended conventions note removed; case is kept."""
+    text = _CONVENTIONS_NOTE.sub("", text)
+    text = text.replace("ˣ", "^x")  # e\u02e3: NFKC would flatten it to the letters "ex"
+    text = _SUPERSCRIPT_RUN.sub(lambda run: "^" + run.group(0).translate(_SUPERSCRIPTS), text)
+    return unicodedata.normalize("NFKC", text).strip()
+
+
 def normalize_request(text: str) -> str:
     """Superscript digits to ``^k``, NFKC, lower case, the appended conventions note removed."""
-    text = _CONVENTIONS_NOTE.sub("", text)
-    text = _SUPERSCRIPT_RUN.sub(lambda run: "^" + run.group(0).translate(_SUPERSCRIPTS), text)
-    return _normalize_text(text)
+    return _normalize_text(_prepare(text))
 
 
 def _normalize_text(text: str) -> str:
@@ -133,29 +142,60 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     if not isinstance(text, str) or not text.strip() or len(text) > _MAX_REQUEST_CHARS:
         return None
     grammar = grammar or _grammar()
-    remaining = normalize_request(text)
+    # Language, format and tone instructions come from a closed table of their own.
+    cased = split_presentation_instructions(_prepare(text)).claim.strip()
+    remaining = _normalize_text(cased)
 
-    matches: list[tuple[int, int, dict[str, Any], re.Match[str]]] = []
+    candidates: list[tuple[int, int, dict[str, Any], re.Match[str]]] = []
     for function in grammar.functions:
         for form in function["forms"]:
-            matches.extend(
+            candidates.extend(
                 (m.start(), m.end(), {**function, "form": form}, m)
                 for m in form["compiled"].finditer(remaining)
             )
-    matches = _non_overlapping_best(matches)
-    if len(matches) != 1:
+    formulas = [c for c in candidates if not c[2]["form"].get("name_only")]
+    names = [c for c in candidates if c[2]["form"].get("name_only")]
+    if formulas:
+        selected = _non_overlapping_best(formulas)
+    else:  # a bare function name is a request only when its table row says it is unambiguous
+        selected = _non_overlapping_best([c for c in names if c[2]["form"].get("alone", True)])
+        names = []
+    if selected is None or len(selected) != 1:
         return None
-    start, end, function, match = matches[0]
+    start, end, function, match = selected[0]
+    # A factorial mark glued to the term changes its meaning; the separators would hide it.
+    if remaining[end : end + 1] == "!" or (start and remaining[start - 1] == "!"):
+        return None
     variable = match.groupdict().get("v") or function["form"].get("variable")
     if not variable or grammar.variable.match(variable) is None:
+        return None
+    # A capital letter is a set, a random variable or a matrix, not the real variable.
+    if re.search(rf"(?<![A-Za-z]){variable.upper()}(?![A-Za-z])", cased):
         return None
     slots = _slots(function, match, grammar)
     if slots is None:
         return None
-    remaining = remaining[:start] + " " + remaining[end:]
+    spans = [(start, end)]
+    # A function name beside its formula ("the fourth power function x^4") only describes it: it
+    # is consumed when it names the same function with the same body, and it is a miss otherwise.
+    for n_start, n_end, n_function, n_match in names:
+        if n_start < end and start < n_end:
+            continue
+        if n_function["id"] != function["id"]:
+            if n_function["form"].get("alone", True):
+                return None
+            continue
+        n_slots = _slots(n_function, n_match, grammar)
+        if n_slots is None or _lean_body(n_function, variable, n_slots) != _lean_body(
+            function, variable, slots
+        ):
+            return None
+        spans.append((n_start, n_end))
+    for span_start, span_end in sorted(spans, reverse=True):
+        remaining = remaining[:span_start] + " " + remaining[span_end:]
 
     remaining, prop_ids = _remove_words(remaining, grammar.properties)
-    if len(prop_ids) != 1:
+    if len(set(prop_ids)) != 1:  # the same property named twice is still one claim
         return None
     remaining, domain_ids = _remove_words(remaining, grammar.domains)
     remaining, pattern_ids = _remove_patterns(remaining, grammar.domains)
@@ -165,8 +205,8 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     function_names: set[str] = set()
     for binder in grammar.binders:
         for bound in list(binder.finditer(remaining)):
-            names = bound.groupdict().get("v")
-            if names is not None and names != variable:
+            bound_name = bound.groupdict().get("v")
+            if bound_name is not None and bound_name != variable:
                 return None
             symbol = bound.groupdict().get("fn")
             if symbol is not None:
@@ -185,7 +225,7 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
         return None
 
     prop_entry = next(p for p in grammar.properties if p["id"] == prop_ids[0])
-    body = function["lean_body"].format(v=variable, **dict(slots))
+    body = _lean_body(function, variable, slots)
     return RequestProposition(
         proposition=prop_entry["lean"].format(v=variable, body=body),
         function_id=function["id"],
@@ -199,14 +239,32 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     )
 
 
+def _lean_body(function: dict[str, Any], variable: str, slots: dict[str, str]) -> str:
+    template = function["form"].get("lean_body") or function["lean_body"]
+    return str(template.format(v=variable, **slots))
+
+
 def _non_overlapping_best(
     matches: list[tuple[int, int, dict[str, Any], re.Match[str]]],
-) -> list[tuple[int, int, dict[str, Any], re.Match[str]]]:
-    """Keep the longest match of overlapping candidates; distinct regions all stay."""
+) -> list[tuple[int, int, dict[str, Any], re.Match[str]]] | None:
+    """Maximal munch among the candidates; an overlap that is not a containment is ambiguous.
+
+    Wordings of one function may overlap each other (the longest wins).  Two different functions
+    may only overlap when one match contains the other (``2*x^3`` contains ``x^3``); the longer
+    one is the reading.  A partial overlap or two functions on the same span is ``None``.
+    """
     chosen: list[tuple[int, int, dict[str, Any], re.Match[str]]] = []
     for item in sorted(matches, key=lambda m: (-(m[1] - m[0]), m[0])):
-        if all(item[1] <= other[0] or item[0] >= other[1] for other in chosen):
+        overlapping = [o for o in chosen if not (item[1] <= o[0] or item[0] >= o[1])]
+        if not overlapping:
             chosen.append(item)
+            continue
+        for other in overlapping:
+            if other[2]["id"] == item[2]["id"]:
+                continue
+            contained = other[0] <= item[0] and item[1] <= other[1]
+            if not contained or (item[0], item[1]) == (other[0], other[1]):
+                return None
     return sorted(chosen, key=lambda m: m[0])
 
 
@@ -224,6 +282,8 @@ def _slots(
         if "numerals" in form:
             raw = str(grammar.numerals[form["numerals"]].get(raw, ""))
         if kind == "natural" and re.fullmatch(r"(?:0|[1-9][0-9]{0,8})", raw) is None:
+            return None
+        if kind == "decimal" and _DECIMAL.fullmatch(raw) is None:
             return None
         values[name] = raw
     return values
@@ -261,7 +321,7 @@ def _remove_filler(text: str, filler: str) -> str:
 
 def _word_pattern(word: str) -> re.Pattern[str]:
     escaped = re.escape(word)
-    if re.fullmatch(r"[a-z][a-z ]*", word):
+    if re.fullmatch(r"[a-z][a-z \-]*", word):
         return re.compile(rf"(?<![a-z]){escaped}(?![a-z])")
     return re.compile(escaped)
 
@@ -269,20 +329,36 @@ def _word_pattern(word: str) -> re.Pattern[str]:
 # --- binding a Recipe's universal parameters to the request -----------------------------------
 
 
+# The literal a request proposition can hold at a parameter of each kind.  A natural number or an
+# integer is a plain digit string; a rational or real value may also be a decimal literal.
+_LITERAL: Final = {
+    "Nat": r"[0-9]{1,9}",
+    "Int": r"[0-9]{1,9}",
+    "Rat": r"[0-9]{1,9}(?:\.[0-9]{1,6})?",
+    "Real": r"[0-9]{1,9}(?:\.[0-9]{1,6})?",
+}
+
+
 def bind_recipe(target_source: str, proposition: str) -> tuple[tuple[str, str], ...] | None:
-    """Literal values of the Recipe's leading universal parameters that give ``proposition``.
+    """Integer-literal hints for the Recipe's leading universal parameters, or ``None``.
 
     A purely syntactic first-order match of the Recipe body against the proposition (bound
-    variable names are normalized).  It only proposes: Lean elaborates the result and the API
-    recompiles it, so a mistaken match costs a failed alternative, never a wrong theorem.
+    variable names are normalized).  Parameters may be of kind Nat, Int, Rat or Real.  It only
+    proposes: Lean elaborates the result and the API recompiles it, so a mistaken match costs a
+    failed alternative, never a wrong theorem.
+
+    * An integer literal becomes a hint ``(name, literal)``.
+    * A decimal literal (``2.5``) is never sent as a hint, since the wire contract carries integer
+      literals only; Lean's unification finds it.  When any parameter took a decimal the result
+      is the empty tuple (a match with nothing to hint), so no partial substitution is claimed.
+    * A non-natural parameter that sits directly after ``^`` does not bind: the table writes
+      natural exponents only, and ``x ^ 2`` elaborates with a natural exponent.
     """
     try:
         parameters, body = _leading_forall(target_source)
     except InstantiationRejected:
         return None
-    # Only natural-number parameters: a literal in the proposition elaborates as a natural
-    # number unless the context forces another type, so Int/Rat/Real parameters stay a miss.
-    if not parameters or not body or any(parameter.kind != "Nat" for parameter in parameters):
+    if not parameters or not body or any(p.kind not in _LITERAL for p in parameters):
         return None
     pattern_text = _canonical(body)
     target_text = _canonical(proposition)
@@ -293,23 +369,29 @@ def bind_recipe(target_source: str, proposition: str) -> tuple[tuple[str, str], 
         token = re.compile(rf"(?<![\w'.§]){re.escape(parameter.name)}(?![\w'.§])")
         if token.search(pattern) is None:
             return None  # a parameter that does not occur cannot be determined
-        pattern = token.sub(_group_replacer(index), pattern)
+        if parameter.kind != "Nat" and re.search(
+            rf"\\\^(?:\\\()*{re.escape(parameter.name)}(?![\w'.§])", pattern
+        ):
+            return None  # a real, rational or integer exponent is never written by the table
+        pattern = token.sub(_group_replacer(index, _LITERAL[parameter.kind or "Nat"]), pattern)
     found = re.fullmatch(pattern, target_text)
     if found is None:
         return None
-    return tuple(
-        (parameter.name, found.group(f"p_{index}")) for index, parameter in enumerate(parameters)
-    )
+    values = [found.group(f"p_{index}") for index in range(len(parameters))]
+    if any("." in value for value in values):
+        return ()
+    names = (parameter.name for parameter in parameters)
+    return tuple(zip(names, values, strict=True))
 
 
-def _group_replacer(index: int) -> Callable[[re.Match[str]], str]:
+def _group_replacer(index: int, literal: str) -> Callable[[re.Match[str]], str]:
     """First occurrence captures a literal, every later occurrence must repeat it."""
     first = [True]
 
     def replace(_: re.Match[str]) -> str:
         if first[0]:
             first[0] = False
-            return f"(?P<p_{index}>[0-9]{{1,9}})"
+            return f"(?P<p_{index}>{literal})"
         return f"(?P=p_{index})"
 
     return replace
