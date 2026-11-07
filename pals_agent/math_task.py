@@ -85,5 +85,6 @@ MATH_LAYOUT_INSTRUCTION = (
     "block $$...$$ (also valid KaTeX math) with a blank line before and after, instead of "
     "embedding it in a sentence; "
     "end the sentence that introduces it with a colon or a connective, and let the next "
-    "paragraph continue after the block. "
+    "paragraph continue after the block. A $$...$$ block is always its own paragraph: never "
+    "place $$ in the middle of a sentence, and use $...$ for every formula that stays inline. "
 )
