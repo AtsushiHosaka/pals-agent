@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from typing import Final
 
-from pals_agent.explanations import _is_x_squared_continuity
+from pals_agent.lean_target import extract_single_target_declaration, matches_x_squared_continuity
 from pals_agent.models import ProofRequest
 from pals_agent.request_proposition import parse_request
 
@@ -208,21 +208,41 @@ def template_proof_for_request(request: ProofRequest) -> TemplateProof | None:
     """Return a verified-template proof when the request is exactly the continuity of x².
 
     Recognised: the retrieval marked the request as an exact equivalent of the seed Draft
-    ``continuous_square``, or the wording asks only for the continuity of x² (the same
-    conservative check that decides whether the explanation must be an epsilon-delta proof).
+    ``continuous_square``, or the vocabulary grammar reads the whole request as exactly
+    ``Continuous (fun v : ℝ => v ^ 2)``: the structure (function, property, domain) decides, in
+    any language the table lists, and any word the table does not consume (a negation, another
+    property, a restricted domain, an extra instruction) makes it a miss.  The older Japanese
+    wording check is not used here: it did not see a negation (連続でない, 不連続).
     A learner-supplied formal statement is never replaced.  Anything else returns ``None`` and
     stays with the model.
     """
     if request.formal_statement is not None:
         return None
     grammar_variable = _grammar_square_variable(request.prompt)
-    if not (
-        _exact_square_draft(request)
-        or _is_x_squared_continuity(request.prompt)
-        or grammar_variable is not None
-    ):
+    if not (_exact_square_draft(request) or grammar_variable is not None):
         return None
     bindings = _bindings_for_prompt(request.prompt, grammar_variable)
+    try:
+        lean_code = render_x_squared_epsilon_delta(bindings)
+    except TemplateBindingError:
+        return None
+    return TemplateProof(lean_code=lean_code, prover_id=PROVER_ID, bindings=bindings)
+
+
+def template_proof_for_sketch(request: ProofRequest, sketch_lean_code: str) -> TemplateProof | None:
+    """The template when the Sketch's own Lean statement is exactly the continuity of x².
+
+    A safety net behind the wording grammar: the Sketch model has already turned whatever the
+    learner wrote (any language or phrasing the grammar does not list) into a Lean statement, and
+    :func:`matches_x_squared_continuity` reads that statement, not the words.  The prove stage is
+    then replaced by the verified template; nothing else about the request changes.
+    """
+    if request.formal_statement is not None:
+        return None
+    target = extract_single_target_declaration(sketch_lean_code)
+    if target is None or not matches_x_squared_continuity(target.proposition):
+        return None
+    bindings = XSquaredBindings()
     try:
         lean_code = render_x_squared_epsilon_delta(bindings)
     except TemplateBindingError:

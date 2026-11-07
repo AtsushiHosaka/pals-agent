@@ -15,7 +15,7 @@ from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
-from pals_agent.lean_templates import template_proof_for_request
+from pals_agent.lean_templates import template_proof_for_request, template_proof_for_sketch
 from pals_agent.models import (
     DEFAULT_MAX_REPAIR_ATTEMPTS,
     BenchmarkProblem,
@@ -711,6 +711,7 @@ class ProofPipeline:
                 context=context,
                 on_status=on_status,
                 verifier=self.verifier,
+                deterministic_templates=self.deterministic_templates,
             )
 
         _emit(
@@ -1223,6 +1224,7 @@ def _generate_staged_attempt(
     context: dict[str, Any],
     on_status: StatusCallback | None,
     verifier: Verifier | None,
+    deterministic_templates: bool = False,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1266,6 +1268,31 @@ def _generate_staged_attempt(
         sketch = generator.generate_sketch(request, draft, feedback)
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
+        if feedback is None and deterministic_templates:
+            # The Sketch's Lean statement is language independent: when it is exactly the
+            # continuity of x², the verified template replaces the prove stage.
+            template = template_proof_for_sketch(request, sketch.lean_code)
+            if template is not None:
+                _emit(
+                    on_status,
+                    "proving",
+                    diagnostics,
+                    None,
+                    None,
+                    {
+                        **context,
+                        "dsp_stage": "prove",
+                        "deterministic_template": template.prover_id,
+                        "template_source": "sketch_statement",
+                    },
+                )
+                return GeneratedProof(
+                    lean_code=template.lean_code,
+                    model=template.prover_id,
+                    raw_model_output=f"[template] {template.prover_id}",
+                    draft=draft,
+                    provider="pals-template",
+                )
         sketch_verification = _verify_sketch(verifier, sketch.lean_code)
         if (
             sketch.has_gaps

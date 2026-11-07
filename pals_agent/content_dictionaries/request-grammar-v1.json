@@ -1,6 +1,6 @@
 {
   "schema_version": "pals.request-grammar.v1",
-  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first.",
+  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first. Output-language instructions (filler_patterns) draw on a closed set of words so that free text cannot ride along. Domain 'patterns' and 'filler_patterns' are regular expressions on the normalized text; 'forms' are literals (normalized when the table is built). A function binder may name the function symbol (group fn): standalone occurrences of that letter are then consumed too.",
   "variable": {
     "pattern": "[a-z]"
   },
@@ -52,6 +52,44 @@
         },
         {
           "re": "(?<![a-z0-9])(?P<v>[a-z])\\s+to\\s+the\\s+(?:power\\s+(?:of\\s+)?)?(?P<k>[0-9]{1,9})(?![0-9])"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*の\\s*平方(?!根)",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*平方(?!根)",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*(?P<k>[零〇一二三四五六七八九十])\\s*次方",
+          "numerals": "kanji"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*的\\s*(?P<k>[0-9]{1,9})\\s*次方"
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:\\^\\s*)?(?:squared|square)(?![a-z])",
+          "fixed": {
+            "k": 2
+          }
+        },
+        {
+          "re": "(?<![a-z0-9])(?P<v>[a-z])\\s*(?:\\^\\s*)?(?:cubed|cube)(?![a-z])",
+          "fixed": {
+            "k": 3
+          }
+        },
+        {
+          "re": "(?:平方関数|二乗関数|2乗関数|平方函数|二次方函数|squaring\\s+function|square\\s+function|the\\s+square\\s+map)",
+          "fixed": {
+            "k": 2
+          },
+          "variable": "x"
         }
       ],
       "search_terms": "power function exponent natural number x^n real"
@@ -62,20 +100,31 @@
       "id": "continuous",
       "lean": "Continuous (fun {v} : ℝ => {body})",
       "forms": [
-        "連続関数",
-        "連続性",
-        "連続である",
-        "連続",
+        "continuous function",
+        "continuous",
         "continuity",
-        "continuous"
+        "連続である",
+        "連續函數",
+        "连续函数",
+        "連続関数",
+        "連續的",
+        "連續性",
+        "连续性",
+        "连续的",
+        "連続性",
+        "连续",
+        "連続",
+        "連續"
       ],
       "search_terms": "continuous continuity",
       "preferred_method": "epsilon_delta"
     }
   ],
   "function_binders": [
-    "f\\s*\\(\\s*(?P<v>[a-z])\\s*\\)\\s*=",
-    "y\\s*="
+    "(?P<fn>[a-z])\\s*\\(\\s*(?P<v>[a-z])\\s*\\)\\s*=",
+    "y\\s*=",
+    "(?P<fn>[a-z])\\s*:\\s*r\\s*(?:→|->)\\s*r",
+    "(?P<fn>[a-z])\\s*:\\s*(?:ℝ|r)\\s*(?:→|->)\\s*(?:ℝ|r)"
   ],
   "domains": [
     {
@@ -93,7 +142,27 @@
         "on the real line",
         "on the reals",
         "on ℝ",
-        "everywhere"
+        "everywhere",
+        "on r",
+        "in r",
+        "over r",
+        "全ての実数で",
+        "すべての実数で",
+        "在实数上",
+        "在实数范围内",
+        "在r上",
+        "在实数集上",
+        "實數上",
+        "在實數上"
+      ],
+      "patterns": [
+        "(?:at|in|on)\\s+(?:every|each|all)\\s+(?:points?|real\\s+numbers?|reals?)(?:\\s+of\\s+(?:the\\s+)?(?:r|real\\s+(?:line|numbers))|\\s+in\\s+r)?",
+        "for\\s+(?:every|all|each)\\s+(?:real\\s+(?:numbers?\\s+)?)?[a-z]?(?:\\s+in\\s+r)?",
+        "on\\s+(?:the\\s+)?(?:whole\\s+)?(?:real\\s+(?:line|numbers?)|reals)",
+        "(?:r|実数)\\s*の\\s*(?:すべて|全て|全)の\\s*点\\s*(?:で|において)",
+        "(?:すべて|全て|全)の\\s*(?:実数|点)\\s*(?:x\\s*)?(?:で|において)",
+        "(?:在)?(?:所有|每一?个?)(?:实数|點|点)(?:处|處|上)",
+        "(?:r|実数|实数|實數)\\s*上\\s*(?:で|において|的)?"
       ]
     }
   ],
@@ -156,6 +225,73 @@
     "tell me",
     "can you",
     "である",
-    "ある"
+    "ある",
+    "the function",
+    "defined by",
+    "defined as",
+    "given by",
+    "real-valued",
+    "real valued",
+    "a real function",
+    "実数上の",
+    "実数の",
+    "実数関数",
+    "と定める",
+    "と定義する",
+    "と定義します",
+    "と定義",
+    "とする",
+    "と置く",
+    "とおく",
+    "と書く",
+    "を定める",
+    "定義される",
+    "で定義された",
+    "によって定義される",
+    "とします",
+    "とし",
+    "について",
+    "においては",
+    "において",
+    "函数",
+    "函數",
+    "证明",
+    "證明",
+    "说明",
+    "說明",
+    "解释",
+    "解釋",
+    "为什么",
+    "為什麼",
+    "请",
+    "請",
+    "是",
+    "的",
+    "在",
+    "上",
+    "对于",
+    "對於",
+    "这个",
+    "這個",
+    "定义为",
+    "定義為",
+    "其中",
+    "设",
+    "設",
+    "令",
+    "吗",
+    "嗎",
+    "呢",
+    "吧",
+    "么",
+    "麼",
+    "吗？",
+    "是否",
+    "是不是"
+  ],
+  "filler_patterns": [
+    "(?:please\\s+)?(?:write|answer|respond|reply|explain|state|give)\\s+(?:(?:the|a|an|entire|whole|full|complete|proposition|statement|theorem|proof|explanation|answer|and|both|all|everything|your|response|reply|it|them)\\s+)*in\\s+(?:english|japanese|chinese|simplified\\s+chinese|traditional\\s+chinese)(?![a-z])",
+    "(?:命題|証明|説明|回答|解答|全体|全て|すべて|全文|と|も|は|を|の)*(?:英語|日本語|中国語|簡体字中国語|繁体字中国語|中国語簡体字|中国語繁体字)\\s*で\\s*(?:書いて|書け|書いてください|答えて|出力して|記述して|ください|お願いします|お願い)*",
+    "(?:请|請)?(?:用|以)(?:英语|英文|英語|日语|日語|日文|中文|简体中文|繁体中文|繁體中文)(?:写出|寫出|写|寫|回答|说明|說明|作答|书写)(?:全部|所有|整个|整個)?(?:命题|命題|证明|證明)*(?:和|与|與)*(?:证明|證明|说明|說明)*"
   ]
 }

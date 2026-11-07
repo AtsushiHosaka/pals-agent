@@ -56,6 +56,7 @@ class _Grammar:
     binders: tuple[re.Pattern[str], ...]
     domains: tuple[dict[str, Any], ...]
     fillers: tuple[str, ...]
+    filler_patterns: tuple[re.Pattern[str], ...] = ()
 
 
 @lru_cache(maxsize=1)
@@ -78,16 +79,21 @@ def build_grammar(payload: dict[str, Any]) -> _Grammar:
         forms = []
         for form in entry["forms"]:
             compiled = re.compile(form["re"])
-            if "v" not in compiled.groupindex:
-                raise RuntimeError("every function form must capture the variable as v")
+            if "v" not in compiled.groupindex and not form.get("variable"):
+                raise RuntimeError(
+                    "every function form must capture the variable as v or name a default"
+                )
             forms.append({**form, "compiled": compiled})
         functions.append({**entry, "forms": tuple(forms)})
     properties = tuple(
-        {**entry, "forms": tuple(sorted(entry["forms"], key=len, reverse=True))}
-        for entry in payload["properties"]
+        {**entry, "forms": _literal_forms(entry["forms"])} for entry in payload["properties"]
     )
     domains = tuple(
-        {**entry, "forms": tuple(sorted(entry["forms"], key=len, reverse=True))}
+        {
+            **entry,
+            "forms": _literal_forms(entry["forms"]),
+            "patterns": tuple(re.compile(pattern) for pattern in entry.get("patterns", ())),
+        }
         for entry in payload["domains"]
     )
     return _Grammar(
@@ -97,7 +103,17 @@ def build_grammar(payload: dict[str, Any]) -> _Grammar:
         properties=properties,
         binders=tuple(re.compile(pattern) for pattern in payload["function_binders"]),
         domains=domains,
-        fillers=tuple(sorted(payload["fillers"], key=len, reverse=True)),
+        fillers=_literal_forms(payload["fillers"]),
+        filler_patterns=tuple(
+            re.compile(pattern) for pattern in payload.get("filler_patterns", ())
+        ),
+    )
+
+
+def _literal_forms(forms: list[str]) -> tuple[str, ...]:
+    """Literal table words, normalized like the request text, longest first."""
+    return tuple(
+        sorted({_normalize_text(form) for form in forms}, key=len, reverse=True)
     )
 
 
@@ -105,6 +121,10 @@ def normalize_request(text: str) -> str:
     """Superscript digits to ``^k``, NFKC, lower case, the appended conventions note removed."""
     text = _CONVENTIONS_NOTE.sub("", text)
     text = _SUPERSCRIPT_RUN.sub(lambda run: "^" + run.group(0).translate(_SUPERSCRIPTS), text)
+    return _normalize_text(text)
+
+
+def _normalize_text(text: str) -> str:
     return unicodedata.normalize("NFKC", text).lower().strip()
 
 
@@ -126,8 +146,8 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     if len(matches) != 1:
         return None
     start, end, function, match = matches[0]
-    variable = match.group("v")
-    if grammar.variable.match(variable) is None:
+    variable = match.groupdict().get("v") or function["form"].get("variable")
+    if not variable or grammar.variable.match(variable) is None:
         return None
     slots = _slots(function, match, grammar)
     if slots is None:
@@ -138,14 +158,27 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     if len(prop_ids) != 1:
         return None
     remaining, domain_ids = _remove_words(remaining, grammar.domains)
+    remaining, pattern_ids = _remove_patterns(remaining, grammar.domains)
+    domain_ids += pattern_ids
     if len(set(domain_ids)) > 1:
         return None
+    function_names: set[str] = set()
     for binder in grammar.binders:
         for bound in list(binder.finditer(remaining)):
             names = bound.groupdict().get("v")
             if names is not None and names != variable:
                 return None
+            symbol = bound.groupdict().get("fn")
+            if symbol is not None:
+                if symbol == variable:
+                    return None
+                function_names.add(symbol)
         remaining = binder.sub(" ", remaining)
+    # The function symbol a binder introduced (``f`` in ``f(x) = x^2``) may be mentioned again.
+    for symbol in function_names:
+        remaining = re.sub(rf"(?<![a-z0-9_]){re.escape(symbol)}(?![a-z0-9_])", " ", remaining)
+    for pattern in grammar.filler_patterns:
+        remaining = pattern.sub(" ", remaining)
     for filler in grammar.fillers:
         remaining = _remove_filler(remaining, filler)
     if _SEPARATORS.sub("", remaining):
@@ -208,6 +241,17 @@ def _remove_words(
                 if count == 0:
                     break
                 found.append(entry["id"])
+    return text, found
+
+
+def _remove_patterns(
+    text: str, entries: tuple[dict[str, Any], ...]
+) -> tuple[str, list[str]]:
+    found: list[str] = []
+    for entry in entries:
+        for pattern in entry.get("patterns", ()):
+            text, count = pattern.subn(" ", text)
+            found.extend([entry["id"]] * count)
     return text, found
 
 
