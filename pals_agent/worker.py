@@ -675,8 +675,13 @@ class SqsProofWorker:
         claim_id: str | None = None,
         extend_visibility: VisibilityExtender | None = None,
         delivery_attempt: int | None = None,
+        resume_with: dict[str, Any] | None = None,
     ) -> bool:
         """Process one delivery of a proof job.
+
+        `resume_with` is only for a call made inside this same delivery right after the wait for
+        Lean reconciliation: the job that wait just read. It replaces the repeated job read and
+        the repeated chat-input binding, whose scope the delivery already holds.
 
         `delivery_attempt` is the queue's receive count for this message. It is only used to
         stop a job that keeps failing closed for reasons carried by its own data; callers that
@@ -684,13 +689,15 @@ class SqsProofWorker:
         """
         if getattr(self.settings, "proof_capability", "full") != "full":
             return False
-        proof_job = self.api_client.get_proof_job(proof_job_id)
+        proof_job = (
+            resume_with if resume_with is not None else self.api_client.get_proof_job(proof_job_id)
+        )
         if proof_job.get("state") in _NON_VERIFIED_TERMINAL_STATES:
             return True
         try:
             return self._process_proof_job_delivery(
                 proof_job_id, proof_job=proof_job, claim_id=claim_id,
-                extend_visibility=extend_visibility,
+                extend_visibility=extend_visibility, scope_held=resume_with is not None,
             )
         except _NoProgressDelivery as stalled:
             if (
@@ -709,11 +716,19 @@ class SqsProofWorker:
         proof_job: dict[str, Any],
         claim_id: str | None,
         extend_visibility: VisibilityExtender | None,
+        scope_held: bool = False,
     ) -> bool:
         context = proof_job.get("request_context", {})
         if not isinstance(context, dict):
             raise _NoProgressDelivery("request_context_invalid", proof_job)
         link_latency_request(context.get("proof_request_id"))
+        if scope_held:
+            # This delivery already validated and entered this job's chat binding; the request
+            # context is immutable, so entering it again would only repeat the fetch.
+            return self._process_proof_job(
+                proof_job_id, proof_job=proof_job, claim_id=claim_id,
+                extend_visibility=extend_visibility,
+            )
         with ExitStack() as stack:
             try:
                 payload = (
@@ -967,6 +982,7 @@ class SqsProofWorker:
                 proof_job_id,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                resume_with=reconciled,
             )
 
         context = proof_job.get("request_context")
@@ -1241,6 +1257,7 @@ class SqsProofWorker:
                 proof_job_id,
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
+                resume_with=reconciled,
             )
         if latest_state != "verified" or not latest_lean_code:
             return False
@@ -1488,6 +1505,7 @@ class SqsProofWorker:
             proof_job_id=proof_job_id,
             claim_id=mutation_claim_id,
             extend_visibility=extend_visibility,
+            resume_with=reconciled,
         )
 
     def process_clarification(
