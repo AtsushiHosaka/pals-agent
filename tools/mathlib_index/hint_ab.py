@@ -233,6 +233,7 @@ def run_one(
         max_repair_attempts=args.max_repairs,
         harness_splice=args.harness_splice,
         deterministic_repair_route=args.deterministic_route,
+        sketch_failure_proceeds_to_prove=args.sketch_continue,
     )
     usage: list[dict[str, Any]] = []
 
@@ -267,6 +268,7 @@ def run_one(
         ),
         "harness_splice": args.harness_splice,
         "deterministic_route": args.deterministic_route,
+        "sketch_continue": args.sketch_continue,
         "route_model_calls": sum(
             1
             for a in attempts
@@ -317,6 +319,11 @@ def main() -> None:
         "--deterministic-route",
         action="store_true",
         help="Enable ProofPipeline.deterministic_repair_route",
+    )
+    parser.add_argument(
+        "--sketch-continue",
+        action="store_true",
+        help="Enable ProofPipeline.sketch_failure_proceeds_to_prove",
     )
     parser.add_argument("--max-output-tokens", type=int, default=12000)
     parser.add_argument("--lean", required=True, help="Verifier lean, usually the Elan proxy")

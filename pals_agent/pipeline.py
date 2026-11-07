@@ -191,6 +191,10 @@ class ProofPipeline:
     # ``deterministic_repair_route`` skips the route-selection model call when the user
     # fixed the statement, and never restarts the prose Draft for a statement mismatch.
     deterministic_repair_route: bool = False
+    # ``sketch_failure_proceeds_to_prove`` keeps a Sketch that fails its Lean check inside
+    # the same attempt: Prove receives the Sketch and its diagnostics at once, instead of
+    # the attempt failing, consuming a repair, and the next attempt resuming at Prove.
+    sketch_failure_proceeds_to_prove: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -729,6 +733,7 @@ class ProofPipeline:
                 context=context,
                 on_status=on_status,
                 verifier=self.verifier,
+                sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
             )
 
         _emit(
@@ -1264,6 +1269,7 @@ def _generate_staged_attempt(
     context: dict[str, Any],
     on_status: StatusCallback | None,
     verifier: Verifier | None,
+    sketch_failure_proceeds_to_prove: bool = False,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1313,19 +1319,33 @@ def _generate_staged_attempt(
             and sketch_verification is not None
             and not sketch_verification.success
         ):
-            diagnostic_text = "\n".join(
-                _format_diagnostic_for_trace(diagnostic)
-                for diagnostic in sketch_verification.diagnostics
-            )
-            return _failed_staged_proof(
-                draft=draft,
-                sketch=sketch,
-                error=(
-                    "[generation-error] sketch Lean validation failed.\n"
-                    f"{diagnostic_text}"
-                ),
-                stage_diagnostics=tuple(sketch_verification.diagnostics),
-            )
+            if sketch_failure_proceeds_to_prove:
+                feedback = GenerationFeedback(
+                    attempt=feedback.attempt if feedback is not None else 0,
+                    previous_lean_code=sketch.lean_code,
+                    diagnostics=tuple(sketch_verification.diagnostics),
+                    repair_route="prove",
+                    repair_rationale=(
+                        "The Sketch failed its Lean check; correct it while completing "
+                        "the proof."
+                    ),
+                    previous_draft=draft,
+                    previous_sketch=sketch,
+                )
+            else:
+                diagnostic_text = "\n".join(
+                    _format_diagnostic_for_trace(diagnostic)
+                    for diagnostic in sketch_verification.diagnostics
+                )
+                return _failed_staged_proof(
+                    draft=draft,
+                    sketch=sketch,
+                    error=(
+                        "[generation-error] sketch Lean validation failed.\n"
+                        f"{diagnostic_text}"
+                    ),
+                    stage_diagnostics=tuple(sketch_verification.diagnostics),
+                )
 
     _emit(
         on_status,

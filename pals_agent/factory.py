@@ -69,6 +69,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         max_repair_attempts=settings.max_repair_attempts,
         harness_splice=settings.harness_splice_enabled,
         deterministic_repair_route=settings.deterministic_repair_route_enabled,
+        sketch_failure_proceeds_to_prove=settings.sketch_failure_proceeds_to_prove_enabled,
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,
         request_linked_typed_retriever=(

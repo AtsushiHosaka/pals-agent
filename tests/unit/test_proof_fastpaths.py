@@ -343,3 +343,90 @@ def test_deterministic_route_skips_the_selector_model_call(tmp_path: Path) -> No
     # This single-stage fake never produced a Draft, so the policy restarts at the Draft.
     assert route["route"] == "draft"
     assert route["elapsed_ms"] == 0
+
+
+# ---------------------------------------------------------------- sketch failure
+
+
+class StagedGenerator:
+    model = "fake"
+
+    def __init__(self) -> None:
+        self.proof_feedback: list[GenerationFeedback | None] = []
+        self.route_calls = 0
+
+    def generate_draft(self, request, feedback=None):  # type: ignore[no-untyped-def]
+        return GeneratedDraft(text="draft", model=self.model, raw_model_output="draft")
+
+    def generate_sketch(self, request, draft, feedback=None):  # type: ignore[no-untyped-def]
+        code = f"{FORMAL} := by\n  sorry\n"
+        return GeneratedSketch(
+            lean_code=code, model=self.model, raw_model_output=code, has_gaps=True
+        )
+
+    def generate_proof(self, request, draft, sketch, feedback=None):  # type: ignore[no-untyped-def]
+        self.proof_feedback.append(feedback)
+        return GeneratedProof(
+            lean_code=GOOD_PROOF, model=self.model, raw_model_output=GOOD_PROOF,
+            draft=draft, sketch=sketch,
+        )
+
+    def repair(self, request, feedback):  # type: ignore[no-untyped-def]
+        raise AssertionError("the staged path never calls repair()")
+
+    def select_repair_route(self, request, feedback):  # type: ignore[no-untyped-def]
+        self.route_calls += 1
+        return RepairRouteDecision(route="prove", rationale="model", raw_model_output="{}")
+
+
+class SketchRejectingVerifier(RecordingVerifier):
+    def verify_sketch(self, lean_code: str) -> VerificationResult:
+        return VerificationResult(
+            success=False,
+            diagnostics=[
+                Diagnostic(severity="error", code="lean.invalidField", message="bad sketch field")
+            ],
+            stdout="",
+            stderr="",
+            elapsed_ms=1,
+        )
+
+
+def _run_staged(tmp_path: Path, **flags: bool):
+    generator = StagedGenerator()
+    pipeline = ProofPipeline(
+        generator=generator,
+        verifier=SketchRejectingVerifier(),
+        artifact_store=FileArtifactStore(tmp_path),
+        max_repair_attempts=3,
+        **flags,
+    )
+    result = pipeline.run_statement(
+        statement="Every natural number plus zero is itself.",
+        formal_statement=FORMAL,
+        proof_job_id="job",
+    )
+    return generator, result
+
+
+def test_failed_sketch_normally_costs_an_attempt_and_a_route_call(tmp_path: Path) -> None:
+    generator, result = _run_staged(tmp_path)
+    assert result.state == "verified"
+    assert generator.route_calls == 1
+    metadata = json.loads((tmp_path / "job" / "result.json").read_text())
+    assert len(metadata["attempts"]) == 2
+    assert metadata["repairs_used"] == 1
+
+
+def test_failed_sketch_proceeds_to_prove_within_the_same_attempt(tmp_path: Path) -> None:
+    generator, result = _run_staged(tmp_path, sketch_failure_proceeds_to_prove=True)
+    assert result.state == "verified"
+    assert generator.route_calls == 0
+    metadata = json.loads((tmp_path / "job" / "result.json").read_text())
+    assert len(metadata["attempts"]) == 1
+    assert metadata["repairs_used"] == 0
+    (feedback,) = generator.proof_feedback
+    assert feedback is not None
+    assert feedback.repair_route == "prove"
+    assert feedback.previous_lean_code.endswith("sorry\n")
+    assert [d.code for d in feedback.diagnostics] == ["lean.invalidField"]
