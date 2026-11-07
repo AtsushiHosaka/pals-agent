@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
 
 from pals_agent.artifacts import (
@@ -37,6 +37,7 @@ from pals_agent.models import (
     VerificationResult,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
+from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal_harness
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
@@ -183,6 +184,13 @@ class ProofPipeline:
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
     request_linked_typed_retriever: ProofFlowRetriever | None = None
+    # Opt-in latency shortcuts, both off by default; see pals_agent/proof_fastpaths.py.
+    # ``harness_splice`` restores a fixed formal statement the model re-typed with only
+    # layout differences instead of paying for a model-driven restart.
+    harness_splice: bool = False
+    # ``deterministic_repair_route`` skips the route-selection model call when the user
+    # fixed the statement, and never restarts the prose Draft for a statement mismatch.
+    deterministic_repair_route: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -663,6 +671,41 @@ class ProofPipeline:
         feedback: GenerationFeedback | None,
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
+        generated = self._generate_attempt_unspliced(
+            request=request,
+            problem_id=problem_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+            diagnostics=diagnostics,
+            feedback=feedback,
+            on_status=on_status,
+        )
+        if not self.harness_splice or not request.formal_statement:
+            return generated
+        if not generated.lean_code.strip() or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=generated.lean_code,
+        ) == []:
+            return generated
+        spliced = splice_formal_harness(generated.lean_code, request.formal_statement)
+        if spliced is None or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=spliced,
+        ):
+            return generated
+        return replace(generated, lean_code=spliced)
+
+    def _generate_attempt_unspliced(
+        self,
+        *,
+        request: ProofRequest,
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        diagnostics: list[Diagnostic],
+        feedback: GenerationFeedback | None,
+        on_status: StatusCallback | None,
+    ) -> GeneratedProof:
         repair_route = feedback.repair_route if feedback is not None else "draft"
         context: dict[str, Any] = {
             **_request_context(request, problem_id=problem_id),
@@ -765,7 +808,11 @@ class ProofPipeline:
             previous_sketch=generated.sketch,
         )
         try:
-            route_decision = _select_repair_route(
+            route_decision = (
+                deterministic_repair_route(request, base_feedback)
+                if self.deterministic_repair_route
+                else None
+            ) or _select_repair_route(
                 self.generator,
                 request,
                 base_feedback,

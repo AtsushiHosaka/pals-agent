@@ -60,6 +60,8 @@ class AgentSettings:
     request_linked_typed_catalog_enabled: bool = False
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
+    harness_splice_enabled: bool = False
+    deterministic_repair_route_enabled: bool = False
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -198,6 +200,10 @@ class AgentSettings:
                 "PALS_REQUEST_LINKED_TYPED_CATALOG_ENABLED"
             ),
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
+            harness_splice_enabled=_strict_bool_env("PALS_HARNESS_SPLICE_ENABLED"),
+            deterministic_repair_route_enabled=_strict_bool_env(
+                "PALS_DETERMINISTIC_REPAIR_ROUTE_ENABLED"
+            ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
                 DEFAULT_MAX_REPAIR_ATTEMPTS,
