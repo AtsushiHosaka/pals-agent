@@ -80,6 +80,7 @@ from pals_agent.runtime_latency import (
     traced_delivery,
 )
 from pals_agent.settings import AgentSettings
+from pals_agent.speculative_explanation import SpeculativeExplanation
 from pals_agent.usage import usage_scope
 
 ClaimStatus = Literal[
@@ -848,70 +849,84 @@ class SqsProofWorker:
                     extend_visibility(3 * math.ceil(timeout_seconds) + 30)
                 except Exception:
                     return False
+            # The model call of the explanation does not depend on this review, only its claim and
+            # write do (the API accepts them for a verified job). Start the call now and adopt it
+            # after the approval is settled; every other outcome drops it. See
+            # pals_agent.speculative_explanation.
+            speculative = self._start_speculative_explanation(
+                theorem_statement=statement, lean_code=lean_code, language=language,
+                claim_id=claim_id, extend_visibility=extend_visibility,
+                timeout_seconds=timeout_seconds,
+            )
             try:
-                with latency_stage("semantic_review"), latency_label("semantic_review"):
-                    review = self._required_proof_reviewer().review_proof(
-                        theorem_statement=statement,
-                        formal_statement=formal_statement,
-                        target_declaration=target_declaration,
-                        lean_code=lean_code,
-                        timeout_seconds=timeout_seconds,
-                    )
-            except Exception as exc:
-                failure = _semantic_review_unavailable_payload(
-                    candidate_id=candidate_id, mutation_claim_id=generation_session_id,
-                    theorem_statement=statement, formal_statement=formal_statement,
-                    lean_code=lean_code, target_declaration=target_declaration,
-                    result_artifact_uri=artifact_uri, source_binding_sha256=None,
-                    failure_kind=(
-                        exc.failure_kind if isinstance(exc, ProofSemanticReviewUnavailable)
-                        else "internal"
-                    ),
-                )
                 try:
-                    response = self.api_client.settle_proof_semantic_review_unavailable(
-                        proof_job_id=proof_job_id, failure=failure,
+                    with latency_stage("semantic_review"), latency_label("semantic_review"):
+                        review = self._required_proof_reviewer().review_proof(
+                            theorem_statement=statement,
+                            formal_statement=formal_statement,
+                            target_declaration=target_declaration,
+                            lean_code=lean_code,
+                            timeout_seconds=timeout_seconds,
+                        )
+                except Exception as exc:
+                    failure = _semantic_review_unavailable_payload(
+                        candidate_id=candidate_id, mutation_claim_id=generation_session_id,
+                        theorem_statement=statement, formal_statement=formal_statement,
+                        lean_code=lean_code, target_declaration=target_declaration,
+                        result_artifact_uri=artifact_uri, source_binding_sha256=None,
+                        failure_kind=(
+                            exc.failure_kind if isinstance(exc, ProofSemanticReviewUnavailable)
+                            else "internal"
+                        ),
+                    )
+                    try:
+                        response = self.api_client.settle_proof_semantic_review_unavailable(
+                            proof_job_id=proof_job_id, failure=failure,
+                        )
+                    except Exception:
+                        return False
+                    return _semantic_review_terminal_response(response, proof_job_id=proof_job_id)
+                evidence = _semantic_review_evidence(
+                    candidate_id=candidate_id,
+                    theorem_statement=statement,
+                    formal_statement=formal_statement,
+                    lean_code=lean_code,
+                    target_declaration=target_declaration,
+                    generator_session_id=generation_session_id,
+                    review=review,
+                )
+                approved = review.decision == "approved"
+                try:
+                    response = self.api_client.settle_proof_semantic_review(
+                        proof_job_id=proof_job_id, evidence=evidence,
                     )
                 except Exception:
+                    # A transport failure after settlement is ambiguous; readback/redelivery is the
+                    # only authority allowed to decide whether the durable state changed.
                     return False
-                return _semantic_review_terminal_response(response, proof_job_id=proof_job_id)
-            evidence = _semantic_review_evidence(
-                candidate_id=candidate_id,
-                theorem_statement=statement,
-                formal_statement=formal_statement,
-                lean_code=lean_code,
-                target_declaration=target_declaration,
-                generator_session_id=generation_session_id,
-                review=review,
-            )
-            approved = review.decision == "approved"
-            try:
-                response = self.api_client.settle_proof_semantic_review(
-                    proof_job_id=proof_job_id, evidence=evidence,
+                settled = _semantic_review_terminal_response(
+                    response,
+                    proof_job_id=proof_job_id,
                 )
-            except Exception:
-                # A transport failure after settlement is ambiguous; readback/redelivery is the
-                # only authority allowed to decide whether the durable state changed.
-                return False
-            settled = _semantic_review_terminal_response(
-                response,
-                proof_job_id=proof_job_id,
-            )
-            if not settled or not approved:
-                return settled
-            # The semantic-review delivery is the first point at which the proof is durably
-            # verified.  Continue with learner-facing work on this receipt when it has a
-            # claim; an explanation failure is isolated from this already-verified proof.
-            if claim_id is None or extend_visibility is None:
-                return True
-            return self._ensure_summary_explanation(
-                proof_job_id=proof_job_id,
-                theorem_statement=statement,
-                lean_code=lean_code,
-                claim_id=claim_id,
-                extend_visibility=extend_visibility,
-                language=language,
-            )
+                if not settled or not approved:
+                    return settled
+                # The semantic-review delivery is the first point at which the proof is durably
+                # verified.  Continue with learner-facing work on this receipt when it has a
+                # claim; an explanation failure is isolated from this already-verified proof.
+                if claim_id is None or extend_visibility is None:
+                    return True
+                return self._ensure_summary_explanation(
+                    proof_job_id=proof_job_id,
+                    theorem_statement=statement,
+                    lean_code=lean_code,
+                    claim_id=claim_id,
+                    extend_visibility=extend_visibility,
+                    language=language,
+                    speculative=speculative,
+                )
+            finally:
+                if speculative is not None:
+                    speculative.discard()  # A no-op once adopted; otherwise drops the result.
         if state == "verified":
             lean_code = proof_job.get("lean_code")
             if not isinstance(lean_code, str) or not lean_code.strip():
@@ -1726,6 +1741,45 @@ class SqsProofWorker:
                 retry_id=retry_id,
             )
 
+    def _start_speculative_explanation(
+        self,
+        *,
+        theorem_statement: str,
+        lean_code: str,
+        language: str,
+        claim_id: str | None,
+        extend_visibility: VisibilityExtender | None,
+        timeout_seconds: float,
+    ) -> SpeculativeExplanation | None:
+        """Begin the first explanation call early, only where this delivery will go on to use it.
+
+        Not started unless the delivery can take the explanation claim after an approval
+        (a claim id and a visibility extender), the explainer and both reviewers exist, and the
+        switch is on. Missing pieces would otherwise spend a model call that nothing can use.
+        """
+        if (
+            not getattr(self.settings, "speculative_explanation_enabled", True)
+            or claim_id is None
+            or extend_visibility is None
+            or self.explainer is None
+            or self.proof_reviewer is None
+            or self.output_reviewer is None
+        ):
+            return None
+        # Same span a claimed explanation is given for all of its model calls.
+        deadline = self.monotonic() + _MAX_EXPLANATION_MODEL_CALLS * timeout_seconds
+        try:
+            return SpeculativeExplanation.start(
+                explain=self.explainer.explain,
+                theorem_statement=theorem_statement,
+                lean_code=lean_code,
+                language=language,
+                deadline=deadline,
+                timeout_seconds=timeout_seconds,
+            )
+        except Exception:  # noqa: BLE001 -- an early start is an optimisation only.
+            return None
+
     def _ensure_summary_explanation(
         self,
         *,
@@ -1736,6 +1790,7 @@ class SqsProofWorker:
         extend_visibility: VisibilityExtender,
         language: str,
         retry_id: str | None = None,
+        speculative: SpeculativeExplanation | None = None,
     ) -> bool:
         acquisition = self._acquire(
             resource_kind="explanation",
@@ -1772,6 +1827,18 @@ class SqsProofWorker:
             reviewer = self._required_output_reviewer()
 
             def generate_explanation(feedback: Any) -> ProofExplanation:
+                if feedback is None and speculative is not None:
+                    # The first candidate was generated while the semantic review ran. It is
+                    # used only now, with the claim held, so it still goes through the same
+                    # explanation review and the same final write as a direct call's output.
+                    pregenerated = speculative.adopt(
+                        theorem_statement=theorem_statement,
+                        lean_code=lean_code,
+                        language=language,
+                        wait_seconds=permit.deadline - self.monotonic(),
+                    )
+                    if pregenerated is not None:
+                        return pregenerated
                 with latency_label("explain"):
                     return self._required_explainer().explain(
                         theorem_statement=theorem_statement,

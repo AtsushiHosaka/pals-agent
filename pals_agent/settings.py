@@ -61,6 +61,7 @@ class AgentSettings:
     pfi_runtime_provenance_sha256: str | None = None
     max_repair_attempts: int = DEFAULT_MAX_REPAIR_ATTEMPTS
     deterministic_templates_enabled: bool = True
+    speculative_explanation_enabled: bool = True
     lemma_alias_repair_enabled: bool = True
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
@@ -202,6 +203,9 @@ class AgentSettings:
             pfi_runtime_provenance_sha256=_optional_env("PALS_PFI_PROVENANCE_SHA256"),
             deterministic_templates_enabled=_strict_bool_env_default(
                 "PALS_DETERMINISTIC_TEMPLATES_ENABLED", True
+            ),
+            speculative_explanation_enabled=_strict_bool_env_default(
+                "PALS_SPECULATIVE_EXPLANATION_ENABLED", True
             ),
             lemma_alias_repair_enabled=_strict_bool_env_default(
                 "PALS_LEMMA_ALIAS_REPAIR_ENABLED", True
