@@ -520,6 +520,8 @@ def test_x_squared_continuity_requires_an_epsilon_delta_explanation() -> None:
     assert "epsilon-delta explanation" in client.prompts[0]
     assert "Do not say that the learner requested epsilon-delta" in client.prompts[0]
     assert "KaTeX-compatible LaTeX" in client.prompts[0]
+    assert "separated by a blank line" in client.prompts[0]
+    assert "$$...$$" in client.prompts[0]
     assert "$\\varepsilon$" in client.prompts[0]
     assert "Write the mathematical proof itself from the first sentence" in client.prompts[0]
     assert "$\\varepsilon>0$ を任意に取ります。" in client.prompts[0]
@@ -995,6 +997,7 @@ def test_clarification_is_scoped_to_selected_section_and_lean() -> None:
     assert "なぜ 0 を足しても値が変わらないのですか？" in client.prompts[1]
     assert "Canonical Lean line table" in client.prompts[1]
     assert "KaTeX-compatible LaTeX" in client.prompts[1]
+    assert "separated by a blank line" in client.prompts[1]
 
 
 def test_clarification_rejects_reference_outside_selected_section() -> None:

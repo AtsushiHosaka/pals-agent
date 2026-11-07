@@ -16,6 +16,7 @@ from pals_agent.chat_images import (
 from pals_agent.figure_calls import FIGURE_INSTRUCTION, labels_occur_in, split_figure
 from pals_agent.linked_chat import linked_chat_scope, validate_generation_settings
 from pals_agent.material_context import MATERIAL_INSTRUCTION, MaterialContext
+from pals_agent.math_task import MATH_LAYOUT_INSTRUCTION
 from pals_agent.model_roles import RELEASE_MODEL
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.proof_reuse import (
@@ -267,7 +268,10 @@ class ChatRuntime:
             "a final solution, a proof, correctness verdict, or that Lean verified anything. "
             "Explain faithfully, identify uncertainty and do not invent missing image content. "
             "Use output_language. Use KaTeX-compatible math in $...$, $$...$$, \\(...\\), "
-            "or \\[...\\]. " + FIGURE_INSTRUCTION + "\nReturn {text, figure_json}, where "
+            "or \\[...\\]. "
+            + MATH_LAYOUT_INSTRUCTION
+            + FIGURE_INSTRUCTION
+            + "\nReturn {text, figure_json}, where "
             "figure_json is that figure serialized as a JSON string, or null when no template "
             "applies.\nDATA:\n"
             + json.dumps(data, ensure_ascii=False),

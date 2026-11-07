@@ -76,3 +76,14 @@ ANSWER_PRESENTATION = (
     "For a whether question, state yes or no and justify it using the verified claim "
     "or its verified negation; do not equate a proposed statement with a hypothesis. "
 )
+
+MATH_LAYOUT_INSTRUCTION = (
+    "Layout for readability: write short paragraphs of one to three sentences, separated by a "
+    "blank line (a double newline inside a JSON string), and never put a whole derivation in "
+    "one paragraph. Keep short symbols and conditions such as $a$ or $\\varepsilon>0$ inline. "
+    "Put each key equation or inequality, and each chain of inequalities, in its own display "
+    "block $$...$$ (also valid KaTeX math) with a blank line before and after, instead of "
+    "embedding it in a sentence; "
+    "end the sentence that introduces it with a colon or a connective, and let the next "
+    "paragraph continue after the block. "
+)
