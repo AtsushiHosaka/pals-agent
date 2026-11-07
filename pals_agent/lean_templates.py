@@ -20,6 +20,7 @@ from typing import Final
 
 from pals_agent.explanations import _is_x_squared_continuity
 from pals_agent.models import ProofRequest
+from pals_agent.request_proposition import parse_request
 
 PROVER_ID: Final = "pals.template.x-squared-epsilon-delta.v1"
 
@@ -214,9 +215,14 @@ def template_proof_for_request(request: ProofRequest) -> TemplateProof | None:
     """
     if request.formal_statement is not None:
         return None
-    if not (_exact_square_draft(request) or _is_x_squared_continuity(request.prompt)):
+    grammar_variable = _grammar_square_variable(request.prompt)
+    if not (
+        _exact_square_draft(request)
+        or _is_x_squared_continuity(request.prompt)
+        or grammar_variable is not None
+    ):
         return None
-    bindings = _bindings_for_prompt(request.prompt)
+    bindings = _bindings_for_prompt(request.prompt, grammar_variable)
     try:
         lean_code = render_x_squared_epsilon_delta(bindings)
     except TemplateBindingError:
@@ -237,7 +243,24 @@ def _exact_square_draft(request: ProofRequest) -> bool:
     )
 
 
-def _bindings_for_prompt(prompt: str) -> XSquaredBindings:
+def _grammar_square_variable(prompt: str) -> str | None:
+    """The variable when the vocabulary grammar reads the request as exactly continuity of v².
+
+    The grammar covers every wording its table lists (English included), and any leftover word
+    is a miss, so this is as conservative as the Japanese-only wording check above.
+    """
+    parsed = parse_request(prompt)
+    if (
+        parsed is None
+        or parsed.function_id != "power"
+        or parsed.property_id != "continuous"
+        or dict(parsed.slots).get("k") != "2"
+    ):
+        return None
+    return parsed.variable
+
+
+def _bindings_for_prompt(prompt: str, grammar_variable: str | None = None) -> XSquaredBindings:
     """Use the learner's single squared variable (``t²``), else ``x``; keep ε and δ fixed.
 
     The names ε and δ stay as they are because the epsilon-delta preflight looks for them.
@@ -245,6 +268,8 @@ def _bindings_for_prompt(prompt: str) -> XSquaredBindings:
     compact = re.sub(r"\s+", "", prompt)
     letters = {match.group(1) for match in _SQUARED_VARIABLE.finditer(compact)}
     variable = "x"
+    if grammar_variable is not None:
+        letters = {grammar_variable}
     if len(letters) == 1:
         (candidate,) = letters
         try:
