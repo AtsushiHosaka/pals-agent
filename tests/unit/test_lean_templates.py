@@ -415,3 +415,57 @@ def test_the_switch_is_on_by_default_and_strict(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setenv(name, "False")
     with pytest.raises(ValueError):
         _strict_bool_env_default(name, True)
+
+
+# --- the template passes the checks a model-written candidate passes ----------------------------
+
+
+def test_the_template_passes_the_source_policy_and_the_worker_alignment_checks() -> None:
+    from pals_agent.explanations import _requires_epsilon_delta
+    from pals_agent.lean_source_policy import find_source_violation
+    from pals_agent.worker import _verified_candidate_matches_statement
+
+    source = render_x_squared_epsilon_delta()
+    assert find_source_violation(source) is None
+    for statement in (JAPANESE_REQUEST, "x^2 の連続性を示して", "Why is x squared continuous?"):
+        assert _requires_epsilon_delta(statement, source) is True
+    assert _verified_candidate_matches_statement(JAPANESE_REQUEST, source) is True
+
+
+def test_an_explanation_of_the_template_passes_the_structural_layer() -> None:
+    from pals_agent.explanations import _parse_explanation
+
+    source = render_x_squared_epsilon_delta()
+    lines = source.splitlines()
+
+    def reference(first: int, last: int) -> dict[str, object]:
+        return {
+            "start_line": first,
+            "end_line": last,
+            "excerpt": "\n".join(lines[first - 1 : last]),
+        }
+
+    delta_line = next(i for i, line in enumerate(lines, 1) if line.strip().startswith("let δ"))
+    final_line = next(i for i, line in enumerate(lines, 1) if "simpa [Real.dist_eq]" in line)
+    payload = {
+        "overview": "任意の $\\varepsilon>0$ と実数 $a$ を取ります。",
+        "sections": [
+            {
+                "id": "delta",
+                "title": "δ の選び方",
+                "summary": "$\\delta=\\min\\{1,\\varepsilon/(2|a|+1)\\}$ とおきます。",
+                "references": [reference(delta_line, delta_line)],
+            },
+            {
+                "id": "estimate",
+                "title": "評価",
+                "summary": "$|x-a|<\\delta$ なら $|x^2-a^2|<\\varepsilon$ です。",
+                "references": [reference(final_line, final_line)],
+            },
+        ],
+        "conclusion": "$a$ は任意なので、$x^2$ は実数全体で連続です。",
+    }
+    overview, sections, conclusion = _parse_explanation(
+        payload, source, language="ja", strict_prose=True
+    )
+    assert overview and conclusion and len(sections) == 2
