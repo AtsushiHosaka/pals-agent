@@ -1,0 +1,142 @@
+{
+ "schema_version": "pals.general-recipe-card.v1",
+ "id": "continuity.linear.real.explicit-epsilon-delta",
+ "revision": 1,
+ "family_id": "real-analysis",
+ "theorem_name": "linear_continuous_explicit_epsilon_delta",
+ "source_path": "proofs/linear_continuous_explicit_epsilon_delta.lean",
+ "target_source": "∀ (c : ℝ), Continuous (fun x : ℝ => c * x)",
+ "statement": "任意の実数 $c$ について、実数全体で定義された関数 $f(x)=cx$（$x$ の定数倍、比例関数）が、$\\mathbb{R}$ のすべての点で連続であること（連続関数であること）を $\\varepsilon$-$\\delta$ 論法で証明せよ。(Prove that for every real number c, the function f(x)=cx is continuous on the real line, using epsilon-delta. This covers 2x, 3x, -x and the zero function.)",
+ "domain": "実数上の関数の連続性：1次の比例関数（xの定数倍、$cx$。$c$ は実数）の $\\varepsilon$-$\\delta$ 論法による連続性の証明",
+ "assumptions": [
+  "$c$ は実数（$0$ や負の数を含む）、$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=cx$（$x$ は実数変数）。",
+  "連続性は実数の通常の距離 $|x-y|$ に関する各点での連続性（$\\varepsilon$-$\\delta$ による定義）を指す。"
+ ],
+ "quantifiers": [
+  "任意の実数 $c$、任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、すべての実数 $x$ について $|x-a|<\\delta$ ならば $|cx-ca|<\\varepsilon$ となる（$\\delta$ は $c$ と $\\varepsilon$ に依存してよい）。"
+ ],
+ "conclusion": "任意の実数 $c$ について $f(x)=cx$ は $\\mathbb{R}$ のすべての点で連続である。すなわち $f$ は $\\mathbb{R}$ 上の連続関数である。",
+ "proof_method_tag": "epsilon_delta",
+ "answer": "$c$ を任意の実数、$a$ を任意の実数とします。$f(x)=cx$ が $a$ で連続であるとは、任意の $\\varepsilon>0$ に対して、ある $\\delta>0$ が存在し、$|x-a|<\\delta$ を満たすすべての実数 $x$ について $|cx-ca|<\\varepsilon$ となることです。そこで $\\varepsilon>0$ を任意に取り、この $\\delta$ を具体的に与えます。\n\n$\\delta=\\dfrac{\\varepsilon}{|c|+1}$ と定めます。$|c|+1\\ge 1>0$ なので $\\delta>0$ です。分母を $|c|$ ではなく $|c|+1$ にするのは、$c=0$ のときも分母が $0$ にならないようにするためです。たとえば $c=3$ のときは $\\delta=\\dfrac{\\varepsilon}{4}$ です。\n\n実数 $x$ が $|x-a|<\\delta$ を満たすとします。$cx-ca=c(x-a)$ なので、$|cx-ca|=|c|\\,|x-a|$ です。$|c|\\le|c|+1$ と $|x-a|\\ge 0$ から、$|c|\\,|x-a|\\le(|c|+1)\\,|x-a|$ が成り立ちます。また $|x-a|<\\dfrac{\\varepsilon}{|c|+1}$ の両辺に正の数 $|c|+1$ を掛けると、$(|c|+1)\\,|x-a|<\\varepsilon$ です。したがって $|cx-ca|<\\varepsilon$ が得られます。\n\n以上から、任意の実数 $a$ と任意の $\\varepsilon>0$ に対して、上の $\\delta>0$ は $|x-a|<\\delta$ ならば $|cx-ca|<\\varepsilon$ を満たします。したがって、任意の実数 $c$ について $cx$ は実数全体のすべての点で連続です。\n",
+ "proof_outline": [
+  "Fix a real number c, a real point a and epsilon greater than zero.",
+  "Choose delta = epsilon / (|c| + 1), which is positive even when c = 0.",
+  "For |x-a| < delta, |cx - ca| = |c||x-a| is at most (|c|+1)|x-a|.",
+  "Conclude |cx - ca| is less than epsilon."
+ ],
+ "question_variants": {
+  "ja": [
+   "cxは連続であることを示してください。",
+   "任意の実数cについてc x が連続であることをε-δ論法で証明してください。",
+   "比例関数 f(x)=cx の連続性を証明してください。",
+   "3xが連続であることをε-δ論法で示してください。",
+   "xの定数倍の連続性を証明せよ。",
+   "2xの連続性を教えてください。"
+  ],
+  "en": [
+   "Prove that cx is continuous for every real number c.",
+   "Show that the function f(x)=cx is continuous on the real line using epsilon-delta.",
+   "Why is 3x continuous? Use epsilon-delta.",
+   "Prove that a constant multiple of x is continuous."
+  ]
+ },
+ "aliases": {
+  "ja": [
+   "cx",
+   "比例関数",
+   "定数倍",
+   "xの定数倍",
+   "1次関数",
+   "連続性",
+   "連続関数",
+   "ε-δ論法",
+   "イプシロンデルタ",
+   "3x",
+   "2x"
+  ],
+  "en": [
+   "cx",
+   "linear function",
+   "proportional function",
+   "constant multiple",
+   "multiple of x",
+   "continuity of linear functions",
+   "epsilon delta proof",
+   "epsilon-delta definition of continuity",
+   "real analysis"
+  ]
+ },
+ "hard_negatives": [
+  {
+   "id": "restricted_domain",
+   "dimension": "domain",
+   "statement": "区間 $[0,1]$ 上で $f(x)=cx$ が連続であることを証明せよ。",
+   "reason": "定義域が $[0,1]$ に制限された弱い主張で、ℝ全体の主張とは別である。"
+  },
+  {
+   "id": "uniform",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=cx$ が $\\mathbb{R}$ 上で一様連続であることを証明せよ。",
+   "reason": "結論が一様連続性であり、連続性の証明とは別の主張である（別の Recipe が答える）。"
+  },
+  {
+   "id": "differentiable",
+   "dimension": "conclusion",
+   "statement": "関数 $f(x)=cx$ が $\\mathbb{R}$ 上で微分可能であることを証明せよ。",
+   "reason": "結論が微分可能性であり、連続性の証明では答えにならない。"
+  },
+  {
+   "id": "affine",
+   "dimension": "objects",
+   "statement": "任意の実数 $a,b$ について、$f(x)=ax+b$ が実数全体で連続であることを証明せよ。",
+   "reason": "切片 $b$ を含む別の関数であり、保存回答の $f(x)=cx$ の証明そのものではない。"
+  },
+  {
+   "id": "quadratic",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx^2$ が実数全体で連続であることを証明せよ。",
+   "reason": "2次の項を含む別の関数であり、保存回答の $\\delta$ の選び方は使えない。"
+  },
+  {
+   "id": "complex",
+   "dimension": "domain",
+   "statement": "任意の複素数 $c$ について、複素数全体で定義された関数 $f(z)=cz$ が連続であることを証明せよ。",
+   "reason": "定義域が $\\mathbb{C}$ であり、距離も複素数の絶対値になる。"
+  },
+  {
+   "id": "without_epsilon_delta",
+   "dimension": "method",
+   "statement": "任意の実数 $c$ について $cx$ が連続であることを、$\\varepsilon$-$\\delta$ 論法を使わずに証明せよ。",
+   "reason": "要求された証明方法が保存回答の方法（ε-δ論法）と異なる。"
+  },
+  {
+   "id": "at_a_point",
+   "dimension": "quantifiers",
+   "statement": "任意の実数 $c$ について、$f(x)=cx$ が $x=0$ で連続であることを証明せよ。",
+   "reason": "1点での連続性だけを問う弱い主張である。"
+  },
+  {
+   "id": "sum_with_constant",
+   "dimension": "objects",
+   "statement": "任意の実数 $c$ について、$f(x)=cx+1$ が実数全体で連続であることを証明せよ。",
+   "reason": "別の関数であり、保存回答の $f(x)=cx$ の証明そのものではない。"
+  }
+ ],
+ "provenance": {
+  "kind": "original_synthetic_problem_and_proof",
+  "license": "Apache-2.0",
+  "upstream_library": "Mathlib",
+  "upstream_license": "Apache-2.0",
+  "mathlib_revision": "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a",
+  "ported_from": "new general-form proof for a universally quantified family (seq27 general Recipe families)"
+ },
+ "lifecycle": {
+  "authored": true,
+  "independently_reviewed": false,
+  "admitted": false,
+  "retrievable": false,
+  "runtime_verified": false,
+  "deployed": false
+ },
+ "status": "authored_awaiting_execution"
+}
