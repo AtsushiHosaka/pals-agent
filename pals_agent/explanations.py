@@ -17,7 +17,11 @@ from pals_agent.lean_target import (
     extract_single_target_declaration,
     matches_x_squared_continuity,
 )
-from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
+from pals_agent.math_task import (
+    ANSWER_PRESENTATION,
+    ANSWER_SCOPE_REVIEW,
+    MATH_LAYOUT_INSTRUCTION,
+)
 from pals_agent.request_instructions import split_presentation_instructions
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
@@ -1504,6 +1508,7 @@ or 連続性判定を使う. Use direct proof prose such as “Fix”, “Let”
 syntax."""
     return f"""Write a mathematical proof for a learner, grounded in a verified Lean artifact.
 {ANSWER_PRESENTATION}
+{MATH_LAYOUT_INSTRUCTION}
 The theorem statement and verified Lean code below are the only sources of truth for the claim
 and its assumptions.
 {_STATED_CONVENTION_INSTRUCTION}
@@ -1677,6 +1682,7 @@ leave formulas, variables, epsilon, or delta as un-delimited plain text. This ap
 to the answer and every key point. Write `$x^m\\in I$` and `$x\\in\\sqrt{{IJ}}$`,
 never bare `x^m∈I` or `x∈√(IJ)`; convert raw notation in the question or selected
 text to TeX. Escape each TeX backslash as `\\\\` in the JSON response.
+{MATH_LAYOUT_INSTRUCTION}
 
 Verified Lean code:
 ```lean
