@@ -82,10 +82,9 @@ def test_requests_the_table_covers_completely(request_text: str, expected: str) 
         "2^x の連続性",
         "x² は連続でないことを示せ",  # negation
         "x² は連続でしょうか、それとも微分可能ですか",
-        "x² の微分可能性",  # another property
-        "x² の導関数",
-        "x² は一様連続か",
-        "x² is uniformly continuous",
+        "x² の導関数",  # a derivative is another object
+        "x² の微分可能性と連続性",  # two properties
+        "x³ は単調増加",  # plain 単調増加 is ambiguous (strict or weak)
         "x² は区間 [0,1] 上で連続",  # restricted domain
         "x² は自然数上で連続",
         "x² は複素数上で連続",
@@ -132,20 +131,20 @@ def test_a_new_function_needs_no_code_change() -> None:
     payload = _payload()
     payload["functions"].append(
         {
-            "id": "sine",
-            "lean_body": "Real.sin {v}",
+            "id": "tangent",
+            "lean_body": "Real.tan {v}",
             "slots": {},
-            "search_terms": "sine trigonometric",
-            "forms": [{"re": "sin\\s*(?P<v>[a-z])(?![a-z])"}],
+            "search_terms": "tangent trigonometric",
+            "forms": [{"re": "(?<![a-z])tan\\s*(?P<v>[a-z])(?![a-z])"}],
         }
     )
     grammar = build_grammar(payload)
-    parsed = parse_request("sin x の連続性", grammar=grammar)
+    parsed = parse_request("tan x の連続性", grammar=grammar)
     assert parsed is not None
-    assert parsed.proposition == "Continuous (fun x : ℝ => Real.sin x)"
-    assert "sine" in parsed.search_query
+    assert parsed.proposition == "Continuous (fun x : ℝ => Real.tan x)"
+    assert "tangent" in parsed.search_query
     # The packaged table does not know it: the request is still a miss there.
-    assert parse_request("sin x の連続性") is None
+    assert parse_request("tan x の連続性") is None
 
 
 def test_a_new_property_and_a_new_filler_are_rows_too() -> None:
