@@ -528,6 +528,7 @@ def test_x_squared_continuity_requires_an_epsilon_delta_explanation() -> None:
     assert "KaTeX-compatible LaTeX" in client.prompts[0]
     assert "separated by a blank line" in client.prompts[0]
     assert "$$...$$" in client.prompts[0]
+    assert "never place $$ in the middle of a sentence" in client.prompts[0]
     assert "$\\varepsilon$" in client.prompts[0]
     assert "Write the mathematical proof itself from the first sentence" in client.prompts[0]
     assert "$\\varepsilon>0$ を任意に取ります。" in client.prompts[0]
