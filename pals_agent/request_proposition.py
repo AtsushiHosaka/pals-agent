@@ -26,6 +26,7 @@ from functools import lru_cache
 from importlib import resources
 from typing import Any, Final
 
+from pals_agent.math_conventions import CONVENTIONS, reading
 from pals_agent.recipe_instantiation import InstantiationRejected, _leading_forall
 from pals_agent.request_instructions import split_presentation_instructions
 
@@ -33,7 +34,32 @@ SCHEMA_VERSION: Final = "pals.request-grammar.v1"
 _SUPERSCRIPTS: Final = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹", "0123456789")
 _SUPERSCRIPT_RUN: Final = re.compile(r"[⁰¹²³⁴⁵⁶⁷⁸⁹]+")
 _SEPARATORS: Final = re.compile(r"[\s、。，,.．!！?？$\\()（）\[\]「」『』:：;；\"`*_]+")
-_CONVENTIONS_NOTE: Final = re.compile(r"\n\s*\nConventions:.*\Z", re.DOTALL)
+
+
+def _conventions_note() -> re.Pattern[str]:
+    """The note ``math_conventions.with_readings`` appends, and nothing a learner could type.
+
+    Everything after a ``Conventions:`` line used to be dropped, so a request such as
+    ``x^2 is continuous`` + ``Conventions: also prove x^3 is not continuous`` was read as the
+    first line alone.  Only a note made of the catalog's own readings is removed now.
+    """
+    readings = sorted(
+        {reading(identifier, choice) for identifier, _, _ in CONVENTIONS
+         for choice in ("include", "exclude")},
+        key=len,
+        reverse=True,
+    )
+    one = "(?:" + "|".join(re.escape(text) for text in readings) + ")"
+    return re.compile(
+        rf"\n[ \t]*\n[ \t]*Conventions: {one}(?:; {one})*\."
+        r"(?: Every other definition keeps its standard meaning\.)?[ \t\n]*\Z"
+    )
+
+
+_CONVENTIONS_NOTE: Final = _conventions_note()
+_TERM: Final = " \x00 "  # stands for the consumed term while the rest of the request is read
+_FACTORIAL_AFTER: Final = re.compile(r"[\s)\]}）」』]*!")
+_NOT_BEFORE: Final = re.compile(r"!\s*[\s(\[{（「『]*\Z")
 _MAX_REQUEST_CHARS: Final = 400
 # A decimal literal slot: at most nine integer digits, no leading zero, up to six decimals.
 _DECIMAL: Final = re.compile(r"(?:0|[1-9][0-9]{0,8})(?:\.[0-9]{1,6})?")
@@ -60,6 +86,9 @@ class _Grammar:
     domains: tuple[dict[str, Any], ...]
     fillers: tuple[str, ...]
     filler_patterns: tuple[re.Pattern[str], ...] = ()
+    # A claim that is only assumed, not asked for ("let x^2 be continuous", "x^2が連続とする").
+    hypothetical_after_property: re.Pattern[str] | None = None
+    hypothetical_before_formula: re.Pattern[str] | None = None
 
 
 @lru_cache(maxsize=1)
@@ -95,9 +124,20 @@ def build_grammar(payload: dict[str, Any]) -> _Grammar:
         {
             **entry,
             "forms": _literal_forms(entry["forms"]),
-            "patterns": tuple(re.compile(pattern) for pattern in entry.get("patterns", ())),
+            # ``{v}`` stands for the request's own variable letter; it is bound per request.
+            "patterns": tuple(
+                _checked_domain_pattern(pattern) for pattern in entry.get("patterns", ())
+            ),
         }
         for entry in payload["domains"]
+    )
+    hypothetical = payload.get("hypothetical", {})
+    after = hypothetical.get("after_property")
+    before = hypothetical.get("before_formula")
+    property_words = "|".join(
+        re.escape(form)
+        for entry in properties
+        for form in sorted(entry["forms"], key=len, reverse=True)
     )
     return _Grammar(
         variable=re.compile(payload["variable"]["pattern"] + r"\Z"),
@@ -110,7 +150,16 @@ def build_grammar(payload: dict[str, Any]) -> _Grammar:
         filler_patterns=tuple(
             re.compile(pattern) for pattern in payload.get("filler_patterns", ())
         ),
+        hypothetical_after_property=(
+            re.compile(rf"(?:{property_words})\s*(?:{after})") if after else None
+        ),
+        hypothetical_before_formula=re.compile(before) if before else None,
     )
+
+
+def _checked_domain_pattern(pattern: str) -> str:
+    re.compile(pattern.replace("{v}", "x"))  # a broken row fails when the table is built
+    return pattern
 
 
 def _literal_forms(forms: list[str]) -> tuple[str, ...]:
@@ -163,8 +212,17 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
     if selected is None or len(selected) != 1:
         return None
     start, end, function, match = selected[0]
-    # A factorial mark glued to the term changes its meaning; the separators would hide it.
-    if remaining[end : end + 1] == "!" or (start and remaining[start - 1] == "!"):
+    # A factorial mark on the term (``(x^2)!``, ``x^2 !``) or a logical not in front of it
+    # (``! x^2``) changes its meaning; the separators would hide it.
+    if _FACTORIAL_AFTER.match(remaining, end) or _NOT_BEFORE.search(remaining, 0, start):
+        return None
+    if grammar.hypothetical_before_formula and grammar.hypothetical_before_formula.search(
+        remaining[:start]
+    ):
+        return None
+    if grammar.hypothetical_after_property and grammar.hypothetical_after_property.search(
+        remaining
+    ):
         return None
     variable = match.groupdict().get("v") or function["form"].get("variable")
     if not variable or grammar.variable.match(variable) is None:
@@ -192,13 +250,15 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
             return None
         spans.append((n_start, n_end))
     for span_start, span_end in sorted(spans, reverse=True):
-        remaining = remaining[:span_start] + " " + remaining[span_end:]
+        # A sentinel, not a blank: a letter glued to the term (``x^2x``) must not become a
+        # variable binder (``of x``) once the term is gone.
+        remaining = remaining[:span_start] + _TERM + remaining[span_end:]
 
     remaining, prop_ids = _remove_words(remaining, grammar.properties)
     if len(set(prop_ids)) != 1:  # the same property named twice is still one claim
         return None
     remaining, domain_ids = _remove_words(remaining, grammar.domains)
-    remaining, pattern_ids = _remove_patterns(remaining, grammar.domains)
+    remaining, pattern_ids = _remove_patterns(remaining, grammar.domains, variable)
     domain_ids += pattern_ids
     if len(set(domain_ids)) > 1:
         return None
@@ -208,6 +268,8 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
             bound_name = bound.groupdict().get("v")
             if bound_name is not None and bound_name != variable:
                 return None
+            if variable == "y" and re.match(r"y\s*=", bound.group(0)):
+                return None  # ``y = y^2`` is an equation, not the definition of a function
             symbol = bound.groupdict().get("fn")
             if symbol is not None:
                 if symbol == variable:
@@ -216,12 +278,20 @@ def parse_request(text: object, *, grammar: _Grammar | None = None) -> RequestPr
         remaining = binder.sub(" ", remaining)
     # The function symbol a binder introduced (``f`` in ``f(x) = x^2``) may be mentioned again.
     for symbol in function_names:
+        # ``f*f`` or ``f f`` would be the product of the function with itself: the symbol may
+        # only be mentioned alone.
+        if re.search(
+            rf"(?<![a-z0-9_]){re.escape(symbol)}(?![a-z0-9_])[\s*·⋅×.\\$_]*"
+            rf"(?<![a-z0-9_]){re.escape(symbol)}(?![a-z0-9_])",
+            remaining,
+        ):
+            return None
         remaining = re.sub(rf"(?<![a-z0-9_]){re.escape(symbol)}(?![a-z0-9_])", " ", remaining)
     for pattern in grammar.filler_patterns:
         remaining = pattern.sub(" ", remaining)
     for filler in grammar.fillers:
         remaining = _remove_filler(remaining, filler)
-    if _SEPARATORS.sub("", remaining):
+    if _SEPARATORS.sub("", remaining.replace(_TERM, " ")):
         return None
 
     prop_entry = next(p for p in grammar.properties if p["id"] == prop_ids[0])
@@ -305,11 +375,12 @@ def _remove_words(
 
 
 def _remove_patterns(
-    text: str, entries: tuple[dict[str, Any], ...]
+    text: str, entries: tuple[dict[str, Any], ...], variable: str
 ) -> tuple[str, list[str]]:
     found: list[str] = []
     for entry in entries:
-        for pattern in entry.get("patterns", ()):
+        for source in entry.get("patterns", ()):
+            pattern = re.compile(source.replace("{v}", re.escape(variable)))
             text, count = pattern.subn(" ", text)
             found.extend([entry["id"]] * count)
     return text, found

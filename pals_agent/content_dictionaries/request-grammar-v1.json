@@ -1,6 +1,6 @@
 {
   "schema_version": "pals.request-grammar.v1",
-  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first. Output-language instructions (filler_patterns) draw on a closed set of words so that free text cannot ride along. Domain 'patterns' and 'filler_patterns' are regular expressions on the normalized text; 'forms' are literals (normalized when the table is built). A function binder may name the function symbol (group fn): standalone occurrences of that letter are then consumed too. Widening notes: slot kind 'decimal' is 0|[1-9]\\d{0,8} with an optional .\\d{1,6} fraction; a form may override the function's lean_body; a form with name_only is a bare function name (e.g. 'the fourth power function'): it is consumed only beside a formula of the same function whose body agrees, and it is a request on its own only when 'alone' is not false. Two different functions may overlap only by containment (the longer match wins); any other overlap is ambiguous and a miss. Variables are the real-variable letters s t u v w x y; e (Euler), n k m (integers), z (complex) and capital letters never match. Properties are listed with uniformly_continuous before continuous, so 'uniformly continuous' is never read as 'continuous'; plain 単調増加 / monotone increasing / increasing / one-to-one / 1対1 are not rows because they are ambiguous. Not in the table on purpose (add a row to widen): a minus sign in a x - b, a coefficient with a power c x^k, unapplied or name-only functions other than the squaring function.",
+  "notes": "Closed vocabulary for turning a learner request into one Lean proposition without a model. A request is accepted only if every character is consumed by an entry below; anything else is a miss and the request keeps its existing route. To widen the grammar, add rows here (a function, a property, a domain, a filler word); no code change is needed for a new function or property that fits the templates. Forms are Python regular expressions applied to the normalized text (superscript digits are written as ^k, NFKC applied, lower-cased). The named group v is the variable letter; k and other slot groups are the parameters of the function. search_terms are the deterministic Recipe-search query words of a function or property. A property may name preferred_method: among Recipes that bind, those with that proof_method_tag are tried first. Output-language instructions (filler_patterns) draw on a closed set of words so that free text cannot ride along. Domain 'patterns' and 'filler_patterns' are regular expressions on the normalized text; 'forms' are literals (normalized when the table is built). A function binder may name the function symbol (group fn): standalone occurrences of that letter are then consumed too. Widening notes: slot kind 'decimal' is 0|[1-9]\\d{0,8} with an optional .\\d{1,6} fraction; a form may override the function's lean_body; a form with name_only is a bare function name (e.g. 'the fourth power function'): it is consumed only beside a formula of the same function whose body agrees, and it is a request on its own only when 'alone' is not false. Two different functions may overlap only by containment (the longer match wins); any other overlap is ambiguous and a miss. Variables are the real-variable letters s t u v w x y; e (Euler), n k m (integers), z (complex) and capital letters never match. Properties are listed with uniformly_continuous before continuous, so 'uniformly continuous' is never read as 'continuous'; plain 単調増加 / monotone increasing / increasing / one-to-one / 1対1 are not rows because they are ambiguous. Not in the table on purpose (add a row to widen): a minus sign in a x - b, a coefficient with a power c x^k, unapplied or name-only functions other than the squaring function. hypothetical: a property followed by 'とする'/'でも' (after_property) or a formula right after '設/令/let' (before_formula) is an assumption, not a request, and is a miss. In domain patterns {v} stands for the request's own variable letter, so 'for all t' with a formula in x is a miss. The bare words 定义/定義 are not fillers (a question about the definition of continuity is not a request to prove it); only 'the term, then 定义' (由 f(x)=x^3 定义) is consumed, by a filler pattern that starts at the consumed term (the NUL character stands for it).",
   "variable": {
     "pattern": "[stuvwxy]"
   },
@@ -588,7 +588,7 @@
   ],
   "function_binders": [
     "(?P<fn>[a-z])\\s*\\(\\s*(?P<v>[a-z])\\s*\\)\\s*=",
-    "y\\s*=",
+    "(?<![a-z0-9_])y\\s*=",
     "(?P<fn>[a-z])\\s*:\\s*r\\s*(?:→|->)\\s*r",
     "(?P<fn>[a-z])\\s*:\\s*(?:ℝ|r)\\s*(?:→|->)\\s*(?:ℝ|r)",
     "(?P<v>[a-z])\\s*(?:↦|⟼|\\\\mapsto)",
@@ -630,7 +630,7 @@
       ],
       "patterns": [
         "定義域全体(?:で|において)(?=.*定義域は\\s*(?:r|実数))",
-        "(?:for\\s+(?:all\\s+|every\\s+|each\\s+|any\\s+)?)?[a-z]\\s*∈\\s*(?:r|\\(\\s*[-−]\\s*(?:∞|inf(?:inity)?)\\s*,\\s*\\+?\\s*(?:∞|inf(?:inity)?)\\s*\\))",
+        "(?:for\\s+(?:all\\s+|every\\s+|each\\s+|any\\s+)?)?{v}\\s*∈\\s*(?:r|\\(\\s*[-−]\\s*(?:∞|inf(?:inity)?)\\s*,\\s*\\+?\\s*(?:∞|inf(?:inity)?)\\s*\\))",
         "(?:on|over|in)?\\s*\\(\\s*[-−]\\s*(?:∞|inf(?:inity)?)\\s*,\\s*\\+?\\s*(?:∞|inf(?:inity)?)\\s*\\)",
         "from\\s+r\\s+to\\s+r",
         "(?:where\\s+|with\\s+|and\\s+)?(?:the\\s+)?domain\\s+(?:is|being)\\s+(?:the\\s+)?(?:real\\s+(?:line|numbers)|reals|r)(?:\\s+with\\s+the\\s+(?:standard|usual)\\s+topology)?",
@@ -640,8 +640,8 @@
         "(?:在\\s*)?整(?:个|個|条|條)\\s*(?:实数轴|實數軸|实数线|實數線)\\s*上",
         "在(?:实数|實數)(?:范围|範圍)(?:内|內)",
         "r\\s*全体(?:で|において)?",
-        "(?:at|in|on)\\s+(?:every|each|all)\\s+(?:points?|real\\s+numbers?|reals?)(?:\\s+[a-z](?![a-z0-9]))?(?:\\s+of\\s+(?:the\\s+)?(?:r|real\\s+(?:line|numbers))|\\s+in\\s+r)?",
-        "for\\s+(?:every|all|each)\\s+(?:real\\s+(?:numbers?\\s+)?)?[a-z]?(?:\\s+in\\s+r)?",
+        "(?:at|in|on)\\s+(?:every|each|all)\\s+(?:points?|real\\s+numbers?|reals?)(?:\\s+{v}(?![a-z0-9]))?(?:\\s+of\\s+(?:the\\s+)?(?:r|real\\s+(?:line|numbers))|\\s+in\\s+r)?",
+        "for\\s+(?:every|all|each)\\s+(?:real\\s+(?:numbers?\\s+)?)?(?:{v}(?![a-z0-9]))?(?:\\s+in\\s+r)?",
         "on\\s+(?:the\\s+)?(?:whole\\s+)?(?:real\\s+(?:line|numbers?)|reals)",
         "(?:r|実数)\\s*の\\s*(?:すべて|全て|全)の\\s*点\\s*(?:で|において)",
         "(?:すべて|全て|全)の\\s*(?:実数|点)\\s*(?:x\\s*)?(?:で|において)",
@@ -785,8 +785,6 @@
     "書け",
     "要求",
     "由",
-    "定义",
-    "定義",
     "並",
     "并",
     "都",
@@ -811,6 +809,11 @@
     "latex\\s*を\\s*使わずに",
     "箇条書き\\s*(?:で|に)?",
     "(?:高校生|中学生|小学生|初心者|大学生)\\s*(?:にも|でも|向け(?:に)?)\\s*(?:分かる|わかる)?\\s*(?:ように)?",
-    "(?:证明|證明)?(?:请|請)?(?:并|並)?(?:写|寫)得(?:简洁|簡潔)一些"
-  ]
+    "(?:证明|證明)?(?:请|請)?(?:并|並)?(?:写|寫)得(?:简洁|簡潔)一些",
+    "\u0000\\s*定[义義](?![域为為])"
+  ],
+  "hypothetical": {
+    "after_property": "(?:である|であり)?\\s*(?:と\\s*(?:する|します|し|して|仮定|おく|置く|考え)|でも|ても|としても)",
+    "before_formula": "(?:設|设|令|let|suppose|assume|仮定|假设|假設)\\s*\\Z"
+  }
 }
