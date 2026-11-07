@@ -30,16 +30,16 @@ from pals_agent.request_proposition import parse_request
 CORPUS = Path(__file__).resolve().parents[1] / "fixtures" / "request_grammar_eval_v1.json"
 
 # Flip to ("current", "widened") once the widened vocabulary is merged.
-EVALUATED_SCOPES: tuple[str, ...] = ("current",)
+EVALUATED_SCOPES: tuple[str, ...] = ("current", "widened")
 # False positives in the unambiguous categories (a_positive parsed to a different proposition,
 # b_near_miss parsed at all). This must stay 0.
 MAX_FALSE_POSITIVES = 0
 # Accepted requests whose gold is "ambiguous" (c_ambiguous, conservative gold = miss). Baseline of
 # the current grammar; drive it to 0 by tightening the variable-letter and function-name rules.
-MAX_AMBIGUOUS_ACCEPTS = 8
+MAX_AMBIGUOUS_ACCEPTS = 0
 # Positives (in EVALUATED_SCOPES) parsed to exactly the gold proposition. Measured 0.532 on the
 # current grammar (58/109); raise it as the vocabulary and the filler rules widen.
-MIN_COVERAGE = 0.50
+MIN_COVERAGE = 0.95
 
 
 def load_corpus() -> list[dict[str, Any]]:
