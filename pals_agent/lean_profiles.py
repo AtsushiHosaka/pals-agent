@@ -12,10 +12,13 @@ request cannot widen the libraries its own proof may import.
 
 from __future__ import annotations
 
+import json
+import os
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 from pals_agent.lean_audit import TRUSTED_AUDIT_SOURCE
 from pals_agent.lean_source_policy import SourceViolation, strip_lean_comments_and_strings
@@ -46,6 +49,10 @@ class UnknownLibraryProfile(ValueError):
 
 class LibraryProfileMismatch(ValueError):
     """A workspace on disk is not the one its profile pins."""
+
+
+class LibraryProfileNotEnabled(ValueError):
+    """A request asked for a profile this deployment does not serve (fail closed, no fallback)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,7 +149,7 @@ class LibraryProfile:
         return None
 
     def validate_workspace(self, project_dir: Path) -> None:
-        """Refuse a workspace whose pinned toolchain is not this profile's."""
+        """Refuse a workspace whose toolchain or package revisions are not this profile's."""
         toolchain = project_dir / "lean-toolchain"
         try:
             pinned = toolchain.read_text(encoding="utf-8").strip()
@@ -152,6 +159,15 @@ class LibraryProfile:
             raise LibraryProfileMismatch(
                 f"profile {self.name} pins {self.lean_version}, workspace pins {pinned}"
             )
+        try:
+            manifest = json.loads((project_dir / "lake-manifest.json").read_text("utf-8"))
+            packages = manifest["packages"]
+            revisions = {package["name"].lower(): package.get("rev") for package in packages}
+        except (OSError, UnicodeDecodeError, ValueError, KeyError, TypeError) as error:
+            raise LibraryProfileMismatch("profile lake-manifest.json is unreadable") from error
+        for name, revision in self.pins:
+            if revisions.get(name) != revision:
+                raise LibraryProfileMismatch(f"profile {self.name} pins {name} at {revision}")
 
 
 # Walks from a statement's constants through the user's own (module-less) definitions and returns
@@ -241,3 +257,60 @@ def resolve_profile(name: str | None = None) -> LibraryProfile:
     if profile is None:
         raise UnknownLibraryProfile(f"unknown library profile: {str(name)[:64]!r}")
     return profile
+
+
+@dataclass(frozen=True, slots=True)
+class ProfileRoutedVerifier:
+    """The verifiers one deployment serves, keyed by profile name.
+
+    Selecting a profile happens here, at the caller, never inside a verifier: each verifier is bound
+    to one profile when it is built. A request for a profile with no verifier is refused rather than
+    answered by the default one, because verifying against a different library than the one asked
+    for would turn a refusal into a silent, wrong ``verified``.
+    """
+
+    verifiers: Mapping[str, Any]
+
+    def __post_init__(self) -> None:
+        if DEFAULT_PROFILE_NAME not in self.verifiers:
+            raise ValueError("the default profile must always be served")
+        for name in self.verifiers:
+            resolve_profile(name)
+
+    def verifier_for(self, name: str | None) -> Any:
+        profile = resolve_profile(name)
+        verifier = self.verifiers.get(profile.name)
+        if verifier is None:
+            raise LibraryProfileNotEnabled(f"library profile is not enabled: {profile.name}")
+        return verifier
+
+
+def build_profile_verifiers(
+    *,
+    default_verifier: Any,
+    workspaces: Mapping[str, Path],
+    environ: Mapping[str, str] | None = None,
+    **verifier_options: Any,
+) -> ProfileRoutedVerifier:
+    """Serve the default verifier plus every non-default profile whose gate is open.
+
+    ``workspaces`` maps a profile name to its absolute, pinned workspace. A profile is served only
+    when it is listed there and, if it has a ``requires_flag``, that variable is exactly ``"true"``;
+    its workspace is validated against the profile's pins before use. Everything else stays
+    unserved, so a request for it is refused by ``ProfileRoutedVerifier.verifier_for``.
+    """
+    from pals_agent.lean import LeanVerifier  # lean imports this module
+
+    env = os.environ if environ is None else environ
+    verifiers: dict[str, Any] = {DEFAULT_PROFILE_NAME: default_verifier}
+    for name, workspace in workspaces.items():
+        profile = resolve_profile(name)
+        if profile.is_default:
+            raise ValueError("the default profile's verifier is passed as default_verifier")
+        if profile.requires_flag is not None and env.get(profile.requires_flag) != "true":
+            continue
+        profile.validate_workspace(workspace)
+        verifiers[name] = LeanVerifier(
+            project_dir=workspace, library_profile=profile, **verifier_options
+        )
+    return ProfileRoutedVerifier(verifiers)

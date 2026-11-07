@@ -182,6 +182,11 @@ def test_workspace_that_pins_another_toolchain_is_refused(tmp_path: Path) -> Non
     with pytest.raises(LibraryProfileMismatch):
         resolve_profile(None).validate_workspace(_STACKS_WORKSPACE)
     (workspace / "lean-toolchain").write_text("leanprover/lean4:v4.35.0\n")
+    with pytest.raises(LibraryProfileMismatch):
+        stacks.validate_workspace(workspace)  # right toolchain, no pinned manifest
+    (workspace / "lake-manifest.json").write_bytes(
+        (_STACKS_WORKSPACE / "lake-manifest.json").read_bytes()
+    )
     stacks.validate_workspace(workspace)
 
 
