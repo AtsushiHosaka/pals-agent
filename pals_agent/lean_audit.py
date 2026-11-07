@@ -28,6 +28,9 @@ _COMPLETE_PREFIX = "complete "
 _BOUND_PREFIX = "bound "
 _UNBOUND_PREFIX = "unbound "
 _STATEMENT_ERROR_PREFIX = "statement_error "
+# Only a profile whose audit program checks statement origins ever prints this line.
+_UNTRUSTED_STATEMENT_PREFIX = "untrusted_statement "
+UNTRUSTED_STATEMENT_LIBRARY = "lean.statement_uses_untrusted_library"
 _STATEMENT_GUIDANCE = (
     "State every hypothesis in the theorem header. Do not rely on `variable`, `include`, local "
     "instances or other commands outside the declaration."
@@ -92,6 +95,7 @@ class AuditReport:
     bound: tuple[str, ...] = ()
     unbound: tuple[str, ...] = ()
     statement_errors: tuple[str, ...] = ()
+    untrusted_statements: tuple[str, ...] = ()
 
 
 def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
@@ -104,6 +108,7 @@ def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
     bound: list[str] = []
     unbound: list[str] = []
     statement_errors: list[str] = []
+    untrusted_statements: list[str] = []
     for line in lines[:-1]:
         if line.startswith(_THEOREM_PREFIX):
             theorems.append(line.removeprefix(_THEOREM_PREFIX))
@@ -115,10 +120,17 @@ def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
             unbound.append(line.removeprefix(_UNBOUND_PREFIX))
         elif line.startswith(_STATEMENT_ERROR_PREFIX):
             statement_errors.append(line.removeprefix(_STATEMENT_ERROR_PREFIX))
+        elif line.startswith(_UNTRUSTED_STATEMENT_PREFIX):
+            untrusted_statements.append(line.removeprefix(_UNTRUSTED_STATEMENT_PREFIX))
         else:
             return None
     return AuditReport(
-        tuple(theorems), tuple(axioms), tuple(bound), tuple(unbound), tuple(statement_errors)
+        tuple(theorems),
+        tuple(axioms),
+        tuple(bound),
+        tuple(unbound),
+        tuple(statement_errors),
+        tuple(untrusted_statements),
     )
 
 
@@ -170,6 +182,19 @@ def audit_diagnostics(report: AuditReport, declared_theorems: tuple[str, ...]) -
             ),
         }
     )
+    if report.untrusted_statements:
+        diagnostics.append(
+            Diagnostic(
+                severity="error",
+                code=UNTRUSTED_STATEMENT_LIBRARY,
+                message=(
+                    "A statement depends on a constant from an unreviewed library "
+                    "(statement constant, library module): "
+                    + "; ".join(item[:200] for item in report.untrusted_statements[:4])
+                    + ". Only proofs may use it."
+                ),
+            )
+        )
     if report.statement_errors:
         diagnostics.append(
             statement_mismatch(

@@ -289,6 +289,45 @@ def test_runtime_never_marks_ready_when_boundary_attestation_fails(
     assert not ready_marker.exists()
 
 
+@pytest.mark.parametrize("flag", [None, "", "1", "True", "yes", "false"])
+def test_frontier_profile_refuses_to_start_unless_explicitly_enabled(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    flag: str | None,
+) -> None:
+    _set_required_environment(monkeypatch)
+    monkeypatch.setenv("PALS_LEAN_LIBRARY_PROFILE", "stacks-frontier-4.35")
+    if flag is None:
+        monkeypatch.delenv("PALS_LEAN_ALLOW_FRONTIER_PROOFS", raising=False)
+    else:
+        monkeypatch.setenv("PALS_LEAN_ALLOW_FRONTIER_PROOFS", flag)
+    scratch_dir = tmp_path / "scratch"
+    scratch_dir.mkdir()
+    ready_marker = scratch_dir / "verifier-ready"
+    monkeypatch.setattr(http_runtime, "_SCRATCH_DIRECTORY", scratch_dir)
+    monkeypatch.setattr(http_runtime, "_READY_MARKER", ready_marker)
+    reached: list[str] = []
+    monkeypatch.setattr(
+        http_runtime, "attest_http_runtime_boundary", lambda **_kwargs: reached.append("attested")
+    )
+
+    with pytest.raises(SystemExit, match="2"):
+        http_runtime.main()
+
+    assert reached == []
+    assert not ready_marker.exists()
+
+
+def test_the_flag_alone_does_not_change_the_default_profile(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _set_required_environment(monkeypatch)
+    monkeypatch.setenv("PALS_LEAN_ALLOW_FRONTIER_PROOFS", "true")
+    monkeypatch.delenv("PALS_LEAN_LIBRARY_PROFILE", raising=False)
+
+    assert HttpVerifierRuntimeSettings.from_env().library_profile.is_default
+
+
 def _set_required_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     environment = {
         "PALS_VERIFIER_BIND_HOST": "0.0.0.0",

@@ -21,6 +21,13 @@ from pals_agent.lean_audit import TRUSTED_AUDIT_SOURCE
 from pals_agent.lean_source_policy import SourceViolation, strip_lean_comments_and_strings
 
 DEFAULT_PROFILE_NAME: Final = "mathlib-4.32"
+FRONTIER_FLAG: Final = "PALS_LEAN_ALLOW_FRONTIER_PROOFS"
+# Everything the workspace can contain except `StacksFrontier`: Lean itself, its reviewed
+# dependencies, Mathlib and the human-reviewed `StacksCore`.
+_LIBRARY_ROOTS: Final = (
+    "Init", "Std", "Lean", "Lake", "Batteries", "Aesop", "Qq", "Plausible", "ImportGraph",
+    "ProofWidgets", "LeanSearchClient", "Cli", "Mathlib", "StacksCore",
+)
 IMPORT_VIOLATION_CODE: Final = "lean.disallowed_import"
 
 _PROFILE_NAME_RE: Final = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*-[0-9]+\.[0-9]+$")
@@ -29,6 +36,7 @@ _IMPORT_RE: Final = re.compile(
     r"^[ \t]*(?:(?:public|meta)[ \t]+)*import[ \t]+(?:all[ \t]+)?(?P<module>[^\s]+)",
     re.MULTILINE,
 )
+_ROOT_RE: Final = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _MODULE_NAME_RE: Final = re.compile(r"^[A-Za-z_][A-Za-z0-9_']*(?:\.[A-Za-z_][A-Za-z0-9_']*)*$")
 
 
@@ -59,6 +67,12 @@ class LibraryProfile:
     # stdout, which the audit parser (correctly) treats as a malformed report. The default profile
     # keeps its audit source byte-identical.
     silence_audit_deprecations: bool = False
+    # Set only on a profile whose proofs may use an unreviewed library: every constant a statement
+    # reaches (through the user's own definitions too) must come from a module under one of these
+    # roots, or the audit rejects it. ``None`` (all other profiles) adds no such check.
+    statement_trusted_roots: tuple[str, ...] | None = None
+    # Environment variable that must equal ``true`` for a verifier to start with this profile.
+    requires_flag: str | None = None
 
     def __post_init__(self) -> None:
         if _PROFILE_NAME_RE.fullmatch(self.name) is None:
@@ -67,6 +81,13 @@ class LibraryProfile:
             raise ValueError("library profile Lean version is malformed")
         if self.import_roots is not None and not self.import_roots:
             raise ValueError("an import allow-list must not be empty")
+        if self.statement_trusted_roots is not None and (
+            not self.statement_trusted_roots
+            or any(_ROOT_RE.fullmatch(root) is None for root in self.statement_trusted_roots)
+        ):
+            raise ValueError("statement trusted roots are malformed")
+        if self.statement_trusted_roots is not None and not self.silence_audit_deprecations:
+            raise ValueError("origin checking needs the Lean 4.33+ audit variant")
 
     @property
     def is_default(self) -> bool:
@@ -82,11 +103,26 @@ class LibraryProfile:
         """The trusted audit program for this profile's Lean version."""
         if not self.silence_audit_deprecations:
             return TRUSTED_AUDIT_SOURCE
-        marker = "open Lean\n"
-        if TRUSTED_AUDIT_SOURCE.count(marker) != 1:
-            raise AssertionError("trusted audit source layout changed")
-        return TRUSTED_AUDIT_SOURCE.replace(
-            marker, "set_option linter.deprecated false\n" + marker, 1
+        source = _replace_once(
+            TRUSTED_AUDIT_SOURCE, "open Lean\n", "set_option linter.deprecated false\nopen Lean\n"
+        )
+        if self.statement_trusted_roots is None:
+            return source
+        roots = ", ".join(f'"{root}"' for root in self.statement_trusted_roots)
+        source = _replace_once(
+            source,
+            "unsafe def main",
+            f"def trustedStatementRoots : List String := [{roots}]\n\n"
+            + _ORIGIN_HELPER
+            + "\nunsafe def main",
+        )
+        return _replace_once(
+            source,
+            '      IO.println s!"{if sameType && sameValue then "bound" else "unbound"} {name}"\n',
+            "      if let some (used, home) := untrustedOrigin env restated trustedStatementRoots\n"
+            "          other.type.getUsedConstants.toList then\n"
+            '        IO.println s!"untrusted_statement {name} {used} {home}"\n'
+            '      IO.println s!"{if sameType && sameValue then "bound" else "unbound"} {name}"\n',
         )
 
     def import_violation(self, source: str) -> SourceViolation | None:
@@ -118,6 +154,38 @@ class LibraryProfile:
             )
 
 
+# Walks from a statement's constants through the user's own (module-less) definitions and returns
+# the first imported constant whose module is outside the trusted roots.
+_ORIGIN_HELPER: Final = """\
+def untrustedOrigin (env restated : Environment) (roots : List String)
+    (start : List Name) : Option (Name × Name) := Id.run do
+  let mut seen : NameSet := {}
+  let mut todo := start
+  for _ in [0:200000] do
+    match todo with
+    | [] => return none
+    | c :: rest =>
+      todo := rest
+      if seen.contains c then continue
+      seen := seen.insert c
+      match env.getModuleIdxFor? c with
+      | some idx =>
+        let moduleName := env.header.moduleNames[idx.toNat]!
+        if !roots.contains moduleName.getRoot.toString then return some (c, moduleName)
+      | none =>
+        if let some info := restated.find? c then
+          let valueConstants := (info.value?.map (·.getUsedConstants.toList)).getD []
+          todo := info.type.getUsedConstants.toList ++ valueConstants ++ todo
+  return some (`exhausted, `exhausted)
+"""
+
+
+def _replace_once(text: str, marker: str, replacement: str) -> str:
+    if text.count(marker) != 1:
+        raise AssertionError("trusted audit source layout changed")
+    return text.replace(marker, replacement, 1)
+
+
 _PROFILES: Final = {
     profile.name: profile
     for profile in (
@@ -139,6 +207,23 @@ _PROFILES: Final = {
             # imports it. Neither is built into the workspace; this keeps it that way by policy.
             import_roots=("Mathlib", "StacksCore"),
             silence_audit_deprecations=True,
+        ),
+        # Proofs may use `StacksFrontier` lemmas (the kernel checks them); statements may not
+        # mention a Frontier constant, because its meaning has not been reviewed. Disabled unless
+        # the verifier is started with PALS_LEAN_ALLOW_FRONTIER_PROOFS=true, and only the Frontier
+        # modules built into the image are importable at all.
+        LibraryProfile(
+            name="stacks-frontier-4.35",
+            lean_version="leanprover/lean4:v4.35.0",
+            workspace="lean-workspaces/stacks-4.35",
+            pins=(
+                ("mathlib", "56a005855ea17e0b0958f73ec801ae140b0a1679"),
+                ("stacks", "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"),
+            ),
+            import_roots=("Mathlib", "StacksCore", "StacksFrontier"),
+            silence_audit_deprecations=True,
+            statement_trusted_roots=_LIBRARY_ROOTS,
+            requires_flag=FRONTIER_FLAG,
         ),
     )
 }

@@ -10,6 +10,7 @@ routing to that profile's verifier deployment.
 |---|---|---|---|
 | `mathlib-4.32` (default) | `v4.32.0-rc1` | `lean-workspace/` | unrestricted (unchanged) |
 | `stacks-4.35` | `v4.35.0` | `lean-workspaces/stacks-4.35/` | `Mathlib`, `StacksCore` |
+| `stacks-frontier-4.35` (flag, off by default) | `v4.35.0` | `lean-workspaces/stacks-4.35/` | `Mathlib`, `StacksCore`, built `StacksFrontier` modules |
 
 ## Digests
 
@@ -38,3 +39,20 @@ lake build StacksCore.Data.Finset.Card   # or `lake build StacksCore` for the wh
 
 Updating a pin means editing `lakefile.lean`, regenerating `lake-manifest.json` with `lake update`,
 and updating the pins in `lean_profiles.py`; `test_lean_profiles.py` fails if they disagree.
+
+## stacks-frontier-4.35 (disabled unless `PALS_LEAN_ALLOW_FRONTIER_PROOFS=true`)
+
+`StacksCore` has no algebraic geometry; schemes and sheaf cohomology exist only in the unreviewed
+`StacksFrontier`. This profile draws the line between *statement* and *proof* instead of at
+`import`: a proof may use Frontier lemmas (the Lean kernel checks them; `sorry` and extra axioms
+stay forbidden), but every constant a statement reaches (through the user's own definitions too)
+must come from Lean, its reviewed dependencies, Mathlib or `StacksCore`. The trusted audit program
+enumerates the constants of each restated statement and reports `untrusted_statement` for any
+whose home module is outside those roots (`lean.statement_uses_untrusted_library`). It applies to
+every `theorem`/`example` statement in the file, so state helper lemmas without Frontier constants.
+
+Only the Frontier modules named in the image's `FRONTIER_MODULES` build argument exist; anything
+else fails as an unknown module. `scripts/audit_frontier_closure.py` screens those modules and their
+Stacks import closure with the candidate source policy (no `notation`, `macro`, `initialize`,
+`unsafe`, native evaluation, ...) and stops the image build on a failure. The verifier refuses to
+start with this profile unless the flag is set, and the Dockerfile deliberately does not set it.

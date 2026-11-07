@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 from pals_agent.lean import LeanVerifier
-from pals_agent.lean_audit import TRUSTED_AUDIT_SOURCE
+from pals_agent.lean_audit import (
+    TRUSTED_AUDIT_SOURCE,
+    UNTRUSTED_STATEMENT_LIBRARY,
+    audit_diagnostics,
+    parse_audit_report,
+)
 from pals_agent.lean_profiles import (
     DEFAULT_PROFILE_NAME,
     IMPORT_VIOLATION_CODE,
@@ -314,11 +319,148 @@ def test_a_fingerprint_may_only_name_a_known_non_default_profile(name: str) -> N
         )
 
 
-def test_every_registered_profile_has_a_unique_name_and_workspace() -> None:
+def test_every_registered_profile_has_a_unique_name_and_an_existing_workspace() -> None:
     profiles = [resolve_profile(name) for name in known_profile_names()]
 
     assert known_profile_names()[0] == DEFAULT_PROFILE_NAME
-    assert len({p.name for p in profiles}) == len({p.workspace for p in profiles}) == len(profiles)
+    assert len({p.name for p in profiles}) == len(profiles)
+    # Profiles may share a workspace only when they pin the same Lean and libraries.
+    for profile in profiles:
+        assert (_ROOT / profile.workspace / "lean-toolchain").is_file()
+        for other in profiles:
+            if other.workspace == profile.workspace:
+                assert (other.lean_version, other.pins) == (profile.lean_version, profile.pins)
+
+
+_FRONTIER = "stacks-frontier-4.35"
+
+
+def test_frontier_profile_is_distinct_and_needs_an_explicit_flag() -> None:
+    frontier = resolve_profile(_FRONTIER)
+    core = resolve_profile("stacks-4.35")
+
+    assert frontier.requires_flag == "PALS_LEAN_ALLOW_FRONTIER_PROOFS"
+    assert core.requires_flag is None and resolve_profile(None).requires_flag is None
+    assert frontier.workspace == core.workspace  # same pins, same manifest, different policy
+    assert frontier.pins == core.pins and frontier.lean_version == core.lean_version
+    assert frontier.fingerprint_name == _FRONTIER != core.fingerprint_name
+    frontier.validate_workspace(_STACKS_WORKSPACE)
+    ctx = {
+        name: pinned_recipe_admission_context(
+            project_dir=_STACKS_WORKSPACE,
+            verifier_sha256="a" * 64,
+            library_profile=resolve_profile(name).fingerprint_name,
+        )
+        for name in ("stacks-4.35", _FRONTIER)
+    }
+    assert (
+        ctx["stacks-4.35"].toolchain_fingerprint_sha256
+        != ctx[_FRONTIER].toolchain_fingerprint_sha256
+    )
+
+
+def test_core_profile_still_forbids_frontier_imports_and_has_no_origin_check() -> None:
+    core = resolve_profile("stacks-4.35")
+
+    violation = core.import_violation("import StacksFrontier.AlgebraicGeometry.X\n")
+    assert violation is not None and violation.code == IMPORT_VIOLATION_CODE
+    assert core.statement_trusted_roots is None
+    assert "untrustedOrigin" not in core.audit_source
+
+
+@pytest.mark.parametrize(
+    ("source", "allowed"),
+    [
+        ("import StacksFrontier.AlgebraicGeometry.Scheme.AffineOpenNeighborhood\n", True),
+        ("import Mathlib\nimport StacksCore\nimport StacksFrontier.A\n", True),
+        ("import Stacks\n", False),  # the umbrella imports the whole Frontier
+        ("import StacksFrontierX.A\n", False),
+        ("import Lean\n", False),
+        ("import «StacksFrontier».A\nimport Batteries\n", False),
+    ],
+)
+def test_frontier_profile_import_roots(source: str, allowed: bool) -> None:
+    violation = resolve_profile(_FRONTIER).import_violation(source)
+
+    assert (violation is None) is allowed
+
+
+def test_frontier_audit_checks_statement_origins_against_a_list_without_the_frontier() -> None:
+    profile = resolve_profile(_FRONTIER)
+    audit = profile.audit_source
+
+    assert profile.statement_trusted_roots is not None
+    assert "StacksFrontier" not in profile.statement_trusted_roots
+    assert {"Init", "Mathlib", "StacksCore"} <= set(profile.statement_trusted_roots)
+    assert audit.count("def untrustedOrigin") == 1
+    assert audit.count("untrusted_statement") == 1
+    assert audit.index("def trustedStatementRoots") < audit.index("unsafe def main")
+    assert "StacksFrontier" not in audit
+    # The origin line comes from the restated (reference) declaration, before `bound`/`unbound`.
+    assert audit.index("untrusted_statement") < audit.index('"bound" else "unbound"')
+    # Everything else is the default program plus the two additions.
+    assert "set_option linter.deprecated false\n" in audit
+    assert audit.count("\n") > resolve_profile("stacks-4.35").audit_source.count("\n")
+
+
+def test_audit_report_with_an_untrusted_statement_is_rejected_with_its_own_code() -> None:
+    nonce = "n" * 64
+    stdout = (
+        "theorem t\naxiom propext\n"
+        "untrusted_statement t AlgebraicGeometry.Scheme.Hom.asFiberAt "
+        "StacksFrontier.AlgebraicGeometry.Morphisms.Fibres.SourcePoint\n"
+        f"bound t\ncomplete {nonce}\n"
+    )
+
+    report = parse_audit_report(stdout, nonce)
+
+    assert report is not None and len(report.untrusted_statements) == 1
+    diagnostics = audit_diagnostics(report, ("t",))
+    assert [d.code for d in diagnostics] == [UNTRUSTED_STATEMENT_LIBRARY]
+    assert "asFiberAt" in diagnostics[0].message
+    # A clean report is unaffected, and unknown lines are still a malformed report.
+    clean = parse_audit_report(f"theorem t\nbound t\ncomplete {nonce}\n", nonce)
+    assert clean is not None and clean.untrusted_statements == ()
+    assert audit_diagnostics(clean, ("t",)) == []
+    assert parse_audit_report(f"theorem t\nuntrusted {nonce}\ncomplete {nonce}\n", nonce) is None
+
+
+def test_origin_checking_is_only_valid_with_the_current_audit_variant() -> None:
+    from pals_agent.lean_profiles import LibraryProfile
+
+    with pytest.raises(ValueError):
+        LibraryProfile(
+            name="x-1.0",
+            lean_version="leanprover/lean4:v4.35.0",
+            workspace="w",
+            pins=(),
+            statement_trusted_roots=("Mathlib",),
+        )
+    with pytest.raises(ValueError):
+        LibraryProfile(
+            name="x-1.0",
+            lean_version="leanprover/lean4:v4.35.0",
+            workspace="w",
+            pins=(),
+            silence_audit_deprecations=True,
+            statement_trusted_roots=("bad root",),
+        )
+
+
+def test_frontier_dockerfile_builds_only_listed_modules_and_screens_them() -> None:
+    dockerfile = _without_shell_comments(
+        (_ROOT / "docker" / "lean-verifier-stacks-frontier.Dockerfile").read_text()
+    )
+
+    assert "PALS_LEAN_LIBRARY_PROFILE=stacks-frontier-4.35" in dockerfile
+    assert "PALS_LEAN_ALLOW_FRONTIER_PROOFS" not in dockerfile  # the deployment must opt in
+    assert "audit_frontier_closure.py" in dockerfile
+    assert "lake update" not in dockerfile
+    assert "lake build Stacks " not in dockerfile and "lake build Stacks\n" not in dockerfile
+    # Only the listed modules (plus StacksCore) are built, never a whole Frontier or Stacks library.
+    assert "lake build StacksCore ${FRONTIER_MODULES}" in dockerfile
+    assert not re.search(r"lake build\s+(Stacks|StacksFrontier)\s*(\\|$|&)", dockerfile)
+    assert dockerfile.index("audit_frontier_closure.py") < dockerfile.index("lake build")
 
 
 def _manifest_revs(manifest: dict[str, object]) -> dict[str, str]:

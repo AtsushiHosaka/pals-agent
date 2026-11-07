@@ -122,6 +122,9 @@ def main() -> None:
     try:
         settings = HttpVerifierRuntimeSettings.from_env()
         enable_orphan_reaping()
+        flag = settings.library_profile.requires_flag
+        if flag is not None and os.getenv(flag) != "true":
+            raise ValueError(f"library profile {settings.library_profile.name} requires {flag}")
         # A non-default profile pins a toolchain; a workspace pinning another one must not serve.
         # The default profile keeps its historical, unchecked startup.
         if not settings.library_profile.is_default:
