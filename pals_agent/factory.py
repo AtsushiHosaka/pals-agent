@@ -80,6 +80,7 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         ),
         max_repair_attempts=settings.max_repair_attempts,
         deterministic_templates=settings.deterministic_templates_enabled,
+        template_skips_retrieval=settings.template_skips_retrieval_enabled,
         lemma_alias_repair=settings.lemma_alias_repair_enabled,
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,

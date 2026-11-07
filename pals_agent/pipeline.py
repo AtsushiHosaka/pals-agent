@@ -198,6 +198,11 @@ class ProofPipeline:
     # are rendered without a model call. The result is compiled like any candidate; a failure
     # repairs through the model as usual.
     deterministic_templates: bool = False
+    # A request-linked first attempt whose wording alone selects such a template does not need the
+    # Draft retrieval (three sequential model/API steps) that would only feed a model prompt the
+    # template replaces. The template, its compile, the semantic review and the explanation
+    # review are unchanged; a request the wording does not select still retrieves.
+    template_skips_retrieval: bool = False
     # When Lean reports a name from the lemma-alias table as unknown, the source is patched with
     # the right name and recompiled before any model repair (see pals_agent.lemma_repair). The
     # table defaults to the packaged one.
@@ -255,12 +260,25 @@ class ProofPipeline:
                 raise ProofFlowRetrievalError("retrieval_unavailable")
             # API repairs already have the durable generated Draft/Sketch/Lean; never
             # re-query a mutable catalog over that compiler failure and its repair seed.
-            request = _request_for_statement(
-                statement, formal_statement=formal_statement,
-                proof_flow_retriever=(
-                    (self.request_linked_typed_retriever or self.natural_draft_retriever)
-                    if api_repair_seed is None else None
-                ),
+            retriever = (
+                (self.request_linked_typed_retriever or self.natural_draft_retriever)
+                if api_repair_seed is None else None
+            )
+            bare: ProofRequest | None = None
+            if (
+                retriever is not None
+                and self.deterministic_templates
+                and self.template_skips_retrieval
+            ):
+                bare = _request_for_statement(
+                    statement, formal_statement=formal_statement, proof_flow_retriever=None,
+                )
+                # The same function decides the first attempt, so a request it accepts here is
+                # rendered from the template there whatever retrieval would have returned.
+                if template_proof_for_request(bare) is None:
+                    bare = None
+            request = bare if bare is not None else _request_for_statement(
+                statement, formal_statement=formal_statement, proof_flow_retriever=retriever,
             )
         else:
             request = self.prepare_statement(statement=statement, formal_statement=formal_statement)
