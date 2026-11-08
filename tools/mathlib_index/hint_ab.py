@@ -30,6 +30,12 @@ from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.pipeline import ProofPipeline
 from pals_agent.usage import usage_scope
 from tools.mathlib_index.build_index import name_tokens
+from tools.mathlib_index.exemplars import (
+    Target,
+    load_catalog,
+    render_exemplars,
+    select_exemplars,
+)
 from tools.mathlib_index.search import (
     MathlibIndex,
     lean_query_terms,
@@ -171,6 +177,18 @@ class HintingClient:
 
 
 @dataclass(slots=True)
+class ExemplarClient:
+    """Appends the same catalog proof examples to every Sketch and Prove prompt of one card."""
+
+    inner: Any
+    text: str
+
+    def generate(self, *, model: str, prompt: str) -> str:
+        suffix = self.text if prompt.startswith(_HINTED_STAGES) else ""
+        return str(self.inner.generate(model=model, prompt=prompt + suffix))
+
+
+@dataclass(slots=True)
 class SpendGuard:
     """Refuses further model calls once the estimated spend of this process reaches the limit."""
 
@@ -219,6 +237,18 @@ def run_one(
         if builder is None:
             raise ValueError("the hinted arm needs --index-dir")
         client = HintingClient(openai, builder)
+    exemplar_ids: list[str] = []
+    exemplar_chars = 0
+    if arm == "exemplars":
+        chosen = select_exemplars(
+            Target(problem["id"], problem["statement"], problem.get("formal_statement") or ""),
+            load_catalog(args.catalog_docs),
+            k=args.exemplar_count,
+        )
+        exemplar_ids = [card.id for card in chosen]
+        text = render_exemplars(chosen)
+        exemplar_chars = len(text)
+        client = ExemplarClient(openai, text)
     generator = HybridLeanGenerator(
         model=args.model, provider="openai", client=GuardedClient(client, guard)
     )
@@ -236,6 +266,9 @@ def run_one(
         ),
         artifact_store=FileArtifactStore(args.out / "artifacts"),
         max_repair_attempts=args.max_repairs,
+        harness_splice=args.harness_splice,
+        deterministic_repair_route=args.deterministic_route,
+        sketch_failure_proceeds_to_prove=args.sketch_continue,
     )
     usage: list[dict[str, Any]] = []
 
@@ -275,6 +308,16 @@ def run_one(
         "lean_seconds": round(
             sum(a.get("verification", {}).get("elapsed_ms", 0) for a in attempts) / 1000, 1
         ),
+        "harness_splice": args.harness_splice,
+        "deterministic_route": args.deterministic_route,
+        "sketch_continue": args.sketch_continue,
+        "route_model_calls": sum(
+            1
+            for a in attempts
+            if a.get("repair_route")
+            and a["repair_route"].get("provider") != "pals-deterministic-policy"
+        ),
+        "routes": [a["repair_route"]["route"] for a in attempts if a.get("repair_route")],
         "model_calls": len(usage),
         "input_tokens": sum(row["input_tokens"] for row in usage),
         "cached_input_tokens": sum(row["cached_input_tokens"] for row in usage),
@@ -289,6 +332,8 @@ def run_one(
             )
             for a in attempts
         ],
+        "exemplar_ids": exemplar_ids,
+        "exemplar_chars": exemplar_chars,
         "hint_seconds": round(sum(r["seconds"] for r in builder.log), 1) if builder else 0.0,
         "hint_rounds": builder.log if builder else [],
         "budget_stopped": guard.stopped,
@@ -306,13 +351,33 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--problems", type=Path, required=True)
     parser.add_argument("--only", default="", help="Comma-separated problem ids")
-    parser.add_argument("--arms", default="baseline,hinted")
-    parser.add_argument("--index-dir", type=Path, help="Required for the hinted arm")
+    parser.add_argument("--arms", default="baseline,hinted", help="baseline, hinted, exemplars")
+    parser.add_argument("--index-dir", type=Path, help="Required only for the hinted arm")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-label", required=True)
     parser.add_argument("--model", default="gpt-6-luna")
     parser.add_argument("--effort", default="low")
     parser.add_argument("--max-repairs", type=int, default=6)
+    parser.add_argument(
+        "--harness-splice", action="store_true", help="Enable ProofPipeline.harness_splice"
+    )
+    parser.add_argument(
+        "--deterministic-route",
+        action="store_true",
+        help="Enable ProofPipeline.deterministic_repair_route",
+    )
+    parser.add_argument(
+        "--sketch-continue",
+        action="store_true",
+        help="Enable ProofPipeline.sketch_failure_proceeds_to_prove",
+    )
+    parser.add_argument(
+        "--catalog-docs",
+        type=Path,
+        default=Path(__file__).resolve().parents[3] / "docs",
+        help="Directory with *-batch.json/.lean catalog cards (arm exemplars)",
+    )
+    parser.add_argument("--exemplar-count", type=int, default=2)
     parser.add_argument("--max-output-tokens", type=int, default=12000)
     parser.add_argument("--lean", required=True, help="Verifier lean, usually the Elan proxy")
     parser.add_argument("--lake", required=True)

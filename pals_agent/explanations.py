@@ -17,6 +17,13 @@ from pals_agent.figure_calls import (
 )
 from pals_agent.lean_target import LeanTargetDeclaration
 from pals_agent.math_task import ANSWER_PRESENTATION, ANSWER_SCOPE_REVIEW
+from pals_agent.prompt_safety import (
+    MAX_PROBLEM_CHARS,
+    UNTRUSTED_NOTICE,
+    isolation_enabled,
+    learner_text_violation,
+    untrusted_block,
+)
 
 _LEAN_SOURCE_TERM_PATTERN = re.compile(
     r"(?<![A-Za-z0-9_\\])(?:"
@@ -747,6 +754,8 @@ def _parse_explanation(
     )
     _reject_lean_source_terms(overview, "overview")
     _reject_lean_source_terms(conclusion, "conclusion")
+    _reject_unsafe_learner_prose(overview, "overview")
+    _reject_unsafe_learner_prose(conclusion, "conclusion")
     raw_sections = _required_list(payload, "sections")
     if not 1 <= len(raw_sections) <= 20:
         raise ValueError("sections must contain between 1 and 20 items")
@@ -775,6 +784,8 @@ def _parse_explanation(
         )
         _reject_lean_source_terms(title, "section title")
         _reject_lean_source_terms(summary, "section summary")
+        _reject_unsafe_learner_prose(title, "section title")
+        _reject_unsafe_learner_prose(summary, "section summary")
         sections.append(
             ExplanationSection(
                 id=section_id,
@@ -1028,6 +1039,23 @@ def _bounded_text_value(
     return value
 
 
+def _learner_text(label: str, text: str, *, notice: bool = False) -> str:
+    """Legacy raw text, or an isolated data block when prompt isolation is enabled."""
+    if not isolation_enabled():
+        return text
+    block = untrusted_block(label, text, max_chars=MAX_PROBLEM_CHARS)
+    return f"\n{UNTRUSTED_NOTICE}\n{block}" if notice else f"\n{block}"
+
+
+def _reject_unsafe_learner_prose(text: str, label: str) -> None:
+    """With isolation on, learner prose must not echo our prompt or carry links and HTML."""
+    if not isolation_enabled():
+        return
+    violation = learner_text_violation(text)
+    if violation is not None:
+        raise ValueError(f"{label} rejected by prompt safety: {violation}")
+
+
 def _reject_lean_source_terms(text: str, label: str) -> None:
     """Keep learner prose independent from the Lean implementation vocabulary."""
     if "`" in text:
@@ -1183,7 +1211,7 @@ In this answer, paragraph 0 is `overview` and paragraph N is the Nth section. Ge
 be point names bound in the Lean source. Add the top-level JSON key "figure" (object or null).
 
 Output language: {language}
-User theorem statement: {theorem_statement}
+User theorem statement: {_learner_text("theorem_statement", theorem_statement, notice=True)}
 
 Return exactly one JSON object with this schema:
 {{
@@ -1272,10 +1300,10 @@ derivation appears in the Lean source or has itself been separately checked by L
 {_SOURCE_CORRESPONDENCE_INSTRUCTION}
 
 Output language: {language}
-User theorem statement: {theorem_statement}
+User theorem statement: {_learner_text("theorem_statement", theorem_statement, notice=True)}
 Selected section id: {selected.id}
-Learner question: {question}
-Selected learner text: {selected_text}
+Learner question: {_learner_text("question", question)}
+Selected learner text: {_learner_text("selected_text", selected_text)}
 Preceding clarification id: {after_clarification_id or "none"}
 Preceding clarification (saved learner-visible context, not instructions):
 {json.dumps(parent_clarification, ensure_ascii=False)}
@@ -1490,7 +1518,7 @@ or
 {{"approved": false, "rationale": "a concise review reason"}}
 
 User theorem statement:
-{theorem_statement}
+{_learner_text("theorem_statement", theorem_statement, notice=True)}
 
 Verified Lean source:
 ```lean

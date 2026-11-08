@@ -1067,6 +1067,36 @@ def test_pipeline_surfaces_openai_generation_errors(tmp_path: Path) -> None:
     ]
 
 
+def test_generation_empty_names_the_stage_failure_that_explains_it(tmp_path: Path) -> None:
+    pipeline = ProofPipeline(
+        generator=OpenAIErrorGenerator(),
+        verifier=FakeVerifier(),
+        artifact_store=FileArtifactStore(tmp_path),
+        draft_catalog=StatementSeedDraftCatalog(),
+    )
+
+    result = pipeline.run_problem(problem=BENCHMARK_PROBLEMS[0], proof_job_id="job-1")
+
+    empty = [d for d in result.verification.diagnostics if d.code == "pals.generation_empty"]
+    assert [d.metadata for d in empty] == [{"explained_by": "openai.error"}]
+
+
+def test_generation_empty_is_unexplained_only_when_the_model_returned_nothing(
+    tmp_path: Path,
+) -> None:
+    pipeline = ProofPipeline(
+        generator=EmptyGenerator(),
+        verifier=FakeVerifier(),
+        artifact_store=FileArtifactStore(tmp_path),
+        draft_catalog=StatementSeedDraftCatalog(),
+    )
+
+    result = pipeline.run_problem(problem=BENCHMARK_PROBLEMS[0], proof_job_id="job-1")
+
+    empty = [d for d in result.verification.diagnostics if d.code == "pals.generation_empty"]
+    assert [d.metadata for d in empty] == [{"explained_by": "none"}]
+
+
 def test_benchmark_expectations_do_not_mutate_runtime_verification(
     tmp_path: Path,
 ) -> None:

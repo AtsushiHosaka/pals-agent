@@ -130,6 +130,10 @@ _TERMINAL_MARGIN_SECONDS: Final = 30.0
 # An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
 # interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
 _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
+# Each poll is a fresh-process HTTP call of about 0.3 s, so a long sleep dominates the wait. A Lean
+# verification usually settles within seconds, so poll fast at first and slow down for a candidate
+# that is still compiling (the API's attempt lease is 310 s).
+_CANDIDATE_RECONCILIATION_POLL_SCHEDULE: Final = ((30.0, 0.25), (90.0, 0.5))
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
 _CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
@@ -1216,7 +1220,7 @@ class SqsProofWorker:
                             timing.set_outcome("error")
                         return None
                     next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
-                self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
+                self.sleep(min(_candidate_poll_delay(now - started), remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -3309,6 +3313,13 @@ def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
         isinstance(item, dict) and item.get("code") == "verifier_compile_failed"
         for item in diagnostics
     )
+
+
+def _candidate_poll_delay(waited_seconds: float) -> float:
+    for until, delay in _CANDIDATE_RECONCILIATION_POLL_SCHEDULE:
+        if waited_seconds < until:
+            return delay
+    return _CANDIDATE_RECONCILIATION_POLL_SECONDS
 
 
 def _has_pending_api_candidate(proof_job: dict[str, Any]) -> bool:

@@ -295,14 +295,7 @@ class LeanVerifier:
                 lake_binary=lake_binary,
                 olean_file=olean_file if audited and not separate_audit_compile else None,
             )
-            child_environment = {
-                "PATH": self.child_path,
-                "HOME": str(home_dir),
-                "TMPDIR": str(temporary_dir),
-                "LANG": "C.UTF-8",
-                "LC_ALL": "C.UTF-8",
-                "ELAN_HOME": self.elan_home,
-            }
+            child_environment = self._child_environment(temporary_dir, home_dir)
 
             started_at = time.monotonic()
             deadline = started_at + float(self.timeout_seconds)
@@ -444,9 +437,24 @@ class LeanVerifier:
         self, command: list[str], base: dict[str, str], *, lean_binary: str,
         lake_binary: str | None, temporary_dir: Path, deadline: float,
     ) -> tuple[list[str], dict[str, str]]:
+        delta, _ = self._lake_environment_delta(
+            base, lean_binary=lean_binary, lake_binary=lake_binary,
+            temporary_dir=temporary_dir, deadline=deadline,
+        )
+        if delta is None:
+            # Optimization unavailable: execute the original bounded compiler path.
+            # No result, environment or admission status is fabricated or cached.
+            return command, base
+        return command[command.index(lean_binary) :], materialize_lake_environment(base, delta)
+
+    def _lake_environment_delta(
+        self, base: dict[str, str], *, lean_binary: str, lake_binary: str | None,
+        temporary_dir: Path, deadline: float,
+    ) -> tuple[dict[str, str] | None, str]:
+        """Return the reviewed Lake delta and ``miss``/``hit``, or ``None`` and ``fallback``."""
         cache = self.lake_environment_cache
         if cache is None or self.project_dir is None or lake_binary is None:
-            return command, base
+            return None, "disabled"
         project_dir = self.project_dir
         started = time.monotonic()
         status = "fallback"
@@ -481,16 +489,46 @@ class LeanVerifier:
             delta, status = cache.get_or_prepare(
                 key, prepare, timeout_seconds=max(0.0, deadline - time.monotonic()),
             )
-            return (
-                command[command.index(lean_binary) :],
-                materialize_lake_environment(base, delta),
-            )
+            return delta, status
         except (OSError, ValueError, KeyError, TypeError, TimeoutError):
-            # Optimization unavailable: execute the original bounded compiler path.
-            # No result, environment or admission status is fabricated or cached.
-            return command, base
+            return None, "fallback"
         finally:
             self._observe("environment_prepare", started, status)
+
+    def warm_lake_environment(self) -> str:
+        """Resolve Lake's environment once before serving; no source is compiled.
+
+        Returns ``miss`` (resolved now), ``hit``, ``fallback`` (requests will run the original
+        ``lake env lean`` command) or ``disabled``. A startup caller can therefore see that the
+        reuse flag is ineffective, and the first request no longer pays for the preparation.
+        """
+        if self.lake_environment_cache is None or self.project_dir is None:
+            return "disabled"
+        lean_binary = shutil.which(self.lean_binary)
+        lake_binary = shutil.which(self.lake_binary)
+        if lean_binary is None or lake_binary is None or not self.project_dir.exists():
+            return "fallback"
+        deadline = time.monotonic() + float(self.timeout_seconds)
+        with TemporaryDirectory(prefix="pals-lean-", dir=self.scratch_dir) as tmpdir:
+            temporary_dir = Path(tmpdir)
+            home_dir = temporary_dir / "home"
+            home_dir.mkdir(mode=0o700)
+            _, status = self._lake_environment_delta(
+                self._child_environment(temporary_dir, home_dir),
+                lean_binary=lean_binary, lake_binary=lake_binary,
+                temporary_dir=temporary_dir, deadline=deadline,
+            )
+        return status
+
+    def _child_environment(self, temporary_dir: Path, home_dir: Path) -> dict[str, str]:
+        return {
+            "PATH": self.child_path,
+            "HOME": str(home_dir),
+            "TMPDIR": str(temporary_dir),
+            "LANG": "C.UTF-8",
+            "LC_ALL": "C.UTF-8",
+            "ELAN_HOME": self.elan_home,
+        }
 
     def _command_for(
         self,

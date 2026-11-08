@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import math
+import random
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -11,8 +13,10 @@ from pals_agent.http_transport import (
     HardDeadlineHttpError,
     HardDeadlineHttpTransport,
     HttpDeadlineExceeded,
+    HttpResponse,
     HttpResponseTooLarge,
     HttpTransport,
+    HttpTransportError,
 )
 from pals_agent.model_roles import (
     ESCALATION_MODEL,
@@ -26,6 +30,11 @@ from pals_agent.openai_diagnostics import (
 )
 from pals_agent.token_meter import active_token_meter
 from pals_agent.usage import report_usage
+
+# Transient provider statuses. Anything else (400/401/403/404/...) is a request defect.
+_RETRYABLE_STATUSES = frozenset({408, 429, 500, 502, 503, 504})
+_MAX_RETRY_AFTER_SECONDS = 10.0
+_MIN_RETRY_WINDOW_SECONDS = 5.0
 
 
 class OpenAIError(RuntimeError):
@@ -46,6 +55,12 @@ class OpenAIResponsesClient:
         compare=False,
     )
     reasoning_effort: ReasoningEffort | None = None
+    # Total tries per generation request (1 disables retries). A transport failure or a
+    # 408/429/5xx is retried after retry_delays[n], all within the one `timeout_seconds` budget;
+    # a request that hit the hard deadline is never retried.
+    max_attempts: int = 3
+    retry_delays: tuple[float, ...] = (1.0, 3.0)
+    sleep: Callable[[float], None] = field(default=time.sleep, repr=False, compare=False)
 
     def generate(
         self,
@@ -157,33 +172,28 @@ class OpenAIResponsesClient:
         timeout = _transport_timeout(timeout_seconds, self.timeout_seconds)
         call_id = str(uuid4())
         meter = active_token_meter()
-        try:
-            response = meter.request(
-                transport=self.transport, endpoint=endpoint, headers=headers,
-                payload=payload, data=data, timeout_seconds=timeout, call_id=call_id,
-            ) if meter is not None else self.transport.request(
-                method="POST",
-                url=endpoint,
-                headers=headers,
-                body=data,
-                timeout_seconds=timeout,
+        if meter is not None:
+            # The meter owns count -> permit -> one provider request -> receipt; the provider
+            # is never retried behind a spent permit.
+            try:
+                response = meter.request(
+                    transport=self.transport, endpoint=endpoint, headers=headers,
+                    payload=payload, data=data, timeout_seconds=timeout, call_id=call_id,
+                )
+            except HardDeadlineHttpError as error:
+                raise _transport_failure(error, attempts=1) from None
+            tries = 1
+        else:
+            response, tries = self._post_with_retry(
+                endpoint=endpoint, headers=headers, data=data, timeout=timeout
             )
-        except HardDeadlineHttpError as error:
-            kind = (
-                "deadline"
-                if isinstance(error, HttpDeadlineExceeded)
-                else "response_too_large"
-                if isinstance(error, HttpResponseTooLarge)
-                else "transport_error"
-            )
-            raise OpenAIError(
-                "OpenAI generation request failed",
-                private_diagnostics={"stage": "transport", "transport_kind": kind},
-            ) from None
         if not 200 <= response.status_code < 300:
             raise OpenAIError(
                 f"OpenAI generation failed with HTTP {response.status_code}",
-                private_diagnostics=http_failure_diagnostics(response.status_code, response.body),
+                private_diagnostics={
+                    **http_failure_diagnostics(response.status_code, response.body),
+                    **({"attempts": tries} if tries > 1 else {}),
+                },
             )
         try:
             body = json.loads(
@@ -219,8 +229,11 @@ class OpenAIResponsesClient:
             else _extract_response_text(body)
         )
         if not generated.strip():
+            # Attribute the cause (e.g. status=incomplete / incomplete_reason=max_output_tokens
+            # when reasoning consumed the output budget) without retaining any text.
             raise OpenAIError(
-                "OpenAI response did not contain text.", private_diagnostics={"stage": "empty_text"}
+                "OpenAI response did not contain text.",
+                private_diagnostics=response_failure_diagnostics(body, "empty_text"),
             )
         if response_callback is not None:
             response_id = body.get("id")
@@ -231,6 +244,94 @@ class OpenAIResponsesClient:
                 raise OpenAIError("OpenAI response session identity was malformed")
             response_callback(response_id)
         return generated
+
+    def _post_with_retry(
+        self, *, endpoint: str, headers: dict[str, str], data: bytes, timeout: float
+    ) -> tuple[HttpResponse, int]:
+        """Retry transient failures inside the caller's one wall-clock budget.
+
+        `timeout` bounds the whole call, retries included, so a retry can never extend the
+        hard deadline. A request that already hit that deadline is never retried.
+        """
+        started = time.monotonic()
+        attempts = 0
+        while True:
+            attempts += 1
+            remaining = timeout - (time.monotonic() - started)
+            try:
+                response = self.transport.request(
+                    method="POST", url=endpoint, headers=headers, body=data,
+                    timeout_seconds=timeout if attempts == 1 else remaining,
+                )
+            except HardDeadlineHttpError as error:
+                retry = isinstance(error, HttpTransportError) and self._may_retry(
+                    attempts, started, timeout, None
+                )
+                if not retry:
+                    raise _transport_failure(error, attempts=attempts) from None
+                continue
+            if (
+                response.status_code in _RETRYABLE_STATUSES
+                and not _quota_exhausted(response)
+                and self._may_retry(attempts, started, timeout, _retry_after(response))
+            ):
+                continue
+            return response, attempts
+
+    def _may_retry(
+        self, attempts: int, started: float, timeout: float, retry_after: float | None
+    ) -> bool:
+        """Sleep and return True when another try fits the budget."""
+        if attempts >= self.max_attempts:
+            return False
+        delays = self.retry_delays
+        base = delays[min(attempts, len(delays)) - 1] if delays else 0.0
+        # Jitter keeps parallel workers from retrying a shared outage in lockstep.
+        delay = max(base, retry_after or 0.0) * (1.0 + 0.25 * random.random())
+        remaining = timeout - (time.monotonic() - started)
+        if remaining < delay + _MIN_RETRY_WINDOW_SECONDS:
+            return False
+        self.sleep(delay)
+        return True
+
+
+def _transport_failure(error: HardDeadlineHttpError, *, attempts: int) -> OpenAIError:
+    kind = (
+        "deadline"
+        if isinstance(error, HttpDeadlineExceeded)
+        else "response_too_large"
+        if isinstance(error, HttpResponseTooLarge)
+        else "transport_error"
+    )
+    return OpenAIError(
+        "OpenAI generation request failed",
+        private_diagnostics={
+            "stage": "transport",
+            "transport_kind": kind,
+            **({"attempts": attempts} if attempts > 1 else {}),
+        },
+    )
+
+
+def _quota_exhausted(response: HttpResponse) -> bool:
+    # A 429 for an exhausted quota is permanent; retrying only delays the failure.
+    diagnostics = http_failure_diagnostics(response.status_code, response.body)
+    return (
+        diagnostics.get("provider_code") == "insufficient_quota"
+        or diagnostics.get("provider_type") == "insufficient_quota"
+    )
+
+
+def _retry_after(response: HttpResponse) -> float | None:
+    for name, value in response.headers:
+        if name.lower() == "retry-after":
+            try:
+                seconds = float(value)
+            except ValueError:
+                return None
+            if math.isfinite(seconds) and seconds > 0:
+                return min(seconds, _MAX_RETRY_AFTER_SECONDS)
+    return None
 
 
 def responses_input(prompt: str, images: tuple[str, ...]) -> str | list[dict[str, Any]]:

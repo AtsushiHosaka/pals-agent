@@ -32,6 +32,25 @@ With Elan the key digests the proxy, not the toolchain behind it. The toolchain
 is bound by the `lean-toolchain` bytes, `ELAN_HOME` and the attested read-only
 root, and the entry never outlives the process.
 
+## Startup warm-up and failure backoff
+
+With the flag on, the verifier resolves Lake's environment once during startup, after the
+boundary attestation and before the ready marker (`LeanVerifier.warm_lake_environment`). No source
+is compiled and no scratch directory outlives the call. The log line
+`lean_environment_reuse status=<miss|hit|fallback>` reports the result: `miss` is the expected
+value of a fresh process, and `fallback` (logged at warning level) means requests will keep running
+the original `lake env lean` command because the reviewed vocabulary or topology check rejected the
+setup. Startup does not fail on a fallback.
+
+A rejected preparation (`ValueError`: unreviewed key, Lake output on stderr, non-zero exit) is
+remembered for 60 s per setup key. Before, every request paid for a doomed `lake env` preparation and
+then for the original command, which cost about 1.8 s more than leaving the flag off. Timeouts and
+OS errors are not remembered. The backoff stores no result, and `clear()` resets it.
+
+Reuse covers every Lean launch of a verification, not only the compile: the trusted audit that
+follows an accepted compile runs `lake env lean --run` as well, so a hit removes two `lake env`
+launches per accepted proof (three when the source contains an `example`).
+
 ## Production Elan path
 
 Production resolves `lean` and `lake` to the `/opt/elan/bin` proxies. The

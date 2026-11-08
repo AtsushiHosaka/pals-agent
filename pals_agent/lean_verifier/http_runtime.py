@@ -127,6 +127,16 @@ def main() -> None:
             settings.tls,
             reader=reader,
         )
+        verifier = LeanVerifier(
+            project_dir=settings.project_dir,
+            timeout_seconds=settings.timeout_seconds,
+            scratch_dir=_SCRATCH_DIRECTORY,
+            lake_environment_cache=(
+                LakeEnvironmentCache() if settings.reuse_lake_environment else None
+            ),
+            timing_observer=_log_verification_timing,
+        )
+        _warm_lake_environment(verifier, enabled=settings.reuse_lake_environment)
         server = create_server(
             IsolatedVerifierHttpSettings(
                 bind_host=settings.bind_host,
@@ -140,15 +150,7 @@ def main() -> None:
                 ),
                 max_concurrent_compiles=settings.max_concurrent_compiles,
             ),
-            verifier=LeanVerifier(
-                project_dir=settings.project_dir,
-                timeout_seconds=settings.timeout_seconds,
-                scratch_dir=_SCRATCH_DIRECTORY,
-                lake_environment_cache=(
-                    LakeEnvironmentCache() if settings.reuse_lake_environment else None
-                ),
-                timing_observer=_log_verification_timing,
-            ),
+            verifier=verifier,
             # Admission receipts bind the literal lake-env command. Keep that
             # contract even when proof-job compilation reuses setup.
             admission_verifier=LeanVerifier(
@@ -185,6 +187,19 @@ def _reuse_lake_environment() -> bool:
     if value not in {"true", "false"}:
         raise ValueError("PALS_LEAN_REUSE_LAKE_ENVIRONMENT must be true or false")
     return value == "true"
+
+
+def _warm_lake_environment(verifier: LeanVerifier, *, enabled: bool) -> None:
+    """Resolve Lake's environment before readiness so the first request does not pay for it.
+
+    A ``fallback`` is safe (requests run the original ``lake env lean``) but means the flag is
+    not effective, so it is logged at warning level for the deployment check.
+    """
+    if not enabled:
+        return
+    status = verifier.warm_lake_environment()
+    log = _LOGGER.info if status in {"miss", "hit"} else _LOGGER.warning
+    log("lean_environment_reuse status=%s", status)
 
 
 def _max_concurrent_compiles() -> int:

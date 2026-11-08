@@ -911,6 +911,43 @@ def test_worker_waits_for_api_candidate_reconciliation_before_regenerating() -> 
     assert sum(sleeps) == 2000.0
 
 
+def test_candidate_wait_polls_fast_at_first_and_backs_off_for_a_long_compile() -> None:
+    clock = [0.0]
+    sleeps: list[float] = []
+
+    def advance(seconds: float) -> None:
+        sleeps.append(seconds)
+        clock[0] += seconds
+
+    worker = SqsProofWorker(
+        settings=cast(AgentSettings, SimpleNamespace()),
+        api_client=cast(Any, PendingCandidateApi()),
+        pipeline=StructuringFailurePipeline(),
+        explainer=ExplainerThatMustNotRun(),
+        monotonic=lambda: clock[0],
+        sleep=advance,
+        stop_requested=lambda: clock[0] >= 200,
+    )
+
+    assert worker._wait_for_candidate_reconciliation(
+        proof_job_id="job-pending", extend_visibility=lambda seconds: None,
+        refresh_visibility=False,
+    ) is None
+
+    assert sleeps[:120] == [0.25] * 120  # the first 30 s
+    assert sleeps[120:240] == [0.5] * 120  # up to 90 s
+    assert set(sleeps[240:]) == {1.0}
+    assert sum(sleeps) == 200.0
+
+
+def test_candidate_poll_delay_never_exceeds_the_previous_one_second_interval() -> None:
+    from pals_agent.worker import _candidate_poll_delay
+
+    delays = [_candidate_poll_delay(waited) for waited in range(0, 2000, 7)]
+    assert delays == sorted(delays)
+    assert min(delays) > 0 and max(delays) == 1.0
+
+
 def test_candidate_wait_ends_on_shutdown_and_when_visibility_cannot_be_renewed() -> None:
     clock = [0.0]
 

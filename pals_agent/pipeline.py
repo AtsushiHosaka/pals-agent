@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
 
 from pals_agent import step_timing
@@ -38,6 +38,7 @@ from pals_agent.models import (
     VerificationResult,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
+from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal_harness
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
@@ -184,6 +185,17 @@ class ProofPipeline:
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
     request_linked_typed_retriever: ProofFlowRetriever | None = None
+    # Opt-in latency shortcuts, both off by default; see pals_agent/proof_fastpaths.py.
+    # ``harness_splice`` restores a fixed formal statement the model re-typed with only
+    # layout differences instead of paying for a model-driven restart.
+    harness_splice: bool = False
+    # ``deterministic_repair_route`` skips the route-selection model call when the user
+    # fixed the statement, and never restarts the prose Draft for a statement mismatch.
+    deterministic_repair_route: bool = False
+    # ``sketch_failure_proceeds_to_prove`` keeps a Sketch that fails its Lean check inside
+    # the same attempt: Prove receives the Sketch and its diagnostics at once, instead of
+    # the attempt failing, consuming a repair, and the next attempt resuming at Prove.
+    sketch_failure_proceeds_to_prove: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -386,6 +398,9 @@ class ProofPipeline:
                 generated.lean_code,
                 verification_harness=verification_harness,
                 require_single_target=self.verification_mode == "api_reconcile",
+            )
+            preflight_diagnostics = _attribute_empty_generation(
+                preflight_diagnostics, generation_diagnostic
             )
             if preflight_diagnostics:
                 failure_diagnostics = [*generated.stage_diagnostics]
@@ -672,6 +687,41 @@ class ProofPipeline:
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
         step_timing.set_attempt(attempt)
+        generated = self._generate_attempt_unspliced(
+            request=request,
+            problem_id=problem_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+            diagnostics=diagnostics,
+            feedback=feedback,
+            on_status=on_status,
+        )
+        if not self.harness_splice or not request.formal_statement:
+            return generated
+        if not generated.lean_code.strip() or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=generated.lean_code,
+        ) == []:
+            return generated
+        spliced = splice_formal_harness(generated.lean_code, request.formal_statement)
+        if spliced is None or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=spliced,
+        ):
+            return generated
+        return replace(generated, lean_code=spliced)
+
+    def _generate_attempt_unspliced(
+        self,
+        *,
+        request: ProofRequest,
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        diagnostics: list[Diagnostic],
+        feedback: GenerationFeedback | None,
+        on_status: StatusCallback | None,
+    ) -> GeneratedProof:
         repair_route = feedback.repair_route if feedback is not None else "draft"
         context: dict[str, Any] = {
             **_request_context(request, problem_id=problem_id),
@@ -695,6 +745,7 @@ class ProofPipeline:
                 context=context,
                 on_status=on_status,
                 verifier=self.verifier,
+                sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
             )
 
         _emit(
@@ -775,7 +826,11 @@ class ProofPipeline:
             previous_sketch=generated.sketch,
         )
         try:
-            route_decision = _select_repair_route(
+            route_decision = (
+                deterministic_repair_route(request, base_feedback)
+                if self.deterministic_repair_route
+                else None
+            ) or _select_repair_route(
                 self.generator,
                 request,
                 base_feedback,
@@ -1231,6 +1286,7 @@ def _generate_staged_attempt(
     context: dict[str, Any],
     on_status: StatusCallback | None,
     verifier: Verifier | None,
+    sketch_failure_proceeds_to_prove: bool = False,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1280,19 +1336,33 @@ def _generate_staged_attempt(
             and sketch_verification is not None
             and not sketch_verification.success
         ):
-            diagnostic_text = "\n".join(
-                _format_diagnostic_for_trace(diagnostic)
-                for diagnostic in sketch_verification.diagnostics
-            )
-            return _failed_staged_proof(
-                draft=draft,
-                sketch=sketch,
-                error=(
-                    "[generation-error] sketch Lean validation failed.\n"
-                    f"{diagnostic_text}"
-                ),
-                stage_diagnostics=tuple(sketch_verification.diagnostics),
-            )
+            if sketch_failure_proceeds_to_prove:
+                feedback = GenerationFeedback(
+                    attempt=feedback.attempt if feedback is not None else 0,
+                    previous_lean_code=sketch.lean_code,
+                    diagnostics=tuple(sketch_verification.diagnostics),
+                    repair_route="prove",
+                    repair_rationale=(
+                        "The Sketch failed its Lean check; correct it while completing "
+                        "the proof."
+                    ),
+                    previous_draft=draft,
+                    previous_sketch=sketch,
+                )
+            else:
+                diagnostic_text = "\n".join(
+                    _format_diagnostic_for_trace(diagnostic)
+                    for diagnostic in sketch_verification.diagnostics
+                )
+                return _failed_staged_proof(
+                    draft=draft,
+                    sketch=sketch,
+                    error=(
+                        "[generation-error] sketch Lean validation failed.\n"
+                        f"{diagnostic_text}"
+                    ),
+                    stage_diagnostics=tuple(sketch_verification.diagnostics),
+                )
 
     _emit(
         on_status,
@@ -1551,6 +1621,26 @@ def _termination_event(
         "attempt": attempt,
         "source": sources[reason],
     }
+
+
+def _attribute_empty_generation(
+    preflight: list[Diagnostic], generation: Diagnostic
+) -> list[Diagnostic]:
+    """Say why `pals.generation_empty` fired, keeping its code for existing consumers.
+
+    No Lean code reaches preflight whenever a stage fails (a provider error, a Sketch that
+    does not compile, a Prove that still has `sorry`), not only when the model returns
+    nothing. In 129 measured attempts none was a model that returned nothing, so counting the
+    bare code overstates empty generations. `explained_by` is the stage diagnostic code, or
+    "none" when the model really produced no extractable Lean code.
+    """
+    cause = generation.code if generation.severity == "error" and generation.code else "none"
+    return [
+        replace(item, metadata={**(item.metadata or {}), "explained_by": cause})
+        if item.code == "pals.generation_empty"
+        else item
+        for item in preflight
+    ]
 
 
 def _generation_diagnostic(generated: GeneratedProof) -> Diagnostic:
