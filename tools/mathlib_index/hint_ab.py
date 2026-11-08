@@ -17,7 +17,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -204,7 +204,7 @@ def run_one(
     *,
     arm: str,
     args: argparse.Namespace,
-    index: MathlibIndex,
+    index: MathlibIndex | None,
     guard: SpendGuard,
 ) -> dict[str, Any]:
     openai = OpenAIResponsesClient(
@@ -212,7 +212,7 @@ def run_one(
         max_output_tokens=args.max_output_tokens,
         reasoning_effort=args.effort,
     )
-    builder = HintBuilder(index, lean=args.hint_lean)
+    builder = HintBuilder(cast(MathlibIndex, index), lean=args.hint_lean)
     client: Any = HintingClient(openai, builder) if arm == "hinted" else openai
     generator = HybridLeanGenerator(
         model=args.model, provider="openai", client=GuardedClient(client, guard)
@@ -231,6 +231,9 @@ def run_one(
         ),
         artifact_store=FileArtifactStore(args.out / "artifacts"),
         max_repair_attempts=args.max_repairs,
+        harness_splice=args.harness_splice,
+        deterministic_repair_route=args.deterministic_route,
+        sketch_failure_proceeds_to_prove=args.sketch_continue,
     )
     usage: list[dict[str, Any]] = []
 
@@ -263,6 +266,16 @@ def run_one(
         "lean_seconds": round(
             sum(a.get("verification", {}).get("elapsed_ms", 0) for a in attempts) / 1000, 1
         ),
+        "harness_splice": args.harness_splice,
+        "deterministic_route": args.deterministic_route,
+        "sketch_continue": args.sketch_continue,
+        "route_model_calls": sum(
+            1
+            for a in attempts
+            if a.get("repair_route")
+            and a["repair_route"].get("provider") != "pals-deterministic-policy"
+        ),
+        "routes": [a["repair_route"]["route"] for a in attempts if a.get("repair_route")],
         "model_calls": len(usage),
         "input_tokens": sum(row["input_tokens"] for row in usage),
         "cached_input_tokens": sum(row["cached_input_tokens"] for row in usage),
@@ -293,12 +306,25 @@ def main() -> None:
     parser.add_argument("--problems", type=Path, required=True)
     parser.add_argument("--only", default="", help="Comma-separated problem ids")
     parser.add_argument("--arms", default="baseline,hinted")
-    parser.add_argument("--index-dir", type=Path, required=True)
+    parser.add_argument("--index-dir", type=Path, help="Required only for the hinted arm")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-label", required=True)
     parser.add_argument("--model", default="gpt-6-luna")
     parser.add_argument("--effort", default="low")
     parser.add_argument("--max-repairs", type=int, default=6)
+    parser.add_argument(
+        "--harness-splice", action="store_true", help="Enable ProofPipeline.harness_splice"
+    )
+    parser.add_argument(
+        "--deterministic-route",
+        action="store_true",
+        help="Enable ProofPipeline.deterministic_repair_route",
+    )
+    parser.add_argument(
+        "--sketch-continue",
+        action="store_true",
+        help="Enable ProofPipeline.sketch_failure_proceeds_to_prove",
+    )
     parser.add_argument("--max-output-tokens", type=int, default=12000)
     parser.add_argument("--lean", required=True, help="Verifier lean, usually the Elan proxy")
     parser.add_argument("--lake", required=True)
@@ -313,8 +339,12 @@ def main() -> None:
     problems = json.loads(args.problems.read_text(encoding="utf-8"))
     selected = set(filter(None, args.only.split(",")))
     results_path = args.out / f"{args.run_label}.jsonl"
-    index = MathlibIndex(args.index_dir / "index.sqlite")
-    index.symbol_search(["Continuous"], [], k=1)  # Load postings outside the measured runs.
+    index = None
+    if "hinted" in args.arms.split(","):
+        if args.index_dir is None:
+            parser.error("--index-dir is required for the hinted arm")
+        index = MathlibIndex(args.index_dir / "index.sqlite")
+        index.symbol_search(["Continuous"], [], k=1)  # Load postings outside the measured runs.
     guard = SpendGuard(limit_usd=args.max_usd)
     for problem in problems:
         if selected and problem["id"] not in selected:
