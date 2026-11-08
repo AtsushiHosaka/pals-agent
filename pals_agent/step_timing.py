@@ -53,8 +53,14 @@ MODEL_STEPS = frozenset({
 })
 OTHER_STEPS = frozenset({
     "lean_check", "lean_sketch_check", "lean_reconcile_wait", "lean_env_cache", "queue_wait",
+    "template_hit",
+    # In-process stages named by runtime_latency.latency_stage, bridged as steps.
+    "context_retrieval", "recipe_attempt_selection", "recipe_batch_validate",
+    "recipe_prompt_build", "recipe_rank", "recipe_response_parse",
 })
-STEPS = MODEL_STEPS | OTHER_STEPS | {"other"}
+# These enclose other steps. They are recorded for reading, never added into run totals.
+CONTAINER_STEPS = frozenset({"assessment", "explanation", "proof_pipeline", "semantic_review"})
+STEPS = MODEL_STEPS | OTHER_STEPS | CONTAINER_STEPS | {"other"}
 OUTCOMES = frozenset({
     "ok", "empty", "timeout", "transport_error", "http_429", "http_4xx", "http_5xx",
     "malformed", "model_mismatch", "config_error", "error",
@@ -199,6 +205,8 @@ class RunRecorder:
         for event in steps:
             ms = event.get("duration_ms") or 0.0
             step = event["step"]
+            if event.get("container"):
+                continue
             by_step[step] = by_step.get(step, 0.0) + ms
             if step in MODEL_STEPS:
                 model_calls += 1
@@ -287,6 +295,7 @@ class StepRecord:
 
     __slots__ = (
         "step", "model", "effort", "outcome", "tokens", "codes", "http_status", "cache",
+        "container",
     )
 
     def __init__(self, step: str, model: str | None, effort: str | None) -> None:
@@ -298,6 +307,7 @@ class StepRecord:
         self.codes: list[str] = []
         self.http_status: int | None = None
         self.cache: str | None = None
+        self.container = False
 
     def set_model(self, model: object, effort: object = None) -> None:
         self.model = model if isinstance(model, str) else None
@@ -354,6 +364,8 @@ def _event(
         "outcome": record.outcome or "ok",
         "attempt": _ATTEMPT.get(),
     }
+    if record.container:
+        event["container"] = True
     if run is not None:
         event["start_offset_ms"] = _ms((time.monotonic() - run.started) * 1000 - (duration_ms or 0))
     for key, value in record.tokens.items():
@@ -370,6 +382,7 @@ def _event(
 @contextmanager
 def step(
     name: str, *, model: str | None = None, effort: str | None = None, job: object = None,
+    container: bool = False,
 ) -> Iterator[StepRecord | None]:
     """Time one step. Yields ``None`` when disabled, so callers guard each setter.
 
@@ -380,6 +393,7 @@ def step(
         yield None
         return
     record = StepRecord(name, model, effort)
+    record.container = container
     current = _CURRENT.set(record)
     started = time.monotonic()
     try:

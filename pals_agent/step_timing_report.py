@@ -48,7 +48,8 @@ def collect(lines: Iterable[str]) -> Samples:
         if event.get("event") == "pipeline_step" and isinstance(
             event.get("duration_ms"), int | float
         ):
-            key = (str(event["step"]), str(event.get("model") or "-"), str(event["outcome"]))
+            name = str(event["step"]) + (" (container)" if event.get("container") else "")
+            key = (name, str(event.get("model") or "-"), str(event["outcome"]))
             samples.steps[key].append(float(event["duration_ms"]))
         elif event.get("event") == "pipeline_run":
             samples.runs.append(event)
@@ -113,11 +114,13 @@ def render(samples: Samples) -> str:
     out = [f"{'step':<24}{'model':<16}{'outcome':<16}{'n':>5}{'p50_ms':>11}{'p95_ms':>11}"
            f"{'max_ms':>11}{'share':>8}"]
     table = rows(samples)
-    total = sum(r["sum_ms"] for r in table) or 1.0
+    total = sum(r["sum_ms"] for r in table if "(container)" not in r["step"]) or 1.0
     for r in table:
         out.append(
             f"{r['step']:<24}{r['model']:<16}{r['outcome']:<16}{r['n']:>5}{r['p50_ms']:>11.1f}"
-            f"{r['p95_ms']:>11.1f}{r['max_ms']:>11.1f}{r['sum_ms'] / total:>8.1%}"
+            f"{r['p95_ms']:>11.1f}{r['max_ms']:>11.1f}"
+            + ("   (encloses other steps)" if "(container)" in r["step"]
+               else f"{r['sum_ms'] / total:>8.1%}")
         )
     summary = run_summary(samples)
     out.append("")
