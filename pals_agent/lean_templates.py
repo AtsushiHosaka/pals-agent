@@ -15,6 +15,7 @@ same Lean compile as a model-written candidate, and a compile failure falls back
 from __future__ import annotations
 
 import re
+import string
 from dataclasses import dataclass
 from typing import Final
 
@@ -297,5 +298,25 @@ def _bindings_for_prompt(prompt: str, grammar_variable: str | None = None) -> XS
         except TemplateBindingError:
             candidate = "x"
         variable = candidate
-    point = next(name for name in _POINT_CANDIDATES if name != variable)
-    return XSquaredBindings(variable=variable, point=point, moving=variable)
+    return XSquaredBindings(variable=variable, point=_point_for_variable(variable), moving=variable)
+
+
+def _point_for_variable(variable: str) -> str:
+    return next(name for name in _POINT_CANDIDATES if name != variable)
+
+
+def x_squared_worker_bindings() -> tuple[XSquaredBindings, ...]:
+    """Every binding the worker can render, in a fixed order, for the verifier's allow-list.
+
+    The worker names the function variable by one ASCII letter of the request
+    (``_SQUARED_VARIABLE``) or falls back to ``x`` (the Sketch safety net, a request with no or
+    several squared variables, a letter that is not a valid name).  The moving point is the
+    variable, the fixed point is picked by :func:`_point_for_variable`, and the theorem name,
+    epsilon and delta never change.  A test keeps this list equal to what
+    :func:`_bindings_for_prompt` produces for every letter.
+    """
+    letters = string.ascii_lowercase + string.ascii_uppercase
+    return tuple(
+        XSquaredBindings(variable=letter, point=_point_for_variable(letter), moving=letter)
+        for letter in letters
+    )
