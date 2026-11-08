@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import http.server
 import json
+import logging
 import re
 import ssl
 import threading
@@ -24,8 +25,17 @@ from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 
 from pals_agent.lean import COMPILE_DEADLINE_INTERRUPTED, COMPILE_INTERRUPTED
+from pals_agent.lean_verifier.result_cache import (
+    SOURCE_CACHE,
+    SOURCE_COMPILE,
+    SOURCE_HEADER,
+    CacheDecision,
+    FreshOutcome,
+    VerifierResultCache,
+)
 from pals_agent.models import VerificationResult
 
+_CACHE_LOGGER: Final = logging.getLogger("pals_agent.lean_verifier.result_cache")
 _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
 _READINESS_SCHEMA_VERSION: Final = "pals.isolated-verifier-readiness.v1"
 _ATTESTATION_SCHEMA_VERSION: Final = "pals.verifier-attestation.v1"
@@ -199,9 +209,12 @@ class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
         settings: IsolatedVerifierHttpSettings,
         verifier: LeanVerifierPort,
         admission_verifier: LeanVerifierPort | None = None,
+        result_cache: VerifierResultCache | None = None,
     ) -> None:
         self.settings = settings
         self.verifier = verifier
+        # ``None`` means both result-cache flags are off: every request compiles.
+        self.result_cache = result_cache
         self.admission_verifier = admission_verifier if admission_verifier is not None else verifier
         self.recipe_admission_context = settings.recipe_admission_context
         self.compile_slot = threading.BoundedSemaphore(settings.max_concurrent_compiles)
@@ -280,6 +293,11 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if not self.server.ready:
             self._error(503, "verifier_not_ready", proof_job_id, retryable=True)
             return
+        decision = self._cache_begin(request["lean_code"])
+        if decision is not None and decision.serve:
+            # An allow-listed source with a stored success for the same full key: no compile.
+            self._write_attestation(request, source=SOURCE_CACHE)
+            return
         if not self.server.compile_slot.acquire(blocking=False):
             self._error(503, "verifier_unavailable", proof_job_id, retryable=True)
             return
@@ -292,23 +310,19 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         finally:
             self.server.compile_slot.release()
 
+        self._cache_finish(decision, result)
         if result.success:
-            self._write_json(
-                200,
-                {
-                    "lean_sha256": hashlib.sha256(request["lean_code"].encode("utf-8")).hexdigest(),
-                    "proof_job_id": request["proof_job_id"],
-                    "result_artifact_uri": request["result_artifact_uri"],
-                    "schema_version": _ATTESTATION_SCHEMA_VERSION,
-                    "verification_succeeded": True,
-                },
-            )
+            self._write_attestation(request, source=SOURCE_COMPILE)
             return
         failure_code = _failure_code(result)
         if failure_code == "verifier_timeout":
-            self._error(504, failure_code, request["proof_job_id"], retryable=True)
+            self._error(
+                504, failure_code, request["proof_job_id"], retryable=True, source=SOURCE_COMPILE
+            )
         elif failure_code in _INTERRUPTED_FAILURES:
-            self._error(503, failure_code, request["proof_job_id"], retryable=True)
+            self._error(
+                503, failure_code, request["proof_job_id"], retryable=True, source=SOURCE_COMPILE
+            )
         else:
             self._error(
                 422,
@@ -316,7 +330,43 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
                 request["proof_job_id"],
                 retryable=False,
                 diagnostics=_repair_diagnostics(result, request["lean_code"]),
+                source=SOURCE_COMPILE,
             )
+
+    def _write_attestation(self, request: dict[str, str], *, source: str) -> None:
+        # Built from this request's own fields, also for a cache hit: a stored attestation is
+        # never replayed, so it can never be bound to another job or artifact.
+        self._write_json(
+            200,
+            {
+                "lean_sha256": hashlib.sha256(request["lean_code"].encode("utf-8")).hexdigest(),
+                "proof_job_id": request["proof_job_id"],
+                "result_artifact_uri": request["result_artifact_uri"],
+                "schema_version": _ATTESTATION_SCHEMA_VERSION,
+                "verification_succeeded": True,
+            },
+            source=source,
+        )
+
+    def _cache_begin(self, lean_code: str) -> CacheDecision | None:
+        cache = self.server.result_cache
+        if cache is None:
+            return None
+        try:
+            return cache.begin(lean_code)
+        except Exception:
+            # The cache is an optimization: a bug in it must never change the verdict path.
+            _CACHE_LOGGER.error("verifier_cache result=internal_error stage=begin")
+            return None
+
+    def _cache_finish(self, decision: CacheDecision | None, result: VerificationResult) -> None:
+        cache = self.server.result_cache
+        if cache is None or decision is None:
+            return
+        try:
+            cache.finish_compiled(decision, _fresh_outcome(result))
+        except Exception:
+            _CACHE_LOGGER.error("verifier_cache result=internal_error stage=finish")
 
     def _verify_recipe_admission(self) -> None:
         """Compile one closed Recipe source without importing proof-job/artifact semantics."""
@@ -575,6 +625,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         *,
         retryable: bool,
         diagnostics: list[dict[str, object]] | None = None,
+        source: str | None = None,
     ) -> None:
         self._write_json(
             status,
@@ -585,6 +636,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
                 "schema_version": _ERROR_SCHEMA_VERSION,
                 **({"diagnostics": diagnostics} if diagnostics is not None else {}),
             },
+            source=source,
         )
 
     def _admission_error(
@@ -606,7 +658,13 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
             },
         )
 
-    def _write_json(self, status: int, value: dict[str, object]) -> None:
+    def _write_json(
+        self,
+        status: int,
+        value: dict[str, object],
+        *,
+        source: str | None = None,
+    ) -> None:
         encoded = json.dumps(
             value,
             ensure_ascii=False,
@@ -625,6 +683,9 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
             "Pals-Deployment-Binding-Sha256",
             binding.deployment_binding_sha256,
         )
+        if source is not None:
+            # Informational only: the deployed client reads just the two binding headers.
+            self.send_header(SOURCE_HEADER, source)
         self.end_headers()
         self.wfile.write(encoded)
 
@@ -658,8 +719,9 @@ def create_server(
     *,
     verifier: LeanVerifierPort,
     admission_verifier: LeanVerifierPort | None = None,
+    result_cache: VerifierResultCache | None = None,
 ) -> ThreadingTlsVerifierServer:
-    return ThreadingTlsVerifierServer(settings, verifier, admission_verifier)
+    return ThreadingTlsVerifierServer(settings, verifier, admission_verifier, result_cache)
 
 
 def _single_header(headers: Message[str, str], name: str) -> str | None:
@@ -805,6 +867,15 @@ def _admission_compiler_result(result: VerificationResult) -> dict[str, object]:
 
 def _canonical_uuid4(value: UUID) -> str | None:
     return str(value) if value.version == 4 and str(value) == str(value).lower() else None
+
+
+def _fresh_outcome(result: VerificationResult) -> FreshOutcome:
+    if result.success:
+        return FreshOutcome.SUCCESS
+    code = _failure_code(result)
+    if code == "verifier_timeout" or code in _INTERRUPTED_FAILURES:
+        return FreshOutcome.INCONCLUSIVE
+    return FreshOutcome.FAILURE
 
 
 def _failure_code(result: VerificationResult) -> str:
