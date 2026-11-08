@@ -229,6 +229,14 @@ def template_proof_for_request(request: ProofRequest) -> TemplateProof | None:
     return TemplateProof(lean_code=lean_code, prover_id=PROVER_ID, bindings=bindings)
 
 
+def is_x_squared_continuity_statement(statement: str) -> bool:
+    """True when the vocabulary grammar reads the whole statement as the continuity of v².
+
+    Grammar only (no retrieval): used before any model call to short-circuit the chat router.
+    """
+    return _grammar_square_variable(statement) is not None
+
+
 def template_proof_for_sketch(request: ProofRequest, sketch_lean_code: str) -> TemplateProof | None:
     """The template when the Sketch's own Lean statement is exactly the continuity of x².
 
