@@ -63,7 +63,7 @@ class AgentSettings:
     deterministic_templates_enabled: bool = True
     template_skips_retrieval_enabled: bool = True
     speculative_explanation_enabled: bool = False
-    template_fixed_explanation_enabled: bool = False
+    template_fixed_explanation_enabled: bool = True
     lemma_alias_repair_enabled: bool = True
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
@@ -213,7 +213,7 @@ class AgentSettings:
                 "PALS_SPECULATIVE_EXPLANATION_ENABLED", False
             ),
             template_fixed_explanation_enabled=_strict_bool_env_default(
-                "PALS_TEMPLATE_FIXED_EXPLANATION_ENABLED", False
+                "PALS_TEMPLATE_FIXED_EXPLANATION_ENABLED", True
             ),
             lemma_alias_repair_enabled=_strict_bool_env_default(
                 "PALS_LEMMA_ALIAS_REPAIR_ENABLED", True

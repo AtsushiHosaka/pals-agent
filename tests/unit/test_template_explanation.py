@@ -185,8 +185,8 @@ def _ensure(worker: SqsProofWorker, code: str, language: str = "en") -> bool:
     )
 
 
-@pytest.mark.parametrize("enabled", [None, False])
-def test_flag_off_or_absent_keeps_the_model_explainer(enabled: bool | None) -> None:
+def test_flag_off_keeps_the_model_explainer() -> None:
+    enabled = False
     api, explainer, reviewer = _Api(), RecordingExplainer(), RecordingOutputReviewer()
     code = render_x_squared_epsilon_delta()
 
@@ -247,14 +247,14 @@ def test_a_model_failure_after_rejection_is_still_a_failure() -> None:
     assert api.updates[-1]["state"] == "failed"
 
 
-def test_the_switch_is_off_by_default_and_must_be_turned_on_explicitly(
+def test_the_switch_is_on_by_default_and_the_environment_can_turn_it_off(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     name = "PALS_TEMPLATE_FIXED_EXPLANATION_ENABLED"
-    assert AgentSettings.__dataclass_fields__["template_fixed_explanation_enabled"].default is False
-    monkeypatch.delenv(name, raising=False)
+    assert AgentSettings.__dataclass_fields__["template_fixed_explanation_enabled"].default is True
     from pals_agent import settings as settings_module
 
-    assert settings_module._strict_bool_env_default(name, False) is False
-    monkeypatch.setenv(name, "true")
-    assert settings_module._strict_bool_env_default(name, False) is True
+    monkeypatch.delenv(name, raising=False)
+    assert settings_module._strict_bool_env_default(name, True) is True
+    monkeypatch.setenv(name, "false")
+    assert settings_module._strict_bool_env_default(name, True) is False

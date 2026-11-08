@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import time
 from dataclasses import dataclass, replace
 from typing import Any
@@ -89,10 +90,10 @@ _VISUAL = (
 class ChatRuntime:
     client: OpenAIResponsesClient
     proof_runtime: ProofReuseRuntime
-    # Default OFF (PALS_CHAT_TEMPLATE_FASTPATH_ENABLED in the factory). A plain request that the
-    # vocabulary grammar reads as exactly the continuity of x² goes straight to the linked Lean
-    # job: no recipe review and no router call.
-    template_fastpath: bool = False
+    # Default ON (PALS_CHAT_TEMPLATE_FASTPATH_ENABLED=false turns it off in the factory). A plain
+    # request that the vocabulary grammar reads as exactly the continuity of x² goes straight to
+    # the linked Lean job: no recipe review and no router call.
+    template_fastpath: bool = True
 
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
@@ -399,6 +400,14 @@ class ChatRuntime:
         return result, sessions[0]
 
 
+# A question ("Is x² continuous?", "x² は連続ですか？", "x²是连续的吗？") is left to the router.
+_QUESTION = re.compile(
+    r"[?？]|ですか|でしょうか|ますか|でしょう|吗|嗎|呢|是否|是不是|\bwhether\b"
+    r"|か\s*[。.!！]?\s*\Z|\A\s*(?:is|are|does|do|can|why|how|what)\b",
+    re.IGNORECASE,
+)
+
+
 def _template_fastpath_eligible(request: dict[str, Any]) -> bool:
     """A first, plain, text-only request that is exactly the continuity of x² (grammar only).
 
@@ -424,6 +433,7 @@ def _template_fastpath_eligible(request: dict[str, Any]) -> bool:
                         "attachments", "material_context")
         )
         and not current_chat_images()
+        and _QUESTION.search(statement) is None
         and is_x_squared_continuity_statement(statement)
     )
 

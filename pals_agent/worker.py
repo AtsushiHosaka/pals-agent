@@ -1761,7 +1761,7 @@ class SqsProofWorker:
             )
 
     def _fixed_explanation_enabled(self) -> bool:
-        return bool(getattr(self.settings, "template_fixed_explanation_enabled", False))
+        return bool(getattr(self.settings, "template_fixed_explanation_enabled", True))
 
     def _start_speculative_explanation(
         self,

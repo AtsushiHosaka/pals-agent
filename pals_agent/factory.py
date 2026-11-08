@@ -60,9 +60,10 @@ def recipe_instantiation_enabled() -> bool:
 
 
 def chat_template_fastpath_enabled() -> bool:
-    """Default OFF. A plain x² continuity request skips the recipe review and the chat router."""
-    return os.environ.get("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "").strip().lower() in {
-        "on", "true", "1",
+    """Default ON: a plain x² continuity request skips the recipe review and the chat router.
+    PALS_CHAT_TEMPLATE_FASTPATH_ENABLED=off|false|0 turns it off."""
+    return os.environ.get("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "").strip().lower() not in {
+        "off", "false", "0",
     }
 
 

@@ -23,6 +23,11 @@ X2_STATEMENTS = [
     "命題と証明はすべて日本語で記述する。",
     "The function f: ℝ → ℝ defined by f(x) = x² is continuous at every real number.",
     "x² が連続であることを説明してください。",
+    "f(x)=x² 在实数范围内连续,请证明。请用简体中文回答。",
+    "請證明函數 f(x)=x² 在實數上連續。請用繁體中文作答。",
+    # Another presentation request inside the original text is split off, not read as the claim.
+    "Prove that x² is continuous. Keep the answer short.",
+    "x² が連続であることを証明してください。箇条書きで。",
 ]
 OTHER_STATEMENTS = [
     "実数上の関数 f: ℝ → ℝ を f(x)=x² で定める。この関数が不連続であるかどうかを判定せよ。",
@@ -31,6 +36,15 @@ OTHER_STATEMENTS = [
     "Explain why x^2 is differentiable.",
     "Prove that x^2 is continuous on [0, 1].",
     "Solve x+1=2.",
+    # Questions keep the router.
+    "x² は連続ですか？",
+    "Is x² continuous?",
+    "x²是连续的吗？",
+    "Why is x² continuous?",
+    "x² は連続か。",
+    # A presentation request outside the closed table is not guessed: the router decides.
+    "x² が連続であることを証明してください。回答は短くしてください。",
+    "Prove that x² is continuous and also prove that x³ is continuous.",
 ]
 
 
@@ -110,13 +124,13 @@ def test_context_requests_never_take_the_shortcut(delta):
     assert _template_fastpath_eligible(_request(X2_STATEMENTS[2]))
 
 
-def test_factory_flag_is_default_off(monkeypatch):
+def test_factory_flag_is_default_on_and_can_be_turned_off(monkeypatch):
     from pals_agent.factory import chat_template_fastpath_enabled
 
     monkeypatch.delenv("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", raising=False)
-    assert chat_template_fastpath_enabled() is False
+    assert chat_template_fastpath_enabled() is True
+    for off in ("off", "false", "0", "FALSE"):
+        monkeypatch.setenv("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", off)
+        assert chat_template_fastpath_enabled() is False
     monkeypatch.setenv("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "on")
     assert chat_template_fastpath_enabled() is True
-    monkeypatch.setenv("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "off")
-    assert chat_template_fastpath_enabled() is False
-
