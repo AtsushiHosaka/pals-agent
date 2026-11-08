@@ -81,6 +81,7 @@ from pals_agent.runtime_latency import (
 )
 from pals_agent.settings import AgentSettings
 from pals_agent.speculative_explanation import SpeculativeExplanation
+from pals_agent.template_explanation import fixed_explanation_for
 from pals_agent.usage import usage_scope
 
 ClaimStatus = Literal[
@@ -1759,6 +1760,9 @@ class SqsProofWorker:
                 retry_id=retry_id,
             )
 
+    def _fixed_explanation_enabled(self) -> bool:
+        return bool(getattr(self.settings, "template_fixed_explanation_enabled", False))
+
     def _start_speculative_explanation(
         self,
         *,
@@ -1777,6 +1781,10 @@ class SqsProofWorker:
         """
         if (
             not getattr(self.settings, "speculative_explanation_enabled", False)
+            or (
+                self._fixed_explanation_enabled()
+                and fixed_explanation_for(lean_code, language) is not None
+            )
             or claim_id is None
             or extend_visibility is None
             or self.explainer is None
@@ -1845,6 +1853,13 @@ class SqsProofWorker:
             reviewer = self._required_output_reviewer()
 
             def generate_explanation(feedback: Any) -> ProofExplanation:
+                if feedback is None and self._fixed_explanation_enabled():
+                    # The proof is exactly the x² template: its explanation is a reviewed fixed
+                    # text. It is only a candidate: the same independent review and the same
+                    # final write follow, and a rejection falls back to the model explainer.
+                    fixed = fixed_explanation_for(lean_code, language)
+                    if fixed is not None:
+                        return fixed
                 if feedback is None and speculative is not None:
                     # The first candidate was generated while the semantic review ran. It is
                     # used only now, with the claim held, so it still goes through the same
