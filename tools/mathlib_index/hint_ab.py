@@ -29,6 +29,12 @@ from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.pipeline import ProofPipeline
 from pals_agent.usage import usage_scope
 from tools.mathlib_index.build_index import name_tokens
+from tools.mathlib_index.exemplars import (
+    Target,
+    load_catalog,
+    render_exemplars,
+    select_exemplars,
+)
 from tools.mathlib_index.search import (
     MathlibIndex,
     lean_query_terms,
@@ -170,6 +176,18 @@ class HintingClient:
 
 
 @dataclass(slots=True)
+class ExemplarClient:
+    """Appends the same catalog proof examples to every Sketch and Prove prompt of one card."""
+
+    inner: Any
+    text: str
+
+    def generate(self, *, model: str, prompt: str) -> str:
+        suffix = self.text if prompt.startswith(_HINTED_STAGES) else ""
+        return str(self.inner.generate(model=model, prompt=prompt + suffix))
+
+
+@dataclass(slots=True)
 class SpendGuard:
     """Refuses further model calls once the estimated spend of this process reaches the limit."""
 
@@ -214,6 +232,18 @@ def run_one(
     )
     builder = HintBuilder(cast(MathlibIndex, index), lean=args.hint_lean)
     client: Any = HintingClient(openai, builder) if arm == "hinted" else openai
+    exemplar_ids: list[str] = []
+    exemplar_chars = 0
+    if arm == "exemplars":
+        chosen = select_exemplars(
+            Target(problem["id"], problem["statement"], problem.get("formal_statement") or ""),
+            load_catalog(args.catalog_docs),
+            k=args.exemplar_count,
+        )
+        exemplar_ids = [card.id for card in chosen]
+        text = render_exemplars(chosen)
+        exemplar_chars = len(text)
+        client = ExemplarClient(openai, text)
     generator = HybridLeanGenerator(
         model=args.model, provider="openai", client=GuardedClient(client, guard)
     )
@@ -290,6 +320,8 @@ def run_one(
             )
             for a in attempts
         ],
+        "exemplar_ids": exemplar_ids,
+        "exemplar_chars": exemplar_chars,
         "hint_seconds": round(sum(round_["seconds"] for round_ in builder.log), 1),
         "hint_rounds": builder.log,
         "budget_stopped": guard.stopped,
@@ -305,7 +337,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--problems", type=Path, required=True)
     parser.add_argument("--only", default="", help="Comma-separated problem ids")
-    parser.add_argument("--arms", default="baseline,hinted")
+    parser.add_argument("--arms", default="baseline,hinted", help="baseline, hinted, exemplars")
     parser.add_argument("--index-dir", type=Path, help="Required only for the hinted arm")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-label", required=True)
@@ -325,6 +357,13 @@ def main() -> None:
         action="store_true",
         help="Enable ProofPipeline.sketch_failure_proceeds_to_prove",
     )
+    parser.add_argument(
+        "--catalog-docs",
+        type=Path,
+        default=Path(__file__).resolve().parents[3] / "docs",
+        help="Directory with *-batch.json/.lean catalog cards (arm exemplars)",
+    )
+    parser.add_argument("--exemplar-count", type=int, default=2)
     parser.add_argument("--max-output-tokens", type=int, default=12000)
     parser.add_argument("--lean", required=True, help="Verifier lean, usually the Elan proxy")
     parser.add_argument("--lake", required=True)
