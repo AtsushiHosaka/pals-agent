@@ -282,12 +282,10 @@ def constantKind : ConstantInfo → Nat
 -- 0: same type and value (or constructor names); 1: same last name component and kind.
 def duplicateReason (target other : ConstantInfo) : Option (Nat × String) :=
   if constantKind target == 0 || constantKind target != constantKind other then none else
-  let levels := other.levelParams.map mkLevelParam
-  let sameType := target.levelParams.length == other.levelParams.length &&
-    other.type == target.type.instantiateLevelParams target.levelParams levels
+  -- Same universe parameter names keep this a plain structural comparison, with no allocation.
+  let sameType := target.levelParams == other.levelParams && other.type == target.type
   let sameBody := match target, other with
-    | .defnInfo l, .defnInfo r =>
-      sameType && r.value == l.value.instantiateLevelParams target.levelParams levels
+    | .defnInfo l, .defnInfo r => sameType && r.value == l.value
     | .inductInfo l, .inductInfo r =>
       sameType && l.ctors.map lastComponent == r.ctors.map lastComponent
     | _, _ => false
@@ -305,14 +303,17 @@ def frontierDuplicates (env : Environment) (roots : List String) (targets : List
   let found : Array (String × Nat × String × String) := env.constants.fold (init := #[])
     fun acc n i =>
       if constantKind i == 0 then acc else
-      match env.getModuleIdxFor? n with
-      | none => acc
-      | some idx =>
-        if !roots.contains (env.header.moduleNames[idx.toNat]!).getRoot.toString then acc
-        else infos.foldl (init := acc) fun acc (t, ti) =>
-          if t == n then acc else
-          match duplicateReason ti i with
-          | some (rank, reason) => acc.push (t.toString, rank, n.toString, reason)
+      -- The cheap comparison first; the module lookup only for the rare constant that matches.
+      infos.foldl (init := acc) fun acc (t, ti) =>
+        if t == n then acc else
+        match duplicateReason ti i with
+        | none => acc
+        | some (rank, reason) =>
+          match env.getModuleIdxFor? n with
+          | some idx =>
+            if roots.contains (env.header.moduleNames[idx.toNat]!).getRoot.toString then
+              acc.push (t.toString, rank, n.toString, reason)
+            else acc
           | none => acc
   let sorted := found.qsort fun a b =>
     a.1 < b.1 || (a.1 == b.1 && (a.2.1 < b.2.1 || (a.2.1 == b.2.1 && a.2.2.1 < b.2.2.1)))
