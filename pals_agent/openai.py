@@ -73,6 +73,51 @@ class OpenAIResponsesClient:
         response_callback: Callable[[str], None] | None = None,
         store: bool | None = None,
     ) -> str:
+        from pals_agent import step_timing
+
+        arguments: dict[str, Any] = dict(
+            model=model, prompt=prompt, timeout_seconds=timeout_seconds,
+            response_schema=response_schema, images=images,
+            response_callback=response_callback, store=store,
+        )
+        if not step_timing.enabled():
+            return self._generate(**arguments)
+        # Opt-in per-step timing: the call below is unchanged, only observed.
+        from pals_agent.runtime_latency import current_role_label
+        from pals_agent.usage import capture_usage
+
+        with (
+            step_timing.step(current_role_label(), model=model) as record,
+            capture_usage() as usage_rows,
+        ):
+            if record is not None:
+                record.model_call = True
+            try:
+                return self._generate(**arguments)
+            except OpenAIError as error:
+                if record is not None:
+                    record.set_outcome(
+                        step_timing.classify_openai_error(error.private_diagnostics)
+                    )
+                    status = error.private_diagnostics.get("http_status")
+                    record.http_status = status if type(status) is int else None
+                raise
+            finally:
+                if record is not None:
+                    for row in usage_rows:
+                        record.set_usage(row)
+
+    def _generate(
+        self,
+        *,
+        model: str,
+        prompt: str,
+        timeout_seconds: float | None,
+        response_schema: dict[str, Any] | None,
+        images: tuple[str, ...],
+        response_callback: Callable[[str], None] | None,
+        store: bool | None,
+    ) -> str:
         from pals_agent.chat_images import current_chat_images
         from pals_agent.linked_chat import linked_chat_prompt
 
@@ -107,6 +152,9 @@ class OpenAIResponsesClient:
             ):
                 raise ValueError("Unsupported reasoning effort for the selected model")
             payload["reasoning"] = {"effort": effort}
+            from pals_agent import step_timing
+
+            step_timing.annotate_effort(effort)
         if response_schema is not None:
             payload["text"] = {
                 "format": {

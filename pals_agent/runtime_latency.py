@@ -25,7 +25,7 @@ import threading
 import time
 from collections import Counter
 from collections.abc import Callable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any, Protocol
@@ -52,6 +52,8 @@ _STAGES = frozenset({
 })
 # These enclose transport spans and other stages; they describe, never attribute.
 _CONTAINER_STAGES = frozenset({"assessment", "explanation", "proof_pipeline", "semantic_review"})
+# Timed as dedicated steps with their own outcomes (lean_check, lean_reconcile_wait).
+_MIRRORED_ELSEWHERE = frozenset({"lean_compile_local", "lean_reconciliation_wait"})
 _NOTES = frozenset({"lean_verification_ms", "reconciliation_polls"})
 _MAX_SERVER_MS = 3_600_000.0
 _API_TIMING = re.compile(r"(?:^|,)\s*app;dur=([0-9]{1,10}(?:\.[0-9]{1,6})?)\s*(?:,|$)")
@@ -118,6 +120,11 @@ def _role() -> str:
         return result if result in _ROLES else "other"
     except Exception:  # noqa: BLE001 -- instrumentation must never alter application behavior.
         return "other"
+
+
+def current_role_label() -> str:
+    """The model role for the call being made now: a latency label, else the usage role."""
+    return _role()
 
 
 def _origin(url: str) -> tuple[str, str | None, int | None] | None:
@@ -451,7 +458,12 @@ def traced_delivery(
     trace = _Trace(resource_id, kind=kind, queue=queue)
     token = _ACTIVE.set(trace)
     try:
-        yield
+        # The same delivery as one step_timing run, so worker stages (review, explanation)
+        # and the pipeline share a summary and a run reference. A no-op while it is off.
+        from pals_agent import step_timing
+
+        with step_timing.run_scope(resource_id):
+            yield
     finally:
         _ACTIVE.reset(token)
         try:
@@ -465,24 +477,33 @@ def traced_delivery(
 @contextmanager
 def latency_stage(name: str) -> Iterator[None]:
     """Name in-process work. Unknown names collapse so free text can't reach a log."""
-    trace = _ACTIVE.get()
-    if trace is None:
-        yield
-        return
-    index = None
-    try:
-        index = trace.begin(name if name in _STAGES else "local_other", _role(), "local")
-    except Exception:  # noqa: BLE001 -- failed telemetry cannot change the traced work.
-        trace.fault()
-    failed = True
-    try:
-        yield
-        failed = False
-    finally:
+    from pals_agent import step_timing
+
+    with ExitStack() as stack:
+        # The same stage as a per-step event when step timing is on. The two stages that
+        # pipeline.py and worker.py time themselves, with a result, are not repeated.
+        if name in step_timing.STEPS and name not in _MIRRORED_ELSEWHERE:
+            stack.enter_context(
+                step_timing.step(name, container=name in step_timing.CONTAINER_STEPS)
+            )
+        trace = _ACTIVE.get()
+        if trace is None:
+            yield
+            return
+        index = None
         try:
-            trace.end(index, None, failed)
-        except Exception:  # noqa: BLE001 -- preserve original result/exception identity.
+            index = trace.begin(name if name in _STAGES else "local_other", _role(), "local")
+        except Exception:  # noqa: BLE001 -- failed telemetry cannot change the traced work.
             trace.fault()
+        failed = True
+        try:
+            yield
+            failed = False
+        finally:
+            try:
+                trace.end(index, None, failed)
+            except Exception:  # noqa: BLE001 -- preserve original result/exception identity.
+                trace.fault()
 
 
 @contextmanager

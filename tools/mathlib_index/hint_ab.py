@@ -17,11 +17,12 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from pals_agent import step_timing
 from pals_agent.artifacts import FileArtifactStore, safe_artifact_segment
 from pals_agent.generator import HybridLeanGenerator
 from pals_agent.lean import LeanVerifier
@@ -230,8 +231,12 @@ def run_one(
         max_output_tokens=args.max_output_tokens,
         reasoning_effort=args.effort,
     )
-    builder = HintBuilder(cast(MathlibIndex, index), lean=args.hint_lean)
-    client: Any = HintingClient(openai, builder) if arm == "hinted" else openai
+    builder = HintBuilder(index, lean=args.hint_lean) if index is not None else None
+    client: Any = openai
+    if arm == "hinted":
+        if builder is None:
+            raise ValueError("the hinted arm needs --index-dir")
+        client = HintingClient(openai, builder)
     exemplar_ids: list[str] = []
     exemplar_chars = 0
     if arm == "exemplars":
@@ -272,7 +277,14 @@ def run_one(
         guard.add(row)
 
     started = time.monotonic()
-    with usage_scope(on_usage):
+    # One label per run label, problem and arm, so timing files from different experiments
+    # cannot be mixed up. A name that is not token-safe falls back to the job digest.
+    with (
+        usage_scope(on_usage),
+        step_timing.run_scope(
+            run_id, label=f"{args.run_label}.{problem['id']}.{arm}"
+        ) as timing_run,
+    ):
         result = pipeline.run_statement(
             statement=problem["statement"],
             formal_statement=problem.get("formal_statement"),
@@ -322,9 +334,11 @@ def run_one(
         ],
         "exemplar_ids": exemplar_ids,
         "exemplar_chars": exemplar_chars,
-        "hint_seconds": round(sum(round_["seconds"] for round_ in builder.log), 1),
-        "hint_rounds": builder.log,
+        "hint_seconds": round(sum(r["seconds"] for r in builder.log), 1) if builder else 0.0,
+        "hint_rounds": builder.log if builder else [],
         "budget_stopped": guard.stopped,
+        # Joins this record to its pipeline_run in the PALS_STEP_TIMING_JSONL events.
+        **({"step_timing_run": timing_run.name} if timing_run is not None else {}),
     }
     print(
         json.dumps({k: v for k, v in record.items() if k != "hint_rounds"}, ensure_ascii=False),
@@ -373,8 +387,14 @@ def main() -> None:
     parser.add_argument("--scratch", type=Path, required=True)
     parser.add_argument("--lean-timeout", type=float, default=180.0)
     parser.add_argument("--max-usd", type=float, help="Stop calling the model at this estimate")
+    parser.add_argument(
+        "--step-timing", action="store_true",
+        help="Write per-step timing events to <out>/<run-label>.steps.jsonl",
+    )
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
+    if args.step_timing:
+        os.environ[step_timing.ENV_JSONL] = str(args.out / f"{args.run_label}.steps.jsonl")
     problems = json.loads(args.problems.read_text(encoding="utf-8"))
     selected = set(filter(None, args.only.split(",")))
     results_path = args.out / f"{args.run_label}.jsonl"
