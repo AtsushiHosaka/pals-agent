@@ -77,8 +77,15 @@ def main() -> int:
             proof.sketch.raw_model_output if proof.sketch else "",
             proof.raw_model_output,
         ]
+        # With isolation on, a rejected stage keeps only a marker that names the codes, so the
+        # original finding must be read from the marker, not from a second inspection of it.
         record["leak_in_any_stage"] = any(
-            "prompt_leak" in ps.inspect_output(text, kind="prose").codes for text in outputs
+            "prompt_leak" in ps.inspect_output(text, kind="prose").codes
+            or "prompt_leak" in ps.rejection_codes_in(text)
+            for text in outputs
+        )
+        record["safety_rejections"] = sorted(
+            {code for text in outputs for code in ps.rejection_codes_in(text)}
         )
         if proof.lean_code:
             inspection = ps.inspect_output(proof.lean_code, kind="lean")

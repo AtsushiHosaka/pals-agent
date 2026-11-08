@@ -332,3 +332,94 @@ def test_every_attack_prompt_stays_bounded(isolation_on):
     for case in ATTACKS:
         for name, prompt in _all_generator_prompts(_request(case)).items():
             assert len(prompt) < 120_000, (case["id"], name)
+
+
+@pytest.mark.parametrize(
+    "prose",
+    [
+        "For $x<a$, choose $\\delta=a-x$.",
+        "$0<a<1$ より $a^2<a$。",
+        "任意の $\\varepsilon>0$ に対し $|x|<\\varepsilon$ とする。",
+        "$a<b>c$ ならば $b$ は $a$ と $c$ の間にない。",
+        "$x<a>y$ の形の式は意味を持たない。",
+        "$a<b$ かつ $b<c$ のとき、$a<c$。",
+        "$i<n$ なので $a<img\\_n$ ではない。",
+        "$x <a$ and $y<b$ with $a<b$.",
+        "$1<2<3$, $a<=b$, $a<-b$, $a<\\sqrt{b}$, $a<(b+c)$, $a<{b}$.",
+        "$A<B\\iff B>A$ と $A<\\!<B$。",
+        "集合 $\\{x \\mid x<a\\}$ は開集合である。",
+        "$a<b$ だから、$f(a)<f(b)$ であり、$b>a$ でもある。",
+    ],
+)
+def test_ordinary_inequalities_are_not_markup(prose):
+    assert ps.learner_text_violation(prose) is None
+
+
+@pytest.mark.parametrize(
+    "markup",
+    [
+        '<a href="http://evil.example">x</a>',
+        "<a href='x'>x",
+        "<a  target=_blank>x",
+        "<A HREF=x>",
+        "</a>",
+        "</script >",
+        "<script>alert(1)</script>",
+        "<SCRIPT src=x>",
+        "<script",
+        '<img src="x" onerror="alert(1)">',
+        "<img/src=x>",
+        "<iframe src=x></iframe>",
+        "<svg onload=alert(1)>",
+        "<style>body{}</style>",
+        "<object data=x>",
+        "<embed src=x>",
+        "<link rel=stylesheet href=x>",
+        "<meta http-equiv=refresh content=0>",
+        "<form action=x><input name=y>",
+        "<button onclick=alert(1)>go</button>",
+        "<p onmouseover=alert(1)>hi</p>",
+        "<div\nonclick = 'x'>hi",
+        "<!-- hidden -->",
+        "<!DOCTYPE html>",
+        "<![CDATA[x]]>",
+        "<?xml version='1.0'?>",
+        "javascript:alert(1)",
+        "JaVaScRiPt :alert(1)",
+        "[x](javascript:alert(1))",
+        "vbscript:msgbox(1)",
+        "data:text/html;base64,PHNjcmlwdD4=",
+        "![x](cid:abc)",
+        "![x](http://evil.example/p.png)",
+        "[x](https://evil.example)",
+        "see https://evil.example/q?a=1",
+        "see www.evil.example",
+    ],
+)
+def test_real_markup_and_script_urls_are_still_rejected(markup):
+    assert ps.learner_text_violation(f"説明: {markup} 以上。") == "active_markup"
+
+
+def test_lean_code_and_latex_with_less_than_are_not_flagged():
+    lean = "theorem t (a b : ℝ) (h : a < b) : a ≤ b := by\n  exact le_of_lt h\n"
+    assert ps.inspect_output(lean, kind="lean").codes == ()
+    assert ps.learner_text_violation(lean) is None
+    latex = r"\begin{align} a &< b \\ \left|x\right| &< \varepsilon \end{align}"
+    assert ps.learner_text_violation(latex) is None
+
+
+def test_hidden_characters_do_not_split_a_script_url():
+    assert ps.learner_text_violation("java​script:alert(1)") == "active_markup"
+    assert ps.learner_text_violation("<scr‍ipt>") == "active_markup"
+
+
+def test_rejection_marker_keeps_the_original_finding(monkeypatch):
+    """The probe must still see a leak after the stage replaced its output with a marker."""
+    monkeypatch.setenv(ps.PROMPT_ISOLATION_ENV, "true")
+    leaked = "Here you go: " + ps.UNTRUSTED_NOTICE
+    draft = HybridLeanGenerator(model="m", client=_Scripted(leaked)).generate_draft(
+        ProofRequest(id="r", prompt="p")
+    )
+    assert ps.inspect_output(draft.raw_model_output, kind="prose").codes == ()
+    assert "prompt_leak" in ps.rejection_codes_in(draft.raw_model_output)
+    assert ps.rejection_codes_in("ordinary output") == ()

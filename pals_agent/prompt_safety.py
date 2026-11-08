@@ -230,9 +230,21 @@ def _forbidden_lean_codes(lean_code: str, *, allow_sorry: bool) -> list[str]:
     return codes
 
 
+_DANGEROUS_TAGS: Final = (
+    "script|iframe|frame|frameset|img|image|style|svg|object|embed|link|meta|form|input|button"
+    "|base|body|html|head|video|audio|source|template|textarea|select|applet|canvas|portal"
+)
+# A bare `<a`, `<b>` or `x<a>y` is an inequality in mathematics, so a tag counts only when its
+# structure is unmistakable: a dangerous element name, any closing tag, an opening tag carrying
+# `name=` attributes and a `>`, a comment/doctype/CDATA/XML prolog, or a script URL scheme.
 _ACTIVE_MARKUP: Final = re.compile(
-    r"https?://|\bwww\.|<\s*/?\s*(?:script|img|iframe|a|style|svg|object|embed|link)\b"
-    r"|!\[[^\]]*\]\(|\]\(\s*(?:https?|javascript|data):",
+    r"https?://|\bwww\."
+    rf"|<\s*/?\s*(?:{_DANGEROUS_TAGS})(?=[\s/>])"
+    r"|</\s*[A-Za-z][\w:-]*\s*>"
+    r"|<[A-Za-z][\w:-]*\s+[\w:-]+\s*=[^<>]*>"
+    r"|<!--|<!doctype|<!\[cdata\[|<\?(?:xml|php)"
+    r"|\b(?:javascript|vbscript)\s*:|\bdata\s*:\s*text/html"
+    r"|!\[[^\]]*\]\(|\]\(\s*(?:https?|javascript|vbscript|data):",
     re.IGNORECASE,
 )
 
@@ -246,9 +258,19 @@ def learner_text_violation(text: str) -> str | None:
     collapsed = " ".join(text.lower().split())
     if any(fingerprint in collapsed for fingerprint in _LEAK_FINGERPRINTS):
         return "prompt_leak"
-    if _ACTIVE_MARKUP.search(text):
+    # Hidden characters must not split `java\u200bscript:` or a tag name past the match.
+    if _ACTIVE_MARKUP.search(sanitize_text(text, max_chars=len(text)).text):
         return "active_markup"
     return None
+
+
+_REJECTION_MARKER: Final = re.compile(r"rejected by prompt safety \(([a-z_:,. ]+)\)")
+
+
+def rejection_codes_in(text: str) -> tuple[str, ...]:
+    """Codes named by the marker that a rejected stage leaves in place of the model output."""
+    found = _REJECTION_MARKER.search(text)
+    return tuple(found.group(1).split(",")) if found else ()
 
 
 def record_output_inspection(role: str, inspection: OutputInspection) -> None:
