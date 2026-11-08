@@ -49,6 +49,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator, Sequence
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, TextIO, cast
 
@@ -63,11 +64,12 @@ from pals_agent.explanations import (
 )
 from pals_agent.latency_report import percentile
 from pals_agent.runtime_latency import TimedTransport, traced_delivery
-from pals_agent.usage import report_usage, usage_scope
+from pals_agent.usage import capture_usage, report_usage, usage_scope
 from pals_agent.worker import SqsProofWorker
 
 STATEMENT = "theorem sample : True := by trivial"
 LEAN = "theorem sample : True := by\n  trivial"
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 JOB_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 RESULT_URI = "s3://pals-artifacts/proof-jobs/job-semantic/result.lean"
 CLAIM_ID = "55555555-5555-4555-8555-555555555555"
@@ -228,6 +230,47 @@ class Marks:
     explain_finished: float = 0.0
     completed_at: float | None = None
     explain_threads: list[str] = field(default_factory=list)
+    # Usage of every explanation call, kept even when the call was discarded (the production
+    # path drops a discarded call's usage, which is exactly the waste this has to measure).
+    explain_records: list[dict[str, Any]] = field(default_factory=list)
+    # Exceptions the model clients raised (class and a short message), for telling a provider
+    # outage from a model answer.
+    errors: list[str] = field(default_factory=list)
+
+    def note_error(self, error: BaseException) -> None:
+        self.errors.append(f"{type(error).__name__}: {str(error)[:160]}")
+
+
+@dataclass(frozen=True)
+class Case:
+    """The proof job the stub API hands to the worker."""
+
+    name: str
+    statement: str
+    formal_statement: str
+    lean: str
+    target_name: str
+    language: str
+
+
+TRIVIAL_CASE = Case("trivial", STATEMENT, "True", LEAN, "sample", "zh-Hans")
+
+
+def square_continuity_case() -> Case:
+    """The x^2 continuity card: the Lean proof is the repo's own test data."""
+    base = _REPO_ROOT / "testdata" / "square-continuity-recipe-v1"
+    card = json.loads((base / "card.json").read_text(encoding="utf-8"))
+    lean = (base / "proofs" / "square_continuous_explicit_epsilon_delta.lean").read_text(
+        encoding="utf-8"
+    ).rstrip("\n")
+    return Case(
+        "x2", card["statement"], "Continuous (fun x : ℝ => x ^ 2)", lean,
+        "square_continuous_explicit_epsilon_delta", "ja",
+    )
+
+
+def load_case(name: str) -> Case:
+    return square_continuity_case() if name == "x2" else TRIVIAL_CASE
 
 
 @dataclass
@@ -293,10 +336,13 @@ def _envelope(status: str, lease_remaining_ms: int | None, proof_job_id: str) ->
 class StubApi:
     """Answers the API calls of the semantic-review -> explanation stage, after a latency."""
 
-    def __init__(self, clock: Clock, current: Current, marks: Marks) -> None:
+    def __init__(
+        self, clock: Clock, current: Current, marks: Marks, case: Case = TRIVIAL_CASE,
+    ) -> None:
         self.clock = clock
         self.current = current
         self.marks = marks
+        self.case = case
         self.calls = 0
         self.evidence: list[dict[str, Any]] = []
         self.operational_failure: Any = None
@@ -315,12 +361,13 @@ class StubApi:
             "state": "semantic_review",
             "result_artifact_uri": RESULT_URI,
             "chat_id": "chat-1",
-            "output_language": "zh-Hans",
-            "theorem_statement": STATEMENT,
-            "request_context": {"formal_statement": "True"},
-            "lean_code": LEAN,
+            "output_language": self.case.language,
+            "theorem_statement": self.case.statement,
+            "request_context": {"formal_statement": self.case.formal_statement},
+            "lean_code": self.case.lean,
             "status_context": {"target_declaration": {
-                "kind": "theorem", "name": "sample", "proposition": "True",
+                "kind": "theorem", "name": self.case.target_name,
+                "proposition": self.case.formal_statement,
             }},
             "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
             "generation_session_id": "11111111-1111-4111-8111-111111111111",
@@ -331,7 +378,7 @@ class StubApi:
         return {
             "schema_version": "pals.verification-candidate-binding.v1", **kwargs,
             "mutation_claim_id": "11111111-1111-4111-8111-111111111111",
-            "lean_sha256": hashlib.sha256(LEAN.encode()).hexdigest(),
+            "lean_sha256": hashlib.sha256(self.case.lean.encode()).hexdigest(),
             "result_artifact_uri": RESULT_URI,
             "source_binding_sha256": None, "candidate_status": "semantic_review",
         }
@@ -470,7 +517,11 @@ class _ReviewerProxy:
 
     def review_proof(self, **kwargs: Any) -> Any:
         self._marks.review_start = self._clock.monotonic()
-        return self._inner.review_proof(**kwargs)
+        try:
+            return self._inner.review_proof(**kwargs)
+        except Exception as error:
+            self._marks.note_error(error)
+            raise
 
 
 class _ExplainerProxy:
@@ -480,7 +531,14 @@ class _ExplainerProxy:
     def explain(self, **kwargs: Any) -> Any:
         self._marks.explain_threads.append(threading.current_thread().name)
         try:
-            return self._inner.explain(**kwargs)
+            with capture_usage() as records:
+                try:
+                    return self._inner.explain(**kwargs)
+                except Exception as error:
+                    self._marks.note_error(error)
+                    raise
+                finally:
+                    self._marks.explain_records.extend(records)
         finally:
             self._marks.explain_finished = max(
                 self._marks.explain_finished, self._clock.monotonic(),
@@ -494,7 +552,11 @@ class _OutputReviewerProxy:
     def review_explanation(self, **kwargs: Any) -> Any:
         # The review cannot start before the explanation it reviews exists.
         self._clock.advance_to(self._marks.explain_finished)
-        return self._inner.review_explanation(**kwargs)
+        try:
+            return self._inner.review_explanation(**kwargs)
+        except Exception as error:
+            self._marks.note_error(error)
+            raise
 
 
 # --------------------------------------------------------------------------------------------
@@ -516,6 +578,9 @@ class IterationResult:
     explain_usage_forwarded: int
     explanation_upserts: int
     event: dict[str, Any] | None = field(default=None, repr=False)
+    cost_usd: float = 0.0
+    wasted_cost_usd: float = 0.0
+    failure: str | None = None
 
 
 @dataclass
@@ -523,6 +588,27 @@ class Clients:
     explainer: Any
     output_reviewer: Any
     reviewer: Any
+
+
+# USD per million tokens. gpt-6-luna: input at the cache-write price, the upper bound that
+# pals_agent.usage prices with (price snapshot openai-gpt-6-luna-standard-upper-bound-2026-09-30;
+# list prices in docs/proof-reuse-latency-decisions-research-2026-09-30.md). A model without an
+# entry is an error, so a changed role binding cannot be spent unmetered.
+PRICES_USD_PER_MTOK: dict[str, tuple[float, float]] = {"gpt-6-luna": (0.125, 0.50)}
+
+
+class UnknownPrice(Exception):
+    pass
+
+
+def record_cost(record: dict[str, Any]) -> float:
+    model = str(record.get("model"))
+    if model not in PRICES_USD_PER_MTOK:
+        raise UnknownPrice(f"no price for model {model!r}")
+    price_in, price_out = PRICES_USD_PER_MTOK[model]
+    return float(
+        record["input_tokens"] * price_in + record["output_tokens"] * price_out
+    ) / 1e6
 
 
 def _event_line(metrics: dict[str, Any]) -> str:
@@ -576,12 +662,13 @@ def _outcome(api: StubApi, marks: Marks) -> str:
 def run_iteration(
     *, pair: int, arm: str, clock: Clock, settings: Any, draws: Draws | None,
     build_clients: Callable[[Current], Clients], current: Current,
+    case: Case = TRIVIAL_CASE,
 ) -> IterationResult:
     current.draws = draws
     if isinstance(clock, VirtualClock):
         clock.reset()
     marks = Marks()
-    api = StubApi(clock, current, marks)
+    api = StubApi(clock, current, marks, case)
     clients = build_clients(current)
     worker = SqsProofWorker(
         settings=settings,
@@ -609,6 +696,12 @@ def run_iteration(
     started = SPECULATIVE_THREAD in marks.explain_threads
     claimed = any(update["state"] == "generating" for update in api.explanation_updates)
     completed = outcome == "completed"
+    adopted = {record.get("call_id") for record in forwarded}
+    cost = math.fsum(record_cost(record) for record in forwarded)
+    wasted = math.fsum(
+        record_cost(record) for record in marks.explain_records
+        if record.get("call_id") not in adopted
+    )
     return IterationResult(
         pair=pair,
         arm=arm,
@@ -635,7 +728,22 @@ def run_iteration(
         explain_usage_forwarded=sum(1 for _ in forwarded),
         explanation_upserts=len(api.explanation_updates),
         event=metrics,
+        cost_usd=cost + wasted,
+        wasted_cost_usd=wasted,
+        failure=None if completed else _failure_detail(api, outcome, marks),
     )
+
+
+def _failure_detail(api: StubApi, outcome: str, marks: Marks) -> str:
+    """A short description of why a delivery did not complete: the outcome, the client errors
+    (exception class and a short message) and, for an operational failure, its repr."""
+    parts = [outcome]
+    if outcome == "review_unavailable":
+        parts.append(repr(api.operational_failure)[:200])
+    if outcome == "rejected":
+        parts.append(str(api.evidence[-1].get("decision")))
+    parts.extend(marks.errors[:3])
+    return " | ".join(parts)[:500]
 
 
 # --------------------------------------------------------------------------------------------
@@ -667,8 +775,18 @@ def run_experiment(
     *, pairs: int, seed: int, scenario: Scenario, order: str = "abab",
     clients_factory: Callable[[Clock], Callable[[Current], Clients]] | None = None,
     settings_factory: Callable[[bool], Any] | None = None, clock: Clock | None = None,
+    case: Case = TRIVIAL_CASE, max_usd: float | None = None,
+    retries: int = 0, excluded: list[IterationResult] | None = None,
+    stop_reason: list[str] | None = None, reserve_usd: float = 0.05,
 ) -> list[IterationResult]:
-    """Run ``pairs`` pairs; fake clients and virtual time unless a factory and clock are given."""
+    """Run ``pairs`` pairs; fake clients and virtual time unless a factory and clock are given.
+
+    ``max_usd`` stops the run before an iteration that could take the spend past the cap (the
+    reserve is the dearest iteration so far, at least ``reserve_usd``); the reason is appended
+    to ``stop_reason``. With ``retries`` a pair in which an arm hit a transient provider failure
+    (see :func:`is_transient`) is run again, up to that many times; the aborted attempts go to
+    ``excluded`` and are not part of the returned results.
+    """
     virtual = clock is None
     the_clock: Clock = clock if clock is not None else VirtualClock()
     draws: list[Draws | None] = (
@@ -677,14 +795,56 @@ def run_experiment(
     build_clients = (clients_factory or _fake_clients)(the_clock)
     make_settings = settings_factory or _fake_settings
     current = Current()
-    results = []
+    results: list[IterationResult] = []
+    spent = 0.0
+    dearest = reserve_usd
+    by_pair: dict[int, list[tuple[int, str]]] = {}
     for pair, arm in arm_sequence(pairs, order):
-        results.append(run_iteration(
-            pair=pair, arm=arm, clock=the_clock, settings=make_settings(arm == "on"),
-            draws=draws[pair], build_clients=build_clients,
-            current=current,
-        ))
+        by_pair.setdefault(pair, []).append((pair, arm))
+    for pair, slots in by_pair.items():
+        for attempt in range(retries + 1):
+            attempt_results: list[IterationResult] = []
+            for _, arm in slots:
+                if max_usd is not None and spent + dearest > max_usd:
+                    if stop_reason is not None:
+                        stop_reason.append(
+                            f"spend cap: ${spent:.4f} spent, next iteration may cost "
+                            f"${dearest:.4f}, cap ${max_usd:.2f}"
+                        )
+                    return results + attempt_results
+                result = run_iteration(
+                    pair=pair, arm=arm, clock=the_clock, settings=make_settings(arm == "on"),
+                    draws=draws[pair], build_clients=build_clients, current=current, case=case,
+                )
+                spent += result.cost_usd
+                dearest = max(dearest, result.cost_usd)
+                attempt_results.append(result)
+                if is_transient(result):
+                    break
+            if any(is_transient(r) for r in attempt_results) and attempt < retries:
+                if excluded is not None:
+                    excluded.extend(attempt_results)
+                continue
+            results.extend(attempt_results)
+            break
     return results
+
+
+_TRANSIENT_MARKERS = (
+    "timeout", "timed out", "rate_limit", "rate limit", "429", "500", "502", "503", "504",
+    "overloaded", "connection", "server_error", "api_error",
+)
+
+
+def is_transient(result: IterationResult) -> bool:
+    """A delivery that stopped on a provider-side error, not on what the model answered.
+
+    Judged on the failure description (content-free codes); a model rejection is a result.
+    """
+    if result.outcome in ("completed", "rejected") or result.failure is None:
+        return False
+    text = result.failure.lower()
+    return any(marker in text for marker in _TRANSIENT_MARKERS)
 
 
 # --------------------------------------------------------------------------------------------
@@ -734,6 +894,8 @@ def summarize(results: Sequence[IterationResult], *, resamples: int, seed: int) 
             "explain_calls": sum(r.explain_calls for r in mine),
             "explain_usage_forwarded": sum(r.explain_usage_forwarded for r in mine),
             "explanation_upserts": sum(r.explanation_upserts for r in mine),
+            "cost_usd": round(math.fsum(r.cost_usd for r in mine), 6),
+            "wasted_cost_usd": round(math.fsum(r.wasted_cost_usd for r in mine), 6),
             "metrics": {
                 name: stats([
                     v for r in mine if (v := getattr(r, f"{name}_ms")) is not None
@@ -777,6 +939,12 @@ def render_table(summary: dict[str, Any], header: str) -> str:
             + ("  " + json.dumps(a["outcomes"], sort_keys=True)
                if set(a["outcomes"]) != {"completed"} else "")
         )
+    if any(summary["arms"][arm]["cost_usd"] for arm in ARMS):
+        lines += [""] + [
+            f"cost {arm}: ${summary['arms'][arm]['cost_usd']:.4f} "
+            f"(of which discarded speculative calls ${summary['arms'][arm]['wasted_cost_usd']:.4f})"
+            for arm in ARMS
+        ]
     lines += ["", f"{'arm':<5}{'metric':<20}{'n':>4}{'p50_ms':>11}{'p95_ms':>11}{'mean_ms':>11}"]
     for arm in ARMS:
         for name in METRICS:
@@ -847,6 +1015,31 @@ def real_setup() -> tuple[Callable[[Clock], Callable[[Current], Clients]], Calla
 # Command line
 
 
+def load_openai_key(path: Path) -> bool:
+    """Put OPENAI_API_KEY from an env file into ``os.environ``; nothing else, and never printed.
+
+    Only that one name is read, so other settings in the file (model names, base URLs) cannot
+    change the production role bindings this harness measures. An existing value wins.
+    """
+    import os
+
+    if os.environ.get("OPENAI_API_KEY"):
+        return True
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line.startswith("export "):
+            line = line[len("export "):].lstrip()
+        name, sep, value = line.partition("=")
+        if sep and name.strip() == "OPENAI_API_KEY":
+            value = value.strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
+            if value:
+                os.environ["OPENAI_API_KEY"] = value
+                return True
+    return False
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="A/B timing of PALS_SPECULATIVE_EXPLANATION_ENABLED.",
@@ -856,6 +1049,16 @@ def _parser() -> argparse.ArgumentParser:
     mode.add_argument("--fake", action="store_true", help="fake clients, virtual time (default)")
     mode.add_argument("--real", action="store_true", help="the repo's real clients; paid calls")
     parser.add_argument("--confirm-spend", action="store_true", help="required with --real")
+    parser.add_argument("--max-usd", type=float, default=None,
+                        help="spend cap in USD (required with --real); the run stops before an "
+                             "iteration that could pass it")
+    parser.add_argument("--case", choices=("trivial", "x2"), default="trivial",
+                        help="the proof job: a one-line True proof, or the x^2 continuity card")
+    parser.add_argument("--retries", type=int, default=0,
+                        help="re-run a pair up to this many times after a transient provider "
+                             "failure; aborted attempts are listed apart from the results")
+    parser.add_argument("--env-file", default=None, metavar="PATH",
+                        help="load only the OpenAI API key from this env file (value never shown)")
     parser.add_argument("-n", "--pairs", type=int, default=20, help="pairs, i.e. 2n deliveries")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--order", choices=("abab", "abba"), default="abab")
@@ -905,6 +1108,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         print("error: -n and --bootstrap must be at least 1", file=sys.stderr)
         return 2
     clients_factory = settings_factory = clock = None
+    if args.env_file is not None:
+        try:
+            load_openai_key(Path(args.env_file))
+        except OSError as error:
+            print(f"error: cannot read --env-file ({type(error).__name__})", file=sys.stderr)
+            return 2
     if args.real:
         if not args.confirm_spend:
             print(
@@ -912,13 +1121,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "pass --confirm-spend to run it", file=sys.stderr,
             )
             return 2
+        if args.max_usd is None or args.max_usd <= 0:
+            print("error: --real needs --max-usd > 0", file=sys.stderr)
+            return 2
         try:
             clients_factory, settings_factory = real_setup()
         except RealUnavailable as error:
             print(f"error: real mode not run: {error}", file=sys.stderr)
             return 2
         clock = RealClock()
-        header = f"real clients; {args.pairs} pairs, {args.order.upper()}"
+        header = (f"real clients; case {args.case}; {args.pairs} pairs, {args.order.upper()}; "
+                  f"cap ${args.max_usd:.2f}")
     else:
         header = f"fake clients, virtual time; seed {args.seed}; {args.pairs} pairs, " \
                  f"{args.order.upper()}"
@@ -926,21 +1139,45 @@ def main(argv: Sequence[str] | None = None) -> int:
         review=args.review, explain=args.explain, explain_review=args.explain_review,
         api=args.api, reject_rate=args.reject_rate, explain_fail_rate=args.explain_fail_rate,
     )
+    excluded: list[IterationResult] = []
+    stop_reason: list[str] = []
     try:
         results = run_experiment(
             pairs=args.pairs, seed=args.seed, scenario=scenario, order=args.order,
             clients_factory=clients_factory, settings_factory=settings_factory, clock=clock,
+            case=load_case(args.case), max_usd=args.max_usd, retries=args.retries,
+            excluded=excluded, stop_reason=stop_reason,
         )
-    except ValueError as error:
+    except (ValueError, UnknownPrice) as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     _write_events(results, args.events, sys.stderr)
     summary = summarize(results, resamples=args.bootstrap, seed=args.seed)
+    summary["case"] = args.case
+    summary["per_iteration"] = [
+        {"pair": r.pair, "arm": r.arm, "outcome": r.outcome,
+         **{f"{m}_ms": getattr(r, f"{m}_ms") for m in METRICS},
+         "cost_usd": round(r.cost_usd, 6), "wasted_cost_usd": round(r.wasted_cost_usd, 6),
+         "explain_calls": r.explain_calls}
+        for r in results
+    ]
+    summary["stopped_early"] = stop_reason
+    summary["excluded_transient"] = [
+        {"pair": r.pair, "arm": r.arm, "outcome": r.outcome, "failure": r.failure,
+         "cost_usd": round(r.cost_usd, 6)} for r in excluded
+    ]
     if args.json:
         json.dump(summary, sys.stdout, indent=2, sort_keys=True)
         sys.stdout.write("\n")
     else:
         sys.stdout.write(render_table(summary, header))
+        for note in stop_reason:
+            sys.stdout.write(f"stopped early: {note}\n")
+        for row in summary["excluded_transient"]:
+            sys.stdout.write(f"excluded (transient, re-run): {json.dumps(row, sort_keys=True)}\n")
+        failed = [r for r in results if r.outcome != "completed"]
+        for r in failed:
+            sys.stdout.write(f"failed (kept as a result): pair {r.pair} {r.arm} {r.failure}\n")
     return 0
 
 

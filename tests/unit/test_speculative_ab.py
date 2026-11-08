@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -254,7 +255,7 @@ def test_main_prints_the_table_and_writes_events_per_arm(
 
     code = ab.main(["-n", "2", "--json", "--events", "none"])
     assert code == 0
-    assert set(json.loads(capsys.readouterr().out)) == {"arms", "paired_off_minus_on"}
+    assert {"arms", "paired_off_minus_on"} <= set(json.loads(capsys.readouterr().out))
 
 
 def test_main_sends_events_to_stderr_by_default(capsys: pytest.CaptureFixture[str]) -> None:
@@ -274,6 +275,9 @@ def test_real_mode_needs_the_spend_flag_and_credentials(
     assert "--confirm-spend" in capsys.readouterr().err
 
     assert ab.main(["--real", "--confirm-spend", "-n", "1"]) == 2
+    assert "--max-usd" in capsys.readouterr().err
+
+    assert ab.main(["--real", "--confirm-spend", "--max-usd", "1", "-n", "1"]) == 2
     err = capsys.readouterr().err
     assert "real mode not run" in err and "credentials" in err.lower()
 
@@ -289,3 +293,122 @@ def test_virtual_time_does_not_leak_into_the_tracing_module() -> None:
 
     _run(_scenario(1.0, 1.0, 1.0), pairs=1)
     assert vars(runtime_latency)["time"] is time
+
+
+# --------------------------------------------------------------------------------------------
+# Real-mode plumbing: key loading, cost accounting, spend cap, transient re-runs
+
+
+def test_only_the_openai_key_is_read_from_an_env_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    for name in ("OPENAI_API_KEY", "PALS_OPENAI_MODEL", "PALS_OPENAI_BASE_URL"):
+        monkeypatch.delenv(name, raising=False)
+    env = tmp_path / "env"
+    env.write_text(
+        "PALS_OPENAI_MODEL=other-model\nPALS_OPENAI_BASE_URL=https://example.invalid\n"
+        "export OPENAI_API_KEY='sk-test-value'\n", encoding="utf-8",
+    )
+
+    assert ab.load_openai_key(env) is True
+
+    import os
+
+    assert os.environ["OPENAI_API_KEY"] == "sk-test-value"
+    assert "PALS_OPENAI_MODEL" not in os.environ and "PALS_OPENAI_BASE_URL" not in os.environ
+    assert "sk-test-value" not in capsys.readouterr().out
+    monkeypatch.delenv("OPENAI_API_KEY")
+    (tmp_path / "other").write_text("A=b\n", encoding="utf-8")
+    assert ab.load_openai_key(tmp_path / "other") is False
+
+
+def test_an_unpriced_model_stops_the_run_instead_of_being_spent_unmetered() -> None:
+    with pytest.raises(ab.UnknownPrice):
+        ab.record_cost({"model": "gpt-6.1-terra", "input_tokens": 1, "output_tokens": 1})
+    assert ab.record_cost(
+        {"model": "gpt-6-luna", "input_tokens": 1_000_000, "output_tokens": 1_000_000},
+    ) == pytest.approx(0.625)
+
+
+class _UsageExplainer(ab._FakeExplainer):  # type: ignore[misc]
+    def explain(self, **kwargs: Any) -> Any:
+        from pals_agent.usage import report_usage
+
+        result = super().explain(**kwargs)
+        report_usage(
+            f"00000000-0000-4000-8000-{id(self) % 10**12:012d}", "gpt-6-luna",
+            {"input_tokens": 10_000, "output_tokens": 2_000},
+        )
+        return result
+
+
+def _usage_clients(clock: Any) -> Any:
+    return lambda current: ab.Clients(
+        explainer=_UsageExplainer(clock, current),
+        output_reviewer=ab._FakeOutputReviewer(clock, current),
+        reviewer=ab._FakeSemanticReviewer(clock, current),
+    )
+
+
+def test_a_discarded_speculative_call_is_costed_as_waste(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    results = ab.run_experiment(
+        pairs=2, seed=1, scenario=_scenario(2.0, 3.0, 1.0, reject_rate=1.0),
+        clients_factory=_usage_clients, settings_factory=ab._fake_settings, clock=None,
+    )
+    off, on = _arm(results, "off"), _arm(results, "on")
+    one_call = ab.record_cost(
+        {"model": "gpt-6-luna", "input_tokens": 10_000, "output_tokens": 2_000},
+    )
+
+    assert all(r.speculative_discarded for r in on)
+    # the explainer call is the one_call above plus the fake's own 10 + 5 tokens
+    assert [r.wasted_cost_usd for r in on] == [pytest.approx(one_call, rel=0.01)] * 2
+    assert [r.cost_usd for r in on] == [pytest.approx(one_call, rel=0.01)] * 2
+    assert [r.cost_usd for r in off] == [0.0, 0.0]  # no explanation is called after a rejection
+
+
+def test_the_spend_cap_stops_before_an_iteration_that_could_pass_it() -> None:
+    stop: list[str] = []
+    results = ab.run_experiment(
+        pairs=3, seed=1, scenario=_scenario(1.0, 1.0, 1.0), max_usd=0.04, stop_reason=stop,
+        clients_factory=_usage_clients, settings_factory=ab._fake_settings, clock=None,
+    )
+    assert results == [] and stop and "cap $0.04" in stop[0]
+
+    stop.clear()
+    results = ab.run_experiment(
+        pairs=3, seed=1, scenario=_scenario(1.0, 1.0, 1.0), max_usd=0.007, reserve_usd=0.003,
+        stop_reason=stop, clients_factory=_usage_clients, settings_factory=ab._fake_settings,
+        clock=None,
+    )
+    assert 0 < len(results) < 6 and stop
+    assert math.fsum(r.cost_usd for r in results) <= 0.007
+
+
+def test_a_transient_failure_is_rerun_and_listed_apart_from_the_results() -> None:
+    class Flaky(ab._FakeExplainer):  # type: ignore[misc]
+        calls = 0
+
+        def explain(self, **kwargs: Any) -> Any:
+            Flaky.calls += 1
+            if Flaky.calls == 1:
+                raise ab.ExplanationGenerationError("provider_timeout: timed out")
+            return super().explain(**kwargs)
+
+    def clients(clock: Any) -> Any:
+        return lambda current: ab.Clients(
+            explainer=Flaky(clock, current),
+            output_reviewer=ab._FakeOutputReviewer(clock, current),
+            reviewer=ab._FakeSemanticReviewer(clock, current),
+        )
+
+    excluded: list[Any] = []
+    results = ab.run_experiment(
+        pairs=1, seed=1, scenario=_scenario(1.0, 1.0, 1.0), retries=1, excluded=excluded,
+        clients_factory=clients, settings_factory=ab._fake_settings, clock=None,
+    )
+    assert [r.outcome for r in results] == ["completed", "completed"]
+    assert [r.outcome for r in excluded] == ["explanation_failed"]
+    assert ab.is_transient(excluded[0])
