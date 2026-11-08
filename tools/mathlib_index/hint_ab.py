@@ -359,7 +359,10 @@ def run_one(
         exemplar_chars = len(text)
         client = ExemplarClient(openai, text)
     generator = HybridLeanGenerator(
-        model=args.model, provider="openai", client=GuardedClient(client, guard)
+        model=args.model,
+        provider="openai",
+        client=GuardedClient(client, guard),
+        fixed_statement_template=args.statement_template,
     )
     run_id = f"{args.run_label}-{arm}-{problem['id']}"
     recorder = SketchRecorder(
@@ -385,6 +388,7 @@ def run_one(
         sketch_failure_proceeds_to_prove=args.sketch_continue,
         sketch_mechanical_repair=args.sketch_repair,
         sketch_parallel=args.sketch_parallel,
+        stop_on_repeated_harness_mismatch=args.stop_harness_repeat,
     )
     usage: list[dict[str, Any]] = []
 
@@ -424,6 +428,8 @@ def run_one(
         "sketch_continue": args.sketch_continue,
         "sketch_repair": args.sketch_repair,
         "sketch_parallel": args.sketch_parallel,
+        "statement_template": args.statement_template,
+        "stop_harness_repeat": args.stop_harness_repeat,
         "route_model_calls": sum(
             1
             for a in attempts
@@ -487,6 +493,16 @@ def main() -> None:
         "--sketch-repair",
         action="store_true",
         help="Enable ProofPipeline.sketch_mechanical_repair (and record it in sketch-only mode)",
+    )
+    parser.add_argument(
+        "--statement-template",
+        action="store_true",
+        help="HybridLeanGenerator.fixed_statement_template: the model writes only the proof body",
+    )
+    parser.add_argument(
+        "--stop-harness-repeat",
+        action="store_true",
+        help="ProofPipeline.stop_on_repeated_harness_mismatch",
     )
     parser.add_argument(
         "--sketch-parallel",

@@ -207,6 +207,10 @@ class ProofPipeline:
     # passes its Lean check (or the first to finish when none does). It costs the extra Sketch
     # tokens and, on the same wall clock, raises the chance that one Sketch is usable.
     sketch_parallel: int = 1
+    # ``stop_on_repeated_harness_mismatch`` ends a run whose last two attempts both failed only
+    # with ``lean.formal_harness_mismatch``. It reuses the ``repair_budget_exhausted`` reason;
+    # a dedicated reason is needed before production use (see docs).
+    stop_on_repeated_harness_mismatch: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -375,6 +379,7 @@ class ProofPipeline:
                 attempt=api_repair_seed.attempt,
                 repairs_used=api_repair_seed.repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -477,6 +482,7 @@ class ProofPipeline:
                     attempt=attempt,
                     repairs_used=repairs_used,
                     attempt_evidence=attempts[-1],
+                    failure_history=failure_fingerprint_history,
                     on_status=on_status,
                 )
                 if repair_generation is None:
@@ -653,6 +659,7 @@ class ProofPipeline:
                 attempt=attempt,
                 repairs_used=repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -789,7 +796,23 @@ class ProofPipeline:
         repairs_used: int,
         attempt_evidence: dict[str, Any],
         on_status: StatusCallback | None,
+        failure_history: list[frozenset[str]] | None = None,
     ) -> RepairGeneration | None:
+        if self.stop_on_repeated_harness_mismatch and _harness_mismatch_repeated(
+            failure_history or []
+        ):
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="pals.repair_budget_exhausted",
+                    message=(
+                        "Lean repair stopped early: the formal statement harness was "
+                        "missing from two consecutive attempts; 1 of 15 recorded runs with "
+                        "that pattern went on to verify."
+                    ),
+                )
+            )
+            return None
         if any(
             diagnostic.code in _NON_REPAIRABLE_DIAGNOSTIC_CODES
             for diagnostic in feedback_diagnostics
@@ -1480,6 +1503,17 @@ def _format_diagnostic_for_trace(diagnostic: Diagnostic) -> str:
     location = f" line {diagnostic.line}" if diagnostic.line is not None else ""
     code = f" [{diagnostic.code}]" if diagnostic.code else ""
     return f"{diagnostic.severity}{location}{code}: {diagnostic.message}"
+
+
+def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
+    """True when each of the last two failures had exactly the harness-mismatch error."""
+    if len(history) < 2:
+        return False
+    return all(
+        {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
+        == {"lean.formal_harness_mismatch"}
+        for fingerprints in history[-2:]
+    )
 
 
 def _with_repair_stagnation(

@@ -26,6 +26,7 @@ from pals_agent.models import (
 from pals_agent.ollama import OllamaClient, OllamaError
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
 from pals_agent.proof_reuse_usage import model_role
+from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
@@ -56,6 +57,8 @@ class HybridLeanGenerator:
     prove_provider: str | None = None
     prove_client: TextGenerationClient | None = None
     use_release_role_bindings: bool = False
+    # Opt-in: the model writes only the proof body; the fixed statement is inserted verbatim.
+    fixed_statement_template: bool = False
 
     def generate(self, request: ProofRequest) -> GeneratedProof:
         return self._generate_staged(request=request, feedback=None, start_stage="draft")
@@ -308,6 +311,9 @@ class HybridLeanGenerator:
             )
 
         prompt = _sketch_prompt_for(request, draft, feedback=feedback)
+        template = self.fixed_statement_template and bool(request.formal_statement)
+        if template:
+            prompt += TEMPLATE_INSTRUCTION
         started_at = time.monotonic()
         try:
             with model_role(ModelRole.SKETCH):
@@ -324,6 +330,8 @@ class HybridLeanGenerator:
             )
 
         lean_code = extract_lean_code(raw_model_output) or ""
+        if template and lean_code:
+            lean_code = assemble(lean_code, str(request.formal_statement))
         if not lean_code:
             error = f"[generation-error] sketch stage did not return Lean code from {provider}."
             return GeneratedSketch(
@@ -368,6 +376,9 @@ class HybridLeanGenerator:
             )
 
         prompt = _prove_prompt_for(request, draft, sketch, feedback=feedback)
+        template = self.fixed_statement_template and bool(request.formal_statement)
+        if template:
+            prompt += TEMPLATE_INSTRUCTION
         started_at = time.monotonic()
         try:
             with model_role(ModelRole.PROVE):
@@ -385,6 +396,8 @@ class HybridLeanGenerator:
             )
 
         lean_code = extract_lean_code(raw_model_output) or ""
+        if template and lean_code:
+            lean_code = assemble(lean_code, str(request.formal_statement))
         if not lean_code:
             raw_model_output = _generation_error_with_raw_output(
                 f"[generation-error] prove stage did not return Lean code from {provider}.",
