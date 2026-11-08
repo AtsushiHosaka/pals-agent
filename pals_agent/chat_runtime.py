@@ -89,6 +89,10 @@ _VISUAL = (
 class ChatRuntime:
     client: OpenAIResponsesClient
     proof_runtime: ProofReuseRuntime
+    # Default OFF (PALS_CHAT_TEMPLATE_FASTPATH_ENABLED in the factory). A plain request that the
+    # vocabulary grammar reads as exactly the continuity of x² goes straight to the linked Lean
+    # job: no recipe review and no router call.
+    template_fastpath: bool = False
 
     def answer(
         self, request: dict[str, Any], recipe_lookup: RecipeLookup | None = None, *,
@@ -107,6 +111,16 @@ class ChatRuntime:
             ) if recipe_search is not None else None
             if exact is not None:
                 return exact
+            if self.template_fastpath and _template_fastpath_eligible(request):
+                evidence.update({
+                    "phase": "template_fastpath",
+                    "grammar": {"function": "power", "property": "continuous",
+                                "slots": {"k": "2"}},
+                })
+                return ProofReuseResult(
+                    "formal", None, None, None, evidence,
+                    {"kind": "dsp", "statement": request["statement"]},
+                )
             evidence["phase"] = "recipe_semantic_review"
             semantic = self.proof_runtime.semantic_recipe_input(
                 request, recipe_batch=recipe_batch, claim_id=claim_id, deadline=deadline,
@@ -383,6 +397,35 @@ class ChatRuntime:
         if not isinstance(result, dict) or set(result) != set(schema["properties"]):
             raise ValueError("invalid chat response shape")
         return result, sessions[0]
+
+
+def _template_fastpath_eligible(request: dict[str, Any]) -> bool:
+    """A first, plain, text-only request that is exactly the continuity of x² (grammar only).
+
+    Anything with history, clarification answers, attachments, project materials, an existing
+    linked job or a retry keeps the established route, as does every other statement.
+    """
+    from pals_agent.chat_images import current_chat_images
+    from pals_agent.lean_templates import is_x_squared_continuity_statement
+
+    statement = request.get("statement")
+    return (
+        isinstance(statement, str)
+        and type(request.get("revision")) is int
+        and request["revision"] == 1
+        and type(request.get("retry_count", 0)) is int
+        and request.get("retry_count", 0) == 0
+        and request.get("formal_job_id") is None
+        and request.get("project_id") is None
+        and request.get("context_turns") == []
+        and not any(
+            request.get(key)
+            for key in ("chat_history", "conversation_history", "attachment_ids", "chat_images",
+                        "attachments", "material_context")
+        )
+        and not current_chat_images()
+        and is_x_squared_continuity_statement(statement)
+    )
 
 
 def _bounded_text(value: Any, maximum: int) -> None:

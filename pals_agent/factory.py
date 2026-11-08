@@ -59,6 +59,13 @@ def recipe_instantiation_enabled() -> bool:
     return os.environ.get("PALS_RECIPE_INSTANTIATION", "").strip().lower() in {"on", "true", "1"}
 
 
+def chat_template_fastpath_enabled() -> bool:
+    """Default OFF. A plain x² continuity request skips the recipe review and the chat router."""
+    return os.environ.get("PALS_CHAT_TEMPLATE_FASTPATH_ENABLED", "").strip().lower() in {
+        "on", "true", "1",
+    }
+
+
 def build_pipeline(settings: AgentSettings) -> ProofPipeline:
     from pals_agent.proof_reuse_catalog import ApiProofReuseCatalog, NaturalDspDraftRetriever
 
@@ -140,6 +147,7 @@ def build_proof_request_processor(
             and os.environ.get("PALS_TOKEN_ACCOUNTING_ENABLED") == "true"
         ),
         runtime=ChatRuntime(
+            template_fastpath=chat_template_fastpath_enabled(),
             client=client,
             proof_runtime=ProofReuseRuntime(
                 client=client, catalog=ApiProofReuseCatalog(settings),

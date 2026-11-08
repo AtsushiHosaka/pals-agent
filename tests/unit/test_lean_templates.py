@@ -191,6 +191,7 @@ def test_english_wording_for_only_the_continuity_of_x_squared_is_recognised(
         "x² が連続であることを示す",
         "x² が連続であることを証明します",
         "State and prove that x² is continuous.",
+        "Please state and prove that x² is continuous.",
     ],
 )
 def test_router_statements_with_imperative_wording_are_recognised(prompt: str) -> None:
@@ -201,6 +202,9 @@ def test_router_statements_with_imperative_wording_are_recognised(prompt: str) -
     "prompt",
     [
         "State that x² is not continuous.",
+        "Prove that x² is continuous and state the result",
+        "x² が連続であることを証明するとする",
+        "x² が連続であることを示すとする",
         "State and prove that x³ is continuous.",
         "この関数が連続であることを示せ",
         "実数上の関数 f: ℝ → ℝ を f(x)=x² で定める。この関数が不連続であるかどうかを判定せよ。",
