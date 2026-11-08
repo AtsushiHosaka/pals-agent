@@ -186,16 +186,29 @@ class RunRecorder:
     started: float = field(default_factory=time.monotonic)
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     steps: list[dict[str, Any]] = field(default_factory=list)
+    intervals: list[tuple[float, float]] = field(default_factory=list)
     final: dict[str, Any] = field(default_factory=dict)
 
-    def add(self, event: dict[str, Any]) -> None:
+    def add(self, event: dict[str, Any], interval: tuple[float, float] | None = None) -> None:
         with self.lock:
             if len(self.steps) < 2048:
                 self.steps.append(event)
+                if interval is not None and not event.get("container"):
+                    self.intervals.append(interval)
 
     def summary(self) -> dict[str, Any]:
         with self.lock:
             steps = list(self.steps)
+            intervals = sorted(self.intervals)
+        busy = 0.0
+        reach = None
+        for begin, end in intervals:
+            if reach is None or begin > reach:
+                busy += end - begin
+                reach = end
+            elif end > reach:
+                busy += end - reach
+                reach = end
         by_step: dict[str, float] = {}
         tokens = {"input_tokens": 0, "cached_input_tokens": 0, "output_tokens": 0,
                   "reasoning_tokens": 0}
@@ -225,6 +238,11 @@ class RunRecorder:
             "model_ms": _ms(model_ms),
             "lean_ms": _ms(lean_ms),
             "step_count": len(steps),
+            # Steps that run at the same time (a speculative explanation beside a review)
+            # add up to more than the wall time: busy_ms counts each moment once.
+            "busy_ms": _ms(busy * 1000),
+            "overlap_ms": _ms(max(0.0, sum(by_step.values()) - busy * 1000)),
+            "unattributed_ms": _ms(max(0.0, (time.monotonic() - self.started - busy) * 1000)),
             "step_ms": {k: _ms(v) for k, v in sorted(by_step.items())},
             **tokens,
         }
@@ -435,7 +453,8 @@ def _finish(record: StepRecord, duration_ms: float | None, job: str | None = Non
         run = _RUN.get()
         event = _event(record, duration_ms, run, job)
         if run is not None:
-            run.add(event)
+            now = time.monotonic()
+            run.add(event, (now - (duration_ms or 0.0) / 1000, now))
         _write(event)
     except Exception:  # noqa: BLE001 -- instrumentation never changes the traced call.
         _count_sink_error()
@@ -469,12 +488,19 @@ def _write(event: dict[str, Any]) -> None:
                 )
                 # The CloudWatch agent transport of quality_events (UDP or file) when it
                 # is configured; stderr otherwise, for the container log driver.
-                from pals_agent import quality_events
-
-                if not quality_events.send_line(emf_line):
+                if not _send_over_agent(emf_line):
                     sys.stderr.write(emf_line + "\n")
     except Exception:  # noqa: BLE001
         _count_sink_error()
+
+
+def _send_over_agent(line: str) -> bool:
+    """Use the quality_events transport where that module exists and is configured."""
+    try:
+        from pals_agent import quality_events
+    except ImportError:
+        return False
+    return quality_events.send_line(line)
 
 
 def to_emf(event: Mapping[str, Any]) -> dict[str, Any]:
