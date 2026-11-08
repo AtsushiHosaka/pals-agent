@@ -293,3 +293,122 @@ def test_dependency_symlink_cannot_escape_read_only_workspace(tmp_path: Path) ->
     }))
     with pytest.raises(ValueError, match="external Lake dependency"):
         environment_identity(project, "/bin/true", "/bin/true", _base())
+
+
+def _preparations(calls: list[tuple[list[str], dict[str, str]]]) -> int:
+    return sum(1 for argv, _ in calls if argv[1:] == ["env", "/usr/bin/env", "-0"])
+
+
+def test_rejected_preparation_is_not_retried_by_every_request(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, lean, lake = _elan_workspace(tmp_path)
+    calls = _simulate_elan_compiler(monkeypatch, lake_hops=2)
+    events: list[VerificationTiming] = []
+    verifier = LeanVerifier(
+        lean_binary=str(lean), lake_binary=str(lake), project_dir=project,
+        scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+        timing_observer=events.append,
+    )
+
+    source = "theorem target : True := by trivial"
+    assert all(verifier.verify(source).success for _ in range(3))
+
+    # One doomed `lake env` preparation, then the original command alone.
+    assert _preparations(calls) == 1
+    assert [e.cache_status for e in events if e.stage == "environment_prepare"] == ["fallback"] * 3
+    originals = [argv[:3] for argv, _ in calls if "--threads=1" in argv and "--run" not in argv]
+    assert originals == [[str(lake), "env", str(lean)]] * 3
+
+
+def test_failure_backoff_expires_ignores_transient_errors_and_resets_with_the_cache() -> None:
+    now = [100.0]
+    cache = LakeEnvironmentCache(failure_backoff_seconds=60, monotonic=lambda: now[0])
+    attempts: list[bool] = []
+
+    def reject() -> dict[str, str]:
+        attempts.append(True)
+        raise ValueError("unreviewed")
+
+    def times_out() -> dict[str, str]:
+        attempts.append(True)
+        raise TimeoutError("slow")
+
+    for _ in range(2):
+        with pytest.raises(ValueError):
+            cache.get_or_prepare("setup", reject)
+    assert len(attempts) == 1
+    # A different setup is judged on its own.
+    assert cache.get_or_prepare("other", lambda: {"LEAN_PATH": "/other"})[1] == "miss"
+    with pytest.raises(ValueError):
+        cache.get_or_prepare("setup", reject)
+    assert len(attempts) == 2
+
+    now[0] += 60
+    assert cache.get_or_prepare("setup", lambda: {"LEAN_PATH": "/fixed"})[1] == "miss"
+
+    # Timeouts and OS errors may be transient, so the next request tries again.
+    for _ in range(2):
+        with pytest.raises(TimeoutError):
+            cache.get_or_prepare("slow", times_out)
+    assert len(attempts) == 4
+
+    cache.get_or_prepare("setup", lambda: {})
+    with pytest.raises(ValueError):
+        cache.get_or_prepare("again", reject)
+    cache.clear()
+    assert cache.get_or_prepare("again", lambda: {})[1] == "miss"
+    with pytest.raises(ValueError):
+        LakeEnvironmentCache(failure_backoff_seconds=-1)
+
+
+def test_warm_up_resolves_the_environment_so_the_first_request_hits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, lean, lake = _elan_workspace(tmp_path)
+    calls = _simulate_elan_compiler(monkeypatch, lake_hops=1)
+    events: list[VerificationTiming] = []
+    verifier = LeanVerifier(
+        lean_binary=str(lean), lake_binary=str(lake), project_dir=project,
+        scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+        timing_observer=events.append,
+    )
+
+    assert verifier.warm_lake_environment() == "miss"
+    assert verifier.warm_lake_environment() == "hit"
+    # Warming compiles nothing and leaves no scratch directory behind.
+    assert [argv[1:] for argv, _ in calls] == [["env", "/usr/bin/env", "-0"]]
+    assert list(tmp_path.glob("pals-lean-*")) == []
+
+    assert verifier.verify("theorem target : True := by trivial").success
+    assert _preparations(calls) == 1
+    assert [e.cache_status for e in events if e.stage == "environment_prepare"] == [
+        "miss", "hit", "hit",
+    ]
+
+
+def test_warm_up_reports_fallback_and_disabled(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    project, lean, lake = _elan_workspace(tmp_path)
+    calls = _simulate_elan_compiler(monkeypatch, lake_hops=2)
+
+    def verifier(**options: object) -> LeanVerifier:
+        return LeanVerifier(
+            lean_binary=str(lean), lake_binary=str(lake), project_dir=project,
+            scratch_dir=tmp_path, **options,  # type: ignore[arg-type]
+        )
+
+    assert verifier().warm_lake_environment() == "disabled"
+    assert verifier(lake_environment_cache=LakeEnvironmentCache()).warm_lake_environment() == (
+        "fallback"
+    )
+    assert LeanVerifier(
+        lean_binary=str(lean), scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+    ).warm_lake_environment() == "disabled"
+    missing = LeanVerifier(
+        lean_binary=str(lean), lake_binary=str(lake), project_dir=tmp_path / "absent",
+        scratch_dir=tmp_path, lake_environment_cache=LakeEnvironmentCache(),
+    )
+    assert missing.warm_lake_environment() == "fallback"
+    assert _preparations(calls) == 1

@@ -411,6 +411,9 @@ class ProofPipeline:
                 verification_harness=verification_harness,
                 require_single_target=self.verification_mode == "api_reconcile",
             )
+            preflight_diagnostics = _attribute_empty_generation(
+                preflight_diagnostics, generation_diagnostic
+            )
             if preflight_diagnostics:
                 failure_diagnostics = [*generated.stage_diagnostics]
                 if generation_diagnostic.severity == "error":
@@ -1711,6 +1714,26 @@ def _termination_event(
         "attempt": attempt,
         "source": sources[reason],
     }
+
+
+def _attribute_empty_generation(
+    preflight: list[Diagnostic], generation: Diagnostic
+) -> list[Diagnostic]:
+    """Say why `pals.generation_empty` fired, keeping its code for existing consumers.
+
+    No Lean code reaches preflight whenever a stage fails (a provider error, a Sketch that
+    does not compile, a Prove that still has `sorry`), not only when the model returns
+    nothing. In 129 measured attempts none was a model that returned nothing, so counting the
+    bare code overstates empty generations. `explained_by` is the stage diagnostic code, or
+    "none" when the model really produced no extractable Lean code.
+    """
+    cause = generation.code if generation.severity == "error" and generation.code else "none"
+    return [
+        replace(item, metadata={**(item.metadata or {}), "explained_by": cause})
+        if item.code == "pals.generation_empty"
+        else item
+        for item in preflight
+    ]
 
 
 def _generation_diagnostic(generated: GeneratedProof) -> Diagnostic:

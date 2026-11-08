@@ -33,7 +33,7 @@ def test_http_error_metadata_only_and_no_provider_prose_or_headers(status, code)
     transport.request.return_value = HttpResponse(
         status, json.dumps(body).encode(), (("authorization", "sk-secret"),)
     )
-    client = OpenAIResponsesClient(api_key="sk-secret", transport=transport)
+    client = OpenAIResponsesClient(api_key="sk-secret", transport=transport, max_attempts=1)
     with pytest.raises(OpenAIError) as caught:
         client.generate(model="model", prompt="PRIVATE PROMPT")
     assert caught.value.private_diagnostics == {
@@ -102,7 +102,7 @@ def test_transport_error_classes_are_closed_without_exception_strings(error, kin
     transport = Mock()
     transport.request.side_effect = error
     with pytest.raises(OpenAIError) as caught:
-        OpenAIResponsesClient(api_key="key", transport=transport).generate(
+        OpenAIResponsesClient(api_key="key", transport=transport, max_attempts=1).generate(
             model="model", prompt="PRIVATE"
         )
     assert caught.value.private_diagnostics == {"stage": "transport", "transport_kind": kind}
