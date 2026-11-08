@@ -488,8 +488,10 @@ def test_the_cache_has_no_flush_or_write_surface() -> None:
         "begin",
         "finish_compiled",
         "mode",
+        "revalidate_every",
         "serving_blocked",
         "snapshot",
+        "start_revalidation",
     }
 
 
@@ -589,6 +591,7 @@ def test_flags_default_off_and_parse_like_the_other_strict_booleans(
     assert result_cache_mode(shadow=True, enabled=False) is ResultCacheMode.SHADOW
 
     monkeypatch.setenv("PALS_VERIFIER_RESULT_CACHE_ENABLED", "true")
+    monkeypatch.setenv("PALS_VERIFIER_RESULT_CACHE_REVALIDATE", "true")
     settings = HttpVerifierRuntimeSettings.from_env()
     assert settings.result_cache_enabled is True
     assert result_cache_mode(shadow=True, enabled=True) is ResultCacheMode.SERVE

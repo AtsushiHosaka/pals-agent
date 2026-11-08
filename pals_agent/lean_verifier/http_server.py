@@ -210,9 +210,15 @@ class ThreadingTlsVerifierServer(http.server.ThreadingHTTPServer):
         verifier: LeanVerifierPort,
         admission_verifier: LeanVerifierPort | None = None,
         result_cache: VerifierResultCache | None = None,
+        revalidation_verifier: LeanVerifierPort | None = None,
     ) -> None:
         self.settings = settings
         self.verifier = verifier
+        # The compiler for background revalidations: the same verifier with a shorter deadline in
+        # production, so a revalidation cannot hold a compile slot for the full 300 s.
+        self.revalidation_verifier = (
+            revalidation_verifier if revalidation_verifier is not None else verifier
+        )
         # ``None`` means both result-cache flags are off: every request compiles.
         self.result_cache = result_cache
         self.admission_verifier = admission_verifier if admission_verifier is not None else verifier
@@ -297,6 +303,8 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         if decision is not None and decision.serve:
             # An allow-listed source with a stored success for the same full key: no compile.
             self._write_attestation(request, source=SOURCE_CACHE)
+            # Only after the response is on the wire; never delays or changes it.
+            self._cache_revalidate(decision)
             return
         if not self.server.compile_slot.acquire(blocking=False):
             self._error(503, "verifier_unavailable", proof_job_id, retryable=True)
@@ -358,6 +366,22 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
             # The cache is an optimization: a bug in it must never change the verdict path.
             _CACHE_LOGGER.error("verifier_cache result=internal_error stage=begin")
             return None
+
+    def _cache_revalidate(self, decision: CacheDecision) -> None:
+        cache = self.server.result_cache
+        if cache is None or not decision.revalidate:
+            return
+        verifier = self.server.revalidation_verifier
+
+        def compile_outcome(source: str) -> FreshOutcome:
+            return _fresh_outcome(verifier.verify(source))
+
+        try:
+            cache.start_revalidation(
+                decision, compile_outcome=compile_outcome, slot=self.server.compile_slot
+            )
+        except Exception:
+            _CACHE_LOGGER.error("verifier_cache result=internal_error stage=revalidate")
 
     def _cache_finish(self, decision: CacheDecision | None, result: VerificationResult) -> None:
         cache = self.server.result_cache
@@ -720,8 +744,11 @@ def create_server(
     verifier: LeanVerifierPort,
     admission_verifier: LeanVerifierPort | None = None,
     result_cache: VerifierResultCache | None = None,
+    revalidation_verifier: LeanVerifierPort | None = None,
 ) -> ThreadingTlsVerifierServer:
-    return ThreadingTlsVerifierServer(settings, verifier, admission_verifier, result_cache)
+    return ThreadingTlsVerifierServer(
+        settings, verifier, admission_verifier, result_cache, revalidation_verifier
+    )
 
 
 def _single_header(headers: Message[str, str], name: str) -> str | None:
