@@ -31,6 +31,21 @@ _STATEMENT_ERROR_PREFIX = "statement_error "
 # Only a profile whose audit program checks statement origins ever prints this line.
 _UNTRUSTED_STATEMENT_PREFIX = "untrusted_statement "
 UNTRUSTED_STATEMENT_LIBRARY = "lean.statement_uses_untrusted_library"
+# Only a profile that RECORDS (rather than rejects) unreviewed statement constants prints these.
+_TRUST_RECORDED = "trust_recorded"
+_STATEMENT_ROOT_PREFIX = "statement_root "
+_FRONTIER_STATEMENT_PREFIX = "frontier_statement "
+_PROOF_ROOT_PREFIX = "proof_root "
+_FRONTIER_DUPLICATE_PREFIX = "frontier_duplicate "
+TRUST_LEVEL_DIAGNOSTIC = "lean.library_trust"
+FRONTIER_DUPLICATE_DIAGNOSTIC = "lean.frontier_duplicate_definition"
+FRONTIER_ROOT = "StacksFrontier"
+CORE_ROOT = "StacksCore"
+# The trust levels a recording profile attaches to a verified result, weakest claim last.
+TRUST_MATHLIB = "mathlib"
+TRUST_CORE = "core"
+TRUST_FRONTIER_PROOF = "frontier_proof"
+TRUST_FRONTIER_STATEMENT = "frontier_statement"
 _STATEMENT_GUIDANCE = (
     "State every hypothesis in the theorem header. Do not rely on `variable`, `include`, local "
     "instances or other commands outside the declaration."
@@ -96,6 +111,15 @@ class AuditReport:
     unbound: tuple[str, ...] = ()
     statement_errors: tuple[str, ...] = ()
     untrusted_statements: tuple[str, ...] = ()
+    # Filled only by a recording profile (see ``trust_recorded``). ``statement_roots`` and
+    # ``proof_roots`` hold ``"<theorem> <root>"``, ``frontier_statements`` holds
+    # ``"<theorem> <constant> <module>"`` and ``frontier_duplicates`` holds
+    # ``"<frontier constant> <other constant> <reason>"``.
+    trust_recorded: bool = False
+    statement_roots: tuple[str, ...] = ()
+    frontier_statements: tuple[str, ...] = ()
+    proof_roots: tuple[str, ...] = ()
+    frontier_duplicates: tuple[str, ...] = ()
 
 
 def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
@@ -109,6 +133,11 @@ def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
     unbound: list[str] = []
     statement_errors: list[str] = []
     untrusted_statements: list[str] = []
+    trust_recorded = False
+    statement_roots: list[str] = []
+    frontier_statements: list[str] = []
+    proof_roots: list[str] = []
+    frontier_duplicates: list[str] = []
     for line in lines[:-1]:
         if line.startswith(_THEOREM_PREFIX):
             theorems.append(line.removeprefix(_THEOREM_PREFIX))
@@ -122,6 +151,16 @@ def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
             statement_errors.append(line.removeprefix(_STATEMENT_ERROR_PREFIX))
         elif line.startswith(_UNTRUSTED_STATEMENT_PREFIX):
             untrusted_statements.append(line.removeprefix(_UNTRUSTED_STATEMENT_PREFIX))
+        elif line == _TRUST_RECORDED:
+            trust_recorded = True
+        elif line.startswith(_STATEMENT_ROOT_PREFIX):
+            statement_roots.append(line.removeprefix(_STATEMENT_ROOT_PREFIX))
+        elif line.startswith(_FRONTIER_STATEMENT_PREFIX):
+            frontier_statements.append(line.removeprefix(_FRONTIER_STATEMENT_PREFIX))
+        elif line.startswith(_PROOF_ROOT_PREFIX):
+            proof_roots.append(line.removeprefix(_PROOF_ROOT_PREFIX))
+        elif line.startswith(_FRONTIER_DUPLICATE_PREFIX):
+            frontier_duplicates.append(line.removeprefix(_FRONTIER_DUPLICATE_PREFIX))
         else:
             return None
     return AuditReport(
@@ -131,6 +170,11 @@ def parse_audit_report(stdout: str, nonce: str) -> AuditReport | None:
         tuple(unbound),
         tuple(statement_errors),
         tuple(untrusted_statements),
+        trust_recorded,
+        tuple(statement_roots),
+        tuple(frontier_statements),
+        tuple(proof_roots),
+        tuple(frontier_duplicates),
     )
 
 
@@ -207,6 +251,90 @@ def audit_diagnostics(report: AuditReport, declared_theorems: tuple[str, ...]) -
                 "The compiled type differs from the written statement of: "
                 + ", ".join(unbound)
                 + "."
+            )
+        )
+    if report.trust_recorded and "exhausted" in {_last_word(item) for item in report.proof_roots}:
+        diagnostics.append(
+            audit_failure("The proof's library use could not be traced completely.")
+        )
+    if not any(diagnostic.severity == "error" for diagnostic in diagnostics):
+        diagnostics.extend(_trust_diagnostics(report))
+    return diagnostics
+
+
+def _last_word(item: str) -> str:
+    return item.rsplit(" ", 1)[-1]
+
+
+def trust_level(report: AuditReport) -> str | None:
+    """The trust level of what a recording profile verified; ``None`` if nothing was recorded.
+
+    ``frontier_statement`` means a statement reaches a ``StacksFrontier`` definition, which an AI
+    wrote and no human reviewed. ``frontier_proof`` means only the proof uses the Frontier. An
+    exhausted walk, whose coverage is unknown, is never reported as a lower level.
+    """
+    if not report.trust_recorded:
+        return None
+    statement_roots = {_last_word(item) for item in report.statement_roots}
+    proof_roots = {_last_word(item) for item in report.proof_roots}
+    if report.frontier_statements or FRONTIER_ROOT in statement_roots:
+        return TRUST_FRONTIER_STATEMENT
+    if FRONTIER_ROOT in proof_roots or "exhausted" in proof_roots:
+        return TRUST_FRONTIER_PROOF
+    if CORE_ROOT in statement_roots | proof_roots:
+        return TRUST_CORE
+    return TRUST_MATHLIB
+
+
+def _trust_diagnostics(report: AuditReport) -> list[Diagnostic]:
+    level = trust_level(report)
+    if level is None:
+        return []
+    constants = sorted({" ".join(item.split(" ")[1:2]) for item in report.frontier_statements})
+    modules = sorted({_last_word(item) for item in report.frontier_statements})
+    shown = {
+        TRUST_MATHLIB: "Lean and Mathlib only.",
+        TRUST_CORE: "Uses the human-reviewed StacksCore.",
+        TRUST_FRONTIER_PROOF: (
+            "The proof uses Frontier lemmas (AI-written, not human-reviewed); "
+            "the statement does not."
+        ),
+        TRUST_FRONTIER_STATEMENT: (
+            "Frontier (human-unreviewed): the statement uses AI-written definitions that no human "
+            "has reviewed: " + ", ".join(constants[:6]) + "."
+        ),
+    }[level]
+    diagnostics = [
+        Diagnostic(
+            severity="warning" if level.startswith("frontier") else "info",
+            code=TRUST_LEVEL_DIAGNOSTIC,
+            message=shown,
+            metadata={
+                "trust_level": level,
+                "frontier_statement_constants": constants[:32],
+                "frontier_modules": modules[:32],
+                "statement_roots": sorted({_last_word(item) for item in report.statement_roots}),
+                "proof_roots": sorted({_last_word(item) for item in report.proof_roots}),
+            },
+        )
+    ]
+    if report.frontier_duplicates:
+        pairs = [item.split(" ", 2) for item in report.frontier_duplicates]
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code=FRONTIER_DUPLICATE_DIAGNOSTIC,
+                message=(
+                    "A Frontier definition used by a statement resembles a Mathlib or StacksCore "
+                    "one under another name; recorded, not rejected: "
+                    + "; ".join(f"{a} ~ {b} ({c})" for a, b, c in pairs[:4])
+                    + "."
+                ),
+                metadata={
+                    "duplicates": [
+                        {"frontier": a, "other": b, "reason": c} for a, b, c in pairs[:24]
+                    ]
+                },
             )
         )
     return diagnostics

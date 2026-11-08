@@ -11,6 +11,7 @@ routing to that profile's verifier deployment.
 | `mathlib-4.32` (default) | `v4.32.0-rc1` | `lean-workspace/` | unrestricted (unchanged) |
 | `stacks-4.35` | `v4.35.0` | `lean-workspaces/stacks-4.35/` | `Mathlib`, `StacksCore` |
 | `stacks-frontier-4.35` (flag, off by default) | `v4.35.0` | `lean-workspaces/stacks-4.35/` | `Mathlib`, `StacksCore`, built `StacksFrontier` modules |
+| `stacks-frontier-defs-4.35` (own flag, off by default) | `v4.35.0` | `lean-workspaces/stacks-4.35/` | same; statements may also use Frontier definitions |
 
 ## Digests
 
@@ -56,3 +57,37 @@ else fails as an unknown module. `scripts/audit_frontier_closure.py` screens tho
 Stacks import closure with the candidate source policy (no `notation`, `macro`, `initialize`,
 `unsafe`, native evaluation, ...) and stops the image build on a failure. The verifier refuses to
 start with this profile unless the flag is set, and the Dockerfile deliberately does not set it.
+
+## stacks-frontier-defs-4.35 (disabled unless `PALS_LEAN_ALLOW_FRONTIER_STATEMENTS=true`)
+
+Relaxes `stacks-frontier-4.35` for one reason: schemes, ample line bundles, Picard groups and
+similar objects have no Mathlib definition, so a statement about them can only be written with a
+`StacksFrontier` definition. That definition was written by an AI and no human has reviewed it.
+This profile accepts such a statement and records the fact; it does not make the statement
+trustworthy. The flag is separate from `PALS_LEAN_ALLOW_FRONTIER_PROOFS`; neither opens the other.
+
+What the trusted audit program records (all in the verification result as non-error diagnostics, so
+the result stays `verified`):
+
+- `lean.library_trust` with `metadata.trust_level`: `mathlib` (Lean and Mathlib only), `core`
+  (uses the reviewed `StacksCore`), `frontier_proof` (only the proof uses Frontier lemmas) or
+  `frontier_statement` (a statement reaches a Frontier definition; show it as *Frontier
+  (human-unreviewed)*). Metadata also lists the Frontier constants and modules the statement
+  reaches and the library roots of the statement and the proof. The statement walk goes through
+  the file's own definitions and stops at the first imported constant on each path; the proof walk
+  goes through file-local constants only, not through imported ones. A walk that cannot finish
+  fails the audit instead of reporting a lower level.
+- `lean.frontier_duplicate_definition`: a Frontier definition a statement reaches that looks like a
+  Lean/Mathlib/StacksCore one: `same_value` (same type and body) or `same_shape` (same type and
+  constructor names) are strong; `same_name` (same last name component and kind) is only a hint.
+  Recorded, never rejected. It cannot find a concept defined differently under a different name.
+
+What stays forbidden, unchanged: `sorry`, any axiom beyond `propext`, `Classical.choice` and
+`Quot.sound`, native evaluation (`native_decide`, `decide +native`, `ofReduceBool`), imports outside
+`Mathlib`, `StacksCore` and the built Frontier modules, and a statement constant from a root that is
+neither reviewed nor Frontier. The kernel replay is mandatory. The level applies to every
+`theorem` in the file, so keep helper lemmas free of Frontier definitions.
+
+What it does not guarantee: that the Frontier definition means what Stacks or Mathlib means, or what
+the user asked. Lean accepts a weaker or different theorem just as happily. Faithfulness comes only
+from the pinned `formal_statement` (`lean.formal_harness_mismatch`) and from a review of it.

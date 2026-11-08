@@ -411,7 +411,10 @@ class LeanVerifier:
         success = completed.returncode == 0 and not any(
             diagnostic.severity == "error" for diagnostic in diagnostics
         )
-        if success and audit_result:
+        # An audit that only records (a recording profile's trust level) never fails the proof;
+        # every other audit diagnostic is an error.
+        audit_errors = [item for item in audit_result if item.severity == "error"]
+        if success and audit_errors:
             success = False
             diagnostics.extend(audit_result)
         if success:
@@ -422,6 +425,7 @@ class LeanVerifier:
                     message="Lean accepted the generated code.",
                 )
             )
+            diagnostics.extend(audit_result)
         elif not diagnostics:
             diagnostics.append(
                 Diagnostic(
