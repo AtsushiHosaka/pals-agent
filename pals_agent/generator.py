@@ -25,6 +25,19 @@ from pals_agent.models import (
 )
 from pals_agent.ollama import OllamaClient, OllamaError
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
+from pals_agent.prompt_safety import (
+    MAX_CATALOG_ITEM_CHARS,
+    MAX_DIAGNOSTIC_CHARS,
+    MAX_DIAGNOSTICS,
+    MAX_LEAN_CHARS,
+    MAX_MODEL_TEXT_CHARS,
+    MAX_PROBLEM_CHARS,
+    UNTRUSTED_NOTICE,
+    inspect_output,
+    isolation_enabled,
+    record_output_inspection,
+    untrusted_block,
+)
 from pals_agent.proof_reuse_usage import model_role
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
@@ -111,7 +124,14 @@ class HybridLeanGenerator:
                 model=model,
                 prompt=_repair_instruction_prompt_for(request, feedback),
             )
-        return parse_repair_instruction(raw_model_output)
+        instruction = parse_repair_instruction(raw_model_output)
+        if rejection := _output_rejection(
+            ModelRole.REPAIR, instruction.instruction, kind="prose"
+        ):
+            raise RepairInstructionError(
+                f"repair instruction rejected by prompt safety ({rejection})"
+            )
+        return instruction
 
     def select_repair_route(
         self,
@@ -280,6 +300,11 @@ class HybridLeanGenerator:
             raw_model_output = (
                 f"[generation-error] draft stage returned empty output from {provider}."
             )
+        elif rejection := _output_rejection(ModelRole.DRAFT, text, kind="prose"):
+            text = ""
+            raw_model_output = (
+                f"[generation-error] draft output rejected by prompt safety ({rejection})."
+            )
         return GeneratedDraft(
             text=text,
             model=model,
@@ -324,6 +349,26 @@ class HybridLeanGenerator:
             )
 
         lean_code = extract_lean_code(raw_model_output) or ""
+        if lean_code and (
+            rejection := _output_rejection(
+                ModelRole.SKETCH,
+                raw_model_output,
+                kind="prose",
+                lean_code=lean_code,
+                allow_sorry=True,
+            )
+        ):
+            return GeneratedSketch(
+                lean_code="",
+                model=model,
+                raw_model_output=(
+                    f"[generation-error] sketch output rejected by prompt safety ({rejection})."
+                ),
+                prompt=prompt,
+                provider=provider,
+                reasoning_effort=effort,
+                elapsed_ms=_elapsed_ms(started_at),
+            )
         if not lean_code:
             error = f"[generation-error] sketch stage did not return Lean code from {provider}."
             return GeneratedSketch(
@@ -385,7 +430,16 @@ class HybridLeanGenerator:
             )
 
         lean_code = extract_lean_code(raw_model_output) or ""
-        if not lean_code:
+        if lean_code and (
+            rejection := _output_rejection(
+                ModelRole.PROVE, raw_model_output, kind="prose", lean_code=lean_code
+            )
+        ):
+            lean_code = ""
+            raw_model_output = (
+                f"[generation-error] prove output rejected by prompt safety ({rejection})."
+            )
+        elif not lean_code:
             raw_model_output = _generation_error_with_raw_output(
                 f"[generation-error] prove stage did not return Lean code from {provider}.",
                 raw_model_output,
@@ -634,8 +688,7 @@ Follow any required exact-match proof method below.
 {DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
-Problem:
-{request.prompt}
+{_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {draft_guidance}
 {_repair_guidance(feedback)}
@@ -711,17 +764,14 @@ representing the Draft's intermediate reasoning.
 {DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
 
-Problem:
-{request.prompt}
+{_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
 {_matrix_literal_guidance(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Required informal Draft to formalize:
-<draft>
-{draft.text}
-</draft>
+{_draft_block(draft.text)}
 {_repair_guidance(feedback)}
 """
 
@@ -757,22 +807,17 @@ Lean proof steps.
 Do not use `sorry` or `admit`.
 You must prove the exact Lean theorem harness shown below when one is provided.
 
-Problem:
-{request.prompt}
+{_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
 {_matrix_literal_guidance(request)}
 Retrieved method context (its required/advisory status is declared inside):
 {_draft_guidance(request)}
 Informal Draft whose required proof method must be preserved:
-<draft>
-{draft.text}
-</draft>
+{_draft_block(draft.text)}
 
 Lean Sketch to complete:
-```lean
-{sketch.lean_code}
-```
+{_lean_block("sketch", sketch.lean_code)}
 {_repair_guidance(feedback)}
 """
 
@@ -885,10 +930,7 @@ def _prompt_for(request: ProofRequest, feedback: GenerationFeedback | None = Non
 
 
 def _repair_route_prompt_for(request: ProofRequest, feedback: GenerationFeedback) -> str:
-    diagnostics = "\n".join(
-        f"- {_format_diagnostic_for_prompt(diagnostic)}"
-        for diagnostic in feedback.diagnostics
-    )
+    diagnostics = _diagnostics_for_prompt(feedback.diagnostics)
     return f"""Choose where the PALS Draft-Sketch-Prove repair loop should resume.
 Return exactly one compact JSON object with keys `route` and `rationale`.
 The `route` value must be exactly one of: `draft`, `sketch`, `prove`.
@@ -908,11 +950,10 @@ generated formalization needs `draft`, the decomposition needs `sketch`, or ther
 specific materially different `prove` repair. Explain that choice in `rationale`.
 {_repair_location_guidance()}
 
-Problem:
-{request.prompt}
+{_problem_section(request)}
 
 Formal statement:
-{request.formal_statement or "(none)"}
+{_plain_block("formal_statement", request.formal_statement or "(none)", MAX_LEAN_CHARS)}
 {_target_declaration_guidance(request)}
 {_matrix_literal_guidance(request)}
 
@@ -920,19 +961,13 @@ Failed attempt number:
 {feedback.attempt}
 
 Failed Lean code:
-```lean
-{feedback.previous_lean_code.strip()}
-```
+{_lean_block("failed_lean", feedback.previous_lean_code.strip())}
 
 Previous informal Draft:
-<draft>
-{feedback.previous_draft.text if feedback.previous_draft is not None else "(none)"}
-</draft>
+{_draft_block(feedback.previous_draft.text if feedback.previous_draft is not None else "(none)")}
 
 Previous Lean Sketch:
-```lean
-{feedback.previous_sketch.lean_code if feedback.previous_sketch is not None else "-- (none)"}
-```
+{_previous_sketch_block(feedback)}
 
 Lean diagnostics:
 {diagnostics or "- no diagnostics returned"}
@@ -954,8 +989,7 @@ code, a route choice, an evaluation rubric, or any extra JSON field.
 {_learner_algebra_guidance()}
 {_lean_scalar_guidance()}
 
-Problem:
-{request.prompt}
+{_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
 {_matrix_literal_guidance(request)}
@@ -1014,10 +1048,10 @@ are excluded.
 Derive every target-specific detail from the user's Problem and approved harness only.
 
 Related strategy notes after target redaction:
-{strategy_notes}
+{_catalog_block(strategy_notes)}
 
 Related sketch pattern after target redaction:
-{sketch_steps}
+{_catalog_block(sketch_steps)}
 """
 
     sketch = "\n".join(f"- {step}" for step in draft.sketch_steps)
@@ -1027,11 +1061,96 @@ The approved harness above, when present, is the only target that may be verifie
 The generated Draft, Sketch, and Proof must follow this proof strategy and these steps.
 
 Draft proof strategy:
-{draft.proof_strategy}
+{_catalog_block(draft.proof_strategy)}
 
 Sketch:
-{sketch}
+{_catalog_block(sketch)}
 """
+
+
+def _problem_section(request: ProofRequest) -> str:
+    if not isolation_enabled():
+        return f"Problem:\n{request.prompt}"
+    return (
+        f"{UNTRUSTED_NOTICE}\n\nProblem (learner data to formalize and prove):\n"
+        + untrusted_block("problem", request.prompt, max_chars=MAX_PROBLEM_CHARS)
+    )
+
+
+def _plain_block(label: str, text: str, limit: int) -> str:
+    if not isolation_enabled():
+        return text
+    return untrusted_block(label, text, max_chars=limit)
+
+
+def _previous_sketch_block(feedback: GenerationFeedback) -> str:
+    sketch = feedback.previous_sketch
+    return _lean_block(
+        "previous_sketch", sketch.lean_code if sketch is not None else "-- (none)"
+    )
+
+
+def _repair_rationale_block(feedback: GenerationFeedback) -> str:
+    return _plain_block(
+        "repair_rationale",
+        feedback.repair_rationale or "No rationale recorded.",
+        MAX_MODEL_TEXT_CHARS,
+    )
+
+
+def _draft_block(text: str) -> str:
+    if not isolation_enabled():
+        return f"<draft>\n{text}\n</draft>"
+    return untrusted_block("draft", text, max_chars=MAX_MODEL_TEXT_CHARS)
+
+
+def _lean_block(label: str, code: str) -> str:
+    if not isolation_enabled():
+        return f"```lean\n{code}\n```"
+    return untrusted_block(label, code, max_chars=MAX_LEAN_CHARS, code_language="lean")
+
+
+def _catalog_block(text: str) -> str:
+    if not isolation_enabled():
+        return text
+    return untrusted_block("catalog", text, max_chars=MAX_CATALOG_ITEM_CHARS)
+
+
+def _diagnostics_for_prompt(diagnostics: tuple[object, ...]) -> str:
+    lines = [f"- {_format_diagnostic_for_prompt(diagnostic)}" for diagnostic in diagnostics]
+    if not isolation_enabled():
+        return "\n".join(lines)
+    if len(lines) > MAX_DIAGNOSTICS:
+        lines = [*lines[:MAX_DIAGNOSTICS], f"- ({len(lines) - MAX_DIAGNOSTICS} more omitted)"]
+    lines = [line[:MAX_DIAGNOSTIC_CHARS] for line in lines]
+    if not lines:
+        return ""
+    return untrusted_block("diagnostics", "\n".join(lines), max_chars=MAX_LEAN_CHARS)
+
+
+def _output_rejection(
+    role: ModelRole,
+    text: str,
+    *,
+    kind: str,
+    lean_code: str | None = None,
+    allow_sorry: bool = False,
+) -> str | None:
+    """Log output findings; with isolation on, return the codes that make the output unusable.
+
+    ``text`` is the whole answer (length, repetition, prompt echo); ``lean_code`` is the extracted
+    Lean, checked for constructs the verifier rejects. Only codes are logged, never content.
+    """
+    inspections = [inspect_output(text, kind=kind)]  # type: ignore[arg-type]
+    if lean_code is not None:
+        inspections.append(inspect_output(lean_code, kind="lean", allow_sorry=allow_sorry))
+    blocking: list[str] = []
+    for inspection in inspections:
+        record_output_inspection(role.value, inspection)
+        blocking.extend(inspection.blocking_codes)
+    if blocking and isolation_enabled():
+        return ",".join(dict.fromkeys(blocking))
+    return None
 
 
 def _prompt_list(items: tuple[str, ...]) -> str:
@@ -1042,10 +1161,10 @@ def _prompt_list(items: tuple[str, ...]) -> str:
 
 def _related_context_guidance(context: RelatedDraftContext) -> str:
     return f"""Candidate `{context.source_draft_id}` strategy notes:
-{_prompt_list(context.strategy_notes)}
+{_catalog_block(_prompt_list(context.strategy_notes))}
 
 Candidate `{context.source_draft_id}` sketch pattern:
-{_prompt_list(context.sketch_steps)}"""
+{_catalog_block(_prompt_list(context.sketch_steps))}"""
 
 
 def _generated_target_name(request: ProofRequest) -> str:
@@ -1085,9 +1204,7 @@ def _formal_statement_guidance(formal_statement: str | None) -> str:
         return ""
     return f"""
 Exact Lean formal statement or harness to prove:
-```lean
-{formal_statement.strip()}
-```
+{_lean_block("formal_statement", formal_statement.strip())}
 """
 
 
@@ -1095,10 +1212,7 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
     if feedback is None:
         return ""
 
-    diagnostics = "\n".join(
-        f"- {_format_diagnostic_for_prompt(diagnostic)}"
-        for diagnostic in feedback.diagnostics
-    )
+    diagnostics = _diagnostics_for_prompt(feedback.diagnostics)
     unknown_identifiers = sorted(
         {
             identifier
@@ -1128,7 +1242,7 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
 Previous attempt failed Lean validation or compilation.
 The selected DSP repair route is `{feedback.repair_route}`.
 Route rationale:
-{feedback.repair_rationale or "No rationale recorded."}
+{_repair_rationale_block(feedback)}
 
 At the current DSP stage, correct the identified failure while keeping any user-supplied
 exact theorem harness and the requested mathematical claim.
@@ -1142,9 +1256,7 @@ Failed attempt number:
 {feedback.attempt}
 
 Failed Lean code:
-```lean
-{feedback.previous_lean_code.strip()}
-```
+{_lean_block("failed_lean", feedback.previous_lean_code.strip())}
 
 Lean diagnostics to fix:
 {diagnostics or "- no diagnostics returned"}
