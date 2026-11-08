@@ -334,7 +334,7 @@ def make_subject(
         raise ValueError("the Lean source must declare exactly one theorem, lemma or example")
     return Subject(
         statement=statement, lean=source, formal_statement=None,
-        output_language=language or "ja", target_name=target.name,
+        output_language=language or "ja", target_name=target.name or "anonymous",
         target_proposition=target.proposition,
     )
 
