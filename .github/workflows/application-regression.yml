@@ -90,7 +90,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
           test "$(git -C .. rev-parse HEAD)" = b6b101177e5ce650eb3d03adc5f64f17e0540d96
       # This is a bounded runtime core, not a whole-repository unit qualification.
-      # Unmapped source/build/test edits require an explicit regression mapping.
+      # Only the repaired server has a complete changed-source mapping here.
+      # The 50 reproduced baseline failures remain unqualified; worker/factory/
+      # token/catalog and other source edits require an owned regression mapping.
+      # The broad core below is additional evidence, not blanket certification.
       - name: Reject changes outside the qualified runtime core
         env:
           REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
@@ -112,35 +115,7 @@ jobs:
           base = git("merge-base", reference, head)
           changed = set(git("diff", "--name-only", base, head).splitlines())
           covered = set(os.environ["CORE_TEST_FILES"].split()) | {
-              'pals_agent/worker.py',
-              'pals_agent/worker_processes.py',
-              'pals_agent/worker_api_trust.py',
-              'pals_agent/pipeline.py',
-              'pals_agent/api_client.py',
-              'pals_agent/proof_request_worker.py',
-              'pals_agent/proof_flow_runtime.py',
-              'pals_agent/aws_worker_credentials.py',
-              'pals_agent/factory.py',
-              'pals_agent/settings.py',
-              'pals_agent/models.py',
-              'pals_agent/model_roles.py',
-              'pals_agent/chat_runtime.py',
-              'pals_agent/runtime_latency.py',
-              'pals_agent/token_meter.py',
-              'pals_agent/http_transport.py',
-              'pals_agent/lightweight_http_transport.py',
-              'pals_agent/lean.py',
-              'pals_agent/lean_child.py',
-              'pals_agent/lean_supervisor.py',
-              'pals_agent/lean_audit.py',
-              'pals_agent/lean_source_policy.py',
-              'pals_agent/lean_environment.py',
-              'pals_agent/lean_target.py',
               'pals_agent/lean_verifier/http_server.py',
-              'pals_agent/lean_verifier/http_runtime.py',
-              'pals_agent/lean_verifier/boundary.py',
-              'pals_agent/lean_verifier/diagnostics.py',
-              'pals_agent/lean_verifier/tls_material.py',
               ".github/workflows/application-regression.yml",
               "README.md", "LICENSE", "AGENTS.md", "CLAUDE.md",
           }
