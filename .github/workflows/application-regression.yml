@@ -18,19 +18,136 @@ jobs:
     name: agent-regression
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: parent-fixture/pals-agent
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       UV_NO_PROGRESS: "1"
       UV_PYTHON_DOWNLOADS: never
+      AWS_EC2_METADATA_DISABLED: "true"
+      CORE_TEST_FILES: >-
+        tests/unit/test_pipeline.py
+        tests/unit/test_worker_credential_provider_binding.py
+        tests/unit/test_proof_request_worker.py
+        tests/unit/test_repair_runtime_spec.py
+        tests/unit/test_proof_flow_runtime.py
+        tests/unit/test_proof_flow_worker_image.py
+        tests/unit/test_worker_claim_spec.py
+        tests/unit/test_chat_runtime.py
+        tests/unit/test_api_repair_stagnation.py
+        tests/unit/test_worker_drain.py
+        tests/unit/test_worker.py
+        tests/unit/test_semantic_token_meter.py
+        tests/unit/test_verifier_tls_material.py
+        tests/unit/test_worker_processes.py
+        tests/unit/test_api_claim_contract_spec.py
+        tests/unit/test_runtime_latency.py
+        tests/unit/test_http_hard_deadline_spec.py
+        tests/unit/test_http_verifier_runtime.py
+        tests/unit/test_production_token_factory.py
+        tests/unit/test_token_proof_request.py
+        tests/unit/test_token_meter.py
+        tests/unit/test_worker_api_trust.py
+        tests/unit/test_aws_worker_credentials.py
+        tests/unit/test_lightweight_http_transport.py
+        tests/unit/test_api_verified_update_contract_spec.py
+        tests/unit/test_aws_worker_credentials_sdk_rotation.py
+        tests/unit/test_worker_lanes.py
+        tests/unit/test_lean.py
+        tests/unit/test_lean_trusted_audit.py
+        tests/unit/test_lean_boundary_attestation_spec.py
+        tests/unit/test_lean_source_policy.py
+        tests/unit/test_lean_environment.py
+        tests/unit/test_lean_container_contract_spec.py
+        tests/unit/test_lean_model_policy.py
+        tests/unit/test_lean_target.py
+        tests/unit/test_lean_process_boundary_spec.py
+        tests/unit/test_lean_child_read_allowlist.py
+        tests/unit/test_isolated_verifier_http_server.py
+        tests/unit/test_recipe_search_client.py
+        tests/unit/test_material_context.py
+        tests/unit/test_linked_chat.py
+        tests/unit/test_chat_pdf_inputs.py
     steps:
+      - name: Check out the immutable public parent fixture contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: AtsushiHosaka/pals
+          ref: b6b101177e5ce650eb3d03adc5f64f17e0540d96
+          path: parent-fixture
+          persist-credentials: false
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: parent-fixture/pals-agent
+          fetch-depth: 0
       - name: Verify the requested source revision
         env:
           EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          test "$(git -C .. rev-parse HEAD)" = b6b101177e5ce650eb3d03adc5f64f17e0540d96
+      # This is a bounded runtime core, not a whole-repository unit qualification.
+      # Unmapped source/build/test edits require an explicit regression mapping.
+      - name: Reject changes outside the qualified runtime core
+        env:
+          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          python - <<'PY_SCOPE'
+          import os
+          import re
+          import subprocess
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          head = git("rev-parse", "HEAD")
+          reference = os.environ.get("REVIEW_BASE") or git("rev-parse", "origin/main")
+          if reference == head:
+              reference = os.environ.get("PUSH_BEFORE", "")
+          assert re.fullmatch(r"[0-9a-f]{40}", reference) and reference != "0" * 40, "missing review baseline"
+          base = git("merge-base", reference, head)
+          changed = set(git("diff", "--name-only", base, head).splitlines())
+          covered = set(os.environ["CORE_TEST_FILES"].split()) | {
+              'pals_agent/worker.py',
+              'pals_agent/worker_processes.py',
+              'pals_agent/worker_api_trust.py',
+              'pals_agent/pipeline.py',
+              'pals_agent/api_client.py',
+              'pals_agent/proof_request_worker.py',
+              'pals_agent/proof_flow_runtime.py',
+              'pals_agent/aws_worker_credentials.py',
+              'pals_agent/factory.py',
+              'pals_agent/settings.py',
+              'pals_agent/models.py',
+              'pals_agent/model_roles.py',
+              'pals_agent/chat_runtime.py',
+              'pals_agent/runtime_latency.py',
+              'pals_agent/token_meter.py',
+              'pals_agent/http_transport.py',
+              'pals_agent/lightweight_http_transport.py',
+              'pals_agent/lean.py',
+              'pals_agent/lean_child.py',
+              'pals_agent/lean_supervisor.py',
+              'pals_agent/lean_audit.py',
+              'pals_agent/lean_source_policy.py',
+              'pals_agent/lean_environment.py',
+              'pals_agent/lean_target.py',
+              'pals_agent/lean_verifier/http_server.py',
+              'pals_agent/lean_verifier/http_runtime.py',
+              'pals_agent/lean_verifier/boundary.py',
+              'pals_agent/lean_verifier/diagnostics.py',
+              'pals_agent/lean_verifier/tls_material.py',
+              ".github/workflows/application-regression.yml",
+              "README.md", "LICENSE", "AGENTS.md", "CLAUDE.md",
+          }
+          missing = sorted(changed - covered)
+          assert not missing, "Add an owned regression mapping before qualifying these paths: " + ", ".join(missing)
+          print(f"Qualified runtime-core change paths: {len(changed)}")
+          PY_SCOPE
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12.13"
@@ -45,12 +162,12 @@ jobs:
           uv run --no-sync ruff check \
             pals_agent/lean_verifier/http_server.py \
             tests/unit/test_isolated_verifier_http_server.py
-      - name: Verify the real TLS boundary and existing closed protocol
+      - name: Verify worker, pipeline, API clients and verifier runtime core
         run: |
           uv run --no-sync python -m pytest -q -p no:cacheprovider \
             --junitxml="$RUNNER_TEMP/agent-regression.xml" \
-            tests/unit/test_isolated_verifier_http_server.py
-      - name: Require executed setup-failure regressions with no skips
+            $CORE_TEST_FILES
+      - name: Require executed runtime modules and setup-failure regressions
         if: always()
         env:
           REGRESSION_REPORT: ${{ runner.temp }}/agent-regression.xml
@@ -58,8 +175,23 @@ jobs:
           python - <<'PY'
           import os
           import xml.etree.ElementTree as ET
+
           cases = ET.parse(os.environ["REGRESSION_REPORT"]).findall(".//testcase")
-          assert len(cases) >= 27, "required verifier regressions did not execute"
-          assert all(not any(case.find(tag) is not None for tag in ("skipped", "failure", "error")) for case in cases)
-          assert sum(case.attrib["name"].startswith("test_sandbox_setup_failure_is_unavailable_and_never_proof_repair_feedback[") for case in cases) == 2
+          expected = {path.removesuffix(".py").replace("/", ".") for path in os.environ["CORE_TEST_FILES"].split()}
+          actual = {case.attrib.get("classname", "") for case in cases}
+          assert expected <= actual, "required runtime modules did not execute: " + repr(expected - actual)
+          assert all(not any(case.find(tag) is not None for tag in ("failure", "error")) for case in cases)
+          # Existing optional-client and exact deployed tmpfs-fixture coverage is
+          # explicitly separate; the first two native Linux Landlock tests must run.
+          allowed_skips = {
+              ("tests.unit.test_worker_api_trust", "test_httpx_observes_exported_trust"),
+              ("tests.unit.test_lean_child_read_allowlist", "test_linux_http_scratch_child_does_not_expose_sibling_runtime_files"),
+          }
+          skipped = {(case.attrib["classname"], case.attrib["name"]) for case in cases if case.find("skipped") is not None}
+          assert skipped <= allowed_skips, "unexpected skipped core regressions: " + repr(skipped - allowed_skips)
+          tls = [case for case in cases if case.attrib.get("classname", "").endswith("test_isolated_verifier_http_server")]
+          assert len(tls) >= 27, "required verifier regressions did not execute"
+          assert all(case.find("skipped") is None for case in tls)
+          assert sum(case.attrib["name"].startswith("test_sandbox_setup_failure_is_unavailable_and_never_proof_repair_feedback[") for case in tls) == 2
+          print(f"Runtime core: {len(cases)} executed cases; explicitly separate optional/deployed-fixture skips: {sorted(skipped)}")
           PY
