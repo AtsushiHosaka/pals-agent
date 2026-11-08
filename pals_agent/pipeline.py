@@ -41,6 +41,7 @@ from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
+from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
     r"\btheorem\s+(?P<name>[A-Za-z_][A-Za-z0-9_'.]*)(?P<signature>.*?)\s*:=",
@@ -195,6 +196,11 @@ class ProofPipeline:
     # the same attempt: Prove receives the Sketch and its diagnostics at once, instead of
     # the attempt failing, consuming a repair, and the next attempt resuming at Prove.
     sketch_failure_proceeds_to_prove: bool = False
+    # ``sketch_mechanical_repair`` repairs a Sketch that failed its Lean check without a model:
+    # focused imports become ``import Mathlib``, scoped notation gets its ``open``, and failing
+    # proof blocks become ``sorry`` gaps (pals_agent/sketch_repair.py). The repaired Sketch is
+    # re-checked by Lean before Prove sees it; a failure keeps the existing path.
+    sketch_mechanical_repair: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -734,6 +740,7 @@ class ProofPipeline:
                 on_status=on_status,
                 verifier=self.verifier,
                 sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
+                sketch_mechanical_repair=self.sketch_mechanical_repair,
             )
 
         _emit(
@@ -1270,6 +1277,7 @@ def _generate_staged_attempt(
     on_status: StatusCallback | None,
     verifier: Verifier | None,
     sketch_failure_proceeds_to_prove: bool = False,
+    sketch_mechanical_repair: bool = False,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1314,6 +1322,20 @@ def _generate_staged_attempt(
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
         sketch_verification = _verify_sketch(verifier, sketch.lean_code)
+        if (
+            sketch_mechanical_repair
+            and sketch.has_gaps
+            and sketch_verification is not None
+            and not sketch_verification.success
+        ):
+            repaired = repair_sketch(
+                sketch.lean_code,
+                sketch_verification,
+                lambda code: cast(SketchVerifier, verifier).verify_sketch(code),
+            )
+            if repaired is not None:
+                sketch = replace(sketch, lean_code=repaired.lean_code)
+                sketch_verification = repaired.verification
         if (
             sketch.has_gaps
             and sketch_verification is not None

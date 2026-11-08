@@ -63,6 +63,7 @@ class AgentSettings:
     harness_splice_enabled: bool = False
     deterministic_repair_route_enabled: bool = False
     sketch_failure_proceeds_to_prove_enabled: bool = False
+    sketch_mechanical_repair_enabled: bool = False
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -207,6 +208,9 @@ class AgentSettings:
             ),
             sketch_failure_proceeds_to_prove_enabled=_strict_bool_env(
                 "PALS_SKETCH_FAILURE_PROCEEDS_TO_PROVE_ENABLED"
+            ),
+            sketch_mechanical_repair_enabled=_strict_bool_env(
+                "PALS_SKETCH_MECHANICAL_REPAIR_ENABLED"
             ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
