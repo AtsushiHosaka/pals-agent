@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from pals_agent.latency_report import percentile
+from pals_agent.step_timing import RUN_SCHEMA, SCHEMA
 
 _TOKENS = ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens")
 
@@ -45,15 +46,44 @@ def collect(lines: Iterable[str]) -> Samples:
             continue
         if not isinstance(event, dict):
             continue
-        if event.get("event") == "pipeline_step" and isinstance(
-            event.get("duration_ms"), int | float
-        ):
-            name = str(event["step"]) + (" (container)" if event.get("container") else "")
-            key = (name, str(event.get("model") or "-"), str(event["outcome"]))
-            samples.steps[key].append(float(event["duration_ms"]))
-        elif event.get("event") == "pipeline_run":
-            samples.runs.append(event)
+        if event.get("event") == "pipeline_step":
+            duration = event.get("duration_ms")
+            if (
+                event.get("schema") == SCHEMA
+                and isinstance(event.get("step"), str)
+                and isinstance(event.get("outcome"), str)
+                and isinstance(duration, int | float)
+                and not isinstance(duration, bool)
+            ):
+                name = event["step"] + (" (container)" if event.get("container") else "")
+                key = (name, str(event.get("model") or "-"), event["outcome"])
+                samples.steps[key].append(float(duration))
+        elif event.get("event") == "pipeline_run" and event.get("schema") == RUN_SCHEMA:
+            run = _normalized_run(event)
+            if run is not None:
+                samples.runs.append(run)
     return samples
+
+
+def _normalized_run(event: dict[str, Any]) -> dict[str, Any] | None:
+    """A run record with numeric ``total_ms`` and a ``step_ms`` mapping, or None.
+
+    CloudWatch EMF lines carry the mapping as the JSON text ``step_ms_json``.
+    """
+    total = event.get("total_ms")
+    if isinstance(total, bool) or not isinstance(total, int | float) or total < 0:
+        return None
+    step_ms = event.get("step_ms")
+    if not isinstance(step_ms, dict) and isinstance(event.get("step_ms_json"), str):
+        try:
+            step_ms = json.loads(event["step_ms_json"])
+        except ValueError:
+            step_ms = None
+    clean = {
+        str(k): float(v) for k, v in (step_ms.items() if isinstance(step_ms, dict) else ())
+        if isinstance(v, int | float) and not isinstance(v, bool)
+    }
+    return {**event, "total_ms": float(total), "step_ms": clean}
 
 
 def rows(samples: Samples) -> list[dict[str, Any]]:
@@ -80,9 +110,21 @@ def run_summary(samples: Samples) -> dict[str, Any]:
         for step, ms in (run.get("step_ms") or {}).items():
             by_step[step] += float(ms or 0)
     shares = {step: round(ms / grand, 4) for step, ms in sorted(by_step.items())}
-    shares["unattributed"] = round(max(0.0, 1 - sum(by_step.values()) / grand), 4)
+    # Steps can overlap, so the unattributed time is the runs' own recorded wall time with no
+    # step running, not what is left after subtracting the summed step times.
+    recorded = [
+        r["unattributed_ms"] for r in runs if isinstance(r.get("unattributed_ms"), int | float)
+    ]
+    shares["unattributed"] = round(
+        sum(recorded) / grand if len(recorded) == len(runs)
+        else max(0.0, 1 - sum(by_step.values()) / grand),
+        4,
+    )
+    truncated = sum(1 for r in runs if r.get("truncated"))
     return {
         "runs": len(runs),
+        "step_shares_can_overlap": True,
+        "truncated_runs": truncated,
         "total_ms_p50": round(percentile(totals, 0.5), 1),
         "total_ms_p95": round(percentile(totals, 0.95), 1),
         "model_calls_mean": round(sum(r.get("model_calls", 0) for r in runs) / len(runs), 2),
@@ -133,6 +175,9 @@ def render(samples: Samples) -> str:
     )
     for step, share in summary["share_of_run_time"].items():
         out.append(f"  {step:<24}{share:>8.1%} of run time")
+    out.append("  (steps can overlap, so the shares may add up to more than 100%)")
+    if summary["truncated_runs"]:
+        out.append(f"  WARNING: {summary['truncated_runs']} run(s) truncated; totals are partial")
     return "\n".join(out) + "\n"
 
 

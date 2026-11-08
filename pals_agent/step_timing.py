@@ -23,9 +23,12 @@ call: a sink failure is swallowed and counted. The design is in
 
 from __future__ import annotations
 
+import atexit
 import hashlib
 import json
 import math
+import os
+import queue
 import re
 import sys
 import threading
@@ -35,6 +38,8 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
+
+from pals_agent.usage import PRICE_SNAPSHOTS
 
 SCHEMA = "pals.pipeline-step.v1"
 RUN_SCHEMA = "pals.pipeline-run.v1"
@@ -68,25 +73,52 @@ OUTCOMES = frozenset({
 })
 EFFORTS = frozenset({"none", "low", "medium", "high", "xhigh", "max"})
 # Exact model identities that may appear as a dimension. Everything else is "other".
-_MODELS = frozenset({
-    "gpt-6-luna", "gpt-6.1-sol", "gpt-6.1-terra", "gpt-5.6-terra", "gpt-5.4-mini",
-    "gpt-5.4-nano", "text-embedding-3-small",
+_MODELS = frozenset(PRICE_SNAPSHOTS)
+RUN_STATES = frozenset({"verified", "failed", "compiling", "exception"})
+# Mirrors pals_agent.pipeline.TerminationReason; a unit test fails if the two drift apart.
+TERMINATION_REASONS = frozenset({
+    "verified", "awaiting_api_reconciliation", "repair_budget_exhausted",
+    "non_repairable_failure", "repair_generator_unavailable", "repair_route_selection_failed",
+    "artifact_store_failure",
+})
+# Diagnostic codes are read from compiler output, which a candidate can influence, so only
+# these exact codes pass. Any other error code is recorded as "lean.other".
+LEAN_CODES = frozenset({
+    "lean.error", "lean.failed", "lean.verified", "lean.not_found", "lean.output_limit",
+    "lean.project_not_found", "lean.prlimit_not_found", "lean.sandbox_setup_failed",
+    "lean.timeout", "lean.verifier_timeout", "lean.compile_error", "lean.compile_interrupted",
+    "lean.compile_deadline_interrupted", "lean.trusted_audit_failed",
+    "lean.declaration_uses_sorry", "lean.undeclared_theorem", "lean.formal_harness_mismatch",
+    "lean.statement_mismatch", "lean.unknown_identifier", "lean.unknownIdentifier",
+    "lean.type_mismatch", "lean.typeMismatch", "lean.syntax_error", "lean.no_goals",
+    "lean.unsolved_goals", "lean.tactic_failed", "lean.already_declared",
+    "lean.disallowed_placeholder", "lean.disallowed_trusted_declaration",
+    "lean.disallowed_axiom", "lean.disallowed_metaprogramming",
+    "lean.disallowed_interactive_command", "lean.disallowed_syntax_quotation",
+    "lean.disallowed_attribute", "lean.disallowed_option", "lean.disallowed_native_evaluation",
+    "lean.disallowed_ambiguous_lexing", "lake.not_found", "verifier_internal_error",
+    "pals.generation_empty", "pals.proof_method_mismatch", "pals.repair_budget_exhausted",
+    "pals.repair_generator_unavailable", "pals.repair_route_selection_failed",
+    "pals.repair_stagnation", "pals.sketch_contract_mismatch",
+    "pals.target_declaration_invalid", "pals.artifact_checkpoint_failed",
+    "llm.empty", "llm.generation_failed", "openai.error", "ollama.error",
+})
+_TIMEOUT_CODES = frozenset({
+    "lean.compile_deadline_interrupted", "lean.timeout", "lean.verifier_timeout",
 })
 _TOKEN = re.compile(r"[A-Za-z0-9_.\-]{1,64}")
 _MAX_CODES = 8
+MAX_RUN_STEPS = 2048
 _MAX_MS = 86_400_000.0
 
 _RUN: ContextVar[RunRecorder | None] = ContextVar("pals_step_timing_run", default=None)
 _ATTEMPT: ContextVar[int | None] = ContextVar("pals_step_timing_attempt", default=None)
 _CURRENT: ContextVar[StepRecord | None] = ContextVar("pals_step_timing_current", default=None)
 
-_sink_lock = threading.Lock()
 _sink_errors = 0
 
 
 def enabled() -> bool:
-    import os
-
     return bool(os.environ.get(ENV_JSONL) or os.environ.get(ENV_EMF) == "1")
 
 
@@ -106,7 +138,11 @@ def _member(value: object, allowed: frozenset[str], fallback: str | None = "othe
 
 
 def _ms(value: object) -> float | None:
-    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value):
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    if isinstance(value, int):  # clamp before float(): an int beyond float range would raise
+        return round(float(min(max(value, 0), int(_MAX_MS))), 1)
+    if not math.isfinite(value):
         return None
     return round(min(max(float(value), 0.0), _MAX_MS), 1)
 
@@ -169,7 +205,7 @@ def coarse_outcome(outcome: object) -> str:
 def classify_lean(success: bool, codes: list[str]) -> str:
     if success:
         return "ok"
-    if "lean.compile_deadline_interrupted" in codes:
+    if _TIMEOUT_CODES.intersection(codes):
         return "timeout"
     if "lean.compile_interrupted" in codes:
         return "interrupted"
@@ -188,18 +224,27 @@ class RunRecorder:
     steps: list[dict[str, Any]] = field(default_factory=list)
     intervals: list[tuple[float, float]] = field(default_factory=list)
     final: dict[str, Any] = field(default_factory=dict)
+    dropped: int = 0
+
+    @property
+    def name(self) -> str | None:
+        """The run identity written on every event of this run."""
+        return self.label or self.ref
 
     def add(self, event: dict[str, Any], interval: tuple[float, float] | None = None) -> None:
         with self.lock:
-            if len(self.steps) < 2048:
+            if len(self.steps) < MAX_RUN_STEPS:
                 self.steps.append(event)
                 if interval is not None and not event.get("container"):
                     self.intervals.append(interval)
+            else:
+                self.dropped += 1
 
     def summary(self) -> dict[str, Any]:
         with self.lock:
             steps = list(self.steps)
             intervals = sorted(self.intervals)
+            dropped = self.dropped
         busy = 0.0
         reach = None
         for begin, end in intervals:
@@ -221,7 +266,7 @@ class RunRecorder:
             if event.get("container"):
                 continue
             by_step[step] = by_step.get(step, 0.0) + ms
-            if step in MODEL_STEPS:
+            if event.get("model_call") or step in MODEL_STEPS:
                 model_calls += 1
                 model_ms += ms
                 for key in tokens:
@@ -232,12 +277,14 @@ class RunRecorder:
             "schema": RUN_SCHEMA,
             "event": "pipeline_run",
             "ts_ms": round(time.time() * 1000),
-            "run": self.label or self.ref,
+            "run": self.name,
             "total_ms": _ms((time.monotonic() - self.started) * 1000),
             "model_calls": model_calls,
             "model_ms": _ms(model_ms),
             "lean_ms": _ms(lean_ms),
             "step_count": len(steps),
+            "truncated": dropped > 0,
+            "dropped_steps": dropped,
             # Steps that run at the same time (a speculative explanation beside a review)
             # add up to more than the wall time: busy_ms counts each moment once.
             "busy_ms": _ms(busy * 1000),
@@ -262,10 +309,13 @@ def note_run(
     run = _RUN.get()
     if run is None:
         return
-    for key, value in (("state", state), ("termination_reason", termination_reason)):
-        token = _token(value)
-        if token is not None:
-            run.final[key] = token
+    for key, value, allowed in (
+        ("state", state, RUN_STATES),
+        ("termination_reason", termination_reason, TERMINATION_REASONS),
+    ):
+        member = _member(value, allowed, None)
+        if member is not None:
+            run.final[key] = member
     for key, value in (("attempts", attempts), ("repairs_used", repairs_used)):
         count = _count(value)
         if count is not None:
@@ -313,7 +363,7 @@ class StepRecord:
 
     __slots__ = (
         "step", "model", "effort", "outcome", "tokens", "codes", "http_status", "cache",
-        "container",
+        "container", "model_call",
     )
 
     def __init__(self, step: str, model: str | None, effort: str | None) -> None:
@@ -326,6 +376,7 @@ class StepRecord:
         self.http_status: int | None = None
         self.cache: str | None = None
         self.container = False
+        self.model_call = False
 
     def set_model(self, model: object, effort: object = None) -> None:
         self.model = model if isinstance(model, str) else None
@@ -352,8 +403,11 @@ class StepRecord:
         for diagnostic in diagnostics if isinstance(diagnostics, list | tuple) else ():
             if getattr(diagnostic, "severity", None) != "error":
                 continue
-            code = _token(getattr(diagnostic, "code", None))
-            if code is not None and code not in codes:
+            raw = getattr(diagnostic, "code", None)
+            if not isinstance(raw, str):
+                continue
+            code = raw if raw in LEAN_CODES else "lean.other"
+            if code not in codes:
                 codes.append(code)
         self.codes = sorted(codes)[:_MAX_CODES]
         self.outcome = classify_lean(success, self.codes)
@@ -376,7 +430,7 @@ def _event(
         "ts_ms": round(time.time() * 1000),
         "run": (run.label or run.ref) if run is not None else job,
         "step": record.step,
-        "model": record.model if record.step in MODEL_STEPS else None,
+        "model": model_dimension(record.model) if record.model is not None else None,
         "effort": record.effort,
         "duration_ms": _ms(duration_ms),
         "outcome": record.outcome or "ok",
@@ -384,6 +438,8 @@ def _event(
     }
     if record.container:
         event["container"] = True
+    if record.model_call:
+        event["model_call"] = True
     if run is not None:
         event["start_offset_ms"] = _ms((time.monotonic() - run.started) * 1000 - (duration_ms or 0))
     for key, value in record.tokens.items():
@@ -461,37 +517,95 @@ def _finish(record: StepRecord, duration_ms: float | None, job: str | None = Non
 
 
 # ------------------------------------------------------------------------- sinks
+#
+# Events are serialized on the calling thread (cheap) and written by one daemon thread.
+# A sink that stalls, such as a full stderr pipe, then delays only later events, never the
+# traced call. The queue is bounded: when it is full the event is dropped and counted.
+
+_QUEUE_LIMIT = 1024
+_queue: queue.Queue[tuple[str, str | None]] = queue.Queue()
+_state_lock = threading.Lock()
+_writer: threading.Thread | None = None
 
 
 def _count_sink_error() -> None:
     global _sink_errors
-    _sink_errors += 1
+    with _state_lock:
+        _sink_errors += 1
+
+
+def _writer_loop() -> None:
+    while True:
+        line, emf_line = _queue.get()
+        try:
+            _write_sinks(line, emf_line)
+        except Exception:  # noqa: BLE001 -- a sink failure loses only this event.
+            _count_sink_error()
+        finally:
+            _queue.task_done()
+
+
+def _ensure_writer() -> None:
+    global _writer
+    with _state_lock:
+        if _writer is None or not _writer.is_alive():
+            _writer = threading.Thread(
+                target=_writer_loop, name="pals-step-timing-writer", daemon=True,
+            )
+            _writer.start()
+
+
+def flush(timeout_seconds: float = 5.0) -> bool:
+    """Wait until queued events are written; False if the sinks are still busy."""
+    deadline = time.monotonic() + timeout_seconds
+    while _queue.unfinished_tasks:
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(0.005)
+    return True
+
+
+atexit.register(flush)
 
 
 def _write(event: dict[str, Any]) -> None:
-    """Write one event to every enabled sink; a failing sink loses only that event."""
-    import os
-
+    """Queue one event for every enabled sink. Never blocks and never raises."""
     try:
         path = os.environ.get(ENV_JSONL)
         emf = os.environ.get(ENV_EMF) == "1"
         if not path and not emf:
             return
         line = json.dumps(event, sort_keys=True, separators=(",", ":"), allow_nan=False)
-        with _sink_lock:
-            if path:
-                with open(path, "a", encoding="utf-8") as handle:
-                    handle.write(line + "\n")
-            if emf:
-                emf_line = json.dumps(
-                    to_emf(event), sort_keys=True, separators=(",", ":"), allow_nan=False,
-                )
-                # The CloudWatch agent transport of quality_events (UDP or file) when it
-                # is configured; stderr otherwise, for the container log driver.
-                if not _send_over_agent(emf_line):
-                    sys.stderr.write(emf_line + "\n")
+        emf_line = (
+            json.dumps(to_emf(event), sort_keys=True, separators=(",", ":"), allow_nan=False)
+            if emf else None
+        )
+        if _queue.qsize() >= _QUEUE_LIMIT:
+            _count_sink_error()
+            return
+        _ensure_writer()
+        _queue.put_nowait((line, emf_line))
     except Exception:  # noqa: BLE001
         _count_sink_error()
+
+
+def _write_sinks(line: str, emf_line: str | None) -> None:
+    """Write to each enabled sink on its own: one failing cannot stop the other."""
+    path = os.environ.get(ENV_JSONL)
+    if path:
+        try:
+            with open(path, "a", encoding="utf-8") as handle:
+                handle.write(line + "\n")
+        except Exception:  # noqa: BLE001
+            _count_sink_error()
+    if emf_line is not None:
+        try:
+            # The CloudWatch agent transport of quality_events (UDP or file) when it is
+            # configured; stderr otherwise, for the container log driver.
+            if not _send_over_agent(emf_line):
+                sys.stderr.write(emf_line + "\n")
+        except Exception:  # noqa: BLE001
+            _count_sink_error()
 
 
 def _send_over_agent(line: str) -> bool:

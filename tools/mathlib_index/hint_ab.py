@@ -214,7 +214,11 @@ def run_one(
         reasoning_effort=args.effort,
     )
     builder = HintBuilder(index, lean=args.hint_lean) if index is not None else None
-    client: Any = HintingClient(openai, builder) if arm == "hinted" else openai
+    client: Any = openai
+    if arm == "hinted":
+        if builder is None:
+            raise ValueError("the hinted arm needs --index-dir")
+        client = HintingClient(openai, builder)
     generator = HybridLeanGenerator(
         model=args.model, provider="openai", client=GuardedClient(client, guard)
     )
@@ -240,8 +244,14 @@ def run_one(
         guard.add(row)
 
     started = time.monotonic()
-    timing_label = f"{problem['id']}.{arm}"
-    with usage_scope(on_usage), step_timing.run_scope(run_id, label=timing_label):
+    # One label per run label, problem and arm, so timing files from different experiments
+    # cannot be mixed up. A name that is not token-safe falls back to the job digest.
+    with (
+        usage_scope(on_usage),
+        step_timing.run_scope(
+            run_id, label=f"{args.run_label}.{problem['id']}.{arm}"
+        ) as timing_run,
+    ):
         result = pipeline.run_statement(
             statement=problem["statement"],
             formal_statement=problem.get("formal_statement"),
@@ -283,7 +293,7 @@ def run_one(
         "hint_rounds": builder.log if builder else [],
         "budget_stopped": guard.stopped,
         # Joins this record to its pipeline_run in the PALS_STEP_TIMING_JSONL events.
-        **({"step_timing_run": timing_label} if step_timing.enabled() else {}),
+        **({"step_timing_run": timing_run.name} if timing_run is not None else {}),
     }
     print(
         json.dumps({k: v for k, v in record.items() if k != "hint_rounds"}, ensure_ascii=False),
