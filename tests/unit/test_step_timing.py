@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from pals_agent import quality_events, step_timing
+from pals_agent import step_timing
 from pals_agent.artifacts import FileArtifactStore
 from pals_agent.http_transport import HttpResponse
 from pals_agent.models import Diagnostic, GeneratedProof, GenerationFeedback, ProofRequest
@@ -266,6 +266,7 @@ def test_only_allow_listed_keys_and_token_shaped_strings_appear(
         "schema", "event", "ts_ms", "run", "total_ms", "model_calls", "model_ms", "lean_ms",
         "step_count", "step_ms", "input_tokens", "cached_input_tokens", "output_tokens",
         "reasoning_tokens", "state", "termination_reason", "attempts", "repairs_used",
+        "busy_ms", "overlap_ms", "unattributed_ms",
     }
     for event in _events(jsonl):
         allowed = step_keys if event["event"] == "pipeline_step" else run_keys
@@ -323,6 +324,7 @@ def test_run_summary_emf_uses_the_outcome_dimension_only(tmp_path: Path, jsonl: 
 def test_emf_uses_the_quality_events_transport_when_configured(
     jsonl: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
 ) -> None:
+    quality_events = pytest.importorskip("pals_agent.quality_events")
     sent: list[str] = []
 
     class Capture:
@@ -408,3 +410,35 @@ def test_report_keeps_containers_out_of_the_shares(jsonl: Path) -> None:
         pass
     text = render(collect(jsonl.read_text(encoding="utf-8").splitlines()))
     assert "assessment (container)" in text and "encloses other steps" in text
+
+
+def test_overlapping_steps_are_counted_once_in_busy_time(jsonl: Path) -> None:
+    import threading
+    import time
+    from contextvars import copy_context
+
+    with step_timing.run_scope("job-5"):
+        def side() -> None:
+            with step_timing.step("explain"):
+                time.sleep(0.05)
+
+        thread = threading.Thread(target=copy_context().run, args=(side,))
+        thread.start()
+        with step_timing.step("recipe_rank"):
+            time.sleep(0.05)
+        thread.join()
+    (run,) = [e for e in _events(jsonl) if e["event"] == "pipeline_run"]
+    assert run["step_count"] == 2
+    assert run["overlap_ms"] >= 30  # the two 50 ms steps ran together
+    assert run["busy_ms"] < sum(run["step_ms"].values())
+    assert run["unattributed_ms"] >= 0
+
+
+def test_template_lookup_is_a_hit_or_miss_step(jsonl: Path) -> None:
+    from pals_agent.pipeline import _template_lookup
+
+    assert _template_lookup(lambda: None) is None
+    assert _template_lookup(lambda: object()) is not None
+    first, second = _events(jsonl)
+    assert (first["step"], first["outcome"]) == ("template_hit", "miss")
+    assert second["outcome"] == "hit"

@@ -276,7 +276,7 @@ class ProofPipeline:
                 )
                 # The same function decides the first attempt, so a request it accepts here is
                 # rendered from the template there whatever retrieval would have returned.
-                if template_proof_for_request(bare) is None:
+                if _template_lookup(lambda: template_proof_for_request(bare)) is None:
                     bare = None
             request = bare if bare is not None else _request_for_statement(
                 statement, formal_statement=formal_statement, proof_flow_retriever=retriever,
@@ -761,7 +761,7 @@ class ProofPipeline:
         }
 
         if feedback is None and self.deterministic_templates:
-            template = template_proof_for_request(request)
+            template = _template_lookup(lambda: template_proof_for_request(request))
             if template is not None:
                 _emit(
                     on_status,
@@ -1512,7 +1512,9 @@ def _generate_staged_attempt(
         if feedback is None and deterministic_templates:
             # The Sketch's Lean statement is language independent: when it is exactly the
             # continuity of x², the verified template replaces the prove stage.
-            template = template_proof_for_sketch(request, sketch.lean_code)
+            template = _template_lookup(
+                lambda: template_proof_for_sketch(request, sketch.lean_code)
+            )
             if template is not None:
                 _emit(
                     on_status,
@@ -1592,6 +1594,15 @@ def _failed_staged_proof(
         stage_diagnostics=stage_diagnostics,
         reasoning_effort=failed_stage.reasoning_effort,
     )
+
+
+def _template_lookup(lookup: Callable[[], Any]) -> Any:
+    """The deterministic-template decision, timed as one step with a hit or miss outcome."""
+    with step_timing.step("template_hit") as timing:
+        template = lookup()
+        if timing is not None:
+            timing.set_outcome("hit" if template is not None else "miss")
+        return template
 
 
 def _verify_sketch(
