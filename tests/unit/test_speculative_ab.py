@@ -289,3 +289,54 @@ def test_virtual_time_does_not_leak_into_the_tracing_module() -> None:
 
     _run(_scenario(1.0, 1.0, 1.0), pairs=1)
     assert vars(runtime_latency)["time"] is time
+
+
+# --- --statement / --lean / --language ----------------------------------------------------------
+
+
+def test_the_x_squared_subject_reaches_the_stub_job() -> None:
+    import tools.speculative_ab as ab
+
+    subject = ab.make_subject(lean="x2", language="en")
+    assert subject.output_language == "en"
+    assert subject.statement == ab.X_SQUARED_STATEMENT
+    assert subject.formal_statement is None
+    assert "Metric.continuous_iff" in subject.lean
+    assert subject.target_proposition.replace(" ", "") == "Continuous(funx:ℝ=>x^2)"
+    api = ab.StubApi(ab.VirtualClock(), ab.Current(), ab.Marks(), subject)
+    job = api.get_proof_job("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")
+    assert job["lean_code"] == subject.lean and job["theorem_statement"] == subject.statement
+    assert job["request_context"] == {} and job["output_language"] == "en"
+    assert job["status_context"]["target_declaration"]["name"] == subject.target_name
+
+
+def test_a_custom_statement_and_lean_file_are_used(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    import tools.speculative_ab as ab
+
+    source = tmp_path / "t.lean"
+    source.write_text("theorem foo : 1 + 1 = 2 := by\n  norm_num\n", encoding="utf-8")
+    subject = ab.make_subject(statement="Show that 1 + 1 = 2.", lean=str(source))
+    assert subject.statement == "Show that 1 + 1 = 2." and subject.output_language == "ja"
+    assert subject.target_name == "foo" and subject.target_proposition == "1 + 1 = 2"
+    with pytest.raises(ValueError):
+        ab.make_subject(lean=str(source))  # a Lean file needs its statement
+    with pytest.raises(ValueError):
+        ab.make_subject(statement="x")  # a statement needs its Lean
+    two = tmp_path / "two.lean"
+    two.write_text("theorem a : True := trivial\ntheorem b : True := trivial\n", encoding="utf-8")
+    with pytest.raises(ValueError):
+        ab.make_subject(statement="x", lean=str(two))
+
+
+def test_the_default_subject_is_unchanged_and_the_cli_runs_with_the_x2_subject(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    import tools.speculative_ab as ab
+
+    assert ab.make_subject() == ab.Subject()
+    assert ab.main(["--fake", "-n", "2", "--seed", "1", "--events", "none",
+                    "--lean", "x2", "--language", "en"]) == 0
+    out = capsys.readouterr().out
+    assert "paired difference" in out
+    assert ab.main(["--fake", "-n", "1", "--lean", "x2", "--events", "none",
+                    "--statement", ""]) == 0  # an empty statement falls back to the x² one

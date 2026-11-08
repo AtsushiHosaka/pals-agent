@@ -49,6 +49,7 @@ from collections import Counter
 from collections.abc import Callable, Iterator, Sequence
 from contextvars import ContextVar
 from dataclasses import dataclass, field
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, TextIO, cast
 
@@ -68,6 +69,9 @@ from pals_agent.worker import SqsProofWorker
 
 STATEMENT = "theorem sample : True := by trivial"
 LEAN = "theorem sample : True := by\n  trivial"
+X_SQUARED_STATEMENT = (
+    "Prove that the function f : ℝ → ℝ defined by f(x) = x² is continuous on ℝ."
+)
 JOB_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 RESULT_URI = "s3://pals-artifacts/proof-jobs/job-semantic/result.lean"
 CLAIM_ID = "55555555-5555-4555-8555-555555555555"
@@ -290,10 +294,58 @@ def _envelope(status: str, lease_remaining_ms: int | None, proof_job_id: str) ->
     }
 
 
+@dataclass(frozen=True)
+class Subject:
+    """What the stub job is about: the learner statement, the Lean source and its target."""
+
+    statement: str = STATEMENT
+    lean: str = LEAN
+    formal_statement: str | None = "True"
+    output_language: str = "zh-Hans"
+    target_name: str = "sample"
+    target_proposition: str = "True"
+
+
+def make_subject(
+    *, statement: str | None = None, lean: str | None = None, language: str | None = None,
+) -> Subject:
+    """The default subject, or one built from a statement and a Lean source.
+
+    ``lean`` is a path to a Lean file, or ``x2`` for the repo's verified template of
+    the continuity of x² (with its usual statement unless ``statement`` is given).
+    """
+    if statement is None and lean is None and language is None:
+        return Subject()
+    if lean == "x2":
+        from pals_agent.lean_templates import render_x_squared_epsilon_delta
+
+        source = render_x_squared_epsilon_delta()
+        statement = statement or X_SQUARED_STATEMENT
+    elif lean is not None:
+        source = Path(lean).read_text(encoding="utf-8")
+    else:
+        raise ValueError("--statement needs --lean (a Lean file, or 'x2')")
+    if statement is None:
+        raise ValueError("--lean needs --statement (the learner's statement)")
+    from pals_agent.lean_target import extract_single_target_declaration
+
+    target = extract_single_target_declaration(source)
+    if target is None:
+        raise ValueError("the Lean source must declare exactly one theorem, lemma or example")
+    return Subject(
+        statement=statement, lean=source, formal_statement=None,
+        output_language=language or "ja", target_name=target.name,
+        target_proposition=target.proposition,
+    )
+
+
 class StubApi:
     """Answers the API calls of the semantic-review -> explanation stage, after a latency."""
 
-    def __init__(self, clock: Clock, current: Current, marks: Marks) -> None:
+    def __init__(
+        self, clock: Clock, current: Current, marks: Marks, subject: Subject | None = None,
+    ) -> None:
+        self.subject = subject or Subject()
         self.clock = clock
         self.current = current
         self.marks = marks
@@ -315,12 +367,16 @@ class StubApi:
             "state": "semantic_review",
             "result_artifact_uri": RESULT_URI,
             "chat_id": "chat-1",
-            "output_language": "zh-Hans",
-            "theorem_statement": STATEMENT,
-            "request_context": {"formal_statement": "True"},
-            "lean_code": LEAN,
+            "output_language": self.subject.output_language,
+            "theorem_statement": self.subject.statement,
+            "request_context": (
+                {"formal_statement": self.subject.formal_statement}
+                if self.subject.formal_statement is not None else {}
+            ),
+            "lean_code": self.subject.lean,
             "status_context": {"target_declaration": {
-                "kind": "theorem", "name": "sample", "proposition": "True",
+                "kind": "theorem", "name": self.subject.target_name,
+                "proposition": self.subject.target_proposition,
             }},
             "verification_candidate_id": "22222222-2222-4222-8222-222222222222",
             "generation_session_id": "11111111-1111-4111-8111-111111111111",
@@ -331,7 +387,7 @@ class StubApi:
         return {
             "schema_version": "pals.verification-candidate-binding.v1", **kwargs,
             "mutation_claim_id": "11111111-1111-4111-8111-111111111111",
-            "lean_sha256": hashlib.sha256(LEAN.encode()).hexdigest(),
+            "lean_sha256": hashlib.sha256(self.subject.lean.encode()).hexdigest(),
             "result_artifact_uri": RESULT_URI,
             "source_binding_sha256": None, "candidate_status": "semantic_review",
         }
@@ -576,12 +632,13 @@ def _outcome(api: StubApi, marks: Marks) -> str:
 def run_iteration(
     *, pair: int, arm: str, clock: Clock, settings: Any, draws: Draws | None,
     build_clients: Callable[[Current], Clients], current: Current,
+    subject: Subject | None = None,
 ) -> IterationResult:
     current.draws = draws
     if isinstance(clock, VirtualClock):
         clock.reset()
     marks = Marks()
-    api = StubApi(clock, current, marks)
+    api = StubApi(clock, current, marks, subject)
     clients = build_clients(current)
     worker = SqsProofWorker(
         settings=settings,
@@ -667,6 +724,7 @@ def run_experiment(
     *, pairs: int, seed: int, scenario: Scenario, order: str = "abab",
     clients_factory: Callable[[Clock], Callable[[Current], Clients]] | None = None,
     settings_factory: Callable[[bool], Any] | None = None, clock: Clock | None = None,
+    subject: Subject | None = None,
 ) -> list[IterationResult]:
     """Run ``pairs`` pairs; fake clients and virtual time unless a factory and clock are given."""
     virtual = clock is None
@@ -682,7 +740,7 @@ def run_experiment(
         results.append(run_iteration(
             pair=pair, arm=arm, clock=the_clock, settings=make_settings(arm == "on"),
             draws=draws[pair], build_clients=build_clients,
-            current=current,
+            current=current, subject=subject,
         ))
     return results
 
@@ -873,6 +931,19 @@ def _parser() -> argparse.ArgumentParser:
                         help="share of explanation calls that fail (fake)")
     parser.add_argument("--bootstrap", type=int, default=2000, help="bootstrap resamples")
     parser.add_argument(
+        "--statement", metavar="TEXT",
+        help="the learner statement of the stub job (with --lean)",
+    )
+    parser.add_argument(
+        "--lean", metavar="FILE|x2",
+        help="a Lean file with one theorem to review and explain, or 'x2' for the verified "
+             "x² template (the statement then defaults to the usual English one)",
+    )
+    parser.add_argument(
+        "--language", choices=("en", "ja", "zh-Hans", "zh-Hant"),
+        help="output language of the explanation (default ja with --lean; zh-Hans otherwise)",
+    )
+    parser.add_argument(
         "--events", default="-", metavar="PREFIX|-|none",
         help="proof_request_latency events: - for stderr, none, or PREFIX.<arm>.jsonl",
     )
@@ -927,9 +998,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         api=args.api, reject_rate=args.reject_rate, explain_fail_rate=args.explain_fail_rate,
     )
     try:
+        subject = make_subject(
+            statement=args.statement, lean=args.lean, language=args.language,
+        )
         results = run_experiment(
             pairs=args.pairs, seed=args.seed, scenario=scenario, order=args.order,
             clients_factory=clients_factory, settings_factory=settings_factory, clock=clock,
+            subject=subject,
         )
     except ValueError as error:
         print(f"error: {error}", file=sys.stderr)
