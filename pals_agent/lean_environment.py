@@ -12,6 +12,7 @@ import platform
 import re
 import sys
 import threading
+import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -140,17 +141,36 @@ def materialize_lake_environment(base: dict[str, str], delta: dict[str, str]) ->
 
 
 class LakeEnvironmentCache:
-    """One entry per verifier, serialized preparation and explicit lifecycle reset."""
+    """One entry per verifier, serialized preparation and explicit lifecycle reset.
 
-    def __init__(self) -> None:
+    A preparation that is rejected (unreviewed key, Lake output on stderr, non-zero exit) is
+    remembered for ``failure_backoff_seconds``. Without that, every request would first pay for
+    a doomed ``lake env`` preparation and then for the original ``lake env lean`` command, which
+    made an unsupported toolchain about twice as slow as leaving the cache off. Timeouts and OS
+    errors are not remembered, because they may be transient. The backoff stores no result.
+    """
+
+    def __init__(
+        self,
+        *,
+        failure_backoff_seconds: float = 60.0,
+        monotonic: Callable[[], float] = time.monotonic,
+    ) -> None:
+        if failure_backoff_seconds < 0:
+            raise ValueError("failure backoff must not be negative")
         self._lock = threading.Lock()
         self._key: str | None = None
         self._environment: dict[str, str] = {}
+        self._failure_backoff_seconds = failure_backoff_seconds
+        self._monotonic = monotonic
+        self._failed_key: str | None = None
+        self._failed_until = 0.0
 
     def clear(self) -> None:
         with self._lock:
             self._key = None
             self._environment = {}
+            self._failed_key = None
 
     def get_or_prepare(
         self, key: str, prepare: Callable[[], dict[str, str]], *, timeout_seconds: float = 10.0,
@@ -162,7 +182,15 @@ class LakeEnvironmentCache:
                 return dict(self._environment), "hit"
             self._key = None
             self._environment = {}
-            environment = prepare()
+            if key == self._failed_key and self._monotonic() < self._failed_until:
+                raise ValueError("Lake preparation recently failed for this setup")
+            try:
+                environment = prepare()
+            except ValueError:
+                self._failed_key = key
+                self._failed_until = self._monotonic() + self._failure_backoff_seconds
+                raise
+            self._failed_key = None
             self._environment = dict(environment)
             self._key = key
             return dict(environment), "miss"

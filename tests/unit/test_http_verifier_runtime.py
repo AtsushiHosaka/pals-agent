@@ -3,6 +3,7 @@ from __future__ import annotations
 import ssl
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any, cast
 from uuid import UUID
 
 import pytest
@@ -358,3 +359,28 @@ def _set_required_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     }
     for name, value in environment.items():
         monkeypatch.setenv(name, value)
+
+
+def test_startup_warms_the_lake_environment_only_when_reuse_is_enabled(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    class Verifier:
+        def __init__(self, status: str) -> None:
+            self.status = status
+            self.calls = 0
+
+        def warm_lake_environment(self) -> str:
+            self.calls += 1
+            return self.status
+
+    disabled = Verifier("miss")
+    http_runtime._warm_lake_environment(cast(Any, disabled), enabled=False)
+    assert disabled.calls == 0
+
+    caplog.set_level("INFO", logger=http_runtime._LOGGER.name)
+    http_runtime._warm_lake_environment(cast(Any, Verifier("miss")), enabled=True)
+    http_runtime._warm_lake_environment(cast(Any, Verifier("fallback")), enabled=True)
+    assert [(r.levelname, r.getMessage()) for r in caplog.records] == [
+        ("INFO", "lean_environment_reuse status=miss"),
+        ("WARNING", "lean_environment_reuse status=fallback"),
+    ]

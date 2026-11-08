@@ -89,6 +89,9 @@ def sanitize_openai_diagnostics(value: object) -> dict[str, Any]:
     status = value.get("http_status")
     if type(status) is int and 100 <= status <= 599:
         result["http_status"] = status
+    attempts = value.get("attempts")
+    if type(attempts) is int and 1 <= attempts <= 10:
+        result["attempts"] = attempts
     return result
 
 

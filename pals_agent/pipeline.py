@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextvars import copy_context
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
 
+from pals_agent import step_timing
 from pals_agent.artifacts import (
     ATTEMPT_CHECKPOINT_SCHEMA_VERSION,
     ArtifactPersistenceError,
@@ -38,9 +41,11 @@ from pals_agent.models import (
     VerificationResult,
 )
 from pals_agent.natural_draft_evidence import NaturalDraftRetrievalResult
+from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal_harness
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
+from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
     r"\btheorem\s+(?P<name>[A-Za-z_][A-Za-z0-9_'.]*)(?P<signature>.*?)\s*:=",
@@ -186,6 +191,30 @@ class ProofPipeline:
     request_linked_typed_retriever: ProofFlowRetriever | None = None
     # Local mode only. Absent, a request can only be verified by ``verifier`` (the default profile).
     profile_verifiers: ProfileRoutedVerifier | None = None
+    # Opt-in latency shortcuts, both off by default; see pals_agent/proof_fastpaths.py.
+    # ``harness_splice`` restores a fixed formal statement the model re-typed with only
+    # layout differences instead of paying for a model-driven restart.
+    harness_splice: bool = False
+    # ``deterministic_repair_route`` skips the route-selection model call when the user
+    # fixed the statement, and never restarts the prose Draft for a statement mismatch.
+    deterministic_repair_route: bool = False
+    # ``sketch_failure_proceeds_to_prove`` keeps a Sketch that fails its Lean check inside
+    # the same attempt: Prove receives the Sketch and its diagnostics at once, instead of
+    # the attempt failing, consuming a repair, and the next attempt resuming at Prove.
+    sketch_failure_proceeds_to_prove: bool = False
+    # ``sketch_mechanical_repair`` repairs a Sketch that failed its Lean check without a model:
+    # focused imports become ``import Mathlib``, scoped notation gets its ``open``, and failing
+    # proof blocks become ``sorry`` gaps (pals_agent/sketch_repair.py). The repaired Sketch is
+    # re-checked by Lean before Prove sees it; a failure keeps the existing path.
+    sketch_mechanical_repair: bool = False
+    # ``sketch_parallel`` > 1 asks for that many Sketches at once and keeps the first one that
+    # passes its Lean check (or the first to finish when none does). It costs the extra Sketch
+    # tokens and, on the same wall clock, raises the chance that one Sketch is usable.
+    sketch_parallel: int = 1
+    # ``stop_on_repeated_harness_mismatch`` ends a run whose last two attempts both failed only
+    # with ``lean.formal_harness_mismatch``. It reuses the ``repair_budget_exhausted`` reason;
+    # a dedicated reason is needed before production use (see docs).
+    stop_on_repeated_harness_mismatch: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -303,7 +332,11 @@ class ProofPipeline:
         """Retrieve once before Recipe selection; model generation consumes this same result."""
         return self._request_for_statement(statement, formal_statement=formal_statement)
 
-    def _run_request(
+    def _run_request(self, **arguments: Any) -> ProofRunResult:
+        with step_timing.run_scope(arguments.get("proof_job_id")):
+            return self._run_request_steps(**arguments)
+
+    def _run_request_steps(
         self,
         *,
         request: ProofRequest,
@@ -385,6 +418,7 @@ class ProofPipeline:
                 attempt=api_repair_seed.attempt,
                 repairs_used=api_repair_seed.repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -415,6 +449,9 @@ class ProofPipeline:
                 generated.lean_code,
                 verification_harness=verification_harness,
                 require_single_target=self.verification_mode == "api_reconcile",
+            )
+            preflight_diagnostics = _attribute_empty_generation(
+                preflight_diagnostics, generation_diagnostic
             )
             if preflight_diagnostics:
                 failure_diagnostics = [*generated.stage_diagnostics]
@@ -487,6 +524,7 @@ class ProofPipeline:
                     attempt=attempt,
                     repairs_used=repairs_used,
                     attempt_evidence=attempts[-1],
+                    failure_history=failure_fingerprint_history,
                     on_status=on_status,
                 )
                 if repair_generation is None:
@@ -586,8 +624,11 @@ class ProofPipeline:
 
             verifier = self.verifier
             assert verifier is not None
-            with latency_stage("lean_compile_local"):
+            step_timing.set_attempt(attempt)
+            with latency_stage("lean_compile_local"), step_timing.step("lean_check") as timing:
                 verification = verifier.verify(generated.lean_code)
+                if timing is not None:
+                    timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
             attempts.append(
                 _attempt_metadata(
@@ -663,6 +704,7 @@ class ProofPipeline:
                 attempt=attempt,
                 repairs_used=repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -697,6 +739,42 @@ class ProofPipeline:
         feedback: GenerationFeedback | None,
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
+        step_timing.set_attempt(attempt)
+        generated = self._generate_attempt_unspliced(
+            request=request,
+            problem_id=problem_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+            diagnostics=diagnostics,
+            feedback=feedback,
+            on_status=on_status,
+        )
+        if not self.harness_splice or not request.formal_statement:
+            return generated
+        if not generated.lean_code.strip() or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=generated.lean_code,
+        ) == []:
+            return generated
+        spliced = splice_formal_harness(generated.lean_code, request.formal_statement)
+        if spliced is None or _validate_formal_harness(
+            formal_statement=request.formal_statement,
+            lean_code=spliced,
+        ):
+            return generated
+        return replace(generated, lean_code=spliced)
+
+    def _generate_attempt_unspliced(
+        self,
+        *,
+        request: ProofRequest,
+        problem_id: str,
+        attempt: int,
+        repairs_used: int,
+        diagnostics: list[Diagnostic],
+        feedback: GenerationFeedback | None,
+        on_status: StatusCallback | None,
+    ) -> GeneratedProof:
         repair_route = feedback.repair_route if feedback is not None else "draft"
         context: dict[str, Any] = {
             **_request_context(request, problem_id=problem_id),
@@ -720,6 +798,9 @@ class ProofPipeline:
                 context=context,
                 on_status=on_status,
                 verifier=self.verifier,
+                sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
+                sketch_mechanical_repair=self.sketch_mechanical_repair,
+                sketch_parallel=self.sketch_parallel,
             )
 
         _emit(
@@ -761,12 +842,29 @@ class ProofPipeline:
         repairs_used: int,
         attempt_evidence: dict[str, Any],
         on_status: StatusCallback | None,
+        failure_history: list[frozenset[str]] | None = None,
     ) -> RepairGeneration | None:
+        if self.stop_on_repeated_harness_mismatch and _harness_mismatch_repeated(
+            failure_history or []
+        ):
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="pals.repair_budget_exhausted",
+                    message=(
+                        "Lean repair stopped early: the formal statement harness was "
+                        "missing from two consecutive attempts; 1 of 15 recorded runs with "
+                        "that pattern went on to verify."
+                    ),
+                )
+            )
+            return None
         if any(
             diagnostic.code in _NON_REPAIRABLE_DIAGNOSTIC_CODES
             for diagnostic in feedback_diagnostics
         ):
             return None
+        step_timing.set_attempt(attempt + 1)  # the repair generates the next attempt
         if repairs_used >= self.max_repair_attempts:
             cumulative_diagnostics.append(
                 Diagnostic(
@@ -799,7 +897,11 @@ class ProofPipeline:
             previous_sketch=generated.sketch,
         )
         try:
-            route_decision = _select_repair_route(
+            route_decision = (
+                deterministic_repair_route(request, base_feedback)
+                if self.deterministic_repair_route
+                else None
+            ) or _select_repair_route(
                 self.generator,
                 request,
                 base_feedback,
@@ -1027,6 +1129,10 @@ class ProofPipeline:
             artifact=artifact,
             verification_pending=verification_pending,
         )
+        step_timing.note_run(
+            state=result.state, termination_reason=termination_reason,
+            attempts=latest_attempt, repairs_used=repairs_used,
+        )
         _emit(
             on_status,
             result.state,
@@ -1251,6 +1357,9 @@ def _generate_staged_attempt(
     context: dict[str, Any],
     on_status: StatusCallback | None,
     verifier: Verifier | None,
+    sketch_failure_proceeds_to_prove: bool = False,
+    sketch_mechanical_repair: bool = False,
+    sketch_parallel: int = 1,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1291,28 +1400,49 @@ def _generate_staged_attempt(
                 ),
             },
         )
-        sketch = generator.generate_sketch(request, draft, feedback)
+        sketch, sketch_verification = _sketch_and_check(
+            generator,
+            request,
+            draft,
+            feedback,
+            verifier,
+            mechanical_repair=sketch_mechanical_repair,
+            parallel=sketch_parallel,
+        )
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
-        sketch_verification = _verify_sketch(verifier, sketch.lean_code)
         if (
             sketch.has_gaps
             and sketch_verification is not None
             and not sketch_verification.success
         ):
-            diagnostic_text = "\n".join(
-                _format_diagnostic_for_trace(diagnostic)
-                for diagnostic in sketch_verification.diagnostics
-            )
-            return _failed_staged_proof(
-                draft=draft,
-                sketch=sketch,
-                error=(
-                    "[generation-error] sketch Lean validation failed.\n"
-                    f"{diagnostic_text}"
-                ),
-                stage_diagnostics=tuple(sketch_verification.diagnostics),
-            )
+            if sketch_failure_proceeds_to_prove:
+                feedback = GenerationFeedback(
+                    attempt=feedback.attempt if feedback is not None else 0,
+                    previous_lean_code=sketch.lean_code,
+                    diagnostics=tuple(sketch_verification.diagnostics),
+                    repair_route="prove",
+                    repair_rationale=(
+                        "The Sketch failed its Lean check; correct it while completing "
+                        "the proof."
+                    ),
+                    previous_draft=draft,
+                    previous_sketch=sketch,
+                )
+            else:
+                diagnostic_text = "\n".join(
+                    _format_diagnostic_for_trace(diagnostic)
+                    for diagnostic in sketch_verification.diagnostics
+                )
+                return _failed_staged_proof(
+                    draft=draft,
+                    sketch=sketch,
+                    error=(
+                        "[generation-error] sketch Lean validation failed.\n"
+                        f"{diagnostic_text}"
+                    ),
+                    stage_diagnostics=tuple(sketch_verification.diagnostics),
+                )
 
     _emit(
         on_status,
@@ -1330,6 +1460,60 @@ def _generate_staged_attempt(
         },
     )
     return generator.generate_proof(request, draft, sketch, feedback)
+
+
+def _sketch_and_check(
+    generator: StagedLeanGenerator,
+    request: ProofRequest,
+    draft: GeneratedDraft,
+    feedback: GenerationFeedback | None,
+    verifier: Verifier | None,
+    *,
+    mechanical_repair: bool,
+    parallel: int,
+) -> tuple[GeneratedSketch, VerificationResult | None]:
+    """One Sketch with its Lean check, or the first usable one of ``parallel`` Sketches."""
+
+    def one() -> tuple[GeneratedSketch, VerificationResult | None]:
+        sketch = generator.generate_sketch(request, draft, feedback)
+        if not sketch.lean_code.strip():
+            return sketch, None
+        verification = _verify_sketch(verifier, sketch.lean_code)
+        if (
+            mechanical_repair
+            and sketch.has_gaps
+            and verification is not None
+            and not verification.success
+        ):
+            repaired = repair_sketch(
+                sketch.lean_code,
+                verification,
+                lambda code: cast(SketchVerifier, verifier).verify_sketch(code),
+            )
+            if repaired is not None:
+                return replace(sketch, lean_code=repaired.lean_code), repaired.verification
+        return sketch, verification
+
+    def usable(result: tuple[GeneratedSketch, VerificationResult | None]) -> bool:
+        sketch, verification = result
+        return bool(sketch.lean_code.strip()) and (
+            not sketch.has_gaps or verification is None or verification.success
+        )
+
+    if parallel <= 1:
+        return one()
+    pool = ThreadPoolExecutor(max_workers=parallel)
+    try:
+        futures = [pool.submit(copy_context().run, one) for _ in range(parallel)]
+        finished: list[tuple[GeneratedSketch, VerificationResult | None]] = []
+        for future in as_completed(futures):
+            result = future.result()
+            if usable(result):
+                return result
+            finished.append(result)
+        return next((r for r in finished if r[0].lean_code.strip()), finished[0])
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
 
 
 def _failed_staged_proof(
@@ -1363,13 +1547,28 @@ def _verify_sketch(
     verify_sketch = getattr(verifier, "verify_sketch", None)
     if not callable(verify_sketch):
         return None
-    return cast(SketchVerifier, verifier).verify_sketch(lean_code)
+    with step_timing.step("lean_sketch_check") as timing:
+        result = cast(SketchVerifier, verifier).verify_sketch(lean_code)
+        if timing is not None:
+            timing.set_lean(result.success, result.diagnostics)
+    return result
 
 
 def _format_diagnostic_for_trace(diagnostic: Diagnostic) -> str:
     location = f" line {diagnostic.line}" if diagnostic.line is not None else ""
     code = f" [{diagnostic.code}]" if diagnostic.code else ""
     return f"{diagnostic.severity}{location}{code}: {diagnostic.message}"
+
+
+def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
+    """True when each of the last two failures had exactly the harness-mismatch error."""
+    if len(history) < 2:
+        return False
+    return all(
+        {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
+        == {"lean.formal_harness_mismatch"}
+        for fingerprints in history[-2:]
+    )
 
 
 def _with_repair_stagnation(
@@ -1567,6 +1766,26 @@ def _termination_event(
         "attempt": attempt,
         "source": sources[reason],
     }
+
+
+def _attribute_empty_generation(
+    preflight: list[Diagnostic], generation: Diagnostic
+) -> list[Diagnostic]:
+    """Say why `pals.generation_empty` fired, keeping its code for existing consumers.
+
+    No Lean code reaches preflight whenever a stage fails (a provider error, a Sketch that
+    does not compile, a Prove that still has `sorry`), not only when the model returns
+    nothing. In 129 measured attempts none was a model that returned nothing, so counting the
+    bare code overstates empty generations. `explained_by` is the stage diagnostic code, or
+    "none" when the model really produced no extractable Lean code.
+    """
+    cause = generation.code if generation.severity == "error" and generation.code else "none"
+    return [
+        replace(item, metadata={**(item.metadata or {}), "explained_by": cause})
+        if item.code == "pals.generation_empty"
+        else item
+        for item in preflight
+    ]
 
 
 def _generation_diagnostic(generated: GeneratedProof) -> Diagnostic:

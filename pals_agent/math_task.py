@@ -67,6 +67,21 @@ ANSWER_SCOPE_REVIEW = (
     "check that the explanation's yes/no conclusion matches the verified target. "
 )
 
+ANSWER_ENDING = (
+    "When the request asks to compute, solve, evaluate or determine something, the last sentence "
+    "of answer must state the explicit final result itself (the value, expression, solution set "
+    "or classification) in terms of the learner's own symbols, exactly as the derivation "
+    "establishes it, for example \"Therefore $\\sum_{k=1}^{n}k=\\frac{n(n+1)}{2}$.\" This is a "
+    "style example only; take the actual result from your own derivation. Do not end with a side "
+    "remark, the justification of a lemma or a restatement of an assumption. "
+)
+
+ANSWER_ENDING_REVIEW = (
+    "When the request asks to compute, solve, evaluate or determine something, reject an answer "
+    "whose last sentence does not state the explicit final result established by its derivation, "
+    "such as one that ends with a side remark or the justification of a lemma. "
+)
+
 ANSWER_PRESENTATION = (
     "When the request asks to compute, solve or determine, give the explicit value, solution "
     "set or classification established by the verified target, followed by its mathematical "

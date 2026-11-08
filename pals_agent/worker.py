@@ -17,7 +17,7 @@ import boto3  # type: ignore[import-untyped]
 import rfc8785
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
-from pals_agent import quality_events
+from pals_agent import quality_events, step_timing
 from pals_agent.api_client import (
     PalsApiError,
     ProofJobNotFoundError,
@@ -130,6 +130,10 @@ _TERMINAL_MARGIN_SECONDS: Final = 30.0
 # An ordinary candidate settles within five attempts under a 310 s lease plus the API's 425 s of
 # interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
 _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
+# Each poll is a fresh-process HTTP call of about 0.3 s, so a long sleep dominates the wait. A Lean
+# verification usually settles within seconds, so poll fast at first and slow down for a candidate
+# that is still compiling (the API's attempt lease is 310 s).
+_CANDIDATE_RECONCILIATION_POLL_SCHEDULE: Final = ((30.0, 0.25), (90.0, 0.5))
 _CANDIDATE_RECONCILIATION_POLL_SECONDS: Final = 1.0
 _CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS: Final = 360
 _CANDIDATE_RECONCILIATION_REFRESH_SECONDS: Final = 300.0
@@ -572,6 +576,8 @@ class SqsProofWorker:
             # generation has started, so return this valid receipt for another worker.
             extend_visibility(0)
             return False
+        if queue_timing is not None:
+            step_timing.record_step("queue_wait", queue_timing["queue_wait_ms"], job=task.id)
         claim_id = self._fresh_claim_id()
         acknowledged = False
         try:
@@ -1184,7 +1190,10 @@ class SqsProofWorker:
         started = self.monotonic()
         deadline = started + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
         next_refresh = started + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
-        with latency_stage("lean_reconciliation_wait"):
+        with (
+            latency_stage("lean_reconciliation_wait"),
+            step_timing.step("lean_reconcile_wait", job=proof_job_id) as timing,
+        ):
             while True:
                 note_latency("reconciliation_polls", 1)
                 try:
@@ -1200,14 +1209,18 @@ class SqsProofWorker:
                 now = self.monotonic()
                 remaining = deadline - now
                 if remaining <= 0 or self.stop_requested():
+                    if timing is not None:
+                        timing.set_outcome("timeout" if remaining <= 0 else "interrupted")
                     return None
                 if now >= next_refresh:
                     try:
                         extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
                     except Exception:
+                        if timing is not None:
+                            timing.set_outcome("error")
                         return None
                     next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
-                self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))
+                self.sleep(min(_candidate_poll_delay(now - started), remaining))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -3300,6 +3313,13 @@ def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
         isinstance(item, dict) and item.get("code") == "verifier_compile_failed"
         for item in diagnostics
     )
+
+
+def _candidate_poll_delay(waited_seconds: float) -> float:
+    for until, delay in _CANDIDATE_RECONCILIATION_POLL_SCHEDULE:
+        if waited_seconds < until:
+            return delay
+    return _CANDIDATE_RECONCILIATION_POLL_SECONDS
 
 
 def _has_pending_api_candidate(proof_job: dict[str, Any]) -> bool:

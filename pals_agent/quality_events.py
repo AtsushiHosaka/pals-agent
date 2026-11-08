@@ -866,6 +866,24 @@ def emit(
     return True
 
 
+def send_line(line: str) -> bool:
+    """Send one already-built EMF line over the configured transport, if there is one.
+
+    For other modules that own their schema (``step_timing``). Unlike ``emit`` this has
+    no ``PALS_QUALITY_EVENTS_ENABLED`` gate and counts no drop: the caller owns its flag
+    and falls back to another sink on False. It never raises.
+    """
+    try:
+        config = _config(needs_environment=False)
+        transport = _transport(config) if config is not None else None
+        if transport is None:
+            return False
+        transport.send(line)
+        return True
+    except Exception:  # noqa: BLE001 -- observability must never alter application behavior.
+        return False
+
+
 def _restore_dropped(count: int) -> None:
     global _DROPPED
     with _LOCK:

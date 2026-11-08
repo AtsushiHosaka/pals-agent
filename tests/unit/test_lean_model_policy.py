@@ -57,7 +57,10 @@ def dsp() -> tuple[HybridLeanGenerator, DSPTransport]:
     transport = DSPTransport()
     return HybridLeanGenerator(
         model="gpt-6.1-terra", provider="openai", use_release_role_bindings=True,
-        openai=OpenAIResponsesClient(api_key="test", transport=transport, max_output_tokens=16384),
+        openai=OpenAIResponsesClient(
+            api_key="test", transport=transport, max_output_tokens=16384,
+            sleep=lambda _seconds: None,
+        ),
     ), transport
 
 
@@ -136,8 +139,10 @@ def test_provider_failure_does_not_silently_try_another_model() -> None:
     transport.status = 429
     generated = generator.generate(request())
     assert not generated.lean_code
-    assert len(transport.calls) == 1
-    assert transport.calls[0]["model"] == "gpt-6.1-terra"
+    # A transient 429 is retried with the identical request, never with another model.
+    assert len(transport.calls) == 3
+    assert {call["model"] for call in transport.calls} == {"gpt-6.1-terra"}
+    assert all(call == transport.calls[0] for call in transport.calls)
 
 
 def test_resume_preserves_reasoning_evidence_and_accepts_historical_missing_field() -> None:
