@@ -6,7 +6,10 @@ contract around it, not a real Lean run (see ``verifier_cache_real_lean.py`` for
 
 from __future__ import annotations
 
+import http.client
+import json
 import logging
+import socket
 import threading
 import time
 from collections.abc import Callable
@@ -37,6 +40,7 @@ from tests.unit import test_verifier_result_cache as _base
 from tests.unit.test_http_verifier_runtime import _set_required_environment
 from tests.unit.test_isolated_verifier_http_server import (
     _failure,
+    _headers,
     _interrupted,
     _success,
     _timeout_failure,
@@ -92,6 +96,11 @@ def _serve_and_revalidate(
     thread = cache.start_revalidation(
         decision, compile_outcome=lambda _source: outcome, slot=slot or _slot()
     )
+    if slot is None:
+        # With a free slot and nothing in flight, the pre-check on the decision is exact.
+        assert decision.revalidate == (thread is not None)
+    else:
+        assert decision.revalidate or thread is None
     if thread is not None:
         thread.join(timeout=5)
         assert not thread.is_alive()
@@ -170,6 +179,34 @@ def test_a_skipped_attempt_leaves_the_entry_due_so_the_next_serve_retries() -> N
     held.release()
     assert _serve_and_revalidate(cache, FIRST, slot=held) is not None
     assert cache.snapshot()["revalidations_started"] == 1
+
+
+def test_one_entrys_serves_never_make_another_entry_due() -> None:
+    cache = _cache(every=3)
+    _store(cache, FIRST)
+    _store(cache, SECOND)
+    assert _serve_and_revalidate(cache, FIRST) is not None  # first serves
+    assert _serve_and_revalidate(cache, SECOND) is not None
+    assert _serve_and_revalidate(cache, FIRST) is None
+    assert _serve_and_revalidate(cache, FIRST) is None  # FIRST is at 2 of 3
+    # SECOND has had one serve since its revalidation: not due, whatever FIRST has done.
+    assert _serve_and_revalidate(cache, SECOND) is None
+    assert _serve_and_revalidate(cache, SECOND) is None
+    assert _serve_and_revalidate(cache, SECOND) is not None  # its own third serve since
+
+
+def test_a_skipped_nth_serve_does_not_postpone_the_entry_by_another_n() -> None:
+    cache = _cache(every=3)
+    _store(cache)
+    assert _serve_and_revalidate(cache, FIRST) is not None  # serve 1: first-serve rule
+    assert _serve_and_revalidate(cache, FIRST) is None  # serve 2
+    assert _serve_and_revalidate(cache, FIRST) is None  # serve 3
+    busy = _slot()
+    assert busy.acquire(blocking=False)
+    assert _serve_and_revalidate(cache, FIRST, slot=busy) is None  # serve 4: due but skipped
+    assert cache.snapshot()["revalidation_skipped_no_slot"] == 1
+    busy.release()
+    assert _serve_and_revalidate(cache, FIRST, slot=busy) is not None  # serve 5 retries at once
 
 
 def test_a_revalidation_resets_the_serve_counter_but_not_for_serves_during_it() -> None:
@@ -791,6 +828,59 @@ def test_a_hit_is_not_delayed_by_a_slow_revalidation_and_keeps_the_wire_contract
     snapshot = cache.snapshot()
     assert snapshot["revalidations_started"] == 1 and snapshot["revalidation_match"] == 1
     assert snapshot["revalidation_skipped_busy"] >= 1
+
+
+def _two_requests_on_one_connection(
+    tls: Any, sources: tuple[str, str]
+) -> tuple[list[tuple[int, str | None]], float]:
+    """Two sequential keep-alive requests on ONE TLS connection; the second one's latency."""
+    results: list[tuple[int, str | None]] = []
+    latency = 0.0
+    with (
+        socket.create_connection(("127.0.0.1", 18117), timeout=8) as raw,
+        tls[1].wrap_socket(raw, server_hostname="verifier.internal") as connection,
+    ):
+        for index, source in enumerate(sources):
+            body = json.dumps(
+                {
+                    "lean_code": source,
+                    "proof_job_id": f"keepalive-{index}",
+                    "result_artifact_uri": f"s3://bucket/proof-jobs/keepalive-{index}/result.lean",
+                    "schema_version": "pals.isolated-verifier-request.v1",
+                },
+                separators=(",", ":"),
+            ).encode("utf-8")
+            started = time.monotonic()
+            connection.sendall(
+                b"POST /v1/verify HTTP/1.1\r\n"
+                + _headers()
+                + b"Content-Type: application/json\r\n"
+                + f"Content-Length: {len(body)}\r\n\r\n".encode("ascii")
+                + body
+            )
+            response = http.client.HTTPResponse(connection)
+            response.begin()
+            response.read()
+            latency = time.monotonic() - started
+            results.append((response.status, response.getheader(SOURCE_HEADER)))
+    return results, latency
+
+
+def test_the_connection_that_got_the_hit_is_free_while_the_revalidation_runs(
+    tls_contexts: Any,
+) -> None:
+    gate = Event()
+    verifier = RevalidationVerifier(gate=gate)
+    cache = _cache(every=1)
+    with _serving(tls_contexts, verifier, cache):
+        _post(tls_contexts, FIRST, job="seed")
+        results, second_latency = _two_requests_on_one_connection(tls_contexts, (FIRST, FIRST))
+        assert verifier.entered.wait(5)
+        assert cache.snapshot()["revalidation_in_flight"] == 1  # still compiling behind both
+        gate.set()
+        _idle(cache)
+    assert results == [(200, "cache"), (200, "cache")]
+    assert second_latency < 2.0  # the handler thread was not held by the revalidation
 
 
 def test_a_real_request_during_a_revalidation_gets_the_retryable_503(tls_contexts: Any) -> None:
