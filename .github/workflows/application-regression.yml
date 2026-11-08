@@ -27,6 +27,7 @@ jobs:
       UV_PYTHON_DOWNLOADS: never
       AWS_EC2_METADATA_DISABLED: "true"
       CORE_TEST_FILES: >-
+        tests/unit/test_agent_regression_source_scope.py
         tests/unit/test_pipeline.py
         tests/unit/test_worker_credential_provider_binding.py
         tests/unit/test_proof_request_worker.py
@@ -89,31 +90,33 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
           test "$(git -C .. rev-parse HEAD)" = b6b101177e5ce650eb3d03adc5f64f17e0540d96
-      # This is a bounded runtime core, not a whole-repository unit qualification.
+      # This qualifies only the immutable retained-verifier189 source slice.
+      # The bounded runtime core is not general main/worker qualification.
       # Only the repaired server has a complete changed-source mapping here.
       # The 50 reproduced baseline failures remain unqualified; worker/factory/
       # token/catalog and other source edits require an owned regression mapping.
       # The broad core below is additional evidence, not blanket certification.
-      - name: Reject changes outside the qualified runtime core
-        env:
-          REVIEW_BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-          PUSH_BEFORE: ${{ github.event.before }}
+      - name: Reject changes outside the retained verifier source slice
         run: |
           python - <<'PY_SCOPE'
           import os
-          import re
           import subprocess
 
           def git(*args):
               return subprocess.check_output(["git", *args], text=True).strip()
 
           head = git("rev-parse", "HEAD")
-          reference = os.environ.get("REVIEW_BASE") or git("rev-parse", "origin/main")
-          if reference == head:
-              reference = os.environ.get("PUSH_BEFORE", "")
-          assert re.fullmatch(r"[0-9a-f]{40}", reference) and reference != "0" * 40, "missing review baseline"
-          base = git("merge-base", reference, head)
-          changed = set(git("diff", "--name-only", base, head).splitlines())
+          anchor = "189b44378e6e63e5ab7c92d9c5b7d6507acd80f0"
+          assert git("rev-parse", anchor + "^{commit}") == anchor, "retained verifier anchor differs"
+          raw_anchor = subprocess.check_output(["git", "cat-file", "commit", anchor])
+          actual_hash = subprocess.check_output(
+              ["git", "hash-object", "-t", "commit", "--stdin"], input=raw_anchor
+          ).decode().strip()
+          assert actual_hash == anchor, "retained verifier commit bytes differ"
+          assert subprocess.run(
+              ["git", "merge-base", "--is-ancestor", anchor, head], check=False
+          ).returncode == 0, "retained verifier anchor must be an ancestor"
+          changed = set(git("diff", "--name-only", anchor, head).splitlines())
           covered = set(os.environ["CORE_TEST_FILES"].split()) | {
               'pals_agent/lean_verifier/http_server.py',
               ".github/workflows/application-regression.yml",
@@ -121,7 +124,7 @@ jobs:
           }
           missing = sorted(changed - covered)
           assert not missing, "Add an owned regression mapping before qualifying these paths: " + ", ".join(missing)
-          print(f"Qualified runtime-core change paths: {len(changed)}")
+          print(f"Qualified retained-verifier189 change paths: {len(changed)}")
           PY_SCOPE
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -136,7 +139,8 @@ jobs:
         run: |
           uv run --no-sync ruff check \
             pals_agent/lean_verifier/http_server.py \
-            tests/unit/test_isolated_verifier_http_server.py
+            tests/unit/test_isolated_verifier_http_server.py \
+            tests/unit/test_agent_regression_source_scope.py
       - name: Verify worker, pipeline, API clients and verifier runtime core
         run: |
           uv run --no-sync python -m pytest -q -p no:cacheprovider \
