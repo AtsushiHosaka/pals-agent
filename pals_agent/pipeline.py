@@ -6,6 +6,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
 
+from pals_agent import step_timing
 from pals_agent.artifacts import (
     ATTEMPT_CHECKPOINT_SCHEMA_VERSION,
     ArtifactPersistenceError,
@@ -307,7 +308,11 @@ class ProofPipeline:
         """Retrieve once before Recipe selection; model generation consumes this same result."""
         return self._request_for_statement(statement, formal_statement=formal_statement)
 
-    def _run_request(
+    def _run_request(self, **arguments: Any) -> ProofRunResult:
+        with step_timing.run_scope(arguments.get("proof_job_id")):
+            return self._run_request_steps(**arguments)
+
+    def _run_request_steps(
         self,
         *,
         request: ProofRequest,
@@ -605,8 +610,11 @@ class ProofPipeline:
 
             verifier = self.verifier
             assert verifier is not None
-            with latency_stage("lean_compile_local"):
+            step_timing.set_attempt(attempt)
+            with latency_stage("lean_compile_local"), step_timing.step("lean_check") as timing:
                 verification = verifier.verify(generated.lean_code)
+                if timing is not None:
+                    timing.set_lean(verification.success, verification.diagnostics)
             diagnostics = [*diagnostics, *verification.diagnostics]
             if not verification.success and self.lemma_alias_repair:
                 lemma_run = self._lemma_repair_in_attempt(
@@ -739,6 +747,7 @@ class ProofPipeline:
         feedback: GenerationFeedback | None,
         on_status: StatusCallback | None,
     ) -> GeneratedProof:
+        step_timing.set_attempt(attempt)
         repair_route = feedback.repair_route if feedback is not None else "draft"
         context: dict[str, Any] = {
             **_request_context(request, problem_id=problem_id),
@@ -832,6 +841,7 @@ class ProofPipeline:
             for diagnostic in feedback_diagnostics
         ):
             return None
+        step_timing.set_attempt(attempt + 1)  # the repair generates the next attempt
         if repairs_used >= self.max_repair_attempts:
             cumulative_diagnostics.append(
                 Diagnostic(
@@ -1246,6 +1256,10 @@ class ProofPipeline:
             artifact=artifact,
             verification_pending=verification_pending,
         )
+        step_timing.note_run(
+            state=result.state, termination_reason=termination_reason,
+            attempts=latest_attempt, repairs_used=repairs_used,
+        )
         _emit(
             on_status,
             result.state,
@@ -1589,7 +1603,11 @@ def _verify_sketch(
     verify_sketch = getattr(verifier, "verify_sketch", None)
     if not callable(verify_sketch):
         return None
-    return cast(SketchVerifier, verifier).verify_sketch(lean_code)
+    with step_timing.step("lean_sketch_check") as timing:
+        result = cast(SketchVerifier, verifier).verify_sketch(lean_code)
+        if timing is not None:
+            timing.set_lean(result.success, result.diagnostics)
+    return result
 
 
 def _format_diagnostic_for_trace(diagnostic: Diagnostic) -> str:
