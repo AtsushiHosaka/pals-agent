@@ -651,6 +651,13 @@
     }
   ],
   "fillers": [
+    "証明する",
+    "証明します",
+    "証明したい",
+    "示す",
+    "示します",
+    "示したい",
+    "state and prove",
     "について",
     "に関して",
     "することを",
@@ -788,7 +795,10 @@
     "並",
     "并",
     "都",
-    "々"
+    "々",
+    "state",
+    "この",
+    "その"
   ],
   "filler_patterns": [
     "(?:please\\s+)?(?:write|answer|respond|reply|explain|state|give)\\s+(?:(?:the|a|an|entire|whole|full|complete|proposition|statement|theorem|proof|explanation|answer|and|both|all|everything|your|response|reply|it|them)\\s+)*in\\s+(?:english|japanese|chinese|simplified\\s+chinese|traditional\\s+chinese)(?![a-z])",

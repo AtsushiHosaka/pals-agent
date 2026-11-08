@@ -179,6 +179,37 @@ def test_english_wording_for_only_the_continuity_of_x_squared_is_recognised(
     assert template.bindings.variable == variable
 
 
+# The router's own statements of the 2026-11-08 production verification: an imperative opening
+# ("State and prove ..."), a plain-form verb ("証明する") and an output-language sentence.
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "State and prove in English that the function f : ℝ → ℝ defined by f(x) = x² "
+        "is continuous on ℝ.",
+        "実数上の関数 f: ℝ → ℝ を f(x) = x² と定める。f が ℝ 上で連続であることを証明する。"
+        "命題と証明はすべて日本語で記述する。",
+        "x² が連続であることを示す",
+        "x² が連続であることを証明します",
+        "State and prove that x² is continuous.",
+    ],
+)
+def test_router_statements_with_imperative_wording_are_recognised(prompt: str) -> None:
+    assert template_proof_for_request(ProofRequest(id="1", prompt=prompt)) is not None
+
+
+@pytest.mark.parametrize(
+    "prompt",
+    [
+        "State that x² is not continuous.",
+        "State and prove that x³ is continuous.",
+        "この関数が連続であることを示せ",
+        "実数上の関数 f: ℝ → ℝ を f(x)=x² で定める。この関数が不連続であるかどうかを判定せよ。",
+    ],
+)
+def test_widened_fillers_do_not_admit_other_claims(prompt: str) -> None:
+    assert template_proof_for_request(ProofRequest(id="1", prompt=prompt)) is None
+
+
 @pytest.mark.parametrize(
     "prompt",
     [
