@@ -27,7 +27,8 @@ from pals_agent.artifacts import FileArtifactStore, safe_artifact_segment
 from pals_agent.generator import HybridLeanGenerator
 from pals_agent.lean import LeanVerifier
 from pals_agent.openai import OpenAIError, OpenAIResponsesClient
-from pals_agent.pipeline import ProofPipeline
+from pals_agent.pipeline import ProofPipeline, _validate_formal_harness
+from pals_agent.sketch_repair import repair_sketch
 from pals_agent.usage import usage_scope
 from tools.mathlib_index.build_index import name_tokens
 from tools.mathlib_index.exemplars import (
@@ -41,6 +42,7 @@ from tools.mathlib_index.search import (
     lean_query_terms,
     natural_query_terms,
 )
+from tools.mathlib_index.sketch_failures import classify_check, summarize
 
 HINT_HEADER = """
 Unverified Mathlib candidates from a name and statement index of the pinned environment.
@@ -218,6 +220,118 @@ class GuardedClient:
         return str(self.inner.generate(model=model, prompt=prompt))
 
 
+@dataclass(slots=True)
+class SketchRecorder:
+    """Wraps the verifier and records every Sketch check: outcome, time, error classes.
+
+    Message text is kept only in the local raw dump (`raw_dir`), never in the result record.
+    """
+
+    inner: Any
+    raw_dir: Path | None = None
+    run_id: str = ""
+    checks: list[dict[str, Any]] = field(default_factory=list)
+    last_result: Any = None
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.inner, name)
+
+    def verify_sketch(self, lean_code: str) -> Any:
+        result = self.inner.verify_sketch(lean_code)
+        self.last_result = result
+        rows = classify_check(list(result.diagnostics), lean_code)
+        self.checks.append(
+            {
+                "ordinal": len(self.checks) + 1,
+                "success": bool(result.success),
+                "lean_ms": result.elapsed_ms,
+                **summarize(rows),
+                "codes": sorted({str(r.code) for r in rows}),
+                "regions": sorted({r.region for r in rows}),
+            }
+        )
+        if self.raw_dir is not None:
+            self.raw_dir.mkdir(parents=True, exist_ok=True)
+            raw = {
+                "code": lean_code,
+                "diagnostics": [d.to_api() for d in result.diagnostics],
+            }
+            name = f"{safe_artifact_segment(self.run_id)}-{len(self.checks)}.json"
+            (self.raw_dir / name).write_text(json.dumps(raw, ensure_ascii=False), encoding="utf-8")
+        return result
+
+
+def run_sketch_only(
+    problem: dict[str, str],
+    arm: str,
+    args: argparse.Namespace,
+    pipeline: ProofPipeline,
+    generator: Any,
+    recorder: SketchRecorder,
+    usage: list[dict[str, Any]],
+    on_usage: Any,
+) -> dict[str, Any]:
+    """Draft, Sketch and the Sketch Lean check of the first attempt; nothing after it."""
+    started = time.monotonic()
+    request = pipeline.prepare_statement(
+        statement=problem["statement"], formal_statement=problem.get("formal_statement")
+    )
+    with usage_scope(on_usage):
+        draft = generator.generate_draft(request, None)
+        draft_seconds = time.monotonic() - started
+        sketch = generator.generate_sketch(request, draft, None) if draft.text.strip() else None
+    sketch_seconds = time.monotonic() - started - draft_seconds
+    check = None
+    harness_ok = None
+    if sketch is not None and sketch.lean_code.strip():
+        recorder.verify_sketch(sketch.lean_code)
+        check = recorder.checks[-1]
+        if request.formal_statement:
+            harness_ok = not _validate_formal_harness(
+                formal_statement=request.formal_statement, lean_code=sketch.lean_code
+            )
+    repair_record: dict[str, Any] | None = None
+    if args.sketch_repair and check and not check["success"] and sketch is not None:
+        first = recorder.last_result
+        before = len(recorder.checks)
+        repaired = repair_sketch(sketch.lean_code, first, recorder.verify_sketch)
+        repair_record = {
+            "repaired": repaired is not None,
+            "steps": list(repaired.steps) if repaired else None,
+            "rechecks": len(recorder.checks) - before,
+            "lean_seconds": round(sum(c["lean_ms"] for c in recorder.checks[before:]) / 1000, 1),
+        }
+    if sketch is None or not sketch.lean_code.strip():
+        outcome = "empty_sketch"
+    elif check and not check["success"]:
+        outcome = "lean_failed"
+    elif harness_ok is False:
+        outcome = "harness_mismatch"
+    else:
+        outcome = "passed"
+    record = {
+        "problem": problem["id"],
+        "arm": arm,
+        "mode": "sketch_only",
+        "model": args.model,
+        "effort": args.effort,
+        "outcome": outcome,
+        "sketch_has_gaps": bool(sketch and sketch.has_gaps),
+        "harness_ok": harness_ok,
+        "elapsed_seconds": round(time.monotonic() - started, 1),
+        "draft_seconds": round(draft_seconds, 1),
+        "sketch_seconds": round(sketch_seconds, 1),
+        "lean_seconds": round((check or {}).get("lean_ms", 0) / 1000, 1),
+        "model_calls": len(usage),
+        "input_tokens": sum(row["input_tokens"] for row in usage),
+        "output_tokens": sum(row["output_tokens"] for row in usage),
+        "sketch_checks": recorder.checks,
+        "mechanical_repair": repair_record,
+    }
+    print(json.dumps(record, ensure_ascii=False), flush=True)
+    return record
+
+
 def run_one(
     problem: dict[str, str],
     *,
@@ -250,12 +364,14 @@ def run_one(
         exemplar_chars = len(text)
         client = ExemplarClient(openai, text)
     generator = HybridLeanGenerator(
-        model=args.model, provider="openai", client=GuardedClient(client, guard)
+        model=args.model,
+        provider="openai",
+        client=GuardedClient(client, guard),
+        fixed_statement_template=args.statement_template,
     )
     run_id = f"{args.run_label}-{arm}-{problem['id']}"
-    pipeline = ProofPipeline(
-        generator=generator,
-        verifier=LeanVerifier(
+    recorder = SketchRecorder(
+        LeanVerifier(
             lean_binary=args.lean,
             lake_binary=args.lake,
             project_dir=args.lean_project,
@@ -264,11 +380,20 @@ def run_one(
             scratch_dir=args.scratch,
             timeout_seconds=args.lean_timeout,
         ),
+        raw_dir=args.out / "raw",
+        run_id=run_id,
+    )
+    pipeline = ProofPipeline(
+        generator=generator,
+        verifier=recorder,
         artifact_store=FileArtifactStore(args.out / "artifacts"),
         max_repair_attempts=args.max_repairs,
         harness_splice=args.harness_splice,
         deterministic_repair_route=args.deterministic_route,
         sketch_failure_proceeds_to_prove=args.sketch_continue,
+        sketch_mechanical_repair=args.sketch_repair,
+        sketch_parallel=args.sketch_parallel,
+        stop_on_repeated_harness_mismatch=args.stop_harness_repeat,
     )
     usage: list[dict[str, Any]] = []
 
@@ -276,6 +401,8 @@ def run_one(
         usage.append(row)
         guard.add(row)
 
+    if args.stop_after_sketch:
+        return run_sketch_only(problem, arm, args, pipeline, generator, recorder, usage, on_usage)
     started = time.monotonic()
     # One label per run label, problem and arm, so timing files from different experiments
     # cannot be mixed up. A name that is not token-safe falls back to the job digest.
@@ -311,6 +438,10 @@ def run_one(
         "harness_splice": args.harness_splice,
         "deterministic_route": args.deterministic_route,
         "sketch_continue": args.sketch_continue,
+        "sketch_repair": args.sketch_repair,
+        "sketch_parallel": args.sketch_parallel,
+        "statement_template": args.statement_template,
+        "stop_harness_repeat": args.stop_harness_repeat,
         "route_model_calls": sum(
             1
             for a in attempts
@@ -332,6 +463,7 @@ def run_one(
             )
             for a in attempts
         ],
+        "sketch_checks": recorder.checks,
         "exemplar_ids": exemplar_ids,
         "exemplar_chars": exemplar_chars,
         "hint_seconds": round(sum(r["seconds"] for r in builder.log), 1) if builder else 0.0,
@@ -370,6 +502,32 @@ def main() -> None:
         "--sketch-continue",
         action="store_true",
         help="Enable ProofPipeline.sketch_failure_proceeds_to_prove",
+    )
+    parser.add_argument(
+        "--sketch-repair",
+        action="store_true",
+        help="Enable ProofPipeline.sketch_mechanical_repair (and record it in sketch-only mode)",
+    )
+    parser.add_argument(
+        "--statement-template",
+        action="store_true",
+        help="HybridLeanGenerator.fixed_statement_template: the model writes only the proof body",
+    )
+    parser.add_argument(
+        "--stop-harness-repeat",
+        action="store_true",
+        help="ProofPipeline.stop_on_repeated_harness_mismatch",
+    )
+    parser.add_argument(
+        "--sketch-parallel",
+        type=int,
+        default=1,
+        help="Ask for this many Sketches at once and keep the first that passes its Lean check",
+    )
+    parser.add_argument(
+        "--stop-after-sketch",
+        action="store_true",
+        help="Run Draft and Sketch and the Sketch Lean check only (no Prove, no repair loop)",
     )
     parser.add_argument(
         "--catalog-docs",

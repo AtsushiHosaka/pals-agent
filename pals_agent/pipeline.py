@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextvars import copy_context
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
@@ -42,6 +44,7 @@ from pals_agent.proof_fastpaths import deterministic_repair_route, splice_formal
 from pals_agent.proof_flow_evidence import DraftEvidence
 from pals_agent.proof_flow_runtime import DraftRetrievalResult
 from pals_agent.runtime_latency import latency_stage
+from pals_agent.sketch_repair import repair_sketch
 
 _THEOREM_DECLARATION_RE = re.compile(
     r"\btheorem\s+(?P<name>[A-Za-z_][A-Za-z0-9_'.]*)(?P<signature>.*?)\s*:=",
@@ -196,6 +199,19 @@ class ProofPipeline:
     # the same attempt: Prove receives the Sketch and its diagnostics at once, instead of
     # the attempt failing, consuming a repair, and the next attempt resuming at Prove.
     sketch_failure_proceeds_to_prove: bool = False
+    # ``sketch_mechanical_repair`` repairs a Sketch that failed its Lean check without a model:
+    # focused imports become ``import Mathlib``, scoped notation gets its ``open``, and failing
+    # proof blocks become ``sorry`` gaps (pals_agent/sketch_repair.py). The repaired Sketch is
+    # re-checked by Lean before Prove sees it; a failure keeps the existing path.
+    sketch_mechanical_repair: bool = False
+    # ``sketch_parallel`` > 1 asks for that many Sketches at once and keeps the first one that
+    # passes its Lean check (or the first to finish when none does). It costs the extra Sketch
+    # tokens and, on the same wall clock, raises the chance that one Sketch is usable.
+    sketch_parallel: int = 1
+    # ``stop_on_repeated_harness_mismatch`` ends a run whose last two attempts both failed only
+    # with ``lean.formal_harness_mismatch``. It reuses the ``repair_budget_exhausted`` reason;
+    # a dedicated reason is needed before production use (see docs).
+    stop_on_repeated_harness_mismatch: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -368,6 +384,7 @@ class ProofPipeline:
                 attempt=api_repair_seed.attempt,
                 repairs_used=api_repair_seed.repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -473,6 +490,7 @@ class ProofPipeline:
                     attempt=attempt,
                     repairs_used=repairs_used,
                     attempt_evidence=attempts[-1],
+                    failure_history=failure_fingerprint_history,
                     on_status=on_status,
                 )
                 if repair_generation is None:
@@ -652,6 +670,7 @@ class ProofPipeline:
                 attempt=attempt,
                 repairs_used=repairs_used,
                 attempt_evidence=attempts[-1],
+                failure_history=failure_fingerprint_history,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -746,6 +765,8 @@ class ProofPipeline:
                 on_status=on_status,
                 verifier=self.verifier,
                 sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
+                sketch_mechanical_repair=self.sketch_mechanical_repair,
+                sketch_parallel=self.sketch_parallel,
             )
 
         _emit(
@@ -787,7 +808,23 @@ class ProofPipeline:
         repairs_used: int,
         attempt_evidence: dict[str, Any],
         on_status: StatusCallback | None,
+        failure_history: list[frozenset[str]] | None = None,
     ) -> RepairGeneration | None:
+        if self.stop_on_repeated_harness_mismatch and _harness_mismatch_repeated(
+            failure_history or []
+        ):
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="pals.repair_budget_exhausted",
+                    message=(
+                        "Lean repair stopped early: the formal statement harness was "
+                        "missing from two consecutive attempts; 1 of 15 recorded runs with "
+                        "that pattern went on to verify."
+                    ),
+                )
+            )
+            return None
         if any(
             diagnostic.code in _NON_REPAIRABLE_DIAGNOSTIC_CODES
             for diagnostic in feedback_diagnostics
@@ -1287,6 +1324,8 @@ def _generate_staged_attempt(
     on_status: StatusCallback | None,
     verifier: Verifier | None,
     sketch_failure_proceeds_to_prove: bool = False,
+    sketch_mechanical_repair: bool = False,
+    sketch_parallel: int = 1,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1327,10 +1366,17 @@ def _generate_staged_attempt(
                 ),
             },
         )
-        sketch = generator.generate_sketch(request, draft, feedback)
+        sketch, sketch_verification = _sketch_and_check(
+            generator,
+            request,
+            draft,
+            feedback,
+            verifier,
+            mechanical_repair=sketch_mechanical_repair,
+            parallel=sketch_parallel,
+        )
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
-        sketch_verification = _verify_sketch(verifier, sketch.lean_code)
         if (
             sketch.has_gaps
             and sketch_verification is not None
@@ -1382,6 +1428,60 @@ def _generate_staged_attempt(
     return generator.generate_proof(request, draft, sketch, feedback)
 
 
+def _sketch_and_check(
+    generator: StagedLeanGenerator,
+    request: ProofRequest,
+    draft: GeneratedDraft,
+    feedback: GenerationFeedback | None,
+    verifier: Verifier | None,
+    *,
+    mechanical_repair: bool,
+    parallel: int,
+) -> tuple[GeneratedSketch, VerificationResult | None]:
+    """One Sketch with its Lean check, or the first usable one of ``parallel`` Sketches."""
+
+    def one() -> tuple[GeneratedSketch, VerificationResult | None]:
+        sketch = generator.generate_sketch(request, draft, feedback)
+        if not sketch.lean_code.strip():
+            return sketch, None
+        verification = _verify_sketch(verifier, sketch.lean_code)
+        if (
+            mechanical_repair
+            and sketch.has_gaps
+            and verification is not None
+            and not verification.success
+        ):
+            repaired = repair_sketch(
+                sketch.lean_code,
+                verification,
+                lambda code: cast(SketchVerifier, verifier).verify_sketch(code),
+            )
+            if repaired is not None:
+                return replace(sketch, lean_code=repaired.lean_code), repaired.verification
+        return sketch, verification
+
+    def usable(result: tuple[GeneratedSketch, VerificationResult | None]) -> bool:
+        sketch, verification = result
+        return bool(sketch.lean_code.strip()) and (
+            not sketch.has_gaps or verification is None or verification.success
+        )
+
+    if parallel <= 1:
+        return one()
+    pool = ThreadPoolExecutor(max_workers=parallel)
+    try:
+        futures = [pool.submit(copy_context().run, one) for _ in range(parallel)]
+        finished: list[tuple[GeneratedSketch, VerificationResult | None]] = []
+        for future in as_completed(futures):
+            result = future.result()
+            if usable(result):
+                return result
+            finished.append(result)
+        return next((r for r in finished if r[0].lean_code.strip()), finished[0])
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
 def _failed_staged_proof(
     *,
     draft: GeneratedDraft,
@@ -1424,6 +1524,17 @@ def _format_diagnostic_for_trace(diagnostic: Diagnostic) -> str:
     location = f" line {diagnostic.line}" if diagnostic.line is not None else ""
     code = f" [{diagnostic.code}]" if diagnostic.code else ""
     return f"{diagnostic.severity}{location}{code}: {diagnostic.message}"
+
+
+def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
+    """True when each of the last two failures had exactly the harness-mismatch error."""
+    if len(history) < 2:
+        return False
+    return all(
+        {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
+        == {"lean.formal_harness_mismatch"}
+        for fingerprints in history[-2:]
+    )
 
 
 def _with_repair_stagnation(

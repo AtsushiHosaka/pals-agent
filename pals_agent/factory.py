@@ -70,6 +70,8 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         harness_splice=settings.harness_splice_enabled,
         deterministic_repair_route=settings.deterministic_repair_route_enabled,
         sketch_failure_proceeds_to_prove=settings.sketch_failure_proceeds_to_prove_enabled,
+        sketch_mechanical_repair=settings.sketch_mechanical_repair_enabled,
+        stop_on_repeated_harness_mismatch=settings.stop_on_repeated_harness_mismatch_enabled,
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,
         request_linked_typed_retriever=(
@@ -141,6 +143,7 @@ def build_generator(settings: AgentSettings) -> HybridLeanGenerator:
         provider=binding.provider,
         openai=_release_openai_client(settings),
         use_release_role_bindings=True,
+        fixed_statement_template=settings.fixed_statement_template_enabled,
     )
 
 
