@@ -458,7 +458,12 @@ def traced_delivery(
     trace = _Trace(resource_id, kind=kind, queue=queue)
     token = _ACTIVE.set(trace)
     try:
-        yield
+        # The same delivery as one step_timing run, so worker stages (review, explanation)
+        # and the pipeline share a summary and a run reference. A no-op while it is off.
+        from pals_agent import step_timing
+
+        with step_timing.run_scope(resource_id):
+            yield
     finally:
         _ACTIVE.reset(token)
         try:

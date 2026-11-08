@@ -1391,6 +1391,8 @@ class SqsProofWorker:
                     try:
                         extend_visibility(_CANDIDATE_RECONCILIATION_VISIBILITY_SECONDS)
                     except Exception:
+                        if timing is not None:
+                            timing.set_outcome("error")
                         return None
                     next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
                 self.sleep(min(_CANDIDATE_RECONCILIATION_POLL_SECONDS, remaining))

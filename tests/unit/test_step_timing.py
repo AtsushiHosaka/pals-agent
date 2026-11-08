@@ -67,7 +67,13 @@ def jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return path
 
 
+def _text(path: Path) -> str:
+    step_timing.flush()
+    return path.read_text(encoding="utf-8")
+
+
 def _events(path: Path) -> list[dict[str, Any]]:
+    step_timing.flush()
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
 
 
@@ -109,7 +115,7 @@ def test_provider_failure_becomes_a_bounded_outcome_and_still_raises(
         _client(FakeTransport(status=status)).generate(model="gpt-6.1-terra", prompt="p")
     (event,) = _events(jsonl)
     assert (event["step"], event["outcome"], event["http_status"]) == ("prove", outcome, status)
-    assert SECRET_MESSAGE not in jsonl.read_text(encoding="utf-8")
+    assert SECRET_MESSAGE not in _text(jsonl)
 
 
 def test_unknown_role_and_model_collapse_to_other(jsonl: Path) -> None:
@@ -128,6 +134,7 @@ def test_a_failing_sink_never_changes_the_call(
     with model_role("draft"):
         text = _client(FakeTransport()).generate(model="gpt-6-luna", prompt="p")
     assert text == SECRET_ANSWER
+    step_timing.flush()
     assert step_timing.sink_errors() > before
 
 
@@ -136,7 +143,7 @@ def test_exception_in_a_step_is_recorded_and_reraised(jsonl: Path) -> None:
         raise RuntimeError("boom " + SECRET_USER)
     (event,) = _events(jsonl)
     assert event["outcome"] == "error"
-    assert SECRET_USER not in jsonl.read_text(encoding="utf-8")
+    assert SECRET_USER not in _text(jsonl)
 
 
 def test_lean_step_keeps_error_codes_only(jsonl: Path) -> None:
@@ -150,7 +157,8 @@ def test_lean_step_keeps_error_codes_only(jsonl: Path) -> None:
         assert record is not None
         record.set_lean(False, diagnostics)
     (event,) = _events(jsonl)
-    assert event["diag_codes"] == ["lean.unknown_identifier"]
+    # the question-shaped code is not in the closed list, so it is recorded as lean.other
+    assert event["diag_codes"] == ["lean.other", "lean.unknown_identifier"]
     assert event["outcome"] == "lean_error"
     assert event["model"] is None
 
@@ -247,7 +255,8 @@ def test_events_never_contain_question_lean_user_or_messages(
         _client(FakeTransport(status=500)).generate(model="gpt-6.1-terra", prompt=SECRET_LEAN)
     with pytest.raises(RuntimeError), step_timing.step("lean_check"):
         raise RuntimeError(SECRET_LEAN)
-    written = jsonl.read_text(encoding="utf-8") + capsys.readouterr().err
+    step_timing.flush()
+    written = _text(jsonl) + capsys.readouterr().err
     assert written.count("\n") >= 12  # both sinks saw every event
     for secret in SECRETS:
         assert secret not in written, secret
@@ -260,13 +269,13 @@ def test_only_allow_listed_keys_and_token_shaped_strings_appear(
     step_keys = {
         "schema", "event", "ts_ms", "run", "step", "model", "effort", "duration_ms", "outcome",
         "attempt", "start_offset_ms", "input_tokens", "cached_input_tokens", "output_tokens",
-        "reasoning_tokens", "diag_codes", "http_status", "cache",
+        "reasoning_tokens", "diag_codes", "http_status", "cache", "container", "model_call",
     }
     run_keys = {
         "schema", "event", "ts_ms", "run", "total_ms", "model_calls", "model_ms", "lean_ms",
         "step_count", "step_ms", "input_tokens", "cached_input_tokens", "output_tokens",
         "reasoning_tokens", "state", "termination_reason", "attempts", "repairs_used",
-        "busy_ms", "overlap_ms", "unattributed_ms",
+        "busy_ms", "overlap_ms", "unattributed_ms", "truncated", "dropped_steps",
     }
     for event in _events(jsonl):
         allowed = step_keys if event["event"] == "pipeline_step" else run_keys
@@ -290,7 +299,7 @@ def test_free_text_is_refused_by_every_setter(jsonl: Path) -> None:
     assert events[0]["step"] == "other" and events[0]["effort"] is None
     assert events[0]["outcome"] == "error"
     assert "state" not in events[1]  # SECRET_QUESTION was not a valid token
-    assert not any(secret in jsonl.read_text(encoding="utf-8") for secret in SECRETS)
+    assert not any(secret in _text(jsonl) for secret in SECRETS)
 
 
 def test_emf_line_has_only_step_model_outcome_dimensions(jsonl: Path) -> None:
@@ -336,6 +345,7 @@ def test_emf_uses_the_quality_events_transport_when_configured(
     monkeypatch.setenv("PALS_QUALITY_EVENTS_FILE", "/var/empty/events.log")
     with quality_events.use_transport(Capture()):
         step_timing.record_step("queue_wait", 1500, job="job-9")
+        step_timing.flush()
     assert len(sent) == 1 and json.loads(sent[0])["step"] == "queue_wait"
     assert capsys.readouterr().err == ""
 
@@ -352,7 +362,7 @@ def test_queue_wait_and_cache_steps(jsonl: Path) -> None:
 def test_report_aggregates_percentiles_totals_and_shares(tmp_path: Path, jsonl: Path) -> None:
     _run_pipeline(tmp_path)
     _run_pipeline(tmp_path / "second")
-    samples = collect(jsonl.read_text(encoding="utf-8").splitlines())
+    samples = collect(_text(jsonl).splitlines())
     table = {(r["step"], r["model"], r["outcome"]): r for r in rows(samples)}
     assert table[("lean_check", "-", "lean_error")]["n"] == 2
     assert table[("repair", "gpt-6.1-terra", "ok")]["n"] == 2
@@ -398,7 +408,7 @@ def test_latency_stages_become_steps_and_containers_stay_out_of_run_totals(
     (run,) = [e for e in events if e["event"] == "pipeline_run"]
     assert "assessment" not in run["step_ms"]
     assert set(run["step_ms"]) == {"recipe_attempt_selection", "explanation_review"}
-    assert SECRET_QUESTION not in jsonl.read_text(encoding="utf-8")
+    assert SECRET_QUESTION not in _text(jsonl)
 
 
 def test_report_keeps_containers_out_of_the_shares(jsonl: Path) -> None:
@@ -408,30 +418,283 @@ def test_report_keeps_containers_out_of_the_shares(jsonl: Path) -> None:
         step_timing.step("recipe_rank"),
     ):
         pass
-    text = render(collect(jsonl.read_text(encoding="utf-8").splitlines()))
+    text = render(collect(_text(jsonl).splitlines()))
     assert "assessment (container)" in text and "encloses other steps" in text
 
 
-def test_overlapping_steps_are_counted_once_in_busy_time(jsonl: Path) -> None:
+
+# ---- review findings on PR 77: each test first reproduced the finding, then pinned the fix ----
+
+
+def test_compiler_output_cannot_smuggle_text_through_a_diagnostic_code(jsonl: Path) -> None:
+    from pals_agent.lean import parse_lean_diagnostics
+
+    # Lean prints `error(<code>)`; a candidate that prints its own line can choose the code.
+    stderr = (
+        "Main.lean:3:2: error(secret_question_text_here): anything\n"
+        "Main.lean:4:2: error(unknownIdentifier): unknown identifier 'x'\n"
+        "Main.lean:5:2: error(unknown_identifier): known\n"
+    )
+    with step_timing.step("lean_check") as record:
+        assert record is not None
+        record.set_lean(False, parse_lean_diagnostics(stderr))
+    (event,) = _events(jsonl)
+    assert "lean.secret_question_text_here" not in _text(jsonl)
+    assert set(event["diag_codes"]) <= step_timing.LEAN_CODES | {"lean.other"}
+    assert "lean.other" in event["diag_codes"] and "lean.unknown_identifier" in event["diag_codes"]
+
+
+def test_the_model_name_is_checked_when_the_event_is_built(jsonl: Path) -> None:
+    with step_timing.step("sketch", model="gpt 6 SECRET QUESTION") as record:
+        assert record is not None
+    with step_timing.step("sketch", model="gpt-6.1-terra"):
+        pass
+    first, second = _events(jsonl)
+    assert first["model"] == "other" and second["model"] == "gpt-6.1-terra"
+
+
+def test_run_state_and_reason_come_from_closed_lists(jsonl: Path) -> None:
+    with step_timing.run_scope("job-6"):
+        step_timing.note_run(state="secret_question", termination_reason="secret_question")
+    with step_timing.run_scope("job-7"):
+        step_timing.note_run(state="verified", termination_reason="verified")
+    first, second = [e for e in _events(jsonl) if e["event"] == "pipeline_run"]
+    assert "state" not in first and "termination_reason" not in first
+    assert second["state"] == "verified" and second["termination_reason"] == "verified"
+
+
+def test_a_failing_jsonl_sink_does_not_stop_the_emf_sink(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv(step_timing.ENV_JSONL, str(tmp_path / "missing" / "x.jsonl"))
+    monkeypatch.setenv(step_timing.ENV_EMF, "1")
+    monkeypatch.delenv("PALS_QUALITY_EVENTS_AGENT_ENDPOINT", raising=False)
+    step_timing.record_step("queue_wait", 5)
+    step_timing.flush()
+    assert '"step":"queue_wait"' in capsys.readouterr().err
+
+
+def test_a_failing_emf_sink_does_not_stop_the_jsonl_sink(
+    jsonl: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(step_timing.ENV_EMF, "1")
+
+    def boom(_line: str) -> bool:
+        raise RuntimeError("transport down")
+
+    monkeypatch.setattr(step_timing, "_send_over_agent", boom)
+    step_timing.record_step("queue_wait", 5)
+    step_timing.flush()
+    assert [e["step"] for e in _events(jsonl)] == ["queue_wait"]
+
+
+def _emf_lines(capsys: pytest.CaptureFixture[str]) -> list[str]:
+    return [line for line in capsys.readouterr().err.splitlines() if line.startswith("{")]
+
+
+def test_an_emf_only_report_recovers_the_run_step_totals(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.delenv(step_timing.ENV_JSONL, raising=False)
+    monkeypatch.setenv(step_timing.ENV_EMF, "1")
+    monkeypatch.delenv("PALS_QUALITY_EVENTS_AGENT_ENDPOINT", raising=False)
+    _run_pipeline(tmp_path)
+    step_timing.flush()
+    samples = collect(_emf_lines(capsys))
+    summary = run_summary_of(samples)
+    assert summary["runs"] == 1
+    assert "lean_check" in summary["share_of_run_time"]
+    assert "prove" in summary["share_of_run_time"]
+    assert summary["share_of_run_time"]["unattributed"] < 1.0
+
+
+def run_summary_of(samples: Any) -> dict[str, Any]:
+    from pals_agent.step_timing_report import run_summary
+
+    return run_summary(samples)
+
+
+def test_the_report_ignores_foreign_or_incomplete_records() -> None:
+    lines = [
+        json.dumps({"schema": "pals.pipeline-step.v1", "event": "pipeline_step"}),
+        json.dumps({"schema": "pals.pipeline-step.v1", "event": "pipeline_step",
+                    "step": "sketch", "outcome": "ok", "duration_ms": "fast"}),
+        json.dumps({"schema": "pals.pipeline-run.v1", "event": "pipeline_run", "run": "a"}),
+        json.dumps({"schema": "pals.pipeline-run.v1", "event": "pipeline_run", "run": "b",
+                    "total_ms": 1000.0, "step_ms": {"sketch": 400.0}, "unattributed_ms": 500.0}),
+    ]
+    samples = collect(lines)
+    assert not samples.steps and len(samples.runs) == 1
+    summary = run_summary_of(samples)
+    assert summary["share_of_run_time"] == {"sketch": 0.4, "unattributed": 0.5}
+
+
+def test_unattributed_time_is_the_recorded_union_not_the_sum_of_overlapping_steps() -> None:
+    run = {"schema": "pals.pipeline-run.v1", "event": "pipeline_run", "run": "a",
+           "total_ms": 100.0, "step_ms": {"a": 40.0, "b": 40.0}, "unattributed_ms": 60.0}
+    summary = run_summary_of(collect([json.dumps(run)]))
+    assert summary["share_of_run_time"]["unattributed"] == 0.6
+    assert summary["step_shares_can_overlap"] is True
+
+
+def test_a_huge_integer_duration_is_clamped_not_raised(jsonl: Path) -> None:
+    step_timing.record_step("queue_wait", 10**400)
+    step_timing.record_step("queue_wait", -(10**400))
+    first, second = _events(jsonl)
+    assert first["duration_ms"] == step_timing._MAX_MS and second["duration_ms"] == 0.0
+
+
+def test_the_verifiers_ordinary_deadline_is_a_timeout() -> None:
+    assert step_timing.classify_lean(False, ["lean.timeout"]) == "timeout"
+    assert step_timing.classify_lean(False, ["lean.verifier_timeout"]) == "timeout"
+
+
+def test_a_truncated_run_summary_says_so(
+    jsonl: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(step_timing, "_QUEUE_LIMIT", 10_000)
+    with step_timing.run_scope("job-8"):
+        for _ in range(2050):
+            step_timing.record_step("queue_wait", 1)
+    (run,) = [e for e in _events(jsonl) if e["event"] == "pipeline_run"]
+    assert run["truncated"] is True and run["dropped_steps"] == 2
+    assert run["step_count"] == 2048
+    samples = collect([json.dumps(run)])
+    assert "truncated" in render(samples)
+
+
+def test_a_model_call_without_a_recognized_role_still_counts_as_a_model_call(
+    jsonl: Path,
+) -> None:
+    with step_timing.run_scope("job-9"), model_role("free text role"):
+        _client(FakeTransport(), effort=None).generate(model="gpt-6-luna", prompt="p")
+    (run,) = [e for e in _events(jsonl) if e["event"] == "pipeline_run"]
+    assert run["model_calls"] == 1 and run["input_tokens"] == 1200
+
+
+def test_a_stalled_sink_does_not_block_the_traced_call(
+    jsonl: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
     import threading
     import time
-    from contextvars import copy_context
 
-    with step_timing.run_scope("job-5"):
-        def side() -> None:
-            with step_timing.step("explain"):
-                time.sleep(0.05)
+    release = threading.Event()
+    real = step_timing._write_sinks
 
-        thread = threading.Thread(target=copy_context().run, args=(side,))
-        thread.start()
-        with step_timing.step("recipe_rank"):
-            time.sleep(0.05)
-        thread.join()
-    (run,) = [e for e in _events(jsonl) if e["event"] == "pipeline_run"]
-    assert run["step_count"] == 2
-    assert run["overlap_ms"] >= 30  # the two 50 ms steps ran together
-    assert run["busy_ms"] < sum(run["step_ms"].values())
-    assert run["unattributed_ms"] >= 0
+    def stalled(line: str, emf_line: str | None) -> None:
+        release.wait(timeout=5)
+        real(line, emf_line)
+
+    monkeypatch.setattr(step_timing, "_write_sinks", stalled)
+    started = time.monotonic()
+    step_timing.record_step("queue_wait", 5)
+    assert time.monotonic() - started < 1.0  # returned while the sink was still stalled
+    release.set()
+    step_timing.flush()
+    assert [e["step"] for e in _events(jsonl)] == ["queue_wait"]
+
+
+def test_a_full_queue_drops_events_and_counts_them(
+    jsonl: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import threading
+
+    gate = threading.Event()
+    monkeypatch.setattr(step_timing, "_write_sinks", lambda *_: gate.wait(timeout=5))
+    monkeypatch.setattr(step_timing, "_QUEUE_LIMIT", 4)
+    before = step_timing.sink_errors()
+    for _ in range(30):
+        step_timing.record_step("queue_wait", 1)
+    assert step_timing.sink_errors() > before
+    gate.set()
+    step_timing.flush()
+
+
+def test_a_delivery_is_one_run_so_worker_stages_share_its_summary(jsonl: Path) -> None:
+    from pals_agent.runtime_latency import latency_stage, traced_delivery
+
+    job = "11111111-1111-4111-8111-111111111111"
+    with traced_delivery("proof_job", job, emit=lambda _r: None):
+        with latency_stage("recipe_attempt_selection"):
+            pass
+        with latency_stage("explanation"), model_role("explain"):
+            _client(FakeTransport()).generate(model="gpt-6-luna", prompt="p")
+    events = _events(jsonl)
+    (run,) = [e for e in events if e["event"] == "pipeline_run"]
+    assert all(e["run"] == step_timing.job_ref(job) for e in events)
+    assert run["model_calls"] == 1 and "explain" in run["step_ms"]
+
+
+def test_the_overlap_calculation_does_not_depend_on_thread_scheduling() -> None:
+    recorder = step_timing.RunRecorder(ref="r", label=None, started=0.0)
+    event = {"event": "pipeline_step", "step": "explain", "duration_ms": 40.0}
+    recorder.add(dict(event), (0.00, 0.04))
+    recorder.add(dict(event, step="recipe_rank"), (0.00, 0.04))
+    recorder.add(dict(event, step="lean_check", duration_ms=20.0), (0.06, 0.08))
+    summary = recorder.summary()
+    assert summary["busy_ms"] == 60.0 and summary["overlap_ms"] == 40.0
+
+
+def test_the_report_numbers_follow_the_events() -> None:
+    def step(name: str, ms: float, outcome: str = "ok") -> str:
+        return json.dumps({"schema": "pals.pipeline-step.v1", "event": "pipeline_step",
+                           "step": name, "model": None, "duration_ms": ms, "outcome": outcome})
+
+    samples = collect([step("lean_check", ms) for ms in (100.0, 200.0, 300.0, 400.0, 500.0)])
+    (row,) = rows(samples)
+    assert (row["n"], row["p50_ms"], row["p95_ms"], row["max_ms"], row["sum_ms"]) == (
+        5, 300.0, 480.0, 500.0, 1500.0,
+    )
+
+
+def test_the_closed_lists_match_the_pipeline_enums() -> None:
+    from typing import get_args
+
+    from pals_agent.pipeline import TerminationReason
+
+    assert set(get_args(TerminationReason)) == step_timing.TERMINATION_REASONS
+
+
+def test_the_reconciliation_wait_step_ends_as_error_when_visibility_cannot_be_renewed(
+    jsonl: Path,
+) -> None:
+    from types import SimpleNamespace
+    from typing import cast
+
+    from pals_agent.settings import AgentSettings
+    from pals_agent.worker import SqsProofWorker
+    from tests.unit.test_worker import (
+        ExplainerThatMustNotRun,
+        PendingCandidateApi,
+        StructuringFailurePipeline,
+    )
+
+    clock = [0.0]
+
+    def worker(**options: Any) -> SqsProofWorker:
+        return SqsProofWorker(
+            settings=cast(AgentSettings, SimpleNamespace()),
+            api_client=cast(Any, PendingCandidateApi()),
+            pipeline=StructuringFailurePipeline(),
+            explainer=ExplainerThatMustNotRun(),
+            monotonic=lambda: clock[0],
+            sleep=lambda seconds: clock.__setitem__(0, clock[0] + seconds),
+            **options,
+        )
+
+    def denied(seconds: int) -> None:
+        raise RuntimeError("denied")
+
+    assert worker()._wait_for_candidate_reconciliation(
+        proof_job_id="job-pending", extend_visibility=denied, refresh_visibility=False,
+    ) is None
+    clock[0] = 0.0
+    assert worker(stop_requested=lambda: clock[0] >= 10)._wait_for_candidate_reconciliation(
+        proof_job_id="job-pending", extend_visibility=lambda seconds: None,
+        refresh_visibility=False,
+    ) is None
+    waits = [e for e in _events(jsonl) if e.get("step") == "lean_reconcile_wait"]
+    assert [e["outcome"] for e in waits] == ["error", "interrupted"]
 
 
 def test_template_lookup_is_a_hit_or_miss_step(jsonl: Path) -> None:

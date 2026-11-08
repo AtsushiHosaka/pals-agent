@@ -75,6 +75,8 @@ class OpenAIResponsesClient:
             step_timing.step(current_role_label(), model=model) as record,
             capture_usage() as usage_rows,
         ):
+            if record is not None:
+                record.model_call = True
             try:
                 return self._generate(**arguments)
             except OpenAIError as error:
