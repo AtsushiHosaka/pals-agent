@@ -231,3 +231,37 @@ def test_with_the_flag_the_sketch_is_repaired_before_prove(tmp_path: Path) -> No
     assert generator.route_calls == 0
     assert json.loads((tmp_path / "job" / "result.json").read_text())["repairs_used"] == 0
     assert generator.sketches_seen_by_prove[0].startswith("import Mathlib\n")
+
+
+class _RacingGenerator(_Generator):
+    """The first Sketch asked for is broken, every later one is fine."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.sketch_calls = 0
+
+    def generate_sketch(self, request, draft, feedback=None):  # type: ignore[no-untyped-def]
+        self.sketch_calls += 1
+        head = "import Mathlib.Tactic" if self.sketch_calls == 1 else "import Mathlib"
+        code = f"{head}\n\n{FORMAL} := by\n  have h : (0 : ℕ) = 0 := by\n    sorry\n  omega"
+        return GeneratedSketch(
+            lean_code=code, model=self.model, raw_model_output=code, has_gaps=True
+        )
+
+
+def test_parallel_sketches_keep_the_one_that_passes(tmp_path: Path) -> None:
+    generator = _RacingGenerator()
+    pipeline = ProofPipeline(
+        generator=generator,
+        verifier=_Verifier(),  # type: ignore[arg-type]
+        artifact_store=FileArtifactStore(tmp_path),
+        max_repair_attempts=3,
+        sketch_parallel=2,
+    )
+    result = pipeline.run_statement(
+        statement="Zero plus zero is zero.", formal_statement=FORMAL, proof_job_id="job"
+    )
+    assert result.state == "verified"
+    assert generator.sketch_calls == 2
+    assert generator.route_calls == 0
+    assert generator.sketches_seen_by_prove[0].startswith("import Mathlib\n\n")

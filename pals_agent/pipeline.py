@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextvars import copy_context
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from typing import Any, Literal, Protocol, cast
@@ -201,6 +203,10 @@ class ProofPipeline:
     # proof blocks become ``sorry`` gaps (pals_agent/sketch_repair.py). The repaired Sketch is
     # re-checked by Lean before Prove sees it; a failure keeps the existing path.
     sketch_mechanical_repair: bool = False
+    # ``sketch_parallel`` > 1 asks for that many Sketches at once and keeps the first one that
+    # passes its Lean check (or the first to finish when none does). It costs the extra Sketch
+    # tokens and, on the same wall clock, raises the chance that one Sketch is usable.
+    sketch_parallel: int = 1
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -741,6 +747,7 @@ class ProofPipeline:
                 verifier=self.verifier,
                 sketch_failure_proceeds_to_prove=self.sketch_failure_proceeds_to_prove,
                 sketch_mechanical_repair=self.sketch_mechanical_repair,
+                sketch_parallel=self.sketch_parallel,
             )
 
         _emit(
@@ -1278,6 +1285,7 @@ def _generate_staged_attempt(
     verifier: Verifier | None,
     sketch_failure_proceeds_to_prove: bool = False,
     sketch_mechanical_repair: bool = False,
+    sketch_parallel: int = 1,
 ) -> GeneratedProof:
     draft = feedback.previous_draft if feedback is not None else None
     sketch = feedback.previous_sketch if feedback is not None else None
@@ -1318,24 +1326,17 @@ def _generate_staged_attempt(
                 ),
             },
         )
-        sketch = generator.generate_sketch(request, draft, feedback)
+        sketch, sketch_verification = _sketch_and_check(
+            generator,
+            request,
+            draft,
+            feedback,
+            verifier,
+            mechanical_repair=sketch_mechanical_repair,
+            parallel=sketch_parallel,
+        )
         if not sketch.lean_code.strip():
             return _failed_staged_proof(draft=draft, sketch=sketch)
-        sketch_verification = _verify_sketch(verifier, sketch.lean_code)
-        if (
-            sketch_mechanical_repair
-            and sketch.has_gaps
-            and sketch_verification is not None
-            and not sketch_verification.success
-        ):
-            repaired = repair_sketch(
-                sketch.lean_code,
-                sketch_verification,
-                lambda code: cast(SketchVerifier, verifier).verify_sketch(code),
-            )
-            if repaired is not None:
-                sketch = replace(sketch, lean_code=repaired.lean_code)
-                sketch_verification = repaired.verification
         if (
             sketch.has_gaps
             and sketch_verification is not None
@@ -1385,6 +1386,60 @@ def _generate_staged_attempt(
         },
     )
     return generator.generate_proof(request, draft, sketch, feedback)
+
+
+def _sketch_and_check(
+    generator: StagedLeanGenerator,
+    request: ProofRequest,
+    draft: GeneratedDraft,
+    feedback: GenerationFeedback | None,
+    verifier: Verifier | None,
+    *,
+    mechanical_repair: bool,
+    parallel: int,
+) -> tuple[GeneratedSketch, VerificationResult | None]:
+    """One Sketch with its Lean check, or the first usable one of ``parallel`` Sketches."""
+
+    def one() -> tuple[GeneratedSketch, VerificationResult | None]:
+        sketch = generator.generate_sketch(request, draft, feedback)
+        if not sketch.lean_code.strip():
+            return sketch, None
+        verification = _verify_sketch(verifier, sketch.lean_code)
+        if (
+            mechanical_repair
+            and sketch.has_gaps
+            and verification is not None
+            and not verification.success
+        ):
+            repaired = repair_sketch(
+                sketch.lean_code,
+                verification,
+                lambda code: cast(SketchVerifier, verifier).verify_sketch(code),
+            )
+            if repaired is not None:
+                return replace(sketch, lean_code=repaired.lean_code), repaired.verification
+        return sketch, verification
+
+    def usable(result: tuple[GeneratedSketch, VerificationResult | None]) -> bool:
+        sketch, verification = result
+        return bool(sketch.lean_code.strip()) and (
+            not sketch.has_gaps or verification is None or verification.success
+        )
+
+    if parallel <= 1:
+        return one()
+    pool = ThreadPoolExecutor(max_workers=parallel)
+    try:
+        futures = [pool.submit(copy_context().run, one) for _ in range(parallel)]
+        finished: list[tuple[GeneratedSketch, VerificationResult | None]] = []
+        for future in as_completed(futures):
+            result = future.result()
+            if usable(result):
+                return result
+            finished.append(result)
+        return next((r for r in finished if r[0].lean_code.strip()), finished[0])
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
 
 
 def _failed_staged_proof(

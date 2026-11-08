@@ -384,6 +384,7 @@ def run_one(
         deterministic_repair_route=args.deterministic_route,
         sketch_failure_proceeds_to_prove=args.sketch_continue,
         sketch_mechanical_repair=args.sketch_repair,
+        sketch_parallel=args.sketch_parallel,
     )
     usage: list[dict[str, Any]] = []
 
@@ -422,6 +423,7 @@ def run_one(
         "deterministic_route": args.deterministic_route,
         "sketch_continue": args.sketch_continue,
         "sketch_repair": args.sketch_repair,
+        "sketch_parallel": args.sketch_parallel,
         "route_model_calls": sum(
             1
             for a in attempts
@@ -485,6 +487,12 @@ def main() -> None:
         "--sketch-repair",
         action="store_true",
         help="Enable ProofPipeline.sketch_mechanical_repair (and record it in sketch-only mode)",
+    )
+    parser.add_argument(
+        "--sketch-parallel",
+        type=int,
+        default=1,
+        help="Ask for this many Sketches at once and keep the first that passes its Lean check",
     )
     parser.add_argument(
         "--stop-after-sketch",

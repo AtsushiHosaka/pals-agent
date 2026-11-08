@@ -89,10 +89,11 @@ def classify_message(message: str) -> str:
     return "other"
 
 
-def source_regions(lean_code: str) -> tuple[int, int]:
-    """1-based lines: last import line, and the line where the first declaration header ends."""
+def source_regions(lean_code: str) -> tuple[int, int, int]:
+    """Last import line, line and column where the first declaration header's `:=` starts."""
     import_end = 0
     header_end = 0
+    header_column = 0
     in_declaration = False
     for number, line in enumerate(lean_code.splitlines(), start=1):
         stripped = line.strip()
@@ -102,17 +103,18 @@ def source_regions(lean_code: str) -> tuple[int, int]:
             in_declaration = True
         if in_declaration and _HEADER_END.search(line):
             header_end = number
+            header_column = line.index(":=")
             break
-    return import_end, header_end
+    return import_end, header_end, header_column
 
 
-def region_of(line: int | None, regions: tuple[int, int]) -> str:
+def region_of(line: int | None, column: int | None, regions: tuple[int, int, int]) -> str:
     if line is None:
         return "unknown"
-    import_end, header_end = regions
+    import_end, header_end, header_column = regions
     if line <= import_end:
         return "imports"
-    if header_end and line <= header_end:
+    if header_end and (line < header_end or (line == header_end and (column or 0) < header_column)):
         return "statement"
     return "body"
 
@@ -133,7 +135,7 @@ def classify_check(diagnostics: list[Any], lean_code: str) -> list[DiagnosticCla
             cls=classify_message(str(getattr(d, "message", ""))),
             code=getattr(d, "code", None),
             line=getattr(d, "line", None),
-            region=region_of(getattr(d, "line", None), regions),
+            region=region_of(getattr(d, "line", None), getattr(d, "column", None), regions),
         )
         for d in diagnostics
         if getattr(d, "severity", "error") == "error"
