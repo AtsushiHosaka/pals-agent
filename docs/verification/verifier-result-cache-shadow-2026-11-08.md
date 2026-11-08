@@ -25,9 +25,11 @@
 | 環境変数 | 既定 | 意味 |
 |---|---|---|
 | `PALS_VERIFIER_RESULT_CACHE_SHADOW` | `false` | shadow(比較と保存) |
-| `PALS_VERIFIER_RESULT_CACHE_ENABLED` | `false` | 配信。`SHADOW=true` が必要。単独は起動拒否 |
+| `PALS_VERIFIER_RESULT_CACHE_ENABLED` | `false` | 配信。`SHADOW=true` と `REVALIDATE=true` が必要。どちらかが欠けると起動拒否 |
+| `PALS_VERIFIER_RESULT_CACHE_REVALIDATE` | `false` | 背景再検証(第6節)。`SHADOW` か `ENABLED` が必要で、単独は起動拒否 |
+| `PALS_VERIFIER_RESULT_CACHE_REVALIDATE_EVERY` | `20` | 間引き。1〜10000の正準な整数だけを受理する。`REVALIDATE=false` でも不正値は起動拒否 |
 
-値は `true` と `false` だけを受理する(`PALS_LEAN_REUSE_LAKE_ENVIRONMENT` と同じ厳密さ)。両方 `false` のときは、キャッシュのオブジェクトも許可リストも作らない。`lean_templates` の読み込みもしない。名前は `boundary.py` の資格情報らしい名前の検査に掛からない(テスト済み)。
+真偽値は `true` と `false` だけを受理する(`PALS_LEAN_REUSE_LAKE_ENVIRONMENT` と同じ厳密さ)。両方 `false` のときは、キャッシュのオブジェクトも許可リストも作らない。`lean_templates` の読み込みもしない。名前は `boundary.py` の資格情報らしい名前の検査に掛からない(テスト済み)。
 
 ### keyの成分
 
@@ -40,7 +42,7 @@
 
 ### 入れていないもの
 
-TTL(設計の24時間)、背景再検証、起動時の予熱は入れていない。オーナーの範囲(第1版はshadow先行)に含まれないためである。
+TTL(設計の24時間)と起動時の予熱は入れていない。背景再検証は第6節で追加した。
 
 ## 2. 確かめたこと・確かめていないこと
 
@@ -117,3 +119,63 @@ pals-infraはチェックアウトされていないため、本番のrelease作
 ## 5. 設計文書の第8節への回答
 
 設計文書の第8節(b)(c)に、この調査の結果を書き込んだ。
+
+## 6. 背景再検証(`claude/seq27-verifier-cache-revalidate`)
+
+### 6.1 目的と動き
+
+ENABLEDでは、ヒットはコンパイルしない。保存済みの成功が今のコンパイルと食い違っても(toolchainのずれ、非決定性、プロセス内ストアの改ざん)、第2節の実Lean検証で書いたとおり観測できなくなる。背景再検証がこれを戻す。
+
+- ヒットの応答を書き終えた後で、条件を満たしたヒットだけが、その許可リスト項目(要求ではなく、キャッシュが持つ許可リストの本文)を1回コンパイルする。要求のパスには乗らない。HTTPハンドラは非ブロックのロック操作とスレッド起動だけを行い、コンパイルはdaemonスレッドで走る。
+- 結果は、一致(`revalidation_match`)、不一致(`revalidation_mismatch`)、判定不能(`revalidation_inconclusive`)のどれかである。
+  - 不一致 = freshなコンパイルが、同じキーの保存済み成功に対し、verifierの拒否判定(422相当)を返した。ERRORを1行出し、カウンタを上げ、既存の `serving_blocked` を立てる。以後プロセスの終わりまで、どの項目の要求も必ずコンパイルする。
+  - 判定不能 = タイムアウト、中断(504、503系)、期限、コンパイラ側の例外。WARNINGで数える。不一致にはせず、配信も止めない。判定ではなく、APIも再試行する扱いだからである。
+  - 一致 = 何も書き換えない。保存済みの判定(origin id)は変えず、再検証の記録(カウンタと最終時刻)だけを更新する。
+- ブロックは一方向である。再検証の完了も、先着の保存も、`shadow_match` も `_blocked` を戻さない。再検証が配信と競合しても、ブロックを外したり、ブロック中の保存を上書きしたりする経路は無い(テスト済み)。
+
+### 6.2 間引き: 項目ごとのカウンタ
+
+| 方式 | 内容 |
+|---|---|
+| 採用 | 項目ごとのカウンタ。その項目の**最初の配信**と、前回の再検証開始から**N回目の配信**ごとに1回 |
+| 不採用 | 全体カウンタ。人気の項目がカウンタを消費し、めったに配信されない項目が長く再検証されないため |
+
+「配信された項目は必ずいつか再検証される」の保証: 各項目は、最初の配信で期限に入る。再検証が空き枠不足や実行中で見送られても(`skipped_*`)、カウンタは戻さないので、項目は期限のままで、次の配信で再試行する。したがって、配信が続く項目は、配信回数N回以内(見送りが続けばその分だけ)に再検証される。**限界**: 見送られたまま、その項目が二度と配信されなければ、再検証されない。ただしその項目は配信もされないので、露出は増えない(タイマーは持たない)。再検証が判定不能で終わった項目は、次のN回の配信まで再試行しない。タイムアウトが続くときに、毎回の配信で60秒のコンパイルが枠を占有するのを避けるためである。
+
+### 6.3 資源: 1本、枠は待たない、期限60秒
+
+- 同時に走る再検証は1本までである(ロック下のフラグ)。実行中に期限が来た別の配信は `revalidation_skipped_busy` を数えて見送る。同じ項目の同時の2配信は、片方が開始時にカウンタを戻すため、片方しか開始しない(テスト済み、40回繰り返し)。
+- verifierのコンパイル枠(`compile_slot`)を**待たずに**取る。取れなければ `revalidation_skipped_no_slot` で見送る。取れたら、コンパイルの間だけ保持して、必ず戻す(例外でも)。
+- 期限は定数 `REVALIDATION_DEADLINE_SECONDS = 60.0`。本番の `http_runtime` は、同じ `LeanVerifier` を `timeout_seconds=min(60, 設定値)` で作り直したものを再検証に使う(実要求の期限300秒は変えない)。キャッシュのキーの `timeout_seconds` は実要求のままである。通常のコンパイルは約10〜18秒、ページキャッシュが冷えていると約50秒以上かかる(実Lean検証の文書)。60秒はその範囲を覆い、超えたら判定不能として枠を返す。
+- **実要求への影響**(`max_concurrent_compiles=1`、既定): 再検証の最中に、キャッシュに無い実要求が来ると、既存の再試行可能な503 `verifier_unavailable` を返す。最悪の窓は1回の再検証の長さで、通常10〜18秒、上限60秒である。配信中の実要求が503になる確率は、再検証の稼働率にほぼ等しい。再検証の頻度は、配信率をrとして最大で約 r/N(項目ごとの初回を除く)で、稼働率は約 (r/N)×15秒 である。r = 日500件(0.006/s)、N = 20 なら約0.4%、日5,000件なら約4%。配信が毎秒1件を超える(N=20で稼働率が約75%を超える)と、実要求を圧迫する。その場合はNを上げる。`max_concurrent_compiles=2` なら、再検証が1枠を使う間も実要求は残りの1枠で走る(ただしPID上限の余裕は小さい、`http_server.py` の注記)。
+
+### 6.4 カウンタとログ
+
+`snapshot()` に出す(キャッシュと同じ場所)。
+
+| キー | 意味 |
+|---|---|
+| `revalidations_started`、`revalidation_match`、`revalidation_mismatch`、`revalidation_inconclusive` | 再検証の開始数と結果 |
+| `revalidation_skipped_busy`、`revalidation_skipped_no_slot` | 見送り |
+| `revalidate_every` | 間引きの間隔 |
+| `revalidation_in_flight` | 実行中なら1 |
+| `last_revalidation_age_seconds` | 最後の再検証の完了からの秒数(未実施なら出ない) |
+
+ログは `verifier_cache result=revalidation_started|revalidation_match|revalidation_mismatch|revalidation_inconclusive|revalidation_skipped_busy|revalidation_skipped_no_slot entry=<キーのハッシュの12桁> key_index=… elapsed_ms=… served_since=… revalidate_every=… serving_blocked=…`。`entry` はキーそのものではなく、キーをさらにハッシュした値である。本文、診断、job IDは出さない(テスト済み)。mismatchはERROR、inconclusiveはWARNING、ほかはINFO。起動時の `verifier result cache:` の行に `revalidate_every` と期限を出す。
+
+### 6.5 導入順とアラート
+
+1. `SHADOW=true` だけで配備する(従来どおり)。`shadow_match` が積み上がり `shadow_mismatch` が0であることを見る。
+2. カウンタを確認する(各本文の `stored`、`shadow_match`)。
+3. `ENABLED=true` と `REVALIDATE=true`(必要なら `REVALIDATE_EVERY`)を同時に有効にする。環境変数だけの変更で、イメージは変わらない。`ENABLED` だけは起動拒否になる。`REVALIDATE=true` を `SHADOW` だけで先に配備することもできる(ヒットが無いので動かないが、フラグと起動ログの確認になる)。
+4. アラート:
+   - `revalidation_mismatch` が1件でもあれば即時(ERROR。配信は自動で止まる)。原因を調べ、再起動で配信を戻す前に、toolchainとイメージの同一性を確認する。
+   - `revalidation_inconclusive` の割合(started に対し)。常態的に高いなら、60秒の期限が短い(ページキャッシュが冷えている、枠が圧迫されている)。
+   - `revalidation_skipped_no_slot` と `revalidation_skipped_busy` の割合。高いと再検証が回らず、露出が伸びる。`last_revalidation_age_seconds` が配信の継続中に長く伸びていないかも見る。
+   - 配信が続いているのに `revalidations_started` が0のままなら、フラグが効いていない。
+
+### 6.6 確かめていないこと
+
+- 本番、AWS、コンテナでの再検証。Linuxの隔離(cgroup圧迫による中断)の下での実発火。
+- 実Leanの確認は、macOS上の固定Lean(`lake` なし)で行った(実Lean検証の文書の第6節)。
+- 再検証の最中に実要求が503を受けたとき、APIが再試行で吸収することは、リポジトリの記述(中断系の503は再試行)から読んだだけで、動かしていない。

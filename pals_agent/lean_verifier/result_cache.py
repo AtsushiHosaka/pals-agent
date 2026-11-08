@@ -15,6 +15,11 @@ Scope (owner decision, design option 1):
 * SERVE (``PALS_VERIFIER_RESULT_CACHE_ENABLED``, requires the shadow flag): an allow-list hit with
   a stored success for the same full key is answered without compiling, unless a disagreement
   was seen.  The HTTP layer marks the response ``Pals-Verification-Source: cache``.
+* REVALIDATE (``PALS_VERIFIER_RESULT_CACHE_REVALIDATE``, required by the serve flag): a served hit
+  does not compile, so a stored success could silently go stale.  After the response is written, a
+  thinned subset of hits triggers one background compile of the allow-list entry (never on the
+  request path, one at a time, only with a free compile slot).  A conclusive disagreement blocks
+  serving like a shadow mismatch; a timeout or interruption is only counted.
 
 Nothing here logs the source, the key or the job; only counters and the allow-list ordinal (the
 templates are public).
@@ -28,7 +33,8 @@ import logging
 import re
 import secrets
 import threading
-from collections.abc import Mapping, Sequence
+import time
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -54,6 +60,22 @@ _POLICY_MODULES: Final = (
     "pals_agent.lean_source_policy",
     "pals_agent.lean_supervisor",
 )
+# Revalidation thinning: every N-th serve of an entry (and its first serve) triggers one compile.
+REVALIDATE_EVERY_DEFAULT: Final = 20
+REVALIDATE_EVERY_MIN: Final = 1
+REVALIDATE_EVERY_MAX: Final = 10_000
+# A revalidation holds a compile slot, so it gets its own, shorter deadline than a real request's
+# 300 s: a normal compile takes ~10-18 s, a page-cache-cold one up to ~50 s.  Hitting the cap is
+# inconclusive (never a mismatch) and frees the slot for real requests.
+REVALIDATION_DEADLINE_SECONDS: Final = 60.0
+_REVALIDATION_COUNTERS: Final = (
+    "revalidations_started",
+    "revalidation_match",
+    "revalidation_mismatch",
+    "revalidation_inconclusive",
+    "revalidation_skipped_busy",
+    "revalidation_skipped_no_slot",
+)
 _SHA256_RE: Final = re.compile(r"^[0-9a-f]{64}$")
 _IMAGE_DIGEST_RE: Final = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -75,6 +97,26 @@ def result_cache_mode(*, shadow: bool, enabled: bool) -> ResultCacheMode:
     if enabled:
         return ResultCacheMode.SERVE
     return ResultCacheMode.SHADOW if shadow else ResultCacheMode.OFF
+
+
+def resolve_result_cache_flags(*, shadow: bool, enabled: bool, revalidate: bool) -> ResultCacheMode:
+    """The startup rules over all three flags; any violation refuses to start.
+
+    * ENABLED needs SHADOW (the comparison) and REVALIDATE (the only way a mismatch stays
+      observable once hits stop compiling).
+    * REVALIDATE needs a cache to revalidate: SHADOW or ENABLED.
+    """
+    mode = result_cache_mode(shadow=shadow, enabled=enabled)
+    if enabled and not revalidate:
+        raise ValueError(
+            "PALS_VERIFIER_RESULT_CACHE_ENABLED requires PALS_VERIFIER_RESULT_CACHE_REVALIDATE"
+        )
+    if revalidate and mode is ResultCacheMode.OFF:
+        raise ValueError(
+            "PALS_VERIFIER_RESULT_CACHE_REVALIDATE requires PALS_VERIFIER_RESULT_CACHE_SHADOW "
+            "or PALS_VERIFIER_RESULT_CACHE_ENABLED"
+        )
+    return mode
 
 
 class FreshOutcome(Enum):
@@ -173,6 +215,9 @@ class CacheDecision:
     key: str | None = None
     key_index: int | None = None
     serve: bool = False
+    # Set only on a served hit that is due for a background revalidation (a pre-check; the real
+    # decision is taken again, atomically, by ``start_revalidation``).
+    revalidate: bool = False
 
 
 _NOT_ELIGIBLE: Final = CacheDecision(eligible=False)
@@ -188,14 +233,22 @@ class VerifierResultCache:
         allow_list: Sequence[str],
         components: CacheKeyComponents,
         logger: logging.Logger = _LOGGER,
+        revalidate_every: int | None = None,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if mode is ResultCacheMode.OFF:
             raise ValueError("an off cache is represented by no cache object")
+        if revalidate_every is not None and (
+            type(revalidate_every) is not int
+            or not REVALIDATE_EVERY_MIN <= revalidate_every <= REVALIDATE_EVERY_MAX
+        ):
+            raise ValueError("revalidate_every is outside its bound")
         entries = tuple(allow_list)
         if not entries or len(set(entries)) != len(entries):
             raise ValueError("allow-list must be a nonempty set of distinct sources")
         self._mode = mode
         self._logger = logger
+        self._sources: tuple[str, ...] = entries
         self._allow_index: Mapping[str, int] = {source: i for i, source in enumerate(entries)}
         self._keys: tuple[str, ...] = tuple(
             _key_for(hashlib.sha256(source.encode("utf-8")).hexdigest(), components)
@@ -206,7 +259,16 @@ class VerifierResultCache:
         self._lock = threading.Lock()
         self._stored: dict[str, str] = {}  # key -> origin id (content free)
         self._blocked = False
-        self._counters: dict[str, int] = {}
+        self._counters: dict[str, int] = (
+            {} if revalidate_every is None else dict.fromkeys(_REVALIDATION_COUNTERS, 0)
+        )
+        # Revalidation bookkeeping.  It never touches ``_stored`` and never clears ``_blocked``.
+        self._revalidate_every = revalidate_every
+        self._clock = clock
+        self._served_since: dict[str, int] = {}  # key -> serves since its last revalidation start
+        self._revalidation_started_keys: set[str] = set()
+        self._revalidation_in_flight = False
+        self._last_revalidation_at: float | None = None
 
     @property
     def mode(self) -> ResultCacheMode:
@@ -221,9 +283,21 @@ class VerifierResultCache:
         with self._lock:
             return self._blocked
 
+    @property
+    def revalidate_every(self) -> int | None:
+        return self._revalidate_every
+
     def snapshot(self) -> dict[str, int]:
         with self._lock:
-            return {**self._counters, "entries": len(self._stored)}
+            data = {**self._counters, "entries": len(self._stored)}
+            if self._revalidate_every is not None:
+                data["revalidate_every"] = self._revalidate_every
+                data["revalidation_in_flight"] = int(self._revalidation_in_flight)
+                if self._last_revalidation_at is not None:
+                    data["last_revalidation_age_seconds"] = max(
+                        0, int(self._clock() - self._last_revalidation_at)
+                    )
+            return data
 
     def begin(self, source: str) -> CacheDecision:
         """Classify a request.  Anything outside the allow-list is ineligible and untouched."""
@@ -239,10 +313,171 @@ class VerifierResultCache:
             serve = self._mode is ResultCacheMode.SERVE and stored is not None and not blocked
             label = "hit" if serve else "eligible_compile"
             self._bump(label)
+            revalidate = False
+            if serve and self._revalidate_every is not None:
+                since = self._served_since.get(key, 0) + 1
+                self._served_since[key] = since
+                revalidate = self._revalidation_due(key, since)
             if self._mode is ResultCacheMode.SERVE and stored is not None and blocked:
                 self._bump("blocked_by_mismatch")
         self._log(label, index=index, origin=stored if serve else None)
-        return CacheDecision(eligible=True, key=key, key_index=index, serve=serve)
+        return CacheDecision(
+            eligible=True, key=key, key_index=index, serve=serve, revalidate=revalidate
+        )
+
+    def _revalidation_due(self, key: str, served_since: int) -> bool:
+        """Per-entry thinning.  Caller holds the lock.
+
+        An entry is due on its first serve, then again once N more serves have happened since the
+        revalidation started.  The counter is per entry (not global) so a hot entry cannot starve
+        a rarely served one.  A skipped attempt does not reset it, so the entry stays due.
+        """
+        every = self._revalidate_every
+        return every is not None and (
+            key not in self._revalidation_started_keys or served_since >= every
+        )
+
+    def start_revalidation(
+        self,
+        decision: CacheDecision,
+        *,
+        compile_outcome: Callable[[str], FreshOutcome],
+        slot: threading.BoundedSemaphore,
+    ) -> threading.Thread | None:
+        """Start one background compile of a served entry, or skip.  Never blocks, never raises
+        into the request path's response (the caller has already written it).
+
+        Skipped when serving is blocked, when the entry is not due any more (another hit handled
+        it), when a revalidation is already in flight, or when no compile slot is free.  The slot
+        is taken without waiting and held for the whole compile.
+        """
+        key, index = decision.key, decision.key_index
+        if (
+            not decision.revalidate
+            or key is None
+            or index is None
+            or self._revalidate_every is None
+        ):
+            return None
+        busy = False
+        with self._lock:
+            if self._blocked:
+                return None
+            if not self._revalidation_due(key, self._served_since.get(key, 0)):
+                return None
+            if self._revalidation_in_flight:
+                self._bump("revalidation_skipped_busy")
+                busy = True
+            else:
+                self._revalidation_in_flight = True
+        if busy:
+            self._log_revalidation(logging.INFO, "revalidation_skipped_busy", key, index)
+            return None
+        if not slot.acquire(blocking=False):
+            with self._lock:
+                self._revalidation_in_flight = False
+                self._bump("revalidation_skipped_no_slot")
+            self._log_revalidation(logging.INFO, "revalidation_skipped_no_slot", key, index)
+            return None
+        with self._lock:
+            served_since = self._served_since.get(key, 0)
+            self._served_since[key] = 0
+            self._revalidation_started_keys.add(key)
+            self._bump("revalidations_started")
+        self._log_revalidation(
+            logging.INFO, "revalidation_started", key, index, served_since=served_since
+        )
+        thread = threading.Thread(
+            target=self._run_revalidation,
+            args=(key, index, served_since, compile_outcome, slot),
+            name="verifier-result-cache-revalidation",
+            daemon=True,
+        )
+        try:
+            thread.start()
+        except BaseException:
+            slot.release()
+            self._complete_revalidation(
+                key, index, served_since, FreshOutcome.INCONCLUSIVE, elapsed_ms=0.0
+            )
+            raise
+        return thread
+
+    def _run_revalidation(
+        self,
+        key: str,
+        index: int,
+        served_since: int,
+        compile_outcome: Callable[[str], FreshOutcome],
+        slot: threading.BoundedSemaphore,
+    ) -> None:
+        started = self._clock()
+        outcome = FreshOutcome.INCONCLUSIVE
+        try:
+            try:
+                outcome = compile_outcome(self._sources[index])
+            except Exception:
+                # Not a verdict: the compiler did not answer.  Counted as inconclusive.
+                outcome = FreshOutcome.INCONCLUSIVE
+            finally:
+                slot.release()
+        finally:
+            self._complete_revalidation(
+                key, index, served_since, outcome, elapsed_ms=(self._clock() - started) * 1000.0
+            )
+
+    def _complete_revalidation(
+        self, key: str, index: int, served_since: int, outcome: FreshOutcome, *, elapsed_ms: float
+    ) -> None:
+        level = logging.INFO
+        with self._lock:
+            self._revalidation_in_flight = False
+            self._last_revalidation_at = self._clock()
+            if outcome is FreshOutcome.SUCCESS:
+                # The stored verdict is left exactly as it was: a match only refreshes the
+                # revalidation bookkeeping above, so it can neither store over nor unblock.
+                self._bump("revalidation_match")
+                result = "revalidation_match"
+            elif outcome is FreshOutcome.FAILURE:
+                self._blocked = True
+                self._bump("revalidation_mismatch")
+                result = "revalidation_mismatch"
+                level = logging.ERROR
+            else:
+                self._bump("revalidation_inconclusive")
+                result = "revalidation_inconclusive"
+                level = logging.WARNING
+        self._log_revalidation(
+            level, result, key, index, served_since=served_since, elapsed_ms=elapsed_ms
+        )
+
+    def _log_revalidation(
+        self,
+        level: int,
+        result: str,
+        key: str,
+        index: int,
+        *,
+        served_since: int | None = None,
+        elapsed_ms: float | None = None,
+    ) -> None:
+        # Content free: a short hash OF the key (not the key, not the source) names the entry.
+        entry = hashlib.sha256(b"verifier-result-cache-entry:" + key.encode("ascii")).hexdigest()
+        with self._lock:
+            blocked = self._blocked
+        self._logger.log(
+            level,
+            "verifier_cache result=%s entry=%s key_index=%s elapsed_ms=%s served_since=%s "
+            "revalidate_every=%s mode=%s serving_blocked=%s",
+            result,
+            entry[:12],
+            index,
+            "-" if elapsed_ms is None else f"{elapsed_ms:.0f}",
+            "-" if served_since is None else served_since,
+            self._revalidate_every,
+            self._mode.value,
+            str(blocked).lower(),
+        )
 
     def finish_compiled(self, decision: CacheDecision, outcome: FreshOutcome) -> None:
         """Compare a fresh compile with the stored verdict and store a first success."""
@@ -330,6 +565,7 @@ def build_result_cache(
     verifier_toolchain_sha256: str,
     verifier_image_digest: str,
     allow_list: Sequence[str] | None = None,
+    revalidate_every: int | None = None,
 ) -> VerifierResultCache | None:
     """The cache for the running verifier, or ``None`` when both flags are off."""
     if mode is ResultCacheMode.OFF:
@@ -348,6 +584,7 @@ def build_result_cache(
         mode=mode,
         allow_list=build_x_squared_allow_list() if allow_list is None else allow_list,
         components=components,
+        revalidate_every=revalidate_every,
     )
 
 

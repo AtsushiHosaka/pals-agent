@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import os
 from contextlib import suppress
@@ -22,7 +23,14 @@ from pals_agent.lean_verifier.http_server import (
     create_server,
     pinned_recipe_admission_context,
 )
-from pals_agent.lean_verifier.result_cache import build_result_cache, result_cache_mode
+from pals_agent.lean_verifier.result_cache import (
+    REVALIDATE_EVERY_DEFAULT,
+    REVALIDATE_EVERY_MAX,
+    REVALIDATE_EVERY_MIN,
+    REVALIDATION_DEADLINE_SECONDS,
+    build_result_cache,
+    resolve_result_cache_flags,
+)
 from pals_agent.lean_verifier.tls_material import (
     Boto3SecretBinaryReader,
     MountedFileSecretBinaryReader,
@@ -76,6 +84,8 @@ class HttpVerifierRuntimeSettings:
     max_concurrent_compiles: int = 1
     result_cache_shadow: bool = False
     result_cache_enabled: bool = False
+    result_cache_revalidate: bool = False
+    result_cache_revalidate_every: int = REVALIDATE_EVERY_DEFAULT
 
     @classmethod
     def from_env(cls) -> HttpVerifierRuntimeSettings:
@@ -84,7 +94,13 @@ class HttpVerifierRuntimeSettings:
             raise ValueError("PALS_LEAN_TIMEOUT_SECONDS must equal 300")
         result_cache_shadow = _strict_bool("PALS_VERIFIER_RESULT_CACHE_SHADOW")
         result_cache_enabled = _strict_bool("PALS_VERIFIER_RESULT_CACHE_ENABLED")
-        result_cache_mode(shadow=result_cache_shadow, enabled=result_cache_enabled)
+        result_cache_revalidate = _strict_bool("PALS_VERIFIER_RESULT_CACHE_REVALIDATE")
+        result_cache_revalidate_every = _revalidate_every()
+        resolve_result_cache_flags(
+            shadow=result_cache_shadow,
+            enabled=result_cache_enabled,
+            revalidate=result_cache_revalidate,
+        )
         environment = _required("PALS_ENV")
         release_id = _uuid4(_required("PALS_RELEASE_ID"))
         tls_directory = _tls_directory(environment)
@@ -99,6 +115,8 @@ class HttpVerifierRuntimeSettings:
             max_concurrent_compiles=_max_concurrent_compiles(),
             result_cache_shadow=result_cache_shadow,
             result_cache_enabled=result_cache_enabled,
+            result_cache_revalidate=result_cache_revalidate,
+            result_cache_revalidate_every=result_cache_revalidate_every,
             binding=VerifierDeploymentBinding(
                 release_id=release_id,
                 deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
@@ -149,9 +167,10 @@ def main() -> None:
             timing_observer=_log_verification_timing,
         )
         result_cache = build_result_cache(
-            mode=result_cache_mode(
+            mode=resolve_result_cache_flags(
                 shadow=settings.result_cache_shadow,
                 enabled=settings.result_cache_enabled,
+                revalidate=settings.result_cache_revalidate,
             ),
             verifier=verifier,
             lean_version=admission_context.toolchain_fingerprint["lean_version"],
@@ -161,6 +180,18 @@ def main() -> None:
             lake_manifest_sha256=admission_context.toolchain_fingerprint["lake_manifest_sha256"],
             verifier_toolchain_sha256=settings.binding.verifier_toolchain_sha256,
             verifier_image_digest=settings.binding.verifier_image_digest,
+            revalidate_every=(
+                settings.result_cache_revalidate_every
+                if settings.result_cache_revalidate
+                else None
+            ),
+        )
+        # A background revalidation holds a compile slot, so it runs under a shorter deadline
+        # than a real request.  Hitting it is an inconclusive outcome, never a mismatch.
+        revalidation_verifier = (
+            _revalidation_verifier(verifier, settings.timeout_seconds)
+            if settings.result_cache_revalidate
+            else None
         )
         server = create_server(
             IsolatedVerifierHttpSettings(
@@ -183,6 +214,7 @@ def main() -> None:
                 literal_admission_command=True,
             ),
             result_cache=result_cache,
+            revalidation_verifier=revalidation_verifier,
         )
         # The marker is strictly local to the bounded tmpfs.  ECS observes it
         # through its container health check; no unauthenticated HTTP readiness
@@ -199,9 +231,13 @@ def main() -> None:
         settings.max_concurrent_compiles,
     )
     _LOGGER.info(
-        "verifier result cache: mode=%s allow_list_entries=%s",
+        "verifier result cache: mode=%s allow_list_entries=%s revalidate_every=%s "
+        "revalidation_deadline_seconds=%s",
         "off" if result_cache is None else result_cache.mode.value,
         0 if result_cache is None else result_cache.allow_list_size,
+        "off" if result_cache is None or result_cache.revalidate_every is None
+        else result_cache.revalidate_every,
+        REVALIDATION_DEADLINE_SECONDS,
     )
     try:
         server.serve_forever()
@@ -223,6 +259,27 @@ def _strict_bool(name: str) -> bool:
     if value not in {"true", "false"}:
         raise ValueError(f"{name} must be true or false")
     return value == "true"
+
+
+def _revalidation_verifier(verifier: LeanVerifier, timeout_seconds: float) -> LeanVerifier:
+    """The same verifier under the revalidation deadline (never longer than the real one)."""
+    return dataclasses.replace(
+        verifier, timeout_seconds=min(REVALIDATION_DEADLINE_SECONDS, timeout_seconds)
+    )
+
+
+def _revalidate_every() -> int:
+    """Omission is the default; anything but a canonical integer in range refuses startup."""
+    name = "PALS_VERIFIER_RESULT_CACHE_REVALIDATE_EVERY"
+    value = os.getenv(name)
+    if value is None:
+        return REVALIDATE_EVERY_DEFAULT
+    if not value.isascii() or not value.isdecimal() or str(int(value)) != value:
+        raise ValueError(f"{name} must be a canonical integer")
+    parsed = int(value)
+    if not REVALIDATE_EVERY_MIN <= parsed <= REVALIDATE_EVERY_MAX:
+        raise ValueError(f"{name} is outside its bound")
+    return parsed
 
 
 def _max_concurrent_compiles() -> int:

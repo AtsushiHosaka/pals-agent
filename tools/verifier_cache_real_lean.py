@@ -13,6 +13,10 @@ without a project directory, so it execs the pinned ``lean`` binary directly, an
 adds ``LEAN_PATH`` (the built Mathlib packages, read only) to the child environment by wrapping
 ``pals_agent.lean._run_limited_process``.  This file is the only place that does that.
 
+Scenario E (``--scenarios E``, about 1-2 minutes) covers the background revalidation: with
+ENABLED+REVALIDATE and EVERY=2, a hit is answered in milliseconds while a REAL compile of the
+same entry runs behind it, and a deliberately tampered stored verdict is caught as a mismatch.
+
 Safety: this never runs ``lake``, never points a ``.lake/packages`` anywhere, and never writes
 under the Mathlib directory (Lean writes only inside a scratch directory it owns).
 """
@@ -116,6 +120,10 @@ class RealLeanAdapter:
             scratch_dir=scratch_dir,
         )
         self.tiny = dataclasses.replace(self.normal, timeout_seconds=TINY_TIMEOUT_SECONDS)
+        # The production revalidation verifier: the same verifier under the 60 s revalidation cap.
+        self.revalidation = dataclasses.replace(
+            self.normal, timeout_seconds=result_cache_module.REVALIDATION_DEADLINE_SECONDS
+        )
         self.mode = "normal"
         self.calls: list[dict[str, Any]] = []
         self._lock = threading.Lock()
@@ -132,6 +140,19 @@ class RealLeanAdapter:
 
     def verify(self, lean_code: str) -> VerificationResult:
         verifier = self.tiny if self.mode == "tiny_timeout" else self.normal
+        return self._verify(verifier, lean_code, self.mode)
+
+    def revalidation_port(self) -> Any:
+        """The port the server uses for background revalidations (60 s cap, calls labelled)."""
+        adapter = self
+
+        class _Revalidation:
+            def verify(self, lean_code: str) -> VerificationResult:
+                return adapter._verify(adapter.revalidation, lean_code, "revalidation")  # noqa: SLF001
+
+        return _Revalidation()
+
+    def _verify(self, verifier: LeanVerifier, lean_code: str, mode: str) -> VerificationResult:
         started = time.monotonic()
         result = verifier.verify(lean_code)
         elapsed = time.monotonic() - started
@@ -139,7 +160,7 @@ class RealLeanAdapter:
             self.calls.append(
                 {
                     "source_sha256": hashlib.sha256(lean_code.encode("utf-8")).hexdigest()[:12],
-                    "mode": self.mode,
+                    "mode": mode,
                     "seconds": round(elapsed, 3),
                     "success": result.success,
                     "codes": [d.code for d in result.diagnostics],
@@ -181,6 +202,7 @@ def serving(
     tls: tuple[ssl.SSLContext, ssl.SSLContext, str],
     verifier: Any,
     cache: VerifierResultCache | None,
+    revalidation_verifier: Any = None,
 ) -> Iterator[Any]:
     server_context, _, client_spki = tls
     settings = IsolatedVerifierHttpSettings(
@@ -197,7 +219,12 @@ def serving(
         recipe_admission_context=_admission_context(),
         max_concurrent_compiles=1,
     )
-    server = create_server(settings, verifier=verifier, result_cache=cache)
+    server = create_server(
+        settings,
+        verifier=verifier,
+        result_cache=cache,
+        revalidation_verifier=revalidation_verifier,
+    )
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -222,7 +249,10 @@ def _exchange(client: ssl.SSLContext, raw_request: bytes) -> tuple[int, bytes, h
 
 
 def build_cache(
-    mode: ResultCacheMode, verifier: LeanVerifier, allow_list: tuple[str, ...] | None = None
+    mode: ResultCacheMode,
+    verifier: LeanVerifier,
+    allow_list: tuple[str, ...] | None = None,
+    revalidate_every: int | None = None,
 ) -> VerifierResultCache:
     cache = build_result_cache(
         mode=mode,
@@ -237,6 +267,7 @@ def build_cache(
         verifier_toolchain_sha256="c" * 64,
         verifier_image_digest="sha256:" + "b" * 64,
         allow_list=allow_list,
+        revalidate_every=revalidate_every,
     )
     assert cache is not None
     return cache
@@ -373,7 +404,7 @@ def stats(values: list[float]) -> dict[str, float]:
     }
 
 
-def run_all(scratch: Path) -> dict[str, Any]:
+def run_all(scratch: Path, scenarios: str = "ABCDE") -> dict[str, Any]:
     sources = allow_listed_sources()
     checks = Checks()
     out: dict[str, Any] = {"scenarios": {}}
@@ -384,10 +415,10 @@ def run_all(scratch: Path) -> dict[str, Any]:
     adapter = RealLeanAdapter(scratch)
     try:
         with tls_material() as tls:
-            out["scenarios"]["A"] = scenario_a(tls, adapter, handler, sources, checks)
-            out["scenarios"]["B"] = scenario_b(tls, adapter, handler, sources, checks)
-            out["scenarios"]["C"] = scenario_c(tls, adapter, handler, sources, checks)
-            out["scenarios"]["D"] = scenario_d(tls, adapter, handler, sources, checks)
+            for letter, scenario in (("A", scenario_a), ("B", scenario_b), ("C", scenario_c),
+                                     ("D", scenario_d), ("E", scenario_e)):
+                if letter in scenarios:
+                    out["scenarios"][letter] = scenario(tls, adapter, handler, sources, checks)
     finally:
         adapter.close()
         logger.removeHandler(handler)
@@ -601,10 +632,124 @@ def scenario_d(
             "serve_snapshot": serve_snapshot, "error_log_lines": len(error_records)}
 
 
+def wait_for(predicate: Any, what: str, timeout: float = 180.0) -> float:
+    started = time.monotonic()
+    while not predicate():
+        if time.monotonic() - started > timeout:
+            raise AssertionError(f"timed out waiting for {what}")
+        time.sleep(0.02)
+    return time.monotonic() - started
+
+
+def scenario_e(
+    tls: Any, adapter: RealLeanAdapter, handler: _Records, sources: dict[str, str], checks: Checks
+) -> dict[str, Any]:
+    print("E. ENABLED+REVALIDATE (EVERY=2): a real background revalidation", flush=True)
+    x = sources["x"]
+    cache = build_cache(
+        result_cache_mode(shadow=True, enabled=True), adapter.normal, revalidate_every=2
+    )
+    out: dict[str, Any] = {}
+    with serving(tls, adapter, cache, adapter.revalidation_port()):
+        session = Session(tls[1], adapter, cache, handler)
+        first = session.post("E x first (compiles, stores)", x)
+        checks("E1: the first request compiled and stored",
+               first["source_header"] == "compile" and first["lean_calls"] == 1 and first["success"])
+        calls_before = len(adapter.calls)
+        hit = session.post("E x hit 1 (first serve, starts a revalidation)", x, job="e-hit-1")
+        wait_for(lambda: cache.snapshot().get("revalidation_in_flight") == 1, "revalidation start")
+        # While the real compile runs behind it: more hits, and a request that needs the slot.
+        during = [
+            session.post(f"E x hit {i} (while revalidating)", x, job=f"e-hit-{i}") for i in (2, 3, 4)
+        ]
+        in_flight_while_hits = cache.snapshot().get("revalidation_in_flight") == 1
+        competing = session.post("E x+comment (needs a slot, during revalidation)",
+                                 not_allow_listed(x), job="e-compete")
+        waited = wait_for(lambda: cache.snapshot().get("revalidation_in_flight") == 0,
+                          "revalidation end")
+        snapshot = cache.snapshot()
+        revalidation_calls = [c for c in adapter.calls[calls_before:] if c["mode"] == "revalidation"]
+        out["first_compile_seconds"] = first["seconds"]
+        out["hit_seconds_first_serve"] = hit["seconds"]
+        out["hit_seconds_during_revalidation"] = [r["seconds"] for r in during]
+        out["competing_request_seconds"] = competing["seconds"]
+        out["revalidation_compile_seconds"] = [c["seconds"] for c in revalidation_calls]
+        out["snapshot"] = snapshot
+        checks("E1: every hit answered 200 with header cache, the response keys unchanged",
+               all(r["status"] == 200 and r["source_header"] == "cache" and r["lean_calls"] == 0
+                   and r["echoed_job"] for r in [hit, *during]))
+        checks("E1: hit latency stays in milliseconds while Lean compiles behind it",
+               in_flight_while_hits and max(r["seconds"] for r in [hit, *during]) < 0.5,
+               [r["seconds"] for r in [hit, *during]])
+        checks("E1: a real request that needs the only slot during the revalidation gets the 503",
+               competing["status"] == 503 and competing["error_code"] == "verifier_unavailable",
+               (competing["status"], competing["error_code"]))
+        checks("E1: exactly one real revalidation compile ran, it succeeded, counter match=1",
+               len(revalidation_calls) == 1 and revalidation_calls[0]["success"]
+               and snapshot.get("revalidation_match") == 1
+               and snapshot.get("revalidations_started") == 1
+               and snapshot.get("revalidation_mismatch") == 0, snapshot)
+        checks("E1: hits during the revalidation were counted skipped_busy, not queued",
+               snapshot.get("revalidation_skipped_busy", 0) >= 1, snapshot)
+        after_match = session.post("E x hit after match", x, job="e-after")
+        # By the cadence this hit starts the next revalidation; let it finish so that only one
+        # Lean process ever runs and nothing leaks into the next scenario.
+        wait_for(lambda: cache.snapshot().get("revalidation_in_flight") == 0, "second revalidation")
+        out["second_revalidation_snapshot"] = cache.snapshot()
+        checks("E1: serving continues after the match, and the cadence started a second one",
+               not cache.serving_blocked and after_match["source_header"] == "cache"
+               and cache.snapshot().get("revalidations_started") == 2
+               and cache.snapshot().get("revalidation_match") == 2, cache.snapshot())
+        out["revalidation_wait_after_hits_seconds"] = round(waited, 3)
+
+    # E2: tamper.  The allow-listed source is one that the real Lean rejects; the stored verdict
+    # is forced to "success" in process (test only).  The hit serves the tampered success; the
+    # background revalidation then really compiles, Lean rejects, and serving is blocked.
+    print("E2. tampered stored verdict is caught by the revalidation", flush=True)
+    bad = wrong_lemma(x)
+    tampered = build_cache(
+        result_cache_mode(shadow=True, enabled=True), adapter.normal, allow_list=(bad,),
+        revalidate_every=2,
+    )
+    tampered._stored[tampered._keys[0]] = "tampered-in-process"  # noqa: SLF001
+    with serving(tls, adapter, tampered, adapter.revalidation_port()):
+        session2 = Session(tls[1], adapter, tampered, handler)
+        calls_before = len(adapter.calls)
+        served = session2.post("E2 tampered hit (served, revalidation starts)", bad, job="e2-hit")
+        wait_for(lambda: tampered.snapshot().get("revalidation_mismatch", 0) == 1
+                 or tampered.snapshot().get("revalidation_inconclusive", 0) == 1, "revalidation end")
+        snapshot2 = tampered.snapshot()
+        after = session2.post("E2 request after the mismatch (must compile)", bad, job="e2-after")
+        other = session2.post("E2 same request again", bad, job="e2-again")
+        final = tampered.snapshot()
+    error_lines = [r for r in handler.records if r.levelno == logging.ERROR
+                   and "revalidation_mismatch" in r.getMessage()]
+    revalidation_calls2 = [c for c in adapter.calls[calls_before:] if c["mode"] == "revalidation"]
+    out["tamper"] = {
+        "tampered_hit_seconds": served["seconds"],
+        "revalidation_compile_seconds": [c["seconds"] for c in revalidation_calls2],
+        "snapshot": snapshot2,
+        "final_snapshot": final,
+    }
+    checks("E2: the tampered success is served from the cache (200, header cache, no Lean)",
+           served["status"] == 200 and served["source_header"] == "cache" and served["lean_calls"] == 0)
+    checks("E2: the real revalidation compile was rejected by Lean -> mismatch, ERROR, blocked",
+           len(revalidation_calls2) == 1 and not revalidation_calls2[0]["success"]
+           and snapshot2.get("revalidation_mismatch") == 1 and tampered.serving_blocked
+           and len(error_lines) == 1, snapshot2)
+    checks("E2: after the mismatch the next requests really compile (422, header compile)",
+           after["status"] == 422 and after["source_header"] == "compile" and after["lean_calls"] == 1
+           and other["source_header"] == "compile" and other["lean_calls"] == 1
+           and final.get("blocked_by_mismatch", 0) >= 2, final)
+    return {"rows": session.rows + session2.rows, **out}
+
+
 # --- summary ------------------------------------------------------------------------------------
 
 
 def summarize(result: dict[str, Any]) -> dict[str, Any]:
+    if "A" not in result["scenarios"] or "B" not in result["scenarios"]:
+        return result
     a_rows = result["scenarios"]["A"]["rows"]
     b = result["scenarios"]["B"]
     table = []
@@ -648,13 +793,14 @@ def environment_report() -> dict[str, object]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--scenarios", default="ABCDE", help="letters to run, e.g. E")
     args = parser.parse_args(argv)
     if not available():
         print("pinned Lean v4.32.0-rc1 or its built Mathlib is missing", file=sys.stderr)
         return 2
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="pals-real-lean-scratch-", dir="/private/tmp") as scratch:
-        result = run_all(Path(scratch))
+        result = run_all(Path(scratch), args.scenarios)
     result["environment"] = environment_report()
     result["total_seconds"] = round(time.monotonic() - started, 1)
     summarize(result)

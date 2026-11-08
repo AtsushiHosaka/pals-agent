@@ -1,0 +1,440 @@
+{
+  "scenarios": {
+    "E": {
+      "rows": [
+        {
+          "label": "E x first (compiles, stores)",
+          "source_sha256": "703eece251e6",
+          "seconds": 21.8269,
+          "status": 200,
+          "source_header": "compile",
+          "success": true,
+          "lean_calls": 1,
+          "counter_delta": {
+            "eligible_compile": 1,
+            "stored": 1,
+            "shadow_no_prior": 1,
+            "entries": 1
+          },
+          "log_results": [
+            "INFO:eligible_compile",
+            "INFO:stored"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E x hit 1 (first serve, starts a revalidation)",
+          "source_sha256": "703eece251e6",
+          "seconds": 0.0026,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "revalidations_started": 1,
+            "hit": 1,
+            "revalidation_in_flight": 1
+          },
+          "log_results": [
+            "INFO:hit",
+            "INFO:revalidation_started"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E x hit 2 (while revalidating)",
+          "source_sha256": "703eece251e6",
+          "seconds": 0.0033,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "hit": 1
+          },
+          "log_results": [
+            "INFO:hit"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E x hit 3 (while revalidating)",
+          "source_sha256": "703eece251e6",
+          "seconds": 0.0016,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "revalidation_skipped_busy": 1,
+            "hit": 1
+          },
+          "log_results": [
+            "INFO:hit",
+            "INFO:revalidation_skipped_busy"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E x hit 4 (while revalidating)",
+          "source_sha256": "703eece251e6",
+          "seconds": 0.0014,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "revalidation_skipped_busy": 1,
+            "hit": 1
+          },
+          "log_results": [
+            "INFO:hit",
+            "INFO:revalidation_skipped_busy"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E x+comment (needs a slot, during revalidation)",
+          "source_sha256": "a5d3b1a3b99e",
+          "seconds": 0.0014,
+          "status": 503,
+          "source_header": null,
+          "success": false,
+          "lean_calls": 0,
+          "counter_delta": {
+            "ineligible": 1
+          },
+          "log_results": [
+            "INFO:ineligible"
+          ],
+          "serving_blocked": false,
+          "error_code": "verifier_unavailable",
+          "echoed_job": true
+        },
+        {
+          "label": "E x hit after match",
+          "source_sha256": "703eece251e6",
+          "seconds": 0.0033,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "revalidations_started": 1,
+            "hit": 1,
+            "revalidation_in_flight": 1
+          },
+          "log_results": [
+            "INFO:hit",
+            "INFO:revalidation_started"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E2 tampered hit (served, revalidation starts)",
+          "source_sha256": "b1021bd95e1c",
+          "seconds": 0.0026,
+          "status": 200,
+          "source_header": "cache",
+          "success": true,
+          "lean_calls": 0,
+          "counter_delta": {
+            "revalidations_started": 1,
+            "hit": 1,
+            "revalidation_in_flight": 1
+          },
+          "log_results": [
+            "INFO:hit",
+            "INFO:revalidation_started"
+          ],
+          "serving_blocked": false,
+          "error_code": null,
+          "echoed_job": true
+        },
+        {
+          "label": "E2 request after the mismatch (must compile)",
+          "source_sha256": "b1021bd95e1c",
+          "seconds": 11.0764,
+          "status": 422,
+          "source_header": "compile",
+          "success": false,
+          "lean_calls": 1,
+          "counter_delta": {
+            "eligible_compile": 1,
+            "blocked_by_mismatch": 1,
+            "shadow_mismatch": 1,
+            "last_revalidation_age_seconds": 11
+          },
+          "log_results": [
+            "INFO:eligible_compile",
+            "ERROR:shadow_mismatch"
+          ],
+          "serving_blocked": true,
+          "error_code": "verifier_compile_failed",
+          "echoed_job": true
+        },
+        {
+          "label": "E2 same request again",
+          "source_sha256": "b1021bd95e1c",
+          "seconds": 8.4163,
+          "status": 422,
+          "source_header": "compile",
+          "success": false,
+          "lean_calls": 1,
+          "counter_delta": {
+            "eligible_compile": 1,
+            "blocked_by_mismatch": 1,
+            "shadow_mismatch": 1,
+            "last_revalidation_age_seconds": 8
+          },
+          "log_results": [
+            "INFO:eligible_compile",
+            "ERROR:shadow_mismatch"
+          ],
+          "serving_blocked": true,
+          "error_code": "verifier_compile_failed",
+          "echoed_job": true
+        }
+      ],
+      "first_compile_seconds": 21.8269,
+      "hit_seconds_first_serve": 0.0026,
+      "hit_seconds_during_revalidation": [
+        0.0033,
+        0.0016,
+        0.0014
+      ],
+      "competing_request_seconds": 0.0014,
+      "revalidation_compile_seconds": [
+        17.961
+      ],
+      "snapshot": {
+        "revalidations_started": 1,
+        "revalidation_match": 1,
+        "revalidation_mismatch": 0,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 2,
+        "revalidation_skipped_no_slot": 0,
+        "eligible_compile": 1,
+        "stored": 1,
+        "shadow_no_prior": 1,
+        "hit": 4,
+        "ineligible": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      },
+      "second_revalidation_snapshot": {
+        "revalidations_started": 2,
+        "revalidation_match": 2,
+        "revalidation_mismatch": 0,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 2,
+        "revalidation_skipped_no_slot": 0,
+        "eligible_compile": 1,
+        "stored": 1,
+        "shadow_no_prior": 1,
+        "hit": 5,
+        "ineligible": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      },
+      "revalidation_wait_after_hits_seconds": 17.964,
+      "tamper": {
+        "tampered_hit_seconds": 0.0026,
+        "revalidation_compile_seconds": [
+          9.171
+        ],
+        "snapshot": {
+          "revalidations_started": 1,
+          "revalidation_match": 0,
+          "revalidation_mismatch": 1,
+          "revalidation_inconclusive": 0,
+          "revalidation_skipped_busy": 0,
+          "revalidation_skipped_no_slot": 0,
+          "hit": 1,
+          "entries": 1,
+          "revalidate_every": 2,
+          "revalidation_in_flight": 0,
+          "last_revalidation_age_seconds": 0
+        },
+        "final_snapshot": {
+          "revalidations_started": 1,
+          "revalidation_match": 0,
+          "revalidation_mismatch": 1,
+          "revalidation_inconclusive": 0,
+          "revalidation_skipped_busy": 0,
+          "revalidation_skipped_no_slot": 0,
+          "hit": 1,
+          "eligible_compile": 2,
+          "blocked_by_mismatch": 2,
+          "shadow_mismatch": 2,
+          "entries": 1,
+          "revalidate_every": 2,
+          "revalidation_in_flight": 0,
+          "last_revalidation_age_seconds": 19
+        }
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "E1: the first request compiled and stored",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "E1: every hit answered 200 with header cache, the response keys unchanged",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "E1: hit latency stays in milliseconds while Lean compiles behind it",
+      "ok": true,
+      "detail": [
+        0.0026,
+        0.0033,
+        0.0016,
+        0.0014
+      ]
+    },
+    {
+      "name": "E1: a real request that needs the only slot during the revalidation gets the 503",
+      "ok": true,
+      "detail": [
+        503,
+        "verifier_unavailable"
+      ]
+    },
+    {
+      "name": "E1: exactly one real revalidation compile ran, it succeeded, counter match=1",
+      "ok": true,
+      "detail": {
+        "revalidations_started": 1,
+        "revalidation_match": 1,
+        "revalidation_mismatch": 0,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 2,
+        "revalidation_skipped_no_slot": 0,
+        "eligible_compile": 1,
+        "stored": 1,
+        "shadow_no_prior": 1,
+        "hit": 4,
+        "ineligible": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      }
+    },
+    {
+      "name": "E1: hits during the revalidation were counted skipped_busy, not queued",
+      "ok": true,
+      "detail": {
+        "revalidations_started": 1,
+        "revalidation_match": 1,
+        "revalidation_mismatch": 0,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 2,
+        "revalidation_skipped_no_slot": 0,
+        "eligible_compile": 1,
+        "stored": 1,
+        "shadow_no_prior": 1,
+        "hit": 4,
+        "ineligible": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      }
+    },
+    {
+      "name": "E1: serving continues after the match, and the cadence started a second one",
+      "ok": true,
+      "detail": {
+        "revalidations_started": 2,
+        "revalidation_match": 2,
+        "revalidation_mismatch": 0,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 2,
+        "revalidation_skipped_no_slot": 0,
+        "eligible_compile": 1,
+        "stored": 1,
+        "shadow_no_prior": 1,
+        "hit": 5,
+        "ineligible": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      }
+    },
+    {
+      "name": "E2: the tampered success is served from the cache (200, header cache, no Lean)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "E2: the real revalidation compile was rejected by Lean -> mismatch, ERROR, blocked",
+      "ok": true,
+      "detail": {
+        "revalidations_started": 1,
+        "revalidation_match": 0,
+        "revalidation_mismatch": 1,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 0,
+        "revalidation_skipped_no_slot": 0,
+        "hit": 1,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 0
+      }
+    },
+    {
+      "name": "E2: after the mismatch the next requests really compile (422, header compile)",
+      "ok": true,
+      "detail": {
+        "revalidations_started": 1,
+        "revalidation_match": 0,
+        "revalidation_mismatch": 1,
+        "revalidation_inconclusive": 0,
+        "revalidation_skipped_busy": 0,
+        "revalidation_skipped_no_slot": 0,
+        "hit": 1,
+        "eligible_compile": 2,
+        "blocked_by_mismatch": 2,
+        "shadow_mismatch": 2,
+        "entries": 1,
+        "revalidate_every": 2,
+        "revalidation_in_flight": 0,
+        "last_revalidation_age_seconds": 19
+      }
+    }
+  ],
+  "environment": {
+    "date": "2026-11-08",
+    "lean": "Lean (version 4.32.0-rc1, arm64-apple-darwin24.6.0, commit b4812ae53eea93439ad5dce5a5c26591c31cb697, Release)",
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.13",
+    "mathlib_packages_dir": "/Users/atsushi/OrbStack/docker/volumes/pals-local_pals-agent-lake/packages",
+    "lean_binary": "/Users/atsushi/.elan/toolchains/leanprover--lean4---v4.32.0-rc1/bin/lean",
+    "normal_timeout_seconds": 300.0
+  },
+  "total_seconds": 86.8
+}

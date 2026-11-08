@@ -68,3 +68,26 @@ D の内訳:
 - SERVEモードでは、保存済みの本文はコンパイルされないため、同じ本文での不一致は構造的に観測できない(重なり要求の競合を除く)。不一致を見つけられるのはshadow期間だけである。設計どおりの動きだが、ENABLEDに切り替えた後は新たな不一致検知が弱くなる。切り替え後も保存済み本文を定期的に再検証するなら、設計にある背景再検証が必要になる。
 - ブロック中(`serving_blocked=true`)も、新しい成功の保存と `shadow_match` の記録は続く。配信だけが止まる。意図どおりである。
 - 1回のコンパイル約18 sは、コンパイル本体と公理監査の2回のLean実行を含む。内訳は取っていない(`timing_observer` は使っていない)。キャッシュヒットは両方を省く。
+
+## 6. 背景再検証の実Lean検証(ブランチ `claude/seq27-verifier-cache-revalidate`)
+
+2026-11-08。生データは `tools/verifier_cache_real_lean_revalidation_results.json`、再現は `uv run --extra dev python tools/verifier_cache_real_lean.py --scenarios E --out <json>`(約90秒)。オプトインのpytestは `tests/unit/test_verifier_result_cache_real_lean.py` の末尾2件(4件で約130秒、うち再検証の2件が約50秒)。第1〜5節と同じ前提(`lake` なし、固定Leanを直接実行、同時に動くLeanは1本、Mathlibは読み取りだけ)で、ENABLED+REVALIDATE、EVERY=2。再検証用のverifierは、本番と同じく期限60秒の `LeanVerifier` である。10項目の確認はすべて通った。
+
+| 場面 | 結果 |
+|---|---|
+| E1 最初の要求(変数 x) | コンパイル 21.8 s(200、`compile`)、保存 |
+| E1 最初のヒット | 2.6 ms(200、`cache`)。応答の後ろで実際のLeanによる再検証が開始(`revalidation_started`) |
+| E1 再検証の最中のヒット3件 | 3.3 / 1.6 / 1.4 ms。Lean呼び出し0。EVERY=2 の周期で期限が来た2件は `revalidation_skipped_busy`(待たない、積まない) |
+| E1 再検証の最中に、キャッシュに無い要求(許可リスト外) | 1.4 ms で503 `verifier_unavailable`(枠1本が再検証に使われているため。想定どおりの影響) |
+| E1 再検証の結果 | 実Leanのコンパイル 18.0 s で成功。`revalidation_match`=1、mismatch 0、inconclusive 0 |
+| E1 一致の後 | 配信は続く(`cache`)。周期で2回目の再検証が走り、これも `match`(合計 started=2、match=2) |
+| E2 改ざん(許可リストに、実Leanが拒否する本文だけを入れ、保存済みの判定をプロセス内で「成功」に書き換え。テスト専用) | 改ざんされた成功が `cache` で配信される(2.6 ms、Lean呼び出し0)。直後の背景再検証で実Leanが拒否(9.2 s)し、`revalidation_mismatch`=1、ERROR、`serving_blocked`=true |
+| E2 不一致の後 | 同じ本文の次の2要求は実際にコンパイルされ、422/`compile`(それぞれ 11.1 s、8.4 s)。`blocked_by_mismatch`=2。保存済み判定との食い違いは既存の `shadow_mismatch` としてもERRORで数えられる(2件) |
+
+読み方
+
+- ヒットの遅延は、再検証が走っていても数ミリ秒である(再検証なしのヒットの p50 1.3 ms、最大 1.9 ms と同じ桁)。応答の遅延は、再検証を応答の後でスレッドに出していることによる。
+- 再検証1回の長さは、この環境で約18秒(許可リスト内の成功本文)で、約9秒(Leanが拒否する本文)。60秒の上限には3倍以上の余裕がある。ただし他のセッションが同じMacで別のLeanを動かしており、1回目の実行では最初のコンパイルが30.8秒かかった。ページキャッシュが冷えた真のcold時間は測れていない(第3節と同じ)。
+- 再検証が走っている間の実要求は、`max_concurrent_compiles=1` では即座に再試行可能な503になる。窓は再検証1回分(この環境で約18秒)である。
+
+この検証で確かめていないこと: 第4節の項目(Linuxの隔離、`lake env`、cgroup圧迫による中断の実発火、本番の期限設定)。60秒の期限に実際に達する場合(タイムアウトの扱いは単体テスト(偽のverifier)で確かめただけで、実Leanでは、再検証の期限を人工的に縮めた試験もしていない)。許可リスト52件のうち、使ったのは x だけ(改ざん側は x を壊した1本)。
