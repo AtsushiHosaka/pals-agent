@@ -152,6 +152,12 @@ class LeanVerifier:
             self._observe("total", started)
 
     def _observe(self, stage: str, started: float, status: str | None = None) -> None:
+        if status is not None:
+            from pals_agent import step_timing
+
+            step_timing.record_step(
+                "lean_env_cache", (time.monotonic() - started) * 1000, outcome=status,
+            )
         if self.timing_observer is not None:
             self.timing_observer(VerificationTiming(
                 stage=stage, elapsed_ms=(time.monotonic() - started) * 1000,

@@ -17,7 +17,7 @@ import boto3  # type: ignore[import-untyped]
 import rfc8785
 from botocore.exceptions import BotoCoreError, ClientError  # type: ignore[import-untyped]
 
-from pals_agent import quality_events
+from pals_agent import quality_events, step_timing
 from pals_agent.api_client import (
     PalsApiError,
     ProofJobNotFoundError,
@@ -572,6 +572,8 @@ class SqsProofWorker:
             # generation has started, so return this valid receipt for another worker.
             extend_visibility(0)
             return False
+        if queue_timing is not None:
+            step_timing.record_step("queue_wait", queue_timing["queue_wait_ms"], job=task.id)
         claim_id = self._fresh_claim_id()
         acknowledged = False
         try:
@@ -1184,7 +1186,10 @@ class SqsProofWorker:
         started = self.monotonic()
         deadline = started + _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS
         next_refresh = started + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
-        with latency_stage("lean_reconciliation_wait"):
+        with (
+            latency_stage("lean_reconciliation_wait"),
+            step_timing.step("lean_reconcile_wait", job=proof_job_id) as timing,
+        ):
             while True:
                 note_latency("reconciliation_polls", 1)
                 try:
@@ -1200,6 +1205,8 @@ class SqsProofWorker:
                 now = self.monotonic()
                 remaining = deadline - now
                 if remaining <= 0 or self.stop_requested():
+                    if timing is not None:
+                        timing.set_outcome("timeout" if remaining <= 0 else "interrupted")
                     return None
                 if now >= next_refresh:
                     try:

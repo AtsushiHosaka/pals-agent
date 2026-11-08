@@ -22,6 +22,7 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from pals_agent import step_timing
 from pals_agent.artifacts import FileArtifactStore, safe_artifact_segment
 from pals_agent.generator import HybridLeanGenerator
 from pals_agent.lean import LeanVerifier
@@ -204,7 +205,7 @@ def run_one(
     *,
     arm: str,
     args: argparse.Namespace,
-    index: MathlibIndex,
+    index: MathlibIndex | None,
     guard: SpendGuard,
 ) -> dict[str, Any]:
     openai = OpenAIResponsesClient(
@@ -212,7 +213,7 @@ def run_one(
         max_output_tokens=args.max_output_tokens,
         reasoning_effort=args.effort,
     )
-    builder = HintBuilder(index, lean=args.hint_lean)
+    builder = HintBuilder(index, lean=args.hint_lean) if index is not None else None
     client: Any = HintingClient(openai, builder) if arm == "hinted" else openai
     generator = HybridLeanGenerator(
         model=args.model, provider="openai", client=GuardedClient(client, guard)
@@ -239,7 +240,8 @@ def run_one(
         guard.add(row)
 
     started = time.monotonic()
-    with usage_scope(on_usage):
+    timing_label = f"{problem['id']}.{arm}"
+    with usage_scope(on_usage), step_timing.run_scope(run_id, label=timing_label):
         result = pipeline.run_statement(
             statement=problem["statement"],
             formal_statement=problem.get("formal_statement"),
@@ -277,9 +279,11 @@ def run_one(
             )
             for a in attempts
         ],
-        "hint_seconds": round(sum(round_["seconds"] for round_ in builder.log), 1),
-        "hint_rounds": builder.log,
+        "hint_seconds": round(sum(r["seconds"] for r in builder.log), 1) if builder else 0.0,
+        "hint_rounds": builder.log if builder else [],
         "budget_stopped": guard.stopped,
+        # Joins this record to its pipeline_run in the PALS_STEP_TIMING_JSONL events.
+        **({"step_timing_run": timing_label} if step_timing.enabled() else {}),
     }
     print(
         json.dumps({k: v for k, v in record.items() if k != "hint_rounds"}, ensure_ascii=False),
@@ -293,7 +297,7 @@ def main() -> None:
     parser.add_argument("--problems", type=Path, required=True)
     parser.add_argument("--only", default="", help="Comma-separated problem ids")
     parser.add_argument("--arms", default="baseline,hinted")
-    parser.add_argument("--index-dir", type=Path, required=True)
+    parser.add_argument("--index-dir", type=Path, help="Required for the hinted arm")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--run-label", required=True)
     parser.add_argument("--model", default="gpt-6-luna")
@@ -308,13 +312,23 @@ def main() -> None:
     parser.add_argument("--scratch", type=Path, required=True)
     parser.add_argument("--lean-timeout", type=float, default=180.0)
     parser.add_argument("--max-usd", type=float, help="Stop calling the model at this estimate")
+    parser.add_argument(
+        "--step-timing", action="store_true",
+        help="Write per-step timing events to <out>/<run-label>.steps.jsonl",
+    )
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
+    if args.step_timing:
+        os.environ[step_timing.ENV_JSONL] = str(args.out / f"{args.run_label}.steps.jsonl")
     problems = json.loads(args.problems.read_text(encoding="utf-8"))
     selected = set(filter(None, args.only.split(",")))
     results_path = args.out / f"{args.run_label}.jsonl"
-    index = MathlibIndex(args.index_dir / "index.sqlite")
-    index.symbol_search(["Continuous"], [], k=1)  # Load postings outside the measured runs.
+    index = None
+    if "hinted" in args.arms.split(","):
+        if args.index_dir is None:
+            parser.error("--index-dir is required for the hinted arm")
+        index = MathlibIndex(args.index_dir / "index.sqlite")
+        index.symbol_search(["Continuous"], [], k=1)  # Load postings outside the measured runs.
     guard = SpendGuard(limit_usd=args.max_usd)
     for problem in problems:
         if selected and problem["id"] not in selected:
