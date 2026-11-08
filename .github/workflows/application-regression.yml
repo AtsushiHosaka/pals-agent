@@ -156,11 +156,12 @@ jobs:
           actual = {case.attrib.get("classname", "") for case in cases}
           assert expected <= actual, "required runtime modules did not execute: " + repr(expected - actual)
           assert all(not any(case.find(tag) is not None for tag in ("failure", "error")) for case in cases)
-          # Existing optional-client and exact deployed tmpfs-fixture coverage is
-          # explicitly separate; the first two native Linux Landlock tests must run.
+          # Existing optional-client, deployed tmpfs and Darwin-only shell
+          # coverage is separate; the first two native Linux Landlock tests must run.
           allowed_skips = {
               ("tests.unit.test_worker_api_trust", "test_httpx_observes_exported_trust"),
               ("tests.unit.test_lean_child_read_allowlist", "test_linux_http_scratch_child_does_not_expose_sibling_runtime_files"),
+              ("tests.unit.test_lean_process_boundary_spec", "test_interrupted_compile_returns_a_failed_result_without_touching_success"),
           }
           skipped = {(case.attrib["classname"], case.attrib["name"]) for case in cases if case.find("skipped") is not None}
           assert skipped <= allowed_skips, "unexpected skipped core regressions: " + repr(skipped - allowed_skips)
