@@ -76,7 +76,7 @@ class BlockingVerifier(StubVerifier):
 
 @pytest.fixture
 def tls_contexts() -> Iterator[tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str]]:
-    with tempfile.TemporaryDirectory(prefix="pals-mtls-", dir="/private/tmp") as directory:
+    with tempfile.TemporaryDirectory(prefix="pals-mtls-") as directory:
         root = Path(directory)
         _create_certificates(root)
         server = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -435,6 +435,63 @@ def _interrupted() -> VerificationResult:
         stderr="",
         elapsed_ms=1,
     )
+
+
+@pytest.mark.parametrize("with_compiler_diagnostic", [False, True])
+def test_sandbox_setup_failure_is_unavailable_and_never_proof_repair_feedback(
+    tls_contexts: tuple[ssl.SSLContext, ssl.SSLContext, ssl.SSLContext, str],
+    with_compiler_diagnostic: bool,
+) -> None:
+    server_context, client_context, _, client_spki_sha256 = tls_contexts
+    diagnostics = [
+        Diagnostic(
+            severity="error",
+            code="lean.sandbox_setup_failed",
+            message="Lean isolation failed at /private/verifier-host/diagnostic-secret.",
+        )
+    ]
+    if with_compiler_diagnostic:
+        diagnostics.append(
+            Diagnostic(severity="error", code="lean.syntax_error", message="unexpected token")
+        )
+    verifier = StubVerifier(
+        VerificationResult(
+            success=False,
+            diagnostics=diagnostics,
+            stdout="private compiler output",
+            stderr="private sandbox error",
+            elapsed_ms=1,
+        )
+    )
+    source = "example : True := by trivial\n"
+    with _running_server(server_context, client_spki_sha256, verifier):
+        proof = _request(client_context, _verify_request(source))
+        admission = _request(
+            client_context,
+            _recipe_admission_request(source, _admission_context()),
+            canonical=True,
+        )
+
+    assert proof == (
+        503,
+        {
+            "error_code": "verifier_unavailable",
+            "proof_job_id": "proof-1",
+            "retryable": True,
+            "schema_version": "pals.isolated-verifier-error.v1",
+        },
+    )
+    assert admission == (
+        503,
+        {
+            "schema_version": "pals.recipe-admission-verifier-result.v1",
+            "status": "failed",
+            "admission_id": str(_ADMISSION_ID),
+            "failure_code": "verifier_not_ready",
+            "retryable": True,
+        },
+    )
+    assert verifier.calls == [source, source]
 
 
 def test_interrupted_compile_is_a_retryable_infrastructure_failure_not_a_verdict(

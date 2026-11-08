@@ -30,8 +30,12 @@ _REQUEST_SCHEMA_VERSION: Final = "pals.isolated-verifier-request.v1"
 _READINESS_SCHEMA_VERSION: Final = "pals.isolated-verifier-readiness.v1"
 _ATTESTATION_SCHEMA_VERSION: Final = "pals.verifier-attestation.v1"
 _ERROR_SCHEMA_VERSION: Final = "pals.isolated-verifier-error.v1"
-_INTERRUPTED_FAILURES: Final = frozenset(
-    {"verifier_compile_interrupted", "verifier_compile_deadline_interrupted"}
+_RETRYABLE_INFRASTRUCTURE_FAILURES: Final = frozenset(
+    {
+        "verifier_unavailable",
+        "verifier_compile_interrupted",
+        "verifier_compile_deadline_interrupted",
+    }
 )
 _ADMISSION_REQUEST_SCHEMA_VERSION: Final = "pals.recipe-admission-verifier-request.v1"
 _ADMISSION_RESULT_SCHEMA_VERSION: Final = "pals.recipe-admission-verifier-result.v1"
@@ -307,7 +311,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
         failure_code = _failure_code(result)
         if failure_code == "verifier_timeout":
             self._error(504, failure_code, request["proof_job_id"], retryable=True)
-        elif failure_code in _INTERRUPTED_FAILURES:
+        elif failure_code in _RETRYABLE_INFRASTRUCTURE_FAILURES:
             self._error(503, failure_code, request["proof_job_id"], retryable=True)
         else:
             self._error(
@@ -375,7 +379,7 @@ class _RequestHandler(http.server.BaseHTTPRequestHandler):
 
         if not result.success:
             failure_code = _failure_code(result)
-            if failure_code in _INTERRUPTED_FAILURES:
+            if failure_code in _RETRYABLE_INFRASTRUCTURE_FAILURES:
                 # The admission transport's retryable registry is closed; see the busy path above.
                 self._admission_error(
                     503,
@@ -808,6 +812,11 @@ def _canonical_uuid4(value: UUID) -> str | None:
 
 
 def _failure_code(result: VerificationResult) -> str:
+    # No compiler verdict exists when child isolation could not be established.
+    # Keep this separate from interrupted compiles: the API may eventually send
+    # those to proof repair, which cannot fix an unavailable sandbox.
+    if any(item.code == "lean.sandbox_setup_failed" for item in result.diagnostics):
+        return "verifier_unavailable"
     if any(item.code == COMPILE_DEADLINE_INTERRUPTED for item in result.diagnostics):
         return "verifier_compile_deadline_interrupted"
     if any(item.code == COMPILE_INTERRUPTED for item in result.diagnostics):
