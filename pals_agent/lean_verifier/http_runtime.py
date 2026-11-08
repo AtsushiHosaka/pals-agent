@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import os
 from contextlib import suppress
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final
 from uuid import UUID
@@ -14,6 +14,10 @@ import boto3  # type: ignore[import-untyped]
 
 from pals_agent.lean import LeanVerifier, enable_orphan_reaping
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
+from pals_agent.lean_profiles import (
+    LibraryProfile,
+    resolve_profile,
+)
 from pals_agent.lean_verifier.boundary import attest_http_runtime_boundary
 from pals_agent.lean_verifier.http_server import (
     MAX_CONCURRENT_COMPILES,
@@ -73,6 +77,8 @@ class HttpVerifierRuntimeSettings:
     tls: VerifierServerTlsConfiguration
     reuse_lake_environment: bool = False
     max_concurrent_compiles: int = 1
+    # One verifier process serves one profile; omission is the default profile.
+    library_profile: LibraryProfile = field(default_factory=resolve_profile)
 
     @classmethod
     def from_env(cls) -> HttpVerifierRuntimeSettings:
@@ -91,6 +97,9 @@ class HttpVerifierRuntimeSettings:
             tls_directory=tls_directory,
             reuse_lake_environment=_reuse_lake_environment(),
             max_concurrent_compiles=_max_concurrent_compiles(),
+            library_profile=resolve_profile(
+                _optional("PALS_LEAN_LIBRARY_PROFILE")
+            ),
             binding=VerifierDeploymentBinding(
                 release_id=release_id,
                 deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
@@ -113,6 +122,13 @@ def main() -> None:
     try:
         settings = HttpVerifierRuntimeSettings.from_env()
         enable_orphan_reaping()
+        flag = settings.library_profile.requires_flag
+        if flag is not None and os.getenv(flag) != "true":
+            raise ValueError(f"library profile {settings.library_profile.name} requires {flag}")
+        # A non-default profile pins a toolchain; a workspace pinning another one must not serve.
+        # The default profile keeps its historical, unchecked startup.
+        if not settings.library_profile.is_default:
+            settings.library_profile.validate_workspace(settings.project_dir)
         if not _SCRATCH_DIRECTORY.is_dir():
             raise ValueError("verifier request scratch tmpfs is unavailable")
         _clear_ready_marker(_READY_MARKER)
@@ -135,6 +151,7 @@ def main() -> None:
                 LakeEnvironmentCache() if settings.reuse_lake_environment else None
             ),
             timing_observer=_log_verification_timing,
+            library_profile=settings.library_profile,
         )
         _warm_lake_environment(verifier, enabled=settings.reuse_lake_environment)
         server = create_server(
@@ -147,6 +164,7 @@ def main() -> None:
                 recipe_admission_context=pinned_recipe_admission_context(
                     project_dir=settings.project_dir,
                     verifier_sha256=settings.binding.verifier_toolchain_sha256,
+                    library_profile=settings.library_profile.fingerprint_name,
                 ),
                 max_concurrent_compiles=settings.max_concurrent_compiles,
             ),
@@ -159,6 +177,7 @@ def main() -> None:
                 scratch_dir=_SCRATCH_DIRECTORY,
                 timing_observer=_log_verification_timing,
                 literal_admission_command=True,
+                library_profile=settings.library_profile,
             ),
         )
         # The marker is strictly local to the bounded tmpfs.  ECS observes it
@@ -170,10 +189,12 @@ def main() -> None:
         raise SystemExit(2) from None
 
     _LOGGER.info(
-        "isolated verifier ready: transport=mtls-http port=%d release_id=%s compile_slots=%d",
+        "isolated verifier ready: transport=mtls-http port=%d release_id=%s compile_slots=%d "
+        "library_profile=%s",
         _PORT,
         settings.binding.release_id,
         settings.max_concurrent_compiles,
+        settings.library_profile.name,
     )
     try:
         server.serve_forever()

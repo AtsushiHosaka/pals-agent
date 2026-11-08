@@ -15,6 +15,7 @@ from pals_agent.artifacts import (
     ArtifactStore,
 )
 from pals_agent.draft_catalog import DraftCatalog, DraftSearchResult
+from pals_agent.lean_profiles import LibraryProfileNotEnabled, ProfileRoutedVerifier
 from pals_agent.lean_source_policy import (
     strip_lean_comments_and_strings as _strip_lean_comments_and_strings,
 )
@@ -188,6 +189,8 @@ class ProofPipeline:
     verification_mode: Literal["local", "api_reconcile"] = "local"
     natural_draft_retriever: ProofFlowRetriever | None = None
     request_linked_typed_retriever: ProofFlowRetriever | None = None
+    # Local mode only. Absent, a request can only be verified by ``verifier`` (the default profile).
+    profile_verifiers: ProfileRoutedVerifier | None = None
     # Opt-in latency shortcuts, both off by default; see pals_agent/proof_fastpaths.py.
     # ``harness_splice`` restores a fixed formal statement the model re-typed with only
     # layout differences instead of paying for a model-driven restart.
@@ -226,13 +229,33 @@ class ProofPipeline:
         if self.verification_mode == "api_reconcile" and self.verifier is not None:
             raise ValueError("API reconciliation mode forbids a worker verifier")
 
+    def for_library_profile(self, name: str | None) -> ProofPipeline:
+        """This pipeline bound to the verifier of one library profile.
+
+        ``None`` is this pipeline unchanged. A named profile needs local verification with that
+        profile served; otherwise ``LibraryProfileNotEnabled`` is raised and nothing is verified
+        against the default library instead.
+        """
+        if name is None:
+            return self
+        if self.verification_mode != "local" or self.profile_verifiers is None:
+            raise LibraryProfileNotEnabled("this pipeline does not route library profiles")
+        return replace(
+            self, verifier=self.profile_verifiers.verifier_for(name), profile_verifiers=None
+        )
+
     def run_problem(
         self,
         *,
         problem: BenchmarkProblem,
         proof_job_id: str | None = None,
         on_status: StatusCallback | None = None,
+        library_profile: str | None = None,
     ) -> ProofRunResult:
+        if library_profile is not None:
+            return self.for_library_profile(library_profile).run_problem(
+                problem=problem, proof_job_id=proof_job_id, on_status=on_status
+            )
         request = self._request_for_statement(problem.prompt, problem_id=problem.id)
         return self._run_request(
             request=request,
@@ -254,7 +277,18 @@ class ProofPipeline:
         api_repair_seed: ApiRepairSeed | None = None,
         prepared_request: ProofRequest | None = None,
         request_linked: bool = False,
+        library_profile: str | None = None,
     ) -> ProofRunResult:
+        if library_profile is not None:
+            return self.for_library_profile(library_profile).run_statement(
+                statement=statement,
+                formal_statement=formal_statement,
+                proof_job_id=proof_job_id,
+                on_status=on_status,
+                api_repair_seed=api_repair_seed,
+                prepared_request=prepared_request,
+                request_linked=request_linked,
+            )
         if prepared_request is not None:
             request = prepared_request
         elif request_linked:

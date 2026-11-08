@@ -27,6 +27,7 @@ from pals_agent.http_transport import (
     HardDeadlineHttpTransport,
     HttpTransport,
 )
+from pals_agent.lean_profiles import DEFAULT_PROFILE_NAME, known_profile_names
 from pals_agent.lean_target import extract_single_target_declaration
 from pals_agent.openmath_v4_contract import (
     OpenMathV4ContractError,
@@ -169,10 +170,18 @@ class ToolchainFingerprintV1:
     verifier_sha256: str
     materializer_version: str
     schema_version: str = _TOOLCHAIN_SCHEMA_VERSION
+    # A non-default library profile (``pals_agent.lean_profiles``). ``None`` is the default profile
+    # and is omitted from the JSON, so default fingerprints keep their original digest.
+    library_profile: str | None = None
 
     def __post_init__(self) -> None:
         if self.schema_version != _TOOLCHAIN_SCHEMA_VERSION:
             raise ValueError("toolchain fingerprint schema version is invalid")
+        if self.library_profile is not None and (
+            self.library_profile == DEFAULT_PROFILE_NAME
+            or self.library_profile not in known_profile_names()
+        ):
+            raise ValueError("toolchain fingerprint library profile is invalid")
         _require_text(self.lean_version, "Lean version")
         _require_hex64(self.lake_manifest_sha256, "lake manifest digest")
         _require_hex64(self.verifier_sha256, "verifier digest")
@@ -185,6 +194,7 @@ class ToolchainFingerprintV1:
             "lake_manifest_sha256": self.lake_manifest_sha256,
             "verifier_sha256": self.verifier_sha256,
             "materializer_version": self.materializer_version,
+            **({} if self.library_profile is None else {"library_profile": self.library_profile}),
         }
 
     @property
@@ -572,17 +582,17 @@ def _exclusions(value: object) -> tuple[RecipeExclusion, ...]:
 
 
 def _toolchain_from_value(value: object) -> ToolchainFingerprintV1:
-    root = _exact_object(
-        value,
-        {
-            "schema_version",
-            "lean_version",
-            "lake_manifest_sha256",
-            "verifier_sha256",
-            "materializer_version",
-        },
-    )
+    required = {
+        "schema_version",
+        "lean_version",
+        "lake_manifest_sha256",
+        "verifier_sha256",
+        "materializer_version",
+    }
+    has_profile = isinstance(value, dict) and "library_profile" in value
+    root = _exact_object(value, required | {"library_profile"} if has_profile else required)
     return ToolchainFingerprintV1(
+        library_profile=cast(str, root["library_profile"]) if has_profile else None,
         schema_version=cast(str, root["schema_version"]),
         lean_version=cast(str, root["lean_version"]),
         lake_manifest_sha256=cast(str, root["lake_manifest_sha256"]),
