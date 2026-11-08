@@ -158,7 +158,18 @@ jobs:
           cases = ET.parse(os.environ["REGRESSION_REPORT"]).findall(".//testcase")
           expected = {path.removesuffix(".py").replace("/", ".") for path in os.environ["CORE_TEST_FILES"].split()}
           actual = {case.attrib.get("classname", "") for case in cases}
-          assert expected <= actual, "required runtime modules did not execute: " + repr(expected - actual)
+          missing_modules = {module for module in expected if not any(
+              name == module or name.startswith(module + ".") for name in actual
+          )}
+          assert not missing_modules, "required runtime modules did not execute: " + repr(missing_modules)
+          scope = [case for case in cases if case.attrib.get("classname", "").startswith(
+              "tests.unit.test_agent_regression_source_scope."
+          )]
+          assert {
+              "test_unqualified_worker_change_is_refused",
+              "test_readme_followup_cannot_hide_the_unqualified_worker",
+              "test_identical_tree_without_anchor_ancestry_is_refused",
+          } <= {case.attrib["name"] for case in scope}, "required source-history regressions did not execute"
           assert all(not any(case.find(tag) is not None for tag in ("failure", "error")) for case in cases)
           # Existing optional-client, deployed tmpfs and Darwin-only shell
           # coverage is separate; the first two native Linux Landlock tests must run.
