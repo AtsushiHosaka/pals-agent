@@ -68,11 +68,11 @@ class OpenAIResponsesClient:
         if not step_timing.enabled():
             return self._generate(**arguments)
         # Opt-in per-step timing: the call below is unchanged, only observed.
-        from pals_agent.proof_reuse_usage import explicit_role
+        from pals_agent.runtime_latency import current_role_label
         from pals_agent.usage import capture_usage
 
         with (
-            step_timing.step(explicit_role() or "other", model=model) as record,
+            step_timing.step(current_role_label(), model=model) as record,
             capture_usage() as usage_rows,
         ):
             try:

@@ -368,3 +368,43 @@ def test_the_metric_dimension_uses_the_coarse_outcome(outcome: str, coarse: str)
              "duration_ms": 5.0, "outcome": outcome}
     line = step_timing.to_emf(event)
     assert line["outcome"] == coarse and line["outcome_detail"] == outcome
+
+
+def test_latency_stages_become_steps_and_containers_stay_out_of_run_totals(
+    jsonl: Path,
+) -> None:
+    from pals_agent.runtime_latency import latency_label, latency_stage, traced_delivery
+
+    with (
+        traced_delivery("proof_request", "request-1", emit=lambda _report: None),
+        step_timing.run_scope("job-3"),
+        latency_stage("assessment"),
+    ):
+        with latency_stage("recipe_attempt_selection"):
+            pass
+        with latency_stage("lean_compile_local"):  # timed by lean_check instead
+            pass
+        with latency_stage("not a stage"):  # free text never becomes a step
+            pass
+        with latency_label("explanation_review"):
+            _client(FakeTransport()).generate(model="gpt-6-luna", prompt=SECRET_QUESTION)
+    events = _events(jsonl)
+    names = [(e.get("step"), e.get("container", False)) for e in events]
+    assert ("assessment", True) in names and ("recipe_attempt_selection", False) in names
+    assert all(step != "lean_compile_local" for step, _ in names)
+    assert ("explanation_review", False) in names  # the model call carries the label role
+    (run,) = [e for e in events if e["event"] == "pipeline_run"]
+    assert "assessment" not in run["step_ms"]
+    assert set(run["step_ms"]) == {"recipe_attempt_selection", "explanation_review"}
+    assert SECRET_QUESTION not in jsonl.read_text(encoding="utf-8")
+
+
+def test_report_keeps_containers_out_of_the_shares(jsonl: Path) -> None:
+    with (
+        step_timing.run_scope("job-4"),
+        step_timing.step("assessment", container=True),
+        step_timing.step("recipe_rank"),
+    ):
+        pass
+    text = render(collect(jsonl.read_text(encoding="utf-8").splitlines()))
+    assert "assessment (container)" in text and "encloses other steps" in text
