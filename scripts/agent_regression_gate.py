@@ -32,12 +32,13 @@ CAUSES = frozenset({
     "stale_timing_expectation",
 })
 BAD = ("failure", "error")
-_SIGNATURE = re.compile(r'^(?:failed on (?:setup|teardown) with ")?([A-Za-z_][\w.]*)(?=:|\s|$)')
+_PHASE = re.compile(r'^failed on (?:setup|teardown) with "')
+_SIGNATURE = re.compile(r"^([A-Za-z_][\w.]*)(?=:|\s|$)")
 
 
 def failure_signature(message: str) -> str:
     """Name the exception class from pytest's JUnit message (it has no `type` attribute)."""
-    text = (message or "").strip()
+    text = _PHASE.sub("", (message or "").strip())
     if text.startswith("assert"):
         return "AssertionError"
     match = _SIGNATURE.match(text)
@@ -59,6 +60,15 @@ def read_report(path: Path) -> dict[str, dict[str, str]]:
         else:
             if case.find("skipped") is not None:
                 outcome = "skipped"
+        previous = cases.get(test_id)
+        if previous is not None:
+            # pytest emits one element per failing phase (call, teardown). Keep every record:
+            # failure beats skip beats pass, and all signatures stay part of the comparison.
+            rank = {"passed": 0, "skipped": 1, "failure": 2, "error": 2}
+            kinds = sorted({*previous["type"].split("+"), *kind.split("+")} - {""})
+            if rank[previous["outcome"]] >= rank[outcome]:
+                outcome = previous["outcome"]
+            kind = "+".join(kinds)
         cases[test_id] = {"outcome": outcome, "type": kind}
     return cases
 

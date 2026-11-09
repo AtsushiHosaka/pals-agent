@@ -199,3 +199,28 @@ def test_real_pytest_reports_distinguish_the_exception_type(tmp_path: Path) -> N
     assert same_case["type"] == "AssertionError"
     assert other_case["type"] == "RuntimeError"
     assert missing_case == {"outcome": "error", "type": "FileNotFoundError"}
+
+
+def test_a_teardown_failure_cannot_hide_a_changed_call_failure(tmp_path: Path) -> None:
+    body = (
+        "import pytest\n\n@pytest.fixture\ndef cleanup():\n    yield\n    assert 1 == 2\n\n"
+        "def test_known(cleanup):\n    {call}\n"
+    )
+    anchor = _pytest_report(tmp_path, "anchor", body.format(call="assert 3 == 4"))
+    candidate = _pytest_report(tmp_path, "candidate", body.format(call="raise RuntimeError('x')"))
+    ((anchor_id, anchor_case),) = anchor.items()
+    ((candidate_id, candidate_case),) = candidate.items()
+    assert anchor_case == {"outcome": "failure", "type": "AssertionError"}
+    assert candidate_case == {"outcome": "failure", "type": "AssertionError+RuntimeError"}
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["known_failures"] = [
+        {"id": candidate_id, "cause": "stale_test_double", "reason": "x"}
+    ]
+    manifest["allowed_skips"] = []
+    manifest["allowed_unexecuted_modules"] = []
+    manifest["core_modules"] = []
+    manifest["minimum_cases"] = 1
+    problems, _ = gate.evaluate(candidate, anchor, manifest, {candidate_id.split("::")[0]})
+    assert problems == [
+        f"failure_changed_from_anchor:{candidate_id}:AssertionError->AssertionError+RuntimeError"
+    ]
