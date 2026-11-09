@@ -215,6 +215,12 @@ class ProofPipeline:
     # with ``lean.formal_harness_mismatch``. It reuses the ``repair_budget_exhausted`` reason;
     # a dedicated reason is needed before production use (see docs).
     stop_on_repeated_harness_mismatch: bool = False
+    # ``stop_on_repeated_statement_mismatch`` widens the same rule to the statement-binding
+    # failure: it ends a run whose last two attempts each failed only with
+    # ``lean.formal_harness_mismatch`` and/or ``lean.statement_mismatch`` (mixed pairs count).
+    # When both flags are on, this one subsumes the other. Same ``repair_budget_exhausted``
+    # reason; a dedicated reason is a separate follow-up.
+    stop_on_repeated_statement_mismatch: bool = False
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -844,6 +850,21 @@ class ProofPipeline:
         on_status: StatusCallback | None,
         failure_history: list[frozenset[str]] | None = None,
     ) -> RepairGeneration | None:
+        if self.stop_on_repeated_statement_mismatch and _statement_mismatch_repeated(
+            failure_history or []
+        ):
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code="pals.repair_budget_exhausted",
+                    message=(
+                        "Lean repair stopped early: the last two attempts both failed on "
+                        "the fixed formal statement (statement harness or statement "
+                        "binding) and no other error."
+                    ),
+                )
+            )
+            return None
         if self.stop_on_repeated_harness_mismatch and _harness_mismatch_repeated(
             failure_history or []
         ):
@@ -1560,15 +1581,29 @@ def _format_diagnostic_for_trace(diagnostic: Diagnostic) -> str:
     return f"{diagnostic.severity}{location}{code}: {diagnostic.message}"
 
 
-def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
-    """True when each of the last two failures had exactly the harness-mismatch error."""
+_HARNESS_MISMATCH_CODES = frozenset({"lean.formal_harness_mismatch"})
+_STATEMENT_MISMATCH_CODES = frozenset({"lean.formal_harness_mismatch", "lean.statement_mismatch"})
+
+
+def _mismatch_repeated(history: list[frozenset[str]], allowed_codes: frozenset[str]) -> bool:
+    """True when each of the last two failures has error codes, all within ``allowed_codes``."""
     if len(history) < 2:
         return False
-    return all(
-        {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
-        == {"lean.formal_harness_mismatch"}
-        for fingerprints in history[-2:]
-    )
+    for fingerprints in history[-2:]:
+        codes = {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
+        if not codes or not codes <= allowed_codes:
+            return False
+    return True
+
+
+def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
+    """True when each of the last two failures had exactly the harness-mismatch error."""
+    return _mismatch_repeated(history, _HARNESS_MISMATCH_CODES)
+
+
+def _statement_mismatch_repeated(history: list[frozenset[str]]) -> bool:
+    """True when each of the last two failures had only harness- or statement-mismatch errors."""
+    return _mismatch_repeated(history, _STATEMENT_MISMATCH_CODES)
 
 
 def _with_repair_stagnation(

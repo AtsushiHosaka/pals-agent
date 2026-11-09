@@ -394,6 +394,7 @@ def run_one(
         sketch_mechanical_repair=args.sketch_repair,
         sketch_parallel=args.sketch_parallel,
         stop_on_repeated_harness_mismatch=args.stop_harness_repeat,
+        stop_on_repeated_statement_mismatch=args.stop_statement_repeat,
     )
     usage: list[dict[str, Any]] = []
 
@@ -442,6 +443,7 @@ def run_one(
         "sketch_parallel": args.sketch_parallel,
         "statement_template": args.statement_template,
         "stop_harness_repeat": args.stop_harness_repeat,
+        "stop_statement_repeat": args.stop_statement_repeat,
         "route_model_calls": sum(
             1
             for a in attempts
@@ -517,6 +519,11 @@ def main() -> None:
         "--stop-harness-repeat",
         action="store_true",
         help="ProofPipeline.stop_on_repeated_harness_mismatch",
+    )
+    parser.add_argument(
+        "--stop-statement-repeat",
+        action="store_true",
+        help="ProofPipeline.stop_on_repeated_statement_mismatch",
     )
     parser.add_argument(
         "--sketch-parallel",

@@ -523,6 +523,47 @@ def test_factory_reads_repair_attempt_limit(monkeypatch: pytest.MonkeyPatch) -> 
     assert pipeline.max_repair_attempts == 2
 
 
+def test_stop_on_repeated_mismatch_flags_default_off_and_are_strict_bools(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in (
+        "PALS_STOP_ON_REPEATED_HARNESS_MISMATCH_ENABLED",
+        "PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    settings = AgentSettings.from_env()
+    assert settings.stop_on_repeated_harness_mismatch_enabled is False
+    assert settings.stop_on_repeated_statement_mismatch_enabled is False
+
+    monkeypatch.setenv("PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED", "true")
+    settings = AgentSettings.from_env()
+    assert settings.stop_on_repeated_statement_mismatch_enabled is True
+    assert settings.stop_on_repeated_harness_mismatch_enabled is False
+
+    for bad in ("1", "True", "yes", ""):
+        monkeypatch.setenv("PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED", bad)
+        with pytest.raises(ValueError, match="must be true or false"):
+            AgentSettings.from_env()
+
+
+def test_factory_wires_the_stop_on_repeated_mismatch_flags(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.delenv("PALS_STOP_ON_REPEATED_HARNESS_MISMATCH_ENABLED", raising=False)
+    monkeypatch.delenv("PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED", raising=False)
+    pipeline = build_pipeline(AgentSettings.from_env())
+    assert pipeline.stop_on_repeated_harness_mismatch is False
+    assert pipeline.stop_on_repeated_statement_mismatch is False
+
+    monkeypatch.setenv("PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED", "true")
+    pipeline = build_pipeline(AgentSettings.from_env())
+    assert pipeline.stop_on_repeated_harness_mismatch is False
+    assert pipeline.stop_on_repeated_statement_mismatch is True
+
+
 def test_factory_rejects_missing_embedding_revision(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

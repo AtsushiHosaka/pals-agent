@@ -72,6 +72,9 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         sketch_failure_proceeds_to_prove=settings.sketch_failure_proceeds_to_prove_enabled,
         sketch_mechanical_repair=settings.sketch_mechanical_repair_enabled,
         stop_on_repeated_harness_mismatch=settings.stop_on_repeated_harness_mismatch_enabled,
+        stop_on_repeated_statement_mismatch=(
+            settings.stop_on_repeated_statement_mismatch_enabled
+        ),
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,
         request_linked_typed_retriever=(
