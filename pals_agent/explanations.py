@@ -1748,6 +1748,29 @@ Give concise checkable evidence, not hidden chain-of-thought.
 """
 
 
+_OUTPUT_REVIEW_EVIDENCE_PRIORITY_INSTRUCTION = """FIRST: compare the request with the \
+candidate's stated setup
+before assessing its proof. Compare the actual overview and used premises with the requested
+domains, quantifiers and hypothesis strength. A valid proof or conclusion does not \
+excuse a strengthened setup.
+For approval, quote a setup span and explain why its assumptions match the request, in addition
+to the existing conclusion check. Do not merely summarize a successful proof.
+Then assess the mathematics. Accept immediate consequences of definitions, equality symmetry
+and substitution, and elementary arithmetic without demanding that every evident side condition
+be repeated. Keep rejecting wrong mathematics, inapplicable laws, changed assumptions, circular
+reasoning and essential missing inferences.
+For a formatting objection, quote the actual offending span and its field. TeX \
+whitespace inside matched math delimiters does not move text outside.
+Do not invent a second occurrence outside those delimiters. Still reject actual bare \
+expressions, broken delimiters or invalid TeX.
+The exact-reference packet below is computed using the supplied source and existing validator,
+including blank lines and comments. Do not override a passed exact-coordinate fact by \
+recounting lines.
+A failed check is not a pass. These facts do not certify the mathematics, citation relevance or
+claims about hidden proof steps; review those independently under all existing requirements.
+"""
+
+
 def _output_review_prompt(
     *,
     theorem_statement: str,
@@ -1887,7 +1910,34 @@ def _output_review_prompt(
         )
     )
     source_correspondence = "" if checklist_review else _SOURCE_CORRESPONDENCE_INSTRUCTION
-    return f"""You are an independent review session for learner-facing mathematical output.
+    evidence_priority = ""
+    if clarification is None:
+        checked_references = 0
+        invalid_reference_fields = []
+        for section_index, section in enumerate(explanation.sections):
+            for reference_index, reference in enumerate(section.references):
+                checked_references += 1
+                try:
+                    _validated_reference(asdict(reference), lean_code)
+                except (KeyError, TypeError, ValueError):
+                    invalid_reference_fields.append(
+                        f"explanation.sections[{section_index}].references[{reference_index}]"
+                    )
+        exact_reference_check = {
+            "checked_references": checked_references,
+            "all_ranges_and_excerpts_match": (
+                bool(checked_references) and not invalid_reference_fields
+            ),
+            "invalid_reference_fields": invalid_reference_fields,
+        }
+        evidence_priority = (
+            f"{_OUTPUT_REVIEW_EVIDENCE_PRIORITY_INSTRUCTION}\n"
+            "BEGIN EXACT REFERENCE CHECK\n"
+            f"{json.dumps(exact_reference_check, sort_keys=True)}\n"
+            "END EXACT REFERENCE CHECK\n\n"
+        )
+    return f"""{evidence_priority}You are an independent review session for learner-facing \
+mathematical output.
 {ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
 candidate against the verified Lean source and the learner theorem statement. A clarification
