@@ -97,9 +97,12 @@ class ImportPlan:
 
 
 class ImportIndex:
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, *, check_same_thread: bool = True) -> None:
+        """``check_same_thread=False``: callers that serialize their calls may share one index."""
         self.path = Path(path)
-        self.db = sqlite3.connect(f"file:{self.path}?mode=ro", uri=True)
+        self.db = sqlite3.connect(
+            f"file:{self.path}?mode=ro", uri=True, check_same_thread=check_same_thread
+        )
         self._load_graph()
 
     # -- graph ---------------------------------------------------------------------------
@@ -328,9 +331,14 @@ class ImportIndex:
         """Plan for a Lean statement: uses its `open`/`namespace` lines and its own imports."""
         shape = query_shape(_strip_header(source))
         identifiers = [*shape["conclusion_constants"], *shape["hypothesis_constants"]]
-        opens = [n for body in _OPEN.findall(source) for n in _open_names(body)]
-        namespaces = _NAMESPACE.findall(source)
+        opens, namespaces = self.scope_of(source)
         return self.plan(identifiers, opens, namespaces, visibility=visibility)
+
+    @staticmethod
+    def scope_of(source: str) -> tuple[list[str], list[str]]:
+        """The `open`/`export` names and `namespace` names a source declares (lexically)."""
+        opens = [n for body in _OPEN.findall(source) for n in _open_names(body)]
+        return opens, _NAMESPACE.findall(source)
 
     def namespace_modules(self, namespace: str) -> list[str]:
         """Modules that declare something under `namespace.`."""

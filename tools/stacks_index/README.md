@@ -122,6 +122,31 @@ modules, changed edges and moved declarations, then rerun `validate_imports` and
 index is valid only for the commit in its manifest; never serve an index built from another
 commit than the one the verifier image builds.
 
+### Using a plan in the verifier (opt-in, off by default)
+
+`pals_agent.lean_import_plan` connects `plan` to the verifier. With `PALS_LEAN_IMPORT_PLAN=true`
+and `PALS_LEAN_IMPORT_INDEX=/abs/path/import_index.sqlite` (a profile that pins Stacks; the index
+provenance must carry the profile's `stacks_commit` and `mathlib_commit`, or startup is refused),
+the proof-job verifier replaces the header imports of a source by the plan for its theorem
+statements and compiles that. Only the header changes (line numbers are kept). The audit runs over
+the same imports. Optional `PALS_LEAN_IMPORT_PLAN_BASE_MODULES=Mod.A,Mod.B` adds modules to every
+plan (for example a tactic library the proofs need).
+
+The source as written, with all of its own imports, is verified once more when
+
+* there is no plan: no import line to replace, `module`/`prelude`/modified imports, own `def`s,
+  no resolved constant, a qualified or capitalised name the index does not know, two definitions of
+  one name, or a module the library profile does not allow (`declined.<reason>`, never compiled
+  over a plan);
+* the compile over the plan fails with `unknown identifier`, `unknown namespace`, `unknown
+  constant`, `unknown tactic`, or a module that is not built (`retried.<reason>`).
+
+The retry gets what is left of the one 300 s deadline. A misspelled lemma in a proof also looks
+like `unknown identifier`, so a failing proof costs two compiles. One `lean_import_plan
+status=... loaded_modules=...` log line per verification carries the closed status code and a
+count; it never contains a question, Lean source, module name or message. The verifier image must
+ship `tools/stacks_index` and the index file; this repository's image does not yet.
+
 ### Checks that need no Lean build
 
 ```bash

@@ -46,6 +46,50 @@ def test_lake_environment_reuse_is_strictly_opt_in(monkeypatch: pytest.MonkeyPat
         HttpVerifierRuntimeSettings.from_env()
 
 
+def test_import_planning_is_strictly_opt_in(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_required_environment(monkeypatch)
+    for name in (
+        "PALS_LEAN_IMPORT_PLAN", "PALS_LEAN_IMPORT_INDEX", "PALS_LEAN_IMPORT_PLAN_BASE_MODULES",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    off = HttpVerifierRuntimeSettings.from_env()
+    assert (off.import_plan_index, off.import_plan_base_modules) == (None, ())
+    # the index path alone does not turn it on
+    monkeypatch.setenv("PALS_LEAN_IMPORT_INDEX", "/index/import_index.sqlite")
+    assert HttpVerifierRuntimeSettings.from_env().import_plan_index is None
+
+    monkeypatch.setenv("PALS_LEAN_IMPORT_PLAN", "true")
+    monkeypatch.setenv("PALS_LEAN_IMPORT_PLAN_BASE_MODULES", "Mathlib.Tactic,Mathlib.Order")
+    on = HttpVerifierRuntimeSettings.from_env()
+    assert on.import_plan_index == Path("/index/import_index.sqlite")
+    assert on.import_plan_base_modules == ("Mathlib.Tactic", "Mathlib.Order")
+
+    monkeypatch.setenv("PALS_LEAN_IMPORT_PLAN", "1")
+    with pytest.raises(ValueError, match="PALS_LEAN_IMPORT_PLAN must be true or false"):
+        HttpVerifierRuntimeSettings.from_env()
+    monkeypatch.setenv("PALS_LEAN_IMPORT_PLAN", "true")
+    monkeypatch.delenv("PALS_LEAN_IMPORT_INDEX")
+    with pytest.raises(ValueError, match="PALS_LEAN_IMPORT_INDEX"):
+        HttpVerifierRuntimeSettings.from_env()
+    monkeypatch.setenv("PALS_LEAN_IMPORT_INDEX", "relative/index.sqlite")
+    with pytest.raises(ValueError, match="PALS_LEAN_IMPORT_INDEX"):
+        HttpVerifierRuntimeSettings.from_env()
+
+
+def test_import_plan_events_are_logged_without_content(caplog: pytest.LogCaptureFixture) -> None:
+    from pals_agent.lean_environment import VerificationTiming
+
+    with caplog.at_level("INFO", logger="pals_agent.lean_verifier.http_runtime"):
+        http_runtime._log_verification_timing(VerificationTiming(
+            stage="import_plan", elapsed_ms=2.0, import_plan="retried.unknown_identifier",
+            import_plan_modules=812,
+        ))
+
+    assert caplog.messages == [
+        "lean_import_plan status=retried.unknown_identifier loaded_modules=812 elapsed_ms=2.000"
+    ]
+
+
 def test_concurrent_compiles_default_to_one_and_accept_only_the_bounded_range(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
