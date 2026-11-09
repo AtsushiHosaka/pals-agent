@@ -1690,6 +1690,47 @@ Copy every `excerpt` exactly from the referenced `text` values, preserving leadi
 spaces and joining multi-line ranges with a single newline."""
 
 
+_OUTPUT_REVIEW_GROUNDING_INSTRUCTION = """Ground the verdict in the actual candidate and request.
+For each criticism in rationale or a checklist note, identify its candidate JSON field path,
+quote a short exact span from that field, and explain the specific invalid inference or
+violated requirement. For an omission, quote existing nearby text and name the missing
+requirement; never invent missing words. An exact quotation alone does not prove a defect.
+Before alleging repetition, identify BOTH passages by field path and exact quotation, and
+identify the same substantive derivation or complete final calculation performed again.
+Using an established premise in a new inference, or concluding the negation of an assumption
+after deriving a contradiction, is not another derivation of that premise or contradiction.
+A permitted brief statement of the established result is not a repeated proof.
+Check the actual operation and equality before objecting to a named law. A valid identity can
+have more than one standard descriptive name; do not invent an exclusive naming convention.
+Keep rejecting a true equality justified by an inapplicable law or an actually false identity.
+In a contradiction argument, reason under the stated temporary assumptions. A case that is
+impossible under those assumptions can validly lead to a contradiction; an extra case split
+is not required when the uniform argument already covers it. Identify which premise supplies
+each hypothesis, including positivity, rather than attributing it to a different premise.
+This does not excuse a false identity, an unsupported inference, or a contradiction merely
+asserted without deriving it.
+The one-sided limit of the difference quotient at a point is that point's one-sided
+derivative when the finite limit exists. Do not reject a correct computation merely because
+it uses this defining expression instead of a preferred derivative label. Conversely, limits
+of the function itself do not establish derivative limits.
+Formatting rules apply to mathematical expressions, including isolated variables, not to
+ordinary mathematical words such as rational, prime or continuous. Preserve existing checks
+for actual unformatted expressions, wrong output language and invalid source references.
+In checklist reviews, do not reassess checks explicitly delegated to code or invent new IDs.
+For an explanation, inspect explanation.conclusion itself: it must state the actual result
+established under the requested hypotheses, not merely say that the proof is complete. For
+either verdict, quote a short exact span from that field in rationale and say whether it
+supplies that result. A correct body cannot excuse a missing result, and a correct conclusion
+cannot excuse an invalid body or source mismatch. For a clarification, apply the corresponding
+check to clarification.answer against its actual question and saved context instead.
+Report one decisive supported defect rather than speculative complaints. Every additional
+criticism must independently meet these evidence requirements. Check all applicable semantic,
+source and presentation requirements before approval, and make the verdict consistent with
+the actual findings. Preserve the required response schema and checklist decision rules.
+Give concise checkable evidence, not hidden chain-of-thought.
+"""
+
+
 def _output_review_prompt(
     *,
     theorem_statement: str,
@@ -1853,6 +1894,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
 {output_quality_review}{semantic_requirement}
+{_OUTPUT_REVIEW_GROUNDING_INSTRUCTION}
 Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
