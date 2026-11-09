@@ -6,10 +6,10 @@ on every test, with no unexplained failure, skip or unexecuted module:
 
 * a failing or erroring candidate test must be listed in the reviewed baseline manifest
   with a cause, AND must fail the same way on the anchor in the same environment;
-* a skipped test must be listed in the manifest with a reason;
+* a skipped test (core modules included) must be listed in the manifest with a reason;
 * every test module under tests/ must execute at least one non-skipped case, unless the
   manifest lists it with a reason;
-* the declared core runtime modules must execute with no failure and no skip;
+* the declared core runtime modules must execute with no failure and no unlisted skip;
 * a missing, unparsable or too-small report blocks.
 
 Manifest entries that now pass are reported as stale but never excuse anything.
@@ -25,11 +25,10 @@ from pathlib import Path
 CAUSES = frozenset({
     "lean_toolchain_unavailable",
     "cross_repository_fixture_missing",
-    "catalog_artifact_digest_stale",
+    "stale_catalog_or_profile_expectation",
     "token_claim_expectation_mismatch",
     "stale_test_double",
     "stale_timing_expectation",
-    "platform_or_optional_dependency",
 })
 BAD = ("failure", "error")
 
@@ -107,11 +106,9 @@ def evaluate(
                 problems.append(
                     f"failure_changed_from_anchor:{test_id}:{anchor[test_id]['type']}->{result['type']}"
                 )
-        elif outcome == "skipped":
-            if module in core:
-                problems.append("core_module_skip:" + test_id)
-            elif test_id not in skips:
-                problems.append("unlisted_skip:" + test_id)
+        elif outcome == "skipped" and test_id not in skips:
+            prefix = "core_module_skip:" if module in core else "unlisted_skip:"
+            problems.append(prefix + test_id)
     unexecuted = {entry["id"]: entry for entry in manifest["allowed_unexecuted_modules"]}
     if any(not entry.get("reason", "").strip() for entry in unexecuted.values()):
         problems.append("manifest_unexecuted_module_without_reason")

@@ -103,7 +103,7 @@ def test_an_unlisted_skip_is_blocked() -> None:
 
 def test_a_skip_in_a_core_module_is_blocked() -> None:
     candidate, anchor = baseline()
-    candidate["tests.unit.test_core::test_s"] = case("skipped")
+    candidate["tests.unit.test_core::test_s"] = case("skipped")  # not in allowed_skips
     assert run(candidate, anchor) == ["core_module_skip:tests.unit.test_core::test_s"]
 
 
