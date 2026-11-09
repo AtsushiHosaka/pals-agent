@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -31,6 +32,16 @@ CAUSES = frozenset({
     "stale_timing_expectation",
 })
 BAD = ("failure", "error")
+_SIGNATURE = re.compile(r'^(?:failed on (?:setup|teardown) with ")?([A-Za-z_][\w.]*)(?=:|\s|$)')
+
+
+def failure_signature(message: str) -> str:
+    """Name the exception class from pytest's JUnit message (it has no `type` attribute)."""
+    text = (message or "").strip()
+    if text.startswith("assert"):
+        return "AssertionError"
+    match = _SIGNATURE.match(text)
+    return match[1].rsplit(".", 1)[-1] if match else "unknown"
 
 
 def read_report(path: Path) -> dict[str, dict[str, str]]:
@@ -43,7 +54,7 @@ def read_report(path: Path) -> dict[str, dict[str, str]]:
         for tag in BAD:
             node = case.find(tag)
             if node is not None:
-                outcome, kind = tag, node.attrib.get("type", "")
+                outcome, kind = tag, failure_signature(node.attrib.get("message", ""))
                 break
         else:
             if case.find("skipped") is not None:

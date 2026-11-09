@@ -163,3 +163,39 @@ def test_the_committed_manifest_only_uses_known_causes() -> None:
     assert all(entry["cause"] in gate.CAUSES and entry["reason"].strip()
                for entry in manifest["known_failures"])
     assert all((_ROOT / path).is_file() for path in manifest["core_modules"])
+
+
+def _pytest_report(tmp_path: Path, name: str, body: str) -> dict[str, dict[str, str]]:
+    import subprocess
+
+    directory = tmp_path / name
+    directory.mkdir()
+    (directory / "test_probe.py").write_text(body)
+    report = directory / "report.xml"
+    subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "--junitxml", str(report),
+         str(directory / "test_probe.py")],
+        cwd=directory, capture_output=True, check=False, timeout=60,
+    )
+    return gate.read_report(report)
+
+
+def test_real_pytest_reports_distinguish_the_exception_type(tmp_path: Path) -> None:
+    anchor = _pytest_report(tmp_path, "anchor", "def test_known():\n    assert 1 == 2\n")
+    same = _pytest_report(tmp_path, "same", "def test_known():\n    assert 3 == 4\n")
+    other = _pytest_report(
+        tmp_path, "other", "def test_known():\n    raise RuntimeError('different')\n"
+    )
+    missing = _pytest_report(
+        tmp_path, "missing",
+        "import pytest\n\n@pytest.fixture\ndef broken():\n    raise FileNotFoundError('x')\n\n"
+        "def test_known(broken):\n    pass\n",
+    )
+    (anchor_case,) = anchor.values()
+    (same_case,) = same.values()
+    (other_case,) = other.values()
+    (missing_case,) = missing.values()
+    assert anchor_case == {"outcome": "failure", "type": "AssertionError"}
+    assert same_case["type"] == "AssertionError"
+    assert other_case["type"] == "RuntimeError"
+    assert missing_case == {"outcome": "error", "type": "FileNotFoundError"}
