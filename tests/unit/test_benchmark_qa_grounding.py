@@ -27,6 +27,11 @@ STATEMENT = "実数において1が1に等しいことを証明してくださ�
 X_SQUARED_SOURCE = (
     "import Mathlib\n\ntheorem target : Continuous (fun x : ℝ => x ^ 2) := by\n  continuity\n"
 )
+OPAQUE_ABS_SOURCE = (
+    "import Mathlib\n\n"
+    "example : ¬ DifferentiableAt ℝ (abs : ℝ → ℝ) 0 := by\n"
+    "  exact not_differentiableAt_abs_zero\n"
+)
 
 
 class ReviewBoundary:
@@ -239,3 +244,93 @@ def test_pq016_unchanged_explainer_rejects_forged_source_references() -> None:
         explainer.explain(theorem_statement=STATEMENT, lean_code=SOURCE, verified=True)
     assert len(client.prompts) == 2
     assert all("Ground the verdict" not in rendered for rendered in client.prompts)
+
+
+def opaque_explanation(summary: str) -> ProofExplanation:
+    return replace(
+        explanation(),
+        overview=r"Let $f(x)=|x|$ on $\mathbb{R}$ and consider $0$.",
+        sections=(
+            ExplanationSection(
+                id="one-sided-quotients",
+                title="internal",
+                summary=summary,
+                references=(
+                    LeanLineReference(
+                        3,
+                        4,
+                        "example : ¬ DifferentiableAt ℝ (abs : ℝ → ℝ) 0 := by\n"
+                        "  exact not_differentiableAt_abs_zero",
+                    ),
+                ),
+            ),
+        ),
+        conclusion=r"Thus $f$ is not differentiable at $0$.",
+    )
+
+
+def test_pq016_opaque_lemma_review_receives_math_expansion_and_coarse_anchor_rule() -> None:
+    summary = (
+        r"For $h>0$, $|h|/h=1$; for $h<0$, $|h|/h=-1$. "
+        r"These are the right and left limits of the difference quotient at $0$. "
+        r"They differ, so its two-sided limit does not exist."
+    )
+    candidate = opaque_explanation(summary)
+    client = ReviewBoundary(
+        '{"approved": true, "rationale": "The ordinary derivation proves the exact claim."}'
+    )
+    decision = reviewer(client).review_explanation(
+        theorem_statement="Explain why absolute value is not differentiable at zero.",
+        lean_code=OPAQUE_ABS_SOURCE,
+        explanation=candidate,
+        language="en",
+    )
+    assert decision.kind == "explanation"
+    rendered = client.prompts[0]
+    assert OPAQUE_ABS_SOURCE in rendered
+    assert summary in rendered
+    assert "opaque verified library lemma" in rendered
+    assert "intermediate\ncalculations are absent from the supplied Lean lines" in rendered
+    assert "Attaching that coarse reference" in rendered
+    assert "does NOT itself claim" in rendered
+    assert "Do not demand unfolded lemma bodies" in rendered
+    assert "Check every explanatory inference under the\nactual hypotheses" in rendered
+    assert "A citation cannot excuse any such defect" in rendered
+
+
+@pytest.mark.parametrize(
+    "summary,rationale",
+    [
+        (
+            r"For $h<0$, $|h|/h=1$, so both one-sided derivatives equal $1$.",
+            "The negative-h quotient is mathematically false; opacity cannot excuse it.",
+        ),
+        (
+            "The source records and separately Lean-verifies each intermediate quotient limit.",
+            "The candidate explicitly invents separately verified source steps.",
+        ),
+    ],
+)
+def test_pq016_opaque_lemma_never_overrides_wrong_math_or_fabricated_source_rejection(
+    summary: str,
+    rationale: str,
+) -> None:
+    client = ReviewBoundary(
+        json.dumps({"approved": False, "rationale": rationale}),
+        '{"approved": true, "rationale": "must not become an opacity fallback"}',
+    )
+    with pytest.raises(ProofOutputReviewError) as caught:
+        reviewer(client).review_explanation(
+            theorem_statement="Explain why absolute value is not differentiable at zero.",
+            lean_code=OPAQUE_ABS_SOURCE,
+            explanation=opaque_explanation(summary),
+            language="en",
+        )
+    rendered = client.prompts[0]
+    assert summary in rendered
+    assert "Keep rejecting wrong mathematics" in rendered
+    assert "explicit claims that unseen intermediate" in rendered
+    assert "steps were recorded or separately Lean-verified" in rendered
+    assert caught.value.category == "rejected"
+    assert len(client.prompts) == 1
+    assert len(client.responses) == 1

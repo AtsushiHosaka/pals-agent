@@ -1695,6 +1695,16 @@ For each criticism in rationale or a checklist note, identify its candidate JSON
 quote a short exact span from that field, and explain the specific invalid inference or
 violated requirement. For an omission, quote existing nearby text and name the missing
 requirement; never invent missing words. An exact quotation alone does not prove a defect.
+A reference to an opaque verified library lemma or one automated proof step anchors its
+exact theorem and hypotheses, not an available trace of its hidden proof. A mathematically
+valid explanatory derivation of that same claim is allowed even when its intermediate
+calculations are absent from the supplied Lean lines. Attaching that coarse reference to a
+summary does NOT itself claim that each explanatory calculation appears in the source or was
+separately verified by Lean. Do not demand unfolded lemma bodies, tactic states or additional
+intermediate Lean lines for such a derivation. Check every explanatory inference under the
+actual hypotheses. Keep rejecting wrong mathematics, invented hypotheses, a different or
+stronger claim, fabricated source excerpts, and explicit claims that unseen intermediate
+steps were recorded or separately Lean-verified. A citation cannot excuse any such defect.
 Before alleging repetition, identify BOTH passages by field path and exact quotation, and
 identify the same substantive derivation or complete final calculation performed again.
 Using an established premise in a new inference, or concluding the negation of an assumption
