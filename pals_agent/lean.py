@@ -31,6 +31,7 @@ from pals_agent.lean_environment import (
     materialize_lake_environment,
     parse_lake_environment,
 )
+from pals_agent.lean_import_plan import APPLIED, ImportPlanning, retried_status
 from pals_agent.lean_profiles import LibraryProfile
 from pals_agent.lean_source_policy import (
     declared_theorem_names,
@@ -106,6 +107,9 @@ class LeanVerifier:
     literal_admission_command: bool = False
     # None keeps the unrestricted default profile; see ``pals_agent.lean_profiles``.
     library_profile: LibraryProfile | None = None
+    # Opt-in (``None`` = off): verify over a proposed small import header and, when that fails the
+    # way a missing import does, once more over the source as written. See ``lean_import_plan``.
+    import_planning: ImportPlanning | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "scratch_dir", Path(self.scratch_dir))
@@ -132,7 +136,11 @@ class LeanVerifier:
     def _timed_verify(self, lean_code: str, *, allow_sorry: bool) -> VerificationResult:
         started = time.monotonic()
         try:
-            return self._verify(lean_code, allow_sorry=allow_sorry)
+            if self.import_planning is None:
+                return self._verify(lean_code, allow_sorry=allow_sorry)
+            return self._verify_over_import_plan(
+                self.import_planning, lean_code, allow_sorry=allow_sorry
+            )
         except LeanCompileInterrupted as error:
             return VerificationResult(
                 success=False,
@@ -154,6 +162,36 @@ class LeanVerifier:
         finally:
             self._observe("total", started)
 
+    def _verify_over_import_plan(
+        self, planning: ImportPlanning, lean_code: str, *, allow_sorry: bool
+    ) -> VerificationResult:
+        planning_started = time.monotonic()
+        planned = planning.prepare(lean_code, self.library_profile)
+        if planned.source is None:
+            self._observe_import_plan(planned.status, planning_started, None)
+            return self._verify(lean_code, allow_sorry=allow_sorry)
+        result = self._verify(lean_code, allow_sorry=allow_sorry, compile_source=planned.source)
+        reason = planning.retry_reason(result)
+        if reason is None:
+            self._observe_import_plan(APPLIED, planning_started, planned.loaded_modules)
+            return result
+        self._observe_import_plan(
+            retried_status(reason), planning_started, planned.loaded_modules
+        )
+        # One more verification, over every import the source wrote, within what is left of the
+        # one deadline a request has.
+        remaining = float(self.timeout_seconds) - (time.monotonic() - planning_started)
+        if remaining <= 0:
+            return result
+        return self._verify(lean_code, allow_sorry=allow_sorry, timeout_seconds=remaining)
+
+    def _observe_import_plan(self, status: str | None, started: float, modules: int | None) -> None:
+        if self.timing_observer is not None and status is not None:
+            self.timing_observer(VerificationTiming(
+                stage="import_plan", elapsed_ms=(time.monotonic() - started) * 1000,
+                import_plan=status, import_plan_modules=modules,
+            ))
+
     def _observe(self, stage: str, started: float, status: str | None = None) -> None:
         if status is not None:
             from pals_agent import step_timing
@@ -167,7 +205,21 @@ class LeanVerifier:
                 cache_status=status,
             ))
 
-    def _verify(self, lean_code: str, *, allow_sorry: bool) -> VerificationResult:
+    def _verify(
+        self,
+        lean_code: str,
+        *,
+        allow_sorry: bool,
+        compile_source: str | None = None,
+        timeout_seconds: float | None = None,
+    ) -> VerificationResult:
+        """Verify ``lean_code``; ``compile_source`` is the same source with another import header.
+
+        Every policy check runs on the source as written and again on what is compiled, so a
+        header rewritten by an import plan can never hide an import the profile forbids.
+        """
+        budget = float(self.timeout_seconds if timeout_seconds is None else timeout_seconds)
+        source = lean_code if compile_source is None else compile_source
         checked_code = _strip_lean_comments_and_strings(lean_code)
 
         placeholder = _PLACEHOLDER_RE.search(checked_code)
@@ -205,9 +257,13 @@ class LeanVerifier:
                 elapsed_ms=0,
             )
 
-        violation = find_source_violation(lean_code)
-        if violation is None and self.library_profile is not None:
-            violation = self.library_profile.import_violation(lean_code)
+        violation = None
+        for checked in dict.fromkeys((lean_code, source)):
+            violation = find_source_violation(checked)
+            if violation is None and self.library_profile is not None:
+                violation = self.library_profile.import_violation(checked)
+            if violation is not None:
+                break
         if violation is not None:
             return VerificationResult(
                 success=False,
@@ -284,14 +340,14 @@ class LeanVerifier:
             home_dir = temporary_dir / "home"
             home_dir.mkdir(mode=0o700)
             lean_file = temporary_dir / "Main.lean"
-            lean_file.write_text(lean_code, encoding="utf-8")
+            lean_file.write_text(source, encoding="utf-8")
             lean_file.chmod(0o400)
             # A sketch contains holes by construction and never becomes a verified result.
             audited = not allow_sorry
             # Receipts attest the literal command, and an `example` leaves no constant to audit.
-            audit_source = with_auditable_examples(lean_code)
+            audit_source = with_auditable_examples(source)
             separate_audit_compile = (
-                self.literal_admission_command or audit_source != lean_code
+                self.literal_admission_command or audit_source != source
             )
             olean_file = temporary_dir / "Main.olean"
             command, cwd = self._command_for(
@@ -303,13 +359,13 @@ class LeanVerifier:
             child_environment = self._child_environment(temporary_dir, home_dir)
 
             started_at = time.monotonic()
-            deadline = started_at + float(self.timeout_seconds)
+            deadline = started_at + budget
             command, child_environment = self._reuse_environment(
                 command, child_environment, lean_binary=lean_binary,
                 lake_binary=lake_binary, temporary_dir=temporary_dir, deadline=deadline,
             )
             remaining = (
-                float(self.timeout_seconds) if self.lake_environment_cache is None
+                budget if self.lake_environment_cache is None
                 else deadline - time.monotonic()
             )
             compile_started = time.monotonic()
@@ -331,7 +387,7 @@ class LeanVerifier:
             if audited and _compiler_accepted(completed):
                 audit_started = time.monotonic()
                 audit_result = self._run_trusted_audit(
-                    lean_code,
+                    source,
                     separate_compile_source=audit_source if separate_audit_compile else None,
                     olean_file=olean_file,
                     command=command,
@@ -354,7 +410,7 @@ class LeanVerifier:
                     Diagnostic(
                         severity="error",
                         code="lean.timeout",
-                        message=f"Lean timed out after {self.timeout_seconds:.1f}s.",
+                        message=f"Lean timed out after {budget:.1f}s.",
                     )
                 ],
                 stdout=stdout,

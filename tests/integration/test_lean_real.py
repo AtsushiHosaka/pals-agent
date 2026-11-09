@@ -10,6 +10,7 @@ import pytest
 
 from pals_agent.lean import LeanVerifier
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
+from pals_agent.lean_import_plan import ImportPlanning, ImportSuggestion
 from pals_agent.synthetic_geometry import _audit, proof_source
 
 
@@ -132,3 +133,33 @@ def _available_mathlib_project() -> Path:
     if value is None or not (Path(value) / "lake-manifest.json").is_file():
         pytest.skip("An explicit pinned Mathlib project is not configured")
     return Path(value)
+
+
+class _FixedSuggester:
+    def __init__(self, *imports: str) -> None:
+        self._imports = imports
+
+    def suggest(self, source: str) -> ImportSuggestion:
+        return ImportSuggestion(imports=self._imports, loaded_modules=1)
+
+
+_JSON_THEOREM = "import Lean.Data.Json\n\ntheorem t (j : Lean.Json) : j = j := rfl\n"
+
+
+def test_real_lean_import_plan_is_applied_and_retried_over_the_written_imports() -> None:
+    lean_binary = _available_lean_binary()
+    for planned, status in (
+        ("Lean.Data.Json", "applied"),
+        ("Std.Data.HashMap.Basic", "retried.unknown_identifier"),
+    ):
+        timings: list[VerificationTiming] = []
+        result = LeanVerifier(
+            lean_binary=lean_binary,
+            elan_home=str(Path(lean_binary).parent.parent),
+            timing_observer=timings.append,
+            import_planning=ImportPlanning(_FixedSuggester(planned)),
+        # A sketch skips the audit program, which is pinned to the default profile's Lean.
+        ).verify_sketch(_JSON_THEOREM.replace("import Lean.Data.Json", "import Lean"))
+
+        assert result.success is True
+        assert [t.import_plan for t in timings if t.stage == "import_plan"] == [status]

@@ -36,6 +36,10 @@ class VerificationTiming:
     stage: str
     elapsed_ms: float
     cache_status: str | None = None
+    # Only on the ``import_plan`` stage: a ``lean_import_plan.STATUS_CODES`` member and the number
+    # of modules the plan loads. Never a source, a module name or a message.
+    import_plan: str | None = None
+    import_plan_modules: int | None = None
 
 
 def environment_identity(

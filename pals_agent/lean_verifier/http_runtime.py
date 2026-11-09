@@ -14,6 +14,7 @@ import boto3  # type: ignore[import-untyped]
 
 from pals_agent.lean import LeanVerifier, enable_orphan_reaping
 from pals_agent.lean_environment import LakeEnvironmentCache, VerificationTiming
+from pals_agent.lean_import_index import build_import_planning
 from pals_agent.lean_profiles import (
     LibraryProfile,
     resolve_profile,
@@ -79,6 +80,10 @@ class HttpVerifierRuntimeSettings:
     max_concurrent_compiles: int = 1
     # One verifier process serves one profile; omission is the default profile.
     library_profile: LibraryProfile = field(default_factory=resolve_profile)
+    # Opt-in import planning (``PALS_LEAN_IMPORT_PLAN=true``): the path of the import index and the
+    # modules every plan also imports. ``None`` keeps verification over the source's own imports.
+    import_plan_index: Path | None = None
+    import_plan_base_modules: tuple[str, ...] = ()
 
     @classmethod
     def from_env(cls) -> HttpVerifierRuntimeSettings:
@@ -100,6 +105,8 @@ class HttpVerifierRuntimeSettings:
             library_profile=resolve_profile(
                 _optional("PALS_LEAN_LIBRARY_PROFILE")
             ),
+            import_plan_index=_import_plan_index(),
+            import_plan_base_modules=_import_plan_base_modules(),
             binding=VerifierDeploymentBinding(
                 release_id=release_id,
                 deployment_binding_sha256=_required("PALS_VERIFIER_DEPLOYMENT_BINDING_SHA256"),
@@ -143,6 +150,17 @@ def main() -> None:
             settings.tls,
             reader=reader,
         )
+        # Only the proof-job verifier plans imports. The admission verifier keeps the literal
+        # command its receipts attest.
+        import_planning = (
+            None
+            if settings.import_plan_index is None
+            else build_import_planning(
+                settings.import_plan_index,
+                settings.library_profile,
+                settings.import_plan_base_modules,
+            )
+        )
         verifier = LeanVerifier(
             project_dir=settings.project_dir,
             timeout_seconds=settings.timeout_seconds,
@@ -152,6 +170,7 @@ def main() -> None:
             ),
             timing_observer=_log_verification_timing,
             library_profile=settings.library_profile,
+            import_planning=import_planning,
         )
         _warm_lake_environment(verifier, enabled=settings.reuse_lake_environment)
         server = create_server(
@@ -210,6 +229,24 @@ def _reuse_lake_environment() -> bool:
     return value == "true"
 
 
+def _import_plan_index() -> Path | None:
+    """Omission keeps import planning off; ``true`` additionally needs the index path."""
+    value = os.getenv("PALS_LEAN_IMPORT_PLAN", "false")
+    if value not in {"true", "false"}:
+        raise ValueError("PALS_LEAN_IMPORT_PLAN must be true or false")
+    if value == "false":
+        return None
+    index = _optional("PALS_LEAN_IMPORT_INDEX")
+    if index is None or not Path(index).is_absolute():
+        raise ValueError("PALS_LEAN_IMPORT_INDEX must be an absolute path")
+    return Path(index)
+
+
+def _import_plan_base_modules() -> tuple[str, ...]:
+    value = _optional("PALS_LEAN_IMPORT_PLAN_BASE_MODULES")
+    return () if value is None else tuple(part for part in value.split(",") if part)
+
+
 def _warm_lake_environment(verifier: LeanVerifier, *, enabled: bool) -> None:
     """Resolve Lake's environment before readiness so the first request does not pay for it.
 
@@ -235,6 +272,12 @@ def _max_concurrent_compiles() -> int:
 
 
 def _log_verification_timing(event: VerificationTiming) -> None:
+    if event.import_plan is not None:
+        _LOGGER.info(
+            "lean_import_plan status=%s loaded_modules=%s elapsed_ms=%.3f",
+            event.import_plan, event.import_plan_modules, event.elapsed_ms,
+        )
+        return
     _LOGGER.info(
         "lean_stage stage=%s elapsed_ms=%.3f environment_cache=%s",
         event.stage, event.elapsed_ms, event.cache_status or "none",
