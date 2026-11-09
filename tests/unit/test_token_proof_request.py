@@ -374,9 +374,13 @@ def test_recipe_hit_binds_stored_answer_qa_to_fresh_metered_correspondence_call(
     assert payload["outcome"] == "answered" and payload["answer"]["text"] == RECIPE["answer"]
     assert events == ["count", "permit", "generate", "receipt"] * 3
     qa = payload["private_evidence"]["token_qa"]
-    assert qa["call_id"] == api.receipts[-1]["call_id"]
+    # The scope assessment and exact-judgment reviews run in parallel, so receipt order is
+    # not defined. Bind the stored QA to the one permitted answer-QA call and its receipt.
+    qa_permits = [permit for permit in api.permits if permit["model_role"] == "token_answer_qa"]
+    assert len(qa_permits) == 1
+    assert qa["call_id"] == qa_permits[0]["call_id"]
+    assert [receipt["call_id"] for receipt in api.receipts].count(qa["call_id"]) == 1
     assert qa["answer_sha256"] == RECIPE["answer_sha256"]
-    assert api.permits[-1]["model_role"] == "token_answer_qa"
     assert len(payload["usage"]) == 3
     receipt = payload["private_evidence"]["recipe_correspondence"]
     assert receipt["claim_id"] == CLAIM_ID and receipt["lean_sha256"] == RECIPE["lean_sha256"]
