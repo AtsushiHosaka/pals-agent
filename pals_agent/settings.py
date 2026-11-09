@@ -66,6 +66,7 @@ class AgentSettings:
     sketch_mechanical_repair_enabled: bool = False
     fixed_statement_template_enabled: bool = False
     stop_on_repeated_harness_mismatch_enabled: bool = False
+    stop_on_repeated_statement_mismatch_enabled: bool = False
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -219,6 +220,9 @@ class AgentSettings:
             ),
             stop_on_repeated_harness_mismatch_enabled=_strict_bool_env(
                 "PALS_STOP_ON_REPEATED_HARNESS_MISMATCH_ENABLED"
+            ),
+            stop_on_repeated_statement_mismatch_enabled=_strict_bool_env(
+                "PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED"
             ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",
