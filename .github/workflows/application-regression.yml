@@ -80,8 +80,13 @@ jobs:
             tests/unit/test_agent_regression_gate.py
       - name: Run the full suite on the candidate source
         run: |
+          # Exit 0 (all passed) and 1 (some tests failed) are the only outcomes that may
+          # proceed; interrupted (2), internal error (3), usage (4) or no tests (5) block.
+          status=0
           uv run --no-sync python -m pytest -p no:cacheprovider tests \
-            --junitxml="$RUNNER_TEMP/candidate.xml" || test -s "$RUNNER_TEMP/candidate.xml"
+            --junitxml="$RUNNER_TEMP/candidate.xml" || status=$?
+          test "$status" -le 1
+          test -s "$RUNNER_TEMP/candidate.xml"
       - name: Re-run the failing test files on the retained verifier anchor
         run: |
           candidate_head="$(git rev-parse HEAD)"
@@ -94,8 +99,11 @@ jobs:
           git checkout --quiet --detach "$RETAINED_VERIFIER_ANCHOR"
           uv sync --locked --extra dev --python 3.12.13
           if [ "${#existing[@]}" -gt 0 ]; then
+            status=0
             uv run --no-sync python -m pytest -p no:cacheprovider "${existing[@]}" \
-              --junitxml="$RUNNER_TEMP/anchor.xml" || test -s "$RUNNER_TEMP/anchor.xml"
+              --junitxml="$RUNNER_TEMP/anchor.xml" || status=$?
+            test "$status" -le 1
+            test -s "$RUNNER_TEMP/anchor.xml"
           else
             printf '<testsuites/>' > "$RUNNER_TEMP/anchor.xml"
           fi
