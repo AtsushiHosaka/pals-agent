@@ -140,7 +140,7 @@ def test_with_the_flag_the_second_mismatch_ends_the_run(tmp_path: Path) -> None:
     generator, metadata = _run(tmp_path, stop_on_repeated_harness_mismatch=True)
     assert generator.calls == 2
     assert metadata["repairs_used"] == 1
-    assert metadata["termination_reason"] == "repair_budget_exhausted"
+    assert metadata["termination_reason"] == "repair_stopped_repeated_statement_mismatch"
 
 
 # ------------------------------------------------- early stop on statement mismatch
@@ -204,7 +204,7 @@ def _run_kinds(tmp_path: Path, kinds: list[str], **flags: bool) -> tuple[_Script
 
 def _early_stop_diagnostics(metadata: dict) -> list[dict]:
     return [
-        d for d in metadata["diagnostics"] if d["code"] == "pals.repair_budget_exhausted"
+        d for d in metadata["diagnostics"] if d["code"] == "pals.repair_stopped_repeated_statement_mismatch"
     ]
 
 
@@ -220,7 +220,7 @@ def test_two_statement_mismatches_end_the_run_before_the_next_generation(tmp_pat
     )
     assert generator.calls == 2
     assert metadata["repairs_used"] == 1
-    assert metadata["termination_reason"] == "repair_budget_exhausted"
+    assert metadata["termination_reason"] == "repair_stopped_repeated_statement_mismatch"
     (diagnostic,) = _early_stop_diagnostics(metadata)
     assert "statement" in diagnostic["message"]
 
@@ -231,7 +231,7 @@ def test_a_mixed_harness_and_statement_pair_ends_the_run(tmp_path: Path) -> None
             tmp_path / "_".join(kinds), kinds, stop_on_repeated_statement_mismatch=True
         )
         assert generator.calls == 2, kinds
-        assert metadata["termination_reason"] == "repair_budget_exhausted"
+        assert metadata["termination_reason"] == "repair_stopped_repeated_statement_mismatch"
 
 
 def test_another_error_in_between_does_not_stop_the_run(tmp_path: Path) -> None:

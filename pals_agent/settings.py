@@ -67,6 +67,8 @@ class AgentSettings:
     fixed_statement_template_enabled: bool = False
     stop_on_repeated_harness_mismatch_enabled: bool = False
     stop_on_repeated_statement_mismatch_enabled: bool = False
+    observe_repeated_statement_mismatch_enabled: bool = False
+    repeated_mismatch_window: int = 2
     worker_idle_sleep_seconds: float = 2.0
     explanation_model_timeout_seconds: int = 90
     semantic_evaluator_provider: Literal["openai", "ollama"] | None = None
@@ -223,6 +225,12 @@ class AgentSettings:
             ),
             stop_on_repeated_statement_mismatch_enabled=_strict_bool_env(
                 "PALS_STOP_ON_REPEATED_STATEMENT_MISMATCH_ENABLED"
+            ),
+            observe_repeated_statement_mismatch_enabled=_strict_bool_env(
+                "PALS_OBSERVE_REPEATED_STATEMENT_MISMATCH_ENABLED"
+            ),
+            repeated_mismatch_window=_bounded_ascii_int_env(
+                "PALS_REPEATED_MISMATCH_WINDOW", 2, minimum=2, maximum=3
             ),
             max_repair_attempts=_bounded_ascii_int_env(
                 "PALS_MAX_REPAIR_ATTEMPTS",

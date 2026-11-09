@@ -55,7 +55,7 @@ from pals_agent.models import (
 )
 from pals_agent.openai import OpenAIError
 from pals_agent.openmath import OpenMathStructuringError
-from pals_agent.pipeline import ApiRepairSeed, _failure_fingerprint_set
+from pals_agent.pipeline import EARLY_STOP_REASON, ApiRepairSeed, _failure_fingerprint_set
 from pals_agent.private_recipe_selection import RecipeSelectionUnavailableError
 from pals_agent.proof_flow_runtime import ProofFlowRetrievalError
 from pals_agent.proof_request_worker import ProofRequestProcessor
@@ -3079,7 +3079,29 @@ def _proof_status_context(
         "attempt": termination_event.get("attempt"),
         "source": termination_event.get("source"),
     }
+    if termination_reason == EARLY_STOP_REASON:
+        _project_early_stop_for_api(context, attempt_number=int(attempt["attempt"]))
     return context
+
+
+def _project_early_stop_for_api(context: dict[str, Any], *, attempt_number: int) -> None:
+    """Express the dedicated early-stop reason in the API's closed status-context contract.
+
+    The API accepts no reason for it yet. Until it does, the stop is reported as
+    ``repair_budget_exhausted`` with the budget actually used, the only terminal shape whose
+    relations hold for a run that ended before the configured budget (the API requires
+    ``attempt == max_repair_attempts + 1`` for that reason). The artifact, the diagnostics and
+    the quality events keep the dedicated reason and code.
+    """
+    if attempt_number < 2 or context.get("repairs_used") != attempt_number - 1:
+        raise ValueError("early stop requires an earlier failed attempt")
+    context["max_repair_attempts"] = attempt_number - 1
+    context["termination_reason"] = "repair_budget_exhausted"
+    context["termination_event"] = {
+        "reason": "repair_budget_exhausted",
+        "attempt": attempt_number,
+        "source": "repair_budget",
+    }
 
 
 def _status_retrieval(value: object) -> dict[str, Any] | None:

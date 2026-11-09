@@ -71,11 +71,18 @@ ENVIRONMENTS: Final = frozenset({"prod", "staging", "dev", "local", "probe"})
 ROUTES: Final = frozenset({"catalog_recipe", "semantic_reuse", "lean_generation", "chat_answer"})
 EVENT_NAMES: Final = frozenset({
     "proof_request_terminal", "lean_attempt", "explanation_failure", "eval_run", "eval_failure",
+    "repair_early_stop",
 })
+STOP_MODES: Final = frozenset({"stopped", "observed"})
+STOP_RULES: Final = frozenset({"repeated_statement_mismatch"})
+# The only diagnostic codes the repeated-statement-mismatch rule can match.
+_STOP_CODES: Final = frozenset({"lean.formal_harness_mismatch", "lean.statement_mismatch"})
 METRIC_REQUESTS_FAILED: Final = "ProofRequestsFailed"
 METRIC_REQUESTS_REFUSED: Final = "ProofRequestsRefused"
 METRIC_ATTEMPTS_FAILED: Final = "LeanAttemptsFailed"
 METRIC_EXPLANATIONS_FAILED: Final = "ExplanationsFailed"
+METRIC_REPAIR_EARLY_STOPS: Final = "RepairEarlyStops"
+METRIC_REPAIR_EARLY_STOPS_OBSERVED: Final = "RepairEarlyStopsObserved"
 
 
 class QualityEventRejected(ValueError):  # noqa: N818 -- a closed-code rejection, not an error class
@@ -380,6 +387,16 @@ def _reason_labels(value: object) -> str:
     return value
 
 
+def _stop_codes(value: object) -> str:
+    """Comma-separated, sorted subset of the two rule codes; anything else rejects the event."""
+    if not isinstance(value, str) or len(value) > 80:
+        raise _reject("stop_codes_invalid")
+    tokens = value.split(",")
+    if not all(token in _STOP_CODES for token in tokens) or tokens != sorted(set(tokens)):
+        raise _reject("stop_codes_invalid")
+    return value
+
+
 _LOG_FIELDS: Final[Mapping[str, Callable[[object], Any]]] = {
     "event": _vocabulary("event", EVENT_NAMES),
     "request_hash": _pattern("request_hash", _SHA256),
@@ -398,6 +415,11 @@ _LOG_FIELDS: Final[Mapping[str, Callable[[object], Any]]] = {
     "exception_type": _pattern("exception_type", _EXCEPTION_TYPE),
     "attempts": _count("attempts", 1000),
     "repairs_used": _count("repairs_used", 1000),
+    "repairs_remaining": _count("repairs_remaining", 1000),
+    "stop_rule": _vocabulary("stop_rule", STOP_RULES),
+    "stop_mode": _vocabulary("stop_mode", STOP_MODES),
+    "stop_codes": _stop_codes,
+    "window": _count("window", 8),
     "duration_ms": _number("duration_ms", 86_400_000),
     "suite": _pattern("suite", _IDENTIFIER),
     "ledger_id": _pattern("ledger_id", _LEDGER_ID),
@@ -423,6 +445,7 @@ _UNITS: Final[Mapping[str, str]] = {
     "LeanVerifyDurationMs": "Milliseconds", "WorkerHeartbeat": "Count",
     "QualityEventsDropped": "Count", METRIC_EXPLANATIONS_FAILED: "Count",
     "EvalSuccessRate": "Percent", "EvalCases": "Count", "EvalFailed": "Count",
+    METRIC_REPAIR_EARLY_STOPS: "Count", METRIC_REPAIR_EARLY_STOPS_OBSERVED: "Count",
 }
 ALLOWED_METRICS: Final = frozenset(_UNITS)
 
@@ -635,6 +658,53 @@ def build_explanation_failure(
     return validate_and_build(
         dimensions={"Environment": environment, "FailureClass": entry.tag},
         groups=[([("Environment", "FailureClass")], {METRIC_EXPLANATIONS_FAILED: 1})],
+        fields=fields,
+        timestamp_ms=_now_ms() if timestamp_ms is None else timestamp_ms,
+    )
+
+
+def build_repair_early_stop(
+    *,
+    environment: str,
+    mode: str,
+    codes: Sequence[str],
+    window: int,
+    attempts: int,
+    repairs_used: int,
+    repairs_remaining: int,
+    request_id: object = None,
+    revision: str | None = None,
+    timestamp_ms: int | None = None,
+) -> QualityEvent:
+    """A repeated-statement-mismatch stop (``stopped``) or a would-be stop (``observed``).
+
+    Carries closed codes and counts only, never a statement, a question or Lean text.
+    ``request_hash`` joins the event to the job's final outcome, which is how a stop that
+    would have been wrong (the job still verified in observe mode) is counted afterwards.
+    """
+    if mode not in STOP_MODES:
+        raise _reject("stop_mode_invalid")
+    fields: dict[str, object] = {
+        "event": "repair_early_stop",
+        "stop_rule": "repeated_statement_mismatch",
+        "stop_mode": mode,
+        "stop_codes": ",".join(sorted(set(codes))),
+        "window": window,
+        "attempts": attempts,
+        "repairs_used": repairs_used,
+        "repairs_remaining": repairs_remaining,
+    }
+    request_hash = _request_correlation(request_id) if isinstance(request_id, str) else None
+    if request_hash is not None:
+        fields["request_hash"] = request_hash
+    if revision is not None:
+        fields["revision"] = revision
+    return validate_and_build(
+        dimensions={"Environment": environment},
+        groups=[([("Environment",)], {
+            METRIC_REPAIR_EARLY_STOPS if mode == "stopped"
+            else METRIC_REPAIR_EARLY_STOPS_OBSERVED: 1,
+        })],
         fields=fields,
         timestamp_ms=_now_ms() if timestamp_ms is None else timestamp_ms,
     )
@@ -970,6 +1040,24 @@ def record_lean_attempt(
     emit(lambda config: [build_lean_attempt(
         environment=_environment(config), diagnostic_codes=diagnostic_codes, success=success,
         duration_ms=elapsed_ms, raw_code=raw_code, revision=config.revision,
+    )])
+
+
+def record_repair_early_stop(
+    *,
+    mode: str,
+    codes: Sequence[str],
+    window: int,
+    attempts: int,
+    repairs_used: int,
+    repairs_remaining: int,
+    request_id: object = None,
+) -> None:
+    """Hook for the pipeline when the repeated-statement-mismatch rule fires."""
+    emit(lambda config: [build_repair_early_stop(
+        environment=_environment(config), mode=mode, codes=codes, window=window,
+        attempts=attempts, repairs_used=repairs_used, repairs_remaining=repairs_remaining,
+        request_id=request_id, revision=config.revision,
     )])
 
 

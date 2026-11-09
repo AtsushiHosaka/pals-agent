@@ -6,9 +6,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextvars import copy_context
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
-from typing import Any, Literal, Protocol, cast
+from typing import Any, Final, Literal, Protocol, cast
 
-from pals_agent import step_timing
+from pals_agent import quality_events, step_timing
 from pals_agent.artifacts import (
     ATTEMPT_CHECKPOINT_SCHEMA_VERSION,
     ArtifactPersistenceError,
@@ -86,11 +86,17 @@ TerminationReason = Literal[
     "verified",
     "awaiting_api_reconciliation",
     "repair_budget_exhausted",
+    "repair_stopped_repeated_statement_mismatch",
     "non_repairable_failure",
     "repair_generator_unavailable",
     "repair_route_selection_failed",
     "artifact_store_failure",
 ]
+# Stable names of the early stop. The reason is a termination reason in the artifact; the code
+# is the diagnostic that records it. Neither carries a statistic, a statement or Lean text.
+EARLY_STOP_REASON: Final = "repair_stopped_repeated_statement_mismatch"
+EARLY_STOP_DIAGNOSTIC_CODE: Final = "pals.repair_stopped_repeated_statement_mismatch"
+EARLY_STOP_RULE: Final = "repeated_statement_mismatch"
 
 
 class LeanGenerator(Protocol):
@@ -212,15 +218,21 @@ class ProofPipeline:
     # tokens and, on the same wall clock, raises the chance that one Sketch is usable.
     sketch_parallel: int = 1
     # ``stop_on_repeated_harness_mismatch`` ends a run whose last two attempts both failed only
-    # with ``lean.formal_harness_mismatch``. It reuses the ``repair_budget_exhausted`` reason;
-    # a dedicated reason is needed before production use (see docs).
+    # with ``lean.formal_harness_mismatch``. ``stop_on_repeated_statement_mismatch`` widens the
+    # same rule to ``lean.statement_mismatch`` (mixed pairs count) and subsumes the first when
+    # both are on. A stop ends the run with the dedicated ``EARLY_STOP_REASON`` and
+    # ``EARLY_STOP_DIAGNOSTIC_CODE`` (never ``repair_budget_exhausted``, which means the whole
+    # budget was used). Both flags are off by default.
     stop_on_repeated_harness_mismatch: bool = False
-    # ``stop_on_repeated_statement_mismatch`` widens the same rule to the statement-binding
-    # failure: it ends a run whose last two attempts each failed only with
-    # ``lean.formal_harness_mismatch`` and/or ``lean.statement_mismatch`` (mixed pairs count).
-    # When both flags are on, this one subsumes the other. Same ``repair_budget_exhausted``
-    # reason; a dedicated reason is a separate follow-up.
     stop_on_repeated_statement_mismatch: bool = False
+    # ``observe_repeated_statement_mismatch`` evaluates the widened rule but never stops: it only
+    # emits a ``repair_early_stop`` quality event (mode ``observed``) and the run goes on. Joined
+    # with the job's final outcome by ``request_hash``, it counts the runs a stop would have
+    # wrongly ended (those that still verified). Ignored where a stop flag already fires.
+    observe_repeated_statement_mismatch: bool = False
+    # Consecutive failing attempts the rule needs. The API hands a resumed worker at most the
+    # two previous failures, so 3 is the largest window that works in api_reconcile mode.
+    repeated_mismatch_window: int = 2
 
     def __post_init__(self) -> None:
         if self.request_linked_typed_retriever is not None and self.natural_draft_retriever is None:
@@ -230,6 +242,11 @@ class ProofPipeline:
             or not 1 <= self.max_repair_attempts <= 64
         ):
             raise ValueError("max_repair_attempts must be between 1 and 64")
+        if (
+            type(self.repeated_mismatch_window) is not int
+            or not 2 <= self.repeated_mismatch_window <= 3
+        ):
+            raise ValueError("repeated_mismatch_window must be 2 or 3")
         if self.verification_mode == "local" and self.verifier is None:
             raise ValueError("local verification requires a verifier")
         if self.verification_mode == "api_reconcile" and self.verifier is not None:
@@ -425,6 +442,7 @@ class ProofPipeline:
                 repairs_used=api_repair_seed.repairs_used,
                 attempt_evidence=attempts[-1],
                 failure_history=failure_fingerprint_history,
+                proof_job_id=proof_job_id,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -531,6 +549,7 @@ class ProofPipeline:
                     repairs_used=repairs_used,
                     attempt_evidence=attempts[-1],
                     failure_history=failure_fingerprint_history,
+                    proof_job_id=proof_job_id,
                     on_status=on_status,
                 )
                 if repair_generation is None:
@@ -711,6 +730,7 @@ class ProofPipeline:
                 repairs_used=repairs_used,
                 attempt_evidence=attempts[-1],
                 failure_history=failure_fingerprint_history,
+                proof_job_id=proof_job_id,
                 on_status=on_status,
             )
             if repair_generation is None:
@@ -836,6 +856,64 @@ class ProofPipeline:
             raise RuntimeError("repair generation was requested for a non-repairable generator")
         return repaired
 
+    def _early_stop_or_observe(
+        self,
+        history: list[frozenset[str]],
+        *,
+        cumulative_diagnostics: list[Diagnostic],
+        proof_job_id: str | None,
+        attempt: int,
+        repairs_used: int,
+    ) -> bool:
+        """True when the run must end here because of a repeated statement mismatch.
+
+        Called only while repair budget remains, so a stop never replaces the budget reason.
+        In observe mode the rule only emits an event and the run goes on.
+        """
+        stop_codes = None
+        if self.stop_on_repeated_statement_mismatch:
+            stop_codes = _repeated_mismatch_codes(
+                history, _STATEMENT_MISMATCH_CODES, self.repeated_mismatch_window
+            )
+        elif self.stop_on_repeated_harness_mismatch:
+            stop_codes = _repeated_mismatch_codes(
+                history, _HARNESS_MISMATCH_CODES, self.repeated_mismatch_window
+            )
+        observed_codes = None
+        if stop_codes is None and self.observe_repeated_statement_mismatch:
+            observed_codes = _repeated_mismatch_codes(
+                history, _STATEMENT_MISMATCH_CODES, self.repeated_mismatch_window
+            )
+        codes = stop_codes or observed_codes
+        if codes is None:
+            return False
+        stopped = stop_codes is not None
+        if quality_events.enabled():
+            quality_events.record_repair_early_stop(
+                mode="stopped" if stopped else "observed",
+                codes=sorted(codes),
+                window=self.repeated_mismatch_window,
+                attempts=attempt,
+                repairs_used=repairs_used,
+                repairs_remaining=self.max_repair_attempts - repairs_used,
+                request_id=proof_job_id,
+            )
+        if stopped:
+            cumulative_diagnostics.append(
+                Diagnostic(
+                    severity="error",
+                    code=EARLY_STOP_DIAGNOSTIC_CODE,
+                    message=(
+                        "Lean repair stopped early: each of the last "
+                        f"{self.repeated_mismatch_window} attempts failed only on the fixed "
+                        "formal statement check ("
+                        + ", ".join(sorted(codes))
+                        + ")."
+                    ),
+                )
+            )
+        return stopped
+
     def _repair_after_failure(
         self,
         *,
@@ -849,37 +927,8 @@ class ProofPipeline:
         attempt_evidence: dict[str, Any],
         on_status: StatusCallback | None,
         failure_history: list[frozenset[str]] | None = None,
+        proof_job_id: str | None = None,
     ) -> RepairGeneration | None:
-        if self.stop_on_repeated_statement_mismatch and _statement_mismatch_repeated(
-            failure_history or []
-        ):
-            cumulative_diagnostics.append(
-                Diagnostic(
-                    severity="error",
-                    code="pals.repair_budget_exhausted",
-                    message=(
-                        "Lean repair stopped early: the last two attempts both failed on "
-                        "the fixed formal statement (statement harness or statement "
-                        "binding) and no other error."
-                    ),
-                )
-            )
-            return None
-        if self.stop_on_repeated_harness_mismatch and _harness_mismatch_repeated(
-            failure_history or []
-        ):
-            cumulative_diagnostics.append(
-                Diagnostic(
-                    severity="error",
-                    code="pals.repair_budget_exhausted",
-                    message=(
-                        "Lean repair stopped early: the formal statement harness was "
-                        "missing from two consecutive attempts; 1 of 15 recorded runs with "
-                        "that pattern went on to verify."
-                    ),
-                )
-            )
-            return None
         if any(
             diagnostic.code in _NON_REPAIRABLE_DIAGNOSTIC_CODES
             for diagnostic in feedback_diagnostics
@@ -897,6 +946,14 @@ class ProofPipeline:
                     ),
                 )
             )
+            return None
+        if self._early_stop_or_observe(
+            failure_history or [],
+            cumulative_diagnostics=cumulative_diagnostics,
+            proof_job_id=proof_job_id,
+            attempt=attempt,
+            repairs_used=repairs_used,
+        ):
             return None
         if not callable(getattr(self.generator, "repair", None)):
             cumulative_diagnostics.append(
@@ -1130,6 +1187,15 @@ class ProofPipeline:
                 "termination_reason": termination_reason,
                 "termination_event": termination_event,
                 "diagnostics": [diagnostic.to_api() for diagnostic in diagnostics],
+            }
+        if termination_reason == EARLY_STOP_REASON:
+            # Counts only: the codes are in the stop diagnostic, never a statement or Lean text.
+            metadata["early_stop"] = {
+                "rule": EARLY_STOP_RULE,
+                "window": self.repeated_mismatch_window,
+                "stopped_after_attempt": latest_attempt,
+                "repairs_used": repairs_used,
+                "repairs_remaining": self.max_repair_attempts - repairs_used,
             }
         try:
             artifact = self.artifact_store.save(
@@ -1585,15 +1651,26 @@ _HARNESS_MISMATCH_CODES = frozenset({"lean.formal_harness_mismatch"})
 _STATEMENT_MISMATCH_CODES = frozenset({"lean.formal_harness_mismatch", "lean.statement_mismatch"})
 
 
-def _mismatch_repeated(history: list[frozenset[str]], allowed_codes: frozenset[str]) -> bool:
-    """True when each of the last two failures has error codes, all within ``allowed_codes``."""
-    if len(history) < 2:
-        return False
-    for fingerprints in history[-2:]:
+def _repeated_mismatch_codes(
+    history: list[frozenset[str]], allowed_codes: frozenset[str], window: int = 2
+) -> frozenset[str] | None:
+    """The error codes seen when each of the last ``window`` failures has error codes, all within
+    ``allowed_codes``; ``None`` when the run does not match."""
+    if window < 2 or len(history) < window:
+        return None
+    seen: set[str] = set()
+    for fingerprints in history[-window:]:
         codes = {fingerprint.split("|", maxsplit=1)[0] for fingerprint in fingerprints}
         if not codes or not codes <= allowed_codes:
-            return False
-    return True
+            return None
+        seen |= codes
+    return frozenset(seen)
+
+
+def _mismatch_repeated(
+    history: list[frozenset[str]], allowed_codes: frozenset[str], window: int = 2
+) -> bool:
+    return _repeated_mismatch_codes(history, allowed_codes, window) is not None
 
 
 def _harness_mismatch_repeated(history: list[frozenset[str]]) -> bool:
@@ -1772,6 +1849,8 @@ def _termination_reason(
         return "repair_generator_unavailable"
     if codes.intersection(_NON_REPAIRABLE_DIAGNOSTIC_CODES):
         return "non_repairable_failure"
+    if EARLY_STOP_DIAGNOSTIC_CODE in codes:
+        return EARLY_STOP_REASON
     if (
         "pals.repair_budget_exhausted" in codes
         or repairs_used >= max_repair_attempts
@@ -1791,6 +1870,7 @@ def _termination_event(
         "verified": "verification_success",
         "awaiting_api_reconciliation": "api_reconciliation",
         "repair_budget_exhausted": "repair_budget",
+        EARLY_STOP_REASON: "repair_early_stop",
         "non_repairable_failure": "verifier_configuration",
         "repair_generator_unavailable": "repair_generator",
         "repair_route_selection_failed": "repair_route_selector",

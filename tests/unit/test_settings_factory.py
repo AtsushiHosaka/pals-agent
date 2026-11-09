@@ -634,3 +634,39 @@ def test_recipe_local_compose_http_is_only_enabled_in_explicit_local_environment
     else:
         with pytest.raises(ValueError, match="absolute HTTPS origin"):
             build_recipe_attempt_planner(AgentSettings.from_env())
+
+
+def test_observe_and_window_settings_default_to_the_old_behaviour(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for name in (
+        "PALS_OBSERVE_REPEATED_STATEMENT_MISMATCH_ENABLED",
+        "PALS_REPEATED_MISMATCH_WINDOW",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    settings = AgentSettings.from_env()
+    assert settings.observe_repeated_statement_mismatch_enabled is False
+    assert settings.repeated_mismatch_window == 2
+
+    monkeypatch.setenv("PALS_OBSERVE_REPEATED_STATEMENT_MISMATCH_ENABLED", "true")
+    monkeypatch.setenv("PALS_REPEATED_MISMATCH_WINDOW", "3")
+    settings = AgentSettings.from_env()
+    assert settings.observe_repeated_statement_mismatch_enabled is True
+    assert settings.repeated_mismatch_window == 3
+
+    for bad in ("1", "4", "x", ""):
+        monkeypatch.setenv("PALS_REPEATED_MISMATCH_WINDOW", bad)
+        with pytest.raises(ValueError, match="PALS_REPEATED_MISMATCH_WINDOW"):
+            AgentSettings.from_env()
+
+
+def test_factory_wires_the_observe_flag_and_window(monkeypatch: pytest.MonkeyPatch) -> None:
+    _pin_embedding(monkeypatch)
+    monkeypatch.setenv("PALS_ARTIFACTS_BUCKET", "pals-artifacts")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setenv("PALS_OBSERVE_REPEATED_STATEMENT_MISMATCH_ENABLED", "true")
+    monkeypatch.setenv("PALS_REPEATED_MISMATCH_WINDOW", "3")
+    pipeline = build_pipeline(AgentSettings.from_env())
+    assert pipeline.observe_repeated_statement_mismatch is True
+    assert pipeline.repeated_mismatch_window == 3
+    assert pipeline.stop_on_repeated_statement_mismatch is False

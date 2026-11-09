@@ -47,6 +47,7 @@ _TERMINATION_REASONS: Final = frozenset(
     {
         "verified",
         "repair_budget_exhausted",
+        "repair_stopped_repeated_statement_mismatch",
         "non_repairable_failure",
         "repair_generator_unavailable",
         "repair_route_selection_failed",
@@ -56,6 +57,7 @@ _TERMINATION_REASONS: Final = frozenset(
 _TERMINATION_SOURCES: Final = {
     "verified": "verification_success",
     "repair_budget_exhausted": "repair_budget",
+    "repair_stopped_repeated_statement_mismatch": "repair_early_stop",
     "non_repairable_failure": "verifier_configuration",
     "repair_generator_unavailable": "repair_generator",
     "repair_route_selection_failed": "repair_route_selector",

@@ -75,6 +75,10 @@ def build_pipeline(settings: AgentSettings) -> ProofPipeline:
         stop_on_repeated_statement_mismatch=(
             settings.stop_on_repeated_statement_mismatch_enabled
         ),
+        observe_repeated_statement_mismatch=(
+            settings.observe_repeated_statement_mismatch_enabled
+        ),
+        repeated_mismatch_window=settings.repeated_mismatch_window,
         verification_mode="api_reconcile",
         natural_draft_retriever=natural,
         request_linked_typed_retriever=(
