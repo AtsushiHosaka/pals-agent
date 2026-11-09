@@ -225,6 +225,28 @@ def test_observe_mode_never_stops_but_reports_the_would_be_stop(
     assert "RepairEarlyStops" not in event
 
 
+def test_observe_mode_counts_a_long_streak_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    lines: list[str] = []
+
+    class _Sink:
+        def send(self, line: str) -> None:
+            lines.append(line)
+
+    monkeypatch.setenv("PALS_QUALITY_EVENTS_ENABLED", "true")
+    monkeypatch.setenv("PALS_QUALITY_EVENTS_ENVIRONMENT", "local")
+    with qe.use_transport(_Sink()):
+        generator, _, _ = _run(
+            tmp_path,
+            ["statement", "statement", "statement", "statement", "success"],
+            observe_repeated_statement_mismatch=True,
+        )
+    assert generator.calls == 5
+    (event,) = [json.loads(line) for line in lines]
+    assert event["attempts"] == 2
+
+
 def test_a_stop_is_emitted_as_a_closed_event_without_any_text(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

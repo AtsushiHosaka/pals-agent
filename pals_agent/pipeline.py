@@ -884,6 +884,14 @@ class ProofPipeline:
             observed_codes = _repeated_mismatch_codes(
                 history, _STATEMENT_MISMATCH_CODES, self.repeated_mismatch_window
             )
+            # Only the first match counts: a stop would have ended the job there, so a longer
+            # streak must not be counted once per extra failure. A resumed worker sees at most
+            # three failures, so for window 3 a streak past four can repeat; consumers keep the
+            # first event per ``request_hash``.
+            if observed_codes is not None and _repeated_mismatch_codes(
+                history[:-1], _STATEMENT_MISMATCH_CODES, self.repeated_mismatch_window
+            ) is not None:
+                observed_codes = None
         codes = stop_codes or observed_codes
         if codes is None:
             return False
