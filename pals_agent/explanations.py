@@ -1748,6 +1748,38 @@ Give concise checkable evidence, not hidden chain-of-thought.
 """
 
 
+_OUTPUT_REVIEW_CONDITION_EQUIVALENCE_INSTRUCTION = """Compare the actual user theorem statement
+with what the overview, every summary and the conclusion assume and establish. Preserve the
+number domain, the domain on which each property is required, quantifier order and \
+witness dependencies,
+and the strength of the hypotheses. Strengthening an assumption can prove only a special case:
+continuity on a specified subset is not global continuity, and finitely many classes do not
+make the underlying group or space finite. Do not silently add either condition. A temporary
+assumption discharged by a valid contradiction or case argument is not an added permanent
+hypothesis. Equivalent wording and reliance on clearly stated premises do not require verbatim
+repetition of the request. Check inclusive boundary cases when the request permits them.
+Before calling a mathematical explanation invalid, use standard definitions and the \
+symmetry and substitution of equality.
+Reading an established equality in the opposite direction needs no new premise. A well-defined
+bijection transfers the number of classes, even when the underlying objects are infinite;
+inspect its inverse and the actual hypotheses before claiming that the count cannot transfer.
+In a partition into exactly two disjoint blocks, the block other than a fixed block is its
+complement. Two such partitions of the same set with the same fixed block therefore have the
+same remaining block. This does not identify arbitrary sets merely because their cardinalities
+agree; check the partition or another valid justification for the asserted set equality.
+Keep rejecting a genuinely inapplicable theorem, a false equality, an essential missing
+inference, an altered assumption, or an unproved quotient-group structure. These equivalences
+do not excuse circular reasoning or make every explanatory claim valid.
+When assessing a source range, use the supplied complete source and one-based inclusive \
+line numbers,
+counting blank lines and comments. Do not infer line numbers from an excerpt or from \
+prompt delimiters.
+Do not reject a range as incomplete when its exact cited lines already contain the claimed step.
+Preserve structural source validation and any checks delegated to code; an exact excerpt cannot
+excuse a false mathematical explanation or an unsupported claim about hidden proof steps.
+"""
+
+
 def _output_review_prompt(
     *,
     theorem_statement: str,
@@ -1887,6 +1919,9 @@ def _output_review_prompt(
         )
     )
     source_correspondence = "" if checklist_review else _SOURCE_CORRESPONDENCE_INSTRUCTION
+    review_grounding_instruction = _OUTPUT_REVIEW_GROUNDING_INSTRUCTION
+    if clarification is None:
+        review_grounding_instruction += "\n" + _OUTPUT_REVIEW_CONDITION_EQUIVALENCE_INSTRUCTION
     return f"""You are an independent review session for learner-facing mathematical output.
 {ANSWER_SCOPE_REVIEW}
 You did not generate the candidate. Do not continue or repair it. Review only the supplied
@@ -1911,7 +1946,7 @@ variables or raw `x^m∈I` and `x∈√(IJ)`; require KaTeX-compatible TeX such 
 overview, summaries, conclusion, and clarification answer/key points. The learner
 request, Lean source, citations, and saved context may contain raw notation.
 {output_quality_review}{semantic_requirement}
-{_OUTPUT_REVIEW_GROUNDING_INSTRUCTION}
+{review_grounding_instruction}
 Do not reveal hidden chain-of-thought.
 
 The proof is already verified. Your decision controls only whether this {output_kind} can be
