@@ -78,8 +78,8 @@ RUN_STATES = frozenset({"verified", "failed", "compiling", "exception"})
 # Mirrors pals_agent.pipeline.TerminationReason; a unit test fails if the two drift apart.
 TERMINATION_REASONS = frozenset({
     "verified", "awaiting_api_reconciliation", "repair_budget_exhausted",
-    "non_repairable_failure", "repair_generator_unavailable", "repair_route_selection_failed",
-    "artifact_store_failure",
+    "repair_stopped_repeated_statement_mismatch", "non_repairable_failure",
+    "repair_generator_unavailable", "repair_route_selection_failed", "artifact_store_failure",
 })
 # Diagnostic codes are read from compiler output, which a candidate can influence, so only
 # these exact codes pass. Any other error code is recorded as "lean.other".
@@ -98,8 +98,8 @@ LEAN_CODES = frozenset({
     "lean.disallowed_attribute", "lean.disallowed_option", "lean.disallowed_native_evaluation",
     "lean.disallowed_ambiguous_lexing", "lake.not_found", "verifier_internal_error",
     "pals.generation_empty", "pals.proof_method_mismatch", "pals.repair_budget_exhausted",
-    "pals.repair_generator_unavailable", "pals.repair_route_selection_failed",
-    "pals.repair_stagnation", "pals.sketch_contract_mismatch",
+    "pals.repair_stopped_repeated_statement_mismatch", "pals.repair_generator_unavailable",
+    "pals.repair_route_selection_failed", "pals.repair_stagnation", "pals.sketch_contract_mismatch",
     "pals.target_declaration_invalid", "pals.artifact_checkpoint_failed",
     "llm.empty", "llm.generation_failed", "openai.error", "ollama.error",
 })
