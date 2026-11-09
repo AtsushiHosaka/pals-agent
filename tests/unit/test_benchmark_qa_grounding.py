@@ -334,3 +334,108 @@ def test_pq016_opaque_lemma_never_overrides_wrong_math_or_fabricated_source_reje
     assert caught.value.category == "rejected"
     assert len(client.prompts) == 1
     assert len(client.responses) == 1
+
+
+PRIME_SOURCE = """import Mathlib
+
+theorem target (N : ℕ) : ∃ p : ℕ, N < p ∧ Nat.Prime p := by
+  have hfactorial_positive : 0 < N.factorial := Nat.factorial_pos N
+  have hnot_one : N.factorial + 1 ≠ 1 := by omega
+  obtain ⟨p, hp, hdiv⟩ := Nat.exists_prime_and_dvd hnot_one
+  have hlarge : N < p := by
+    by_contra hnot_large
+    have hsmall : p ≤ N := Nat.le_of_not_gt hnot_large
+    have hdiv_factorial : p ∣ N.factorial := Nat.dvd_factorial hp.pos hsmall
+    have hdiv_one : p ∣ 1 := by
+      have hdiff : p ∣ (N.factorial + 1) - N.factorial := Nat.dvd_sub hdiv hdiv_factorial
+      simpa using hdiff
+    exact hp.not_dvd_one hdiv_one
+  exact ⟨p, hlarge, hp⟩
+"""
+
+
+def prime_explanation(conclusion: str) -> ProofExplanation:
+    return replace(
+        explanation(),
+        overview="自然数 $N$ を任意に取る。",
+        sections=(
+            ExplanationSection(
+                id="prime-divisor",
+                title="internal",
+                summary=(
+                    "$N!+1>1$ より素因数 $p$ を取る。もし $p\\le N$ なら "
+                    "$p\\mid N!$ であり、差を取ると $p\\mid1$ となって矛盾する。"
+                    "したがって $N<p$ である。"
+                ),
+                references=(
+                    LeanLineReference(
+                        3,
+                        len(PRIME_SOURCE.splitlines()),
+                        "\n".join(PRIME_SOURCE.splitlines()[2:]),
+                    ),
+                ),
+            ),
+        ),
+        conclusion=conclusion,
+    )
+
+
+def test_pq017_equivalent_natural_language_conclusion_does_not_need_formal_conjunction() -> None:
+    conclusion = "したがって、任意の自然数 $N$ より大きい素数 $p$ が存在する。"
+    client = ReviewBoundary(
+        '{"approved": true, "rationale": "The conclusion gives the same quantified result."}'
+    )
+    reviewer(client).review_explanation(
+        theorem_statement="任意の自然数より大きい素数が存在することを示してください。",
+        lean_code=PRIME_SOURCE,
+        explanation=prime_explanation(conclusion),
+        language="ja",
+    )
+    rendered = client.prompts[0]
+    assert conclusion in rendered
+    assert "N < p ∧ Nat.Prime p" in rendered
+    assert "Judge a conclusion by its mathematical meaning" in rendered
+    assert (
+        "Equivalent natural-language\nstatements of quantifiers, order and properties" in rendered
+    )
+    assert (
+        "without verbatim\nquantifier symbols, conjunction notation or formal identifiers"
+        in rendered
+    )
+    assert "Preserve the scope and\ndependency of each quantified variable" in rendered
+    assert len(client.prompts) == 1
+
+
+@pytest.mark.parametrize(
+    "conclusion",
+    [
+        "全ての自然数 $N$ に対して $N<p$ となる一つの素数 $p$ が存在する。",
+        "任意の自然数 $N$ より小さい素数 $p$ が存在する。",
+        "任意の自然数 $N$ より大きい自然数 $p$ が存在する。",
+        "以上で証明は完了した。",
+    ],
+)
+def test_pq017_semantic_paraphrase_rule_never_overrides_changed_or_missing_result_rejection(
+    conclusion: str,
+) -> None:
+    client = ReviewBoundary(
+        '{"approved": false, "rationale": "The conclusion changes or omits the required result."}',
+        '{"approved": true, "rationale": "must not become a semantic-equivalence fallback"}',
+    )
+    with pytest.raises(ProofOutputReviewError) as caught:
+        reviewer(client).review_explanation(
+            theorem_statement="任意の自然数より大きい素数が存在することを示してください。",
+            lean_code=PRIME_SOURCE,
+            explanation=prime_explanation(conclusion),
+            language="ja",
+        )
+    rendered = client.prompts[0]
+    assert conclusion in rendered
+    assert "a witness chosen for each given input is not one\nwitness for all inputs" in rendered
+    assert "missing or changed quantifier, reversed order" in rendered
+    assert "omitted required property" in rendered
+    assert "generic proof-complete conclusion" in rendered
+    assert "A correct body cannot excuse a missing result" in rendered
+    assert caught.value.category == "rejected"
+    assert len(client.prompts) == 1
+    assert len(client.responses) == 1

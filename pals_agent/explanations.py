@@ -1733,6 +1733,13 @@ either verdict, quote a short exact span from that field in rationale and say wh
 supplies that result. A correct body cannot excuse a missing result, and a correct conclusion
 cannot excuse an invalid body or source mismatch. For a clarification, apply the corresponding
 check to clarification.answer against its actual question and saved context instead.
+Judge a conclusion by its mathematical meaning, including the established variable setup,
+not by whether it copies Lean syntax or the target's phrasing. Equivalent natural-language
+statements of quantifiers, order and properties supply the same result without verbatim
+quantifier symbols, conjunction notation or formal identifiers. Preserve the scope and
+dependency of each quantified variable; a witness chosen for each given input is not one
+witness for all inputs. Keep rejecting a missing or changed quantifier, reversed order,
+omitted required property, different number domain, or a generic proof-complete conclusion.
 Report one decisive supported defect rather than speculative complaints. Every additional
 criticism must independently meet these evidence requirements. Check all applicable semantic,
 source and presentation requirements before approval, and make the verdict consistent with
