@@ -243,3 +243,30 @@ def test_recording_generator_records_staged_calls_with_tokens(tmp_path):
     assert [r["stage"] for r in rows] == ["draft", "sketch", "prove"]
     assert [r["input_tokens"] for r in rows] == [7, 20, 0]
     assert rows[1]["cached_input_tokens"] == 5
+
+
+def test_recording_generator_hides_stage_methods_the_inner_lacks(tmp_path):
+    scope = Scope(run_id="r", sink=JsonlSink(tmp_path / "r.jsonl", artifacts_dir=tmp_path / "a"))
+
+    class OnlyGenerate:
+        def generate(self, request):
+            return object()
+
+    g = RecordingGenerator(OnlyGenerate(), scope)
+    assert not hasattr(g, "generate_draft")
+    assert callable(g.generate)
+
+    class Staged:
+        def generate_draft(self, request, feedback=None):
+            return None
+
+        def generate_sketch(self, request, draft, feedback=None):
+            return None
+
+        def generate_proof(self, request, draft, sketch, feedback=None):
+            return None
+
+    s = RecordingGenerator(Staged(), scope)
+    assert all(
+        callable(getattr(s, m)) for m in ("generate_draft", "generate_sketch", "generate_proof")
+    )

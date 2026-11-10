@@ -86,6 +86,9 @@ def mdd_binary(n: int, disc: float, sims: int = 4000, seed: int = 3) -> float:
 
 def report_binary(name: str, a: dict[str, float], t: dict[str, float]) -> None:
     ids = sorted(set(a) & set(t))
+    if not ids:
+        print(f"{name}: no problems with both arms; nothing to compare")
+        return
     d = [t[i] - a[i] for i in ids]
     n = len(ids)
     single = all(x in (0.0, 1.0) for x in list(a.values()) + list(t.values()))
@@ -109,6 +112,9 @@ def report_binary(name: str, a: dict[str, float], t: dict[str, float]) -> None:
 
 def report_cont(name: str, a: dict[str, float], t: dict[str, float]) -> None:
     ids = sorted(set(a) & set(t))
+    if not ids:
+        print(f"{name}: no problems with both arms; nothing to compare")
+        return
     d = [t[i] - a[i] for i in ids]
     lo, hi = boot_ci(d)
     print(
@@ -117,6 +123,20 @@ def report_cont(name: str, a: dict[str, float], t: dict[str, float]) -> None:
         f" boot95=[{lo:+.2f},{hi:+.2f}] signflip_p={sign_flip_p(d):.3f}"
         f" median_diff={st.median(d):+.2f}"
     )
+
+
+def error_totals(
+    errs: list[dict[str, Any]], base: str, treat: str, key: str
+) -> tuple[dict[str, float], dict[str, float]]:
+    """Per-problem sums of ``key`` for the two selected arms only (other arms are ignored)."""
+    a: dict[str, float] = defaultdict(float)
+    t: dict[str, float] = defaultdict(float)
+    for e in errs:
+        if e["arm"] == base:
+            a[e["problem_id"]] += e[key]
+        elif e["arm"] == treat:
+            t[e["problem_id"]] += e[key]
+    return a, t
 
 
 def main() -> None:
@@ -149,10 +169,7 @@ def main() -> None:
     if err_path.exists():
         errs = load(err_path)
         for key in ("errors", "unknown_identifier", "import_error"):
-            a = defaultdict(float)
-            t = defaultdict(float)
-            for e in errs:
-                (a if e["arm"] == args.base else t)[e["problem_id"]] += e[key]
+            a, t = error_totals(errs, args.base, args.treat, key)
             ids = sorted(set(a) & set(t))
             print(
                 f"sketch {key}: total base={sum(a[i] for i in ids):.0f} treat={sum(t[i] for i in ids):.0f}"  # noqa: E501

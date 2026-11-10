@@ -177,6 +177,9 @@ class RecordingVerifier:
         return self._record("sketch_check", lean_code, self.inner.verify_sketch)
 
 
+_STAGE_METHODS = ("generate_draft", "generate_sketch", "generate_proof")
+
+
 @dataclass(slots=True)
 class RecordingGenerator:
     """Wraps generate/repair; emits draft/sketch/prove rows from the elapsed_ms the generator
@@ -187,6 +190,15 @@ class RecordingGenerator:
 
     def __getattr__(self, name: str) -> Any:
         return getattr(self.inner, name)
+
+    def __getattribute__(self, name: str) -> Any:
+        # Expose a stage method only when the wrapped generator has it: ProofPipeline decides
+        # staged vs generate() by probing these names (pipeline._staged_generator).
+        if name in _STAGE_METHODS and not callable(
+            getattr(object.__getattribute__(self, "inner"), name, None)
+        ):
+            raise AttributeError(name)
+        return object.__getattribute__(self, name)
 
     def _emit(
         self, stage: str, part: Any, start_ms: float, t_start: float, since: int | None = None
