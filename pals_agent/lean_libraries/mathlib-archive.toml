@@ -1,0 +1,41 @@
+# `Archive/` and `Counterexamples/` of the Mathlib repository at the pinned commit: material that
+# is already part of the project's pinned Mathlib dependency (IMO problems, the "100 theorems",
+# counterexamples). Inventory and index only; no profile imports it and nothing here is admitted
+# to the product catalogue.
+schema = "pals.lean-library-manifest.v1"
+
+[library]
+name = "mathlib-archive"
+repo = "https://github.com/leanprover-community/mathlib4"
+commit = "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+license = "Apache-2.0"
+attribution = "Copyright (c) The Mathlib Authors and the individual Archive authors named in each file header. Released under the Apache 2.0 license."
+# Served by the default profile's verifier; this source yields no profile of its own.
+host_profile = "mathlib-4.32"
+notes = "Mathlib review covers code quality, not the fidelity of a statement to a natural-language question."
+
+[toolchain]
+lean = "leanprover/lean4:v4.32.0-rc1"
+workspace = "lean-workspace"
+silence_audit_deprecations = false
+dependency_roots = [
+  "Init", "Std", "Lean", "Lake", "Batteries", "Aesop", "Qq", "Plausible", "ImportGraph",
+  "ProofWidgets", "LeanSearchClient", "Cli", "Mathlib",
+]
+
+[pins]
+mathlib = "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+
+# Everything imported from outside PALS is unreviewed here, however well it is maintained upstream.
+[[layers]]
+root = "Archive"
+trust = "kernel-checked-unreviewed"
+description = "IMO problems, 100 theorems, 1000+ theorems; own lemmas, proved"
+
+[[layers]]
+root = "Counterexamples"
+trust = "kernel-checked-unreviewed"
+description = "counterexamples to plausible statements"
+
+[audit]
+allowed_axioms = ["propext", "Classical.choice", "Quot.sound"]

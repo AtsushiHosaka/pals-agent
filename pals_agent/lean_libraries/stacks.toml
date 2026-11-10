@@ -1,0 +1,60 @@
+# AxiomMath/Stacks: StacksCore is human-reviewed, StacksFrontier is AI-generated and unreviewed.
+# Definition only; none of the three profiles is served in production.
+schema = "pals.lean-library-manifest.v1"
+
+[library]
+name = "stacks"
+repo = "https://github.com/AxiomMath/Stacks"
+commit = "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"
+license = "Apache-2.0"
+attribution = "AxiomMath/Stacks contributors. Apache-2.0 (per the repository LICENSE)."
+
+[toolchain]
+lean = "leanprover/lean4:v4.35.0"
+workspace = "lean-workspaces/stacks-4.35"
+# Lean 4.33+ prints a deprecation warning for the audit's `Environment.replay`.
+silence_audit_deprecations = true
+dependency_roots = [
+  "Init", "Std", "Lean", "Lake", "Batteries", "Aesop", "Qq", "Plausible", "ImportGraph",
+  "ProofWidgets", "LeanSearchClient", "Cli", "Mathlib",
+]
+
+[pins]
+mathlib = "56a005855ea17e0b0958f73ec801ae140b0a1679"
+stacks = "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"
+
+[[layers]]
+root = "StacksCore"
+trust = "kernel-checked-reviewed"
+description = "human-reviewed, about 445 files"
+
+[[layers]]
+root = "StacksFrontier"
+trust = "kernel-checked-unreviewed"
+description = "AI-generated, not reviewed, about 62k files; only modules built into the image"
+
+# `StacksFrontier` and the umbrella `Stacks` library are not importable here.
+[[profiles]]
+name = "stacks-4.35"
+imports = ["Mathlib", "StacksCore"]
+
+# Proofs may use Frontier lemmas (the kernel checks them); statements may not reach a Frontier
+# constant.
+[[profiles]]
+name = "stacks-frontier-4.35"
+imports = ["Mathlib", "StacksCore", "StacksFrontier"]
+statements = "reviewed-only"
+requires_flag = "PALS_LEAN_ALLOW_FRONTIER_PROOFS"
+
+# Statements may use Frontier definitions; the audit records them and the result carries a trust level.
+[[profiles]]
+name = "stacks-frontier-defs-4.35"
+imports = ["Mathlib", "StacksCore", "StacksFrontier"]
+statements = "record-unreviewed"
+requires_flag = "PALS_LEAN_ALLOW_FRONTIER_STATEMENTS"
+
+[audit]
+allowed_axioms = ["propext", "Classical.choice", "Quot.sound"]
+
+[build]
+modules_ref = "docker/lean-verifier-stacks-frontier.Dockerfile"

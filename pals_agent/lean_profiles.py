@@ -1,9 +1,11 @@
 """Library profiles: which pinned Lean workspace a proof is verified against.
 
-A profile names one immutable (Lean toolchain, library set, workspace) triple. The default profile
-is the workspace PALS has always verified against; its behaviour and every digest derived from it
-are unchanged. A non-default profile adds a source ``import`` allow-list, because the library behind
-it is only partly trusted (Stacks: ``StacksCore`` is reviewed, ``StacksFrontier`` is not).
+A profile names one immutable (Lean toolchain, library set, workspace) triple. Profiles are not
+defined here: each library has a manifest (``pals_agent/lean_libraries/*.toml``, see
+``pals_agent.lean_library_manifest``) and this module derives its profiles from them. The default
+profile is the workspace PALS has always verified against; its behaviour and every digest derived
+from it are unchanged. A non-default profile adds a source ``import`` allow-list, because the
+library behind it is only partly trusted (Stacks: ``StacksCore`` is reviewed, ``StacksFrontier`` is not).
 
 One verifier process serves exactly one profile. Routing a request to a profile is the caller's job
 (it picks the verifier deployment); the verifier never accepts a profile from the request body, so a
@@ -15,23 +17,21 @@ from __future__ import annotations
 import json
 import os
 import re
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
 
-from pals_agent.lean_audit import TRUSTED_AUDIT_SOURCE
+from pals_agent.lean_audit import ALLOWED_AXIOMS, TRUSTED_AUDIT_SOURCE
+from pals_agent.lean_library_manifest import (
+    LibraryManifest,
+    LibraryManifestError,
+    ProfileSpec,
+    load_manifests,
+)
 from pals_agent.lean_source_policy import SourceViolation, strip_lean_comments_and_strings
 
 DEFAULT_PROFILE_NAME: Final = "mathlib-4.32"
-FRONTIER_FLAG: Final = "PALS_LEAN_ALLOW_FRONTIER_PROOFS"
-FRONTIER_STATEMENTS_FLAG: Final = "PALS_LEAN_ALLOW_FRONTIER_STATEMENTS"
-# Everything the workspace can contain except `StacksFrontier`: Lean itself, its reviewed
-# dependencies, Mathlib and the human-reviewed `StacksCore`.
-_LIBRARY_ROOTS: Final = (
-    "Init", "Std", "Lean", "Lake", "Batteries", "Aesop", "Qq", "Plausible", "ImportGraph",
-    "ProofWidgets", "LeanSearchClient", "Cli", "Mathlib", "StacksCore",
-)
 IMPORT_VIOLATION_CODE: Final = "lean.disallowed_import"
 
 _PROFILE_NAME_RE: Final = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*-[0-9]+\.[0-9]+$")
@@ -390,67 +390,52 @@ def _recording_audit_source(source: str, trusted: str, recorded: str) -> str:
     return _replace_once(source, complete, _RECORD_TAIL + complete)
 
 
-_PROFILES: Final = {
-    profile.name: profile
-    for profile in (
-        LibraryProfile(
-            name=DEFAULT_PROFILE_NAME,
-            lean_version="leanprover/lean4:v4.32.0-rc1",
-            workspace="lean-workspace",
-            pins=(("mathlib", "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"),),
-        ),
-        LibraryProfile(
-            name="stacks-4.35",
-            lean_version="leanprover/lean4:v4.35.0",
-            workspace="lean-workspaces/stacks-4.35",
-            pins=(
-                ("mathlib", "56a005855ea17e0b0958f73ec801ae140b0a1679"),
-                ("stacks", "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"),
-            ),
-            # `StacksFrontier` is AI-generated and unreviewed, and the umbrella `Stacks` library
-            # imports it. Neither is built into the workspace; this keeps it that way by policy.
-            import_roots=("Mathlib", "StacksCore"),
-            silence_audit_deprecations=True,
-        ),
-        # Proofs may use `StacksFrontier` lemmas (the kernel checks them); statements may not
-        # mention a Frontier constant, because its meaning has not been reviewed. Disabled unless
-        # the verifier is started with PALS_LEAN_ALLOW_FRONTIER_PROOFS=true, and only the Frontier
-        # modules built into the image are importable at all.
-        LibraryProfile(
-            name="stacks-frontier-4.35",
-            lean_version="leanprover/lean4:v4.35.0",
-            workspace="lean-workspaces/stacks-4.35",
-            pins=(
-                ("mathlib", "56a005855ea17e0b0958f73ec801ae140b0a1679"),
-                ("stacks", "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"),
-            ),
-            import_roots=("Mathlib", "StacksCore", "StacksFrontier"),
-            silence_audit_deprecations=True,
-            statement_trusted_roots=_LIBRARY_ROOTS,
-            requires_flag=FRONTIER_FLAG,
-        ),
-        # Statements MAY use `StacksFrontier` definitions, which no human has reviewed. Nothing is
-        # hidden: the audit records which Frontier constants a statement reaches, which library
-        # roots the proof uses, and Frontier definitions that resemble a reviewed one, and the
-        # result carries a trust level. `sorry`, extra axioms and native evaluation stay forbidden
-        # and the kernel replay stays mandatory. Faithfulness to the intended meaning comes only
-        # from a pinned `formal_statement` and a review, never from this profile.
-        LibraryProfile(
-            name="stacks-frontier-defs-4.35",
-            lean_version="leanprover/lean4:v4.35.0",
-            workspace="lean-workspaces/stacks-4.35",
-            pins=(
-                ("mathlib", "56a005855ea17e0b0958f73ec801ae140b0a1679"),
-                ("stacks", "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"),
-            ),
-            import_roots=("Mathlib", "StacksCore", "StacksFrontier"),
-            silence_audit_deprecations=True,
-            statement_trusted_roots=_LIBRARY_ROOTS,
-            statement_recorded_roots=("StacksFrontier",),
-            requires_flag=FRONTIER_STATEMENTS_FLAG,
-        ),
+def _profile_from_spec(manifest: LibraryManifest, spec: ProfileSpec) -> LibraryProfile:
+    trusted, recorded = manifest.statement_roots(spec.statements)
+    return LibraryProfile(
+        name=spec.name,
+        lean_version=manifest.lean_version,
+        workspace=manifest.workspace,
+        pins=manifest.pins,
+        import_roots=spec.imports,
+        silence_audit_deprecations=manifest.silence_audit_deprecations,
+        statement_trusted_roots=trusted,
+        requires_flag=spec.requires_flag,
+        statement_recorded_roots=recorded,
     )
-}
+
+
+def _build_profiles(manifests: Sequence[LibraryManifest]) -> dict[str, LibraryProfile]:
+    profiles = {
+        spec.name: _profile_from_spec(manifest, spec)
+        for manifest in manifests
+        for spec in manifest.profiles
+    }
+    if DEFAULT_PROFILE_NAME not in profiles or next(iter(profiles)) != DEFAULT_PROFILE_NAME:
+        raise LibraryManifestError("the default profile must come from the first manifest")
+    return profiles
+
+
+MANIFESTS: Final = load_manifests(standard_axioms=ALLOWED_AXIOMS)
+_PROFILES: Final = _build_profiles(MANIFESTS)
+
+
+def _flag_of(profile_name: str) -> str:
+    flag = _PROFILES[profile_name].requires_flag
+    if flag is None:
+        raise LibraryManifestError(f"profile {profile_name} has no enabling flag")
+    return flag
+
+
+# Kept as names because verifier startup and tests refer to them; the values come from the manifest.
+FRONTIER_FLAG: Final = _flag_of("stacks-frontier-4.35")
+FRONTIER_STATEMENTS_FLAG: Final = _flag_of("stacks-frontier-defs-4.35")
+
+
+def manifest_for_profile(name: str) -> LibraryManifest:
+    """The manifest that yields profile ``name`` (an unknown name is rejected)."""
+    profile = resolve_profile(name)
+    return next(m for m in MANIFESTS if any(s.name == profile.name for s in m.profiles))
 
 
 def known_profile_names() -> tuple[str, ...]:

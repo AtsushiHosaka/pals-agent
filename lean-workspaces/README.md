@@ -13,6 +13,24 @@ routing to that profile's verifier deployment.
 | `stacks-frontier-4.35` (flag, off by default) | `v4.35.0` | `lean-workspaces/stacks-4.35/` | `Mathlib`, `StacksCore`, built `StacksFrontier` modules |
 | `stacks-frontier-defs-4.35` (own flag, off by default) | `v4.35.0` | `lean-workspaces/stacks-4.35/` | same; statements may also use Frontier definitions |
 
+## Adding a library: a manifest, not code
+
+Each library is one TOML file in `pals_agent/lean_libraries/` (schema
+`pals.lean-library-manifest.v1`, loader `pals_agent/lean_library_manifest.py`): source repository,
+exact commit, SPDX licence and attribution, Lean toolchain, workspace, pins, dependency roots,
+trust *layers* by import root, the profiles it yields (import roots, statement policy, enabling flag),
+the audit's axiom allow-list (a manifest may narrow it, never widen it), a reference to the build
+recipe and the pinned declaration-index digest. `lean_profiles.py` derives every profile from the
+manifests; tests pin the derived profiles to the values issued before manifests existed.
+
+Trust words are generic: `kernel-checked-reviewed`, `kernel-checked-unreviewed`, `statement-only`.
+The earlier words `core` and `frontier` stay readable as aliases (`canonical_trust`); audit result
+levels (`mathlib`, `core`, `frontier_proof`, `frontier_statement`) are stored data and unchanged.
+
+`python -m tools.library_index.build --library NAME --source DIR --out OUT` indexes any manifest's
+layers (declaration name, kind, statement text, module, path, line, trust). Stacks tag parsing is
+the optional `--plugin stacks-tags`.
+
 ## Digests
 
 A non-default profile adds `"library_profile": "<name>"` to the toolchain fingerprint, so its

@@ -187,9 +187,14 @@ def test_every_lean_diagnostic_code_in_the_package_is_classified():
                  "lean_supervisor.py", "lean_child.py", "lean_environment.py"):
         found |= set(re.findall(r'"((?:lean|pals)\.[a-z_]+)"', (package / name).read_text()))
     found = {code for code in found if code.startswith("lean.")} - {"lean.verified"}
+    # Advisory diagnostics ride on verified results; they are named, not failures.
+    assert found >= qe.LEAN_ADVISORY_CODES
+    found -= qe.LEAN_ADVISORY_CODES
     assert found, "the scan found no Lean diagnostic codes"
     for code in sorted(found):
         assert qe.classify_lean_codes([code]) in TAXONOMY_CODES, code
+    for code in sorted(qe.LEAN_ADVISORY_CODES):
+        assert qe.classify_lean_codes([code]) == qe.UNCLASSIFIED, code  # never a failure class
 
 
 @pytest.mark.parametrize("codes,expected", [
