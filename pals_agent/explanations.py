@@ -1600,7 +1600,8 @@ Return exactly one JSON object with this schema:
       ]
     }}
   ],
-  "conclusion": "one short final sentence; no repeated calculation or proof summary"
+  "conclusion": "one short final sentence; no repeated calculation or proof summary",
+  "figure": "a figure call object exactly as specified above, or null"
 }}
 
 Write all learner-facing prose in the requested output language. Overview and conclusion must be
