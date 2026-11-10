@@ -1,0 +1,185 @@
+{
+ "source": "pals-observability#2 ef6065d datasets (request text only; no reference solutions)",
+ "problems": [
+  {
+   "id": "real-square-continuity",
+   "statement": "実数上の関数f(x)=x²が任意の実数aで連続であることを、εとδの定義を使って証明してください。",
+   "fixture_sha256": "da8e1d4b25de297df303bb093f7239d41604a261e5e0f7164de05ec91363d1e1",
+   "case_id": "234fa37fc30cbc5b0c1ab2ee8265eeb836a47c79a38f7b68b3e1451bf4beecc5",
+   "topic_group": "real-analysis-continuity",
+   "codex_split": "tuning",
+   "requires_lean": true
+  },
+  {
+   "id": "absolute-value-nondifferentiability",
+   "statement": "f(x)=|x|がx=0で微分できない理由を、左右の微分係数を使って説明してください。",
+   "fixture_sha256": "19e48aad4cedaa4e4f574715afb603db19cd453efba32b7c7da727cdb52b7815",
+   "case_id": "b15266ed4e600c5a48a42252941f5013e0454e54afc4b7bae7e883f40fba4451",
+   "topic_group": "real-analysis-derivative",
+   "codex_split": "tuning",
+   "requires_lean": true
+  },
+  {
+   "id": "irrational-square-root-two",
+   "statement": "√2が無理数であることを背理法で証明してください。分数を既約にする理由も説明してください。",
+   "fixture_sha256": "59e3b18b7c63e0947e92abf61807619d0d32e70c5207e198463d8aca5b05326d",
+   "case_id": "9f124ea7743f344eb96c34dc7faef6bae4c9c6c1cfeb41e6734e0add58f5d493",
+   "topic_group": "number-theory-parity",
+   "codex_split": "tuning",
+   "requires_lean": true
+  },
+  {
+   "id": "sum-of-first-n-integers",
+   "statement": "0以上の整数nについて、1+2+…+n=n(n+1)/2を数学的帰納法で証明してください。n=0の和は0とします。",
+   "fixture_sha256": "48a2b70c47bdb4dfa7e1d476943765ec557ace874445c91084b4a6eeb8be8d0a",
+   "case_id": "265a03eb8dcc3631eb2819c2cdd642893764b6e4e16fced75097b9ce84b7777d",
+   "topic_group": "induction",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "square-root-of-square-false-claim",
+   "statement": "すべての実数xについて√(x²)=xは成り立ちますか。成り立たない場合は反例を示し、正しい式を説明してください。",
+   "fixture_sha256": "607aee4c288a25cb1c3fdfb4193aef0e2e2fa3ff3b553fe9aba0ace1235b4385",
+   "case_id": "9cea71d86783e705c47e417ca023586cd50a92a9977d775bb7f536f5cc1808f7",
+   "topic_group": "real-analysis-square-root",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "cancellation-zero-coefficient",
+   "statement": "実数a,x,yについて、ax=ayなら必ずx=yといえますか。必要な条件と、条件を外した場合の反例を説明してください。",
+   "fixture_sha256": "f3ecb4ae7b7b9c216e90b28d964a2570d572c4a9ede77e4fcff0db017309ed01",
+   "case_id": "a0c780a15245936bd1e1c1da6e11210519a4916bbde7603cf455efe8a98e2da2",
+   "topic_group": "algebra-cancellation",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "continuity-quantifier-meaning",
+   "statement": "連続のεとδによる定義を学んでいます。δがεと点aに依存してよいというのは、どういう意味ですか。新しい命題の証明ではなく、定義の読み方を説明してください。",
+   "fixture_sha256": "1cea9cad61f1dc345d2a2a6878d9051d666913290111f09d8ea89cff792f5036",
+   "case_id": "cbd82ae966807c6d944dc0c8a0934c6aecc3858e6bd3c3c52721353ffe39b9c5",
+   "topic_group": "real-analysis-quantifiers",
+   "codex_split": "regression",
+   "requires_lean": false
+  },
+  {
+   "id": "pointwise-uniform-quantifier-meaning",
+   "statement": "各点収束と一様収束の定義で、Nがxに依存するかどうかの違いを説明してください。個別の関数列が収束するかの判定は不要です。",
+   "fixture_sha256": "ed55f3edb0cf33682359050e7220a5f135b263d7b5a76fb43cf0cbde3f064dec",
+   "case_id": "3faf8a465d5944a723def223abe9889b5c330055c1846e6918b45ff4c9094fc1",
+   "topic_group": "real-analysis-uniformity",
+   "codex_split": "regression",
+   "requires_lean": false
+  },
+  {
+   "id": "real-sequence-limit-uniqueness",
+   "statement": "実数列(u_n)が実数aとbの両方に収束するとき、a=bであることをε–N論法で証明してください。aへの収束とは、任意のε>0に対してあるN∈ℕが存在し、n≥Nなら|u_n−a|<εとなることです。bへの収束も同じ意味とします。",
+   "fixture_sha256": "2588292fbd1039f937e8b4514e2d5969f14c4789b25a03910f29a4a5e832f773",
+   "case_id": "9a25a2b00ea4eac26aacbd45bc4e7011b335a134d986b40db32540df2d869867",
+   "topic_group": "real_analysis_sequences",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "positive-derivative-injectivity",
+   "statement": "f:ℝ→ℝはℝ全体で微分可能で、すべてのx∈ℝについてf′(x)>0を満たすとします。平均値の定理を使って、fが単射であることを証明してください。",
+   "fixture_sha256": "5f10c0f771ffdaa3293dbb97b4b9e6a8c2a5ef0a794d17e9d99aae41af060ebc",
+   "case_id": "82d6efa4bb1370454f7ba10bacdd1c4471ee5bc58c1c79f8a81f1c77f49a0c6e",
+   "topic_group": "real_analysis_mean_value_theorem",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "prime-above-every-bound",
+   "statement": "任意の自然数Nに対して、Nより大きい素数pが存在することを、N!+1の素因数を考えて証明してください。N=0も含めて扱ってください。",
+   "fixture_sha256": "9613a8ff70324861224fd4aea5c3c1957f1c03f310f5d233eb3245ea355ef679",
+   "case_id": "9ae7073c2c648035e6a5c0a0bbb33d9aa125847081dbfafa74e876b93a00e5f1",
+   "topic_group": "elementary_number_theory",
+   "codex_split": "regression",
+   "requires_lean": true
+  },
+  {
+   "id": "continuous-interval-self-map-fixed-point",
+   "statement": "実数a,bがa≤bを満たすとする。関数f:ℝ→ℝは閉区間[a,b]上で連続で、すべてのx∈[a,b]についてf(x)∈[a,b]を満たす。このとき、f(c)=cを満たすc∈[a,b]が存在することを証明してください。",
+   "fixture_sha256": "aedd1384ef3d07bea735ab68f6ec05362568588e425a27ab6937e4c9f5433c1a",
+   "case_id": "17958f51a34a2d7dbe79179b11b0c4c0bc2dde66ce602612af6e32e94b7bf32c",
+   "topic_group": "real_analysis_fixed_point",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "idempotent-linear-map-unique-decomposition",
+   "statement": "Vを実ベクトル空間、P:V→Vを線形写像とする。P∘P=Pを仮定する。任意のx∈Vについて、P(y)=0、P(z)=z、x=y+zを同時に満たす組(y,z)∈V×Vがただ一つ存在することを証明してください。",
+   "fixture_sha256": "24caee7f840806f277fe6b24b3dbda422a084e5a739899e99e845aad07b8c200",
+   "case_id": "b058aa13e0891c41ea84f914c7af15d63f1b910a13b1d896d100cc42c7bba5b3",
+   "topic_group": "linear_algebra_idempotent",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "index-two-subgroup-normality",
+   "statement": "Gを群、HをGの部分群とする。HのGにおける指数[G:H]が2であると仮定する。このとき、すべてのg∈Gとh∈Hについてghg⁻¹∈Hとなること、すなわちHがGの正規部分群であることを証明してください。Gが有限群であるとは仮定しません。",
+   "fixture_sha256": "e346c9f93104b1d8507d1b44a5a7271df640833ad60cf6df0d2ebf182780e228",
+   "case_id": "8a6c0d01b271ce37ab2318724efaad6e081174f170f34b486bfb605a07af64b9",
+   "topic_group": "group_theory_cosets",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "bounded-monotone-real-sequence-convergence",
+   "statement": "実数列u:ℕ→ℝは単調非減少であるとする。また、ある実数Mについて、すべてのn∈ℕでu(n)≤Mが成り立つとする。このとき、ある実数Lが存在してu(n)→Lとなり、すべてのn∈ℕについてu(n)≤L≤Mが成り立つことを、実数の上限の性質を使って証明してください。",
+   "fixture_sha256": "00bf326d4006ef9cf0a25dd959a2bc2636df7ae8716ac9bd32512049d7385c55",
+   "case_id": "828fa76bcaa9b273f9d82fdcbb32c15f3423c847de171b6d1d958fe5fbbd6bc1",
+   "topic_group": "real_analysis_monotone_convergence",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "distinct-eigenvalues-linear-independence",
+   "statement": "Vを実ベクトル空間、T:V→Vを線形写像、nを自然数とする。添字i∈{0,…,n−1}に対し、実数λᵢと非零ベクトルvᵢ∈Vがあり、T(vᵢ)=λᵢvᵢを満たすとする。λᵢは相異なると仮定する。このとき、ベクトルの族(vᵢ)が一次独立であることを証明してください。n=0のときは空の族とします。",
+   "fixture_sha256": "1733ff28f1e24317f04e69d9dd8301c41e1c836314b9d86dabc602fe5567400e",
+   "case_id": "c991d8806e8abfc27267482b11d81193895c82c26d50248b46c01013183d24d9",
+   "topic_group": "linear_algebra_eigenvectors",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "prime-order-group-nonidentity-generator",
+   "statement": "Gを有限群とし、その位数|G|が素数pであるとする。単位元をeと書く。任意のg∈Gについて、g≠eならばgの生成する巡回部分群⟨g⟩がG全体に等しいことを、ラグランジュの定理を使って証明してください。",
+   "fixture_sha256": "cb25897825555c31e71c939e1c65cdc7aae7c6720c72b296be3bb1097fa7b74c",
+   "case_id": "52b55080b1bb34d6788308c37670b12e5349ba50e7a3dbf26afb051497c521c3",
+   "topic_group": "group_theory_prime_order",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "coprime-moduli-unique-residue-solution",
+   "statement": "m,nを正の自然数とし、gcd(m,n)=1とする。任意の自然数a,bに対して、0≤x<mn、x≡a (mod m)、x≡b (mod n)を同時に満たす自然数xがただ一つ存在することを証明してください。a<m、b<nは仮定しません。",
+   "fixture_sha256": "b3bbe63bfead998cf8c9eb1ae5b7bb88a0812da0eddce1647129326e333f06cd",
+   "case_id": "f20d607ebcd3beb2aa3132d170a932a74d160e670593de9b18fc0a3b512d2348",
+   "topic_group": "elementary_number_theory_crt",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "compact-hausdorff-continuous-bijection-inverse",
+   "statement": "X,Yを位相空間とする。Xはコンパクトで、Yはハウスドルフ空間であると仮定する。全単射f:X→Yが連続ならば、その逆写像f⁻¹:Y→Xも連続であることを証明してください。Xがハウスドルフであることは仮定しません。",
+   "fixture_sha256": "7d23c60f947f730312ebb9ca7f7dee2f0e4fa53bc26d61b3c011e62ade0185a2",
+   "case_id": "48d161a45e25942b033e87fbcfd07aae2954e8c9c9fe7fec5ecd558b2d4938fc",
+   "topic_group": "topology_compact_hausdorff",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  },
+  {
+   "id": "finite-integral-domain-unique-inverse",
+   "statement": "Rを有限整域とする。ここで整域とは、単位元をもつ可換環で1≠0かつ零因子をもたないものとします。任意のa∈Rに対し、a≠0ならばab=1を満たすb∈Rがただ一つ存在することを証明してください。",
+   "fixture_sha256": "1dbff37f0d55f743077081cf89eea7893c31636f9daaed5df5a5a005a5d7885d",
+   "case_id": "81bb390696d44b0ec998f44182a9037b10353cd673b412418e2aeddfe7850802",
+   "topic_group": "ring_theory_finite_domains",
+   "codex_split": "prospective_holdout",
+   "requires_lean": true
+  }
+ ]
+}
