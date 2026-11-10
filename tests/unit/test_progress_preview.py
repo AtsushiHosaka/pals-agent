@@ -95,7 +95,6 @@ def test_caps_truncate_at_a_line_boundary_and_flag_it() -> None:
         ("compiling", {}, _SKETCH),
         ("sketching", {}, None),
         ("sketching", {"generated_draft": {"text": "  "}}, None),
-        ("sketching", {"generated_draft": {"text": "<script>alert(1)</script>"}}, None),
         ("proving", {}, None),
     ],
 )
@@ -105,9 +104,32 @@ def test_nothing_is_sent_without_usable_content(
     assert _progress_preview(status=status, raw=raw, lean_code=lean, language="en") is None
 
 
-def test_lean_tactic_operators_are_not_mistaken_for_html() -> None:
-    lean = "example (a b : ℕ) (h : a < b) : a ≤ b := by\n  omega <;> simp\n"
-    assert _progress_preview(status="proving", raw={}, lean_code=lean, language="en") is not None
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Assume $a<b$ and $c>0$",
+        "$a<b$ and $c>0$",
+        "<script>x</script>",
+    ],
+)
+def test_draft_plan_with_angle_brackets_is_sent_verbatim(text: str) -> None:
+    preview = _progress_preview(
+        status="sketching", raw={"generated_draft": {"text": text}}, lean_code=None, language="en"
+    )
+    assert preview is not None and preview["text"] == text and preview["truncated"] is False
+
+
+@pytest.mark.parametrize(
+    "lean",
+    [
+        "example (a b : ℕ) (h : a<b) : a ≤ b := by\n  omega <;> simp\n",
+        "example (a b : ℕ) (h : a < b) : a ≤ b := by\n  omega <;> simp\n",
+        "-- <script>x</script>\nexample : True := trivial\n",
+    ],
+)
+def test_lean_with_angle_brackets_is_sent_verbatim(lean: str) -> None:
+    preview = _progress_preview(status="proving", raw={}, lean_code=lean, language="en")
+    assert preview is not None and preview["text"] == lean
 
 
 def test_client_puts_closed_payload_with_short_timeout() -> None:
