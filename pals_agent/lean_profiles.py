@@ -5,7 +5,8 @@ defined here: each library has a manifest (``pals_agent/lean_libraries/*.toml``,
 ``pals_agent.lean_library_manifest``) and this module derives its profiles from them. The default
 profile is the workspace PALS has always verified against; its behaviour and every digest derived
 from it are unchanged. A non-default profile adds a source ``import`` allow-list, because the
-library behind it is only partly trusted (Stacks: ``StacksCore`` is reviewed, ``StacksFrontier`` is not).
+library behind it is only partly trusted (Stacks: ``StacksCore`` is reviewed,
+``StacksFrontier`` is not).
 
 One verifier process serves exactly one profile. Routing a request to a profile is the caller's job
 (it picks the verifier deployment); the verifier never accepts a profile from the request body, so a
