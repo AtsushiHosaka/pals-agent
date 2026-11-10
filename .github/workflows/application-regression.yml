@@ -1,0 +1,188 @@
+name: Agent application regression
+
+on:
+  pull_request:
+  push:
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-regression-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agent-regression:
+    name: agent-regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: parent-fixture/pals-agent
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      UV_NO_PROGRESS: "1"
+      UV_PYTHON_DOWNLOADS: never
+      AWS_EC2_METADATA_DISABLED: "true"
+      CORE_TEST_FILES: >-
+        tests/unit/test_agent_regression_source_scope.py
+        tests/unit/test_pipeline.py
+        tests/unit/test_worker_credential_provider_binding.py
+        tests/unit/test_proof_request_worker.py
+        tests/unit/test_repair_runtime_spec.py
+        tests/unit/test_proof_flow_runtime.py
+        tests/unit/test_proof_flow_worker_image.py
+        tests/unit/test_worker_claim_spec.py
+        tests/unit/test_chat_runtime.py
+        tests/unit/test_api_repair_stagnation.py
+        tests/unit/test_worker_drain.py
+        tests/unit/test_worker.py
+        tests/unit/test_semantic_token_meter.py
+        tests/unit/test_verifier_tls_material.py
+        tests/unit/test_worker_processes.py
+        tests/unit/test_api_claim_contract_spec.py
+        tests/unit/test_runtime_latency.py
+        tests/unit/test_http_hard_deadline_spec.py
+        tests/unit/test_http_verifier_runtime.py
+        tests/unit/test_production_token_factory.py
+        tests/unit/test_token_proof_request.py
+        tests/unit/test_token_meter.py
+        tests/unit/test_worker_api_trust.py
+        tests/unit/test_aws_worker_credentials.py
+        tests/unit/test_lightweight_http_transport.py
+        tests/unit/test_api_verified_update_contract_spec.py
+        tests/unit/test_aws_worker_credentials_sdk_rotation.py
+        tests/unit/test_worker_lanes.py
+        tests/unit/test_lean.py
+        tests/unit/test_lean_trusted_audit.py
+        tests/unit/test_lean_boundary_attestation_spec.py
+        tests/unit/test_lean_source_policy.py
+        tests/unit/test_lean_environment.py
+        tests/unit/test_lean_container_contract_spec.py
+        tests/unit/test_lean_model_policy.py
+        tests/unit/test_lean_target.py
+        tests/unit/test_lean_process_boundary_spec.py
+        tests/unit/test_lean_child_read_allowlist.py
+        tests/unit/test_isolated_verifier_http_server.py
+        tests/unit/test_recipe_search_client.py
+        tests/unit/test_material_context.py
+        tests/unit/test_linked_chat.py
+        tests/unit/test_chat_pdf_inputs.py
+    steps:
+      - name: Check out the immutable public parent fixture contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: AtsushiHosaka/pals
+          ref: b6b101177e5ce650eb3d03adc5f64f17e0540d96
+          path: parent-fixture
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: parent-fixture/pals-agent
+          fetch-depth: 0
+      - name: Verify the requested source revision
+        env:
+          EXPECTED_SOURCE: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
+          test "$(git -C .. rev-parse HEAD)" = b6b101177e5ce650eb3d03adc5f64f17e0540d96
+      # This qualifies only the immutable retained-verifier189 source slice.
+      # The bounded runtime core is not general main/worker qualification.
+      # Only the repaired server has a complete changed-source mapping here.
+      # The 50 reproduced baseline failures remain unqualified; worker/factory/
+      # token/catalog and other source edits require an owned regression mapping.
+      # The broad core below is additional evidence, not blanket certification.
+      - name: Reject changes outside the retained verifier source slice
+        run: |
+          python - <<'PY_SCOPE'
+          import os
+          import subprocess
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          head = git("rev-parse", "HEAD")
+          anchor = "189b44378e6e63e5ab7c92d9c5b7d6507acd80f0"
+          assert git("rev-parse", anchor + "^{commit}") == anchor, "retained verifier anchor differs"
+          raw_anchor = subprocess.check_output(["git", "cat-file", "commit", anchor])
+          actual_hash = subprocess.check_output(
+              ["git", "hash-object", "-t", "commit", "--stdin"], input=raw_anchor
+          ).decode().strip()
+          assert actual_hash == anchor, "retained verifier commit bytes differ"
+          assert subprocess.run(
+              ["git", "merge-base", "--is-ancestor", anchor, head], check=False
+          ).returncode == 0, "retained verifier anchor must be an ancestor"
+          changed = set(git("diff", "--name-only", anchor, head).splitlines())
+          covered = set(os.environ["CORE_TEST_FILES"].split()) | {
+              'pals_agent/lean_verifier/http_server.py',
+              ".github/workflows/application-regression.yml",
+              "README.md", "LICENSE", "AGENTS.md", "CLAUDE.md",
+          }
+          missing = sorted(changed - covered)
+          assert not missing, "Add an owned regression mapping before qualifying these paths: " + ", ".join(missing)
+          print(f"Qualified retained-verifier189 change paths: {len(changed)}")
+          PY_SCOPE
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.13"
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.11.28"
+          enable-cache: false
+      - name: Install the locked declared development environment
+        run: uv sync --locked --extra dev --python 3.12.13
+      - name: Check the changed verifier boundary
+        run: |
+          uv run --no-sync ruff check \
+            pals_agent/lean_verifier/http_server.py \
+            tests/unit/test_isolated_verifier_http_server.py \
+            tests/unit/test_agent_regression_source_scope.py
+      - name: Verify worker, pipeline, API clients and verifier runtime core
+        run: |
+          uv run --no-sync python -m pytest -q -p no:cacheprovider \
+            --junitxml="$RUNNER_TEMP/agent-regression.xml" \
+            $CORE_TEST_FILES
+      - name: Require executed runtime modules and setup-failure regressions
+        if: always()
+        env:
+          REGRESSION_REPORT: ${{ runner.temp }}/agent-regression.xml
+        run: |
+          python - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+
+          cases = ET.parse(os.environ["REGRESSION_REPORT"]).findall(".//testcase")
+          expected = {path.removesuffix(".py").replace("/", ".") for path in os.environ["CORE_TEST_FILES"].split()}
+          actual = {case.attrib.get("classname", "") for case in cases}
+          missing_modules = {module for module in expected if not any(
+              name == module or name.startswith(module + ".") for name in actual
+          )}
+          assert not missing_modules, "required runtime modules did not execute: " + repr(missing_modules)
+          scope = [case for case in cases if case.attrib.get("classname", "").startswith(
+              "tests.unit.test_agent_regression_source_scope."
+          )]
+          assert {
+              "test_unqualified_worker_change_is_refused",
+              "test_readme_followup_cannot_hide_the_unqualified_worker",
+              "test_identical_tree_without_anchor_ancestry_is_refused",
+          } <= {case.attrib["name"] for case in scope}, "required source-history regressions did not execute"
+          assert all(not any(case.find(tag) is not None for tag in ("failure", "error")) for case in cases)
+          # Existing optional-client, deployed tmpfs and Darwin-only shell
+          # coverage is separate; the first two native Linux Landlock tests must run.
+          allowed_skips = {
+              ("tests.unit.test_worker_api_trust", "test_httpx_observes_exported_trust"),
+              ("tests.unit.test_lean_child_read_allowlist", "test_linux_http_scratch_child_does_not_expose_sibling_runtime_files"),
+              ("tests.unit.test_lean_process_boundary_spec", "test_interrupted_compile_returns_a_failed_result_without_touching_success"),
+          }
+          skipped = {(case.attrib["classname"], case.attrib["name"]) for case in cases if case.find("skipped") is not None}
+          assert skipped <= allowed_skips, "unexpected skipped core regressions: " + repr(skipped - allowed_skips)
+          tls = [case for case in cases if case.attrib.get("classname", "").endswith("test_isolated_verifier_http_server")]
+          assert len(tls) >= 27, "required verifier regressions did not execute"
+          assert all(case.find("skipped") is None for case in tls)
+          assert sum(case.attrib["name"].startswith("test_sandbox_setup_failure_is_unavailable_and_never_proof_repair_feedback[") for case in tls) == 2
+          print(f"Runtime core: {len(cases)} executed cases; explicitly separate optional/deployed-fixture skips: {sorted(skipped)}")
+          PY
