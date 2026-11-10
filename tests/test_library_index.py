@@ -92,3 +92,17 @@ def test_stacks_tags_are_an_optional_plugin(tmp_path: Path) -> None:
 def test_a_source_at_another_commit_is_refused(tmp_path: Path) -> None:
     with pytest.raises(SystemExit):
         build(_manifest(), _tree(tmp_path), tmp_path / "out")  # not a git checkout
+
+
+def test_the_committed_archive_index_matches_its_manifest_digest() -> None:
+    import hashlib
+
+    manifest = _manifest()
+    root = Path(__file__).resolve().parents[1]
+    assert manifest.index_path is not None and manifest.index_sha256 is not None
+    data = (root / manifest.index_path).read_bytes()
+    assert hashlib.sha256(data).hexdigest() == manifest.index_sha256
+    written = json.loads((root / "lean-indexes/mathlib-archive/manifest.json").read_text())
+    assert written["decls_jsonl_gz_sha256"] == manifest.index_sha256
+    assert written["commit"] == manifest.commit and written["license"] == manifest.license_spdx
+    assert {r["trust"] for r in _rows(root / manifest.index_path)} == {"kernel-checked-unreviewed"}

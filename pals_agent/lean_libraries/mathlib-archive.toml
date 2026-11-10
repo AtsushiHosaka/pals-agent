@@ -39,3 +39,9 @@ description = "counterexamples to plausible statements"
 
 [audit]
 allowed_axioms = ["propext", "Classical.choice", "Quot.sound"]
+
+# Declaration index built by tools/library_index (source text only; no Lean, no model). The rows are
+# committed (about 54 KB) so the digest can be checked without the Mathlib checkout.
+[index]
+path = "lean-indexes/mathlib-archive/decls.jsonl.gz"
+sha256 = "64b4e3edd1fcff05356c94c52af63c433c2f3a4f08b7e42857996d6f16ca4577"

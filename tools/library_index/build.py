@@ -48,7 +48,9 @@ def _commit_of(source: Path) -> str | None:
     return out.stdout.strip() or None
 
 
-def _row(declaration: Declaration, layer_root: str, trust: str, tags: list[str]) -> dict[str, Any]:
+def _row(
+    declaration: Declaration, layer_root: str, trust: str, tags: list[str], title: str
+) -> dict[str, Any]:
     return {
         "name": declaration.name,
         "kind": declaration.kind,
@@ -59,9 +61,21 @@ def _row(declaration: Declaration, layer_root: str, trust: str, tags: list[str])
         "line": declaration.line,
         "layer": layer_root,
         "trust": trust,
+        "module_title": title,
         "has_doc": bool(declaration.doc),
+        "span_lines": 0,  # filled by `_with_spans`
         "tags": tags,
     }
+
+
+def _with_spans(rows: list[dict[str, Any]], text: str) -> None:
+    """Non-blank source lines from each declaration's line to the next one's (an upper bound on its
+    length: it includes the docstring and comments of the following declaration)."""
+    lines = text.splitlines()
+    rows.sort(key=lambda r: r["line"])
+    for index, row in enumerate(rows):
+        end = rows[index + 1]["line"] - 1 if index + 1 < len(rows) else len(lines)
+        row["span_lines"] = sum(1 for line in lines[row["line"] - 1 : end] if line.strip())
 
 
 def build(
@@ -90,10 +104,15 @@ def build(
             result = extract_file(path, source)
             files += 1
             skipped.update(result.skipped)
-            rows.extend(
-                _row(d, layer.root, layer.trust, tag_plugin(d) if tag_plugin else [])
+            file_rows = [
+                _row(
+                    d, layer.root, layer.trust, tag_plugin(d) if tag_plugin else [],
+                    result.module.title,
+                )
                 for d in result.declarations
-            )
+            ]
+            _with_spans(file_rows, path.read_text(encoding="utf-8", errors="replace"))
+            rows.extend(file_rows)
     rows.sort(key=lambda r: (r["module"], r["line"], r["name"]))
     out_dir.mkdir(parents=True, exist_ok=True)
     jsonl = out_dir / "decls.jsonl.gz"
