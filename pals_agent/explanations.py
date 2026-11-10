@@ -1648,7 +1648,8 @@ Return exactly one JSON object with this schema:
       ]
     }}
   ],
-  "conclusion": "one short final sentence; the explicit final answer when asked to compute or solve"
+  "conclusion": "one short final sentence; the explicit final answer when asked to compute or solve",
+  "figure": "a figure call object exactly as specified above, or null"
 }}
 
 Write all learner-facing prose in the requested output language. Overview and conclusion must be
@@ -1837,7 +1838,9 @@ def _output_review_prompt(
     figure_review = (
         "`explanation.figure` is a closed illustration template, drawn beside the proof and "
         "proving nothing. Reject the output if its labels, marks or `claim` values state "
-        "something the verified theorem does not establish or assume.\n"
+        "something the verified theorem does not establish or assume. A graph template's "
+        "`domain` and `range` (and `anchor`/`offsets`) only choose the visible window and "
+        "sample positions; they state no mathematical claim, so never reject for them.\n"
         if explanation.visualization is not None and clarification is None
         else ""
     )
