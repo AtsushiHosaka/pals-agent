@@ -68,6 +68,10 @@ packages = ["pals_agent"]
 "pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-integral-v1-registry.json"
 "pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json" = "pals_agent/content_dictionaries/typed-commutative-algebra-chain-dimension-v1-registry.json"
 
+"pals_agent/lean_libraries/mathlib.toml" = "pals_agent/lean_libraries/mathlib.toml"
+"pals_agent/lean_libraries/stacks.toml" = "pals_agent/lean_libraries/stacks.toml"
+"pals_agent/lean_libraries/mathlib-archive.toml" = "pals_agent/lean_libraries/mathlib-archive.toml"
+
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]

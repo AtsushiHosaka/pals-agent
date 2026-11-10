@@ -197,6 +197,15 @@ _LEAN_COMPILE_CODES: Final = frozenset({
     "lean.disallowed_native_evaluation", "lean.disallowed_interactive_command",
     "lean.disallowed_axiom", "lean.disallowed_ambiguous_lexing",
     "pals.target_declaration_invalid",
+    # A profile's statement-origin check rejected a constant from an unreviewed library: a verdict
+    # about the proof text, like the other `lean.disallowed_*` rejections.
+    "lean.statement_uses_untrusted_library",
+})
+# Advisory diagnostics a *verified* result may carry (library trust level, a Frontier definition
+# that resembles a reviewed one). They are never the reason an attempt failed, so they have no
+# failure taxonomy code; listing them here keeps the "every package code is classified" scan honest.
+LEAN_ADVISORY_CODES: Final = frozenset({
+    "lean.library_trust", "lean.frontier_duplicate_definition",
 })
 # Lean diagnostic codes in precedence order: infrastructure first, then trust, then verdicts.
 _LEAN_PRECEDENCE: Final[tuple[tuple[frozenset[str], str], ...]] = (
@@ -205,9 +214,7 @@ _LEAN_PRECEDENCE: Final[tuple[tuple[frozenset[str], str], ...]] = (
     (frozenset({"lean.timeout", "lean.verifier_timeout"}), "infra.timeout"),
     (frozenset({"lean.sandbox_setup_failed", "lean.project_not_found", "lean.prlimit_not_found"}),
      "verifier.runtime_unavailable"),
-    # The frontier/library trust audit codes (production line) are trust verdicts too.
-    (frozenset({"lean.trusted_audit_failed", "lean.frontier_duplicate_definition",
-                "lean.statement_uses_untrusted_library", "lean.library_trust"}),
+    (frozenset({"lean.trusted_audit_failed"}),
      "verifier.trusted_audit_failed"),
     (frozenset({"lean.statement_mismatch"}), "verifier.statement_mismatch"),
     (frozenset({"lean.formal_harness_mismatch"}), "verifier.formal_harness_mismatch"),
@@ -216,7 +223,7 @@ _LEAN_PRECEDENCE: Final[tuple[tuple[frozenset[str], str], ...]] = (
 )
 _KNOWN_LEAN_CODES: Final = frozenset().union(*(codes for codes, _ in _LEAN_PRECEDENCE)) | {
     "lean.verified",
-}
+} | LEAN_ADVISORY_CODES
 # Closed raw vocabulary for the ``raw_code`` log field (anything else becomes unrecognized).
 _RAW_CODES: Final = frozenset(_KNOWN_REQUEST_ERRORS | _KNOWN_LEAN_CODES) | {
     "verifier_internal_error",

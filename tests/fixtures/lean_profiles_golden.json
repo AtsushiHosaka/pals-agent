@@ -1,0 +1,141 @@
+{
+ "_LIBRARY_ROOTS": [
+  "Init",
+  "Std",
+  "Lean",
+  "Lake",
+  "Batteries",
+  "Aesop",
+  "Qq",
+  "Plausible",
+  "ImportGraph",
+  "ProofWidgets",
+  "LeanSearchClient",
+  "Cli",
+  "Mathlib",
+  "StacksCore"
+ ],
+ "mathlib-4.32": {
+  "audit_source_sha256": "b2730ada3b30f0ebc1c571c1f33b0ecaa6544e57c9558cc7927b3e96498d8c0f",
+  "import_roots": null,
+  "lean_version": "leanprover/lean4:v4.32.0-rc1",
+  "name": "mathlib-4.32",
+  "pins": [
+   [
+    "mathlib",
+    "8b62164d808cd0f23b7d8cc28190a6c1a1bb483a"
+   ]
+  ],
+  "requires_flag": null,
+  "silence_audit_deprecations": false,
+  "statement_recorded_roots": null,
+  "statement_trusted_roots": null,
+  "workspace": "lean-workspace"
+ },
+ "stacks-4.35": {
+  "audit_source_sha256": "f6b7107d48b0b5693a79c7e1723909033d9027e4f5c531fd1ce75cd984867d07",
+  "import_roots": [
+   "Mathlib",
+   "StacksCore"
+  ],
+  "lean_version": "leanprover/lean4:v4.35.0",
+  "name": "stacks-4.35",
+  "pins": [
+   [
+    "mathlib",
+    "56a005855ea17e0b0958f73ec801ae140b0a1679"
+   ],
+   [
+    "stacks",
+    "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"
+   ]
+  ],
+  "requires_flag": null,
+  "silence_audit_deprecations": true,
+  "statement_recorded_roots": null,
+  "statement_trusted_roots": null,
+  "workspace": "lean-workspaces/stacks-4.35"
+ },
+ "stacks-frontier-4.35": {
+  "audit_source_sha256": "0775739a9327d57fd6a709fd09739d447d1a5612587ea68d50e6f20b6a2de264",
+  "import_roots": [
+   "Mathlib",
+   "StacksCore",
+   "StacksFrontier"
+  ],
+  "lean_version": "leanprover/lean4:v4.35.0",
+  "name": "stacks-frontier-4.35",
+  "pins": [
+   [
+    "mathlib",
+    "56a005855ea17e0b0958f73ec801ae140b0a1679"
+   ],
+   [
+    "stacks",
+    "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"
+   ]
+  ],
+  "requires_flag": "PALS_LEAN_ALLOW_FRONTIER_PROOFS",
+  "silence_audit_deprecations": true,
+  "statement_recorded_roots": null,
+  "statement_trusted_roots": [
+   "Init",
+   "Std",
+   "Lean",
+   "Lake",
+   "Batteries",
+   "Aesop",
+   "Qq",
+   "Plausible",
+   "ImportGraph",
+   "ProofWidgets",
+   "LeanSearchClient",
+   "Cli",
+   "Mathlib",
+   "StacksCore"
+  ],
+  "workspace": "lean-workspaces/stacks-4.35"
+ },
+ "stacks-frontier-defs-4.35": {
+  "audit_source_sha256": "ba93cc4fda4ff2803c58559a46eda584b1f0f5e654800240821e3a16823d6031",
+  "import_roots": [
+   "Mathlib",
+   "StacksCore",
+   "StacksFrontier"
+  ],
+  "lean_version": "leanprover/lean4:v4.35.0",
+  "name": "stacks-frontier-defs-4.35",
+  "pins": [
+   [
+    "mathlib",
+    "56a005855ea17e0b0958f73ec801ae140b0a1679"
+   ],
+   [
+    "stacks",
+    "5ed82d14634e8d9576bb844c7bd4e3da66d450e7"
+   ]
+  ],
+  "requires_flag": "PALS_LEAN_ALLOW_FRONTIER_STATEMENTS",
+  "silence_audit_deprecations": true,
+  "statement_recorded_roots": [
+   "StacksFrontier"
+  ],
+  "statement_trusted_roots": [
+   "Init",
+   "Std",
+   "Lean",
+   "Lake",
+   "Batteries",
+   "Aesop",
+   "Qq",
+   "Plausible",
+   "ImportGraph",
+   "ProofWidgets",
+   "LeanSearchClient",
+   "Cli",
+   "Mathlib",
+   "StacksCore"
+  ],
+  "workspace": "lean-workspaces/stacks-4.35"
+ }
+}

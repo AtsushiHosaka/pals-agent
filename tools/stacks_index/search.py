@@ -34,6 +34,9 @@ from tools.mathlib_index.search import (
 )
 from tools.stacks_index.shape import query_shape
 
+# Reviewed layers: the legacy word and its generic successor (see pals_agent.lean_library_manifest).
+_REVIEWED = frozenset({"core", "kernel-checked-reviewed"})
+
 __all__ = [
     "Candidate",
     "StacksIndex",
@@ -56,7 +59,7 @@ class StacksIndex:
         clauses: list[str] = []
         params: list[str] = []
         if scope == "core":
-            clauses.append("d.trust = 'core'")
+            clauses.append("d.trust IN ('core', 'kernel-checked-reviewed')")
         elif scope != "all":
             raise ValueError(f"unknown scope {scope!r}; use 'core' or 'all'")
         if not include_upstream:
@@ -143,7 +146,7 @@ class StacksIndex:
         scored = [
             Candidate(names[doc_id], value / (query_mass + masses[doc_id] - value + 1e-9))
             for doc_id, value in overlap.items()
-            if scope == "all" or trusts[doc_id] == "core"
+            if scope == "all" or trusts[doc_id] in _REVIEWED
         ]
         scored.sort(key=lambda candidate: (-candidate.score, candidate.name))
         return scored[:k]

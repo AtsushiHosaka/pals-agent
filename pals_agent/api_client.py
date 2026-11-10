@@ -609,6 +609,39 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def upsert_unreviewed_proof_explanation(
+        self,
+        *,
+        proof_job_id: str,
+        claim_id: str,
+        content: dict[str, Any],
+        unreviewed_reason: str,
+        private_review_failures: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        """Complete an explanation that no reviewer approved, marked ``unreviewed``.
+
+        The pinned API rejects this request (completed requires approved review evidence), so
+        it is used only behind PALS_EXPLANATION_FALLBACK_ENABLED and a failure is non-fatal.
+        """
+        resource_id = _path_segment(proof_job_id)
+        if not isinstance(content, dict) or not unreviewed_reason.strip():
+            raise ValueError("an unreviewed explanation requires content and a reason")
+        payload: dict[str, Any] = {
+            "state": "completed",
+            "claim_id": _canonical_claim_id(claim_id),
+            "content": content,
+            "review_status": "unreviewed",
+            "unreviewed_reason": unreviewed_reason,
+        }
+        if private_review_failures:
+            payload["private_review_failures"] = private_review_failures
+        return self._request(
+            "PUT",
+            f"/v1/internal/proof-jobs/{resource_id}/explanation",
+            payload,
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+        )
+
     def get_proof_clarification(self, clarification_id: str) -> dict[str, Any]:
         resource_id = _path_segment(clarification_id)
         return self._request(
