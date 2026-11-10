@@ -205,7 +205,10 @@ _LEAN_PRECEDENCE: Final[tuple[tuple[frozenset[str], str], ...]] = (
     (frozenset({"lean.timeout", "lean.verifier_timeout"}), "infra.timeout"),
     (frozenset({"lean.sandbox_setup_failed", "lean.project_not_found", "lean.prlimit_not_found"}),
      "verifier.runtime_unavailable"),
-    (frozenset({"lean.trusted_audit_failed"}), "verifier.trusted_audit_failed"),
+    # The frontier/library trust audit codes (production line) are trust verdicts too.
+    (frozenset({"lean.trusted_audit_failed", "lean.frontier_duplicate_definition",
+                "lean.statement_uses_untrusted_library", "lean.library_trust"}),
+     "verifier.trusted_audit_failed"),
     (frozenset({"lean.statement_mismatch"}), "verifier.statement_mismatch"),
     (frozenset({"lean.formal_harness_mismatch"}), "verifier.formal_harness_mismatch"),
     (frozenset({"pals.theorem_alignment_failed"}), "verifier.theorem_alignment_failed"),

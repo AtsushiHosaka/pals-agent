@@ -799,6 +799,74 @@
   {
    "id": "tests.unit.test_worker_api_trust::test_httpx_observes_exported_trust",
    "reason": "could not import 'httpx': No module named 'httpx'"
+  },
+  {
+   "id": "tests.integration.test_lean_real::test_real_lean_import_plan_is_applied_and_retried_over_the_written_imports",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_definition_behind_a_local_definition_is_still_found",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_definition_resembling_a_mathlib_one_is_recorded_not_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_frontier_lemma_in_the_proof_only_is_frontier_proof",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_mathlib_only_proof_is_recorded_as_mathlib",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_module_that_was_not_built_cannot_be_imported",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_pinned_statement_is_kept_only_when_the_proof_proves_exactly_it",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_statement_reaching_an_unreviewed_non_frontier_root_is_still_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_statement_with_a_frontier_definition_is_accepted_and_labelled",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_a_wrong_proof_is_rejected_by_the_kernel_path",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real::test_sorry_extra_axioms_and_native_evaluation_stay_forbidden",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_frontier_module_that_was_not_built_cannot_be_imported",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_mathlib_statement_may_be_proved_with_a_frontier_lemma",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_statement_reaching_a_frontier_definition_through_a_local_def_is_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_statement_that_mentions_a_frontier_definition_is_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_a_wrong_proof_is_still_rejected",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier::test_sorry_and_extra_axioms_stay_forbidden",
+   "reason": "Needs the real pinned Lean/Lake/Mathlib workspace (main-line real-Lean test); not provided on this runner."
   }
  ],
  "allowed_unexecuted_modules": [
@@ -817,6 +885,14 @@
   {
    "id": "tests.unit.test_recipe_instantiation_lean",
    "reason": "Needs the pinned Lean v4.32.0-rc1 toolchain; not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_frontier_defs_real",
+   "reason": "Every case needs the real pinned Lean workspace; not provided on this runner."
+  },
+  {
+   "id": "tests.unit.test_lean_profiles_real_frontier",
+   "reason": "Every case needs the real pinned Lean workspace; not provided on this runner."
   }
  ]
 }
