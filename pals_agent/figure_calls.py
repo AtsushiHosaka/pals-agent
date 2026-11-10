@@ -234,9 +234,11 @@ def validate_figure_bindings(value: Any, call: dict[str, Any]) -> None:
 
 
 FIGURE_INSTRUCTION = """Add one figure whenever the answer concerns plane geometry that a template
-below covers, or the graph of a polynomial; otherwise use null. A figure only illustrates and
-proves nothing. Call a template and do not describe the figure in the text. Never give coordinates,
-code, colors or captions.
+below covers, or an explicit polynomial of degree at most 7 in one real variable whose values,
+sign, roots or extrema the statement is about (its graph is then the figure); use null only when
+none of these applies, never because the figure seems optional.
+A figure only illustrates and proves nothing. Call a template and do not describe the figure in
+the text. Never give coordinates, code, colors or captions.
 Example: {"version":1,"template":"inscribed-angle","parameters":{"labels":{"chord_start":"A",
 "chord_end":"B","on_arc_1":"P","on_arc_2":"Q"},"marks":[{"icon":"equal_angle","at":[["A","P","B"],
 ["A","Q","B"]],"claim":"conclusion","step":"angles"}]},"bindings":[{"step_id":"angles","paragraph":1}]}
