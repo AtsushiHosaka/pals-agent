@@ -22,6 +22,7 @@ from pals_agent.explanation_v2 import (
     derive_references,
     draft_text_from_proof_job,
     explanation_prompt_v2,
+    fit_defects_rationale,
     parse_defects_text,
     parse_review_verdict,
     select_v2,
@@ -345,6 +346,44 @@ def test_revision_prompt_carries_the_specific_defects() -> None:
     assert (
         "unjustified_leap" in client.calls[0]["prompt"] and "no reason" in client.calls[0]["prompt"]
     )
+
+
+def test_revision_prompt_includes_the_rejected_candidate() -> None:
+    previous = json.dumps(["REJECTED-OVERVIEW-MARKER", "step", "end"])
+    client = ScriptedClient(json.dumps(good_payload()))
+    writer(client).explain(
+        theorem_statement=STATEMENT_PROVE,
+        lean_code=LEAN,
+        draft_text=DRAFT,
+        language="en",
+        review_feedback={
+            "rationale": json.dumps({"defects": [DEFECT], "summary": "s"}),
+            "previous_candidate": previous,
+        },
+    )
+    prompt = client.calls[0]["prompt"]
+    assert "REJECTED-OVERVIEW-MARKER" in prompt
+    assert prompt.index("REJECTED-OVERVIEW-MARKER") < prompt.index(DEFECT["problem"])
+
+
+def test_long_defect_lists_survive_the_rationale_limit_as_valid_json() -> None:
+    defects = [
+        {"kind": "unjustified_leap", "where": f"section-{i}" + "あ" * 190, "problem": "い" * 600}
+        for i in range(12)
+    ]
+    text = fit_defects_rationale(defects, "う" * 2000)
+    assert len(text) <= 2000
+    parsed = parse_defects_text(text)
+    assert parsed and parsed[0]["kind"] == "unjustified_leap" and parsed[0]["problem"]
+    client = ScriptedClient(json.dumps({"approved": False, "defects": defects, "summary": "x"}))
+    with pytest.raises(ProofOutputReviewError) as error:
+        review(client)
+    assert len(error.value.rationale) <= 2000
+    assert parse_defects_text(error.value.rationale)
+
+
+def test_short_defect_lists_are_kept_whole() -> None:
+    assert parse_defects_text(fit_defects_rationale([DEFECT], "s")) == [DEFECT]
 
 
 def test_prompt_is_a_positive_specification_with_one_exemplar_per_type() -> None:
