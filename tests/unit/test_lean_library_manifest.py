@@ -6,6 +6,7 @@ import copy
 import dataclasses
 import hashlib
 import json
+import re
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -13,7 +14,13 @@ from typing import Any
 import pytest
 
 from pals_agent import lean_profiles
-from pals_agent.lean_audit import ALLOWED_AXIOMS
+from pals_agent.lean_audit import (
+    ALLOWED_AXIOMS,
+    AuditReport,
+    audit_diagnostics,
+    parse_audit_report,
+    trust_level,
+)
 from pals_agent.lean_library_manifest import (
     MANIFEST_DIR,
     TRUST_REVIEWED,
@@ -33,6 +40,9 @@ _GOLDEN = json.loads((_ROOT / "tests/fixtures/lean_profiles_golden.json").read_t
 def _described(name: str) -> dict[str, Any]:
     profile = lean_profiles.resolve_profile(name)
     described = json.loads(json.dumps(dataclasses.asdict(profile)))
+    # Fields added after the golden was cut; their values are asserted in their own tests below.
+    for added in ("allowed_axioms", "reviewed_roots"):
+        described.pop(added)
     described["audit_source_sha256"] = hashlib.sha256(profile.audit_source.encode()).hexdigest()
     return described
 
@@ -186,3 +196,119 @@ def test_one_manifest_is_enough_to_add_a_library(tmp_path: Path) -> None:
     assert toy.statement_recorded_roots == ("ToyFrontier",)
     assert toy.requires_flag == "PALS_LEAN_ALLOW_TOY_STATEMENTS"
     assert toy.import_violation("import StacksCore\n") is not None
+
+
+def _toy_manifests(tmp_path: Path, *, root: str = "ToyFrontier", axioms: str | None = None) -> Any:
+    (tmp_path / "mathlib.toml").write_bytes((MANIFEST_DIR / "mathlib.toml").read_bytes())
+    stacks = (MANIFEST_DIR / "stacks.toml").read_text()
+    other = (
+        stacks.replace('name = "stacks"', 'name = "toy"')
+        .replace("StacksCore", "ToyCore")
+        .replace("StacksFrontier", root)
+        .replace("stacks-4.35", "toy-4.35")
+        .replace("stacks-frontier-4.35", "toy-frontier-4.35")
+        .replace("stacks-frontier-defs-4.35", "toy-frontier-defs-4.35")
+        .replace("PALS_LEAN_ALLOW_FRONTIER_PROOFS", "PALS_LEAN_ALLOW_TOY_PROOFS")
+        .replace("PALS_LEAN_ALLOW_FRONTIER_STATEMENTS", "PALS_LEAN_ALLOW_TOY_STATEMENTS")
+    )
+    if axioms is not None:
+        other = re.sub(r"allowed_axioms\s*=\s*\[[^\]]*\]", f"allowed_axioms = {axioms}", other)
+    (tmp_path / "toy.toml").write_text(other)
+    return lean_profiles._build_profiles(load_manifests(tmp_path, standard_axioms=ALLOWED_AXIOMS))
+
+
+def test_shipped_profiles_keep_the_audit_default_axioms_and_name_their_reviewed_roots() -> None:
+    for name in lean_profiles.known_profile_names():
+        if name == "mathlib-archive":
+            continue
+        assert lean_profiles.resolve_profile(name).axiom_allow_list == ALLOWED_AXIOMS
+        assert lean_profiles.resolve_profile(name).allowed_axioms is None
+    assert lean_profiles.resolve_profile("stacks-4.35").reviewed_roots == ("StacksCore",)
+    assert lean_profiles.resolve_profile("mathlib-4.32").reviewed_roots == ()
+
+
+def test_a_narrowed_manifest_axiom_list_reaches_the_audit(tmp_path: Path) -> None:
+    profiles = _toy_manifests(tmp_path, axioms='["propext", "Quot.sound"]')
+    toy = profiles["toy-4.35"]
+    assert toy.axiom_allow_list == frozenset({"propext", "Quot.sound"})
+    report = AuditReport(("t",), ("propext", "Classical.choice"), bound=("t",))
+
+    narrowed = audit_diagnostics(report, ("t",), allowed_axioms=toy.axiom_allow_list)
+    assert [(d.code, d.severity) for d in narrowed] == [("lean.disallowed_axiom", "error")]
+    assert "Classical.choice" in narrowed[0].message
+    # The default list, and a profile that does not narrow it, still accept the same proof.
+    assert audit_diagnostics(report, ("t",)) == []
+    assert audit_diagnostics(
+        report, ("t",), allowed_axioms=lean_profiles.resolve_profile("stacks-4.35").axiom_allow_list
+    ) == []
+
+
+def test_a_profile_cannot_widen_the_audit_axiom_list() -> None:
+    with pytest.raises(ValueError):
+        dataclasses.replace(
+            lean_profiles.resolve_profile("stacks-4.35"), allowed_axioms=("propext", "sorryAx")
+        )
+    with pytest.raises(ValueError):
+        audit_diagnostics(
+            AuditReport(("t",), (), bound=("t",)), ("t",), allowed_axioms=frozenset({"sorryAx"})
+        )
+
+
+def _recorded(*lines: str) -> AuditReport:
+    report = parse_audit_report(
+        "\n".join(["theorem t", "trust_recorded", *lines, "bound t", "complete n"]), "n"
+    )
+    assert report is not None
+    return report
+
+
+def test_trust_comes_from_the_manifest_roots_not_from_stacks_names(tmp_path: Path) -> None:
+    toy = _toy_manifests(tmp_path, root="ToyFrontier")["toy-frontier-defs-4.35"]
+    unreviewed = toy.statement_recorded_roots or ()
+    assert unreviewed == ("ToyFrontier",) and toy.reviewed_roots == ("ToyCore",)
+
+    def level(*lines: str) -> str | None:
+        return trust_level(_recorded(*lines), unreviewed, toy.reviewed_roots)
+
+    statement_use = level("statement_root t Mathlib", "statement_root t ToyFrontier")
+    assert statement_use == "frontier_statement"
+    assert level("statement_root t Mathlib", "proof_root t ToyFrontier") == "frontier_proof"
+    assert level("statement_root t Mathlib", "proof_root t ToyCore") == "core"
+    assert level("statement_root t Mathlib", "proof_root t Mathlib") == "mathlib"
+    # The old Stacks names mean nothing to a manifest that does not declare them.
+    assert level("statement_root t StacksFrontier", "proof_root t StacksCore") == "mathlib"
+
+    diagnostics = audit_diagnostics(
+        _recorded("statement_root t ToyFrontier"),
+        ("t",),
+        unreviewed_roots=unreviewed,
+        reviewed_roots=toy.reviewed_roots,
+    )
+    assert diagnostics[0].metadata is not None
+    assert diagnostics[0].metadata["trust_level"] == "frontier_statement"
+    assert diagnostics[0].severity == "warning"
+
+
+def test_the_verifier_audit_passes_the_profile_to_the_policy(tmp_path: Path) -> None:
+    """``LeanVerifier`` hands the profile's lists to ``audit_diagnostics`` (not the globals)."""
+    toy = _toy_manifests(tmp_path, axioms='["propext"]')["toy-frontier-defs-4.35"]
+    seen: dict[str, Any] = {}
+
+    def fake(report: AuditReport, declared: tuple[str, ...], **kwargs: Any) -> list[Any]:
+        seen.update(kwargs)
+        return []
+
+    from pals_agent import lean
+
+    original = lean.audit_diagnostics
+    lean.audit_diagnostics = fake  # type: ignore[assignment]
+    try:
+        verifier = lean.LeanVerifier(project_dir=tmp_path, library_profile=toy)
+        verifier._audit_policy(AuditReport(("t",), ()), "theorem t : True := trivial")
+    finally:
+        lean.audit_diagnostics = original
+    assert seen == {
+        "allowed_axioms": frozenset({"propext"}),
+        "unreviewed_roots": ("ToyFrontier",),
+        "reviewed_roots": ("ToyCore",),
+    }

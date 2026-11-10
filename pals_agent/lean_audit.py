@@ -190,10 +190,24 @@ def statement_mismatch(detail: str) -> Diagnostic:
     )
 
 
-def audit_diagnostics(report: AuditReport, declared_theorems: tuple[str, ...]) -> list[Diagnostic]:
-    """Apply axiom, declaration and statement policy; no errors means the audit passed."""
+def audit_diagnostics(
+    report: AuditReport,
+    declared_theorems: tuple[str, ...],
+    *,
+    allowed_axioms: frozenset[str] = ALLOWED_AXIOMS,
+    unreviewed_roots: tuple[str, ...] = (FRONTIER_ROOT,),
+    reviewed_roots: tuple[str, ...] = (CORE_ROOT,),
+) -> list[Diagnostic]:
+    """Apply axiom, declaration and statement policy; no errors means the audit passed.
+
+    ``allowed_axioms`` is the profile's axiom allow-list (a manifest may narrow the default, never
+    widen it). ``unreviewed_roots`` and ``reviewed_roots`` are the library roots the profile's
+    manifest declares, which decide the trust level a recording profile reports.
+    """
+    if not allowed_axioms <= ALLOWED_AXIOMS:
+        raise ValueError("an axiom allow-list can only be narrowed")
     diagnostics: list[Diagnostic] = []
-    disallowed = sorted(set(report.axioms) - ALLOWED_AXIOMS)
+    disallowed = sorted(set(report.axioms) - allowed_axioms)
     if disallowed:
         diagnostics.append(
             Diagnostic(
@@ -258,7 +272,7 @@ def audit_diagnostics(report: AuditReport, declared_theorems: tuple[str, ...]) -
             audit_failure("The proof's library use could not be traced completely.")
         )
     if not any(diagnostic.severity == "error" for diagnostic in diagnostics):
-        diagnostics.extend(_trust_diagnostics(report))
+        diagnostics.extend(_trust_diagnostics(report, unreviewed_roots, reviewed_roots))
     return diagnostics
 
 
@@ -266,28 +280,36 @@ def _last_word(item: str) -> str:
     return item.rsplit(" ", 1)[-1]
 
 
-def trust_level(report: AuditReport) -> str | None:
+def trust_level(
+    report: AuditReport,
+    unreviewed_roots: tuple[str, ...] = (FRONTIER_ROOT,),
+    reviewed_roots: tuple[str, ...] = (CORE_ROOT,),
+) -> str | None:
     """The trust level of what a recording profile verified; ``None`` if nothing was recorded.
 
     ``frontier_statement`` means a statement reaches a ``StacksFrontier`` definition, which an AI
     wrote and no human reviewed. ``frontier_proof`` means only the proof uses the Frontier. An
-    exhausted walk, whose coverage is unknown, is never reported as a lower level.
+    exhausted walk, whose coverage is unknown, is never reported as a lower level. Which roots are
+    unreviewed (``frontier_*``) and which reviewed (``core``) comes from the profile's manifest.
     """
     if not report.trust_recorded:
         return None
     statement_roots = {_last_word(item) for item in report.statement_roots}
     proof_roots = {_last_word(item) for item in report.proof_roots}
-    if report.frontier_statements or FRONTIER_ROOT in statement_roots:
+    unreviewed = set(unreviewed_roots)
+    if report.frontier_statements or unreviewed & statement_roots:
         return TRUST_FRONTIER_STATEMENT
-    if FRONTIER_ROOT in proof_roots or "exhausted" in proof_roots:
+    if unreviewed & proof_roots or "exhausted" in proof_roots:
         return TRUST_FRONTIER_PROOF
-    if CORE_ROOT in statement_roots | proof_roots:
+    if set(reviewed_roots) & (statement_roots | proof_roots):
         return TRUST_CORE
     return TRUST_MATHLIB
 
 
-def _trust_diagnostics(report: AuditReport) -> list[Diagnostic]:
-    level = trust_level(report)
+def _trust_diagnostics(
+    report: AuditReport, unreviewed_roots: tuple[str, ...], reviewed_roots: tuple[str, ...]
+) -> list[Diagnostic]:
+    level = trust_level(report, unreviewed_roots, reviewed_roots)
     if level is None:
         return []
     constants = sorted({" ".join(item.split(" ")[1:2]) for item in report.frontier_statements})

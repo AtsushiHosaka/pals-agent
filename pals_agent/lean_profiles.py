@@ -25,6 +25,7 @@ from typing import Any, Final
 
 from pals_agent.lean_audit import ALLOWED_AXIOMS, TRUSTED_AUDIT_SOURCE
 from pals_agent.lean_library_manifest import (
+    TRUST_REVIEWED,
     LibraryManifest,
     LibraryManifestError,
     ProfileSpec,
@@ -87,6 +88,12 @@ class LibraryProfile:
     # Frontier definition that resembles a reviewed one) instead of rejected. Constants from a root
     # that is neither trusted nor recorded are still rejected.
     statement_recorded_roots: tuple[str, ...] | None = None
+    # The manifest's axiom allow-list when it is narrower than the audit's own; ``None`` keeps the
+    # audit default. A profile can never allow an axiom the audit does not.
+    allowed_axioms: tuple[str, ...] | None = None
+    # Roots of the manifest's reviewed layers: using one lowers a recording profile's trust level
+    # only as far as ``core`` (the unreviewed roots are ``statement_recorded_roots``).
+    reviewed_roots: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if _PROFILE_NAME_RE.fullmatch(self.name) is None:
@@ -109,6 +116,13 @@ class LibraryProfile:
                 raise ValueError("recorded statement roots are malformed")
             if set(self.statement_recorded_roots) & set(self.statement_trusted_roots):
                 raise ValueError("a root cannot be both trusted and recorded")
+
+        if self.allowed_axioms is not None and not set(self.allowed_axioms) <= ALLOWED_AXIOMS:
+            raise ValueError("a profile may narrow the audit's axiom allow-list, never widen it")
+
+    @property
+    def axiom_allow_list(self) -> frozenset[str]:
+        return ALLOWED_AXIOMS if self.allowed_axioms is None else frozenset(self.allowed_axioms)
 
     @property
     def is_default(self) -> bool:
@@ -393,6 +407,7 @@ def _recording_audit_source(source: str, trusted: str, recorded: str) -> str:
 
 def _profile_from_spec(manifest: LibraryManifest, spec: ProfileSpec) -> LibraryProfile:
     trusted, recorded = manifest.statement_roots(spec.statements)
+    narrowed = frozenset(manifest.allowed_axioms) != ALLOWED_AXIOMS
     return LibraryProfile(
         name=spec.name,
         lean_version=manifest.lean_version,
@@ -403,6 +418,13 @@ def _profile_from_spec(manifest: LibraryManifest, spec: ProfileSpec) -> LibraryP
         statement_trusted_roots=trusted,
         requires_flag=spec.requires_flag,
         statement_recorded_roots=recorded,
+        allowed_axioms=manifest.allowed_axioms if narrowed else None,
+        # Base roots (Lean, Mathlib, ...) are the ``mathlib`` level, not a reviewed library layer.
+        reviewed_roots=tuple(
+            layer.root
+            for layer in manifest.layers
+            if layer.trust == TRUST_REVIEWED and layer.root not in manifest.dependency_roots
+        ),
     )
 
 
