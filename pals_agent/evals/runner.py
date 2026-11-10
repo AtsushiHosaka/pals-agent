@@ -177,6 +177,9 @@ class RecordingVerifier:
         return self._record("sketch_check", lean_code, self.inner.verify_sketch)
 
 
+_STAGE_METHODS = ("generate_draft", "generate_sketch", "generate_proof")
+
+
 @dataclass(slots=True)
 class RecordingGenerator:
     """Wraps generate/repair; emits draft/sketch/prove rows from the elapsed_ms the generator
@@ -188,10 +191,22 @@ class RecordingGenerator:
     def __getattr__(self, name: str) -> Any:
         return getattr(self.inner, name)
 
-    def _emit(self, stage: str, part: Any, start_ms: float, t_start: float) -> None:
+    def __getattribute__(self, name: str) -> Any:
+        # Expose a stage method only when the wrapped generator has it: ProofPipeline decides
+        # staged vs generate() by probing these names (pipeline._staged_generator).
+        if name in _STAGE_METHODS and not callable(
+            getattr(object.__getattribute__(self, "inner"), name, None)
+        ):
+            raise AttributeError(name)
+        return object.__getattribute__(self, name)
+
+    def _emit(
+        self, stage: str, part: Any, start_ms: float, t_start: float, since: int | None = None
+    ) -> None:
         if part is None:
             return
         ms = int(getattr(part, "elapsed_ms", 0) or 0)
+        tokens = self.scope.usage_totals(since) if since is not None else {}
         self.scope.attempt(
             stage,
             started_at=datetime.fromtimestamp(t_start + start_ms / 1000, UTC).isoformat(
@@ -204,6 +219,26 @@ class RecordingGenerator:
             success=True,
             model=getattr(part, "model", None),
             effort=getattr(part, "reasoning_effort", None),
+            **tokens,
+        )
+
+    # ProofPipeline drives a staged generator through these three methods instead of generate()
+    # (pipeline._staged_generator), so without them Tier 2 records no Draft/Sketch/Prove rows.
+    def _stage(self, stage: str, call: Callable[[], Any]) -> Any:
+        t_start, since = time.time(), len(self.scope.usage)
+        part = call()
+        self._emit(stage, part, 0.0, t_start, since)
+        return part
+
+    def generate_draft(self, request: Any, feedback: Any = None) -> Any:
+        return self._stage("draft", lambda: self.inner.generate_draft(request, feedback))
+
+    def generate_sketch(self, request: Any, draft: Any, feedback: Any = None) -> Any:
+        return self._stage("sketch", lambda: self.inner.generate_sketch(request, draft, feedback))
+
+    def generate_proof(self, request: Any, draft: Any, sketch: Any, feedback: Any = None) -> Any:
+        return self._stage(
+            "prove", lambda: self.inner.generate_proof(request, draft, sketch, feedback)
         )
 
     def generate(self, request: Any) -> Any:
@@ -230,6 +265,22 @@ class RecordingGenerator:
         return proof
 
 
+def _usage_cost(usage: list[dict[str, Any]], default_model: str) -> float | None:
+    """Price every usage row at its own model's rate (route/repair calls may use a cheaper model);
+    rows without a model fall back to ``default_model``. None when any row's model is unpriced."""
+    total = 0.0
+    for row in usage:
+        usd = estimate_usd(
+            row.get("model") or default_model,
+            int(row.get("input_tokens", 0) or 0),
+            int(row.get("output_tokens", 0) or 0),
+        )
+        if usd is None:
+            return None
+        total += usd
+    return total
+
+
 def _run_row(
     scope: Scope,
     tier: int,
@@ -246,7 +297,7 @@ def _run_row(
     error: str | None = None,
 ) -> dict[str, Any]:
     totals = scope.usage_totals()
-    cost = estimate_usd(model, totals["input_tokens"], totals["output_tokens"]) if model else 0.0
+    cost = _usage_cost(scope.usage, model) if model else 0.0
     row = {
         "schema": RUN_SCHEMA,
         "run_id": scope.run_id,

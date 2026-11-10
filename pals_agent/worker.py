@@ -3250,7 +3250,6 @@ def _status_diagnostics(
 
 
 _PREVIEW_MAX_CHARS: Final = {"draft_plan": 6_000, "sketch_lean": 30_000}
-_PREVIEW_HTML_RE: Final = re.compile(r"<[A-Za-z!/?][^<>]*>")
 
 
 def _progress_preview(
@@ -3272,7 +3271,7 @@ def _progress_preview(
     if truncated:
         cut = text[:limit]
         text = cut[: cut.rfind("\n")] if "\n" in cut[limit // 2 :] else cut
-    if not text.strip() or _PREVIEW_HTML_RE.search(text):
+    if not text.strip():
         return None
     return {"kind": kind, "language": tag, "text": text, "truncated": truncated}
 
