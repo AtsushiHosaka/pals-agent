@@ -82,3 +82,27 @@ def test_labels_bind_to_point_names_not_to_other_words():
     assert labels_occur_in(call, "theorem t (A B P Q O : P') : True")
     # Lean's `Add` and TeX's `\Omega` must not count as the points A and O.
     assert not labels_occur_in(call, r"Add Bool Prop Quot $\Omega$")
+
+
+def test_instruction_pins_the_graph_parameter_shape():
+    from pals_agent.figure_calls import FIGURE_INSTRUCTION
+
+    graph = {
+        "version": 1,
+        "template": "polynomial",
+        "parameters": {"coefficients": [2, -3, 0, 1], "domain": [-3, 3], "range": [-2, 8]},
+    }
+    validate_figure_call(graph)
+    # The documented good example is exactly what the validator accepts.
+    compact = FIGURE_INSTRUCTION.replace("\n", "")
+    assert json.dumps(graph, separators=(",", ":")) in compact
+    assert 'there is no "polynomial" key' in compact
+    # The wrong nesting that models produced is rejected, never repaired.
+    nested = {
+        "version": 1,
+        "template": "polynomial",
+        "parameters": {"polynomial": graph["parameters"]},
+    }
+    with pytest.raises(FigureCallError):
+        validate_figure_call(nested)
+    assert "occur in the Lean source" in compact
