@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import time
 from dataclasses import dataclass, replace
@@ -43,6 +44,16 @@ from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
 _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
+
+PROMPT_STATIC_PREFIX_ENV = "PALS_PROMPT_STATIC_PREFIX_ENABLED"
+
+
+def static_prefix_enabled() -> bool:
+    """True when prompts put all static guidance first. Strict boolean like other PALS flags."""
+    value = os.environ.get(PROMPT_STATIC_PREFIX_ENV, "false")
+    if value not in {"true", "false"}:
+        raise ValueError(f"{PROMPT_STATIC_PREFIX_ENV} must be true or false")
+    return value == "true"
 
 
 class TextGenerationClient(Protocol):
@@ -709,6 +720,20 @@ Follow any required exact-match proof method below.
 
 
 def _lean_import_guidance() -> str:
+    if static_prefix_enabled():
+        # The model has no source or compiler access, so it cannot verify module ownership or
+        # recompile with `import Mathlib` itself; those two instructions are omitted.
+        return (
+            "Start with Mathlib imports. Prefer the specific modules needed for the theorem "
+            "and proof, including individual tactic modules, instead of loading the entire "
+            "library with `import Mathlib`. Do not infer a module path from "
+            "a declaration name or assume a nearby module exports it. Unknown identifiers "
+            "can mean missing imports, not nonexistent declarations. "
+            "Keep every theorem assumption and substantive "
+            "Draft proof step. Prefer focused imports once their declarations are verified. "
+            "A compiler deadline failure requires simplifying the "
+            "imports and expensive tactic search, not repeating the same code."
+        )
     return (
         "Start with Mathlib imports. Prefer the specific modules needed for the theorem "
         "and proof, including individual tactic modules, instead of loading the entire "
@@ -795,6 +820,13 @@ def _prove_prompt_for(
     sketch: GeneratedSketch,
     feedback: GenerationFeedback | None = None,
 ) -> str:
+    # Flag off: the request-specific reliability block sits inside the guidance, as before.
+    # Flag on: it moves behind the byte-identical static guidance.
+    reliability = _lean_reliability_guidance(request)
+    if static_prefix_enabled():
+        reliability_before, reliability_after = "", reliability
+    else:
+        reliability_before, reliability_after = f"{reliability}\n", ""
     return f"""Complete a Lean 4/mathlib proof from the supplied Draft and formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
 {_lean_import_guidance()}
@@ -816,10 +848,9 @@ mathematical argument without claiming unexposed tactic internals were explicit
 Lean proof steps.
 {DERIVE_ANSWER_INSTRUCTION}
 {_learner_algebra_guidance()}
-{_lean_reliability_guidance(request)}
-Do not use `sorry` or `admit`.
+{reliability_before}Do not use `sorry` or `admit`.
 You must prove the exact Lean theorem harness shown below when one is provided.
-
+{reliability_after}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
@@ -992,6 +1023,24 @@ def _repair_instruction_prompt_for(
     feedback: GenerationFeedback,
 ) -> str:
     """Build the one typed handoff from a valid route to its selected stage."""
+
+    if static_prefix_enabled():
+        # Same sentences; the route-specific paragraph moves behind the static guidance.
+        return f"""Create the PALS repair handoff for the selected DSP route.
+Return exactly one JSON object with exactly one key, `instruction`.
+{DERIVE_ANSWER_INSTRUCTION}
+{_learner_algebra_guidance()}
+{_lean_scalar_guidance()}
+`instruction` must be a concise, concrete repair plan for the selected `{feedback.repair_route}`
+stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
+code, a route choice, an evaluation rubric, or any extra JSON field.
+
+{_problem_section(request)}
+{_formal_statement_guidance(request.formal_statement)}
+{_target_declaration_guidance(request)}
+{_matrix_literal_guidance(request)}
+{_repair_guidance(feedback)}
+"""
 
     return f"""Create the PALS repair handoff for the selected DSP route.
 Return exactly one JSON object with exactly one key, `instruction`.
@@ -1240,8 +1289,13 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
             "\nIdentifiers unresolved in the failed import environment:\n"
             + "\n".join(f"- `{identifier}`" for identifier in unknown_identifiers)
             + "\nA fully-qualified declaration may exist in a Mathlib module that was not "
-            "imported. Check its owning module in the active pinned source when available. "
-            "First repair only the imports while preserving the theorem and proof body "
+            "imported. "
+            + (
+                ""
+                if static_prefix_enabled()  # the model cannot look at the pinned source
+                else "Check its owning module in the active pinned source when available. "
+            )
+            + "First repair only the imports while preserving the theorem and proof body "
             "when this resolves the diagnostic. If module ownership is uncertain and the "
             "failed code lacks `import Mathlib`, try `import Mathlib` once and recompile. "
             "If the identifier is still unknown with the full import, treat it as "
