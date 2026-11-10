@@ -63,6 +63,7 @@ class AgentSettings:
     harness_splice_enabled: bool = False
     deterministic_repair_route_enabled: bool = False
     sketch_failure_proceeds_to_prove_enabled: bool = False
+    progress_preview_enabled: bool = False
     sketch_mechanical_repair_enabled: bool = False
     fixed_statement_template_enabled: bool = False
     stop_on_repeated_harness_mismatch_enabled: bool = False
@@ -216,6 +217,7 @@ class AgentSettings:
             deterministic_repair_route_enabled=_strict_bool_env(
                 "PALS_DETERMINISTIC_REPAIR_ROUTE_ENABLED"
             ),
+            progress_preview_enabled=_strict_bool_env("PALS_PROGRESS_PREVIEW_ENABLED"),
             sketch_failure_proceeds_to_prove_enabled=_strict_bool_env(
                 "PALS_SKETCH_FAILURE_PROCEEDS_TO_PROVE_ENABLED"
             ),
