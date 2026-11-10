@@ -270,3 +270,20 @@ def test_recording_generator_hides_stage_methods_the_inner_lacks(tmp_path):
     assert all(
         callable(getattr(s, m)) for m in ("generate_draft", "generate_sketch", "generate_proof")
     )
+
+
+def test_run_cost_prices_each_usage_row_at_its_own_model():
+    from pals_agent.evals.runner import _usage_cost
+
+    rows = [
+        {"model": "gpt-6.1-terra", "input_tokens": 1_000_000, "output_tokens": 0},
+        {"model": "gpt-6-luna", "input_tokens": 1_000_000, "output_tokens": 0},
+        {"input_tokens": 1_000_000, "output_tokens": 0},
+    ]
+    assert _usage_cost(rows, "gpt-6.1-terra") == pytest.approx(1.25 + 0.10 + 1.25)
+    assert (
+        _usage_cost(
+            [{"model": "unknown-x", "input_tokens": 1, "output_tokens": 1}], "gpt-6.1-terra"
+        )
+        is None
+    )

@@ -265,6 +265,22 @@ class RecordingGenerator:
         return proof
 
 
+def _usage_cost(usage: list[dict[str, Any]], default_model: str) -> float | None:
+    """Price every usage row at its own model's rate (route/repair calls may use a cheaper model);
+    rows without a model fall back to ``default_model``. None when any row's model is unpriced."""
+    total = 0.0
+    for row in usage:
+        usd = estimate_usd(
+            row.get("model") or default_model,
+            int(row.get("input_tokens", 0) or 0),
+            int(row.get("output_tokens", 0) or 0),
+        )
+        if usd is None:
+            return None
+        total += usd
+    return total
+
+
 def _run_row(
     scope: Scope,
     tier: int,
@@ -281,7 +297,7 @@ def _run_row(
     error: str | None = None,
 ) -> dict[str, Any]:
     totals = scope.usage_totals()
-    cost = estimate_usd(model, totals["input_tokens"], totals["output_tokens"]) if model else 0.0
+    cost = _usage_cost(scope.usage, model) if model else 0.0
     row = {
         "schema": RUN_SCHEMA,
         "run_id": scope.run_id,
