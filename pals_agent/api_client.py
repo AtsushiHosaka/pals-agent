@@ -348,6 +348,37 @@ class PalsApiClient:
             headers={"X-PALS-Worker-Secret": self.worker_secret},
         )
 
+    def put_progress_preview(
+        self,
+        *,
+        proof_job_id: str,
+        claim_id: str,
+        kind: str,
+        language: str,
+        text: str,
+        truncated: bool,
+        timeout_seconds: float = 2.0,
+    ) -> dict[str, Any]:
+        """Best-effort, unverified in-progress text for the owner's waiting screen.
+
+        The API accepts it only while the job is in the matching stage and drops it on the next
+        transition.  Callers must treat every failure as non-fatal.
+        """
+        return self._request(
+            "PUT",
+            f"/v1/internal/proof-jobs/{_path_segment(proof_job_id)}/progress-preview",
+            {
+                "schema_version": "pals.proof-progress-preview.v1",
+                "claim_id": _canonical_claim_id(claim_id),
+                "kind": kind,
+                "language": language,
+                "text": text,
+                "truncated": truncated,
+            },
+            headers={"X-PALS-Worker-Secret": self.worker_secret},
+            timeout_seconds=timeout_seconds,
+        )
+
     def submit_verification_candidate(
         self,
         *,

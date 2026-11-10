@@ -942,6 +942,11 @@ class SqsProofWorker:
                 context=api_context,
             )
 
+            self._send_progress_preview(
+                proof_job_id=proof_job_id, claim_id=claim_id, status=status,
+                raw=status_context, lean_code=lean_code, language=language,
+            )
+
         try:
             run_kwargs: dict[str, Any] = {
                 "statement": statement,
@@ -1114,6 +1119,24 @@ class SqsProofWorker:
             extend_visibility=extend_visibility,
             language=language,
         )
+
+    def _send_progress_preview(
+        self, *, proof_job_id: str, claim_id: str, status: str,
+        raw: dict[str, Any], lean_code: str | None, language: str,
+    ) -> None:
+        """Best-effort unverified preview (PALS_PROGRESS_PREVIEW_ENABLED); never raises."""
+        if not getattr(self.settings, "progress_preview_enabled", False):
+            return
+        try:
+            preview = _progress_preview(status=status, raw=raw, lean_code=lean_code,
+                                        language=language)
+            if preview is None:
+                return
+            send = getattr(self.api_client, "put_progress_preview", None)
+            if callable(send):
+                send(proof_job_id=proof_job_id, claim_id=claim_id, **preview)
+        except Exception:  # noqa: BLE001 - a preview must never affect the job
+            return
 
     def _recover_candidate_import(
         self, *, proof_job_id: str, candidate_id: str, claim_id: str,
@@ -2981,6 +3004,34 @@ def _status_diagnostics(
         )
         for diagnostic in diagnostics
     ]
+
+
+_PREVIEW_MAX_CHARS: Final = {"draft_plan": 6_000, "sketch_lean": 30_000}
+_PREVIEW_HTML_RE: Final = re.compile(r"<[A-Za-z!/?][^<>]*>")
+
+
+def _progress_preview(
+    *, status: str, raw: dict[str, Any], lean_code: str | None, language: str
+) -> dict[str, Any] | None:
+    """Pick the unverified Draft plan (entering sketching) or Sketch Lean (entering proving)."""
+    if status == "sketching":
+        draft = raw.get("generated_draft")
+        text = draft.get("text") if isinstance(draft, dict) else None
+        kind, tag = "draft_plan", language
+    elif status == "proving":
+        text, kind, tag = lean_code, "sketch_lean", "lean"
+    else:
+        return None
+    if not isinstance(text, str) or not text.strip() or "\x00" in text:
+        return None
+    limit = _PREVIEW_MAX_CHARS[kind]
+    truncated = len(text) > limit
+    if truncated:
+        cut = text[:limit]
+        text = cut[: cut.rfind("\n")] if "\n" in cut[limit // 2 :] else cut
+    if not text.strip() or _PREVIEW_HTML_RE.search(text):
+        return None
+    return {"kind": kind, "language": tag, "text": text, "truncated": truncated}
 
 
 def _proof_status_context(
