@@ -512,6 +512,39 @@ def test_worker_v2_revises_once_from_defects_then_completes(
     assert completed["content"]["sections"][0]["references"][0]["excerpt"] == "  trivial"
 
 
+def test_worker_v2_tries_the_fixed_x_squared_explanation_before_the_v2_writer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from pals_agent.template_explanation import render_x_squared_epsilon_delta
+
+    x_squared = job(draft=True)
+    x_squared["lean_code"] = render_x_squared_epsilon_delta()
+    x_squared["theorem_statement"] = "f(x) = x² が実数全体で連続であることを証明せよ"
+    api = ClaimApi(claim_response=_envelope("acquired", 600_000), proof_job_response=x_squared)
+    writer_client = ScriptedClient()  # a call would raise: no scripted response
+    reviewer_client = ScriptedClient(APPROVE)
+    assert run_retry(v2_worker(monkeypatch, writer_client, reviewer_client, api))
+    assert writer_client.calls == []
+    assert api.explanation_updates[-1]["state"] == "completed"
+
+
+def test_v2_parse_is_as_strict_as_v1_about_lean_names_in_prose() -> None:
+    from pals_agent.explanation_v2 import validate_v2_payload
+    from pals_agent.explanations import _parse_explanation
+
+    payload = good_payload()
+    payload["sections"][0]["summary"] = "This is the lemma nat_add_zero applied to $n$."
+    completed = derive_references(LEAN, payload)
+    with pytest.raises(ValueError, match="lemma name"):
+        _parse_explanation(
+            completed, LEAN, language="en", require_linear_ending=True, strict_prose=True
+        )
+    with pytest.raises(ValueError, match="lemma name"):
+        validate_v2_payload(
+            payload, theorem_statement=STATEMENT_PROVE, lean_code=LEAN, language="en"
+        )
+
+
 # ---- fallback (B) -------------------------------------------------------------------------
 
 

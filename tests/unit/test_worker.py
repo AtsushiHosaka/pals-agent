@@ -920,7 +920,7 @@ def test_candidate_wait_polls_fast_at_first_and_backs_off_for_a_long_compile() -
         clock[0] += seconds
 
     worker = SqsProofWorker(
-        settings=cast(AgentSettings, SimpleNamespace()),
+        settings=cast(AgentSettings, SimpleNamespace(fast_candidate_poll_enabled=True)),
         api_client=cast(Any, PendingCandidateApi()),
         pipeline=StructuringFailurePipeline(),
         explainer=ExplainerThatMustNotRun(),
@@ -940,10 +940,18 @@ def test_candidate_wait_polls_fast_at_first_and_backs_off_for_a_long_compile() -
     assert sum(sleeps) == 200.0
 
 
+def test_candidate_poll_is_a_fixed_one_second_by_default() -> None:
+    from pals_agent.settings import AgentSettings
+    from pals_agent.worker import _candidate_poll_delay
+
+    assert AgentSettings.__dataclass_fields__["fast_candidate_poll_enabled"].default is False
+    assert {_candidate_poll_delay(waited) for waited in range(0, 2000, 7)} == {1.0}
+
+
 def test_candidate_poll_delay_never_exceeds_the_previous_one_second_interval() -> None:
     from pals_agent.worker import _candidate_poll_delay
 
-    delays = [_candidate_poll_delay(waited) for waited in range(0, 2000, 7)]
+    delays = [_candidate_poll_delay(waited, fast=True) for waited in range(0, 2000, 7)]
     assert delays == sorted(delays)
     assert min(delays) > 0 and max(delays) == 1.0
 

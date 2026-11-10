@@ -208,7 +208,7 @@ def validate_v2_payload(
     """Run the v1 validators on the completed payload, then the v2 deterministic gates."""
     completed = derive_references(lean_code, payload)
     overview, sections, conclusion = _parse_explanation(
-        completed, lean_code, language=language, require_linear_ending=True
+        completed, lean_code, language=language, require_linear_ending=True, strict_prose=True
     )
     for label, text in (
         ("overview", overview),

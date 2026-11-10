@@ -886,8 +886,7 @@ def test_worker_waits_for_delayed_candidate_and_finishes_on_one_sqs_delivery(
 
     assert worker.run_once() is True
 
-    # The first 30 s of waiting polls every 0.25 s (_CANDIDATE_RECONCILIATION_POLL_SCHEDULE).
-    assert sleeps == [0.25, 0.25]
+    assert sleeps == [1.0, 1.0]
     assert api.events.count("proof_generation_claim") == 1
     assert api.events.count("verification_candidate") == 1
     assert api.events.count("semantic_review") == 1
@@ -1505,8 +1504,7 @@ def test_ambiguous_import_does_not_recover_a_different_or_unknown_binding(change
 def test_late_candidate_completion_extends_visibility_before_semantic_model_call() -> None:
     clock = [0.0]
     visibility: list[tuple[float, int]] = []
-    # Polling is 0.25 s for 30 s, 0.5 s until 90 s, then 1 s: 120 + 120 + 239 reads reach 329 s.
-    api = DelayedCandidateApi(compiling_reads=479)
+    api = DelayedCandidateApi(compiling_reads=329)
 
     class ObservedReviewer(FakeSemanticReviewer):
         def review_proof(self, **kwargs: Any) -> ProofSemanticReview:

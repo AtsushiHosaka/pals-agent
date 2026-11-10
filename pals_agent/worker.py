@@ -143,8 +143,10 @@ _TERMINAL_MARGIN_SECONDS: Final = 30.0
 # interruption backoff. A Recipe candidate can take longer, and a later delivery picks it up.
 _CANDIDATE_RECONCILIATION_TIMEOUT_SECONDS: Final = 2000.0
 # Each poll is a fresh-process HTTP call of about 0.3 s, so a long sleep dominates the wait. A Lean
-# verification usually settles within seconds, so poll fast at first and slow down for a candidate
-# that is still compiling (the API's attempt lease is 310 s).
+# verification usually settles within seconds, so, only with PALS_FAST_CANDIDATE_POLL_ENABLED
+# (default off), poll fast at first and slow down for a candidate that is still compiling (the
+# API's attempt lease is 310 s). The API opens a database connection per request, so the fast
+# interval stays off until a connection pool is in production; the default is a fixed 1 s.
 _CANDIDATE_RECONCILIATION_POLL_SCHEDULE: Final = ((30.0, 0.25), (90.0, 0.5))
 # A delivery that fails closed for a reason the job's own stored data carries (data any worker
 # version rejects) three times in a row can never succeed on a fourth: SQS has redelivered it
@@ -1431,7 +1433,13 @@ class SqsProofWorker:
                             timing.set_outcome("error")
                         return None
                     next_refresh = now + _CANDIDATE_RECONCILIATION_REFRESH_SECONDS
-                self.sleep(min(_candidate_poll_delay(now - started), remaining))
+                self.sleep(min(
+                    _candidate_poll_delay(
+                        now - started,
+                        fast=bool(getattr(self.settings, "fast_candidate_poll_enabled", False)),
+                    ),
+                    remaining,
+                ))
 
     def _pipeline_for_proof(self) -> StatementPipeline:
         """Build the proof pipeline only for a proof-generation task.
@@ -1923,26 +1931,31 @@ class SqsProofWorker:
         try:
             reviewer = self._required_output_reviewer()
 
-            def generate_explanation(feedback: Any) -> ProofExplanation:
-                if feedback is None and self._fixed_explanation_enabled():
+            def pregenerated_explanation(feedback: Any) -> ProofExplanation | None:
+                """The reviewed fixed text or the early candidate, for the first attempt only.
+
+                Tried before any model writer, v1 or v2, so a flag on the writer never bypasses
+                them. Each result is only a candidate: the same review and final write follow.
+                """
+                if feedback is not None:
+                    return None
+                if self._fixed_explanation_enabled():
                     # The proof is exactly the x² template: its explanation is a reviewed fixed
-                    # text. It is only a candidate: the same independent review and the same
-                    # final write follow, and a rejection falls back to the model explainer.
+                    # text; a rejection falls back to the model writer.
                     fixed = fixed_explanation_for(lean_code, language)
                     if fixed is not None:
                         return fixed
-                if feedback is None and speculative is not None:
-                    # The first candidate was generated while the semantic review ran. It is
-                    # used only now, with the claim held, so it still goes through the same
-                    # explanation review and the same final write as a direct call's output.
-                    pregenerated = speculative.adopt(
+                if speculative is not None:
+                    # Generated while the semantic review ran; used only now, with the claim held.
+                    return speculative.adopt(
                         theorem_statement=theorem_statement,
                         lean_code=lean_code,
                         language=language,
                         wait_seconds=permit.deadline - self.monotonic(),
                     )
-                    if pregenerated is not None:
-                        return pregenerated
+                return None
+
+            def generate_explanation(feedback: Any) -> ProofExplanation:
                 with latency_label("explain"):
                     return self._required_explainer().explain(
                         theorem_statement=theorem_statement,
@@ -1977,7 +1990,12 @@ class SqsProofWorker:
                     "explanation_v2_fallback_to_v1 proof_job=%s reason=%s",
                     proof_job_id, v2_skipped,
                 )
-            write = v2.generate if v2 is not None else generate_explanation
+            model_write = v2.generate if v2 is not None else generate_explanation
+
+            def write(feedback: Any) -> ProofExplanation:
+                early = pregenerated_explanation(feedback)
+                return early if early is not None else model_write(feedback)
+
             with latency_stage("explanation"):
                 explanation, review = _generate_reviewed_candidate(
                     generate=lambda feedback: _remember(candidates, write(feedback)),
@@ -3676,7 +3694,9 @@ def _has_api_compile_failure(proof_job: dict[str, Any]) -> bool:
     )
 
 
-def _candidate_poll_delay(waited_seconds: float) -> float:
+def _candidate_poll_delay(waited_seconds: float, *, fast: bool = False) -> float:
+    if not fast:
+        return _CANDIDATE_RECONCILIATION_POLL_SECONDS
     for until, delay in _CANDIDATE_RECONCILIATION_POLL_SCHEDULE:
         if waited_seconds < until:
             return delay
