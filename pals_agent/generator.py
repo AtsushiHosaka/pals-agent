@@ -13,6 +13,7 @@ from pals_agent.math_task import DERIVE_ANSWER_INSTRUCTION
 from pals_agent.mlx import MlxError
 from pals_agent.model_roles import RELEASE_MODEL, ModelRole, fixed_model_default
 from pals_agent.models import (
+    DraftFields,
     GeneratedDraft,
     GeneratedProof,
     GeneratedSketch,
@@ -40,6 +41,7 @@ from pals_agent.prompt_safety import (
     untrusted_block,
 )
 from pals_agent.proof_reuse_usage import model_role
+from pals_agent.sketch_repair import normalize_header
 from pals_agent.statement_template import TEMPLATE_INSTRUCTION, assemble
 
 _LEAN_BLOCK_RE = re.compile(r"```(?:lean4?|Lean)?\s*(.*?)```", re.DOTALL)
@@ -48,12 +50,37 @@ _MAX_REPAIR_INSTRUCTION_BYTES = 8_192
 PROMPT_STATIC_PREFIX_ENV = "PALS_PROMPT_STATIC_PREFIX_ENABLED"
 
 
-def static_prefix_enabled() -> bool:
-    """True when prompts put all static guidance first. Strict boolean like other PALS flags."""
-    value = os.environ.get(PROMPT_STATIC_PREFIX_ENV, "false")
+FULL_MATHLIB_IMPORT_ENV = "PALS_PROMPT_FULL_MATHLIB_IMPORT_ENABLED"
+CONDITIONAL_GUIDANCE_ENV = "PALS_PROMPT_CONDITIONAL_GUIDANCE_ENABLED"
+DRAFT_STRUCTURED_FIELDS_ENV = "PALS_DRAFT_STRUCTURED_FIELDS_ENABLED"
+
+
+def _flag(name: str) -> bool:
+    """Strict boolean like the other PALS flags; unset means false."""
+    value = os.environ.get(name, "false")
     if value not in {"true", "false"}:
-        raise ValueError(f"{PROMPT_STATIC_PREFIX_ENV} must be true or false")
+        raise ValueError(f"{name} must be true or false")
     return value == "true"
+
+
+def static_prefix_enabled() -> bool:
+    """True when prompts put all static guidance first."""
+    return _flag(PROMPT_STATIC_PREFIX_ENV)
+
+
+def full_mathlib_import_enabled() -> bool:
+    """True when the model is told to write exactly ``import Mathlib`` and choose no imports."""
+    return _flag(FULL_MATHLIB_IMPORT_ENV)
+
+
+def conditional_guidance_enabled() -> bool:
+    """True when the scalar and algebra guidance is added only for matching requests."""
+    return _flag(CONDITIONAL_GUIDANCE_ENV)
+
+
+def draft_structured_fields_enabled() -> bool:
+    """True when the Draft stage also asks for FINAL_ANSWER and HARD_STEPS fields."""
+    return _flag(DRAFT_STRUCTURED_FIELDS_ENV)
 
 
 class TextGenerationClient(Protocol):
@@ -327,6 +354,7 @@ class HybridLeanGenerator:
             provider=provider,
             reasoning_effort=effort,
             elapsed_ms=_elapsed_ms(started_at),
+            fields=parse_draft_fields(text) if text and draft_structured_fields_enabled() else None,
         )
 
     def generate_sketch(
@@ -365,7 +393,7 @@ class HybridLeanGenerator:
                 elapsed_ms=_elapsed_ms(started_at),
             )
 
-        lean_code = extract_lean_code(raw_model_output) or ""
+        lean_code = _with_full_mathlib_import(extract_lean_code(raw_model_output) or "")
         if template and lean_code:
             lean_code = assemble(lean_code, str(request.formal_statement))
         if lean_code and (
@@ -451,7 +479,7 @@ class HybridLeanGenerator:
                 elapsed_ms=_elapsed_ms(started_at),
             )
 
-        lean_code = extract_lean_code(raw_model_output) or ""
+        lean_code = _with_full_mathlib_import(extract_lean_code(raw_model_output) or "")
         if template and lean_code:
             lean_code = assemble(lean_code, str(request.formal_statement))
         if lean_code and (
@@ -563,6 +591,55 @@ class HybridLeanGenerator:
         elif selected_effort is not None:
             raise ValueError("Selected reasoning requires an OpenAI generation client")
         return client, model, binding.provider, effort
+
+
+def _with_full_mathlib_import(lean_code: str) -> str:
+    """Under PALS_PROMPT_FULL_MATHLIB_IMPORT_ENABLED, the header is exactly `import Mathlib`.
+
+    Reuses sketch_repair.normalize_header (the same rewrite the opt-in mechanical Sketch
+    repair applies after a failure): a model that still picks its own imports is corrected
+    before Lean runs. Without the flag the code is returned unchanged.
+    """
+    if not lean_code or not full_mathlib_import_enabled():
+        return lean_code
+    return normalize_header(lean_code) or lean_code
+
+
+_FIELD_FINAL = re.compile(r"^[ \t]*FINAL_ANSWER:[ \t]*(.*?)[ \t]*$", re.MULTILINE)
+_FIELD_HARD = re.compile(r"^[ \t]*HARD_STEPS:[ \t]*(.*?)[ \t]*$", re.MULTILINE)
+
+
+def parse_draft_fields(text: str) -> DraftFields | None:
+    """Read the trailing FINAL_ANSWER / HARD_STEPS fields; None when absent or malformed.
+
+    Strict: both fields exactly once, FINAL_ANSWER before HARD_STEPS, a non-empty single-line
+    answer, and at most 3 non-empty step lines after HARD_STEPS (a `- ` bullet marker is
+    optional; "none" means no step), with nothing else after them. Anything else is None, which
+    is the same as not asking for the fields.
+    """
+    finals = list(_FIELD_FINAL.finditer(text))
+    hards = list(_FIELD_HARD.finditer(text))
+    if len(finals) != 1 or len(hards) != 1 or finals[0].start() > hards[0].start():
+        return None
+    answer = finals[0].group(1).strip()
+    between = text[finals[0].end() : hards[0].start()].strip()
+    if not answer or between:
+        return None
+    raw_steps = [hards[0].group(1), *text[hards[0].end() :].split("\n")]
+    steps: list[str] = []
+    for raw in raw_steps:
+        step = raw.strip()
+        if not step:
+            continue
+        step = step.removeprefix("- ").removeprefix("-").strip()
+        if not step:
+            return None
+        steps.append(step)
+    if len(steps) == 1 and steps[0].lower() == "none":
+        steps = []
+    if len(steps) > 3:
+        return None
+    return DraftFields(final_answer=answer, hard_steps=tuple(steps))
 
 
 def extract_lean_code(text: str) -> str | None:
@@ -699,27 +776,111 @@ def _repair_route_from_string(value: str) -> RepairRoute:
     raise RepairRouteSelectionError(f"Unsupported DSP repair route: {value}")
 
 
+_SCALAR_CUES = (
+    "ℝ", "ℕ", "ℤ", "ℚ", "ℂ", "real", "実数", "nat", "自然数", "integer", "整数", "rational",
+    "有理", "abs", "|", "絶対値", "≤", "≥", "<", "inequal", "不等", "bound", "上界", "下界",
+    "max", "min", "sup", "inf", "最大", "最小", "polynomial", "多項式", "sqrt", "√", "^", "²",
+    "³", "root", "解", "subtract", "引き算",
+)
+_ALGEBRA_CUES = (
+    "identity", "恒等", "expand", "展開", "factor", "因数", "polynomial", "多項式", "binomial",
+    "二項", "simplif", "整理", "ring", "^", "²", "³", "√", "sqrt", "equation", "方程式",
+    "calc", "sum", "和", "product", "積",
+)
+_ARITHMETIC_EXPRESSION = re.compile(r"[\w)]\s*[*+/]\s*[\w(]")
+
+
+def _guidance_cue_text(
+    request: ProofRequest,
+    draft_text: str | None = None,
+    feedback: GenerationFeedback | None = None,
+) -> str:
+    parts = [request.prompt, request.formal_statement or "", draft_text or ""]
+    if feedback is not None:
+        parts.append(feedback.previous_lean_code)
+        if feedback.previous_draft is not None:
+            parts.append(feedback.previous_draft.text)
+    return "\n".join(parts).lower()
+
+
+def needs_scalar_guidance(cue_text: str) -> bool:
+    """Deterministic cue test (lower-cased text); errs toward True. Empty text counts as a hit."""
+    return not cue_text.strip() or any(cue.lower() in cue_text for cue in _SCALAR_CUES)
+
+
+def needs_algebra_guidance(cue_text: str) -> bool:
+    """Deterministic cue test (lower-cased text); errs toward True. Empty text counts as a hit."""
+    return (
+        not cue_text.strip()
+        or any(cue.lower() in cue_text for cue in _ALGEBRA_CUES)
+        or _ARITHMETIC_EXPRESSION.search(cue_text) is not None
+    )
+
+
+def _guidance_slots(
+    request: ProofRequest,
+    draft_text: str | None = None,
+    feedback: GenerationFeedback | None = None,
+    *,
+    scalar: bool = True,
+) -> tuple[str, str, str]:
+    """(early scalar, early algebra, late) guidance.
+
+    Flag off: both blocks, in their original position, as before. Flag on: only the blocks
+    whose cues match. With the static-prefix flag also on, they move to the late slot, after
+    the byte-identical static guidance.
+    """
+    algebra_text, scalar_text = _learner_algebra_guidance(), _lean_scalar_guidance()
+    if not conditional_guidance_enabled():
+        return scalar_text, algebra_text, ""
+    cues = _guidance_cue_text(request, draft_text, feedback)
+    chosen_scalar = scalar_text if scalar and needs_scalar_guidance(cues) else ""
+    chosen_algebra = algebra_text if needs_algebra_guidance(cues) else ""
+    if static_prefix_enabled():
+        return "", "", chosen_scalar + chosen_algebra
+    return chosen_scalar, chosen_algebra, ""
+
+
+_DRAFT_FIELDS_INSTRUCTION = """
+After the Draft, end your answer with exactly these two fields, each starting a new line:
+FINAL_ANSWER: for a computation or a value to find, the value; for a proof, the claim to be shown,
+in one sentence.
+HARD_STEPS: at most 3 steps that are likely to be hard to formalize in Lean, one per line,
+each line starting with "- ". Write "- none" when there is none.
+"""
+
+
 def _draft_prompt_for(
     request: ProofRequest,
     feedback: GenerationFeedback | None = None,
 ) -> str:
     draft_guidance = _draft_guidance(request)
+    _, algebra, late = _guidance_slots(request, None, feedback, scalar=False)
+    fields = _DRAFT_FIELDS_INSTRUCTION if draft_structured_fields_enabled() else ""
+    fields_early, fields_late = (fields, "") if static_prefix_enabled() else ("", fields)
     return f"""Write an informal natural-language proof Draft for a theorem-proving request.
 Return only the Draft. Do not write Lean code yet.
 Give an ordered, mathematically explicit sequence of atomic proof moves that can be
 translated into intermediate Lean `have` statements or local lemmas.
 Follow any required exact-match proof method below.
 {DERIVE_ANSWER_INSTRUCTION}
-{_learner_algebra_guidance()}
-
+{algebra}{fields_early}
+{late}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {draft_guidance}
-{_repair_guidance(feedback)}
+{_repair_guidance(feedback)}{fields_late}
 """
 
 
 def _lean_import_guidance() -> str:
+    if full_mathlib_import_enabled():
+        return (
+            "Start the file with exactly one import line, `import Mathlib`, and no other "
+            "import line; do not choose individual modules. Keep every theorem assumption and "
+            "substantive Draft proof step. A compiler deadline failure requires simplifying "
+            "expensive tactic search, not repeating the same code."
+        )
     if static_prefix_enabled():
         # The model has no source or compiler access, so it cannot verify module ownership or
         # recompile with `import Mathlib` itself; those two instructions are omitted.
@@ -786,10 +947,11 @@ def _sketch_prompt_for(
     draft: GeneratedDraft,
     feedback: GenerationFeedback | None = None,
 ) -> str:
+    scalar, algebra, late = _guidance_slots(request, draft.text, feedback)
     return f"""Translate the informal Draft into a Lean 4/mathlib formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
 {_lean_import_guidance()}
-{_lean_scalar_guidance()}
+{scalar}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 State every hypothesis in the theorem header. Do not use `variable`, `include` or a
@@ -800,8 +962,8 @@ Leave one or more localized `sorry` gaps for the substantive proof obligations.
 Do not use a shortcut tactic or proof term to close the whole theorem instead of
 representing the Draft's intermediate reasoning.
 {DERIVE_ANSWER_INSTRUCTION}
-{_learner_algebra_guidance()}
-
+{algebra}
+{late}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
@@ -822,6 +984,7 @@ def _prove_prompt_for(
 ) -> str:
     # Flag off: the request-specific reliability block sits inside the guidance, as before.
     # Flag on: it moves behind the byte-identical static guidance.
+    scalar, algebra, late = _guidance_slots(request, draft.text, feedback)
     reliability = _lean_reliability_guidance(request)
     if static_prefix_enabled():
         reliability_before, reliability_after = "", reliability
@@ -830,7 +993,7 @@ def _prove_prompt_for(
     return f"""Complete a Lean 4/mathlib proof from the supplied Draft and formal Sketch.
 Return exactly one fenced Lean code block. Do not include prose outside the code block.
 {_lean_import_guidance()}
-{_lean_scalar_guidance()}
+{scalar}
 Use Lean 4 syntax. Do not use Lean 3 imports such as `topology.*`, `data.*`, or
 `linear_algebra.*`. Do not use `begin ... end`.
 State every hypothesis in the theorem header. Do not use `variable`, `include` or a
@@ -847,10 +1010,10 @@ is generated separately from the verified theorem and must still expand the Draf
 mathematical argument without claiming unexposed tactic internals were explicit
 Lean proof steps.
 {DERIVE_ANSWER_INSTRUCTION}
-{_learner_algebra_guidance()}
+{algebra}
 {reliability_before}Do not use `sorry` or `admit`.
 You must prove the exact Lean theorem harness shown below when one is provided.
-{reliability_after}
+{late}{reliability_after}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
@@ -1024,17 +1187,18 @@ def _repair_instruction_prompt_for(
 ) -> str:
     """Build the one typed handoff from a valid route to its selected stage."""
 
+    scalar, algebra, late = _guidance_slots(request, None, feedback)
     if static_prefix_enabled():
         # Same sentences; the route-specific paragraph moves behind the static guidance.
         return f"""Create the PALS repair handoff for the selected DSP route.
 Return exactly one JSON object with exactly one key, `instruction`.
 {DERIVE_ANSWER_INSTRUCTION}
-{_learner_algebra_guidance()}
-{_lean_scalar_guidance()}
+{algebra}
+{scalar}
 `instruction` must be a concise, concrete repair plan for the selected `{feedback.repair_route}`
 stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
 code, a route choice, an evaluation rubric, or any extra JSON field.
-
+{late}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
@@ -1048,9 +1212,9 @@ Return exactly one JSON object with exactly one key, `instruction`.
 stage. It must address the actual diagnostics and failed Lean candidate below. Do not return Lean
 code, a route choice, an evaluation rubric, or any extra JSON field.
 {DERIVE_ANSWER_INSTRUCTION}
-{_learner_algebra_guidance()}
-{_lean_scalar_guidance()}
-
+{algebra}
+{scalar}
+{late}
 {_problem_section(request)}
 {_formal_statement_guidance(request.formal_statement)}
 {_target_declaration_guidance(request)}
@@ -1284,7 +1448,16 @@ def _repair_guidance(feedback: GenerationFeedback | None) -> str:
         }
     )
     unknown_identifier_guidance = ""
-    if unknown_identifiers:
+    if unknown_identifiers and full_mathlib_import_enabled():
+        unknown_identifier_guidance = (
+            "\nIdentifiers unresolved in the failed attempt:\n"
+            + "\n".join(f"- `{identifier}`" for identifier in unknown_identifiers)
+            + "\nDo not change the import line (it stays `import Mathlib`). Treat each name "
+            "above as nonexistent and replace it with an actual declaration or an automation "
+            "tactic; do not invent a replacement name. Never add axioms, weaken assumptions "
+            "or change the requested claim to silence the error.\n"
+        )
+    elif unknown_identifiers:
         unknown_identifier_guidance = (
             "\nIdentifiers unresolved in the failed import environment:\n"
             + "\n".join(f"- `{identifier}`" for identifier in unknown_identifiers)

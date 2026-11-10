@@ -124,6 +124,14 @@ class Diagnostic:
 
 
 @dataclass(frozen=True, slots=True)
+class DraftFields:
+    """Machine-readable tail of a Draft (only when PALS_DRAFT_STRUCTURED_FIELDS_ENABLED)."""
+
+    final_answer: str
+    hard_steps: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class GeneratedDraft:
     text: str
     model: str
@@ -132,6 +140,8 @@ class GeneratedDraft:
     provider: str = ""
     elapsed_ms: int = 0
     reasoning_effort: str | None = None
+    # None unless the flag is on and the model wrote well-formed FINAL_ANSWER/HARD_STEPS fields.
+    fields: DraftFields | None = None
 
 
 @dataclass(frozen=True, slots=True)
