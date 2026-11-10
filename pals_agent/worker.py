@@ -23,6 +23,11 @@ from pals_agent.api_client import (
     ProofJobNotFoundError,
 )
 from pals_agent.artifacts import ArtifactPersistenceError
+from pals_agent.explanation_fallback import (
+    deliver_unreviewed_explanation,
+    explanation_fallback_enabled,
+)
+from pals_agent.explanation_v2 import draft_text_from_proof_job, select_v2
 from pals_agent.explanations import (
     ExplanationDeadlineExceeded,
     ExplanationGenerationError,
@@ -791,6 +796,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
                 language=language,
+                draft_text=draft_text_from_proof_job(proof_job),
             )
         if state == "verified":
             lean_code = proof_job.get("lean_code")
@@ -805,6 +811,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
                 language=language,
+                draft_text=draft_text_from_proof_job(proof_job),
             )
 
         if _has_pending_api_candidate(proof_job):
@@ -1594,6 +1601,7 @@ class SqsProofWorker:
                 claim_id=claim_id,
                 extend_visibility=extend_visibility,
                 retry_id=retry_id,
+                draft_text=draft_text_from_proof_job(proof_job),
             )
 
     def _ensure_summary_explanation(
@@ -1606,6 +1614,7 @@ class SqsProofWorker:
         extend_visibility: VisibilityExtender,
         language: str,
         retry_id: str | None = None,
+        draft_text: str | None = None,
     ) -> bool:
         acquisition = self._acquire(
             resource_kind="explanation",
@@ -1625,7 +1634,28 @@ class SqsProofWorker:
 
         permit = acquisition.permit
         private_review_failures: list[dict[str, Any]] = []
+        candidates: list[ProofExplanation] = []
         started_at = time.monotonic()
+
+        def fail(code: str, reason: str, *, log: str) -> bool:
+            log_failure(log)
+            if explanation_fallback_enabled():
+                response = deliver_unreviewed_explanation(
+                    self.api_client, proof_job_id=proof_job_id, claim_id=claim_id,
+                    theorem_statement=theorem_statement, lean_code=lean_code, language=language,
+                    reason=reason, private_review_failures=private_review_failures,
+                    candidate_content=(
+                        _public_explanation_content(candidates[-1]) if candidates else None
+                    ),
+                )
+                if response is not None:
+                    return _terminal_response_persisted(
+                        response, resource_kind="explanation", resource_id=proof_job_id
+                    )
+            return self._write_explanation_failure(
+                proof_job_id=proof_job_id, claim_id=claim_id, code=code, language=language,
+                private_review_failures=private_review_failures,
+            )
 
         def log_failure(reason: str) -> None:
             _log_generation_failure(
@@ -1664,10 +1694,23 @@ class SqsProofWorker:
                         timeout_seconds=permit.timeout_seconds,
                     )
 
+            # PALS_EXPLANATION_V2_ENABLED: Draft-aware writer and defect-list review (default off).
+            v2, v2_skipped = select_v2(
+                explainer=self.explainer, reviewer=reviewer, draft_text=draft_text,
+                theorem_statement=theorem_statement, lean_code=lean_code, language=language,
+                deadline=permit.deadline, timeout_seconds=permit.timeout_seconds,
+                monotonic=self.monotonic,
+            )
+            if v2 is None and v2_skipped != "flag_off":
+                _logger.warning(
+                    "explanation_v2_fallback_to_v1 proof_job=%s reason=%s",
+                    proof_job_id, v2_skipped,
+                )
+            write = v2.generate if v2 is not None else generate_explanation
             with latency_stage("explanation"):
                 explanation, review = _generate_reviewed_candidate(
-                    generate=generate_explanation,
-                    review=review_explanation,
+                    generate=lambda feedback: _remember(candidates, write(feedback)),
+                    review=v2.review if v2 is not None else review_explanation,
                     content_of=_public_explanation_content,
                     failures=private_review_failures,
                 )
@@ -1684,31 +1727,15 @@ class SqsProofWorker:
             )
             self._raise_if_generation_deadline_reached(permit.deadline)
         except ExplanationDeadlineExceeded:
-            log_failure("deadline")
-            return self._write_explanation_failure(
-                proof_job_id=proof_job_id,
-                claim_id=claim_id,
-                code="pals.explanation_deadline_exceeded",
-                language=language,
-                private_review_failures=private_review_failures,
-            )
+            return fail("pals.explanation_deadline_exceeded", "timeout", log="deadline")
         except ProofOutputReviewError:
-            log_failure(_review_failure_reason(private_review_failures))
-            return self._write_explanation_failure(
-                proof_job_id=proof_job_id,
-                claim_id=claim_id,
-                code="pals.explanation_review_failed",
-                language=language,
-                private_review_failures=private_review_failures,
+            return fail(
+                "pals.explanation_review_failed", "qa_rejected_or_unavailable",
+                log=_review_failure_reason(private_review_failures),
             )
         except Exception as exc:
-            log_failure(_generation_failure_reason(exc))
-            return self._write_explanation_failure(
-                proof_job_id=proof_job_id,
-                claim_id=claim_id,
-                code="pals.explanation_failed",
-                language=language,
-                private_review_failures=private_review_failures,
+            return fail(
+                "pals.explanation_failed", "generation_failed", log=_generation_failure_reason(exc)
             )
 
         try:
@@ -3926,6 +3953,11 @@ def _generate_reviewed_candidate(
             previous_visible = normalized
             feedback = {"rationale": exc.rationale, "previous_candidate": normalized[:16000]}
     raise AssertionError("candidate budget exhausted")
+
+
+def _remember(candidates: list[Any], candidate: Any) -> Any:
+    candidates.append(candidate)
+    return candidate
 
 
 def _optional_keyword(key: str, value: Any) -> dict[str, Any]:
