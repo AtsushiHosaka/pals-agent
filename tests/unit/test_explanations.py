@@ -1558,3 +1558,5 @@ def test_review_prompt_covers_the_figure() -> None:
     )
     assert '"figure"' in prompt
     assert "proving nothing" in prompt
+    # A graph's window is not a claim; Luna rejected polynomial figures for their range.
+    assert "state no mathematical claim" in prompt
