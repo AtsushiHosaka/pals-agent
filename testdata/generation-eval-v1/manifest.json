@@ -1,0 +1,2066 @@
+{
+ "problems": [
+  {
+   "expected_answer": null,
+   "field": "sequences-limits",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "calc_derivative_cubic_minus_linear",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-sequences-limits-calculus-candidates",
+   "split": "tuning",
+   "statement": "Show that for every real a, the derivative of x^3 - 2x at a is 3a^2 - 2.",
+   "statement_sha256": "a6c2c7933397d246e261301992b7502665822b29fd73e2b062a15dea570c2f95",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "sequences-limits",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "calc_integral_square_zero_one",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-sequences-limits-calculus-candidates",
+   "split": "tuning",
+   "statement": "Show that the definite integral of x^2 from 0 to 1 is 1/3.",
+   "statement_sha256": "d58b1bc6b235edb61ab40cb4be319344be3476be9cf260945ddf9ec22e96ca9c",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (q : ℝ) (hq : 1 ≤ |q|) : ¬Summable (fun n : ℕ => q^n)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_supp_v3_geometric_boundary_counterexample",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "For every real q with |q|≥1, the geometric power series Σ q^n is not summable. In particular, interior convergence does not license its boundary values.",
+   "statement_sha256": "18b41dfcba4dc5bfe548ae80447353aa2de05d1bcbfe55ec20713a2b0796143d",
+   "tags": [
+    "epsilon-delta",
+    "inequality"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (a b v : ℝ) (hv : v ≠ 0) : HasDerivAt (fun x => ∫ t in b..x, Function.update (fun _ : ℝ => 0) a v t) 0 a ∧ ¬HasDerivAt (fun x => ∫ t in b..x, Function.update (fun _ : ℝ => 0) a v t) v a",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_supp_v5_ftc_point_spike_counterexample",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "For every a,b and v≠0, let f equal zero except f(a)=v. The variable-upper-endpoint integral x↦∫[b,x]f has derivative zero at a and does not have derivative f(a)=v there.",
+   "statement_sha256": "b3192078e88c38102f9d2d36be9a1c6bc814ad346743499bb792c514b6768f4c",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (a b c : ℝ) (hf : IntervalIntegrable f (MeasureTheory.volume : MeasureTheory.Measure ℝ) a b) : IntervalIntegrable (fun x => c * f x) (MeasureTheory.volume : MeasureTheory.Measure ℝ) a b ∧ (∫ x : ℝ in a..b, c * f x) = c * (∫ x : ℝ in a..b, f x)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v2_integral_scalar_linearity",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "If f is interval-integrable, multiplying it by any real constant c preserves integrability and multiplies its integral by c.",
+   "statement_sha256": "71667862383c4d3bed0872798b079b1ff2965d63fc7767de124a6e6169850dab",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (u : ℕ → ℝ) (n : ℕ) (a : ℝ) : Filter.Tendsto (fun k => u (k+n)) Filter.atTop (nhds a) ↔ Filter.Tendsto u Filter.atTop (nhds a)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v3_limit_fixed_shift",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "For any natural shift n, u(k+n) converges to a if and only if u(k) converges to a.",
+   "statement_sha256": "7d5ddb10930b0b6eca10dd65f518429fca9def7bcbe4984f62652e83d879debc",
+   "tags": [
+    "epsilon-delta",
+    "equivalence"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (u v : ℕ → ℝ) (a b : ℝ) (hu : Filter.Tendsto u Filter.atTop (nhds a)) (hv : Filter.Tendsto v Filter.atTop (nhds b)) (hle : ∀ n, u n ≤ v n) : a ≤ b",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v3_limit_order",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "If u(n)≤v(n) for every natural n and both sequences converge to a,b, then a≤b.",
+   "statement_sha256": "b16c61747ff942f6c9e3f39492c1a07e65a6378be300f06e3e80d5bc285a833e",
+   "tags": [
+    "epsilon-delta",
+    "inequality",
+    "needs-induction"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F] [FiniteDimensional ℝ F] (f : E → F) (A : E →L[ℝ] F) (c : ℝ → E) (t : ℝ) (u : E) (hc : HasDerivAt c u t) (hf : HasFDerivAt f A (c t)) : HasDerivAt (f ∘ c) (A u) t",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v4_curve_chain_rule",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Let all vector spaces be finite-dimensional real inner product spaces. If c has velocity u at t and Df(c(t))=A, then f∘c has velocity A u at t.",
+   "statement_sha256": "d5142ea00fd192c7c36d0678de9f4c7b334ad949e484e4ab4a85a922d5685740",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] (f : E → ℝ) (x u : E) (hf : HasGradientAt f u x) (w : E) : |lineDeriv ℝ f x w| ≤ ‖u‖*‖w‖",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v4_gradient_direction_bound",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Let all vector spaces be finite-dimensional real inner product spaces. If f has gradient u at x, the absolute directional slope |Df(x)[w]| is at most ‖u‖‖w‖.",
+   "statement_sha256": "c557d371134981afc79d7682d0ed9f6fe3f0343d433d98b9f9103a3b19f286a9",
+   "tags": [
+    "inequality",
+    "linear-algebra"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] {F : Type*} [NormedAddCommGroup F] [InnerProductSpace ℝ F] [FiniteDimensional ℝ F] (f : E → F) (A : E →L[ℝ] F) (x : E) (hf : HasFDerivAt f A x) : HasFDerivAt (fun y => ‖f y‖^2) (2 • (innerSL ℝ (f x)).comp A) x",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v4_norm_square_chain",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Let all vector spaces be finite-dimensional real inner product spaces. If Df(x)=A, the derivative of ‖f‖² is 2•(innerSL ℝ (f x)).comp A.",
+   "statement_sha256": "b4b174d83cb2dbc4829923ad0b23973f80ab8b2d9f62c8a448fb999b5c7b4528",
+   "tags": [
+    "epsilon-delta",
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (hc : ConvexOn ℝ Set.univ f) (hf : Differentiable ℝ f) : Monotone (deriv f)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "exhausted-repairs",
+    "statement-mismatch"
+   ],
+   "id": "calculus_v5_convex_derivative_monotone",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "A differentiable globally convex real function has a nondecreasing derivative.",
+   "statement_sha256": "19ff60336ead2ab9a22eb1fe0ef001321ebde5f4ac719f76eb60d85926d77195",
+   "tags": [
+    "epsilon-delta",
+    "equivalence"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (a u : ℝ) : HasDerivAt f u a ↔ Filter.Tendsto (fun t => (f (a+t)-f a)/t) (nhdsWithin 0 {0}ᶜ) (nhds u)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v5_derivative_difference_quotient_limit",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Having derivative u at a is equivalent to the punctured limit of (f(a+t)-f(a))/t as t→0 being u.",
+   "statement_sha256": "2bd2957bd05f749bb0249e9e1c629377b8cd4fe358ea82fbfc73d3b6f87dce73",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (a u : ℝ) : Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds u) ↔ ContinuousAt (Function.update f a u) a",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v5_removable_singularity_extension",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "A finite punctured limit f(x)→u at a exists with value u exactly when replacing f(a) by u makes the function continuous at a.",
+   "statement_sha256": "88644a37c8192165f269d268de0ed05132f55a566b80af5ca00adf2e888466bd",
+   "tags": [
+    "epsilon-delta",
+    "existence-uniqueness"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (a u : ℝ) (hf : HasDerivAt f 0 a) (h2 : HasDerivAt (deriv f) u a) (hu : 0 < u) : IsLocalMin f a",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v5_second_derivative_minimum",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "If f′(a)=0 with an actual derivative witness and the derivative function has a positive derivative u at a, then f has an unconstrained local minimum at a.",
+   "statement_sha256": "acf5e5220a3da66f57580c7b1cd82ac6a5cb91a0f8f03289741148546e5e8816",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": "example (f : ℝ → ℝ) (a u : ℝ) : Filter.Tendsto f (nhdsWithin a {a}ᶜ) (nhds u) ↔ Filter.Tendsto f (nhdsWithin a (Set.Iio a)) (nhds u) ∧ Filter.Tendsto f (nhdsWithin a (Set.Ioi a)) (nhds u)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "calculus_v5_two_sided_limit_characterization",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "A real function has punctured two-sided limit u at a if and only if its left-hand and right-hand limits at a both equal u.",
+   "statement_sha256": "5c55ceeddaa76bae3c956b1c168c06f994c887b2c44697266af31b9c26caf0fc",
+   "tags": [
+    "epsilon-delta",
+    "equivalence"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "commutative-algebra",
+   "fixed_lean_statement": "example {R M : Type*} [CommRing R] [AddCommGroup M] [Module R M] : LinearMap.range (LinearMap.id : M →ₗ[R] M) = LinearMap.ker (0 : M →ₗ[R] M)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "commalg_modules_exact_id_zero",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "id_M と 0:M→M は M で正確である。",
+   "statement_sha256": "123f25f0e12d200309947801232417ddfc1f1ca4a22b0211fc11bd509bb3c43c",
+   "tags": [],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "commutative-algebra",
+   "fixed_lean_statement": "example {R : Type*} [CommRing R] {M : Type*} [AddCommGroup M] [Module R M] [IsNoetherian R M] (f : M →ₗ[R] M) (hf : Function.Surjective f) : Function.Injective f",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "commalg_v3_noetherian_surjective_endomorphism",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "Every surjective linear endomorphism of a Noetherian module over a commutative ring is injective.",
+   "statement_sha256": "a8d53f4843866959063132d4c803418f87eeb21f6ab660b76fd09cca164222fa",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "commutative-algebra",
+   "fixed_lean_statement": "example {R : Type*} [CommRing R] (T : Set (PrimeSpectrum R)) (hT : IsClopen T) : ∃ x : R, IsIdempotentElem x ∧ T = PrimeSpectrum.basicOpen x ∧ ∀ y : R, IsIdempotentElem y ∧ T = PrimeSpectrum.basicOpen y → y = x",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "exhausted-repairs",
+    "statement-mismatch"
+   ],
+   "id": "commalg_v4_clopen_unique_idempotent",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "For any commutative ring R, every clopen subset T of Spec R is D(e) for a unique idempotent e∈R.",
+   "statement_sha256": "e761ba1f4c9d9ce61548564f3e0995762da8420d01152b149785eb48c6b410cc",
+   "tags": [
+    "existence-uniqueness"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "commutative-algebra",
+   "fixed_lean_statement": "example {R : Type*} [CommRing R] (p : PrimeSpectrum R) : IsClosed ({p} : Set (PrimeSpectrum R)) ↔ p.asIdeal.IsMaximal",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "commalg_v4_closed_point_maximal",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "A point of Spec R is closed if and only if its underlying prime ideal is maximal.",
+   "statement_sha256": "80c676439db784fbf33075a97180dbfe429a86f8445808358ca77bf2b5d51a66",
+   "tags": [
+    "equivalence"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "coordinate-geometry",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "conic_parabola_circle_two_intersections",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-coordinate-conics-candidates",
+   "split": "held_out",
+   "statement": "For all real x and y, if y = x^2 and x^2 + y^2 = 2, then (x, y) is either (1, 1) or (-1, 1).",
+   "statement_sha256": "a37cff5b95e907a874085b679be2138f83069257768bb5501cda98d253999029",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "coordinate-geometry",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "coord_quarter_turn_orthogonal_components",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:coordinate-geometry-candidates",
+   "split": "tuning",
+   "statement": "For all real x and y, the coordinate dot expression x(-y) + yx equals 0.",
+   "statement_sha256": "b286d4e9f93ce314a32f4d988a2572689efb275eb2b558a66ceb5c6ff6223000",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "disc_size_difference_closed",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:discrete-relations-maps-combinatorics-candidates",
+   "split": "tuning",
+   "statement": "The finite set {1,2,3} \\ {2} has size 2.",
+   "statement_sha256": "0e154de6dfc9250c6ff77fa40475e4e9cda65cddce5f3b79d41d178711364e75",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "exp-log",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "exlog_exp_strictly_positive",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:exponent-log-number-theory-candidates",
+   "split": "tuning",
+   "statement": "For every real x, exp(x) > 0.",
+   "statement_sha256": "9a91b5215f2e4c4ca9c24c1fc20f13d3e0717e1b9415c3fb433b0f1f963b3879",
+   "tags": [
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "exp-log",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "exlog_expand_exp_sub_recover",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-exponent-log-expansion-candidates",
+   "split": "tuning",
+   "statement": "For all real x and y, exp(x - y)*exp(y) = exp(x).",
+   "statement_sha256": "885c0270edad1545243d2e8cea2d1bb0716de99a6fdf85b6327fa6a652e4ef0f",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {R M N P : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] [AddCommGroup P] [Module R P] (f : M →ₗ[R] N) (g : N →ₗ[R] P) : LinearMap.range f = LinearMap.ker g → g.comp f = 0",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_reuse_exact_sequence_zero_composite",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "線形写像 f:M→N、g:N→P が N で完全（im(f)=ker(g)）なら g∘f=0。",
+   "statement_sha256": "cdf4bdfdd5424d18bad37436c11407bbe364af69214acd59f93aac65c1e5fd9c",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (f : M →ₗ[R] N) : (LinearMap.ker f = ⊤ → f = 0) ∧ (f = 0 → LinearMap.ker f = ⊤)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_reuse_kernel_detects_zero",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "線形写像 f:M→N の核が M 全体であることと f が零写像であることは同値である。",
+   "statement_sha256": "2eaaa9bb3d69d7c6741a8abafceefab10660be68ed213e295bde483542898a0a",
+   "tags": [
+    "equivalence",
+    "linear-algebra"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N] (f : M →ₗ[R] N) (g : N →ₗ[R] M) : f.comp g = LinearMap.id → Function.Surjective f",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_reuse_right_inverse_surjective",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "線形写像 f:M→N が線形右逆写像 g:N→M（f∘g=id_N）を持つなら f は全射である。",
+   "statement_sha256": "7622ddb9e0b2e20726c248cf792a8b9ec399e30fff1848970fcb28f9efc07561",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K V : Type*} [Field K] [AddCommGroup V] [Module K V] [FiniteDimensional K V] (f : V →ₗ[K] V) (a : K) (b : K) : a ≠ b → Module.End.eigenspace f a ⊓ Module.End.eigenspace f b = ⊥",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v2_distinct_eigenspaces_intersection",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "体 K 上の有限次元ベクトル空間について、a≠b なら f の a 固有空間と b 固有空間の共通部分は零である。",
+   "statement_sha256": "0739633189c985875950e09847874f4f7079011a6bfd16f98e1983f8df869809",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V] {n : ℕ} (v : Fin n → V) (hv : LinearIndependent ℝ v) : LinearIndependent ℝ (InnerProductSpace.gramSchmidt ℝ v)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v3_gram_schmidt_independent",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "Let V be any finite-dimensional real inner product space. If v is linearly independent, GramSchmidt(v) is linearly independent.",
+   "statement_sha256": "32c6bc2552f2aabf422b6203d4eef5fd9c9e42205b16a42be077698acfbb37dd",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V] (x y : V) : 4 * inner ℝ x y = ‖x + y‖ ^ 2 - ‖x - y‖ ^ 2",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v3_polarization",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Let V be any finite-dimensional real inner product space. For all x,y, 4⟨x,y⟩ = ‖x+y‖²-‖x-y‖².",
+   "statement_sha256": "97d5730e429d74e25c8ab88a00bf964d36ad51f70628c408b99f8f3bcdea6d74",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {n : ℕ} (A : Matrix (Fin n) (Fin n) K) : A.charpoly.Monic ∧ A.charpoly.natDegree = n",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v4_charpoly_monic_degree",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "Over any field K and for arbitrary natural matrix dimensions, The characteristic polynomial of an n×n matrix is monic and has natural degree n.",
+   "statement_sha256": "c26e6bdf53c9cd51613412d99884516e7cdcbf65d5c40cfbfd7dcfc15e428024",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] {W : Type*} [AddCommGroup W] [Module K W] [FiniteDimensional K W] {U : Type*} [AddCommGroup U] [Module K U] [FiniteDimensional K U] {n m p : ℕ} (b : Module.Basis (Fin n) K V) (c : Module.Basis (Fin m) K W) (d : Module.Basis (Fin p) K U) (f : V →ₗ[K] W) (g : W →ₗ[K] U) : LinearMap.toMatrix b d (g.comp f) = LinearMap.toMatrix c d g * LinearMap.toMatrix b c f",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v5_matrix_of_composition",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, the matrix of g∘f in three chosen bases is matrix(g)·matrix(f), with the intermediate basis shared.",
+   "statement_sha256": "5fa8bfa2649e8539b7f5db2e09c7e428a1c686419df93d13e781a8eb487e30d1",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "easy",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S : Submodule K V) : ∃ T : Submodule K V, IsCompl S T",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "statement-mismatch"
+   ],
+   "id": "la_v5_subspace_has_complement",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, every subspace S has a complementary subspace T.",
+   "statement_sha256": "cbc1c9cae9996256338efc4cf833a38bdad62cf048e35d3d4d12fbbf71712f24",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] {n : ℕ} (v : Fin n → V) : (∃ b : Module.Basis (Fin n) K V, (fun i => b i)=v) ↔ LinearIndependent K v ∧ Submodule.span K (Set.range v)=⊤",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "statement-mismatch"
+   ],
+   "id": "la_v6_basis_recognition",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, a Fin n family is the vector family of some basis exactly when it is independent and spans the whole space.",
+   "statement_sha256": "0fca2cd842965a01e5fce773cf1e3aefba0f8d3d6fb93963da1eb0b1030b7ee4",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] {W : Type*} [AddCommGroup W] [Module K W] [FiniteDimensional K W] (f : V →ₗ[K] W) (y : W) : (∃ x, f x = y) ↔ ∀ phi : W →ₗ[K] K, (∀ x, phi (f x) = 0) → phi y = 0",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v6_fredholm_solvability",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, f(x)=y is solvable exactly when every linear functional on W annihilating all outputs of f also annihilates y.",
+   "statement_sha256": "cb46944df3cef3d47fffbeacb5f6b2114df47065d6a7e0a252270352a7ebe157",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] {n : ℕ} (b : Module.Basis (Fin n) K V) (i j : Fin n) (hij : i ≠ j) : let p := (b.coord i).smulRight (b i); let q := (b.coord j).smulRight (b j); p ≠ 0 ∧ q ≠ 0 ∧ p.comp q = 0",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "statement-mismatch"
+   ],
+   "id": "la_v6_nonzero_maps_zero_composite",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, coordinate projections onto two distinct vectors of a basis are both nonzero but their composite is zero; a zero composite does not force either factor to vanish.",
+   "statement_sha256": "d1736018ccd0fe5b2201e2bea6f65d650924f98127195e31c882228c5a5b2f0d",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] {n m : ℕ} (A : Matrix (Fin n) (Fin m) K) (B : Matrix (Fin m) (Fin n) K) : (1+A*B).det=(1+B*A).det ∧ (IsUnit (1+A*B) ↔ IsUnit (1+B*A))",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "statement-mismatch"
+   ],
+   "id": "la_v6_rectangular_determinant_transfer",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, for rectangular A:n×m and B:m×n, det(Iₙ+AB)=det(Iₘ+BA); consequently one of these square systems is invertible exactly when the other is, even when m≠n.",
+   "statement_sha256": "ce08ee8f1391eca10d9af3843de135439ef47d01eb91411fd6caa42e437ff497",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": "example {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V] [FiniteDimensional K V] (S T : Submodule K V) (x : V) : x ∈ S ⊔ T ↔ ∃ u ∈ S, ∃ y ∈ T, u+y=x",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "la_v6_subspace_sum_membership",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "Over any field K and finite-dimensional K-vector spaces, x lies in S+T exactly when x=s+t for some s∈S and t∈T.",
+   "statement_sha256": "8d2307aa20aaa95442d7c880b6d198436a353ad6064a24cbc88d8d47c50fd59e",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "logic_add_neq_contrapositive_real",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:logic-proof-methods-set-foundations-candidates",
+   "split": "tuning",
+   "statement": "For all real x, y, and z, if x + z ≠ y + z then x ≠ y.",
+   "statement_sha256": "5d2c71da4f7381ed74b5e7272f6e6693c947a1cb8c826b26b00cf14440f4c59b",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "logic_no_negative_natural",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:logic-proof-methods-set-foundations-candidates",
+   "split": "held_out",
+   "statement": "No natural number n satisfies n < 0.",
+   "statement_sha256": "04ca86f308940a93bb33b558aaa9acab8b9ec21ee140ac4537fc5be5c760fcf9",
+   "tags": [
+    "inequality"
+   ],
+   "tier": "easy",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "logic_set_union_absorption",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:logic-proof-methods-set-foundations-candidates",
+   "split": "held_out",
+   "statement": "For all sets A and B, A ∪ (A ∩ B) = A.",
+   "statement_sha256": "4866507462b8db30539a5db30dc9c7affe8526a7247c88ae98caf349ef1bc299",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "multivariable",
+   "fixed_lean_statement": "example (m n : ℕ) (i : Fin m) (j : Fin n) (c : ℝ) (hc : c ≠ 0) :\n ∃ f : ((Fin m → ℝ) × (Fin n → ℝ)) → ℝ,\n MeasureTheory.Integrable f ∧ (∀ y, f (0,y) = c) ∧ ¬ MeasureTheory.Integrable (fun y => f (0,y))",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "exhausted-repairs",
+    "statement-mismatch"
+   ],
+   "id": "mv_foundation_exceptional_section_counterexample",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "For all nonempty coordinate dimensions m,n and nonzero real c, there exists a Lebesgue-integrable f on ℝᵐ×ℝⁿ whose entire section at x=0 equals c and is not integrable. Fubini ensures integrable sections almost everywhere, not at every point.",
+   "statement_sha256": "33609441bcc7b537ce1e644ecd719a810f011198e45d4a830f0c9faad2c4f175",
+   "tags": [
+    "existence-uniqueness",
+    "linear-algebra"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "multivariable",
+   "fixed_lean_statement": "example (n : ℕ) (f g : (Fin n → ℝ) → ℝ) (A B : (Fin n → ℝ) →L[ℝ] ℝ) (x u : Fin n → ℝ) (he : IsLocalExtrOn g {y | f y = f x} x) (hf : HasStrictFDerivAt f A x) (hg : HasStrictFDerivAt g B x) (hu : A u ≠ 0) : ∃ c : ℝ, B = c • A ∧ c * A u = B u ∧ ∀ t : ℝ, t * A u = B u → t = c",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "exhausted-repairs",
+    "statement-mismatch"
+   ],
+   "id": "mv_foundation_lagrange_multiplier_from_direction",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "held_out",
+   "statement": "At a constrained local extremum of g on f=f(x), assume strict derivatives A,B and choose a direction u with A(u)≠0. Then the unique normalized multiplier c is determined by c A(u)=B(u), and the full derivative identity is B=cA. Thus one scalar division computes the multiplier after the regularity check.",
+   "statement_sha256": "cbf77415f2271b567008063aa1deebe496d3170ef3dee4935610e581a032eb61",
+   "tags": [
+    "computation",
+    "epsilon-delta",
+    "existence-uniqueness"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "multivariable",
+   "fixed_lean_statement": "example (E : Type*) [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] (u : E) (hu : u ≠ 0) : ∃ f : E → ℝ, IsLocalMin f 0 ∧ ¬DifferentiableAt ℝ f 0",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "mv_foundation_nondifferentiable_minimum",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "On any finite-dimensional real inner-product space with a nonzero vector, there exists a function with a local minimum at the origin that is not differentiable there. A local minimum does not imply the differentiability premise of Fermat’s theorem.",
+   "statement_sha256": "51b3c727ca0def96573452da323ae7bda79683f878ec3969586c14a3c5fae558",
+   "tags": [
+    "epsilon-delta",
+    "equivalence",
+    "existence-uniqueness",
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "multivariable",
+   "fixed_lean_statement": "example (n : ℕ) (i : Fin n) (x : Fin n → ℝ) (u : ℝ → (Fin n → ℝ)) (a b : ℝ) (hu : ∀ t, u t = Pi.single i 1) (hab : a ≠ b) : (∀ t, HasDerivAt (fun s => Function.update x i s) (u t) t) ∧ (∫ t in a..b, fderiv ℝ (fun y : Fin n → ℝ => y i) (Function.update x i t) (u t)) ≠ (∫ t in b..a, fderiv ℝ (fun y : Fin n → ℝ => y i) (Function.update x i t) (u t))",
+   "has_catalog_witness": true,
+   "history": [
+    "observed"
+   ],
+   "id": "mv_line_supp_v5_orientation_counterexample",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "For every dimension n with coordinate i, base vector x, distinct real endpoints a,b, and constant velocity u(t)=e_i, the curve obtained by replacing coordinate i of x by t has actual velocity u. Integrating the exact coordinate form dx_i along this curve from a to b differs from integrating it from b to a.",
+   "statement_sha256": "64c4e8cde897d1aa5d679aeb34e0e849a557244692973616690412d5bca1ef35",
+   "tags": [
+    "equivalence",
+    "linear-algebra"
+   ],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "multivariable",
+   "fixed_lean_statement": "example (m n : ℕ) (f : ((Fin m → ℝ) × (Fin n → ℝ)) → ℝ) (hf : MeasureTheory.AEStronglyMeasurable f) : MeasureTheory.Integrable f ↔ (∀ᵐ x, MeasureTheory.Integrable (fun y => f (x,y))) ∧ MeasureTheory.Integrable (fun x => ∫ y, ‖f (x,y)‖)",
+   "has_catalog_witness": true,
+   "history": [
+    "observed",
+    "exhausted-repairs",
+    "statement-mismatch"
+   ],
+   "id": "mv_v5_absolute_section_criterion",
+   "language": "en",
+   "shared": null,
+   "source": "catalog-typed-observed",
+   "split": "tuning",
+   "statement": "For product-a.e. strongly measurable real f on ℝᵐ×ℝⁿ, product integrability is equivalent to almost every right section being integrable and x↦∫y |f(x,y)| being integrable. Signed iterated integrals alone are insufficient.",
+   "statement_sha256": "f08d270796b32d6eb325cd8bd73e94db01c113192773abf3682be75f7a8f9647",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "nt_bezout_101_37",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:exponent-log-number-theory-candidates",
+   "split": "tuning",
+   "statement": "There exist integers a and b such that 101a + 37b = 1.",
+   "statement_sha256": "8b2f845c37b7def6a5856639f83885c3898c77e4271ecb5163c7db7787e3a068",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "nt_gcd_lcm_product_identity",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:exponent-log-number-theory-candidates",
+   "split": "held_out",
+   "statement": "For all natural m and n, gcd(m,n) * lcm(m,n) = m*n.",
+   "statement_sha256": "f38761092319583b36976d6830f2c4cde40bc33396539044e39d5cd849b342f6",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "number_theory_gcd_dvd_left",
+   "language": "ja",
+   "shared": null,
+   "source": "candidate:typed-number-theory-v1-authoring-manifest.proposal",
+   "split": "held_out",
+   "statement": "任意の自然数 m,n で gcd(m,n)|m。",
+   "statement_sha256": "397ee8c73e36d32d28d36c7bd5d19d5f0144571fd092c4de27a0e618e1b358c9",
+   "tags": [
+    "needs-induction"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "probability-ode",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ode_second_exponential_positive_root",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:typed-ode-v1-authoring-manifest.proposal",
+   "split": "tuning",
+   "statement": "The function f(t)=exp t has f(0)=1 and satisfies f''(x)-f(x)=0 for every real x.",
+   "statement_sha256": "6ef6ae4baf36c4a68391d7ae4f30f78a455ecacfa611bd6245a560e507d408c3",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "probability-ode",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "ode_separable_zero_solution",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:typed-ode-v1-authoring-manifest.proposal",
+   "split": "tuning",
+   "statement": "The zero function has f(0)=0 and satisfies f'(x)=f(x)^2 for every real x.",
+   "statement_sha256": "ddaddfceaba8aa007763fef433bfd270315238dff3f7e575b9e796650a0f0817",
+   "tags": [],
+   "tier": "easy",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "school-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "poly_square_linear_bound",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-polynomial-rational-candidates",
+   "split": "tuning",
+   "statement": "For every real x, 2x is at most x^2 + 1.",
+   "statement_sha256": "cab3194db196f348117e7dcead7511259a73f0b6469faa6c90b8eaa8dcfa7d9e",
+   "tags": [
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "school-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "poly_square_nonnegative",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-polynomial-rational-candidates",
+   "split": "tuning",
+   "statement": "For every real x, x^2 is nonnegative.",
+   "statement_sha256": "cf39a83761923084407617211acc97c2ccad6a7db6ca32de65e3029e819b4d99",
+   "tags": [],
+   "tier": "easy",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-absolute-value-nondifferentiability",
+   "language": "ja",
+   "shared": {
+    "case_id": "b15266ed4e600c5a48a42252941f5013e0454e54afc4b7bae7e883f40fba4451",
+    "fixture_sha256": "19e48aad4cedaa4e4f574715afb603db19cd453efba32b7c7da727cdb52b7815",
+    "prompt_quality_id": "absolute-value-nondifferentiability"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "f(x)=|x|がx=0で微分できない理由を、左右の微分係数を使って説明してください。",
+   "statement_sha256": "27af081ff4f312b26dc9cf9540d3429534f5ccca4ca67341b770693597efc914",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-bounded-monotone-real-sequence-convergence",
+   "language": "ja",
+   "shared": {
+    "case_id": "828fa76bcaa9b273f9d82fdcbb32c15f3423c847de171b6d1d958fe5fbbd6bc1",
+    "fixture_sha256": "00bf326d4006ef9cf0a25dd959a2bc2636df7ae8716ac9bd32512049d7385c55",
+    "prompt_quality_id": "bounded-monotone-real-sequence-convergence"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "実数列u:ℕ→ℝは単調非減少であるとする。また、ある実数Mについて、すべてのn∈ℕでu(n)≤Mが成り立つとする。このとき、ある実数Lが存在してu(n)→Lとなり、すべてのn∈ℕについてu(n)≤L≤Mが成り立つことを、実数の上限の性質を使って証明してください。",
+   "statement_sha256": "36d8e5d0a225f35741ada12eee227d76caf1462b24efb01464749b27e2061b35",
+   "tags": [
+    "existence-uniqueness",
+    "inequality"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "school-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-cancellation-zero-coefficient",
+   "language": "ja",
+   "shared": {
+    "case_id": "a0c780a15245936bd1e1c1da6e11210519a4916bbde7603cf455efe8a98e2da2",
+    "fixture_sha256": "f3ecb4ae7b7b9c216e90b28d964a2570d572c4a9ede77e4fcff0db017309ed01",
+    "prompt_quality_id": "cancellation-zero-coefficient"
+   },
+   "source": "prompt-quality-registry",
+   "split": "held_out",
+   "statement": "実数a,x,yについて、ax=ayなら必ずx=yといえますか。必要な条件と、条件を外した場合の反例を説明してください。",
+   "statement_sha256": "a9eae6cf12f986f93d8dcf7277f2ba4a11da428983a2f6f7dce421f439763244",
+   "tags": [
+    "counterexample"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "topology",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-compact-hausdorff-continuous-bijection-inverse",
+   "language": "ja",
+   "shared": {
+    "case_id": "48d161a45e25942b033e87fbcfd07aae2954e8c9c9fe7fec5ecd558b2d4938fc",
+    "fixture_sha256": "7d23c60f947f730312ebb9ca7f7dee2f0e4fa53bc26d61b3c011e62ade0185a2",
+    "prompt_quality_id": "compact-hausdorff-continuous-bijection-inverse"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "X,Yを位相空間とする。Xはコンパクトで、Yはハウスドルフ空間であると仮定する。全単射f:X→Yが連続ならば、その逆写像f⁻¹:Y→Xも連続であることを証明してください。Xがハウスドルフであることは仮定しません。",
+   "statement_sha256": "1ac3ed3a4309e07fc278a8e445c9785751221a7c34f88d762b7fa54d46e46130",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-continuous-interval-self-map-fixed-point",
+   "language": "ja",
+   "shared": {
+    "case_id": "17958f51a34a2d7dbe79179b11b0c4c0bc2dde66ce602612af6e32e94b7bf32c",
+    "fixture_sha256": "aedd1384ef3d07bea735ab68f6ec05362568588e425a27ab6937e4c9f5433c1a",
+    "prompt_quality_id": "continuous-interval-self-map-fixed-point"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "実数a,bがa≤bを満たすとする。関数f:ℝ→ℝは閉区間[a,b]上で連続で、すべてのx∈[a,b]についてf(x)∈[a,b]を満たす。このとき、f(c)=cを満たすc∈[a,b]が存在することを証明してください。",
+   "statement_sha256": "e51589e89696e41890cf26f0f04e4f640aaaa6288d8b243921b60f3e2a3be582",
+   "tags": [
+    "epsilon-delta",
+    "existence-uniqueness",
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-coprime-moduli-unique-residue-solution",
+   "language": "ja",
+   "shared": {
+    "case_id": "f20d607ebcd3beb2aa3132d170a932a74d160e670593de9b18fc0a3b512d2348",
+    "fixture_sha256": "b3bbe63bfead998cf8c9eb1ae5b7bb88a0812da0eddce1647129326e333f06cd",
+    "prompt_quality_id": "coprime-moduli-unique-residue-solution"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "m,nを正の自然数とし、gcd(m,n)=1とする。任意の自然数a,bに対して、0≤x<mn、x≡a (mod m)、x≡b (mod n)を同時に満たす自然数xがただ一つ存在することを証明してください。a<m、b<nは仮定しません。",
+   "statement_sha256": "fd975bc24a0e710c8a5f52ba41fbed49c47ba9276de341ec2cb1de94aecc1273",
+   "tags": [
+    "existence-uniqueness",
+    "inequality",
+    "needs-induction"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-distinct-eigenvalues-linear-independence",
+   "language": "ja",
+   "shared": {
+    "case_id": "c991d8806e8abfc27267482b11d81193895c82c26d50248b46c01013183d24d9",
+    "fixture_sha256": "1733ff28f1e24317f04e69d9dd8301c41e1c836314b9d86dabc602fe5567400e",
+    "prompt_quality_id": "distinct-eigenvalues-linear-independence"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "Vを実ベクトル空間、T:V→Vを線形写像、nを自然数とする。添字i∈{0,…,n−1}に対し、実数λᵢと非零ベクトルvᵢ∈Vがあり、T(vᵢ)=λᵢvᵢを満たすとする。λᵢは相異なると仮定する。このとき、ベクトルの族(vᵢ)が一次独立であることを証明してください。n=0のときは空の族とします。",
+   "statement_sha256": "2f0f13f81296315f7c551ca6e4deb632ebc210a4444f1e85a49332044704cfd3",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "abstract-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-finite-integral-domain-unique-inverse",
+   "language": "ja",
+   "shared": {
+    "case_id": "81bb390696d44b0ec998f44182a9037b10353cd673b412418e2aeddfe7850802",
+    "fixture_sha256": "1dbff37f0d55f743077081cf89eea7893c31636f9daaed5df5a5a005a5d7885d",
+    "prompt_quality_id": "finite-integral-domain-unique-inverse"
+   },
+   "source": "prompt-quality-registry",
+   "split": "held_out",
+   "statement": "Rを有限整域とする。ここで整域とは、単位元をもつ可換環で1≠0かつ零因子をもたないものとします。任意のa∈Rに対し、a≠0ならばab=1を満たすb∈Rがただ一つ存在することを証明してください。",
+   "statement_sha256": "556962736fa245404f6345cc8eb8e5909db4b71ab7d25d7e245dbc3d9e1ffa3a",
+   "tags": [
+    "existence-uniqueness"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-idempotent-linear-map-unique-decomposition",
+   "language": "ja",
+   "shared": {
+    "case_id": "b058aa13e0891c41ea84f914c7af15d63f1b910a13b1d896d100cc42c7bba5b3",
+    "fixture_sha256": "24caee7f840806f277fe6b24b3dbda422a084e5a739899e99e845aad07b8c200",
+    "prompt_quality_id": "idempotent-linear-map-unique-decomposition"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "Vを実ベクトル空間、P:V→Vを線形写像とする。P∘P=Pを仮定する。任意のx∈Vについて、P(y)=0、P(z)=z、x=y+zを同時に満たす組(y,z)∈V×Vがただ一つ存在することを証明してください。",
+   "statement_sha256": "8c05f427a19c3fa6b5c446566018d8e69cf9192e636aa7901ad77702e5e2382a",
+   "tags": [
+    "existence-uniqueness",
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "abstract-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-index-two-subgroup-normality",
+   "language": "ja",
+   "shared": {
+    "case_id": "8a6c0d01b271ce37ab2318724efaad6e081174f170f34b486bfb605a07af64b9",
+    "fixture_sha256": "e346c9f93104b1d8507d1b44a5a7271df640833ad60cf6df0d2ebf182780e228",
+    "prompt_quality_id": "index-two-subgroup-normality"
+   },
+   "source": "prompt-quality-registry",
+   "split": "held_out",
+   "statement": "Gを群、HをGの部分群とする。HのGにおける指数[G:H]が2であると仮定する。このとき、すべてのg∈Gとh∈Hについてghg⁻¹∈Hとなること、すなわちHがGの正規部分群であることを証明してください。Gが有限群であるとは仮定しません。",
+   "statement_sha256": "529268b7d8e8d00e8ccccd87b27a24468a36eb38602a6770b31f1a909738d259",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-irrational-square-root-two",
+   "language": "ja",
+   "shared": {
+    "case_id": "9f124ea7743f344eb96c34dc7faef6bae4c9c6c1cfeb41e6734e0add58f5d493",
+    "fixture_sha256": "59e3b18b7c63e0947e92abf61807619d0d32e70c5207e198463d8aca5b05326d",
+    "prompt_quality_id": "irrational-square-root-two"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "√2が無理数であることを背理法で証明してください。分数を既約にする理由も説明してください。",
+   "statement_sha256": "a7f9cede728e76d2277396ee8bcd32ee7064243392dbeee3551d2d78f0288ee8",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-positive-derivative-injectivity",
+   "language": "ja",
+   "shared": {
+    "case_id": "82d6efa4bb1370454f7ba10bacdd1c4471ee5bc58c1c79f8a81f1c77f49a0c6e",
+    "fixture_sha256": "5f10c0f771ffdaa3293dbb97b4b9e6a8c2a5ef0a794d17e9d99aae41af060ebc",
+    "prompt_quality_id": "positive-derivative-injectivity"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "f:ℝ→ℝはℝ全体で微分可能で、すべてのx∈ℝについてf′(x)>0を満たすとします。平均値の定理を使って、fが単射であることを証明してください。",
+   "statement_sha256": "f4a1f3c4db2bfc161c5158a55587a22a956f6519924be0c59d441be73bb32561",
+   "tags": [
+    "epsilon-delta",
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "number-theory",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-prime-above-every-bound",
+   "language": "ja",
+   "shared": {
+    "case_id": "9ae7073c2c648035e6a5c0a0bbb33d9aa125847081dbfafa74e876b93a00e5f1",
+    "fixture_sha256": "9613a8ff70324861224fd4aea5c3c1957f1c03f310f5d233eb3245ea355ef679",
+    "prompt_quality_id": "prime-above-every-bound"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "任意の自然数Nに対して、Nより大きい素数pが存在することを、N!+1の素因数を考えて証明してください。N=0も含めて扱ってください。",
+   "statement_sha256": "0a80efb356d512553deffd21c3367e4dcb53ac365c79b4e499febcfe36d81260",
+   "tags": [
+    "existence-uniqueness",
+    "needs-induction"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "abstract-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-prime-order-group-nonidentity-generator",
+   "language": "ja",
+   "shared": {
+    "case_id": "52b55080b1bb34d6788308c37670b12e5349ba50e7a3dbf26afb051497c521c3",
+    "fixture_sha256": "cb25897825555c31e71c939e1c65cdc7aae7c6720c72b296be3bb1097fa7b74c",
+    "prompt_quality_id": "prime-order-group-nonidentity-generator"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "Gを有限群とし、その位数|G|が素数pであるとする。単位元をeと書く。任意のg∈Gについて、g≠eならばgの生成する巡回部分群⟨g⟩がG全体に等しいことを、ラグランジュの定理を使って証明してください。",
+   "statement_sha256": "8a85fee39b274442df9940fee31fa78e236b03170fb1a8a6bd7768516d134f34",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-real-sequence-limit-uniqueness",
+   "language": "ja",
+   "shared": {
+    "case_id": "9a25a2b00ea4eac26aacbd45bc4e7011b335a134d986b40db32540df2d869867",
+    "fixture_sha256": "2588292fbd1039f937e8b4514e2d5969f14c4789b25a03910f29a4a5e832f773",
+    "prompt_quality_id": "real-sequence-limit-uniqueness"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "実数列(u_n)が実数aとbの両方に収束するとき、a=bであることをε–N論法で証明してください。aへの収束とは、任意のε>0に対してあるN∈ℕが存在し、n≥Nなら|u_n−a|<εとなることです。bへの収束も同じ意味とします。",
+   "statement_sha256": "bd5823fc21ad5e863e6940248a67a90acd2a38bc2060f9011c1a71004344d77a",
+   "tags": [
+    "epsilon-delta",
+    "existence-uniqueness",
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-real-square-continuity",
+   "language": "ja",
+   "shared": {
+    "case_id": "234fa37fc30cbc5b0c1ab2ee8265eeb836a47c79a38f7b68b3e1451bf4beecc5",
+    "fixture_sha256": "da8e1d4b25de297df303bb093f7239d41604a261e5e0f7164de05ec91363d1e1",
+    "prompt_quality_id": "real-square-continuity"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "実数上の関数f(x)=x²が任意の実数aで連続であることを、εとδの定義を使って証明してください。",
+   "statement_sha256": "7b1c291972cd7704af559e44c7e4024346c2e4ae73e3f375b79cc49197745ee8",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-square-root-of-square-false-claim",
+   "language": "ja",
+   "shared": {
+    "case_id": "9cea71d86783e705c47e417ca023586cd50a92a9977d775bb7f536f5cc1808f7",
+    "fixture_sha256": "607aee4c288a25cb1c3fdfb4193aef0e2e2fa3ff3b553fe9aba0ace1235b4385",
+    "prompt_quality_id": "square-root-of-square-false-claim"
+   },
+   "source": "prompt-quality-registry",
+   "split": "held_out",
+   "statement": "すべての実数xについて√(x²)=xは成り立ちますか。成り立たない場合は反例を示し、正しい式を説明してください。",
+   "statement_sha256": "26aa34a64371611d4bae8a67997f69c94fe107bcc7d6e12ebf9177edca8d5e87",
+   "tags": [
+    "counterexample"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "pq-sum-of-first-n-integers",
+   "language": "ja",
+   "shared": {
+    "case_id": "265a03eb8dcc3631eb2819c2cdd642893764b6e4e16fced75097b9ce84b7777d",
+    "fixture_sha256": "48a2b70c47bdb4dfa7e1d476943765ec557ace874445c91084b4a6eeb8be8d0a",
+    "prompt_quality_id": "sum-of-first-n-integers"
+   },
+   "source": "prompt-quality-registry",
+   "split": "tuning",
+   "statement": "0以上の整数nについて、1+2+…+n=n(n+1)/2を数学的帰納法で証明してください。n=0の和は0とします。",
+   "statement_sha256": "b33a169334cf3455aa77bd4e2874ea9f3991db4a7f585926a72d045526f71420",
+   "tags": [
+    "needs-induction"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "school-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "rat_adjacent_partial_fractions",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-polynomial-rational-candidates",
+   "split": "tuning",
+   "statement": "For every real x with x ≠ -1 and x ≠ -2, (2x+3)/((x+1)(x+2)) = 1/(x+1) + 1/(x+2).",
+   "statement_sha256": "1d561ee9e3515b5e68e122185434c11338ed596b8424a6324d7df00cd47cc85a",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t {X Y Z : Scheme.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) [IsAffineHom f] [IsAffineHom g] :\n    IsAffineHom (f ≫ g) := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed"
+   ],
+   "id": "scheme-M03",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "tuning",
+   "statement": "Show that the composition of two affine morphisms of schemes is affine.",
+   "statement_sha256": "cbc20861c0ffda59f372a7bde6c00acef71414768468aa3fd9c482d0cd3d8751",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t {X Y : Scheme.{u}} (f : X ⟶ Y) [IsClosedImmersion f] [IsAffine Y] : IsAffine X := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed"
+   ],
+   "id": "scheme-M08",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "held_out",
+   "statement": "Show that a scheme admitting a closed immersion into an affine scheme is affine.",
+   "statement_sha256": "169f0b324c045b8ef18de399f8074f05e5fa41b7eff597c95a3c81e402cd0c65",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t (R : Type u) [CommRing R] [IsDomain R] : IsIntegral (Spec (CommRingCat.of R)) := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed"
+   ],
+   "id": "scheme-M10",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "tuning",
+   "statement": "Show that the spectrum of an integral domain is an integral scheme.",
+   "statement_sha256": "60c5dcdc94a7e5f0ff25f97e1150866cb4712319f759dac35418925ed6e14e1f",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t (R : CommRingCat.{u}) : IsReduced (Spec R) ↔ IsReduced R := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed"
+   ],
+   "id": "scheme-M13",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "tuning",
+   "statement": "Show that Spec R is a reduced scheme if and only if the ring R is reduced.",
+   "statement_sha256": "15a63a255f593d9747788d2c6e2ebdcb769f8f2c77fdd9373ac0b9d9f783ee22",
+   "tags": [
+    "equivalence"
+   ],
+   "tier": "medium",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t (K : Type u) [Field K] : Nonempty (Unique (Spec (CommRingCat.of K))) := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed",
+    "exhausted-repairs"
+   ],
+   "id": "scheme-M14",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "held_out",
+   "statement": "Show that the underlying space of the spectrum of a field has exactly one point.",
+   "statement_sha256": "36a6cd296be2ba639ffeaf0fd6671948ce75e69b8aa1e6e081f8bb803aee575b",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": null,
+   "field": "algebraic-geometry",
+   "fixed_lean_statement": "import Mathlib\nopen AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite TopologicalSpace\n\nuniverse u\ntheorem t {A σ : Type*} [CommRing A] [SetLike σ A] [AddSubgroupClass σ A] (𝒜 : ℕ → σ) [GradedRing 𝒜]\n    [Algebra.FiniteType (𝒜 0) A] : IsProper (Proj.toSpecZero 𝒜) := by\n",
+   "has_catalog_witness": false,
+   "history": [
+    "observed",
+    "exhausted-repairs"
+   ],
+   "id": "scheme-M16",
+   "language": "en",
+   "shared": null,
+   "source": "scheme-theory-measurement-cards",
+   "split": "tuning",
+   "statement": "Let A be an ℕ-graded commutative ring such that A is a finitely generated algebra over its degree-zero part A₀. Show that the structure morphism Proj A → Spec A₀ is proper.",
+   "statement_sha256": "e5bdf6889ba5b88b2da8ed321c435f319f816b3149d76ae16ee1d90f92bae652",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "observed"
+  },
+  {
+   "expected_answer": "$0$では微分可能ではない。差商は$h>0$なら$|h|/h=1$、$h<0$なら$|h|/h=-1$となる。左右から近づけた極限が一致しないため、$0$での微分係数は存在しない。Leanでは、この事実を証明済みの定理を適用して微分不可能性を確認している。",
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-absolute_value_not_differentiable",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実数上の絶対値関数$f(x)=|x|$は$0$で微分可能か。理由を示して判定せよ。",
+   "statement_sha256": "1cd26966e6b300684db8bcc381d0d865147bef51bd017107f079e4f3577aeac0",
+   "tags": [
+    "computation",
+    "epsilon-delta"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-composite_injective_implies_first",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "写像$f:A\\to B$、$g:B\\to C$について、合成写像$g\\circ f$が単射なら$f$も単射であることを証明せよ。",
+   "statement_sha256": "e6a4ffb77a5c48fe9d181a133baf695325c6e5179044d79e3532b2ddb3883322",
+   "tags": [],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-continuous_endpoint_sign_change_has_root",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実数$a\\le b$と、閉区間$[a,b]$上で連続な実関数$f$を考える。$f(a)<0<f(b)$のとき、$[a,b]$内に$f(x)=0$となる点が存在することを証明せよ。",
+   "statement_sha256": "41e86484bb1a5921f644f8b21afe53c4ecbcf9d8f917a4df8bd03a6770294920",
+   "tags": [
+    "epsilon-delta",
+    "existence-uniqueness",
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "任意の実数$x$について$f^{\\prime}(x)=3x^2-3$である。べき関数の微分公式から$x^3$の導関数は$3x^2$となる。また、恒等関数の微分と定数倍の公式から$3x$の導関数は$3$である。差の微分公式を使えば、求める式が得られる。",
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-cubic_derivative",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実関数$f(x)=x^3-3x$について、任意の実数$x$での導関数を求め、その式を証明せよ。",
+   "statement_sha256": "2d4d1f7b15c3834475421fe8df14c1b871779ced40a7f94fc60c2167c97c2d31",
+   "tags": [
+    "computation"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "$2\\times2$行列の行列式の公式から、$\\det A=1\\cdot5-2\\cdot3=-1$となる。実数の$-1$は$0$と異なるので、行列式は非零である。Leanの証明も、この公式の適用と正確な計算によって非零性を確認している。",
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-determinant_nonzero_decision",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実数成分の行列$A=\\begin{pmatrix}1&2\\\\3&5\\end{pmatrix}$の行列式は$0$か。厳密に計算して判定せよ。",
+   "statement_sha256": "cb98beda26d405ff2128caf133b251ea7295dfc0b6affba3b857ba147fb31c01",
+   "tags": [
+    "computation",
+    "linear-algebra"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "導関数は$f^{\\prime}(x)=(x+1)e^x$である。恒等関数の導関数は$1$、指数関数の導関数は$e^x$なので、積の微分公式から$f^{\\prime}(x)=1\\cdot e^x+x e^x$となる。これを因数分解すれば$(x+1)e^x$が得られる。",
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-exponential_product_derivative",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "held_out",
+   "statement": "実関数$f(x)=x e^x$について、任意の実数$x$での導関数を求め、積の微分公式で証明せよ。",
+   "statement_sha256": "0fad167aa08c84a43835c6bc395246342a95e55d9dec53206484a5aaf926d270",
+   "tags": [
+    "computation",
+    "epsilon-delta"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-linear_injective_iff_zero_kernel",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "held_out",
+   "statement": "体$K$上のベクトル空間$V,W$と線形写像$f:V\\to W$を考える。$f$が単射であることと、すべての$x\\in V$について$f(x)=0$なら$x=0$となることが同値であると証明せよ。",
+   "statement_sha256": "3c96212559785ee89c79ad5f7519f26fd0fab217b33ae0788b25fedb28c1ed14",
+   "tags": [
+    "equivalence",
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "そのような実数の組は存在しない。第一式を二倍すると$2x+2y=2$となる。一方、第二式は同じ左辺が$3$に等しいことを要求する。両方が成り立つなら$2=3$となり矛盾するため、この連立方程式は解を持たない。",
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-linear_system_inconsistent",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実数$x,y$で、$x+y=1$と$2x+2y=3$を同時に満たすものは存在するか。理由を示して判定せよ。",
+   "statement_sha256": "df0ac13b311dfe12493cfaaa31561071aa67d304112ee0136c462b4d21529f61",
+   "tags": [
+    "computation",
+    "existence-uniqueness"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-linear_system_unique_solution",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "held_out",
+   "statement": "実数$x,y$について、連立方程式$3x+2y=7$、$x-y=-1$を解き、解が一意であることを証明せよ。",
+   "statement_sha256": "6eec8f8c65e7e21a3bd5127aa21d25f8581e38534dc88962afdeace6ad6ef709",
+   "tags": [
+    "existence-uniqueness"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-natural_power_continuous",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "任意の自然数$n$について、実数上の関数$f(x)=x^n$が実数全体で連続であることを証明せよ。$n=0$も含める。",
+   "statement_sha256": "e474305b91bc9fcaa2dfa65074d195e6900649310627a71a9155532f7d1916c4",
+   "tags": [
+    "epsilon-delta",
+    "needs-induction"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-pi_gt_305",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "浮動小数点の近似値を証明として使わず、厳密な不等式$\\pi>3.05$を証明せよ。形式的に証明済みのライブラリの評価を使ってよい。",
+   "statement_sha256": "d0326b4d6deb1460591984fed824bf3f831caca3fcf7a6e0501840c93b8e983d",
+   "tags": [
+    "inequality"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-product_determinant_nonzero_iff",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "同じ有限の添字集合で表される実正方行列$A,B$について、$\\det(AB)\\ne0$と、$\\det A\\ne0$かつ$\\det B\\ne0$が同値であることを証明せよ。",
+   "statement_sha256": "54df0fc717d63de91bfce4509c0678e284ec07efdf075c4e0e1745208f93e07d",
+   "tags": [
+    "equivalence",
+    "linear-algebra"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "単射ではない。$(0,0)$と$(0,1)$の第1座標はどちらも$0$だが、この2点は異なる。もし射影が単射なら2点が等しくなり、第2座標を比べると$0=1$となって矛盾する。よって、この射影は単射ではない。",
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-projection_not_injective",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "第1座標への射影$p:\\mathbb{R}^2\\to\\mathbb{R}$、$p(x,y)=x$は単射か。理由を示して判定せよ。",
+   "statement_sha256": "c8aeedc2861d599e67cbd8931cfeaf3ff4ef44cc4b7fdab0a712f7a469d65af1",
+   "tags": [
+    "computation",
+    "counterexample"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "単射ではない。異なる点$-1$と$1$について、どちらの値も$1$となる。もし単射なら、この値の等しさから$-1=1$が従ってしまい矛盾する。したがって、実数全体を定義域とする平方関数は単射ではない。",
+   "field": "discrete-logic",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-quadratic_not_injective",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "写像$f:\\mathbb{R}\\to\\mathbb{R}$、$f(x)=x^2$は単射か。定義域が実数全体であることに注意して証明せよ。",
+   "statement_sha256": "93599e790b47d21411ee9c3e9af970bd6499daafa2b810f7ba462096e932b155",
+   "tags": [
+    "computation",
+    "counterexample"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "linear-algebra",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-rank_nullity",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "斜体$K$上の加群$V,W$を考え、$V$は有限次元とする。線形写像$f:V\\to W$について、$\\dim_K(\\operatorname{range}f)+\\dim_K(\\ker f)=\\dim_K V$を証明せよ。",
+   "statement_sha256": "30d62d20359013cf25179fbe59a951f48c8c3466b961463a9ccd3e06171dd761",
+   "tags": [
+    "linear-algebra"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-rational_power_continuous",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "held_out",
+   "statement": "自然数$n$について、実関数$f(x)=\\dfrac{x^n+\\sin x}{1+x^2}$が実数全体で連続であることを証明せよ。",
+   "statement_sha256": "235a962e957a6bed9c8f897868214e599b72c03409b7190f42686de55429ab98",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-reciprocal_derivative",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "実数$x\\ne0$において、関数$y\\mapsto1/y$の微分係数が$-1/x^2$であることを証明せよ。",
+   "statement_sha256": "5a364f36d3c29284e9ea2e21c8ee1b779db21bf1933f1ce8f8c13e97e523a6f3",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "右極限は$0$であり、$f$は$0$で連続ではない。正の側では$f$が定数関数$0$と一致するため、右極限も$0$になる。一方、$0$で連続なら右極限は$f(0)=1$でなければならない。実数値関数の極限は一意なので、これらの異なる右極限を持つことはなく、矛盾する。負の側の値は、この結論に影響しない。",
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-right_limit_and_discontinuity",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "関数$f:\\mathbb{R}\\to\\mathbb{R}$が$f(0)=1$を満たし、すべての$x>0$で$f(x)=0$となるとする。$x\\to0+$のときの極限を求め、$f$が$0$で連続か判定せよ。負の$x$での値には条件を置かない。",
+   "statement_sha256": "e8c62eb897884c3748ffe6df6cf787a02e68462323e93b79174678894127d94b",
+   "tags": [
+    "computation",
+    "epsilon-delta",
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-sum_derivative",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "held_out",
+   "statement": "実関数$f,g$が点$a$で微分係数$f^{\\prime},g^{\\prime}$を持つとする。関数$x\\mapsto f(x)+g(x)$が$a$で微分係数$f^{\\prime}+g^{\\prime}$を持つことを証明せよ。",
+   "statement_sha256": "e3c04faf2a875f1462017bd28bc9a0fab03582e4bc34f6655ae8e60e5f56ede4",
+   "tags": [
+    "epsilon-delta"
+   ],
+   "tier": "easy",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": "無理数である。$\\theta=\\pi/180$とおき、$\\tan\\theta=q$となる有理数$q$があると仮定する。$-\\pi/2<\\theta<\\pi/2$だから$\\cos\\theta\\ne0$である。三角関数の恒等式から$\\cos(2\\theta)=(1-q^2)/(1+q^2)$となり、これも有理数になる。Nivenの定理によると、$0\\le r\\le1$を満たす有理数$r$について$\\cos(r\\pi)$が有理数なら、$r$は$0,1/3,1/2,2/3,1$のいずれかである。ところが$2\\theta=(1/90)\\pi$であり、$1/90$はどの値とも異なる。したがって仮定が誤りで、$\\tan1^\\circ$は無理数である。",
+   "field": "calculus-analysis",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": true,
+   "history": [],
+   "id": "seed-tan_one_degree_irrational",
+   "language": "ja",
+   "shared": null,
+   "source": "requested-math-seeds-v1",
+   "split": "tuning",
+   "statement": "$\\tan1^\\circ=\\tan(\\pi/180)$は有理数か。理由も証明せよ。Leanの三角関数では角度をラジアンで表す。",
+   "statement_sha256": "af0a7d4523ae366a017dc0bd1b910b9cc25b863da1ae00d995f4c9a95b9f0fe2",
+   "tags": [
+    "computation"
+   ],
+   "tier": "hard",
+   "tier_basis": "assigned"
+  },
+  {
+   "expected_answer": null,
+   "field": "trigonometry",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "trig_expand_difference_square_le_two",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-trigonometry-expansion-candidates",
+   "split": "tuning",
+   "statement": "For every real x, (sin(x) - cos(x))^2 ≤ 2.",
+   "statement_sha256": "a781cbb60c525c0522469d6bd2603f9c8354574d416c1a119b890bc05387a4a4",
+   "tags": [
+    "inequality"
+   ],
+   "tier": "medium",
+   "tier_basis": "declared"
+  },
+  {
+   "expected_answer": null,
+   "field": "trigonometry",
+   "fixed_lean_statement": null,
+   "has_catalog_witness": false,
+   "history": [],
+   "id": "trig_expand_tan_square_plus_one",
+   "language": "en",
+   "shared": null,
+   "source": "candidate:highschool-trigonometry-expansion-candidates",
+   "split": "tuning",
+   "statement": "For every real x, if cos(x) is not equal to 0, then tan(x)^2 + 1 = 1/cos(x)^2.",
+   "statement_sha256": "b8662e04f1b773c5a03a8f4e649e7169d19bf72d4c59a896cd3804023ddff15e",
+   "tags": [],
+   "tier": "hard",
+   "tier_basis": "declared"
+  }
+ ],
+ "schema_version": "pals.generation-eval-manifest.v1",
+ "split_checksum": "8b348fb7cf53b066df482c008997c43dc77c77ca5fb4a99bca0c169ae05a3536",
+ "split_salt": "pals-generation-eval-v1",
+ "version": "generation-eval-v1"
+}
